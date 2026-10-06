@@ -80,22 +80,6 @@ figcaption {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-.mark-sheet {
-  fill: var(--panel);
-  stroke: var(--ink);
-  stroke-width: 2;
-}
-.mark-path {
-  fill: none;
-  stroke: var(--gold);
-  stroke-width: 2.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.mark-hole {
-  fill: var(--green);
-}
-
 /* the page and its title block */
 .b-page {
   position: relative;
@@ -147,13 +131,11 @@ figcaption {
 .b-brand {
   display: inline-flex;
   align-items: center;
-  gap: 1.6mm;
-  font-weight: 650;
-  color: var(--ink);
 }
-.b-tb-brand svg {
-  width: 4.6mm;
-  height: 4.6mm;
+.b-tb-brand img {
+  display: block;
+  height: 5mm;
+  width: auto;
 }
 
 /* 1 — cover: the first sheet of the example kitchen on the machine bed */
@@ -163,14 +145,10 @@ figcaption {
   align-items: center;
   font-size: 8.5pt;
 }
-.b-brand {
-  gap: 2.2mm;
-  font-size: 13pt;
-  font-weight: 680;
-}
-.b-brand svg {
-  width: 7.5mm;
-  height: 7.5mm;
+.b-brand img {
+  display: block;
+  height: 12mm;
+  width: auto;
 }
 .b-cover h1 {
   margin: 15mm 0 6mm;

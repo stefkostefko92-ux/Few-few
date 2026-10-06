@@ -173,6 +173,9 @@ export function landingStructuredData(
       '@type': 'SoftwareApplication',
       '@id': `${base}/#app`,
       name: 'Korpora',
+      // логото на продукта (scripts/brand.mjs); фирмата в Organization е Carbon Stealth VCC, не Korpora
+      image: `${base}/static/img/brand/logo.png`,
+      screenshot: `${base}/static/img/story/step-1-1120.webp`,
       applicationCategory: 'DesignApplication',
       operatingSystem: 'Web',
       browserRequirements: t('landing.meta.browser'),

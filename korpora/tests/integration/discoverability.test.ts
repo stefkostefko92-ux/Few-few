@@ -80,20 +80,24 @@ test('the raster icons are real ICO and PNG files in the sizes they declare', as
   }
 });
 
-test('every page links the icons and the manifest, and the links resolve', async () => {
+test('every page links the icons, the manifest and its logo, and the links resolve', async () => {
   for (const path of ['/', '/en/terms', '/it/privacy', '/login']) {
-    const head = /<head>([\s\S]*?)<\/head>/.exec(await html(path))?.[1] ?? '';
+    const page = await html(path);
+    const head = /<head>([\s\S]*?)<\/head>/.exec(page)?.[1] ?? '';
     for (const link of [
-      '<link rel="icon" href="/favicon.ico" sizes="32x32">',
+      '<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48 192x192">',
       '<link rel="apple-touch-icon" href="/apple-touch-icon.png">',
       '<link rel="manifest" href="/site.webmanifest">',
     ])
       assert.ok(head.includes(link), `${path}: ${link}`);
-    const svg = /<link rel="icon" href="([^"]+)" type="image\/svg\+xml">/.exec(head)?.[1];
-    assert.ok(svg, `${path}: SVG icon`);
-    const res = await get(svg);
-    assert.equal(res.status, 200);
-    assert.match(res.headers.get('content-type') ?? '', /^image\/svg\+xml/);
+    // the logo in the top bar: every width of its srcset is a real WebP
+    const srcset = /<img class="logo"[^>]* srcset="([^"]+)"/.exec(page)?.[1];
+    assert.ok(srcset, `${path}: logo`);
+    for (const url of srcset.split(',').map((entry) => entry.trim().split(' ')[0] ?? '')) {
+      const res = await get(url);
+      assert.equal(res.status, 200, url);
+      assert.equal(res.headers.get('content-type'), 'image/webp', url);
+    }
   }
 });
 
@@ -212,6 +216,22 @@ test('Speakable points at text that is on the page', async () => {
       assert.match(selector, /^\.[a-z-]+$/, 'a class selector');
       const text = new RegExp(`<p class="${selector.slice(1)}">([^<]+)</p>`).exec(body)?.[1];
       assert.ok(text && text.trim().length > 20, `${path}: ${selector} has text`);
+    }
+  }
+});
+
+test('the product node points at the Korpora logo and a picture of the program, and both resolve', async () => {
+  for (const [, path] of LANDINGS) {
+    const app = ofType(graph(await html(path)), 'SoftwareApplication');
+    for (const [key, type] of [
+      ['image', 'image/png'],
+      ['screenshot', 'image/webp'],
+    ] as const) {
+      const url = String(app[key] ?? '');
+      assert.ok(url.startsWith(`${BASE}/static/img/`), `${path}: ${key} ${url}`);
+      const res = await fetch(url);
+      assert.equal(res.status, 200, url);
+      assert.equal(res.headers.get('content-type'), type, url);
     }
   }
 });

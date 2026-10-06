@@ -1,7 +1,7 @@
 <%- include('sprite') %>
 <a class="skip" href="#main"><%= t('common.skip') %></a>
 <header class="bar">
-  <a class="brand" href="/app"><%- include('mark') %><span>Korpora</span></a>
+  <a class="brand" href="/app"><%- include('logo', { h: 36 }) %></a>
   <% if (currentUser && mfaPassed) { %>
   <nav class="bar-nav" aria-label="<%= t('nav.main') %>">
     <a href="/app" aria-current="<%= path.startsWith('/app') ? 'page' : 'false' %>"><%= t('nav.projects') %></a>

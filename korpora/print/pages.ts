@@ -19,7 +19,8 @@ export interface BrochureContext {
   priceDate: string;
   render: string | null;
   qr: string;
-  mark: string;
+  /** Логото като data URI (scripts/brand.mjs). */
+  logo: string;
   email: string;
   company: string;
 }
@@ -46,7 +47,7 @@ export function icon(name: keyof typeof ICON): string {
 
 /** Каре в долния край — като на чертежите от програмата: кой лист от колко. */
 export function titleBlock(c: BrochureContext, n: number): string {
-  return `<footer class="b-tb"><span class="b-tb-brand">${c.mark}Korpora</span><span>${esc(c.url.label)}</span><span>${esc(c.t('brochure.sheet', { n, total: PAGES }))}</span></footer>`;
+  return `<footer class="b-tb"><span class="b-tb-brand"><img src="${c.logo}" alt="Korpora"></span><span>${esc(c.url.label)}</span><span>${esc(c.t('brochure.sheet', { n, total: PAGES }))}</span></footer>`;
 }
 
 /** Svg от чертеж на програмата с ширина в мм на хартията; класът `rdw` остава — стилът на чертежа е по него. */
@@ -74,7 +75,7 @@ export function cover(c: BrochureContext): string {
       : '',
   ].join('');
   return `<section class="b-page b-cover">
-  <header class="b-top"><span class="b-brand">${c.mark}Korpora</span><a href="${esc(c.url.site)}">${esc(c.url.label)}</a></header>
+  <header class="b-top"><span class="b-brand"><img src="${c.logo}" alt="Korpora"></span><a href="${esc(c.url.site)}">${esc(c.url.label)}</a></header>
   <h1><span>${esc(t('landing.hero.line1'))}</span> <span>${esc(t('landing.hero.line2'))}</span></h1>
   <p class="b-lead">${esc(t('landing.hero.lead'))}</p>
   <p class="b-for">${esc(t('brochure.cover.for'))}</p>

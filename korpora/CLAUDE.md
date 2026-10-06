@@ -35,12 +35,13 @@ npm run dev              # локален сървър на :4320; чете .env
 npm run owner:create     # първият собственик — OWNER_EMAIL/OWNER_NAME/OWNER_PASSWORD от средата
 npm run geoip:update     # DB-IP Lite → data/dbip-country-lite.mmdb (месечно)
 CATALOG_KEY=… npm run catalog:seal # data/catalog.json → sealed/catalog.json.enc (шифрованият каталог в репото)
-npm run og:image         # public/img/og.png — ръчно, след промяна на вида или двигателя (листът е от витрината)
+npm run og:image         # public/img/og.png — логото и първата снимка от историята; ръчно, след промяна на тях
 npm run story:stills     # public/img/story/step-<n>-<ширина>.webp — четирите снимки на историята във витрината
                          # (живата сцена в Chromium със SwiftShader, ~7 мин., сървърът да работи) — ръчно, след промяна
                          # на двигателя, на 3D изгледа на редактора или на landing/
-node scripts/favicons.mjs # favicon.ico (16/32/48/192), apple-touch-icon, иконите на манифеста — след промяна на
-                          # favicon.svg (Google Search не приема SVG за иконка)
+node scripts/brand.mjs   # от brand/korpora-logo.png (логото на собственика): public/img/brand/logo-*.webp и logo.png,
+                         # favicon.ico (16/32/48/192), apple-touch-icon и иконите на манифеста — от емблемата (K в
+                         # кръга); после npm run og:image и npm run brochure
 npm run brochure         # print/korpora-brochure-<език>.pdf — брошурата A4 за клиенти (print/README.md)
 ```
 
@@ -75,6 +76,8 @@ locales/<език>/       common · auth · account · admin · mail · editor �
 tests/                unit · engine/ · integration/ (реален Postgres)
 print/                брошурата за клиенти: build-brochure.ts → PDF на трите езика; locales/*/brochure.json
 sealed/               каталогът от магазините, шифрован (catalog.json.enc); ключът CATALOG_KEY е само на сървъра
+brand/                логото на собственика (korpora-logo.png, прозрачен PNG) — източникът на всички картини на
+                      марката: views/partials/logo.ejs, иконите, og.png и брошурата (scripts/brand.mjs)
 ```
 
 ## Правила, които не се нарушават

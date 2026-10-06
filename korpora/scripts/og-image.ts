@@ -1,35 +1,26 @@
-// Renders public/img/og.png (1200 × 630) — the picture for link previews. Language-neutral on purpose: the brand
-// mark (views/partials/mark.ejs) and the nested sheet with its router path from the landing page
-// (src/services/landing-assets.ts — the same example project as the landing page and the brochure), straight
-// from the engine. The shop catalogue is used when data/catalog.json is there, as on the server.
-// Run after changing the engine or the look: `npm run og:image` (needs the Playwright dev dependency).
+// Renders public/img/og.png (1200 × 630) — the picture for link previews. Language-neutral on purpose: the logo
+// (public/img/brand/logo-1200.webp, from scripts/brand.mjs) and the first still of the landing page's story
+// (public/img/story/step-1-1120.webp, from scripts/landing-stills.ts) — the example kitchen as the editor draws it,
+// in the same light studio panel as on the page.
+// Run after changing the logo or the stills: `npm run og:image` (needs the Playwright dev dependency).
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { chromium } from 'playwright';
 import { ROOT } from '../src/paths.js';
-import { loadEngine } from '../src/services/engine.js';
-import { landingAssets } from '../src/services/landing-assets.js';
 
-await loadEngine(join(ROOT, 'data', 'catalog.json'));
-const svg = landingAssets().sheet.svg;
-const mark = readFileSync(join(ROOT, 'views', 'partials', 'mark.ejs'), 'utf8').trim();
+const dataUri = (path: string, type: string) =>
+  `data:${type};base64,${readFileSync(join(ROOT, path)).toString('base64')}`;
+const logo = dataUri('public/img/brand/logo-1200.webp', 'image/webp');
+const still = dataUri('public/img/story/step-1-1120.webp', 'image/webp');
 
-// setContent has no origin, so the fonts go in as data URIs
-const css = ['base', 'controls', 'site']
-  .map((name) => readFileSync(join(ROOT, 'public', 'css', `${name}.css`), 'utf8'))
-  .join('\n')
-  .replace(
-    /url\('\/static\/fonts\/([\w-]+\.woff2)'\)/g,
-    (_m, file: string) =>
-      `url(data:font/woff2;base64,${readFileSync(join(ROOT, 'public', 'fonts', file)).toString('base64')})`,
-  );
-const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><style>${css}
-html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; }
-.card { display: grid; grid-template-columns: 430px 1fr; gap: 40px; align-items: center; height: 630px; padding: 0 56px; box-sizing: border-box; background: var(--paper); }
-.word { display: flex; align-items: center; gap: 18px; font: 760 76px/1 var(--f-text); letter-spacing: -0.04em; font-variation-settings: 'SHRP' 100; color: var(--ink); }
-.word svg { width: 74px; height: 74px; flex: none; }
-.bed { padding: 20px; }
-</style></head><body><div class="card"><div><div class="word">${mark}Korpora</div></div><figure class="bed">${svg}</figure></div></body></html>`;
+// --paper and --studio: the page's paper (public/css/base.css) and the stage panel (public/css/site-story.css)
+const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><style>
+html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; background: #f6f7f1; }
+.card { display: grid; grid-template-columns: 1fr 448px; gap: 48px; align-items: center; height: 630px; padding: 0 40px 0 64px; box-sizing: border-box; }
+.logo { display: block; width: 100%; height: auto; }
+.stage { height: 560px; border-radius: 26px; overflow: hidden; background: #eeeee9; box-shadow: inset 0 0 0 1px rgb(52 48 47 / 0.06); }
+.stage img { display: block; width: 100%; height: 100%; object-fit: cover; }
+</style></head><body><div class="card"><img class="logo" src="${logo}" alt="Korpora"><div class="stage"><img src="${still}" alt=""></div></div></body></html>`;
 
 const browser = await chromium.launch();
 try {
@@ -39,8 +30,6 @@ try {
     reducedMotion: 'reduce',
   });
   await page.setContent(html, { waitUntil: 'load' });
-  // the fonts are data URIs: wait until the page has laid them out before the screenshot
-  await page.evaluate('document.fonts.ready.then(() => true)');
   await page.screenshot({ path: join(ROOT, 'public', 'img', 'og.png') });
 } finally {
   await browser.close();

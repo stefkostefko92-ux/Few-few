@@ -58,7 +58,7 @@ function renderImage(): string | null {
     : null;
 }
 
-type SharedContext = Pick<BrochureContext, 'lineup' | 'render' | 'mark'>;
+type SharedContext = Pick<BrochureContext, 'lineup' | 'render' | 'logo'>;
 
 /** Частите, които не зависят от езика — смятат се веднъж за трите брошури. */
 function sharedContext(): SharedContext {
@@ -66,7 +66,8 @@ function sharedContext(): SharedContext {
   return {
     lineup: { groups, scale: LINEUP_SCALE, count: groups.reduce((n, g) => n + g.items.length, 0) },
     render: renderImage(),
-    mark: readFileSync(join(ROOT, 'views', 'partials', 'mark.ejs'), 'utf8').trim(),
+    // the logo (scripts/brand.mjs): 480 px wide is ~300 dpi at the cover's 12 mm height
+    logo: `data:image/webp;base64,${readFileSync(join(ROOT, 'public', 'img', 'brand', 'logo-480.webp')).toString('base64')}`,
   };
 }
 
