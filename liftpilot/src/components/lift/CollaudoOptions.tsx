@@ -122,7 +122,7 @@ export default function CollaudoOptions({ P, isNew, chosen, value, set, access, 
               // the renovation's sling stays: never ticked; the load the documented loads count as changed: ticked
               const kept = rif && p === 'sling', auto = p === 'load' && autoLoad;
               return (
-                <label key={p}>
+                <label key={p} data-part={p}>
                   <input type="checkbox" checked={!kept && value.parti.includes(p)} disabled={kept || auto} onChange={(e) => toggle(p, e.target.checked)} />
                   <span>{kept ? t('rif_sling') : auto ? `${t('parte_load')} — ${t('auto_load')}` : t(`parte_${p}`)}</span>
                 </label>

@@ -74,7 +74,8 @@ try {
   await page.waitForSelector('.advice .advice-card.best button');
   await page.click('.advice .advice-card.best button');
   await page.waitForSelector('.advice .advice-card.best button[disabled]');
-  await page.waitForTimeout(300);
+  // the form has taken the machine (its card is the chosen one): save as soon as the save button accepts it
+  await page.waitForSelector('.savebar button.primary:not([disabled])');
   await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.primary')]);
   const calcUrl = page.url();
   assert.match(await page.textContent('dl.cartiglio'), /UNI 10411-1 · EN 81-20\/50/, 'test standards kept');
@@ -132,7 +133,7 @@ try {
   await page.press('.lift-main .ed-pop input', 'Enter');
   await page.waitForSelector(`.lift-main .ed-hits .hit[aria-label^="${spanWas + 40}"][aria-label*="Ammortizzatori di cabina: interasse"]`);
   await page.waitForSelector('.lift-stage.live, .lift-stage.failed', { timeout: 120000 });
-  await page.click('.scenario-tabs > button:nth-child(2)');
+  await page.click('.scenario-tabs button[data-scenario="brake"]');
   await page.waitForSelector('.sim-chart svg path.line');
   await page.check('#auto-P');
   await page.waitForSelector('.lift-calc .auto-value .badge');
@@ -142,21 +143,21 @@ try {
   assert.ok(await page.isChecked('.collaudo label:has-text("tutto l’impianto") input'), 'the replacement’s test standards carried over');
   await page.uncheck('.collaudo label:has-text("tutto l’impianto") input');
   await page.selectOption('.collaudo select', '10411-11');
-  await page.check('.collaudo .parti-grid label:nth-child(2) input');
+  await page.check('.collaudo .parti-grid label[data-part="ropes"] input');
   await page.waitForSelector('.lift-checks tr.existing .status-pill.existing');
   assert.match(await page.textContent('.lift-work .lift-verdict .badge'), /UNI 10411-11/, 'standard of the acceptance test');
   // the renovation keeping the existing sling: every part but the sling (locked), still tested to the UNI 10411 part
   // chosen, never to EN 81-20/50; through a new lift and back it is the same
   const rif = '.lift-form .seg-row button:has-text("Rifacimento con arcata esistente")';
   await page.click(rif);
-  await page.waitForSelector('.collaudo .parti-grid label:nth-child(4) input:disabled');
-  assert.ok(await page.isChecked('.collaudo .parti-grid label:nth-child(3) input'), 'the car replaced');
+  await page.waitForSelector('.collaudo .parti-grid label[data-part="sling"] input:disabled');
+  assert.ok(await page.isChecked('.collaudo .parti-grid label[data-part="car"] input'), 'the car replaced');
   assert.equal(await page.locator('.lift-form .collaudo select option[value="en81"]').count(), 0, 'EN 81-20/50 not offered');
   await page.waitForFunction(() => /arcata esistente/.test(globalThis.document.querySelector('.lift-work .lift-verdict')?.textContent ?? ''));
   await page.click('.lift-form .seg-row button:has-text("Nuovo impianto")');
   await page.waitForFunction(() => /EN 81-20\/50/.test(globalThis.document.querySelector('.lift-work .lift-verdict .badge')?.textContent ?? ''));
   await page.click(rif);
-  await page.waitForSelector('.collaudo .parti-grid label:nth-child(4) input:disabled');
+  await page.waitForSelector('.collaudo .parti-grid label[data-part="sling"] input:disabled');
   assert.equal(await page.inputValue('.collaudo select'), '10411-11', 'the part of UNI 10411 kept');
   await page.waitForFunction(() => /UNI 10411-11/.test(globalThis.document.querySelector('.lift-work .lift-verdict .badge')?.textContent ?? ''));
   // the machine from SICOR's catalogue: the proposal takes one of its models, which the room's drawings, the 3D and the

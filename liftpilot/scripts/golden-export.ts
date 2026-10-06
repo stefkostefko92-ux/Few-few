@@ -14,5 +14,7 @@ const cases = doc.cases.map((c, idx) => {
   if (idx >= 3) for (const [key, v] of Object.entries(out)) out[key] = { sha256: sha256(v as never) };
   return { name: c.name, V: c.V, ...out };
 });
-writeFileSync(file, JSON.stringify({ source: `liftpilot engine — ${reason}`, generated: new Date().toISOString().slice(0, 10), cases }));
+// one case per line: a regeneration's diff shows which cases changed
+const head = JSON.stringify({ source: `liftpilot engine — ${reason}`, generated: new Date().toISOString().slice(0, 10) }).slice(0, -1);
+writeFileSync(file, `${head},"cases":[\n${cases.map((c) => JSON.stringify(c)).join(',\n')}\n]}\n`);
 process.stdout.write(`golden: ${cases.length} casi rigenerati\n`);

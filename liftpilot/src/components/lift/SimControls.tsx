@@ -56,7 +56,7 @@ export default function SimControls({ sc, choose, set, labels, here, Q, T, clock
     <div className="sim-controls">
       <div className="scenario-tabs" role="tablist" aria-label={t('scenario')}>
         {SCENARIOS.map((id) => (
-          <button key={id} type="button" role="tab" aria-selected={sc.id === id} className={sc.id === id ? 'on' : undefined} onClick={() => choose(id)}>{t(`sc_${id}`)}</button>
+          <button key={id} type="button" role="tab" data-scenario={id} aria-selected={sc.id === id} className={sc.id === id ? 'on' : undefined} onClick={() => choose(id)}>{t(`sc_${id}`)}</button>
         ))}
       </div>
       <div className="scenario-params">

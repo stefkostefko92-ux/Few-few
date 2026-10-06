@@ -53,3 +53,15 @@ test('numeri uguali sul server e nel browser: separatori fissi, non quelli del r
   assert.equal(f(Number.NaN), '—');
   assert.equal(f(null), '—');
 });
+
+test('nessun testo è vuoto in nessuna delle tre lingue', () => {
+  const at = (o: object, k: string): unknown => k.split('.').reduce<unknown>((x, p) => (x as Record<string, unknown>)[p], o);
+  for (const [name, dicts] of [['app', [appIt, appEn, appBg]], ['calc', [calcIt, calcEn, calcBg]]] as const) {
+    for (const [i, dict] of dicts.entries()) {
+      for (const k of keys(dict)) {
+        const v = at(dict, k);
+        if (typeof v === 'string') assert.ok(v.trim().length > 0, `${name}/${['it', 'en', 'bg'][i]}: «${k}» è vuoto`);
+      }
+    }
+  }
+});
