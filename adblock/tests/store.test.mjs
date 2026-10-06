@@ -34,6 +34,8 @@ const locs = readdirSync(join(ROOT, "_locales"));
 const descs = locs.map((l) => [l, JSON.parse(readFileSync(join(ROOT, "_locales", l, "messages.json"), "utf8")).extDescription.message]);
 const en = descs.find(([l]) => l === "en")[1];
 ok(`summary (en): no promotional words (${en})`, !BANNED.test(en) && !/\b(fast|private|no cost)\b/i.test(en));
+const sub = readFileSync(join(ROOT, "docs", "SUBMISSION.md"), "utf8");
+ok("SUBMISSION.md summary == extDescription (en)", sub.includes("`" + en + "`"));
 const long = descs.filter(([, d]) => d.length > 132).map(([l]) => l);
 ok(`summary: ≤132 chars in every locale (${long.join(",") || "all"})`, long.length === 0);
 

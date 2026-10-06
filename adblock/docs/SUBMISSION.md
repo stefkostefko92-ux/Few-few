@@ -46,7 +46,7 @@ via headless Chromium; see that script's header).
 
 - **Name:** `Supreme AdBlock`
 - **Summary (132 max):**
-  `Block ads everywhere, YouTube video ads, banners, pop-ups, trackers and cookie prompts. Free, fast and private.`
+  `Blocks ads everywhere: YouTube video ads, banners, pop-ups, trackers, cookie prompts and anti-adblock walls.` (= `extDescription` in `_locales/en`; the store takes it from the package)
 - **Category:** Productivity
 - **Language:** English
 - **Detailed description:** use the block in `docs/STORE_LISTING.md`.
