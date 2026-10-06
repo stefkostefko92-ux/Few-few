@@ -24,3 +24,22 @@ describe("health-check-овете сочат 127.0.0.1", () => {
     expect(checks.some((l) => /127\.0\.0\.1/.test(l)), f).toBe(true);
   });
 });
+
+// ДЕФЕКТЪТ (сървър, 06.10.2026): `curl … | grep -q` под `set -o pipefail` в
+// deploy/smoke.sh. grep -q излиза при първото съвпадение, curl/echo пише
+// остатъка в затворения pipe → SIGPIPE → проверката „пада“, макар страницата
+// да е наред. При всеки деплой падаха случайни страници (/privacy, /eula…),
+// а 18/18 директни заявки ги връщаха с canonical. Възпроизведено 10/10 със
+// сървър, който праща на парчета. Търсенето е само в изтеглен текст (has/hasi).
+describe("deploy/smoke.sh не лъже при голям отговор", () => {
+  const src = readFileSync(join(ROOT, "deploy/smoke.sh"), "utf8")
+    .split("\n").filter((l) => !/^\s*#/.test(l)).join("\n");
+  it("pipefail е включен — затова pipe към grep -q е забранен", () => {
+    expect(src).toMatch(/set -\w*o pipefail/);
+    expect(src.match(/\|\s*grep\s+-q/g) || [], "pipe към grep -q").toEqual([]);
+  });
+  it("помощниците търсят през here-string, не през pipe", () => {
+    expect(src).toMatch(/has\(\)\s*\{\s*grep -q\s+-- "\$2" <<<"\$1"; \}/);
+    expect(src).toMatch(/prerendered\(\) \{ has "\$\(body/);
+  });
+});
