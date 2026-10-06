@@ -181,3 +181,5 @@
 {"t":"handoff","ts":"2026-09-28T13:42:12.695Z","id":"rb0b2c7c7","from":"kodadjiyata","to":"човек","status":"има бележки","run":"2f8a1cd7"}
 {"t":"start","ts":"2026-10-05T05:54:17.876Z","id":"r257d6f89","flow":"авто","lead":"kodadjiyata","auto":true}
 {"t":"handoff","ts":"2026-10-05T05:54:17.876Z","id":"r257d6f89","from":"kodadjiyata","to":"човек","status":"има бележки","run":"b56426c1"}
+{"t":"start","ts":"2026-10-06T08:58:00.760Z","id":"rd442711c","flow":"авто","lead":"asansyorchika","auto":true}
+{"t":"handoff","ts":"2026-10-06T08:58:00.760Z","id":"rd442711c","from":"asansyorchika","to":"ai-djiyata","status":"има бележки","run":"9212ad9d"}
