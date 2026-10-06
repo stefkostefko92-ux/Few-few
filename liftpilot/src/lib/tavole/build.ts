@@ -1,7 +1,8 @@
 // The drawing set of a lift, A4 sheets: 1 the data; the plans of the shaft at the top floor (headroom), at the main
 // floor and at the lowest floor; section A-A whole and in three details (headroom, main floor, pit); the machine room
-// in plan and in section B-B; the pit in plan with its loads. Each view at the largest standard scale that fits with
-// its dimensions; the count adapts (no machine room: no sheets of it; main floor = lowest floor: one plan less).
+// in plan and in section B-B — with the machine below, its room beside the shaft or under it in plan and in section
+// C-C —; the pit in plan with its loads. Each view at the largest standard scale that fits with its dimensions; the
+// count adapts (no machine room: no sheets of it; main floor = lowest floor: one plan less).
 import {
   A4, COND, PALETTE, concreteTile, drawingArea, frame, shapeBox, sheetTitle, strip, toPaper,
   type Box, type DrawingDoc, type Hit, type Page, type Place, type Pt, type Shape, type SheetMeta,
@@ -11,6 +12,7 @@ import type { PlanLevel } from '@/shaft/plan-view';
 import type { SectionKind } from '@/shaft/section-dims';
 import type { Layout } from '@/shaft/types';
 import { withPitches } from '@/shaft/brackets';
+import type { BottomGeo, BottomScheme } from '../lift/bottom';
 import { analyse, type Analysis } from '../present/analysis';
 import { dataSheet, type Mismatch } from './data';
 import { dataSheetShapes } from './datasheet';
@@ -18,13 +20,14 @@ import { legendColumn, legendHeight, legendRow, scaleLabel, sectionMarks, sideLa
 import { dateIt, placeLines, type TavoleInput } from './input';
 import { OVER_DOWN, OVER_UP, spaceLegend, type LegendItem } from './notes';
 import { makeFmt } from '../present/tr';
-import { machineOf, planView, roomView, sectionView } from './views';
+import { belowGeoOf, belowView, machineOf, planView, roomView, sectionView } from './views';
 
 /** A sheet of the set after the data: a plan of the shaft, section A-A or a detail, the machine room. */
 export type Spec =
   | { k: 'plan'; level: PlanLevel; floor: number; title: string; subtitle?: string; total: string; legend: LegendItem[] }
   | { k: 'section'; kind: SectionKind; floor: number; title: string; subtitle?: string; legend: LegendItem[] }
-  | { k: 'room-plan' | 'room-section'; title: string; subtitle: string };
+  | { k: 'room-plan' | 'room-section'; title: string; subtitle: string }
+  | { k: 'below-plan' | 'below-section'; title: string; subtitle: string };
 
 export interface TavoleResult {
   doc: DrawingDoc;
@@ -38,7 +41,13 @@ export interface TavoleResult {
 
 const LEGEND_W = 34;
 
-export function specs(L: Layout, room: boolean): Spec[] {
+/** The scheme of the machine below as the subtitles name it (the research's three). */
+const BELOW_SUB: Readonly<Record<BottomScheme, string>> = {
+  head: 'RINVII IN TESTATA', room: 'LOCALE PULEGGE SOPRA IL VANO', under: 'RINVII IN TESTATA, MACCHINA SOTTO LA FOSSA',
+};
+
+/** `room`: the design has a machine room above; `below`: the scheme of the machine below (its room's sheets). */
+export function specs(L: Layout, room: boolean, below: BottomScheme | null = null): Spec[] {
   const V = L.inputs.vertical, top = V.floors.length - 1, main = Math.min(Math.max(0, V.main), top), label = (i: number): string => V.floors[i]?.label ?? String(i);
   const sp = spaceLegend(L, makeFmt('it-IT')), loads = 'CARICHI: VALORI NEL FOGLIO 1';
   const out: Spec[] = [
@@ -56,6 +65,13 @@ export function specs(L: Layout, room: boolean): Spec[] {
     out.push(
       { k: 'room-plan', title: 'VISTA IN PIANTA DEL LOCALE MACCHINA', subtitle: `${loads.replace('CARICHI', 'CARICHI SULLA SOLETTA')}` },
       { k: 'room-section', title: 'VISTA IN ELEVATO DEL LOCALE MACCHINA - SEZ. B-B', subtitle: loads },
+    );
+  }
+  if (below) {
+    const where = below === 'under' ? 'SOTTO IL VANO' : 'ACCANTO AL VANO', sub = `MACCHINA IN BASSO: ${BELOW_SUB[below]}`;
+    out.push(
+      { k: 'below-plan', title: `VISTA IN PIANTA DEL LOCALE MACCHINA ${where}`, subtitle: sub },
+      { k: 'below-section', title: `VISTA IN ELEVATO DEL LOCALE MACCHINA ${where} - SEZ. C-C`, subtitle: sub },
     );
   }
   out.push({ k: 'plan', level: 'pit', floor: 0, title: `VISTA IN PIANTA DEL VANO AL PIANO "${label(0)}" E IN FOSSA`, subtitle: loads.replace('CARICHI', 'CARICHI IN FOSSA'), total: `piano "${label(0)}" e in Fossa`, legend: [sp.pit] });
@@ -127,6 +143,26 @@ export function roomMarks(G: RoomGeo, p: Place, edges: Box): Shape[] {
   return sectionMarks(reach(-1), reach(1), view, 'B');
 }
 
+/** Section C-C's marks on the plan of the room below: through the sheave's centre along the drops' direction. */
+function belowMarks(g: BottomGeo, p: Place, edges: Box): Shape[] {
+  const c: Pt = [(g.mc[0] + g.mw[0]) / 2, (g.mc[1] + g.mw[1]) / 2], a = toPaper(p, c), b = toPaper(p, [c[0] + g.dir[0], c[1] + g.dir[1]]);
+  const n = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1, ux = (b[0] - a[0]) / n, uy = (b[1] - a[1]) / n;
+  const reach = (s: number): Pt => {
+    for (let t = 0; t < 400; t += 1) {
+      const q: Pt = [a[0] + s * ux * t, a[1] + s * uy * t];
+      if (q[0] < edges.x0 || q[0] > edges.x1 || q[1] < edges.y0 || q[1] > edges.y1) return [q[0] + s * ux * 5, q[1] + s * uy * 5];
+    }
+    return a;
+  };
+  const view = Math.abs(ux) >= Math.abs(uy) ? (ux > 0 ? 'up' : 'down') : uy > 0 ? 'left' : 'right';
+  return sectionMarks(reach(-1), reach(1), view, 'C');
+}
+
+function belowSheet(L: Layout, M: MachineSpec, g: BottomGeo, kind: 'below-plan' | 'below-section', area: Box): Drawn {
+  const v = belowView(L, M, g, kind === 'below-plan' ? 'plan' : 'section', inset(area, 8, 8, 8, 8));
+  return { shapes: [...v.r.shapes, ...(kind === 'below-plan' ? belowMarks(g, v.place, v.r.extent) : [])], scale: v.place.scale, hits: v.r.hits };
+}
+
 function roomSheet(L: Layout, M: MachineSpec, kind: 'room-plan' | 'room-section', area: Box): Drawn {
   const v = roomView(L, M, kind === 'room-plan' ? 'plan' : 'section', inset(area, 8, 8, 8, 8));
   if (!v) throw new Error('no machine room');
@@ -135,7 +171,10 @@ function roomSheet(L: Layout, M: MachineSpec, kind: 'room-plan' | 'room-section'
 
 export function buildTavole(x: TavoleInput): TavoleResult {
   // the counterweight brackets' pitch the data declare: the plan's codes count as sheet 1 does
-  const L: Layout = withPitches(x.layout, { car: x.plant.carBracketPitch, cw: x.plant.cwBracketPitch }), a: Analysis = analyse(x.values), list = specs(L, L.inputs.room !== null && a.ctx.I.layout !== 'bottom'), pages = list.length + 1, M = machineOf(a, x.plant, L, x.marks?.catalog ?? null);
+  const L: Layout = withPitches(x.layout, { car: x.plant.carBracketPitch, cw: x.plant.cwBracketPitch }), a: Analysis = analyse(x.values), M = machineOf(a, x.plant, L, x.marks?.catalog ?? null);
+  // the machine below: its room's sheets for the scheme the design chose (the head pulleys under the slab when none)
+  const scheme = a.ctx.I.layout === 'bottom' ? x.marks?.bottom ?? 'head' : null, g = scheme ? belowGeoOf(a, L, M, scheme) : null;
+  const list = specs(L, L.inputs.room !== null && a.ctx.I.layout !== 'bottom', scheme), pages = list.length + 1;
   const [l1, l2] = placeLines(x.project), last = x.set.revisions[x.set.revisions.length - 1];
   const meta = (page: number): SheetMeta => ({
     number: x.set.number, page, pages, revision: last ? `${last.mark} ${dateIt(last.date)}` : '', location: `${l1} - ${l2}`, plant: x.project.plantNumber || '—',
@@ -145,7 +184,8 @@ export function buildTavole(x: TavoleInput): TavoleResult {
   const sheets: TavoleResult['sheets'] = [{ title: 'DATI DELL\'IMPIANTO', scale: null }], hits: Hit[][] = [[]];
   list.forEach((s, i) => {
     const sub = s.subtitle !== undefined, area = drawingArea(sub);
-    const d = s.k === 'plan' ? planSheet(L, s, area) : s.k === 'section' ? sectionSheet(L, s, area) : roomSheet(L, M, s.k, area);
+    const d = s.k === 'plan' ? planSheet(L, s, area) : s.k === 'section' ? sectionSheet(L, s, area)
+      : s.k === 'below-plan' || s.k === 'below-section' ? belowSheet(L, M, g ?? belowGeoOf(a, L, M, 'head'), s.k, area) : roomSheet(L, M, s.k, area);
     out.push({ w: A4.w, h: A4.h, shapes: [...frame(), ...d.shapes, ...sheetTitle(s.title, s.subtitle), scaleLabel(d.scale, sub), ...strip(meta(i + 2))] });
     sheets.push({ title: s.title, scale: d.scale });
     hits.push(d.hits);

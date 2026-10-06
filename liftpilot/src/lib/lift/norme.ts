@@ -20,6 +20,13 @@ export const KL = {
   pulleyRoomAxis: 450,
   underSlab: 300,
   underRoomH: 2400,
+  // the machine's room beside the shaft (schemes head and room): along the ropes' plane past the wall, across it each
+  // way from the car's drop line, its height [mm]
+  belowRoomLen: 2200,
+  belowRoomHalf: 1300,
+  belowRoomH: 2400,
+  // either room grows to keep this much free past the machine's body where the body reaches out of it [mm]
+  belowRoomClear: 500,
   // a maker's machine for the proposal: its ratio may give a speed this far from the ratio of the rated speed
   catalogRatioTol: 0.1,
   // direct pull: the falls in the plan and the sheave's pitch diameter may differ by this much (the rounding) [mm]
@@ -167,12 +174,16 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
     valore: `tre schemi: rinvii appesi sotto il solaio del vano (assi a Dp/2 + ${KL.headFrame} mm sotto il soffitto), macchina nel locale al piano più `
       + `basso oltre la parete del contrappeso con la puleggia nel vano; locale pulegge sopra il solaio (assi a ${KL.pulleyRoomAxis} mm sul pavimento `
       + `del locale, solaio di ${KL.slab} mm se il locale non è progettato), macchina come sopra; macchina sotto il vano, in un locale alto `
-      + `${KL.underRoomH} mm sotto la soletta della fossa di ${KL.underSlab} mm, rinvii sotto il solaio. I due rami alla macchina salgono dietro il `
+      + `${KL.underRoomH} mm sotto la soletta della fossa di ${KL.underSlab} mm, rinvii sotto il solaio. Il locale della macchina accanto al vano è `
+      + `lungo ${KL.belowRoomLen} mm oltre la parete, largo ${2 * KL.belowRoomHalf} mm e alto ${KL.belowRoomH} mm, con la porta sul fianco e il quadro `
+      + `sulla parete di fondo; quello sotto il vano è grande quanto il vano. Tutti e due si allargano dove la macchina ne esce, fino a `
+      + `${KL.belowRoomClear} mm oltre il suo ingombro. I due rami alla macchina salgono dietro il `
       + `contrappeso a ${KL.bottomClear} mm dalla parete e dal contrappeso, la puleggia con il piano parallelo alla parete; per lato un rinvio a 180° `
       + 'se il ramo dista dalla calata in pianta non più di Dp, altrimenti due rinvii a 90° con un tratto orizzontale. Il calcolo conta due rinvii '
       + 'per la macchina in basso: gli altri entrano come flessioni semplici aggiuntive (nps)',
     riferimento: 'ricerca, funi con la macchina in basso, capitoli 2–5; DPR 1497/1963 artt. 5–9, 33', fonte: 'geometria ricostruita dal software',
-    stato: 'scelta', costanti: ['bottomClear', 'headFrame', 'pulleyRoomAxis', 'underSlab', 'underRoomH', 'slab'],
+    stato: 'scelta', costanti: ['bottomClear', 'headFrame', 'pulleyRoomAxis', 'underSlab', 'underRoomH', 'belowRoomLen', 'belowRoomHalf', 'belowRoomH', 'belowRoomClear',
+      'slab'],
     nota: 'lo schema reale va rilevato sull\'impianto; con la macchina sotto il vano lo spazio sotto la fossa è accessibile: paracadute del '
       + 'contrappeso — la EN 81-20 non ammette più il pilastro pieno fino al terreno — (UNI EN 81-20:2020, 5.2.5.4) e fondo della fossa per le reazioni degli ammortizzatori; '
       + 'in una modifica la UNI 10411-1:2024 (6.14) accetta al posto del paracadute un pilastro esistente fino al terreno, verificato per i nuovi carichi',

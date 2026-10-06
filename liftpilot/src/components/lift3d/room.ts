@@ -13,6 +13,7 @@ import { supportOf, type Layout, type MachineSupport } from '@/shaft';
 import { machineFrame, type MachineFrame, type MachineShape } from '@/shaft/machine-shape';
 import type { RinvioFrame } from '@/shaft/rinvio';
 import { KL, planeAt, type RopePlane, type RopeRig } from '@/lib/lift';
+import { belowMachine } from '@/lib/lift/bottom';
 import { buildMachine, CONDUIT_END, DIM, ROPE_LENGTH } from '../machine/parts';
 import { buildShaped } from '../machine/shape';
 import { createMaterials, type MachineMaterials } from '../machine/materials';
@@ -76,7 +77,9 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
     const [x, yy] = planeAt(p, u);
     return new THREE.Vector3(x / 1000, y, -yy / 1000);
   };
-  const z0 = rig.roomFloor * 1000, shells = shellsOf(L, rig), shell = shells.find((sh) => sh.kind === 'machine') ?? null, R = shell?.room ?? null;
+  // below, the room grown round the machine's body where it reaches out (bottom.ts)
+  const body = rig.bottom && rig.scheme ? belowMachine(L, rig.scheme, D, n, d, shape).body : null;
+  const z0 = rig.roomFloor * 1000, shells = shellsOf(L, rig, body), shell = shells.find((sh) => sh.kind === 'machine') ?? null, R = shell?.room ?? null;
   for (const sh of shells) buildShell(sh, M, sides, roof, common);
 
   // the machine: the generic one scaled to the sheave or the maker's as it is, its rope plane on the sheave's, the

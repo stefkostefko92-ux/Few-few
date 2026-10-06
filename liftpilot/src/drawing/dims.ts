@@ -32,8 +32,9 @@ function splitFigure(text: string, value: string): { fig: string; words: string 
   const t = text.trim(), own = new RegExp(`(^|\\D)(${value})(?!\\d)`).exec(t), first = /\d+(?:[.,]\d+)?/.exec(t);
   const [fig, at] = own ? [own[2], own.index + own[1].length] : first ? [first[0], first.index] : [null, 0];
   if (fig === null || fig === t) return null;
-  // the words left round it, without the brackets that held it ("Calata (768)" → "Calata")
-  const words = `${t.slice(0, at)} ${t.slice(at + fig.length)}`.replace(/\(\s*\)/g, ' ').replace(/\s+/g, ' ').trim();
+  // the words left round it, without the brackets that held it ("Calata (768)" → "Calata") or the "x" glued to it
+  // ("Porta 800x H. 2000" → "Porta H. 2000"; a spaced "× 640" says what it multiplies and stays)
+  const words = `${t.slice(0, at)} ${t.slice(at + fig.length).replace(/^x(?=\s)/, '')}`.replace(/\(\s*\)/g, ' ').replace(/\s+/g, ' ').trim();
   return { fig, words };
 }
 

@@ -12,7 +12,9 @@ import { sectionDims, type SectionKind } from '@/shaft/section-dims';
 import { sectionEntities, type SectionView } from '@/shaft/section-view';
 import type { Layout } from '@/shaft/types';
 import type { RoomDerived } from '../room/derive';
-import { machineSpec } from '../lift/machine';
+import { bottomGeo, type BottomGeo, type BottomScheme } from '../lift/bottom';
+import { machineSpec, sheaveAxisBelow } from '../lift/machine';
+import { belowPlanEntities, belowSectionEntities } from './below-view';
 import type { Plant } from '../plant';
 import type { Analysis } from '../present/analysis';
 
@@ -97,6 +99,22 @@ export function roomView(L: Layout, M: MachineSpec, kind: 'plan' | 'section', ar
   const { entities, bounds } = kind === 'plan' ? roomPlanEntities(L, M, G) : roomSectionEntities(L, M, G);
   const place = placeIn(bounds, entities, area, DETAIL_SCALES);
   return { r: renderView(entities, place), place, G };
+}
+
+/** The geometry of the machine below for the calculation's machine (the 3D's: bottom.ts). */
+export const belowGeoOf = (a: Analysis, L: Layout, M: MachineSpec, scheme: BottomScheme): BottomGeo =>
+  bottomGeo(L, scheme, M.D, a.ctx.I.Dp, M.n, M.d, a.ctx.I.r, sheaveAxisBelow(M.D, M.shape ?? null));
+
+/** The machine's room with the machine below, in plan or in section C-C (below-view.ts). */
+export function belowView(L: Layout, M: MachineSpec, g: BottomGeo, kind: 'plan' | 'section', area: Box): View {
+  // the plan keeps its names clear of each other at the scale it is drawn at: placed once more when that is not 1:25
+  const at = (s: number) => (kind === 'plan' ? belowPlanEntities(L, M, g, s) : belowSectionEntities(L, M, g));
+  let { entities, bounds } = at(DETAIL_SCALES[0]), place = placeIn(bounds, entities, area, DETAIL_SCALES);
+  if (kind === 'plan' && place.scale !== DETAIL_SCALES[0]) {
+    ({ entities, bounds } = at(place.scale));
+    place = placeIn(bounds, entities, area, DETAIL_SCALES);
+  }
+  return { r: renderView(entities, place), place };
 }
 
 /** The machine room of a replacement (its survey) in plan or in section B-B, the machine `M` (the derived one, or the

@@ -9,8 +9,9 @@
 //   under — pulleys as in head, the machine in a room under the pit (an accessible space below the shaft).
 // The calculation counts the bottom layout's two head pulleys; the scheme's others are extra simple bends. Plan [mm]
 // in the shaft's coordinates, heights [mm] from the lowest floor. Pure.
-import { layout, section, type Layout, type ShaftInputs } from '@/shaft';
+import { layout, section, type Layout, type RoomInputs, type ShaftInputs, type Wall } from '@/shaft';
 import { ropeWidths } from '@/shaft/machine-room';
+import { machineFrame, type MachineFrame, type MachineShape } from '@/shaft/machine-shape';
 import { bracketSpan } from '@/shaft/plan-staffe';
 import { KL } from './norme';
 
@@ -111,6 +112,69 @@ export function bottomGapNeeded(I: ShaftInputs, s: BottomScheme, D: number, Dp: 
     else lo = m;
   }
   return Math.ceil((I.cwWallGap + hi) / 5) * 5;
+}
+
+/** The wall across the room from each one. */
+export const OPPOSITE: Readonly<Record<Wall, Wall>> = { front: 'rear', rear: 'front', left: 'right', right: 'left' };
+/** The side of a plan rectangle whose outward normal is (nx, ny): the larger component's. */
+const facing = (nx: number, ny: number): Wall => (Math.abs(nx) > Math.abs(ny) ? (nx > 0 ? 'right' : 'left') : ny > 0 ? 'rear' : 'front');
+const alongX = (s: Wall): boolean => s === 'front' || s === 'rear';
+
+/** The machine below where the 3D stands it (components/lift3d/room.ts machinePose): its worm (X) along the wall, its
+ *  slow shaft (local Z) toward the sheave between the two runs, the motor across the ropes' plane — away from the shaft
+ *  beside it, toward the car under the pit; beside the shaft the slow shaft longer by `ext` to reach through the wall into
+ *  the gap behind the counterweight; the corners of what stands in the room in plan: the body, and under the pit the
+ *  sheave with it [mm]. */
+export function belowMachine(L: Layout, g: BottomGeo, D: number, n: number, d: number, shape: MachineShape | null):
+  { F: MachineFrame; xDir: P2; zDir: P2; C: P2; ext: number; body: P2[] } {
+  const F = machineFrame(D, shape), xDir: P2 = g.scheme === 'under' ? g.across : [-g.across[0], -g.across[1]], zDir: P2 = [xDir[1], -xDir[0]];
+  const ext = g.scheme !== 'under' ? Math.max(0, KL.bottomClear + ropeWidths(n, d).ropes + L.inputs.wall + 50 - (F.zSheave - F.face)) : 0;
+  const C: P2 = [(g.mc[0] + g.mw[0]) / 2, (g.mc[1] + g.mw[1]) / 2];
+  const at = (x: number, z: number): P2 => [C[0] + x * xDir[0] + (z - F.zSheave - ext) * zDir[0], C[1] + x * xDir[1] + (z - F.zSheave - ext) * zDir[1]];
+  const z1 = g.scheme === 'under' ? F.z[1] : F.face;
+  return { F, xDir, zDir, C, ext, body: [at(F.x[0], F.z[0]), at(F.x[1], F.z[0]), at(F.x[1], z1), at(F.x[0], z1)] };
+}
+
+/** The machine's room below as the 3D and the drawings show it, in the room's own axes (RoomInputs: the shaft's inner
+ *  corner of entrance A at shaftX, shaftY) with its floor `z0` over the lowest floor [mm]. Beside the shaft (head,
+ *  room): past the wall behind the counterweight, KL.belowRoomLen along the drops' direction and twice
+ *  KL.belowRoomHalf across it, open on the shaft's side (`open`: the shaft's wall closes it), the controller on the far
+ *  wall at the end on the motor's side, the door in the side wall across the ropes from the machine. Under the pit: as
+ *  large as the shaft, the door on the entrances' wall, the controller on the side away from the counterweight. Either
+ *  grows to keep KL.belowRoomClear past the machine's `body` (belowMachine) where the body reaches out of it. */
+export function belowRoom(L: Layout, g: BottomGeo, body: readonly P2[] | null = null): { room: RoomInputs; open: Wall | null; z0: number } {
+  const I = L.inputs, c = KL.belowRoomClear;
+  if (g.scheme === 'under') {
+    const xs = (body ?? []).map((p) => p[0]), ys = (body ?? []).map((p) => p[1]);
+    const x0 = Math.min(0, ...xs.map((x) => x - c)), y0 = Math.min(0, ...ys.map((y) => y - c));
+    const x1 = Math.max(I.W, ...xs.map((x) => x + c)), y1 = Math.max(I.D, ...ys.map((y) => y + c));
+    return {
+      room: {
+        W: x1 - x0, D: y1 - y0, shaftX: -x0, shaftY: -y0, H: KL.underRoomH, ridge: 0, slab: 0, doorWall: 'front', doorAt: 150, doorW: 800, doorH: 2000,
+        panelWall: L.cwSide === 'left' ? 'right' : 'left', panelAt: 150, panelW: 800, panelD: 300, panelH: 1800,
+      },
+      open: null, z0: g.roomFloor,
+    };
+  }
+  const [dx, dy] = g.dir, [ox, oy] = g.car, u0 = g.wallAt + I.wall;
+  // the body in the room's frame: along the drops' direction from the car's drop (u) and across it (v)
+  const us = (body ?? []).map((p) => (p[0] - ox) * dx + (p[1] - oy) * dy), vs = (body ?? []).map((p) => -(p[0] - ox) * dy + (p[1] - oy) * dx);
+  const u1 = Math.max(u0 + KL.belowRoomLen, ...us.map((u) => u + c));
+  const v0 = Math.min(-KL.belowRoomHalf, ...vs.map((v) => v - c)), v1 = Math.max(KL.belowRoomHalf, ...vs.map((v) => v + c));
+  const pts = [[u0, v0], [u1, v0], [u1, v1], [u0, v1]].map(([u, v]) => [ox + u * dx - v * dy, oy + u * dy + v * dx]);
+  const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]), x0 = Math.min(...xs), y0 = Math.min(...ys);
+  const W = Math.max(...xs) - x0, D = Math.max(...ys) - y0, open = facing(-dx, -dy), far = OPPOSITE[open];
+  const len = (s: Wall): number => (alongX(s) ? W : D), doorWall = facing(dy, -dx);
+  // the cabinet at the far wall's end on the motor's side, the door near the far end of the other side wall
+  const toMotor = alongX(far) ? -dy : dx, toFar = alongX(doorWall) ? dx : dy;
+  return {
+    room: {
+      W, D, shaftX: -x0, shaftY: -y0, H: KL.belowRoomH, ridge: 0, slab: 0,
+      doorWall, doorAt: toFar > 0 ? len(doorWall) - 1000 : 200, doorW: 800, doorH: 2000,
+      panelWall: far, panelAt: toMotor > 0 ? len(far) - 900 : 100, panelW: 800, panelD: 300, panelH: 1800,
+    },
+    open, z0: g.roomFloor,
+  };
 }
 
 /** The head pulleys the scheme has beyond the two the calculation counts for the bottom layout: extra simple bends. */

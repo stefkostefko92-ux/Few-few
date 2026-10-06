@@ -1,15 +1,16 @@
 // The rooms of the machine and of the pulleys as shells: the room above the shaft from its design; with the machine
-// below, a room past the wall behind the counterweight, 2.2 m along the ropes' plane, 2.6 m across and 2.4 m high,
-// open on the shaft's side (the shaft's wall closes it), the controller's cabinet on the far wall beside the
-// machine's motor and the door in the side wall across the ropes from the machine; for a pulley room over the slab,
-// the room above from the design or one as large as the shaft, 1.5 m high, with a door of 0.6 × 1.4 m; for the
-// machine under the pit, a room as large as the shaft under the pit's slab. The walls with the door (x-ray, by side),
-// the roof (and the floor of a room below), the cabinet and the main switch of a machine's room, the lamp. Plan and
-// heights in millimetres, in the shaft's coordinates. Loaded only through boot.ts (lazy).
+// below, the room the drawings show too (lib/lift/bottom.ts belowRoom) — past the wall behind the counterweight, open on
+// the shaft's side (the shaft's wall closes it), the controller's cabinet on the far wall beside the machine's motor and
+// the door in the side wall across the ropes from the machine, or under the pit's slab as large as the shaft, either
+// grown round the machine where it reaches out; for a pulley room over the slab, the room above from the design or one
+// as large as the shaft, 1.5 m high, with a door of 0.6 × 1.4 m. The walls with the door (x-ray, by side), the roof
+// (and the floor of a room below), the cabinet and the main switch of a machine's room, the lamp. Plan and heights in
+// millimetres, in the shaft's coordinates. Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import type { Layout, RoomInputs } from '@/shaft';
 import { KL, type RopeRig } from '@/lib/lift';
+import { belowRoom } from '@/lib/lift/bottom';
 import { section } from '@/shaft';
 import { Batch, box, onWall } from './geom';
 import { SIDES, type LiftMaterials, type Side } from './materials';
@@ -26,42 +27,23 @@ export interface Shell {
   kind: 'machine' | 'pulleys';
   floor: boolean;
   roof: boolean;
+  /** under the pit, a room larger than the shaft: its roof round the shaft's outer footprint [x0, y0, x1, y1] (the pit's
+   *  slab, buildShaft, covers the rest), as thick as that slab */
+  ring?: readonly [number, number, number, number];
 }
 
-const OPPOSITE: Record<Side, Side> = { front: 'rear', rear: 'front', left: 'right', right: 'left' };
-/** The side of a plan rectangle whose outward normal is (nx, ny): the larger component's. */
-const facing = (nx: number, ny: number): Side => (Math.abs(nx) > Math.abs(ny) ? (nx > 0 ? 'right' : 'left') : ny > 0 ? 'rear' : 'front');
 /** Whether u along a wall runs along plan x (front and rear walls) or y. */
 const alongX = (s: Side): boolean => s === 'front' || s === 'rear';
 
-/** The rooms: the machine's — above from the design, below beside the shaft, or under the pit — and a pulley room over
- *  the slab. The machine's body stands across the ropes' plane toward (−dy, dx) of the plan's direction (room.ts). */
-export function shellsOf(L: Layout, rig: RopeRig): Shell[] {
+/** The rooms: the machine's — above from the design, below beside the shaft, or under the pit, grown round the machine's
+ *  `body` (bottom.ts belowMachine) — and a pulley room over the slab. The machine's body stands across the ropes' plane
+ *  toward (−dy, dx) of the plan's direction (room.ts). */
+export function shellsOf(L: Layout, rig: RopeRig, body: readonly (readonly [number, number])[] | null = null): Shell[] {
   const z0 = rig.roomFloor * 1000, I = L.inputs, g = rig.scheme;
   if (!rig.bottom || !g) return I.room ? [{ room: I.room, open: null, z0, kind: 'machine', floor: false, roof: true }] : [];
-  const S = section(L), out: Shell[] = [];
-  if (g.scheme === 'under') {
-    // under the pit: as large as the shaft, the door on the entrance's wall, the cabinet on a side
-    const room: RoomInputs = {
-      W: I.W, D: I.D, shaftX: 0, shaftY: 0, H: KL.underRoomH, ridge: 0, slab: 0, doorWall: 'front', doorAt: 150, doorW: 800, doorH: 2000,
-      panelWall: L.cwSide === 'left' ? 'right' : 'left', panelAt: 150, panelW: 800, panelD: 300, panelH: 1800,
-    };
-    out.push({ room, open: null, z0, kind: 'machine', floor: true, roof: false });
-  } else {
-    const [dx, dy] = rig.dir, [ox, oy] = rig.origin, u0 = rig.wallAt * 1000 + I.wall, u1 = u0 + 2200, half = 1300;
-    const pts = [[u0, -half], [u1, -half], [u1, half], [u0, half]].map(([u, v]) => [ox + u * dx - v * dy, oy + u * dy + v * dx]);
-    const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]), x0 = Math.min(...xs), y0 = Math.min(...ys);
-    const W = Math.max(...xs) - x0, D = Math.max(...ys) - y0, open = facing(-dx, -dy), far = OPPOSITE[open];
-    const len = (s: Side): number => (alongX(s) ? W : D), doorWall = facing(dy, -dx);
-    // the cabinet at the far wall's end on the motor's side, the door near the far end of the other side wall
-    const toMotor = alongX(far) ? -dy : dx, toFar = alongX(doorWall) ? dx : dy;
-    const room: RoomInputs = {
-      W, D, shaftX: -x0, shaftY: -y0, H: 2400, ridge: 0, slab: 0,
-      doorWall, doorAt: toFar > 0 ? len(doorWall) - 1000 : 200, doorW: 800, doorH: 2000,
-      panelWall: far, panelAt: toMotor > 0 ? len(far) - 900 : 100, panelW: 800, panelD: 300, panelH: 1800,
-    };
-    out.push({ room, open, z0, kind: 'machine', floor: true, roof: true });
-  }
+  const S = section(L), out: Shell[] = [], below = belowRoom(L, g, body), T = I.wall;
+  // under the pit no roof of its own but round the shaft (the pit's slab); beside the shaft open on its wall (bottom.ts)
+  out.push({ room: below.room, open: below.open, z0, kind: 'machine', floor: true, roof: g.scheme !== 'under', ...(g.scheme === 'under' ? { ring: [-T, -T, I.W + T, I.D + T] as const } : {}) });
   if (g.scheme === 'room') {
     const room: RoomInputs = I.room ?? {
       W: I.W, D: I.D, shaftX: 0, shaftY: 0, H: 1500, ridge: 0, slab: KL.slab, doorWall: 'front', doorAt: 150, doorW: 600, doorH: 1400,
@@ -93,6 +75,12 @@ export function buildShell(sh: Shell, M: LiftMaterials, sides: Record<Side, THRE
     } else piece(a0, a1, z0, z0 + H);
   }
   if (sh.roof) roof.add(box(x0 - WALL, y0 - WALL, z0 + H, x0 + Wr + WALL, y0 + Dr + WALL, z0 + H + 200, M.roof));
+  if (sh.ring) {
+    const [h0, k0, h1, k1] = sh.ring, X0 = x0 - WALL, Y0 = y0 - WALL, X1 = x0 + Wr + WALL, Y1 = y0 + Dr + WALL, za = z0 + H, zb = za + KL.underSlab;
+    for (const [a, b, c, d] of [[X0, Y0, h0, Y1], [h1, Y0, X1, Y1], [h0, Y0, h1, k0], [h0, k1, h1, Y1]] as const) {
+      if (c - a > 1 && d - b > 1) roof.add(box(a, b, za, c, d, zb, M.slab));
+    }
+  }
   if (sh.floor) common.add(box(x0 - WALL, y0 - WALL, z0 - 200, x0 + Wr + WALL, y0 + Dr + WALL, z0, M.slab));
   // a box against a wall of the room: u along it, v out from it, z over the floor
   const B = new Batch();
