@@ -1,10 +1,12 @@
-import { publicBaseUrl } from '@/lib/env';
+import { indexingAllowed, publicBaseUrl } from '@/lib/env';
 import { PROFILO } from '@/calc/norme';
 
 export const dynamic = 'force-dynamic';
 
-// llms.txt: what the site is and where the key pages are, for AI crawlers.
+// llms.txt: what the site is and where the key pages are, for AI crawlers; not found while indexing is off, as robots.txt
+// and the sitemap.
 export function GET(): Response {
+  if (!indexingAllowed()) return new Response('Not found', { status: 404, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
   const base = publicBaseUrl();
   const body = [
     '# LiftPilot',
@@ -25,8 +27,8 @@ export function GET(): Response {
     `- [LiftPilot (Italiano)](${base}/it): modules, drawings made by the software, workflow, deliverables, security, standards, FAQ`,
     `- [LiftPilot (English)](${base}/en)`,
     `- [LiftPilot (Български)](${base}/bg)`,
-    `- [Register a company](${base}/it/register): self-registration of an installer company and its owner`,
-    `- [Privacy and terms of use](${base}/it/privacy): data controller, data processed, cookies, retention, rights, terms`,
+    `- [Register a company](${base}/it/register): self-registration of an installer company and its owner (also [English](${base}/en/register), [Български](${base}/bg/register))`,
+    `- [Privacy and terms of use](${base}/it/privacy): data controller, data processed, cookies, retention, rights, terms (also [English](${base}/en/privacy), [Български](${base}/bg/privacy))`,
     '',
     '## Publisher',
     '- [Carbon Stealth VCC](https://carbonstealth.eu)',

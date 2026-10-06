@@ -21,7 +21,8 @@ export function pageMetadata(p: PageMeta): Metadata {
   const base = publicBaseUrl(), url = (l: string): string => `${base}/${l}${p.path}`;
   const index = p.indexable && indexingAllowed();
   return {
-    title: p.title,
+    // a title that already names the site (the home page's) stays as it is: the layout's template would repeat the name
+    title: p.title.startsWith(SITE_NAME) ? { absolute: p.title } : p.title,
     description: p.description,
     keywords: [...p.keywords],
     alternates: {
@@ -45,15 +46,16 @@ export function organizationLd(): JsonLd {
 }
 
 export function websiteLd(locale: Locale): JsonLd {
-  return { '@type': 'WebSite', '@id': `${publicBaseUrl()}/#website`, name: SITE_NAME, url: `${publicBaseUrl()}/${locale}`, inLanguage: locale, publisher: { '@id': 'https://carbonstealth.eu/#org' } };
+  return { '@type': 'WebSite', '@id': `${publicBaseUrl()}/${locale}/#website`, name: SITE_NAME, url: `${publicBaseUrl()}/${locale}`, inLanguage: locale, publisher: { '@id': 'https://carbonstealth.eu/#org' } };
 }
 
 export function softwareLd(locale: Locale, description: string, features: readonly string[] = []): JsonLd {
+  const base = publicBaseUrl();
   return {
-    '@type': 'SoftwareApplication', name: SITE_NAME, applicationCategory: 'BusinessApplication', applicationSubCategory: 'Lift design and engineering calculation',
-    operatingSystem: 'Web', inLanguage: ['it', 'en', 'bg'], description, url: `${publicBaseUrl()}/${locale}`,
-    ...(features.length ? { featureList: [...features] } : {}),
-    publisher: { '@id': 'https://carbonstealth.eu/#org' }, areaServed: { '@type': 'Country', name: 'Italia' },
+    '@type': 'SoftwareApplication', '@id': `${base}/#app`, name: SITE_NAME, applicationCategory: 'BusinessApplication',
+    applicationSubCategory: 'Lift design and engineering calculation', operatingSystem: 'Web', inLanguage: ['it', 'en', 'bg'], description,
+    url: `${base}/${locale}`, image: `${base}/img/og-${locale}.png`, ...(features.length ? { featureList: [...features] } : {}),
+    publisher: { '@id': 'https://carbonstealth.eu/#org' }, countriesSupported: 'IT',
   };
 }
 

@@ -21,6 +21,9 @@ export default function RegisterForm({ date, trialDays }: { date: string; trialD
   const [v, setV] = useState<Record<Text, string>>({ company: '', vatNumber: '', city: '', name: '', email: '' });
   const [agreed, setAgreed] = useState<Record<Consent, boolean>>({ accept: false, business: false, drafts: false, clauses: false });
   const bad = (f: string): true | undefined => (state.fields?.includes(f) ? true : undefined);
+  // a field with an error says so in words under it, not only with the red border, and points to the message on top
+  const said = (f: string): string | undefined => (bad(f) ? `err-${f}${state.error ? ' register-error' : ''}` : undefined);
+  const mark = (f: string) => (bad(f) ? <small id={`err-${f}`} className="field-error">{t('fieldError')}</small> : null);
   const values = { ...legalValues(), version: TERMS_VERSION, date };
   if (state.ok) {
     return (
@@ -34,13 +37,14 @@ export default function RegisterForm({ date, trialDays }: { date: string; trialD
     <label className="field">
       <span>{t(name)}</span>
       <input className="input" type={type} name={name} autoComplete={autoComplete} maxLength={max} required={required} aria-invalid={bad(name)}
-        value={v[name]} onChange={(e) => setV({ ...v, [name]: e.target.value })} />
+        aria-describedby={said(name)} value={v[name]} onChange={(e) => setV({ ...v, [name]: e.target.value })} />
+      {mark(name)}
     </label>
   );
   return (
     <form action={action} className="panel register-form" noValidate>
       <input type="hidden" name="locale" value={locale} />
-      {state.error ? <p className="alert alert-bad" role="alert">{te(state.error, { min: PASSWORD_MIN_LENGTH })}</p> : null}
+      {state.error ? <p id="register-error" className="alert alert-bad" role="alert">{te(state.error, { min: PASSWORD_MIN_LENGTH })}</p> : null}
       <fieldset>
         <legend>{t('companySection')}</legend>
         {text('company', 'text', 'organization', 160)}
@@ -55,11 +59,15 @@ export default function RegisterForm({ date, trialDays }: { date: string; trialD
         {text('email', 'email', 'email', 254)}
         <label className="field">
           <span>{t('password')}</span>
-          <input className="input" type="password" name="password" autoComplete="new-password" minLength={PASSWORD_MIN_LENGTH} maxLength={200} required aria-invalid={bad('password')} />
+          <input className="input" type="password" name="password" autoComplete="new-password" minLength={PASSWORD_MIN_LENGTH} maxLength={200} required aria-invalid={bad('password')}
+            aria-describedby={said('password')} />
+          {mark('password')}
         </label>
         <label className="field">
           <span>{t('confirm')}</span>
-          <input className="input" type="password" name="confirm" autoComplete="new-password" maxLength={200} required aria-invalid={bad('confirm')} />
+          <input className="input" type="password" name="confirm" autoComplete="new-password" maxLength={200} required aria-invalid={bad('confirm')}
+            aria-describedby={said('confirm')} />
+          {mark('confirm')}
         </label>
         <p className="note">{t('rule', { min: PASSWORD_MIN_LENGTH })}</p>
       </fieldset>
@@ -67,10 +75,11 @@ export default function RegisterForm({ date, trialDays }: { date: string; trialD
       <p className="note">{t.rich('privacyNote', { link: (chunks) => <Link href="/privacy" target="_blank">{chunks}</Link> })}</p>
       {CONSENTS.map((k) => (
         <label key={k} className="check consent">
-          <input type="checkbox" name={k} checked={agreed[k]} onChange={(e) => setAgreed({ ...agreed, [k]: e.target.checked })} aria-invalid={bad(k)} />
+          <input type="checkbox" name={k} checked={agreed[k]} onChange={(e) => setAgreed({ ...agreed, [k]: e.target.checked })} aria-invalid={bad(k)}
+            aria-describedby={said(k)} />
           <span>{k === 'accept'
             ? t.rich('accept', { ...values, link: (chunks) => <Link href="/privacy#terms" target="_blank">{chunks}</Link> })
-            : t(k, values)}</span>
+            : t(k, values)}{mark(k)}</span>
         </label>
       ))}
       <div><button type="submit" className="btn btn-primary" disabled={pending}>{pending ? t('submitting') : t('submit')}</button></div>
