@@ -1,0 +1,352 @@
+// Rendetto — схема на данните. PostgreSQL, миграции само през `prisma migrate deploy`.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Седем нива: клиент + шест нива персонал. По-високото включва по-ниските (src/auth/rbac.ts).
+enum Role {
+  CUSTOMER
+  VIEWER
+  ANALYST
+  SUPPORT
+  MANAGER
+  ADMIN
+  OWNER
+}
+
+enum Plan {
+  TRIAL
+  PREMIUM
+  LIFETIME
+}
+
+/// Един акаунт. Планът е състояние на акаунта, плащанията засега са извън системата (ръчно).
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  name              String
+  passwordHash      String
+  role              Role      @default(CUSTOMER)
+  locale            String    @default("bg")
+  emailVerifiedAt   DateTime?
+  plan              Plan      @default(TRIAL)
+  /// Край на плана. TRIAL и PREMIUM имат дата; LIFETIME — null. TRIAL без дата = още не е започнал
+  /// (тестовият период тръгва при потвърждаване на имейла).
+  planExpiresAt     DateTime?
+  /// Кога е пратено напомнянето, че тестовият период свършва — праща се веднъж.
+  trialReminderAt   DateTime?
+  /// TOTP тайна, AES-256-GCM в покой. Без `totpEnabledAt` тайната е само започната настройка.
+  totpSecretEnc     String?
+  totpEnabledAt     DateTime?
+  /// Последната приета 30-секундна стъпка — един и същ код не минава два пъти.
+  totpLastStep      Int?
+  failedLogins      Int       @default(0)
+  lockedUntil       DateTime?
+  /// Текущ бан (историята е в AccountBan). Причината се показва на човека при вход.
+  bannedAt          DateTime?
+  banReason         String?
+  lastLoginAt       DateTime?
+  lastLoginIp       String?
+  lastLoginCountry  String?
+  /// Откъде е регистриран акаунтът — за „свързани акаунти“ (повторни тестови периоди от едно устройство).
+  signupIp          String?
+  signupCountry     String?
+  signupDeviceHash  String?
+  signupFingerprint String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  sessions        Session[]
+  devices         Device[]
+  logins          LoginEvent[]
+  projects        Project[]
+  planChanges     PlanChange[]
+  bans            AccountBan[]
+  emailTokens     EmailToken[]
+  recoveryCodes   RecoveryCode[]
+  upgradeRequests UpgradeRequest[]
+
+  @@index([plan, planExpiresAt])
+  @@index([role])
+  @@index([createdAt])
+  @@index([bannedAt])
+  @@index([signupDeviceHash])
+  @@index([signupFingerprint])
+  @@index([signupIp])
+  /// Свързаните акаунти и търсенето по IP питат `signupIp ИЛИ lastLoginIp` — без двата индекса е пълно обхождане.
+  @@index([lastLoginIp])
+}
+
+/// Сесия в базата (не JWT): банът, смяната на парола и „излез навсякъде“ я прекратяват веднага.
+model Session {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// SHA-256 на токена от бисквитката — откраднат дъмп на базата не дава вход.
+  tokenHash   String   @unique
+  csrfToken   String
+  mfaPassed   Boolean  @default(false)
+  mfaFailures Int      @default(0)
+  ip          String?
+  country     String?
+  userAgent   String?
+  deviceId    String?
+  device      Device?  @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  lastSeenAt  DateTime @default(now())
+  expiresAt   DateTime
+
+  @@index([userId])
+  @@index([deviceId])
+  @@index([expiresAt])
+}
+
+/// Устройство на акаунта — в панела „HWID“. Браузърът не дава хардуерен номер, затова пазим хеш на
+/// постоянната бисквитка на устройството и хеш на отпечатъка му (видеокарта, екран, ядра, часова зона).
+model Device {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cookieHash      String
+  fingerprintHash String?
+  /// Четимо описание: система · браузър · екран · видеокарта · часова зона.
+  summary         String
+  userAgent       String?
+  firstSeenAt     DateTime @default(now())
+  lastSeenAt      DateTime @default(now())
+  lastIp          String?
+  lastCountry     String?
+  loginCount      Int      @default(0)
+
+  sessions Session[]
+  logins   LoginEvent[]
+
+  @@unique([userId, cookieHash])
+  @@index([cookieHash])
+  @@index([fingerprintHash])
+  /// Поддръжката на всеки час трие устройствата след срока за пазене.
+  @@index([lastSeenAt])
+}
+
+enum LoginOutcome {
+  SUCCESS
+  BAD_PASSWORD
+  UNKNOWN_EMAIL
+  LOCKED
+  THROTTLED
+  BANNED
+  UNVERIFIED
+  MFA_FAILED
+  MFA_RECOVERY
+}
+
+/// Всеки опит за вход: IP, държава, устройство, изход. Имейл на несъществуващ акаунт не се пази.
+model LoginEvent {
+  id              String       @id @default(cuid())
+  userId          String?
+  user            User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  outcome         LoginOutcome
+  ip              String?
+  /// Мрежата на адреса: IPv4 както е, IPv6 — неговата /64 (един човек държи цялата /64). По нея се броят
+  /// неуспешните опити, за да не се заобикалят със смяна на последните 64 бита.
+  ipNet           String?
+  country         String?
+  userAgent       String?
+  deviceId        String?
+  device          Device?      @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  fingerprintHash String?
+  createdAt       DateTime     @default(now())
+
+  @@index([userId, createdAt])
+  @@index([ip, createdAt])
+  @@index([ipNet, createdAt])
+  @@index([deviceId])
+  @@index([createdAt])
+}
+
+/// История на плана: кой, кога, от какво към какво. Справочната цена е по ценоразписа, не плащане.
+model PlanChange {
+  id             String          @id @default(cuid())
+  userId         String
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// null = системата (регистрация, потвърждаване на имейла).
+  actorId        String?
+  actorLabel     String
+  fromPlan       Plan?
+  toPlan         Plan
+  fromExpiresAt  DateTime?
+  toExpiresAt    DateTime?
+  months         Int?
+  listPriceCents Int?
+  note           String?
+  /// Поръчката, която промяната изпълнява — при отказ от договора планът се връща оттук.
+  requestId      String?
+  request        UpgradeRequest? @relation(fields: [requestId], references: [id], onDelete: SetNull)
+  createdAt      DateTime        @default(now())
+
+  @@index([userId, createdAt])
+  @@index([requestId])
+}
+
+/// Бановете с историята им. Текущият бан стои и в User.bannedAt/banReason за бърза проверка.
+model AccountBan {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reason        String
+  bannedById    String?
+  bannedByLabel String
+  createdAt     DateTime  @default(now())
+  liftedAt      DateTime?
+  liftedById    String?
+  liftedByLabel String?
+  liftNote      String?
+
+  @@index([userId, createdAt])
+}
+
+enum RequestStatus {
+  OPEN
+  DONE
+  REJECTED
+  CANCELLED
+  /// потребителят се е отказал от договора в срока за отказ (чл. 11а от Директива 2011/83)
+  WITHDRAWN
+}
+
+/// Кой купува: потребителят има право на отказ; фирмата или самонаетият за професионални цели — не.
+enum BuyerType {
+  CONSUMER
+  BUSINESS
+}
+
+/// Поръчка на Premium/Lifetime (със задължение за плащане). Цената се смята на сървъра от
+/// ценоразписа в момента на поръчката; договорът се сключва с потвърждението по имейл веднага след нея.
+model UpgradeRequest {
+  id                    String           @id @default(cuid())
+  userId                String
+  user                  User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// m1 | m3 | m6 | m12 | lifetime
+  option                String
+  months                Int?
+  /// без ДДС, цели евроценти
+  listPriceCents        Int
+  message               String?
+  buyerType             BuyerType        @default(CONSUMER)
+  /// Изричното искане на потребителя планът да започне преди края на срока за отказ (неотметната отметка).
+  earlyStartRequestedAt DateTime?
+  /// Версията на общите условия, приети с поръчката (LEGAL_UPDATED.terms).
+  termsVersion          String?
+  /// Кога тръгна потвърждението на договора по имейл (траен носител); null = поддръжката опитва пак.
+  confirmationSentAt    DateTime?
+  /// Кога потребителят е потвърдил отказа си от договора.
+  withdrawnAt           DateTime?
+  /// Кога тръгна потвърждението, че отказът е получен; null след отказ = поддръжката опитва пак.
+  withdrawalAckSentAt   DateTime?
+  /// Какво стана с плана при отказа: open | reverted | manual — решено и записано при самия отказ.
+  /// null = отказ отпреди записа (изходът се извежда от историята, plans/withdrawal.ts).
+  withdrawalOutcome     String?
+  status                RequestStatus    @default(OPEN)
+  handledById           String?
+  handledByLabel        String?
+  handledAt             DateTime?
+  /// Поръчката, която е заменила тази (отменена с @superseded) — за повторното писмо на поддръжката.
+  supersededById        String?
+  supersededBy          UpgradeRequest?  @relation("Supersedes", fields: [supersededById], references: [id], onDelete: SetNull)
+  supersedes            UpgradeRequest[] @relation("Supersedes")
+  createdAt             DateTime         @default(now())
+  planChanges           PlanChange[]
+
+  @@index([status, createdAt])
+  @@index([userId])
+  @@index([supersededById])
+}
+
+/// Проект = една мебел. Спецификацията е единственият източник на истината; изходите се смятат от нея.
+model Project {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  type      String
+  spec      Json
+  specHash  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, updatedAt])
+}
+
+/// Началото на веригата след изтриване на стари записи по срока за пазене: последният изтрит запис.
+model AuditBase {
+  id       Int      @id @default(1)
+  lastId   Int
+  lastHash String
+  prunedAt DateTime @default(now())
+}
+
+enum TokenPurpose {
+  VERIFY_EMAIL
+  RESET_PASSWORD
+  CHANGE_EMAIL
+}
+
+/// Еднократни връзки по имейл. В базата е само хешът; връзката изтича и се изразходва при употреба.
+model EmailToken {
+  id        String       @id @default(cuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose   TokenPurpose
+  tokenHash String       @unique
+  newEmail  String?
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime     @default(now())
+
+  @@index([userId, purpose])
+  @@index([expiresAt])
+}
+
+/// Резервни кодове за втория фактор: HMAC в базата, всеки се ползва веднъж.
+model RecoveryCode {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash  String
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+/// Одит с верига от хешове: подправен стар запис чупи веригата (src/audit.ts).
+model AuditLog {
+  id         Int      @id @default(autoincrement())
+  at         DateTime @default(now())
+  actorType  String
+  actorId    String?
+  actorLabel String
+  action     String
+  targetType String?
+  targetId   String?
+  detail     Json?
+  /// Самият адрес се заличава след 180 дни; веригата пази HMAC-а му, затова проверката не се чупи.
+  ip         String?
+  ipHmac     String?
+  prevHash   String
+  hash       String
+  /// 1 — SHA-256 (записите преди ключа); 2 — HMAC-SHA-256 с ключ извън базата, с името на извършителя.
+  v          Int      @default(1)
+
+  /// Справките търсят по targetId (често в ИЛИ с actorId) — без targetType.
+  @@index([targetId])
+  @@index([actorId])
+  @@index([action])
+  @@index([at])
+}

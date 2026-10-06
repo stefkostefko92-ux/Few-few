@@ -42,10 +42,19 @@ export function assistantTexts(lines) {
     let o; try { o = JSON.parse(t); } catch { continue; }
     const m = o?.message;
     if (o?.type !== "assistant" || m?.role !== "assistant" || !Array.isArray(m.content)) continue;
-    for (const c of m.content) if (c?.type === "text" && typeof c.text === "string") out.push(c.text);
+    for (const c of m.content) {
+      if (c?.type === "text" && typeof c.text === "string") out.push(c.text);
+      else if (isHandback(c)) out.push(c.input.message);
+    }
   }
   return out;
 }
+
+// Фоновият агент предава доклада си с извикване на инструмента SubagentHandback (assistant → tool_use,
+// input.message), не с текст. Без този клон всички поуки на фоновите пускания се губеха тихо (2026-10-06:
+// осем пускания на Асансьорчика, нула записани). Пак е текст, който агентът сам е написал — tool_result
+// остава изключен.
+export const isHandback = (c) => c?.type === "tool_use" && c.name === "SubagentHandback" && typeof c.input?.message === "string";
 
 function transcriptText(path) {
   if (!path || !existsSync(path)) return "";

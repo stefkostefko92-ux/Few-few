@@ -1,0 +1,7 @@
+  </div>
+</main>
+<%- include('../partials/app-footer') %>
+<% for (const s of (typeof scripts !== 'undefined' ? scripts : [])) { %><script src="/static/js/<%= s %>.js?v=<%= v %>" defer></script>
+<% } %>
+</body>
+</html>

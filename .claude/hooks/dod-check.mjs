@@ -15,6 +15,7 @@ import { fileURLToPath } from "node:url";
 import { checkScope } from "../../tools/agents/scope-check.mjs";
 import { validateHandoff, knownAgentIds } from "../../tools/agents/handoff.mjs";
 import { evalMode } from "../../tools/lib/eval-mode.mjs";
+import { isHandback } from "./memory-capture.mjs";
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -150,8 +151,9 @@ export function lastAssistantText(jsonl) {
     const msg = o.message || o;
     if (msg.role !== "assistant") continue;
     const c = msg.content;
+    // Фоновият агент приключва с SubagentHandback (tool_use, input.message) — това е отговорът му.
     const txt = typeof c === "string" ? c
-      : Array.isArray(c) ? c.filter((b) => b && b.type === "text").map((b) => b.text).join("\n")
+      : Array.isArray(c) ? c.map((b) => (b?.type === "text" ? b.text : isHandback(b) ? b.input.message : "")).filter(Boolean).join("\n")
       : "";
     if (txt.trim()) return txt;
   }

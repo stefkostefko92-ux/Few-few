@@ -1,0 +1,83 @@
+<%- include('../partials/page-top', { title: t('plan.title') }) %>
+<div class="page-head"><h1><%= t('plan.title') %></h1></div>
+<%- include('../partials/account-nav') %>
+<%- include('../partials/flash') %>
+<% const termsHref = legalPath(locale, 'terms'); %>
+
+<section class="section" aria-labelledby="current-h">
+  <h2 id="current-h"><%= t('plan.current') %></h2>
+  <p><%- include('../partials/plan-chip', { plan }) %>
+  <% if (plan.expiresAt && plan.plan !== 'LIFETIME') { %><span class="muted"> <%= t(plan.state === 'expired' ? 'plan.endedOn' : 'plan.endsOn', { date: fmt.date(plan.expiresAt) }) %></span><% } %></p>
+  <p class="muted"><%= t('plan.expiredRule') %></p>
+</section>
+
+<% if (requests.length) { %>
+<section class="section" aria-labelledby="req-h">
+  <h2 id="req-h"><%= t('plan.requestsTitle') %></h2>
+  <p class="muted"><%= t('plan.withdraw.where', { days: withdrawalDays }) %></p>
+  <div class="table-wrap"><table class="stack">
+    <thead><tr><th><%= t('plan.col.date') %></th><th><%= t('plan.col.option') %></th><th class="num"><%= t('plan.col.price') %></th><th><%= t('plan.col.status') %></th><th><%= t('plan.col.actions') %></th></tr></thead>
+    <tbody>
+    <% for (const r of requests) { %>
+      <tr>
+        <td data-label="<%= t('plan.col.date') %>" class="nowrap"><%= fmt.dateTime(r.createdAt) %></td>
+        <td data-label="<%= t('plan.col.option') %>"><%- include('../partials/order-option', { order: r }) %></td>
+        <td data-label="<%= t('plan.col.price') %>" class="num"><% if (r.buyerType === 'CONSUMER') { %><%= fmt.money(r.withVatCents) %><br><small class="muted"><%= t('plan.withVatShort') %></small><% } else { %><%= fmt.money(r.listPriceCents) %><br><small class="muted"><%= t('plan.netShort') %></small><% } %></td>
+        <td data-label="<%= t('plan.col.status') %>"><%- include('../partials/order-status', { order: r, warnWithdrawn: false }) %>
+          <% if (r.status === 'OPEN' && r.activationFrom > now) { %><br><small class="muted"><%= t('plan.activationAfter', { date: fmt.date(r.lastDay) }) %></small><% } %>
+          <% if (r.status === 'WITHDRAWN' && r.withdrawnAt) { %><br><small class="muted"><%= t('plan.withdrawnOn', { date: fmt.dateTime(r.withdrawnAt) }) %></small><% } %></td>
+        <td data-label="<%= t('plan.col.actions') %>"><% if (r.canWithdraw) { %><a class="btn btn-small" href="/account/plan/withdraw/<%= r.id %>"><%= t('plan.withdraw.button') %></a><small class="order-until"><%= t('plan.withdraw.until', { date: fmt.date(r.lastDay) }) %></small><% } else if (r.status === 'OPEN') { %><form method="post" action="/account/plan/request/<%= r.id %>/cancel"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-quiet btn-small" type="submit"><%= t('plan.cancel') %></button></form><% } else { %>—<% } %></td>
+      </tr>
+    <% } %>
+    </tbody>
+  </table></div>
+</section>
+<% } %>
+
+<% if (plan.plan !== 'LIFETIME' && plan.state !== 'staff') { %>
+<section class="section" aria-labelledby="buy-h">
+  <h2 id="buy-h"><%= t('plan.requestTitle') %></h2>
+  <% if (plan.blockedBy === 'unverified') { %><p><%= t('plan.errors.unverified') %></p><% } else { %>
+  <p><%= t('plan.manualText') %></p>
+  <form method="post" action="/account/plan/request" class="form">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <fieldset>
+      <legend><%= t('plan.choose') %></legend>
+      <div class="table-wrap">
+        <table class="prices">
+          <thead><tr><th><%= t('plan.col.period') %></th><th class="num"><%= t('plan.col.withVat', { vat: vatPercent }) %></th><th class="num"><%= t('plan.col.perMonth') %></th><th class="num"><%= t('plan.col.total') %></th></tr></thead>
+          <tbody>
+          <% for (const row of prices) { %>
+            <tr>
+              <td><label class="price-option"><input type="radio" name="option" value="<%= row.id %>"<%= row.id === 'm12' ? ' checked' : '' %> required><span><%= row.id === 'lifetime' ? t('plan.lifetime') : t('plan.months', { n: row.months }) %><% if (row.discountPercent) { %> <span class="saving"><%= t('plan.discount', { pct: row.discountPercent }) %></span><% } %></span></label></td>
+              <td class="num"><b><%= fmt.money(row.totalWithVatCents) %></b></td>
+              <td class="num"><%= row.perMonthWithVatCents ? fmt.money(row.perMonthWithVatCents) : '—' %></td>
+              <td class="num muted"><%= fmt.money(row.totalCents) %></td>
+            </tr>
+          <% } %>
+          </tbody>
+        </table>
+      </div>
+    </fieldset>
+    <p class="hint"><%= t('plan.vatNote', { vat: vatPercent }) %></p>
+    <fieldset class="order-who">
+      <legend><%= t('plan.buyer.legend') %></legend>
+      <label class="check"><input type="radio" name="buyer" value="consumer" checked required><span><%= t('plan.buyer.consumer') %></span></label>
+      <label class="check"><input type="radio" name="buyer" value="business"><span><%= t('plan.buyer.business') %></span></label>
+      <p class="hint"><%= t('plan.buyer.hint', { days: withdrawalDays }) %></p>
+    </fieldset>
+    <fieldset class="order-who">
+      <legend><%= t('plan.early.legend') %></legend>
+      <label class="check"><input type="checkbox" name="early" value="yes"><span><%= t('plan.early.label', { days: withdrawalDays }) %></span></label>
+      <p class="hint"><%= t('plan.early.hint', { days: withdrawalDays }) %></p>
+    </fieldset>
+    <div class="field"><label for="message"><%= t('plan.message') %></label><textarea id="message" name="message" maxlength="1000" placeholder="<%= t('plan.messagePlaceholder') %>"></textarea></div>
+    <% if (requests.some((r) => r.status === 'OPEN')) { %><div class="notice notice-warn"><%- include('../partials/icon', { name: 'clock' }) %><p><%= t('plan.replacesOpen', { contact }) %></p></div><% } %>
+    <p class="order-accept"><%- t('plan.accept', { terms: '<a href="' + termsHref + '" target="_blank" rel="noopener">' + t('plan.termsLink') + '</a>', withdrawal: '<a href="' + termsHref + '#withdrawal" target="_blank" rel="noopener">' + t('plan.withdrawalLink') + '</a>' }) %></p>
+    <div class="actions"><button class="btn btn-primary" type="submit"><%= t('plan.send') %></button></div>
+  </form>
+  <% } %>
+</section>
+<% } %>
+
+<%- include('../partials/page-bottom') %>

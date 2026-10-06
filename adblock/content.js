@@ -45,7 +45,11 @@
   // Gate for the bundled generic cosmetic CSS. Set optimistically at
   // document_start (ads never flash in); removed a moment later if the
   // extension turns out to be off or the site allowlisted.
+  // Not on YouTube: an attribute of ours on <html> is a tell its scripts can read;
+  // youtube.css (ungated) covers YouTube's ad surfaces there.
+  const isYouTube = /(^|\.)youtube(-nocookie)?\.com$/.test(host);
   const gate = (on) => {
+    if (isYouTube) return;
     try {
       if (on) document.documentElement.setAttribute("data-tbab-on", "1");
       else document.documentElement.removeAttribute("data-tbab-on");

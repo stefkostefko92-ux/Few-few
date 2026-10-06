@@ -2,11 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { t, type Locale } from "@/lib/i18n";
+import { useUi } from "./UiProvider";
 import Icon from "@/components/Icon";
 
 const STORE_KEY = "qb-fb-consent";
 
 export default function FacebookEmbed({ locale, href }: { locale: Locale; href: string }) {
+  const ui = useUi();
   const [loaded, setLoaded] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -52,9 +54,9 @@ export default function FacebookEmbed({ locale, href }: { locale: Locale; href: 
           <span className="fb-consent__logo">
             <Icon name="facebook-circle" size={56} />
           </span>
-          <h3>{t(locale, "nav.facebook")}</h3>
-          <p>{t(locale, "fb.consent")}</p>
-          <button className="btn btn--primary" type="button" onClick={onLoad}>{t(locale, "fb.show")}</button>
+          <h3>{t(locale, "nav.facebook", ui)}</h3>
+          <p>{t(locale, "fb.consent", ui)}</p>
+          <button className="btn btn--red" type="button" onClick={onLoad}>{t(locale, "fb.show", ui)}</button>
         </div>
       )}
     </div>
