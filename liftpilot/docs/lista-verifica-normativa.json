@@ -53,7 +53,7 @@
       "voce": "Coefficiente di attrito, caricamento",
       "valore": "μ = 0,1",
       "riferimento": "UNI EN 81-50:2020, 5.11.2.3.2",
-      "fonte": "BS EN 81-50:2020, estratto pubblico del testo, p. 50",
+      "fonte": "UNI EN 81-50:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 42",
       "stato": "confermato",
       "verifiche": "aderenza al caricamento",
       "nota": ""
@@ -65,7 +65,7 @@
       "voce": "Coefficiente di attrito, frenatura di emergenza",
       "valore": "μ = 0,1 / (1 + v_f/10), v_f = velocità delle funi",
       "riferimento": "UNI EN 81-50:2020, 5.11.2.3.2",
-      "fonte": "BS EN 81-50:2020, estratto pubblico del testo, p. 50 (v_f: velocità delle funi alla velocità nominale della cabina)",
+      "fonte": "UNI EN 81-50:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 42 (v_f: velocità delle funi alla velocità nominale della cabina)",
       "stato": "confermato",
       "verifiche": "aderenza in frenatura, in discesa; aderenza in frenatura, in salita; aderenza alla decelerazione reale (avviso)",
       "nota": ""
@@ -77,7 +77,7 @@
       "voce": "Coefficiente di attrito, contrappeso o cabina bloccati",
       "valore": "μ = 0,2",
       "riferimento": "UNI EN 81-50:2020, 5.11.2.3.2",
-      "fonte": "BS EN 81-50:2020, estratto pubblico del testo, p. 50",
+      "fonte": "UNI EN 81-50:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 42",
       "stato": "confermato",
       "verifiche": "cabina bloccata",
       "nota": ""
@@ -88,8 +88,8 @@
       "gruppo": "Aderenza",
       "voce": "Carico della verifica di caricamento",
       "valore": "1,25·Q, cabina in basso e in alto",
-      "riferimento": "UNI EN 81-50:2020, 5.11.3",
-      "fonte": "BS EN 81-50:2020, estratto pubblico del testo, p. 52 (al caricamento e con la cabina bloccata a = 0)",
+      "riferimento": "UNI EN 81-50:2020, 5.11.2.2.1 e 5.11.3",
+      "fonte": "UNI EN 81-50:2020, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 40 e 44 (al caricamento e con la cabina bloccata a = 0)",
       "stato": "confermato",
       "verifiche": "aderenza al caricamento",
       "nota": "La norma aggiunge il peso dei dispositivi di movimentazione, dove usati negli ascensori per merci e persone: non modellato. Le due posizioni della cabina sono quelle più sfavorevoli che il software verifica."
@@ -507,12 +507,12 @@
       "id": "soccorso.forza",
       "gruppo": "Manovra di emergenza",
       "voce": "Forza massima al volantino",
-      "valore": "≤ 400 N, altrimenti manovra elettrica di emergenza",
+      "valore": "≤ 400 N per far salire la cabina con la portata, altrimenti manovra elettrica di emergenza; il mezzo meccanico è ammesso se per portare la cabina a una fermata bastano 150 N",
       "riferimento": "UNI EN 81-20:2020, 5.9.2.3.3 (400 N) e 5.9.2.3.1 a) (150 N)",
       "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 101–102",
       "stato": "confermato",
       "verifiche": "forza al volantino",
-      "nota": "Il mezzo meccanico è ammesso solo se la forza per portare la cabina a una fermata non supera 150 N (5.9.2.3.1 a)): non verificato dal software."
+      "nota": "Il software verifica i 400 N; i 150 N del mezzo meccanico (5.9.2.3.1 a)) non sono verificati: sono nella lista da verificare."
     },
     {
       "n": 41,

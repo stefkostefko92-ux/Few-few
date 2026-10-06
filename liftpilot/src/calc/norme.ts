@@ -45,8 +45,9 @@ export const K = {
   // brake (UNI EN 81-20:2020, 5.9.2.2)
   brakeSetsMin: 2,
   brakeDecelMax: 9.81,
-  // rescue, drive, margins
+  // rescue (UNI EN 81-20:2020, 5.9.2.3.3; the mechanical means of 5.9.2.3.1 a) only up to 150 N: not checked), drive, margins
   rescueForceMax: 400,
+  rescueForceMech: 150,
   accelTorqueRatioMax: 2,
   nearLimit: 0.98,
   // sensitivity (research 8.9)
@@ -208,11 +209,12 @@ export const VOCI: readonly Voce[] = [
   },
   // ---------- rescue ----------
   {
-    id: 'soccorso.forza', gruppo: 'soccorso', titolo: 'Forza massima al volantino', valore: '≤ 400 N, altrimenti manovra elettrica di emergenza',
+    id: 'soccorso.forza', gruppo: 'soccorso', titolo: 'Forza massima al volantino',
+    valore: '≤ 400 N per far salire la cabina con la portata, altrimenti manovra elettrica di emergenza; il mezzo meccanico è ammesso se per portare '
+      + 'la cabina a una fermata bastano 150 N',
     riferimento: 'UNI EN 81-20:2020, 5.9.2.3.3 (400 N) e 5.9.2.3.1 a) (150 N)', fonte: letto(T20, 'pp. 101–102'), stato: 'confermato',
-    costanti: ['rescueForceMax'], verifiche: ['s_force'],
-    nota: 'Il mezzo meccanico è ammesso solo se la forza per portare la cabina a una fermata non supera 150 N (5.9.2.3.1 a)): non verificato '
-      + 'dal software.',
+    costanti: ['rescueForceMax', 'rescueForceMech'], verifiche: ['s_force'],
+    nota: 'Il software verifica i 400 N; i 150 N del mezzo meccanico (5.9.2.3.1 a)) non sono verificati: sono nella lista da verificare.',
   },
   // ---------- shaft ----------
   {

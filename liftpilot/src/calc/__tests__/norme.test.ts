@@ -43,7 +43,7 @@ test('i testi delle voci riportano i numeri usati dal motore', () => {
     ['funi.Sf.minimo', `${K.sfMin3} con tre`], ['funi.Sf.minimo', `${K.sfMin2} con due`],
     ['funi.Sf.formula', `${it(K.sfC0)}`], ['funi.Sf.formula', `695,85·10^6`], ['funi.Sf.formula', `^${it(K.sfE1)}`], ['funi.Sf.formula', `${it(K.sfC2)}`], ['funi.Sf.formula', `^−${it(-K.sfE2)}`],
     ['funi.Nequiv.pulegge', `^${K.kpExponent}`], ['funi.Nequiv.pulegge', `${K.reverseBendWeight}·N_pr`],
-    ['freno.gruppi', `almeno ${K.brakeSetsMin}`], ['soccorso.forza', `${K.rescueForceMax} N`], ['azionamento.accelerazione', `${K.accelTorqueRatioMax} volte`],
+    ['freno.gruppi', `almeno ${K.brakeSetsMin}`], ['soccorso.forza', `≤ ${K.rescueForceMax} N`], ['soccorso.forza', `bastano ${K.rescueForceMech} N`], ['azionamento.accelerazione', `${K.accelTorqueRatioMax} volte`],
     ['azionamento.margine', `${Math.round(K.nearLimit * 100)}%`], ['modello.sensibilita', `P ±${Math.round(K.sensP * 100)}%`], ['modello.sensibilita', `k ±${it(K.sensK)}`],
     ['modello.g', `g = ${it(K.g)} m/s²`],
   ];

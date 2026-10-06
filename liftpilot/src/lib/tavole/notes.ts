@@ -109,7 +109,7 @@ export interface LegendItem {
 export function spaceLegend(L: Layout, fmt: Fmt): { free: LegendItem; top: LegendItem; pit: LegendItem } {
   const V = L.inputs.vertical, K = KV_VERT;
   return {
-    free: { sym: 'dot', text: `SUPERFICIE LIBERA SUL TETTO DI CABINA: ALMENO ${fmt(K.roofFreeArea, 2)} m², LATO MINORE ${K.roofFreeSide} mm` },
+    free: { sym: 'dot', text: `SUPERFICIE LIBERA SUL TETTO DI CABINA: ALMENO ${fmt(K.roofFreeArea, 2)} m², LATO MINORE OLTRE ${K.roofFreeSide} mm` },
     top: { sym: 'tri', text: `SPAZIO DI RIFUGIO SUL TETTO DI CABINA, ${refuge(V.topRefuge)}` },
     pit: { sym: 'square', text: `SPAZIO DI RIFUGIO IN FOSSA, ${refuge(V.pitRefuge)}` },
   };

@@ -34,7 +34,7 @@ export function textsFor(P: Pres) {
 
   const alphaText = (res: Results): string => (Math.abs(res.wa.B - res.wa.T) < 0.05 ? `${fmt(res.wa.B, 1)}°`
     : `${fmt(res.wa.B, 1)}° (${t('pos_b')}) · ${fmt(res.wa.T, 1)}° (${t('pos_t')})`);
-  const grooveAngles = (g: Groove): string => (g.type === 'U' ? '—' : g.type === 'VH' ? `γ ${fmt(g.gamma, 1)}°` : `β ${fmt(g.beta, 1)}° · γ ${fmt(g.gamma, 1)}°`);
+  const grooveAngles = (g: Groove): string => (g.type === 'U' || g.type === 'VH' ? `γ ${fmt(g.gamma, 1)}°` : `β ${fmt(g.beta, 1)}° · γ ${fmt(g.gamma, 1)}°`);
   const grooveText = (g: Groove): string => `${t(`gr_${g.type}`)}${g.type === 'U' ? '' : ', ' + grooveAngles(g)}`;
   // UNI EN 81-50:2020, 5.11.2.3.1: β ≤ 105° (Montanari advises 90°), γ ≥ 35° on V grooves, γ ≥ 25° advised on the round ones
   const grooveLimit = (g: Groove): string => (g.type === 'U' ? `γ ≥ ${K.gammaMinU}°` : g.type === 'UU' ? `β ≤ ${K.betaMax}° (${K.betaRecommended}°) · γ ≥ ${K.gammaMinU}°`
@@ -86,9 +86,12 @@ export function textsFor(P: Pres) {
     return rows;
   }
 
-  const verifyList = (I: Plant, N: Machine, res: Results): string[] => [t('v_mu'), t('v_real'), ...(N.etaIest ? [t('v_etaI', { x: fmt(N.etaI, 2) })] : []),
-    t('v_neq', { val: fmt(res.ropes.NeqT, 2) }), ...(N.groove.type === 'VN' ? [t('v_neq_vn')] : []), ...(I.r === 2 ? [t('v_r2')] : []),
-    t('v_geom'), t('v_min'), t('v_brake'), t('v_rescue'), t('v_eta')];
+  // what the engineer still checks: the points the standards leave open or that depend on the installation (the values read
+  // on the standards are in the registry, not here)
+  const verifyList = (I: Plant, N: Machine, res: Results): string[] => [t('v_real'), ...(N.etaIest ? [t('v_etaI', { x: fmt(N.etaI, 2) })] : []),
+    ...(I.ae > K.aeMin ? [t('v_ae', { a: fmt(I.ae, 1) })] : []), ...(N.groove.type === 'VN' ? [t('v_neq_vn', { val: fmt(res.ropes.NeqT, 2) })] : []),
+    ...(I.r === 2 ? [t('v_r2')] : []), t('v_geom', { b: K.betaMax, g: K.gammaMin, gu: K.gammaMinU, br: K.betaRecommended }),
+    t('v_rescue', { f: K.rescueForceMech, fmax: K.rescueForceMax }), t('v_eta')];
 
   // which case a row is: "cabina vuota in salita, in alto, a 0,50 m/s² (minimo della norma)"
   function caseText(c: TractionCase | BrakeCase | null | undefined, withA = true): string {
