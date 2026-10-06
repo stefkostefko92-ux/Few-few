@@ -4,7 +4,7 @@
     "description": "Extension name."
   },
   "extDescription": {
-    "message": "Blockiert Werbung überall: YouTube-Videoanzeigen, Banner, Pop-ups, Tracker, Cookie-Banner und Anti-Adblock-Sperren. Gratis.",
+    "message": "Blockiert Werbung überall: YouTube-Videoanzeigen, Banner, Pop-ups, Tracker, Cookie-Banner und Anti-Adblock-Sperren.",
     "description": "Extension description."
   },
   "byCarbon": {
@@ -601,5 +601,49 @@
   },
   "opt_notices": {
     "message": "Lizenzen der Filterlisten"
+  },
+  "welPageTitle": {
+    "message": "Willkommen bei Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Sie sind geschützt",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock blockiert jetzt Werbung und Tracker auf jeder Website, die Sie besuchen. Sie müssen nichts einrichten.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "An die Symbolleiste anheften",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Klicken Sie neben der Adressleiste auf das Puzzleteil-Symbol und heften Sie Supreme AdBlock an. Dann zeigt Ihnen ein Klick, was auf der Seite blockiert wurde.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Wenn eine Website fehlerhaft aussieht",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Öffnen Sie die Erweiterung und schalten Sie die Blockierung für diese Website aus, oder wählen Sie „Website kaputt?“ für schnelle Lösungen.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Ihr Surfen bleibt auf Ihrem Gerät",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Das Filtern geschieht lokal. Die Erweiterung erfasst keine personenbezogenen Daten und sendet nichts über die Seiten, die Sie besuchen.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Einstellungen öffnen",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Verstanden",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

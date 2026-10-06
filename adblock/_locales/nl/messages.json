@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Blokkeert overal advertenties: YouTube-videoadvertenties, banners, pop-ups, trackers, cookiebanners en anti-adblockmuren. Gratis."
+    "message": "Blokkeert overal advertenties: YouTube-videoadvertenties, banners, pop-ups, trackers, cookiebanners en anti-adblockmuren."
   },
   "byCarbon": {
     "message": "door Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Licenties van de filterlijsten"
+  },
+  "welPageTitle": {
+    "message": "Welkom bij Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "U bent beschermd",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock blokkeert nu advertenties en trackers op elke website die u bezoekt. U hoeft niets in te stellen.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Zet de extensie vast op de werkbalk",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Klik op het puzzelstukje naast de adresbalk en zet Supreme AdBlock vast. Met één klik ziet u daarna wat er op de pagina is geblokkeerd.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Als een website er kapot uitziet",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Open de extensie en zet het blokkeren voor die website uit, of kies “Website kapot?” voor snelle oplossingen.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Uw surfgedrag blijft op uw apparaat",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Het filteren gebeurt lokaal. De extensie verzamelt geen persoonsgegevens en verstuurt niets over de pagina’s die u bezoekt.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Instellingen openen",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Begrepen",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

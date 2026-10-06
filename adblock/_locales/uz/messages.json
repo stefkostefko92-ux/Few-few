@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Reklamani hamma joyda bloklaydi: YouTube reklamalari, bannerlar, qalqib chiquvchi oynalar, trekerlar, cookie soʻrovlari. Bepul."
+    "message": "Reklamani hamma joyda bloklaydi: YouTube reklamalari, bannerlar, qalqib chiquvchi oynalar, trekerlar, cookie soʻrovlari."
   },
   "byCarbon": {
     "message": "Carbon Stealth tomonidan"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Filtr roʻyxatlarining litsenziyalari"
+  },
+  "welPageTitle": {
+    "message": "Supreme AdBlock kengaytmasiga xush kelibsiz",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Himoya yoqilgan",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock endi siz kiradigan har bir saytda reklama va trekerlarni bloklaydi. Hech narsani sozlash shart emas.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Kengaytmani asboblar paneliga qadab qoʻying",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Manzil satri yonidagi boshqotirma boʻlagi belgisini bosing va Supreme AdBlock kengaytmasini qadab qoʻying. Shunda bir bosishda sahifada nima bloklanganini koʻrasiz.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Agar sayt notoʻgʻri koʻrinsa",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Kengaytmani oching va oʻsha sayt uchun bloklashni oʻchiring yoki tezkor tuzatishlar uchun “Sayt buzildimi?” bandini tanlang.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Brauzerdagi faoliyatingiz qurilmangizda qoladi",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Filtrlash qurilmaning oʻzida bajariladi. Kengaytma shaxsiy maʼlumotlarni yigʻmaydi va siz kiradigan sahifalar haqida hech narsa yubormaydi.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Sozlamalarni ochish",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Tushunarli",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

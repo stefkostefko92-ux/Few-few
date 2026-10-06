@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "يحظر الإعلانات وإعلانات YouTube واللافتات والنوافذ المنبثقة وأدوات التتبع ونوافذ ملفات تعريف الارتباط وجدران مكافحة الحظر. مجاني."
+    "message": "يحظر الإعلانات وإعلانات YouTube واللافتات والنوافذ المنبثقة وأدوات التتبع ونوافذ ملفات تعريف الارتباط وجدران مكافحة الحظر."
   },
   "byCarbon": {
     "message": "من Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "تراخيص قوائم الفلاتر"
+  },
+  "welPageTitle": {
+    "message": "مرحبًا بك في Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "الحماية مفعّلة",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "يحظر Supreme AdBlock الآن الإعلانات وأدوات التتبع في كل موقع تزوره. لا يوجد ما تحتاج إلى إعداده.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "ثبّت الإضافة في شريط الأدوات",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "انقر على رمز قطعة الأحجية بجوار شريط العناوين وثبّت Supreme AdBlock. بعد ذلك تعرض لك نقرة واحدة ما تم حظره في الصفحة.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "إذا بدا موقع ما معطّلًا",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "افتح الإضافة وأوقف الحظر لذلك الموقع، أو اختر «الموقع معطّل؟» للحصول على إصلاحات سريعة.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "يبقى تصفحك على جهازك",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "تتم الفلترة محليًا. لا تجمع الإضافة أي بيانات شخصية ولا ترسل أي شيء عن الصفحات التي تزورها.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "فتح الإعدادات",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "فهمت",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

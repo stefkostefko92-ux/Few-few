@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "YouTube వీడియో ప్రకటనలు, బ్యానర్‌లు, పాప్-అప్‌లు, ట్రాకర్‌లు, కుక్కీ ప్రాంప్ట్‌లను బ్లాక్ చేస్తుంది. ఉచితం, గోప్యమైనది."
+    "message": "YouTube వీడియో ప్రకటనలు, బ్యానర్‌లు, పాప్-అప్‌లు, ట్రాకర్‌లు, కుక్కీ ప్రాంప్ట్‌లను బ్లాక్ చేస్తుంది."
   },
   "byCarbon": {
     "message": "Carbon Stealth రూపొందించినది"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "ఫిల్టర్ జాబితాల లైసెన్స్‌లు"
+  },
+  "welPageTitle": {
+    "message": "Supreme AdBlock కు స్వాగతం",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "మీరు సురక్షితంగా ఉన్నారు",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "మీరు సందర్శించే ప్రతి సైట్‌లో Supreme AdBlock ఇప్పుడు ప్రకటనలు, ట్రాకర్‌లను బ్లాక్ చేస్తోంది. ఏదీ సెటప్ చేయాల్సిన అవసరం లేదు.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "ఎక్స్‌టెన్షన్‌ను టూల్‌బార్‌కు పిన్ చేయండి",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "అడ్రస్ బార్ పక్కన ఉన్న పజిల్ ముక్క చిహ్నంపై క్లిక్ చేసి Supreme AdBlock ను పిన్ చేయండి. తర్వాత ఒక్క క్లిక్‌తో పేజీలో ఏమి బ్లాక్ అయిందో చూడవచ్చు.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "ఏదైనా సైట్ సరిగ్గా కనిపించకపోతే",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "ఎక్స్‌టెన్షన్‌ను తెరిచి ఆ సైట్‌కు బ్లాకింగ్‌ను ఆఫ్ చేయండి, లేదా త్వరిత పరిష్కారాల కోసం “సైట్ పనిచేయడం లేదా?” ఎంచుకోండి.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "మీ బ్రౌజింగ్ మీ పరికరంలోనే ఉంటుంది",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "ఫిల్టరింగ్ స్థానికంగా జరుగుతుంది. ఎక్స్‌టెన్షన్ ఏ వ్యక్తిగత డేటానూ సేకరించదు, మీరు సందర్శించే పేజీల గురించి ఏదీ పంపదు.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "సెట్టింగ్‌లను తెరవండి",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "అర్థమైంది",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }
