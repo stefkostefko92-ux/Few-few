@@ -14,7 +14,7 @@ const { COMMAND_CATALOG } = await import("../utils/commandsCatalog.js");
 const { CMD_DESC_L10N } = await import("../utils/commandLocalizations.js");
 const { handleGameInteraction } = await import("../utils/gameInteractions.js");
 
-beforeEach(() => { vi.clearAllMocks(); game.__test.spawnState.clear(); game.__setRandom(null); });
+beforeEach(() => { vi.clearAllMocks(); apiPost.mockReset(); game.__test.spawnState.clear(); game.__test.autoSpawn.clear(); game.__test.settingsCache.clear(); game.__setRandom(null); });
 
 describe("/companion", () => {
   it("шестте подкоманди и локализация; каталогът обявява петте публични", () => {
@@ -53,6 +53,77 @@ describe("поява при активност", () => {
     const m = game.spawnMessage({ spawn: { id: "sp1", expiresAt: new Date().toISOString() }, companion: { name: "Blip", rarityEmoji: "⚪", rarityLabel: "Common", imageUrl: "https://x/blip-1.jpg" } }, "en", (k) => k);
     expect(JSON.stringify(m.components)).toContain("game:catch:sp1");
     expect(JSON.stringify(m.embeds)).toContain("blip-1.jpg");
+  });
+});
+
+describe("автоматична поява по случайно време", () => {
+  const SID = "222222222222222222";
+  const T0 = 1_000_000_000_000;
+  const data = { spawn: { id: "sp9", expiresAt: new Date(Date.now() + 300_000).toISOString() }, companion: { id: "lime-blip", name: "Blip", rarityEmoji: "⚪", rarityLabel: "Common", imageUrl: "https://x/blip-1.jpg" } };
+  function world({ canPost = true } = {}) {
+    const guild = { members: { me: { id: "bot" } }, channels: { cache: new Map() } };
+    const mk = (id) => {
+      const ch = { id, guildId: SID, guild, client: {}, isTextBased: () => true, permissionsFor: () => ({ has: () => canPost }), send: vi.fn(async () => ({ id: "m1" })), messages: { fetch: vi.fn() } };
+      guild.channels.cache.set(id, ch);
+      return ch;
+    };
+    return { general: mk("100"), spawns: mk("700") };
+  }
+  const cacheSettings = (s) => game.__test.settingsCache.set(SID, { settings: { enabled: true, spawnEnabled: true, spawnChannelIds: [], ...s }, expiresAt: Date.now() + 60_000 });
+
+  it("активност → поява в случаен момент между мин. и макс., в канала с последната активност", async () => {
+    const { general } = world();
+    cacheSettings({});
+    game.__setRandom(() => 0.5);
+    game.noteSpawnActivity({ guildId: SID, channel: general }, { spawnEnabled: true }, T0);
+    const due = T0 + game.AUTO_SPAWN_MIN_MS + Math.floor(0.5 * (game.AUTO_SPAWN_MAX_MS - game.AUTO_SPAWN_MIN_MS));
+    expect(game.__test.autoSpawn.get(SID).nextAt).toBe(due);
+    game.noteSpawnActivity({ guildId: SID, channel: general }, { spawnEnabled: true }, due - 60_000); // хората още пишат
+    expect(await game.tickAutoSpawn(due - 1, () => 0.5)).toBe(0);
+    apiPost.mockResolvedValueOnce({ data });
+    expect(await game.tickAutoSpawn(due, () => 0.5)).toBe(1);
+    expect(apiPost).toHaveBeenCalledWith("/bot/game/spawn", { serverId: SID, channelId: "100" });
+    expect(JSON.stringify(general.send.mock.calls[0][0].components)).toContain("game:catch:sp9");
+    expect(game.__test.autoSpawn.get(SID).nextAt).toBeGreaterThanOrEqual(due + game.AUTO_SPAWN_MIN_MS);
+  });
+
+  it("зададени канали → пуска в един от тях, дори когато хората пишат другаде", async () => {
+    const { general } = world();
+    cacheSettings({ spawnChannelIds: ["700"] });
+    game.noteSpawnActivity({ guildId: SID, channel: general }, { spawnEnabled: true }, T0);
+    game.noteSpawnActivity({ guildId: SID, channel: general }, { spawnEnabled: true }, T0 + game.AUTO_SPAWN_MAX_MS);
+    apiPost.mockResolvedValueOnce({ data });
+    expect(await game.tickAutoSpawn(T0 + game.AUTO_SPAWN_MAX_MS, () => 0)).toBe(1);
+    expect(apiPost).toHaveBeenCalledWith("/bot/game/spawn", { serverId: SID, channelId: "700" });
+  });
+
+  it("мъртъв сървър, изключена поява или бот без права → нищо", async () => {
+    let w = world();
+    cacheSettings({});
+    game.noteSpawnActivity({ guildId: SID, channel: w.general }, { spawnEnabled: true }, T0);
+    expect(await game.tickAutoSpawn(T0 + game.AUTO_SPAWN_ACTIVE_MS + 1)).toBe(0); // никой не е писал 30+ мин
+    expect(game.__test.autoSpawn.has(SID)).toBe(false);
+
+    game.noteSpawnActivity({ guildId: SID, channel: w.general }, { spawnEnabled: false }, T0);
+    expect(game.__test.autoSpawn.has(SID)).toBe(false);
+
+    w = world({ canPost: false });
+    game.noteSpawnActivity({ guildId: SID, channel: w.general }, { spawnEnabled: true }, T0);
+    game.__test.autoSpawn.get(SID).lastActivityAt = T0 + game.AUTO_SPAWN_MAX_MS;
+    expect(await game.tickAutoSpawn(T0 + game.AUTO_SPAWN_MAX_MS)).toBe(0);
+    expect(apiPost).not.toHaveBeenCalled();
+  });
+
+  it("отказ от backend-а (жива поява) → без повторен опит на всяка минута", async () => {
+    const { general } = world();
+    cacheSettings({});
+    game.noteSpawnActivity({ guildId: SID, channel: general }, { spawnEnabled: true }, T0);
+    const due = game.__test.autoSpawn.get(SID).nextAt;
+    game.__test.autoSpawn.get(SID).lastActivityAt = due;
+    apiPost.mockRejectedValueOnce({ response: { status: 409, data: { error: "SPAWN_ACTIVE" } } });
+    expect(await game.tickAutoSpawn(due, () => 0)).toBe(0);
+    expect(await game.tickAutoSpawn(due + 60_000, () => 0)).toBe(0);
+    expect(apiPost).toHaveBeenCalledTimes(1);
   });
 });
 

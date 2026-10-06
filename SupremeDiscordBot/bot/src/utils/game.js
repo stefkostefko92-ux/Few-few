@@ -5,7 +5,7 @@
 // на ролите за ниво. Съдържанието на съобщенията НЕ се чете тук: броим
 // събитието (message.author + channel), нищо друго (Privileged Intents:
 // употребата на Message Content остава само за тикети/лог/counting).
-import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
+import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits } from "discord.js";
 import { BRAND, MUTED } from "./colors.js";
 import api from "./api.js";
 import { roleAssignabilityReason } from "./reactionRoles.js";
@@ -25,6 +25,25 @@ const spawnState = new Map();     // serverId → { events, lastAttemptAt }
 export const SPAWN_MIN_EVENTS = 6;
 export const SPAWN_CHANCE = 1 / 25;
 export const SPAWN_LOCAL_INTERVAL_MS = 12 * 60 * 1000;
+
+// ─── Автоматична поява по случайно време ────────────────────────────────────
+// Жребият при активност беше рядък (6 XP събития + 12 мин + 1/25) и при
+// зададени канали за поява се броеше САМО в тях — на практика спътниците
+// излизаха само с /spawn. Сега всеки сървър, в който някой е писал в
+// последните AUTO_SPAWN_ACTIVE_MS, получава поява в случаен момент между
+// AUTO_SPAWN_MIN_MS и AUTO_SPAWN_MAX_MS. В мъртъв сървър не се пуска нищо —
+// поява, която никой не вижда, е само шум. Backend-ът остава съдията (една
+// жива поява, 12 мин между появите, план и сезон).
+export const AUTO_SPAWN_MIN_MS = 20 * 60 * 1000;
+export const AUTO_SPAWN_MAX_MS = 50 * 60 * 1000;
+export const AUTO_SPAWN_ACTIVE_MS = 30 * 60 * 1000;
+const AUTO_SPAWN_TICK_MS = 60 * 1000;
+const autoSpawn = new Map();      // serverId → { channel, lastActivityAt, nextAt }
+
+// Без тях съобщението не излиза, а появата вече е създадена и блокира следващата
+// за 5 минути. ReadMessageHistory: след 5 минути появата се маркира „избягала“
+// през channel.messages.fetch — без него бутонът „Улови“ оставаше видим.
+export const SPAWN_PERMS = [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks, PermissionFlagsBits.ReadMessageHistory];
 
 // Заявка в полет по сървър: при изтекъл кеш всяко съобщение пускаше СВОЯ
 // заявка и отговорите пристигаха в произволен ред — опашката на Counting се
@@ -69,6 +88,7 @@ export async function onMessageForXp(message) {
   if (message.author?.bot || !message.guildId) return;
   const settings = await getGameSettings(message.guildId);
   if (!settings?.enabled) return;
+  noteSpawnActivity(message, settings);
   const key = `${message.guildId}:${message.author.id}`;
   const last = cooldown.get(key) || 0;
   const cd = Math.max(10, Number(settings.messageCooldownSec) || 60) * 1000;
@@ -101,7 +121,65 @@ export async function maybeSpawn(message, settings, r = rand) {
     return false; // SPAWN_ACTIVE / TOO_SOON / CHANNEL_NOT_ALLOWED — backend-ът е съдията
   }
   await postSpawn(message.channel, data, message.client).catch(() => {});
+  // Следващата автоматична поява — отново на случайно разстояние от тази.
+  const auto = autoSpawn.get(message.guildId);
+  if (auto) auto.nextAt = Date.now() + autoSpawnDelay(r);
   return true;
+}
+
+const autoSpawnDelay = (r = rand) => AUTO_SPAWN_MIN_MS + Math.floor(r() * (AUTO_SPAWN_MAX_MS - AUTO_SPAWN_MIN_MS));
+
+/** Отбелязва, че в сървъра има хора — и къде са писали последно. */
+export function noteSpawnActivity(message, settings, now = Date.now()) {
+  if (!settings?.spawnEnabled || !message.channel?.isTextBased?.()) return;
+  const st = autoSpawn.get(message.guildId);
+  if (st) { st.channel = message.channel; st.lastActivityAt = now; return; }
+  autoSpawn.set(message.guildId, { channel: message.channel, lastActivityAt: now, nextAt: now + autoSpawnDelay() });
+}
+
+function canPostSpawn(channel) {
+  const me = channel?.guild?.members?.me;
+  return !!(me && channel.isTextBased?.() && channel.permissionsFor?.(me)?.has(SPAWN_PERMS));
+}
+
+/**
+ * Къде да излезе: при зададени канали — случаен от тях (в който ботът може да
+ * пише), иначе каналът с последната активност. null → пропуск до следващия път.
+ */
+function pickAutoSpawnChannel(lastChannel, settings, r = rand) {
+  const ids = settings.spawnChannelIds || [];
+  if (!ids.length) return canPostSpawn(lastChannel) ? lastChannel : null;
+  const cache = lastChannel?.guild?.channels?.cache;
+  const options = ids.map((id) => cache?.get(id)).filter(canPostSpawn);
+  return options.length ? options[Math.floor(r() * options.length)] : null;
+}
+
+/** Една проба: пуска появите, на които им е дошло времето. Връща броя пуснати. */
+export async function tickAutoSpawn(now = Date.now(), r = rand) {
+  let spawned = 0;
+  for (const [serverId, st] of [...autoSpawn]) {
+    if (now - st.lastActivityAt > AUTO_SPAWN_ACTIVE_MS) { autoSpawn.delete(serverId); continue; }
+    if (now < st.nextAt) continue;
+    // Новото време се слага ПРЕДИ заявката — провал (жива поява, твърде скоро,
+    // липсващи права) не води до опит на всяка минута.
+    st.nextAt = now + autoSpawnDelay(r);
+    const settings = await getGameSettings(serverId).catch(() => null);
+    if (!settings?.enabled || !settings.spawnEnabled) { autoSpawn.delete(serverId); continue; }
+    const channel = pickAutoSpawnChannel(st.channel, settings, r);
+    if (!channel) continue;
+    let data;
+    try {
+      ({ data } = await api.post("/bot/game/spawn", { serverId, channelId: channel.id }));
+    } catch {
+      continue; // SPAWN_ACTIVE / TOO_SOON / … — backend-ът е съдията
+    }
+    const local = spawnState.get(serverId) || { events: 0, lastAttemptAt: 0 };
+    local.lastAttemptAt = now; local.events = 0;
+    spawnState.set(serverId, local);
+    await postSpawn(channel, data, channel.client).catch(() => {});
+    spawned++;
+  }
+  return spawned;
 }
 
 export function spawnMessage(data, lang = "en", tFn = (k) => k) {
@@ -208,12 +286,16 @@ export async function flushXp(client) {
 
 let flushTimer = null;
 let voiceTimer = null;
+let autoSpawnTimer = null;
 export function startXpFlusher(client) {
   if (flushTimer) return;
   flushTimer = setInterval(() => flushXp(client).catch(() => {}), FLUSH_MS);
   flushTimer.unref?.();
   voiceTimer = setInterval(() => tickVoiceXp(client).catch(() => {}), 60_000);
   voiceTimer.unref?.();
+  // Каналите в autoSpawn носят своя клиент (главен или white-label) — един таймер стига.
+  autoSpawnTimer = setInterval(() => tickAutoSpawn().catch(() => {}), AUTO_SPAWN_TICK_MS);
+  autoSpawnTimer.unref?.();
 }
 
 /** Дава натрупаните роли за ниво (само безопасни) и обявява, ако е включено. */
@@ -272,4 +354,4 @@ export async function grantShopRole(guild, member, roleId) {
 }
 
 /** Само за тестове. */
-export const __test = { cooldown, pending, voiceJoined, settingsCache, settingsInflight, spawnState };
+export const __test = { cooldown, pending, voiceJoined, settingsCache, settingsInflight, spawnState, autoSpawn };
