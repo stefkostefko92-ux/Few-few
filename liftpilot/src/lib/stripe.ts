@@ -28,17 +28,19 @@ export interface MonthlyPrice {
   taxBehavior: Stripe.Price.TaxBehavior | null;
 }
 
-let priceCache: { id: string; at: number; price: MonthlyPrice } | null = null;
+let priceCache: { id: string; at: number; price: MonthlyPrice | null } | null = null;
 const PRICE_TTL_MS = 10 * 60 * 1000;
 
-/** The monthly price from Stripe (null: billing off, or the Price is not a recurring one with a fixed amount). */
+/** The monthly price from Stripe (null: billing off, or the Price is not a recurring one with a fixed amount). Stripe's
+ *  answer is kept for PRICE_TTL_MS, a Price that has no usable amount too: the public pricing page does not ask Stripe
+ *  on every visit. */
 export async function monthlyPrice(): Promise<MonthlyPrice | null> {
   const c = billingConfig(), s = stripeClient();
   if (!c || !s) return null;
   if (priceCache && priceCache.id === c.priceMonthly && Date.now() - priceCache.at < PRICE_TTL_MS) return priceCache.price;
   const p = await s.prices.retrieve(c.priceMonthly);
-  if (!p.active || p.unit_amount === null || !p.recurring) return null;
-  const price: MonthlyPrice = { cents: p.unit_amount, currency: p.currency, interval: p.recurring.interval, intervalCount: p.recurring.interval_count, taxBehavior: p.tax_behavior };
+  const price: MonthlyPrice | null = !p.active || p.unit_amount === null || !p.recurring ? null
+    : { cents: p.unit_amount, currency: p.currency, interval: p.recurring.interval, intervalCount: p.recurring.interval_count, taxBehavior: p.tax_behavior };
   priceCache = { id: c.priceMonthly, at: Date.now(), price };
   return price;
 }

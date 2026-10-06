@@ -17,6 +17,7 @@ import { cwBracketMargin, cwSpecialOf } from './staffe-scelta';
 import { doorOpDepthOf, doorOpOf } from './operator';
 import { frameRoom } from './frame';
 import { callStationOf } from './callstation';
+import { reasonGiven } from './reason';
 import type { Access, CwSide, DoorLayout, Layout, Rail, Rect, ShaftCheck, ShaftInputs, Wall } from './types';
 
 const ACCESS: Readonly<Record<Exclude<Access, 'none'>, readonly [number, number, number]>> = {
@@ -249,7 +250,7 @@ export function layout(I: ShaftInputs): Layout {
       // case c) only where the existing building takes no larger car: a car under case b)'s sizes relies on it, and the
       // reason is written in the design (warning)
       ...(I.access === 'dm236_existing' && !(A >= KV.dm236Residential[0] && B >= KV.dm236Residential[1] && passage >= KV.dm236Residential[2])
-        ? [check('v_acc_c', !!I.accessReason, null, null, 0, '', true)] : []),
+        ? [check('v_acc_c', reasonGiven(I.accessReason), null, null, 0, '', true)] : []),
       // the call stations' top button (a warning: they stand on the landings, set on site)
       check('v_call', callTop >= KV.callTopRange[0] && callTop <= KV.callTopRange[1], callTop, null, 0, 'mm', true),
     ] : []),

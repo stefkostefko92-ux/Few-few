@@ -9,7 +9,7 @@ import type { FormValues } from '@/calc/types';
 import { formValuesSchema } from '@/lib/calc-input';
 import { NO_MARKS, valueMarks, type ValueMarks } from '@/lib/lift/marks';
 import { collaudoOf, type Collaudo } from '@/lib/lift/collaudo';
-import { collaudoSchema } from '@/lib/lift-input';
+import { collaudoReadSchema } from '@/lib/lift-input';
 import { liftRecord, type LiftRecord } from '@/lib/lift-record';
 import { LIFT_ENGINE_VERSION } from '@/lib/lift/version';
 import { ROOM_ENGINE_VERSION } from '@/lib/room/snapshot';
@@ -27,7 +27,7 @@ export function readCalc(c: { inputs: unknown; sha256: string }): { values: Form
 /** The standards of a saved calculation's acceptance test: those chosen with it (Calculation.collaudo, outside its hash),
  *  else the intervention's default. */
 export function storedCollaudo(values: FormValues, raw: unknown): Collaudo {
-  const chosen = raw ? collaudoSchema.safeParse(raw) : null;
+  const chosen = raw ? collaudoReadSchema.safeParse(raw) : null;
   return collaudoOf(values, chosen?.success ? chosen.data : undefined);
 }
 

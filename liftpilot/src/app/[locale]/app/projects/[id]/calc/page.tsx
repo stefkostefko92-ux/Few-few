@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { requireCapability } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { formValuesSchema } from '@/lib/calc-input';
-import { collaudoSchema } from '@/lib/lift-input';
+import { collaudoReadSchema } from '@/lib/lift-input';
 import { idSchema } from '@/lib/schemas';
 import { blankCalc } from '@/lib/calc-blank';
 import { calcDraftSchema } from '@/lib/draft-input';
@@ -35,7 +35,7 @@ export default async function CalcPage({ params, searchParams }: { params: Promi
     orderBy: { createdAt: 'desc' },
     select: { inputs: true, collaudo: true },
   });
-  const parsed = source ? formValuesSchema.safeParse(source.inputs) : null, chosen = source?.collaudo ? collaudoSchema.safeParse(source.collaudo) : null;
+  const parsed = source ? formValuesSchema.safeParse(source.inputs) : null, chosen = source?.collaudo ? collaudoReadSchema.safeParse(source.collaudo) : null;
   const initial = draft ? draft.data.values : parsed?.success ? parsed.data : blankCalc();
   const collaudo = draft ? draft.data.collaudo : chosen?.success ? chosen.data : null;
   const [t, tp] = await Promise.all([getTranslations('calculations'), getTranslations('projects')]);

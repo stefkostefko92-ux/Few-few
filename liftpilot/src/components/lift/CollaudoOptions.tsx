@@ -14,7 +14,7 @@ import type { FormValues } from '@/calc/types';
 import { KL, NORME_AGGIUNTIVE, NORME_COLLAUDO, PARTI, adeguamentiDovuti, ammessa, withAggiunta, type Collaudo, type NormaAggiuntiva, type NormaCollaudo,
   type Parte } from '@/lib/lift';
 import { choiceOf, esistenteOf } from '@/lib/lift/collaudo';
-import { MARCATURE, carichiOf, variazioneCarico, type Carichi } from '@/lib/lift/modifica';
+import { MARCATURE, carichiOf, isServiceDay, variazioneCarico, type Carichi } from '@/lib/lift/modifica';
 import type { Access } from '@/shaft';
 import { ADAPT } from '@/lib/present/adapt';
 import type { Pres } from '@/lib/present/tr';
@@ -68,7 +68,7 @@ export default function CollaudoOptions({ P, isNew, chosen, value, set, access, 
     const d = { ...doc, [k]: text }, n = DOC_KEYS.map((x) => Number(d[x].replace(',', '.')));
     setDoc(d);
     const [Q, Pc, Mcw] = n;
-    setKnown({ documentato: n.every((x) => Number.isFinite(x) && x > 0 && x <= 100_000) ? { Q, P: Pc, Mcw } : undefined });
+    setKnown({ documentato: n.every((x) => Number.isFinite(x) && x >= 1 && x <= 100_000) ? { Q, P: Pc, Mcw } : undefined });
   };
   const ora = calc ? carichiOf(calc) : null, norma11 = value.norma === '10411-1' || value.norma === '10411-11' ? value.norma : null;
   const v = norma11 && value.documentato && ora ? variazioneCarico(norma11, value.documentato, ora) : null;
@@ -108,7 +108,9 @@ export default function CollaudoOptions({ P, isNew, chosen, value, set, access, 
           {value.marcatura === 'incerta' ? (
             <label className="field">
               <span>{t('servizio')}</span>
-              <input type="date" className="input" min="1900-01-01" value={value.servizio ?? ''} onChange={(e) => setKnown({ servizio: e.target.value || undefined })} />
+              {/* a day of the calendar up to today (isServiceDay); today's date may differ between the server and the browser */}
+              <input type="date" className="input" min="1900-01-01" max={new Date().toISOString().slice(0, 10)} suppressHydrationWarning value={value.servizio ?? ''}
+                onChange={(e) => setKnown({ servizio: isServiceDay(e.target.value) ? e.target.value : undefined })} />
             </label>
           ) : null}
           <p className={`note${value.marcatura === 'incerta' ? ' bad' : ''}`}>{t(value.marcatura === 'incerta' ? 'ce_incerta_hint' : 'ce_hint')}</p>

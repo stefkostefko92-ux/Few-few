@@ -497,7 +497,7 @@
     "access_none": "No requirement",
     "access_dm236_existing": "DM 236/89 — existing building",
     "accessReason": "Why no larger car is possible (case c)",
-    "accessReasonHint": "Case c) applies only when the existing building cannot take a larger car: with a car smaller than case b), write the reason, it goes into the design.",
+    "accessReasonHint": "Case c) applies only when the existing building cannot take a larger car: with a car smaller than case b), write the reason (at least {n} letters); it goes into the design and the report.",
     "access_dm236_residential": "DM 236/89 — new residential building",
     "access_dm236_public": "DM 236/89 — new non-residential building",
     "allowances": "Allowances (typical values, editable)",

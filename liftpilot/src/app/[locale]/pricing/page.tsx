@@ -28,10 +28,17 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     keywords: t('keywords').split(',').map((k) => k.trim()), indexable: true });
 }
 
+// after Stripe failed to answer, the page says "on request" for a minute before asking again (a public page: not a
+// call to Stripe and a warning in the log on every visit)
+const RETRY_MS = 60 * 1000;
+let failedAt = 0;
+
 async function currentPrice(): Promise<MonthlyPrice | null> {
+  if (Date.now() - failedAt < RETRY_MS) return null;
   try {
     return await monthlyPrice();
   } catch (err) {
+    failedAt = Date.now();
     log.warn({ err: stripeErrorOf(err) }, 'monthly price not read for the pricing page');
     return null;
   }

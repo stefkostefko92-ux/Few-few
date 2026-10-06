@@ -6,9 +6,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { KL, collaudoOf, type Collaudo } from '@/lib/lift';
 import { choiceOf, esistenteOf, modificaOf } from '@/lib/lift/collaudo';
-import { carichiOf, caricoVariato, normaDaMarcatura, variazioneCarico, type Carichi } from '@/lib/lift/modifica';
+import { carichiOf, caricoVariato, isServiceDay, normaDaMarcatura, variazioneCarico, type Carichi } from '@/lib/lift/modifica';
 import { interventoTo } from '@/lib/lift/intervento';
-import { collaudoSchema } from '@/lib/lift-input';
+import { collaudoReadSchema, collaudoSchema } from '@/lib/lift-input';
 import { collaudoRows } from '../report/collaudo';
 
 const doc = (Q: number, P: number, Mcw: number): Carichi => ({ Q, P, Mcw });
@@ -107,4 +107,33 @@ test('dati salvati: marcatura, data e carichi validati; la relazione dice marcat
   assert.ok(C.parti.includes('load'));
   // tested as new: no rows of a modification
   assert.equal(collaudoRows({ norma: 'en81', parti: [], marcatura: 'si' }, true).length, 2);
+});
+
+test('i carichi come li legge il calcolo; mezzo chilo è arrotondamento, non variazione; giorni del calendario', () => {
+  // the measured balancing load decides the counterweight, as in the calculation (calc/model.ts): k does not count
+  assert.deepEqual(carichiOf({ Q: '630', P: '700', k: '0.5', qeq: '400' }), { Q: 630, P: 700, Mcw: 1100 });
+  assert.deepEqual(carichiOf({ Q: '630', P: '700', k: '', qeq: '400' }), { Q: 630, P: 700, Mcw: 1100 });
+  assert.equal(carichiOf({ Q: '630', P: '700', k: '' }), null, 'k not entered');
+  assert.equal(carichiOf({ Q: '630abc', P: '700', k: '0.5' }), null, 'a number as the calculation reads it');
+  // documented 1015 kg, the design's counterweight 1100 kg with the measured load: +85 kg, the load's checks come in
+  const documentato = doc(630, 700, 1015), chosen: Collaudo = { norma: '10411-1', parti: ['machine'], documentato };
+  assert.ok(collaudoOf({ context: 'repl', Q: '630', P: '700', k: '0.5', qeq: '400' }, chosen).parti.includes('load'));
+  assert.ok(!collaudoOf({ context: 'repl', Q: '630', P: '700', k: '0.5' }, chosen).parti.includes('load'));
+  // 900 + 0,43 · 450 = 1093,5 kg against a report's 1094: rounding, under -1 and under -11
+  assert.equal(caricoVariato(variazioneCarico('10411-1', doc(450, 900, 1094), doc(450, 900, 1093.5))), false);
+  assert.equal(caricoVariato(variazioneCarico('10411-11', doc(450, 900, 1296), doc(450, 900, 1296.1))), false);
+  assert.equal(variazioneCarico('10411-11', doc(450, 900, 1296), doc(450, 900, 1297)).p2, true, 'one kilogram is a change');
+  // the day the lift was put in service
+  assert.equal(isServiceDay('1999-02-31', '2026-10-06'), false);
+  assert.equal(isServiceDay('2023-02-29', '2026-10-06'), false);
+  assert.equal(isServiceDay('2024-02-29', '2026-10-06'), true);
+  assert.equal(isServiceDay('2026-10-07', '2026-10-06'), false, 'not after today');
+  assert.equal(isServiceDay('', '2026-10-06'), false);
+  // a new record takes only such days and loads of a report; one stored by an earlier rule is read back
+  const ok = { norma: '10411-1', parti: ['machine'], marcatura: 'incerta', servizio: '1997-11-03', documentato: { Q: 480, P: 600, Mcw: 840 } };
+  for (const bad of [{ ...ok, servizio: '1999-02-31' }, { ...ok, servizio: '2099-01-01' }, { ...ok, documentato: { Q: 0.5, P: 600, Mcw: 840 } },
+    { ...ok, documentato: { Q: 5e-324, P: 600, Mcw: 840 } }]) {
+    assert.ok(!collaudoSchema.safeParse(bad).success, JSON.stringify(bad));
+    assert.ok(collaudoReadSchema.safeParse(bad).success, JSON.stringify(bad));
+  }
 });

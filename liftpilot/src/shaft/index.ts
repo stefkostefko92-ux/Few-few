@@ -7,6 +7,7 @@ export { maxArea, loadForArea, passengers } from './area';
 export { SHAFT_ENGINE_VERSION, shaftSnapshot, projectLayout } from './snapshot';
 export type { ShaftSnapshot } from './snapshot';
 export { KV, DEFAULTS, VOCI_VANO, vociOfDesign } from './norme';
+export { REASON_LETTERS, reasonGiven, reasonText } from './reason';
 export type { Allowance, CostanteVano, GruppoVano, VoceVano } from './norme';
 export { KV_VERT, VOCI_VERT, COSTANTI_VERT } from './norme-vert';
 export type { CostanteVert } from './norme-vert';

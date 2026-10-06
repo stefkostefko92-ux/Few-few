@@ -6,7 +6,7 @@
 // the project's data are in.
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { counterweightSide, type ShaftInputs } from '@/shaft';
+import { REASON_LETTERS, counterweightSide, reasonText, type ShaftInputs } from '@/shaft';
 import { Q_PLACEHOLDER, emptied, entrancesTo, filled, type BlankKey } from '@/lib/lift/blank';
 import { NO_BLANK, fieldId, mmOf, type FormBlank, type ShaftSet } from '../blank';
 import Seg from './Seg';
@@ -76,8 +76,8 @@ export default function ShaftOptions({ I, set, blank = NO_BLANK }: Props) {
         <label className="field">
           <span>{t('accessReason')}</span>
           <input id="shaft-access-reason" className="input" maxLength={300} value={I.accessReason ?? ''}
-            onChange={(e) => set({ accessReason: e.target.value.trim() ? e.target.value : undefined })} />
-          <span className="note">{t('accessReasonHint')}</span>
+            onChange={(e) => { const v = reasonText(e.target.value); set({ accessReason: v.trim() ? v : undefined }); }} />
+          <span className="note">{t('accessReasonHint', { n: REASON_LETTERS })}</span>
         </label>
       ) : null}
     </div>

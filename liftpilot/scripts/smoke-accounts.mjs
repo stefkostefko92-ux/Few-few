@@ -2,9 +2,9 @@
 // server sends its mail to scripts/mail-sink.mjs): a company registers, signs in only after confirming the address
 // with the newest link and its own password, invites a colleague who chooses the password from the link (an address with
 // an account elsewhere gets the same answer), forgets the password and sets a new one through the e-mail; a sign-out
-// ends the session on the server; a registration with the address of a waiting invitation ends it once the inbox
-// confirms; a second registration with the same address and a forgotten password for an unknown one answer
-// the same as any other.
+// ends the session on the server; a registration with the address of a waiting invitation leaves it waiting in the
+// inviting company — no company learns that the address joined another —; a second registration with the same address
+// and a forgotten password for an unknown one answer the same as any other.
 import assert from 'node:assert/strict';
 
 const link = (text, path) => {
@@ -113,7 +113,7 @@ export async function accountFlows({ BASE, stamp, step, newPage, sink, ADMIN_EMA
   assert.match(new URL(other.url()).pathname, /^\/it\/login/, 'the copied cookie after the sign-out');
   await other.close();
 
-  step('a registration with the address of a waiting invitation: its confirmation ends the invitation');
+  step('a registration with the address of a waiting invitation: confirmed, the invitation still waits in the inviting company');
   const held = `trattenuto.${stamp}@example.com`, heldPw = `Trattenuto${stamp}Pw9`;
   await page.fill('input[name="email"]', email);
   await page.fill('input[name="password"]', password);
@@ -146,7 +146,7 @@ export async function accountFlows({ BASE, stamp, step, newPage, sink, ADMIN_EMA
   await page.fill('input[name="password"]', password);
   await Promise.all([page.waitForURL(/\/it\/app$/), page.click('main form button[type="submit"]')]);
   await page.goto(`${BASE}/it/app/team`);
-  assert.doesNotMatch(await page.textContent('main'), new RegExp(held.replace(/\./g, '\\.')), 'the invitation ended by the confirmation');
+  assert.match(await page.textContent('#invites-title + table'), new RegExp(held.replace(/\./g, '\\.')), 'the invitation after the confirmation, alike');
   await Promise.all([page.waitForURL(/\/it\/login$/), page.click('header form button[type="submit"]')]);
 
   step('forgotten password: the e-mail link, a new password, the old one refused');

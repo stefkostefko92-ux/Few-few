@@ -497,7 +497,7 @@
     "access_none": "Nessun requisito",
     "access_dm236_existing": "DM 236/89 — edificio esistente",
     "accessReason": "Perché non è possibile una cabina più grande (caso c)",
-    "accessReasonHint": "Il caso c) vale solo quando l’edificio esistente non consente una cabina più grande: con una cabina più piccola del caso b) scrivi il motivo, va nel progetto.",
+    "accessReasonHint": "Il caso c) vale solo quando l’edificio esistente non consente una cabina più grande: con una cabina più piccola del caso b) scrivi il motivo (almeno {n} lettere), va nel progetto e nella relazione.",
     "access_dm236_residential": "DM 236/89 — edificio residenziale nuovo",
     "access_dm236_public": "DM 236/89 — edificio non residenziale nuovo",
     "allowances": "Ingombri (valori tipici, modificabili)",

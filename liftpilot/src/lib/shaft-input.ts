@@ -3,7 +3,7 @@
 // ranges wide enough for any lift and narrow enough to refuse nonsense. A design saved before the vertical data
 // existed (engine 1) reads with the typical values of what it lacks.
 import { z } from 'zod';
-import { DEFAULTS, DEFAULT_VERTICAL, GOVERNORS, KV, PROFILE_NAMES, RAIL_TYPES, SUPPORT_KINDS } from '@/shaft';
+import { DEFAULTS, DEFAULT_VERTICAL, GOVERNORS, KV, PROFILE_NAMES, RAIL_TYPES, SUPPORT_KINDS, reasonText } from '@/shaft';
 import { CW_CHOICES, DOOR_PAIRS } from '@/shaft/staffe-ids';
 
 const mm = (min: number, max: number) => z.number().int().min(min).max(max);
@@ -168,6 +168,10 @@ export const shaftInputsReadSchema = z.object({
 
 /** The shaft as the form saves it: the stored shape and the rules a new record must meet. */
 export const shaftInputsSchema = shaftInputsReadSchema.superRefine((S, ctx) => {
+  // case c)'s reason goes into the relazione as written: no hidden characters (src/shaft/reason.ts)
+  if (S.accessReason !== undefined && reasonText(S.accessReason) !== S.accessReason) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['accessReason'], message: 'hidden characters' });
+  }
   // the next stop above, a door's height up at least when both have a door on the same side (the doors of one wall do not
   // overlap), above it in any case
   const sides = (d: 'A' | 'B' | 'AB'): string[] => (d === 'AB' ? ['A', 'B'] : [d]), F = S.vertical.floors;

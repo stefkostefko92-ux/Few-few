@@ -19,7 +19,7 @@ import { forgotSchema, inviteAcceptSchema, registerSchema, resetSchema, verifySc
 import { inviteOfToken } from '@/lib/invites';
 import { hashToken } from '@/lib/token-hash';
 import { consumeToken, issueToken, tokenUser } from '@/lib/tokens';
-import { seatAvailable } from './billing';
+import { lockCompany, seatAvailable } from './billing';
 import { str, type FormState } from './form';
 
 // Accounts without an administrator: a company registers itself (its owner confirms the address by the link and the
@@ -174,7 +174,8 @@ export async function resetPasswordAction(_prev: FormState, fd: FormData): Promi
 /** What the link of an invitation opens: the inviting company, the address and the role; nothing for a link that is not
  *  good (unknown, ended, malformed). Reading it changes nothing. */
 export async function inviteInfoAction(token: string): Promise<{ company: string; email: string; name: string; role: string } | null> {
-  if (!rateLimit(`invite-ip:${await clientIp()}`, 40, WINDOW)) return null;
+  // its own count: reading links never uses up the tries of accepting one
+  if (!rateLimit(`invite-info-ip:${await clientIp()}`, 40, WINDOW)) return null;
   const invite = await inviteOfToken(token);
   return invite ? { company: invite.company.name, email: invite.email, name: invite.name, role: invite.role } : null;
 }
@@ -182,12 +183,13 @@ export async function inviteInfoAction(token: string): Promise<{ company: string
 class NoSeat extends Error {}
 
 /** The colleague accepts the invitation with the password chosen: the account is made confirmed (the link proved the
- *  address), the invitation goes and so do the other companies' invitations of the address (one address, one
- *  company). An address that has an account meanwhile cannot take it; a company without a free slot keeps the
- *  invitation waiting. */
+ *  address) and the invitation goes. Other companies' invitations of the address stay until their end — taking one
+ *  meets the account (one address, one company) —, so no company learns that the address joined another. An address
+ *  that has an account meanwhile cannot take it; a company without a free slot keeps the invitation waiting; the same
+ *  link taken twice at once makes one account. */
 export async function acceptInviteAction(_prev: FormState, fd: FormData): Promise<FormState> {
   const locale = localeOf(fd);
-  if (!rateLimit(`invite-ip:${await clientIp()}`, 20, WINDOW)) return { error: 'rateLimited' };
+  if (!rateLimit(`invite-accept-ip:${await clientIp()}`, 20, WINDOW)) return { error: 'rateLimited' };
   const parsed = inviteAcceptSchema.safeParse({ token: str(fd, 'token'), next: str(fd, 'next'), confirm: str(fd, 'confirm') });
   if (!parsed.success) return formError(parsed.error.issues);
   const passwordHash = await hashPassword(parsed.data.next), now = new Date();
@@ -196,13 +198,13 @@ export async function acceptInviteAction(_prev: FormState, fd: FormData): Promis
     user = await prisma.$transaction(async (tx) => {
       const invite = await tx.invite.findUnique({ where: { tokenHash: hashToken(parsed.data.token) }, include: { company: { select: { active: true } } } });
       if (!invite || invite.expiresAt <= now || !invite.company.active) return null;
-      // the invitation's own slot becomes the colleague's: without it the company must still have one free
-      await tx.invite.delete({ where: { id: invite.id } });
+      // the company first, as everything that counts its slots locks it (billing.ts), then the invitation: its own slot
+      // becomes the colleague's, without it the company must still have one free; gone meanwhile, the link is used
+      await lockCompany(tx, invite.companyId);
+      if ((await tx.invite.deleteMany({ where: { id: invite.id } })).count !== 1) return null;
       if (!(await seatAvailable(tx, invite.companyId))) throw new NoSeat();
-      const made = await tx.user.create({ data: { companyId: invite.companyId, email: invite.email, name: invite.name, role: invite.role,
+      return tx.user.create({ data: { companyId: invite.companyId, email: invite.email, name: invite.name, role: invite.role,
         passwordHash, mustChangePassword: false, locale: invite.locale, emailVerifiedAt: now, lastLoginAt: now } });
-      await tx.invite.deleteMany({ where: { email: invite.email } });
-      return made;
     });
   } catch (e) {
     if (e instanceof NoSeat) return { error: 'noSeats' };

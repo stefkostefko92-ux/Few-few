@@ -18,6 +18,7 @@ import { TOKEN_TTL_MS, issueToken, newToken } from '@/lib/tokens';
 import { enforceSeats, lockCompany, seatAvailable } from './billing';
 import { str, type FormState } from './form';
 
+const HOUR = 60 * 60 * 1000;
 const localeOf = (fd: FormData): Locale => { const l = str(fd, 'locale'); return isLocale(l) ? l : DEFAULT_LOCALE; };
 /** Two requests with the same e-mail at once: the second meets the unique index. */
 const emailTaken = (e: unknown): boolean => e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002';
@@ -37,7 +38,7 @@ async function manageable(me: SessionUser, id: string) {
 export async function createUserAction(_prev: FormState, fd: FormData): Promise<FormState> {
   const me = await actor('users:manage');
   if (!me) return { error: 'forbidden' };
-  if (!rateLimit(`users:${me.id}`, 30, 60 * 60 * 1000)) return { error: 'rateLimited' };
+  if (!rateLimit(`users:${me.id}`, 30, HOUR)) return { error: 'rateLimited' };
   const parsed = userCreateSchema.safeParse({ email: str(fd, 'email'), name: str(fd, 'name'), role: str(fd, 'role') });
   if (!parsed.success) return { error: 'invalidFields', fields: parsed.error.issues.map((i) => String(i.path[0])) };
   if (!assignableRoles(me.role).includes(parsed.data.role)) return { error: 'forbidden' };
@@ -71,26 +72,31 @@ export async function createUserAction(_prev: FormState, fd: FormData): Promise<
 /** The owner's invitation of a colleague. The answer is the same for any address outside the company: an address with
  *  an account in another company (one address, one company) gets a notice instead of the link, and the invitation
  *  waits like any other until its end — the owner cannot tell which addresses have an account elsewhere (audit
- *  2026-10-06). Inviting an address again sends a new link and ends the earlier one. */
+ *  2026-10-06). Inviting an address again sends a new link and ends the earlier one. One address gets a few letters an
+ *  hour whoever invites it: beyond them the invitation is kept with the link already sent (a first one waits for the
+ *  owner to send it again), no letter goes, and the answer does not change. */
 async function invite(me: SessionUser, d: { email: string; name: string; role: Role }, locale: Locale): Promise<FormState> {
   const { token, tokenHash } = newToken(), expiresAt = new Date(Date.now() + TOKEN_TTL_MS.INVITE);
   const outcome = await prisma.$transaction(async (tx) => {
-    // the slots first, under the company's lock: without a free one the answer is the same for any address
-    const waiting = await tx.invite.findUnique({ where: { companyId_email: { companyId: me.companyId, email: d.email } }, select: { id: true } });
+    // the slots first, under the company's lock: without a free one the answer is the same for any address; an
+    // invitation still waiting keeps its slot, one past its end takes a new one
+    await lockCompany(tx, me.companyId);
+    const waiting = await tx.invite.findFirst({ where: { companyId: me.companyId, email: d.email, expiresAt: { gt: new Date() } }, select: { id: true } });
     if (!waiting && !(await seatAvailable(tx, me.companyId))) return 'noSeats' as const;
     const user = await tx.user.findUnique({ where: { email: d.email }, select: { companyId: true } });
     if (user?.companyId === me.companyId) return 'emailTaken' as const;
+    const mail = rateLimit(`invite-mail:${d.email}`, 3, HOUR);
     const row = await tx.invite.upsert({
       where: { companyId_email: { companyId: me.companyId, email: d.email } },
       create: { companyId: me.companyId, email: d.email, name: d.name, role: d.role, tokenHash, expiresAt, locale },
-      update: { name: d.name, role: d.role, tokenHash, expiresAt, locale },
+      update: { name: d.name, role: d.role, locale, ...(mail ? { tokenHash, expiresAt } : {}) },
       select: { id: true },
     });
-    return { id: row.id, elsewhere: !!user };
+    return { id: row.id, elsewhere: !!user, mail };
   });
   if (outcome === 'noSeats' || outcome === 'emailTaken') return { error: outcome };
-  mailAccount(d.email, locale, outcome.elsewhere ? { kind: 'inviteExists' } : { kind: 'invite', token });
-  await audit({ companyId: me.companyId, userId: me.id, action: 'INVITE_SENT', entity: 'Invite', entityId: outcome.id, meta: { role: d.role } });
+  if (outcome.mail) mailAccount(d.email, locale, outcome.elsewhere ? { kind: 'inviteExists' } : { kind: 'invite', token });
+  await audit({ companyId: me.companyId, userId: me.id, action: 'INVITE_SENT', entity: 'Invite', entityId: outcome.id, meta: { role: d.role, mailed: outcome.mail } });
   revalidatePath(`/${locale}/app/team`);
   return { ok: true, pending: true, message: d.email };
 }
@@ -99,7 +105,7 @@ async function invite(me: SessionUser, d: { email: string; name: string; role: R
 export async function inviteAgainAction(fd: FormData): Promise<void> {
   const me = await actor('users:manage');
   const id = idSchema.safeParse(str(fd, 'id'));
-  if (!me || !id.success || !mailConfigured() || !rateLimit(`users:${me.id}`, 30, 60 * 60 * 1000)) return;
+  if (!me || !id.success || !mailConfigured() || !rateLimit(`users:${me.id}`, 30, HOUR)) return;
   const row = await prisma.invite.findFirst({ where: { id: id.data, companyId: me.companyId }, select: { email: true, name: true, role: true } });
   if (row) await invite(me, row, localeOf(fd));
 }
@@ -163,7 +169,7 @@ export async function resetUserPasswordAction(_prev: FormState, fd: FormData): P
   const me = await actor('users:manage');
   const id = idSchema.safeParse(str(fd, 'id'));
   if (!me || !id.success) return { error: 'forbidden' };
-  if (!rateLimit(`reset:${me.id}`, 20, 60 * 60 * 1000)) return { error: 'rateLimited' };
+  if (!rateLimit(`reset:${me.id}`, 20, HOUR)) return { error: 'rateLimited' };
   const target = await manageable(me, id.data);
   if (!target) return { error: 'forbidden' };
   if (mailConfigured() && me.role !== 'SUPERADMIN') {

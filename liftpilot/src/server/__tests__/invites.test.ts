@@ -1,6 +1,8 @@
 // The invitations of colleagues (round 30): the owner's answer is the same for an address with an account in another
 // company and for an unknown one — the first gets a notice, the second the link — and nobody's account is made until
-// the colleague opens the link and chooses the password.
+// the colleague opens the link and chooses the password. An invitation past its end takes a slot again, one address
+// gets a few letters an hour, reading links never uses up the tries of accepting one, and accepting leaves the other
+// companies' invitations alone.
 import { test, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
@@ -19,6 +21,9 @@ let created: Record<string, unknown>[] = [];
 const mails: { to: string; kind: string }[] = [];
 let billing = false;
 let userCreateError: Error | null = null;
+/** the invitation taken meanwhile by the same link opened twice at once */
+let vanish = false;
+const live = (i: Invite): boolean => i.expiresAt > new Date();
 
 const tx = {
   $queryRaw: async () => [],
@@ -33,18 +38,23 @@ const tx = {
     },
   },
   invite: {
-    count: async ({ where }: { where: { companyId: string } }) => invites.filter((i) => i.companyId === where.companyId).length,
-    findUnique: async ({ where }: { where: { tokenHash?: string; companyId_email?: { companyId: string; email: string } } }) =>
-      invites.find((i) => (where.tokenHash ? i.tokenHash === where.tokenHash
-        : i.companyId === where.companyId_email?.companyId && i.email === where.companyId_email?.email)) ?? null,
-    upsert: async ({ create }: { create: Omit<Invite, 'id' | 'company'> }) => {
-      invites = invites.filter((i) => !(i.companyId === create.companyId && i.email === create.email));
-      const row = { ...create, id: `i${invites.length + 1}`, company: { active: true } };
-      invites.push(row);
+    // the slots count the invitations still waiting (lib/invites.ts pendingInvites)
+    count: async ({ where }: { where: { companyId: string } }) => invites.filter((i) => i.companyId === where.companyId && live(i)).length,
+    findUnique: async ({ where }: { where: { tokenHash: string } }) => invites.find((i) => i.tokenHash === where.tokenHash) ?? null,
+    findFirst: async ({ where }: { where: { companyId: string; email: string } }) =>
+      invites.find((i) => i.companyId === where.companyId && i.email === where.email && live(i)) ?? null,
+    upsert: async ({ create, update }: { create: Omit<Invite, 'id' | 'company'>; update: Partial<Invite> }) => {
+      const was = invites.find((i) => i.companyId === create.companyId && i.email === create.email);
+      const row = was ? Object.assign(was, update) : { ...create, id: `i${invites.length + 1}`, company: { active: true } };
+      if (!was) invites.push(row);
       return { id: row.id };
     },
-    delete: async ({ where }: { where: { id: string } }) => { invites = invites.filter((i) => i.id !== where.id); },
-    deleteMany: async ({ where }: { where: { email: string } }) => { invites = invites.filter((i) => i.email !== where.email); return { count: 0 }; },
+    deleteMany: async ({ where }: { where: { id: string } }) => {
+      if (vanish) { vanish = false; invites = invites.filter((i) => i.id !== where.id); return { count: 0 }; }
+      const n = invites.length;
+      invites = invites.filter((i) => i.id !== where.id);
+      return { count: n - invites.length };
+    },
   },
 };
 mock.module(src('lib/db.ts'), { namedExports: { prisma: { ...tx, $transaction: async (fn: (t: typeof tx) => unknown) => fn(tx) } } });
@@ -105,7 +115,7 @@ const accept = async (token: string) => {
   return acceptInviteAction({}, fd);
 };
 
-test('the link makes the confirmed account with the role invited, signs in and ends the address’s other invitations', async () => {
+test('the link makes the confirmed account with the role invited and signs in; another company’s invitation of the address stays', async () => {
   const { hashToken } = await import(src('lib/token-hash.ts'));
   const token = 'A'.repeat(43);
   invites = [
@@ -118,7 +128,8 @@ test('the link makes the confirmed account with the role invited, signs in and e
   assert.equal(created[0]?.role, 'ENGINEER');
   assert.equal(created[0]?.companyId, 'c1');
   assert.ok(created[0]?.emailVerifiedAt instanceof Date, 'the link proved the address');
-  assert.equal(invites.length, 0);
+  // the other company does not learn that the address joined one: its invitation waits until its end
+  assert.deepEqual(invites.map((i) => i.id), ['i2']);
 });
 
 test('an ended link, an address taken meanwhile and a company without a free slot make nothing', async () => {
@@ -136,4 +147,40 @@ test('an ended link, an address taken meanwhile and a company without a free slo
   assert.deepEqual(await accept(token), { error: 'noSeats' });
   assert.equal(created.length, 0);
   assert.equal((await accept('bad')).error, 'invalidLink', 'a malformed link');
+});
+
+test('an invitation past its end takes a slot again: without a free one, nothing', async () => {
+  invites = [{ id: 'i1', companyId: 'c1', email: 'old@nowhere.example', name: 'X', role: 'TECHNICIAN', tokenHash: 'old', expiresAt: new Date(Date.now() - 1000),
+    locale: 'it', company: { active: true } }];
+  created = []; mails.length = 0; billing = true;
+  assert.deepEqual(await ask('old@nowhere.example'), { error: 'noSeats' });
+  assert.equal(invites[0]?.tokenHash, 'old', 'not made to wait again');
+  assert.equal(mails.length, 0);
+});
+
+test('one address gets three letters an hour: beyond them the answer is the same, no letter, the link sent stays good', async () => {
+  invites = []; created = []; mails.length = 0; billing = false;
+  const answers = [];
+  for (let i = 0; i < 3; i++) answers.push(await ask('often@nowhere.example'));
+  const sent = invites[0]?.tokenHash;
+  answers.push(await ask('often@nowhere.example'));
+  assert.equal(new Set(answers.map((a) => JSON.stringify(a))).size, 1, 'the same answer each time');
+  assert.equal(mails.filter((m) => m.to === 'often@nowhere.example').length, 3);
+  assert.equal(invites[0]?.tokenHash, sent, 'the link of the last letter still opens the invitation');
+});
+
+test('the same link taken twice at once makes one account; reading links never uses up the tries of accepting', async () => {
+  const { hashToken } = await import(src('lib/token-hash.ts'));
+  const { inviteInfoAction } = await import(src('server/account-actions.ts'));
+  const token = 'C'.repeat(43);
+  const row = (): Invite => ({ id: 'i1', companyId: 'c1', email: 'twice@nowhere.example', name: 'X', role: 'TECHNICIAN', tokenHash: hashToken(token),
+    expiresAt: new Date(Date.now() + 864e5), locale: 'it', company: { active: true } });
+  created = []; billing = false; userCreateError = null;
+  invites = [row()]; vanish = true;
+  assert.deepEqual(await accept(token), { error: 'invalidLink' }, 'the other request took it');
+  assert.equal(created.length, 0);
+  for (let i = 0; i < 25; i++) assert.equal(await inviteInfoAction('x'), null);
+  invites = [row()];
+  await assert.rejects(accept(token), /redirect \/it\/app/);
+  assert.equal(created.length, 1);
 });

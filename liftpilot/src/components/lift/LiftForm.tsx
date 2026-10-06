@@ -78,9 +78,10 @@ export default function LiftForm({ P, X, inp, derived, complete, blank, bad, nee
           <button key={k} type="button" role="radio" aria-checked={intervento === k} className={intervento === k ? 'on' : undefined} onClick={() => pick(k)}>{t(`context_${k}`)}</button>
         ))}
       </div>
-      {/* DM 236 ticked with no case chosen yet sets the usual one, as with none */}
-      {/* the design's loads, once worked out, against the documented ones */}
-      <CollaudoOptions P={P} isNew={intervento === 'new'} chosen={inp.collaudo} value={derived?.collaudo ?? collaudoOf(inp.calc, inp.collaudo)} set={setCollaudo}
+      {/* the test as chosen now (the derivation is deferred: its collaudo would lag a render behind a click); the design's
+          loads, once worked out, against the documented ones; DM 236 ticked with no case chosen yet sets the usual one */}
+      <CollaudoOptions P={P} isNew={intervento === 'new'} chosen={inp.collaudo} set={setCollaudo}
+        value={collaudoOf(derived ? { ...derived.values, context: inp.calc.context } : inp.calc, inp.collaudo)}
         access={{ value: is('access') ? 'none' : inp.shaft.access, set: (access) => setShaft({ access }) }} calc={derived?.values} />
       <h2>{t('s_shaft')}</h2>
       <div className="form-grid">

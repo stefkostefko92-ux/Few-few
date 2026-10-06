@@ -13,7 +13,7 @@ import { DEFAULT_LOCALE, isLocale } from '@/i18n/locales';
 import { getSessionUser, type SessionUser } from '@/lib/auth';
 import { formValuesSchema } from '@/lib/calc-input';
 import { prisma } from '@/lib/db';
-import { collaudoSchema, liftInputsReadSchema, liftInputsSchema } from '@/lib/lift-input';
+import { collaudoReadSchema, collaudoSchema, liftInputsReadSchema, liftInputsSchema } from '@/lib/lift-input';
 import { liftRecord } from '@/lib/lift-record';
 import { rateLimit } from '@/lib/ratelimit';
 import { can } from '@/lib/rbac';
@@ -87,7 +87,10 @@ interface RoomRow { id: string; label: string | null; inputs: unknown }
 /** A replacement's calculation made again from its values and the standards chosen with it, and the machine room given
  *  on the new one (`room` null: a survey the new calculation no longer takes, which stays where it was). */
 async function remakeCalc(user: SessionUser, c: CalcRow, room: RoomRow | null): Promise<{ calc: string; room: string | null } | null> {
-  const values = formValuesSchema.safeParse(c.inputs), chosen = c.collaudo ? collaudoSchema.safeParse(c.collaudo) : null;
+  // the standards chosen as stored, taken again only as today's rules take them: else the form opens on the record
+  const read = c.collaudo ? collaudoReadSchema.safeParse(c.collaudo) : null, chosen = read?.success ? collaudoSchema.safeParse(read.data) : null;
+  if (chosen && !chosen.success) return null;
+  const values = formValuesSchema.safeParse(c.inputs);
   const r = values.success ? await createCalculation(user, c.projectId, values.data, c.label, chosen?.success ? chosen.data : null, c.id) : null;
   if (!r?.ok) return null;
   if (!room) return { calc: r.id, room: null };

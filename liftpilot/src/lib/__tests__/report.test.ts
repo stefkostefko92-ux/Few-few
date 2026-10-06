@@ -107,6 +107,13 @@ test('calcolo da un progetto del vano: pianta in scala, verifiche in pianta, voc
   assert.ok(mismatch(buildReport({ ...base, design: design({ ...defaultInputs(1600, 1750), Q: Q + 75 }) })));
 });
 
+test('caso c) del DM 236/1989: la motivazione scritta nel progetto va nella relazione', () => {
+  const base = input('B'), Q = readInputs(PRESETS.B).I.Q, why = 'vano nella tromba delle scale esistente';
+  const rows = (I: ShaftInputs): string[][] => buildReport({ ...base, design: design({ ...I, Q }) }).blocks.flatMap((b) => (b.t === 'kv' ? b.rows : []));
+  assert.ok(rows({ ...defaultInputs(1600, 1750), accessReason: why }).some(([k, v]) => k === 'Perché non una cabina più grande (caso c)' && v === why));
+  assert.ok(!rows(defaultInputs(1600, 1750)).some(([k]) => k?.startsWith('Perché non una cabina')));
+});
+
 test('carta intestata, argano riconosciuto dal catalogo, argano consigliato fra SICOR e Montanari', () => {
   const logo = { mime: 'image/png' as const, data: readFileSync(path.join(process.cwd(), 'public', 'img', 'liftpilot-logo-480.png')).toString('base64') };
   const advice = valuesAdvice(PRESETS.A), first = advice.best[0];

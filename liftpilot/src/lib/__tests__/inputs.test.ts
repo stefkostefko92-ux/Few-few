@@ -54,4 +54,7 @@ test('vano: due fermate con porta sullo stesso lato almeno a una porta di distan
   assert.ok(at(S.doorHeight).success);
   assert.equal(at(0, 'B').success, false, 'stessa quota');
   assert.ok(at(500, 'B').success, 'porte su lati opposti: basta salire');
+  // case c)'s reason goes into the relazione as written: no hidden characters
+  assert.ok(shaftInputsSchema.safeParse({ ...S, accessReason: 'vano nella tromba delle scale' }).success);
+  assert.equal(shaftInputsSchema.safeParse({ ...S, accessReason: 'vano nella\u200b tromba delle scale' }).success, false);
 });

@@ -72,8 +72,9 @@ export type Confirmed =
 
 /** The registration confirmed (the password already checked against it): in one transaction the link is used, an
  *  account of the address never confirmed nor used is released (with its company when it was the last user), the
- *  other registrations of the address go and so do the companies' invitations of it (one address, one company), the
- *  company and its owner are made — signed in and confirmed now. */
+ *  other registrations of the address go, the company and its owner are made — signed in and confirmed now. The
+ *  companies' invitations of the address stay until their end (taking one meets the account: one address, one
+ *  company), so no company learns of the registration. */
 export async function confirmPending(p: PendingRegistration, token: string): Promise<Confirmed> {
   const now = new Date();
   return prisma.$transaction(async (tx): Promise<Confirmed> => {
@@ -88,7 +89,6 @@ export async function confirmPending(p: PendingRegistration, token: string): Pro
       released = { id: old.id, companyId: gone ? null : old.companyId };
     }
     await tx.pendingRegistration.deleteMany({ where: { email: p.email } });
-    await tx.invite.deleteMany({ where: { email: p.email } });
     const c = await tx.company.create({ data: { name: p.company, vatNumber: p.vatNumber, city: p.city } });
     const user = await tx.user.create({
       data: {
