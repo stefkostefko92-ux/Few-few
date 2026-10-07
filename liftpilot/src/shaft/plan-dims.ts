@@ -24,6 +24,7 @@ import { hasImbotti, marbleOpening } from './imbotti';
 import { landingKey, shiftDims } from './landing';
 import { cwNiche, nichesOf } from './niche';
 import { calataEdit } from './drop';
+import { governorDims } from './plan-governor';
 import { doorOpDepthOf } from './operator';
 import { doorsAt, roofSpaces, wallsAt, type PlanLevel } from './plan-view';
 import { pitSpace } from './pit';
@@ -241,5 +242,7 @@ export function planDims(L: Layout, level: PlanLevel, floor: number, labels: Pla
     out.push(chain({ dir: 'x', pts: [r.x0, r.x1], at: r.y0 + 0.28 * (r.y1 - r.y0), edit: [pick] }), chain({ dir: 'y', pts: [r.y0, r.y1], at: r.x0 + 0.28 * (r.x1 - r.x0), edit: [pick] }));
     out.push(chain({ dir: 'x', pts: [f.x0, f.x1], at: f.y0 + 90, edit: [E('v.standW')] }), chain({ dir: 'y', pts: [f.y0, f.y1], at: f.x0 + 40, edit: [E('v.standD')] }));
   }
+  // the governor's rope: on the main floor's plan, from the wall on its side and from the car rail's axis
+  if (level === 'main') out.push(...governorDims(L));
   return out;
 }

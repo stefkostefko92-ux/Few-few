@@ -25,7 +25,7 @@ import { ESITI_CALCOLO, EXISTING_NOTE, adaptSection, adempimentiBlocks, collaudo
 import { machineSpec } from '../lift/machine';
 import { shapeOf } from '../catalog/shapes';
 import { rinvioRow, shapeRows } from './machine-shape';
-import { supportChecks, supportLoad } from '../lift/support';
+import { bedplateMass, supportChecks, supportLoad } from '../lift/support';
 import { adviceBlocks } from './advice';
 import type { MachineAdvice } from '../lift/advice';
 import { catalogMachineOf, modelOf } from '../order/machine';
@@ -121,15 +121,16 @@ export function buildReport(r: ReportInput): ReportDoc {
 
   const made = m.catalog ? { brand: m.catalog.brand, model: m.catalog.model } : null;
   const machine = r.design ? machineSpec(ctx, N.mass, '', r.design.layout.inputs.room, made ? shapeOf(made.brand, made.model) : null, made) : null;
-  const beams = r.design && machine ? supportChecks(r.design.layout, machine, supportLoad(ctx, res.Mcw), I.layout !== 'bottom') : [];
+  // the support's load as the design and sheet 1 count it: the machine with the maker's bedplate it stands on
+  const bed = bedplateMass(machine), ld = supportLoad(ctx, res.Mcw, { machine: N.mass + bed });
+  const beams = r.design && machine ? supportChecks(r.design.layout, machine, ld, I.layout !== 'bottom') : [];
   if (r.design) {
     section('Vano e cabina');
     B.push(...shaftBlocks(r.design, I.Q, { fmt, st, when, head: [t('col_item'), t('col_val'), t('col_lim'), t('col_res'), 'Riferimento'] }, beams, C));
     if (beams.length) {
-      const ld = supportLoad(ctx, res.Mcw);
-      B.push({ t: 'p', style: 'note', text: `Travi sotto l’argano verificate con il carico di questo calcolo: argano ${fmt(ld.machine, 0)} kg, carico statico sull’asse `
-        + `${fmt(ld.static, 0)} kg (funi e cavi secondo il registro), coefficiente dinamico ${fmt(ld.dyn, 1)}. Le tavole usano i dati dell’impianto inseriti `
-        + "all’emissione (massa dell’argano con il telaio, cavi, coefficiente) e possono dare un altro esito: vale quello con i dati reali." });
+      B.push({ t: 'p', style: 'note', text: `Travi sotto l’argano verificate con il carico di questo calcolo: argano${bed ? ' con il basamento con rinvio' : ''} `
+        + `${fmt(ld.machine, 0)} kg, carico statico sull’asse ${fmt(ld.static, 0)} kg (funi e cavi secondo il registro), coefficiente dinamico `
+        + `${fmt(ld.dyn, 1)}: gli stessi carichi del foglio 1 delle tavole.` });
     }
     if (machine?.rinvio) B.push({ t: 'kv', rows: [rinvioRow(machine.rinvio, fmt)] });
   }

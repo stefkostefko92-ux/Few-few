@@ -7,14 +7,14 @@ import type { MachineSpec, RoomGeo } from './machine-room';
 
 /** `s0`, `s1`: the shaft's walls along the drop line, which the lettering under the slab keeps within. */
 export function pulleySection(M: MachineSpec, G: RoomGeo, s0: number, s1: number): Entity[] {
-  const R = G.room, pu = G.pulleyAt, zp = G.pulleyZ, r = M.Dp / 2, out: Entity[] = [];
+  const R = G.room, pu = G.pulleyAt, zp = G.pulleyZ, r = M.Dp / 2, out: Entity[] = [], b = M.base ?? 0;
   out.push(circle([pu, zp], r, 'outline', 'paper'), circle([pu, zp], r - M.d, 'thin'), circle([pu, zp], r * 0.28, 'outline', 'steel'));
   out.push(line([pu - r - 40, zp], [pu + r + 40, zp], 'axis'), line([pu, zp - r - 40], [pu, zp + r + 40], 'axis'));
   const framed = M.rinvio?.on === 'frame' && zp - r >= 0;
   if (!framed && zp > -R.slab) {
     const u0 = pu - r - 110, u1 = pu + r + 110;
-    out.push(rect(u0, 0, u1, 140, 'outline'), rect(pu - 80, Math.min(0, zp - 70), pu + 80, Math.max(140, zp + 70), 'thin'));
-    for (const x of [u0, u1 - 70]) out.push(rect(x, 0, x + 70, 12, 'outline', 'steel'));
+    out.push(rect(u0, b, u1, b + 140, 'outline'), rect(pu - 80, Math.min(b, zp - 70), pu + 80, Math.max(b + 140, zp + 70), 'thin'));
+    for (const x of [u0, u1 - 70]) out.push(rect(x, b, x + 70, b + 12, 'outline', 'steel'));
   } else if (!framed) out.push(rect(pu - 140, -R.slab - 14, pu + 140, -R.slab, 'outline', 'steel'), rect(pu - 80, zp - 70, pu + 80, -R.slab - 14, 'thin'));
   const text = `Ø${M.Dp}`;
   if (zp - r >= 0) {

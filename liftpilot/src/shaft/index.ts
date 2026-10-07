@@ -21,8 +21,10 @@ export { BUFFER_TYPES, bufferStroke, bufferType, maxSpeed, strokeNeeded, typical
 export { DEFAULT_ROOM } from './room';
 export { PROFILES, PROFILE_NAMES, isChannel } from './profiles';
 export type { Profile, ProfileName } from './profiles';
-export { SUPPORT_KINDS, hasProfile, padsOf, profileOf, sheaveAxisOn, supportHeight, supportLength, supportOf, supportSpan } from './support';
-export type { MachineSupport, SupportKind } from './support';
+export { HEB_PROFILES, SUPPORT_KINDS, hasProfile, hebBase, onHeb, padsOf, profileOf, sheaveAxisOn, supportHeight, supportLength, supportOf, supportSpan } from './support';
+export type { HebDir, HebProfile, MachineSupport, ShaftBeams, SupportKind } from './support';
+export { dropRopes, hebChecks, hebDrawn, hebFor, hebLayout, hebOptions, hebPick, hebResult, hebResultant, supportFeet } from './heb';
+export type { HebLayout, HebOption, HebResult, HebShaft, HebTaken, Rope } from './heb';
 export type { RoomInputs } from './room';
 export { section, sectionChecks, roofGap } from './section';
 export type { Section } from './section';
@@ -46,7 +48,7 @@ export { bracketCode, cwBracket, cwBracketMargin, cwSpecialOf } from './staffe-s
 export type { ArmBracket, CwBracket, SlideBracket } from './staffe-scelta';
 export { GOVERNORS, LEVER_REACH, freeSides, govSize, governorSpot } from './governor';
 export type { Governor, GovernorSpot } from './governor';
-export { CALC_KEYS, PLAN_KEYS, applyEdit, editKeys, editLabel, editValue, keptPlan, planValues, valueOf, withChoice, withValue, withoutFix } from './edit';
+export { CALC_KEYS, PLAN_KEYS, applyEdit, editKeys, editLabel, editValue, inputPath, keptPlan, planValues, valueOf, withChoice, withValue, withoutFix } from './edit';
 export { FRAME_STD, portalOf, withFrame } from './frame';
 export {
   NO_IMBOTTI, hasImbotti, imbottiOf, marbleHeight, marbleOpening, marbleWidth, wallOpeningHeight, withImbotti, withMarbleHeight, withMarbleWidth,

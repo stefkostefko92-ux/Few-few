@@ -3,7 +3,7 @@
 // ranges wide enough for any lift and narrow enough to refuse nonsense. A design saved before the vertical data
 // existed (engine 1) reads with the typical values of what it lacks.
 import { z } from 'zod';
-import { DEFAULTS, DEFAULT_VERTICAL, GOVERNORS, KV, PROFILE_NAMES, RAIL_TYPES, SUPPORT_KINDS, reasonText } from '@/shaft';
+import { DEFAULTS, DEFAULT_VERTICAL, GOVERNORS, HEB_PROFILES, KV, PROFILE_NAMES, RAIL_TYPES, SUPPORT_KINDS, reasonText } from '@/shaft';
 import { CW_CHOICES, DOOR_PAIRS } from '@/shaft/staffe-ids';
 
 const mm = (min: number, max: number) => z.number().int().min(min).max(max);
@@ -76,6 +76,8 @@ export const roomSchema = z.object({
   panelD: mm(100, 1000),
   panelH: mm(500, 3000),
   support: supportSchema.optional(),
+  /** HEB beams on the shaft's walls under the support (src/shaft/heb.ts); each value absent: the software's choice */
+  heb: z.object({ profile: z.enum(HEB_PROFILES).optional(), dir: z.enum(['x', 'y']).optional() }).strict().optional(),
 }).strict();
 
 /** The range the save accepts for each allowance [mm]: the form's fields take the same. */
@@ -107,6 +109,8 @@ export const planSchema = z.object({
   bufY: mm(0, 10000).optional(),
   bufSpan: mm(100, 5000).optional(),
   cwBufPos: mm(0, 10000).optional(),
+  govX: mm(0, 3000).optional(),
+  govY: mm(0, 10000).optional(),
 }).strict();
 
 /** A niche in a wall of the shaft (src/shaft/niche.ts). */
@@ -157,6 +161,8 @@ export const shaftInputsReadSchema = z.object({
   panev: z.object({ door: z.enum(DOOR_PAIRS).optional(), cw: z.enum(CW_CHOICES).optional() }).strict().optional(),
   doorMaker: z.enum(['generic', '2sg', 'fermator', 'dapa']).optional(),
   governor: z.string().refine((g) => GOVERNORS.some((x) => x.model === g)).optional(),
+  /** the side wall the governor's rope runs by (src/shaft/governor.ts); absent: the software's */
+  governorSide: z.enum(['left', 'right']).optional(),
   /** the walls at the top floor and in the headroom, in from the main floor's (src/shaft/head.ts) */
   head: z.object({ front: mm(-500, 500), rear: mm(-500, 500), left: mm(-500, 500), right: mm(-500, 500) }).strict().optional(),
   /** linings of the landing doors in an old opening between the marbles (src/shaft/imbotti.ts) */
@@ -164,6 +170,9 @@ export const shaftInputsReadSchema = z.object({
   /** the landing doors' own frame (src/shaft/frame.ts): jambs, header and depth from KV.frameMin (the depth within the
    *  landing door's: check v_telaio) */
   frame: z.object({ jamb: mm(KV.frameMin, FRAME_MAX), head: mm(KV.frameMin, FRAME_MAX), depth: mm(KV.frameMin, FRAME_MAX) }).strict().optional(),
+  /** the room of a machine below, sizes set on its drawings (lib/lift/bottom.ts belowRoom); each absent: the software's */
+  below: z.object({ W: mm(1000, 20000).optional(), D: mm(1000, 20000).optional(), H: mm(1800, 10000).optional(), doorAt: mm(0, 20000).optional(),
+    doorW: mm(500, 3000).optional(), doorH: mm(1500, 3000).optional() }).strict().optional(),
 }).strict();
 
 /** The shaft as the form saves it: the stored shape and the rules a new record must meet. */

@@ -8,8 +8,10 @@
 import appIt from '../../../messages/it.json';
 import type { Analysis } from '../present/analysis';
 import { makeFmt } from '../present/tr';
+import { belowFit } from '../lift/bottom';
 import { headTopChecks } from '../lift/head';
-import { cablesMass, headStatic, ropeLength, supportChecks } from '../lift/support';
+import { bedplateMass, cablesMass, carSideStatic, headStatic, hebOf, ropeLength, supportChecks } from '../lift/support';
+import { hebRows } from './heb-rows';
 import { isUpperLimit, mergeChecks, shownValue } from '@/shaft/checks';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { bracketCount, bracketHeights, railSpan } from '@/shaft/brackets';
@@ -24,7 +26,7 @@ import { railForces } from './forces';
 import { railCheck, railChecks } from './rail-check';
 import { dateIt, placeLines, type TavoleInput } from './input';
 import { loads } from './loads';
-import { machineOf, machineText } from './views';
+import { belowGeoOf, machineOf, machineText } from './views';
 import { clientNotes, estimateNote, railNote, safetyGearNote, spaceLegend } from './notes';
 import { NORMA_SIGLA, ambitoOf, collaudoOf } from '../lift/collaudo';
 import { collaudoNote } from '../report/collaudo';
@@ -141,7 +143,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   // coefficient of the registry; a machine below pulls its anchors up and the head pulleys carry both falls of each side
   const M = machineOf(a, Pl, L, x.marks?.catalog ?? null), below = I.layout === 'bottom';
   const ropesKg = N.n * N.qf * ropeLen, cablesKg = cablesMass(travel);
-  const bedplate = M.rinvio?.on === 'frame' ? M.rinvio.maker?.mass ?? 0 : 0;
+  const bedplate = bedplateMass(M);
   const machine = N.mass + bedplate, dyn = KV_VERT.dynFactor;
   const ld = loads({
     P: I.P, Q: I.Q, Mcw: res.Mcw, ropes: ropesKg, cables: cablesKg, machine, roping: I.r,
@@ -165,7 +167,8 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     ...(below ? [
       ['ARGANO IN BASSO (NON SULLA SOLETTA)', fmt(machine, 0), 'kg'] as const,
       ['SOLLEVAMENTO NETTO ANCORAGGI ARGANO, PROVA 1,25·Q', fmt(Math.max(0, res.shaft.uplift ?? 0), 0), 'kg'] as const,
-    ] : [[!bedplate ? 'ARGANO E TELAIO' : 'ARGANO E BASAMENTO CON RINVIO', fmt(machine, 0), 'kg'] as const]),
+    ] : [[!bedplate ? 'ARGANO E TELAIO' : 'ARGANO E BASAMENTO CON RINVIO', fmt(machine, 0), 'kg'] as const,
+      ...hebRows(hebOf(L, M, { machine, static: ld.static, dyn, car: carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes: ropesKg, cables: cablesKg }) })?.chosen ?? null, fmt)]),
   ];
   const each = [false, false, false, false, true, V.carBuffers > 1, true, false, false];
   const P = ld.P.map((p, i) => (p === null ? '—' : `${each[i] ? 'cad. ' : ''}${fmt(p, 0)}`));
@@ -177,8 +180,10 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   const withUnit = (x: number | null, dp: number, u: string): string => (x == null ? '—' : `${fmt(x, dp)}${u ? ` ${u}` : ''}`);
   // the clause stays in the label, the standard is in the heading of the table; the door of the room in its sizes
   // the shaft's checks, then the beams under the machine at the load of this sheet
-  const all = [...mergeChecks(L.checks, supportChecks(L, M, { machine: below ? 0 : machine, static: ld.static, dyn }, !below)),
-    ...headTopChecks(L, I.r, I.Dp, below ? x.marks?.bottom ?? 'head' : null), ...railChecks(rc, gear, I.v)];
+  const car = carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes: ropesKg, cables: cablesKg });
+  const all = [...mergeChecks(L.checks, supportChecks(L, M, { machine: below ? 0 : machine, static: ld.static, dyn, car }, !below)),
+    ...headTopChecks(L, I.r, I.Dp, below ? x.marks?.bottom ?? 'head' : null), ...(below ? belowFit(L, belowGeoOf(a, L, M, x.marks?.bottom ?? 'head'), M) : []),
+    ...railChecks(rc, gear, I.v)];
   const checks: DataSheet['checks'] = all.map((c) => {
     const label = (labels[`c_${c.id}`] ?? c.id).replace(' (UNI EN 81-20, ', ' (');
     // a check of a part that stays as it is is out of the acceptance test (note on the sheet)

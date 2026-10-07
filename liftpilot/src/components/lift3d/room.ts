@@ -9,7 +9,7 @@
 // ends (pulleys.ts). Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
-import { supportOf, type Layout, type MachineSupport } from '@/shaft';
+import { PROFILES, supportOf, type HebLayout, type Layout, type MachineSupport } from '@/shaft';
 import { machineFrame, type MachineFrame, type MachineShape } from '@/shaft/machine-shape';
 import type { RinvioFrame } from '@/shaft/rinvio';
 import { KL, planeAt, type RopePlane, type RopeRig } from '@/lib/lift';
@@ -22,7 +22,7 @@ import { pulley, pulleyFrames } from './pulleys';
 import { ropeWidths, type Opening } from './slab';
 import type { GovernorSpot } from './governor';
 import { buildShell, shellsOf } from './roomshell';
-import { buildSupport, wallsAlong } from './support';
+import { buildSupport, hebBeams, wallsAlong } from './support';
 import { mainFeed, rectOf, roomPoint, trunking, trunkingRoute, type Rect } from './wiring';
 import type { LiftMaterials, Side } from './materials';
 
@@ -68,9 +68,9 @@ export function machinePose(rig: RopeRig, wall: number, n: number, d: number, F:
 
 /** `ceiling`: the slab's underside over the shaft [mm]; `openings`: the slab's (slab.ts); `gov`: the governor's spot;
  *  `shape`: the maker's machine as it is (null: the generic one scaled to the sheave); `rinvio`: where the diverting
- *  pulley turns in the room (src/shaft/rinvio.ts). */
+ *  pulley turns in the room (src/shaft/rinvio.ts); `heb`: the HEB beams on the shaft's walls the support stands on. */
 export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: number, ceiling: number, M: LiftMaterials, openings: readonly Opening[], gov: GovernorSpot | null,
-  shape: MachineShape | null = null, rinvio: RinvioFrame | null = null): RoomModel {
+  shape: MachineShape | null = null, rinvio: RinvioFrame | null = null, heb: HebLayout | null = null): RoomModel {
   const I = L.inputs, sides = { front: new THREE.Group(), rear: new THREE.Group(), left: new THREE.Group(), right: new THREE.Group() } as Record<Side, THREE.Group>;
   const roof = new THREE.Group(), common = new THREE.Group();
   const at = (p: RopePlane, u: number, y: number): THREE.Vector3 => {
@@ -110,7 +110,14 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
   // the diverting pulley in the bedplate: along the machine from the sheave, as the rig places it
   const defl = rig.wheels.find((w) => w.role === 'deflector'), framed = !rig.bottom && rinvio?.on === 'frame' && defl !== undefined;
   const inFrame = framed && defl && rinvio ? { x: defl.u - rig.sheave.u, r: defl.r, half: ropeWidths(n, d).pulley, frame: rinvio } : null;
-  const base = buildSupport(sup, F, D, gap, walls, M, inFrame);
+  // the HEB beams on the shaft's walls under it all (the support, the pulleys' stands), on the floor
+  const beams = !rig.bottom && R && heb ? heb : null, hebH = beams ? PROFILES[beams.profile].h : 0;
+  if (beams && R) {
+    const hb = new Batch();
+    hebBeams(hb, beams, R, z0, M);
+    hb.into(common);
+  }
+  const base = buildSupport(sup, F, D, gap, walls, M, inFrame, hebH / 1000);
   base.position.copy(machine.group.position);
   base.rotation.copy(machine.group.rotation);
   common.add(base);
@@ -165,7 +172,7 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
     p.position.copy(at(w.plane, w.u, w.y));
     common.add(p);
   }
-  const over = !rig.bottom ? z0 : rig.scheme?.scheme === 'room' ? ceiling + (I.room?.slab ?? KL.slab) : null;
+  const over = !rig.bottom ? z0 + hebH : rig.scheme?.scheme === 'room' ? ceiling + (I.room?.slab ?? KL.slab) : null;
   pulleyFrames(frames, M, rig, n, d, over, ceiling, framed);
   frames.into(common);
   const pcs = rig.pieces(0, 0), first = pcs[0], last = pcs[pcs.length - 1];

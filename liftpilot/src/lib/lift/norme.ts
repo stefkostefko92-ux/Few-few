@@ -177,7 +177,9 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
       + `${KL.underRoomH} mm sotto la soletta della fossa di ${KL.underSlab} mm, rinvii sotto la soletta. Il locale della macchina accanto al vano è `
       + `lungo ${KL.belowRoomLen} mm oltre la parete, largo ${2 * KL.belowRoomHalf} mm e alto ${KL.belowRoomH} mm, con la porta sul fianco e il quadro `
       + `sulla parete di fondo; quello sotto il vano è grande quanto il vano. Tutti e due si allargano dove la macchina ne esce, fino a `
-      + `${KL.belowRoomClear} mm oltre il suo ingombro. I due rami alla macchina salgono dietro il `
+      + `${KL.belowRoomClear} mm oltre il suo ingombro; larghezza, profondità, altezza e porta del locale si cambiano sui suoi disegni (accanto al `
+      + 'vano resta il lato al muro, sotto il vano l’angolo più vicino all’origine; sotto il vano la sua altezza abbassa la macchina) e la '
+      + 'macchina deve restarci dentro. I due rami alla macchina salgono dietro il '
       + `contrappeso a ${KL.bottomClear} mm dalla parete e dal contrappeso, la puleggia con il piano parallelo alla parete; per lato un rinvio a 180° `
       + 'se il ramo dista dalla calata in pianta non più di Dp, altrimenti due rinvii a 90° con un tratto orizzontale. Il calcolo conta due rinvii '
       + 'per la macchina in basso: gli altri entrano come flessioni semplici aggiuntive (nps)',

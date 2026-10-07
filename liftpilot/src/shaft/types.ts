@@ -48,6 +48,10 @@ export interface PlanFix {
   bufSpan?: number;
   /** the counterweight's buffer along the wall the counterweight stands by (x at the back, y on a side) */
   cwBufPos?: number;
+  /** the overspeed governor's rope (governor.ts): its plane from the side wall it runs by, the strand clamped to the car
+   *  from the front wall */
+  govX?: number;
+  govY?: number;
 }
 
 export type PlanKey = keyof PlanFix;
@@ -143,21 +147,38 @@ export type ShaftInputs = {
   doorMaker?: 'generic' | '2sg' | 'fermator' | 'dapa';
   /** the overspeed governor's model (governor.ts); missing: by the rated speed */
   governor?: string;
+  /** the side wall the governor's rope runs by, when free of doors and of the counterweight; missing: the software's */
+  governorSide?: 'left' | 'right';
   /** the walls at the top floor and in the headroom (head.ts); missing: as at the main floor */
   head?: HeadWalls;
   /** linings of the landing doors' openings (imbotti.ts); missing: none, the opening is the portal's */
   imbotti?: Imbotti;
   /** the landing doors' own frame (frame.ts); missing: the portal round the clear opening */
   frame?: DoorFrame;
+  /** the room of a machine below (lib/lift/bottom.ts belowRoom), sizes set on its drawings; missing: the software's */
+  below?: BelowRoom;
 } & Record<Allowance, number>;
+
+/** The room of a machine below as set on its drawings, each size missing the software's: its width (along x) and depth
+ *  (along y) — beside the shaft from the wall it stands past, under the pit from its corner nearest the shaft's origin —,
+ *  its clear height, its door's place along its wall from the room's corner and its clear width and height [mm]. */
+export interface BelowRoom {
+  W?: number;
+  D?: number;
+  H?: number;
+  doorAt?: number;
+  doorW?: number;
+  doorH?: number;
+}
 
 export type ShaftCheckId =
   | 'v_fit' | 'v_area' | 'v_acc_car' | 'v_acc_door' | 'v_acc_side' | 'v_acc_c' | 'v_call' | 'v_door' | 'v_door2' | 'v_land' | 'v_land2' | 'v_op' | 'v_wall' | 'v_sill' | 'v_cw' | 'v_cwlen'
-  | 'v_place' | 'v_doorcar' | 'v_buffer' | 'v_niche' | 'v_staffa' | 'v_telaio' | 'v_head'
+  | 'v_place' | 'v_doorcar' | 'v_buffer' | 'v_niche' | 'v_staffa' | 'v_telaio' | 'v_head' | 'v_gov' | 'v_govrail'
   | 'h_refuge' | 'h_clear' | 'h_top' | 'h_parapet' | 'h_stand' | 'h_cross' | 'h_door' | 'h_staffe' | 'h_car' | 'h_cw' | 'h_guide' | 'p_refuge' | 'p_apron'
   | 'p_screen'
   | 'b_runby' | 'b_type' | 'b_car' | 'b_cw' | 'm_height' | 'm_panel' | 'm_door'
-  | 'm_beam' | 'm_beamf' | 'm_rinvio' | 'm_fit' | 'm_stand' | 'm_free' | 'm_calata' | 'm_quadro' | 'm_route'
+  | 'm_beam' | 'm_beamf' | 'm_rinvio' | 'm_fit' | 'm_stand' | 'm_free' | 'm_calata' | 'm_quadro' | 'm_route' | 'm_gov' | 'm_govfree'
+  | 'm_heb' | 'm_hebf' | 'm_hebfeet' | 'm_hebrope' | 'm_hebwall'
   | 'gr_stress' | 'gr_flange' | 'gr_defl' | 'sg_type';
 
 export interface ShaftCheck {

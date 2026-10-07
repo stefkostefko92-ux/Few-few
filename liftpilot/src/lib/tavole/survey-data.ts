@@ -8,11 +8,13 @@ import { isUpperLimit, shownValue } from '@/shaft/checks';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { PROFILES } from '@/shaft/profiles';
 import { profileOf, supportOf } from '@/shaft/support';
+import { hebChecks, hebFor } from '@/shaft/heb';
+import { hebRows } from './heb-rows';
 import { beamChecks } from '@/shaft/support-check';
 import type { ShaftCheck } from '@/shaft/types';
 import { NORMA_SIGLA, ambitoOf } from '../lift/collaudo';
 import { ADEMPIMENTI } from '../lift/norme-collaudo';
-import { cablesMass, ropeLength } from '../lift/support';
+import { bedplateMass, cablesMass, carSideStatic, ropeLength } from '../lift/support';
 import type { Plant } from '../plant';
 import { makeFmt } from '../present/tr';
 import { collaudoNote, partiText } from '../report/collaudo';
@@ -29,6 +31,8 @@ const dec = (x: number): number => (Number.isInteger(x) ? 0 : Math.abs(x * 10 - 
 const num = (x: number | null | undefined): string => (x == null ? '—' : fmt(x, dec(x)));
 const txt = (s: string | undefined, fallback = '—'): string => (s && s.trim() ? s.trim() : fallback);
 const mm = (x: number): string => fmt(Math.round(x), 0);
+/** The checks of the support the sheet counts again at its own load: the beams under the machine, the HEB beams. */
+const AT_SHEET_LOAD: ReadonlySet<string> = new Set(['m_beam', 'm_beamf', 'm_heb', 'm_hebf', 'm_hebfeet', 'm_hebrope', 'm_hebwall']);
 
 export interface SurveySheet extends TitleData {
   /** the installation and the intervention */
@@ -45,8 +49,13 @@ export interface SurveySheet extends TitleData {
   P: readonly (readonly [string, string])[];
 }
 
-/** The support under the machine as the sheet names it. */
+/** The support under the machine as the sheet names it, on the HEB beams over the shaft's walls when it stands there. */
 export function supportName(d: RoomDerived): string {
+  const own = ownSupportName(d);
+  return d.heb ? `${own} SU DUE ${d.heb.chosen.profile} SUI MURI DEL VANO` : own;
+}
+
+function ownSupportName(d: RoomDerived): string {
   const s = supportOf(d.G?.room ?? null, d.M.Dp > 0), rf = d.M.rinvio;
   if (s.kind === 'rinvio' && rf?.on === 'frame') return rf.maker ? `TELAIO CON RINVIO ${rf.maker.brand} ${rf.maker.code}` : 'TELAIO CON RINVIO (SU MISURA)';
   if (s.kind === 'frame') return `TELAIO ${profileOf(s)}`;
@@ -75,16 +84,17 @@ const machineRows = (O: Machine | null, N: Machine, oldName: string, newName: st
  *  design's sheet counts them — and the checks of the room, of the machine in it and of the drops, the beams again at
  *  this load: the sheet and the relazione tecnica print the same. */
 export function surveyLoad(d: RoomDerived, Pl: Plant) {
-  const { ctx, res } = d.analysis, { I, N } = ctx, rf = d.M.rinvio;
+  const { ctx, res } = d.analysis, { I, N } = ctx;
   const ropesKg = N.n * N.qf * ropeLength(I), cablesKg = cablesMass(I.H);
-  const bedplate = rf?.on === 'frame' ? rf.maker?.mass ?? 0 : 0, machine = N.mass + bedplate, dyn = KV_VERT.dynFactor;
+  const bedplate = bedplateMass(d.M), machine = N.mass + bedplate, dyn = KV_VERT.dynFactor;
   const ld = loads({
     P: I.P, Q: I.Q, Mcw: res.Mcw, ropes: ropesKg, cables: cablesKg, machine, roping: I.r, carRailQ: 0, carRailLen: 0, cwRailQ: 0, cwRailLen: 0,
     safetyGear: Pl.safetyGear ?? 'progressive', dyn, carBuffers: 1, cwBuffers: 1, governor: Pl.governorLoad ?? null,
   });
-  const beams = d.G ? beamChecks(d.G, { machine, static: ld.static, dyn }) : [];
-  const checks: ShaftCheck[] = [...d.checks.filter((c) => c.id !== 'm_beam' && c.id !== 'm_beamf'), ...beams];
-  return { ropesKg, cablesKg, bedplate, machine, dyn, ld, checks };
+  const load = { machine, static: ld.static, dyn, car: carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes: ropesKg, cables: cablesKg }) };
+  const heb = d.G ? hebFor(d.G, d.M, d.site, load) : null, beams = d.G ? [...beamChecks(d.G, load), ...hebChecks(heb?.chosen.result ?? null)] : [];
+  const checks: ShaftCheck[] = [...d.checks.filter((c) => !AT_SHEET_LOAD.has(c.id)), ...beams];
+  return { ropesKg, cablesKg, bedplate, machine, dyn, ld, checks, heb: heb?.chosen ?? null };
 }
 
 export function surveySheetData(x: SurveyTavoleInput, d: RoomDerived, pages: number): SurveySheet {
@@ -118,7 +128,7 @@ export function surveySheetData(x: SurveyTavoleInput, d: RoomDerived, pages: num
     ...(M.Dp > 0 && G ? [['PULEGGIA DI RINVIO Ø - h - dx', 'mm', `${mm(M.Dp)} - ${mm(M.h)} - ${mm(G.pulleyAt - G.sheaveAt)}`] as Row] : []),
     ...(rf ? [['ASSE DEL RINVIO SUL PAVIMENTO', 'mm', mm(G ? G.pulleyZ : rf.pulleyAxis)] as Row] : []),
   ];
-  const { ropesKg, cablesKg, bedplate, machine, dyn, ld, checks: all } = surveyLoad(d, Pl);
+  const { ropesKg, cablesKg, bedplate, machine, dyn, ld, checks: all, heb } = surveyLoad(d, Pl);
   const loadRows: SurveySheet['loads'] = [
     ['FUNI', fmt(ropesKg, 0), 'kg'],
     ['CAVI FLESSIBILI', fmt(cablesKg, 0), 'kg'],
@@ -126,6 +136,7 @@ export function surveySheetData(x: SurveyTavoleInput, d: RoomDerived, pages: num
     [`COEFFICIENTE DINAMICO × ${fmt(dyn, 1)}`, fmt(ld.dynamic, 0), 'kg'],
     [!bedplate ? 'ARGANO E TELAIO' : 'ARGANO E BASAMENTO CON RINVIO', machine > 0 ? fmt(machine, 0) : 'NON INSERITA', 'kg'],
     ...(supportOf(R).kind === 'beams' ? [['PUTRELLE (DUE)', `${profileOf(supportOf(R))}, ${fmt(2 * PROFILES[profileOf(supportOf(R))].mass, 1)} kg/m`, ''] as const] : []),
+    ...hebRows(heb, fmt),
   ];
   const P: SurveySheet['P'] = [
     ['P1 ARGANO', fmt(ld.P[0] ?? 0, 0)], ['P2 ATTACCO FUNI CABINA', ld.P[1] == null ? '—' : fmt(ld.P[1], 0)],

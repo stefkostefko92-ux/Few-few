@@ -13,7 +13,7 @@ import type { MachineSpec } from '@/shaft/machine-room';
 import type { MachineShape } from '@/shaft/machine-shape';
 import { rinvioFrame, sheaveAxisIn, type RinvioFrame } from '@/shaft/rinvio';
 import type { RoomInputs } from '@/shaft/room';
-import { sheaveAxisOn, supportOf, type MachineSupport } from '@/shaft/support';
+import { hebBase, sheaveAxisOn, supportOf, type MachineSupport } from '@/shaft/support';
 import { KL } from './norme';
 
 const SHIMS: MachineSupport = { kind: 'shims' };
@@ -33,13 +33,14 @@ export function rinvioOf(room: RoomInputs | null | undefined, D: number, Dp: num
   const mk = made ? makerBedplate(made.brand, made.model, D, Dp) : null;
   // h is kept to the millimetre
   const maker = mk && (h === null || Math.abs(mk.sheaveAxis - h - mk.pulleyAxis) <= 1) ? mk : null;
-  return rinvioFrame(supportOf(room, true), Dp, maker, shape ? shape.yWheel : null);
+  return rinvioFrame(supportOf(room, true), Dp, maker, shape ? shape.yWheel : null, hebBase(room, true));
 }
 
 /** The sheave's axis over the machine room's floor on the room's support, for the sheave D [mm]; a maker's machine on
  *  our bedframe (shape) where it takes the axis higher; on the bedplate with the diverting pulley (`rinvio`). */
 export const sheaveAxis = (room: RoomInputs | null | undefined, D: number, shape: MachineShape | null = null, rinvio: RinvioFrame | null = null): number =>
-  (rinvio?.on === 'frame' ? sheaveAxisIn(rinvio, D, shape) : sheaveAxisOn(supportOf(room ?? null, rinvio !== null), D, KL.sheaveAxisPerD * D, shape));
+  (rinvio?.on === 'frame' ? sheaveAxisIn(rinvio, D, shape)
+    : sheaveAxisOn(supportOf(room ?? null, rinvio !== null), D, KL.sheaveAxisPerD * D, shape, 0, hebBase(room, rinvio !== null)));
 
 /** The sheave's axis over the floor of a machine below (on shims, room.ts in 3D) [mm]. */
 export const sheaveAxisBelow = (D: number, shape: MachineShape | null = null): number => sheaveAxisOn(SHIMS, D, KL.sheaveAxisPerD * D, shape);
@@ -55,5 +56,6 @@ export function machineSpec({ I, N }: Pick<ParsedInputs, 'I' | 'N'>, mass: numbe
   return {
     D: N.D, Dp: defl ? I.Dp : 0, n: N.n, d: N.d, mass, label, axis: sheaveAxis(room, N.D, shape, rinvio),
     h: defl ? I.h * 1000 : 0, reverse: defl && (deflectorAngle(N.D, I.Dp, I.dx, I.h)?.reverse ?? false), ropeIn: I.r === 2 ? I.Dp / 2 : 0, shape, rinvio,
+    ...(hebBase(room, rinvio !== null) ? { base: hebBase(room, rinvio !== null) } : {}),
   };
 }

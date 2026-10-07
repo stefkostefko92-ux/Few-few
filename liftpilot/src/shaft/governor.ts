@@ -6,9 +6,13 @@
 // listing. Bode's GB 7 and GB 8 and Dynatech's VEGA 200 from their drawings hosted by a dealer; Wittur's (no dimension
 // published) and Montanari's (search extracts) are drawn in the software's proportions. The governor goes on a side
 // wall with neither a door nor the counterweight, its rope in the gap beside the car next to the car rail, the tension
-// weight in the pit clamped to that rail. Plan in millimetres as in types.ts. Pure: the machine room plan draws it, the
-// 3D builds it.
-import type { Layout, Rail } from './types';
+// weight in the pit clamped to that rail; the side, the rope's distance from that wall and its clamped strand may be set
+// by hand (registry limitatore.posto). Plan in millimetres as in types.ts. Pure: the machine room plan draws it, the 3D
+// builds it.
+import { check } from './checks';
+import { KV_GOV } from './norme-limitatore';
+import { RAILS } from './rails';
+import type { Layout, Rail, ShaftCheck } from './types';
 
 export type GovernorBrand = 'PFB' | 'Bode' | 'Dynatech' | 'Wittur' | 'Montanari';
 
@@ -110,14 +114,35 @@ export function freeSides(L: Layout): FreeSide[] {
   return (['left', 'right'] as const).filter((s) => L.cwSide !== s && !L.doors.some((d) => d.wall === s));
 }
 
-/** Only for a central sling, on a side wall free of doors and of the counterweight, with room beside the car. */
+/** Only for a central sling, on a side wall free of doors and of the counterweight: the side chosen when free (else the
+ *  last free one), the rope's plane from that wall and its clamped strand from the front wall as set by hand (plan.govX,
+ *  plan.govY), else in the middle of the gap beside the car, 145 mm behind the car rail's axis — where it fits. */
 export function governorSpot(L: Layout): GovernorSpot | null {
   if (L.frame.kind !== 'central') return null;
-  const side = freeSides(L).at(-1);
+  const I = L.inputs, free = freeSides(L), side = I.governorSide && free.includes(I.governorSide) ? I.governorSide : free.at(-1);
   const rail = L.rails.find((r) => r.kind === 'car' && (side === 'left' ? r.dir === 'right' : r.dir === 'left'));
   if (!side || !rail) return null;
-  const { W, D } = L.inputs, gap = side === 'left' ? L.car.x : W - (L.car.x + L.car.w), G = govSize(L.inputs.vertical.v, L.inputs.governor);
-  if (gap < 110) return null;
-  const x = side === 'left' ? gap / 2 - 10 : W - gap / 2 + 10, y1 = rail.y + 145, y2 = y1 + 2 * G.R;
-  return y2 + G.R < D - 80 ? { side, x, y1, y2, G, rail, lever: y1 + G.R + LEVER_REACH < D - 60 } : null;
+  const { W, D } = I, gap = side === 'left' ? L.car.x : W - (L.car.x + L.car.w), G = govSize(I.vertical.v, I.governor);
+  const fix = I.plan ?? {}, byHand = fix.govX !== undefined || fix.govY !== undefined;
+  if (gap < 110 && !byHand) return null;
+  const off = fix.govX ?? gap / 2 - 10, x = side === 'left' ? off : W - off, y1 = fix.govY ?? rail.y + 145, y2 = y1 + 2 * G.R;
+  // the lever of the tension weight reaches on from the rail past the pulley: toward the rear, or the front with the rope there
+  const lever = y1 >= rail.y ? y1 + G.R + LEVER_REACH < D - 60 : y1 + G.R - LEVER_REACH > 60;
+  return byHand || y2 + G.R < D - 80 ? { side, x, y1, y2, G, rail, lever } : null;
+}
+
+/** The checks of the governor's rope in plan (registry limitatore.posto): v_gov, the least distance of its strands from
+ *  the car, the walls and the car rail with its bracket and the sling's upright; v_govrail, the clamped strand from the
+ *  car rail's axis, within the safety gear lever's reach [mm]. None without a governor placed. */
+export function governorChecks(L: Layout): ShaftCheck[] {
+  const g = governorSpot(L);
+  if (!g) return [];
+  const { W, D, carRail } = L.inputs, r = g.G.rope, c = L.car, half = Math.max(RAILS[carRail].b / 2, KV_GOV.govStile);
+  const wall = g.side === 'left' ? g.x : W - g.x, car = g.side === 'left' ? c.x - g.x : g.x - (c.x + c.w);
+  const rail = Math.min(...[g.y1, g.y2].map((y) => Math.abs(y - g.rail.y) - half));
+  const clear = Math.min(wall, car, rail, g.y1, D - g.y2) - r, reach = Math.abs(g.y1 - g.rail.y);
+  return [
+    check('v_gov', clear >= KV_GOV.govGap, Math.round(clear), KV_GOV.govGap, 0, 'mm'),
+    check('v_govrail', reach <= KV_GOV.govReach, Math.round(reach), KV_GOV.govReach, 0, 'mm'),
+  ];
 }

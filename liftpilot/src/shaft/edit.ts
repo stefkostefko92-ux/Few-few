@@ -1,9 +1,11 @@
 // Changing a distance where it is drawn. The key of a dimension's edit (src/drawing/model.ts) names an input of the
-// shaft: its size (W, D), the doors' size, an allowance, a distance of the plan set by hand (plan.*), a niche's place
+// shaft: its size (W, D) and walls, the doors' size, an allowance, a distance of the plan set by hand (plan.*), a niche's place
 // and size (n.<index>.*), the call stations' place (cs.*), a height of section A-A (v.*), a floor's rise (f.<index>.rise)
 // or a size of the machine room (room.*), where a wall stands in the headroom (head.*), the doors' linings (imb.*) and
-// own frame (frame.*), the machine's support (sup.*); the new length of the dimension gives its value. A length a catalogue or a table gives is
-// changed by choice (carRail, cwRail, v.topRefuge, v.pitRefuge, sup.profile): the edit lists the entries. Keys of the calculation (calc.*) are
+// own frame (frame.*), the machine's support (sup.*), the room of a machine below (below.*); the new length of the dimension
+// gives its value. A length a catalogue or a table gives is
+// changed by choice (carRail, cwRail, v.topRefuge, v.pitRefuge, sup.profile, the HEB beams heb.option and heb.profile): the edit lists the
+// entries. Keys of the calculation (calc.*) are
 // applied by the screen that holds it. Pure: the screens validate the result as the save does (src/lib/shaft-edit.ts).
 import type { Edit } from '../drawing';
 import { callStationOf } from './callstation';
@@ -11,35 +13,40 @@ import { DEFAULTS, type Allowance } from './norme';
 import { headOf } from './head';
 import { FRAME_STD, withFrame } from './frame';
 import { imbottiOf, marbleHeight, marbleWidth, withImbotti, withMarbleHeight, withMarbleWidth } from './imbotti';
+import { governorSpot } from './governor';
+import { HEB_KEYS, withHebChoice } from './heb';
 import { counterweightSide, layout } from './layout';
 import { bufferPlan } from './pit';
 import { PROFILE_NAMES } from './profiles';
 import { RAIL_TYPES } from './rails';
 import { supportOf } from './support';
 import type { RoomInputs } from './room';
-import type { Layout, PlanFix, PlanKey, ShaftInputs } from './types';
+import type { BelowRoom, Layout, PlanFix, PlanKey, ShaftInputs } from './types';
 import type { VerticalInputs } from './vertical';
 
 /** The keys of T whose values are plain numbers (set or not). */
 type NumKey<T> = { [K in keyof T]-?: NonNullable<T[K]> extends number ? (number extends NonNullable<T[K]> ? K : never) : never }[keyof T];
 
-export const PLAN_KEYS: readonly PlanKey[] = ['A', 'B', 'carX', 'doorA', 'doorB', 'landA', 'landB', 'opLen', 'railY', 'dbg', 'cwLen', 'cwPos', 'bufX', 'bufY', 'bufSpan', 'cwBufPos'];
+export const PLAN_KEYS: readonly PlanKey[] = ['A', 'B', 'carX', 'doorA', 'doorB', 'landA', 'landB', 'opLen', 'railY', 'dbg', 'cwLen', 'cwPos', 'bufX', 'bufY', 'bufSpan', 'cwBufPos',
+  'govX', 'govY'];
 const V_KEYS = ['pit', 'headroom', 'carH', 'carOutH', 'platform', 'opTop', 'frameTop', 'frameBelow', 'parapet', 'carBufferH', 'carBufferStroke',
   'carBufferBase', 'cwH', 'cwBufferH', 'cwBufferStroke', 'cwBufferBase', 'cwRunby', 'cwScreen', 'standW', 'standD'] as const satisfies readonly NumKey<VerticalInputs>[];
 const R_KEYS = ['W', 'D', 'shaftX', 'shaftY', 'H', 'ridge', 'slab', 'doorAt', 'doorW', 'doorH', 'panelAt', 'panelW', 'panelD', 'panelH'] as const satisfies readonly NumKey<RoomInputs>[];
-const SIZES = ['W', 'D', 'doorWidth', 'doorHeight'] as const;
+const SIZES = ['W', 'D', 'doorWidth', 'doorHeight', 'wall'] as const;
 const N_KEYS = ['at', 'width', 'depth'] as const;
 const CS_KEYS = ['offset', 'height'] as const;
 const H_KEYS = ['front', 'rear', 'left', 'right'] as const;
 const IMB_KEYS = ['left', 'right', 'top', 'marble', 'height'] as const;
 const FR_KEYS = ['jamb', 'head', 'depth'] as const;
 const SUP_KEYS = ['height', 'length'] as const;
+const BL_KEYS = ['W', 'D', 'H', 'doorAt', 'doorW', 'doorH'] as const satisfies readonly (keyof BelowRoom)[];
 /** Inputs changed by choosing an entry of a catalogue or a table. */
-const PICK_KEYS = ['carRail', 'cwRail', 'v.topRefuge', 'v.pitRefuge', 'sup.profile'] as const;
+const PICK_KEYS = ['carRail', 'cwRail', 'v.topRefuge', 'v.pitRefuge', 'sup.profile', ...HEB_KEYS] as const;
 /** Inputs of the calculation a drawing of the machine room shows (applied by the screen that holds them). */
 export const CALC_KEYS = ['calc.h'] as const;
-// the arrangement's distances: they mean something else once the entrances or the counterweight's side change
-const ARRANGEMENT: readonly PlanKey[] = ['doorB', 'landB', 'railY', 'dbg', 'cwLen', 'cwPos', 'cwBufPos'];
+// the arrangement's distances: they mean something else once the entrances or the counterweight's side change (the
+// governor's rope runs by a side wall free of both)
+const ARRANGEMENT: readonly PlanKey[] = ['doorB', 'landB', 'railY', 'dbg', 'cwLen', 'cwPos', 'cwBufPos', 'govX', 'govY'];
 // a door's place along its wall (the car's and the landing's) and its operator: kept when the shaft changes size while
 // the door still opens on the car
 const DOORS: readonly PlanKey[] = ['doorA', 'doorB', 'landA', 'landB', 'opLen'];
@@ -70,7 +77,7 @@ export const editKeys = (): string[] => [
   ...SIZES, ...Object.keys(DEFAULTS), ...PLAN_KEYS.map((k) => `plan.${k}`), ...V_KEYS.map((k) => `v.${k}`), ...R_KEYS.map((k) => `room.${k}`),
   ...N_KEYS.map((k) => `n.0.${k}`), ...CS_KEYS.map((k) => `cs.${k}`), ...H_KEYS.map((k) => `head.${k}`), 'f.0.rise', ...IMB_KEYS.map((k) => `imb.${k}`),
   ...FR_KEYS.map((k) => `frame.${k}`),
-  ...SUP_KEYS.map((k) => `sup.${k}`), 'rinvio.height', ...PICK_KEYS, ...CALC_KEYS,
+  ...SUP_KEYS.map((k) => `sup.${k}`), 'rinvio.height', ...BL_KEYS.map((k) => `below.${k}`), ...PICK_KEYS, ...CALC_KEYS,
 ];
 
 /** The message (namespace shaft) naming the input behind an edit's key as the form calls it; the rail's distance reads
@@ -88,6 +95,8 @@ export function editLabel(key: string, cantilever: boolean): string {
   if (head === 'frame') return `fr_${sub}`;
   if (head === 'sup') return `su_${sub}`;
   if (head === 'rinvio') return `ri_${sub}`;
+  if (head === 'heb') return `hb_${sub}`;
+  if (head === 'below') return `bl_${sub}`;
   if (head === 'calc') return `calc_${sub}`;
   return isAllowance(key) ? `a_${key}` : key;
 }
@@ -117,6 +126,8 @@ export function withValue(I: ShaftInputs, key: string, value: number): ShaftInpu
   if (fr) return withFrame(I, { ...(I.frame ?? FRAME_STD), [fr]: value });
   // the top of the bedplate with the diverting pulley: that support, ours, at that height
   if (head === 'rinvio' && sub === 'height' && I.room) return value < 0 ? null : { ...I, room: { ...I.room, support: { kind: 'rinvio', height: value } } };
+  const bl = head === 'below' ? pick(BL_KEYS, sub) : undefined;
+  if (bl) return { ...I, below: { ...I.below, [bl]: value } };
   const su = head === 'sup' ? pick(SUP_KEYS, sub) : undefined;
   // a support below the floor or a frame or plinth shorter than the zod range is no support
   if (su && I.room) return value < (su === 'length' ? 300 : 0) ? null : { ...I, room: { ...I.room, support: { ...supportOf(I.room), [su]: value } } };
@@ -142,6 +153,8 @@ export function withChoice(I: ShaftInputs, key: string, set: string | number): S
     const p = PROFILE_NAMES.find((x) => x === set), s = supportOf(I.room);
     return p ? { ...I, room: { ...I.room, support: { kind: s.kind, profile: p, ...(s.length !== undefined ? { length: s.length } : {}) } } } : null;
   }
+  const hb = I.room ? withHebChoice(I.room, key, set) : null;
+  if (hb) return { ...I, room: hb };
   return null;
 }
 
@@ -155,6 +168,19 @@ export function applyEdit(I: ShaftInputs, e: Edit, length: number): ShaftInputs 
   let out: ShaftInputs | null = I;
   for (const a of e.also ?? []) out = out && withValue(out, a.key, a.value);
   return out && withValue(out, e.key, editValue(e, length));
+}
+
+/** Where the input named by an edit's key sits in the inputs, as a validation issue names it; null for a key that
+ *  names none or one that sets several (the marble's sizes). */
+export function inputPath(key: string): (string | number)[] | null {
+  if (pick(SIZES, key) || isAllowance(key)) return [key];
+  const dot = key.indexOf('.'), head = key.slice(0, dot), sub = key.slice(dot + 1), [a, b] = sub.split('.');
+  if (head === 'n') return ['niches', Number(a), b ?? ''];
+  if (head === 'f') return ['vertical', 'floors', Number(a), 'rise'];
+  if (head === 'sup' || head === 'rinvio') return ['room', 'support', sub];
+  if (head === 'imb' && (sub === 'marble' || sub === 'height')) return null;
+  const at: Readonly<Record<string, string>> = { plan: 'plan', v: 'vertical', room: 'room', cs: 'callStation', head: 'head', imb: 'imbotti', frame: 'frame', below: 'below' };
+  return at[head] ? [at[head], sub] : null;
 }
 
 /** The current value of an input named by an edit's key; null for a key that names none. */
@@ -181,6 +207,8 @@ export function valueOf(I: ShaftInputs, key: string): number | null {
   if (fr) return I.frame?.[fr] ?? null;
   const su = head === 'sup' ? pick(SUP_KEYS, sub) : undefined;
   if (su) return I.room?.support?.[su] ?? null;
+  const bl = head === 'below' ? pick(BL_KEYS, sub) : undefined;
+  if (bl) return I.below?.[bl] ?? null;
   const w = head === 'head' ? pick(H_KEYS, sub) : undefined;
   return w ? headOf(I)[w] : null;
 }
@@ -203,6 +231,12 @@ export function planValues(L: Layout): Partial<Record<PlanKey, number>> {
   out.bufY = bp.y;
   if (bp.span !== null) out.bufSpan = bp.span;
   out.cwBufPos = bp.cwPos;
+  // the governor's rope (governor.ts): from the wall of its side, its clamped strand from the front wall
+  const g = governorSpot(L);
+  if (g) {
+    out.govX = g.side === 'left' ? g.x : L.inputs.W - g.x;
+    out.govY = g.y1;
+  }
   return out;
 }
 

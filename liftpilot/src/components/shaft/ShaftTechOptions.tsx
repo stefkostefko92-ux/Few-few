@@ -5,7 +5,7 @@
 // allowances with their typical values. A value still as the software set it carries the standard badge.
 import { useTranslations } from 'next-intl';
 import {
-  CW_SPECIALS, CW_SUPPORTS, DEFAULTS, DOOR_PAIRS, DOOR_PAIR_DEFAULT, GOVERNORS, RAIL_TYPES, callStationOf, cwBracketsOf, defaultInputs, govSize, railLabel,
+  CW_SPECIALS, CW_SUPPORTS, DEFAULTS, DOOR_PAIRS, DOOR_PAIR_DEFAULT, GOVERNORS, RAIL_TYPES, callStationOf, cwBracketsOf, defaultInputs, freeSides, govSize, layout, railLabel,
   type Allowance, type CwChoice, type DoorPairId, type RailType, type ShaftInputs,
 } from '@/shaft';
 import { ALLOWANCE_RANGE } from '@/lib/shaft-input';
@@ -32,6 +32,8 @@ function withPanev(I: ShaftInputs, patch: { door?: DoorPairId; cw?: CwChoice }):
 
 export default function ShaftTechOptions({ I, set }: Props) {
   const t = useTranslations('shaft'), cs = callStationOf(I);
+  // the side walls the governor's rope can run by (a central sling, free of doors and of the counterweight)
+  const L = layout(I), free = L.frame.kind === 'central' ? freeSides(L) : [], auto = free.at(-1);
   const allowance = (a: Allowance) => (
     <label className="field" key={a}>
       <span>{t(`a_${a}`)}<StdBadge on={I[a] === DEFAULTS[a]} /></span>
@@ -84,6 +86,16 @@ export default function ShaftTechOptions({ I, set }: Props) {
           {GOVERNORS.filter((g) => I.vertical.v <= g.vMax).map((g) => <option key={g.model} value={g.model}>{`${g.brand} ${g.model} · Ø ${2 * g.R} · ≤ ${g.vMax} m/s`}</option>)}
         </select>
       </label>
+      {free.length > 0 && auto ? (
+        <label className="field">
+          <span>{t('gov_side')}<StdBadge on={!I.governorSide} /></span>
+          <select className="input" value={I.governorSide ?? ''} onChange={(e) => { const v = e.target.value; set({ governorSide: v === 'left' || v === 'right' ? v : undefined }); }}>
+            <option value="">{t('gov_side_auto', { side: t(`gov_${auto}`) })}</option>
+            {free.map((s) => <option key={s} value={s}>{t(`gov_${s}`)}</option>)}
+          </select>
+          <small className="note">{t('gov_hint')}</small>
+        </label>
+      ) : null}
       <Seg name="cw-brackets" label={t('cb_title')} value={cwBracketsOf(I)} onChange={(cwBrackets) => set({ cwBrackets })}
         options={[{ v: 'panev', label: t('cb_panev') }, { v: 'generic', label: t('cb_generic') }]} />
       {cwBracketsOf(I) === 'panev' ? (

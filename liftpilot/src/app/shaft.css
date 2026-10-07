@@ -99,3 +99,6 @@ label.check input { width: 18px; height: 18px; accent-color: var(--accent); }
   .shaft-checks th { grid-column: 1 / -1; border: 0; padding: 0; }
   .shaft-checks td { border: 0; padding: 0; }
 }
+/* the HEB beams on the shaft's walls: the six to choose from, each with how it does */
+.heb-list { display: grid; gap: 6px; margin-top: 6px; }
+.heb-list .status-pill { margin-left: 6px; }

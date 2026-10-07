@@ -90,6 +90,7 @@ export const AMBITO_VERIFICHE: Readonly<Record<CheckId | ShaftCheckId, readonly 
   v_door: ['landingDoors'], v_door2: ['landingDoors'], v_land: DOORS, v_land2: DOORS, v_op: ['carDoors'], v_wall: ['car', ...DOORS], v_sill: ['car', ...DOORS],
   v_cw: ['car', 'cw', 'rails'], v_cwlen: ['cw'], v_place: ['car', 'cw', 'rails', ...DOORS], v_doorcar: ['car', ...DOORS],
   v_buffer: ['buffers'], v_niche: ['cw'], v_staffa: ['cw', 'rails'], v_telaio: ['landingDoors'], v_head: ['car', 'cw', 'rails'],
+  v_gov: ['governor', 'car', 'rails', 'sling'], v_govrail: ['governor', 'sling'],
   // the headroom and the pit: their spaces follow the car, its frame, the buffers and the speed
   h_refuge: HEAD, h_clear: HEAD, h_top: [...HEAD, 'machine'], h_parapet: ['car'], h_stand: ['car'], h_cross: ['car', 'sling'], h_door: DOORS, h_staffe: DOORS, h_car: ['car'], h_cw: [...HEAD, 'travel'], h_guide: [...HEAD, 'travel'],
   p_refuge: PIT, p_apron: [...PIT, 'carDoors'], p_screen: ['cw'],
@@ -97,7 +98,9 @@ export const AMBITO_VERIFICHE: Readonly<Record<CheckId | ShaftCheckId, readonly 
   // the machine room is the building's; the panel's space follows a new controller; the beams under a new machine
   m_height: [], m_panel: ['controller'], m_door: [], m_beam: ['machine'], m_beamf: ['machine'], m_rinvio: ['machine'], m_fit: ['machine'], m_stand: ['machine'], m_free: ['machine'], m_calata: ['machine'],
   // the panel among what stands on the floor and the ways to the free areas follow a new controller or a new machine
-  m_quadro: ['controller', 'machine'], m_route: ['controller', 'machine'],
+  m_quadro: ['controller', 'machine'], m_route: ['controller', 'machine'], m_gov: ['governor', 'machine', 'controller'], m_govfree: ['governor', 'machine', 'controller'],
+  // the HEB beams on the shaft's walls under a new machine
+  m_heb: ['machine'], m_hebf: ['machine'], m_hebfeet: ['machine'], m_hebrope: ['machine'], m_hebwall: ['machine'],
   // the car's rails under the safety gear and in use (sheet 1 of the drawing set); the safety gear is on the sling
   gr_stress: ['rails', 'car', 'sling', 'load'], gr_flange: ['rails', 'car', 'sling', 'load'], gr_defl: ['rails', 'car', 'sling', 'load'], sg_type: ['sling', 'speed'],
 };
@@ -108,9 +111,10 @@ export const VERIFICHE_DATI: readonly ShaftCheckId[] = ['v_place', 'v_doorcar'];
 
 /** The accessibility checks of DM 236/1989: the shaft's, present when its case is chosen in the shaft's data. */
 export const VERIFICHE_DM236: readonly ShaftCheckId[] = ['v_acc_car', 'v_acc_door', 'v_acc_side', 'v_acc_c', 'v_call'];
-/** The checks NTC 2018 computes: the beams under the machine (σ ≤ fyk/γM0, deflection). The other standards added
+/** The checks NTC 2018 computes: the beams under the machine and the HEB beams on the shaft's walls (σ ≤ fyk/γM0,
+ *  deflection). The other standards added
  *  compute none: their points are checked on site (norme-collaudo.ts). */
-export const VERIFICHE_NTC: readonly ShaftCheckId[] = ['m_beam', 'm_beamf'];
+export const VERIFICHE_NTC: readonly ShaftCheckId[] = ['m_beam', 'm_beamf', 'm_heb', 'm_hebf'];
 
 const isNorma = (x: unknown): x is NormaCollaudo => NORME_COLLAUDO.some((n) => n === x);
 

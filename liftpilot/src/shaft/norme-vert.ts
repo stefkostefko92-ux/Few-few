@@ -5,6 +5,8 @@
 import { letto } from '../calc/norme-fonti';
 import type { VoceVano } from './norme';
 import { COSTANTI_GUIDE, KV_GUIDE, VOCI_GUIDE } from './norme-guide';
+import { COSTANTI_HEB, KV_HEB, VOCI_HEB } from './norme-heb';
+import { COSTANTI_LIMITATORE, KV_GOV, VOCI_LIMITATORE } from './norme-limitatore';
 import { VOCI_LOCALE } from './norme-locale';
 import { VOCI_SPAZI } from './norme-spazi';
 import { VOCI_SUPPORTO } from './norme-supporto';
@@ -13,6 +15,8 @@ const T20 = 'UNI EN 81-20:2020', T50 = 'UNI EN 81-50:2020';
 
 export const KV_VERT = {
   ...KV_GUIDE,
+  ...KV_GOV,
+  ...KV_HEB,
   // UNI EN 81-20:2020, Tabella 3: refuge spaces by type, height and plan [mm] (type 3 in the pit only)
   refugeH: { 1: 2000, 2: 1000, 3: 500 },
   refugePlan: { 1: [400, 500], 2: [500, 700], 3: [700, 1000] },
@@ -88,8 +92,8 @@ export const KV_VERT = {
   k1Instant: 5,
   k2Running: 1.2,
   loadOffset: 0.125,
-  // practice: dynamic coefficient on the machine's static load; travelling cables [kg/m]
-  dynFactor: 1.5,
+  // 5.2.1.8.1 and annex E.1 (informative): the dynamic coefficient on the machine's static load; travelling cables [kg/m]
+  dynFactor: 2,
   cableKgM: 0.5,
   // 5.2.1.4: fixed lighting of the well (1 m above the car roof and the pit floor, elsewhere) and of the machinery
   // spaces at floor level in the working areas [lux]
@@ -203,13 +207,14 @@ export const VOCI_VERT: readonly VoceVano[] = [
   },
   {
     id: 'carichi.macchina', gruppo: 'carichi', titolo: 'Carico della macchina sulla soletta',
-    valore: 'carico statico sull’asse (cabina, portata, contrappeso, funi, cavi; in taglia 2:1 la metà di cabina, portata e contrappeso) × 1,5 come '
-      + 'coefficiente dinamico, modificabile nei dati dell’impianto; sulla soletta anche la massa di macchina e telaio',
-    riferimento: '—', fonte: 'prassi di progetto: la EN 81 non fissa un coefficiente dinamico per gli appoggi della macchina (in altre prassi 2,0)', stato: 'prassi',
+    valore: 'carico statico sull’asse (cabina, portata, contrappeso, funi, cavi; in taglia 2:1 la metà di cabina, portata e contrappeso) × 2 come '
+      + 'coefficiente dinamico; sulla soletta anche la massa di macchina e telaio',
+    riferimento: 'UNI EN 81-20:2020, 5.2.1.8.1 e appendice E.1 (informativa: l’effetto dinamico delle masse in moto con un fattore 2); il DPR '
+      + '1497/1963, art. 5.1, per gli impianti costruiti secondo esso chiedeva 1,5 volte il carico statico delle funi', fonte: letto(T20, 'pp. 26, 148'), stato: 'confermato',
   },
   {
     id: 'carichi.cavi', gruppo: 'carichi', titolo: 'Massa dei cavi flessibili',
-    valore: '0,5 kg/m per metà della corsa più 3 m, se non data nei dati dell’impianto (cavo piatto 24G0,75)',
+    valore: '0,5 kg/m per metà della corsa più 3 m (cavo piatto 24G0,75), sul basamento dell’argano, nella relazione e nel foglio 1',
     riferimento: '—', fonte: 'schede dei costruttori di cavi piatti (0,48–0,57 kg/m)', stato: 'stima',
   },
   {
@@ -251,6 +256,8 @@ export const VOCI_VERT: readonly VoceVano[] = [
   },
   ...VOCI_SUPPORTO,
   ...VOCI_GUIDE,
+  ...VOCI_LIMITATORE,
+  ...VOCI_HEB,
 ];
 
 /** Constants of this registry, for the test that every one has its entry. */
@@ -284,4 +291,6 @@ export const COSTANTI_VERT: Readonly<Record<string, readonly CostanteVert[]>> = 
   'locale.putrelle': ['steelFyk', 'steelGammaM0', 'steelE', 'beamDeflection'],
   'locale.calate': ['dropTol'],
   ...COSTANTI_GUIDE,
+  ...COSTANTI_LIMITATORE,
+  ...COSTANTI_HEB,
 };

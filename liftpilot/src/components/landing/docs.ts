@@ -3,6 +3,6 @@
 export const LANDING_DOCS = {
   'lp-doc-tavola': { w: 820, h: 1160, args: { n: 1, of: 10 } },
   'lp-doc-locale': { w: 820, h: 1160, args: { n: 8, of: 10, scale: 25 } },
-  'lp-doc-relazione': { w: 820, h: 1160, args: { n: 1, of: 27 } },
-  'lp-doc-verifiche': { w: 820, h: 1160, args: { n: 4, of: 27 } },
+  'lp-doc-relazione': { w: 820, h: 1160, args: { n: 1, of: 29 } },
+  'lp-doc-verifiche': { w: 820, h: 1160, args: { n: 4, of: 29 } },
 } as const;

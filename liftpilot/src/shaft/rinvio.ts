@@ -43,6 +43,9 @@ export interface RinvioFrame {
   maker: MakerBedplate | null;
   /** the calculation took its h from here (the pulley's distance automatic): a change of h is a change of the bedplate */
   auto?: boolean;
+  /** what the bedplate or the stand stands on over the floor: the HEB beams' height (0: the floor); the heights above
+   *  count it */
+  base?: number;
 }
 
 /** The pulley's axis over the floor: the makers' height, its rim at least KV_VERT.rinvioRim over the floor. */
@@ -54,17 +57,19 @@ export const rinvioTopOf = (Dp: number): number => Math.max(KV_VERT.rinvioTop, r
 /** The pulley's place for the support `sup` (the bedplate with the pulley, or another one), the pulley Dp, the maker's
  *  bedplate when the machine has one and `yWheel`, the maker's machine's sheave axis over its feet (null: the machine
  *  is drawn as the generic one, the maker's heights still count). A height set by hand makes the bedplate ours. */
-export function rinvioFrame(sup: MachineSupport, Dp: number, maker: MakerBedplate | null, yWheel: number | null): RinvioFrame {
-  if (sup.kind !== 'rinvio') return { on: 'stand', pulleyAxis: rinvioAxisOf(Dp), top: 0, bed: null, maker: null };
+export function rinvioFrame(sup: MachineSupport, Dp: number, maker: MakerBedplate | null, yWheel: number | null, base = 0): RinvioFrame {
+  // over the floor, or over the HEB beams (the frame's own heights unchanged, every height over the floor raised)
+  const on = (rf: RinvioFrame): RinvioFrame => (base ? { ...rf, pulleyAxis: rf.pulleyAxis + base, top: rf.top + base, base } : rf);
+  if (sup.kind !== 'rinvio') return on({ on: 'stand', pulleyAxis: rinvioAxisOf(Dp), top: 0, bed: null, maker: null });
   const seat = maker && yWheel !== null ? maker.sheaveAxis - maker.top - yWheel : null;
-  if (maker && sup.height === undefined && (seat === null || seat >= 0)) return { on: 'frame', pulleyAxis: maker.pulleyAxis, top: maker.top, bed: seat, maker };
-  return { on: 'frame', pulleyAxis: rinvioAxisOf(Dp), top: sup.height ?? rinvioTopOf(Dp), bed: null, maker: null };
+  if (maker && sup.height === undefined && (seat === null || seat >= 0)) return on({ on: 'frame', pulleyAxis: maker.pulleyAxis, top: maker.top, bed: seat, maker });
+  return on({ on: 'frame', pulleyAxis: rinvioAxisOf(Dp), top: sup.height ?? rinvioTopOf(Dp), bed: null, maker: null });
 }
 
 /** The sheave's axis over the floor with the machine on the bedplate `rf`: the maker's, or our top and the machine's own
  *  height over it (machine-shape.ts). */
 export const sheaveAxisIn = (rf: RinvioFrame, D: number, shape: MachineShape | null): number =>
-  (rf.maker ? rf.maker.sheaveAxis : rf.top + machineFrame(D, shape, rf.bed).axis);
+  (rf.maker ? rf.maker.sheaveAxis + (rf.base ?? 0) : rf.top + machineFrame(D, shape, rf.bed).axis);
 
 /** Along the drop line, from the sheave's centre: where the bedplate runs, past the machine's bedframe [x0, x1] and the
  *  pulley at `pu` (radius r) by KV_VERT.rinvioOverhang. */

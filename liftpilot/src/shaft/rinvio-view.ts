@@ -13,21 +13,23 @@ import { ownAxis } from './support';
 /** Section B-B: the bedplate, its legs and dampers, the pulley's plates; its heights left of it. */
 export function rinvioSection(M: MachineSpec, G: RoomGeo, rf: RinvioFrame): Entity[] {
   const out: Entity[] = [], P = PROFILES[KV_VERT.rinvioBeam], leg = KV_VERT.rinvioLeg, pads = KV_VERT.rinvioPads;
-  const [u0, u1] = rinvioRun(M, G), top = rf.top, under = top - P.h, pu = G.pulleyAt, zp = G.pulleyZ;
+  const [u0, u1] = rinvioRun(M, G), top = rf.top, under = top - P.h, pu = G.pulleyAt, zp = G.pulleyZ, base = rf.base ?? 0;
   // the beams seen beside the cut, drawn and not hatched (the pulley and the ropes in front stay readable)
   out.push(rect(u0, under, u1, top, 'outline'));
   for (const z of [top - P.tf, under + P.tf]) out.push(path([[u0, z], [u1, z]] as Pt[], false, 'thin'));
   for (const x of [u0, u1 - leg]) {
-    out.push(rect(x, pads, x + leg, under, 'outline', 'steel'));
-    out.push(rect(x - 10, 0, x + leg + 10, pads, 'thin', 'paper'));
+    out.push(rect(x, base + pads, x + leg, under, 'outline', 'steel'));
+    out.push(rect(x - 10, base, x + leg + 10, base + pads, 'thin', 'paper'));
   }
   // the axle's plates, hung from the beams down past the axle (a pulley set higher by hand: between the beams, up to them)
   out.push(rect(pu - 80, zp - 70, pu + 80, Math.min(top, Math.max(under, zp + 90)), 'thin'));
   // the heights: the pulley's axis, the top (ours changes with it, the sheave's axis follows); the length; the code
   const fixed = rf.maker !== null;
   // left of the bedplate, past the sheave's axis (room-view.ts draws it at the machine's end less 120)
+  // the pulley's axis: the bedplate's own, or the sheave's axis less an h entered by hand (whose change may take
+  // another machine: its h is the dimension to change)
   out.push(chain({ dir: 'y', pts: [0, zp], at: u0 - 220, from: [null, pu], text: ['Asse rinvio {v}'], edit: [null] }));
-  out.push(chain({ dir: 'y', pts: [0, top], at: u0 - 420, from: [null, u0], text: [`{v} ${fixed ? rf.maker?.code : 'Telaio'}`], edit: [fixed ? null : E('rinvio.height')] }));
+  out.push(chain({ dir: 'y', pts: [base, top], at: u0 - 420, from: [null, u0], text: [`{v} ${fixed ? rf.maker?.code : 'Telaio'}`], edit: [fixed ? null : E('rinvio.height')] }));
   // over the room past dx and the machine's frame (room-view.ts)
   out.push(chain({ dir: 'x', pts: [u0, u1], side: 'top', row: 2, from: [top, top], text: ['{v} Telaio con rinvio'] }));
   return out;
@@ -48,5 +50,6 @@ export function rinvioPlan(M: MachineSpec, G: RoomGeo, rf: RinvioFrame, onDrop: 
   return out;
 }
 
-/** The dimension of h on the bedplate: the top takes the change (the pulley's axis and the machine's height stay). */
-export const rinvioHEdit = (M: MachineSpec, rf: RinvioFrame) => (rf.maker ? null : E('rinvio.height', rf.pulleyAxis - ownAxis(M.D, M.shape ?? null)));
+/** The dimension of h on the bedplate: the top takes the change (the pulley's axis and the machine's height stay; the
+ *  bedplate's own height is its top over the HEB beams it stands on). */
+export const rinvioHEdit = (M: MachineSpec, rf: RinvioFrame) => (rf.maker ? null : E('rinvio.height', rf.pulleyAxis - ownAxis(M.D, M.shape ?? null) - (rf.base ?? 0)));

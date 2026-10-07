@@ -18,7 +18,7 @@ import { bufferType } from '@/shaft/buffers';
 import { govSize } from '@/shaft/governor';
 import { railLabel } from '@/shaft/rails';
 import { supportOf } from '@/shaft/support';
-import { bedplateKey, governorKey, machineKey, ropeKey } from './articles';
+import { bedplateKey, governorKey, hebKey, machineKey, ropeKey } from './articles';
 import type { BomLine } from './cost';
 import { plantLines } from './plant-bom';
 import type { Collaudo } from '@/lib/lift/collaudo';
@@ -64,6 +64,8 @@ export function designBom(dv: LiftDerived): BomLine[] {
     if (rf?.on === 'frame' && rf.maker) L.push({ key: bedplateKey(rf.maker.code), label: { item: 'bedplate', name: `${rf.maker.brand} ${rf.maker.code}` }, qty: 1, unit: 'pz' });
     else L.push({ key: `support:${sup.kind}`, label: { item: `support_${sup.kind}` }, qty: 1, unit: 'pz' });
     if (rf?.on === 'stand') L.push({ key: 'support:stand', label: { item: 'support_stand' }, qty: 1, unit: 'pz' });
+    // the two HEB beams on the shaft's walls, by the metre
+    if (dv.heb) L.push({ key: hebKey(dv.heb.chosen.profile), label: { item: 'heb', name: dv.heb.chosen.profile }, qty: (2 * dv.heb.chosen.length) / 1000, unit: 'm' });
   }
   const rope = ropeLength(dv);
   if (rope !== null) L.push({ key: ropeKey(M.d), label: { item: 'rope', name: sizeText(M.d) }, qty: rope * M.n, unit: 'm' });
@@ -111,6 +113,7 @@ export function calcBom(V: FormValues, C: Collaudo | null = null, room: RoomDeri
     L.push({ key: `support:${sup.kind}`, label: { item: `support_${sup.kind}` }, qty: 1, unit: 'pz' });
   }
   if (rf?.on === 'stand') L.push({ key: 'support:stand', label: { item: 'support_stand' }, qty: 1, unit: 'pz' });
+  if (room?.heb) L.push({ key: hebKey(room.heb.chosen.profile), label: { item: 'heb', name: room.heb.chosen.profile }, qty: (2 * room.heb.chosen.length) / 1000, unit: 'm' });
   if (parts.includes('ropes')) L.push({ key: ropeKey(N.d), label: { item: 'rope', name: sizeText(N.d) }, qty: N.n * ropeRun(I), unit: 'm' });
   if (parts.includes('controller')) L.push({ key: 'controller', label: { item: 'controller' }, qty: 1, unit: 'pz' });
   L.push({ key: 'labour:replacement', label: { item: 'labour_replacement' }, qty: 1, unit: 'lot' });

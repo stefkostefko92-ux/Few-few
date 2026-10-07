@@ -107,7 +107,7 @@ export default function LiftForm({ P, X, inp, derived, complete, blank, bad, nee
       <VerticalOptions I={inp.shaft} set={setShaft} open blank={blank} />
       {above ? (
         <RoomOptions I={inp.shaft} set={setShaft} blank={blank}
-          machine={derived && complete ? { D: derived.machine.D, shimsAxis: KL.sheaveAxisPerD * derived.machine.D, shape: derived.machine.shape ?? null, rinvio: derived.machine.rinvio ?? null } : undefined}
+          machine={derived && complete ? { D: derived.machine.D, shimsAxis: KL.sheaveAxisPerD * derived.machine.D, shape: derived.machine.shape ?? null, rinvio: derived.machine.rinvio ?? null, heb: derived.heb } : undefined}
           panel={{ auto: !!inp.auto.panel, set: (on) => setAuto({ panel: on }), placed: derived && complete && derived.origin.panel === 'auto' ? derived.shaft.room : null }} />
       ) : null}
       <h2>{t('s_drive')}</h2>

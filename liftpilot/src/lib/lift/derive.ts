@@ -7,18 +7,18 @@
 import { SHEAVE_GRID, readInputs, sizeMachine } from '@/calc/index';
 import { deflectorAngle } from '@/calc/geometry';
 import type { FormValues, SizingOption } from '@/calc/types';
-import { layout, section, travel, type Layout, type ShaftCheck, type ShaftInputs } from '@/shaft';
+import { HEB_PROFILES, layout, section, travel, type HebTaken, type Layout, type ShaftCheck, type ShaftInputs } from '@/shaft';
 import type { MachineSpec } from '@/shaft/machine-room';
 import { analyse, mirrorRopes, proposalValues, type Analysis } from '@/lib/present/analysis';
 import { simModel, type SimModel } from '@/sim';
-import { bottomGapNeeded, bottomGeo, extraBends, type BottomScheme } from './bottom';
+import { belowFit, bottomGapNeeded, bottomGeo, extraBends, type BottomScheme } from './bottom';
 import { bestFit, catalogValues, pickOption, type CatalogChoice } from './catalog';
 import type { CatalogFit } from '@/lib/catalog/machines';
 import { machineShapeOf, machineSpec, rinvioOf, sheaveAxis, sheaveAxisBelow, type Made } from './machine';
 import type { MachineShape } from '@/shaft/machine-shape';
 import type { RinvioFrame } from '@/shaft/rinvio';
 import { headTopChecks } from './head';
-import { placedPanel, supportChecks, supportLoad } from './support';
+import { bedplateMass, hebOf, placedPanel, supportChecks, supportLoad } from './support';
 import { collaudoOf, type Collaudo } from './collaudo';
 import { KL } from './norme';
 
@@ -71,6 +71,9 @@ export interface LiftDerived {
   machine: MachineSpec;
   /** the checks of the machine's support in the room (the beams under it), at the load sheet 1 counts */
   supportChecks: readonly ShaftCheck[];
+  /** the HEB beams on the shaft's walls (heb.ts): the six weighed, the one taken (the shaft's room names it), and
+   *  whether its profile and its direction are the software's; null without them */
+  heb: HebTaken | null;
   /** the rope scheme of a machine below; null with the machine above */
   bottom: BottomScheme | null;
   /** its runs to the machine do not clear the counterweight and its brackets: the gap behind the counterweight as
@@ -150,7 +153,7 @@ function propose(V0: FormValues, L: Layout, geometry: (W: FormValues) => FormVal
   return { V: geometry(best.fit ? { ...W, ...catalogValues(best.fit, W) } : W), fit: best.fit };
 }
 
-export function deriveLift(inp: LiftInputs): LiftDerived {
+function deriveOnce(inp: LiftInputs): LiftDerived {
   const S = inp.shaft, L = layout(S), vt = S.vertical, rise = travel(vt.floors), Sec = section(L);
   let V: FormValues = { ...inp.calc, Q: L.Q, v: vt.v, H: rise / 1000 };
   if (inp.auto.P) V = { ...V, P: carMassEstimate(L.Q) };
@@ -219,13 +222,38 @@ export function deriveLift(inp: LiftInputs): LiftDerived {
     L0: inp.auto.L0 ? 'auto' : 'entered', dx: inp.auto.dx ? 'auto' : 'entered', Hv: inp.auto.Hv ? 'auto' : 'entered',
     machine: inp.auto.machine && !noProposal ? 'auto' : 'entered', panel: spot ? 'auto' : 'entered',
   };
-  // the beams under the machine and the machine in its room; the car's highest part under what hangs over it
-  const supportCk = [...supportChecks(Lp, machine, supportLoad(analysis.ctx, analysis.res.Mcw), I.layout !== 'bottom'), ...headTopChecks(Lp, I.r, I.Dp, scheme)];
+  // the beams under the machine (with the maker's bedplate it stands on) and the machine in its room; the car's highest
+  // part under what hangs over it
+  const load = supportLoad(analysis.ctx, analysis.res.Mcw, { machine: N.mass + bedplateMass(machine) }), above = I.layout !== 'bottom';
   const g = scheme ? bottomGeo(L, scheme, N.D, I.Dp, N.n, N.d, I.r, sheaveAxisBelow(N.D, shape)) : null;
+  // a machine below in its room
+  const supportCk = [...supportChecks(Lp, machine, load, above), ...headTopChecks(Lp, I.r, I.Dp, scheme), ...(g ? belowFit(Lp, g, machine) : [])];
+  const beams = above ? hebOf(Lp, machine, load) : null, chosenBy = Lp.inputs.room?.heb;
   const bottomGap = scheme && g && !g.fits ? { now: S.cwWallGap, need: bottomGapNeeded(S, scheme, N.D, I.Dp, N.n, N.d, I.r) } : null;
   return {
     shaft: Lp.inputs, values: V, layout: Lp, analysis, origin, noProposal, issues, calata, machine, supportChecks: supportCk, bottom: scheme, bottomGap,
+    heb: beams && chosenBy ? { ...beams, auto: { profile: !chosenBy.profile, dir: !chosenBy.dir } } : null,
     headPulleys: g ? 2 + extraBends(g) : 0, catalog, collaudo: collaudoOf(V, inp.collaudo),
     sim: simModel(I, N, analysis.res, Sec, vt),
   };
+}
+
+/**
+ * The derivation of the form. The HEB beams on the shaft's walls (registry locale.putrelle.vano) raise the machine by
+ * their height, which the rope beyond the travel and the diverting pulley's h follow: with their profile or direction
+ * left to the software, the form is derived with the tallest (or the profile chosen), the beams taken among the six for
+ * that machine and that load, and — when another profile — derived again on them; the design goes on with them named in
+ * its room (the drawings, the 3D, the shaft's record), marked as the software's.
+ */
+export function deriveLift(inp: LiftInputs): LiftDerived {
+  const R = inp.shaft.room, chosenBy = R?.heb, first = deriveOnce(inp), taken = first.heb?.chosen;
+  if (!R || !chosenBy || (chosenBy.profile && chosenBy.dir) || !first.heb || !taken) return first;
+  const auto = { profile: !chosenBy.profile, dir: !chosenBy.dir }, heb = { profile: taken.profile, dir: taken.dir };
+  if (taken.profile !== (chosenBy.profile ?? HEB_PROFILES[HEB_PROFILES.length - 1])) {
+    const again = deriveOnce({ ...inp, shaft: { ...inp.shaft, room: { ...R, heb } } });
+    return { ...again, heb: again.heb ? { ...again.heb, auto } : null };
+  }
+  // the same profile: only the room names the beams taken
+  const own = first.shaft.room, shaft = own ? { ...first.shaft, room: { ...own, heb } } : first.shaft;
+  return { ...first, shaft, layout: { ...first.layout, inputs: shaft }, heb: { ...first.heb, auto } };
 }

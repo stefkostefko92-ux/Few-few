@@ -8,6 +8,8 @@ import { chain, edit as E, line, path, rect, type Box, type Edit, type Entity, t
 import { ownAxis, padsOf, supportOf } from './support';
 import { rinvioHEdit } from './rinvio-view';
 import { rinvioAcross, rinvioRun } from './rinvio';
+import { hebDrawn } from './heb';
+import { hebPlan } from './heb-view';
 import { supportPlan, supportSection } from './support-view';
 import { MACHINE_A, machineElevation, machinePlan } from './machine-outline';
 import { bodyBox } from './machine-shape';
@@ -75,6 +77,8 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo): { entities:
   }
   const [p0, p1] = span(G, 0, 0, R.W, R.D);
   out.push(...supportPlan(M, G, (u, v) => onDrop(G, u, v), p0, p1));
+  const heb = hebDrawn(G, M, S);
+  if (heb) out.push(...hebPlan(heb, G, M, S));
   const F = G.frame;
   out.push(...(F.shape ? shapePlan(F, M.D, M.n, M.d, (x, z) => onDrop(G, G.sheaveAt + x, F.zSheave - z))
     : machinePlan((x, z) => onDrop(G, G.sheaveAt + x * k, (MACHINE_A.zSheave - z) * k))));
@@ -213,7 +217,7 @@ export function roomSectionOn(S: RoomSite, M: MachineSpec, G: RoomGeo): { entiti
   const bedRun = rf?.on === 'frame' && M.Dp > 0 && G.pulleyZ - M.Dp / 2 >= 0 ? rinvioRun(M, G) : null;
   const near = Math.max(G.pulleyAt + M.Dp / 2, G.frame1, bedRun ? bedRun[1] : -Infinity);
   const ue = Math.max(Math.min(near + (bedRun ? 300 : 160), r1 - 150), near + 60), hChain = M.Dp > 0 && Math.abs(M.h) > 1;
-  out.push(...supportSection(M, G, r0, r1, hChain ? ue : null));
+  out.push(...supportSection(M, G, r0, r1, hChain ? ue : null, hebDrawn(G, M, S)));
   out.push(...(F.shape ? shapeElevation(F, D, (x, y) => [G.sheaveAt + x, base + y]) : machineElevation((x, y) => [G.sheaveAt + x * k, base + y * k])));
   const centre = (c: Pt, r: number): void => { out.push(line([c[0] - r - 40, c[1]], [c[0] + r + 40, c[1]], 'axis'), line([c[0], c[1] - r - 40], [c[0], c[1] + r + 40], 'axis')); };
   centre([G.sheaveAt, zs], D / 2);
@@ -236,16 +240,19 @@ export function roomSectionOn(S: RoomSite, M: MachineSpec, G: RoomGeo): { entiti
   if (ridge > top) out.push(chain({ dir: 'y', pts: [0, ridge], side: 'left', row: 1, text: ['{v} H. Colmo'], edit: [E('room.ridge')] }));
   out.push(chain({ dir: 'y', pts: [0, R.doorH], side: 'right', row: 0, text: ['{v} H. Porta'], edit: [E('room.doorH')] }));
   out.push(chain({ dir: 'y', pts: [0, R.panelH], side: 'right', row: 1, text: ['{v} H. Quadro'], edit: [E('room.panelH')] }));
-  // the sheave's axis: the support's height takes the change (pads and the machine's own height stay)
-  const axisEdit = rf?.on === 'frame' ? (rf.maker ? null : E('rinvio.height', -ownAxis(D, F.shape))) : E('sup.height', -(padsOf(sup) + ownAxis(D, F.shape)));
+  // the sheave's axis: the support's height takes the change (pads, the machine's own height and the HEB beams under
+  // the support stay)
+  const hb = M.base ?? 0, axisEdit = rf?.on === 'frame' ? (rf.maker ? null : E('rinvio.height', -ownAxis(D, F.shape) - hb)) : E('sup.height', -(padsOf(sup) + ownAxis(D, F.shape) + hb));
   // (on the bedplate of the pulley, left of its two heights; the h of the pulley right of its legs)
   out.push(chain({ dir: 'y', pts: [0, zs], at: bedRun ? Math.min(G.frame0 - 120, bedRun[0] - 620) : G.frame0 - 120, from: [null, G.sheaveAt], text: ['Asse {v}'], edit: [axisEdit] }));
   if (M.Dp > 0) {
     const low = G.pulleyZ < zs;
     const left = G.sheaveAt < G.pulleyAt;
     // the pulley's height below the sheave is the calculation's h; its distance dx follows the rope drop
-    // on the bedplate whose h the calculation took, a change of h is a change of the bedplate's top
-    const hEdit = rf?.on === 'frame' && rf.auto ? (low ? rinvioHEdit(M, rf) : null) : S.calcEdits ? E('calc.h', 0, low ? 1 : -1) : null;
+    // on the bedplate whose h the calculation took, a change of h is a change of the bedplate's top; on its own stand,
+    // of the machine's support (the pulley's axis stays where the stand has it)
+    const standH = E('sup.height', G.pulleyZ - padsOf(sup) - ownAxis(D, F.shape) - hb, low ? 1 : -1);
+    const hEdit = rf?.auto ? (rf.on === 'frame' ? (low ? rinvioHEdit(M, rf) : null) : standH) : S.calcEdits ? E('calc.h', 0, low ? 1 : -1) : null;
     if (hChain) out.push(chain({ dir: 'y', pts: low ? [G.pulleyZ, zs] : [zs, G.pulleyZ], at: ue, from: low ? [G.pulleyAt, G.sheaveAt] : [G.sheaveAt, G.pulleyAt], text: ['h {v}'], edit: [hEdit] }));
     const less = 2 * M.ropeIn + M.D / 2 + (M.reverse ? -M.Dp / 2 : M.Dp / 2);
     // over the room, nearest to it: the frames' lengths in the rows beyond

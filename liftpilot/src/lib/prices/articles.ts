@@ -11,7 +11,7 @@ import { PANEV_ARTICLES, PANEV_LISTINO } from '@/lib/catalog/panev';
 import { PANEV_LIST_PRICE } from '@/lib/catalog/panev-prices';
 import { GOVERNORS } from '@/shaft/governor';
 import { RAIL_TYPES, railLabel } from '@/shaft/rails';
-import { SUPPORT_KINDS } from '@/shaft/support';
+import { HEB_PROFILES, SUPPORT_KINDS } from '@/shaft/support';
 import type { BufferType } from '@/shaft/vertical';
 import type { DoorKind } from '@/shaft/types';
 import type { PriceGroup, PriceUnit } from './groups';
@@ -57,6 +57,7 @@ export const machineKey = (brand: string, model: string): string => `machine:${b
 export const bedplateKey = (code: string): string => `bedplate:${code}`;
 export const ropeKey = (d: number): string => `rope:${d}`;
 export const governorKey = (brand: string, model: string): string => `governor:${brand}:${model}`;
+export const hebKey = (profile: string): string => `heb:${profile}`;
 
 const PANEV_SRC = `Panev ${PANEV_LISTINO.year}, p. ${PANEV_LISTINO.page}`;
 
@@ -65,6 +66,7 @@ export const PRICE_ARTICLES: readonly PriceArticle[] = [
   ...BEDPLATE_CODES.map((b): PriceArticle => ({ key: bedplateKey(b.code), group: 'bedplates', label: { item: 'bedplate', name: `SICOR ${b.code} (${b.models.join(', ')})` }, unit: 'pz' })),
   ...SUPPORT_KINDS.map((k): PriceArticle => ({ key: `support:${k}`, group: 'supports', label: { item: `support_${k}` }, unit: 'pz' })),
   { key: 'support:stand', group: 'supports', label: { item: 'support_stand' }, unit: 'pz' },
+  ...HEB_PROFILES.map((p): PriceArticle => ({ key: hebKey(p), group: 'supports', label: { item: 'heb', name: p }, unit: 'm' })),
   ...ROPE_SIZES.map((d): PriceArticle => ({ key: ropeKey(d), group: 'ropes', label: { item: 'rope', name: String(d).replace('.', ',') }, unit: 'm' })),
   ...RAIL_TYPES.map((t): PriceArticle => ({ key: `rail:${t}`, group: 'rails', label: { item: 'rail', name: railLabel(t) }, unit: 'm' })),
   ...RAIL_TYPES.map((t): PriceArticle => ({ key: `fishplate:${t}`, group: 'rails', label: { item: 'fishplate', name: railLabel(t) }, unit: 'pz' })),

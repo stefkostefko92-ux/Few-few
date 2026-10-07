@@ -17,6 +17,7 @@ import { cwBracketMargin, cwSpecialOf } from './staffe-scelta';
 import { doorOpDepthOf, doorOpOf } from './operator';
 import { frameRoom } from './frame';
 import { callStationOf } from './callstation';
+import { governorChecks } from './governor';
 import { reasonGiven } from './reason';
 import type { Access, CwSide, DoorLayout, Layout, Rail, Rect, ShaftCheck, ShaftInputs, Wall } from './types';
 
@@ -145,7 +146,11 @@ export function layout(I: ShaftInputs): Layout {
   const shortSide = acc !== null && I.entrances !== 'adjacent';
   const fixedB = I.entrances === 'opposite', fixedA = I.entrances === 'adjacent';
   const fits = maxA >= minA && maxB >= minB && (!shortSide || maxB >= minA);
-  const proposed = fits ? carSize(I, maxA, maxB, minA, minB, shortSide, fixedB, fixedA) : { A: minA, B: minB };
+  // a shaft too small for the smallest car the rules admit: the largest car it takes (as wide as its doors need), so a
+  // shaft a few millimetres short shows the car it has and v_fit says by how much
+  const door = I.doorWidth + KV.carDoorMargin;
+  const most = { A: Math.max(door, shortSide ? Math.min(maxA, floorTo(maxB, step)) : maxA), B: Math.max(maxB, I.entrances === 'adjacent' ? door : step) };
+  const proposed = fits ? carSize(I, maxA, maxB, minA, minB, shortSide, fixedB, fixedA) : most;
   // the car inside as set by hand, else as proposed; the load is the given one or the one its area needs
   const A = fix.A ?? proposed.A, B = fix.B ?? proposed.B, Q = I.Q ?? loadForArea((A * B) / 1e6);
   const area = (A * B) / 1e6, areaMax = maxArea(Q);
@@ -280,7 +285,7 @@ export function layout(I: ShaftInputs): Layout {
     car, carInner, doors, frame, cw: cwRect, cwSide, cwDbg, bridge, rails, checks,
   };
   const head = headCheck(L);
-  L.checks.push(...(head ? [head] : []), ...bufferChecks(L), ...sectionChecks(L), ...roomChecks(L));
+  L.checks.push(...(head ? [head] : []), ...bufferChecks(L), ...sectionChecks(L), ...roomChecks(L), ...governorChecks(L));
   return L;
 }
 

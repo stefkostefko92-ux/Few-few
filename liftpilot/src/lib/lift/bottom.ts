@@ -9,9 +9,11 @@
 //   under — pulleys as in head, the machine in a room under the pit (an accessible space below the shaft).
 // The calculation counts the bottom layout's two head pulleys; the scheme's others are extra simple bends. Plan [mm]
 // in the shaft's coordinates, heights [mm] from the lowest floor. Pure.
-import { layout, section, type Layout, type RoomInputs, type ShaftInputs, type Wall } from '@/shaft';
-import { ropeWidths } from '@/shaft/machine-room';
-import { machineFrame, type MachineFrame, type MachineShape } from '@/shaft/machine-shape';
+import { layout, section, type Layout, type RoomInputs, type ShaftCheck, type ShaftInputs, type Wall } from '@/shaft';
+import { check } from '@/shaft/checks';
+import { MACHINE_TOP } from '@/shaft/machine-outline';
+import { ropeWidths, type MachineSpec } from '@/shaft/machine-room';
+import { bodyBox, machineFrame, type MachineFrame, type MachineShape } from '@/shaft/machine-shape';
 import { bracketSpan } from '@/shaft/plan-staffe';
 import { KL } from './norme';
 
@@ -88,7 +90,7 @@ export function bottomGeo(L: Layout, s: BottomScheme, D: number, Dp: number, n: 
   const mw = at(um, pick.sg * vw), mc = at(um, pick.sg * (vw - D)), fits = pick.score >= 0 && gap >= 2 * (ropes + c);
   const sCar = Math.hypot(mc[0] - car[0], mc[1] - car[1]) - side, sCw = Math.hypot(mw[0] - cw[0], mw[1] - cw[1]) - side;
   const zHead = s === 'room' ? S.ceiling + (I.room?.slab ?? KL.slab) + KL.pulleyRoomAxis : S.ceiling - Dp / 2 - KL.headFrame;
-  const roomFloor = s === 'under' ? S.pitFloor - KL.underSlab - KL.underRoomH : 0;
+  const roomFloor = s === 'under' ? S.pitFloor - KL.underSlab - (I.below?.H ?? KL.underRoomH) : 0;
   return {
     scheme: s, car, cw, dir, across, mc, mw, zHead, zSheave: roomFloor + axis, roomFloor,
     sCar, sCw, carPulleys: sCar > Dp + 1 ? 2 : 1, cwPulleys: sCw > Dp + 1 ? 2 : 1, wallAt, fits, gap,
@@ -141,16 +143,20 @@ export function belowMachine(L: Layout, g: BottomGeo, D: number, n: number, d: n
  *  KL.belowRoomHalf across it, open on the shaft's side (`open`: the shaft's wall closes it), the controller on the far
  *  wall at the end on the motor's side, the door in the side wall across the ropes from the machine. Under the pit: as
  *  large as the shaft, the door on the entrances' wall, the controller on the side away from the counterweight. Either
- *  grows to keep KL.belowRoomClear past the machine's `body` (belowMachine) where the body reaches out of it. */
+ *  grows to keep KL.belowRoomClear past the machine's `body` (belowMachine) where the body reaches out of it. The sizes set
+ *  on its drawings (ShaftInputs.below) take the place of the software's: beside the shaft its size along the drops'
+ *  direction from the wall it stands past, across it from its side nearest the origin; under the pit both from its
+ *  corner nearest the origin; its height, its door. */
 export function belowRoom(L: Layout, g: BottomGeo, body: readonly P2[] | null = null): { room: RoomInputs; open: Wall | null; z0: number } {
-  const I = L.inputs, c = KL.belowRoomClear;
+  const I = L.inputs, c = KL.belowRoomClear, B = I.below ?? {};
   if (g.scheme === 'under') {
     const xs = (body ?? []).map((p) => p[0]), ys = (body ?? []).map((p) => p[1]);
     const x0 = Math.min(0, ...xs.map((x) => x - c)), y0 = Math.min(0, ...ys.map((y) => y - c));
     const x1 = Math.max(I.W, ...xs.map((x) => x + c)), y1 = Math.max(I.D, ...ys.map((y) => y + c));
     return {
       room: {
-        W: x1 - x0, D: y1 - y0, shaftX: -x0, shaftY: -y0, H: KL.underRoomH, ridge: 0, slab: 0, doorWall: 'front', doorAt: 150, doorW: 800, doorH: 2000,
+        W: B.W ?? x1 - x0, D: B.D ?? y1 - y0, shaftX: -x0, shaftY: -y0, H: B.H ?? KL.underRoomH, ridge: 0, slab: 0, doorWall: 'front',
+        doorAt: B.doorAt ?? 150, doorW: B.doorW ?? 800, doorH: B.doorH ?? 2000,
         panelWall: L.cwSide === 'left' ? 'right' : 'left', panelAt: 150, panelW: 800, panelD: 300, panelH: 1800,
       },
       open: null, z0: g.roomFloor,
@@ -162,19 +168,34 @@ export function belowRoom(L: Layout, g: BottomGeo, body: readonly P2[] | null = 
   const u1 = Math.max(u0 + KL.belowRoomLen, ...us.map((u) => u + c));
   const v0 = Math.min(-KL.belowRoomHalf, ...vs.map((v) => v - c)), v1 = Math.max(KL.belowRoomHalf, ...vs.map((v) => v + c));
   const pts = [[u0, v0], [u1, v0], [u1, v1], [u0, v1]].map(([u, v]) => [ox + u * dx - v * dy, oy + u * dy + v * dx]);
-  const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]), x0 = Math.min(...xs), y0 = Math.min(...ys);
-  const W = Math.max(...xs) - x0, D = Math.max(...ys) - y0, open = facing(-dx, -dy), far = OPPOSITE[open];
+  const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+  let x0 = Math.min(...xs), y0 = Math.min(...ys), W = Math.max(...xs) - x0, D = Math.max(...ys) - y0;
+  // a size set on the drawings: along the drops' direction the side at the wall stays, across it the side nearest the origin
+  const alongXdir = Math.abs(dx) > Math.abs(dy);
+  if (B.W !== undefined) { if (alongXdir && dx < 0) x0 += W - B.W; W = B.W; }
+  if (B.D !== undefined) { if (!alongXdir && dy < 0) y0 += D - B.D; D = B.D; }
+  const open = facing(-dx, -dy), far = OPPOSITE[open];
   const len = (s: Wall): number => (alongX(s) ? W : D), doorWall = facing(dy, -dx);
   // the cabinet at the far wall's end on the motor's side, the door near the far end of the other side wall
   const toMotor = alongX(far) ? -dy : dx, toFar = alongX(doorWall) ? dx : dy;
   return {
     room: {
-      W, D, shaftX: -x0, shaftY: -y0, H: KL.belowRoomH, ridge: 0, slab: 0,
-      doorWall, doorAt: toFar > 0 ? len(doorWall) - 1000 : 200, doorW: 800, doorH: 2000,
+      W, D, shaftX: -x0, shaftY: -y0, H: B.H ?? KL.belowRoomH, ridge: 0, slab: 0,
+      doorWall, doorAt: B.doorAt ?? (toFar > 0 ? len(doorWall) - 1000 : 200), doorW: B.doorW ?? 800, doorH: B.doorH ?? 2000,
       panelWall: far, panelAt: toMotor > 0 ? len(far) - 900 : 100, panelW: 800, panelD: 300, panelH: 1800,
     },
     open, z0: g.roomFloor,
   };
+}
+
+/** The check m_fit of the machine below (registry locale.ingombro): its body inside its room in plan, its top and its
+ *  sheave's under the room's ceiling — the least distance left, at least 0 [mm]. */
+export function belowFit(L: Layout, g: BottomGeo, M: MachineSpec): ShaftCheck[] {
+  const m = belowMachine(L, g, M.D, M.n, M.d, M.shape ?? null), R = belowRoom(L, g, m.body).room, F = m.F, x0 = -R.shaftX, y0 = -R.shaftY;
+  const top = g.zSheave - F.axis + (F.shape ? F.bed + bodyBox(F.shape)[4] : MACHINE_TOP * 1000 * F.s);
+  let clear = R.H - (Math.max(top, g.zSheave + M.D / 2) - g.roomFloor);
+  for (const [x, y] of m.body) clear = Math.min(clear, x - x0, x0 + R.W - x, y - y0, y0 + R.D - y);
+  return [check('m_fit', clear >= 0, Math.round(clear), 0, 0, 'mm')];
 }
 
 /** The head pulleys the scheme has beyond the two the calculation counts for the bottom layout: extra simple bends. */

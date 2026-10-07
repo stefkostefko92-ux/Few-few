@@ -4,16 +4,18 @@
 // drop at the calculation's spacing along the line to the counterweight drop measured, which must agree with it
 // (m_calata, registry locale.calate). The checks of the room (height, panel, door), of the machine in it (m_fit,
 // m_stand, m_free), of its support (the beams), of a maker's bedplate (m_rinvio) and of the panel among them (m_quadro,
-// m_route: the panel stays where it was surveyed); the load on the support. What stops a
+// m_route: the panel stays where it was surveyed), of the HEB beams on the shaft's walls when the room puts the support
+// on them (the software's choice among the six named in the room it draws); the load on the support. What stops a
 // record: the machine below (no room over the shaft: not drawn, as in a whole design), drops that coincide or lie
 // outside the shaft, a diverting pulley under the room's floor. Pure: the browser and the server run it alike.
 import type { FormValues } from '@/calc/types';
 import { shapeOf } from '@/lib/catalog/shapes';
 import { machineSpec } from '@/lib/lift/machine';
-import { supportLoad } from '@/lib/lift/support';
+import { bedplateMass, supportLoad } from '@/lib/lift/support';
 import { calcMachine } from '@/lib/order/machine';
 import { analyse, type Analysis } from '@/lib/present/analysis';
 import { check } from '@/shaft/checks';
+import { hebChecks, hebFor, type HebTaken } from '@/shaft/heb';
 import { geoOn, roomChecksOf, type MachineSpec, type RoomGeo } from '@/shaft/machine-room';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { rinvioAxisOf, rinvioTopOf } from '@/shaft/rinvio';
@@ -39,6 +41,9 @@ export interface RoomDerived {
   /** the least h of the calculation that keeps the diverting pulley under the seat of our bedplate [mm]; null: no pulley */
   hMin: number | null;
   load: SupportLoad;
+  /** the HEB beams on the shaft's walls: the six weighed, the one taken (the room of G names it), whether its profile
+   *  and its direction are the software's; null without them */
+  heb: HebTaken | null;
   checks: ShaftCheck[];
   issues: RoomIssue[];
 }
@@ -67,7 +72,7 @@ export function surveyMachine(V: FormValues, a: Analysis, s: Pick<Survey, 'room'
   return { M: spec({ ...s.room, support: { kind: 'rinvio', height } }), made };
 }
 
-export function deriveRoom(V: FormValues, s: Survey, a: Analysis = analyse(V)): RoomDerived {
+function deriveOnce(V: FormValues, s: Survey, a: Analysis): RoomDerived {
   const { I } = a.ctx, R = s.room, { M, made } = surveyMachine(V, a, s), issues: RoomIssue[] = [];
   const { calata, sheaveAt } = calcDrops(a, M);
   const mx = s.cw.x - s.car.x, my = s.cw.y - s.car.y, measured = Math.hypot(mx, my);
@@ -88,15 +93,27 @@ export function deriveRoom(V: FormValues, s: Survey, a: Analysis = analyse(V)): 
   const rf = M.rinvio, r = M.Dp / 2;
   const clash = !!G && rf?.on === 'frame' && G.pulleyAt + r > G.frame0 && G.pulleyAt - r < G.frame1 && G.pulleyZ + r > rf.top;
   if (G && M.Dp > 0 && (G.pulleyZ - r < 0 || clash)) issues.push('rinvio');
-  // the support carries the machine as the full design counts it: its mass, the static load on its axis, the dynamic
-  // coefficient (the data of the installation may change them on the drawing set's sheet 1)
-  const load = supportLoad(a.ctx, a.res.Mcw);
+  // the support carries the machine as the full design counts it: its mass with the maker's bedplate it stands on, the
+  // static load on its axis, the dynamic coefficient — as sheet 1 and the relazione tecnica count them
+  const load = supportLoad(a.ctx, a.res.Mcw, { machine: a.ctx.N.mass + bedplateMass(M) });
   // what stands on the floor besides the machine: the main switch by the door (no governor in the survey)
   const off = Math.abs(measured - calata), others = [switchBox(R)];
+  const beams = G ? hebFor(G, M, s.shaft, load) : null, chosenBy = R.heb;
   const checks: ShaftCheck[] = G ? [
-    ...roomChecksOf(R, [...machineParts(G, M), ...others]), ...beamChecks(G, load), ...rinvioChecks(G, M), ...fitChecks(G, M, others),
+    ...roomChecksOf(R, [...machineParts(G, M), ...others]), ...beamChecks(G, load), ...rinvioChecks(G, M), ...hebChecks(beams?.chosen.result ?? null), ...fitChecks(G, M, others),
     ...panelFloorChecks(G, M, others), check('m_calata', off <= KV_VERT.dropTol, Math.round(off), KV_VERT.dropTol, 0, 'mm'),
   ] : roomChecksOf(R);
   const hMin = M.Dp > 0 ? Math.ceil(ownAxis(M.D, M.shape ?? null) + r) : null;
-  return { analysis: a, made, M, G, site, calata: { calc: calata, measured }, hMin, load, checks, issues };
+  const heb = beams && chosenBy ? { ...beams, auto: { profile: !chosenBy.profile, dir: !chosenBy.dir } } : null;
+  return { analysis: a, made, M, G, site, calata: { calc: calata, measured }, hMin, load, heb, checks, issues };
+}
+
+/** The machine room of the survey: with the HEB beams' profile or direction left to the software, derived on the beams
+ *  it takes (their height raises the machine), which the room it draws names. */
+export function deriveRoom(V: FormValues, s: Survey, a: Analysis = analyse(V)): RoomDerived {
+  const R = s.room, chosenBy = R.heb, first = deriveOnce(V, s, a), taken = first.heb?.chosen;
+  if (!chosenBy || (chosenBy.profile && chosenBy.dir) || !first.heb || !taken) return first;
+  const heb = { profile: taken.profile, dir: taken.dir }, again = deriveOnce(V, { ...s, room: { ...R, heb } }, a);
+  const auto = { profile: !chosenBy.profile, dir: !chosenBy.dir };
+  return { ...again, heb: again.heb ? { ...again.heb, auto } : null };
 }

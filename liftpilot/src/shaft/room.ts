@@ -1,7 +1,7 @@
 // Machine room above the shaft: the room around the machine, its door, the control panel and the main switch, the
 // machine's support. Inputs and typical values; the drawings and the checks are in machine-room.ts, the support in
 // support.ts.
-import type { MachineSupport } from './support';
+import type { MachineSupport, ShaftBeams } from './support';
 
 export interface RoomInputs {
   /** clear room, as a rectangle in plan [mm] */
@@ -28,6 +28,8 @@ export interface RoomInputs {
   panelH: number;
   /** what the machine stands on (missing: levelling shims, the sheave's axis where the software puts it) */
   support?: MachineSupport;
+  /** HEB beams on the shaft's walls under the support, when the slab is not checked (missing: none) */
+  heb?: ShaftBeams;
 }
 
 export const DEFAULT_ROOM: RoomInputs = {

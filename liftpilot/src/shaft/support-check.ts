@@ -9,7 +9,7 @@ import { KV_VERT } from './norme-vert';
 import { PROFILES } from './profiles';
 import { rinvioAcross, rinvioRun, standBox } from './rinvio';
 import { padsOf, profileOf, supportOf } from './support';
-import { panelBox, type Box } from './room-floor';
+import { boxGap, panelBox, switchBox, type Box } from './room-floor';
 import { panelChecks, placePanel, type PanelSpot } from './room-panel';
 import type { RoomInputs } from './room';
 import type { ShaftCheck } from './types';
@@ -22,6 +22,9 @@ export interface SupportLoad {
   machine: number;
   static: number;
   dyn: number;
+  /** of the static load, what hangs on the car's fall (the car, the rated load, half the ropes, the cables); missing:
+   *  half of it (heb.ts takes where the load acts from it) */
+  car?: number;
 }
 
 export interface BeamResult {
@@ -184,4 +187,14 @@ export function panelFloorChecks(Gm: RoomGeo, M: MachineSpec, others: readonly B
  *  `others` (the governor, the main switch). */
 export function panelPlace(Gm: RoomGeo, M: MachineSpec, others: readonly Box[]): PanelSpot {
   return placePanel(Gm.room, [...machineParts(Gm, M), ...others], freeWith(Gm, M, others));
+}
+
+/** The checks of the governor on the room's floor (registry limitatore.posto), its outline `gov` [x0, y0, x1, y1] (room
+ *  axes; null: none drawn): m_gov, the least distance to the machine's parts, the control panel, the main switch and the
+ *  walls, at least 0; m_govfree, the free area beside it for its maintenance as deep as it needs (500 × 600 mm). */
+export function governorRoomChecks(gov: Box | null, Gm: RoomGeo, M: MachineSpec): ShaftCheck[] {
+  if (!gov) return [];
+  const R = Gm.room, near = [...machineParts(Gm, M), panelBox(R), switchBox(R)];
+  const gap = Math.min(gov[0], gov[1], R.W - gov[2], R.D - gov[3], ...near.map((b) => boxGap(gov, b))), free = freeBeside(R, gov, near);
+  return [check('m_gov', gap >= 0, Math.round(gap), 0, 0, 'mm'), check('m_govfree', free.depth >= free.need, Math.round(free.depth), free.need, 0, 'mm')];
 }

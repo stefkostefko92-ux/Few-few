@@ -1,10 +1,13 @@
 // A dimension of the replacement's machine room changed where it is drawn (src/shaft/room-view.ts): the keys of the
-// room (room.*), of the machine's support (sup.*, rinvio.height, sup.profile by choice), of the shaft under it (W, D)
+// room (room.*), of the machine's support (sup.*, rinvio.height, sup.profile by choice), of the HEB beams under it (heb.option,
+// heb.profile by choice), of the shaft under it (W, D)
 // and of the drops, moved together from the car's (drop.carX, drop.carY); the new length gives the value as in a whole design (src/shaft/edit.ts).
 // What the calculation decides (the drop's spacing, h) is not changed here: a new calculation is. Pure; the screen
 // validates the result as the save does (surveySchema).
 import type { Edit } from '@/drawing';
+import { lengthBounds } from '@/lib/shaft-edit';
 import { editValue } from '@/shaft/edit';
+import { withHebChoice } from '@/shaft/heb';
 import { PROFILE_NAMES } from '@/shaft/profiles';
 import type { RoomInputs } from '@/shaft/room';
 import { supportOf } from '@/shaft/support';
@@ -36,7 +39,8 @@ export function withSurveyValue(s: Survey, key: string, value: number): Survey |
 /** The survey after the dimension of `e` is given the new length (an edit by choice: the index of the entry chosen). */
 export function applySurveyEdit(s: Survey, e: Edit, length: number): Survey | null {
   if (e.pick) {
-    const o = e.pick.options[length], p = PROFILE_NAMES.find((x) => x === o?.set);
+    const o = e.pick.options[length], p = PROFILE_NAMES.find((x) => x === o?.set), hb = o ? withHebChoice(s.room, e.key, o.set) : null;
+    if (hb) return { ...s, room: hb };
     if (e.key !== 'sup.profile' || !p) return null;
     // another profile: the support's height goes back to the profile's own
     const sup = supportOf(s.room);
@@ -47,12 +51,18 @@ export function applySurveyEdit(s: Survey, e: Edit, length: number): Survey | nu
   return out && withSurveyValue(out, e.key, editValue(e, length));
 }
 
-/** The survey after an edit, validated as the save validates it: the new survey, or the bounds the value broke. */
+/** Where the input of an edit's key sits in the survey, as a validation issue names it. */
+const pathOf = (key: string): string => (key === 'W' || key === 'D' ? `shaft.${key}` : key === 'drop.carX' ? 'car.x' : key === 'drop.carY' ? 'car.y'
+  : key.startsWith('sup.') || key === 'rinvio.height' ? `room.support.${key.slice(key.indexOf('.') + 1)}` : key);
+
+/** The survey after an edit, validated as the save validates it: the new survey, or the bounds of the dimension typed
+ *  when the value broke its input's (else none). */
 export function editSurvey(s: Survey, e: Edit, length: number): { ok: true; survey: Survey } | { ok: false; min: number | null; max: number | null } {
   const next = applySurveyEdit(s, e, length);
-  if (!next) return { ok: false, min: null, max: null };
+  if (!next) return e.pick ? { ok: false, min: null, max: null } : { ok: false, ...lengthBounds(e, e.key === 'sup.length' ? 300 : e.key.startsWith('drop.') ? null : 0, null) };
   const r = surveySchema.safeParse(next);
   if (r.success) return { ok: true, survey: r.data };
-  const issue = r.error.issues[0];
-  return { ok: false, min: issue?.code === 'too_small' ? Number(issue.minimum) : null, max: issue?.code === 'too_big' ? Number(issue.maximum) : null };
+  const issue = r.error.issues[0], own = !e.pick && issue?.path.join('.') === pathOf(e.key);
+  if (!own || !issue) return { ok: false, min: null, max: null };
+  return { ok: false, ...lengthBounds(e, issue.code === 'too_small' ? Number(issue.minimum) : null, issue.code === 'too_big' ? Number(issue.maximum) : null) };
 }

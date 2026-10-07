@@ -2,10 +2,11 @@
 // hitches hang (the slab's openings, the ropes in section B-B), the governor, the dimensions that change the rope drop.
 // A whole design gives them from its layout (layoutSite); a machine replacement from the survey of its room
 // (src/lib/room). Model entities and numbers; pure.
-import { circle, rect, type Box as DrawBox, type Edit, type Entity, type Pt } from '../drawing';
+import { chain, circle, edit as E, rect, type Box as DrawBox, type Edit, type Entity, type Pt } from '../drawing';
 import { calataEdit } from './drop';
 import { governorSpot, type GovernorSpot } from './governor';
 import { hitchDepths } from './machine-room';
+import { govYEdit } from './plan-governor';
 import type { RoomInputs } from './room';
 import type { Box } from './room-floor';
 import type { Layout } from './types';
@@ -79,6 +80,13 @@ function governor(L: Layout, R: RoomInputs, out: Entity[]): DrawBox | null {
     const s = gx - R.shaftX < I.W / 2 ? -1 : 1;
     out.push({ e: 'text', at: [gx + s * (g.baseA + 60), gy - 30], text: `Limitatore ${g.model}`, size: 1.6, align: s < 0 ? 'r' : 'l', halo: true });
     out.push({ e: 'tag', at: [gx + s * (g.baseA + 200), gy + g.baseW + 230], text: 'P4', to: [gx + s * g.baseA, gy + g.baseW / 2] });
+    // where it stands, as the shaft's plan dimensions its rope: from the shaft's wall on its side (below it) and its clamped
+    // strand from the car rail's axis (on the side away from its name)
+    const wallX = R.shaftX + (spot.side === 'left' ? 0 : I.W), ry = R.shaftY + spot.rail.y, sy = R.shaftY + spot.y1, cx = gx - s * (g.baseA + 70);
+    out.push(chain({ dir: 'x', pts: [Math.min(wallX, gx), Math.max(wallX, gx)], at: gy - g.baseW - 140, from: spot.side === 'left' ? [sy, gy] : [gy, sy],
+      text: ['Fune limitatore {v}'], edit: [E('plan.govX')] }));
+    out.push(chain({ dir: 'y', pts: [Math.min(ry, sy), Math.max(ry, sy)], at: cx, from: ry <= sy ? [R.shaftX + spot.rail.x, gx] : [gx, R.shaftX + spot.rail.x],
+      text: ['{v} da asse guida'], edit: [govYEdit(spot)] }));
     // its footprint with its lettering and reference (the lettering about 1,6 mm high, 1:50 at most)
     return { x0: gx - g.baseA - (s < 0 ? 900 : 0), y0: gy - g.baseW - 60, x1: gx + g.baseA + (s > 0 ? 900 : 0), y1: gy + g.baseW + 330 };
   }

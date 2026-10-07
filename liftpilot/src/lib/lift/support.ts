@@ -1,14 +1,15 @@
 // The machine's load on its support as sheet 1 counts it (registry carichi.macchina): the static load on its axis (the
 // car, the rated load and the counterweight, half of them at 2:1, the ropes and the travelling cables) times the
-// dynamic coefficient, plus the machine with its bedframe; and the check of the beams under it (src/shaft/support-check.ts).
+// dynamic coefficient, plus the machine with its bedframe; and the check of the beams under it (src/shaft/support-check.ts)
+// and of the HEB beams on the shaft's walls (src/shaft/heb.ts).
 import type { ParsedInputs } from '@/calc/types';
-import { roomGeo, type Layout, type MachineSpec, type RoomGeo, type ShaftCheck } from '@/shaft';
+import { governorSpot, hebChecks, hebFor, roomGeo, type HebOption, type Layout, type MachineSpec, type RoomGeo, type Rope, type ShaftCheck } from '@/shaft';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { roomChecksOf } from '@/shaft/machine-room';
 import { switchBox, type Box } from '@/shaft/room-floor';
 import type { PanelSpot } from '@/shaft/room-panel';
 import { governorFootprint } from '@/shaft/room-site';
-import { beamChecks, fitChecks, machineParts, panelFloorChecks, panelPlace, rinvioChecks, type SupportLoad } from '@/shaft/support-check';
+import { beamChecks, fitChecks, governorRoomChecks, machineParts, panelFloorChecks, panelPlace, rinvioChecks, type SupportLoad } from '@/shaft/support-check';
 
 /** Length of each traction rope [m]: the roping times the travel and twice the rope beyond it, with the diverting
  *  pulley's drop or, with the machine below, the runs to it. */
@@ -32,11 +33,36 @@ export const headStatic = ({ I, N }: Pick<ParsedInputs, 'I' | 'N'>, Mcw: number)
 export const axisStatic = (x: { P: number; Q: number; Mcw: number; roping: number; ropes: number; cables: number }): number =>
   (x.roping > 1 ? (x.P + x.Q + x.Mcw) / 2 : x.P + x.Q + x.Mcw) + x.ropes + x.cables;
 
+/** Of the static load on the machine's axis, what hangs on the car's fall [kg]: the car and its rated load (half of them
+ *  at 2:1), half the ropes, the cables. */
+export const carSideStatic = (x: { P: number; Q: number; roping: number; ropes: number; cables: number }): number =>
+  (x.roping > 1 ? (x.P + x.Q) / 2 : x.P + x.Q) + x.ropes / 2 + x.cables;
+
+/** The mass of the maker's bedplate with the diverting pulley the machine stands on [kg], 0 on any other support: the
+ *  support carries it with the machine (registry carichi.macchina), on the screen, in the relazione and on sheet 1. */
+export const bedplateMass = (M: Pick<MachineSpec, 'rinvio'> | null): number => (M?.rinvio?.on === 'frame' ? M.rinvio.maker?.mass ?? 0 : 0);
+
 /** The load the support carries for these values: `over` takes the data of the installation (machine with bedframe,
  *  cables, dynamic coefficient) where given. */
 export function supportLoad({ I, N }: Pick<ParsedInputs, 'I' | 'N'>, Mcw: number, over: { machine?: number; cables?: number; dyn?: number } = {}): SupportLoad {
   const ropes = N.n * N.qf * ropeLength(I), cables = cablesMass(I.H, over.cables);
-  return { machine: over.machine ?? N.mass, static: axisStatic({ P: I.P, Q: I.Q, Mcw, roping: I.r, ropes, cables }), dyn: over.dyn ?? KV_VERT.dynFactor };
+  return {
+    machine: over.machine ?? N.mass, static: axisStatic({ P: I.P, Q: I.Q, Mcw, roping: I.r, ropes, cables }), dyn: over.dyn ?? KV_VERT.dynFactor,
+    car: carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes, cables }),
+  };
+}
+
+/** The governor's rope where it goes through the slab, both strands (room axes); none without one placed. */
+const governorRopes = (L: Layout, G: RoomGeo): Rope[] => {
+  const spot = governorSpot(L), R = G.room;
+  return spot ? [spot.y1, spot.y2].map((y) => ({ at: [R.shaftX + spot.x, R.shaftY + y] as const, r: spot.G.rope / 2 })) : [];
+};
+
+/** The HEB beams on the shaft's walls under the machine of a whole design at `load` (heb.ts hebFor): the six weighed and
+ *  the one taken; null without them or without a room over the shaft. */
+export function hebOf(L: Layout, M: MachineSpec, load: SupportLoad): { options: HebOption[]; chosen: HebOption } | null {
+  const G = roomGeo(L, M), I = L.inputs;
+  return G ? hebFor(G, M, { W: I.W, D: I.D, wall: I.wall }, load, governorRopes(L, G)) : null;
 }
 
 /** What stands on the floor of the room over the shaft besides the machine: the governor as the plan draws it, the main
@@ -47,15 +73,16 @@ const floorOthers = (L: Layout, G: RoomGeo): Box[] => {
 };
 
 /** The checks of the machine's support (the beams' stress and deflection, none for the other supports; the reach of
- *  a maker's bedplate with the diverting pulley) and of the machine in the room (it fits, the free area beside it, and
- *  the free area in front of the panel up to what stands on the floor, in place of the shaft's own m_panel:
- *  mergeChecks; the panel clear of it all, the ways from the door; `above`: the machine stands in the room over the
- *  shaft, not below). */
+ *  a maker's bedplate with the diverting pulley; the HEB beams on the shaft's walls) and of the machine in the room (it
+ *  fits, the free area beside it, and the free area in front of the panel up to what stands on the floor, in place of
+ *  the shaft's own m_panel: mergeChecks; the panel clear of it all, the ways from the door; `above`: the machine stands
+ *  in the room over the shaft, not below). */
 export const supportChecks = (L: Layout, M: MachineSpec, load: SupportLoad, above = true): ShaftCheck[] => {
   const G = roomGeo(L, M);
   if (!above || !G) return [...beamChecks(G, load), ...rinvioChecks(G, M)];
   const others = floorOthers(L, G), panel = roomChecksOf(G.room, [...machineParts(G, M), ...others]).filter((c) => c.id === 'm_panel');
-  return [...beamChecks(G, load), ...rinvioChecks(G, M), ...fitChecks(G, M, others), ...panel, ...panelFloorChecks(G, M, others)];
+  return [...beamChecks(G, load), ...rinvioChecks(G, M), ...hebChecks(hebOf(L, M, load)?.chosen.result ?? null), ...fitChecks(G, M, others), ...panel,
+    ...panelFloorChecks(G, M, others), ...governorRoomChecks(governorFootprint(L, G.room), G, M)];
 };
 
 /** Where the software puts the control panel in the room over the shaft for the machine `M` (room-panel.ts placePanel);

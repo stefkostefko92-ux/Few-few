@@ -4,9 +4,11 @@
 // or under the pit, the ropes down through the pit's slab; the walls and the door, the controller with the free area in
 // front of it, the main switch, the two runs of the ropes to the sheave. Plan in the shaft's coordinates; section C-C
 // along the drops' direction (U from the car's drop, through the sheave's centre) with the height over the lowest floor.
-// Model entities with their dimensions; the machine is the 3D's (machine-outline.ts) scaled to the sheave or a maker's
-// as it is, its side view the outline of its body. Pure.
-import { chain, line, path, rect, textWidth, type Box, type Entity, type Pt } from '@/drawing';
+// Model entities with their dimensions — the room's sizes and its door changed where they are drawn (ShaftInputs.below),
+// the shaft's (W, D, its wall, the pit) as on its own drawings; the machine's place and its sheave's axis follow the
+// ropes and stay references —; the machine is the 3D's (machine-outline.ts) scaled to the sheave or a maker's as it is,
+// its side view the outline of its body. Pure.
+import { chain, edit as E, line, path, rect, textWidth, type Box, type Edit, type Entity, type Pt } from '@/drawing';
 import { MACHINE_TOP, machinePlan } from '@/shaft/machine-outline';
 import { bodyBox } from '@/shaft/machine-shape';
 import { shapePlan } from '@/shaft/machine-shape-view';
@@ -153,25 +155,27 @@ export function belowPlanEntities(L: Layout, M: MachineSpec, g: BottomGeo, s = 2
   // dimensions: the door on its wall
   const x0 = Math.min(o[0], under ? 0 : -T), x1 = Math.max(o[0] + R.W, under ? I.W : I.W + T), y0 = Math.min(o[1], under ? 0 : -T), y1 = Math.max(o[1] + R.D, under ? I.D : I.D + T);
   const doorAlongX = R.doorWall === 'front' || R.doorWall === 'rear', doorLen = doorAlongX ? R.W : R.D, d0 = doorAlongX ? o[0] : o[1];
-  out.push(chain({ dir: doorAlongX ? 'x' : 'y', pts: [d0, d0 + R.doorAt, d0 + R.doorAt + R.doorW, d0 + doorLen], side: sideOf(R.doorWall), row: 0, text: [null, `Porta ${R.doorW}x H. ${R.doorH}`, null] }));
+  out.push(chain({ dir: doorAlongX ? 'x' : 'y', pts: [d0, d0 + R.doorAt, d0 + R.doorAt + R.doorW, d0 + doorLen], side: sideOf(R.doorWall), row: 0, text: [null, `Porta ${R.doorW}x H. ${R.doorH}`, null],
+    edit: [E('below.doorAt'), E('below.doorW'), E('below.doorAt', doorLen - R.doorW, -1)] }));
   out.push(...(under || !open ? underChains(I, R, o) : besideChains(I, g, R, o, open, C)));
   return { entities: out, bounds: { x0: x0 - WALL, y0: y0 - WALL, x1: x1 + WALL, y1: y1 + WALL } };
 }
 
-/** A chain's points with the segments shorter than a millimetre left out (their texts with them). */
-function steps(pts: readonly number[], text: readonly (string | null)[]): { pts: number[]; text: (string | null)[] } {
-  const p = [pts[0]], t: (string | null)[] = [];
-  for (let i = 1; i < pts.length; i++) if (pts[i] - p[p.length - 1] >= 1) { p.push(pts[i]); t.push(text[i - 1]); }
-  return { pts: p, text: t };
+/** A chain's points with the segments shorter than a millimetre left out (their texts and edits with them). */
+function steps(pts: readonly number[], text: readonly (string | null)[], edit: readonly (Edit | null)[]): { pts: number[]; text: (string | null)[]; edit: (Edit | null)[] } {
+  const p = [pts[0]], t: (string | null)[] = [], e: (Edit | null)[] = [];
+  for (let i = 1; i < pts.length; i++) if (pts[i] - p[p.length - 1] >= 1) { p.push(pts[i]); t.push(text[i - 1]); e.push(edit[i - 1]); }
+  return { pts: p, text: t, edit: e };
 }
 
 /** Under the pit: where the shaft stands from the room's walls and its size, the room's outermost (the door is on the
- *  front wall). */
+ *  front wall); the room grows from its corner nearest the origin (the shaft's place in it follows the machine). */
 function underChains(I: Layout['inputs'], R: RoomInputs, o: P2): Entity[] {
-  const x = steps([o[0], 0, I.W, o[0] + R.W], [null, 'Vano {v}', null]), y = steps([o[1], 0, I.D, o[1] + R.D], [null, 'Vano {v}', null]);
+  const x = steps([o[0], 0, I.W, o[0] + R.W], [null, 'Vano {v}', null], [null, E('W'), E('below.W', I.W - o[0])]);
+  const y = steps([o[1], 0, I.D, o[1] + R.D], [null, 'Vano {v}', null], [null, E('D'), E('below.D', I.D - o[1])]);
   return [
-    chain({ dir: 'x', ...x, side: 'top', row: 0 }), chain({ dir: 'x', pts: [o[0], o[0] + R.W], side: 'top', row: 1, text: ['{v} Locale'] }),
-    chain({ dir: 'y', ...y, side: 'right', row: 0 }), chain({ dir: 'y', pts: [o[1], o[1] + R.D], side: 'right', row: 1, text: ['{v} Locale'] }),
+    chain({ dir: 'x', ...x, side: 'top', row: 0 }), chain({ dir: 'x', pts: [o[0], o[0] + R.W], side: 'top', row: 1, text: ['{v} Locale'], edit: [E('below.W')] }),
+    chain({ dir: 'y', ...y, side: 'right', row: 0 }), chain({ dir: 'y', pts: [o[1], o[1] + R.D], side: 'right', row: 1, text: ['{v} Locale'], edit: [E('below.D')] }),
   ];
 }
 
@@ -181,26 +185,30 @@ function underChains(I: Layout['inputs'], R: RoomInputs, o: P2): Entity[] {
 function besideChains(I: Layout['inputs'], g: BottomGeo, R: RoomInputs, o: P2, open: Wall, C: Pt): Entity[] {
   const k = Math.abs(g.dir[0]) > Math.abs(g.dir[1]) ? 0 : 1, len = k ? I.D : I.W, rLo = o[k], rHi = o[k] + (k ? R.D : R.W);
   const toRoom = g.dir[k] > 0, j = 1 - k, wallLen = j ? I.D : I.W, axis = Math.round(C[j]);
+  const size = (a: number): string => (a ? 'D' : 'W'), shaft = E(size(k)), room = E(`below.${size(k)}`);
   return [
     chain({ dir: k ? 'y' : 'x', pts: toRoom ? [0, len, rLo, rHi] : [rLo, rHi, 0, len], side: sideOf(OPPOSITE[R.doorWall]), row: 0,
-      text: toRoom ? ['Vano {v}', '{v}', '{v} Locale'] : ['{v} Locale', '{v}', 'Vano {v}'] }),
-    chain({ dir: j ? 'y' : 'x', pts: [o[j], o[j] + (j ? R.D : R.W)], side: sideOf(OPPOSITE[open]), row: 0, text: ['{v} Locale'] }),
+      text: toRoom ? ['Vano {v}', '{v}', '{v} Locale'] : ['{v} Locale', '{v}', 'Vano {v}'], edit: toRoom ? [shaft, E('wall'), room] : [room, E('wall'), shaft] }),
+    chain({ dir: j ? 'y' : 'x', pts: [o[j], o[j] + (j ? R.D : R.W)], side: sideOf(OPPOSITE[open]), row: 0, text: ['{v} Locale'], edit: [E(`below.${size(j)}`)] }),
+    // the slow shaft's axis where the ropes put it (a reference)
     chain({ dir: j ? 'y' : 'x', pts: [0, axis, wallLen], side: sideOf(open), row: 0, text: ['Asse argano {v}', null] }),
-    chain({ dir: j ? 'y' : 'x', pts: [0, wallLen], side: sideOf(open), row: 1, text: ['Vano {v}'] }),
+    chain({ dir: j ? 'y' : 'x', pts: [0, wallLen], side: sideOf(open), row: 1, text: ['Vano {v}'], edit: [E(size(j))] }),
   ];
 }
 
 /** Section C-C: along the drops' direction through the sheave's centre, the height over the lowest floor. */
 export function belowSectionEntities(L: Layout, M: MachineSpec, g: BottomGeo): { entities: Entity[]; bounds: Box } {
   const I = L.inputs, V = I.vertical, T = I.wall, S = section(L), out: Entity[] = [], under = g.scheme === 'under';
-  const { F, zDir, C, ext, body, room: R } = placed(L, M, g), w = ropeWidths(M.n, M.d), c = KL.belowRoomClear;
-  const along = (p: P2): number => dot([p[0] - g.car[0], p[1] - g.car[1]], g.dir), us = body.map(along);
+  const { F, zDir, C, ext, room: R } = placed(L, M, g), w = ropeWidths(M.n, M.d);
+  const along = (p: P2): number => dot([p[0] - g.car[0], p[1] - g.car[1]], g.dir);
   const back = exitAlong(g.car, [-g.dir[0], -g.dir[1]], I.W, I.D), uC = along(C), sg = dot(zDir, g.dir);
   const zs = g.zSheave, base = zs - F.axis, floor = g.roomFloor, H = R.H, top = under ? 900 : H + SLAB + 300;
   // the shaft's walls cut, the pit's floor (beside the shaft the wall behind the counterweight open round the slow
   // shaft's sleeve); the room past it, or under the pit as far as the machine needs (bottom.ts belowRoom)
   const u0 = -back, u1 = g.wallAt, r = 0.075 * (M.D / 560) * 1000 + 30, sLow = under ? S.pitFloor - KL.underSlab : S.pitFloor - SLAB;
-  const r0 = under ? Math.min(u0, ...us.map((u) => u - c)) : u1 + T, r1 = under ? Math.max(u1, ...us.map((u) => u + c)) : Math.max(u1 + T + KL.belowRoomLen, ...us.map((u) => u + c));
+  // the room along the section, as bottom.ts belowRoom has it (its sizes set on the drawings in place)
+  const rs = [[0, 0], [R.W, 0], [R.W, R.D], [0, R.D]].map(([x, y]) => along([x - R.shaftX, y - R.shaftY]));
+  const r0 = under ? Math.min(...rs) : u1 + T, r1 = under ? Math.max(...rs) : u1 + T + (Math.abs(g.dir[0]) > Math.abs(g.dir[1]) ? R.W : R.D);
   const low = under ? floor - SLAB : sLow;
   out.push(rect(u0 - T, sLow, u0, top, 'wall', 'concrete'));
   if (ext > 0) out.push(rect(u1, low, u1 + T, zs - r, 'wall', 'concrete'), rect(u1, zs + r, u1 + T, top, 'wall', 'concrete'), rect(u1, zs - r, u1 + T, zs + r, 'thin', 'paper'));
@@ -235,13 +243,18 @@ export function belowSectionEntities(L: Layout, M: MachineSpec, g: BottomGeo): {
   // the ropes up from the sheave toward the head, cut at the drawing's top
   for (const s of [-1, 1]) out.push(line([uC + s * w.ropes, zs], [uC + s * w.ropes, top - 60], 'thin'));
   out.push({ e: 'text', at: [(u0 + Math.min(u1, uC - 400)) / 2, S.pitFloor + 300], text: 'FOSSA', size: 2.2, align: 'c' });
-  // dimensions: the room's height, the sheave's axis over its floor, the pit; along the section the wall and the room
+  // dimensions: the door's and the room's heights (as section B-B of a room above), the sheave's axis over its floor, the
+  // pit; along the section the wall and the room
   const right = r1 + (under ? T : WALL), x0 = (under ? Math.min(u0, r0) : u0) - T;
-  out.push(chain({ dir: 'y', pts: [floor, floor + H], side: 'right', row: 0, text: ['{v} H. Locale'] }));
+  out.push(chain({ dir: 'y', pts: [floor, floor + R.doorH], side: 'right', row: 0, text: ['{v} H. Porta'], edit: [E('below.doorH')] }));
+  out.push(chain({ dir: 'y', pts: [floor, floor + H], side: 'right', row: 1, text: ['{v} H. Locale'], edit: [E('below.H')] }));
+  // the sheave's axis over the room's floor: the machine on its levelling shims (a reference)
   out.push(chain({ dir: 'y', pts: [floor, zs], at: right - (under ? T + 300 : WALL + 300), from: [null, uC], text: ['Asse {v}'] }));
-  out.push(chain({ dir: 'y', pts: [S.pitFloor, 0], side: 'left', row: 0, text: ['Fossa {v}'] }));
+  out.push(chain({ dir: 'y', pts: [S.pitFloor, 0], side: 'left', row: 0, text: ['Fossa {v}'], edit: [E('v.pit')] }));
+  const size = Math.abs(g.dir[0]) > Math.abs(g.dir[1]) ? 'W' : 'D';
   if (under) {
-    out.push(chain({ dir: 'x', pts: [u0, u1], side: 'top', row: 0, text: ['Vano {v}'] }), chain({ dir: 'x', pts: [r0, r1], side: 'bottom', row: 0, text: ['{v} Locale'] }));
-  } else out.push(chain({ dir: 'x', pts: [u0, u1, u1 + T, r1], side: 'bottom', row: 0, text: ['Vano {v}', '{v}', '{v} Locale'] }));
+    out.push(chain({ dir: 'x', pts: [u0, u1], side: 'top', row: 0, text: ['Vano {v}'], edit: [E(size)] }),
+      chain({ dir: 'x', pts: [r0, r1], side: 'bottom', row: 0, text: ['{v} Locale'], edit: [E(`below.${size}`)] }));
+  } else out.push(chain({ dir: 'x', pts: [u0, u1, u1 + T, r1], side: 'bottom', row: 0, text: ['Vano {v}', '{v}', '{v} Locale'], edit: [E(size), E('wall'), E(`below.${size}`)] }));
   return { entities: out, bounds: { x0, y0: low, x1: right, y1: top } };
 }

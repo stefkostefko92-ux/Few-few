@@ -36,6 +36,8 @@ export interface MachineSpec {
   shape?: MachineShape | null;
   /** where the diverting pulley turns in the room (rinvio.ts); missing or null: no pulley, or no room */
   rinvio?: RinvioFrame | null;
+  /** the HEB beams on the shaft's walls the support stands on: their height over the floor (missing or 0: none) */
+  base?: number;
 }
 
 export interface RoomGeo {

@@ -35,7 +35,7 @@ export function buildGovernor(L: Layout, S: Section, g: GovernorSpot, roomFloor:
     for (const w of [-80, 80]) B.rod([wallX, yc + w, zBase - 260], [x + inward * 150, yc + w, zBase - 20], 12, M.galv, 10);
   }
   governorFrame(B, M, [x, yc, zGov], inward, roomFloor === null ? wallX - x : null, roomFloor !== null, G);
-  tensionWeight(B, M, [x, yc, zTension], G, g.rail, L.inputs.carRail, g.lever, 1);
+  tensionWeight(B, M, [x, yc, zTension], G, g.rail, L.inputs.carRail, g.lever, y1 >= g.rail.y ? 1 : -1);
   const group = new THREE.Group(), top = governorWheel(M, inward, G), bottom = governorWheel(M, null, G);
   top.position.copy(P(x, yc, zGov));
   bottom.position.copy(P(x, yc, zTension));

@@ -115,7 +115,9 @@ export function buildSling(L: Layout, M: LiftMaterials, B: Batch, hitch: Hitch |
   // the safety gear's lever out to the governor rope, clamped on it
   const govRail = gov ? carRails.find((r) => (gov.side === 'left' ? r.dir === 'right' : r.dir === 'left')) : undefined;
   if (gov && govRail) {
-    B.box(gov.x - 12, govRail.y + 30, -100, gov.x + 12, gov.y1 + 25, -80, M.galv);
+    // toward the strand, on whichever side of the rail it was put
+    const s = gov.y1 >= govRail.y ? 1 : -1;
+    B.box(gov.x - 12, govRail.y + s * 30, -100, gov.x + 12, gov.y1 + s * 25, -80, M.galv);
     B.box(gov.x - 18, gov.y1 - 18, -125, gov.x + 18, gov.y1 + 18, -55, M.frame);
   }
 

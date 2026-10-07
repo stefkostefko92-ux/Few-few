@@ -13,7 +13,7 @@ import type { FormValues } from '@/calc/types';
 import type { Edit } from '@/drawing';
 import { deriveLift, type AutoFlags, type BottomScheme, type Collaudo, type LiftDerived, type LiftInputs } from '@/lib/lift';
 import { enteredBy, existingMissing, filled, layoutTo, missingOf, type BlankKey, type LiftDraft } from '@/lib/lift/blank';
-import { drawnShaft, movedPanel, panelEntered } from '@/lib/lift/panel-form';
+import { drawnShaft, edited, enteredShaft, movedPanel, panelEntered } from '@/lib/lift/panel-form';
 import { withPitches, type BracketPitches } from '@/shaft/brackets';
 import { deflectorInputs, liftCandidate, type AdviceModel, type MachineCandidate } from '@/lib/lift/advice';
 import type { CatalogChoice } from '@/lib/lift/catalog';
@@ -148,12 +148,12 @@ export default function LiftWorkspace({ projectId, initial, blank: initialBlank 
     });
     setSaveError(null);
   };
-  // the drawings show the panel where the software put it; moved there, its place is entered
+  // the drawings show the panel where the software put it and the HEB beams it took; moved or chosen there, entered
   const drawn = useMemo(() => drawnShaft(inp.shaft, derived), [inp.shaft, derived]);
   const setDrawn = (next: ShaftInputs): void => {
     const moved = movedPanel(next, derived);
     if (moved) setForm((f) => panelEntered(f, moved));
-    setShaft(next);
+    setShaft(enteredShaft(next, inp.shaft, derived));
   };
   const setCalc = (patch: FormValues): void => {
     setForm((f) => {
@@ -179,8 +179,7 @@ export default function LiftWorkspace({ projectId, initial, blank: initialBlank 
     edit(e, length) {
       if (e.key.startsWith('calc.')) return setCalcFromDrawing(e.key, editValue(e, length));
       // the support the drawings show: the bedplate with the diverting pulley when none was chosen
-      const R = drawn.room, shaft = R && !R.support && derived?.machine.rinvio ? { ...drawn, room: { ...R, support: { kind: 'rinvio' as const } } } : drawn;
-      const r = editShaft(shaft, e, length);
+      const r = editShaft(edited(drawn, e, derived), e, length);
       if (!r.ok) return r;
       setDrawn(r.inputs);
       return null;
@@ -270,7 +269,8 @@ export default function LiftWorkspace({ projectId, initial, blank: initialBlank 
             {complete ? (
               <>
                 <LiftSimulator derived={derived} fmt={P.fmt} api={sim} />
-                <section className="panel"><PlanEditor I={drawn} onChange={setDrawn} machine={above ? derived.machine : null} onCalc={setCalcFromDrawing} id="lift-plan" /></section>
+                <section className="panel"><PlanEditor I={drawn} onChange={setDrawn} machine={above ? derived.machine : null} onCalc={setCalcFromDrawing} id="lift-plan"
+                  below={derived.bottom ? { machine: derived.machine, analysis: derived.analysis, scheme: derived.bottom } : null} /></section>
                 <LiftChecks derived={derived} X={X} fmt={P.fmt} onSimulate={(req) => sim.current?.play(req)} />
                 <PanevBom L={derived.layout} prices={prices} />
               </>

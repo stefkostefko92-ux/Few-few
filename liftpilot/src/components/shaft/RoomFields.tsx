@@ -6,14 +6,16 @@
 // the pulley stays in the room, never in the shaft — with the profile and height). Shared by a whole design's options
 // (RoomOptions) and a replacement's survey (components/room). A measure still to enter shows nothing (and a flat roof
 // no ridge); the support's fields come with the machine, once the rest is entered. In a whole design the software may
-// place the control panel: its wall and place are then shown as it put them, marked as such.
+// place the control panel: its wall and place are then shown as it put them, marked as such. With the support, the HEB
+// beams on the shaft's walls it may stand on (HebFields).
 import { useTranslations } from 'next-intl';
-import type { RoomInputs } from '@/shaft';
+import type { HebTaken, RoomInputs } from '@/shaft';
 import { PROFILE_NAMES } from '@/shaft/profiles';
 import { SUPPORT_KINDS, hasProfile, profileOf, supportHeight, supportLength, supportOf, type MachineSupport } from '@/shaft/support';
 import type { MachineShape } from '@/shaft/machine-shape';
 import type { RinvioFrame } from '@/shaft/rinvio';
 import { mmOf } from '../blank';
+import HebFields from './HebFields';
 
 export interface RoomMachine {
   /** the machine's sheave and the axis the software takes on shims [mm], where its diverting pulley turns (null: none) */
@@ -21,9 +23,11 @@ export interface RoomMachine {
   shimsAxis: number;
   shape?: MachineShape | null;
   rinvio?: RinvioFrame | null;
+  /** the HEB beams on the shaft's walls as the derivation weighed them */
+  heb?: HebTaken | null;
 }
 
-type Measure = Exclude<keyof RoomInputs, 'support'>;
+type Measure = Exclude<keyof RoomInputs, 'support' | 'heb'>;
 
 /** The control panel the software places (registry locale.quadro.posto): whether it does, the switch, where it put it
  *  (null: not yet worked out). */
@@ -47,7 +51,7 @@ interface Props {
   panel?: RoomPanel;
 }
 
-type NumKey = Exclude<keyof RoomInputs, 'doorWall' | 'panelWall' | 'support'>;
+type NumKey = Exclude<keyof RoomInputs, 'doorWall' | 'panelWall' | 'support' | 'heb'>;
 const WALLS = ['front', 'rear', 'left', 'right'] as const;
 
 export default function RoomFields({ R, put, machine, blank = () => false, choose = '—', panel }: Props) {
@@ -120,6 +124,7 @@ export default function RoomFields({ R, put, machine, blank = () => false, choos
         : rf.maker ? t('sp_rinvio_maker', { code: rf.maker.code, mass: rf.maker.mass, axis: rf.maker.pulleyAxis, A: rf.maker.sheaveAxis })
           : t('sp_rinvio_ours', { axis: Math.round(rf.pulleyAxis), top: Math.round(rf.top) })}</p> : null}
       <p className="note">{t('sp_hint')}</p>
+      <HebFields R={R} put={put} heb={machine.heb} deflector={rf !== null} />
     </>
   ) : null;
   return (

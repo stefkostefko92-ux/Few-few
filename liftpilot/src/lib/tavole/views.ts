@@ -142,13 +142,20 @@ function sectionPreview(L: Layout): ReturnType<typeof cropped> | null {
   }
 }
 
-export type ScreenView = 'plan' | 'head' | 'pit-plan' | SectionKind | 'room-plan' | 'room-section';
+export type ScreenView = 'plan' | 'head' | 'pit-plan' | SectionKind | 'room-plan' | 'room-section' | 'below-plan' | 'below-section';
+
+/** A machine below as the screens draw its room: the machine, the calculation it comes from, the rope scheme. */
+export interface BelowSource {
+  machine: MachineSpec;
+  analysis: Analysis;
+  scheme: BottomScheme;
+}
 
 /** One view for the screens that change the design: the plan at the main floor, at the top floor and in the headroom
  *  (its walls where they stand there) or at the lowest floor and in the pit (the buffers and the refuge space), section
  *  A-A whole or a detail (the headroom, the car at the main floor, the pit), the machine room in plan or in section B-B
- *  (with a machine); null when it cannot be drawn. */
-export function screenView(L: Layout, v: ScreenView, M: MachineSpec | null): ReturnType<typeof cropped> | null {
+ *  (with a machine), the room of a machine below in plan or in section C-C (`below`); null when it cannot be drawn. */
+export function screenView(L: Layout, v: ScreenView, M: MachineSpec | null, below: BelowSource | null = null): ReturnType<typeof cropped> | null {
   const V = L.inputs.vertical, top = V.floors.length - 1, main = Math.min(V.main, top), area: Box = { x0: 0, y0: 0, x1: 190, y1: 190 };
   try {
     if (v === 'plan') return cropped(planView(L, 'main', main, `piano "${V.floors[main]?.label ?? ''}"`, area));
@@ -157,6 +164,10 @@ export function screenView(L: Layout, v: ScreenView, M: MachineSpec | null): Ret
     if (v === 'room-plan' || v === 'room-section') {
       const r = M ? roomView(L, M, v === 'room-plan' ? 'plan' : 'section', area) : null;
       return r ? cropped(r) : null;
+    }
+    if (v === 'below-plan' || v === 'below-section') {
+      const B = below;
+      return B ? cropped(belowView(L, B.machine, belowGeoOf(B.analysis, L, B.machine, B.scheme), v === 'below-plan' ? 'plan' : 'section', area)) : null;
     }
     return cropped(sectionView(L, v, v === 'floor' ? main : v === 'pit' ? 0 : top, v === 'full' ? { x0: 0, y0: 0, x1: 130, y1: 260 } : area));
   } catch {

@@ -15,6 +15,19 @@ import type { RoomInputs } from './room';
 export const SUPPORT_KINDS = ['shims', 'frame', 'beams', 'plates', 'plinth', 'rinvio'] as const;
 export type SupportKind = (typeof SUPPORT_KINDS)[number];
 
+/** The HEB beams on the shaft's walls the support may stand on (heb.ts, registry locale.putrelle.vano): the profiles
+ *  the software chooses among, and the direction they span — the shaft's width (x) or its depth (y). */
+export const HEB_PROFILES = ['HEB 120', 'HEB 140', 'HEB 160'] as const;
+export type HebProfile = (typeof HEB_PROFILES)[number];
+export type HebDir = 'x' | 'y';
+
+/** Two HEB beams bearing on the shaft's opposite walls under the support, when the slab is not checked: the profile and
+ *  the direction (each missing: the software's choice, the shortest beams that pass). */
+export interface ShaftBeams {
+  profile?: HebProfile;
+  dir?: HebDir;
+}
+
 export interface MachineSupport {
   kind: SupportKind;
   /** a frame's or the beams' profile (missing: the typical one) */
@@ -41,6 +54,16 @@ export const hasProfile = (s: MachineSupport): boolean => s.kind === 'frame' || 
 export const ownAxis = (D: number, shape: MachineShape | null = null): number => machineFrame(D, shape).axis;
 export const bedplate = (D: number, shape: MachineShape | null = null): readonly [number, number] => machineFrame(D, shape).run;
 
+/** Whether the support stands on HEB beams over the shaft's walls: chosen, under a support that can (not the beams from
+ *  wall to wall of the room, not a concrete plinth). */
+export const onHeb = (R: RoomInputs | null | undefined, deflector = false): boolean =>
+  !!R?.heb && supportOf(R, deflector).kind !== 'beams' && supportOf(R, deflector).kind !== 'plinth';
+
+/** The HEB beams' height under the support [mm]: the profile chosen, else the tallest of them (the derivation puts its
+ *  choice in its place); 0 without them. */
+export const hebBase = (R: RoomInputs | null | undefined, deflector = false): number =>
+  (R?.heb && onHeb(R, deflector) ? PROFILES[R.heb.profile ?? HEB_PROFILES[HEB_PROFILES.length - 1]].h : 0);
+
 /** The pads under the mounts [mm]: none on the shims and on the bedplate with the pulley. */
 export const padsOf = (s: MachineSupport): number => (s.kind === 'shims' || s.kind === 'rinvio' ? 0 : KV_VERT.supportPads);
 
@@ -55,9 +78,9 @@ export function supportHeight(s: MachineSupport, D: number, shimsAxis: number, s
   return s.kind === 'plates' ? KV_VERT.supportPlate : KV_VERT.supportPlinth;
 }
 
-/** The sheave's axis over the room's floor on this support [mm]. */
-export const sheaveAxisOn = (s: MachineSupport, D: number, shimsAxis: number, shape: MachineShape | null = null, Dp = 0): number =>
-  supportHeight(s, D, shimsAxis, shape, Dp) + padsOf(s) + ownAxis(D, shape);
+/** The sheave's axis over the room's floor on this support standing `base` over the floor (the HEB beams) [mm]. */
+export const sheaveAxisOn = (s: MachineSupport, D: number, shimsAxis: number, shape: MachineShape | null = null, Dp = 0, base = 0): number =>
+  base + supportHeight(s, D, shimsAxis, shape, Dp) + padsOf(s) + ownAxis(D, shape);
 
 /** A frame's or a plinth's length along the drop line [mm]; null for the others. */
 export function supportLength(s: MachineSupport, D: number, shape: MachineShape | null = null): number | null {

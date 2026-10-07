@@ -48,7 +48,8 @@ export const VOCI_SUPPORTO: readonly VoceVano[] = [
     valore: 'l’argano sul suo basamento — con il telaio del rinvio o con il supporto del rinvio — sta dentro il locale in pianta e sotto il '
       + 'soffitto: la distanza minima dai muri e dal soffitto non è negativa; ingombri dalle quote del costruttore per gli argani disegnati com’è, '
       + 'dall’argano generico del software (scalato alla puleggia) per gli altri; la puleggia di rinvio sul suo supporto sotto l’argano '
-      + 'libera il basamento dell’argano sopra di essa (solo le putrelle sollevate la scavalcano)',
+      + 'libera il basamento dell’argano sopra di essa (solo le putrelle sollevate la scavalcano); con la macchina in basso l’argano — corpo e '
+      + 'puleggia — sta dentro il suo locale, accanto al vano o sotto di esso, con le misure date sui disegni o quelle del software',
     riferimento: '—', fonte: 'geometria del progetto: la pianta e l’altezza del locale inserite, gli ingombri dell’argano e del basamento',
     stato: 'derivazione', verifiche: ['m_fit', 'm_stand'],
   },

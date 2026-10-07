@@ -3,11 +3,12 @@
 // in the walls (clear of the floor when higher than their profile: a machine not standing on the floor), steel plates
 // or a concrete plinth under the mounts, rubber pads under the mounts on all but the shims; the bedplate with the
 // diverting pulley (src/shaft/rinvio.ts): legs of square tube on dampers, beams round the top and the two plates its
-// axle turns in, hung from short channels to the side beams. Built in a group placed and turned as the machine's
-// bedplate: x along the machine (the rope drop line, 0 at the sheave), y up from the mounts' underside, z across, in
-// metres. Loaded only through boot.ts (lazy).
+// axle turns in, hung from short channels to the side beams; all of it on the HEB beams over the shaft's walls when the
+// room puts them there (src/shaft/heb.ts, hebBeams). Built in a group placed and turned as the machine's bedplate: x
+// along the machine (the rope drop line, 0 at the sheave), y up from the mounts' underside, z across, in metres. Loaded
+// only through boot.ts (lazy).
 import * as THREE from 'three/webgpu';
-import { KV_VERT, PROFILES, hasProfile, isChannel, padsOf, profileOf, supportSpan, type MachineSupport, type Profile } from '@/shaft';
+import { KV_VERT, PROFILES, hasProfile, isChannel, padsOf, profileOf, supportSpan, type HebLayout, type MachineSupport, type Profile, type RoomInputs } from '@/shaft';
 import type { RinvioFrame } from '@/shaft/rinvio';
 import type { MachineFrame } from '@/shaft/machine-shape';
 import { Batch } from './geom';
@@ -37,10 +38,11 @@ export interface FramedPulley {
 /**
  * The support under the machine of frame `F` (the generic one scaled to its sheave, or a maker's on our bedframe) whose
  * mounts stand `gap` metres over the floor. `walls`: the room's walls along the machine's x from the sheave [mm] (the
- * beams' bearings); null without a room. `pulley`: the diverting pulley in the bedplate.
+ * beams' bearings); null without a room. `pulley`: the diverting pulley in the bedplate. `base`: the HEB beams it stands
+ * on over the floor [m].
  */
 export function buildSupport(sup: MachineSupport, F: MachineFrame, D: number, gap: number, walls: readonly [number, number] | null, M: LiftMaterials,
-  pulley: FramedPulley | null = null): THREE.Group {
+  pulley: FramedPulley | null = null, base = 0): THREE.Group {
   const g = new THREE.Group(), b = new Batch(), pads = padsOf(sup) / 1000, top = -pads, beams = F.beams.map((z) => z / 1000), mid = (beams[0] + beams[beams.length - 1]) / 2, s = F.shape ? 1 : F.s;
   const MOUNTS = F.shape ? F.mounts.map((x) => x / 1000) : [-0.36 * F.s, 0.95 * F.s];
   const box = (x0: number, x1: number, y0: number, y1: number, z0: number, z1: number, m: THREE.Material): void => {
@@ -65,13 +67,13 @@ export function buildSupport(sup: MachineSupport, F: MachineFrame, D: number, ga
   };
 
   if (sup.kind === 'rinvio' && pulley) {
-    rinvioFrame3D(box, F, gap, pulley, M);
+    rinvioFrame3D(box, F, gap, pulley, M, base);
     b.into(g);
     return g;
   }
-  if (sup.kind === 'shims') atMounts(0.06 * s, 0.05 * s, -gap, 0, M.galv);
+  const span = supportSpan(sup, D, F.shape), floor = base - gap;
+  if (sup.kind === 'shims') atMounts(0.06 * s, 0.05 * s, floor, 0, M.galv);
   else atMounts(0.06 * s, 0.05 * s, top, 0, M.rubber);
-  const span = supportSpan(sup, D, F.shape), floor = -gap;
   if (sup.kind === 'plates') atMounts(0.09 * s, 0.06 * s, floor, top, M.galv);
   if (sup.kind === 'plinth' && span) for (const [z0, z1] of F.plinth) box(span[0] / 1000, span[1] / 1000, floor, top, z0 / 1000, z1 / 1000, M.slab);
   if (hasProfile(sup)) {
@@ -89,8 +91,9 @@ export function buildSupport(sup: MachineSupport, F: MachineFrame, D: number, ga
 
 type BoxFn = (x0: number, x1: number, y0: number, y1: number, z0: number, z1: number, m: THREE.Material) => void;
 
-/** The bedplate with the diverting pulley under the mounts at y 0 (its top), the floor at −gap [m]. */
-function rinvioFrame3D(box: BoxFn, F: MachineFrame, gap: number, P: FramedPulley, M: LiftMaterials): void {
+/** The bedplate with the diverting pulley under the mounts at y 0 (its top), the floor at −gap, the HEB beams under its
+ *  legs `base` high [m]. */
+function rinvioFrame3D(box: BoxFn, F: MachineFrame, gap: number, P: FramedPulley, M: LiftMaterials, base: number): void {
   const B = PROFILES[KV_VERT.rinvioBeam], h = B.h / 1000, w = B.b / 1000, tf = B.tf / 1000, tw = B.tw / 1000, leg = KV_VERT.rinvioLeg / 1000;
   const zs = F.zSheave / 1000, half = P.half / 1000, ov = KV_VERT.rinvioOverhang / 1000, floor = -gap, pads = KV_VERT.rinvioPads / 1000;
   const x0 = Math.min(F.x[0] / 1000, P.x - P.r) - ov, x1 = Math.max(F.x[1] / 1000, P.x + P.r) + ov;
@@ -116,8 +119,8 @@ function rinvioFrame3D(box: BoxFn, F: MachineFrame, gap: number, P: FramedPulley
   across(x1 - w / 2, 1, z0 + w, z1 - w);
   // the legs at the corners on their dampers
   for (const x of [x0, x1 - leg]) for (const z of [z0, z1 - leg]) {
-    box(x, x + leg, floor + pads, -h, z, z + leg, M.galv);
-    box(x - 0.01, x + leg + 0.01, floor, floor + pads, z - 0.01, z + leg + 0.01, M.rubber);
+    box(x, x + leg, floor + base + pads, -h, z, z + leg, M.galv);
+    box(x - 0.01, x + leg + 0.01, floor + base, floor + base + pads, z - 0.01, z + leg + 0.01, M.rubber);
   }
   // the two plates the pulley's axle turns in, each hung from a short channel to the beam on its side: nothing crosses
   // the ropes' plane
@@ -126,5 +129,19 @@ function rinvioFrame3D(box: BoxFn, F: MachineFrame, gap: number, P: FramedPulley
     const za = zs + s * (half - 0.01), zb = zs + s * half, beam = s < 0 ? z0 + w : z1 - w;
     box(P.x - 0.08, P.x + 0.08, axis - 0.07, Math.min(0, Math.max(-h, axis + 0.09)), Math.min(za, zb), Math.max(za, zb), M.galv);
     if ((beam - zb) * s > 0.005) across(P.x, 1, Math.min(zb, beam), Math.max(zb, beam));
+  }
+}
+
+/** The HEB beams on the shaft's walls (src/shaft/heb.ts) on the room's floor at `z0` [mm]: two H profiles across the
+ *  shaft under the support, their ends in its walls; plan in the shaft's axes (the room's less where the shaft lies). */
+export function hebBeams(b: Batch, lay: HebLayout, R: RoomInputs, z0: number, M: LiftMaterials): void {
+  const P = PROFILES[lay.profile], [e0, e1] = lay.ends, alongX = lay.dir === 'x';
+  for (const c of lay.at) {
+    const put = (c0: number, c1: number, h0: number, h1: number): void => (alongX
+      ? b.box(e0 - R.shaftX, c0 - R.shaftY, z0 + h0, e1 - R.shaftX, c1 - R.shaftY, z0 + h1, M.steel)
+      : b.box(c0 - R.shaftX, e0 - R.shaftY, z0 + h0, c1 - R.shaftX, e1 - R.shaftY, z0 + h1, M.steel));
+    put(c - P.b / 2, c + P.b / 2, 0, P.tf);
+    put(c - P.tw / 2, c + P.tw / 2, P.tf, P.h - P.tf);
+    put(c - P.b / 2, c + P.b / 2, P.h - P.tf, P.h);
   }
 }
