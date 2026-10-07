@@ -136,7 +136,7 @@ export function machineCorners(G: RoomGeo, M: MachineSpec, stand = true): [numbe
   const R = G.room, rf = M.rinvio ?? null;
   const boxes: (readonly [number, number, number, number])[] = [machineOutline(G, M)];
   if (rf?.on === 'frame') {
-    const [u0, u1] = rinvioRun(M, G), [v0, v1] = rinvioAcross(M, G, rf);
+    const [u0, u1] = rinvioRun(M, G), [v0, v1] = rinvioAcross(G, rf);
     boxes.push([u0, v0, u1, v1]);
   } else if (stand && M.Dp > 0 && G.pulleyZ > -R.slab) boxes.push(standBox(M, G));
   return boxes.flatMap(([u0, v0, u1, v1]) => ([[u0, v0], [u1, v0], [u1, v1], [u0, v1]] as const)

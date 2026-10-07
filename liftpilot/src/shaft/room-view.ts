@@ -93,7 +93,7 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo): { entities:
   const side = g > 0 ? Math.min(G.across[0], -clearV) : Math.max(G.across[1], clearV), gear = g > 0 ? G.across[1] : G.across[0];
   // the bedplate with the diverting pulley, when the pulley turns in it: its chain goes on the machine's other side
   const rfx = M.rinvio, bed = rfx?.on === 'frame' && M.Dp > 0 && G.pulleyZ - M.Dp / 2 >= 0
-    ? (([u0, u1], [v0, v1]) => ({ u0, u1, v0, v1 }))(rinvioRun(M, G), rinvioAcross(M, G, rfx)) : null;
+    ? (([u0, u1], [v0, v1]) => ({ u0, u1, v0, v1 }))(rinvioRun(M, G), rinvioAcross(G, rfx)) : null;
   const ax = Math.abs(G.ux) > Math.abs(G.uy) ? 0 : 1;
   out.push({ e: 'text', at: onDrop(G, G.sheaveAt, side - 70 * g), text: `${M.label ? `${M.label} · ` : ''}Ø ${M.D}`, size: 1.8, align: 'c', angle: ax ? 90 : 0, halo: true });
   // clear of the main switch's lettering too (wide enough for it at 1:50)

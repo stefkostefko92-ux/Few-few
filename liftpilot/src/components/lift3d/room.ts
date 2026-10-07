@@ -33,6 +33,8 @@ export interface RoomModel {
   sides: Record<Side, THREE.Group>;
   roof: THREE.Group;
   common: THREE.Group;
+  /** what hangs from the roof (the lamps, the lifting hook): hidden while the roof is a ghost, else it hangs in the air */
+  overhead: THREE.Group;
   /** sheave rotation [rad] (positive: car going up), car floor and counterweight plate for the moving pulleys */
   set(theta: number, i: number, carPulley: THREE.Vector3 | null, cwPulley: THREE.Vector3 | null): void;
   /** where the machine is, for the camera */
@@ -73,7 +75,7 @@ export function machinePose(rig: RopeRig, wall: number, n: number, d: number, F:
 export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: number, ceiling: number, M: LiftMaterials, openings: readonly Opening[], gov: GovernorSpot | null,
   shape: MachineShape | null = null, rinvio: RinvioFrame | null = null, heb: HebLayout | null = null, turn: 1 | -1 = 1): RoomModel {
   const I = L.inputs, sides = { front: new THREE.Group(), rear: new THREE.Group(), left: new THREE.Group(), right: new THREE.Group() } as Record<Side, THREE.Group>;
-  const roof = new THREE.Group(), common = new THREE.Group();
+  const roof = new THREE.Group(), common = new THREE.Group(), overhead = new THREE.Group();
   const at = (p: RopePlane, u: number, y: number): THREE.Vector3 => {
     const [x, yy] = planeAt(p, u);
     return new THREE.Vector3(x / 1000, y, -yy / 1000);
@@ -81,7 +83,7 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
   // below, the room grown round the machine's body where it reaches out (bottom.ts)
   const body = rig.bottom && rig.scheme ? belowMachine(L, rig.scheme, D, n, d, shape).body : null;
   const z0 = rig.roomFloor * 1000, shells = shellsOf(L, rig, body), shell = shells.find((sh) => sh.kind === 'machine') ?? null, R = shell?.room ?? null;
-  for (const sh of shells) buildShell(sh, M, sides, roof, common);
+  for (const sh of shells) buildShell(sh, M, sides, roof, common, overhead);
 
   // the machine: the generic one scaled to the sheave or the maker's as it is, its rope plane on the sheave's, the
   // sheave's centre where the rig puts it; on its frame of three irons round the sheave (below beside the shaft, the
@@ -165,7 +167,7 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
     hook.box(hx - 110, hy - 110, z0 + R.H - 14, hx + 110, hy + 110, z0 + R.H, M.galv);
     hook.rod([hx, hy, z0 + R.H - 14], [hx, hy, z0 + R.H - 90], 14, M.steel, 12);
     hook.add(new THREE.TorusGeometry(0.045, 0.012, 10, 24).translate(centre.x, top - 0.135, centre.z), M.steel);
-    hook.into(common);
+    hook.into(overhead);
   }
 
   // pulleys: diverting and head ones fixed on their frames; car and counterweight pulleys of a 2:1 roping follow them
@@ -187,7 +189,7 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
   if (cwP) common.add(cwP);
 
   return {
-    sides, roof, common, focus: centre,
+    sides, roof, common, overhead, focus: centre,
     bounds: R ? { x0: -R.shaftX, y0: -R.shaftY, x1: R.W - R.shaftX, y1: R.D - R.shaftY, top: z0 + R.H + 200 } : null,
     set(theta, i, carPos, cwPos) {
       machine.sheave.rotation.z = -theta;

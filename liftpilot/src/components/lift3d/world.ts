@@ -90,7 +90,7 @@ export function buildLiftWorld(renderer: THREE.WebGPURenderer, dv: LiftDerived, 
   fit.into(fittings);
   const cable = buildCable(L, S, M, gov);
   for (const side of SIDES) scene.add(shaft.sides[side], machine.sides[side]);
-  scene.add(shaft.common, car.group, cw, rails, buffers.group, ropes.group, machine.common, machine.roof, fittings);
+  scene.add(shaft.common, car.group, cw, rails, buffers.group, ropes.group, machine.common, machine.roof, machine.overhead, fittings);
   if (cable) scene.add(cable.group);
   if (governor) scene.add(governor.group);
 
@@ -198,6 +198,7 @@ export function buildLiftWorld(renderer: THREE.WebGPURenderer, dv: LiftDerived, 
       }
       const above = cam.y > (rb?.top ?? S.ceiling + 2600) / 1000;
       if (M.ghost(M.roof, above, 0.08)) cast(roof, !above);
+      machine.overhead.visible = !above;
     },
     focus(view, f) {
       const s = f?.s ?? 0;

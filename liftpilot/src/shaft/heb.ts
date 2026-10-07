@@ -82,7 +82,7 @@ const onDrop = (G: RoomGeo, u: number, v: number): Pt => [G.carDrop[0] + u * G.u
 export function supportFeet(G: RoomGeo, M: MachineSpec): Pt[] {
   const s = supportOf(G.room, M.Dp > 0), F = G.frame, rf = M.rinvio ?? null, out: Pt[] = [];
   if (s.kind === 'rinvio' && rf?.on === 'frame') {
-    const [u0, u1] = rinvioRun(M, G), [v0, v1] = rinvioAcross(M, G, rf), h = KV_VERT.rinvioLeg / 2;
+    const [u0, u1] = rinvioRun(M, G), [v0, v1] = rinvioAcross(G, rf), h = KV_VERT.rinvioLeg / 2;
     for (const u of [u0 + h, u1 - h]) for (const v of [v0 + h, v1 - h]) out.push(onDrop(G, u, v));
     return out;
   }

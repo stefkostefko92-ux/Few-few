@@ -4,10 +4,10 @@
 // dimensions: the pulley's axis and the top over the floor (the top changes with the dimension on our bedplate; a
 // maker's has its own), its length, the maker's code. Model entities.
 import { chain, edit as E, path, rect, type Entity, type Pt } from '../drawing';
-import { ropeWidths, type MachineSpec, type RoomGeo } from './machine-room';
+import { machineV, ropeWidths, type MachineSpec, type RoomGeo } from './machine-room';
 import { KV_VERT } from './norme-vert';
 import { PROFILES } from './profiles';
-import { rinvioAcross, rinvioRun, type RinvioFrame } from './rinvio';
+import { bedplateBeams, rinvioAcross, rinvioRun, type RinvioFrame } from './rinvio';
 import { ownAxis } from './support';
 
 /** Section B-B: the bedplate, its legs and dampers, the pulley's plates; its heights left of it. */
@@ -35,14 +35,20 @@ export function rinvioSection(M: MachineSpec, G: RoomGeo, rf: RinvioFrame): Enti
   return out;
 }
 
-/** Plan: the bedplate's outline under the machine and the pulley, its legs at the corners, the two plates the pulley's
- *  axle turns in; its length and width (the plan's own chains, after the machine's). */
+/** Plan: the bedplate's outline under the machine and the pulley — its side beams under the machine's outer irons, a
+ *  beam of its own under each iron they do not carry —, its legs at the corners, the two plates the pulley's axle turns
+ *  in; its length and width (the plan's own chains, after the machine's). */
 export function rinvioPlan(M: MachineSpec, G: RoomGeo, rf: RinvioFrame, onDrop: (u: number, v: number) => Pt): Entity[] {
-  const [u0, u1] = rinvioRun(M, G), [v0, v1] = rinvioAcross(M, G, rf), leg = KV_VERT.rinvioLeg, b = PROFILES[KV_VERT.rinvioBeam].b;
+  const [u0, u1] = rinvioRun(M, G), [v0, v1] = rinvioAcross(G, rf), leg = KV_VERT.rinvioLeg, b = PROFILES[KV_VERT.rinvioBeam].b;
   const quad = (a0: number, w0: number, a1: number, w1: number): Pt[] => [onDrop(a0, w0), onDrop(a1, w0), onDrop(a1, w1), onDrop(a0, w1)];
   // the beams along the drop line and the channels across its ends, under the machine (hidden)
   const out: Entity[] = [path(quad(u0, v0, u1, v0 + b), true, 'hidden'), path(quad(u0, v1 - b, u1, v1), true, 'hidden'),
     path(quad(u0, v0 + b, u0 + b, v1 - b), true, 'hidden'), path(quad(u1 - b, v0 + b, u1, v1 - b), true, 'hidden')];
+  // the irons no side beam carries, each on a beam of its own from end to end (bedplateBeams)
+  for (const z of bedplateBeams(G.frame.beams, rf.maker?.width ?? KV_VERT.rinvioWidth).inner) {
+    const v = machineV(G, z);
+    out.push(path(quad(u0 + b, v - b / 2, u1 - b, v + b / 2), true, 'hidden'));
+  }
   for (const u of [u0, u1 - leg]) for (const v of [v0, v1 - leg]) out.push(path(quad(u, v, u + leg, v + leg), true, 'outline', 'steel'));
   // the axle's plates either side of the pulley, 160 mm along the drop line, 10 mm thick
   const half = ropeWidths(M.n, M.d).pulley, pu = G.pulleyAt;

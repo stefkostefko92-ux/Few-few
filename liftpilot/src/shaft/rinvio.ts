@@ -1,13 +1,15 @@
 // The diverting pulley of a machine above the shaft, in the machine room and never in the shaft (registry
-// locale.rinvio). It turns in the machine's bedplate — legs on dampers, two beams at the top that carry the machine, the
-// pulley hung between them — or, with another support chosen for the machine, on its own stand on the room's floor.
+// locale.rinvio). It turns in the machine's bedplate — legs on dampers, beams at the top under the irons of the machine's
+// bedframe that carry it (bedplateBeams), the pulley hung between them — or, with another support chosen for the
+// machine, on its own stand on the room's floor.
 // Ours is drawn after the makers' bedplates (SICOR XTE3022, XTE6026: the pulley's axis 320 mm over the floor, the top
 // 736 mm); a maker's own, when the machine is one of its models with a bedplate in the catalogue
 // (src/lib/catalog/bedplates.ts), gives its heights, its code and the rope drops it takes. Millimetres over the room's
 // floor, along the rope drop line from the sheave's centre. Pure.
 import type { MachineSpec, RoomGeo } from './machine-room';
-import { machineFrame, type MachineShape } from './machine-shape';
+import { IRON, machineFrame, type MachineShape } from './machine-shape';
 import { KV_VERT } from './norme-vert';
+import { PROFILES } from './profiles';
 import { ropeWidths } from './ropes';
 import type { MachineSupport } from './support';
 
@@ -80,12 +82,21 @@ export const rinvioSpan = (x0: number, x1: number, pu: number, r: number): reado
 /** Along the drop line: where the bedplate runs [u0, u1] (absolute u, as the room's drawings measure it). */
 export const rinvioRun = (M: MachineSpec, G: RoomGeo): readonly [number, number] => rinvioSpan(G.frame0, G.frame1, G.pulleyAt, M.Dp / 2);
 
-/** Across the drop line: where the bedplate runs [v0, v1], round the machine and the pulley, at least its width. */
-export function rinvioAcross(M: MachineSpec, G: RoomGeo, rf: RinvioFrame): readonly [number, number] {
-  const half = ropeWidths(M.n, M.d).pulley, w = rf.maker?.width ?? KV_VERT.rinvioWidth;
-  let v0 = Math.min(G.across[0], -half) - 60, v1 = Math.max(G.across[1], half) + 60;
-  if (v1 - v0 < w) [v0, v1] = [(v0 + v1) / 2 - w / 2, (v0 + v1) / 2 + w / 2];
-  return [v0, v1];
+/** Across the machine, in its own frame (z, machine-shape.ts): the bedplate under the irons `beams` of the machine's
+ *  bedframe — its side beams under the outer irons, as wide as that or at least `width` (the maker's, else ours: then
+ *  centred on them), and the irons no side beam carries (its flange off theirs), each on a beam of its own between them
+ *  end to end. The pulley and the ropes go down between the second iron and the third (machineFrame). [mm] */
+export function bedplateBeams(beams: readonly number[], width: number): { edges: readonly [number, number]; inner: number[] } {
+  const b = PROFILES[KV_VERT.rinvioBeam].b, lo = Math.min(...beams) - b / 2, hi = Math.max(...beams) + b / 2, c = (lo + hi) / 2;
+  const edges: readonly [number, number] = hi - lo >= width ? [lo, hi] : [c - width / 2, c + width / 2];
+  const sides = [edges[0] + b / 2, edges[1] - b / 2];
+  return { edges, inner: beams.filter((z) => sides.every((s) => Math.abs(z - s) >= (b + IRON) / 2)) };
+}
+
+/** Across the drop line: where the bedplate runs [v0, v1] (bedplateBeams; v as machine-room.ts machineV). */
+export function rinvioAcross(G: RoomGeo, rf: RinvioFrame): readonly [number, number] {
+  const F = G.frame, [a, b] = bedplateBeams(F.beams, rf.maker?.width ?? KV_VERT.rinvioWidth).edges.map((z) => G.dir * (F.zSheave - z));
+  return [Math.min(a, b), Math.max(a, b)];
 }
 
 /** The pulley's own stand on the floor (another support carries the machine): its ends along the drop line and across,

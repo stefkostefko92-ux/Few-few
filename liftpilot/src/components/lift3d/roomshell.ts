@@ -58,8 +58,9 @@ export function shellsOf(L: Layout, rig: RopeRig, body: readonly (readonly [numb
   return out;
 }
 
-/** The shell's walls into `sides` (x-ray), its roof into `roof`, the rest into `common`. */
-export function buildShell(sh: Shell, M: LiftMaterials, sides: Record<Side, THREE.Group>, roof: THREE.Group, common: THREE.Group): void {
+/** The shell's walls into `sides` (x-ray), its roof into `roof`, what hangs from the roof (the lamp) into `overhead` —
+ *  shown and hidden with the roof —, the rest into `common`. */
+export function buildShell(sh: Shell, M: LiftMaterials, sides: Record<Side, THREE.Group>, roof: THREE.Group, common: THREE.Group, overhead: THREE.Group): void {
   const { room: R, z0 } = sh, x0 = -R.shaftX, y0 = -R.shaftY, Wr = R.W, Dr = R.D, H = R.H;
   for (const side of SIDES) {
     if (side === sh.open) continue;
@@ -85,15 +86,17 @@ export function buildShell(sh: Shell, M: LiftMaterials, sides: Record<Side, THRE
   if (sh.floor) common.add(box(x0 - WALL, y0 - WALL, z0 - 200, x0 + Wr + WALL, y0 + Dr + WALL, z0, M.slab));
   // a box against a wall of the room: u along it, v out from it, z over the floor
   const B = new Batch();
-  const fix = (wall: Side, u0: number, u1: number, v0: number, v1: number, za: number, zb: number, m: THREE.Material): void => {
+  const fix = (wall: Side, u0: number, u1: number, v0: number, v1: number, za: number, zb: number, m: THREE.Material, into: Batch = B): void => {
     const [p, q] = [onWall(wall, Wr, Dr, u0, v0), onWall(wall, Wr, Dr, u1, v1)];
-    B.box(p[0] + x0, p[1] + y0, z0 + za, q[0] + x0, q[1] + y0, z0 + zb, m);
+    into.box(p[0] + x0, p[1] + y0, z0 + za, q[0] + x0, q[1] + y0, z0 + zb, m);
   };
   if (sh.kind === 'machine' && sh.switchSpan) machineFittings(fix, R, M, sh.switchSpan);
-  // the lamp under the roof
-  fix('front', Wr / 2 - 300, Wr / 2 + 300, Dr / 2 - 60, Dr / 2 + 60, H - 70, H, M.galv);
-  fix('front', Wr / 2 - 280, Wr / 2 + 280, Dr / 2 - 45, Dr / 2 + 45, H - 74, H - 70, M.carLight);
   B.into(common);
+  // the lamp under the roof (hidden with the roof turned into a ghost: it would hang in the air)
+  const fitting = new Batch();
+  fix('front', Wr / 2 - 300, Wr / 2 + 300, Dr / 2 - 60, Dr / 2 + 60, H - 70, H, M.galv, fitting);
+  fix('front', Wr / 2 - 280, Wr / 2 + 280, Dr / 2 - 45, Dr / 2 + 45, H - 74, H - 70, M.carLight, fitting);
+  fitting.into(overhead);
   const lamp = new THREE.PointLight(0xfff2de, 2.2, 7, 2);
   lamp.position.set((x0 + Wr / 2) / 1000, (z0 + H - 150) / 1000, -(y0 + Dr / 2) / 1000);
   common.add(lamp);

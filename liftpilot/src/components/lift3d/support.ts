@@ -1,16 +1,15 @@
-// The machine's support in 3D (src/shaft/support.ts), as the drawings of the machine room draw it: levelling shims,
-// a frame of profiles (on steel packs when set higher than the profile) or beams from wall to wall borne 150 mm in the
+// The machine's support in 3D (src/shaft/support.ts), as the drawings of the machine room draw it: levelling shims, a
+// frame of profiles (on steel packs when set higher than the profile) or beams from wall to wall borne 150 mm in the
 // walls (clear of the floor when higher than their profile: a machine not standing on the floor), one under each iron
 // of the machine's frame, steel plates or a concrete plinth under the mounts, rubber pads under the mounts on all but
-// the shims; the bedplate with the
-// diverting pulley (src/shaft/rinvio.ts): legs of square tube on dampers, beams round the top and the two plates its
-// axle turns in, hung from short channels to the side beams; all of it on the HEB beams over the shaft's walls when the
-// room puts them there (src/shaft/heb.ts, hebBeams). Built in a group placed and turned as the machine's bedplate: x
-// along the machine (the rope drop line, 0 at the sheave), y up from the mounts' underside, z across, in metres. Loaded
-// only through boot.ts (lazy).
+// the shims; the bedplate with the diverting pulley (src/shaft/rinvio.ts): legs of square tube on dampers, beams round
+// the top and under each iron of the machine's bedframe, the two plates its axle turns in, hung from short channels to
+// the nearest beams; all of it on the HEB beams over the shaft's walls when the room puts them there (src/shaft/heb.ts,
+// hebBeams). Built in a group placed and turned as the machine's bedplate: x along the machine (the rope drop line, 0
+// at the sheave), y up from the mounts' underside, z across, in metres. Loaded only through boot.ts (lazy).
 import * as THREE from 'three/webgpu';
 import { KV_VERT, PROFILES, hasProfile, isChannel, padsOf, profileOf, supportSpan, type HebLayout, type MachineSupport, type Profile, type RoomInputs } from '@/shaft';
-import type { RinvioFrame } from '@/shaft/rinvio';
+import { bedplateBeams, type RinvioFrame } from '@/shaft/rinvio';
 import type { MachineFrame } from '@/shaft/machine-shape';
 import { Batch } from './geom';
 import type { LiftMaterials } from './materials';
@@ -98,9 +97,10 @@ function rinvioFrame3D(box: BoxFn, F: MachineFrame, gap: number, P: FramedPulley
   const B = PROFILES[KV_VERT.rinvioBeam], h = B.h / 1000, w = B.b / 1000, tf = B.tf / 1000, tw = B.tw / 1000, leg = KV_VERT.rinvioLeg / 1000;
   const zs = F.zSheave / 1000, half = P.half / 1000, ov = KV_VERT.rinvioOverhang / 1000, floor = -gap, pads = KV_VERT.rinvioPads / 1000;
   const x0 = Math.min(F.x[0] / 1000, P.x - P.r) - ov, x1 = Math.max(F.x[1] / 1000, P.x + P.r) + ov;
-  let z0 = Math.min(F.z[0] / 1000, zs - half) - 0.06, z1 = Math.max(F.z[1] / 1000, zs + half) + 0.06;
-  const width = (P.frame.maker?.width ?? KV_VERT.rinvioWidth) / 1000;
-  if (z1 - z0 < width) [z0, z1] = [(z0 + z1) / 2 - width / 2, (z0 + z1) / 2 + width / 2];
+  // its side beams under the machine's outer irons (or as wide as the maker's, centred on them), a beam of its own
+  // under each iron they do not carry (src/shaft/rinvio.ts bedplateBeams): the bedframe's mounts stand on them
+  const seat = bedplateBeams(F.beams, P.frame.maker?.width ?? KV_VERT.rinvioWidth), [z0, z1] = seat.edges.map((z) => z / 1000);
+  const irons = seat.inner.map((z) => z / 1000);
   // a channel along x or z: flanges and web, its back outward
   const along = (a0: number, a1: number, zc: number, out: number): void => {
     const back = zc + (out * w) / 2, zf0 = Math.min(back, back - out * w), zf1 = Math.max(back, back - out * w);
@@ -118,6 +118,7 @@ function rinvioFrame3D(box: BoxFn, F: MachineFrame, gap: number, P: FramedPulley
   along(x0, x1, z1 - w / 2, 1);
   across(x0 + w / 2, -1, z0 + w, z1 - w);
   across(x1 - w / 2, 1, z0 + w, z1 - w);
+  for (const z of irons) along(x0 + w, x1 - w, z, z > zs ? 1 : -1);
   // the legs at the corners on their dampers
   for (const x of [x0, x1 - leg]) for (const z of [z0, z1 - leg]) {
     box(x, x + leg, floor + base + pads, -h, z, z + leg, M.galv);
@@ -125,9 +126,11 @@ function rinvioFrame3D(box: BoxFn, F: MachineFrame, gap: number, P: FramedPulley
   }
   // the two plates the pulley's axle turns in, each hung from a short channel to the beam on its side: nothing crosses
   // the ropes' plane
-  const axis = floor + P.frame.pulleyAxis / 1000;
+  const axis = floor + P.frame.pulleyAxis / 1000, rails = [z0 + w / 2, ...irons, z1 - w / 2];
   for (const s of [-1, 1]) {
-    const za = zs + s * (half - 0.01), zb = zs + s * half, beam = s < 0 ? z0 + w : z1 - w;
+    // hung from the nearest beam on its side, from that beam's face (none past the plate: no channel)
+    const za = zs + s * (half - 0.01), zb = zs + s * half;
+    const near = rails.reduce((a, r) => ((r - zb) * s > 0 && (r - a) * s < 0 ? r : a), s < 0 ? z0 + w / 2 : z1 - w / 2), beam = near - (s * w) / 2;
     box(P.x - 0.08, P.x + 0.08, axis - 0.07, Math.min(0, Math.max(-h, axis + 0.09)), Math.min(za, zb), Math.max(za, zb), M.galv);
     if ((beam - zb) * s > 0.005) across(P.x, 1, Math.min(zb, beam), Math.max(zb, beam));
   }
