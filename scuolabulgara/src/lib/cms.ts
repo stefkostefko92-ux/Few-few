@@ -208,6 +208,6 @@ export const isAudioKey = (k: string) => k === "audio";
 export function safeAudio(v: unknown): string {
   if (typeof v !== "string") return "";
   const s = v.trim();
-  if (!s.startsWith("/uploads/") || s.includes("..") || s.includes("//")) return "";
+  if (!(s.startsWith("/uploads/") || s.startsWith("/assets/audio/")) || s.includes("..") || s.includes("//")) return "";
   return new RegExp(`\\.(${AUDIO_EXT.join("|")})$`, "i").test(s) ? s : "";
 }

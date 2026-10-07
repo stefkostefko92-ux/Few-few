@@ -52,6 +52,14 @@ const ALPHABET: [letter: string, latin: string, word: string, it: string, en: st
   ["Ю", "yu", "юнак", "eroe", "hero"],
   ["Я", "ya", "Яворов", "il poeta che dà il nome alla nostra scuola", "the poet our school is named after"],
 ];
+// Bundled pronunciation, one clip per default word (public/assets/audio/alphabet,
+// voice bg-BG-KalinaNeural). Keyed by the WORD, so an editor who changes a word
+// never gets the old word's sound; an uploaded clip always wins.
+const AUDIO_BY_WORD = new Map(
+  ALPHABET.map(([, latin, word], i) => [word, `/assets/audio/alphabet/${String(i + 1).padStart(2, "0")}-${latin.replace(/[^a-z]/g, "") || "x"}.mp3`]),
+);
+export const bundledWordAudio = (word: string): string => AUDIO_BY_WORD.get(word) ?? "";
+
 const lettersFor = (l: Locale) =>
   ALPHABET.map(([letter, latin, word, it, en]) => ({ letter, latin, word, meaning: l === "en" ? en : it, audio: "" }));
 
