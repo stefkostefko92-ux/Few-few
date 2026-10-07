@@ -1,0 +1,73 @@
+<p>Questa informativa spiega quali dati personali tratta Korpora, perché, per quanto tempo li conserviamo e quali diritti avete secondo il Regolamento generale sulla protezione dei dati (GDPR).</p>
+
+<h2>Chi tratta i dati</h2>
+<p><%= t('company.legalName') %>, <%= t('company.legalForm') %>, codice EIK&nbsp;<%= company.eik %>, ul. Samuil 3, <%= company.postalCode %> Bobov Dol, provincia di Kyustendil, Bulgaria, tel.&nbsp;<a class="nowrap" href="<%= company.phoneHref %>"><%= company.phone %></a>. Per domande sui dati personali scrivete a <a href="mailto:<%= privacyEmail %>"><%= privacyEmail %></a>.</p>
+
+<h2>Quali dati, perché e per quanto tempo</h2>
+<div class="table-wrap">
+  <table class="stack">
+    <thead><tr><th scope="col">Dati</th><th scope="col">Perché</th><th scope="col">Base giuridica</th><th scope="col">Conservazione</th></tr></thead>
+    <tbody>
+      <tr><td data-label="Dati">Email, nome, lingua, hash della password (Argon2id)</td><td data-label="Perché">L'account e l'accesso</td><td data-label="Base giuridica">Contratto, art. 6, par. 1, lett. b) GDPR</td><td data-label="Conservazione">Finché l'account esiste; una registrazione la cui email non viene mai confermata è cancellata dopo <%= unverifiedKept %></td></tr>
+      <tr><td data-label="Dati">I progetti: tipo di mobile, misure, materiali, nome del progetto</td><td data-label="Perché">Il servizio stesso: modello, distinta di taglio, disegni, file per la macchina</td><td data-label="Base giuridica">Contratto</td><td data-label="Conservazione">Finché non li eliminate o non eliminate l'account</td></tr>
+      <tr><td data-label="Dati">Indirizzo IP, paese ricavato dall'indirizzo IP, browser e sistema operativo, esito di ogni tentativo di accesso, anche con un'email per cui non esiste un account</td><td data-label="Perché">Protezione degli account: individuare accessi altrui, bloccare temporaneamente l'accesso dopo tentativi di indovinare la password, avvisare di un nuovo accesso</td><td data-label="Base giuridica">Legittimo interesse, art. 6, par. 1, lett. f) GDPR</td><td data-label="Conservazione">Storico degli accessi: <%= loginRetentionDays %> giorni. Indirizzo IP e paese alla registrazione e all'ultimo accesso: finché l'account esiste. Sessioni attive (indirizzo IP, paese, browser): fino all'uscita o alla scadenza della sessione, al massimo <%= sessionMax %></td></tr>
+      <tr><td data-label="Dati">Identificativo del dispositivo (HWID): hash del cookie del dispositivo, hash della sua impronta e una breve descrizione</td><td data-label="Perché">Riconoscere un dispositivo noto, avvisare via email di un accesso da uno nuovo, individuare prove ripetute e account condivisi</td><td data-label="Base giuridica">Legittimo interesse</td><td data-label="Conservazione">Un dispositivo non usato da <%= loginRetentionDays %> giorni viene eliminato; il dispositivo e l'impronta della registrazione <%= loginRetentionDays %> giorni dopo di essa; l'impronta di un tentativo di accesso con lo storico degli accessi, <%= loginRetentionDays %> giorni</td></tr>
+      <tr><td data-label="Dati">Protezione a due fattori: chiave segreta (cifrata con AES-256-GCM) e codici di recupero (ne conserviamo solo l'HMAC)</td><td data-label="Perché">Il secondo fattore all'accesso, se l'avete attivato</td><td data-label="Base giuridica">Contratto</td><td data-label="Conservazione">Fino alla disattivazione della protezione o all'eliminazione dell'account</td></tr>
+      <tr><td data-label="Dati">Piano, scadenza, ordini (opzione, prezzo, se acquistate come consumatori o come azienda, richiesta di inizio anticipato, versione delle condizioni, messaggio, recesso dal contratto), modifiche al piano e relativi importi</td><td data-label="Perché">La prova, il contratto per il piano a pagamento, il pagamento, l'attivazione e il diritto di recesso</td><td data-label="Base giuridica">Contratto; obbligo di legge per i documenti contabili, art. 6, par. 1, lett. c) GDPR</td><td data-label="Conservazione">Finché l'account esiste; le fatture per il tempo richiesto dalla normativa contabile</td></tr>
+      <tr><td data-label="Dati">Blocco dell'account: motivo, chi ha bloccato o sbloccato l'account e quando, la nota allo sblocco</td><td data-label="Perché">Far rispettare le <a href="<%= legalPath(locale, 'terms') %>">condizioni d'uso</a> (sezione «Blocco») e tutela in caso di contestazione</td><td data-label="Base giuridica">Legittimo interesse</td><td data-label="Conservazione">Finché l'account esiste</td></tr>
+      <tr><td data-label="Dati">Registro di controllo: chi ha fatto cosa e quando su un account, un ordine o un progetto, e da quale indirizzo IP</td><td data-label="Perché">Responsabilizzazione e tutela in caso di contestazione</td><td data-label="Base giuridica">Legittimo interesse</td><td data-label="Conservazione">Le voci sono conservate <%= auditKept %> e poi eliminate; gli indirizzi IP al loro interno <%= loginRetentionDays %> giorni, dopodiché resta solo un hash con chiave (HMAC) dell'indirizzo, necessario per verificare l'integrità del registro, fino all'eliminazione della voce. Per i clienti il registro conserva il numero dell'account, non l'email. Quando il team elimina un account, resta un hash SHA-256 dell'email: dimostra quale account è stato eliminato senza conservare l'indirizzo</td></tr>
+    </tbody>
+  </table>
+</div>
+<p>Email, nome e password servono per avere un account: senza di essi non possiamo crearlo. Indirizzo IP, browser e dispositivo vengono registrati a ogni accesso, perché senza di essi non possiamo proteggere l'account dall'accesso di altri. Per ordinare un piano servono anche le scelte dell'ordine: senza di esse non possiamo concludere il contratto.</p>
+
+<h2>Che cosa intendiamo per «HWID»</h2>
+<p>Il browser non comunica ai siti il numero hardware del computer. Per «HWID» intendiamo quindi un'impronta del dispositivo: un hash di dati che il browser mostra a qualsiasi sito — piattaforma, numero di core, memoria, profondità di colore, schermo tattile e scheda grafica (produttore e modello). Oltre all'hash conserviamo una breve descrizione: sistema, browser, dimensioni dello schermo, core, memoria, scheda grafica e fuso orario (per esempio «Windows, Chrome 128, 1920 × 1080, 8 CPU»). L'impronta viene calcolata all'accesso e alla registrazione, anche per un tentativo di accesso con un'email per cui non esiste un account; se JavaScript è disattivato, l'accesso funziona anche senza.</p>
+
+<h2>Cookie</h2>
+<p>Usiamo solo cookie senza i quali il servizio non funziona o non è protetto. Non abbiamo cookie pubblicitari, analitici o di terze parti, per questo non mostriamo il banner per il consenso.</p>
+<div class="table-wrap">
+  <table class="stack">
+    <thead><tr><th scope="col">Nome</th><th scope="col">A cosa serve</th><th scope="col">Durata</th></tr></thead>
+    <tbody>
+      <tr><td data-label="Nome"><code>__Host-rd_sid</code></td><td data-label="A cosa serve">La sessione dopo l'accesso</td><td data-label="Durata">Fino all'uscita; al massimo <%= customerSession %> (<%= customerIdle %> di inattività), <%= staffSession %> per il personale</td></tr>
+      <tr><td data-label="Nome"><code>__Host-rd_dev</code></td><td data-label="A cosa serve">Riconoscere il dispositivo per la sicurezza dell'accesso e individuare prove ripetute e account condivisi</td><td data-label="Durata"><%= loginRetentionDays %> giorni dall'ultima apertura della pagina di accesso o di registrazione</td></tr>
+      <tr><td data-label="Nome"><code>rd_pre</code></td><td data-label="A cosa serve">Proteggere i moduli di accesso e registrazione da richieste contraffatte (CSRF)</td><td data-label="Durata"><%= preCsrfKept %></td></tr>
+      <tr><td data-label="Nome"><code>rd_lang</code></td><td data-label="A cosa serve">La lingua scelta</td><td data-label="Durata"><%= langKept %></td></tr>
+      <tr><td data-label="Nome"><code>rd_flash</code></td><td data-label="A cosa serve">Un messaggio una tantum dopo un'azione (per esempio «Salvato»)</td><td data-label="Durata"><%= flashKept %></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2>Chi altro vede i dati</h2>
+<ul>
+  <li>Hetzner Online GmbH, Germania — il server su cui funziona Korpora, in un data center nell'Unione europea.</li>
+  <li>Sendinblue SAS (Brevo), Francia — l'invio delle email elencate in «Email» qui sotto.</li>
+  <li>Have I Been Pwned — quando scegliete una nuova password inviamo solo i primi 5 caratteri del suo hash SHA-1, per verificare se la password è trapelata in una violazione. La password e l'hash completo non lasciano il server.</li>
+</ul>
+<p>Il paese di un indirizzo IP viene ricavato da un database DB-IP (<a href="https://db-ip.com" target="_blank" rel="noopener">IP Geolocation by DB-IP</a>, licenza <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>) che si trova sul nostro server: l'indirizzo IP non viene inviato da nessuna parte. Non vendiamo dati e non li cediamo per pubblicità. Non trasferiamo dati personali fuori dall'Unione europea; se un sub-responsabile di Brevo tratta dati fuori dall'UE, il trasferimento è tutelato da clausole contrattuali tipo (art. 46 GDPR).</p>
+
+<h2>Email</h2>
+<p>Inviamo solo email che riguardano l'account e il contratto: conferma dell'indirizzo e del suo cambio (con avviso al vecchio indirizzo), reimpostazione e cambio della password, accesso da un nuovo dispositivo, codici di accesso errati, password o codici errati nella conferma di un'azione nell'account, attivazione e disattivazione della protezione a due fattori, un promemoria <%= trialReminder %> prima della fine della prova, conferma di un ordine e di un recesso dal contratto, modifiche al piano, un avviso se qualcuno prova a registrarsi con la vostra email, un'email per impostare la password quando il team crea un account per voi e la conferma dell'eliminazione dell'account. Non inviamo email promozionali.</p>
+
+<h2>Decisioni automatizzate</h2>
+<p>Non prendiamo decisioni con effetti giuridici basate unicamente su un trattamento automatizzato. Dopo <%= failedLogins %> password o codici sbagliati l'accesso si blocca per <%= lockFor %>: è una misura di sicurezza che si annulla da sola. Se gli errori avvengono confermando un'azione in una sessione aperta, chiudiamo anche tutte le sessioni e vi inviamo un'email. Solo una persona del nostro team può bloccare un account e il motivo viene mostrato al tentativo di accesso.</p>
+
+<h2>Sicurezza</h2>
+<p>La connessione è solo HTTPS. Le password sono conservate come hash Argon2id, le chiavi segrete della protezione a due fattori sono cifrate, le sessioni stanno sul server e terminano subito quando cambia la password o l'account viene bloccato. Il pannello di amministrazione si apre solo con la protezione a due fattori. I log dell'applicazione non contengono email, indirizzi IP o password e il server web non tiene un registro delle richieste: registra un indirizzo IP solo nel suo log degli errori, quando una richiesta non può essere servita.</p>
+
+<h2>I vostri diritti</h2>
+<p>Avete diritto di accesso, rettifica, cancellazione, limitazione del trattamento e portabilità. Gran parte si fa direttamente dall'account:</p>
+<ul>
+  <li>«Profilo» — correggere nome ed email;</li>
+  <li>«Dati» — scaricare tutti i vostri dati in un file JSON (profilo, progetti, piano e ordini, dispositivi, accessi, sessioni e le voci del registro di controllo che vi riguardano) ed eliminare l'account insieme ai progetti;</li>
+  <li>«Sicurezza» — le sessioni attive e i dispositivi da cui si è effettuato l'accesso.</li>
+</ul>
+<p><strong>Diritto di opposizione.</strong> Potete opporvi in qualsiasi momento, per motivi connessi alla vostra situazione particolare, al trattamento dei vostri dati basato sul legittimo interesse: lo storico degli accessi, il dispositivo, il blocco e il registro di controllo. In tal caso ci fermiamo, salvo che abbiamo motivi legittimi cogenti che prevalgono sui vostri interessi o che i dati servano per la difesa di un diritto in sede giudiziaria.</p>
+<p>Per tutto il resto scrivete a <a href="mailto:<%= privacyEmail %>"><%= privacyEmail %></a>: rispondiamo entro un mese. Avete il diritto di proporre reclamo alla Commissione bulgara per la protezione dei dati personali (bul. «Prof. Tsvetan Lazarov» 2, Sofia 1592, <a href="https://www.cpdp.bg" target="_blank" rel="noopener">www.cpdp.bg</a>) o all'autorità di controllo del paese UE in cui vivete, in Italia il Garante per la protezione dei dati personali.</p>
+
+<h2>Minori</h2>
+<p>Korpora è uno strumento professionale e non è destinato a persone sotto i 16 anni.</p>
+
+<h2>Modifiche</h2>
+<p>Se modificheremo questa informativa in modo sostanziale, vi avviseremo via email prima che la modifica entri in vigore. La data dell'ultima modifica è in cima alla pagina.</p>

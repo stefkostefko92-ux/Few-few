@@ -12,8 +12,8 @@ Docker Compose (приложение + PostgreSQL 16) зад nginx на хост
 2. **Портът:** `4330` по подразбиране. Провери с `ss -tlnp | grep 4330`; ако е зает, създай
    `/opt/few-few/shared/liftpilot/.env` от `.env.example` с друг `APP_PORT` преди деплоя
    (скриптът и сам спира с ясна грешка, ако портът е зает при първия старт). До кръг 26 портът беше
-   `4320`, който сега е на rendetto: на сървър, където LiftPilot вече върви, смени `APP_PORT=4320` на
-   `4330` в `.env` и пусни деплоя наново (vhost-ът се пише с порта от `.env`) — преди деплоя на rendetto.
+   `4320`, който сега е на korpora (до 2026-10-07 — rendetto): на сървър, където LiftPilot вече върви, смени `APP_PORT=4320` на
+   `4330` в `.env` и пусни деплоя наново (vhost-ът се пише с порта от `.env`) — преди деплоя на korpora.
 3. **Поща (Brevo):** SMTP login и SMTP ключ от Brevo (SMTP & API → SMTP); подателят
    (`MAIL_FROM`, по подразбиране `LiftPilot <noreply@carbonstealth.eu>`) трябва да е потвърден в Brevo
    (домейнът със SPF и DKIM). Изпраща се през `smtp-relay.brevo.com:2525` със STARTTLS (VPS-ът блокира

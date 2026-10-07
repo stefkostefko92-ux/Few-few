@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Blokeerib reklaamid kõikjal: YouTube'i videoreklaamid, bännerid, hüpikaknad, jälgijad ja anti-adblock seinad. Tasuta."
+    "message": "Blokeerib reklaamid kõikjal: YouTube'i videoreklaamid, bännerid, hüpikaknad, jälgijad ja anti-adblock seinad."
   },
   "byCarbon": {
     "message": "loonud Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Filtriloendite litsentsid"
+  },
+  "welPageTitle": {
+    "message": "Tere tulemast Supreme AdBlocki",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Olete kaitstud",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock blokeerib nüüd reklaamid ja jälgijad igal saidil, mida külastate. Midagi pole vaja seadistada.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Kinnitage laiendus tööriistaribale",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Klõpsake aadressiriba kõrval pusletüki ikooni ja kinnitage Supreme AdBlock. Siis näitab üks klõps, mida lehel blokeeriti.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Kui sait näeb katkine välja",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Avage laiendus ja lülitage selle saidi blokeerimine välja või valige kiirparanduste jaoks „Sait ei tööta?“.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Teie sirvimine jääb teie seadmesse",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Filtreerimine toimub kohapeal. Laiendus ei kogu isikuandmeid ega saada midagi külastatavate lehtede kohta.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Ava seaded",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Selge",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

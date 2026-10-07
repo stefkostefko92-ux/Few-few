@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Ücretsiz reklam engelleyici: YouTube reklamları, banner'lar, pop-up'lar, izleyiciler, çerez uyarıları, anti-adblock duvarları."
+    "message": "Reklam engelleyici: YouTube reklamları, banner'lar, pop-up'lar, izleyiciler, çerez uyarıları, anti-adblock duvarları."
   },
   "byCarbon": {
     "message": "Carbon Stealth tarafından"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Filtre listelerinin lisansları"
+  },
+  "welPageTitle": {
+    "message": "Supreme AdBlock'a hoş geldiniz",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Korumanız etkin",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock artık ziyaret ettiğiniz her sitede reklamları ve izleyicileri engelliyor. Ayarlamanız gereken hiçbir şey yok.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Uzantıyı araç çubuğuna sabitleyin",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Adres çubuğunun yanındaki yapboz parçası simgesini tıklayın ve Supreme AdBlock'u sabitleyin. Böylece tek tıkla sayfada nelerin engellendiğini görürsünüz.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Bir site bozuk görünüyorsa",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Uzantıyı açın ve o site için engellemeyi kapatın ya da hızlı çözümler için “Site bozuk mu?” seçeneğini belirleyin.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Gezinme bilgileriniz cihazınızda kalır",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Filtreleme yerel olarak yapılır. Uzantı kişisel veri toplamaz ve ziyaret ettiğiniz sayfalar hakkında hiçbir şey göndermez.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Ayarları aç",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Anladım",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

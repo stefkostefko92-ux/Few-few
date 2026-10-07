@@ -59,7 +59,7 @@ mock.store.set("autoUpdate", true);
 served = { cfg: cfg(20, { scriptlets: [{ h: "s.com", n: "aopr", a: ["x"] }], blockDomains: Array.from({ length: 25000 }, (_, i) => `d${i}.example`) }), sig: "" };
 served.sig = await sign(k1.kp, served.cfg);
 r = await bg.fetchLiveConfig(true);
-ok("live channel: 25 000 domains capped to 20 000 across 20 chunked rules; scriptlets sanitised", r.ok && r.domains === 20000 && mock.dynamic().filter((x) => x.id >= 100000).length === 20 && mock.store.get("liveConfig").scriptlets.length === 1);
+ok("live channel: 25 000 domains capped to 20 000 across 20 chunked rules; scriptlets from the network ignored", r.ok && r.domains === 20000 && mock.dynamic().filter((x) => x.id >= 100000).length === 20 && !("scriptlets" in mock.store.get("liveConfig")));
 
 // ---------- 2) scriptlet registration ----------
 await bg.doSyncScriptlets(true);
@@ -141,7 +141,7 @@ served = { cfg: cfg(5) };
 const r2 = await bg.fetchLiveConfig(true);
 served = { cfg: JSON.stringify({ version: 6, blockDomains: [], cosmetic: [], youtube: {}, scriptlets: [{ h: "example.com", n: "set-constant", a: ["adsEnabled", "false"] }] }) };
 await bg.fetchLiveConfig(true);
-ok("unsigned (no Ed25519): live scriptlets are dropped — they run in the page, only from a signed file", mock.store.get("liveConfig").verified === false && mock.store.get("liveConfig").scriptlets.length === 0);
+ok("unsigned (no Ed25519): data only, never scriptlets", mock.store.get("liveConfig").verified === false && !("scriptlets" in mock.store.get("liveConfig")));
 served = { cfg: cfg(5) };
 await bg.fetchLiveConfig(true);
 ok("unsigned (no Ed25519): a huge version cannot lock out later updates", r.ok && pinned.verified === false && r2.ok && mock.store.get("liveConfig").version === 5);

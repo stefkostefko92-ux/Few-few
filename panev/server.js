@@ -95,10 +95,6 @@ function validatePrice(price) {
   return Number.isFinite(n) && n >= 0 && n < 100000;
 }
 
-function validPassword(pw) {
-  return typeof pw === 'string' && pw.length >= 8 && pw.length < 200;
-}
-
 // ─────────────────────────────────────────────────────────────
 //  Security headers
 // ─────────────────────────────────────────────────────────────
@@ -791,15 +787,16 @@ app.get('/api/admin/me', auth.requireAdmin, (req, res) => {
 app.post('/api/admin/password', auth.requireAdmin, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body || {};
-    if (!currentPassword || !validPassword(newPassword)) {
-      return res.status(400).json({ error: 'Nuova password deve avere almeno 8 caratteri' });
-    }
+    if (!currentPassword) return res.status(400).json({ error: 'Inserisci la password attuale' });
     const user = db.getAdminById(req.adminUser.id);
+    const problem = auth.passwordProblem(newPassword, user.email);
+    if (problem) return res.status(400).json({ error: problem });
     const ok = await auth.verifyPassword(currentPassword, user.password_hash);
     if (!ok) return res.status(401).json({ error: 'Password attuale non corretta' });
 
     const hash = await auth.hashPassword(newPassword);
-    db.updateAdminPassword(user.id, hash);
+    db.updateAdminPassword(user.id, hash); // ends every other session (token_version + 1)
+    auth.setAuthCookie(res, auth.issueToken(db.getAdminById(user.id)), IS_PROD); // this one stays
     res.json({ ok: true });
   } catch (err) {
     console.error('[password]', err.message);

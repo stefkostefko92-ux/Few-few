@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "YouTube ವೀಡಿಯೊ ಜಾಹೀರಾತುಗಳು, ಬ್ಯಾನರ್‌ಗಳು, ಪಾಪ್-ಅಪ್‌ಗಳು, ಟ್ರ್ಯಾಕರ್‌ಗಳು, ಕುಕೀ ಪ್ರಾಂಪ್ಟ್‌ಗಳನ್ನು ನಿರ್ಬಂಧಿಸುತ್ತದೆ. ಉಚಿತ, ಖಾಸಗಿ."
+    "message": "YouTube ವೀಡಿಯೊ ಜಾಹೀರಾತುಗಳು, ಬ್ಯಾನರ್‌ಗಳು, ಪಾಪ್-ಅಪ್‌ಗಳು, ಟ್ರ್ಯಾಕರ್‌ಗಳು, ಕುಕೀ ಪ್ರಾಂಪ್ಟ್‌ಗಳನ್ನು ನಿರ್ಬಂಧಿಸುತ್ತದೆ."
   },
   "byCarbon": {
     "message": "Carbon Stealth ಅವರಿಂದ"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "ಫಿಲ್ಟರ್ ಪಟ್ಟಿಗಳ ಪರವಾನಗಿಗಳು"
+  },
+  "welPageTitle": {
+    "message": "Supreme AdBlock ಗೆ ಸ್ವಾಗತ",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "ನೀವು ಸುರಕ್ಷಿತವಾಗಿದ್ದೀರಿ",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "ನೀವು ಭೇಟಿ ನೀಡುವ ಪ್ರತಿಯೊಂದು ಸೈಟ್‌ನಲ್ಲಿ Supreme AdBlock ಈಗ ಜಾಹೀರಾತುಗಳು ಮತ್ತು ಟ್ರ್ಯಾಕರ್‌ಗಳನ್ನು ನಿರ್ಬಂಧಿಸುತ್ತಿದೆ. ಏನನ್ನೂ ಹೊಂದಿಸುವ ಅಗತ್ಯವಿಲ್ಲ.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "ವಿಸ್ತರಣೆಯನ್ನು ಟೂಲ್‌ಬಾರ್‌ಗೆ ಪಿನ್ ಮಾಡಿ",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "ವಿಳಾಸ ಪಟ್ಟಿಯ ಪಕ್ಕದಲ್ಲಿರುವ ಒಗಟಿನ ತುಣುಕಿನ ಐಕಾನ್ ಕ್ಲಿಕ್ ಮಾಡಿ ಮತ್ತು Supreme AdBlock ಅನ್ನು ಪಿನ್ ಮಾಡಿ. ನಂತರ ಒಂದೇ ಕ್ಲಿಕ್‌ನಲ್ಲಿ ಪುಟದಲ್ಲಿ ಏನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ ಎಂದು ನೋಡಬಹುದು.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "ಯಾವುದಾದರೂ ಸೈಟ್ ಸರಿಯಾಗಿ ಕಾಣಿಸದಿದ್ದರೆ",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "ವಿಸ್ತರಣೆಯನ್ನು ತೆರೆಯಿರಿ ಮತ್ತು ಆ ಸೈಟ್‌ಗೆ ನಿರ್ಬಂಧಿಸುವಿಕೆಯನ್ನು ಆಫ್ ಮಾಡಿ, ಅಥವಾ ತ್ವರಿತ ಪರಿಹಾರಗಳಿಗಾಗಿ “ಸೈಟ್ ಹಾಳಾಗಿದೆಯೇ?” ಆಯ್ಕೆಮಾಡಿ.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ನಿಮ್ಮ ಸಾಧನದಲ್ಲೇ ಉಳಿಯುತ್ತದೆ",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "ಫಿಲ್ಟರಿಂಗ್ ಸ್ಥಳೀಯವಾಗಿ ನಡೆಯುತ್ತದೆ. ವಿಸ್ತರಣೆ ಯಾವುದೇ ವೈಯಕ್ತಿಕ ಡೇಟಾ ಸಂಗ್ರಹಿಸುವುದಿಲ್ಲ ಮತ್ತು ನೀವು ಭೇಟಿ ನೀಡುವ ಪುಟಗಳ ಬಗ್ಗೆ ಏನನ್ನೂ ಕಳುಹಿಸುವುದಿಲ್ಲ.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "ಅರ್ಥವಾಯಿತು",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

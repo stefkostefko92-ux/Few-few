@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "ማስታወቂያዎችን በሁሉም ቦታ ያግዳል፦ የYouTube ቪዲዮ ማስታወቂያዎች፣ ሰንደቆች፣ ብቅ-ባዮች፣ መከታተያዎች እና የፀረ-ማስታወቂያ-አጋጅ ግድግዳዎች። ነፃ እና ፈጣን።"
+    "message": "ማስታወቂያዎችን በሁሉም ቦታ ያግዳል፦ የYouTube ቪዲዮ ማስታወቂያዎች፣ ሰንደቆች፣ ብቅ-ባዮች፣ መከታተያዎች እና የፀረ-ማስታወቂያ-አጋጅ ግድግዳዎች።"
   },
   "byCarbon": {
     "message": "በCarbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "የማጣሪያ ዝርዝሮቹ ፈቃዶች"
+  },
+  "welPageTitle": {
+    "message": "ወደ Supreme AdBlock እንኳን በደህና መጡ",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "ጥበቃ በርቷል",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock አሁን በሚጎበኟቸው ሁሉም ጣቢያዎች ላይ ማስታወቂያዎችን እና መከታተያዎችን እያገደ ነው። ምንም የሚዋቀር ነገር የለም።",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "ቅጥያውን በመሣሪያ አሞሌው ላይ ይሰኩት",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "ከአድራሻ አሞሌው አጠገብ ያለውን የእንቆቅልሽ ቁራጭ አዶ ጠቅ ያድርጉ እና Supreme AdBlockን ይሰኩ። ከዚያ አንድ ጠቅታ በገጹ ላይ የታገደውን ያሳያል።",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "አንድ ጣቢያ የተበላሸ ቢመስል",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "ቅጥያውን ይክፈቱ እና ለዚያ ጣቢያ ማገድን ያጥፉ፣ ወይም ለፈጣን ማስተካከያዎች «ጣቢያው ተበላሽቷል?»ን ይምረጡ።",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "አሰሳዎ በመሣሪያዎ ላይ ይቆያል",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "ማጣራቱ በመሣሪያዎ ላይ ይከናወናል። ቅጥያው ምንም የግል ውሂብ አይሰበስብም፣ ስለሚጎበኟቸው ገጾችም ምንም አይልክም።",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "ቅንብሮችን ይክፈቱ",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "ገባኝ",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

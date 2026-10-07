@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma liftpilot rendetto}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma liftpilot korpora}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -154,13 +154,13 @@ PIUMA_ENV="${PIUMA_ENV:-/opt/few-few/shared/piuma/.env}"
 # или случайна, отпечатана веднъж); LIFTPILOT_SMTP_USER/LIFTPILOT_SMTP_PASS — данните на Brevo за писмата.
 LIFTPILOT_ENV="${LIFTPILOT_ENV:-/opt/few-few/shared/liftpilot/.env}"
 
-# rendetto (Rendetto — Docker Compose: db + app на 127.0.0.1:4320 зад nginx на хоста). Стъпките са
-# в rendetto/deploy/deploy.sh — същият скрипт и за ръчния деплой, затова двата пътя не се разминават:
-# тайните от /opt/few-few/shared/rendetto/.env, бекъп преди миграция, сонда с маркер, vhost-ът от
+# korpora (Korpora — Docker Compose: db + app на 127.0.0.1:4320 зад nginx на хоста). Стъпките са
+# в korpora/deploy/deploy.sh — същият скрипт и за ръчния деплой, затова двата пътя не се разминават:
+# тайните от /opt/few-few/shared/korpora/.env, бекъп преди миграция, сонда с маркер, vhost-ът от
 # репото, IndexNow при променен sitemap. Тук остава откатът: пътят на последния release, който е
 # отговорил, стои на стабилно място извън releases/ (чистенето в т. 4 не трие този release).
-RENDETTO_SHARED="${RENDETTO_SHARED:-/opt/few-few/shared/rendetto}"
-RENDETTO_LAST_GOOD="${RENDETTO_LAST_GOOD:-$RENDETTO_SHARED/last-good}"
+KORPORA_SHARED="${KORPORA_SHARED:-/opt/few-few/shared/korpora}"
+KORPORA_LAST_GOOD="${KORPORA_LAST_GOOD:-$KORPORA_SHARED/last-good}"
 
 # vps-dashboard (Carbon Stealth VPS Dashboard — systemd, Node ≥20, нула runtime
 # зависимости). Панелът управлява СЪРВЪРА → върви като root (виж service unit-а),
@@ -1341,85 +1341,85 @@ deploy_liftpilot() {
   health "http://127.0.0.1:${p:-4330}/api/health" "liftpilot" '"app":"liftpilot"' || deploy_failed=1
 }
 
-# ── 3к) rendetto — Docker Compose (db + app); стъпките са в rendetto/deploy/deploy.sh ──
+# ── 3к) korpora — Docker Compose (db + app); стъпките са в korpora/deploy/deploy.sh ──
 # Кодовете на deploy.sh: 0 — жив; 3 — няма .env (машината още не е настроена: пропуск, не провал,
-# както при piuma); 4 — контейнерите са сменени, но Rendetto не отговаря → откат; друго — спрян
+# както при piuma); 4 — контейнерите са сменени, но Korpora не отговаря → откат; друго — спрян
 # преди смяната на контейнерите (работещите не са пипани).
-deploy_rendetto() {
-  local d="$SRC/rendetto" rc=0
-  [ -d "$d" ] || { warn "Няма rendetto/ в архива — пропускам."; return; }
-  [ -f "$d/deploy/deploy.sh" ] || { warn "rendetto: няма deploy/deploy.sh в архива — пропускам."; return; }
-  log "Разгръщам rendetto (Docker Compose)…"
+deploy_korpora() {
+  local d="$SRC/korpora" rc=0
+  [ -d "$d" ] || { warn "Няма korpora/ в архива — пропускам."; return; }
+  [ -f "$d/deploy/deploy.sh" ] || { warn "korpora: няма deploy/deploy.sh в архива — пропускам."; return; }
+  log "Разгръщам korpora (Docker Compose)…"
   # `|| rc=$?`, не голо извикване: под `set -e` ненулев изход тук би убил ЦЕЛИЯ autodeploy.
   bash "$d/deploy/deploy.sh" || rc=$?
   case "$rc" in
     0)
       # Истинският път (без symlink-ове): с него чистенето в т. 4 разпознава release-а и не го трие.
-      install -d -m 700 "$(dirname "$RENDETTO_LAST_GOOD")"
-      printf '%s\n' "$(readlink -f "$d")" > "$RENDETTO_LAST_GOOD.tmp" && mv -f "$RENDETTO_LAST_GOOD.tmp" "$RENDETTO_LAST_GOOD"
+      install -d -m 700 "$(dirname "$KORPORA_LAST_GOOD")"
+      printf '%s\n' "$(readlink -f "$d")" > "$KORPORA_LAST_GOOD.tmp" && mv -f "$KORPORA_LAST_GOOD.tmp" "$KORPORA_LAST_GOOD"
       ;;
-    3) warn "rendetto: тази машина още не е настроена (няма .env) — пропускам, не е провал." ;;
+    3) warn "korpora: тази машина още не е настроена (няма .env) — пропускам, не е провал." ;;
     4)
       deploy_failed=1
-      if rendetto_migration_failed "$d"; then
-        rendetto_migration_help
+      if korpora_migration_failed "$d"; then
+        korpora_migration_help
       else
-        rendetto_rollback "$d" || true
+        korpora_rollback "$d" || true
       fi
       ;;
-    *) deploy_failed=1; warn "rendetto: деплоят спря преди смяната на контейнерите (код $rc) — работи предишният код." ;;
+    *) deploy_failed=1; warn "korpora: деплоят спря преди смяната на контейнерите (код $rc) — работи предишният код." ;;
   esac
 }
 
 # Провалена миграция личи по кода на Prisma в лога на app: P3018 при самия опит, P3009 при всеки
 # следващ старт. Тогава откат само на кода не помага — entrypoint-ът на стария release пуска същия
 # `prisma migrate deploy` и спира на P3009 (Prisma отказва, докато в базата има неуредена миграция).
-rendetto_migration_failed() {
+korpora_migration_failed() {
   docker compose -f "$1/docker-compose.yml" logs --no-color --tail 300 app 2>/dev/null | grep -qE 'P3009|P3018'
 }
 
 # Базата не се пипа автоматично: възстановяването от бекъп е решение на човек. Тук само казваме кой
 # дъмп е отпреди миграцията и къде е процедурата.
-rendetto_migration_help() {
+korpora_migration_help() {
   local dump good
-  dump="$(ls -1t "$RENDETTO_SHARED/backups"/pre-deploy-*.sql.gz 2>/dev/null | head -n 1 || true)"
-  good="$(head -n 1 "$RENDETTO_LAST_GOOD" 2>/dev/null || true)"
-  warn "rendetto: миграцията на базата се провали — откат само на кода не помага (старият код спира на P3009)."
-  warn "rendetto: бекъпът отпреди миграцията: ${dump:-(няма — виж $RENDETTO_SHARED/backups)}"
+  dump="$(ls -1t "$KORPORA_SHARED/backups"/pre-deploy-*.sql.gz 2>/dev/null | head -n 1 || true)"
+  good="$(head -n 1 "$KORPORA_LAST_GOOD" 2>/dev/null || true)"
+  warn "korpora: миграцията на базата се провали — откат само на кода не помага (старият код спира на P3009)."
+  warn "korpora: бекъпът отпреди миграцията: ${dump:-(няма — виж $KORPORA_SHARED/backups)}"
   # Първо а): PostgreSQL връща паднала миграция цялата, затова възстановяването (б) не е обичайният път.
-  warn "rendetto: нужен е човек — rendetto/DEPLOY.md, „Провалена миграция“, от ${good:-папката на последния работещ release}:"
-  warn "rendetto:   а) данните са цели (обичайното): migrate resolve --rolled-back <миграцията>;"
-  warn "rendetto:   б) данните трябва да се върнат: възстановяване от бекъпа по-горе;"
-  warn "rendetto:   после deploy.sh оттам с RENDETTO_SKIP_BACKUP=1."
+  warn "korpora: нужен е човек — korpora/DEPLOY.md, „Провалена миграция“, от ${good:-папката на последния работещ release}:"
+  warn "korpora:   а) данните са цели (обичайното): migrate resolve --rolled-back <миграцията>;"
+  warn "korpora:   б) данните трябва да се върнат: възстановяване от бекъпа по-горе;"
+  warn "korpora:   после deploy.sh оттам с KORPORA_SKIP_BACKUP=1."
 }
 
 # Откат САМО на кода: deploy.sh на последния release, който е отговорил, вдига неговия код със същото
 # compose име. Миграциите са адитивни по правило (skill prisma-migrate), значи старият код работи с
-# базата — освен ако миграцията се е провалила (виж rendetto_migration_failed; тогава не стигаме дотук).
-# Кандидат: пътят от RENDETTO_LAST_GOOD; `current` само ако памет още няма (първи деплой по autodeploy
+# базата — освен ако миграцията се е провалила (виж korpora_migration_failed; тогава не стигаме дотук).
+# Кандидат: пътят от KORPORA_LAST_GOOD; `current` само ако памет още няма (първи деплой по autodeploy
 # след ръчен) — непроверен код не се вдига „за откат“. Никога провалилият се release.
-# RENDETTO_SKIP_BACKUP=1: откатът не прави нов дъмп — иначе всеки провал гори слот от ротацията и
+# KORPORA_SKIP_BACKUP=1: откатът не прави нов дъмп — иначе всеки провал гори слот от ротацията и
 # изтласква дъмпа отпреди счупената миграция.
-rendetto_rollback() {
+korpora_rollback() {
   local failed prev="" cand
   failed="$(readlink -f "$1" || true)"
-  if [ -f "$RENDETTO_LAST_GOOD" ]; then
-    cand="$(cat "$RENDETTO_LAST_GOOD" 2>/dev/null || true)"
+  if [ -f "$KORPORA_LAST_GOOD" ]; then
+    cand="$(cat "$KORPORA_LAST_GOOD" 2>/dev/null || true)"
   else
-    cand="$CURRENT_LINK/rendetto"
+    cand="$CURRENT_LINK/korpora"
   fi
   if [ -n "$cand" ] && [ -f "$cand/deploy/deploy.sh" ] && [ "$(readlink -f "$cand" || true)" != "$failed" ]; then
     prev="$cand"
   fi
   if [ -z "$prev" ]; then
-    warn "rendetto: няма предишен работещ release за откат — нужен е човек (cd $1 && docker compose logs app)."
+    warn "korpora: няма предишен работещ release за откат — нужен е човек (cd $1 && docker compose logs app)."
     return 1
   fi
-  warn "rendetto: връщам предишния код ($prev)…"
-  if RENDETTO_SKIP_BACKUP=1 bash "$prev/deploy/deploy.sh"; then
-    ok "rendetto: предишният код отговаря."
+  warn "korpora: връщам предишния код ($prev)…"
+  if KORPORA_SKIP_BACKUP=1 bash "$prev/deploy/deploy.sh"; then
+    ok "korpora: предишният код отговаря."
   else
-    warn "rendetto: откатът не тръгна — нужен е човек (cd $prev && docker compose logs app)."
+    warn "korpora: откатът не тръгна — нужен е човек (cd $prev && docker compose logs app)."
     return 1
   fi
 }
@@ -1728,7 +1728,7 @@ for p in $PROJECTS; do
     eternaltouch)         deploy_eternaltouch ;;
     piuma)      deploy_piuma ;;
     liftpilot)  deploy_liftpilot ;;
-    rendetto)   deploy_rendetto ;;
+    korpora)   deploy_korpora ;;
     adblock)    deploy_adblock ;;
     vpsdash|vps-dashboard|vpsdashboard) deploy_vpsdashboard ;;
     *)          warn "Непознат проект: $p" ;;
@@ -1756,14 +1756,14 @@ fi
 # стария release, а той може да е достатъчно назад, за да попадне под ножа. Тогава
 # щяхме да изтрием кода, който в момента обслужва продукцията.
 # (VPS-аджията, одит 07.08.2026)
-# Третото: release-ът, към който сочи паметта на Rendetto за последния работещ (RENDETTO_LAST_GOOD).
-# Без него няколко деплоя без rendetto (PROJECTS="piuma") изтриваха целта на отката и той падаше към
-# код, който никога не е разгръщан за Rendetto.
+# Третото: release-ът, към който сочи паметта на Korpora за последния работещ (KORPORA_LAST_GOOD).
+# Без него няколко деплоя без korpora (PROJECTS="piuma") изтриваха целта на отката и той падаше към
+# код, който никога не е разгръщан за Korpora.
 prune_releases() {
   local keep_rel live_rel lg_rel old old_real keep protected
   keep_rel="$(cd "$SRC" && pwd -P)"
   live_rel="$(readlink -f "$CURRENT_LINK" 2>/dev/null || true)"
-  lg_rel="$(readlink -f "$(cat "$RENDETTO_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
+  lg_rel="$(readlink -f "$(cat "$KORPORA_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
   while read -r old; do
     [ -n "$old" ] || continue
     old_real="$(cd "$old" 2>/dev/null && pwd -P || true)"

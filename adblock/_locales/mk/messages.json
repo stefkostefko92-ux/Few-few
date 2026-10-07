@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Блокира реклами насекаде: видеореклами на YouTube, банери, скокачки прозорци, тракери и анти-адблок ѕидови. Бесплатно и приватно."
+    "message": "Блокира реклами насекаде: видеореклами на YouTube, банери, скокачки прозорци, тракери и анти-адблок ѕидови."
   },
   "byCarbon": {
     "message": "од Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Лиценци на листите со филтри"
+  },
+  "welPageTitle": {
+    "message": "Добредојдовте во Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Заштитата е вклучена",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock сега блокира реклами и тракери на секој сајт што го посетувате. Нема ништо за поставување.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Закачете го додатокот на лентата со алатки",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Кликнете на иконата со парче сложувалка до лентата за адреси и закачете го Supreme AdBlock. Потоа со еден клик гледате што е блокирано на страницата.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Ако некој сајт изгледа расипано",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Отворете го додатокот и исклучете го блокирањето за тој сајт или изберете „Сајтот не работи?“ за брзи поправки.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Вашето прелистување останува на вашиот уред",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Филтрирањето се врши локално. Додатокот не собира лични податоци и не испраќа ништо за страниците што ги посетувате.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Отвори ги поставките",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Разбрав",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

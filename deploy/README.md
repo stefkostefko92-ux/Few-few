@@ -139,16 +139,16 @@ ZIP отпреди месец.
   Nginx vhost (`liftpilot/deploy/nginx/liftpilot.conf`) + certbot за `liftpilot.carbonstealth.eu` — нужен е DNS A
   запис към VPS-а; без него остава само HTTP и деплоят не се проваля. Индексирането е изключено
   (`ALLOW_INDEXING=false`) до одобрение за публично пускане → `liftpilot/DEPLOY.md`.
-- **rendetto** (мебели в 3D, разкрой, CNC): Docker Compose (db + app на `127.0.0.1:4320`).
-  Стъпките са в `rendetto/deploy/deploy.sh` — същият скрипт и за ръчния деплой: тайните от
-  `/opt/few-few/shared/rendetto/.env` (не се генерират; без тях rendetto се пропуска като „още
+- **korpora** (мебели в 3D, разкрой, CNC): Docker Compose (db + app на `127.0.0.1:4320`).
+  Стъпките са в `korpora/deploy/deploy.sh` — същият скрипт и за ръчния деплой: тайните от
+  `/opt/few-few/shared/korpora/.env` (не се генерират; без тях korpora се пропуска като „още
   ненастроен“), `build`, `pg_dump` точно преди смяната (последните 5; провален дъмп спира деплоя),
-  `up -d` (миграциите — от entrypoint-а), сонда с маркер `"app":"rendetto"`, vhost-ът от репото
+  `up -d` (миграциите — от entrypoint-а), сонда с маркер `"app":"korpora"`, vhost-ът от репото
   в nginx щом има сертификат, IndexNow само при променен sitemap. Ако новият код не отговори,
-  `autodeploy.sh` пуска `deploy.sh` на последния работещ release (`RENDETTO_LAST_GOOD`; чистенето
-  на releases не го трие) с `RENDETTO_SKIP_BACKUP=1` — откатът не изтласква дъмпа отпреди
+  `autodeploy.sh` пуска `deploy.sh` на последния работещ release (`KORPORA_LAST_GOOD`; чистенето
+  на releases не го трие) с `KORPORA_SKIP_BACKUP=1` — откатът не изтласква дъмпа отпреди
   миграцията. Изключение: провалена миграция (`P3018`/`P3009` в лога на app) — старият код спира на
-  същото, затова откат няма; скриптът сочи последния дъмп и вика човек → `rendetto/DEPLOY.md`:
+  същото, затова откат няма; скриптът сочи последния дъмп и вика човек → `korpora/DEPLOY.md`:
   обикновено `migrate resolve --rolled-back` (PostgreSQL е върнал миграцията цялата), а
   възстановяване от дъмпа — само ако данните трябва да се върнат.
 - **vpsdash** (VPS таблото): systemd модел. `rsync` към `/opt/vps-dashboard` (конфигът
@@ -164,7 +164,7 @@ ZIP отпреди месец.
 
 | Променлива | По подразбиране | Смисъл |
 | --- | --- | --- |
-| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma liftpilot rendetto` | кои проекти да се разгръщат тук |
+| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma liftpilot korpora` | кои проекти да се разгръщат тук |
 | `PANEV_DIR` | `/opt/panev` | път на panev (systemd) |
 | `PANEV_ENV` | `/etc/panev/panev.env` | тайните на panev (600, `EnvironmentFile`) |
 | `PANEV_HEALTH_URL` | `http://127.0.0.1:4102/api/health` | health на panev |
@@ -172,10 +172,10 @@ ZIP отпреди месец.
 | `OSPEDALI_HEALTH_URL` | `http://127.0.0.1:8788/healthz` | health на ospedali |
 | `ADBLOCK_WWW` | `/var/www/adblock` | www root на статичния adblock сайт |
 | `CADDY_SITES_DIR` / `CADDY_MAIN` | `/etc/caddy/sites` · `/etc/caddy/Caddyfile` | къде се инсталира adblock сайт-блокът + главен Caddyfile |
-| `LIFTPILOT_ENV` | `/opt/few-few/shared/liftpilot/.env` | тайните на liftpilot (600); портът е `APP_PORT` в него (по подразбиране 4330; 4320 е на rendetto) |
+| `LIFTPILOT_ENV` | `/opt/few-few/shared/liftpilot/.env` | тайните на liftpilot (600); портът е `APP_PORT` в него (по подразбиране 4330; 4320 е на korpora) |
 | `PIUMA_ENV` / `PIUMA_HEALTH_URL` | `/opt/few-few/shared/piuma/.env` · `http://127.0.0.1:4310/health` (портът се чете от `HTTP_PORT` в `.env`) | тайните и health на piuma |
-| `RENDETTO_LAST_GOOD` | `/opt/few-few/shared/rendetto/last-good` | пътят на последния release на rendetto, който е отговорил — към него е откатът |
-| `RENDETTO_SHARED` · `RENDETTO_HEALTH_WAIT` · `RENDETTO_INDEXNOW` | `/opt/few-few/shared/rendetto` · `90` · `1` | тайни/бекъпи/данни (и за `autodeploy.sh`: къде са дъмповете), секунди за сондата, IndexNow |
+| `KORPORA_LAST_GOOD` | `/opt/few-few/shared/korpora/last-good` | пътят на последния release на korpora, който е отговорил — към него е откатът |
+| `KORPORA_SHARED` · `KORPORA_HEALTH_WAIT` · `KORPORA_INDEXNOW` | `/opt/few-few/shared/korpora` · `90` · `1` | тайни/бекъпи/данни (и за `autodeploy.sh`: къде са дъмповете), секунди за сондата, IndexNow |
 | `VPSDASH_DIR` / `VPSDASH_SERVICE` / `VPSDASH_HEALTH_URL` | `/opt/vps-dashboard` · `vps-dashboard` · `http://127.0.0.1:7700/api/ping` | път, systemd услуга и health на VPS таблото |
 | `ARCHIVE` | (най-новият в `/root`) | конкретен архив |
 | `FORCE_SEED` | `0` | принудителен сийд на zabobovdol |

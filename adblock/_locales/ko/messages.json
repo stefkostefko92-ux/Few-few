@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "모든 광고 차단: YouTube 동영상 광고, 배너, 팝업, 추적기, 쿠키 동의 창, 광고 차단 감지 벽까지. 무료, 빠름, 개인정보 보호."
+    "message": "모든 광고 차단: YouTube 동영상 광고, 배너, 팝업, 추적기, 쿠키 동의 창, 광고 차단 감지 벽까지."
   },
   "byCarbon": {
     "message": "by Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "필터 목록 라이선스"
+  },
+  "welPageTitle": {
+    "message": "Supreme AdBlock에 오신 것을 환영합니다",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "보호가 활성화되었습니다",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "이제 Supreme AdBlock이 방문하는 모든 사이트에서 광고와 추적기를 차단합니다. 따로 설정할 것은 없습니다.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "확장 프로그램을 툴바에 고정하기",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "주소 표시줄 옆의 퍼즐 조각 아이콘을 클릭한 다음 Supreme AdBlock을 고정하세요. 그러면 한 번의 클릭으로 페이지에서 차단된 항목을 확인할 수 있습니다.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "사이트가 제대로 표시되지 않으면",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "확장 프로그램을 열고 해당 사이트의 차단을 끄거나, '사이트에 문제가 있나요?'를 선택해 빠르게 해결하세요.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "탐색 기록은 기기에만 남습니다",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "필터링은 기기에서 이루어집니다. 확장 프로그램은 개인 정보를 수집하지 않으며 방문한 페이지에 관한 어떤 정보도 전송하지 않습니다.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "설정 열기",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "확인",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }
