@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1587 1122" width="1587" height="1122" role="img" aria-label="Disposizione fisica del quadro (vista frontale, indicativa)">
+<title>T15 — Disposizione fisica del quadro (vista frontale, indicativa)</title>
+<defs></defs>
+<rect width="1587" height="1122" fill="#ffffff"/>
+
+<rect x="8" y="8" width="1571" height="1106" fill="none" stroke="#111827" stroke-width="2"/>
+<rect x="14" y="14" width="1559" height="1094" fill="none" stroke="#111827" stroke-width="0.8"/>
+<g font-family="DejaVu Sans, Arial, sans-serif">
+<rect x="60" y="60" width="400" height="500" rx="4" fill="#f8fafc" stroke="#111827" stroke-width="3"/>
+<text x="260" y="52" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="260" dy="0">800 mm</tspan></text>
+<text x="50" y="310" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280" transform="rotate(-90 50 310)"><tspan x="50" dy="0">1000 mm</tspan></text>
+<line x1="68" y1="80" x2="452" y2="80" stroke="#94a3b8" stroke-width="5" stroke-linecap="round"/>
+<text x="72" y="76" font-size="8.5" text-anchor="start" font-weight="400" fill="#6b7280"><tspan x="72" dy="0"></tspan></text>
+<rect x="74" y="82" width="44" height="50" rx="2" fill="#fef2f2" stroke="#b91c1c" stroke-width="1.2"/>
+<text x="96" y="110" font-size="10" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="96" dy="0">QS1</tspan></text>
+<rect x="122" y="82" width="34" height="50" rx="2" fill="#fef2f2" stroke="#b91c1c" stroke-width="1.2"/>
+<text x="139" y="110" font-size="10" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="139" dy="0">QF1</tspan></text>
+<rect x="160" y="82" width="34" height="50" rx="2" fill="#fef2f2" stroke="#b91c1c" stroke-width="1.2"/>
+<text x="177" y="110" font-size="10" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="177" dy="0">QF2</tspan></text>
+<rect x="198" y="82" width="34" height="50" rx="2" fill="#fef2f2" stroke="#b91c1c" stroke-width="1.2"/>
+<text x="215" y="110" font-size="10" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="215" dy="0">QF3</tspan></text>
+<rect x="236" y="82" width="56" height="50" rx="2" fill="#f1f5f9" stroke="#111827" stroke-width="1.2"/>
+<text x="264" y="110" font-size="8.387096774193548" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="264" dy="0">Filtro EMC</tspan></text>
+<rect x="296" y="82" width="70" height="50" rx="2" fill="#f1f5f9" stroke="#111827" stroke-width="1.2"/>
+<text x="331" y="110" font-size="10" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="331" dy="0">Reattanza</tspan></text>
+<rect x="370" y="82" width="76" height="50" rx="2" fill="#f1f5f9" stroke="#111827" stroke-width="1.2"/>
+<text x="408" y="110" font-size="8.294930875576037" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="408" dy="0">Res. frenatura</tspan></text>
+<rect x="74" y="148" width="190" height="118" rx="2" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="169" y="210" font-size="10" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="169" dy="0">INVERTER VVVF + STO</tspan></text>
+<rect x="272" y="148" width="56" height="56" rx="2" fill="#f1f5f9" stroke="#111827" stroke-width="1.2"/>
+<text x="300" y="179" font-size="10" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="300" dy="0">KM1</tspan></text>
+<rect x="332" y="148" width="56" height="56" rx="2" fill="#f1f5f9" stroke="#111827" stroke-width="1.2"/>
+<text x="360" y="179" font-size="10" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="360" dy="0">KM2</tspan></text>
+<rect x="392" y="148" width="54" height="56" rx="2" fill="#f1f5f9" stroke="#111827" stroke-width="1.2"/>
+<text x="419" y="179" font-size="10" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="419" dy="0">KB freno</tspan></text>
+<rect x="272" y="210" width="174" height="56" rx="2" fill="#f1f5f9" stroke="#111827" stroke-width="1.2"/>
+<text x="359" y="241" font-size="10" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="359" dy="0">Alim. freno + porte</tspan></text>
+<rect x="74" y="282" width="84" height="70" rx="2" fill="#ecfdf5" stroke="#15803d" stroke-width="1.2"/>
+<text x="116" y="320" font-size="10" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="116" dy="0">SMPS 48 V</tspan></text>
+<rect x="162" y="282" width="84" height="70" rx="2" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="204" y="320" font-size="10" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="204" dy="0">SMPS 24 V</tspan></text>
+<rect x="250" y="282" width="100" height="70" rx="2" fill="#fff7ed" stroke="#111827" stroke-width="1.2"/>
+<text x="300" y="320" font-size="10" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="300" dy="0">Caricabatt. ARD</tspan></text>
+<rect x="354" y="282" width="92" height="70" rx="2" fill="#fff7ed" stroke="#111827" stroke-width="1.2"/>
+<text x="400" y="320" font-size="10" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="400" dy="0">Batterie</tspan></text>
+<rect x="74" y="368" width="100" height="76" rx="2" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="124" y="409" font-size="10" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="124" dy="0">PLC CPU + I/O</tspan></text>
+<rect x="178" y="368" width="70" height="76" rx="2" fill="#fff7ed" stroke="#111827" stroke-width="1.2"/>
+<text x="213" y="409" font-size="7" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="213" dy="0">Nodi CAN / I/O remoto</tspan></text>
+<rect x="252" y="368" width="90" height="76" rx="2" fill="#faf5ff" stroke="#111827" stroke-width="1.2"/>
+<text x="297" y="409" font-size="10" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="297" dy="0">Gateway web</tspan></text>
+<rect x="346" y="368" width="100" height="76" rx="2" fill="#faf5ff" stroke="#111827" stroke-width="1.2"/>
+<text x="396" y="409" font-size="10" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="396" dy="0">Router 5G + AP</tspan></text>
+<rect x="74" y="460" width="120" height="50" rx="2" fill="#ecfdf5" stroke="#15803d" stroke-width="1.2"/>
+<text x="134" y="488" font-size="7.795698924731183" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="134" dy="0">Modulo CE (bypass · UCM)</tspan></text>
+<rect x="198" y="460" width="70" height="50" rx="2" fill="#ecfdf5" stroke="#15803d" stroke-width="1.2"/>
+<text x="233" y="488" font-size="7.603686635944701" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="233" dy="0">Relè sicurezza</tspan></text>
+<rect x="272" y="460" width="80" height="50" rx="2" fill="#ecfdf5" stroke="#15803d" stroke-width="1.2"/>
+<text x="312" y="488" font-size="7" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="312" dy="0">Limit. tempo (idr.)</tspan></text>
+<rect x="356" y="460" width="90" height="50" rx="2" fill="#fff7ed" stroke="#111827" stroke-width="1.2"/>
+<text x="401" y="488" font-size="10" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="401" dy="0">Teleallarme</tspan></text>
+<rect x="74" y="522" width="90" height="28" rx="2" fill="#fff" stroke="#111827" stroke-width="1.2"/>
+<text x="119" y="539" font-size="10" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="119" dy="0">X1 potenza</tspan></text>
+<rect x="168" y="522" width="90" height="28" rx="2" fill="#fff" stroke="#15803d" stroke-width="1.2"/>
+<text x="213" y="539" font-size="10" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="213" dy="0">X2 sicurezza</tspan></text>
+<rect x="262" y="522" width="90" height="28" rx="2" fill="#fff" stroke="#c2410c" stroke-width="1.2"/>
+<text x="307" y="539" font-size="10" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="307" dy="0">X3 CAN/24 V</tspan></text>
+<rect x="356" y="522" width="90" height="28" rx="2" fill="#fff" stroke="#111827" stroke-width="1.2"/>
+<text x="401" y="539" font-size="9.90783410138249" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="401" dy="0">X4 cabina/vano</tspan></text>
+<rect x="520" y="60" width="240" height="500" rx="4" fill="#fff" stroke="#111827" stroke-width="3"/>
+<text x="640" y="52" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="640" dy="0">SPORTELLO (esterno)</tspan></text>
+<rect x="540" y="84" width="200" height="72" rx="6" fill="#eff6ff" stroke="#111827" stroke-width="1.6"/>
+<text x="640" y="110.75" font-size="12" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="640" dy="0">Display locale 4–7"</tspan></text>
+<text x="640" y="125.75" font-size="10" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="640" dy="0">stato · guasti · parametri</tspan><tspan x="640" dy="12.5">solo lettura senza chiave</tspan></text>
+<circle cx="580" cy="210" r="20" fill="#fff7ed" stroke="#111827" stroke-width="1.4"/>
+<text x="580" y="214" font-size="10" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="580" dy="0">SERV</tspan></text>
+<text x="580" y="248" font-size="10" text-anchor="middle" font-weight="400" fill="#111827"><tspan x="580" dy="0">chiave</tspan><tspan x="580" dy="12.5">SERVIZIO</tspan></text>
+<circle cx="700" cy="210" r="20" fill="#fff" stroke="#be185d" stroke-width="1.4"/>
+<text x="700" y="214" font-size="10" text-anchor="middle" font-weight="700" fill="#be185d"><tspan x="700" dy="0">Wi-Fi</tspan></text>
+<text x="700" y="248" font-size="10" text-anchor="middle" font-weight="400" fill="#111827"><tspan x="700" dy="0">pulsante</tspan><tspan x="700" dy="12.5">10 min</tspan></text>
+<rect x="540" y="290" width="200" height="54" rx="6" fill="#f1f5f9" stroke="#111827" stroke-width="1.6"/>
+<text x="640" y="314.65" font-size="11.9" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="640" dy="0">LED di stato</tspan></text>
+<text x="640" y="329.525" font-size="9.9" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="640" dy="0">rete · catena · bus · 5G · allarme</tspan></text>
+<rect x="540" y="360" width="200" height="54" rx="6" fill="#fff7ed" stroke="#111827" stroke-width="1.6"/>
+<text x="640" y="377.75" font-size="12" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="640" dy="0">Manovra di ispezione</tspan></text>
+<text x="640" y="392.75" font-size="10" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="640" dy="0">salita · discesa · abilita</tspan><tspan x="640" dy="12.5">(se prevista nel quadro)</tspan></text>
+<rect x="540" y="430" width="200" height="54" rx="6" fill="#f1f5f9" stroke="#111827" stroke-width="1.6"/>
+<text x="640" y="447.75" font-size="12" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="640" dy="0">Targa e schemi</tspan></text>
+<text x="640" y="462.75" font-size="10" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="640" dy="0">marcatura, tensioni, schema</tspan><tspan x="640" dy="12.5">in tasca porta-schemi</tspan></text>
+<text x="640" y="510" font-size="10.5" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="640" dy="0">Sportello con serratura.</tspan><tspan x="640" dy="13.125">IP2X dietro la chiusura;</tspan><tspan x="640" dy="13.125">sezionatore azionabile da fuori.</tspan></text>
+<rect x="800" y="40" width="760" height="560" rx="8" fill="none" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="6 4"/>
+<text x="810" y="56" font-size="12" text-anchor="start" font-weight="700" fill="#6b7280"><tspan x="810" dy="0">Armadi indicativi (da dimensionare con i dati reali dell'azionamento)</tspan></text>
+<text x="814" y="80" font-size="12" text-anchor="start" font-weight="700" fill="#111827"><tspan x="814" dy="0">Variante</tspan></text>
+<text x="1064" y="80" font-size="12" text-anchor="start" font-weight="700" fill="#111827"><tspan x="1064" dy="0">Armadio</tspan></text>
+<text x="1204" y="80" font-size="12" text-anchor="start" font-weight="700" fill="#111827"><tspan x="1204" dy="0">Note</tspan></text>
+<line x1="810" y1="92" x2="1550" y2="92" stroke="#e5e7eb" stroke-width="1" stroke-linecap="round"/>
+<text x="814" y="124" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="814" dy="0">Trazione ≤ 7,5 kW, 12 fermate</tspan></text>
+<text x="1064" y="124" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1064" dy="0">600×800×250</tspan></text>
+<text x="1204" y="124" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1204" dy="0">inverter a parete o su guida; dissipazione ≈ 3 % della potenza</tspan></text>
+<line x1="810" y1="136" x2="1550" y2="136" stroke="#e5e7eb" stroke-width="1" stroke-linecap="round"/>
+<text x="814" y="168" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="814" dy="0">Trazione ≤ 15 kW, fino a 24 fermate</tspan></text>
+<text x="1064" y="168" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1064" dy="0">800×1000×300</tspan></text>
+<text x="1204" y="168" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1204" dy="0">come in figura; nessun componente in più per le fermate</tspan></text>
+<line x1="810" y1="180" x2="1550" y2="180" stroke="#e5e7eb" stroke-width="1" stroke-linecap="round"/>
+<text x="814" y="212" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="814" dy="0">Idraulico con soft starter</tspan></text>
+<text x="1064" y="212" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1064" dy="0">600×800×250</tspan></text>
+<text x="1204" y="212" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1204" dy="0">niente inverter né reattanza; soft starter + contattore di by-pass</tspan></text>
+<line x1="810" y1="224" x2="1550" y2="224" stroke="#e5e7eb" stroke-width="1" stroke-linecap="round"/>
+<text x="814" y="256" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="814" dy="0">Idraulico con inverter</tspan></text>
+<text x="1064" y="256" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1064" dy="0">800×1000×300</tspan></text>
+<text x="1204" y="256" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1204" dy="0">inverter con reattanza + filtro EMC; valvola proporzionale</tspan></text>
+<line x1="810" y1="268" x2="1550" y2="268" stroke="#e5e7eb" stroke-width="1" stroke-linecap="round"/>
+<text x="814" y="300" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="814" dy="0">Senza locale macchine (MRL)</tspan></text>
+<text x="1064" y="300" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1064" dy="0">in architrave o nel vano</tspan></text>
+<text x="1204" y="300" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1204" dy="0">accessibile per manutenzione dal piano; ingombro minimo</tspan></text>
+<line x1="810" y1="312" x2="1550" y2="312" stroke="#e5e7eb" stroke-width="1" stroke-linecap="round"/>
+<text x="814" y="330" font-size="12.5" text-anchor="start" font-weight="700" fill="#111827"><tspan x="814" dy="0">Regole di montaggio</tspan></text>
+<text x="814" y="356" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="814" dy="0">• Separare nel canale: 400 V (nero) · 48 V sicurezza (verde) · 24 V + CAN (blu/arancio).</tspan></text>
+<text x="814" y="384" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="814" dy="0">• Potenza e bus in canali diversi o a ≥ 100 mm, con schermi a terra solo dal lato quadro.</tspan></text>
+<text x="814" y="412" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="814" dy="0">• Morsetti con ponticelli di prova sulla catena di sicurezza e punto di misura per ogni tratto.</tspan></text>
+<text x="814" y="440" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="814" dy="0">• Ventilazione o termostato, riscaldamento anticondensa se il quadro è in ambiente freddo.</tspan></text>
+<text x="814" y="468" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="814" dy="0">• Targhetta per ogni conduttore, schemi in tasca; sezionatore lucchettabile.</tspan></text>
+<text x="814" y="496" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="814" dy="0">• I punti di misura della catena e il modulo CE sono accessibili senza smontare altro.</tspan></text>
+<text x="814" y="524" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="814" dy="0">• Aerazione del locale e del vano: vedere 02-normativa (scheda VSA 2016).</tspan></text>
+</g>
+
+<g font-family="DejaVu Sans, Arial, sans-serif">
+<rect x="827" y="1010" width="746" height="98" fill="#fff" stroke="#111827" stroke-width="1.2"/>
+<line x1="827" y1="1042" x2="1573" y2="1042" stroke="#111827" stroke-width="0.8"/>
+<line x1="1437" y1="1010" x2="1437" y2="1108" stroke="#111827" stroke-width="0.8"/>
+<line x1="1437" y1="1075" x2="1573" y2="1075" stroke="#111827" stroke-width="0.8"/>
+<text x="837" y="1028" font-size="10" fill="#6b7280">QUADRO DI MANOVRA A PLC — PROGETTO DI FATTIBILITÀ · Carbon Stealth VCC</text>
+<text x="837" y="1062" font-size="17" font-weight="700" fill="#111827">Disposizione fisica del quadro (vista frontale, indicativa)</text>
+<text x="837" y="1084" font-size="11" fill="#374151">Armadio 800 × 1000 × 300 mm per trazione fino a 15 kW · idraulico: vedi tabella</text>
+<text x="837" y="1100" font-size="10" fill="#b45309">Schema di principio: non è un esecutivo. Lo firma un progettista abilitato.</text>
+<text x="1445" y="1026" font-size="10" fill="#6b7280">Tavola</text>
+<text x="1445" y="1056" font-size="26" font-weight="700">T15</text>
+<text x="1445" y="1090" font-size="10" fill="#6b7280">Rev. A · 2026-10-07</text>
+<text x="1445" y="1103" font-size="10" fill="#6b7280">A3 · senza scala</text>
+</g>
+</svg>

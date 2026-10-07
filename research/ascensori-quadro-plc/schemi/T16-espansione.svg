@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1587 1122" width="1587" height="1122" role="img" aria-label="Espansione da 12 a 24 fermate">
+<title>T16 — Espansione da 12 a 24 fermate</title>
+<defs></defs>
+<rect width="1587" height="1122" fill="#ffffff"/>
+
+<rect x="8" y="8" width="1571" height="1106" fill="none" stroke="#111827" stroke-width="2"/>
+<rect x="14" y="14" width="1559" height="1094" fill="none" stroke="#111827" stroke-width="0.8"/>
+<g font-family="DejaVu Sans, Arial, sans-serif">
+<rect x="50" y="50" width="220" height="640" rx="8" fill="none" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="6 4"/>
+<text x="60" y="66" font-size="12" text-anchor="start" font-weight="700" fill="#6b7280"><tspan x="60" dy="0">BASE: 12 fermate</tspan></text>
+<rect x="80" y="90" width="160" height="36" rx="2" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.1"/>
+<text x="160" y="112" font-size="11" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="160" dy="0">Piano 12 · nodo N12</tspan></text>
+<rect x="80" y="134" width="160" height="36" rx="2" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.1"/>
+<text x="160" y="156" font-size="11" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="160" dy="0">Piano 11 · nodo N11</tspan></text>
+<rect x="80" y="178" width="160" height="36" rx="2" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.1"/>
+<text x="160" y="200" font-size="11" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="160" dy="0">Piano 10 · nodo N10</tspan></text>
+<rect x="80" y="222" width="160" height="36" rx="2" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.1"/>
+<text x="160" y="244" font-size="11" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="160" dy="0">Piano 9 · nodo N9</tspan></text>
+<rect x="80" y="266" width="160" height="36" rx="2" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.1"/>
+<text x="160" y="288" font-size="11" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="160" dy="0">Piano 8 · nodo N8</tspan></text>
+<rect x="80" y="310" width="160" height="36" rx="2" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.1"/>
+<text x="160" y="332" font-size="11" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="160" dy="0">Piano 7 · nodo N7</tspan></text>
+<rect x="80" y="354" width="160" height="36" rx="2" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.1"/>
+<text x="160" y="376" font-size="11" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="160" dy="0">Piano 6 · nodo N6</tspan></text>
+<rect x="80" y="398" width="160" height="36" rx="2" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.1"/>
+<text x="160" y="420" font-size="11" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="160" dy="0">Piano 5 · nodo N5</tspan></text>
+<rect x="80" y="442" width="160" height="36" rx="2" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.1"/>
+<text x="160" y="464" font-size="11" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="160" dy="0">Piano 4 · nodo N4</tspan></text>
+<rect x="80" y="486" width="160" height="36" rx="2" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.1"/>
+<text x="160" y="508" font-size="11" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="160" dy="0">Piano 3 · nodo N3</tspan></text>
+<rect x="80" y="530" width="160" height="36" rx="2" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.1"/>
+<text x="160" y="552" font-size="11" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="160" dy="0">Piano 2 · nodo N2</tspan></text>
+<rect x="80" y="574" width="160" height="36" rx="2" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.1"/>
+<text x="160" y="596" font-size="11" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="160" dy="0">Piano 1 · nodo N1</tspan></text>
+<rect x="300" y="50" width="220" height="640" rx="8" fill="none" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="6 4"/>
+<text x="310" y="66" font-size="12" text-anchor="start" font-weight="700" fill="#6b7280"><tspan x="310" dy="0">ESPANSO: 24 fermate</tspan></text>
+<rect x="330" y="90" width="160" height="17" rx="2" fill="#fff7ed" stroke="#c2410c" stroke-width="1.1"/>
+<text x="410" y="102.5" font-size="9.5" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="410" dy="0">Piano 24 · nodo N24</tspan></text>
+<rect x="330" y="112" width="160" height="17" rx="2" fill="#fff7ed" stroke="#c2410c" stroke-width="1.1"/>
+<text x="410" y="124.5" font-size="9.5" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="410" dy="0">Piano 23 · nodo N23</tspan></text>
+<rect x="330" y="134" width="160" height="17" rx="2" fill="#fff7ed" stroke="#c2410c" stroke-width="1.1"/>
+<text x="410" y="146.5" font-size="9.5" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="410" dy="0">Piano 22 · nodo N22</tspan></text>
+<rect x="330" y="156" width="160" height="17" rx="2" fill="#fff7ed" stroke="#c2410c" stroke-width="1.1"/>
+<text x="410" y="168.5" font-size="9.5" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="410" dy="0">Piano 21 · nodo N21</tspan></text>
+<rect x="330" y="178" width="160" height="17" rx="2" fill="#fff7ed" stroke="#c2410c" stroke-width="1.1"/>
+<text x="410" y="190.5" font-size="9.5" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="410" dy="0">Piano 20 · nodo N20</tspan></text>
+<rect x="330" y="200" width="160" height="17" rx="2" fill="#fff7ed" stroke="#c2410c" stroke-width="1.1"/>
+<text x="410" y="212.5" font-size="9.5" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="410" dy="0">Piano 19 · nodo N19</tspan></text>
+<rect x="330" y="222" width="160" height="17" rx="2" fill="#fff7ed" stroke="#c2410c" stroke-width="1.1"/>
+<text x="410" y="234.5" font-size="9.5" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="410" dy="0">Piano 18 · nodo N18</tspan></text>
+<rect x="330" y="244" width="160" height="17" rx="2" fill="#fff7ed" stroke="#c2410c" stroke-width="1.1"/>
+<text x="410" y="256.5" font-size="9.5" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="410" dy="0">Piano 17 · nodo N17</tspan></text>
+<rect x="330" y="266" width="160" height="17" rx="2" fill="#fff7ed" stroke="#c2410c" stroke-width="1.1"/>
+<text x="410" y="278.5" font-size="9.5" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="410" dy="0">Piano 16 · nodo N16</tspan></text>
+<rect x="330" y="288" width="160" height="17" rx="2" fill="#fff7ed" stroke="#c2410c" stroke-width="1.1"/>
+<text x="410" y="300.5" font-size="9.5" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="410" dy="0">Piano 15 · nodo N15</tspan></text>
+<rect x="330" y="310" width="160" height="17" rx="2" fill="#fff7ed" stroke="#c2410c" stroke-width="1.1"/>
+<text x="410" y="322.5" font-size="9.5" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="410" dy="0">Piano 14 · nodo N14</tspan></text>
+<rect x="330" y="332" width="160" height="17" rx="2" fill="#fff7ed" stroke="#c2410c" stroke-width="1.1"/>
+<text x="410" y="344.5" font-size="9.5" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="410" dy="0">Piano 13 · nodo N13</tspan></text>
+<rect x="330" y="354" width="160" height="17" rx="2" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.1"/>
+<text x="410" y="366.5" font-size="9.5" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="410" dy="0">Piano 12 · nodo N12</tspan></text>
+<rect x="330" y="376" width="160" height="17" rx="2" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.1"/>
+<text x="410" y="388.5" font-size="9.5" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="410" dy="0">Piano 11 · nodo N11</tspan></text>
+<rect x="330" y="398" width="160" height="17" rx="2" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.1"/>
+<text x="410" y="410.5" font-size="9.5" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="410" dy="0">Piano 10 · nodo N10</tspan></text>
+<rect x="330" y="420" width="160" height="17" rx="2" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.1"/>
+<text x="410" y="432.5" font-size="9.5" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="410" dy="0">Piano 9 · nodo N9</tspan></text>
+<rect x="330" y="442" width="160" height="17" rx="2" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.1"/>
+<text x="410" y="454.5" font-size="9.5" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="410" dy="0">Piano 8 · nodo N8</tspan></text>
+<rect x="330" y="464" width="160" height="17" rx="2" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.1"/>
+<text x="410" y="476.5" font-size="9.5" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="410" dy="0">Piano 7 · nodo N7</tspan></text>
+<rect x="330" y="486" width="160" height="17" rx="2" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.1"/>
+<text x="410" y="498.5" font-size="9.5" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="410" dy="0">Piano 6 · nodo N6</tspan></text>
+<rect x="330" y="508" width="160" height="17" rx="2" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.1"/>
+<text x="410" y="520.5" font-size="9.5" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="410" dy="0">Piano 5 · nodo N5</tspan></text>
+<rect x="330" y="530" width="160" height="17" rx="2" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.1"/>
+<text x="410" y="542.5" font-size="9.5" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="410" dy="0">Piano 4 · nodo N4</tspan></text>
+<rect x="330" y="552" width="160" height="17" rx="2" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.1"/>
+<text x="410" y="564.5" font-size="9.5" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="410" dy="0">Piano 3 · nodo N3</tspan></text>
+<rect x="330" y="574" width="160" height="17" rx="2" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.1"/>
+<text x="410" y="586.5" font-size="9.5" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="410" dy="0">Piano 2 · nodo N2</tspan></text>
+<rect x="330" y="596" width="160" height="17" rx="2" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.1"/>
+<text x="410" y="608.5" font-size="9.5" text-anchor="middle" font-weight="600" fill="#111827"><tspan x="410" dy="0">Piano 1 · nodo N1</tspan></text>
+<text x="80" y="660" font-size="10.5" text-anchor="start" font-weight="400" fill="#1d4ed8"><tspan x="80" dy="0">tratto blu = base (T07)</tspan></text>
+<text x="330" y="660" font-size="10.5" text-anchor="start" font-weight="400" fill="#c2410c"><tspan x="330" dy="0">tratto arancio = piani 13…24 (nuovi)</tspan></text>
+<rect x="600" y="50" width="960" height="640" rx="8" fill="none" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="6 4"/>
+<text x="610" y="66" font-size="12" text-anchor="start" font-weight="700" fill="#6b7280"><tspan x="610" dy="0">Che cosa cambia (e che cosa no)</tspan></text>
+<text x="614" y="90" font-size="12" text-anchor="start" font-weight="700" fill="#111827"><tspan x="614" dy="0">Elemento</tspan></text>
+<text x="884" y="90" font-size="12" text-anchor="start" font-weight="700" fill="#111827"><tspan x="884" dy="0">12 fermate</tspan></text>
+<text x="1034" y="90" font-size="12" text-anchor="start" font-weight="700" fill="#111827"><tspan x="1034" dy="0">24 fermate</tspan></text>
+<text x="1184" y="90" font-size="12" text-anchor="start" font-weight="700" fill="#111827"><tspan x="1184" dy="0">Variazione</tspan></text>
+<line x1="610" y1="102" x2="1550" y2="102" stroke="#e5e7eb" stroke-width="1" stroke-linecap="round"/>
+<text x="614" y="130" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="614" dy="0">CPU PLC, alimentatori, quadro</tspan></text>
+<text x="884" y="130" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="884" dy="0">1</tspan></text>
+<text x="1034" y="130" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1034" dy="0">1</tspan></text>
+<text x="1184" y="130" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1184" dy="0">nessuna (da verificare la corrente 24 V)</tspan></text>
+<line x1="610" y1="142" x2="1550" y2="142" stroke="#e5e7eb" stroke-width="1" stroke-linecap="round"/>
+<text x="614" y="170" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="614" dy="0">Nodi di piano sul bus CAN2</tspan></text>
+<text x="884" y="170" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="884" dy="0">12</tspan></text>
+<text x="1034" y="170" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1034" dy="0">24</tspan></text>
+<text x="1184" y="170" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1184" dy="0">+ 12 nodi (indirizzi 13…24)</tspan></text>
+<line x1="610" y1="182" x2="1550" y2="182" stroke="#e5e7eb" stroke-width="1" stroke-linecap="round"/>
+<text x="614" y="210" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="614" dy="0">Pulsantiera di cabina (COP)</tspan></text>
+<text x="884" y="210" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="884" dy="0">1 modulo</tspan></text>
+<text x="1034" y="210" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1034" dy="0">1–2 moduli</tspan></text>
+<text x="1184" y="210" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1184" dy="0">se i tasti superano il modulo scelto</tspan></text>
+<line x1="610" y1="222" x2="1550" y2="222" stroke="#e5e7eb" stroke-width="1" stroke-linecap="round"/>
+<text x="614" y="250" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="614" dy="0">Cavo mobile</tspan></text>
+<text x="884" y="250" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="884" dy="0">stesso</tspan></text>
+<text x="1034" y="250" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1034" dy="0">stesso</tspan></text>
+<text x="1184" y="250" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1184" dy="0">nessuna: il bus non cresce con i piani</tspan></text>
+<line x1="610" y1="262" x2="1550" y2="262" stroke="#e5e7eb" stroke-width="1" stroke-linecap="round"/>
+<text x="614" y="290" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="614" dy="0">Catena serrature di piano</tspan></text>
+<text x="884" y="290" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="884" dy="0">12 contatti in serie</tspan></text>
+<text x="1034" y="290" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1034" dy="0">24 contatti in serie</tspan></text>
+<text x="1184" y="290" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1184" dy="0">+ 12 contatti, 2 fili di dorsale invariati</tspan></text>
+<line x1="610" y1="302" x2="1550" y2="302" stroke="#e5e7eb" stroke-width="1" stroke-linecap="round"/>
+<text x="614" y="330" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="614" dy="0">Sensori zona porta e finecorsa</tspan></text>
+<text x="884" y="330" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="884" dy="0">stessi</tspan></text>
+<text x="1034" y="330" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1034" dy="0">stessi</tspan></text>
+<text x="1184" y="330" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1184" dy="0">nessuna; solo più magneti/lamelle di piano</tspan></text>
+<line x1="610" y1="342" x2="1550" y2="342" stroke="#e5e7eb" stroke-width="1" stroke-linecap="round"/>
+<text x="614" y="370" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="614" dy="0">Lunghezza dorsale CAN2</tspan></text>
+<text x="884" y="370" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="884" dy="0">≈ 40–50 m</tspan></text>
+<text x="1034" y="370" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1034" dy="0">≈ 80–100 m</tspan></text>
+<text x="1184" y="370" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1184" dy="0">ben sotto 500 m a 125 kbit/s</tspan></text>
+<line x1="610" y1="382" x2="1550" y2="382" stroke="#e5e7eb" stroke-width="1" stroke-linecap="round"/>
+<text x="614" y="410" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="614" dy="0">Corrente 24 V dei nodi</tspan></text>
+<text x="884" y="410" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="884" dy="0">≈ 0,6 A</tspan></text>
+<text x="1034" y="410" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1034" dy="0">≈ 1,2 A</tspan></text>
+<text x="1184" y="410" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1184" dy="0">verificare caduta di tensione e alimentatore</tspan></text>
+<line x1="610" y1="422" x2="1550" y2="422" stroke="#e5e7eb" stroke-width="1" stroke-linecap="round"/>
+<text x="614" y="450" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="614" dy="0">Parametro «numero fermate»</tspan></text>
+<text x="884" y="450" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="884" dy="0">12</tspan></text>
+<text x="1034" y="450" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1034" dy="0">24</tspan></text>
+<text x="1184" y="450" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1184" dy="0">si imposta in messa in servizio (ruolo L3)</tspan></text>
+<line x1="610" y1="462" x2="1550" y2="462" stroke="#e5e7eb" stroke-width="1" stroke-linecap="round"/>
+<text x="614" y="490" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="614" dy="0">Prestazioni della manovra</tspan></text>
+<text x="884" y="490" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="884" dy="0">collettiva</tspan></text>
+<text x="1034" y="490" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1034" dy="0">collettiva</tspan></text>
+<text x="1184" y="490" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1184" dy="0">valutare 2 impianti in gruppo oltre 12 piani di traffico</tspan></text>
+<line x1="610" y1="502" x2="1550" y2="502" stroke="#e5e7eb" stroke-width="1" stroke-linecap="round"/>
+<text x="614" y="530" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="614" dy="0">Fossa/testata e velocità</tspan></text>
+<text x="884" y="530" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="884" dy="0">dipendono dall'altezza</tspan></text>
+<text x="1034" y="530" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1034" dy="0">dipendono dall'altezza</tspan></text>
+<text x="1184" y="530" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1184" dy="0">fuori da questo studio: vedi EN 81-20/50</tspan></text>
+<line x1="610" y1="542" x2="1550" y2="542" stroke="#e5e7eb" stroke-width="1" stroke-linecap="round"/>
+<text x="614" y="600" font-size="12" text-anchor="start" font-weight="700" fill="#111827"><tspan x="614" dy="0">Costo dell'espansione ≈ 12 × (nodo di piano + 1 contatto serratura + tratto di cavo + posa).</tspan></text>
+<text x="614" y="622" font-size="11.5" text-anchor="start" font-weight="400" fill="#b45309"><tspan x="614" dy="0">Il prezzo del nodo non è verificato: vedi 03-costi (formula Totale = V + B + p × N).</tspan></text>
+<text x="614" y="650" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="614" dy="0">Oltre 24 fermate: secondo bus CAN o repeater; da progettare a parte.</tspan></text>
+</g>
+
+<g font-family="DejaVu Sans, Arial, sans-serif">
+<rect x="827" y="1010" width="746" height="98" fill="#fff" stroke="#111827" stroke-width="1.2"/>
+<line x1="827" y1="1042" x2="1573" y2="1042" stroke="#111827" stroke-width="0.8"/>
+<line x1="1437" y1="1010" x2="1437" y2="1108" stroke="#111827" stroke-width="0.8"/>
+<line x1="1437" y1="1075" x2="1573" y2="1075" stroke="#111827" stroke-width="0.8"/>
+<text x="837" y="1028" font-size="10" fill="#6b7280">QUADRO DI MANOVRA A PLC — PROGETTO DI FATTIBILITÀ · Carbon Stealth VCC</text>
+<text x="837" y="1062" font-size="17" font-weight="700" fill="#111827">Espansione da 12 a 24 fermate</text>
+<text x="837" y="1084" font-size="11" fill="#374151">Stessa CPU, stesso quadro, stesso inverter: si aggiungono solo nodi di piano e un modulo pulsanti</text>
+<text x="837" y="1100" font-size="10" fill="#b45309">Schema di principio: non è un esecutivo. Lo firma un progettista abilitato.</text>
+<text x="1445" y="1026" font-size="10" fill="#6b7280">Tavola</text>
+<text x="1445" y="1056" font-size="26" font-weight="700">T16</text>
+<text x="1445" y="1090" font-size="10" fill="#6b7280">Rev. A · 2026-10-07</text>
+<text x="1445" y="1103" font-size="10" fill="#6b7280">A3 · senza scala</text>
+</g>
+</svg>
