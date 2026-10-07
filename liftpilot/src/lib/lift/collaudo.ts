@@ -96,6 +96,8 @@ export const AMBITO_VERIFICHE: Readonly<Record<CheckId | ShaftCheckId, readonly 
   b_runby: BUFFERS, b_type: ['buffers', 'speed'], b_car: ['buffers', 'speed'], b_cw: ['buffers', 'speed'],
   // the machine room is the building's; the panel's space follows a new controller; the beams under a new machine
   m_height: [], m_panel: ['controller'], m_door: [], m_beam: ['machine'], m_beamf: ['machine'], m_rinvio: ['machine'], m_fit: ['machine'], m_stand: ['machine'], m_free: ['machine'], m_calata: ['machine'],
+  // the panel among what stands on the floor and the ways to the free areas follow a new controller or a new machine
+  m_quadro: ['controller', 'machine'], m_route: ['controller', 'machine'],
   // the car's rails under the safety gear and in use (sheet 1 of the drawing set); the safety gear is on the sling
   gr_stress: ['rails', 'car', 'sling', 'load'], gr_flange: ['rails', 'car', 'sling', 'load'], gr_defl: ['rails', 'car', 'sling', 'load'], sg_type: ['sling', 'speed'],
 };

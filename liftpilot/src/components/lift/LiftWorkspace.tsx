@@ -13,6 +13,7 @@ import type { FormValues } from '@/calc/types';
 import type { Edit } from '@/drawing';
 import { deriveLift, type AutoFlags, type BottomScheme, type Collaudo, type LiftDerived, type LiftInputs } from '@/lib/lift';
 import { enteredBy, existingMissing, filled, layoutTo, missingOf, type BlankKey, type LiftDraft } from '@/lib/lift/blank';
+import { drawnShaft, movedPanel, panelEntered } from '@/lib/lift/panel-form';
 import { withPitches, type BracketPitches } from '@/shaft/brackets';
 import { deflectorInputs, liftCandidate, type AdviceModel, type MachineCandidate } from '@/lib/lift/advice';
 import type { CatalogChoice } from '@/lib/lift/catalog';
@@ -25,7 +26,7 @@ import type { CalcKey } from '@/lib/present/tr';
 import { shaftInputsSchema, type ShaftSource } from '@/lib/shaft-input';
 import { editShaft } from '@/lib/shaft-edit';
 import { saveLiftDesignAction } from '@/server/lift-actions';
-import { DEFAULTS, editValue, keptPlan } from '@/shaft';
+import { DEFAULTS, editValue, keptPlan, type ShaftInputs } from '@/shaft';
 import { asCalcDict } from '../calc/dict';
 import MissingPanel from '../MissingPanel';
 import type { ShaftSet } from '../blank';
@@ -147,6 +148,13 @@ export default function LiftWorkspace({ projectId, initial, blank: initialBlank 
     });
     setSaveError(null);
   };
+  // the drawings show the panel where the software put it; moved there, its place is entered
+  const drawn = useMemo(() => drawnShaft(inp.shaft, derived), [inp.shaft, derived]);
+  const setDrawn = (next: ShaftInputs): void => {
+    const moved = movedPanel(next, derived);
+    if (moved) setForm((f) => panelEntered(f, moved));
+    setShaft(next);
+  };
   const setCalc = (patch: FormValues): void => {
     setForm((f) => {
       const roping = 'r' in patch ? filled(f.blank, ['r']) : f.blank;
@@ -171,10 +179,10 @@ export default function LiftWorkspace({ projectId, initial, blank: initialBlank 
     edit(e, length) {
       if (e.key.startsWith('calc.')) return setCalcFromDrawing(e.key, editValue(e, length));
       // the support the drawings show: the bedplate with the diverting pulley when none was chosen
-      const R = inp.shaft.room, shaft = R && !R.support && derived?.machine.rinvio ? { ...inp.shaft, room: { ...R, support: { kind: 'rinvio' as const } } } : inp.shaft;
+      const R = drawn.room, shaft = R && !R.support && derived?.machine.rinvio ? { ...drawn, room: { ...R, support: { kind: 'rinvio' as const } } } : drawn;
       const r = editShaft(shaft, e, length);
       if (!r.ok) return r;
-      setShaft(r.inputs);
+      setDrawn(r.inputs);
       return null;
     },
   }));
@@ -202,22 +210,29 @@ export default function LiftWorkspace({ projectId, initial, blank: initialBlank 
   };
   const machineInUse = (c: MachineCandidate): boolean => !!derived && derived.origin.machine === 'auto' && derived.values.layout === c.I.layout
     && derived.catalog?.fit?.machine.brand === c.brand && derived.catalog.fit.machine.model === c.model;
-  // a value switched to entered starts from the one the software showed, so nothing jumps
+  // a value switched to entered starts from the one the software showed, so nothing jumps: the panel's wall and place
+  // too, entered as they are
   const setAuto = (patch: Partial<AutoFlags>): void => {
-    if (!derived) return;
-    const pick = derived.analysis.sizing.pick;
-    const ids: Readonly<Record<keyof AutoFlags, readonly string[]>> = {
-      P: ['P'], L0: ['L0'], dx: ['dx'], Hv: ['Hv'], machine: derived.origin.machine === 'auto' && pick ? Object.keys(proposalValues(pick)) : [],
+    // (the panel's switch works before anything is worked out: entered, its wall and place are to enter)
+    if (!derived && !('panel' in patch)) return;
+    const pick = derived?.analysis.sizing.pick ?? null;
+    const ids: Readonly<Record<Exclude<keyof AutoFlags, 'panel'>, readonly string[]>> = {
+      P: ['P'], L0: ['L0'], dx: ['dx'], Hv: ['Hv'], machine: derived?.origin.machine === 'auto' && pick ? Object.keys(proposalValues(pick)) : [],
     };
     const seed: Record<string, string | number | boolean> = {};
     for (const k of Object.keys(patch) as (keyof AutoFlags)[]) {
-      if (patch[k] !== false) continue;
+      if (patch[k] !== false || k === 'panel' || !derived) continue;
       for (const id of ids[k]) {
         const v = derived.values[id];
         if (v !== undefined) seed[id] = v;
       }
     }
-    setInputs((p) => ({ ...p, auto: { ...p.auto, ...patch }, calc: mirrorRopes({ ...p.calc, ...seed }) }));
+    const placed = patch.panel === false && derived?.origin.panel === 'auto' ? derived.shaft.room : null;
+    setForm((f) => {
+      const next = { ...f, inputs: { ...f.inputs, auto: { ...f.inputs.auto, ...patch }, calc: mirrorRopes({ ...f.inputs.calc, ...seed }) } };
+      return placed ? panelEntered(next, placed) : next;
+    });
+    setSaveError(null);
   };
   const setSize = (key: 'W' | 'D', value: number): void => {
     setShaft({ [key]: value });
@@ -255,7 +270,7 @@ export default function LiftWorkspace({ projectId, initial, blank: initialBlank 
             {complete ? (
               <>
                 <LiftSimulator derived={derived} fmt={P.fmt} api={sim} />
-                <section className="panel"><PlanEditor I={inp.shaft} onChange={setShaft} machine={above ? derived.machine : null} onCalc={setCalcFromDrawing} id="lift-plan" /></section>
+                <section className="panel"><PlanEditor I={drawn} onChange={setDrawn} machine={above ? derived.machine : null} onCalc={setCalcFromDrawing} id="lift-plan" /></section>
                 <LiftChecks derived={derived} X={X} fmt={P.fmt} onSimulate={(req) => sim.current?.play(req)} />
                 <PanevBom L={derived.layout} prices={prices} />
               </>

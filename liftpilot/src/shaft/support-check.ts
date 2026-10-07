@@ -9,6 +9,8 @@ import { KV_VERT } from './norme-vert';
 import { PROFILES } from './profiles';
 import { rinvioAcross, rinvioRun, standBox } from './rinvio';
 import { padsOf, profileOf, supportOf } from './support';
+import { panelBox, type Box } from './room-floor';
+import { panelChecks, placePanel, type PanelSpot } from './room-panel';
 import type { RoomInputs } from './room';
 import type { ShaftCheck } from './types';
 
@@ -88,26 +90,34 @@ export function standClearance(Gm: RoomGeo, M: MachineSpec): number | null {
 
 /** The free area beside the machine for its maintenance and the manual emergency operation (registry locale.macchina):
  *  on the side of the machine's outline `box` [x0, y0, x1, y1] (room axes, its bedplate and pulley stand with it) with
- *  the most room, the strip to the wall or to the control panel — as deep as the area's longer side along a side at
- *  least as long as its shorter, or the other way round. Its depth and the depth it needs there [mm]. */
-export function freeBeside(R: RoomInputs, box: readonly [number, number, number, number]): { depth: number; need: number } {
+ *  the most room, the strip to the wall or to the nearest of `obstacles` beside it (the control panel; the governor and
+ *  the main switch when given) — as deep as the area's longer side along a side at least as long as its shorter, or the
+ *  other way round. Its depth, the depth it needs there [mm], and the strip as deep as it needs (or as it is). */
+export function freeBeside(R: RoomInputs, box: Box, obstacles: readonly Box[] = [panelBox(R)]): { depth: number; need: number; area: Box } {
   const [x0, y0, x1, y1] = box, K = KV_VERT, [a, b] = [Math.min(K.maintW, K.maintD), Math.max(K.maintW, K.maintD)];
-  const p = R.panelWall, pd = R.panelD, pa = R.panelAt, pe = R.panelAt + R.panelW;
-  const [px0, py0, px1, py1] = p === 'front' ? [pa, 0, pe, pd] : p === 'rear' ? [pa, R.D - pd, pe, R.D] : p === 'left' ? [0, pa, pd, pe] : [R.W - pd, pa, R.W, pe];
-  const overX = px0 < x1 && x0 < px1, overY = py0 < y1 && y0 < py1;
-  const sides = [
-    { depth: x0 - (overY && px1 <= x0 ? px1 : 0), len: y1 - y0 },
-    { depth: (overY && px0 >= x1 ? px0 : R.W) - x1, len: y1 - y0 },
-    { depth: y0 - (overX && py1 <= y0 ? py1 : 0), len: x1 - x0 },
-    { depth: (overX && py0 >= y1 ? py0 : R.D) - y1, len: x1 - x0 },
+  // how far each side is from the wall, or from what stands beside it
+  let left = x0, right = R.W - x1, front = y0, rear = R.D - y1;
+  for (const [px0, py0, px1, py1] of obstacles) {
+    const overX = px0 < x1 && x0 < px1, overY = py0 < y1 && y0 < py1;
+    if (overY && px1 <= x0) left = Math.min(left, x0 - px1);
+    if (overY && px0 >= x1) right = Math.min(right, px0 - x1);
+    if (overX && py1 <= y0) front = Math.min(front, y0 - py1);
+    if (overX && py0 >= y1) rear = Math.min(rear, py0 - y1);
+  }
+  const sides: { depth: number; len: number; strip: (d: number) => Box }[] = [
+    { depth: left, len: y1 - y0, strip: (d) => [x0 - d, y0, x0, y1] },
+    { depth: right, len: y1 - y0, strip: (d) => [x1, y0, x1 + d, y1] },
+    { depth: front, len: x1 - x0, strip: (d) => [x0, y0 - d, x1, y0] },
+    { depth: rear, len: x1 - x0, strip: (d) => [x0, y1, x1, y1 + d] },
   ];
-  const ways = sides.flatMap((s) => [...(s.len >= a ? [{ depth: s.depth, need: b }] : []), ...(s.len >= b ? [{ depth: s.depth, need: a }] : [])]);
-  const all = ways.length ? ways : sides.map((s) => ({ depth: s.depth, need: b }));
-  return all.reduce((best, w) => (w.depth - w.need > best.depth - best.need ? w : best));
+  const ways = sides.flatMap((s) => [...(s.len >= a ? [{ s, need: b }] : []), ...(s.len >= b ? [{ s, need: a }] : [])]);
+  const all = ways.length ? ways : sides.map((s) => ({ s, need: b }));
+  const best = all.reduce((p, w) => (w.s.depth - w.need > p.s.depth - p.need ? w : p));
+  return { depth: best.s.depth, need: best.need, area: best.s.strip(Math.max(0, Math.min(best.s.depth, best.need))) };
 }
 
 /** The corners, in room axes, of the machine on its support with the bedplate of the diverting pulley or the pulley's own
- *  stand. */
+ *  stand: four for each part. */
 function machineCorners(Gm: RoomGeo, M: MachineSpec): [number, number][] {
   const R = Gm.room, rf = M.rinvio ?? null;
   const boxes: (readonly [number, number, number, number])[] = [[Gm.frame0, Gm.across[0], Gm.frame1, Gm.across[1]]];
@@ -119,24 +129,59 @@ function machineCorners(Gm: RoomGeo, M: MachineSpec): [number, number][] {
     .map(([u, v]): [number, number] => [Gm.carDrop[0] + u * Gm.ux - v * Gm.uy, Gm.carDrop[1] + u * Gm.uy + v * Gm.ux]));
 }
 
+const boxAround = (c: readonly (readonly [number, number])[]): Box => {
+  const xs = c.map((p) => p[0]), ys = c.map((p) => p[1]);
+  return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+};
+
+/** The machine's parts in the room's plan, each its outline [x0, y0, x1, y1] (room axes) [mm]: the machine on its
+ *  support, and the bedplate of the diverting pulley or the pulley's own stand. */
+export function machineParts(Gm: RoomGeo, M: MachineSpec): Box[] {
+  const c = machineCorners(Gm, M);
+  return Array.from({ length: c.length / 4 }, (_, k) => boxAround(c.slice(4 * k, 4 * k + 4)));
+}
+
 /** The machine's outline in the room's plan, its support and pulley with it: [x0, y0, x1, y1] (room axes) [mm]. */
 export function machineBox(Gm: RoomGeo, M: MachineSpec): [number, number, number, number] {
-  const c = machineCorners(Gm, M), xs = c.map((p) => p[0]), ys = c.map((p) => p[1]);
-  return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+  const [x0, y0, x1, y1] = boxAround(machineCorners(Gm, M));
+  return [x0, y0, x1, y1];
 }
 
 /** The checks m_fit and m_stand (registry locale.ingombro): the machine on its support — with the bedplate of the
  *  diverting pulley or the pulley's own stand — inside the room in plan and under its ceiling: the least distance left to
  *  a wall or to the ceiling, at least 0 [mm]; the pulley on its stand under the machine clear of the support over it; the
- *  free area beside it (m_free). */
-export function fitChecks(Gm: RoomGeo | null, M: MachineSpec): ShaftCheck[] {
+ *  free area beside it up to the walls, the control panel and `others` (the governor, the main switch: m_free). */
+export function fitChecks(Gm: RoomGeo | null, M: MachineSpec, others: readonly Box[] = []): ShaftCheck[] {
   if (!Gm) return [];
   const R = Gm.room;
   let clear = R.H - machineTop(M, Gm);
   for (const [x, y] of machineCorners(Gm, M)) clear = Math.min(clear, x, R.W - x, y, R.D - y);
-  const stand = standClearance(Gm, M), free = freeBeside(R, machineBox(Gm, M));
+  const stand = standClearance(Gm, M), free = freeBeside(R, machineBox(Gm, M), [panelBox(R), ...others]);
   return [
     check('m_fit', clear >= 0, Math.round(clear), 0, 0, 'mm'), ...(stand === null ? [] : [check('m_stand', stand >= 0, Math.round(stand), 0, 0, 'mm')]),
     check('m_free', free.depth >= free.need, Math.round(free.depth), free.need, 0, 'mm'),
   ];
+}
+
+/** The free area beside the machine with the panel standing at `panel` (null: none) and `others` beside it: whether it is
+ *  as deep as it needs, and the strip where it is (null when it is not). */
+function freeWith(Gm: RoomGeo, M: MachineSpec, others: readonly Box[]): (panel: Box | null) => { ok: boolean; area: Box | null } {
+  const box = machineBox(Gm, M);
+  return (panel) => {
+    const f = freeBeside(Gm.room, box, [...(panel ? [panel] : []), ...others]), ok = f.depth >= f.need;
+    return { ok, area: ok ? f.area : null };
+  };
+}
+
+/** The checks m_quadro and m_route of the control panel in the room (room-panel.ts panelChecks) among the machine's parts
+ *  and `others` (the governor, the main switch): the ways from the door reach the free area beside the machine too. */
+export function panelFloorChecks(Gm: RoomGeo, M: MachineSpec, others: readonly Box[]): ShaftCheck[] {
+  const R = Gm.room;
+  return panelChecks(R, [...machineParts(Gm, M), ...others], freeWith(Gm, M, others)(panelBox(R)).area);
+}
+
+/** Where the software puts the control panel in the room (room-panel.ts placePanel) among the machine's parts and
+ *  `others` (the governor, the main switch). */
+export function panelPlace(Gm: RoomGeo, M: MachineSpec, others: readonly Box[]): PanelSpot {
+  return placePanel(Gm.room, [...machineParts(Gm, M), ...others], freeWith(Gm, M, others));
 }

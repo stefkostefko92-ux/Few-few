@@ -101,11 +101,13 @@ src/shaft/           Чист двигател на шахтата: area (Таб
                      машината: подложки, рама, греди от стена до стена, плочи, постамент, рамата с отклоняващата ролка;
                      височината ѝ е оста на шайбата), rinvio + rinvio-view (отклоняващата ролка в машинното: в рамата на
                      машината — на производителя или наша — или на своя стойка; разрезът B-B и планът ѝ),
-                     profiles (валцувани профили EN 10365), support-check (гредите: σ и провисване; свободната площ до
-                     машината), panel (свободното място пред таблото, до машината, когато е пред него), checks
+                     profiles (валцувани профили EN 10365), support-check (гредите: σ и провисване; частите на
+                     машината и свободната площ до нея), room-floor (подът на машинното: таблото и площта пред него,
+                     главният прекъсвач, отворът на вратата), room-route (решетката на пода и пътищата от вратата),
+                     room-panel (проверките m_quadro и m_route, мястото на таблото от софтуера), checks
                      (mergeChecks), rails (профилите на водачите, сеченията им за EN 81-50 5.10), norme + norme-vert +
-                     norme-porte + norme-supporto + norme-ingombri + norme-spazi + norme-guide (KV, KV_VERT, DEFAULTS,
-                     регистърът), snapshot (SHAFT_ENGINE_VERSION).
+                     norme-porte + norme-supporto + norme-ingombri + norme-spazi + norme-locale + norme-guide (KV,
+                     KV_VERT, DEFAULTS, регистърът), snapshot (SHAFT_ENGINE_VERSION).
                      Координати в план: x по стената на вход A, y навътре; в разреза x = y на плана, z от най-ниската спирка.
 src/lib/tavole/      Комплектът чертежи: build (листовете), views (изгледите без хартията), datasheet + data (лист 1),
                      loads (P1–P9), forces (сили по водачите, EN 81-50 5.10: парашут, движение, товарене на прага),

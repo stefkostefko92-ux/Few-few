@@ -71,6 +71,8 @@ export function relevant(k: BlankKey, d: LiftDraft): boolean {
   if (k.startsWith('fdoor.')) return has('floors') && !one && indexOf(k, 'fdoor.') < n;
   if (k === 'main') return has('floors');
   if (k === 'bottom') return has('layout') && d.inputs.calc.layout === 'bottom';
+  // the panel's wall and place: none to enter while the software places it
+  if (k === 'room.panelWall' || k === 'room.panelAt') return has('layout') && d.inputs.calc.layout !== 'bottom' && S.room !== null && !d.inputs.auto.panel;
   if (k.startsWith('room.')) return has('layout') && d.inputs.calc.layout !== 'bottom' && S.room !== null;
   return true;
 }

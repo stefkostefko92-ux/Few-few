@@ -18,7 +18,7 @@ import { machineShapeOf, machineSpec, rinvioOf, sheaveAxis, sheaveAxisBelow, typ
 import type { MachineShape } from '@/shaft/machine-shape';
 import type { RinvioFrame } from '@/shaft/rinvio';
 import { headTopChecks } from './head';
-import { supportChecks, supportLoad } from './support';
+import { placedPanel, supportChecks, supportLoad } from './support';
 import { collaudoOf, type Collaudo } from './collaudo';
 import { KL } from './norme';
 
@@ -29,6 +29,9 @@ export interface AutoFlags {
   L0: boolean;
   dx: boolean;
   Hv: boolean;
+  /** the control panel's wall and place in the machine room (registry locale.quadro.posto); missing: as entered (the
+   *  records before it) */
+  panel?: boolean;
 }
 
 /** The one form of an installation: the shaft (plan, floors, machine room), the calculator's values, the switches. */
@@ -45,7 +48,7 @@ export interface LiftInputs {
 }
 
 export type Origin = 'entered' | 'auto' | 'estimate';
-export type DerivedKey = 'Q' | 'v' | 'H' | 'P' | 'L0' | 'dx' | 'Hv' | 'machine';
+export type DerivedKey = 'Q' | 'v' | 'H' | 'P' | 'L0' | 'dx' | 'Hv' | 'machine' | 'panel';
 /** What the plan cannot give or contradicts: the diverting pulley's distance, a direct pull's falls (calata), a pulley
  *  the h entered by hand puts under the room's floor (rinvio: it stays in the room). */
 export type IssueKey = DerivedKey | 'calata' | 'rinvio';
@@ -205,19 +208,23 @@ export function deriveLift(inp: LiftInputs): LiftDerived {
     ...(rinvio && pulleyRim < 0 ? ['rinvio' as const] : []),
     ...(calata !== null && Math.abs(calata - (oldHitches ? O.D : N.D)) > KL.calataTol ? ['calata' as const] : []),
   ];
+  const spec = machineSpec(analysis.ctx, analysis.ctx.N.mass, '', S.room, shape, made);
+  const machine: MachineSpec = spec.rinvio ? { ...spec, rinvio: { ...spec.rinvio, auto: inp.auto.dx } } : spec;
+  // the control panel where the software puts it for this machine (registry locale.quadro.posto): the design goes on
+  // with it there (the room's drawings, the 3D, the shaft's record)
+  const spot = inp.auto.panel && S.room && I.layout !== 'bottom' ? placedPanel(L, machine) : null;
+  const Lp = spot && S.room ? layout({ ...S, room: { ...S.room, panelWall: spot.wall, panelAt: spot.at } }) : L;
   const origin: Record<DerivedKey, Origin> = {
     Q: S.Q === null ? 'auto' : 'entered', v: 'entered', H: 'auto', P: inp.auto.P ? 'estimate' : 'entered',
     L0: inp.auto.L0 ? 'auto' : 'entered', dx: inp.auto.dx ? 'auto' : 'entered', Hv: inp.auto.Hv ? 'auto' : 'entered',
-    machine: inp.auto.machine && !noProposal ? 'auto' : 'entered',
+    machine: inp.auto.machine && !noProposal ? 'auto' : 'entered', panel: spot ? 'auto' : 'entered',
   };
-  const spec = machineSpec(analysis.ctx, analysis.ctx.N.mass, '', S.room, shape, made);
-  const machine: MachineSpec = spec.rinvio ? { ...spec, rinvio: { ...spec.rinvio, auto: inp.auto.dx } } : spec;
   // the beams under the machine and the machine in its room; the car's highest part under what hangs over it
-  const supportCk = [...supportChecks(L, machine, supportLoad(analysis.ctx, analysis.res.Mcw), I.layout !== 'bottom'), ...headTopChecks(L, I.r, I.Dp, scheme)];
+  const supportCk = [...supportChecks(Lp, machine, supportLoad(analysis.ctx, analysis.res.Mcw), I.layout !== 'bottom'), ...headTopChecks(Lp, I.r, I.Dp, scheme)];
   const g = scheme ? bottomGeo(L, scheme, N.D, I.Dp, N.n, N.d, I.r, sheaveAxisBelow(N.D, shape)) : null;
   const bottomGap = scheme && g && !g.fits ? { now: S.cwWallGap, need: bottomGapNeeded(S, scheme, N.D, I.Dp, N.n, N.d, I.r) } : null;
   return {
-    shaft: L.inputs, values: V, layout: L, analysis, origin, noProposal, issues, calata, machine, supportChecks: supportCk, bottom: scheme, bottomGap,
+    shaft: Lp.inputs, values: V, layout: Lp, analysis, origin, noProposal, issues, calata, machine, supportChecks: supportCk, bottom: scheme, bottomGap,
     headPulleys: g ? 2 + extraBends(g) : 0, catalog, collaudo: collaudoOf(V, inp.collaudo),
     sim: simModel(I, N, analysis.res, Sec, vt),
   };

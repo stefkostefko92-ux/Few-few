@@ -2,13 +2,13 @@
 
 // The machine room over the shaft: whether the design has one, and its fields (RoomFields). It is drawn in plan and in
 // section B-B and checked (height, free area in front of the panel, door, beams). A room added starts with every
-// measure to enter (src/lib/lift/blank.ts).
+// measure to enter (src/lib/lift/blank.ts) but the panel's place when the software places it.
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { RoomInputs, ShaftInputs } from '@/shaft';
 import { ROOM_FIELDS, ROOM_PLACEHOLDER, filled, isBlankKey, roomAdded, type BlankKey } from '@/lib/lift/blank';
 import { NO_BLANK, type FormBlank, type ShaftSet } from '../blank';
-import RoomFields, { type RoomMachine } from './RoomFields';
+import RoomFields, { type RoomMachine, type RoomPanel } from './RoomFields';
 
 interface Props {
   I: ShaftInputs;
@@ -18,9 +18,11 @@ interface Props {
   /** the machine (its sheave, the axis on shims, where its pulley turns): the support's fields; missing: none shown */
   machine?: RoomMachine;
   blank?: FormBlank;
+  /** the control panel's place by the software (a whole design); missing: entered */
+  panel?: RoomPanel;
 }
 
-export default function RoomOptions({ I, set, open = false, machine, blank = NO_BLANK }: Props) {
+export default function RoomOptions({ I, set, open = false, machine, blank = NO_BLANK, panel }: Props) {
   const t = useTranslations('shaft'), tb = useTranslations('blank'), R = I.room;
   // unfolded when it comes with measures to enter; then as the user leaves it
   const [unfolded] = useState(() => open || (R !== null && ROOM_FIELDS.some((k) => blank.is(`room.${k}`))));
@@ -36,7 +38,7 @@ export default function RoomOptions({ I, set, open = false, machine, blank = NO_
         <input type="checkbox" checked={R !== null} onChange={(e) => { const on = e.target.checked; set({ room: on ? ROOM_PLACEHOLDER : null }, (b) => (on ? roomAdded(b) : [...b])); }} />
         <span>{t('rm_on')}</span>
       </label>
-      {R ? <RoomFields R={R} put={put} machine={machine} blank={(k) => keys([k]).some(blank.is)} choose={tb('choose')} /> : null}
+      {R ? <RoomFields R={R} put={put} machine={machine} blank={(k) => keys([k]).some(blank.is)} choose={tb('choose')} panel={panel} /> : null}
     </details>
   );
 }

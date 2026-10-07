@@ -13,6 +13,7 @@ import { shapePlan } from '@/shaft/machine-shape-view';
 import { ropeWidths, type MachineSpec } from '@/shaft/machine-room';
 import { section } from '@/shaft/section';
 import type { RoomInputs } from '@/shaft/room';
+import { belowSwitchAt } from '@/shaft/room-floor';
 import type { Layout, Wall } from '@/shaft/types';
 import { OPPOSITE, belowMachine, belowRoom, exitAlong, type BottomGeo } from '../lift/bottom';
 import { KL } from '../lift/norme';
@@ -81,12 +82,12 @@ function clearOf(spots: readonly Pt[], text: string, size: number, s: number, ta
 }
 
 /** The controller with the free area in front of it, the main switch beside the door where the 3D puts it
- *  (roomshell.ts switchAt) with its name nearest it clear of them and of `kept` (the machine and its name) — room axes
+ *  (room-floor.ts belowSwitchAt) with its name nearest it clear of them and of `kept` (the machine and its name) — room axes
  *  moved by `o`, at 1:`s`; and the boxes the room's name keeps clear of. */
 function fittings(R: RoomInputs, o: P2, s: number, kept: readonly Box[], room: Box): { entities: Entity[]; taken: Box[] } {
   const mv = (ps: Pt[]): Pt[] => ps.map((p) => add(p, o)), side = R.panelWall === 'left' || R.panelWall === 'right';
   const pan = mv(wallBox(R, R.panelWall, R.panelAt, R.panelW, 0, R.panelD)), front = mv(wallBox(R, R.panelWall, R.panelAt, R.panelW, R.panelD, R.panelD + FREE));
-  const swAt = R.doorAt > 400 ? R.doorAt - 300 : R.doorAt + R.doorW + 100, sw = mv(wallBox(R, R.doorWall, swAt - 100, 200, 0, 130));
+  const swAt = belowSwitchAt(R), sw = mv(wallBox(R, R.doorWall, swAt - 100, 200, 0, 130));
   const inward: P2 = R.doorWall === 'front' ? [0, 1] : R.doorWall === 'rear' ? [0, -1] : R.doorWall === 'left' ? [1, 0] : [-1, 0];
   const name = 'INTERRUTTORE GENERALE', along: P2 = [Math.abs(inward[1]), Math.abs(inward[0])], hw = letterBox([0, 0], name, 1.5, s).x1;
   const near = [boxOf(front), boxOf(pan), boxOf(sw), ...kept], spots: Pt[] = [], c = mid(sw);

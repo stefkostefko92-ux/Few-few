@@ -5,6 +5,7 @@
 import { letto } from '../calc/norme-fonti';
 import type { VoceVano } from './norme';
 import { COSTANTI_GUIDE, KV_GUIDE, VOCI_GUIDE } from './norme-guide';
+import { VOCI_LOCALE } from './norme-locale';
 import { VOCI_SPAZI } from './norme-spazi';
 import { VOCI_SUPPORTO } from './norme-supporto';
 
@@ -71,8 +72,14 @@ export const KV_VERT = {
   // 5.2.6.3.2.1: free area for the maintenance of moving parts and the manual emergency operation [mm]
   maintW: 500,
   maintD: 600,
+  // 5.2.6.3.2.2: access routes to the free areas ≥ 0,50 m wide (0,40 m allowed where nothing moves: not used)
+  routeW: 500,
   doorMinW: 600,
   doorMinH: 2000,
+  // where the software puts the control panel (registry locale.quadro.posto): clear of what stands on the floor by this
+  // much where it can, tried every this much along the walls [mm]
+  panelSideGap: 100,
+  panelStep: 50,
   // 5.2.1.8 and UNI EN 81-50:2020, 5.10: 4 × the static load under each buffer; impact factor of the safety gear on
   // the rails (progressive 2, instantaneous roller type 3, instantaneous 5); running 1,2; rated load off centre by 1/8
   bufferFactor: 4,
@@ -174,18 +181,7 @@ export const VOCI_VERT: readonly VoceVano[] = [
     nota: 'gli ammortizzatori Oleo sono dati di catalogo, non della norma: vanno sostituiti con quelli montati',
     verifiche: ['b_type', 'b_car', 'b_cw'],
   },
-  {
-    id: 'locale.macchina', gruppo: 'locale', titolo: 'Locale del macchinario',
-    valore: 'altezza libera delle zone di lavoro ≥ 2100 mm (1800 mm sui percorsi); davanti al quadro una superficie libera profonda ≥ 700 mm e larga '
-      + '≥ 500 mm o quanto il quadro; per la manutenzione delle parti in movimento e la manovra di emergenza una superficie libera di almeno '
-      + '500 × 600 mm (il software la cerca accanto all’argano, sul lato più libero, fino a muri e quadro); porta di accesso ≥ 600 × 2000 mm',
-    riferimento: 'UNI EN 81-20:2020, 5.2.6.3.2.1 (2,10 m e superfici libere), 5.2.6.3.2.2 (1,80 m sui percorsi) e 5.2.3.2 a) (porta)',
-    fonte: `${letto(T20, 'pp. 29, 43')}; le superfici libere anche in UNI EN 81-1:1999, 6.3.2.1 (edizione 2008: 6.3.3.1)`,
-    stato: 'confermato',
-    nota: 'davanti al quadro il software verifica la profondità libera e che la parete sia lunga almeno quanto il maggiore tra 500 mm e il quadro; '
-      + 'non verificati: la macchina o altro dentro quella superficie, i percorsi larghi almeno 0,50 m (5.2.6.3.2.2) e lo spazio di 0,30 m sopra le '
-      + 'parti rotanti (5.2.6.3.2.3)', verifiche: ['m_height', 'm_panel', 'm_free', 'm_door'],
-  },
+  ...VOCI_LOCALE,
   {
     id: 'carichi.fossa', gruppo: 'carichi', titolo: 'Carichi sul pavimento della fossa',
     valore: 'sotto ogni ammortizzatore 4 volte il carico statico: 4·g·(P+Q) per la cabina, 4·g·M_cw per il contrappeso, divisi tra gli ammortizzatori; '
@@ -271,7 +267,8 @@ export const COSTANTI_VERT: Readonly<Record<string, readonly CostanteVert[]>> = 
   'ammortizzatori.corsa': ['springMaxV', 'strokeK', 'strokeMin'],
   'ammortizzatori.poliuretano': ['puStroke', 'puTypical'],
   'ammortizzatori.idraulici': ['oilStrokeK', 'oilTypical'],
-  'locale.macchina': ['roomH', 'panelFreeDepth', 'panelFreeWidth', 'maintW', 'maintD', 'doorMinW', 'doorMinH'],
+  'locale.macchina': ['roomH', 'panelFreeDepth', 'panelFreeWidth', 'maintW', 'maintD', 'routeW', 'doorMinW', 'doorMinH'],
+  'locale.quadro.posto': ['panelSideGap', 'panelStep'],
   'carichi.fossa': ['bufferFactor', 'k1Progressive', 'k1Roller', 'k1Instant'],
   'guide.spinte': ['k2Running', 'loadOffset'],
   'carichi.macchina': ['dynFactor'],

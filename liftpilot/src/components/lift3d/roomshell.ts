@@ -12,6 +12,7 @@ import type { Layout, RoomInputs } from '@/shaft';
 import { KL, type RopeRig } from '@/lib/lift';
 import { belowRoom } from '@/lib/lift/bottom';
 import { section } from '@/shaft';
+import { SWITCH, belowSwitchAt, switchSpan } from '@/shaft/room-floor';
 import { Batch, box, onWall } from './geom';
 import { SIDES, type LiftMaterials, type Side } from './materials';
 
@@ -25,6 +26,8 @@ export interface Shell {
   z0: number;
   /** the machine's room (cabinet, main switch) or the pulleys'; whether it has its own floor and roof */
   kind: 'machine' | 'pulleys';
+  /** a machine's room: where the main switch runs along the door's wall [mm] (room-floor.ts) */
+  switchSpan?: readonly [number, number];
   floor: boolean;
   roof: boolean;
   /** under the pit, a room larger than the shaft: its roof round the shaft's outer footprint [x0, y0, x1, y1] (the pit's
@@ -40,10 +43,11 @@ const alongX = (s: Side): boolean => s === 'front' || s === 'rear';
  *  toward (−dy, dx) of the plan's direction (room.ts). */
 export function shellsOf(L: Layout, rig: RopeRig, body: readonly (readonly [number, number])[] | null = null): Shell[] {
   const z0 = rig.roomFloor * 1000, I = L.inputs, g = rig.scheme;
-  if (!rig.bottom || !g) return I.room ? [{ room: I.room, open: null, z0, kind: 'machine', floor: false, roof: true }] : [];
+  if (!rig.bottom || !g) return I.room ? [{ room: I.room, open: null, z0, kind: 'machine', switchSpan: switchSpan(I.room), floor: false, roof: true }] : [];
   const S = section(L), out: Shell[] = [], below = belowRoom(L, g, body), T = I.wall;
   // under the pit no roof of its own but round the shaft (the pit's slab); beside the shaft open on its wall (bottom.ts)
-  out.push({ room: below.room, open: below.open, z0, kind: 'machine', floor: true, roof: g.scheme !== 'under', ...(g.scheme === 'under' ? { ring: [-T, -T, I.W + T, I.D + T] as const } : {}) });
+  const sw = belowSwitchAt(below.room);
+  out.push({ room: below.room, open: below.open, z0, kind: 'machine', switchSpan: [sw - 100, sw + 100], floor: true, roof: g.scheme !== 'under', ...(g.scheme === 'under' ? { ring: [-T, -T, I.W + T, I.D + T] as const } : {}) });
   if (g.scheme === 'room') {
     const room: RoomInputs = I.room ?? {
       W: I.W, D: I.D, shaftX: 0, shaftY: 0, H: 1500, ridge: 0, slab: KL.slab, doorWall: 'front', doorAt: 150, doorW: 600, doorH: 1400,
@@ -53,9 +57,6 @@ export function shellsOf(L: Layout, rig: RopeRig, body: readonly (readonly [numb
   }
   return out;
 }
-
-/** The main switch's place along the door's wall: beside the door. */
-export const switchAt = (R: RoomInputs): number => (R.doorAt > 400 ? R.doorAt - 300 : R.doorAt + R.doorW + 100);
 
 /** The shell's walls into `sides` (x-ray), its roof into `roof`, the rest into `common`. */
 export function buildShell(sh: Shell, M: LiftMaterials, sides: Record<Side, THREE.Group>, roof: THREE.Group, common: THREE.Group): void {
@@ -88,7 +89,7 @@ export function buildShell(sh: Shell, M: LiftMaterials, sides: Record<Side, THRE
     const [p, q] = [onWall(wall, Wr, Dr, u0, v0), onWall(wall, Wr, Dr, u1, v1)];
     B.box(p[0] + x0, p[1] + y0, z0 + za, q[0] + x0, q[1] + y0, z0 + zb, m);
   };
-  if (sh.kind === 'machine') machineFittings(fix, R, M);
+  if (sh.kind === 'machine' && sh.switchSpan) machineFittings(fix, R, M, sh.switchSpan);
   // the lamp under the roof
   fix('front', Wr / 2 - 300, Wr / 2 + 300, Dr / 2 - 60, Dr / 2 + 60, H - 70, H, M.galv);
   fix('front', Wr / 2 - 280, Wr / 2 + 280, Dr / 2 - 45, Dr / 2 + 45, H - 74, H - 70, M.carLight);
@@ -101,8 +102,8 @@ export function buildShell(sh: Shell, M: LiftMaterials, sides: Record<Side, THRE
 type Fix = (wall: Side, u0: number, u1: number, v0: number, v1: number, za: number, zb: number, m: THREE.Material) => void;
 
 /** The controller cabinet: two doors with their handles, the display and the lamps of its state, the louvres; the
- *  main switch by the door with its handle. */
-function machineFittings(fix: Fix, R: RoomInputs, M: LiftMaterials): void {
+ *  main switch by the door (along it from `sw[0]` to `sw[1]`) with its handle. */
+function machineFittings(fix: Fix, R: RoomInputs, M: LiftMaterials, [s0, s1]: readonly [number, number]): void {
   const pw = R.panelWall, a = R.panelAt, w = R.panelW, dp = R.panelD, h = R.panelH;
   fix(pw, a, a + w, 0, dp, 0, h, M.panel);
   fix(pw, a + w / 2 - 2, a + w / 2 + 2, dp, dp + 1, 40, h - 40, M.glass);
@@ -111,8 +112,8 @@ function machineFittings(fix: Fix, R: RoomInputs, M: LiftMaterials): void {
   for (const [k, m] of [[0, M.led], [1, M.carLight], [2, M.red]] as const) fix(pw, a + 240 + k * 40, a + 260 + k * 40, dp, dp + 4, h - 265, h - 245, m);
   for (let k = 0; k < 5; k++) fix(pw, a + w / 2 + 60, a + w - 60, dp, dp + 3, 120 + k * 36, 132 + k * 36, M.glass);
   // the main switch by the door, its handle
-  const dw = R.doorWall, sw = switchAt(R) - 100;
-  fix(dw, sw, sw + 200, 0, 130, 1450, 1750, M.panel);
-  fix(dw, sw + 70, sw + 130, 130, 145, 1560, 1640, M.base);
-  fix(dw, sw + 92, sw + 108, 145, 175, 1540, 1660, M.red);
+  const dw = R.doorWall, c = (s0 + s1) / 2, d = SWITCH.depth;
+  fix(dw, s0, s1, 0, d, 1450, 1750, M.panel);
+  fix(dw, c - 30, c + 30, d, d + 15, 1560, 1640, M.base);
+  fix(dw, c - 8, c + 8, d + 15, d + 45, 1540, 1660, M.red);
 }

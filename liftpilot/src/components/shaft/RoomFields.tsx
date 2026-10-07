@@ -5,7 +5,8 @@
 // beams that may stand clear of the floor, plates, a plinth or, with a diverting pulley, the bedplate that holds it —
 // the pulley stays in the room, never in the shaft — with the profile and height). Shared by a whole design's options
 // (RoomOptions) and a replacement's survey (components/room). A measure still to enter shows nothing (and a flat roof
-// no ridge); the support's fields come with the machine, once the rest is entered.
+// no ridge); the support's fields come with the machine, once the rest is entered. In a whole design the software may
+// place the control panel: its wall and place are then shown as it put them, marked as such.
 import { useTranslations } from 'next-intl';
 import type { RoomInputs } from '@/shaft';
 import { PROFILE_NAMES } from '@/shaft/profiles';
@@ -24,6 +25,14 @@ export interface RoomMachine {
 
 type Measure = Exclude<keyof RoomInputs, 'support'>;
 
+/** The control panel the software places (registry locale.quadro.posto): whether it does, the switch, where it put it
+ *  (null: not yet worked out). */
+export interface RoomPanel {
+  auto: boolean;
+  set(auto: boolean): void;
+  placed: Pick<RoomInputs, 'panelWall' | 'panelAt'> | null;
+}
+
 interface Props {
   R: RoomInputs;
   /** a change of the room, with the measures it enters */
@@ -34,13 +43,15 @@ interface Props {
   blank?: (key: Measure) => boolean;
   /** the words of an empty choice */
   choose?: string;
+  /** the panel's place by the software; missing: always entered */
+  panel?: RoomPanel;
 }
 
 type NumKey = Exclude<keyof RoomInputs, 'doorWall' | 'panelWall' | 'support'>;
 const WALLS = ['front', 'rear', 'left', 'right'] as const;
 
-export default function RoomFields({ R, put, machine, blank = () => false, choose = '—' }: Props) {
-  const t = useTranslations('shaft');
+export default function RoomFields({ R, put, machine, blank = () => false, choose = '—', panel }: Props) {
+  const t = useTranslations('shaft'), tl = useTranslations('lift');
   const field = (key: NumKey, min: number, max: number) => (
     <label className={`field${blank(key) ? ' need' : ''}`} key={key}>
       <span>{t(`rm_${key}`)}</span>
@@ -59,6 +70,14 @@ export default function RoomFields({ R, put, machine, blank = () => false, choos
       </select>
     </label>
   );
+  // the panel's wall and place as the software put them
+  const placed = (key: 'panelWall' | 'panelAt', text: (P: NonNullable<RoomPanel['placed']>) => string) => (
+    <label className="field">
+      <span>{t(`rm_${key}`)}</span>
+      <output id={`bk-room-${key}`} className="auto-value">{panel?.placed ? text(panel.placed) : '—'} <span className="badge">{tl('badge_auto')}</span></output>
+    </label>
+  );
+  const auto = !!panel?.auto;
   const rf = machine?.rinvio ?? null, sup = supportOf(R, rf !== null), putSup = (patch: Partial<MachineSupport>): void => put({ support: { ...sup, ...patch } });
   const num = (label: string, value: number, min: number, max: number, apply: (v: number) => void) => (
     <label className="field">
@@ -120,13 +139,20 @@ export default function RoomFields({ R, put, machine, blank = () => false, choos
         {field('doorW', 500, 3000)}
         {field('doorH', 1500, 3000)}
       </div>
+      {panel ? (
+        <label className="check">
+          <input type="checkbox" id="auto-panel" checked={auto} onChange={(e) => panel.set(e.target.checked)} />
+          <span>{t('rm_panelAuto')}</span>
+        </label>
+      ) : null}
       <div className="form-grid">
-        {wall('panelWall')}
-        {field('panelAt', 0, 20000)}
+        {auto ? placed('panelWall', (P) => t(`wall_${P.panelWall}`)) : wall('panelWall')}
+        {auto ? placed('panelAt', (P) => String(Math.round(P.panelAt))) : field('panelAt', 0, 20000)}
         {field('panelW', 200, 3000)}
         {field('panelD', 100, 1000)}
         {field('panelH', 500, 3000)}
       </div>
+      {auto ? <p className="note">{t('rm_panelAutoHint')}</p> : null}
       {supportFields}
     </>
   );

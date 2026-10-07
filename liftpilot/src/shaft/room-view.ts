@@ -13,6 +13,7 @@ import { MACHINE_A, machineElevation, machinePlan } from './machine-outline';
 import { bodyBox } from './machine-shape';
 import { shapeElevation, shapePlan } from './machine-shape-view';
 import { dropSpan as span, roomRopes, ropeWidths, slabHoles, type MachineSpec, type RoomGeo } from './machine-room';
+import { bbox, fittingsPlan } from './room-fittings-view';
 import { layoutSite, type RoomSite } from './room-site';
 import { pulleySection } from './room-pulley';
 import type { Layout } from './types';
@@ -78,16 +79,9 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo): { entities:
   out.push(...(F.shape ? shapePlan(F, M.D, M.n, M.d, (x, z) => onDrop(G, G.sheaveAt + x, F.zSheave - z))
     : machinePlan((x, z) => onDrop(G, G.sheaveAt + x * k, (MACHINE_A.zSheave - z) * k))));
   if (pulley) out.push(path(pulley, true, 'hidden'));
-  // control panel with its free area, main switch by the door
-  // (the cross over the free area in front of the panel only, not through its name)
-  const pan = wallBox(R, R.panelWall, R.panelAt, R.panelW, R.panelD), free = wallBox(R, R.panelWall, R.panelAt, R.panelW, R.panelD + 700);
-  const front = wallBand(R, R.panelWall, R.panelAt, R.panelW, R.panelD, R.panelD + 700);
-  out.push(path(free, true, 'space'), line(front[0], front[2], 'space'), line(front[1], front[3], 'space'));
-  out.push(path(pan, true, 'outline', 'paper'), { e: 'text', at: mid(pan), text: 'QUADRO MANOVRA', size: 1.8, align: 'c', halo: true, fit: R.panelW - 60 });
-  const sw = wallBox(R, R.doorWall, R.doorAt + R.doorW + 150, 200, 120);
-  const inward: Pt = R.doorWall === 'front' ? [0, 1] : R.doorWall === 'rear' ? [0, -1] : R.doorWall === 'left' ? [1, 0] : [-1, 0];
-  const swAt: Pt = [mid(sw)[0] + inward[0] * 260, mid(sw)[1] + inward[1] * 260 - 30];
-  out.push(path(sw, true, 'outline', 'paper'), { e: 'text', at: swAt, text: 'INTERRUTTORE GENERALE', size: 1.5, align: 'c' });
+  // control panel with its free area, main switch by the door (room-fittings-view.ts)
+  const { entities: fittings, free, sw, swAt } = fittingsPlan(R);
+  out.push(...fittings);
   // the sheave's size on the side away from the gearbox, along the drop line (an upright one would cross the frame's
   // dimension); the load P1 where the room is free, its leader to the gearbox
   const side = Math.min(G.across[0], -Math.max(w.ropes + 60, M.Dp > 0 ? w.pulley + 40 : 0)), um = (G.frame0 + G.frame1) / 2;
@@ -190,25 +184,6 @@ function dropChains(S: RoomSite, d: { car: Pt; cw: Pt }, R: RoomGeo['room'], dim
   }
   return out;
 }
-
-function wallBox(R: RoomGeo['room'], w: 'front' | 'rear' | 'left' | 'right', at: number, len: number, depth: number): Pt[] {
-  if (w === 'front') return [[at, 0], [at + len, 0], [at + len, depth], [at, depth]];
-  if (w === 'rear') return [[at, R.D - depth], [at + len, R.D - depth], [at + len, R.D], [at, R.D]];
-  if (w === 'left') return [[0, at], [depth, at], [depth, at + len], [0, at + len]];
-  return [[R.W - depth, at], [R.W, at], [R.W, at + len], [R.W - depth, at + len]];
-}
-
-/** The band along a wall from depth d0 to d1 into the room, its corners in order. */
-function wallBand(R: RoomGeo['room'], w: 'front' | 'rear' | 'left' | 'right', at: number, len: number, d0: number, d1: number): Pt[] {
-  if (w === 'front') return [[at, d0], [at + len, d0], [at + len, d1], [at, d1]];
-  if (w === 'rear') return [[at, R.D - d1], [at + len, R.D - d1], [at + len, R.D - d0], [at, R.D - d0]];
-  if (w === 'left') return [[d0, at], [d1, at], [d1, at + len], [d0, at + len]];
-  return [[R.W - d1, at], [R.W - d0, at], [R.W - d0, at + len], [R.W - d1, at + len]];
-}
-const mid = (p: Pt[]): Pt => [(p[0][0] + p[2][0]) / 2, (p[0][1] + p[2][1]) / 2];
-const bbox = (p: readonly Pt[]): Box => ({
-  x0: Math.min(...p.map((q) => q[0])), y0: Math.min(...p.map((q) => q[1])), x1: Math.max(...p.map((q) => q[0])), y1: Math.max(...p.map((q) => q[1])),
-});
 
 /** Section B-B along the rope drops: X is u along the drop line, Z the height above the room floor. */
 export function roomSectionOn(S: RoomSite, M: MachineSpec, G: RoomGeo): { entities: Entity[]; bounds: Box } {

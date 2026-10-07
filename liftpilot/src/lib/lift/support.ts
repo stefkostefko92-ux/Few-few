@@ -2,10 +2,13 @@
 // car, the rated load and the counterweight, half of them at 2:1, the ropes and the travelling cables) times the
 // dynamic coefficient, plus the machine with its bedframe; and the check of the beams under it (src/shaft/support-check.ts).
 import type { ParsedInputs } from '@/calc/types';
-import { roomGeo, type Layout, type MachineSpec, type ShaftCheck } from '@/shaft';
+import { roomGeo, type Layout, type MachineSpec, type RoomGeo, type ShaftCheck } from '@/shaft';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { roomChecksOf } from '@/shaft/machine-room';
-import { beamChecks, fitChecks, machineBox, rinvioChecks, type SupportLoad } from '@/shaft/support-check';
+import { switchBox, type Box } from '@/shaft/room-floor';
+import type { PanelSpot } from '@/shaft/room-panel';
+import { governorFootprint } from '@/shaft/room-site';
+import { beamChecks, fitChecks, machineParts, panelFloorChecks, panelPlace, rinvioChecks, type SupportLoad } from '@/shaft/support-check';
 
 /** Length of each traction rope [m]: the roping times the travel and twice the rope beyond it, with the diverting
  *  pulley's drop or, with the machine below, the runs to it. */
@@ -36,11 +39,28 @@ export function supportLoad({ I, N }: Pick<ParsedInputs, 'I' | 'N'>, Mcw: number
   return { machine: over.machine ?? N.mass, static: axisStatic({ P: I.P, Q: I.Q, Mcw, roping: I.r, ropes, cables }), dyn: over.dyn ?? KV_VERT.dynFactor };
 }
 
-/** The checks of the machine's support (the beams' stress and deflection, none for the other supports; the reach of
- *  a maker's bedplate with the diverting pulley) and of the machine in the room (it fits, and the free area in front of
- *  the panel up to it, in place of the shaft's own m_panel: mergeChecks; `above`: the machine stands in the room over
- *  the shaft, not below). */
-export const supportChecks = (L: Layout, M: MachineSpec, load: SupportLoad, above = true): ShaftCheck[] => {
-  const G = roomGeo(L, M), panel = above && G ? roomChecksOf(G.room, machineBox(G, M)).filter((c) => c.id === 'm_panel') : [];
-  return [...beamChecks(G, load), ...rinvioChecks(G, M), ...(above ? fitChecks(G, M) : []), ...panel];
+/** What stands on the floor of the room over the shaft besides the machine: the governor as the plan draws it, the main
+ *  switch by the door (room axes). */
+const floorOthers = (L: Layout, G: RoomGeo): Box[] => {
+  const gov = governorFootprint(L, G.room);
+  return [...(gov ? [gov] : []), switchBox(G.room)];
 };
+
+/** The checks of the machine's support (the beams' stress and deflection, none for the other supports; the reach of
+ *  a maker's bedplate with the diverting pulley) and of the machine in the room (it fits, the free area beside it, and
+ *  the free area in front of the panel up to what stands on the floor, in place of the shaft's own m_panel:
+ *  mergeChecks; the panel clear of it all, the ways from the door; `above`: the machine stands in the room over the
+ *  shaft, not below). */
+export const supportChecks = (L: Layout, M: MachineSpec, load: SupportLoad, above = true): ShaftCheck[] => {
+  const G = roomGeo(L, M);
+  if (!above || !G) return [...beamChecks(G, load), ...rinvioChecks(G, M)];
+  const others = floorOthers(L, G), panel = roomChecksOf(G.room, [...machineParts(G, M), ...others]).filter((c) => c.id === 'm_panel');
+  return [...beamChecks(G, load), ...rinvioChecks(G, M), ...fitChecks(G, M, others), ...panel, ...panelFloorChecks(G, M, others)];
+};
+
+/** Where the software puts the control panel in the room over the shaft for the machine `M` (room-panel.ts placePanel);
+ *  null without a room. */
+export function placedPanel(L: Layout, M: MachineSpec): PanelSpot | null {
+  const G = roomGeo(L, M);
+  return G ? panelPlace(G, M, floorOthers(L, G)) : null;
+}

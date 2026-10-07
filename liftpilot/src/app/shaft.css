@@ -54,6 +54,8 @@ fieldset.field > legend { font-size: 13.5px; font-weight: 500; padding: 0; margi
 /* the designer's vertical data and machine room */
 .vertical-options, .room-options, .niche-options, .head-options { border-top: 1px solid var(--rule); padding-top: 10px; display: flex; flex-direction: column; gap: 10px; }
 .vertical-options > summary, .room-options > summary, .niche-options > summary, .head-options > summary { cursor: pointer; font-weight: 600; }
+/* the panel's wall and place as the software put them: the value at the start, the badge at the end of the field */
+.room-options .auto-value { justify-content: space-between; min-width: 0; flex-wrap: wrap; row-gap: 4px; }
 .niche-options .niche { margin: 0; min-width: 0; padding: 8px 12px 12px; border: 1px solid var(--rule); border-radius: 10px; display: flex; flex-direction: column; gap: 10px; }
 .niche-options .niche > legend { padding: 0 4px; font: 600 13.5px/1.3 var(--font-body); color: var(--ink-2); }
 .niche-options .niche > .btn, .head-options > .btn { align-self: flex-start; }

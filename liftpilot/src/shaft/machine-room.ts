@@ -7,7 +7,7 @@ import { check } from './checks';
 import { MACHINE_A, MACHINE_X, MACHINE_Z } from './machine-outline';
 import { machineFrame, type MachineFrame, type MachineShape } from './machine-shape';
 import { KV_VERT } from './norme-vert';
-import { panelFree } from './panel';
+import { panelFree, type Box } from './room-floor';
 import type { RinvioFrame } from './rinvio';
 import { cwPlateAt, section } from './section';
 import type { Layout, ShaftCheck } from './types';
@@ -181,12 +181,13 @@ export function hitchDepths(L: Layout): { ends: [number, number][]; mid: [number
 export const roomChecks = (L: Layout): ShaftCheck[] => (L.inputs.room ? roomChecksOf(L.inputs.room) : []);
 
 /** The checks of the room itself: its height, the free area in front of the control panel — to the opposite wall, or to
- *  the machine when its outline `box` (room axes) is known (panel.ts) —, its door. */
-export function roomChecksOf(R: RoomInputs, box?: readonly [number, number, number, number] | null): ShaftCheck[] {
+ *  what stands on the floor when its outlines `gear` (room axes: the machine's parts, the governor, the main switch) are
+ *  known (room-floor.ts) —, its door. */
+export function roomChecksOf(R: RoomInputs, gear: readonly Box[] = []): ShaftCheck[] {
   const along = R.panelWall === 'front' || R.panelWall === 'rear' ? R.W : R.D;
   // 5.2.6.3.2.1 a): in front of the panel ≥ 700 mm deep and as wide as the larger of 500 mm and the panel (the panel
   // itself may be narrower; until 2026-10-06 a panel under 500 mm failed here)
-  const free = panelFree(R, box), wide = along >= Math.max(KV_VERT.panelFreeWidth, R.panelW);
+  const free = panelFree(R, gear), wide = along >= Math.max(KV_VERT.panelFreeWidth, R.panelW);
   return [
     check('m_height', R.H >= KV_VERT.roomH, R.H, KV_VERT.roomH, 0, 'mm'),
     check('m_panel', free >= KV_VERT.panelFreeDepth && wide, free, KV_VERT.panelFreeDepth, 0, 'mm'),

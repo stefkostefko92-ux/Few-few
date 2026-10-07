@@ -6,7 +6,7 @@ import type { FormValues } from '@/calc/types';
 import { defaultInputs } from '@/shaft';
 import type { AutoFlags, LiftInputs } from './derive';
 
-export const AUTO_ALL: AutoFlags = { P: true, machine: true, L0: true, dx: true, Hv: true };
+export const AUTO_ALL: AutoFlags = { P: true, machine: true, L0: true, dx: true, Hv: true, panel: true };
 
 const CALC_START: FormValues = {
   ...PRESETS.A, context: 'repl', layout: 'topDefl', alphaMode: 'geo', r: '1', compare: false, keepRopes: true, keepD: false, qeq: '',

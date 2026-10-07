@@ -15,7 +15,7 @@ export const mergeChecks = (base: readonly ShaftCheck[], over: readonly ShaftChe
   [...base.map((c) => over.find((o) => o.id === c.id) ?? c), ...over.filter((o) => !base.some((c) => c.id === o.id))];
 
 /** Checks whose value is kept rounded to the millimetre while the outcome is decided on the exact one. */
-const KEPT_ROUNDED: ReadonlySet<ShaftCheckId> = new Set<ShaftCheckId>(['m_calata', 'm_fit', 'm_stand', 'v_place', 'v_doorcar', 'v_niche', 'v_staffa']);
+const KEPT_ROUNDED: ReadonlySet<ShaftCheckId> = new Set<ShaftCheckId>(['m_calata', 'm_fit', 'm_stand', 'm_quadro', 'v_place', 'v_doorcar', 'v_niche', 'v_staffa']);
 
 /** `x` rounded as the pages print it (half away from zero, as Intl does). */
 export function roundShown(x: number, dec: number): number {

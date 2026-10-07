@@ -2,11 +2,12 @@
 // hitches hang (the slab's openings, the ropes in section B-B), the governor, the dimensions that change the rope drop.
 // A whole design gives them from its layout (layoutSite); a machine replacement from the survey of its room
 // (src/lib/room). Model entities and numbers; pure.
-import { circle, rect, type Box, type Edit, type Entity, type Pt } from '../drawing';
+import { circle, rect, type Box as DrawBox, type Edit, type Entity, type Pt } from '../drawing';
 import { calataEdit } from './drop';
-import { governorSpot } from './governor';
+import { governorSpot, type GovernorSpot } from './governor';
 import { hitchDepths } from './machine-room';
 import type { RoomInputs } from './room';
+import type { Box } from './room-floor';
 import type { Layout } from './types';
 
 export interface RoomSite {
@@ -19,7 +20,7 @@ export interface RoomSite {
   ends: readonly (readonly [number, number])[];
   mid: readonly [number, number];
   /** the governor drawn in the plan, and its footprint with its lettering (null: nothing drawn) */
-  governor: { entities: Entity[]; box: Box | null };
+  governor: { entities: Entity[]; box: DrawBox | null };
   /** the edit of a dimension of the rope drop, `less` shorter (the diverting pulley's dx), `exact`: along an axis only */
   calata: (less: number, exact: boolean) => Edit | null;
   /** the drawings may change the calculation's inputs (calc.h) */
@@ -38,13 +39,36 @@ export function layoutSite(L: Layout): RoomSite {
   };
 }
 
+/** Where the governor stands in the room's plan (room axes): over its rope where the 3D puts it (governor.ts), or — a
+ *  cantilever sling, no place worked out — by the car rail opposite the counterweight; null: neither. */
+function governorPlace(L: Layout, R: RoomInputs): { spot: GovernorSpot | null; gx: number; gy: number } | null {
+  const spot = governorSpot(L);
+  if (spot) return { spot, gx: R.shaftX + spot.x, gy: R.shaftY + (spot.y1 + spot.y2) / 2 };
+  const railR = L.rails.filter((r) => r.kind === 'car').sort((a, b) => (L.cwSide === 'left' ? b.x - a.x : a.x - b.x))[0];
+  return railR ? { spot: null, gx: R.shaftX + railR.x + (railR.dir === 'left' ? 120 : -120), gy: R.shaftY + railR.y + 250 } : null;
+}
+
+/** The governor's outline on the floor as the plan draws it (its base, sheave and the strands' openings; the symbol of a
+ *  cantilever sling's) [x0, y0, x1, y1], room axes; null: none drawn. */
+export function governorFootprint(L: Layout, R: RoomInputs): Box | null {
+  const at = governorPlace(L, R);
+  if (!at) return null;
+  const { spot, gx, gy } = at;
+  if (!spot) return [gx - 150, gy - 90, gx + 150, gy + 90];
+  const g = spot.G, ys = [gy - g.baseW, gy + g.baseW, gy - g.R - 14, gy + g.R + 14, R.shaftY + spot.y1 - 25, R.shaftY + spot.y2 + 25];
+  const half = Math.max(g.baseA, g.half, 25);
+  return [gx - half, Math.min(...ys), gx + half, Math.max(...ys)];
+}
+
 /** The governor over its rope where the 3D puts it (governor.ts): its base, the A-frame's cheeks, the sheave seen from
  *  above with the jaw's housing over it, the two strands through the slab; the model by the rated speed, written
  *  toward the wall it is nearer to, out of the machine's way. */
-function governor(L: Layout, R: RoomInputs, out: Entity[]): Box | null {
-  const spot = governorSpot(L), I = L.inputs;
+function governor(L: Layout, R: RoomInputs, out: Entity[]): DrawBox | null {
+  const at = governorPlace(L, R), I = L.inputs;
+  if (!at) return null;
+  const { spot, gx, gy } = at;
   if (spot) {
-    const g = spot.G, gx = R.shaftX + spot.x, gy = R.shaftY + (spot.y1 + spot.y2) / 2, fw = g.baseW - 6;
+    const g = spot.G, fw = g.baseW - 6;
     out.push(rect(gx - g.baseA, gy - g.baseW, gx + g.baseA, gy + g.baseW, 'outline', 'paper'));
     for (const sx of [-1, 1]) out.push(rect(gx + sx * 26, gy - fw, gx + sx * 40, gy + fw, 'thin'));
     out.push(rect(gx - g.half, gy - g.R - 14, gx + g.half, gy + g.R + 14, 'outline', 'steel'), rect(gx - 26, gy - 48, gx + 26, gy + 48, 'thin'));
@@ -59,12 +83,7 @@ function governor(L: Layout, R: RoomInputs, out: Entity[]): Box | null {
     return { x0: gx - g.baseA - (s < 0 ? 900 : 0), y0: gy - g.baseW - 60, x1: gx + g.baseA + (s > 0 ? 900 : 0), y1: gy + g.baseW + 330 };
   }
   // a cantilever sling: no place worked out, the governor shown by the car rail opposite the counterweight
-  const railR = L.rails.filter((r) => r.kind === 'car').sort((a, b) => (L.cwSide === 'left' ? b.x - a.x : a.x - b.x))[0];
-  if (railR) {
-    const gx = R.shaftX + railR.x + (railR.dir === 'left' ? 120 : -120), gy = R.shaftY + railR.y + 250;
-    out.push(rect(gx - 150, gy - 90, gx + 150, gy + 90, 'outline', 'paper'), circle([gx, gy], 125, 'thin'));
-    out.push({ e: 'tag', at: [gx + 330, gy + 160], text: 'P4', to: [gx + 150, gy] });
-    return { x0: gx - 150, y0: gy - 90, x1: gx + 420, y1: gy + 250 };
-  }
-  return null;
+  out.push(rect(gx - 150, gy - 90, gx + 150, gy + 90, 'outline', 'paper'), circle([gx, gy], 125, 'thin'));
+  out.push({ e: 'tag', at: [gx + 330, gy + 160], text: 'P4', to: [gx + 150, gy] });
+  return { x0: gx - 150, y0: gy - 90, x1: gx + 420, y1: gy + 250 };
 }

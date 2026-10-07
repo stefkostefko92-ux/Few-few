@@ -21,7 +21,7 @@ import { Batch } from './geom';
 import { pulley, pulleyFrames } from './pulleys';
 import { ropeWidths, type Opening } from './slab';
 import type { GovernorSpot } from './governor';
-import { buildShell, shellsOf, switchAt } from './roomshell';
+import { buildShell, shellsOf } from './roomshell';
 import { buildSupport, wallsAlong } from './support';
 import { mainFeed, rectOf, roomPoint, trunking, trunkingRoute, type Rect } from './wiring';
 import type { LiftMaterials, Side } from './materials';
@@ -143,7 +143,8 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
     blocked.push(rectOf([roomPoint(R, x0, y0, R.doorWall, R.doorAt, 0), roomPoint(R, x0, y0, R.doorWall, R.doorAt + R.doorW, 600)]));
     const way = trunkingRoute(from, [o[0] - from[0], o[1] - from[1]], tip, blocked, { x0, y0, x1: x0 + R.W, y1: y0 + R.D });
     trunking(wires, M, way, tip, tipH, z0);
-    mainFeed(wires, M, R, x0, y0, z0, switchAt(R), z0 + 1750);
+    const sw = shell?.switchSpan ?? [0, 0];
+    mainFeed(wires, M, R, x0, y0, z0, (sw[0] + sw[1]) / 2, z0 + 1750);
   } else trunking(wires, M, null, tip, tipH, z0);
   wires.into(common);
 

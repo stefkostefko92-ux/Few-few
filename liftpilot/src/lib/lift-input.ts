@@ -35,6 +35,8 @@ export const autoSchema = z.object({
   L0: z.boolean(),
   dx: z.boolean(),
   Hv: z.boolean(),
+  // missing in the records before the panel's place was the software's: as entered
+  panel: z.boolean().optional(),
 }).strict();
 
 const liftObject = <S extends z.ZodTypeAny, C extends z.ZodTypeAny>(shaft: S, collaudo: C) => z.object({

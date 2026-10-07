@@ -15,6 +15,7 @@ import {
   type BlankKey, type LiftDraft,
 } from '@/lib/lift/blank';
 import { carriedOver } from '@/lib/lift/carry';
+import { panelEntered } from '@/lib/lift/panel-form';
 import { blankCalc, calcMissing, isStandard, plantReady } from '@/lib/calc-blank';
 import { readInputs } from '@/calc/index';
 import { calcDraftSchema, draftScopeSchema, liftDraftSchema, surveyDraftSchema } from '@/lib/draft-input';
@@ -66,7 +67,12 @@ test('una scelta porta i suoi dati da inserire: portata data, secondo accesso, c
   assert.ok(missingOf(d).includes('side2'));
   assert.equal(relevant('cw', d), false, 'two entrances place the counterweight');
   d = calc(d, { layout: 'top' });
-  assert.ok(roomKeys.every((k) => missingOf(d).includes(k)), 'a machine above: its room');
+  // the panel's wall and place are the software's (registry locale.quadro.posto): to enter only when switched to entered
+  const placed: readonly BlankKey[] = ['room.panelWall', 'room.panelAt'];
+  assert.ok(roomKeys.every((k) => missingOf(d).includes(k) !== placed.includes(k)), 'a machine above: its room, the panel placed');
+  const byHand: LiftDraft = { ...d, inputs: { ...d.inputs, auto: { ...d.inputs.auto, panel: false } } };
+  assert.ok(roomKeys.every((k) => missingOf(byHand).includes(k)), 'the panel by hand: its wall and place too');
+  assert.deepEqual(panelEntered(byHand, { panelWall: 'left', panelAt: 450 }).blank.filter((k) => placed.includes(k)), [], 'entered where it was');
   d = calc(d, { layout: 'bottom' });
   assert.ok(missingOf(d).includes('bottom') && !missingOf(d).some((k) => k.startsWith('room.')), 'a machine below: its scheme, no room');
   // a room added again starts empty

@@ -3,7 +3,8 @@
 // in the room, its diverting pulley at the calculation's h), standing over the existing car drop; its counterweight
 // drop at the calculation's spacing along the line to the counterweight drop measured, which must agree with it
 // (m_calata, registry locale.calate). The checks of the room (height, panel, door), of the machine in it (m_fit,
-// m_stand), of its support (the beams) and of a maker's bedplate (m_rinvio); the load on the support. What stops a
+// m_stand, m_free), of its support (the beams), of a maker's bedplate (m_rinvio) and of the panel among them (m_quadro,
+// m_route: the panel stays where it was surveyed); the load on the support. What stops a
 // record: the machine below (no room over the shaft: not drawn, as in a whole design), drops that coincide or lie
 // outside the shaft, a diverting pulley under the room's floor. Pure: the browser and the server run it alike.
 import type { FormValues } from '@/calc/types';
@@ -17,7 +18,8 @@ import { geoOn, roomChecksOf, type MachineSpec, type RoomGeo } from '@/shaft/mac
 import { KV_VERT } from '@/shaft/norme-vert';
 import { rinvioAxisOf, rinvioTopOf } from '@/shaft/rinvio';
 import type { RoomSite } from '@/shaft/room-site';
-import { beamChecks, fitChecks, machineBox, rinvioChecks, type SupportLoad } from '@/shaft/support-check';
+import { switchBox } from '@/shaft/room-floor';
+import { beamChecks, fitChecks, machineParts, panelFloorChecks, rinvioChecks, type SupportLoad } from '@/shaft/support-check';
 import { ownAxis } from '@/shaft/support';
 import type { ShaftCheck } from '@/shaft/types';
 import type { Survey } from './survey';
@@ -89,10 +91,11 @@ export function deriveRoom(V: FormValues, s: Survey, a: Analysis = analyse(V)): 
   // the support carries the machine as the full design counts it: its mass, the static load on its axis, the dynamic
   // coefficient (the data of the installation may change them on the drawing set's sheet 1)
   const load = supportLoad(a.ctx, a.res.Mcw);
-  const off = Math.abs(measured - calata);
+  // what stands on the floor besides the machine: the main switch by the door (no governor in the survey)
+  const off = Math.abs(measured - calata), others = [switchBox(R)];
   const checks: ShaftCheck[] = G ? [
-    ...roomChecksOf(R, machineBox(G, M)), ...beamChecks(G, load), ...rinvioChecks(G, M), ...fitChecks(G, M),
-    check('m_calata', off <= KV_VERT.dropTol, Math.round(off), KV_VERT.dropTol, 0, 'mm'),
+    ...roomChecksOf(R, [...machineParts(G, M), ...others]), ...beamChecks(G, load), ...rinvioChecks(G, M), ...fitChecks(G, M, others),
+    ...panelFloorChecks(G, M, others), check('m_calata', off <= KV_VERT.dropTol, Math.round(off), KV_VERT.dropTol, 0, 'mm'),
   ] : roomChecksOf(R);
   const hMin = M.Dp > 0 ? Math.ceil(ownAxis(M.D, M.shape ?? null) + r) : null;
   return { analysis: a, made, M, G, site, calata: { calc: calata, measured }, hMin, load, checks, issues };
