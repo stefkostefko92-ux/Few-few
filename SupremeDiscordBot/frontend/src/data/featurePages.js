@@ -113,13 +113,13 @@ export const FEATURE_PAGES = [
     nav: "Verification",
     title: "Discord Verification Bot — Button, Captcha & Account-Age Gate",
     description:
-      "Stop bots and raiders with Supreme Bot's Discord verification: one-click button verification on the Free tier, math captcha and minimum account age on Premium, auto role on success, brute-force protection and no IP collection.",
+      "Stop bots and raiders with Supreme Bot's Discord verification: button or math captcha, minimum account age, auto role on success, brute-force protection and no IP collection — on every plan, Free included.",
     keywords: ["discord verification bot", "discord captcha bot", "discord verification bot free", "discord age verification bot", "discord anti bot verification", "verification bot setup", "supreme bot", "carbon stealth"],
     h1: "Verification and anti-bot gate",
     answer:
-      "Supreme Bot's verification panel asks a new member to click a button (Free) or solve a short math captcha (Premium) before they get the verified role. On Premium you can also require a minimum Discord account age, and ticket panels can be locked behind the verified role so unverified accounts cannot open tickets. Repeated failures are rate-limited, attempts are kept for 90 days and then deleted, and no IP addresses are collected — Discord interactions do not carry any.",
+      "Supreme Bot's verification panel asks a new member to click a button or solve a short math captcha before they get the verified role, and it can require a minimum Discord account age. All of that is free on every plan — raid protection is not sold, and it never weakens when a subscription ends; Premium only raises the number of panels from one to ten. Ticket panels can be locked behind the verified role so unverified accounts cannot open tickets. Repeated failures are rate-limited, attempts are kept for 90 days and then deleted, and no IP addresses are collected — Discord interactions do not carry any.",
     steps: [
-      { title: "Create a verification panel", body: "Dashboard → your server → Verification. Choose the type (button, or math captcha on Premium), the role to grant on success and, on Premium, the minimum account age in days." },
+      { title: "Create a verification panel", body: "Dashboard → your server → Verification. Choose the type (button or math captcha), the role to grant on success and, if you want, the minimum account age in days." },
       { title: "Post it and restrict the server", body: "Spawn the panel in your #verify channel. Configure your channel permissions so unverified members only see that channel; the granted role unlocks the rest." },
       { title: "Gate tickets and forms", body: "In a ticket panel's settings, require the verified role — unverified accounts cannot open tickets or forms attached to that panel." },
       { title: "Watch the numbers", body: "The dashboard shows daily verification counts per panel. Attempt records are pruned automatically after 90 days and are deleted on any /privacy delete request." },
@@ -127,14 +127,14 @@ export const FEATURE_PAGES = [
     tiers: [
       ["Verification panels", "1", "10"],
       ["Button verification", "Included", "Included"],
-      ["Math captcha", "—", "Included"],
-      ["Minimum account age", "—", "Included"],
+      ["Math captcha", "Included", "Included"],
+      ["Minimum account age", "Included", "Included"],
       ["Auto role on success, brute-force protection", "Included", "Included"],
     ],
     faq: [
-      { q: "Is the verification bot free?", a: "Button verification with an auto role is free (one panel). Math captcha, the account-age gate and up to ten panels are Premium features." },
+      { q: "Is the verification bot free?", a: "Yes. Button or math-captcha verification, the account-age gate, the auto role and brute-force protection are free on every plan. Premium only raises the limit from one verification panel to ten." },
       { q: "Does the bot collect IP addresses or personal data for verification?", a: "No IP addresses are collected: the bot only receives Discord interactions, which do not carry them. It stores the user id, the panel, the outcome and a timestamp for 90 days, then deletes them automatically." },
-      { q: "How does account-age verification work?", a: "Premium panels can require a minimum account age in days. The bot compares the Discord account creation date with your threshold when the member clicks; accounts that are too new are told the minimum age required." },
+      { q: "How does account-age verification work?", a: "Any panel can require a minimum account age in days. The bot compares the Discord account creation date with your threshold when the member clicks; accounts that are too new are told the minimum age required." },
       { q: "Can I require verification before opening a ticket?", a: "Yes. Set the verified role as required on a ticket panel and only verified members can open tickets there." },
     ],
     related: ["/features/discord-ticket-system", "/features/discord-welcome-bot-autorole", "/guides/gdpr-discord-bot"],

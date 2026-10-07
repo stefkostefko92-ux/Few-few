@@ -11,7 +11,7 @@ export function PremiumBadge({ small = false }) {
   const { t } = useT();
   if (small) {
     return (
-      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-cs-gold/10 text-cs-gold text-[9px] font-bold uppercase tracking-wider border border-cs-gold/30">
+      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-cs-gold/10 text-cs-gold text-[10px] font-bold uppercase tracking-wider border border-cs-gold/30">
         <Star className="w-2.5 h-2.5 fill-current" />
         {t("premium.badge")}
       </span>

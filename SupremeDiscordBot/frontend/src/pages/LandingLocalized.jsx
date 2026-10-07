@@ -113,7 +113,7 @@ export default function LandingLocalized({ locale }) {
             <SupremeLogo size={52} />
             <div>
               <SupremeWordmark className="text-lg leading-none" />
-              <div className="hidden sm:block font-mono text-[9px] tracking-[0.3em] uppercase text-cs-dim mt-0.5 group-hover:text-cs-cyan transition-colors">
+              <div className="hidden sm:block font-mono text-[10px] tracking-[0.3em] uppercase text-cs-dim mt-0.5 group-hover:text-cs-cyan transition-colors">
                 by {COMPANY_NAME}
               </div>
             </div>
@@ -161,7 +161,7 @@ export default function LandingLocalized({ locale }) {
               </h2>
               <p className="text-cs-muted max-w-2xl mx-auto">{t.featuresSub}</p>
             </div>
-            <div data-reveal className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div data-reveal className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
               {t.features.map((f, i) => {
                 const Icon = FEATURE_ICONS[f.key] || Sparkles;
                 return <FeatureTile key={f.title} icon={Icon} title={f.title} desc={f.desc} />;
@@ -291,10 +291,10 @@ export default function LandingLocalized({ locale }) {
                 <SupremeLogo size={36} />
                 <div className="flex flex-col leading-tight">
                   <SupremeWordmark className="text-base" />
-                  <span className="font-mono text-[9px] tracking-[0.25em] uppercase text-cs-dim mt-1">
+                  <span className="font-mono text-[10px] tracking-[0.25em] uppercase text-cs-dim mt-1">
                     © 2026 {COMPANY_NAME} · EIK 208725180 · VAT BG208725180 · EU-hosted
                   </span>
-                  <span className="font-mono text-[9px] tracking-[0.12em] text-cs-dim mt-1">
+                  <span className="font-mono text-[10px] tracking-[0.12em] text-cs-dim mt-1">
                     Carbon Stealth VCC · ul. Samuil 3, 2670 Bobov dol, Bulgaria ·{" "}
                     <a href="mailto:legal@carbonstealth.eu" className="text-cs-cyan underline">legal@carbonstealth.eu</a>
                   </span>

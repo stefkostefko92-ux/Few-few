@@ -39,7 +39,7 @@ export default function PublicPageLayout({ crumb, children, maxWidth = "max-w-4x
             <SupremeLogo size={28} />
             <div className="flex flex-col leading-tight">
               <SupremeWordmark className="text-sm" />
-              <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-cs-dim">
+              <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-cs-dim">
                 Created and Designed by{" "}
                 <a
                   href="https://carbonstealth.eu"

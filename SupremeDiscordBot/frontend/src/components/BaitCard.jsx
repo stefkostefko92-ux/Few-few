@@ -28,8 +28,10 @@ function BaitForm({ serverId, data }) {
   const toast = useToast();
   const qc = useQueryClient();
   const [form, setForm] = useState(() => ({
-    enabled: data.enabled, channelId: data.channelId || "", action: data.action,
-    logChannelId: data.logChannelId || "", dmUser: data.dmUser,
+    // Липсващо поле (стар/непълен отговор) не бива да стига до екрана като
+    // „bait.actionHint.undefined“ — подразбиращите се стойности са тези на backend-а.
+    enabled: !!data.enabled, channelId: data.channelId || "", action: ACTIONS.includes(data.action) ? data.action : "softban",
+    logChannelId: data.logChannelId || "", dmUser: data.dmUser !== false,
   }));
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -58,7 +60,7 @@ function BaitForm({ serverId, data }) {
           <p className="text-cs-muted text-sm mt-1 max-w-2xl">{t("bait.intro")}</p>
         </div>
         <div className="text-sm text-cs-dim sm:text-right shrink-0">
-          {t("bait.caught")}: <span className="text-cs-text font-bold">{data.caughtCount}</span>
+          {t("bait.caught")}: <span className="text-cs-text font-bold">{data.caughtCount ?? 0}</span>
         </div>
       </div>
 

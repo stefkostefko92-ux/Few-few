@@ -125,7 +125,7 @@ const FIX = {
     status: "operational", timestamp: new Date(0).toISOString(),
     services: { api: { status: "operational", uptime: 3600 }, database: { status: "operational", latencyMs: 2 },
       bot: { status: "operational", latencyMs: 8 }, cache: { status: "operational", latencyMs: 2 } },
-    uptime: 3600, stats: { totalServers: 5, activeServers24h: 2 },
+    uptime: 3600,
   },
   [`GET /api/analytics/${SID}/dashboard`]: {
     kpis: { ticketsOpened: { value: 12, deltaPct: 8 }, ticketsClosed: { value: 10, deltaPct: -3 },
@@ -149,6 +149,8 @@ const FIX = {
       removeRoleIds: [], managerRoleIds: [], pingRoleIds: [], published: true },
   ],
   [`GET /api/tickets/${SID}`]: { tickets: [], total: 0 },
+  // v52 — канал-стръв (секцията на страница Verification); вътрешният път е /honeypot.
+  [`GET /api/honeypot/${SID}`]: { enabled: true, channelId: "223", action: "softban", logChannelId: "224", dmUser: true, warningMessageId: "1", caughtCount: 17, lastCaughtAt: new Date().toISOString() },
   [`GET /api/reactionroles/${SID}`]: [],
   // Истинският каталог на бекенда (същият, който /help ползва) — без него
   // страницата „Commands“ в таблото се снимаше празна (визуален одит 25.09.2026).

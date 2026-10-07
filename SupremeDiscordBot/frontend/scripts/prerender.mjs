@@ -177,6 +177,7 @@ function landingSnapshot(t) {
     <h1>${esc(t.h1a)} ${esc(t.h1b)}</h1>
     <p>${esc(t.sub)}</p>
     <section><h2>${esc(t.featuresHeading)}</h2><p>${esc(t.featuresSub)}</p><ul>${features}</ul></section>
+    ${t.game ? `<section><h2>${esc(t.game.heading)}</h2><p>${esc(t.game.sub)}</p><ul>${t.game.bullets.map((b) => `<li>${esc(b)}</li>`).join("")}</ul></section>` : ""}
     ${baitSnapshot(t.locale)}
     <section><h2>${esc(t.euHeading)}</h2><ul>${eu}</ul></section>
     ${compare}

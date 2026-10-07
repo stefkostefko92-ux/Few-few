@@ -2,7 +2,7 @@
 // Consolidated page with tabs: Polls, Giveaways, Sticky, Scheduled, Webhooks.
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import DiscordChannelSelect, { DiscordRoleSelect } from "../components/DiscordPicker";
+import DiscordChannelSelect, { DiscordRoleSelect, ChannelName } from "../components/DiscordPicker";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   BarChart3, Gift, Pin, CalendarClock, Webhook, Trash2, Plus, CheckCircle2, RefreshCw,
@@ -436,7 +436,7 @@ function StickyTab() {
         {stickies.map((s) => (
           <div key={s.id} className="cs-card flex items-start justify-between">
             <div className="flex-1">
-              <p className="text-xs text-cs-dim font-mono">Channel: {s.channelId}</p>
+              <p className="text-xs text-cs-dim">Channel: <ChannelName id={s.channelId} /></p>
               {s.embedTitle && <p className="text-cs-text font-bold mt-1">{s.embedTitle}</p>}
               <p className="text-sm text-cs-text mt-1 line-clamp-2">{s.content}</p>
             </div>
@@ -842,7 +842,7 @@ function ReactionRolesTab() {
                 </div>
                 <p className="text-xs text-cs-muted mt-1">
                   {m.pairs.length} role{m.pairs.length === 1 ? "" : "s"}
-                  {m.channelId && <> · channel <code className="text-xs">{m.channelId}</code></>}
+                  {m.channelId && <> · <ChannelName id={m.channelId} /></>}
                 </p>
                 <div className="mt-2 flex flex-wrap gap-1">
                   {m.pairs.map((p) => (

@@ -85,23 +85,6 @@ export default function StatusPage() {
           />
         </div>
 
-        {/* ═══ Stats ═══ */}
-        {data?.stats && (
-          <>
-            <h2 className="text-xs text-cs-muted uppercase tracking-wider font-mono mb-3">Platform Stats</h2>
-            <div className="grid grid-cols-2 gap-4 mb-8">
-              <div className="cs-card !p-4">
-                <div className="text-xs text-cs-muted uppercase tracking-wider font-mono">Total Servers</div>
-                <div className="text-2xl font-black text-cs-text mt-1">{data.stats.totalServers}</div>
-              </div>
-              <div className="cs-card !p-4">
-                <div className="text-xs text-cs-muted uppercase tracking-wider font-mono">Active (24h)</div>
-                <div className="text-2xl font-black text-cs-cyan mt-1">{data.stats.activeServers24h}</div>
-              </div>
-            </div>
-          </>
-        )}
-
         {/* ═══ SLA info ═══ */}
         <div className="border-t border-cs-border pt-6 text-xs text-cs-dim font-mono space-y-1">
           {/* Обявявахме „99.9% Premium | 99.95% Enterprise — backed by service
@@ -128,7 +111,7 @@ export default function StatusPage() {
             <SupremeLogo size={28} />
             <div className="flex flex-col leading-tight">
               <SupremeWordmark className="text-sm" />
-              <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-cs-dim">
+              <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-cs-dim">
                 Created and Designed by{" "}
                 <a
                   href="https://carbonstealth.eu"

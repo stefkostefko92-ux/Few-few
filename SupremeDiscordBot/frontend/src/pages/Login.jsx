@@ -75,7 +75,7 @@ export default function Login() {
             <SupremeLogo size={52} />
             <div>
               <SupremeWordmark className="text-lg leading-none" />
-              <div className="font-mono text-[9px] tracking-[0.3em] uppercase text-cs-dim mt-0.5 group-hover:text-cs-cyan transition-colors">
+              <div className="font-mono text-[10px] tracking-[0.3em] uppercase text-cs-dim mt-0.5 group-hover:text-cs-cyan transition-colors">
                 by {COMPANY_NAME}
               </div>
             </div>
@@ -167,7 +167,7 @@ export default function Login() {
               </p>
             </div>
 
-            <div data-reveal className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div data-reveal className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
               <FeatureCard icon={Ticket} title="Ticket System" badge="Free">
                 A complete Discord ticket bot: unlimited ticket volume via button panels — claim, escalate, rename, priority levels, two-step close, rich transcripts and archive links. Staff can reply straight from the dashboard.
               </FeatureCard>
@@ -177,7 +177,7 @@ export default function Login() {
               <FeatureCard icon={SmilePlus} title="Reaction Roles" badge="Free">
                 Members react to a message to get a role and remove the reaction to drop it. Up to 20 emoji-to-role pairs per message, exclusive (pick-one) mode, and the bot places the reactions for you.
               </FeatureCard>
-              <FeatureCard icon={ShieldCheck} title="Verification & Anti-Bot">
+              <FeatureCard icon={ShieldCheck} title="Verification & Anti-Bot" badge="Free">
                 One-click button or math captcha. Account age gates. Brute-force protection. Gate ticket panels behind verification.
               </FeatureCard>
               <FeatureCard icon={BarChart3} title="Polls" badge="Free">
@@ -286,7 +286,7 @@ export default function Login() {
                   <CompareRow label="Ticket panels"          free="1 panel"              premium="50 panels" />
                   <CompareRow label="Forms"                   free="2 forms · 5 questions" premium="50 forms · 50 questions" />
                   <CompareRow label="Form logic"              free="—"                    premium="Branching + regex" />
-                  <CompareRow label="Verification"            free="Button only"          premium="+ Math captcha + age gate" />
+                  <CompareRow label="Verification"            free="1 panel · button, captcha, account-age gate" premium="10 panels" />
                   <CompareRow label="Ticket workflow"         free="Basic open/close"     premium="Claim · escalate · round-robin" />
                   <CompareRow label="AI replies"              free="—"                    premium="Automatic first reply, labelled as AI" />
                   <CompareRow label="Webhooks"                free="—"                    premium="20 integrations" />
@@ -316,13 +316,14 @@ export default function Login() {
             <h2 className="font-display font-black text-3xl sm:text-4xl text-cs-text mb-10">
               Replace these. <span className="text-cs-cyan">All of them.</span>
             </h2>
-            <div data-reveal className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div data-reveal className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {/* Категории, не чужди марки и цени: цените на конкурентите се менят и не
                   са сверени — недоказуемо твърдение не стои тук (одит 24.09.2026;
                   сравненията със сверени източници са в /compare/*). */}
               {[
-                ["Ticket bot", "tickets & transcripts"], ["Application bot", "forms & review"], ["Giveaway bot", "prizes & rerolls"],
-                ["Leveling bot", "XP & level roles"], ["Sticky / schedule bot", "pinned & timed posts"], ["Logging bot", "edits & deletions"],
+                ["Ticket bot", "tickets & transcripts"], ["Application bot", "forms & review"], ["Verification bot", "captcha & roles"],
+                ["Anti-spam bot", "scam cleanup"], ["Giveaway bot", "prizes & rerolls"], ["Leveling bot", "XP & level roles"],
+                ["Sticky / schedule bot", "pinned & timed posts"], ["Logging bot", "edits & deletions"],
               ].map(([name, what]) => (
                 <div key={name} className="cs-card text-center !p-4">
                   <div className="text-sm text-cs-text font-bold line-through decoration-red-500">{name}</div>
@@ -331,7 +332,7 @@ export default function Login() {
               ))}
             </div>
             <p className="text-cs-muted mt-8 max-w-2xl mx-auto">
-              <span className="line-through decoration-red-500">6 bots, 6 dashboards, 6 sets of permissions, 6 support channels.</span><br />
+              <span className="line-through decoration-red-500">8 bots, 8 dashboards, 8 sets of permissions, 8 support channels.</span><br />
               <span className="text-cs-cyan font-bold">One subscription. One dashboard. One bot.</span>
             </p>
           </div>
@@ -458,7 +459,7 @@ export default function Login() {
               <PricingCard
                 icon={Zap}
                 name="Free"
-                tagline="Get a real ticket + application flow live today. €0, forever."
+                tagline="Get a real ticket + application flow live today."
                 price="€0"
                 per="/ month, forever"
                 onCta={handleLogin}
@@ -466,9 +467,10 @@ export default function Login() {
                 bullets={[
                   "1 ticket panel",
                   "2 application forms (up to 5 questions)",
-                  "1 verification panel",
+                  "1 verification panel (captcha + account-age gate included)",
                   "Unlimited polls & giveaways",
                   "Server Season game: levels, shop, 1 companion slot",
+                  "Bait channel for spam bots",
                   "Persistent transcripts (30-day retention)",
                 ]}
               />
@@ -485,7 +487,7 @@ export default function Login() {
                 cta="Get Premium"
                 bullets={[
                   "50 panels · 50 forms · 50 questions",
-                  "Math captcha + account-age gates",
+                  "10 verification panels",
                   "Claim · escalate · round-robin",
                   "Sticky + scheduled + recurring messages",
                   "Advanced analytics",
@@ -541,10 +543,10 @@ export default function Login() {
                 <SupremeLogo size={36} />
                 <div className="flex flex-col leading-tight">
                   <SupremeWordmark className="text-base" />
-                  <span className="font-mono text-[9px] tracking-[0.25em] uppercase text-cs-dim mt-1">
+                  <span className="font-mono text-[10px] tracking-[0.25em] uppercase text-cs-dim mt-1">
                     © 2026 {COMPANY_NAME} · EIK 208725180 · VAT BG208725180 · EU-hosted
                   </span>
-                  <span className="font-mono text-[9px] tracking-[0.12em] text-cs-dim mt-1">
+                  <span className="font-mono text-[10px] tracking-[0.12em] text-cs-dim mt-1">
                     Carbon Stealth VCC · ul. Samuil 3, 2670 Bobov dol, Bulgaria ·{" "}
                     <a href="mailto:legal@carbonstealth.eu" className="text-cs-cyan underline">legal@carbonstealth.eu</a>
                   </span>
@@ -617,7 +619,7 @@ function FeatureCard({ icon: Icon, title, badge, children }) {
     <div ref={tiltRef} className="cs-card hover:border-cs-cyan/50 hover:shadow-cs-cyan-sm transition-colors">
       <div className="flex items-start justify-between mb-3">
         <Icon className="w-6 h-6 text-cs-cyan" />
-        {badge && <span className="cs-badge text-[9px] text-success">{badge}</span>}
+        {badge && <span className="cs-badge text-[10px] text-success">{badge}</span>}
       </div>
       <h3 className="text-cs-text font-bold mb-2">{title}</h3>
       <p className="text-sm text-cs-muted leading-relaxed">{children}</p>
@@ -683,7 +685,7 @@ function ProductTour() {
             The dashboard, <span className="text-cs-cyan">for real.</span>
           </h2>
           <p className="text-cs-muted max-w-2xl mx-auto">
-            Not mockups — actual screenshots of the Supreme Bot dashboard running a live server.
+            Not mockups — real screenshots of the current dashboard, filled with demo data.
           </p>
         </div>
         <div className="flex flex-wrap justify-center gap-2 mb-6" role="group" aria-label="Dashboard screenshots">

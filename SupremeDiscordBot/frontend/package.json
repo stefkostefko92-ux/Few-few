@@ -20,7 +20,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "budget": "node scripts/bundle-budget.mjs",
-    "mobile-proof": "node scripts/mobile-proof.mjs"
+    "mobile-proof": "node scripts/mobile-proof.mjs",
+    "tour-shots": "node scripts/tour-shots.mjs"
   },
   "dependencies": {
     "@fontsource/inter-tight": "^5.2.7",

@@ -91,7 +91,9 @@ export default function AnalyticsPage() {
                     }`}>
                       {i + 1}
                     </div>
-                    <span className="font-mono text-xs text-cs-text">&lt;@{s.userId}&gt;</span>
+                    {s.username
+                      ? <span className="text-sm text-cs-text">{s.username}</span>
+                      : <span className="font-mono text-xs text-cs-muted" title={s.userId}>ID …{String(s.userId).slice(-6)}</span>}
                   </div>
                   <div className="flex items-center gap-4 text-xs">
                     <span className="text-cs-cyan">{t("analytics.claimed", { count: s.claimed })}</span>
@@ -177,7 +179,7 @@ function Heatmap({ grid, t }) {
       <div className="inline-grid" style={{ gridTemplateColumns: "auto repeat(24, 16px)", gap: "2px" }}>
         <div />
         {Array.from({ length: 24 }).map((_, h) => (
-          <div key={h} className="text-[8px] text-cs-dim text-center font-mono">
+          <div key={h} className="text-[10px] text-cs-dim text-center font-mono">
             {h % 3 === 0 ? h : ""}
           </div>
         ))}

@@ -1,5 +1,6 @@
 // frontend/src/pages/ApplicationsPage.jsx
 import { useState } from "react";
+import { ChannelName } from "../components/DiscordPicker";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle, XCircle, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Trash2, MessageSquare, Users, History } from "lucide-react";
@@ -337,7 +338,7 @@ export default function ApplicationsPage() {
                     {fullApp?.ticket && (
                       <div className="mt-3 flex items-center gap-2 text-sm">
                         <span className="text-cs-muted">{t("apps.linkedTicket")}</span>
-                        <span className="text-cs-muted">#{fullApp.ticket.channelId}</span>
+                        <ChannelName id={fullApp.ticket.channelId} className="text-cs-muted" />
                       </div>
                     )}
                   </div>

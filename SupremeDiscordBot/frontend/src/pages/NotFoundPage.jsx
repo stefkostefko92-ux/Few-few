@@ -72,7 +72,7 @@ export default function NotFoundPage() {
         <div className="max-w-4xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <SupremeLogo size={24} />
-            <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-cs-dim">
+            <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-cs-dim">
               Created and Designed by{" "}
               <a
                 href="https://carbonstealth.eu"

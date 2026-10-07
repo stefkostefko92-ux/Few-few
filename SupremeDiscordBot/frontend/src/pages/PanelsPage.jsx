@@ -1,7 +1,7 @@
 // frontend/src/pages/PanelsPage.jsx
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import DiscordChannelSelect, { DiscordRoleSelect } from "../components/DiscordPicker";
+import DiscordChannelSelect, { DiscordRoleSelect, ChannelName } from "../components/DiscordPicker";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, Send, Pencil, Copy, Layout as LayoutIcon } from "lucide-react";
 import { getPanels, createPanel, updatePanel, deletePanel, spawnPanel, spawnPanelGroup, duplicatePanel, getForms } from "../api";
@@ -459,7 +459,7 @@ export default function PanelsPage() {
               </div>
 
               {panel.channelId && (
-                <p className="text-xs text-success mt-2">✅ Active in channel <code className="text-xs">{panel.channelId}</code></p>
+                <p className="text-xs text-success mt-2">✅ Active in <ChannelName id={panel.channelId} /></p>
               )}
             </div>
           ))}

@@ -170,7 +170,7 @@ export default function Layout() {
               <SupremeWordmark className="text-base leading-none" />
               {/* Версията идва от package.json през Vite define — закованият низ
                   тук беше разминат с цял мажор (v2.3 при реални 3.1.0). */}
-              <div className="font-mono text-[8px] tracking-[0.25em] uppercase text-cs-dim mt-0.5">
+              <div className="font-mono text-[10px] tracking-[0.25em] uppercase text-cs-dim mt-0.5">
                 {APP_VERSION_LABEL} {RELEASE_NAME}
               </div>
             </div>
@@ -214,7 +214,7 @@ export default function Layout() {
               <NavItem to={`/dashboard/${serverId}/premium`}      icon={Star}>
                 {t("nav.premium")}
                 {currentServer?.isPremium && (
-                  <span className="ml-auto cs-badge-premium !text-[8px] !px-1.5 !py-0">
+                  <span className="ml-auto cs-badge-premium !text-[10px] !px-1.5 !py-0">
                     Active
                   </span>
                 )}
@@ -249,7 +249,7 @@ export default function Layout() {
             <LegalLink href="/cookies" label={t("privacy.cookies")}>C</LegalLink>
             <LegalLink href="/eula"    label={t("privacy.eula")}>E</LegalLink>
             <a href="https://carbonstealth.eu" target="_blank" rel="noopener"
-               className="ml-auto font-mono text-[9px] uppercase tracking-wider text-cs-dim hover:text-cs-cyan transition-colors">
+               className="ml-auto font-mono text-[10px] uppercase tracking-wider text-cs-dim hover:text-cs-cyan transition-colors">
               CS.EU
             </a>
           </div>
@@ -280,7 +280,7 @@ export default function Layout() {
               {/* Ролята беше суров enum („MAIN OWNER“) — непреведен и твърде
                   дълъг за лентата, затова се режеше на „MAIN O…“. Сега е къс
                   преведен етикет, който се събира без отрязване. */}
-              <p className="text-[9px] font-mono uppercase tracking-wider text-cs-cyan truncate">
+              <p className="text-[10px] font-mono uppercase tracking-wider text-cs-cyan truncate">
                 {t(`role.${user?.globalRole || "USER"}`)}
               </p>
             </div>
@@ -338,7 +338,7 @@ export default function Layout() {
               <SupremeLogo size={28} />
               <div className="flex flex-col leading-tight">
                 <SupremeWordmark className="text-sm" />
-                <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-cs-dim">
+                <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-cs-dim">
                   Created and Designed by{" "}
                   <a
                     href="https://carbonstealth.eu"
@@ -349,7 +349,7 @@ export default function Layout() {
                     Carbon Stealth VCC
                   </a>
                 </span>
-                <span className="font-mono text-[9px] tracking-[0.12em] text-cs-dim mt-1">
+                <span className="font-mono text-[10px] tracking-[0.12em] text-cs-dim mt-1">
                   Carbon Stealth VCC · ul. Samuil 3, 2670 Bobov dol, Bulgaria · EIK 208725180 · VAT BG208725180 ·{" "}
                   <a href="mailto:legal@carbonstealth.eu" className="text-cs-cyan underline">legal@carbonstealth.eu</a>
                 </span>
@@ -387,7 +387,7 @@ export default function Layout() {
 
 function SectionLabel({ children, truncate }) {
   return (
-    <p className={`font-mono text-[9px] font-bold uppercase tracking-[0.25em] text-cs-dim px-6 pt-4 pb-2 ${truncate ? "truncate" : ""}`}>
+    <p className={`font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-cs-dim px-6 pt-4 pb-2 ${truncate ? "truncate" : ""}`}>
       → {children}
     </p>
   );

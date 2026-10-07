@@ -43,6 +43,21 @@ export function useGuildDirectory() {
   });
 }
 
+/**
+ * Име на канал вместо суров id: „#support“, а не „500000000000000002“
+ * (визуален одит 07.10.2026 — Panels, Automation и Applications показваха
+ * цифри). Каталогът е същата кеширана заявка като в полетата за избор.
+ * Изтрит/непознат канал → кратко id с пълното в title.
+ */
+export function ChannelName({ id, className = "" }) {
+  const { data } = useGuildDirectory();
+  if (!id) return null;
+  const ch = (data?.text || []).find((c) => c.id === String(id));
+  return ch
+    ? <span className={className}>#{ch.name}</span>
+    : <span className={`font-mono ${className}`} title={String(id)}>#…{String(id).slice(-6)}</span>;
+}
+
 function Warn({ children }) {
   return (
     <p className="text-xs text-warning mt-1 flex items-start gap-1.5">
