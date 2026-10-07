@@ -7,7 +7,8 @@
 // (RoomOptions) and a replacement's survey (components/room). A measure still to enter shows nothing (and a flat roof
 // no ridge); the support's fields come with the machine, once the rest is entered. In a whole design the software may
 // place the control panel: its wall and place are then shown as it put them, marked as such. With the support, the HEB
-// beams on the shaft's walls it may stand on (HebFields).
+// beams on the shaft's walls it may stand on (HebFields), and which way the machine lies along the rope drops (its motor
+// toward the counterweight, or turned round toward the car: the software's when not chosen).
 import { useTranslations } from 'next-intl';
 import type { HebTaken, RoomInputs } from '@/shaft';
 import { PROFILE_NAMES } from '@/shaft/profiles';
@@ -25,9 +26,11 @@ export interface RoomMachine {
   rinvio?: RinvioFrame | null;
   /** the HEB beams on the shaft's walls as the derivation weighed them */
   heb?: HebTaken | null;
+  /** where the derivation turned the machine: its motor toward the counterweight's drop (1) or the car's (−1) */
+  turn?: 1 | -1;
 }
 
-type Measure = Exclude<keyof RoomInputs, 'support' | 'heb'>;
+type Measure = Exclude<keyof RoomInputs, 'support' | 'heb' | 'motor'>;
 
 /** The control panel the software places (registry locale.quadro.posto): whether it does, the switch, where it put it
  *  (null: not yet worked out). */
@@ -51,7 +54,7 @@ interface Props {
   panel?: RoomPanel;
 }
 
-type NumKey = Exclude<keyof RoomInputs, 'doorWall' | 'panelWall' | 'support' | 'heb'>;
+type NumKey = Exclude<keyof RoomInputs, 'doorWall' | 'panelWall' | 'support' | 'heb' | 'motor'>;
 const WALLS = ['front', 'rear', 'left', 'right'] as const;
 
 export default function RoomFields({ R, put, machine, blank = () => false, choose = '—', panel }: Props) {
@@ -119,7 +122,19 @@ export default function RoomFields({ R, put, machine, blank = () => false, choos
           : num(t('sp_height'), sup.kind === 'rinvio' && rf ? rf.top : supportHeight(sup, machine.D, machine.shimsAxis, machine.shape ?? null), 0, 3000, (v) => putSup({ height: v }))}
         {supportLength(sup, machine.D, machine.shape ?? null) !== null
           ? num(t('sp_length'), supportLength(sup, machine.D, machine.shape ?? null) ?? 0, 300, 5000, (v) => putSup({ length: v })) : null}
+        <label className="field">
+          <span>{t('rm_motor')}</span>
+          <select id="bk-room-motor" className="input" value={R.motor ?? ''} onChange={(e) => {
+            const v = e.target.value;
+            put({ motor: v === 'cw' || v === 'car' ? v : undefined });
+          }}>
+            <option value="">{t('rm_motor_auto', { side: t(machine.turn === -1 ? 'rm_motor_car' : 'rm_motor_cw') })}</option>
+            <option value="cw">{t('rm_motor_cw')}</option>
+            <option value="car">{t('rm_motor_car')}</option>
+          </select>
+        </label>
       </div>
+      <p className="note">{t('rm_motor_hint')}</p>
       {rf ? <p className="note">{rf.on === 'stand' ? t('sp_rinvio_stand', { axis: Math.round(rf.pulleyAxis) })
         : rf.maker ? t('sp_rinvio_maker', { code: rf.maker.code, mass: rf.maker.mass, axis: rf.maker.pulleyAxis, A: rf.maker.sheaveAxis })
           : t('sp_rinvio_ours', { axis: Math.round(rf.pulleyAxis), top: Math.round(rf.top) })}</p> : null}

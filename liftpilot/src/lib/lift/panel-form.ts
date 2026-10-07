@@ -1,9 +1,10 @@
 // The control panel's place in the one form (registry locale.quadro.posto): while the software places it, the drawings
 // show it where the derivation put it; switched off, or moved on a drawing, its wall and place are entered as they were
 // shown. The HEB beams on the shaft's walls the same way: the drawings show those the derivation took, chosen on a
-// drawing they are entered. A change on the drawings enters only what it changed: the panel and the beams stay the
-// software's, the support the drawings show stays unchosen unless the change is the support's. Pure: the form and its
-// tests share it.
+// drawing they are entered; and the governor rope's side the derivation took (registry limitatore.posto), entered when
+// the governor is moved on a drawing. A change on the drawings enters only what it changed: the panel, the beams and the
+// governor's side stay the software's, the support the drawings show stays unchosen unless the change is the support's.
+// Pure: the form and its tests share it.
 import type { Edit } from '@/drawing';
 import type { RoomInputs, ShaftBeams, ShaftInputs } from '@/shaft';
 import { filled, type LiftDraft } from './blank';
@@ -30,11 +31,17 @@ const takenBeams = (shaft: ShaftInputs, derived: LiftDerived | null): ShaftBeams
   return own && taken && (!own.profile || !own.dir) ? taken : null;
 };
 
-/** The shaft the drawings show and change: the one entered, the panel where the software put it, the HEB beams it took. */
+/** The governor rope's side the derivation took when the form leaves it to the software; undefined otherwise. */
+const takenSide = (shaft: ShaftInputs, derived: LiftDerived | null): ShaftInputs['governorSide'] =>
+  (shaft.governorSide ? undefined : derived?.shaft.governorSide);
+
+/** The shaft the drawings show and change: the one entered, the panel where the software put it, the HEB beams it took,
+ *  the governor on the side it took. */
 export function drawnShaft(shaft: ShaftInputs, derived: LiftDerived | null): ShaftInputs {
-  const at = placedPanel(derived), heb = takenBeams(shaft, derived), R = shaft.room;
-  if (!R || (!at && !heb)) return shaft;
-  return { ...shaft, room: { ...R, ...(at ? { panelWall: at.panelWall, panelAt: at.panelAt } : {}), ...(heb ? { heb } : {}) } };
+  const at = placedPanel(derived), heb = takenBeams(shaft, derived), R = shaft.room, side = takenSide(shaft, derived);
+  const out = side ? { ...shaft, governorSide: side } : shaft;
+  if (!R || (!at && !heb)) return out;
+  return { ...out, room: { ...R, ...(at ? { panelWall: at.panelWall, panelAt: at.panelAt } : {}), ...(heb ? { heb } : {}) } };
 }
 
 /** The room of `next` (a drawing's change of the drawn shaft) when it moves the panel the software placed: then entered
@@ -45,15 +52,17 @@ export function movedPanel(next: ShaftInputs, derived: LiftDerived | null): Room
 }
 
 /** The shaft a drawing's change of the drawn shaft (`next`) enters into the form's `shaft`: the panel the software
- *  placed and did not see moved, and the HEB beams it took and did not see changed, keep the form's own entries (they
- *  stay the software's). */
+ *  placed and did not see moved, the HEB beams it took and did not see changed, and the governor's side it took with the
+ *  governor not moved keep the form's own entries (they stay the software's). */
 export function enteredShaft(next: ShaftInputs, shaft: ShaftInputs, derived: LiftDerived | null): ShaftInputs {
-  const R = next.room, own = shaft.room;
-  if (!R || !own) return next;
-  const panel = !!placedPanel(derived) && !movedPanel(next, derived), taken = takenBeams(shaft, derived);
+  const side = takenSide(shaft, derived), moved = next.plan?.govX !== shaft.plan?.govX || next.plan?.govY !== shaft.plan?.govY;
+  const kept = side && !moved && next.governorSide === side ? { ...next, governorSide: shaft.governorSide } : next;
+  const R = kept.room, own = shaft.room;
+  if (!R || !own) return kept;
+  const panel = !!placedPanel(derived) && !movedPanel(kept, derived), taken = takenBeams(shaft, derived);
   const beams = !!taken && R.heb?.profile === taken.profile && R.heb?.dir === taken.dir;
-  if (!panel && !beams) return next;
-  return { ...next, room: { ...R, ...(panel ? { panelWall: own.panelWall, panelAt: own.panelAt } : {}), ...(beams ? { heb: own.heb } : {}) } };
+  if (!panel && !beams) return kept;
+  return { ...kept, room: { ...R, ...(panel ? { panelWall: own.panelWall, panelAt: own.panelAt } : {}), ...(beams ? { heb: own.heb } : {}) } };
 }
 
 /** The drawn shaft an edit `e` changes: with the support the drawings show (the bedplate with the diverting pulley when

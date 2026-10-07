@@ -10,7 +10,7 @@
 // directions, three profiles) the software takes the shortest that pass, then the lightest — the easiest to carry in;
 // the engineer may take another. Room axes [mm]; pure.
 import { check } from './checks';
-import { ropeWidths, type MachineSpec, type RoomGeo } from './machine-room';
+import { machineU, machineV, ropeWidths, type MachineSpec, type RoomGeo } from './machine-room';
 import { KV_VERT } from './norme-vert';
 import { PROFILES } from './profiles';
 import { rinvioAcross, rinvioRun, standBox } from './rinvio';
@@ -87,8 +87,8 @@ export function supportFeet(G: RoomGeo, M: MachineSpec): Pt[] {
     return out;
   }
   const span = supportSpan(s, M.D, F.shape);
-  const us = s.kind === 'frame' && span ? [G.sheaveAt + span[0], G.sheaveAt + span[1]] : F.mounts.map((x) => G.sheaveAt + x);
-  for (const u of us) for (const z of F.beams) out.push(onDrop(G, u, F.zSheave - z));
+  const us = (s.kind === 'frame' && span ? span : F.mounts).map((x) => machineU(G, x));
+  for (const u of us) for (const z of F.beams) out.push(onDrop(G, u, machineV(G, z)));
   if (rf?.on === 'stand' && M.Dp > 0) {
     const [u0, v0, u1, v1] = standBox(M, G);
     for (const u of [u0, u1]) for (const v of [v0, v1]) out.push(onDrop(G, u, v));

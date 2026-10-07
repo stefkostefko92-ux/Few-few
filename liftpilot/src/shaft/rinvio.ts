@@ -5,9 +5,10 @@
 // 736 mm); a maker's own, when the machine is one of its models with a bedplate in the catalogue
 // (src/lib/catalog/bedplates.ts), gives its heights, its code and the rope drops it takes. Millimetres over the room's
 // floor, along the rope drop line from the sheave's centre. Pure.
-import { ropeWidths, type MachineSpec, type RoomGeo } from './machine-room';
+import type { MachineSpec, RoomGeo } from './machine-room';
 import { machineFrame, type MachineShape } from './machine-shape';
 import { KV_VERT } from './norme-vert';
+import { ropeWidths } from './ropes';
 import type { MachineSupport } from './support';
 
 /** A maker's bedplate with the diverting pulley: its code, mass, heights and the spacing of the rope drops it takes. */

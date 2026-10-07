@@ -16,7 +16,7 @@ import { calcMachine } from '@/lib/order/machine';
 import { analyse, type Analysis } from '@/lib/present/analysis';
 import { check } from '@/shaft/checks';
 import { hebChecks, hebFor, type HebTaken } from '@/shaft/heb';
-import { geoOn, roomChecksOf, type MachineSpec, type RoomGeo } from '@/shaft/machine-room';
+import { orientedGeo, roomChecksOf, type MachineSpec, type RoomGeo } from '@/shaft/machine-room';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { rinvioAxisOf, rinvioTopOf } from '@/shaft/rinvio';
 import type { RoomSite } from '@/shaft/room-site';
@@ -88,7 +88,7 @@ function deriveOnce(V: FormValues, s: Survey, a: Analysis): RoomDerived {
     W: s.shaft.W, D: s.shaft.D, wall: s.shaft.wall, ends: [[top, top + H], [top + H, top]], mid: [top + H / 2, top + H / 2],
     governor: { entities: [], box: null }, calata: () => null, calcEdits: false, drops: { car: [s.car.x, s.car.y], cw: [cw[0] - R.shaftX, cw[1] - R.shaftY] },
   };
-  const G = issues.includes('bottom') ? null : geoOn(R, { car, cw, ux, uy, calata }, M, sheaveAt);
+  const G = issues.includes('bottom') ? null : orientedGeo(R, { car, cw, ux, uy, calata }, M, sheaveAt);
   // the diverting pulley under the room's floor, or in the bedplate up into the machine standing over it
   const rf = M.rinvio, r = M.Dp / 2;
   const clash = !!G && rf?.on === 'frame' && G.pulleyAt + r > G.frame0 && G.pulleyAt - r < G.frame1 && G.pulleyZ + r > rf.top;

@@ -10,7 +10,7 @@ import type { RoomDerived } from './derive';
 import type { Survey } from './survey';
 
 /** Version of the derivation of the room (semver): a change of rule or of a default is a minor or major version. */
-export const ROOM_ENGINE_VERSION = '1.9.0';
+export const ROOM_ENGINE_VERSION = '1.10.0';
 
 export interface RoomSnapshot {
   engine: string;
@@ -28,7 +28,7 @@ export function roomResults(d: RoomDerived): Json {
       D: M.D, Dp: M.Dp, n: M.n, d: M.d, mass: M.mass, axis: M.axis, h: M.h, reverse: M.reverse, ropeIn: M.ropeIn,
       rinvio: rf ? { on: rf.on, top: rf.top, pulleyAxis: rf.pulleyAxis, maker: rf.maker?.code ?? null } : null,
     },
-    geo: G ? { carDrop: G.carDrop, cwDrop: G.cwDrop, sheaveAt: G.sheaveAt, pulleyAt: G.pulleyAt, pulleyZ: G.pulleyZ, frame: [G.frame0, G.frame1], across: G.across } : null,
+    geo: G ? { carDrop: G.carDrop, cwDrop: G.cwDrop, sheaveAt: G.sheaveAt, pulleyAt: G.pulleyAt, pulleyZ: G.pulleyZ, frame: [G.frame0, G.frame1], across: G.across, dir: G.dir } : null,
     checks: d.checks.map((c) => ({ id: c.id, status: c.status, value: c.value, limit: c.limit })),
   });
 }

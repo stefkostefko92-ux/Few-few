@@ -6,11 +6,11 @@
 // bearings' centres in the walls. Stress σ = M/Wel,y ≤ fyk/γM0 and elastic deflection ≤ 1/1500 of the clear span, on
 // the beam where each is largest. Pure.
 import { check } from './checks';
-import { dropSpan, type MachineSpec, type RoomGeo } from './machine-room';
+import { dropSpan, machineCorners, machineV, type MachineSpec, type RoomGeo } from './machine-room';
 import { MACHINE_TOP } from './machine-outline';
 import { KV_VERT } from './norme-vert';
 import { PROFILES } from './profiles';
-import { rinvioAcross, rinvioRun, standBox } from './rinvio';
+import { standBox } from './rinvio';
 import { padsOf, profileOf, supportOf } from './support';
 import { boxGap, panelBox, switchBox, type Box } from './room-floor';
 import { panelChecks, placePanel, type PanelSpot } from './room-panel';
@@ -71,7 +71,7 @@ export function beamResult(Gm: RoomGeo, M: MachineSpec, load: SupportLoad): Beam
   const P = PROFILES[profileOf(s)], [r0, r1] = dropSpan(Gm, 0, 0, Gm.room.W, Gm.room.D), Fr = Gm.frame;
   const clear = r1 - r0, L = clear + KV_VERT.supportBearing, c = loadCentre(Gm, M, load);
   // each beam's force [N]: under the frame's irons, the load's share by where it acts across them
-  const forces = rowShares(Fr.beams.map((z) => Fr.zSheave - z), c.v).map((k) => k * c.F * G);
+  const forces = rowShares(Fr.beams.map((z) => machineV(Gm, z)), c.v).map((k) => k * c.F * G);
   // own weight [N/mm]; Wel,y [cm³] and Iy [cm⁴] in mm
   const q = (P.mass * G) / 1000, W = P.Wy * 1e3, I = P.Iy * 1e4, E = KV_VERT.steelE;
   const sigma = Math.max(...forces.map((F) => Math.abs((F * L) / 4 + (q * L * L) / 8) / W));
@@ -142,19 +142,6 @@ export function freeBeside(R: RoomInputs, box: Box, obstacles: readonly Box[] = 
   const all = ways.length ? ways : sides.map((s) => ({ s, need: b }));
   const best = all.reduce((p, w) => (w.s.depth - w.need > p.s.depth - p.need ? w : p));
   return { depth: best.s.depth, need: best.need, area: best.s.strip(Math.max(0, Math.min(best.s.depth, best.need))) };
-}
-
-/** The corners, in room axes, of the machine on its support with the bedplate of the diverting pulley or the pulley's own
- *  stand: four for each part. */
-function machineCorners(Gm: RoomGeo, M: MachineSpec): [number, number][] {
-  const R = Gm.room, rf = M.rinvio ?? null;
-  const boxes: (readonly [number, number, number, number])[] = [[Gm.frame0, Gm.across[0], Gm.frame1, Gm.across[1]]];
-  if (rf?.on === 'frame') {
-    const [u0, u1] = rinvioRun(M, Gm), [v0, v1] = rinvioAcross(M, Gm, rf);
-    boxes.push([u0, v0, u1, v1]);
-  } else if (M.Dp > 0 && Gm.pulleyZ > -R.slab) boxes.push(standBox(M, Gm));
-  return boxes.flatMap(([u0, v0, u1, v1]) => ([[u0, v0], [u1, v0], [u1, v1], [u0, v1]] as const)
-    .map(([u, v]): [number, number] => [Gm.carDrop[0] + u * Gm.ux - v * Gm.uy, Gm.carDrop[1] + u * Gm.uy + v * Gm.ux]));
 }
 
 const boxAround = (c: readonly (readonly [number, number])[]): Box => {

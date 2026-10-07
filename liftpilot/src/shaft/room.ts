@@ -30,6 +30,10 @@ export interface RoomInputs {
   support?: MachineSupport;
   /** HEB beams on the shaft's walls under the support, when the slab is not checked (missing: none) */
   heb?: ShaftBeams;
+  /** where the machine's motor points along the rope drop line: toward the counterweight's drop, or turned round toward
+   *  the car's (missing: the software's choice — toward the counterweight, turned round when only so the machine stays
+   *  clear of the walls; machine-room.ts orientedGeo) */
+  motor?: 'cw' | 'car';
 }
 
 export const DEFAULT_ROOM: RoomInputs = {

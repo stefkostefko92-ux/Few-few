@@ -8,10 +8,14 @@ import { MACHINE_A } from './machine-outline';
 import { machineFrame, type MachineFrame, type MachineShape } from './machine-shape';
 import { KV_VERT } from './norme-vert';
 import { panelFree, type Box } from './room-floor';
-import type { RinvioFrame } from './rinvio';
+import { rinvioAcross, rinvioRun, standBox, type RinvioFrame } from './rinvio';
+import { PROFILES } from './profiles';
 import { cwPlateAt, section } from './section';
+import { profileOf, supportOf, supportSpan } from './support';
 import type { Layout, ShaftCheck } from './types';
 import type { RoomInputs } from './room';
+
+export { ropeWidths } from './ropes';
 
 /** The machine as the calculation describes it [mm, kg]. */
 export interface MachineSpec {
@@ -59,6 +63,9 @@ export interface RoomGeo {
   frame0: number;
   frame1: number;
   across: readonly [number, number];
+  /** the machine's worm (its +X, toward the motor) along +u, toward the counterweight's drop (1), or turned round about
+   *  the sheave's vertical axis toward the car's (−1): its gearbox then on the drop line's right */
+  dir: 1 | -1;
   /** the machine's scale on the 3D's Ø 560 */
   s: number;
   /** where the machine is in its own frame: its axis, its sheave, its bedplate (machine-shape.ts) */
@@ -77,12 +84,6 @@ export function dropSpan(G: RoomGeo, x0: number, y0: number, x1: number, y1: num
   return [lo, hi];
 }
 
-/** Half the width of the n ropes side by side, and of a pulley with its cheeks [mm]. */
-export function ropeWidths(n: number, d: number): { ropes: number; pulley: number } {
-  const pitch = Math.max(d + 6, 1.7 * d);
-  return { ropes: ((n - 1) / 2) * pitch + d / 2, pulley: (n * pitch + 30) / 2 + 18 };
-}
-
 /** The rope drops in the room (room coordinates): the car's and the counterweight's, the unit vector from the one to the
  *  other and their spacing (calata) [mm]. */
 export interface Drops {
@@ -95,16 +96,71 @@ export interface Drops {
 
 /** The machine over the drops `P`: the sheave's car side over the car's drop (`sheaveAt`: its centre elsewhere on the
  *  drop line, as a direct pull centred between drops wider than the sheave hangs it), the diverting pulley where the
- *  counterweight's drop leaves it. */
-export function geoOn(R: RoomInputs, P: Drops, M: MachineSpec, sheaveAt = M.ropeIn + M.D / 2): RoomGeo {
+ *  counterweight's drop leaves it; its motor toward the counterweight's drop (`dir` 1) or the car's (−1). */
+export function geoOn(R: RoomInputs, P: Drops, M: MachineSpec, sheaveAt = M.ropeIn + M.D / 2, dir: 1 | -1 = 1): RoomGeo {
   const calata = P.calata, s = M.D / (2000 * MACHINE_A.rp), u1 = calata - M.ropeIn;
   const pulleyAt = M.Dp > 0 ? (M.reverse ? u1 + M.Dp / 2 : u1 - M.Dp / 2) : sheaveAt;
-  // the machine on its frame, the third iron past the sheave with it
-  const F = machineFrame(M.D, M.shape ?? null, M.rinvio?.bed ?? null), frame0 = sheaveAt + F.x[0], frame1 = sheaveAt + F.x[1];
-  const across: readonly [number, number] = [F.zSheave - F.z[1], F.zSheave - F.z[0]];
+  // the machine on its frame, the third iron past the sheave with it; turned round, the same about the sheave's axis
+  const F = machineFrame(M.D, M.shape ?? null, M.rinvio?.bed ?? null), us = [sheaveAt + dir * F.x[0], sheaveAt + dir * F.x[1]];
+  const vs = [dir * (F.zSheave - F.z[1]), dir * (F.zSheave - F.z[0])], across: readonly [number, number] = [Math.min(...vs), Math.max(...vs)];
   return {
-    room: R, carDrop: P.car, cwDrop: P.cw, ux: P.ux, uy: P.uy, calata, sheaveAt, pulleyAt, pulleyZ: M.axis - M.h, frame0, frame1, across, s, frame: F,
+    room: R, carDrop: P.car, cwDrop: P.cw, ux: P.ux, uy: P.uy, calata, sheaveAt, pulleyAt, pulleyZ: M.axis - M.h, frame0: Math.min(...us), frame1: Math.max(...us),
+    across, dir, s, frame: F,
   };
+}
+
+/** Where a point of the machine stands on the drop line: along it (u) from its x along the worm from the sheave's axis,
+ *  across it (v) from its z across from the worm's plane (machine-shape.ts), as the machine is turned. */
+export const machineU = (G: RoomGeo, x: number): number => G.sheaveAt + G.dir * x;
+export const machineV = (G: RoomGeo, z: number): number => G.dir * (G.frame.zSheave - z);
+/** A stretch of the machine's x [a, b] along the drop line, in order. */
+export const machineRun = (G: RoomGeo, a: number, b: number): [number, number] => {
+  const p = machineU(G, a), q = machineU(G, b);
+  return [Math.min(p, q), Math.max(p, q)];
+};
+
+/** The machine on its bedframe in plan [u0, v0, u1, v1], with what its support spreads past it: a frame's profiles and a
+ *  plinth's blocks under the irons, along the drop line as long as they run (the beams bear in the walls, plates and
+ *  shims stay under the mounts). */
+function machineOutline(G: RoomGeo, M: MachineSpec): readonly [number, number, number, number] {
+  const s = supportOf(G.room, M.Dp > 0), F = G.frame, span = supportSpan(s, M.D, F.shape);
+  if (!span || (s.kind !== 'frame' && s.kind !== 'plinth')) return [G.frame0, G.across[0], G.frame1, G.across[1]];
+  const [u0, u1] = machineRun(G, span[0], span[1]), half = s.kind === 'frame' ? PROFILES[profileOf(s)].b / 2 : 0;
+  const vs = (s.kind === 'plinth' ? F.plinth.flat() : F.beams.flatMap((z) => [z - half, z + half])).map((z) => machineV(G, z));
+  return [Math.min(G.frame0, u0), Math.min(G.across[0], ...vs), Math.max(G.frame1, u1), Math.max(G.across[1], ...vs)];
+}
+
+/** The corners, in room axes, of the machine on its support with the bedplate of the diverting pulley or the pulley's own
+ *  stand: four for each part (`stand` false: without the stand, which does not turn with the machine). */
+export function machineCorners(G: RoomGeo, M: MachineSpec, stand = true): [number, number][] {
+  const R = G.room, rf = M.rinvio ?? null;
+  const boxes: (readonly [number, number, number, number])[] = [machineOutline(G, M)];
+  if (rf?.on === 'frame') {
+    const [u0, u1] = rinvioRun(M, G), [v0, v1] = rinvioAcross(M, G, rf);
+    boxes.push([u0, v0, u1, v1]);
+  } else if (stand && M.Dp > 0 && G.pulleyZ > -R.slab) boxes.push(standBox(M, G));
+  return boxes.flatMap(([u0, v0, u1, v1]) => ([[u0, v0], [u1, v0], [u1, v1], [u0, v1]] as const)
+    .map(([u, v]): [number, number] => [G.carDrop[0] + u * G.ux - v * G.uy, G.carDrop[1] + u * G.uy + v * G.ux]));
+}
+
+/** The least distance in plan of the machine on its support, with the bedplate of the diverting pulley, from the room's
+ *  walls [mm]: below 0 it goes into a wall (as m_fit counts it, support-check.ts fitChecks). */
+export function planClear(G: RoomGeo, M: MachineSpec): number {
+  const R = G.room;
+  let clear = Infinity;
+  for (const [x, y] of machineCorners(G, M, false)) clear = Math.min(clear, x, R.W - x, y, R.D - y);
+  return clear;
+}
+
+/** The machine over the drops as the room takes it (registry locale.ingombro): its motor where the room's input puts it,
+ *  else toward the counterweight's drop — turned round toward the car's when only so it keeps clear of the walls, or
+ *  goes less into them. */
+export function orientedGeo(R: RoomInputs, P: Drops, M: MachineSpec, sheaveAt = M.ropeIn + M.D / 2): RoomGeo {
+  if (R.motor) return geoOn(R, P, M, sheaveAt, R.motor === 'car' ? -1 : 1);
+  const G = geoOn(R, P, M, sheaveAt, 1), c = planClear(G, M);
+  if (c >= 0) return G;
+  const T = geoOn(R, P, M, sheaveAt, -1);
+  return planClear(T, M) > c ? T : G;
 }
 
 /** Room coordinates: origin at the room's inner corner; the shaft's inner corner of entrance A lies at (shaftX, shaftY).
@@ -115,7 +171,7 @@ export function roomGeo(L: Layout, M: MachineSpec): RoomGeo | null {
   const car: [number, number] = [R.shaftX + L.car.x + L.car.w / 2, R.shaftY + L.car.y + L.car.h / 2];
   const cw: [number, number] = [R.shaftX + L.cw.x + L.cw.w / 2, R.shaftY + L.cw.y + L.cw.h / 2];
   const dx = cw[0] - car[0], dy = cw[1] - car[1], calata = Math.hypot(dx, dy) || 1;
-  return geoOn(R, { car, cw, ux: dx / calata, uy: dy / calata, calata }, M);
+  return orientedGeo(R, { car, cw, ux: dx / calata, uy: dy / calata, calata }, M);
 }
 
 type P2 = readonly [number, number];

@@ -5,7 +5,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { DEFAULT_ROOM, KV_VERT, PROFILES, defaultInputs, layout, padsOf, roomGeo, sheaveAxisOn, supportHeight, type MachineSpec, type MachineSupport } from '../index';
-import { ownAxis } from '../support';
+import { ownAxis, supportSpan } from '../support';
 import { beamChecks, beamResult, fitChecks, freeBeside, machineTop, rowShares } from '../support-check';
 
 const D = 400, SHIMS_AXIS = 0.55 * D;
@@ -77,9 +77,14 @@ test('putrelle: nessuna verifica sugli altri basamenti', () => {
 test('ingombro: l’argano dentro il locale, il margine minimo da muri e soffitto', () => {
   const G = geo({ kind: 'frame' }), R = G.room, [c] = fitChecks(G, M);
   assert.ok(c && c.id === 'm_fit' && c.status === 'ok' && c.unit === 'mm');
-  // the least distance: the ceiling over the machine's top, or a corner of its frame to a wall
-  const corners = [[G.frame0, G.across[0]], [G.frame1, G.across[0]], [G.frame1, G.across[1]], [G.frame0, G.across[1]]].map(([u, v]) => [
-    G.carDrop[0] + u * G.ux - v * G.uy, G.carDrop[1] + u * G.uy + v * G.ux]);
+  // the least distance: the ceiling over the machine's top, or a corner of its frame — with the frame it stands on, its
+  // sections under the irons and running KV_VERT.supportOverhang past the bedplate at each end — to a wall
+  const [a, b] = supportSpan({ kind: 'frame' }, D) ?? [0, 0], half = PROFILES[KV_VERT.supportFrame].b / 2;
+  const vs = G.frame.beams.flatMap((z) => [z - half, z + half]).map((z) => G.dir * (G.frame.zSheave - z));
+  const u0 = Math.min(G.frame0, G.sheaveAt + G.dir * a, G.sheaveAt + G.dir * b), u1 = Math.max(G.frame1, G.sheaveAt + G.dir * a, G.sheaveAt + G.dir * b);
+  const v0 = Math.min(G.across[0], ...vs), v1 = Math.max(G.across[1], ...vs);
+  assert.ok(u1 - u0 > G.frame1 - G.frame0, 'il telaio sporge oltre il telaio dell’argano');
+  const corners = [[u0, v0], [u1, v0], [u1, v1], [u0, v1]].map(([u, v]) => [G.carDrop[0] + u * G.ux - v * G.uy, G.carDrop[1] + u * G.uy + v * G.ux]);
   const expected = Math.min(R.H - machineTop(M, G), ...corners.flatMap(([x, y]) => [x, R.W - x, y, R.D - y]));
   assert.equal(c.value, Math.round(expected));
   // a room lower than the machine, a room whose wall cuts the frame: the check fails by as much

@@ -10,6 +10,7 @@ import type { FormValues } from '@/calc/types';
 import { INTERVENTI, KL, collaudoOf, interventoOf, interventoTo, type AutoFlags, type BottomScheme, type Collaudo, type Intervento, type LiftDerived,
   type LiftInputs } from '@/lib/lift';
 import type { CatalogChoice } from '@/lib/lift/catalog';
+import { roomGeo } from '@/shaft/machine-room';
 import type { Texts } from '@/lib/present/texts';
 import type { Pres } from '@/lib/present/tr';
 import type { ShaftSource } from '@/lib/shaft-input';
@@ -96,7 +97,7 @@ export default function LiftForm({ P, X, inp, derived, complete, blank, bad, nee
       <ShaftOptions I={inp.shaft} set={setShaft} blank={blank} />
       {blank.full ? (
         <>
-          <ShaftTechOptions I={inp.shaft} set={setShaft} />
+          <ShaftTechOptions I={inp.shaft} set={setShaft} govSide={derived && complete && !inp.shaft.governorSide ? derived.shaft.governorSide : undefined} />
           <NicheOptions I={inp.shaft} set={setShaft} />
           <HeadOptions I={inp.shaft} set={setShaft} />
           <FrameOptions I={inp.shaft} set={setShaft} />
@@ -107,7 +108,7 @@ export default function LiftForm({ P, X, inp, derived, complete, blank, bad, nee
       <VerticalOptions I={inp.shaft} set={setShaft} open blank={blank} />
       {above ? (
         <RoomOptions I={inp.shaft} set={setShaft} blank={blank}
-          machine={derived && complete ? { D: derived.machine.D, shimsAxis: KL.sheaveAxisPerD * derived.machine.D, shape: derived.machine.shape ?? null, rinvio: derived.machine.rinvio ?? null, heb: derived.heb } : undefined}
+          machine={derived && complete ? { D: derived.machine.D, shimsAxis: KL.sheaveAxisPerD * derived.machine.D, shape: derived.machine.shape ?? null, rinvio: derived.machine.rinvio ?? null, heb: derived.heb, turn: roomGeo(derived.layout, derived.machine)?.dir } : undefined}
           panel={{ auto: !!inp.auto.panel, set: (on) => setAuto({ panel: on }), placed: derived && complete && derived.origin.panel === 'auto' ? derived.shaft.room : null }} />
       ) : null}
       <h2>{t('s_drive')}</h2>

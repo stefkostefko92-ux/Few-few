@@ -77,7 +77,7 @@ export default function RoomSurvey({ calculationId, values, initial, draft = nul
         <h2 id="room-fields">{t('roomTitle')}</h2>
         <RoomFields R={s.room} put={(patch, entered = []) => change({ ...s, room: { ...s.room, ...patch } }, entered.map((k) => `room.${k}` as SurveyField))}
           blank={(k) => is(`room.${k}` as SurveyField)} choose={tb('choose')}
-          machine={d ? { D: d.M.D, shimsAxis: KL.sheaveAxisPerD * d.M.D, shape: d.M.shape ?? null, rinvio: d.M.rinvio ?? null, heb: d.heb } : undefined} />
+          machine={d ? { D: d.M.D, shimsAxis: KL.sheaveAxisPerD * d.M.D, shape: d.M.shape ?? null, rinvio: d.M.rinvio ?? null, heb: d.heb, turn: d.G?.dir } : undefined} />
         <h3>{t('shaftTitle')}</h3>
         <div className="form-grid">
           {num('shaft.W', ts('W'), s.shaft.W, (v) => ({ ...s, shaft: { ...s.shaft, W: v } }), 500)}

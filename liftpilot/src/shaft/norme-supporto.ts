@@ -57,12 +57,20 @@ export const VOCI_SUPPORTO: readonly VoceVano[] = [
   {
     id: 'locale.ingombro', gruppo: 'locale', titolo: 'L’argano dentro il locale del macchinario',
     valore: 'l’argano sul suo basamento — con il telaio del rinvio o con il supporto del rinvio — sta dentro il locale in pianta e sotto il '
-      + 'soffitto: la distanza minima dai muri e dal soffitto non è negativa; ingombri dalle quote del costruttore per gli argani disegnati com’è, '
-      + 'dall’argano generico del software (scalato alla puleggia) per gli altri; la puleggia di rinvio sul suo supporto sotto l’argano '
-      + 'libera il basamento dell’argano sopra di essa (solo le putrelle sollevate la scavalcano); con la macchina in basso l’argano — corpo e '
-      + 'puleggia — sta dentro il suo locale, accanto al vano o sotto di esso, con le misure date sui disegni o quelle del software',
-    riferimento: '—', fonte: 'geometria del progetto: la pianta e l’altezza del locale inserite, gli ingombri dell’argano e del basamento',
+      + 'soffitto: la distanza minima dai muri e dal soffitto non è negativa; nell’ingombro in pianta il telaio dell’argano e quanto il basamento '
+      + 'sporge oltre di esso (i profilati di un telaio e i blocchi di un plinto per tutta la loro lunghezza; le putrelle appoggiano nei muri); '
+      + 'ingombri dalle quote del costruttore per gli argani disegnati com’è, dall’argano generico del software (scalato alla puleggia) per gli '
+      + 'altri. L’argano sta lungo la linea delle calate con la puleggia sopra le funi e il motore verso il contrappeso; quando solo così sta '
+      + 'dentro il locale, o ne esce di meno, il software lo gira di 180° attorno all’asse verticale della puleggia (motore verso la calata della '
+      + 'cabina, riduttore sull’altro lato della linea delle calate); il verso si può scegliere a mano. La puleggia di rinvio sul suo supporto '
+      + 'sotto l’argano libera il basamento dell’argano sopra di essa (solo le putrelle sollevate la scavalcano); con la macchina in basso '
+      + 'l’argano — corpo e puleggia — sta dentro il suo locale, accanto al vano o sotto di esso, con le misure date sui disegni o quelle del '
+      + 'software',
+    riferimento: '—', fonte: 'geometria del progetto: la pianta e l’altezza del locale inserite, gli ingombri dell’argano e del basamento; il '
+      + 'verso dell’argano: scelta del software',
     stato: 'derivazione', verifiche: ['m_fit', 'm_stand'],
+    nota: 'fino a LIFT 1.25.0, ROOM 1.9.0 e SHAFT 2.19.0 l’argano stava sempre con il motore verso il contrappeso, anche quando così entrava '
+      + 'nel muro, e l’ingombro non contava quanto il telaio o il plinto sporgono oltre il telaio dell’argano',
   },
   {
     id: 'locale.putrelle', gruppo: 'locale', titolo: 'Verifica delle putrelle sotto l’argano',

@@ -19,7 +19,7 @@ import { machineShapeOf, machineSpec, rinvioOf, sheaveAxis, sheaveAxisBelow, typ
 import type { MachineShape } from '@/shaft/machine-shape';
 import type { RinvioFrame } from '@/shaft/rinvio';
 import { headTopChecks } from './head';
-import { bedplateMass, hebOf, placedPanel, supportChecks, supportLoad } from './support';
+import { bedplateMass, governorSideFor, hebOf, placedPanel, supportChecks, supportLoad } from './support';
 import { collaudoOf, type Collaudo } from './collaudo';
 import { KL } from './norme';
 
@@ -214,10 +214,13 @@ function deriveOnce(inp: LiftInputs): LiftDerived {
   ];
   const spec = machineSpec(analysis.ctx, analysis.ctx.N.mass, '', S.room, shape, made);
   const machine: MachineSpec = spec.rinvio ? { ...spec, rinvio: { ...spec.rinvio, auto: inp.auto.dx } } : spec;
-  // the control panel where the software puts it for this machine (registry locale.quadro.posto): the design goes on
-  // with it there (the room's drawings, the 3D, the shaft's record)
-  const spot = inp.auto.panel && S.room && I.layout !== 'bottom' ? placedPanel(L, machine) : null;
-  const Lp = spot && S.room ? layout({ ...S, room: { ...S.room, panelWall: spot.wall, panelAt: spot.at } }) : L;
+  // the governor's rope on the other free side wall when only there the governor stands clear of the machine in the
+  // room (registry limitatore.posto), the control panel where the software puts it for this machine (registry
+  // locale.quadro.posto): the design goes on with them there (the room's drawings, the 3D, the shaft's record)
+  const govSide = S.room && I.layout !== 'bottom' ? governorSideFor(L, machine) : null;
+  const Sg: ShaftInputs = govSide ? { ...S, governorSide: govSide } : S, Lg = govSide ? layout(Sg) : L;
+  const spot = inp.auto.panel && S.room && I.layout !== 'bottom' ? placedPanel(Lg, machine) : null;
+  const Lp = spot && S.room ? layout({ ...Sg, room: { ...S.room, panelWall: spot.wall, panelAt: spot.at } }) : Lg;
   const origin: Record<DerivedKey, Origin> = {
     Q: S.Q === null ? 'auto' : 'entered', v: 'entered', H: 'auto', P: inp.auto.P ? 'estimate' : 'entered',
     L0: inp.auto.L0 ? 'auto' : 'entered', dx: inp.auto.dx ? 'auto' : 'entered', Hv: inp.auto.Hv ? 'auto' : 'entered',

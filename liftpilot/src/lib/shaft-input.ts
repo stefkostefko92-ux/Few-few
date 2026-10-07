@@ -78,6 +78,8 @@ export const roomSchema = z.object({
   support: supportSchema.optional(),
   /** HEB beams on the shaft's walls under the support (src/shaft/heb.ts); each value absent: the software's choice */
   heb: z.object({ profile: z.enum(HEB_PROFILES).optional(), dir: z.enum(['x', 'y']).optional() }).strict().optional(),
+  /** the machine's motor toward the counterweight's drop or the car's (src/shaft/machine-room.ts); absent: the software's */
+  motor: z.enum(['cw', 'car']).optional(),
 }).strict();
 
 /** The range the save accepts for each allowance [mm]: the form's fields take the same. */

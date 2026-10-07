@@ -53,24 +53,25 @@ export function machinePassage(rig: RopeRig, D: number): { side: Side; u0: numbe
   return { side, u0: u - r, u1: u + r, z0: z - r, z1: z + r };
 }
 
-/** `ceiling`: the slab's underside over the shaft [mm]; `openings`: the slab's (slab.ts); `gov`: the governor's spot. */
 /** Where the machine stands in plan: the direction of its worm (local X), its sheave's centre [world m] and, beside the
  *  shaft, how much longer its slow shaft is to carry the sheave through the wall into the gap behind the counterweight
- *  [mm] (the gearbox in the room, 50 mm clear of the wall). */
-export function machinePose(rig: RopeRig, wall: number, n: number, d: number, F: MachineFrame): { xDir: readonly [number, number]; centre: THREE.Vector3; ext: number } {
+ *  [mm] (the gearbox in the room, 50 mm clear of the wall). `turn`: above the shaft, its motor toward the
+ *  counterweight's drop (1) or turned round toward the car's (−1), as the room's drawings have it (machine-room.ts). */
+export function machinePose(rig: RopeRig, wall: number, n: number, d: number, F: MachineFrame, turn: 1 | -1 = 1): { xDir: readonly [number, number]; centre: THREE.Vector3; ext: number } {
   const g = rig.scheme, S = rig.sheave, [px, py] = planeAt(S.plane, S.u);
   // above: the worm along the drops' plane; below: along the wall, the gearbox past the sheave away from the shaft
   // (through the wall) or, under the pit, toward the car
-  const xDir = !g ? rig.dir : g.scheme === 'under' ? g.across : ([-g.across[0], -g.across[1]] as const);
+  const xDir = !g ? ([turn * rig.dir[0], turn * rig.dir[1]] as const) : g.scheme === 'under' ? g.across : ([-g.across[0], -g.across[1]] as const);
   const ext = g && g.scheme !== 'under' ? Math.max(0, KL.bottomClear + ropeWidths(n, d).ropes + wall + 50 - (F.zSheave - F.face)) : 0;
   return { xDir, centre: new THREE.Vector3(px / 1000, S.y, -py / 1000), ext };
 }
 
 /** `ceiling`: the slab's underside over the shaft [mm]; `openings`: the slab's (slab.ts); `gov`: the governor's spot;
  *  `shape`: the maker's machine as it is (null: the generic one scaled to the sheave); `rinvio`: where the diverting
- *  pulley turns in the room (src/shaft/rinvio.ts); `heb`: the HEB beams on the shaft's walls the support stands on. */
+ *  pulley turns in the room (src/shaft/rinvio.ts); `heb`: the HEB beams on the shaft's walls the support stands on;
+ *  `turn`: the machine above turned round, its motor toward the car's drop (−1; machine-room.ts RoomGeo.dir). */
 export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: number, ceiling: number, M: LiftMaterials, openings: readonly Opening[], gov: GovernorSpot | null,
-  shape: MachineShape | null = null, rinvio: RinvioFrame | null = null, heb: HebLayout | null = null): RoomModel {
+  shape: MachineShape | null = null, rinvio: RinvioFrame | null = null, heb: HebLayout | null = null, turn: 1 | -1 = 1): RoomModel {
   const I = L.inputs, sides = { front: new THREE.Group(), rear: new THREE.Group(), left: new THREE.Group(), right: new THREE.Group() } as Record<Side, THREE.Group>;
   const roof = new THREE.Group(), common = new THREE.Group();
   const at = (p: RopePlane, u: number, y: number): THREE.Vector3 => {
@@ -89,7 +90,7 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
   // the group's own units: the generic machine's metres at Ø 560 (scaled by s), the maker's in metres as they are
   const s = F.shape ? 1 : D / 560, irons = F.beams.map((z) => z / 1000 / s);
   const shaped = F.shape ? buildShaped(MM, F, D, n, d) : null, machine = shaped ?? buildMachine(MM, false, irons);
-  const pose = machinePose(rig, I.wall, n, d, F), e = pose.ext / 1000 / s;
+  const pose = machinePose(rig, I.wall, n, d, F, rig.bottom ? 1 : turn), e = pose.ext / 1000 / s;
   const yAxis = F.shape ? F.axis / 1000 : DIM.yWheel, zSh = F.shape ? F.zSheave / 1000 : DIM.zSheave, face = F.shape ? F.face / 1000 : 0.2;
   machine.group.scale.setScalar(s);
   machine.group.rotation.y = Math.atan2(pose.xDir[1], pose.xDir[0]);
@@ -109,9 +110,10 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
   // shaft the room's support (shims, frame, beams, plates, plinth), below it levelling shims
   const gap = F.shape ? rig.sheave.y - rig.roomFloor - yAxis : ((rig.sheave.y - rig.roomFloor) / s - DIM.yWheel) * s, sup = rig.bottom ? SHIMS : supportOf(I.room, rinvio !== null);
   const walls = R ? wallsAlong([machine.group.position.x * 1000, -machine.group.position.z * 1000], pose.xDir, { x0: -R.shaftX, y0: -R.shaftY, x1: R.W - R.shaftX, y1: R.D - R.shaftY }) : null;
-  // the diverting pulley in the bedplate: along the machine from the sheave, as the rig places it
+  // the diverting pulley in the bedplate: along the machine from the sheave, as the rig places it (the machine turned
+  // round, on its other side)
   const defl = rig.wheels.find((w) => w.role === 'deflector'), framed = !rig.bottom && rinvio?.on === 'frame' && defl !== undefined;
-  const inFrame = framed && defl && rinvio ? { x: defl.u - rig.sheave.u, r: defl.r, half: ropeWidths(n, d).pulley, frame: rinvio } : null;
+  const inFrame = framed && defl && rinvio ? { x: turn * (defl.u - rig.sheave.u), r: defl.r, half: ropeWidths(n, d).pulley, frame: rinvio } : null;
   // the HEB beams on the shaft's walls under it all (the support, the pulleys' stands), on the floor
   const beams = !rig.bottom && R && heb ? heb : null, hebH = beams ? PROFILES[beams.profile].h : 0;
   if (beams && R) {

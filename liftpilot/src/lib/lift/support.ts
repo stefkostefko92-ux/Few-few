@@ -3,10 +3,10 @@
 // dynamic coefficient, plus the machine with its bedframe; and the check of the beams under it (src/shaft/support-check.ts)
 // and of the HEB beams on the shaft's walls (src/shaft/heb.ts).
 import type { ParsedInputs } from '@/calc/types';
-import { governorSpot, hebChecks, hebFor, roomGeo, type HebOption, type Layout, type MachineSpec, type RoomGeo, type Rope, type ShaftCheck } from '@/shaft';
+import { freeSides, governorSpot, hebChecks, hebFor, layout, roomGeo, type HebOption, type Layout, type MachineSpec, type RoomGeo, type Rope, type ShaftCheck } from '@/shaft';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { roomChecksOf } from '@/shaft/machine-room';
-import { switchBox, type Box } from '@/shaft/room-floor';
+import { boxGap, switchBox, type Box } from '@/shaft/room-floor';
 import type { PanelSpot } from '@/shaft/room-panel';
 import { governorFootprint } from '@/shaft/room-site';
 import { beamChecks, fitChecks, governorRoomChecks, machineParts, panelFloorChecks, panelPlace, rinvioChecks, type SupportLoad } from '@/shaft/support-check';
@@ -90,4 +90,24 @@ export const supportChecks = (L: Layout, M: MachineSpec, load: SupportLoad, abov
 export function placedPanel(L: Layout, M: MachineSpec): PanelSpot | null {
   const G = roomGeo(L, M);
   return G ? panelPlace(G, M, floorOthers(L, G)) : null;
+}
+
+/** How far the governor stands from the machine and its support in the room over the shaft [mm] (below 0: on them);
+ *  Infinity without a room or a governor drawn. */
+function governorGap(L: Layout, M: MachineSpec): number {
+  const G = roomGeo(L, M), gov = G ? governorFootprint(L, G.room) : null;
+  return G && gov ? Math.min(...machineParts(G, M).map((b) => boxGap(b, gov))) : Infinity;
+}
+
+/** The side wall of the governor's rope the software takes for the machine `M` when the side is left to it (registry
+ *  limitatore.posto): the last free one, or the other free one when only there the governor stands clear of the
+ *  machine in the room over the shaft (the machine turned round toward the car's drop reaches across to it); null: the
+ *  layout's own — the side chosen, the governor placed by hand on the plan, one free side, no room over the shaft. */
+export function governorSideFor(L: Layout, M: MachineSpec): 'left' | 'right' | null {
+  const I = L.inputs, spot = governorSpot(L), byHand = I.plan?.govX !== undefined || I.plan?.govY !== undefined;
+  if (I.governorSide || byHand || !I.room || !spot || governorGap(L, M) >= 0) return null;
+  const other = freeSides(L).find((s) => s !== spot.side);
+  if (!other) return null;
+  const Lo = layout({ ...I, governorSide: other });
+  return governorSpot(Lo)?.side === other && governorGap(Lo, M) >= 0 ? other : null;
 }

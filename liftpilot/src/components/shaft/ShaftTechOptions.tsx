@@ -15,6 +15,8 @@ import Seg from './Seg';
 interface Props {
   I: ShaftInputs;
   set(patch: Partial<ShaftInputs>): void;
+  /** the governor rope's side the derivation took when it is left to the software (support.ts governorSideFor) */
+  govSide?: 'left' | 'right';
 }
 
 const ALLOWANCES = Object.keys(DEFAULTS) as Allowance[];
@@ -30,10 +32,11 @@ function withPanev(I: ShaftInputs, patch: { door?: DoorPairId; cw?: CwChoice }):
   return out.door || out.cw ? out : undefined;
 }
 
-export default function ShaftTechOptions({ I, set }: Props) {
+export default function ShaftTechOptions({ I, set, govSide }: Props) {
   const t = useTranslations('shaft'), cs = callStationOf(I);
-  // the side walls the governor's rope can run by (a central sling, free of doors and of the counterweight)
-  const L = layout(I), free = L.frame.kind === 'central' ? freeSides(L) : [], auto = free.at(-1);
+  // the side walls the governor's rope can run by (a central sling, free of doors and of the counterweight); the one the
+  // software takes: the derivation's (clear of the machine in the room), else the last free one
+  const L = layout(I), free = L.frame.kind === 'central' ? freeSides(L) : [], auto = govSide && free.includes(govSide) ? govSide : free.at(-1);
   const allowance = (a: Allowance) => (
     <label className="field" key={a}>
       <span>{t(`a_${a}`)}<StdBadge on={I[a] === DEFAULTS[a]} /></span>

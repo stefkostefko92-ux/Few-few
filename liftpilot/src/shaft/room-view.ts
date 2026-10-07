@@ -14,8 +14,9 @@ import { supportPlan, supportSection } from './support-view';
 import { MACHINE_A, machineElevation, machinePlan } from './machine-outline';
 import { bodyBox } from './machine-shape';
 import { shapeElevation, shapePlan } from './machine-shape-view';
-import { dropSpan as span, roomRopes, ropeWidths, slabHoles, type MachineSpec, type RoomGeo } from './machine-room';
+import { dropSpan as span, machineU, machineV, roomRopes, ropeWidths, slabHoles, type MachineSpec, type RoomGeo } from './machine-room';
 import { bbox, fittingsPlan } from './room-fittings-view';
+import { machineParts } from './support-check';
 import { layoutSite, type RoomSite } from './room-site';
 import { pulleySection } from './room-pulley';
 import type { Layout } from './types';
@@ -62,7 +63,7 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo): { entities:
   if (M.ropeIn > 0) for (const u of [-M.ropeIn, G.calata + M.ropeIn]) out.push(path(quad(G, u - 90, -w.ropes - 50, u + 90, w.ropes + 50), true, 'hidden'));
   // the diverting pulley under the machine: on a stand over the opening when its axle is above the slab's underside,
   // else hung under the slab; the machine over it, its sheave's rope plane on the drop line, the motor toward the
-  // counterweight; the pulley's outline again where the machine hides it
+  // counterweight or, turned round, toward the car (G.dir); the pulley's outline again where the machine hides it
   const pulley = M.Dp > 0 ? quad(G, G.pulleyAt - M.Dp / 2, -(w.ropes + 8), G.pulleyAt + M.Dp / 2, w.ropes + 8) : null;
   if (pulley) {
     const u = G.pulleyAt, r = M.Dp / 2, half = w.pulley, under = G.pulleyZ <= -R.slab;
@@ -80,20 +81,21 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo): { entities:
   const heb = hebDrawn(G, M, S);
   if (heb) out.push(...hebPlan(heb, G, M, S));
   const F = G.frame;
-  out.push(...(F.shape ? shapePlan(F, M.D, M.n, M.d, (x, z) => onDrop(G, G.sheaveAt + x, F.zSheave - z))
-    : machinePlan((x, z) => onDrop(G, G.sheaveAt + x * k, (MACHINE_A.zSheave - z) * k), F.beams.map((z) => z / k))));
+  out.push(...(F.shape ? shapePlan(F, M.D, M.n, M.d, (x, z) => onDrop(G, machineU(G, x), machineV(G, z)))
+    : machinePlan((x, z) => onDrop(G, machineU(G, x * k), machineV(G, z * k)), F.beams.map((z) => z / k))));
   if (pulley) out.push(path(pulley, true, 'hidden'));
   // control panel with its free area, main switch by the door (room-fittings-view.ts)
-  const { entities: fittings, free, sw, swAt } = fittingsPlan(R);
+  const { entities: fittings, free, sw, swAt } = fittingsPlan(R, machineParts(G, M).map(([x0, y0, x1, y1]) => ({ x0, y0, x1, y1 })));
   out.push(...fittings);
   // the sheave's size on the side away from the gearbox, along the drop line (an upright one would cross the frame's
-  // dimension); the load P1 where the room is free, its leader to the gearbox
-  const side = Math.min(G.across[0], -Math.max(w.ropes + 60, M.Dp > 0 ? w.pulley + 40 : 0)), um = (G.frame0 + G.frame1) / 2;
+  // dimension); the load P1 where the room is free, its leader to the gearbox (the gearbox's side of the drop line: g)
+  const g = G.dir, clearV = Math.max(w.ropes + 60, M.Dp > 0 ? w.pulley + 40 : 0), um = (G.frame0 + G.frame1) / 2;
+  const side = g > 0 ? Math.min(G.across[0], -clearV) : Math.max(G.across[1], clearV), gear = g > 0 ? G.across[1] : G.across[0];
   // the bedplate with the diverting pulley, when the pulley turns in it: its chain goes on the machine's other side
   const rfx = M.rinvio, bed = rfx?.on === 'frame' && M.Dp > 0 && G.pulleyZ - M.Dp / 2 >= 0
     ? (([u0, u1], [v0, v1]) => ({ u0, u1, v0, v1 }))(rinvioRun(M, G), rinvioAcross(M, G, rfx)) : null;
   const ax = Math.abs(G.ux) > Math.abs(G.uy) ? 0 : 1;
-  out.push({ e: 'text', at: onDrop(G, G.sheaveAt, side - 70), text: `${M.label ? `${M.label} · ` : ''}Ø ${M.D}`, size: 1.8, align: 'c', angle: ax ? 90 : 0, halo: true });
+  out.push({ e: 'text', at: onDrop(G, G.sheaveAt, side - 70 * g), text: `${M.label ? `${M.label} · ` : ''}Ø ${M.D}`, size: 1.8, align: 'c', angle: ax ? 90 : 0, halo: true });
   // clear of the main switch's lettering too (wide enough for it at 1:50)
   const inRoom = (p: Pt): boolean => p[0] > 250 && p[0] < R.W - 250 && p[1] > 250 && p[1] < R.D - 250;
   const offSwitch = (p: Pt): boolean => Math.abs(p[0] - swAt[0]) > 600 || Math.abs(p[1] - swAt[1]) > 250;
@@ -103,11 +105,11 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo): { entities:
     + (pw0 === 'rear' || pw0 === 'right' ? -1 : 1) * (R.panelD + 150);
   const offPanelRow = (p: Pt): boolean => !bed || Math.abs((pw0 === 'front' || pw0 === 'rear' ? p[1] : p[0]) - panelRow) > 300;
   const spots = bed
-    ? [onDrop(G, G.sheaveAt, Math.max(G.across[1], bed.v1 + 300) + 380), onDrop(G, bed.u0 - 380, G.across[1] / 2), onDrop(G, bed.u1 + 380, G.across[1] / 2),
-      onDrop(G, um, side - 700), onDrop(G, um, side - 400)]
-    : [onDrop(G, G.sheaveAt, G.across[1] + 380), onDrop(G, G.frame1 + 380, G.across[1] / 2), onDrop(G, G.frame0 - 380, G.across[1] / 2), onDrop(G, um, side - 700), onDrop(G, um, side - 400)];
+    ? [onDrop(G, G.sheaveAt, g > 0 ? Math.max(G.across[1], bed.v1 + 300) + 380 : Math.min(G.across[0], bed.v0 - 300) - 380), onDrop(G, bed.u0 - 380, gear / 2),
+      onDrop(G, bed.u1 + 380, gear / 2), onDrop(G, um, side - 700 * g), onDrop(G, um, side - 400 * g)]
+    : [onDrop(G, G.sheaveAt, gear + 380 * g), onDrop(G, G.frame1 + 380, gear / 2), onDrop(G, G.frame0 - 380, gear / 2), onDrop(G, um, side - 700 * g), onDrop(G, um, side - 400 * g)];
   out.push({ e: 'tag', at: spots.find((p) => inRoom(p) && !inBox(p, free) && offSwitch(p) && offPanelRow(p)) ?? spots[0], text: 'P1',
-    to: F.shape ? onDrop(G, G.sheaveAt, F.zSheave) : onDrop(G, 0.1 * k + G.sheaveAt, MACHINE_A.zSheave * k) });
+    to: onDrop(G, machineU(G, F.shape ? 0 : 0.1 * k), machineV(G, 0)) });
   out.push(...S.governor.entities);
   const gov = S.governor.box;
   // dimensions: room, door, bedframe, rope drops; outside the walls the drops in the shaft first, the shaft under the
@@ -141,16 +143,20 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo): { entities:
   // governor, the control panel's free area and the main switch
   const blocked = [gov, bbox(free), bbox(sw)].filter((x): x is Box => x !== null);
   const inside = (p: Pt): boolean => p[0] > 100 && p[0] < R.W - 100 && p[1] > 100 && p[1] < R.D - 100;
-  const clear = (v: number, u0: number, u1: number): boolean => {
-    const band = bbox(quad(G, u0 - 80, v - 150, u1 + 80, v + 150));
-    return !blocked.some((q) => q.x0 < band.x1 && band.x0 < q.x1 && q.y0 < band.y1 && band.y0 < q.y1) && inside(onDrop(G, (u0 + u1) / 2, v));
+  // how much of a row's band (its lettering and ticks) lies on them: 0 clear, Infinity out of the room
+  const onBlocked = (v: number, u0: number, u1: number): number => {
+    const band = bbox(quad(G, u0 - 80, v - 150, u1 + 80, v + 150)), over = (a0: number, a1: number, b0: number, b1: number): number => Math.max(0, Math.min(a1, b1) - Math.max(a0, b0));
+    return inside(onDrop(G, (u0 + u1) / 2, v)) ? blocked.reduce((t, q) => t + over(q.x0, q.x1, band.x0, band.x1) * over(q.y0, q.y1, band.y0, band.y1), 0) : Infinity;
   };
-  // the first clear row: away from the gearbox as always, else past the machine (and the bedplate's chain) on its side
-  const pick = (rows: readonly number[], u0: number, u1: number): number => rows.find((v) => clear(v, u0, u1)) ?? rows[0] ?? side - 220;
-  const beyond = Math.max(G.across[1], bed ? bed.v1 + 220 : -Infinity) + 200;
-  const vFrame = pick([side - 220, side - 370, beyond, beyond + 150], G.frame0, G.frame1);
-  const vDrop = vFrame < 0 ? pick([Math.min(side - 420, vFrame - 200), Math.min(side - 570, vFrame - 350), beyond, beyond + 150], 0, G.calata)
-    : pick([side - 220, side - 370, side - 520, vFrame + 200, vFrame + 350], 0, G.calata);
+  // the first clear row: away from the gearbox as always, else past the machine (and the bedplate's chain) on its side —
+  // the rows counted toward the gearbox (w = g·v); none clear, the one least on what is there
+  const pick = (rows: readonly number[], u0: number, u1: number): number =>
+    g * (rows.find((w) => onBlocked(g * w, u0, u1) === 0) ?? rows.reduce((b, w) => (onBlocked(g * w, u0, u1) < onBlocked(g * b, u0, u1) ? w : b)));
+  const far = (v0: number, v1: number): number => Math.max(g * v0, g * v1), gs = g * side;
+  const beyond = Math.max(far(G.across[0], G.across[1]), bed ? far(bed.v0, bed.v1) + 220 : -Infinity) + 200;
+  const vFrame = pick([gs - 220, gs - 370, beyond, beyond + 150], G.frame0, G.frame1), wf = g * vFrame;
+  const vDrop = wf < 0 ? pick([Math.min(gs - 420, wf - 200), Math.min(gs - 570, wf - 350), beyond, beyond + 150], 0, G.calata)
+    : pick([gs - 220, gs - 370, gs - 520, wf + 200, wf + 350], 0, G.calata);
   const [a, b] = [onDrop(G, G.frame0, vFrame), onDrop(G, G.frame1, vFrame)], drop = onDrop(G, 0, vDrop);
   const sorted = (p: number, q: number): number[] => [Math.min(p, q), Math.max(p, q)];
   // from the bedframe's side toward the chain
@@ -164,7 +170,7 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo): { entities:
     : { dir: ax ? 'y' : 'x', on: { o: G.carDrop, u: [G.ux, G.uy] }, pts: [0, G.calata], at: vDrop, from: [0, 0], text: ['Calata Funi {v}'], edit: [S.calata(0, false)] }));
   // the bedplate with the diverting pulley: its length and width beside the machine, away from the drop's chains
   if (bed) {
-    const [c, d] = [onDrop(G, bed.u0, bed.v1 + 220), onDrop(G, bed.u1, bed.v1 + 220)], side1 = onDrop(G, bed.u0, bed.v1)[1 - ax];
+    const bv = g > 0 ? bed.v1 : bed.v0, [c, d] = [onDrop(G, bed.u0, bv + 220 * g), onDrop(G, bed.u1, bv + 220 * g)], side1 = onDrop(G, bed.u0, bv)[1 - ax];
     out.push(chain({ dir: ax ? 'y' : 'x', pts: sorted(c[ax], d[ax]), at: c[1 - ax], from: [side1, side1], text: [`{v} × ${Math.round(bed.v1 - bed.v0)} Telaio con rinvio`] }));
   }
   return { entities: out, bounds: { x0: -WALL, y0: -WALL, x1: R.W + WALL, y1: R.D + WALL } };
@@ -218,7 +224,8 @@ export function roomSectionOn(S: RoomSite, M: MachineSpec, G: RoomGeo): { entiti
   const near = Math.max(G.pulleyAt + M.Dp / 2, G.frame1, bedRun ? bedRun[1] : -Infinity);
   const ue = Math.max(Math.min(near + (bedRun ? 300 : 160), r1 - 150), near + 60), hChain = M.Dp > 0 && Math.abs(M.h) > 1;
   out.push(...supportSection(M, G, r0, r1, hChain ? ue : null, hebDrawn(G, M, S)));
-  out.push(...(F.shape ? shapeElevation(F, D, (x, y) => [G.sheaveAt + x, base + y]) : machineElevation((x, y) => [G.sheaveAt + x * k, base + y * k])));
+  // (turned round, the machine seen from its other side: its elevation mirrored along the drop line)
+  out.push(...(F.shape ? shapeElevation(F, D, (x, y) => [machineU(G, x), base + y]) : machineElevation((x, y) => [machineU(G, x * k), base + y * k])));
   const centre = (c: Pt, r: number): void => { out.push(line([c[0] - r - 40, c[1]], [c[0] + r + 40, c[1]], 'axis'), line([c[0], c[1] - r - 40], [c[0], c[1] + r + 40], 'axis')); };
   centre([G.sheaveAt, zs], D / 2);
   // the ropes as they run with the car halfway, cut at the drawing's foot; the pulley in the bedplate (drawn with it), on
@@ -264,10 +271,10 @@ export function roomSectionOn(S: RoomSite, M: MachineSpec, G: RoomGeo): { entiti
   out.push(chain({ dir: 'x', pts: [0, G.calata], at: foot + 160, from: [ropeFoot, ropeFoot], axis: [true, true], text: ['{v} Calata Funi (Rif.)'], edit: [S.calata(0, true)] }));
   const along = Math.abs(G.uy) > 0.999 ? 'D' : Math.abs(G.ux) > 0.999 ? 'W' : null;
   out.push(chain({ dir: 'x', pts: [s0, s1], at: foot + 420, text: ['Vano {v}'], edit: [along ? E(along) : null] }));
-  // the sheave's diameter with its leader to the rim
-  const rim: Pt = [G.sheaveAt - (D / 2) * Math.SQRT1_2, zs + (D / 2) * Math.SQRT1_2], tag: Pt = [G.sheaveAt - D / 2 - 40, zs + D / 2 + 60];
-  out.push(line([tag[0] + 10, tag[1] + 20], rim, 'dim'), { e: 'text', at: tag, text: `Ø${M.D}`, size: 2.2, align: 'r', halo: true });
-  const body = F.shape ? bodyBox(F.shape) : null, um = body ? G.sheaveAt + (body[0] + body[3]) / 2 : G.sheaveAt + 0.53 * k;
+  // the sheave's diameter with its leader to the rim, on the side away from the motor
+  const away = -G.dir, rim: Pt = [G.sheaveAt + away * (D / 2) * Math.SQRT1_2, zs + (D / 2) * Math.SQRT1_2], tag: Pt = [G.sheaveAt + away * (D / 2 + 40), zs + D / 2 + 60];
+  out.push(line([tag[0] - away * 10, tag[1] + 20], rim, 'dim'), { e: 'text', at: tag, text: `Ø${M.D}`, size: 2.2, align: away < 0 ? 'r' : 'l', halo: true });
+  const body = F.shape ? bodyBox(F.shape) : null, um = machineU(G, body ? (body[0] + body[3]) / 2 : 0.53 * k);
   out.push({ e: 'tag', at: [um, top - 350], text: 'P1', to: [um, body ? base + F.bed + 0.9 * body[4] : base + 0.55 * k] });
   out.push({ e: 'text', at: [(s0 + s1) / 2, foot - 250], text: 'VANO', size: 2.2, align: 'c' });
   return { entities: out, bounds: { x0: r0 - WALL, y0: foot, x1: r1 + WALL, y1: Math.max(top, ridge) + WALL } };

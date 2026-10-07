@@ -35,9 +35,11 @@ export function roomRows(s: Survey, d: RoomDerived, fmt: (x: number, dp?: number
     ['Vano sotto il locale', `${fmt(s.shaft.W, 0)} × ${fmt(s.shaft.D, 0)} mm, muri di ${mm(s.shaft.wall)}; il suo angolo interno a ${fmt(R.shaftX, 0)} e ${fmt(R.shaftY, 0)} mm dai muri del locale`],
     ['Calate rilevate (dall’angolo interno del vano)', `funi lato cabina a x ${fmt(s.car.x, 0)}, y ${fmt(s.car.y, 0)} mm; funi lato contrappeso a x ${fmt(s.cw.x, 0)}, y ${fmt(s.cw.y, 0)} mm: distanza ${mm(d.calata.measured)}`],
     ['Calate della nuova macchina (dal calcolo)', `${mm(d.calata.calc)} (scarto dal rilievo ${mm(Math.abs(d.calata.measured - d.calata.calc))})`],
-    ['Posizione dell’argano', G && Math.abs(G.sheaveAt - (M.ropeIn + M.D / 2)) > 0.5
+    ['Posizione dell’argano', `${G && Math.abs(G.sheaveAt - (M.ropeIn + M.D / 2)) > 0.5
       ? 'puleggia di frizione centrata tra le calate esistenti (tiro diretto, come nel calcolo)'
-      : 'lato cabina della puleggia di frizione sulla calata della cabina; motore verso il contrappeso'],
+      : 'lato cabina della puleggia di frizione sulla calata della cabina'}; ${G?.dir === -1
+      ? `motore verso la calata della cabina${R.motor ? '' : ' (argano girato di 180° dal software: con il motore verso il contrappeso uscirebbe dal locale)'}`
+      : 'motore verso il contrappeso'}`],
     ['Basamento', `${supportName(d).toLowerCase()}; asse della puleggia di frizione a ${mm(M.axis)} sul pavimento del locale`],
     ...(M.rinvio ? [rinvioRow(M.rinvio, fmt)] : []),
   ];
