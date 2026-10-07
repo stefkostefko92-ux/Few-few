@@ -3,7 +3,9 @@ FROM node:20-bookworm-slim AS deps
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 COPY package.json package-lock.json* ./
-RUN npm ci || npm install
+# postinstall runs `prisma generate`, which needs the schema already in place
+COPY prisma ./prisma
+RUN npm ci
 
 # ---------- builder ----------
 FROM node:20-bookworm-slim AS builder
