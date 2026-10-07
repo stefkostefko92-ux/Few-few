@@ -66,9 +66,9 @@ test("рутинг: нищо не хвана → водачът на флота"
   assert.equal(r.agent, loadTeams().fallback);
 });
 
-test("картата носи екипа, входа, изхода и човека; празна за непознат агент", () => {
+test("картата е рамката на промпта по шаблона; празна за непознат агент", () => {
   const c = cardFor("kasadjiyata");
-  for (const s of ["ТВОЯТА КАРТА", "Парите", "Тръгваш при", "Получаваш", "Връщаш", "Предаваш на", "Човек одобрява"]) assert.ok(c.includes(s), s);
+  for (const s of ["ТВОЯТА КАРТА", "Парите", "Отговаряш за", "Получаваш", "Решения", "Инструменти", "Изход", "Готово е, когато", "Ескалация", "решение на човек", "При провал"]) assert.ok(c.includes(s), s);
   assert.equal(cardFor("няма-такъв"), "");
 });
 
@@ -78,4 +78,15 @@ test("картата не влиза в статичния (кеширан) пр
 
 test("_teams.md е свеж спрямо _teams.json", () => {
   assert.equal(readFileSync(TEAMS_MD, "utf8"), render());
+});
+
+test("инструмент в картата, който не съществува, и план не за 7 дни → грешки", () => {
+  const T = clone();
+  T.agents.seo.tools = ["tools/seo/няма.mjs"];
+  T.agents.seo.rules = ["само едно"];
+  T.launchPlan = T.launchPlan.slice(0, 5);
+  const errs = validate(T);
+  assert.ok(errs.some((e) => e.includes("tools/seo/няма.mjs")));
+  assert.ok(errs.some((e) => e.includes("под 2 решения")));
+  assert.ok(errs.some((e) => e.includes("не 7")));
 });

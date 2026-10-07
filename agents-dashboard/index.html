@@ -16122,6 +16122,9 @@ function iconSVG(id, stroke, sw) {
 function iconFallback(id, stroke, sw) { return `<svg viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="${sw || 1.9}" stroke-linecap="round" stroke-linejoin="round">${iconInner(id)}</svg>`; }
 
 /* ---------- зареждане ---------- */
+/* TEAMS:BEGIN — генерирано от node tools/agents/teams.mjs --write; не пипай на ръка */
+const TEAMS = {"fallback":"ai-djiyata","teams":[{"id":"shtab","name":"Щабът","mission":"Кой кога работи: избор на поток и агент, надзор на флота, LLM интеграции в продуктите.","lead":"ai-djiyata","members":["ai-djiyata"],"keys":["агент","агенти","флот","оркестр","делегир","llm","claude","anthropic","gemini","openai","модел","промпт","токен","vertex","агентски"],"flow":{"name":"AI/LLM интеграция","steps":["ai-djiyata","pravniyat-razbirach","kodadjiyata"],"human":"Собственикът избира доставчика и модела; лични данни към доставчик — само с негово решение."}},{"id":"kod","name":"Ковачницата","mission":"Кодът да е верен, сигурен, поддържаем и пазен от тестове и CI.","lead":"kodadjiyata","members":["kodadjiyata","kachestveniyat","izpitatelya","razbivacha","konveyera"],"keys":["бъг","ревю","diff","уязвим","owasp","xss","csrf","injection","рефактор","дублиран","поддръж","тест","flaky","e2e","playwright","vitest","ci","workflow","actions","pipeline","червен","счупи","атакувай","red-team","пробив"],"flow":{"name":"Промяна по код","steps":["kodadjiyata","kachestveniyat","izpitatelya"],"human":"Сливането в main е решение на човек; CI не пуска в продукция."}},{"id":"pusk","name":"Пускането","mission":"Продуктът да стигне до сървъра бързо, безопасно и да остане здрав след това.","lead":"vps-adjiyata","members":["vps-adjiyata","skorostnika","nabludatelya"],"keys":["деплой","deploy","сървър","vps","autodeploy","nginx","systemd","docker","tls","сертификат","бекъп","rollback","продукция","lighthouse","lcp","бавн","скорост","производител","slo","аларм","инцидент","логове","мониторинг","диск"],"flow":{"name":"Пускане в продукция","steps":["skorostnika","vps-adjiyata","nabludatelya"],"human":"Собственикът решава кога и кой ref; миграция с изтриване — само с изрично да."}},{"id":"dumi","name":"Думите","mission":"Текстът — документация, съдържание и преводи — е верен, с източник и на трите езика.","lead":"letopisetsa","members":["letopisetsa","prevodach","siydara"],"keys":["документац","readme","changelog","adr","runbook","преведи","превод","италиански","английски","локализ","i18n","seed","сийд","ръководств","съдържание"],"flow":{"name":"Ново съдържание или документация","steps":["siydara","letopisetsa","prevodach"],"human":"Медицински и правни низове не се превеждат машинно — човек ги одобрява."}},{"id":"rastezh","name":"Растежът","mission":"Да ни намират (търсачки и AI отговори), да ни виждат (социални мрежи) и да знаем какво работи (метрики).","lead":"seo","members":["seo","socialdjiyata","analizatora"],"keys":["seo","търсачк","класиране","sitemap","hreflang","json-ld","llms","indexnow","ключови","instagram","tiktok","reels","пост","клип","обхват","социал","метрик","фуния","retention","a/b","kpi","аналитик","ga4","plausible","posthog"],"flow":{"name":"Откриваемост и обхват","steps":["seo","analizatora","socialdjiyata"],"human":"Публикуването в социалните мрежи го одобрява човек; проследяване — само след съгласие."}},{"id":"pari","name":"Парите","mission":"Всеки код, който пипа пари — плащане, каса, поръчка, залог — е точен, идемпотентен и с човешка спирачка.","lead":"prodavacha","members":["prodavacha","kasadjiyata","treydara","goladjiyata"],"keys":["stripe","checkout","плащан","абонамент","webhook","фактур","ддс","каса","касов","фискал","бон","н-18","супто","евро","pos","трейд","binance","ccxt","бектест","поръчк","залог","коефициент","мач","kelly","xg"],"flow":{"name":"Паричен код","steps":["prodavacha","kodadjiyata","pravniyat-razbirach"],"human":"Реални пари, реални поръчки и реални залози пуска само човекът."}},{"id":"pravo","name":"Нормите","mission":"Правото на ЕС, политиките на платформите и техническите норми — с точка, издание и източник.","lead":"pravniyat-razbirach","members":["pravniyat-razbirach","tayniyat-agent","asansyorchika"],"keys":["gdpr","бисквит","cookie","съгласие","поверител","dsa","достъпност","eaa","wcag","импресум","общи условия","правн","закон","app review","app store","google play","отказ","data safety","privacy","meta app","норма","uni","en 81","асансьор"],"flow":{"name":"Съответствие преди пускане","steps":["pravniyat-razbirach","tayniyat-agent"],"human":"Изводът не е правен съвет; съответствието решава човек (юрист, инженер)."}},{"id":"platformi","name":"Платформите","mission":"Продуктите там, където живеят чужди платформи: телефон, браузър, Discord, FiveM.","lead":"mobildjiyata","members":["mobildjiyata","hromadjiyata","diskordjiyata","geymara"],"keys":["мобил","ios","android","capacitor","twa","push","nfc","приложение","разширение","chrome","manifest v3","mv3","web store","discord","slash","бот","interaction","gateway","fivem","lua","esx","qbcore","fxmanifest"],"flow":{"name":"Билд за платформа","steps":["mobildjiyata","tayniyat-agent","kodadjiyata"],"human":"Качването в магазин и отговорите на ревю ги прави човекът."}},{"id":"forma","name":"Формата","mission":"Как изглежда и как става физически: уеб ефекти, 3D от скан, печат.","lead":"dizayner","members":["dizayner","3d-maniac","printadjiyata"],"keys":["дизайн","визуал","анимац","webgl","three","шейдър","gsap","hero","ефект","скан","cad","nurbs","карбон","калъп","quicksurface","печат","k2","слайс","3mf","нишк","fdm","stl"],"flow":{"name":"Визуален ефект или физическа част","steps":["dizayner","printadjiyata"],"human":"Режимът (сериозен или творчески) се задава от човека; физическата част се проверява преди употреба."}}],"keys":{"ai-djiyata":[],"kodadjiyata":["бъг","ревю","diff","уязвим","owasp","xss","csrf","injection","sql"],"kachestveniyat":["рефактор","дублиран","поддръж","сложност","четим","мъртъв"],"izpitatelya":["тест","flaky","e2e","playwright","vitest","jest","покрит"],"razbivacha":["атакувай","red-team","пробив","счупи","заобикол"],"konveyera":["ci","workflow","actions","pipeline","кеш","gitleaks","dependabot"],"vps-adjiyata":["деплой","deploy","сървър","vps","autodeploy","nginx","systemd","docker","tls","сертификат","бекъп","rollback","диск"],"skorostnika":["lighthouse","lcp","inp","cls","бавн","скорост","производител"],"nabludatelya":["slo","аларм","инцидент","логове","мониторинг","500","opentelemetry","grafana"],"letopisetsa":["документац","readme","changelog","adr","runbook","llms.txt"],"prevodach":["преведи","превод","италиански","английски","локализ","i18n"],"siydara":["seed","сийд","ръководств","zabobovdol"],"seo":["seo","търсачк","класиране","sitemap","hreflang","json-ld","llms","indexnow","ключови"],"socialdjiyata":["instagram","tiktok","reels","shorts","пост","клип","обхват","социал"],"analizatora":["метрик","фуния","retention","a/b","kpi","аналитик","ga4","plausible","posthog"],"prodavacha":["stripe","checkout","плащан","абонамент","webhook","фактур","ддс"],"kasadjiyata":["каса","касов","фискал","бон","н-18","супто","cspos","pos"],"treydara":["трейд","binance","ccxt","бектест","стратеги","treydar"],"goladjiyata":["залог","коефициент","мач","kelly","xg","футбол"],"pravniyat-razbirach":["gdpr","бисквит","cookie","съгласие","поверител","dsa","достъпност","eaa","wcag","импресум","правн"],"tayniyat-agent":["app review","app store","google play","data safety","meta app","отказа","ревю"],"asansyorchika":["норма","uni","en 81","асансьор","кабина","liftpilot"],"mobildjiyata":["мобил","ios","android","capacitor","twa","push","nfc"],"hromadjiyata":["разширение","chrome","manifest v3","mv3","web store","adblock"],"diskordjiyata":["discord","slash","бот","interaction","gateway","webhook"],"geymara":["fivem","lua","esx","qbcore","qbox","fxmanifest"],"dizayner":["дизайн","визуал","анимац","webgl","three","шейдър","gsap","hero","ефект","скрол"],"3d-maniac":["скан","cad","nurbs","карбон","калъп","quicksurface","mesh"],"printadjiyata":["печат","k2","слайс","3mf","нишк","fdm","stl","watertight"]}};
+/* TEAMS:END */
 let DATA = FALLBACK;
 fetch("./agents.json").then(r => { if (!r.ok) throw 0; return r.json(); }).then(d => { DATA = d; boot(); }).catch(() => boot());
 
@@ -16176,6 +16179,7 @@ function drawNeb(time) {
   galaxy.render({ time, gx: gxN(), gy: gyN(), reducedMotion: RM, captureFromCanvas: cv, bloomSkip: galaxy.quality.state.tier < 2 ? 1 : 2 });
 }
 let W = 0, H = 0, DPR = 1, nodes = [], particles = [];
+let constel = [], teamLabelRects = []; // съзвездията на екипите (buildNodes/drawConstellations)
 // ЕДНА константа управлява темпото на ЦЯЛАТА галактика (собственика, 2026-09-25: „забави движението
 // на звездите… спокойно, величествено"). `t` захранва: gal (въртене), орбитите/бобването на звездите-
 // агенти (nodePos, drawStar), мигането им (tw в drawStar) И споделения GLSL `uT` (drawNeb(t) →
@@ -16240,12 +16244,39 @@ function buildNodes() {
   const prez = DATA.agents.find(isPrez) || DATA.agents[0];
   const maxL = Math.max(1, ...DATA.agents.map(lessonsOf));
   nodes = [{ a: prez, prez: true, f: 0, armBase: 0, x: 0, y: 0, r: 34, hovT: 0, dim: 1, spark: Math.random() * 5, phase: Math.random() * 6.28, orbit: buildOrbit(prez, true), pulseCd: 0.2 + Math.random() * 0.8 }];
-  const GOLD = 2.3999632;
-  others.forEach((a, i) => {
-    const fr = Math.min(0.98, 0.34 + Math.sqrt((i + 0.6) / others.length) * 0.6 + (((i * 37) % 11) / 11 - 0.5) * 0.05);
-    const lr = lessonsOf(a) / maxL;
-    nodes.push({ a, prez: false, f: fr, ang0: i * GOLD, osp: 0.05 + (1 - fr) * 0.13, bobph: Math.random() * 6.28, x: 0, y: 0, r: 10 + Math.sqrt(lr) * 13, hovT: 0, dim: 1, spark: Math.random() * 5, phase: Math.random() * 6.28, orbit: buildOrbit(a, false), pulseCd: 0.3 + Math.random() * 1.4 });
-  });
+  const mk = (a, f, ang0, osp) => ({ a, prez: false, f, ang0, osp, bobph: Math.random() * 6.28, x: 0, y: 0, r: 10 + Math.sqrt(lessonsOf(a) / maxL) * 13, hovT: 0, dim: 1, spark: Math.random() * 5, phase: Math.random() * 6.28, orbit: buildOrbit(a, false), pulseCd: 0.3 + Math.random() * 1.4 });
+  // СЪЗВЕЗДИЯ ПО ЕКИПИ (.claude/agents/_teams.json → блок TEAMS). Всеки екип е сектор около президента:
+  // водачът навътре, членовете ветрило навън. Въртенето е еднакво за всички (твърдо тяло) — иначе
+  // съзвездията се разпиляват за минута. Без TEAMS — старата спирала по поуки.
+  const teams = TEAMS ? TEAMS.teams.filter(tm => !tm.members.includes(prez.id)) : [];
+  const byIdLocal = Object.fromEntries(others.map(a => [a.id, a]));
+  if (teams.length) {
+    constel = [];
+    const S = 6.2832 / teams.length, OSP = 0.035;
+    teams.forEach((tm, k) => {
+      const th = k * S - 1.5708, lead = byIdLocal[tm.lead];
+      if (!lead) return;
+      const ln = mk(lead, 0.6, th, OSP); ln.team = tm; ln.isLead = true; nodes.push(ln);
+      const rest = tm.members.filter(id => id !== tm.lead && byIdLocal[id]);
+      const span = S * 0.66, m = rest.length;
+      const cons = { team: tm, th, lead: ln, members: [] };
+      rest.forEach((id, j) => {
+        const off = m > 1 ? (j / (m - 1) - 0.5) * span : 0;
+        const nd = mk(byIdLocal[id], j % 2 ? 0.98 : 0.82, th + off, OSP); nd.team = tm; nd.leadNode = ln;
+        nodes.push(nd); cons.members.push(nd);
+      });
+      constel.push(cons);
+    });
+    // агент без екип (нов, още не вписан) — не изчезва: отива на външния ръб
+    const placed = new Set(nodes.map(nd => nd.a.id));
+    others.filter(a => !placed.has(a.id)).forEach((a, i) => nodes.push(mk(a, 0.99, i * 2.3999632, OSP)));
+  } else {
+    const GOLD = 2.3999632;
+    others.forEach((a, i) => {
+      const fr = Math.min(0.98, 0.34 + Math.sqrt((i + 0.6) / others.length) * 0.6 + (((i * 37) % 11) / 11 - 0.5) * 0.05);
+      nodes.push(mk(a, fr, i * GOLD, 0.05 + (1 - fr) * 0.13));
+    });
+  }
   // таван 400 орбитиращи частици ОБЩО — трим веднъж тук, не в кадъра
   const total = nodes.reduce((s, nd) => s + nd.orbit.length, 0);
   if (total > 400) { const scale = 400 / total; for (const nd of nodes) nd.orbit.length = Math.max(2, Math.round(nd.orbit.length * scale)); }
@@ -16296,6 +16327,39 @@ function drawNebulae(cx, cy, R) { if (backdrop) backdrop.drawStructure(ctx, cx, 
 function drawDust() {}
 function drawMeteors() { if (backdrop) backdrop.stepMeteors(ctx, W, H, RM); }
 let pulses = [], nova = null, trail = [];
+// Съзвездията на екипите: член → водач (тънко), водач → президент (едва видимо), име на екипа в
+// сектора. При hover на звезда нейният екип светва. Имената на екипа влизат в labelObstacles(), за да
+// не ги затискат етикетите на агентите; на телефон (W<480) имената не се рисуват — само линиите.
+function drawConstellations(prez, cx, cy, R, Ry) {
+  teamLabelRects = [];
+  if (!constel.length) return;
+  const hvTeam = hovered && hovered.team ? hovered.team.id : null;
+  ctx.save(); ctx.lineCap = "round";
+  for (const c of constel) {
+    const on = hvTeam === c.team.id, col = c.lead.a.accent;
+    ctx.globalCompositeOperation = "lighter";
+    for (const nd of c.members) {
+      ctx.strokeStyle = hex(col, (on ? 0.4 : 0.16) * nd.dim); ctx.lineWidth = on ? 1.4 : 0.9;
+      ctx.beginPath(); ctx.moveTo(c.lead.x, c.lead.y); ctx.lineTo(nd.x, nd.y); ctx.stroke();
+    }
+    ctx.setLineDash([2, 6]); ctx.strokeStyle = hex(col, on ? 0.22 : 0.06); ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(prez.x, prez.y); ctx.lineTo(c.lead.x, c.lead.y); ctx.stroke(); ctx.setLineDash([]);
+    ctx.globalCompositeOperation = "source-over";
+    if (W < 480) continue;
+    const ang = c.th + gal + (RM ? 0 : t * c.lead.osp), f = 0.37;
+    const x = cx + Math.cos(ang) * f * R * zoom, y = cy + Math.sin(ang) * f * (Ry || R) * zoom;
+    const label = c.team.name.toUpperCase();
+    ctx.font = "600 10px system-ui, sans-serif";
+    const w = ctx.measureText(label).width + label.length * 1.6, hgt = 12;
+    ctx.fillStyle = hex(lighten(col, 70), on ? 0.85 : 0.42);
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    if ("letterSpacing" in ctx) ctx.letterSpacing = "1.6px";
+    ctx.fillText(label, x, y);
+    if ("letterSpacing" in ctx) ctx.letterSpacing = "0px";
+    teamLabelRects.push({ x: x - w / 2, y: y - hgt / 2, w, h: hgt });
+  }
+  ctx.restore();
+}
 function drawTethers(prez) {
   ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round";
   // светлинни влакна — САМО при hover (собственикова бележка: лъчите към всички звезди претрупваха
@@ -16404,6 +16468,7 @@ function loop(ts) {
   for (const nd of nodes) { const [x, y] = nodePos(nd, cx, cy, R, nodeRy); nd.x = x; nd.y = y; }
   const prez = nodes[0];
   drawTethers(prez);
+  drawConstellations(prez, cx, cy, R, nodeRy);
   updatePulses(prez);
 
   hovered = null;
@@ -16435,7 +16500,7 @@ function loop(ts) {
   const tip = document.getElementById("tip");
   if (hovered && !warp && !nova) {
     const a = hovered.a; tip.style.left = hovered.x + "px"; tip.style.top = (hovered.y - hovered.r * 1.3) + "px";
-    tip.innerHTML = `<div class="t-n">${iconSVG(a.id, a.accent, 2)}${esc(a.name)}${hovered.prez ? " · президент" : ""}</div><div class="t-r">${esc(a.title || "")}</div><div class="t-m"><div><b>v${verOf(a)}</b><span>версия</span></div><div><b>${lessonsOf(a)}</b><span>поуки</span></div></div>`;
+    tip.innerHTML = `<div class="t-n">${iconSVG(a.id, a.accent, 2)}${esc(a.name)}${hovered.prez ? " · президент" : ""}</div><div class="t-r">${esc(a.title || "")}</div>${hovered.team ? `<div class="t-r" style="opacity:.8">Екип „${esc(hovered.team.name)}“${hovered.isLead ? " · водач" : ""}</div>` : ""}<div class="t-m"><div><b>v${verOf(a)}</b><span>версия</span></div><div><b>${lessonsOf(a)}</b><span>поуки</span></div></div>`;
     tip.style.opacity = 1;
   } else tip.style.opacity = 0;
 
@@ -16561,6 +16626,7 @@ function labelObstacles() {
     if (r.width <= 0 || r.height <= 0) continue;
     out.push({ x: r.left, y: r.top, w: r.width, h: r.height }); // layoutLabels ги превръща в плътна кръгова „капсула" (rectToCapsule, labels.js)
   }
+  for (const r of teamLabelRects) out.push(r); // имената на екипите (drawConstellations)
   return out;
 }
 function drawLabels() {
@@ -17334,39 +17400,74 @@ function md(src) {
   .router{ margin-top:14px;border-top:1px solid var(--line);padding-top:14px; } .router h4{ margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut); }
   .router .rin{ display:flex;gap:8px; } .router textarea{ flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--txt);padding:10px 12px;font-size:13px;font-family:inherit;resize:vertical;min-height:44px;outline:none; }
   .router button.rgo{ align-self:stretch;padding:0 16px;background:var(--accent);color:#04121a;border:none;border-radius:10px;font-weight:700;cursor:pointer; }
-  .rres{ margin-top:12px;display:flex;flex-wrap:wrap;gap:10px; } .rcard{ display:flex;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--ac);border-radius:11px;padding:10px 12px;cursor:pointer;min-width:200px; } .rcard:hover{ border-color:var(--ac); }
-  .rcard svg{ width:20px;height:20px; } .rcard b{ font-size:13px;display:block; } .rcard span{ font-size:11px;color:var(--mut); }`;
+  .rres{ margin-top:12px;display:flex;flex-wrap:wrap;gap:10px; } .rcard{ display:flex;align-items:center;gap:10px;color:var(--txt);text-align:left;font:inherit;background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--ac);border-radius:11px;padding:10px 12px;cursor:pointer;min-width:200px; } .rcard:hover{ border-color:var(--ac); }
+  .rcard svg{ width:20px;height:20px; } .rcard b{ font-size:13px;display:block; } .rcard span{ font-size:11px;color:var(--mut); }
+  .constel .tlabel{ font:700 8.5px system-ui;letter-spacing:.12em;opacity:.75;pointer-events:auto;cursor:default; }
+  .teambox.focus .constel .node:not(.hl),.teambox.focus .constel .edge:not(.hl),.teambox.focus .constel .tlabel:not(.hl){ opacity:.18; }
+  .rnote{ flex-basis:100%;font-size:11.5px;color:var(--mut); }
+  .tcards{ margin-top:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px; }
+  .tcard{ display:flex;flex-direction:column;gap:5px;background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--ac);border-radius:11px;padding:10px 12px;cursor:pointer;transition:.15s; }
+  .tcard.hl,.tcard:hover{ border-color:var(--ac); } .tcard b{ font-size:13px; } .tcard .tm{ font-size:11.5px;color:var(--txt);line-height:1.45; }
+  .tcard .tf{ font-size:11px;color:var(--ac);line-height:1.4; } .tcard .th{ font-size:10.5px;color:var(--mut);line-height:1.4; }`;
   document.head.appendChild(css2);
   const xb = $(".xbtns");
-  if (xb) xb.insertAdjacentHTML("beforeend", `<button class="xbtn" id="xb-feed" title="Учебен фийд" aria-label="Учебен фийд"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/><circle cx="20" cy="18" r="1.6" fill="currentColor" stroke="none"/></svg></button><button class="xbtn" id="xb-team" title="Екипна карта + кой агент да ползвам" aria-label="Екипна карта"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="5" r="2.2"/><circle cx="5" cy="17" r="2.2"/><circle cx="19" cy="17" r="2.2"/><path d="M12 7.2v3.6M10.5 12l-4 3.2M13.5 12l4 3.2M7 17h10"/></svg></button>`);
+  if (xb) xb.insertAdjacentHTML("beforeend", `<button class="xbtn" id="xb-feed" title="Учебен фийд" aria-label="Учебен фийд"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/><circle cx="20" cy="18" r="1.6" fill="currentColor" stroke="none"/></svg></button><button class="xbtn" id="xb-team" title="Екипите + откъде да започна" aria-label="Екипите"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="5" r="2.2"/><circle cx="5" cy="17" r="2.2"/><circle cx="19" cy="17" r="2.2"/><path d="M12 7.2v3.6M10.5 12l-4 3.2M13.5 12l4 3.2M7 17h10"/></svg></button>`);
   document.body.insertAdjacentHTML("beforeend", `<div id="feed"></div><div id="team"></div>`);
 
   /* ---- учебен фийд ---- */
   function toggleFeed() { const f = $("#feed"); if (f.classList.contains("open")) { f.classList.remove("open"); return; } const items = []; DATA.agents.forEach(a => (a.recentLessons || []).slice(0, 3).forEach(L => items.push({ a, L }))); items.sort((x, y) => (y.L.date || "").localeCompare(x.L.date || "")); f.innerHTML = `<div class="stitle"><b>Учебен фийд · последно научено</b><button class="sx" aria-label="Затвори">×</button></div>` + items.slice(0, 40).map(it => `<button class="frow" data-id="${it.a.id}" style="--ac:${it.a.accent}"><span style="color:${it.a.accent}">${iconSVG(it.a.id, it.a.accent, 1.8)}</span><span><span class="ft">${esc(it.L.text)}</span><span class="fm"><b>${esc(it.a.name)}</b> · ${esc(it.L.date || "")}</span></span></button>`).join(""); f.classList.add("open"); f.querySelector(".sx").onclick = () => f.classList.remove("open"); f.querySelectorAll(".frow").forEach(b => b.onclick = () => { f.classList.remove("open"); openById(b.dataset.id); }); }
 
   /* ---- екипна карта (съзвездие) + рутер ---- */
-  const TEAM = { "ai-djiyata": ["pravniyat-razbirach", "kodadjiyata", "tayniyat-agent", "mobildjiyata", "dizayner", "vps-adjiyata"], "pravniyat-razbirach": ["seo", "prevodach", "mobildjiyata", "prodavacha", "tayniyat-agent", "kasadjiyata"], "kodadjiyata": ["kachestveniyat", "geymara", "prodavacha", "hromadjiyata"], "kachestveniyat": ["kodadjiyata"], "tayniyat-agent": ["mobildjiyata", "hromadjiyata", "prodavacha", "socialdjiyata"], "mobildjiyata": ["seo", "prevodach", "kodadjiyata", "vps-adjiyata", "socialdjiyata"], "prodavacha": ["vps-adjiyata"], "seo": ["prevodach", "socialdjiyata", "dizayner"], "dizayner": ["kachestveniyat"], "vps-adjiyata": ["siydara", "diskordjiyata", "treydara"], "socialdjiyata": ["prevodach"], "diskordjiyata": [], "hromadjiyata": [], "prevodach": [], "siydara": [], "geymara": [], "treydara": [], "kasadjiyata": ["prodavacha"], "printadjiyata": ["3d-maniac"], "3d-maniac": [], "konveyera": ["vps-adjiyata", "kodadjiyata", "kachestveniyat", "tayniyat-agent", "mobildjiyata", "izpitatelya"], "izpitatelya": ["kachestveniyat", "kodadjiyata", "konveyera"], "letopisetsa": ["prevodach", "seo", "pravniyat-razbirach", "konveyera"] };
+  // Екипите идват от блока TEAMS (_teams.json) — един източник с teams.mjs; рутерът е същият алгоритъм:
+  // ключ = начало на дума; екип по брой попадения, агент вътре по своите ключове, равенство → водачът.
+  const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const hitsOf = (q, keys) => keys.filter(k => new RegExp("(^|[^\\p{L}\\p{N}])" + escRe(k.toLowerCase()), "u").test(" " + q + " ")).length;
+  function routeTeam(task) {
+    const q = (task || "").toLowerCase();
+    const sc = TEAMS.teams.map(tm => ({ tm, s: hitsOf(q, [...new Set([...tm.keys, ...tm.members.flatMap(m => TEAMS.keys[m] || [])])]) })).sort((x, y) => y.s - x.s);
+    if (!sc[0] || !sc[0].s) return { team: TEAMS.teams.find(tm => tm.members.includes(TEAMS.fallback)), agent: TEAMS.fallback, fallback: true };
+    const tm = sc[0].tm, ag = tm.members.map(m => ({ m, s: hitsOf(q, TEAMS.keys[m] || []) })), top = Math.max(...ag.map(x => x.s));
+    const agent = !top || ag.find(x => x.m === tm.lead).s === top ? tm.lead : ag.find(x => x.s === top).m;
+    return { team: tm, agent, tie: sc[1] && sc[1].s === sc[0].s ? sc[1].tm : null };
+  }
   function toggleTeam() { const T = $("#team"); if (T.classList.contains("open")) { T.classList.remove("open"); return; } renderTeam(); T.classList.add("open"); }
   function renderTeam() {
-    const T = $("#team"), ag = DATA.agents, n = ag.length, cx = 300, cy = 300, R = 232;
-    const pos = {}; ag.forEach((a, i) => { const th = -Math.PI / 2 + i / n * Math.PI * 2; pos[a.id] = { x: cx + Math.cos(th) * R, y: cy + Math.sin(th) * R, th, a }; });
-    const seen = new Set(), edges = [];
-    Object.keys(TEAM).forEach(id => (TEAM[id] || []).forEach(b => { const k = [id, b].sort().join("|"); if (seen.has(k) || !pos[id] || !pos[b]) return; seen.add(k); edges.push([id, b]); }));
-    const edgeSVG = edges.map(([u, v]) => `<line class="edge" data-u="${u}" data-v="${v}" x1="${pos[u].x.toFixed(1)}" y1="${pos[u].y.toFixed(1)}" x2="${pos[v].x.toFixed(1)}" y2="${pos[v].y.toFixed(1)}"/>`).join("");
-    const nodeSVG = ag.map(a => { const p = pos[a.id], lx = cx + Math.cos(p.th) * (R + 20), ly = cy + Math.sin(p.th) * (R + 20), anchor = Math.cos(p.th) > .3 ? "start" : Math.cos(p.th) < -.3 ? "end" : "middle"; return `<g class="node" data-id="${a.id}"><circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${isPrez(a) ? 9 : 7}" fill="${a.accent}"/><text x="${lx.toFixed(1)}" y="${(ly + 3).toFixed(1)}" text-anchor="${anchor}">${esc(shortName(a.name))}</text></g>`; }).join("");
-    T.innerHTML = `<div class="teambox"><div class="teamhd"><h3>Екипна карта · оркестрация</h3><button class="tx" aria-label="Затвори">×</button></div><div class="teamsub">Кой агент подава на кого. Посочи възел, за да видиш връзките му · клик отваря профила.</div>
-      <svg class="constel" viewBox="0 0 600 600">${edgeSVG}${nodeSVG}</svg>
-      <div class="router"><h4>Кой агент да ползвам?</h4><div class="rin"><textarea id="rtask" placeholder="Опиши задачата… напр. да мине приложението през App Store ревюто, или GDPR банер за бисквитки"></textarea><button class="rgo" id="rgo">Препоръчай</button></div><div class="rres" id="rres"></div></div></div>`;
+    const T = $("#team");
+    if (!TEAMS) { T.innerHTML = `<div class="teambox"><div class="teamhd"><h3>Екипите</h3><button class="tx" aria-label="Затвори">×</button></div><div class="teamsub">Няма данни за екипите.</div></div>`; T.querySelector(".tx").onclick = () => T.classList.remove("open"); return; }
+    const cx = 300, cy = 300, sub = TEAMS.teams.filter(tm => !tm.members.includes(TEAMS.fallback)), S = Math.PI * 2 / sub.length;
+    const prez = byId(TEAMS.fallback), pos = {}, edges = [], labels = [];
+    if (prez) pos[prez.id] = { x: cx, y: cy, a: prez };
+    sub.forEach((tm, k) => {
+      const th = k * S - Math.PI / 2, rest = tm.members.filter(m => m !== tm.lead);
+      const L = byId(tm.lead); if (!L) return;
+      pos[tm.lead] = { x: cx + Math.cos(th) * 120, y: cy + Math.sin(th) * 120, a: L, lead: true, tm };
+      edges.push([TEAMS.fallback, tm.lead, tm.id, true]);
+      rest.forEach((id, j) => { const a = byId(id); if (!a) return; const off = rest.length > 1 ? (j / (rest.length - 1) - 0.5) * S * 0.64 : 0, r = j % 2 ? 252 : 200; pos[id] = { x: cx + Math.cos(th + off) * r, y: cy + Math.sin(th + off) * r, a, tm }; edges.push([tm.lead, id, tm.id, false]); });
+      labels.push({ x: cx + Math.cos(th) * 66, y: cy + Math.sin(th) * 66, tm, c: L.accent });
+    });
+    const edgeSVG = edges.filter(([u, v]) => pos[u] && pos[v]).map(([u, v, tid, dash]) => `<line class="edge" data-t="${tid}" ${dash ? 'stroke-dasharray="2 5"' : ""} x1="${pos[u].x.toFixed(1)}" y1="${pos[u].y.toFixed(1)}" x2="${pos[v].x.toFixed(1)}" y2="${pos[v].y.toFixed(1)}"/>`).join("");
+    const nodeSVG = Object.entries(pos).map(([id, p]) => { const dx = p.x - cx, dy = p.y - cy, far = Math.hypot(dx, dy) > 150, lx = far ? p.x + dx / Math.hypot(dx, dy) * 14 : p.x, ly = far ? p.y + dy / Math.hypot(dx, dy) * 14 + 3 : p.y - 12, anchor = !far ? "middle" : dx > 30 ? "start" : dx < -30 ? "end" : "middle"; return `<g class="node" data-id="${id}" data-t="${p.tm ? p.tm.id : ""}"><circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${id === TEAMS.fallback ? 10 : p.lead ? 8 : 6}" fill="${p.a.accent}"/><text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${anchor}">${esc(shortName(p.a.name))}</text></g>`; }).join("");
+    const labelSVG = labels.map(l => `<text class="tlabel" data-t="${l.tm.id}" x="${l.x.toFixed(1)}" y="${(l.y + 3).toFixed(1)}" text-anchor="middle" fill="${l.c}">${esc(l.tm.name.toUpperCase())}</text>`).join("");
+    const cards = TEAMS.teams.map(tm => `<div class="tcard" data-t="${tm.id}" style="--ac:${(byId(tm.lead) || {}).accent || "var(--accent)"}"><b>${esc(tm.name)}</b><span class="tm">${esc(tm.mission)}</span><span class="tf">${esc(tm.flow.name)}: ${tm.flow.steps.map(s => esc(shortName((byId(s) || { name: s }).name))).join(" → ")} → човек</span><span class="th">Човек: ${esc(tm.flow.human)}</span></div>`).join("");
+    T.innerHTML = `<div class="teambox"><div class="teamhd"><h3>Екипите на флота · ${TEAMS.teams.length} съзвездия</h3><button class="tx" aria-label="Затвори">×</button></div><div class="teamsub">Всеки агент е в точно един екип: водач, поток до 3 стъпки и точка, в която решава човек. Посочи екип или звезда · клик отваря профила.</div>
+      <svg class="constel" viewBox="-70 -10 740 630">${edgeSVG}${labelSVG}${nodeSVG}</svg>
+      <div class="router"><h4>Започни оттук</h4><div class="rin"><textarea id="rtask" placeholder="Опиши задачата… напр. деплойни piuma, или GDPR банер за бисквитки"></textarea><button class="rgo" id="rgo">Към кого?</button></div><div class="rres" id="rres"></div></div>
+      <div class="tcards">${cards}</div></div>`;
     T.querySelector(".tx").onclick = () => T.classList.remove("open");
     T.addEventListener("click", e => { if (e.target === T) T.classList.remove("open"); }, { once: false });
-    const svg = T.querySelector(".constel");
-    svg.querySelectorAll(".node").forEach(g => {
-      const id = g.dataset.id;
-      g.addEventListener("mouseenter", () => { const nb = new Set(); edges.forEach(([u, v]) => { if (u === id || v === id) { nb.add(u); nb.add(v); } }); svg.querySelectorAll(".edge").forEach(e => e.classList.toggle("hl", e.dataset.u === id || e.dataset.v === id)); svg.querySelectorAll(".node").forEach(nn => nn.classList.toggle("hl", nb.has(nn.dataset.id))); });
-      g.addEventListener("mouseleave", () => { svg.querySelectorAll(".hl").forEach(e => e.classList.remove("hl")); });
-      g.addEventListener("click", () => { T.classList.remove("open"); openById(id); });
-    });
-    const go = () => { const q = ($("#rtask").value || "").toLowerCase(); const score = {}; ROUTES.forEach(r => r.k.forEach(w => { if (q.includes(w)) score[r.to] = (score[r.to] || 0) + 1; })); DATA.agents.forEach(a => { const hay = ((a.title || "") + " " + (a.mission || "") + " " + (a.capabilities || []).join(" ")).toLowerCase(); let s = score[a.id] || 0; q.split(/\s+/).filter(w => w.length > 3).forEach(w => { if (hay.includes(w)) s += 0.5; }); if (s) score[a.id] = s; }); const ranked = Object.keys(score).sort((x, y) => score[y] - score[x]).slice(0, 3); const box = $("#rres"); box.innerHTML = ranked.length ? ranked.map(id => { const a = byId(id); return `<button class="rcard" data-id="${id}" style="--ac:${a.accent}">${iconSVG(id, a.accent, 1.9)}<span><b>${esc(a.name)}</b><span>${esc(a.title || "")}</span></span></button>`; }).join("") : `<div style="color:var(--mut);font-size:12.5px">Опиши задачата с малко повече контекст (платформа, технология, цел).</div>`; box.querySelectorAll(".rcard").forEach(b => b.onclick = () => { T.classList.remove("open"); openById(b.dataset.id); }); };
+    const box = T.querySelector(".teambox");
+    const hl = tid => { box.querySelectorAll("[data-t]").forEach(e => e.classList.toggle("hl", !!tid && e.dataset.t === tid)); box.classList.toggle("focus", !!tid); };
+    box.querySelectorAll(".node,.tcard,.tlabel").forEach(g => { g.addEventListener("mouseenter", () => hl(g.dataset.t)); g.addEventListener("mouseleave", () => hl(null)); });
+    box.querySelectorAll(".node").forEach(g => g.addEventListener("click", () => { T.classList.remove("open"); openById(g.dataset.id); }));
+    box.querySelectorAll(".tcard").forEach(c => c.addEventListener("click", () => { const tm = TEAMS.teams.find(x => x.id === c.dataset.t); if (tm) { T.classList.remove("open"); openById(tm.lead); } }));
+    const go = () => {
+      const r = routeTeam($("#rtask").value), a = byId(r.agent), res = $("#rres");
+      if (!a) { res.innerHTML = ""; return; }
+      hl(r.team.id);
+      res.innerHTML = `<button class="rcard" data-id="${a.id}" style="--ac:${a.accent}">${iconSVG(a.id, a.accent, 1.9)}<span><b>${esc(a.name)}</b><span>Екип „${esc(r.team.name)}“ · ${esc(r.team.flow.steps.map(s => shortName((byId(s) || { name: s }).name)).join(" → "))} → човек</span></span></button>` +
+        (r.fallback ? `<div class="rnote">Нищо не хвана — решава водачът на флота.</div>` : r.tie ? `<div class="rnote">Равно с екип „${esc(r.tie.name)}“ — уточни задачата или питай водача на флота.</div>` : "");
+      res.querySelectorAll(".rcard").forEach(b => b.onclick = () => { T.classList.remove("open"); openById(b.dataset.id); });
+    };
     T.querySelector("#rgo").onclick = go; T.querySelector("#rtask").addEventListener("keydown", e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) go(); });
   }
   bind("#xb-feed", toggleFeed); bind("#xb-team", toggleTeam);
