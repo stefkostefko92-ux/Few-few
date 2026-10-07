@@ -5,7 +5,8 @@ import type { VoceVano } from './norme';
 export const VOCI_SUPPORTO: readonly VoceVano[] = [
   {
     id: 'locale.basamento', gruppo: 'locale', titolo: 'Basamento dell’argano',
-    valore: 'su spessori di livellamento sotto gli appoggi (l’asse della puleggia dove lo mette il software), su telaio di tre profilati sul pavimento, '
+    valore: 'su spessori di livellamento sotto gli appoggi (per l’argano generico l’asse della puleggia dove lo mette il software; l’argano di '
+      + 'catalogo sugli stessi spessori, l’asse dove lo porta il suo telaio, mai una pila di spessori), su telaio di tre profilati sul pavimento, '
       + 'uno sotto ogni ferro del telaio dell’argano (locale.telaio; tipico UPN 200, alto quanto il profilato come i telai bassi universali), su tre '
       + 'putrelle da muro a muro, una sotto ogni ferro, che possono stare sollevate dal pavimento (tipiche IPE 200, appoggio nei muri 150 mm), su '
       + 'piastre d’acciaio sotto gli appoggi (tipiche 20 mm) o su plinto in calcestruzzo (tipico 250 mm) in un blocco per parte delle funi, o — con '
@@ -25,16 +26,20 @@ export const VOCI_SUPPORTO: readonly VoceVano[] = [
       + 'faccia esterna della puleggia; le traverse alle estremità stanno almeno 20 mm oltre il bordo della puleggia, così le funi scendono dentro il '
       + 'telaio; antivibranti alle estremità di ogni ferro, il telaio 40 mm oltre l’argano a ogni estremità; l’argano generico del software ha lo '
       + 'stesso telaio (ferri a −160, +160 e +520 mm dal piano della vite, la puleggia a 340 mm, alla puleggia Ø 560); sotto l’argano di catalogo il '
-      + 'telaio è alto quanto serve per tenere l’asse della puleggia dove lo tiene l’argano generico, almeno 80 mm e con il bordo della puleggia 30 mm '
-      + 'sopra il suo piano d’appoggio (gli argani compatti hanno la puleggia a sbalzo, sotto il piano dei piedi); se l’argano non lo permette l’asse '
-      + 'sale e il calcolo segue; con la macchina in basso accanto al vano la puleggia passa il muro: il telaio resta nel locale con i soli ferri '
-      + 'sotto i piedi',
+      + 'telaio è alto quanto serve all’argano e non di più: almeno 80 mm, il bordo della puleggia e quanto pende sotto i piedi 30 mm sopra il suo '
+      + 'piano d’appoggio (gli argani compatti hanno la puleggia a sbalzo, sotto il piano dei piedi); ogni ferro è un profilato alto quanto il '
+      + 'telaio sugli antivibranti, mai su ritti; l’asse della puleggia sta dove lo porta il telaio e il calcolo segue (h, L0); sul telaio con '
+      + 'rinvio l’argano non ha un telaio proprio: i piedi stanno sui ferri del telaio con rinvio (locale.rinvio), sul telaio del costruttore sul '
+      + 'piedistallo del costruttore; con la macchina in basso accanto al vano la puleggia passa il muro: il telaio resta nel locale con i soli '
+      + 'ferri sotto i piedi',
     riferimento: 'regola del committente (Panev): il telaio ha tre ferri sopra e la puleggia fra i ferri, altrimenti si ribalterebbe',
     fonte: 'quote dei piedi, dei fori e dell’asse della puleggia dalle schede tecniche del costruttore; i supporti esterni dei costruttori a catalogo '
       + '(SICOR MR35, Montanari M73S, M75S, M95, M98, Sassi MF94, MB94, MB95, GEM HW134L, HW135L-VF, HW140CL, FAER P58F, P60F, P68F, P70F, P80F) '
       + 'stanno oltre la puleggia da 0,84 a 1,26 volte la distanza della fila prima; altezza e terzo ferro scelti dal software, da adattare al '
       + 'telaio fornito', stato: 'scelta',
-    nota: 'fino a LIFT 1.24.0, ROOM 1.8.0 e SHAFT 2.18.0 il telaio aveva due soli ferri, sotto le file di fori, con la puleggia a sbalzo oltre di essi',
+    nota: 'fino a LIFT 1.24.0, ROOM 1.8.0 e SHAFT 2.18.0 il telaio aveva due soli ferri, sotto le file di fori, con la puleggia a sbalzo oltre di essi; '
+      + 'fino a LIFT 1.26.0, ROOM 1.10.0 e SHAFT 2.20.0 sotto l’argano di catalogo era alto quanto teneva l’asse dove lo tiene l’argano generico '
+      + '(fino a 285 mm, i ferri su ritti), anche sopra il telaio con rinvio',
   },
   {
     id: 'locale.rinvio', gruppo: 'locale', titolo: 'Puleggia di rinvio nel locale del macchinario',
@@ -44,9 +49,11 @@ export const VOCI_SUPPORTO: readonly VoceVano[] = [
       + 'UPN 160 sotto i ferri del telaio dell’argano — le due laterali sotto i ferri esterni, oppure, se così il telaio è più stretto di 655 mm '
       + '(o di quello del costruttore), largo 655 mm (o quanto quello del costruttore) e centrato sui ferri; una trave propria sotto ogni ferro '
       + 'che le laterali non portano: ogni appoggio dell’argano sta su una trave —, 100 mm oltre l’argano e il rinvio a ogni estremità, il '
-      + 'rinvio appeso fra le travi; con un argano SICOR che ha il suo telaio a catalogo '
+      + 'rinvio appeso fra le travi; l’argano di catalogo con i piedi direttamente sui ferri, senza un telaio proprio (l’asse della puleggia sulla '
+      + 'sommità quanto quello dell’argano sui piedi; l’argano generico sul suo basamento); con un argano SICOR che ha il suo telaio a catalogo '
       + '(SV110 e SH110B XTE0517/XTE0516, SH130 e SH130G XTE3022/XTE3023, SH140 XTE6026/XTE6027, SH160 XTE5708, SH190 XTE3988) le quote del '
-      + 'costruttore: asse del rinvio, asse della puleggia (A), piano del telaio (A − B), calata del contrappeso entro L max dall’asse della '
+      + 'costruttore: asse del rinvio, asse della puleggia (A), piano del telaio (A − B), l’argano sul piedistallo del costruttore alto B meno '
+      + 'l’asse della puleggia sui piedi (SH140 114 mm, SH160 240, SH190 307), calata del contrappeso entro L max dall’asse della '
       + 'puleggia (verifica di avvertimento: oltre, telaio su misura); h del calcolo = asse della puleggia − asse del rinvio, dx dalla pianta; '
       + 'con un altro basamento scelto il rinvio sta su un supporto proprio sul pavimento, alla stessa altezza; una h inserita a mano che porta il '
       + 'rinvio sotto il pavimento è segnalata',

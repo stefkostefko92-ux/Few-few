@@ -105,13 +105,15 @@ test('ogni argano SICOR, Montanari, Sassi, GEM e FAER con disegno quotato ha la 
   assert.deepEqual([600, 650, 700].map((D) => sheaveOf(M73, D)), [{ P: 215, E: 115 }, { P: 230, E: 78 }, { P: 230, E: 87 }]);
 });
 
-test('telaio: il bordo della puleggia sopra il suo piano, le travi lontane da puleggia e funi, nulla del corpo nella corona', () => {
+test('telaio: alto quanto serve all’argano, il bordo della puleggia sopra il suo piano, le travi lontane da puleggia e funi, nulla del corpo nella corona', () => {
   for (const S of SHAPES) {
     for (const [D] of S.sheaves) {
       const F = machineFrame(D, S), R = D / 2, rIn = R - Math.max(32, 0.09 * R), z0 = F.zSheave - F.width / 2, z1 = F.zSheave + F.width / 2;
       assert.ok(F.bed >= KV_VERT.machineBed, `${S.model} Ø${D}: telaio ${F.bed}`);
       assert.ok(F.axis - R >= KV_VERT.machineRimClear - 1e-9, `${S.model} Ø${D}: bordo della puleggia ${F.axis - R}`);
-      assert.ok(F.axis >= ownAxis(D) - 1e-9, `${S.model} Ø${D}: asse non sotto quello della macchina generica`);
+      // no taller than the machine needs (never raised to the generic machine's axis on posts)
+      const need = Math.max(KV_VERT.machineBed, R + KV_VERT.machineRimClear - S.yWheel, KV_VERT.machineRimClear - bodyBox(S)[1]);
+      assert.ok(F.on === 'frame' && F.bed >= need - 1e-9 && F.bed < need + 1, `${S.model} Ø${D}: telaio ${F.bed}, serve ${need}`);
       for (const zb of F.beams) assert.ok(zb + IRON / 2 < z0 || zb - IRON / 2 > z1, `${S.model} Ø${D}: trave del telaio a ${zb} sotto la puleggia`);
       // three irons on top, the sheave between the last two; the one we add past it clear of its face; the cross members
       // at the ends past the rope falls, the ropes going down inside the frame
@@ -173,8 +175,8 @@ test('proposta da SICOR, Montanari o Sassi: la forma nei disegni, l’asse del s
     assert.equal(dv.catalog?.fit?.machine.model, model, `${model}: presa dal catalogo`);
     assert.equal(M.shape, S, model);
     // with the diverting pulley of the example and no support chosen, on the bedplate that holds it: SICOR's own for the
-    // SH140 (XTE6026, A 1016 mm), ours for the others (its top and the machine on our bedframe)
-    if (!support) assert.equal(M.axis, model === 'SH140' ? 1016 : (M.rinvio?.top ?? NaN) + machineFrame(D, S).axis, `${model}: asse sul telaio con rinvio`);
+    // SH140 (XTE6026, A 1016 mm), ours for the others (its top and the machine's feet straight on its irons)
+    if (!support) assert.equal(M.axis, model === 'SH140' ? 1016 : (M.rinvio?.top ?? NaN) + machineFrame(D, S, 0).axis, `${model}: asse sul telaio con rinvio`);
     const vt = dv.shaft.vertical, room = dv.shaft.room;
     assert.ok(room);
     assert.ok(Math.abs(Number(dv.values.L0) - Math.round(vt.headroom - vt.frameTop + room.slab + M.axis) / 1000) < 1e-9, `${model}: L0 con l’asse ${M.axis}`);

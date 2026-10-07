@@ -1,11 +1,11 @@
 // A maker's machine drawn as the 3D builds it (machine-shape.ts; machine-detail.ts; components/machine/shape): seen
-// along Z with the sheave face-on, and from above. The bedframe of ours under the feet, then everything back to front
-// (from above: low to high): the castings with rounded corners and, from above, the ribs on their backs; the turned
-// covers with their bolt circles; the motor with its end shields or its fins; the drum brake whole — the drum, the
-// levers with their pivots, the tie rod with the springs, the magnet —; the handwheel edge-on; the worm's axis; in front
-// the sheave as cast, its rim, three curved spokes and the hub with the shaft's end plate and screws, the openings
-// between the spokes showing what stands behind. Millimetres of the machine's frame, the bedframe's underside at y = 0;
-// `at` maps them to the drawing. Pure: room-view.ts places it.
+// along Z with the sheave face-on, and from above. What the feet stand on (our bedframe, the maker's pedestal, or the
+// irons of our bedplate), then everything back to front (from above: low to high): the castings with rounded corners
+// and, from above, the ribs on their backs; the turned covers with their bolt circles; the motor with its end shields
+// or its fins; the drum brake whole — the drum, the levers with their pivots, the tie rod with the springs, the magnet
+// —; the handwheel edge-on; the worm's axis; in front the sheave as cast, its rim, three curved spokes and the hub with
+// the shaft's end plate and screws, the openings between the spokes showing what stands behind. Millimetres of the
+// machine's frame, where it stands at y = 0; `at` maps them to the drawing. Pure: room-view.ts places it.
 import { circle, line, path, type Entity, type FillName, type Pt, type StyleName } from '../drawing';
 import { IRON, partBox, tilted, type MachineFrame, type ShapePart } from './machine-shape';
 import { SPOKE_ANGLES, brakeOf, coverBolts, endShields, ribsOf, sheaveDims, spokeOutline, type BrakeDetail, type P2 } from './machine-detail';
@@ -33,18 +33,26 @@ function rounded(at: At, x0: number, y0: number, x1: number, y1: number, rr: num
 
 const CAST = new Set(['housing', 'base', 'cover', 'pedestal', 'terminal']);
 
-/** The bedframe seen along Z: the beam, the posts down to the mounts when it is tall, the mounts. */
+/** What the feet stand on, seen along Z: our bedframe — an iron as tall as the frame on its mounts, never on posts —,
+ *  the maker's pedestal on the maker's bedplate under the feet, or nothing on our bedplate (the feet on its irons). */
 function bedElevation(F: MachineFrame, at: At): Entity[] {
-  const out: Entity[] = [], hb = Math.min(120, F.bed - 22), y0 = F.bed - hb, [x0, x1] = F.run;
+  const out: Entity[] = [], S = F.shape;
   const box = (a: number, b: number, c: number, d: number, st: 'outline' | 'thin' = 'outline', fill?: 'cw' | 'steel' | 'paper'): void => {
     out.push(path([at(a, b), at(c, b), at(c, d), at(a, d)], true, st, fill));
   };
-  box(x0, y0, x1, F.bed, 'outline', 'cw');
-  for (const y of [y0 + 9, F.bed - 9]) out.push(line(at(x0, y), at(x1, y), 'thin'));
-  for (const x of F.mounts) {
-    if (y0 - 22 > 4) box(x - 40, 22, x + 40, y0);
-    box(x - 60, 0, x + 60, 22, 'thin', 'steel');
+  if (F.on === 'bedplate' || !S) return out;
+  if (F.on === 'pedestal') {
+    // a welded box under the feet with its plates bolted to the bedplate and to the feet
+    const [x0, , x1] = S.feet;
+    box(x0 + 15, 12, x1 - 15, F.bed - 12, 'outline', 'cw');
+    box(x0 - 15, 0, x1 + 15, 12, 'outline', 'cw');
+    box(x0, F.bed - 12, x1, F.bed, 'outline', 'cw');
+    return out;
   }
+  const [x0, x1] = F.run;
+  box(x0, 22, x1, F.bed, 'outline', 'cw');
+  for (const y of [31, F.bed - 9]) out.push(line(at(x0, y), at(x1, y), 'thin'));
+  for (const x of F.mounts) box(x - 60, 0, x + 60, 22, 'thin', 'steel');
   return out;
 }
 
@@ -172,7 +180,7 @@ function drawElevation(p: ShapePart, at: At, out: Entity[]): void {
   if (p.role === 'handwheel') out.push(line(at((s0 + s1) / 2, a - r), at((s0 + s1) / 2, a + r), 'thin'));
 }
 
-/** The machine from above (toward −Y): the bedframe's irons round the sheave, the parts from the lowest with the ribs on the castings'
+/** The machine from above (toward −Y): our bedframe's irons round the sheave, the parts from the lowest with the ribs on the castings'
  *  backs, the brake's levers and springs, the sheave with its grooves, the worm's axis, the feet's holes (seen through
  *  the base when it has one; hidden under a compact gearbox). */
 export function shapePlan(F: MachineFrame, D: number, n: number, d: number, at: (x: number, z: number) => Pt): Entity[] {
@@ -181,9 +189,12 @@ export function shapePlan(F: MachineFrame, D: number, n: number, d: number, at: 
   const out: Entity[] = [], quad = (x0: number, z0: number, x1: number, z1: number, st: 'outline' | 'thin' | 'hidden' = 'outline', fill?: FillName): void => {
     out.push(path([at(x0, z0), at(x1, z0), at(x1, z1), at(x0, z1)], true, st, fill));
   };
+  // our bedframe's irons round the sheave (on a bedplate the irons are its beams, the maker's pedestal is under the feet)
   const h = IRON / 2;
-  for (const z of F.beams) quad(F.run[0], z - h, F.run[1], z + h, 'outline', 'cw');
-  for (const x of [F.run[0], F.run[1] - IRON]) quad(x, F.beams[0] + h, x + IRON, F.beams[F.beams.length - 1] - h, 'thin', 'cw');
+  if (F.on === 'frame') {
+    for (const z of F.beams) quad(F.run[0], z - h, F.run[1], z + h, 'outline', 'cw');
+    for (const x of [F.run[0], F.run[1] - IRON]) quad(x, F.beams[0] + h, x + IRON, F.beams[F.beams.length - 1] - h, 'thin', 'cw');
+  }
   const B = brakeOf(S);
   const low = [...S.parts].sort((a, b) => partBox(a)[4] - partBox(b)[4]);
   for (const p of low) {

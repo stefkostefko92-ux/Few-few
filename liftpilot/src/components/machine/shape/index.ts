@@ -1,11 +1,12 @@
 // A maker's machine in 3D (src/shaft/machine-shape.ts, the data in src/lib/catalog/shapes.ts): its body from the parts
 // of the shape, finished by what each part is (parts.ts), the drum brake built whole round its drum, arms and magnet
 // (brake.ts), the gearbox's oil sight glass, filler and drain plugs, the sheave at the calculation's diameter where the
-// sheet puts it (sheave.ts), standing on our bedframe — three irons round the sheave (under the rows of the feet's holes
-// and past the sheave), cross members at the ends, posts down to anti-vibration mounts when the frame is tall, the
-// feet's bolts — and the motor's supply
-// conduit from the terminal box to the floor. The group's origin is the bedframe's underside under the sheave's axis,
-// as the generic machine's (parts/index.ts), so the room places either the same way. Metres. Loaded only through boot.ts.
+// sheet puts it (sheave.ts), standing on what the room gives it — our bedframe (three irons round the sheave, under the
+// rows of the feet's holes and past the sheave, as tall as the frame on anti-vibration mounts, never on posts; cross
+// members at the ends), the maker's pedestal on the maker's bedplate, or the irons of our bedplate with the diverting
+// pulley — with the feet's bolts, and the motor's supply conduit from the terminal box to the floor. The group's origin
+// is where the machine stands under the sheave's axis, as the generic machine's (parts/index.ts), so the room places
+// either the same way. Metres. Loaded only through boot.ts.
 import * as THREE from 'three/webgpu';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { IRON, partBox, type MachineFrame, type MachineShape, type ShapePart } from '@/shaft/machine-shape';
@@ -19,18 +20,27 @@ import { shapedSheave } from './sheave';
 
 const m = (v: number): number => v / 1000;
 
-/** The bedframe under the feet, its underside at y = 0 and its top at the feet's plane: a channel under each iron
- *  (src/shaft/machine-shape.ts machineFrame), the end ones across from the first to the last, past the rope falls. */
+/** What the feet stand on, its underside at y = 0 and its top at the feet's plane: our bedframe — a channel under each
+ *  iron (src/shaft/machine-shape.ts machineFrame) as tall as the frame on its mounts, never on posts, the end ones
+ *  across from the first to the last, past the rope falls —, the maker's pedestal on the maker's bedplate (a welded box
+ *  under the feet between its plates), or nothing on our bedplate with the diverting pulley (the feet on its irons). */
 function bedframe(F: MachineFrame, M: MachineMaterials): THREE.Group {
-  const g = new THREE.Group(), bed = m(F.bed), [x0, x1] = [m(F.run[0]), m(F.run[1])], zs = F.beams.map(m), mount = 0.022;
-  const za = zs[0], zb = zs[zs.length - 1], hb = Math.min(0.12, bed - mount), bw = m(IRON), tf = 0.009, tw = 0.007, y1 = bed, y0 = bed - hb;
+  const g = new THREE.Group(), S = F.shape, bed = m(F.bed);
+  if (F.on === 'bedplate' || !S) return g;
+  if (F.on === 'pedestal') {
+    const [x0, z0, x1, z1] = S.feet.map(m), t = 0.012, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
+    g.add(mesh(new THREE.BoxGeometry(x1 - x0 + 0.03, t, z1 - z0 + 0.03), M.frame, cx, t / 2, cz), mesh(new THREE.BoxGeometry(x1 - x0, t, z1 - z0), M.frame, cx, bed - t / 2, cz));
+    g.add(mesh(new RoundedBoxGeometry(x1 - x0 - 0.03, bed - 2 * t, z1 - z0 - 0.03, 2, 0.006), M.frame, cx, bed / 2, cz));
+    return g;
+  }
+  const [x0, x1] = [m(F.run[0]), m(F.run[1])], zs = F.beams.map(m), mount = 0.022;
+  const za = zs[0], zb = zs[zs.length - 1], bw = m(IRON), tf = 0.009, tw = 0.007, y1 = bed, y0 = mount, hb = y1 - y0;
   for (const [z, s] of zs.map((z, i) => [z, i === 0 ? -1 : 1] as const)) {
     // a channel's top and bottom flanges and its web, the back toward the machine's middle
     g.add(mesh(new THREE.BoxGeometry(x1 - x0, tf, bw), M.frame, (x0 + x1) / 2, y1 - tf / 2, z), mesh(new THREE.BoxGeometry(x1 - x0, tf, bw), M.frame, (x0 + x1) / 2, y0 + tf / 2, z));
     g.add(mesh(new THREE.BoxGeometry(x1 - x0, hb - 2 * tf, tw), M.frame, (x0 + x1) / 2, (y0 + y1) / 2, z - s * (bw / 2 - tw / 2)));
+    // the mounts at its ends: plate, rubber, plate
     for (const xm of F.mounts.map(m)) {
-      // posts down to the mounts when the frame stands taller than its beams; the mounts: plate, rubber, plate
-      if (y0 - mount > 0.004) g.add(mesh(new RoundedBoxGeometry(0.08, y0 - mount, 0.08, 1, 0.004), M.frame, xm, mount + (y0 - mount) / 2, z));
       g.add(mesh(new THREE.BoxGeometry(0.12, 0.004, 0.1), M.frame, xm, 0.002, z), mesh(new RoundedBoxGeometry(0.1, 0.014, 0.085, 2, 0.004), M.rubber, xm, 0.011, z),
         mesh(new THREE.BoxGeometry(0.12, 0.004, 0.1), M.frame, xm, 0.02, z));
     }

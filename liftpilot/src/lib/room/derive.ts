@@ -18,7 +18,7 @@ import { check } from '@/shaft/checks';
 import { hebChecks, hebFor, type HebTaken } from '@/shaft/heb';
 import { orientedGeo, roomChecksOf, type MachineSpec, type RoomGeo } from '@/shaft/machine-room';
 import { KV_VERT } from '@/shaft/norme-vert';
-import { rinvioAxisOf, rinvioTopOf } from '@/shaft/rinvio';
+import { axisOverTop, rinvioAxisOf, rinvioTopOf } from '@/shaft/rinvio';
 import type { RoomSite } from '@/shaft/room-site';
 import { switchBox } from '@/shaft/room-floor';
 import { beamChecks, fitChecks, machineParts, panelFloorChecks, rinvioChecks, type SupportLoad } from '@/shaft/support-check';
@@ -68,7 +68,7 @@ export function surveyMachine(V: FormValues, a: Analysis, s: Pick<Survey, 'room'
   const spec = (room: Survey['room']): MachineSpec => machineSpec(a.ctx, a.ctx.N.mass, made ? `${made.brand} ${made.model}` : '', room, shape, made);
   const M = spec(s.room), rf = M.rinvio;
   if (rf?.on !== 'frame' || rf.maker || s.room.support?.height !== undefined) return { M, made };
-  const height = Math.round(Math.max(rinvioTopOf(M.Dp), rinvioAxisOf(M.Dp) + M.h - ownAxis(M.D, shape)));
+  const height = Math.round(Math.max(rinvioTopOf(M.Dp), rinvioAxisOf(M.Dp) + M.h - axisOverTop(M.D, shape)));
   return { M: spec({ ...s.room, support: { kind: 'rinvio', height } }), made };
 }
 
@@ -103,7 +103,7 @@ function deriveOnce(V: FormValues, s: Survey, a: Analysis): RoomDerived {
     ...roomChecksOf(R, [...machineParts(G, M), ...others]), ...beamChecks(G, M, load), ...rinvioChecks(G, M), ...hebChecks(beams?.chosen.result ?? null), ...fitChecks(G, M, others),
     ...panelFloorChecks(G, M, others), check('m_calata', off <= KV_VERT.dropTol, Math.round(off), KV_VERT.dropTol, 0, 'mm'),
   ] : roomChecksOf(R);
-  const hMin = M.Dp > 0 ? Math.ceil(ownAxis(M.D, M.shape ?? null) + r) : null;
+  const hMin = M.Dp > 0 ? Math.ceil((rf?.on === 'frame' ? axisOverTop(M.D, M.shape ?? null, rf.bed) : ownAxis(M.D, M.shape ?? null)) + r) : null;
   const heb = beams && chosenBy ? { ...beams, auto: { profile: !chosenBy.profile, dir: !chosenBy.dir } } : null;
   return { analysis: a, made, M, G, site, calata: { calc: calata, measured }, hMin, load, heb, checks, issues };
 }

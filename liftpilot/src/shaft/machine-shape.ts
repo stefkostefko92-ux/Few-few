@@ -103,14 +103,12 @@ export function bodyBox(S: MachineShape): Box6 {
   return [lo(0), lo(1), lo(2), hi(3), hi(4), hi(5)];
 }
 
-/** The generic machine's sheave axis over its bedplate's underside at the sheave D [mm] (machine-outline.ts, scaled). */
-export const genericAxis = (D: number): number => MACHINE_A.yWheel * 1000 * (D / (2000 * MACHINE_A.rp));
-
-/** Our bedframe's height under the maker's feet at the sheave D: where the generic machine has the sheave's axis, at
- *  least KV_VERT.machineBed and with the sheave's rim, and what hangs under the feet (Sassi's LEO: the end of its
- *  inclined worm, the brake and the flywheel), KV_VERT.machineRimClear over the bedframe's underside. */
+/** Our bedframe's height under the maker's feet at the sheave D: what the machine needs and no more — at least
+ *  KV_VERT.machineBed, the sheave's rim and what hangs under the feet (Sassi's LEO: the end of its inclined worm, the
+ *  brake and the flywheel) KV_VERT.machineRimClear over the bedframe's underside. Its irons are as tall as that on
+ *  their mounts: never on posts. */
 export const bedOf = (S: MachineShape, D: number): number =>
-  Math.ceil(Math.max(KV_VERT.machineBed, D / 2 + KV_VERT.machineRimClear - S.yWheel, genericAxis(D) - S.yWheel, KV_VERT.machineRimClear - bodyBox(S)[1]) - 1e-9);
+  Math.ceil(Math.max(KV_VERT.machineBed, D / 2 + KV_VERT.machineRimClear - S.yWheel, KV_VERT.machineRimClear - bodyBox(S)[1]) - 1e-9);
 
 /** Where the machine is, as the room's drawings and the 3D place it [mm]. */
 export interface MachineFrame {
@@ -135,8 +133,14 @@ export interface MachineFrame {
   /** a concrete plinth under the bedplate across Z: a block under the irons on each side of the sheave's band, where its
    *  ropes go down */
   plinth: readonly (readonly [number, number])[];
-  /** our bedframe's height under the maker's feet (0: the generic machine, whose bedplate is its own) */
+  /** the height under the maker's feet over what the machine stands on (0: the generic machine, whose bedplate is its
+   *  own) */
   bed: number;
+  /** what the maker's feet stand on: our bedframe (`frame`: an iron under each row and past the sheave, as tall as the
+   *  frame less its mounts — never on posts), the irons of the bedplate with the diverting pulley (`bedplate`: its beams
+   *  under them, rinvio.ts; no frame of its own, `bed` 0) or the maker's pedestal on the maker's bedplate (`pedestal`,
+   *  `bed` high, as the maker draws it); the generic machine on its own bedplate (`frame`) */
+  on: 'frame' | 'bedplate' | 'pedestal';
   /** the gearbox's face toward the sheave across Z: a slow shaft longer than the machine's runs from there */
   face: number;
   shape: MachineShape | null;
@@ -153,9 +157,10 @@ export const IRON = 70;
  *  stand), its flange at least KV_VERT.machineIronClear clear of the sheave's outer face. */
 const ironPast = (near: number, P: number, E: number, half: number): number => Math.max(2 * P - near, P + E / 2 + KV_VERT.machineIronClear + half);
 
-/** The machine of the sheave D: the generic one scaled to it, or the maker's `S` on our bedframe (bedOf), or on the seat
- *  of the maker's bedplate with the diverting pulley (`seat`, rinvio.ts). `through`: the sheave reaches through a wall
- *  (the machine below beside the shaft), no iron past it. */
+/** The machine of the sheave D: the generic one scaled to it, or the maker's `S` on our bedframe (bedOf) or, on the
+ *  bedplate with the diverting pulley (rinvio.ts), `seat` over its top — 0 on ours, the feet on its irons; the maker's
+ *  pedestal on the maker's. `through`: the sheave reaches through a wall (the machine below beside the shaft), no iron
+ *  past it. */
 export function machineFrame(D: number, S: MachineShape | null, seat: number | null = null, through = false): MachineFrame {
   const s = D / (2000 * MACHINE_A.rp);
   if (!S) {
@@ -166,9 +171,10 @@ export function machineFrame(D: number, S: MachineShape | null, seat: number | n
     const beams = through ? [-160 * s, 160 * s] : [-160 * s, 160 * s, 520 * s];
     return { axis: MACHINE_A.yWheel * 1000 * s, zSheave: P, width: E, x, run: x,
       z: [MACHINE_Z[0] * 1000 * s, through ? MACHINE_Z[1] * 1000 * s : 560 * s], mounts: [-360 * s, 950 * s], beams,
-      plinth: plinthOf(beams, P - E / 2 - 20, P + E / 2 + 20), bed: 0, face: 200 * s, shape: null, s };
+      plinth: plinthOf(beams, P - E / 2 - 20, P + E / 2 + 20), bed: 0, on: 'frame', face: 200 * s, shape: null, s };
   }
   const { P, E } = sheaveOf(S, D), b = bodyBox(S), bed = seat ?? bedOf(S, D), ov = KV_VERT.machineBedOverhang, half = IRON / 2;
+  const on: MachineFrame['on'] = seat === null ? 'frame' : seat > 0 ? 'pedestal' : 'bedplate';
   // an iron under each row of holes, and past the sheave a third when no row (an outboard support's) stands there
   const rows = [...new Set(S.holes.map((h) => h[1]))].sort((a, c) => a - c), near = rows.filter((z) => z < P);
   const beams = through || !near.length || rows.some((z) => z > P) ? rows : [...rows, ironPast(near[near.length - 1], P, E, half)];
@@ -182,7 +188,7 @@ export function machineFrame(D: number, S: MachineShape | null, seat: number | n
   const face = Math.max(...S.parts.filter((p) => p.role === 'housing' || p.role === 'cover').map((p) => partBox(p)[5]).filter((z) => z < P));
   return { axis: bed + S.yWheel, zSheave: P, width: E, x: [Math.min(x0, run[0]), Math.max(x1, run[1])], run,
     z: [Math.min(S.feet[1], b[2], beams[0] - half), Math.max(P + E / 2, S.feet[3], beams[beams.length - 1] + half)], mounts: [run[0] + 90, run[1] - 90], beams,
-    plinth: plinthOf(beams, P - E / 2 - 20, P + E / 2 + 20), bed, face, shape: S, s };
+    plinth: plinthOf(beams, P - E / 2 - 20, P + E / 2 + 20), bed, on, face, shape: S, s };
 }
 
 /** The plinth across Z under beams at `beams` (in order): 140 mm past them, kept out of the sheave's band [s0, s1] where

@@ -76,10 +76,10 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo): { entities:
     } else out.push(path(quad(G, u - 140, -half - 40, u + 140, half + 40), true, 'hidden'));
     out.push(path(pulley, true, under ? 'hidden' : 'outline', under ? undefined : 'steel'), line(onDrop(G, u, -half - 22), onDrop(G, u, half + 22), under ? 'hidden' : 'thin'));
   }
-  const [p0, p1] = span(G, 0, 0, R.W, R.D);
-  out.push(...supportPlan(M, G, (u, v) => onDrop(G, u, v), p0, p1));
-  const heb = hebDrawn(G, M, S);
+  // from the lowest up: the HEB beams on the shaft's walls, the support on them, the machine on it
+  const [p0, p1] = span(G, 0, 0, R.W, R.D), heb = hebDrawn(G, M, S);
   if (heb) out.push(...hebPlan(heb, G, M, S));
+  out.push(...supportPlan(M, G, (u, v) => onDrop(G, u, v), p0, p1));
   const F = G.frame;
   out.push(...(F.shape ? shapePlan(F, M.D, M.n, M.d, (x, z) => onDrop(G, machineU(G, x), machineV(G, z)))
     : machinePlan((x, z) => onDrop(G, machineU(G, x * k), machineV(G, z * k)), F.beams.map((z) => z / k))));
@@ -159,9 +159,9 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo): { entities:
     : pick([gs - 220, gs - 370, gs - 520, wf + 200, wf + 350], 0, G.calata);
   const [a, b] = [onDrop(G, G.frame0, vFrame), onDrop(G, G.frame1, vFrame)], drop = onDrop(G, 0, vDrop);
   const sorted = (p: number, q: number): number[] => [Math.min(p, q), Math.max(p, q)];
-  // from the bedframe's side toward the chain
+  // from the bedframe's side toward the chain (a machine on a bedplate's irons or on the maker's pedestal has none)
   const edgeV = vFrame < G.across[0] ? G.across[0] : G.across[1], edge = onDrop(G, G.frame0, edgeV)[1 - ax];
-  out.push(chain({ dir: ax ? 'y' : 'x', pts: sorted(a[ax], b[ax]), at: a[1 - ax], from: [edge, edge], text: ['{v} Telaio argano'] }));
+  if (G.frame.on === 'frame') out.push(chain({ dir: ax ? 'y' : 'x', pts: sorted(a[ax], b[ax]), at: a[1 - ax], from: [edge, edge], text: ['{v} Telaio argano'] }));
   // the rope drop between the ropes, from each of them: along an axis on a chain there; askew, along the drop line
   // itself (the rows outside give where each drop stands)
   const [r0, r1] = G.carDrop[ax] <= G.cwDrop[ax] ? [G.carDrop, G.cwDrop] : [G.cwDrop, G.carDrop];
@@ -249,7 +249,7 @@ export function roomSectionOn(S: RoomSite, M: MachineSpec, G: RoomGeo): { entiti
   out.push(chain({ dir: 'y', pts: [0, R.panelH], side: 'right', row: 1, text: ['{v} H. Quadro'], edit: [E('room.panelH')] }));
   // the sheave's axis: the support's height takes the change (pads, the machine's own height and the HEB beams under
   // the support stay)
-  const hb = M.base ?? 0, axisEdit = rf?.on === 'frame' ? (rf.maker ? null : E('rinvio.height', -ownAxis(D, F.shape) - hb)) : E('sup.height', -(padsOf(sup) + ownAxis(D, F.shape) + hb));
+  const hb = M.base ?? 0, axisEdit = rf?.on === 'frame' ? (rf.maker ? null : E('rinvio.height', -F.axis - hb)) : E('sup.height', -(padsOf(sup) + ownAxis(D, F.shape) + hb));
   // (on the bedplate of the pulley, left of its two heights; the h of the pulley right of its legs)
   out.push(chain({ dir: 'y', pts: [0, zs], at: bedRun ? Math.min(G.frame0 - 120, bedRun[0] - 620) : G.frame0 - 120, from: [null, G.sheaveAt], text: ['Asse {v}'], edit: [axisEdit] }));
   if (M.Dp > 0) {
@@ -266,8 +266,9 @@ export function roomSectionOn(S: RoomSite, M: MachineSpec, G: RoomGeo): { entiti
     out.push(chain({ dir: 'x', pts: left ? [G.sheaveAt, G.pulleyAt] : [G.pulleyAt, G.sheaveAt], side: 'top', row: 0, from: left ? [zs, G.pulleyZ] : [G.pulleyZ, zs], text: ['dx {v}'],
       edit: [left ? S.calata(less, true) : null] }));
   }
-  // the bedframe's length over the room, from its ends; the rope drop between the ropes' axes in the shaft
-  out.push(chain({ dir: 'x', pts: [G.frame0, G.frame1], side: 'top', row: M.Dp > 0 ? 1 : 0, from: [base, base], text: ['{v} Telaio argano'] }));
+  // the bedframe's length over the room, from its ends (none on a bedplate's irons or the maker's pedestal); the rope
+  // drop between the ropes' axes in the shaft
+  if (F.on === 'frame') out.push(chain({ dir: 'x', pts: [G.frame0, G.frame1], side: 'top', row: M.Dp > 0 ? 1 : 0, from: [base, base], text: ['{v} Telaio argano'] }));
   out.push(chain({ dir: 'x', pts: [0, G.calata], at: foot + 160, from: [ropeFoot, ropeFoot], axis: [true, true], text: ['{v} Calata Funi (Rif.)'], edit: [S.calata(0, true)] }));
   const along = Math.abs(G.uy) > 0.999 ? 'D' : Math.abs(G.ux) > 0.999 ? 'W' : null;
   out.push(chain({ dir: 'x', pts: [s0, s1], at: foot + 420, text: ['Vano {v}'], edit: [along ? E(along) : null] }));

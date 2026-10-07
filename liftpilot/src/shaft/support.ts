@@ -1,12 +1,13 @@
 // The machine's support in the room above the shaft (registry locale.basamento): levelling shims under its mounts (the
-// sheave's axis where the software puts it), a frame of rolled profiles on the floor or beams (putrelle) from wall to
-// wall that may stand clear of the floor — one under each of the three irons of the machine's frame, the sheave between
-// the last two (machine-shape.ts) —, steel plates under the mounts, a concrete plinth on each side of the ropes, or the bedplate with the
-// diverting pulley (rinvio.ts, registry locale.rinvio: what the machine stands on when it has one, unless another is
-// chosen); anti-vibration pads under the mounts on all but the shims and the bedplate (its dampers are under its legs). Its height sets the sheave's axis over the room's floor (the calculation's rope
-// beyond the travel and the 3D follow it); a frame and a plinth run along the rope drop line past the machine's
-// bedplate. Millimetres; the machine is the one of the drawings scaled to the sheave (machine-outline.ts) or a maker's on our
-// bedframe (machine-shape.ts). Pure.
+// generic machine's sheave's axis where the software puts it, a maker's where its bedframe on the same shims puts it),
+// a frame of rolled profiles on the floor or beams (putrelle) from wall to wall that may stand clear of the floor — one
+// under each of the three irons of the machine's frame, the sheave between the last two (machine-shape.ts) —, steel
+// plates under the mounts, a concrete plinth on each side of the ropes, or the bedplate with the diverting pulley
+// (rinvio.ts, registry locale.rinvio: what the machine stands on when it has one, unless another is chosen);
+// anti-vibration pads under the mounts on all but the shims and the bedplate (its dampers are under its legs). Its
+// height sets the sheave's axis over the room's floor (the calculation's rope beyond the travel and the 3D follow it);
+// a frame and a plinth run along the rope drop line past the machine's bedplate. Millimetres; the machine is the one of
+// the drawings scaled to the sheave (machine-outline.ts) or a maker's on our bedframe (machine-shape.ts). Pure.
 import { machineFrame, type MachineShape } from './machine-shape';
 import { rinvioTopOf } from './rinvio';
 import { KV_VERT } from './norme-vert';
@@ -68,13 +69,13 @@ export const hebBase = (R: RoomInputs | null | undefined, deflector = false): nu
 /** The pads under the mounts [mm]: none on the shims and on the bedplate with the pulley. */
 export const padsOf = (s: MachineSupport): number => (s.kind === 'shims' || s.kind === 'rinvio' ? 0 : KV_VERT.supportPads);
 
-/** The support's top over the room's floor [mm]; `shimsAxis`: the sheave's axis the software takes on shims (a maker's
- *  machine whose own axis is higher stands on its bedframe with no shims); `Dp`: the diverting pulley under the
- *  bedplate's beams. */
+/** The support's top over the room's floor [mm]; `shimsAxis`: the sheave's axis the software takes on shims for the
+ *  generic machine — the levelling shims that leaves under it go under a maker's machine too, whose sheave then stands
+ *  where its bedframe puts it (no stack of shims raising it); `Dp`: the diverting pulley under the bedplate's beams. */
 export function supportHeight(s: MachineSupport, D: number, shimsAxis: number, shape: MachineShape | null = null, Dp = 0): number {
   if (s.height !== undefined) return s.height;
   if (s.kind === 'rinvio') return rinvioTopOf(Dp);
-  if (s.kind === 'shims') return shape ? Math.max(0, shimsAxis - ownAxis(D, shape)) : shimsAxis - ownAxis(D);
+  if (s.kind === 'shims') return shape ? Math.max(0, shimsAxis - ownAxis(D)) : shimsAxis - ownAxis(D);
   if (hasProfile(s)) return PROFILES[profileOf(s)].h;
   return s.kind === 'plates' ? KV_VERT.supportPlate : KV_VERT.supportPlinth;
 }

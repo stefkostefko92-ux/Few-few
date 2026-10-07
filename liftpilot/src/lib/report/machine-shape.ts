@@ -1,11 +1,13 @@
 // The maker's machine as it is, in the relazione: the sheet's dimensions the installer needs to place it (overall
 // sizes, the sheave's and the worm's axes over the feet, the sheave's mid-plane P and width E, the holes of the feet)
-// and the height of the bedframe the drawings put under it (src/shaft/machine-shape.ts); where the diverting pulley
-// turns in the machine room (src/shaft/rinvio.ts). Italian. Pure.
-import { bodyBox, machineFrame, sheaveOf, type MachineShape } from '@/shaft/machine-shape';
-import type { RinvioFrame } from '@/shaft/rinvio';
+// and what its feet stand on in the drawings — our bedframe, the irons of our bedplate, the maker's pedestal
+// (src/shaft/machine-shape.ts); where the diverting pulley turns in the machine room (src/shaft/rinvio.ts). Italian.
+// Pure.
+import { bodyBox, machineFrame, sheaveOf, type MachineFrame, type MachineShape } from '@/shaft/machine-shape';
+import type { MakerBedplate, RinvioFrame } from '@/shaft/rinvio';
 
-/** `rf`: the bedplate with the diverting pulley the machine stands on; on the maker's, the machine's seat is the maker's.
+/** `rf`: the bedplate with the diverting pulley the machine stands on (on ours its feet on the irons, on the maker's its
+ *  pedestal).
  *  `through`: the machine below beside the shaft, its sheave through the wall (machine-shape.ts machineFrame). */
 export function shapeRows(S: MachineShape, D: number, fmt: (x: number, dp?: number) => string, rf: RinvioFrame | null = null, through = false): [string, string][] {
   const seat = rf?.on === 'frame' ? rf.bed : null, mk = rf?.on === 'frame' ? rf.maker : null;
@@ -28,12 +30,25 @@ export function shapeRows(S: MachineShape, D: number, fmt: (x: number, dp?: numb
     ['Puleggia', `Ø ${fmt(D, 0)} mm, piano medio a P = ${fmt(P, 1)} mm dal piano della vite, larghezza E `
       + (S.sheaveScaled ? scaled(`${fmt(E, 0)} mm`, true) : `= ${fmt(E, 0)} mm${S.bodyFrom ? ` (come la ${S.bodyFrom})` : ''}`)],
     ['Fissaggio', `${S.holes.length} × ${S.hole} su ${span(xs)} × ${span(zs)} mm; piedi ${fmt(S.feet[2] - S.feet[0], 0)} × ${fmt(S.feet[3] - S.feet[1], 0)} mm`],
-    mk && seat !== null
-      ? ['Sede sul basamento', `${fmt(seat, 0)} mm sotto i piedi, sul basamento ${mk.brand} ${mk.code}: l’asse della puleggia a ${fmt(mk.sheaveAxis, 0)} mm sul pavimento del locale`]
-      : ['Telaio sotto l’argano', `alto ${fmt(F.bed, 0)} mm (scelta del software), ${through ? `con i ferri sotto le file di fori (a ${irons}): la puleggia passa il `
-        + 'muro del vano' : `con tre ferri sopra e la puleggia fra il secondo e il terzo (a ${irons})`}: l’asse della puleggia a ${fmt(F.axis, 0)} mm sul piano `
-        + 'd’appoggio del telaio'],
+    standsOn(F, mk, irons, through, fmt),
   ];
+}
+
+/** What the machine's feet stand on: the maker's pedestal on the maker's bedplate, the irons of our bedplate with the
+ *  diverting pulley, or our bedframe (machine-shape.ts machineFrame). */
+function standsOn(F: MachineFrame, mk: MakerBedplate | null, irons: string, through: boolean, fmt: (x: number, dp?: number) => string): [string, string] {
+  if (mk && F.on === 'pedestal') {
+    return ['Piedistallo sul basamento', `del costruttore, alto ${fmt(F.bed, 0)} mm sotto i piedi, sul basamento ${mk.brand} ${mk.code} come lo disegna il `
+      + `costruttore: l’asse della puleggia a ${fmt(mk.sheaveAxis, 0)} mm sul pavimento del locale`];
+  }
+  if (F.on === 'bedplate') {
+    return ['Appoggio sul basamento', `i piedi direttamente sui ferri del ${mk ? `basamento ${mk.brand} ${mk.code}` : 'telaio con rinvio (una trave UPN 160 sotto '
+      + `ogni ferro, a ${irons}; la puleggia fra il secondo e il terzo)`}, senza un telaio proprio: l’asse della puleggia a ${fmt(F.axis, 0)} mm sulla `
+      + 'sommità del basamento'];
+  }
+  return ['Telaio sotto l’argano', `alto ${fmt(F.bed, 0)} mm (scelta del software: quanto serve all’argano, ferri alti quanto il telaio sugli `
+    + `antivibranti, mai su ritti), ${through ? `con i ferri sotto le file di fori (a ${irons}): la puleggia passa il muro del vano`
+    : `con tre ferri sopra e la puleggia fra il secondo e il terzo (a ${irons})`}: l’asse della puleggia a ${fmt(F.axis, 0)} mm sul piano d’appoggio del telaio`];
 }
 
 /** The diverting pulley in the machine room, never in the shaft: in the machine's bedplate (the maker's, with its code,
@@ -45,5 +60,5 @@ export function rinvioRow(rf: RinvioFrame, fmt: (x: number, dp?: number) => stri
   return ['Puleggia di rinvio', mk
     ? `nel locale macchina, mai nel vano: nel basamento ${mk.brand} ${mk.code} dell’argano (${fmt(mk.mass, 0)} kg con puleggia e antivibranti), ${axis}, `
       + `sommità a ${fmt(mk.top, 0)} mm, asse della puleggia di frizione a ${fmt(mk.sheaveAxis, 0)} mm (fonte: ${mk.src})`
-    : `nel locale macchina, mai nel vano: nel telaio dell’argano (UPN, su antivibranti; scelta del software), ${axis}, sommità a ${fmt(rf.top, 0)} mm`];
+    : `nel locale macchina, mai nel vano: nel telaio dell’argano (UPN sotto i suoi ferri, su antivibranti; scelta del software), ${axis}, sommità a ${fmt(rf.top, 0)} mm`];
 }

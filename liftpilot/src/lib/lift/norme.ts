@@ -139,7 +139,8 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
   {
     id: 'impianto.L0', titolo: 'Fune oltre la corsa (L0)',
     valore: `dalla sommità dell’arcata con la cabina all’ultimo piano fino all’asse della puleggia: testata − sommità dell’arcata + soletta del locale + `
-      + `asse della puleggia a ${it(KL.sheaveAxisPerD)}·D sul pavimento del locale; con la puleggia di rinvio, l’asse sul basamento o sul telaio che la `
+      + `asse della puleggia a ${it(KL.sheaveAxisPerD)}·D sul pavimento del locale (l’argano generico sugli spessori; quello di catalogo sugli stessi `
+      + `spessori e sul suo telaio, l’asse dove lo porta il telaio); con la puleggia di rinvio, l’asse sul basamento o sul telaio che la `
       + 'porta (voce locale.rinvio); macchina in basso o senza locale: fino al soffitto del vano',
     riferimento: '—', fonte: 'dati verticali del vano; altezza dell’asse scelta dal software', stato: 'scelta', costanti: ['sheaveAxisPerD'],
   },
