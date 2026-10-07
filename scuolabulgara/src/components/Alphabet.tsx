@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Letter } from "@/lib/content";
 import { sewLetter } from "@/lib/stitch-dom";
+import { bestVoice } from "@/lib/voice";
 
 type Labels = { pick: string; latin: string; meaning: string; listen: string };
 
@@ -27,19 +28,44 @@ export default function Alphabet({ letters, labels }: { letters: Letter[]; label
     return () => { live = false; cancel(); };
   }, [cur]);
 
-  // The word, spoken: one player for the whole grid; a new letter stops the old clip.
+  // The word, spoken. A sound uploaded in the admin wins; otherwise the
+  // device's best Bulgarian voice reads it (no button if it has none).
   const player = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
-  useEffect(() => () => { player.current?.pause(); }, []);
-  useEffect(() => { player.current?.pause(); setPlaying(false); }, [cur]);
-  const speak = () => {
-    if (!cur?.audio) return;
+  const [voice, setVoice] = useState<SpeechSynthesisVoice | null>(null);
+  useEffect(() => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    const pick = () => setVoice(bestVoice(window.speechSynthesis.getVoices()));
+    pick();
+    window.speechSynthesis.addEventListener("voiceschanged", pick);
+    return () => window.speechSynthesis.removeEventListener("voiceschanged", pick);
+  }, []);
+  const stop = () => {
     player.current?.pause();
-    const a = new Audio(cur.audio);
-    player.current = a;
-    a.onended = a.onerror = () => setPlaying(false);
+    if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
+  };
+  useEffect(() => stop, []);
+  useEffect(() => { stop(); setPlaying(false); }, [cur]);
+  const canSpeak = !!cur?.audio || !!voice;
+  const speak = () => {
+    if (!cur) return;
+    stop();
+    if (cur.audio) {
+      const a = new Audio(cur.audio);
+      player.current = a;
+      a.onended = a.onerror = () => setPlaying(false);
+      setPlaying(true);
+      a.play().catch(() => setPlaying(false));
+      return;
+    }
+    if (!voice) return;
+    const u = new SpeechSynthesisUtterance(cur.word);
+    u.voice = voice;
+    u.lang = voice.lang || "bg-BG";
+    u.rate = 0.85; // a little slower: it's a word to learn
+    u.onend = u.onerror = () => setPlaying(false);
     setPlaying(true);
-    a.play().catch(() => setPlaying(false));
+    window.speechSynthesis.speak(u);
   };
 
   // Arrow keys move through the grid like a keyboard (roving focus).
@@ -84,7 +110,7 @@ export default function Alphabet({ letters, labels }: { letters: Letter[]; label
           <p className="abc__pair" lang="bg">{cur.letter}{cur.letter.toLocaleLowerCase("bg")}</p>
           <p className="abc__word" lang="bg">
             {cur.word}
-            {cur.audio && (
+            {canSpeak && (
               <button type="button" className={`abc__speak ${playing ? "is-playing" : ""}`} onClick={speak} aria-label={`${labels.listen}: ${cur.word}`} title={labels.listen}>
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M4 9v6h4l5 4V5L8 9H4Z" fill="currentColor" stroke="none" />
