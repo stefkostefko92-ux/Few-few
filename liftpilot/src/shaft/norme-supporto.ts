@@ -62,7 +62,8 @@ export const VOCI_SUPPORTO: readonly VoceVano[] = [
       + 'ingombri dalle quote del costruttore per gli argani disegnati com’è, dall’argano generico del software (scalato alla puleggia) per gli '
       + 'altri. L’argano sta lungo la linea delle calate con la puleggia sopra le funi e il motore verso il contrappeso; quando solo così sta '
       + 'dentro il locale, o ne esce di meno, il software lo gira di 180° attorno all’asse verticale della puleggia (motore verso la calata della '
-      + 'cabina, riduttore sull’altro lato della linea delle calate); il verso si può scegliere a mano. La puleggia di rinvio sul suo supporto '
+      + 'cabina, riduttore sull’altro lato della linea delle calate), non sul telaio con rinvio del costruttore, che la porta come la monta lui; '
+      + 'il verso si può scegliere a mano (girato a mano sul telaio del costruttore, da confermare con il costruttore). La puleggia di rinvio sul suo supporto '
       + 'sotto l’argano libera il basamento dell’argano sopra di essa (solo le putrelle sollevate la scavalcano); con la macchina in basso '
       + 'l’argano — corpo e puleggia — sta dentro il suo locale, accanto al vano o sotto di esso, con le misure date sui disegni o quelle del '
       + 'software',

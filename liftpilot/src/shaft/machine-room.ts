@@ -154,11 +154,11 @@ export function planClear(G: RoomGeo, M: MachineSpec): number {
 
 /** The machine over the drops as the room takes it (registry locale.ingombro): its motor where the room's input puts it,
  *  else toward the counterweight's drop — turned round toward the car's when only so it keeps clear of the walls, or
- *  goes less into them. */
+ *  goes less into them; on a maker's bedplate with the diverting pulley, as the maker seats it (turned only by hand). */
 export function orientedGeo(R: RoomInputs, P: Drops, M: MachineSpec, sheaveAt = M.ropeIn + M.D / 2): RoomGeo {
   if (R.motor) return geoOn(R, P, M, sheaveAt, R.motor === 'car' ? -1 : 1);
   const G = geoOn(R, P, M, sheaveAt, 1), c = planClear(G, M);
-  if (c >= 0) return G;
+  if (c >= 0 || M.rinvio?.maker) return G;
   const T = geoOn(R, P, M, sheaveAt, -1);
   return planClear(T, M) > c ? T : G;
 }

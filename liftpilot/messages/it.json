@@ -821,7 +821,7 @@
     "rm_motor_auto": "automatico ({side})",
     "rm_motor_cw": "verso il contrappeso",
     "rm_motor_car": "verso la cabina",
-    "rm_motor_hint": "L’argano sta lungo le calate, la puleggia sopra le funi. Il software mette il motore verso il contrappeso e gira l’argano di 180° attorno all’asse della puleggia quando solo così argano e basamento stanno dentro il locale.",
+    "rm_motor_hint": "L’argano sta lungo le calate, la puleggia sopra le funi. Il software mette il motore verso il contrappeso e gira l’argano di 180° attorno all’asse della puleggia quando solo così argano e basamento stanno dentro il locale. Sul telaio con rinvio del costruttore lo lascia come lo monta il costruttore.",
     "heb_on": "Putrelle HEB sui muri del vano sotto il basamento (soletta senza verifica strutturale)",
     "heb_not": "Con questo basamento (putrelle da muro a muro del locale, plinto) le putrelle HEB sui muri del vano non si usano.",
     "heb_title": "Putrelle HEB sui muri del vano",

@@ -821,7 +821,7 @@
     "rm_motor_auto": "automatic ({side})",
     "rm_motor_cw": "toward the counterweight",
     "rm_motor_car": "toward the car",
-    "rm_motor_hint": "The machine lies along the rope drops, its sheave over the ropes. The software puts the motor toward the counterweight and turns the machine round by 180° about the sheave’s axis when only so the machine and its support stay inside the room.",
+    "rm_motor_hint": "The machine lies along the rope drops, its sheave over the ropes. The software puts the motor toward the counterweight and turns the machine round by 180° about the sheave’s axis when only so the machine and its support stay inside the room. On the maker’s bedplate with the diverting pulley it leaves the machine as the maker mounts it.",
     "heb_on": "HEB beams on the shaft walls under the support (slab without a structural check)",
     "heb_not": "With this support (beams from wall to wall of the room, plinth) HEB beams on the shaft walls are not used.",
     "heb_title": "HEB beams on the shaft walls",

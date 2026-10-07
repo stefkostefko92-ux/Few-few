@@ -7,7 +7,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { PRESETS } from '@/calc/presets';
 import type { FormValues } from '@/calc/types';
-import { deriveLift, newLift, type LiftInputs } from '@/lib/lift';
+import { defaultLift, deriveLift, newLift, type LiftInputs } from '@/lib/lift';
 import { drawnShaft, enteredShaft } from '@/lib/lift/panel-form';
 import { deriveRoom } from '@/lib/room/derive';
 import { startSurvey } from '@/lib/room/survey';
@@ -106,4 +106,17 @@ test('sostituzione: l’argano nuovo girato quando solo così sta nel locale ril
   assert.equal(cw.checks.find((c) => c.id === 'm_fit')?.status, 'fail');
   // the survey as it starts fits as it always stood
   assert.equal(deriveRoom(V, s).G?.dir, 1);
+});
+
+test('telaio con rinvio del costruttore: l’argano come lo monta il costruttore, girato solo a mano', () => {
+  // SICOR SH140 on its bedplate XTE6026, the rear wall brought in until it reaches into it
+  const L = { ...defaultLift(), catalog: { brand: 'SICOR' as const, model: 'SH140' } }, R0 = L.shaft.room as Room;
+  const tight = (extra: Partial<Room> = {}): LiftInputs => ({ ...L, shaft: { ...L.shaft, room: { ...R0, D: 2250, ...extra } } });
+  const d = deriveLift(tight()), G = roomGeo(d.layout, d.machine);
+  assert.ok(d.machine.rinvio?.maker, 'telaio del costruttore');
+  assert.ok(G && G.dir === 1, 'non lo gira il software');
+  assert.equal(check(tight(), 'm_fit')?.status, 'fail');
+  // turned by hand it is the engineer's (and the maker's) call
+  const k = deriveLift(tight({ motor: 'car' }));
+  assert.equal(roomGeo(k.layout, k.machine)?.dir, -1);
 });
