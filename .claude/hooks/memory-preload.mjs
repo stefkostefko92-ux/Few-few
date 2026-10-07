@@ -10,6 +10,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { pendingLessons } from "../../tools/lib/memory-branch.mjs";
 import { select, estTok as estTokR, taskFromTranscript, crossAgentPicks } from "../../tools/lib/memory-retrieval.mjs";
 import { evalMode } from "../../tools/lib/eval-mode.mjs";
+import { cardFor } from "../../tools/agents/teams.mjs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -124,6 +125,9 @@ function main() {
 
   // Статичен, кешируем префикс (агент-независим) — ВИНАГИ първо и в фиксиран ред.
   const parts = staticPrefixParts();
+  // Картата на агента (екип, вход/изход, на кого предава, къде е човекът) — агент-специфична, затова
+  // СЛЕД статичния префикс (кешът остава общ). Липсва ли _teams.json — тихо без нея.
+  try { const card = cardFor(agent); if (card) parts.push(card); } catch { /* без карта */ }
   // Динамичното (лична проверена памет) идва СЛЕД статичното. ВСИЧКИ поуки — собствените и чакащите в
   // agents/memory — минават през едно подреждане: релевантност към задачата, после дата от реда.
   const task = taskTextOf(payload) || taskFromTranscript(payload.transcript_path, agent);

@@ -8,6 +8,12 @@ markdown file with YAML frontmatter (`name`, `description`, `tools`, `model`) an
 Bulgarian system prompt distilled from deep web + GitHub research. Invoke one with the
 Agent tool (e.g. *"пусни Кодаджията върху промените"*); several can run in parallel.
 
+**Екипи — започни оттук.** Агентите са в 9 малки екипа около реален поток (Щабът · Ковачницата ·
+Пускането · Думите · Растежът · Парите · Нормите · Платформите · Формата) — всеки с водач, поток до 3
+стъпки, човешка точка, 5 тестови задачи, 3 вероятни провала и метрики. Източник: `_teams.json`;
+прочетим изглед: [`_teams.md`](_teams.md). Не знаеш кого да викнеш →
+`node tools/agents/teams.mjs --route "<задачата>"`. Всеки агент получава своята карта при старт.
+
 | Agent (file)                              | Викай го за…                                                                 |
 | ----------------------------------------- | ---------------------------------------------------------------------------- |
 | **Правният Разбирач** `pravniyat-razbirach.md` | EU-law audit: GDPR, ePrivacy/cookies, DSA, accessibility (EAA/WCAG 2.1 AA), imprint, robots/sitemap/llms/JSON-LD. Read-only auditor; ends every legal output with a „not legal advice“ disclaimer. |
