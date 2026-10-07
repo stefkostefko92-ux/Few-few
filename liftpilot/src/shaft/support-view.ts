@@ -1,8 +1,9 @@
 // The machine's support drawn in the machine room (support.ts): in section B-B along the rope drop line (u) over the
 // room's floor (z) and in plan, under the machine's bedplate of the drawings (machine-outline.ts: its mounts at x
-// −0,36 and 0,95 m, its two beams at z ±0,16 m at Ø 560; a maker's machine: its bedframe's, machine-shape.ts):
-// levelling shims, a frame of two profiles, two beams from wall to wall (raised clear of the floor when higher than
-// their profile), plates under the mounts, a concrete plinth; the pads under the mounts; the bedplate with the
+// −0,36 and 0,95 m at Ø 560; a maker's machine: its bedframe's; the three irons of either, machine-shape.ts): levelling
+// shims, a frame of three profiles, three beams from wall to wall (raised clear of the floor when higher than their
+// profile) — one under each iron, the sheave between the last two —, plates under the mounts, a concrete plinth in a
+// block on each side of the ropes; the pads under the mounts; the bedplate with the
 // diverting pulley (rinvio-view.ts); all of them on the HEB beams over the shaft's walls when the room puts them there
 // (heb-view.ts: every height over the floor raised by theirs). With its dimensions: the support's height (it carries the
 // sheave's axis), a profile by choice from the catalogue, the length of a frame or a plinth, the beams' span between the
@@ -10,7 +11,6 @@
 import { chain, edit as E, path, pickEdit, rect, type Edit, type Entity, type Pt } from '../drawing';
 import type { HebLayout } from './heb';
 import { hebSection } from './heb-view';
-import { MACHINE_A } from './machine-outline';
 import type { MachineSpec, RoomGeo } from './machine-room';
 import { KV_VERT } from './norme-vert';
 import { PROFILES, PROFILE_NAMES } from './profiles';
@@ -18,7 +18,7 @@ import { rinvioRun } from './rinvio';
 import { rinvioPlan, rinvioSection } from './rinvio-view';
 import { hasProfile, ownAxis, padsOf, profileOf, supportOf, supportSpan, type MachineSupport } from './support';
 
-const MOUNTS = [-0.36, 0.95] as const, BEAMS = [-0.16, 0.16] as const;
+const MOUNTS = [-0.36, 0.95] as const;
 const NAME: Record<MachineSupport['kind'], string> = { shims: 'Spessori', frame: 'Telaio', beams: 'Putrelle', plates: 'Piastre', plinth: 'Plinto', rinvio: 'Telaio con rinvio' };
 
 /** A profile changed by choosing another of the catalogue: the dimension shows its height. */
@@ -79,14 +79,15 @@ export function supportSection(M: MachineSpec, G: RoomGeo, r0: number, r1: numbe
 
 /** Plan: the support under the machine's bedplate (the drop line's u, across it v as the machine's plan is drawn). */
 export function supportPlan(M: MachineSpec, G: RoomGeo, onDrop: (u: number, v: number) => Pt, r0: number, r1: number): Entity[] {
-  const s = supportOf(G.room, M.Dp > 0), k = 1000 * G.s, out: Entity[] = [], zs = MACHINE_A.zSheave, F = G.frame, span = supportSpan(s, M.D, F.shape);
+  const s = supportOf(G.room, M.Dp > 0), k = 1000 * G.s, out: Entity[] = [], F = G.frame, span = supportSpan(s, M.D, F.shape);
   if (s.kind === 'rinvio' && M.rinvio?.on === 'frame') return rinvioPlan(M, G, M.rinvio, onDrop);
   const quad = (u0: number, v0: number, u1: number, v1: number): Pt[] => [onDrop(u0, v0), onDrop(u1, v0), onDrop(u1, v1), onDrop(u0, v1)];
-  const at = (x: number): number => G.sheaveAt + x * k, v = (z: number): number => (zs - z) * k;
-  // the mounts and the beams' lines across: the generic machine's scaled, a maker's on our bedframe [u, v]
-  const mounts = F.shape ? F.mounts.map((x) => G.sheaveAt + x) : MOUNTS.map(at), beams = F.shape ? F.beams.map((z) => F.zSheave - z) : BEAMS.map(v);
+  const at = (x: number): number => G.sheaveAt + x * k;
+  // the mounts (the generic machine's scaled, a maker's on our bedframe), the irons' lines across and the plinth's blocks
+  // on each side of the ropes [u, v]
+  const mounts = F.shape ? F.mounts.map((x) => G.sheaveAt + x) : MOUNTS.map(at), beams = F.beams.map((z) => F.zSheave - z);
   const [hx, hz] = F.shape ? [90, 60] : [0.09 * k, 0.06 * k];
-  const bands = F.shape ? F.plinth.map(([z0, z1]) => [F.zSheave - z1, F.zSheave - z0] as const) : [[v(0.2) - 100, v(-0.2) + 100] as const];
+  const bands = F.plinth.map(([z0, z1]) => [F.zSheave - z1, F.zSheave - z0] as const);
   if (s.kind === 'plates') for (const u of mounts) for (const vb of beams) out.push(path(quad(u - hx, vb - hz, u + hx, vb + hz), true, 'outline', 'steel'));
   if (s.kind === 'plinth' && span) for (const [w0, w1] of bands) out.push(path(quad(G.sheaveAt + span[0], w0, G.sheaveAt + span[1], w1), true, 'outline', 'concrete'));
   if (hasProfile(s)) {

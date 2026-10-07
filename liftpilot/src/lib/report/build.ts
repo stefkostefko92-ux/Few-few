@@ -220,7 +220,7 @@ export function buildReport(r: ReportInput): ReportDoc {
       + `(fonte: ${m.catalog.src}). Il calcolo usa questo rapporto, il carico statico e la massa del catalogo; i dati vanno verificati sulla scheda del `
       + 'costruttore prima dell’ordine.' });
     const S = shapeOf(m.catalog.brand, m.catalog.model);
-    if (S) B.push({ t: 'kv', rows: shapeRows(S, N.D, fmt, machine?.rinvio ?? null) });
+    if (S) B.push({ t: 'kv', rows: shapeRows(S, N.D, fmt, machine?.rinvio ?? null, !!scheme && scheme !== 'under') });
   }
   if (m.catalog) {
     // the machine verified is the catalogue's: the sizing's grid would describe another machine

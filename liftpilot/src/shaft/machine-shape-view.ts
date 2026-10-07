@@ -7,7 +7,7 @@
 // between the spokes showing what stands behind. Millimetres of the machine's frame, the bedframe's underside at y = 0;
 // `at` maps them to the drawing. Pure: room-view.ts places it.
 import { circle, line, path, type Entity, type FillName, type Pt, type StyleName } from '../drawing';
-import { partBox, tilted, type MachineFrame, type ShapePart } from './machine-shape';
+import { IRON, partBox, tilted, type MachineFrame, type ShapePart } from './machine-shape';
 import { SPOKE_ANGLES, brakeOf, coverBolts, endShields, ribsOf, sheaveDims, spokeOutline, type BrakeDetail, type P2 } from './machine-detail';
 
 type At = (x: number, y: number) => Pt;
@@ -172,7 +172,7 @@ function drawElevation(p: ShapePart, at: At, out: Entity[]): void {
   if (p.role === 'handwheel') out.push(line(at((s0 + s1) / 2, a - r), at((s0 + s1) / 2, a + r), 'thin'));
 }
 
-/** The machine from above (toward −Y): the bedframe's beams, the parts from the lowest with the ribs on the castings'
+/** The machine from above (toward −Y): the bedframe's irons round the sheave, the parts from the lowest with the ribs on the castings'
  *  backs, the brake's levers and springs, the sheave with its grooves, the worm's axis, the feet's holes (seen through
  *  the base when it has one; hidden under a compact gearbox). */
 export function shapePlan(F: MachineFrame, D: number, n: number, d: number, at: (x: number, z: number) => Pt): Entity[] {
@@ -181,8 +181,9 @@ export function shapePlan(F: MachineFrame, D: number, n: number, d: number, at: 
   const out: Entity[] = [], quad = (x0: number, z0: number, x1: number, z1: number, st: 'outline' | 'thin' | 'hidden' = 'outline', fill?: FillName): void => {
     out.push(path([at(x0, z0), at(x1, z0), at(x1, z1), at(x0, z1)], true, st, fill));
   };
-  for (const z of F.beams) quad(F.run[0], z - 35, F.run[1], z + 35, 'outline', 'cw');
-  for (const x of [F.run[0], F.run[1] - 70]) quad(x, F.beams[0] + 35, x + 70, F.beams[F.beams.length - 1] - 35, 'thin', 'cw');
+  const h = IRON / 2;
+  for (const z of F.beams) quad(F.run[0], z - h, F.run[1], z + h, 'outline', 'cw');
+  for (const x of [F.run[0], F.run[1] - IRON]) quad(x, F.beams[0] + h, x + IRON, F.beams[F.beams.length - 1] - h, 'thin', 'cw');
   const B = brakeOf(S);
   const low = [...S.parts].sort((a, b) => partBox(a)[4] - partBox(b)[4]);
   for (const p of low) {

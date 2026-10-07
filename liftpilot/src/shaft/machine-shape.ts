@@ -2,11 +2,12 @@
 // across, sized by the maker's dimensions — the technical sheet (the sheave's axis over the feet, the feet and their
 // holes, the sheave's mid-plane P and width E by diameter, the overall sizes) and the CAD model the maker publishes
 // (where the gearbox, the motor, the brake and the handwheel stand), rounded to the millimetre. Dimensions only: the
-// shapes are ours, no geometry of the maker's is kept. The machine stands on a bedframe of ours (a beam under each row
-// of holes, an outboard support's too; anti-vibration mounts at the ends) whose height keeps the sheave's axis where the
-// generic machine has it, when the machine allows. Millimetres, the machine's own frame: X along the worm from the sheave's axis (+X toward
-// the motor), Y up from the feet's plane, Z along the sheave's axis from the worm's vertical plane (+Z toward the
-// sheave). Pure.
+// shapes are ours, no geometry of the maker's is kept. The machine stands on a bedframe of ours whose height keeps the
+// sheave's axis where the generic machine has it, when the machine allows: three irons on top, one under each row of
+// holes and, when no row (an outboard support's) stands past the sheave, a third past it — the sheave between the irons,
+// so the rope load acts between the frame's supports and nothing tips it —, anti-vibration mounts at their ends.
+// Millimetres, the machine's own frame: X along the worm from the sheave's axis (+X toward the motor), Y up from the
+// feet's plane, Z along the sheave's axis from the worm's vertical plane (+Z toward the sheave). Pure.
 import { MACHINE_A, MACHINE_X, MACHINE_Z } from './machine-outline';
 import { KV_VERT } from './norme-vert';
 
@@ -123,14 +124,16 @@ export interface MachineFrame {
   x: readonly [number, number];
   z: readonly [number, number];
   /** our bedframe along X: as `x`, but stopping short of what hangs under the feet past their ends (Sassi's LEO: its
-   *  inclined brake and flywheel overhang it) */
+   *  inclined brake and flywheel overhang it), and with the irons round the sheave reaching past its rope falls */
   run: readonly [number, number];
-  /** the anti-vibration mounts along X and the bedplate's beams across Z, in order: the generic machine's two, a maker's
-   *  one under each row of its holes (an outboard support's row too) */
+  /** the anti-vibration mounts along X, at the ends of each iron; the frame's irons across Z, in order: three, the sheave
+   *  between the last two (the generic bedplate's two I-beams under the gearbox and one past the sheave; under a maker's
+   *  rows of holes and past the sheave when no row stands there) — beside the shaft below, the sheave through the wall,
+   *  the machine's own only */
   mounts: readonly [number, number];
   beams: readonly number[];
-  /** a concrete plinth under the bedplate across Z: one block, or a strip under each beam when the sheave and its ropes
-   *  are between or over them */
+  /** a concrete plinth under the bedplate across Z: a block under the irons on each side of the sheave's band, where its
+   *  ropes go down */
   plinth: readonly (readonly [number, number])[];
   /** our bedframe's height under the maker's feet (0: the generic machine, whose bedplate is its own) */
   bed: number;
@@ -141,25 +144,44 @@ export interface MachineFrame {
   s: number;
 }
 
+/** The flange width of our bedframe's channels and of the generic bedplate's I-beams at Ø 560 [mm], as the drawings and
+ *  the 3D draw them. */
+export const IRON = 70;
+
+/** The third iron past the sheave (mid-plane P, width E) of a frame whose row nearest before it is `near`, its flange
+ *  `half` wide each side: as far past the sheave as that row stands before it (where the makers' outboard supports
+ *  stand), its flange at least KV_VERT.machineIronClear clear of the sheave's outer face. */
+const ironPast = (near: number, P: number, E: number, half: number): number => Math.max(2 * P - near, P + E / 2 + KV_VERT.machineIronClear + half);
+
 /** The machine of the sheave D: the generic one scaled to it, or the maker's `S` on our bedframe (bedOf), or on the seat
- *  of the maker's bedplate with the diverting pulley (`seat`, rinvio.ts). */
-export function machineFrame(D: number, S: MachineShape | null, seat: number | null = null): MachineFrame {
+ *  of the maker's bedplate with the diverting pulley (`seat`, rinvio.ts). `through`: the sheave reaches through a wall
+ *  (the machine below beside the shaft), no iron past it. */
+export function machineFrame(D: number, S: MachineShape | null, seat: number | null = null, through = false): MachineFrame {
   const s = D / (2000 * MACHINE_A.rp);
   if (!S) {
-    // the same products as the drawings have always taken (a drawing set's hash covers every number)
-    const x: [number, number] = [MACHINE_X[0] * 1000 * s, MACHINE_X[1] * 1000 * s];
-    return { axis: MACHINE_A.yWheel * 1000 * s, zSheave: MACHINE_A.zSheave * 1000 * s, width: 100 * s, x, run: x,
-      z: [MACHINE_Z[0] * 1000 * s, MACHINE_Z[1] * 1000 * s], mounts: [-360 * s, 950 * s], beams: [-160 * s, 160 * s], plinth: [[-200 * s - 100, 200 * s + 100]],
-      bed: 0, face: 200 * s, shape: null, s };
+    // the generic bedplate (machine-outline.ts): its I-beams at ±160 under the gearbox, the third past the sheave at 520
+    // (Ø 560: as far past its plane at 340 as the near one is before it, as ironPast; its flange 95 clear of the sheave),
+    // the cross members 40 past the outer ones
+    const x: [number, number] = [MACHINE_X[0] * 1000 * s, MACHINE_X[1] * 1000 * s], P = MACHINE_A.zSheave * 1000 * s, E = 100 * s;
+    const beams = through ? [-160 * s, 160 * s] : [-160 * s, 160 * s, 520 * s];
+    return { axis: MACHINE_A.yWheel * 1000 * s, zSheave: P, width: E, x, run: x,
+      z: [MACHINE_Z[0] * 1000 * s, through ? MACHINE_Z[1] * 1000 * s : 560 * s], mounts: [-360 * s, 950 * s], beams,
+      plinth: plinthOf(beams, P - E / 2 - 20, P + E / 2 + 20), bed: 0, face: 200 * s, shape: null, s };
   }
-  const { P, E } = sheaveOf(S, D), b = bodyBox(S), bed = seat ?? bedOf(S, D), ov = KV_VERT.machineBedOverhang;
-  const x0 = Math.min(S.feet[0], b[0]) - ov, x1 = Math.max(S.feet[2], b[3]) + ov;
-  // the bedframe ends 20 mm short of a part hanging under the feet past their ends
+  const { P, E } = sheaveOf(S, D), b = bodyBox(S), bed = seat ?? bedOf(S, D), ov = KV_VERT.machineBedOverhang, half = IRON / 2;
+  // an iron under each row of holes, and past the sheave a third when no row (an outboard support's) stands there
+  const rows = [...new Set(S.holes.map((h) => h[1]))].sort((a, c) => a - c), near = rows.filter((z) => z < P);
+  const beams = through || !near.length || rows.some((z) => z > P) ? rows : [...rows, ironPast(near[near.length - 1], P, E, half)];
+  // the bedframe ends 20 mm short of a part hanging under the feet past their ends; with the irons round the sheave its
+  // cross members at the ends stand past the rope falls (the sheave's rim, D/2 + 6) by KV_VERT.machineIronClear, the
+  // ropes going down inside it
   const hang = S.parts.map(partBox).filter((q) => q[1] < 0), past = hang.filter((q) => q[0] >= S.feet[2]), before = hang.filter((q) => q[3] <= S.feet[0]);
-  const run: [number, number] = [before.length ? Math.max(...before.map((q) => q[3])) + 20 : x0, past.length ? Math.min(...past.map((q) => q[0])) - 20 : x1];
+  const x0 = Math.min(S.feet[0], b[0]) - ov, x1 = Math.max(S.feet[2], b[3]) + ov, reach = D / 2 + 6 + KV_VERT.machineIronClear + IRON;
+  const r0 = before.length ? Math.max(...before.map((q) => q[3])) + 20 : x0, r1 = past.length ? Math.min(...past.map((q) => q[0])) - 20 : x1;
+  const run: [number, number] = beams[0] < P && beams[beams.length - 1] > P ? [Math.min(r0, -reach), Math.max(r1, reach)] : [r0, r1];
   const face = Math.max(...S.parts.filter((p) => p.role === 'housing' || p.role === 'cover').map((p) => partBox(p)[5]).filter((z) => z < P));
-  const beams = [...new Set(S.holes.map((h) => h[1]))].sort((a, c) => a - c);
-  return { axis: bed + S.yWheel, zSheave: P, width: E, x: [x0, x1], run, z: [Math.min(S.feet[1], b[2]), Math.max(P + E / 2, S.feet[3])], mounts: [run[0] + 90, run[1] - 90], beams,
+  return { axis: bed + S.yWheel, zSheave: P, width: E, x: [Math.min(x0, run[0]), Math.max(x1, run[1])], run,
+    z: [Math.min(S.feet[1], b[2], beams[0] - half), Math.max(P + E / 2, S.feet[3], beams[beams.length - 1] + half)], mounts: [run[0] + 90, run[1] - 90], beams,
     plinth: plinthOf(beams, P - E / 2 - 20, P + E / 2 + 20), bed, face, shape: S, s };
 }
 

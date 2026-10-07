@@ -81,7 +81,7 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo): { entities:
   if (heb) out.push(...hebPlan(heb, G, M, S));
   const F = G.frame;
   out.push(...(F.shape ? shapePlan(F, M.D, M.n, M.d, (x, z) => onDrop(G, G.sheaveAt + x, F.zSheave - z))
-    : machinePlan((x, z) => onDrop(G, G.sheaveAt + x * k, (MACHINE_A.zSheave - z) * k))));
+    : machinePlan((x, z) => onDrop(G, G.sheaveAt + x * k, (MACHINE_A.zSheave - z) * k), F.beams.map((z) => z / k))));
   if (pulley) out.push(path(pulley, true, 'hidden'));
   // control panel with its free area, main switch by the door (room-fittings-view.ts)
   const { entities: fittings, free, sw, swAt } = fittingsPlan(R);

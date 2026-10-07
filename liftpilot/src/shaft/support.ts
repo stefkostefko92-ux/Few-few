@@ -1,6 +1,7 @@
 // The machine's support in the room above the shaft (registry locale.basamento): levelling shims under its mounts (the
-// sheave's axis where the software puts it), a frame of two rolled profiles on the floor, two beams (putrelle) from wall
-// to wall that may stand clear of the floor, steel plates under the mounts, a concrete plinth, or the bedplate with the
+// sheave's axis where the software puts it), a frame of rolled profiles on the floor or beams (putrelle) from wall to
+// wall that may stand clear of the floor — one under each of the three irons of the machine's frame, the sheave between
+// the last two (machine-shape.ts) —, steel plates under the mounts, a concrete plinth on each side of the ropes, or the bedplate with the
 // diverting pulley (rinvio.ts, registry locale.rinvio: what the machine stands on when it has one, unless another is
 // chosen); anti-vibration pads under the mounts on all but the shims and the bedplate (its dampers are under its legs). Its height sets the sheave's axis over the room's floor (the calculation's rope
 // beyond the travel and the 3D follow it); a frame and a plinth run along the rope drop line past the machine's

@@ -5,10 +5,12 @@
 import { bodyBox, machineFrame, sheaveOf, type MachineShape } from '@/shaft/machine-shape';
 import type { RinvioFrame } from '@/shaft/rinvio';
 
-/** `rf`: the bedplate with the diverting pulley the machine stands on; on the maker's, the machine's seat is the maker's. */
-export function shapeRows(S: MachineShape, D: number, fmt: (x: number, dp?: number) => string, rf: RinvioFrame | null = null): [string, string][] {
+/** `rf`: the bedplate with the diverting pulley the machine stands on; on the maker's, the machine's seat is the maker's.
+ *  `through`: the machine below beside the shaft, its sheave through the wall (machine-shape.ts machineFrame). */
+export function shapeRows(S: MachineShape, D: number, fmt: (x: number, dp?: number) => string, rf: RinvioFrame | null = null, through = false): [string, string][] {
   const seat = rf?.on === 'frame' ? rf.bed : null, mk = rf?.on === 'frame' ? rf.maker : null;
-  const { P, E } = sheaveOf(S, D), F = machineFrame(D, S, seat), xs = S.holes.map((h) => h[0]), zs = S.holes.map((h) => h[1]);
+  const { P, E } = sheaveOf(S, D), F = machineFrame(D, S, seat, through), xs = S.holes.map((h) => h[0]), zs = S.holes.map((h) => h[1]);
+  const irons = `${F.beams.map((z) => fmt(z, 0)).join(', ')} mm dal piano della vite`;
   const span = (v: number[]): string => fmt(Math.max(...v) - Math.min(...v), 0);
   // an inclined worm (its angle) and what hangs under the feet's plane, as the drawing has them
   const tilt = S.parts.find((p) => p.tilt)?.tilt, below = Math.round(-bodyBox(S)[1]);
@@ -28,7 +30,9 @@ export function shapeRows(S: MachineShape, D: number, fmt: (x: number, dp?: numb
     ['Fissaggio', `${S.holes.length} × ${S.hole} su ${span(xs)} × ${span(zs)} mm; piedi ${fmt(S.feet[2] - S.feet[0], 0)} × ${fmt(S.feet[3] - S.feet[1], 0)} mm`],
     mk && seat !== null
       ? ['Sede sul basamento', `${fmt(seat, 0)} mm sotto i piedi, sul basamento ${mk.brand} ${mk.code}: l’asse della puleggia a ${fmt(mk.sheaveAxis, 0)} mm sul pavimento del locale`]
-      : ['Telaio sotto l’argano', `alto ${fmt(F.bed, 0)} mm (scelta del software): l’asse della puleggia a ${fmt(F.axis, 0)} mm sul piano d’appoggio del telaio`],
+      : ['Telaio sotto l’argano', `alto ${fmt(F.bed, 0)} mm (scelta del software), ${through ? `con i ferri sotto le file di fori (a ${irons}): la puleggia passa il `
+        + 'muro del vano' : `con tre ferri sopra e la puleggia fra il secondo e il terzo (a ${irons})`}: l’asse della puleggia a ${fmt(F.axis, 0)} mm sul piano `
+        + 'd’appoggio del telaio'],
   ];
 }
 

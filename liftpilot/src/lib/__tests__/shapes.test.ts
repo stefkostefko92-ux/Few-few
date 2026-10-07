@@ -1,7 +1,7 @@
 // The makers' machines as they are (src/lib/catalog/shapes.ts, src/shaft/machine-shape.ts): every current SICOR model
 // with a CAD model and every Montanari model with a dimensioned drawing has its shape with the sheet's dimensions; our
-// bedframe keeps the sheave's rim over its underside and its beams clear of the sheave and the ropes; nothing of the body
-// crosses the sheave's rim; the generic machine keeps its numbers; a proposal from SICOR or Montanari brings the shape
+// bedframe keeps the sheave's rim over its underside, has three irons with the sheave between the last two and its cross
+// members past the rope falls; nothing of the body crosses the sheave's rim; the generic machine keeps its numbers; a proposal from SICOR or Montanari brings the shape
 // into the drawings and the axis the calculation counts; the details the drawings and the 3D share
 // (src/shaft/machine-detail.ts) sit where they belong.
 import { test } from 'node:test';
@@ -11,7 +11,7 @@ import { SHAPES, shapeOf } from '@/lib/catalog/shapes';
 import { defaultLift, deriveLift, type LiftInputs } from '@/lib/lift';
 import { KV_VERT, roomGeo, roomPlanEntities, roomSectionEntities } from '@/shaft';
 import { MACHINE_A, MACHINE_X } from '@/shaft/machine-outline';
-import { bodyBox, machineFrame, partBox, sheaveOf } from '@/shaft/machine-shape';
+import { IRON, bodyBox, machineFrame, partBox, sheaveOf } from '@/shaft/machine-shape';
 import { SPOKE_ANGLES, brakeOf, ribsOf, sheaveDims, spokeOutline } from '@/shaft/machine-detail';
 import { ownAxis } from '@/shaft/support';
 import { PRESETS } from '@/calc/presets';
@@ -112,7 +112,17 @@ test('telaio: il bordo della puleggia sopra il suo piano, le travi lontane da pu
       assert.ok(F.bed >= KV_VERT.machineBed, `${S.model} Ø${D}: telaio ${F.bed}`);
       assert.ok(F.axis - R >= KV_VERT.machineRimClear - 1e-9, `${S.model} Ø${D}: bordo della puleggia ${F.axis - R}`);
       assert.ok(F.axis >= ownAxis(D) - 1e-9, `${S.model} Ø${D}: asse non sotto quello della macchina generica`);
-      for (const zb of F.beams) assert.ok(zb + 35 < z0 || zb - 35 > z1, `${S.model} Ø${D}: trave del telaio a ${zb} sotto la puleggia`);
+      for (const zb of F.beams) assert.ok(zb + IRON / 2 < z0 || zb - IRON / 2 > z1, `${S.model} Ø${D}: trave del telaio a ${zb} sotto la puleggia`);
+      // three irons on top, the sheave between the last two; the one we add past it clear of its face; the cross members
+      // at the ends past the rope falls, the ropes going down inside the frame
+      const rows = new Set(S.holes.map((h) => h[1])), last = F.beams[F.beams.length - 1];
+      assert.equal(F.beams.length, 3, `${S.model} Ø${D}: tre ferri`);
+      assert.ok(F.beams[1] < F.zSheave && last > F.zSheave, `${S.model} Ø${D}: la puleggia fra i ferri`);
+      if (!rows.has(last)) assert.ok(last - IRON / 2 >= z1 + KV_VERT.machineIronClear - 1e-9, `${S.model} Ø${D}: il terzo ferro a ${last}`);
+      assert.ok(F.run[0] + IRON <= -(R + 6) - KV_VERT.machineIronClear + 1e-9 && F.run[1] - IRON >= R + 6 + KV_VERT.machineIronClear - 1e-9, `${S.model} Ø${D}: traverse oltre le funi`);
+      assert.ok(F.z[1] >= last + IRON / 2 && F.x[0] <= F.run[0] && F.x[1] >= F.run[1], `${S.model} Ø${D}: l’ingombro col telaio`);
+      // beside the shaft below, the sheave through the wall: the machine's own rows
+      assert.deepEqual(machineFrame(D, S, null, true).beams, [...rows].sort((a, b) => a - b), `${S.model} Ø${D}: in basso accanto al vano`);
       for (const [a, b] of F.plinth) assert.ok(b <= z0 - 20 + 1e-9 || a >= z1 + 20 - 1e-9, `${S.model} Ø${D}: plinto sotto le funi`);
       for (const p of S.parts) {
         if (p.role === 'shaft') continue;
@@ -133,13 +143,19 @@ test('telaio: il bordo della puleggia sopra il suo piano, le travi lontane da pu
   }
 });
 
-test('la macchina generica resta quella di sempre', () => {
+test('la macchina generica: le sue quote di sempre, il telaio di tre ferri con la puleggia fra il secondo e il terzo', () => {
   for (const D of [320, 480, 560, 650, 800]) {
     const F = machineFrame(D, null), s = D / (2000 * MACHINE_A.rp);
     assert.equal(F.axis, MACHINE_A.yWheel * 1000 * s);
     assert.equal(ownAxis(D), MACHINE_A.yWheel * 1000 * s);
     assert.deepEqual(F.x, [MACHINE_X[0] * 1000 * s, MACHINE_X[1] * 1000 * s]);
     assert.equal(F.shape, null);
+    // the irons at −160 and +160 under the gearbox, the third at +520 past the sheave at +340 (Ø 560); the cross members
+    // 40 past the outer ones; beside the shaft below the first two only
+    assert.deepEqual(F.beams, [-160 * s, 160 * s, 520 * s]);
+    assert.deepEqual(F.z, [-200 * s, 560 * s]);
+    assert.ok(F.x[0] + 60 * s < -D / 2 - 6 - KV_VERT.machineIronClear, `Ø${D}: traversa oltre le funi`);
+    assert.deepEqual(machineFrame(D, null, null, true).beams, [-160 * s, 160 * s]);
   }
 });
 
@@ -181,7 +197,7 @@ test('supporto esterno (Montanari S, SICOR MR35, Sassi MF94 MB94 MB95, GEM L e C
     const F = machineFrame(S.sheaves[0][0], S), rows = [...new Set(S.holes.map((h) => h[1]))].sort((a, b) => a - b);
     assert.deepEqual(F.beams, rows, `${model}: travi`);
     assert.equal(rows.length, 3, model);
-    assert.equal(F.z[1], S.feet[3], `${model}: ingombro di traverso fino al supporto`);
+    assert.equal(F.z[1], Math.max(S.feet[3], rows[2] + IRON / 2), `${model}: ingombro di traverso fino al supporto e al ferro sotto di esso`);
   }
 });
 

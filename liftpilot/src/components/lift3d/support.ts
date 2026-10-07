@@ -1,7 +1,8 @@
 // The machine's support in 3D (src/shaft/support.ts), as the drawings of the machine room draw it: levelling shims,
-// a frame of two profiles (on steel packs when set higher than the profile), two beams from wall to wall borne 150 mm
-// in the walls (clear of the floor when higher than their profile: a machine not standing on the floor), steel plates
-// or a concrete plinth under the mounts, rubber pads under the mounts on all but the shims; the bedplate with the
+// a frame of profiles (on steel packs when set higher than the profile) or beams from wall to wall borne 150 mm in the
+// walls (clear of the floor when higher than their profile: a machine not standing on the floor), one under each iron
+// of the machine's frame, steel plates or a concrete plinth under the mounts, rubber pads under the mounts on all but
+// the shims; the bedplate with the
 // diverting pulley (src/shaft/rinvio.ts): legs of square tube on dampers, beams round the top and the two plates its
 // axle turns in, hung from short channels to the side beams; all of it on the HEB beams over the shaft's walls when the
 // room puts them there (src/shaft/heb.ts, hebBeams). Built in a group placed and turned as the machine's bedplate: x

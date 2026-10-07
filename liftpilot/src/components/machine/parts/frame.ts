@@ -5,8 +5,9 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import type { MachineMaterials } from '../materials';
 import { DIM, mesh } from './common';
 
-/** Two I-beams on anti-vibration mounts (rubber between steel plates), joined by end cross members. */
-export function bedplate(M: MachineMaterials): THREE.Group {
+/** The I-beams at `irons` across Z on anti-vibration mounts (rubber between steel plates), joined by end cross members
+ *  40 mm past the outer ones: three, the sheave between the last two. */
+export function bedplate(M: MachineMaterials, irons: readonly number[]): THREE.Group {
   const g = new THREE.Group();
   const s = new THREE.Shape();
   const fw = 0.035, h = 0.12, tf = 0.01, tw = 0.004;
@@ -15,12 +16,12 @@ export function bedplate(M: MachineMaterials): THREE.Group {
   const beam = new THREE.ExtrudeGeometry(s, { depth: 1.52, bevelEnabled: false }).rotateY(Math.PI / 2); // x -0.46 … 1.06
   const plate = new RoundedBoxGeometry(0.12, 0.004, 0.1, 1, 0.0015);
   const rubber = new RoundedBoxGeometry(0.1, 0.013, 0.085, 2, 0.004);
-  for (const z of [-DIM.zBeam, DIM.zBeam]) {
+  for (const z of irons) {
     g.add(mesh(beam, M.frame, -0.46, 0.02, z));
     for (const x of [-0.36, 0.95]) g.add(mesh(plate, M.frame, x, 0.002, z), mesh(rubber, M.rubber, x, 0.0105, z), mesh(plate, M.frame, x, 0.018, z));
   }
-  const cross = new RoundedBoxGeometry(0.06, 0.1, 0.4, 2, 0.006);
-  for (const x of [-0.49, 1.09]) g.add(mesh(cross, M.frame, x, 0.08, 0)); // the handwheel dips between the beams
+  const z0 = irons[0] - 0.04, z1 = irons[irons.length - 1] + 0.04, cross = new RoundedBoxGeometry(0.06, 0.1, z1 - z0, 2, 0.006);
+  for (const x of [-0.49, 1.09]) g.add(mesh(cross, M.frame, x, 0.08, (z0 + z1) / 2)); // the handwheel dips between the beams
   return g;
 }
 

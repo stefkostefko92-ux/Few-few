@@ -83,11 +83,13 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
   for (const sh of shells) buildShell(sh, M, sides, roof, common);
 
   // the machine: the generic one scaled to the sheave or the maker's as it is, its rope plane on the sheave's, the
-  // sheave's centre where the rig puts it
-  const MM: MachineMaterials = createMaterials(ROPE_LENGTH), F = machineFrame(D, shape, rinvio?.bed ?? null);
-  const shaped = F.shape ? buildShaped(MM, F, D, n, d) : null, machine = shaped ?? buildMachine(MM, false);
+  // sheave's centre where the rig puts it; on its frame of three irons round the sheave (below beside the shaft, the
+  // sheave through the wall, the machine's own)
+  const MM: MachineMaterials = createMaterials(ROPE_LENGTH), F = machineFrame(D, shape, rinvio?.bed ?? null, !!rig.scheme && rig.scheme.scheme !== 'under');
   // the group's own units: the generic machine's metres at Ø 560 (scaled by s), the maker's in metres as they are
-  const s = F.shape ? 1 : D / 560, pose = machinePose(rig, I.wall, n, d, F), e = pose.ext / 1000 / s;
+  const s = F.shape ? 1 : D / 560, irons = F.beams.map((z) => z / 1000 / s);
+  const shaped = F.shape ? buildShaped(MM, F, D, n, d) : null, machine = shaped ?? buildMachine(MM, false, irons);
+  const pose = machinePose(rig, I.wall, n, d, F), e = pose.ext / 1000 / s;
   const yAxis = F.shape ? F.axis / 1000 : DIM.yWheel, zSh = F.shape ? F.zSheave / 1000 : DIM.zSheave, face = F.shape ? F.face / 1000 : 0.2;
   machine.group.scale.setScalar(s);
   machine.group.rotation.y = Math.atan2(pose.xDir[1], pose.xDir[0]);
@@ -134,7 +136,7 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
     // the door (it opens outward)
     base.updateMatrixWorld(true);
     const foot = new THREE.Box3().setFromObject(base), wide = sup.kind === 'frame' || sup.kind === 'plinth' || sup.kind === 'rinvio';
-    const [fz0, fz1] = F.shape ? [F.beams[0] / 1000 - 0.07, F.beams[F.beams.length - 1] / 1000 + 0.07] : [-0.2, 0.2], [fx0, fx1] = F.shape ? [F.x[0] / 1000, F.x[1] / 1000] : [-0.52, 1.12];
+    const out = F.shape ? 0.07 : 0.04, [fz0, fz1] = [irons[0] - out, irons[irons.length - 1] + out], [fx0, fx1] = F.shape ? [F.x[0] / 1000, F.x[1] / 1000] : [-0.52, 1.12];
     blocked.push(rectOf([[fx0, fz0], [fx1, fz0], [fx1, fz1], [fx0, fz1]].map(([x, zz]) => {
       const p = new THREE.Vector3(x, 0, zz).applyMatrix4(machine.group.matrixWorld);
       return [p.x * 1000, -p.z * 1000] as const;

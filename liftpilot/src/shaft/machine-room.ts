@@ -4,7 +4,7 @@
 // slab's openings round them, as the 3D cuts them (components/lift3d/slab.ts). The machine is the 3D's (machine-outline) or a
 // maker's as it is (machine-shape).
 import { check } from './checks';
-import { MACHINE_A, MACHINE_X, MACHINE_Z } from './machine-outline';
+import { MACHINE_A } from './machine-outline';
 import { machineFrame, type MachineFrame, type MachineShape } from './machine-shape';
 import { KV_VERT } from './norme-vert';
 import { panelFree, type Box } from './room-floor';
@@ -99,12 +99,9 @@ export interface Drops {
 export function geoOn(R: RoomInputs, P: Drops, M: MachineSpec, sheaveAt = M.ropeIn + M.D / 2): RoomGeo {
   const calata = P.calata, s = M.D / (2000 * MACHINE_A.rp), u1 = calata - M.ropeIn;
   const pulleyAt = M.Dp > 0 ? (M.reverse ? u1 + M.Dp / 2 : u1 - M.Dp / 2) : sheaveAt;
-  const v = (z: number): number => (MACHINE_A.zSheave - z) * 1000 * s, F = machineFrame(M.D, M.shape ?? null, M.rinvio?.bed ?? null);
-  // the generic machine's numbers as they have always been computed (a drawing set's hash covers them); a maker's from
-  // its frame
-  const [frame0, frame1, across]: [number, number, readonly [number, number]] = F.shape
-    ? [sheaveAt + F.x[0], sheaveAt + F.x[1], [F.zSheave - F.z[1], F.zSheave - F.z[0]]]
-    : [sheaveAt + MACHINE_X[0] * 1000 * s, sheaveAt + MACHINE_X[1] * 1000 * s, [v(MACHINE_Z[1]), v(MACHINE_Z[0])]];
+  // the machine on its frame, the third iron past the sheave with it
+  const F = machineFrame(M.D, M.shape ?? null, M.rinvio?.bed ?? null), frame0 = sheaveAt + F.x[0], frame1 = sheaveAt + F.x[1];
+  const across: readonly [number, number] = [F.zSheave - F.z[1], F.zSheave - F.z[0]];
   return {
     room: R, carDrop: P.car, cwDrop: P.cw, ux: P.ux, uy: P.uy, calata, sheaveAt, pulleyAt, pulleyZ: M.axis - M.h, frame0, frame1, across, s, frame: F,
   };

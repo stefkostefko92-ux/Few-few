@@ -129,7 +129,8 @@ const alongX = (s: Wall): boolean => s === 'front' || s === 'rear';
  *  sheave with it [mm]. */
 export function belowMachine(L: Layout, g: BottomGeo, D: number, n: number, d: number, shape: MachineShape | null):
   { F: MachineFrame; xDir: P2; zDir: P2; C: P2; ext: number; body: P2[] } {
-  const F = machineFrame(D, shape), xDir: P2 = g.scheme === 'under' ? g.across : [-g.across[0], -g.across[1]], zDir: P2 = [xDir[1], -xDir[0]];
+  // beside the shaft the sheave reaches through the wall: the machine's frame stops at it, no iron past the sheave
+  const F = machineFrame(D, shape, null, g.scheme !== 'under'), xDir: P2 = g.scheme === 'under' ? g.across : [-g.across[0], -g.across[1]], zDir: P2 = [xDir[1], -xDir[0]];
   const ext = g.scheme !== 'under' ? Math.max(0, KL.bottomClear + ropeWidths(n, d).ropes + L.inputs.wall + 50 - (F.zSheave - F.face)) : 0;
   const C: P2 = [(g.mc[0] + g.mw[0]) / 2, (g.mc[1] + g.mw[1]) / 2];
   const at = (x: number, z: number): P2 => [C[0] + x * xDir[0] + (z - F.zSheave - ext) * zDir[0], C[1] + x * xDir[1] + (z - F.zSheave - ext) * zDir[1]];

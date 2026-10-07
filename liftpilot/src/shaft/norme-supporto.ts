@@ -5,10 +5,11 @@ import type { VoceVano } from './norme';
 export const VOCI_SUPPORTO: readonly VoceVano[] = [
   {
     id: 'locale.basamento', gruppo: 'locale', titolo: 'Basamento dell’argano',
-    valore: 'su spessori di livellamento sotto gli appoggi (l’asse della puleggia dove lo mette il software), su telaio di due profilati sul pavimento '
-      + '(tipico UPN 200, alto quanto il profilato come i telai bassi universali), su due putrelle da muro a muro che possono stare sollevate dal '
-      + 'pavimento (tipiche IPE 200, appoggio nei muri 150 mm), su piastre d’acciaio sotto gli appoggi (tipiche 20 mm) o su plinto in calcestruzzo '
-      + '(tipico 250 mm), o — con un rinvio — sul telaio con rinvio (locale.rinvio); tamponi antivibranti di 30 mm sotto gli appoggi, salvo sugli '
+    valore: 'su spessori di livellamento sotto gli appoggi (l’asse della puleggia dove lo mette il software), su telaio di tre profilati sul pavimento, '
+      + 'uno sotto ogni ferro del telaio dell’argano (locale.telaio; tipico UPN 200, alto quanto il profilato come i telai bassi universali), su tre '
+      + 'putrelle da muro a muro, una sotto ogni ferro, che possono stare sollevate dal pavimento (tipiche IPE 200, appoggio nei muri 150 mm), su '
+      + 'piastre d’acciaio sotto gli appoggi (tipiche 20 mm) o su plinto in calcestruzzo (tipico 250 mm) in un blocco per parte delle funi, o — con '
+      + 'un rinvio — sul telaio con rinvio (locale.rinvio); tamponi antivibranti di 30 mm sotto gli appoggi, salvo sugli '
       + 'spessori e sul telaio con rinvio (antivibranti sotto le gambe); telaio e plinto 100 mm oltre il telaio dell’argano a ogni estremità; '
       + 'l’altezza del basamento porta l’asse della puleggia, che il calcolo (tratto di fune oltre la corsa) e il 3D seguono',
     riferimento: 'UNI EN 81-20:2020, 5.2.1.8 (carichi sull’edificio); scelta del costruttore',
@@ -17,13 +18,23 @@ export const VOCI_SUPPORTO: readonly VoceVano[] = [
     stato: 'scelta',
   },
   {
-    id: 'locale.telaio', gruppo: 'locale', titolo: 'Telaio sotto l’argano di un costruttore',
-    valore: 'l’argano di catalogo poggia con i suoi piedi su un telaio di due travi sotto le file di fori, con antivibranti alle estremità e 40 mm '
-      + 'oltre l’argano a ogni estremità; il telaio è alto quanto serve per tenere l’asse della puleggia dove lo tiene l’argano generico del '
-      + 'software, almeno 80 mm e con il bordo della puleggia 30 mm sopra il suo piano d’appoggio (gli argani compatti hanno la puleggia a sbalzo, '
-      + 'sotto il piano dei piedi); se l’argano non lo permette l’asse sale e il calcolo segue',
-    riferimento: '—', fonte: 'quote dei piedi, dei fori e dell’asse della puleggia dalle schede tecniche del costruttore; altezza del telaio scelta '
-      + 'dal software, da adattare al telaio fornito', stato: 'scelta',
+    id: 'locale.telaio', gruppo: 'locale', titolo: 'Telaio sotto l’argano',
+    valore: 'il telaio ha sempre tre ferri sopra e la puleggia sta fra i ferri, così il carico delle funi cade fra gli appoggi e il telaio non si '
+      + 'ribalta: un ferro sotto ogni fila di fori dei piedi e, se nessuna fila (il supporto esterno) sta oltre la puleggia, un terzo ferro oltre di '
+      + 'essa, distante dal suo piano quanto la fila più vicina sta prima (come i supporti esterni dei costruttori) e con l’ala almeno 20 mm oltre la '
+      + 'faccia esterna della puleggia; le traverse alle estremità stanno almeno 20 mm oltre il bordo della puleggia, così le funi scendono dentro il '
+      + 'telaio; antivibranti alle estremità di ogni ferro, il telaio 40 mm oltre l’argano a ogni estremità; l’argano generico del software ha lo '
+      + 'stesso telaio (ferri a −160, +160 e +520 mm dal piano della vite, la puleggia a 340 mm, alla puleggia Ø 560); sotto l’argano di catalogo il '
+      + 'telaio è alto quanto serve per tenere l’asse della puleggia dove lo tiene l’argano generico, almeno 80 mm e con il bordo della puleggia 30 mm '
+      + 'sopra il suo piano d’appoggio (gli argani compatti hanno la puleggia a sbalzo, sotto il piano dei piedi); se l’argano non lo permette l’asse '
+      + 'sale e il calcolo segue; con la macchina in basso accanto al vano la puleggia passa il muro: il telaio resta nel locale con i soli ferri '
+      + 'sotto i piedi',
+    riferimento: 'regola del committente (Panev): il telaio ha tre ferri sopra e la puleggia fra i ferri, altrimenti si ribalterebbe',
+    fonte: 'quote dei piedi, dei fori e dell’asse della puleggia dalle schede tecniche del costruttore; i supporti esterni dei costruttori a catalogo '
+      + '(SICOR MR35, Montanari M73S, M75S, M95, M98, Sassi MF94, MB94, MB95, GEM HW134L, HW135L-VF, HW140CL, FAER P58F, P60F, P68F, P70F, P80F) '
+      + 'stanno oltre la puleggia da 0,84 a 1,26 volte la distanza della fila prima; altezza e terzo ferro scelti dal software, da adattare al '
+      + 'telaio fornito', stato: 'scelta',
+    nota: 'fino a LIFT 1.24.0, ROOM 1.8.0 e SHAFT 2.18.0 il telaio aveva due soli ferri, sotto le file di fori, con la puleggia a sbalzo oltre di essi',
   },
   {
     id: 'locale.rinvio', gruppo: 'locale', titolo: 'Puleggia di rinvio nel locale del macchinario',
@@ -55,24 +66,22 @@ export const VOCI_SUPPORTO: readonly VoceVano[] = [
   },
   {
     id: 'locale.putrelle', gruppo: 'locale', titolo: 'Verifica delle putrelle sotto l’argano',
-    valore: 'una putrella sotto ogni fila di appoggi del telaio dell’argano, lungo la linea delle calate da muro a muro; il carico dell’argano (il '
-      + 'suo peso al centro del suo ingombro più il carico statico sull’asse per il coefficiente dinamico, sulle calate delle funi nel piano della '
-      + 'puleggia) si ripartisce tra le putrelle con la regola della leva (telaio rigido su putrelle di pari rigidezza; con più di due file, '
-      + 'ripartizione lineare); ognuna porta la sua parte come forza concentrata in mezzeria (a favore di sicurezza), più il proprio peso, sulla '
-      + 'luce tra i centri degli appoggi nei muri (luce libera più 150 mm): σ = M/Wel,y ≤ fyk/γM0 con acciaio S275 (fyk 275 MPa) e γM0 = 1,05; '
-      + 'freccia elastica f = F·L³/(48·E·I) + 5·q·L⁴/(384·E·I) ≤ 1/1500 della luce libera con E = 210000 MPa, sulla putrella più caricata; '
-      + 'proprietà dei profili EN 10365; quando la risultante cade fuori dalle putrelle (la puleggia a sbalzo oltre il telaio) la putrella '
-      + 'lontana è tirata verso l’alto: avvertimento con la forza, l’argano va ancorato a essa e la putrella trattenuta nei muri, oppure le '
-      + 'putrelle spostate sotto la puleggia',
+    valore: 'una putrella sotto ogni ferro del telaio dell’argano (tre, la puleggia fra il secondo e il terzo: locale.telaio), lungo la linea delle '
+      + 'calate da muro a muro; il carico dell’argano (il suo peso al centro del suo ingombro più il carico statico sull’asse per il coefficiente '
+      + 'dinamico, sulle calate delle funi nel piano della puleggia) cade fra le putrelle esterne e si ripartisce tra le tre linearmente (telaio '
+      + 'rigido su putrelle di pari rigidezza); ognuna porta la sua parte come forza concentrata in mezzeria (a favore di sicurezza), più il proprio '
+      + 'peso, sulla luce tra i centri degli appoggi nei muri (luce libera più 150 mm): σ = M/Wel,y ≤ fyk/γM0 con acciaio S275 (fyk 275 MPa) e '
+      + 'γM0 = 1,05; freccia elastica f = F·L³/(48·E·I) + 5·q·L⁴/(384·E·I) ≤ 1/1500 della luce libera con E = 210000 MPa, sulla putrella più '
+      + 'caricata; proprietà dei profili EN 10365',
     riferimento: 'NTC 2018, §4.2.4.1.1 (γM0), Tab. 11.3.IX (S275), §11.3.4.1 (E), §3.1.4 (carichi del macchinario); DPR 1497/1963, art. 5.1–5.2 '
       + '(carichi fissi più 1,5 volte il carico statico delle funi, sicurezza ≥ 6, freccia ≤ 1/1500 della luce libera: regola storica degli impianti '
       + 'esistenti, letta su Normattiva)',
     fonte: 'NTC 2018 (DM 17/01/2018); catalogo dei profilati ArcelorMittal (EN 10365) confrontato con due tabelle indipendenti; IPE 330, 360 e 400 '
       + 'dalle tabelle EN 10365 di eurocodeapplied.com e dalla scheda tecnica degli IPE di STAD, concordi, lette il 7 ottobre 2026; DPR 1497/1963 '
       + 'letto per intero (research/argano-geared, cap. 15, §1.1)', stato: 'da_verificare',
-    verifiche: ['m_beam', 'm_beamf', 'm_beamup'],
-    nota: 'verifica semplice a carico concentrato in mezzeria su trave appoggiata; gli appoggi nei muri, il loro ancoraggio contro il sollevamento e '
-      + 'la muratura vanno verificati dal progettista; fino a LIFT 1.23.0 e ROOM 1.7.0 ognuna delle due putrelle portava metà del carico',
+    verifiche: ['m_beam', 'm_beamf'],
+    nota: 'verifica semplice a carico concentrato in mezzeria su trave appoggiata; gli appoggi nei muri e la muratura vanno verificati dal '
+      + 'progettista; fino a LIFT 1.24.0 e ROOM 1.8.0 le putrelle erano due, sotto le file di fori con la puleggia a sbalzo oltre di esse',
   },
   {
     id: 'locale.calate', gruppo: 'locale', titolo: 'Sostituzione dell’argano: calate esistenti e calate della nuova macchina',

@@ -31,8 +31,10 @@ const dec = (x: number): number => (Number.isInteger(x) ? 0 : Math.abs(x * 10 - 
 const num = (x: number | null | undefined): string => (x == null ? '—' : fmt(x, dec(x)));
 const txt = (s: string | undefined, fallback = '—'): string => (s && s.trim() ? s.trim() : fallback);
 const mm = (x: number): string => fmt(Math.round(x), 0);
+/** The beams' count on the sheet. */
+const N_IT: Readonly<Record<number, string>> = { 2: 'DUE', 3: 'TRE' };
 /** The checks of the support the sheet counts again at its own load: the beams under the machine, the HEB beams. */
-const AT_SHEET_LOAD: ReadonlySet<string> = new Set(['m_beam', 'm_beamf', 'm_beamup', 'm_heb', 'm_hebf', 'm_hebfeet', 'm_hebrope', 'm_hebwall']);
+const AT_SHEET_LOAD: ReadonlySet<string> = new Set(['m_beam', 'm_beamf', 'm_heb', 'm_hebf', 'm_hebfeet', 'm_hebrope', 'm_hebwall']);
 
 export interface SurveySheet extends TitleData {
   /** the installation and the intervention */
@@ -135,7 +137,8 @@ export function surveySheetData(x: SurveyTavoleInput, d: RoomDerived, pages: num
     ['CARICO STATICO SUL BASAMENTO DELL’ARGANO', fmt(ld.static, 0), 'kg'],
     [`COEFFICIENTE DINAMICO × ${fmt(dyn, 1)}`, fmt(ld.dynamic, 0), 'kg'],
     [!bedplate ? 'ARGANO E TELAIO' : 'ARGANO E BASAMENTO CON RINVIO', machine > 0 ? fmt(machine, 0) : 'NON INSERITA', 'kg'],
-    ...(supportOf(R).kind === 'beams' ? [['PUTRELLE (DUE)', `${profileOf(supportOf(R))}, ${fmt(2 * PROFILES[profileOf(supportOf(R))].mass, 1)} kg/m`, ''] as const] : []),
+    // one beam under each iron of the machine's frame (three)
+    ...(supportOf(R).kind === 'beams' && G ? [[`PUTRELLE (${N_IT[G.frame.beams.length] ?? G.frame.beams.length})`, `${profileOf(supportOf(R))}, ${fmt(G.frame.beams.length * PROFILES[profileOf(supportOf(R))].mass, 1)} kg/m`, ''] as const] : []),
     ...hebRows(heb, fmt),
   ];
   const P: SurveySheet['P'] = [

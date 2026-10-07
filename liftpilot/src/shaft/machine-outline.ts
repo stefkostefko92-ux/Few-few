@@ -1,5 +1,5 @@
 // The worm-geared machine drawn as the 3D builds it (components/machine/parts: the machine of example A, sheave Ø 560,
-// scaled to the sheave of the calculation): the bedplate's two I-beams on their anti-vibration mounts, the gearbox's
+// scaled to the sheave of the calculation): the bedplate's I-beams on their anti-vibration mounts, the gearbox's
 // cast housing with the round wheel covers and the worm's bearing caps, the sheave in front of it, the drum brake
 // between gearbox and motor with its arms and magnet, the finned motor with its end shields, fan cover and terminal
 // box, the handwheel on the shaft's end. The machine's own axes in metres at Ø 560: X along the worm (the motor toward
@@ -64,18 +64,19 @@ export function machineElevation(at: (x: number, y: number) => Pt): Entity[] {
   return out;
 }
 
-/** The machine seen from above: `at` maps (x, z) of the machine [m] to the drawing. */
-export function machinePlan(at: (x: number, z: number) => Pt): Entity[] {
+/** The machine seen from above: `at` maps (x, z) of the machine [m] to the drawing; `irons`: the bedplate's I-beams
+ *  across Z [m] (machine-shape.ts machineFrame: the two under the gearbox and the third past the sheave). */
+export function machinePlan(at: (x: number, z: number) => Pt, irons: readonly number[]): Entity[] {
   const out: Entity[] = [], { zSheave: zs, rp } = MACHINE_A;
   const box = ([x0, z0, x1, z1]: Box3, st: 'outline' | 'thin' = 'outline', fill?: 'paper' | 'steel' | 'cw'): void => {
     out.push(path([at(x0, z0), at(x1, z0), at(x1, z1), at(x0, z1)], true, st, fill));
   };
-  // the bedplate: two I-beams' top flanges, the cross members, the mounts' plates
-  for (const z of [-0.16, 0.16]) {
+  // the bedplate: the I-beams' top flanges, the cross members 40 mm past the outer ones, the mounts' plates
+  for (const z of irons) {
     box([-0.46, z - 0.035, 1.06, z + 0.035], 'outline', 'cw');
     out.push(line(at(-0.46, z), at(1.06, z), 'fine'));
   }
-  for (const x of [-0.52, 1.06]) box([x, -0.2, x + 0.06, 0.2]);
+  for (const x of [-0.52, 1.06]) box([x, irons[0] - 0.04, x + 0.06, irons[irons.length - 1] + 0.04]);
   // the gearbox with its wheel covers, the output boss toward the sheave, the rear bearing cap, the worm's caps
   box([-0.2, -0.145, 0.2, 0.145], 'outline', 'paper');
   box([-0.17, 0.145, 0.17, 0.165], 'thin');
@@ -83,7 +84,7 @@ export function machinePlan(at: (x: number, z: number) => Pt): Entity[] {
   box([-0.105, 0.165, 0.105, 0.2], 'thin');
   box([-0.074, -0.189, 0.074, -0.165], 'thin');
   for (const s of [-1, 1]) box([s > 0 ? 0.196 : -0.235, -0.075, s > 0 ? 0.235 : -0.196, 0.075], 'thin');
-  // the sheave over the bedplate's side: its rim and the grooves of the ropes
+  // the sheave between the irons: its rim and the grooves of the ropes
   box([-(rp + 0.012), zs - 0.05, rp + 0.012, zs + 0.05], 'outline', 'steel');
   for (let k = -1.5; k <= 1.5; k += 1) out.push(line(at(-(rp + 0.006), zs + k * 0.018), at(rp + 0.006, zs + k * 0.018), 'fine'));
   box([-0.085, 0.2, 0.085, zs - 0.05], 'thin');
@@ -104,7 +105,7 @@ export function machinePlan(at: (x: number, z: number) => Pt): Entity[] {
 }
 
 /** The machine's footprint [m]: along X the bedplate's cross members end to end, along Z from the mounts' plates to
- *  the sheave's outer face. */
+ *  the sheave's outer face (its frame's third iron past it: machine-shape.ts machineFrame). */
 export const MACHINE_X: readonly [number, number] = [-0.52, 1.12];
 export const MACHINE_Z: readonly [number, number] = [-0.2, MACHINE_A.zSheave + 0.05];
 

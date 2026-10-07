@@ -1,13 +1,14 @@
 // A maker's machine in 3D (src/shaft/machine-shape.ts, the data in src/lib/catalog/shapes.ts): its body from the parts
 // of the shape, finished by what each part is (parts.ts), the drum brake built whole round its drum, arms and magnet
 // (brake.ts), the gearbox's oil sight glass, filler and drain plugs, the sheave at the calculation's diameter where the
-// sheet puts it (sheave.ts), standing on our bedframe — two beams under the rows of the feet's holes, cross members at
-// the ends, posts down to anti-vibration mounts when the frame is tall, the feet's bolts — and the motor's supply
+// sheet puts it (sheave.ts), standing on our bedframe — three irons round the sheave (under the rows of the feet's holes
+// and past the sheave), cross members at the ends, posts down to anti-vibration mounts when the frame is tall, the
+// feet's bolts — and the motor's supply
 // conduit from the terminal box to the floor. The group's origin is the bedframe's underside under the sheave's axis,
 // as the generic machine's (parts/index.ts), so the room places either the same way. Metres. Loaded only through boot.ts.
 import * as THREE from 'three/webgpu';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { partBox, type MachineFrame, type MachineShape, type ShapePart } from '@/shaft/machine-shape';
+import { IRON, partBox, type MachineFrame, type MachineShape, type ShapePart } from '@/shaft/machine-shape';
 import { brakeOf, ribsOf } from '@/shaft/machine-detail';
 import type { MachineMaterials } from '../materials';
 import { P3, bolts, cylY, cylZ, hexZ, mesh } from '../parts/common';
@@ -18,11 +19,11 @@ import { shapedSheave } from './sheave';
 
 const m = (v: number): number => v / 1000;
 
-/** The bedframe under the feet, its underside at y = 0 and its top at the feet's plane: a channel under each row of
- *  holes, the end ones across from the first to the last. */
+/** The bedframe under the feet, its underside at y = 0 and its top at the feet's plane: a channel under each iron
+ *  (src/shaft/machine-shape.ts machineFrame), the end ones across from the first to the last, past the rope falls. */
 function bedframe(F: MachineFrame, M: MachineMaterials): THREE.Group {
   const g = new THREE.Group(), bed = m(F.bed), [x0, x1] = [m(F.run[0]), m(F.run[1])], zs = F.beams.map(m), mount = 0.022;
-  const za = zs[0], zb = zs[zs.length - 1], hb = Math.min(0.12, bed - mount), bw = 0.07, tf = 0.009, tw = 0.007, y1 = bed, y0 = bed - hb;
+  const za = zs[0], zb = zs[zs.length - 1], hb = Math.min(0.12, bed - mount), bw = m(IRON), tf = 0.009, tw = 0.007, y1 = bed, y0 = bed - hb;
   for (const [z, s] of zs.map((z, i) => [z, i === 0 ? -1 : 1] as const)) {
     // a channel's top and bottom flanges and its web, the back toward the machine's middle
     g.add(mesh(new THREE.BoxGeometry(x1 - x0, tf, bw), M.frame, (x0 + x1) / 2, y1 - tf / 2, z), mesh(new THREE.BoxGeometry(x1 - x0, tf, bw), M.frame, (x0 + x1) / 2, y0 + tf / 2, z));
