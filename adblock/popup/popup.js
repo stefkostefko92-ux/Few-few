@@ -218,3 +218,19 @@ if (!navigator.webdriver && !matchMedia("(prefers-reduced-motion: reduce), (pref
     document.head.appendChild(s);
   }, 0)));
 }
+
+// Liquid Glass: отблясъкът по стъклото следва курсора (CSS --mx/--my), веднъж на кадър.
+// Без движение при reduced-motion — тогава остава на мястото си горе вляво.
+if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  let raf = 0, px = 0, py = 0;
+  addEventListener("pointermove", (e) => {
+    px = e.clientX; py = e.clientY;
+    if (raf) return;
+    raf = requestAnimationFrame(() => {
+      raf = 0;
+      const root = document.documentElement.style;
+      root.setProperty("--mx", Math.round((px / innerWidth) * 100) + "%");
+      root.setProperty("--my", Math.round((py / innerHeight) * 60 - 40) + "%");
+    });
+  }, { passive: true });
+}

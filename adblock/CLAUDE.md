@@ -39,6 +39,8 @@ popup/ · options/       UI (popup + настройки; карти „Филт�
                         WebGL2 (без библиотека) САМО за преосветяване по курсора — след първото
                         рисуване, не при reduced-motion/-data/автоматизация/софтуерен GL. Състоянието
                         идва от `#hero[data-state]` (protected|paused|off|allowed), пише го popup.js.
+                        Liquid Glass: стъклото е само CSS (backdrop-filter + маскиран ръб ::after + --mx/--my
+                        от popup.js), сиянието е body::before; prefers-reduced-transparency → плътни панели.
                         НЕ ползвай localStorage в popup-а (първият достъп ~40 ms) и не връщай three.js в пакета.
 report/                 „Сайтът е счупен?" — бързи поправки + mailto доклад (нищо не се праща само)
 icons/ · _locales/      икони · локализация
