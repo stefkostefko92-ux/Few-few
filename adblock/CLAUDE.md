@@ -33,7 +33,13 @@ rules/                  DNR статични правила: ad_rules + youtube_
                         tools/build_filters.mjs) + козметичен bundle + counts
 lib/abp2dnr.js          ЕДИНСТВЕН ABP/uBO → DNR конвертор (класически скрипт, root.ABP2DNR):
                         билдът го ползва през vm, SW през importScripts (листите от автора)
-popup/ · options/       UI (popup + настройки; карти „Филтър-листи" и „Фокус")
+popup/ · options/       UI (popup + настройки; карти „Филтър-листи" и „Фокус"). Popup-ът има 3D щит:
+                        popup/img/*.webp = ПРЕРЕНДЕРИРАН three.js (tools/popup_shield3d.mjs, комитва се;
+                        статичен кадър в CSS, показва се веднага), popup/shield3d.js = ~8 KB собствен
+                        WebGL2 (без библиотека) САМО за преосветяване по курсора — след първото
+                        рисуване, не при reduced-motion/-data/автоматизация/софтуерен GL. Състоянието
+                        идва от `#hero[data-state]` (protected|paused|off|allowed), пише го popup.js.
+                        НЕ ползвай localStorage в popup-а (първият достъп ~40 ms) и не връщай three.js в пакета.
 report/                 „Сайтът е счупен?" — бързи поправки + mailto доклад (нищо не се праща само)
 icons/ · _locales/      икони · локализация
 tools/                  build_filters.mjs (EasyList→DNR + каталога tools/lists.json → rules/list_<id>.json,
@@ -44,6 +50,7 @@ tools/                  build_filters.mjs (EasyList→DNR + каталога too
                         + promo/ (промо клип 1080p за YouTube/CWS в стила на boy/: film.html + timeline.json —
                         бурята идва от server/index.html, popup/панелите от store генератора, звукът е
                         генериран; `PW_ROOT=$(npm root -g) PYTHONPATH=<numpy> node tools/promo/render.mjs`)
+                        + popup_shield3d.mjs (three.js от CDN САМО в инструмента → popup/img/; `PW_ROOT=$(npm root -g) node tools/popup_shield3d.mjs`)
                         + e2e_redirect.mjs (истински Chromium през Playwright: DNR redirect → resources/*
                         smoke; `PW_ROOT=$(npm root -g) node tools/e2e_redirect.mjs "$PWD" <url> <global>`)
 tests/                  npm test — engine/билд/DNR/паритет на политиката (нула зависимости)
