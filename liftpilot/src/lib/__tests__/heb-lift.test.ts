@@ -26,9 +26,15 @@ const withHeb = (inp: LiftInputs, heb: ShaftBeams): LiftInputs => {
   assert.ok(R, 'locale macchina');
   return { ...inp, shaft: { ...inp.shaft, room: { ...R, heb } } };
 };
+// a machine pulling straight down on our low frame: the frame lies across the beams, which stay between the walls
+const onFrame = (): LiftInputs => {
+  const b = newLift(), R = b.shaft.room;
+  assert.ok(R, 'locale macchina');
+  return { ...b, calc: { ...b.calc, layout: 'top' }, shaft: { ...b.shaft, room: { ...R, support: { kind: 'frame' } } } };
+};
 
 test('progetto: le putrelle più corte che passano, l’argano alzato della loro altezza, scelte del software', () => {
-  const base = newLift(), plain = deriveLift(base), d = deriveLift(withHeb(base, {}));
+  const base = onFrame(), plain = deriveLift(base), d = deriveLift(withHeb(base, {}));
   assert.equal(plain.heb, null);
   assert.ok(d.heb, 'putrelle pesate');
   const { options, chosen, auto } = d.heb;
@@ -40,6 +46,7 @@ test('progetto: le putrelle più corte che passano, l’argano alzato della loro
     assert.ok(p.length < q.length || (p.length === q.length && PROFILES[p.profile].mass <= PROFILES[q.profile].mass), `ordine ${i}`);
   }
   assert.equal(chosen, options.find((o) => o.ok));
+  assert.ok(chosen.ok && chosen.bridge, 'sotto il telaio, entro i muri');
   // named in the shaft the design goes on with; the machine stands their height higher
   assert.deepEqual(d.shaft.room?.heb, { profile: chosen.profile, dir: chosen.dir });
   assert.equal(d.machine.base, PROFILES[chosen.profile].h);
@@ -130,4 +137,13 @@ test('progetto: il basamento del costruttore con il rinvio pesa sulle putrelle c
   const { ctx, res } = d.analysis, reaction = (machine: number) => hebOf(d.layout, d.machine, supportLoad(ctx, res.Mcw, { machine }))?.chosen.result.reaction ?? 0;
   assert.equal(d.heb?.chosen.result.reaction, reaction(ctx.N.mass + bed));
   assert.ok(reaction(ctx.N.mass) < reaction(ctx.N.mass + bed));
+});
+
+test('progetto: il telaio con il rinvio sulle sue gambe oltre il muro di fondo — nessuna putrella lo porta, e lo dice', () => {
+  // the example's bedplate runs 140 mm past the rear wall's outer face: its rear legs would stand on nothing
+  const d = deriveLift(withHeb(newLift(), {}));
+  assert.ok(d.heb);
+  assert.equal(d.heb.options.some((o) => o.ok), false);
+  assert.equal(d.heb.chosen.bridge, false);
+  assert.equal(d.supportChecks.find((c) => c.id === 'm_hebwall')?.status, 'fail');
 });

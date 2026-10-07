@@ -252,9 +252,12 @@ export function belowSectionEntities(L: Layout, M: MachineSpec, g: BottomGeo): {
   out.push(chain({ dir: 'y', pts: [floor, zs], at: right - (under ? T + 300 : WALL + 300), from: [null, uC], text: ['Asse {v}'] }));
   out.push(chain({ dir: 'y', pts: [S.pitFloor, 0], side: 'left', row: 0, text: ['Fossa {v}'], edit: [E('v.pit')] }));
   const size = Math.abs(g.dir[0]) > Math.abs(g.dir[1]) ? 'W' : 'D';
+  // along a drop line askew to the shaft the section's lengths through the shaft (and under the pit through the room)
+  // are not their sizes: references then (the plans change them)
+  const axial = Math.max(Math.abs(g.dir[0]), Math.abs(g.dir[1])) > 0.999;
   if (under) {
-    out.push(chain({ dir: 'x', pts: [u0, u1], side: 'top', row: 0, text: ['Vano {v}'], edit: [E(size)] }),
-      chain({ dir: 'x', pts: [r0, r1], side: 'bottom', row: 0, text: ['{v} Locale'], edit: [E(`below.${size}`)] }));
-  } else out.push(chain({ dir: 'x', pts: [u0, u1, u1 + T, r1], side: 'bottom', row: 0, text: ['Vano {v}', '{v}', '{v} Locale'], edit: [E(size), E('wall'), E(`below.${size}`)] }));
+    out.push(chain({ dir: 'x', pts: [u0, u1], side: 'top', row: 0, text: ['Vano {v}'], edit: [axial ? E(size) : null] }),
+      chain({ dir: 'x', pts: [r0, r1], side: 'bottom', row: 0, text: ['{v} Locale'], edit: [axial ? E(`below.${size}`) : null] }));
+  } else out.push(chain({ dir: 'x', pts: [u0, u1, u1 + T, r1], side: 'bottom', row: 0, text: ['Vano {v}', '{v}', '{v} Locale'], edit: [axial ? E(size) : null, E('wall'), E(`below.${size}`)] }));
   return { entities: out, bounds: { x0, y0: low, x1: right, y1: top } };
 }

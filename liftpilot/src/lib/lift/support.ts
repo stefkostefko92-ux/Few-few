@@ -55,7 +55,7 @@ export function supportLoad({ I, N }: Pick<ParsedInputs, 'I' | 'N'>, Mcw: number
 /** The governor's rope where it goes through the slab, both strands (room axes); none without one placed. */
 const governorRopes = (L: Layout, G: RoomGeo): Rope[] => {
   const spot = governorSpot(L), R = G.room;
-  return spot ? [spot.y1, spot.y2].map((y) => ({ at: [R.shaftX + spot.x, R.shaftY + y] as const, r: spot.G.rope / 2 })) : [];
+  return spot ? [spot.y1, spot.y2].map((y) => ({ at: [R.shaftX + spot.x, R.shaftY + y] as const, r: spot.G.rope })) : [];
 };
 
 /** The HEB beams on the shaft's walls under the machine of a whole design at `load` (heb.ts hebFor): the six weighed and

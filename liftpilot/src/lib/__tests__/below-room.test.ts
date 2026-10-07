@@ -5,6 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { deriveLift, newLift, type LiftInputs } from '@/lib/lift';
 import { belowFit, belowMachine, belowRoom, bottomGeo, type BottomScheme } from '@/lib/lift/bottom';
+import { belowSectionEntities } from '@/lib/tavole/below-view';
 import { sheaveAxisBelow } from '@/lib/lift/machine';
 import type { BelowRoom, ShaftInputs } from '@/shaft';
 
@@ -44,4 +45,19 @@ test('macchina sotto il vano: il locale dal suo angolo, la sua altezza porta giÃ
   assert.equal(b.fit.status, 'ok');
   // the calculation follows the machine down (the runs from the head pulleys are longer)
   assert.ok(Number(b.d.values.Hv) > Number(a.d.values.Hv));
+});
+
+test('sezione C-C lungo calate oblique: le lunghezze del vano e del locale sotto il vano sono solo riferimenti', () => {
+  // the counterweight's drop moved by hand: the drop line askew to the shaft
+  const keys = (scheme: BottomScheme, cwPos?: number): string[] => {
+    const b = below(scheme), inp = cwPos === undefined ? b : { ...b, shaft: { ...b.shaft, plan: { ...(b.shaft.plan ?? {}), cwPos } } };
+    const { d, g } = roomOf(inp);
+    assert.ok(cwPos === undefined || Math.max(Math.abs(g.dir[0]), Math.abs(g.dir[1])) < 0.999, 'calate oblique');
+    const chains = belowSectionEntities(d.layout, d.machine, g).entities.flatMap((e) => (e.e === 'chain' && e.c.dir === 'x' ? [e.c] : []));
+    return chains.flatMap((c) => (c.edit ?? []).flatMap((e) => (e ? [e.key] : [])));
+  };
+  assert.deepEqual(keys('head').sort(), ['D', 'below.D', 'wall']);
+  assert.deepEqual(keys('head', 200).sort(), ['below.D', 'wall'], 'accanto al vano: il muro e il locale restano esatti');
+  assert.deepEqual(keys('under').sort(), ['D', 'below.D']);
+  assert.deepEqual(keys('under', 200), []);
 });

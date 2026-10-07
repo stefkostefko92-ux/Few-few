@@ -43,6 +43,11 @@ export interface HebLayout {
   /** along their direction: the shaft's inner faces (the clear span) and the beams' ends in the walls (room axes) */
   span: readonly [number, number];
   ends: readonly [number, number];
+  /** across their direction: the outer faces of the walls they rest on — each beam lies within them (room axes) */
+  walls: readonly [number, number];
+  /** the support is one frame crossing them: it rests on them where it crosses them and may run past them (its feet
+   *  need not be on their flanges); else its feet stand on them */
+  bridge: boolean;
   /** each beam's length [mm] */
   length: number;
 }
@@ -57,7 +62,7 @@ export interface HebResult {
   feet: number;
   /** the least distance of the ropes from the beams [mm] */
   rope: number;
-  /** the walls' thickness less the bearing [mm] */
+  /** the walls' thickness less the bearing, and each beam's flange within the walls' outer faces: the least [mm] */
   wall: number;
   /** the largest force on a bearing [N] */
   reaction: number;
@@ -113,11 +118,26 @@ export function hebResultant(G: RoomGeo, M: MachineSpec, load: SupportLoad): { a
   return { at: onDrop(G, u, v), F: F * G_ACC };
 }
 
-/** The two beams of `profile` along `dir` under `feet` over the shaft `S` lying in the room (room axes). */
-export function hebLayout(R: RoomInputs, S: HebShaft, feet: readonly Pt[], dir: HebDir, profile: HebProfile): HebLayout {
-  const along = dir === 'x' ? 0 : 1, across = 1 - along, b = KV_VERT.hebBearing;
-  const s0 = along ? R.shaftY : R.shaftX, s1 = s0 + (along ? S.D : S.W), cs = feet.map((p) => p[across]);
-  return { dir, profile, at: [Math.min(...cs), Math.max(...cs)], span: [s0, s1], ends: [s0 - b, s1 + b], length: s1 - s0 + 2 * b };
+/** Whether the support is our low frame alone, lying on what is under it along its members: it rests on beams across
+ *  it wherever it crosses them and may run past them. A machine on shims or plates, the bedplate with the diverting
+ *  pulley on its legs, a pulley on its own stand: they stand on their feet. */
+function frameOnly(G: RoomGeo, M: MachineSpec): boolean {
+  const s = supportOf(G.room, M.Dp > 0), rf = M.rinvio ?? null;
+  return s.kind === 'frame' && !(rf?.on === 'stand' && M.Dp > 0);
+}
+
+/** Whether beams along `dir` cross the frame, whose members run along the rope drop line (within 45° of square to it). */
+const crossing = (G: RoomGeo, dir: HebDir): boolean => Math.abs(dir === 'x' ? G.ux : G.uy) < Math.SQRT1_2;
+
+/** The two beams of `profile` along `dir` under `feet` over the shaft `S` lying in the room (room axes): under the
+ *  outermost feet across them; under a frame crossing them (`bridge`) as far apart under it as the walls let them. */
+export function hebLayout(R: RoomInputs, S: HebShaft, feet: readonly Pt[], dir: HebDir, profile: HebProfile, bridge = false): HebLayout {
+  const along = dir === 'x' ? 0 : 1, across = 1 - along, b = KV_VERT.hebBearing, half = PROFILES[profile].b / 2;
+  const s0 = along ? R.shaftY : R.shaftX, s1 = s0 + (along ? S.D : S.W), cs = feet.map((p) => p[across]), lo = Math.min(...cs), hi = Math.max(...cs);
+  // the walls it bears on run across it from one outer face of the shaft to the other
+  const c0 = across ? R.shaftY : R.shaftX, c1 = c0 + (across ? S.D : S.W), walls = [c0 - S.wall, c1 + S.wall] as const;
+  const a = Math.max(lo, walls[0] + half), z = Math.min(hi, walls[1] - half), fits = bridge && z - a >= 2 * half;
+  return { dir, profile, at: fits ? [a, z] : [lo, hi], span: [s0, s1], ends: [s0 - b, s1 + b], walls, bridge: fits, length: s1 - s0 + 2 * b };
 }
 
 /** The signed distance of a point from a beam's outline in plan (negative inside) [mm]. */
@@ -144,13 +164,19 @@ export function hebResult(lay: HebLayout, res: { at: Pt; F: number }, feet: read
     reaction = Math.max(reaction, (F * (L - s)) / L + (q * L) / 2);
   }
   let onBeams = d > 1 ? Math.min(c[across] - a, b - c[across]) : 0;
-  for (const p of feet) onBeams = Math.min(onBeams, half - Math.min(Math.abs(p[across] - a), Math.abs(p[across] - b)), p[along] - lay.ends[0], lay.ends[1] - p[along]);
+  // the feet on the flanges, within the beams' ends; a frame crossing the beams only over their length
+  for (const p of feet) {
+    onBeams = Math.min(onBeams, p[along] - lay.ends[0], lay.ends[1] - p[along]);
+    if (!lay.bridge) onBeams = Math.min(onBeams, half - Math.min(Math.abs(p[across] - a), Math.abs(p[across] - b)));
+  }
   const rope = Math.min(...ropes.flatMap((x) => lay.at.map((ax) => fromBeam(x.at, lay, ax) - x.r)));
-  return { sigma, sigmaMax: KV_VERT.steelFyk / KV_VERT.steelGammaM0, f, fMax: clear / KV_VERT.beamDeflection, feet: onBeams, rope, wall: wall - bear, reaction };
+  // a beam past the walls' outer faces (under feet beyond the shaft) rests on nothing
+  const onWalls = Math.min(wall - bear, a - half - lay.walls[0], lay.walls[1] - b - half);
+  return { sigma, sigmaMax: KV_VERT.steelFyk / KV_VERT.steelGammaM0, f, fMax: clear / KV_VERT.beamDeflection, feet: onBeams, rope, wall: onWalls, reaction };
 }
 
 /** The checks m_heb (stress), m_hebf (deflection), m_hebfeet (the load between the beams, the feet on them), m_hebrope
- *  (the ropes clear of them), m_hebwall (the bearing in the wall). */
+ *  (the ropes clear of them), m_hebwall (on the walls: the bearing in them, the beams within their outer faces). */
 export function hebChecks(r: HebResult | null): ShaftCheck[] {
   if (!r) return [];
   return [
@@ -165,8 +191,8 @@ export function hebChecks(r: HebResult | null): ShaftCheck[] {
 /** The six beams (two directions, three profiles) under the machine `M` in the room of `G`, the shortest first, then the
  *  lightest. */
 export function hebLayouts(G: RoomGeo, M: MachineSpec, S: HebShaft): HebLayout[] {
-  const feet = supportFeet(G, M);
-  return (['x', 'y'] as const).flatMap((dir) => HEB_PROFILES.map((profile) => hebLayout(G.room, S, feet, dir, profile)))
+  const feet = supportFeet(G, M), frame = frameOnly(G, M);
+  return (['x', 'y'] as const).flatMap((dir) => HEB_PROFILES.map((profile) => hebLayout(G.room, S, feet, dir, profile, frame && crossing(G, dir))))
     .sort((p, q) => p.length - q.length || PROFILES[p.profile].mass - PROFILES[q.profile].mass);
 }
 
@@ -207,7 +233,7 @@ export function hebDrawn(G: RoomGeo, M: MachineSpec, S: HebShaft): HebLayout | n
   const set = G.room.heb;
   if (!set || !onHeb(G.room, M.Dp > 0)) return null;
   const dir = set.dir ?? (S.W <= S.D ? 'x' : 'y');
-  return hebLayout(G.room, S, supportFeet(G, M), dir, set.profile ?? HEB_PROFILES[HEB_PROFILES.length - 1]);
+  return hebLayout(G.room, S, supportFeet(G, M), dir, set.profile ?? HEB_PROFILES[HEB_PROFILES.length - 1], frameOnly(G, M) && crossing(G, dir));
 }
 
 /** The key of the drawings' choice of the beams: their profile and direction together (set `<dir>:<profile>`). */

@@ -1,6 +1,8 @@
-// The HEB beams on the shaft's walls (registry locale.putrelle.vano): their layout over the shaft, the check of a beam
-// against a calculation by hand (HEB 140, 1600 mm between the walls, 40 kN between the two beams at mid-span), the
-// margins of the feet, the ropes and the walls, the six weighed in order and the one taken, the choice on a drawing.
+// The HEB beams on the shaft's walls (registry locale.putrelle.vano): their layout over the shaft (under the outermost
+// feet, or as far apart as the walls let them under a frame crossing them), the check of a beam against a calculation
+// by hand (HEB 140, 1600 mm between the walls, 40 kN between the two beams at mid-span), the margins of the feet, the
+// ropes and the walls (a beam past the walls' outer faces rests on nothing), the six weighed in order and the one
+// taken, the choice on a drawing.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { DEFAULT_ROOM, KV_VERT, PROFILES, defaultInputs, hebChecks, hebDrawn, hebLayout, hebPick, hebResult, layout, roomGeo, type HebOption, type MachineSpec } from '../index';
@@ -18,14 +20,40 @@ test('putrelle HEB: tra le facce interne del vano, 200 mm in ogni muro, sotto i 
   assert.deepEqual(x.ends, [500 - KV_VERT.hebBearing, 2100 + KV_VERT.hebBearing]);
   assert.equal(x.length, 1600 + 2 * KV_VERT.hebBearing);
   assert.deepEqual(x.at, [1000, 1500]);
+  // across them the walls carrying them, outer face to outer face
+  assert.deepEqual(x.walls, [400 - 250, 400 + 1750 + 250]);
+  assert.equal(x.bridge, false);
   const y = hebLayout(R, S, feet, 'y', 'HEB 120');
   assert.deepEqual(y.span, [400, 2150]);
   assert.equal(y.length, 1750 + 400);
   assert.deepEqual(y.at, [900, 1900]);
+  assert.deepEqual(y.walls, [500 - 250, 500 + 1600 + 250]);
+});
+
+test('putrelle HEB: sotto un telaio più lungo del vano, entro i muri; sotto i piedi, fuori dai muri non passano', () => {
+  const R = { ...DEFAULT_ROOM, shaftX: 500, shaftY: 400 }, S = { W: 1600, D: 1750, wall: 250 }, half = PROFILES['HEB 160'].b / 2;
+  // the frame's ends past the rear wall's outer face (2400): under the frame the second beam stays on that wall
+  const feet = [[900, 1000], [1600, 1000], [900, 2600], [1600, 2600]] as const;
+  const frame = hebLayout(R, S, feet, 'x', 'HEB 160', true);
+  assert.equal(frame.bridge, true);
+  assert.deepEqual(frame.at, [1000, 2400 - half]);
+  const res = { at: [1250, 1700] as const, F: 30000 };
+  const on = hebResult(frame, res, feet, [], 250);
+  assert.ok(on.feet > 0 && on.wall >= 0, `piedi ${on.feet}, muri ${on.wall}`);
+  // the same feet standing on the beams: the second beam past the wall rests on nothing
+  const strict = hebLayout(R, S, feet, 'x', 'HEB 160');
+  assert.deepEqual(strict.at, [1000, 2600]);
+  const off = hebResult(strict, res, feet, [], 250);
+  assert.equal(off.wall, 2400 - 2600 - half);
+  assert.equal(hebChecks(off).find((c) => c.id === 'm_hebwall')?.status, 'fail');
+  // no room for two beams under the frame between the walls: as under feet, failing
+  const narrow = hebLayout(R, S, [[900, 2380], [1600, 2380], [900, 2700], [1600, 2700]], 'x', 'HEB 160', true);
+  assert.equal(narrow.bridge, false);
 });
 
 test('putrelle HEB: tensione, freccia e reazione come a mano', () => {
-  const lay = { dir: 'x' as const, profile: 'HEB 140' as const, at: [1000, 1600] as const, span: [500, 2100] as const, ends: [300, 2300] as const, length: 2000 };
+  const lay = { dir: 'x' as const, profile: 'HEB 140' as const, at: [1000, 1600] as const, span: [500, 2100] as const, ends: [300, 2300] as const,
+    walls: [250, 2400] as const, bridge: false, length: 2000 };
   const feet = [[800, 1000], [1800, 1000], [800, 1600], [1800, 1600]] as const;
   const r = hebResult(lay, { at: [1300, 1300], F: 40000 }, feet, [{ at: [1300, 1300], r: 10 }], 250);
   // each beam half the load at mid-span of L = 1600 + 200 between the bearings' centres, its own weight
@@ -52,7 +80,7 @@ test('putrelle HEB: tensione, freccia e reazione come a mano', () => {
 
 test('putrelle HEB: la scelta — le più corte che passano, poi le più leggere; a mano profilo e direzione', () => {
   const opt = (dir: 'x' | 'y', profile: HebOption['profile'], length: number, ok: boolean): HebOption => ({
-    dir, profile, length, at: [0, 0], span: [0, 0], ends: [0, 0], ok,
+    dir, profile, length, at: [0, 0], span: [0, 0], ends: [0, 0], walls: [0, 0], bridge: false, ok,
     result: { sigma: ok ? 50 : 300, sigmaMax: 262, f: 1, fMax: 2, feet: 10, rope: 100, wall: 0, reaction: 1 },
   });
   const opts = [opt('x', 'HEB 120', 2000, false), opt('x', 'HEB 140', 2000, true), opt('x', 'HEB 160', 2000, true), opt('y', 'HEB 120', 2150, true)];
