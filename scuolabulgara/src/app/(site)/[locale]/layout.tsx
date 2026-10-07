@@ -18,7 +18,7 @@ const OG_LOCALE: Record<Locale, string> = { it: "it_IT", bg: "bg_BG", en: "en_GB
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale: raw } = await params;
   const base = process.env.SITE_URL || "https://www.scuolabulgaramilano.it";
-  const locale = (isLocale(raw) ? raw : "en") as Locale;
+  const locale = (isLocale(raw) ? raw : "it") as Locale;
   const site = await loadSite(locale);
   const seo = site.get("seo");
   const org = site.get("org");

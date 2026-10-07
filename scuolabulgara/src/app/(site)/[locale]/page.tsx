@@ -24,7 +24,7 @@ const CardIcon = ({ name, fallback }: { name: string; fallback: string }) => (
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: raw } = await params;
-  const locale = (isLocale(raw) ? raw : "en") as Locale;
+  const locale = (isLocale(raw) ? raw : "it") as Locale;
   const site = await loadSite(locale);
   const tt = (k: string) => t(locale, k, site.ui);
 

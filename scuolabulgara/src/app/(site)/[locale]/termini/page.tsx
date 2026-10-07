@@ -9,7 +9,7 @@ const KIND = "termini" as const;
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale: raw } = await params;
-  const locale = (isLocale(raw) ? raw : "en") as Locale;
+  const locale = (isLocale(raw) ? raw : "it") as Locale;
   const base = process.env.SITE_URL || "https://www.scuolabulgaramilano.it";
   const doc = LEGAL[KIND][locale];
   const languages: Record<string, string> = {};

@@ -3,7 +3,9 @@
 
 export const LOCALES = ["it", "bg", "en"] as const;
 export type Locale = (typeof LOCALES)[number];
-export const DEFAULT_LOCALE: Locale = "en";
+// Italian is the default: a school in Milan. Bulgarian is chosen automatically
+// only for a clear Bulgarian signal; English only when the visitor picks it.
+export const DEFAULT_LOCALE: Locale = "it";
 
 export const LOCALE_META: Record<Locale, { label: string; flag: string; htmlLang: string }> = {
   it: { label: "Italiano", flag: "🇮🇹", htmlLang: "it" },
@@ -17,10 +19,7 @@ export function isLocale(value: string | undefined | null): value is Locale {
 
 // Map an ISO country code to the locale we serve to that audience.
 export function localeForCountry(country: string | undefined | null): Locale {
-  const c = (country || "").toUpperCase();
-  if (c === "IT") return "it";
-  if (c === "BG") return "bg";
-  return "en";
+  return (country || "").toUpperCase() === "BG" ? "bg" : DEFAULT_LOCALE;
 }
 
 // UI strings (navigation, buttons, labels). Content lives in the DB.
