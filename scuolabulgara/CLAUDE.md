@@ -47,8 +47,8 @@ scripts/          hash-password + helpers
 
 - **One idea: cross-stitch (кръстат бод), drawn by code.** `src/lib/stitch.ts` holds the
   pure geometry (8-pointed star, border tile, photo → thread colours) with unit tests;
-  `components/Stitch.tsx` renders it as server SVG, `StitchedPhoto.tsx` (hero: the photo's
-  edge unravels into stitches in its own colours, sewn once on load) and `Alphabet.tsx`
+  `components/Stitch.tsx` renders it as server SVG, `StitchedPhoto.tsx` (hero: embroidery in the
+  photo's own colours rises from the bottom edge to knee height, `--stitch-depth`, sewn once on load) and `Alphabet.tsx`
   (the chosen letter embroidered on Aida) draw it on canvas. Reduced motion → drawn at
   once; no JS → plain photo / plain letter.
 - **Type: Sofia Sans** (Bulgarian designer) — text + Extra Condensed display, self-hosted

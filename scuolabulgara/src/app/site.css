@@ -162,12 +162,13 @@ body.menu-open .nav__toggle span::after { transform: rotate(-45deg); }
 
 /* The stitched photograph (StitchedPhoto.tsx). --zone and --out are set by the
    script once the stitches exist; until then (or without JS) the photo is whole. */
-.stitched { position: relative; margin: 0; --stitch-axis: x; --stitch-cell: 10px; --stitch-focus: 40% 50%; --zone: 0px; --out: 0px; }
+/* The embroidery rises from the bottom edge (the hem) to knee height. */
+.stitched { position: relative; margin: 0; --stitch-axis: y; --stitch-cell: 10px; --stitch-depth: .3; --stitch-focus: 40% 50%; --zone: 0px; --out: 0px; }
 .stitched__img { width: 100%; height: 100%; object-fit: cover; object-position: var(--stitch-focus); }
-.stitched__thread { position: absolute; pointer-events: none; top: 0; left: calc(-1 * var(--out)); width: calc(var(--zone) + var(--out)); height: 100%; z-index: 1; }
+.stitched__thread { position: absolute; pointer-events: none; left: 0; top: calc(100% - var(--zone)); width: 100%; height: calc(var(--zone) + var(--out)); z-index: 1; }
 .stitched.is-stitched .stitched__img {
-  -webkit-mask-image: linear-gradient(90deg, transparent calc(var(--zone) * .2), #000 calc(var(--zone) * .9));
-  mask-image: linear-gradient(90deg, transparent calc(var(--zone) * .2), #000 calc(var(--zone) * .9));
+  -webkit-mask-image: linear-gradient(0deg, transparent calc(var(--zone) * .2), #000 calc(var(--zone) * .9));
+  mask-image: linear-gradient(0deg, transparent calc(var(--zone) * .2), #000 calc(var(--zone) * .9));
 }
 
 .facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.25rem 2rem; padding-block: clamp(2rem, 4vw, 3rem) 1.75rem; }
@@ -177,13 +178,8 @@ body.menu-open .nav__toggle span::after { transform: rotate(-45deg); }
 @media (max-width: 900px) {
   .hero { padding-top: 0; }
   .hero__grid { grid-template-columns: [full-start] var(--g) [wrap-start] minmax(0, 1fr) [wrap-end] var(--g) [full-end]; }
-  .hero__photo { grid-column: full-start / full-end; grid-row: 1; height: auto; aspect-ratio: 4 / 3.2; --stitch-axis: y; --stitch-cell: 8px; --stitch-focus: 45% 40%; }
+  .hero__photo { grid-column: full-start / full-end; grid-row: 1; height: auto; aspect-ratio: 4 / 3.2; --stitch-cell: 8px; --stitch-focus: 45% 40%; }
   .hero__copy { grid-column: wrap-start / wrap-end; grid-row: 2; padding: 2.6rem 0 0; }
-  .stitched__thread { left: 0; top: calc(100% - var(--zone)); width: 100%; height: calc(var(--zone) + var(--out)); }
-  .stitched.is-stitched .stitched__img {
-    -webkit-mask-image: linear-gradient(0deg, transparent calc(var(--zone) * .2), #000 calc(var(--zone) * .9));
-    mask-image: linear-gradient(0deg, transparent calc(var(--zone) * .2), #000 calc(var(--zone) * .9));
-  }
   .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 520px) {

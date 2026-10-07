@@ -57,8 +57,11 @@ function prepare(c: HTMLCanvasElement, w: number, h: number) {
 /**
  * A photograph whose edge comes undone into cross-stitch. Reads its layout from
  * CSS custom properties on the figure: --stitch-axis (x: left edge, y: bottom
- * edge), --stitch-cell (px per stitch), --stitch-focus (object-position). Sets
- * --zone/--out for the CSS mask and adds .is-stitched once drawn.
+ * edge), --stitch-cell (px per stitch), --stitch-depth (how far into the photo
+ * the embroidery climbs, as a share of it), --stitch-focus (object-position).
+ * Sewn from the outer edge inwards — on the bottom edge: from the hem upwards,
+ * stopping at the top of the zone. Sets --zone/--out for the CSS mask and adds
+ * .is-stitched once drawn.
  */
 export function stitchPhoto(f: HTMLElement, im: HTMLImageElement, c: HTMLCanvasElement, animate: boolean): () => void {
   const P = f.clientWidth, H = f.clientHeight;
@@ -68,7 +71,8 @@ export function stitchPhoto(f: HTMLElement, im: HTMLImageElement, c: HTMLCanvasE
   const s = parseFloat(css.getPropertyValue("--stitch-cell")) || 10;
   const along = vertical ? H : P;
   const across = vertical ? P : H;
-  const zone = Math.round((along * (vertical ? 0.5 : 0.42)) / s) * s;
+  const depthShare = parseFloat(css.getPropertyValue("--stitch-depth")) || (vertical ? 0.3 : 0.42);
+  const zone = Math.round((along * depthShare) / s) * s;
   const out = Math.round((vertical ? 32 : 72) / s) * s;
   const W = zone + out;
 
@@ -101,7 +105,7 @@ export function stitchPhoto(f: HTMLElement, im: HTMLImageElement, c: HTMLCanvasE
     return nearestSkein(pixels[i], pixels[i + 1], pixels[i + 2]);
   };
 
-  // Which cells get a stitch, and the order they are sewn: from the photo outwards.
+  // Which cells get a stitch, and the order they are sewn: from the outer edge in.
   type St = { x: number; y: number; rgb: RGB; order: number };
   const cols = Math.ceil((vertical ? across : W) / s), rows = Math.ceil((vertical ? W : across) / s);
   const stitches: St[] = [];
@@ -113,7 +117,7 @@ export function stitchPhoto(f: HTMLElement, im: HTMLImageElement, c: HTMLCanvasE
       if (hash2(i, j, 11) >= stitchChance(u)) continue;
       const inPhoto = Math.floor((depth - out) / s);
       const a = inPhoto >= 0 ? inPhoto : Math.floor(hash2(i, j, 13) * 3); // loose threads keep the edge's colours
-      stitches.push({ x: i * s, y: j * s, rgb: vertical ? colour(k, ph - 1 - a) : colour(a, k), order: -u + hash2(i, j, 17) * 0.18 });
+      stitches.push({ x: i * s, y: j * s, rgb: vertical ? colour(k, ph - 1 - a) : colour(a, k), order: u + hash2(i, j, 17) * 0.08 });
     }
   }
   stitches.sort((p, q) => p.order - q.order);
@@ -123,7 +127,7 @@ export function stitchPhoto(f: HTMLElement, im: HTMLImageElement, c: HTMLCanvasE
   const ctx = prepare(c, vertical ? across : W, vertical ? W : across);
   const shade = (rgb: RGB, m: number) => `rgb(${rgb.map((v) => Math.round(Math.min(255, v * m))).join(",")})`;
   f.classList.add("is-stitched");
-  return sew(stitches, (st, second) => paintLeg(ctx, st.x, st.y, s, shade(st.rgb, second ? 1 : 0.82), second, (hash2(st.x, st.y, second ? 19 : 23) - 0.5) * 0.9), animate, 1400, 90);
+  return sew(stitches, (st, second) => paintLeg(ctx, st.x, st.y, s, shade(st.rgb, second ? 1 : 0.82), second, (hash2(st.x, st.y, second ? 19 : 23) - 0.5) * 0.9), animate, 1900, 90);
 }
 
 /**
