@@ -11,7 +11,8 @@ import { HEB_PROFILES, layout, section, travel, type HebTaken, type Layout, type
 import type { MachineSpec } from '@/shaft/machine-room';
 import { analyse, mirrorRopes, proposalValues, type Analysis } from '@/lib/present/analysis';
 import { simModel, type SimModel } from '@/sim';
-import { belowFit, bottomGapNeeded, bottomGeo, extraBends, type BottomScheme } from './bottom';
+import { belowChecks } from './below-checks';
+import { bottomGapNeeded, bottomGeo, extraBends, type BottomScheme } from './bottom';
 import { bestFit, catalogValues, pickOption, type CatalogChoice } from './catalog';
 import type { CatalogFit } from '@/lib/catalog/machines';
 import { machineShapeOf, machineSpec, rinvioOf, sheaveAxis, sheaveAxisBelow, type Made } from './machine';
@@ -226,8 +227,8 @@ function deriveOnce(inp: LiftInputs): LiftDerived {
   // part under what hangs over it
   const load = supportLoad(analysis.ctx, analysis.res.Mcw, { machine: N.mass + bedplateMass(machine) }), above = I.layout !== 'bottom';
   const g = scheme ? bottomGeo(L, scheme, N.D, I.Dp, N.n, N.d, I.r, sheaveAxisBelow(N.D, shape)) : null;
-  // a machine below in its room
-  const supportCk = [...supportChecks(Lp, machine, load, above), ...headTopChecks(Lp, I.r, I.Dp, scheme), ...(g ? belowFit(Lp, g, machine) : [])];
+  // a machine below: its room as a machine room, the pulley room over the shaft (below-checks.ts)
+  const supportCk = [...supportChecks(Lp, machine, load, above), ...headTopChecks(Lp, I.r, I.Dp, scheme), ...(g ? belowChecks(Lp, g, machine, I.Dp) : [])];
   const beams = above ? hebOf(Lp, machine, load) : null, chosenBy = Lp.inputs.room?.heb;
   const bottomGap = scheme && g && !g.fits ? { now: S.cwWallGap, need: bottomGapNeeded(S, scheme, N.D, I.Dp, N.n, N.d, I.r) } : null;
   return {

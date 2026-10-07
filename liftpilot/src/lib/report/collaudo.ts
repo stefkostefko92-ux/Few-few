@@ -3,7 +3,8 @@
 // staying as it is, the result under each standard and the test's, the adaptations the standard asks of a replaced
 // machine. Pure.
 import appIt from '../../../messages/it.json';
-import type { CheckId } from '@/calc/types';
+import { PROFILO } from '@/calc/norme';
+import type { CheckId, MachineStd } from '@/calc/types';
 import type { ShaftCheckId } from '@/shaft';
 import { NORMA_BREVE, NORMA_SIGLA, adeguamentiDovuti, ambitoOf, collaudoVerdict, esitiNorme, normeOf, type Collaudo } from '../lift/collaudo';
 import { ADEMPIMENTI, NORME_INFO, type PuntoInSito } from '../lift/norme-collaudo';
@@ -14,6 +15,26 @@ import type { Tr } from '../present/tr';
 import type { BlockStatus, ReportBlock } from './model';
 
 const LIFT = appIt.lift;
+
+/** What DPR 162/1999 asks of a new installation, in the references (the articles of ADEMPIMENTI.nuovo). */
+const DPR_NUOVO = 'impianto nuovo: conformità con un organismo notificato e marcatura CE (artt. 4-bis, 6-bis e 7), messa in esercizio '
+  + '(art. 12) e verifiche periodiche (art. 13)';
+
+/** The machine to UNI EN 81-1 in the relazione's object: the points of that standard the checks take. */
+export const STD_81_1 = ' Macchina secondo la norma di origine, UNI EN 81-1 (UNI 10411-1:2024, 14.1 b)): con la cabina o il contrappeso bloccati vale '
+  + 'la sua 9.3 c), senza l’alternativa del dispositivo elettrico, e la manovra di emergenza segue la sua 12.5.';
+const EN81_1 = ['UNI EN 81-1:2010', 'la macchina secondo la norma di origine (UNI 10411-1:2024, 14.1 b)): aderenza (9.3), funi (9.2.2), freno (12.4.2), '
+  + 'manovra di emergenza (12.5); punti letti sulla UNI EN 81-1:2008'];
+
+/** The references of the relazione, by the case: an existing installation is modified under DPR 162/1999 and tested to
+ *  the UNI 10411 part chosen; a new one is placed on the market and put into service (section «Adempimenti»), with no UNI
+ *  10411 and no extraordinary inspection; DM 236/1989 with a shaft design; UNI EN 81-1 with a machine to it. */
+export function riferimentiRows(repl: boolean, norma: Collaudo['norma'], std: MachineStd, design: boolean): string[][] {
+  const rows = PROFILO.documenti
+    .filter((d) => (d.sigla.startsWith('UNI 10411') ? repl && d.sigla.startsWith(`UNI ${norma}:`) : d.sigla.startsWith('DM 236') ? design : true))
+    .map((d) => [d.sigla, !repl && d.sigla.startsWith('DPR 162/1999') ? DPR_NUOVO : d.ambito]);
+  return std === 'en81-1' ? [...rows, EN81_1] : rows;
+}
 
 /** The parts replaced or changed, in words (tested as new: all of them). */
 export const partiText = (C: Collaudo): string => (C.norma === 'en81'

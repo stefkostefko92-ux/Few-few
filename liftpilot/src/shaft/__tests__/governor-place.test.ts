@@ -23,7 +23,24 @@ test('limitatore: il lato scelto se libero, altrimenti l’ultimo lato libero', 
   // a side with the counterweight is never the governor's
   const left = layout({ ...I0, cw: 'left', governorSide: 'left' });
   assert.notEqual(governorSpot(left)?.side, 'left');
-  assert.deepEqual(ids(I0), [['v_gov', 'ok'], ['v_govrail', 'ok']]);
+  assert.deepEqual(ids(I0), [['v_gov', 'ok'], ['v_govrail', 'ok'], ['v_govdd', 'ok']]);
+});
+
+test('limitatore: pulegge di almeno 30 volte la fune (UNI EN 81-20:2020, 5.6.2.2.1.3 c)); senza posto, avviso', () => {
+  const dd = (model: string) => governorChecks(layout({ ...I0, governor: model })).find((c) => c.id === 'v_govdd');
+  // LK200 Ø 200 with a 6 mm rope (33,3) passes; LX120 Ø 120 and LX150 Ø 150 with 6 mm (20 and 25) do not; LK120 with 4 mm, 30
+  assert.equal(dd('LK200')?.status, 'ok');
+  assert.equal(dd('LX120')?.status, 'fail');
+  assert.equal(dd('LX150')?.status, 'fail');
+  assert.equal(dd('LK120')?.status, 'ok');
+  assert.ok(Math.abs((dd('LX120')?.value ?? 0) - 20) < 1e-9);
+  // no side wall free of doors and of the counterweight: no place for the rope, the check warns without a value (the
+  // governor is placed by hand)
+  const none: ShaftInputs = { ...I0, entrances: 'adjacent', side2: 'right' };
+  assert.equal(governorSpot(layout(none)), null);
+  const v = governorChecks(layout(none)).find((c) => c.id === 'v_gov');
+  assert.equal(v?.status, 'warn');
+  assert.equal(v?.value, null);
 });
 
 test('limitatore: fune e ramo agganciato messi a mano, con le loro verifiche', () => {
@@ -35,7 +52,7 @@ test('limitatore: fune e ramo agganciato messi a mano, con le loro verifiche', (
   assert.equal(g.y1, g0.rail.y + 300);
   // too near the wall, too far from the rail: the checks say so
   const bad = { ...I0, plan: { govX: 20, govY: g0.rail.y + KV_VERT.govReach + 50 } };
-  assert.deepEqual(ids(bad), [['v_gov', 'fail'], ['v_govrail', 'fail']]);
+  assert.deepEqual(ids(bad), [['v_gov', 'fail'], ['v_govrail', 'fail'], ['v_govdd', 'ok']]);
   // in front of the rail: the lever toward the front
   const front = governorSpot(layout({ ...I0, plan: { govY: g0.rail.y - 200 } }));
   assert.ok(front && front.y1 < front.rail.y);

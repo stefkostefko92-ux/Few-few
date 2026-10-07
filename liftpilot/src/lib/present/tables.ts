@@ -108,7 +108,7 @@ export function techTables(P: Pres, X: Texts, a: Analysis): TableBlock[] {
     key: 'drive', title: t('c_drive'), head: head4,
     rows: [
       [{ text: t('d_df'), sub: t(d.empty ? 'd_case_e' : 'd_case_q') }, `${fmt(d.dF, 0)} N`, '', ''],
-      [t('d_pst'), withBar(`${fmt(d.Pst / 1000, 2)} kW`, d.powerUtil), `${fmt(N.Pn, 1)} kW`, pill('d_pst')],
+      [d.Peq > d.Pst ? { text: t('d_pst'), sub: t('d_pst_torque', { v: fmt(res.kin.vReal, 3) }) } : t('d_pst'), withBar(`${fmt(d.Peq / 1000, 2)} kW`, d.powerUtil), `${fmt(N.Pn, 1)} kW`, pill('d_pst')],
       [t('d_pbal'), `${fmt(d.Pbal / 1000, 2)} kW`, '', ''],
       [`${t('d_mn')} · ${t('d_mst')}`, `${fmt(d.Mn, 1)} · ${fmt(d.MmSt, 1)} N·m`, '', ''],
       [t('d_macc'), `${fmt(d.Macc, 1)} N·m`, '', ''],

@@ -125,6 +125,7 @@
   "r_nd": "Numero e diametro delle funi",
   "d_df": "Squilibrio ΔF",
   "d_pst": "Potenza statica",
+  "d_pst_torque": "alla coppia statica: la macchina va più veloce della nominale ({v} m/s), il motore lavora sotto la frequenza base",
   "d_pbal": "Formula semplificata (1−k)·Q·g·v/η",
   "d_mn": "Coppia nominale",
   "d_mst": "Coppia statica al motore",
@@ -156,6 +157,7 @@
   "st_info": "Info",
   "v_rescue": "Manovra di emergenza: il software verifica i {fmax} N per far salire la cabina con la portata e, con la macchina secondo la UNI EN 81-20, i {f} N per portarla a una fermata (5.9.2.3); il mezzo installato si verifica sul posto.",
   "v_eta": "Rendimento del riduttore per rapporto e rendimento del vano: dai dati del costruttore e della disposizione reale.",
+  "v_inertia": "Inerzie J_m (motore, freno e volano), J_s (puleggia di frizione), J_p (pulegge di rinvio) e massa dell’argano: dai dati del costruttore; freno, decelerazioni e aderenza alla decelerazione reale ne dipendono.",
   "a_brake": "Freno con elementi meccanici in almeno due gruppi; con uno in avaria deve fermare la cabina carica in discesa e vuota in salita (UNI EN 81-20, 5.9.2.2.2.1).",
   "a_dd": "Diametro di puleggia di frizione, pulegge e tamburo almeno 40 volte quello delle funi (14.3).",
   "a_machine": "Macchina nuova secondo la UNI EN 81-20 (5.9.1 e 5.9.2) o la UNI EN 81-1:2010 (punto 12), verificando aderenza e coefficiente di sicurezza delle funi (14.1).",
@@ -169,7 +171,7 @@
   "c_adapt_en81": "Adeguamenti: collaudo come impianto nuovo",
   "a_en81": "Collaudato secondo UNI EN 81-20:2020 e UNI EN 81-50:2020, l’impianto deve avere le protezioni di un impianto nuovo, tra cui quelle contro la velocità eccessiva in salita e contro i movimenti incontrollati della cabina (UNI EN 81-20, 5.6.6 e 5.6.7): l’organo d’arresto agisce su cabina, contrappeso, funi, puleggia di frizione o sul suo albero (5.6.6.4 e 5.6.7.4), quindi se il freno agisce sull’albero motore servono dispositivi separati e certificati.",
   "c_adapt_11": "Adeguamenti per la sostituzione (UNI 10411-11)",
-  "a_11": "UNI 10411-11:2024, punto 14: macchina nuova come l’originale, altrimenti secondo la UNI EN 81-20 (5.9.1 e 5.9.2) con le verifiche di aderenza e delle funi della norma di origine o della UNI EN 81-20 e la valutazione del punto 4.3 (14.1); le protezioni UCM esistenti devono continuare a funzionare (14.3 a)); senza UCM conforme alla 5.6.7 e con il rallentamento controllato, interruzione dell’alimentazione se il freno non si apre (14.3 b)); funi nuove e loro attacchi come gli originali, altrimenti verificati sull’impianto con la valutazione del punto 4.3 (17).",
+  "a_11": "UNI 10411-11:2024, punto 14: macchina nuova come l’originale, altrimenti secondo la UNI EN 81-20 (5.9.1 e 5.9.2) con le verifiche di aderenza e delle funi della norma di origine o della UNI EN 81-20 e la valutazione del punto 4.3 (14.1); le protezioni UCM esistenti devono continuare a funzionare (14.3 a)); senza UCM conforme alla 5.6.7 e con il rallentamento controllato, interruzione dell’alimentazione se il freno non si apre (14.3 b)); funi nuove e loro attacchi come gli originali, altrimenti verificati sull’impianto con la valutazione del punto 4.3 (17). Se l’ACOP o l’organo d’arresto dell’UCM agiva sulla puleggia di frizione o sul suo albero della macchina sostituita, con la macchina nuova serve un dispositivo equivalente con esame del tipo: un freno sull’albero del motore non è un organo d’arresto ammesso (UNI EN 81-20, 5.6.6.4 e 5.6.7.4; UNI EN 81-1, 9.10.4).",
   "c_adapt_other": "Adeguamenti",
   "a_other": "La macchina resta quella esistente. Gli adeguamenti che la {norma} chiede per le parti sostituite o modificate vanno verificati sul testo della norma.",
   "n_new": "Impianto nuovo: l’organo d’arresto delle protezioni contro la velocità eccessiva in salita e il movimento incontrollato agisce su cabina, contrappeso, funi, puleggia di frizione o sul suo albero (UNI EN 81-20, 5.6.6.4 e 5.6.7.4): se il freno agisce sull’albero motore serve un dispositivo separato e certificato.",
@@ -375,6 +377,7 @@
   "tr_msr1": "Frenatura con il tratto macchina–testata a r·a",
   "r_two": "Cabina appesa a due funi",
   "g_retain": "Funi trattenute nelle gole",
+  "g_retain_lim": "fermo intermedio con più di {below}° sotto l’asse e più di {wrap}° di avvolgimento",
   "v_comp": "Velocità e compensazione",
   "s_fa": "Forza al volantino fino a una fermata",
   "s_gravity": "Movimento per gravità",
@@ -408,5 +411,5 @@
   "hint_Dp": "Con pulegge di diametro diverso inserisci la più piccola: vale per D/d e, dal lato della sicurezza, per N_equiv.",
   "a_assess": "Valutazione della sicurezza della modifica su tre piani: il componente cambiato, quelli che la modifica tocca e l’impianto nel suo insieme (punto 4).",
   "a_ropes": "Con funi nuove (UNI EN 81-20, 5.5.1) si controllano sempre anche gli attacchi d’estremità su cabina, contrappeso e punti fissi: secondo la 5.5.2.3.1 o, se già dello stesso tipo, a testa fusa (UNI EN 13411-4) o con morsetti a cavallotto (UNI EN 13411-5) (17.1).",
-  "a_docs": "Documenti della sostituzione (appendice C, 14): dati della macchina nuova, taratura del variatore di frequenza per la velocità dichiarata, calcolo di aderenza e del coefficiente di sicurezza delle funi (e della pressione specifica, se serve), compatibilità con gli ACOP e gli UCM esistenti, esame del tipo e dichiarazione di conformità di ACOP o UCM nuovi; i manuali della macchina e dei componenti nuovi (25.5)."
+  "a_docs": "Documenti della sostituzione (appendice C, 14): dati della macchina nuova, taratura del variatore di frequenza per la velocità dichiarata, calcolo di aderenza e del coefficiente di sicurezza delle funi (e della pressione specifica, se serve), compatibilità con gli ACOP e gli UCM esistenti, esame del tipo e dichiarazione di conformità di ACOP o UCM nuovi; quando pertinenti, i documenti dei punti 5 (strutture dell’edificio: l’idoneità la dimostra il proprietario, con i nuovi carichi), 9 (disegno quotato del locale del macchinario con accessi e spazi di manutenzione), 10 (linee elettriche rifatte o estese) e 15 (velocità nominale cambiata); i manuali della macchina e dei componenti nuovi (25.5)."
 }

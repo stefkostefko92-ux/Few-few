@@ -4,12 +4,13 @@
 // filled in from the one form (estimated car mass, geometry from the shaft design, machine proposed) are marked. Pure.
 import calcIt from '../../../messages/calc/it.json';
 import appIt from '../../../messages/it.json';
-import { deg } from '@/calc/math';
-import { K, PROFILO, VOCI, type Stato } from '@/calc/norme';
+import { PROFILO, VOCI, type Stato } from '@/calc/norme';
 import { COND, PALETTE, concreteTile, type SheetImage } from '@/drawing';
 import { mergeChecks, vociOfDesign } from '@/shaft';
-import type { BrakeCase, CheckId, CheckStatus, FormValues, TractionCase } from '@/calc/types';
-import type { BottomScheme } from '../lift/bottom';
+import type { CheckId, CheckStatus, FormValues } from '@/calc/types';
+import { belowChecks } from '../lift/below-checks';
+import { bottomGeo, type BottomScheme } from '../lift/bottom';
+import { headTopChecks } from '../lift/head';
 import { NO_MARKS, P_ESTIMATE_RULE, type ValueMarks } from '../lift/marks';
 import { ambitoOf, collaudoOf } from '../lift/collaudo';
 import { carichiOf } from '../lift/modifica';
@@ -21,8 +22,9 @@ import { textsFor, verdictStatus } from '../present/texts';
 import { makePres } from '../present/tr';
 import type { BlockStatus, ReportBlock, ReportDoc } from './model';
 import { refsOf, refsText, shaftBlocks, type ReportDesign } from './shaft';
-import { ESITI_CALCOLO, EXISTING_NOTE, adaptSection, adempimentiBlocks, collaudoRows, collaudoText, esitiBlocks, esitoOf } from './collaudo';
-import { machineSpec } from '../lift/machine';
+import { LIMITI_MODELLO, casesBlocks, limitiBlocks } from './cases';
+import { ESITI_CALCOLO, EXISTING_NOTE, STD_81_1, adaptSection, adempimentiBlocks, collaudoRows, collaudoText, esitiBlocks, esitoOf, riferimentiRows } from './collaudo';
+import { machineSpec, sheaveAxisBelow } from '../lift/machine';
 import { shapeOf } from '../catalog/shapes';
 import { rinvioRow, shapeRows } from './machine-shape';
 import { bedplateMass, supportChecks, supportLoad } from '../lift/support';
@@ -56,13 +58,9 @@ export interface ReportInput {
 }
 
 const STATO: Record<Stato, string> = { confermato: 'confermato', da_verificare: 'da verificare', stima: 'stima', derivazione: 'derivazione', scelta: 'scelta del software', prassi: 'prassi di cantiere' };
-const CASE_W = [0.3, 0.07, 0.08, 0.08, 0.08, 0.1, 0.1, 0.09, 0.1];
-// the stalled cases: the last column holds the condition with its result
-const STALL_W = [0.27, 0.07, 0.08, 0.08, 0.08, 0.09, 0.08, 0.08, 0.17];
 
 const cellText = (c: Cell | undefined): string => (c === undefined ? '' : typeof c === 'string' ? c : `${c.text}${c.flag ? ' ⚠' : ''}${c.sub ? `\n${c.sub}` : ''}`);
 const rowStatus = (row: readonly Cell[]): BlockStatus => { const s = row.find((c) => typeof c === 'object' && c.status); return typeof s === 'object' && s.status ? s.status : ''; };
-const utilStatus = (u: number, warnOnly = false): BlockStatus => (u > 1 && !warnOnly ? 'fail' : u > K.tractionWarn ? 'warn' : 'ok');
 
 export function buildReport(r: ReportInput): ReportDoc {
   const P = makePres(calcIt, 'it-IT'), X = textsFor(P), { t, fmt } = P;
@@ -95,9 +93,9 @@ export function buildReport(r: ReportInput): ReportDoc {
   ] });
 
   section('Oggetto');
-  B.push({ t: 'p', text: `Verifica dell’argano geared ${rif ? "per il rifacimento di un impianto esistente che ne mantiene l’arcata" : repl ? "in sostituzione su impianto esistente" : "per un impianto nuovo"} (${layoutText}, ${I.r}:1): aderenza al caricamento, in frenatura di emergenza e a cabina bloccata (UNI EN 81-50:2020, 5.11); funi e coefficiente di sicurezza (UNI EN 81-20:2020, 5.5; UNI EN 81-50:2020, 5.12); freno (UNI EN 81-20:2020, 5.9.2.2); azionamento, manovra di emergenza e carico sull’albero secondo il modello di calcolo del software.${collaudoText(C, repl)}${r.design ? ' La pianta del vano e della cabina, con le sue verifiche, viene dal progetto del vano del software (sezione «Vano e cabina»).' : ''}` });
+  B.push({ t: 'p', text: `Verifica dell’argano geared ${rif ? "per il rifacimento di un impianto esistente che ne mantiene l’arcata" : repl ? "in sostituzione su impianto esistente" : "per un impianto nuovo"} (${layoutText}, ${I.r}:1): aderenza al caricamento, in frenatura di emergenza e a cabina bloccata (UNI EN 81-50:2020, 5.11); funi e coefficiente di sicurezza (UNI EN 81-20:2020, 5.5; UNI EN 81-50:2020, 5.12); freno (UNI EN 81-20:2020, 5.9.2.2); azionamento, manovra di emergenza e carico sull’albero secondo il modello di calcolo del software.${I.std === 'en81-1' ? STD_81_1 : ''}${collaudoText(C, repl)}${r.design ? ' La pianta del vano e della cabina, con le sue verifiche, viene dal progetto del vano del software (sezione «Vano e cabina»).' : ''}` });
   section('Riferimenti normativi');
-  B.push({ t: 'grid', head: ['Documento', 'Ambito'], rows: PROFILO.documenti.map((d) => [d.sigla, d.ambito]), widths: [0.38, 0.62], align: ['l', 'l'] });
+  B.push({ t: 'grid', head: ['Documento', 'Ambito'], rows: riferimentiRows(repl, C.norma, I.std, !!r.design), widths: [0.38, 0.62], align: ['l', 'l'] });
 
   section("Dati dell’impianto");
   const plant: [string, string][] = [
@@ -108,9 +106,9 @@ export function buildReport(r: ReportInput): ReportDoc {
     ...(I.layout === 'topDefl' ? [[`${t('dx')} · ${t('h')}`, `${fmt(I.dx, 3)} m · ${fmt(I.h, 3)} m${m.geometry.includes('dx')
       ? ' (dx dal progetto del vano; h dal basamento o dal telaio del rinvio, salvo se inserita a mano)' : ''}`] as [string, string]] : []),
     ...(I.layout === 'bottom' ? [[t('Hv'), `${fmt(I.Hv, 2)} m${fromShaft('Hv', false)}`] as [string, string]] : []),
-    ...(res.ropes.DpD != null ? [[t('Dp'), `${fmt(I.Dp, 0)} mm`] as [string, string]] : []),
+    ...(res.ropes.DpD != null ? [[`${t('Dp')} · ${t('Jp')}`, `${fmt(I.Dp, 0)} mm · ${fmt(I.Jp, 2)} kg·m²`] as [string, string]] : []),
     [t('etaShaft'), fmt(I.etaShaft, 2)], [`${t('aDesign')} · ${t('aBrake')}`, `${fmt(I.aDesign, 2)} · ${fmt(I.aBrake, 2)} m/s²`],
-    [t('buffers'), I.ae > K.aeMin ? 'sì' : 'no'], [t('rh'), `${fmt(I.rh, 2)} m`],
+    [t('buffers'), I.buffers ? `sì (a_e ${fmt(I.ae, 2)} m/s²)` : 'no'], [t('rh'), `${fmt(I.rh, 2)} m`],
   ];
   B.push({ t: 'kv', rows: plant });
   if (m.pEstimate) {
@@ -118,16 +116,22 @@ export function buildReport(r: ReportInput): ReportDoc {
       + 'Contrappeso, aderenza, funi, freno e carichi dipendono da P: prima di usare questa relazione sostituire la stima con la massa reale (libretto '
       + "dell’impianto, costruttore della cabina o prova di bilanciamento) e ripetere il calcolo." });
   }
+  section('Ipotesi e limiti del modello');
+  B.push(...limitiBlocks());
 
   const made = m.catalog ? { brand: m.catalog.brand, model: m.catalog.model } : null;
   const machine = r.design ? machineSpec(ctx, N.mass, '', r.design.layout.inputs.room, made ? shapeOf(made.brand, made.model) : null, made) : null;
   // the support's load as the design and sheet 1 count it: the machine with the maker's bedplate it stands on
   const bed = bedplateMass(machine), ld = supportLoad(ctx, res.Mcw, { machine: N.mass + bed });
-  const beams = r.design && machine ? supportChecks(r.design.layout, machine, ld, I.layout !== 'bottom') : [];
+  // the checks that need the machine, as the design's verdict takes them: the beams, the car's top under what hangs over
+  // it, a machine below in its rooms (below-checks.ts)
+  const scheme = I.layout === 'bottom' ? m.bottom ?? 'head' : null, L = r.design?.layout;
+  const g = L && machine && scheme ? bottomGeo(L, scheme, machine.D, I.Dp, machine.n, machine.d, I.r, sheaveAxisBelow(machine.D, machine.shape ?? null)) : null;
+  const beams = L && machine ? [...supportChecks(L, machine, ld, !scheme), ...headTopChecks(L, I.r, I.Dp, scheme), ...(g ? belowChecks(L, g, machine, I.Dp) : [])] : [];
   if (r.design) {
     section('Vano e cabina');
     B.push(...shaftBlocks(r.design, I.Q, { fmt, st, when, head: [t('col_item'), t('col_val'), t('col_lim'), t('col_res'), 'Riferimento'] }, beams, C));
-    if (beams.length) {
+    if (beams.some((c) => c.id.startsWith('m_beam') || c.id.startsWith('m_heb'))) {
       B.push({ t: 'p', style: 'note', text: `Travi sotto l’argano verificate con il carico di questo calcolo: argano${bed ? ' con il basamento con rinvio' : ''} `
         + `${fmt(ld.machine, 0)} kg, carico statico sull’asse ${fmt(ld.static, 0)} kg (funi e cavi secondo il registro), coefficiente dinamico `
         + `${fmt(ld.dyn, 1)}: gli stessi carichi del foglio 1 delle tavole.` });
@@ -184,20 +188,7 @@ export function buildReport(r: ReportInput): ReportDoc {
   B.push(...adempimentiBlocks(C, repl));
 
   section("Aderenza: tutti i casi di calcolo");
-  const caseHead = ['Caso', 'α [°]', 'μ', 'f', 'e^(f·α)', 'T1 [N]', 'T2 [N]', 'T1/T2', 'Utilizzo'];
-  const caseRow = (c: TractionCase | BrakeCase, label: string): string[] => [label, fmt(deg(c.alpha), 1), fmt(c.mu, 4), fmt(c.f, 4), fmt(c.efa, 3), fmt(c.T1, 0), fmt(c.T2, 0), fmt(c.ratio, 3), fmt(c.util, 3)];
-  const cases = (title: string, list: readonly (TractionCase | BrakeCase)[], label: (c: TractionCase | BrakeCase) => string, warnOnly = false): void => {
-    B.push({ t: 'h3', text: title });
-    B.push({ t: 'grid', head: caseHead, rows: list.map((c) => caseRow(c, label(c))), status: list.map((c) => utilStatus(c.util, warnOnly)), widths: CASE_W });
-  };
-  cases(`${t('tr_load')} (UNI EN 81-50:2020, 5.11)`, res.loadCases, (c) => X.caseText(c));
-  cases(`Frenatura di emergenza alla decelerazione minima di ${fmt(I.ae, 1)} m/s² (UNI EN 81-50:2020, 5.11.2.2.2)`, res.brk, (c) => X.caseText(c));
-  cases(`${t('tr_real')}: decelerazione data dal freno (${N.brakeSets} × ${fmt(N.brakeNm, 0)} N·m), solo avviso`, res.brkReal, (c) => X.caseText(c), true);
-  B.push({ t: 'h3', text: `${t('tr_stall')} (UNI EN 81-50:2020, 5.11.2.2.3): cabina vuota nella posizione più alta e in quella più bassa` });
-  const stalls = [res.stall, res.stallLow], stallStatus = stalls.map((s) => (s.ratio >= s.efa ? 'ok' : 'fail'));
-  B.push({ t: 'grid', head: [...caseHead.slice(0, 8), 'Condizione'], rows: stalls.map((s, k) => [`${t(s.pos === 'b' ? 'st_car' : 'st_cw')}: ${t('cs_e')}, ${t(s.pos === 'b' ? 'at_b' : 'at_t')}`,
-    fmt(deg(s.alpha), 1), fmt(s.mu, 4), fmt(s.f, 4), fmt(s.efa, 3), fmt(s.T1, 0), fmt(s.T2, 0), fmt(s.ratio, 2), `≥ e^(f·α): ${st(stallStatus[k])}`]),
-  status: stallStatus, widths: STALL_W });
+  B.push(...casesBlocks(P, I, N, res, (c) => X.caseText(c), st));
 
   section('Dettaglio delle verifiche');
   const tables = techTables(P, X, a);
@@ -271,7 +262,7 @@ export function buildReport(r: ReportInput): ReportDoc {
   const filled = new Set([...(repl ? ['impianto.collaudo'] : []), ...(rif ? ['impianto.rifacimento'] : []), ...(m.pEstimate ? ['impianto.massa.cabina'] : []), ...(m.machineProposed ? ['impianto.macchina'] : []),
     ...(I.layout === 'bottom' && m.bottom ? ['impianto.basso.schema'] : []), ...(m.catalog ? ['impianto.catalogo'] : []),
     ...m.geometry.filter((k) => k === 'L0' || (k === 'dx' && I.layout === 'topDefl') || (k === 'Hv' && I.layout === 'bottom')).map((k) => `impianto.${k}`)]);
-  const listed = [...used, ...vano, ...VOCI_IMPIANTO.filter((v) => filled.has(v.id))];
+  const listed = [...used, ...VOCI.filter((v) => LIMITI_MODELLO.includes(v.id)), ...vano, ...VOCI_IMPIANTO.filter((v) => filled.has(v.id))];
   B.push({ t: 'grid', head: ['Voce', 'Valore nel software', 'Dove si verifica', 'Stato'], rows: listed.map((v) => [v.titolo, v.valore, v.riferimento, STATO[v.stato]]),
     status: listed.map((v) => (v.stato === 'confermato' ? 'ok' : v.stato === 'da_verificare' ? 'warn' : 'info')), widths: [0.27, 0.33, 0.26, 0.14], align: ['l', 'l', 'l', 'l'] });
 

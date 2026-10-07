@@ -1,7 +1,7 @@
 // Rolled steel sections for the machine's support (EN 10365; values of the ArcelorMittal sales catalogue, cross-checked
-// with independent data files; registry locale.putrelle): height h, flange width b, web tw and flange tf [mm], mass
-// [kg/m], second moment Iy [cm⁴] and elastic section modulus Wel,y [cm³] about the strong axis. UPN flanges are
-// tapered: tf is the nominal value. Pure data.
+// with independent data files; IPE 330–400 from two independent EN 10365 tables; registry locale.putrelle): height h,
+// flange width b, web tw and flange tf [mm], mass [kg/m], second moment Iy [cm⁴] and elastic section modulus Wel,y
+// [cm³] about the strong axis. UPN flanges are tapered: tf is the nominal value. Pure data.
 export interface Profile {
   h: number;
   b: number;
@@ -24,6 +24,9 @@ export const PROFILES = {
   'IPE 240': p(240, 120, 6.2, 9.8, 30.7, 3892, 324.3),
   'IPE 270': p(270, 135, 6.6, 10.2, 36.1, 5790, 428.9),
   'IPE 300': p(300, 150, 7.1, 10.7, 42.2, 8356, 557.1),
+  'IPE 330': p(330, 160, 7.5, 11.5, 49.1, 11770, 713.1),
+  'IPE 360': p(360, 170, 8, 12.7, 57.1, 16270, 903.6),
+  'IPE 400': p(400, 180, 8.6, 13.5, 66.3, 23130, 1156),
   'HEA 120': p(114, 120, 5, 8, 19.9, 606.2, 106.3),
   'HEA 140': p(133, 140, 5.5, 8.5, 24.7, 1033, 155.4),
   'HEA 160': p(152, 160, 6, 9, 30.4, 1673, 220.1),

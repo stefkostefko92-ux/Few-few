@@ -16,7 +16,7 @@ import { PROFILES } from './profiles';
 import { rinvioAcross, rinvioRun, standBox } from './rinvio';
 import type { RoomInputs } from './room';
 import { HEB_PROFILES, onHeb, supportOf, supportSpan, type HebDir, type HebProfile } from './support';
-import type { SupportLoad } from './support-check';
+import { loadCentre, type SupportLoad } from './support-check';
 import type { ShaftCheck } from './types';
 
 type Pt = readonly [number, number];
@@ -107,15 +107,8 @@ export function dropRopes(G: RoomGeo, M: MachineSpec): Rope[] {
  *  outline, the static load times the dynamic coefficient on the fall of the car (`load.car`, else half of it) and on
  *  the counterweight's (2:1: the falls toward the machine). */
 export function hebResultant(G: RoomGeo, M: MachineSpec, load: SupportLoad): { at: Pt; F: number } {
-  const car = load.car ?? load.static / 2;
-  const parts: readonly (readonly [number, number, number])[] = [
-    [(G.frame0 + G.frame1) / 2, (G.across[0] + G.across[1]) / 2, load.machine],
-    [M.ropeIn, 0, car * load.dyn],
-    [G.calata - M.ropeIn, 0, (load.static - car) * load.dyn],
-  ];
-  const F = parts.reduce((t, p) => t + p[2], 0) || 1;
-  const u = parts.reduce((t, p) => t + p[0] * p[2], 0) / F, v = parts.reduce((t, p) => t + p[1] * p[2], 0) / F;
-  return { at: onDrop(G, u, v), F: F * G_ACC };
+  const c = loadCentre(G, M, load);
+  return { at: onDrop(G, c.u, c.v), F: c.F * G_ACC };
 }
 
 /** Whether the support is our low frame alone, lying on what is under it along its members: it rests on beams across

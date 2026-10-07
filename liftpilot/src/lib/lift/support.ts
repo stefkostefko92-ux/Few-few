@@ -79,9 +79,9 @@ const floorOthers = (L: Layout, G: RoomGeo): Box[] => {
  *  in the room over the shaft, not below). */
 export const supportChecks = (L: Layout, M: MachineSpec, load: SupportLoad, above = true): ShaftCheck[] => {
   const G = roomGeo(L, M);
-  if (!above || !G) return [...beamChecks(G, load), ...rinvioChecks(G, M)];
+  if (!above || !G) return [...beamChecks(G, M, load), ...rinvioChecks(G, M)];
   const others = floorOthers(L, G), panel = roomChecksOf(G.room, [...machineParts(G, M), ...others]).filter((c) => c.id === 'm_panel');
-  return [...beamChecks(G, load), ...rinvioChecks(G, M), ...hebChecks(hebOf(L, M, load)?.chosen.result ?? null), ...fitChecks(G, M, others), ...panel,
+  return [...beamChecks(G, M, load), ...rinvioChecks(G, M), ...hebChecks(hebOf(L, M, load)?.chosen.result ?? null), ...fitChecks(G, M, others), ...panel,
     ...panelFloorChecks(G, M, others), ...governorRoomChecks(governorFootprint(L, G.room), G, M)];
 };
 

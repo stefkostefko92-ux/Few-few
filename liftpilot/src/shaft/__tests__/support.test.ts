@@ -1,11 +1,12 @@
 // The machine's support: the typical height of each kind, the sheave's axis it gives (pads on all but the shims), the
 // check of the beams against a calculation by hand (IPE 200, 3 m between the walls, machine 400 kg, static load
-// 2000 kg × 1,5), and the machine inside the room (walls and ceiling).
+// 2000 kg × 1,5, shared by the lever rule between the beams under the bedplate's rows), and the machine inside the room
+// (walls and ceiling).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { DEFAULT_ROOM, KV_VERT, PROFILES, defaultInputs, layout, padsOf, roomGeo, sheaveAxisOn, supportHeight, type MachineSpec, type MachineSupport } from '../index';
 import { ownAxis } from '../support';
-import { beamChecks, beamResult, fitChecks, freeBeside, machineTop } from '../support-check';
+import { beamChecks, beamResult, fitChecks, freeBeside, machineTop, rowShares } from '../support-check';
 
 const D = 400, SHIMS_AXIS = 0.55 * D;
 const M: MachineSpec = { D, Dp: 0, n: 5, d: 8, mass: 400, label: '', axis: 600, h: 0, reverse: false, ropeIn: 0 };
@@ -28,23 +29,50 @@ test('basamento: altezza tipica di ogni tipo e asse della puleggia', () => {
   assert.ok(Math.abs(sheaveAxisOn(raised, D, SHIMS_AXIS) - (900 + KV_VERT.supportPads + ownAxis(D))) < 1e-9);
 });
 
-test('putrelle: tensione e freccia come il calcolo a mano', () => {
-  const b = beamResult(geo({ kind: 'beams' }), { machine: 400, static: 2000, dyn: 1.5 });
+test('putrelle: la regola della leva, tensione e freccia come il calcolo a mano', () => {
+  const load = { machine: 400, static: 2000, dyn: 1.5 };
+  const b = beamResult(geo({ kind: 'beams' }), M, load);
   assert.ok(b);
   assert.equal(b.clear, 3000);
   assert.equal(b.L, 3000 + KV_VERT.supportBearing);
-  assert.ok(Math.abs(b.F - 16677) < 1e-6, `F ${b.F}`);
-  assert.ok(Math.abs(b.sigma - 68.9948) < 1e-3, `σ ${b.sigma}`);
-  assert.ok(Math.abs(b.f - 2.73048) < 1e-4, `f ${b.f}`);
+  // by hand: the generic machine at Ø 400 (scale 400/560), the beams under its bedplate's rows 180 and 500 mm from the
+  // sheave's plane, its weight 245 mm from it, the ropes in it; the load 400 + 2000 × 1,5 kg acts 20,6 mm from the
+  // sheave's plane, outside the beams: the near one takes 1,47 of it, the far one is pulled up by 0,47
+  const sc = D / 560, a = 180 * sc, z = 500 * sc, F = 400 + 2000 * 1.5, v = (400 * 245 * sc) / F;
+  const near = ((z - v) / (z - a)) * F * 9.81, far = ((v - a) / (z - a)) * F * 9.81;
+  assert.ok(Math.abs(b.F - near) < 1e-6 && Math.abs(near - 49111.31) < 0.01, `F ${b.F}`);
+  assert.ok(Math.abs(b.up + far) < 1e-6 && Math.abs(b.up - 15757.31) < 0.01, `up ${b.up}`);
+  const L = 3150, q = (22.4 * 9.81) / 1000, W = 194.3e3, I = 1943e4, E = 210000;
+  assert.ok(Math.abs(b.sigma - ((near * L) / 4 + (q * L * L) / 8) / W) < 1e-9, `σ ${b.sigma}`);
+  assert.ok(Math.abs(b.f - ((near * L ** 3) / (48 * E * I) + (5 * q * L ** 4) / (384 * E * I))) < 1e-9, `f ${b.f}`);
+  assert.ok(Math.abs(b.sigma - 200.45) < 0.01 && Math.abs(b.f - 7.907) < 1e-3, `σ ${b.sigma}, f ${b.f}`);
   assert.ok(Math.abs(b.sigmaMax - 275 / 1.05) < 1e-9);
   assert.equal(b.fMax, 2);
-  // the stress passes, the deflection over L/1500 does not: a stiffer profile passes both
-  assert.deepEqual(beamChecks(geo({ kind: 'beams' }), { machine: 400, static: 2000, dyn: 1.5 }).map((c) => [c.id, c.status]), [['m_beam', 'ok'], ['m_beamf', 'fail']]);
-  assert.deepEqual(beamChecks(geo({ kind: 'beams', profile: 'IPE 240' }), { machine: 400, static: 2000, dyn: 1.5 }).map((c) => c.status), ['ok', 'ok']);
+  // the stress passes, the deflection over L/1500 does not, the far beam is pulled up (a warning: anchor it); a stiffer
+  // profile passes both, the pull stays (where the load acts, not the profile)
+  assert.deepEqual(beamChecks(geo({ kind: 'beams' }), M, load).map((c) => [c.id, c.status]), [['m_beam', 'ok'], ['m_beamf', 'fail'], ['m_beamup', 'warn']]);
+  assert.deepEqual(beamChecks(geo({ kind: 'beams', profile: 'IPE 300' }), M, load).map((c) => c.status), ['ok', 'ok', 'warn']);
+  const up = beamChecks(geo({ kind: 'beams' }), M, load).find((c) => c.id === 'm_beamup');
+  assert.ok(up && up.unit === 'kN' && up.value !== null && Math.abs(up.value - 15.7573) < 1e-4 && up.limit === 0);
+  // a heavy machine with a light load on its ropes: the resultant between the beams, no pull
+  const heavy = beamChecks(geo({ kind: 'beams', profile: 'IPE 300' }), M, { machine: 4000, static: 200, dyn: 1.5 }).find((c) => c.id === 'm_beamup');
+  assert.ok(heavy && heavy.status === 'ok' && heavy.value === 0);
+});
+
+test('putrelle: le quote di ogni fila sommano il carico e il suo momento', () => {
+  // two rows: the lever rule; three (an outboard support's row): linear, the same total and the same moment
+  assert.deepEqual(rowShares([100, 300], 150), [0.75, 0.25]);
+  assert.deepEqual(rowShares([100, 300], 0), [1.5, -0.5]);
+  for (const v of [-80, 0, 150, 260, 420]) {
+    const rows = [100, 220, 400], k = rowShares(rows, v);
+    assert.ok(Math.abs(k.reduce((t, x) => t + x, 0) - 1) < 1e-12, `somma a ${v}`);
+    assert.ok(Math.abs(k.reduce((t, x, i) => t + x * rows[i], 0) - v) < 1e-9, `momento a ${v}`);
+  }
+  assert.deepEqual(rowShares([200], 0), [1], 'una sola fila: tutto su di essa');
 });
 
 test('putrelle: nessuna verifica sugli altri basamenti', () => {
-  for (const kind of ['shims', 'frame', 'plates', 'plinth'] as const) assert.deepEqual(beamChecks(geo({ kind }), { machine: 400, static: 2000, dyn: 1.5 }), []);
+  for (const kind of ['shims', 'frame', 'plates', 'plinth'] as const) assert.deepEqual(beamChecks(geo({ kind }), M, { machine: 400, static: 2000, dyn: 1.5 }), []);
 });
 
 test('ingombro: l’argano dentro il locale, il margine minimo da muri e soffitto', () => {

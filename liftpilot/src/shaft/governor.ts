@@ -131,12 +131,16 @@ export function governorSpot(L: Layout): GovernorSpot | null {
   return byHand || y2 + G.R < D - 80 ? { side, x, y1, y2, G, rail, lever } : null;
 }
 
-/** The checks of the governor's rope in plan (registry limitatore.posto): v_gov, the least distance of its strands from
- *  the car, the walls and the car rail with its bracket and the sling's upright; v_govrail, the clamped strand from the
- *  car rail's axis, within the safety gear lever's reach [mm]. None without a governor placed. */
+/** The checks of the governor and its rope (registry limitatore.posto, limitatore.fune): v_govdd, its sheave's pitch
+ *  diameter over the rope's; in plan v_gov, the least distance of its strands from the car, the walls and the car rail
+ *  with its bracket and the sling's upright, and v_govrail, the clamped strand from the car rail's axis, within the
+ *  safety gear lever's reach [mm]. Without a place for it (a cantilever sling, no free side wall) v_gov warns, valueless:
+ *  the governor is to be placed by hand. */
 export function governorChecks(L: Layout): ShaftCheck[] {
+  const G = govSize(L.inputs.vertical.v, L.inputs.governor), dd = G.R / G.rope;
+  const ratio = check('v_govdd', dd >= KV_GOV.govSheaveRatio - 1e-9, dd, KV_GOV.govSheaveRatio, 1, '');
   const g = governorSpot(L);
-  if (!g) return [];
+  if (!g) return [ratio, check('v_gov', false, null, KV_GOV.govGap, 0, 'mm', true)];
   const { W, D, carRail } = L.inputs, r = g.G.rope, c = L.car, half = Math.max(RAILS[carRail].b / 2, KV_GOV.govStile);
   const wall = g.side === 'left' ? g.x : W - g.x, car = g.side === 'left' ? c.x - g.x : g.x - (c.x + c.w);
   const rail = Math.min(...[g.y1, g.y2].map((y) => Math.abs(y - g.rail.y) - half));
@@ -144,5 +148,6 @@ export function governorChecks(L: Layout): ShaftCheck[] {
   return [
     check('v_gov', clear >= KV_GOV.govGap, Math.round(clear), KV_GOV.govGap, 0, 'mm'),
     check('v_govrail', reach <= KV_GOV.govReach, Math.round(reach), KV_GOV.govReach, 0, 'mm'),
+    ratio,
   ];
 }

@@ -2,7 +2,7 @@
 // the headroom and in the pit, the buffer strokes, the room's checks; worked by hand on the typical data.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { DEFAULT_VERTICAL, KV_VERT, defaultInputs, layout, levels, section, travel, type ShaftInputs } from '../index';
+import { DEFAULT_VERTICAL, KV_VERT, defaultInputs, layout, levels, roofSpaces, section, travel, type ShaftInputs } from '../index';
 
 const near = (a: number, b: number, eps = 1e-6) => assert.ok(Math.abs(a - b) <= eps, `${a} ≠ ${b}`);
 const check = (I: ShaftInputs, id: string) => layout(I).checks.find((c) => c.id === id);
@@ -66,23 +66,36 @@ test('contrappeso con la cabina sugli ammortizzatori compressi: corsa guidata 0,
   assert.equal(Math.round((check(I, 'h_cw')?.value ?? 0) - (check(tall, 'h_cw')?.value ?? 0)), 1300);
 });
 
-test('tetto di cabina: lo spazio di rifugio del tipo scelto ci sta; traversa dell’arcata sotto il soffitto', () => {
-  const at = (topRefuge: 1 | 2, plan?: ShaftInputs['plan']) => {
-    const I = defaultInputs(1300, 1400), L = layout({ ...I, access: 'none', plan, vertical: { ...I.vertical, topRefuge } });
-    const [rw, rd] = KV_VERT.refugePlan[topRefuge], c = L.car;
-    return { c: L.checks.find((x) => x.id === 'h_stand'), fit: Math.max(Math.min(c.w - rw, c.h - rd), Math.min(c.w - rd, c.h - rw)) };
+test('tetto di cabina: lo spazio di rifugio del tipo scelto ci sta davanti o dietro la traversa, fuori dagli operatori', () => {
+  // recomputed here: the roof less the operator's strip at the entrance, split by a crosshead lower than the refuge
+  // (UNI EN 81-20:2020, 5.2.5.7.1; registry spazi.tetto.arcata)
+  const at = (topRefuge: 1 | 2, I0: ShaftInputs = defaultInputs(1600, 1750), plan?: ShaftInputs['plan']) => {
+    const I = { ...I0, access: 'none' as const, plan, vertical: { ...I0.vertical, topRefuge } }, L = layout(I), V = I.vertical, K = KV_VERT;
+    const [rw, rd] = K.refugePlan[topRefuge], c = L.car, y0 = c.y + K.roofOperator, y1 = c.y + c.h;
+    const low = V.frameTop - K.crossheadH - V.carOutH < K.refugeH[topRefuge];
+    const parts = L.frame.kind === 'central' && low ? [[y0, L.frame.axis - K.crossheadHalf], [L.frame.axis + K.crossheadHalf, y1]] : [[y0, y1]];
+    const fit = Math.max(...parts.map(([a, b]) => Math.max(Math.min(c.w - rw, b - a - rd), Math.min(c.w - rd, b - a - rw))));
+    return { L, c: L.checks.find((x) => x.id === 'h_stand'), fit, low };
   };
-  // the roof's leftover around the refuge, either way round (UNI EN 81-20:2020, 5.2.5.7.1)
-  for (const t of [1, 2] as const) {
-    const { c, fit } = at(t);
-    assert.equal(c?.value, fit, `tipo ${t}`);
-    assert.equal(c?.status, 'ok', `tipo ${t}`);
-  }
-  // a car set by hand too small for the crouching refuge (0,50 × 0,70 m) either way round
-  const small = at(2, { A: 500, B: 600 });
+  // the default design: the crosshead 280 mm over the roof, the crouching refuge (0,50 × 0,70 m) behind it
+  const def = at(2);
+  assert.ok(def.low);
+  assert.equal(def.c?.value, def.fit);
+  assert.equal(def.c?.status, 'ok');
+  // drawn where it is checked: never across the crosshead
+  const r = roofSpaces(def.L).refuge, axis = def.L.frame.axis;
+  assert.ok(r.y0 >= axis + KV_VERT.crossheadHalf - 1e-9 || r.y1 <= axis - KV_VERT.crossheadHalf + 1e-9, `rifugio ${r.y0}..${r.y1}, traversa ${axis}`);
+  // a small car of an old building: the refuge fits on the roof as a whole but neither in front of nor behind the crosshead
+  const small = at(2, { ...defaultInputs(1400, 1500), access: 'none' });
   assert.ok(small.fit < 0);
   assert.equal(small.c?.status, 'fail');
-  assert.equal(at(1, { A: 500, B: 600 }).c?.status, 'ok', 'quello in piedi (0,40 × 0,50 m) ci sta');
+  // a crosshead higher than the refuge: the whole roof less the operator's strip
+  const tall = at(2, { ...defaultInputs(1400, 1500), vertical: { ...defaultInputs(1400, 1500).vertical, frameTop: 3500 } });
+  assert.ok(!tall.low);
+  assert.equal(tall.c?.value, tall.fit);
+  assert.equal(tall.c?.status, 'ok');
+  // the standing refuge (0,40 × 0,50 m, 2 m high) behind the crosshead of the default car
+  assert.equal(at(1).c?.value, at(1).fit);
   // the crosshead: under 500 mm from the ceiling a warning (it may count as equipment, 5.2.5.7.2 a)), never a fail
   const head = (headroom: number) => layout({ ...defaultInputs(1600, 1750), vertical: { ...defaultInputs(1600, 1750).vertical, headroom } }).checks.find((x) => x.id === 'h_cross');
   assert.equal(head(3700)?.status, 'ok');

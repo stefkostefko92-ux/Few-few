@@ -100,7 +100,7 @@ function deriveOnce(V: FormValues, s: Survey, a: Analysis): RoomDerived {
   const off = Math.abs(measured - calata), others = [switchBox(R)];
   const beams = G ? hebFor(G, M, s.shaft, load) : null, chosenBy = R.heb;
   const checks: ShaftCheck[] = G ? [
-    ...roomChecksOf(R, [...machineParts(G, M), ...others]), ...beamChecks(G, load), ...rinvioChecks(G, M), ...hebChecks(beams?.chosen.result ?? null), ...fitChecks(G, M, others),
+    ...roomChecksOf(R, [...machineParts(G, M), ...others]), ...beamChecks(G, M, load), ...rinvioChecks(G, M), ...hebChecks(beams?.chosen.result ?? null), ...fitChecks(G, M, others),
     ...panelFloorChecks(G, M, others), check('m_calata', off <= KV_VERT.dropTol, Math.round(off), KV_VERT.dropTol, 0, 'mm'),
   ] : roomChecksOf(R);
   const hMin = M.Dp > 0 ? Math.ceil(ownAxis(M.D, M.shape ?? null) + r) : null;

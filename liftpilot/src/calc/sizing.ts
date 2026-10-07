@@ -67,9 +67,10 @@ export function sizeMachine(I: Plant, base: Machine, fixedD = 0, keep: RopeSet |
     let M: Machine = { ...M0, brakeNm: brakeSet, groove };
     const res = compute(I, M);
     if (!(res.ropes.SfAct >= res.ropes.SfReq)) return null;
-    // motor: the smallest IEC rating that covers the static power with acceleration torque ≤ 2 × rated
-    // (the acceleration torque does not depend on the rating: Jm is an assumption of the group)
-    const Preq = res.drive.Pst / 1000;
+    // motor: the smallest IEC rating that covers the static power (at the static torque, with the machine faster than the
+    // rated speed) with acceleration torque ≤ 2 × rated (the acceleration torque does not depend on the rating: Jm is an
+    // assumption of the group)
+    const Preq = res.drive.Peq / 1000;
     const Pn = MOTOR_KW.find((kw) => kw >= Preq && res.drive.Macc / ((9550 * kw) / base.nm) <= K.accelTorqueRatioMax);
     if (!Pn) return null;
     M = { ...M, Pn, shaftMax: ceilTo(res.shaft.testKg, 100) };

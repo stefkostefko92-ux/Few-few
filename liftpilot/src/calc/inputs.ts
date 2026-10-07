@@ -52,7 +52,7 @@ export function readInputs(V: FormValues): ParsedInputs {
     aDesign: pos('aDesign', 0.8), ae: !V.buffers ? K.aeMin : blank(V.ae) ? K.aeReducedStroke : field('ae', K.aeReducedStroke, K.aeMin, K.g, false),
     aBrake: pos('aBrake', 0.5), rh: pos('rh', 0.2),
     // a new lift's machine is to UNI EN 81-20; a replacement's as chosen (UNI 10411-1:2024, 14.1 a) or b))
-    std: V.context === 'repl' && V.machineStd === 'en81-1' ? 'en81-1' : 'en81-20', stallDevice: !!V.stallDevice,
+    std: V.context === 'repl' && V.machineStd === 'en81-1' ? 'en81-1' : 'en81-20', stallDevice: !!V.stallDevice, buffers: !!V.buffers,
     dropAlign: (V.dropAlign === 'car' ? 'car' : 'center') as DropAlign, drops: 0,
   };
   // the motor's poles: 2, 4, 6 or 8 (blank: 4), else flagged

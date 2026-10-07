@@ -223,7 +223,7 @@ function carTopAt(L: Layout, P: (x: number, z: number) => Pt, zf: number): Entit
     if (V.opTop > V.carOutH + 60) out.push(b(front ? x0 - I.carDoorDepth : x1 - 150, roof + 60, front ? x0 + 150 : x1 + I.carDoorDepth, zf + V.opTop));
   }
   const stiles = stilesOf(L);
-  out.push(b(Math.min(...stiles) - 105, zf + V.frameTop - 170, Math.max(...stiles) + 105, zf + V.frameTop));
+  out.push(b(Math.min(...stiles) - KV_VERT.crossheadHalf, zf + V.frameTop - KV_VERT.crossheadH, Math.max(...stiles) + KV_VERT.crossheadHalf, zf + V.frameTop));
   if (V.parapet > 0) {
     const zt = roof + V.parapet;
     out.push(line(P(x0 + 60, zt), P(x1 - 60, zt), 'space'), line(P(x0 + 60, roof), P(x0 + 60, zt), 'space'), line(P(x1 - 60, roof), P(x1 - 60, zt), 'space'));
@@ -260,8 +260,8 @@ function car(L: Layout, P: (x: number, z: number) => Pt, zf: number, ropeTop: nu
     out.push(b(ax - 55, zf - V.frameBelow, ax + 55, zf + V.frameTop, 'thin'));
     for (const z of [zf + V.frameTop, zf - V.frameBelow - 90]) out.push(b(ax - 35, z, ax + 35, z + 90, 'thin'));
   }
-  const [s0, s1] = [Math.min(...stiles) - 105, Math.max(...stiles) + 105];
-  out.push(b(s0, zf + V.frameTop - 170, s1, zf + V.frameTop, 'outline', 'steel'));
+  const [s0, s1] = [Math.min(...stiles) - KV_VERT.crossheadHalf, Math.max(...stiles) + KV_VERT.crossheadHalf];
+  out.push(b(s0, zf + V.frameTop - KV_VERT.crossheadH, s1, zf + V.frameTop, 'outline', 'steel'));
   out.push(b(s0, zf - V.frameBelow, s1, zf - V.frameBelow + 150, 'outline', 'steel'));
   // suspension ropes up to the machine
   if (ropeTop > zf + V.frameTop) out.push(line(P(c.y + c.h / 2, zf + V.frameTop), P(c.y + c.h / 2, ropeTop), 'thin'));

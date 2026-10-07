@@ -1,13 +1,14 @@
 // The room of a machine below with its sizes set on its drawings (ShaftInputs.below): beside the shaft it keeps its side
 // at the wall it stands past and grows away from it, across from its side nearest the origin; under the pit from its
-// corner nearest the origin, its height taking the machine's floor down; the machine has to stay inside it (m_fit).
+// corner nearest the origin, its height taking the machine's floor down; the machine has to stay inside it (m_fit), and
+// the room is checked as a machine room; a pulley room over the shaft with its own values (below-checks.ts).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { deriveLift, newLift, type LiftInputs } from '@/lib/lift';
 import { belowFit, belowMachine, belowRoom, bottomGeo, type BottomScheme } from '@/lib/lift/bottom';
 import { belowSectionEntities } from '@/lib/tavole/below-view';
 import { sheaveAxisBelow } from '@/lib/lift/machine';
-import type { BelowRoom, ShaftInputs } from '@/shaft';
+import { DEFAULT_ROOM, mergeChecks, type BelowRoom, type ShaftCheckId, type ShaftInputs } from '@/shaft';
 
 const below = (scheme: BottomScheme, p: Partial<ShaftInputs> = {}): LiftInputs => {
   const b = newLift();
@@ -60,4 +61,40 @@ test('sezione C-C lungo calate oblique: le lunghezze del vano e del locale sotto
   assert.deepEqual(keys('head', 200).sort(), ['below.D', 'wall'], 'accanto al vano: il muro e il locale restano esatti');
   assert.deepEqual(keys('under').sort(), ['D', 'below.D']);
   assert.deepEqual(keys('under', 200), []);
+});
+
+test('macchina in basso: il suo locale verificato come un locale del macchinario (altezza, porta, quadro, superfici, percorsi)', () => {
+  const ids: readonly ShaftCheckId[] = ['m_fit', 'm_height', 'm_panel', 'm_door', 'm_free', 'm_quadro', 'm_route'];
+  // the software's room beside the shaft and under the pit passes them all
+  for (const scheme of ['head', 'under'] as const) {
+    const d = deriveLift(below(scheme)), got = new Map(d.supportChecks.map((c) => [c.id, c.status]));
+    assert.deepEqual(ids.map((id) => [id, got.get(id)]), ids.map((id) => [id, 'ok']), scheme);
+  }
+  // a room 1700 mm high with a door of 500 × 1500 mm: the height and the door fail (until LIFT 1.23.0 only m_fit was checked)
+  const low = deriveLift(below('head', { below: { H: 1700, doorW: 500, doorH: 1500 } })), at = (id: string) => low.supportChecks.find((c) => c.id === id);
+  assert.deepEqual([at('m_height')?.status, at('m_height')?.value], ['fail', 1700]);
+  assert.deepEqual([at('m_door')?.status, at('m_door')?.value], ['fail', -500]);
+  // a room over the shaft holds no machine: its own checks give way to those of the machine's room
+  const over = below('head', { room: { ...DEFAULT_ROOM, H: 1600 } }), m = mergeChecks(deriveLift(over).layout.checks, deriveLift(over).supportChecks);
+  assert.deepEqual(m.filter((c) => c.id === 'm_height').map((c) => [c.value, c.status]), [[roomOf(over).R.H, 'ok']]);
+});
+
+test('macchina in basso con i rinvii sopra il vano: il locale delle pulegge con i suoi valori, senza quadro', () => {
+  const pulleys = (H: number, doorW: number, doorH: number) => {
+    const d = deriveLift(below('room', { room: { ...DEFAULT_ROOM, H, doorW, doorH } }));
+    return { d, at: (id: string) => mergeChecks(d.layout.checks, d.supportChecks).find((c) => c.id === id) };
+  };
+  // 1600 mm and a door of 700 × 1500 mm: enough for a pulley room (1500, 600 × 1400), not for a machine room
+  const ok = pulleys(1600, 700, 1500), Dp = ok.d.analysis.ctx.I.Dp;
+  assert.deepEqual(['m_pheight', 'm_pdoor', 'm_pabove'].map((id) => ok.at(id)?.status), ['ok', 'ok', 'ok']);
+  assert.equal(ok.at('m_pabove')?.value, 1600 - (450 + Dp / 2));
+  // the machine room's checks are the machine's room's below, not the pulley room's
+  assert.equal(ok.at('m_height')?.value, roomOf(below('room', { room: { ...DEFAULT_ROOM, H: 1600, doorW: 700, doorH: 1500 } })).R.H);
+  // lower and narrower than the pulley room's values: they fail; the space over the pulleys is a warning
+  const low = pulleys(1400, 550, 1300);
+  assert.deepEqual([low.at('m_pheight')?.status, low.at('m_pdoor')?.status, low.at('m_pdoor')?.value], ['fail', 'fail', -100]);
+  const tight = pulleys(450 + Dp / 2 + 200, 700, 1500);
+  assert.equal(tight.at('m_pabove')?.status, 'warn');
+  // the other schemes have no pulley room
+  assert.equal(deriveLift(below('head', { room: { ...DEFAULT_ROOM } })).supportChecks.some((c) => c.id.startsWith('m_p') && c.id !== 'm_panel'), false);
 });

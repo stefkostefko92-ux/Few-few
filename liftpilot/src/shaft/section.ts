@@ -4,6 +4,7 @@
 import { bufferStroke, bufferType, maxSpeed, strokeNeeded } from './buffers';
 import { check } from './checks';
 import { KV_VERT } from './norme-vert';
+import { roofRefuge } from './roof';
 import { topPairStops } from './staffe-porte';
 import { levels, type VerticalInputs } from './vertical';
 import type { Layout, ShaftCheck } from './types';
@@ -48,8 +49,7 @@ export function section(L: Layout): Section {
   };
 }
 
-/** The place to stand on the car roof, across and along the car [mm]: as set, else as drawn by default. */
-export const standOf = (V: VerticalInputs): readonly [number, number] => [V.standW ?? KV_VERT.standDrawn[0], V.standD ?? KV_VERT.standDrawn[1]];
+export { standOf } from './roof';
 
 /** Top of the counterweight's screen over the pit floor [mm]: as set, else the least the standard asks. */
 export const screenOf = (V: VerticalInputs): number => V.cwScreen ?? KV_VERT.cwScreen;
@@ -77,7 +77,9 @@ export function sectionChecks(L: Layout): ShaftCheck[] {
     ...(V.parapet > 0 ? [{ v: S.ceiling - (roof + V.parapet), lim: K.headBalustrade }] : []),
   ].sort((a, b) => a.v - a.lim - (b.v - b.lim))[0];
   const pitFree = V.carBufferBase + V.carBufferH - S.carStroke;
-  // the apron: its vertical part, then the bevel's drop (5.4.5.1: ≥ 60° with a horizontal projection ≥ 20 mm)
+  // the apron: its vertical part, then the bevel's drop (5.4.5.1: ≥ 60° with a horizontal projection ≥ 20 mm); short of
+  // the 100 mm over the pit floor the design does not meet 5.2.5.8.2 a) 1) (a folding apron, UNI EN 81-21:2022 5.8.1,
+  // is not modelled)
   const apronFree = V.pit - S.moveDown - (K.apron + K.apronBevel * Math.tan((K.apronBevelAngle * Math.PI) / 180));
   // a balustrade when the roof's edge is over 300 mm from the wall; its height by the handrail's inner edge to the wall
   const gap = roofGap(L), railGap = gap + K.parapetEdge + K.parapetBar;
@@ -85,10 +87,9 @@ export function sectionChecks(L: Layout): ShaftCheck[] {
   // the buffers' types for the rated speed: the lowest limit of the two (hydraulic ones have none)
   const limits = (['car', 'cw'] as const).map((sd) => maxSpeed(bufferType(V, sd))).filter((x): x is number => x !== null);
   const vmax = limits.length ? Math.min(...limits) : null, need = S.strokeNeeded;
-  // the refuge of the type chosen on the car roof (5.2.5.7.1, Tabella 3), either way round: what the roof leaves; the
-  // counterweight's screen in the pit, as drawn
-  const [rw, rd] = K.refugePlan[V.topRefuge], cw = L.car.w, ch = L.car.h, screen = screenOf(V);
-  const refugeFit = Math.max(Math.min(cw - rw, ch - rd), Math.min(cw - rd, ch - rw));
+  // the refuge of the type chosen on the car roof (5.2.5.7.1, Tabella 3), either way round, in front of or behind a
+  // crosshead lower than its height and clear of the operators (roof.ts); the counterweight's screen in the pit, as drawn
+  const refugeFit = roofRefuge(L).fit, screen = screenOf(V);
   // the sling's crosshead under the ceiling: 100 mm of 5.2.5.7.2 b), 500 if it counts as equipment (a)): a warning between
   const frameClear = S.ceiling - (top + V.frameTop);
   // the counterweight with the car on its compressed buffers: what its rails still guide past its top
@@ -111,7 +112,7 @@ export function sectionChecks(L: Layout): ShaftCheck[] {
     check('h_cw', guided >= guide - 1e-9, guided, Math.ceil(guide), 0, 'mm'),
     check('h_guide', carGuided >= K.carGuided * 1000 - 1e-9, carGuided, K.carGuided * 1000, 0, 'mm', true),
     check('p_refuge', pitFree >= refugePit, pitFree, refugePit, 0, 'mm'),
-    check('p_apron', apronFree >= K.apronClear, apronFree, K.apronClear, 0, 'mm', true),
+    check('p_apron', apronFree >= K.apronClear, apronFree, K.apronClear, 0, 'mm'),
     check('p_screen', screen >= K.cwScreen, screen, K.cwScreen, 0, 'mm'),
     check('b_runby', S.carRunby >= 0 && V.cwRunby >= 0, Math.min(S.carRunby, V.cwRunby), 0, 0, 'mm'),
     check('b_type', vmax === null || V.v <= vmax + 1e-9, V.v, vmax, 2, 'm/s'),

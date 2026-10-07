@@ -8,7 +8,7 @@
 import appIt from '../../../messages/it.json';
 import type { Analysis } from '../present/analysis';
 import { makeFmt } from '../present/tr';
-import { belowFit } from '../lift/bottom';
+import { belowChecks, belowRoomOf } from '../lift/below-checks';
 import { headTopChecks } from '../lift/head';
 import { bedplateMass, cablesMass, carSideStatic, headStatic, hebOf, ropeLength, supportChecks } from '../lift/support';
 import { hebRows } from './heb-rows';
@@ -181,14 +181,16 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   // the clause stays in the label, the standard is in the heading of the table; the door of the room in its sizes
   // the shaft's checks, then the beams under the machine at the load of this sheet
   const car = carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes: ropesKg, cables: cablesKg });
-  const all = [...mergeChecks(L.checks, supportChecks(L, M, { machine: below ? 0 : machine, static: ld.static, dyn, car }, !below)),
-    ...headTopChecks(L, I.r, I.Dp, below ? x.marks?.bottom ?? 'head' : null), ...(below ? belowFit(L, belowGeoOf(a, L, M, x.marks?.bottom ?? 'head'), M) : []),
-    ...railChecks(rc, gear, I.v)];
+  // a machine below: its own room in place of the one over the shaft (the pulley room's checks apart; below-checks.ts)
+  const scheme = below ? x.marks?.bottom ?? 'head' : null, bg = scheme ? belowGeoOf(a, L, M, scheme) : null, mRoom = bg ? belowRoomOf(L, bg, M).R : room;
+  const all = [...mergeChecks(L.checks, [...supportChecks(L, M, { machine: below ? 0 : machine, static: ld.static, dyn, car }, !below),
+    ...(bg ? belowChecks(L, bg, M, I.Dp) : [])]), ...headTopChecks(L, I.r, I.Dp, scheme), ...railChecks(rc, gear, I.v)];
   const checks: DataSheet['checks'] = all.map((c) => {
     const label = (labels[`c_${c.id}`] ?? c.id).replace(' (UNI EN 81-20, ', ' (');
     // a check of a part that stays as it is is out of the acceptance test (note on the sheet)
     const outcome = ambitoOf(C, c.id) === 'existing' ? 'ESISTENTE' : OUTCOME[c.status];
-    if (c.id === 'm_door' && room) return [label.replace(', margine', ''), `${room.doorW} × ${room.doorH} mm`, `≥ ${KV_VERT.doorMinW} × ${KV_VERT.doorMinH} mm`, outcome];
+    if (c.id === 'm_door' && mRoom) return [label.replace(', margine', ''), `${mRoom.doorW} × ${mRoom.doorH} mm`, `≥ ${KV_VERT.doorMinW} × ${KV_VERT.doorMinH} mm`, outcome];
+    if (c.id === 'm_pdoor' && room) return [label.replace(', margine', ''), `${room.doorW} × ${room.doorH} mm`, `≥ ${KV_VERT.doorMinW} × ${KV_VERT.pulleyDoorH} mm`, outcome];
     return [label, c.value == null ? '—' : `${shownValue(c, fmt)}${c.unit ? ` ${c.unit}` : ''}`, c.limit == null ? '—' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${withUnit(c.limit, c.dec, c.unit)}`, outcome];
   });
   const sp = spaceLegend(L, fmt), notes = clientNotes(L, below);

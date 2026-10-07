@@ -1,5 +1,6 @@
 // Translator and number format of the calculator texts: the same `{name}` substitution as the prototype, so the
-// screen, the copied summary and the report say exactly what the prototype said.
+// screen, the copied summary and the report say exactly what the prototype said; a name used twice in a text is
+// replaced both times (the note of the rescue force: «(q − {b})·Q e (q + {b})·Q»).
 import type calcIt from '../../../messages/calc/it.json';
 
 export type CalcKey = keyof typeof calcIt;
@@ -18,7 +19,7 @@ export interface Pres {
 export function makeTr(dict: CalcDict): Tr {
   return (key, vars) => {
     let s: string = dict[key] ?? key;
-    if (vars) for (const [a, b] of Object.entries(vars)) s = s.replace(`{${a}}`, String(b));
+    if (vars) for (const [a, b] of Object.entries(vars)) s = s.split(`{${a}}`).join(String(b));
     return s;
   };
 }

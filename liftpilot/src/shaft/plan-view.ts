@@ -15,10 +15,9 @@ import { onWall, quad, walls } from './plan-walls';
 import { AXIS_OVER } from './plan-from';
 import { cwPlanCode, genericBracketPlan, panevSupportPlan, specialPlanLabel } from './plan-staffe';
 import { CAR_PANEL, GROOVE, LANDING_PANEL, carTracks, landingTracks, trackPlanes, type Tracks } from './sill';
-import { KV_VERT } from './norme-vert';
 import { doorOpDepthOf } from './operator';
 import { bufferPlan, pitSpace } from './pit';
-import { standOf } from './section';
+import { roofRefuge } from './roof';
 import { RAILS } from './rails';
 import type { DoorLayout, Layout, Rail } from './types';
 
@@ -187,13 +186,11 @@ export function planEntities(L: Layout, level: PlanLevel, floor: number): Entity
 }
 
 
-/** On the car roof: the refuge space at the back on the right, the free area of at least 0,12 m² at the back on the left. */
+/** On the car roof: the refuge space at the back on the right of the part where it fits (behind or in front of a low
+ *  crosshead, clear of the operators: roof.ts), the free area of at least 0,12 m² at the back on the left. */
 export function roofSpaces(L: Layout): { refuge: Box; free: Box } {
-  const ci = L.carInner, [w, d] = KV_VERT.refugePlan[L.inputs.vertical.topRefuge], top = ci.y + ci.h - 60, [sw, sd] = standOf(L.inputs.vertical);
-  return {
-    refuge: { x0: ci.x + ci.w - 60 - w, y0: Math.max(ci.y + 60, top - d), x1: ci.x + ci.w - 60, y1: top },
-    free: { x0: ci.x + 60, y0: top - sd, x1: ci.x + 60 + sw, y1: top },
-  };
+  const { refuge, free } = roofRefuge(L);
+  return { refuge, free };
 }
 
 /** Where the loads on the pit floor act (see loads.ts): P5 car rails, P6 car buffers, P7 counterweight rails, P8 its buffer. */

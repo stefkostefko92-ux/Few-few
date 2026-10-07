@@ -219,7 +219,9 @@ export const VOCI: readonly Voce[] = [
     costanti: ['nearLimit'], verifiche: ['s_shaft', 'd_mp'],
   },
   {
-    id: 'azionamento.potenza', gruppo: 'azionamento', titolo: 'Potenza statica del motore', valore: 'P_st = ΔF·v_f / (η_d·η_vano) ≤ P_n, con ΔF il maggiore tra cabina carica in salita dal basso e vuota in discesa dall’alto',
+    id: 'azionamento.potenza', gruppo: 'azionamento', titolo: 'Potenza statica del motore', valore: 'P_st = ΔF·v_f / (η_d·η_vano) ≤ P_n, con ΔF il maggiore tra cabina carica in salita dal basso e vuota in discesa dall’alto; '
+      + 'con la macchina più veloce della nominale (v_reale > v_f) P_st per v_reale/v_f: il motore sotto la frequenza base è limitato dalla coppia '
+      + '(M_st ≤ M_n)',
     riferimento: '—', fonte: 'derivazione', stato: 'derivazione',
     verifiche: ['d_pst'],
   },
@@ -254,8 +256,9 @@ export const VOCI: readonly Voce[] = [
   // ---------- replacement (Italy) ----------
   {
     id: 'sostituzione.modifica', gruppo: 'sostituzione', titolo: 'La sostituzione del macchinario è una modifica costruttiva',
-    valore: 'modifica costruttiva (art. 2 c.1 lett. cc), n. 5): adeguamento della parte sostituita e delle altre parti interessate, comunicazione al Comune e '
-      + 'al soggetto delle verifiche periodiche, verifica straordinaria prima del servizio',
+    valore: 'modifica costruttiva (art. 2 c.1 lett. cc), n. 5): prima l’adeguamento della parte sostituita e delle altre parti interessate, poi la '
+      + 'comunicazione aggiornata al Comune e al soggetto delle verifiche periodiche, senza la quale l’impianto non si tiene in esercizio (art. 12 '
+      + 'c.4–5); verifica straordinaria da uno dei soggetti dell’art. 13 c.1 (art. 14 c.3)',
     riferimento: 'DPR 162/1999 e s.m.i., art. 2 c.1 lett. cc), art. 12 c.4–5, art. 14 c.3', fonte: 'DPR 162/1999 consolidato (Normattiva), letto il 2026-10-02 (ricerca, cap. 16), §3.2', stato: 'confermato',
   },
   {

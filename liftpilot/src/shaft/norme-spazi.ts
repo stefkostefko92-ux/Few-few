@@ -89,6 +89,18 @@ export const VOCI_SPAZI: readonly VoceVano[] = [
       + '(500 mm, h_clear). La UNI EN 81-1:2008 (8.13.2) chiedeva un’area ≥ 0,12 m² con il lato minore ≥ 0,25 m.',
   },
   {
+    id: 'spazi.tetto.arcata', gruppo: 'sezione', titolo: 'Spazio di rifugio sul tetto: traversa dell’arcata e operatori delle porte',
+    valore: 'la traversa dell’arcata centrale attraversa il tetto sull’asse delle guide, profonda 210 mm (105 mm per parte) e alta 170 mm sotto la '
+      + 'sommità dell’arcata: dove il suo lato inferiore sta sopra il tetto meno dell’altezza del rifugio, la pianta del rifugio sta tutta davanti o '
+      + 'tutta dietro la traversa; l’operatore di ogni porta di cabina occupa 150 mm del tetto dal lato del suo accesso; la verifica dà il margine '
+      + 'nel posto migliore e il disegno vi mette il rifugio',
+    riferimento: 'UNI EN 81-20:2020, 5.2.5.7.1 (prospetto 3)', fonte: 'misure dell’arcata e dell’operatore del disegno del software (tipiche, da '
+      + 'confermare con il fornitore dell’arcata e delle porte)', stato: 'stima',
+    nota: 'fino alla versione 2.17.0 del motore del vano la verifica misurava il rifugio sull’intero tetto e il disegno lo metteva sopra la traversa; '
+      + 'non contati: la puleggia di cabina della taglia 2:1 (verifica della testata del progetto) e il corrimano della balaustra',
+    verifiche: ['h_stand'],
+  },
+  {
     id: 'spazi.altezze', gruppo: 'sezione', titolo: 'Altezza libera degli accessi e della cabina',
     valore: 'luce netta in altezza delle porte di piano e di cabina ≥ 2000 mm; altezza libera interna della cabina ≥ 2000 mm',
     riferimento: 'UNI EN 81-20:2020, 5.3.2.1 e 5.4.1',

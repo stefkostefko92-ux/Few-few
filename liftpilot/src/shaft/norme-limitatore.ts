@@ -14,6 +14,8 @@ export const KV_GOV = {
   govStile: 60,
   // the strand clamped to the car at most this far from the car rail's axis, where the safety gear's lever reaches [mm]
   govReach: 400,
+  // 5.6.2.2.1.3 c): the pitch diameter of the governor's sheaves at least this many times the rope's nominal diameter
+  govSheaveRatio: 30,
 } as const;
 
 export const VOCI_LIMITATORE: readonly VoceVano[] = [
@@ -31,8 +33,19 @@ export const VOCI_LIMITATORE: readonly VoceVano[] = [
       + 'la manutenzione delle parti in movimento: UNI EN 81-20:2020, 5.2.6.3.2.1 b)',
     fonte: `scelta del software (50, 60 e 400 mm); ${letto('UNI EN 81-20:2020', 'pp. 43, 71–72, 82–83')}; ${letto('UNI EN 81-1:2008', 'p. 67')}`, stato: 'scelta',
     verifiche: ['v_gov', 'v_govrail', 'm_gov', 'm_govfree'],
+    nota: 'con l’arcata a zaino, o senza una parete laterale libera, il software non mette il limitatore: la verifica della fune resta '
+      + '«Attenzione» senza valore e il limitatore va posizionato a mano',
+  },
+  {
+    id: 'limitatore.fune', gruppo: 'ingombri', titolo: 'Pulegge del limitatore e diametro della fune',
+    valore: 'diametro primitivo delle pulegge del limitatore almeno 30 volte il diametro nominale della sua fune (dai dati del modello: '
+      + 'diametro della puleggia e fune)',
+    riferimento: 'UNI EN 81-20:2020, 5.6.2.2.1.3 c)', fonte: letto('UNI EN 81-20:2020', 'p. 83'), stato: 'confermato',
+    nota: 'un modello con la fune più grossa del rapporto (fune «in deroga» del costruttore) non passa: si sceglie un altro modello o la fune che '
+      + 'il rapporto ammette, salvo una deroga documentata dal certificato del costruttore',
+    verifiche: ['v_govdd'],
   },
 ];
 
 /** Constants of this registry, for the test that every one has its entry. */
-export const COSTANTI_LIMITATORE = { 'limitatore.posto': ['govGap', 'govStile', 'govReach'] } as const;
+export const COSTANTI_LIMITATORE = { 'limitatore.posto': ['govGap', 'govStile', 'govReach'], 'limitatore.fune': ['govSheaveRatio'] } as const;

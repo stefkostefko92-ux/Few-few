@@ -32,7 +32,7 @@ const num = (x: number | null | undefined): string => (x == null ? '—' : fmt(x
 const txt = (s: string | undefined, fallback = '—'): string => (s && s.trim() ? s.trim() : fallback);
 const mm = (x: number): string => fmt(Math.round(x), 0);
 /** The checks of the support the sheet counts again at its own load: the beams under the machine, the HEB beams. */
-const AT_SHEET_LOAD: ReadonlySet<string> = new Set(['m_beam', 'm_beamf', 'm_heb', 'm_hebf', 'm_hebfeet', 'm_hebrope', 'm_hebwall']);
+const AT_SHEET_LOAD: ReadonlySet<string> = new Set(['m_beam', 'm_beamf', 'm_beamup', 'm_heb', 'm_hebf', 'm_hebfeet', 'm_hebrope', 'm_hebwall']);
 
 export interface SurveySheet extends TitleData {
   /** the installation and the intervention */
@@ -92,7 +92,7 @@ export function surveyLoad(d: RoomDerived, Pl: Plant) {
     safetyGear: Pl.safetyGear ?? 'progressive', dyn, carBuffers: 1, cwBuffers: 1, governor: Pl.governorLoad ?? null,
   });
   const load = { machine, static: ld.static, dyn, car: carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes: ropesKg, cables: cablesKg }) };
-  const heb = d.G ? hebFor(d.G, d.M, d.site, load) : null, beams = d.G ? [...beamChecks(d.G, load), ...hebChecks(heb?.chosen.result ?? null)] : [];
+  const heb = d.G ? hebFor(d.G, d.M, d.site, load) : null, beams = d.G ? [...beamChecks(d.G, d.M, load), ...hebChecks(heb?.chosen.result ?? null)] : [];
   const checks: ShaftCheck[] = [...d.checks.filter((c) => !AT_SHEET_LOAD.has(c.id)), ...beams];
   return { ropesKg, cablesKg, bedplate, machine, dyn, ld, checks, heb: heb?.chosen ?? null };
 }
@@ -152,7 +152,7 @@ export function surveySheetData(x: SurveyTavoleInput, d: RoomDerived, pages: num
     return [label, c.value == null ? '—' : `${shownValue(c, fmt)}${c.unit ? ` ${c.unit}` : ''}`, c.limit == null ? '—' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${withUnit(c.limit, c.dec, c.unit)}`, outcome];
   });
   const notes: Note[] = [
-    { ...roomNote(false), tag: 'NOTA 1' },
+    { ...roomNote(C.norma === 'en81' ? 'machine' : 'existing'), tag: 'NOTA 1' },
     {
       title: 'SOLETTA, APPOGGI E BASAMENTO', tag: 'NOTA 2',
       text: 'La soletta del locale e gli appoggi del basamento devono sopportare i carichi di questo foglio, che non agiscono insieme: la verifica '
@@ -164,7 +164,8 @@ export function surveySheetData(x: SurveyTavoleInput, d: RoomDerived, pages: num
       text: 'La cabina e il contrappeso restano dove sono: le funi della nuova macchina devono scendere sulle calate esistenti rilevate in sito, '
         + `entro ${KV_VERT.dropTol} mm (verifica delle calate). Le aperture disegnate nella soletta sono quelle che servono alle funi e al rinvio della `
         + 'nuova macchina, con 30 mm di gioco: confrontarle in sito con quelle esistenti; aprire o chiudere aperture senza indebolire la soletta, '
-        + 'con la verifica del tecnico. Riferimenti: UNI EN 81-20:2020, punto 5.2.',
+        + `con la verifica del tecnico; ogni apertura sopra il vano con un manicotto o un bordo di almeno ${KV_VERT.slabKerb} mm sul pavimento. Riferimenti: `
+        + 'UNI EN 81-20:2020, punti 5.2 e 5.2.6.3.3.',
     },
   ];
   const test = collaudoNote(C, `NOTA ${notes.length + 1}`);

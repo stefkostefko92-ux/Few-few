@@ -1,7 +1,10 @@
-// The check of the two beams (putrelle) under the machine, registry locale.putrelle: each carries half the machine's
-// load (the machine with its bedframe plus the static load on its axis times the dynamic coefficient) as one force at
-// mid-span, with its own weight, over the span between the bearings' centres in the walls along the rope drop line.
-// Stress σ = M/Wel,y ≤ fyk/γM0 and elastic deflection ≤ 1/1500 of the clear span. Pure.
+// The check of the beams (putrelle) under the machine, registry locale.putrelle: one under each row of the bedplate's
+// mounts, along the rope drop line from wall to wall. The machine's load (the machine with its bedframe at the middle of
+// its outline, the static load on its axis times the dynamic coefficient on the ropes' falls, in the sheave's plane)
+// shares out across them by the lever rule (the bedplate rigid on beams equally stiff: linear across more than two);
+// each carries its share as one force at mid-span, with its own weight, over the span between the bearings' centres in
+// the walls. Stress σ = M/Wel,y ≤ fyk/γM0 and elastic deflection ≤ 1/1500 of the clear span; a share below 0 (the load
+// past the beams: a sheave overhung beyond them) pulls its beam up. Pure.
 import { check } from './checks';
 import { dropSpan, type MachineSpec, type RoomGeo } from './machine-room';
 import { MACHINE_TOP } from './machine-outline';
@@ -28,28 +31,56 @@ export interface SupportLoad {
 }
 
 export interface BeamResult {
-  /** clear span between the walls and span between the bearings' centres [mm], force on each beam [N], stress [MPa]
-   *  and its limit, deflection and its limit [mm] */
+  /** clear span between the walls and span between the bearings' centres [mm], force on the more loaded beam and the
+   *  largest pull up on a beam (0: none) [N], stress [MPa] and its limit, deflection and its limit [mm], of the beam
+   *  where each is largest */
   clear: number;
   L: number;
   F: number;
+  up: number;
   sigma: number;
   sigmaMax: number;
   f: number;
   fMax: number;
 }
 
-/** The beams under the machine at this load; null when the machine does not stand on beams. */
-export function beamResult(Gm: RoomGeo, load: SupportLoad): BeamResult | null {
+/** The machine's load [kg] and where it acts, along the rope drop line from the car's drop (u) and across it (v) [mm]:
+ *  the machine with its bedframe at the middle of its outline, the static load times the dynamic coefficient on the
+ *  fall of the car (`load.car`, else half of it) and on the counterweight's (2:1: the falls toward the machine). */
+export function loadCentre(Gm: RoomGeo, M: MachineSpec, load: SupportLoad): { u: number; v: number; F: number } {
+  const car = load.car ?? load.static / 2;
+  const parts: readonly (readonly [number, number, number])[] = [
+    [(Gm.frame0 + Gm.frame1) / 2, (Gm.across[0] + Gm.across[1]) / 2, load.machine],
+    [M.ropeIn, 0, car * load.dyn],
+    [Gm.calata - M.ropeIn, 0, (load.static - car) * load.dyn],
+  ];
+  const F = parts.reduce((t, p) => t + p[2], 0) || 1;
+  return { u: parts.reduce((t, p) => t + p[0] * p[2], 0) / F, v: parts.reduce((t, p) => t + p[1] * p[2], 0) / F, F };
+}
+
+/** The shares of a load acting at `v` across the beams at `rows` (across the drop line) [mm]: a rigid bedplate on beams
+ *  equally stiff — linear across them, the lever rule for two; a share below 0 pulls its beam up. */
+export function rowShares(rows: readonly number[], v: number): number[] {
+  const n = rows.length, m = rows.reduce((t, r) => t + r, 0) / n, S = rows.reduce((t, r) => t + (r - m) ** 2, 0);
+  return rows.map((r) => (S > 1 ? 1 / n + ((v - m) * (r - m)) / S : 1 / n));
+}
+
+/** The beams under the machine `M` at this load; null when the machine does not stand on beams. */
+export function beamResult(Gm: RoomGeo, M: MachineSpec, load: SupportLoad): BeamResult | null {
   const s = supportOf(Gm.room);
   if (s.kind !== 'beams') return null;
-  const P = PROFILES[profileOf(s)], [r0, r1] = dropSpan(Gm, 0, 0, Gm.room.W, Gm.room.D);
-  const clear = r1 - r0, L = clear + KV_VERT.supportBearing, F = ((load.machine + load.static * load.dyn) * G) / 2;
+  const P = PROFILES[profileOf(s)], [r0, r1] = dropSpan(Gm, 0, 0, Gm.room.W, Gm.room.D), Fr = Gm.frame;
+  const clear = r1 - r0, L = clear + KV_VERT.supportBearing, c = loadCentre(Gm, M, load);
+  // each beam's force [N]: under the rows of the bedplate's mounts, the load's share by where it acts across them
+  const forces = rowShares(Fr.beams.map((z) => Fr.zSheave - z), c.v).map((k) => k * c.F * G);
   // own weight [N/mm]; Wel,y [cm³] and Iy [cm⁴] in mm
   const q = (P.mass * G) / 1000, W = P.Wy * 1e3, I = P.Iy * 1e4, E = KV_VERT.steelE;
-  const M = (F * L) / 4 + (q * L * L) / 8;
-  const f = (F * L ** 3) / (48 * E * I) + (5 * q * L ** 4) / (384 * E * I);
-  return { clear, L, F, sigma: M / W, sigmaMax: KV_VERT.steelFyk / KV_VERT.steelGammaM0, f, fMax: clear / KV_VERT.beamDeflection };
+  const sigma = Math.max(...forces.map((F) => Math.abs((F * L) / 4 + (q * L * L) / 8) / W));
+  const f = Math.max(...forces.map((F) => Math.abs((F * L ** 3) / (48 * E * I) + (5 * q * L ** 4) / (384 * E * I))));
+  return {
+    clear, L, F: Math.max(...forces), up: Math.max(0, ...forces.map((F) => -F)), sigma, sigmaMax: KV_VERT.steelFyk / KV_VERT.steelGammaM0, f,
+    fMax: clear / KV_VERT.beamDeflection,
+  };
 }
 
 /** The check m_rinvio (registry locale.rinvio), soft: on a maker's bedplate the counterweight's rope drop within its
@@ -62,13 +93,16 @@ export function rinvioChecks(Gm: RoomGeo | null, M: MachineSpec): ShaftCheck[] {
   return [check('m_rinvio', need <= mk.fall.max, need, mk.fall.max, 0, 'mm', true)];
 }
 
-/** The checks m_beam (stress) and m_beamf (deflection); none when the machine does not stand on beams. */
-export function beamChecks(Gm: RoomGeo | null, load: SupportLoad): ShaftCheck[] {
-  const b = Gm ? beamResult(Gm, load) : null;
+/** The checks m_beam (stress) and m_beamf (deflection), of the beam where each is largest, and m_beamup (soft): the
+ *  pull up on a beam when the load acts past them — the machine anchored to it, it held in the walls; none when the
+ *  machine does not stand on beams. */
+export function beamChecks(Gm: RoomGeo | null, M: MachineSpec, load: SupportLoad): ShaftCheck[] {
+  const b = Gm ? beamResult(Gm, M, load) : null;
   if (!b) return [];
   return [
     check('m_beam', b.sigma <= b.sigmaMax, b.sigma, b.sigmaMax, 0, 'MPa'),
     check('m_beamf', b.f <= b.fMax, b.f, b.fMax, 1, 'mm'),
+    check('m_beamup', b.up <= 1e-6, b.up / 1000, 0, 1, 'kN', true),
   ];
 }
 

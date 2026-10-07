@@ -57,7 +57,7 @@ export function sectionDims(L: Layout, S: Section, kind: SectionKind, carFloor: 
   };
   const zf = S.levels[carFloor] ?? 0, roof = zf + V.carOutH, c = L.car, n = V.floors.length, x0 = c.y, x1 = c.y + c.h;
   // the crosshead's and the safety plank's ends (section-view.ts)
-  const stiles = stilesOf(L), [h0, h1] = [Math.min(...stiles) - 105, Math.max(...stiles) + 105];
+  const stiles = stilesOf(L), [h0, h1] = [Math.min(...stiles) - KV_VERT.crossheadHalf, Math.max(...stiles) + KV_VERT.crossheadHalf];
   // a buffer's stroke: entered, or for a polyurethane pad 90 % of its height (the height takes the change)
   const strokeEdit = (sd: 'car' | 'cw'): Edit => (bufferType(V, sd) === 'pu' ? E(`v.${sd}BufferH`, 0, 1 / KV_VERT.puStroke) : E(`v.${sd}BufferStroke`));
   const bp = bufferPlan(L), carX = bp.rows[0] ?? c.y + c.h / 2, cwAt = bp.spots.find((b) => b.kind === 'cw')?.c[1] ?? L.cw.y + L.cw.h / 2;

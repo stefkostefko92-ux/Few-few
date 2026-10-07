@@ -39,7 +39,7 @@ export function clientNotes(L: Layout, below = false): Note[] {
         + "protetta dalle infiltrazioni d’acqua, con accesso sicuro dalla porta di piano più bassa. Riferimenti: UNI EN 81-20:2020, punto 5.2; DPR 162/1999.",
     },
   ];
-  if (room) notes.push({ ...roomNote(below), tag: 'NOTA 2' });
+  if (room) notes.push({ ...roomNote(below ? 'pulleys' : 'machine'), tag: 'NOTA 2' });
   notes.push({
     title: 'ARMADIO DEL QUADRO (SE PRESENTE)', tag: room ? 'NOTA 3' : 'NOTA 2',
     text: "Il quadro di manovra fuori dal locale macchina va in un armadio chiuso a chiave, accessibile solo alle persone autorizzate, "
@@ -49,20 +49,45 @@ export function clientNotes(L: Layout, below = false): Note[] {
   return notes;
 }
 
-/** The note on the room of the machinery (`below`: the machine stands below, the room over the shaft holds the
- *  diverting pulleys only): access, door, heights, free area at the panel, light, temperature, lifting point. */
-export function roomNote(below: boolean): Omit<Note, 'tag'> {
+/** The note on the room of the machinery: a new machine room (`machine`), the room of the diverting pulleys over the
+ *  shaft of a machine below (`pulleys`), or the existing machine room of a modification (`existing`, UNI 10411-1/-11:2024,
+ *  9.2): access, door, heights, free areas, light, temperature, openings, lifting point, switches. */
+export function roomNote(kind: 'machine' | 'pulleys' | 'existing'): Omit<Note, 'tag'> {
   const K = KV_VERT;
+  const access = 'Accesso sicuro e agevole, riservato alle persone autorizzate; ';
+  const ambient = `Illuminazione fissa di almeno ${K.roomLux} lux al pavimento nelle zone di lavoro. Temperatura ambiente tra +${K.tempMin} °C e `
+    + `+${K.tempMax} °C, con ventilazione che protegga motore e apparecchiature da polvere e umidità; l’aria di locali estranei all’ascensore non va `
+    + 'convogliata nel locale, che contiene solo l’impianto. Aperture nella soletta sopra il vano ridotte al minimo, con manicotti o bordi che sporgono '
+    + `almeno ${K.slabKerb} mm dal pavimento. `;
+  const panel = `davanti al quadro una superficie libera profonda almeno ${K.panelFreeDepth} mm e larga almeno ${K.panelFreeWidth} mm; accanto alla `
+    + `macchina una superficie libera di ${K.maintW} × ${K.maintD} mm per la manutenzione e la manovra di emergenza. `;
+  if (kind === 'pulleys') {
+    return {
+      title: 'LOCALE DELLE PULEGGE DI RINVIO',
+      text: `${access}porta di almeno ${K.doorMinW} × ${K.pulleyDoorH} mm con serratura a chiave, apribile dall’interno senza chiave, e un dispositivo `
+        + `di arresto presso ogni accesso. Percorsi alti almeno ${K.pulleyRoomH} mm fino alle pulegge, una superficie libera di ${K.maintW} × `
+        + `${K.maintD} mm dove si lavora, almeno ${K.pulleyAbove} mm liberi sopra le pulegge non protette. ${ambient}Sopra le pulegge un gancio o una `
+        + 'trave di sollevamento con il carico ammesso indicato; comando della luce vicino all’accesso. Il locale della macchina, in basso, ha i '
+        + `requisiti del locale del macchinario: porta di almeno ${K.doorMinW} × ${K.doorMinH} mm, altezza libera di almeno ${K.roomH} mm nelle zone di `
+        + `lavoro, ${panel}interruttore generale vicino all’accesso. Riferimenti: UNI EN 81-20:2020, punti 5.2, 5.10 e 5.12.1.11.`,
+    };
+  }
+  if (kind === 'existing') {
+    return {
+      title: 'LOCALE DELLA MACCHINA (ESISTENTE)',
+      text: 'Attorno alla macchina nuova il locale segue la UNI EN 81-20 5.2.6.3 (UNI 10411-1:2024 e UNI 10411-11:2024, punto 9.2): '
+        + `${panel}L’altezza libera esistente sulle zone di lavoro può restare sotto ${K.roomH} mm se non si riduce; con la UNI 10411-1, sotto `
+        + `${K.existingRoomMin} mm zone segnalate a strisce gialle e nere o con un cartello, materiale ammortizzante al soffitto e almeno `
+        + `${K.existingRoomPad} mm liberi sotto di esso (UNI EN 81-21:2022, 5.9). Porta e accesso restano quelli esistenti. ${ambient}Sopra la `
+        + 'macchina un gancio o una trave di sollevamento con il carico ammesso indicato; interruttore generale e comando della luce vicino '
+        + 'all’accesso. Riferimenti: UNI EN 81-20:2020, punti 5.2 e 5.10; UNI 10411-1:2024 e UNI 10411-11:2024, punto 9.2.',
+    };
+  }
   return {
-    title: below ? 'LOCALE DELLE PULEGGE DI RINVIO' : 'LOCALE DELLA MACCHINA E DEI RINVII',
-    text: 'Accesso sicuro e agevole, riservato alle persone autorizzate; porta di almeno '
-      + `${K.doorMinW} × ${K.doorMinH} mm con serratura a chiave, apribile dall’interno senza chiave. Altezza libera di almeno ${K.roomH} mm `
-      + `nelle zone di lavoro; davanti al quadro una superficie libera profonda almeno ${K.panelFreeDepth} mm e larga almeno ${K.panelFreeWidth} mm. `
-      + `Illuminazione fissa di almeno ${K.roomLux} lux al pavimento nelle zone di lavoro. Temperatura ambiente tra +${K.tempMin} °C e +${K.tempMax} °C, `
-      + "con ventilazione che protegga motore e apparecchiature da polvere e umidità; l’aria di locali estranei all’ascensore non va convogliata nel "
-      + `locale, che contiene solo l’impianto. Sopra ${below ? 'le pulegge' : 'la macchina'} un gancio o una trave di sollevamento con il carico ammesso `
-      + `indicato; ${below ? 'il locale della macchina, in basso, ha gli stessi requisiti; ' : ''}interruttore generale e comando della luce vicino all’accesso. `
-      + 'Riferimenti: UNI EN 81-20:2020, punti 5.2 e 5.10.',
+    title: 'LOCALE DELLA MACCHINA E DEI RINVII',
+    text: `${access}porta di almeno ${K.doorMinW} × ${K.doorMinH} mm con serratura a chiave, apribile dall’interno senza chiave. Altezza libera di `
+      + `almeno ${K.roomH} mm nelle zone di lavoro; ${panel}${ambient}Sopra la macchina un gancio o una trave di sollevamento con il carico ammesso `
+      + 'indicato; interruttore generale e comando della luce vicino all’accesso. Riferimenti: UNI EN 81-20:2020, punti 5.2 e 5.10.',
   };
 }
 

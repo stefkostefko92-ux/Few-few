@@ -48,7 +48,7 @@ export function quickRows(P: Pres, X: Texts, N: Machine, res: Results, sens: rea
   }
   {
     const ids: CheckId[] = ['d_pst', 'd_ratio', 'd_mp'], s = worstOf(ids), d = res.drive;
-    const need = { p: fmt(d.Pst / 1000, 1), pn: fmt(N.Pn, 1), pct: fmt(d.powerUtil * 100, 0) };
+    const need = { p: fmt(d.Peq / 1000, 1), pn: fmt(N.Pn, 1), pct: fmt(d.powerUtil * 100, 0) };
     const text = s === 'fail' ? `${t('q_fail', { what: failed(ids) })} ${t('q_motor_need', need)}`
       : t('q_motor_ok', need) + (statusOf(res, 'd_ratio') === 'warn' ? ' ' + t('q_motor_acc') : '');
     rows.push({ key: 'c_drive', status: s, text });

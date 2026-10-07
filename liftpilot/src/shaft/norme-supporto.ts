@@ -55,17 +55,24 @@ export const VOCI_SUPPORTO: readonly VoceVano[] = [
   },
   {
     id: 'locale.putrelle', gruppo: 'locale', titolo: 'Verifica delle putrelle sotto l’argano',
-    valore: 'ognuna delle due putrelle porta metà del carico dell’argano (il suo peso più il carico statico sull’asse per il coefficiente dinamico) '
-      + 'come forza concentrata in mezzeria, più il proprio peso, sulla luce tra i centri degli appoggi nei muri (luce libera più 150 mm): '
-      + 'σ = M/Wel,y ≤ fyk/γM0 con acciaio S275 (fyk 275 MPa) e γM0 = 1,05; freccia elastica f = F·L³/(48·E·I) + 5·q·L⁴/(384·E·I) ≤ 1/1500 '
-      + 'della luce libera con E = 210000 MPa; proprietà dei profili EN 10365',
+    valore: 'una putrella sotto ogni fila di appoggi del telaio dell’argano, lungo la linea delle calate da muro a muro; il carico dell’argano (il '
+      + 'suo peso al centro del suo ingombro più il carico statico sull’asse per il coefficiente dinamico, sulle calate delle funi nel piano della '
+      + 'puleggia) si ripartisce tra le putrelle con la regola della leva (telaio rigido su putrelle di pari rigidezza; con più di due file, '
+      + 'ripartizione lineare); ognuna porta la sua parte come forza concentrata in mezzeria (a favore di sicurezza), più il proprio peso, sulla '
+      + 'luce tra i centri degli appoggi nei muri (luce libera più 150 mm): σ = M/Wel,y ≤ fyk/γM0 con acciaio S275 (fyk 275 MPa) e γM0 = 1,05; '
+      + 'freccia elastica f = F·L³/(48·E·I) + 5·q·L⁴/(384·E·I) ≤ 1/1500 della luce libera con E = 210000 MPa, sulla putrella più caricata; '
+      + 'proprietà dei profili EN 10365; quando la risultante cade fuori dalle putrelle (la puleggia a sbalzo oltre il telaio) la putrella '
+      + 'lontana è tirata verso l’alto: avvertimento con la forza, l’argano va ancorato a essa e la putrella trattenuta nei muri, oppure le '
+      + 'putrelle spostate sotto la puleggia',
     riferimento: 'NTC 2018, §4.2.4.1.1 (γM0), Tab. 11.3.IX (S275), §11.3.4.1 (E), §3.1.4 (carichi del macchinario); DPR 1497/1963, art. 5.1–5.2 '
       + '(carichi fissi più 1,5 volte il carico statico delle funi, sicurezza ≥ 6, freccia ≤ 1/1500 della luce libera: regola storica degli impianti '
       + 'esistenti, letta su Normattiva)',
-    fonte: 'NTC 2018 (DM 17/01/2018); catalogo dei profilati ArcelorMittal (EN 10365) confrontato con due tabelle indipendenti; DPR 1497/1963 letto '
-      + 'per intero (research/argano-geared, cap. 15, §1.1)', stato: 'da_verificare',
-    verifiche: ['m_beam', 'm_beamf'],
-    nota: 'verifica semplice a carico concentrato in mezzeria su trave appoggiata; gli appoggi nei muri e la muratura vanno verificati dal progettista',
+    fonte: 'NTC 2018 (DM 17/01/2018); catalogo dei profilati ArcelorMittal (EN 10365) confrontato con due tabelle indipendenti; IPE 330, 360 e 400 '
+      + 'dalle tabelle EN 10365 di eurocodeapplied.com e dalla scheda tecnica degli IPE di STAD, concordi, lette il 7 ottobre 2026; DPR 1497/1963 '
+      + 'letto per intero (research/argano-geared, cap. 15, §1.1)', stato: 'da_verificare',
+    verifiche: ['m_beam', 'm_beamf', 'm_beamup'],
+    nota: 'verifica semplice a carico concentrato in mezzeria su trave appoggiata; gli appoggi nei muri, il loro ancoraggio contro il sollevamento e '
+      + 'la muratura vanno verificati dal progettista; fino a LIFT 1.23.0 e ROOM 1.7.0 ognuna delle due putrelle portava metà del carico',
   },
   {
     id: 'locale.calate', gruppo: 'locale', titolo: 'Sostituzione dell’argano: calate esistenti e calate della nuova macchina',

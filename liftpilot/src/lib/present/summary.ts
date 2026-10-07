@@ -26,7 +26,7 @@ export function summaryText(P: Pres, X: Texts, a: Analysis, opts: { badVisible: 
     L.push(`- ${X.checkText(c)}: ${X.st(c.status)}${val}`);
   }
   L.push(X.sensLine(sens), ...X.sensChanges(sens).map((x) => `  ${x}`));
-  if (old) L.push(`${t('col_old')}: v ${fmt(old.kin.vReal, 3)} m/s · ${t('k_trac')} ${fmt(worstTraction(old), 3)} · ${fmt(old.drive.Pst / 1000, 2)} kW`);
+  if (old) L.push(`${t('col_old')}: v ${fmt(old.kin.vReal, 3)} m/s · ${t('k_trac')} ${fmt(worstTraction(old), 3)} · ${fmt(old.drive.Peq / 1000, 2)} kW`);
   L.push('', t('lg_title'), t('lg_short'), ...LEGAL.map((k, j) => `${j + 1}. ${t(k)}`), '', t('disclaimer'), 'Created and Designed by Carbon Stealth VCC · https://carbonstealth.eu');
   return L.join('\n');
 }

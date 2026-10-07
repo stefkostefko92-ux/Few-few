@@ -125,6 +125,7 @@
   "r_nd": "Number and diameter of ropes",
   "d_df": "Unbalance ΔF",
   "d_pst": "Static power",
+  "d_pst_torque": "at the static torque: the machine runs faster than rated ({v} m/s), the motor works below its base frequency",
   "d_pbal": "Simplified formula (1−k)·Q·g·v/η",
   "d_mn": "Rated torque",
   "d_mst": "Static motor torque",
@@ -156,6 +157,7 @@
   "st_info": "Info",
   "v_rescue": "Emergency operation: the software checks the {fmax} N for raising the car with the rated load and, with the machine to UNI EN 81-20, the {f} N for bringing it to a landing (5.9.2.3); the means installed is checked on site.",
   "v_eta": "Gear efficiency per ratio and hoistway efficiency: from the manufacturer’s data and the actual layout.",
+  "v_inertia": "Inertias J_m (motor, brake and flywheel), J_s (traction sheave), J_p (diverting pulleys) and the machine mass: from the manufacturer’s data; the brake, the decelerations and the traction at the real deceleration depend on them.",
   "a_brake": "Brake with mechanical elements in at least two sets; with one failed it must stop the loaded car going down and the empty car going up (UNI EN 81-20, 5.9.2.2.2.1).",
   "a_dd": "Traction sheave, pulley and drum diameter at least 40 times the rope diameter (14.3).",
   "a_machine": "New machine to UNI EN 81-20 (5.9.1 and 5.9.2) or UNI EN 81-1:2010 (clause 12), with the traction and rope safety factor checks (14.1).",
@@ -169,7 +171,7 @@
   "c_adapt_en81": "Adaptations: tested as a new installation",
   "a_en81": "Tested to UNI EN 81-20:2020 and UNI EN 81-50:2020, the installation must have the protections of a new one, among them those against ascending overspeed and unintended car movement (UNI EN 81-20, 5.6.6 and 5.6.7): the stopping element acts on the car, the counterweight, the ropes, the traction sheave or its shaft (5.6.6.4 and 5.6.7.4), so if the brake acts on the motor shaft separate certified devices are needed.",
   "c_adapt_11": "Adaptations for machine replacement (UNI 10411-11)",
-  "a_11": "UNI 10411-11:2024, clause 14: a new machine like the original one, otherwise to UNI EN 81-20 (5.9.1 and 5.9.2) with the traction and rope checks of the original standard or of UNI EN 81-20 and the assessment of clause 4.3 (14.1); existing UCM protections must keep working (14.3 a)); without UCM to 5.6.7 and with controlled slowdown, power cut-off if the brake fails to open (14.3 b)); new ropes and their terminations like the original ones, otherwise checked on the lift with the assessment of clause 4.3 (17).",
+  "a_11": "UNI 10411-11:2024, clause 14: a new machine like the original one, otherwise to UNI EN 81-20 (5.9.1 and 5.9.2) with the traction and rope checks of the original standard or of UNI EN 81-20 and the assessment of clause 4.3 (14.1); existing UCM protections must keep working (14.3 a)); without UCM to 5.6.7 and with controlled slowdown, power cut-off if the brake fails to open (14.3 b)); new ropes and their terminations like the original ones, otherwise checked on the lift with the assessment of clause 4.3 (17). If the ACOP or the stopping element of the UCM acted on the traction sheave or its shaft of the machine replaced, the new machine needs an equivalent type-examined device: a brake on the motor shaft is not an admissible stopping element (UNI EN 81-20, 5.6.6.4 and 5.6.7.4; UNI EN 81-1, 9.10.4).",
   "c_adapt_other": "Adaptations",
   "a_other": "The machine stays the existing one. The adaptations {norma} asks for the parts replaced or changed are to be checked on the text of the standard.",
   "n_new": "New installation: the stopping element of the protections against ascending overspeed and unintended movement acts on the car, the counterweight, the ropes, the traction sheave or its shaft (UNI EN 81-20, 5.6.6.4 and 5.6.7.4): if the brake acts on the motor shaft a separate certified device is needed.",
@@ -375,6 +377,7 @@
   "tr_msr1": "Braking with the machine–top rope at r·a",
   "r_two": "Car suspended by two ropes",
   "g_retain": "Ropes retained in the grooves",
+  "g_retain_lim": "intermediate retainer with more than {below}° under the axis and more than {wrap}° of wrap",
   "v_comp": "Speed and compensation",
   "s_fa": "Handwheel force to a landing",
   "s_gravity": "Movement by gravity",
@@ -408,5 +411,5 @@
   "hint_Dp": "With pulleys of different diameters enter the smallest: it counts for D/d and, on the safe side, for N_equiv.",
   "a_assess": "Safety assessment of the modification on three levels: the component changed, those the change affects and the lift as a whole (clause 4).",
   "a_ropes": "With new ropes (UNI EN 81-20, 5.5.1) the end terminations on car, counterweight and fixed points are always checked too: to 5.5.2.3.1 or, when already of the same type, cast sockets (UNI EN 13411-4) or U-bolt grips (UNI EN 13411-5) (17.1).",
-  "a_docs": "Documents of the replacement (annex C, 14): data of the new machine, setting of the frequency converter for the declared speed, traction and rope safety factor calculations (and the specific pressure, where relevant), compatibility with the existing ACOP and UCM, type examination and declaration of conformity of new ACOP or UCM; the manuals of the machine and of the new components (25.5)."
+  "a_docs": "Documents of the replacement (annex C, 14): data of the new machine, setting of the frequency converter for the declared speed, traction and rope safety factor calculations (and the specific pressure, where relevant), compatibility with the existing ACOP and UCM, type examination and declaration of conformity of new ACOP or UCM; where relevant, the documents of points 5 (the building’s structure: its adequacy is shown by the owner, with the new loads), 9 (dimensioned drawing of the machine room with accesses and maintenance spaces), 10 (electrical lines redone or extended) and 15 (rated speed changed); the manuals of the machine and of the new components (25.5)."
 }

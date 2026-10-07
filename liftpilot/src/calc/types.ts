@@ -67,6 +67,8 @@ export interface Plant {
   /** an electric safety device (UNI EN 81-20:2020, 5.11.2) stops the machine when the car or the counterweight is stalled
    *  (5.5.3 c) 2)): the stalled traction is then not what keeps the car from rising */
   stallDevice: boolean;
+  /** reduced-stroke buffers chosen (their deceleration is ae, which may be the minimum itself) */
+  buffers: boolean;
   dropAlign: DropAlign;
   /** direct pull in a replacement: existing drop spacing [mm]; 0 = none */
   drops: number;
@@ -186,6 +188,9 @@ export interface DriveResult {
   Ms: number;
   MmSt: number;
   Pst: number;
+  /** the static power at the motor's rated speed for the static torque: Pst, more when the machine runs faster than the
+   *  rated speed (the drive turns the motor under its base frequency, where its torque is the limit) [W] */
+  Peq: number;
   empty: boolean;
   Pbal: number;
   Mn: number;

@@ -106,8 +106,11 @@ export function compute(I: Plant, M: Machine): Results {
       return { dF: dFx, Ms, MmSt, Pst: (dFx * I.v * r) / eta, Macc: MmSt + (J * aM) / eta + M.Jm * aM, MpMax: Ms + J * M.i * aM };
     };
     const upRun = run(dF, Q), dnRun = run(dFe, 0), g = dnRun.Pst > upRun.Pst ? dnRun : upRun, Macc = Math.max(upRun.Macc, dnRun.Macc);
-    drive = { dF: g.dF, Ms: g.Ms, MmSt: g.MmSt, Pst: g.Pst, empty: g === dnRun, Pbal: ((1 - k) * Q * G * I.v) / eta, Mn,
-      Macc, accRatio: Macc / Mn, MpMax: Math.max(upRun.MpMax, dnRun.MpMax), powerUtil: g.Pst / (M.Pn * 1000) };
+    // a machine faster than the rated speed has the drive turn the motor under its base frequency, where its torque is
+    // the limit: the static power at its rated speed for the static torque (registry azionamento.potenza)
+    const Peq = g.Pst * Math.max(1, kin.vReal / I.v);
+    drive = { dF: g.dF, Ms: g.Ms, MmSt: g.MmSt, Pst: g.Pst, Peq, empty: g === dnRun, Pbal: ((1 - k) * Q * G * I.v) / eta, Mn,
+      Macc, accRatio: Macc / Mn, MpMax: Math.max(upRun.MpMax, dnRun.MpMax), powerUtil: Peq / (M.Pn * 1000) };
   }
 
   // brake requirements (the gear's friction helps the brake: not counted)
@@ -176,8 +179,9 @@ export function compute(I: Plant, M: Machine): Results {
   add('r_nd', M.n < K.ropesMin || M.d < K.ropeDiameterMin ? 'fail' : 'ok', M.n, K.ropesMin, null, 0);
   if (M.n === K.ropesMin) add('r_two', 'info', M.n, null, null, 0);
   {
-    // a bottom machine: the ropes wrap the sheave from below (UNI EN 81-20:2020, 5.5.7.2)
-    const wrap = Math.max(wa.B, wa.T), below = I.layout === 'bottom' ? Math.min(wrap, 180) : 0;
+    // the arc of the wrap under the horizontal through the axis (UNI EN 81-20:2020, 5.5.7.2): a bottom machine's ropes
+    // wrap the sheave from below; over a diverting pulley a wrap past 180° goes under it by as much
+    const wrap = Math.max(wa.B, wa.T), below = I.layout === 'bottom' ? Math.min(wrap, 180) : Math.max(0, wrap - 180);
     if (below > K.retainBelow && wrap > K.retainWrap) add('g_retain', 'info', wrap, K.retainWrap, null, 1);
   }
   if (I.v > K.vCompGuided) add('v_comp', I.v > K.vCompRopes ? 'fail' : 'warn', I.v, I.v > K.vCompRopes ? K.vCompRopes : K.vCompGuided, null, 2);
@@ -189,7 +193,7 @@ export function compute(I: Plant, M: Machine): Results {
     add('g_geom', st, lowU && !betaRemark ? g.gamma : g.type === 'U' ? null : hasBeta ? g.beta : g.gamma, null, null, 1);
   }
   add('r_sfa', ropes.SfAct >= ropes.SfReq ? 'ok' : 'fail', ropes.SfAct, ropes.SfReq, ropes.SfReq / ropes.SfAct, 2);
-  add('d_pst', drive.powerUtil <= 1 ? 'ok' : 'fail', drive.Pst / 1000, M.Pn, drive.powerUtil, 2);
+  add('d_pst', drive.powerUtil <= 1 ? 'ok' : 'fail', drive.Peq / 1000, M.Pn, drive.powerUtil, 2);
   add('d_ratio', drive.accRatio > K.accelTorqueRatioMax ? 'warn' : 'info', drive.accRatio, null, null, 2);
   if (M.MpCat > 0) add('d_mp', drive.MpMax <= M.MpCat ? (drive.MpMax / M.MpCat > K.nearLimit ? 'warn' : 'ok') : 'fail', drive.MpMax, M.MpCat, drive.MpMax / M.MpCat, 0);
   if (M.shaftMax > 0) add('s_shaft', shaft.testKg <= M.shaftMax ? (shaft.testKg / M.shaftMax > K.nearLimit ? 'warn' : 'ok') : 'fail', shaft.testKg, M.shaftMax, shaft.testKg / M.shaftMax, 0);

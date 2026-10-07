@@ -7,7 +7,7 @@ import type { VoceVano } from './norme';
 import { COSTANTI_GUIDE, KV_GUIDE, VOCI_GUIDE } from './norme-guide';
 import { COSTANTI_HEB, KV_HEB, VOCI_HEB } from './norme-heb';
 import { COSTANTI_LIMITATORE, KV_GOV, VOCI_LIMITATORE } from './norme-limitatore';
-import { VOCI_LOCALE } from './norme-locale';
+import { COSTANTI_LOCALE, KV_LOCALE, VOCI_LOCALE } from './norme-locale';
 import { VOCI_SPAZI } from './norme-spazi';
 import { VOCI_SUPPORTO } from './norme-supporto';
 
@@ -17,6 +17,7 @@ export const KV_VERT = {
   ...KV_GUIDE,
   ...KV_GOV,
   ...KV_HEB,
+  ...KV_LOCALE,
   // UNI EN 81-20:2020, Tabella 3: refuge spaces by type, height and plan [mm] (type 3 in the pit only)
   refugeH: { 1: 2000, 2: 1000, 3: 500 },
   refugePlan: { 1: [400, 500], 2: [500, 700], 3: [700, 1000] },
@@ -66,24 +67,14 @@ export const KV_VERT = {
   roofFreeArea: 0.12,
   roofFreeSide: 250,
   standDrawn: [400, 300],
+  // the crosshead of a central sling over the roof: this far either side of the rails' axis, this high under the sling's
+  // top; the operator of a car door takes this strip of the roof on its entrance's side [mm] (registry spazi.tetto.arcata)
+  crossheadHalf: 105,
+  crossheadH: 170,
+  roofOperator: 150,
   // 5.3.2.1 and 5.4.1: clear height of the entrances (landing and car doors) and inside the car [mm]
   entranceH: 2000,
   carInnerH: 2000,
-  // 5.2.6.3.2.1 and 5.2.3: machine room: clear height of working areas, free area in front of the panel, access door [mm]
-  roomH: 2100,
-  panelFreeDepth: 700,
-  panelFreeWidth: 500,
-  // 5.2.6.3.2.1: free area for the maintenance of moving parts and the manual emergency operation [mm]
-  maintW: 500,
-  maintD: 600,
-  // 5.2.6.3.2.2: access routes to the free areas ≥ 0,50 m wide (0,40 m allowed where nothing moves: not used)
-  routeW: 500,
-  doorMinW: 600,
-  doorMinH: 2000,
-  // where the software puts the control panel (registry locale.quadro.posto): clear of what stands on the floor by this
-  // much where it can, tried every this much along the walls [mm]
-  panelSideGap: 100,
-  panelStep: 50,
   // 5.2.1.8 and UNI EN 81-50:2020, 5.10: 4 × the static load under each buffer; impact factor of the safety gear on
   // the rails (progressive 2, instantaneous roller type 3, instantaneous 5); running 1,2; rated load off centre by 1/8
   bufferFactor: 4,
@@ -268,14 +259,13 @@ export const COSTANTI_VERT: Readonly<Record<string, readonly CostanteVert[]>> = 
   'spazi.fossa': ['pitClear', 'apron', 'apronBevel', 'apronBevelAngle', 'apronClear'],
   'spazi.balaustra': ['parapetGap1', 'parapetGap2', 'parapetH1', 'parapetH2', 'parapetEdge', 'parapetBar'],
   'spazi.tetto.superficie': ['roofFreeArea', 'roofFreeSide', 'standDrawn'],
+  'spazi.tetto.arcata': ['crossheadHalf', 'crossheadH', 'roofOperator'],
   'spazi.altezze': ['entranceH', 'carInnerH'],
   'contrappeso.schermo': ['cwScreen'],
   'contrappeso.guidato': ['cwGuided', 'cwGuidedV2', 'carGuided'],
   'ammortizzatori.corsa': ['springMaxV', 'strokeK', 'strokeMin'],
   'ammortizzatori.poliuretano': ['puStroke', 'puTypical'],
   'ammortizzatori.idraulici': ['oilStrokeK', 'oilTypical'],
-  'locale.macchina': ['roomH', 'panelFreeDepth', 'panelFreeWidth', 'maintW', 'maintD', 'routeW', 'doorMinW', 'doorMinH'],
-  'locale.quadro.posto': ['panelSideGap', 'panelStep'],
   'carichi.fossa': ['bufferFactor', 'k1Progressive', 'k1Roller', 'k1Instant'],
   'guide.spinte': ['k2Running', 'loadOffset'],
   'carichi.macchina': ['dynFactor'],
@@ -292,5 +282,6 @@ export const COSTANTI_VERT: Readonly<Record<string, readonly CostanteVert[]>> = 
   'locale.calate': ['dropTol'],
   ...COSTANTI_GUIDE,
   ...COSTANTI_LIMITATORE,
+  ...COSTANTI_LOCALE,
   ...COSTANTI_HEB,
 };

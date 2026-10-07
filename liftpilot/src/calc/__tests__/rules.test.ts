@@ -1,7 +1,8 @@
 // The rules of round 30, checked against forms written out by hand: the car's and the counterweight's pulleys at 2:1
 // (term III) and the rope from a bottom machine (MSR1) of UNI EN 81-50:2020 5.11.3, the rescue forces of UNI EN 81-20:2020
 // 5.9.2.3 by the machine's standard, the electric device against stalling (5.5.3 c) 2)), and the remarks on two ropes,
-// the speed, the ropes retained in the grooves, the gravity and the reduced-stroke buffers' deceleration.
+// the speed, the ropes retained in the grooves, the gravity and the reduced-stroke buffers' deceleration; of round 34, the
+// static power at the static torque of a machine faster than the rated speed and the retainer over a diverting pulley.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { K, PRESETS, compute, readInputs } from '../index';
@@ -96,4 +97,26 @@ test('ammortizzatori a corsa ridotta: la decelerazione inserita, mai sotto il mi
   assert.equal(readInputs({ ...C, buffers: true, ae: '1,2' }).I.ae, 1.2);
   const low = readInputs({ ...C, buffers: true, ae: '0.3' });
   assert.ok(low.bad.includes('ae') && low.I.ae === K.aeReducedStroke);
+});
+
+test('potenza statica: con la macchina più veloce della nominale vale la coppia statica (il motore sotto la frequenza base)', () => {
+  const C = { ...PRESETS.C, compare: false, n_Pn: 6 };
+  // i = 43: 0,989 m/s, sotto la velocità nominale: la potenza, come prima
+  const slow = run({ ...C, n_i: 43 }).r;
+  near('P_eq = P_st', slow.drive.Peq, slow.drive.Pst);
+  assert.equal(status(slow, 'd_pst'), 'ok');
+  // i = 39: 1,090 m/s; la potenza alla velocità nominale passerebbe, la coppia statica supera la nominale (M_n = 9550·P_n/n)
+  const fast = run({ ...C, n_i: 39 }).r;
+  near('P_eq', fast.drive.Peq, (fast.drive.Pst * fast.kin.vReal) / 1.0);
+  near('utilizzo = M_st/M_n', fast.drive.powerUtil, fast.drive.MmSt / fast.drive.Mn, 1e-4);
+  assert.ok(fast.drive.Pst / 6000 < 1 && fast.drive.powerUtil > 1);
+  assert.equal(status(fast, 'd_pst'), 'fail');
+});
+
+test('fermo intermedio delle funi: con il rinvio un avvolgimento oltre 180° scende sotto l’asse di altrettanto', () => {
+  const A = { ...PRESETS.A, compare: false, layout: 'topDefl', alphaMode: 'geo', n_D: 560, Dp: 400 };
+  // dx 0,05 m and h 0,5 m: the rope wraps the diverting pulley from the inside, 247° on the sheave, 67° under the axis
+  const c = run({ ...A, dx: 0.05, h: 0.5 }).r.checks.find((x) => x.id === 'g_retain');
+  assert.ok(c && c.status === 'info' && c.value !== null && c.value - 180 > K.retainBelow && c.value > K.retainWrap, `${c?.value}`);
+  assert.equal(status(run({ ...A, dx: 0.3, h: 0.6 }).r, 'g_retain'), undefined);
 });

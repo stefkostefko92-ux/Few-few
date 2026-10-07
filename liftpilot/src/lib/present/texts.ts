@@ -83,7 +83,7 @@ export function textsFor(P: Pres) {
       [`${t('r_sfr')} · ${t('r_sfa')}`, `${fmt(old.ropes.SfReq, 2)} · ${fmt(old.ropes.SfAct, 2)}`, `${fmt(res.ropes.SfReq, 2)} · ${fmt(res.ropes.SfAct, 2)}`],
       [t('k_trac'), fmt(worstTraction(old), 3), fmt(worstTraction(res), 3)],
       [t('tr_real'), `${fmt(old.real.util, 3)} (a ${fmt(old.real.aEff, 2)} m/s²)`, `${fmt(res.real.util, 3)} (a ${fmt(res.real.aEff, 2)} m/s²)`],
-      [t('d_pst'), `${fmt(old.drive.Pst / 1000, 2)} kW (${fmt(old.drive.powerUtil * 100, 0)}%)`, `${fmt(res.drive.Pst / 1000, 2)} kW (${fmt(res.drive.powerUtil * 100, 0)}%)`],
+      [t('d_pst'), `${fmt(old.drive.Peq / 1000, 2)} kW (${fmt(old.drive.powerUtil * 100, 0)}%)`, `${fmt(res.drive.Peq / 1000, 2)} kW (${fmt(res.drive.powerUtil * 100, 0)}%)`],
       [t('d_ratio'), fmt(old.drive.accRatio, 2), fmt(res.drive.accRatio, 2)],
       [t('b_sets'), String(old.brake.sets), String(res.brake.sets)],
       [t('b_amax'), `${fmt(old.brake.aMax / G, 2)} g`, `${fmt(res.brake.aMax / G, 2)} g`],
@@ -98,9 +98,9 @@ export function textsFor(P: Pres) {
   // what the engineer still checks: the points the standards leave open or that depend on the installation (the values read
   // on the standards are in the registry, not here)
   const verifyList = (I: Plant, N: Machine, res: Results): string[] => [t('v_real'), ...(N.etaIest ? [t('v_etaI', { x: fmt(N.etaI, 2) })] : []),
-    ...(I.ae > K.aeMin ? [t('v_ae', { a: fmt(I.ae, 1) })] : []), ...(N.groove.type === 'VN' ? [t('v_neq_vn', { val: fmt(res.ropes.NeqT, 2) })] : []),
+    ...(I.buffers ? [t('v_ae', { a: fmt(I.ae, 1) })] : []), ...(N.groove.type === 'VN' ? [t('v_neq_vn', { val: fmt(res.ropes.NeqT, 2) })] : []),
     ...(I.r === 2 ? [t('v_r2')] : []), t('v_geom', { b: K.betaMax, g: K.gammaMin, gu: K.gammaMinU, br: K.betaRecommended }),
-    t('v_rescue', { f: K.rescueForceMech, fmax: K.rescueForceMax }), t('v_eta')];
+    t('v_rescue', { f: K.rescueForceMech, fmax: K.rescueForceMax }), t('v_eta'), t('v_inertia')];
 
   // which case a row is: "cabina vuota in salita, in alto, a 0,50 m/s² (minimo della norma)"
   function caseText(c: TractionCase | BrakeCase | null | undefined, withA = true): string {
@@ -114,11 +114,13 @@ export function textsFor(P: Pres) {
   const etaText = (M: Machine): string => `${fmt(M.etaI, 2)}${M.etaIest ? ` (${t('est')})` : ''}`;
   const windowText = (w: BrakeWindow): string =>
     `${fmt(w.lo / w.sets, 1)} N·m · ${w.hi == null ? t('b_win_none') : w.hi === Infinity ? '—' : `${fmt(w.hi / w.sets, 1)} N·m`}`;
-  // `old`: the existing machine (its ropes are the existing ones)
+  // `old`: the existing machine (its ropes are the existing ones); the inertias and the mass, which the brake, the
+  // decelerations and the uplift depend on, so that the calculation can be repeated
   const machineRows = (N: Machine, res: Results, old = false): Row2[] => [
     [t('D'), `${fmt(N.D, 0)} mm`], [t('groove'), grooveText(N.groove)], [t('i'), fmt(N.i, 1)],
     [t('Pn'), `${fmt(N.Pn, 1)} kW · ${N.poles} ${t('poles_short')} · ${fmt(N.nm, 0)} 1/min · ${fmt(N.fn, 0)} Hz`],
     [`${t('etaD')} · ${t('etaI')}`, `${fmt(N.etaD, 2)} · ${etaText(N)}`],
+    [`${t('Jm')} · ${t('Js')}`, `${fmt(N.Jm, 3)} · ${fmt(N.Js, 2)} kg·m²`], [t('mass'), `${fmt(N.mass, 0)} kg`],
     [`${t('brakeSets')} × ${t('brakeNm')}`, `${N.brakeSets} × ${fmt(N.brakeNm, 0)} N·m`],
     [t('b_win'), windowText(brakeWindow(res))],
     [t(old ? 'oldRopes' : 'g_ropes'), `${N.n} × Ø${fmt(N.d, 1)} mm · ${fmt(N.Fmin, 1)} kN · ${fmt(N.qf, 3)} kg/m`],
@@ -143,6 +145,8 @@ export function textsFor(P: Pres) {
   };
   const checkLimit = (c: Check, N: Machine): string => {
     if (c.id === 'g_geom') return grooveLimit(N.groove);
+    // the retainer is a condition, not a limit the wrap must stay under
+    if (c.id === 'g_retain') return t('g_retain_lim', { below: fmt(K.retainBelow, 0), wrap: fmt(K.retainWrap, 0) });
     if (c.limit == null) return '';
     const sense = AT_LEAST.has(c.id) ? '≥' : '≤';
     return c.id === 'r_nd' ? `≥ ${K.ropesMin} × Ø${dText(K.ropeDiameterMin)}\u00a0mm` : `${sense} ${fmt(c.limit, c.dec)}${unitOf(c.id)}`;
@@ -156,7 +160,7 @@ export function textsFor(P: Pres) {
   // rows [variant, traction, real traction, S_f, power, shaft, result] for the data entered and each variant
   const sensRows = (res: Results, sens: readonly SensitivityVariant[]): string[][] =>
     ([[t('sens_nom'), res], ...sens.map((s) => [sensLabel(s), s.r])] as [string, Results][]).map(([name, r]) => [name, fmt(worstTraction(r), 3), fmt(r.real.util, 3),
-      `${fmt(r.ropes.SfAct, 2)} / ${fmt(r.ropes.SfReq, 2)}`, `${fmt(r.drive.Pst / 1000, 2)} kW`, `${fmt(r.shaft.testKg, 0)} kg`,
+      `${fmt(r.ropes.SfAct, 2)} / ${fmt(r.ropes.SfReq, 2)}`, `${fmt(r.drive.Peq / 1000, 2)} kW`, `${fmt(r.shaft.testKg, 0)} kg`,
       r.fails.length ? `${t('st_fail')}\u00a0(${r.fails.length})` : t('st_ok')]);
   const sensHead = (): string[] => [t('sens_var'), t('sens_trac'), t('sens_real'), t('sens_sf'), t('sens_p'), t('col_shaftk'), t('col_res')];
   const sensTitle = (sens: readonly SensitivityVariant[]): string => t(sensMeasured(sens) ? 'c_sens_q' : 'c_sens');

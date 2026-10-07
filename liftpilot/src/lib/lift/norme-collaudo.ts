@@ -51,6 +51,7 @@ export const NORME_INFO: Readonly<Record<Norma, NormaInfo>> = {
       lt('UNI EN 81-20:2020, 5.2.5.7.1', 'cartello sopra o accanto allo schermo del contrappeso (5.2.5.5.1) con il gioco massimo ammesso tra contrappeso e ammortizzatore con la cabina al piano più alto, per conservare gli spazi in testata'),
       lt('UNI EN 81-20:2020, 5.2.2.4', 'fossa più profonda di 2,50 m: porta di accesso; fino a 2,50 m porta di accesso oppure scala dentro il vano (appendice F)'),
       lt('UNI EN 81-20:2020, 5.2.1.5.1 b)', 'in fossa un commutatore di ispezione fisso, manovrabile da non oltre 0,30 m da uno spazio di rifugio'),
+      lt('UNI EN 81-20:2020, 5.12.1.5.2.1 f)', 'velocità in manovra d’ispezione non oltre 0,30 m/s quando sopra un posto in piedi sul tetto della cabina o in fossa l’altezza libera è di 2,0 m o meno (spazi di rifugio di tipo 2 o 3): da impostare nel quadro'),
       lt('UNI EN 81-20:2020, 5.2.5.7.1 e 5.2.5.8.1', 'uno spazio di rifugio per ogni persona, tutti dello stesso tipo e senza sovrapposizioni; cartello con il numero di persone ammesse e la postura'),
       lt('UNI EN 81-20:2020, 5.2.1.4.1', 'illuminazione del vano: almeno 50 lux a 1 m sopra il tetto della cabina nella sua proiezione e a 1 m sopra il fondo della fossa dove si sta, si lavora o si passa tra le zone di lavoro; almeno 20 lux altrove'),
       lt('UNI EN 81-20:2020, 5.4.10.1 e 5.4.10.4', 'luce in cabina almeno 100 lux sui comandi e a 1 m dal pavimento; luce di emergenza di almeno 5 lux per un’ora presso gli allarmi in cabina e sul tetto e al centro di cabina e tetto, a 1 m'),
@@ -70,6 +71,8 @@ export const NORME_INFO: Readonly<Record<Norma, NormaInfo>> = {
     ambiti: [], citazione: 'norma nazionale volontaria, in vigore dal 31/10/2024 (sostituisce la 2021); il DPR 162/1999 non la richiama',
     punti: [
       lt('UNI 10411-1:2024, scopo', 'impianti elettrici a frizione fuori dalla 95/16/CE e dalla 2014/33/UE; esclude le modifiche che cambiano le misure antincendio (per queste, a nostro giudizio, il DM 15/09/2005 o il Codice V.3)'),
+      lt('UNI 10411-1:2024, 9.1–9.2', 'apparecchiature spostate o aggiunte nel locale del macchinario (a nostro giudizio anche la macchina nuova, che ne cambia gli ingombri): locale secondo la UNI EN 81-20 5.2.6.3, locale delle pulegge secondo la 5.2.6.7; l’altezza libera sulle zone di lavoro può restare sotto 2,1 m se non scende sotto quella esistente; sotto 2,0 m vale la UNI EN 81-21:2022, 5.9 (zone segnalate, materiale ammortizzante al soffitto, almeno 1,80 m liberi sotto di esso)'),
+      lt('UNI 10411-1:2024, 5 e App. C (5, 9 e 14)', 'se le forze sulle strutture dell’edificio crescono o si spostano a sfavore della sicurezza, l’idoneità della struttura la dimostra il proprietario (dichiarazione con le nuove posizioni e i nuovi valori dei carichi: foglio 1, P1–P9); disegno quotato del locale del macchinario con accessi e spazi di manutenzione; con la macchina nuova, quando pertinenti, anche i documenti dei punti 5, 9, 10 e 15'),
       lt('UNI 10411-1:2024, 14.4 a)–g)', 'con la macchina nuova: temporizzatore del motore (EN 81-20 5.9.2.7); arresto in salita prima della velocità d’intervento del limitatore; protezioni ACOP e UCM esistenti che continuano a funzionare; dispositivo d’arresto presso la macchina (5.12.1.11.1 e)); pulegge nel locale secondo la 5.5.7; senza UCM e con la regolazione di velocità, macchinario senza alimentazione se il freno non si apre, con ripristino solo manuale'),
     ],
   },
@@ -78,6 +81,7 @@ export const NORME_INFO: Readonly<Record<Norma, NormaInfo>> = {
     punti: [
       lt('UNI 10411-11:2024, scopo', 'impianti elettrici a frizione marcati CE secondo la Direttiva; esclude le modifiche che cambiano le misure antincendio (per queste, a nostro giudizio, il DM 15/09/2005 o il Codice V.3)'),
       lt('UNI 10411-11:2024, 14.3 a) e App. A (14); UNI EN 81-20:2020, 5.6.6.2 e 5.6.7.3', 'cambiando la macchina: le protezioni UCM esistenti devono continuare a funzionare (14.3 a)); per l’ACOP esistente l’App. A (14) chiede una relazione sulla compatibilità della nuova macchina, oppure nuovi dispositivi con certificato di esame di tipo e dichiarazione di conformità; il freno della macchina vale come organo d’arresto solo se ridondante e autocontrollato'),
+      lt('UNI 10411-11:2024, 5 e 9.2', 'se le forze sulle strutture dell’edificio crescono o si spostano a sfavore della sicurezza, l’idoneità della struttura la dimostra il proprietario; nuova disposizione del locale del macchinario secondo la UNI EN 81-20 5.2.6, con l’altezza esistente sulle zone di lavoro ammessa se non si arriva a 2,10 m'),
       lt('UNI 10411-11:2024, 14.3 b)', 'senza UCM conforme alla 5.6.7 e con il rallentamento controllato: macchinario senza alimentazione se il freno non si apre, al più tardi all’arrivo al piano, con ripristino solo manuale'),
     ],
   },
@@ -185,6 +189,9 @@ export const NORME_INFO: Readonly<Record<Norma, NormaInfo>> = {
   },
   ntc2018: {
     ambiti: BOTH, citazione: 'DM 17/01/2018 (NTC 2018), obbligatorie',
+    avviso: 'l’esito delle travi (putrelle e HEB) è una verifica semplificata del software: tensione con i carichi caratteristici (macchina e '
+      + 'doppio del carico statico) e fyk/γM0, freccia 1/1500; non sostituisce la verifica strutturale secondo le NTC 2018 del progettista '
+      + '(combinazioni allo SLU con i coefficienti parziali, appoggi, ancoraggi e murature), che resta sua',
     punti: [
       ok('NTC 2018, §3.1.4', 'carichi del macchinario valutati caso per caso sui massimi prevedibili e riportati nel progetto e nel collaudo statico'),
       ok('NTC 2018, §8.4.1', 'su un edificio esistente l’intervento è locale: verifica limitata alle parti interessate, senza ridurre la sicurezza preesistente'),

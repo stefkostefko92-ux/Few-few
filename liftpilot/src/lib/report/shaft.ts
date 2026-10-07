@@ -111,7 +111,7 @@ export function shaftBlocks(d: ReportDesign, calcQ: number, x: ShaftTexts, extra
     ['Impronta SHA-256 del progetto', d.sha256],
   ] });
   const voci = vociOfDesign(I.access);
-  const refOf = (id: ShaftCheckId): string => refsText(voci.filter((v) => v.verifiche?.includes(id)).flatMap((v) => refsOf(v))) || 'modello di calcolo del software';
+  const refOf = (id: ShaftCheckId): string => refsText(voci.filter((v) => v.verifiche?.includes(id)).flatMap((v) => refsOf(v)), 3) || 'modello di calcolo del software';
   B.push({ t: 'h3', text: 'Verifiche del vano: pianta, sezione e locale macchina' });
   const esiti = checks.map((c) => (collaudo ? esitoOf(collaudo, c.id, st(c.status), c.status) : { text: st(c.status), status: c.status }));
   B.push({ t: 'grid', head: x.head, rows: checks.map((c, i) => {

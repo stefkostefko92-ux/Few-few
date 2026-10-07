@@ -90,15 +90,19 @@ export const AMBITO_VERIFICHE: Readonly<Record<CheckId | ShaftCheckId, readonly 
   v_door: ['landingDoors'], v_door2: ['landingDoors'], v_land: DOORS, v_land2: DOORS, v_op: ['carDoors'], v_wall: ['car', ...DOORS], v_sill: ['car', ...DOORS],
   v_cw: ['car', 'cw', 'rails'], v_cwlen: ['cw'], v_place: ['car', 'cw', 'rails', ...DOORS], v_doorcar: ['car', ...DOORS],
   v_buffer: ['buffers'], v_niche: ['cw'], v_staffa: ['cw', 'rails'], v_telaio: ['landingDoors'], v_head: ['car', 'cw', 'rails'],
-  v_gov: ['governor', 'car', 'rails', 'sling'], v_govrail: ['governor', 'sling'],
+  v_gov: ['governor', 'car', 'rails', 'sling'], v_govrail: ['governor', 'sling'], v_govdd: ['governor'],
   // the headroom and the pit: their spaces follow the car, its frame, the buffers and the speed
   h_refuge: HEAD, h_clear: HEAD, h_top: [...HEAD, 'machine'], h_parapet: ['car'], h_stand: ['car'], h_cross: ['car', 'sling'], h_door: DOORS, h_staffe: DOORS, h_car: ['car'], h_cw: [...HEAD, 'travel'], h_guide: [...HEAD, 'travel'],
   p_refuge: PIT, p_apron: [...PIT, 'carDoors'], p_screen: ['cw'],
   b_runby: BUFFERS, b_type: ['buffers', 'speed'], b_car: ['buffers', 'speed'], b_cw: ['buffers', 'speed'],
-  // the machine room is the building's; the panel's space follows a new controller; the beams under a new machine
-  m_height: [], m_panel: ['controller'], m_door: [], m_beam: ['machine'], m_beamf: ['machine'], m_rinvio: ['machine'], m_fit: ['machine'], m_stand: ['machine'], m_free: ['machine'], m_calata: ['machine'],
+  // the machine room is the building's; the space in front of the panel follows a new controller or a new machine that
+  // stands in it (UNI 10411-1/-11:2024, 9.2: UNI EN 81-20 5.2.6.3 round the equipment replaced); the beams under a new
+  // machine
+  m_height: [], m_panel: ['controller', 'machine'], m_door: [], m_beam: ['machine'], m_beamf: ['machine'], m_beamup: ['machine'], m_rinvio: ['machine'], m_fit: ['machine'], m_stand: ['machine'], m_free: ['machine'], m_calata: ['machine'],
   // the panel among what stands on the floor and the ways to the free areas follow a new controller or a new machine
-  m_quadro: ['controller', 'machine'], m_route: ['controller', 'machine'], m_gov: ['governor', 'machine', 'controller'], m_govfree: ['governor', 'machine', 'controller'],
+  m_quadro: ['controller', 'machine'], m_route: ['controller', 'machine'],
+  // the pulley room of a machine below is the building's; the free height over its pulleys follows a new machine's pulleys
+  m_pheight: [], m_pdoor: [], m_pabove: ['machine'], m_gov: ['governor', 'machine', 'controller'], m_govfree: ['governor', 'machine', 'controller'],
   // the HEB beams on the shaft's walls under a new machine
   m_heb: ['machine'], m_hebf: ['machine'], m_hebfeet: ['machine'], m_hebrope: ['machine'], m_hebwall: ['machine'],
   // the car's rails under the safety gear and in use (sheet 1 of the drawing set); the safety gear is on the sling
@@ -114,7 +118,7 @@ export const VERIFICHE_DM236: readonly ShaftCheckId[] = ['v_acc_car', 'v_acc_doo
 /** The checks NTC 2018 computes: the beams under the machine and the HEB beams on the shaft's walls (σ ≤ fyk/γM0,
  *  deflection). The other standards added
  *  compute none: their points are checked on site (norme-collaudo.ts). */
-export const VERIFICHE_NTC: readonly ShaftCheckId[] = ['m_beam', 'm_beamf', 'm_heb', 'm_hebf'];
+export const VERIFICHE_NTC: readonly ShaftCheckId[] = ['m_beam', 'm_beamf', 'm_beamup', 'm_heb', 'm_hebf'];
 
 const isNorma = (x: unknown): x is NormaCollaudo => NORME_COLLAUDO.some((n) => n === x);
 

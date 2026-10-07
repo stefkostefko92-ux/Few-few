@@ -37,7 +37,8 @@ export const VOCI_FUNI: readonly Voce[] = [
   {
     id: 'funi.trattenuta', gruppo: 'funi', titolo: 'Funi trattenute nelle gole', valore: 'un fermo dove le funi entrano ed escono dalla puleggia e '
       + 'almeno uno intermedio se più di 60° dell’arco di avvolgimento sono sotto l’orizzontale per l’asse e l’avvolgimento supera 120°: '
-      + 'con la macchina in basso le funi avvolgono la puleggia da sotto (informazione)',
+      + 'con la macchina in basso le funi avvolgono la puleggia da sotto; con il rinvio un avvolgimento oltre 180° scende sotto l’orizzontale di '
+      + 'altrettanto (informazione)',
     riferimento: 'UNI EN 81-20:2020, 5.5.7.2', fonte: letto(T20, 'pp. 77–78'), stato: 'confermato',
     costanti: ['retainWrap', 'retainBelow'], verifiche: ['g_retain'],
   },

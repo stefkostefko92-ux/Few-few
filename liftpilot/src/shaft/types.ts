@@ -173,11 +173,12 @@ export interface BelowRoom {
 
 export type ShaftCheckId =
   | 'v_fit' | 'v_area' | 'v_acc_car' | 'v_acc_door' | 'v_acc_side' | 'v_acc_c' | 'v_call' | 'v_door' | 'v_door2' | 'v_land' | 'v_land2' | 'v_op' | 'v_wall' | 'v_sill' | 'v_cw' | 'v_cwlen'
-  | 'v_place' | 'v_doorcar' | 'v_buffer' | 'v_niche' | 'v_staffa' | 'v_telaio' | 'v_head' | 'v_gov' | 'v_govrail'
+  | 'v_place' | 'v_doorcar' | 'v_buffer' | 'v_niche' | 'v_staffa' | 'v_telaio' | 'v_head' | 'v_gov' | 'v_govrail' | 'v_govdd'
   | 'h_refuge' | 'h_clear' | 'h_top' | 'h_parapet' | 'h_stand' | 'h_cross' | 'h_door' | 'h_staffe' | 'h_car' | 'h_cw' | 'h_guide' | 'p_refuge' | 'p_apron'
   | 'p_screen'
   | 'b_runby' | 'b_type' | 'b_car' | 'b_cw' | 'm_height' | 'm_panel' | 'm_door'
-  | 'm_beam' | 'm_beamf' | 'm_rinvio' | 'm_fit' | 'm_stand' | 'm_free' | 'm_calata' | 'm_quadro' | 'm_route' | 'm_gov' | 'm_govfree'
+  | 'm_beam' | 'm_beamf' | 'm_beamup' | 'm_rinvio' | 'm_fit' | 'm_stand' | 'm_free' | 'm_calata' | 'm_quadro' | 'm_route' | 'm_gov' | 'm_govfree'
+  | 'm_pheight' | 'm_pdoor' | 'm_pabove'
   | 'm_heb' | 'm_hebf' | 'm_hebfeet' | 'm_hebrope' | 'm_hebwall'
   | 'gr_stress' | 'gr_flange' | 'gr_defl' | 'sg_type';
 
@@ -188,7 +189,7 @@ export interface ShaftCheck {
   limit: number | null;
   /** decimals shown */
   dec: number;
-  unit: 'mm' | 'm²' | 'm/s' | 'MPa' | '';
+  unit: 'mm' | 'm²' | 'm/s' | 'MPa' | 'kN' | '';
 }
 
 export interface Rect {

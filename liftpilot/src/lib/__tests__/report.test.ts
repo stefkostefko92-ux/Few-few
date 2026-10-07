@@ -82,7 +82,9 @@ test('calcolo da un progetto del vano: pianta in scala, verifiche in pianta, voc
   const heads = (doc: ReportDoc): string[] => doc.blocks.flatMap((b) => (b.t === 'h2' ? [b.text.replace(/^\d+\. /, '')] : []));
   const same = buildReport({ ...base, design: design({ ...defaultInputs(1600, 1750), Q }) });
   const h = heads(same);
-  assert.equal(h[h.indexOf("Dati dell’impianto") + 1], 'Vano e cabina');
+  // the data, the limits of the model, then the shaft
+  assert.equal(h[h.indexOf("Dati dell’impianto") + 1], 'Ipotesi e limiti del modello');
+  assert.equal(h[h.indexOf("Dati dell’impianto") + 2], 'Vano e cabina');
   assert.deepEqual(heads(buildReport(base)).filter((x) => x === 'Vano e cabina'), []);
   const plan = same.blocks.find((b) => b.t === 'plan');
   assert.ok(plan && plan.t === 'plan' && plan.shapes.length > 100 && /^Scala 1:(10|20|25|50) /.test(plan.scale), 'pianta in scala');
@@ -95,7 +97,11 @@ test('calcolo da un progetto del vano: pianta in scala, verifiche in pianta, voc
   assert.ok(same.drawing && same.drawing.patterns.concrete.shapes.length > 0, 'colori e retino del disegno');
   const L = shaftSnapshot({ ...defaultInputs(1600, 1750), Q }).layout;
   const checks = same.blocks.find((b) => b.t === 'grid' && b.rows.some((r) => r[0] === 'Gioco tra le soglie'));
-  assert.ok(checks && checks.t === 'grid' && checks.rows.length === L.checks.length && checks.rows.every((r) => r[4]), 'una riga per verifica, con riferimento');
+  // one row for each check of the shaft, then those that need the machine as the design's verdict takes them: B has it
+  // below with the head pulleys under the slab — its room (m_height, m_panel and m_door in place of those of the room over
+  // the shaft, then m_fit, m_free, m_quadro and m_route) and the car's top under the pulleys (h_top)
+  assert.ok(checks && checks.t === 'grid' && checks.rows.length === L.checks.length + 5 && checks.rows.every((r) => r[4]), 'una riga per verifica, con riferimento');
+  assert.ok(['Parte più alta della cabina', 'L’argano sta nel locale: distanza minima da muri e soffitto'].every((x) => checks.rows.some((r) => r[0].startsWith(x))), 'il locale della macchina in basso');
   assert.ok(checks.rows.some((r) => r[0] === 'Superficie entro la portata' && r[4].startsWith('UNI EN 81-20:2020, 5.4.2.1')), 'riferimento della superficie');
   const all = texts(same);
   for (const bad of ['undefined', 'NaN', '[object Object]']) assert.ok(!all.some((x) => x.includes(bad)), `«${bad}» nel testo`);
