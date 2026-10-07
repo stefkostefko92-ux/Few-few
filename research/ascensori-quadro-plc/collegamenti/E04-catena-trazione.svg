@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1587 1122" width="1587" height="1122" role="img" aria-label="Catena di sicurezza — trazione (collegamenti e morsetti)">
+<title>E04 — Catena di sicurezza — trazione (collegamenti e morsetti)</title>
+<rect width="1587" height="1122" fill="#ffffff"/>
+
+<rect x="6" y="6" width="1575" height="1110" fill="none" stroke="#111111" stroke-width="1.6"/>
+<rect x="22" y="22" width="1543" height="1078" fill="none" stroke="#111111" stroke-width="0.8"/><line x1="22" y1="6" x2="22" y2="22" stroke="#111111" stroke-width="0.6"/><line x1="22" y1="1100" x2="22" y2="1116" stroke="#111111" stroke-width="0.6"/><text x="70.21875" y="18" font-size="9" text-anchor="middle" fill="#111111">1</text><text x="70.21875" y="1112" font-size="9" text-anchor="middle" fill="#111111">1</text><line x1="118.4375" y1="6" x2="118.4375" y2="22" stroke="#111111" stroke-width="0.6"/><line x1="118.4375" y1="1100" x2="118.4375" y2="1116" stroke="#111111" stroke-width="0.6"/><text x="166.65625" y="18" font-size="9" text-anchor="middle" fill="#111111">2</text><text x="166.65625" y="1112" font-size="9" text-anchor="middle" fill="#111111">2</text><line x1="214.875" y1="6" x2="214.875" y2="22" stroke="#111111" stroke-width="0.6"/><line x1="214.875" y1="1100" x2="214.875" y2="1116" stroke="#111111" stroke-width="0.6"/><text x="263.09375" y="18" font-size="9" text-anchor="middle" fill="#111111">3</text><text x="263.09375" y="1112" font-size="9" text-anchor="middle" fill="#111111">3</text><line x1="311.3125" y1="6" x2="311.3125" y2="22" stroke="#111111" stroke-width="0.6"/><line x1="311.3125" y1="1100" x2="311.3125" y2="1116" stroke="#111111" stroke-width="0.6"/><text x="359.53125" y="18" font-size="9" text-anchor="middle" fill="#111111">4</text><text x="359.53125" y="1112" font-size="9" text-anchor="middle" fill="#111111">4</text><line x1="407.75" y1="6" x2="407.75" y2="22" stroke="#111111" stroke-width="0.6"/><line x1="407.75" y1="1100" x2="407.75" y2="1116" stroke="#111111" stroke-width="0.6"/><text x="455.96875" y="18" font-size="9" text-anchor="middle" fill="#111111">5</text><text x="455.96875" y="1112" font-size="9" text-anchor="middle" fill="#111111">5</text><line x1="504.1875" y1="6" x2="504.1875" y2="22" stroke="#111111" stroke-width="0.6"/><line x1="504.1875" y1="1100" x2="504.1875" y2="1116" stroke="#111111" stroke-width="0.6"/><text x="552.40625" y="18" font-size="9" text-anchor="middle" fill="#111111">6</text><text x="552.40625" y="1112" font-size="9" text-anchor="middle" fill="#111111">6</text><line x1="600.625" y1="6" x2="600.625" y2="22" stroke="#111111" stroke-width="0.6"/><line x1="600.625" y1="1100" x2="600.625" y2="1116" stroke="#111111" stroke-width="0.6"/><text x="648.84375" y="18" font-size="9" text-anchor="middle" fill="#111111">7</text><text x="648.84375" y="1112" font-size="9" text-anchor="middle" fill="#111111">7</text><line x1="697.0625" y1="6" x2="697.0625" y2="22" stroke="#111111" stroke-width="0.6"/><line x1="697.0625" y1="1100" x2="697.0625" y2="1116" stroke="#111111" stroke-width="0.6"/><text x="745.28125" y="18" font-size="9" text-anchor="middle" fill="#111111">8</text><text x="745.28125" y="1112" font-size="9" text-anchor="middle" fill="#111111">8</text><line x1="793.5" y1="6" x2="793.5" y2="22" stroke="#111111" stroke-width="0.6"/><line x1="793.5" y1="1100" x2="793.5" y2="1116" stroke="#111111" stroke-width="0.6"/><text x="841.71875" y="18" font-size="9" text-anchor="middle" fill="#111111">9</text><text x="841.71875" y="1112" font-size="9" text-anchor="middle" fill="#111111">9</text><line x1="889.9375" y1="6" x2="889.9375" y2="22" stroke="#111111" stroke-width="0.6"/><line x1="889.9375" y1="1100" x2="889.9375" y2="1116" stroke="#111111" stroke-width="0.6"/><text x="938.15625" y="18" font-size="9" text-anchor="middle" fill="#111111">10</text><text x="938.15625" y="1112" font-size="9" text-anchor="middle" fill="#111111">10</text><line x1="986.375" y1="6" x2="986.375" y2="22" stroke="#111111" stroke-width="0.6"/><line x1="986.375" y1="1100" x2="986.375" y2="1116" stroke="#111111" stroke-width="0.6"/><text x="1034.59375" y="18" font-size="9" text-anchor="middle" fill="#111111">11</text><text x="1034.59375" y="1112" font-size="9" text-anchor="middle" fill="#111111">11</text><line x1="1082.8125" y1="6" x2="1082.8125" y2="22" stroke="#111111" stroke-width="0.6"/><line x1="1082.8125" y1="1100" x2="1082.8125" y2="1116" stroke="#111111" stroke-width="0.6"/><text x="1131.03125" y="18" font-size="9" text-anchor="middle" fill="#111111">12</text><text x="1131.03125" y="1112" font-size="9" text-anchor="middle" fill="#111111">12</text><line x1="1179.25" y1="6" x2="1179.25" y2="22" stroke="#111111" stroke-width="0.6"/><line x1="1179.25" y1="1100" x2="1179.25" y2="1116" stroke="#111111" stroke-width="0.6"/><text x="1227.46875" y="18" font-size="9" text-anchor="middle" fill="#111111">13</text><text x="1227.46875" y="1112" font-size="9" text-anchor="middle" fill="#111111">13</text><line x1="1275.6875" y1="6" x2="1275.6875" y2="22" stroke="#111111" stroke-width="0.6"/><line x1="1275.6875" y1="1100" x2="1275.6875" y2="1116" stroke="#111111" stroke-width="0.6"/><text x="1323.90625" y="18" font-size="9" text-anchor="middle" fill="#111111">14</text><text x="1323.90625" y="1112" font-size="9" text-anchor="middle" fill="#111111">14</text><line x1="1372.125" y1="6" x2="1372.125" y2="22" stroke="#111111" stroke-width="0.6"/><line x1="1372.125" y1="1100" x2="1372.125" y2="1116" stroke="#111111" stroke-width="0.6"/><text x="1420.34375" y="18" font-size="9" text-anchor="middle" fill="#111111">15</text><text x="1420.34375" y="1112" font-size="9" text-anchor="middle" fill="#111111">15</text><line x1="1468.5625" y1="6" x2="1468.5625" y2="22" stroke="#111111" stroke-width="0.6"/><line x1="1468.5625" y1="1100" x2="1468.5625" y2="1116" stroke="#111111" stroke-width="0.6"/><text x="1516.78125" y="18" font-size="9" text-anchor="middle" fill="#111111">16</text><text x="1516.78125" y="1112" font-size="9" text-anchor="middle" fill="#111111">16</text><line x1="6" y1="22" x2="22" y2="22" stroke="#111111" stroke-width="0.6"/><line x1="1565" y1="22" x2="1581" y2="22" stroke="#111111" stroke-width="0.6"/><text x="14" y="92.375" font-size="9" text-anchor="middle" fill="#111111">A</text><text x="1573" y="92.375" font-size="9" text-anchor="middle" fill="#111111">A</text><line x1="6" y1="156.75" x2="22" y2="156.75" stroke="#111111" stroke-width="0.6"/><line x1="1565" y1="156.75" x2="1581" y2="156.75" stroke="#111111" stroke-width="0.6"/><text x="14" y="227.125" font-size="9" text-anchor="middle" fill="#111111">B</text><text x="1573" y="227.125" font-size="9" text-anchor="middle" fill="#111111">B</text><line x1="6" y1="291.5" x2="22" y2="291.5" stroke="#111111" stroke-width="0.6"/><line x1="1565" y1="291.5" x2="1581" y2="291.5" stroke="#111111" stroke-width="0.6"/><text x="14" y="361.875" font-size="9" text-anchor="middle" fill="#111111">C</text><text x="1573" y="361.875" font-size="9" text-anchor="middle" fill="#111111">C</text><line x1="6" y1="426.25" x2="22" y2="426.25" stroke="#111111" stroke-width="0.6"/><line x1="1565" y1="426.25" x2="1581" y2="426.25" stroke="#111111" stroke-width="0.6"/><text x="14" y="496.625" font-size="9" text-anchor="middle" fill="#111111">D</text><text x="1573" y="496.625" font-size="9" text-anchor="middle" fill="#111111">D</text><line x1="6" y1="561" x2="22" y2="561" stroke="#111111" stroke-width="0.6"/><line x1="1565" y1="561" x2="1581" y2="561" stroke="#111111" stroke-width="0.6"/><text x="14" y="631.375" font-size="9" text-anchor="middle" fill="#111111">E</text><text x="1573" y="631.375" font-size="9" text-anchor="middle" fill="#111111">E</text><line x1="6" y1="695.75" x2="22" y2="695.75" stroke="#111111" stroke-width="0.6"/><line x1="1565" y1="695.75" x2="1581" y2="695.75" stroke="#111111" stroke-width="0.6"/><text x="14" y="766.125" font-size="9" text-anchor="middle" fill="#111111">F</text><text x="1573" y="766.125" font-size="9" text-anchor="middle" fill="#111111">F</text><line x1="6" y1="830.5" x2="22" y2="830.5" stroke="#111111" stroke-width="0.6"/><line x1="1565" y1="830.5" x2="1581" y2="830.5" stroke="#111111" stroke-width="0.6"/><text x="14" y="900.875" font-size="9" text-anchor="middle" fill="#111111">G</text><text x="1573" y="900.875" font-size="9" text-anchor="middle" fill="#111111">G</text><line x1="6" y1="965.25" x2="22" y2="965.25" stroke="#111111" stroke-width="0.6"/><line x1="1565" y1="965.25" x2="1581" y2="965.25" stroke="#111111" stroke-width="0.6"/><text x="14" y="1035.625" font-size="9" text-anchor="middle" fill="#111111">H</text><text x="1573" y="1035.625" font-size="9" text-anchor="middle" fill="#111111">H</text>
+<g font-family="DejaVu Sans, Arial, sans-serif">
+<text x="570" y="106" font-size="10" text-anchor="middle" font-weight="700" fill="#111111"><tspan x="570" dy="0">-X2</tspan></text>
+<text x="570" y="116" font-size="7" text-anchor="middle" font-weight="400" fill="#4b5563"><tspan x="570" dy="0">sinistra: quadro · destra: campo</tspan></text>
+<rect x="470" y="120" width="200" height="32" rx="0" fill="none" stroke="#111111" stroke-width="0.8"/>
+<line x1="508" y1="120" x2="508" y2="152" stroke="#111111" stroke-width="0.6" stroke-linecap="round"/>
+<text x="489" y="139" font-size="8" text-anchor="middle" font-weight="700" fill="#111111"><tspan x="489" dy="0">1</tspan></text>
+<text x="512" y="139" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="512" dy="0">+48 V → fossa</tspan></text>
+<line x1="470" y1="136" x2="461" y2="136" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<line x1="670" y1="136" x2="679" y2="136" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<rect x="470" y="152" width="200" height="32" rx="0" fill="none" stroke="#111111" stroke-width="0.8"/>
+<line x1="508" y1="152" x2="508" y2="184" stroke="#111111" stroke-width="0.6" stroke-linecap="round"/>
+<text x="489" y="171" font-size="8" text-anchor="middle" font-weight="700" fill="#111111"><tspan x="489" dy="0">2</tspan></text>
+<text x="512" y="171" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="512" dy="0">fossa → catena</tspan></text>
+<line x1="470" y1="168" x2="461" y2="168" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<line x1="670" y1="168" x2="679" y2="168" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<rect x="470" y="184" width="200" height="32" rx="0" fill="none" stroke="#111111" stroke-width="0.8"/>
+<line x1="508" y1="184" x2="508" y2="216" stroke="#111111" stroke-width="0.6" stroke-linecap="round"/>
+<text x="489" y="203" font-size="8" text-anchor="middle" font-weight="700" fill="#111111"><tspan x="489" dy="0">3</tspan></text>
+<text x="512" y="203" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="512" dy="0">+48 V → tetto</tspan></text>
+<line x1="470" y1="200" x2="461" y2="200" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<line x1="670" y1="200" x2="679" y2="200" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<rect x="470" y="216" width="200" height="32" rx="0" fill="none" stroke="#111111" stroke-width="0.8"/>
+<line x1="508" y1="216" x2="508" y2="248" stroke="#111111" stroke-width="0.6" stroke-linecap="round"/>
+<text x="489" y="235" font-size="8" text-anchor="middle" font-weight="700" fill="#111111"><tspan x="489" dy="0">4</tspan></text>
+<text x="512" y="235" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="512" dy="0">tetto → catena</tspan></text>
+<line x1="470" y1="232" x2="461" y2="232" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<line x1="670" y1="232" x2="679" y2="232" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<rect x="470" y="248" width="200" height="32" rx="0" fill="none" stroke="#111111" stroke-width="0.8"/>
+<line x1="508" y1="248" x2="508" y2="280" stroke="#111111" stroke-width="0.6" stroke-linecap="round"/>
+<text x="489" y="267" font-size="8" text-anchor="middle" font-weight="700" fill="#111111"><tspan x="489" dy="0">5</tspan></text>
+<text x="512" y="267" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="512" dy="0">limitatore →</tspan></text>
+<line x1="470" y1="264" x2="461" y2="264" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<line x1="670" y1="264" x2="679" y2="264" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<rect x="470" y="280" width="200" height="32" rx="0" fill="none" stroke="#111111" stroke-width="0.8"/>
+<line x1="508" y1="280" x2="508" y2="312" stroke="#111111" stroke-width="0.6" stroke-linecap="round"/>
+<text x="489" y="299" font-size="8" text-anchor="middle" font-weight="700" fill="#111111"><tspan x="489" dy="0">6</tspan></text>
+<text x="512" y="299" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="512" dy="0">→ limitatore</tspan></text>
+<line x1="470" y1="296" x2="461" y2="296" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<line x1="670" y1="296" x2="679" y2="296" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<rect x="470" y="312" width="200" height="32" rx="0" fill="none" stroke="#111111" stroke-width="0.8"/>
+<line x1="508" y1="312" x2="508" y2="344" stroke="#111111" stroke-width="0.6" stroke-linecap="round"/>
+<text x="489" y="331" font-size="8" text-anchor="middle" font-weight="700" fill="#111111"><tspan x="489" dy="0">7</tspan></text>
+<text x="512" y="331" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="512" dy="0">paracadute →</tspan></text>
+<line x1="470" y1="328" x2="461" y2="328" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<line x1="670" y1="328" x2="679" y2="328" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<rect x="470" y="344" width="200" height="32" rx="0" fill="none" stroke="#111111" stroke-width="0.8"/>
+<line x1="508" y1="344" x2="508" y2="376" stroke="#111111" stroke-width="0.6" stroke-linecap="round"/>
+<text x="489" y="363" font-size="8" text-anchor="middle" font-weight="700" fill="#111111"><tspan x="489" dy="0">8</tspan></text>
+<text x="512" y="363" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="512" dy="0">→ paracadute</tspan></text>
+<line x1="470" y1="360" x2="461" y2="360" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<line x1="670" y1="360" x2="679" y2="360" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<rect x="470" y="376" width="200" height="32" rx="0" fill="none" stroke="#111111" stroke-width="0.8"/>
+<line x1="508" y1="376" x2="508" y2="408" stroke="#111111" stroke-width="0.6" stroke-linecap="round"/>
+<text x="489" y="395" font-size="8" text-anchor="middle" font-weight="700" fill="#111111"><tspan x="489" dy="0">9</tspan></text>
+<text x="512" y="395" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="512" dy="0">extracorsa →</tspan></text>
+<line x1="470" y1="392" x2="461" y2="392" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<line x1="670" y1="392" x2="679" y2="392" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<rect x="470" y="408" width="200" height="32" rx="0" fill="none" stroke="#111111" stroke-width="0.8"/>
+<line x1="508" y1="408" x2="508" y2="440" stroke="#111111" stroke-width="0.6" stroke-linecap="round"/>
+<text x="489" y="427" font-size="8" text-anchor="middle" font-weight="700" fill="#111111"><tspan x="489" dy="0">10</tspan></text>
+<text x="512" y="427" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="512" dy="0">→ extracorsa</tspan></text>
+<line x1="470" y1="424" x2="461" y2="424" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<line x1="670" y1="424" x2="679" y2="424" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<rect x="470" y="440" width="200" height="32" rx="0" fill="none" stroke="#111111" stroke-width="0.8"/>
+<line x1="508" y1="440" x2="508" y2="472" stroke="#111111" stroke-width="0.6" stroke-linecap="round"/>
+<text x="489" y="459" font-size="8" text-anchor="middle" font-weight="700" fill="#111111"><tspan x="489" dy="0">11</tspan></text>
+<text x="512" y="459" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="512" dy="0">serrature →</tspan></text>
+<line x1="470" y1="456" x2="461" y2="456" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<line x1="670" y1="456" x2="679" y2="456" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<rect x="470" y="472" width="200" height="32" rx="0" fill="none" stroke="#111111" stroke-width="0.8"/>
+<line x1="508" y1="472" x2="508" y2="504" stroke="#111111" stroke-width="0.6" stroke-linecap="round"/>
+<text x="489" y="491" font-size="8" text-anchor="middle" font-weight="700" fill="#111111"><tspan x="489" dy="0">12</tspan></text>
+<text x="512" y="491" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="512" dy="0">→ serrature (ritorno)</tspan></text>
+<line x1="470" y1="488" x2="461" y2="488" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<line x1="670" y1="488" x2="679" y2="488" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<rect x="470" y="504" width="200" height="32" rx="0" fill="none" stroke="#111111" stroke-width="0.8"/>
+<line x1="508" y1="504" x2="508" y2="536" stroke="#111111" stroke-width="0.6" stroke-linecap="round"/>
+<text x="489" y="523" font-size="8" text-anchor="middle" font-weight="700" fill="#111111"><tspan x="489" dy="0">13</tspan></text>
+<text x="512" y="523" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="512" dy="0">porta cabina →</tspan></text>
+<line x1="470" y1="520" x2="461" y2="520" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<line x1="670" y1="520" x2="679" y2="520" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<rect x="470" y="536" width="200" height="32" rx="0" fill="none" stroke="#111111" stroke-width="0.8"/>
+<line x1="508" y1="536" x2="508" y2="568" stroke="#111111" stroke-width="0.6" stroke-linecap="round"/>
+<text x="489" y="555" font-size="8" text-anchor="middle" font-weight="700" fill="#111111"><tspan x="489" dy="0">14</tspan></text>
+<text x="512" y="555" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="512" dy="0">→ porta cabina</tspan></text>
+<line x1="470" y1="552" x2="461" y2="552" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<line x1="670" y1="552" x2="679" y2="552" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<rect x="470" y="568" width="200" height="32" rx="0" fill="none" stroke="#111111" stroke-width="0.8"/>
+<line x1="508" y1="568" x2="508" y2="600" stroke="#111111" stroke-width="0.6" stroke-linecap="round"/>
+<text x="489" y="587" font-size="8" text-anchor="middle" font-weight="700" fill="#111111"><tspan x="489" dy="0">15</tspan></text>
+<text x="512" y="587" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="512" dy="0">0 V (48 V)</tspan></text>
+<line x1="470" y1="584" x2="461" y2="584" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<line x1="670" y1="584" x2="679" y2="584" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<rect x="70" y="123" width="70" height="26" rx="0" fill="none" stroke="#111111" stroke-width="1.1"/>
+<line x1="140" y1="136" x2="149" y2="136" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<text x="135" y="139" font-size="7.5" text-anchor="end" font-weight="400" fill="#111111"><tspan x="135" dy="0">+48 V</tspan></text>
+<text x="62" y="131" font-size="9.5" text-anchor="end" font-weight="700" fill="#111111"><tspan x="62" dy="0"></tspan></text>
+<text x="105" y="116" font-size="8" text-anchor="start" font-weight="700" fill="#111111"><tspan x="105" dy="0">-G1  SMPS 48 V</tspan></text>
+<rect x="210" y="123" width="60" height="26" rx="0" fill="none" stroke="#111111" stroke-width="1.1"/>
+<line x1="210" y1="136" x2="201" y2="136" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<text x="215" y="139" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="215" dy="0">1</tspan></text>
+<text x="278" y="131" font-size="9.5" text-anchor="start" font-weight="700" fill="#111111"><tspan x="278" dy="0"></tspan></text>
+<text x="210" y="116" font-size="8" text-anchor="start" font-weight="700" fill="#111111"><tspan x="210" dy="0">-F1  2 A</tspan></text>
+<rect x="320" y="123" width="70" height="26" rx="0" fill="none" stroke="#111111" stroke-width="1.1"/>
+<line x1="320" y1="136" x2="311" y2="136" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<text x="325" y="139" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="325" dy="0">1</tspan></text>
+<text x="398" y="131" font-size="9.5" text-anchor="start" font-weight="700" fill="#111111"><tspan x="398" dy="0"></tspan></text>
+<text x="320" y="116" font-size="8" text-anchor="start" font-weight="700" fill="#111111"><tspan x="320" dy="0">-SF4  STOP quadro</tspan></text>
+<line x1="149" y1="136" x2="201" y2="136" stroke="#111111" stroke-width="1" stroke-linecap="round"/>
+<text x="175" y="133" font-size="7" text-anchor="middle" font-weight="400" fill="#111111"><tspan x="175" dy="0">440 BL</tspan></text>
+<line x1="270" y1="136" x2="311" y2="136" stroke="#111111" stroke-width="1" stroke-linecap="round"/>
+<text x="290" y="133" font-size="7" text-anchor="middle" font-weight="400" fill="#111111"><tspan x="290" dy="0">441 BL</tspan></text>
+<line x1="390" y1="136" x2="390" y2="136" stroke="#111111" stroke-width="1" stroke-linecap="round"/>
+<line x1="390" y1="136" x2="461" y2="136" stroke="#111111" stroke-width="1" stroke-linecap="round"/>
+<text x="425" y="133" font-size="7" text-anchor="middle" font-weight="400" fill="#111111"><tspan x="425" dy="0">400 BL</tspan></text>
+<line x1="461" y1="584" x2="421" y2="584" stroke="#111111" stroke-width="1" stroke-linecap="round"/>
+<polyline points="421,581 416,584 421,587" fill="#111111" stroke="#111111" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="441" y="581.5" font-size="7" text-anchor="middle" font-weight="400" fill="#111111"><tspan x="441" dy="0">400 BL</tspan></text>
+<text x="412" y="587" font-size="7.5" text-anchor="end" font-weight="400" fill="#111111"><tspan x="412" dy="0">← -G1:− (0 V 48 V)</tspan></text>
+<line x1="461" y1="232" x2="351" y2="232" stroke="#111111" stroke-width="1" stroke-linecap="round"/>
+<polyline points="351,229 346,232 351,235" fill="#111111" stroke="#111111" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="406" y="229.5" font-size="7" text-anchor="middle" font-weight="400" fill="#111111"><tspan x="406" dy="0">451 BL</tspan></text>
+<text x="342" y="235" font-size="7.5" text-anchor="end" font-weight="400" fill="#111111"><tspan x="342" dy="0">→ -A7:IN1 (tratto A)</tspan></text>
+<line x1="461" y1="424" x2="351" y2="424" stroke="#111111" stroke-width="1" stroke-linecap="round"/>
+<polyline points="351,421 346,424 351,427" fill="#111111" stroke="#111111" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="406" y="421.5" font-size="7" text-anchor="middle" font-weight="400" fill="#111111"><tspan x="406" dy="0">452 BL</tspan></text>
+<text x="342" y="427" font-size="7.5" text-anchor="end" font-weight="400" fill="#111111"><tspan x="342" dy="0">→ -A7:IN2 (tratto B)</tspan></text>
+<line x1="461" y1="488" x2="351" y2="488" stroke="#111111" stroke-width="1" stroke-linecap="round"/>
+<polyline points="351,485 346,488 351,491" fill="#111111" stroke="#111111" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="406" y="485.5" font-size="7" text-anchor="middle" font-weight="400" fill="#111111"><tspan x="406" dy="0">453 BL</tspan></text>
+<text x="342" y="491" font-size="7.5" text-anchor="end" font-weight="400" fill="#111111"><tspan x="342" dy="0">→ -A7:IN3 (tratto C)</tspan></text>
+<line x1="461" y1="552" x2="351" y2="552" stroke="#111111" stroke-width="1" stroke-linecap="round"/>
+<polyline points="351,549 346,552 351,555" fill="#111111" stroke="#111111" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="406" y="549.5" font-size="7" text-anchor="middle" font-weight="400" fill="#111111"><tspan x="406" dy="0">433 BL</tspan></text>
+<text x="342" y="555" font-size="7.5" text-anchor="end" font-weight="400" fill="#111111"><tspan x="342" dy="0">→ -A7:IN4 (tratto D) · -K10:A1 · -K11:A1 (E06)</tspan></text>
+<rect x="830" y="123" width="70" height="58" rx="0" fill="none" stroke="#111111" stroke-width="1.1"/>
+<line x1="830" y1="136" x2="821" y2="136" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<text x="835" y="139" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="835" dy="0">IN</tspan></text>
+<line x1="830" y1="168" x2="821" y2="168" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<text x="835" y="171" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="835" dy="0">OUT</tspan></text>
+<text x="908" y="131" font-size="9.5" text-anchor="start" font-weight="700" fill="#111111"><tspan x="908" dy="0">-SF1  STOP fossa</tspan></text>
+<text x="908" y="142" font-size="7.5" text-anchor="start" font-weight="400" fill="#4b5563"><tspan x="908" dy="0">fossa · W201</tspan></text>
+<rect x="830" y="187" width="70" height="58" rx="0" fill="none" stroke="#111111" stroke-width="1.1"/>
+<line x1="830" y1="200" x2="821" y2="200" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<text x="835" y="203" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="835" dy="0">IN</tspan></text>
+<line x1="830" y1="232" x2="821" y2="232" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<text x="835" y="235" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="835" dy="0">OUT</tspan></text>
+<text x="908" y="195" font-size="9.5" text-anchor="start" font-weight="700" fill="#111111"><tspan x="908" dy="0">-SF2/-SF3  STOP tetto + ispezione (in serie)</tspan></text>
+<text x="908" y="206" font-size="7.5" text-anchor="start" font-weight="400" fill="#4b5563"><tspan x="908" dy="0">cabina · XC:1–2</tspan></text>
+<rect x="830" y="251" width="70" height="58" rx="0" fill="none" stroke="#111111" stroke-width="1.1"/>
+<line x1="830" y1="264" x2="821" y2="264" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<text x="835" y="267" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="835" dy="0">IN</tspan></text>
+<line x1="830" y1="296" x2="821" y2="296" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<text x="835" y="299" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="835" dy="0">OUT</tspan></text>
+<text x="908" y="259" font-size="9.5" text-anchor="start" font-weight="700" fill="#111111"><tspan x="908" dy="0">-SG1  limitatore di velocità</tspan></text>
+<text x="908" y="270" font-size="7.5" text-anchor="start" font-weight="400" fill="#4b5563"><tspan x="908" dy="0">macchina/vano · W202</tspan></text>
+<rect x="830" y="315" width="70" height="58" rx="0" fill="none" stroke="#111111" stroke-width="1.1"/>
+<line x1="830" y1="328" x2="821" y2="328" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<text x="835" y="331" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="835" dy="0">IN</tspan></text>
+<line x1="830" y1="360" x2="821" y2="360" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<text x="835" y="363" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="835" dy="0">OUT</tspan></text>
+<text x="908" y="323" font-size="9.5" text-anchor="start" font-weight="700" fill="#111111"><tspan x="908" dy="0">-SP1  paracadute</tspan></text>
+<text x="908" y="334" font-size="7.5" text-anchor="start" font-weight="400" fill="#4b5563"><tspan x="908" dy="0">cabina · XC:3–4</tspan></text>
+<rect x="830" y="379" width="70" height="58" rx="0" fill="none" stroke="#111111" stroke-width="1.1"/>
+<line x1="830" y1="392" x2="821" y2="392" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<text x="835" y="395" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="835" dy="0">IN</tspan></text>
+<line x1="830" y1="424" x2="821" y2="424" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<text x="835" y="427" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="835" dy="0">OUT</tspan></text>
+<text x="908" y="387" font-size="9.5" text-anchor="start" font-weight="700" fill="#111111"><tspan x="908" dy="0">-SQ1 · -SQ2 · -SQ3  extracorsa alto, basso, ammortizzatori</tspan></text>
+<text x="908" y="398" font-size="7.5" text-anchor="start" font-weight="400" fill="#4b5563"><tspan x="908" dy="0">vano/fossa · W203</tspan></text>
+<rect x="830" y="443" width="70" height="58" rx="0" fill="none" stroke="#111111" stroke-width="1.1"/>
+<line x1="830" y1="456" x2="821" y2="456" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<text x="835" y="459" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="835" dy="0">IN</tspan></text>
+<line x1="830" y1="488" x2="821" y2="488" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<text x="835" y="491" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="835" dy="0">OUT</tspan></text>
+<text x="908" y="451" font-size="9.5" text-anchor="start" font-weight="700" fill="#111111"><tspan x="908" dy="0">XP1 … XPn  serrature di piano in serie</tspan></text>
+<text x="908" y="462" font-size="7.5" text-anchor="start" font-weight="400" fill="#4b5563"><tspan x="908" dy="0">dorsale vano · W204 (E10)</tspan></text>
+<rect x="830" y="507" width="70" height="58" rx="0" fill="none" stroke="#111111" stroke-width="1.1"/>
+<line x1="830" y1="520" x2="821" y2="520" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<text x="835" y="523" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="835" dy="0">IN</tspan></text>
+<line x1="830" y1="552" x2="821" y2="552" stroke="#111111" stroke-width="0.9" stroke-linecap="round"/>
+<text x="835" y="555" font-size="7.5" text-anchor="start" font-weight="400" fill="#111111"><tspan x="835" dy="0">OUT</tspan></text>
+<text x="908" y="515" font-size="9.5" text-anchor="start" font-weight="700" fill="#111111"><tspan x="908" dy="0">-SD1  porta di cabina</tspan></text>
+<text x="908" y="526" font-size="7.5" text-anchor="start" font-weight="400" fill="#4b5563"><tspan x="908" dy="0">cabina · XC:5–6</tspan></text>
+<rect x="320" y="80" width="380" height="534" rx="0" fill="none" stroke="#111111" stroke-width="0.9" stroke-dasharray="8 3 2 3"/>
+<text x="326" y="91" font-size="8.5" text-anchor="start" font-weight="700" fill="#111111"><tspan x="326" dy="0">QUADRO</tspan></text>
+<rect x="790" y="80" width="380" height="534" rx="0" fill="none" stroke="#111111" stroke-width="0.9" stroke-dasharray="8 3 2 3"/>
+<text x="796" y="91" font-size="8.5" text-anchor="start" font-weight="700" fill="#111111"><tspan x="796" dy="0">CAMPO (vano, macchina, cabina)</tspan></text>
+<polyline points="461,168 447,168 447,200 461,200" fill="none" stroke="#111111" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="454" y="165.5" font-size="7" text-anchor="middle" font-weight="400" fill="#111111"><tspan x="454" dy="0">405 BL</tspan></text>
+<polyline points="461,232 447,232 447,264 461,264" fill="none" stroke="#111111" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="454" y="229.5" font-size="7" text-anchor="middle" font-weight="400" fill="#111111"><tspan x="454" dy="0">406 BL</tspan></text>
+<polyline points="461,296 447,296 447,328 461,328" fill="none" stroke="#111111" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="454" y="293.5" font-size="7" text-anchor="middle" font-weight="400" fill="#111111"><tspan x="454" dy="0">407 BL</tspan></text>
+<polyline points="461,360 447,360 447,392 461,392" fill="none" stroke="#111111" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="454" y="357.5" font-size="7" text-anchor="middle" font-weight="400" fill="#111111"><tspan x="454" dy="0">408 BL</tspan></text>
+<polyline points="461,424 447,424 447,456 461,456" fill="none" stroke="#111111" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="454" y="421.5" font-size="7" text-anchor="middle" font-weight="400" fill="#111111"><tspan x="454" dy="0">409 BL</tspan></text>
+<polyline points="461,488 447,488 447,520 461,520" fill="none" stroke="#111111" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="454" y="485.5" font-size="7" text-anchor="middle" font-weight="400" fill="#111111"><tspan x="454" dy="0">417 BL</tspan></text>
+<polyline points="679,136 709,136 709,136 821,136" fill="none" stroke="#111111" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="694" y="133.5" font-size="7" text-anchor="middle" font-weight="400" fill="#111111"><tspan x="694" dy="0">401 BL</tspan></text>
+<text x="694" y="144" font-size="6" text-anchor="middle" font-weight="400" fill="#4b5563" font-style="italic"><tspan x="694" dy="0">W201</tspan></text>
+<polyline points="679,168 709,168 709,168 821,168" fill="none" stroke="#111111" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="694" y="165.5" font-size="7" text-anchor="middle" font-weight="400" fill="#111111"><tspan x="694" dy="0">402 BL</tspan></text>
+<text x="694" y="176" font-size="6" text-anchor="middle" font-weight="400" fill="#4b5563" font-style="italic"><tspan x="694" dy="0">W201</tspan></text>
+<polyline points="679,200 709,200 709,200 821,200" fill="none" stroke="#111111" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="694" y="197.5" font-size="7" text-anchor="middle" font-weight="400" fill="#111111"><tspan x="694" dy="0">403 BL</tspan></text>
+<text x="694" y="208" font-size="6" text-anchor="middle" font-weight="400" fill="#4b5563" font-style="italic"><tspan x="694" dy="0">W210</tspan></text>
+<polyline points="679,232 709,232 709,232 821,232" fill="none" stroke="#111111" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="694" y="229.5" font-size="7" text-anchor="middle" font-weight="400" fill="#111111"><tspan x="694" dy="0">404 BL</tspan></text>
+<text x="694" y="240" font-size="6" text-anchor="middle" font-weight="400" fill="#4b5563" font-style="italic"><tspan x="694" dy="0">W210</tspan></text>
+<polyline points="679,264 709,264 709,264 821,264" fill="none" stroke="#111111" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="694" y="261.5" font-size="7" text-anchor="middle" font-weight="400" fill="#111111"><tspan x="694" dy="0">411 BL</tspan></text>
+<text x="694" y="272" font-size="6" text-anchor="middle" font-weight="400" fill="#4b5563" font-style="italic"><tspan x="694" dy="0">W202</tspan></text>
+<polyline points="679,296 709,296 709,296 821,296" fill="none" stroke="#111111" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="694" y="293.5" font-size="7" text-anchor="middle" font-weight="400" fill="#111111"><tspan x="694" dy="0">412 BL</tspan></text>
+<text x="694" y="304" font-size="6" text-anchor="middle" font-weight="400" fill="#4b5563" font-style="italic"><tspan x="694" dy="0">W202</tspan></text>
+<polyline points="679,328 709,328 709,328 821,328" fill="none" stroke="#111111" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="694" y="325.5" font-size="7" text-anchor="middle" font-weight="400" fill="#111111"><tspan x="694" dy="0">413 BL</tspan></text>
+<text x="694" y="336" font-size="6" text-anchor="middle" font-weight="400" fill="#4b5563" font-style="italic"><tspan x="694" dy="0">W210</tspan></text>
+<polyline points="679,360 709,360 709,360 821,360" fill="none" stroke="#111111" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="694" y="357.5" font-size="7" text-anchor="middle" font-weight="400" fill="#111111"><tspan x="694" dy="0">414 BL</tspan></text>
+<text x="694" y="368" font-size="6" text-anchor="middle" font-weight="400" fill="#4b5563" font-style="italic"><tspan x="694" dy="0">W210</tspan></text>
+<polyline points="679,392 709,392 709,392 821,392" fill="none" stroke="#111111" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="694" y="389.5" font-size="7" text-anchor="middle" font-weight="400" fill="#111111"><tspan x="694" dy="0">415 BL</tspan></text>
+<text x="694" y="400" font-size="6" text-anchor="middle" font-weight="400" fill="#4b5563" font-style="italic"><tspan x="694" dy="0">W203</tspan></text>
+<polyline points="679,424 709,424 709,424 821,424" fill="none" stroke="#111111" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="694" y="421.5" font-size="7" text-anchor="middle" font-weight="400" fill="#111111"><tspan x="694" dy="0">416 BL</tspan></text>
+<text x="694" y="432" font-size="6" text-anchor="middle" font-weight="400" fill="#4b5563" font-style="italic"><tspan x="694" dy="0">W203</tspan></text>
+<polyline points="679,456 709,456 709,456 821,456" fill="none" stroke="#111111" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="694" y="453.5" font-size="7" text-anchor="middle" font-weight="400" fill="#111111"><tspan x="694" dy="0">421 BL</tspan></text>
+<text x="694" y="464" font-size="6" text-anchor="middle" font-weight="400" fill="#4b5563" font-style="italic"><tspan x="694" dy="0">W204</tspan></text>
+<polyline points="679,488 709,488 709,488 821,488" fill="none" stroke="#111111" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="694" y="485.5" font-size="7" text-anchor="middle" font-weight="400" fill="#111111"><tspan x="694" dy="0">422 BL</tspan></text>
+<text x="694" y="496" font-size="6" text-anchor="middle" font-weight="400" fill="#4b5563" font-style="italic"><tspan x="694" dy="0">W204</tspan></text>
+<polyline points="679,520 709,520 709,520 821,520" fill="none" stroke="#111111" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="694" y="517.5" font-size="7" text-anchor="middle" font-weight="400" fill="#111111"><tspan x="694" dy="0">431 BL</tspan></text>
+<text x="694" y="528" font-size="6" text-anchor="middle" font-weight="400" fill="#4b5563" font-style="italic"><tspan x="694" dy="0">W210</tspan></text>
+<polyline points="679,552 709,552 709,552 821,552" fill="none" stroke="#111111" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="694" y="549.5" font-size="7" text-anchor="middle" font-weight="400" fill="#111111"><tspan x="694" dy="0">432 BL</tspan></text>
+<text x="694" y="560" font-size="6" text-anchor="middle" font-weight="400" fill="#4b5563" font-style="italic"><tspan x="694" dy="0">W210</tspan></text>
+<rect x="60" y="636" width="1290" height="15" rx="0" fill="#e5e7eb" stroke="#111111" stroke-width="0.8"/>
+<text x="64" y="647" font-size="8.5" text-anchor="start" font-weight="700" fill="#111111"><tspan x="64" dy="0">Tratto</tspan></text>
+<text x="134" y="647" font-size="8.5" text-anchor="start" font-weight="700" fill="#111111"><tspan x="134" dy="0">Elementi in serie</tspan></text>
+<line x1="130" y1="636" x2="130" y2="711" stroke="#111111" stroke-width="0.6" stroke-linecap="round"/>
+<text x="464" y="647" font-size="8.5" text-anchor="start" font-weight="700" fill="#111111"><tspan x="464" dy="0">Morsetti X2</tspan></text>
+<line x1="460" y1="636" x2="460" y2="711" stroke="#111111" stroke-width="0.6" stroke-linecap="round"/>
+<text x="584" y="647" font-size="8.5" text-anchor="start" font-weight="700" fill="#111111"><tspan x="584" dy="0">Fili (andata/ritorno)</tspan></text>
+<line x1="580" y1="636" x2="580" y2="711" stroke="#111111" stroke-width="0.6" stroke-linecap="round"/>
+<text x="734" y="647" font-size="8.5" text-anchor="start" font-weight="700" fill="#111111"><tspan x="734" dy="0">Cavo</tspan></text>
+<line x1="730" y1="636" x2="730" y2="711" stroke="#111111" stroke-width="0.6" stroke-linecap="round"/>
+<text x="884" y="647" font-size="8.5" text-anchor="start" font-weight="700" fill="#111111"><tspan x="884" dy="0">Lettura PLC</tspan></text>
+<line x1="880" y1="636" x2="880" y2="711" stroke="#111111" stroke-width="0.6" stroke-linecap="round"/>
+<text x="1104" y="647" font-size="8.5" text-anchor="start" font-weight="700" fill="#111111"><tspan x="1104" dy="0">Punti di norma</tspan></text>
+<line x1="1100" y1="636" x2="1100" y2="711" stroke="#111111" stroke-width="0.6" stroke-linecap="round"/>
+<line x1="60" y1="651" x2="1350" y2="651" stroke="#111111" stroke-width="0.5" stroke-linecap="round"/>
+<text x="64" y="662" font-size="8" text-anchor="start" font-weight="400" fill="#111111"><tspan x="64" dy="0">A</tspan></text>
+<text x="134" y="662" font-size="8" text-anchor="start" font-weight="400" fill="#111111"><tspan x="134" dy="0">STOP quadro, STOP fossa, STOP tetto, ispezione tetto</tspan></text>
+<text x="464" y="662" font-size="8" text-anchor="start" font-weight="400" fill="#111111"><tspan x="464" dy="0">1–2, 3–4</tspan></text>
+<text x="584" y="662" font-size="8" text-anchor="start" font-weight="400" fill="#111111"><tspan x="584" dy="0">401/402, 403/404</tspan></text>
+<text x="734" y="662" font-size="8" text-anchor="start" font-weight="400" fill="#111111"><tspan x="734" dy="0">W201, W210</tspan></text>
+<text x="884" y="662" font-size="8" text-anchor="start" font-weight="400" fill="#111111"><tspan x="884" dy="0">I01 (-A7 canale 1)</tspan></text>
+<text x="1104" y="662" font-size="8" text-anchor="start" font-weight="400" fill="#111111"><tspan x="1104" dy="0">5.12.1.11, 5.12.1.5.1.2</tspan></text>
+<line x1="60" y1="666" x2="1350" y2="666" stroke="#111111" stroke-width="0.5" stroke-linecap="round"/>
+<text x="64" y="677" font-size="8" text-anchor="start" font-weight="400" fill="#111111"><tspan x="64" dy="0">B</tspan></text>
+<text x="134" y="677" font-size="8" text-anchor="start" font-weight="400" fill="#111111"><tspan x="134" dy="0">limitatore, paracadute, extracorsa, ammortizzatori</tspan></text>
+<text x="464" y="677" font-size="8" text-anchor="start" font-weight="400" fill="#111111"><tspan x="464" dy="0">5–6, 7–8, 9–10</tspan></text>
+<text x="584" y="677" font-size="8" text-anchor="start" font-weight="400" fill="#111111"><tspan x="584" dy="0">411…416</tspan></text>
+<text x="734" y="677" font-size="8" text-anchor="start" font-weight="400" fill="#111111"><tspan x="734" dy="0">W202, W210, W203</tspan></text>
+<text x="884" y="677" font-size="8" text-anchor="start" font-weight="400" fill="#111111"><tspan x="884" dy="0">I02 (-A7 canale 2)</tspan></text>
+<text x="1104" y="677" font-size="8" text-anchor="start" font-weight="400" fill="#111111"><tspan x="1104" dy="0">5.6.2.2.1.6, 5.12.2</tspan></text>
+<line x1="60" y1="681" x2="1350" y2="681" stroke="#111111" stroke-width="0.5" stroke-linecap="round"/>
+<text x="64" y="692" font-size="8" text-anchor="start" font-weight="400" fill="#111111"><tspan x="64" dy="0">C</tspan></text>
+<text x="134" y="692" font-size="8" text-anchor="start" font-weight="400" fill="#111111"><tspan x="134" dy="0">serrature di piano (uno per fermata)</tspan></text>
+<text x="464" y="692" font-size="8" text-anchor="start" font-weight="400" fill="#111111"><tspan x="464" dy="0">11–12</tspan></text>
+<text x="584" y="692" font-size="8" text-anchor="start" font-weight="400" fill="#111111"><tspan x="584" dy="0">421/422</tspan></text>
+<text x="734" y="692" font-size="8" text-anchor="start" font-weight="400" fill="#111111"><tspan x="734" dy="0">W204</tspan></text>
+<text x="884" y="692" font-size="8" text-anchor="start" font-weight="400" fill="#111111"><tspan x="884" dy="0">I03 (-A7 canale 3)</tspan></text>
+<text x="1104" y="692" font-size="8" text-anchor="start" font-weight="400" fill="#111111"><tspan x="1104" dy="0">5.3.9.1, 5.3.9.4.1</tspan></text>
+<line x1="60" y1="696" x2="1350" y2="696" stroke="#111111" stroke-width="0.5" stroke-linecap="round"/>
+<text x="64" y="707" font-size="8" text-anchor="start" font-weight="400" fill="#111111"><tspan x="64" dy="0">D</tspan></text>
+<text x="134" y="707" font-size="8" text-anchor="start" font-weight="400" fill="#111111"><tspan x="134" dy="0">porta di cabina</tspan></text>
+<text x="464" y="707" font-size="8" text-anchor="start" font-weight="400" fill="#111111"><tspan x="464" dy="0">13–14</tspan></text>
+<text x="584" y="707" font-size="8" text-anchor="start" font-weight="400" fill="#111111"><tspan x="584" dy="0">431/432</tspan></text>
+<text x="734" y="707" font-size="8" text-anchor="start" font-weight="400" fill="#111111"><tspan x="734" dy="0">W210</tspan></text>
+<text x="884" y="707" font-size="8" text-anchor="start" font-weight="400" fill="#111111"><tspan x="884" dy="0">I04 (-A7 canale 4)</tspan></text>
+<text x="1104" y="707" font-size="8" text-anchor="start" font-weight="400" fill="#111111"><tspan x="1104" dy="0">5.3.13.2</tspan></text>
+<rect x="60" y="636" width="1290" height="75" rx="0" fill="none" stroke="#111111" stroke-width="0.9"/>
+<text x="60" y="728" font-size="8" text-anchor="start" font-weight="400" fill="#4b5563"><tspan x="60" dy="0">Le letture passano da -A7 (isolamento, guasto analizzato): EN 81-20:2020 5.11.2.1.2, 5.11.2.3.2–3. Nessun apparecchio in parallelo ai contatti di sicurezza.</tspan></text>
+<text x="60" y="740" font-size="8" text-anchor="start" font-weight="400" fill="#4b5563"><tspan x="60" dy="0">Contatti: apertura positiva, IP ≥ 4X, ≥ 10⁶ cicli (5.11.2.2). Sigle e morsetti come nello schema. Bypass porte e UCM: modulo certificato -A5 (E06), mai cavallotti.</tspan></text>
+</g>
+
+<g font-family="DejaVu Sans, Arial, sans-serif" fill="#111111">
+<rect x="845" y="1022" width="720" height="78" fill="#fff" stroke="#111111" stroke-width="1.2"/>
+<line x1="845" y1="1044" x2="1565" y2="1044" stroke="#111111" stroke-width="0.7"/>
+<line x1="1315" y1="1022" x2="1315" y2="1100" stroke="#111111" stroke-width="0.7"/>
+<line x1="1315" y1="1062" x2="1565" y2="1062" stroke="#111111" stroke-width="0.7"/>
+<line x1="1435" y1="1044" x2="1435" y2="1062" stroke="#111111" stroke-width="0.7"/>
+<text x="853" y="1037" font-size="9.5" font-weight="700">Carbon Stealth VCC · Quadro di manovra a PLC per ascensori (esempio di riferimento)</text>
+<text x="853" y="1065" font-size="12.5" font-weight="700">Catena di sicurezza — trazione (collegamenti e morsetti)</text>
+<text x="853" y="1080" font-size="9" fill="#4b5563">48 V c.c. · contatti ad apertura positiva in serie · tratti A, B, C, D letti dal PLC tramite -A7</text>
+<text x="853" y="1093" font-size="7.5" fill="#4b5563">EN 81-20:2020 · EN 60204-1 · IEC 60617 · EN 81346 — valori di esempio, da verificare dal progettista; non per costruzione</text>
+<text x="1321" y="1037" font-size="9" font-weight="700">Foglio E04 / E18</text>
+<text x="1321" y="1057" font-size="9">Rev. A</text>
+<text x="1441" y="1057" font-size="9">2026-10-07</text>
+<text x="1321" y="1076" font-size="8" fill="#4b5563">Disegnato: Carbon Stealth</text>
+<text x="1321" y="1090" font-size="8" fill="#4b5563">Verificato: — (progettista)</text>
+</g>
+</svg>

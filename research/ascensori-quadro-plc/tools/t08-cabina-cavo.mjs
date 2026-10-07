@@ -27,30 +27,32 @@ export default function t08() {
   });
   // cavo
   const rows = [
-    ['Catena di sicurezza 48 V c.c. (porta cabina, ispezione, STOP tetto, paracadute)', '4', COL.sic],
-    ['CAN1 — coppia twistata schermata 120 Ω', '2 + schermo', COL.can],
-    ['Alimentazione 24 V (bus, display, COP)', '2', COL.v24],
-    ['Sensori zona porta (2 × alimentazione + segnale)', '6', COL.sic],
-    ['Pesacarico 4–20 mA (schermato)', '2 + schermo', COL.v24],
-    ['Operatore porte: alimentazione 230 V', '3', COL.p230],
-    ['Operatore porte: comando e limiti', '6', COL.v24],
-    ['Luce cabina 230 V (separata dal generale)', '3', COL.p230],
-    ['Citofono / comunicatore (fonia, alimentazione, pulsante)', '4', COL.warn],
-    ['Luce di emergenza (ricarica + segnale)', '2', COL.warn],
-    ['Ispezione tetto (pulsanti e commutatore)', '5', COL.sic],
-    ['Terra di protezione', '1', COL.ink],
-    ['Riserva ≈ 15 %', '6', COL.mute],
+    ['Catena di sicurezza 48 V c.c.: tetto, paracadute, porta cabina (3 anelli andata/ritorno)  · XC 1–6', '6', COL.sic],
+    ['Segnali 24 V: ispezione attiva, sovraccarico, carico completo  · XC 7–9', '3', COL.v24],
+    ['Operatore porte: porta aperta, chiusa, barriera/costa  · XC 10–12', '3', COL.v24],
+    ['Allarme (copia del comunicatore)  · XC 13', '1', COL.v24],
+    ['Pesacarico 4–20 mA (coppia schermata)  · XC 14–15', '2', COL.v24],
+    ['Comandi: porte apri/chiudi, luce cabina  · XC 16–18', '3', COL.v24],
+    ['CAN1: H, L, schermo, +24 V, 0 V (coppia twistata schermata)  · XC 19–23', '5', COL.can],
+    ['Luce cabina 230 V (L, N, PE)  · XC 24–26', '3', COL.p230],
+    ['Operatore porte 230 V (L, N, PE)  · XC 27–29', '3', COL.p230],
+    ['Citofono / comunicatore (fonia A/B, +24 V, 0 V)  · XC 30–33', '4', COL.warn],
+    ['Luce di emergenza (carica, segnale)  · XC 34–35', '2', COL.warn],
+    ['Ispezione tetto (salita, discesa, +24 V, 0 V)  · XC 36–39', '4', COL.sic],
+    ['Sensori zona porta ×2 (segnali + alimentazione)  · XC 41–44', '4', COL.sic],
+    ['Terra di protezione  · XC 45', '1', COL.ink],
+    ['Riserva  · XC 40, 46–48', '4', COL.mute],
   ];
   s.group(630, 50, 920, 560, 'CAVO MOBILE (conduttori)', { c: COL.mute });
   rows.forEach(([t, n, c], i) => {
-    const y = 90 + i * 36;
+    const y = 88 + i * 31;
     s.line(650, y - 10, 700, y - 10, { c, w: 5 });
     s.text(714, y - 5, t, { size: 11.5 });
     s.text(1520, y - 5, n, { size: 12, anchor: 'end', weight: 700, c });
   });
-  s.line(650, 90 + rows.length * 36 - 12, 1530, 90 + rows.length * 36 - 12, { c: COL.ink, w: 1 });
-  s.text(714, 90 + rows.length * 36 + 8, 'Totale indicativo', { size: 12.5, weight: 700 });
-  s.text(1520, 90 + rows.length * 36 + 8, '≈ 44 fili + 2 schermi', { size: 12.5, anchor: 'end', weight: 700 });
+  s.line(650, 88 + rows.length * 31 - 12, 1530, 88 + rows.length * 31 - 12, { c: COL.ink, w: 1 });
+  s.text(714, 88 + rows.length * 31 + 8, 'Totale (morsettiera XC, foglio E11)', { size: 12.5, weight: 700 });
+  s.text(1520, 88 + rows.length * 31 + 8, '48 conduttori numerati + schermi', { size: 12.5, anchor: 'end', weight: 700 });
 
   s.group(30, 640, 1520, 330, 'Vano: dispositivi e punti di norma (EN 81-20:2020, numero e valore)', { c: COL.mute });
   [

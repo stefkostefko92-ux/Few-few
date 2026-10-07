@@ -36,7 +36,11 @@ export default function t06() {
     ['I24', 'Porta chiusa (finecorsa operatore)'],
     ['I25', 'Barriera / costa porte'],
     ['I26', 'Pulsante di allarme (copia, il comando è sul citofono)'],
-    ['I27', 'Riserva'],
+    ['I27', 'Ispezione: SALITA (serie con MARCIA)'],
+    ['I28', 'Ispezione: DISCESA (serie con MARCIA)'],
+    ['I29', 'Emergenza elettrica: SALITA'],
+    ['I30', 'Emergenza elettrica: DISCESA'],
+    ['I31', 'Riserva'],
   ];
   const DO = [
     ['Q00', 'Consenso KM1 (attraverso la catena)'],
@@ -78,13 +82,13 @@ export default function t06() {
       s.text(x + 72, yy + 17, b, { size: 11.5 });
     });
   };
-  col(30, 54, 'Ingressi digitali 24 V (28)', DI, COL.fillC, 500);
+  col(30, 54, 'Ingressi digitali 24 V (32)', DI, COL.fillC, 500);
   col(560, 54, 'Uscite digitali (18)', DO, COL.fillD, 480);
   col(560, 54 + 30 + 18 * 26 + 24, 'Analogici, contatore e bus', AI, COL.fillE, 480);
 
   s.group(1070, 54, 490, 500, 'Dimensionamento (indicativo)', { c: COL.mute });
   [
-    '• ≈ 28 ingressi e ≈ 18 uscite digitali, 2 analogici,',
+    '• ≈ 32 ingressi e ≈ 18 uscite digitali, 2 analogici,',
     '  1 contatore veloce, 2 CAN: stessi per 12 e 24 fermate.',
     '• Se il PLC base ha meno punti, si aggiunge un modulo',
     '  di espansione (circa 16 DI + 16 DO), mai per le fermate.',
