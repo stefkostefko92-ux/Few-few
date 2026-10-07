@@ -8,7 +8,8 @@ services:
       # (0.0.0.0) is reachable directly because Docker's DNAT rules sit in front
       # of ufw — that would let an attacker skip nginx and forge X-Real-IP,
       # defeating the login rate limit.
-      - "127.0.0.1:3000:3000"
+      # QB_PORT in .env when 3000 is taken on the host (medqr uses it).
+      - "127.0.0.1:${QB_PORT:-3000}:3000"
     environment:
       NODE_ENV: production
       DATABASE_URL: "file:/app/data/app.db"
