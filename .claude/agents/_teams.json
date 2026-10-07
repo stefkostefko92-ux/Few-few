@@ -8,24 +8,74 @@
       "name": "Щабът",
       "mission": "Кой кога работи: избор на поток и агент, надзор на флота, LLM интеграции в продуктите.",
       "lead": "ai-djiyata",
-      "members": ["ai-djiyata"],
-      "keys": ["агент", "агенти", "флот", "оркестр", "делегир", "llm", "claude", "anthropic", "gemini", "openai", "модел", "промпт", "токен", "vertex", "агентски"],
+      "members": [
+        "ai-djiyata"
+      ],
+      "keys": [
+        "агент",
+        "агенти",
+        "флот",
+        "оркестр",
+        "делегир",
+        "llm",
+        "claude",
+        "anthropic",
+        "gemini",
+        "openai",
+        "модел",
+        "промпт",
+        "токен",
+        "vertex",
+        "агентски"
+      ],
       "workflow": {
         "name": "AI/LLM интеграция",
         "trigger": "Нов или променен AI извик в продукт, или промяна по агентския слой.",
         "steps": [
-          { "agent": "ai-djiyata", "does": "сверява живите докове, ключ само на сървъра, бюджетен таван, идемпотентност", "gate": "oversee.mjs + gate.mjs зелени" },
-          { "agent": "pravniyat-razbirach", "does": "разкрива трансфера на данни към доставчика", "gate": "чл.13/28 GDPR отметнати" },
-          { "agent": "kodadjiyata", "does": "ревю на кода около извика", "gate": "нула блокери" }
+          {
+            "agent": "ai-djiyata",
+            "does": "сверява живите докове, ключ само на сървъра, бюджетен таван, идемпотентност",
+            "gate": "oversee.mjs + gate.mjs зелени"
+          },
+          {
+            "agent": "pravniyat-razbirach",
+            "does": "разкрива трансфера на данни към доставчика",
+            "gate": "чл.13/28 GDPR отметнати"
+          },
+          {
+            "agent": "kodadjiyata",
+            "does": "ревю на кода около извика",
+            "gate": "нула блокери"
+          }
         ],
         "human": "Собственикът избира доставчика и модела; лични данни към доставчик — само с негово решение."
       },
       "tests": [
-        { "task": "смени модела на агента в piuma с по-нов Claude", "team": "shtab", "agent": "ai-djiyata" },
-        { "task": "кой агент да пусна за тази задача и в какъв ред", "team": "shtab", "agent": "ai-djiyata" },
-        { "task": "отговорът от Gemini се реже по средата, оправи извика", "team": "shtab", "agent": "ai-djiyata" },
-        { "task": "добави нов агент към флота и го вкарай в гейта", "team": "shtab", "agent": "ai-djiyata" },
-        { "task": "намали разхода на токени при агентите", "team": "shtab", "agent": "ai-djiyata" }
+        {
+          "task": "смени модела на агента в piuma с по-нов Claude",
+          "team": "shtab",
+          "agent": "ai-djiyata"
+        },
+        {
+          "task": "кой агент да пусна за тази задача и в какъв ред",
+          "team": "shtab",
+          "agent": "ai-djiyata"
+        },
+        {
+          "task": "отговорът от Gemini се реже по средата, оправи извика",
+          "team": "shtab",
+          "agent": "ai-djiyata"
+        },
+        {
+          "task": "добави нов агент към флота и го вкарай в гейта",
+          "team": "shtab",
+          "agent": "ai-djiyata"
+        },
+        {
+          "task": "намали разхода на токени при агентите",
+          "team": "shtab",
+          "agent": "ai-djiyata"
+        }
       ],
       "failureModes": [
         "Делегира заради самото делегиране — задача за един ред минава през три агента и плаща три префикса.",
@@ -33,8 +83,29 @@
         "Пусната верига без дневник — блокерът потъва и никой не довършва."
       ],
       "metrics": [
-        { "name": "незавършени/блокирани вериги", "cmd": "node tools/agents/flow-ledger.mjs --report" },
-        { "name": "реален разход по агенти", "cmd": "node tools/agents/usage-report.mjs" }
+        {
+          "name": "незавършени/блокирани вериги",
+          "cmd": "node tools/agents/flow-ledger.mjs --report"
+        },
+        {
+          "name": "реален разход по агенти",
+          "cmd": "node tools/agents/usage-report.mjs"
+        }
+      ],
+      "why": "Без водач всяка задача става „пусни всички“ — флотът плаща префикс след префикс и никой не отговаря за изхода.",
+      "stack": [
+        {
+          "tool": "tools/agents/oversee.mjs",
+          "why": "целостта на флота — пръв сигнал, че нещо е разминато"
+        },
+        {
+          "tool": "tools/agents/flow-ledger.mjs",
+          "why": "дневник на веригите — блокерът не потъва"
+        },
+        {
+          "tool": "tools/agents/route.mjs",
+          "why": "модел и усилие по задача — евтино за лесното, дълбоко за рисковото"
+        }
       ]
     },
     {
@@ -42,24 +113,88 @@
       "name": "Ковачницата",
       "mission": "Кодът да е верен, сигурен, поддържаем и пазен от тестове и CI.",
       "lead": "kodadjiyata",
-      "members": ["kodadjiyata", "kachestveniyat", "izpitatelya", "razbivacha", "konveyera"],
-      "keys": ["бъг", "ревю", "diff", "уязвим", "owasp", "xss", "csrf", "injection", "рефактор", "дублиран", "поддръж", "тест", "flaky", "e2e", "playwright", "vitest", "ci", "workflow", "actions", "pipeline", "червен", "счупи", "атакувай", "red-team", "пробив"],
+      "members": [
+        "kodadjiyata",
+        "kachestveniyat",
+        "izpitatelya",
+        "razbivacha",
+        "konveyera"
+      ],
+      "keys": [
+        "бъг",
+        "ревю",
+        "diff",
+        "уязвим",
+        "owasp",
+        "xss",
+        "csrf",
+        "injection",
+        "рефактор",
+        "дублиран",
+        "поддръж",
+        "тест",
+        "flaky",
+        "e2e",
+        "playwright",
+        "vitest",
+        "ci",
+        "workflow",
+        "actions",
+        "pipeline",
+        "червен",
+        "счупи",
+        "атакувай",
+        "red-team",
+        "пробив"
+      ],
       "workflow": {
         "name": "Промяна по код",
         "trigger": "Нетривиален diff в който и да е продукт, преди PR.",
         "steps": [
-          { "agent": "kodadjiyata", "does": "бъгове и уязвимости с файл:ред, самопроверени", "gate": "нула блокери" },
-          { "agent": "kachestveniyat", "does": "поддръжаемост — само ако промяната е нетривиална", "gate": "рефакторите са поведение-запазващи" },
-          { "agent": "izpitatelya", "does": "тест, който пада без поправката и минава с нея", "gate": "продуктовият гейт зелен" }
+          {
+            "agent": "kodadjiyata",
+            "does": "бъгове и уязвимости с файл:ред, самопроверени",
+            "gate": "нула блокери"
+          },
+          {
+            "agent": "kachestveniyat",
+            "does": "поддръжаемост — само ако промяната е нетривиална",
+            "gate": "рефакторите са поведение-запазващи"
+          },
+          {
+            "agent": "izpitatelya",
+            "does": "тест, който пада без поправката и минава с нея",
+            "gate": "продуктовият гейт зелен"
+          }
         ],
         "human": "Сливането в main е решение на човек; CI не пуска в продукция."
       },
       "tests": [
-        { "task": "прегледай diff-а за бъгове и SQL injection", "team": "kod", "agent": "kodadjiyata" },
-        { "task": "тази функция е трудна за поддръжка, има дублиране на три места", "team": "kod", "agent": "kachestveniyat" },
-        { "task": "e2e тестът с playwright е flaky, стабилизирай го", "team": "kod", "agent": "izpitatelya" },
-        { "task": "workflow-ът в github actions е червен заради кеша", "team": "kod", "agent": "konveyera" },
-        { "task": "атакувай новия вход на linketto като red-team преди пускане", "team": "kod", "agent": "razbivacha" }
+        {
+          "task": "прегледай diff-а за бъгове и SQL injection",
+          "team": "kod",
+          "agent": "kodadjiyata"
+        },
+        {
+          "task": "тази функция е трудна за поддръжка, има дублиране на три места",
+          "team": "kod",
+          "agent": "kachestveniyat"
+        },
+        {
+          "task": "e2e тестът с playwright е flaky, стабилизирай го",
+          "team": "kod",
+          "agent": "izpitatelya"
+        },
+        {
+          "task": "workflow-ът в github actions е червен заради кеша",
+          "team": "kod",
+          "agent": "konveyera"
+        },
+        {
+          "task": "атакувай новия вход на linketto като red-team преди пускане",
+          "team": "kod",
+          "agent": "razbivacha"
+        }
       ],
       "failureModes": [
         "Шум: двайсет козметични находки скриват единствения реален блокер.",
@@ -67,8 +202,29 @@
         "Тест, който минава и без поправката — пази нищо."
       ],
       "metrics": [
-        { "name": "дефекти по агенти (находки, оборени после)", "cmd": "node tools/agents/defect-rate.mjs" },
-        { "name": "сигнали за качество по агент", "cmd": "node tools/agents/critique.mjs --agent kodadjiyata" }
+        {
+          "name": "дефекти по агенти (находки, оборени после)",
+          "cmd": "node tools/agents/defect-rate.mjs"
+        },
+        {
+          "name": "сигнали за качество по агент",
+          "cmd": "node tools/agents/critique.mjs --agent kodadjiyata"
+        }
+      ],
+      "why": "Кодът е общото на всички продукти: бъг или дупка тук удря продукция, затова минава през три различни очи.",
+      "stack": [
+        {
+          "tool": "tools/code/scan.sh",
+          "why": "SAST/SCA и мутационен тест в една команда"
+        },
+        {
+          "tool": "tools/agents/rubric.mjs",
+          "why": "тежестта се смята, не се лепи"
+        },
+        {
+          "tool": "tools/ci/workflow-lint.mjs",
+          "why": "всеки CI job има таван на времето"
+        }
       ]
     },
     {
@@ -76,24 +232,85 @@
       "name": "Пускането",
       "mission": "Продуктът да стигне до сървъра бързо, безопасно и да остане здрав след това.",
       "lead": "vps-adjiyata",
-      "members": ["vps-adjiyata", "skorostnika", "nabludatelya"],
-      "keys": ["деплой", "deploy", "сървър", "vps", "autodeploy", "nginx", "systemd", "docker", "tls", "сертификат", "бекъп", "rollback", "продукция", "lighthouse", "lcp", "бавн", "скорост", "производител", "slo", "аларм", "инцидент", "логове", "мониторинг", "диск"],
+      "members": [
+        "vps-adjiyata",
+        "skorostnika",
+        "nabludatelya"
+      ],
+      "keys": [
+        "деплой",
+        "deploy",
+        "сървър",
+        "vps",
+        "autodeploy",
+        "nginx",
+        "systemd",
+        "docker",
+        "tls",
+        "сертификат",
+        "бекъп",
+        "rollback",
+        "продукция",
+        "lighthouse",
+        "lcp",
+        "бавн",
+        "скорост",
+        "производител",
+        "slo",
+        "аларм",
+        "инцидент",
+        "логове",
+        "мониторинг",
+        "диск"
+      ],
       "workflow": {
         "name": "Пускане в продукция",
         "trigger": "Собственикът реши да пусне ref на сървъра.",
         "steps": [
-          { "agent": "skorostnika", "does": "лабораторен одит срещу локален билд", "gate": "оценка ≥90" },
-          { "agent": "vps-adjiyata", "does": "fetch-deploy.sh → autodeploy.sh, health-check, rollback", "gate": "health зелен" },
-          { "agent": "nabludatelya", "does": "SLO и аларми след пускането", "gate": "без burn-rate аларма 24 ч" }
+          {
+            "agent": "skorostnika",
+            "does": "лабораторен одит срещу локален билд",
+            "gate": "оценка ≥90"
+          },
+          {
+            "agent": "vps-adjiyata",
+            "does": "fetch-deploy.sh → autodeploy.sh, health-check, rollback",
+            "gate": "health зелен"
+          },
+          {
+            "agent": "nabludatelya",
+            "does": "SLO и аларми след пускането",
+            "gate": "без burn-rate аларма 24 ч"
+          }
         ],
         "human": "Собственикът решава кога и кой ref; миграция с изтриване — само с изрично да."
       },
       "tests": [
-        { "task": "деплойни piuma на сървъра с autodeploy", "team": "pusk", "agent": "vps-adjiyata" },
-        { "task": "страницата е бавна, lcp е 4 секунди", "team": "pusk", "agent": "skorostnika" },
-        { "task": "настрой slo и аларми за medqr след пускането", "team": "pusk", "agent": "nabludatelya" },
-        { "task": "сертификатът tls на nginx изтича, поднови го", "team": "pusk", "agent": "vps-adjiyata" },
-        { "task": "инцидент: 500-ки в логовете от снощи", "team": "pusk", "agent": "nabludatelya" }
+        {
+          "task": "деплойни piuma на сървъра с autodeploy",
+          "team": "pusk",
+          "agent": "vps-adjiyata"
+        },
+        {
+          "task": "страницата е бавна, lcp е 4 секунди",
+          "team": "pusk",
+          "agent": "skorostnika"
+        },
+        {
+          "task": "настрой slo и аларми за medqr след пускането",
+          "team": "pusk",
+          "agent": "nabludatelya"
+        },
+        {
+          "task": "сертификатът tls на nginx изтича, поднови го",
+          "team": "pusk",
+          "agent": "vps-adjiyata"
+        },
+        {
+          "task": "инцидент: 500-ки в логовете от снощи",
+          "team": "pusk",
+          "agent": "nabludatelya"
+        }
       ],
       "failureModes": [
         "Пускане без бекъп преди миграция — няма връщане.",
@@ -101,8 +318,29 @@
         "Аларма по причина вместо по симптом — будят те за нищо, а истинското спиране минава."
       ],
       "metrics": [
-        { "name": "autodeploy е изряден", "cmd": "node tools/vps/deploy-check.mjs deploy/autodeploy.sh" },
-        { "name": "незавършени вериги по пускане", "cmd": "node tools/agents/flow-ledger.mjs --report" }
+        {
+          "name": "autodeploy е изряден",
+          "cmd": "node tools/vps/deploy-check.mjs deploy/autodeploy.sh"
+        },
+        {
+          "name": "незавършени вериги по пускане",
+          "cmd": "node tools/agents/flow-ledger.mjs --report"
+        }
+      ],
+      "why": "Пускането е единственото необратимо действие — бекъп, проверка на здравето и наблюдение го правят обратимо.",
+      "stack": [
+        {
+          "tool": "deploy/fetch-deploy.sh",
+          "why": "архив за точен ref, без git на кутията"
+        },
+        {
+          "tool": "tools/vps/deploy-check.mjs",
+          "why": "autodeploy.sh е изряден преди пускане"
+        },
+        {
+          "tool": "tools/seo/prelaunch-audit.mjs",
+          "why": "скорост, измерена преди деплоя"
+        }
       ]
     },
     {
@@ -110,24 +348,76 @@
       "name": "Думите",
       "mission": "Текстът — документация, съдържание и преводи — е верен, с източник и на трите езика.",
       "lead": "letopisetsa",
-      "members": ["letopisetsa", "prevodach", "siydara"],
-      "keys": ["документац", "readme", "changelog", "adr", "runbook", "преведи", "превод", "италиански", "английски", "локализ", "i18n", "seed", "сийд", "ръководств", "съдържание"],
+      "members": [
+        "letopisetsa",
+        "prevodach",
+        "siydara"
+      ],
+      "keys": [
+        "документац",
+        "readme",
+        "changelog",
+        "adr",
+        "runbook",
+        "преведи",
+        "превод",
+        "италиански",
+        "английски",
+        "локализ",
+        "i18n",
+        "seed",
+        "сийд",
+        "ръководств",
+        "съдържание"
+      ],
       "workflow": {
         "name": "Ново съдържание или документация",
         "trigger": "Потребителски-видима промяна или ново съдържание.",
         "steps": [
-          { "agent": "siydara", "does": "сийд с проверени факти (за zabobovdol)", "gate": "check-dups/integrity" },
-          { "agent": "letopisetsa", "does": "README/CHANGELOG/runbook; всяка команда пусната", "gate": "примерите минават" },
-          { "agent": "prevodach", "does": "BG → EN → IT с паритет на ключовете", "gate": "parity зелен" }
+          {
+            "agent": "siydara",
+            "does": "сийд с проверени факти (за zabobovdol)",
+            "gate": "check-dups/integrity"
+          },
+          {
+            "agent": "letopisetsa",
+            "does": "README/CHANGELOG/runbook; всяка команда пусната",
+            "gate": "примерите минават"
+          },
+          {
+            "agent": "prevodach",
+            "does": "BG → EN → IT с паритет на ключовете",
+            "gate": "parity зелен"
+          }
         ],
         "human": "Медицински и правни низове не се превеждат машинно — човек ги одобрява."
       },
       "tests": [
-        { "task": "обнови changelog-а за новата версия", "team": "dumi", "agent": "letopisetsa" },
-        { "task": "преведи новите низове на италиански", "team": "dumi", "agent": "prevodach" },
-        { "task": "добави ново ръководство „Как да…“ като seed в zabobovdol", "team": "dumi", "agent": "siydara" },
-        { "task": "напиши readme за онбординг на нов разработчик", "team": "dumi", "agent": "letopisetsa" },
-        { "task": "провери локализацията на medqr на английски", "team": "dumi", "agent": "prevodach" }
+        {
+          "task": "обнови changelog-а за новата версия",
+          "team": "dumi",
+          "agent": "letopisetsa"
+        },
+        {
+          "task": "преведи новите низове на италиански",
+          "team": "dumi",
+          "agent": "prevodach"
+        },
+        {
+          "task": "добави ново ръководство „Как да…“ като seed в zabobovdol",
+          "team": "dumi",
+          "agent": "siydara"
+        },
+        {
+          "task": "напиши readme за онбординг на нов разработчик",
+          "team": "dumi",
+          "agent": "letopisetsa"
+        },
+        {
+          "task": "провери локализацията на medqr на английски",
+          "team": "dumi",
+          "agent": "prevodach"
+        }
       ],
       "failureModes": [
         "Факт без източник влиза в seed-а и отива на живо.",
@@ -135,8 +425,29 @@
         "Сляп машинен превод на клиничен термин."
       ],
       "metrics": [
-        { "name": "твърдения сверени в срок", "cmd": "node tools/agents/claims-audit.mjs --check" },
-        { "name": "дефекти по агенти", "cmd": "node tools/agents/defect-rate.mjs" }
+        {
+          "name": "твърдения сверени в срок",
+          "cmd": "node tools/agents/claims-audit.mjs --check"
+        },
+        {
+          "name": "дефекти по агенти",
+          "cmd": "node tools/agents/defect-rate.mjs"
+        }
+      ],
+      "why": "Текстът е договорът с потребителя на три езика; грешка в него е грешка в продукта.",
+      "stack": [
+        {
+          "tool": "tools/i18n/check-parity.mjs",
+          "why": "нито един ключ не изпада между bg/en/it"
+        },
+        {
+          "tool": "tools/docs/doc-audit.mjs",
+          "why": "документите не лъжат за кода"
+        },
+        {
+          "tool": "tools/seed/check-dups.mjs",
+          "why": "seed-ът не дублира"
+        }
       ]
     },
     {
@@ -144,24 +455,86 @@
       "name": "Растежът",
       "mission": "Да ни намират (търсачки и AI отговори), да ни виждат (социални мрежи) и да знаем какво работи (метрики).",
       "lead": "seo",
-      "members": ["seo", "socialdjiyata", "analizatora"],
-      "keys": ["seo", "търсачк", "класиране", "sitemap", "hreflang", "json-ld", "llms", "indexnow", "ключови", "instagram", "tiktok", "reels", "пост", "клип", "обхват", "социал", "метрик", "фуния", "retention", "a/b", "kpi", "аналитик", "ga4", "plausible", "posthog"],
+      "members": [
+        "seo",
+        "socialdjiyata",
+        "analizatora"
+      ],
+      "keys": [
+        "seo",
+        "търсачк",
+        "класиране",
+        "sitemap",
+        "hreflang",
+        "json-ld",
+        "llms",
+        "indexnow",
+        "ключови",
+        "instagram",
+        "tiktok",
+        "reels",
+        "пост",
+        "клип",
+        "обхват",
+        "социал",
+        "метрик",
+        "фуния",
+        "retention",
+        "a/b",
+        "kpi",
+        "аналитик",
+        "ga4",
+        "plausible",
+        "posthog"
+      ],
       "workflow": {
         "name": "Откриваемост и обхват",
         "trigger": "Нова или променена страница, кампания или въпрос „работи ли“.",
         "steps": [
-          { "agent": "seo", "does": "мета, JSON-LD, hreflang, sitemap; ≥5 ключови думи с „Carbon Stealth“", "gate": "IndexNow пуснат след деплой" },
-          { "agent": "analizatora", "does": "какво мерим и как — без PII, със съгласие", "gate": "tracking plan одобрен" },
-          { "agent": "socialdjiyata", "does": "hook, сценарий, план за публикуване", "gate": "чернова" }
+          {
+            "agent": "seo",
+            "does": "мета, JSON-LD, hreflang, sitemap; ≥5 ключови думи с „Carbon Stealth“",
+            "gate": "IndexNow пуснат след деплой"
+          },
+          {
+            "agent": "analizatora",
+            "does": "какво мерим и как — без PII, със съгласие",
+            "gate": "tracking plan одобрен"
+          },
+          {
+            "agent": "socialdjiyata",
+            "does": "hook, сценарий, план за публикуване",
+            "gate": "чернова"
+          }
         ],
         "human": "Публикуването в социалните мрежи го одобрява човек; проследяване — само след съгласие."
       },
       "tests": [
-        { "task": "направи seo одит на сайта и оправи hreflang", "team": "rastezh", "agent": "seo" },
-        { "task": "сценарий за reels с по-голям обхват", "team": "rastezh", "agent": "socialdjiyata" },
-        { "task": "направи фуния и retention анализ за linketto", "team": "rastezh", "agent": "analizatora" },
-        { "task": "подай новия sitemap през indexnow", "team": "rastezh", "agent": "seo" },
-        { "task": "план за пост в instagram за пускането", "team": "rastezh", "agent": "socialdjiyata" }
+        {
+          "task": "направи seo одит на сайта и оправи hreflang",
+          "team": "rastezh",
+          "agent": "seo"
+        },
+        {
+          "task": "сценарий за reels с по-голям обхват",
+          "team": "rastezh",
+          "agent": "socialdjiyata"
+        },
+        {
+          "task": "направи фуния и retention анализ за linketto",
+          "team": "rastezh",
+          "agent": "analizatora"
+        },
+        {
+          "task": "подай новия sitemap през indexnow",
+          "team": "rastezh",
+          "agent": "seo"
+        },
+        {
+          "task": "план за пост в instagram за пускането",
+          "team": "rastezh",
+          "agent": "socialdjiyata"
+        }
       ],
       "failureModes": [
         "Промяна по страници без IndexNow — Bing вижда старото седмици.",
@@ -169,8 +542,29 @@
         "Корелация, представена като причина, без A/B."
       ],
       "metrics": [
-        { "name": "сигнали за качество на SEO", "cmd": "node tools/agents/critique.mjs --agent seo" },
-        { "name": "дефекти по агенти", "cmd": "node tools/agents/defect-rate.mjs" }
+        {
+          "name": "сигнали за качество на SEO",
+          "cmd": "node tools/agents/critique.mjs --agent seo"
+        },
+        {
+          "name": "дефекти по агенти",
+          "cmd": "node tools/agents/defect-rate.mjs"
+        }
+      ],
+      "why": "Продукт, който никой не намира, не съществува — но растежът без съгласие и мерене е шум.",
+      "stack": [
+        {
+          "tool": "tools/seo/indexnow.mjs",
+          "why": "Bing, Yandex и др. научават за промяната веднага"
+        },
+        {
+          "tool": "tools/seo/check-jsonld.mjs",
+          "why": "структурираните данни са валидни"
+        },
+        {
+          "tool": "tools/analytics/analytics-audit.mjs",
+          "why": "проследяване само със съгласие"
+        }
       ]
     },
     {
@@ -178,24 +572,87 @@
       "name": "Парите",
       "mission": "Всеки код, който пипа пари — плащане, каса, поръчка, залог — е точен, идемпотентен и с човешка спирачка.",
       "lead": "prodavacha",
-      "members": ["prodavacha", "kasadjiyata", "treydara", "goladjiyata"],
-      "keys": ["stripe", "checkout", "плащан", "абонамент", "webhook", "фактур", "ддс", "каса", "касов", "фискал", "бон", "н-18", "супто", "евро", "pos", "трейд", "binance", "ccxt", "бектест", "поръчк", "залог", "коефициент", "мач", "kelly", "xg"],
+      "members": [
+        "prodavacha",
+        "kasadjiyata",
+        "treydara",
+        "goladjiyata"
+      ],
+      "keys": [
+        "stripe",
+        "checkout",
+        "плащан",
+        "абонамент",
+        "webhook",
+        "фактур",
+        "ддс",
+        "каса",
+        "касов",
+        "фискал",
+        "бон",
+        "н-18",
+        "супто",
+        "евро",
+        "pos",
+        "трейд",
+        "binance",
+        "ccxt",
+        "бектест",
+        "поръчк",
+        "залог",
+        "коефициент",
+        "мач",
+        "kelly",
+        "xg"
+      ],
       "workflow": {
         "name": "Паричен код",
         "trigger": "Промяна, която докосва сума, плащане, бон, поръчка или залог.",
         "steps": [
-          { "agent": "prodavacha", "does": "сумата от сървъра, права само през проверен webhook, идемпотентност", "gate": "stripe-lint зелен" },
-          { "agent": "kodadjiyata", "does": "сигурностно ревю на паричния код (цели центове, без float)", "gate": "нула блокери" },
-          { "agent": "pravniyat-razbirach", "does": "отказ 14 дни, ДДС/OSS, Omnibus", "gate": "„не е правен съвет“" }
+          {
+            "agent": "prodavacha",
+            "does": "сумата от сървъра, права само през проверен webhook, идемпотентност",
+            "gate": "stripe-lint зелен"
+          },
+          {
+            "agent": "kodadjiyata",
+            "does": "сигурностно ревю на паричния код (цели центове, без float)",
+            "gate": "нула блокери"
+          },
+          {
+            "agent": "pravniyat-razbirach",
+            "does": "отказ 14 дни, ДДС/OSS, Omnibus",
+            "gate": "„не е правен съвет“"
+          }
         ],
         "human": "Реални пари, реални поръчки и реални залози пуска само човекът."
       },
       "tests": [
-        { "task": "добави stripe checkout с абонамент и webhook", "team": "pari", "agent": "prodavacha" },
-        { "task": "касовият бон в CSPos не излиза на фискалното устройство", "team": "pari", "agent": "kasadjiyata" },
-        { "task": "направи честен бектест на стратегията в treydar", "team": "pari", "agent": "treydara" },
-        { "task": "анализ на мача с xg и коефициенти", "team": "pari", "agent": "goladjiyata" },
-        { "task": "ддс и фактура при плащане от италия", "team": "pari", "agent": "prodavacha" }
+        {
+          "task": "добави stripe checkout с абонамент и webhook",
+          "team": "pari",
+          "agent": "prodavacha"
+        },
+        {
+          "task": "касовият бон в CSPos не излиза на фискалното устройство",
+          "team": "pari",
+          "agent": "kasadjiyata"
+        },
+        {
+          "task": "направи честен бектест на стратегията в treydar",
+          "team": "pari",
+          "agent": "treydara"
+        },
+        {
+          "task": "анализ на мача с xg и коефициенти",
+          "team": "pari",
+          "agent": "goladjiyata"
+        },
+        {
+          "task": "ддс и фактура при плащане от италия",
+          "team": "pari",
+          "agent": "prodavacha"
+        }
       ],
       "failureModes": [
         "Сумата идва от клиента и се приема на доверие.",
@@ -203,8 +660,29 @@
         "Бектест с look-ahead и без такси — „печалба“, която я няма."
       ],
       "metrics": [
-        { "name": "инвариантите на домейн-собствениците са в материала", "cmd": "node tools/agents/invariant-check.mjs --check" },
-        { "name": "сигнали за качество на Касаджията", "cmd": "node tools/agents/critique.mjs --agent kasadjiyata" }
+        {
+          "name": "инвариантите на домейн-собствениците са в материала",
+          "cmd": "node tools/agents/invariant-check.mjs --check"
+        },
+        {
+          "name": "сигнали за качество на Касаджията",
+          "cmd": "node tools/agents/critique.mjs --agent kasadjiyata"
+        }
+      ],
+      "why": "Парите не прощават: двойно плащане, бон без запис или look-ahead бектест са реална загуба.",
+      "stack": [
+        {
+          "tool": "tools/commerce/stripe-lint.mjs",
+          "why": "проверен webhook и идемпотентност"
+        },
+        {
+          "tool": "tools/trading/trader-lint.mjs",
+          "why": "stop, clientOrderId и честен бектест"
+        },
+        {
+          "tool": "tools/betting/devig.mjs",
+          "why": "маржът се маха преди всяка „стойност“"
+        }
       ]
     },
     {
@@ -212,23 +690,80 @@
       "name": "Нормите",
       "mission": "Правото на ЕС, политиките на платформите и техническите норми — с точка, издание и източник.",
       "lead": "pravniyat-razbirach",
-      "members": ["pravniyat-razbirach", "tayniyat-agent", "asansyorchika"],
-      "keys": ["gdpr", "бисквит", "cookie", "съгласие", "поверител", "dsa", "достъпност", "eaa", "wcag", "импресум", "общи условия", "правн", "закон", "app review", "app store", "google play", "отказ", "data safety", "privacy", "meta app", "норма", "uni", "en 81", "асансьор"],
+      "members": [
+        "pravniyat-razbirach",
+        "tayniyat-agent",
+        "asansyorchika"
+      ],
+      "keys": [
+        "gdpr",
+        "бисквит",
+        "cookie",
+        "съгласие",
+        "поверител",
+        "dsa",
+        "достъпност",
+        "eaa",
+        "wcag",
+        "импресум",
+        "общи условия",
+        "правн",
+        "закон",
+        "app review",
+        "app store",
+        "google play",
+        "отказ",
+        "data safety",
+        "privacy",
+        "meta app",
+        "норма",
+        "uni",
+        "en 81",
+        "асансьор"
+      ],
       "workflow": {
         "name": "Съответствие преди пускане",
         "trigger": "Пускане, ново проследяване, форма, потребителско съдържание или качване в магазин.",
         "steps": [
-          { "agent": "pravniyat-razbirach", "does": "GDPR/ePrivacy/DSA/EAA одит с файл:ред", "gate": "нула правни блокери" },
-          { "agent": "tayniyat-agent", "does": "политиките на Apple/Google/Meta, етикети за поверителност", "gate": "чеклистът на магазина цял" }
+          {
+            "agent": "pravniyat-razbirach",
+            "does": "GDPR/ePrivacy/DSA/EAA одит с файл:ред",
+            "gate": "нула правни блокери"
+          },
+          {
+            "agent": "tayniyat-agent",
+            "does": "политиките на Apple/Google/Meta, етикети за поверителност",
+            "gate": "чеклистът на магазина цял"
+          }
         ],
         "human": "Изводът не е правен съвет; съответствието решава човек (юрист, инженер)."
       },
       "tests": [
-        { "task": "провери банера за бисквитки и gdpr преди пускане", "team": "pravo", "agent": "pravniyat-razbirach" },
-        { "task": "apple отказа приложението при app review, разчети причината", "team": "pravo", "agent": "tayniyat-agent" },
-        { "task": "коя точка от en 81-20 важи за височината на кабината", "team": "pravo", "agent": "asansyorchika" },
-        { "task": "попълни data safety формуляра за google play", "team": "pravo", "agent": "tayniyat-agent" },
-        { "task": "одит на достъпността по eaa и wcag", "team": "pravo", "agent": "pravniyat-razbirach" }
+        {
+          "task": "провери банера за бисквитки и gdpr преди пускане",
+          "team": "pravo",
+          "agent": "pravniyat-razbirach"
+        },
+        {
+          "task": "apple отказа приложението при app review, разчети причината",
+          "team": "pravo",
+          "agent": "tayniyat-agent"
+        },
+        {
+          "task": "коя точка от en 81-20 важи за височината на кабината",
+          "team": "pravo",
+          "agent": "asansyorchika"
+        },
+        {
+          "task": "попълни data safety формуляра за google play",
+          "team": "pravo",
+          "agent": "tayniyat-agent"
+        },
+        {
+          "task": "одит на достъпността по eaa и wcag",
+          "team": "pravo",
+          "agent": "pravniyat-razbirach"
+        }
       ],
       "failureModes": [
         "Правен извод без „не е правен съвет“.",
@@ -236,8 +771,29 @@
         "Стойност от норма без издание и точка."
       ],
       "metrics": [
-        { "name": "правни и таксономични твърдения сверени в срок", "cmd": "node tools/agents/claims-audit.mjs --check" },
-        { "name": "сигнали за качество на Правния", "cmd": "node tools/agents/critique.mjs --agent pravniyat-razbirach" }
+        {
+          "name": "правни и таксономични твърдения сверени в срок",
+          "cmd": "node tools/agents/claims-audit.mjs --check"
+        },
+        {
+          "name": "сигнали за качество на Правния",
+          "cmd": "node tools/agents/critique.mjs --agent pravniyat-razbirach"
+        }
+      ],
+      "why": "ЕС правото и магазините спират продукти за дни; нормите за асансьори пазят хора.",
+      "stack": [
+        {
+          "tool": "tools/legal/consent-scan.mjs",
+          "why": "бисквитки и проследяване преди съгласие"
+        },
+        {
+          "tool": "tools/legal/a11y.mjs",
+          "why": "достъпност по EAA/WCAG"
+        },
+        {
+          "tool": "tools/approval/review-check.mjs",
+          "why": "чеклистът на магазините"
+        }
       ]
     },
     {
@@ -245,24 +801,85 @@
       "name": "Платформите",
       "mission": "Продуктите там, където живеят чужди платформи: телефон, браузър, Discord, FiveM.",
       "lead": "mobildjiyata",
-      "members": ["mobildjiyata", "hromadjiyata", "diskordjiyata", "geymara"],
-      "keys": ["мобил", "ios", "android", "capacitor", "twa", "push", "nfc", "приложение", "разширение", "chrome", "manifest v3", "mv3", "web store", "discord", "slash", "бот", "interaction", "gateway", "fivem", "lua", "esx", "qbcore", "fxmanifest"],
+      "members": [
+        "mobildjiyata",
+        "hromadjiyata",
+        "diskordjiyata",
+        "geymara"
+      ],
+      "keys": [
+        "мобил",
+        "ios",
+        "android",
+        "capacitor",
+        "twa",
+        "push",
+        "nfc",
+        "приложение",
+        "разширение",
+        "chrome",
+        "manifest v3",
+        "mv3",
+        "web store",
+        "discord",
+        "slash",
+        "бот",
+        "interaction",
+        "gateway",
+        "fivem",
+        "lua",
+        "esx",
+        "qbcore",
+        "fxmanifest"
+      ],
       "workflow": {
         "name": "Билд за платформа",
         "trigger": "Нов билд или функция за мобилно, Chrome, Discord или FiveM.",
         "steps": [
-          { "agent": "mobildjiyata", "does": "билд и нативни функции (или Хромаджията/Дискорджията/Геймъра по платформа)", "gate": "store-readiness зелен" },
-          { "agent": "tayniyat-agent", "does": "политиките на магазина", "gate": "чеклистът цял" },
-          { "agent": "kodadjiyata", "does": "ревю на backend-а", "gate": "нула блокери" }
+          {
+            "agent": "mobildjiyata",
+            "does": "билд и нативни функции (или Хромаджията/Дискорджията/Геймъра по платформа)",
+            "gate": "store-readiness зелен"
+          },
+          {
+            "agent": "tayniyat-agent",
+            "does": "политиките на магазина",
+            "gate": "чеклистът цял"
+          },
+          {
+            "agent": "kodadjiyata",
+            "does": "ревю на backend-а",
+            "gate": "нула блокери"
+          }
         ],
         "human": "Качването в магазин и отговорите на ревю ги прави човекът."
       },
       "tests": [
-        { "task": "направи android twa за zabobovdol", "team": "platformi", "agent": "mobildjiyata" },
-        { "task": "мигрирай разширението за chrome към manifest v3", "team": "platformi", "agent": "hromadjiyata" },
-        { "task": "добави slash команда в discord бота", "team": "platformi", "agent": "diskordjiyata" },
-        { "task": "напиши fivem ресурс на lua с qbcore", "team": "platformi", "agent": "geymara" },
-        { "task": "push известия за ios с nfc четене", "team": "platformi", "agent": "mobildjiyata" }
+        {
+          "task": "направи android twa за zabobovdol",
+          "team": "platformi",
+          "agent": "mobildjiyata"
+        },
+        {
+          "task": "мигрирай разширението за chrome към manifest v3",
+          "team": "platformi",
+          "agent": "hromadjiyata"
+        },
+        {
+          "task": "добави slash команда в discord бота",
+          "team": "platformi",
+          "agent": "diskordjiyata"
+        },
+        {
+          "task": "напиши fivem ресурс на lua с qbcore",
+          "team": "platformi",
+          "agent": "geymara"
+        },
+        {
+          "task": "push известия за ios с nfc четене",
+          "team": "platformi",
+          "agent": "mobildjiyata"
+        }
       ],
       "failureModes": [
         "Тайна в бъндъла на приложението или разширението.",
@@ -270,8 +887,29 @@
         "Валидация на клиента във FiveM — читърите я прескачат."
       ],
       "metrics": [
-        { "name": "най-малки права на агентите", "cmd": "node tools/agents/tools-audit.mjs" },
-        { "name": "дефекти по агенти", "cmd": "node tools/agents/defect-rate.mjs" }
+        {
+          "name": "най-малки права на агентите",
+          "cmd": "node tools/agents/tools-audit.mjs"
+        },
+        {
+          "name": "дефекти по агенти",
+          "cmd": "node tools/agents/defect-rate.mjs"
+        }
+      ],
+      "why": "Чуждите платформи имат свои правила и ревюта — една грешка и сме извън магазина.",
+      "stack": [
+        {
+          "tool": "tools/mobile/store-readiness.mjs",
+          "why": "готовност за App Store/Play"
+        },
+        {
+          "tool": "tools/chrome/mv3-lint.mjs",
+          "why": "MV3 и минимални права"
+        },
+        {
+          "tool": "tools/discord/discord-lint.mjs",
+          "why": "подпис, intents и defer"
+        }
       ]
     },
     {
@@ -279,23 +917,78 @@
       "name": "Формата",
       "mission": "Как изглежда и как става физически: уеб ефекти, 3D от скан, печат.",
       "lead": "dizayner",
-      "members": ["dizayner", "3d-maniac", "printadjiyata"],
-      "keys": ["дизайн", "визуал", "анимац", "webgl", "three", "шейдър", "gsap", "hero", "ефект", "скан", "cad", "nurbs", "карбон", "калъп", "quicksurface", "печат", "k2", "слайс", "3mf", "нишк", "fdm", "stl"],
+      "members": [
+        "dizayner",
+        "3d-maniac",
+        "printadjiyata"
+      ],
+      "keys": [
+        "дизайн",
+        "визуал",
+        "анимац",
+        "webgl",
+        "three",
+        "шейдър",
+        "gsap",
+        "hero",
+        "ефект",
+        "скан",
+        "cad",
+        "nurbs",
+        "карбон",
+        "калъп",
+        "quicksurface",
+        "печат",
+        "k2",
+        "слайс",
+        "3mf",
+        "нишк",
+        "fdm",
+        "stl"
+      ],
       "workflow": {
         "name": "Визуален ефект или физическа част",
         "trigger": "Нов визуален ефект, или част от скан до печат.",
         "steps": [
-          { "agent": "dizayner", "does": "ефект с reduced-motion резерв (или 3D Maniac за скан→CAD)", "gate": "motion-a11y зелен" },
-          { "agent": "printadjiyata", "does": "DfAM и слайс за K2 Plus", "gate": "printability зелен" }
+          {
+            "agent": "dizayner",
+            "does": "ефект с reduced-motion резерв (или 3D Maniac за скан→CAD)",
+            "gate": "motion-a11y зелен"
+          },
+          {
+            "agent": "printadjiyata",
+            "does": "DfAM и слайс за K2 Plus",
+            "gate": "printability зелен"
+          }
         ],
         "human": "Режимът (сериозен или творчески) се задава от човека; физическата част се проверява преди употреба."
       },
       "tests": [
-        { "task": "направи webgl hero ефект с шейдър", "team": "forma", "agent": "dizayner" },
-        { "task": "от скана направи cad модел с nurbs за карбоновия калъп", "team": "forma", "agent": "3d-maniac" },
-        { "task": "слайсни модела за печат на k2 с две нишки", "team": "forma", "agent": "printadjiyata" },
-        { "task": "gsap анимация при скрол на витрината", "team": "forma", "agent": "dizayner" },
-        { "task": "поправи stl-а, не е watertight за fdm печат", "team": "forma", "agent": "printadjiyata" }
+        {
+          "task": "направи webgl hero ефект с шейдър",
+          "team": "forma",
+          "agent": "dizayner"
+        },
+        {
+          "task": "от скана направи cad модел с nurbs за карбоновия калъп",
+          "team": "forma",
+          "agent": "3d-maniac"
+        },
+        {
+          "task": "слайсни модела за печат на k2 с две нишки",
+          "team": "forma",
+          "agent": "printadjiyata"
+        },
+        {
+          "task": "gsap анимация при скрол на витрината",
+          "team": "forma",
+          "agent": "dizayner"
+        },
+        {
+          "task": "поправи stl-а, не е watertight за fdm печат",
+          "team": "forma",
+          "agent": "printadjiyata"
+        }
       ],
       "failureModes": [
         "Декоративна анимация в спешния изглед на medqr.",
@@ -303,40 +996,858 @@
         "Модел от скан директно към печат, без deviation анализ."
       ],
       "metrics": [
-        { "name": "сигнали за качество на Дизайнера", "cmd": "node tools/agents/critique.mjs --agent dizayner" },
-        { "name": "дефекти по агенти", "cmd": "node tools/agents/defect-rate.mjs" }
+        {
+          "name": "сигнали за качество на Дизайнера",
+          "cmd": "node tools/agents/critique.mjs --agent dizayner"
+        },
+        {
+          "name": "дефекти по агенти",
+          "cmd": "node tools/agents/defect-rate.mjs"
+        }
+      ],
+      "why": "Видимото и физическото: ефект, който свети или се чупи, и част, която трябва да издържи.",
+      "stack": [
+        {
+          "tool": "tools/design/motion-a11y.mjs",
+          "why": "без строб и с резерв за намалено движение"
+        },
+        {
+          "tool": "tools/print/printability.mjs",
+          "why": "моделът е печатаем"
+        },
+        {
+          "tool": "tools/3d/clean_and_validate.py",
+          "why": "мрежата от скана е годна"
+        }
       ]
     }
   ],
   "agents": {
-    "ai-djiyata": { "trigger": "задача без ясен собственик, AI извик в продукт, промяна по флота", "receives": "задачата от човека", "outputs": "кой поток и кои агенти, с цел, формат и граници; или поправен LLM извик", "handoff": "водача на избрания екип", "human": "избор на доставчик/модел и всичко, което пипа лични данни", "keys": [] },
-    "kodadjiyata": { "trigger": "нетривиален diff преди PR", "receives": "diff и обхват", "outputs": "находки по тежест с файл:ред и минимална поправка", "handoff": "Качествения (поддръжаемост) или Изпитателя (тест за поправката)", "human": "сливането в main", "keys": ["бъг", "ревю", "diff", "уязвим", "owasp", "xss", "csrf", "injection", "sql"] },
-    "kachestveniyat": { "trigger": "нетривиална кодова промяна или „труден за поддръжка“ код", "receives": "diff или модул", "outputs": "рефактори по въздействие × усилие, поведение-запазващи", "handoff": "Изпитателя (мрежата преди рефактора)", "human": "архитектурна промяна извън текущия diff", "keys": ["рефактор", "дублиран", "поддръж", "сложност", "четим", "мъртъв"] },
-    "izpitatelya": { "trigger": "поправка без тест, нов поток, flaky тест", "receives": "поправката и критичния поток", "outputs": "тестове, които падат без поправката", "handoff": "Кодаджията, ако тестът разкрие бъг", "human": "изключване на тест", "keys": ["тест", "flaky", "e2e", "playwright", "vitest", "jest", "покрит"] },
-    "razbivacha": { "trigger": "преди пускане или нова повърхност за атака", "receives": "системата и модела на заплахата", "outputs": "опити за пробив с доказателство и поправка", "handoff": "собственика на домейна (Кодаджията, Продавача, VPS-аджията)", "human": "реална дупка → координирано разкриване", "keys": ["атакувай", "red-team", "пробив", "счупи", "заобикол"] },
-    "konveyera": { "trigger": "червен или бавен CI, нов workflow", "receives": "workflow-а и лога", "outputs": "зелен, path-филтриран, пиннат workflow", "handoff": "VPS-аджията за стъпка извън GitHub", "human": "required checks и права на токена", "keys": ["ci", "workflow", "actions", "pipeline", "кеш", "gitleaks", "dependabot"] },
-    "vps-adjiyata": { "trigger": "деплой, сървър, TLS, бекъп", "receives": "ref и списък продукти", "outputs": "пуснат release с health-check и път за връщане", "handoff": "Наблюдателя (след пускането)", "human": "кога и кой ref; разрушителна миграция", "keys": ["деплой", "deploy", "сървър", "vps", "autodeploy", "nginx", "systemd", "docker", "tls", "сертификат", "бекъп", "rollback", "диск"] },
-    "skorostnika": { "trigger": "преди деплой, бавна страница, регресия на CWV", "receives": "локален билд или URL", "outputs": "оценка 0–100 и какво пречи на 100", "handoff": "Дизайнера или Кодаджията по причината", "human": "приемане на бюджет под 90", "keys": ["lighthouse", "lcp", "inp", "cls", "бавн", "скорост", "производител"] },
-    "nabludatelya": { "trigger": "след пускане, инцидент, нужда от SLO", "receives": "услугата и нейните логове/метрики", "outputs": "SLO, аларми по симптом, диагноза", "handoff": "Кодаджията (бъг), VPS-аджията (инфра), Летописеца (postmortem)", "human": "error budget политика", "keys": ["slo", "аларм", "инцидент", "логове", "мониторинг", "500", "opentelemetry", "grafana"] },
-    "letopisetsa": { "trigger": "потребителски-видима промяна, нужда от документ", "receives": "промяната", "outputs": "README/CHANGELOG/ADR/runbook с пуснати примери", "handoff": "Преводача", "human": "правни документи → Правния", "keys": ["документац", "readme", "changelog", "adr", "runbook", "llms.txt"] },
-    "prevodach": { "trigger": "нов или променен UI текст", "receives": "BG източника", "outputs": "EN и IT с паритет на ключовете", "handoff": "SEO (hreflang)", "human": "медицински и правни низове", "keys": ["преведи", "превод", "италиански", "английски", "локализ", "i18n"] },
-    "siydara": { "trigger": "ново съдържание за zabobovdol", "receives": "фактите с източник", "outputs": "идемпотентен seed, регистриран в db:seed:all", "handoff": "Преводача", "human": "факт без източник — спира", "keys": ["seed", "сийд", "ръководств", "zabobovdol"] },
-    "seo": { "trigger": "нова/променена страница, sitemap, JSON-LD", "receives": "страниците", "outputs": "находки по ефект × усилие, ключови думи, IndexNow", "handoff": "Скоростника (CWV), Преводача (hreflang)", "human": "деплоят, след който тръгва IndexNow", "keys": ["seo", "търсачк", "класиране", "sitemap", "hreflang", "json-ld", "llms", "indexnow", "ключови"] },
-    "socialdjiyata": { "trigger": "пускане, кампания, клип", "receives": "продукта и аудиторията", "outputs": "hooks, сценарии, план за публикуване", "handoff": "Анализатора (мерене на обхвата)", "human": "публикуването", "keys": ["instagram", "tiktok", "reels", "shorts", "пост", "клип", "обхват", "социал"] },
-    "analizatora": { "trigger": "„работи ли“, нова метрика, A/B тест", "receives": "въпроса и данните", "outputs": "tracking plan, фунии, прочетен експеримент", "handoff": "Правния (съгласие), Продавача (приходи)", "human": "проследяване — само със съгласие", "keys": ["метрик", "фуния", "retention", "a/b", "kpi", "аналитик", "ga4", "plausible", "posthog"] },
-    "prodavacha": { "trigger": "checkout, абонамент, webhook, фактура", "receives": "паричния поток", "outputs": "идемпотентен код с проверен webhook", "handoff": "Кодаджията (ревю), Правния (14 дни, ДДС)", "human": "реални пари", "keys": ["stripe", "checkout", "плащан", "абонамент", "webhook", "фактур", "ддс"] },
-    "kasadjiyata": { "trigger": "касов или фискален код в CSPos", "receives": "касовия поток", "outputs": "код по Н-18/СУПТО, цели евроценти", "handoff": "Кодаджията, после Изпитателя", "human": "нормативната изрядност; „не е правен съвет“", "keys": ["каса", "касов", "фискал", "бон", "н-18", "супто", "cspos", "pos"] },
-    "treydara": { "trigger": "трейдинг бот или бектест", "receives": "стратегията и пазара", "outputs": "риск-първо код и честен бектест", "handoff": "Кодаджията, VPS-аджията (ключове)", "human": "реални поръчки", "keys": ["трейд", "binance", "ccxt", "бектест", "стратеги", "treydar"] },
-    "goladjiyata": { "trigger": "анализ на мач, value залог", "receives": "мача и пазара", "outputs": "вероятности, стойност след маржа, дробен Kelly", "handoff": "Кодаджията (математиката)", "human": "реален залог", "keys": ["залог", "коефициент", "мач", "kelly", "xg", "футбол"] },
-    "pravniyat-razbirach": { "trigger": "пускане, проследяване, форма, потребителско съдържание", "receives": "сайта или промяната", "outputs": "одит с файл:ред; „не е правен съвет“", "handoff": "собственика на кода (поправката е негова)", "human": "правното решение", "keys": ["gdpr", "бисквит", "cookie", "съгласие", "поверител", "dsa", "достъпност", "eaa", "wcag", "импресум", "правн"] },
-    "tayniyat-agent": { "trigger": "качване в Apple/Google/Meta/Web Store, отказ при ревю", "receives": "билда и декларациите", "outputs": "изрядност по политиките, разчетен отказ", "handoff": "Мобилджията/Хромаджията (поправка), Правния", "human": "отговорът на ревюто", "keys": ["app review", "app store", "google play", "data safety", "meta app", "отказа", "ревю"] },
-    "asansyorchika": { "trigger": "въпрос по норма за асансьори", "receives": "въпроса и изданието", "outputs": "документ + издание + точка + стойност", "handoff": "Кодаджията (код), Изпитателя (тест на стойността)", "human": "инженерът решава съответствието", "keys": ["норма", "uni", "en 81", "асансьор", "кабина", "liftpilot"] },
-    "mobildjiyata": { "trigger": "мобилен билд или нативна функция", "receives": "продукта", "outputs": "билд, готов за магазина", "handoff": "Тайния агент (ревю)", "human": "качването", "keys": ["мобил", "ios", "android", "capacitor", "twa", "push", "nfc"] },
-    "hromadjiyata": { "trigger": "разширение за Chrome/Edge", "receives": "разширението", "outputs": "MV3 с минимални permissions", "handoff": "Тайния агент (Web Store)", "human": "качването", "keys": ["разширение", "chrome", "manifest v3", "mv3", "web store", "adblock"] },
-    "diskordjiyata": { "trigger": "Discord бот или интеграция", "receives": "бота", "outputs": "interactions с defer под 3 s, проверка Ed25519", "handoff": "Кодаджията/VPS-аджията", "human": "токенът и intents", "keys": ["discord", "slash", "бот", "interaction", "gateway", "webhook"] },
-    "geymara": { "trigger": "FiveM ресурс", "receives": "ресурса", "outputs": "Lua със сървърна валидация", "handoff": "Кодаджията при общ код", "human": "пускането на сървъра", "keys": ["fivem", "lua", "esx", "qbcore", "qbox", "fxmanifest"] },
-    "dizayner": { "trigger": "визуален ефект, hero, анимация", "receives": "режима (сериозен/творчески) и страницата", "outputs": "ефект с reduced-motion резерв", "handoff": "Скоростника (CWV)", "human": "режимът", "keys": ["дизайн", "визуал", "анимац", "webgl", "three", "шейдър", "gsap", "hero", "ефект", "скрол"] },
-    "3d-maniac": { "trigger": "скан към CAD, карбонова форма", "receives": "мрежата от скана", "outputs": "solid/NURBS с deviation отчет", "handoff": "Принтаджията", "human": "проверка на физическата част", "keys": ["скан", "cad", "nurbs", "карбон", "калъп", "quicksurface", "mesh"] },
-    "printadjiyata": { "trigger": "модел за печат на K2 Plus", "receives": "модела", "outputs": "печатаем модел и 3MF слайс", "handoff": "човека (печатът е физически)", "human": "проверка на отпечатъка", "keys": ["печат", "k2", "слайс", "3mf", "нишк", "fdm", "stl", "watertight"] }
-  }
+    "ai-djiyata": {
+      "trigger": "задача без ясен собственик, AI извик в продукт, промяна по флота",
+      "receives": "задачата от човека",
+      "outputs": "кой поток и кои агенти, с цел, формат и граници; или поправен LLM извик",
+      "handoff": "водача на избрания екип",
+      "human": "избор на доставчик/модел и всичко, което пипа лични данни",
+      "keys": [],
+      "rules": [
+        "Делегирай само ако инлайн е по-скъпо; прост факт = един агент.",
+        "Модел и параметри — от живите докове, никога по памет; ключът само на сървъра."
+      ],
+      "tools": [
+        "tools/agents/oversee.mjs",
+        "tools/agents/gate.mjs",
+        "tools/agents/route.mjs",
+        "tools/agents/flow-ledger.mjs"
+      ],
+      "output": "избран поток с делегати (цел · вход · граници · готово) или поправен LLM извик",
+      "done": "oversee.mjs и gate.mjs зелени; веригата е записана в flow-ledger",
+      "onFail": "доставчикът връща 404/429 → провери живите докове и квотата, не сменяй модела наслуки; блокер → пауза за човек"
+    },
+    "kodadjiyata": {
+      "trigger": "нетривиален diff преди PR",
+      "receives": "diff и обхват",
+      "outputs": "находки по тежест с файл:ред и минимална поправка",
+      "handoff": "Качествения (поддръжаемост) или Изпитателя (тест за поправката)",
+      "human": "сливането в main",
+      "keys": [
+        "бъг",
+        "ревю",
+        "diff",
+        "уязвим",
+        "owasp",
+        "xss",
+        "csrf",
+        "injection",
+        "sql"
+      ],
+      "rules": [
+        "Всяка находка се самопроверява срещу кода, преди да се докладва; недоказаното се маха.",
+        "Тежестта се смята с rubric.mjs, не на око."
+      ],
+      "tools": [
+        "tools/code/scan.sh",
+        "tools/agents/rubric.mjs",
+        "tools/security/secret-scan.mjs"
+      ],
+      "output": "находки по тежест × увереност с файл:ред, път на провал и минимална поправка",
+      "done": "всяка находка с файл:ред и пътека на провал; нула недоказани; покритието е заявено честно",
+      "onFail": "скенерът не тръгва → ръчно ревю на diff-а и го кажи в покритието; не обявявай „чисто“"
+    },
+    "kachestveniyat": {
+      "trigger": "нетривиална кодова промяна или „труден за поддръжка“ код",
+      "receives": "diff или модул",
+      "outputs": "рефактори по въздействие × усилие, поведение-запазващи",
+      "handoff": "Изпитателя (мрежата преди рефактора)",
+      "human": "архитектурна промяна извън текущия diff",
+      "keys": [
+        "рефактор",
+        "дублиран",
+        "поддръж",
+        "сложност",
+        "четим",
+        "мъртъв"
+      ],
+      "rules": [
+        "Само поведение-запазващи рефактори (каталогът на Fowler); вкусът не е находка.",
+        "Чистенето е отделно от промяната на поведение."
+      ],
+      "tools": [
+        "tools/code/scan.sh"
+      ],
+      "output": "рефактори по въздействие × усилие с файл:ред, „сега“ срещу „после“",
+      "done": "находки с файл:ред + рефактор + защо; продуктовият гейт остава зелен",
+      "onFail": "няма тест около кода → „характеризиращ тест първо“ към Изпитателя, не рефакторирай на сляпо"
+    },
+    "izpitatelya": {
+      "trigger": "поправка без тест, нов поток, flaky тест",
+      "receives": "поправката и критичния поток",
+      "outputs": "тестове, които падат без поправката",
+      "handoff": "Кодаджията, ако тестът разкрие бъг",
+      "human": "изключване на тест",
+      "keys": [
+        "тест",
+        "flaky",
+        "e2e",
+        "playwright",
+        "vitest",
+        "jest",
+        "покрит"
+      ],
+      "rules": [
+        "Тестът трябва да пада без поправката — иначе не пази нищо.",
+        "Flaky се изолира и поправя, не се крие с повторения."
+      ],
+      "tools": [
+        "tools/qa/static-site-check.mjs",
+        "tools/code/scan.sh"
+      ],
+      "output": "тестове (unit/e2e) и как падат без поправката",
+      "done": "тестът пада при регресията и минава стабилно; нула flaky",
+      "onFail": "не може да се възпроизведе → минимален репро случай и блокер към Кодаджията"
+    },
+    "razbivacha": {
+      "trigger": "преди пускане или нова повърхност за атака",
+      "receives": "системата и модела на заплахата",
+      "outputs": "опити за пробив с доказателство и поправка",
+      "handoff": "собственика на домейна (Кодаджията, Продавача, VPS-аджията)",
+      "human": "реална дупка → координирано разкриване",
+      "keys": [
+        "атакувай",
+        "red-team",
+        "пробив",
+        "счупи",
+        "заобикол"
+      ],
+      "rules": [
+        "Само наши системи; никога DoS, разрушително или изнасяне на реални данни.",
+        "Ексфил път се доказва само с маркер-канарче, никога с реална тайна."
+      ],
+      "tools": [
+        "tools/agents/verifier.mjs",
+        "tools/security/secret-scan.mjs"
+      ],
+      "output": "възпроизведени атаки с доказателство, таксономия и поправка",
+      "done": "всяка находка е възпроизведена (не хипотеза); verifier.mjs razbivacha минава",
+      "onFail": "не се възпроизвежда → отхвърли находката, не я ескалирай като догадка"
+    },
+    "konveyera": {
+      "trigger": "червен или бавен CI, нов workflow",
+      "receives": "workflow-а и лога",
+      "outputs": "зелен, path-филтриран, пиннат workflow",
+      "handoff": "VPS-аджията за стъпка извън GitHub",
+      "human": "required checks и права на токена",
+      "keys": [
+        "ci",
+        "workflow",
+        "actions",
+        "pipeline",
+        "кеш",
+        "gitleaks",
+        "dependabot"
+      ],
+      "rules": [
+        "Actions пиннати по SHA; permissions минимални; OIDC вместо дълготрайни ключове.",
+        "Гейтът живее в gate.mjs/скриптове, не преписан в YAML."
+      ],
+      "tools": [
+        "tools/ci/workflow-lint.mjs",
+        "tools/ci/workflow-audit.mjs"
+      ],
+      "output": "workflow с path-филтри, таван на времето и минимални права",
+      "done": "workflow-ът е path-филтриран, пиннат и с минимални права; workflow-lint зелен",
+      "onFail": "Actions не стартира (лимит, плащане) → кажи го и спри; не пипай кода заради чужд провал"
+    },
+    "vps-adjiyata": {
+      "trigger": "деплой, сървър, TLS, бекъп",
+      "receives": "ref и списък продукти",
+      "outputs": "пуснат release с health-check и път за връщане",
+      "handoff": "Наблюдателя (след пускането)",
+      "human": "кога и кой ref; разрушителна миграция",
+      "keys": [
+        "деплой",
+        "deploy",
+        "сървър",
+        "vps",
+        "autodeploy",
+        "nginx",
+        "systemd",
+        "docker",
+        "tls",
+        "сертификат",
+        "бекъп",
+        "rollback",
+        "диск"
+      ],
+      "rules": [
+        "Бекъп преди всяко рисково действие; нищо разрушително без изрично да.",
+        "Тайните остават на сървъра (600); на кутията няма git pull."
+      ],
+      "tools": [
+        "tools/vps/deploy-check.mjs",
+        "tools/vps/backup-verify.sh",
+        "tools/vps/blue-green.sh"
+      ],
+      "output": "пуснат release, health-check и пътят за връщане",
+      "done": "бекъп преди; health зелен след; rollback готов",
+      "onFail": "health-check пада → автоматичното връщане на autodeploy и диагноза от логовете; не кърпи на живо"
+    },
+    "skorostnika": {
+      "trigger": "преди деплой, бавна страница, регресия на CWV",
+      "receives": "локален билд или URL",
+      "outputs": "оценка 0–100 и какво пречи на 100",
+      "handoff": "Дизайнера или Кодаджията по причината",
+      "human": "приемане на бюджет под 90",
+      "keys": [
+        "lighthouse",
+        "lcp",
+        "inp",
+        "cls",
+        "бавн",
+        "скорост",
+        "производител"
+      ],
+      "rules": [
+        "Числата са измерени в истински Chromium срещу локален билд, не измислени.",
+        "Лабораторни данни ≠ полеви — винаги го казвай."
+      ],
+      "tools": [
+        "tools/seo/prelaunch-audit.mjs",
+        "tools/seo/cwv.mjs"
+      ],
+      "output": "оценка 0–100 и подреден списък какво пречи на 100",
+      "done": "оценка ≥90 преди пускане или изрично прието изключение",
+      "onFail": "билдът не тръгва локално → блокер към собственика на продукта, не оценявай на око"
+    },
+    "nabludatelya": {
+      "trigger": "след пускане, инцидент, нужда от SLO",
+      "receives": "услугата и нейните логове/метрики",
+      "outputs": "SLO, аларми по симптом, диагноза",
+      "handoff": "Кодаджията (бъг), VPS-аджията (инфра), Летописеца (postmortem)",
+      "human": "error budget политика",
+      "keys": [
+        "slo",
+        "аларм",
+        "инцидент",
+        "логове",
+        "мониторинг",
+        "500",
+        "opentelemetry",
+        "grafana"
+      ],
+      "rules": [
+        "Аларма по симптом (burn-rate), не по причина.",
+        "Здравето на системата е твое; поведението на потребителя е на Анализатора."
+      ],
+      "tools": [
+        "tools/observability/obs-audit.mjs"
+      ],
+      "output": "SLI/SLO, аларми с runbook, диагноза на инцидента",
+      "done": "SLO от потребителска гледна точка; аларми по burn-rate с runbook",
+      "onFail": "липсват логове/метрики → първо инструментирай, после съди; не гадай причината"
+    },
+    "letopisetsa": {
+      "trigger": "потребителски-видима промяна, нужда от документ",
+      "receives": "промяната",
+      "outputs": "README/CHANGELOG/ADR/runbook с пуснати примери",
+      "handoff": "Преводача",
+      "human": "правни документи → Правния",
+      "keys": [
+        "документац",
+        "readme",
+        "changelog",
+        "adr",
+        "runbook",
+        "llms.txt"
+      ],
+      "rules": [
+        "Всяка команда и пример в документа е пусната.",
+        "Един документ — един режим по Diátaxis."
+      ],
+      "tools": [
+        "tools/docs/doc-audit.mjs",
+        "tools/docs/collect-claude-md.mjs"
+      ],
+      "output": "README/CHANGELOG/ADR/runbook в правилния режим",
+      "done": "примерите минават; документът е кратък и активен",
+      "onFail": "примерът не минава → поправи го или го махни; не публикувай непроверено"
+    },
+    "prevodach": {
+      "trigger": "нов или променен UI текст",
+      "receives": "BG източника",
+      "outputs": "EN и IT с паритет на ключовете",
+      "handoff": "SEO (hreflang)",
+      "human": "медицински и правни низове",
+      "keys": [
+        "преведи",
+        "превод",
+        "италиански",
+        "английски",
+        "локализ",
+        "i18n"
+      ],
+      "rules": [
+        "BG е източникът; никога сляп машинен превод на клиничен или правен термин.",
+        "Числата и единиците не се губят и не се добавят."
+      ],
+      "tools": [
+        "tools/i18n/check-parity.mjs",
+        "tools/i18n/glossary-check.mjs",
+        "tools/i18n/pseudo.mjs"
+      ],
+      "output": "EN и IT с пълен паритет на ключовете",
+      "done": "паритетът bg/en/it е пълен; клиничните термини са проверени или маркирани",
+      "onFail": "несигурен термин → маркирай за човешка проверка, не измисляй"
+    },
+    "siydara": {
+      "trigger": "ново съдържание за zabobovdol",
+      "receives": "фактите с източник",
+      "outputs": "идемпотентен seed, регистриран в db:seed:all",
+      "handoff": "Преводача",
+      "human": "факт без източник — спира",
+      "keys": [
+        "seed",
+        "сийд",
+        "ръководств",
+        "zabobovdol"
+      ],
+      "rules": [
+        "Източник или нищо — факт без източник спира seed-а.",
+        "Идемпотентно: upsert по уникален ключ, две пускания без дубли."
+      ],
+      "tools": [
+        "tools/seed/check-dups.mjs",
+        "tools/seed/check-integrity.mjs"
+      ],
+      "output": "seed скрипт, регистриран в db:seed:all",
+      "done": "две пускания без нови дубли; check-dups и check-integrity зелени",
+      "onFail": "липсва източник → спри и поискай; не попълвай по памет"
+    },
+    "seo": {
+      "trigger": "нова/променена страница, sitemap, JSON-LD",
+      "receives": "страниците",
+      "outputs": "находки по ефект × усилие, ключови думи, IndexNow",
+      "handoff": "Скоростника (CWV), Преводача (hreflang)",
+      "human": "деплоят, след който тръгва IndexNow",
+      "keys": [
+        "seo",
+        "търсачк",
+        "класиране",
+        "sitemap",
+        "hreflang",
+        "json-ld",
+        "llms",
+        "indexnow",
+        "ключови"
+      ],
+      "rules": [
+        "Всяка страница носи ≥5 ключови думи, една е „Carbon Stealth“.",
+        "Без обещания за класиране; смяна на slug → 301."
+      ],
+      "tools": [
+        "tools/seo/check-jsonld.mjs",
+        "tools/seo/indexnow.mjs",
+        "tools/seo/ai-bots.mjs",
+        "tools/seo/gsc.mjs"
+      ],
+      "output": "препоръки по ефект × усилие с измерим показател",
+      "done": "всяка препоръка с ефект × усилие; каноничността не е счупена; IndexNow след деплой",
+      "onFail": "сайтът не е жив → одит срещу локалния билд и бележка, че IndexNow чака деплоя"
+    },
+    "socialdjiyata": {
+      "trigger": "пускане, кампания, клип",
+      "receives": "продукта и аудиторията",
+      "outputs": "hooks, сценарии, план за публикуване",
+      "handoff": "Анализатора (мерене на обхвата)",
+      "human": "публикуването",
+      "keys": [
+        "instagram",
+        "tiktok",
+        "reels",
+        "shorts",
+        "пост",
+        "клип",
+        "обхват",
+        "социал"
+      ],
+      "rules": [
+        "Публикуването го одобрява човек; агентът стига до чернова.",
+        "AI съдържание носи разкриване (C2PA/етикет) по правилата на платформата."
+      ],
+      "tools": [
+        "tools/social/post-lint.mjs",
+        "tools/social/clip.sh",
+        "tools/social/repurpose.sh",
+        "tools/social/c2pa-sign.sh"
+      ],
+      "output": "hook, сценарий, caption, cover и час за публикуване",
+      "done": "готов клип или точен производствен план с hook, 9:16, captions и разкриване",
+      "onFail": "липсва материал → производствен план с точните кадри, не измисляй резултати"
+    },
+    "analizatora": {
+      "trigger": "„работи ли“, нова метрика, A/B тест",
+      "receives": "въпроса и данните",
+      "outputs": "tracking plan, фунии, прочетен експеримент",
+      "handoff": "Правния (съгласие), Продавача (приходи)",
+      "human": "проследяване — само със съгласие",
+      "keys": [
+        "метрик",
+        "фуния",
+        "retention",
+        "a/b",
+        "kpi",
+        "аналитик",
+        "ga4",
+        "plausible",
+        "posthog"
+      ],
+      "rules": [
+        "Проследяване само след съгласие; нула PII.",
+        "Корелация не е причина — причинно твърдение иска A/B."
+      ],
+      "tools": [
+        "tools/analytics/analytics-audit.mjs"
+      ],
+      "output": "tracking plan, дефинирани метрики, прочетен експеримент",
+      "done": "всяка метрика с писана дефиниция; съгласие и нула PII",
+      "onFail": "няма данни → дизайн на проследяването, не изводи от нищо"
+    },
+    "prodavacha": {
+      "trigger": "checkout, абонамент, webhook, фактура",
+      "receives": "паричния поток",
+      "outputs": "идемпотентен код с проверен webhook",
+      "handoff": "Кодаджията (ревю), Правния (14 дни, ДДС)",
+      "human": "реални пари",
+      "keys": [
+        "stripe",
+        "checkout",
+        "плащан",
+        "абонамент",
+        "webhook",
+        "фактур",
+        "ддс"
+      ],
+      "rules": [
+        "Сумата се смята на сървъра; правата се дават само през проверен webhook.",
+        "Всяка платежна операция е идемпотентна."
+      ],
+      "tools": [
+        "tools/commerce/stripe-lint.mjs"
+      ],
+      "output": "checkout/billing код с проверен webhook и идемпотентност",
+      "done": "сумата е сървърна; подписът на webhook-а е проверен със суровото тяло; stripe-lint зелен",
+      "onFail": "webhook не идва → провери подписа и endpoint-а при VPS-аджията; не давай права по redirect"
+    },
+    "kasadjiyata": {
+      "trigger": "касов или фискален код в CSPos",
+      "receives": "касовия поток",
+      "outputs": "код по Н-18/СУПТО, цели евроценти",
+      "handoff": "Кодаджията, после Изпитателя",
+      "human": "нормативната изрядност; „не е правен съвет“",
+      "keys": [
+        "каса",
+        "касов",
+        "фискал",
+        "бон",
+        "н-18",
+        "супто",
+        "cspos",
+        "pos"
+      ],
+      "rules": [
+        "Парите са цели евроценти, никога float.",
+        "Продажба без успешен фискален бон не се записва."
+      ],
+      "tools": [
+        "tools/code/scan.sh"
+      ],
+      "output": "касов код по Н-18/СУПТО",
+      "done": "парите са int; продажба без бон не се записва; корекции само чрез сторно",
+      "onFail": "ФУ не отговаря → продажбата не се записва и потребителят вижда грешка; не „записвай после“"
+    },
+    "treydara": {
+      "trigger": "трейдинг бот или бектест",
+      "receives": "стратегията и пазара",
+      "outputs": "риск-първо код и честен бектест",
+      "handoff": "Кодаджията, VPS-аджията (ключове)",
+      "human": "реални поръчки",
+      "keys": [
+        "трейд",
+        "binance",
+        "ccxt",
+        "бектест",
+        "стратеги",
+        "treydar"
+      ],
+      "rules": [
+        "Реални поръчки пуска само човекът; ключове без право на теглене.",
+        "Бектестът е без look-ahead, с такси и slippage."
+      ],
+      "tools": [
+        "tools/trading/trader-lint.mjs"
+      ],
+      "output": "риск-първо код и честен бектест (walk-forward)",
+      "done": "всяка поръчка с clientOrderId и идемпотентен ретрай; всяка позиция със stop",
+      "onFail": "борсата връща грешка → идемпотентен ретрай по clientOrderId, после kill-switch; никога двойна поръчка"
+    },
+    "goladjiyata": {
+      "trigger": "анализ на мач, value залог",
+      "receives": "мача и пазара",
+      "outputs": "вероятности, стойност след маржа, дробен Kelly",
+      "handoff": "Кодаджията (математиката)",
+      "human": "реален залог",
+      "keys": [
+        "залог",
+        "коефициент",
+        "мач",
+        "kelly",
+        "xg",
+        "футбол"
+      ],
+      "rules": [
+        "Стойност само след махане на маржа и спрямо пазарната вероятност.",
+        "Никога „сигурен залог“; реален залог пуска само човекът; 18+."
+      ],
+      "tools": [
+        "tools/betting/golad.mjs",
+        "tools/betting/devig.mjs",
+        "tools/betting/calibration.mjs"
+      ],
+      "output": "вероятности, стойност и дробен Kelly с таван",
+      "done": "данните са цитирани; λ и матрицата са смятани прозрачно",
+      "onFail": "липсват живи данни → кажи го и спри; не прогнозирай по спомен"
+    },
+    "pravniyat-razbirach": {
+      "trigger": "пускане, проследяване, форма, потребителско съдържание",
+      "receives": "сайта или промяната",
+      "outputs": "одит с файл:ред; „не е правен съвет“",
+      "handoff": "собственика на кода (поправката е негова)",
+      "human": "правното решение",
+      "keys": [
+        "gdpr",
+        "бисквит",
+        "cookie",
+        "съгласие",
+        "поверител",
+        "dsa",
+        "достъпност",
+        "eaa",
+        "wcag",
+        "импресум",
+        "правн"
+      ],
+      "rules": [
+        "Само чете и докладва с файл:ред; поправката е на собственика на кода.",
+        "Всеки извод завършва с „не е правен съвет“; „в сила“ се отделя от „проект“."
+      ],
+      "tools": [
+        "tools/legal/consent-scan.mjs",
+        "tools/legal/a11y.mjs",
+        "tools/legal/ropa-gen.mjs"
+      ],
+      "output": "одит с правна препратка и тежест",
+      "done": "всяка находка с препратка + тежест; дисклеймърът е на края",
+      "onFail": "текстът на закона не е достъпен → кажи „непроверено“, не цитирай по памет"
+    },
+    "tayniyat-agent": {
+      "trigger": "качване в Apple/Google/Meta/Web Store, отказ при ревю",
+      "receives": "билда и декларациите",
+      "outputs": "изрядност по политиките, разчетен отказ",
+      "handoff": "Мобилджията/Хромаджията (поправка), Правния",
+      "human": "отговорът на ревюто",
+      "keys": [
+        "app review",
+        "app store",
+        "google play",
+        "data safety",
+        "meta app",
+        "отказа",
+        "ревю"
+      ],
+      "rules": [
+        "Никога cloaking или заобикаляне на ревю — перманентен бан.",
+        "Правилото се цитира точно, с източник и дата."
+      ],
+      "tools": [
+        "tools/approval/review-check.mjs",
+        "tools/mobile/store-readiness.mjs"
+      ],
+      "output": "изрядност по политиките, разчетен отказ с поправка",
+      "done": "правилото е цитирано точно; етикетите за поверителност са пълни и верни",
+      "onFail": "неясен отказ → разчети причината по цитираното правило и попитай ревюто; не крий"
+    },
+    "asansyorchika": {
+      "trigger": "въпрос по норма за асансьори",
+      "receives": "въпроса и изданието",
+      "outputs": "документ + издание + точка + стойност",
+      "handoff": "Кодаджията (код), Изпитателя (тест на стойността)",
+      "human": "инженерът решава съответствието",
+      "keys": [
+        "норма",
+        "uni",
+        "en 81",
+        "асансьор",
+        "кабина",
+        "liftpilot"
+      ],
+      "rules": [
+        "Текст на норма UNI/EN никога не влиза в репото — само номер на точка и стойност.",
+        "Изданието се проверява първо: кое важи за нов срещу съществуващ асансьор."
+      ],
+      "tools": [
+        "tools/agents/verifier.mjs"
+      ],
+      "output": "документ + издание + точка + стойност",
+      "done": "отговорът сочи точка и стойност от правилното издание",
+      "onFail": "точката не е проверима → „непроверено“ и въпрос към инженера, не стойност по памет"
+    },
+    "mobildjiyata": {
+      "trigger": "мобилен билд или нативна функция",
+      "receives": "продукта",
+      "outputs": "билд, готов за магазина",
+      "handoff": "Тайния агент (ревю)",
+      "human": "качването",
+      "keys": [
+        "мобил",
+        "ios",
+        "android",
+        "capacitor",
+        "twa",
+        "push",
+        "nfc"
+      ],
+      "rules": [
+        "Нула тайни в бъндъла; чувствителното е на сървъра.",
+        "Обвивката има нативна стойност (Guideline 4.2), не е само уеб изглед."
+      ],
+      "tools": [
+        "tools/mobile/store-readiness.mjs"
+      ],
+      "output": "билд, готов за App Store/Play",
+      "done": "без тайни в бъндъла; store-readiness зелен",
+      "onFail": "билдът пада в магазина → към Тайния агент с причината, не заобикаляй"
+    },
+    "hromadjiyata": {
+      "trigger": "разширение за Chrome/Edge",
+      "receives": "разширението",
+      "outputs": "MV3 с минимални permissions",
+      "handoff": "Тайния агент (Web Store)",
+      "human": "качването",
+      "keys": [
+        "разширение",
+        "chrome",
+        "manifest v3",
+        "mv3",
+        "web store",
+        "adblock"
+      ],
+      "rules": [
+        "Manifest V3; нула отдалечен код.",
+        "Минимални permissions — activeTab, където стига."
+      ],
+      "tools": [
+        "tools/chrome/mv3-lint.mjs"
+      ],
+      "output": "MV3 разширение, готово за Web Store",
+      "done": "manifest_version 3; нула отдалечен код; mv3-lint зелен",
+      "onFail": "Web Store отказ → към Тайния агент; не добавяй права „за всеки случай“"
+    },
+    "diskordjiyata": {
+      "trigger": "Discord бот или интеграция",
+      "receives": "бота",
+      "outputs": "interactions с defer под 3 s, проверка Ed25519",
+      "handoff": "Кодаджията/VPS-аджията",
+      "human": "токенът и intents",
+      "keys": [
+        "discord",
+        "slash",
+        "бот",
+        "interaction",
+        "gateway",
+        "webhook"
+      ],
+      "rules": [
+        "Токенът е в env, не в git; intents минимални.",
+        "HTTP interactions се проверяват с Ed25519; отговор (defer) под 3 s."
+      ],
+      "tools": [
+        "tools/discord/discord-lint.mjs"
+      ],
+      "output": "бот с interactions, команди и проверка на подписа",
+      "done": "токенът е в env; HTTP interactions проверени; discord-lint зелен",
+      "onFail": "rate limit → изчакай по заглавката retry-after, не бомбардирай"
+    },
+    "geymara": {
+      "trigger": "FiveM ресурс",
+      "receives": "ресурса",
+      "outputs": "Lua със сървърна валидация",
+      "handoff": "Кодаджията при общ код",
+      "human": "пускането на сървъра",
+      "keys": [
+        "fivem",
+        "lua",
+        "esx",
+        "qbcore",
+        "qbox",
+        "fxmanifest"
+      ],
+      "rules": [
+        "Всяко сървърно събитие е валидирано на сървъра.",
+        "Natives се кешират; без Wait(0) спам."
+      ],
+      "tools": [
+        "tools/fivem/manifest-lint.mjs"
+      ],
+      "output": "FiveM ресурс с fxmanifest",
+      "done": "ensure без грешки; сървърна валидация на всяко събитие",
+      "onFail": "ресурсът не тръгва → конзолата/txAdmin първо, после поправка"
+    },
+    "dizayner": {
+      "trigger": "визуален ефект, hero, анимация",
+      "receives": "режима (сериозен/творчески) и страницата",
+      "outputs": "ефект с reduced-motion резерв",
+      "handoff": "Скоростника (CWV)",
+      "human": "режимът",
+      "keys": [
+        "дизайн",
+        "визуал",
+        "анимац",
+        "webgl",
+        "three",
+        "шейдър",
+        "gsap",
+        "hero",
+        "ефект",
+        "скрол"
+      ],
+      "rules": [
+        "Никога над 3 проблясъка в секунда; prefers-reduced-motion резерв винаги.",
+        "Режимът (сериозен/творчески) е вход от човека, не догадка; спешният изглед на medqr е без декорация."
+      ],
+      "tools": [
+        "tools/design/motion-a11y.mjs"
+      ],
+      "output": "ефект с резерв за намалено движение",
+      "done": "motion-a11y зелен; режимът е определен",
+      "onFail": "ефектът сваля CWV → към Скоростника, опрости ефекта, не пускай бавно"
+    },
+    "3d-maniac": {
+      "trigger": "скан към CAD, карбонова форма",
+      "receives": "мрежата от скана",
+      "outputs": "solid/NURBS с deviation отчет",
+      "handoff": "Принтаджията",
+      "human": "проверка на физическата част",
+      "keys": [
+        "скан",
+        "cad",
+        "nurbs",
+        "карбон",
+        "калъп",
+        "quicksurface",
+        "mesh"
+      ],
+      "rules": [
+        "Deviation анализ срещу скана преди всяка форма.",
+        "Параметрично и редактируемо; датуми и допускания документирани."
+      ],
+      "tools": [
+        "tools/3d/clean_and_validate.py",
+        "tools/3d/ransac_segment.py",
+        "tools/3d/generate_mold.py"
+      ],
+      "output": "solid/NURBS модел и deviation отчет",
+      "done": "watertight/manifold; deviation в целевия толеранс",
+      "onFail": "мрежата е дупчива → почисти и валидирай преди моделиране, не замазвай"
+    },
+    "printadjiyata": {
+      "trigger": "модел за печат на K2 Plus",
+      "receives": "модела",
+      "outputs": "печатаем модел и 3MF слайс",
+      "handoff": "човека (печатът е физически)",
+      "human": "проверка на отпечатъка",
+      "keys": [
+        "печат",
+        "k2",
+        "слайс",
+        "3mf",
+        "нишк",
+        "fdm",
+        "stl",
+        "watertight"
+      ],
+      "rules": [
+        "Watertight/manifold, в мм, 3MF.",
+        "Материалът съвпада с камерата и дюзата на K2 Plus."
+      ],
+      "tools": [
+        "tools/print/printability.mjs"
+      ],
+      "output": "печатаем модел и 3MF слайс",
+      "done": "printability зелен; ориентация по товар; толеранси заложени",
+      "onFail": "моделът идва от скан → първо 3D Maniac, после печат"
+    }
+  },
+  "launchPlan": [
+    {
+      "day": 1,
+      "goal": "Всяка нова задача започва с teams.mjs --route; равенство или празно → AI-джията.",
+      "check": "рутингът е ползван за всяка задача от деня"
+    },
+    {
+      "day": 2,
+      "goal": "Всяка многостъпкова задача се записва във flow-ledger (--start/--handoff/--close).",
+      "check": "flow-ledger.mjs --report показва записаните вериги"
+    },
+    {
+      "day": 3,
+      "goal": "Делегиране само с шаблона за задача (цел · вход · граници · готово е, когато).",
+      "check": "нито един делегат без „готово е, когато“"
+    },
+    {
+      "day": 4,
+      "goal": "Човешките точки се спазват: пари, право, пускане, публикуване спират за одобрение.",
+      "check": "нула вериги, минали човешка точка без одобрение"
+    },
+    {
+      "day": 5,
+      "goal": "Прочети метриките на всеки екип (командите в секцията му).",
+      "check": "всеки екип има поне един прочетен отчет"
+    },
+    {
+      "day": 6,
+      "goal": "Задача, отишла в грешен екип, става нова тестова задача и поправка на ключовете.",
+      "check": "teams.mjs --check зелен с новия случай"
+    },
+    {
+      "day": 7,
+      "goal": "Преглед: кой екип блокира, кой стои празен; решение за v2 (вж. „след v1“).",
+      "check": "записано решение за всеки блокиран или празен екип"
+    }
+  ],
+  "nextVersion": [
+    "Рутинг по смисъл (BM25 като паметта) вместо по ключови думи — когато грешните маршрути в седмицата станат повече от 2.",
+    "Отделен поток за всеки екип с trajectory spec, за да се съди и пътят, не само изходът.",
+    "Свиване на екип с един човек (Щабът) или празен екип след 30 дни без верига.",
+    "Таблото да показва живите вериги по екипи от flow-ledger."
+  ]
 }
