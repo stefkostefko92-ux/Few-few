@@ -60,7 +60,7 @@ const DEF_LINE_WARN = 200;
 const REVERIFY_RE = /re-?verify:?\s*(\d{4}-\d{2}-\d{2})/i;
 
 // „Не-агентски" файлове в директориите
-const NOT_AGENT_DEF = new Set(["README.md", "_orchestration.md"]);
+const NOT_AGENT_DEF = new Set(["README.md", "_orchestration.md", "_teams.md"]);
 const NOT_AGENT_MEM = new Set(["SECURITY.md", "PROTOCOL.md", "PROCEDURE.md", "_shared.md"]);
 
 // --- Събери източниците на истина ---

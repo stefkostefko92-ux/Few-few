@@ -28,6 +28,15 @@ that file **and** `agents-dashboard/agents.json` in sync when you change an agen
 **model/effort sync** frontmatter↔`agents.json`, uncited lessons, near-dups, dashboard/doctrine sync;
 fail-closed) and orchestrates by Anthropic's agent canon. Run `oversee.mjs` after any change to the agent layer.
 
+**Екипи (`.claude/agents/_teams.json` → `_teams.md`, `teams.mjs`).** 29 агента в плосък ростер и 24
+потока в проза — никой не знаеше откъде да започне, а дългите вериги плащаха префикса на всеки участник.
+Сега всеки агент е в **точно един** от 9 екипа; екипът има водач, основен поток **≤3 стъпки** с гейт
+между тях и **човешка точка**, 5 тестови задачи, 3 вероятни провала и метрики, сочещи реални наши
+инструменти. Картата на агента (екип · тръгва при · получава · връща · предава на · човек) се инжектира
+при старт **след** статичния префикс — кешът остава общ. `teams.mjs --check` (в `gate.mjs`) гейтва
+целостта и че 45-те задачи рутират точно; рутингът е лексикален помощник за старт, не съдия — нищо или
+равенство → AI-джията. Нов агент или екип се доказва с верига в `flow-ledger.mjs`, спряла заради липсата.
+
 **Loop/automation слой (`tools/agents/loops/`).** Лостът е loop-ът, не единичният промпт (идея от
 loop-engineering, написана нашия начин — zero-dep, fail-closed). Декларативен манифест (`loops.json`) с
 **автономия-стълба L1 (само доклад) → L2 (помага) → L3 (безнадзорно)**; `loop-audit.mjs` гейтва готовността
