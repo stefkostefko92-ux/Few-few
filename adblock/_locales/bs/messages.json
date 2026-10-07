@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Blokira reklame svuda: video reklame na YouTubeu, banere, iskočne prozore, tragače i anti-adblock zidove. Besplatno i privatno."
+    "message": "Blokira reklame svuda: video reklame na YouTubeu, banere, iskočne prozore, tragače i anti-adblock zidove."
   },
   "byCarbon": {
     "message": "od Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Licence lista filtera"
+  },
+  "welPageTitle": {
+    "message": "Dobro došli u Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Zaštita je uključena",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock sada blokira reklame i tragače na svakom sajtu koji posjetite. Ništa ne trebate podešavati.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Zakačite ekstenziju na traku s alatima",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Kliknite ikonu dijela slagalice pored adresne trake i zakačite Supreme AdBlock. Tada jednim klikom vidite šta je blokirano na stranici.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Ako sajt izgleda neispravno",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Otvorite ekstenziju i isključite blokiranje za taj sajt ili odaberite „Sajt ne radi?“ za brze popravke.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Vaše pregledanje ostaje na vašem uređaju",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Filtriranje se odvija lokalno. Ekstenzija ne prikuplja lične podatke i ne šalje ništa o stranicama koje posjećujete.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Otvori postavke",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Razumijem",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

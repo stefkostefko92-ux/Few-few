@@ -80,9 +80,7 @@ const cfg = bg.sanitizeConfig({ version: 7, blockDomains: ["||ads.example.com^",
   ] });
 ok("bg: blockDomains normalised, protected/invalid dropped", cfg.blockDomains.length === 1 && cfg.blockDomains[0] === "ads.example.com");
 ok("bg: cosmetic guards (form/password/cc/universal) applied", cfg.cosmetic.join() === ".ad,.sponsored-box");
-const names = cfg.scriptlets.map((s) => s.h + ":" + s.d.join(","));
-ok("bg: scriptlets — aliases canonicalised, global/remove-cookie/bad-cookie/protected/proto/trusted dropped",
-  names.length === 2 && names.includes("example.com:abort-on-property-read,adBlock") && names.includes("s.com:set-cookie,c,accepted"));
+ok("bg: filters.json can never carry scriptlets — the key is dropped, only data survives", !("scriptlets" in cfg));
 ok("bg: safeSelector refuses stylesheet escapes and the page itself as target",
   [".x{background:url(//t.example/b)}", ".y;", ".ad\\", ".a /* c", "body.x", ".a, body", "html > body:not(.a)", "body:has(.x)", ":root.x"].every((x) => !bg.safeSelector(x)) &&
   ["body.x .ad", ".ad-body", "html .ad", "#bodyx", ".tbody-ad"].every((x) => bg.safeSelector(x)));

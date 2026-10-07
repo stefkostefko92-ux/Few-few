@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "ფილტრების სიების ლიცენზიები"
+  },
+  "welPageTitle": {
+    "message": "მოგესალმებათ Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "დაცვა ჩართულია",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock ახლა ბლოკავს რეკლამებსა და ტრეკერებს ყველა საიტზე, რომელსაც სტუმრობთ. არაფრის დაყენება არ არის საჭირო.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "მიამაგრეთ გაფართოება ხელსაწყოთა ზოლზე",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "დააწკაპუნეთ მისამართის ზოლის გვერდით თავსატეხის ნაწილის ხატულაზე და მიამაგრეთ Supreme AdBlock. შემდეგ ერთი დაწკაპუნებით ნახავთ, რა დაიბლოკა გვერდზე.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "თუ საიტი გაფუჭებულად გამოიყურება",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "გახსენით გაფართოება და გამორთეთ დაბლოკვა ამ საიტისთვის, ან სწრაფი გამოსწორებისთვის აირჩიეთ „საიტი გაფუჭდა?“.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "თქვენი დათვალიერება თქვენს მოწყობილობაზე რჩება",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "ფილტრაცია ადგილობრივად ხდება. გაფართოება არ აგროვებს პერსონალურ მონაცემებს და არაფერს აგზავნის თქვენ მიერ მონახულებული გვერდების შესახებ.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "პარამეტრების გახსნა",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "გასაგებია",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

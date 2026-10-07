@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "隨處封鎖廣告：YouTube 影片廣告、橫幅、彈出式視窗、追蹤器、Cookie 提示和反廣告封鎖牆。免費、快速、保護隱私。"
+    "message": "隨處封鎖廣告：YouTube 影片廣告、橫幅、彈出式視窗、追蹤器、Cookie 提示和反廣告封鎖牆。"
   },
   "byCarbon": {
     "message": "by Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "過濾清單的授權條款"
+  },
+  "welPageTitle": {
+    "message": "歡迎使用 Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "您已受到保護",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock 現在會在您造訪的每個網站上封鎖廣告和追蹤器，不需要任何設定。",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "將擴充功能固定到工具列",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "按一下網址列旁的拼圖圖示，然後固定 Supreme AdBlock。之後只要按一下，就能查看頁面上封鎖了哪些內容。",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "如果網站顯示異常",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "開啟擴充功能並關閉該網站的封鎖功能，或選擇「網站顯示異常？」進行快速修正。",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "您的瀏覽資料只會留在您的裝置上",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "過濾作業在本機進行。擴充功能不會收集任何個人資料，也不會傳送任何關於您所造訪網頁的資訊。",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "開啟設定",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "我知道了",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

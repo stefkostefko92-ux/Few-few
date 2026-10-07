@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Blokeatu iragarkiak nonahi: YouTube, bannerrak, laster-leihoak, jarraipen-elementuak, cookie-oharrak eta anti-adblock hesiak. Doan."
+    "message": "Blokeatu iragarkiak nonahi: YouTube, bannerrak, laster-leihoak, jarraipen-elementuak, cookie-oharrak eta anti-adblock hesiak."
   },
   "byCarbon": {
     "message": "Carbon Stealth-ek egina"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Iragazki-zerrenden lizentziak"
+  },
+  "welPageTitle": {
+    "message": "Ongi etorri Supreme AdBlock-era",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Babestuta zaude",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock-ek iragarkiak eta jarraipen-elementuak blokeatzen ditu orain bisitatzen dituzun webgune guztietan. Ez dago ezer konfiguratu beharrik.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Ainguratu gehigarria tresna-barran",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Egin klik helbide-barraren ondoko puzzle-piezaren ikonoan eta ainguratu Supreme AdBlock. Gero, klik bakarrarekin ikusiko duzu zer blokeatu den orrian.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Webgune bat hautsita badago",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Ireki gehigarria eta desaktibatu blokeoa webgune horretarako, edo aukeratu «Webgunea hautsita?» konponbide azkarrak lortzeko.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Zure nabigazioa zure gailuan geratzen da",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Iragazketa lokalean egiten da. Gehigarriak ez du datu pertsonalik biltzen, eta ez du ezer bidaltzen bisitatzen dituzun orriei buruz.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Ireki ezarpenak",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Ulertuta",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

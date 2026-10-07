@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "随处拦截广告：YouTube 视频广告、横幅、弹出式窗口、跟踪器、Cookie 提示和反广告拦截墙。免费、快速、保护隐私。"
+    "message": "随处拦截广告：YouTube 视频广告、横幅、弹出式窗口、跟踪器、Cookie 提示和反广告拦截墙。"
   },
   "byCarbon": {
     "message": "by Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "过滤规则列表的许可证"
+  },
+  "welPageTitle": {
+    "message": "欢迎使用 Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "您已受到保护",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock 现已在您访问的每个网站上拦截广告和跟踪器。无需任何设置。",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "将扩展程序固定到工具栏",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "点击地址栏旁边的拼图图标，然后固定 Supreme AdBlock。之后只需点击一下，即可查看页面上拦截了哪些内容。",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "如果网站显示异常",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "打开扩展程序并为该网站关闭拦截，或选择“网站显示异常？”进行快速修复。",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "您的浏览数据只留在您的设备上",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "过滤在本地进行。扩展程序不收集任何个人数据，也不会发送任何有关您所访问网页的信息。",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "打开设置",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "知道了",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

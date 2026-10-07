@@ -11,6 +11,8 @@ import os
 HERE = os.path.dirname(os.path.abspath(__file__))
 import json
 VERSION = json.load(open(os.path.join(HERE, "..", "..", "manifest.json")))["version"]  # popup shows the real version
+COUNTS = json.load(open(os.path.join(HERE, "..", "..", "rules", "counts.json")))  # real rule counts, never typed by hand
+LANGS = len([d for d in os.listdir(os.path.join(HERE, "..", "..", "_locales")) if not d.startswith(".")])
 
 CSS = """
 *{margin:0;padding:0;box-sizing:border-box}
@@ -127,7 +129,7 @@ def shoot(html_path, out_png, width, height, scale=2):
             f"--screenshot={out_png}", "file://" + html_path])
 
 
-def popup(blocked="1,204", data="68 MB", time="14 min", host="nytimes.com", log=None, theme="carbon"):
+def popup(blocked="1,204", data="68 MB", time="14 min", host="news.example.com", log=None, theme="carbon"):
     """Screenshot of the REAL popup (popup/popup.html + popup.css) seeded with demo
     numbers — the store art can never drift from the shipped UI again."""
     import base64, subprocess, tempfile, shutil
@@ -201,8 +203,8 @@ def features_panel():
 <div class="panel">
   <div class="ph">{SHIELD}<div><b>Settings</b><br><span>Carbon Stealth</span></div></div>
   <div class="card"><h3>Filter lists</h3>
-    <div class="row"><div><div class="t">uBlock Origin filters</div><div class="d">GPL-3.0 · 17,073 rules</div></div><div class="mini"></div></div>
-    <div class="row"><div><div class="t">French <span class="badge">your language</span></div><div class="d">AdGuard French · 4,917 rules</div></div><div class="mini"></div></div>
+    <div class="row"><div><div class="t">uBlock Origin filters</div><div class="d">GPL-3.0 · {COUNTS["list_ubo"]:,} rules</div></div><div class="mini"></div></div>
+    <div class="row"><div><div class="t">French <span class="badge">your language</span></div><div class="d">AdGuard French · {COUNTS["list_reg-fr"]:,} rules</div></div><div class="mini"></div></div>
     <div class="row"><div><div class="t">+ 30 more regional lists</div><div class="d">Arabic to Vietnamese, one switch each</div></div><div class="mini off"></div></div>
   </div>
   <div class="card"><h3>Focus mode</h3>
@@ -217,10 +219,10 @@ def smartlog_panel():
 <div class="panel">
   <div class="ph">{SHIELD}<div><b>Smart Detection log</b><br><span>why blocked</span></div></div>
   <div class="card"><h3>Caught heuristically · no filter list</h3>
-    <div class="logline"><div><div class="t">nytimes.com</div><div class="m">Ad-sized cross-origin frame · 300×250</div></div><div class="m">2m ago</div></div>
-    <div class="logline"><div><div class="t">forbes.com</div><div class="m">Sticky banner ad · 970×90</div></div><div class="m">5m ago</div></div>
-    <div class="logline"><div><div class="t">bbc.com</div><div class="m">Ad-sized cross-origin frame · 728×90</div></div><div class="m">11m ago</div></div>
-    <div class="logline"><div><div class="t">reddit.com</div><div class="m">Sticky banner ad · 320×50</div></div><div class="m">18m ago</div></div>
+    <div class="logline"><div><div class="t">news.example.com</div><div class="m">Ad-sized cross-origin frame · 300×250</div></div><div class="m">2m ago</div></div>
+    <div class="logline"><div><div class="t">magazine.example.org</div><div class="m">Sticky banner ad · 970×90</div></div><div class="m">5m ago</div></div>
+    <div class="logline"><div><div class="t">weather.example.net</div><div class="m">Ad-sized cross-origin frame · 728×90</div></div><div class="m">11m ago</div></div>
+    <div class="logline"><div><div class="t">forum.example.com</div><div class="m">Sticky banner ad · 320×50</div></div><div class="m">18m ago</div></div>
   </div>
 </div>"""
 
@@ -230,7 +232,7 @@ SLIDES = [
     ("Supreme AdBlock",
      'Ads and trackers, <span class="c">blocked</span>',
      "Banners, pop-ups, trackers and YouTube video ads are blocked as each page loads.",
-     ["YouTube pre-roll & mid-roll ads", "EasyList, EasyPrivacy & uBlock filters built in", "Banners, pop-ups, trackers & cookie prompts", "A per-page breakdown of what was blocked"],
+     ["YouTube pre-roll & mid-roll ads", "EasyList, EasyPrivacy & more filter lists built in", "Banners, pop-ups, trackers & cookie prompts", "A per-page breakdown of what was blocked"],
      popup(log=[["EasyList", 9], ["EasyPrivacy", 7], ["uBlock filters", 4], ["Tracking parameters", 2]])),
     ("YouTube",
      'YouTube video ads, <span class="c">removed</span>',
@@ -246,13 +248,13 @@ SLIDES = [
     ("Your language · your focus",
      'Local ads, <span class="c">local lists</span>',
      "31 regional lists built in — the one for your language turns on by itself. Focus mode hides chat bubbles, pop-ups and Shorts.",
-     ["70 interface languages", "Site broken? One-click fixes", "Element picker & custom filters", "Allow ads on sites you support"],
+     [f"{LANGS} interface languages", "Site broken? One-click fixes", "Element picker & custom filters", "Allow ads on sites you support"],
      features_panel()),
     ("Private by design",
      'No account. <span class="c">No telemetry.</span>',
      "Everything runs on your device — and the popup shows what each filter list blocked on the page.",
      ["See what each list blocked, per page", "Your browsing data never leaves the device", "Open-source code, MIT licence"],
-     popup(blocked="9,140", data="4.6 GB", time="2.3 h", host="facebook.com",
+     popup(blocked="9,140", data="4.6 GB", time="2.3 h", host="social.example.com",
            log=[["EasyPrivacy", 12], ["EasyList", 7], ["uBlock filters", 5], ["Supreme core rules", 3], ["Tracking parameters", 2]])),
 ]
 

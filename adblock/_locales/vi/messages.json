@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Chặn mọi quảng cáo: video YouTube, biểu ngữ, pop-up, trình theo dõi, hộp cookie, tường anti-adblock. Miễn phí, nhanh, riêng tư."
+    "message": "Chặn mọi quảng cáo: video YouTube, biểu ngữ, pop-up, trình theo dõi, hộp cookie, tường anti-adblock."
   },
   "byCarbon": {
     "message": "by Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Giấy phép của các danh sách bộ lọc"
+  },
+  "welPageTitle": {
+    "message": "Chào mừng bạn đến với Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Bạn đã được bảo vệ",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock hiện đang chặn quảng cáo và trình theo dõi trên mọi trang web bạn truy cập. Bạn không cần thiết lập gì cả.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Ghim tiện ích vào thanh công cụ",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Nhấp vào biểu tượng mảnh ghép bên cạnh thanh địa chỉ và ghim Supreme AdBlock. Sau đó, chỉ một cú nhấp là bạn thấy những gì đã bị chặn trên trang.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Nếu một trang web hiển thị bị lỗi",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Mở tiện ích và tắt chặn cho trang web đó, hoặc chọn “Trang bị lỗi?” để sửa nhanh.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Hoạt động duyệt web của bạn ở lại trên thiết bị của bạn",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Việc lọc diễn ra ngay trên máy. Tiện ích không thu thập dữ liệu cá nhân và không gửi bất kỳ thông tin nào về các trang bạn truy cập.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Mở cài đặt",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Đã hiểu",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

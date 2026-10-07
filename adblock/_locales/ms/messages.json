@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Sekat semua iklan: video YouTube, sepanduk, pop-up, penjejak, gesaan kuki, dinding anti-adblock. Percuma, pantas, peribadi."
+    "message": "Sekat semua iklan: video YouTube, sepanduk, pop-up, penjejak, gesaan kuki, dinding anti-adblock."
   },
   "byCarbon": {
     "message": "by Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Lesen senarai penapis"
+  },
+  "welPageTitle": {
+    "message": "Selamat datang ke Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Anda dilindungi",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock kini menyekat iklan dan penjejak pada setiap tapak yang anda lawati. Tiada apa-apa yang perlu disediakan.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Semat sambungan pada bar alat",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Klik ikon kepingan teka-teki di sebelah bar alamat dan semat Supreme AdBlock. Selepas itu, satu klik menunjukkan apa yang disekat pada halaman.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Jika tapak kelihatan rosak",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Buka sambungan dan matikan penyekatan untuk tapak itu, atau pilih “Tapak rosak?” untuk pembaikan pantas.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Penyemakan imbas anda kekal pada peranti anda",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Penapisan berlaku secara setempat. Sambungan tidak mengumpul data peribadi dan tidak menghantar apa-apa tentang halaman yang anda lawati.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Buka tetapan",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Faham",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

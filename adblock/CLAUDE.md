@@ -46,7 +46,7 @@ tools/                  build_filters.mjs (EasyList→DNR + каталога too
                         генериран; `PW_ROOT=$(npm root -g) PYTHONPATH=<numpy> node tools/promo/render.mjs`)
                         + e2e_redirect.mjs (истински Chromium през Playwright: DNR redirect → resources/*
                         smoke; `PW_ROOT=$(npm root -g) node tools/e2e_redirect.mjs "$PWD" <url> <global>`)
-tests/                  npm test — engine/live канал/билд/DNR/паритет на политиката (нула зависимости)
+tests/                  npm test — engine/билд/DNR/паритет на политиката (нула зависимости)
 store/ · docs/          store графики + листинг/submission текстове
 ```
 
@@ -55,7 +55,7 @@ store/ · docs/          store графики + листинг/submission тек
 ```
 node -c *.js popup/*.js options/*.js tools/*.mjs   # syntax на всички скриптове
 python3 -c "import json; json.load(...)"     # валиден manifest/rules/locale
-npm test                                      # tests/: engine + live канал + билд + DNR правила + YouTube + cookies
+npm test                                      # tests/: engine + билд + DNR правила + YouTube + cookies
 PW_ROOT=$(npm root -g) npm run test:browser   # реален Chromium: cookies.js фикстури + истинското разширение (не е в CI — иска Playwright)
 PW_ROOT=$(npm root -g) npm run landing:assets # server/*.webp: бранд щитът + РЕАЛНИЯТ popup (след промяна на popup/версия)
 PW_ROOT=$(npm root -g) node tools/perf_speedtest.mjs [--old <разархивиран zip>]  # цена на главната нишка (Speedtest-подобно); след промяна в content scripts/CSS
@@ -72,9 +72,10 @@ bash tools/package.sh                         # билд + самопровер�
   които се валидират строго и не се изпълняват. Данни са разрешени в MV3; код не е.
 - **Scriptlets (`##+js`):** точно uBOL моделът — КОДЪТ (`scriptlets/engine.js`) е
   фиксиран в пакета; per-site директивите се **пекат при билда** от `list.txt` в
-  `scriptlets/main.js`. Scriptlet КОД никога не идва от мрежата; live директиви (само
-  ДАННИ: host + име + аргументи) идват единствено от Ed25519-подписания `filters.json`
-  и се **ре-валидират в engine-а** срещу същия allowlist. Нула eval.
+  `scriptlets/main.js` (+ `scriptlets/ubo/`). **От 5.1.4 няма канал на живо:** нито код,
+  нито директиви идват от мрежата; engine-ът не слуша никакво DOM събитие, а ключ
+  `scriptlets` във `filters.json` се игнорира (CWS: нищо изтеглено не управлява MAIN
+  world). Нула eval.
   Билд-валидаторът е allowlist на имена + строга проверка на аргументите;
   `set-constant` стойностите — само от фиксиран речник. **След промяна на
   engine.js или list.txt пусни `node tools/build_scriptlets.mjs`** и препакетирай.

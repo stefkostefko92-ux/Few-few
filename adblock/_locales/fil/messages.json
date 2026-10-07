@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "I-block ang ads kahit saan: YouTube video ad, banner, pop-up, tracker, cookie prompt, anti-adblock wall. Libre, mabilis, pribado."
+    "message": "I-block ang ads kahit saan: YouTube video ad, banner, pop-up, tracker, cookie prompt, anti-adblock wall."
   },
   "byCarbon": {
     "message": "by Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Mga lisensya ng mga filter list"
+  },
+  "welPageTitle": {
+    "message": "Maligayang pagdating sa Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Protektado na kayo",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Bina-block na ngayon ng Supreme AdBlock ang ads at tracker sa bawat site na binibisita ninyo. Wala nang kailangang i-set up.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "I-pin ang extension sa toolbar",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "I-click ang icon na hugis puzzle piece sa tabi ng address bar at i-pin ang Supreme AdBlock. Pagkatapos, isang click lang para makita kung ano ang na-block sa page.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Kung mukhang sira ang isang site",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Buksan ang extension at i-off ang pag-block para sa site na iyon, o piliin ang “Sira ang site?” para sa mabilisang ayos.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Nananatili sa device ninyo ang pag-browse ninyo",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Lokal na nangyayari ang pag-filter. Hindi nangongolekta ang extension ng personal na data at walang ipinapadala tungkol sa mga page na binibisita ninyo.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Buksan ang Settings",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Sige",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

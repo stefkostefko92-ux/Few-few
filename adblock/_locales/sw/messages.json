@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Huzuia matangazo popote: matangazo ya video ya YouTube, mabango, madirisha ibukizi, vifuatiliaji na kuta za anti-adblock. Bure."
+    "message": "Huzuia matangazo popote: matangazo ya video ya YouTube, mabango, madirisha ibukizi, vifuatiliaji na kuta za anti-adblock."
   },
   "byCarbon": {
     "message": "na Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Leseni za orodha za vichujio"
+  },
+  "welPageTitle": {
+    "message": "Karibu kwenye Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Umelindwa",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock sasa inazuia matangazo na vifuatiliaji kwenye kila tovuti unayotembelea. Hakuna cha kuweka.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Bandika kiendelezi kwenye upau wa zana",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Bofya aikoni ya kipande cha fumbo karibu na upau wa anwani kisha ubandike Supreme AdBlock. Baada ya hapo, mbofyo mmoja unaonyesha kilichozuiwa kwenye ukurasa.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Ikiwa tovuti inaonekana kuwa na hitilafu",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Fungua kiendelezi na uzime uzuiaji kwa tovuti hiyo, au uchague “Tovuti ina hitilafu?” kwa marekebisho ya haraka.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Kuvinjari kwako kunabaki kwenye kifaa chako",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Uchujaji hufanyika kwenye kifaa chako. Kiendelezi hakikusanyi data yoyote ya kibinafsi na hakitumi chochote kuhusu kurasa unazotembelea.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Fungua mipangilio",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Nimeelewa",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

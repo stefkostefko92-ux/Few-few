@@ -110,7 +110,7 @@ HTML filtering `##^`/`filterResponseData`, `$replace=` (response body rewrite),
   `no-fetch-if`, `no-window-open-if`, `remove-attr`, `remove-class` (+ uBO алиаси).
 
 ### Остатъчно / следващо
-- ✅ **Scriptlet engine — live channel — ИЗПЪЛНЕНО (v4.6.0).** `filters.json` носи
+- ⛔ **Scriptlet engine — live channel — МАХНАТ в 5.1.4** (CWS: нищо изтеглено не управлява MAIN world; всички директиви са печени). Историческо описание (v4.6.0–5.1.3): `filters.json` носи
   `scriptlets: [{h, n, a}]` (само ДАННИ). background канонизира алиасите и валидира
   като билда; content.js подава списъка като JSON низ на DOM събитие; engine-ът го
   **ре-валидира** (allowlist = IMPL ключове, argument safety, set-constant речник),
@@ -120,7 +120,7 @@ HTML filtering `##^`/`filterResponseData`, `$replace=` (response body rewrite),
   атрибути/тагове минават през safeSelector + denylist на двата слоя.
   Level 2 = hook-овете се слагат при пристигане (след document_start) — за
   не-timing-critical директиви; timing-critical остават печени в MAP.
-- **`trusted-*` варианти** — само от нашия Ed25519-подписан канал; не в v1.
+- **`trusted-*` варианти** — не; няма канал, по който да дойдат.
 - ✅ Добавени (v4.6.0): `href-sanitizer`, `remove-node-text`/`rmnt`, `nowebrtc`.
 - ✅ Добавени (v4.7.0): `abort-on-stack-trace`/`aost`, `set-cookie`, `remove-cookie` (последният
   само от печения списък). Roster: 18 scriptlet-а — пълен спрямо приоритетния uBO списък.

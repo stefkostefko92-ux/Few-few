@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Bloķē reklāmas visur: YouTube video reklāmas, banerus, uznirstošos logus, izsekotājus un anti-adblock sienas. Bezmaksas."
+    "message": "Bloķē reklāmas visur: YouTube video reklāmas, banerus, uznirstošos logus, izsekotājus un anti-adblock sienas."
   },
   "byCarbon": {
     "message": "no Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Filtru sarakstu licences"
+  },
+  "welPageTitle": {
+    "message": "Laipni lūdzam Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Aizsardzība ir ieslēgta",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock tagad bloķē reklāmas un izsekotājus katrā vietnē, ko apmeklējat. Nekas nav jāiestata.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Piespraudiet paplašinājumu rīkjoslai",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Noklikšķiniet uz puzles gabaliņa ikonas blakus adreses joslai un piespraudiet Supreme AdBlock. Pēc tam ar vienu klikšķi redzēsiet, kas lapā tika bloķēts.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Ja vietne izskatās bojāta",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Atveriet paplašinājumu un izslēdziet bloķēšanu šai vietnei vai izvēlieties „Vietne nedarbojas?“, lai to ātri salabotu.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Jūsu pārlūkošana paliek jūsu ierīcē",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Filtrēšana notiek lokāli. Paplašinājums nevāc personas datus un neko nesūta par lapām, ko apmeklējat.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Atvērt iestatījumus",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Skaidrs",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

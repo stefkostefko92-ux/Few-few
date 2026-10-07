@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "تبلیغات را همه‌جا مسدود می‌کند: تبلیغات ویدیویی YouTube، بنرها، پنجره‌های بازشو، ردیاب‌ها و دیوارهای ضد مسدودساز. رایگان و سریع."
+    "message": "تبلیغات را همه‌جا مسدود می‌کند: تبلیغات ویدیویی YouTube، بنرها، پنجره‌های بازشو، ردیاب‌ها و دیوارهای ضد مسدودساز."
   },
   "byCarbon": {
     "message": "از Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "مجوزهای فهرست‌های فیلتر"
+  },
+  "welPageTitle": {
+    "message": "به Supreme AdBlock خوش آمدید",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "محافظت فعال است",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock اکنون تبلیغات و ردیاب‌ها را در هر سایتی که بازدید می‌کنید مسدود می‌کند. نیازی به هیچ تنظیمی نیست.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "افزونه را به نوار ابزار سنجاق کنید",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "روی نماد قطعه پازل کنار نوار نشانی کلیک کنید و Supreme AdBlock را سنجاق کنید. سپس با یک کلیک می‌بینید چه چیزی در صفحه مسدود شده است.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "اگر سایتی خراب به نظر می‌رسد",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "افزونه را باز کنید و مسدودسازی را برای آن سایت خاموش کنید، یا برای رفع سریع «سایت خراب است؟» را انتخاب کنید.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "مرور شما روی دستگاه خودتان می‌ماند",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "فیلتر کردن به‌صورت محلی انجام می‌شود. افزونه هیچ داده شخصی جمع‌آوری نمی‌کند و چیزی درباره صفحه‌هایی که بازدید می‌کنید ارسال نمی‌کند.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "باز کردن تنظیمات",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "متوجه شدم",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

@@ -85,6 +85,21 @@ try {
   await new Promise((r) => setTimeout(r, 1500));
   const setStore = (obj) => sw.evaluate((o) => chrome.storage.local.set(o), obj);
 
+  // ---- first install: the local welcome page opens once, renders, closes itself ----
+  {
+    const wel = ctx.pages().find((pg) => /\/welcome\/welcome\.html$/.test(pg.url()));
+    ok("welcome page opened on first install", !!wel);
+    if (wel) {
+      await wel.waitForLoadState();
+      const title = await wel.evaluate(() => document.querySelector("h1").textContent.trim());
+      const steps = await wel.evaluate(() => document.querySelectorAll(".steps li").length);
+      ok("welcome page renders (title + 3 steps)", title.length > 0 && steps === 3);
+      const closed = wel.waitForEvent("close", { timeout: 5000 }).then(() => true, () => false);
+      await wel.click("#done");
+      ok("welcome page: 'Got it' closes its own tab", await closed);
+    }
+  }
+
   // ---- procedural policy in the isolated world (every source, here "My filters") ----
   await setStore({
     enabled: true, allowlist: [],

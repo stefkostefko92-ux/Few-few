@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Bllokon reklamat kudo: reklamat video në YouTube, banerat, dritaret kërcyese, gjurmuesit dhe muret anti-adblock. Falas."
+    "message": "Bllokon reklamat kudo: reklamat video në YouTube, banerat, dritaret kërcyese, gjurmuesit dhe muret anti-adblock."
   },
   "byCarbon": {
     "message": "nga Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Licencat e listave të filtrave"
+  },
+  "welPageTitle": {
+    "message": "Mirë se vini në Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Mbrojtja është aktive",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock tani bllokon reklamat dhe gjurmuesit në çdo sajt që vizitoni. Nuk ka asgjë për të konfiguruar.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Fiksojeni shtesën në shiritin e veglave",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Klikoni ikonën e pjesës së enigmës pranë shiritit të adresës dhe fiksoni Supreme AdBlock. Pastaj me një klikim shihni çfarë u bllokua në faqe.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Nëse një sajt duket i prishur",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Hapni shtesën dhe çaktivizoni bllokimin për atë sajt, ose zgjidhni «Sajti nuk punon?» për rregullime të shpejta.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Shfletimi juaj mbetet në pajisjen tuaj",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Filtrimi bëhet në nivel lokal. Shtesa nuk mbledh të dhëna personale dhe nuk dërgon asgjë për faqet që vizitoni.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Hap cilësimet",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "E kuptova",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

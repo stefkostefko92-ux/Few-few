@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "සෑම තැනකම දැන්වීම් අවහිර කරයි: YouTube වීඩියෝ දැන්වීම්, බැනර, උත්පතන, ලුහුබඳින්නන් සහ ඇඩ්බ්ලොක් විරෝධී බාධක. නොමිලේ සහ පෞද්ගලික."
+    "message": "සෑම තැනකම දැන්වීම් අවහිර කරයි: YouTube වීඩියෝ දැන්වීම්, බැනර, උත්පතන, ලුහුබඳින්නන් සහ ඇඩ්බ්ලොක් විරෝධී බාධක."
   },
   "byCarbon": {
     "message": "Carbon Stealth විසින්"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "පෙරහන් ලැයිස්තුවල බලපත්‍ර"
+  },
+  "welPageTitle": {
+    "message": "Supreme AdBlock වෙත සාදරයෙන් පිළිගනිමු",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "ඔබ ආරක්ෂිතයි",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock දැන් ඔබ පිවිසෙන සෑම අඩවියකම දැන්වීම් සහ ලුහුබඳින්නන් අවහිර කරයි. කිසිවක් සැකසීමට අවශ්‍ය නැත.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "දිගුව මෙවලම් තීරුවට අමුණන්න",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "ලිපින තීරුව අසල ඇති ප්‍රහේලිකා කැබැල්ලේ නිරූපකය ක්ලික් කර Supreme AdBlock අමුණන්න. ඉන්පසු එක් ක්ලික් කිරීමකින් පිටුවේ අවහිර වූ දේ පෙනේ.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "අඩවියක් කැඩී ඇති බව පෙනේ නම්",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "දිගුව විවෘත කර එම අඩවිය සඳහා අවහිර කිරීම ක්‍රියාවිරහිත කරන්න, නැතහොත් ඉක්මන් විසඳුම් සඳහා “අඩවිය කැඩී ද?” තෝරන්න.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "ඔබේ බ්‍රවුස් කිරීම ඔබේ උපාංගයේම රැඳේ",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "පෙරීම දේශීයව සිදු වේ. දිගුව කිසිදු පුද්ගලික දත්තයක් එකතු නොකරන අතර ඔබ පිවිසෙන පිටු ගැන කිසිවක් නොයවයි.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "සැකසීම් විවෘත කරන්න",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "තේරුණා",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

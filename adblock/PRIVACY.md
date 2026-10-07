@@ -47,8 +47,7 @@ extension.
    request carries no identifier, no cookie and no browsing data. As with any
    download, our server necessarily sees your IP address and browser user agent
    to answer it; **these requests are not logged**. The file is data only —
-   domain names, CSS selectors and scriptlet directives from a fixed allowlist —
-   and no downloaded code is ever executed. You can turn auto-update off in
+   domain names and CSS selectors — and no downloaded code is ever executed. You can turn auto-update off in
    Settings.
 2. **Filter lists you add yourself (only if you do).** If you subscribe to a
    filter list by URL, the extension downloads it as plain text from the address
