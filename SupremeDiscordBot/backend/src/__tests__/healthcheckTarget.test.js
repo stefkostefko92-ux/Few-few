@@ -43,3 +43,20 @@ describe("deploy/smoke.sh не лъже при голям отговор", () =>
     expect(src).toMatch(/prerendered\(\) \{ has "\$\(body/);
   });
 });
+
+// ДЕФЕКТЪТ (сървър, 07.10.2026): `docker compose up -d --build` пребилдна
+// образа на бота, но остави стария контейнер („Running“) — ботът продължи със
+// стария код, а `deploy-commands` (exec в същия контейнер) регистрира старите
+// команди. deploy.sh сверява образа на всеки наш контейнер и пресъздава
+// разликата ПРЕДИ регистрацията на командите.
+describe("deploy.sh не оставя контейнер на стар образ", () => {
+  const sh = readFileSync(join(ROOT, "deploy.sh"), "utf8");
+  it("сверява образа и пресъздава backend, bot и frontend", () => {
+    expect(sh).toMatch(/for svc in backend bot frontend/);
+    expect(sh).toMatch(/--force-recreate "\$svc"/);
+  });
+  it("проверката е преди регистрацията на командите", () => {
+    expect(sh.indexOf("--force-recreate")).toBeGreaterThan(-1);
+    expect(sh.indexOf("--force-recreate")).toBeLessThan(sh.indexOf("deploy-commands.js"));
+  });
+});
