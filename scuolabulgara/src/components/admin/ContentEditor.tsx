@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { LOCALE_META, LOCALES, type Locale } from "@/lib/i18n";
-import { BRAND_ICONS, altKeyFor, bundledAlt, isImageKey, isSharedKey } from "@/lib/cms";
+import { BRAND_ICONS, altKeyFor, bundledAlt, isAudioKey, isImageKey, isSharedKey } from "@/lib/cms";
 import {
   addItem, fieldOf, getAt, moveItem, removeItem, setPerLocale, setValue, templatePath, type Data, type Doc, type Path,
 } from "@/lib/editor-ops";
@@ -108,6 +108,38 @@ export default function ContentEditor({ contentKey, initial, template }: {
     );
   }
 
+  function audioField(value: string, path: Path) {
+    const key = path.join(".");
+    const upload = async (file: File) => {
+      const fd = new FormData();
+      fd.append("file", file);
+      setStatus({ msg: "Качване на звука…", cls: "" });
+      try {
+        const res = await fetch("/api/admin/media", { method: "POST", body: fd });
+        const json = await res.json();
+        if (!json.ok) throw new Error(String(res.status));
+        set(path, json.media.url);
+        setStatus({ msg: "Звукът е качен — натиснете „Запази промените“", cls: "" });
+      } catch (e) {
+        const code = String(e);
+        setStatus({ msg: code.includes("415") ? "Това не е звуков файл (MP3, M4A, OGG или WAV)" : code.includes("413") ? "Файлът е над 3 MB" : "Качването не успя", cls: "err" });
+      }
+    };
+    return (
+      <div className="ad-field" key={key}>
+        {label("audio", true)}
+        <div className="ad-audio">
+          {value ? <audio controls preload="none" src={value} /> : <span className="ad-muted">Няма звук</span>}
+          <label className="ad-btn ad-btn--primary" style={{ cursor: "pointer" }}>
+            {value ? "Смени звука" : "Качи звук"}
+            <input type="file" hidden accept="audio/mpeg,audio/mp4,audio/x-m4a,audio/ogg,audio/webm,audio/wav,.mp3,.m4a,.ogg,.wav" onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
+          </label>
+          {value && <button type="button" className="ad-btn ad-btn--ghost" onClick={() => set(path, "")}>Махни</button>}
+        </div>
+      </div>
+    );
+  }
+
   function iconField(value: string, path: Path) {
     return (
       <div className="ad-field" key={path.join(".")}>
@@ -177,6 +209,7 @@ export default function ContentEditor({ contentKey, initial, template }: {
     if (typeof value === "string") {
       if (k === "icon") return iconField(value, path);
       if (isImageKey(k)) return imageField(value, path, k);
+      if (isAudioKey(k)) return audioField(value, path);
       return textField(value, path, k);
     }
     if (Array.isArray(value)) return listField(value, path, k);

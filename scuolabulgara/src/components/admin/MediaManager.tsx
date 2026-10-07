@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-type Media = { id: string; url: string; filename: string; alt: string; width?: number; height?: number; size: number };
+type Media = { id: string; url: string; filename: string; mime?: string; alt: string; width?: number; height?: number; size: number };
 
 export default function MediaManager() {
   const [media, setMedia] = useState<Media[]>([]);
@@ -51,7 +51,7 @@ export default function MediaManager() {
         onDrop={(e) => { e.preventDefault(); setDrag(false); if (e.dataTransfer.files.length) uploadFiles(e.dataTransfer.files); }}
         style={{ marginBottom: "1.5rem" }}
       >
-        <input ref={inputRef} type="file" accept="image/*" multiple hidden onChange={(e) => e.target.files && uploadFiles(e.target.files)} />
+        <input ref={inputRef} type="file" accept="image/*,audio/mpeg,audio/mp4,audio/x-m4a,audio/ogg,audio/webm,audio/wav,.mp3,.m4a,.ogg,.wav" multiple hidden onChange={(e) => e.target.files && uploadFiles(e.target.files)} />
         <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" style={{ margin: "0 auto .5rem" }}><path d="M12 16V4m0 0 4 4m-4-4-4 4" strokeLinecap="round" strokeLinejoin="round" /><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" strokeLinecap="round" /></svg>
         <div>{uploading ? "Качване…" : "Плъзнете снимки тук или кликнете за качване"}</div>
         <small>JPG, PNG, WebP, GIF — макс. 12 MB</small>
@@ -65,7 +65,7 @@ export default function MediaManager() {
         <div className="ad-media-grid">
           {media.map((m) => (
             <div className="ad-media" key={m.id}>
-              <div className="ad-media__img"><img src={m.url} alt={m.alt} loading="lazy" /></div>
+              <div className="ad-media__img">{m.mime?.startsWith("audio/") ? <audio controls preload="none" src={m.url} style={{ width: "100%" }} /> : <img src={m.url} alt={m.alt} loading="lazy" />}</div>
               <div className="ad-media__body">
                 <div className="ad-media__name">{m.filename}</div>
                 <div className="ad-media__name" style={{ marginTop: 2 }}>{m.width && m.height ? `${m.width}×${m.height}` : ""} · {(m.size / 1024).toFixed(0)} KB</div>

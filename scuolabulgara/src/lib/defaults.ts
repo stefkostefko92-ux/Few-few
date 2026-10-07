@@ -53,7 +53,7 @@ const ALPHABET: [letter: string, latin: string, word: string, it: string, en: st
   ["Я", "ya", "Яворов", "il poeta che dà il nome alla nostra scuola", "the poet our school is named after"],
 ];
 const lettersFor = (l: Locale) =>
-  ALPHABET.map(([letter, latin, word, it, en]) => ({ letter, latin, word, meaning: l === "en" ? en : it }));
+  ALPHABET.map(([letter, latin, word, it, en]) => ({ letter, latin, word, meaning: l === "en" ? en : it, audio: "" }));
 
 const BASE_ROWS: DefaultRow[] = [
   {

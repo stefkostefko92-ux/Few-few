@@ -139,7 +139,7 @@ export type Simple = { title: string; lead?: string; body?: string };
 export type Feature = { title: string; text: string };
 export type About = Simple & Pictured & { features: Feature[] };
 
-export type Letter = { letter: string; latin: string; word: string; meaning: string };
+export type Letter = { letter: string; latin: string; word: string; meaning: string; audio: string };
 export type Alphabet = { title: string; lead: string; letters: Letter[] };
 
 export type Card = { icon: string; title: string; text: string; bullets: string[] };

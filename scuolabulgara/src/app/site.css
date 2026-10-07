@@ -245,7 +245,9 @@ body.menu-open .nav__toggle span::after { transform: rotate(-45deg); }
 .abc__cloth[data-sewn] .abc__glyph { visibility: hidden; }
 .abc__info { display: grid; grid-template-columns: auto 1fr; gap: .3rem 1.5rem; align-items: baseline; margin-top: 1.5rem; }
 .abc__pair { font: 800 3.4rem/1 var(--font-display); color: var(--ink); grid-row: span 2; }
-.abc__word { font: 800 2.2rem/1 var(--font-display); color: var(--red-ink); }
+.abc__word { font: 800 2.2rem/1 var(--font-display); color: var(--red-ink); display: flex; align-items: center; gap: .7rem; }
+.abc__speak { display: inline-grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; border: 2px solid var(--red); border-radius: 50%; background: var(--paper); color: var(--red); transition: background-color .15s, color .15s; }
+.abc__speak:hover, .abc__speak.is-playing { background: var(--red); color: #fff; }
 .abc__info dl { grid-column: 2; display: grid; gap: .2rem; }
 .abc__info dl div { display: flex; gap: .5rem; flex-wrap: wrap; }
 .abc__info dt { color: var(--muted); font-size: .9rem; }

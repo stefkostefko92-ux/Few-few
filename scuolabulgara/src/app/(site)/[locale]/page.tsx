@@ -1,7 +1,7 @@
 import { Fragment, type ReactNode } from "react";
 import { isLocale, t, type Locale } from "@/lib/i18n";
 import { loadSite } from "@/lib/content";
-import { isBrandIcon, safeHref, safeImage, type SectionKey } from "@/lib/cms";
+import { isBrandIcon, safeAudio, safeHref, safeImage, type SectionKey } from "@/lib/cms";
 import { buildNav } from "@/lib/nav";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -163,8 +163,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             <p className="lead">{alphabet.lead}</p>
           </header>
           <Alphabet
-            letters={alphabet.letters.filter((l) => l.letter)}
-            labels={{ pick: tt("alpha.pick"), latin: tt("alpha.latin"), meaning: tt("alpha.meaning") }}
+            letters={alphabet.letters.filter((l) => l.letter).map((l) => ({ ...l, audio: safeAudio(l.audio) }))}
+            labels={{ pick: tt("alpha.pick"), latin: tt("alpha.latin"), meaning: tt("alpha.meaning"), listen: tt("alpha.listen") }}
           />
         </div>
       </section>

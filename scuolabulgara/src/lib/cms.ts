@@ -112,7 +112,7 @@ const SHARED = new Set([
   "icon", "phone", "phoneHref", "email", "facebookUrl", "facebookPageHref", "mapUrl",
   "latitude", "longitude", "foundingDate", "postalCode", "country", "updated",
   // the alphabet: the letter, its transliteration and the Bulgarian word
-  "letter", "latin", "word",
+  "letter", "latin", "word", "audio",
 ]);
 export const isImageKey = (k: string) => k === "src" || k === "logo" || /^(image|photo)$/i.test(k) || /(Image|Photo)$/.test(k);
 export const isSharedKey = (k: string) => SHARED.has(k) || isImageKey(k);
@@ -198,4 +198,16 @@ export function finalKeywords(list: string[], fallback: string[]): string[] {
   for (const f of fallback) { if (out.length >= 5) break; add(f); }
   if (!seen.has(BRAND_KEYWORD.toLowerCase())) out.push(BRAND_KEYWORD);
   return out;
+}
+
+// ---- Audio (pronunciation of the alphabet words) ---------------------------
+export const AUDIO_EXT = ["mp3", "m4a", "ogg", "webm", "wav"] as const;
+/** Field holding a sound file; like a picture, the same in every language. */
+export const isAudioKey = (k: string) => k === "audio";
+/** Only sound files uploaded to this site (no external URLs, no traversal). */
+export function safeAudio(v: unknown): string {
+  if (typeof v !== "string") return "";
+  const s = v.trim();
+  if (!s.startsWith("/uploads/") || s.includes("..") || s.includes("//")) return "";
+  return new RegExp(`\\.(${AUDIO_EXT.join("|")})$`, "i").test(s) ? s : "";
 }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { BUNDLED_MEDIA } from "@/lib/cms";
 
-type Media = { id: string; url: string; filename: string; alt: string };
+type Media = { id: string; url: string; filename: string; mime?: string; alt: string };
 
 // Picture chooser: the school's own uploads first, then the photos that ship
 // with the site — so a section can always be switched back to a bundled one.
@@ -17,7 +17,7 @@ export default function MediaPicker({ onPick, onClose }: { onPick: (url: string)
     try {
       const res = await fetch("/api/admin/media");
       const json = await res.json();
-      setMedia(json.media || []);
+      setMedia(((json.media || []) as Media[]).filter((m) => !m.mime?.startsWith("audio/")));
     } finally {
       setLoading(false);
     }
