@@ -1,0 +1,92 @@
+/* Rendetto — брошурата, корицата: първият лист от разкроя на примерната кухня върху леглото на машината,
+   с пътя на фрезата и отворите в цветовете на операциите — същите като на витрината. */
+.b-bed {
+  position: relative;
+  padding: 6mm 6mm 4mm;
+  border-radius: 4mm;
+  background: var(--mdf);
+}
+.b-bed::before {
+  /* vacuum zones of the spoilboard, as on the site */
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(rgb(0 0 0 / 0.07) 0.3mm, transparent 0.3mm) 0 0 / 100% 25%,
+    linear-gradient(90deg, rgb(0 0 0 / 0.07) 0.3mm, transparent 0.3mm) 0 0 / 20% 100%;
+}
+.sheet-art {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.sheet-art .board-shadow {
+  fill: rgb(52 48 47 / 0.16);
+}
+.sheet-art .board {
+  fill: #f2efe7;
+  stroke: #8e8371;
+  stroke-width: 4;
+}
+.sheet-art .part {
+  fill: var(--panel);
+  stroke: var(--ink);
+  stroke-width: 3;
+}
+.sheet-art .pid {
+  font-family: var(--f-mono);
+  font-weight: 500;
+  fill: var(--ink-3);
+}
+.sheet-art .cut {
+  fill: none;
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+.sheet-art .hole {
+  stroke: none;
+}
+.sheet-art .tcontour {
+  stroke: var(--gold);
+}
+.sheet-art .tgroove {
+  stroke: var(--green);
+}
+.sheet-art .hole.tdrill {
+  fill: var(--drill);
+}
+.b-bed figcaption {
+  position: relative;
+  margin-top: 3mm;
+  font-size: 8pt;
+  color: #2b2722;
+}
+.b-keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1mm 5mm;
+  margin-top: 1.5mm;
+}
+.b-keys span::before {
+  content: '';
+  display: inline-block;
+  width: 5mm;
+  height: 0.8mm;
+  margin-right: 1.5mm;
+  vertical-align: middle;
+  border-radius: 0.5mm;
+}
+.k-contour::before {
+  background: var(--gold);
+}
+.k-groove::before {
+  background: var(--green);
+}
+.b-keys .k-drill::before {
+  width: 2mm;
+  height: 2mm;
+  border-radius: 50%;
+  background: var(--drill);
+}

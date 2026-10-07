@@ -1,0 +1,28 @@
+{
+  "brochure": {
+    "title": "Rendetto — software per mobili in pannelli",
+    "keywords": "Rendetto, software per mobili, distinta di taglio, mappa di foratura, CNC, G-code, DXF, Carbon Stealth",
+    "sheet": "Foglio {n} di {total}",
+    "cover": {
+      "for": "Per i laboratori di mobili in pannelli, con un centro di lavoro CNC o con una sezionatrice.",
+      "proof": "Tutti i disegni, le tabelle e i file di questa brochure sono output del programma da un unico progetto: una cucina di {modules} moduli da {width} mm."
+    },
+    "model": {
+      "caption": "La stessa cucina in 3D, come la vedete nell'editor."
+    },
+    "drilling": {
+      "scale": "Scala 1:1: stampando questa pagina in dimensioni reali potete appoggiare la cerniera sul disegno."
+    },
+    "kinds": {
+      "scale": "Tutti i {n} tipi in scala 1:{scale}, con le misure con cui il programma li propone. I pensili sono alla loro altezza dal pavimento."
+    },
+    "prices": {
+      "lifetime": "Lifetime è un pagamento unico, pari a {multiple} volte il prezzo annuale senza lo sconto per {months} mesi, e vale finché Rendetto è offerto.",
+      "asOf": "Prezzi validi alla data: {date}; condizioni complete: {terms}"
+    },
+    "contact": {
+      "scan": "Inquadrate il codice o aprite {url}",
+      "questions": "Domande: {email}"
+    }
+  }
+}

@@ -1,0 +1,48 @@
+/* Rendetto — data tables on a phone. A table with class "stack" shows every row as a card and the column name above
+   each value (data-label on the cell, the same text as the header). Four or more columns side by side would hide
+   the rest, often the column with the action, behind a sideways scroll. */
+@media (max-width: 640px) {
+  table.stack,
+  table.stack tbody,
+  table.stack tr,
+  table.stack td {
+    display: block;
+  }
+  table.stack thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  table.stack tr {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--rule);
+  }
+  table.stack tr:last-child {
+    border-bottom: 0;
+  }
+  table.stack td {
+    padding: 3px 0;
+    border: 0;
+    text-align: left;
+    overflow-wrap: anywhere;
+  }
+  table.stack td + td {
+    padding-top: 7px;
+  }
+  table.stack td:empty {
+    display: none;
+  }
+  table.stack td.who {
+    display: grid;
+  }
+  table.stack td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--ink-2);
+  }
+}

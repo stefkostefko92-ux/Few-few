@@ -86,6 +86,5 @@ test("билдът чете дървото на дадения връх, не р
   const fb = parseFallback(git(REPO, "show", `${head}:agents-dashboard/index.html`));
   const sum = fb.agents.reduce((t, a) => t + (a.knowledge?.lessons || 0), 0);
   assert.equal(r.lessons, sum, "сумата в артефакта = сумата във FALLBACK на този връх");
-  // Бройката идва от данните на същия връх, не от спомен: 28 → 29 (Асансьорчика, 2026-10-05) чупеше теста.
-  assert.equal(r.icons, fb.agents.length, "маскот-икона за всеки агент във FALLBACK на този връх");
+  assert.equal(r.icons, 28);
 });

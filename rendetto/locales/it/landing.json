@@ -1,0 +1,196 @@
+{
+  "landing": {
+    "meta": {
+      "title": "Rendetto — software per mobili: taglio, disegni e CNC",
+      "description": "Progettate mobili in pannelli in 3D: distinta di taglio, ferramenta, disegni con mappa di foratura e file CNC. {days} giorni di prova dalla conferma dell'email.",
+      "keywords": "software per mobili, progettazione mobili, distinta di taglio, mappa di foratura, CNC, G-code, DXF, Rendetto, Carbon Stealth",
+      "imageAlt": "Pannello di truciolare nobilitato del nesting di una cucina con il percorso della fresa CNC",
+      "browser": "Un browser con WebGL 2: Chrome, Edge, Firefox o Safari."
+    },
+    "nav": {
+      "label": "Sezioni della pagina",
+      "how": "Come funziona",
+      "drilling": "Forature",
+      "kinds": "Mobili",
+      "machine": "File CNC",
+      "prices": "Prezzi",
+      "faq": "Domande",
+      "login": "Accedi"
+    },
+    "cta": {
+      "start": "Crea un account",
+      "how": "Come funziona"
+    },
+    "hero": {
+      "line1": "Dall'idea",
+      "line2": "alla fresa.",
+      "lead": "Rendetto progetta mobili in pannelli nel browser e dallo stesso progetto ricava tutto ciò che serve al laboratorio: distinta di taglio con i bordi, elenco della ferramenta, disegni con la mappa di foratura di ogni pezzo e file per la macchina CNC.",
+      "trial": "Ogni nuovo account riceve {days} giorni di prova dalla conferma dell'email per valutare il software. Senza carta e senza pagamenti automatici.",
+      "caption": "Pannello {no} di {count} di una cucina di {modules} moduli da {width} mm: {parts} pezzi e {holes} fori. Risultato del programma, non un'illustrazione.",
+      "keyContour": "contorno, fresa Ø{d}",
+      "keyGroove": "scanalatura dello schienale, fresa Ø{d}",
+      "keyDrill": "fori {list}"
+    },
+    "how": {
+      "title": "Come si arriva dalle misure alla macchina?",
+      "lead": "In quattro passi, in un solo progetto. Cambiare una misura aggiorna tutto ciò che segue: il modello, la distinta di taglio, i disegni e il G-code.",
+      "s1": {
+        "title": "Misure e frontali",
+        "text": "Scegliete il tipo di mobile e impostate misure, ante, cassetti e ripiani. Decorativo, bordo, cerniere, maniglie e guide si scelgono dal catalogo."
+      },
+      "s2": {
+        "title": "Modello 3D",
+        "text": "Il mobile viene montato con pezzi reali, con spessore, bordo e direzione della venatura. Il programma controlla la flessione dei ripiani, il peso delle ante rispetto alle cerniere e i fori troppo vicini al bordo."
+      },
+      "s3": {
+        "title": "Taglio e ferramenta",
+        "text": "L'elenco dei pezzi con le misure di taglio al netto del bordo, il nesting sui pannelli e la ferramenta contata, pronta da ordinare."
+      },
+      "s4": {
+        "title": "Disegni e CNC",
+        "text": "Disegno d'assieme, disegno con mappa di foratura per ogni pezzo, DXF a layer e G-code per ogni pannello."
+      }
+    },
+    "cut": {
+      "caption": "Estratto della distinta di taglio: {shown} di {total} pezzi",
+      "id": "N.",
+      "part": "Pezzo",
+      "finished": "Finito, mm",
+      "cut": "Di taglio, mm",
+      "edgeL": "Bordo lungh.",
+      "edgeW": "Bordo largh.",
+      "holes": "Fori",
+      "note": "Il primo mobile base della stessa cucina: {shown} di {total} pezzi. La misura di taglio è già ridotta dello spessore del bordo.",
+      "parts": {
+        "sideL": "Fianco sinistro",
+        "sideR": "Fianco destro",
+        "bottom": "Fondo",
+        "railF": "Traverso anteriore",
+        "railB": "Traverso posteriore",
+        "back1": "Schienale in HDF",
+        "c1door1": "Anta sinistra",
+        "c1door2": "Anta destra",
+        "c1shelf1": "Ripiano"
+      }
+    },
+    "gcode": {
+      "note": "L'inizio del G-code per il pannello {no} di {count}: intestazione, cambio utensile e ciclo di foratura G81."
+    },
+    "drilling": {
+      "title": "Dove si fora esattamente?",
+      "lead": "Sul disegno di ogni pezzo: coordinate, diametro e profondità di ogni foro, secondo la documentazione del produttore della ferramenta — Blum, Hettich, GTV e Salice per le cerniere, GTV e Blum per le guide.",
+      "cup": "Tazza Ø35 a {c} mm dal bordo dell'anta: è quanto dà la tabella di Blum CLIP top per una sovrapposizione di {overlay} mm con basetta da {plate} mm.",
+      "system32": "Basette e reggipiani seguono il sistema 32 mm: la prima fila è a 37 mm dal bordo anteriore.",
+      "handles": "Le maniglie si forano all'interasse del modello scelto, le guide secondo la dima del produttore.",
+      "edges": "I fori orizzontali nelle teste (per le viti confirmat) sono nella tabella del disegno, separati dal G-code.",
+      "checks": "Se una cerniera, una guida o un foro esce dalla tabella del produttore, il programma dice cosa cambiare. Dove il documento non dice nulla, il programma sceglie da sé e indica il valore come «наш избор» (nostra scelta).",
+      "imageAlt": "Disegno di un'anta {h} × {w} mm con misure, bordo e mappa di foratura delle tazze delle cerniere",
+      "cupAlt": "Dettaglio della tazza della cerniera in scala 1:1: Ø35 a {c} mm dal bordo",
+      "caption": "L'anta sinistra del primo mobile base, {h} × {w} mm: misure, bordo e mappa di foratura. Le etichette del disegno sono in bulgaro.",
+      "open": "Apri tutto il disegno"
+    },
+    "kinds": {
+      "title": "Che cosa si può progettare?",
+      "lead": "Mobili in pannelli per cucina, camera, soggiorno e studio: da un singolo mobile a una cucina intera.",
+      "width": "larghezza {min}–{max} mm",
+      "modules": "{min}–{max} moduli da {wmin}–{wmax} mm",
+      "mattress": "materasso {min}–{max} cm",
+      "rules": "La costruzione segue le regole del laboratorio: fondo e cielo stanno tra i fianchi, lo schienale in HDF entra in una scanalatura, i mobili base hanno i traversi per il piano di lavoro e le misure di taglio sono ridotte del bordo."
+    },
+    "machine": {
+      "title": "Che cosa riceve la macchina?",
+      "lead": "DXF a layer e G-code per ogni pannello del nesting. Le tabelle di taglio, ferramenta e forature si scaricano a parte.",
+      "dxf": {
+        "title": "DXF R12 a layer",
+        "text": "Il nome del layer indica lavorazione, utensile e profondità, così il programma CAM li assegna senza tirare a indovinare. I layer del pannello in cima alla pagina:"
+      },
+      "iso": {
+        "title": "G-code ISO / Fanuc",
+        "text": "Ciclo di foratura G81, compensazione della lunghezza utensile G43 e cambio utensile con T… M6."
+      },
+      "grbl": {
+        "title": "G-code GRBL",
+        "text": "Per macchine con GRBL: il programma si ferma per il cambio utensile manuale e l'azzeramento di Z."
+      },
+      "csv": {
+        "title": "Tabelle CSV",
+        "text": "Distinta di taglio, ferramenta e tutti i fori, separati da punto e virgola: si aprono direttamente in Excel e LibreOffice."
+      },
+      "zip": {
+        "title": "Tutto il progetto in ZIP",
+        "text": "Disegni, DXF e G-code per ogni pannello, le tabelle e la specifica del progetto in un unico archivio."
+      },
+      "drawings": {
+        "title": "Disegni SVG",
+        "text": "Disegno d'assieme e disegno di ogni pezzo in formato A3, pronti da stampare."
+      },
+      "caution": "I post-processori sono generici, non fatti per un controllo specifico. Prima del primo taglio provate il programma in simulazione e a vuoto sopra il pannello, e verificate lo zero, gli utensili e i giri con la vostra macchina."
+    },
+    "prices": {
+      "title": "Quanto costa?",
+      "trial": "Ogni account riceve {days} giorni di prova dalla conferma dell'email per valutare il nostro software: con tutte le funzioni, senza carta e senza pagamenti automatici.",
+      "vat": "Per i consumatori i prezzi sono finali, IVA {vat}% inclusa. Per le aziende è indicato anche il prezzo IVA esclusa; l'IVA si applica secondo le regole del paese dell'acquirente.",
+      "lifetime": "Lifetime costa {multiple} volte il prezzo annuale senza lo sconto per {months} mesi e vale finché Rendetto è offerto: dettagli nelle condizioni generali.",
+      "manual": "Il piano si ordina dall'account e viene attivato manualmente quando arriva il pagamento.",
+      "expired": "Quando finisce la prova o il periodo pagato, i progetti restano scaricabili. Nuovi progetti e modifiche richiedono un piano attivo."
+    },
+    "price": {
+      "months": {
+        "one": "1 mese",
+        "other": "{n} mesi"
+      },
+      "lifetime": "Lifetime",
+      "perMonth": "{amount} al mese",
+      "once": "una tantum, per la durata del servizio",
+      "off": "sconto {pct}%",
+      "withoutVat": "{amount} IVA esclusa"
+    },
+    "faq": {
+      "title": "Domande e risposte",
+      "price": {
+        "q": "Quanto costa Rendetto?",
+        "a": "{month} al mese IVA inclusa ({monthNet} IVA esclusa). Pagando {terms} mesi in una volta lo sconto è del {discounts}. Lifetime costa {life} IVA inclusa ({lifeNet} IVA esclusa), si paga una volta e vale finché Rendetto è offerto."
+      },
+      "afterTrial": {
+        "q": "Che cosa succede quando finisce il periodo di prova?",
+        "a": "I progetti restano nell'account e potete scaricarli: distinta di taglio, ferramenta, disegni e file CNC. Per un nuovo progetto o per modificarne uno vecchio serve Premium o Lifetime."
+      },
+      "install": {
+        "q": "Devo installare qualcosa?",
+        "a": "No. Rendetto funziona nel browser — Chrome, Edge, Firefox o Safari su un computer con WebGL 2. I progetti sono conservati sul server, non sul computer."
+      },
+      "machines": {
+        "q": "Con quali macchine CNC funziona?",
+        "a": "Il programma fornisce un DXF a layer che si apre in qualsiasi programma CAM e G-code in due versioni: ISO/Fanuc e GRBL. I post-processori sono generici, quindi il primo taglio passa da una simulazione e da una prova a vuoto."
+      },
+      "hardware": {
+        "q": "Quale ferramenta supporta?",
+        "a": "La foratura delle cerniere segue la documentazione di Blum CLIP top, Hettich Sensys, GTV e Salice Serie 200; quella delle guide segue GTV H45 PRESTIGE, Blum TANDEM 560H e Blum MOVENTO 760H."
+      },
+      "languages": {
+        "q": "In che lingua è il programma?",
+        "a": "Il sito, l'account e l'amministrazione sono in bulgaro, inglese e italiano. L'editor, i disegni e le tabelle per ora sono in bulgaro."
+      },
+      "twofa": {
+        "q": "Posso attivare la protezione a due fattori?",
+        "a": "Sì. In «Sicurezza» nell'account attivate i codici di un'app come Google Authenticator, Aegis o 1Password e ricevete 10 codici di recupero nel caso perdiate il telefono."
+      },
+      "data": {
+        "q": "Dove sono conservati i miei dati?",
+        "a": "Su un server nell'Unione europea. Le password sono conservate solo come hash Argon2id. I progetti li vedete solo voi; il team li apre solo per l'assistenza e ogni apertura viene registrata nel registro di controllo."
+      },
+      "delete": {
+        "q": "Posso eliminare il mio account?",
+        "a": "Sì, da «Dati» nell'account. Prima potete scaricare tutti i vostri dati; l'eliminazione è definitiva e rimuove anche i progetti."
+      }
+    },
+    "closing": {
+      "title": "Provatelo su un ordine vero.",
+      "text": "{days} giorni bastano per portare un ordine dalle misure alla macchina. Se Rendetto non fa per voi, non pagate nulla e i progetti restano scaricabili.",
+      "login": "Ho già un account"
+    },
+    "foot": {
+      "about": "Rendetto è un software per progettare mobili in pannelli: modello 3D, distinta di taglio, disegni con mappa di foratura e file per la macchina CNC."
+    }
+  }
+}

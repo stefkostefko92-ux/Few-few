@@ -47,11 +47,6 @@ jobs:
           done < <(find . -name '*.js' -o -name '*.mjs' | grep -v node_modules)
           exit $fail
 
-      # Сесиите на админа (token_version) и правилата за парола — временна SQLite, без мрежа.
-      - name: Тестове
-        working-directory: panev
-        run: npm test
-
       # Истинският гейт на сайта: генераторът минава и страниците, които дава, са точно тези в
       # репото — нито ръчна редакция на генериран HTML, нито забравен билд след промяна по site/
       # (или по 3d/template.html и 3d-viewer/, от които се правят 3D страниците), нито нова

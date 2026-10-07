@@ -7,7 +7,7 @@
 //
 //   PW_ROOT=$(npm root -g) node tools/landing_assets.mjs
 import { createRequire } from "node:module";
-import { readFileSync, writeFileSync, mkdtempSync, copyFileSync, cpSync, rmSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdtempSync, copyFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -50,7 +50,6 @@ for (const [w, name] of [[380, "shield-380.webp"], [96, "shield-96.webp"]]) {
 const tmp = mkdtempSync(join(tmpdir(), "sa-landing-"));
 try {
   copyFileSync(join(ROOT, "popup", "popup.css"), join(tmp, "popup.css"));
-  cpSync(join(ROOT, "popup", "img"), join(tmp, "img"), { recursive: true }); // кадрите на 3D щита (popup.css → url(img/…))
   const demo = {
     blocked: "1,204", data: "68 MB", time: "14 min", host: "news.example.com",
     log: [["EasyPrivacy", 14], ["EasyList", 9], ["Supreme core rules", 4], ["Tracking parameters", 2]],

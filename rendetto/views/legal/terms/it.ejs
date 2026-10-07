@@ -1,0 +1,93 @@
+<%
+  const row = (id) => prices.find((p) => p.id === id);
+  const m1 = row('m1');
+  const life = row('lifetime');
+  const terms = prices.filter((p) => p.discountPercent);
+  const list = (items) => items.slice(0, -1).join(', ') + ' o ' + items[items.length - 1];
+%>
+<p>Queste condizioni regolano l'uso di Rendetto. Registrando un account le accettate e, quando ordinate un piano a pagamento, diventano parte del relativo contratto.</p>
+
+<h2>Chi fornisce il servizio</h2>
+<p><%= company.name %> (denominazione in bulgaro: <span lang="bg"><%= company.nameBg %></span>) — <%= t('company.legalForm') %>, iscritta nel Registro di commercio e delle persone giuridiche senza scopo di lucro tenuto dall'Agenzia delle iscrizioni della Bulgaria con codice EIK&nbsp;<%= company.eik %>, partita IVA&nbsp;<%= company.vat %>, rappresentata da <%= t('company.representative') %>. Sede legale e amministrativa: ul. Samuil 3, <%= company.postalCode %> Bobov Dol, provincia di Kyustendil, Bulgaria. Telefono: <a class="nowrap" href="<%= company.phoneHref %>"><%= company.phone %></a>, email: <a href="mailto:<%= contact %>"><%= contact %></a>. L'indirizzo email è anche il nostro punto di contatto unico per le autorità e per i destinatari del servizio ai sensi del Regolamento (UE) 2022/2065 sui servizi digitali, in bulgaro o in inglese.</p>
+
+<h2>Che cos'è Rendetto</h2>
+<p>Rendetto è un programma nel browser per progettare mobili in pannelli. Da un progetto calcola il modello 3D, la distinta di taglio con i bordi, l'elenco della ferramenta, i disegni con la mappa di foratura e i file per una macchina CNC (DXF e G-code). Tutto viene calcolato dai dati che inserite e dalla documentazione dei produttori di ferramenta. L'editor, i disegni e le tabelle per ora sono in bulgaro; il sito, l'account e le email sono in bulgaro, inglese e italiano.</p>
+
+<h2>Account</h2>
+<ul>
+  <li>L'account è personale: non condividetelo. Per ogni persona del vostro team create un account separato.</li>
+  <li>Usate un indirizzo email reale: lì arrivano le conferme, le nuove password, le conferme degli ordini e gli avvisi di sicurezza.</li>
+  <li>Custodite la password. Potete attivare la protezione a due fattori in «Sicurezza» nell'account.</li>
+  <li>Se sospettate un accesso altrui, cambiate la password e scriveteci.</li>
+</ul>
+
+<h2>Periodo di prova</h2>
+<p>Ogni nuovo account riceve <%= trialDays %> giorni di prova dalla conferma dell'email, con tutte le funzioni. Non chiediamo dati di pagamento e dopo la prova non viene addebitato nulla automaticamente. La prova è una per persona o azienda: più account per ottenere più prove non sono consentiti e possono essere bloccati.</p>
+
+<h2>Piani e prezzi</h2>
+<ul>
+  <li>Premium: <%= fmt.money(m1.totalWithVatCents) %> al mese IVA inclusa (<%= fmt.money(m1.totalCents) %> IVA esclusa). Pagando <%= list(terms.map((p) => String(p.months))) %> mesi in una volta lo sconto è del <%= list(terms.map((p) => p.discountPercent + '%')) %>. Premium non si rinnova da solo: scade alla fine del periodo pagato.</li>
+  <li>Lifetime: <%= fmt.money(life.totalWithVatCents) %> IVA inclusa (<%= fmt.money(life.totalCents) %> IVA esclusa), pagamento unico: <%= lifetimeTimes %> volte il prezzo annuale senza lo sconto per 12 mesi. Lifetime vale finché Rendetto è offerto.</li>
+  <li>Per i consumatori i prezzi sono finali, IVA <%= vatPercent %>% inclusa. Per le aziende l'IVA si applica secondo le regole del paese dell'acquirente.</li>
+  <li>Possiamo cambiare i prezzi per gli ordini futuri. Un piano già ordinato non cambia.</li>
+</ul>
+
+<h2>Conclusione del contratto</h2>
+<p>Il piano a pagamento si ordina da «Piano» nell'account. Prima dell'ordine scegliete la durata, se acquistate come consumatori o come azienda e, se siete consumatori, se volete che il piano inizi prima della fine del periodo di recesso. Controllate le scelte prima di premere il pulsante «Ordine con obbligo di pagamento»; dopo l'ordine potete correggere un errore ritirando l'ordine e ordinando di nuovo.</p>
+<p>Il contratto è concluso con l'ordine. Subito dopo vi inviamo per email una conferma con quanto ordinato, il prezzo, queste condizioni alla data dell'ordine, le informazioni sul diritto di recesso e il modulo di recesso tipo. I vostri ordini restano in «Piano» nell'account. Il contratto è concluso nella lingua della pagina: bulgaro, inglese o italiano.</p>
+
+<h2>Pagamento e attivazione</h2>
+<p>Il pagamento è con bonifico, secondo la fattura con i dati per il pagamento che vi inviamo dopo l'ordine. Il piano viene attivato manualmente quando arriva il pagamento e ricevete un'email. Se siete consumatori e non avete chiesto l'inizio anticipato, il periodo a pagamento inizia dopo la fine del periodo di recesso. Se pagate mentre la prova o il periodo pagato è ancora in corso, i nuovi mesi iniziano dopo la sua fine. Se il pagamento non arriva, il piano non viene attivato e possiamo respingere l'ordine.</p>
+
+<h2>Quando il piano scade</h2>
+<p>Alla fine della prova o del periodo pagato l'account resta e i progetti si possono ancora aprire e scaricare in tutti i formati. Nuovi progetti, salvataggio delle modifiche e copia dei progetti richiedono un piano attivo. I progetti si possono sempre eliminare.</p>
+
+<h2 id="withdrawal">Diritto di recesso</h2>
+<p>Se siete consumatori, avete il diritto di recedere dal contratto, senza indicarne le ragioni, entro <%= withdrawalDays %> giorni. Il periodo di recesso scade dopo <%= withdrawalDays %> giorni dal giorno della conclusione del contratto; se l'ultimo giorno è un sabato, una domenica o un giorno festivo, scade alla fine del primo giorno lavorativo successivo.</p>
+<p>Per esercitare il diritto di recesso usate il pulsante «Recedi dal contratto qui» accanto all'ordine in «Piano» nell'account: c'è per tutto il periodo e la conferma che abbiamo ricevuto il recesso arriva subito per email. Potete anche informarci con una dichiarazione esplicita inviata a <a href="mailto:<%= contact %>"><%= contact %></a> o per lettera all'indirizzo sopra, ad esempio con il modulo tipo qui sotto, ma non è obbligatorio. Per rispettare il termine di recesso è sufficiente inviare la comunicazione prima della scadenza del periodo.</p>
+<p>Se recedete dal contratto, vi saranno rimborsati tutti i pagamenti che avete effettuato a nostro favore, senza indebito ritardo e in ogni caso non oltre <%= refundDays %> giorni dal giorno in cui siamo informati della vostra decisione di recedere. I rimborsi saranno effettuati con lo stesso mezzo di pagamento da voi usato, salvo che abbiate espressamente convenuto altrimenti; in ogni caso non dovrete sostenere alcun costo per il rimborso. Se il piano è già stato attivato, lo riportiamo com'era prima dell'ordine.</p>
+<p>Se avete chiesto che il piano inizi durante il periodo di recesso, siete tenuti a pagarci un importo proporzionale a quanto fornito fino al momento in cui ci avete comunicato il recesso, rispetto a tutte le prestazioni previste dal contratto. Senza questa richiesta il periodo a pagamento inizia dopo la fine del periodo di recesso e, se recedete, non dovete nulla.</p>
+<p>Il diritto di recesso non si applica agli acquisti delle aziende e dei professionisti per scopi professionali.</p>
+<div class="model-form">
+  <h3>Modulo di recesso tipo</h3>
+  <p>(compilare e restituire il presente modulo solo se si desidera recedere dal contratto)</p>
+  <p>— Destinatario <%= t('company.legalName') %>, ul. Samuil 3, <%= company.postalCode %> Bobov Dol, provincia di Kyustendil, Bulgaria, <%= contact %>:</p>
+  <p>— Con la presente io/noi (*) notifichiamo il recesso dal mio/nostro (*) contratto di vendita dei seguenti beni/servizi (*)</p>
+  <p>— Ordinato il (*)/ricevuto il (*)</p>
+  <p>— Nome del/dei consumatore(i)</p>
+  <p>— Indirizzo del/dei consumatore(i)</p>
+  <p>— Firma del/dei consumatore(i) (solo se il presente modulo è notificato in versione cartacea)</p>
+  <p>— Data</p>
+  <p>(*) Cancellare la dicitura inutile.</p>
+</div>
+
+<h2>Garanzia legale</h2>
+<p>Come consumatori avete la garanzia legale di conformità dei servizi digitali per tutta la durata del contratto. Se Rendetto non è conforme al contratto, scriveteci: lo renderemo conforme e, se non è possibile, avete diritto a una riduzione del prezzo o alla risoluzione del contratto.</p>
+
+<h2>Che cosa non è consentito</h2>
+<ul>
+  <li>aggirare la protezione, i limiti del piano o il periodo di prova;</li>
+  <li>richieste automatiche di massa e tentativi di sovraccaricare il servizio;</li>
+  <li>tentativi di accedere ad account o dati altrui;</li>
+  <li>contenuti illeciti od offensivi nei nomi dei progetti.</li>
+</ul>
+
+<h2>Blocco</h2>
+<p>In caso di violazione di queste condizioni possiamo bloccare un account. Il motivo viene mostrato al tentativo di accesso. Se ritenete che il blocco sia un errore, scriveteci: esaminiamo ogni contestazione e, se è un errore, ripristiniamo l'accesso.</p>
+
+<h2>Risultati e responsabilità</h2>
+<p class="disclaimer">Rendetto calcola in base ai dati che inserite. Dove la documentazione del produttore non dice nulla, il valore è una nostra scelta ed è indicato come «наш избор» (nostra scelta). Prima della produzione controllate le misure, la costruzione e i disegni, e provate il G-code prima in simulazione e a vuoto: i post-processori sono generici e non conoscono la vostra macchina. Nei limiti consentiti dalla legge non rispondiamo di materiale, utensili o macchine danneggiati usando risultati non verificati. Nulla in queste condizioni limita una responsabilità che la legge non consente di limitare, ad esempio per danni causati con dolo o colpa grave. Se siete consumatori, conservate anche i diritti di legge quando il servizio non è conforme al contratto.</p>
+
+<h2>Disponibilità</h2>
+<p>Cerchiamo di far funzionare Rendetto senza interruzioni, ma non lo garantiamo: a volte c'è manutenzione. Conservate i progetti importanti anche come file scaricati.</p>
+
+<h2>Diritti sul software e sui progetti</h2>
+<p>Il programma e il suo design appartengono a <%= company.name %>, ad eccezione delle librerie open source che usiamo secondo le loro licenze (<a href="/static/editor/THIRD-PARTY-LICENSES.txt" hreflang="en">elenco e testi completi</a>). La selezione e l'organizzazione dei cataloghi sono nostre. Blum, Hettich, GTV, Salice, Egger e gli altri nomi di produttori e prodotti sono marchi dei rispettivi titolari; li usiamo solo per indicare la compatibilità. Rendetto non è affiliato a questi produttori né da essi approvato.</p>
+<p>I vostri progetti e i loro risultati sono vostri. Conserviamo e trattiamo i progetti solo per fornirvi il servizio: i dettagli nell'<a href="<%= legalPath(locale, 'privacy') %>">informativa sulla privacy</a>.</p>
+
+<h2>Modifiche alle condizioni</h2>
+<p>Per una modifica sostanziale vi scriveremo almeno 30 giorni prima che entri in vigore. Se la modifica è a vostro svantaggio e avete un piano a pagamento, potete recedere gratuitamente entro 30 giorni dall'avviso e ottenere la parte di prezzo non utilizzata. Se non siete d'accordo, potete anche smettere di usare Rendetto ed eliminare l'account.</p>
+
+<h2>Legge applicabile e controversie</h2>
+<p>Si applica la legge bulgara. Se siete consumatori, ciò non vi priva della tutela delle norme imperative del paese in cui vivete. Le controversie sono decise dal giudice bulgaro competente; se siete consumatori residenti nell'UE, potete agire anche davanti al giudice del luogo in cui vivete, e noi possiamo agire contro di voi solo lì.</p>
+<p>Potete rivolgervi alla Commissione bulgara per la tutela dei consumatori e alle sue commissioni di conciliazione per la risoluzione extragiudiziale della controversia (<a href="https://www.kzp.bg" target="_blank" rel="noopener">www.kzp.bg</a>). Gli organismi di risoluzione alternativa delle controversie in tutta l'UE sono elencati su <a href="https://consumer-redress.ec.europa.eu" target="_blank" rel="noopener">consumer-redress.ec.europa.eu</a>.</p>

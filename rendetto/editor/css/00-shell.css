@@ -1,0 +1,261 @@
+/* Rendetto editor — the Lab workbench inside the product shell. The Lab's variable names are mapped onto the
+   product tokens (base.css), so the light and dark themes come from one place. */
+.editor-body {
+  --bg: var(--paper);
+  --surface: var(--panel);
+  --surface-2: var(--panel-2);
+  --line: var(--rule);
+  /* the edge of a form control (field, select, search, picker button, segment): ≥ 3:1 against the panel and the
+     paper in both themes (WCAG 2.1 SC 1.4.11), like the global fields; --line stays for dividers and frames */
+  --edge: var(--ink-3);
+  --accent: var(--green);
+  --accent-ink: var(--on-green);
+  --stage-1: #fbfbf7;
+  --stage-2: #dcdfd3;
+  --sheet: #f2ede1;
+  --sheet-line: #b9ad94;
+  --err: var(--red);
+  --warn: var(--amber);
+  --ok: var(--green);
+  --t1: #2c6a10;
+  --t2: #0f6e86;
+  --t3: #7a3db8;
+  --t4: #2456a8;
+  --t5: #a87406;
+  --t6: #b4365c;
+  --t7: #4b7f52;
+  --t8: #6b5b95;
+  --f-display: var(--f-text);
+  --f-ui: var(--f-text);
+  --r: var(--radius-lg);
+  font-size: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  .editor-body {
+    --stage-1: #3a3d41;
+    --stage-2: #222427;
+    --sheet: #3b3a35;
+    --sheet-line: #6b6555;
+    --t1: #9cc97b;
+    --t2: #45c3dd;
+    --t3: #b88cf0;
+    --t4: #6fa0ff;
+    --t5: #e2b33d;
+    --t6: #f07ca0;
+    --t7: #8fd19e;
+    --t8: #b5a6e8;
+  }
+}
+.tc0 {
+  --c: var(--ink-2);
+}
+.tc1 {
+  --c: var(--t1);
+}
+.tc2 {
+  --c: var(--t2);
+}
+.tc3 {
+  --c: var(--t3);
+}
+.tc4 {
+  --c: var(--t4);
+}
+.tc5 {
+  --c: var(--t5);
+}
+.tc6 {
+  --c: var(--t6);
+}
+.tc7 {
+  --c: var(--t7);
+}
+.tc8 {
+  --c: var(--t8);
+}
+
+.editor {
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: 14px 16px 24px;
+  display: grid;
+  gap: 12px;
+}
+.ed-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+}
+.ed-title {
+  display: grid;
+  gap: 2px;
+  flex: 1 1 260px;
+  min-width: 0;
+}
+/* .ed-title raises it above the global input[type='text'] (controls.css), which would draw a full field */
+.ed-title .ed-name {
+  font: 650 1.25rem/1.2 var(--f-text);
+  border: 1px solid transparent;
+  background: transparent;
+  padding: 4px 6px;
+  margin-left: -6px;
+  min-height: 0;
+  width: 100%;
+}
+.ed-name:hover,
+.ed-name:focus {
+  border-color: var(--rule-strong);
+  background: var(--panel);
+}
+.ed-spec {
+  color: var(--ink-2);
+  font-size: 0.9rem;
+}
+.ed-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.ed-state {
+  font-size: 0.85rem;
+  color: var(--ink-2);
+}
+.ed-state[data-state='dirty'] {
+  color: var(--amber);
+  font-weight: 600;
+}
+.ed-error {
+  margin: 0;
+  color: var(--red);
+  font-weight: 550;
+}
+.ed-notice {
+  margin: 0;
+}
+/* the reasons under the notice about hardware or decors that have left the catalog */
+.ed-notice ul {
+  margin: 0;
+  padding-left: 18px;
+}
+/* the download list and the checks open under the whole header, right-aligned to it: anchored to their own
+   button, they ran off the left edge of a phone once the actions wrapped onto a second row. `start` keeps the
+   header as tall as its content, so a list never opens far below the buttons on a short page */
+.ed-top {
+  position: relative;
+  align-self: start;
+}
+.menu > summary {
+  list-style: none;
+}
+.menu > summary::-webkit-details-marker {
+  display: none;
+}
+.menu-list {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 20;
+  width: min(320px, calc(100vw - 32px));
+  background: var(--panel);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 6px;
+  display: grid;
+}
+.menu-list a {
+  padding: 9px 10px;
+  border-radius: var(--radius);
+  color: var(--ink);
+  text-decoration: none;
+}
+.menu-list a:hover,
+.menu-list a:focus-visible {
+  background: var(--panel-2);
+}
+.menu-note {
+  margin: 6px 10px 4px;
+  font-size: 0.8rem;
+  color: var(--ink-2);
+}
+.app-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: 'work' 'rail';
+  gap: 14px;
+}
+@media (min-width: 1040px) {
+  .app-grid {
+    grid-template-columns: 330px minmax(0, 1fr);
+    grid-template-areas: 'rail work';
+  }
+}
+.rail fieldset[disabled] {
+  opacity: 0.72;
+}
+.dfm summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-weight: 600;
+  font-size: 13px;
+}
+.dfm summary::-webkit-details-marker {
+  display: none;
+}
+.dfm summary::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+  background: var(--ok);
+  vertical-align: 1px;
+}
+.dfm summary[data-level='warn']::before {
+  background: var(--warn);
+}
+.dfm summary[data-level='error']::before {
+  background: var(--err);
+}
+.dfm ul {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 20;
+  width: min(480px, calc(100vw - 32px));
+  max-height: 60vh;
+  overflow: auto;
+  margin: 0;
+  padding: 10px;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 8px;
+}
+.dfm li {
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1fr);
+  gap: 8px;
+  font-size: 13px;
+}
+.lvl {
+  font: 600 11px/1.9 var(--f-ui);
+  letter-spacing: 0.02em;
+  color: var(--ink-2);
+}
+li[data-level='error'] .lvl {
+  color: var(--err);
+}
+li[data-level='warn'] .lvl {
+  color: var(--warn);
+}
