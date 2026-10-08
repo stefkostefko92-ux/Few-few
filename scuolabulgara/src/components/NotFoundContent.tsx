@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { StarMotif } from "./Stitch";
+import { RosetteMotif } from "./Stitch";
 
 // Inner 404 (no <html>/<body>) so it can be embedded inside any layout. It
 // can't know the visitor's language, so it says it in all three.
@@ -7,7 +7,7 @@ export default function NotFoundContent() {
   return (
     <main className="notfound">
       <div className="wrap notfound__grid">
-        <StarMotif a={6} size={10} className="notfound__star" />
+        <RosetteMotif size={9} className="notfound__rosette" />
         <div>
           <p className="notfound__code">404</p>
           <h1 lang="bg">Страницата не е намерена.</h1>

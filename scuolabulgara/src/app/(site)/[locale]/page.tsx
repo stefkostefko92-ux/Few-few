@@ -14,7 +14,7 @@ import Gallery from "@/components/Gallery";
 import Icon from "@/components/Icon";
 import StitchedPhoto from "@/components/StitchedPhoto";
 import Alphabet from "@/components/Alphabet";
-import { StarMotif, StitchBand } from "@/components/Stitch";
+import { RosetteMotif, StitchBand } from "@/components/Stitch";
 
 export const dynamic = "force-dynamic";
 
@@ -355,7 +355,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               <a className="btn btn--line" href={`tel:${settings.phoneHref}`}>{cta.secondary}</a>
             </div>
           </div>
-          <StarMotif a={7} size={11} className="welcome__star" />
+          <RosetteMotif size={11} className="welcome__rosette" />
         </div>
       </section>
     ),

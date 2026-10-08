@@ -45,8 +45,10 @@ scripts/          hash-password + helpers
 
 ## Design system — „Платно“ (the cloth)
 
-- **One idea: cross-stitch (кръстат бод), drawn by code.** `src/lib/stitch.ts` holds the
-  pure geometry (8-pointed star, border tile, photo → thread colours) with unit tests;
+- **One idea: cross-stitch (кръстат бод), drawn by code.** `src/lib/stitch.ts` holds
+  the motifs as charts — the rosette and the „вълчи зъби“ border of a 1930s Divotino (Shopluk) cloth,
+  transcribed stitch by stitch from photos, never invented geometry — plus back-stitch contours and
+  photo → thread colours, with unit tests;
   `components/Stitch.tsx` renders it as server SVG, `StitchedPhoto.tsx` (hero: embroidery in the
   photo's own colours rises from the bottom edge to knee height, `--stitch-depth`, sewn once on load) and `Alphabet.tsx`
   (the chosen letter embroidered on Aida) draw it on canvas. Reduced motion → drawn at
