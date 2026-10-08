@@ -10,6 +10,7 @@ import { PRESETS } from '@/calc/presets';
 import { DIMENSIONS_NOTE, TEXT, renderView, type Shape } from '@/drawing';
 import { defaultInputs, layout, type ShaftInputs } from '@/shaft';
 import { hitchTags } from '@/shaft/room-loads';
+import { TAG_R, letteringBoxes, placeTags } from '@/shaft/tag-place';
 import { inputViews } from '../cad/project';
 import { readCad } from '../cad/read';
 import { TITLE_BLOCK, inTitleBlock, mendAttributes, setToDwg, setToDxf, type IssuedSet } from '../cad/set-export';
@@ -19,7 +20,8 @@ import { FAILED, TITLE_H } from '../tavole/datasheet';
 import type { TavoleInput } from '../tavole/input';
 import { issueChecks } from '../tavole/issue-check';
 import { GOVERNOR_LOAD_UNSET, loadNames } from '../tavole/loads';
-import { machineConflict, machineName, machineText } from '../tavole/machine-name';
+import { machineConflict, machineName, machineText, modelCore } from '../tavole/machine-name';
+import { MACHINES } from '../catalog/machines';
 import { VOCI_TAVOLE } from '../tavole/norme-tavole';
 import { FIRST_ISSUE, currentRevision, refBand, revisionRows, titleBlock, titleFields, titleFrame } from '../tavole/title-block';
 import { DRAFT_NUMBER, plantMark, refsText, titleOf } from '../tavole/title-data';
@@ -49,6 +51,33 @@ test('argano: il nome del catalogo, il testo dell’impianto per riferimento, la
   assert.equal(machineConflict({ machine: 'M 73' }, null), false);
   assert.deepEqual(issueChecks({ machine: 'M 73' }, cat, { plantNumber: null, client: ' ' }, true), { machine: { named: 'M 73', catalog: 'SICOR SH140' }, plantNumber: true, client: true });
   assert.deepEqual(issueChecks({}, cat, { plantNumber: null, client: 'Condominio' }, false), { machine: null, plantNumber: false, client: false });
+});
+
+test('argano: il modello del catalogo a parole intere — un modello che ne comincia un altro, un altro costruttore contraddicono', () => {
+  const conflict = (own: string, brand: string, model: string): boolean => machineConflict({ machine: own }, { brand, model });
+  // the name of another model of the catalogue that begins with the chosen one's
+  assert.equal(conflict('SICOR SH130G', 'SICOR', 'SH130'), true);
+  assert.equal(conflict('M73AL', 'Montanari', 'M73'), true);
+  assert.equal(conflict('Montanari M73H', 'Montanari', 'M73'), true);
+  assert.equal(conflict('MR21TS', 'SICOR', 'MR21'), true);
+  assert.equal(conflict('HW134VF', 'GEM', 'HW134'), true);
+  assert.equal(conflict('PENTA 830', 'Montanari', 'PENTA'), true);
+  assert.equal(conflict('M73 H', 'Montanari', 'M73'), true);
+  // «Sx» is the left hand of the M73, a word of its own: the M73, not the M73S
+  assert.equal(conflict('M 73 (Sx)', 'Montanari', 'M73S'), true);
+  assert.equal(conflict('M 73 (Sx)', 'Montanari', 'M73'), false);
+  // the model without its sheave, its mounting, its note in brackets; a core over several words
+  assert.equal(conflict('SICOR MR12', 'SICOR', 'MR12 (storico)'), false);
+  assert.equal(conflict('HW134', 'GEM', 'HW134 Ø600'), false);
+  assert.equal(conflict('GEM HW134VF', 'GEM', 'HW134VF con supporto'), false);
+  assert.equal(conflict('GEM HW134L (Dx)', 'GEM', 'HW134L Ø600'), false);
+  assert.equal(conflict('MR21 TS', 'SICOR', 'MR21TS'), false);
+  assert.equal(conflict('Montanari Penta 830', 'Montanari', 'PENTA 830'), false);
+  assert.deepEqual(['MR12 (storico)', 'HW134 Ø600', 'HW134VF con supporto', 'PENTA 830', 'HW135L-VF'].map(modelCore), ['MR12', 'HW134', 'HW134VF', 'PENTA830', 'HW135LVF']);
+  // another maker's name
+  assert.equal(conflict('Montanari SH140', 'SICOR', 'SH140'), true);
+  // every machine of the catalogue, named as the catalogue names it, with its maker or without
+  for (const m of MACHINES) for (const own of [m.model, `${m.brand} ${m.model}`]) assert.equal(machineConflict({ machine: own }, m), false, own);
 });
 
 test('cartiglio: R0 prima emissione, le ultime quattro revisioni, la revisione corrente, timbro e firma del progettista', () => {
@@ -124,6 +153,34 @@ test('scritte dei disegni: mai sotto il corpo minimo; un nome che non ci sta esc
   assert.equal(tag?.t === 'text' ? tag.size : 0, TEXT.min);
 });
 
+test('fossa: i riferimenti dei carichi mai uno sull’altro — contrappeso di lato fuori asse, due accessi adiacenti', () => {
+  // their circles (2,4 mm) 2r + 0,5 mm apart on the sheet at least, as the plan is drawn
+  for (const I of [{ cw: 'right', plan: { cwPos: 700 } }, { cw: 'left', plan: { cwPos: 300 } }, { entrances: 'adjacent', side2: 'right' }, { entrances: 'adjacent', side2: 'left' }] as Partial<ShaftInputs>[]) {
+    const pages = buildTavole(input(I)).doc.pages, pit = pages[pages.length - 1]?.shapes ?? [], tag = JSON.stringify(I);
+    const at = pit.flatMap((s) => (s.t === 'text' && /^P[5-8]$/.test(s.text) ? [{ text: s.text, at: s.at }] : []));
+    assert.ok(['P5', 'P6', 'P7', 'P8'].every((p) => at.some((t) => t.text === p)), `${tag}: ${at.map((t) => t.text).join(' ')}`);
+    for (const [i, a] of at.entries()) for (const b of at.slice(i + 1)) {
+      const d = Math.hypot(a.at[0] - b.at[0], a.at[1] - b.at[1]);
+      assert.ok(d >= 2 * 2.4 + 0.5 - 1e-9, `${tag}: ${a.text}–${b.text} a ${d.toFixed(2)} mm`);
+    }
+  }
+});
+
+test('riferimenti: il primo posto libero intorno a ciò che indicano, lontano dagli altri, dalle scritte, dentro il vano', () => {
+  const room = { x0: 0, y0: 0, x1: 2000, y1: 2000 };
+  // where it goes as a rule when free; else turned round what it names, off the one placed first
+  const [a, b] = placeTags([{ text: 'P7', to: [1000, 1000], at: [1200, 1000] }, { text: 'P6', to: [1000, 1040], at: [1200, 1050], rank: 1 }], room, []);
+  assert.ok(a.e === 'tag' && b.e === 'tag');
+  assert.deepEqual(a.at, [1200, 1000]);
+  assert.ok(Math.hypot(b.at[0] - a.at[0], b.at[1] - a.at[1]) >= 2 * TAG_R + 0.5 * 25, `${b.at}`);
+  // off a lettering in the way, inside the room
+  const [c] = placeTags([{ text: 'P8', to: [100, 100], at: [100, 300] }], room, [], letteringBoxes([{ e: 'text', at: [100, 300], text: 'CONTRAPPESO', align: 'c' }]));
+  assert.ok(c.e === 'tag' && (c.at[0] !== 100 || c.at[1] !== 300) && c.at[0] >= 0 && c.at[1] >= 0, `${c.e === 'tag' ? c.at : ''}`);
+  // a load shared by several points: one reference, a leader to each
+  const shapes = renderView([{ e: 'tag', at: [0, 0], text: 'P1', to: [1000, 0], also: [[0, 1000]] }], { scale: 50, ox: 0, oy: 0 }).shapes;
+  assert.equal(shapes.filter((s) => s.t === 'line').length, 2);
+});
+
 test('2:1: P2 e P3 sugli attacchi delle funi, oltre l’attacco e fuori dalla linea delle calate', () => {
   const tags = hitchTags({ deadEnds: [{ at: [0, 0], dir: [0, 1] }, { at: [600, 0], dir: [0, 1] }], ux: 1, uy: 0 });
   assert.deepEqual(tags.map((t) => (t.e === 'tag' ? [t.text, t.at, t.to] : null)), [['P2', [-130, -180], [0, 0]], ['P3', [730, -180], [600, 0]]]);
@@ -138,7 +195,8 @@ test('registro di quello che le tavole scrivono: le costanti del foglio', () => 
   assert.ok(text('tavole.revisioni').includes(FIRST_ISSUE) && text('tavole.revisioni').includes('ultime 4'));
   assert.ok(text('tavole.limitatore').includes(GOVERNOR_LOAD_UNSET));
   assert.ok(text('tavole.elaborati').includes(DIMENSIONS_NOTE));
-  assert.ok(text('tavole.cad').includes(TITLE_BLOCK) && text('tavole.argano').includes('(rif. impianto: …)'));
+  assert.ok(text('tavole.cad').includes(TITLE_BLOCK) && text('tavole.argano').includes('(rif. impianto: …)') && text('tavole.argano').includes('parole intere'));
+  assert.ok(text('tavole.carichi').includes('2r + 0,5 mm') && TAG_R === 2.4 * 25);
 });
 
 test('serie emessa in DXF e DWG: cartiglio come blocco con attributi, calcestruzzo campito, la stessa geometria', () => {

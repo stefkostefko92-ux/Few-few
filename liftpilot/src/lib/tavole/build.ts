@@ -5,7 +5,7 @@
 // count adapts (no machine room: no sheets of it; main floor = lowest floor: one plan less).
 import {
   A4, COND, PALETTE, concreteTile, drawingArea, frame, shapeBox, sheetTitle, strip, toPaper,
-  type Box, type DrawingDoc, type Hit, type Page, type Place, type Pt, type Shape, type SheetMeta,
+  type Box, type DrawingDoc, type Entity, type Hit, type Page, type Place, type Pt, type Shape, type SheetMeta,
 } from '@/drawing';
 import type { MachineSpec, RoomGeo } from '@/shaft/machine-room';
 import type { PlanLevel } from '@/shaft/plan-view';
@@ -21,7 +21,7 @@ import { placeLines, type TavoleInput } from './input';
 import { currentRevision, type TitleData } from './title-block';
 import { OVER_DOWN, OVER_UP, spaceLegend, type LegendItem } from './notes';
 import { makeFmt } from '../present/tr';
-import { belowGeoOf, belowView, machineOf, planView, roomView, sectionView } from './views';
+import { belowGeoOf, belowView, headLoadsOf, machineOf, planView, roomView, sectionView } from './views';
 
 /** A sheet of the set after the data: a plan of the shaft, section A-A or a detail, the machine room. */
 export type Spec =
@@ -95,11 +95,12 @@ const clear = (shapes: readonly Shape[], b: Box): boolean => shapes.every((s) =>
   return o.x1 < b.x0 || o.x0 > b.x1 || o.y1 < b.y0 || o.y0 > b.y1;
 });
 
-function planSheet(L: Layout, s: Extract<Spec, { k: 'plan' }>, area: Box): Drawn {
+/** `extra`: what the set draws on the plan besides (the head's loads of a machine below on the plan at the top). */
+function planSheet(L: Layout, s: Extract<Spec, { k: 'plan' }>, area: Box, extra: readonly Entity[] = []): Drawn {
   // room around the view for the "LATO FERMATE" labels (rotated on a side wall) and the section marks
   const side = (w: 'left' | 'right'): number => (L.doors.some((d) => d.wall === w) ? 11 : 4);
   const drawn = (a: Box): Drawn => {
-    const { r, place } = planView(L, s.level, s.floor, s.total, inset(a, side('left'), side('right'), 9, 8));
+    const { r, place } = planView(L, s.level, s.floor, s.total, inset(a, side('left'), side('right'), 9, 8), extra);
     const px = toPaper(place, [L.car.x + L.car.w / 2, 0])[0];
     const marks = sectionMarks([px, r.extent.y1 + 3.5], [px, r.extent.y0 - 3.5], 'left', 'A');
     return { shapes: [...r.shapes, ...sideLabels(L, r.extent), ...marks], scale: place.scale, hits: r.hits };
@@ -176,6 +177,8 @@ export function buildTavole(x: TavoleInput): TavoleResult {
   const L: Layout = withPitches(x.layout, { car: x.plant.carBracketPitch, cw: x.plant.cwBracketPitch }), a: Analysis = analyse(x.values), M = machineOf(a, x.plant, L, x.marks?.catalog ?? null);
   // the machine below: its room's sheets for the scheme the design chose (the head pulleys under the slab when none)
   const scheme = a.ctx.I.layout === 'bottom' ? x.marks?.bottom ?? 'head' : null, g = scheme ? belowGeoOf(a, L, M, scheme) : null;
+  // (and the loads on the head of the shaft, on its plan at the top floor)
+  const head = g ? headLoadsOf(a, L, M, g) : [];
   const list = specs(L, L.inputs.room !== null && a.ctx.I.layout !== 'bottom', scheme), pages = list.length + 1;
   const [l1, l2] = placeLines(x.project), ds = dataSheet(x, a, pages);
   // the strip of every sheet: the revision the set is at (R0 and its date on a first issue) and the plant number as the
@@ -187,7 +190,7 @@ export function buildTavole(x: TavoleInput): TavoleResult {
   const sheets: TavoleResult['sheets'] = [{ title: 'DATI DELL’IMPIANTO', scale: null }], hits: Hit[][] = [[]];
   list.forEach((s, i) => {
     const sub = s.subtitle !== undefined, area = drawingArea(sub);
-    const d = s.k === 'plan' ? planSheet(L, s, area) : s.k === 'section' ? sectionSheet(L, s, area)
+    const d = s.k === 'plan' ? planSheet(L, s, area, s.level === 'top' ? head : []) : s.k === 'section' ? sectionSheet(L, s, area)
       : s.k === 'below-plan' || s.k === 'below-section' ? belowSheet(L, M, g ?? belowGeoOf(a, L, M, 'head'), s.k, area) : roomSheet(L, M, s.k, area);
     out.push({ w: A4.w, h: A4.h, shapes: [...frame(), ...d.shapes, ...sheetTitle(s.title, s.subtitle), scaleLabel(d.scale, sub), ...strip(meta(i + 2))] });
     sheets.push({ title: s.title, scale: d.scale });

@@ -1,5 +1,6 @@
 // Registry of what the drawing set writes by the software's choice or by the rules of the trade: the smallest lettering,
-// the plant number, the revisions, the machine's name, the governor's load when it is not known, the records sheet 1
+// the plant number, the revisions, the machine's name, where the loads are tagged, the governor's load when it is not
+// known, the records sheet 1
 // cites, the CAD files of an issued set. Same form as the values filled in (src/lib/lift/norme.ts), with which the list
 // for the engineer prints them; Italian texts, clause numbers and values only. The values are the constants of the
 // drawing set (tavole.test.ts checks them).
@@ -31,9 +32,19 @@ export const VOCI_TAVOLE: readonly VoceImpianto[] = [
   },
   {
     id: 'tavole.argano', titolo: 'Nome dell’argano nei disegni',
-    valore: 'il modello del catalogo su cui è fatto il calcolo, con accanto «(rif. impianto: …)» il testo dei dati dell’impianto quando è diverso; un '
-      + 'testo che nomina un altro argano (non contiene il modello del catalogo) ferma l’emissione delle tavole finché non si corregge',
+    valore: 'il modello del catalogo su cui è fatto il calcolo, con accanto «(rif. impianto: …)» il testo dei dati dell’impianto quando è diverso; il '
+      + 'testo deve nominare quel modello a parole intere (senza la nota fra parentesi, la puleggia «Ø…» e «con …»; «M 73» è M73, ma «Sx» è una '
+      + 'parola a sé) e nessun altro modello o costruttore del catalogo (SH130G non è SH130, M73S non è M73): altrimenti l’emissione delle tavole '
+      + 'si ferma finché non si corregge',
     riferimento: 'relazione di calcolo e tavole dello stesso impianto: un solo argano', fonte: 'scelta del software', stato: 'scelta',
+  },
+  {
+    id: 'tavole.carichi', titolo: 'Richiami dei carichi P1…P8 sulle tavole',
+    valore: 'dove ogni carico agisce: P1 sull’argano nel locale (con la macchina in basso sulle pulegge di rinvio in testata, tratteggiate nella '
+      + 'pianta in testata, un richiamo con una linea a ciascuna), P2 e P3 sugli attacchi delle funi a 2:1, P4 sul limitatore, P5–P8 su guide e '
+      + 'ammortizzatori nella pianta della fossa; ogni cerchio ad almeno 2r + 0,5 mm dagli altri e fuori dalle scritte, al primo posto libero intorno '
+      + 'a ciò che indica',
+    riferimento: 'UNI EN 81-20:2020, 5.2.1.8 (carichi sulla struttura dell’edificio: voci carichi.macchina e carichi.fossa)', fonte: 'scelta del software', stato: 'scelta',
   },
   {
     id: 'tavole.limitatore', titolo: 'Carico del limitatore (P4) non noto',

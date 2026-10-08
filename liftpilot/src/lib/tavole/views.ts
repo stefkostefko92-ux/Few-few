@@ -16,6 +16,7 @@ import type { RoomDerived } from '../room/derive';
 import { bottomGeo, type BottomGeo, type BottomScheme } from '../lift/bottom';
 import { machineSpec, sheaveAxisBelow } from '../lift/machine';
 import { belowPlanEntities, belowSectionEntities } from './below-view';
+import { headLoads } from './head-loads';
 import type { Plant } from '../plant';
 import { machineName } from './machine-name';
 import type { Analysis } from '../present/analysis';
@@ -35,9 +36,10 @@ function placeIn(model: Box, entities: readonly Entity[], area: Box, scales: rea
   return p;
 }
 
-/** Plan of the shaft at a level; `total` names the level in the overall dimensions (e.g. `in Testata`). */
-export function planView(L: Layout, level: PlanLevel, floor: number, total: string, area: Box): View {
-  const T = L.inputs.wall, B = wallsAt(L, level), ents = [...planEntities(L, level, floor), ...planDims(L, level, floor, { level: total })];
+/** Plan of the shaft at a level; `total` names the level in the overall dimensions (e.g. `in Testata`); `extra`: what
+ *  the set draws on it besides (the loads on the head of a machine below: headLoadsOf). */
+export function planView(L: Layout, level: PlanLevel, floor: number, total: string, area: Box, extra: readonly Entity[] = []): View {
+  const T = L.inputs.wall, B = wallsAt(L, level), ents = [...planEntities(L, level, floor), ...extra, ...planDims(L, level, floor, { level: total })];
   const place = placeIn({ x0: Math.min(0, B.x0) - T, y0: Math.min(0, B.y0) - T, x1: Math.max(L.inputs.W, B.x1) + T, y1: Math.max(L.inputs.D, B.y1) + T }, ents, area, PLAN_SCALES);
   return { r: renderView(ents, place), place };
 }
@@ -118,6 +120,10 @@ export function roomView(L: Layout, M: MachineSpec, kind: 'plan' | 'section', ar
 /** The geometry of the machine below for the calculation's machine (the 3D's: bottom.ts). */
 export const belowGeoOf = (a: Analysis, L: Layout, M: MachineSpec, scheme: BottomScheme): BottomGeo =>
   bottomGeo(L, scheme, M.D, a.ctx.I.Dp, M.n, M.d, a.ctx.I.r, sheaveAxisBelow(M.D, M.shape ?? null));
+
+/** The loads on the head of the shaft of a machine below for the calculation's machine, on the plan at the top floor
+ *  (head-loads.ts). */
+export const headLoadsOf = (a: Analysis, L: Layout, M: MachineSpec, g: BottomGeo): Entity[] => headLoads(L, g, a.ctx.I.r, a.ctx.I.Dp, M.n, M.d);
 
 /** The machine's room with the machine below, in plan or in section C-C (below-view.ts). */
 export function belowView(L: Layout, M: MachineSpec, g: BottomGeo, kind: 'plan' | 'section', area: Box): View & { entities: Entity[] } {

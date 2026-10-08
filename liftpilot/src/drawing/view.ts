@@ -73,7 +73,7 @@ export function renderView(entities: readonly Entity[], place: Place): ViewResul
   entities.forEach((e, i) => {
     if (e.e === 'text') parts[i] = lettering(e, place);
     else if (e.e === 'mark') parts[i] = symbol(e.sym, toPaper(place, e.at), e.size);
-    else if (e.e === 'tag') parts[i] = tag(toPaper(place, e.at), e.text, e.to ? toPaper(place, e.to) : null);
+    else if (e.e === 'tag') parts[i] = tag(toPaper(place, e.at), e.text, [...(e.to ? [e.to] : []), ...(e.also ?? [])].map((p) => toPaper(place, p)));
     for (const s of parts[i]) if (s.t !== 'line') taken.push(shapeBox(s));
   });
   const room = rowsRoom(entities);
@@ -109,12 +109,12 @@ function lettering(e: Extract<Entity, { e: 'text' }>, place: Place): Shape[] {
   return [{ t: 'line', a: from, b: to, s: STYLES.dim }, { t: 'circle', c: to, r: 0.35, fill: { k: 'solid', ink: 'ink' } }, s];
 }
 
-/** A reference in a circle with its leader, sized on paper: its letters as large as the smallest lettering. */
-function tag([x, y]: Pt, text: string, to: Pt | null): Shape[] {
+/** A reference in a circle with its leaders, sized on paper: its letters as large as the smallest lettering. */
+function tag([x, y]: Pt, text: string, to: readonly Pt[]): Shape[] {
   const size = TEXT.min, r = Math.max(2.4, textWidth(text, { size, cond: true }) / 2 + 0.7), out: Shape[] = [];
-  if (to) {
-    const d = Math.hypot(to[0] - x, to[1] - y);
-    if (d > r) out.push({ t: 'line', a: [x + ((to[0] - x) * r) / d, y + ((to[1] - y) * r) / d], b: to, s: STYLES.dim });
+  for (const t of to) {
+    const d = Math.hypot(t[0] - x, t[1] - y);
+    if (d > r) out.push({ t: 'line', a: [x + ((t[0] - x) * r) / d, y + ((t[1] - y) * r) / d], b: t, s: STYLES.dim });
   }
   out.push({ t: 'circle', c: [x, y], r, s: STYLES.thin, fill: { k: 'solid', ink: 'paper' } });
   out.push({ t: 'text', at: [x, y - size * 0.36], text, size, align: 'c', cond: true });

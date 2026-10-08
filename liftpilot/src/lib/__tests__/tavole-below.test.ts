@@ -1,7 +1,9 @@
 // The machine's room with the machine below in the drawing set (tavole/below-view.ts): for each scheme its plan and
 // section C-C in place of the machine room above, titled by where the room stands; everything on the A4 sheet, no holes
 // in the texts, the names on the plan clear of each other and of the machine at whatever scale the sheet takes; and a
-// door's width over its dimension line with its words under it ("Porta H. 2000") where the whole text does not fit.
+// door's width over its dimension line with its words under it ("Porta H. 2000") where the whole text does not fit;
+// the loads on the head of the shaft (P1 the head pulleys, P2 and P3 the hitches of a 2:1 roping, P4 the governor) on
+// the plan at the top floor, in the set and in its CAD file.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { PRESETS } from '@/calc/presets';
@@ -10,7 +12,8 @@ import { A4, chainShapes, shapeBox, type Shape } from '@/drawing';
 import { buildTavole } from '../tavole/build';
 import { belowGeoOf, machineOf } from '../tavole/views';
 import { analyse } from '../present/analysis';
-import { projectViews } from '../cad/project';
+import { inputViews, projectViews } from '../cad/project';
+import { dataSheet } from '../tavole/data';
 import { toDxf } from '../cad/export';
 import { readCad } from '../cad/read';
 import type { TavoleInput } from '../tavole/input';
@@ -96,5 +99,27 @@ test('progetto in DXF con la macchina in basso: le due viste del locale dopo le 
     assert.deepEqual(views.map((v) => [v.title, v.scale]).filter(([t]) => String(t).includes('LOCALE MACCHINA')),
       sheets.filter((s) => s.title.includes('LOCALE MACCHINA')).map((s) => [s.title, s.scale]), scheme);
     assert.ok(readCad(new TextEncoder().encode(toDxf(views, 'Prova')), 'progetto.dxf').count > 1000, scheme);
+  }
+});
+
+test('macchina in basso: i carichi della testata sulla pianta in testata — P1 sulle pulegge, P2 e P3 sugli attacchi a 2:1, P4 sul limitatore', () => {
+  for (const scheme of BOTTOM_SCHEMES) {
+    for (const [W, D, cw] of VARIANTS) {
+      for (const r of ['1', '2']) {
+        const base = input(shaft(W, D, cw, scheme === 'room'), scheme), x = { ...base, values: { ...base.values, r } }, tag = `${scheme} ${cw} ${r}:1`;
+        const t = buildTavole(x), P = dataSheet(x, analyse(x.values), t.doc.pages.length).sheet.P;
+        // every load sheet 1 gives (the total on the slab aside) has its reference on a drawing sheet
+        const drawn = new Set(t.doc.pages.slice(1).flatMap((p) => texts(p.shapes).map((s) => s.text)).filter((s) => /^P[1-9]$/.test(s)));
+        P.forEach((v, i) => {
+          if (i < 8 && v !== '—') assert.ok(drawn.has(`P${i + 1}`), `${tag}: P${i + 1} = ${v} senza riferimento (${[...drawn].join(' ')})`);
+        });
+        assert.equal(drawn.has('P2') && drawn.has('P3'), r === '2', tag);
+        // on the plan at the top: P1 with a leader to each head pulley, its CAD view the same
+        const head = t.sheets.findIndex((s) => s.title.startsWith('VISTA IN PIANTA DEL VANO IN TESTATA')), top = texts(t.doc.pages[head]?.shapes ?? []).map((s) => s.text);
+        for (const p of ['P1', 'P4', ...(r === '2' ? ['P2', 'P3'] : [])]) assert.ok(top.includes(p), `${tag}: ${p} non in testata`);
+        const plan = inputViews(x).find((v) => v.title.startsWith('VISTA IN PIANTA DEL VANO IN TESTATA')), p1 = plan?.entities.find((e) => e.e === 'tag' && e.text === 'P1');
+        assert.ok(p1?.e === 'tag' && (p1.also?.length ?? 0) >= 1, `${tag}: P1 nel DXF`);
+      }
+    }
   }
 });

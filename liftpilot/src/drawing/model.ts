@@ -72,8 +72,9 @@ export type Entity =
   | { e: 'text'; at: Pt; text: string; size?: number; angle?: number; align?: Align; bold?: boolean; ink?: Ink; halo?: boolean; fit?: number; out?: Pt }
   /** a symbol of fixed paper size at a model point */
   | { e: 'mark'; at: Pt; sym: SymbolName; size?: number }
-  /** a reference in a small circle (e.g. a load P5), with a leader to the element it names */
-  | { e: 'tag'; at: Pt; text: string; to?: Pt }
+  /** a reference in a small circle (e.g. a load P5), with a leader to the element it names — and one to each of `also`,
+   *  the others of a load shared by several (the head pulleys of a machine below) */
+  | { e: 'tag'; at: Pt; text: string; to?: Pt; also?: readonly Pt[] }
   | { e: 'chain'; c: Chain };
 
 export const line = (a: Pt, b: Pt, st: StyleName = 'thin'): Entity => ({ e: 'line', a, b, st });
