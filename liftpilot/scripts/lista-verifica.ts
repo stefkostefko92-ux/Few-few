@@ -27,6 +27,7 @@ const VERIFICA: Record<CheckId, string> = {
   b_one: 'freno, un gruppo in discesa', b_up: 'freno, un gruppo a vuoto in salita', b_amax: 'decelerazione massima del freno',
   s_force: 'forza al volantino', s_uplift: 'sollevamento netto', tr_msr1: 'tratto macchina–testata a r·a (avviso)', r_two: 'cabina appesa a due funi',
   v_comp: 'velocità e compensazione', g_retain: 'funi trattenute nelle gole', s_fa: 'forza al volantino fino a una fermata', s_gravity: 'movimento per gravità',
+  g_press: 'pressione specifica nelle gole (informazione)',
 };
 const ORDER: readonly Gruppo[] = ['trazione', 'gole', 'funi', 'freno', 'azionamento', 'soccorso', 'albero', 'sostituzione', 'modello'];
 // the shaft design (src/shaft/norme.ts), after the machine

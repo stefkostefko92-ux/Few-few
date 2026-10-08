@@ -30,6 +30,8 @@ export default function AdviceView({ advice, alt = null, running = null, fmt, in
   const status = (c: MachineCandidate): 'ok' | 'warn' | 'fail' => (c.fails ? 'fail' : c.warns ? 'warn' : 'ok');
   const result = (c: MachineCandidate): string => (c.fails ? t('res_fail', { n: c.fails }) : c.warns ? t('res_warn', { n: c.warns }) : t('res_ok'));
   const sources = (c: MachineCandidate): string => c.sources.map((s) => t(`src_${s}`)).join(' + ');
+  // the whole machine, marked when the parts its catalogue leaves out are estimated
+  const massText = (c: MachineCandidate): string => (c.massWhole === null ? '—' : `${c.massEstimated ? '≈ ' : ''}${fmt(c.massWhole, 0)} kg${c.massEstimated ? ` ${t('mass_est')}` : ''}`);
   const bed = (c: MachineCandidate): string => (c.bedplate ? t('bed_maker', { code: c.bedplate.code, kg: fmt(c.bedplate.mass, 0) }) : t('bed_ours'));
   const held = (): string => (onUse ? t('in_use') : t(where === 'design' ? 'recorded_design' : 'recorded_calc'));
   const reason = (A: MachineAdvice): string => (A.best[0] && A.why ? t(`why_${A.why}`, whyValues(A.best[0], A.best[1], fmt)) : '');
@@ -52,7 +54,7 @@ export default function AdviceView({ advice, alt = null, running = null, fmt, in
         <div><dt>{t('f_sheave')}</dt><dd className="num">Ø {fmt(c.N.D, 0)} · {c.N.n} × Ø{dText(c.N.d)}</dd></div>
         <div><dt>{t('f_motor')}</dt><dd className="num">{fmt(c.N.Pn, 1)} kW{c.kWmax !== null ? ` · ${t('max', { kw: fmt(c.kWmax, 1) })}` : ''}</dd></div>
         <div><dt>{t('f_static')}</dt><dd className="num">{fmt(c.staticKg, 0)} kg · {t('test', { kg: fmt(c.testKg, 0) })}</dd></div>
-        <div><dt>{t('f_mass')}</dt><dd className="num">{c.mass === null ? '—' : `${fmt(c.mass, 0)} kg`}</dd></div>
+        <div><dt>{t('f_mass')}</dt><dd className="num">{massText(c)}</dd></div>
         {c.I.layout === 'topDefl' ? <div><dt>{t('f_bedplate')}</dt><dd>{bed(c)}</dd></div> : null}
         <div><dt>{t('f_source')}</dt><dd title={c.src}>{sources(c)}</dd></div>
         <div><dt>{t('f_drawn')}</dt><dd>{t(c.drawn ? 'drawn_yes' : 'drawn_no')}</dd></div>
@@ -95,7 +97,7 @@ export default function AdviceView({ advice, alt = null, running = null, fmt, in
                   <td className="spec" data-label={t('f_ratio')}>{c.ratio} · {dvText(c.dv, fmt)} %</td>
                   <td className="spec" data-label={t('f_sheave')}>Ø {fmt(c.N.D, 0)} · {c.N.n} × Ø{dText(c.N.d)}</td>
                   <td className="spec num" data-label={t('f_static')}>{fmt(c.staticKg, 0)} kg</td>
-                  <td className="spec num" data-label={t('f_mass')}>{c.mass === null ? '—' : `${fmt(c.mass, 0)} kg`}</td>
+                  <td className="spec num" data-label={t('f_mass')}>{massText(c)}</td>
                   {defl ? <td data-label={t('f_bedplate')}>{c.I.layout === 'topDefl' ? (c.bedplate ? c.bedplate.code : t('bed_ours')) : '—'}</td> : null}
                   <td data-label={t('f_source')}><abbr title={`${sources(c)} — ${c.src}`}>{c.sources.join(' + ')}</abbr></td>
                   <td data-label={t('f_result')} className={`res res-cell ${status(c)}`}>{result(c)}</td>

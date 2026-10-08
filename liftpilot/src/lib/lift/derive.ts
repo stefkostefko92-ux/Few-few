@@ -13,16 +13,18 @@ import { analyse, mirrorRopes, proposalValues, type Analysis } from '@/lib/prese
 import { simModel, type SimModel } from '@/sim';
 import { belowChecks } from './below-checks';
 import { bottomGapNeeded, bottomGeo, extraBends, type BottomScheme } from './bottom';
-import { bestFit, catalogValues, offGrid, pickOption, type CatalogChoice } from './catalog';
+import { bestFit, catalogValues, firstTaken, offGrid, type CatalogChoice } from './catalog';
 import type { CatalogFit } from '@/lib/catalog/machines';
 import { machineShapeOf, machineSpec, rinvioOf, sheaveAxis, sheaveAxisBelow, type Made } from './machine';
 import type { MachineShape } from '@/shaft/machine-shape';
 import { rinvioClash, type RinvioFrame } from '@/shaft/rinvio';
 import { fallsOf } from '@/shaft/falls';
 import { headTopChecks } from './head';
-import { bedplateMass, governorSideFor, hebOf, placedPanel, supportChecks, supportLoad } from './support';
+import { carriedMass, governorSideFor, hebOf, placedPanel, supportChecks, supportLoad } from './support';
+import { drawnIssues, type Drawn } from './drawn';
 import { collaudoOf, type Collaudo } from './collaudo';
 import { KL } from './norme';
+import { massModelOf } from './known';
 
 /** Values the software fills in (true) or takes as entered (false). */
 export interface AutoFlags {
@@ -90,6 +92,9 @@ export interface LiftDerived {
   catalog: { fit: CatalogFit | null; miss: boolean } | null;
   /** the standard the lift is tested to and what the intervention replaces: which checks apply (collaudo.ts) */
   collaudo: Collaudo;
+  /** what the shaft design gives for the rope beyond the travel and a machine below's Hv entered by hand (null: taken
+   *  from it, or no Hv); an entered value it contradicts is an issue (drawn.ts) */
+  drawn: Drawn;
   sim: SimModel;
 }
 
@@ -142,7 +147,9 @@ function deflectorDx(L: Layout, V: FormValues): { dx: number; fits: boolean } {
  * exactly the sizing of the calculator. null: nothing passes (the machine entered is checked).
  */
 function propose(V0: FormValues, L: Layout, geometry: (W: FormValues) => FormValues, planned: boolean, fitOf: ((o: SizingOption, W: FormValues) => CatalogFit | null) | null, only: readonly number[] | null,
-  extra: readonly number[] = []): { V: FormValues; fit: CatalogFit | null } | null {
+  extra: readonly number[] = [], finish: (fit: CatalogFit, W: FormValues) => FormValues | null = () => null): { V: FormValues; fit: CatalogFit | null } | null {
+  // (`finish`: the maker's machine taken for an option, as it stands, its parts sized again on it; null: it does not
+  // take the option after all, the next one in the sizing's order is tried)
   // (`extra`: a chosen model's own sheave off the grid)
   const c0 = readInputs(V0), sheaves = c0.fixedD ? [c0.fixedD] : only ?? [...SHEAVE_GRID, ...extra.filter((D) => !SHEAVE_GRID.includes(D))].sort((a, b) => a - b);
   const found: { o: SizingOption; V: FormValues; fit: CatalogFit | null }[] = [];
@@ -155,10 +162,11 @@ function propose(V0: FormValues, L: Layout, geometry: (W: FormValues) => FormVal
       if (!fitOf || fit) found.push({ o, V: W, fit });
     }
   }
-  const best = pickOption(found, !!c0.rope);
-  if (!best) return null;
-  const W = mirrorRopes({ ...best.V, ...proposalValues(best.o) });
-  return { V: geometry(best.fit ? { ...W, ...catalogValues(best.fit, W) } : W), fit: best.fit };
+  const taken = firstTaken(found, !!c0.rope, (best) => {
+    const W = mirrorRopes({ ...best.V, ...proposalValues(best.o) });
+    return best.fit ? finish(best.fit, W) : geometry(W);
+  });
+  return taken ? { V: taken.r, fit: taken.x.fit } : null;
 }
 
 function deriveOnce(inp: LiftInputs): LiftDerived {
@@ -174,18 +182,20 @@ function deriveOnce(inp: LiftInputs): LiftDerived {
   let shape: MachineShape | null = null, made: Made | null = null;
   // the diverting pulley in the room, in the machine's bedplate or on its stand: its h is the sheave's axis over its own
   // (registry locale.rinvio), with the distance dx from the plan; an h entered by hand stays
-  const rinvioFor = (X: FormValues): RinvioFrame | null =>
-    (X.layout === 'topDefl' ? rinvioOf(S.room, num(X, 'n_D'), num(X, 'Dp'), shape, made, inp.auto.dx ? null : num(X, 'h') * 1000) : null);
-  const geometry = (W: FormValues): FormValues => {
+  const rinvioFor = (X: FormValues, sh = shape, md = made): RinvioFrame | null =>
+    (X.layout === 'topDefl' ? rinvioOf(S.room, num(X, 'n_D'), num(X, 'Dp'), sh, md, inp.auto.dx ? null : num(X, 'h') * 1000) : null);
+  // the rope geometry with the machine `sh` (`md`) where it stands; `drawn`: L0 and Hv from the design even where entered
+  const geometryOf = (sh: MachineShape | null, md: Made | null, drawn = false) => (W: FormValues): FormValues => {
     let X = W;
-    const D = num(X, 'n_D'), g = scheme ? bottomGeo(L, scheme, D, num(X, 'Dp'), num(X, 'n_n'), num(X, 'n_d'), num(X, 'r'), sheaveAxisBelow(D, shape)) : null;
-    const rf = rinvioFor(X);
-    if (g) X = { ...X, nps: npsEntered + extraBends(g), ...(inp.auto.Hv ? { Hv: m3((g.zHead - g.zSheave) / 1000) } : {}) };
-    if (inp.auto.L0) X = { ...X, L0: ropeBeyond(S, X, g ? g.zHead - Sec.ceiling : null, shape, rf) };
-    if (inp.auto.dx && rf) X = { ...X, h: m3((sheaveAxis(S.room, D, shape, rf) - rf.pulleyAxis) / 1000) };
+    const D = num(X, 'n_D'), g = scheme ? bottomGeo(L, scheme, D, num(X, 'Dp'), num(X, 'n_n'), num(X, 'n_d'), num(X, 'r'), sheaveAxisBelow(D, sh)) : null;
+    const rf = rinvioFor(X, sh, md);
+    if (g) X = { ...X, nps: npsEntered + extraBends(g), ...(inp.auto.Hv || drawn ? { Hv: m3((g.zHead - g.zSheave) / 1000) } : {}) };
+    if (inp.auto.L0 || drawn) X = { ...X, L0: ropeBeyond(S, X, g ? g.zHead - Sec.ceiling : null, sh, rf) };
+    if (inp.auto.dx && rf) X = { ...X, h: m3((sheaveAxis(S.room, D, sh, rf) - rf.pulleyAxis) / 1000) };
     if (inp.auto.dx) X = { ...X, dx: deflectorDx(L, X).dx };
     return X;
   };
+  const geometry = (W: FormValues): FormValues => geometryOf(shape, made)(W);
   V = geometry(mirrorRopes(V));
   // the diverting pulley's distance comes from the plan: only geometries the wrap-angle model reads as drawn
   const p0 = readInputs(V), c0 = p0.I, planned = inp.auto.dx && c0.layout === 'topDefl' && c0.alphaMode !== 'manual';
@@ -198,7 +208,13 @@ function deriveOnce(inp: LiftInputs): LiftDerived {
   let noProposal = false, catalog: LiftDerived['catalog'] = null;
   if (inp.auto.machine) {
     // from the maker chosen when one of its machines takes an option, else from the calculation grid
-    const choice = inp.catalog, fromCat = choice ? propose(V, L, geometry, planned, (o, W) => bestFit(choice, o, num(W, 'Q'), num(W, 'r')), only, offGrid(choice)) : null;
+    // a maker's machine: its geometry as it stands (its axis, its bedplate), its motor, groove and brake sized again on
+    // it (catalog.ts), the diverting pulley still where the plan places it
+    const finish = (fit: CatalogFit, W: FormValues): FormValues | null => {
+      const X = geometryOf(machineShapeOf(fit), fit.machine)(W), own = catalogValues(fit, X), Y = own ? { ...X, ...own } : null;
+      return Y && !(planned && !deflectorDx(L, Y).fits) ? Y : null;
+    };
+    const choice = inp.catalog, fromCat = choice ? propose(V, L, geometry, planned, (o, W) => bestFit(choice, o, num(W, 'Q'), num(W, 'r')), only, offGrid(choice), finish) : null;
     const proposed = fromCat ?? propose(V, L, geometry, planned, null, only);
     if (choice) catalog = { fit: fromCat?.fit ?? null, miss: !fromCat };
     if (proposed) V = proposed.V;
@@ -214,7 +230,10 @@ function deriveOnce(inp: LiftInputs): LiftDerived {
   // the sheave's diameter apart contradict the plan (registry impianto.calata)
   const calata = direct ? fallSpacing(L, V) : null;
   const rinvio = rinvioFor(V), pulleyRim = rinvio ? sheaveAxis(S.room, N.D, shape, rinvio) - I.h * 1000 - I.Dp / 2 : 0;
+  // L0 and a machine below's Hv entered by hand against the design's (drawn.ts)
+  const G0 = geometryOf(shape, made, true)(V), drawn: Drawn = { L0: inp.auto.L0 ? null : num(G0, 'L0'), Hv: scheme && !inp.auto.Hv ? num(G0, 'Hv') : null };
   const issues: IssueKey[] = [
+    ...drawnIssues({ L0: I.L0, Hv: I.Hv }, drawn),
     ...(planned && !deflectorDx(L, V).fits ? ['dx' as const] : []),
     ...(rinvio && pulleyRim < 0 ? ['rinvio' as const] : []),
     ...(calata !== null && Math.abs(calata - (oldHitches ? O.D : N.D)) > KL.calataTol ? ['calata' as const] : []),
@@ -234,8 +253,9 @@ function deriveOnce(inp: LiftInputs): LiftDerived {
     machine: inp.auto.machine && !noProposal ? 'auto' : 'entered', panel: spot ? 'auto' : 'entered',
   };
   // the beams under the machine (with the maker's bedplate it stands on) and the machine in its room; the car's highest
-  // part under what hangs over it
-  const load = supportLoad(analysis.ctx, analysis.res.Mcw, { machine: N.mass + bedplateMass(machine) }), above = I.layout !== 'bottom';
+  // part under what hangs over it. The whole machine is the catalogue's model the proposal took, else the one the values
+  // are (one entered by hand, carried from the replacement's calculator): as the relazione names it (known.ts)
+  const load = supportLoad(analysis.ctx, analysis.res.Mcw, { machine: carriedMass(roomGeo(Lp, machine), machine, N, massModelOf(I, N, V, made)) }), above = I.layout !== 'bottom';
   // the diverting pulley up over the bedplate's top into the machine (an h or a height set by hand): as the replacement says
   const clash = rinvio && pulleyRim < 0 ? 'floor' : above && machine.rinvio ? rinvioClash(roomGeo(Lp, machine), machine) : null;
   if (clash && !issues.includes('rinvio')) issues.push('rinvio');
@@ -247,7 +267,7 @@ function deriveOnce(inp: LiftInputs): LiftDerived {
   return {
     shaft: Lp.inputs, values: V, layout: Lp, analysis, origin, noProposal, issues, calata, rinvioClash: clash, machine, supportChecks: supportCk, bottom: scheme, bottomGap,
     heb: beams && chosenBy ? { ...beams, auto: { profile: !chosenBy.profile, dir: !chosenBy.dir } } : null,
-    headPulleys: g ? 2 + extraBends(g) : 0, catalog, collaudo: collaudoOf(V, inp.collaudo),
+    headPulleys: g ? 2 + extraBends(g) : 0, catalog, collaudo: collaudoOf(V, inp.collaudo), drawn,
     sim: simModel(I, N, analysis.res, Sec, vt),
   };
 }

@@ -14,14 +14,16 @@ import { beamChecks } from '@/shaft/support-check';
 import type { ShaftCheck } from '@/shaft/types';
 import { NORMA_SIGLA, ambitoOf } from '../lift/collaudo';
 import { ADEMPIMENTI } from '../lift/norme-collaudo';
-import { bedplateMass, cablesMass, carSideStatic, ropeLength } from '../lift/support';
+import { cablesMass, carSideStatic, carriedBy, ropeLength, supportMass } from '../lift/support';
+import { machineMass } from '../lift/machine-mass';
+import { supportRows } from './sheet-loads';
 import type { Plant } from '../plant';
 import { makeFmt } from '../present/tr';
 import { collaudoNote, partiText } from '../report/collaudo';
 import type { RoomDerived } from '../room/derive';
 import type { Row, TitleData } from './datasheet';
 import { dateIt, placeLines } from './input';
-import { loads } from './loads';
+import { loads, type LoadsInput } from './loads';
 import { roomNote, type Note } from './notes';
 import type { SurveyTavoleInput } from './survey-input';
 import { machineText } from './views';
@@ -74,7 +76,7 @@ const machineRows = (O: Machine | null, N: Machine, oldName: string, newName: st
     ['POTENZA MOTORE', 'kW', ...both((m) => num(m.Pn))],
     ['POLI N° - GIRI/MINUTO', '', ...both((m) => `${m.poles}/${fmt(m.nm, 0)}`)],
     ['FRENO: GRUPPI × COPPIA', 'N·m', ...both((m) => `${m.brakeSets} × ${fmt(m.brakeNm, 0)}`)],
-    ['ANGOLO GOLE γ - β', '°', ...both((m) => `${fmt(m.groove.gamma, 0)} - ${fmt(m.groove.beta, 0)}`)],
+    ['ANGOLO GOLE γ - β', '°', ...both((m) => `${num(m.groove.gamma)} - ${num(m.groove.beta)}`)],
     ['FUNI DI SOSPENSIONE', 'N°-Ø', ...both((m) => `${m.n} - ${num(m.d)}`)],
     ['CARICO STATICO AMMESSO', 'kg', ...both((m) => (m.shaftMax > 0 ? fmt(m.shaftMax, 0) : '—'))],
     ['MASSA', 'kg', ...both((m) => (m.mass > 0 ? fmt(m.mass, 0) : 'NON INSERITA'))],
@@ -88,15 +90,19 @@ const machineRows = (O: Machine | null, N: Machine, oldName: string, newName: st
 export function surveyLoad(d: RoomDerived, Pl: Plant) {
   const { ctx, res } = d.analysis, { I, N } = ctx;
   const ropesKg = N.n * N.qf * ropeLength(I), cablesKg = cablesMass(I.H);
-  const bedplate = bedplateMass(d.M), machine = N.mass + bedplate, dyn = KV_VERT.dynFactor;
-  const ld = loads({
+  // the whole machine (a catalogue's parts estimated) on what carries it, as a whole design's sheet counts them
+  const whole = machineMass(N, d.made), support = supportMass(d.G, d.M), bedplate = support.maker, dyn = KV_VERT.dynFactor;
+  const machine = carriedBy(support, whole.kg);
+  const inp: LoadsInput = {
     P: I.P, Q: I.Q, Mcw: res.Mcw, ropes: ropesKg, cables: cablesKg, machine, roping: I.r, carRailQ: 0, carRailLen: 0, cwRailQ: 0, cwRailLen: 0,
     safetyGear: Pl.safetyGear ?? 'progressive', dyn, carBuffers: 1, cwBuffers: 1, governor: Pl.governorLoad ?? null,
-  });
-  const load = { machine, static: ld.static, dyn, car: carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes: ropesKg, cables: cablesKg }) };
+  };
+  const load = { machine, static: loads(inp).static, dyn, car: carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes: ropesKg, cables: cablesKg }) };
   const heb = d.G ? hebFor(d.G, d.M, d.site, load) : null, beams = d.G ? [...beamChecks(d.G, d.M, load), ...hebChecks(heb?.chosen.result ?? null)] : [];
+  const hebKg = heb ? (2 * PROFILES[heb.chosen.profile].mass * heb.chosen.length) / 1000 : 0;
+  const ld = loads({ ...inp, base: (support.kind === 'beams' ? support.base : 0) + hebKg });
   const checks: ShaftCheck[] = [...d.checks.filter((c) => !AT_SHEET_LOAD.has(c.id)), ...beams];
-  return { ropesKg, cablesKg, bedplate, machine, dyn, ld, checks, heb: heb?.chosen ?? null };
+  return { ropesKg, cablesKg, bedplate, machine, whole, support, dyn, ld, checks, heb: heb?.chosen ?? null };
 }
 
 export function surveySheetData(x: SurveyTavoleInput, d: RoomDerived, pages: number): SurveySheet {
@@ -130,13 +136,14 @@ export function surveySheetData(x: SurveyTavoleInput, d: RoomDerived, pages: num
     ...(M.Dp > 0 && G ? [['PULEGGIA DI RINVIO Ø - h - dx', 'mm', `${mm(M.Dp)} - ${mm(M.h)} - ${mm(G.pulleyAt - G.sheaveAt)}`] as Row] : []),
     ...(rf ? [['ASSE DEL RINVIO SUL PAVIMENTO', 'mm', mm(G ? G.pulleyZ : rf.pulleyAxis)] as Row] : []),
   ];
-  const { ropesKg, cablesKg, bedplate, machine, dyn, ld, checks: all, heb } = surveyLoad(d, Pl);
+  const { ropesKg, cablesKg, whole, support, dyn, ld, checks: all, heb } = surveyLoad(d, Pl);
   const loadRows: SurveySheet['loads'] = [
     ['FUNI', fmt(ropesKg, 0), 'kg'],
     ['CAVI FLESSIBILI', fmt(cablesKg, 0), 'kg'],
     ['CARICO STATICO SUL BASAMENTO DELL’ARGANO', fmt(ld.static, 0), 'kg'],
     [`COEFFICIENTE DINAMICO × ${fmt(dyn, 1)}`, fmt(ld.dynamic, 0), 'kg'],
-    [!bedplate ? 'ARGANO E TELAIO' : 'ARGANO E BASAMENTO CON RINVIO', machine > 0 ? fmt(machine, 0) : 'NON INSERITA', 'kg'],
+    [`ARGANO${whole.estimate ? ' (STIMA)' : ''}`, whole.kg > 0 ? fmt(whole.kg, 0) : 'NON INSERITA', 'kg'],
+    ...supportRows(support, M, fmt),
     // one beam under each iron of the machine's frame (three)
     ...(supportOf(R).kind === 'beams' && G ? [[`PUTRELLE (${N_IT[G.frame.beams.length] ?? G.frame.beams.length})`, `${profileOf(supportOf(R))}, ${fmt(G.frame.beams.length * PROFILES[profileOf(supportOf(R))].mass, 1)} kg/m`, ''] as const] : []),
     ...hebRows(heb, fmt),

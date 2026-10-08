@@ -61,8 +61,10 @@ export function carriedOver({ shaft, calc, survey }: CarriedFrom): LiftDraft {
     inputs: {
       shaft: S,
       calc: values,
-      // what was entered stays entered
-      auto: calc ? { P: false, machine: false, L0: false, dx: false, Hv: false } : AUTO_ALL,
+      // what was entered stays entered; the rope beyond the travel and a machine below's Hv are the shaft design's (the
+      // replacement's calculator had no shaft: its values, often the example's, would contradict the drawing — registry
+      // impianto.L0, impianto.Hv)
+      auto: calc ? { P: false, machine: false, L0: true, dx: false, Hv: true } : AUTO_ALL,
       // the standards chosen for the replacement's test
       ...(calc?.collaudo ? { collaudo: calc.collaudo } : {}),
     },

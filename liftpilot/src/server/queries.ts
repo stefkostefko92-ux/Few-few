@@ -167,6 +167,16 @@ export function getDrawingSet(user: SessionUser, id: string) {
   });
 }
 
+/** The drawing sets issued on a calculation, every revision (the relazione lists the latest of each number). */
+export function listCalcDrawingSets(user: SessionUser, calculationId: string) {
+  return prisma.drawingSet.findMany({
+    where: { calculationId, companyId: user.companyId },
+    orderBy: [{ year: 'asc' }, { seq: 'asc' }, { revision: 'asc' }],
+    take: 200,
+    select: { number: true, revision: true, pages: true, createdAt: true, sha256: true },
+  });
+}
+
 /** The other revisions of the same drawing number (for the history on a set's page). */
 export function listRevisions(user: SessionUser, year: number, seq: number) {
   return prisma.drawingSet.findMany({

@@ -4,6 +4,7 @@
 import type { BottomScheme } from './bottom';
 import type { Collaudo } from './collaudo';
 import type { AutoFlags, LiftDerived } from './derive';
+import type { Drawn } from './drawn';
 import { KL } from './norme';
 
 export type GeometryKey = 'L0' | 'dx' | 'Hv';
@@ -22,6 +23,8 @@ export interface ValueMarks {
   /** the acceptance test's standard and the parts the intervention replaces, as the form says (collaudo.ts); null: the
    *  calculation has no lift design (the documents take the intervention's default) */
   collaudo?: Collaudo | null;
+  /** the shaft design's L0 and Hv where they were entered by hand (drawn.ts); missing: none */
+  drawn?: Drawn | null;
 }
 
 export const NO_MARKS: ValueMarks = { pEstimate: false, geometry: [], machineProposed: false, bottom: null, catalog: null, collaudo: null };
@@ -30,7 +33,8 @@ export const NO_MARKS: ValueMarks = { pEstimate: false, geometry: [], machinePro
  * From the switches of the form as saved. The machine counts as proposed only when the derivation that made the
  * calculation is known (it reproduces the stored values) and found a machine; otherwise nothing is claimed about it.
  */
-export function valueMarks(auto: AutoFlags, derived: Pick<LiftDerived, 'origin' | 'catalog'> | null, bottom: BottomScheme | null = null, collaudo: Collaudo | null = null): ValueMarks {
+export function valueMarks(auto: AutoFlags, derived: (Pick<LiftDerived, 'origin' | 'catalog'> & Partial<Pick<LiftDerived, 'drawn'>>) | null, bottom: BottomScheme | null = null,
+  collaudo: Collaudo | null = null): ValueMarks {
   const f = derived?.origin.machine === 'auto' ? derived.catalog?.fit ?? null : null;
   return {
     pEstimate: auto.P,
@@ -39,6 +43,7 @@ export function valueMarks(auto: AutoFlags, derived: Pick<LiftDerived, 'origin' 
     bottom,
     catalog: f && f.ratio ? { brand: f.machine.brand, model: f.machine.model, ratio: f.ratio, staticKg: f.machine.staticKg, src: f.machine.src } : null,
     collaudo,
+    ...(derived?.drawn && (derived.drawn.L0 !== null || derived.drawn.Hv !== null) ? { drawn: derived.drawn } : {}),
   };
 }
 

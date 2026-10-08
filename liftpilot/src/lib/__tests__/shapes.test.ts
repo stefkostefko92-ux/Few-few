@@ -171,7 +171,11 @@ test('proposta da SICOR, Montanari o Sassi: la forma nei disegni, l’asse del s
   const cases = [['SICOR', 'SH140', undefined], ['SICOR', 'MR21', undefined], ['SICOR', 'MR21', 'frame'], ['SICOR', 'SH140', 'plinth'], ['Montanari', 'M93', undefined],
     ['Montanari', 'M98', 'frame'], ['Sassi', 'LEO', undefined], ['Sassi', 'MF84', 'frame']] as const;
   for (const [brand, model, support] of cases) {
-    const dv = deriveLift(maker(brand, model, support)), M = dv.machine, D = M.D, S = shapeOf(brand, model);
+    // on a frame or a plinth the maker's sheave stands so high that the plan places no diverting pulley for it (below):
+    // the wrap angle entered by hand
+    const inp = maker(brand, model, support), manual = support ? { ...inp, calc: { ...inp.calc, alphaMode: 'manual' } } : inp;
+    const dv = deriveLift(manual), M = dv.machine, D = M.D, S = shapeOf(brand, model);
+    assert.deepEqual(dv.issues, [], model);
     assert.equal(dv.catalog?.fit?.machine.model, model, `${model}: presa dal catalogo`);
     assert.equal(M.shape, S, model);
     // with the diverting pulley of the example and no support chosen, on the bedplate that holds it: SICOR's own for the
@@ -189,6 +193,14 @@ test('proposta da SICOR, Montanari o Sassi: la forma nei disegni, l’asse del s
   }
   // the generic machine when the proposal does not take a maker's model with a shape
   assert.equal(deriveLift(defaultLift()).machine.shape ?? null, null);
+  // a maker's machine on a plinth or a frame with the wrap angle from the plan: its sheave's axis so high that the plan
+  // cannot place the diverting pulley as a simple bend (until round 36 it was proposed with the issue 'dx', a project
+  // that could not be saved) — the proposal does not take it, the grid's machine stands with no issue
+  for (const [brand, model] of [['SICOR', 'SH140'], ['SICOR', 'SH190'], ['Montanari', 'M98'], ['Sassi', 'MF84']] as const) for (const support of ['plinth', 'frame'] as const) {
+    const dv = deriveLift(maker(brand, model, support));
+    assert.equal(dv.catalog?.miss, true, `${model} ${support}`);
+    assert.deepEqual(dv.issues, [], `${model} ${support}`);
+  }
 });
 
 test('supporto esterno (Montanari S, SICOR MR35, Sassi MF94 MB94 MB95, GEM L e CL, FAER F): una trave sotto ogni fila di fori, l’ingombro fino ai suoi piedi', () => {

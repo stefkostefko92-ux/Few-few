@@ -203,6 +203,9 @@ export default function LiftCalcFields({ P, X, inp, derived, complete, bad, need
               {row('dropAlign')}
               {toggle('L0', t('auto_L0'))}
               {row('L0', auto.L0 ? { value: worked(fmt(num('L0'), 2)), badge: t('badge_auto') } : null)}
+              {complete && derived.issues.includes('L0') && derived.drawn.L0 !== null ? (
+                <p className="hint bad" role="alert">{t('hint_L0_drawn', { v: fmt(num('L0'), 2), g: fmt(derived.drawn.L0, 2) })}</p>
+              ) : null}
               {V.layout === 'topDefl' ? toggle('dx', t('auto_dx')) : null}
               {row('dx', auto.dx ? { value: worked(fmt(num('dx'), 3)), badge: t('badge_auto') } : null)}
               {complete && derived.issues.includes('dx') ? (
@@ -215,6 +218,9 @@ export default function LiftCalcFields({ P, X, inp, derived, complete, bad, need
               {complete && derived.issues.includes('rinvio') ? <p className="hint bad" role="alert">{t(derived.rinvioClash === 'machine' ? 'hint_rinvio_machine' : 'hint_rinvio_floor')}</p> : null}
               {V.layout === 'bottom' ? toggle('Hv', t('auto_Hv')) : null}
               {row('Hv', auto.Hv ? { value: worked(fmt(num('Hv'), 2)), badge: t('badge_auto') } : null)}
+              {complete && derived.issues.includes('Hv') && derived.drawn.Hv !== null ? (
+                <p className="hint bad" role="alert">{t('hint_Hv_drawn', { v: fmt(num('Hv'), 2), g: fmt(derived.drawn.Hv, 2) })}</p>
+              ) : null}
               {['Dp', 'Jp', 'nps', 'npr', 'etaShaft'].map((id) => row(id))}
             </div>
           </details>

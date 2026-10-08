@@ -10,22 +10,22 @@ import type { Analysis } from '../present/analysis';
 import { makeFmt } from '../present/tr';
 import { belowChecks, belowRoomOf } from '../lift/below-checks';
 import { headTopChecks } from '../lift/head';
-import { bedplateMass, cablesMass, carSideStatic, headStatic, hebOf, ropeLength, supportChecks } from '../lift/support';
+import { carSideStatic, ropeLength, supportChecks } from '../lift/support';
+import { massModelOf } from '../lift/known';
 import { hebRows } from './heb-rows';
 import { isUpperLimit, mergeChecks, shownValue } from '@/shaft/checks';
 import { KV_VERT } from '@/shaft/norme-vert';
-import { bracketCount, bracketHeights, railSpan } from '@/shaft/brackets';
+import { bracketCount } from '@/shaft/brackets';
 import { bufferType } from '@/shaft/buffers';
 import { govSize } from '@/shaft/governor';
 import { hasImbotti, imbottiOf } from '@/shaft/imbotti';
 import type { BufferType } from '@/shaft/vertical';
-import { RAILS, railLabel, type RailType } from '@/shaft/rails';
+import { railLabel, type RailType } from '@/shaft/rails';
 import { section } from '@/shaft/section';
 import type { DataSheet, Row } from './datasheet';
-import { railForces } from './forces';
-import { railCheck, railChecks } from './rail-check';
+import { railChecks } from './rail-check';
 import { dateIt, placeLines, type TavoleInput } from './input';
-import { loads } from './loads';
+import { sheetLoads, sheetRails, supportRows } from './sheet-loads';
 import { belowGeoOf, machineOf, machineText } from './views';
 import { clientNotes, estimateNote, railNote, safetyGearNote, spaceLegend } from './notes';
 import { NORMA_SIGLA, ambitoOf, collaudoOf } from '../lift/collaudo';
@@ -102,7 +102,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   // rails from the pit floor to under the slab, new or existing as the acceptance test says; brackets one every pitch
   // (the declared one or the rule's) plus the first and the last of each rail (registry guide.staffe); ropes and governor
   // rope (estimates); the governor the design takes (the one chosen, else by the speed)
-  const railLen = (V.pit + S.top + V.headroom - KV_VERT.railTopGap) / 1000, oldRails = kept('rails');
+  const R = sheetRails(L, I.P, I.Q, Pl), railLen = R.railLen, oldRails = kept('rails');
   const rails = (t: RailType): string => `${oldRails ? 'ESISTENTI ' : ''}${railLabel(t)}`;
   const brackets = (pitch: number | undefined): string => (oldRails ? 'ESISTENTI' : `${2 * bracketCount(railLen * 1000, pitch ?? KV_VERT.bracketPitch)}`);
   const gov = govSize(V.v, L.inputs.governor), oldGov = kept('governor');
@@ -115,7 +115,8 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     ['PULEGGIA DI FRIZIONE Ø', 'mm', fmt(N.D, 0)],
     ['PULEGGIA DI RINVIO/TAGLIA Ø', 'mm', I.layout === 'top' && I.r === 1 ? '—' : fmt(I.Dp, 0)],
     ['ANGOLO DI AVVOLGIMENTO', '°', fmt(res.alphaDeg, 0)],
-    ['ANGOLO GOLE γ - β', '°', `${fmt(g.gamma, 0)} - ${fmt(g.beta, 0)}`],
+    // the angles the sheave is made to, as the calculation checks them (to the half degree)
+    ['ANGOLO GOLE γ - β', '°', `${num(g.gamma)} - ${num(g.beta)}`],
     ['POTENZA MOTORE', 'kW', num(N.Pn)],
     ['POLI N° - GIRI/MINUTO', '', `${N.poles}/${fmt(N.nm, 0)}`],
     ['CORRENTE NOMINALE / AVVIAMENTO', 'A', Pl.currentIn || Pl.currentStart ? `${num(Pl.currentIn)} / ${num(Pl.currentStart)}` : '—'],
@@ -138,19 +139,13 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     ['AMMORTIZZATORE CONTRAPPESO', 'N°-tipo', `1 - ${BUFFER_TEXT[bufferType(V, 'cw')][1]}${kept('buffers') ? ' ESISTENTE' : ''}`],
   ];
 
-  // loads on the machine and on the building, as the calculation and the report take them: the machine's mass of the
-  // calculation with its bedframe (the maker's bedplate with the diverting pulley counted), the cables and the dynamic
-  // coefficient of the registry; a machine below pulls its anchors up and the head pulleys carry both falls of each side
-  const M = machineOf(a, Pl, L, x.marks?.catalog ?? null), below = I.layout === 'bottom';
-  const ropesKg = N.n * N.qf * ropeLen, cablesKg = cablesMass(travel);
-  const bedplate = bedplateMass(M);
-  const machine = N.mass + bedplate, dyn = KV_VERT.dynFactor;
-  const ld = loads({
-    P: I.P, Q: I.Q, Mcw: res.Mcw, ropes: ropesKg, cables: cablesKg, machine, roping: I.r,
-    carRailQ: RAILS[L.inputs.carRail].q, carRailLen: railLen, cwRailQ: RAILS[L.inputs.cwRail].q, cwRailLen: railLen,
-    safetyGear: Pl.safetyGear ?? 'progressive', dyn, carBuffers: V.carBuffers, cwBuffers: 1, governor: Pl.governorLoad ?? null,
-    below: below ? headStatic(a.ctx, res.Mcw) : null,
-  });
+  // loads on the machine and on the building, as the calculation and the report take them (sheet-loads.ts): the whole
+  // machine (a catalogue's parts estimated), its bedframe and support, the HEB beams, the cables and the dynamic
+  // coefficient of the registry; a machine below pulls its anchors up and the head pulleys carry both falls of each side.
+  // The machine drawn is the proposal's (its shape); its whole mass that of the catalogue's model the values are, also
+  // one entered by hand (known.ts), as the design's derivation and the relazione count it
+  const made = x.marks?.catalog ?? null, M = machineOf(a, Pl, L, made), below = I.layout === 'bottom';
+  const SL = sheetLoads(a, L, Pl, M, massModelOf(I, N, x.values, made), N.n * N.qf * ropeLen, R), { ropesKg, cablesKg, dyn, ld } = SL, machine = SL.carried;
   const kg = (v: number | undefined): string => (v == null ? '—' : fmt(v, 0));
   const loadRows: DataSheet['loads'] = [
     ['CABINA', kg(Pl.massShell), 'kg'],
@@ -165,17 +160,15 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     [`COEFFICIENTE DINAMICO × ${fmt(dyn, 1)}`, fmt(ld.dynamic, 0), 'kg'],
     ['TOTALE CARICHI × 0,981', fmt(ld.P[0] ?? 0, 0), 'daN'],
     ...(below ? [
-      ['ARGANO IN BASSO (NON SULLA SOLETTA)', fmt(machine, 0), 'kg'] as const,
+      [`ARGANO IN BASSO (NON SULLA SOLETTA)${SL.machine.estimate ? ' (STIMA)' : ''}`, fmt(SL.machine.kg, 0), 'kg'] as const,
       ['SOLLEVAMENTO NETTO ANCORAGGI ARGANO, PROVA 1,25·Q', fmt(Math.max(0, res.shaft.uplift ?? 0), 0), 'kg'] as const,
-    ] : [[!bedplate ? 'ARGANO E TELAIO' : 'ARGANO E BASAMENTO CON RINVIO', fmt(machine, 0), 'kg'] as const,
-      ...hebRows(hebOf(L, M, { machine, static: ld.static, dyn, car: carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes: ropesKg, cables: cablesKg }) })?.chosen ?? null, fmt)]),
+      [`TIRO ANCORAGGI ARGANO, PORTATA × ${fmt(dyn, 1)}`, fmt(Math.max(0, SL.anchor?.dyn ?? 0), 0), 'kg'] as const,
+    ] : [[`ARGANO${SL.machine.estimate ? ' (STIMA)' : ''}`, fmt(SL.machine.kg, 0), 'kg'] as const, ...supportRows(SL.support, M, fmt), ...hebRows(SL.heb, fmt)]),
   ];
   const each = [false, false, false, false, true, V.carBuffers > 1, true, false, false];
   const P = ld.P.map((p, i) => (p === null ? '—' : `${each[i] ? 'cad. ' : ''}${fmt(p, 0)}`));
-  const gear = Pl.safetyGear ?? 'progressive', F = railForces(L, I.P, I.Q, gear);
-  // the car rails between their brackets (the pitch declared or the rule's), at the loads of this sheet
-  const [z0, z1] = railSpan(S), hs = bracketHeights(z0, z1, L.inputs.carRail, Pl.carBracketPitch);
-  const rc = railCheck(L, L.inputs.carRail, I.P, I.Q, gear, Math.max(...hs.slice(1).map((z, i) => z - hs[i])), z1 - z0, Pl.liftUse);
+  // the car rails between their brackets (the pitch declared or the rule's), at the loads of this sheet (sheet-loads.ts)
+  const { gear, F, rc } = R;
   const labels: Readonly<Record<string, string>> = appIt.shaft, OUTCOME = { ok: 'OK', warn: 'ATTENZIONE', fail: 'NON PASSA', info: '—' } as const;
   const withUnit = (x: number | null, dp: number, u: string): string => (x == null ? '—' : `${fmt(x, dp)}${u ? ` ${u}` : ''}`);
   // the clause stays in the label, the standard is in the heading of the table; the door of the room in its sizes

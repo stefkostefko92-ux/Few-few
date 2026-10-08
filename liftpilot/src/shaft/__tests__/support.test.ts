@@ -119,7 +119,9 @@ test('ingombro: l’argano dentro il locale, il margine minimo da muri e soffitt
 
 test('rinvio sul suo supporto sotto l’argano: lo scavalcano solo le putrelle sollevate', async () => {
   const { defaultLift, deriveLift } = await import('../../lib/lift');
-  const L = { ...defaultLift(), catalog: { brand: 'SICOR' as const, model: 'SH140' } };
+  // the wrap angle entered: on a frame the SH140's sheave stands so high that the plan places no diverting pulley for it
+  // and the proposal would not take it (shapes.test.ts)
+  const L0 = defaultLift(), L = { ...L0, calc: { ...L0.calc, alphaMode: 'manual' }, catalog: { brand: 'SICOR' as const, model: 'SH140' } };
   const withSupport = (support: MachineSupport) => deriveLift({ ...L, shaft: { ...L.shaft, room: { ...(L.shaft.room ?? DEFAULT_ROOM), support } } });
   const stand = (s: MachineSupport) => withSupport(s).supportChecks.find((c) => c.id === 'm_stand');
   // a frame on the floor over the pulley's stand: they clash by the pulley's top

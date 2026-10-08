@@ -69,7 +69,7 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
   ] });
 
   section('Oggetto');
-  B.push({ t: 'p', text: `Sostituzione dell’argano dell’impianto con un argano geared ${named ? `(${named}) ` : ''}— ${LAYOUT[I.layout] ?? I.layout}, taglia ${I.r}:1. `
+  B.push({ t: 'p', text: `Sostituzione dell’argano dell’impianto con un argano a riduttore ${named ? `(${named}) ` : ''}— ${LAYOUT[I.layout] ?? I.layout}, taglia ${I.r}:1. `
     + 'La relazione descrive l’impianto com’è, l’argano esistente e quello nuovo, la sistemazione del nuovo nel locale macchina (basamento, '
     + 'puleggia di rinvio, calate, aperture nella soletta), i carichi sulla soletta e le verifiche del locale; le verifiche della macchina sono nella '
     + `relazione di calcolo allegata, riassunte nella sezione «Verifiche della nuova macchina».${collaudoText(C, true, ESITI_TECNICA)}` });
@@ -115,7 +115,7 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
   const sheet = surveySheetData({ ...r, set: { number: '', issuedAt: r.generatedAt, author: '', revisions: [] }, company: { name: r.company, logo: null } }, d, 1);
   const labels: Readonly<Record<string, string>> = appIt.shaft;
   // the checks as sheet 1 prints them: the beams at the sheet's load (the data of the installation may change it)
-  const checks: readonly ShaftCheck[] = surveyLoad(d, r.plant).checks;
+  const onSlab = surveyLoad(d, r.plant), checks: readonly ShaftCheck[] = onSlab.checks;
   const out = (c: ShaftCheck): { text: string; status: BlockStatus } => esitoOf(C, c.id, st(c.status), c.status);
   const withUnit = (v: string, c: ShaftCheck): string => `${v}${c.unit ? ` ${c.unit}` : ''}`;
   // the room's door in its sizes, as sheet 1 writes it
@@ -130,8 +130,12 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
   section('Carichi sul basamento e sulla soletta');
   B.push({ t: 'kv', rows: [...sheet.loads.map(([k, v, u]): [string, string] => [k.charAt(0) + k.slice(1).toLowerCase(), `${v}${u ? ` ${u}` : ''}`]),
     ...sheet.P.map(([k, v]): [string, string] => [`Carico ${k.slice(0, 2)}: ${k.slice(3).toLowerCase()}`, v === '—' ? '—' : `${v} daN`])] });
+  // the new machine as the table above counts it: the whole machine, what its catalogue's mass leaves out estimated
+  // (machine-mass.ts); the existing one's mass is entered, the whole machine
+  const whole = onSlab.whole;
   if (ctx.compare && ctx.O.mass > 0 && N.mass > 0) {
-    B.push({ t: 'p', text: `Massa dell’argano: esistente ${fmt(ctx.O.mass, 0)} kg, nuovo ${fmt(N.mass, 0)} kg (${N.mass >= ctx.O.mass ? '+' : '−'}${fmt(Math.abs(N.mass - ctx.O.mass), 0)} kg sulla soletta).` });
+    B.push({ t: 'p', text: `Massa dell’argano: esistente ${fmt(ctx.O.mass, 0)} kg, nuovo ${fmt(whole.kg, 0)} kg (${whole.kg >= ctx.O.mass ? '+' : '−'}${fmt(Math.abs(whole.kg - ctx.O.mass), 0)} kg sulla soletta)`
+      + `${whole.estimate ? `; il nuovo è l’argano completo, stima ⚠: ${fmt(N.mass, 0)} kg dal catalogo più le parti che non comprende` : ''}.` });
   }
   B.push({ t: 'p', style: 'note', text: 'Carichi non contemporanei. La verifica della soletta e degli appoggi del basamento spetta al tecnico strutturale incaricato dal '
     + 'committente (NTC 2018, §8.4.1: intervento locale; §3.1.4: carichi del macchinario).' });

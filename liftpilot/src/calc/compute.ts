@@ -84,7 +84,7 @@ export function compute(I: Plant, M: Machine): Results {
     const Tmax = (I.layout === 'bottom' ? walk(P + Q, 0, pB.car.slice(0, 1)) : walk(P + Q, 0, pB.car)) / M.n;
     // diverting pulleys (layout or bends entered): their D/d counts too
     const DpD = nps + npr > 0 ? I.Dp / M.d : null;
-    ropes = { Dd, DpD, nps, npr, NeqT: nq.v, neqVerified: nq.verified, Kp, NeqP, Neq, SfCalc, SfMin, SfReq, Tmax, SfAct: (M.Fmin * 1000) / Tmax };
+    ropes = { Dd, DpD, nps, npr, NeqT: nq.v, neqVerified: nq.verified, Kp, NeqP, Neq, SfCalc, SfMin, SfReq, Tmax, SfAct: (M.Fmin * 1000) / Tmax, press: groovePressure(I, M, walk(P + Q, 0, pB.car)) };
   }
 
   // kinematics
@@ -109,8 +109,14 @@ export function compute(I: Plant, M: Machine): Results {
     // a machine faster than the rated speed has the drive turn the motor under its base frequency, where its torque is
     // the limit: the static power at its rated speed for the static torque (registry azionamento.potenza)
     const Peq = g.Pst * Math.max(1, kin.vReal / I.v);
+    // the output shaft's torque (registry azionamento.coppia.uscita): in acceleration; at the emergency braking with the
+    // real brake, the ropes' pull difference on the sheave and the sheave's own inertia the gear decelerates (r·a/R),
+    // both taken with the same sense, on the safe side; at the test with 1,25·Q, static
+    const MpAcc = Math.max(upRun.MpMax, dnRun.MpMax), mpBrake = (c: BrakeCase): number => (c.T1 - c.T2) * R + (M.Js * c.aEff * r) / R;
+    const MpBrakeCase = brkReal.reduce((a, b) => (mpBrake(b) > mpBrake(a) ? b : a)), MpBrake = mpBrake(MpBrakeCase);
+    const MpTest = Math.max(...loadCases.map((c) => (c.T1 - c.T2) * R));
     drive = { dF: g.dF, Ms: g.Ms, MmSt: g.MmSt, Pst: g.Pst, Peq, empty: g === dnRun, Pbal: ((1 - k) * Q * G * I.v) / eta, Mn,
-      Macc, accRatio: Macc / Mn, MpMax: Math.max(upRun.MpMax, dnRun.MpMax), powerUtil: Peq / (M.Pn * 1000) };
+      Macc, accRatio: Macc / Mn, MpAcc, MpBrake, MpBrakeCase, MpTest, MpMax: Math.max(MpAcc, MpBrake, MpTest), powerUtil: Peq / (M.Pn * 1000) };
   }
 
   // brake requirements (the gear's friction helps the brake: not counted)
@@ -134,8 +140,8 @@ export function compute(I: Plant, M: Machine): Results {
   {
     const res = (a: number, b: number): number => Math.sqrt(a * a + b * b + 2 * a * b * Math.cos(Math.PI - alphaB));
     const Tct = walk(P + K.loadTestFactor * Q, 0, pB.car), Tw = walk(Mcw, 0, pB.cwt);
-    const testKg = res(Tct, Tw) / G;
-    shaft = { testKg, up: I.layout === 'bottom', uplift: I.layout === 'bottom' ? testKg - M.mass : null };
+    const testKg = res(Tct, Tw) / G, ratedKg = res(walk(P + Q, 0, pB.car), Tw) / G;
+    shaft = { testKg, ratedKg, up: I.layout === 'bottom', uplift: I.layout === 'bottom' ? testKg - M.mass : null };
   }
 
   // levers when braking traction fails (worst case)
@@ -192,6 +198,9 @@ export function compute(I: Plant, M: Machine): Results {
     const st: CheckStatus = (hasBeta && g.beta > K.betaMax) || (hasV && g.gamma < K.gammaMin) ? 'fail' : betaRemark || lowU ? 'warn' : 'ok';
     add('g_geom', st, lowU && !betaRemark ? g.gamma : g.type === 'U' ? null : hasBeta ? g.beta : g.gamma, null, null, 1);
   }
+  // the specific pressure in the grooves (UNI 10411-1:2024, D.2): a value to state, binding only with the minimum safety
+  // factors in place of the calculation of UNI EN 81-50 (14.1 c)–d)); over its limit a remark
+  add('g_press', ropes.press.p <= ropes.press.limit ? 'info' : 'warn', ropes.press.p, ropes.press.limit, ropes.press.p / ropes.press.limit, 2);
   add('r_sfa', ropes.SfAct >= ropes.SfReq ? 'ok' : 'fail', ropes.SfAct, ropes.SfReq, ropes.SfReq / ropes.SfAct, 2);
   add('d_pst', drive.powerUtil <= 1 ? 'ok' : 'fail', drive.Peq / 1000, M.Pn, drive.powerUtil, 2);
   add('d_ratio', drive.accRatio > K.accelTorqueRatioMax ? 'warn' : 'info', drive.accRatio, null, null, 2);
@@ -215,6 +224,19 @@ export function compute(I: Plant, M: Machine): Results {
     M, k, Mcw, alphaDeg, wa, loadCases, load, brk, dn, up, brkReal, real, ...(msr1 ? { msr1 } : {}), brakeCasesAt: brakeCases, brakeUtil, stall, stallLow,
     ropes, kin, drive, brake, rescue, shaft, ...(levers ? { levers } : {}), checks: C, fails: C.filter((c) => c.status === 'fail'),
   };
+}
+
+/**
+ * Specific pressure in the grooves (UNI 10411-1:2024, D.2; registry gole.pressione) for the car side's static pull T [N]
+ * at the sheave: T/(n·d·D) times 8·cos(β/2)/(π − β − sin β) for a semicircular groove (β = 0 without undercut) or
+ * 4,5/sin(γ/2) for a V groove; a V groove with undercut the larger of the two. The limit at the ropes' speed v_c of
+ * the rated speed: (12,5 + 4·v_c)/(1 + v_c) [N/mm²].
+ */
+export function groovePressure(I: Plant, M: Machine, T: number): { T: number; p: number; limit: number } {
+  const g = M.groove, b = g.type === 'U' ? 0 : rad(g.beta || 0);
+  const u = (K.pressU * Math.cos(b / 2)) / (Math.PI - b - Math.sin(b)), v = K.pressV / Math.sin(rad(g.gamma || 0) / 2);
+  const f = g.type === 'U' || g.type === 'UU' ? u : g.type === 'VH' ? v : Math.max(u, v), vc = I.v * I.r;
+  return { T, p: (T / (M.n * M.d * M.D)) * f, limit: (K.pressBase + K.pressSpeed * vc) / (1 + vc) };
 }
 
 /**

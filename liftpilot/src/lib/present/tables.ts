@@ -3,6 +3,7 @@
 // shaft, sensitivity, comparison.
 import { G } from '@/calc/math';
 import { K, VOCI } from '@/calc/norme';
+import { anchorPull } from '@/lib/lift/anchor';
 import type { BrakeCase, CheckId, CheckStatus, StallCase, TractionCase } from '@/calc/types';
 import type { Analysis } from './analysis';
 import { statusOf, type Texts } from './texts';
@@ -90,8 +91,10 @@ export function techTables(P: Pres, X: Texts, a: Analysis): TableBlock[] {
       ...(statusOf(res, 'r_two') ? [[t('r_two'), String(N.n), '', pill('r_two')]] : []),
       ...(statusOf(res, 'g_retain') ? [[t('g_retain'), `${fmt(Math.max(res.wa.B, res.wa.T), 1)}°`, `> ${K.retainWrap}°`, pill('g_retain')]] : []),
       ...(statusOf(res, 'v_comp') ? [[t('v_comp'), `${fmt(I.v, 2)} m/s`, `≤ ${fmt(K.vCompGuided, 2)} m/s`, pill('v_comp')]] : []),
+      [t('g_press'), withBar(`${fmt(rp.press.p, 2)} N/mm²`, rp.press.p / rp.press.limit), `≤ ${fmt(rp.press.limit, 2)} N/mm²`, pill('g_press')],
     ],
     notes: [...(res.wa.reverse ? [{ text: t('g_bend_note') }] : []), ...(statusOf(res, 'r_two') ? [{ text: t('r_two_note') }] : []),
+      { text: t('g_press_note', { t: fmt(rp.press.T, 0), vc: fmt(I.v * I.r, 2) }) },
       ...(statusOf(res, 'g_retain') ? [{ text: t('g_retain_note', { w: K.retainWrap }) }] : []),
       ...(statusOf(res, 'v_comp') ? [{ text: t('v_comp_note', { g: fmt(K.vCompGuided, 2), r: fmt(K.vCompRopes, 1) }) }] : [])],
   });
@@ -113,9 +116,13 @@ export function techTables(P: Pres, X: Texts, a: Analysis): TableBlock[] {
       [`${t('d_mn')} · ${t('d_mst')}`, `${fmt(d.Mn, 1)} · ${fmt(d.MmSt, 1)} N·m`, '', ''],
       [t('d_macc'), `${fmt(d.Macc, 1)} N·m`, '', ''],
       [t('d_ratio'), fmt(d.accRatio, 2), '', pill('d_ratio')],
+      // the output shaft's torque in each case, then the largest: what the maker is asked for (registry azionamento.coppia.uscita)
+      [t('d_mp_acc'), `${fmt(d.MpAcc, 0)} N·m`, '', ''],
+      [{ text: t('d_mp_brake'), sub: X.caseText(d.MpBrakeCase) || undefined }, `${fmt(d.MpBrake, 0)} N·m`, '', ''],
+      [t('d_mp_test'), `${fmt(d.MpTest, 0)} N·m`, '', ''],
       [t('d_mp'), withBar(`${fmt(d.MpMax, 0)} N·m`, N.MpCat > 0 ? d.MpMax / N.MpCat : null), N.MpCat > 0 ? `${fmt(N.MpCat, 0)} N·m` : '—', N.MpCat > 0 ? pill('d_mp') : ''],
     ],
-    notes: [],
+    notes: [{ text: t('d_mp_note') }],
   });
   const b = res.brake;
   const brakeRows: Cell[][] = [[t('b_sets'), String(b.sets), '≥ 2', pill('b_sets')],
@@ -145,7 +152,10 @@ export function techTables(P: Pres, X: Texts, a: Analysis): TableBlock[] {
   const sh = res.shaft;
   const shaftRows: Cell[][] = [[t('s_shaft'), withBar(`${fmt(sh.testKg, 0)} kg`, N.shaftMax > 0 ? sh.testKg / N.shaftMax : null),
     N.shaftMax > 0 ? `${fmt(N.shaftMax, 0)} kg` : '—', N.shaftMax > 0 ? pill('s_shaft') : ''], [t('s_dir'), sh.up ? t('s_up') : t('s_down'), '', '']];
+  // a machine below: the net uplift at the test and the pull with the dynamic coefficient, less the calculation's mass
+  const pull = anchorPull(sh, N.mass);
   if (sh.up) shaftRows.push([t('s_uplift'), `${fmt(sh.uplift, 0)} kg`, '', pill('s_uplift')]);
+  if (pull) shaftRows.push([t('s_pull_dyn', { f: fmt(pull.factor, 1) }), `${fmt(pull.dyn, 0)} kg`, '', '']);
   out.push({ key: 'shaft', title: t('c_shaft'), head: head4, rows: shaftRows, notes: sh.up ? [{ text: t('s_uplift_note') }] : [] });
   const sensRows = X.sensRows(res, sens).map((row, j): Cell[] => row.map((c, i): Cell => (i === 6
     ? { text: c, status: (j ? sens[j - 1]?.r ?? res : res).fails.length ? 'fail' : 'ok' } : c)));

@@ -11,7 +11,7 @@
 import type { FormValues } from '@/calc/types';
 import { shapeOf } from '@/lib/catalog/shapes';
 import { machineSpec } from '@/lib/lift/machine';
-import { bedplateMass, supportLoad } from '@/lib/lift/support';
+import { carriedMass, supportLoad } from '@/lib/lift/support';
 import { calcMachine } from '@/lib/order/machine';
 import { analyse, type Analysis } from '@/lib/present/analysis';
 import { check } from '@/shaft/checks';
@@ -96,9 +96,10 @@ function deriveOnce(V: FormValues, s: Survey, a: Analysis): RoomDerived {
   // the diverting pulley under the room's floor, or in the bedplate up into the machine standing over it
   const rf = M.rinvio, r = M.Dp / 2;
   if (rinvioClash(G, M)) issues.push('rinvio');
-  // the support carries the machine as the full design counts it: its mass with the maker's bedplate it stands on, the
-  // static load on its axis, the dynamic coefficient — as sheet 1 and the relazione tecnica count them
-  const load = supportLoad(a.ctx, a.res.Mcw, { machine: a.ctx.N.mass + bedplateMass(M) });
+  // the support carries the machine as the full design counts it: the whole machine with what carries it (the maker's
+  // bedplate, our bedframe, the support's own weight), the static load on its axis, the dynamic coefficient — as sheet 1
+  // and the relazione tecnica count them
+  const load = supportLoad(a.ctx, a.res.Mcw, { machine: carriedMass(G, M, a.ctx.N, made) });
   // what stands on the floor besides the machine: the main switch by the door (no governor in the survey)
   const off = Math.abs(measured - calata), others = [switchBox(R)];
   const beams = G ? hebFor(G, M, s.shaft, load) : null, chosenBy = R.heb;

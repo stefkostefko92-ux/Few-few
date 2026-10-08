@@ -161,7 +161,9 @@ test('sostituzione → progetto completo: quello che c’è entra come inserito,
   for (const k of ['v', 'Q', 'Qkg', 'r', 'layout'] as const) assert.equal(fromCalc.blank.includes(k), false, k);
   for (const k of ['W', 'D', 'entrances', 'door', 'pit', 'headroom', 'floors', 'access'] as const) assert.ok(fromCalc.blank.includes(k), k);
   assert.equal(fromCalc.inputs.calc, C);
-  assert.deepEqual(fromCalc.inputs.auto, { P: false, machine: false, L0: false, dx: false, Hv: false });
+  // L0 and Hv are the shaft design's: the replacement's calculator had no shaft (its values, often the example's, would
+  // contradict the drawing)
+  assert.deepEqual(fromCalc.inputs.auto, { P: false, machine: false, L0: true, dx: false, Hv: true });
   assert.equal(fromCalc.inputs.shaft.Q, 630);
   // with the survey: the shaft under the room, the room, and with a direct pull the counterweight's side at its drop
   const s = { ...startSurvey(600), car: { x: 1000, y: 800 }, cw: { x: 400, y: 800 } };

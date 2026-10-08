@@ -6,7 +6,8 @@ import { audit } from '@/lib/audit';
 import { log } from '@/lib/log';
 import { isRole } from '@/lib/rbac';
 import { attachment, downloader, slug, text } from '@/server/download';
-import { getCalculation, getLetterhead } from '@/server/queries';
+import { getCalculation, getLetterhead, listCalcDrawingSets } from '@/server/queries';
+import { plantReadSchema } from '@/lib/plant';
 import { calcRecord, recordMarks } from '@/server/records';
 import { RendererBusy, busyResponse } from '@/lib/report/render';
 
@@ -28,11 +29,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     if (!rec.ok) return text(409, 'The running engines do not reproduce this calculation or the records it was made from');
     // the advice among SICOR and Montanari: from the lift design's inputs when it has one, else from the values
     const advice = rec.lift ? savedLiftAdvice(rec.lift.inputs) : savedValuesAdvice(rec.values);
+    // the data of the installation (the rails and the loads of a lift design) and the drawing sets issued on it
+    const plant = plantReadSchema.safeParse(c.project.plant ?? {}), drawings = rec.design ? await listCalcDrawingSets(user, c.id) : [];
     const doc = buildReport({
       calc: { id: c.id, label: c.label, createdAt: c.createdAt, sha256: c.sha256, engineVersion: c.engineVersion, profileId: c.profileId, author: c.user?.name ?? null },
       project: c.project, ...await getLetterhead(user), advice, values: rec.values, design: rec.design, generatedAt: new Date(),
       // the standards: those of the lift design it comes from, else those chosen with the calculation
-      marks: recordMarks(rec, c.collaudo),
+      marks: recordMarks(rec, c.collaudo), plant: plant.success ? plant.data : null, drawings,
       reviews: c.reviews.map((r) => ({ name: r.user?.name ?? null, role: r.user && isRole(r.user.role) ? r.user.role : null, note: r.note, createdAt: r.createdAt })),
     });
     const pdf = await renderPdf(doc);

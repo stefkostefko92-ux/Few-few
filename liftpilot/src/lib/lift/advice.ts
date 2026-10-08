@@ -7,7 +7,8 @@
 // (one supply, the maker's heights); the smallest machine that suffices (static load: an oversized machine loads the
 // building and the room for nothing, and passing checks are what makes one acceptable — a bigger one is not taken for
 // its margins); fewer values at the limit; drawn as it is (the maker's dimensions: the drawings and the room's check
-// exact); the speed nearest the rated one (to 1 %); the lighter. Pure: the screens may spread the models over time
+// exact); the speed nearest the rated one (to 1 %); the lighter whole machine (what a catalogue's mass leaves out
+// estimated, so that the makers compare alike). Pure: the screens may spread the models over time
 // (ADVICE_MODELS, one candidate each).
 import type { CheckStatus, FormValues, Machine, Plant, Results } from '@/calc/types';
 import { makerBedplate } from '@/lib/catalog/bedplates';
@@ -16,11 +17,15 @@ import { shapeOf } from '@/lib/catalog/shapes';
 import { analyse, mirrorRopes, proposalValues, type Analysis } from '@/lib/present/analysis';
 import type { MakerBedplate } from '@/shaft/rinvio';
 import { sizeMachine } from '@/calc/sizing';
-import { bestFit, catalogValues, offGrid, pickOption } from './catalog';
+import { bestFit, catalogValues, firstTaken, offGrid } from './catalog';
+import { anchorPull, type AnchorPull } from './anchor';
+import { ADVICE_BRANDS } from './known';
+import { machineMass } from './machine-mass';
 import { deriveLift, type LiftDerived, type LiftInputs } from './derive';
 
-/** The makers the advice compares, and every model of theirs it verifies (those proposed only by name are out). */
-export const ADVICE_BRANDS: readonly Brand[] = ['SICOR', 'Montanari'];
+/** The makers the advice compares (known.ts, which ranks them first in recognising a machine), and every model of
+ *  theirs it verifies (those proposed only by name are out). */
+export { ADVICE_BRANDS };
 export interface AdviceModel { brand: Brand; model: string }
 export const ADVICE_MODELS: readonly AdviceModel[] =
   ADVICE_BRANDS.flatMap((brand) => catalogOf(brand).filter((c) => !c.byName).map((c) => ({ brand, model: c.model })));
@@ -52,14 +57,19 @@ export interface MachineCandidate {
   Mcw: number;
   k: number;
   /** the largest torque on the reducer's output shaft the calculation asks [N·m]; the least brake torque each set must
-   *  give [N·m]; a machine below: the net uplift on its anchors in the test [kg] (null above) */
+   *  give [N·m]; a machine below: the pulls on its anchors, at the test with 1,25·Q and with the rated load times the
+   *  dynamic coefficient (anchor.ts; null above) */
   mpMax: number;
   brakeMin: number;
-  uplift: number | null;
+  anchor: AnchorPull | null;
   /** the load on the sheave's shaft in the test [kg] and what the machine allows */
   testKg: number;
   staticKg: number;
+  /** the catalogue's mass as the maker writes it (null: none); the whole machine, the parts the catalogue leaves out
+   *  estimated (machine-mass.ts), so that the makers compare alike, and whether it is an estimate */
   mass: number | null;
+  massWhole: number | null;
+  massEstimated: boolean;
   /** the largest motor the maker lists [kW] */
   kWmax: number | null;
   /** the maker's bedplate that carries the machine and the diverting pulley; null: none, or no pulley */
@@ -101,7 +111,7 @@ export const CRITERIA: readonly [Exclude<AdviceReason, 'only'>, (a: MachineCandi
   ['warns', (a, b) => a.warns - b.warns],
   ['drawn', (a, b) => Number(b.drawn) - Number(a.drawn)],
   ['speed', (a, b) => Math.round(Math.abs(a.dv) * 100) - Math.round(Math.abs(b.dv) * 100)],
-  ['lighter', (a, b) => (a.mass ?? Infinity) - (b.mass ?? Infinity)],
+  ['lighter', (a, b) => (a.massWhole ?? Infinity) - (b.massWhole ?? Infinity)],
 ];
 
 const rank = (a: MachineCandidate, b: MachineCandidate): number => {
@@ -121,12 +131,13 @@ export function adviceOf(found: readonly MachineCandidate[]): MachineAdvice {
  *  `res`, its failures and warnings), on `bedplate`; `values`: what loads it into the calculator. */
 export function candidateOf(fit: CatalogFit, I: Plant, N: Machine, res: Results, fails: number, warns: number, bedplate: MakerBedplate | null,
   values: FormValues): MachineCandidate | null {
-  const c = fit.machine;
+  const c = fit.machine, whole = c.mass === null ? null : machineMass({ ...N, mass: c.mass }, c);
   if (!fit.ratio) return null;
   return {
     brand: c.brand, model: c.model, ratio: fit.ratio, i: fit.i, dv: fit.dv, I, N, Mcw: res.Mcw, k: res.k, mpMax: res.drive.MpMax,
-    brakeMin: Math.max(res.brake.all / Math.max(1, res.brake.sets), res.brake.one, res.brake.up), uplift: res.shaft.uplift, testKg: res.shaft.testKg, staticKg: c.staticKg,
-    mass: c.mass, kWmax: c.kWmax, bedplate, drawn: shapeOf(c.brand, c.model) !== null, fails, warns, src: c.src, sources: sourcesOf(c.src), values,
+    brakeMin: Math.max(res.brake.all / Math.max(1, res.brake.sets), res.brake.one, res.brake.up), anchor: anchorPull(res.shaft, N.mass), testKg: res.shaft.testKg, staticKg: c.staticKg,
+    mass: c.mass, massWhole: whole?.kg ?? null, massEstimated: whole?.estimate ?? false, kWmax: c.kWmax, bedplate, drawn: shapeOf(c.brand, c.model) !== null,
+    fails, warns, src: c.src, sources: sourcesOf(c.src), values,
   };
 }
 
@@ -149,10 +160,13 @@ export function valuesCandidate(V: FormValues, a: Analysis, m: AdviceModel): Mac
   // the grid's options, and those of the model's own sheave off the grid (catalog.ts offGrid) unless the sheave is kept
   const own = fixedD ? [] : offGrid(m).flatMap((D) => sizeMachine(I, a.ctx.N, D, rope).options);
   const fits = [...a.sizing.options, ...own].flatMap((o) => { const fit = bestFit(m, o, I.Q, I.r); return fit ? [{ o, fit }] : []; });
-  const best = pickOption(fits, a.sizing.keep !== null);
-  if (!best) return null;
-  const option = proposalValues(best.o), values = { ...option, ...catalogValues(best.fit, mirrorRopes({ ...V, ...option })) };
-  const b = analyse(mirrorRopes({ ...V, ...values })), N = b.ctx.N;
+  // the first in the sizing's order the machine takes with its own ratio (motor, groove and brake sized again on it)
+  const taken = firstTaken(fits, a.sizing.keep !== null, (x) => {
+    const option = proposalValues(x.o), own = catalogValues(x.fit, mirrorRopes({ ...V, ...option }));
+    return own ? { ...option, ...own } : null;
+  });
+  if (!taken) return null;
+  const best = taken.x, values = taken.r, b = analyse(mirrorRopes({ ...V, ...values })), N = b.ctx.N;
   return candidateOf(best.fit, b.ctx.I, N, b.res, b.res.fails.length, count(b.res.checks, 'warn'),
     b.ctx.I.layout === 'topDefl' ? makerBedplate(m.brand, m.model, N.D, b.ctx.I.Dp) : null, values);
 }
