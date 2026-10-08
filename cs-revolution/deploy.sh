@@ -31,7 +31,7 @@ echo "✓ Extracted cs-revolution/"
 # 3. FULL COPY — dist to webroot (with --delete to remove stale files)
 echo ""
 echo "═══ DEPLOYING DIST ═══"
-rsync -av --delete --exclude='api/' cs-revolution/dist/ "$WEBROOT/"
+rsync -av --delete --exclude='/api/' cs-revolution/dist/ "$WEBROOT/"   # anchored: keep /glossario/api/ pages
 echo "✓ All dist files synced to $WEBROOT"
 
 # 4. COPY API FILES (preserve logs)

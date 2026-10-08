@@ -31,10 +31,15 @@ python3 scripts/seo-keywords.py    # <meta keywords> on every page that lacks on
 python3 scripts/adsense-inject.py  # Google AdSense loader in every <head> (CSP in nginx allows it; ads.txt in public/)
 python3 scripts/it-accents.py      # Italian accents (perché, più, già…) on IT pages + generators, never inside URLs
 python3 scripts/work-images.py     # real project screenshots (public/work/*.webp) on portfolio + case studies
+python3 scripts/seo-index-policy.py # only cities with a real client/office stay indexed; the rest noindex,follow + out of the sitemaps (doorway policy)
+python3 scripts/geo-cases.py       # real projects on the indexed city pages (Milano = Panev Ascensori, Dupnitsa, Kyustendil)
+python3 scripts/service-depth.py   # web-development page: real sites + packages from src/pricing.json; FAQ schema = visible FAQ
 python3 scripts/static-theme.py    # shared Carbon/Chrome theme, mobile nav toggle, legal footer — run LAST
 python3 scripts/self-host-fonts.py # every Google Fonts link → /fonts/fonts.css (self-hosted woff2; GDPR) — after the theme
 ```
-All post-processors are idempotent — run the whole chain after any regeneration. Never put
+All post-processors are idempotent — run the whole chain after any regeneration.
+City pages: do NOT add more indexed "<service> <city>" pages — a city is indexable only with a real,
+verifiable project or office there (`KEEP_CITIES` in `seo-index-policy.py`, content in `geo-cases.py`). Never put
 content in `<noscript>`: it is invisible to people and mostly to Google (30 pages used to).
 Static generators use Python `.format()` — never inject brace-heavy JS into their
 templates; post-process the OUTPUT (that's what `inject-widgets.py` is for).

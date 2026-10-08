@@ -74,7 +74,9 @@ mkdir -p "$WEBROOT/api/logs"
 # Static files. api/ is protected in both paths. Stale pages are removed so a
 # deleted page can't linger and keep being served/indexed.
 if command -v rsync >/dev/null; then
-  rsync -a --delete --exclude='api/' "$SRC/dist/" "$WEBROOT/"
+  # '/api/' is anchored to the webroot: an unanchored 'api/' also skipped every
+  # page folder named api (/glossario/api/, /en/glossary/api/ → live 404).
+  rsync -a --delete --exclude='/api/' "$SRC/dist/" "$WEBROOT/"
 else
   c_warn "rsync липсва — ползвам tar (същият резултат)"
   ( cd "$SRC/dist" && tar cf - . ) | ( cd "$WEBROOT" && tar xf - )
