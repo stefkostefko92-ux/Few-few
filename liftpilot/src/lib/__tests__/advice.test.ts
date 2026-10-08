@@ -74,7 +74,7 @@ test('graduatoria: un criterio dopo l’altro, con il suo perché', () => {
   assert.deepEqual(one.best.map((m) => m.model), ['A']);
   assert.equal(one.why, 'only');
   assert.deepEqual(one.none, ['Montanari']);
-  assert.deepEqual(adviceOf([]), { candidates: [], best: [], none: ['SICOR', 'Montanari'], why: null });
+  assert.deepEqual(adviceOf([]), { candidates: [], best: [], none: ['SICOR', 'Montanari'], why: null, models: ADVICE_MODELS, wall: false });
 });
 
 test('fonte dei dati: le lettere del catalogo, la principale prima; il sito di ogni costruttore', () => {

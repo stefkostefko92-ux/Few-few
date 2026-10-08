@@ -9,10 +9,11 @@ import { PANEV_ARTICLES, panevBom } from '../catalog/panev';
 import { PANEV_LIST_PRICE } from '../catalog/panev-prices';
 import { MACHINES } from '../catalog/machines';
 import { deriveLift } from '../lift/derive';
-import { defaultLift } from '../lift/defaults';
-import { cableLength, ropeLength as ropeRun } from '../lift/support';
+import { defaultLift, newLift } from '../lift/defaults';
+import { KL } from '../lift/norme';
+import { cableLength, ropeCut, ropeLength as ropeRun } from '../lift/support';
 import { analyse } from '../present/analysis';
-import { PRICE_ARTICLES, machineKey, priceArticle, ropeKey } from '../prices/articles';
+import { PRICE_ARTICLES, machineKey, priceArticle, ropeEndKey, ropeKey } from '../prices/articles';
 import { calcBom, designBom, ropeLength } from '../prices/bom';
 import { MAX_CENTS, costOf, parseCents, pricesOf } from '../prices/cost';
 import { customLines, customPrices, customRowSchema, type CustomItem } from '../prices/custom';
@@ -72,19 +73,23 @@ test('the company’s prices over the start; the cost counts only priced lines',
 });
 
 test('the design’s bill: the quantities the design has', () => {
-  const dv = deriveLift(defaultLift()), bom = designBom(dv), I = dv.shaft, S = section(dv.layout), [z0, z1] = railSpan(S);
+  const dv = deriveLift(newLift()), bom = designBom(dv), I = dv.shaft, S = section(dv.layout), [z0, z1] = railSpan(S);
   const q = (key: string): number => bom.find((l) => l.key === key)?.qty ?? 0;
-  const span = z1 - z0, joints = Math.ceil(span / RAIL_LENGTH) - 1;
-  assert.equal(q(`rail:${I.carRail}`), tenth((2 * span) / 1000));
+  // the rails in whole 5 m bars (the last one cut), a joint between two bars
+  const span = z1 - z0, bars = Math.ceil(span / RAIL_LENGTH), joints = bars - 1;
+  assert.notEqual(I.carRail, I.cwRail);
+  assert.equal(q(`rail:${I.carRail}`), (2 * bars * RAIL_LENGTH) / 1000);
+  assert.ok(q(`rail:${I.carRail}`) >= (2 * span) / 1000);
   assert.equal(q(`fishplate:${I.carRail}`), 2 * joints);
   assert.equal(q('bracket:car'), 2 * bracketHeights(z0, z1, I.carRail).length);
   for (const r of panevBom(dv.layout).rows) assert.equal(q(`panev:${r.article.code}`), r.qty, r.article.code);
   assert.equal(q(`door:landing:${I.door}`), I.vertical.floors.length);
   assert.equal(q('cw'), Math.round(dv.analysis.res.Mcw));
-  // the ropes: every rope, the length on the pulleys longer than the travel
+  // the ropes: every rope at its cut length — on the pulleys, longer than the travel, with the ends, to the metre
   const one = ropeLength(dv);
   assert.ok(one !== null && one > dv.sim.H);
-  assert.equal(q(`rope:${dv.machine.d}`), tenth(one * dv.machine.n));
+  assert.equal(q(`rope:${dv.machine.d}`), ropeCut(dv.analysis.ctx.I, one) * dv.machine.n);
+  assert.equal(ropeCut(dv.analysis.ctx.I, one), Math.ceil(one + KL.ropeEnds));
   // every line once
   const keys = bom.flatMap((l) => (l.key ? [l.key] : []));
   assert.equal(new Set(keys).size, keys.length);
@@ -97,7 +102,7 @@ test('the replacement: the machine of the calculation, else a machine of no list
 });
 
 test('the plant counted from the design: one each, a panel at every landing door, the lengths of the shaft', () => {
-  const dv = deriveLift(defaultLift()), bom = designBom(dv), V = dv.shaft.vertical, S = section(dv.layout), [z0, z1] = railSpan(S);
+  const dv = deriveLift(newLift()), bom = designBom(dv), V = dv.shaft.vertical, S = section(dv.layout), [z0, z1] = railSpan(S);
   const q = (key: string): number => bom.find((l) => l.key === key)?.qty ?? 0;
   for (const k of ['controller', 'electrical:panel', 'push:car', 'push:inspection', 'stop:pit', 'stop:room', 'light:emergency', 'alarm:siren', 'alarm:remote']) assert.equal(q(k), 1, k);
   assert.equal(q('push:landing'), dv.layout.doors.reduce((n, d) => n + V.floors.filter((f) => f.door.includes(d.side)).length, 0));
@@ -111,8 +116,9 @@ test('the plant counted from the design: one each, a panel at every landing door
   assert.ok(q('trunking') > q('wiring'));
   // a support under every spring or polyurethane buffer, none under a hydraulic one
   for (const t of ['spring', 'pu']) assert.equal(q(`buffer-support:${t}`), q(`buffer:${t}`), t);
-  // two shoes on each car rail; the installer by the stop; every metre of rail cleaned
+  // two shoes on each car rail and on each counterweight rail; the installer by the stop; every metre of rail cleaned
   assert.equal(q('shoes:car'), 2 * dv.layout.rails.filter((r) => r.kind === 'car').length);
+  assert.equal(q('shoes:cw'), 2 * dv.layout.rails.filter((r) => r.kind === 'cw').length);
   assert.equal(q('labour:installer'), V.floors.length);
   assert.equal(bom.find((l) => l.key === 'labour:installer')?.unit, 'stop');
   assert.equal(q('labour:rails'), tenth((dv.layout.rails.length * (z1 - z0)) / 1000));
@@ -126,7 +132,10 @@ test('the replacement: the parts the acceptance test replaces, the installer as 
   const lab = only.find((l) => l.key === 'labour:replacement');
   assert.deepEqual([lab?.qty, lab?.unit], [1, 'lot']);
   const all = calcBom(V, { norma: '10411-1', parti: ['machine', 'ropes', 'controller'] }), { I, N } = analyse(V).ctx;
-  assert.equal(all.find((l) => l.key === ropeKey(N.d))?.qty, tenth(N.n * ropeRun(I)));
+  // the ropes at the formula's cut length (no rig: no shaft design), with two wedge sockets each
+  assert.equal(all.find((l) => l.key === ropeKey(N.d))?.qty, N.n * ropeCut(I));
+  assert.equal(ropeCut(I), Math.ceil(ropeRun(I) + KL.ropeEnds));
+  assert.equal(all.find((l) => l.key === ropeEndKey(N.d))?.qty, 2 * N.n);
   assert.equal(all.find((l) => l.key === 'controller')?.qty, 1);
   // the machine room surveyed: what stands there, once (our frame with the pulley made to h, no maker's bedplate)
   const DEFL: FormValues = { ...PRESETS.A, context: 'repl', alphaMode: 'geo', h: 0.95 }, d = deriveRoom(DEFL, startSurvey(780));

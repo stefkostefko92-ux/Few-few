@@ -6,20 +6,36 @@ import { readInputs } from '@/calc/inputs';
 import { ceilTo } from '@/calc/math';
 import { SHEAVE_GRID, compareOptions } from '@/calc/sizing';
 import type { FormValues, SizingOption } from '@/calc/types';
-import { catalogFit, catalogOf, type Brand, type CatalogFit } from '@/lib/catalog/machines';
+import { catalogFit, catalogOf, type Brand, type CatalogFit, type CatalogMachine } from '@/lib/catalog/machines';
+import { throughWallMachine } from '@/lib/catalog/mounting';
 import { KL } from './norme';
 
 export interface CatalogChoice {
   brand: Brand;
   /** one model of the brand; missing: any of them */
   model?: string;
+  /** the sheave through a wall (the machine below beside the shaft, throughWall): only the long-shaft and outboard-support
+   *  variants (registry impianto.basso.albero); missing: any mounting */
+  wall?: boolean;
+}
+
+/** The machine below beside the shaft (the schemes head and room; none given: head): its sheave is in the shaft on the
+ *  slow shaft through the wall (bottom.ts belowMachine). */
+export const throughWall = (layout: unknown, scheme: string | null | undefined): boolean => layout === 'bottom' && (scheme ?? 'head') !== 'under';
+
+/** The machines of a choice the proposal weighs: without a model those not proposed only by name; with the sheave
+ *  through a wall only the long-shaft and outboard-support variants, named or not, at the static load they allow there
+ *  (src/lib/catalog/mounting.ts). */
+export function choiceMachines(choice: CatalogChoice): CatalogMachine[] {
+  const all = catalogOf(choice.brand, choice.model);
+  return choice.wall ? all.flatMap((c) => throughWallMachine(c) ?? []) : all.filter((c) => choice.model || !c.byName);
 }
 
 /** The sheaves a choice's machines take that the sizing's grid (SHEAVE_GRID) has none of: a model built with one sheave
  *  only, off the grid (FAER P80F Ø 550, Montanari M105 Ø 650) — the proposal and the advice weigh it too, so the model
  *  is proposed when it passes. */
 export function offGrid(choice: CatalogChoice): number[] {
-  return catalogOf(choice.brand, choice.model).filter((c) => choice.model || !c.byName)
+  return choiceMachines(choice)
     .flatMap((c) => {
       const s = c.sheaves;
       return s && !SHEAVE_GRID.some((D) => D >= s[0] && D <= s[1]) ? [s[0]] : [];
@@ -29,7 +45,7 @@ export function offGrid(choice: CatalogChoice): number[] {
 /** The machine of the choice that takes an option: no failure, the lowest static load (the smallest machine), then
  *  the ratio nearest the ideal one; null when none does. Without a model, the machines proposed only by name are out. */
 export function bestFit(choice: CatalogChoice, o: SizingOption, Q: number, r: number): CatalogFit | null {
-  const fits = catalogOf(choice.brand, choice.model).filter((c) => choice.model || !c.byName)
+  const fits = choiceMachines(choice)
     .map((c) => catalogFit(c, { D: o.D, iIdeal: o.iIdeal, Pn: o.Pn, staticKg: o.res.shaft.testKg, Q, r }, KL.catalogRatioTol))
     .filter((f) => f.fails.length === 0);
   return fits.sort((a, b) => a.machine.staticKg - b.machine.staticKg || Math.abs(a.dv) - Math.abs(b.dv))[0] ?? null;

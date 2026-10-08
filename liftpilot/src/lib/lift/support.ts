@@ -10,10 +10,24 @@ import { outlineGap, switchBox, type Box } from '@/shaft/room-floor';
 import type { PanelSpot } from '@/shaft/room-panel';
 import { governorFootprint, governorRopes as governorRopesIn } from '@/shaft/room-site';
 import { beamChecks, fitChecks, governorRoomChecks, machineParts, panelFloorChecks, panelPlace, rinvioChecks, type SupportLoad } from '@/shaft/support-check';
+import { KL } from './norme';
 
-/** Length of each traction rope [m]: the roping times the travel and twice the rope beyond it, with the diverting
- *  pulley's drop or, with the machine below, the runs to it. */
-export const ropeLength = (I: ParsedInputs['I']): number => I.r * (I.H + 2 * I.L0) + (I.layout === 'topDefl' ? I.h : I.layout === 'bottom' ? 2 * I.Hv : 0);
+/** Length of each traction rope [m]: the one measured on the design's rope rig (rope.ts rigLength, hitch to hitch over
+ *  every pulley) when there is one; else the formula — the roping times the travel and twice the rope beyond it, with
+ *  the diverting pulley's drop or, with the machine below, the runs to it (a replacement, which has no rig). */
+export const ropeLength = (I: ParsedInputs['I'], rig: number | null = null): number =>
+  rig ?? I.r * (I.H + 2 * I.L0) + (I.layout === 'topDefl' ? I.h : I.layout === 'bottom' ? 2 * I.Hv : 0);
+
+/** The cut length of each traction rope [m]: its length plus KL.ropeEnds for the two terminations and the adjustment,
+ *  rounded up to the metre (registry impianto.funi.taglio). One number for sheet 1, the bill, the draft order and the
+ *  ropes' mass in the loads. */
+export const ropeCut = (I: ParsedInputs['I'], rig: number | null = null): number => Math.ceil(ropeLength(I, rig) + KL.ropeEnds - 1e-9);
+
+/** The governor's rope [m]: twice the height from the pit floor to the governor — KV_VERT.governorAbove over the floor of
+ *  the room over the shaft, or under the shaft's ceiling without one —, rounded up to the metre (registry foglio.stime).
+ *  Sheet 1 and the bill take the same. */
+export const governorRopeLength = (V: { pit: number; headroom: number }, top: number, room: { slab: number } | null): number =>
+  Math.ceil((2 * (V.pit + top + V.headroom + (room ? room.slab + KV_VERT.governorAbove : 0))) / 1000);
 
 /** The travelling cable's length the software counts [m]: half the travel plus 3 m (registry carichi.cavi). */
 export const cableLength = (travel: number): number => travel / 2 + 3;
@@ -43,9 +57,10 @@ export const carSideStatic = (x: { P: number; Q: number; roping: number; ropes: 
 export const bedplateMass = (M: Pick<MachineSpec, 'rinvio'> | null): number => (M?.rinvio?.on === 'frame' ? M.rinvio.maker?.mass ?? 0 : 0);
 
 /** The load the support carries for these values: `over` takes the data of the installation (machine with bedframe,
- *  cables, dynamic coefficient) where given. */
-export function supportLoad({ I, N }: Pick<ParsedInputs, 'I' | 'N'>, Mcw: number, over: { machine?: number; cables?: number; dyn?: number } = {}): SupportLoad {
-  const ropes = N.n * N.qf * ropeLength(I), cables = cablesMass(I.H, over.cables);
+ *  cables, dynamic coefficient) where given, and the rope's length on the design's rig (`rope`); the ropes at their cut
+ *  length (ropeCut). */
+export function supportLoad({ I, N }: Pick<ParsedInputs, 'I' | 'N'>, Mcw: number, over: { machine?: number; cables?: number; dyn?: number; rope?: number | null } = {}): SupportLoad {
+  const ropes = N.n * N.qf * ropeCut(I, over.rope ?? null), cables = cablesMass(I.H, over.cables);
   return {
     machine: over.machine ?? N.mass, static: axisStatic({ P: I.P, Q: I.Q, Mcw, roping: I.r, ropes, cables }), dyn: over.dyn ?? KV_VERT.dynFactor,
     car: carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes, cables }),

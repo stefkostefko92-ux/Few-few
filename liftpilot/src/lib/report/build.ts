@@ -28,6 +28,7 @@ import { machineSpec, sheaveAxisBelow } from '../lift/machine';
 import { shapeOf } from '../catalog/shapes';
 import { rinvioRow, shapeRows } from './machine-shape';
 import { bedplateMass, supportChecks, supportLoad } from '../lift/support';
+import { rigLength } from '../lift/rope';
 import { adviceBlocks } from './advice';
 import type { MachineAdvice } from '../lift/advice';
 import { catalogMachineOf, modelOf } from '../order/machine';
@@ -122,10 +123,11 @@ export function buildReport(r: ReportInput): ReportDoc {
   const made = m.catalog ? { brand: m.catalog.brand, model: m.catalog.model } : null;
   const machine = r.design ? machineSpec(ctx, N.mass, '', r.design.layout.inputs.room, made ? shapeOf(made.brand, made.model) : null, made) : null;
   // the support's load as the design and sheet 1 count it: the machine with the maker's bedplate it stands on
-  const bed = bedplateMass(machine), ld = supportLoad(ctx, res.Mcw, { machine: N.mass + bed });
   // the checks that need the machine, as the design's verdict takes them: the beams, the car's top under what hangs over
-  // it, a machine below in its rooms (below-checks.ts)
+  // it, a machine below in its rooms (below-checks.ts); the ropes at their cut length on the design's rope rig
   const scheme = I.layout === 'bottom' ? m.bottom ?? 'head' : null, L = r.design?.layout;
+  const bed = bedplateMass(machine), rope = L && machine ? rigLength({ layout: L, analysis: a, machine, bottom: scheme }) : null;
+  const ld = supportLoad(ctx, res.Mcw, { machine: N.mass + bed, rope });
   const g = L && machine && scheme ? bottomGeo(L, scheme, machine.D, I.Dp, machine.n, machine.d, I.r, sheaveAxisBelow(machine.D, machine.shape ?? null)) : null;
   const beams = L && machine ? [...supportChecks(L, machine, ld, !scheme), ...headTopChecks(L, I.r, I.Dp, scheme), ...(g ? belowChecks(L, g, machine, I.Dp) : [])] : [];
   if (r.design) {

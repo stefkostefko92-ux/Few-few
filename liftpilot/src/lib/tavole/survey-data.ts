@@ -14,7 +14,7 @@ import { beamChecks } from '@/shaft/support-check';
 import type { ShaftCheck } from '@/shaft/types';
 import { NORMA_SIGLA, ambitoOf } from '../lift/collaudo';
 import { ADEMPIMENTI } from '../lift/norme-collaudo';
-import { bedplateMass, cablesMass, carSideStatic, ropeLength } from '../lift/support';
+import { bedplateMass, cablesMass, carSideStatic, ropeCut } from '../lift/support';
 import type { Plant } from '../plant';
 import { makeFmt } from '../present/tr';
 import { collaudoNote, partiText } from '../report/collaudo';
@@ -87,7 +87,7 @@ const machineRows = (O: Machine | null, N: Machine, oldName: string, newName: st
  *  this load: the sheet and the relazione tecnica print the same. */
 export function surveyLoad(d: RoomDerived, Pl: Plant) {
   const { ctx, res } = d.analysis, { I, N } = ctx;
-  const ropesKg = N.n * N.qf * ropeLength(I), cablesKg = cablesMass(I.H);
+  const ropesKg = N.n * N.qf * ropeCut(I), cablesKg = cablesMass(I.H);
   const bedplate = bedplateMass(d.M), machine = N.mass + bedplate, dyn = KV_VERT.dynFactor;
   const ld = loads({
     P: I.P, Q: I.Q, Mcw: res.Mcw, ropes: ropesKg, cables: cablesKg, machine, roping: I.r, carRailQ: 0, carRailLen: 0, cwRailQ: 0, cwRailLen: 0,

@@ -10,6 +10,7 @@ import { edit as E, type Chain, type Edit, type Entity, type Pt } from '@/drawin
 import { KV_VERT } from '@/shaft/norme-vert';
 import { defaultLift, deriveLift, newLift, type LiftInputs } from '@/lib/lift';
 import { bedplateMass, hebOf, supportLoad } from '@/lib/lift/support';
+import { rigLength } from '@/lib/lift/rope';
 import { drawnShaft, enteredShaft } from '@/lib/lift/panel-form';
 import { editShaft } from '@/lib/shaft-edit';
 import { designBom } from '@/lib/prices/bom';
@@ -136,7 +137,8 @@ test('progetto: il basamento del costruttore con il rinvio pesa sulle putrelle c
   assert.ok(R);
   const d = deriveLift({ ...L, catalog: { brand: 'SICOR', model: 'SH140' }, shaft: { ...L.shaft, room: { ...R, heb: {} } } }), bed = bedplateMass(d.machine);
   assert.ok(d.machine.rinvio?.maker && bed > 0, 'il basamento SICOR con rinvio');
-  const { ctx, res } = d.analysis, reaction = (machine: number) => hebOf(d.layout, d.machine, supportLoad(ctx, res.Mcw, { machine }))?.chosen.result.reaction ?? 0;
+  // (the ropes at their cut length on the design's rope rig, as the derivation counts them)
+  const { ctx, res } = d.analysis, rope = rigLength(d), reaction = (machine: number) => hebOf(d.layout, d.machine, supportLoad(ctx, res.Mcw, { machine, rope }))?.chosen.result.reaction ?? 0;
   assert.equal(d.heb?.chosen.result.reaction, reaction(ctx.N.mass + bed));
   assert.ok(reaction(ctx.N.mass) < reaction(ctx.N.mass + bed));
 });

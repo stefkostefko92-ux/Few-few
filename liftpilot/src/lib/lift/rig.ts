@@ -60,7 +60,7 @@ export interface RopeRig {
 /** A point of a plane in plan [mm]: u [m] along it. */
 export const planeAt = (p: RopePlane, u: number): P2 => [p.origin[0] + u * 1000 * p.dir[0], p.origin[1] + u * 1000 * p.dir[1]];
 
-export function ropeRig(dv: LiftDerived, scheme: BottomScheme = dv.bottom ?? 'head'): RopeRig {
+export function ropeRig(dv: Pick<LiftDerived, 'layout' | 'analysis' | 'machine' | 'bottom'>, scheme: BottomScheme = dv.bottom ?? 'head'): RopeRig {
   const L: Layout = dv.layout, S = section(L), V = L.inputs.vertical, { I, N } = dv.analysis.ctx;
   // the falls: the parts' centres, or with 2:1 a side of each one's pulley, which turns between its guide rails
   // (falls.ts): its own plane, from the dead end to the fall

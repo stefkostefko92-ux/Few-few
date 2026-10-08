@@ -10,7 +10,8 @@ import type { Analysis } from '../present/analysis';
 import { makeFmt } from '../present/tr';
 import { belowChecks, belowRoomOf } from '../lift/below-checks';
 import { headTopChecks } from '../lift/head';
-import { bedplateMass, cablesMass, carSideStatic, headStatic, hebOf, ropeLength, supportChecks } from '../lift/support';
+import { bedplateMass, cablesMass, carSideStatic, governorRopeLength, headStatic, hebOf, ropeCut, supportChecks } from '../lift/support';
+import { rigLength } from '../lift/rope';
 import { hebRows } from './heb-rows';
 import { isUpperLimit, mergeChecks, shownValue } from '@/shaft/checks';
 import { KV_VERT } from '@/shaft/norme-vert';
@@ -100,14 +101,15 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   ];
 
   // rails from the pit floor to under the slab, new or existing as the acceptance test says; brackets one every pitch
-  // (the declared one or the rule's) plus the first and the last of each rail (registry guide.staffe); ropes and governor
-  // rope (estimates); the governor the design takes (the one chosen, else by the speed)
+  // (the declared one or the rule's) plus the first and the last of each rail (registry guide.staffe); each rope at its
+  // cut length on the design's rope rig (registry impianto.funi.taglio: the bill and the draft order take the same) and
+  // the governor rope (estimates); the governor the design takes (the one chosen, else by the speed)
   const railLen = (V.pit + S.top + V.headroom - KV_VERT.railTopGap) / 1000, oldRails = kept('rails');
   const rails = (t: RailType): string => `${oldRails ? 'ESISTENTI ' : ''}${railLabel(t)}`;
   const brackets = (pitch: number | undefined): string => (oldRails ? 'ESISTENTI' : `${2 * bracketCount(railLen * 1000, pitch ?? KV_VERT.bracketPitch)}`);
   const gov = govSize(V.v, L.inputs.governor), oldGov = kept('governor');
-  const ropeLen = ropeLength(I);
-  const room = L.inputs.room, govLen = (2 * (V.pit + S.top + V.headroom + (room ? room.slab + KV_VERT.governorAbove : 0))) / 1000;
+  const ropeLen = ropeCut(I, rigLength({ layout: L, analysis: a, machine: machineOf(a, Pl, L, x.marks?.catalog ?? null), bottom: I.layout === 'bottom' ? x.marks?.bottom ?? 'head' : null }));
+  const room = L.inputs.room;
   const g = N.groove, fRated = res.kin.fRated;
   const specs: Row[] = [
     ['ARGANO', 'tipo', txt(machineText(Pl, x.marks?.catalog ?? null))],
@@ -131,9 +133,9 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     ['STAFFE GUIDE CONTRAPPESO', 'N°', brackets(Pl.cwBracketPitch)],
     ['PASSO STAFFE CONTRAPPESO', 'mm', num(Pl.cwBracketPitch ?? KV_VERT.bracketPitch)],
     ['FUNI DI SOSPENSIONE', 'N°-Ø', `${N.n} - ${num(N.d)}`],
-    ['LUNGHEZZA FUNI (CIASCUNA)', 'm', fmt(ropeLen, 0)],
+    ['LUNGHEZZA DI TAGLIO FUNI (CIASCUNA)', 'm', fmt(ropeLen, 0)],
     ['LIMITATORE DI VELOCITÀ', 'tipo', oldGov ? 'ESISTENTE' : `${gov.brand} ${gov.model}`],
-    ['FUNE DEL LIMITATORE', 'm-Ø', oldGov ? 'ESISTENTE' : `${fmt(Math.ceil(govLen), 0)} - ${fmt(2 * gov.rope, 0)}`],
+    ['FUNE DEL LIMITATORE', 'm-Ø', oldGov ? 'ESISTENTE' : `${fmt(governorRopeLength(V, S.top, room), 0)} - ${fmt(2 * gov.rope, 0)}`],
     ['AMMORTIZZATORI CABINA', 'N°-tipo', `${V.carBuffers} - ${BUFFER_TEXT[bufferType(V, 'car')][0]}${kept('buffers') ? ' ESISTENTI' : ''}`],
     ['AMMORTIZZATORE CONTRAPPESO', 'N°-tipo', `1 - ${BUFFER_TEXT[bufferType(V, 'cw')][1]}${kept('buffers') ? ' ESISTENTE' : ''}`],
   ];

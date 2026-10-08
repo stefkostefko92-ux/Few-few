@@ -1,7 +1,9 @@
 // The articles a company prices: every one the software can put in a project — the machines of the catalogues, SICOR's
-// bedplates with the diverting pulley, the supports of the machine, the ropes and the rails by size, the brackets, Panev's
-// 48 articles, the doors, the governors and the tension pulley, the buffers and their supports, the car, its sling, its
-// guide shoes and the counterweight, the electrical system and the signalling, the labour (bom.ts counts them).
+// bedplates with the diverting pulley, the supports of the machine, a machine below's head pulleys and base, the ropes
+// and their wedge sockets and the rails by size, the brackets, Panev's 48 articles, the doors, the governors with the
+// tension pulley and their rope, the buffers and their supports, the car, its sling (for 2:1 too) with the safety gear,
+// the guide shoes, the counterweight, the 2:1 roping's pulleys and dead ends, ACOP/UCM, the electrical system and the
+// signalling, the labour (bom.ts counts them).
 // Each company keeps its own prices (PriceItem); Panev's start from the 2026 list price (p. 65, VAT excluded), the
 // others from none. The names are the makers' and the catalogues'; what an article is, the screens say in their
 // language (messages `prices.items`). Pure.
@@ -18,10 +20,12 @@ import type { PriceGroup, PriceUnit } from './groups';
 
 export { PRICE_GROUPS, type PriceGroup, type PriceUnit } from './groups';
 
-/** What the article is (the key of its words in `prices.items`) and its maker's name, code or size. */
+/** What the article is (the key of its words in `prices.items`) and its maker's name, code or size; a line of a bill
+ *  may say more with its own words (`args`: the values of the message, e.g. a pulley's diameter and grooves). */
 export interface ArticleLabel {
   item: string;
   name?: string;
+  args?: Readonly<Record<string, string>>;
 }
 
 export interface PriceArticle {
@@ -35,6 +39,10 @@ export interface PriceArticle {
 
 /** Rope diameters of the lifts' ropes the list offers [mm] (EN 12385-5 sizes; the calculator takes any). */
 export const ROPE_SIZES: readonly number[] = [6, 6.5, 8, 9, 10, 11, 12, 13, 16];
+/** The governors' rope diameters [mm] (their catalogue). */
+export const GOVERNOR_ROPES: readonly number[] = [...new Set(GOVERNORS.map((g) => 2 * g.rope))].sort((a, b) => a - b);
+/** The car's safety gear by type: progressive, instantaneous with captive rollers, instantaneous (plant.ts). */
+export const SAFETY_GEARS = ['progressive', 'roller', 'instantaneous'] as const;
 export const DOOR_KINDS: readonly DoorKind[] = ['T2', 'C2'];
 export const BUFFER_KINDS: readonly BufferType[] = ['spring', 'pu', 'oil'];
 /** The buffers that stand on a support of their own in the pit: springs and polyurethane pads. */
@@ -58,6 +66,8 @@ export const bedplateKey = (code: string): string => `bedplate:${code}`;
 export const ropeKey = (d: number): string => `rope:${d}`;
 export const governorKey = (brand: string, model: string): string => `governor:${brand}:${model}`;
 export const hebKey = (profile: string): string => `heb:${profile}`;
+export const ropeEndKey = (d: number): string => `rope-end:${d}`;
+export const governorRopeKey = (d: number): string => `governor-rope:${d}`;
 
 const PANEV_SRC = `Panev ${PANEV_LISTINO.year}, p. ${PANEV_LISTINO.page}`;
 
@@ -89,6 +99,20 @@ export const PRICE_ARTICLES: readonly PriceArticle[] = [
   { key: 'sling', group: 'car', label: { item: 'sling' }, unit: 'pz' },
   { key: 'shoes:car', group: 'car', label: { item: 'shoes_car' }, unit: 'pz' },
   { key: 'cw', group: 'car', label: { item: 'cw' }, unit: 'kg' },
+  // the 2:1 roping's frames, pulleys and dead ends, the counterweight's shoes, the ropes' terminations, a machine below's
+  // head pulleys and base, the governor's rope, the safety gear, ACOP/UCM (a new device, or the existing ones adapted)
+  { key: 'sling:2to1', group: 'car', label: { item: 'sling_2to1' }, unit: 'pz' },
+  { key: 'cw:2to1', group: 'car', label: { item: 'cw_2to1' }, unit: 'kg' },
+  { key: 'pulley:2to1', group: 'car', label: { item: 'pulley_2to1' }, unit: 'pz' },
+  { key: 'shoes:cw', group: 'car', label: { item: 'shoes_cw' }, unit: 'pz' },
+  { key: 'deadend:2to1', group: 'ropes', label: { item: 'deadend_2to1' }, unit: 'pz' },
+  ...ROPE_SIZES.map((d): PriceArticle => ({ key: ropeEndKey(d), group: 'ropes', label: { item: 'rope_end', name: String(d).replace('.', ',') }, unit: 'pz' })),
+  { key: 'pulley:head', group: 'supports', label: { item: 'pulley_head' }, unit: 'pz' },
+  { key: 'base:below', group: 'supports', label: { item: 'base_below' }, unit: 'pz' },
+  ...GOVERNOR_ROPES.map((d): PriceArticle => ({ key: governorRopeKey(d), group: 'safety', label: { item: 'governor_rope', name: String(d).replace('.', ',') }, unit: 'm' })),
+  ...SAFETY_GEARS.map((k): PriceArticle => ({ key: `safety-gear:${k}`, group: 'safety', label: { item: `safety_gear_${k}` }, unit: 'pz' })),
+  { key: 'acop:ucm', group: 'safety', label: { item: 'acop_ucm' }, unit: 'pz' },
+  { key: 'acop:adapt', group: 'safety', label: { item: 'acop_adapt' }, unit: 'lot' },
   ...ELECTRICAL.map(([key, item, unit]): PriceArticle => ({ key, group: 'electrical', label: { item }, unit })),
   ...LABOUR.map(([key, item, unit]): PriceArticle => ({ key, group: 'labour', label: { item }, unit })),
 ];

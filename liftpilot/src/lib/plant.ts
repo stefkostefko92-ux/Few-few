@@ -71,3 +71,9 @@ export function pitchesOf(raw: unknown): { car?: number; cw?: number } {
   const p = plantReadSchema.safeParse(raw ?? {});
   return p.success ? { car: p.data.carBracketPitch, cw: p.data.cwBracketPitch } : {};
 }
+
+/** The stored data of an installation as the documents read them (plantReadSchema); empty when unreadable. */
+export function plantData(raw: unknown): Plant {
+  const p = plantReadSchema.safeParse(raw ?? {});
+  return p.success ? p.data : {};
+}
