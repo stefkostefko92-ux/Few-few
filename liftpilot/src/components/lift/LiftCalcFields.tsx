@@ -212,7 +212,7 @@ export default function LiftCalcFields({ P, X, inp, derived, complete, bad, need
                 </p>
               ) : null}
               {row('h', auto.dx && derived.machine.rinvio ? { value: worked(fmt(num('h'), 3)), badge: t('badge_auto') } : null)}
-              {complete && derived.issues.includes('rinvio') ? <p className="hint bad" role="alert">{t('hint_rinvio_floor')}</p> : null}
+              {complete && derived.issues.includes('rinvio') ? <p className="hint bad" role="alert">{t(derived.rinvioClash === 'machine' ? 'hint_rinvio_machine' : 'hint_rinvio_floor')}</p> : null}
               {V.layout === 'bottom' ? toggle('Hv', t('auto_Hv')) : null}
               {row('Hv', auto.Hv ? { value: worked(fmt(num('Hv'), 2)), badge: t('badge_auto') } : null)}
               {['Dp', 'Jp', 'nps', 'npr', 'etaShaft'].map((id) => row(id))}

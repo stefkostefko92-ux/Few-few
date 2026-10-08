@@ -6,12 +6,13 @@
 // bearings' centres in the walls. Stress σ = M/Wel,y ≤ fyk/γM0 and elastic deflection ≤ 1/1500 of the clear span, on
 // the beam where each is largest. Pure.
 import { check } from './checks';
-import { dropSpan, machineCorners, machineV, type MachineSpec, type RoomGeo } from './machine-room';
+import { dropSpan, machineCorners, machineRun, machineV, supportRunIn, type MachineSpec, type RoomGeo } from './machine-room';
 import { MACHINE_TOP } from './machine-outline';
+import { IRON } from './machine-shape';
 import { KV_VERT } from './norme-vert';
 import { PROFILES } from './profiles';
-import { standBox } from './rinvio';
-import { padsOf, profileOf, supportOf } from './support';
+import { rinvioRun, standBox } from './rinvio';
+import { profileOf, supportOf } from './support';
 import { outlineBox, outlineGap, panelBox, switchBox, type Box, type Outline } from './room-floor';
 import { panelChecks, placePanel, type PanelSpot } from './room-panel';
 import type { RoomInputs } from './room';
@@ -105,14 +106,17 @@ export function beamDoorGap(Gm: RoomGeo): number | null {
   return gap;
 }
 
-/** The check m_rinvio (registry locale.rinvio), soft: on a maker's bedplate the counterweight's rope drop within its
+/** The checks of a maker's bedplate (registry locale.rinvio): m_rinvio, soft, the counterweight's rope drop within its
  *  reach — from the sheave's car side to the pulley's far side at most the maker's L max (a longer bedplate is made to
- *  measure); none on ours or without one. */
+ *  measure); m_bedplate, the machine's bedframe and the pulley within its catalogue length (rinvio.ts rinvioRun: the
+ *  maker builds it so, a machine turned on it overhangs its end — ours is then made to measure): the least margin to its
+ *  ends [mm]. None on ours or without one. */
 export function rinvioChecks(Gm: RoomGeo | null, M: MachineSpec): ShaftCheck[] {
   const mk = M.rinvio?.on === 'frame' ? M.rinvio.maker : null;
   if (!Gm || !mk || M.Dp <= 0) return [];
-  const need = Gm.pulleyAt + M.Dp / 2 - M.ropeIn;
-  return [check('m_rinvio', need <= mk.fall.max, need, mk.fall.max, 0, 'mm', true)];
+  const need = Gm.pulleyAt + M.Dp / 2 - M.ropeIn, [u0, u1] = rinvioRun(M, Gm), r = M.Dp / 2;
+  const margin = Math.min(Gm.frame0 - u0, u1 - Gm.frame1, Gm.pulleyAt - r - u0, u1 - (Gm.pulleyAt + r));
+  return [check('m_rinvio', need <= mk.fall.max, need, mk.fall.max, 0, 'mm', true), check('m_bedplate', margin >= 0, Math.round(margin), 0, 0, 'mm')];
 }
 
 /** The checks m_beam (stress) and m_beamf (deflection), of the beam where each is largest, and m_beamwall (no beam's end
@@ -131,16 +135,53 @@ export function machineTop(M: MachineSpec, G: RoomGeo): number {
   return S ? M.axis - S.yWheel + S.overall[2] : M.axis - F.axis + MACHINE_TOP * 1000 * F.s;
 }
 
-/** The diverting pulley on its own stand under the machine (registry locale.ingombro): what is left between the pulley's
- *  rim and the underside of the machine's support over it [mm] — raised beams span over it, the other supports stand on
- *  the floor (0); null when the stand is beside the machine or there is none. */
+/** The diverting pulley on its own stand under the machine (registry locale.ingombro): what is left between the stand,
+ *  standing on the floor in the ropes' plane between the machine's irons, and the members of the machine's support
+ *  beside it — the frame's profiles, the beams, the plates or the shims under the irons, the plinth's blocks either side
+ *  of the ropes; raised beams over the pulley's rim span it —, and between the rim and the machine's bedframe over it
+ *  (its end cross members) [mm]; null when the stand is beside the machine or there is none. */
 export function standClearance(Gm: RoomGeo, M: MachineSpec): number | null {
   const R = Gm.room, rf = M.rinvio ?? null;
   if (rf?.on !== 'stand' || M.Dp <= 0 || Gm.pulleyZ <= -R.slab) return null;
   const [a0, b0, a1, b1] = standBox(M, Gm);
   if (!(a0 < Gm.frame1 && Gm.frame0 < a1 && b0 < Gm.across[1] && Gm.across[0] < b1)) return null;
-  const s = supportOf(R, true), top = M.axis - padsOf(s) - Gm.frame.axis;
-  return (s.kind === 'beams' ? top - PROFILES[profileOf(s)].h : 0) - (Gm.pulleyZ + M.Dp / 2);
+  const s = supportOf(R, true), F = Gm.frame, top = M.axis - F.axis, rim = Gm.pulleyZ + M.Dp / 2, k = F.shape ? 1 : F.s;
+  // the members in plan along the drop line [u0, u1] and across it [v0, v1], from their stretches of the machine's x and z
+  const members: (readonly [number, number, number, number])[] = [];
+  const add = (x0: number, x1: number, z0: number, z1: number): void => {
+    const [u0, u1] = machineRun(Gm, x0, x1), v0 = machineV(Gm, z0), v1 = machineV(Gm, z1);
+    members.push([u0, u1, Math.min(v0, v1), Math.max(v0, v1)]);
+  };
+  let clear = Infinity;
+  if (s.kind === 'shims' || s.kind === 'plates') {
+    const [hx, hz] = s.kind === 'shims' ? [60 * k, 50 * k] : [90 * k, 60 * k];
+    for (const x of F.mounts) for (const z of F.beams) add(x - hx, x + hx, z - hz, z + hz);
+  } else if (s.kind === 'plinth') {
+    const span = supportRunIn(Gm, M);
+    if (span) for (const [z0, z1] of F.plinth) add(span[0], span[1], z0, z1);
+  } else if (s.kind === 'frame' || s.kind === 'beams') {
+    const P = PROFILES[profileOf(s)], under = top - P.h, span = supportRunIn(Gm, M);
+    if (s.kind === 'beams' && under >= rim) clear = under - rim;
+    else for (const z of F.beams) {
+      if (s.kind === 'frame' && span) add(span[0], span[1], z - P.b / 2, z + P.b / 2);
+      else {
+        const v = machineV(Gm, z), [u0, u1] = dropSpan(Gm, 0, 0, R.W, R.D, v);
+        members.push([u0 - KV_VERT.supportBearing, u1 + KV_VERT.supportBearing, v - P.b / 2, v + P.b / 2]);
+      }
+    }
+  }
+  // the gap in plan between the stand and each member (< 0: into it, by the least it would have to move)
+  for (const [u0, u1, v0, v1] of members) {
+    const du = Math.max(u0 - a1, a0 - u1), dv = Math.max(v0 - b1, b0 - v1);
+    clear = Math.min(clear, du > 0 && dv > 0 ? Math.hypot(du, dv) : Math.max(du, dv));
+  }
+  // over it: the bedframe's end cross members, where the pulley's rim reaches above the bedframe's underside
+  const r = M.Dp / 2;
+  if (rim > top) for (const x of [F.run[0], F.run[1]]) {
+    const [u0, u1] = machineRun(Gm, x - IRON / 2, x + IRON / 2);
+    if (u0 < Gm.pulleyAt + r && Gm.pulleyAt - r < u1) clear = Math.min(clear, top - rim);
+  }
+  return Number.isFinite(clear) ? clear : null;
 }
 
 /** The free area beside the machine for its maintenance and the manual emergency operation (registry locale.macchina):
@@ -190,7 +231,16 @@ export function machineBox(Gm: RoomGeo, M: MachineSpec): [number, number, number
   return [x0, y0, x1, y1];
 }
 
-/** The checks m_fit and m_stand (registry locale.ingombro): the machine on its support — with the bedplate of the
+/** A frame or a plinth under the machine's mounts (registry locale.basamento, m_base): how far it runs past the outer
+ *  edges of the mounts' pads along the drop line, the least of its two ends [mm] (< 0: a mount over nothing — a length set
+ *  by hand too short); null for the other supports. */
+export function baseUnderMounts(Gm: RoomGeo, M: MachineSpec): number | null {
+  const span = supportRunIn(Gm, M), F = Gm.frame, hp = 60 * (F.shape ? 1 : F.s);
+  if (!span) return null;
+  return Math.min(Math.min(...F.mounts) - hp - span[0], span[1] - (Math.max(...F.mounts) + hp));
+}
+
+/** The checks m_base, m_fit and m_stand (registry locale.basamento, locale.ingombro): the machine on its support — with the bedplate of the
  *  diverting pulley or the pulley's own stand — inside the room in plan and under its ceiling: the least distance left to
  *  a wall or to the ceiling, at least 0 [mm]; the pulley on its stand under the machine clear of the support over it; the
  *  free area beside it up to the walls, the control panel and `others` (the governor, the main switch: m_free). */
@@ -199,8 +249,9 @@ export function fitChecks(Gm: RoomGeo | null, M: MachineSpec, others: readonly B
   const R = Gm.room;
   let clear = R.H - machineTop(M, Gm);
   for (const [x, y] of machineCorners(Gm, M)) clear = Math.min(clear, x, R.W - x, y, R.D - y);
-  const stand = standClearance(Gm, M), free = freeBeside(R, machineBox(Gm, M), [panelBox(R), ...others]);
+  const stand = standClearance(Gm, M), free = freeBeside(R, machineBox(Gm, M), [panelBox(R), ...others]), base = baseUnderMounts(Gm, M);
   return [
+    ...(base === null ? [] : [check('m_base', base >= 0, Math.round(base), 0, 0, 'mm')]),
     check('m_fit', clear >= 0, Math.round(clear), 0, 0, 'mm'), ...(stand === null ? [] : [check('m_stand', stand >= 0, Math.round(stand), 0, 0, 'mm')]),
     check('m_free', free.depth >= free.need, Math.round(free.depth), free.need, 0, 'mm'),
   ];

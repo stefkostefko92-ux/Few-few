@@ -8,7 +8,7 @@ import { getSessionUser } from '@/lib/auth';
 import { can } from '@/lib/rbac';
 import { rateLimit } from '@/lib/ratelimit';
 import { calcLabelSchema, idSchema } from '@/lib/schemas';
-import { surveySchema } from '@/lib/room/survey';
+import { surveySaveSchema } from '@/lib/room/survey';
 import { dropDraft } from './drafts';
 import { createRoomDesign, type Created } from './save';
 
@@ -19,7 +19,7 @@ export async function saveRoomDesignAction(input: { calculationId: unknown; surv
   if (!user) return { ok: false, error: 'unauthorized' };
   if (user.mustChangePassword || !can(user, 'calc:create')) return { ok: false, error: 'forbidden' };
   if (!rateLimit(`room:${user.id}`, 60, 10 * 60 * 1000)) return { ok: false, error: 'rateLimited' };
-  const calcId = idSchema.safeParse(input.calculationId), label = calcLabelSchema.safeParse(input.label ?? ''), survey = surveySchema.safeParse(input.survey);
+  const calcId = idSchema.safeParse(input.calculationId), label = calcLabelSchema.safeParse(input.label ?? ''), survey = surveySaveSchema.safeParse(input.survey);
   if (!calcId.success || !label.success) return { ok: false, error: 'invalidFields' };
   if (!survey.success) return { ok: false, error: 'invalidFields', fields: survey.error.issues.map((i) => i.path.join('.')) };
   const c = await prisma.calculation.findFirst({

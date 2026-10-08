@@ -5,7 +5,7 @@
 // the sheave, or a maker's as it is (machine-shape-view.ts); the sheave's axis and the pulley stand where the
 // calculation puts them (machine-room.ts). Model entities for the drawing kernel; dimensions included.
 import { chain, edit as E, line, path, rect, type Box, type Edit, type Entity, type Pt } from '../drawing';
-import { ownAxis, padsOf, supportOf } from './support';
+import { ownAxis } from './support';
 import { rinvioHEdit } from './rinvio-view';
 import { rinvioAcross, rinvioRun } from './rinvio';
 import { hebDrawn } from './heb';
@@ -222,9 +222,9 @@ export function roomSectionOn(S: RoomSite, M: MachineSpec, G: RoomGeo): { entiti
   if (ridge > top) {
     out.push(path([[r0 - WALL, top], [midU, ridge], [r1 + WALL, top], [r1 + WALL, top + WALL], [midU, ridge + WALL], [r0 - WALL, top + WALL]], true, 'wall', 'concrete'));
   } else out.push(rect(r0 - WALL, top, r1 + WALL, top + WALL, 'wall', 'concrete'));
-  // the machine on its support (shims, frame, beams, plates or plinth, with pads), its sheave's axis at the height the
+  // the machine on its support (shims, frame, beams, plates or plinth), its sheave's axis at the height the
   // calculation counts
-  const k = 1000 * G.s, F = G.frame, base = F.shape ? M.axis - F.axis : M.axis - MACHINE_A.yWheel * k, zs = M.axis, D = M.D, sup = supportOf(R, M.Dp > 0), rf = M.rinvio ?? null;
+  const k = 1000 * G.s, F = G.frame, base = F.shape ? M.axis - F.axis : M.axis - MACHINE_A.yWheel * k, zs = M.axis, D = M.D, rf = M.rinvio ?? null;
   // the pulley's h right of it and of the frames, nearest to them (on the bedplate of the pulley, past it); the support's
   // own heights beyond it
   // (kept 150 off the wall, not on its face, as long as the room allows)
@@ -255,9 +255,9 @@ export function roomSectionOn(S: RoomSite, M: MachineSpec, G: RoomGeo): { entiti
   if (ridge > top) out.push(chain({ dir: 'y', pts: [0, ridge], side: 'left', row: 1, text: ['{v} H. Colmo'], edit: [E('room.ridge')] }));
   out.push(chain({ dir: 'y', pts: [0, R.doorH], side: 'right', row: 0, text: ['{v} H. Porta'], edit: [E('room.doorH')] }));
   out.push(chain({ dir: 'y', pts: [0, R.panelH], side: 'right', row: 1, text: ['{v} H. Quadro'], edit: [E('room.panelH')] }));
-  // the sheave's axis: the support's height takes the change (pads, the machine's own height and the HEB beams under
+  // the sheave's axis: the support's height takes the change (the machine's own height and the HEB beams under
   // the support stay)
-  const hb = M.base ?? 0, axisEdit = rf?.on === 'frame' ? (rf.maker ? null : E('rinvio.height', -F.axis - hb)) : E('sup.height', -(padsOf(sup) + ownAxis(D, F.shape) + hb));
+  const hb = M.base ?? 0, axisEdit = rf?.on === 'frame' ? (rf.maker ? null : E('rinvio.height', -F.axis - hb)) : E('sup.height', -(ownAxis(D, F.shape) + hb));
   // (on the bedplate of the pulley, left of its two heights; the h of the pulley right of its legs)
   out.push(chain({ dir: 'y', pts: [0, zs], at: bedRun ? Math.min(G.frame0 - 120, bedRun[0] - 620) : G.frame0 - 120, from: [null, G.sheaveAt], text: ['Asse {v}'], edit: [axisEdit] }));
   if (M.Dp > 0) {
@@ -266,7 +266,7 @@ export function roomSectionOn(S: RoomSite, M: MachineSpec, G: RoomGeo): { entiti
     // the pulley's height below the sheave is the calculation's h; its distance dx follows the rope drop
     // on the bedplate whose h the calculation took, a change of h is a change of the bedplate's top; on its own stand,
     // of the machine's support (the pulley's axis stays where the stand has it)
-    const standH = E('sup.height', G.pulleyZ - padsOf(sup) - ownAxis(D, F.shape) - hb, low ? 1 : -1);
+    const standH = E('sup.height', G.pulleyZ - ownAxis(D, F.shape) - hb, low ? 1 : -1);
     const hEdit = rf?.auto ? (rf.on === 'frame' ? (low ? rinvioHEdit(M, rf) : null) : standH) : S.calcEdits ? E('calc.h', 0, low ? 1 : -1) : null;
     if (hChain) out.push(chain({ dir: 'y', pts: low ? [G.pulleyZ, zs] : [zs, G.pulleyZ], at: ue, from: low ? [G.pulleyAt, G.sheaveAt] : [G.sheaveAt, G.pulleyAt], text: ['h {v}'], edit: [hEdit] }));
     const less = 2 * M.ropeIn + M.D / 2 + (M.reverse ? -M.Dp / 2 : M.Dp / 2);

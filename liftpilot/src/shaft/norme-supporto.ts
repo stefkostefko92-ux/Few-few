@@ -10,13 +10,19 @@ export const VOCI_SUPPORTO: readonly VoceVano[] = [
       + 'uno sotto ogni ferro del telaio dell’argano (locale.telaio; tipico UPN 200, alto quanto il profilato come i telai bassi universali), su tre '
       + 'putrelle da muro a muro, una sotto ogni ferro, che possono stare sollevate dal pavimento (tipiche IPE 200, appoggio nei muri 150 mm), su '
       + 'piastre d’acciaio sotto gli appoggi (tipiche 20 mm) o su plinto in calcestruzzo (tipico 250 mm) in un blocco per parte delle funi, o — con '
-      + 'un rinvio — sul telaio con rinvio (locale.rinvio); tamponi antivibranti di 30 mm sotto gli appoggi, salvo sugli '
-      + 'spessori e sul telaio con rinvio (antivibranti sotto le gambe); telaio e plinto 100 mm oltre il telaio dell’argano a ogni estremità; '
+      + 'un rinvio — sul telaio con rinvio (locale.rinvio); gli antivibranti del telaio dell’argano (locale.telaio) poggiano direttamente sul '
+      + 'basamento, imbullonati ai profilati o alle piastre, ancorati al plinto — un solo stadio elastico (sul telaio con rinvio gli antivibranti '
+      + 'sotto le gambe); il telaio saldato con una traversa dello stesso profilato a ogni estremità; telaio e plinto 100 mm oltre il telaio '
+      + 'dell’argano a ogni estremità, meno dove così arriverebbero a meno di 30 mm da un muro (mai più corti del telaio dell’argano: lì lo dice '
+      + 'm_fit); una lunghezza data a mano copre gli appoggi dell’argano (m_base); un telaio o le putrelle mai più bassi del loro profilato; '
       + 'l’altezza del basamento porta l’asse della puleggia, che il calcolo (tratto di fune oltre la corsa) e il 3D seguono',
     riferimento: 'UNI EN 81-20:2020, 5.2.1.8 (carichi sull’edificio); scelta del costruttore',
-    fonte: 'telaio basso universale per argano alto 200 mm (lift-store.it); tamponi antivibranti 25–30 mm (catalogo Donati); piastre di 20 mm e plinto di '
-      + '250–300 mm nella pratica di installazione (fonti estere, da confermare); estratti di ricerca del 1° ottobre 2026',
-    stato: 'scelta',
+    fonte: 'telaio basso universale per argano alto 200 mm (lift-store.it); antivibranti del telaio dell’argano 25–30 mm (catalogo Donati); piastre di '
+      + '20 mm e plinto di 250–300 mm nella pratica di installazione (fonti estere, da confermare); estratti di ricerca del 1° ottobre 2026',
+    stato: 'scelta', verifiche: ['m_base'],
+    nota: 'fino a SHAFT 2.21.0, LIFT 1.27.0 e ROOM 1.11.0 sotto gli antivibranti dell’argano andavano altri 30 mm di tamponi (due stadi elastici in '
+      + 'serie, l’asse 30 mm più alto) su telaio, putrelle, piastre e plinto; il telaio erano tre profilati senza traverse; telaio e plinto andavano '
+      + '100 mm oltre l’argano anche dentro un muro',
   },
   {
     id: 'locale.telaio', gruppo: 'locale', titolo: 'Telaio sotto l’argano',
@@ -54,7 +60,9 @@ export const VOCI_SUPPORTO: readonly VoceVano[] = [
       + '(SV110 e SH110B XTE0517/XTE0516, SH130 e SH130G XTE3022/XTE3023, SH140 XTE6026/XTE6027, SH160 XTE5708, SH190 XTE3988) le quote del '
       + 'costruttore: asse del rinvio, asse della puleggia (A), piano del telaio (A − B), l’argano sul piedistallo del costruttore alto B meno '
       + 'l’asse della puleggia sui piedi (SH140 114 mm, SH160 240, SH190 307), calata del contrappeso entro L max dall’asse della '
-      + 'puleggia (verifica di avvertimento: oltre, telaio su misura); h del calcolo = asse della puleggia − asse del rinvio, dx dalla pianta; '
+      + 'puleggia (verifica di avvertimento: oltre, telaio su misura), il telaio del costruttore lungo quanto a catalogo con l’asse della '
+      + 'puleggia dove lo mette lui dall’estremità verso la cabina (X + D/2 della sua tabella: SV110, SH110B, SH130, SH140 380 mm, SH160 495, '
+      + 'SH190 600), l’argano e il rinvio dentro la sua lunghezza (m_bedplate; un argano girato che ne esce vuole il telaio su misura); h del calcolo = asse della puleggia − asse del rinvio, dx dalla pianta; '
       + 'con un altro basamento scelto il rinvio sta su un supporto proprio sul pavimento, alla stessa altezza; una h inserita a mano che porta il '
       + 'rinvio sotto il pavimento è segnalata',
     riferimento: 'regola del committente (Panev): il rinvio sta nel telaio del locale macchina, mai nel vano; UNI EN 81-20:2020, 5.2.1.8 (carichi '
@@ -62,7 +70,9 @@ export const VOCI_SUPPORTO: readonly VoceVano[] = [
     fonte: 'brochure Geared SICOR, aprile 2026, pp. 16, 23, 41, 47, 58, 68 e 80 (telai «top machine with diverting pulley for CSW wrapping»), '
       + 'letta il 2 ottobre 2026; i telai «corti» MR21, MR26 e MR35 portano il rinvio sotto il pavimento (Hmin = Dt/2 + 75) e non sono usati; '
       + 'le quote del telaio del software sono quelle dei telai SICOR, da adattare al telaio fornito',
-    stato: 'scelta', verifiche: ['m_rinvio'],
+    stato: 'scelta', verifiche: ['m_rinvio', 'm_bedplate'],
+    nota: 'fino a LIFT 1.27.0 e ROOM 1.11.0 il telaio del costruttore era disegnato e verificato lungo quanto il nostro (l’argano e il rinvio più '
+      + '100 mm a ogni estremità), non quanto a catalogo',
   },
   {
     id: 'locale.ingombro', gruppo: 'locale', titolo: 'L’argano dentro il locale del macchinario',
@@ -73,7 +83,7 @@ export const VOCI_SUPPORTO: readonly VoceVano[] = [
       + 'altri. L’argano sta lungo la linea delle calate con la puleggia sopra le funi e il motore verso il contrappeso; quando solo così sta '
       + 'dentro il locale, o ne esce di meno, il software lo gira di 180° attorno all’asse verticale della puleggia (motore verso la calata della '
       + 'cabina, riduttore sull’altro lato della linea delle calate), non sul telaio con rinvio del costruttore, che la porta come la monta lui; '
-      + 'il verso si può scegliere a mano (girato a mano sul telaio del costruttore, da confermare con il costruttore). La puleggia di rinvio sul suo supporto '
+      + 'il verso si può scegliere a mano (sul telaio del costruttore un argano girato deve stare nella sua lunghezza: m_bedplate). La puleggia di rinvio sul suo supporto '
       + 'sotto l’argano libera il basamento dell’argano sopra di essa (solo le putrelle sollevate la scavalcano); con la macchina in basso '
       + 'l’argano — corpo e puleggia — sta dentro il suo locale, accanto al vano o sotto di esso, con le misure date sui disegni o quelle del '
       + 'software, e i due rami alla macchina salgono dietro il contrappeso liberi dalla parete, dal contrappeso, dalle staffe delle sue guide e '

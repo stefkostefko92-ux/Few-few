@@ -11,7 +11,7 @@ import { panelFree, type Outline } from './room-floor';
 import { rinvioAcross, rinvioRun, standBox, type RinvioFrame } from './rinvio';
 import { PROFILES } from './profiles';
 import { cwPlateAt, section } from './section';
-import { profileOf, supportOf, supportSpan } from './support';
+import { profileOf, supportOf, supportSpanIn } from './support';
 import type { Layout, ShaftCheck } from './types';
 import type { RoomInputs } from './room';
 
@@ -120,11 +120,21 @@ export const machineRun = (G: RoomGeo, a: number, b: number): [number, number] =
   return [Math.min(p, q), Math.max(p, q)];
 };
 
+type P2 = readonly [number, number];
+
+/** A frame's or a plinth's run along the machine's x as the room lets it run (support.ts supportSpanIn) [mm]; null for
+ *  the others. */
+export function supportRunIn(G: RoomGeo, M: MachineSpec): readonly [number, number] | null {
+  const d = G.dir, vx = -G.uy, vy = G.ux, zS = G.frame.zSheave;
+  const o: P2 = [G.carDrop[0] + G.sheaveAt * G.ux + d * zS * vx, G.carDrop[1] + G.sheaveAt * G.uy + d * zS * vy];
+  return supportSpanIn(supportOf(G.room, M.Dp > 0), M.D, G.frame.shape, G.room.W, G.room.D, o, [d * G.ux, d * G.uy], [-d * vx, -d * vy]);
+}
+
 /** The machine on its bedframe in plan [u0, v0, u1, v1], with what its support spreads past it: a frame's profiles and a
  *  plinth's blocks under the irons, along the drop line as long as they run (the beams bear in the walls, plates and
  *  shims stay under the mounts). */
 function machineOutline(G: RoomGeo, M: MachineSpec): readonly [number, number, number, number] {
-  const s = supportOf(G.room, M.Dp > 0), F = G.frame, span = supportSpan(s, M.D, F.shape);
+  const s = supportOf(G.room, M.Dp > 0), F = G.frame, span = supportRunIn(G, M);
   if (!span || (s.kind !== 'frame' && s.kind !== 'plinth')) return [G.frame0, G.across[0], G.frame1, G.across[1]];
   const [u0, u1] = machineRun(G, span[0], span[1]), half = s.kind === 'frame' ? PROFILES[profileOf(s)].b / 2 : 0;
   const vs = (s.kind === 'plinth' ? F.plinth.flat() : F.beams.flatMap((z) => [z - half, z + half])).map((z) => machineV(G, z));
@@ -175,7 +185,6 @@ export function roomGeo(L: Layout, M: MachineSpec): RoomGeo | null {
   return orientedGeo(R, { car, cw, ux: dx / calata, uy: dy / calata, calata }, M);
 }
 
-type P2 = readonly [number, number];
 
 /** The straight runs of a rope over wheels in order (centre, radius signed: > 0 wrapped clockwise seen with y up, 0 a
  *  point), each from where it leaves a wheel to where it meets the next. */

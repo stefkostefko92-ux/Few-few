@@ -3,7 +3,7 @@
 // heb.profile by choice), of the shaft under it (W, D)
 // and of the drops, moved together from the car's (drop.carX, drop.carY); the new length gives the value as in a whole design (src/shaft/edit.ts).
 // What the calculation decides (the drop's spacing, h) is not changed here: a new calculation is. Pure; the screen
-// validates the result as the save does (surveySchema).
+// validates the result as the save does (surveySaveSchema).
 import type { Edit } from '@/drawing';
 import { lengthBounds } from '@/lib/shaft-edit';
 import { editValue } from '@/shaft/edit';
@@ -11,7 +11,7 @@ import { withHebChoice } from '@/shaft/heb';
 import { PROFILE_NAMES } from '@/shaft/profiles';
 import type { RoomInputs } from '@/shaft/room';
 import { supportOf } from '@/shaft/support';
-import { surveySchema, type Survey } from './survey';
+import { surveySaveSchema, type Survey } from './survey';
 
 type NumKey<T> = { [K in keyof T]-?: NonNullable<T[K]> extends number ? (number extends NonNullable<T[K]> ? K : never) : never }[keyof T];
 const R_KEYS = ['W', 'D', 'shaftX', 'shaftY', 'H', 'ridge', 'slab', 'doorAt', 'doorW', 'doorH', 'panelAt', 'panelW', 'panelD', 'panelH'] as const satisfies readonly NumKey<RoomInputs>[];
@@ -60,7 +60,7 @@ const pathOf = (key: string): string => (key === 'W' || key === 'D' ? `shaft.${k
 export function editSurvey(s: Survey, e: Edit, length: number): { ok: true; survey: Survey } | { ok: false; min: number | null; max: number | null } {
   const next = applySurveyEdit(s, e, length);
   if (!next) return e.pick ? { ok: false, min: null, max: null } : { ok: false, ...lengthBounds(e, e.key === 'sup.length' ? 300 : e.key.startsWith('drop.') ? null : 0, null) };
-  const r = surveySchema.safeParse(next);
+  const r = surveySaveSchema.safeParse(next);
   if (r.success) return { ok: true, survey: r.data };
   const issue = r.error.issues[0], own = !e.pick && issue?.path.join('.') === pathOf(e.key);
   if (!own || !issue) return { ok: false, min: null, max: null };

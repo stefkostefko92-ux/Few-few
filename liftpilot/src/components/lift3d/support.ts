@@ -1,15 +1,15 @@
 // The machine's support in 3D (src/shaft/support.ts), as the drawings of the machine room draw it: levelling shims, a
 // frame of profiles (on steel packs when set higher than the profile) or beams from wall to wall borne 150 mm in the
 // walls (clear of the floor when higher than their profile: a machine not standing on the floor), one under each iron
-// of the machine's frame, steel plates or a concrete plinth under the mounts, rubber pads under the mounts on all but
-// the shims; the bedplate with the diverting pulley (src/shaft/rinvio.ts): legs of square tube on dampers, beams round
+// of the machine's frame, steel plates or a concrete plinth under the mounts — the machine's own anti-vibration mounts
+// straight on it —; the bedplate with the diverting pulley (src/shaft/rinvio.ts): legs of square tube on dampers, beams round
 // the top and under each iron of the machine's bedframe, the two plates its axle turns in, hung from short channels to
 // the nearest beams; all of it on the HEB beams over the shaft's walls when the room puts them there (src/shaft/heb.ts,
 // hebBeams). Built in a group placed and turned as the machine's bedplate: x along the machine (the rope drop line, 0
 // at the sheave), y up from the mounts' underside, z across, in metres. Loaded only through boot.ts (lazy).
 import * as THREE from 'three/webgpu';
-import { KV_VERT, PROFILES, hasProfile, isChannel, padsOf, profileOf, supportSpan, type HebLayout, type MachineSupport, type Profile, type RoomInputs } from '@/shaft';
-import { bedplateBeams, type RinvioFrame } from '@/shaft/rinvio';
+import { KV_VERT, PROFILES, hasProfile, isChannel, profileOf, supportSpan, type HebLayout, type MachineSupport, type Profile, type RoomInputs } from '@/shaft';
+import { bedplateBeams, makerRun, type RinvioFrame } from '@/shaft/rinvio';
 import type { MachineFrame } from '@/shaft/machine-shape';
 import { Batch } from './geom';
 import type { LiftMaterials } from './materials';
@@ -27,23 +27,26 @@ export function wallsAlong(o: readonly [number, number], dir: readonly [number, 
 }
 
 /** The diverting pulley in the bedplate: its place along the machine's x from the sheave [m], its radius [m] and half
- *  the width of its rim with the cheeks [mm], and the bedplate (rinvio.ts). */
+ *  the width of its rim with the cheeks [mm], the bedplate (rinvio.ts) and the machine's x along the drop line (1) or
+ *  turned against it (−1): a maker's bedplate keeps its end on the car's side. */
 export interface FramedPulley {
   x: number;
   r: number;
   half: number;
   frame: RinvioFrame;
+  turn: 1 | -1;
 }
 
 /**
  * The support under the machine of frame `F` (the generic one scaled to its sheave, or a maker's on our bedframe) whose
  * mounts stand `gap` metres over the floor. `walls`: the room's walls along the machine's x from the group's origin under
- * each iron [mm] (each beam's bearings: askew each meets them elsewhere); null without a room. `pulley`: the diverting pulley in the bedplate. `base`: the HEB beams it stands
- * on over the floor [m].
+ * each iron [mm] (each beam's bearings: askew each meets them elsewhere); null without a room. `pulley`: the diverting
+ * pulley in the bedplate. `base`: the HEB beams it stands on over the floor [m]. `span`: a frame's or a plinth's run along
+ * the machine's x as the room lets it run (support.ts supportSpanIn) [mm]; missing: supportSpan.
  */
 export function buildSupport(sup: MachineSupport, F: MachineFrame, D: number, gap: number, walls: readonly (readonly [number, number])[] | null, M: LiftMaterials,
-  pulley: FramedPulley | null = null, base = 0): THREE.Group {
-  const g = new THREE.Group(), b = new Batch(), pads = padsOf(sup) / 1000, top = -pads, beams = F.beams.map((z) => z / 1000), mid = (beams[0] + beams[beams.length - 1]) / 2, s = F.shape ? 1 : F.s;
+  pulley: FramedPulley | null = null, base = 0, span: readonly [number, number] | null = supportSpan(sup, D, F.shape)): THREE.Group {
+  const g = new THREE.Group(), b = new Batch(), top = 0, beams = F.beams.map((z) => z / 1000), mid = (beams[0] + beams[beams.length - 1]) / 2, s = F.shape ? 1 : F.s;
   const MOUNTS = F.shape ? F.mounts.map((x) => x / 1000) : [-0.36 * F.s, 0.95 * F.s];
   const box = (x0: number, x1: number, y0: number, y1: number, z0: number, z1: number, m: THREE.Material): void => {
     if (x1 - x0 > 1e-4 && y1 - y0 > 1e-4 && z1 - z0 > 1e-4) b.add(new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0).translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2), m);
@@ -71,19 +74,31 @@ export function buildSupport(sup: MachineSupport, F: MachineFrame, D: number, ga
     b.into(g);
     return g;
   }
-  const span = supportSpan(sup, D, F.shape), floor = base - gap;
+  const floor = base - gap;
   if (sup.kind === 'shims') atMounts(0.06 * s, 0.05 * s, floor, 0, M.galv);
-  else atMounts(0.06 * s, 0.05 * s, top, 0, M.rubber);
   if (sup.kind === 'plates') atMounts(0.09 * s, 0.06 * s, floor, top, M.galv);
   if (sup.kind === 'plinth' && span) for (const [z0, z1] of F.plinth) box(span[0] / 1000, span[1] / 1000, floor, top, z0 / 1000, z1 / 1000, M.slab);
   if (hasProfile(sup)) {
-    const name = profileOf(sup), P = PROFILES[name], h = P.h / 1000, bear = KV_VERT.supportBearing / 1000;
+    const name = profileOf(sup), P = PROFILES[name], h = P.h / 1000, bw = P.b / 1000, bear = KV_VERT.supportBearing / 1000;
+    const run = span ? [span[0] / 1000, span[1] / 1000] : [MOUNTS[0] - 0.15, MOUNTS[1] + 0.15];
     beams.forEach((z, i) => {
-      const w = walls?.[i], [x0, x1] = sup.kind === 'beams' && w ? [w[0] / 1000 - bear, w[1] / 1000 + bear] : span ? [span[0] / 1000, span[1] / 1000] : [MOUNTS[0] - 0.15, MOUNTS[1] + 0.15];
+      const w = walls?.[i], [x0, x1] = sup.kind === 'beams' && w ? [w[0] / 1000 - bear, w[1] / 1000 + bear] : run;
       profile(P, isChannel(name), x0, x1, top, z);
       // a frame set higher than its profile stands on steel packs at its ends
-      if (sup.kind === 'frame' && top - h - floor > 1e-3) for (const x of [x0, x1 - 0.1]) box(x, x + 0.1, floor, top - h, z - P.b / 2000, z + P.b / 2000, M.galv);
+      if (sup.kind === 'frame' && top - h - floor > 1e-3) for (const x of [x0, x1 - 0.1]) box(x, x + 0.1, floor, top - h, z - bw / 2, z + bw / 2, M.galv);
     });
+    // a frame is welded: an end cross member of the same profile at each end, between the longitudinals' flanges
+    if (sup.kind === 'frame') {
+      const zs = [...beams].sort((a, c) => a - c), tf = P.tf / 1000, tw = P.tw / 1000, channel = isChannel(name);
+      for (const [xa, out] of [[run[0], -1], [run[1] - bw, 1]] as const) for (let k = 0; k + 1 < zs.length; k++) {
+        // a channel's back outward, an I-section's web in its middle
+        const za = zs[k] + bw / 2, zb = zs[k + 1] - bw / 2, back = channel ? (out < 0 ? xa : xa + bw) : xa + bw / 2 + (out * tw) / 2;
+        if (zb - za < 1e-4) continue;
+        box(xa, xa + bw, top - tf, top, za, zb, M.steel);
+        box(xa, xa + bw, top - h, top - h + tf, za, zb, M.steel);
+        box(Math.min(back, back - out * tw), Math.max(back, back - out * tw), top - h + tf, top - tf, za, zb, M.steel);
+      }
+    }
   }
   b.into(g);
   return g;
@@ -96,7 +111,9 @@ type BoxFn = (x0: number, x1: number, y0: number, y1: number, z0: number, z1: nu
 function rinvioFrame3D(box: BoxFn, F: MachineFrame, gap: number, P: FramedPulley, M: LiftMaterials, base: number): void {
   const B = PROFILES[KV_VERT.rinvioBeam], h = B.h / 1000, w = B.b / 1000, tf = B.tf / 1000, tw = B.tw / 1000, leg = KV_VERT.rinvioLeg / 1000;
   const zs = F.zSheave / 1000, half = P.half / 1000, ov = KV_VERT.rinvioOverhang / 1000, floor = -gap, pads = KV_VERT.rinvioPads / 1000;
-  const x0 = Math.min(F.x[0] / 1000, P.x - P.r) - ov, x1 = Math.max(F.x[1] / 1000, P.x + P.r) + ov;
+  // the maker's as long as it is made, from its end on the car's side (rinvio.ts makerRun); ours past the machine and the pulley
+  const mk = P.frame.maker, ends = mk ? makerRun(mk).map((u) => (P.turn * u) / 1000) : null;
+  const x0 = ends ? Math.min(...ends) : Math.min(F.x[0] / 1000, P.x - P.r) - ov, x1 = ends ? Math.max(...ends) : Math.max(F.x[1] / 1000, P.x + P.r) + ov;
   // its side beams under the machine's outer irons (or as wide as the maker's, centred on them), a beam of its own
   // under each iron they do not carry (src/shaft/rinvio.ts bedplateBeams): the bedframe's mounts stand on them
   const seat = bedplateBeams(F.beams, P.frame.maker?.width ?? KV_VERT.rinvioWidth), [z0, z1] = seat.edges.map((z) => z / 1000);
@@ -128,11 +145,14 @@ function rinvioFrame3D(box: BoxFn, F: MachineFrame, gap: number, P: FramedPulley
   // the ropes' plane
   const axis = floor + P.frame.pulleyAxis / 1000, rails = [z0 + w / 2, ...irons, z1 - w / 2];
   for (const s of [-1, 1]) {
-    // hung from the nearest beam on its side, from that beam's face (none past the plate: no channel)
-    const za = zs + s * (half - 0.01), zb = zs + s * half;
+    // hung from the nearest beam on its side: its top welded under the bottom flange of a short channel run over the
+    // plate's whole thickness to that beam's face, or under the beam's own flange when the beam reaches over the plate;
+    // a plate risen between the beams (a pulley set high by hand) butts the channel's end with its whole section
+    const za = zs + s * (half - 0.01), zb = zs + s * half, yTop = Math.min(0, Math.max(-h, axis + 0.09));
     const near = rails.reduce((a, r) => ((r - zb) * s > 0 && (r - a) * s < 0 ? r : a), s < 0 ? z0 + w / 2 : z1 - w / 2), beam = near - (s * w) / 2;
-    box(P.x - 0.08, P.x + 0.08, axis - 0.07, Math.min(0, Math.max(-h, axis + 0.09)), Math.min(za, zb), Math.max(za, zb), M.galv);
-    if ((beam - zb) * s > 0.005) across(P.x, 1, Math.min(zb, beam), Math.max(zb, beam));
+    box(P.x - 0.08, P.x + 0.08, axis - 0.07, yTop, Math.min(za, zb), Math.max(za, zb), M.galv);
+    const from = yTop > -h + 1e-6 ? zb : za;
+    if ((beam - from) * s > 1e-6) across(P.x, 1, Math.min(from, beam), Math.max(from, beam));
   }
 }
 

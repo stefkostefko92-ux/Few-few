@@ -4,7 +4,7 @@
 // under each of the three irons of the machine's frame, the sheave between the last two (machine-shape.ts) —, steel
 // plates under the mounts, a concrete plinth on each side of the ropes, or the bedplate with the diverting pulley
 // (rinvio.ts, registry locale.rinvio: what the machine stands on when it has one, unless another is chosen);
-// anti-vibration pads under the mounts on all but the shims and the bedplate (its dampers are under its legs). Its
+// the machine's own anti-vibration mounts straight on it (one elastic stage; the bedplate's dampers under its legs). Its
 // height sets the sheave's axis over the room's floor (the calculation's rope beyond the travel and the 3D follow it);
 // a frame and a plinth run along the rope drop line past the machine's bedplate. Millimetres; the machine is the one of
 // the drawings scaled to the sheave (machine-outline.ts) or a maker's on our bedframe (machine-shape.ts). Pure.
@@ -34,7 +34,7 @@ export interface MachineSupport {
   kind: SupportKind;
   /** a frame's or the beams' profile (missing: the typical one) */
   profile?: ProfileName;
-  /** the support's top over the room's floor, where the mounts (on their pads) stand: the profiles' top (beams raised
+  /** the support's top over the room's floor, where the mounts stand: the profiles' top (beams raised
    *  clear of the floor: higher than the profile), the plates' thickness, the plinth's height; with shims, the
    *  mounts' underside (missing: what the typical one or the software's axis gives) [mm] */
   height?: number;
@@ -66,9 +66,6 @@ export const onHeb = (R: RoomInputs | null | undefined, deflector = false): bool
 export const hebBase = (R: RoomInputs | null | undefined, deflector = false): number =>
   (R?.heb && onHeb(R, deflector) ? PROFILES[R.heb.profile ?? HEB_PROFILES[HEB_PROFILES.length - 1]].h : 0);
 
-/** The pads under the mounts [mm]: none on the shims and on the bedplate with the pulley. */
-export const padsOf = (s: MachineSupport): number => (s.kind === 'shims' || s.kind === 'rinvio' ? 0 : KV_VERT.supportPads);
-
 /** The support's top over the room's floor [mm]; `shimsAxis`: the sheave's axis the software takes on shims for the
  *  generic machine — the levelling shims that leaves under it go under a maker's machine too, whose sheave then stands
  *  where its bedframe puts it (no stack of shims raising it); `Dp`: the diverting pulley under the bedplate's beams. */
@@ -82,7 +79,7 @@ export function supportHeight(s: MachineSupport, D: number, shimsAxis: number, s
 
 /** The sheave's axis over the room's floor on this support standing `base` over the floor (the HEB beams) [mm]. */
 export const sheaveAxisOn = (s: MachineSupport, D: number, shimsAxis: number, shape: MachineShape | null = null, Dp = 0, base = 0): number =>
-  base + supportHeight(s, D, shimsAxis, shape, Dp) + padsOf(s) + ownAxis(D, shape);
+  base + supportHeight(s, D, shimsAxis, shape, Dp) + ownAxis(D, shape);
 
 /** A frame's or a plinth's length along the drop line [mm]; null for the others. */
 export function supportLength(s: MachineSupport, D: number, shape: MachineShape | null = null): number | null {
@@ -97,4 +94,34 @@ export function supportSpan(s: MachineSupport, D: number, shape: MachineShape | 
   if (len === null) return null;
   const [a, b] = bedplate(D, shape), mid = (a + b) / 2;
   return [mid - len / 2, mid + len / 2];
+}
+
+type P2 = readonly [number, number];
+
+/** Where a frame or a plinth runs along the machine's x as the room lets it run [mm]: supportSpan, each end the software
+ *  puts past the bedplate brought back to stay KV_VERT.supportWallGap off the walls of the room [0, W] × [0, Dr] — never
+ *  short of the bedplate (m_fit then tells) —, the machine's origin at `o` in the room's plan, its x along the unit `ex`
+ *  and its z along `ez`; a length set by hand as it is. null for the others. */
+export function supportSpanIn(s: MachineSupport, D: number, shape: MachineShape | null, W: number, Dr: number, o: P2, ex: P2, ez: P2): readonly [number, number] | null {
+  const span = supportSpan(s, D, shape);
+  if (!span || s.length !== undefined) return span;
+  const F = machineFrame(D, shape), [a, b] = F.run, half = s.kind === 'frame' ? PROFILES[profileOf(s)].b / 2 : 0;
+  const zs = s.kind === 'plinth' ? F.plinth.flat() : F.beams.flatMap((z) => [z - half, z + half]), g = KV_VERT.supportWallGap;
+  // the least distance of the support's corners at x to the walls: concave in x, so what stays off them is one stretch
+  const clear = (x: number): number => Math.min(...zs.map((z) => {
+    const px = o[0] + x * ex[0] + z * ez[0], py = o[1] + x * ex[1] + z * ez[1];
+    return Math.min(px, W - px, py, Dr - py);
+  }));
+  const end = (from: number, to: number): number => {
+    if (clear(to) >= g) return to;
+    if (clear(from) < g) return from;
+    let lo = from, hi = to;
+    for (let i = 0; i < 40; i++) {
+      const m = (lo + hi) / 2;
+      if (clear(m) >= g) lo = m;
+      else hi = m;
+    }
+    return to < from ? Math.ceil(lo) : Math.floor(lo);
+  };
+  return [end(a, span[0]), end(b, span[1])];
 }

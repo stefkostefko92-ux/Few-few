@@ -10,12 +10,12 @@
 // directions, three profiles) the software takes the shortest that pass, then the lightest — the easiest to carry in;
 // the engineer may take another. Room axes [mm]; pure.
 import { check } from './checks';
-import { machineU, machineV, ropeWidths, type MachineSpec, type RoomGeo } from './machine-room';
+import { machineU, machineV, ropeWidths, supportRunIn, type MachineSpec, type RoomGeo } from './machine-room';
 import { KV_VERT } from './norme-vert';
 import { PROFILES } from './profiles';
 import { rinvioAcross, rinvioRun, standBox } from './rinvio';
 import type { RoomInputs } from './room';
-import { HEB_PROFILES, onHeb, supportOf, supportSpan, type HebDir, type HebProfile } from './support';
+import { HEB_PROFILES, onHeb, supportOf, type HebDir, type HebProfile } from './support';
 import { loadCentre, type SupportLoad } from './support-check';
 import type { ShaftCheck } from './types';
 
@@ -86,7 +86,7 @@ export function supportFeet(G: RoomGeo, M: MachineSpec): Pt[] {
     for (const u of [u0 + h, u1 - h]) for (const v of [v0 + h, v1 - h]) out.push(onDrop(G, u, v));
     return out;
   }
-  const span = supportSpan(s, M.D, F.shape);
+  const span = supportRunIn(G, M);
   const us = (s.kind === 'frame' && span ? span : F.mounts).map((x) => machineU(G, x));
   for (const u of us) for (const z of F.beams) out.push(onDrop(G, u, machineV(G, z)));
   if (rf?.on === 'stand' && M.Dp > 0) {

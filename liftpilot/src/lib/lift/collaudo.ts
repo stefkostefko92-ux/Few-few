@@ -98,7 +98,7 @@ export const AMBITO_VERIFICHE: Readonly<Record<CheckId | ShaftCheckId, readonly 
   // the machine room is the building's; the space in front of the panel follows a new controller or a new machine that
   // stands in it (UNI 10411-1/-11:2024, 9.2: UNI EN 81-20 5.2.6.3 round the equipment replaced); the beams under a new
   // machine
-  m_height: [], m_panel: ['controller', 'machine'], m_door: [], m_beam: ['machine'], m_beamf: ['machine'], m_beamwall: ['machine'], m_rinvio: ['machine'], m_fit: ['machine'], m_runs: ['machine', 'ropes'], m_stand: ['machine'], m_free: ['machine'], m_calata: ['machine'],
+  m_height: [], m_panel: ['controller', 'machine'], m_door: [], m_beam: ['machine'], m_beamf: ['machine'], m_beamwall: ['machine'], m_rinvio: ['machine'], m_bedplate: ['machine'], m_base: ['machine'], m_fit: ['machine'], m_runs: ['machine', 'ropes'], m_stand: ['machine'], m_free: ['machine'], m_calata: ['machine'],
   // the panel among what stands on the floor and the ways to the free areas follow a new controller or a new machine
   m_quadro: ['controller', 'machine'], m_route: ['controller', 'machine'],
   // the pulley room of a machine below is the building's; the free height over its pulleys follows a new machine's pulleys

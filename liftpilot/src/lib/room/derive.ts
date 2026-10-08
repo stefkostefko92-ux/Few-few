@@ -18,7 +18,7 @@ import { check } from '@/shaft/checks';
 import { hebChecks, hebFor, type HebTaken } from '@/shaft/heb';
 import { orientedGeo, roomChecksOf, type MachineSpec, type RoomGeo } from '@/shaft/machine-room';
 import { KV_VERT } from '@/shaft/norme-vert';
-import { axisOverTop, rinvioAxisOf, rinvioTopOf } from '@/shaft/rinvio';
+import { axisOverTop, rinvioAxisOf, rinvioClash, rinvioTopOf } from '@/shaft/rinvio';
 import type { RoomSite } from '@/shaft/room-site';
 import { switchBox } from '@/shaft/room-floor';
 import { beamChecks, fitChecks, machineParts, panelFloorChecks, rinvioChecks, type SupportLoad } from '@/shaft/support-check';
@@ -91,8 +91,7 @@ function deriveOnce(V: FormValues, s: Survey, a: Analysis): RoomDerived {
   const G = issues.includes('bottom') ? null : orientedGeo(R, { car, cw, ux, uy, calata }, M, sheaveAt);
   // the diverting pulley under the room's floor, or in the bedplate up into the machine standing over it
   const rf = M.rinvio, r = M.Dp / 2;
-  const clash = !!G && rf?.on === 'frame' && G.pulleyAt + r > G.frame0 && G.pulleyAt - r < G.frame1 && G.pulleyZ + r > rf.top;
-  if (G && M.Dp > 0 && (G.pulleyZ - r < 0 || clash)) issues.push('rinvio');
+  if (rinvioClash(G, M)) issues.push('rinvio');
   // the support carries the machine as the full design counts it: its mass with the maker's bedplate it stands on, the
   // static load on its axis, the dynamic coefficient — as sheet 1 and the relazione tecnica count them
   const load = supportLoad(a.ctx, a.res.Mcw, { machine: a.ctx.N.mass + bedplateMass(M) });

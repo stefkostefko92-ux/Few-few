@@ -9,7 +9,7 @@
 // ends (pulleys.ts). Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
-import { PROFILES, supportOf, type HebLayout, type Layout, type MachineSupport } from '@/shaft';
+import { PROFILES, supportOf, supportSpanIn, type HebLayout, type Layout, type MachineSupport } from '@/shaft';
 import { machineFrame, type MachineFrame, type MachineShape } from '@/shaft/machine-shape';
 import type { RinvioFrame } from '@/shaft/rinvio';
 import { groovePitch } from '@/shaft/ropes';
@@ -120,7 +120,7 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
   // the diverting pulley in the bedplate: along the machine from the sheave, as the rig places it (the machine turned
   // round, on its other side)
   const defl = rig.wheels.find((w) => w.role === 'deflector'), framed = !rig.bottom && rinvio?.on === 'frame' && defl !== undefined;
-  const inFrame = framed && defl && rinvio ? { x: turn * (defl.u - rig.sheave.u), r: defl.r, half: ropeWidths(n, d).pulley, frame: rinvio } : null;
+  const inFrame = framed && defl && rinvio ? { x: turn * (defl.u - rig.sheave.u), r: defl.r, half: ropeWidths(n, d).pulley, frame: rinvio, turn } : null;
   // the HEB beams on the shaft's walls under it all (the support, the pulleys' stands), on the floor
   const beams = !rig.bottom && R && heb ? heb : null, hebH = beams ? PROFILES[beams.profile].h : 0;
   if (beams && R) {
@@ -128,7 +128,8 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
     hebBeams(hb, beams, R, z0, M);
     hb.into(common);
   }
-  const base = buildSupport(sup, F, D, gap, walls, M, inFrame, hebH / 1000);
+  const span = R ? supportSpanIn(sup, D, F.shape, R.W, R.D, [o[0] + R.shaftX, o[1] + R.shaftY], pose.xDir, across) : undefined;
+  const base = buildSupport(sup, F, D, gap, walls, M, inFrame, hebH / 1000, span);
   base.position.copy(machine.group.position);
   base.rotation.copy(machine.group.rotation);
   common.add(base);

@@ -7,7 +7,7 @@
 import { SHEAVE_GRID, readInputs, sizeMachine } from '@/calc/index';
 import { deflectorAngle } from '@/calc/geometry';
 import type { FormValues, SizingOption } from '@/calc/types';
-import { HEB_PROFILES, layout, section, travel, type HebTaken, type Layout, type ShaftCheck, type ShaftInputs } from '@/shaft';
+import { HEB_PROFILES, layout, roomGeo, section, travel, type HebTaken, type Layout, type ShaftCheck, type ShaftInputs } from '@/shaft';
 import type { MachineSpec } from '@/shaft/machine-room';
 import { analyse, mirrorRopes, proposalValues, type Analysis } from '@/lib/present/analysis';
 import { simModel, type SimModel } from '@/sim';
@@ -17,7 +17,7 @@ import { bestFit, catalogValues, offGrid, pickOption, type CatalogChoice } from 
 import type { CatalogFit } from '@/lib/catalog/machines';
 import { machineShapeOf, machineSpec, rinvioOf, sheaveAxis, sheaveAxisBelow, type Made } from './machine';
 import type { MachineShape } from '@/shaft/machine-shape';
-import type { RinvioFrame } from '@/shaft/rinvio';
+import { rinvioClash, type RinvioFrame } from '@/shaft/rinvio';
 import { headTopChecks } from './head';
 import { bedplateMass, governorSideFor, hebOf, placedPanel, supportChecks, supportLoad } from './support';
 import { collaudoOf, type Collaudo } from './collaudo';
@@ -69,6 +69,9 @@ export interface LiftDerived {
   /** direct pull (no diverting pulley): the spacing of the falls in the plan, which the sheave's pitch diameter must
    *  equal [mm]; null with a diverting pulley or the machine below */
   calata: number | null;
+  /** where the diverting pulley stands where it may not (the issue 'rinvio'): under the room's floor, or up into the
+   *  machine over the bedplate's top (rinvio.ts rinvioClash) */
+  rinvioClash: 'floor' | 'machine' | null;
   machine: MachineSpec;
   /** the checks of the machine's support in the room (the beams under it), at the load sheet 1 counts */
   supportChecks: readonly ShaftCheck[];
@@ -231,13 +234,16 @@ function deriveOnce(inp: LiftInputs): LiftDerived {
   // the beams under the machine (with the maker's bedplate it stands on) and the machine in its room; the car's highest
   // part under what hangs over it
   const load = supportLoad(analysis.ctx, analysis.res.Mcw, { machine: N.mass + bedplateMass(machine) }), above = I.layout !== 'bottom';
+  // the diverting pulley up over the bedplate's top into the machine (an h or a height set by hand): as the replacement says
+  const clash = rinvio && pulleyRim < 0 ? 'floor' : above && machine.rinvio ? rinvioClash(roomGeo(Lp, machine), machine) : null;
+  if (clash && !issues.includes('rinvio')) issues.push('rinvio');
   const g = scheme ? bottomGeo(L, scheme, N.D, I.Dp, N.n, N.d, I.r, sheaveAxisBelow(N.D, shape)) : null;
   // a machine below: its room as a machine room, the pulley room over the shaft (below-checks.ts)
   const supportCk = [...supportChecks(Lp, machine, load, above), ...headTopChecks(Lp, I.r, I.Dp, scheme), ...(g ? belowChecks(Lp, g, machine, I.Dp) : [])];
   const beams = above ? hebOf(Lp, machine, load) : null, chosenBy = Lp.inputs.room?.heb;
   const bottomGap = scheme && g && !g.fits ? { now: S.cwWallGap, need: bottomGapNeeded(S, scheme, N.D, I.Dp, N.n, N.d, I.r) } : null;
   return {
-    shaft: Lp.inputs, values: V, layout: Lp, analysis, origin, noProposal, issues, calata, machine, supportChecks: supportCk, bottom: scheme, bottomGap,
+    shaft: Lp.inputs, values: V, layout: Lp, analysis, origin, noProposal, issues, calata, rinvioClash: clash, machine, supportChecks: supportCk, bottom: scheme, bottomGap,
     heb: beams && chosenBy ? { ...beams, auto: { profile: !chosenBy.profile, dir: !chosenBy.dir } } : null,
     headPulleys: g ? 2 + extraBends(g) : 0, catalog, collaudo: collaudoOf(V, inp.collaudo),
     sim: simModel(I, N, analysis.res, Sec, vt),

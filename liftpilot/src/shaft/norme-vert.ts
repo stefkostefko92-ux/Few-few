@@ -105,15 +105,16 @@ export const KV_VERT = {
   // walls of an old building that stand elsewhere at the top floor and in the headroom: the least clearance of the car
   // and the counterweight running past them [mm]
   headRun: 25,
-  // the machine's support (registry locale.basamento, locale.putrelle): pads under the mounts; the typical frame, beams,
-  // plates and plinth; frame and plinth past the bedplate at each end; the beams' bearing in the walls [mm]; steel
+  // the machine's support (registry locale.basamento, locale.putrelle): the typical frame, beams,
+  // plates and plinth; frame and plinth past the bedplate at each end, and kept that far off the walls when the
+  // software sets their length; the beams' bearing in the walls [mm]; steel
   // S275 [MPa], γM0, E [MPa]; the beams' elastic deflection limit (span / this)
-  supportPads: 30,
   supportFrame: 'UPN 200',
   supportBeam: 'IPE 200',
   supportPlate: 20,
   supportPlinth: 250,
   supportOverhang: 100,
+  supportWallGap: 30,
   supportBearing: 150,
   // the diverting pulley in the machine room, never in the shaft (registry locale.rinvio): in the machine's bedplate as
   // the makers' (SICOR XTE3022/XTE6026: the pulley's axis 320 mm over the floor, the top 736 mm), its rim at least 60 mm
@@ -277,7 +278,7 @@ export const COSTANTI_VERT: Readonly<Record<string, readonly CostanteVert[]>> = 
   'foglio.stime': ['railTopGap', 'governorAbove'],
   'guide.staffe': ['bracketPitch', 'bracketFirst', 'bracketLast'],
   'distanze.testata': ['headRun'],
-  'locale.basamento': ['supportPads', 'supportFrame', 'supportBeam', 'supportPlate', 'supportPlinth', 'supportOverhang', 'supportBearing'],
+  'locale.basamento': ['supportFrame', 'supportBeam', 'supportPlate', 'supportPlinth', 'supportOverhang', 'supportWallGap', 'supportBearing'],
   'locale.telaio': ['machineBed', 'machineRimClear', 'machineBedOverhang', 'machineIronClear'],
   'locale.rinvio': ['rinvioAxis', 'rinvioRim', 'rinvioTop', 'rinvioOver', 'rinvioLeg', 'rinvioPads', 'rinvioBeam', 'rinvioOverhang', 'rinvioWidth'],
   'locale.putrelle': ['steelFyk', 'steelGammaM0', 'steelE', 'beamDeflection'],

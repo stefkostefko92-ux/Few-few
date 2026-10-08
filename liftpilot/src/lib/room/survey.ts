@@ -4,7 +4,7 @@
 // the shaft's inner corner on the side of entrance A (x along that wall, y into the shaft). Millimetres as whole
 // numbers; the browser's values are validated here as the save validates them.
 import { z } from 'zod';
-import { roomSchema } from '@/lib/shaft-input';
+import { roomSchema, supportAtLeastProfile } from '@/lib/shaft-input';
 import { DEFAULT_ROOM } from '@/shaft/room';
 
 const mm = (min: number, max: number) => z.number().int().min(min).max(max);
@@ -18,6 +18,9 @@ export const surveySchema = z.object({
 }).strict();
 
 export type Survey = z.infer<typeof surveySchema>;
+
+/** A survey as a new record must be (the save and the edits on the drawings): the stored shape and its rules. */
+export const surveySaveSchema = surveySchema.superRefine((S, ctx) => supportAtLeastProfile(S.room.support, ctx));
 
 /** The survey a new machine room starts from: the room and the shaft of the software's example (to be replaced with the
  *  measures), the car's drop in the middle of the shaft and the counterweight's behind it at the calculation's spacing

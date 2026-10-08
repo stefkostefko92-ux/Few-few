@@ -21,7 +21,7 @@ export { BUFFER_TYPES, bufferStroke, bufferType, maxSpeed, strokeNeeded, typical
 export { DEFAULT_ROOM } from './room';
 export { PROFILES, PROFILE_NAMES, isChannel } from './profiles';
 export type { Profile, ProfileName } from './profiles';
-export { HEB_PROFILES, SUPPORT_KINDS, hasProfile, hebBase, onHeb, padsOf, profileOf, sheaveAxisOn, supportHeight, supportLength, supportOf, supportSpan } from './support';
+export { HEB_PROFILES, SUPPORT_KINDS, hasProfile, hebBase, onHeb, profileOf, sheaveAxisOn, supportHeight, supportLength, supportOf, supportSpan, supportSpanIn } from './support';
 export type { HebDir, HebProfile, MachineSupport, ShaftBeams, SupportKind } from './support';
 export { dropRopes, hebChecks, hebDrawn, hebFor, hebLayout, hebOptions, hebPick, hebResult, hebResultant, supportFeet } from './heb';
 export type { HebLayout, HebOption, HebResult, HebShaft, HebTaken, Rope } from './heb';

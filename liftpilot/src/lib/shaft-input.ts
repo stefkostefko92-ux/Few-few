@@ -3,7 +3,7 @@
 // ranges wide enough for any lift and narrow enough to refuse nonsense. A design saved before the vertical data
 // existed (engine 1) reads with the typical values of what it lacks.
 import { z } from 'zod';
-import { DEFAULTS, DEFAULT_VERTICAL, GOVERNORS, HEB_PROFILES, KV, PROFILE_NAMES, RAIL_TYPES, SUPPORT_KINDS, reasonText } from '@/shaft';
+import { DEFAULTS, DEFAULT_VERTICAL, GOVERNORS, HEB_PROFILES, KV, PROFILES, PROFILE_NAMES, RAIL_TYPES, SUPPORT_KINDS, hasProfile, profileOf, reasonText } from '@/shaft';
 import { CW_CHOICES, DOOR_PAIRS } from '@/shaft/staffe-ids';
 
 const mm = (min: number, max: number) => z.number().int().min(min).max(max);
@@ -192,7 +192,17 @@ export const shaftInputsSchema = shaftInputsReadSchema.superRefine((S, ctx) => {
     const min = sides(f.door).some((x) => sides(up.door).includes(x)) ? S.doorHeight : 1;
     if (f.rise < min) ctx.addIssue({ code: z.ZodIssueCode.too_small, minimum: min, inclusive: true, type: 'number', path: ['vertical', 'floors', i, 'rise'], message: 'stops too close' });
   });
+  supportAtLeastProfile(S.room?.support, ctx);
 });
+
+/** A rule of a new record (the full project's shaft, the replacement's survey): a frame or beams never lower than their
+ *  profile, whose top their height is (raised beams higher) — a lower axis is another profile or the shims
+ *  (src/shaft/support.ts). Stored records read without it. */
+export function supportAtLeastProfile(sup: z.infer<typeof supportSchema> | undefined, ctx: z.RefinementCtx): void {
+  if (!sup || !hasProfile(sup) || sup.height === undefined) return;
+  const h = PROFILES[profileOf(sup)].h;
+  if (sup.height < h) ctx.addIssue({ code: z.ZodIssueCode.too_small, minimum: h, inclusive: true, type: 'number', path: ['room', 'support', 'height'], message: 'support below its profile' });
+}
 
 const finite = z.number().finite();
 const positive = finite.positive().max(1e9);

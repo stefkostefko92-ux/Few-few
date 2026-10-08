@@ -12,9 +12,10 @@ const chains = (es: readonly Entity[]): Chain[] => es.flatMap((e) => (e.e === 'c
 type Shaft = ReturnType<typeof defaultLift>['shaft'];
 
 // the panel where it is entered: a dimension of it moved on the drawing enters its place (the form switches the
-// software's place off: LiftWorkspace)
+// software's place off: LiftWorkspace); the machine as entered — the software's choice may swap it for another sheave
+// when the axis moves (its h changes the sizing), which would move what the dimension reads
 function draw(shaft: ShaftInputs, kind: 'plan' | 'section'): Chain[] {
-  const base = defaultLift(), dv = deriveLift({ ...base, shaft, auto: { ...base.auto, panel: false } }), G = roomGeo(dv.layout, dv.machine);
+  const base = defaultLift(), dv = deriveLift({ ...base, shaft, auto: { ...base.auto, panel: false, machine: false } }), G = roomGeo(dv.layout, dv.machine);
   assert.ok(G, 'locale macchina');
   return chains(kind === 'plan' ? roomPlanEntities(dv.layout, dv.machine, G).entities : roomSectionEntities(dv.layout, dv.machine, G).entities);
 }

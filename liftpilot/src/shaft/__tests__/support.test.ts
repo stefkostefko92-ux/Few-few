@@ -4,7 +4,7 @@
 // machine inside the room (walls and ceiling).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { DEFAULT_ROOM, KV_VERT, PROFILES, defaultInputs, layout, padsOf, roomGeo, sheaveAxisOn, supportHeight, type MachineSpec, type MachineSupport } from '../index';
+import { DEFAULT_ROOM, KV_VERT, PROFILES, defaultInputs, layout, roomGeo, sheaveAxisOn, supportHeight, type MachineSpec, type MachineSupport } from '../index';
 import { ownAxis, supportSpan } from '../support';
 import { beamChecks, beamDoorGap, beamResult, fitChecks, freeBeside, machineTop, rowShares } from '../support-check';
 
@@ -21,12 +21,13 @@ test('basamento: altezza tipica di ogni tipo e asse della puleggia', () => {
   assert.equal(supportHeight({ kind: 'beams' }, D, SHIMS_AXIS), PROFILES[KV_VERT.supportBeam].h);
   assert.equal(supportHeight({ kind: 'plates' }, D, SHIMS_AXIS), KV_VERT.supportPlate);
   assert.equal(supportHeight({ kind: 'plinth' }, D, SHIMS_AXIS), KV_VERT.supportPlinth);
-  // on shims the axis stays where the software puts it, without pads
-  assert.equal(padsOf({ kind: 'shims' }), 0);
+  // on shims the axis stays where the software puts it
   assert.ok(Math.abs(sheaveAxisOn({ kind: 'shims' }, D, SHIMS_AXIS) - SHIMS_AXIS) < 1e-9);
-  // beams raised clear of the floor carry the machine higher: the axis follows the entered height
+  // beams raised clear of the floor carry the machine higher: the axis follows the entered height, the machine's own
+  // anti-vibration mounts straight on them (until SHAFT 2.21.0 30 mm of pads more under them)
   const raised: MachineSupport = { kind: 'beams', height: 900 };
-  assert.ok(Math.abs(sheaveAxisOn(raised, D, SHIMS_AXIS) - (900 + KV_VERT.supportPads + ownAxis(D))) < 1e-9);
+  assert.ok(Math.abs(sheaveAxisOn(raised, D, SHIMS_AXIS) - (900 + ownAxis(D))) < 1e-9);
+  for (const kind of ['frame', 'beams', 'plates', 'plinth'] as const) assert.ok(Math.abs(sheaveAxisOn({ kind }, D, SHIMS_AXIS) - (supportHeight({ kind }, D, SHIMS_AXIS) + ownAxis(D))) < 1e-9, kind);
 });
 
 test('putrelle: una sotto ogni ferro del telaio, la puleggia fra i ferri, tensione e freccia come il calcolo a mano', () => {
@@ -92,7 +93,7 @@ test('putrelle: nessuna verifica sugli altri basamenti', () => {
 });
 
 test('ingombro: l’argano dentro il locale, il margine minimo da muri e soffitto', () => {
-  const G = geo({ kind: 'frame' }), R = G.room, [c] = fitChecks(G, M);
+  const G = geo({ kind: 'frame' }), R = G.room, fit = (g: typeof G) => fitChecks(g, M).find((x) => x.id === 'm_fit'), c = fit(G);
   assert.ok(c && c.id === 'm_fit' && c.status === 'ok' && c.unit === 'mm');
   // the least distance: the ceiling over the machine's top, or a corner of its frame — with the frame it stands on, its
   // sections under the irons and running KV_VERT.supportOverhang past the bedplate at each end — to a wall
@@ -107,11 +108,11 @@ test('ingombro: l’argano dentro il locale, il margine minimo da muri e soffitt
   // a room lower than the machine, a room whose wall cuts the frame: the check fails by as much
   const low = roomGeo(layout({ ...defaultInputs(1600, 1750), room: { ...DEFAULT_ROOM, support: { kind: 'frame' }, H: Math.floor(machineTop(M, G)) - 40 } }), M);
   assert.ok(low);
-  const [l] = fitChecks(low, M);
+  const l = fit(low);
   assert.ok(l && l.status === 'fail' && l.value !== null && l.value <= -40);
   const narrow = roomGeo(layout({ ...defaultInputs(1600, 1750), room: { ...DEFAULT_ROOM, support: { kind: 'frame' }, W: 2000, D: 2300 } }), M);
   assert.ok(narrow);
-  const [n] = fitChecks(narrow, M);
+  const n = fit(narrow);
   assert.ok(n && n.value !== null && n.value < (c.value ?? 0));
   assert.deepEqual(fitChecks(null, M), [], 'senza locale nessuna verifica');
 });

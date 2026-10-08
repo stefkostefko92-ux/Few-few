@@ -3,7 +3,7 @@
 // −0,36 and 0,95 m at Ø 560; a maker's machine: its bedframe's; the three irons of either, machine-shape.ts): levelling
 // shims, a frame of three profiles, three beams from wall to wall (raised clear of the floor when higher than their
 // profile) — one under each iron, the sheave between the last two —, plates under the mounts, a concrete plinth in a
-// block on each side of the ropes; the pads under the mounts; the bedplate with the
+// block on each side of the ropes; the bedplate with the
 // diverting pulley (rinvio-view.ts); all of them on the HEB beams over the shaft's walls when the room puts them there
 // (heb-view.ts: every height over the floor raised by theirs). With its dimensions: the support's height (it carries the
 // sheave's axis), a profile by choice from the catalogue, the length of a frame or a plinth, the beams' span between the
@@ -16,7 +16,7 @@ import { KV_VERT } from './norme-vert';
 import { PROFILES, PROFILE_NAMES } from './profiles';
 import { rinvioRun } from './rinvio';
 import { rinvioPlan, rinvioSection } from './rinvio-view';
-import { hasProfile, ownAxis, padsOf, profileOf, supportOf, supportSpan, type MachineSupport } from './support';
+import { hasProfile, ownAxis, profileOf, supportOf, supportSpan, type MachineSupport } from './support';
 
 const MOUNTS = [-0.36, 0.95] as const;
 const NAME: Record<MachineSupport['kind'], string> = { shims: 'Spessori', frame: 'Telaio', beams: 'Putrelle', plates: 'Piastre', plinth: 'Plinto', rinvio: 'Telaio con rinvio' };
@@ -29,20 +29,20 @@ export const beamSpans = (G: RoomGeo): [number, number][] => beamClear(G).map(([
 /** A profile changed by choosing another of the catalogue: the dimension shows its height. */
 const profilePick = (s: MachineSupport): Edit => pickEdit('sup.profile', PROFILE_NAMES.map((n) => ({ label: `${n} · h ${PROFILES[n].h} mm`, set: n })), PROFILE_NAMES.indexOf(profileOf(s)));
 
-/** The support's top over the room's floor: the sheave's axis less the pads and the machine's own height; the
+/** The support's top over the room's floor: the sheave's axis less the machine's own height; the
  *  bedplate with the pulley, its own top [mm]. */
 export const supportTop = (M: MachineSpec, s: MachineSupport): number =>
-  (s.kind === 'rinvio' && M.rinvio?.on === 'frame' ? M.rinvio.top : M.axis - padsOf(s) - ownAxis(M.D, M.shape ?? null));
+  (s.kind === 'rinvio' && M.rinvio?.on === 'frame' ? M.rinvio.top : M.axis - ownAxis(M.D, M.shape ?? null));
 
 /** The u of the support's height chain right of the machine in section B-B (its profile's 260 past it): `run` the
  *  frame's or the plinth's along the drop line. */
 const dimsRight = (G: RoomGeo, run: readonly [number, number] | null): number => Math.max(G.frame1, run ? run[1] : -Infinity) + 220;
 
-/** Section B-B: the support under the machine, its pads, its dimensions. `r0`, `r1`: the room's walls along u; `after`:
+/** Section B-B: the support under the machine, its dimensions. `r0`, `r1`: the room's walls along u; `after`:
  *  a chain right of the machine (the pulley's h, room-view.ts) the support's heights stand past; `heb`: the HEB beams it
  *  stands on (M.base their height), their height on the line of the support's own. */
 export function supportSection(M: MachineSpec, G: RoomGeo, r0: number, r1: number, after: number | null = null, heb: HebLayout | null = null): Entity[] {
-  const s = supportOf(G.room, M.Dp > 0), k = 1000 * G.s, top = supportTop(M, s), pads = padsOf(s), out: Entity[] = [], F = G.frame, base = M.base ?? 0;
+  const s = supportOf(G.room, M.Dp > 0), k = 1000 * G.s, top = supportTop(M, s), out: Entity[] = [], F = G.frame, base = M.base ?? 0;
   const span = supportSpan(s, M.D, F.shape), run = span ? machineRun(G, span[0], span[1]) : null;
   if (s.kind === 'rinvio' && M.rinvio?.on === 'frame') return [...(heb ? hebSection(heb, G, rinvioRun(M, G)[0] - 420) : []), ...rinvioSection(M, G, M.rinvio)];
   // the mounts along the drop line and their half sizes: the generic machine's scaled, a maker's on our bedframe
@@ -50,7 +50,6 @@ export function supportSection(M: MachineSpec, G: RoomGeo, r0: number, r1: numbe
   if (s.kind === 'shims') {
     if (top - base > 0.5) for (const u of mounts) out.push(rect(u - hm, base, u + hm, top, 'thin', 'steel'));
   } else {
-    for (const u of mounts) out.push(rect(u - hm, top, u + hm, top + pads, 'thin', 'paper'));
     if (s.kind === 'plates') for (const u of mounts) out.push(rect(u - hp, base, u + hp, top, 'outline', 'steel'));
     if (s.kind === 'plinth' && run) out.push(rect(run[0], base, run[1], top, 'outline', 'concrete'));
     if (hasProfile(s)) {

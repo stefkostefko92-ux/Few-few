@@ -28,8 +28,10 @@ export interface MakerBedplate {
   top: number;
   /** the spacing of the two rope drops, from the sheave's car side to the pulley's far side, it takes */
   fall: { min: number | null; max: number };
+  /** its length along the drop line and width across, and the sheave's axis from its end on the car's side */
   length: number;
   width: number;
+  axisAt: number;
   src: string;
 }
 
@@ -84,8 +86,19 @@ export const sheaveAxisIn = (rf: RinvioFrame, D: number, shape: MachineShape | n
 export const rinvioSpan = (x0: number, x1: number, pu: number, r: number): readonly [number, number] =>
   [Math.min(x0, pu - r) - KV_VERT.rinvioOverhang, Math.max(x1, pu + r) + KV_VERT.rinvioOverhang];
 
-/** Along the drop line: where the bedplate runs [u0, u1] (absolute u, as the room's drawings measure it). */
-export const rinvioRun = (M: MachineSpec, G: RoomGeo): readonly [number, number] => rinvioSpan(G.frame0, G.frame1, G.pulleyAt, M.Dp / 2);
+/** A maker's bedplate along the drop line from the sheave's axis: its catalogue length from its end on the car's side
+ *  (the pulley on the counterweight's, as the maker builds it) [mm]. */
+export const makerRun = (mk: MakerBedplate): readonly [number, number] => [-mk.axisAt, mk.length - mk.axisAt];
+
+/** Along the drop line: where the bedplate runs [u0, u1] (absolute u, as the room's drawings measure it) — a maker's as
+ *  long as it is made (a machine or a pulley past its ends is the check m_bedplate's), ours past the machine and the
+ *  pulley. */
+export function rinvioRun(M: MachineSpec, G: RoomGeo): readonly [number, number] {
+  const mk = M.rinvio?.on === 'frame' ? M.rinvio.maker : null;
+  if (!mk) return rinvioSpan(G.frame0, G.frame1, G.pulleyAt, M.Dp / 2);
+  const [a, b] = makerRun(mk);
+  return [G.sheaveAt + a, G.sheaveAt + b];
+}
 
 /** Across the machine, in its own frame (z, machine-shape.ts): the bedplate under the irons `beams` of the machine's
  *  bedframe — its side beams under the outer irons, as wide as that or at least `width` (the maker's, else ours: then
@@ -102,6 +115,16 @@ export function bedplateBeams(beams: readonly number[], width: number): { edges:
 export function rinvioAcross(G: RoomGeo, rf: RinvioFrame): readonly [number, number] {
   const F = G.frame, [a, b] = bedplateBeams(F.beams, rf.maker?.width ?? KV_VERT.rinvioWidth).edges.map((z) => G.dir * (F.zSheave - z));
   return [Math.min(a, b), Math.max(a, b)];
+}
+
+/** Where the diverting pulley stands where it may not (one rule for the full project and the replacement): under the
+ *  room's floor ('floor'), or in the bedplate up over its top into the machine standing on it ('machine': an h or a
+ *  bedplate's height set by hand) — the pulley stays under the bedplate's beams or between them; null where it is right. */
+export function rinvioClash(G: RoomGeo | null, M: MachineSpec): 'floor' | 'machine' | null {
+  const rf = M.rinvio ?? null, r = M.Dp / 2;
+  if (!G || !rf || M.Dp <= 0) return null;
+  if (G.pulleyZ - r < 0) return 'floor';
+  return rf.on === 'frame' && G.pulleyAt + r > G.frame0 && G.pulleyAt - r < G.frame1 && G.pulleyZ + r > rf.top ? 'machine' : null;
 }
 
 /** The pulley's own stand on the floor (another support carries the machine): its ends along the drop line and across,
