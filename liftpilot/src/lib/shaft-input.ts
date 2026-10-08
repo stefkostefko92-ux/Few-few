@@ -43,6 +43,7 @@ export const verticalSchema = z.object({
   cwScreen: mm(300, 6000).optional(),
   standW: mm(100, 3000).optional(),
   standD: mm(100, 3000).optional(),
+  unlockZone: mm(50, 350).optional(),
 }).strict().superRefine((V, ctx) => {
   if (V.main >= V.floors.length) ctx.addIssue({ code: 'custom', path: ['main'], message: 'main floor out of range' });
   if (V.carOutH < V.carH) ctx.addIssue({ code: 'custom', path: ['carOutH'], message: 'outside height below inside height' });

@@ -37,12 +37,17 @@ test('vano 1600 × 1750, contrappeso sul fondo, edificio esistente: la cabina pi
   assert.equal(L.fits, true);
   // case c) of DM 236/1989: the largest car this shaft takes is not as deep as case b)'s (1300 mm), so the design says
   // why the existing building takes no larger one — a warning until it does
+  // (and, until the doors' unlocking zone is given, the plate under the sills is drawn on an assumed one: p_toe)
   assert.equal(verdictOf(L), 'warn');
-  assert.deepEqual(L.checks.filter((c) => c.status !== 'ok').map((c) => c.id), ['v_acc_c']);
-  assert.equal(verdictOf(layout({ ...defaultInputs(1600, 1750), accessReason: 'vano nella tromba delle scale esistente' })), 'ok');
+  assert.deepEqual(L.checks.filter((c) => c.status === 'warn' || c.status === 'fail').map((c) => c.id), ['v_acc_c', 'p_toe']);
+  const zoned = (why: string): ReturnType<typeof defaultInputs> => {
+    const I = defaultInputs(1600, 1750);
+    return { ...I, accessReason: why, vertical: { ...I.vertical, unlockZone: 200 } };
+  };
+  assert.equal(verdictOf(layout(zoned('vano nella tromba delle scale esistente'))), 'ok');
   // a reason in words: hidden characters or a few letters are none (src/shaft/reason.ts)
   for (const why of ['\u202e.\u200b', 'vano', '\u202evano nella tromba delle scale']) {
-    assert.equal(verdictOf(layout({ ...defaultInputs(1600, 1750), accessReason: why })), 'warn', JSON.stringify(why));
+    assert.equal(verdictOf(layout(zoned(why))), 'warn', JSON.stringify(why));
   }
   assert.ok(!layout({ ...defaultInputs(1600, 1850) }).checks.some((c) => c.id === 'v_acc_c'), 'una cabina come il caso b) non ne ha bisogno');
   // telescopic door 800: frame 1,5·800 + 110 = 1310, 145 mm from each side wall

@@ -16,7 +16,8 @@ import { massModelOf } from '../lift/known';
 import { hebRows } from './heb-rows';
 import { isUpperLimit, mergeChecks, shownValue } from '@/shaft/checks';
 import { KV_VERT } from '@/shaft/norme-vert';
-import { bracketCount } from '@/shaft/brackets';
+import { bracketCount, maxBracketSpan, railSpan } from '@/shaft/brackets';
+import { cwGapOver } from '@/shaft/cw-gap';
 import { bufferType } from '@/shaft/buffers';
 import { govSize } from '@/shaft/governor';
 import { hasImbotti, imbottiOf } from '@/shaft/imbotti';
@@ -30,6 +31,7 @@ import { sheetLoads, sheetRails, supportRows } from './sheet-loads';
 import { cwGearChecks, cwGearOf, cwGearRow } from './cw-gear';
 import { belowGeoOf, machineOf, machineText } from './views';
 import { clientNotes, estimateNote, railNote, safetyGearNote, spaceLegend } from './notes';
+import { shaftDetailText } from './notes-vano';
 import { NORMA_SIGLA, ambitoOf, collaudoOf } from '../lift/collaudo';
 import { KL } from '../lift/norme';
 import { collaudoNote } from '../report/collaudo';
@@ -59,6 +61,10 @@ const carParts = (Pl: TavoleInput['plant']): number | null =>
 export interface DataSheetResult {
   sheet: DataSheet;
   warnings: Mismatch[];
+  /** the clearance on the counterweight's sign the checks give [mm] (cw-gap.ts): section A-A writes it on the screen */
+  cwGap: number | null;
+  /** for the sheet of the rails: the thrusts on a car rail written [daN], whether the rails stay as they are */
+  rails: { fx: string; fy: string; kept: boolean };
 }
 
 export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheetResult {
@@ -108,6 +114,9 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   const R = sheetRails(L, I.P, I.Q, Pl), railLen = R.railLen, oldRails = kept('rails');
   const rails = (t: RailType): string => `${oldRails ? 'ESISTENTI ' : ''}${railLabel(t)}`;
   const brackets = (pitch: number | undefined): string => (oldRails ? 'ESISTENTI' : `${2 * bracketCount(railLen * 1000, pitch ?? KV_VERT.bracketPitch)}`);
+  // the longest interval between two brackets actually mounted (brackets.ts), the one figure the sheet gives for their
+  // spacing: the car's is the l of the car rails' check below (UNI EN 81-50:2020, 5.10; sheet-loads.ts sheetRails)
+  const [z0, z1] = railSpan(S), spanCar = R.span, spanCw = maxBracketSpan(z0, z1, L.inputs.cwRail, Pl.cwBracketPitch);
   const gov = govSize(V.v, L.inputs.governor), oldGov = kept('governor');
   const ropeLen = ropeLength(I);
   // the governor's rope up to the governor: in the room over the shaft (with a machine below, the pulley room), else on
@@ -133,11 +142,11 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     ['GUIDE DI CABINA', 'tipo', rails(L.inputs.carRail)],
     ['LUNGHEZZA GUIDE DI CABINA', 'm', oldRails ? 'ESISTENTI' : fmt(railLen, 1)],
     ['STAFFE GUIDE DI CABINA', 'N°', brackets(Pl.carBracketPitch)],
-    ['PASSO STAFFE CABINA', 'mm', num(Pl.carBracketPitch ?? KV_VERT.bracketPitch)],
+    ['INTERASSE MASSIMO STAFFE CABINA', 'mm', fmt(spanCar, 0)],
     ['GUIDE CONTRAPPESO', 'tipo', rails(L.inputs.cwRail)],
     ['LUNGHEZZA GUIDE CONTRAPPESO', 'm', oldRails ? 'ESISTENTI' : fmt(railLen, 1)],
     ['STAFFE GUIDE CONTRAPPESO', 'N°', brackets(Pl.cwBracketPitch)],
-    ['PASSO STAFFE CONTRAPPESO', 'mm', num(Pl.cwBracketPitch ?? KV_VERT.bracketPitch)],
+    ['INTERASSE MASSIMO STAFFE CONTRAPPESO', 'mm', fmt(spanCw, 0)],
     ['FUNI DI SOSPENSIONE', 'N°-Ø', `${N.n} - ${num(N.d)}`],
     ['LUNGHEZZA FUNI (CIASCUNA)', 'm', fmt(ropeLen, 0)],
     ['LIMITATORE DI VELOCITÀ', 'tipo', oldGov ? 'ESISTENTE' : `${gov.brand} ${gov.model}`],
@@ -186,9 +195,11 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   const car = carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes: ropesKg, cables: cablesKg });
   // a machine below: its own room in place of the one over the shaft (the pulley room's checks apart; below-checks.ts)
   const scheme = below ? x.marks?.bottom ?? 'head' : null, bg = scheme ? belowGeoOf(a, L, M, scheme) : null, mRoom = bg ? belowRoomOf(L, bg, M).R : room;
-  // (the car's top and the refuge on its roof under what the rope rig hangs in the shaft: head.ts)
+  // the car's top and the refuge on its roof under what the rope rig hangs in the shaft (head.ts), and with them the
+  // clearance on the counterweight's sign (cw-gap.ts) in place of the shaft's own
+  const head = headTopChecks(withRig(L, I.r, I.Dp, N.n, N.d, bg), I.r, I.Dp, scheme);
   const all = [...mergeChecks(L.checks, [...supportChecks(L, M, { machine: below ? 0 : machine, static: ld.static, dyn, car }, !below),
-    ...(bg ? belowChecks(L, bg, M, I.Dp) : []), ...headTopChecks(withRig(L, I.r, I.Dp, N.n, N.d, bg), I.r, I.Dp, scheme)]), ...railChecks(rc, gear, I.v),
+    ...(bg ? belowChecks(L, bg, M, I.Dp) : []), ...head, ...cwGapOver(L, head)]), ...railChecks(rc, gear, I.v),
     ...cwGearChecks(underPit, Pl, I.v, C.norma !== 'en81')];
   const checks: DataSheet['checks'] = all.map((c) => {
     const label = (labels[`c_${c.id}`] ?? c.id).replace(' (UNI EN 81-20, ', ' (');
@@ -198,8 +209,11 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     if (c.id === 'm_pdoor' && room) return [label.replace(', margine', ''), `${room.doorW} × ${room.doorH} mm`, `≥ ${KV_VERT.doorMinW} × ${KV_VERT.pulleyDoorH} mm`, outcome];
     return [label, c.value == null ? '—' : `${shownValue(c, fmt)}${c.unit ? ` ${c.unit}` : ''}`, c.limit == null ? '—' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${withUnit(c.limit, c.dec, c.unit)}`, outcome];
   });
-  // the rooms as the scheme of a machine below has them, existing in a modification tested to UNI 10411-1/-11 (9.2)
-  const sp = spaceLegend(L, fmt), notes = clientNotes(L, below, { scheme, existing: C.norma !== 'en81' });
+  // the rooms as the scheme of a machine below has them, existing in a modification tested to UNI 10411-1/-11 (9.2); the
+  // shaft's note with the pit, the sills, the counterweight's sign and the brackets' anchors (notes-vano.ts)
+  const gap = all.find((c) => c.id === 'h_cwgap')?.value ?? null;
+  const sp = spaceLegend(L, fmt), notes = clientNotes(L, below, { scheme, existing: C.norma !== 'en81',
+    detail: shaftDetailText(L, { cwGap: gap === null ? null : num(gap), fx: fmt(F.fx, 0), fy: fmt(F.fy, 0) }) });
   if (pEstimate) notes.push(estimateNote(fmt(I.P, 0), `NOTA ${notes.length + 1}`));
   if (!Pl.safetyGear) notes.push(safetyGearNote(`NOTA ${notes.length + 1}`));
   // the note of the rails' check wherever the check enters the acceptance test (new rails, or a change of load, car or sling)
@@ -208,7 +222,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   if (test) notes.push(test);
 
   return {
-    warnings,
+    warnings, cwGap: gap, rails: { fx: fmt(F.fx, 0), fy: fmt(F.fy, 0), kept: oldRails },
     sheet: {
       base, specs, loads: loadRows, notes, legend: [sp.free, sp.pit, sp.top],
       forces: { fx: fmt(F.fx, 0), fy: fmt(F.fy, 0) }, checks,

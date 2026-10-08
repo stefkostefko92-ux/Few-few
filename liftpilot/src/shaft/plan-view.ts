@@ -18,6 +18,8 @@ import { CAR_PANEL, GROOVE, LANDING_PANEL, carTracks, landingTracks, trackPlanes
 import { doorOpDepthOf } from './operator';
 import { bufferPlan, pitSpace } from './pit';
 import { roofRefuge } from './roof';
+import { bufferTagAt, pitPlanExtras } from './plan-pit';
+import { carBracketLabel } from './plan-car-brackets';
 import { RAILS } from './rails';
 import { rigPlan } from './rig-view';
 import type { DoorLayout, Layout, Rail } from './types';
@@ -171,7 +173,8 @@ export function planEntities(L: Layout, level: PlanLevel, floor: number): Entity
     const k = cws.indexOf(r);
     out.push(...rail(L, r, level !== 'pit', k === 0 || (k > 0 && codes[k] !== codes[0]), level === 'top'));
   });
-  out.push(...axes(L), ...governorPlan(L, level === 'pit'));
+  // the car rails' brackets named by their rail (plan-car-brackets.ts)
+  out.push(...axes(L), ...governorPlan(L, level === 'pit'), ...carBracketLabel(L));
   if (level === 'top') {
     const { refuge: r, free: f } = roofSpaces(L);
     out.push(...space(r.x0, r.y0, r.x1, r.y1), { e: 'mark', at: [r.x1 - 110, r.y1 - 150], sym: 'tri' });
@@ -181,7 +184,8 @@ export function planEntities(L: Layout, level: PlanLevel, floor: number): Entity
     const p = pitSpace(L);
     out.push(...space(p.x0, p.y0, p.x1, p.y1), { e: 'mark', at: [(p.x0 + p.x1) / 2 + 60, (p.y0 + p.y1) / 2 - 60], sym: 'square' });
     for (const b of bufferPlan(L).spots) out.push(circle(b.c, b.r, 'outline', 'paper'), circle(b.c, b.r * 0.55, 'thin'));
-    out.push(...pitTags(L));
+    // the counterweight's screen, the ladder and the pit's control box (plan-pit.ts)
+    out.push(...pitPlanExtras(L), ...pitTags(L));
   }
   // the lift's rope rig where the lift design has one (rig-view.ts)
   out.push(...rigPlan(L, level));
@@ -198,15 +202,17 @@ export function roofSpaces(L: Layout): { refuge: Box; free: Box } {
 
 /** Where the loads on the pit floor act (see loads.ts): P5 car rails, P6 car buffers, P7 counterweight rails, P8 its buffer. */
 function pitTags(L: Layout): Entity[] {
-  const out: Entity[] = [], cx = L.car.x + L.car.w / 2, cy = L.car.y + L.car.h / 2;
-  const toward = (p: Pt, d: number): Pt => {
-    const dx = cx - p[0], dy = cy - p[1], n = Math.hypot(dx, dy) || 1;
-    return [p[0] + (dx / n) * d, p[1] + (dy / n) * d];
-  };
+  const out: Entity[] = [], cx = L.car.x + L.car.w / 2;
   for (const r of L.rails) {
     const foot: Pt = [r.x, r.y], at: Pt = r.kind === 'car' ? [r.x + (r.x < cx ? 120 : -120), r.y + 230] : [r.x + (r.x < cx ? 230 : -230), r.y];
     out.push({ e: 'tag', at, text: r.kind === 'car' ? 'P5' : 'P7', to: foot });
   }
-  for (const b of bufferPlan(L).spots) out.push({ e: 'tag', at: b.kind === 'car' ? toward(b.c, -230) : [b.c[0] + 230, b.c[1] + 160], text: b.kind === 'car' ? 'P6' : 'P8', to: b.c });
+  // the car buffers' P6 off the rails' line, their brackets and the axes (plan-pit.ts); the counterweight's P8 beside it
+  const taken = out.flatMap((e) => (e.e === 'tag' ? [e.at] : []));
+  for (const b of bufferPlan(L).spots) {
+    const at: Pt = b.kind === 'car' ? bufferTagAt(L, b.c, taken) : [b.c[0] + 230, b.c[1] + 160];
+    taken.push(at);
+    out.push({ e: 'tag', at, text: b.kind === 'car' ? 'P6' : 'P8', to: b.c });
+  }
   return out;
 }

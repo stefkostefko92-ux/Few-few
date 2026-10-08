@@ -4,6 +4,7 @@
 // 2026-10-06, and the makers' catalogues where an entry says so.
 import { letto } from '../calc/norme-fonti';
 import type { VoceVano } from './norme';
+import { COSTANTI_FOSSA, KV_FOSSA, VOCI_FOSSA } from './norme-fossa';
 import { COSTANTI_GUIDE, KV_GUIDE, VOCI_GUIDE } from './norme-guide';
 import { COSTANTI_HEB, KV_HEB, VOCI_HEB } from './norme-heb';
 import { COSTANTI_LIMITATORE, KV_GOV, VOCI_LIMITATORE } from './norme-limitatore';
@@ -15,6 +16,7 @@ const T20 = 'UNI EN 81-20:2020', T50 = 'UNI EN 81-50:2020';
 
 export const KV_VERT = {
   ...KV_GUIDE,
+  ...KV_FOSSA,
   ...KV_GOV,
   ...KV_HEB,
   ...KV_LOCALE,
@@ -240,7 +242,8 @@ export const VOCI_VERT: readonly VoceVano[] = [
       + 'sua sommità, le altre a passo uguale tra le due; una staffa che cadrebbe sulla piastra di una giunzione (guide da 5 m dal fondo della '
       + `fossa) si sposta appena oltre la piastra. Il passo inserito nei dati dell’impianto sostituisce i ${KV_VERT.bracketPitch} mm`,
     riferimento: 'regola di montaggio indicata dal committente', fonte: 'scelta del committente', stato: 'scelta',
-    nota: 'il passo delle staffe va confermato con la verifica delle guide (UNI EN 81-50:2020, 5.10), che usa la distanza tra le staffe',
+    nota: 'il foglio 1 delle tavole riporta l’interasse massimo tra le staffe montate, lo stesso l della verifica delle guide di cabina (UNI EN '
+      + '81-50:2020, 5.10); le quote di ogni staffa dal fondo della fossa sono nel foglio dello sviluppo delle guide',
   },
   {
     id: 'foglio.stime', gruppo: 'carichi', titolo: 'Lunghezze stimate nel foglio dei dati',
@@ -252,6 +255,7 @@ export const VOCI_VERT: readonly VoceVano[] = [
   ...VOCI_GUIDE,
   ...VOCI_LIMITATORE,
   ...VOCI_HEB,
+  ...VOCI_FOSSA,
 ];
 
 /** Constants of this registry, for the test that every one has its entry. */
@@ -287,4 +291,5 @@ export const COSTANTI_VERT: Readonly<Record<string, readonly CostanteVert[]>> = 
   ...COSTANTI_LIMITATORE,
   ...COSTANTI_LOCALE,
   ...COSTANTI_HEB,
+  ...COSTANTI_FOSSA,
 };

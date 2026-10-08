@@ -25,11 +25,13 @@ export interface Note {
 }
 
 /** What the notes for the client follow besides the layout: the scheme of a machine below (its room below, the pulleys
- *  over the shaft: hung under the slab, or in a pulley room; under the pit a space people reach under the shaft), and a
- *  modification tested to UNI 10411-1/-11 (its rooms the existing ones, 9.2). */
+ *  over the shaft: hung under the slab, or in a pulley room; under the pit a space people reach under the shaft), a
+ *  modification tested to UNI 10411-1/-11 (its rooms the existing ones, 9.2), and `detail`: the sentences on the pit,
+ *  the sills, the counterweight's sign and the brackets' anchors (notes-vano.ts), in NOTA 1 before its references. */
 export interface NoteCase {
   scheme?: BottomScheme | null;
   existing?: boolean;
+  detail?: string;
 }
 
 /** Notes for the client: the shaft always; the rooms the lift has — the machine room over the shaft, or with the machine
@@ -37,7 +39,7 @@ export interface NoteCase {
  *  shaft), and the space under the shaft of a machine under the pit —; the control cabinet. `below`: the machine stands
  *  below, its scheme in `c` (the pulleys hung under the slab when none). */
 export function clientNotes(L: Layout, below = false, c: NoteCase = {}): Note[] {
-  const K = KV_VERT, room = L.inputs.room !== null, ex = c.existing === true, scheme = below ? c.scheme ?? 'head' : null;
+  const K = KV_VERT, room = L.inputs.room !== null, ex = c.existing === true, scheme = below ? c.scheme ?? 'head' : null, detail = c.detail ?? '';
   const notes: Omit<Note, 'tag'>[] = [
     {
       title: 'VANO DI CORSA',
@@ -46,7 +48,8 @@ export function clientNotes(L: Layout, below = false, c: NoteCase = {}): Note[] 
         + "Il vano serve solo all’ascensore: nessun cavo, tubazione o impianto estraneo al suo servizio. Ventilazione e aperture di aerazione "
         + "del vano secondo le norme edilizie e di prevenzione incendi dell’edificio, da concordare prima dei lavori. Illuminazione fissa del vano: "
         + `almeno ${K.wellLux} lux a un metro dal tetto di cabina e dal fondo della fossa, ${K.wellLuxElse} lux nel resto del vano. Fossa asciutta, `
-        + "protetta dalle infiltrazioni d’acqua, con accesso sicuro dalla porta di piano più bassa. Riferimenti: UNI EN 81-20:2020, punto 5.2; DPR 162/1999.",
+        + `protetta dalle infiltrazioni d’acqua, con accesso sicuro dalla porta di piano più bassa. ${detail}Riferimenti: UNI EN 81-20:2020, punto 5.2`
+        + `${detail ? ' (5.2.1.5.1, 5.2.2.4, 5.2.5.3.2, 5.2.5.7.1, 5.2.5.8.1)' : ''}; DPR 162/1999.`,
     },
   ];
   if (scheme === null) {

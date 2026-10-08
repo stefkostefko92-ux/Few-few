@@ -8,6 +8,7 @@
 import { useTranslations } from 'next-intl';
 import { BUFFER_TYPES, DEFAULT_VERTICAL, bufferStroke, bufferType, withBufferType, type BufferType, type Floor, type ShaftInputs, type VerticalInputs } from '@/shaft';
 import { screenOf, standOf } from '@/shaft/section';
+import { KV_VERT } from '@/shaft/norme-vert';
 import { filled, floorRemoved, floorsTo, type BlankKey } from '@/lib/lift/blank';
 import { NO_BLANK, StdBadge, fieldId, type FormBlank, type ShaftSet } from '../blank';
 
@@ -154,6 +155,12 @@ export default function VerticalOptions({ I, set, open = false, blank = NO_BLANK
             {field('cwScreen', 300, 6000)}
             {field('standW', 100, 3000)}
             {field('standD', 100, 3000)}
+            {/* the doors' unlocking zone (the supplier's): empty, the most the standard allows and the plate under the sills warns */}
+            <label className="field" key="unlockZone">
+              <span>{t('vt_unlockZone')}<StdBadge on={V.unlockZone === undefined} /></span>
+              <input className="input num" type="number" inputMode="numeric" min={50} max={350} step={10} value={V.unlockZone ?? ''} placeholder={String(KV_VERT.unlockMax)}
+                onChange={(e) => { const v = num(e.target.value); put({ unlockZone: Number.isFinite(v) ? Math.round(v) : undefined }); }} />
+            </label>
           </div>
           <p className="note">{t('bt_hint')}</p>
           <div className="form-grid">

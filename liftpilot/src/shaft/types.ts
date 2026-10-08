@@ -177,6 +177,7 @@ export type ShaftCheckId =
   | 'v_place' | 'v_doorcar' | 'v_buffer' | 'v_niche' | 'v_staffa' | 'v_telaio' | 'v_head' | 'v_gov' | 'v_govrail' | 'v_govdd'
   | 'h_refuge' | 'h_clear' | 'h_top' | 'h_parapet' | 'h_stand' | 'h_cross' | 'h_door' | 'h_staffe' | 'h_car' | 'h_cw' | 'h_guide' | 'p_refuge' | 'p_apron'
   | 'p_screen'
+  | 'v_emerg' | 'p_toe' | 'p_screenlo' | 'p_screenw' | 'h_cwgap'
   | 'b_runby' | 'b_type' | 'b_car' | 'b_cw' | 'm_height' | 'm_panel' | 'm_door'
   | 'm_beam' | 'm_beamf' | 'm_beamwall' | 'm_rinvio' | 'm_bedplate' | 'm_base' | 'm_fit' | 'm_runs' | 'm_stand' | 'm_free' | 'm_calata' | 'm_quadro' | 'm_route' | 'm_gov' | 'm_govfree'
   | 'm_pheight' | 'm_pdoor' | 'm_pabove'

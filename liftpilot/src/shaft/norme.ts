@@ -225,8 +225,9 @@ export const VOCI_VANO: readonly VoceVano[] = [
       + 'in taglia 2:1 sotto il soffitto con il contrappeso nella posizione più alta; uno spazio accessibile sotto il vano che non sia il locale '
       + 'della macchina (il software lo conosce solo con la macchina sotto la fossa); distanza tra le parti fisse più alte della fossa e quelle '
       + 'più basse della cabina sugli ammortizzatori; sporgenze nel vano oltre 150 mm senza balaustra; movimento incontrollato della cabina '
-      + '(UCM) e velocità eccessiva in salita con la nuova macchina; muro sotto la soglia di piano (5.2.5.3.2 a)); le soluzioni della UNI EN '
-      + '81-21:2022 per testata, fossa, locale e porte ridotti (le verifiche in sezione seguono solo la UNI EN 81-20:2020). Il locale della '
+      + '(UCM) e velocità eccessiva in salita con la nuova macchina; rigidità e sporgenze della lamiera sotto la soglia di piano (5.2.5.3.2 b)–c), '
+      + 'dato del fornitore delle porte); porte di soccorso oltre 11 m tra due porte di piano (5.2.3.1: la verifica le chiede, il disegno '
+      + 'non le ha); le soluzioni della UNI EN 81-21:2022 per testata, fossa, locale e porte ridotti (le verifiche in sezione seguono solo la UNI EN 81-20:2020). Il locale della '
       + 'macchina in basso è disegnato e verificato (altezza, porta, spazi davanti al quadro e accanto alla macchina) e le pulegge di rinvio '
       + 'appese sotto la soletta entrano nello spazio di rifugio sul tetto (spazi.tetto.appese)',
     riferimento: 'UNI EN 81-20:2020: guide e staffe 5.7.2–5.7.4 (con UNI EN 81-50:2020, 5.10); distanze in testata 5.2.5.7.2; spazi accessibili sotto '

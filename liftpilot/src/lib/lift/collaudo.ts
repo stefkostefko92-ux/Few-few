@@ -95,6 +95,9 @@ export const AMBITO_VERIFICHE: Readonly<Record<CheckId | ShaftCheckId, readonly 
   // the headroom and the pit: their spaces follow the car, its frame, the buffers and the speed
   h_refuge: HEAD, h_clear: HEAD, h_top: [...HEAD, 'machine'], h_parapet: ['car'], h_stand: ['car'], h_cross: ['car', 'sling'], h_door: DOORS, h_staffe: DOORS, h_car: ['car'], h_cw: [...HEAD, 'travel'], h_guide: [...HEAD, 'travel'],
   p_refuge: PIT, p_apron: [...PIT, 'carDoors'], p_screen: ['cw'],
+  // the shaft's details (round 36): the emergency doors follow the floors served, the plate under the sills the landing doors,
+  // the screen the counterweight, the sign's clearance the headroom's spaces
+  v_emerg: ['landingDoors', 'travel'], p_toe: ['landingDoors'], p_screenlo: ['cw'], p_screenw: ['cw'], h_cwgap: [...HEAD, 'machine'],
   b_runby: BUFFERS, b_type: ['buffers', 'speed'], b_car: ['buffers', 'speed'], b_cw: ['buffers', 'speed'],
   // the machine room is the building's; the space in front of the panel follows a new controller or a new machine that
   // stands in it (UNI 10411-1/-11:2024, 9.2: UNI EN 81-20 5.2.6.3 round the equipment replaced); the beams under a new

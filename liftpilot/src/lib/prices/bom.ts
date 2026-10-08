@@ -86,6 +86,8 @@ export function designBom(dv: LiftDerived): BomLine[] {
     L.push({ key: `door:landing:${d.kind}`, label: { item: `door_landing_${d.kind}` }, qty: V.floors.filter((f) => f.door.includes(d.side)).length, unit: 'pz' });
     L.push({ key: `door:car:${d.kind}`, label: { item: `door_car_${d.kind}` }, qty: 1, unit: 'pz' });
   }
+  // the plate under each landing sill (UNI EN 81-20:2020, 5.2.5.3.2; src/shaft/toe.ts): one per landing door
+  L.push({ key: 'door:toe', label: { item: 'door_toe' }, qty: dv.layout.doors.reduce((n, d) => n + V.floors.filter((f) => f.door.includes(d.side)).length, 0), unit: 'pz' });
   const g = govSize(V.v, I.governor);
   L.push({ key: governorKey(g.brand, g.model), label: { item: 'governor', name: `${g.brand} ${g.model}` }, qty: 1, unit: 'pz' });
   L.push({ key: 'tension', label: { item: 'tension' }, qty: 1, unit: 'pz' });

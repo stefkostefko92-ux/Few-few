@@ -7,6 +7,7 @@ import { RAILS, railClip } from './rails';
 import { DEFAULT_ROOM } from './room';
 import { DEFAULT_VERTICAL } from './vertical';
 import { sectionChecks } from './section';
+import { detailChecks } from './detail-checks';
 import { roomChecks } from './machine-room';
 import { check } from './checks';
 import { bufferChecks } from './pit';
@@ -286,6 +287,7 @@ export function layout(I: ShaftInputs): Layout {
   };
   const head = headCheck(L);
   L.checks.push(...(head ? [head] : []), ...bufferChecks(L), ...sectionChecks(L), ...roomChecks(L), ...governorChecks(L));
+  L.checks.push(...detailChecks(L));
   return L;
 }
 

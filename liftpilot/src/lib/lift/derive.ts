@@ -21,6 +21,7 @@ import { rinvioClash, type RinvioFrame } from '@/shaft/rinvio';
 import { fallsOf } from '@/shaft/falls';
 import { headTopChecks, refugeHeadroom } from './head';
 import { withRig } from './shaft-rig';
+import { cwGapOver } from '@/shaft/cw-gap';
 import { carriedMass, governorSideFor, hebOf, placedPanel, supportChecks, supportLoad } from './support';
 import { drawnIssues, type Drawn } from './drawn';
 import { collaudoOf, type Collaudo } from './collaudo';
@@ -269,6 +270,8 @@ function deriveOnce(inp: LiftInputs): LiftDerived {
   // the rope rig in the shaft (shaft-rig.ts): the car roof's spaces under what hangs there, the 3D and the sheets
   const Lr = withRig(Lp, I.r, I.Dp, N.n, N.d, g), head = refugeHeadroom(Lr);
   const supportCk = [...supportChecks(Lp, machine, load, above), ...headTopChecks(Lr, I.r, I.Dp, scheme), ...(g ? belowChecks(Lp, g, machine, I.Dp) : [])];
+  // the clearance on the counterweight's sign with the car's top under what hangs over it (cw-gap.ts)
+  supportCk.push(...cwGapOver(Lp, supportCk));
   const beams = above ? hebOf(Lp, machine, load) : null, chosenBy = Lp.inputs.room?.heb;
   const bottomGap = scheme && g && !g.fits ? { now: S.cwWallGap, need: bottomGapNeeded(S, scheme, N.D, I.Dp, N.n, N.d, I.r, sheaveHalfBelow(N.D, N.n, N.d, shape)) } : null;
   return {

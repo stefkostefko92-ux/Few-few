@@ -81,6 +81,7 @@ export const PRICE_ARTICLES: readonly PriceArticle[] = [
   }),
   ...DOOR_KINDS.map((k): PriceArticle => ({ key: `door:landing:${k}`, group: 'doors', label: { item: `door_landing_${k}` }, unit: 'pz' })),
   ...DOOR_KINDS.map((k): PriceArticle => ({ key: `door:car:${k}`, group: 'doors', label: { item: `door_car_${k}` }, unit: 'pz' })),
+  { key: 'door:toe', group: 'doors', label: { item: 'door_toe' }, unit: 'pz' },
   ...GOVERNORS.map((g): PriceArticle => ({ key: governorKey(g.brand, g.model), group: 'safety', label: { item: 'governor', name: `${g.brand} ${g.model}` }, unit: 'pz' })),
   { key: 'tension', group: 'safety', label: { item: 'tension' }, unit: 'pz' },
   ...BUFFER_KINDS.map((k): PriceArticle => ({ key: `buffer:${k}`, group: 'safety', label: { item: `buffer_${k}` }, unit: 'pz' })),

@@ -2,7 +2,8 @@
 // a detail, the machine room in plan or in section B-B, each laid out at the largest standard scale that fits an area
 // with its dimensions. The sheets add titles, legends and marks; the screens show the views alone.
 import { shapeOf } from '@/lib/catalog/shapes';
-import { boxH, fitView, moveHits, moveShapes, renderView, type Box, type Entity, type Hit, type Place, type Shape, type ViewResult } from '@/drawing';
+import { boxH, fitView, moveHits, moveShapes, renderView, type Box, type Entity, type Hit, type Place, type Shape, type SymbolName, type ViewResult } from '@/drawing';
+import { cwGapLabel } from '@/shaft/cw-gap';
 import { roomGeo, type MachineSpec, type RoomGeo } from '@/shaft/machine-room';
 import { planDims } from '@/shaft/plan-dims';
 import { planEntities, wallsAt, type PlanLevel } from '@/shaft/plan-view';
@@ -10,7 +11,7 @@ import type { RoomDrawOpts } from '@/shaft/room-draw';
 import { roomPlanEntities, roomPlanOn, roomSectionEntities, roomSectionOn } from '@/shaft/room-view';
 import { section } from '@/shaft/section';
 import { sectionDims, type SectionKind } from '@/shaft/section-dims';
-import { sectionEntities, type SectionView } from '@/shaft/section-view';
+import { mapZ, sectionEntities, type SectionView } from '@/shaft/section-view';
 import type { Layout } from '@/shaft/types';
 import type { RoomDerived } from '../room/derive';
 import { bottomGeo, sheaveHalfBelow, type BottomGeo, type BottomScheme } from '../lift/bottom';
@@ -72,18 +73,22 @@ export function realSection(L: Layout): SectionView {
 /** The heights a detail shows: the headroom with the car at the top floor, the car at a floor, the pit. */
 export function detailWindow(L: Layout, kind: SectionKind, floor: number): SectionView {
   const S = section(L), V = L.inputs.vertical, r = L.inputs.room, zf = S.levels[floor] ?? 0, low = S.levels[0] ?? 0;
-  if (kind === 'top') return { carFloor: floor, lo: zf - V.frameBelow - 400, hi: overTop(L, r ? S.ceiling + r.slab + 500 : S.ceiling + SLAB), zmap: null };
-  if (kind === 'pit') return { carFloor: floor, lo: S.pitFloor - SLAB, hi: low + S.highest + 500, zmap: null };
+  // the headroom's and the pit's details show the car at its extreme positions too (extremes.ts)
+  if (kind === 'top') return { carFloor: floor, lo: zf - V.frameBelow - 400, hi: overTop(L, r ? S.ceiling + r.slab + 500 : S.ceiling + SLAB), zmap: null, extremes: true };
+  if (kind === 'pit') return { carFloor: floor, lo: S.pitFloor - SLAB, hi: low + S.highest + 500, zmap: null, extremes: true };
   const nearPit = zf - low <= 2600;
   return { carFloor: floor, lo: nearPit ? S.pitFloor - SLAB : zf - V.frameBelow - 700, hi: zf + S.highest + 600, zmap: null };
 }
 
-/** Section A-A: whole (`full`, car at the top floor) or a detail with the car at `floor`. */
-export function sectionView(L: Layout, kind: SectionKind, floor: number, area: Box): View {
+/** Section A-A: whole (`full`, car at the top floor) or a detail with the car at `floor`; `cwGap`, the clearance on the
+ *  counterweight's sign sheet 1 gives, written on the screen where the pit is shown (cw-gap.ts). With the symbols it
+ *  places (the legend shows those) and whether the travel is drawn shorter. */
+export function sectionView(L: Layout, kind: SectionKind, floor: number, area: Box, cwGap: number | null = null): View & { marks: SymbolName[]; compressed: boolean } {
   const { v, scale } = kind === 'full' ? fullSection(L, area) : { v: detailWindow(L, kind, floor), scale: 0 };
   const { entities, bounds, S } = sectionEntities(L, v), ents = [...entities, ...sectionDims(L, S, kind, v.carFloor, v.zmap)];
+  if (cwGap !== null && (kind === 'full' || kind === 'pit')) ents.push(...cwGapLabel(L, S, (x, z) => [x, mapZ(v.zmap, z)], cwGap));
   const place = placeIn(bounds, ents, area, scale ? [scale] : DETAIL_SCALES);
-  return { r: renderView(ents, place), place };
+  return { r: renderView(ents, place), place, marks: [...new Set(ents.flatMap((e) => (e.e === 'mark' ? [e.sym] : [])))], compressed: v.zmap !== null };
 }
 
 /** The machine as the sheets name it: as the data of the installation write it, else the catalogue's machine of the

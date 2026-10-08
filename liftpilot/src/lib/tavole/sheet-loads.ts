@@ -5,7 +5,7 @@
 // walls, the ropes and the cables, the dynamic coefficient (registry carichi.macchina), P1…P9, and a bottom machine's
 // pull on its anchors. Pure.
 import { KV_VERT } from '@/shaft/norme-vert';
-import { bracketHeights, railSpan } from '@/shaft/brackets';
+import { bracketHeights, maxBracketSpan, railSpan } from '@/shaft/brackets';
 import { PROFILES } from '@/shaft/profiles';
 import { section } from '@/shaft/section';
 import type { HebOption } from '@/shaft/heb';
@@ -37,7 +37,7 @@ export interface SheetRails {
  *  bracket pitch, the lift's use). */
 export function sheetRails(L: Layout, P: number, Q: number, Pl: Plant): SheetRails {
   const V = L.inputs.vertical, S = section(L), railLen = (V.pit + S.top + V.headroom - KV_VERT.railTopGap) / 1000, gear = Pl.safetyGear ?? 'progressive';
-  const [z0, z1] = railSpan(S), hs = bracketHeights(z0, z1, L.inputs.carRail, Pl.carBracketPitch), span = Math.max(...hs.slice(1).map((z, i) => z - hs[i]));
+  const [z0, z1] = railSpan(S), hs = bracketHeights(z0, z1, L.inputs.carRail, Pl.carBracketPitch), span = maxBracketSpan(z0, z1, L.inputs.carRail, Pl.carBracketPitch);
   return { railLen, hs, span, gear, rc: railCheck(L, L.inputs.carRail, P, Q, gear, span, z1 - z0, Pl.liftUse), F: railForces(L, P, Q, gear) };
 }
 

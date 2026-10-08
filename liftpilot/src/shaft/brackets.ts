@@ -40,3 +40,22 @@ export interface BracketPitches {
 /** The layout with the pitches of the data of the installation, for whatever counts or places the brackets. */
 export const withPitches = (L: Layout, p: BracketPitches | null | undefined): Layout =>
   p && (p.car || p.cw) ? { ...L, ...(p.car ? { carBracketPitch: p.car } : {}), ...(p.cw ? { cwBracketPitch: p.cw } : {}) } : L;
+
+/** The intervals between the brackets of a rail, in order [mm]. */
+export const bracketSpans = (hs: readonly number[]): number[] => hs.slice(1).map((z, i) => z - (hs[i] ?? z));
+
+/** The longest interval between two brackets actually mounted on a rail from z0 to z1 [mm]: the l of the rails' check
+ *  (UNI EN 81-50:2020, 5.10) and the one figure sheet 1 prints for the brackets' spacing; 0 with fewer than two. */
+export const maxBracketSpan = (z0: number, z1: number, type: RailType, pitch?: number): number =>
+  Math.max(0, ...bracketSpans(bracketHeights(z0, z1, type, pitch)));
+
+/** The lengths a rail from z0 to z1 is made of: 5 m each from the pit floor, the last cut to what is left; the joints
+ *  (each with its fishplate) between them [mm]. */
+export function railPieces(z0: number, z1: number): { pieces: number[]; joints: number[] } {
+  const pieces: number[] = [], joints: number[] = [];
+  for (let z = z0; z < z1 - 1e-9; z += RAIL_LENGTH) {
+    pieces.push(Math.min(RAIL_LENGTH, z1 - z));
+    if (z > z0) joints.push(z);
+  }
+  return { pieces, joints };
+}

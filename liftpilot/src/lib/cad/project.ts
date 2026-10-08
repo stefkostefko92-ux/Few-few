@@ -14,13 +14,17 @@ import { sectionEntities } from '@/shaft/section-view';
 import type { Layout } from '@/shaft/types';
 import type { BottomGeo } from '../lift/bottom';
 import { inset, specs } from '../tavole/build';
+import { railsNotes, railsSheet } from '../tavole/rails-sheet';
+import { railsDev } from '@/shaft/rails-dev';
+import { makeFmt } from '../present/tr';
 import { belowView, detailWindow, planView, realSection, roomView, sectionView } from '../tavole/views';
 import type { CadView } from './export';
 
 /** The scale section A-A whole is lettered for. */
 const FULL_SCALE = 50;
 
-/** `machine`: the machine of the calculation, for the machine room's views; `room`: the design has a room above;
+/** `L`: the design as the set draws it, with the brackets' pitches of the installation's data (build.ts setLayout);
+ *  `machine`: the machine of the calculation, for the machine room's views; `room`: the design has a room above;
  *  `below`: the geometry of the machine below (its room's views). */
 export function projectViews(L: Layout, M: MachineSpec, room: boolean, below: BottomGeo | null = null): CadView[] {
   const S = section(L), G = roomGeo(L, M);
@@ -34,6 +38,11 @@ export function projectViews(L: Layout, M: MachineSpec, room: boolean, below: Bo
       const v = s.kind === 'full' ? realSection(L) : detailWindow(L, s.kind, s.floor);
       const entities = [...sectionEntities(L, v).entities, ...sectionDims(L, S, s.kind, v.carFloor, null)];
       return [{ title: s.title, scale: s.kind === 'full' ? FULL_SCALE : sectionView(L, s.kind, s.floor, area).place.scale, entities }];
+    }
+    if (s.k === 'rails') {
+      // the rails developed, at the scale the set prints them (its notes under it as the sheet has them)
+      const notes = railsNotes(L, { fx: '—', fy: '—', kept: false }, makeFmt('it-IT'));
+      return [{ title: s.title, scale: railsSheet(L, area, notes).scale, entities: railsDev(L).entities }];
     }
     if (s.k === 'below-plan' || s.k === 'below-section') {
       if (!below) return [];

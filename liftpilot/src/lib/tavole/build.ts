@@ -1,10 +1,11 @@
 // The drawing set of a lift, A4 sheets: 1 the data; the plans of the shaft at the top floor (headroom), at the main
 // floor and at the lowest floor; section A-A whole and in three details (headroom, main floor, pit); the machine room
 // in plan and in section B-B — with the machine below, its room beside the shaft or under it in plan and in section
-// C-C —; the pit in plan with its loads. Each view at the largest standard scale that fits with its dimensions; the
+// C-C —; the pit in plan with its loads; the rails developed with their brackets. Each view at the largest standard
+// scale that fits with its dimensions; the
 // count adapts (no machine room: no sheets of it; main floor = lowest floor: one plan less).
 import {
-  A4, COND, PALETTE, concreteTile, drawingArea, frame, shapeBox, sheetTitle, strip, toPaper,
+  A4, COND, FRAME, PALETTE, STRIP_H, concreteTile, drawingArea, frame, shapeBox, sheetTitle, strip, toPaper,
   type Box, type DrawingDoc, type Hit, type Page, type Place, type Pt, type Shape, type SheetMeta,
 } from '@/drawing';
 import type { MachineSpec, RoomGeo } from '@/shaft/machine-room';
@@ -21,13 +22,15 @@ import { dateIt, placeLines, type TavoleInput } from './input';
 import { OVER_DOWN, OVER_UP, clientNotes, spaceLegend, type LegendItem } from './notes';
 import { makeFmt } from '../present/tr';
 import { belowGeoOf, belowView, machineOf, planView, roomView, sectionView, sheetLayoutOf } from './views';
+import { railsNotes, railsSheet } from './rails-sheet';
 
 /** A sheet of the set after the data: a plan of the shaft, section A-A or a detail, the machine room. */
 export type Spec =
   | { k: 'plan'; level: PlanLevel; floor: number; title: string; subtitle?: string; total: string; legend: LegendItem[] }
   | { k: 'section'; kind: SectionKind; floor: number; title: string; subtitle?: string; legend: LegendItem[] }
   | { k: 'room-plan' | 'room-section'; title: string; subtitle: string }
-  | { k: 'below-plan' | 'below-section'; title: string; subtitle: string };
+  | { k: 'below-plan' | 'below-section'; title: string; subtitle: string }
+  | { k: 'rails'; title: string; subtitle: string };
 
 export interface TavoleResult {
   doc: DrawingDoc;
@@ -77,6 +80,8 @@ export function specs(L: Layout, room: boolean, below: BottomScheme | null = nul
     );
   }
   out.push({ k: 'plan', level: 'pit', floor: 0, title: `VISTA IN PIANTA DEL VANO AL PIANO "${label(0)}" E IN FOSSA`, subtitle: loads.replace('CARICHI', 'CARICHI IN FOSSA'), total: `piano "${label(0)}" e in Fossa`, legend: [sp.pit] });
+  // the rails developed with their brackets' heights (rails-sheet.ts)
+  out.push({ k: 'rails', title: 'SVILUPPO DELLE GUIDE E POSIZIONE DELLE STAFFE', subtitle: 'QUOTE DELLE STAFFE DAL FONDO DELLA FOSSA, LUNGHEZZE DELLE GUIDE' });
   return out;
 }
 
@@ -117,12 +122,21 @@ function planSheet(L: Layout, s: Extract<Spec, { k: 'plan' }>, area: Box): Drawn
   return { ...small, shapes: [...small.shapes, ...lg.shapes] };
 }
 
-function sectionSheet(L: Layout, s: Extract<Spec, { k: 'section' }>, area: Box): Drawn {
-  // the whole section keeps its height: its legend goes in a column on the left, the details' in a row at the foot
-  const full = s.kind === 'full', lg = full ? { shapes: legendColumn(s.legend, area, LEGEND_W), height: 0 } : legendRow(s.legend, area);
-  const view = full ? inset(area, LEGEND_W + 4, 0, 0, 0) : inset(area, 0, 0, lg.height + (lg.height ? 4 : 0), 0);
-  const { r, place } = sectionView(L, s.kind, s.floor, view);
-  return { shapes: [...r.shapes, ...lg.shapes], scale: place.scale, hits: r.hits };
+function sectionSheet(L: Layout, s: Extract<Spec, { k: 'section' }>, area: Box, cwGap: number | null = null): Drawn {
+  // the whole section keeps its height: its legend goes in a column on the left, the details' in a row at the foot; the
+  // legend only of the symbols the view places (laid out again when some are missing)
+  const draw = (legend: readonly LegendItem[]) => {
+    const full = s.kind === 'full', lg = full ? { shapes: legendColumn(legend, area, LEGEND_W), height: 0 } : legendRow(legend, area);
+    const view = full ? inset(area, LEGEND_W + 4, 0, 0, 0) : inset(area, 0, 0, lg.height + (lg.height ? 4 : 0), 0);
+    return { lg, v: sectionView(L, s.kind, s.floor, view, cwGap) };
+  };
+  let { lg, v } = draw(s.legend);
+  const used = s.legend.filter((it) => v.marks.includes(it.sym));
+  if (used.length < s.legend.length) ({ lg, v } = draw(used));
+  // the travel drawn shorter between the break marks: said by the scale
+  const note: Shape[] = v.compressed ? [{ t: 'text', at: [FRAME.x1 - 3, FRAME.y0 + STRIP_H + (s.subtitle !== undefined ? 11 : 8) - 3.4], text: 'TRATTO TRA LE INTERRUZIONI FUORI SCALA',
+    size: 1.8, align: 'r', cond: true }] : [];
+  return { shapes: [...v.r.shapes, ...lg.shapes, ...note], scale: v.place.scale, hits: v.r.hits };
 }
 
 /** Section line B-B on the room plan: along the rope drops, beyond the drawing and its dimensions at both ends, looking
@@ -170,9 +184,13 @@ function roomSheet(L: Layout, M: MachineSpec, kind: 'room-plan' | 'room-section'
   return { shapes: [...v.r.shapes, ...(kind === 'room-plan' ? roomMarks(v.G, v.place, v.r.extent) : [])], scale: v.place.scale, hits: v.r.hits };
 }
 
+/** The design the set draws: the stored one with the brackets' pitches the installation's data declare, so the plans'
+ *  codes, the rails' sheet and sheet 1 count the same brackets — the PDF and the CAD files alike (project-export.ts). */
+export const setLayout = (x: Pick<TavoleInput, 'layout' | 'plant'>): Layout =>
+  withPitches(x.layout, { car: x.plant.carBracketPitch, cw: x.plant.cwBracketPitch });
+
 export function buildTavole(x: TavoleInput): TavoleResult {
-  // the counterweight brackets' pitch the data declare: the plan's codes count as sheet 1 does
-  const L0: Layout = withPitches(x.layout, { car: x.plant.carBracketPitch, cw: x.plant.cwBracketPitch }), a: Analysis = analyse(x.values), M = machineOf(a, x.plant, L0, x.marks?.catalog ?? null);
+  const L0: Layout = setLayout(x), a: Analysis = analyse(x.values), M = machineOf(a, x.plant, L0, x.marks?.catalog ?? null);
   // the machine below: its room's sheets for the scheme the design chose (the head pulleys under the slab when none)
   const scheme = a.ctx.I.layout === 'bottom' ? x.marks?.bottom ?? 'head' : null, g = scheme ? belowGeoOf(a, L0, M, scheme) : null;
   // the shaft's sheets with the lift's rope rig and the room over the shaft the lift has (views.ts sheetLayoutOf)
@@ -187,7 +205,8 @@ export function buildTavole(x: TavoleInput): TavoleResult {
   const sheets: TavoleResult['sheets'] = [{ title: 'DATI DELL’IMPIANTO', scale: null }], hits: Hit[][] = [[]];
   list.forEach((s, i) => {
     const sub = s.subtitle !== undefined, area = drawingArea(sub);
-    const d = s.k === 'plan' ? planSheet(L, s, area) : s.k === 'section' ? sectionSheet(L, s, area)
+    const d = s.k === 'plan' ? planSheet(L, s, area) : s.k === 'section' ? sectionSheet(L, s, area, ds.cwGap)
+      : s.k === 'rails' ? { ...railsSheet(L, area, railsNotes(L, ds.rails, makeFmt('it-IT'))), hits: [] }
       : s.k === 'below-plan' || s.k === 'below-section' ? belowSheet(L, M, g ?? belowGeoOf(a, L, M, 'head'), s.k, area) : roomSheet(L, M, s.k, area);
     out.push({ w: A4.w, h: A4.h, shapes: [...frame(), ...d.shapes, ...sheetTitle(s.title, s.subtitle), scaleLabel(d.scale, sub), ...strip(meta(i + 2))] });
     sheets.push({ title: s.title, scale: d.scale });
