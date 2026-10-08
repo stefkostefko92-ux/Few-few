@@ -4,12 +4,13 @@
 // geared machine of the landing page scaled to the sheave of the calculation, or the maker's machine the proposal took
 // as it is (machine/shape), turned onto the sheave's rope plane,
 // its anti-vibration mounts on levelling shims on the floor beside the rope openings (slab.ts); its cable in a floor
-// trunking to the controller and the main switch's feed (wiring.ts); the lifting hook over it; the diverting and head
+// trunking to the controller and the main switch's feed (wiring.ts) — what is fixed on a wall in that wall's group,
+// hidden with its x-ray —; the lifting hook over it; the diverting and head
 // pulleys on their frames, each in its rope's plane, the car and counterweight pulleys of a 2:1 roping and its dead
 // ends (pulleys.ts). Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
-import { PROFILES, supportOf, supportSpanIn, type HebLayout, type Layout, type MachineSupport } from '@/shaft';
+import { KV_VERT, PROFILES, profileOf, supportOf, supportSpanIn, type HebLayout, type Layout, type MachineSupport } from '@/shaft';
 import { machineFrame, type MachineFrame, type MachineShape } from '@/shaft/machine-shape';
 import type { RinvioFrame } from '@/shaft/rinvio';
 import { groovePitch } from '@/shaft/ropes';
@@ -24,14 +25,17 @@ import { ropeWidths, type Opening } from './slab';
 import type { GovernorSpot } from './governor';
 import { buildShell, shellsOf } from './roomshell';
 import { buildSupport, hebBeams, wallsAlong } from './support';
-import { mainFeed, rectOf, roomPoint, trunking, trunkingRoute, type Rect } from './wiring';
-import type { LiftMaterials, Side } from './materials';
+import { FLOOR_REACH, hebRects, mainFeed, rectOf, roomPoint, stripRects, trunking, trunkingRoute, type Rect } from './wiring';
+import { SIDES, type LiftMaterials, type Side } from './materials';
 
 const SHIMS: MachineSupport = { kind: 'shims' };
 
 export interface RoomModel {
   /** walls of the machine's room, by side (x-ray); the rest */
   sides: Record<Side, THREE.Group>;
+  /** what is fixed on each wall (the door with its frame, the cabinet, the main switch, the conduit), inside that
+   *  wall's group: hidden while the wall is a ghost, else it hangs in the air between the camera and the machine */
+  mounted: Record<Side, THREE.Group>;
   roof: THREE.Group;
   common: THREE.Group;
   /** what hangs from the roof (the lamps, the lifting hook): hidden while the roof is a ghost, else it hangs in the air */
@@ -76,8 +80,10 @@ export function machinePose(rig: RopeRig, wall: number, n: number, d: number, F:
  *  bedplate's legs in the machine's x and z [m] (rinvio.ts bedplateLegs). */
 export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: number, ceiling: number, M: LiftMaterials, openings: readonly Opening[], gov: GovernorSpot | null,
   shape: MachineShape | null = null, rinvio: RinvioFrame | null = null, heb: HebLayout | null = null, turn: 1 | -1 = 1, legs: readonly (readonly [number, number])[] | null = null): RoomModel {
-  const I = L.inputs, sides = { front: new THREE.Group(), rear: new THREE.Group(), left: new THREE.Group(), right: new THREE.Group() } as Record<Side, THREE.Group>;
+  const bySide = <T,>(make: () => T): Record<Side, T> => ({ front: make(), rear: make(), left: make(), right: make() });
+  const I = L.inputs, sides = bySide(() => new THREE.Group()), mounted = bySide(() => new THREE.Group()), onWall = bySide(() => new Batch());
   const roof = new THREE.Group(), common = new THREE.Group(), overhead = new THREE.Group();
+  for (const side of SIDES) sides[side].add(mounted[side]);
   const at = (p: RopePlane, u: number, y: number): THREE.Vector3 => {
     const [x, yy] = planeAt(p, u);
     return new THREE.Vector3(x / 1000, y, -yy / 1000);
@@ -85,7 +91,7 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
   // below, the room grown round the machine's body where it reaches out (bottom.ts)
   const body = rig.bottom && rig.scheme ? belowMachine(L, rig.scheme, D, n, d, shape).body : null;
   const z0 = rig.roomFloor * 1000, shells = shellsOf(L, rig, body), shell = shells.find((sh) => sh.kind === 'machine') ?? null, R = shell?.room ?? null;
-  for (const sh of shells) buildShell(sh, M, sides, roof, common, overhead);
+  for (const sh of shells) buildShell(sh, M, { sides, onWall, roof, overhead, common });
 
   // the machine: the generic one scaled to the sheave or the maker's as it is, its rope plane on the sheave's, the
   // sheave's centre where the rig puts it; on its frame of three irons round the sheave (below beside the shaft, the
@@ -161,12 +167,25 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
     }
     if (gov && !rig.bottom) blocked.push(rectOf([[gov.x - 175, gov.y1 - 30], [gov.x + 175, gov.y2 + 30]]));
     blocked.push(rectOf([roomPoint(R, x0, y0, R.doorWall, R.doorAt, 0), roomPoint(R, x0, y0, R.doorWall, R.doorAt + R.doorW, 600)]));
-    const way = trunkingRoute(from, [o[0] - from[0], o[1] - from[1]], tip, blocked, { x0, y0, x1: x0 + R.W, y1: y0 + R.D });
-    trunking(wires, M, way, tip, tipH, z0);
+    // the steel lying on the floor: the HEB beams, a support's beams from wall to wall borne in them (their bounds as
+    // support.ts lays them, when lower than the trunking's reach)
+    const steel = beams ? hebRects(beams, R) : [], low = foot.min.y * 1000 - z0 < FLOOR_REACH;
+    if (sup.kind === 'beams' && walls && low) {
+      const hb = PROFILES[profileOf(sup)].b / 2, bear = KV_VERT.supportBearing;
+      const plan = (x: number, zz: number): readonly [number, number] => {
+        const p = new THREE.Vector3(x / 1000, 0, zz / 1000).applyMatrix4(base.matrixWorld);
+        return [p.x * 1000, -p.z * 1000];
+      };
+      F.beams.forEach((zb, i) => steel.push(...stripRects(plan(walls[i][0] - bear, zb), plan(walls[i][1] + bear, zb), hb)));
+    }
+    blocked.push(...steel);
+    const room = { x0, y0, x1: x0 + R.W, y1: y0 + R.D }, way = trunkingRoute(from, [o[0] - from[0], o[1] - from[1]], tip, blocked, room);
+    trunking(wires, M, way, tip, tipH, z0, { steel, blocked, room, over: Math.max(hebH, sup.kind === 'beams' && low ? foot.max.y * 1000 - z0 : 0) });
     const sw = shell?.switchSpan ?? [0, 0];
-    mainFeed(wires, M, R, x0, y0, z0, (sw[0] + sw[1]) / 2, z0 + 1750);
+    mainFeed(onWall, M, R, x0, y0, z0, (sw[0] + sw[1]) / 2, z0 + 1750);
   } else trunking(wires, M, null, tip, tipH, z0);
   wires.into(common);
+  for (const side of SIDES) onWall[side].into(mounted[side]);
 
   // the lifting hook over the machine, on its plate under the roof
   if (R) {
@@ -196,7 +215,7 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
   if (cwP) common.add(cwP);
 
   return {
-    sides, roof, common, overhead, focus: centre,
+    sides, mounted, roof, common, overhead, focus: centre,
     bounds: R ? { x0: -R.shaftX, y0: -R.shaftY, x1: R.W - R.shaftX, y1: R.D - R.shaftY, top: z0 + R.H + 200 } : null,
     set(theta, i, carPos, cwPos) {
       machine.sheave.rotation.z = -theta;

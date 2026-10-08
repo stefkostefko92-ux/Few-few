@@ -14,6 +14,12 @@ import type { Batch, Point } from './geom';
 import type { LiftMaterials } from './materials';
 import { ropeWidths } from './slab';
 
+/** Every holder of a pulley's axle — its stand or hanger (pulleyFrames), the bedplate's plates (support.ts), the cheeks
+ *  of the car's and the counterweight's pulley of a 2:1 roping (sling.ts, counterweight.ts) — has its cheeks' inner
+ *  faces CHEEK mm past the wheel's faces (width / 2 + 8 = ropeWidths(n, d).pulley − 10, width = n · pitch + 30); the
+ *  hub turns between them, HUB mm past the faces: only the axle passes through the cheeks, a nut outside each [mm]. */
+export const CHEEK = 8, HUB = 6;
+
 /** A pulley with its axis across the rope plane (plan direction perpendicular to dir); r and width in metres. */
 export function pulley(r: number, width: number, dir: readonly [number, number], mat: THREE.Material): THREE.Group {
   const g = new THREE.Group();
@@ -22,7 +28,7 @@ export function pulley(r: number, width: number, dir: readonly [number, number],
   const a = new THREE.Mesh(lip, mat), b = new THREE.Mesh(lip, mat);
   a.position.y = width / 2;
   b.position.y = -width / 2;
-  const hub = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.28, r * 0.28, width + 0.06, 20), mat);
+  const hub = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.28, r * 0.28, width + (2 * HUB) / 1000, 20), mat);
   g.add(body, a, b, hub);
   for (const m of [body, a, b, hub]) m.castShadow = true;
   // cylinder axis (local Y) → across the rope plane: world (−dy, 0, −dx)
@@ -34,6 +40,7 @@ export function pulley(r: number, width: number, dir: readonly [number, number],
  *  floor: the floor of the room over the slab [mm], null without one; ceiling: the slab's underside [mm]; `framed`:
  *  the diverting pulley turns in the machine's bedplate, which holds it. */
 export function pulleyFrames(B: Batch, M: LiftMaterials, rig: RopeRig, n: number, d: number, floor: number | null, ceiling: number, framed = false): void {
+  // half: the cheeks' outer faces; 10 mm plates, their inner faces CHEEK past the wheel's
   const wd = ropeWidths(n, d), half = wd.pulley;
   const frame = (p: RopePlane) => {
     const [ox, oy] = p.origin, [dx, dy] = p.dir, turn = Math.atan2(dy, dx);

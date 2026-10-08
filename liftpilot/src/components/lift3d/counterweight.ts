@@ -6,6 +6,7 @@
 import * as THREE from 'three/webgpu';
 import { RAILS, type Layout } from '@/shaft';
 import { Batch, P } from './geom';
+import { CHEEK } from './pulleys';
 import { coil, guideShoe, type Hitch } from './sling';
 import type { LiftMaterials } from './materials';
 
@@ -55,9 +56,10 @@ export function buildCounterweight(L: Layout, M: LiftMaterials, hitch: Hitch | n
     }
     spring.dispose();
   } else if (hitch?.kind === 'pulley') {
+    // the cheeks (12 mm) that carry the pulley's axle, the hub between them (pulleys.ts CHEEK)
     const [ax, ay] = hitch.across, zAxle = H + 60 + hitch.r;
     for (const s of [-1, 1]) {
-      const o = s * (hitch.width / 2 + 14), x = hitch.x + ax * o, y = hitch.y + ay * o;
+      const o = s * (hitch.width / 2 + CHEEK + 6), x = hitch.x + ax * o, y = hitch.y + ay * o;
       const [dx, dy] = [Math.abs(ay) * hitch.r * 0.55 + Math.abs(ax) * 6, Math.abs(ax) * hitch.r * 0.55 + Math.abs(ay) * 6];
       B.box(x - dx, y - dy, H, x + dx, y + dy, zAxle + 70, M.galv);
     }
