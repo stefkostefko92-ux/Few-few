@@ -1,7 +1,7 @@
 import { promises as fs } from "fs";
 import path from "path";
 import crypto from "crypto";
-import { sniffAudio, AUDIO_MAX_BYTES } from "./audio";
+import { sniffAudio, AUDIO_MAX_BYTES, isPdf, PDF_MAX_BYTES } from "./audio";
 
 // Uploaded files live on the VPS disk (persisted via a Docker volume). The
 // directory is configurable; default keeps everything under ./data/uploads.
@@ -90,6 +90,18 @@ export async function saveAudio(file: File): Promise<SavedImage | null> {
   return { filename, url: `/uploads/${filename}`, mime: kind.mime, size: buf.length };
 }
 
+/** A document (statute, form, newspaper issue). Accepted only if its bytes are
+ *  a PDF; stored as .pdf whatever the uploaded name says. */
+export async function savePdf(file: File): Promise<SavedImage | null> {
+  if (file.size > PDF_MAX_BYTES) throw new Error("too large");
+  const buf = Buffer.from(await file.arrayBuffer());
+  if (!isPdf(buf)) return null;
+  await ensureUploadsDir();
+  const filename = `${slugify(file.name)}-${crypto.randomBytes(5).toString("hex")}.pdf`;
+  await fs.writeFile(path.join(UPLOADS_DIR, filename), buf);
+  return { filename, url: `/uploads/${filename}`, mime: "application/pdf", size: buf.length };
+}
+
 export async function deleteUpload(filename: string): Promise<void> {
   const safe = path.basename(filename);
   await fs.rm(path.join(UPLOADS_DIR, safe), { force: true });
@@ -105,6 +117,7 @@ export async function readUpload(rel: string): Promise<{ data: Buffer; mime: str
     const mimeByExt: Record<string, string> = {
       jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp", gif: "image/gif",
       mp3: "audio/mpeg", m4a: "audio/mp4", ogg: "audio/ogg", webm: "audio/webm", wav: "audio/wav",
+      pdf: "application/pdf",
     };
     return { data, mime: mimeByExt[ext] || "application/octet-stream" };
   } catch {

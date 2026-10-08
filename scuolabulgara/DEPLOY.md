@@ -134,6 +134,20 @@ sempre (500 000 caratteri al mese; le 30 parole sono circa 200).
    e tre le lingue. `--force` rigenera tutto, `--only=Й,Я` solo quelle lettere.
    Ogni suono si può anche sostituire a mano dall'admin (Contenuti → Alfabeto).
 
+## 5d. Giornalino della scuola — portare i PDF sul server (una volta)
+
+I numeri di „Училищен вестник“ sono ancora sul vecchio sito
+(scuolabulgaramilano.it). Prima di spegnerlo o di spostare il dominio, copiali
+sul server (finiscono nel volume `qb-data`, nella libreria Media):
+
+```bash
+docker compose exec web node scripts/import-docs.mjs
+```
+
+Si può rilanciare senza rischi: i file già copiati vengono saltati. Nuovi numeri,
+statuto e modulo di adesione si caricano dall'admin (Contenuti → Документи и
+училищен вестник → „Качи PDF“, fino a 14 MB).
+
 ## 6. Accesso all'amministrazione
 
 `https://il-tuo-dominio/admin` → login con `ADMIN_EMAIL` e la password scelta.

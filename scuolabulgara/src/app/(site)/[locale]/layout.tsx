@@ -46,7 +46,6 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     creator: "Carbon Stealth VCC",
     alternates: { canonical: `${base}/${locale}`, languages: alt },
     icons: { icon: "/assets/img/brand/favicon.svg", apple: "/assets/img/brand/favicon.svg" },
-    manifest: "/site.webmanifest",
     robots: { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large" } },
     formatDetection: { telephone: true, address: true, email: true },
     openGraph: {

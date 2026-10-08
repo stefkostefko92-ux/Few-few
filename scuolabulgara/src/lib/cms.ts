@@ -4,7 +4,7 @@
 /** Page sections that the admin can reorder and switch on/off. The hero and its
  *  strip of facts are deliberately excluded: they always open the page. */
 export const SECTION_KEYS = [
-  "about", "alphabet", "school", "courses", "dance", "facebook", "gallery", "faq", "contact", "cta",
+  "about", "alphabet", "school", "teachers", "courses", "dance", "facebook", "gallery", "documents", "faq", "contact", "cta",
 ] as const;
 export type SectionKey = (typeof SECTION_KEYS)[number];
 export const isSectionKey = (k: string): k is SectionKey => (SECTION_KEYS as readonly string[]).includes(k);
@@ -113,6 +113,8 @@ const SHARED = new Set([
   "latitude", "longitude", "foundingDate", "postalCode", "country", "updated",
   // the alphabet: the letter, its transliteration and the Bulgarian word
   "letter", "latin", "word", "audio",
+  // a document (statute, newspaper issue) is one file for every language
+  "file",
 ]);
 export const isImageKey = (k: string) => k === "src" || k === "logo" || /^(image|photo)$/i.test(k) || /(Image|Photo)$/.test(k);
 export const isSharedKey = (k: string) => SHARED.has(k) || isImageKey(k);
@@ -210,4 +212,17 @@ export function safeAudio(v: unknown): string {
   const s = v.trim();
   if (!(s.startsWith("/uploads/") || s.startsWith("/assets/audio/")) || s.includes("..") || s.includes("//")) return "";
   return new RegExp(`\\.(${AUDIO_EXT.join("|")})$`, "i").test(s) ? s : "";
+}
+
+// ---- Documents (PDF: statute, forms, the school newspaper) -----------------
+/** Field holding a PDF; like a picture, the same in every language. */
+export const isFileKey = (k: string) => k === "file";
+/** A PDF of this site (uploaded or bundled), or a plain https link to one —
+ *  e.g. an issue still on the school's previous website. Nothing else. */
+export function safeFile(v: unknown): string {
+  if (typeof v !== "string") return "";
+  const s = v.trim();
+  if (/^https:\/\/[^\s"'<>]+$/i.test(s)) return s;
+  if (!(s.startsWith("/uploads/") || s.startsWith("/assets/docs/")) || s.includes("..") || s.includes("//")) return "";
+  return /\.pdf$/i.test(s) ? s : "";
 }

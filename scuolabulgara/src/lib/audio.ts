@@ -16,3 +16,10 @@ export function sniffAudio(b: Uint8Array): AudioKind | null {
 }
 
 export const AUDIO_MAX_BYTES = 3 * 1024 * 1024;
+
+/** A PDF starts with "%PDF-" (a few producers put a little junk first). */
+export const isPdf = (b: Uint8Array) => {
+  for (let i = 0; i < Math.min(16, b.length - 5); i++) if (at(b, i, "%PDF-")) return true;
+  return false;
+};
+export const PDF_MAX_BYTES = 14 * 1024 * 1024; // nginx accepts 15 MB per request

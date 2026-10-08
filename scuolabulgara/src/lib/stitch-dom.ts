@@ -5,24 +5,92 @@ import { hash2, nearestSkein, noise1, stitchChance, THREAD } from "./stitch";
 
 type RGB = [number, number, number];
 
-/** One leg of a stitch: soft shadow, the thread, and (on the top leg) a sheen. */
+// The same thread as the server-drawn motifs (components/Stitch.tsx): a
+// spindle pinched at both holes, lit from the top left, two twisted strands,
+// darker where it dives into the cloth. Each leg is painted once per colour
+// and size into a small sprite, then stamped — a photo's hem holds thousands.
+const INSET = 0.07, BODY = 0.5;
+const sprites = new Map<string, HTMLCanvasElement>();
+
+const toRgb = (c: string): RGB => {
+  if (c.startsWith("#")) return [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16)) as RGB;
+  const m = c.match(/\d+(\.\d+)?/g) || ["0", "0", "0"];
+  return [Number(m[0]), Number(m[1]), Number(m[2])];
+};
+const mix = ([r, g, b]: RGB, t: number, to: number) =>
+  `rgb(${[r, g, b].map((v) => Math.round(v + (to - v) * t)).join(",")})`;
+
+function legSprite(colour: string, second: boolean, s: number, dpr: number): { img: HTMLCanvasElement; pad: number } {
+  const pad = Math.ceil(s * 0.25);
+  const key = `${colour}|${second}|${s}|${dpr}`;
+  let img = sprites.get(key);
+  if (!img) {
+    img = document.createElement("canvas");
+    img.width = img.height = Math.ceil((s + 2 * pad) * dpr);
+    const g = img.getContext("2d")!;
+    g.scale(dpr, dpr);
+    const half = ((1 - 2 * INSET) * Math.SQRT2 * s) / 2, h = BODY * 0.68 * s, k = 0.2 * s;
+    const spindle = () => {
+      g.beginPath();
+      g.moveTo(-half, 0);
+      g.bezierCurveTo(-half + k, -h, half - k, -h, half, 0);
+      g.bezierCurveTo(half - k, h, -half + k, h, -half, 0);
+      g.closePath();
+    };
+    const angle = second ? Math.PI / 4 : -Math.PI / 4;
+    // its shadow — on the cloth, or for the top leg on the bottom one
+    g.save();
+    g.translate(pad + s / 2 + s * 0.035, pad + s / 2 + s * 0.06);
+    g.rotate(angle);
+    spindle();
+    g.fillStyle = second ? "rgba(20,8,6,.3)" : "rgba(40,20,10,.22)";
+    g.fill();
+    g.restore();
+    // the thread
+    g.translate(pad + s / 2, pad + s / 2);
+    g.rotate(angle);
+    const rgb = toRgb(colour);
+    const body = g.createLinearGradient(0, -h * 0.75, 0, h * 0.75);
+    body.addColorStop(0, mix(rgb, 0.42, 0));
+    body.addColorStop(0.2, colour);
+    body.addColorStop(0.38, mix(rgb, 0.3, 255));
+    body.addColorStop(0.56, colour);
+    body.addColorStop(1, mix(rgb, 0.5, 0));
+    spindle();
+    g.fillStyle = body;
+    g.fill();
+    g.save();
+    g.clip();
+    g.strokeStyle = "rgba(20,8,6,.2)"; // the twist of the two strands
+    g.lineWidth = s * 0.04;
+    for (let x = -half - h; x < half + h; x += s * 0.11) {
+      g.beginPath(); g.moveTo(x - h * 0.8, -h); g.lineTo(x + h * 0.8, h); g.stroke();
+    }
+    const ends = g.createLinearGradient(-half, 0, half, 0);
+    ends.addColorStop(0, "rgba(20,8,6,.55)");
+    ends.addColorStop(0.16, "rgba(20,8,6,0)");
+    ends.addColorStop(0.84, "rgba(20,8,6,0)");
+    ends.addColorStop(1, "rgba(20,8,6,.55)");
+    g.fillStyle = ends;
+    g.fillRect(-half, -h, 2 * half, 2 * h);
+    g.restore();
+    g.strokeStyle = "rgba(255,255,255,.3)"; // sheen
+    g.lineWidth = s * 0.035;
+    g.lineCap = "round";
+    g.beginPath(); g.moveTo(-0.36 * s, -BODY * 0.17 * s); g.lineTo(0.36 * s, -BODY * 0.17 * s); g.stroke();
+    sprites.set(key, img);
+  }
+  return { img, pad };
+}
+
+/** One leg of a stitch, stamped from its sprite. */
 function paintLeg(
   ctx: CanvasRenderingContext2D, x: number, y: number, s: number, colour: string,
   second: boolean, jitter: number,
 ) {
-  const inset = s * 0.17, lw = s * 0.3;
-  const x0 = x + inset, y0 = y + inset, x1 = x + s - inset, y1 = y + s - inset;
-  const [ax, ay, bx, by] = second ? [x0, y0, x1, y1] : [x0, y1, x1, y0];
-  ctx.lineWidth = lw;
-  ctx.strokeStyle = "rgba(28,25,23,.25)";
-  ctx.beginPath(); ctx.moveTo(ax + 0.6, ay + 0.9 + jitter); ctx.lineTo(bx + 0.6, by + 0.9 - jitter); ctx.stroke();
-  ctx.strokeStyle = colour;
-  ctx.beginPath(); ctx.moveTo(ax, ay + jitter); ctx.lineTo(bx, by - jitter); ctx.stroke();
-  if (second) {
-    ctx.lineWidth = lw * 0.3;
-    ctx.strokeStyle = "rgba(255,255,255,.25)";
-    ctx.beginPath(); ctx.moveTo(ax - 0.3, ay - 0.45 + jitter); ctx.lineTo(bx - 0.3, by - 0.45 - jitter); ctx.stroke();
-  }
+  const dpr = ctx.getTransform().a || 1;
+  const { img, pad } = legSprite(colour, second, s, dpr);
+  ctx.drawImage(img, x - pad, y - pad + jitter * 0.5, s + 2 * pad, s + 2 * pad);
 }
 
 /** Sew a list of stitches: all at once, or first legs then second legs over

@@ -17,7 +17,7 @@ export default function MediaPicker({ onPick, onClose }: { onPick: (url: string)
     try {
       const res = await fetch("/api/admin/media");
       const json = await res.json();
-      setMedia(((json.media || []) as Media[]).filter((m) => !m.mime?.startsWith("audio/")));
+      setMedia(((json.media || []) as Media[]).filter((m) => !m.mime?.startsWith("audio/") && m.mime !== "application/pdf"));
     } finally {
       setLoading(false);
     }

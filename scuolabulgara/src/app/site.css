@@ -282,8 +282,16 @@ body.menu-open .nav__toggle span::after { transform: rotate(-45deg); }
 .dance h2, .dance h3 { color: #fff; }
 .dance p, .dance .lead { color: rgba(255,255,255,.88); }
 .dance .lead { margin: 1.5rem 0 1rem; color: #fff; }
-.dance__teacher { margin-top: 2rem; padding-top: 1.4rem; background: repeating-linear-gradient(90deg, rgba(255,255,255,.75) 0 12px, transparent 12px 20px) top left / 100% 2px no-repeat; }
-.dance__teacher b { display: block; font: 800 1.6rem/1.1 var(--font-display); color: #fff; margin-bottom: .2rem; }
+.dance__copy p + p { margin-top: 1rem; }
+.dance__copy > div { margin-top: 1rem; }
+/* The choreographer: portrait, name, career — under a running stitch in white. */
+.dance__teacher { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(120px, 200px) minmax(0, 1fr); gap: 1.5rem clamp(1.5rem, 4vw, 3.5rem); align-items: start; margin-top: clamp(1rem, 3vw, 2.5rem); padding-top: clamp(2rem, 4vw, 3rem); background: repeating-linear-gradient(90deg, rgba(255,255,255,.75) 0 12px, transparent 12px 20px) top left / 100% 2px no-repeat; }
+.dance__teacher img { width: 100%; aspect-ratio: 1; object-fit: cover; object-position: 50% 30%; }
+.dance__teacher h3 { font: 800 clamp(1.8rem, 3vw, 2.4rem)/1 var(--font-display); }
+.dance__role { margin-top: .5rem; font-weight: 600; color: #fff; }
+.dance__bio { margin-top: 1rem; columns: 2 22rem; column-gap: clamp(1.5rem, 4vw, 3.5rem); }
+.dance__bio p { break-inside: avoid; margin-bottom: 1rem; }
+@media (max-width: 600px) { .dance__teacher { grid-template-columns: 1fr; } .dance__teacher img { width: 160px; } }
 .dance__times h3 { margin-bottom: 1rem; }
 .dance table { width: 100%; border-collapse: collapse; }
 .dance th, .dance td { text-align: left; vertical-align: top; padding: 1rem 1rem 1rem 0; border-top: 1px solid rgba(255,255,255,.35); color: #fff; }
@@ -437,3 +445,37 @@ body.menu-open .nav__toggle span::after { transform: rotate(-45deg); }
 .notfound h1 { font-size: clamp(2.2rem, 4vw, 3.4rem); margin: 1rem 0 .8rem; }
 .notfound p + p { margin-top: .3rem; }
 @media (max-width: 700px) { .notfound__grid { grid-template-columns: 1fr; } .notfound__rosette { width: 120px; height: auto; } }
+
+/* ---------- Longer texts (from the school's own pages) ---------- */
+.prose p { color: var(--ink-2); max-width: 40rem; }
+.prose p + p { margin-top: 1rem; }
+.about__copy .prose { margin-top: 1.4rem; }
+.prose--cols { columns: 2 24rem; column-gap: clamp(2rem, 5vw, 5rem); margin-bottom: clamp(1rem, 3vw, 2rem); }
+.prose--cols p { break-inside: avoid; max-width: none; margin: 0 0 1rem; }
+.prose--narrow { max-width: 46rem; margin: calc(-1 * clamp(1rem, 3vw, 2.5rem)) 0 clamp(2rem, 4vw, 3rem); }
+.about__motto { margin-top: 1.8rem; padding-left: 1.4rem; border-left: 3px solid var(--red); }
+.about__motto p { font: italic 450 clamp(1.15rem, 1.6vw, 1.35rem)/1.45 var(--font-sofia-italic), var(--font-text); color: var(--ink); }
+
+/* ---------- Teachers: a register of portraits, not cards ---------- */
+.staff { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); gap: 2.4rem clamp(1.2rem, 2.5vw, 2rem); }
+.staff li { min-width: 0; }
+.staff img, .staff__none { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: 50% 25%; background: var(--paper); }
+.staff img { box-shadow: 0 1px 0 rgba(28,25,23,.08), 0 10px 24px -14px rgba(28,25,23,.45); }
+.staff h3 { margin-top: .9rem; font: 800 1.35rem/1.05 var(--font-display); color: var(--ink); }
+.staff p { margin-top: .35rem; font-size: .92rem; line-height: 1.4; color: var(--muted); }
+
+/* ---------- Documents and the school newspaper ---------- */
+.doclist { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: 0 clamp(2rem, 5vw, 5rem); margin-bottom: clamp(3rem, 6vw, 5rem); }
+.doclist a { display: grid; gap: .3rem; padding: 1.2rem 0 1.2rem 2.4rem; position: relative; text-decoration: none; border-top: 1px solid var(--rule); color: var(--ink); }
+.doclist a::before { content: ""; position: absolute; left: 0; top: 1.35rem; width: 1.5rem; height: 1.9rem; border: 2px solid var(--red); border-radius: 2px; background: linear-gradient(var(--red), var(--red)) 4px 7px / 10px 2px no-repeat, linear-gradient(var(--red), var(--red)) 4px 12px / 10px 2px no-repeat, linear-gradient(var(--red), var(--red)) 4px 17px / 6px 2px no-repeat; }
+.doclist__title { font: 800 1.45rem/1.1 var(--font-display); }
+.doclist a:hover .doclist__title { color: var(--red-ink); text-decoration: underline; text-underline-offset: .15em; }
+.doclist__text { color: var(--ink-2); font-size: .97rem; }
+.issues__title { font: 800 var(--h3)/1 var(--font-display); color: var(--ink); margin-bottom: 1.6rem; }
+.issues { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 2.4rem clamp(1.2rem, 2.5vw, 2rem); }
+.issues a { display: grid; gap: .45rem; text-decoration: none; color: var(--ink); }
+.issues img, .issues__none { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; object-position: top; background: var(--linen); box-shadow: 0 1px 0 rgba(28,25,23,.08), 0 12px 26px -16px rgba(28,25,23,.5); transition: transform .25s ease, box-shadow .25s ease; }
+.issues a:hover img { transform: translateY(-3px); box-shadow: 0 1px 0 rgba(28,25,23,.08), 0 18px 30px -16px rgba(28,25,23,.55); }
+.issues__no { margin-top: .5rem; font-weight: 700; font-size: .9rem; color: var(--red-ink); font-variant-numeric: tabular-nums; }
+.issues__head { font: 800 1.3rem/1.1 var(--font-display); }
+@media (prefers-reduced-motion: reduce) { .issues img { transition: none; } .issues a:hover img { transform: none; } }

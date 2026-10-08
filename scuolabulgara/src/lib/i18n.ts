@@ -74,6 +74,10 @@ export const UI: Record<Locale, Dict> = {
     "alpha.listen": "Ascolta la pronuncia",
     "updated": "Ultimo aggiornamento",
     "backHome": "Torna alla home",
+    "nav.home": "Home",
+    "nav.label": "Menu principale",
+    "nav.menu": "Menu",
+    "notfound.text": "Pagina non trovata: il link potrebbe essere errato o non più valido.",
   },
   bg: {
     "nav.about": "За нас",
@@ -124,6 +128,10 @@ export const UI: Record<Locale, Dict> = {
     "alpha.listen": "Чуйте произношението",
     "updated": "Последна актуализация",
     "backHome": "Към началото",
+    "nav.home": "Начало",
+    "nav.label": "Основно меню",
+    "nav.menu": "Меню",
+    "notfound.text": "Страницата не е намерена.",
   },
   en: {
     "nav.about": "About",
@@ -174,6 +182,10 @@ export const UI: Record<Locale, Dict> = {
     "alpha.listen": "Listen to the pronunciation",
     "updated": "Last updated",
     "backHome": "Back to home",
+    "nav.home": "Home",
+    "nav.label": "Main menu",
+    "nav.menu": "Menu",
+    "notfound.text": "Page not found: the link may be wrong or out of date.",
   },
 };
 

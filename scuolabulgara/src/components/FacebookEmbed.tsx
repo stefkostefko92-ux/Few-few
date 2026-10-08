@@ -42,7 +42,7 @@ export default function FacebookEmbed({ locale, href }: { locale: Locale; href: 
       {frame ? (
         <iframe
           src={frame.src}
-          title="Facebook — Qui Bulgaria"
+          title={t(locale, "nav.facebook", ui)}
           width={frame.width}
           height={600}
           style={{ width: "100%", maxWidth: frame.width, border: 0 }}

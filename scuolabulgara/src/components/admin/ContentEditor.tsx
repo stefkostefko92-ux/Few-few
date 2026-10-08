@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { LOCALE_META, LOCALES, type Locale } from "@/lib/i18n";
-import { BRAND_ICONS, altKeyFor, bundledAlt, isAudioKey, isImageKey, isSharedKey } from "@/lib/cms";
+import { BRAND_ICONS, altKeyFor, bundledAlt, isAudioKey, isFileKey, isImageKey, isSharedKey } from "@/lib/cms";
 import {
   addItem, fieldOf, getAt, moveItem, removeItem, setPerLocale, setValue, templatePath, type Data, type Doc, type Path,
 } from "@/lib/editor-ops";
@@ -140,6 +140,40 @@ export default function ContentEditor({ contentKey, initial, template }: {
     );
   }
 
+  function fileField(value: string, path: Path) {
+    const key = path.join(".");
+    const upload = async (file: File) => {
+      const fd = new FormData();
+      fd.append("file", file);
+      setStatus({ msg: "Качване на документа…", cls: "" });
+      try {
+        const res = await fetch("/api/admin/media", { method: "POST", body: fd });
+        const json = await res.json();
+        if (!json.ok) throw new Error(String(res.status));
+        set(path, json.media.url);
+        setStatus({ msg: "Документът е качен — натиснете „Запази промените“", cls: "" });
+      } catch (e) {
+        const code = String(e);
+        setStatus({ msg: code.includes("415") ? "Това не е PDF файл" : code.includes("413") ? "Файлът е над 14 MB" : "Качването не успя", cls: "err" });
+      }
+    };
+    const external = /^https?:\/\//i.test(value);
+    return (
+      <div className="ad-field" key={key}>
+        {label("file", true)}
+        <div className="ad-file">
+          {value ? <a href={value} target="_blank" rel="noopener noreferrer">{fileName(value)}</a> : <span className="ad-muted">Няма файл</span>}
+          {external && <small className="ad-hint">⚠ Файлът още е на стария сайт — качете го тук, за да остане и след като старият сайт спре.</small>}
+          <label className="ad-btn ad-btn--primary" style={{ cursor: "pointer" }}>
+            {value ? "Смени PDF" : "Качи PDF"}
+            <input type="file" hidden accept="application/pdf,.pdf" onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
+          </label>
+          {value && <button type="button" className="ad-btn ad-btn--ghost" onClick={() => set(path, "")}>Махни</button>}
+        </div>
+      </div>
+    );
+  }
+
   function iconField(value: string, path: Path) {
     return (
       <div className="ad-field" key={path.join(".")}>
@@ -210,6 +244,7 @@ export default function ContentEditor({ contentKey, initial, template }: {
       if (k === "icon") return iconField(value, path);
       if (isImageKey(k)) return imageField(value, path, k);
       if (isAudioKey(k)) return audioField(value, path);
+      if (isFileKey(k)) return fileField(value, path);
       return textField(value, path, k);
     }
     if (Array.isArray(value)) return listField(value, path, k);

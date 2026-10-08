@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { saveImage, saveAudio, deleteUpload, isAllowedImage } from "@/lib/storage";
-import { AUDIO_MAX_BYTES } from "@/lib/audio";
+import { saveImage, saveAudio, savePdf, deleteUpload, isAllowedImage } from "@/lib/storage";
+import { AUDIO_MAX_BYTES, PDF_MAX_BYTES } from "@/lib/audio";
 
 export const runtime = "nodejs";
 
@@ -23,6 +23,11 @@ export async function POST(req: NextRequest) {
     if (isAllowedImage(file.type)) {
       if (file.size > 12 * 1024 * 1024) return NextResponse.json({ ok: false, error: "too large" }, { status: 413 });
       saved = await saveImage(file);
+    } else if (file.type === "application/pdf" || /\.pdf$/i.test(file.name)) {
+      // A document: kept only if its bytes really are a PDF.
+      if (file.size > PDF_MAX_BYTES) return NextResponse.json({ ok: false, error: "too large" }, { status: 413 });
+      saved = await savePdf(file);
+      if (!saved) return NextResponse.json({ ok: false, error: "type" }, { status: 415 });
     } else {
       // Anything else is accepted only if its bytes are a known sound format.
       if (file.size > AUDIO_MAX_BYTES) return NextResponse.json({ ok: false, error: "too large" }, { status: 413 });

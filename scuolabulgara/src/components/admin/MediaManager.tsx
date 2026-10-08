@@ -31,7 +31,7 @@ export default function MediaManager() {
   }
 
   async function remove(id: string) {
-    if (!confirm("Да изтрия ли тази снимка?")) return;
+    if (!confirm("Да изтрия ли този файл? Ако се използва на сайта, там ще остане празно място.")) return;
     await fetch("/api/admin/media", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) });
     await refresh();
   }
@@ -51,10 +51,10 @@ export default function MediaManager() {
         onDrop={(e) => { e.preventDefault(); setDrag(false); if (e.dataTransfer.files.length) uploadFiles(e.dataTransfer.files); }}
         style={{ marginBottom: "1.5rem" }}
       >
-        <input ref={inputRef} type="file" accept="image/*,audio/mpeg,audio/mp4,audio/x-m4a,audio/ogg,audio/webm,audio/wav,.mp3,.m4a,.ogg,.wav" multiple hidden onChange={(e) => e.target.files && uploadFiles(e.target.files)} />
+        <input ref={inputRef} type="file" accept="image/*,audio/mpeg,audio/mp4,audio/x-m4a,audio/ogg,audio/webm,audio/wav,.mp3,.m4a,.ogg,.wav,application/pdf,.pdf" multiple hidden onChange={(e) => e.target.files && uploadFiles(e.target.files)} />
         <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" style={{ margin: "0 auto .5rem" }}><path d="M12 16V4m0 0 4 4m-4-4-4 4" strokeLinecap="round" strokeLinejoin="round" /><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" strokeLinecap="round" /></svg>
-        <div>{uploading ? "Качване…" : "Плъзнете снимки тук или кликнете за качване"}</div>
-        <small>JPG, PNG, WebP, GIF — макс. 12 MB</small>
+        <div>{uploading ? "Качване…" : "Плъзнете снимки, звуци или PDF тук или кликнете за качване"}</div>
+        <small>Снимки JPG, PNG, WebP, GIF — до 12 MB · звук MP3, M4A, OGG, WAV — до 3 MB · документи PDF — до 14 MB</small>
       </div>
 
       {loading ? (
@@ -65,7 +65,7 @@ export default function MediaManager() {
         <div className="ad-media-grid">
           {media.map((m) => (
             <div className="ad-media" key={m.id}>
-              <div className="ad-media__img">{m.mime?.startsWith("audio/") ? <audio controls preload="none" src={m.url} style={{ width: "100%" }} /> : <img src={m.url} alt={m.alt} loading="lazy" />}</div>
+              <div className="ad-media__img">{m.mime?.startsWith("audio/") ? <audio controls preload="none" src={m.url} style={{ width: "100%" }} /> : m.mime === "application/pdf" ? <a className="ad-pdf" href={m.url} target="_blank" rel="noopener noreferrer">PDF</a> : <img src={m.url} alt={m.alt} loading="lazy" />}</div>
               <div className="ad-media__body">
                 <div className="ad-media__name">{m.filename}</div>
                 <div className="ad-media__name" style={{ marginTop: 2 }}>{m.width && m.height ? `${m.width}×${m.height}` : ""} · {(m.size / 1024).toFixed(0)} KB</div>

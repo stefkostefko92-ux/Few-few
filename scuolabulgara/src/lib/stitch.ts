@@ -104,6 +104,14 @@ export function outlinePath(cells: Cell[], size: number): string {
   return d.join("");
 }
 
+/** Mix two #rrggbb colours: t = 0 gives a, t = 1 gives b. For the light and
+ *  shade of a thread. */
+export function mixHex(a: string, b: string, t: number): string {
+  const p = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const [x, y] = [p(a), p(b)];
+  return "#" + x.map((v, i) => Math.round(v + (y[i] - v) * t).toString(16).padStart(2, "0")).join("");
+}
+
 /** SVG path data for a set of stitches, one path per thread colour. Each stitch
  *  is the two legs of an X, inset so neighbouring stitches don't touch. */
 export function stitchPaths(cells: Cell[], size: number, inset = size * 0.16): Record<string, string> {

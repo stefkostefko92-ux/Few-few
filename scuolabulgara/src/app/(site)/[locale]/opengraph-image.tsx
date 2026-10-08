@@ -1,5 +1,7 @@
 import { ImageResponse } from "next/og";
 import { borderTile, outlinePath, rosette, stitchPaths, type Motif } from "@/lib/stitch";
+import { getOne } from "@/lib/content";
+import { isLocale, type Locale } from "@/lib/i18n";
 
 // Branded 1200×630 social card (Open Graph / Twitter), in the site's own
 // language: linen, the Divotino border and rosette, drawn by the same stitch
@@ -24,7 +26,12 @@ function Stitches({ motif, cell, pad = 0 }: { motif: Motif; cell: number; pad?: 
   );
 }
 
-export default async function OgImage() {
+export default async function OgImage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale: raw } = await params;
+  const locale = (isLocale(raw) ? raw : "it") as Locale;
+  // The words on the card are the admin's (settings → name; SEO → the card's
+  // title and line), in the page's language.
+  const [settings, seo] = await Promise.all([getOne(locale, "settings"), getOne(locale, "seo")]);
   const tile = borderTile();
   const cell = 6;
   const tiles = Math.ceil(1200 / (tile.w * cell));
@@ -39,9 +46,9 @@ export default async function OgImage() {
         <Band />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 80px" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "14px", maxWidth: "760px" }}>
-            <div style={{ fontSize: "34px", fontWeight: 700, color: "#a3141a" }}>Qui Bulgaria</div>
-            <div style={{ fontSize: "84px", fontWeight: 800, lineHeight: 1, letterSpacing: "-0.02em" }}>Scuola bulgara di Milano</div>
-            <div style={{ fontSize: "32px", color: "#45403b" }}>Lingua, cultura e danza bulgara, dal 2014</div>
+            <div style={{ fontSize: "34px", fontWeight: 700, color: "#a3141a" }}>{settings.brandName}</div>
+            <div style={{ fontSize: "84px", fontWeight: 800, lineHeight: 1, letterSpacing: "-0.02em" }}>{seo.cardTitle || settings.brandSub}</div>
+            {seo.cardText.trim() && <div style={{ fontSize: "32px", color: "#45403b" }}>{seo.cardText}</div>}
           </div>
           <Stitches motif={rosette()} cell={11} pad={6} />
         </div>
