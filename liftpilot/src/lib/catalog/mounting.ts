@@ -4,7 +4,7 @@
 // them (their `src`). A machine below beside the shaft has its sheave in the shaft on the slow shaft through the wall
 // (src/lib/lift/bottom.ts belowMachine): only these variants take it, at the static load they allow with the longest
 // shaft their sheet lists (registry impianto.basso.albero). Pure.
-import type { CatalogMachine } from './machines';
+import { catalogOf, type Brand, type CatalogMachine } from './machines';
 
 export interface ShaftMount {
   /** a long slow shaft, or the slow shaft on an outboard bearing */
@@ -53,3 +53,11 @@ export const throughStatic = (c: CatalogMachine): number => {
 
 /** The machine as the proposal takes it with the sheave through a wall: its static load there; null for a standard one. */
 export const throughWallMachine = (c: CatalogMachine): CatalogMachine | null => (mountOf(c) ? { ...c, staticKg: throughStatic(c) } : null);
+
+/** The variants to name when a standard machine of the maker `brand` (`model`) is chosen for the sheave through a wall:
+ *  the model's own (its name and the variant's letters: SICOR SH140 → SH140LS, Montanari M75 → M75S and M75AL), else
+ *  every one of the maker's; none when the maker has none. */
+export function wallVariants(brand: Brand, model?: string): string[] {
+  const all = catalogOf(brand).filter((c) => mountOf(c)).map((c) => c.model), own = model ? all.filter((m) => m !== model && m.startsWith(model)) : [];
+  return own.length ? own : all;
+}

@@ -1155,6 +1155,8 @@
     "cat_any": "il più piccolo che passa (esclusi storici e varianti speciali)",
     "cat_fit": "{model}: rapporto {ratio}, carico statico ammesso {stat} kg; con questo rapporto la velocità si scosta di {dv} % e l’inverter la riporta a quella nominale. Dati dai documenti del costruttore o, dove non si aprono, da estratti delle sue pagine (la fonte è nella relazione): da verificare sulla scheda prima dell’ordine.",
     "cat_miss": "Nessun argano {brand} passa le verifiche con questi dati: la proposta viene dalla griglia di calcolo.",
+    "cat_miss_wall": "Con l’argano in basso accanto al vano la puleggia passa il muro: serve una variante ad albero lungo o con supporto esterno, e {brand} non lo è. Varianti del catalogo: {variants}. La proposta viene dalla griglia di calcolo.",
+    "cat_miss_wall_none": "Con l’argano in basso accanto al vano la puleggia passa il muro: serve una variante ad albero lungo o con supporto esterno, e {brand} non ne ha nel catalogo. La proposta viene dalla griglia di calcolo.",
     "full_on": "Schermo intero",
     "full_off": "Esci dallo schermo intero",
     "doc_export": "Esporta il progetto",

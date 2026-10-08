@@ -80,7 +80,7 @@ export async function exportCalcOrder(user: SessionUser, id: string, format: Ord
   return render({
     ...await getLetterhead(user), ...await orderPrices(user, order), author: user.name, project: { name, address, city, province, plantNumber }, order,
     collaudo: storedCollaudo(rec.values, c.collaudo), generatedAt: new Date(),
-    ...calcSite(design?.layout ?? null, order.machine), plant: plantData(c.project.plant),
+    ...calcSite(design?.layout ?? null, order.machine, rec.values), plant: plantData(c.project.plant),
     record: { kind: 'calc', id: c.id, sha256: c.sha256, createdAt: c.createdAt, label: c.label },
   }, format);
 }

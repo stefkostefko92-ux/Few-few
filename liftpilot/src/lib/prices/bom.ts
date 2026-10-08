@@ -12,11 +12,11 @@
 import type { FormValues } from '@/calc/types';
 import { panevBom } from '@/lib/catalog/panev';
 import type { LiftDerived } from '@/lib/lift/derive';
-import { rigLength } from '@/lib/lift/rope';
+import { layoutRigLength, rigLength } from '@/lib/lift/rope';
 import { calcMachine } from '@/lib/order/machine';
 import type { Plant } from '@/lib/plant';
 import { analyse } from '@/lib/present/analysis';
-import { RAIL_LENGTH, bracketHeights, cwBracketsOf, railSpan, section } from '@/shaft';
+import { RAIL_LENGTH, bracketHeights, cwBracketsOf, railSpan, section, type Layout } from '@/shaft';
 import { bufferType } from '@/shaft/buffers';
 import { govSize } from '@/shaft/governor';
 import { railLabel, type RailType } from '@/shaft/rails';
@@ -107,8 +107,9 @@ export function designBom(dv: LiftDerived, plant: Plant = {}): BomLine[] {
  *  (the maker's bedplate with the pulley; with the machine room surveyed `room`, the support chosen there and the pulley's
  *  stand; a machine below its base anchored against the uplift), the ropes at their cut length with their wedge
  *  sockets and the controller when the acceptance test `C` names them replaced, the adaptation of ACOP/UCM under
- *  UNI 10411-11, and the installer as a lump sum. */
-export function calcBom(V: FormValues, C: Collaudo | null = null, room: RoomDerived | null = null): BomLine[] {
+ *  UNI 10411-11, and the installer as a lump sum. The cut length on the rig of the shaft design laid out `shaft` the
+ *  calculation was made from, as its sheet 1 measures it (rope.ts layoutRigLength); without one, the formula. */
+export function calcBom(V: FormValues, C: Collaudo | null = null, room: RoomDerived | null = null, shaft: Layout | null = null): BomLine[] {
   const c = calcMachine(V), a = room?.analysis ?? analyse(V), { I, N } = a.ctx, parts = C?.parti ?? ['machine'];
   const L: BomLine[] = [c ? { key: machineKey(c.brand, c.model), label: { item: 'machine', name: `${c.brand} ${c.model}` }, qty: 1, unit: 'pz' } : { key: null, label: { item: 'machine_other' }, qty: 1, unit: 'pz' }];
   // with the room surveyed, what stands there (the maker's frame, ours, or the support with the pulley's stand); else
@@ -123,7 +124,7 @@ export function calcBom(V: FormValues, C: Collaudo | null = null, room: RoomDeri
   if (room?.heb) L.push({ key: hebKey(room.heb.chosen.profile), label: { item: 'heb', name: room.heb.chosen.profile }, qty: (2 * room.heb.chosen.length) / 1000, unit: 'm' });
   if (I.layout === 'bottom') L.push({ key: 'base:below', label: { item: 'base_below' }, qty: 1, unit: 'pz' });
   if (parts.includes('ropes')) {
-    L.push({ key: ropeKey(N.d), label: { item: 'rope', name: sizeText(N.d) }, qty: N.n * ropeCut(I), unit: 'm' });
+    L.push({ key: ropeKey(N.d), label: { item: 'rope', name: sizeText(N.d) }, qty: N.n * ropeCut(I, shaft ? layoutRigLength(shaft, a) : null), unit: 'm' });
     L.push({ key: ropeEndKey(N.d), label: { item: 'rope_end', name: sizeText(N.d) }, qty: 2 * N.n, unit: 'pz' });
   }
   if (parts.includes('controller')) L.push({ key: 'controller', label: { item: 'controller' }, qty: 1, unit: 'pz' });

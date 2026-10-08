@@ -62,14 +62,14 @@ export function machinePassage(rig: RopeRig, D: number): { side: Side; u0: numbe
 
 /** Where the machine stands in plan: the direction of its worm (local X), its sheave's centre [world m] and, beside the
  *  shaft, how much longer its slow shaft is to carry the sheave through the wall into the gap behind the counterweight
- *  [mm] (the gearbox in the room, 50 mm clear of the wall). `turn`: above the shaft, its motor toward the
+ *  [mm] (the gearbox in the room, KL.faceGap clear of the wall). `turn`: above the shaft, its motor toward the
  *  counterweight's drop (1) or turned round toward the car's (−1), as the room's drawings have it (machine-room.ts). */
 export function machinePose(rig: RopeRig, wall: number, n: number, d: number, F: MachineFrame, turn: 1 | -1 = 1): { xDir: readonly [number, number]; centre: THREE.Vector3; ext: number } {
   const g = rig.scheme, S = rig.sheave, [px, py] = planeAt(S.plane, S.u);
   // above: the worm along the drops' plane; below: along the wall, the gearbox past the sheave away from the shaft
   // (through the wall) or, under the pit, toward the car
   const xDir = !g ? ([turn * rig.dir[0], turn * rig.dir[1]] as const) : g.scheme === 'under' ? g.across : ([-g.across[0], -g.across[1]] as const);
-  const ext = g && g.scheme !== 'under' ? Math.max(0, KL.bottomClear + ropeWidths(n, d).ropes + wall + 50 - (F.zSheave - F.face)) : 0;
+  const ext = g && g.scheme !== 'under' ? Math.max(0, KL.bottomClear + ropeWidths(n, d).ropes + wall + KL.faceGap - (F.zSheave - F.face)) : 0;
   return { xDir, centre: new THREE.Vector3(px / 1000, S.y, -py / 1000), ext };
 }
 

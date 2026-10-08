@@ -97,6 +97,14 @@ export function partBox(p: ShapePart): Box6 {
   return [Math.min(...xs), Math.min(...ys), b[2], Math.max(...xs), Math.max(...ys), b[5]];
 }
 
+/** The side of the sheave's axis the motor stands on along X: +1 as the frame takes it (the generic machine, every
+ *  horizontal worm), −1 when the maker's motor stands on the other side (SICOR SV110: the worm upright with the motor
+ *  over it at −X). The machine's hand follows it (order/site.ts). */
+export function motorSide(S: MachineShape | null): 1 | -1 {
+  const xs = (S?.parts ?? []).filter((p) => p.role === 'motor').map((p) => { const b = partBox(p); return (b[0] + b[3]) / 2; });
+  return xs.length && xs.reduce((a, x) => a + x, 0) < 0 ? -1 : 1;
+}
+
 /** The bounds of the body (the parts, not the sheave). */
 export function bodyBox(S: MachineShape): Box6 {
   const bs = S.parts.map(partBox), lo = (i: number): number => Math.min(...bs.map((b) => b[i])), hi = (i: number): number => Math.max(...bs.map((b) => b[i]));

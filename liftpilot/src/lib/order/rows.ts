@@ -7,6 +7,7 @@
 import type { Machine } from '@/calc/types';
 import { mountOf } from '@/lib/catalog/mounting';
 import type { MachineCandidate } from '@/lib/lift/advice';
+import { KL } from '@/lib/lift/norme';
 import type { Collaudo } from '@/lib/lift/collaudo';
 import type { Plant } from '@/lib/plant';
 import type { ReportBlock } from '@/lib/report/model';
@@ -83,7 +84,10 @@ export function acopBlocks(C: Collaudo): ReportBlock[] {
 
 /** A machine below beside the shaft: the variant (long slow shaft or outboard support), the sheave's overhang from the
  *  gearbox's face through the wall, the static load the catalogue allows there; a machine below without the design's
- *  geometry (a calculation): the same to be measured. None above or under the pit. */
+ *  geometry (a calculation): the same to be measured. The extension over the maker's own shaft only for a machine drawn
+ *  as it is that is not the long-shaft variant (site.ts `ext`); otherwise what does not depend on the machine's body —
+ *  the sheave's plane from the wall, the wall, the least overhang — to be checked on the maker's drawing. None above or
+ *  under the pit. */
 export function belowBlocks(c: MachineCandidate, site: OrderSite | undefined, fmt: Fmt): ReportBlock[] {
   if (c.I.layout !== 'bottom' || site?.below === 'under') return [];
   const mount = mountOf(c), t = site?.through ?? null, table = mount?.byLength?.length ? mount.byLength : null;
@@ -92,9 +96,14 @@ export function belowBlocks(c: MachineCandidate, site: OrderSite | undefined, fm
     { t: 'kv', rows: [
       ['Variante', mount ? `${mount.kind === 'long' ? 'albero lento lungo' : 'albero lento con supporto esterno'} (${c.brand} ${c.model})`
         : 'argano standard: chiedere al costruttore la variante ad albero lungo o con supporto esterno'],
-      ['Sbalzo della puleggia', t
-        ? `${fmt(t.overhang, 0)} mm dalla faccia del riduttore al piano medio della puleggia; muro attraversato ${fmt(t.wall, 0)} mm; albero più lungo dello standard di ${fmt(t.ext, 0)} mm`
-        : `${BLANK} mm dalla faccia del riduttore al piano medio della puleggia (da rilevare); muro attraversato ${BLANK} mm`],
+      ['Sbalzo della puleggia', !t
+        ? `${BLANK} mm dalla faccia del riduttore al piano medio della puleggia (da rilevare); muro attraversato ${BLANK} mm`
+        : t.ext !== null
+          ? `${fmt(t.overhang, 0)} mm dalla faccia del riduttore al piano medio della puleggia; muro attraversato ${fmt(t.wall, 0)} mm; `
+            + (t.ext > 0 ? `albero più lungo di ${fmt(t.ext, 0)} mm rispetto al disegno del costruttore` : 'albero come nel disegno del costruttore')
+          : `piano medio della puleggia a ${fmt(t.inner, 0)} mm dalla faccia del muro verso il vano; muro attraversato ${fmt(t.wall, 0)} mm; `
+            + `almeno ${fmt(t.reach, 0)} mm dalla faccia del riduttore al piano medio della puleggia con la faccia a ${fmt(KL.faceGap, 0)} mm dal muro — `
+            + 'da verificare con il disegno del costruttore'],
       ['Supporto esterno', '☐ richiesto (oltre la puleggia, nel vano)   ☐ non richiesto — secondo il costruttore'],
       ['Carico statico ammesso con l’albero prolungato', `${fmt(c.staticKg, 0)} kg ${table ? `(scheda del costruttore: con l’albero più lungo; ${table.map((x) => fmt(x, 0)).join(' / ')} kg secondo la lunghezza)` : '(dato di catalogo)'}; `
         + `nella prova ${fmt(c.testKg, 0)} kg verso l’alto: da confermare con il costruttore per lo sbalzo indicato`],

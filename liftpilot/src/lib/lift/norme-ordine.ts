@@ -12,6 +12,8 @@ export const KL_ORDINE = {
   // each traction rope is cut this much longer than its length on the pulleys, for the two terminations and the
   // adjustment, then rounded up to the metre [m] (site practice)
   ropeEnds: 1,
+  // the machine below beside the shaft: its gearbox's face this far from the wall the slow shaft goes through [mm]
+  faceGap: 50,
 } as const;
 
 const it = (x: number): string => String(x).replace('.', ',');
@@ -27,9 +29,11 @@ export const VOCI_ORDINE: readonly VoceImpianto[] = [
     id: 'impianto.funi.taglio', titolo: 'Lunghezza di taglio delle funi di sospensione',
     valore: 'per ogni fune la lunghezza misurata sul progetto da attacco ad attacco con la cabina al piano più basso, su tutte le pulegge '
       + '(puleggia di frizione, rinvio, pulegge in testata della macchina in basso, pulegge della taglia 2:1: tratti rettilinei e archi '
-      + `di avvolgimento), più ${it(KL_ORDINE.ropeEnds)} m per i due attacchi e la regolazione, arrotondata al metro superiore; senza il progetto `
-      + 'del vano (sostituzione dell’argano) la lunghezza è taglia × (corsa + 2 × tratto oltre la corsa) più deviazione o rinvii. La stessa '
-      + 'lunghezza nel foglio 1, nella distinta, nella bozza d’ordine e nella massa delle funi dei carichi sulla macchina',
+      + `di avvolgimento), più ${it(KL_ORDINE.ropeEnds)} m per i due attacchi e la regolazione, arrotondata al metro superiore; un calcolo fatto `
+      + 'da un progetto del vano la misura sulla geometria di quel progetto con il suo argano; senza il progetto del vano (sostituzione '
+      + 'dell’argano) la lunghezza è taglia × (corsa + 2 × tratto oltre la corsa) più deviazione o rinvii. La stessa lunghezza nel foglio 1, '
+      + 'nella distinta, nella bozza d’ordine e nella massa delle funi dei carichi sulla macchina; le funi che il collaudo lascia al loro posto '
+      + 'il foglio 1 le dà come esistenti (la loro massa nei carichi resta a quella lunghezza)',
     riferimento: '—', fonte: 'prassi di cantiere: la fune si taglia più lunga e si accorcia all’attacco; da misurare in sito prima del taglio',
     stato: 'prassi', costanti: ['ropeEnds'],
     nota: 'fino a LIFT 1.28.0 e ROOM 1.12.0 il foglio 1 dava la formula arrotondata al metro più vicino, i carichi la formula e la '
@@ -41,11 +45,15 @@ export const VOCI_ORDINE: readonly VoceImpianto[] = [
       + 'lento che attraversa il muro: la proposta da un catalogo e il confronto tra SICOR e Montanari prendono solo le varianti ad albero '
       + 'lungo (SICOR LS, Montanari AL) o con supporto esterno (SICOR TS, Montanari S e i modelli con supporto, GEM L e CL, FAER P58F), con '
       + `il carico statico ammesso con l’albero più lungo della scheda (SICOR SH140LS ${minLoad('SICOR SH140LS')} kg, SH160LS `
-      + `${minLoad('SICOR SH160LS')} kg) o, se la scheda ne dà uno solo, quello del catalogo; la bozza d’ordine riporta lo sbalzo dalla `
-      + 'faccia del riduttore all’asse della puleggia, il muro attraversato e il supporto esterno. Con la macchina sotto la fossa vale ogni argano',
+      + `${minLoad('SICOR SH160LS')} kg) o, se la scheda ne dà uno solo, quello del catalogo; un argano standard scelto per nome non si prende `
+      + '(lo schermo lo dice e nomina le varianti del costruttore). La bozza d’ordine riporta il piano medio della puleggia dalla faccia del '
+      + 'muro verso il vano (la distanza dei rami dalla parete della voce impianto.basso.schema più metà del pacco funi), il muro '
+      + `attraversato, lo sbalzo minimo dalla faccia del riduttore a ${KL_ORDINE.faceGap} mm dal muro e il supporto esterno; l’allungamento `
+      + 'dell’albero rispetto al disegno del costruttore solo per un argano disegnato com’è che non sia già la variante ad albero lungo. Con '
+      + 'la macchina sotto la fossa vale ogni argano',
     riferimento: 'ricerca, capitolo 17 §2.1 (SICOR LS: carico statico per lunghezza dell’albero A e quota B) e §3 (Montanari AL e S)',
     fonte: 'brochure SICOR Geared 2026, pp. 59 e 69; schede Montanari M73, M75, M93 e M98 (documenti del costruttore); scelta del software',
-    stato: 'da_verificare',
+    stato: 'da_verificare', costanti: ['faceGap'],
     nota: 'come le quote A e B delle schede corrispondono allo sbalzo del progetto non è detto: il carico statico ammesso per lo sbalzo '
       + 'indicato va confermato con il costruttore prima dell’ordine. Nel calcolatore della sostituzione, che non conosce lo schema, la '
       + 'macchina in basso è presa accanto al vano',
@@ -70,6 +78,8 @@ export const VOCI_ORDINE: readonly VoceImpianto[] = [
     id: 'ordine.esecuzione', titolo: 'Esecuzione dell’argano (destra o sinistra) nella bozza d’ordine',
     valore: 'dalla geometria del progetto: guardando l’argano dal lato della puleggia, destra se il motore sta a destra, sinistra se sta a '
       + 'sinistra, come lo disegnano la pianta del locale, il piano della macchina in basso e il 3D (girato di 180° resta della stessa mano); '
+      + 'il lato del motore è quello della forma dell’argano (lo SICOR SV110, a vite verticale, ha il motore dall’altra parte dell’asse della '
+      + 'puleggia rispetto agli argani a vite orizzontale e all’argano generico); '
       + 'senza la geometria (calcolo senza progetto del vano) la casella resta da segnare',
     riferimento: '—', fonte: 'scelta del software: la convenzione di destra e sinistra cambia tra i costruttori', stato: 'scelta',
     nota: 'la mano segnata va confermata con lo schema di esecuzione del costruttore prima dell’ordine',

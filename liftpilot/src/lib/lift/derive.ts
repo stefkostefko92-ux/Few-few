@@ -13,7 +13,7 @@ import { analyse, mirrorRopes, proposalValues, type Analysis } from '@/lib/prese
 import { simModel, type SimModel } from '@/sim';
 import { belowChecks } from './below-checks';
 import { bottomGapNeeded, bottomGeo, extraBends, type BottomScheme } from './bottom';
-import { bestFit, catalogValues, offGrid, pickOption, throughWall, type CatalogChoice } from './catalog';
+import { bestFit, catalogValues, choiceMachines, offGrid, pickOption, throughWall, type CatalogChoice } from './catalog';
 import type { CatalogFit } from '@/lib/catalog/machines';
 import { machineShapeOf, machineSpec, rinvioOf, sheaveAxis, sheaveAxisBelow, type Made } from './machine';
 import type { MachineShape } from '@/shaft/machine-shape';
@@ -87,8 +87,10 @@ export interface LiftDerived {
   bottomGap: { now: number; need: number | null } | null;
   /** the head pulleys of the scheme (the calculation counts two of them for the bottom layout) */
   headPulleys: number;
-  /** the proposal from a catalogue: the maker's machine taken, or none of the choice passing (the grid's proposal) */
-  catalog: { fit: CatalogFit | null; miss: boolean } | null;
+  /** the proposal from a catalogue: the maker's machine taken, or none of the choice taken (the grid's proposal) — none
+   *  passing the checks, or with the sheave through the wall none of the choice a long-shaft or outboard-support variant
+   *  (`wall`: a standard model named, or a maker without them) */
+  catalog: { fit: CatalogFit | null; miss: false | 'checks' | 'wall' } | null;
   /** the standard the lift is tested to and what the intervention replaces: which checks apply (collaudo.ts) */
   collaudo: Collaudo;
   sim: SimModel;
@@ -202,7 +204,7 @@ function deriveOnce(inp: LiftInputs): LiftDerived {
     // beside the shaft only from the long-shaft and outboard-support variants (the sheave through the wall)
     const choice = inp.catalog && throughWall(V.layout, scheme) ? { ...inp.catalog, wall: true } : inp.catalog, fromCat = choice ? propose(V, L, geometry, planned, (o, W) => bestFit(choice, o, num(W, 'Q'), num(W, 'r')), only, offGrid(choice)) : null;
     const proposed = fromCat ?? propose(V, L, geometry, planned, null, only);
-    if (choice) catalog = { fit: fromCat?.fit ?? null, miss: !fromCat };
+    if (choice) catalog = { fit: fromCat?.fit ?? null, miss: fromCat ? false : choice.wall && !choiceMachines(choice).length ? 'wall' : 'checks' };
     if (proposed) V = proposed.V;
     else noProposal = true;
     // the maker's machine stands on our bedframe: where its own axis is higher than the generic machine's, the rope

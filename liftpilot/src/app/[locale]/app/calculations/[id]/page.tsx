@@ -73,9 +73,10 @@ export default async function CalculationPage({ params, searchParams }: {
   const download = rec.ok && can(user, 'report:download');
   const order = !download ? null : lift ? designOrder(lift.inputs, advice, lift.dv) : calcOrder(V, advice);
   // the cost with the company's prices (only for whoever sees prices): the design's articles, or the replacement's machine
-  // (a lift design tested to UNI 10411: only the parts it replaces, as a replacement)
+  // (a lift design tested to UNI 10411: only the parts it replaces, as a replacement) with the ropes cut as sheet 1 of its
+  // shaft design measures them
   const costKind = lift ? bomKind(lift.dv.collaudo) : 'replacement';
-  const costed = await projectCost(user, lift ? designBom({ ...lift.dv, layout: withPitches(lift.dv.layout, pitchesOf(c.project.plant)) }, plantData(c.project.plant)) : calcBom(V, C), costKind,
+  const costed = await projectCost(user, lift ? designBom({ ...lift.dv, layout: withPitches(lift.dv.layout, pitchesOf(c.project.plant)) }, plantData(c.project.plant)) : calcBom(V, C, null, rec.design?.layout ?? null), costKind,
     lift ? designBasis(lift.dv) : { stops: null, travel: analyse(V).ctx.I.H });
   const where = lift ? 'design' : 'calc';
   const mine = sets.filter((x) => x.calculationId === c.id);
