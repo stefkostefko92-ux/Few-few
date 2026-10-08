@@ -15,7 +15,7 @@ const TAB_KEY = "qb-admin-locale";
 const LANG_NAME: Record<Locale, string> = { it: "италиански", bg: "български", en: "английски" };
 
 function Shared() {
-  return <span className="ad-shared" title="Еднакво за трите езика — сменя се навсякъде наведнъж">🌐 общо за трите езика</span>;
+  return <span className="qba-shared" title="Еднакво за трите езика — сменя се навсякъде наведнъж">🌐 общо за трите езика</span>;
 }
 
 export default function ContentEditor({ contentKey, initial, template }: {
@@ -80,7 +80,7 @@ export default function ContentEditor({ contentKey, initial, template }: {
     return (
       <label>
         {humanize(k)} {shared && <Shared />}
-        {HINTS[k] && <small className="ad-hint">{HINTS[k]}</small>}
+        {HINTS[k] && <small className="qba-hint">{HINTS[k]}</small>}
       </label>
     );
   }
@@ -104,18 +104,18 @@ export default function ContentEditor({ contentKey, initial, template }: {
     const def = getAt(template, templatePath(path));
     const canRestore = k === "image" && typeof def === "string" && def !== value;
     return (
-      <div className="ad-field" key={path.join(".")}>
+      <div className="qba-field" key={path.join(".")}>
         {label(k, true)}
-        <div className="ad-image">
-          <div className="ad-image__thumb">{value ? <img src={value} alt="" /> : <span>Няма снимка</span>}</div>
-          <div className="ad-image__meta">
+        <div className="qba-image">
+          <div className="qba-image__thumb">{value ? <img src={value} alt="" /> : <span>Няма снимка</span>}</div>
+          <div className="qba-image__meta">
             <b>{value ? fileName(value) : "—"}</b>
-            <div className="ad-image__actions">
-              <button type="button" className="ad-btn ad-btn--primary" onClick={() => setPicker(() => pick)}>
+            <div className="qba-image__actions">
+              <button type="button" className="qba-btn qba-btn--primary" onClick={() => setPicker(() => pick)}>
                 {value ? "Смени снимката" : "Избери снимка"}
               </button>
-              {canRestore && <button type="button" className="ad-btn ad-btn--ghost" onClick={() => pick(def as string)}>Върни стандартната</button>}
-              {(k === "logo" || k === "shareImage") && value && <button type="button" className="ad-btn ad-btn--ghost" onClick={() => set(path, "")}>Махни</button>}
+              {canRestore && <button type="button" className="qba-btn qba-btn--ghost" onClick={() => pick(def as string)}>Върни стандартната</button>}
+              {(k === "logo" || k === "shareImage") && value && <button type="button" className="qba-btn qba-btn--ghost" onClick={() => set(path, "")}>Махни</button>}
             </div>
           </div>
         </div>
@@ -141,15 +141,15 @@ export default function ContentEditor({ contentKey, initial, template }: {
       }
     };
     return (
-      <div className="ad-field" key={key}>
+      <div className="qba-field" key={key}>
         {label("audio", true)}
-        <div className="ad-audio">
-          {value ? <audio controls preload="none" src={value} /> : <span className="ad-muted">Няма звук</span>}
-          <label className="ad-btn ad-btn--primary" style={{ cursor: "pointer" }}>
+        <div className="qba-audio">
+          {value ? <audio controls preload="none" src={value} /> : <span className="qba-muted">Няма звук</span>}
+          <label className="qba-btn qba-btn--primary" style={{ cursor: "pointer" }}>
             {value ? "Смени звука" : "Качи звук"}
             <input type="file" hidden accept="audio/mpeg,audio/mp4,audio/x-m4a,audio/ogg,audio/webm,audio/wav,.mp3,.m4a,.ogg,.wav" onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
           </label>
-          {value && <button type="button" className="ad-btn ad-btn--ghost" onClick={() => set(path, "")}>Махни</button>}
+          {value && <button type="button" className="qba-btn qba-btn--ghost" onClick={() => set(path, "")}>Махни</button>}
         </div>
       </div>
     );
@@ -174,16 +174,16 @@ export default function ContentEditor({ contentKey, initial, template }: {
     };
     const external = /^https?:\/\//i.test(value);
     return (
-      <div className="ad-field" key={key}>
+      <div className="qba-field" key={key}>
         {label("file", true)}
-        <div className="ad-file">
-          {value ? <a href={value} target="_blank" rel="noopener noreferrer">{fileName(value)}</a> : <span className="ad-muted">Няма файл</span>}
-          {external && <small className="ad-hint">⚠ Файлът още е на стария сайт — качете го тук, за да остане и след като старият сайт спре.</small>}
-          <label className="ad-btn ad-btn--primary" style={{ cursor: "pointer" }}>
+        <div className="qba-file">
+          {value ? <a href={value} target="_blank" rel="noopener noreferrer">{fileName(value)}</a> : <span className="qba-muted">Няма файл</span>}
+          {external && <small className="qba-hint">⚠ Файлът още е на стария сайт — качете го тук, за да остане и след като старият сайт спре.</small>}
+          <label className="qba-btn qba-btn--primary" style={{ cursor: "pointer" }}>
             {value ? "Смени PDF" : "Качи PDF"}
             <input type="file" hidden accept="application/pdf,.pdf" onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
           </label>
-          {value && <button type="button" className="ad-btn ad-btn--ghost" onClick={() => set(path, "")}>Махни</button>}
+          {value && <button type="button" className="qba-btn qba-btn--ghost" onClick={() => set(path, "")}>Махни</button>}
         </div>
       </div>
     );
@@ -191,13 +191,13 @@ export default function ContentEditor({ contentKey, initial, template }: {
 
   function iconField(value: string, path: Path) {
     return (
-      <div className="ad-field" key={path.join(".")}>
+      <div className="qba-field" key={path.join(".")}>
         {label("icon", true)}
-        <div className="ad-icons" role="radiogroup" aria-label="Икона">
+        <div className="qba-icons" role="radiogroup" aria-label="Икона">
           {BRAND_ICONS.map((name) => (
             <button
               type="button" key={name} role="radio" aria-checked={value === name}
-              className={`ad-icon ${value === name ? "active" : ""}`} onClick={() => set(path, name)} title={ICON_LABELS[name]}
+              className={`qba-icon ${value === name ? "active" : ""}`} onClick={() => set(path, name)} title={ICON_LABELS[name]}
             >
               <img src={`/assets/img/icons/${name}.webp`} alt="" />
               <span>{ICON_LABELS[name]}</span>
@@ -216,9 +216,9 @@ export default function ContentEditor({ contentKey, initial, template }: {
     const img = imgKey ? getAt(data[locale], [...path.slice(0, -1), imgKey]) : undefined;
     const missingAlt = typeof img === "string" && img !== "" && !value.trim();
     return (
-      <div className={`ad-field ${missingAlt ? "ad-field--warn" : ""}`} key={path.join(".")}>
+      <div className={`qba-field ${missingAlt ? "qba-field--warn" : ""}`} key={path.join(".")}>
         {label(k, shared)}
-        {missingAlt && <p className="ad-warn" role="note">⚠ Липсва описание на този език — добавете какво има на снимката.</p>}
+        {missingAlt && <p className="qba-warn" role="note">⚠ Липсва описание на този език — добавете какво има на снимката.</p>}
         {long ? (
           <textarea value={value} onChange={(e) => set(path, e.target.value)} rows={Math.min(8, Math.max(3, Math.ceil(value.length / 80)))} />
         ) : (
@@ -231,20 +231,20 @@ export default function ContentEditor({ contentKey, initial, template }: {
   function listField(value: unknown[], path: Path, k: string) {
     const tpl = getAt(template, templatePath([...path, 0]));
     return (
-      <div className="ad-sub" key={path.join(".")}>
-        <div className="ad-sub__head">
-          <b>{humanize(k)} <span className="ad-count">{value.length}</span></b>
-          <button type="button" className="ad-btn ad-btn--ghost" onClick={() => change((d) => addItem(d, path, tpl))}>+ Добави</button>
+      <div className="qba-sub" key={path.join(".")}>
+        <div className="qba-sub__head">
+          <b>{humanize(k)} <span className="qba-count">{value.length}</span></b>
+          <button type="button" className="qba-btn qba-btn--ghost" onClick={() => change((d) => addItem(d, path, tpl))}>+ Добави</button>
         </div>
-        {value.length === 0 && <p className="ad-empty-list">Празно. Натиснете „+ Добави“.</p>}
+        {value.length === 0 && <p className="qba-empty-list">Празно. Натиснете „+ Добави“.</p>}
         {value.map((item, i) => (
-          <div className="ad-sub ad-list-item" key={i}>
-            <div className="ad-sub__head">
+          <div className="qba-sub qba-list-item" key={i}>
+            <div className="qba-sub__head">
               <b>#{i + 1}</b>
-              <div className="ad-item-actions">
-                <button type="button" className="ad-btn ad-btn--ghost ad-btn--icon" disabled={i === 0} onClick={() => change((d) => moveItem(d, path, i, -1))} aria-label="Нагоре" title="Нагоре">↑</button>
-                <button type="button" className="ad-btn ad-btn--ghost ad-btn--icon" disabled={i === value.length - 1} onClick={() => change((d) => moveItem(d, path, i, 1))} aria-label="Надолу" title="Надолу">↓</button>
-                <button type="button" className="ad-btn ad-btn--danger" onClick={() => { if (confirm("Да премахна ли този елемент от трите езика?")) change((d) => removeItem(d, path, i)); }}>Премахни</button>
+              <div className="qba-item-actions">
+                <button type="button" className="qba-btn qba-btn--ghost qba-btn--icon" disabled={i === 0} onClick={() => change((d) => moveItem(d, path, i, -1))} aria-label="Нагоре" title="Нагоре">↑</button>
+                <button type="button" className="qba-btn qba-btn--ghost qba-btn--icon" disabled={i === value.length - 1} onClick={() => change((d) => moveItem(d, path, i, 1))} aria-label="Надолу" title="Надолу">↓</button>
+                <button type="button" className="qba-btn qba-btn--danger" onClick={() => { if (confirm("Да премахна ли този елемент от трите езика?")) change((d) => removeItem(d, path, i)); }}>Премахни</button>
               </div>
             </div>
             {translationNote([...path, i])}
@@ -263,10 +263,10 @@ export default function ContentEditor({ contentKey, initial, template }: {
     const missing = LOCALES.filter((l) => l !== locale && blank(l));
     if (blank(locale)) {
       const from = (["it", "bg", "en"] as const).find((l) => !blank(l));
-      return from ? <p className="ad-warn" role="note">⚠ На {LANG_NAME[locale]} още няма текст — на сайта тук засега се показва текстът на {LANG_NAME[from]}.</p> : null;
+      return from ? <p className="qba-warn" role="note">⚠ На {LANG_NAME[locale]} още няма текст — на сайта тук засега се показва текстът на {LANG_NAME[from]}.</p> : null;
     }
     return missing.length ? (
-      <p className="ad-note" role="note">Още без превод на {missing.map((l) => LANG_NAME[l]).join(" и ")} — там засега се показва този текст.</p>
+      <p className="qba-note" role="note">Още без превод на {missing.map((l) => LANG_NAME[l]).join(" и ")} — там засега се показва този текст.</p>
     ) : null;
   }
 
@@ -281,7 +281,7 @@ export default function ContentEditor({ contentKey, initial, template }: {
     if (Array.isArray(value)) return listField(value, path, k);
     if (value && typeof value === "object") {
       return (
-        <div key={path.join(".")} className="ad-group">
+        <div key={path.join(".")} className="qba-group">
           {Object.entries(value as Doc).map(([ck, v]) => renderValue(v, [...path, ck], ck))}
         </div>
       );
@@ -292,11 +292,11 @@ export default function ContentEditor({ contentKey, initial, template }: {
   // The interface wording is a flat list of ~40 strings: grouped, it reads.
   function renderUi(root: Doc) {
     return UI_GROUPS.map((g) => (
-      <fieldset className="ad-fieldset" key={g.title}>
+      <fieldset className="qba-fieldset" key={g.title}>
         <legend>{g.title}</legend>
         {Object.entries(g.keys).map(([key, label]) =>
           typeof root[key] === "string" ? (
-            <div className="ad-field" key={key}>
+            <div className="qba-field" key={key}>
               <label>{label}</label>
               {isLongField(key, root[key] as string) ? (
                 <textarea value={root[key] as string} onChange={(e) => set([key], e.target.value)} rows={3} />
@@ -313,24 +313,24 @@ export default function ContentEditor({ contentKey, initial, template }: {
   const root = data[locale];
   return (
     <>
-      <div className="ad-tabs" role="tablist">
+      <div className="qba-tabs" role="tablist">
         {LOCALES.map((l) => (
-          <button key={l} type="button" role="tab" aria-selected={l === locale} className={`ad-tab ${l === locale ? "active" : ""}`} onClick={() => pickLocale(l)}>
+          <button key={l} type="button" role="tab" aria-selected={l === locale} className={`qba-tab ${l === locale ? "active" : ""}`} onClick={() => pickLocale(l)}>
             <span className="flag">{LOCALE_META[l].flag}</span>{LOCALE_META[l].label}
           </button>
         ))}
       </div>
 
-      <div className="ad-panel">
+      <div className="qba-panel">
         {contentKey === "ui" ? renderUi(root) : Object.entries(root).map(([k, v]) => renderValue(v, [k], k))}
       </div>
 
-      <div className="ad-save-bar">
-        <button className="ad-btn ad-btn--primary" type="button" onClick={save} disabled={saving || !dirty}>
+      <div className="qba-save-bar">
+        <button className="qba-btn qba-btn--primary" type="button" onClick={save} disabled={saving || !dirty}>
           {saving ? "Запазване…" : dirty ? "Запази промените" : "Няма промени"}
         </button>
         <span className={`status ${status.cls}`} role="status" aria-live="polite">{status.msg}</span>
-        <span className="ad-save-bar__note">
+        <span className="qba-save-bar__note">
           Редактирате: <b>{LOCALE_META[locale].label}</b> · текстът е за всеки език поотделно, снимките и подредбата — общи ·
           виж на сайта:{" "}
           {LOCALES.map((l, i) => (

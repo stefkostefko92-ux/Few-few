@@ -8,7 +8,7 @@ import { getOne } from "@/lib/content";
 // invalid locale makes the locale layout bail out), so it owns <html>/<body>.
 export async function generateMetadata() {
   const settings = await getOne("it", "settings");
-  return { title: `404 · ${settings.brandName}`, robots: { index: false } };
+  return { title: `404 · ${settings.brandName}`, robots: { index: false }, icons: { icon: "/assets/img/brand/favicon.svg" } };
 }
 
 export default function NotFound() {

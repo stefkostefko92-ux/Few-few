@@ -44,7 +44,7 @@ export default function MediaManager() {
   return (
     <>
       <div
-        className={`ad-dropzone ${drag ? "drag" : ""}`}
+        className={`qba-dropzone ${drag ? "drag" : ""}`}
         onClick={() => inputRef.current?.click()}
         onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
         onDragLeave={() => setDrag(false)}
@@ -58,20 +58,20 @@ export default function MediaManager() {
       </div>
 
       {loading ? (
-        <p style={{ color: "var(--ad-muted)" }}>Зареждане…</p>
+        <p style={{ color: "var(--qba-muted)" }}>Зареждане…</p>
       ) : media.length === 0 ? (
-        <div className="ad-empty">Все още няма качени снимки.</div>
+        <div className="qba-empty">Все още няма качени снимки.</div>
       ) : (
-        <div className="ad-media-grid">
+        <div className="qba-media-grid">
           {media.map((m) => (
-            <div className="ad-media" key={m.id}>
-              <div className="ad-media__img">{m.mime?.startsWith("audio/") ? <audio controls preload="none" src={m.url} style={{ width: "100%" }} /> : m.mime === "application/pdf" ? <a className="ad-pdf" href={m.url} target="_blank" rel="noopener noreferrer">PDF</a> : <img src={m.url} alt={m.alt} loading="lazy" />}</div>
-              <div className="ad-media__body">
-                <div className="ad-media__name">{m.filename}</div>
-                <div className="ad-media__name" style={{ marginTop: 2 }}>{m.width && m.height ? `${m.width}×${m.height}` : ""} · {(m.size / 1024).toFixed(0)} KB</div>
-                <div className="ad-media__row">
-                  <button className="ad-btn ad-btn--ghost" style={{ padding: ".35rem .6rem", fontSize: ".8rem" }} onClick={() => copy(m.url)}>Копирай URL</button>
-                  <button className="ad-btn ad-btn--danger" style={{ padding: ".35rem .6rem", fontSize: ".8rem" }} onClick={() => remove(m.id)}>Изтрий</button>
+            <div className="qba-media" key={m.id}>
+              <div className="qba-media__img">{m.mime?.startsWith("audio/") ? <audio controls preload="none" src={m.url} style={{ width: "100%" }} /> : m.mime === "application/pdf" ? <a className="qba-pdf" href={m.url} target="_blank" rel="noopener noreferrer">PDF</a> : <img src={m.url} alt={m.alt} loading="lazy" />}</div>
+              <div className="qba-media__body">
+                <div className="qba-media__name">{m.filename}</div>
+                <div className="qba-media__name" style={{ marginTop: 2 }}>{m.width && m.height ? `${m.width}×${m.height}` : ""} · {(m.size / 1024).toFixed(0)} KB</div>
+                <div className="qba-media__row">
+                  <button className="qba-btn qba-btn--ghost" style={{ padding: ".35rem .6rem", fontSize: ".8rem" }} onClick={() => copy(m.url)}>Копирай URL</button>
+                  <button className="qba-btn qba-btn--danger" style={{ padding: ".35rem .6rem", fontSize: ".8rem" }} onClick={() => remove(m.id)}>Изтрий</button>
                 </div>
               </div>
             </div>

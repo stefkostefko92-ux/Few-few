@@ -69,6 +69,10 @@ scripts/          hash-password + helpers
 - **Untranslated list items** (added in one language only) show in the language they were written in
   (`fillUntranslated` in `cms.ts`, it → bg → en) until translated; the editor flags them. Plain fields are
   never filled in — emptying one hides it. Items empty in every language are not rendered.
+- **Ad-blocker-safe names:** EasyList (uBlock/AdBlock/AdGuard/Brave/Supreme AdBlock) hides `.ad-*` classes and
+  `#facebook` — they hid the admin login form and the Facebook section. Admin classes use `qba-`; the FB
+  section is `#seguici`; `__tests__/adblock-safe.test.ts` guards it. A blocked Facebook plugin shows a
+  message + link (`fb.blocked`) instead of an empty box.
 - **Embeds only after consent:** Facebook and Google Maps (`MapEmbed`, `qb-map-consent`) load on click;
   „Отказвам“ and the footer cookie link withdraw consent and unload them.
 - **Everything visible is editable** in `/admin` (sections, settings, SEO + share card, UI wording incl. 404

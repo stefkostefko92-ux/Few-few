@@ -113,6 +113,7 @@ export const UI_GROUPS: { title: string; keys: Record<string, string> }[] = [
       "cookie.more": "Връзка „Повече информация“", "cookie.manage": "Връзка „Настройки на бисквитките“",
       "fb.consent": "Текст преди зареждане на Facebook",
       "nav.facebook": "Заглавие на прозореца с Facebook",
+      "fb.blocked": "Facebook е блокиран в браузъра (напр. от блокер на реклами) — текст",
       "map.title": "Картата — заглавие (и за екранни четци)", "map.consent": "Картата — текст преди зареждане",
       "map.show": "Бутон „Покажи картата“", "map.open": "Връзка „Отвори в Google Maps“",
     },

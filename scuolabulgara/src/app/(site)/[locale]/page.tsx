@@ -345,7 +345,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     ),
 
     facebook: (
-      <section className="sec fb" id="facebook" aria-labelledby="fb-title">
+      <section className="sec fb" id="seguici" aria-labelledby="fb-title">
         <div className="wrap fb__grid">
           <div className="fb__copy">
             <h2 id="fb-title">{facebook.title}</h2>

@@ -24,14 +24,14 @@ const ABOUT: Record<string, string> = {
 
 function Card({ s }: { s: Row }) {
   return (
-    <div className="ad-card">
+    <div className="qba-card">
       <div>
         <h3>{s.label || s.key}</h3>
         {ABOUT[s.key] && <p>{ABOUT[s.key]}</p>}
       </div>
       <div className="meta">
-        <a className="ad-btn ad-btn--ghost" href={previewUrl(s.key)} target="_blank" rel="noopener">Преглед</a>
-        <Link className="ad-btn ad-btn--primary" href={`/admin/content/${s.key}`}>Редактирай</Link>
+        <a className="qba-btn qba-btn--ghost" href={previewUrl(s.key)} target="_blank" rel="noopener">Преглед</a>
+        <Link className="qba-btn qba-btn--primary" href={`/admin/content/${s.key}`}>Редактирай</Link>
       </div>
     </div>
   );
@@ -47,27 +47,27 @@ export default async function ContentList() {
 
   return (
     <AdminShell active="content" title="Съдържание" subtitle="Всичко, което се вижда на сайта — текстове, снимки, подредба — на италиански, български и английски.">
-      <div className="ad-help">
+      <div className="qba-help">
         <b>Как работи.</b> Текстът се пише за всеки език отделно. Снимките, иконите, телефоните и подредбата са <em>общи</em> —
         сменяте ги веднъж и важат и за трите езика. Промените влизат в сайта веднага след <em>Запази</em>.
       </div>
 
-      <h2 className="ad-section-title">Начало на страницата</h2>
-      <div className="ad-grid">{hero.map((s) => <Card key={s.key} s={s} />)}</div>
+      <h2 className="qba-section-title">Начало на страницата</h2>
+      <div className="qba-grid">{hero.map((s) => <Card key={s.key} s={s} />)}</div>
 
-      <h2 className="ad-section-title">Секции на страницата</h2>
-      <p className="ad-section-lead">В реда, в който се показват. Стрелките ги местят, „Видима/Скрита“ ги включва и изключва.</p>
+      <h2 className="qba-section-title">Секции на страницата</h2>
+      <p className="qba-section-lead">В реда, в който се показват. Стрелките ги местят, „Видима/Скрита“ ги включва и изключва.</p>
       <SectionOrder
         initial={sections.map((s) => ({ key: s.key, label: s.label || s.key, enabled: s.enabled, preview: previewUrl(s.key) }))}
       />
 
-      <h2 className="ad-section-title">Настройки</h2>
-      <div className="ad-grid">{settings.map((s) => <Card key={s.key} s={s} />)}</div>
+      <h2 className="qba-section-title">Настройки</h2>
+      <div className="qba-grid">{settings.map((s) => <Card key={s.key} s={s} />)}</div>
 
-      <h2 className="ad-section-title">Правни страници</h2>
-      <div className="ad-grid">{legal.map((s) => <Card key={s.key} s={s} />)}</div>
+      <h2 className="qba-section-title">Правни страници</h2>
+      <div className="qba-grid">{legal.map((s) => <Card key={s.key} s={s} />)}</div>
 
-      {rows.length === 0 && <div className="ad-empty">Няма намерено съдържание. Изпълнете <code>npm run setup</code>.</div>}
+      {rows.length === 0 && <div className="qba-empty">Няма намерено съдържание. Изпълнете <code>npm run setup</code>.</div>}
     </AdminShell>
   );
 }
