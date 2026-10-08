@@ -1,11 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { existsSync } from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
 import { isSharedKey, safeFile, SECTION_KEYS } from "../cms";
 import { isPdf } from "../audio";
 import { defaultFor } from "../defaults";
 
-const pub = (url: string) => path.join(process.cwd(), "public", url);
+// relative to this file, so the test passes from any working directory
+const pub = (url: string) => path.join(fileURLToPath(new URL("../../../public/", import.meta.url)), url);
 type Row = Record<string, unknown>;
 const list = (key: string, l: "it" | "bg" | "en", field: string) => (defaultFor(key, l)[field] as Row[]) ?? [];
 
