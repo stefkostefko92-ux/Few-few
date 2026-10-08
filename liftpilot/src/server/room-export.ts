@@ -50,9 +50,11 @@ export async function exportRoomDesign(user: SessionUser, id: string, format: Ro
   if (!d.G) return { ok: false, error: 'notFound' };
   // the plan and the section at full size, lettered for the scale the drawing set prints them at
   const M = { ...d.M, label: machineText(P, d.made) }, area = inset(drawingArea(true), 8, 8, 8, 8);
+  // (as the sheet lays them out for its scale: surveyView)
+  const G = d.G, plan = surveyView(d, 'plan', area, M), cut = surveyView(d, 'section', area, M);
   const views: CadView[] = [
-    { title: 'VISTA IN PIANTA DEL LOCALE MACCHINA', scale: surveyView(d, 'plan', area, M)?.place.scale ?? 50, entities: roomPlanOn(d.site, M, d.G).entities },
-    { title: 'VISTA IN ELEVATO DEL LOCALE MACCHINA - SEZ. B-B', scale: surveyView(d, 'section', area, M)?.place.scale ?? 50, entities: roomSectionOn(d.site, M, d.G).entities },
+    { title: 'VISTA IN PIANTA DEL LOCALE MACCHINA', scale: plan?.place.scale ?? 50, entities: plan?.entities ?? roomPlanOn(d.site, M, G).entities },
+    { title: 'VISTA IN ELEVATO DEL LOCALE MACCHINA - SEZ. B-B', scale: cut?.place.scale ?? 50, entities: cut?.entities ?? roomSectionOn(d.site, M, G).entities },
   ];
   const title = `${r.project.name} · locale macchina ${r.id} · ${date} · LiftPilot`;
   const body = format === 'dxf' ? new TextEncoder().encode(toDxf(views, title)) : new Uint8Array(toDwg(views, title));

@@ -1,7 +1,7 @@
-// The diverting pulley in section B-B of the machine room (room-view.ts): the pulley with its centre lines; on its own
-// stand over the slab's opening when its axle is above the slab, hung under the slab when it is below (in the bedplate
-// its plates hold it: rinvio-view.ts); its diameter beside it, over the floor next to it or under the slab inside the
-// shaft, with a leader to its rim. Model entities.
+// The diverting pulley in section B-B of the machine room (room-section-view.ts): the pulley with its centre lines; on
+// its own stand over the slab's opening when its axle is above the slab, hung under the slab when it is below (in the
+// bedplate its plates hold it: rinvio-view.ts); its diameter beside it, over the floor next to it or under the slab
+// inside the shaft, with a leader to its rim. Model entities.
 import { circle, line, rect, type Entity, type Pt } from '../drawing';
 import type { MachineSpec, RoomGeo } from './machine-room';
 

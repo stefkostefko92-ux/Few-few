@@ -9,8 +9,9 @@ import { KV_VERT } from './norme-vert';
 import { PROFILES } from './profiles';
 import { axisOverTop, bedplateBeams, rinvioAcross, rinvioRun, type RinvioFrame } from './rinvio';
 
-/** Section B-B: the bedplate, its legs and dampers, the pulley's plates; its heights left of it. */
-export function rinvioSection(M: MachineSpec, G: RoomGeo, rf: RinvioFrame): Entity[] {
+/** Section B-B: the bedplate, its legs and dampers, the pulley's plates; its heights left of it (`sk`: the section's
+ *  scale on 1:25, their offsets kept on paper). */
+export function rinvioSection(M: MachineSpec, G: RoomGeo, rf: RinvioFrame, sk = 1): Entity[] {
   const out: Entity[] = [], P = PROFILES[KV_VERT.rinvioBeam], leg = KV_VERT.rinvioLeg, pads = KV_VERT.rinvioPads;
   const [u0, u1] = rinvioRun(M, G), top = rf.top, under = top - P.h, pu = G.pulleyAt, zp = G.pulleyZ, base = rf.base ?? 0;
   // the beams seen beside the cut, drawn and not hatched (the pulley and the ropes in front stay readable)
@@ -24,13 +25,14 @@ export function rinvioSection(M: MachineSpec, G: RoomGeo, rf: RinvioFrame): Enti
   out.push(rect(pu - 80, zp - 70, pu + 80, Math.min(top, Math.max(under, zp + 90)), 'thin'));
   // the heights: the pulley's axis, the top (ours changes with it, the sheave's axis follows); the length; the code
   const fixed = rf.maker !== null;
-  // left of the bedplate, past the sheave's axis (room-view.ts draws it at the machine's end less 120)
+  // left of the bedplate, past the sheave's axis (room-section-view.ts draws it at the machine's end less 120; where the
+  // room is narrow, section-columns.ts sets them again)
   // the pulley's axis: the bedplate's own, or the sheave's axis less an h entered by hand (whose change may take
   // another machine: its h is the dimension to change)
-  out.push(chain({ dir: 'y', pts: [0, zp], at: u0 - 220, from: [null, pu], text: ['Asse rinvio {v}'], edit: [null] }));
-  out.push(chain({ dir: 'y', pts: [base, top], at: u0 - 420, from: [null, u0], text: [`{v} ${fixed ? rf.maker?.code : 'Telaio'}`], edit: [fixed ? null : E('rinvio.height')] }));
-  // over the room past dx and the machine's frame (room-view.ts)
-  out.push(chain({ dir: 'x', pts: [u0, u1], side: 'top', row: 2, from: [top, top], text: ['{v} Telaio con rinvio'] }));
+  out.push(chain({ dir: 'y', pts: [0, zp], at: u0 - 220 * sk, from: [null, pu], text: ['Asse rinvio {v}'], edit: [null] }));
+  out.push(chain({ dir: 'y', pts: [base, top], at: u0 - 420 * sk, from: [null, u0], text: [`{v} ${fixed ? rf.maker?.code : 'Telaio'}`], edit: [fixed ? null : E('rinvio.height')] }));
+  // over the room past dx and the machine's frame (room-section-view.ts)
+  out.push(chain({ dir: 'x', pts: [u0, u1], side: 'top', row: 2, from: [top, top], text: [`{v} ${rinvioName(rf)}`] }));
   return out;
 }
 
@@ -50,11 +52,15 @@ export function rinvioPlan(M: MachineSpec, G: RoomGeo, rf: RinvioFrame, onDrop: 
     out.push(beam(u0 + b, v - b / 2, u1 - b, v + b / 2));
   }
   for (const u of [u0, u1 - leg]) for (const v of [v0, v1 - leg]) out.push(path(quad(u, v, u + leg, v + leg), true, 'outline', 'steel'));
-  // the axle's plates either side of the pulley, 160 mm along the drop line, 10 mm thick
+  // the axle's plates either side of the pulley, 160 mm along the drop line, 10 mm thick inside the pulley's band (as the
+  // 3D and the pulley's own stand)
   const half = ropeWidths(M.n, M.d).pulley, pu = G.pulleyAt;
-  for (const s of [-1, 1]) out.push(path(quad(pu - 80, s * half, pu + 80, s * (half + 10)), true, 'outline', 'steel'));
+  for (const s of [-1, 1]) out.push(path(quad(pu - 80, s * (half - 10), pu + 80, s * half), true, 'outline', 'steel'));
   return out;
 }
+
+/** The bedplate's name on the dimension of its length: the maker's product by its code. */
+export const rinvioName = (rf: RinvioFrame): string => (rf.maker ? `Telaio con rinvio ${rf.maker.brand} ${rf.maker.code}` : 'Telaio con rinvio');
 
 /** The dimension of h on the bedplate: the top takes the change (the pulley's axis and the machine's height stay; the
  *  bedplate's own height is its top over the HEB beams it stands on). */

@@ -1,7 +1,7 @@
 // Model entities: geometry in millimetres of the object (y up) with annotations that keep their size on paper
 // (lettering, symbols, dimension chains). A view turns them into paper primitives at a scale.
 import type { FillName, StyleName } from './style';
-import type { Align, Ink, Pt } from './types';
+import type { Align, Box, Ink, Pt } from './types';
 
 export type Side = 'top' | 'bottom' | 'left' | 'right';
 
@@ -50,6 +50,11 @@ export interface Chain {
    *  `at` is where its dimension line stands to the line's left and `from` where the extension lines start, across it
    *  (oblique.ts; `dir` and `side` are not read) */
   on?: { o: Pt; u: Pt };
+  /** model boxes its lettering keeps off as off the lettering already on the sheet (what the drawing has there: a
+   *  machine beside a chain); none clear, where it would go without them */
+  avoid?: readonly Box[];
+  /** a chain across the drawing: the model box its lettering past an end keeps inside (a room's inner faces) */
+  within?: Box;
 }
 
 export type Entity =

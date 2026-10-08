@@ -139,8 +139,8 @@ export function roomMarks(G: RoomGeo, p: Place, edges: Box): Shape[] {
     }
     return mid;
   };
-  const view = Math.abs(ux) >= Math.abs(uy) ? (ux > 0 ? 'up' : 'down') : uy > 0 ? 'left' : 'right';
-  return sectionMarks(reach(-1), reach(1), view, 'B');
+  // looking square to the cut, to its left (on an axis: up when it runs right, left when it runs up)
+  return sectionMarks(reach(-1), reach(1), [-uy, ux], 'B');
 }
 
 /** Section C-C's marks on the plan of the room below: through the sheave's centre along the drops' direction. */
@@ -154,8 +154,7 @@ function belowMarks(g: BottomGeo, p: Place, edges: Box): Shape[] {
     }
     return a;
   };
-  const view = Math.abs(ux) >= Math.abs(uy) ? (ux > 0 ? 'up' : 'down') : uy > 0 ? 'left' : 'right';
-  return sectionMarks(reach(-1), reach(1), view, 'C');
+  return sectionMarks(reach(-1), reach(1), [-uy, ux], 'C');
 }
 
 function belowSheet(L: Layout, M: MachineSpec, g: BottomGeo, kind: 'below-plan' | 'below-section', area: Box): Drawn {

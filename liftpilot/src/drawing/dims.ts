@@ -38,6 +38,12 @@ function splitFigure(text: string, value: string): { fig: string; words: string 
   return { fig, words };
 }
 
+/** A model box on paper. */
+const paperBox = (place: Place, b: Box): Box => {
+  const [x0, y0] = toPaper(place, [b.x0, b.y0]), [x1, y1] = toPaper(place, [b.x1, b.y1]);
+  return { x0: Math.min(x0, x1), y0: Math.min(y0, y1), x1: Math.max(x0, x1), y1: Math.max(y0, y1) };
+};
+
 /** Boxes closer than 0.2 mm on both axes. */
 const clash = (a: Box, b: Box): boolean => Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0) > -0.2 && Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0) > -0.2;
 
@@ -166,7 +172,10 @@ export function chainShapes(c: Chain, place: Place, edges: Box, onText?: (s: Tex
 
   // past the ends: within the drawing and a little beyond, into the corners as far as the rows there reach
   const reach = (sd: Side): number => Math.max(DIM.overrun, c.side ? room?.[sd] ?? 0 : 0);
-  const rot = horiz ? 0 : 90, lo = horiz ? edges.x0 - reach('left') : edges.y0 - reach('bottom'), hi = horiz ? edges.x1 + reach('right') : edges.y1 + reach('top');
+  // (a chain across the drawing told to keep its lettering in a box: its ends there)
+  const keep = !c.side && c.within ? paperBox(place, c.within) : null;
+  const rot = horiz ? 0 : 90, lo = Math.max(horiz ? edges.x0 - reach('left') : edges.y0 - reach('bottom'), keep ? (horiz ? keep.x0 : keep.y0) : -Infinity);
+  const hi = Math.min(horiz ? edges.x1 + reach('right') : edges.y1 + reach('top'), keep ? (horiz ? keep.x1 : keep.y1) : Infinity);
   const angleOf = (sign: number): number => (horiz ? (sign > 0 ? 0 : Math.PI) : sign > 0 ? Math.PI / 2 : -Math.PI / 2);
   const mk: Mk = (text, size, at, align) => ({ t: 'text', at, text, size, angle: rot, align, cond: true, halo: true });
   const dots = new Set<number>(), lens = along.slice(1).map((b, i) => Math.abs(b - along[i])), [ends0, ends1] = [Math.min(...along), Math.max(...along)];
@@ -200,7 +209,8 @@ export function chainShapes(c: Chain, place: Place, edges: Box, onText?: (s: Tex
     band = [Math.min(inner, outer) + 0.3, Math.max(inner, outer) - 0.3];
   }
   const inBand = (b: Box): boolean => (horiz ? b.y0 >= band[0] && b.y1 <= band[1] : b.x0 >= band[0] && b.x1 <= band[1]);
-  const placed = new Map<number, Spot>(), free = (b: Box): boolean => inBand(b) && !taken?.some((t) => clash(b, t));
+  const avoid = (c.avoid ?? []).map((b) => paperBox(place, b));
+  const placed = new Map<number, Spot>(), free = (b: Box): boolean => inBand(b) && !taken?.some((t) => clash(b, t)) && !avoid.some((t) => clash(b, t));
   for (const g of order) {
     const spots = spotsOf(g, horiz, mk);
     const spot = spots.find((q) => free(textBox(q.s)) && (!q.words || free(textBox(q.words)))) ?? spots[0];

@@ -12,7 +12,7 @@ const SWITCH_NAME = 'INTERRUTTORE GENERALE';
 /** The panel, its free area and the main switch drawn, the switch's name clear of `gear` too (the machine's parts);
  *  the outlines and the name's place the rest of the plan keeps clear of. */
 export function fittingsPlan(R: RoomInputs, gear: readonly Box[] = []): { entities: Entity[]; free: Pt[]; sw: Pt[]; swAt: Pt } {
-  const [b0, b1] = panelBand(R), pan = wallBox(R, R.panelWall, R.panelAt, R.panelW, R.panelD), free = wallBox(R, R.panelWall, b0, b1 - b0, R.panelD + KV_VERT.panelFreeDepth);
+  const side = R.panelWall === 'left' || R.panelWall === 'right', [b0, b1] = panelBand(R), pan = wallBox(R, R.panelWall, R.panelAt, R.panelW, R.panelD), free = wallBox(R, R.panelWall, b0, b1 - b0, R.panelD + KV_VERT.panelFreeDepth);
   const front = wallBand(R, R.panelWall, b0, b1 - b0, R.panelD, R.panelD + KV_VERT.panelFreeDepth);
   const [w0, w1] = switchSpan(R), sw = wallBox(R, R.doorWall, w0, w1 - w0, 120);
   const inward: Pt = R.doorWall === 'front' ? [0, 1] : R.doorWall === 'rear' ? [0, -1] : R.doorWall === 'left' ? [1, 0] : [-1, 0];
@@ -20,7 +20,8 @@ export function fittingsPlan(R: RoomInputs, gear: readonly Box[] = []): { entiti
   return {
     entities: [
       path(free, true, 'space'), line(front[0], front[2], 'space'), line(front[1], front[3], 'space'),
-      path(pan, true, 'outline', 'paper'), { e: 'text', at: mid(pan), text: 'QUADRO MANOVRA', size: 1.8, align: 'c', halo: true, fit: R.panelW - 60 },
+      // (along a side wall the name runs along the panel, as on the room below's: below-view.ts)
+      path(pan, true, 'outline', 'paper'), { e: 'text', at: mid(pan), text: 'QUADRO MANOVRA', size: 1.8, align: 'c', halo: true, fit: R.panelW - 60, ...(side ? { angle: 90 } : {}) },
       path(sw, true, 'outline', 'paper'), { e: 'text', at: swAt, text: SWITCH_NAME, size: 1.5, align: 'c', ...(onGear ? { halo: true } : {}) },
     ],
     free, sw, swAt,
