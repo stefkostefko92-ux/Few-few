@@ -17,7 +17,8 @@ import { analyse, type Analysis } from '../present/analysis';
 import { dataSheet, type Mismatch } from './data';
 import { dataSheetShapes } from './datasheet';
 import { legendColumn, legendHeight, legendRow, scaleLabel, sectionMarks, sideLabels } from './extras';
-import { dateIt, placeLines, type TavoleInput } from './input';
+import { placeLines, type TavoleInput } from './input';
+import { currentRevision, type TitleData } from './title-block';
 import { OVER_DOWN, OVER_UP, spaceLegend, type LegendItem } from './notes';
 import { makeFmt } from '../present/tr';
 import { belowGeoOf, belowView, machineOf, planView, roomView, sectionView } from './views';
@@ -37,6 +38,8 @@ export interface TavoleResult {
   sheets: { title: string; scale: number | null }[];
   /** the dimensions of each sheet the screens let change (not part of the document) */
   hits: Hit[][];
+  /** what sheet 1's title block writes (the attributes of the title block of the CAD files: cad/set-export.ts) */
+  title: TitleData;
 }
 
 const LEGEND_W = 34;
@@ -174,11 +177,12 @@ export function buildTavole(x: TavoleInput): TavoleResult {
   // the machine below: its room's sheets for the scheme the design chose (the head pulleys under the slab when none)
   const scheme = a.ctx.I.layout === 'bottom' ? x.marks?.bottom ?? 'head' : null, g = scheme ? belowGeoOf(a, L, M, scheme) : null;
   const list = specs(L, L.inputs.room !== null && a.ctx.I.layout !== 'bottom', scheme), pages = list.length + 1;
-  const [l1, l2] = placeLines(x.project), last = x.set.revisions[x.set.revisions.length - 1];
+  const [l1, l2] = placeLines(x.project), ds = dataSheet(x, a, pages);
+  // the strip of every sheet: the revision the set is at (R0 and its date on a first issue) and the plant number as the
+  // title block writes them
   const meta = (page: number): SheetMeta => ({
-    number: x.set.number, page, pages, revision: last ? `${last.mark} ${dateIt(last.date)}` : '', location: `${l1} - ${l2}`, plant: x.project.plantNumber || '—',
+    number: x.set.number, page, pages, revision: currentRevision(ds.sheet), location: `${l1} - ${l2}`, plant: ds.sheet.plant,
   });
-  const ds = dataSheet(x, a, pages);
   const out: Page[] = [{ w: A4.w, h: A4.h, shapes: [...frame(), ...dataSheetShapes(ds.sheet)] }];
   const sheets: TavoleResult['sheets'] = [{ title: 'DATI DELL’IMPIANTO', scale: null }], hits: Hit[][] = [[]];
   list.forEach((s, i) => {
@@ -193,5 +197,5 @@ export function buildTavole(x: TavoleInput): TavoleResult {
     meta: { title: `Tavole ${x.set.number} - ${x.project.name}`, subject: 'Progetto dell’ascensore: dati, piante e sezioni del vano, locale macchina', author: x.company.name },
     palette: PALETTE, patterns: { concrete: concreteTile() }, cond: COND, images: { ...(x.company.logo ? { logo: x.company.logo } : {}), ...(x.clientLogo ? { client: x.clientLogo } : {}) }, pages: out,
   };
-  return { doc, warnings: ds.warnings, sheets, hits };
+  return { doc, warnings: ds.warnings, sheets, hits, title: ds.sheet };
 }

@@ -13,6 +13,7 @@ import { machinePlan } from './machine-outline';
 import { shapePlan } from './machine-shape-view';
 import { dropSpan as span, machineU, machineV, ropeWidths, type MachineSpec, type RoomGeo } from './machine-room';
 import { WALL, doorSwing, holesOf, onDrop, quad, type RoomDrawOpts } from './room-draw';
+import { hitchTags } from './room-loads';
 import { bbox, fittingsPlan } from './room-fittings-view';
 import { outlineBox } from './room-floor';
 import { machineParts } from './support-check';
@@ -23,8 +24,8 @@ import type { Layout } from './types';
 
 export { roomSectionOn };
 
-/** A reference's circle at 1:25, the plan's scale [mm] (view.ts tag). */
-const TAG_R = 1.9 * 25;
+/** A reference's circle at 1:25, the plan's scale [mm] (view.ts tag: the smallest lettering's). */
+const TAG_R = 2.4 * 25;
 /** A circle round p of radius r meets the box. */
 const nearBox = (p: Pt, b: Box, r: number): boolean => Math.hypot(Math.max(b.x0 - p[0], 0, p[0] - b.x1), Math.max(b.y0 - p[1], 0, p[1] - b.y1)) < r;
 /** The segment p–q crosses the box (Liang–Barsky). */
@@ -86,6 +87,8 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDrawO
     const a = 90, b = w.ropes + 50, n: Pt = [-dir[1], dir[0]];
     out.push(path([[-a, -b], [a, -b], [a, b], [-a, b]].map(([p, q]): Pt => [at[0] + p * dir[0] + q * n[0], at[1] + p * dir[1] + q * n[1]]), true, 'hidden'));
   }
+  // the loads of their hitches (P2, P3)
+  out.push(...hitchTags(G));
   // the diverting pulley under the machine: on a stand over the opening when its axle is above the slab's underside,
   // else hung under the slab; the machine over it, its sheave's rope plane on the drop line, the motor toward the
   // counterweight or, turned round, toward the car (G.dir); the pulley's outline again where the machine hides it

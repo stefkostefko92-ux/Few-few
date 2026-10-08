@@ -11,11 +11,12 @@ import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { makeFmt } from '@/lib/present/tr';
 import { getCalculation, latestRoomOf, listDrawingSets, listRoomDesigns, refreshedFrom } from '@/server/queries';
 import { projectCost } from '@/server/prices';
-import { calcRecord, storedCollaudo } from '@/server/records';
+import { calcRecord, recordMarks, storedCollaudo } from '@/server/records';
 import { designBasis } from '@/lib/prices/plant-bom';
 import { analyse } from '@/lib/present/analysis';
 import { calcBom, designBom } from '@/lib/prices/bom';
 import { initialsOf } from '@/lib/tavole/compose';
+import { issueChecks } from '@/lib/tavole/issue-check';
 import { idSchema } from '@/lib/schemas';
 import ProjectCost from '@/components/prices/ProjectCost';
 import IssueForm from '@/components/tavole/IssueForm';
@@ -27,7 +28,7 @@ import CalculationView from '@/components/calc/CalculationView';
 import RefreshForm from '@/components/RefreshForm';
 import Refreshed from '@/components/Refreshed';
 import AdviceView from '@/components/lift/AdviceView';
-import { pitchesOf } from '@/lib/plant';
+import { pitchesOf, plantReadSchema } from '@/lib/plant';
 import { withPitches } from '@/shaft/brackets';
 
 export async function generateMetadata() {
@@ -75,6 +76,10 @@ export default async function CalculationPage({ params, searchParams }: {
   const costed = await projectCost(user, lift ? designBom({ ...lift.dv, layout: withPitches(lift.dv.layout, pitchesOf(c.project.plant)) }) : calcBom(V, C), lift ? 'full' : 'replacement',
     lift ? designBasis(lift.dv) : { stops: null, travel: analyse(V).ctx.I.H });
   const where = lift ? 'design' : 'calc';
+  // before an issue: the machine the data of the installation name against the catalogue's the set would carry (the
+  // marks of the record, as the issue reads them), the plant number of an existing lift, the client
+  const plant = plantReadSchema.safeParse(c.project.plant ?? {});
+  const checks = issueChecks(plant.success ? plant.data : {}, recordMarks(rec, c.collaudo).catalog ?? null, c.project, C.norma !== 'en81');
   const mine = sets.filter((x) => x.calculationId === c.id);
   const fd = dateFormat(locale);
   return (
@@ -172,7 +177,7 @@ export default async function CalculationPage({ params, searchParams }: {
           </ul>
         ) : null}
         {replacement ? null : !c.shaftDesign ? <p className="note">{tt('needDesign')}</p>
-          : rec.ok && open ? <IssueForm calculationId={c.id} initials={initialsOf(user.name)} /> : null}
+          : rec.ok && open ? <IssueForm calculationId={c.id} initials={initialsOf(user.name)} checks={checks} projectId={c.projectId} /> : null}
       </section>
       <CalculationView values={V} brand={user.companyName} collaudo={C} />
     </main>

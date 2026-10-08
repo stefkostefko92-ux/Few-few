@@ -2,7 +2,7 @@
 // hitches hang (the slab's openings, the ropes in section B-B), the governor, the dimensions that change the rope drop.
 // A whole design gives them from its layout (layoutSite); a machine replacement from the survey of its room
 // (src/lib/room). Model entities and numbers; pure.
-import { chain, circle, edit as E, rect, textWidth, type Box as DrawBox, type Edit, type Entity, type Pt } from '../drawing';
+import { TEXT, chain, circle, edit as E, rect, textWidth, type Box as DrawBox, type Edit, type Entity, type Pt } from '../drawing';
 import { calataEdit } from './drop';
 import { governorSpot, type GovernorSpot } from './governor';
 import type { Rope } from './heb';
@@ -95,18 +95,18 @@ function governor(L: Layout, R: RoomInputs, out: Entity[], marks: DrawBox[]): Dr
       out.push(rect(c[0] - 25, c[1] - 25, c[0] + 25, c[1] + 25, 'thin'), circle(c, g.rope, 'outline', 'steel'));
     }
     const s = gx - R.shaftX < I.W / 2 ? -1 : 1, name = `Limitatore ${g.model}`, p4: Pt = [gx + s * (g.baseA + 200), gy + g.baseW + 230];
-    out.push({ e: 'text', at: [gx + s * (g.baseA + 60), gy - 30], text: name, size: 1.6, align: s < 0 ? 'r' : 'l', halo: true });
+    out.push({ e: 'text', at: [gx + s * (g.baseA + 60), gy - 30], text: name, size: TEXT.min, align: s < 0 ? 'r' : 'l', halo: true });
     out.push({ e: 'tag', at: p4, text: 'P4', to: [gx + s * g.baseA, gy + g.baseW / 2] });
-    const bx = Math.max(g.baseA, g.half), by = Math.max(g.baseW, g.R + 14), nx = gx + s * (g.baseA + 60), nw = textWidth(name, { size: 1.6, cond: true }) * 25;
-    marks.push({ x0: gx - bx, y0: gy - by, x1: gx + bx, y1: gy + by }, { x0: Math.min(nx, nx + s * nw), y0: gy - 40, x1: Math.max(nx, nx + s * nw), y1: gy + 20 }, tagBox(p4));
+    const bx = Math.max(g.baseA, g.half), by = Math.max(g.baseW, g.R + 14), nx = gx + s * (g.baseA + 60), nw = textWidth(name, { size: TEXT.min, cond: true }) * 25;
+    marks.push({ x0: gx - bx, y0: gy - by, x1: gx + bx, y1: gy + by }, { x0: Math.min(nx, nx + s * nw), y0: gy - 50, x1: Math.max(nx, nx + s * nw), y1: gy + 35 }, tagBox(p4));
     // where it stands, as the shaft's plan dimensions its rope: from the shaft's wall on its side (below it) and its clamped
     // strand from the car rail's axis (on the side away from its name)
-    const wallX = R.shaftX + (spot.side === 'left' ? 0 : I.W), ry = R.shaftY + spot.rail.y, sy = R.shaftY + spot.y1, cx = gx - s * (g.baseA + 70);
+    const wallX = R.shaftX + (spot.side === 'left' ? 0 : I.W), ry = R.shaftY + spot.rail.y, sy = R.shaftY + spot.y1, cx = gx - s * (g.baseA + 130);
     out.push(chain({ dir: 'x', pts: [Math.min(wallX, gx), Math.max(wallX, gx)], at: gy - g.baseW - 140, from: spot.side === 'left' ? [sy, gy] : [gy, sy],
       text: ['Fune limitatore {v}'], edit: [E('plan.govX')] }));
     out.push(chain({ dir: 'y', pts: [Math.min(ry, sy), Math.max(ry, sy)], at: cx, from: ry <= sy ? [R.shaftX + spot.rail.x, gx] : [gx, R.shaftX + spot.rail.x],
       text: ['{v} da asse guida'], edit: [govYEdit(spot)] }));
-    // its footprint with its lettering and reference (the lettering about 1,6 mm high, 1:50 at most) and the row of its
+    // its footprint with its lettering and reference (the smallest lettering, 1:50 at most) and the row of its
     // dimension from the shaft's wall under it, with that lettering (the upright one's lettering steps round the others
     // and keeps off the machine itself: room-view.ts)
     return { x0: Math.min(gx - g.baseA - (s < 0 ? 900 : 0), wallX), y0: gy - g.baseW - 340, x1: Math.max(gx + g.baseA + (s > 0 ? 900 : 0), wallX), y1: gy + g.baseW + 330 };

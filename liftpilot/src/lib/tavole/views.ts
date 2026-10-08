@@ -17,6 +17,7 @@ import { bottomGeo, type BottomGeo, type BottomScheme } from '../lift/bottom';
 import { machineSpec, sheaveAxisBelow } from '../lift/machine';
 import { belowPlanEntities, belowSectionEntities } from './below-view';
 import type { Plant } from '../plant';
+import { machineName } from './machine-name';
 import type { Analysis } from '../present/analysis';
 
 export const PLAN_SCALES = [20, 25, 50, 100, 200], DETAIL_SCALES = [25, 50, 100, 200];
@@ -81,16 +82,14 @@ export function sectionView(L: Layout, kind: SectionKind, floor: number, area: B
   return { r: renderView(ents, place), place };
 }
 
-/** The machine as the sheets name it: as the data of the installation write it, else the catalogue's machine of the
- *  design (maker and model), else none. */
-export const machineText = (plant: Plant, catalog: { brand: string; model: string } | null): string =>
-  plant.machine ?? (catalog ? `${catalog.brand} ${catalog.model}` : '');
+// the machine's name on the sheets (machine-name.ts: pure, for the forms too)
+export { machineConflict, machineName, machineText } from './machine-name';
 
-/** The machine as the calculation describes it (its mass the calculation's; its name as the data of the installation
- *  write it), on the room's support: the maker's as it is when the proposal took one from a catalogue (`catalog` of the
- *  marks; its bedplate with the diverting pulley), else the generic machine. */
+/** The machine as the calculation describes it (its mass the calculation's; its name the catalogue's, else as the data of
+ *  the installation write it), on the room's support: the maker's as it is when the proposal took one from a catalogue
+ *  (`catalog` of the marks; its bedplate with the diverting pulley), else the generic machine. */
 export function machineOf(a: Analysis, plant: Plant, L: Layout, catalog: { brand: string; model: string } | null = null): MachineSpec {
-  return machineSpec(a.ctx, a.ctx.N.mass, machineText(plant, catalog), L.inputs.room, catalog ? shapeOf(catalog.brand, catalog.model) : null, catalog);
+  return machineSpec(a.ctx, a.ctx.N.mass, machineName(plant, catalog), L.inputs.room, catalog ? shapeOf(catalog.brand, catalog.model) : null, catalog);
 }
 
 /** A machine room's view as the sheet takes it, at 1:25 when it can be had: the plan with its door open outward, or

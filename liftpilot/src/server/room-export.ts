@@ -4,16 +4,13 @@ import 'server-only';
 // the stored survey and calculation only when the running engines reproduce them (otherwise refused, like the
 // documents).
 import type { SessionUser } from '@/lib/auth';
-import { toDwg, toDxf, type CadView } from '@/lib/cad/export';
+import { toDwg, toDxf } from '@/lib/cad/export';
+import { surveyViews } from '@/lib/cad/project';
 import { prisma } from '@/lib/db';
 import { plantReadSchema } from '@/lib/plant';
 import { renderPdf, renderTavole } from '@/lib/report/render';
 import { buildTecnica } from '@/lib/report/tecnica';
-import { drawingArea } from '@/drawing';
-import { roomPlanOn, roomSectionOn } from '@/shaft/room-view';
-import { inset } from '@/lib/tavole/build';
 import { initialsOf } from '@/lib/tavole/compose';
-import { machineText, surveyView } from '@/lib/tavole/views';
 import { slug } from './download';
 import { composeFromRoom, reproduceRoomRecord } from './room-compose';
 import { getLetterhead, getRoomDesign } from './queries';
@@ -38,7 +35,7 @@ export async function exportRoomDesign(user: SessionUser, id: string, format: Ro
   }
   const d = rep.derived, plant = plantReadSchema.safeParse(r.project.plant ?? {}), P = plant.success ? plant.data : {};
   if (format === 'relazione') {
-    const sets = await prisma.drawingSet.findMany({ where: { companyId: user.companyId, roomDesignId: r.id }, orderBy: [{ seq: 'asc' }, { revision: 'asc' }], select: { number: true, revision: true } });
+    const sets = await prisma.drawingSet.findMany({ where: { companyId: user.companyId, roomDesignId: r.id }, orderBy: [{ seq: 'asc' }, { revision: 'asc' }], select: { number: true, revision: true, sha256: true } });
     const doc = buildTecnica({
       room: { id: r.id, label: r.label, createdAt: r.createdAt, sha256: r.sha256, engineVersion: r.engineVersion, author: r.user?.name ?? null },
       calc: { id: r.calculation.id, label: r.calculation.label, createdAt: r.calculation.createdAt, sha256: r.calculation.sha256, engineVersion: r.calculation.engineVersion, profileId: r.calculation.profileId },
@@ -47,15 +44,9 @@ export async function exportRoomDesign(user: SessionUser, id: string, format: Ro
     });
     return { ok: true, body: new Uint8Array(await renderPdf(doc)), mime: MIME.relazione, name: `relazione-tecnica-${base}.pdf` };
   }
-  if (!d.G) return { ok: false, error: 'notFound' };
   // the plan and the section at full size, lettered for the scale the drawing set prints them at
-  const M = { ...d.M, label: machineText(P, d.made) }, area = inset(drawingArea(true), 8, 8, 8, 8);
-  // (as the sheet lays them out for its scale: surveyView)
-  const G = d.G, plan = surveyView(d, 'plan', area, M), cut = surveyView(d, 'section', area, M);
-  const views: CadView[] = [
-    { title: 'VISTA IN PIANTA DEL LOCALE MACCHINA', scale: plan?.place.scale ?? 50, entities: plan?.entities ?? roomPlanOn(d.site, M, G).entities },
-    { title: 'VISTA IN ELEVATO DEL LOCALE MACCHINA - SEZ. B-B', scale: cut?.place.scale ?? 50, entities: cut?.entities ?? roomSectionOn(d.site, M, G).entities },
-  ];
+  const views = surveyViews(d, P);
+  if (!views.length) return { ok: false, error: 'notFound' };
   const title = `${r.project.name} · locale macchina ${r.id} · ${date} · LiftPilot`;
   const body = format === 'dxf' ? new TextEncoder().encode(toDxf(views, title)) : new Uint8Array(toDwg(views, title));
   return { ok: true, body, mime: MIME[format], name: `locale-macchina-${base}.${format}` };

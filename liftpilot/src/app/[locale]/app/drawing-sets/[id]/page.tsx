@@ -31,14 +31,15 @@ export default async function DrawingSetPage({ params, searchParams }: { params:
   if (!s) notFound();
   const [t, tp, tc] = await Promise.all([getTranslations('tavole'), getTranslations('projects'), getTranslations('calculations')]);
   const fd = dateFormat(locale), fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
-  const full = s.shaftDesign ? composeStored({ ...s, calculation: s.calculation, shaftDesign: s.shaftDesign, logo: s.logo, clientLogo: s.clientLogo }) : null;
-  const room = s.roomDesign ? composeStoredRoom({ ...s, calculation: s.calculation, roomDesign: s.roomDesign, logo: s.logo, clientLogo: s.clientLogo }) : null;
+  // the revisions of the number: the first issue's date is R0 in the title block
+  const history = await listRevisions(user, s.year, s.seq), first = history.find((h) => h.revision === 0)?.createdAt ?? null;
+  const full = s.shaftDesign ? composeStored({ ...s, firstIssuedAt: first, calculation: s.calculation, shaftDesign: s.shaftDesign, logo: s.logo, clientLogo: s.clientLogo }) : null;
+  const room = s.roomDesign ? composeStoredRoom({ ...s, firstIssuedAt: first, calculation: s.calculation, roomDesign: s.roomDesign, logo: s.logo, clientLogo: s.clientLogo }) : null;
   const doc = full && 'doc' in full ? full.doc : room && 'doc' in room ? room.doc : null;
   const DEC = { travel: 2, speed: 2, load: 0, carMass: 0 } as const;
   const mismatch = full && 'doc' in full ? full.warnings.map((w) => t(`mm_${w.what}`, { calc: fmt(w.calc, DEC[w.what]), shaft: fmt(w.shaft, DEC[w.what]) })) : [];
   const total = doc?.pages.length ?? s.pages, page = Math.min(Math.max(1, Number((await searchParams).p) || 1), total);
   const sheet = doc?.pages[page - 1];
-  const history = await listRevisions(user, s.year, s.seq);
   const revs = revisionsSchema.safeParse(s.revisions);
   const editable = can(user, 'calc:create') && !s.project.archivedAt;
   // a whole project's set comes from a calculation made from a shaft design, a replacement's from a saved machine room
@@ -70,6 +71,16 @@ export default async function DrawingSetPage({ params, searchParams }: { params:
           <DrawingFigure className="sheet-page" w={sheet.w} h={sheet.h} label={t('sheet', { n: page, total })} caption={t('sheet', { n: page, total })}>
             <ShapesSvg shapes={sheet.shapes} w={sheet.w} h={sheet.h} id={`sheet-${page}`} label={t('sheet', { n: page, total })} images={doc.images} />
           </DrawingFigure>
+        </section>
+      ) : null}
+      {doc && can(user, 'report:download') ? (
+        <section className="panel">
+          <h2>{t('cadTitle')}</h2>
+          <p className="note">{t('cadLead')}</p>
+          <div className="flex flex-wrap gap-2">
+            <a className="btn" href={`/api/drawing-sets/${s.id}/dxf`}>{t('cadDxf')}</a>
+            <a className="btn" href={`/api/drawing-sets/${s.id}/dwg`}>{t('cadDwg')}</a>
+          </div>
         </section>
       ) : null}
       <section className="panel">

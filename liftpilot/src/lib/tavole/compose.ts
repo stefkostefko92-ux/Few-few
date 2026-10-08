@@ -6,7 +6,7 @@ import type { FormValues } from '@/calc/types';
 import type { Layout } from '@/shaft/types';
 import { NO_MARKS, type ValueMarks } from '../lift/marks';
 import { plantReadSchema } from '../plant';
-import type { TavoleInput, TavoleRevision } from './input';
+import type { SetRecords, TavoleInput, TavoleRevision } from './input';
 
 const text = (max: number) => z.string().trim().max(max);
 
@@ -52,6 +52,8 @@ export interface StoredSet {
   plant: unknown;
   projectData: unknown;
   companyName: string;
+  /** the date of the set's first issue (its R0) when this row is a revision; none: `createdAt` */
+  firstIssuedAt?: Date | null;
 }
 
 /** What every stored set keeps beside what it was made of: the data of the installation, the project, the company and
@@ -66,15 +68,16 @@ export function storedParts(
     plant: plant.data, project: project.data,
     company: { name: s.companyName, logo: logo ? { mime: logo.mime, data: Buffer.from(logo.data).toString('base64') } : null },
     clientLogo: clientLogo ? { mime: clientLogo.mime, data: Buffer.from(clientLogo.data).toString('base64') } : null,
-    set: { number: s.number, issuedAt: s.createdAt, author: s.authorInitials, revisions },
+    set: { number: s.number, issuedAt: s.createdAt, author: s.authorInitials, revisions, ...(s.firstIssuedAt ? { firstIssuedAt: s.firstIssuedAt } : {}) },
   };
 }
 
-/** The input of the drawing set of a stored set; null when a stored part does not read back. */
+/** The input of the drawing set of a stored set; null when a stored part does not read back. `records`: what sheet 1
+ *  cites (the calculation and the shaft design the set is drawn from). */
 export function storedInput(
   values: FormValues, layout: Layout, s: StoredSet, logo: { mime: 'image/png' | 'image/jpeg'; data: Uint8Array } | null, marks: ValueMarks = NO_MARKS,
-  clientLogo: { mime: 'image/png' | 'image/jpeg'; data: Uint8Array } | null = null,
+  clientLogo: { mime: 'image/png' | 'image/jpeg'; data: Uint8Array } | null = null, records?: SetRecords,
 ): TavoleInput | null {
   const p = storedParts(s, logo, clientLogo);
-  return p ? { values, layout, marks, ...p } : null;
+  return p ? { values, layout, marks, ...p, ...(records ? { records } : {}) } : null;
 }

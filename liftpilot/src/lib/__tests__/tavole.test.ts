@@ -168,13 +168,17 @@ test('foglio 1: ciò che il progetto sa viene dal progetto; le parti che restano
   assert.ok(sheet1(buildTavole({ ...input(I), plant: { ...input(I).plant, safetyGear: undefined } })).includes('PARACADUTE DI CABINA'), 'non dato: la nota');
 });
 
-test('argano nel foglio 1: come scritto nei dati dell’impianto, altrimenti il modello del catalogo del progetto', () => {
+test('argano nel foglio 1: il modello del catalogo del progetto, il testo dei dati dell’impianto come riferimento', () => {
   const I: ShaftInputs = { ...defaultInputs(1740, 1445), Q: 400, access: 'none', room: null };
   const sheet1 = (r: ReturnType<typeof buildTavole>): string[] => r.doc.pages[0]?.shapes.flatMap((s) => (s.t === 'text' ? [s.text] : [])) ?? [];
   const marks = { ...NO_MARKS, catalog: { brand: 'SICOR', model: 'SH140', ratio: '1/37', staticKg: 3300, src: 'D: prova' } };
-  assert.ok(sheet1(buildTavole({ ...input(I), marks })).includes('M 73 (Sx)'), 'il testo dei dati dell’impianto resta');
+  // the machine the calculation checked first; a name that contradicts it stays only as the installation's reference
+  // (and the set is not issued: drawing-actions.ts)
+  assert.ok(sheet1(buildTavole({ ...input(I), marks })).includes('SICOR SH140 (rif. impianto: M 73 (Sx))'));
   const blank = buildTavole({ ...input(I), plant: { ...input(I).plant, machine: undefined }, marks });
   assert.ok(sheet1(blank).includes('SICOR SH140'), 'senza testo, il modello del catalogo');
+  // without a catalogue machine the name of the data of the installation is the machine's name
+  assert.ok(sheet1(buildTavole(input(I))).includes('M 73 (Sx)'));
 });
 
 test('parti conservate delle tavole: si rileggono, altrimenti nessuna tavola', () => {

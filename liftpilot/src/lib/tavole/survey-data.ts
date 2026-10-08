@@ -20,10 +20,10 @@ import { makeFmt } from '../present/tr';
 import { collaudoNote, partiText } from '../report/collaudo';
 import type { RoomDerived } from '../room/derive';
 import type { Row, TitleData } from './datasheet';
-import { dateIt, placeLines } from './input';
-import { loads } from './loads';
+import { GOVERNOR_LOAD_UNSET, loadNames, loads } from './loads';
 import { roomNote, type Note } from './notes';
 import type { SurveyTavoleInput } from './survey-input';
+import { refsText, titleOf } from './title-data';
 import { machineText } from './views';
 
 const fmt = makeFmt('it-IT');
@@ -49,6 +49,8 @@ export interface SurveySheet extends TitleData {
   electric: readonly Row[];
   /** the loads on the slab: their name and value [daN] */
   P: readonly (readonly [string, string])[];
+  /** the records the set goes with (title-data.ts refsText) */
+  refs?: string | null;
 }
 
 /** The support under the machine as the sheet names it, on the HEB beams over the shaft's walls when it stands there. */
@@ -141,11 +143,9 @@ export function surveySheetData(x: SurveyTavoleInput, d: RoomDerived, pages: num
     ...(supportOf(R).kind === 'beams' && G ? [[`PUTRELLE (${N_IT[G.frame.beams.length] ?? G.frame.beams.length})`, `${profileOf(supportOf(R))}, ${fmt(G.frame.beams.length * PROFILES[profileOf(supportOf(R))].mass, 1)} kg/m`, ''] as const] : []),
     ...hebRows(heb, fmt),
   ];
-  const P: SurveySheet['P'] = [
-    ['P1 ARGANO', fmt(ld.P[0] ?? 0, 0)], ['P2 ATTACCO FUNI CABINA', ld.P[1] == null ? '—' : fmt(ld.P[1], 0)],
-    ['P3 ATTACCO FUNI CONTRAPPESO', ld.P[2] == null ? '—' : fmt(ld.P[2], 0)], ['P4 LIMITATORE', ld.P[3] == null ? '—' : fmt(ld.P[3], 0)],
-    ['P9 TOTALE SULLA SOLETTA', fmt(ld.P[8] ?? 0, 0)],
-  ];
+  // the loads on the slab by their names (loads.ts); the governor's, when not entered, its maker's
+  const name = (i: number): string => `P${i + 1} ${loadNames()[i] ?? ''}`, val = (i: number): string => (ld.P[i] == null ? '—' : fmt(ld.P[i] ?? 0, 0));
+  const P: SurveySheet['P'] = [[name(0), val(0)], [name(1), val(1)], [name(2), val(2)], [name(3), ld.P[3] == null ? GOVERNOR_LOAD_UNSET : val(3)], [name(8), val(8)]];
   const labels: Readonly<Record<string, string>> = appIt.shaft, OUTCOME = { ok: 'OK', warn: 'ATTENZIONE', fail: 'NON PASSA', info: '—' } as const;
   const withUnit = (v: number | null, dp: number, u: string): string => (v == null ? '—' : `${fmt(v, dp)}${u ? ` ${u}` : ''}`);
   const checks: SurveySheet['checks'] = all.map((c) => {
@@ -178,8 +178,7 @@ export function surveySheetData(x: SurveyTavoleInput, d: RoomDerived, pages: num
   return {
     base, machines, room, loads: loadRows, notes, checks, P,
     electric: [['TENSIONE F.M.', 'V', num(Pl.voltage)], ['LUCE', 'V', num(Pl.lightVoltage)], ['FREQUENZA', 'Hz', num(Pl.frequency)], ['INTERMITTENZA', '%', num(Pl.duty)]],
-    client: x.project.client || '—', location: placeLines(x.project), author: x.set.author, date: dateIt(x.set.issuedAt),
-    revisions: x.set.revisions.map((r) => ({ mark: r.mark, text: r.text, date: dateIt(r.date) })),
-    number: x.set.number, pages, plant: x.project.plantNumber || '—', company: x.company.name, logo: x.company.logo !== null, clientLogo: x.clientLogo != null,
+    // the title block's words (the lift exists: its plant number is to be given when missing), the records the set goes with
+    ...titleOf(x, pages, true), refs: refsText(x.records),
   };
 }

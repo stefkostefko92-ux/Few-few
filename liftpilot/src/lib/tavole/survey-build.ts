@@ -7,11 +7,12 @@ import { A4, COND, PALETTE, concreteTile, drawingArea, frame, sheetTitle, strip,
 import { deriveRoom, type RoomDerived } from '../room/derive';
 import { inset, roomMarks } from './build';
 import { scaleLabel } from './extras';
-import { dateIt, placeLines } from './input';
+import { placeLines } from './input';
+import { currentRevision, type TitleData } from './title-block';
 import { surveySheetData } from './survey-data';
 import type { SurveyTavoleInput } from './survey-input';
 import { surveySheetShapes } from './survey-sheet';
-import { machineText, surveyView } from './views';
+import { machineName, surveyView } from './views';
 
 export interface SurveyTavoleResult {
   doc: DrawingDoc;
@@ -20,6 +21,8 @@ export interface SurveyTavoleResult {
   sheets: { title: string; scale: number | null }[];
   /** the dimensions of each sheet the screens let change (not part of the document) */
   hits: Hit[][];
+  /** what sheet 1's title block writes (the attributes of the title block of the CAD files: cad/set-export.ts) */
+  title: TitleData;
 }
 
 const LOADS = 'CARICHI: VALORI NEL FOGLIO 1';
@@ -31,13 +34,14 @@ const SPECS = [
 export function buildSurveyTavole(x: SurveyTavoleInput): SurveyTavoleResult {
   const d = deriveRoom(x.values, x.survey);
   if (!d.G) throw new Error('no machine room over the shaft');
-  // the machine named as the data of the installation name it, else as the catalogue
-  const M = { ...d.M, label: machineText(x.plant, d.made) }, pages = SPECS.length + 1;
-  const [l1, l2] = placeLines(x.project), last = x.set.revisions[x.set.revisions.length - 1];
+  // the machine named as the catalogue names it, else as the data of the installation
+  const M = { ...d.M, label: machineName(x.plant, d.made) }, pages = SPECS.length + 1;
+  const [l1, l2] = placeLines(x.project), sheet = surveySheetData(x, d, pages);
+  // the strip of every sheet: the revision and the plant number as the title block writes them
   const meta = (page: number): SheetMeta => ({
-    number: x.set.number, page, pages, revision: last ? `${last.mark} ${dateIt(last.date)}` : '', location: `${l1} - ${l2}`, plant: x.project.plantNumber || '—',
+    number: x.set.number, page, pages, revision: currentRevision(sheet), location: `${l1} - ${l2}`, plant: sheet.plant,
   });
-  const out: Page[] = [{ w: A4.w, h: A4.h, shapes: [...frame(), ...surveySheetShapes(surveySheetData(x, d, pages))] }];
+  const out: Page[] = [{ w: A4.w, h: A4.h, shapes: [...frame(), ...surveySheetShapes(sheet)] }];
   const sheets: SurveyTavoleResult['sheets'] = [{ title: 'DATI DELLA SOSTITUZIONE DELL’ARGANO', scale: null }], hits: Hit[][] = [[]];
   SPECS.forEach((s, i) => {
     const area = drawingArea(true), v = surveyView(d, s.k, inset(area, 8, 8, 8, 8), M);
@@ -52,5 +56,5 @@ export function buildSurveyTavole(x: SurveyTavoleInput): SurveyTavoleResult {
     palette: PALETTE, patterns: { concrete: concreteTile() }, cond: COND,
     images: { ...(x.company.logo ? { logo: x.company.logo } : {}), ...(x.clientLogo ? { client: x.clientLogo } : {}) }, pages: out,
   };
-  return { doc, derived: d, sheets, hits };
+  return { doc, derived: d, sheets, hits, title: sheet };
 }

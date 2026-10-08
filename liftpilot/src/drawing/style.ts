@@ -51,5 +51,11 @@ export const FILLS: Readonly<Record<FillName, Fill>> = {
   paper: { k: 'solid', ink: 'paper' },
 };
 
-/** Lettering sizes on paper [mm]. */
-export const TEXT = { dim: 2.8, label: 2.5, small: 1.6, note: 1.9, title: 3.6, subtitle: 2.4 } as const;
+/** Lettering sizes on paper [mm] (font size). `min`: the smallest lettering of the drawings — names, codes and the
+ *  references of the loads —, 2,5 mm of DejaVu Sans being capitals 1,8 mm high, the smallest of the heights ISO 3098-1
+ *  lists (registry tavole.caratteri); a name that does not fit at it is not made smaller: it goes out on a leader
+ *  (view.ts). The dimensions keep their own (dims.ts). */
+export const TEXT = { dim: 2.8, label: 2.5, small: 1.6, note: 1.9, title: 3.6, subtitle: 2.4, min: 2.5 } as const;
+
+/** The size a lettering of a drawing is drawn at: the one asked (the label's when none), never under `TEXT.min`. */
+export const letterSize = (size?: number): number => Math.max(size ?? TEXT.label, TEXT.min);

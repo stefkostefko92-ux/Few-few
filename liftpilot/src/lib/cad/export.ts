@@ -4,9 +4,9 @@
 // millimetres, so lettering and dimensions plot at their paper size at that scale; several views stand side by side in
 // model space, the first at its own coordinates (the shaft's corner at the origin, a section's 0 at the lowest floor),
 // the next ones moved along x only. One layer per kind of part; dimensions drawn as lines, arrowheads and texts, so
-// that every CAD program shows them the same way. The plan of a shaft design alone here, every view of a project in
-// project.ts.
-import { renderView, type Entity, type Place, type Pt, type Shape } from '@/drawing';
+// that every CAD program shows them the same way; concrete hatched with ANSI31, the dark fills solid. The plan of a
+// shaft design alone here, every view of a project in project.ts, an issued set with its sheet 1 in set-export.ts.
+import { renderView, type Entity, type Fill, type Place, type Pt, type Shape } from '@/drawing';
 import { planDims, planEntities, type Layout } from '@/shaft';
 import { acad } from './acad';
 
@@ -18,7 +18,7 @@ const LAYERS: Readonly<Record<DxfLayer, number>> = {
 };
 
 /** Model millimetres between two views side by side. */
-const GAP = 2500;
+export const GAP = 2500;
 
 // Windows-1252 beyond Latin-1, and the signs of the drawings outside it in ASCII
 const CP1252 = '€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ';
@@ -53,9 +53,13 @@ export interface CadView {
   entities: readonly Entity[];
 }
 
+/** The two files: DXF in the AutoCAD 2007 format, DWG in the AutoCAD 2000 one. */
+export type CadFormat = 'dxf' | 'dwg';
+const VERSION: Readonly<Record<CadFormat, acad.ACadVersion>> = { dxf: acad.ACadVersion.AC1021, dwg: acad.ACadVersion.AC1015 };
+
 /** The views in one document; `title` under the first view (what the drawing is, its record and its hash). */
-export function cadDocument(views: readonly CadView[], title: string, version: acad.ACadVersion): acad.CadDocument {
-  const doc = new acad.CadDocument();
+export function cadDocument(views: readonly CadView[], title: string, format: CadFormat): acad.CadDocument {
+  const doc = new acad.CadDocument(), version = VERSION[format];
   const { header, layers: table, modelSpace: space } = doc;
   if (!header || !table || !space) throw new Error('empty CAD document');
   header.version = version;
@@ -78,7 +82,7 @@ export function cadDocument(views: readonly CadView[], title: string, version: a
     const place: Place = { scale: v.scale, ox: 0, oy: 0 }, { extent, parts } = renderView(v.entities, place);
     // the first view where its coordinates are, the next ones after it along x
     const dx = cursor === null ? 0 : cursor - extent.x0 * v.scale;
-    const emit = writer(add, v.scale, dx, text);
+    const emit = writer(add, v.scale, dx, text, { degrees: format === 'dxf' });
     v.entities.forEach((e, k) => {
       const l = layerOf(e);
       for (const s of parts[k] ?? []) emit(s, l);
@@ -90,17 +94,61 @@ export function cadDocument(views: readonly CadView[], title: string, version: a
   return doc;
 }
 
+/** How shapes are written besides their scale: moved by `dy` along y too; condensed lettering `cond` times as wide (a
+ *  sheet's tables, lettered to fit); the angle of a hatch's lines in degrees (a DXF) or in radians (a DWG). */
+export interface WriteOptions {
+  dy?: number;
+  cond?: number;
+  degrees?: boolean;
+}
+
+/** ANSI31, the section hatch of masonry and concrete: lines at 45°, 3,175 mm apart at scale 1. */
+const ANSI31 = { angle: 45, spacing: 3.175 } as const;
+/** The hatch's scale for each unit of the view's scale: lines 1,6 mm apart on paper. */
+const HATCH_PER_SCALE = 0.5;
+
+/** The hatch of a closed outline (model millimetres): ANSI31 for concrete, solid for the dark fills (arrowheads, the
+ *  dots of the leaders, the black parts of the symbols); none for the tints of the car, the doors, the counterweight. */
+function hatchOf(pts: readonly acad.XY[], fill: Fill | undefined, scale: number, degrees: boolean): acad.Hatch | null {
+  const kind = fill?.k === 'pattern' ? 'concrete' : fill?.k === 'solid' && (fill.ink === 'dark' || fill.ink === 'ink') ? 'solid' : null;
+  if (!kind || pts.length < 3) return null;
+  const h = new acad.Hatch(), edge = new acad.HatchBoundaryPathPolyline();
+  edge.vertices = pts.map((p) => new acad.XYZ(p.x, p.y, 0));
+  edge.isClosed = true;
+  const path = new acad.HatchBoundaryPath([edge]);
+  path.flags = acad.BoundaryPathFlags.External | acad.BoundaryPathFlags.Polyline;
+  h.paths.push(path);
+  // (acad-ts names DXF's pattern types wrong: its "SolidFill", 1, is the predefined pattern of a .pat file)
+  h.patternType = acad.HatchPatternType.SolidFill;
+  if (kind === 'solid') {
+    h.isSolid = true;
+    h.pattern = acad.HatchPattern.solid;
+    h.patternScale = 1;
+    return h;
+  }
+  const pattern = new acad.HatchPattern('ANSI31'), line = new acad.HatchPatternLine(), a = (ANSI31.angle * Math.PI) / 180;
+  line.offset = new acad.XY(-Math.sin(a) * ANSI31.spacing, Math.cos(a) * ANSI31.spacing);
+  pattern.lines.push(line);
+  h.pattern = pattern;
+  h.patternScale = HATCH_PER_SCALE * scale;
+  // acad-ts writes the angle of a line as it is given: a DXF reader takes degrees, a DWG one radians
+  line.angle = degrees ? ANSI31.angle : a;
+  return h;
+}
+
 /** Writes paper shapes (paper millimetres at 1:scale) as entities in model millimetres, moved by dx along x. */
-function writer(add: (e: acad.Entity, l: DxfLayer) => void, scale: number, dx: number, text: (t: string) => string): (s: Shape, l: DxfLayer) => void {
-  const M = ([x, y]: Pt): acad.XYZ => new acad.XYZ(x * scale + dx, y * scale, 0);
+export function writer<L extends string>(add: (e: acad.Entity, l: L) => void, scale: number, dx: number, text: (t: string) => string, o: WriteOptions = {}): (s: Shape, l: L) => void {
+  const dy = o.dy ?? 0, M = ([x, y]: Pt): acad.XYZ => new acad.XYZ(x * scale + dx, y * scale + dy, 0);
   return (s, l) => {
     switch (s.t) {
       case 'line':
         add(new acad.Line(M(s.a), M(s.b)), l);
         return;
       case 'path': {
+        const pts = s.pts.map(([x, y]) => new acad.XY(x * scale + dx, y * scale + dy)), h = s.closed ? hatchOf(pts, s.fill, scale, o.degrees ?? false) : null;
+        if (h) add(h, l);
         if (!s.s || s.pts.length < 2) return;
-        const pl = new acad.LwPolyline(s.pts.map(([x, y]) => new acad.XY(x * scale + dx, y * scale)));
+        const pl = new acad.LwPolyline(pts);
         pl.isClosed = s.closed;
         add(pl, l);
         return;
@@ -127,6 +175,7 @@ function writer(add: (e: acad.Entity, l: DxfLayer) => void, scale: number, dx: n
         // DXF height is the capital height: about 0,73 of the font size for DejaVu Sans
         t.height = s.size * 0.73 * scale;
         t.rotation = ((s.angle ?? 0) * Math.PI) / 180;
+        if (o.cond && s.cond) t.widthFactor = o.cond;
         t.insertPoint = M(s.at);
         if (s.align && s.align !== 'l') {
           t.horizontalAlignment = s.align === 'c' ? acad.TextHorizontalAlignment.Center : acad.TextHorizontalAlignment.Right;
@@ -141,15 +190,18 @@ function writer(add: (e: acad.Entity, l: DxfLayer) => void, scale: number, dx: n
   };
 }
 
-/** DXF text (AutoCAD 2007). */
-export function toDxf(views: readonly CadView[], title: string): string {
+/** A document as DXF text. */
+export function dxfText(doc: acad.CadDocument): string {
   const out: string[] = [];
-  new acad.DxfWriter({ write: (v: string) => { out.push(v); } }, cadDocument(views, title, acad.ACadVersion.AC1021)).write();
+  new acad.DxfWriter({ write: (v: string) => { out.push(v); } }, doc).write();
   return out.join('');
 }
 
+/** DXF text (AutoCAD 2007). */
+export const toDxf = (views: readonly CadView[], title: string): string => dxfText(cadDocument(views, title, 'dxf'));
+
 /** DWG bytes (AutoCAD 2000). */
-export const toDwg = (views: readonly CadView[], title: string): Uint8Array => acad.DwgWriter.writeToBuffer(cadDocument(views, title, acad.ACadVersion.AC1015));
+export const toDwg = (views: readonly CadView[], title: string): Uint8Array => acad.DwgWriter.writeToBuffer(cadDocument(views, title, 'dwg'));
 
 /** The plan of a shaft design at its main floor, at 1:scale. */
 export function planToDxf(L: Layout, title: string, scale = 20): string {

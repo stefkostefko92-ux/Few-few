@@ -8,7 +8,7 @@
 // keeps the generic bracket with its articles' code. A generic bracket as the 3D's railfix.ts builds it: the plate
 // behind the foot with its two clips, one angle out to the wall (two bolted together past 150 mm), the wall plate and
 // its anchors.
-import { circle, line, path, type Entity, type Pt } from '../drawing';
+import { TEXT, circle, line, path, type Entity, type Pt } from '../drawing';
 import { bracketCount, railSpan } from './brackets';
 import { cwNiche } from './niche';
 import { ANCHOR, HEAD, hex, slot, type BracketPlan } from './plan-parts';
@@ -95,7 +95,7 @@ export function panevSupportPlan(L: Layout, r: Rail, label: boolean, head?: Head
     const behind = (I.wall - Math.max(0, g.inset)) / 2, along = g.wall === 'front' || g.wall === 'rear';
     // from the support's end nearer the corner, toward the middle of the wall
     const ends = [u0, u0 + sx * k.flange], lo = Math.min(...ends), hi = Math.max(...ends), first = lo + hi < 2 * (along ? I.W : I.D) / 2;
-    over.push({ e: 'text', at: P(((first ? lo : hi) - u0) / sx, -behind), text: code, size: 1.6, align: first ? 'l' : 'r', halo: true, angle: along ? 0 : 90 });
+    over.push({ e: 'text', at: P(((first ? lo : hi) - u0) / sx, -behind), text: code, size: TEXT.min, align: first ? 'l' : 'r', halo: true, angle: along ? 0 : 90 });
   }
   return { under: out, over };
 }
@@ -107,7 +107,7 @@ export function specialPlanLabel(L: Layout, r: Rail, code: string | null): Entit
   if (!code || !cwSpecialOf(I)) return [];
   const x = r.bracketAxis === 'x', wall: Wall = x ? (r.bracketTo > I.W / 2 ? 'right' : 'left') : r.bracketTo > I.D / 2 ? 'rear' : 'front';
   const u = x ? r.y : r.x, first = 2 * u < (x ? I.D : I.W);
-  return [{ e: 'text', at: onWall(L, wall, u, -I.wall / 2), text: code, size: 1.6, align: first ? 'l' : 'r', halo: true, angle: x ? 90 : 0 }];
+  return [{ e: 'text', at: onWall(L, wall, u, -I.wall / 2), text: code, size: TEXT.min, align: first ? 'l' : 'r', halo: true, angle: x ? 90 : 0 }];
 }
 
 /** A generic bracket of a rail seen from above, reaching the wall (or the bridge) at the rail's bracketTo. */

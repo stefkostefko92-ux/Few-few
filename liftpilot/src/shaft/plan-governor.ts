@@ -2,7 +2,7 @@
 // every level — the one clamped to the car and the free one — and in the pit the tension weight under them
 // (components/lift3d/tension.ts): the pulley seen from above, the lever's bars from the hinge by the car rail with the
 // weight at their end, or the vertical kind's channel on the rail with the weight hung under the pulley. Pure.
-import { chain, edit as E, line, rect, type Edit, type Entity } from '../drawing';
+import { TEXT, chain, edit as E, line, rect, type Edit, type Entity } from '../drawing';
 import { TENSION, governorSpot, type GovernorSpot } from './governor';
 import { RAILS } from './rails';
 import type { Layout } from './types';
@@ -26,7 +26,7 @@ export function governorPlan(L: Layout, pit: boolean): Entity[] {
   out.push(box(-G.half, G.half, -G.R, G.R, 'outline', 'paper'), line([x - G.half - 40, yc], [x + G.half + 40, yc], 'axis'));
   // the label below the pulley, toward the car: the car rail's load P5 is tagged beside the pulley
   const inward = g.side === 'left' ? 1 : -1;
-  out.push({ e: 'text', at: [x + inward * (G.half + 70), yc - G.R - 70], text: `Tenditore ${g.lever ? T.leverKg : T.hangKg} kg`, size: 1.6, align: inward > 0 ? 'l' : 'r', halo: true });
+  out.push({ e: 'text', at: [x + inward * (G.half + 70), yc - G.R - 70], text: `Tenditore ${g.lever ? T.leverKg : T.hangKg} kg`, size: TEXT.min, align: inward > 0 ? 'l' : 'r', halo: true });
   return out;
 }
 

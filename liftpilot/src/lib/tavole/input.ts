@@ -6,7 +6,7 @@ import type { ValueMarks } from '../lift/marks';
 import type { Plant } from '../plant';
 
 export interface TavoleRevision {
-  /** R1, R2, R3 */
+  /** R1, R2, R3 (R0, the first issue, is the set's own date) */
   mark: string;
   text: string;
   date: Date;
@@ -29,7 +29,24 @@ export interface TavoleInput {
     /** initials of who drew the set */
     author: string;
     revisions: readonly TavoleRevision[];
+    /** the date of the first issue (R0) of a revised set; none: `issuedAt` (the first issue itself) */
+    firstIssuedAt?: Date;
   };
+  /** the records the set is drawn from, as sheet 1 names them (the relazione of the same calculation goes with it):
+   *  the calculation, the shaft design of a whole project or the machine room surveyed of a replacement */
+  records?: SetRecords;
+}
+
+/** A stored record: its id and SHA-256. */
+export interface RecordRef {
+  id: string;
+  sha256: string;
+}
+
+export interface SetRecords {
+  calc: RecordRef;
+  design?: RecordRef;
+  room?: RecordRef;
 }
 
 /** dd/mm/yyyy in Italy's time zone. */

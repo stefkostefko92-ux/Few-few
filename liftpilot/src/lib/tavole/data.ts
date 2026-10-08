@@ -24,8 +24,9 @@ import { section } from '@/shaft/section';
 import type { DataSheet, Row } from './datasheet';
 import { railForces } from './forces';
 import { railCheck, railChecks } from './rail-check';
-import { dateIt, placeLines, type TavoleInput } from './input';
-import { loads } from './loads';
+import type { TavoleInput } from './input';
+import { GOVERNOR_LOAD_UNSET, loadNames, loads } from './loads';
+import { refsText, titleOf } from './title-data';
 import { belowGeoOf, machineOf, machineText } from './views';
 import { clientNotes, estimateNote, railNote, safetyGearNote, spaceLegend } from './notes';
 import { NORMA_SIGLA, ambitoOf, collaudoOf } from '../lift/collaudo';
@@ -171,7 +172,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
       ...hebRows(hebOf(L, M, { machine, static: ld.static, dyn, car: carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes: ropesKg, cables: cablesKg }) })?.chosen ?? null, fmt)]),
   ];
   const each = [false, false, false, false, true, V.carBuffers > 1, true, false, false];
-  const P = ld.P.map((p, i) => (p === null ? '—' : `${each[i] ? 'cad. ' : ''}${fmt(p, 0)}`));
+  const P = ld.P.map((p, i) => (p === null ? (i === 3 ? GOVERNOR_LOAD_UNSET : '—') : `${each[i] ? 'cad. ' : ''}${fmt(p, 0)}`));
   const gear = Pl.safetyGear ?? 'progressive', F = railForces(L, I.P, I.Q, gear);
   // the car rails between their brackets (the pitch declared or the rule's), at the loads of this sheet
   const [z0, z1] = railSpan(S), hs = bracketHeights(z0, z1, L.inputs.carRail, Pl.carBracketPitch);
@@ -207,9 +208,8 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
       base, specs, loads: loadRows, notes, legend: [sp.free, sp.pit, sp.top],
       forces: { fx: fmt(F.fx, 0), fy: fmt(F.fy, 0) }, checks,
       electric: [['TENSIONE F.M.', 'V', num(Pl.voltage)], ['LUCE', 'V', num(Pl.lightVoltage)], ['FREQUENZA', 'Hz', num(Pl.frequency)], ['INTERMITTENZA', '%', num(Pl.duty)]],
-      P, client: x.project.client || '—', location: placeLines(x.project), author: x.set.author, date: dateIt(x.set.issuedAt),
-      revisions: x.set.revisions.map((r) => ({ mark: r.mark, text: r.text, date: dateIt(r.date) })),
-      number: x.set.number, pages, plant: x.project.plantNumber || '—', company: x.company.name, logo: x.company.logo !== null, clientLogo: x.clientLogo != null,
+      // the title block's words (an existing lift's plant number is to be given), the records the set goes with
+      P, loadNames: loadNames(below), ...titleOf(x, pages, C.norma !== 'en81'), refs: refsText(x.records),
     },
   };
 }

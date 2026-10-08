@@ -4,6 +4,7 @@
 import type { Stato } from '@/calc/norme';
 import { letto } from '@/calc/norme-fonti';
 import { SHEAVE_GRID } from '@/calc/sizing';
+import { VOCI_TAVOLE } from '../tavole/norme-tavole';
 
 export const KL = {
   // estimate of the empty car mass when it is not entered: P = ratio · Q, rounded up to the step [kg]
@@ -222,4 +223,6 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
       + 'delle funi (fune oltre la corsa, distanza del rinvio): ogni puleggia della griglia è dimensionata con la propria, e con il rinvio dalla '
       + 'pianta solo le pulegge per cui la pianta sa posizionare il rinvio',
   },
+  // what the drawing set writes by choice or by practice (src/lib/tavole/norme-tavole.ts)
+  ...VOCI_TAVOLE,
 ];

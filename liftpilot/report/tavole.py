@@ -2,8 +2,9 @@
 """Tavole di progetto: paints the drawing set laid out by src/lib/tavole (JSON on stdin) as a PDF on stdout.
 Painter only: every position, size, word and colour arrives computed; paper millimetres, origin bottom-left, y up.
 
-Fonts: DejaVu Sans (fonts.py), condensed lettering by horizontal scaling. The concrete speckle is the document's tile,
-drawn once as a form and repeated inside a clipping path. Works with ReportLab 3.6 (Debian bookworm) and later.
+Fonts: DejaVu Sans (fonts.py), condensed lettering by horizontal scaling; the halo under a lettering is the outline of its
+glyphs stroked in the paper's colour (glyphs.py), so each word is in the PDF once. The concrete speckle is the document's
+tile, drawn once as a form and repeated inside a clipping path. Works with ReportLab 3.6 (Debian bookworm) and later.
 """
 import base64
 import io
@@ -17,9 +18,19 @@ from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.pdfgen import canvas
 
 import fonts
+from glyphs import Outlines
 from images import decodable
 
 K = 72 / 25.4  # points per millimetre
+
+_OUTLINES = {}
+
+
+def outlines(font):
+    """The glyph outlines of a registered font (fonts.py), read once."""
+    if font not in _OUTLINES:
+        _OUTLINES[font] = Outlines(fonts.path_of(font))
+    return _OUTLINES[font]
 
 
 class Painter:
@@ -29,6 +40,8 @@ class Painter:
         self.cond = doc["cond"]
         self.patterns = doc["patterns"]
         self.forms = set()
+        # the glyph forms of the halos drawn (glyph_form)
+        self.halos = set()
         # the logos by name: the company's ("logo") and the client's ("client"); one that does not decode stays out
         raw = {k: base64.b64decode(v["data"]) for k, v in doc.get("images", {}).items()}
         self.images = {k: ImageReader(io.BytesIO(data)) for k, data in raw.items() if decodable(data)}
@@ -93,27 +106,77 @@ class Painter:
         scale = self.cond if s.get("cond") else 1.0
         width = stringWidth(s["text"], font, size) * scale
         dx = {"l": 0, "c": -width / 2, "r": -width}[s.get("align", "l")]
-        # the text rendering mode belongs to the graphics state: each pass in its own q/Q, so the halo's stroke mode
-        # does not leak into the letters (a new text object assumes mode 0 and does not set it)
-        for mode in ((1, 0) if s.get("halo") else (0,)):
-            c.saveState()
-            c.translate(s["at"][0] * K, s["at"][1] * K)
-            if s.get("angle"):
-                c.rotate(s["angle"])
-            t = c.beginText()
-            t.setTextOrigin(dx, 0)
-            t.setFont(font, size)
-            t.setHorizScale(scale * 100)
-            if mode == 1:
-                t.setTextRenderMode(1)
-                c.setStrokeColor(self.palette["paper"])
-                c.setLineWidth(0.9 * K)
-                c.setLineJoin(1)
-            else:
-                t.setFillColor(self.palette[s.get("ink", "ink")])
-            t.textOut(s["text"])
-            c.drawText(t)
-            c.restoreState()
+        c.saveState()
+        c.translate(s["at"][0] * K, s["at"][1] * K)
+        if s.get("angle"):
+            c.rotate(s["angle"])
+        # the halo: the letters' outlines stroked in the paper's colour under them, a path (the words are in the PDF once)
+        if s.get("halo"):
+            self.halo(s["text"], font, size, scale, dx)
+        t = c.beginText()
+        t.setTextOrigin(dx, 0)
+        t.setFont(font, size)
+        t.setHorizScale(scale * 100)
+        t.setFillColor(self.palette[s.get("ink", "ink")])
+        t.textOut(s["text"])
+        c.drawText(t)
+        c.restoreState()
+
+    def halo(self, text, font, size, scale, dx):
+        """The outlines of `text` as the text object sets it (each glyph at its advance, scaled horizontally), stroked
+        0,9 mm wide in the paper's colour with round joins, in the current coordinates (the text's origin). Each glyph at
+        a size is drawn once, as a form, and placed where it recurs (the sheets repeat few signs at few sizes)."""
+        c, g, pen = self.c, outlines(font), 0.0
+        for ch in text:
+            name = self.glyph_form(g, font, g.glyph(ch), size, scale)
+            if name:
+                c.saveState()
+                c.translate(dx + pen * scale, 0)
+                c.doForm(name)
+                c.restoreState()
+            pen += stringWidth(ch, font, size)
+
+    def glyph_form(self, g, font, gid, size, scale):
+        """The form of a glyph's halo at a size (origin on the baseline at the glyph's start); None for an empty glyph."""
+        name = "H%s_%d_%d_%d" % ("b" if font.endswith("Bold") else "r", gid, round(size * 1000), round(scale * 1000))
+        if name in self.forms:
+            return name if name in self.halos else None
+        self.forms.add(name)
+        contours = g.contours(gid)
+        if not contours:
+            return None
+        k = size / g.upm
+        at = lambda q: (q[0] * k * scale, q[1] * k)
+        xs = [at(q)[0] for cnt in contours for seg in cnt for q in seg[1:]]
+        ys = [at(q)[1] for cnt in contours for seg in cnt for q in seg[1:]]
+        m = 0.6 * K
+        c = self.c
+        c.beginForm(name, lowerx=min(xs) - m, lowery=min(ys) - m, upperx=max(xs) + m, uppery=max(ys) + m)
+        p = c.beginPath()
+        for contour in contours:
+            cur = None
+            for seg in contour:
+                if seg[0] == "M":
+                    cur = at(seg[1])
+                    p.moveTo(*cur)
+                elif seg[0] == "L":
+                    cur = at(seg[1])
+                    p.lineTo(*cur)
+                else:
+                    q, e = at(seg[1]), at(seg[2])
+                    p.curveTo(cur[0] + 2 / 3 * (q[0] - cur[0]), cur[1] + 2 / 3 * (q[1] - cur[1]),
+                              e[0] + 2 / 3 * (q[0] - e[0]), e[1] + 2 / 3 * (q[1] - e[1]), e[0], e[1])
+                    cur = e
+            p.close()
+        c.setStrokeColor(self.palette["paper"])
+        c.setLineWidth(0.9 * K)
+        c.setLineJoin(1)
+        c.setLineCap(1)
+        c.setDash([])
+        c.drawPath(p, stroke=1, fill=0)
+        c.endForm()
+        self.halos.add(name)
+        return name
 
     def image(self, s):
         img = self.images.get(s["ref"])

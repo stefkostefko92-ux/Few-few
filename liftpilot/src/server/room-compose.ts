@@ -13,8 +13,9 @@ import { reproduceRoom } from '@/lib/room-hash';
 import type { RoomDerived } from '@/lib/room/derive';
 import type { Survey } from '@/lib/room/survey';
 import { storedParts, type ProjectData, type StoredSet } from '@/lib/tavole/compose';
-import type { TavoleRevision } from '@/lib/tavole/input';
+import type { SetRecords, TavoleRevision } from '@/lib/tavole/input';
 import { buildSurveyTavole } from '@/lib/tavole/survey-build';
+import type { TitleData } from '@/lib/tavole/title-block';
 import type { SurveyTavoleInput } from '@/lib/tavole/survey-input';
 import { tavoleHash } from '@/lib/tavole-hash';
 import { SET_PROJECT, setBasis, type ComposeError } from './drawing-compose';
@@ -35,6 +36,8 @@ export interface RoomComposed {
   companyName: string;
   doc: DrawingDoc;
   input: SurveyTavoleInput;
+  /** the catalogue's machine of the calculation, when it has one (the name its sheets give the machine) */
+  made: { brand: string; model: string } | null;
   sha256: string;
   pages: number;
 }
@@ -52,7 +55,7 @@ export function reproduceRoomRecord(r: { inputs: unknown; sha256: string }, c: {
 
 /** `readOnly`: a draft, allowed for an archived project too (an issue is not). */
 export async function composeFromRoom(
-  tx: Tx, user: SessionUser, roomDesignId: string, set: { number: string; issuedAt: Date; author: string; revisions: TavoleRevision[] }, readOnly = false,
+  tx: Tx, user: SessionUser, roomDesignId: string, set: { number: string; issuedAt: Date; author: string; revisions: TavoleRevision[]; firstIssuedAt?: Date }, readOnly = false,
 ): Promise<RoomComposed | ComposeError> {
   const r = await tx.roomDesign.findFirst({
     where: { id: roomDesignId, companyId: user.companyId },
@@ -65,23 +68,29 @@ export async function composeFromRoom(
   const b = await setBasis(tx, user, r.project, set);
   const parts = b ? storedParts(b.stored, b.logo, b.clientLogo) : null;
   if (!b || !parts) return { ok: false, error: 'notFound' };
-  const input: SurveyTavoleInput = { values: rep.values, survey: rep.survey, collaudo: rep.collaudo, ...parts };
+  const input: SurveyTavoleInput = { values: rep.values, survey: rep.survey, collaudo: rep.collaudo, ...parts, records: roomRecords(r.calculation, r) };
   const { doc } = buildSurveyTavole(input);
-  return { ok: true, ...b.row, calculationId: r.calculation.id, roomDesignId: r.id, doc, input, sha256: tavoleHash(doc), pages: doc.pages.length };
+  return { ok: true, ...b.row, calculationId: r.calculation.id, roomDesignId: r.id, doc, input, made: rep.derived.made, sha256: tavoleHash(doc), pages: doc.pages.length };
 }
 
-/** An issued set of a replacement drawn again from its snapshots; an error when the engines do not reproduce it. */
+/** The records a replacement's set cites on sheet 1: the machine room surveyed and its calculation. */
+const roomRecords = (c: { id: string; sha256: string }, r: { id: string; sha256: string }): SetRecords =>
+  ({ calc: { id: c.id, sha256: c.sha256 }, room: { id: r.id, sha256: r.sha256 } });
+
+/** An issued set of a replacement drawn again from its snapshots, with what it was drawn from; an error when the engines
+ *  do not reproduce it. */
 export function composeStoredRoom(s: StoredSet & {
   sha256: string;
-  calculation: { inputs: unknown; sha256: string; collaudo: unknown };
-  roomDesign: { inputs: unknown; sha256: string };
+  calculation: { id: string; inputs: unknown; sha256: string; collaudo: unknown };
+  roomDesign: { id: string; inputs: unknown; sha256: string };
   logo: { mime: string; data: Uint8Array } | null;
   clientLogo?: { mime: string; data: Uint8Array } | null;
-}): { doc: DrawingDoc } | ComposeError {
+}): { doc: DrawingDoc; input: SurveyTavoleInput; derived: RoomDerived; title: TitleData } | ComposeError {
   const rep = reproduceRoomRecord(s.roomDesign, s.calculation);
   if (!rep.ok) return rep;
   const parts = storedParts(s, usableLogo(s.logo), usableLogo(s.clientLogo ?? null));
   if (!parts) return { ok: false, error: 'notFound' };
-  const { doc } = buildSurveyTavole({ values: rep.values, survey: rep.survey, collaudo: rep.collaudo, ...parts });
-  return tavoleHash(doc) === s.sha256 ? { doc } : { ok: false, error: 'engineChanged' };
+  const input: SurveyTavoleInput = { values: rep.values, survey: rep.survey, collaudo: rep.collaudo, ...parts, records: roomRecords(s.calculation, s.roomDesign) };
+  const { doc, derived, title } = buildSurveyTavole(input);
+  return tavoleHash(doc) === s.sha256 ? { doc, input, derived, title } : { ok: false, error: 'engineChanged' };
 }

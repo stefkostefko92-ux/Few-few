@@ -195,15 +195,17 @@ export function roofSpaces(L: Layout): { refuge: Box; free: Box } {
 
 /** Where the loads on the pit floor act (see loads.ts): P5 car rails, P6 car buffers, P7 counterweight rails, P8 its buffer. */
 function pitTags(L: Layout): Entity[] {
-  const out: Entity[] = [], cx = L.car.x + L.car.w / 2, cy = L.car.y + L.car.h / 2;
-  const toward = (p: Pt, d: number): Pt => {
-    const dx = cx - p[0], dy = cy - p[1], n = Math.hypot(dx, dy) || 1;
-    return [p[0] + (dx / n) * d, p[1] + (dy / n) * d];
-  };
+  const out: Entity[] = [], cx = L.car.x + L.car.w / 2;
   for (const r of L.rails) {
     const foot: Pt = [r.x, r.y], at: Pt = r.kind === 'car' ? [r.x + (r.x < cx ? 120 : -120), r.y + 230] : [r.x + (r.x < cx ? 230 : -230), r.y];
     out.push({ e: 'tag', at, text: r.kind === 'car' ? 'P5' : 'P7', to: foot });
   }
-  for (const b of bufferPlan(L).spots) out.push({ e: 'tag', at: b.kind === 'car' ? toward(b.c, -230) : [b.c[0] + 230, b.c[1] + 160], text: b.kind === 'car' ? 'P6' : 'P8', to: b.c });
+  // a car buffer's tag toward the doors, a little outward: off the rails and their brackets, its leader off the car's
+  // axes (two buffers stand on one, a single one on both)
+  const carTag = (c: Pt): Pt => {
+    const s = Math.sign(c[0] - cx) || 1;
+    return [c[0] + s * 110, c[1] - 290];
+  };
+  for (const b of bufferPlan(L).spots) out.push({ e: 'tag', at: b.kind === 'car' ? carTag(b.c) : [b.c[0] + 230, b.c[1] + 160], text: b.kind === 'car' ? 'P6' : 'P8', to: b.c });
   return out;
 }

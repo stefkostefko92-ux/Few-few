@@ -66,8 +66,10 @@ export type Entity =
   | { e: 'path'; pts: readonly Pt[]; closed: boolean; st?: StyleName; fill?: FillName }
   | { e: 'circle'; c: Pt; r: number; st?: StyleName; fill?: FillName }
   | { e: 'arc'; c: Pt; r: number; a0: number; a1: number; st: StyleName }
-  /** lettering at a model point, size on paper [mm]; `fit`: the most model length it may take (smaller when longer) */
-  | { e: 'text'; at: Pt; text: string; size?: number; angle?: number; align?: Align; bold?: boolean; ink?: Ink; halo?: boolean; fit?: number }
+  /** lettering at a model point, size on paper [mm] (never under TEXT.min); `fit`: the most model length it may take
+   *  (smaller when longer, down to TEXT.min); `out`: where it goes instead when even then it does not fit, on a leader
+   *  back to `at` */
+  | { e: 'text'; at: Pt; text: string; size?: number; angle?: number; align?: Align; bold?: boolean; ink?: Ink; halo?: boolean; fit?: number; out?: Pt }
   /** a symbol of fixed paper size at a model point */
   | { e: 'mark'; at: Pt; sym: SymbolName; size?: number }
   /** a reference in a small circle (e.g. a load P5), with a leader to the element it names */

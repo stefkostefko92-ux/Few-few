@@ -38,8 +38,8 @@ export interface TecnicaInput {
   derived: RoomDerived;
   collaudo: Collaudo;
   plant: Plant;
-  /** the drawing sets issued from this room: their number and revision */
-  sets: readonly { number: string; revision: number }[];
+  /** the drawing sets issued from this room: their number, revision and the SHA-256 of their drawing */
+  sets: readonly { number: string; revision: number; sha256?: string }[];
   generatedAt: Date;
 }
 
@@ -160,7 +160,7 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
   section('Allegati');
   B.push({ t: 'list', items: [
     `Relazione di calcolo dell’argano, calcolo ${r.calc.id} (SHA-256 ${r.calc.sha256.slice(0, 16)}…)`,
-    r.sets.length ? `Tavole di progetto n. ${r.sets.map((x) => `${x.number}${x.revision ? ` R${x.revision}` : ''}`).join(', ')}` : 'Tavole di progetto: da emettere dal rilievo del locale',
+    r.sets.length ? `Tavole di progetto n. ${r.sets.map((x) => `${x.number} R${x.revision}${x.sha256 ? ` (SHA-256 ${x.sha256.slice(0, 16)}…)` : ''}`).join(', ')}` : 'Tavole di progetto: da emettere dal rilievo del locale',
     'Scheda tecnica e dichiarazioni del costruttore del nuovo argano (da allegare)',
   ] });
 

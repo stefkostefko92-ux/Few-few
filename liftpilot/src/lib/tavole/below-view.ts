@@ -9,7 +9,7 @@
 // the shaft's (W, D, its wall, the pit) as on its own drawings; the machine's place and its sheave's axis follow the
 // ropes and stay references —; the machine is the 3D's (machine-outline.ts) scaled to the sheave or a maker's as it is,
 // its side view the outline of its body. Pure.
-import { chain, edit as E, line, path, rect, textWidth, type Box, type Edit, type Entity, type Pt } from '@/drawing';
+import { TEXT, chain, edit as E, letterSize, line, path, rect, textWidth, type Box, type Edit, type Entity, type Pt } from '@/drawing';
 import { MACHINE_TOP, machinePlan } from '@/shaft/machine-outline';
 import { IRON, bodyBox } from '@/shaft/machine-shape';
 import { shapePlan } from '@/shaft/machine-shape-view';
@@ -69,8 +69,9 @@ const mid = (p: readonly Pt[]): Pt => [(p[0][0] + p[2][0]) / 2, (p[0][1] + p[2][
 const sideOf = (w: Wall): 'top' | 'bottom' | 'left' | 'right' => (w === 'front' ? 'bottom' : w === 'rear' ? 'top' : w);
 
 /** The box round a level lettering centred on `at` at 1:`s` (model units), 0.8 mm clear of it. */
-function letterBox(at: P2, text: string, size: number, s: number): Box {
-  const hw = (textWidth(text, { size, cond: true }) / 2 + 0.8) * s;
+function letterBox(at: P2, text: string, asked: number, s: number): Box {
+  // (at the size the kernel draws it: never under the smallest lettering)
+  const size = letterSize(asked), hw = (textWidth(text, { size, cond: true }) / 2 + 0.8) * s;
   return { x0: at[0] - hw, x1: at[0] + hw, y0: at[1] - (0.3 * size + 0.8) * s, y1: at[1] + (0.9 * size + 0.8) * s };
 }
 const boxOf = (ps: readonly P2[]): Box => {
@@ -93,17 +94,17 @@ function fittings(R: RoomInputs, o: P2, s: number, kept: readonly Box[], room: B
   const pan = mv(wallBox(R, R.panelWall, R.panelAt, R.panelW, 0, R.panelD)), front = mv(wallBox(R, R.panelWall, R.panelAt, R.panelW, R.panelD, R.panelD + FREE));
   const swAt = belowSwitchAt(R), sw = mv(wallBox(R, R.doorWall, swAt - 100, 200, 0, 130));
   const inward: P2 = R.doorWall === 'front' ? [0, 1] : R.doorWall === 'rear' ? [0, -1] : R.doorWall === 'left' ? [1, 0] : [-1, 0];
-  const name = 'INTERRUTTORE GENERALE', along: P2 = [Math.abs(inward[1]), Math.abs(inward[0])], hw = letterBox([0, 0], name, 1.5, s).x1;
+  const name = 'INTERRUTTORE GENERALE', along: P2 = [Math.abs(inward[1]), Math.abs(inward[0])], hw = letterBox([0, 0], name, TEXT.min, s).x1;
   const near = [boxOf(front), boxOf(pan), boxOf(sw), ...kept], spots: Pt[] = [], c = mid(sw);
   for (let k = -2; k <= 2; k++) for (let d = 200; d <= 2000; d += 50) spots.push(add(add(c, inward, d), along, (k * hw) / 2));
-  const at = clearOf(spots.sort((p, q) => Math.hypot(p[0] - c[0], p[1] - c[1]) - Math.hypot(q[0] - c[0], q[1] - c[1])), name, 1.5, s, near, room);
+  const at = clearOf(spots.sort((p, q) => Math.hypot(p[0] - c[0], p[1] - c[1]) - Math.hypot(q[0] - c[0], q[1] - c[1])), name, TEXT.min, s, near, room);
   return {
     entities: [
       path(front, true, 'space'), line(front[0], front[2], 'space'), line(front[1], front[3], 'space'),
-      path(pan, true, 'outline', 'paper'), { e: 'text', at: mid(pan), text: 'QUADRO MANOVRA', size: 1.8, align: 'c', angle: side ? 90 : 0, halo: true, fit: R.panelW - 60 },
-      path(sw, true, 'outline', 'paper'), { e: 'text', at, text: name, size: 1.5, align: 'c', halo: true },
+      path(pan, true, 'outline', 'paper'), { e: 'text', at: mid(pan), text: 'QUADRO MANOVRA', size: TEXT.min, align: 'c', angle: side ? 90 : 0, halo: true, fit: R.panelW - 60, out: mid(front) },
+      path(sw, true, 'outline', 'paper'), { e: 'text', at, text: name, size: TEXT.min, align: 'c', halo: true },
     ],
-    taken: [...near, letterBox(at, name, 1.5, s)],
+    taken: [...near, letterBox(at, name, TEXT.min, s)],
   };
 }
 
@@ -150,8 +151,8 @@ export function belowPlanEntities(L: Layout, M: MachineSpec, g: BottomGeo, s = 2
   const body = boxOf([at(F.x[0], F.z[0]), at(F.x[1], F.z[0]), at(F.x[1], F.zSheave + ext), at(F.x[0], F.zSheave + ext)]);
   const label = `${M.label || 'ARGANO'} · Ø ${M.D}`, ends: Pt[] = [];
   for (let d = 150; d <= 2500; d += 50) ends.push(add(at((F.x[0] + F.x[1]) / 2, F.z[0]), zDir, -d));
-  const named = clearOf(ends, label, 1.8, s, [body], room), fit = fittings(R, o, s, [body, letterBox(named, label, 1.8, s)], room);
-  out.push({ e: 'text', at: named, text: label, size: 1.8, align: 'c', halo: true }, ...fit.entities);
+  const named = clearOf(ends, label, TEXT.min, s, [body], room), fit = fittings(R, o, s, [body, letterBox(named, label, TEXT.min, s)], room);
+  out.push({ e: 'text', at: named, text: label, size: TEXT.min, align: 'c', halo: true }, ...fit.entities);
   const roomName = under ? 'LOCALE MACCHINA SOTTO IL VANO' : 'LOCALE MACCHINA', taken = fit.taken;
   const grid: Pt[] = [];
   for (let i = 0; i <= 12; i++) for (let j = 0; j <= 12; j++) grid.push([room.x0 + (R.W * i) / 12, room.y0 + (R.D * j) / 12]);
@@ -250,7 +251,7 @@ export function belowSectionEntities(L: Layout, M: MachineSpec, g: BottomGeo): {
   out.push(box(F.face, F.zSheave + ext - F.width / 2, F.axis - 0.06 * k - 10, F.axis + 0.06 * k + 10, 'thin', 'steel'));
   out.push(box(F.zSheave + ext - F.width / 2, F.zSheave + ext + F.width / 2, F.axis - M.D / 2, F.axis + M.D / 2, 'outline', 'steel'));
   out.push(line([uC - F.width / 2 - 60, zs], [uC + F.width / 2 + 60, zs], 'axis'));
-  out.push({ e: 'text', at: [uC + sg * (F.width / 2 + 90), zs + M.D / 2 + 120], text: `Ø ${M.D}`, size: 1.8, align: sg > 0 ? 'l' : 'r', halo: true });
+  out.push({ e: 'text', at: [uC + sg * (F.width / 2 + 90), zs + M.D / 2 + 120], text: `Ø ${M.D}`, size: TEXT.min, align: sg > 0 ? 'l' : 'r', halo: true });
   // the ropes up from the sheave toward the head, cut at the drawing's top
   for (const s of [-1, 1]) out.push(line([uC + s * w.ropes, zs], [uC + s * w.ropes, top - 60], 'thin'));
   out.push({ e: 'text', at: [(u0 + Math.min(u1, uC - 400)) / 2, S.pitFloor + 300], text: 'FOSSA', size: 2.2, align: 'c' });

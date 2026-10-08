@@ -8,9 +8,17 @@ from reportlab.pdfbase.ttfonts import TTFont
 FONT_DIR = os.environ.get("REPORT_FONT_DIR", "/usr/share/fonts/truetype/dejavu")
 
 
+FILES = {"DejaVu": "DejaVuSans.ttf", "DejaVu-Bold": "DejaVuSans-Bold.ttf"}
+
+
+def path_of(name):
+    """The file of a font the documents register."""
+    return os.path.join(FONT_DIR, FILES[name])
+
+
 def register():
     if "DejaVu" in pdfmetrics.getRegisteredFontNames():
         return
-    pdfmetrics.registerFont(TTFont("DejaVu", os.path.join(FONT_DIR, "DejaVuSans.ttf")))
-    pdfmetrics.registerFont(TTFont("DejaVu-Bold", os.path.join(FONT_DIR, "DejaVuSans-Bold.ttf")))
+    pdfmetrics.registerFont(TTFont("DejaVu", path_of("DejaVu")))
+    pdfmetrics.registerFont(TTFont("DejaVu-Bold", path_of("DejaVu-Bold")))
     pdfmetrics.registerFontFamily("DejaVu", normal="DejaVu", bold="DejaVu-Bold", italic="DejaVu", boldItalic="DejaVu-Bold")
