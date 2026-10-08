@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 
 // ═══════════════════════════════════════════════════════════════
-// COVERAGE MAP — Milano ⇄ Bulgaria, as a measuring instrument,
+// COVERAGE MAP — Bulgaria → Milano, as a measuring instrument,
 // not a map service.
 //
 // This is deliberately NOT Google Maps: no tiles, no coastlines, no
@@ -98,11 +98,12 @@ function vec3ToLatLon(v) {
 }
 
 var DISTANCE_KM = Math.round(haversineKm(MILANO, BOBOV_DOL));
-var AZIMUTH_DEG = initialBearingDeg(MILANO, BOBOV_DOL);
+// the link runs FROM the home base in Bobov Dol TO Milano (owner, 2026-10-08)
+var AZIMUTH_DEG = initialBearingDeg(BOBOV_DOL, MILANO);
 
 var ARC_N = 64;
 var ARC_POINTS = (function buildArc() {
-  var va = toVec3(MILANO), vb = toVec3(BOBOV_DOL);
+  var va = toVec3(BOBOV_DOL), vb = toVec3(MILANO);
   var dot = Math.max(-1, Math.min(1, va.x * vb.x + va.y * vb.y + va.z * vb.z));
   var omega = Math.acos(dot);
   var pts = [];
@@ -143,8 +144,8 @@ export default function CoverageMap() {
     function hm(tz) { try { return new Intl.DateTimeFormat("en-GB", { timeZone: tz, hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date()); } catch (e) { return "--:--"; } }
     function offset(tz) { try { var d = new Date(); var s = d.toLocaleString("en-US", { timeZone: tz }); return (new Date(s) - new Date(d.toLocaleString("en-US", { timeZone: "UTC" }))) / 36e5; } catch (e) { return 0; } }
     function tick() {
-      var dh = offset("Europe/Sofia") - offset("Europe/Rome");
-      el.textContent = "MILANO " + hm("Europe/Rome") + " \u00b7 BOBOV DOL " + hm("Europe/Sofia") + " \u00b7 \u0394 " + (dh >= 0 ? "+" : "\u2212") + Math.abs(dh) + " H";
+      var dh = offset("Europe/Rome") - offset("Europe/Sofia");
+      el.textContent = "BOBOV DOL " + hm("Europe/Sofia") + " \u00b7 MILANO " + hm("Europe/Rome") + " \u00b7 \u0394 " + (dh >= 0 ? "+" : "\u2212") + Math.abs(dh) + " H";
     }
     tick();
     var iv = setInterval(tick, 30000);
@@ -445,8 +446,8 @@ export default function CoverageMap() {
       {/* real, accessible readout — the actual data, not locked in pixels.
           Over the plot on wide screens, under it on phones (it would cover the arc). */}
       <div className="cs-cov-hud" style={{ zIndex: 2, display: "flex", flexDirection: "column", gap: 5, fontFamily: MONO, fontSize: 9, letterSpacing: ".06em", lineHeight: 1.7 }}>
-        <span ref={milanoLineRef} style={{ color: INK2, transition: "color .2s " + EASE }}>MILANO {"·"} {fmtCoord(MILANO)}</span>
         <span ref={bobovLineRef} style={{ color: INK2, transition: "color .2s " + EASE }}>BOBOV DOL {"·"} {fmtCoord(BOBOV_DOL)}</span>
+        <span ref={milanoLineRef} style={{ color: INK2, transition: "color .2s " + EASE }}>MILANO {"·"} {fmtCoord(MILANO)}</span>
         <span style={{ color: C }}>{"≈"} {DISTANCE_KM} KM {"·"} AZIMUTH {AZIMUTH_DEG.toFixed(1)}{"°"}</span>
         <span ref={clockRef} style={{ color: INK }} />
       </div>

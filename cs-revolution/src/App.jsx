@@ -42,9 +42,9 @@ var LANGS = {
     bg: "УЕБ САЙТОВЕ · E-COMMERCE · ПРИЛОЖЕНИЯ · ERP · SEO/AEO · REVERSE ENGINEERING"
   },
   hero_desc: {
-    it: "Progettiamo e sviluppiamo siti web, e-commerce, app e sistemi ERP su misura — con la precisione di un'officina di ingegneria. Da Milano alla Bulgaria. Preventivo gratuito in 24 ore.",
-    en: "We design and build custom websites, e-commerce, apps and ERP systems — with the precision of an engineering shop. From Milan to Bulgaria. Free quote in 24 hours.",
-    bg: "Проектираме и разработваме сайтове, онлайн магазини, приложения и ERP системи по поръчка — с прецизността на инженерен цех. От София до Милано. Безплатна оферта до 24 часа."
+    it: "Progettiamo e sviluppiamo siti web, e-commerce, app e sistemi ERP su misura — con la precisione di un'officina di ingegneria. Dalla Bulgaria a Milano. Preventivo gratuito in 24 ore.",
+    en: "We design and build custom websites, e-commerce, apps and ERP systems — with the precision of an engineering shop. From Bulgaria to Milan. Free quote in 24 hours.",
+    bg: "Проектираме и разработваме сайтове, онлайн магазини, приложения и ERP системи по поръчка — с прецизността на инженерен цех. От България до Милано. Безплатна оферта до 24 часа."
   },
   // ── ABOUT ──
   about_tag: { it: "// CHI SIAMO", en: "// ABOUT US", bg: "// \u0417\u0410 \u041D\u0410\u0421" },
@@ -95,11 +95,11 @@ var LANGS = {
   lab_cta: { it: "PORTACI IL PEZZO \u2192", en: "BRING US THE PART \u2192", bg: "\u0414\u041e\u041d\u0415\u0421\u0418 \u041d\u0418 \u0427\u0410\u0421\u0422\u0422\u0410 \u2192" },
   // ── COVERAGE ──
   cov_tag: { it: "// COPERTURA", en: "// COVERAGE", bg: "// \u041f\u041e\u041a\u0420\u0418\u0422\u0418\u0415" },
-  cov_title: { it: "DA MILANO ALLA BULGARIA", en: "FROM MILAN TO BULGARIA", bg: "\u041e\u0422 \u041c\u0418\u041b\u0410\u041d\u041e \u0414\u041e \u0411\u042a\u041b\u0413\u0410\u0420\u0418\u042f" },
+  cov_title: { it: "DALLA BULGARIA A MILANO", en: "FROM BULGARIA TO MILAN", bg: "ОТ БЪЛГАРИЯ ДО МИЛАНО" },
   cov_desc: {
-    it: "Due hub reali, una sola tolleranza. Lavoriamo tra Milano e Bobov Dol \u2014 distanza misurata, non promesse di marketing.",
-    en: "Two real hubs, one tolerance. We work between Milan and Bobov Dol \u2014 measured distance, not a marketing promise.",
-    bg: "\u0414\u0432\u0430 \u0440\u0435\u0430\u043b\u043d\u0438 \u0445\u044a\u0431\u0430, \u0435\u0434\u0438\u043d \u0442\u043e\u043b\u0435\u0440\u0430\u043d\u0441. \u0420\u0430\u0431\u043e\u0442\u0438\u043c \u043c\u0435\u0436\u0434\u0443 \u041c\u0438\u043b\u0430\u043d\u043e \u0438 \u0411\u043e\u0431\u043e\u0432 \u0434\u043e\u043b \u2014 \u0438\u0437\u043c\u0435\u0440\u0435\u043d\u043e \u0440\u0430\u0437\u0441\u0442\u043e\u044f\u043d\u0438\u0435, \u043d\u0435 \u043c\u0430\u0440\u043a\u0435\u0442\u0438\u043d\u0433\u043e\u0432\u0438 \u043e\u0431\u0435\u0449\u0430\u043d\u0438\u044f."
+    it: "Due hub reali, una sola tolleranza. Lavoriamo tra Bobov Dol e Milano \u2014 distanza misurata, non promesse di marketing.",
+    en: "Two real hubs, one tolerance. We work between Bobov Dol and Milan \u2014 measured distance, not a marketing promise.",
+    bg: "\u0414\u0432\u0430 \u0440\u0435\u0430\u043b\u043d\u0438 \u0445\u044a\u0431\u0430, \u0435\u0434\u0438\u043d \u0442\u043e\u043b\u0435\u0440\u0430\u043d\u0441. Работим между Бобов дол и Милано \u2014 \u0438\u0437\u043c\u0435\u0440\u0435\u043d\u043e \u0440\u0430\u0437\u0441\u0442\u043e\u044f\u043d\u0438\u0435, \u043d\u0435 \u043c\u0430\u0440\u043a\u0435\u0442\u0438\u043d\u0433\u043e\u0432\u0438 \u043e\u0431\u0435\u0449\u0430\u043d\u0438\u044f."
   },
   // \u2500\u2500 MONUMENT \u2500\u2500
   mon_tag: { it: "// IL MONUMENTO", en: "// THE MONUMENT", bg: "// \u041c\u041e\u041d\u0423\u041c\u0415\u041d\u0422\u042a\u0422" },
@@ -3032,7 +3032,7 @@ export default function App(){
       </section>
 
       {/* ═══════════════════════════════════════════
-          COVERAGE — Milano ⇄ Bulgaria, measured not mapped
+          COVERAGE — Bulgaria → Milano, measured not mapped
           ═══════════════════════════════════════════ */}
       <section id="coverage" style={{position:"relative",zIndex:5,padding:"80px 20px 120px",borderTop:"1px solid rgba(245,245,240,.08)"}}>
         <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("cov_tag")}</div>
