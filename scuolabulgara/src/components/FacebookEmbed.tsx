@@ -29,6 +29,14 @@ export default function FacebookEmbed({ locale, href }: { locale: Locale; href: 
     try {
       if (localStorage.getItem(STORE_KEY) === "1") load();
     } catch {}
+    // Withdrawn consent („Отказвам“, cookie settings) unloads the plugin again.
+    const off = () => setFrame(null);
+    window.addEventListener("qb:cookie-settings", off);
+    window.addEventListener("qb:consent-withdrawn", off);
+    return () => {
+      window.removeEventListener("qb:cookie-settings", off);
+      window.removeEventListener("qb:consent-withdrawn", off);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

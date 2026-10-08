@@ -202,3 +202,6 @@
 /* A photo without a description in the current language */
 .ad-field--warn textarea, .ad-field--warn input { border-color: #e2b34a; background: #fffbf0; }
 .ad-warn { margin: 0 0 .4rem; font-size: .8rem; font-weight: 600; color: #8a5a00; }
+
+.ad-note { margin: 0 0 .6rem; padding: .45rem .7rem; border-radius: 6px; background: #eef4ff; color: #23406e; font-size: .85rem; }
+.ad-save-bar__note a { font-weight: 700; }

@@ -66,7 +66,11 @@ scripts/          hash-password + helpers
 - **Content upgrades:** stored rows beat defaults, so a redesign must ship an upgrade in
   `src/lib/content-upgrade.ts` (untouched old defaults → new ones; edited text kept in the
   new shape). Runs once per process from `ensureSeeded`.
-- Empty list items (added in one language, not yet translated) are not rendered.
+- **Untranslated list items** (added in one language only) show in the language they were written in
+  (`fillUntranslated` in `cms.ts`, it → bg → en) until translated; the editor flags them. Plain fields are
+  never filled in — emptying one hides it. Items empty in every language are not rendered.
+- **Embeds only after consent:** Facebook and Google Maps (`MapEmbed`, `qb-map-consent`) load on click;
+  „Отказвам“ and the footer cookie link withdraw consent and unload them.
 - **Everything visible is editable** in `/admin` (sections, settings, SEO + share card, UI wording incl. 404
   and aria labels, legal pages, llms.txt and the manifest are built from them). Locked on purpose: the agency
   credit, the CC BY-SA photo credit and its rose bullet. Long texts: an empty line = a new paragraph.

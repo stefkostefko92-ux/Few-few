@@ -1,7 +1,7 @@
 import { prisma } from "./db";
 import type { Dict, Locale } from "./i18n";
 import { DEFAULT_CONTENT, defaultFor } from "./defaults";
-import { SECTION_KEYS, isSectionKey, mergeSection, type SectionKey } from "./cms";
+import { NO_FALLBACK, SECTION_KEYS, fillUntranslated, isSectionKey, mergeSection, type SectionKey } from "./cms";
 import { upgradeStored } from "./content-upgrade";
 
 let seedChecked = false;
@@ -57,6 +57,16 @@ function parseLocale(row: Row | undefined, locale: Locale): unknown {
   }
 }
 
+/** A stored row in one language, merged over its defaults; list items not yet
+ *  translated into it show in the language they were written in (Italian
+ *  first, then Bulgarian, then English). */
+function resolve(key: string, row: Row | undefined, locale: Locale): Record<string, unknown> {
+  const doc = mergeSection(defaultFor(key, locale), parseLocale(row, locale));
+  if (!row || NO_FALLBACK.has(key)) return doc;
+  const others = (["it", "bg", "en"] as const).filter((l) => l !== locale);
+  return fillUntranslated(doc, others.map((l) => mergeSection(defaultFor(key, l), parseLocale(row, l))));
+}
+
 /** One section, merged over its defaults for a locale (lightweight pages). */
 export async function getOne<K extends ContentKey>(locale: Locale, key: K): Promise<ContentMap[K]> {
   await ensureSeeded();
@@ -66,7 +76,7 @@ export async function getOne<K extends ContentKey>(locale: Locale, key: K): Prom
   } catch {
     // fall through to defaults
   }
-  return mergeSection(defaultFor(key, locale), parseLocale(row, locale)) as ContentMap[K];
+  return resolve(key, row, locale) as ContentMap[K];
 }
 
 export type Site = {
@@ -90,8 +100,7 @@ export async function loadSite(locale: Locale): Promise<Site> {
   }
   const byKey = new Map(rows.map((r) => [r.key, r] as const));
 
-  const get = <K extends ContentKey>(key: K) =>
-    mergeSection(defaultFor(key, locale), parseLocale(byKey.get(key), locale)) as ContentMap[K];
+  const get = <K extends ContentKey>(key: K) => resolve(key, byKey.get(key), locale) as ContentMap[K];
   const enabled = (key: string) => byKey.get(key)?.enabled ?? true;
 
   const orderOf = (k: SectionKey) =>

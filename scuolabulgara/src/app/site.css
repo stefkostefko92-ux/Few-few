@@ -479,3 +479,25 @@ body.menu-open .nav__toggle span::after { transform: rotate(-45deg); }
 .issues__no { margin-top: .5rem; font-weight: 700; font-size: .9rem; color: var(--red-ink); font-variant-numeric: tabular-nums; }
 .issues__head { font: 800 1.3rem/1.1 var(--font-display); }
 @media (prefers-reduced-motion: reduce) { .issues img { transition: none; } .issues a:hover img { transform: none; } }
+
+/* ---------- Map (Google Maps, only after consent) ---------- */
+.map { margin: 2.2rem 0 0; }
+.map iframe, .map__consent { display: block; width: 100%; aspect-ratio: 4 / 3; border: 0; background: #e9e1d3; box-shadow: 0 1px 0 rgba(28,25,23,.08), 0 14px 30px -18px rgba(28,25,23,.5); }
+/* Before consent: a street plan drawn in the cloth's own colours, nothing loaded. */
+.map__consent {
+  display: grid; place-content: center; justify-items: center; gap: .7rem; padding: 1.5rem; text-align: center; position: relative;
+  background:
+    linear-gradient(rgba(242,237,228,.86), rgba(242,237,228,.86)) center / min(88%, 26rem) 62% no-repeat,
+    linear-gradient(24deg, transparent 47.6%, #fdfcf9 47.6% 50.4%, transparent 50.4%),
+    linear-gradient(-58deg, transparent 31%, #fdfcf9 31% 32.6%, transparent 32.6%),
+    linear-gradient(98deg, transparent 70%, #fdfcf9 70% 71.4%, transparent 71.4%),
+    repeating-linear-gradient(0deg, transparent 0 38px, rgba(253,252,249,.75) 38px 41px),
+    repeating-linear-gradient(90deg, transparent 0 54px, rgba(253,252,249,.75) 54px 57px),
+    #e6dccb;
+}
+.map__pin { width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: var(--red); box-shadow: 2px 3px 6px rgba(28,25,23,.3); position: relative; margin-bottom: .2rem; }
+.map__pin::after { content: ""; position: absolute; inset: 9px; border-radius: 50%; background: #fff; }
+.map__address { font: 800 1.35rem/1.1 var(--font-display); color: var(--ink); max-width: 22rem; }
+.map__note { font-size: .9rem; line-height: 1.45; color: var(--ink-2); max-width: 22rem; }
+.map figcaption { margin-top: .7rem; font-size: .95rem; }
+.map figcaption a { color: var(--red-ink); font-weight: 650; text-underline-offset: .2em; }

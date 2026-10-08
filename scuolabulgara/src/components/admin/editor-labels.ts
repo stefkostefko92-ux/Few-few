@@ -107,12 +107,14 @@ export const UI_GROUPS: { title: string; keys: Record<string, string> }[] = [
     },
   },
   {
-    title: "Бисквитки и Facebook",
+    title: "Бисквитки, Facebook и карта",
     keys: {
       "cookie.text": "Текст на банера", "cookie.accept": "Бутон „Приемам“", "cookie.reject": "Бутон „Отказвам“",
       "cookie.more": "Връзка „Повече информация“", "cookie.manage": "Връзка „Настройки на бисквитките“",
       "fb.consent": "Текст преди зареждане на Facebook",
       "nav.facebook": "Заглавие на прозореца с Facebook",
+      "map.title": "Картата — заглавие (и за екранни четци)", "map.consent": "Картата — текст преди зареждане",
+      "map.show": "Бутон „Покажи картата“", "map.open": "Връзка „Отвори в Google Maps“",
     },
   },
   {

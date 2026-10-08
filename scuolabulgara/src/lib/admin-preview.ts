@@ -5,6 +5,8 @@ const ANCHORS: Record<string, string> = {
   about: "chi-siamo",
   alphabet: "alfabeto",
   school: "scuola",
+  teachers: "insegnanti",
+  documents: "documenti",
   courses: "corsi",
   dance: "danza",
   facebook: "facebook",

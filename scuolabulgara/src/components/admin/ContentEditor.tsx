@@ -2,7 +2,8 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { LOCALE_META, LOCALES, type Locale } from "@/lib/i18n";
-import { BRAND_ICONS, altKeyFor, bundledAlt, isAudioKey, isFileKey, isImageKey, isSharedKey } from "@/lib/cms";
+import { BRAND_ICONS, NO_FALLBACK, altKeyFor, bundledAlt, isAudioKey, isBlankItem, isFileKey, isImageKey, isSharedKey } from "@/lib/cms";
+import { previewUrl } from "@/lib/admin-preview";
 import {
   addItem, fieldOf, getAt, moveItem, removeItem, setPerLocale, setValue, templatePath, type Data, type Doc, type Path,
 } from "@/lib/editor-ops";
@@ -10,6 +11,8 @@ import { HINTS, ICON_LABELS, UI_GROUPS, humanize, isLongField } from "./editor-l
 import MediaPicker from "./MediaPicker";
 
 const fileName = (url: string) => decodeURIComponent(url.split("/").pop() || "");
+const TAB_KEY = "qb-admin-locale";
+const LANG_NAME: Record<Locale, string> = { it: "италиански", bg: "български", en: "английски" };
 
 function Shared() {
   return <span className="ad-shared" title="Еднакво за трите езика — сменя се навсякъде наведнъж">🌐 общо за трите езика</span>;
@@ -27,6 +30,18 @@ export default function ContentEditor({ contentKey, initial, template }: {
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [picker, setPicker] = useState<null | ((url: string) => void)>(null);
+
+  // The language tab you worked in last time opens again.
+  useEffect(() => {
+    try {
+      const l = localStorage.getItem(TAB_KEY);
+      if (l === "it" || l === "bg" || l === "en") setLocale(l);
+    } catch {}
+  }, []);
+  const pickLocale = (l: Locale) => {
+    setLocale(l);
+    try { localStorage.setItem(TAB_KEY, l); } catch {}
+  };
 
   // Warn before leaving the page with unsaved edits.
   useEffect(() => {
@@ -50,7 +65,7 @@ export default function ContentEditor({ contentKey, initial, template }: {
       });
       if (!res.ok) throw new Error(String(res.status));
       setDirty(false);
-      setStatus({ msg: "Запазено ✓ — вече е на сайта", cls: "ok" });
+      setStatus({ msg: `Запазено ✓ — вече е на сайта. Текстът е на ${LANG_NAME[locale]}; другите езици показват своя текст.`, cls: "ok" });
     } catch (e) {
       setStatus({ msg: String(e).includes("413") ? "Твърде много съдържание за една секция" : "Грешка при запазване — опитайте отново", cls: "err" });
     } finally {
@@ -232,11 +247,27 @@ export default function ContentEditor({ contentKey, initial, template }: {
                 <button type="button" className="ad-btn ad-btn--danger" onClick={() => { if (confirm("Да премахна ли този елемент от трите езика?")) change((d) => removeItem(d, path, i)); }}>Премахни</button>
               </div>
             </div>
+            {translationNote([...path, i])}
             {renderValue(item, [...path, i], k)}
           </div>
         ))}
       </div>
     );
+  }
+
+  // A list item written in one language only: say where it is missing and
+  // what the site shows there meanwhile (the text of the language it has).
+  function translationNote(path: Path) {
+    if (NO_FALLBACK.has(contentKey)) return null;
+    const blank = (l: Locale) => isBlankItem(getAt(data[l], path));
+    const missing = LOCALES.filter((l) => l !== locale && blank(l));
+    if (blank(locale)) {
+      const from = (["it", "bg", "en"] as const).find((l) => !blank(l));
+      return from ? <p className="ad-warn" role="note">⚠ На {LANG_NAME[locale]} още няма текст — на сайта тук засега се показва текстът на {LANG_NAME[from]}.</p> : null;
+    }
+    return missing.length ? (
+      <p className="ad-note" role="note">Още без превод на {missing.map((l) => LANG_NAME[l]).join(" и ")} — там засега се показва този текст.</p>
+    ) : null;
   }
 
   function renderValue(value: unknown, path: Path, k: string): ReactNode {
@@ -284,7 +315,7 @@ export default function ContentEditor({ contentKey, initial, template }: {
     <>
       <div className="ad-tabs" role="tablist">
         {LOCALES.map((l) => (
-          <button key={l} type="button" role="tab" aria-selected={l === locale} className={`ad-tab ${l === locale ? "active" : ""}`} onClick={() => setLocale(l)}>
+          <button key={l} type="button" role="tab" aria-selected={l === locale} className={`ad-tab ${l === locale ? "active" : ""}`} onClick={() => pickLocale(l)}>
             <span className="flag">{LOCALE_META[l].flag}</span>{LOCALE_META[l].label}
           </button>
         ))}
@@ -300,7 +331,11 @@ export default function ContentEditor({ contentKey, initial, template }: {
         </button>
         <span className={`status ${status.cls}`} role="status" aria-live="polite">{status.msg}</span>
         <span className="ad-save-bar__note">
-          Редактирате: <b>{LOCALE_META[locale].label}</b> · текстът е за всеки език поотделно, снимките и подредбата — общи
+          Редактирате: <b>{LOCALE_META[locale].label}</b> · текстът е за всеки език поотделно, снимките и подредбата — общи ·
+          виж на сайта:{" "}
+          {LOCALES.map((l, i) => (
+            <span key={l}>{i > 0 && " · "}<a href={previewUrl(contentKey, l)} target="_blank" rel="noopener">{l.toUpperCase()}</a></span>
+          ))}
         </span>
       </div>
 

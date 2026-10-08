@@ -9,6 +9,7 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import ContactForm from "@/components/ContactForm";
 import FacebookEmbed from "@/components/FacebookEmbed";
+import MapEmbed from "@/components/MapEmbed";
 import CookieBanner from "@/components/CookieBanner";
 import Gallery from "@/components/Gallery";
 import Icon from "@/components/Icon";
@@ -109,6 +110,11 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const fbPage = safeHref(settings.facebookPageHref);
   const logo = safeImage(settings.logo, "/assets/img/brand/logo.webp");
   const mapHref = safeHref(settings.mapUrl, "");
+  // What the embedded map looks up: the `q` of the admin's Google Maps link if
+  // it has one, otherwise the street from the organisation's data.
+  const mapQuery = (() => {
+    try { return new URL(mapHref).searchParams.get("q") || ""; } catch { return ""; }
+  })() || [org.streetAddress, `${org.postalCode} ${org.locality}`].filter((x) => x.trim()).join(", ");
   const nav = buildNav(locale, site.ui, site.sections);
 
   // ---- Structured data (search + answer engines) -------------------------
@@ -437,6 +443,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               <div><dt>{tt("addr")}</dt><dd>{mapHref ? <a href={mapHref} target="_blank" rel="noopener noreferrer">{settings.address}</a> : settings.address}</dd></div>
               {fbHref !== "#" && <div><dt>{tt("nav.facebook")}</dt><dd><a href={fbHref} target="_blank" rel="noopener noreferrer">{fbHref.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}</a></dd></div>}
             </dl>
+            {mapQuery && <MapEmbed locale={locale} query={mapQuery} address={settings.address} href={mapHref} />}
           </div>
           <ContactForm locale={locale} topics={topics} email={settings.email} />
         </div>
