@@ -18,10 +18,11 @@ import { CAR_PANEL, GROOVE, LANDING_PANEL, carTracks, landingTracks, trackPlanes
 import { doorOpDepthOf } from './operator';
 import { bufferPlan, pitSpace } from './pit';
 import { roofRefuge } from './roof';
-import { bufferTagAt, pitPlanExtras } from './plan-pit';
+import { pitPlanExtras } from './plan-pit';
 import { carBracketLabel } from './plan-car-brackets';
 import { RAILS } from './rails';
 import { rigPlan } from './rig-view';
+import { RAIL_KEEP, TAG_R, letteringBoxes, placeTags, type TagAsk, type TagKeep } from './tag-place';
 import type { DoorLayout, Layout, Rail } from './types';
 
 export type PlanLevel = 'top' | 'main' | 'bottom' | 'pit';
@@ -184,8 +185,9 @@ export function planEntities(L: Layout, level: PlanLevel, floor: number): Entity
     const p = pitSpace(L);
     out.push(...space(p.x0, p.y0, p.x1, p.y1), { e: 'mark', at: [(p.x0 + p.x1) / 2 + 60, (p.y0 + p.y1) / 2 - 60], sym: 'square' });
     for (const b of bufferPlan(L).spots) out.push(circle(b.c, b.r, 'outline', 'paper'), circle(b.c, b.r * 0.55, 'thin'));
-    // the counterweight's screen, the ladder and the pit's control box (plan-pit.ts)
-    out.push(...pitPlanExtras(L), ...pitTags(L));
+    // the counterweight's screen, the ladder and the pit's control box (plan-pit.ts), then the loads' tags clear of them
+    out.push(...pitPlanExtras(L));
+    out.push(...pitTags(L, letteringBoxes(out)));
   }
   // the lift's rope rig where the lift design has one (rig-view.ts)
   out.push(...rigPlan(L, level));
@@ -200,19 +202,25 @@ export function roofSpaces(L: Layout): { refuge: Box; free: Box } {
   return { refuge, free };
 }
 
-/** Where the loads on the pit floor act (see loads.ts): P5 car rails, P6 car buffers, P7 counterweight rails, P8 its buffer. */
-function pitTags(L: Layout): Entity[] {
-  const out: Entity[] = [], cx = L.car.x + L.car.w / 2;
+/** Where the loads on the pit floor act (see loads.ts): P5 car rails, P6 car buffers, P7 counterweight rails, P8 its
+ *  buffer. The counterweight's first, as they always were; a car rail's beside its foot toward the doors; a car buffer's
+ *  toward the doors, a little outward — off the rails and their brackets, its leader off the car's axes (two buffers
+ *  stand on one, a single one on both); each moved round what it names where the others or the shaft's walls are in its
+ *  way (tag-place.ts: the counterweight to a side, a buffer off the axis, the arch of two adjacent entrances). */
+function pitTags(L: Layout, avoid: readonly Box[]): Entity[] {
+  const cx = L.car.x + L.car.w / 2, spots = bufferPlan(L).spots, asks: TagAsk[] = [];
   for (const r of L.rails) {
-    const foot: Pt = [r.x, r.y], at: Pt = r.kind === 'car' ? [r.x + (r.x < cx ? 120 : -120), r.y + 230] : [r.x + (r.x < cx ? 230 : -230), r.y];
-    out.push({ e: 'tag', at, text: r.kind === 'car' ? 'P5' : 'P7', to: foot });
+    const to: Pt = [r.x, r.y], car = r.kind === 'car';
+    asks.push(car ? { text: 'P5', to, at: [r.x + (r.x < cx ? 120 : -120), r.y + 230], rank: 1 }
+      : { text: 'P7', to, at: [r.x + (r.x < cx ? 230 : -230), r.y] });
   }
-  // the car buffers' P6 off the rails' line, their brackets and the axes (plan-pit.ts); the counterweight's P8 beside it
-  const taken = out.flatMap((e) => (e.e === 'tag' ? [e.at] : []));
-  for (const b of bufferPlan(L).spots) {
-    const at: Pt = b.kind === 'car' ? bufferTagAt(L, b.c, taken) : [b.c[0] + 230, b.c[1] + 160];
-    taken.push(at);
-    out.push({ e: 'tag', at, text: b.kind === 'car' ? 'P6' : 'P8', to: b.c });
+  for (const b of spots) {
+    const s = Math.sign(b.c[0] - cx) || 1;
+    asks.push(b.kind === 'car' ? { text: 'P6', to: b.c, at: [b.c[0] + s * 110, b.c[1] - 290], rank: 2, offAxes: true }
+      : { text: 'P8', to: b.c, at: [b.c[0] + 230, b.c[1] + 160] });
   }
-  return out;
+  const keep: TagKeep[] = [...L.rails.map((r): TagKeep => ({ c: [r.x, r.y], r: RAIL_KEEP })), ...spots.map((b): TagKeep => ({ c: b.c, r: b.r }))];
+  // (the circles on the shaft's walls at most, as the counterweight's buffer's has always stood by the wall behind it)
+  const T = L.inputs.wall - TAG_R;
+  return placeTags(asks, { x0: -T, y0: -T, x1: L.inputs.W + T, y1: L.inputs.D + T }, keep, avoid);
 }

@@ -12,6 +12,7 @@ import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { useRouter } from '@/i18n/routing';
 import { makeFmt } from '@/lib/present/tr';
 import { PLANT_RANGE, type Plant, type PlantNumber } from '@/lib/plant';
+import { machineConflict } from '@/lib/tavole/machine-name';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { savePlantAction } from '@/server/drawing-actions';
 
@@ -22,7 +23,11 @@ const LIFT_USES = ['passengers', 'goods', 'goodsHeavy'] as const;
 const CW_GEARS = ['progressive', 'roller', 'instantaneous', 'pillar'] as const;
 const CW_TRIPS = ['governor', 'rupture', 'rope'] as const;
 
-export default function PlantForm({ projectId, initial, readOnly, whole }: { projectId: string; initial: Plant; readOnly: boolean; whole: boolean }) {
+/** `catalog`: the catalogue's machine the next drawing set carries (its latest design or calculation); the machine's name
+ *  here must name its model, or the set is not issued. */
+export default function PlantForm({ projectId, initial, readOnly, whole, catalog = null }: {
+  projectId: string; initial: Plant; readOnly: boolean; whole: boolean; catalog?: { brand: string; model: string } | null;
+}) {
   const t = useTranslations('tavole'), te = useTranslations('errors'), router = useRouter(), locale = useLocale();
   const fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
   const [P, setP] = useState<Plant>(initial);
@@ -110,10 +115,16 @@ export default function PlantForm({ projectId, initial, readOnly, whole }: { pro
         <legend>{t('g_electric')}</legend>
         <div className="form-grid">{whole ? <>{num('currentIn')}{num('currentStart')}</> : null}{num('voltage')}{num('lightVoltage')}{num('frequency')}{num('duty')}</div>
       </fieldset>
-      <details className="panel">
+      {/* open when the machine's name already contradicts the calculation's */}
+      <details className="panel" open={machineConflict(initial, catalog) || undefined}>
         <summary>{t('g_optional')}</summary>
         <div className="form-grid">
           {text('machine')}
+          {catalog ? (
+            <p className={`note${machineConflict(P, catalog) ? ' bad' : ''}`} role={machineConflict(P, catalog) ? 'alert' : undefined}>
+              {machineConflict(P, catalog) ? t('machineCatalog', { catalog: `${catalog.brand} ${catalog.model}` }) : t('f_machineHint')}
+            </p>
+          ) : null}
           {whole ? <>{num('carBracketPitch')}{num('cwBracketPitch')}</> : null}
         </div>
         {whole ? <p className="note">{t('bracketRule', { pitch: KV_VERT.bracketPitch })}</p> : null}

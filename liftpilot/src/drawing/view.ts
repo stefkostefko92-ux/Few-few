@@ -6,7 +6,7 @@ import { boundsOf, boxH, boxW, grow, toPaper, union, type Place } from './geom';
 import { textBox, textWidth } from './metrics';
 import type { Edit, Entity, Side } from './model';
 import { obliqueShapes } from './oblique';
-import { FILLS, STYLES, TEXT } from './style';
+import { FILLS, STYLES, TEXT, letterSize } from './style';
 import { symbol } from './symbols';
 import type { Box, Pt, Shape, TextShape } from './types';
 
@@ -71,12 +71,9 @@ export function renderView(entities: readonly Entity[], place: Place): ViewResul
   // round each other, in the order of the chains
   const parts: Shape[][] = entities.map(() => []), taken: Box[] = [];
   entities.forEach((e, i) => {
-    if (e.e === 'text') {
-      const size = e.size ?? TEXT.label, w = e.fit ? textWidth(e.text, { size, bold: e.bold, cond: true }) : 0, room = e.fit ? e.fit / place.scale : 0;
-      parts[i] = [{ t: 'text', at: toPaper(place, e.at), text: e.text, size: w > room && room > 0 ? (size * room) / w : size, angle: e.angle, align: e.align, bold: e.bold, ink: e.ink, cond: true, halo: e.halo }];
-    }
+    if (e.e === 'text') parts[i] = lettering(e, place);
     else if (e.e === 'mark') parts[i] = symbol(e.sym, toPaper(place, e.at), e.size);
-    else if (e.e === 'tag') parts[i] = tag(toPaper(place, e.at), e.text, e.to ? toPaper(place, e.to) : null);
+    else if (e.e === 'tag') parts[i] = tag(toPaper(place, e.at), e.text, [...(e.to ? [e.to] : []), ...(e.also ?? [])].map((p) => toPaper(place, p)));
     for (const s of parts[i]) if (s.t !== 'line') taken.push(shapeBox(s));
   });
   const room = rowsRoom(entities);
@@ -99,12 +96,25 @@ export function renderView(entities: readonly Entity[], place: Place): ViewResul
   return { shapes, edges: E, extent: extent ?? E, hits, parts: parts.map((p, i) => (p.length ? p : own[i])) };
 }
 
-/** A reference in a circle with its leader, sized on paper. */
-function tag([x, y]: Pt, text: string, to: Pt | null): Shape[] {
-  const size = TEXT.small, r = Math.max(1.9, textWidth(text, { size, cond: true }) / 2 + 0.6), out: Shape[] = [];
-  if (to) {
-    const d = Math.hypot(to[0] - x, to[1] - y);
-    if (d > r) out.push({ t: 'line', a: [x + ((to[0] - x) * r) / d, y + ((to[1] - y) * r) / d], b: to, s: STYLES.dim });
+/** A lettering on paper: at its size (never under TEXT.min); one with `fit` smaller when longer than its room, down to
+ *  TEXT.min, and past it — when it has an `out` — there, with a leader to the element it names (ending in a dot). */
+function lettering(e: Extract<Entity, { e: 'text' }>, place: Place): Shape[] {
+  const asked = letterSize(e.size), w = e.fit ? textWidth(e.text, { size: asked, bold: e.bold, cond: true }) : 0, room = e.fit ? e.fit / place.scale : 0;
+  const size = w > room && room > 0 ? Math.max(TEXT.min, (asked * room) / w) : asked, over = room > 0 && (w * size) / asked > room + 1e-9;
+  const text = (at: Pt): TextShape => ({ t: 'text', at, text: e.text, size, angle: e.angle, align: e.align, bold: e.bold, ink: e.ink, cond: true, halo: e.halo });
+  if (!over || !e.out) return [text(toPaper(place, e.at))];
+  const s = text(toPaper(place, e.out)), b = textBox(s), to = toPaper(place, e.at);
+  // the leader from the side of the lettering nearest the element
+  const from: Pt = [Math.min(Math.max(to[0], b.x0), b.x1), Math.min(Math.max(to[1], b.y0), b.y1)];
+  return [{ t: 'line', a: from, b: to, s: STYLES.dim }, { t: 'circle', c: to, r: 0.35, fill: { k: 'solid', ink: 'ink' } }, s];
+}
+
+/** A reference in a circle with its leaders, sized on paper: its letters as large as the smallest lettering. */
+function tag([x, y]: Pt, text: string, to: readonly Pt[]): Shape[] {
+  const size = TEXT.min, r = Math.max(2.4, textWidth(text, { size, cond: true }) / 2 + 0.7), out: Shape[] = [];
+  for (const t of to) {
+    const d = Math.hypot(t[0] - x, t[1] - y);
+    if (d > r) out.push({ t: 'line', a: [x + ((t[0] - x) * r) / d, y + ((t[1] - y) * r) / d], b: t, s: STYLES.dim });
   }
   out.push({ t: 'circle', c: [x, y], r, s: STYLES.thin, fill: { k: 'solid', ink: 'paper' } });
   out.push({ t: 'text', at: [x, y - size * 0.36], text, size, align: 'c', cond: true });

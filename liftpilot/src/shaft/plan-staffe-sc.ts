@@ -3,7 +3,7 @@
 // on it along the wall with its slots across and its flange edge-on behind the rail's foot, the two bolts holding it
 // in the SC's slots, the two N1 clips over the foot's edges with their nuts behind the flange; and the code with the
 // count per rail in the wall's thickness behind it. Pure.
-import { circle, line, path, type Entity, type Pt } from '../drawing';
+import { TEXT, circle, line, path, type Entity, type Pt } from '../drawing';
 import { ANCHOR, HEAD, hex, slot, type BracketPlan } from './plan-parts';
 import { onWall } from './plan-walls';
 import { N1, SG_T, STATIONS } from './staffe';
@@ -46,7 +46,7 @@ export function slidePlan(L: Layout, g: SlideBracket, label: string | null): Bra
   if (label) {
     // in the wall's thickness behind the support, from its end nearer the corner toward the middle of the wall
     const I = L.inputs, along = g.wall === 'front' || g.wall === 'rear', len = along ? I.W : I.D, first = 2 * p.s + sc.L < len;
-    over.push({ e: 'text', at: P(first ? p.s : p.s + sc.L, -(I.wall - Math.max(0, g.inset)) / 2), text: label, size: 1.6, align: first ? 'l' : 'r', halo: true, angle: along ? 0 : 90 });
+    over.push({ e: 'text', at: P(first ? p.s : p.s + sc.L, -(I.wall - Math.max(0, g.inset)) / 2), text: label, size: TEXT.min, align: first ? 'l' : 'r', halo: true, angle: along ? 0 : 90 });
   }
   return { under: out, over };
 }

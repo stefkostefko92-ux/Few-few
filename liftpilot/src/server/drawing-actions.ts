@@ -21,6 +21,7 @@ import { composeFromRoom, type RoomComposed } from './room-compose';
 import { keepSetPdfLater } from './drawing-pdf';
 import type { TavoleRevision } from '@/lib/tavole/input';
 import { initialsSchema, revisionNoteSchema, revisionsSchema, setNumber } from '@/lib/tavole/compose';
+import { machineConflict } from '@/lib/tavole/views';
 import { entry } from './form';
 
 export type DrawingResult = { ok: true; id?: string } | { ok: false; error: string };
@@ -84,13 +85,17 @@ export async function removeLogoAction(): Promise<DrawingResult> {
 
 /** A set drawn for an issue or a revision: of a whole project's calculation and shaft design, or of a replacement's room. */
 type Drawn = (Composed & { calculationId: string; roomDesignId?: undefined }) | RoomComposed;
-type Compose = (tx: Prisma.TransactionClient, set: { number: string; issuedAt: Date; author: string; revisions: TavoleRevision[] }) => Promise<Drawn | ComposeError>;
+type Compose = (tx: Prisma.TransactionClient, set: { number: string; issuedAt: Date; author: string; revisions: TavoleRevision[]; firstIssuedAt?: Date }) => Promise<Drawn | ComposeError>;
 
 /** The row of a set: what it was made of (one design of the two, a check in the database) and its snapshots. */
 const madeOf = (c: Drawn) => ({
   projectId: c.projectId, calculationId: c.calculationId, ...(c.roomDesignId !== undefined ? { roomDesignId: c.roomDesignId } : { shaftDesignId: c.shaftDesignId }),
   logoId: c.logoId, clientLogoId: c.clientLogoId, plant: c.plant, projectData: c.projectData, companyName: c.companyName, sha256: c.sha256, pages: c.pages,
 });
+
+/** The data of the installation name a machine other than the catalogue's machine the calculation checked: the set would
+ *  carry a machine its relazione does not (refused at the issue, shown on the data of the installation). */
+const wrongMachine = (c: Drawn): boolean => machineConflict(c.input.plant, 'made' in c ? c.made : c.input.marks?.catalog ?? null);
 
 /** A first issue: a new number YY-NNN of the company and year, given in the transaction that stores the set. */
 async function issueNew(user: SessionUser, author: string, compose: Compose): Promise<DrawingResult> {
@@ -104,6 +109,7 @@ async function issueNew(user: SessionUser, author: string, compose: Compose): Pr
         const seq = counter.last, number = setNumber(year, seq);
         const c = await compose(tx, { number, issuedAt, author, revisions: [] });
         if (!c.ok) throw new ComposeRefused(c.error);
+        if (wrongMachine(c)) throw new ComposeRefused('machineMismatch');
         const set = await tx.drawingSet.create({
           data: { companyId: user.companyId, userId: user.id, number, year, seq, revision: 0, authorInitials: author, revisions: [], createdAt: issuedAt, ...madeOf(c) },
           select: { id: true },
@@ -176,8 +182,14 @@ export async function reviseDrawingSetAction(input: { drawingSetId: unknown; cal
       if (!last || !prev.success) return { ok: false as const, error: 'notFound' };
       const revision = last.revision + 1;
       const revisions = [...prev.data, { mark: `R${revision}`, text: note.data, date: issuedAt.toISOString() }];
-      const c = await compose(tx, { number: base.number, issuedAt, author: initials.data, revisions: revisions.map((r) => ({ mark: r.mark, text: r.text, date: new Date(r.date) })) });
+      // R0 in the title block: the date of the first issue of the number
+      const first = await tx.drawingSet.findFirst({ where: { companyId: user.companyId, year: base.year, seq: base.seq, revision: 0 }, select: { createdAt: true } });
+      const c = await compose(tx, {
+        number: base.number, issuedAt, author: initials.data, revisions: revisions.map((r) => ({ mark: r.mark, text: r.text, date: new Date(r.date) })),
+        ...(first ? { firstIssuedAt: first.createdAt } : {}),
+      });
       if (!c.ok) return c;
+      if (wrongMachine(c)) return { ok: false as const, error: 'machineMismatch' };
       // a revision stays on its installation
       if (c.projectId !== base.projectId) return { ok: false as const, error: 'notFound' };
       const set = await tx.drawingSet.create({

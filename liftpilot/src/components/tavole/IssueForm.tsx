@@ -2,10 +2,13 @@
 
 // Issue of a drawing set from a calculation (a whole project) or from a saved machine room (a replacement): the
 // drafter's initials go into the title block (prefilled from the user's name), the number comes from the server (YY-NNN
-// of the company and year). A revision instead keeps the number and adds a note.
+// of the company and year). A revision instead keeps the number and adds a note. Before it, what the title block would
+// get wrong or leave empty: a machine name against the calculation's (the server refuses the issue), the plant number of
+// an existing lift, the client.
 import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
-import { useRouter } from '@/i18n/routing';
+import { Link, useRouter } from '@/i18n/routing';
+import type { IssueChecks } from '@/lib/tavole/issue-check';
 import { issueDrawingSetAction, issueRoomSetAction, reviseDrawingSetAction } from '@/server/drawing-actions';
 
 interface Props {
@@ -16,9 +19,12 @@ interface Props {
   revise?: { drawingSetId: string; calculations?: { id: string; label: string }[]; rooms?: { id: string; label: string }[] };
   /** the signed-in user's initials (initialsOf) */
   initials: string;
+  /** what the data of the project leave wrong or empty in the title block (issue-check.ts), with the project to correct */
+  checks?: IssueChecks;
+  projectId?: string;
 }
 
-export default function IssueForm({ calculationId, roomDesignId, revise, initials: mine }: Props) {
+export default function IssueForm({ calculationId, roomDesignId, revise, initials: mine, checks, projectId }: Props) {
   const t = useTranslations('tavole'), te = useTranslations('errors'), router = useRouter();
   const [initials, setInitials] = useState(mine);
   const [note, setNote] = useState('');
@@ -59,8 +65,16 @@ export default function IssueForm({ calculationId, roomDesignId, revise, initial
         </label>
       </div>
       {revise ? <p className="note">{t('reviseHint')}</p> : null}
+      {checks?.machine ? (
+        <p className="alert alert-bad" role="alert">
+          {t('issueMachine', checks.machine)}
+          {projectId ? <> <Link href={`/app/projects/${projectId}/impianto`}>{t('plantLink')}</Link></> : null}
+        </p>
+      ) : null}
+      {checks?.plantNumber ? <p className="alert alert-warn" role="status">{t('issuePlantNumber')}</p> : null}
+      {checks?.client ? <p className="note">{t('issueClient')}</p> : null}
       <div className="flex flex-wrap items-center gap-3">
-        <button type="submit" className="btn btn-primary" disabled={pending || !calc}>{pending ? t('issuing') : revise ? t('revise') : t('issue')}</button>
+        <button type="submit" className="btn btn-primary" disabled={pending || !calc || !!checks?.machine}>{pending ? t('issuing') : revise ? t('revise') : t('issue')}</button>
         {error ? <span className="note bad" role="alert">{error}</span> : null}
       </div>
     </form>

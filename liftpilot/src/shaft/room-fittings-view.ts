@@ -2,7 +2,7 @@
 // 5.2.6.3.2.1 a): as wide as the larger of 500 mm and the panel, crossed in front of the panel only, not through its
 // name) and the main switch by the door (room-floor.ts switchSpan) with its name clear of them. Model entities, room
 // axes [mm].
-import { line, path, textWidth, type Box, type Entity, type Pt } from '../drawing';
+import { TEXT, line, path, textWidth, type Box, type Entity, type Pt } from '../drawing';
 import { KV_VERT } from './norme-vert';
 import { panelBand, switchSpan } from './room-floor';
 import type { RoomInputs } from './room';
@@ -16,29 +16,34 @@ export function fittingsPlan(R: RoomInputs, gear: readonly Box[] = []): { entiti
   const front = wallBand(R, R.panelWall, b0, b1 - b0, R.panelD, R.panelD + KV_VERT.panelFreeDepth);
   const [w0, w1] = switchSpan(R), sw = wallBox(R, R.doorWall, w0, w1 - w0, 120);
   const inward: Pt = R.doorWall === 'front' ? [0, 1] : R.doorWall === 'rear' ? [0, -1] : R.doorWall === 'left' ? [1, 0] : [-1, 0];
-  const [swAt, onGear] = switchName(R, mid(sw), inward, [bbox(pan), bbox(free), ...gear]);
+  const [swAt] = switchName(R, mid(sw), inward, [bbox(pan), bbox(free), ...gear]);
+  // the panel's name in it; too long for it at the smallest lettering, in the free area in front of it on a leader
+  const into: Pt = R.panelWall === 'front' ? [0, 1] : R.panelWall === 'rear' ? [0, -1] : R.panelWall === 'left' ? [1, 0] : [-1, 0], pm = mid(pan);
+  const panelOut: Pt = [pm[0] + into[0] * (R.panelD / 2 + 320), pm[1] + into[1] * (R.panelD / 2 + 320)];
   return {
     entities: [
       path(free, true, 'space'), line(front[0], front[2], 'space'), line(front[1], front[3], 'space'),
       // (along a side wall the name runs along the panel, as on the room below's: below-view.ts)
-      path(pan, true, 'outline', 'paper'), { e: 'text', at: mid(pan), text: 'QUADRO MANOVRA', size: 1.8, align: 'c', halo: true, fit: R.panelW - 60, ...(side ? { angle: 90 } : {}) },
-      path(sw, true, 'outline', 'paper'), { e: 'text', at: swAt, text: SWITCH_NAME, size: 1.5, align: 'c', ...(onGear ? { halo: true } : {}) },
+      path(pan, true, 'outline', 'paper'), { e: 'text', at: pm, text: 'QUADRO MANOVRA', size: TEXT.min, align: 'c', halo: true, fit: R.panelW - 60, out: panelOut, ...(side ? { angle: 90 } : {}) },
+      path(sw, true, 'outline', 'paper'), { e: 'text', at: swAt, text: SWITCH_NAME, size: TEXT.min, align: 'c', halo: true },
     ],
     free, sw, swAt,
   };
 }
 
-/** Where the main switch's name goes: 260 mm into the room from the switch at `c` as always; where its lettering (1:50 at
- *  most) would meet `busy` (the panel and the free area in front of it, the machine), the nearest place along the wall or
- *  further in that stays clear and in the room — none, where it was, and whether it lies on them (then on a halo). */
+/** Where the main switch's name goes: 260 mm into the room from the switch at `c` as always; where its lettering (the
+ *  smallest, at 1:25, the plan's scale) would meet `busy` (the panel and the free area in front of it, the machine), the
+ *  nearest place along the wall or further in that stays clear and in the room — none, where it was, and whether it lies
+ *  on them (then on a halo). */
 function switchName(R: RoomInputs, c: Pt, inward: Pt, busy: readonly Box[]): [Pt, boolean] {
-  const hw = (textWidth(SWITCH_NAME, { size: 1.5 }) / 2 + 0.8) * 50, along: Pt = [Math.abs(inward[1]), Math.abs(inward[0])];
+  const S = TEXT.min, k = 25, hw = (textWidth(SWITCH_NAME, { size: S, cond: true }) / 2 + 0.8) * k, along: Pt = [Math.abs(inward[1]), Math.abs(inward[0])];
+  const lo = (0.3 * S + 0.8) * k, hi = (0.9 * S + 0.8) * k;
   const at = (d: number, k: number): Pt => [c[0] + inward[0] * d + along[0] * k, c[1] + inward[1] * d + along[1] * k - 30];
-  const hits = (p: Pt): boolean => busy.some((b) => p[0] - hw < b.x1 && b.x0 < p[0] + hw && p[1] - 62.5 < b.y1 && b.y0 < p[1] + 107.5);
+  const hits = (p: Pt): boolean => busy.some((b) => p[0] - hw < b.x1 && b.x0 < p[0] + hw && p[1] - lo < b.y1 && b.y0 < p[1] + hi);
   const first = at(260, 0);
   if (!hits(first)) return [first, false];
-  const inRoom = (p: Pt): boolean => p[0] - hw >= 0 && p[0] + hw <= R.W && p[1] - 62.5 >= 0 && p[1] + 107.5 <= R.D;
-  const spots = [260, 460, 660].flatMap((d) => Array.from({ length: 41 }, (_, i) => ({ p: at(d, (i - 20) * 100), cost: Math.abs(i - 20) * 100 + 2 * (d - 260) })));
+  const inRoom = (p: Pt): boolean => p[0] - hw >= 0 && p[0] + hw <= R.W && p[1] - lo >= 0 && p[1] + hi <= R.D;
+  const spots = [260, 460, 660, 860, 1060].flatMap((d) => Array.from({ length: 41 }, (_, i) => ({ p: at(d, (i - 20) * 100), cost: Math.abs(i - 20) * 100 + 2 * (d - 260) })));
   const best = spots.filter((q) => inRoom(q.p) && !hits(q.p)).sort((a, b) => a.cost - b.cost)[0]?.p;
   return best ? [best, false] : [first, true];
 }

@@ -2,37 +2,42 @@
 // of the shaft at its levels, section A-A and its details, the machine room in plan and in section B-B, or the room of
 // the machine below in plan and in section C-C), each with the
 // lettering sized for the scale the drawing set prints it at; section A-A whole at its real height (the drawing set
-// draws the travel shorter to fit the sheet). Pure.
-import { drawingArea } from '@/drawing';
+// draws the travel shorter to fit the sheet). The machine room of a replacement in plan and section B-B too. Pure.
+import { drawingArea, type Entity } from '@/drawing';
 import { roomGeo, type MachineSpec } from '@/shaft/machine-room';
 import { planDims } from '@/shaft/plan-dims';
 import { planEntities } from '@/shaft/plan-view';
-import { roomPlanEntities, roomSectionEntities } from '@/shaft/room-view';
+import { roomPlanEntities, roomPlanOn, roomSectionEntities, roomSectionOn } from '@/shaft/room-view';
 import { section } from '@/shaft/section';
 import { sectionDims } from '@/shaft/section-dims';
 import { sectionEntities } from '@/shaft/section-view';
 import type { Layout } from '@/shaft/types';
 import type { BottomGeo } from '../lift/bottom';
-import { inset, specs } from '../tavole/build';
+import type { Plant } from '../plant';
+import { analyse } from '../present/analysis';
+import type { RoomDerived } from '../room/derive';
+import { inset, setLayout, specs } from '../tavole/build';
 import { railsNotes, railsSheet } from '../tavole/rails-sheet';
 import { railsDev } from '@/shaft/rails-dev';
 import { makeFmt } from '../present/tr';
-import { belowView, detailWindow, planView, realSection, roomView, sectionView } from '../tavole/views';
+import type { TavoleInput } from '../tavole/input';
+import { belowGeoOf, belowView, detailWindow, headLoadsOf, machineName, machineOf, planView, realSection, roomView, sectionView, sheetLayoutOf, surveyView } from '../tavole/views';
 import type { CadView } from './export';
 
 /** The scale section A-A whole is lettered for. */
 const FULL_SCALE = 50;
 
-/** `L`: the design as the set draws it, with the brackets' pitches of the installation's data (build.ts setLayout);
- *  `machine`: the machine of the calculation, for the machine room's views; `room`: the design has a room above;
- *  `below`: the geometry of the machine below (its room's views). */
-export function projectViews(L: Layout, M: MachineSpec, room: boolean, below: BottomGeo | null = null): CadView[] {
+/** `L`: the design as the set draws it, with the brackets' pitches of the installation's data (build.ts setLayout) and
+ *  the lift's rope rig (views.ts sheetLayoutOf); `machine`: the machine of the calculation, for the machine room's views;
+ *  `room`: the design has a room above; `below`: the geometry of the machine below (its room's views) and `head` the
+ *  loads on the head of the shaft it puts on the plan at the top floor (views.ts headLoadsOf). */
+export function projectViews(L: Layout, M: MachineSpec, room: boolean, below: BottomGeo | null = null, head: readonly Entity[] = []): CadView[] {
   const S = section(L), G = roomGeo(L, M);
   return specs(L, room && G !== null, below?.scheme ?? null).flatMap((s): CadView[] => {
     const area = drawingArea(s.subtitle !== undefined);
     if (s.k === 'plan') {
-      const entities = [...planEntities(L, s.level, s.floor), ...planDims(L, s.level, s.floor, { level: s.total })];
-      return [{ title: s.title, scale: planView(L, s.level, s.floor, s.total, area).place.scale, entities }];
+      const extra = s.level === 'top' ? head : [], entities = [...planEntities(L, s.level, s.floor), ...extra, ...planDims(L, s.level, s.floor, { level: s.total })];
+      return [{ title: s.title, scale: planView(L, s.level, s.floor, s.total, area, extra).place.scale, entities }];
     }
     if (s.k === 'section') {
       const v = s.kind === 'full' ? realSection(L) : detailWindow(L, s.kind, s.floor);
@@ -55,4 +60,28 @@ export function projectViews(L: Layout, M: MachineSpec, room: boolean, below: Bo
     const plan = s.k === 'room-plan', v = roomView(L, M, plan ? 'plan' : 'section', area);
     return [{ title: s.title, scale: v?.place.scale ?? FULL_SCALE, entities: v?.entities ?? (plan ? roomPlanEntities : roomSectionEntities)(L, M, G).entities }];
   });
+}
+
+/** Every view of the set drawn from `x`, as its sheets have them: the brackets at the pitches its data declare, the
+ *  lift's rope rig, the machine named as the catalogue names it, the room of the machine below for its scheme. */
+export function inputViews(x: Pick<TavoleInput, 'values' | 'layout' | 'plant' | 'marks'>): CadView[] {
+  const L0 = setLayout(x), a = analyse(x.values);
+  const M = machineOf(a, x.plant, L0, x.marks?.catalog ?? null), bottom = a.ctx.I.layout === 'bottom';
+  const g = bottom ? belowGeoOf(a, L0, M, x.marks?.bottom ?? 'head') : null;
+  // the shaft's views as the sheets draw them: the lift's rope rig in the shaft, the room over it the lift has
+  const L = sheetLayoutOf(a, L0, M, g);
+  return projectViews(L, M, L.inputs.room !== null && !bottom, g, g ? headLoadsOf(a, L, M, g) : []);
+}
+
+/** The machine room of a replacement in plan and in section B-B, lettered for the scale its set prints them at (as the
+ *  sheets lay them out: surveyView); none without a room over the shaft. */
+export function surveyViews(d: RoomDerived, plant: Plant): CadView[] {
+  const G = d.G;
+  if (!G) return [];
+  const M = { ...d.M, label: machineName(plant, d.made) }, area = inset(drawingArea(true), 8, 8, 8, 8);
+  const plan = surveyView(d, 'plan', area, M), cut = surveyView(d, 'section', area, M);
+  return [
+    { title: 'VISTA IN PIANTA DEL LOCALE MACCHINA', scale: plan?.place.scale ?? FULL_SCALE, entities: plan?.entities ?? roomPlanOn(d.site, M, G).entities },
+    { title: 'VISTA IN ELEVATO DEL LOCALE MACCHINA - SEZ. B-B', scale: cut?.place.scale ?? FULL_SCALE, entities: cut?.entities ?? roomSectionOn(d.site, M, G).entities },
+  ];
 }

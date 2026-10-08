@@ -25,16 +25,17 @@ interface Look {
   short: boolean;
 }
 
-const LOOK: Look = { size: 1.8, row: 5.2, sym: 3, pad: 1.2, short: false };
-/** Beside the title, smaller: the full texts first, then the short ones. */
+const LOOK: Look = { size: 2, row: 5.2, sym: 3, pad: 1.2, short: false };
+/** Beside the title, closer: the full texts first, then the short ones — the lettering never under the 2 mm of every
+ *  drawing sheet's (round 36). */
 const SPARE: readonly Look[] = [
-  { size: 1.5, row: 3.9, sym: 2.4, pad: 0.8, short: false },
-  { size: 1.3, row: 3.4, sym: 2.2, pad: 0.6, short: false },
-  { size: 1.5, row: 3.9, sym: 2.4, pad: 0.8, short: true },
-  { size: 1.3, row: 3.4, sym: 2.2, pad: 0.6, short: true },
+  { size: 2, row: 4.2, sym: 2.6, pad: 0.8, short: false },
+  { size: 2, row: 3.4, sym: 2.4, pad: 0.6, short: false },
+  { size: 2, row: 4.2, sym: 2.6, pad: 0.8, short: true },
+  { size: 2, row: 3.4, sym: 2.4, pad: 0.6, short: true },
 ];
 
-const textOf = (it: (typeof ROOM_LEGEND)[number], k: Look): string => (k.short ? it.short : it.text);
+const textOf = (it: LegendItem, k: Look): string => (k.short ? it.short : it.text);
 const cellOf = (k: Look): number => Math.max(...ROOM_LEGEND.map((it) => textWidth(textOf(it, k), { size: k.size, cond: true }))) + k.sym + 4;
 
 /** The free boxes beside a sheet's title (sheet.ts sheetTitle), between the strip and the drawing area: left of it, and
@@ -68,26 +69,39 @@ export function roomLegend(drawn: readonly Shape[], area: Box, spare: readonly B
     const clear = x0 > (area.x0 + area.x1) / 2 ? area.x1 - ext.x1 >= cell + 2 : ext.x0 - area.x0 >= cell + 2;
     if (clear && area.y1 - area.y0 >= h) return block(x0, area.y0, 1, cell, n, LOOK);
   }
-  // else beside the title, smaller (round 36 review: the symbols are drawn in any case)
-  for (const k of SPARE) {
+  // else beside the title, closer (round 36 review: the symbols are drawn in any case): in one box, else its first items
+  // left of the title and the rest right of it
+  const inBox = (b: Box, k: Look, items: readonly LegendItem[]): Shape[] | null => {
     const c = cellOf(k);
-    for (const b of spare) {
-      for (let cols = 1; cols <= n; cols++) {
-        const rows = Math.ceil(n / cols), bh = rows * k.row + 2 * k.pad;
-        if (cols * c > b.x1 - b.x0 || bh > b.y1 - b.y0) continue;
-        return block(b.x0, (b.y0 + b.y1) / 2 - bh / 2, cols, c, rows, k);
-      }
+    for (let cols = 1; cols <= items.length; cols++) {
+      const rows = Math.ceil(items.length / cols), bh = rows * k.row + 2 * k.pad;
+      if (cols * c > b.x1 - b.x0 || bh > b.y1 - b.y0) continue;
+      return block(b.x0, (b.y0 + b.y1) / 2 - bh / 2, cols, c, rows, k, items);
+    }
+    return null;
+  };
+  for (const k of SPARE) for (const b of spare) {
+    const one = inBox(b, k, ROOM_LEGEND);
+    if (one) return one;
+  }
+  const [left, right] = spare;
+  if (left && right) {
+    for (const k of SPARE) for (let m = Math.ceil(n / 2); m < n; m++) {
+      const a = inBox(left, k, ROOM_LEGEND.slice(0, m)), b = a && inBox(right, k, ROOM_LEGEND.slice(m));
+      if (a && b) return [...a, ...b];
     }
   }
   return [];
 }
 
-/** The legend's items in `rows` rows of `cols` cells `cell` wide from (x0, y0), framed, as `k` letters them. */
-function block(x0: number, y0: number, cols: number, cell: number, rows: number, k: Look): Shape[] {
+type LegendItem = (typeof ROOM_LEGEND)[number];
+
+/** The legend's `items` in `rows` rows of `cols` cells `cell` wide from (x0, y0), framed, as `k` letters them. */
+function block(x0: number, y0: number, cols: number, cell: number, rows: number, k: Look, items: readonly LegendItem[] = ROOM_LEGEND): Shape[] {
   const h = rows * k.row + 2 * k.pad, out: Shape[] = [
     { t: 'path', pts: [[x0, y0], [x0 + cols * cell, y0], [x0 + cols * cell, y0 + h], [x0, y0 + h]], closed: true, s: STYLES.thin, fill: { k: 'solid', ink: 'paper' } },
   ];
-  ROOM_LEGEND.forEach((it, i) => {
+  items.forEach((it, i) => {
     const r = Math.floor(i / cols), c = i % cols, cx = x0 + c * cell, cy = y0 + h - k.pad - (r + 0.5) * k.row;
     out.push(...symbol(it.sym, [cx + 1 + k.sym / 2, cy], k.sym), { t: 'text', at: [cx + k.sym + 2.5, cy - k.size * 0.35], text: textOf(it, k), size: k.size, cond: true });
   });

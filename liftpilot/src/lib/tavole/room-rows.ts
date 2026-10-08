@@ -34,10 +34,6 @@ export function reactionRows(G: RoomGeo, M: MachineSpec, load: SupportLoad, heb:
 export const hebFor = (G: RoomGeo, M: MachineSpec, shaft: HebShaft, govRopes: Parameters<typeof hebDrawn>[3] = []): HebLayout | null =>
   hebDrawn(G, M, shaft, govRopes);
 
-/** P4 without the governor's load in the data of the installation: the line under the distribution of the loads. */
-export const P4_NOTE = 'P4 NON INDICATO: carico del limitatore sulla soletta (peso, tiro della fune con il tenditore, forza d’intervento) — dato del '
-  + 'costruttore del limitatore, da inserire nei dati dell’impianto';
-
 /** The HEB beams over the shaft: their bearings and the fixing of the support to them (registry locale.putrelle.vano): the
  *  plates as long as the bearing, as wide and thick as the registry has them, as the plan and the 3D draw them. */
 export const hebNote = (tag: string): Note => ({

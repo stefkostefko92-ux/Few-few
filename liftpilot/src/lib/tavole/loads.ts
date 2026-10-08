@@ -65,3 +65,15 @@ export function loads(x: LoadsInput): Loads {
   const P9 = P1 + (P2 ?? 0) + (P3 ?? 0) + (x.below != null ? 0 : daN(x.machine + (x.base ?? 0)));
   return { static: stat, dynamic, P: [P1, P2, P3, x.governor, P5, P6, P7, P8, P9] };
 }
+
+/** What P1 … P9 are, as sheet 1 names them (where each acts): the machine on its support — the head pulleys when the
+ *  machine stands below —, the hitches of the ropes of a 2:1 installation, the governor, the rails and the buffers on
+ *  the pit floor, the whole on the slab. */
+export const loadNames = (below = false): readonly string[] => [
+  below ? 'PULEGGE IN TESTATA' : 'ARGANO', 'ATTACCO FUNI CABINA', 'ATTACCO FUNI CONTRAPPESO', 'LIMITATORE', 'GUIDE CABINA',
+  'AMMORTIZZATORI CABINA', 'GUIDE CONTRAPPESO', 'AMMORTIZZATORE CONTRAPPESO', 'TOTALE SULLA SOLETTA',
+];
+
+/** P4 without the governor's load in the data of the installation: its maker gives it (the governor's mass and the pull
+ *  of its rope when tripped). */
+export const GOVERNOR_LOAD_UNSET = 'DA FORNITORE';

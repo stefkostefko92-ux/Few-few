@@ -1,22 +1,24 @@
 // Sheet 1 of a machine replacement's drawing set, laid out on the A4 sheet: on the left the installation and the
 // intervention, the existing machine beside the new one, the machine room and the drops as surveyed, the analysis of
 // the load on the support; on the right the notes for the client, the checks and the electrical supply; under both the
-// loads on the slab (P1–P4, P9) and the title block. The rows of the left column grow to fill it. Every value arrives
-// written (survey-data.ts); this module only lays them out.
-import { FRAME, fitted, paragraph, table, wrap, type Cell, type Shape } from '@/drawing';
-import { titleBlock, type Row } from './datasheet';
+// loads on the slab (P1–P4, P9), the band of the dimensions, the failed checks and the records, and the title block.
+// The rows of the left column grow to fill it. Every value arrives written (survey-data.ts); this module only lays
+// them out.
+import { FRAME, fitted, paragraph, table, textWidth, wrap, type Cell, type Shape } from '@/drawing';
+import { FAILED, TITLE_H, titleBlock, type Row } from './datasheet';
 import type { SurveySheet } from './survey-data';
+import { REF_BAND_H, refBand } from './title-block';
 
 const L = (a: readonly [number, number], b: readonly [number, number], w = 0.25): Shape => ({ t: 'line', a, b, s: { ink: 'ink', w } });
 const box = (x0: number, y0: number, x1: number, y1: number, w = 0.3): Shape => ({ t: 'path', pts: [[x0, y0], [x1, y0], [x1, y1], [x0, y1]], closed: true, s: { ink: 'ink', w } });
 const rows3 = (rows: readonly Row[]): Cell[][] => rows.map(([l, u, v]) => [{ text: l }, { text: u, align: 'c' }, { text: v }]);
 
-/** The title block's top over the frame's foot, and the loads' band over it [mm]. */
-const TITLE_H = 48, GRID_H = 9.8;
+/** The loads' band over the title block and the band of the records [mm]. */
+const GRID_H = 9.8;
 
 export function surveySheetShapes(d: SurveySheet): Shape[] {
   const out: Shape[] = [], xL = FRAME.x0, xM = 98, xR = FRAME.x1, yTop = FRAME.y1;
-  const yb = FRAME.y0 + TITLE_H, yd = yb + 1.6 + GRID_H, yCols = yd + 1.6;
+  const yb = FRAME.y0 + TITLE_H, yBand = yb + 1.6 + REF_BAND_H, yd = yBand + 1.6 + GRID_H, yCols = yd + 1.6;
   // left column: three tables of label, unit and value, one of the machines side by side; the rows as tall as fill it
   const heads = 4, gaps = 3 * 1.6, rows = d.base.length + d.machines.length + 1 + d.room.length + d.loads.length;
   const rowH = Math.max(3.35, Math.min(4.6, (yTop - yCols - gaps - heads * 4.2) / rows)), size = Math.min(2.3, rowH * 0.6);
@@ -65,13 +67,15 @@ export function surveySheetShapes(d: SurveySheet): Shape[] {
 
   // the loads on the slab, not acting together
   const cw = (xR - xL) / d.P.length;
-  out.push(box(xL, yb + 1.6, xR, yd, 0.3), fitted([(xL + xR) / 2, yd - 3.4], 'DISTRIBUZIONE DEI CARICHI SULLA SOLETTA daN (N.B. CARICHI NON CONTEMPORANEI)', 2.6, xR - xL - 4, { align: 'c' }));
+  out.push(box(xL, yBand + 1.6, xR, yd, 0.3), fitted([(xL + xR) / 2, yd - 3.4], 'DISTRIBUZIONE DEI CARICHI SULLA SOLETTA daN (N.B. CARICHI NON CONTEMPORANEI)', 2.6, xR - xL - 4, { align: 'c' }));
   out.push(L([xL, yd - 4.6], [xR, yd - 4.6], 0.2));
   d.P.forEach(([name, v], i) => {
     const x0 = xL + i * cw;
-    if (i) out.push(L([x0, yd - 4.6], [x0, yb + 1.6], 0.2));
-    out.push(fitted([x0 + 1.2, yb + 3], name, 1.9, cw - 16), fitted([x0 + cw - 1.2, yb + 3], v, 2.6, 14, { align: 'r' }));
+    if (i) out.push(L([x0, yd - 4.6], [x0, yBand + 1.6], 0.2));
+    // the name takes what the value leaves of the cell
+    const vw = Math.min(16, textWidth(v, { size: 2.4, cond: true }));
+    out.push(fitted([x0 + 1.2, yBand + 3], name, 2.2, cw - vw - 3.6), fitted([x0 + cw - 1.2, yBand + 3], v, 2.4, 16, { align: 'r' }));
   });
-  out.push(...titleBlock(d, yb));
+  out.push(...refBand(yBand, d.checks.filter((c) => c[3] === FAILED).length, d.refs ?? null), ...titleBlock(d, yb));
   return out.filter((s) => s.t !== 'text' || s.text !== '');
 }

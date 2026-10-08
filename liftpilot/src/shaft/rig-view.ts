@@ -78,21 +78,19 @@ export function rigPlan(L: Layout, level: 'top' | 'main' | 'bottom' | 'pit'): En
   taken.push({ x0: L.cw.x, y0: L.cw.y, x1: L.cw.x + L.cw.w, y1: L.cw.y + L.cw.h }, grow(free, 80), ...L.rails.map((q) => grow({ x0: q.x, y0: q.y, x1: q.x, y1: q.y }, 200)));
   const ry = r.y0 + 0.28 * (r.y1 - r.y0), rx = r.x0 + 0.28 * (r.x1 - r.x0);
   taken.push({ x0: r.x0, y0: ry - 90, x1: r.x1, y1: ry + 90 }, { x0: rx - 90, y0: r.y0, x1: rx + 90, y1: r.y1 });
-  // the pulleys over the shaft: hung under the slab, or over it in the pulley room; the level runs; P1 where they act
+  // the pulleys over the shaft: hung under the slab, or over it in the pulley room; the level runs (their loads P1, P2,
+  // P3 and P4 the head's references place: lib/tavole/head-loads.ts)
   for (const p of rig.head) out.push(...pulleyPlan(p, rig.hung, rig.hung, !rig.hung));
   for (const r of rig.runs) {
     const dx = r.b[0] - r.a[0], dy = r.b[1] - r.a[1], n = Math.hypot(dx, dy) || 1, ox = (-dy / n) * rig.ropes, oy = (dx / n) * rig.ropes;
     out.push(line([r.a[0] + ox, r.a[1] + oy], [r.b[0] + ox, r.b[1] + oy], rig.hung ? 'thin' : 'hidden'), line([r.a[0] - ox, r.a[1] - oy], [r.b[0] - ox, r.b[1] - oy], rig.hung ? 'thin' : 'hidden'));
   }
-  if (rig.head.length) {
-    const c: Pt = [rig.head.reduce((s, p) => s + p.c[0], 0) / rig.head.length, rig.head.reduce((s, p) => s + p.c[1], 0) / rig.head.length];
-    out.push({ e: 'tag', at: tagNear(c, taken, within), text: 'P1', to: rig.head[0].c as Pt });
-  }
-  // the dead ends of a 2:1 roping on their plates under the slab, P2 on the car's side and P3 on the counterweight's
+  // the dead ends of a 2:1 roping on their plates under the slab, P2 on the car's side and P3 on the counterweight's (with
+  // the machine below the head's references place them)
   for (const e of rig.dead) {
     const q: RigPulley = { c: e.at, dir: e.dir, z: 0, r: 90, half: rig.ropes + 50 }, part = e.tag === 'P2' ? rig.car : rig.cw;
     out.push(path(quadOn(q, -90, -q.half, 90, q.half), true, 'hidden'), circle(e.at as Pt, Math.max(8, rig.d), 'outline', 'steel'));
-    out.push({ e: 'tag', at: tagNear(e.at as Pt, taken, within), text: e.tag, to: e.at as Pt });
+    if (rig.scheme === null) out.push({ e: 'tag', at: tagNear(e.at as Pt, taken, within), text: e.tag, to: e.at as Pt });
     // where the slab is drilled for it: from the axes of the part it holds (its pulley's centre), a reference
     if (part) {
       for (const k of [0, 1] as const) {
@@ -107,8 +105,8 @@ export function rigPlan(L: Layout, level: 'top' | 'main' | 'bottom' | 'pit'): En
 }
 
 /** The governor of a machine below on its bracket from the side wall under the ceiling (registry limitatore.vano): its
- *  base on the bracket's plate out to the base's inner edge, the sheave, P4 on the bracket behind it and its rope's plane
- *  from the wall (a reference: the plan of the main floor sets it). */
+ *  base on the bracket's plate out to the base's inner edge, the sheave and its rope's plane from the wall (a reference:
+ *  the plan of the main floor sets it); P4 on it the head's references place (lib/tavole/head-loads.ts). */
 function governorPlan(L: Layout): Entity[] {
   const g = governorSpot(L);
   if (!L.rig?.governor || !g) return [];
@@ -117,7 +115,6 @@ function governorPlan(L: Layout): Entity[] {
     rect(Math.min(wall, inner), yc - G.baseW, Math.max(wall, inner), yc + G.baseW, 'thin', 'paper'),
     rect(g.x - G.baseA, yc - G.baseW, g.x + G.baseA, yc + G.baseW, 'outline', 'paper'), rect(g.x - G.half, yc - G.R - 14, g.x + G.half, yc + G.R + 14, 'outline', 'steel'),
     chain({ dir: 'x', pts: [Math.min(wall, g.x), Math.max(wall, g.x)], at: yc + G.baseW + 130, from: yc + G.baseW, text: ['Limitatore {v}'] }),
-    { e: 'tag', at: [g.x, yc + G.baseW + 400], text: 'P4', to: [(wall + inner) / 2, yc + G.baseW] },
   ];
 }
 

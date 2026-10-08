@@ -27,10 +27,12 @@ import { railLabel, type RailType } from '@/shaft/rails';
 import { section } from '@/shaft/section';
 import type { DataSheet, Row } from './datasheet';
 import { railChecks } from './rail-check';
-import { dateIt, placeLines, type TavoleInput } from './input';
+import type { TavoleInput } from './input';
+import { GOVERNOR_LOAD_UNSET, loadNames } from './loads';
+import { refsText, titleOf } from './title-data';
 import { sheetLoads, sheetRails, supportRows } from './sheet-loads';
 import { cwGearChecks, cwGearOf, cwGearRow } from './cw-gear';
-import { P4_NOTE, hebFor, hebNote, hookRow, reactionRows } from './room-rows';
+import { hebFor, hebNote, hookRow, reactionRows } from './room-rows';
 import { roomGeo } from '@/shaft/machine-room';
 import { governorRopes, shaftUnder } from '@/shaft/room-site';
 import { belowGeoOf, machineOf, machineText } from './views';
@@ -193,7 +195,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   const roomRows = Gr ? [hookRow(Gr, M, fmt), ...reactionRows(Gr, M, { machine, static: ld.static, dyn, car: car0 },
     hebFor(Gr, M, shaftUnder(L), governorRopes(L, Gr.room)), fmt)] : [];
   const each = [false, false, false, false, true, V.carBuffers > 1, true, false, false];
-  const P = ld.P.map((p, i) => (p === null ? '—' : `${each[i] ? 'cad. ' : ''}${fmt(p, 0)}`));
+  const P = ld.P.map((p, i) => (p === null ? (i === 3 ? GOVERNOR_LOAD_UNSET : '—') : `${each[i] ? 'cad. ' : ''}${fmt(p, 0)}`));
   // the car rails between their brackets (the pitch declared or the rule's), at the loads of this sheet (sheet-loads.ts)
   const { gear, F, rc } = R;
   const labels: Readonly<Record<string, string>> = appIt.shaft, OUTCOME = { ok: 'OK', warn: 'ATTENZIONE', fail: 'NON PASSA', info: '—' } as const;
@@ -239,9 +241,8 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
       base, specs, loads: [...loadRows, ...roomRows], notes, legend: [sp.free, sp.pit, sp.top],
       forces: { fx: fmt(F.fx, 0), fy: fmt(F.fy, 0) }, checks,
       electric: [['TENSIONE F.M.', 'V', num(Pl.voltage)], ['LUCE', 'V', num(Pl.lightVoltage)], ['FREQUENZA', 'Hz', num(Pl.frequency)], ['INTERMITTENZA', '%', num(Pl.duty)]],
-      P, ...(Pl.governorLoad == null ? { pNote: P4_NOTE } : {}), client: x.project.client || '—', location: placeLines(x.project), author: x.set.author, date: dateIt(x.set.issuedAt),
-      revisions: x.set.revisions.map((r) => ({ mark: r.mark, text: r.text, date: dateIt(r.date) })),
-      number: x.set.number, pages, plant: x.project.plantNumber || '—', company: x.company.name, logo: x.company.logo !== null, clientLogo: x.clientLogo != null,
+      // the title block's words (an existing lift's plant number is to be given), the records the set goes with
+      P, loadNames: loadNames(below), ...titleOf(x, pages, C.norma !== 'en81'), refs: refsText(x.records),
     },
   };
 }

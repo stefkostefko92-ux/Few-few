@@ -4,6 +4,7 @@ import { requireCapability } from '@/lib/auth';
 import { can } from '@/lib/rbac';
 import { plantReadSchema } from '@/lib/plant';
 import { getProject } from '@/server/queries';
+import { projectCatalogMachine } from '@/server/plant-machine';
 import Crumbs from '@/components/Crumbs';
 import PlantForm from '@/components/tavole/PlantForm';
 import ClientLogoForm from '@/components/tavole/ClientLogoForm';
@@ -25,6 +26,8 @@ export default async function PlantPage({ params }: { params: Promise<{ locale: 
   const plant = plantReadSchema.safeParse(p.plant ?? {});
   const readOnly = !can(user, 'projects:edit') || p.archivedAt !== null;
   const cl = p.clientLogo, clientLogo = cl ? `data:${cl.mime};base64,${Buffer.from(cl.data).toString('base64')}` : null;
+  // the catalogue's machine the next drawing set would carry: the machine's name is checked against it
+  const catalog = await projectCatalogMachine(user, p.id, p.kind === 'FULL');
   return (
     <main className="page">
       <Crumbs items={[{ href: '/app', label: tp('title') }, { href: `/app/projects/${p.id}`, label: p.name }, { label: t('plantTitle') }]} />
@@ -35,7 +38,7 @@ export default async function PlantPage({ params }: { params: Promise<{ locale: 
         </div>
       </div>
       <ClientLogoForm projectId={p.id} current={clientLogo} readOnly={readOnly} />
-      <PlantForm projectId={p.id} initial={plant.success ? plant.data : {}} readOnly={readOnly} whole={p.kind === 'FULL'} />
+      <PlantForm projectId={p.id} initial={plant.success ? plant.data : {}} readOnly={readOnly} whole={p.kind === 'FULL'} catalog={catalog} />
     </main>
   );
 }

@@ -6,7 +6,7 @@
 // count adapts (no machine room: no sheets of it; main floor = lowest floor: one plan less).
 import {
   A4, COND, FRAME, PALETTE, STRIP_H, concreteTile, drawingArea, frame, shapeBox, sheetTitle, strip, toPaper,
-  type Box, type DrawingDoc, type Hit, type Page, type Place, type Pt, type Shape, type SheetMeta,
+  type Box, type DrawingDoc, type Entity, type Hit, type Page, type Place, type Pt, type Shape, type SheetMeta,
 } from '@/drawing';
 import type { MachineSpec, RoomGeo } from '@/shaft/machine-room';
 import type { PlanLevel } from '@/shaft/plan-view';
@@ -18,10 +18,11 @@ import { analyse, type Analysis } from '../present/analysis';
 import { dataSheet, type Mismatch } from './data';
 import { dataSheetShapes } from './datasheet';
 import { legendColumn, legendHeight, legendRow, scaleLabel, sectionMarks, sideLabels } from './extras';
-import { dateIt, placeLines, type TavoleInput } from './input';
+import { placeLines, type TavoleInput } from './input';
+import { currentRevision, type TitleData } from './title-block';
 import { OVER_DOWN, OVER_UP, clientNotes, spaceLegend, type LegendItem } from './notes';
 import { makeFmt } from '../present/tr';
-import { belowGeoOf, belowView, machineOf, planView, roomView, sectionView, sheetLayoutOf } from './views';
+import { belowGeoOf, belowView, headLoadsOf, machineOf, planView, roomView, sectionView, sheetLayoutOf } from './views';
 import { railsNotes, railsSheet } from './rails-sheet';
 import { roomLegend, titleSpares } from './room-legend';
 
@@ -41,6 +42,8 @@ export interface TavoleResult {
   sheets: { title: string; scale: number | null }[];
   /** the dimensions of each sheet the screens let change (not part of the document) */
   hits: Hit[][];
+  /** what sheet 1's title block writes (the attributes of the title block of the CAD files: cad/set-export.ts) */
+  title: TitleData;
 }
 
 const LEGEND_W = 34;
@@ -100,11 +103,12 @@ const clear = (shapes: readonly Shape[], b: Box): boolean => shapes.every((s) =>
   return o.x1 < b.x0 || o.x0 > b.x1 || o.y1 < b.y0 || o.y0 > b.y1;
 });
 
-function planSheet(L: Layout, s: Extract<Spec, { k: 'plan' }>, area: Box): Drawn {
+/** `extra`: what the set draws on the plan besides (the head's loads of a machine below on the plan at the top). */
+function planSheet(L: Layout, s: Extract<Spec, { k: 'plan' }>, area: Box, extra: readonly Entity[] = []): Drawn {
   // room around the view for the "LATO FERMATE" labels (rotated on a side wall) and the section marks
   const side = (w: 'left' | 'right'): number => (L.doors.some((d) => d.wall === w) ? 11 : 4);
   const drawn = (a: Box): Drawn => {
-    const { r, place } = planView(L, s.level, s.floor, s.total, inset(a, side('left'), side('right'), 9, 8));
+    const { r, place } = planView(L, s.level, s.floor, s.total, inset(a, side('left'), side('right'), 9, 8), extra);
     const px = toPaper(place, [L.car.x + L.car.w / 2, 0])[0];
     const marks = sectionMarks([px, r.extent.y1 + 3.5], [px, r.extent.y0 - 3.5], 'left', 'A');
     return { shapes: [...r.shapes, ...sideLabels(L, r.extent), ...marks], scale: place.scale, hits: r.hits };
@@ -136,7 +140,7 @@ function sectionSheet(L: Layout, s: Extract<Spec, { k: 'section' }>, area: Box, 
   if (used.length < s.legend.length) ({ lg, v } = draw(used));
   // the travel drawn shorter between the break marks: said by the scale
   const note: Shape[] = v.compressed ? [{ t: 'text', at: [FRAME.x1 - 3, FRAME.y0 + STRIP_H + (s.subtitle !== undefined ? 11 : 8) - 3.4], text: 'TRATTO TRA LE INTERRUZIONI FUORI SCALA',
-    size: 1.8, align: 'r', cond: true }] : [];
+    size: 2, align: 'r', cond: true }] : [];
   return { shapes: [...v.r.shapes, ...lg.shapes, ...note], scale: v.place.scale, hits: v.r.hits };
 }
 
@@ -196,19 +200,21 @@ export function buildTavole(x: TavoleInput): TavoleResult {
   const L0: Layout = setLayout(x), a: Analysis = analyse(x.values), M = machineOf(a, x.plant, L0, x.marks?.catalog ?? null);
   // the machine below: its room's sheets for the scheme the design chose (the head pulleys under the slab when none)
   const scheme = a.ctx.I.layout === 'bottom' ? x.marks?.bottom ?? 'head' : null, g = scheme ? belowGeoOf(a, L0, M, scheme) : null;
-  // the shaft's sheets with the lift's rope rig and the room over the shaft the lift has (views.ts sheetLayoutOf)
-  const L = sheetLayoutOf(a, L0, M, g);
+  // the shaft's sheets with the lift's rope rig and the room over the shaft the lift has (views.ts sheetLayoutOf), and
+  // the loads on the head of the shaft on its plan at the top floor
+  const L = sheetLayoutOf(a, L0, M, g), head = g ? headLoadsOf(a, L, M, g) : [];
   const list = specs(L, L.inputs.room !== null && a.ctx.I.layout !== 'bottom', scheme), pages = list.length + 1;
-  const [l1, l2] = placeLines(x.project), last = x.set.revisions[x.set.revisions.length - 1];
+  const [l1, l2] = placeLines(x.project), ds = dataSheet(x, a, pages);
+  // the strip of every sheet: the revision the set is at (R0 and its date on a first issue) and the plant number as the
+  // title block writes them
   const meta = (page: number): SheetMeta => ({
-    number: x.set.number, page, pages, revision: last ? `${last.mark} ${dateIt(last.date)}` : '', location: `${l1} - ${l2}`, plant: x.project.plantNumber || '—',
+    number: x.set.number, page, pages, revision: currentRevision(ds.sheet), location: `${l1} - ${l2}`, plant: ds.sheet.plant,
   });
-  const ds = dataSheet(x, a, pages);
   const out: Page[] = [{ w: A4.w, h: A4.h, shapes: [...frame(), ...dataSheetShapes(ds.sheet)] }];
   const sheets: TavoleResult['sheets'] = [{ title: 'DATI DELL’IMPIANTO', scale: null }], hits: Hit[][] = [[]];
   list.forEach((s, i) => {
     const sub = s.subtitle !== undefined, area = drawingArea(sub);
-    const d = s.k === 'plan' ? planSheet(L, s, area) : s.k === 'section' ? sectionSheet(L, s, area, ds.cwGap)
+    const d = s.k === 'plan' ? planSheet(L, s, area, s.level === 'top' ? head : []) : s.k === 'section' ? sectionSheet(L, s, area, ds.cwGap)
       : s.k === 'rails' ? { ...railsSheet(L, area, railsNotes(L, ds.rails, makeFmt('it-IT'))), hits: [] }
       : s.k === 'below-plan' || s.k === 'below-section' ? belowSheet(L, M, g ?? belowGeoOf(a, L, M, 'head'), s.k, area)
       : roomSheet(L, M, s.k, area, titleSpares(s.title, s.subtitle));
@@ -220,5 +226,5 @@ export function buildTavole(x: TavoleInput): TavoleResult {
     meta: { title: `Tavole ${x.set.number} - ${x.project.name}`, subject: 'Progetto dell’ascensore: dati, piante e sezioni del vano, locale macchina', author: x.company.name },
     palette: PALETTE, patterns: { concrete: concreteTile() }, cond: COND, images: { ...(x.company.logo ? { logo: x.company.logo } : {}), ...(x.clientLogo ? { client: x.clientLogo } : {}) }, pages: out,
   };
-  return { doc, warnings: ds.warnings, sheets, hits };
+  return { doc, warnings: ds.warnings, sheets, hits, title: ds.sheet };
 }

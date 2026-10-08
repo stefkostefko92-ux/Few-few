@@ -15,6 +15,8 @@ import { getRoomDesign, refreshedFrom } from '@/server/queries';
 import { projectCost } from '@/server/prices';
 import { calcBom } from '@/lib/prices/bom';
 import { initialsOf } from '@/lib/tavole/compose';
+import { issueChecks } from '@/lib/tavole/issue-check';
+import { plantReadSchema } from '@/lib/plant';
 import ProjectCost from '@/components/prices/ProjectCost';
 import Crumbs from '@/components/Crumbs';
 import IssueForm from '@/components/tavole/IssueForm';
@@ -59,6 +61,8 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
   }).filter((x) => x !== null) : [];
   // what the replacement costs with the company's prices: the machine, its support, the parts the test names replaced
   const costed = d && rep.ok ? await projectCost(user, calcBom(rep.values, rep.collaudo, d), 'replacement', { stops: null, travel: d.analysis.ctx.I.H }) : null;
+  // before an issue: the machine the data of the installation name against the calculation's, the plant number, the client
+  const plant = plantReadSchema.safeParse(r.project.plant ?? {}), checks = issueChecks(plant.success ? plant.data : {}, d?.made ?? null, r.project, true);
   const sets = await prisma.drawingSet.findMany({ where: { companyId: user.companyId, roomDesignId: r.id }, orderBy: [{ seq: 'desc' }, { revision: 'desc' }],
     select: { id: true, number: true, revision: true, createdAt: true, authorInitials: true, user: { select: { name: true } } } });
   return (
@@ -134,7 +138,7 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
             {sets.map((x) => <li key={x.id}><Link href={`/app/drawing-sets/${x.id}`} className="num">{x.number}{x.revision ? ` R${x.revision}` : ''}</Link> · <span className="note">{fd.dateTime(x.createdAt)} · {x.user?.name ?? x.authorInitials}</span></li>)}
           </ul>
         ) : null}
-        {d && editable ? <IssueForm roomDesignId={r.id} initials={initialsOf(user.name)} /> : null}
+        {d && editable ? <IssueForm roomDesignId={r.id} initials={initialsOf(user.name)} checks={checks} projectId={r.projectId} /> : null}
       </section>
     </main>
   );

@@ -1,5 +1,5 @@
-// The machine room in the documents (round 36): sheet 1 with the hook's rated load, the reactions R1…Rn, the line on P4
-// when its load is not given and the note on the HEB beams' bearings, the title block no smaller than before; the room's
+// The machine room in the documents (round 36): sheet 1 with the hook's rated load, the reactions R1…Rn, P4 «DA
+// FORNITORE» when its load is not given and the note on the HEB beams' bearings, the title block no smaller than before; the room's
 // plan with the legend of its symbols at its scale; the note on the room with the sockets; a replacement's survey with
 // the existing governor, openings and support — in its checks, on its sheet 1 and in its relazione tecnica (the drops'
 // wording with a direct drive, the existing machine's loads and UNI 10411-1 point 5, the openings with their place, the
@@ -15,6 +15,7 @@ import { buildTavole } from '@/lib/tavole/build';
 import { storedInput } from '@/lib/tavole/compose';
 import { roomNote } from '@/lib/tavole/notes';
 import { hebNote } from '@/lib/tavole/room-rows';
+import { GOVERNOR_LOAD_UNSET } from '@/lib/tavole/loads';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { ROOM_LEGEND } from '@/lib/tavole/room-legend';
 import { fallSlants, slantText, surveySheetData } from '@/lib/tavole/survey-data';
@@ -42,7 +43,7 @@ test('foglio 1: gancio, reazioni R1…Rn, P4 non indicato; nota sulle HEB; carti
     const r = sheets(inp), t = pageTexts(r, 0);
     assert.ok(t.includes('GANCIO DI SOLLEVAMENTO SOPRA L’ARGANO: PORTATA'), `${name}: gancio`);
     assert.ok(t.some((x) => x.startsWith('REAZIONI APPOGGI R1')), `${name}: reazioni`);
-    assert.ok(t.some((x) => x.startsWith('P4 NON INDICATO')), `${name}: P4`);
+    assert.ok(t.includes(GOVERNOR_LOAD_UNSET), `${name}: P4`);
     assert.equal(t.includes('PUTRELLE HEB SOPRA IL VANO'), heb, `${name}: nota HEB`);
     const c = r.doc.pages[0]?.shapes.find((s) => s.t === 'text' && s.text === 'COMMITTENTE :');
     assert.ok(c && c.t === 'text' && c.at[1] - 3 + 9 - FRAME.y0 >= 50.1 - 1e-6, `${name}: cartiglio`);

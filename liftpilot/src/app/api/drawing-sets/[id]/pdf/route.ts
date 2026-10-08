@@ -6,6 +6,7 @@ import { composeStoredRoom } from '@/server/room-compose';
 import { attachment, downloader, text } from '@/server/download';
 import { getDrawingSet } from '@/server/queries';
 import { keepSetPdf, keptSetPdf } from '@/server/drawing-pdf';
+import { firstIssuedAt } from '@/server/set-identity';
 import { RendererBusy, busyResponse } from '@/lib/report/render';
 
 export const runtime = 'nodejs';
@@ -25,9 +26,10 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     if (!s) return text(404, 'Not found');
     let pdf = await keptSetPdf(s.id);
     if (!pdf) {
-      // a whole project's set from its shaft design, a replacement's from its machine room
-      const r = s.roomDesign ? composeStoredRoom({ ...s, calculation: s.calculation, roomDesign: s.roomDesign, logo: s.logo, clientLogo: s.clientLogo })
-        : s.shaftDesign ? composeStored({ ...s, calculation: s.calculation, shaftDesign: s.shaftDesign, logo: s.logo, clientLogo: s.clientLogo }) : null;
+      // a whole project's set from its shaft design, a replacement's from its machine room (R0: its number's first issue)
+      const first = await firstIssuedAt(user.companyId, s);
+      const r = s.roomDesign ? composeStoredRoom({ ...s, firstIssuedAt: first, calculation: s.calculation, roomDesign: s.roomDesign, logo: s.logo, clientLogo: s.clientLogo })
+        : s.shaftDesign ? composeStored({ ...s, firstIssuedAt: first, calculation: s.calculation, shaftDesign: s.shaftDesign, logo: s.logo, clientLogo: s.clientLogo }) : null;
       if (!r) return text(404, 'Not found');
       if ('ok' in r) return text(r.error === 'engineChanged' ? 409 : 404, r.error === 'engineChanged' ? 'The running engines do not reproduce this drawing set' : 'Not found');
       pdf = await keepSetPdf(s.id, r.doc);

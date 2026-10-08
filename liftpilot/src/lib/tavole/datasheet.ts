@@ -1,12 +1,15 @@
 // Sheet 1 of the drawing set: characteristics, specifications of the installation, analysis of the loads, notes for
-// the client, legend of the spaces, forces on the rails, electrical supply, distribution of the loads and the title
-// block (client, location, author, date, approval, revisions, company logo, plant number, drawing number). Every value
-// arrives written; this module only lays them out on the A4 sheet.
+// the client, legend of the spaces, forces on the rails, electrical supply, distribution of the loads (each named) and,
+// at the foot, the band of the dimensions, the failed checks and the records the set goes with over the title block
+// (title-block.ts). Every value arrives written; this module only lays them out on the A4 sheet.
 import { FRAME, arrowhead, fitted, paragraph, symbol, table, wrap, type Cell, type Shape, type SymbolName } from '@/drawing';
+import { REF_BAND_H, refBand, titleBlock, type TitleData } from './title-block';
+
+export { titleBlock, type TitleData } from './title-block';
 
 export type Row = readonly [label: string, unit: string, value: string];
 
-export interface DataSheet {
+export interface DataSheet extends TitleData {
   base: readonly Row[];
   specs: readonly Row[];
   /** label, value, unit */
@@ -19,30 +22,20 @@ export interface DataSheet {
   electric: readonly Row[];
   /** P1 … P9, written */
   P: readonly string[];
-  /** a line under them: what a load not given is and who gives it (round 36: P4 without the governor's load) */
-  pNote?: string;
-  client: string;
-  location: readonly [string, string];
-  author: string;
-  date: string;
-  revisions: readonly { mark: string; text: string; date: string }[];
-  number: string;
-  pages: number;
-  plant: string;
-  company: string;
-  logo: boolean;
-  /** the client's logo beside its name */
-  clientLogo?: boolean;
+  /** what P1 … P9 are (loads.ts loadNames); none: their numbers alone */
+  loadNames?: readonly string[];
+  /** the records the set goes with (title-data.ts refsText) */
+  refs?: string | null;
 }
+
+/** The title block's height over the frame's foot [mm]: the same on every sheet 1. */
+export const TITLE_H = 52;
+/** The outcome of a check that does not pass, as the tables write it. */
+export const FAILED = 'NON PASSA';
 
 const L = (a: readonly [number, number], b: readonly [number, number], w = 0.25): Shape => ({ t: 'line', a, b, s: { ink: 'ink', w } });
 const T = (at: readonly [number, number], text: string, size: number, o: Partial<Extract<Shape, { t: 'text' }>> = {}): Shape => ({ t: 'text', at, text, size, cond: true, ...o });
 const box = (x0: number, y0: number, x1: number, y1: number, w = 0.3): Shape => ({ t: 'path', pts: [[x0, y0], [x1, y0], [x1, y1], [x0, y1]], closed: true, s: { ink: 'ink', w } });
-
-/** The distribution of the loads' height; the title block's least height (the sheet with HEB beams until round 36) [mm]. */
-const GRID_H = 3 * 5.2 + 4.6, TITLE_MIN = 50.1, P_NOTE_H = 4.2;
-/** The least heights of the rows of the loads and of the data above them [mm]. */
-const LOAD_MIN = 3.2, ROW_MIN = 3.0;
 
 function rows3(rows: readonly Row[]): Cell[][] {
   return rows.map(([l, u, v]) => [{ text: l }, { text: u, align: 'c' }, { text: v }]);
@@ -51,24 +44,19 @@ function rows3(rows: readonly Row[]): Cell[][] {
 export function dataSheetShapes(d: DataSheet): Shape[] {
   const out: Shape[] = [];
   const xL = FRAME.x0, xM = 98, xR = FRAME.x1, yTop = FRAME.y1;
-  // left column: characteristics, specifications, analysis of the loads
-  const w3 = [51, 12, xM - xL - 63];
-  // the column down to the distribution of the loads and the title block at their least: the data's rows 3,35 mm tall,
-  // closer (down to ROW_MIN) where the loads would otherwise go under LOAD_MIN and push the title block down (round 36)
-  const gridH = GRID_H + (d.pNote ? P_NOTE_H : 0), column = yTop - (FRAME.y0 + TITLE_MIN + 1.6 + gridH + 1.6) - 2 * 1.6;
-  const rowH = Math.max(ROW_MIN, Math.min(3.35, (column - LOAD_MIN * (d.loads.length + 1)) / (d.base.length + d.specs.length + 2)));
-  let t = table(xL, yTop, w3, rowH, [[{ text: 'CARATTERISTICHE DI BASE', size: 3 }], ...rows3(d.base)], 2.05);
+  // from the foot: the title block, the band over it, the distribution of the loads; the columns above them
+  const yb = FRAME.y0 + TITLE_H, yBand = yb + 1.6 + REF_BAND_H, gridH = 3 * 5.2 + 4.6, yd = yBand + 1.6 + gridH, yLoads = yd + 1.6;
+  // left column: characteristics, specifications, analysis of the loads, their rows as tall as they can be down to the
+  // distribution (never taller than the usual 3,35 and 4,15 mm)
+  const w3 = [51, 12, xM - xL - 63], need = 3.35 * (d.base.length + d.specs.length + 2) + 4.15 * (d.loads.length + 1) + 3.2;
+  const k = Math.min(1, (yTop - yLoads) / need), rh = 3.35 * k, lh = 4.15 * k;
+  let t = table(xL, yTop, w3, rh, [[{ text: 'CARATTERISTICHE DI BASE', size: 3 * Math.min(1, k + 0.05) }], ...rows3(d.base)], Math.min(2.05, rh * 0.62));
   out.push(...t.shapes);
-  t = table(xL, t.bottom - 1.6, w3, rowH, [[{ text: "SPECIFICHE DELL’IMPIANTO", size: 3 }], ...rows3(d.specs)], 2.05);
+  t = table(xL, t.bottom - 1.6, w3, rh, [[{ text: "SPECIFICHE DELL’IMPIANTO", size: 3 * Math.min(1, k + 0.05) }], ...rows3(d.specs)], Math.min(2.05, rh * 0.62));
   out.push(...t.shapes);
-  // the rows as tall as the sheet allows down to the distribution of the loads and the title block at their least
-  // (round 36: the hook and the reactions added; until then always 4,15 mm)
-  const room = t.bottom - 1.6 - (FRAME.y0 + TITLE_MIN + 1.6 + gridH + 1.6), loadH = Math.max(LOAD_MIN, Math.min(4.15, room / (d.loads.length + 1)));
-  const ls = Math.min(2.5, loadH * 0.62);
-  const loadRows: Cell[][] = d.loads.map(([l, v, u]) => [{ text: l, size: ls }, { text: v, size: ls }, { text: u, align: 'c', size: ls }]);
-  t = table(xL, t.bottom - 1.6, [52, 26, xM - xL - 78], loadH, [[{ text: 'ANALISI DEI CARICHI', size: 3 }], ...loadRows], ls);
+  const ls = Math.min(2.5, lh * 0.62), loadRows: Cell[][] = d.loads.map(([l, v, u]) => [{ text: l, size: ls }, { text: v, size: ls }, { text: u, align: 'c', size: ls }]);
+  t = table(xL, t.bottom - 1.6, [52, 26, xM - xL - 78], lh, [[{ text: 'ANALISI DEI CARICHI', size: 3 * Math.min(1, k + 0.05) }], ...loadRows], ls);
   out.push(...t.shapes);
-  const yLoads = t.bottom;
 
   // right column, from the foot: the legend of the spaces beside the forces on the rails and the electrical supply,
   // level with the foot of the left column; above them the notes for the client, lettered as large as the room allows
@@ -117,52 +105,15 @@ export function dataSheetShapes(d: DataSheet): Shape[] {
     out.push(...t2.shapes);
   }
 
-  // distribution of the loads
-  const yd = yLoads - 1.6, cw = (xR - xL) / 3;
+  // distribution of the loads: each with its name, the value at the end of its cell
+  const cw = (xR - xL) / 3;
   out.push(box(xL, yd - gridH, xR, yd, 0.3), fitted([(xL + xR) / 2, yd - 3.5], 'DISTRIBUZIONE DEI CARICHI daN (N.B. CARICHI NON CONTEMPORANEI)', 2.8, xR - xL - 4, { align: 'c' }));
   for (let i = 0; i < 9; i++) {
-    const col = Math.floor(i / 3), row = i % 3, x0 = xL + col * cw, y0 = yd - 4.6 - row * 5.2;
-    out.push(L([x0, y0], [x0 + cw, y0], 0.2), T([x0 + 1.4, y0 - 3.7], `CARICO P${i + 1} =`, 2.6), fitted([x0 + cw - 1.4, y0 - 3.7], d.P[i] ?? '—', 2.6, cw - 22, { align: 'r' }));
-    if (col > 0 && row === 0) out.push(L([x0, yd - 4.6], [x0, yd - GRID_H], 0.2));
+    const col = Math.floor(i / 3), row = i % 3, x0 = xL + col * cw, y0 = yd - 4.6 - row * 5.2, name = d.loadNames?.[i];
+    out.push(L([x0, y0], [x0 + cw, y0], 0.2), fitted([x0 + 1.4, y0 - 3.7], name ? `P${i + 1} ${name}` : `CARICO P${i + 1} =`, 2.4, cw - 19), fitted([x0 + cw - 1.4, y0 - 3.7], d.P[i] ?? '—', 2.6, 15, { align: 'r' }));
+    if (col > 0 && row === 0) out.push(L([x0, yd - 4.6], [x0, yd - gridH], 0.2));
   }
-  if (d.pNote) out.push(L([xL, yd - GRID_H], [xR, yd - GRID_H], 0.2), fitted([xL + 1.4, yd - GRID_H - 3], d.pNote, 2.1, xR - xL - 2.8));
 
-  out.push(...titleBlock(d, yd - gridH - 1.6));
+  out.push(...refBand(yBand, d.checks.filter((c) => c[3] === FAILED).length, d.refs ?? null), ...titleBlock(d, yb));
   return out.filter((s) => s.t !== 'text' || s.text !== '');
-}
-
-/** What the title block writes. */
-export type TitleData = Pick<DataSheet, 'client' | 'location' | 'author' | 'date' | 'revisions' | 'number' | 'pages' | 'plant' | 'company' | 'logo' | 'clientLogo'>;
-
-/** The title block at the foot of sheet 1, its top at `yb`: client (and its logo), location, author, date, approval,
- *  revisions, the company's logo or name, plant number, drawing number. */
-export function titleBlock(d: TitleData, yb: number): Shape[] {
-  const out: Shape[] = [], xL = FRAME.x0, xR = FRAME.x1;
-  const y0 = FRAME.y0, r1 = yb - 9, r2 = r1 - 18, c1 = 150;
-  out.push(box(xL, y0, xR, yb, 0.3), L([xL, r1], [xR, r1], 0.3), L([xL, r2], [xR, r2], 0.3), L([c1, r1], [c1, y0], 0.3), L([c1, r1 - 9], [xR, r1 - 9], 0.2));
-  // the client's name, and its logo at the end of the row when there is one
-  const clientW = d.clientLogo ? 40 : 0;
-  out.push(T([xL + 1.6, r1 + 3], 'COMMITTENTE :', 2), fitted([xL + 26, r1 + 2.6], d.client, 5, c1 - xL - 28 - clientW, { at: [xL + 26, r1 + 2.6] }));
-  if (d.clientLogo) out.push({ t: 'image', ref: 'client', box: { x0: c1 - clientW, y0: r1 + 1, x1: c1 - 2, y1: yb - 1 } });
-  out.push(L([c1, r1], [c1, yb], 0.3));
-  out.push(T([xL + 1.6, r1 - 6], 'UBICAZIONE :', 2), fitted([xL + 26, r1 - 6.4], d.location[0], 4.6, c1 - xL - 28), fitted([xL + 26, r1 - 14.6], d.location[1], 4.6, c1 - xL - 28));
-  out.push(T([c1 + 1.6, r1 - 6], 'ELABORATO DA', 2), fitted([xR - 1.6, r1 - 6.3], d.author, 3.6, 20, { align: 'r' }));
-  out.push(T([c1 + 1.6, r1 - 15], 'DATA', 2), fitted([xR - 1.6, r1 - 15.3], d.date, 3.6, 28, { align: 'r' }));
-  // approval, revisions, logo, plant number, drawing number
-  const cA = 58, cB = 118, lastRev = d.revisions.at(-1);
-  out.push(L([cA, r2], [cA, y0], 0.3), L([cB, r2], [cB, r2 - 13.5], 0.2), L([cB + 16, r2], [cB + 16, r2 - 13.5], 0.2));
-  out.push(T([xL + 1.2, r2 - 3], 'FIRMA PER APPROVAZIONE DEL', 1.8), T([xL + 1.2, r2 - 5.4], 'PRESENTE PROGETTO :', 1.8), T([xL + 1.2, y0 + 14.2], 'Data', 1.4));
-  out.push(L([xL, y0 + 10.5], [cA, y0 + 10.5], 0.3), L([xL, y0 + 4.2], [cA, y0 + 4.2], 0.2), L([xL + 23, y0], [xL + 23, y0 + 4.2], 0.2));
-  out.push(T([xL + 1.2, y0 + 6], 'DIS. N°', 1.8), fitted([xL + 12, y0 + 5.8], d.number, 4.6, cA - xL - 13), T([xL + 1.2, y0 + 1.3], `PAGINA N° 1/${d.pages}`, 1.7), fitted([xL + 24, y0 + 1.3], lastRev ? `${lastRev.mark} ${lastRev.date}` : 'R_  __/__/__', 1.7, cA - xL - 25));
-  out.push(T([(cA + cB) / 2, r2 - 2.8], 'REVISIONE DISEGNO', 1.9, { align: 'c' }), T([cB + 8, r2 - 2.8], 'DATA', 1.9, { align: 'c' }), T([(cB + 16 + c1) / 2, r2 - 2.8], 'FIRMA', 1.9, { align: 'c' }));
-  for (let i = 0; i < 3; i++) {
-    const yr = r2 - 3.8 - i * 3.25, rev = d.revisions[i];
-    out.push(L([cA, yr], [c1, yr], 0.18), T([cA + 1, yr - 2.4], `R${i + 1}`, 1.8));
-    if (rev) out.push(fitted([cA + 6, yr - 2.4], rev.text, 1.8, cB - cA - 7), fitted([cB + 8, yr - 2.4], rev.date, 1.8, 15, { align: 'c' }));
-  }
-  out.push(L([cA + 5, r2 - 3.8], [cA + 5, r2 - 13.5], 0.18), L([cA, r2 - 13.5], [c1, r2 - 13.5], 0.3));
-  if (d.logo) out.push({ t: 'image', ref: 'logo', box: { x0: cA + 3, y0: y0 + 2, x1: c1 - 3, y1: r2 - 15.5 } });
-  else out.push(fitted([(cA + c1) / 2, (y0 + r2 - 13.5) / 2 - 1.5], d.company, 5, c1 - cA - 6, { align: 'c', bold: true }));
-  out.push(T([(c1 + xR) / 2, r1 - 13.2], '', 1), T([(c1 + xR) / 2, r2 - 4.5], 'MATRICOLA N°', 2.6, { align: 'c' }), fitted([(c1 + xR) / 2, y0 + 8], d.plant, 7, xR - c1 - 4, { align: 'c' }));
-  return out;
 }

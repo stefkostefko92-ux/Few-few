@@ -14,7 +14,7 @@ export interface SheetMeta {
   number: string;
   page: number;
   pages: number;
-  /** revision mark of the strip, e.g. "R1 12/07/26", or blank */
+  /** revision mark of the strip, e.g. "R1 12/07/2026" ("R0 …" on a first issue), or blank (a draft) */
   revision: string;
   location: string;
   /** plant number (matricola) */
@@ -39,19 +39,25 @@ export function frame(): Shape[] {
   ];
 }
 
-/** The strip at the foot of the drawing sheets. */
+/** The general note of the dimensions, on the strip of every drawing sheet and over sheet 1's title block. */
+export const DIMENSIONS_NOTE = 'QUOTE IN mm, DA VERIFICARE IN CANTIERE';
+
+/** The strip at the foot of the drawing sheets: the drawing number, the page and the revision; the location with the
+ *  note of the dimensions; the designer's signature; the plant number. */
 export function strip(m: SheetMeta): Shape[] {
-  const { x0, y0, x1 } = FRAME, y1 = y0 + STRIP_H, c1 = x0 + 36, c3 = x1 - 36, mid = y0 + 4.2, rcol = x0 + 23;
+  const { x0, y0, x1 } = FRAME, y1 = y0 + STRIP_H, c1 = x0 + 40, c3 = x1 - 36, c2 = c3 - 40, mid = y0 + 4.2, rcol = x0 + 21;
   return [
-    L([x0, y1], [x1, y1], 0.35), L([c1, y0], [c1, y1], 0.35), L([c3, y0], [c3, y1], 0.35), L([x0, mid], [c1, mid]), L([rcol, y0], [rcol, mid]),
-    T([x0 + 1.4, mid + 1.6], 'DIS. N°', 1.7),
-    fitted([x0 + 9.2, mid + 1.4], m.number, 4.6, c1 - x0 - 10.4),
-    fitted([x0 + 1.4, y0 + 1.2], `PAGINA N° ${m.page}/${m.pages}`, 1.7, rcol - x0 - 2),
-    fitted([rcol + 1, y0 + 1.2], m.revision || 'R_  __/__/__', 1.7, c1 - rcol - 1.6),
-    T([c1 + 2, y0 + 3.4], 'UBICAZIONE :', 1.7),
-    fitted([c1 + 20, y0 + 3.2], m.location, 4, c3 - c1 - 22),
-    T([c3 + 2, y0 + 3.4], 'MATRICOLA :', 1.7),
-    fitted([c3 + 15, y0 + 3.2], m.plant, 4.6, x1 - c3 - 16.5),
+    L([x0, y1], [x1, y1], 0.35), L([c1, y0], [c1, y1], 0.35), L([c2, y0], [c2, y1], 0.35), L([c3, y0], [c3, y1], 0.35), L([x0, mid], [c1, mid]), L([rcol, y0], [rcol, mid]),
+    T([x0 + 1.4, mid + 1.6], 'DIS. N°', 2),
+    fitted([x0 + 10.4, mid + 1.4], m.number, 4.6, c1 - x0 - 11.6),
+    fitted([x0 + 1.4, y0 + 1.2], `PAGINA N° ${m.page}/${m.pages}`, 2, rcol - x0 - 2),
+    fitted([rcol + 1, y0 + 1.2], m.revision || 'R_  __/__/__', 2, c1 - rcol - 1.6),
+    T([c1 + 2, y0 + 6.6], 'UBICAZIONE :', 2),
+    fitted([c1 + 20, y0 + 6.3], m.location, 3.6, c2 - c1 - 22),
+    fitted([c1 + 2, y0 + 1.5], DIMENSIONS_NOTE, 2, c2 - c1 - 4, { bold: true }),
+    T([c2 + 1.4, y0 + 7.6], 'FIRMA DEL PROGETTISTA', 2),
+    T([c3 + 2, y0 + 3.4], 'MATRICOLA :', 2),
+    fitted([c3 + 16, y0 + 3.2], m.plant, 4.6, x1 - c3 - 17.5),
   ];
 }
 

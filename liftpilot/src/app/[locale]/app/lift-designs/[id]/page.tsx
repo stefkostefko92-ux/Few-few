@@ -17,6 +17,9 @@ import { pitchesOf } from '@/lib/plant';
 import { withPitches } from '@/shaft/brackets';
 import { designBom } from '@/lib/prices/bom';
 import { initialsOf } from '@/lib/tavole/compose';
+import { issueChecks } from '@/lib/tavole/issue-check';
+import { valueMarks } from '@/lib/lift/marks';
+import { plantReadSchema } from '@/lib/plant';
 import ProjectCost from '@/components/prices/ProjectCost';
 import LiftView from '@/components/lift/LiftView';
 import AdviceView from '@/components/lift/AdviceView';
@@ -57,6 +60,10 @@ export default async function LiftDesignPage({ params, searchParams }: { params:
   const order = same && r && advice && can(user, 'report:download') ? designOrder(r.inputs, advice, r.dv) : null;
   // the cost of its articles with the company's prices: only for whoever sees prices
   const prices = await visiblePrices(user), costed = dv ? await projectCost(user, designBom(dv), 'full', designBasis(dv)) : null;
+  // before an issue: the machine the data of the installation name against the catalogue's the set would carry, the
+  // plant number of an existing lift, the client
+  const plant = plantReadSchema.safeParse(d.project.plant ?? {}), catalog = r ? valueMarks(r.inputs.auto, r.dv, r.dv.bottom, r.dv.collaudo).catalog : null;
+  const checks = issueChecks(plant.success ? plant.data : {}, catalog ?? null, d.project, (r?.dv.collaudo.norma ?? 'en81') !== 'en81');
   return (
     <main className="page page-wide">
       <Crumbs items={[{ href: '/app', label: tp('title') }, { href: `/app/projects/${d.project.id}`, label: d.project.name }, { label: t('designTitle') }]} />
@@ -123,7 +130,7 @@ export default async function LiftDesignPage({ params, searchParams }: { params:
           <div className="panel">
             <h3>{tt('title')}</h3>
             <p className="note">{tt('lead')}</p>
-            <IssueForm calculationId={d.calculation.id} initials={initialsOf(user.name)} />
+            <IssueForm calculationId={d.calculation.id} initials={initialsOf(user.name)} checks={checks} projectId={d.project.id} />
           </div>
         ) : null}
       </section>

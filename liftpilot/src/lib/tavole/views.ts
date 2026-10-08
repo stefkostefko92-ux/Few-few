@@ -18,7 +18,9 @@ import { bottomGeo, sheaveHalfBelow, type BottomGeo, type BottomScheme } from '.
 import { machineSpec, sheaveAxisBelow } from '../lift/machine';
 import { sheetLayout } from '../lift/shaft-rig';
 import { belowPlanEntities, belowSectionEntities } from './below-view';
+import { headLoads } from './head-loads';
 import type { Plant } from '../plant';
+import { machineName } from './machine-name';
 import type { Analysis } from '../present/analysis';
 
 export const PLAN_SCALES = [20, 25, 50, 100, 200], DETAIL_SCALES = [25, 50, 100, 200];
@@ -36,9 +38,10 @@ function placeIn(model: Box, entities: readonly Entity[], area: Box, scales: rea
   return p;
 }
 
-/** Plan of the shaft at a level; `total` names the level in the overall dimensions (e.g. `in Testata`). */
-export function planView(L: Layout, level: PlanLevel, floor: number, total: string, area: Box): View {
-  const T = L.inputs.wall, B = wallsAt(L, level), ents = [...planEntities(L, level, floor), ...planDims(L, level, floor, { level: total })];
+/** Plan of the shaft at a level; `total` names the level in the overall dimensions (e.g. `in Testata`); `extra`: what
+ *  the set draws on it besides (the loads on the head of a machine below: headLoadsOf). */
+export function planView(L: Layout, level: PlanLevel, floor: number, total: string, area: Box, extra: readonly Entity[] = []): View {
+  const T = L.inputs.wall, B = wallsAt(L, level), ents = [...planEntities(L, level, floor), ...extra, ...planDims(L, level, floor, { level: total })];
   const place = placeIn({ x0: Math.min(0, B.x0) - T, y0: Math.min(0, B.y0) - T, x1: Math.max(L.inputs.W, B.x1) + T, y1: Math.max(L.inputs.D, B.y1) + T }, ents, area, PLAN_SCALES);
   return { r: renderView(ents, place), place };
 }
@@ -91,16 +94,14 @@ export function sectionView(L: Layout, kind: SectionKind, floor: number, area: B
   return { r: renderView(ents, place), place, marks: [...new Set(ents.flatMap((e) => (e.e === 'mark' ? [e.sym] : [])))], compressed: v.zmap !== null };
 }
 
-/** The machine as the sheets name it: as the data of the installation write it, else the catalogue's machine of the
- *  design (maker and model), else none. */
-export const machineText = (plant: Plant, catalog: { brand: string; model: string } | null): string =>
-  plant.machine ?? (catalog ? `${catalog.brand} ${catalog.model}` : '');
+// the machine's name on the sheets (machine-name.ts: pure, for the forms too)
+export { machineConflict, machineName, machineText } from './machine-name';
 
-/** The machine as the calculation describes it (its mass the calculation's; its name as the data of the installation
- *  write it), on the room's support: the maker's as it is when the proposal took one from a catalogue (`catalog` of the
- *  marks; its bedplate with the diverting pulley), else the generic machine. */
+/** The machine as the calculation describes it (its mass the calculation's; its name the catalogue's, else as the data of
+ *  the installation write it), on the room's support: the maker's as it is when the proposal took one from a catalogue
+ *  (`catalog` of the marks; its bedplate with the diverting pulley), else the generic machine. */
 export function machineOf(a: Analysis, plant: Plant, L: Layout, catalog: { brand: string; model: string } | null = null): MachineSpec {
-  return machineSpec(a.ctx, a.ctx.N.mass, machineText(plant, catalog), L.inputs.room, catalog ? shapeOf(catalog.brand, catalog.model) : null, catalog);
+  return machineSpec(a.ctx, a.ctx.N.mass, machineName(plant, catalog), L.inputs.room, catalog ? shapeOf(catalog.brand, catalog.model) : null, catalog);
 }
 
 /** A machine room's view as the sheet takes it, at 1:25 when it can be had: the plan with its door open outward, or
@@ -135,6 +136,10 @@ export const sheetLayoutOf = (a: Analysis, L: Layout, M: MachineSpec, g: BottomG
 /** The geometry of the machine below for the calculation's machine (the 3D's: bottom.ts). */
 export const belowGeoOf = (a: Analysis, L: Layout, M: MachineSpec, scheme: BottomScheme): BottomGeo =>
   bottomGeo(L, scheme, M.D, a.ctx.I.Dp, M.n, M.d, a.ctx.I.r, sheaveAxisBelow(M.D, M.shape ?? null), sheaveHalfBelow(M.D, M.n, M.d, M.shape ?? null));
+
+/** The loads on the head of the shaft of a machine below for the calculation's machine, on the plan at the top floor
+ *  (head-loads.ts). */
+export const headLoadsOf = (a: Analysis, L: Layout, M: MachineSpec, g: BottomGeo): Entity[] => headLoads(L, g, a.ctx.I.r, a.ctx.I.Dp, M.n, M.d);
 
 /** The machine's room with the machine below, in plan or in section C-C (below-view.ts). */
 export function belowView(L: Layout, M: MachineSpec, g: BottomGeo, kind: 'plan' | 'section', area: Box): View & { entities: Entity[] } {

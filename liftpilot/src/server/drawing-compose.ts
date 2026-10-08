@@ -12,7 +12,8 @@ import type { StoredDesign } from '@/lib/shaft-hash';
 import { buildTavole } from '@/lib/tavole/build';
 import type { Mismatch } from '@/lib/tavole/data';
 import { projectData, storedInput, type ProjectData, type StoredSet } from '@/lib/tavole/compose';
-import type { TavoleInput, TavoleRevision } from '@/lib/tavole/input';
+import type { SetRecords, TavoleInput, TavoleRevision } from '@/lib/tavole/input';
+import type { TitleData } from '@/lib/tavole/title-block';
 import { tavoleHash } from '@/lib/tavole-hash';
 import type { DrawingDoc } from '@/drawing';
 import { usableLogo } from '@/lib/logo';
@@ -24,7 +25,9 @@ export const DESIGN_SELECT = {
   id: true, label: true, summary: true, inputs: true, source: true, sha256: true, engineVersion: true, profileId: true, createdAt: true, user: { select: { name: true } },
 } as const;
 
-export type ComposeError = { ok: false; error: 'notFound' | 'noDesign' | 'engineChanged' | 'archived' };
+/** `machineMismatch`: the data of the installation name a machine other than the one the calculation checked (an issue
+ *  only, views.ts machineConflict). */
+export type ComposeError = { ok: false; error: 'notFound' | 'noDesign' | 'engineChanged' | 'archived' | 'machineMismatch' };
 
 /** The project as a set takes it: its data, the installation's, the client's logo. */
 export const SET_PROJECT = {
@@ -33,7 +36,7 @@ export const SET_PROJECT = {
 } as const;
 
 type SetProject = ProjectData & { id: string; plant: Prisma.JsonValue; clientLogo: { id: string; mime: string; data: Uint8Array } | null };
-type SetHead = { number: string; issuedAt: Date; author: string; revisions: TavoleRevision[] };
+type SetHead = { number: string; issuedAt: Date; author: string; revisions: TavoleRevision[]; firstIssuedAt?: Date };
 
 /** What every set takes besides its records, as it is now: the company with its logo, the project's data and the
  *  installation's, the client's logo, the revisions; with the row's columns that keep them. Null: no company. */
@@ -44,7 +47,7 @@ export async function setBasis(tx: Tx, user: SessionUser, project: SetProject, s
   const logo = usableLogo(company.logo), clientLogo = usableLogo(project.clientLogo);
   const stored: StoredSet = {
     number: set.number, createdAt: set.issuedAt, authorInitials: set.author, companyName: company.name, projectData: pd, plant: P,
-    revisions: set.revisions.map((x) => ({ mark: x.mark, text: x.text, date: x.date.toISOString() })),
+    revisions: set.revisions.map((x) => ({ mark: x.mark, text: x.text, date: x.date.toISOString() })), firstIssuedAt: set.firstIssuedAt ?? null,
   };
   const row = {
     projectId: project.id, logoId: logo ? company.logo?.id ?? null : null, clientLogoId: clientLogo ? project.clientLogo?.id ?? null : null,
@@ -93,27 +96,32 @@ export async function composeFromCalculation(tx: Tx, user: SessionUser, calculat
   const r = reproduce(c);
   if (!r.ok) return r;
   const b = await setBasis(tx, user, c.project, set);
-  const input = b ? storedInput(r.values, r.layout, b.stored, b.logo, r.marks, b.clientLogo) : null;
+  const input = b ? storedInput(r.values, r.layout, b.stored, b.logo, r.marks, b.clientLogo, recordsOf(calculationId, c)) : null;
   if (!b || !input) return { ok: false, error: 'notFound' };
   const { doc } = buildTavole(input);
   return { ok: true, ...b.row, shaftDesignId: r.designId, doc, input, sha256: tavoleHash(doc), pages: doc.pages.length };
 }
 
+/** The records a whole project's set cites on sheet 1: its calculation and its shaft design. */
+const recordsOf = (calculationId: string, c: { sha256: string; shaftDesign: { id: string; sha256: string } | null }): SetRecords =>
+  ({ calc: { id: calculationId, sha256: c.sha256 }, ...(c.shaftDesign ? { design: { id: c.shaftDesign.id, sha256: c.shaftDesign.sha256 } } : {}) });
+
 /**
  * A stored set drawn again from its snapshots, with where its calculation and shaft design disagree; an error when the
- * engines do not reproduce it (hash differs).
+ * engines do not reproduce it (hash differs). `firstIssuedAt` of the stored set: the date of its R0 (the date of the
+ * row of revision 0; set-identity.ts).
  */
 export function composeStored(s: StoredSet & {
   sha256: string;
-  calculation: { inputs: unknown; sha256: string; collaudo: unknown; liftDesign: { inputs: unknown; engineVersion: string } | null };
+  calculation: { id: string; inputs: unknown; sha256: string; collaudo: unknown; liftDesign: { inputs: unknown; engineVersion: string } | null };
   shaftDesign: StoredDesign;
   logo: { mime: string; data: Uint8Array } | null;
   clientLogo?: { mime: string; data: Uint8Array } | null;
-}): { doc: DrawingDoc; warnings: Mismatch[] } | ComposeError {
+}): { doc: DrawingDoc; warnings: Mismatch[]; input: TavoleInput; title: TitleData } | ComposeError {
   const r = reproduce({ ...s.calculation, shaftDesign: s.shaftDesign });
   if (!r.ok) return r;
-  const input = storedInput(r.values, r.layout, s, usableLogo(s.logo), r.marks, usableLogo(s.clientLogo ?? null));
+  const input = storedInput(r.values, r.layout, s, usableLogo(s.logo), r.marks, usableLogo(s.clientLogo ?? null), recordsOf(s.calculation.id, { sha256: s.calculation.sha256, shaftDesign: s.shaftDesign }));
   if (!input) return { ok: false, error: 'notFound' };
-  const { doc, warnings } = buildTavole(input);
-  return tavoleHash(doc) === s.sha256 ? { doc, warnings } : { ok: false, error: 'engineChanged' };
+  const { doc, warnings, title } = buildTavole(input);
+  return tavoleHash(doc) === s.sha256 ? { doc, warnings, input, title } : { ok: false, error: 'engineChanged' };
 }
