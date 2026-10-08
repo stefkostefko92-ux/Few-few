@@ -76,13 +76,18 @@ p { color: var(--ink-2); }
   background: repeating-linear-gradient(90deg, var(--red) 0 12px, transparent 12px 20px) top left / 100% 2px no-repeat;
 }
 
-/* A list whose bullet is one cross-stitch. */
-.stitch-list { display: grid; gap: .55rem; margin-top: 1.1rem; }
-.stitch-list li { position: relative; padding-left: 1.55rem; color: var(--ink-2); }
+/* A list whose bullet is a Bulgarian (Damask) rose, cut from the real photo
+   (rose-damascena, CC BY-SA, credited in the footer). Each one is turned a
+   little differently, as roses are. */
+.stitch-list { display: grid; gap: .6rem; margin-top: 1.1rem; }
+.stitch-list li { position: relative; padding-left: 2rem; color: var(--ink-2); }
 .stitch-list li::before {
-  content: ""; position: absolute; left: 0; top: .42em; width: .78em; height: .78em;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M2 8L8 2M2 2l6 6' stroke='%23b3171d' stroke-width='2.3' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  content: ""; position: absolute; left: 0; top: .08em; width: 1.4em; height: 1.4em;
+  background: url("/assets/img/brand/rose-bullet.webp") center / contain no-repeat;
+  filter: drop-shadow(0 1px 1.5px rgba(74, 20, 34, .28));
 }
+.stitch-list li:nth-child(3n+2)::before { transform: rotate(38deg); }
+.stitch-list li:nth-child(3n+3)::before { transform: rotate(-27deg); }
 
 /* Embroidered border band */
 .band { line-height: 0; }
