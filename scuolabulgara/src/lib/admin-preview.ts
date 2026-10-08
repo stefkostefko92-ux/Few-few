@@ -9,7 +9,7 @@ const ANCHORS: Record<string, string> = {
   documents: "documenti",
   courses: "corsi",
   dance: "danza",
-  facebook: "facebook",
+  facebook: "seguici",
   gallery: "galleria",
   faq: "faq",
   contact: "contatti",
