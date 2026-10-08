@@ -7,7 +7,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { DEFAULT_ROOM, KV_VERT, PROFILES, defaultInputs, hebChecks, hebDrawn, hebLayout, hebPick, hebResult, layout, roomGeo, type HebOption, type MachineSpec } from '../index';
 import { HEB_KEYS, withHebChoice } from '../heb';
-import { hebBase, onHeb } from '../support';
+import { HEB_PAD, hebBase, onHeb } from '../support';
 
 const M: MachineSpec = { D: 400, Dp: 0, n: 5, d: 8, mass: 400, label: '', axis: 600, h: 0, reverse: false, ropeIn: 0 };
 const near = (a: number, b: number, tol = 1e-6): boolean => Math.abs(a - b) <= tol * Math.max(1, Math.abs(b));
@@ -103,8 +103,10 @@ test('putrelle HEB: scelte sui disegni, altezza sotto il basamento, non sotto pu
   assert.equal(withHebChoice(R, 'heb.option', 'x:HEB 200'), null);
   assert.equal(withHebChoice(R, 'sup.profile', 'x:HEB 140'), null);
   // the height: the profile chosen, else the tallest until the derivation puts its choice
-  assert.equal(hebBase(R), PROFILES['HEB 160'].h);
-  assert.equal(hebBase({ ...R, heb: { profile: 'HEB 120' } }), PROFILES['HEB 120'].h);
+  // (on their bearing plates over the mortar bed: round 36, registry locale.putrelle.vano)
+  assert.equal(HEB_PAD, KV_VERT.hebPlateT + KV_VERT.hebMortar);
+  assert.equal(hebBase(R), PROFILES['HEB 160'].h + HEB_PAD);
+  assert.equal(hebBase({ ...R, heb: { profile: 'HEB 120' } }), PROFILES['HEB 120'].h + HEB_PAD);
   assert.equal(hebBase(DEFAULT_ROOM), 0);
   for (const kind of ['beams', 'plinth'] as const) {
     const Rk = { ...R, support: { kind } };

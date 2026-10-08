@@ -61,10 +61,15 @@ export const bedplate = (D: number, shape: MachineShape | null = null): readonly
 export const onHeb = (R: RoomInputs | null | undefined, deflector = false): boolean =>
   !!R?.heb && supportOf(R, deflector).kind !== 'beams' && supportOf(R, deflector).kind !== 'plinth';
 
+/** What lifts the HEB beams off the slab (registry locale.putrelle.vano): the bearing plate over the shaft's wall on its
+ *  bed of non-shrink mortar — the beam's underside as high over the slab, clear of it between the bearings [mm]. */
+export const HEB_PAD: number = KV_VERT.hebPlateT + KV_VERT.hebMortar;
+
 /** The HEB beams' height under the support [mm]: the profile chosen, else the tallest of them (the derivation puts its
- *  choice in its place); 0 without them. */
+ *  choice in its place), on its bearing plates (HEB_PAD; until LIFT 1.28.0 and ROOM 1.12.0 straight on the slab); 0
+ *  without them. */
 export const hebBase = (R: RoomInputs | null | undefined, deflector = false): number =>
-  (R?.heb && onHeb(R, deflector) ? PROFILES[R.heb.profile ?? HEB_PROFILES[HEB_PROFILES.length - 1]].h : 0);
+  (R?.heb && onHeb(R, deflector) ? PROFILES[R.heb.profile ?? HEB_PROFILES[HEB_PROFILES.length - 1]].h + HEB_PAD : 0);
 
 /** The support's top over the room's floor [mm]; `shimsAxis`: the sheave's axis the software takes on shims for the
  *  generic machine — the levelling shims that leaves under it go under a maker's machine too, whose sheave then stands

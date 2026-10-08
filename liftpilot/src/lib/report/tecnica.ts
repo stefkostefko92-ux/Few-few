@@ -19,11 +19,12 @@ import { makePres } from '../present/tr';
 import type { RoomDerived } from '../room/derive';
 import type { Survey } from '../room/survey';
 import { machineText } from '../tavole/views';
-import { surveyLoad, surveySheetData } from '../tavole/survey-data';
+import { surveyLoad, surveySheetData, surveyedLabel } from '../tavole/survey-data';
 import { ESITI_TECNICA, EXISTING_NOTE, adaptSection, adempimentiBlocks, collaudoRows, collaudoText, esitiBlocks, esitoOf } from './collaudo';
 import { shapeRows } from './machine-shape';
 import type { BlockStatus, ReportBlock, ReportDoc } from './model';
-import { TECNICA_DRAWING, roomRows, slabOpenings, surveyBlocks } from './tecnica-room';
+import { TECNICA_DRAWING, roomRows, surveyBlocks } from './tecnica-room';
+import { existingNewBlocks, hookBlocks, openingsBlocks, p4Block, siteChecks } from './tecnica-site';
 import { shapeOf } from '../catalog/shapes';
 
 export interface TecnicaInput {
@@ -104,11 +105,8 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
 
   section('Sistemazione nel locale macchina');
   B.push({ t: 'kv', rows: roomRows(s, d, fmt) });
-  const holes = slabOpenings(d);
-  if (holes.length) {
-    B.push({ t: 'p', text: `Aperture minime nella soletta per le funi${d.M.Dp > 0 ? ' e il rinvio' : ''} della nuova macchina (lungo le calate × di traverso, 30 mm di gioco), da confrontare con quelle esistenti:` });
-    B.push({ t: 'list', items: holes.map((h, i) => `Apertura ${i + 1}: ${fmt(Math.round(h.length), 0)} × ${fmt(Math.round(h.width), 0)} mm${h.wheel ? ' (anche la puleggia di rinvio)' : ''}`) });
-  }
+  // the openings with their place, the hook and the masses lifted (round 36)
+  B.push(...openingsBlocks(d, s, fmt), ...hookBlocks(d, fmt));
   B.push(...surveyBlocks(d, { ...d.M, label: named }));
 
   section('Verifiche del locale, del basamento e delle calate');
@@ -121,7 +119,7 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
   // the room's door in its sizes, as sheet 1 writes it
   const row = (c: ShaftCheck): string[] => (c.id === 'm_door'
     ? [(labels.c_m_door ?? c.id).replace(', margine', ''), `${s.room.doorW} × ${s.room.doorH} mm`, `≥ ${KV_VERT.doorMinW} × ${KV_VERT.doorMinH} mm`, out(c).text]
-    : [labels[`c_${c.id}`] ?? c.id, c.value == null ? '—' : withUnit(shownValue(c, fmt), c), c.limit == null ? '—' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${withUnit(fmt(c.limit, c.dec), c)}`, out(c).text]);
+    : [surveyedLabel(c.id, labels[`c_${c.id}`] ?? c.id, s), c.value == null ? '—' : withUnit(shownValue(c, fmt), c), c.limit == null ? '—' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${withUnit(fmt(c.limit, c.dec), c)}`, out(c).text]);
   B.push({ t: 'grid', head: [t('col_item'), t('col_val'), t('col_lim'), t('col_res')], widths: [0.52, 0.16, 0.16, 0.16], align: ['l', 'r', 'r', 'l'], statusCol: 3,
     rows: checks.map(row),
     status: checks.map((c) => out(c).status) });
@@ -135,6 +133,8 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
   }
   B.push({ t: 'p', style: 'note', text: 'Carichi non contemporanei. La verifica della soletta e degli appoggi del basamento spetta al tecnico strutturale incaricato dal '
     + 'committente (NTC 2018, §8.4.1: intervento locale; §3.1.4: carichi del macchinario).' });
+  // P4 without the governor's load; the existing machine's loads and bearings beside the new one's (round 36)
+  B.push(...p4Block(r.plant), ...existingNewBlocks(d, s, r.plant, fmt));
 
   section('Verifiche della nuova macchina (dalla relazione di calcolo)');
   const esiti = res.checks.map((c) => esitoOf(C, c.id, st(c.status), c.status));
@@ -155,6 +155,7 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
     'Dimensioni del locale, della porta e dello spazio davanti al quadro, come nel rilievo',
     ...(d.M.Dp > 0 ? ['Distanze dx e h tra puleggia di frizione e puleggia di rinvio, come nel calcolo'] : []),
     'Appoggi del basamento sulla soletta o nei muri e fissaggio secondo il costruttore',
+    ...siteChecks(s),
   ] });
 
   section('Allegati');

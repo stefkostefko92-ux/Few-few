@@ -1,6 +1,8 @@
 // Symbols of fixed paper size: the spaces for the maintenance person (● free area on the car roof, ▲ refuge space
 // crouching, ■ lying), the overtravels of the car (circle with quadrants, half circle), plumb lines, junction boxes,
-// the shaft light; and the arrow of a section line. All in paper millimetres around the given centre.
+// the shaft light; the machine room's fittings (a 2P+PE socket, the light's switch, a ventilation grille, a cable
+// trunking, the lifting hook, a free area for maintenance); and the arrow of a section line. All in paper millimetres
+// around the given centre.
 import type { SymbolName } from './model';
 import { STYLES } from './style';
 import type { Pt, Shape } from './types';
@@ -68,6 +70,58 @@ export function symbol(sym: SymbolName, [x, y]: Pt, size = 3.4): Shape[] {
         }),
       ];
     }
+    case 'socket': {
+      // a 2P+PE socket: the half circle on its base line, the earth's stroke under it
+      const r = h * 0.62, arc: Pt[] = [];
+      for (let i = 0; i <= 12; i++) arc.push([x - r * Math.cos((i / 12) * Math.PI), y - r * 0.35 + r * Math.sin((i / 12) * Math.PI)]);
+      return [
+        { t: 'path', pts: arc, closed: true, s: thin, fill: PAPER },
+        { t: 'line', a: [x - r * 1.2, y - r * 0.35], b: [x + r * 1.2, y - r * 0.35], s: thin },
+        { t: 'line', a: [x, y - r * 0.35], b: [x, y - r * 0.95], s: thin },
+      ];
+    }
+    case 'switch': {
+      // the light's one-way switch: a small ring, its lever at 45° with the stop
+      const r = h * 0.28, e: Pt = [x + h * 0.8, y + h * 0.8];
+      return [
+        { t: 'circle', c: [x, y], r, s: thin, fill: PAPER },
+        { t: 'line', a: [x + r * Math.SQRT1_2, y + r * Math.SQRT1_2], b: e, s: thin },
+        { t: 'line', a: e, b: [e[0] + h * 0.3, e[1] - h * 0.3], s: thin },
+      ];
+    }
+    case 'vent': {
+      // a ventilation grille: a box with its slats
+      const q = h * 0.75, out: Shape[] = [{ t: 'path', pts: [[x - q, y - q * 0.6], [x + q, y - q * 0.6], [x + q, y + q * 0.6], [x - q, y + q * 0.6]], closed: true, s: thin, fill: PAPER }];
+      for (const k of [-0.3, 0, 0.3]) out.push({ t: 'line', a: [x - q * 0.8, y + q * k], b: [x + q * 0.8, y + q * k], s: thin });
+      return out;
+    }
+    case 'duct':
+      // a cable trunking on the floor, as the plan draws its route (STYLES.hidden), between its two ends
+      return [
+        { t: 'line', a: [x - h, y], b: [x + h, y], s: STYLES.hidden },
+        { t: 'line', a: [x - h, y - h * 0.3], b: [x - h, y + h * 0.3], s: thin },
+        { t: 'line', a: [x + h, y - h * 0.3], b: [x + h, y + h * 0.3], s: thin },
+      ];
+    case 'hook': {
+      // the lifting hook: its plate on the ceiling, the shank and the bend
+      const r = h * 0.38, arc: Pt[] = [];
+      for (let i = 0; i <= 12; i++) {
+        const a = Math.PI + (i / 12) * Math.PI * 1.3;
+        arc.push([x + r * Math.cos(a) + r, y - h * 0.35 + r * Math.sin(a)]);
+      }
+      return [
+        { t: 'line', a: [x - h * 0.5, y + h * 0.85], b: [x + h * 0.5, y + h * 0.85], s: { ink: 'ink', w: 0.35 } },
+        { t: 'line', a: [x, y + h * 0.85], b: [x, y - h * 0.35], s: { ink: 'ink', w: 0.3 } },
+        { t: 'path', pts: arc.map(([px, py]): Pt => [px - 2 * r, py]), closed: false, s: { ink: 'ink', w: 0.3 } },
+      ];
+    }
+    case 'area':
+      // a free area for maintenance, as the plan draws it: its outline and diagonals dashed
+      return [
+        { t: 'path', pts: [[x - h, y - h * 0.7], [x + h, y - h * 0.7], [x + h, y + h * 0.7], [x - h, y + h * 0.7]], closed: true, s: STYLES.space },
+        { t: 'line', a: [x - h, y - h * 0.7], b: [x + h, y + h * 0.7], s: STYLES.space },
+        { t: 'line', a: [x - h, y + h * 0.7], b: [x + h, y - h * 0.7], s: STYLES.space },
+      ];
   }
 }
 

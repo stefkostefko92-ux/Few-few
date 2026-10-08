@@ -15,6 +15,7 @@ import { dropSpan, roomGeo, ropeWidths } from '@/shaft/machine-room';
 import { editValue } from '@/shaft';
 import { WALL } from '@/shaft/room-draw';
 import { roomPlanEntities, roomSectionEntities } from '@/shaft/room-view';
+import { seenFittings } from '@/shaft/room-section-extra';
 import { rinvioPlan } from '@/shaft/rinvio-view';
 import { layoutSite } from '@/shaft/room-site';
 
@@ -43,11 +44,19 @@ test('sezione B-B alla scala della sua pianta anche con la calata di sbieco o il
     const r = sheets(inp);
     assert.equal(r.sheets[8]?.scale, r.sheets[7]?.scale, name);
     assert.equal(r.sheets[8]?.scale, 25, name);
-    // each read as it is and changed by what is typed on it (the higher one written whole)
-    const R = deriveLift(inp).layout.inputs.room;
-    assert.ok(R);
-    for (const [key, h] of [['room.doorH', R.doorH], ['room.panelH', R.panelH]] as const) {
+    // each the view sees read as it is and changed by what is typed on it (the higher one written whole); one it
+    // does not see (behind the cut) not there, its height on the plan (round 36)
+    const d = deriveLift(inp), R = d.layout.inputs.room, G = roomGeo(d.layout, d.machine);
+    assert.ok(R && G);
+    const [r0, r1] = dropSpan(G, 0, 0, R.W, R.D), fit = seenFittings(G, r0, r1);
+    for (const [key, h, seen] of [['room.doorH', R.doorH, fit.door !== null], ['room.panelH', R.panelH, fit.panel !== null]] as const) {
       const hit = r.hits[8]?.find((x) => x.edit.key === key);
+      if (!seen) {
+        assert.equal(hit, undefined, `${name}: ${key} non visto`);
+        const plan = chains(roomPlanEntities(d.layout, d.machine, G).entities).flatMap((c) => c.text ?? []);
+        assert.ok(plan.some((t) => t?.includes(`H. ${h}`)), `${name}: ${key} in pianta`);
+        continue;
+      }
       assert.ok(hit, `${name}: ${key}`);
       assert.equal(Math.round(hit.value), h, `${name}: ${key}`);
       assert.equal(editValue(hit.edit, hit.value + 10), h + 10, `${name}: ${key}`);

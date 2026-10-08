@@ -21,6 +21,8 @@ export interface RoomDrawOpts {
   closedDoor?: boolean;
   compact?: boolean;
   scale?: number;
+  /** the plan's rope drops dimensioned inside the shaft, not in a row outside (the plan keeps its scale; round 36) */
+  dropsInside?: boolean;
 }
 
 /** A room's door, opening outward (UNI EN 81-20 5.2.3.3 a), drawn open 90° in plan: the steel leaf from its hinge at the

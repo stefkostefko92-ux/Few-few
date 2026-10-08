@@ -27,6 +27,7 @@ import { buildShell, shellsOf } from './roomshell';
 import { buildSupport, hebBeams, wallsAlong } from './support';
 import { FLOOR_REACH, hebRects, mainFeed, rectOf, roomPoint, stripRects, trunking, trunkingRoute, type Rect } from './wiring';
 import { SIDES, type LiftMaterials, type Side } from './materials';
+import { HEB_PAD } from '@/shaft/support';
 
 const SHIMS: MachineSupport = { kind: 'shims' };
 
@@ -129,7 +130,7 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
   const defl = rig.wheels.find((w) => w.role === 'deflector'), framed = !rig.bottom && rinvio?.on === 'frame' && defl !== undefined;
   const inFrame = framed && defl && rinvio ? { x: turn * (defl.u - rig.sheave.u), r: defl.r, half: ropeWidths(n, d).pulley, frame: rinvio, turn, ...(legs ? { legs } : {}) } : null;
   // the HEB beams on the shaft's walls under it all (the support, the pulleys' stands), on the floor
-  const beams = !rig.bottom && R && heb ? heb : null, hebH = beams ? PROFILES[beams.profile].h : 0;
+  const beams = !rig.bottom && R && heb ? heb : null, hebH = beams ? PROFILES[beams.profile].h + HEB_PAD : 0;
   if (beams && R) {
     const hb = new Batch();
     hebBeams(hb, beams, R, z0, M);

@@ -127,5 +127,21 @@ export const VOCI_SUPPORTO: readonly VoceVano[] = [
       + 'misurata differiscono al più di 10 mm; oltre, il calcolo va ripetuto con la geometria misurata (dx, puleggia esistente)',
     riferimento: '—', fonte: 'tolleranza scelta dal software per il rilievo in sito (le funi a qualche metro dal basamento): da confermare con l’installatore',
     stato: 'scelta', verifiche: ['m_calata'],
+    nota: 'con il tiro diretto la nuova puleggia può essere più piccola delle calate esistenti: ogni ramo scende inclinato di (calate − D)/2 '
+      + 'fino agli attacchi (la relazione tecnica lo scrive con l’angolo); i fori nella soletta seguono le funi al loro livello',
+  },
+  {
+    id: 'carichi.reazioni', gruppo: 'carichi', titolo: 'Reazioni sugli appoggi del basamento (R1…Rn)',
+    valore: 'il carico dell’argano sul basamento — la massa dell’argano con il suo telaio al centro del suo ingombro e il carico statico sul suo '
+      + 'asse per il coefficiente dinamico, sui rami delle funi — ripartito sugli appoggi come da un corpo rigido su appoggi ugualmente cedevoli '
+      + '(regola della leva nelle due direzioni): sulla soletta sotto gli antivibranti (spessori, piastre), le estremità dei profilati del telaio, '
+      + 'le gambe del telaio con rinvio, i blocchi del plinto; nei muri agli appoggi delle putrelle da muro a muro o delle HEB sopra il vano (ogni '
+      + 'trave la sua quota di traverso, appoggiata lungo, con il peso proprio); il foglio 1 le scrive in daN, la pianta segna R1…Rn',
+    riferimento: 'UNI EN 81-20:2020, 5.2.1.8 (carichi sull’edificio); ripartizione scelta del software',
+    fonte: 'statica elementare (corpo rigido su appoggi elastici uguali; trave appoggiata); per il punzonamento della soletta sotto gambe e '
+      + 'antivibranti, dati per il tecnico strutturale',
+    stato: 'scelta',
+    nota: 'P1 resta il carico totale sul basamento; le reazioni non sono simultanee ai carichi P2…P8; la verifica della soletta e dei muri è del '
+      + 'tecnico strutturale',
   },
 ];

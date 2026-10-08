@@ -15,6 +15,9 @@ import { WALL, holesOf, onDrop, type RoomDrawOpts } from './room-draw';
 import type { RoomSite } from './room-site';
 import { pulleySection } from './room-pulley';
 import { columns } from './section-columns';
+import { KV_VERT } from './norme-vert';
+import { hookOf } from './room-hook';
+import { aboveSection, hitchesSection, hookSection, kerbDim, kerbsSection, mountsSection, seenFittings } from './room-section-extra';
 
 /** Section B-B along the rope drops: X is u along the drop line, Z the height above the room floor. `o`: the door's and
  *  the panel's heights in one row, the dimensions placed for another scale than 1:25 (views.ts, to keep the section at
@@ -38,6 +41,9 @@ export function roomSectionOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDr
   if (ridge > top) {
     out.push(path([[r0 - WALL, top], [midU, ridge], [r1 + WALL, top], [r1 + WALL, top + WALL], [midU, ridge + WALL], [r0 - WALL, top + WALL]], true, 'wall', 'concrete'));
   } else out.push(rect(r0 - WALL, top, r1 + WALL, top + WALL, 'wall', 'concrete'));
+  // the door and the panel where the view sees them, under the machine drawn next; the openings' upstands (round 36)
+  const fit = seenFittings(G, r0, r1);
+  out.push(...fit.entities, ...kerbsSection(S, M, G));
   // the machine on its support (shims, frame, beams, plates or plinth), its sheave's axis at the height the
   // calculation counts
   const k = 1000 * G.s, F = G.frame, base = F.shape ? M.axis - F.axis : M.axis - MACHINE_A.yWheel * k, zs = M.axis, D = M.D, rf = M.rinvio ?? null;
@@ -63,22 +69,22 @@ export function roomSectionOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDr
     out.push(line(cut(p, q), cut(q, p), 'thin'));
   }
   if (M.Dp > 0) out.push(...pulleySection(M, G, s0, s1));
-  // a 2:1 roping's dead ends hung under the slab, where they stand along the drop line
-  for (const { at } of G.deadEnds) {
-    const x = (at[0] - G.carDrop[0]) * G.ux + (at[1] - G.carDrop[1]) * G.uy;
-    out.push(rect(x - 90, -R.slab - 16, x + 90, -R.slab, 'outline', 'steel'), line([x, -R.slab - 16], [x, ropeFoot], 'thin'));
-  }
+  // a 2:1 roping's hitches under the slab, where they stand along the drop line, with P2 and P3 (round 36)
+  out.push(...hitchesSection(G, ropeFoot, sk));
   // dimensions and references: the axis' height, the pulley's h and dx as the calculation takes them
   out.push(chain({ dir: 'y', pts: [-R.slab, 0, top], side: 'left', row: 0, text: ['{v} Soletta', '{v} H. Locale'], edit: [E('room.slab'), E('room.H')] }));
   if (ridge > top) out.push(chain({ dir: 'y', pts: [0, ridge], side: 'left', row: 1, text: ['{v} H. Colmo'], edit: [E('room.ridge')] }));
-  // the door's and the panel's heights from the floor, each in its row; compact, in one (the higher's value written
-  // whole, typed whole when changed)
-  const [lo, hi] = [{ h: R.doorH, key: 'room.doorH', name: 'H. Porta' }, { h: R.panelH, key: 'room.panelH', name: 'H. Quadro' }].sort((a, b) => a.h - b.h);
-  const one = o.compact === true && lo.h < hi.h;
-  if (one) out.push(chain({ dir: 'y', pts: [0, lo.h, hi.h], side: 'right', row: 0, text: [`{v} ${lo.name}`, `${hi.h} ${hi.name}`], edit: [E(lo.key), { ...E(hi.key), value: hi.h }] }));
-  else {
-    out.push(chain({ dir: 'y', pts: [0, R.doorH], side: 'right', row: 0, text: ['{v} H. Porta'], edit: [E('room.doorH')] }));
-    out.push(chain({ dir: 'y', pts: [0, R.panelH], side: 'right', row: 1, text: ['{v} H. Quadro'], edit: [E('room.panelH')] }));
+  // the door's and the panel's heights from the floor on the side the view sees each (none seen: the plan gives it),
+  // each in its row past the room's own there; compact, two on one side in one (the higher's value written whole,
+  // typed whole when changed), on opposite sides the panel's in the room beside its outline
+  const rows = { left: ridge > top ? 2 : 1, right: 0 }, ps = fit.panelSpan;
+  const inside = o.compact === true && fit.door !== null && fit.panel !== null && fit.door !== fit.panel && ps !== null;
+  const heights = [{ h: R.doorH, key: 'room.doorH', name: 'H. Porta', side: fit.door }, { h: R.panelH, key: 'room.panelH', name: 'H. Quadro', side: inside ? null : fit.panel }];
+  for (const side of ['left', 'right'] as const) {
+    const [lo, hi] = heights.filter((x) => x.side === side).sort((a, b) => a.h - b.h);
+    if (lo && hi && o.compact === true && lo.h < hi.h) {
+      out.push(chain({ dir: 'y', pts: [0, lo.h, hi.h], side, row: rows[side]++, text: [`{v} ${lo.name}`, `${hi.h} ${hi.name}`], edit: [E(lo.key), { ...E(hi.key), value: hi.h }] }));
+    } else for (const x of [lo, hi]) if (x) out.push(chain({ dir: 'y', pts: [0, x.h], side, row: rows[side]++, text: [`{v} ${x.name}`], edit: [E(x.key)] }));
   }
   // the sheave's axis: the support's height takes the change (the machine's own height and the HEB beams under
   // the support stay)
@@ -116,7 +122,23 @@ export function roomSectionOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDr
   // the upright chains beside the machine where they fit in the room, else outside it past the rows there
   const span0 = supportRunIn(G, M), run = span0 ? machineRun(G, span0[0], span0[1]) : null, ends = [...(run ? [run] : []), ...(bedRun ? [bedRun] : [])];
   const held = [G.frame0, G.frame1, ...ends.flat(), ...(M.Dp > 0 ? [G.pulleyAt - M.Dp / 2, G.pulleyAt + M.Dp / 2] : [])];
-  columns(out, { x0: r0, y0: 0, x1: r1, y1: top }, { left: Math.min(...held), right: Math.max(...held) }, ends, sk, { left: ridge > top ? 2 : 1, right: one ? 1 : 2 });
+  columns(out, { x0: r0, y0: 0, x1: r1, y1: top }, { left: Math.min(...held), right: Math.max(...held) }, ends, sk, rows);
+  // (after them, not set again with them: the panel's height beside its outline, the upstand's height)
+  if (inside && ps) {
+    const at = fit.panel === 'left' ? ps[1] + 70 * sk : ps[0] - 70 * sk, edge = fit.panel === 'left' ? ps[1] : ps[0];
+    out.push(chain({ dir: 'y', pts: [0, R.panelH], at, from: [edge, edge], text: ['{v} H. Quadro'], edit: [E('room.panelH')] }));
+  }
+  out.push(...kerbDim(S, M, G, out, r0, r1, sk));
+  // the hook over the machine with its rated load, the free height over the rotating parts; the mounts and the
+  // fixings named (round 36)
+  const hook = hookOf(G, M, S.pieces ?? []);
+  out.push(...aboveSection(G, M, hook.u, sk));
+  out.push(...hookSection(G, hook, out, sk));
+  const machineTop = Math.max(zs + D / 2, ...(M.Dp > 0 ? [G.pulleyZ + M.Dp / 2] : [])), machineArea: Box = { x0: Math.min(...held) - 60, y0: -R.slab, x1: Math.max(...held) + 60, y1: machineTop + 60 };
+  const under: Box = { x0: s0 - S.wall, y0: -R.slab - below, x1: s1 + S.wall, y1: -R.slab };
+  // (to a mount: under a leg of the bedplate with the pulley, else under the machine's bedplate)
+  const mountAt: Pt = rf?.on === 'frame' && M.Dp > 0 ? [rinvioRun(M, G)[0] + KV_VERT.rinvioLeg / 2, (rf.base ?? 0) + KV_VERT.rinvioPads / 2] : [G.frame0 + 60 * sk, base - 10];
+  out.push(...mountsSection(G, M, out, [machineArea, under], mountAt, { r0, r1, low: hebDrawn(G, M, S, S.govRopes) ? 330 * sk : 140 * sk }, sk));
   return { entities: out, bounds: { x0: r0 - WALL, y0: foot, x1: r1 + WALL, y1: Math.max(top, ridge) + WALL } };
 }
 

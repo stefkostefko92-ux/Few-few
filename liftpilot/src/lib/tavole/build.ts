@@ -21,6 +21,7 @@ import { dateIt, placeLines, type TavoleInput } from './input';
 import { OVER_DOWN, OVER_UP, spaceLegend, type LegendItem } from './notes';
 import { makeFmt } from '../present/tr';
 import { belowGeoOf, belowView, machineOf, planView, roomView, sectionView } from './views';
+import { roomLegend } from './room-legend';
 
 /** A sheet of the set after the data: a plan of the shaft, section A-A or a detail, the machine room. */
 export type Spec =
@@ -165,7 +166,9 @@ function belowSheet(L: Layout, M: MachineSpec, g: BottomGeo, kind: 'below-plan' 
 function roomSheet(L: Layout, M: MachineSpec, kind: 'room-plan' | 'room-section', area: Box): Drawn {
   const v = roomView(L, M, kind === 'room-plan' ? 'plan' : 'section', inset(area, 8, 8, 8, 8));
   if (!v) throw new Error('no machine room');
-  return { shapes: [...v.r.shapes, ...(kind === 'room-plan' ? roomMarks(v.G, v.place, v.r.extent) : [])], scale: v.place.scale, hits: v.r.hits };
+  const shapes = [...v.r.shapes, ...(kind === 'room-plan' ? roomMarks(v.G, v.place, v.r.extent) : [])];
+  // (the plan's symbols named in a free band, round 36)
+  return { shapes: [...shapes, ...(kind === 'room-plan' ? roomLegend(shapes, area) : [])], scale: v.place.scale, hits: v.r.hits };
 }
 
 export function buildTavole(x: TavoleInput): TavoleResult {

@@ -107,7 +107,14 @@ export function supportPlan(M: MachineSpec, G: RoomGeo, onDrop: (u: number, v: n
   const [hx, hz] = F.shape ? [90, 60] : [0.09 * k, 0.06 * k], run = span ? machineRun(G, span[0], span[1]) : null;
   const bands = F.plinth.map(([z0, z1]) => [Math.min(machineV(G, z0), machineV(G, z1)), Math.max(machineV(G, z0), machineV(G, z1))] as const);
   if (s.kind === 'plates') for (const u of mounts) for (const vb of beams) out.push(path(quad(u - hx, vb - hz, u + hx, vb + hz), true, 'outline', 'steel'));
-  if (s.kind === 'plinth' && run) for (const [w0, w1] of bands) out.push(path(quad(run[0], w0, run[1], w1), true, 'outline', 'concrete'));
+  if (s.kind === 'plinth' && run) {
+    // each block with its plan size along the drop line and across it, written in it (round 36)
+    const deg = (Math.atan2(G.uy, G.ux) * 180) / Math.PI, up = deg > 90 || deg <= -90 ? deg + 180 : deg;
+    for (const [w0, w1] of bands) {
+      out.push(path(quad(run[0], w0, run[1], w1), true, 'outline', 'concrete'));
+      out.push({ e: 'text', at: onDrop((run[0] + run[1]) / 2, (w0 + w1) / 2 - 25), text: `Plinto ${Math.round(run[1] - run[0])}×${Math.round(w1 - w0)}`, size: 1.5, align: 'c', angle: up, halo: true, fit: run[1] - run[0] - 40 });
+    }
+  }
   if (hasProfile(s)) {
     const b = PROFILES[profileOf(s)].b, spans = s.kind === 'beams' ? beamSpans(G) : beams.map(() => run ?? [r0, r1]);
     beams.forEach((vb, i) => out.push(path(quad(spans[i][0], vb - b / 2, spans[i][1], vb + b / 2), true, 'hidden')));

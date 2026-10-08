@@ -51,14 +51,16 @@ export function clientNotes(L: Layout, below = false): Note[] {
 
 /** The note on the room of the machinery: a new machine room (`machine`), the room of the diverting pulleys over the
  *  shaft of a machine below (`pulleys`), or the existing machine room of a modification (`existing`, UNI 10411-1/-11:2024,
- *  9.2): access, door, heights, free areas, light, temperature, openings, lifting point, switches. */
-export function roomNote(kind: 'machine' | 'pulleys' | 'existing'): Omit<Note, 'tag'> {
+ *  9.2): access, door, heights, free areas, light, temperature, openings, lifting point, switches, sockets. `H`: the
+ *  existing room's height — at least 2,0 m, without the measures of UNI EN 81-21 for a lower one (round 36). */
+export function roomNote(kind: 'machine' | 'pulleys' | 'existing', H?: number): Omit<Note, 'tag'> {
   const K = KV_VERT;
   const access = 'Accesso sicuro e agevole, riservato alle persone autorizzate; ';
   const ambient = `Illuminazione fissa di almeno ${K.roomLux} lux al pavimento nelle zone di lavoro. Temperatura ambiente tra +${K.tempMin} °C e `
     + `+${K.tempMax} °C, con ventilazione che protegga motore e apparecchiature da polvere e umidità; l’aria di locali estranei all’ascensore non va `
     + 'convogliata nel locale, che contiene solo l’impianto. Aperture nella soletta sopra il vano ridotte al minimo, con manicotti o bordi che sporgono '
-    + `almeno ${K.slabKerb} mm dal pavimento. `;
+    + `almeno ${K.slabKerb} mm dal pavimento. Almeno una presa 2P+PE per ogni area di lavoro e il comando della luce presso ogni accesso, entro `
+    + `${K.lightSwitchMax} mm (UNI EN 81-20:2020, 5.2.1.5.2, 5.10.7.2 e 5.10.8.2). `;
   const panel = `davanti al quadro una superficie libera profonda almeno ${K.panelFreeDepth} mm e larga almeno ${K.panelFreeWidth} mm; accanto alla `
     + `macchina una superficie libera di ${K.maintW} × ${K.maintD} mm per la manutenzione e la manovra di emergenza. `;
   if (kind === 'pulleys') {
@@ -76,9 +78,9 @@ export function roomNote(kind: 'machine' | 'pulleys' | 'existing'): Omit<Note, '
     return {
       title: 'LOCALE DELLA MACCHINA (ESISTENTE)',
       text: 'Attorno alla macchina nuova il locale segue la UNI EN 81-20 5.2.6.3 (UNI 10411-1:2024 e UNI 10411-11:2024, punto 9.2): '
-        + `${panel}L’altezza libera esistente sulle zone di lavoro può restare sotto ${K.roomH} mm se non si riduce; con la UNI 10411-1, sotto `
+        + `${panel}L’altezza libera esistente sulle zone di lavoro può restare sotto ${K.roomH} mm se non si riduce${H !== undefined && H >= K.existingRoomMin ? '' : `; con la UNI 10411-1, sotto `
         + `${K.existingRoomMin} mm zone segnalate a strisce gialle e nere o con un cartello, materiale ammortizzante al soffitto e almeno `
-        + `${K.existingRoomPad} mm liberi sotto di esso (UNI EN 81-21:2022, 5.9). Porta e accesso restano quelli esistenti. ${ambient}Sopra la `
+        + `${K.existingRoomPad} mm liberi sotto di esso (UNI EN 81-21:2022, 5.9)`}. Porta e accesso restano quelli esistenti. ${ambient}Sopra la `
         + 'macchina un gancio o una trave di sollevamento con il carico ammesso indicato; interruttore generale e comando della luce vicino '
         + 'all’accesso. Riferimenti: UNI EN 81-20:2020, punti 5.2 e 5.10; UNI 10411-1:2024 e UNI 10411-11:2024, punto 9.2.',
     };

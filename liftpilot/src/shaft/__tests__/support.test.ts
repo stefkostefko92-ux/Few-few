@@ -136,7 +136,8 @@ test('superficie libera accanto all’argano: 500 × 600 mm sul lato più libero
   const R = DEFAULT_ROOM, K = KV_VERT, dn = (f: ReturnType<typeof freeBeside>) => ({ depth: f.depth, need: f.need });
   // a machine 1000 × 600 mm near the left wall: the most room is behind its 1000 mm side, which takes 500 deep (the
   // strip 500 deep along that side)
-  assert.deepEqual(freeBeside(R, [500, 500, 1500, 1100]), { depth: R.D - 1100, need: K.maintW, area: [500, 1100, 1500, 1100 + K.maintW] });
+  // (the area itself 500 × 600, not the whole side's strip since round 36: in the side's middle without a handwheel)
+  assert.deepEqual(freeBeside(R, [500, 500, 1500, 1100]), { depth: R.D - 1100, need: K.maintW, area: [700, 1100, 1300, 1100 + K.maintW], wheel: 0 });
   // a machine 550 × 500 mm: in front of a side shorter than 600 mm the area needs 600 deep
   assert.deepEqual(dn(freeBeside(R, [500, 500, 1050, 1000])), { depth: R.D - 1000, need: K.maintD });
   // pushed into a corner, only 500 left in front of its 1000 mm side: enough the other way round (500 deep, ≥ 600 long)
@@ -146,7 +147,7 @@ test('superficie libera accanto all’argano: 500 × 600 mm sul lato più libero
   assert.ok(freeBeside(panel, [0, 0, 1500, 1100]).depth < K.maintW);
   // so does what else stands beside it: a governor 200 mm behind the machine leaves the right side the most room
   const gov = freeBeside(R, [500, 500, 1500, 1100], [[900, 1300, 1100, 1500]]);
-  assert.deepEqual(gov, { depth: R.W - 1500, need: K.maintW, area: [1500, 500, 1500 + K.maintW, 1100] });
+  assert.deepEqual(gov, { depth: R.W - 1500, need: K.maintW, area: [1500, 500, 1500 + K.maintW, 1100], wheel: 0 });
   // on the design: the default machine room leaves the area free
   const L = layout(defaultInputs(1600, 1750)), G = roomGeo(L, M);
   assert.equal(fitChecks(G, M).find((c) => c.id === 'm_free')?.status, 'ok');

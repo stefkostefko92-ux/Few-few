@@ -23,6 +23,7 @@ import { headTopChecks } from './head';
 import { bedplateMass, governorSideFor, hebOf, placedPanel, supportChecks, supportLoad } from './support';
 import { collaudoOf, type Collaudo } from './collaudo';
 import { KL } from './norme';
+import { existingRoomCheck } from '@/shaft/room-above';
 
 /** Values the software fills in (true) or takes as entered (false). */
 export interface AutoFlags {
@@ -242,6 +243,8 @@ function deriveOnce(inp: LiftInputs): LiftDerived {
   const g = scheme ? bottomGeo(L, scheme, N.D, I.Dp, N.n, N.d, I.r, sheaveAxisBelow(N.D, shape)) : null;
   // a machine below: its room as a machine room, the pulley room over the shaft (below-checks.ts)
   const supportCk = [...supportChecks(Lp, machine, load, above), ...headTopChecks(Lp, I.r, I.Dp, scheme), ...(g ? belowChecks(Lp, g, machine, I.Dp) : [])];
+  // a modification: the existing room's height under 2,0 m (UNI 10411-1:2024, 9.2; registry locale.esistente.altezza)
+  if (V.context === 'repl' && above && Lp.inputs.room) supportCk.push(existingRoomCheck(Lp.inputs.room));
   const beams = above ? hebOf(Lp, machine, load) : null, chosenBy = Lp.inputs.room?.heb;
   const bottomGap = scheme && g && !g.fits ? { now: S.cwWallGap, need: bottomGapNeeded(S, scheme, N.D, I.Dp, N.n, N.d, I.r) } : null;
   return {

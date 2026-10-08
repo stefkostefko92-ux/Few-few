@@ -77,7 +77,11 @@ test('esito: le verifiche delle parti che restano non contano nella UNI 10411', 
   const s = at(780), d = deriveRoom(DEFL, { ...s, room: { ...s.room, H: 1900 } });
   const h = d.checks.find((c) => c.id === 'm_height');
   assert.equal(h?.status, 'fail');
-  assert.deepEqual(roomVerdict(d.checks, { norma: '10411-1', parti: ['machine'] }), { verdict: 'OK', failCount: 0, warnCount: 0 });
+  // (but the existing room's height under 2,0 m asks its measures under UNI 10411-1: m_hexist, round 36 — 1900 mm with
+  // the padding's 50 mm over 1800: a warning; under UNI 10411-11 the existing height stays)
+  assert.deepEqual(roomVerdict(d.checks, { norma: '10411-1', parti: ['machine'] }), { verdict: 'WARN', failCount: 0, warnCount: 1 });
+  assert.equal(d.checks.find((c) => c.id === 'm_hexist')?.status, 'warn');
+  assert.deepEqual(roomVerdict(d.checks, { norma: '10411-11', parti: ['machine'] }), { verdict: 'OK', failCount: 0, warnCount: 0 });
   assert.equal(roomVerdict(d.checks, { norma: 'en81', parti: [] }).verdict, 'FAIL');
 });
 

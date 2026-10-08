@@ -31,6 +31,8 @@ import { bedplateMass, supportChecks, supportLoad } from '../lift/support';
 import { adviceBlocks } from './advice';
 import type { MachineAdvice } from '../lift/advice';
 import { catalogMachineOf, modelOf } from '../order/machine';
+import { existingRoomCheck } from '@/shaft/room-above';
+import { designRoomBlocks } from './tecnica-site';
 
 /** The rope schemes of a machine below, in the relazione's words (src/lib/lift/bottom.ts). */
 const BOTTOM_IT: Readonly<Record<BottomScheme, string>> = {
@@ -128,6 +130,8 @@ export function buildReport(r: ReportInput): ReportDoc {
   const scheme = I.layout === 'bottom' ? m.bottom ?? 'head' : null, L = r.design?.layout;
   const g = L && machine && scheme ? bottomGeo(L, scheme, machine.D, I.Dp, machine.n, machine.d, I.r, sheaveAxisBelow(machine.D, machine.shape ?? null)) : null;
   const beams = L && machine ? [...supportChecks(L, machine, ld, !scheme), ...headTopChecks(L, I.r, I.Dp, scheme), ...(g ? belowChecks(L, g, machine, I.Dp) : [])] : [];
+  // a modification: the existing room's height under 2,0 m (UNI 10411-1:2024, 9.2), as the design's verdict takes it
+  if (I.context === 'repl' && L?.inputs.room && !scheme) beams.push(existingRoomCheck(L.inputs.room));
   if (r.design) {
     section('Vano e cabina');
     B.push(...shaftBlocks(r.design, I.Q, { fmt, st, when, head: [t('col_item'), t('col_val'), t('col_lim'), t('col_res'), 'Riferimento'] }, beams, C));
@@ -137,6 +141,8 @@ export function buildReport(r: ReportInput): ReportDoc {
         + `${fmt(ld.dyn, 1)}: gli stessi carichi del foglio 1 delle tavole.` });
     }
     if (machine?.rinvio) B.push({ t: 'kv', rows: [rinvioRow(machine.rinvio, fmt)] });
+    // the machine room's openings, hook, bearings and mounts (round 36)
+    if (machine && L && !scheme) B.push(...designRoomBlocks(L, machine, ld, fmt));
   }
 
   section('Argano verificato');

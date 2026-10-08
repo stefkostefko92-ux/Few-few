@@ -32,7 +32,11 @@ function match(before: Chain[], after: Chain[], j: number): Chain | undefined {
 
 // the references: what the machine, the ropes and the calculation set, drawn to be read, not changed
 const REFERENCES = new Set(['# Telaio argano', '# × # Telaio con rinvio', '# Telaio con rinvio', 'Asse rinvio #', 'Asse argano #', 'below-section:Asse #', 'below-plan:#',
-  'survey-plan:#', 'Calata Funi #', '# Calata Funi (Rif.)', 'Vano # (Rif.)', 'survey-section:dx #', 'survey-section:h #']);
+  'survey-plan:#', 'Calata Funi #', '# Calata Funi (Rif.)', 'Vano # (Rif.)', 'survey-section:dx #', 'survey-section:h #',
+  // the set-out (round 36): the drops of a whole design from the shaft's walls (its layout sets them), the bedplate, the
+  // ropes' line, the sheave's axis and the hook from two walls, the HEB beams' axes and bearings, the upstands, the free
+  // height over the rotating parts — where the machine and the calculation put them
+  'room-plan:#', '# Telaio', '# Asse funi', '# Asse puleggia', '# Gancio', '# Appoggio', '# Asse HEB', 'Interasse #', '# Bordo', '# (≥ #)']);
 const isReference = (view: string, text: string): boolean => REFERENCES.has(text) || REFERENCES.has(`${view}:${text}`);
 
 type View = { name: string; draw: (d: LiftDerived, I: ShaftInputs) => Entity[] | null };

@@ -8,6 +8,7 @@ import assert from 'node:assert/strict';
 import { PRESETS } from '@/calc/presets';
 import { edit as E, type Chain, type Edit, type Entity, type Pt } from '@/drawing';
 import { KV_VERT } from '@/shaft/norme-vert';
+import { HEB_PAD } from '@/shaft/support';
 import { defaultLift, deriveLift, newLift, type LiftInputs } from '@/lib/lift';
 import { bedplateMass, hebOf, supportLoad } from '@/lib/lift/support';
 import { drawnShaft, enteredShaft } from '@/lib/lift/panel-form';
@@ -51,8 +52,9 @@ test('progetto: le putrelle più corte che passano, l’argano alzato della loro
   assert.ok(chosen.ok && chosen.bridge, 'sotto il telaio, entro i muri');
   // named in the shaft the design goes on with; the machine stands their height higher
   assert.deepEqual(d.shaft.room?.heb, { profile: chosen.profile, dir: chosen.dir });
-  assert.equal(d.machine.base, PROFILES[chosen.profile].h);
-  assert.ok(Math.abs(d.machine.axis - plain.machine.axis - PROFILES[chosen.profile].h) < 1e-6);
+  // (on their bearing plates and mortar beds, HEB_PAD more: round 36)
+  assert.equal(d.machine.base, PROFILES[chosen.profile].h + HEB_PAD);
+  assert.ok(Math.abs(d.machine.axis - plain.machine.axis - PROFILES[chosen.profile].h - HEB_PAD) < 1e-6);
   assert.ok(Number(d.values.L0) > Number(plain.values.L0), 'la fune oltre la corsa segue l’asse');
   // its checks with the others of the support, as the chosen one does
   assert.deepEqual(d.supportChecks.filter((c) => c.id.startsWith('m_heb')).map((c) => c.status), ['ok', 'ok', 'ok', 'ok', 'ok']);
@@ -69,7 +71,7 @@ test('progetto: profilo o direzione scelti restano, anche se non passano', () =>
     const d = deriveLift(withHeb(base, { profile }));
     assert.equal(d.heb?.chosen.profile, profile);
     assert.deepEqual(d.heb?.auto, { profile: false, dir: true });
-    assert.equal(d.machine.base, PROFILES[profile].h);
+    assert.equal(d.machine.base, PROFILES[profile].h + HEB_PAD);
   }
   const y = deriveLift(withHeb(base, { dir: 'y', profile: 'HEB 120' }));
   assert.deepEqual([y.heb?.chosen.dir, y.heb?.chosen.profile], ['y', 'HEB 120']);
@@ -105,7 +107,7 @@ test('rilievo: le putrelle sotto il nuovo argano, scelte sulla quota del disegno
   assert.equal(plain.heb, null);
   assert.ok(d.heb && d.G, 'putrelle pesate');
   assert.deepEqual(d.G.room.heb, { profile: d.heb.chosen.profile, dir: d.heb.chosen.dir });
-  assert.equal(d.M.base, PROFILES[d.heb.chosen.profile].h);
+  assert.equal(d.M.base, PROFILES[d.heb.chosen.profile].h + HEB_PAD);
   assert.ok(d.checks.some((c) => c.id === 'm_heb'));
   const plan = picks(roomPlanOn(d.site, d.M, d.G).entities);
   assert.equal(plan.length, 1);

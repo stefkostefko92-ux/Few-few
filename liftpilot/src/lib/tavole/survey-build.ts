@@ -7,6 +7,7 @@ import { A4, COND, PALETTE, concreteTile, drawingArea, frame, sheetTitle, strip,
 import { deriveRoom, type RoomDerived } from '../room/derive';
 import { inset, roomMarks } from './build';
 import { scaleLabel } from './extras';
+import { roomLegend } from './room-legend';
 import { dateIt, placeLines } from './input';
 import { surveySheetData } from './survey-data';
 import type { SurveyTavoleInput } from './survey-input';
@@ -42,7 +43,7 @@ export function buildSurveyTavole(x: SurveyTavoleInput): SurveyTavoleResult {
   SPECS.forEach((s, i) => {
     const area = drawingArea(true), v = surveyView(d, s.k, inset(area, 8, 8, 8, 8), M);
     if (!v) throw new Error('no machine room');
-    const shapes = [...v.r.shapes, ...(s.k === 'plan' ? roomMarks(v.G, v.place, v.r.extent) : [])];
+    const drawn = [...v.r.shapes, ...(s.k === 'plan' ? roomMarks(v.G, v.place, v.r.extent) : [])], shapes = [...drawn, ...(s.k === 'plan' ? roomLegend(drawn, area) : [])];
     out.push({ w: A4.w, h: A4.h, shapes: [...frame(), ...shapes, ...sheetTitle(s.title, s.subtitle), scaleLabel(v.place.scale, true), ...strip(meta(i + 2))] });
     sheets.push({ title: s.title, scale: v.place.scale });
     hits.push(v.r.hits);

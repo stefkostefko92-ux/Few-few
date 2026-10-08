@@ -1,13 +1,16 @@
-// The machine room in the relazione tecnica of a replacement: the room and the shaft under it as surveyed, the drops,
-// where the new machine stands on its support with the diverting pulley, the openings its ropes need in the slab, and
-// its plan and section B-B laid out by the drawing kernel. Italian. Pure.
+// The machine room in the relazione tecnica of a replacement: the room and the shaft under it as surveyed, the drops (with
+// a direct drive, how the new sheave's ropes slant to them), where the new machine stands on its support with the
+// diverting pulley, its mounts and fixings, what else the survey found, and its plan and section B-B laid out by the
+// drawing kernel (the openings in the slab: tecnica-site.ts). Italian. Pure.
 import { COND, PALETTE, concreteTile } from '@/drawing';
-import { ropeWidths, slabHoles } from '@/shaft/machine-room';
+import { KV_VERT } from '@/shaft/norme-vert';
+import { mountsText } from '@/shaft/room-mounts';
 import { cropped, surveyView } from '../tavole/views';
 import type { MachineSpec } from '@/shaft/machine-room';
 import type { RoomDerived } from '../room/derive';
 import type { Survey } from '../room/survey';
-import { supportName } from '../tavole/survey-data';
+import { foundText, supportName } from '../tavole/survey-data';
+import { hebNote } from '../tavole/room-rows';
 import { rinvioRow } from './machine-shape';
 import type { ReportBlock, ReportDoc } from './model';
 
@@ -19,13 +22,6 @@ const AREA = { x0: 0, y0: 0, x1: 172, y1: 150 };
 
 const WALL: Readonly<Record<string, string>> = { front: 'anteriore', rear: 'posteriore', left: 'sinistra', right: 'destra' };
 
-/** The openings the new machine's ropes (and a pulley dipping into the slab) need, 30 mm clear: their size in plan. */
-export function slabOpenings(d: RoomDerived): { length: number; width: number; wheel: boolean }[] {
-  if (!d.G) return [];
-  const w = ropeWidths(d.M.n, d.M.d);
-  return slabHoles(d.M, d.G, d.G.room.slab, d.site.ends).map((h) => ({ length: h.u1 - h.u0, width: 2 * ((h.wheel ? Math.max(w.ropes, w.pulley) : w.ropes) + 30), wheel: h.wheel }));
-}
-
 /** The rows of the room as surveyed and of the new machine in it. */
 export function roomRows(s: Survey, d: RoomDerived, fmt: (x: number, dp?: number) => string): [string, string][] {
   const R = s.room, M = d.M, G = d.G, mm = (x: number): string => `${fmt(Math.round(x), 0)} mm`;
@@ -34,7 +30,8 @@ export function roomRows(s: Survey, d: RoomDerived, fmt: (x: number, dp?: number
     ['Porta e quadro di manovra', `porta ${fmt(R.doorW, 0)} × ${fmt(R.doorH, 0)} mm sulla parete ${WALL[R.doorWall]}; quadro ${fmt(R.panelW, 0)} × ${fmt(R.panelD, 0)} × ${fmt(R.panelH, 0)} mm sulla parete ${WALL[R.panelWall]}`],
     ['Vano sotto il locale', `${fmt(s.shaft.W, 0)} × ${fmt(s.shaft.D, 0)} mm, muri di ${mm(s.shaft.wall)}; il suo angolo interno a ${fmt(R.shaftX, 0)} e ${fmt(R.shaftY, 0)} mm dai muri del locale`],
     ['Calate rilevate (dall’angolo interno del vano)', `funi lato cabina a x ${fmt(s.car.x, 0)}, y ${fmt(s.car.y, 0)} mm; funi lato contrappeso a x ${fmt(s.cw.x, 0)}, y ${fmt(s.cw.y, 0)} mm: distanza ${mm(d.calata.measured)}`],
-    ['Calate della nuova macchina (dal calcolo)', `${mm(d.calata.calc)} (scarto dal rilievo ${mm(Math.abs(d.calata.measured - d.calata.calc))})`],
+    // (direct drive: the calculation's drops are the existing sheave's; the new one's falls slant to them — round 36)
+    ...calataText(d, fmt),
     ['Posizione dell’argano', `${G && Math.abs(G.sheaveAt - (M.ropeIn + M.D / 2)) > 0.5
       ? 'puleggia di frizione centrata tra le calate esistenti (tiro diretto, come nel calcolo)'
       : 'lato cabina della puleggia di frizione sulla calata della cabina'}; ${G?.dir === -1
@@ -42,6 +39,24 @@ export function roomRows(s: Survey, d: RoomDerived, fmt: (x: number, dp?: number
       : 'motore verso il contrappeso'}`],
     ['Basamento', `${supportName(d).toLowerCase()}; asse della puleggia di frizione a ${mm(M.axis)} sul pavimento del locale`],
     ...(M.rinvio ? [rinvioRow(M.rinvio, fmt)] : []),
+    // the mounts and the fixings; the HEB beams' bearings; what else the survey found (round 36)
+    ...(G ? [['Antivibranti e fissaggi', mountsText(G, M)] as [string, string]] : []),
+    ...(d.heb ? [['Putrelle HEB sui muri del vano', hebNote('').text] as [string, string]] : []),
+    ['Limitatore, aperture e basamento esistenti (rilievo)', foundText(s).toLowerCase()],
+  ];
+}
+
+/** The drops: with a direct drive the surveyed ones beside the existing sheave's diameter the calculation takes, and how
+ *  much each fall of the new sheave slants down to them with the least wrap angle of the calculation; else the
+ *  calculation's drops beside the surveyed. */
+function calataText(d: RoomDerived, fmt: (x: number, dp?: number) => string): [string, string][] {
+  const { ctx, res } = d.analysis, M = d.M, mm = (x: number): string => `${fmt(Math.round(x), 0)} mm`, off = mm(Math.abs(d.calata.measured - d.calata.calc));
+  if (M.Dp > 0 || M.rinvio) return [['Calate della nuova macchina (dal calcolo)', `${mm(d.calata.calc)} (scarto dal rilievo ${off})`]];
+  const oldD = ctx.compare && ctx.O.D > 0 ? ctx.O.D : 0, slant = (d.calata.measured - 2 * M.ropeIn - M.D) / 2;
+  return [
+    ['Calate esistenti', `rilevate ${mm(d.calata.measured)}, ${oldD ? `coerenti con la puleggia esistente Ø ${fmt(oldD, 0)} del calcolo` : 'confrontate con il calcolo'} (scarto ${off}, al più ${KV_VERT.dropTol} mm)`],
+    ['Inclinazione delle funi della nuova puleggia', `nuova puleggia Ø ${fmt(M.D, 0)}: ogni ramo inclinato di ${fmt(Math.abs(slant), Math.abs(slant) < 10 ? 1 : 0)} mm per lato fino alle calate${slant < 0 ? ' (verso l’interno)' : ''}; `
+      + `angolo di avvolgimento ${fmt(res.alphaDeg, 1)}° (dal calcolo); i fori nella soletta seguono le funi al loro livello`],
   ];
 }
 

@@ -5,7 +5,8 @@ import type { Align, Box, Ink, Pt } from './types';
 
 export type Side = 'top' | 'bottom' | 'left' | 'right';
 
-export type SymbolName = 'dot' | 'tri' | 'square' | 'overUp' | 'overDown' | 'plumb' | 'box' | 'light';
+export type SymbolName = 'dot' | 'tri' | 'square' | 'overUp' | 'overDown' | 'plumb' | 'box' | 'light'
+  | 'socket' | 'switch' | 'vent' | 'duct' | 'hook' | 'area';
 
 /** What changing a dimension does on the screens: the input `key` becomes base + k · (the new length) [mm]; the
  *  inputs in `also` take the values given, so that what the dimension starts from stays where it is. `value`: the real
