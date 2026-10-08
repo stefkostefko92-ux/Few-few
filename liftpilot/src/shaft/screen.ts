@@ -2,9 +2,9 @@
 // contrappeso.schermo.pianta): a sheet between the car and the counterweight's run, from its lower edge at most 300 mm
 // over the pit floor (c)) up to its top (b), screenOf), along the counterweight's wall across the counterweight and its
 // rails and 40 mm past them (d)), on to the wall — or to a car rail standing between — wherever more than 300 mm would
-// be left open there (e)). The plan of the pit, section A-A, their dimensions and the checks take it from here. Pure.
+// be left open there (e)). The plan of the pit, section A-A, their dimensions and the informations of its lower edge and
+// width take it from here. Pure.
 import { chain, path, type Entity, type Pt } from '../drawing';
-import { check } from './checks';
 import { KV_VERT } from './norme-vert';
 import { onWall, quad } from './plan-walls';
 import { RAILS } from './rails';
@@ -54,12 +54,14 @@ export function cwScreen(L: Layout): CwScreen {
   return { wall, u0, u1, v0: face + SHEET[0], v1, low: K.cwScreenLow, high: screenOf(I.vertical), cwLen: c1 - c0, bare: [Math.max(0, a), Math.min(len, b)] };
 }
 
-/** The checks of the screen's lower edge (c)) and of its width with the space beside the rails (d), e)). */
+/** The screen's lower edge (c)) and its width with the space beside the rails (d), e)) as the drawings give them, beside
+ *  the standard's figures: informations, not checks — the software sizes the screen to the standard, nothing of the
+ *  design's could fall short of it (the screen the installer fits is checked at the acceptance test). */
 export function screenChecks(L: Layout): ShaftCheck[] {
   const s = cwScreen(L), K = KV_VERT;
   return [
-    check('p_screenlo', s.low <= K.cwScreenLow, s.low, K.cwScreenLow, 0, 'mm'),
-    check('p_screenw', s.u1 - s.u0 >= s.cwLen - 1e-9, Math.round(s.u1 - s.u0), Math.round(s.cwLen), 0, 'mm'),
+    { id: 'p_screenlo', status: 'info', value: s.low, limit: K.cwScreenLow, dec: 0, unit: 'mm' },
+    { id: 'p_screenw', status: 'info', value: Math.round(s.u1 - s.u0), limit: Math.round(s.cwLen), dec: 0, unit: 'mm' },
   ];
 }
 

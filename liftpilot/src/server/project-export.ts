@@ -8,6 +8,7 @@ import { toDwg, toDxf } from '@/lib/cad/export';
 import { prisma } from '@/lib/db';
 import { analyse } from '@/lib/present/analysis';
 import { renderTavole } from '@/lib/report/render';
+import { setLayout } from '@/lib/tavole/build';
 import { initialsOf } from '@/lib/tavole/compose';
 import { belowGeoOf, machineOf } from '@/lib/tavole/views';
 import { composeFromCalculation } from './drawing-compose';
@@ -32,7 +33,8 @@ export async function exportLiftDesign(user: SessionUser, id: string, format: Ex
   if (!c.ok) return { ok: false, error: c.error === 'engineChanged' ? 'engineChanged' : 'notFound' };
   const date = d.createdAt.toISOString().slice(0, 10), name = `progetto-${slug(d.project.name)}-${date}.${format}`;
   if (format === 'pdf') return { ok: true, body: new Uint8Array(await renderTavole(c.doc)), mime: MIME.pdf, name, designId: d.id };
-  const L = c.input.layout, a = analyse(c.input.values), M = machineOf(a, c.input.plant, L, c.input.marks?.catalog ?? null), bottom = a.ctx.I.layout === 'bottom';
+  // the brackets at the pitches of the installation's data, as the PDF draws them (build.ts setLayout)
+  const L = setLayout(c.input), a = analyse(c.input.values), M = machineOf(a, c.input.plant, L, c.input.marks?.catalog ?? null), bottom = a.ctx.I.layout === 'bottom';
   const views = projectViews(L, M, L.inputs.room !== null && !bottom, bottom ? belowGeoOf(a, L, M, c.input.marks?.bottom ?? 'head') : null);
   const title = `${d.project.name} · progetto ${d.id} · ${date} · LiftPilot`;
   const body = format === 'dxf' ? new TextEncoder().encode(toDxf(views, title)) : new Uint8Array(toDwg(views, title));

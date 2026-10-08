@@ -23,7 +23,8 @@ import type { CadView } from './export';
 /** The scale section A-A whole is lettered for. */
 const FULL_SCALE = 50;
 
-/** `machine`: the machine of the calculation, for the machine room's views; `room`: the design has a room above;
+/** `L`: the design as the set draws it, with the brackets' pitches of the installation's data (build.ts setLayout);
+ *  `machine`: the machine of the calculation, for the machine room's views; `room`: the design has a room above;
  *  `below`: the geometry of the machine below (its room's views). */
 export function projectViews(L: Layout, M: MachineSpec, room: boolean, below: BottomGeo | null = null): CadView[] {
   const S = section(L), G = roomGeo(L, M);

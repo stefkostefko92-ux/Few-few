@@ -6,11 +6,14 @@ import assert from 'node:assert/strict';
 import { PRESETS } from '@/calc/presets';
 import { A4 } from '@/drawing';
 import { defaultInputs, layout, section, type ShaftInputs } from '@/shaft';
-import { maxBracketSpan, railSpan } from '@/shaft/brackets';
-import { buildTavole } from '../tavole/build';
+import { bracketHeights, bracketSpans, maxBracketSpan, railSpan } from '@/shaft/brackets';
+import { railsDev } from '@/shaft/rails-dev';
+import { carBracketCode } from '@/shaft/staffe-cabina';
+import { projectViews } from '../cad/project';
+import { buildTavole, setLayout } from '../tavole/build';
 import { dataSheet } from '../tavole/data';
 import type { TavoleInput } from '../tavole/input';
-import { sectionView } from '../tavole/views';
+import { machineOf, sectionView } from '../tavole/views';
 import { analyse } from '../present/analysis';
 import { makeFmt } from '../present/tr';
 import { deriveLift } from '../lift/derive';
@@ -37,7 +40,8 @@ test('foglio 1: l’interasse massimo delle staffe è la l della verifica delle 
     // NOTA 1: the pit's kit, the sign with the clearance the checks give, the plates under the sills, the anchors
     const nota = JSON.stringify(ds.sheet.notes);
     assert.ok(ds.cwGap !== null && nota.includes(`gioco massimo ${fmt(ds.cwGap, 0)} mm`), 'cartello');
-    for (const t of ['Fossa (', 'STOP', 'Lamiera sottosoglia alta 250 mm', 'zona di sbloccaggio assunta 200 mm', `Fx ${ds.rails.fx}`, '5.2.5.3.2']) assert.ok(nota.includes(t), t);
+    for (const t of ['Fossa (', 'STOP', 'Lamiera sottosoglia alta 250 mm', 'zona di sbloccaggio assunta 200 mm', `Fx ${ds.rails.fx}`, '5.2.5.3.2',
+      'comando d’ispezione a non più di 300 mm da uno spazio di rifugio', 'comando della luce a non più di 750 mm dal telaio e almeno 1000 mm sopra']) assert.ok(nota.includes(t), t);
     // the checks of the details in the table
     for (const t of ['Porte di soccorso', 'Lamiera sotto la soglia', 'Protezione del contrappeso: bordo', 'Gioco massimo contrappeso']) {
       assert.ok(ds.sheet.checks.some((r) => r[0].startsWith(t)), t);
@@ -55,6 +59,27 @@ test('foglio delle guide: ultimo, a una scala normale, quote delle staffe e note
   assert.ok(texts.join(' ').includes('interasse massimo'), 'note');
   assert.ok(texts.includes(`PAGINA N° ${r.doc.pages.length}/${r.doc.pages.length}`));
   for (const s of page?.shapes ?? []) if (s.t === 'text') assert.ok(s.at[0] > 0 && s.at[0] < A4.w && s.at[1] > 0 && s.at[1] < A4.h, s.text);
+});
+
+test('DXF e DWG: il foglio delle guide e le sigle delle staffe al passo dei dati dell’impianto, come il PDF', () => {
+  const x = input(I0, 1500), L = setLayout(x), a = analyse(x.values), M = machineOf(a, x.plant, L, null);
+  const views = projectViews(L, M, L.inputs.room !== null), view = views.find((v) => v.title === 'SVILUPPO DELLE GUIDE E POSIZIONE DELLE STAFFE');
+  assert.ok(view, 'vista delle guide');
+  const [z0, z1] = railSpan(section(L)), hs = bracketHeights(z0, z1, L.inputs.carRail, 1500);
+  assert.notEqual(hs.length, bracketHeights(z0, z1, L.inputs.carRail).length, 'il passo dei dati cambia il numero di staffe');
+  // the brackets' chain at the pitch of the data, its longest interval the l of sheet 1 and of the rails' check
+  const cs = view.entities.flatMap((e) => (e.e === 'chain' ? [e.c] : []));
+  assert.ok(cs.some((c) => c.pts.length === hs.length + 2), 'catena delle staffe al passo dei dati');
+  assert.deepEqual(view.entities, railsDev(L).entities);
+  const row = dataSheet(x, a, 12).sheet.specs.find((r) => r[0] === 'INTERASSE MASSIMO STAFFE CABINA');
+  assert.equal(row?.[2], fmt(Math.max(...bracketSpans(hs)), 0));
+  // the plans name the car rails' brackets with the same count
+  const code = carBracketCode(L);
+  assert.ok(code.startsWith(`${hs.length}× `), code);
+  assert.ok(views.some((v) => v.entities.some((e) => e.e === 'text' && e.text === code)), 'sigla nelle piante');
+  // the layout of the set is the stored one with the data's pitches
+  assert.equal(L.carBracketPitch, 1500);
+  assert.equal(setLayout(input(I0)).carBracketPitch, undefined);
 });
 
 test('sezione A-A: la legenda solo dei simboli disegnati, la nota della scala dove la corsa è interrotta', () => {

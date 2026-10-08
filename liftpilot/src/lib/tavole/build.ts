@@ -182,9 +182,13 @@ function roomSheet(L: Layout, M: MachineSpec, kind: 'room-plan' | 'room-section'
   return { shapes: [...v.r.shapes, ...(kind === 'room-plan' ? roomMarks(v.G, v.place, v.r.extent) : [])], scale: v.place.scale, hits: v.r.hits };
 }
 
+/** The design the set draws: the stored one with the brackets' pitches the installation's data declare, so the plans'
+ *  codes, the rails' sheet and sheet 1 count the same brackets — the PDF and the CAD files alike (project-export.ts). */
+export const setLayout = (x: Pick<TavoleInput, 'layout' | 'plant'>): Layout =>
+  withPitches(x.layout, { car: x.plant.carBracketPitch, cw: x.plant.cwBracketPitch });
+
 export function buildTavole(x: TavoleInput): TavoleResult {
-  // the counterweight brackets' pitch the data declare: the plan's codes count as sheet 1 does
-  const L: Layout = withPitches(x.layout, { car: x.plant.carBracketPitch, cw: x.plant.cwBracketPitch }), a: Analysis = analyse(x.values), M = machineOf(a, x.plant, L, x.marks?.catalog ?? null);
+  const L: Layout = setLayout(x), a: Analysis = analyse(x.values), M = machineOf(a, x.plant, L, x.marks?.catalog ?? null);
   // the machine below: its room's sheets for the scheme the design chose (the head pulleys under the slab when none)
   const scheme = a.ctx.I.layout === 'bottom' ? x.marks?.bottom ?? 'head' : null, g = scheme ? belowGeoOf(a, L, M, scheme) : null;
   const list = specs(L, L.inputs.room !== null && a.ctx.I.layout !== 'bottom', scheme), pages = list.length + 1;

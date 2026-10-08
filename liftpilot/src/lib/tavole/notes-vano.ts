@@ -26,8 +26,9 @@ export function shaftDetailText(L: Layout, x: ShaftDetailValues): string {
   const missing = [...(k.ladderAllowed && !k.ladder ? ['scala'] : []), ...(!k.box ? ['pulsantiera'] : [])];
   const sign = x.cwGap === null ? 'gioco massimo da stabilire quando le verifiche della testata passano' : `gioco massimo ${x.cwGap} mm`;
   const where = missing.length ? `${missing.join(' e ')} da collocare: nei disegni non c’è un posto libero` : 'posizioni e quote nella pianta e nella sezione della fossa';
-  return `Fossa (${V.pit} mm): ${access}; ${stops}, a non più di ${K.pitReach} mm dal telaio della porta; comando d’ispezione, presa e comando della `
-    + `luce; cartelli con persone ammesse e postura (${where}). Cartello sulla protezione del contrappeso: ${sign}. Lamiera `
+  return `Fossa (${V.pit} mm): ${access}; ${stops}, a non più di ${K.pitReach} mm dal telaio della porta; comando d’ispezione a non più di `
+    + `${K.inspReach} mm da uno spazio di rifugio; presa; comando della luce a non più di ${K.pitReach} mm dal telaio e almeno ${K.lightOver} mm sopra `
+    + `il piano di accesso; cartelli con persone ammesse e postura (${where}). Cartello sulla protezione del contrappeso: ${sign}. Lamiera `
     + `sottosoglia alta ${t.h} mm sotto ogni soglia di piano${t.entered ? '' : ` (zona di sbloccaggio assunta ${t.zone} mm)`}. Ogni staffa delle guide di `
     + `cabina porta alla parete fino a Fx ${x.fx} e Fy ${x.fy} daN, per la verifica degli ancoraggi. `;
 }

@@ -8,14 +8,17 @@ import { applyEdit, defaultInputs, KV_VERT, layout, section, sectionDims, type S
 import { bracketHeights, bracketSpans, maxBracketSpan, railPieces, railSpan } from '../brackets';
 import { cwGapMax, cwGapOver } from '../cw-gap';
 import { maxDoorRise } from '../detail-checks';
-import { pitKit } from '../pit-kit';
+import { pitKit, pitKitSection } from '../pit-kit';
 import { bufferPlan } from '../pit';
 import { bufferTagAt } from '../plan-pit';
+import { quad } from '../plan-walls';
 import { FISHPLATES, RAILS } from '../rails';
 import { railsDev } from '../rails-dev';
 import { cwScreen, screenChecks } from '../screen';
-import { toeOf, toeWidth } from '../toe';
+import { mapZ, sectionEntities, type ZMap } from '../section-view';
+import { toeOf, toeSection, toeWidth } from '../toe';
 import type { ShaftCheck } from '../types';
+import type { VerticalInputs } from '../vertical';
 
 const chains = (es: readonly Entity[]): Chain[] => es.flatMap((e) => (e.e === 'chain' ? [e.c] : []));
 /** A chain's whole length, first point to last [mm]. */
@@ -94,9 +97,12 @@ test('lamiera sottosoglia: metà zona di sbloccaggio + 50, avviso finché la zon
 test('protezione del contrappeso: bordo inferiore ≤ 300, larga quanto contrappeso e guide + 40, fino al muro se resta più di 300', () => {
   for (const [name, I] of CASES) {
     const L = layout(I), s = cwScreen(L), [lo, w] = screenChecks(L);
-    assert.equal(lo?.status, 'ok', name);
+    // what the drawing gives beside the standard's figures: informations, nothing of the design's to check
+    assert.equal(lo?.status, 'info', name);
     assert.equal(lo?.value, KV_VERT.cwScreenLow, name);
-    assert.equal(w?.status, 'ok', name);
+    assert.equal(lo?.limit, KV_VERT.cwScreenLow, name);
+    assert.equal(w?.status, 'info', name);
+    assert.ok((w?.value ?? 0) >= (w?.limit ?? Infinity), name);
     assert.ok(s.u0 <= s.bare[0] && s.u1 >= s.bare[1], name);
     assert.ok(s.bare[1] - s.bare[0] >= s.cwLen + 2 * KV_VERT.cwScreenPast - 1e-9, name);
     const len = s.wall === 'front' || s.wall === 'rear' ? I.W : I.D;
@@ -110,8 +116,11 @@ test('protezione del contrappeso: bordo inferiore ≤ 300, larga quanto contrapp
   }
 });
 
-test('cartello del contrappeso: gioco massimo = extracorsa + il margine minore della testata, a 5 mm', () => {
-  const L = layout(defaultInputs(1600, 1750)), head = L.checks.filter((c) => c.id === 'h_refuge' || c.id === 'h_clear');
+test('cartello del contrappeso: gioco massimo = extracorsa + il margine minore delle verifiche che il gioco riduce, a 5 mm', () => {
+  const L = layout(defaultInputs(1600, 1750));
+  // the ones that must pass, and the warnings of the crosshead and of the car's guided travel while they pass
+  const head = L.checks.filter((c) => ['h_refuge', 'h_clear', 'h_cw'].includes(c.id) || (['h_cross', 'h_guide'].includes(c.id) && c.status === 'ok'));
+  assert.deepEqual(head.map((c) => c.id).sort(), ['h_clear', 'h_cross', 'h_cw', 'h_guide', 'h_refuge']);
   const m = Math.min(...head.map((c) => (c.value ?? 0) - (c.limit ?? 0))), want = Math.floor((L.inputs.vertical.cwRunby + m) / 5) * 5;
   const info = L.checks.find((c) => c.id === 'h_cwgap');
   assert.equal(info?.status, 'info');
@@ -126,6 +135,35 @@ test('cartello del contrappeso: gioco massimo = extracorsa + il margine minore d
   // a headroom's check failing by more than the run-by: no clearance would do, the sign waits
   assert.equal(cwGapMax(L, [{ ...top, status: 'fail', value: 0, limit: 10000 }]), null);
   assert.equal(cwGapMax(L, [{ ...top, status: 'fail', value: 100, limit: 100 + L.inputs.vertical.cwRunby }]), 0);
+  // a warning already given does not count (it stays a warning), one that passes does
+  const cross: ShaftCheck = { id: 'h_cross', status: 'warn', value: 300, limit: 500, dec: 0, unit: 'mm' };
+  assert.equal(cwGapMax(L, [cross]), L.inputs.vertical.cwRunby);
+  assert.equal(cwGapMax(L, [{ ...cross, status: 'ok', value: 520 }]), Math.floor((L.inputs.vertical.cwRunby + 20) / 5) * 5);
+});
+
+test('cartello del contrappeso: con il gioco scritto nessuna verifica del progetto peggiora', () => {
+  const RANK = { ok: 0, info: 0, warn: 1, fail: 2 } as const;
+  const tweaks: readonly ((V: VerticalInputs) => VerticalInputs)[] = [
+    (V) => V,
+    // the crosshead within 500 mm of the ceiling at its highest: the warning h_cross passes by little (review, round 36)
+    (V) => ({ ...V, frameTop: V.frameTop + 100 }),
+    // no balustrade, the crosshead high: the car's guided travel passes by little
+    (V) => ({ ...V, frameTop: V.frameTop + 450, parapet: 0 }),
+    // a taller counterweight: its guided travel passes by little
+    (V) => ({ ...V, cwH: V.cwH + 400 }),
+  ];
+  let seen = 0;
+  for (const [name, I0] of CASES) for (const [k, tw] of tweaks.entries()) {
+    const I: ShaftInputs = { ...I0, vertical: tw(I0.vertical) }, L = layout(I), gap = cwGapMax(L, L.checks);
+    if (gap === null) continue;
+    seen++;
+    const at = layout({ ...I, vertical: { ...I.vertical, cwRunby: gap } }).checks;
+    for (const c of L.checks) {
+      const d = at.find((x) => x.id === c.id);
+      assert.ok(d && RANK[d.status] <= RANK[c.status], `${name} #${k}: ${c.id} ${c.status} → ${d?.status} (${d?.value}/${d?.limit}) col gioco ${gap}`);
+    }
+  }
+  assert.ok(seen >= CASES.length * 3, `${seen}`);
 });
 
 test('fossa: scala entro 600 mm e pulsantiera entro 750 mm dal vano porta, libere da cabina, contrappeso e ammortizzatori', () => {
@@ -138,6 +176,10 @@ test('fossa: scala entro 600 mm e pulsantiera entro 750 mm dal vano porta, liber
     const car = { x0: L.car.x, y0: L.car.y, x1: L.car.x + L.car.w, y1: L.car.y + L.car.h }, cw = { x0: L.cw.x, y0: L.cw.y, x1: L.cw.x + L.cw.w, y1: L.cw.y + L.cw.h };
     for (const it of [k.ladder, k.box]) for (const b of [car, cw]) assert.ok(apart(it.box, b), name);
     assert.ok(apart(k.ladder.box, k.box.box), `${name}: scala e pulsantiera`);
+    // nothing behind the counterweight's screen: all it closes off to the wall is out of reach from the door and the pit
+    const s = cwScreen(L), pts = quad(L, s.wall, s.u0, 0, s.u1, s.v1);
+    const shut = { x0: Math.min(...pts.map((p) => p[0])), y0: Math.min(...pts.map((p) => p[1])), x1: Math.max(...pts.map((p) => p[0])), y1: Math.max(...pts.map((p) => p[1])) };
+    for (const it of [k.ladder, k.box]) assert.ok(apart(it.box, shut), `${name}: dietro la protezione del contrappeso`);
     for (const s of bufferPlan(L).spots) {
       const f = s.r;
       assert.ok(apart(k.ladder.box, { x0: s.c[0] - f, y0: s.c[1] - f, x1: s.c[0] + f, y1: s.c[1] + f }), `${name}: ammortizzatore`);
@@ -150,6 +192,26 @@ test('fossa: scala entro 600 mm e pulsantiera entro 750 mm dal vano porta, liber
   assert.equal(deep.ladder, null);
   assert.equal(deep.twoStops, true);
   assert.equal(deep.stop, KV_VERT.stopUpper);
+  // the lower stop under the box, its top at most 1200 mm over the pit floor: the section draws both
+  assert.equal(deep.lowStop, KV_VERT.stopLower - KV_VERT.pitBoxH / 2 - 2600);
+  assert.equal(pitKit(layout(I)).lowStop, null);
+  const stops = (J: ShaftInputs): number => pitKitSection(layout(J), (x, z) => [x, z], -J.vertical.pit)
+    .filter((e) => e.e === 'text' && e.text.startsWith('STOP ')).length;
+  assert.equal(stops({ ...I, vertical: { ...I.vertical, pit: 2600 } }), 2);
+  assert.equal(stops(I), 1);
+});
+
+test('lamiera sottosoglia: sotto ogni soglia di piano anche dove la corsa è disegnata più corta', () => {
+  const I0 = defaultInputs(1600, 1750), floors = ['0', '1', '2', '3', '4', '5', '6'].map((label, i, a) => ({ label, rise: i < a.length - 1 ? 3000 : 0, door: 'A' as const }));
+  const I: ShaftInputs = { ...I0, vertical: { ...I0.vertical, floors } }, L = layout(I), S = section(L);
+  const zmap: ZMap = { z0: I.doorHeight + 250, z1: S.top - I.vertical.frameBelow - 600, f: 0.2 };
+  const drawn = new Set(sectionEntities(L, { carFloor: floors.length - 1, lo: -Infinity, hi: Infinity, zmap }).entities.map((e) => JSON.stringify(e)));
+  let short = 0;
+  for (const zf of S.levels) {
+    for (const e of toeSection(I, zf, (q, z) => [q, mapZ(zmap, z)])) assert.ok(drawn.has(JSON.stringify(e)), `piano a ${zf}`);
+    if (zf > zmap.z0 + 1 && zf < zmap.z1 - 1) short++;
+  }
+  assert.ok(short >= 3, `${short}`);
 });
 
 test('P6 in pianta della fossa: lontano dalle guide, dalle staffe e dall’asse della cabina', () => {

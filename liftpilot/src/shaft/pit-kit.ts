@@ -1,11 +1,12 @@
 // What the pit needs besides the buffers (UNI EN 81-20:2020, 5.2.1.5.1, 5.2.2.4 and annex F; registries fossa.accesso,
 // fossa.comandi, fossa.posizioni): the access ladder in the well (a pit up to 2500 mm deep) and the pit's control box —
 // the stop, the socket and the well light's switch — by the door of the lowest floor, each against a wall as near that
-// door's clear opening as it may stand clear of the car with its sills and operators, the counterweight and its screen,
-// the rails with their brackets, the landing door, the buffers, the refuge space and the governor's tension weight; the
-// ladder within 600 mm of the opening's edge (annex F, F.5 c)), the box's stop within 750 mm (5.2.1.5.1 a)). The plan of
-// the pit draws them with their places, the pit's detail of section A-A with their heights; where none fits, the
-// drawings leave it out and sheet 1's note says where it must go. Pure.
+// door's clear opening as it may stand clear of the car with its sills and operators, the counterweight and its screen
+// with all it closes off, the rails with their brackets, the landing door, the governor's rope and, in the pit, the
+// buffers, the refuge space and the governor's tension weight; the ladder within 600 mm of the opening's edge (annex F,
+// F.5 c)), the box's stop within 750 mm (5.2.1.5.1 a)), a deep pit's lower stop under the box. The plan of the pit draws
+// them with their places, the pit's detail of section A-A with their heights; where none fits, the drawings leave it out
+// and sheet 1's note says where it must go. Pure.
 import { chain, line, path, type Box, type Entity, type Pt } from '../drawing';
 import { governorSpot, TENSION } from './governor';
 import { landingOf } from './landing';
@@ -48,6 +49,9 @@ export interface PitKit {
   stop: number;
   light: number;
   twoStops: boolean;
+  /** the lower stop of a pit over 1600 mm, under the box, its top at the most over the pit floor (reached from the pit's
+   *  refuge): its middle over the lowest landing [mm]; null with one stop */
+  lowStop: number | null;
 }
 
 const bboxOf = (pts: readonly Pt[]): Box => ({
@@ -56,9 +60,10 @@ const bboxOf = (pts: readonly Pt[]): Box => ({
 const overlaps = (a: Box, b: Box): boolean => a.x0 < b.x1 + GAP && b.x0 < a.x1 + GAP && a.y0 < b.y1 + GAP && b.y0 < a.y1 + GAP;
 
 /** What the ladder and the box keep clear of in plan: the car with its sills and — where the car on its compressed
- *  buffers brings them down to the kit's top — its door operators, the counterweight with its screen, each rail with its
- *  bracket out to its wall, the buffers' footprints, the refuge space, the governor's tension weight and rope; for the
- *  box (over the landing) the landing doors' whole width, for the ladder (in the pit) their sills. */
+ *  buffers brings them down to the kit's top — its door operators, the counterweight with its screen and all the screen
+ *  closes off to the wall, each rail with its bracket out to its wall, the governor's rope; for the box (over the landing)
+ *  the landing doors' whole width, for the ladder (in the pit) their sills, the buffers' footprints, the refuge space and
+ *  the governor's tension weight. */
 function obstacles(L: Layout, over: boolean): Box[] {
   const I = L.inputs, c = L.car, v0 = I.landingDepth + I.sillGap, out: Box[] = [{ x0: c.x, y0: c.y, x1: c.x + c.w, y1: c.y + c.h }];
   // the operators hang over the car's doors: their underside at the car's lowest against the ladder's or the box's top
@@ -69,8 +74,10 @@ function obstacles(L: Layout, over: boolean): Box[] {
     const l = landingOf(d);
     out.push(bboxOf(over ? quad(L, d.wall, d.frame0, 0, d.frame1, I.landingDepth) : quad(L, d.wall, l.u0 - 60, 0, l.u1 + 60, I.landingDepth + 10)));
   }
+  // the counterweight's run closed off by its screen: all from the wall to the sheet, end to end (nothing behind it is
+  // reached from the door or from the pit)
   const s = cwScreen(L);
-  out.push({ x0: L.cw.x, y0: L.cw.y, x1: L.cw.x + L.cw.w, y1: L.cw.y + L.cw.h }, bboxOf(quad(L, s.wall, s.u0, s.v0, s.u1, s.v1)));
+  out.push({ x0: L.cw.x, y0: L.cw.y, x1: L.cw.x + L.cw.w, y1: L.cw.y + L.cw.h }, bboxOf(quad(L, s.wall, s.u0, 0, s.u1, s.v1)));
   for (const r of L.rails) {
     const t = RAILS[r.kind === 'car' ? I.carRail : I.cwRail], half = t.b / 2 + 60;
     const [dx, dy] = r.dir === 'right' ? [1, 0] : r.dir === 'left' ? [-1, 0] : r.dir === 'back' ? [0, 1] : [0, -1];
@@ -86,9 +93,11 @@ function obstacles(L: Layout, over: boolean): Box[] {
     }
     out.push(pitSpace(L));
   }
+  // the governor's rope with its strands; in the pit also the tension weight's lever (over the landing the box only meets
+  // the rope: the weight hangs near the pit floor)
   const g = governorSpot(L);
   if (g) {
-    const reach = Math.max(g.G.R, TENSION.weightAt + TENSION.lever[1]) + 60;
+    const reach = over ? 60 : Math.max(g.G.R, TENSION.weightAt + TENSION.lever[1]) + 60;
     out.push({ x0: g.x - g.G.half - 80, y0: Math.min(g.y1, g.rail.y) - reach, x1: g.x + g.G.half + 80, y1: Math.max(g.y2, g.rail.y) + reach });
   }
   return out;
@@ -128,7 +137,8 @@ export function pitKit(L: Layout): PitKit {
   const box = place(L, edges, K.pitBoxW, K.pitBoxD, K.pitReach, [...obstacles(L, true), ...(ladder ? [ladder.box] : [])]);
   // the stop between 400 mm over the landing and 2000 mm over the pit floor (one stop), or 1000 mm over the landing (two)
   const stop = twoStops ? K.stopUpper : Math.max(K.stopOverLanding, Math.min(K.stopAt, K.stopOverPit - pit));
-  const kit: PitKit = { door, edges, ladderAllowed, ladder, box, stop, light: Math.max(K.lightAt, K.lightOver), twoStops };
+  const lowStop = twoStops ? K.stopLower - K.pitBoxH / 2 - pit : null;
+  const kit: PitKit = { door, edges, ladderAllowed, ladder, box, stop, light: Math.max(K.lightAt, K.lightOver), twoStops, lowStop };
   kits.set(L, kit);
   return kit;
 }
@@ -154,8 +164,8 @@ export function pitKitPlan(L: Layout): Entity[] {
 }
 
 /** The kit in the pit's detail of section A-A (a cut along the depth, the plan's y across the sheet): the ladder from the
- *  pit floor to the sill with its rungs, the box's stop and light switch at their heights; the ones on the far wall half
- *  dashed (behind the cut). */
+ *  pit floor to the sill with its rungs, the box's stop and light switch at their heights, a deep pit's lower stop under
+ *  them; the ones on the far wall half dashed (behind the cut). */
 export function pitKitSection(L: Layout, P: (x: number, z: number) => Pt, pitFloor: number): Entity[] {
   const k = pitKit(L), out: Entity[] = [], cut = L.car.x + L.car.w / 2;
   const behind = (b: Box): boolean => (b.x0 + b.x1) / 2 > cut;
@@ -167,10 +177,10 @@ export function pitKitSection(L: Layout, P: (x: number, z: number) => Pt, pitFlo
   }
   if (k.box) {
     const b = k.box.box, st = behind(b) ? 'hidden' : 'outline', h = KV_VERT.pitBoxH;
-    for (const [z, name] of [[k.stop, 'STOP'], [k.light, 'LUCE']] as const) {
+    for (const [z, name] of [[k.stop, 'STOP'], [k.light, 'LUCE'], ...(k.lowStop !== null ? [[k.lowStop, 'STOP'] as const] : [])] as const) {
       out.push(path([P(b.y0, z - h / 2), P(b.y1, z - h / 2), P(b.y1, z + h / 2), P(b.y0, z + h / 2)], true, st, 'paper'));
       // its height over the lowest landing (a reference: the software's within the standard's band)
-      out.push({ e: 'text', at: P(b.y1 + 40, z - 20), text: `${name} +${Math.round(z)}`, size: 1.6, align: 'l', halo: true });
+      out.push({ e: 'text', at: P(b.y1 + 40, z - 20), text: `${name} ${z < 0 ? '-' : '+'}${Math.abs(Math.round(z))}`, size: 1.6, align: 'l', halo: true });
     }
   }
   return out;

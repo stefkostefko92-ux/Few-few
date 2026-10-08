@@ -1,8 +1,8 @@
 // The checks of the shaft's details (round 36): v_emerg, the rise between consecutive landings with doors, over which
 // emergency doors are needed (UNI EN 81-20:2020, 5.2.3.1; registry porte.soccorso — the software does not model them,
 // so it does not pass); p_toe, the plate under the landing sills, a warning until the doors' unlocking zone is entered
-// (toe.ts, registry porte.sottosoglia); the counterweight's screen's lower edge and width (screen.ts); the information
-// h_cwgap, the clearance on the counterweight's sign (cw-gap.ts). Pure.
+// (toe.ts, registry porte.sottosoglia); the informations of the counterweight's screen's lower edge and width as drawn
+// (screen.ts) and h_cwgap, the clearance on the counterweight's sign (cw-gap.ts). Pure.
 import { check } from './checks';
 import { cwGapCheck } from './cw-gap';
 import { KV_VERT } from './norme-vert';

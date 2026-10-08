@@ -114,11 +114,14 @@ export const VOCI_FOSSA: readonly VoceVano[] = [
   {
     id: 'fossa.posizioni', gruppo: 'sezione', titolo: 'Scala e pulsantiera della fossa nei disegni',
     valore: 'la scala disegnata larga 370 mm e profonda 100 mm, la pulsantiera della fossa (arresto, presa, comando della luce) larga 150 mm, '
-      + 'profonda 80 mm, alta 120 mm per apparecchio, con l’arresto 500 mm e il comando della luce 1100 mm sopra la fermata più bassa; ognuna contro '
-      + 'una parete, il più vicino possibile al bordo dell’accesso di quella fermata (la scala entro il limite di uso, la pulsantiera entro quello '
-      + 'dell’arresto), fuori dalla cabina con le soglie, dagli operatori delle porte se con la cabina sugli ammortizzatori compressi scendono fino a '
-      + '100 mm sopra la scala o la pulsantiera, dal contrappeso e dalla sua protezione, dalle guide con le staffe, dalla porta di '
-      + 'piano, dagli ammortizzatori, dallo spazio di rifugio e dal tenditore del limitatore; senza un posto libero il disegno non la mette e la nota '
+      + 'profonda 80 mm, alta 120 mm per apparecchio, con l’arresto 500 mm e il comando della luce 1100 mm sopra la fermata più bassa (fossa oltre '
+      + '1600 mm: l’arresto alto 1000 mm sopra la fermata e quello basso sotto la pulsantiera, con il bordo superiore 1200 mm sopra il fondo); '
+      + 'ognuna contro una parete, il più vicino possibile al bordo dell’accesso di quella fermata (la scala entro il limite di uso, la pulsantiera '
+      + 'entro quello dell’arresto), fuori dalla cabina con le soglie, dagli operatori delle porte se con la cabina sugli ammortizzatori compressi '
+      + 'scendono fino a 100 mm sopra la scala o la pulsantiera, dal contrappeso e dalla sua protezione con tutto lo spazio che chiude fino alla '
+      + 'parete, dalle guide con le staffe, dalla porta di '
+      + 'piano, dalla fune del limitatore e, per la scala in fossa, dagli ammortizzatori, dallo spazio di rifugio e dal tenditore del limitatore; '
+      + 'senza un posto libero il disegno non la mette e la nota '
       + 'lo dice',
     riferimento: '—', fonte: 'scelta del software: tipo, misure e posizione definitivi del fornitore della scala e del quadro', stato: 'scelta',
   },
@@ -146,12 +149,16 @@ export const VOCI_FOSSA: readonly VoceVano[] = [
       + 'ci sono più di 300 mm, la protezione arriva anche alla parete. Il disegno la mette davanti al contrappeso e alle sue guide, 40 mm oltre da '
       + 'ogni lato, fino alla parete dove resterebbero più di 300 mm',
     riferimento: 'UNI EN 81-20:2020, 5.2.5.5.1 c)–e)', fonte: letto(T20, 'p. 35'), stato: 'confermato', verifiche: ['p_screenlo', 'p_screenw'],
+    nota: 'p_screenlo e p_screenw sono informazioni, non verifiche: il bordo e la larghezza sono quelli che il disegno dà accanto ai valori della '
+      + 'norma; la protezione montata si controlla al collaudo',
   },
   {
     id: 'contrappeso.cartello', gruppo: 'sezione', titolo: 'Gioco massimo tra contrappeso e ammortizzatore (cartello)',
     valore: 'il cartello sulla protezione del contrappeso o accanto riporta il gioco massimo ammesso tra contrappeso e ammortizzatore con la cabina '
-      + 'al piano più alto: l’extracorsa del progetto più il margine più piccolo delle verifiche della testata che il gioco riduce (spazio di '
-      + 'rifugio sul tetto, distanze libere dal soffitto, parte più alta della cabina sotto ciò che pende sopra), arrotondato per difetto a 5 mm',
+      + 'al piano più alto: l’extracorsa del progetto più il margine più piccolo delle verifiche che il gioco riduce (spazio di rifugio sul tetto, '
+      + 'distanze libere dal soffitto, parte più alta della cabina sotto ciò che pende sopra, corsa guidata del contrappeso con la cabina sugli '
+      + 'ammortizzatori e, finché passano, gli avvisi della traversa sotto il soffitto e della corsa guidata della cabina), arrotondato per difetto '
+      + 'a 5 mm: con quel gioco nessuna verifica del progetto cambia esito',
     riferimento: 'UNI EN 81-20:2020, 5.2.5.7.1', fonte: `${letto(T20, 'pp. 37–38')}; il calcolo del margine è del software`, stato: 'confermato',
     verifiche: ['h_cwgap'],
   },

@@ -123,6 +123,8 @@ export function sectionEntities(L: Layout, v: SectionView): { entities: Entity[]
         // the landing door as a scheme where the travel is drawn shorter: its sill and its panels up to its clear height
         const s = side === 'front' ? 1 : -1, w0 = side === 'front' ? 0 : D, X = (q: number): number => w0 + s * q, f = landingTracks(I.landingDepth).fast;
         out.push(box(X(-25), zf - 24, X(I.landingDepth), zf, 'outline', 'steel'), box(X(f), zf, X(f + LANDING_PANEL), zf + I.doorHeight, 'thin', 'door'));
+        // the plate under its sill, drawn shorter with the travel (toe.ts)
+        out.push(...toeSection(I, zf, (q, z) => P(X(q), z)));
       } else {
         out.push(box(ext[0], zf - SLAB, ext[1], zf, 'wall', 'concrete'));
         const s = side === 'front' ? 1 : -1, w0 = side === 'front' ? 0 : D, dl = I.landingDepth, X = (v: number): number => w0 + s * v;
