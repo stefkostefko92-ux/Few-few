@@ -12,14 +12,14 @@
 import { chain, edit as E, line, path, rect, textWidth, type Box, type Edit, type Entity, type Pt } from '@/drawing';
 import { MACHINE_TOP, machinePlan } from '@/shaft/machine-outline';
 import { IRON, bodyBox } from '@/shaft/machine-shape';
-import { shapePlan } from '@/shaft/machine-shape-view';
+import { shapePlan, sheaveHalf } from '@/shaft/machine-shape-view';
 import { ropeWidths, type MachineSpec } from '@/shaft/machine-room';
 import { section } from '@/shaft/section';
 import type { RoomInputs } from '@/shaft/room';
 import { doorSwing } from '@/shaft/room-draw';
 import { belowSwitchAt } from '@/shaft/room-floor';
 import type { Layout, Wall } from '@/shaft/types';
-import { OPPOSITE, belowMachine, belowRoom, exitAlong, type BottomGeo } from '../lift/bottom';
+import { OPPOSITE, belowMachine, belowRoom, bodyReach, exitAlong, type BottomGeo } from '../lift/bottom';
 import { KL } from '../lift/norme';
 
 const WALL = 250, SLAB = 200, FREE = 700;
@@ -30,7 +30,7 @@ const dot = (a: P2, b: P2): number => a[0] * b[0] + a[1] * b[1];
 
 /** The machine of `M` below (bottom.ts belowMachine) and its room grown round it where it reaches out. */
 const placed = (L: Layout, M: MachineSpec, g: BottomGeo) => {
-  const m = belowMachine(L, g, M.D, M.n, M.d, M.shape ?? null);
+  const m = belowMachine(L, g, M.D, M.shape ?? null);
   return { ...m, ...belowRoom(L, g, m.body) };
 };
 
@@ -107,6 +107,32 @@ function fittings(R: RoomInputs, o: P2, s: number, kept: readonly Box[], room: B
   };
 }
 
+/** The sleeve of the slow shaft through the wall: its half side [mm] (the 3D's opening, roomshell.ts). */
+const sleeveR = (D: number): number => 0.075 * (D / 560) * 1000 + 30;
+
+/** The machine below in plan (the shaft's coordinates): its body, its sheave between the runs and, beside the shaft, the
+ *  slow shaft longer by `ext` (bottom.ts throughExt) carrying the sheave through the wall in its sleeve, the opening's
+ *  width dimensioned (a reference: the ropes place it) — `through`, the only entities in the wall. A maker's machine
+ *  stands whole in the room with only its sheave moved onto the longer slow shaft, as the 3D does; the generic one's
+ *  sheave side moves with it. */
+export function belowMachinePlan(L: Layout, M: MachineSpec, g: BottomGeo): { entities: Entity[]; through: Entity[] } {
+  const { F, xDir, zDir, C, ext } = belowMachine(L, g, M.D, M.shape ?? null), T = L.inputs.wall;
+  const at = (x: number, z: number): Pt => add(add(C, xDir, x), zDir, z - F.zSheave - ext), through: Entity[] = [];
+  if (ext > 0) {
+    const r = sleeveR(M.D), wall0 = add(g.car, g.dir, g.wallAt), across = (p: P2): number => dot([p[0] - g.car[0], p[1] - g.car[1]], xDir);
+    const u = across(C) - across(wall0), s0 = add(wall0, xDir, u - r), s1 = add(add(wall0, xDir, u + r), g.dir, T);
+    const [x0, y0, x1, y1] = [Math.min(s0[0], s1[0]), Math.min(s0[1], s1[1]), Math.max(s0[0], s1[0]), Math.max(s0[1], s1[1])], alongY = Math.abs(g.dir[0]) > Math.abs(g.dir[1]);
+    const h = 60 * F.s + 10, end = F.zSheave + ext - (F.shape ? sheaveHalf(F, M.n, M.d) : F.width / 2);
+    through.push(rect(x0, y0, x1, y1, 'thin', 'paper'));
+    through.push(F.shape ? path([at(-h, F.face), at(h, F.face), at(h, end), at(-h, end)], true, 'thin', 'steel') : line(at(0, F.face), at(0, end), 'outline'));
+    through.push(chain({ dir: alongY ? 'y' : 'x', pts: alongY ? [y0, y1] : [x0, x1], at: alongY ? (x0 + x1) / 2 : (y0 + y1) / 2, text: [`Foro {v} x ${Math.round(2 * r)}`] }));
+  }
+  // a maker's body whole in the room, its sheave on the longer slow shaft: drawn over the slow shaft
+  const k = 1000 * F.s, cut = F.zSheave - F.width / 2 - 1, shift = (z: number): number => (z >= cut ? ext : 0);
+  const machine = F.shape ? shapePlan({ ...F, zSheave: F.zSheave + ext }, M.D, M.n, M.d, at) : machinePlan((x, z) => at(x * k, z * k + shift(z * k)), F.beams.map((z) => z / k));
+  return { entities: F.shape ? [...through, ...machine] : [...machine, ...through], through };
+}
+
 /** The machine's room below in plan, with the shaft at the lowest floor; the names kept clear of each other at 1:`s`
  *  (the scale the sheet draws it at: views.ts belowView). */
 export function belowPlanEntities(L: Layout, M: MachineSpec, g: BottomGeo, s = 25, shut = false): { entities: Entity[]; bounds: Box } {
@@ -133,17 +159,10 @@ export function belowPlanEntities(L: Layout, M: MachineSpec, g: BottomGeo, s = 2
     out.push(path(box(m, M.d / 2 + 2, w.ropes), true, 'outline', 'steel'));
     if (under) out.push(path(box(m, M.d / 2 + 60, w.ropes + 60), true, 'thin'));
   }
-  // the machine: its sheave between the runs, the gearbox and the motor past it (the sheave's side of the machine moved
-  // by the slow shaft's extension, as the 3D does); beside the shaft the slow shaft through the wall in its sleeve
-  const at = (x: number, z: number): Pt => add(add(C, xDir, x), zDir, z - F.zSheave - ext), cut = F.zSheave - F.width / 2 - 1;
-  const k = 1000 * F.s, shift = (z: number): number => (z >= cut ? ext : 0);
-  out.push(...(F.shape ? shapePlan(F, M.D, M.n, M.d, (x, z) => at(x, z + shift(z))) : machinePlan((x, z) => at(x * k, z * k + shift(z * k)), F.beams.map((z) => z / k))));
-  if (ext > 0) {
-    const r = 0.075 * (M.D / 560) * 1000 + 30, wall0 = add(g.car, g.dir, g.wallAt), across = (p: P2): number => dot([p[0] - g.car[0], p[1] - g.car[1]], xDir);
-    const u = across(C) - across(wall0), s0 = add(wall0, xDir, u - r), s1 = add(add(wall0, xDir, u + r), g.dir, T);
-    out.push(rect(Math.min(s0[0], s1[0]), Math.min(s0[1], s1[1]), Math.max(s0[0], s1[0]), Math.max(s0[1], s1[1]), 'thin', 'paper'));
-    out.push(line(at(0, F.face), at(0, F.zSheave + ext - F.width / 2), 'outline'));
-  }
+  // the machine: its sheave between the runs, the gearbox and the motor past it; beside the shaft the slow shaft through
+  // the wall in its sleeve
+  out.push(...belowMachinePlan(L, M, g).entities);
+  const at = (x: number, z: number): Pt => add(add(C, xDir, x), zDir, z - F.zSheave - ext);
   // the names: the machine's past its body's far side, the main switch's off the controller, the room's where nothing
   // else is, nearest the room's middle
   const room: Box = { x0: o[0], y0: o[1], x1: o[0] + R.W, y1: o[1] + R.D };
@@ -214,7 +233,7 @@ export function belowSectionEntities(L: Layout, M: MachineSpec, g: BottomGeo): {
   const zs = g.zSheave, base = zs - F.axis, floor = g.roomFloor, H = R.H, top = under ? 900 : H + SLAB + 300;
   // the shaft's walls cut, the pit's floor (beside the shaft the wall behind the counterweight open round the slow
   // shaft's sleeve); the room past it, or under the pit as far as the machine needs (bottom.ts belowRoom)
-  const u0 = -back, u1 = g.wallAt, r = 0.075 * (M.D / 560) * 1000 + 30, sLow = under ? S.pitFloor - KL.underSlab : S.pitFloor - SLAB;
+  const u0 = -back, u1 = g.wallAt, r = sleeveR(M.D), sLow = under ? S.pitFloor - KL.underSlab : S.pitFloor - SLAB;
   // the room along the section, as bottom.ts belowRoom has it (its sizes set on the drawings in place)
   const rs = [[0, 0], [R.W, 0], [R.W, R.D], [0, R.D]].map(([x, y]) => along([x - R.shaftX, y - R.shaftY]));
   const r0 = under ? Math.min(...rs) : u1 + T, r1 = under ? Math.max(...rs) : u1 + T + (Math.abs(g.dir[0]) > Math.abs(g.dir[1]) ? R.W : R.D);
@@ -239,18 +258,19 @@ export function belowSectionEntities(L: Layout, M: MachineSpec, g: BottomGeo): {
   const half = Math.abs(g.dir[0]) * L.car.w / 2 + Math.abs(g.dir[1]) * L.car.h / 2;
   out.push(rect(-half, 0, half, Math.min(V.carOutH, top - 100), 'thin'));
   // the machine from its side on levelling shims: the bedplate (its cross members across the irons, under the pit past
-  // the sheave to the third) and the body, the slow shaft, the sheave
-  const U = (z: number): number => uC + sg * (z - (F.zSheave + ext)), k = 1000 * F.s;
-  const [z0, z1] = F.shape ? [bodyBox(F.shape)[2], F.face] : [F.z[0], F.face], yTop = F.shape ? F.bed + bodyBox(F.shape)[4] : MACHINE_TOP * k;
+  // the sheave to the third) and the body — beside the shaft as far as it reaches, the plan's (belowMachinePlan) —, the
+  // slow shaft, the sheave as wide as the plan has it
+  const U = (z: number): number => uC + sg * (z - (F.zSheave + ext)), k = 1000 * F.s, hw = F.shape ? sheaveHalf(F, M.n, M.d) : F.width / 2;
+  const [z0, z1] = F.shape ? [bodyBox(F.shape)[2], under ? F.face : bodyReach(F)] : [F.z[0], F.face], yTop = F.shape ? F.bed + bodyBox(F.shape)[4] : MACHINE_TOP * k;
   const zb = Math.max(z1, F.beams[F.beams.length - 1] + (F.shape ? IRON / 2 : 40 * F.s));
   const bed = F.shape ? Math.max(F.bed, 40) : 0.07 * k, box = (za: number, zb: number, ya: number, yb: number, st: 'outline' | 'thin', fill?: 'paper' | 'steel' | 'cw'): Entity =>
     rect(Math.min(U(za), U(zb)), base + ya, Math.max(U(za), U(zb)), base + yb, st, fill);
   out.push(rect(Math.min(U(z0), U(zb)), floor, Math.max(U(z0), U(zb)), base, 'thin', 'paper'));
   out.push(box(z0, zb, 0, bed, 'outline', 'cw'), box(z0, z1, bed, yTop, 'outline', 'paper'));
-  out.push(box(F.face, F.zSheave + ext - F.width / 2, F.axis - 0.06 * k - 10, F.axis + 0.06 * k + 10, 'thin', 'steel'));
-  out.push(box(F.zSheave + ext - F.width / 2, F.zSheave + ext + F.width / 2, F.axis - M.D / 2, F.axis + M.D / 2, 'outline', 'steel'));
-  out.push(line([uC - F.width / 2 - 60, zs], [uC + F.width / 2 + 60, zs], 'axis'));
-  out.push({ e: 'text', at: [uC + sg * (F.width / 2 + 90), zs + M.D / 2 + 120], text: `Ø ${M.D}`, size: 1.8, align: sg > 0 ? 'l' : 'r', halo: true });
+  if (z1 < F.zSheave + ext - hw) out.push(box(z1, F.zSheave + ext - hw, F.axis - 0.06 * k - 10, F.axis + 0.06 * k + 10, 'thin', 'steel'));
+  out.push(box(F.zSheave + ext - hw, F.zSheave + ext + hw, F.axis - M.D / 2, F.axis + M.D / 2, 'outline', 'steel'));
+  out.push(line([uC - hw - 60, zs], [uC + hw + 60, zs], 'axis'));
+  out.push({ e: 'text', at: [uC + sg * (hw + 90), zs + M.D / 2 + 120], text: `Ø ${M.D}`, size: 1.8, align: sg > 0 ? 'l' : 'r', halo: true });
   // the ropes up from the sheave toward the head, cut at the drawing's top
   for (const s of [-1, 1]) out.push(line([uC + s * w.ropes, zs], [uC + s * w.ropes, top - 60], 'thin'));
   out.push({ e: 'text', at: [(u0 + Math.min(u1, uC - 400)) / 2, S.pitFloor + 300], text: 'FOSSA', size: 2.2, align: 'c' });

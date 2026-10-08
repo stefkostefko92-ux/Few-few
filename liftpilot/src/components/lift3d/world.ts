@@ -5,7 +5,7 @@
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { hebDrawn, pitSpace, roofSpaces, roomGeo, section } from '@/shaft';
+import { hebDrawn, mergeChecks, pitSpace, roofSpaces, roomGeo, section } from '@/shaft';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { groovePitch } from '@/shaft/ropes';
 import { bedplateLegs } from '@/shaft/rinvio';
@@ -101,7 +101,8 @@ export function buildLiftWorld(renderer: THREE.WebGPURenderer, dv: LiftDerived, 
   if (governor) scene.add(governor.group);
 
   // spaces of the checks: the refuge on the car roof (rides with the car) and in the pit
-  const status = (id: string) => L.checks.find((c) => c.id === id)?.status ?? 'ok';
+  // (the lift's own where it has them: the refuge under what the rig hangs over the roof, head.ts)
+  const status = (id: string) => mergeChecks(L.checks, dv.supportChecks).find((c) => c.id === id)?.status ?? 'ok';
   const zones = new THREE.Group();
   // where the plans put them (roof.ts: clear of a low crosshead and of the operators; pit.ts: clear of the buffers)
   const cx = L.car.x + L.car.w / 2, cy = L.car.y + L.car.h / 2;

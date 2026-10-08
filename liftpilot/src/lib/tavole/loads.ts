@@ -32,6 +32,9 @@ export interface LoadsInput {
   /** a machine below: the static load on the head pulleys [kg] (support.ts headStatic), which P1 then is; the machine
    *  does not stand on the slab */
   below?: number | null;
+  /** the counterweight's safety gear over a space under the shaft (cw-gear.ts): its operation on the counterweight
+   *  rails, half the counterweight on each, as the car's on its rails (P5); none without */
+  cwGear?: SafetyGear | null;
 }
 
 export interface Loads {
@@ -53,7 +56,7 @@ export function loads(x: LoadsInput): Loads {
   const Pc = x.P + x.cables;
   const P5 = daN((k1 * (Pc + x.Q)) / 2 + x.carRailQ * x.carRailLen);
   const P6 = daN((KV_VERT.bufferFactor * (Pc + x.Q)) / Math.max(1, x.carBuffers));
-  const P7 = daN(x.cwRailQ * x.cwRailLen);
+  const P7 = daN((x.cwGear ? (impactFactor(x.cwGear) * x.Mcw) / 2 : 0) + x.cwRailQ * x.cwRailLen);
   const P8 = daN((KV_VERT.bufferFactor * x.Mcw) / Math.max(1, x.cwBuffers));
   const P9 = P1 + (P2 ?? 0) + (P3 ?? 0) + (x.below != null ? 0 : daN(x.machine));
   return { static: stat, dynamic, P: [P1, P2, P3, x.governor, P5, P6, P7, P8, P9] };

@@ -48,6 +48,12 @@ export const plantSchema = z.object({
   massFloor: num('massFloor'),
   massDoors: num('massDoors'),
   massFrame: num('massFrame'),
+  /** the counterweight's safety gear over a space people reach under the shaft (UNI EN 81-20:2020, 5.2.5.4): its type
+   *  (the impact on its rails: the load P7), or in a modification an existing pillar to the ground in its place
+   *  (UNI 10411-1:2024, 6.14); and what trips it — its own governor, the breakage of the suspension or a safety rope
+   *  (prospetto 11) */
+  cwSafetyGear: z.enum(['progressive', 'roller', 'instantaneous', 'pillar']).optional(),
+  cwGearTrip: z.enum(['governor', 'rupture', 'rope']).optional(),
 }).strict();
 
 export type Plant = z.infer<typeof plantSchema>;

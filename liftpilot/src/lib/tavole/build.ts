@@ -18,9 +18,9 @@ import { dataSheet, type Mismatch } from './data';
 import { dataSheetShapes } from './datasheet';
 import { legendColumn, legendHeight, legendRow, scaleLabel, sectionMarks, sideLabels } from './extras';
 import { dateIt, placeLines, type TavoleInput } from './input';
-import { OVER_DOWN, OVER_UP, spaceLegend, type LegendItem } from './notes';
+import { OVER_DOWN, OVER_UP, clientNotes, spaceLegend, type LegendItem } from './notes';
 import { makeFmt } from '../present/tr';
-import { belowGeoOf, belowView, machineOf, planView, roomView, sectionView } from './views';
+import { belowGeoOf, belowView, machineOf, planView, roomView, sectionView, sheetLayoutOf } from './views';
 
 /** A sheet of the set after the data: a plan of the shaft, section A-A or a detail, the machine room. */
 export type Spec =
@@ -43,7 +43,7 @@ const LEGEND_W = 34;
 
 /** The scheme of the machine below as the subtitles name it (the research's three). */
 const BELOW_SUB: Readonly<Record<BottomScheme, string>> = {
-  head: 'RINVII IN TESTATA', room: 'LOCALE PULEGGE SOPRA IL VANO', under: 'RINVII IN TESTATA, MACCHINA SOTTO LA FOSSA',
+  head: 'RINVII APPESI SOTTO LA SOLETTA DEL VANO', room: 'RINVII NEL LOCALE PULEGGE SOPRA IL VANO', under: 'RINVII APPESI SOTTO LA SOLETTA, LOCALE SOTTO LA FOSSA',
 };
 
 /** `room`: the design has a machine room above; `below`: the scheme of the machine below (its room's sheets). */
@@ -68,7 +68,9 @@ export function specs(L: Layout, room: boolean, below: BottomScheme | null = nul
     );
   }
   if (below) {
-    const where = below === 'under' ? 'SOTTO IL VANO' : 'ACCANTO AL VANO', sub = `MACCHINA IN BASSO: ${BELOW_SUB[below]}`;
+    // the room's requirements are a note of sheet 1 (notes.ts belowRoomNote): its tag in the subtitle
+    const note = clientNotes(L, true, { scheme: below }).find((n) => n.title.startsWith('LOCALE MACCHINA'))?.tag;
+    const where = below === 'under' ? 'SOTTO IL VANO' : 'ACCANTO AL VANO', sub = `MACCHINA IN BASSO: ${BELOW_SUB[below]}${note ? ` · REQUISITI DEL LOCALE: ${note} DEL FOGLIO 1` : ''}`;
     out.push(
       { k: 'below-plan', title: `VISTA IN PIANTA DEL LOCALE MACCHINA ${where}`, subtitle: sub },
       { k: 'below-section', title: `VISTA IN ELEVATO DEL LOCALE MACCHINA ${where} - SEZ. C-C`, subtitle: sub },
@@ -170,9 +172,11 @@ function roomSheet(L: Layout, M: MachineSpec, kind: 'room-plan' | 'room-section'
 
 export function buildTavole(x: TavoleInput): TavoleResult {
   // the counterweight brackets' pitch the data declare: the plan's codes count as sheet 1 does
-  const L: Layout = withPitches(x.layout, { car: x.plant.carBracketPitch, cw: x.plant.cwBracketPitch }), a: Analysis = analyse(x.values), M = machineOf(a, x.plant, L, x.marks?.catalog ?? null);
+  const L0: Layout = withPitches(x.layout, { car: x.plant.carBracketPitch, cw: x.plant.cwBracketPitch }), a: Analysis = analyse(x.values), M = machineOf(a, x.plant, L0, x.marks?.catalog ?? null);
   // the machine below: its room's sheets for the scheme the design chose (the head pulleys under the slab when none)
-  const scheme = a.ctx.I.layout === 'bottom' ? x.marks?.bottom ?? 'head' : null, g = scheme ? belowGeoOf(a, L, M, scheme) : null;
+  const scheme = a.ctx.I.layout === 'bottom' ? x.marks?.bottom ?? 'head' : null, g = scheme ? belowGeoOf(a, L0, M, scheme) : null;
+  // the shaft's sheets with the lift's rope rig and the room over the shaft the lift has (views.ts sheetLayoutOf)
+  const L = sheetLayoutOf(a, L0, M, g);
   const list = specs(L, L.inputs.room !== null && a.ctx.I.layout !== 'bottom', scheme), pages = list.length + 1;
   const [l1, l2] = placeLines(x.project), last = x.set.revisions[x.set.revisions.length - 1];
   const meta = (page: number): SheetMeta => ({

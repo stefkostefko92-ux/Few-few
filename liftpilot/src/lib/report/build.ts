@@ -9,8 +9,9 @@ import { COND, PALETTE, concreteTile, type SheetImage } from '@/drawing';
 import { mergeChecks, vociOfDesign } from '@/shaft';
 import type { CheckId, CheckStatus, FormValues } from '@/calc/types';
 import { belowChecks } from '../lift/below-checks';
-import { bottomGeo, type BottomScheme } from '../lift/bottom';
+import { bottomGeo, sheaveHalfBelow, type BottomScheme } from '../lift/bottom';
 import { headTopChecks } from '../lift/head';
+import { withRig } from '../lift/shaft-rig';
 import { NO_MARKS, P_ESTIMATE_RULE, type ValueMarks } from '../lift/marks';
 import { ambitoOf, collaudoOf } from '../lift/collaudo';
 import { carichiOf } from '../lift/modifica';
@@ -126,8 +127,9 @@ export function buildReport(r: ReportInput): ReportDoc {
   // the checks that need the machine, as the design's verdict takes them: the beams, the car's top under what hangs over
   // it, a machine below in its rooms (below-checks.ts)
   const scheme = I.layout === 'bottom' ? m.bottom ?? 'head' : null, L = r.design?.layout;
-  const g = L && machine && scheme ? bottomGeo(L, scheme, machine.D, I.Dp, machine.n, machine.d, I.r, sheaveAxisBelow(machine.D, machine.shape ?? null)) : null;
-  const beams = L && machine ? [...supportChecks(L, machine, ld, !scheme), ...headTopChecks(L, I.r, I.Dp, scheme), ...(g ? belowChecks(L, g, machine, I.Dp) : [])] : [];
+  const g = L && machine && scheme ? bottomGeo(L, scheme, machine.D, I.Dp, machine.n, machine.d, I.r, sheaveAxisBelow(machine.D, machine.shape ?? null),
+    sheaveHalfBelow(machine.D, machine.n, machine.d, machine.shape ?? null)) : null;
+  const beams = L && machine ? [...supportChecks(L, machine, ld, !scheme), ...headTopChecks(withRig(L, I.r, I.Dp, machine.n, machine.d, g), I.r, I.Dp, scheme), ...(g ? belowChecks(L, g, machine, I.Dp) : [])] : [];
   if (r.design) {
     section('Vano e cabina');
     B.push(...shaftBlocks(r.design, I.Q, { fmt, st, when, head: [t('col_item'), t('col_val'), t('col_lim'), t('col_res'), 'Riferimento'] }, beams, C));

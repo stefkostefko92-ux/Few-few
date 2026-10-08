@@ -21,6 +21,7 @@ import { roofSpaces } from './plan-view';
 import { bufferPlan, pitSpace } from './pit';
 import { RAILS } from './rails';
 import { cwPlateAt, screenOf, section, type Section } from './section';
+import { pitHoles, rigSection, roomName, ropeTop, solid } from './rig-view';
 import type { Layout, Rail } from './types';
 
 /** Real heights between z0 and z1 are drawn f times shorter. */
@@ -141,18 +142,21 @@ export function sectionEntities(L: Layout, v: SectionView): { entities: Entity[]
   if (v.zmap) for (const z of [v.zmap.z0, v.zmap.z1]) for (const [x0, x1] of [[-T - 60, 60], [D - 60, D + T + 60]]) out.push(...zigzag(P(x0, z), P(x1, z)));
 
   // pit floor, slab over the shaft, machine room
-  if (inWin(S.pitFloor)) out.push(box(-T, S.pitFloor - SLAB, D + T, S.pitFloor, 'wall', 'concrete'));
+  // (open where the ropes of a machine under the pit go through it: rig-view.ts)
+  if (inWin(S.pitFloor)) for (const [a, b] of solid(-T, D + T, pitHoles(L))) out.push(box(a, S.pitFloor - SLAB, b, S.pitFloor, 'wall', 'concrete'));
   // the slab over the shaft reaches the walls where they stand in the headroom too
   const s0 = Math.min(-T, -T + hd.front), s1 = Math.max(D + T, D + T - hd.rear);
   if (I.room && S.ceiling <= v.hi) {
     const r = I.room, top = S.ceiling + r.slab + r.H, ridge = r.ridge ? S.ceiling + r.slab + r.ridge : top;
     const holeX = L.car.y + L.car.h / 2;
-    out.push(box(s0, S.ceiling, holeX - 120, S.ceiling + r.slab, 'wall', 'concrete'), box(holeX + 120, S.ceiling, s1, S.ceiling + r.slab, 'wall', 'concrete'));
+    // (open round the ropes: where the lift's rig has them, else round the car's)
+    for (const [a, b] of solid(s0, s1, L.rig?.holes ?? [[holeX - 120, holeX + 120]])) out.push(box(a, S.ceiling, b, S.ceiling + r.slab, 'wall', 'concrete'));
     // the room's walls up to the roof, or cut where the view ends
     const wallTop = Math.min(ridge, zTop);
     if (wallTop > S.ceiling + r.slab + 1) out.push(box(-T, S.ceiling + r.slab, 0, wallTop, 'wall', 'concrete'), box(D, S.ceiling + r.slab, D + T, wallTop, 'wall', 'concrete'));
     if (ridge <= zTop && top <= v.hi + 1) out.push(box(-T, ridge, D + T, ridge + SLAB, 'wall', 'concrete'));
-    if (S.ceiling + r.slab + 250 <= zTop) out.push({ e: 'text', at: P(D / 2, S.ceiling + r.slab + 250), text: 'LOCALE MACCHINA', size: 2.4, align: 'c' });
+    const name = roomName(L, S.ceiling + r.slab + 250);
+    if (name.z <= zTop) out.push({ e: 'text', at: P(name.y, name.z), text: name.text, size: 2.4, align: 'c' });
   } else if (S.ceiling <= v.hi) {
     out.push(box(s0, S.ceiling, s1, S.ceiling + SLAB, 'wall', 'concrete'));
   }
@@ -174,7 +178,7 @@ export function sectionEntities(L: Layout, v: SectionView): { entities: Entity[]
   if (cwTop >= v.lo && plate <= v.hi) {
     out.push(box(c.y, plate, c.y + c.h, cwTop, 'outline', 'cw'));
     for (let z = plate + 150; z < cwTop - 120; z += 120) out.push(line(P(c.y + 18, z), P(c.y + c.h - 18, z), 'fine'));
-    out.push(line(P(c.y + c.h / 2, cwTop), P(c.y + c.h / 2, Math.min(S.ceiling, zTop)), 'thin'));
+    out.push(line(P(c.y + c.h / 2, cwTop), P(c.y + c.h / 2, Math.min(ropeTop(L, S.ceiling), zTop)), 'thin'));
   }
   if (inWin(S.pitFloor)) {
     const x0 = L.cwSide === 'rear' ? c.y - 25 : c.y - 40, x1 = L.cwSide === 'rear' ? c.y - 15 : c.y + c.h + 40;
@@ -192,8 +196,10 @@ export function sectionEntities(L: Layout, v: SectionView): { entities: Entity[]
 
   // the car at its floor; at the top floor also dashed where the counterweight on its buffer lets it go
   const zf = S.levels[v.carFloor] ?? 0;
-  if (zf + S.highest >= v.lo && zf - V.frameBelow <= v.hi) out.push(...car(L, P, zf, Math.min(S.ceiling, zTop), v.carFloor === V.floors.length - 1));
+  if (zf + S.highest >= v.lo && zf - V.frameBelow <= v.hi) out.push(...car(L, P, zf, Math.min(ropeTop(L, S.ceiling), zTop), v.carFloor === V.floors.length - 1));
   if (v.carFloor === V.floors.length - 1 && zf + S.moveUp + S.highest >= v.lo) out.push(...carTopAt(L, P, zf + S.moveUp));
+  // the lift's rope rig where the lift design has one (rig-view.ts)
+  out.push(...rigSection(L, S, P, zf, v.carFloor === V.floors.length - 1, zTop));
   const bounds: Box = { x0: -T - LANDING_EXT + Math.min(0, hd.front), y0: Z(zBot), x1: D + T + LANDING_EXT + Math.max(0, -hd.rear), y1: Z(zTop) };
   return { entities: clipBand(out, bounds.y0, bounds.y1), bounds, S };
 }

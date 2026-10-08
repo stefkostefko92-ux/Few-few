@@ -13,8 +13,9 @@ import { sectionDims, type SectionKind } from '@/shaft/section-dims';
 import { sectionEntities, type SectionView } from '@/shaft/section-view';
 import type { Layout } from '@/shaft/types';
 import type { RoomDerived } from '../room/derive';
-import { bottomGeo, type BottomGeo, type BottomScheme } from '../lift/bottom';
+import { bottomGeo, sheaveHalfBelow, type BottomGeo, type BottomScheme } from '../lift/bottom';
 import { machineSpec, sheaveAxisBelow } from '../lift/machine';
+import { sheetLayout } from '../lift/shaft-rig';
 import { belowPlanEntities, belowSectionEntities } from './below-view';
 import type { Plant } from '../plant';
 import type { Analysis } from '../present/analysis';
@@ -41,11 +42,15 @@ export function planView(L: Layout, level: PlanLevel, floor: number, total: stri
   return { r: renderView(ents, place), place };
 }
 
+/** The top of section A-A over the shaft: `z`, or over a pulley room the pulleys in it (rig-view.ts). */
+const overTop = (L: Layout, z: number): number =>
+  Math.max(z, ...(L.rig?.scheme === 'room' ? L.rig.head.map((p) => p.z + p.r + 100) : []));
+
 /** Section A-A whole: the travel between the lowest floor's door and the car at the top floor drawn shorter, so the
  *  rest stays at 1:50 (or the next scale); the machine room as a stub over its floor slab. */
 function fullSection(L: Layout, area: Box): { v: SectionView; scale: number } {
   const S = section(L), I = L.inputs, V = I.vertical, r = I.room;
-  const zTop = r ? S.ceiling + r.slab + 600 : S.ceiling + SLAB, zBot = S.pitFloor - SLAB;
+  const zTop = overTop(L, r ? S.ceiling + r.slab + 600 : S.ceiling + SLAB), zBot = S.pitFloor - SLAB;
   const z0 = (S.levels[0] ?? 0) + I.doorHeight + 250, z1 = S.top - V.frameBelow - 600, band = z1 - z0;
   for (const scale of [50, 100, 200]) {
     const room = boxH(area) - 4, fixed = zTop - zBot - Math.max(0, band);
@@ -61,13 +66,13 @@ function fullSection(L: Layout, area: Box): { v: SectionView; scale: number } {
 /** Section A-A whole at its real height (no travel drawn shorter), from under the pit to the machine room's stub. */
 export function realSection(L: Layout): SectionView {
   const S = section(L), r = L.inputs.room;
-  return { carFloor: L.inputs.vertical.floors.length - 1, lo: -Infinity, hi: r ? S.ceiling + r.slab + 600 : S.ceiling + SLAB, zmap: null };
+  return { carFloor: L.inputs.vertical.floors.length - 1, lo: -Infinity, hi: overTop(L, r ? S.ceiling + r.slab + 600 : S.ceiling + SLAB), zmap: null };
 }
 
 /** The heights a detail shows: the headroom with the car at the top floor, the car at a floor, the pit. */
 export function detailWindow(L: Layout, kind: SectionKind, floor: number): SectionView {
   const S = section(L), V = L.inputs.vertical, r = L.inputs.room, zf = S.levels[floor] ?? 0, low = S.levels[0] ?? 0;
-  if (kind === 'top') return { carFloor: floor, lo: zf - V.frameBelow - 400, hi: r ? S.ceiling + r.slab + 500 : S.ceiling + SLAB, zmap: null };
+  if (kind === 'top') return { carFloor: floor, lo: zf - V.frameBelow - 400, hi: overTop(L, r ? S.ceiling + r.slab + 500 : S.ceiling + SLAB), zmap: null };
   if (kind === 'pit') return { carFloor: floor, lo: S.pitFloor - SLAB, hi: low + S.highest + 500, zmap: null };
   const nearPit = zf - low <= 2600;
   return { carFloor: floor, lo: nearPit ? S.pitFloor - SLAB : zf - V.frameBelow - 700, hi: zf + S.highest + 600, zmap: null };
@@ -116,9 +121,13 @@ export function roomView(L: Layout, M: MachineSpec, kind: 'plan' | 'section', ar
   return { ...roomPlaced((o) => (kind === 'plan' ? roomPlanEntities(L, M, G, o) : roomSectionEntities(L, M, G, o)), kind, area), G };
 }
 
+/** The layout the shaft's sheets draw of the design `L` for the calculation `a` and its machine `M` (the machine below's
+ *  geometry `g`): the lift's rope rig in the shaft and the room over it it has (lib/lift/shaft-rig.ts sheetLayout). */
+export const sheetLayoutOf = (a: Analysis, L: Layout, M: MachineSpec, g: BottomGeo | null): Layout => sheetLayout(L, a.ctx.I.r, a.ctx.I.Dp, M.n, M.d, g);
+
 /** The geometry of the machine below for the calculation's machine (the 3D's: bottom.ts). */
 export const belowGeoOf = (a: Analysis, L: Layout, M: MachineSpec, scheme: BottomScheme): BottomGeo =>
-  bottomGeo(L, scheme, M.D, a.ctx.I.Dp, M.n, M.d, a.ctx.I.r, sheaveAxisBelow(M.D, M.shape ?? null));
+  bottomGeo(L, scheme, M.D, a.ctx.I.Dp, M.n, M.d, a.ctx.I.r, sheaveAxisBelow(M.D, M.shape ?? null), sheaveHalfBelow(M.D, M.n, M.d, M.shape ?? null));
 
 /** The machine's room with the machine below, in plan or in section C-C (below-view.ts). */
 export function belowView(L: Layout, M: MachineSpec, g: BottomGeo, kind: 'plan' | 'section', area: Box): View & { entities: Entity[] } {

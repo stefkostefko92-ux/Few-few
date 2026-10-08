@@ -15,7 +15,7 @@ import { machineFrame, type MachineFrame, type MachineShape } from '@/shaft/mach
 import type { RinvioFrame } from '@/shaft/rinvio';
 import { groovePitch } from '@/shaft/ropes';
 import { KL, planeAt, type RopePlane, type RopeRig } from '@/lib/lift';
-import { belowMachine } from '@/lib/lift/bottom';
+import { belowMachine, throughExt } from '@/lib/lift/bottom';
 import { buildMachine, CONDUIT_END, DIM, ROPE_LENGTH } from '../machine/parts';
 import { buildShaped } from '../machine/shape';
 import { createMaterials, type MachineMaterials } from '../machine/materials';
@@ -62,14 +62,15 @@ export function machinePassage(rig: RopeRig, D: number): { side: Side; u0: numbe
 
 /** Where the machine stands in plan: the direction of its worm (local X), its sheave's centre [world m] and, beside the
  *  shaft, how much longer its slow shaft is to carry the sheave through the wall into the gap behind the counterweight
- *  [mm] (the gearbox in the room, 50 mm clear of the wall). `turn`: above the shaft, its motor toward the
- *  counterweight's drop (1) or turned round toward the car's (−1), as the room's drawings have it (machine-room.ts). */
-export function machinePose(rig: RopeRig, wall: number, n: number, d: number, F: MachineFrame, turn: 1 | -1 = 1): { xDir: readonly [number, number]; centre: THREE.Vector3; ext: number } {
+ *  [mm] (bottom.ts throughExt: the whole body in the room, 50 mm clear of the wall). `turn`: above the shaft, its motor
+ *  toward the counterweight's drop (1) or turned round toward the car's (−1), as the room's drawings have it
+ *  (machine-room.ts). */
+export function machinePose(rig: RopeRig, wall: number, F: MachineFrame, turn: 1 | -1 = 1): { xDir: readonly [number, number]; centre: THREE.Vector3; ext: number } {
   const g = rig.scheme, S = rig.sheave, [px, py] = planeAt(S.plane, S.u);
   // above: the worm along the drops' plane; below: along the wall, the gearbox past the sheave away from the shaft
   // (through the wall) or, under the pit, toward the car
   const xDir = !g ? ([turn * rig.dir[0], turn * rig.dir[1]] as const) : g.scheme === 'under' ? g.across : ([-g.across[0], -g.across[1]] as const);
-  const ext = g && g.scheme !== 'under' ? Math.max(0, KL.bottomClear + ropeWidths(n, d).ropes + wall + 50 - (F.zSheave - F.face)) : 0;
+  const ext = g && g.scheme !== 'under' ? throughExt(F, g, wall) : 0;
   return { xDir, centre: new THREE.Vector3(px / 1000, S.y, -py / 1000), ext };
 }
 
@@ -89,7 +90,7 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
     return new THREE.Vector3(x / 1000, y, -yy / 1000);
   };
   // below, the room grown round the machine's body where it reaches out (bottom.ts)
-  const body = rig.bottom && rig.scheme ? belowMachine(L, rig.scheme, D, n, d, shape).body : null;
+  const body = rig.bottom && rig.scheme ? belowMachine(L, rig.scheme, D, shape).body : null;
   const z0 = rig.roomFloor * 1000, shells = shellsOf(L, rig, body), shell = shells.find((sh) => sh.kind === 'machine') ?? null, R = shell?.room ?? null;
   for (const sh of shells) buildShell(sh, M, { sides, onWall, roof, overhead, common });
 
@@ -102,7 +103,7 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
   const shaped = F.shape ? buildShaped(MM, F, D, n, d) : null;
   // the generic sheave grooved for the ropes it carries, at their pitch (in its own units, scaled by s)
   const machine = shaped ?? buildMachine(MM, false, irons, { n, pitch: groovePitch(d) / 1000 / s, ropeR: d / 2000 / s });
-  const pose = machinePose(rig, I.wall, n, d, F, rig.bottom ? 1 : turn), e = pose.ext / 1000 / s;
+  const pose = machinePose(rig, I.wall, F, rig.bottom ? 1 : turn), e = pose.ext / 1000 / s;
   const yAxis = F.shape ? F.axis / 1000 : DIM.yWheel, zSh = F.shape ? F.zSheave / 1000 : DIM.zSheave, face = F.shape ? F.face / 1000 : 0.2;
   machine.group.scale.setScalar(s);
   machine.group.rotation.y = Math.atan2(pose.xDir[1], pose.xDir[0]);

@@ -9,6 +9,8 @@ const CHECKS: readonly ShaftCheckId[] = [
   'v_fit', 'v_area', 'v_acc_car', 'v_acc_door', 'v_acc_side', 'v_acc_c', 'v_call', 'v_door', 'v_door2', 'v_op', 'v_wall', 'v_sill', 'v_cw', 'v_cwlen', 'v_place', 'v_doorcar', 'v_telaio', 'v_head', 'v_gov', 'v_govrail', 'v_govdd',
   'h_refuge', 'h_clear', 'h_parapet', 'h_stand', 'h_cross', 'h_door', 'h_staffe', 'h_car', 'h_cw', 'p_refuge', 'p_apron', 'p_screen', 'b_runby', 'b_type', 'b_car', 'b_cw', 'm_height', 'm_panel', 'm_door', 'm_beam', 'm_beamf', 'm_free', 'm_quadro', 'm_route', 'm_pheight', 'm_pdoor', 'm_pabove',
   'gr_stress', 'gr_flange', 'gr_defl', 'sg_type',
+  // round 36: the car's pulley or crosshead under hung pulleys, the counterweight's safety gear over a space under the shaft
+  'h_hung', 'sg_cw',
 ];
 const it = (x: number, dec?: number): string => (dec == null ? String(x) : x.toFixed(dec)).replace('.', ',');
 const voce = (id: string) => {

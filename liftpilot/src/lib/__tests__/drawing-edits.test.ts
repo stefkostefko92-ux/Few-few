@@ -33,6 +33,8 @@ function match(before: Chain[], after: Chain[], j: number): Chain | undefined {
 // the references: what the machine, the ropes and the calculation set, drawn to be read, not changed
 const REFERENCES = new Set(['# Telaio argano', '# × # Telaio con rinvio', '# Telaio con rinvio', 'Asse rinvio #', 'Asse argano #', 'below-section:Asse #', 'below-plan:#',
   'survey-plan:#', 'Calata Funi #', '# Calata Funi (Rif.)', 'Vano # (Rif.)', 'survey-section:dx #', 'survey-section:h #']);
+// the machine below beside the shaft: the opening of the slow shaft in the wall, where the ropes put it (below-view.ts)
+REFERENCES.add('below-plan:Foro # x #');
 const isReference = (view: string, text: string): boolean => REFERENCES.has(text) || REFERENCES.has(`${view}:${text}`);
 
 type View = { name: string; draw: (d: LiftDerived, I: ShaftInputs) => Entity[] | null };

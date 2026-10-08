@@ -12,6 +12,7 @@ import * as THREE from 'three/webgpu';
 import type { Layout, RoomInputs } from '@/shaft';
 import { KL, type RopeRig } from '@/lib/lift';
 import { belowRoom } from '@/lib/lift/bottom';
+import { pulleyRoomOf } from '@/lib/lift/shaft-rig';
 import { section } from '@/shaft';
 import { SWITCH, belowSwitchAt, switchSpan } from '@/shaft/room-floor';
 import { Batch, box, onWall, type Point } from './geom';
@@ -50,10 +51,7 @@ export function shellsOf(L: Layout, rig: RopeRig, body: readonly (readonly [numb
   const sw = belowSwitchAt(below.room);
   out.push({ room: below.room, open: below.open, z0, kind: 'machine', switchSpan: [sw - 100, sw + 100], floor: true, roof: g.scheme !== 'under', ...(g.scheme === 'under' ? { ring: [-T, -T, I.W + T, I.D + T] as const } : {}) });
   if (g.scheme === 'room') {
-    const room: RoomInputs = I.room ?? {
-      W: I.W, D: I.D, shaftX: 0, shaftY: 0, H: 1500, ridge: 0, slab: KL.slab, doorWall: 'front', doorAt: 150, doorW: 600, doorH: 1400,
-      panelWall: 'rear', panelAt: 0, panelW: 0, panelD: 0, panelH: 0,
-    };
+    const room: RoomInputs = pulleyRoomOf(I);
     out.push({ room, open: null, z0: S.ceiling + room.slab, kind: 'pulleys', floor: false, roof: true });
   }
   return out;

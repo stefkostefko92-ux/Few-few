@@ -18,6 +18,9 @@ import { savePlantAction } from '@/server/drawing-actions';
 type TextKey = 'machine' | 'control' | 'shaft' | 'carFinish';
 
 const LIFT_USES = ['passengers', 'goods', 'goodsHeavy'] as const;
+// the counterweight's safety gear over a space under the shaft and what trips it (sheet 1: P7 and its check)
+const CW_GEARS = ['progressive', 'roller', 'instantaneous', 'pillar'] as const;
+const CW_TRIPS = ['governor', 'rupture', 'rope'] as const;
 
 export default function PlantForm({ projectId, initial, readOnly, whole }: { projectId: string; initial: Plant; readOnly: boolean; whole: boolean }) {
   const t = useTranslations('tavole'), te = useTranslations('errors'), router = useRouter(), locale = useLocale();
@@ -79,6 +82,27 @@ export default function PlantForm({ projectId, initial, readOnly, whole }: { pro
             </label>
           ) : null}
           {num('governorLoad')}
+          {whole ? (
+            <>
+              <label className="field">
+                <span>{t('f_cwSafetyGear')}</span>
+                <select className="input" value={P.cwSafetyGear ?? ''} disabled={readOnly}
+                  onChange={(e) => put({ cwSafetyGear: CW_GEARS.find((g) => g === e.target.value) })}>
+                  <option value="">{t('r_unset')}</option>
+                  {CW_GEARS.map((g) => <option key={g} value={g}>{t(`s_${g}`)}</option>)}
+                </select>
+                <small className="note">{t('f_cwGearHint', { v: fmt(KV_VERT.cwGearInstantV, 0) })}</small>
+              </label>
+              <label className="field">
+                <span>{t('f_cwGearTrip')}</span>
+                <select className="input" value={P.cwGearTrip ?? ''} disabled={readOnly || P.cwSafetyGear === 'pillar'}
+                  onChange={(e) => put({ cwGearTrip: CW_TRIPS.find((g) => g === e.target.value) })}>
+                  <option value="">{t('r_unset')}</option>
+                  {CW_TRIPS.map((g) => <option key={g} value={g}>{t(`t_${g}`)}</option>)}
+                </select>
+              </label>
+            </>
+          ) : null}
         </div>
         <p className="note">{t(whole ? 'fromDesign' : 'fromCalc')}</p>
       </fieldset>
