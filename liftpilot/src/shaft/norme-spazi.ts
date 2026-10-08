@@ -129,7 +129,7 @@ export const VOCI_SPAZI: readonly VoceVano[] = [
       + '(altezza dello schermo modificabile sul progetto, mai sotto questo valore)',
     riferimento: 'UNI EN 81-20:2020, 5.2.5.5.1 b)', fonte: letto(T20, 'p. 35'), stato: 'confermato',
     verifiche: ['p_screen'],
-    nota: 'non verificati: il bordo inferiore dello schermo a non più di 300 mm dal fondo della fossa (5.2.5.5.1 c)) e la protezione dello spazio '
-      + 'oltre 300 mm tra guide del contrappeso e parete (e))',
+    nota: 'bordo inferiore, larghezza e spazio tra le guide e la parete (5.2.5.5.1 c)–e)): voce contrappeso.schermo.pianta; fino alla versione 2.22.0 '
+      + 'del motore del vano non erano verificati',
   },
 ];

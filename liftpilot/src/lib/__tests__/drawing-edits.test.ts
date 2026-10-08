@@ -32,7 +32,10 @@ function match(before: Chain[], after: Chain[], j: number): Chain | undefined {
 
 // the references: what the machine, the ropes and the calculation set, drawn to be read, not changed
 const REFERENCES = new Set(['# Telaio argano', '# × # Telaio con rinvio', '# Telaio con rinvio', 'Asse rinvio #', 'Asse argano #', 'below-section:Asse #', 'below-plan:#',
-  'survey-plan:#', 'Calata Funi #', '# Calata Funi (Rif.)', 'Vano # (Rif.)', 'survey-section:dx #', 'survey-section:h #']);
+  'survey-plan:#', 'Calata Funi #', '# Calata Funi (Rif.)', 'Vano # (Rif.)', 'survey-section:dx #', 'survey-section:h #',
+  // round 36: what the counterweight sets (the screen's width), the standard's lower edge of the screen, the software's
+  // places of the pit's kit
+  'plan-pit:Protezione #', 'section-pit:# max', 'plan-pit:Scala #', 'plan-pit:Pulsantiera #']);
 const isReference = (view: string, text: string): boolean => REFERENCES.has(text) || REFERENCES.has(`${view}:${text}`);
 
 type View = { name: string; draw: (d: LiftDerived, I: ShaftInputs) => Entity[] | null };

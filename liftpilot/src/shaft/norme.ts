@@ -223,8 +223,9 @@ export const VOCI_VANO: readonly VoceVano[] = [
       + 'paracadute del contrappeso con spazi accessibili sotto il vano; distanza tra le parti fisse più alte della fossa e quelle più basse '
       + 'della cabina sugli ammortizzatori; sporgenze nel vano oltre 150 mm senza balaustra; locale della macchina in basso (dimensioni e spazi '
       + 'di manovra: il software non lo disegna); movimento incontrollato della cabina (UCM) e velocità eccessiva in salita con la nuova macchina; '
-      + 'muro sotto la soglia di piano (5.2.5.3.2 a)); le soluzioni della UNI EN 81-21:2022 per testata, fossa, locale e porte ridotti (le verifiche '
-      + 'in sezione seguono solo la UNI EN 81-20:2020)',
+      + 'rigidità e sporgenze della lamiera sotto la soglia di piano (5.2.5.3.2 b)–c), dato del fornitore delle porte); porte di soccorso '
+      + 'oltre 11 m tra due porte di piano (5.2.3.1: la verifica le chiede, il disegno non le ha); le soluzioni della UNI EN 81-21:2022 per '
+      + 'testata, fossa, locale e porte ridotti (le verifiche in sezione seguono solo la UNI EN 81-20:2020)',
     riferimento: 'UNI EN 81-20:2020: guide e staffe 5.7.2–5.7.4 (con UNI EN 81-50:2020, 5.10); distanze in testata 5.2.5.7.2; spazi accessibili sotto '
       + 'il vano 5.2.5.4; parti fisse in fossa 5.2.5.8.2; sporgenze oltre 0,15 m 5.2.5.2.2.2; locale del macchinario 5.2.6.3; velocità eccessiva '
       + 'in salita 5.6.6; movimento incontrollato 5.6.7', fonte: `${letto(T20, 'pp. 31–43, 89–97')}; analisi delle lacune del 2026-10-03`,

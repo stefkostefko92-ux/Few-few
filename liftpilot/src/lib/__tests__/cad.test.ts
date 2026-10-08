@@ -122,8 +122,8 @@ function near(a: number, b: number, eps = 1e-6): void {
 
 test('il progetto intero in DXF e DWG: tutte le viste affiancate, la stessa geometria letta da entrambi', () => {
   const d = deriveLift(defaultLift()), views = projectViews(d.layout, d.machine, true);
-  // the drawing set's views: three plans, section A-A and its three details, the machine room twice
-  assert.equal(views.length, 9);
+  // the drawing set's views: three plans, section A-A and its three details, the machine room twice, the rails developed
+  assert.equal(views.length, 10);
   const dxf = new TextEncoder().encode(toDxf(views, 'Prova')), dwg = toDwg(views, 'Prova');
   assert.equal(new TextDecoder().decode(dwg.subarray(0, 6)), 'AC1015');
   const a = readCad(dxf, 'progetto.dxf'), b = readCad(dwg, 'progetto.dwg');

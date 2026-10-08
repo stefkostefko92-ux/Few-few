@@ -60,6 +60,9 @@ export interface VerticalInputs {
   /** the place on the car roof where a person can stand: across and along the car [mm]; missing: 400 × 300 */
   standW?: number;
   standD?: number;
+  /** the landing doors' unlocking zone, over and under the landing as the door supplier gives it [mm]; missing: the
+   *  most the standard allows (5.3.8.1), and the plate under the sills warns until it is entered (toe.ts) */
+  unlockZone?: number;
 }
 
 export const DEFAULT_FLOORS: Floor[] = [

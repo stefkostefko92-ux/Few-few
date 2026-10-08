@@ -17,10 +17,13 @@ import { lampHeights, nichesOf } from './niche';
 import { CAR_PANEL, HEADER, LANDING_PANEL, carTracks, landingTracks, sillSection, trackPlanes } from './sill';
 import { doorPairSection, doorTopPairSection } from './section-staffe';
 import { doorPairOf, topPairRoom } from './staffe-porte';
-import { roofSpaces } from './plan-view';
 import { bufferPlan, pitSpace } from './pit';
 import { RAILS } from './rails';
-import { cwPlateAt, screenOf, section, type Section } from './section';
+import { cwPlateAt, section, type Section } from './section';
+import { cwScreen, screenLowDim } from './screen';
+import { carLowest, refugeHigh } from './extremes';
+import { pitKitSection } from './pit-kit';
+import { toeSection } from './toe';
 import type { Layout, Rail } from './types';
 
 /** Real heights between z0 and z1 are drawn f times shorter. */
@@ -40,6 +43,8 @@ export interface SectionView {
   lo: number;
   hi: number;
   zmap: ZMap | null;
+  /** the details of the extreme positions: the car on its compressed buffers dashed in the pit (extremes.ts) */
+  extremes?: boolean;
 }
 
 const LANDING_EXT = 400;
@@ -101,7 +106,8 @@ export function sectionEntities(L: Layout, v: SectionView): { entities: Entity[]
     };
     // the opening in the wall: the door's, its own frame's (frame.ts) or the old one between the marbles round its linings
     const fr = portalOf(I), opening = wallOpeningHeight(I);
-    const gaps = served(side).map((i) => S.levels[i]).filter((z) => inWin(z) && !compressed(z)).map((z) => [z, z + opening] as const);
+    // the openings of the floors drawn shorter too (their doors drawn as a scheme below)
+    const gaps = served(side).map((i) => S.levels[i]).filter((z) => inWin(z)).map((z) => [z, z + opening] as const);
     let z = zBot;
     for (const [a, b] of [...gaps, [zTop, zTop] as const]) {
       if (a > z + 1) stretch(z, Math.min(a, zTop));
@@ -114,6 +120,9 @@ export function sectionEntities(L: Layout, v: SectionView): { entities: Entity[]
       const ext = side === 'front' ? [-T - LANDING_EXT + sh, -T + sh] : [D + T + sh, D + T + LANDING_EXT + sh];
       if (compressed(zf)) {
         out.push(line(P(ext[0], zf), P(ext[1], zf), 'outline'));
+        // the landing door as a scheme where the travel is drawn shorter: its sill and its panels up to its clear height
+        const s = side === 'front' ? 1 : -1, w0 = side === 'front' ? 0 : D, X = (q: number): number => w0 + s * q, f = landingTracks(I.landingDepth).fast;
+        out.push(box(X(-25), zf - 24, X(I.landingDepth), zf, 'outline', 'steel'), box(X(f), zf, X(f + LANDING_PANEL), zf + I.doorHeight, 'thin', 'door'));
       } else {
         out.push(box(ext[0], zf - SLAB, ext[1], zf, 'wall', 'concrete'));
         const s = side === 'front' ? 1 : -1, w0 = side === 'front' ? 0 : D, dl = I.landingDepth, X = (v: number): number => w0 + s * v;
@@ -123,6 +132,8 @@ export function sectionEntities(L: Layout, v: SectionView): { entities: Entity[]
         const zh = zf + I.doorHeight, Q = (v: number, z: number): Pt => P(X(v), z), pair = doorPairOf(I);
         const up = served(side).includes(i + 1) ? S.levels[i + 1] : undefined, over = door ? topPairRoom(pair, door, zf, opening - I.doorHeight, up) >= 0 : false;
         out.push(...doorPairSection(pair, dl, zf, Q), ...(over ? doorTopPairSection(pair, dl, zh + HEADER.top, Q) : []));
+        // the plate under the sill (toe.ts)
+        out.push(...toeSection(I, zf, Q));
         out.push(path(sillSection(-25, dl, grooves, false).map(([v, z]) => P(X(v), zf + z)), true, 'outline', 'steel'));
         for (const g of grooves) out.push(box(X(g - LANDING_PANEL / 2), zf, X(g + LANDING_PANEL / 2), zh, 'thin', 'door'));
         out.push(box(w0 + s * (fr.depth ?? 0), zh + HEADER.foot, w0 + s * (dl + 6), zh + HEADER.top, 'thin'));
@@ -177,8 +188,9 @@ export function sectionEntities(L: Layout, v: SectionView): { entities: Entity[]
     out.push(line(P(c.y + c.h / 2, cwTop), P(c.y + c.h / 2, Math.min(S.ceiling, zTop)), 'thin'));
   }
   if (inWin(S.pitFloor)) {
-    const x0 = L.cwSide === 'rear' ? c.y - 25 : c.y - 40, x1 = L.cwSide === 'rear' ? c.y - 15 : c.y + c.h + 40;
-    out.push(box(x0, S.pitFloor + 300, x1, S.pitFloor + screenOf(V), 'hidden'));
+    // seen edge-on in front of a counterweight at the back, face-on across one on a side (screen.ts)
+    const sc = cwScreen(L), x0 = L.cwSide === 'rear' ? c.y - 25 : sc.u0, x1 = L.cwSide === 'rear' ? c.y - 15 : sc.u1;
+    out.push(box(x0, S.pitFloor + sc.low, x1, S.pitFloor + sc.high, 'hidden'));
   }
 
   // buffers on their bases where pit.ts puts them (each row of car buffers, the counterweight's), and the space in the pit
@@ -188,12 +200,18 @@ export function sectionEntities(L: Layout, v: SectionView): { entities: Entity[]
     out.push(...buffer(P, cwAt, S.pitFloor, V.cwBufferBase, V.cwBufferH, bufferType(V, 'cw')));
     const ps = pitSpace(L), h = KV_VERT.refugeH[V.pitRefuge];
     out.push(...cross(P, ps.y0, S.pitFloor, ps.y1, S.pitFloor + h), { e: 'mark', at: P((ps.y0 + ps.y1) / 2 - 80, S.pitFloor + h / 2), sym: 'square' });
+    // the access ladder and the pit's control box, the screen's lower edge in the pit's detail (pit-kit.ts, screen.ts)
+    if (v.extremes && v.carFloor === 0) out.push(...pitKitSection(L, P, S.pitFloor), ...screenLowDim(L, P, S.pitFloor));
   }
 
   // the car at its floor; at the top floor also dashed where the counterweight on its buffer lets it go
   const zf = S.levels[v.carFloor] ?? 0;
-  if (zf + S.highest >= v.lo && zf - V.frameBelow <= v.hi) out.push(...car(L, P, zf, Math.min(S.ceiling, zTop), v.carFloor === V.floors.length - 1));
+  if (zf + S.highest >= v.lo && zf - V.frameBelow <= v.hi) out.push(...car(L, P, zf, Math.min(S.ceiling, zTop)));
   if (v.carFloor === V.floors.length - 1 && zf + S.moveUp + S.highest >= v.lo) out.push(...carTopAt(L, P, zf + S.moveUp));
+  // the refuge space on the roof where the car stands at its highest position; the car on its compressed buffers in the
+  // pit's detail (extremes.ts)
+  if (v.carFloor === V.floors.length - 1 && zf + S.moveUp + V.carOutH <= v.hi) out.push(...refugeHigh(L, P, zf + S.moveUp));
+  if (v.extremes && v.carFloor === 0 && inWin(S.pitFloor)) out.push(...carLowest(L, P, S));
   const bounds: Box = { x0: -T - LANDING_EXT + Math.min(0, hd.front), y0: Z(zBot), x1: D + T + LANDING_EXT + Math.max(0, -hd.rear), y1: Z(zTop) };
   return { entities: clipBand(out, bounds.y0, bounds.y1), bounds, S };
 }
@@ -231,9 +249,9 @@ function carTopAt(L: Layout, P: (x: number, z: number) => Pt, zf: number): Entit
   return out;
 }
 
-/** Car at the floor zf: platform, walls cut at the entrances, roof, doors, operator, frame, balustrade; at the top floor
- *  the refuge space on the roof. */
-function car(L: Layout, P: (x: number, z: number) => Pt, zf: number, ropeTop: number, atTop: boolean): Entity[] {
+/** Car at the floor zf: platform, walls cut at the entrances, roof, doors, operator, frame, balustrade (the refuge space
+ *  on the roof is drawn where the car stands at its highest position: extremes.ts). */
+function car(L: Layout, P: (x: number, z: number) => Pt, zf: number, ropeTop: number): Entity[] {
   const I = L.inputs, V = I.vertical, c = L.car, out: Entity[] = [], x0 = c.y, x1 = c.y + c.h, w = I.carWall;
   const b = (a0: number, z0: number, a1: number, z1: number, st: Parameters<typeof rect>[4] = 'thin', fill?: Parameters<typeof rect>[5]): Entity =>
     path([P(a0, z0), P(a1, z0), P(a1, z1), P(a0, z1)], true, st, fill);
@@ -270,11 +288,6 @@ function car(L: Layout, P: (x: number, z: number) => Pt, zf: number, ropeTop: nu
     const zt = zf + V.carOutH + V.parapet;
     out.push(line(P(x0 + 60, zt), P(x1 - 60, zt), 'outline'), line(P(x0 + 60, zf + V.carOutH), P(x0 + 60, zt), 'outline'), line(P(x1 - 60, zf + V.carOutH), P(x1 - 60, zt), 'outline'));
     out.push(line(P(x0 + 60, zf + V.carOutH + V.parapet / 2), P(x1 - 60, zf + V.carOutH + V.parapet / 2), 'thin'));
-  }
-  // the refuge space over the roof, with the car at the top floor
-  if (atTop) {
-    const { refuge: r } = roofSpaces(L), h = KV_VERT.refugeH[V.topRefuge], roof = zf + V.carOutH;
-    out.push(...cross(P, r.y0, roof, r.y1, roof + h), { e: 'mark', at: P((r.y0 + r.y1) / 2 + 60, roof + h * 0.72), sym: 'tri' });
   }
   return out;
 }

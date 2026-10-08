@@ -20,6 +20,7 @@ import type { MachineShape } from '@/shaft/machine-shape';
 import { rinvioClash, type RinvioFrame } from '@/shaft/rinvio';
 import { fallsOf } from '@/shaft/falls';
 import { headTopChecks } from './head';
+import { cwGapOver } from '@/shaft/cw-gap';
 import { bedplateMass, governorSideFor, hebOf, placedPanel, supportChecks, supportLoad } from './support';
 import { collaudoOf, type Collaudo } from './collaudo';
 import { KL } from './norme';
@@ -242,6 +243,8 @@ function deriveOnce(inp: LiftInputs): LiftDerived {
   const g = scheme ? bottomGeo(L, scheme, N.D, I.Dp, N.n, N.d, I.r, sheaveAxisBelow(N.D, shape)) : null;
   // a machine below: its room as a machine room, the pulley room over the shaft (below-checks.ts)
   const supportCk = [...supportChecks(Lp, machine, load, above), ...headTopChecks(Lp, I.r, I.Dp, scheme), ...(g ? belowChecks(Lp, g, machine, I.Dp) : [])];
+  // the clearance on the counterweight's sign with the car's top under what hangs over it (cw-gap.ts)
+  supportCk.push(...cwGapOver(Lp, supportCk));
   const beams = above ? hebOf(Lp, machine, load) : null, chosenBy = Lp.inputs.room?.heb;
   const bottomGap = scheme && g && !g.fits ? { now: S.cwWallGap, need: bottomGapNeeded(S, scheme, N.D, I.Dp, N.n, N.d, I.r) } : null;
   return {

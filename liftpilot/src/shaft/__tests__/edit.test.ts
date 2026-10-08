@@ -135,7 +135,7 @@ test('un valore a mezzo millimetro va dalla parte che fa leggere la quota scritt
 });
 
 test('le quote fissate a mano restano, la cabina fuori posto non passa', () => {
-  const I: ShaftInputs = { ...defaultInputs(1600, 1750), accessReason: 'vano esistente' }, L = layout(I);
+  const I0 = defaultInputs(1600, 1750), I: ShaftInputs = { ...I0, accessReason: 'vano esistente', vertical: { ...I0.vertical, unlockZone: 200 } }, L = layout(I);
   assert.ok(!L.checks.some((c) => c.id === 'v_place' || c.id === 'v_doorcar'), 'senza quote a mano niente verifiche in più');
   const v = planValues(L);
   assert.equal(v.A, L.A);
@@ -145,7 +145,7 @@ test('le quote fissate a mano restano, la cabina fuori posto non passa', () => {
   assert.deepEqual(same.car, L.car);
   assert.deepEqual(same.cw, L.cw);
   assert.deepEqual(same.doors, L.doors);
-  assert.ok(same.checks.every((c) => c.status === 'ok'), 'tutto conforme');
+  assert.ok(same.checks.every((c) => c.status === 'ok' || c.status === 'info'), 'tutto conforme');
   // the car pushed into the rails of the left wall, a door past the car's side
   const moved = layout({ ...I, plan: { carX: L.car.x - 50 } });
   assert.equal(moved.checks.find((c) => c.id === 'v_place')?.status, 'fail');
@@ -188,13 +188,14 @@ test('chiavi delle quote: dati del vano, ingombri, quote a mano, altezze, locale
 
 test('il vano cambia misura: la cabina e ciò che le sta intorno si adattano, le porte fissate a mano restano se aprono ancora sulla cabina', () => {
   // a door set by hand where it still opens on the car the wider shaft gets
-  const I0: ShaftInputs = { ...defaultInputs(1600, 1750), accessReason: 'vano esistente' }, L0 = layout(I0), door = layout({ ...I0, W: 1800 }).carInner.x + 30;
+  const D0 = defaultInputs(1600, 1750), I0: ShaftInputs = { ...D0, accessReason: 'vano esistente', vertical: { ...D0.vertical, unlockZone: 200 } };
+  const L0 = layout(I0), door = layout({ ...I0, W: 1800 }).carInner.x + 30;
   const I: ShaftInputs = { ...I0, plan: { A: L0.A - 100, B: L0.B - 100, carX: L0.car.x + 20, doorA: door, cwPos: L0.cw.x } };
   const wider: ShaftInputs = { ...I, W: 1800 }, kept = keptPlan(I, wider);
   assert.deepEqual(kept, { doorA: door });
   const L = layout({ ...wider, plan: kept });
   assert.ok(L.A > L0.A, `la cabina cresce col vano: ${L.A} > ${L0.A}`);
-  assert.ok(L.checks.every((c) => c.status === 'ok'), 'tutto conforme');
+  assert.ok(L.checks.every((c) => c.status === 'ok' || c.status === 'info'), 'tutto conforme');
   // smaller: a door that would no longer open on the car goes back to the one worked out
   const small: ShaftInputs = { ...I, W: 1250, D: 1450 }, L2 = layout({ ...small, plan: keptPlan(I, small) });
   assert.ok(!L2.checks.some((c) => c.id === 'v_doorcar' && c.status !== 'ok'), 'nessuna porta fuori dalla cabina');

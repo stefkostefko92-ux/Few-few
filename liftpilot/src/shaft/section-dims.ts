@@ -16,6 +16,7 @@ import { portalOf } from './frame';
 import { hasImbotti, marbleHeight } from './imbotti';
 import { KV_VERT } from './norme-vert';
 import { refugePick } from './plan-picks';
+import { detailDims } from './section-details';
 import { mapZ, stilesOf, type ZMap } from './section-view';
 import { screenOf, type Section } from './section';
 import type { Layout } from './types';
@@ -107,7 +108,6 @@ export function sectionDims(L: Layout, S: Section, kind: SectionKind, carFloor: 
     const up = roof + S.moveUp;
     out.push(line(P(c.y - 60, up), P(c.y + c.h + 60, up), 'hidden'), { e: 'mark', at: P(c.y + c.h + 150, up), sym: 'overUp' });
     inside(c.y + c.h - 120, [roof, up], ['{v} Extracorsa sup.'], [E('v.cwRunby', -(S.cwStroke + S.jump))]);
-    inside(c.y + 90, [roof, roof + KV_VERT.refugeH[V.topRefuge]], ['H. Rifugio {v}'], [refugePick('v.topRefuge', V.topRefuge)]);
   }
   if (kind === 'pit' || kind === 'full') {
     const plateCar = -V.frameBelow, low = plateCar - S.moveDown;
@@ -146,5 +146,8 @@ export function sectionDims(L: Layout, S: Section, kind: SectionKind, carFloor: 
     side('right', [S.pitFloor, S.pitFloor + screenOf(V)], ['{v} H. Protezione Contrappeso in Fossa'], [E('v.cwScreen')], [rear, screenX]);
     inside(cwAt + cwB.top + 110, [S.cwBufferTop - S.cwStroke, S.cwBufferTop], ['Corsa {v}'], [strokeEdit('cw')], [cwAt + cwB.top, cwAt + cwB.top]);
   }
+  // the car at its extreme positions (the refuge's height with the car at its highest), the plate under the sill, the
+  // pit's control box, the screen's lower edge (section-details.ts)
+  out.push(...detailDims(L, S, kind, carFloor, zmap, row));
   return out;
 }

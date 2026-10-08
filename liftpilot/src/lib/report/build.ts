@@ -11,6 +11,7 @@ import type { CheckId, CheckStatus, FormValues } from '@/calc/types';
 import { belowChecks } from '../lift/below-checks';
 import { bottomGeo, type BottomScheme } from '../lift/bottom';
 import { headTopChecks } from '../lift/head';
+import { cwGapOver } from '@/shaft/cw-gap';
 import { NO_MARKS, P_ESTIMATE_RULE, type ValueMarks } from '../lift/marks';
 import { ambitoOf, collaudoOf } from '../lift/collaudo';
 import { carichiOf } from '../lift/modifica';
@@ -128,6 +129,8 @@ export function buildReport(r: ReportInput): ReportDoc {
   const scheme = I.layout === 'bottom' ? m.bottom ?? 'head' : null, L = r.design?.layout;
   const g = L && machine && scheme ? bottomGeo(L, scheme, machine.D, I.Dp, machine.n, machine.d, I.r, sheaveAxisBelow(machine.D, machine.shape ?? null)) : null;
   const beams = L && machine ? [...supportChecks(L, machine, ld, !scheme), ...headTopChecks(L, I.r, I.Dp, scheme), ...(g ? belowChecks(L, g, machine, I.Dp) : [])] : [];
+  // the clearance on the counterweight's sign with the car's top under what hangs over it (cw-gap.ts), as sheet 1 gives it
+  if (L) beams.push(...cwGapOver(L, beams));
   if (r.design) {
     section('Vano e cabina');
     B.push(...shaftBlocks(r.design, I.Q, { fmt, st, when, head: [t('col_item'), t('col_val'), t('col_lim'), t('col_res'), 'Riferimento'] }, beams, C));

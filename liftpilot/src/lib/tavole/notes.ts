@@ -25,8 +25,9 @@ export interface Note {
 
 /** Notes for the client: the shaft always; the machine room when the design has one; the control cabinet. */
 /** `below`: the machine stands below (its room at the lowest floor or under the pit): the room over the shaft holds the
- *  diverting pulleys only. */
-export function clientNotes(L: Layout, below = false): Note[] {
+ *  diverting pulleys only. `detail`: the sentences on the pit, the sills, the counterweight's sign and the brackets'
+ *  anchors (notes-vano.ts), in NOTA 1 before its references. */
+export function clientNotes(L: Layout, below = false, detail = ''): Note[] {
   const K = KV_VERT, room = L.inputs.room !== null;
   const notes: Note[] = [
     {
@@ -36,7 +37,8 @@ export function clientNotes(L: Layout, below = false): Note[] {
         + "Il vano serve solo all’ascensore: nessun cavo, tubazione o impianto estraneo al suo servizio. Ventilazione e aperture di aerazione "
         + "del vano secondo le norme edilizie e di prevenzione incendi dell’edificio, da concordare prima dei lavori. Illuminazione fissa del vano: "
         + `almeno ${K.wellLux} lux a un metro dal tetto di cabina e dal fondo della fossa, ${K.wellLuxElse} lux nel resto del vano. Fossa asciutta, `
-        + "protetta dalle infiltrazioni d’acqua, con accesso sicuro dalla porta di piano più bassa. Riferimenti: UNI EN 81-20:2020, punto 5.2; DPR 162/1999.",
+        + `protetta dalle infiltrazioni d’acqua, con accesso sicuro dalla porta di piano più bassa. ${detail}Riferimenti: UNI EN 81-20:2020, punto 5.2`
+        + `${detail ? ' (5.2.1.5.1, 5.2.2.4, 5.2.5.3.2, 5.2.5.7.1, 5.2.5.8.1)' : ''}; DPR 162/1999.`,
     },
   ];
   if (room) notes.push({ ...roomNote(below ? 'pulleys' : 'machine'), tag: 'NOTA 2' });

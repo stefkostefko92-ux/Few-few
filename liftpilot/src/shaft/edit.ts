@@ -30,7 +30,7 @@ type NumKey<T> = { [K in keyof T]-?: NonNullable<T[K]> extends number ? (number 
 export const PLAN_KEYS: readonly PlanKey[] = ['A', 'B', 'carX', 'doorA', 'doorB', 'landA', 'landB', 'opLen', 'railY', 'dbg', 'cwLen', 'cwPos', 'bufX', 'bufY', 'bufSpan', 'cwBufPos',
   'govX', 'govY'];
 const V_KEYS = ['pit', 'headroom', 'carH', 'carOutH', 'platform', 'opTop', 'frameTop', 'frameBelow', 'parapet', 'carBufferH', 'carBufferStroke',
-  'carBufferBase', 'cwH', 'cwBufferH', 'cwBufferStroke', 'cwBufferBase', 'cwRunby', 'cwScreen', 'standW', 'standD'] as const satisfies readonly NumKey<VerticalInputs>[];
+  'carBufferBase', 'cwH', 'cwBufferH', 'cwBufferStroke', 'cwBufferBase', 'cwRunby', 'cwScreen', 'standW', 'standD', 'unlockZone'] as const satisfies readonly NumKey<VerticalInputs>[];
 const R_KEYS = ['W', 'D', 'shaftX', 'shaftY', 'H', 'ridge', 'slab', 'doorAt', 'doorW', 'doorH', 'panelAt', 'panelW', 'panelD', 'panelH'] as const satisfies readonly NumKey<RoomInputs>[];
 const SIZES = ['W', 'D', 'doorWidth', 'doorHeight', 'wall'] as const;
 const N_KEYS = ['at', 'width', 'depth'] as const;
