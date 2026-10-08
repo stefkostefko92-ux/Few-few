@@ -107,7 +107,7 @@ test('rinvio dalla pianta: semplice o inverso come lo legge l’angolo di avvolg
   const hand = deriveLift({ ...base, calc: { ...base.calc, r: '2', n_D: 900 }, auto: { ...AUTO_ALL, machine: false } });
   assert.deepEqual(hand.issues, ['dx']);
   // dx and h by hand: the pulley hung under the frame is fine; one so high it rises into the machine over the frame's
-  // top is not (rinvioClash, LIFT 1.27.0), as one so low it reaches under the floor
+  // top is not (rinvioClash, since LIFT 1.28.0), as one so low it reaches under the floor
   const byHand = (h: number): ReturnType<typeof deriveLift> =>
     deriveLift({ ...base, calc: { ...base.calc, r: '2', n_D: 900, h }, auto: { ...AUTO_ALL, machine: false, dx: false } });
   assert.deepEqual(byHand(1.1).issues, []);
