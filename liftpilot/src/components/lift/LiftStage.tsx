@@ -2,7 +2,8 @@
 
 // The 3D stage of an installation: three.js loads only here, lazily; the scene is built from the derived design and
 // rebuilt a moment after the data stop changing; the render loop runs only while the stage is on screen and the tab
-// visible. Without WebGPU or WebGL the stage says so and the charts carry the simulation.
+// visible. Without WebGPU or WebGL the stage says so and the charts carry the simulation. The canvas takes the keyboard
+// (arrows pan, Shift or Ctrl with them orbit, + and − zoom); a view chosen again brings its framing back.
 import { useEffect, useRef, useState } from 'react';
 import type { LiftDerived } from '@/lib/lift';
 import type { LiftHandle, View } from '../lift3d/boot';
@@ -12,14 +13,16 @@ interface Props {
   derived: LiftDerived;
   clock: SimClock;
   view: View;
+  /** counts the times a view was chosen: the same view again goes back to its framing */
+  reset?: number;
   zones: boolean;
   label: string;
-  texts: { loading: string; failed: string };
+  texts: { loading: string; failed: string; keys: string };
 }
 
 const REBUILD_MS = 450;
 
-export default function LiftStage({ derived, clock, view, zones, label, texts }: Props) {
+export default function LiftStage({ derived, clock, view, reset = 0, zones, label, texts }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null), wrapRef = useRef<HTMLDivElement>(null);
   const handleRef = useRef<LiftHandle | null>(null), viewRef = useRef(view), zonesRef = useRef(zones);
   const [state, setState] = useState<'loading' | 'live' | 'failed'>('loading');
@@ -32,10 +35,12 @@ export default function LiftStage({ derived, clock, view, zones, label, texts }:
     const controller = new AbortController();
     let visible = true, handle: LiftHandle | null = null;
     const sync = (): void => handle?.setActive(visible && document.visibilityState === 'visible');
-    const booted = designRef.current;
+    const booted = designRef.current, motion = matchMedia('(prefers-reduced-motion: reduce)');
+    // the setting changed while the stage is up: the camera follows it
+    motion.addEventListener('change', (e) => handle?.setReducedMotion(e.matches), { signal: controller.signal });
     import('../lift3d/boot')
       .then((m) => m.bootLift(canvas, booted, {
-        signal: controller.signal, clock, view: viewRef.current, reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
+        signal: controller.signal, clock, view: viewRef.current, reducedMotion: motion.matches,
         onReady: () => setState('live'), onFail: () => setState('failed'),
       }))
       .then((h) => {
@@ -74,7 +79,7 @@ export default function LiftStage({ derived, clock, view, zones, label, texts }:
   useEffect(() => {
     viewRef.current = view;
     handleRef.current?.setView(view);
-  }, [view]);
+  }, [view, reset]);
   useEffect(() => {
     zonesRef.current = zones;
     handleRef.current?.setZones(zones);
@@ -82,7 +87,7 @@ export default function LiftStage({ derived, clock, view, zones, label, texts }:
 
   return (
     <div ref={wrapRef} className={`lift-stage ${state}`}>
-      <canvas ref={canvasRef} aria-label={label} role="img" />
+      <canvas ref={canvasRef} aria-label={`${label}. ${texts.keys}`} role="application" tabIndex={0} />
       {state !== 'live' ? <p className="stage-note" role="status">{state === 'failed' ? texts.failed : texts.loading}</p> : null}
     </div>
   );

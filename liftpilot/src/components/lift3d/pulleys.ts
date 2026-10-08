@@ -9,6 +9,7 @@
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import type { BeltEl, RopePlane, RopeRig } from '@/lib/lift';
+import { groovePitch } from '@/shaft/ropes';
 import type { Batch, Point } from './geom';
 import type { LiftMaterials } from './materials';
 import { ropeWidths } from './slab';
@@ -77,7 +78,7 @@ export function pulleyFrames(B: Batch, M: LiftMaterials, rig: RopeRig, n: number
   // the dead ends of a 2:1 roping: a plate anchored under the slab, a socket on each rope's end, its nut on the plate.
   // A rope's end is a dead end only before the car's or the counterweight's pulley: a 1:1 rope ends on the car's
   // crosshead or on the counterweight, before a wheel at rest
-  const pcs = rig.pieces(0, 0), pitch = Math.max(d + 6, 1.7 * d);
+  const pcs = rig.pieces(0, 0), pitch = groovePitch(d);
   const atRest = (e: BeltEl, p: RopePlane): boolean => e.kind === 'wheel' && rig.wheels.some((w) => w.plane === p && Math.abs(w.u - e.u) < 1e-9 && Math.abs(w.y - e.y) < 1e-9);
   const first = pcs[0], last = pcs[pcs.length - 1];
   const ends = [[first, first.els[0], first.els[1]], [last, last.els.at(-1), last.els.at(-2)]] as const;

@@ -13,7 +13,7 @@ import { analyse, mirrorRopes, proposalValues, type Analysis } from '@/lib/prese
 import { simModel, type SimModel } from '@/sim';
 import { belowChecks } from './below-checks';
 import { bottomGapNeeded, bottomGeo, extraBends, type BottomScheme } from './bottom';
-import { bestFit, catalogValues, pickOption, type CatalogChoice } from './catalog';
+import { bestFit, catalogValues, offGrid, pickOption, type CatalogChoice } from './catalog';
 import type { CatalogFit } from '@/lib/catalog/machines';
 import { machineShapeOf, machineSpec, rinvioOf, sheaveAxis, sheaveAxisBelow, type Made } from './machine';
 import type { MachineShape } from '@/shaft/machine-shape';
@@ -136,8 +136,10 @@ function deflectorDx(L: Layout, V: FormValues): { dx: number; fits: boolean } {
  * then the smallest sheave (ropes kept: every sheave), then compareOptions. With the geometry entered by hand this is
  * exactly the sizing of the calculator. null: nothing passes (the machine entered is checked).
  */
-function propose(V0: FormValues, L: Layout, geometry: (W: FormValues) => FormValues, planned: boolean, fitOf: ((o: SizingOption, W: FormValues) => CatalogFit | null) | null, only: readonly number[] | null): { V: FormValues; fit: CatalogFit | null } | null {
-  const c0 = readInputs(V0), sheaves = c0.fixedD ? [c0.fixedD] : only ?? SHEAVE_GRID;
+function propose(V0: FormValues, L: Layout, geometry: (W: FormValues) => FormValues, planned: boolean, fitOf: ((o: SizingOption, W: FormValues) => CatalogFit | null) | null, only: readonly number[] | null,
+  extra: readonly number[] = []): { V: FormValues; fit: CatalogFit | null } | null {
+  // (`extra`: a chosen model's own sheave off the grid)
+  const c0 = readInputs(V0), sheaves = c0.fixedD ? [c0.fixedD] : only ?? [...SHEAVE_GRID, ...extra.filter((D) => !SHEAVE_GRID.includes(D))].sort((a, b) => a - b);
   const found: { o: SizingOption; V: FormValues; fit: CatalogFit | null }[] = [];
   for (const D of sheaves) {
     const W = geometry({ ...V0, n_D: D });
@@ -191,7 +193,7 @@ function deriveOnce(inp: LiftInputs): LiftDerived {
   let noProposal = false, catalog: LiftDerived['catalog'] = null;
   if (inp.auto.machine) {
     // from the maker chosen when one of its machines takes an option, else from the calculation grid
-    const choice = inp.catalog, fromCat = choice ? propose(V, L, geometry, planned, (o, W) => bestFit(choice, o, num(W, 'Q'), num(W, 'r')), only) : null;
+    const choice = inp.catalog, fromCat = choice ? propose(V, L, geometry, planned, (o, W) => bestFit(choice, o, num(W, 'Q'), num(W, 'r')), only, offGrid(choice)) : null;
     const proposed = fromCat ?? propose(V, L, geometry, planned, null, only);
     if (choice) catalog = { fit: fromCat?.fit ?? null, miss: !fromCat };
     if (proposed) V = proposed.V;

@@ -205,7 +205,12 @@ export default function LiftCalcFields({ P, X, inp, derived, complete, bad, need
               {row('L0', auto.L0 ? { value: worked(fmt(num('L0'), 2)), badge: t('badge_auto') } : null)}
               {V.layout === 'topDefl' ? toggle('dx', t('auto_dx')) : null}
               {row('dx', auto.dx ? { value: worked(fmt(num('dx'), 3)), badge: t('badge_auto') } : null)}
-              {complete && derived.issues.includes('dx') ? <p className="hint bad" role="alert">{t('hint_dx_tight')}</p> : null}
+              {complete && derived.issues.includes('dx') ? (
+                <p className="hint bad" role="alert">
+                  {/* the pulley on its own stand under a machine on the floor: no h fits, the support is the cause */}
+                  {t(derived.supportChecks.some((c) => c.id === 'm_stand' && c.status === 'fail') ? 'hint_stand_under' : 'hint_dx_tight')}
+                </p>
+              ) : null}
               {row('h', auto.dx && derived.machine.rinvio ? { value: worked(fmt(num('h'), 3)), badge: t('badge_auto') } : null)}
               {complete && derived.issues.includes('rinvio') ? <p className="hint bad" role="alert">{t('hint_rinvio_floor')}</p> : null}
               {V.layout === 'bottom' ? toggle('Hv', t('auto_Hv')) : null}

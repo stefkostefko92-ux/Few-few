@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { roomGeo } from '@/shaft';
-import { boxGap, panelBox, type Wall } from '@/shaft/room-floor';
+import { outlineGap, panelBox, type Wall } from '@/shaft/room-floor';
 import { machineBox, machineParts } from '@/shaft/support-check';
 import { defaultLift, deriveLift, type LiftDerived, type LiftInputs } from '@/lib/lift';
 import { liftInputsReadSchema, liftInputsSchema } from '@/lib/lift-input';
@@ -18,7 +18,7 @@ test('progetto completo: il quadro dove lo mette il software, fuori dall’argan
   const d = deriveLift(base), R = d.shaft.room, G = roomGeo(d.layout, d.machine);
   assert.ok(R && G);
   assert.equal(d.origin.panel, 'auto');
-  assert.ok(machineParts(G, d.machine).every((b) => boxGap(panelBox(R), b) >= 0), 'clear of the machine and its bedplate');
+  assert.ok(machineParts(G, d.machine).every((b) => outlineGap(panelBox(R), b) >= 0), 'clear of the machine and its bedplate');
   for (const id of ['m_panel', 'm_quadro', 'm_route', 'm_free']) assert.equal(statusOf(d, id), 'ok', id);
   // the drawings and the shaft's record take the design with the panel there
   assert.deepEqual([d.layout.inputs.room?.panelWall, d.layout.inputs.room?.panelAt], [R.panelWall, R.panelAt]);

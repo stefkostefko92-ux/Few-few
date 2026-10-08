@@ -4,7 +4,7 @@
 import { compute } from '@/calc/compute';
 import { readInputs } from '@/calc/inputs';
 import { ceilTo } from '@/calc/math';
-import { compareOptions } from '@/calc/sizing';
+import { SHEAVE_GRID, compareOptions } from '@/calc/sizing';
 import type { FormValues, SizingOption } from '@/calc/types';
 import { catalogFit, catalogOf, type Brand, type CatalogFit } from '@/lib/catalog/machines';
 import { KL } from './norme';
@@ -13,6 +13,17 @@ export interface CatalogChoice {
   brand: Brand;
   /** one model of the brand; missing: any of them */
   model?: string;
+}
+
+/** The sheaves a choice's machines take that the sizing's grid (SHEAVE_GRID) has none of: a model built with one sheave
+ *  only, off the grid (FAER P80F Ø 550, Montanari M105 Ø 650) — the proposal and the advice weigh it too, so the model
+ *  is proposed when it passes. */
+export function offGrid(choice: CatalogChoice): number[] {
+  return catalogOf(choice.brand, choice.model).filter((c) => choice.model || !c.byName)
+    .flatMap((c) => {
+      const s = c.sheaves;
+      return s && !SHEAVE_GRID.some((D) => D >= s[0] && D <= s[1]) ? [s[0]] : [];
+    });
 }
 
 /** The machine of the choice that takes an option: no failure, the lowest static load (the smallest machine), then

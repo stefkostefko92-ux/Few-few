@@ -67,7 +67,7 @@ export default function LiftSimulator({ derived, fmt, api }: Props) {
   const m = derived.sim, main = derived.shaft.vertical.main, above = derived.analysis.ctx.I.layout !== 'bottom';
   const [clock] = useState(createClock);
   const [sc, setSc] = useState<ScenarioParams>(() => defaultScenario('ride', m, main));
-  const [view, setView] = useState<View>('car');
+  const [view, setView] = useState<View>('car'), [reset, setReset] = useState(0);
   const [zones, setZones] = useState(false);
   const autoplay = useRef(false), section = useRef<HTMLElement>(null);
   const run = useMemo(() => runScenario(m, sc), [m, sc]);
@@ -162,7 +162,7 @@ export default function LiftSimulator({ derived, fmt, api }: Props) {
   return (
     <section ref={section} className={full === 'off' ? 'lift-sim' : 'lift-sim full'} aria-label={t('sim_title')}>
       <div className="stage-wrap">
-        <LiftStage derived={derived} clock={clock} view={view} zones={zones} label={t('stage_label')} texts={{ loading: t('loading3d'), failed: t('no3d') }} />
+        <LiftStage derived={derived} clock={clock} view={view} reset={reset} zones={zones} label={t('stage_label')} texts={{ loading: t('loading3d'), failed: t('no3d'), keys: t('keys3d') }} />
         <dl ref={hud} className="hud" aria-live="off">
           <div><dt>{t('hud_floor')}</dt><dd data-k="floor" /></div>
           <div><dt>{t('hud_speed')}</dt><dd data-k="speed" className="num" /></div>
@@ -172,7 +172,7 @@ export default function LiftSimulator({ derived, fmt, api }: Props) {
           <div className="flag brake">{t('hud_brake')}</div>
         </dl>
         <div className="views" role="radiogroup" aria-label={t('views')}>
-          {VIEWS.map((v) => <button key={v} type="button" role="radio" aria-checked={view === v} className={view === v ? 'on' : undefined} onClick={() => setView(v)}>{t(`view_${v}`)}</button>)}
+          {VIEWS.map((v) => <button key={v} type="button" role="radio" aria-checked={view === v} className={view === v ? 'on' : undefined} onClick={() => { setView(v); setReset((n) => n + 1); }}>{t(`view_${v}`)}</button>)}
           <label className="check"><input type="checkbox" checked={zones} onChange={(e) => setZones(e.target.checked)} /> {t('zones')}</label>
           <button type="button" className="full" aria-pressed={full !== 'off'} aria-label={t(full === 'off' ? 'full_on' : 'full_off')} title={t(full === 'off' ? 'full_on' : 'full_off')} onClick={toggleFull}>
             <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">

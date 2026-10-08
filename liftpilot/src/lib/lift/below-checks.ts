@@ -48,6 +48,8 @@ export function pulleyRoomChecks(L: Layout, g: BottomGeo, Dp: number): ShaftChec
   ];
 }
 
-/** The checks of the rooms of a machine below, its head pulleys of diameter `Dp`. */
+/** The checks of the rooms of a machine below, its head pulleys of diameter `Dp`; m_runs (registry locale.ingombro): the
+ *  runs to the machine behind the counterweight clear of the wall, the counterweight, its rails' brackets and the side
+ *  walls by KL.bottomClear (bottom.ts bottomGeo) — the least margin, at least 0 [mm]. */
 export const belowChecks = (L: Layout, g: BottomGeo, M: MachineSpec, Dp: number): ShaftCheck[] =>
-  [...belowRoomChecks(L, g, M), ...pulleyRoomChecks(L, g, Dp)];
+  [check('m_runs', g.fits, Math.round(g.clear), 0, 0, 'mm'), ...belowRoomChecks(L, g, M), ...pulleyRoomChecks(L, g, Dp)];

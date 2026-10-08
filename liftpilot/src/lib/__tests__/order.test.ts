@@ -117,7 +117,7 @@ test('bozza d’ordine con la macchina in basso: nessun locale sopra il vano, co
   assert.ok(order);
   assert.deepEqual(designRoom(L, d, order.machine, order.recorded), []);
   const doc = buildOrder({ ...sample(null), order, room: [] }), all = texts(doc);
-  assert.ok(!doc.blocks.some((b) => b.t === 'plan') && !all.includes('Locale macchina con l’argano') && !all.includes('punto 4'));
+  assert.ok(!doc.blocks.some((b) => b.t === 'plan') && !all.includes('Locale macchina con l’argano') && !all.includes('come nella pianta del locale'));
 });
 
 test('Word: le parti del pacchetto, il testo protetto, il logo e i disegni come immagini', () => {

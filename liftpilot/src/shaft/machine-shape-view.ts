@@ -9,6 +9,7 @@
 import { circle, line, path, type Entity, type FillName, type Pt, type StyleName } from '../drawing';
 import { IRON, partBox, tilted, type MachineFrame, type ShapePart } from './machine-shape';
 import { SPOKE_ANGLES, brakeOf, coverBolts, endShields, ribsOf, sheaveDims, spokeOutline, type BrakeDetail, type P2 } from './machine-detail';
+import { groovePitch } from './ropes';
 
 type At = (x: number, y: number) => Pt;
 
@@ -34,15 +35,17 @@ function rounded(at: At, x0: number, y0: number, x1: number, y1: number, rr: num
 const CAST = new Set(['housing', 'base', 'cover', 'pedestal', 'terminal']);
 
 /** What the feet stand on, seen along Z: our bedframe — an iron as tall as the frame on its mounts, never on posts —,
- *  the maker's pedestal on the maker's bedplate under the feet, or nothing on our bedplate (the feet on its irons). */
+ *  the maker's pedestal on the maker's bedplate under the feet, our riser on our bedplate when something hangs under the
+ *  feet, or nothing on it (the feet on its irons). */
 function bedElevation(F: MachineFrame, at: At): Entity[] {
   const out: Entity[] = [], S = F.shape;
   const box = (a: number, b: number, c: number, d: number, st: 'outline' | 'thin' = 'outline', fill?: 'cw' | 'steel' | 'paper'): void => {
     out.push(path([at(a, b), at(c, b), at(c, d), at(a, d)], true, st, fill));
   };
   if (F.on === 'bedplate' || !S) return out;
-  if (F.on === 'pedestal') {
-    // a welded box under the feet with its plates bolted to the bedplate and to the feet
+  if (F.on === 'pedestal' || F.on === 'pad') {
+    // a welded box under the feet with its plates bolted to the bedplate and to the feet (the maker's pedestal, or our
+    // riser on our bedplate's irons)
     const [x0, , x1] = S.feet;
     box(x0 + 15, 12, x1 - 15, F.bed - 12, 'outline', 'cw');
     box(x0 - 15, 0, x1 + 15, 12, 'outline', 'cw');
@@ -231,7 +234,7 @@ export function shapePlan(F: MachineFrame, D: number, n: number, d: number, at: 
   const xs = S.parts.map(partBox);
   out.push(line(at(Math.min(...xs.map((q) => q[0])) - 25, 0), at(Math.max(...xs.map((q) => q[3])) + 25, 0), 'axis'));
   // the sheave over the side: its rim and the grooves of the ropes
-  const R = F.zSheave, half = F.width / 2, rs = D / 2 + 6, pitch = Math.min(Math.max(d + 6, 1.7 * d), (F.width - 12) / n);
+  const R = F.zSheave, pitch = groovePitch(d), half = Math.max(F.width, n * pitch + 12) / 2, rs = D / 2 + 6;
   quad(-rs, R - half, rs, R + half, 'outline', 'steel');
   for (let i = 0; i < Math.min(n, 64); i++) { // the input caps the ropes at 20; the loop never trusts it
     const z = R - (n * pitch) / 2 + pitch * (i + 0.5);

@@ -177,7 +177,7 @@ export type ShaftCheckId =
   | 'h_refuge' | 'h_clear' | 'h_top' | 'h_parapet' | 'h_stand' | 'h_cross' | 'h_door' | 'h_staffe' | 'h_car' | 'h_cw' | 'h_guide' | 'p_refuge' | 'p_apron'
   | 'p_screen'
   | 'b_runby' | 'b_type' | 'b_car' | 'b_cw' | 'm_height' | 'm_panel' | 'm_door'
-  | 'm_beam' | 'm_beamf' | 'm_rinvio' | 'm_fit' | 'm_stand' | 'm_free' | 'm_calata' | 'm_quadro' | 'm_route' | 'm_gov' | 'm_govfree'
+  | 'm_beam' | 'm_beamf' | 'm_beamwall' | 'm_rinvio' | 'm_fit' | 'm_runs' | 'm_stand' | 'm_free' | 'm_calata' | 'm_quadro' | 'm_route' | 'm_gov' | 'm_govfree'
   | 'm_pheight' | 'm_pdoor' | 'm_pabove'
   | 'm_heb' | 'm_hebf' | 'm_hebfeet' | 'm_hebrope' | 'm_hebwall'
   | 'gr_stress' | 'gr_flange' | 'gr_defl' | 'sg_type';

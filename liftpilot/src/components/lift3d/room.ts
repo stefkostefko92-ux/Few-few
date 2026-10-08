@@ -12,6 +12,7 @@ import * as THREE from 'three/webgpu';
 import { PROFILES, supportOf, type HebLayout, type Layout, type MachineSupport } from '@/shaft';
 import { machineFrame, type MachineFrame, type MachineShape } from '@/shaft/machine-shape';
 import type { RinvioFrame } from '@/shaft/rinvio';
+import { groovePitch } from '@/shaft/ropes';
 import { KL, planeAt, type RopePlane, type RopeRig } from '@/lib/lift';
 import { belowMachine } from '@/lib/lift/bottom';
 import { buildMachine, CONDUIT_END, DIM, ROPE_LENGTH } from '../machine/parts';
@@ -91,7 +92,9 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
   const MM: MachineMaterials = createMaterials(ROPE_LENGTH), F = machineFrame(D, shape, rinvio?.bed ?? null, !!rig.scheme && rig.scheme.scheme !== 'under');
   // the group's own units: the generic machine's metres at Ø 560 (scaled by s), the maker's in metres as they are
   const s = F.shape ? 1 : D / 560, irons = F.beams.map((z) => z / 1000 / s);
-  const shaped = F.shape ? buildShaped(MM, F, D, n, d) : null, machine = shaped ?? buildMachine(MM, false, irons);
+  const shaped = F.shape ? buildShaped(MM, F, D, n, d) : null;
+  // the generic sheave grooved for the ropes it carries, at their pitch (in its own units, scaled by s)
+  const machine = shaped ?? buildMachine(MM, false, irons, { n, pitch: groovePitch(d) / 1000 / s, ropeR: d / 2000 / s });
   const pose = machinePose(rig, I.wall, n, d, F, rig.bottom ? 1 : turn), e = pose.ext / 1000 / s;
   const yAxis = F.shape ? F.axis / 1000 : DIM.yWheel, zSh = F.shape ? F.zSheave / 1000 : DIM.zSheave, face = F.shape ? F.face / 1000 : 0.2;
   machine.group.scale.setScalar(s);
@@ -111,7 +114,9 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
   // what the machine stands on, down to the floor (the sheave's axis sits at its height over the floor): above the
   // shaft the room's support (shims, frame, beams, plates, plinth), below it levelling shims
   const gap = F.shape ? rig.sheave.y - rig.roomFloor - yAxis : ((rig.sheave.y - rig.roomFloor) / s - DIM.yWheel) * s, sup = rig.bottom ? SHIMS : supportOf(I.room, rinvio !== null);
-  const walls = R ? wallsAlong([machine.group.position.x * 1000, -machine.group.position.z * 1000], pose.xDir, { x0: -R.shaftX, y0: -R.shaftY, x1: R.W - R.shaftX, y1: R.D - R.shaftY }) : null;
+  // each beam's own walls along the machine's x: the line under its iron (the group's z across, in plan (x, −z))
+  const o = [machine.group.position.x * 1000, -machine.group.position.z * 1000] as const, across = [pose.xDir[1], -pose.xDir[0]] as const;
+  const walls = R ? F.beams.map((z) => wallsAlong([o[0] + z * across[0], o[1] + z * across[1]], pose.xDir, { x0: -R.shaftX, y0: -R.shaftY, x1: R.W - R.shaftX, y1: R.D - R.shaftY })) : null;
   // the diverting pulley in the bedplate: along the machine from the sheave, as the rig places it (the machine turned
   // round, on its other side)
   const defl = rig.wheels.find((w) => w.role === 'deflector'), framed = !rig.bottom && rinvio?.on === 'frame' && defl !== undefined;
@@ -171,7 +176,7 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
   }
 
   // pulleys: diverting and head ones fixed on their frames; car and counterweight pulleys of a 2:1 roping follow them
-  const width = n * Math.max(d + 6, 1.7 * d) / 1000 + 0.03, frames = new Batch();
+  const width = n * groovePitch(d) / 1000 + 0.03, frames = new Batch();
   for (const w of rig.wheels) {
     if (w.role === 'sheave') continue;
     const p = pulley(w.r, width, w.plane.dir, M.pulley);

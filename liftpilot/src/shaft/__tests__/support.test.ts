@@ -6,7 +6,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { DEFAULT_ROOM, KV_VERT, PROFILES, defaultInputs, layout, padsOf, roomGeo, sheaveAxisOn, supportHeight, type MachineSpec, type MachineSupport } from '../index';
 import { ownAxis, supportSpan } from '../support';
-import { beamChecks, beamResult, fitChecks, freeBeside, machineTop, rowShares } from '../support-check';
+import { beamChecks, beamDoorGap, beamResult, fitChecks, freeBeside, machineTop, rowShares } from '../support-check';
 
 const D = 400, SHIMS_AXIS = 0.55 * D;
 const M: MachineSpec = { D, Dp: 0, n: 5, d: 8, mass: 400, label: '', axis: 600, h: 0, reverse: false, ropeIn: 0 };
@@ -53,9 +53,26 @@ test('putrelle: una sotto ogni ferro del telaio, la puleggia fra i ferri, tensio
   assert.ok(Math.abs(b.sigmaMax - 275 / 1.05) < 1e-9);
   assert.equal(b.fMax, 2);
   // the stress passes, the deflection over L/1500 does not; IPE 240 passes both
-  assert.deepEqual(beamChecks(G, M, load).map((c) => [c.id, c.status]), [['m_beam', 'ok'], ['m_beamf', 'fail']]);
-  assert.deepEqual(beamChecks(geo({ kind: 'beams', profile: 'IPE 220' }), M, load).map((c) => c.status), ['ok', 'fail']);
-  assert.deepEqual(beamChecks(geo({ kind: 'beams', profile: 'IPE 240' }), M, load).map((c) => c.status), ['ok', 'ok']);
+  const loadChecks = (g: typeof G) => beamChecks(g, M, load).filter((c) => c.id !== 'm_beamwall');
+  assert.deepEqual(loadChecks(G).map((c) => [c.id, c.status]), [['m_beam', 'ok'], ['m_beamf', 'fail']]);
+  assert.deepEqual(loadChecks(geo({ kind: 'beams', profile: 'IPE 220' })).map((c) => c.status), ['ok', 'fail']);
+  assert.deepEqual(loadChecks(geo({ kind: 'beams', profile: 'IPE 240' })).map((c) => c.status), ['ok', 'ok']);
+});
+
+test('putrelle: ognuna appoggiata nei muri, mai nel vano della porta del locale', () => {
+  const load = { machine: 400, static: 2000, dyn: 1.5 }, wall = (s: MachineSupport, door: Partial<typeof DEFAULT_ROOM>) => {
+    const G = roomGeo(layout({ ...defaultInputs(1600, 1750), room: { ...DEFAULT_ROOM, support: s, ...door } }), M);
+    assert.ok(G);
+    return { gap: beamDoorGap(G), check: beamChecks(G, M, load).find((c) => c.id === 'm_beamwall') };
+  };
+  // the beams run from the front wall to the rear one, the first of them (its flange at x 943 ± 50) in the door 300…1100
+  const inDoor = wall({ kind: 'beams' }, {});
+  assert.ok(inDoor.gap !== null && inDoor.gap < 0 && inDoor.check?.status === 'fail', `porta ${inDoor.gap}`);
+  // the door further along the wall: every beam bears on masonry
+  const clear = wall({ kind: 'beams' }, { doorAt: 1900 });
+  assert.ok(clear.gap !== null && clear.gap > 0 && clear.check?.status === 'ok', `porta ${clear.gap}`);
+  // the door on a side wall no beam bears in: no check
+  assert.equal(wall({ kind: 'beams' }, { doorWall: 'left' }).check, undefined);
 });
 
 test('putrelle: le quote di ogni fila sommano il carico e il suo momento', () => {

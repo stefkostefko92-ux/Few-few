@@ -3,7 +3,7 @@
 // in room-floor.ts [mm]. Pure.
 import { check } from './checks';
 import { KV_VERT } from './norme-vert';
-import { WALLS, alongX, boxGap, doorZone, meets, panelArea, panelBox, panelFree, wallLength, type Box, type Wall } from './room-floor';
+import { WALLS, alongX, boxGap, doorZone, meets, outlineGap, panelArea, panelBox, panelFree, wallLength, type Box, type Outline, type Wall } from './room-floor';
 import { bestIn, grid, leastIn, reachOf, routeWidths, walkOf, widthTo } from './room-route';
 import type { RoomInputs } from './room';
 import type { ShaftCheck } from './types';
@@ -12,9 +12,9 @@ import type { ShaftCheck } from './types';
  *  of `gear` (the machine with its support, the governor, the main switch): the least gap [mm], at least 0; m_route
  *  (registry locale.macchina) — the ways from the door into the free area in front of the panel and into `machineArea`,
  *  the one beside the machine (null: none to reach), at least KV_VERT.routeW wide [mm], by defect to 10 mm. */
-export function panelChecks(R: RoomInputs, gear: readonly Box[], machineArea: Box | null): ShaftCheck[] {
+export function panelChecks(R: RoomInputs, gear: readonly Outline[], machineArea: Box | null): ShaftCheck[] {
   const P = panelBox(R), out = Math.min(R.panelAt, wallLength(R, R.panelWall) - R.panelAt - R.panelW, (alongX(R.panelWall) ? R.D : R.W) - R.panelD);
-  const gap = Math.min(gear.reduce((m, b) => Math.min(m, boxGap(P, b)), Infinity), out < 0 ? out : Infinity);
+  const gap = Math.min(gear.reduce((m, b) => Math.min(m, outlineGap(P, b)), Infinity), out < 0 ? out : Infinity);
   const route = Math.floor(Math.min(...routeWidths(R, [...gear, P], [panelArea(R), ...(machineArea ? [machineArea] : [])])) / 10) * 10;
   return [
     check('m_quadro', gap >= 0, Number.isFinite(gap) ? Math.round(gap) : null, 0, 0, 'mm'),
@@ -46,7 +46,7 @@ interface Candidate extends PanelSpot {
  * frame) first, then the shortest walk from the door, the deepest free area, the order of WALLS, the start of the wall;
  * none fitting: the place with the fewest shortcomings (the checks say which).
  */
-export function placePanel(R: RoomInputs, gear: readonly Box[], free: FreeOf | null = null): PanelSpot {
+export function placePanel(R: RoomInputs, gear: readonly Outline[], free: FreeOf | null = null): PanelSpot {
   const K = KV_VERT, g = grid(R, gear), reach = reachOf(g), steps = walkOf(g, K.routeW / 2), zone = doorZone(R);
   const free0 = free?.(null) ?? null, keepFree = !!free0?.ok;
   // the machine's free area reached from the door before the panel stands anywhere: the panel must not cut it off
@@ -59,7 +59,7 @@ export function placePanel(R: RoomInputs, gear: readonly Box[], free: FreeOf | n
     if (ats[ats.length - 1] !== last) ats.push(last);
     for (const at of ats) {
       const S: RoomInputs = { ...R, panelWall: wall, panelAt: at }, P = panelBox(S), A = panelArea(S);
-      const gap = gear.reduce((m, b) => Math.min(m, boxGap(P, b)), Infinity), depth = panelFree(S, gear);
+      const gap = gear.reduce((m, b) => Math.min(m, outlineGap(P, b)), Infinity), depth = panelFree(S, gear);
       const wide = bestIn(g, reach, A), near = leastIn(g, steps, A);
       const kept = !keepFree || !!free?.(P).ok;
       const flaws = (gap < 0 ? 4 : 0) + (meets(P, zone) || meets(A, zone) ? 2 : 0) + (depth < K.panelFreeDepth || len < Math.max(K.panelFreeWidth, R.panelW) ? 2 : 0)

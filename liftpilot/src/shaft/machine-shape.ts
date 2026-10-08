@@ -110,6 +110,11 @@ export function bodyBox(S: MachineShape): Box6 {
 export const bedOf = (S: MachineShape, D: number): number =>
   Math.ceil(Math.max(KV_VERT.machineBed, D / 2 + KV_VERT.machineRimClear - S.yWheel, KV_VERT.machineRimClear - bodyBox(S)[1]) - 1e-9);
 
+/** Our riser under the maker's feet on the irons of our bedplate with the diverting pulley: as high as keeps what hangs
+ *  under the feet's plane (Sassi's LEO: the end of its inclined worm with the handwheel; TORO: its brake) KV_VERT.
+ *  machineRimClear over the irons — the handwheel free for the manual emergency operation; 0 when nothing hangs there. */
+export const padOf = (S: MachineShape): number => (bodyBox(S)[1] < 0 ? Math.ceil(KV_VERT.machineRimClear - bodyBox(S)[1] - 1e-9) : 0);
+
 /** Where the machine is, as the room's drawings and the 3D place it [mm]. */
 export interface MachineFrame {
   /** the sheave's axis over the underside of the bedplate (where the machine stands on its support) */
@@ -138,9 +143,11 @@ export interface MachineFrame {
   bed: number;
   /** what the maker's feet stand on: our bedframe (`frame`: an iron under each row and past the sheave, as tall as the
    *  frame less its mounts — never on posts), the irons of the bedplate with the diverting pulley (`bedplate`: its beams
-   *  under them, rinvio.ts; no frame of its own, `bed` 0) or the maker's pedestal on the maker's bedplate (`pedestal`,
+   *  under them, rinvio.ts; no frame of its own, `bed` 0), on those irons our welded riser under the feet when something
+   *  hangs under the feet's plane (`pad`: Sassi's LEO, its inclined worm's handwheel and brake — `bed` as high as keeps
+   *  them KV_VERT.machineRimClear over the irons, padOf) or the maker's pedestal on the maker's bedplate (`pedestal`,
    *  `bed` high, as the maker draws it); the generic machine on its own bedplate (`frame`) */
-  on: 'frame' | 'bedplate' | 'pedestal';
+  on: 'frame' | 'bedplate' | 'pad' | 'pedestal';
   /** the gearbox's face toward the sheave across Z: a slow shaft longer than the machine's runs from there */
   face: number;
   shape: MachineShape | null;
@@ -173,8 +180,9 @@ export function machineFrame(D: number, S: MachineShape | null, seat: number | n
       z: [MACHINE_Z[0] * 1000 * s, through ? MACHINE_Z[1] * 1000 * s : 560 * s], mounts: [-360 * s, 950 * s], beams,
       plinth: plinthOf(beams, P - E / 2 - 20, P + E / 2 + 20), bed: 0, on: 'frame', face: 200 * s, shape: null, s };
   }
-  const { P, E } = sheaveOf(S, D), b = bodyBox(S), bed = seat ?? bedOf(S, D), ov = KV_VERT.machineBedOverhang, half = IRON / 2;
-  const on: MachineFrame['on'] = seat === null ? 'frame' : seat > 0 ? 'pedestal' : 'bedplate';
+  // on our bedplate's irons (seat 0) a riser when something hangs under the feet (padOf)
+  const pad = seat === 0 ? padOf(S) : 0, b = bodyBox(S), bed = seat === null ? bedOf(S, D) : seat + pad, ov = KV_VERT.machineBedOverhang, half = IRON / 2;
+  const { P, E } = sheaveOf(S, D), on: MachineFrame['on'] = seat === null ? 'frame' : seat > 0 ? 'pedestal' : pad > 0 ? 'pad' : 'bedplate';
   // an iron under each row of holes, and past the sheave a third when no row (an outboard support's) stands there
   const rows = [...new Set(S.holes.map((h) => h[1]))].sort((a, c) => a - c), near = rows.filter((z) => z < P);
   const beams = through || !near.length || rows.some((z) => z > P) ? rows : [...rows, ironPast(near[near.length - 1], P, E, half)];

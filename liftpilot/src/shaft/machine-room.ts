@@ -7,7 +7,7 @@ import { check } from './checks';
 import { MACHINE_A } from './machine-outline';
 import { machineFrame, type MachineFrame, type MachineShape } from './machine-shape';
 import { KV_VERT } from './norme-vert';
-import { panelFree, type Box } from './room-floor';
+import { panelFree, type Outline } from './room-floor';
 import { rinvioAcross, rinvioRun, standBox, type RinvioFrame } from './rinvio';
 import { PROFILES } from './profiles';
 import { cwPlateAt, section } from './section';
@@ -72,10 +72,11 @@ export interface RoomGeo {
   frame: MachineFrame;
 }
 
-/** Where the drop line runs inside the rectangle [x0, x1] × [y0, y1] of the room: the range of u. */
-export function dropSpan(G: RoomGeo, x0: number, y0: number, x1: number, y1: number): [number, number] {
+/** Where the drop line — or the line along it `v` to its left (a beam under an iron of the machine's frame) — runs
+ *  inside the rectangle [x0, x1] × [y0, y1] of the room: the range of u. */
+export function dropSpan(G: RoomGeo, x0: number, y0: number, x1: number, y1: number, v = 0): [number, number] {
   let lo = -Infinity, hi = Infinity;
-  for (const [p, d, a, b] of [[G.carDrop[0], G.ux, x0, x1], [G.carDrop[1], G.uy, y0, y1]] as const) {
+  for (const [p, d, a, b] of [[G.carDrop[0] - v * G.uy, G.ux, x0, x1], [G.carDrop[1] + v * G.ux, G.uy, y0, y1]] as const) {
     if (Math.abs(d) < 1e-9) continue;
     const t0 = (a - p) / d, t1 = (b - p) / d;
     lo = Math.max(lo, Math.min(t0, t1));
@@ -238,7 +239,7 @@ export const roomChecks = (L: Layout): ShaftCheck[] => (L.inputs.room ? roomChec
 /** The checks of the room itself: its height, the free area in front of the control panel — to the opposite wall, or to
  *  what stands on the floor when its outlines `gear` (room axes: the machine's parts, the governor, the main switch) are
  *  known (room-floor.ts) —, its door. */
-export function roomChecksOf(R: RoomInputs, gear: readonly Box[] = []): ShaftCheck[] {
+export function roomChecksOf(R: RoomInputs, gear: readonly Outline[] = []): ShaftCheck[] {
   const along = R.panelWall === 'front' || R.panelWall === 'rear' ? R.W : R.D;
   // 5.2.6.3.2.1 a): in front of the panel ≥ 700 mm deep and as wide as the larger of 500 mm and the panel (the panel
   // itself may be narrower; until 2026-10-06 a panel under 500 mm failed here)

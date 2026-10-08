@@ -3,7 +3,7 @@
 // (the door's opening left out) or obstacle —, the widest way from the door to every cell and the walk to it. A way's
 // width is twice the least clearance along it (a person as a disc moving through). Room axes as in room-floor.ts [mm].
 // Pure.
-import { WALLS, alongX, wallBox, wallLength, type Box } from './room-floor';
+import { WALLS, alongX, edgeDistance, insideQuad, isBox, wallBox, wallLength, type Box, type Outline } from './room-floor';
 import type { RoomInputs } from './room';
 
 // cells about CELL mm (no more than MAX_CELLS over the floor); a walk's steps across a cell and diagonally
@@ -32,10 +32,21 @@ function wallFaces(R: RoomInputs): Box[] {
   return out;
 }
 
-/** Each cell's clearance from `boxes`, at most what it has: the distance from its centre, negative inside. */
-function clearOf(g: Grid, boxes: readonly Box[]): void {
+/** Each cell's clearance from `outlines`, at most what it has: the distance from its centre, negative inside (a turned
+ *  outline: from its sides). */
+function clearOf(g: Grid, outlines: readonly Outline[]): void {
   const { nx, ny, sx, sy, stride, clear } = g;
-  for (const [x0, y0, x1, y1] of boxes) {
+  for (const o of outlines) {
+    if (isBox(o)) continue;
+    for (let j = 0; j < ny; j++) {
+      const py = (j + 0.5) * sy, row = (j + 1) * stride + 1;
+      for (let i = 0; i < nx; i++) {
+        const p = [(i + 0.5) * sx, py] as const, e = edgeDistance(p, o), c = Math.floor(insideQuad(p, o) ? -e : e);
+        if (c < clear[row + i]) clear[row + i] = c;
+      }
+    }
+  }
+  for (const [x0, y0, x1, y1] of outlines.filter(isBox)) {
     for (let j = 0; j < ny; j++) {
       const py = (j + 0.5) * sy, dy = Math.max(y0 - py, py - y1), ey = dy > 0 ? dy : 0, row = (j + 1) * stride + 1;
       for (let i = 0; i < nx; i++) {
@@ -51,7 +62,7 @@ function clearOf(g: Grid, boxes: readonly Box[]): void {
 let last: { key: string; g: Grid } | null = null;
 
 /** The floor of room `R` with the walls (the door's opening left out) and `obstacles`. */
-export function grid(R: RoomInputs, obstacles: readonly Box[]): Grid {
+export function grid(R: RoomInputs, obstacles: readonly Outline[]): Grid {
   const key = `${R.W},${R.D},${R.doorWall},${R.doorAt},${R.doorW}|${obstacles.map((b) => b.join(',')).join(';')}`;
   if (last?.key === key) return last.g;
   const cell = Math.max(CELL, Math.sqrt((R.W * R.D) / MAX_CELLS));
@@ -164,7 +175,7 @@ export const widthTo = (g: Grid, b: Box): number => Math.max(0, 2 * bestIn(g, re
 
 /** The width of the way from the door to each of `areas` past the walls and `obstacles` [mm] (5.2.6.3.2.2), measured
  *  on the grid — by defect, by up to about the size of a cell; 0 when there is none. */
-export function routeWidths(R: RoomInputs, obstacles: readonly Box[], areas: readonly Box[]): number[] {
+export function routeWidths(R: RoomInputs, obstacles: readonly Outline[], areas: readonly Box[]): number[] {
   const g = grid(R, obstacles);
   return areas.map((a) => widthTo(g, a));
 }

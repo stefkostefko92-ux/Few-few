@@ -6,7 +6,7 @@ import type { ParsedInputs } from '@/calc/types';
 import { freeSides, governorSpot, hebChecks, hebFor, layout, roomGeo, type HebOption, type Layout, type MachineSpec, type RoomGeo, type Rope, type ShaftCheck } from '@/shaft';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { roomChecksOf } from '@/shaft/machine-room';
-import { boxGap, switchBox, type Box } from '@/shaft/room-floor';
+import { outlineGap, switchBox, type Box } from '@/shaft/room-floor';
 import type { PanelSpot } from '@/shaft/room-panel';
 import { governorFootprint } from '@/shaft/room-site';
 import { beamChecks, fitChecks, governorRoomChecks, machineParts, panelFloorChecks, panelPlace, rinvioChecks, type SupportLoad } from '@/shaft/support-check';
@@ -96,7 +96,7 @@ export function placedPanel(L: Layout, M: MachineSpec): PanelSpot | null {
  *  Infinity without a room or a governor drawn. */
 function governorGap(L: Layout, M: MachineSpec): number {
   const G = roomGeo(L, M), gov = G ? governorFootprint(L, G.room) : null;
-  return G && gov ? Math.min(...machineParts(G, M).map((b) => boxGap(b, gov))) : Infinity;
+  return G && gov ? Math.min(...machineParts(G, M).map((b) => outlineGap(gov, b))) : Infinity;
 }
 
 /** The side wall of the governor's rope the software takes for the machine `M` when the side is left to it (registry

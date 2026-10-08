@@ -7,6 +7,7 @@
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import { belt, type Pt2, type RopePiece, type RopePlane, type RopeRig } from '@/lib/lift';
+import { groovePitch } from '@/shaft/ropes';
 import type { LiftMaterials } from './materials';
 
 export interface RopeModel {
@@ -54,7 +55,7 @@ function runsOf(pieces: readonly RopePiece[], isSheave: (k: number, j: number) =
 }
 
 export function buildRopes(rig: RopeRig, n: number, d: number, M: LiftMaterials, hitched: boolean): RopeModel {
-  const group = new THREE.Group(), rr = d / 2000, pitch = Math.max(d + 6, 1.7 * d) / 1000;
+  const group = new THREE.Group(), rr = d / 2000, pitch = groovePitch(d) / 1000;
   // one unit tube per world, shared by its straight runs: disposed with the world (never shared across worlds)
   const unit = new THREE.TubeGeometry(new THREE.LineCurve3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0)), 1, 1, 10);
   // a point (u, y) of plane p for rope i, in world metres; the ropes spread across the plane, wider at a hitch

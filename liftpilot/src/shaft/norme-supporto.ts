@@ -76,31 +76,38 @@ export const VOCI_SUPPORTO: readonly VoceVano[] = [
       + 'il verso si può scegliere a mano (girato a mano sul telaio del costruttore, da confermare con il costruttore). La puleggia di rinvio sul suo supporto '
       + 'sotto l’argano libera il basamento dell’argano sopra di essa (solo le putrelle sollevate la scavalcano); con la macchina in basso '
       + 'l’argano — corpo e puleggia — sta dentro il suo locale, accanto al vano o sotto di esso, con le misure date sui disegni o quelle del '
-      + 'software',
+      + 'software, e i due rami alla macchina salgono dietro il contrappeso liberi dalla parete, dal contrappeso, dalle staffe delle sue guide e '
+      + 'dai muri laterali con il margine della macchina in basso (m_runs: il margine minimo non è negativo), la puleggia con il piano parallelo '
+      + 'alla parete anche a linea delle calate obliqua (l’obliquità la prendono le pulegge in testata, ognuna nel piano delle due verticali che '
+      + 'unisce)',
     riferimento: '—', fonte: 'geometria del progetto: la pianta e l’altezza del locale inserite, gli ingombri dell’argano e del basamento; il '
       + 'verso dell’argano: scelta del software',
-    stato: 'derivazione', verifiche: ['m_fit', 'm_stand'],
+    stato: 'derivazione', verifiche: ['m_fit', 'm_stand', 'm_runs'],
     nota: 'fino a LIFT 1.25.0, ROOM 1.9.0 e SHAFT 2.19.0 l’argano stava sempre con il motore verso il contrappeso, anche quando così entrava '
-      + 'nel muro, e l’ingombro non contava quanto il telaio o il plinto sporgono oltre il telaio dell’argano',
+      + 'nel muro, e l’ingombro non contava quanto il telaio o il plinto sporgono oltre il telaio dell’argano; fino a LIFT 1.27.0 i rami della '
+      + 'macchina in basso stretti fra contrappeso e parete erano solo un avviso nel modulo, e a linea delle calate obliqua i rami, l’argano e il '
+      + 'suo locale seguivano la linea delle calate invece della parete',
   },
   {
     id: 'locale.putrelle', gruppo: 'locale', titolo: 'Verifica delle putrelle sotto l’argano',
     valore: 'una putrella sotto ogni ferro del telaio dell’argano (tre, la puleggia fra il secondo e il terzo: locale.telaio), lungo la linea delle '
-      + 'calate da muro a muro; il carico dell’argano (il suo peso al centro del suo ingombro più il carico statico sull’asse per il coefficiente '
+      + 'calate da muro a muro, ciascuna fra i suoi muri (a linea delle calate obliqua ognuna li incontra altrove) e appoggiata 150 mm per parte '
+      + 'nella muratura, mai nel vano della porta del locale (m_beamwall: la distanza della sua ala dallo stipite più vicino ≥ 0); il carico dell’argano (il suo peso al centro del suo ingombro più il carico statico sull’asse per il coefficiente '
       + 'dinamico, sulle calate delle funi nel piano della puleggia) cade fra le putrelle esterne e si ripartisce tra le tre linearmente (telaio '
       + 'rigido su putrelle di pari rigidezza); ognuna porta la sua parte come forza concentrata in mezzeria (a favore di sicurezza), più il proprio '
       + 'peso, sulla luce tra i centri degli appoggi nei muri (luce libera più 150 mm): σ = M/Wel,y ≤ fyk/γM0 con acciaio S275 (fyk 275 MPa) e '
       + 'γM0 = 1,05; freccia elastica f = F·L³/(48·E·I) + 5·q·L⁴/(384·E·I) ≤ 1/1500 della luce libera con E = 210000 MPa, sulla putrella più '
-      + 'caricata; proprietà dei profili EN 10365',
+      + 'caricata, ognuna sulla sua luce; proprietà dei profili EN 10365',
     riferimento: 'NTC 2018, §4.2.4.1.1 (γM0), Tab. 11.3.IX (S275), §11.3.4.1 (E), §3.1.4 (carichi del macchinario); DPR 1497/1963, art. 5.1–5.2 '
       + '(carichi fissi più 1,5 volte il carico statico delle funi, sicurezza ≥ 6, freccia ≤ 1/1500 della luce libera: regola storica degli impianti '
       + 'esistenti, letta su Normattiva)',
     fonte: 'NTC 2018 (DM 17/01/2018); catalogo dei profilati ArcelorMittal (EN 10365) confrontato con due tabelle indipendenti; IPE 330, 360 e 400 '
       + 'dalle tabelle EN 10365 di eurocodeapplied.com e dalla scheda tecnica degli IPE di STAD, concordi, lette il 7 ottobre 2026; DPR 1497/1963 '
       + 'letto per intero (research/argano-geared, cap. 15, §1.1)', stato: 'da_verificare',
-    verifiche: ['m_beam', 'm_beamf'],
+    verifiche: ['m_beam', 'm_beamf', 'm_beamwall'],
     nota: 'verifica semplice a carico concentrato in mezzeria su trave appoggiata; gli appoggi nei muri e la muratura vanno verificati dal '
-      + 'progettista; fino a LIFT 1.24.0 e ROOM 1.8.0 le putrelle erano due, sotto le file di fori con la puleggia a sbalzo oltre di esse',
+      + 'progettista; fino a LIFT 1.24.0 e ROOM 1.8.0 le putrelle erano due, sotto le file di fori con la puleggia a sbalzo oltre di esse; fino a '
+      + 'LIFT 1.27.0 e ROOM 1.11.0, a linea delle calate obliqua, le tre putrelle avevano la luce di quella sotto la linea delle calate',
   },
   {
     id: 'locale.calate', gruppo: 'locale', titolo: 'Sostituzione dell’argano: calate esistenti e calate della nuova macchina',

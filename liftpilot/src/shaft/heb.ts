@@ -122,14 +122,27 @@ function frameOnly(G: RoomGeo, M: MachineSpec): boolean {
 /** Whether beams along `dir` cross the frame, whose members run along the rope drop line (within 45° of square to it). */
 const crossing = (G: RoomGeo, dir: HebDir): boolean => Math.abs(dir === 'x' ? G.ux : G.uy) < Math.SQRT1_2;
 
+/** A frame's irons by their two ends across beams along `dir`: the feet of a frame (supportFeet) pair up, each iron's
+ *  end at one u with its other end at the other — [the least, the most] of each across the beams. */
+function ironSpans(feet: readonly Pt[], across: number): [number, number][] {
+  const n = feet.length / 2;
+  return Array.from({ length: n }, (_, i) => {
+    const p = feet[i][across], q = feet[i + n][across];
+    return [Math.min(p, q), Math.max(p, q)];
+  });
+}
+
 /** The two beams of `profile` along `dir` under `feet` over the shaft `S` lying in the room (room axes): under the
- *  outermost feet across them; under a frame crossing them (`bridge`) as far apart under it as the walls let them. */
+ *  outermost feet across them; under a frame crossing them (`bridge`) as far apart under it as the walls let them, each
+ *  iron lying on both with the whole flange (askew the irons' ends stand at other places: where all of them reach). */
 export function hebLayout(R: RoomInputs, S: HebShaft, feet: readonly Pt[], dir: HebDir, profile: HebProfile, bridge = false): HebLayout {
   const along = dir === 'x' ? 0 : 1, across = 1 - along, b = KV_VERT.hebBearing, half = PROFILES[profile].b / 2;
   const s0 = along ? R.shaftY : R.shaftX, s1 = s0 + (along ? S.D : S.W), cs = feet.map((p) => p[across]), lo = Math.min(...cs), hi = Math.max(...cs);
   // the walls it bears on run across it from one outer face of the shaft to the other
   const c0 = across ? R.shaftY : R.shaftX, c1 = c0 + (across ? S.D : S.W), walls = [c0 - S.wall, c1 + S.wall] as const;
-  const a = Math.max(lo, walls[0] + half), z = Math.min(hi, walls[1] - half), fits = bridge && z - a >= 2 * half;
+  const irons = bridge ? ironSpans(feet, across) : [];
+  const reach0 = irons.length ? Math.max(...irons.map((r) => r[0])) : lo, reach1 = irons.length ? Math.min(...irons.map((r) => r[1])) : hi;
+  const a = Math.max(reach0 + half, walls[0] + half), z = Math.min(reach1 - half, walls[1] - half), fits = bridge && z - a >= 2 * half;
   return { dir, profile, at: fits ? [a, z] : [lo, hi], span: [s0, s1], ends: [s0 - b, s1 + b], walls, bridge: fits, length: s1 - s0 + 2 * b };
 }
 
@@ -157,10 +170,15 @@ export function hebResult(lay: HebLayout, res: { at: Pt; F: number }, feet: read
     reaction = Math.max(reaction, (F * (L - s)) / L + (q * L) / 2);
   }
   let onBeams = d > 1 ? Math.min(c[across] - a, b - c[across]) : 0;
-  // the feet on the flanges, within the beams' ends; a frame crossing the beams only over their length
+  // the feet on the flanges, within the beams' ends; a frame crossing the beams only over their length, each of its
+  // irons over both beams with the whole flange (short of it: by how much)
   for (const p of feet) {
     onBeams = Math.min(onBeams, p[along] - lay.ends[0], lay.ends[1] - p[along]);
     if (!lay.bridge) onBeams = Math.min(onBeams, half - Math.min(Math.abs(p[across] - a), Math.abs(p[across] - b)));
+  }
+  if (lay.bridge) {
+    const irons = ironSpans(feet, across), short = Math.min(...irons.flatMap(([i0, i1]) => lay.at.map((ax) => Math.min(ax - half - i0, i1 - ax - half))));
+    if (short < 0) onBeams = Math.min(onBeams, short);
   }
   const rope = Math.min(...ropes.flatMap((x) => lay.at.map((ax) => fromBeam(x.at, lay, ax) - x.r)));
   // a beam past the walls' outer faces (under feet beyond the shaft) rests on nothing

@@ -12,7 +12,7 @@ import { KV_VERT } from './norme-vert';
 import { PROFILES } from './profiles';
 import { standBox } from './rinvio';
 import { padsOf, profileOf, supportOf } from './support';
-import { boxGap, panelBox, switchBox, type Box } from './room-floor';
+import { outlineBox, outlineGap, panelBox, switchBox, type Box, type Outline } from './room-floor';
 import { panelChecks, placePanel, type PanelSpot } from './room-panel';
 import type { RoomInputs } from './room';
 import type { ShaftCheck } from './types';
@@ -64,19 +64,45 @@ export function rowShares(rows: readonly number[], v: number): number[] {
   return rows.map((r) => (S > 1 ? 1 / n + ((v - m) * (r - m)) / S : 1 / n));
 }
 
-/** The beams under the machine `M` at this load; null when the machine does not stand on beams. */
+/** The beams under the machine `M` at this load; null when the machine does not stand on beams. Each over its own span
+ *  between the walls (askew, they meet the walls at other u; on an axis all alike). */
 export function beamResult(Gm: RoomGeo, M: MachineSpec, load: SupportLoad): BeamResult | null {
   const s = supportOf(Gm.room);
   if (s.kind !== 'beams') return null;
-  const P = PROFILES[profileOf(s)], [r0, r1] = dropSpan(Gm, 0, 0, Gm.room.W, Gm.room.D), Fr = Gm.frame;
-  const clear = r1 - r0, L = clear + KV_VERT.supportBearing, c = loadCentre(Gm, M, load);
+  const P = PROFILES[profileOf(s)], rows = Gm.frame.beams.map((z) => machineV(Gm, z)), c = loadCentre(Gm, M, load);
   // each beam's force [N]: under the frame's irons, the load's share by where it acts across them
-  const forces = rowShares(Fr.beams.map((z) => machineV(Gm, z)), c.v).map((k) => k * c.F * G);
+  const forces = rowShares(rows, c.v).map((k) => k * c.F * G);
   // own weight [N/mm]; Wel,y [cm³] and Iy [cm⁴] in mm
-  const q = (P.mass * G) / 1000, W = P.Wy * 1e3, I = P.Iy * 1e4, E = KV_VERT.steelE;
-  const sigma = Math.max(...forces.map((F) => Math.abs((F * L) / 4 + (q * L * L) / 8) / W));
-  const f = Math.max(...forces.map((F) => Math.abs((F * L ** 3) / (48 * E * I) + (5 * q * L ** 4) / (384 * E * I))));
-  return { clear, L, F: Math.max(...forces), sigma, sigmaMax: KV_VERT.steelFyk / KV_VERT.steelGammaM0, f, fMax: clear / KV_VERT.beamDeflection };
+  const q = (P.mass * G) / 1000, W = P.Wy * 1e3, I = P.Iy * 1e4, E = KV_VERT.steelE, sigmaMax = KV_VERT.steelFyk / KV_VERT.steelGammaM0;
+  const each = rows.map((v, i) => {
+    const [r0, r1] = dropSpan(Gm, 0, 0, Gm.room.W, Gm.room.D, v), clear = r1 - r0, L = clear + KV_VERT.supportBearing, F = forces[i];
+    return { clear, L, F, sigma: Math.abs((F * L) / 4 + (q * L * L) / 8) / W, f: Math.abs((F * L ** 3) / (48 * E * I) + (5 * q * L ** 4) / (384 * E * I)) };
+  });
+  // the beam most stressed, the one most deflected for its span
+  const b = each.reduce((a, x) => (x.sigma > a.sigma ? x : a)), d = each.reduce((a, x) => (x.f / x.clear > a.f / a.clear ? x : a));
+  return { clear: b.clear, L: b.L, F: Math.max(...forces), sigma: b.sigma, sigmaMax, f: d.f, fMax: d.clear / KV_VERT.beamDeflection };
+}
+
+/** How far the beams' ends stay off the opening of the room's door, along its wall [mm]: the least over the ends that bear
+ *  in the door's wall (each flange as wide along the wall as the beam meets it askew); < 0 an end in the opening, with no
+ *  wall to bear on. null when no end bears in that wall, or the machine does not stand on beams. */
+export function beamDoorGap(Gm: RoomGeo): number | null {
+  const R = Gm.room, s = supportOf(R);
+  if (s.kind !== 'beams') return null;
+  const b = PROFILES[profileOf(s)].b, wall = R.doorWall, alongX = wall === 'front' || wall === 'rear', face = wall === 'front' || wall === 'left' ? 0 : alongX ? R.D : R.W;
+  // the beam's width along the wall: b over the cosine of its angle to the wall's normal
+  const cos = Math.abs(alongX ? Gm.uy : Gm.ux), half = cos > 1e-6 ? b / 2 / cos : Infinity;
+  let gap: number | null = null;
+  for (const z of Gm.frame.beams) {
+    const v = machineV(Gm, z);
+    for (const u of dropSpan(Gm, 0, 0, R.W, R.D, v)) {
+      const x = Gm.carDrop[0] + u * Gm.ux - v * Gm.uy, y = Gm.carDrop[1] + u * Gm.uy + v * Gm.ux;
+      if (Math.abs((alongX ? y : x) - face) > 1) continue;
+      const c = alongX ? x : y, g = Math.max(R.doorAt - (c + half), c - half - (R.doorAt + R.doorW));
+      gap = gap === null ? g : Math.min(gap, g);
+    }
+  }
+  return gap;
 }
 
 /** The check m_rinvio (registry locale.rinvio), soft: on a maker's bedplate the counterweight's rope drop within its
@@ -89,12 +115,13 @@ export function rinvioChecks(Gm: RoomGeo | null, M: MachineSpec): ShaftCheck[] {
   return [check('m_rinvio', need <= mk.fall.max, need, mk.fall.max, 0, 'mm', true)];
 }
 
-/** The checks m_beam (stress) and m_beamf (deflection), of the beam where each is largest; none when the machine does
- *  not stand on beams. */
+/** The checks m_beam (stress) and m_beamf (deflection), of the beam where each is largest, and m_beamwall (no beam's end
+ *  in the door's opening: there is no wall to bear on); none when the machine does not stand on beams. */
 export function beamChecks(Gm: RoomGeo | null, M: MachineSpec, load: SupportLoad): ShaftCheck[] {
-  const b = Gm ? beamResult(Gm, M, load) : null;
+  const b = Gm ? beamResult(Gm, M, load) : null, door = Gm ? beamDoorGap(Gm) : null;
   if (!b) return [];
-  return [check('m_beam', b.sigma <= b.sigmaMax, b.sigma, b.sigmaMax, 0, 'MPa'), check('m_beamf', b.f <= b.fMax, b.f, b.fMax, 1, 'mm')];
+  return [check('m_beam', b.sigma <= b.sigmaMax, b.sigma, b.sigmaMax, 0, 'MPa'), check('m_beamf', b.f <= b.fMax, b.f, b.fMax, 1, 'mm'),
+    ...(door === null ? [] : [check('m_beamwall', door >= 0, Math.round(door), 0, 0, 'mm')])];
 }
 
 /** The top of the machine over the room's floor [mm]: a maker's by its sheet (its height over the feet), the generic
@@ -149,11 +176,12 @@ const boxAround = (c: readonly (readonly [number, number])[]): Box => {
   return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
 };
 
-/** The machine's parts in the room's plan, each its outline [x0, y0, x1, y1] (room axes) [mm]: the machine on its
- *  support, and the bedplate of the diverting pulley or the pulley's own stand. */
-export function machineParts(Gm: RoomGeo, M: MachineSpec): Box[] {
-  const c = machineCorners(Gm, M);
-  return Array.from({ length: c.length / 4 }, (_, k) => boxAround(c.slice(4 * k, 4 * k + 4)));
+/** The machine's parts in the room's plan (room axes) [mm]: the machine on its support, and the bedplate of the
+ *  diverting pulley or the pulley's own stand — each a rectangle [x0, y0, x1, y1] on a drop line along the room's axes,
+ *  its turned outline by its corners on one askew (the floor's checks measure what is there, not the box round it). */
+export function machineParts(Gm: RoomGeo, M: MachineSpec): Outline[] {
+  const c = machineCorners(Gm, M), square = Math.abs(Gm.ux) < 1e-9 || Math.abs(Gm.uy) < 1e-9;
+  return Array.from({ length: c.length / 4 }, (_, k) => (square ? boxAround(c.slice(4 * k, 4 * k + 4)) : c.slice(4 * k, 4 * k + 4)));
 }
 
 /** The machine's outline in the room's plan, its support and pulley with it: [x0, y0, x1, y1] (room axes) [mm]. */
@@ -207,6 +235,6 @@ export function panelPlace(Gm: RoomGeo, M: MachineSpec, others: readonly Box[]):
 export function governorRoomChecks(gov: Box | null, Gm: RoomGeo, M: MachineSpec): ShaftCheck[] {
   if (!gov) return [];
   const R = Gm.room, near = [...machineParts(Gm, M), panelBox(R), switchBox(R)];
-  const gap = Math.min(gov[0], gov[1], R.W - gov[2], R.D - gov[3], ...near.map((b) => boxGap(gov, b))), free = freeBeside(R, gov, near);
+  const gap = Math.min(gov[0], gov[1], R.W - gov[2], R.D - gov[3], ...near.map((b) => outlineGap(gov, b))), free = freeBeside(R, gov, near.map(outlineBox));
   return [check('m_gov', gap >= 0, Math.round(gap), 0, 0, 'mm'), check('m_govfree', free.depth >= free.need, Math.round(free.depth), free.need, 0, 'mm')];
 }

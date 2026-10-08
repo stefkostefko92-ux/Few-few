@@ -16,6 +16,7 @@ import { bodyBox } from './machine-shape';
 import { shapeElevation, shapePlan } from './machine-shape-view';
 import { dropSpan as span, machineU, machineV, roomRopes, ropeWidths, slabHoles, type MachineSpec, type RoomGeo } from './machine-room';
 import { bbox, fittingsPlan } from './room-fittings-view';
+import { outlineBox } from './room-floor';
 import { machineParts } from './support-check';
 import { layoutSite, type RoomSite } from './room-site';
 import { pulleySection } from './room-pulley';
@@ -85,7 +86,7 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo): { entities:
     : machinePlan((x, z) => onDrop(G, machineU(G, x * k), machineV(G, z * k)), F.beams.map((z) => z / k))));
   if (pulley) out.push(path(pulley, true, 'hidden'));
   // control panel with its free area, main switch by the door (room-fittings-view.ts)
-  const { entities: fittings, free, sw, swAt } = fittingsPlan(R, machineParts(G, M).map(([x0, y0, x1, y1]) => ({ x0, y0, x1, y1 })));
+  const { entities: fittings, free, sw, swAt } = fittingsPlan(R, machineParts(G, M).map(outlineBox).map(([x0, y0, x1, y1]) => ({ x0, y0, x1, y1 })));
   out.push(...fittings);
   // the sheave's size on the side away from the gearbox, along the drop line (an upright one would cross the frame's
   // dimension); the load P1 where the room is free, its leader to the gearbox (the gearbox's side of the drop line: g)
@@ -161,7 +162,12 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo): { entities:
   const sorted = (p: number, q: number): number[] => [Math.min(p, q), Math.max(p, q)];
   // from the bedframe's side toward the chain (a machine on a bedplate's irons or on the maker's pedestal has none)
   const edgeV = vFrame < G.across[0] ? G.across[0] : G.across[1], edge = onDrop(G, G.frame0, edgeV)[1 - ax];
-  if (G.frame.on === 'frame') out.push(chain({ dir: ax ? 'y' : 'x', pts: sorted(a[ax], b[ax]), at: a[1 - ax], from: [edge, edge], text: ['{v} Telaio argano'] }));
+  // askew, the frames' lengths along the drop line itself, like the drop's (on an axis their projection is their length)
+  const askew = Math.max(Math.abs(G.ux), Math.abs(G.uy)) <= 0.999, on = { o: G.carDrop, u: [G.ux, G.uy] as Pt };
+  if (G.frame.on === 'frame') {
+    out.push(chain(askew ? { dir: ax ? 'y' : 'x', on, pts: [G.frame0, G.frame1], at: vFrame, from: [edgeV, edgeV], text: ['{v} Telaio argano'] }
+      : { dir: ax ? 'y' : 'x', pts: sorted(a[ax], b[ax]), at: a[1 - ax], from: [edge, edge], text: ['{v} Telaio argano'] }));
+  }
   // the rope drop between the ropes, from each of them: along an axis on a chain there; askew, along the drop line
   // itself (the rows outside give where each drop stands)
   const [r0, r1] = G.carDrop[ax] <= G.cwDrop[ax] ? [G.carDrop, G.cwDrop] : [G.cwDrop, G.carDrop];
@@ -171,7 +177,9 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo): { entities:
   // the bedplate with the diverting pulley: its length and width beside the machine, away from the drop's chains
   if (bed) {
     const bv = g > 0 ? bed.v1 : bed.v0, [c, d] = [onDrop(G, bed.u0, bv + 220 * g), onDrop(G, bed.u1, bv + 220 * g)], side1 = onDrop(G, bed.u0, bv)[1 - ax];
-    out.push(chain({ dir: ax ? 'y' : 'x', pts: sorted(c[ax], d[ax]), at: c[1 - ax], from: [side1, side1], text: [`{v} × ${Math.round(bed.v1 - bed.v0)} Telaio con rinvio`] }));
+    const text = [`{v} × ${Math.round(bed.v1 - bed.v0)} Telaio con rinvio`];
+    out.push(chain(askew ? { dir: ax ? 'y' : 'x', on, pts: [bed.u0, bed.u1], at: bv + 220 * g, from: [bv, bv], text }
+      : { dir: ax ? 'y' : 'x', pts: sorted(c[ax], d[ax]), at: c[1 - ax], from: [side1, side1], text }));
   }
   return { entities: out, bounds: { x0: -WALL, y0: -WALL, x1: R.W + WALL, y1: R.D + WALL } };
 }

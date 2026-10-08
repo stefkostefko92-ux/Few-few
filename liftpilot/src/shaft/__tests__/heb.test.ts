@@ -36,7 +36,8 @@ test('putrelle HEB: sotto un telaio più lungo del vano, entro i muri; sotto i p
   const feet = [[900, 1000], [1600, 1000], [900, 2600], [1600, 2600]] as const;
   const frame = hebLayout(R, S, feet, 'x', 'HEB 160', true);
   assert.equal(frame.bridge, true);
-  assert.deepEqual(frame.at, [1000, 2400 - half]);
+  // (each iron with the whole flange on the first: it starts at 1000)
+  assert.deepEqual(frame.at, [1000 + half, 2400 - half]);
   const res = { at: [1250, 1700] as const, F: 30000 };
   const on = hebResult(frame, res, feet, [], 250);
   assert.ok(on.feet > 0 && on.wall >= 0, `piedi ${on.feet}, muri ${on.wall}`);

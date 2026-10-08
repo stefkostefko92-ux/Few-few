@@ -48,19 +48,21 @@ test('macchina sotto il vano: il locale dal suo angolo, la sua altezza porta giÃ
   assert.ok(Number(b.d.values.Hv) > Number(a.d.values.Hv));
 });
 
-test('sezione C-C lungo calate oblique: le lunghezze del vano e del locale sotto il vano sono solo riferimenti', () => {
-  // the counterweight's drop moved by hand: the drop line askew to the shaft
+test('sezione C-C con calate oblique: in squadra al muro dietro il contrappeso, le lunghezze del vano e del locale esatte', () => {
+  // the counterweight's drop moved by hand: the drop line askew to the shaft; the runs, the machine and the section keep
+  // to the wall behind the counterweight (until LIFT 1.27.0 they followed the drops' line: the lengths were references)
   const keys = (scheme: BottomScheme, cwPos?: number): string[] => {
     const b = below(scheme), inp = cwPos === undefined ? b : { ...b, shaft: { ...b.shaft, plan: { ...(b.shaft.plan ?? {}), cwPos } } };
-    const { d, g } = roomOf(inp);
-    assert.ok(cwPos === undefined || Math.max(Math.abs(g.dir[0]), Math.abs(g.dir[1])) < 0.999, 'calate oblique');
+    const { d, g } = roomOf(inp), [dx, dy] = [g.cw[0] - g.car[0], g.cw[1] - g.car[1]];
+    assert.ok(cwPos === undefined || Math.min(Math.abs(dx), Math.abs(dy)) > 50, 'calate oblique');
+    assert.equal(Math.max(Math.abs(g.dir[0]), Math.abs(g.dir[1])), 1, 'in squadra al muro');
     const chains = belowSectionEntities(d.layout, d.machine, g).entities.flatMap((e) => (e.e === 'chain' && e.c.dir === 'x' ? [e.c] : []));
     return chains.flatMap((c) => (c.edit ?? []).flatMap((e) => (e ? [e.key] : [])));
   };
   assert.deepEqual(keys('head').sort(), ['D', 'below.D', 'wall']);
-  assert.deepEqual(keys('head', 200).sort(), ['below.D', 'wall'], 'accanto al vano: il muro e il locale restano esatti');
+  assert.deepEqual(keys('head', 200).sort(), ['D', 'below.D', 'wall']);
   assert.deepEqual(keys('under').sort(), ['D', 'below.D']);
-  assert.deepEqual(keys('under', 200), []);
+  assert.deepEqual(keys('under', 200).sort(), ['D', 'below.D']);
 });
 
 test('macchina in basso: il suo locale verificato come un locale del macchinario (altezza, porta, quadro, superfici, percorsi)', () => {

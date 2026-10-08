@@ -15,6 +15,7 @@ import { mergeChecks } from '@/shaft';
 import { geoOn, machineU, machineV, planClear, roomGeo } from '@/shaft/machine-room';
 import { governorFootprint } from '@/shaft/room-site';
 import { machineParts } from '@/shaft/support-check';
+import { outlineGap } from '@/shaft/room-floor';
 
 type Room = NonNullable<LiftInputs['shaft']['room']>;
 const base = newLift(), room = base.shaft.room as Room;
@@ -69,7 +70,7 @@ test('argano girato: il limitatore passa sull’altra parete libera, se solo lì
   assert.equal(d.shaft.governorSide, 'left', 'sulla parete di destra l’argano girato gli starebbe sopra');
   const gov = governorFootprint(d.layout, G.room);
   assert.ok(gov);
-  for (const [x0, y0, x1, y1] of machineParts(G, d.machine)) assert.ok(x1 <= gov[0] || gov[2] <= x0 || y1 <= gov[1] || gov[3] <= y0, 'limitatore fuori dall’argano');
+  for (const o of machineParts(G, d.machine)) assert.ok(outlineGap(gov, o) >= 0, 'limitatore fuori dall’argano');
   assert.equal(check(direct(), 'm_gov')?.status, 'ok');
   // a side chosen by hand stays (and the check says it is under the machine)
   const right = direct({}, { governorSide: 'right' });

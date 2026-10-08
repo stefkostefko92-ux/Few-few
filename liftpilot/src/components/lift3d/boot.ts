@@ -1,29 +1,32 @@
 // Boots the 3D installation, on the landing page's pipeline (src/components/machine/boot.ts, here pipeline.ts): WebGPU
 // on a hardware adapter (the top quality tier on a large screen), else WebGL 2, never on a software rasteriser. An orbit
-// camera with four views (car, whole shaft, machine, pit); the car view follows the car. The simulation's clock gives
+// camera with four views (car, whole shaft, machine, pit), free to orbit, pan and zoom (camera.ts); the car view follows
+// the car. The simulation's clock gives
 // the state of every frame; frames are drawn only while something moves, at the resolution the governor holds the
 // frame rate with, and once the scene is at rest its last frames are drawn sharper (supersampled where the screen's
 // own resolution is lower: resolution.ts). Every part's pipeline is compiled before the first frame. Everything freed on
 // dispose. Loaded lazily by LiftStage.tsx.
 import * as THREE from 'three/webgpu';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import type { LiftDerived } from '@/lib/lift';
 import type { SimClock } from '../lift/clock';
 import { gradeUniforms } from '../machine/grade';
 import { acceptIdentitySwizzle, hardwareWebGPU, softwareRenderer } from '../machine/gpu';
 import { createGovernor, initialQuality } from '../machine/quality';
 import { buildStage, releaseStage, type Stage } from './pipeline';
+import { createViewCamera, type View } from './camera';
 import { motionRatio, stillRatio } from './resolution';
 import { LIFT_FOV, type LiftWorld } from './world';
 
-export type View = 'car' | 'shaft' | 'room' | 'pit';
+export type { View } from './camera';
 
 export interface LiftHandle {
   setActive(active: boolean): void;
   /** the design changed: a new world replaces the old one once its shaders are ready (the camera stays) */
   setDesign(dv: LiftDerived): Promise<void>;
+  /** to the framing of `view` (again: back to it) */
   setView(view: View): void;
   setZones(on: boolean): void;
+  setReducedMotion(on: boolean): void;
   dispose(): void;
 }
 
@@ -37,15 +40,6 @@ export interface LiftBootOptions {
   onFail(): void;
 }
 
-// where the camera stands relative to its target, per view (direction; the distance comes from the world)
-const OFFSET: Record<View, THREE.Vector3> = {
-  car: new THREE.Vector3(0.55, 0.28, 1).normalize(),
-  shaft: new THREE.Vector3(0.62, 0.12, 1).normalize(),
-  room: new THREE.Vector3(0.75, 0.62, 1).normalize(),
-  pit: new THREE.Vector3(0.6, 0.45, 1).normalize(),
-};
-
-const GLIDE_MS = 700;
 // frames rendered after the last change, for the temporal filters (TRAA, GTAO) to settle
 const SETTLE_FRAMES = 16;
 // a device that cannot animate the scene (software rendering): frames slower than SLOW_MS first drop the resolution to
@@ -88,26 +82,8 @@ export async function bootLift(canvas: HTMLCanvasElement, dv: LiftDerived, opts:
   let stage: Stage = initial;
   let world: LiftWorld = stage.world;
 
-  const controls = new OrbitControls(camera, canvas);
-  controls.enableDamping = !opts.reducedMotion;
-  controls.dampingFactor = 0.12;
-  controls.minDistance = 0.8;
-  controls.maxDistance = 120;
-  let view: View = opts.view;
   // the zones switch, kept across a change of design; the count of designs asked for (the latest wins)
   let zonesOn = false, designs = 0;
-  // camera glide toward a view: from where it is to target + offset·distance
-  // (on the wall clock: it takes GLIDE_MS however slow the frames are)
-  let glide: { from: THREE.Vector3; to: THREE.Vector3; tFrom: THREE.Vector3; tTo: THREE.Vector3; start: number } | null = null;
-  const place = (v: View, animate: boolean): void => {
-    const f = world.focus(v, opts.clock.frame());
-    const to = f.target.clone().addScaledVector(OFFSET[v], f.distance);
-    if (!animate || opts.reducedMotion) {
-      controls.target.copy(f.target);
-      camera.position.copy(to);
-      glide = null;
-    } else glide = { from: camera.position.clone(), to, tFrom: controls.target.clone(), tTo: f.target.clone(), start: performance.now() };
-  };
 
   // the pipelines are compiled before the first frame: a short warm-up, from the tier's starting scale
   const governor = createGovernor({ warmupMs: 800, startScale: quality.startScale });
@@ -132,13 +108,13 @@ export async function bootLift(canvas: HTMLCanvasElement, dv: LiftDerived, opts:
     }
   };
   const offClock = opts.clock.subscribe(wake);
+  const cam = createViewCamera(camera, canvas, world, opts.view, opts.reducedMotion, () => opts.clock.frame()), controls = cam.controls;
   controls.addEventListener('change', wake);
   const sizer = new ResizeObserver(() => { resize(); wake(); });
   sizer.observe(canvas);
   resize();
   const first = opts.clock.frame();
   if (first) world.update(first, camera.position, controls.target);
-  place(view, false);
 
   let disposed = false, active = false, frames = 0, last = performance.now(), prevRendered = false, lastRendered = 0, slowRun = 0, prevSharp = false;
   function dispose(): void {
@@ -148,7 +124,7 @@ export async function bootLift(canvas: HTMLCanvasElement, dv: LiftDerived, opts:
     sizer.disconnect();
     offClock();
     controls.removeEventListener('change', wake);
-    controls.dispose();
+    cam.dispose();
     canvas.removeEventListener('webglcontextlost', fail);
     release(stage);
     const ctx = renderer.getContext();
@@ -163,11 +139,10 @@ export async function bootLift(canvas: HTMLCanvasElement, dv: LiftDerived, opts:
   renderer.onDeviceLost = fail;
   canvas.addEventListener('webglcontextlost', fail);
 
-  const prevTarget = new THREE.Vector3();
   function frame(now: number): void {
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
-    if (opts.clock.playing || glide) wake();
+    if (opts.clock.playing || cam.gliding()) wake();
     if (still > SETTLE_FRAMES) {
       controls.update();
       prevRendered = false;
@@ -197,18 +172,8 @@ export async function bootLift(canvas: HTMLCanvasElement, dv: LiftDerived, opts:
     if (!refining && !prevSharp && governor.sample(dt * 1000, now)) resize();
     const f = opts.clock.frame();
     if (f) world.update(f, camera.position, controls.target);
-    if (glide) {
-      const u = Math.min(1, Math.max(0, (now - glide.start) / GLIDE_MS)), k = u * u * (3 - 2 * u);
-      camera.position.lerpVectors(glide.from, glide.to, k);
-      controls.target.lerpVectors(glide.tFrom, glide.tTo, k);
-      if (u >= 1) glide = null;
-    } else if (view === 'car' && f) {
-      // follow the car: target and camera move together, the angle the user chose stays
-      const want = world.focus('car', f).target;
-      prevTarget.copy(controls.target);
-      controls.target.lerp(want, opts.reducedMotion ? 1 : 1 - Math.exp(-dt * 8));
-      camera.position.add(prevTarget.sub(controls.target).negate());
-    }
+    // the glide toward a view, the car followed by its motion (camera.ts)
+    cam.step(now, f);
     controls.update();
     try {
       stage.pipeline.render();
@@ -261,15 +226,18 @@ export async function bootLift(canvas: HTMLCanvasElement, dv: LiftDerived, opts:
       stage = st;
       world = st.world;
       world.setZones(zonesOn);
+      cam.setWorld(world);
       const f = opts.clock.frame();
       if (f) world.update(f, camera.position, controls.target);
       release(old);
       wake();
     },
     setView(v) {
-      view = v;
-      place(v, true);
+      cam.place(v, true);
       wake();
+    },
+    setReducedMotion(on) {
+      cam.setReducedMotion(on);
     },
     setZones(on) {
       zonesOn = on;

@@ -9,10 +9,20 @@ import { DIM, V, P3, bolts, circle, latheZ, mesh, slab } from './common';
 const RIM_IN = 0.236;
 const WEB = 0.03; // web thickness
 
-/** Rim with the grooves: a closed ring profile (radius, axial), so it is turned on its own. */
-function rimGeometry(): THREE.BufferGeometry {
-  const { rp, ropes, pitch, ropeR } = DIM;
-  const w = ropes * pitch + 0.024, rOut = rp + 0.004, bottom = rp - ropeR - 0.0004, gw = ropeR + 0.0011;
+/** The grooves on the rim: how many, their pitch and the rope's radius (the machine's own units; the landing page's four
+ *  of DIM, an installation's its ropes'). */
+export interface Grooves {
+  n: number;
+  pitch: number;
+  ropeR: number;
+}
+const FOUR: Grooves = { n: DIM.ropes, pitch: DIM.pitch, ropeR: DIM.ropeR };
+
+/** Rim with the grooves: a closed ring profile (radius, axial), so it is turned on its own; at least as wide as with the
+ *  four grooves of DIM. */
+function rimGeometry({ n: ropes, pitch, ropeR }: Grooves): THREE.BufferGeometry {
+  const { rp } = DIM;
+  const w = Math.max(ropes * pitch, DIM.ropes * DIM.pitch) + 0.024, gw = Math.min(ropeR + 0.0011, pitch / 2 - 0.0012), rOut = rp + 0.004, bottom = rp - ropeR - 0.0004;
   const pts = [V(0.224, -WEB / 2), V(RIM_IN, -0.027), V(RIM_IN, -w / 2 + 0.004), V(RIM_IN + 0.004, -w / 2), V(rOut - 0.004, -w / 2), V(rOut, -w / 2 + 0.004)];
   for (let i = 0; i < ropes; i++) {
     const yc = -ropes * pitch / 2 + pitch * (i + 0.5);
@@ -53,9 +63,9 @@ function webGeometry(): THREE.BufferGeometry {
 }
 
 /** The sheave centred on its own axis (local Z); the caller places it on the output shaft. */
-export function sheave(M: MachineMaterials): THREE.Group {
+export function sheave(M: MachineMaterials, grooves: Grooves = FOUR): THREE.Group {
   const g = new THREE.Group();
-  g.add(mesh(rimGeometry(), M.machined), mesh(webGeometry(), M.sheavePaint), mesh(hubGeometry(), M.sheavePaint));
+  g.add(mesh(rimGeometry(grooves), M.machined), mesh(webGeometry(), M.sheavePaint), mesh(hubGeometry(), M.sheavePaint));
   // shaft end plate clamping the sheave on the output shaft, with six screws
   const plate = latheZ([V(0.0001, 0.078), V(0.062, 0.078), V(0.062, 0.088), V(0.059, 0.091), V(0.0001, 0.091)], 64);
   plate.computeTangents();

@@ -15,7 +15,8 @@ import { catalogOf, type Brand, type CatalogFit } from '@/lib/catalog/machines';
 import { shapeOf } from '@/lib/catalog/shapes';
 import { analyse, mirrorRopes, proposalValues, type Analysis } from '@/lib/present/analysis';
 import type { MakerBedplate } from '@/shaft/rinvio';
-import { bestFit, catalogValues, pickOption } from './catalog';
+import { sizeMachine } from '@/calc/sizing';
+import { bestFit, catalogValues, offGrid, pickOption } from './catalog';
 import { deriveLift, type LiftDerived, type LiftInputs } from './derive';
 
 /** The makers the advice compares, and every model of theirs it verifies (those proposed only by name are out). */
@@ -144,8 +145,10 @@ export const liftCandidate = (inp: LiftInputs, m: AdviceModel): MachineCandidate
 /** One model for the calculator's values `V` (their analysis `a`): the option of the sizing it takes, the calculation
  *  with its values, the maker's bedplate by the sheave and the diverting pulley of the values. */
 export function valuesCandidate(V: FormValues, a: Analysis, m: AdviceModel): MachineCandidate | null {
-  const { I } = a.ctx;
-  const fits = a.sizing.options.flatMap((o) => { const fit = bestFit(m, o, I.Q, I.r); return fit ? [{ o, fit }] : []; });
+  const { I, fixedD, rope } = a.ctx;
+  // the grid's options, and those of the model's own sheave off the grid (catalog.ts offGrid) unless the sheave is kept
+  const own = fixedD ? [] : offGrid(m).flatMap((D) => sizeMachine(I, a.ctx.N, D, rope).options);
+  const fits = [...a.sizing.options, ...own].flatMap((o) => { const fit = bestFit(m, o, I.Q, I.r); return fit ? [{ o, fit }] : []; });
   const best = pickOption(fits, a.sizing.keep !== null);
   if (!best) return null;
   const option = proposalValues(best.o), values = { ...option, ...catalogValues(best.fit, mirrorRopes({ ...V, ...option })) };

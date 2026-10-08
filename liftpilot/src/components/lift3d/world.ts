@@ -7,6 +7,7 @@ import * as THREE from 'three/webgpu';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { hebDrawn, pitSpace, roofSpaces, roomGeo, section } from '@/shaft';
 import { KV_VERT } from '@/shaft/norme-vert';
+import { groovePitch } from '@/shaft/ropes';
 import { KL, planeAt, ropeRig, type LiftDerived, type RopePlane } from '@/lib/lift';
 import type { Frame } from '@/sim';
 import { Batch, P, box, disposeTree } from './geom';
@@ -68,7 +69,7 @@ export function buildLiftWorld(renderer: THREE.WebGPURenderer, dv: LiftDerived, 
   const shaft = buildShaft(L, S, M, openings, { walls: passage ? [passage] : [], pit: pitHoles });
   // the ropes end on the car: a 1:1 hitch on the crosshead, or the car pulley of a 2:1 roping, in the plane of its rope
   const two = dv.analysis.ctx.I.r === 2, pcs = rig.pieces(0, 0), carPlane = pcs[0].plane, cwPlane = pcs[pcs.length - 1].plane;
-  const Rp = dv.analysis.ctx.I.Dp / 2, width = N.n * Math.max(N.d + 6, 1.7 * N.d) + 30;
+  const Rp = dv.analysis.ctx.I.Dp / 2, width = N.n * groovePitch(N.d) + 30;
   const hitchAt = (pl: RopePlane, u: number): Hitch => {
     const [x, y] = planeAt(pl, u);
     return two ? { kind: 'pulley', x, y, across: [-pl.dir[1], pl.dir[0]], r: Rp, width } : { kind: 'ropes', at: hitchSpots(pl, N.n, u) };

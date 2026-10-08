@@ -34,7 +34,7 @@ const mm = (x: number): string => fmt(Math.round(x), 0);
 /** The beams' count on the sheet. */
 const N_IT: Readonly<Record<number, string>> = { 2: 'DUE', 3: 'TRE' };
 /** The checks of the support the sheet counts again at its own load: the beams under the machine, the HEB beams. */
-const AT_SHEET_LOAD: ReadonlySet<string> = new Set(['m_beam', 'm_beamf', 'm_heb', 'm_hebf', 'm_hebfeet', 'm_hebrope', 'm_hebwall']);
+const AT_SHEET_LOAD: ReadonlySet<string> = new Set(['m_beam', 'm_beamf', 'm_beamwall', 'm_heb', 'm_hebf', 'm_hebfeet', 'm_hebrope', 'm_hebwall']);
 
 export interface SurveySheet extends TitleData {
   /** the installation and the intervention */

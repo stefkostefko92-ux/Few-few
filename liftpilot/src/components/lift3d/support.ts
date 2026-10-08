@@ -37,11 +37,11 @@ export interface FramedPulley {
 
 /**
  * The support under the machine of frame `F` (the generic one scaled to its sheave, or a maker's on our bedframe) whose
- * mounts stand `gap` metres over the floor. `walls`: the room's walls along the machine's x from the sheave [mm] (the
- * beams' bearings); null without a room. `pulley`: the diverting pulley in the bedplate. `base`: the HEB beams it stands
+ * mounts stand `gap` metres over the floor. `walls`: the room's walls along the machine's x from the group's origin under
+ * each iron [mm] (each beam's bearings: askew each meets them elsewhere); null without a room. `pulley`: the diverting pulley in the bedplate. `base`: the HEB beams it stands
  * on over the floor [m].
  */
-export function buildSupport(sup: MachineSupport, F: MachineFrame, D: number, gap: number, walls: readonly [number, number] | null, M: LiftMaterials,
+export function buildSupport(sup: MachineSupport, F: MachineFrame, D: number, gap: number, walls: readonly (readonly [number, number])[] | null, M: LiftMaterials,
   pulley: FramedPulley | null = null, base = 0): THREE.Group {
   const g = new THREE.Group(), b = new Batch(), pads = padsOf(sup) / 1000, top = -pads, beams = F.beams.map((z) => z / 1000), mid = (beams[0] + beams[beams.length - 1]) / 2, s = F.shape ? 1 : F.s;
   const MOUNTS = F.shape ? F.mounts.map((x) => x / 1000) : [-0.36 * F.s, 0.95 * F.s];
@@ -78,12 +78,12 @@ export function buildSupport(sup: MachineSupport, F: MachineFrame, D: number, ga
   if (sup.kind === 'plinth' && span) for (const [z0, z1] of F.plinth) box(span[0] / 1000, span[1] / 1000, floor, top, z0 / 1000, z1 / 1000, M.slab);
   if (hasProfile(sup)) {
     const name = profileOf(sup), P = PROFILES[name], h = P.h / 1000, bear = KV_VERT.supportBearing / 1000;
-    const [x0, x1] = sup.kind === 'beams' && walls ? [walls[0] / 1000 - bear, walls[1] / 1000 + bear] : span ? [span[0] / 1000, span[1] / 1000] : [MOUNTS[0] - 0.15, MOUNTS[1] + 0.15];
-    for (const z of beams) {
+    beams.forEach((z, i) => {
+      const w = walls?.[i], [x0, x1] = sup.kind === 'beams' && w ? [w[0] / 1000 - bear, w[1] / 1000 + bear] : span ? [span[0] / 1000, span[1] / 1000] : [MOUNTS[0] - 0.15, MOUNTS[1] + 0.15];
       profile(P, isChannel(name), x0, x1, top, z);
       // a frame set higher than its profile stands on steel packs at its ends
       if (sup.kind === 'frame' && top - h - floor > 1e-3) for (const x of [x0, x1 - 0.1]) box(x, x + 0.1, floor, top - h, z - P.b / 2000, z + P.b / 2000, M.galv);
-    }
+    });
   }
   b.into(g);
   return g;

@@ -76,14 +76,17 @@ export function buildShell(sh: Shell, M: LiftMaterials, sides: Record<Side, THRE
       piece(R.doorAt, R.doorAt + R.doorW, z0 + R.doorH, z0 + H);
     } else piece(a0, a1, z0, z0 + H);
   }
-  if (sh.roof) roof.add(box(x0 - WALL, y0 - WALL, z0 + H, x0 + Wr + WALL, y0 + Dr + WALL, z0 + H + 200, M.roof));
+  // the roof and the floor over the walls, but on the side open onto the shaft only to the shaft wall's outer face (the
+  // room starts there): never into the shaft
+  const past = (side: Side): number => (side === sh.open ? 0 : WALL), X0 = x0 - past('left'), Y0 = y0 - past('front'), X1 = x0 + Wr + past('right'), Y1 = y0 + Dr + past('rear');
+  if (sh.roof) roof.add(box(X0, Y0, z0 + H, X1, Y1, z0 + H + 200, M.roof));
   if (sh.ring) {
-    const [h0, k0, h1, k1] = sh.ring, X0 = x0 - WALL, Y0 = y0 - WALL, X1 = x0 + Wr + WALL, Y1 = y0 + Dr + WALL, za = z0 + H, zb = za + KL.underSlab;
+    const [h0, k0, h1, k1] = sh.ring, za = z0 + H, zb = za + KL.underSlab;
     for (const [a, b, c, d] of [[X0, Y0, h0, Y1], [h1, Y0, X1, Y1], [h0, Y0, h1, k0], [h0, k1, h1, Y1]] as const) {
       if (c - a > 1 && d - b > 1) roof.add(box(a, b, za, c, d, zb, M.slab));
     }
   }
-  if (sh.floor) common.add(box(x0 - WALL, y0 - WALL, z0 - 200, x0 + Wr + WALL, y0 + Dr + WALL, z0, M.slab));
+  if (sh.floor) common.add(box(X0, Y0, z0 - 200, X1, Y1, z0, M.slab));
   // a box against a wall of the room: u along it, v out from it, z over the floor
   const B = new Batch();
   const fix = (wall: Side, u0: number, u1: number, v0: number, v1: number, za: number, zb: number, m: THREE.Material, into: Batch = B): void => {

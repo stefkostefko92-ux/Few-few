@@ -24,7 +24,9 @@ type P2 = readonly [number, number];
 
 export interface BottomGeo {
   scheme: BottomScheme;
-  /** the drops of the car and of the counterweight, the unit direction between them and the one across it (its left) */
+  /** the drops of the car and of the counterweight; the direction square to the wall behind the counterweight, toward
+   *  it (the drops' own when their line runs square to it; askew the runs and the machine keep to the wall, the head
+   *  pulleys turn each rope in its own plane) and the one across it, its left — along that wall */
   car: P2;
   cw: P2;
   dir: P2;
@@ -44,8 +46,10 @@ export interface BottomGeo {
   /** where the wall behind the counterweight is along dir from the car's drop [mm] */
   wallAt: number;
   /** the runs clear the counterweight's back, the wall, the counterweight rails' brackets and the side walls by
-   *  KL.bottomClear; the gap between the counterweight's back and the wall [mm] */
+   *  KL.bottomClear (`clear`: the least margin, below 0 by how much they do not — the check m_runs); the gap between
+   *  the counterweight's back and the wall [mm] */
   fits: boolean;
+  clear: number;
   gap: number;
 }
 
@@ -65,16 +69,19 @@ export function exitAlong(p: P2, d: P2, W: number, D: number): number {
  *  further toward the drop line (the sheave's plane along the wall). */
 export function bottomGeo(L: Layout, s: BottomScheme, D: number, Dp: number, n: number, d: number, r: number, axis: number = KL.sheaveAxisPerD * D): BottomGeo {
   const I = L.inputs, S = section(L), car: P2 = [L.car.x + L.car.w / 2, L.car.y + L.car.h / 2], cw: P2 = [L.cw.x + L.cw.w / 2, L.cw.y + L.cw.h / 2];
-  const cal = Math.hypot(cw[0] - car[0], cw[1] - car[1]) || 1, dir: P2 = [(cw[0] - car[0]) / cal, (cw[1] - car[1]) / cal], across: P2 = [-dir[1], dir[0]];
+  // the wall behind the counterweight, the one the drops' line runs toward; the frame square to it from the car's drop
+  const dx = cw[0] - car[0], dy = cw[1] - car[1], alongX = Math.abs(dx) <= Math.abs(dy);
+  const wall = alongX ? (dy > 0 ? 'rear' : 'front') : dx > 0 ? 'right' : 'left';
+  const dir: P2 = alongX ? [0, dy > 0 ? 1 : -1] : [dx > 0 ? 1 : -1, 0], across: P2 = [-dir[1], dir[0]];
+  const cal = dx * dir[0] + dy * dir[1], vc = dx * across[0] + dy * across[1];
   const wallAt = exitAlong(car, dir, I.W, I.D), ropes = ropeWidths(n, d).ropes, c = KL.bottomClear, side = r === 2 ? Dp / 2 : 0;
   const half = Math.abs(dir[0]) * L.cw.w / 2 + Math.abs(dir[1]) * L.cw.h / 2, gap = wallAt - cal - half, um = wallAt - c - ropes;
   const at = (u: number, v: number): P2 => [car[0] + u * dir[0] + v * across[0], car[1] + u * dir[1] + v * across[1]];
   // what stands along the wall behind the counterweight: the rails' brackets and the side walls
-  const alongX = Math.abs(dir[0]) <= Math.abs(dir[1]), wallU = (v: number): number => {
+  const wallU = (v: number): number => {
     const p = at(um, v);
     return alongX ? p[0] : p[1];
   };
-  const wall = alongX ? (dir[1] > 0 ? 'rear' : 'front') : dir[0] > 0 ? 'right' : 'left';
   const spans = L.rails.flatMap((rl) => {
     const b = bracketSpan(L, rl);
     return b && b.wall === wall ? [b] : [];
@@ -86,14 +93,14 @@ export function bottomGeo(L: Layout, s: BottomScheme, D: number, Dp: number, n: 
   };
   // the counterweight's run Dp + side from its drop in plan: behind it when the gap allows, else along the wall
   const gu = half + gap - c - ropes, need = Dp + side, vw = gu >= need ? 0 : Math.sqrt(need * need - gu * gu);
-  const pick = [1, -1].map((sg) => ({ sg, score: Math.min(room(sg * vw), room(sg * vw - sg * D)) })).sort((p, q) => q.score - p.score)[0];
-  const mw = at(um, pick.sg * vw), mc = at(um, pick.sg * (vw - D)), fits = pick.score >= 0 && gap >= 2 * (ropes + c);
+  const pick = [1, -1].map((sg) => ({ sg, score: Math.min(room(vc + sg * vw), room(vc + sg * vw - sg * D)) })).sort((p, q) => q.score - p.score)[0];
+  const mw = at(um, vc + pick.sg * vw), mc = at(um, vc + pick.sg * (vw - D)), clear = Math.min(pick.score, gap - 2 * (ropes + c)), fits = clear >= 0;
   const sCar = Math.hypot(mc[0] - car[0], mc[1] - car[1]) - side, sCw = Math.hypot(mw[0] - cw[0], mw[1] - cw[1]) - side;
   const zHead = s === 'room' ? S.ceiling + (I.room?.slab ?? KL.slab) + KL.pulleyRoomAxis : S.ceiling - Dp / 2 - KL.headFrame;
   const roomFloor = s === 'under' ? S.pitFloor - KL.underSlab - (I.below?.H ?? KL.underRoomH) : 0;
   return {
     scheme: s, car, cw, dir, across, mc, mw, zHead, zSheave: roomFloor + axis, roomFloor,
-    sCar, sCw, carPulleys: sCar > Dp + 1 ? 2 : 1, cwPulleys: sCw > Dp + 1 ? 2 : 1, wallAt, fits, gap,
+    sCar, sCw, carPulleys: sCar > Dp + 1 ? 2 : 1, cwPulleys: sCw > Dp + 1 ? 2 : 1, wallAt, fits, clear, gap,
   };
 }
 
@@ -164,10 +171,11 @@ export function belowRoom(L: Layout, g: BottomGeo, body: readonly P2[] | null = 
     };
   }
   const [dx, dy] = g.dir, [ox, oy] = g.car, u0 = g.wallAt + I.wall;
-  // the body in the room's frame: along the drops' direction from the car's drop (u) and across it (v)
+  // the body in the room's frame: square to the wall from the car's drop (u) and along the wall (v), the room centred on
+  // the counterweight's drop along it
   const us = (body ?? []).map((p) => (p[0] - ox) * dx + (p[1] - oy) * dy), vs = (body ?? []).map((p) => -(p[0] - ox) * dy + (p[1] - oy) * dx);
-  const u1 = Math.max(u0 + KL.belowRoomLen, ...us.map((u) => u + c));
-  const v0 = Math.min(-KL.belowRoomHalf, ...vs.map((v) => v - c)), v1 = Math.max(KL.belowRoomHalf, ...vs.map((v) => v + c));
+  const vc = -(g.cw[0] - ox) * dy + (g.cw[1] - oy) * dx, u1 = Math.max(u0 + KL.belowRoomLen, ...us.map((u) => u + c));
+  const v0 = Math.min(vc - KL.belowRoomHalf, ...vs.map((v) => v - c)), v1 = Math.max(vc + KL.belowRoomHalf, ...vs.map((v) => v + c));
   const pts = [[u0, v0], [u1, v0], [u1, v1], [u0, v1]].map(([u, v]) => [ox + u * dx - v * dy, oy + u * dy + v * dx]);
   const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
   let x0 = Math.min(...xs), y0 = Math.min(...ys), W = Math.max(...xs) - x0, D = Math.max(...ys) - y0;
@@ -192,6 +200,7 @@ export function belowRoom(L: Layout, g: BottomGeo, body: readonly P2[] | null = 
 /** The check m_fit of the machine below (registry locale.ingombro): its body inside its room in plan, its top and its
  *  sheave's under the room's ceiling — the least distance left, at least 0 [mm]. */
 export function belowFit(L: Layout, g: BottomGeo, M: MachineSpec): ShaftCheck[] {
+  // (the runs' own clearances: m_runs in belowChecks)
   const m = belowMachine(L, g, M.D, M.n, M.d, M.shape ?? null), R = belowRoom(L, g, m.body).room, F = m.F, x0 = -R.shaftX, y0 = -R.shaftY;
   const top = g.zSheave - F.axis + (F.shape ? F.bed + bodyBox(F.shape)[4] : MACHINE_TOP * 1000 * F.s);
   let clear = R.H - (Math.max(top, g.zSheave + M.D / 2) - g.roomFloor);

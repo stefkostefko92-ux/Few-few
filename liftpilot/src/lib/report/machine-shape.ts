@@ -4,6 +4,7 @@
 // (src/shaft/machine-shape.ts); where the diverting pulley turns in the machine room (src/shaft/rinvio.ts). Italian.
 // Pure.
 import { bodyBox, machineFrame, sheaveOf, type MachineFrame, type MachineShape } from '@/shaft/machine-shape';
+import { KV_VERT } from '@/shaft/norme-vert';
 import type { MakerBedplate, RinvioFrame } from '@/shaft/rinvio';
 
 /** `rf`: the bedplate with the diverting pulley the machine stands on (on ours its feet on the irons, on the maker's its
@@ -40,6 +41,12 @@ function standsOn(F: MachineFrame, mk: MakerBedplate | null, irons: string, thro
   if (mk && F.on === 'pedestal') {
     return ['Piedistallo sul basamento', `del costruttore, alto ${fmt(F.bed, 0)} mm sotto i piedi, sul basamento ${mk.brand} ${mk.code} come lo disegna il `
       + `costruttore: l’asse della puleggia a ${fmt(mk.sheaveAxis, 0)} mm sul pavimento del locale`];
+  }
+  if (F.on === 'pad') {
+    return ['Rialzo sul basamento', `in acciaio, alto ${fmt(F.bed, 0)} mm sotto i piedi, sui ferri del telaio con rinvio (una trave UPN 160 sotto ogni `
+      + `ferro, a ${irons}; la puleggia fra il secondo e il terzo): quanto tiene ${fmt(KV_VERT.machineRimClear, 0)} mm sopra i ferri ciò che scende sotto `
+      + `il piano dei piedi (volantino e freno della vite inclinata), il volantino libero per la manovra di emergenza; l’asse della puleggia a `
+      + `${fmt(F.axis, 0)} mm sulla sommità del basamento`];
   }
   if (F.on === 'bedplate') {
     return ['Appoggio sul basamento', `i piedi direttamente sui ferri del ${mk ? `basamento ${mk.brand} ${mk.code}` : 'telaio con rinvio (una trave UPN 160 sotto '

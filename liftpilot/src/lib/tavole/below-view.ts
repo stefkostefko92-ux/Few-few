@@ -3,7 +3,8 @@
 // sheave in the gap behind the counterweight on a slow shaft through the wall, the gearbox and the motor in the room —
 // or under the pit, the ropes down through the pit's slab; the walls and the door, the controller with the free area in
 // front of it, the main switch, the two runs of the ropes to the sheave. Plan in the shaft's coordinates; section C-C
-// along the drops' direction (U from the car's drop, through the sheave's centre) with the height over the lowest floor.
+// square to the wall behind the counterweight (U from the car's drop, through the sheave's centre) with the height over
+// the lowest floor.
 // Model entities with their dimensions — the room's sizes and its door changed where they are drawn (ShaftInputs.below),
 // the shaft's (W, D, its wall, the pit) as on its own drawings; the machine's place and its sheave's axis follow the
 // ropes and stay references —; the machine is the 3D's (machine-outline.ts) scaled to the sheave or a maker's as it is,
@@ -196,7 +197,7 @@ function besideChains(I: Layout['inputs'], g: BottomGeo, R: RoomInputs, o: P2, o
   ];
 }
 
-/** Section C-C: along the drops' direction through the sheave's centre, the height over the lowest floor. */
+/** Section C-C: square to the wall behind the counterweight through the sheave's centre, the height over the lowest floor. */
 export function belowSectionEntities(L: Layout, M: MachineSpec, g: BottomGeo): { entities: Entity[]; bounds: Box } {
   const I = L.inputs, V = I.vertical, T = I.wall, S = section(L), out: Entity[] = [], under = g.scheme === 'under';
   const { F, zDir, C, ext, room: R } = placed(L, M, g), w = ropeWidths(M.n, M.d);
@@ -253,13 +254,12 @@ export function belowSectionEntities(L: Layout, M: MachineSpec, g: BottomGeo): {
   // the sheave's axis over the room's floor: the machine on its levelling shims (a reference)
   out.push(chain({ dir: 'y', pts: [floor, zs], at: right - (under ? T + 300 : WALL + 300), from: [null, uC], text: ['Asse {v}'] }));
   out.push(chain({ dir: 'y', pts: [S.pitFloor, 0], side: 'left', row: 0, text: ['Fossa {v}'], edit: [E('v.pit')] }));
+  // the section square to the wall behind the counterweight (bottom.ts: also with the drops' line askew to it), so its
+  // lengths through the shaft and the room are their sizes
   const size = Math.abs(g.dir[0]) > Math.abs(g.dir[1]) ? 'W' : 'D';
-  // along a drop line askew to the shaft the section's lengths through the shaft (and under the pit through the room)
-  // are not their sizes: references then (the plans change them)
-  const axial = Math.max(Math.abs(g.dir[0]), Math.abs(g.dir[1])) > 0.999;
   if (under) {
-    out.push(chain({ dir: 'x', pts: [u0, u1], side: 'top', row: 0, text: ['Vano {v}'], edit: [axial ? E(size) : null] }),
-      chain({ dir: 'x', pts: [r0, r1], side: 'bottom', row: 0, text: ['{v} Locale'], edit: [axial ? E(`below.${size}`) : null] }));
-  } else out.push(chain({ dir: 'x', pts: [u0, u1, u1 + T, r1], side: 'bottom', row: 0, text: ['Vano {v}', '{v}', '{v} Locale'], edit: [axial ? E(size) : null, E('wall'), E(`below.${size}`)] }));
+    out.push(chain({ dir: 'x', pts: [u0, u1], side: 'top', row: 0, text: ['Vano {v}'], edit: [E(size)] }),
+      chain({ dir: 'x', pts: [r0, r1], side: 'bottom', row: 0, text: ['{v} Locale'], edit: [E(`below.${size}`)] }));
+  } else out.push(chain({ dir: 'x', pts: [u0, u1, u1 + T, r1], side: 'bottom', row: 0, text: ['Vano {v}', '{v}', '{v} Locale'], edit: [E(size), E('wall'), E(`below.${size}`)] }));
   return { entities: out, bounds: { x0, y0: low, x1: right, y1: top } };
 }

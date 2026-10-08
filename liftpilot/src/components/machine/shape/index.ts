@@ -23,11 +23,13 @@ const m = (v: number): number => v / 1000;
 /** What the feet stand on, its underside at y = 0 and its top at the feet's plane: our bedframe — a channel under each
  *  iron (src/shaft/machine-shape.ts machineFrame) as tall as the frame on its mounts, never on posts, the end ones
  *  across from the first to the last, past the rope falls —, the maker's pedestal on the maker's bedplate (a welded box
- *  under the feet between its plates), or nothing on our bedplate with the diverting pulley (the feet on its irons). */
+ *  under the feet between its plates), on our bedplate with the diverting pulley our riser like it when something hangs
+ *  under the feet (machine-shape.ts padOf), or nothing (the feet on its irons). */
 function bedframe(F: MachineFrame, M: MachineMaterials): THREE.Group {
   const g = new THREE.Group(), S = F.shape, bed = m(F.bed);
   if (F.on === 'bedplate' || !S) return g;
-  if (F.on === 'pedestal') {
+  if (F.on === 'pedestal' || F.on === 'pad') {
+    // (our riser on the bedplate's irons is the same welded box)
     const [x0, z0, x1, z1] = S.feet.map(m), t = 0.012, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
     g.add(mesh(new THREE.BoxGeometry(x1 - x0 + 0.03, t, z1 - z0 + 0.03), M.frame, cx, t / 2, cz), mesh(new THREE.BoxGeometry(x1 - x0, t, z1 - z0), M.frame, cx, bed - t / 2, cz));
     g.add(mesh(new RoundedBoxGeometry(x1 - x0 - 0.03, bed - 2 * t, z1 - z0 - 0.03, 2, 0.006), M.frame, cx, bed / 2, cz));

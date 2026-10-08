@@ -11,7 +11,7 @@
 import { chain, edit as E, path, pickEdit, rect, type Edit, type Entity, type Pt } from '../drawing';
 import type { HebLayout } from './heb';
 import { hebSection } from './heb-view';
-import { machineRun, machineU, machineV, type MachineSpec, type RoomGeo } from './machine-room';
+import { dropSpan, machineRun, machineU, machineV, type MachineSpec, type RoomGeo } from './machine-room';
 import { KV_VERT } from './norme-vert';
 import { PROFILES, PROFILE_NAMES } from './profiles';
 import { rinvioRun } from './rinvio';
@@ -20,6 +20,11 @@ import { hasProfile, ownAxis, padsOf, profileOf, supportOf, supportSpan, type Ma
 
 const MOUNTS = [-0.36, 0.95] as const;
 const NAME: Record<MachineSupport['kind'], string> = { shims: 'Spessori', frame: 'Telaio', beams: 'Putrelle', plates: 'Piastre', plinth: 'Plinto', rinvio: 'Telaio con rinvio' };
+
+/** The clear span of each beam from wall to wall, under each iron of the machine's frame, along the drop line [u0, u1]
+ *  (askew, each meets the walls at its own u), and the beam itself borne in the walls at each end. */
+export const beamClear = (G: RoomGeo): [number, number][] => G.frame.beams.map((z) => dropSpan(G, 0, 0, G.room.W, G.room.D, machineV(G, z)));
+export const beamSpans = (G: RoomGeo): [number, number][] => beamClear(G).map(([a, b]) => [a - KV_VERT.supportBearing, b + KV_VERT.supportBearing]);
 
 /** A profile changed by choosing another of the catalogue: the dimension shows its height. */
 const profilePick = (s: MachineSupport): Edit => pickEdit('sup.profile', PROFILE_NAMES.map((n) => ({ label: `${n} · h ${PROFILES[n].h} mm`, set: n })), PROFILE_NAMES.indexOf(profileOf(s)));
@@ -49,10 +54,13 @@ export function supportSection(M: MachineSpec, G: RoomGeo, r0: number, r1: numbe
     if (s.kind === 'plates') for (const u of mounts) out.push(rect(u - hp, base, u + hp, top, 'outline', 'steel'));
     if (s.kind === 'plinth' && run) out.push(rect(run[0], base, run[1], top, 'outline', 'concrete'));
     if (hasProfile(s)) {
-      const P = PROFILES[profileOf(s)], [u0, u1] = s.kind === 'beams' ? [r0 - KV_VERT.supportBearing, r1 + KV_VERT.supportBearing] : run ?? [r0, r1];
-      // seen beside the cut along the drop line: drawn, not hatched, so the pulleys and ropes in front stay readable
-      out.push(rect(u0, top - P.h, u1, top, 'outline'));
-      for (const z of [top - P.tf, top - P.h + P.tf]) out.push(path([[u0, z], [u1, z]] as Pt[], false, 'thin'));
+      // seen beside the cut along the drop line: drawn, not hatched, so the pulleys and ropes in front stay readable;
+      // beams from wall to wall each between its own walls (askew they meet the walls at other u), one drawn when alike
+      const P = PROFILES[profileOf(s)], spans = s.kind === 'beams' ? beamSpans(G) : [run ?? [r0, r1]];
+      for (const [u0, u1] of spans.filter((p, i) => spans.findIndex((q) => Math.abs(q[0] - p[0]) < 0.5 && Math.abs(q[1] - p[1]) < 0.5) === i)) {
+        out.push(rect(u0, top - P.h, u1, top, 'outline'));
+        for (const z of [top - P.tf, top - P.h + P.tf]) out.push(path([[u0, z], [u1, z]] as Pt[], false, 'thin'));
+      }
     }
   }
   // dimensions: the support's height (the sheave's axis follows it), a profile, a frame's or a plinth's length, the
@@ -71,8 +79,10 @@ export function supportSection(M: MachineSpec, G: RoomGeo, r0: number, r1: numbe
   const row = M.Dp > 0 ? 2 : 1;
   if (run) out.push(chain({ dir: 'x', pts: run, side: 'top', row, from: [top, top], text: [`{v} ${NAME[s.kind]}`], edit: [E('sup.length')] }));
   if (s.kind === 'beams') {
+    // the clear span of the longest beam (on an axis, of each)
     const along = Math.abs(G.uy) > 0.999 ? 'room.D' : Math.abs(G.ux) > 0.999 ? 'room.W' : null;
-    out.push(chain({ dir: 'x', pts: [r0, r1], side: 'top', row, text: ['Luce putrelle {v}'], edit: [along ? E(along) : null] }));
+    const [c0, c1] = beamClear(G).reduce((a, b) => (b[1] - b[0] > a[1] - a[0] + 0.5 ? b : a));
+    out.push(chain({ dir: 'x', pts: [c0, c1], side: 'top', row, text: ['Luce putrelle {v}'], edit: [along ? E(along) : null] }));
   }
   return out;
 }
@@ -90,8 +100,8 @@ export function supportPlan(M: MachineSpec, G: RoomGeo, onDrop: (u: number, v: n
   if (s.kind === 'plates') for (const u of mounts) for (const vb of beams) out.push(path(quad(u - hx, vb - hz, u + hx, vb + hz), true, 'outline', 'steel'));
   if (s.kind === 'plinth' && run) for (const [w0, w1] of bands) out.push(path(quad(run[0], w0, run[1], w1), true, 'outline', 'concrete'));
   if (hasProfile(s)) {
-    const b = PROFILES[profileOf(s)].b, [u0, u1] = s.kind === 'beams' ? [r0 - KV_VERT.supportBearing, r1 + KV_VERT.supportBearing] : run ?? [r0, r1];
-    for (const vb of beams) out.push(path(quad(u0, vb - b / 2, u1, vb + b / 2), true, 'hidden'));
+    const b = PROFILES[profileOf(s)].b, spans = s.kind === 'beams' ? beamSpans(G) : beams.map(() => run ?? [r0, r1]);
+    beams.forEach((vb, i) => out.push(path(quad(spans[i][0], vb - b / 2, spans[i][1], vb + b / 2), true, 'hidden')));
   }
   return out;
 }
