@@ -4,7 +4,7 @@
 // No state and no directive: the live panel (MachineAdvice) verifies the models in the browser; the saved pages render
 // it on the server with the advice of the record and no `onUse`.
 import { useTranslations } from 'next-intl';
-import { ADVICE_MODELS, type MachineAdvice, type MachineCandidate } from '@/lib/lift/advice';
+import type { MachineAdvice, MachineCandidate } from '@/lib/lift/advice';
 import { dvText, excludedText, machineName, whyValues } from '@/lib/present/advice';
 
 export interface AdviceViewProps {
@@ -71,7 +71,7 @@ export default function AdviceView({ advice, alt = null, running = null, fmt, in
     const th = (short: string, full: string, num = false) => <th scope="col" title={full} className={num ? 'num' : undefined}>{short}</th>;
     return (
       <details className="advice-all">
-        <summary>{t('table', { n: A.candidates.length, total: ADVICE_MODELS.length })}</summary>
+        <summary>{t('table', { n: A.candidates.length, total: A.models.length })}</summary>
         <div className="table-scroll">
           <table className="data-table stack">
             <thead>
@@ -127,6 +127,7 @@ export default function AdviceView({ advice, alt = null, running = null, fmt, in
       </div>
       {advice ? (
         <div className="advice-body">
+          {advice.wall ? <p className="note">{t('wall')}</p> : null}
           {advice.best.length ? <div className="advice-grid">{advice.best.map((c, k) => card(c, k === 0, t('use')))}</div> : <p className="note">{t('none_all')}</p>}
           {advice.best.length ? <p className="advice-why">{reason(advice)}</p> : null}
           {advice.candidates.length ? advice.none.map((brand) => <p key={brand} className="note">{t('none_brand', { brand })}</p>) : null}

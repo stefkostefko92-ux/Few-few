@@ -15,6 +15,7 @@ import { calcRecord, recordMarks, storedCollaudo } from '@/server/records';
 import { designBasis } from '@/lib/prices/plant-bom';
 import { analyse } from '@/lib/present/analysis';
 import { calcBom, designBom } from '@/lib/prices/bom';
+import { bomKind } from '@/lib/prices/bom-parts';
 import { initialsOf } from '@/lib/tavole/compose';
 import { issueChecks } from '@/lib/tavole/issue-check';
 import { idSchema } from '@/lib/schemas';
@@ -28,7 +29,7 @@ import CalculationView from '@/components/calc/CalculationView';
 import RefreshForm from '@/components/RefreshForm';
 import Refreshed from '@/components/Refreshed';
 import AdviceView from '@/components/lift/AdviceView';
-import { pitchesOf, plantReadSchema } from '@/lib/plant';
+import { pitchesOf, plantData, plantReadSchema } from '@/lib/plant';
 import { withPitches } from '@/shaft/brackets';
 
 export async function generateMetadata() {
@@ -73,7 +74,10 @@ export default async function CalculationPage({ params, searchParams }: {
   const download = rec.ok && can(user, 'report:download');
   const order = !download ? null : lift ? designOrder(lift.inputs, advice, lift.dv) : calcOrder(V, advice);
   // the cost with the company's prices (only for whoever sees prices): the design's articles, or the replacement's machine
-  const costed = await projectCost(user, lift ? designBom({ ...lift.dv, layout: withPitches(lift.dv.layout, pitchesOf(c.project.plant)) }) : calcBom(V, C), lift ? 'full' : 'replacement',
+  // (a lift design tested to UNI 10411: only the parts it replaces, as a replacement) with the ropes cut as sheet 1 of its
+  // shaft design measures them
+  const costKind = lift ? bomKind(lift.dv.collaudo) : 'replacement';
+  const costed = await projectCost(user, lift ? designBom({ ...lift.dv, layout: withPitches(lift.dv.layout, pitchesOf(c.project.plant)) }, plantData(c.project.plant)) : calcBom(V, C, null, rec.design?.layout ?? null), costKind,
     lift ? designBasis(lift.dv) : { stops: null, travel: analyse(V).ctx.I.H });
   const where = lift ? 'design' : 'calc';
   // before an issue: the machine the data of the installation name against the catalogue's the set would carry (the
@@ -120,7 +124,7 @@ export default async function CalculationPage({ params, searchParams }: {
       </dl>
       <AdviceView advice={advice} alt={alt && lift ? { advice: alt, sheave: lift.dv.machine.D } : null} fmt={fmt} where={where}
         inUse={(x) => own !== null && own.brand === x.brand && own.model === x.model && (!lift || own.I.layout === x.I.layout)} />
-      {costed ? <ProjectCost cost={costed.cost} skipped={costed.skipped} locale={locale} scope={lift ? 'design' : 'calc'} editable={can(user, 'prices:edit')} /> : null}
+      {costed ? <ProjectCost cost={costed.cost} skipped={costed.skipped} locale={locale} scope={!lift ? 'calc' : costKind === 'full' ? 'design' : 'modification'} editable={can(user, 'prices:edit')} /> : null}
       {download ? (
         <section className="panel">
           <h2>{ta('order_title')}</h2>

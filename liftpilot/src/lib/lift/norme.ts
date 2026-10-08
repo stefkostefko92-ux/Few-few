@@ -6,6 +6,7 @@ import { letto } from '@/calc/norme-fonti';
 import { SHEAVE_GRID } from '@/calc/sizing';
 import { VOCI_MASSE, type CostanteMasse } from './norme-masse';
 import { VOCI_TAVOLE } from '../tavole/norme-tavole';
+import { KL_ORDINE, VOCI_ORDINE } from './norme-ordine';
 
 export const KL = {
   // estimate of the empty car mass when it is not entered: P = ratio · Q, rounded up to the step [kg]
@@ -48,6 +49,7 @@ export const KL = {
   // DPR 162/1999, art. 19 c.1: lifts put in service by the earlier rules until 30 June 1999; from this day only with
   // the CE marking (a reading of the article: the day is to be confirmed on the logbook)
   ceFrom: '1999-07-01',
+  ...KL_ORDINE,
 } as const;
 
 export type CostanteImpianto = keyof typeof KL;
@@ -248,4 +250,5 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
   },
   // what the drawing set writes by choice or by practice (src/lib/tavole/norme-tavole.ts)
   ...VOCI_TAVOLE,
+  ...VOCI_ORDINE,
 ];

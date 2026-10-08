@@ -1,7 +1,7 @@
 // The words of the advice (src/lib/lift/advice.ts) the screens and the documents share: the machine's name, the speed's
 // deviation, the values of the reason the first machine comes before the second (messages advice.why_*), the models left
 // out before the calculation. Pure.
-import { ADVICE_BRANDS, ADVICE_MODELS, type MachineAdvice, type MachineCandidate } from '@/lib/lift/advice';
+import { ADVICE_BRANDS, type MachineAdvice, type MachineCandidate } from '@/lib/lift/advice';
 
 type Fmt = (x: number, dec?: number) => string;
 
@@ -22,12 +22,13 @@ export function whyValues(a: MachineCandidate, b: MachineCandidate | undefined, 
   };
 }
 
-/** The models of the advice's makers whose catalogue does not take the installation (no candidate), by maker:
+/** The models the advice verified (its own: with the sheave through the wall the long-shaft and outboard-support ones)
+ *  whose catalogue does not take the installation (no candidate), by maker:
  *  "SICOR SV110, SH110B · Montanari M65"; empty when every model was verified. */
 export function excludedText(A: MachineAdvice): string {
   const out = (m: { brand: string; model: string }): boolean => !A.candidates.some((c) => c.brand === m.brand && c.model === m.model);
   return ADVICE_BRANDS.flatMap((b) => {
-    const models = ADVICE_MODELS.filter((m) => m.brand === b && out(m)).map((m) => m.model);
+    const models = A.models.filter((m) => m.brand === b && out(m)).map((m) => m.model);
     return models.length ? [`${b} ${models.join(', ')}`] : [];
   }).join(' · ');
 }

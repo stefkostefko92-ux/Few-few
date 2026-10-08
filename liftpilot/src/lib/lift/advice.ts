@@ -8,16 +8,18 @@
 // building and the room for nothing, and passing checks are what makes one acceptable — a bigger one is not taken for
 // its margins); fewer values at the limit; drawn as it is (the maker's dimensions: the drawings and the room's check
 // exact); the speed nearest the rated one (to 1 %); the lighter whole machine (what a catalogue's mass leaves out
-// estimated, so that the makers compare alike). Pure: the screens may spread the models over time
+// estimated, so that the makers compare alike). With the machine below beside the shaft, its sheave through the wall,
+// only their long-shaft and outboard-support variants (WALL_MODELS). Pure: the screens may spread the models over time
 // (ADVICE_MODELS, one candidate each).
 import type { CheckStatus, FormValues, Machine, Plant, Results } from '@/calc/types';
 import { makerBedplate } from '@/lib/catalog/bedplates';
 import { catalogOf, type Brand, type CatalogFit } from '@/lib/catalog/machines';
+import { mountOf } from '@/lib/catalog/mounting';
 import { shapeOf } from '@/lib/catalog/shapes';
 import { analyse, mirrorRopes, proposalValues, type Analysis } from '@/lib/present/analysis';
 import type { MakerBedplate } from '@/shaft/rinvio';
 import { sizeMachine } from '@/calc/sizing';
-import { bestFit, catalogValues, firstTaken, offGrid } from './catalog';
+import { bestFit, catalogValues, firstTaken, offGrid, throughWall } from './catalog';
 import { anchorPull, type AnchorPull } from './anchor';
 import { ADVICE_BRANDS } from './known';
 import { machineMass } from './machine-mass';
@@ -29,6 +31,15 @@ export { ADVICE_BRANDS };
 export interface AdviceModel { brand: Brand; model: string }
 export const ADVICE_MODELS: readonly AdviceModel[] =
   ADVICE_BRANDS.flatMap((brand) => catalogOf(brand).filter((c) => !c.byName).map((c) => ({ brand, model: c.model })));
+/** With the machine below beside the shaft (the sheave through the wall, catalog.ts throughWall) the advice's makers'
+ *  long-shaft and outboard-support variants instead, named only or not (registry impianto.basso.albero). */
+export const WALL_MODELS: readonly AdviceModel[] =
+  ADVICE_BRANDS.flatMap((brand) => catalogOf(brand).filter((c) => mountOf(c)).map((c) => ({ brand, model: c.model })));
+/** The models the advice verifies: with the sheave through the wall or not. */
+export const adviceModels = (wall: boolean): readonly AdviceModel[] => (wall ? WALL_MODELS : ADVICE_MODELS);
+/** The sheave through the wall for the one form's inputs, for the calculator's values (no scheme: beside the shaft). */
+export const liftWall = (inp: Pick<LiftInputs, 'calc' | 'bottom'>): boolean => throughWall(inp.calc.layout, inp.bottom);
+export const valuesWall = (V: FormValues): boolean => throughWall(V.layout, null);
 
 /** Where the catalogue's data of a machine come from, as its `src` marks them: a document of the maker (D), the maker's
  *  pages or extracts of them (E), a dealer (R), an earlier round (P). */
@@ -98,6 +109,9 @@ export interface MachineAdvice {
   none: Brand[];
   /** why best[0] comes before best[1] */
   why: AdviceReason | null;
+  /** the models verified (adviceModels) and whether they are those for the sheave through the wall */
+  models: readonly AdviceModel[];
+  wall: boolean;
 }
 
 const count = (checks: readonly { status: CheckStatus }[], s: CheckStatus): number => checks.filter((c) => c.status === s).length;
@@ -119,12 +133,12 @@ const rank = (a: MachineCandidate, b: MachineCandidate): number => {
   return 0;
 };
 
-/** The advice from the candidates found (any order). */
-export function adviceOf(found: readonly MachineCandidate[]): MachineAdvice {
+/** The advice from the candidates found (any order) among the models for the sheave through the wall (`wall`) or not. */
+export function adviceOf(found: readonly MachineCandidate[], wall = false): MachineAdvice {
   const candidates = [...found].sort(rank);
   const best = ADVICE_BRANDS.flatMap((b) => candidates.find((c) => c.brand === b) ?? []).sort(rank), [a, b] = best;
   const why = !a ? null : !b ? 'only' : CRITERIA.find(([, f]) => f(a, b) < 0)?.[0] ?? null;
-  return { candidates, best, none: ADVICE_BRANDS.filter((x) => !candidates.some((c) => c.brand === x)), why };
+  return { candidates, best, none: ADVICE_BRANDS.filter((x) => !candidates.some((c) => c.brand === x)), why, models: adviceModels(wall), wall };
 }
 
 /** The candidate of the machine `fit` of the catalogue, verified with the installation I and the machine N (results
@@ -156,10 +170,10 @@ export const liftCandidate = (inp: LiftInputs, m: AdviceModel): MachineCandidate
 /** One model for the calculator's values `V` (their analysis `a`): the option of the sizing it takes, the calculation
  *  with its values, the maker's bedplate by the sheave and the diverting pulley of the values. */
 export function valuesCandidate(V: FormValues, a: Analysis, m: AdviceModel): MachineCandidate | null {
-  const { I, fixedD, rope } = a.ctx;
+  const { I, fixedD, rope } = a.ctx, choice = { ...m, wall: throughWall(I.layout, null) };
   // the grid's options, and those of the model's own sheave off the grid (catalog.ts offGrid) unless the sheave is kept
-  const own = fixedD ? [] : offGrid(m).flatMap((D) => sizeMachine(I, a.ctx.N, D, rope).options);
-  const fits = [...a.sizing.options, ...own].flatMap((o) => { const fit = bestFit(m, o, I.Q, I.r); return fit ? [{ o, fit }] : []; });
+  const own = fixedD ? [] : offGrid(choice).flatMap((D) => sizeMachine(I, a.ctx.N, D, rope).options);
+  const fits = [...a.sizing.options, ...own].flatMap((o) => { const fit = bestFit(choice, o, I.Q, I.r); return fit ? [{ o, fit }] : []; });
   // the first in the sizing's order the machine takes with its own ratio (motor, groove and brake sized again on it)
   const taken = firstTaken(fits, a.sizing.keep !== null, (x) => {
     const option = proposalValues(x.o), own = catalogValues(x.fit, mirrorRopes({ ...V, ...option }));
@@ -172,7 +186,10 @@ export function valuesCandidate(V: FormValues, a: Analysis, m: AdviceModel): Mac
 }
 
 /** The whole advice at once (the server, the documents, the tests). */
-export const liftAdvice = (inp: LiftInputs): MachineAdvice => adviceOf(ADVICE_MODELS.flatMap((m) => liftCandidate(inp, m) ?? []));
+export const liftAdvice = (inp: LiftInputs): MachineAdvice => {
+  const wall = liftWall(inp);
+  return adviceOf(adviceModels(wall).flatMap((m) => liftCandidate(inp, m) ?? []), wall);
+};
 
 /** With direct pull the sheave is the rope drop of the plan: the same inputs with the diverting pulley in the machine
  *  room (on the machine's bedplate), whose traction sheave is then free; null when the layout is not direct pull. */
@@ -184,6 +201,6 @@ export function liftAlternative(inp: LiftInputs, advice: MachineAdvice): Machine
   return d ? liftAdvice(d) : null;
 }
 export function valuesAdvice(V: FormValues): MachineAdvice {
-  const a = analyse(V);
-  return adviceOf(ADVICE_MODELS.flatMap((m) => valuesCandidate(V, a, m) ?? []));
+  const a = analyse(V), wall = valuesWall(V);
+  return adviceOf(adviceModels(wall).flatMap((m) => valuesCandidate(V, a, m) ?? []), wall);
 }

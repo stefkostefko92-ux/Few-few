@@ -14,7 +14,7 @@ import { beamChecks, type SupportLoad } from '@/shaft/support-check';
 import type { ShaftCheck } from '@/shaft/types';
 import { NORMA_SIGLA, ambitoOf } from '../lift/collaudo';
 import { ADEMPIMENTI } from '../lift/norme-collaudo';
-import { cablesMass, carSideStatic, carriedBy, ropeLength, supportMass } from '../lift/support';
+import { cablesMass, carSideStatic, carriedBy, ropeCut, supportMass } from '../lift/support';
 import { machineMass } from '../lift/machine-mass';
 import { supportRows } from './sheet-loads';
 import type { Plant } from '../plant';
@@ -127,8 +127,8 @@ export function foundText(s: SurveyTavoleInput['survey']): string {
 
 /** The load on the support as the sheet counts it (surveyLoad's), for the reactions. */
 const surveyLoadOf = (d: RoomDerived, Pl: Plant): SupportLoad => {
-  const { ld, machine, dyn } = surveyLoad(d, Pl), { I, N } = d.analysis.ctx;
-  return { machine, static: ld.static, dyn, car: carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes: N.n * N.qf * ropeLength(I), cables: cablesMass(I.H) }) };
+  const { ld, machine, dyn, ropesKg, cablesKg } = surveyLoad(d, Pl), { I } = d.analysis.ctx;
+  return { machine, static: ld.static, dyn, car: carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes: ropesKg, cables: cablesKg }) };
 };
 
 /** The load on the machine's support and on the slab as sheet 1 counts it — the machine's mass of the calculation with
@@ -137,7 +137,7 @@ const surveyLoadOf = (d: RoomDerived, Pl: Plant): SupportLoad => {
  *  this load: the sheet and the relazione tecnica print the same. */
 export function surveyLoad(d: RoomDerived, Pl: Plant) {
   const { ctx, res } = d.analysis, { I, N } = ctx;
-  const ropesKg = N.n * N.qf * ropeLength(I), cablesKg = cablesMass(I.H);
+  const ropesKg = N.n * N.qf * ropeCut(I), cablesKg = cablesMass(I.H);
   // the whole machine (a catalogue's parts estimated) on what carries it, as a whole design's sheet counts them
   const whole = machineMass(N, d.made), support = supportMass(d.G, d.M), bedplate = support.maker, dyn = KV_VERT.dynFactor;
   const machine = carriedBy(support, whole.kg);

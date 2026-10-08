@@ -37,6 +37,7 @@ import { machineSpec, sheaveAxisBelow } from '../lift/machine';
 import { shapeOf } from '../catalog/shapes';
 import { rinvioRow } from './machine-shape';
 import { carriedMass, supportChecks, supportLoad, supportMass } from '../lift/support';
+import { rigLength } from '../lift/rope';
 import { adviceBlocks } from './advice';
 import type { MachineAdvice } from '../lift/advice';
 import { catalogMachineOf, massModelOf, modelOf } from '../lift/known';
@@ -153,12 +154,14 @@ export function buildReport(r: ReportInput): ReportDoc {
   // the maker's model whose whole machine the loads count: the proposal's, else the catalogue's machine the values are
   // (one entered by hand) — the one named below, as the design's derivation and sheet 1 take it (known.ts)
   const weighed = massModelOf(I, N, r.values, made);
-  // the support's load as the design and sheet 1 count it: the whole machine with what carries it (support.ts)
-  const ld = supportLoad(ctx, res.Mcw, { machine: machine && r.design ? carriedMass(roomGeo(r.design.layout, machine), machine, N, weighed) : N.mass });
-  const bed = machine ? supportMass(null, machine).maker : 0;
   // the checks that need the machine, as the design's verdict takes them: the beams, the car's top under what hangs over
   // it, a machine below in its rooms (below-checks.ts)
   const scheme = I.layout === 'bottom' ? m.bottom ?? 'head' : null, L = r.design?.layout;
+  // the support's load as the design and sheet 1 count it: the whole machine with what carries it (support.ts), the
+  // ropes at their cut length on the design's rope rig
+  const rope = L && machine ? rigLength({ layout: L, analysis: a, machine, bottom: scheme }) : null;
+  const ld = supportLoad(ctx, res.Mcw, { machine: machine && L ? carriedMass(roomGeo(L, machine), machine, N, weighed) : N.mass, rope });
+  const bed = machine ? supportMass(null, machine).maker : 0;
   const g = L && machine && scheme ? bottomGeo(L, scheme, machine.D, I.Dp, machine.n, machine.d, I.r, sheaveAxisBelow(machine.D, machine.shape ?? null),
     sheaveHalfBelow(machine.D, machine.n, machine.d, machine.shape ?? null)) : null;
   const beams = L && machine ? [...supportChecks(L, machine, ld, !scheme), ...headTopChecks(withRig(L, I.r, I.Dp, machine.n, machine.d, g), I.r, I.Dp, scheme), ...(g ? belowChecks(L, g, machine, I.Dp) : [])] : [];
@@ -180,7 +183,7 @@ export function buildReport(r: ReportInput): ReportDoc {
   }
   // the rails and the loads on the building, with the data of the installation (guide.ts): as sheet 1 counts them
   const guide = r.design && machine ? guideSection(a, r.design.layout, r.plant ?? {}, machine, weighed, fmt, st, (c) => esitoOf(C, c.id, st(c.status), c.status),
-    cwGearOf(scheme === 'under', r.plant ?? {})) : null;
+    cwGearOf(scheme === 'under', r.plant ?? {}), rope) : null;
   if (guide) {
     section('Guide e carichi sulle strutture');
     B.push(...guide.blocks);

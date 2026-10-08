@@ -9,7 +9,7 @@ import { KV_GUIDE } from '@/shaft/norme-guide';
 import type { MachineSpec } from '@/shaft/machine-room';
 import { railLabel } from '@/shaft/rails';
 import type { Layout, ShaftCheck } from '@/shaft/types';
-import { ropeLength } from '../lift/support';
+import { ropeCut } from '../lift/support';
 import type { Plant } from '../plant';
 import type { Analysis } from '../present/analysis';
 import { railChecks, railLimits } from '../tavole/rail-check';
@@ -21,10 +21,13 @@ type Fmt = (x: number, dec?: number) => string;
 
 const GEAR_IT = { progressive: 'progressivo', roller: 'istantaneo a rulli', instantaneous: 'istantaneo' } as const;
 
-/** The rails' checks with the data of the installation (the result of the relazione takes them) and the section. */
+/** The rails' checks with the data of the installation (the result of the relazione takes them) and the section;
+ *  `cwGear`: the counterweight's safety gear over a space under the shaft, `rope`: one rope's length on the rig. */
 export function guideSection(a: Analysis, L: Layout, Pl: Plant, M: MachineSpec, made: { brand: string; model: string } | null, fmt: Fmt,
-  st: (s: CheckStatus) => string, esito: (c: ShaftCheck) => { text: string; status: BlockStatus }, cwGear: SafetyGear | null = null): { checks: ShaftCheck[]; blocks: ReportBlock[] } {
-  const { I, N } = a.ctx, R = sheetRails(L, I.P, I.Q, Pl), SL = sheetLoads(a, L, Pl, M, made, N.n * N.qf * ropeLength(I), R, cwGear), rc = R.rc, lim = railLimits();
+  st: (s: CheckStatus) => string, esito: (c: ShaftCheck) => { text: string; status: BlockStatus }, cwGear: SafetyGear | null = null,
+  rope: number | null = null): { checks: ShaftCheck[]; blocks: ReportBlock[] } {
+  // the ropes at their cut length on the design's rope rig (`rope`: rope.ts rigLength), as sheet 1 counts them
+  const { I, N } = a.ctx, R = sheetRails(L, I.P, I.Q, Pl), SL = sheetLoads(a, L, Pl, M, made, N.n * N.qf * ropeCut(I, rope), R, cwGear), rc = R.rc, lim = railLimits();
   const checks = railChecks(rc, R.gear, I.v), MPa = (x: number | null): string => (x === null ? '—' : `${fmt(x, 1)} N/mm²`);
   const labels: Readonly<Record<string, string>> = appIt.shaft, rows = checks.map((c) => esito(c));
   const B: ReportBlock[] = [

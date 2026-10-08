@@ -15,7 +15,7 @@ import { deriveLift, type AutoFlags, type BottomScheme, type Collaudo, type Lift
 import { enteredBy, existingMissing, filled, layoutTo, missingOf, type BlankKey, type LiftDraft } from '@/lib/lift/blank';
 import { drawnShaft, edited, enteredShaft, movedPanel, panelEntered } from '@/lib/lift/panel-form';
 import { withPitches, type BracketPitches } from '@/shaft/brackets';
-import { deflectorInputs, liftCandidate, type AdviceModel, type MachineCandidate } from '@/lib/lift/advice';
+import { deflectorInputs, liftCandidate, liftWall, type AdviceModel, type MachineCandidate } from '@/lib/lift/advice';
 import type { CatalogChoice } from '@/lib/lift/catalog';
 import { mirrorRopes, proposalValues } from '@/lib/present/analysis';
 import { textsFor } from '@/lib/present/texts';
@@ -265,7 +265,7 @@ export default function LiftWorkspace({ projectId, initial, blank: initialBlank 
           <>
             {complete ? <LiftFacts derived={derived} X={X} fmt={P.fmt} />
               : <MissingPanel id="missing-machine" title={tb('machineTitle')} lead={tb('machineLead')} items={items(machineMissing)} />}
-            <MachineAdvice evaluate={evaluate} alternative={alternative} fmt={P.fmt} inUse={machineInUse} onUse={takeMachine} where="design" />
+            <MachineAdvice evaluate={evaluate} alternative={alternative} wall={liftWall(dInp)} fmt={P.fmt} inUse={machineInUse} onUse={takeMachine} where="design" />
             {complete ? (
               <>
                 <LiftSimulator derived={derived} fmt={P.fmt} api={sim} />

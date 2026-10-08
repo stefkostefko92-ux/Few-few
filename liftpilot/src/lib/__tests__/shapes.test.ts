@@ -198,7 +198,7 @@ test('proposta da SICOR, Montanari o Sassi: la forma nei disegni, l’asse del s
   // that could not be saved) — the proposal does not take it, the grid's machine stands with no issue
   for (const [brand, model] of [['SICOR', 'SH140'], ['SICOR', 'SH190'], ['Montanari', 'M98'], ['Sassi', 'MF84']] as const) for (const support of ['plinth', 'frame'] as const) {
     const dv = deriveLift(maker(brand, model, support));
-    assert.equal(dv.catalog?.miss, true, `${model} ${support}`);
+    assert.equal(dv.catalog?.miss, 'checks', `${model} ${support}`);
     assert.deepEqual(dv.issues, [], `${model} ${support}`);
   }
 });

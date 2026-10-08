@@ -154,12 +154,17 @@ export function bodyReach(F: MachineFrame): number {
   return Math.max(F.face, S.feet[3], ...parts, ...rod, ...F.beams.map((z) => z + IRON / 2));
 }
 
+/** Beside the shaft below: the sheave's mid-plane, between the runs of `g`, from the wall's face in the shaft [mm]. */
+export function sheaveInner(g: BottomGeo): number {
+  const C: P2 = [(g.mc[0] + g.mw[0]) / 2, (g.mc[1] + g.mw[1]) / 2];
+  return g.wallAt - ((C[0] - g.car[0]) * g.dir[0] + (C[1] - g.car[1]) * g.dir[1]);
+}
+
 /** Beside the shaft below: how much longer the machine's slow shaft is to carry its sheave, between the runs of `g`,
- *  through the wall `wall` thick into the gap behind the counterweight, the whole body (bodyReach) in the room 50 mm
+ *  through the wall `wall` thick into the gap behind the counterweight, the whole body (bodyReach) in the room KL.faceGap
  *  clear of the wall — only the slow shaft goes through it, in its sleeve [mm]. */
 export function throughExt(F: MachineFrame, g: BottomGeo, wall: number): number {
-  const C: P2 = [(g.mc[0] + g.mw[0]) / 2, (g.mc[1] + g.mw[1]) / 2], toWall = g.wallAt - ((C[0] - g.car[0]) * g.dir[0] + (C[1] - g.car[1]) * g.dir[1]);
-  return Math.max(0, toWall + wall + 50 - (F.zSheave - bodyReach(F)));
+  return Math.max(0, sheaveInner(g) + wall + KL.faceGap - (F.zSheave - bodyReach(F)));
 }
 
 /** Half the width across its plane of the sheave of a machine below beside the shaft, as its drawings show it (a maker's
@@ -172,17 +177,20 @@ export function sheaveHalfBelow(D: number, n: number, d: number, shape: MachineS
 /** The machine below where the 3D stands it (components/lift3d/room.ts machinePose): its worm (X) along the wall, its
  *  slow shaft (local Z) toward the sheave between the two runs, the motor across the ropes' plane — away from the shaft
  *  beside it, toward the car under the pit; beside the shaft the slow shaft longer by `ext` (throughExt) to reach through
- *  the wall into the gap behind the counterweight; the corners of what stands in the room in plan: the body, and under
- *  the pit the sheave with it [mm]. */
+ *  the wall into the gap behind the counterweight — the sheave's mid-plane `inner` from the wall's face in the shaft, the
+ *  machine's body KL.faceGap from its other face: `reach` the least from the gearbox's face to the sheave so (what of the
+ *  body stands past the face toward the wall counted); the corners of what stands in the room in plan: the body, and
+ *  under the pit the sheave with it [mm]. */
 export function belowMachine(L: Layout, g: BottomGeo, D: number, shape: MachineShape | null):
-  { F: MachineFrame; xDir: P2; zDir: P2; C: P2; ext: number; body: P2[] } {
+  { F: MachineFrame; xDir: P2; zDir: P2; C: P2; ext: number; inner: number; reach: number; body: P2[] } {
   // beside the shaft the sheave reaches through the wall: the machine's frame stops at it, no iron past the sheave
   const F = machineFrame(D, shape, null, g.scheme !== 'under'), xDir: P2 = g.scheme === 'under' ? g.across : [-g.across[0], -g.across[1]], zDir: P2 = [xDir[1], -xDir[0]];
   const ext = g.scheme !== 'under' ? throughExt(F, g, L.inputs.wall) : 0;
+  const inner = sheaveInner(g), reach = inner + L.inputs.wall + KL.faceGap + (bodyReach(F) - F.face);
   const C: P2 = [(g.mc[0] + g.mw[0]) / 2, (g.mc[1] + g.mw[1]) / 2];
   const at = (x: number, z: number): P2 => [C[0] + x * xDir[0] + (z - F.zSheave - ext) * zDir[0], C[1] + x * xDir[1] + (z - F.zSheave - ext) * zDir[1]];
   const z1 = g.scheme === 'under' ? F.z[1] : bodyReach(F);
-  return { F, xDir, zDir, C, ext, body: [at(F.x[0], F.z[0]), at(F.x[1], F.z[0]), at(F.x[1], z1), at(F.x[0], z1)] };
+  return { F, xDir, zDir, C, ext, inner, reach, body: [at(F.x[0], F.z[0]), at(F.x[1], F.z[0]), at(F.x[1], z1), at(F.x[0], z1)] };
 }
 
 /** The machine's room below as the 3D and the drawings show it, in the room's own axes (RoomInputs: the shaft's inner

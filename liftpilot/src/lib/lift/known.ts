@@ -5,6 +5,7 @@
 // replacement. Pure.
 import type { FormValues, Machine, Plant } from '@/calc/types';
 import { MACHINES, ratioValue, type Brand, type CatalogFit, type CatalogMachine } from '@/lib/catalog/machines';
+import { throughWallMachine } from '@/lib/catalog/mounting';
 import type { Made } from './machine';
 
 /** The makers the advice compares (advice.ts), the first the recognition of a machine ranks among equal data. */
@@ -19,7 +20,9 @@ export const modelOf = (V: FormValues): string => (typeof V.n_model === 'string'
 export function catalogMachineOf(I: Plant, N: Machine, named = ''): CatalogFit | null {
   const iIdeal = (Math.PI * (N.D / 1000) * N.nm) / (60 * I.v * I.r);
   const rank = (c: CatalogMachine): number => (`${c.brand} ${c.model}` === named ? 0 : 8) + (c.mass === N.mass ? 0 : 4) + (ADVICE_BRANDS.includes(c.brand) ? 0 : 2) + (c.byName ? 1 : 0);
-  const found = MACHINES.flatMap((c): CatalogFit[] => {
+  // a machine below: also the long-shaft and outboard-support variants at the static load they allow through the wall
+  const variants = (c: CatalogMachine): CatalogMachine[] => [c, ...(I.layout === 'bottom' ? [throughWallMachine(c)].flatMap((x) => (x && x.staticKg !== c.staticKg ? [x] : [])) : [])];
+  const found = MACHINES.flatMap(variants).flatMap((c): CatalogFit[] => {
     const ratio = c.ratios.find((r) => Math.abs(Math.round(ratioValue(r) * 1000) / 1000 - N.i) < 1e-9);
     const fits = ratio !== undefined && c.staticKg === N.shaftMax && (c.mass === null || c.mass === N.mass) && (!c.sheaves || (N.D >= c.sheaves[0] && N.D <= c.sheaves[1]));
     return fits ? [{ machine: c, ratio, i: ratioValue(ratio), dv: iIdeal / ratioValue(ratio) - 1, fails: [] }] : [];

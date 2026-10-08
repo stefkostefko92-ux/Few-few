@@ -95,9 +95,12 @@ test('sezione A-A: la legenda solo dei simboli disegnati, la nota della scala do
 });
 
 test('elenco degli articoli: una lamiera sottosoglia per ogni porta di piano', () => {
-  const dv = deriveLift(defaultLift()), bom = designBom(dv);
+  // a new lift (UNI EN 81-20): the whole bill, a plate under every landing door's sill
+  const dv = deriveLift({ ...defaultLift(), collaudo: { norma: 'en81', parti: [] } }), bom = designBom(dv);
   const toe = bom.find((l) => l.key === 'door:toe'), landing = bom.filter((l) => l.key?.startsWith('door:landing:')).reduce((n, l) => n + l.qty, 0);
   assert.ok(toe);
   assert.equal(toe.qty, landing);
   assert.ok(toe.qty >= dv.shaft.vertical.floors.length);
+  // a modification that keeps the doors: neither the doors nor their plates in its bill
+  assert.ok(!designBom(deriveLift(defaultLift())).some((l) => l.key === 'door:toe' || l.key?.startsWith('door:landing:')));
 });

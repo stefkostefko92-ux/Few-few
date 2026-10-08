@@ -33,6 +33,7 @@ export function adviceBlocks(A: MachineAdvice, fmt: Fmt): ReportBlock[] {
       + 'puleggia e volano, le parti mancanti sono stimate: voce impianto.massa.argano); il prezzo non entra nella scelta. ★ il primo di ogni costruttore. È un ordine '
       + 'tecnico sui dati dei cataloghi, non un giudizio sulla qualità né una raccomandazione commerciale; SICOR e Montanari sono marchi dei rispettivi '
       + 'titolari, citati solo per identificare i prodotti. La verifica di questa relazione resta quella dell’argano del calcolo.' },
+    ...(A.wall ? [{ t: 'p' as const, style: 'note' as const, text: T.wall }] : []),
     { t: 'grid', head, rows, status: A.candidates.map(status), statusCol: head.length - 1, widths, align: head.map((_, j) => (j === 3 || j === 4 ? 'r' : 'l')) },
     ...(a && A.why ? [{ t: 'p' as const, text: fillText(T[`why_${A.why}`], whyValues(a, b, fmt)) }] : []),
     ...A.none.map((brand) => ({ t: 'p' as const, style: 'note' as const, text: fillText(T.none_brand, { brand }) })),

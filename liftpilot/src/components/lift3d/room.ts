@@ -64,8 +64,8 @@ export function machinePassage(rig: RopeRig, D: number): { side: Side; u0: numbe
 
 /** Where the machine stands in plan: the direction of its worm (local X), its sheave's centre [world m] and, beside the
  *  shaft, how much longer its slow shaft is to carry the sheave through the wall into the gap behind the counterweight
- *  [mm] (bottom.ts throughExt: the whole body in the room, 50 mm clear of the wall). `turn`: above the shaft, its motor
- *  toward the counterweight's drop (1) or turned round toward the car's (−1), as the room's drawings have it
+ *  [mm] (bottom.ts throughExt: the whole body in the room, KL.faceGap clear of the wall). `turn`: above the shaft, its
+ *  motor toward the counterweight's drop (1) or turned round toward the car's (−1), as the room's drawings have it
  *  (machine-room.ts). */
 export function machinePose(rig: RopeRig, wall: number, F: MachineFrame, turn: 1 | -1 = 1): { xDir: readonly [number, number]; centre: THREE.Vector3; ext: number } {
   const g = rig.scheme, S = rig.sheave, [px, py] = planeAt(S.plane, S.u);

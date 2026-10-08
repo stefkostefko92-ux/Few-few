@@ -10,6 +10,7 @@ import type { FormValues } from '@/calc/types';
 import { BOTTOM_SCHEMES, type AutoFlags, type BottomScheme, type LiftDerived, type LiftInputs } from '@/lib/lift';
 import { isLiftStandard } from '@/lib/lift/defaults';
 import { BRANDS, catalogOf, type Brand } from '@/lib/catalog/machines';
+import { wallVariants } from '@/lib/catalog/mounting';
 import type { CatalogChoice } from '@/lib/lift/catalog';
 import type { Texts } from '@/lib/present/texts';
 import type { Pres } from '@/lib/present/tr';
@@ -55,6 +56,15 @@ function calataHint(derived: LiftDerived, fmt: Pres['fmt'], t: Props['t']) {
     : out ? t('hint_calata_range', { c: fmt(c, 0), min: SHEAVE_GRID[0], max: SHEAVE_GRID[SHEAVE_GRID.length - 1] })
       : t('hint_calata_bad', { c: fmt(c, 0), D: fmt(D, 0) });
   return <p className={bad ? 'hint bad' : 'hint'} role={bad ? 'alert' : undefined}>{text}</p>;
+}
+
+/** Why the machine of the catalogue chosen was not taken: none passes the checks, or with the sheave through the wall
+ *  the model is a standard one (the maker's long-shaft and outboard-support variants named) or the maker has none. */
+function missText(c: CatalogChoice, miss: 'checks' | 'wall', t: Props['t']): string {
+  const name = c.model ? `${c.brand} ${c.model}` : c.brand;
+  if (miss === 'checks') return t('cat_miss', { brand: name });
+  const alt = wallVariants(c.brand, c.model);
+  return alt.length ? t('cat_miss_wall', { brand: name, variants: alt.map((m) => `${c.brand} ${m}`).join(', ') }) : t('cat_miss_wall_none', { brand: c.brand });
 }
 
 export default function LiftCalcFields({ P, X, inp, derived, complete, bad, need, blank, texts, setCalc, setAuto, setBottom, setCatalog, t }: Props) {
@@ -160,7 +170,7 @@ export default function LiftCalcFields({ P, X, inp, derived, complete, bad, need
                     stat: fmt(derived.catalog.fit.machine.staticKg, 0), dv: `${derived.catalog.fit.dv >= 0 ? '+' : ''}${fmt(derived.catalog.fit.dv * 100, 1)}`,
                   })}</p>
                 ) : null}
-                {derived.catalog?.miss ? <p className="hint bad" role="alert">{t('cat_miss', { brand: inp.catalog?.model ? `${inp.catalog.brand} ${inp.catalog.model}` : inp.catalog?.brand ?? '' })}</p> : null}
+                {derived.catalog?.miss && inp.catalog ? <p className="hint bad" role="alert">{missText(inp.catalog, derived.catalog.miss, t)}</p> : null}
                 <p className="hint">{derived.noProposal ? t('no_proposal') : t('hint_machine_auto')}</p>
                 {pick && !derived.noProposal ? <p className="proposal-line num">{X.proposalShort(pick)}</p> : null}
               </>

@@ -13,7 +13,7 @@ import { analyse, mirrorRopes, proposalValues, type Analysis } from '@/lib/prese
 import { simModel, type SimModel } from '@/sim';
 import { belowChecks } from './below-checks';
 import { bottomGapNeeded, bottomGeo, extraBends, sheaveHalfBelow, type BottomScheme } from './bottom';
-import { bestFit, catalogValues, firstTaken, offGrid, type CatalogChoice } from './catalog';
+import { bestFit, catalogValues, choiceMachines, firstTaken, offGrid, throughWall, type CatalogChoice } from './catalog';
 import type { CatalogFit } from '@/lib/catalog/machines';
 import { machineShapeOf, machineSpec, rinvioOf, sheaveAxis, sheaveAxisBelow, type Made } from './machine';
 import type { MachineShape } from '@/shaft/machine-shape';
@@ -25,6 +25,7 @@ import { cwGapOver } from '@/shaft/cw-gap';
 import { carriedMass, governorSideFor, hebOf, placedPanel, supportChecks, supportLoad } from './support';
 import { drawnIssues, type Drawn } from './drawn';
 import { collaudoOf, type Collaudo } from './collaudo';
+import { rigLength } from './rope';
 import { KL } from './norme';
 import { massModelOf } from './known';
 import { existingRoomCheck } from '@/shaft/room-above';
@@ -94,8 +95,10 @@ export interface LiftDerived {
   /** what the rig hangs over the car roof (the pulleys hung under the slab) reaches into the refuge's height: the
    *  headroom as designed and the least that clears it [mm] (head.ts refugeHeadroom); null when nothing does */
   refugeHead: { now: number; need: number } | null;
-  /** the proposal from a catalogue: the maker's machine taken, or none of the choice passing (the grid's proposal) */
-  catalog: { fit: CatalogFit | null; miss: boolean } | null;
+  /** the proposal from a catalogue: the maker's machine taken, or none of the choice taken (the grid's proposal) — none
+   *  passing the checks, or with the sheave through the wall none of the choice a long-shaft or outboard-support variant
+   *  (`wall`: a standard model named, or a maker without them) */
+  catalog: { fit: CatalogFit | null; miss: false | 'checks' | 'wall' } | null;
   /** the standard the lift is tested to and what the intervention replaces: which checks apply (collaudo.ts) */
   collaudo: Collaudo;
   /** what the shaft design gives for the rope beyond the travel and a machine below's Hv entered by hand (null: taken
@@ -214,16 +217,18 @@ function deriveOnce(inp: LiftInputs): LiftDerived {
   const only = direct && !oldHitches ? (fallD >= SHEAVE_GRID[0] && fallD <= SHEAVE_GRID[SHEAVE_GRID.length - 1] ? [fallD] : []) : null;
   let noProposal = false, catalog: LiftDerived['catalog'] = null;
   if (inp.auto.machine) {
-    // from the maker chosen when one of its machines takes an option, else from the calculation grid
-    // a maker's machine: its geometry as it stands (its axis, its bedplate), its motor, groove and brake sized again on
+    // from the maker chosen when one of its machines takes an option, else from the calculation grid; the machine below
+    // beside the shaft only from the long-shaft and outboard-support variants (the sheave through the wall).
+    // A maker's machine: its geometry as it stands (its axis, its bedplate), its motor, groove and brake sized again on
     // it (catalog.ts), the diverting pulley still where the plan places it
     const finish = (fit: CatalogFit, W: FormValues): FormValues | null => {
       const X = geometryOf(machineShapeOf(fit), fit.machine)(W), own = catalogValues(fit, X), Y = own ? { ...X, ...own } : null;
       return Y && !(planned && !deflectorDx(L, Y).fits) ? Y : null;
     };
-    const choice = inp.catalog, fromCat = choice ? propose(V, L, geometry, planned, (o, W) => bestFit(choice, o, num(W, 'Q'), num(W, 'r')), only, offGrid(choice), finish) : null;
+    const choice = inp.catalog && throughWall(V.layout, scheme) ? { ...inp.catalog, wall: true } : inp.catalog;
+    const fromCat = choice ? propose(V, L, geometry, planned, (o, W) => bestFit(choice, o, num(W, 'Q'), num(W, 'r')), only, offGrid(choice), finish) : null;
     const proposed = fromCat ?? propose(V, L, geometry, planned, null, only);
-    if (choice) catalog = { fit: fromCat?.fit ?? null, miss: !fromCat };
+    if (choice) catalog = { fit: fromCat?.fit ?? null, miss: fromCat ? false : choice.wall && !choiceMachines(choice).length ? 'wall' : 'checks' };
     if (proposed) V = proposed.V;
     else noProposal = true;
     // the maker's machine stands on our bedframe: where its own axis is higher than the generic machine's, the rope
@@ -261,8 +266,11 @@ function deriveOnce(inp: LiftInputs): LiftDerived {
   };
   // the beams under the machine (with the maker's bedplate it stands on) and the machine in its room; the car's highest
   // part under what hangs over it. The whole machine is the catalogue's model the proposal took, else the one the values
-  // are (one entered by hand, carried from the replacement's calculator): as the relazione names it (known.ts)
-  const load = supportLoad(analysis.ctx, analysis.res.Mcw, { machine: carriedMass(roomGeo(Lp, machine), machine, N, massModelOf(I, N, V, made)) }), above = I.layout !== 'bottom';
+  // are (one entered by hand, carried from the replacement's calculator): as the relazione names it (known.ts); the ropes
+  // at their cut length on the rope rig (sheet 1 and the bill take the same)
+  const load = supportLoad(analysis.ctx, analysis.res.Mcw, {
+    machine: carriedMass(roomGeo(Lp, machine), machine, N, massModelOf(I, N, V, made)), rope: rigLength({ layout: Lp, analysis, machine, bottom: scheme }),
+  }), above = I.layout !== 'bottom';
   // the diverting pulley up over the bedplate's top into the machine (an h or a height set by hand): as the replacement says
   const clash = rinvio && pulleyRim < 0 ? 'floor' : above && machine.rinvio ? rinvioClash(roomGeo(Lp, machine), machine) : null;
   if (clash && !issues.includes('rinvio')) issues.push('rinvio');

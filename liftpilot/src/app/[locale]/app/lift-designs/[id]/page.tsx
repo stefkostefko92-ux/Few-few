@@ -13,13 +13,13 @@ import { makeFmt } from '@/lib/present/tr';
 import { getLiftDesign, refreshedFrom } from '@/server/queries';
 import { projectCost, visiblePrices } from '@/server/prices';
 import { designBasis } from '@/lib/prices/plant-bom';
-import { pitchesOf } from '@/lib/plant';
+import { pitchesOf, plantData, plantReadSchema } from '@/lib/plant';
 import { withPitches } from '@/shaft/brackets';
 import { designBom } from '@/lib/prices/bom';
+import { bomKind } from '@/lib/prices/bom-parts';
 import { initialsOf } from '@/lib/tavole/compose';
 import { issueChecks } from '@/lib/tavole/issue-check';
 import { valueMarks } from '@/lib/lift/marks';
-import { plantReadSchema } from '@/lib/plant';
 import ProjectCost from '@/components/prices/ProjectCost';
 import LiftView from '@/components/lift/LiftView';
 import AdviceView from '@/components/lift/AdviceView';
@@ -59,7 +59,9 @@ export default async function LiftDesignPage({ params, searchParams }: { params:
   const own = dv ? designMachine(dv) : null, fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
   const order = same && r && advice && can(user, 'report:download') ? designOrder(r.inputs, advice, r.dv) : null;
   // the cost of its articles with the company's prices: only for whoever sees prices
-  const prices = await visiblePrices(user), costed = dv ? await projectCost(user, designBom(dv), 'full', designBasis(dv)) : null;
+  // (a modification tested to UNI 10411: only the parts it replaces, as a replacement)
+  const prices = await visiblePrices(user), kind = dv ? bomKind(dv.collaudo) : 'full';
+  const costed = dv ? await projectCost(user, designBom(dv, plantData(d.project.plant)), kind, designBasis(dv)) : null;
   // before an issue: the machine the data of the installation name against the catalogue's the set would carry, the
   // plant number of an existing lift, the client
   const plant = plantReadSchema.safeParse(d.project.plant ?? {}), catalog = r ? valueMarks(r.inputs.auto, r.dv, r.dv.bottom, r.dv.collaudo).catalog : null;
@@ -84,7 +86,7 @@ export default async function LiftDesignPage({ params, searchParams }: { params:
         </div>
       )}
       {r ? <LiftView inputs={r.inputs} prices={prices} pitches={pitches} /> : <p className="alert alert-bad" role="status">{t('unreadable')}</p>}
-      {costed ? <ProjectCost cost={costed.cost} skipped={costed.skipped} locale={locale} scope="design" editable={can(user, 'prices:edit')} /> : null}
+      {costed ? <ProjectCost cost={costed.cost} skipped={costed.skipped} locale={locale} scope={kind === 'full' ? 'design' : 'modification'} editable={can(user, 'prices:edit')} /> : null}
       {advice ? (
         <AdviceView advice={advice} alt={alt && dv ? { advice: alt, sheave: dv.machine.D } : null} fmt={fmt} where="design"
           inUse={(c) => own !== null && own.brand === c.brand && own.model === c.model && own.I.layout === c.I.layout} />

@@ -1,10 +1,12 @@
 // The draft order of the machine (Italian), as report blocks: report/relazione.py draws it as a PDF and docx.ts writes
 // it as a Word document. On the buyer's letterhead (logo, name, city) to the maker's sales office (its site from the
 // catalogue's sources): the machine with what it must be built to (sheave and grooves, ratio, motor, brake, load on the
-// shaft, the bedplate with the diverting pulley), the installation it is for, the machine room in plan and in section
-// with this machine, and the outcome of the software's check with it; the fields the buyer completes (hand, delivery,
-// the maker's address) left blank, the price too unless the downloader sees prices (then the company's list's). Every
-// value comes from the calculation and the catalogue, whose source the note names. Pure.
+// shaft, its hand as the design draws it, the bedplate with the diverting pulley, a machine below's slow shaft through
+// the wall, the protection ACOP/UCM, the supply and the duty: rows.ts), the installation it is for (the ropes at their
+// cut length), the machine room — or the room of the machine below — in plan and in section with this machine, and the
+// outcome of the software's check with it; the fields the buyer completes (delivery, the maker's address, what the
+// installation's data do not give) left blank, the price too unless the downloader sees prices (then the company's
+// list's). Every value comes from the calculation, the design and the catalogue, whose source the note names. Pure.
 import calcIt from '../../../messages/calc/it.json';
 import { ceilTo } from '@/calc/math';
 import type { SheetImage } from '@/drawing';
@@ -15,8 +17,11 @@ import { dvText, machineName } from '@/lib/present/advice';
 import { textsFor } from '@/lib/present/texts';
 import { makePres } from '@/lib/present/tr';
 import type { ReportBlock, ReportDoc } from '@/lib/report/model';
+import type { Plant } from '@/lib/plant';
 import { ORDER_DRAWING } from './drawings';
 import type { OrderMachine } from './machine';
+import { acopBlocks, belowBlocks, driveRows, handRow } from './rows';
+import type { OrderSite } from './site';
 
 export interface OrderInput {
   company: string;
@@ -28,8 +33,14 @@ export interface OrderInput {
   /** the saved record the order comes from */
   record: { kind: 'design' | 'calc'; id: string; sha256: string; createdAt: Date; label: string | null };
   order: OrderMachine;
-  /** the machine room in plan and section B-B with the ordered machine (drawings.ts); empty without a machine room */
+  /** the machine room in plan and section B-B with the ordered machine, or the room of the machine below in plan and
+   *  section C-C (drawings.ts); empty without one */
   room: ReportBlock[];
+  /** what the design knows of the ordered machine where it stands (site.ts): its hand, the ropes' cut length, the slow
+   *  shaft through the wall; missing: left blank */
+  site?: OrderSite;
+  /** the data of the installation: the supply and the duty (plant.ts); missing: the usual values, marked */
+  plant?: Plant;
   collaudo: Collaudo;
   /** the car's mass is the software's estimate (not entered): the maker is told */
   pEstimate?: boolean;
@@ -84,6 +95,8 @@ export function buildOrder(o: OrderInput): ReportDoc {
   const vMains = I.v * (1 + c.dv), hand = o.room.length ? ' — come nella pianta del locale (punto 4)' : '';
   // a machine below: the pulls on its anchors where one is upward (anchor.ts)
   const anchor = c.anchor && c.anchor.max > 0 ? c.anchor : null;
+  // the ropes at the cut length of sheet 1 and of the bill, when the intervention replaces them
+  const cut = o.collaudo.norma === 'en81' || o.collaudo.parti.includes('ropes') ? o.site?.ropeCut ?? null : null;
   B.push({ t: 'kv', rows: [
     ['Costruttore e modello', `${machineName(c)} · quantità 1`],
     ['Rapporto di riduzione', `${c.ratio} (i = ${fmt(c.i, 3)})`],
@@ -100,8 +113,7 @@ export function buildOrder(o: OrderInput): ReportDoc {
       + (N.MpCat > 0 ? ` (ammessa ${fmt(N.MpCat, 0)} N·m, dato inserito)` : '')],
     ['Massa (catalogo)', c.mass === null ? 'non indicata dal costruttore' : `${fmt(c.mass, 0)} kg`],
     ['Fonte dei dati di catalogo', c.src],
-    ['Esecuzione (vista dal lato puleggia)', `☐ destra   ☐ sinistra${hand}`],
-    ['Volano, encoder, sblocco manuale del freno', BLANK],
+    handRow(o.site, hand),
   ] });
   if (I.layout === 'topDefl') {
     const bp = c.bedplate;
@@ -116,6 +128,8 @@ export function buildOrder(o: OrderInput): ReportDoc {
       ...(bp ? [['Fonte', bp.src] as [string, string]] : []),
     ] });
   }
+  B.push(...belowBlocks(c, o.site, fmt), ...acopBlocks(o.collaudo));
+  B.push({ t: 'h3', text: 'Dati elettrici e di servizio (da completare con il costruttore)' }, { t: 'kv', rows: driveRows(N, o.plant, fmt) });
 
   section('Dati dell’impianto');
   B.push({ t: 'kv', rows: [
@@ -123,14 +137,17 @@ export function buildOrder(o: OrderInput): ReportDoc {
     ['Taglia · corsa', `${I.r}:1 · ${fmt(I.H, 2)} m`],
     ['Massa della cabina · contrappeso', `${fmt(I.P, 0)} kg${o.pEstimate ? ' (stima del software, da confermare)' : ''} · ${fmt(c.Mcw, 0)} kg (bilanciamento ${fmt(c.k, I.qeq > 0 ? 3 : 2)})`],
     ['Disposizione', t(`lay_${I.layout}`)],
-    ['Funi (non comprese)', `${N.n} × Ø ${dText(N.d)} mm, carico di rottura minimo ${fmt(N.Fmin, 1)} kN`],
+    ['Funi (non comprese)', `${N.n} × Ø ${dText(N.d)} mm, carico di rottura minimo ${fmt(N.Fmin, 1)} kN${cut !== null ? `, lunghezza di taglio ${fmt(cut, 0)} m ciascuna` : ''}`],
     ['Norma del collaudo', `${NORMA_SIGLA[o.collaudo.norma]}${o.collaudo.rifacimento ? ' (rifacimento con l’arcata esistente)' : ''}`],
   ] });
 
   if (o.room.length) {
-    section('Locale macchina con l’argano');
-    B.push({ t: 'p', style: 'note', text: `Disegni LiftPilot del ${what}: l’argano ${machineName(c)} sul suo basamento${I.layout === 'topDefl' ? ' con la puleggia di rinvio' : ''}, `
-      + 'le funi verso la cabina e il contrappeso, le aperture nella soletta; quote in mm.' });
+    section(I.layout === 'bottom' ? 'Locale dell’argano in basso' : 'Locale macchina con l’argano');
+    B.push({ t: 'p', style: 'note', text: I.layout === 'bottom'
+      ? `Disegni LiftPilot del ${what}: l’argano ${machineName(c)} nel suo locale${o.site?.below === 'under' ? ' sotto la fossa, le funi attraverso la soletta della fossa' : ' accanto al vano, la puleggia nel vano sull’albero lento che attraversa il muro'}, `
+        + 'le due funi verso i rinvii in testata; quote in mm.'
+      : `Disegni LiftPilot del ${what}: l’argano ${machineName(c)} sul suo basamento${I.layout === 'topDefl' ? ' con la puleggia di rinvio' : ''}, `
+        + 'le funi verso la cabina e il contrappeso, le aperture nella soletta; quote in mm.' });
     B.push(...o.room);
   }
 

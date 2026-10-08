@@ -11,7 +11,8 @@ import { makeFmt } from '../present/tr';
 import { belowChecks, belowRoomOf } from '../lift/below-checks';
 import { headTopChecks } from '../lift/head';
 import { withRig } from '../lift/shaft-rig';
-import { carSideStatic, ropeLength, supportChecks } from '../lift/support';
+import { carSideStatic, governorRopeLength, ropeCut, supportChecks } from '../lift/support';
+import { layoutRigLength } from '../lift/rope';
 import { massModelOf } from '../lift/known';
 import { hebRows } from './heb-rows';
 import { isUpperLimit, mergeChecks, shownValue } from '@/shaft/checks';
@@ -39,7 +40,6 @@ import { belowGeoOf, machineOf, machineText } from './views';
 import { clientNotes, estimateNote, railNote, safetyGearNote, spaceLegend } from './notes';
 import { shaftDetailText } from './notes-vano';
 import { NORMA_SIGLA, ambitoOf, collaudoOf } from '../lift/collaudo';
-import { KL } from '../lift/norme';
 import { collaudoNote } from '../report/collaudo';
 
 /** The buffers by type as the data sheet writes them: the car's (plural) and the counterweight's. */
@@ -115,8 +115,10 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   ];
 
   // rails from the pit floor to under the slab, new or existing as the acceptance test says; brackets one every pitch
-  // (the declared one or the rule's) plus the first and the last of each rail (registry guide.staffe); ropes and governor
-  // rope (estimates); the governor the design takes (the one chosen, else by the speed)
+  // (the declared one or the rule's) plus the first and the last of each rail (registry guide.staffe); each rope at its
+  // cut length on the design's rope rig (registry impianto.funi.taglio: the bill and the draft order take the same; the
+  // ropes the acceptance test keeps are existing, their mass in the loads at that length) and the governor rope
+  // (estimates); the governor the design takes (the one chosen, else by the speed)
   const R = sheetRails(L, I.P, I.Q, Pl), railLen = R.railLen, oldRails = kept('rails');
   const rails = (t: RailType): string => `${oldRails ? 'ESISTENTI ' : ''}${railLabel(t)}`;
   const brackets = (pitch: number | undefined): string => (oldRails ? 'ESISTENTI' : `${2 * bracketCount(railLen * 1000, pitch ?? KV_VERT.bracketPitch)}`);
@@ -124,13 +126,11 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   // spacing: the car's is the l of the car rails' check below (UNI EN 81-50:2020, 5.10; sheet-loads.ts sheetRails)
   const [z0, z1] = railSpan(S), spanCar = R.span, spanCw = maxBracketSpan(z0, z1, L.inputs.cwRail, Pl.cwBracketPitch);
   const gov = govSize(V.v, L.inputs.governor), oldGov = kept('governor');
-  const ropeLen = ropeLength(I);
+  const ropeLen = ropeCut(I, layoutRigLength(L, a, x.marks?.catalog ?? null, x.marks?.bottom ?? null)), oldRopes = kept('ropes');
   // the governor's rope up to the governor: in the room over the shaft (with a machine below, the pulley room), else on
   // its bracket under the ceiling (registry limitatore.vano)
-  const room = L.inputs.room, low = I.layout === 'bottom', inShaft = low && (x.marks?.bottom ?? 'head') !== 'room';
-  const over = inShaft ? -KV_VERT.govUnderCeiling : low ? (room?.slab ?? KL.slab) + KV_VERT.governorAbove : room ? room.slab + KV_VERT.governorAbove : 0;
-  const govLen = (2 * (V.pit + S.top + V.headroom + over)) / 1000;
-  const g = N.groove, fRated = res.kin.fRated, underPit = low && (x.marks?.bottom ?? 'head') === 'under';
+  const room = L.inputs.room, scheme = I.layout === 'bottom' ? x.marks?.bottom ?? 'head' : null;
+  const g = N.groove, fRated = res.kin.fRated, underPit = scheme === 'under';
   const specs: Row[] = [
     ['ARGANO', 'tipo', txt(machineText(Pl, x.marks?.catalog ?? null))],
     ['RAPPORTO DI RIDUZIONE', '', `1 : ${num(N.i)}`],
@@ -153,10 +153,10 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     ['LUNGHEZZA GUIDE CONTRAPPESO', 'm', oldRails ? 'ESISTENTI' : fmt(railLen, 1)],
     ['STAFFE GUIDE CONTRAPPESO', 'N°', brackets(Pl.cwBracketPitch)],
     ['INTERASSE MASSIMO STAFFE CONTRAPPESO', 'mm', fmt(spanCw, 0)],
-    ['FUNI DI SOSPENSIONE', 'N°-Ø', `${N.n} - ${num(N.d)}`],
-    ['LUNGHEZZA FUNI (CIASCUNA)', 'm', fmt(ropeLen, 0)],
+    ['FUNI DI SOSPENSIONE', 'N°-Ø', `${N.n} - ${num(N.d)}${oldRopes ? ' ESISTENTI' : ''}`],
+    ['LUNGHEZZA DI TAGLIO FUNI (CIASCUNA)', 'm', oldRopes ? 'ESISTENTI' : fmt(ropeLen, 0)],
     ['LIMITATORE DI VELOCITÀ', 'tipo', oldGov ? 'ESISTENTE' : `${gov.brand} ${gov.model}`],
-    ['FUNE DEL LIMITATORE', 'm-Ø', oldGov ? 'ESISTENTE' : `${fmt(Math.ceil(govLen), 0)} - ${fmt(2 * gov.rope, 0)}`],
+    ['FUNE DEL LIMITATORE', 'm-Ø', oldGov ? 'ESISTENTE' : `${fmt(governorRopeLength(V, S.top, room, scheme), 0)} - ${fmt(2 * gov.rope, 0)}`],
     ['AMMORTIZZATORI CABINA', 'N°-tipo', `${V.carBuffers} - ${BUFFER_TEXT[bufferType(V, 'car')][0]}${kept('buffers') ? ' ESISTENTI' : ''}`],
     ['AMMORTIZZATORE CONTRAPPESO', 'N°-tipo', `1 - ${BUFFER_TEXT[bufferType(V, 'cw')][1]}${kept('buffers') ? ' ESISTENTE' : ''}`],
     // a machine under the pit: the counterweight's safety gear over the space under the shaft (cw-gear.ts)
@@ -204,7 +204,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   // the shaft's checks, then the beams under the machine at the load of this sheet
   const car = carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes: ropesKg, cables: cablesKg });
   // a machine below: its own room in place of the one over the shaft (the pulley room's checks apart; below-checks.ts)
-  const scheme = below ? x.marks?.bottom ?? 'head' : null, bg = scheme ? belowGeoOf(a, L, M, scheme) : null, mRoom = bg ? belowRoomOf(L, bg, M).R : room;
+  const bg = scheme ? belowGeoOf(a, L, M, scheme) : null, mRoom = bg ? belowRoomOf(L, bg, M).R : room;
   // the car's top and the refuge on its roof under what the rope rig hangs in the shaft (head.ts), and with them the
   // clearance on the counterweight's sign (cw-gap.ts) in place of the shaft's own
   const head = headTopChecks(withRig(L, I.r, I.Dp, N.n, N.d, bg), I.r, I.Dp, scheme);

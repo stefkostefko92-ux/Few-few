@@ -23,7 +23,7 @@ import DraftBar from '@/components/draft/DraftBar';
 import { useDraft, type DraftTarget } from '@/components/draft/useDraft';
 import { saveCalculationAction } from '@/server/calc-actions';
 import { collaudoOf, type Collaudo } from '@/lib/lift';
-import { valuesCandidate, type AdviceModel, type MachineCandidate } from '@/lib/lift/advice';
+import { valuesCandidate, valuesWall, type AdviceModel, type MachineCandidate } from '@/lib/lift/advice';
 import CollaudoOptions from '@/components/lift/CollaudoOptions';
 import MachineAdvice from '@/components/lift/MachineAdvice';
 import { asCalcDict } from './dict';
@@ -163,7 +163,7 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
         {ready ? <Results P={P} X={X} a={a} mode={mode} badCount={bad.size} brand={brand} collaudo={collaudoOf(values, collaudo)} onUse={onUse} propMsg={propMsg}
           proposalOnly={!complete} /> : null}
       </div>
-      {ready ? <MachineAdvice evaluate={evaluate} alternative={null} fmt={P.fmt} inUse={machineInUse} onUse={takeMachine} where="calc" /> : null}
+      {ready ? <MachineAdvice evaluate={evaluate} alternative={null} wall={valuesWall(deferred)} fmt={P.fmt} inUse={machineInUse} onUse={takeMachine} where="calc" /> : null}
       <div className="savebar">
         <div className="inner">
           <input className="input" value={label} onChange={(e) => setLabel(e.target.value)} maxLength={120} placeholder={tc('labelPlaceholder')} aria-label={tc('label')} />

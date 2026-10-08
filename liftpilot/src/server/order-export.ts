@@ -9,7 +9,8 @@ import { liftRecord } from '@/lib/lift-record';
 import { savedLiftAdvice, savedValuesAdvice } from '@/lib/lift/advice-cache';
 import { buildOrder, type OrderInput } from '@/lib/order/build';
 import { toDocx } from '@/lib/order/docx';
-import { calcRoom, designRoom } from '@/lib/order/drawings';
+import { calcSite, designSite } from '@/lib/order/site';
+import { plantData } from '@/lib/plant';
 import { calcOrder, designOrder } from '@/lib/order/machine';
 import { renderPdf, renderPictures } from '@/lib/report/render';
 import { can } from '@/lib/rbac';
@@ -31,7 +32,7 @@ export type OrderExport =
   | { ok: true; body: Uint8Array<ArrayBuffer>; mime: string; name: string; entity: 'LiftDesign' | 'Calculation'; entityId: string }
   | { ok: false; error: 'notFound' | 'engineChanged' | 'noMachine' };
 
-const PROJECT = { name: true, address: true, city: true, province: true, plantNumber: true } as const;
+const PROJECT = { name: true, address: true, city: true, province: true, plantNumber: true, plant: true } as const;
 
 async function render(input: OrderInput, format: OrderFormat): Promise<OrderExport> {
   const doc = buildOrder(input), m = input.order.machine;
@@ -54,11 +55,12 @@ export async function exportDesignOrder(user: SessionUser, id: string, format: O
   if (!r.same) return { ok: false, error: 'engineChanged' };
   const { inputs, dv } = r, order = designOrder(inputs, savedLiftAdvice(inputs), dv);
   if (!order) return { ok: false, error: 'noMachine' };
-  const project = await prisma.project.findFirst({ where: { id: d.project.id, companyId: user.companyId }, select: PROJECT });
-  if (!project) return { ok: false, error: 'notFound' };
+  const found = await prisma.project.findFirst({ where: { id: d.project.id, companyId: user.companyId }, select: PROJECT });
+  if (!found) return { ok: false, error: 'notFound' };
+  const { plant, ...project } = found;
   return render({
     ...await getLetterhead(user), ...await orderPrices(user, order), author: user.name, project, order, collaudo: dv.collaudo, pEstimate: dv.origin.P === 'estimate', generatedAt: new Date(),
-    room: designRoom(inputs, dv, order.machine, order.recorded),
+    ...designSite(inputs, dv, order.machine, order.recorded), plant: plantData(plant),
     record: { kind: 'design', id: d.id, sha256: d.sha256, createdAt: d.createdAt, label: d.label },
   }, format);
 }
@@ -78,7 +80,7 @@ export async function exportCalcOrder(user: SessionUser, id: string, format: Ord
   return render({
     ...await getLetterhead(user), ...await orderPrices(user, order), author: user.name, project: { name, address, city, province, plantNumber }, order,
     collaudo: storedCollaudo(rec.values, c.collaudo), generatedAt: new Date(),
-    room: design?.layout.inputs.room ? calcRoom(design.layout, order.machine) : [],
+    ...calcSite(design?.layout ?? null, order.machine, rec.values), plant: plantData(c.project.plant),
     record: { kind: 'calc', id: c.id, sha256: c.sha256, createdAt: c.createdAt, label: c.label },
   }, format);
 }

@@ -8,10 +8,15 @@
 // - shaft wiring: the shaft's height from the pit floor to the machine room's floor (to its ceiling without a room over
 //   it); cable trunking: the same, plus in the room the run square to the walls from the control panel to the machine;
 // - shaft lighting: the shaft's height from the pit floor to its ceiling;
-// - buffer supports: one under each spring or polyurethane buffer; car guide shoes: two on each car rail;
+// - buffer supports: one under each spring or polyurethane buffer; guide shoes: two on each car rail and two on each
+//   counterweight rail;
 // - installer (cottimista): by the stop; rail cleaning: every metre of rail.
-// A machine replacement counts the machine, its support and diverting pulley, the ropes and the controller when the
-// acceptance test names them replaced, and the installer as a lump sum. Pure.
+// The bill (bom.ts, bom-parts.ts) adds what the design gives one by one: the ropes at their cut length with two wedge
+// sockets each, the 2:1 roping's pulleys and dead ends, a machine below's head pulleys and base, the rails in whole
+// 5 m bars, the safety gear, the governor's rope, ACOP/UCM; a modification tested to UNI 10411 only the parts its
+// acceptance test replaces, the installer as a lump sum. A machine replacement counts the machine, its support and
+// diverting pulley, the ropes and the controller when the acceptance test names them replaced, and the installer as a
+// lump sum. Pure.
 import type { LiftDerived } from '@/lib/lift/derive';
 import { cableLength } from '@/lib/lift/support';
 import { roomGeo, type RoomGeo } from '@/shaft/machine-room';
@@ -31,7 +36,7 @@ export function panelRun(R: RoomInputs, G: RoomGeo): number {
   return Math.abs(m[0] - front[0]) + Math.abs(m[1] - front[1]);
 }
 
-/** The electrical system, the signalling, the buffers' supports, the car's shoes and the labour of a whole project; `rails`:
+/** The electrical system, the signalling, the buffers' supports, the guide shoes and the labour of a whole project; `rails`:
  *  the metres of every rail (car and counterweight) the bill counts. */
 export function plantLines(dv: LiftDerived, rails: number): BomLine[] {
   const I = dv.shaft, V = I.vertical, L = dv.layout, S = section(L), travel = S.top / 1000, above = I.room !== null && !dv.bottom;
@@ -50,6 +55,7 @@ export function plantLines(dv: LiftDerived, rails: number): BomLine[] {
     one('alarm:siren', 'alarm_siren'), one('alarm:remote', 'alarm_remote'),
     ...(['spring', 'pu'] as const).map((t): BomLine => ({ key: `buffer-support:${t}`, label: { item: `buffer_support_${t}` }, qty: supports(t), unit: 'pz' })),
     { key: 'shoes:car', label: { item: 'shoes_car' }, qty: 2 * L.rails.filter((r) => r.kind === 'car').length, unit: 'pz' },
+    { key: 'shoes:cw', label: { item: 'shoes_cw' }, qty: 2 * L.rails.filter((r) => r.kind === 'cw').length, unit: 'pz' },
     { key: 'labour:installer', label: { item: 'labour_installer' }, qty: V.floors.length, unit: 'stop' },
     { key: 'labour:rails', label: { item: 'labour_rails' }, qty: rails, unit: 'm' },
   ];

@@ -14,6 +14,8 @@ import { collaudoOf } from '@/lib/lift/collaudo';
 import { buildOrder, type OrderInput } from '@/lib/order/build';
 import { toDocx } from '@/lib/order/docx';
 import { designRoom } from '@/lib/order/drawings';
+import { designSite } from '@/lib/order/site';
+import { mountOf } from '@/lib/catalog/mounting';
 import { designOrder } from '@/lib/order/machine';
 import { crc32, zipStore } from '@/lib/order/zip';
 import type { ReportDoc } from '@/lib/report/model';
@@ -112,12 +114,18 @@ test('bozza d’ordine del consigliato: l’avviso in testa, il locale disegnato
   assert.ok(head?.t === 'letterhead' && head.logo === null && head.from.length === 1);
 });
 
-test('bozza d’ordine con la macchina in basso: nessun locale sopra il vano, come nel fascicolo dei disegni', () => {
+test('bozza d’ordine con la macchina in basso: il suo locale in pianta e in sezione C-C, come nel fascicolo dei disegni', () => {
   const L0 = defaultLift(), L = { ...L0, calc: { ...L0.calc, layout: 'bottom' as const } }, d = deriveLift(L), order = designOrder(L, liftAdvice(L), d);
   assert.ok(order);
-  assert.deepEqual(designRoom(L, d, order.machine, order.recorded), []);
-  const doc = buildOrder({ ...sample(null), order, room: [] }), all = texts(doc);
-  assert.ok(!doc.blocks.some((b) => b.t === 'plan') && !all.includes('Locale macchina con l’argano') && !all.includes('come nella pianta del locale'));
+  const { room, site } = designSite(L, d, order.machine, order.recorded);
+  assert.deepEqual(room.filter((b) => b.t === 'h3').map((b) => b.t === 'h3' && b.text), ['Pianta del locale dell’argano in basso', 'Sezione C-C del locale dell’argano in basso']);
+  assert.deepEqual(designRoom(L, d, order.machine, order.recorded).length, room.length);
+  const doc = buildOrder({ ...sample(null), order, room, site }), all = texts(doc);
+  assert.ok(doc.blocks.some((b) => b.t === 'plan') && all.includes('Locale dell’argano in basso') && !all.includes('Locale macchina con l’argano'));
+  // beside the shaft (head pulleys under the slab): a long-shaft or outboard-support variant, its overhang through the wall
+  assert.ok(site.through && site.through.overhang > site.through.wall, JSON.stringify(site.through));
+  assert.ok(all.includes('Albero lento prolungato attraverso il muro') && all.includes(`${site.through.overhang} mm dalla faccia del riduttore`));
+  assert.ok(mountOf(order.machine), `${order.machine.brand} ${order.machine.model}`);
   // the pulls on its anchors as sheet 1 gives them: at the test with 1,25·Q and with the rated load times the dynamic
   // coefficient (registry albero.sollevamento), the machine's mass deducted
   const a = order.machine.anchor, fmt = (x: number): string => new Intl.NumberFormat('it-IT', { maximumFractionDigits: 0 }).format(x);
