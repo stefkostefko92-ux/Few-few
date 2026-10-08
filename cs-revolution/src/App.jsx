@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
 import HeroSignature from "./HeroSignature.jsx";
 import ReverseLabShowcase from "./ReverseLabShowcase.jsx";
-import MonumentCrystal from "./MonumentCrystal.jsx";
+import MonumentGalaxy from "./MonumentGalaxy.jsx";
 import CoverageMap from "./CoverageMap.jsx";
 import ScrollInstrument from "./ScrollInstrument.jsx";
 import { CaliperCursor, useChromeLight, useActiveSection, NavSlider, DrumNumber, useTilt, Magnetic, ProbeCloud, INSTRUMENT_CSS, finePointer, reducedMotion } from "./Instruments.jsx";
@@ -105,9 +105,9 @@ var LANGS = {
   mon_tag: { it: "// IL MONUMENTO", en: "// THE MONUMENT", bg: "// \u041c\u041e\u041d\u0423\u041c\u0415\u041d\u0422\u042a\u0422" },
   mon_title: { it: "COSTRUITO DA OGNI VISITATORE", en: "BUILT BY EVERY VISITOR", bg: "\u0418\u0417\u0413\u0420\u0410\u0414\u0415\u041d \u041e\u0422 \u0412\u0421\u0415\u041a\u0418 \u041f\u041e\u0421\u0415\u0422\u0418\u0422\u0415\u041b" },
   mon_desc: {
-    it: "Una geode che si riempie di un cristallo per ogni visita. Dal tuo comportamento \u2014 movimento del cursore, ritmo di scroll, tempo \u2014 nasce un'impronta anonima che decide inclinazione, lunghezza e colore del tuo cristallo. I primi visitatori hanno i cristalli pi\u00f9 grandi; i nuovi riempiono i vuoti: a 1.200 cristalli la geode \u00e8 piena. Nessun dato personale. Il tuo cristallo brilla in ciano: ora fai parte del monumento.",
-    en: "A geode that fills by one crystal for every visit. Your behaviour \u2014 cursor movement, scroll rhythm, time \u2014 forms an anonymous imprint that sets your crystal's tilt, length and colour. The first visitors grew the largest crystals; newcomers fill the gaps \u2014 at 1,200 crystals the geode is full. No personal data. Your crystal glows cyan: you are now part of the monument.",
-    bg: "Геода, която се пълни с по един кристал за всяко посещение. Поведението ви \u2014 движение на курсора, ритъм на скрола, време \u2014 образува анонимен отпечатък, който определя наклона, дължината и цвета на вашия кристал. Първите посетители имат най-големите кристали; новите запълват празнините \u2014 при 1200 кристала геодата е пълна. Без лични данни. Вашият кристал свети в циан: вече сте част от монумента."
+    it: "Una galassia a spirale in cui ogni visita accende una nuova stella. Dal tuo comportamento \u2014 movimento del cursore, ritmo di scroll, tempo \u2014 nasce un'impronta anonima che sceglie il braccio, la posizione e la classe spettrale della tua stella, dal blu delle O al rosso delle M. Come le galassie vere cresce dall'interno: le prime stelle stanno vicino al nucleo, le nuove nascono sui bracci esterni. Nessun dato personale. La tua stella brilla in ciano: ora fai parte del monumento.",
+    en: "A spiral galaxy where every visit lights a new star. Your behaviour \u2014 cursor movement, scroll rhythm, time \u2014 forms an anonymous imprint that picks your star's arm, position and spectral class, from blue O to red M. Like real galaxies it grows from the inside out: the first stars sit near the core, new ones are born on the outer arms. No personal data. Your star glows cyan: you are now part of the monument.",
+    bg: "Спирална галактика, в която всяко посещение запалва нова звезда. Поведението ви \u2014 движение на курсора, ритъм на скрола, време \u2014 образува анонимен отпечатък, който избира ръкава, мястото и спектралния клас на вашата звезда, от сините O до червените M. Като истинските галактики расте отвътре навън: първите звезди са до ядрото, новите се раждат по външните ръкави. Без лични данни. Вашата звезда свети в циан: вече сте част от монумента."
   },
   // ── CTA ──
   cta_title: { it: "HAI UN PROGETTO?", en: "GOT A PROJECT?", bg: "\u0418\u041C\u0410\u0428 \u041F\u0420\u041E\u0415\u041A\u0422?" },
@@ -2264,7 +2264,7 @@ function PrintForge(){
   return <canvas ref={ref} style={{width:"100%",height:"100%",display:"block"}}/>;
 }
 
-// THE MONUMENT now lives in src/MonumentCrystal.jsx (3D quartz druse, one crystal per visit).
+// THE MONUMENT now lives in src/MonumentGalaxy.jsx (a spiral galaxy, one star per visit).
 
 // ═══════════════════════════════════════════════════
 // TOLERANCE SIGNATURE — the measured carbon surface
@@ -3027,7 +3027,7 @@ export default function App(){
         <ProximityText text={t("mon_title")} style={{fontFamily:HEAD,fontSize:"clamp(2rem,5vw,4rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:12,color:"#C9D1D6",fontWeight:700}}/>
         <p style={{fontSize:12,color:"#ccc",marginBottom:28,maxWidth:560,lineHeight:1.9}}>{t("mon_desc")}</p>
         <div style={{border:"1px solid rgba("+CR+",.15)",background:"radial-gradient(circle at 50% 50%, rgba("+CR+",.04), transparent 70%)",height:"min(72vh,560px)",position:"relative"}}>
-          <MonumentCrystal lang={lang}/>
+          <MonumentGalaxy lang={lang}/>
         </div>
       </section>
 
