@@ -12,6 +12,9 @@ Space Grotesk, циан сияние) и ~400 статични страници 
   * <style id="cs-theme"> — токени, фон, типография, навигация, мобилно меню, карти,
     бутони, линкове в текста (подчертани), футър, долните блокове на услугите;
   * <script id="cs-nav-js"> преди </body> — мобилното меню (бутон, Esc, aria-expanded);
+  * <script id="cs-cal-js"> — шублерът (челюсти около посочения елемент + размер) и лампата по
+    хромовото h1; само при мишка и без reduced-motion. CSS: лента за прочетеното, размерна
+    линия под h2, сонда по ръба на картите, сканиране на снимките (scroll/view timelines);
   * футър на правните страници и 404, които нямаха такъв.
 
 Идемпотентно: при повторно пускане старите блокове се махат и се слагат наново, така
@@ -32,8 +35,11 @@ JS_FLAG = '<script id="cs-js-flag">document.documentElement.classList.add("js")<
 
 DISP = "'Space Grotesk','Onest','SG-fallback','Inter Tight',-apple-system,sans-serif"
 MONO = "'Space Mono','JetBrains Mono','SM-fallback',ui-monospace,monospace"
-CHROME = ("background-image:linear-gradient(180deg,#F4F7F8 0%,#D6DDE1 38%,#8E989F 50%,#E4E9EC 58%,#F4F7F8 100%);"
-          "background-size:100% 1lh;background-repeat:repeat-y;-webkit-background-clip:text;background-clip:text;"
+CHROME = ("background-image:linear-gradient(100deg,transparent calc(var(--sx,-40%) - 9%),rgba(0,229,255,calc(var(--sa,0) * .28)) calc(var(--sx,-40%) - 5%),"
+          "rgba(255,255,255,var(--sa,0)) calc(var(--sx,-40%) - 1.5%),rgba(255,255,255,var(--sa,0)) calc(var(--sx,-40%) + 1.5%),"
+          "rgba(0,229,255,calc(var(--sa,0) * .28)) calc(var(--sx,-40%) + 5%),transparent calc(var(--sx,-40%) + 9%)),"
+          "linear-gradient(180deg,#F4F7F8 0%,#D6DDE1 38%,#8E989F 50%,#E4E9EC 58%,#F4F7F8 100%);"
+          "background-size:100% 100%,100% 1lh;background-repeat:no-repeat,repeat-y;-webkit-background-clip:text;background-clip:text;"
           "color:transparent;-webkit-text-fill-color:transparent")
 
 CSS = f"""
@@ -102,6 +108,43 @@ a{{color:var(--cs-c)}}
   html:not(.js) .nav>div a{{padding:9px 6px}}
 }}
 @media(prefers-reduced-motion:reduce){{.nav-toggle span,.cta{{transition:none}}}}
+/* 404: the added legal footer was a flex sibling of the centred box, so the box sat in the left half */
+body:has(>.cs-legal-ft){{flex-direction:column}}
+/* ── instruments (visual pass 2026-10, same system as the homepage — src/Instruments.jsx) ── */
+@property --sx{{syntax:'<percentage>';inherits:false;initial-value:-40%}}
+@property --sa{{syntax:'<number>';inherits:false;initial-value:0}}
+@property --trace{{syntax:'<angle>';inherits:false;initial-value:0deg}}
+/* the lamp: one glint across the chrome h1 when the page opens, then it follows the pointer (cs-cal-js) */
+h1{{animation:csGlint 1.5s cubic-bezier(.22,1,.36,1) .35s 1;transition:--sx .45s cubic-bezier(.22,1,.36,1),--sa .6s}}
+@keyframes csGlint{{0%{{--sx:-40%;--sa:1}}100%{{--sx:140%;--sa:1}}}}
+/* reading gauge: a cyan carriage across the top that measures how far you have read (CSS scroll timeline, no JS) */
+body::after{{content:'';position:fixed;left:0;right:0;top:0;height:2px;z-index:1004;pointer-events:none;background:#00e5ff;box-shadow:0 0 8px rgba(0,229,255,.7);transform-origin:left;transform:scaleX(0)}}
+@supports (animation-timeline:scroll()){{body::after{{animation:csRead linear both;animation-timeline:scroll(root)}}}}
+@keyframes csRead{{to{{transform:scaleX(1)}}}}
+/* section headings carry a dimension line drawn as the heading scrolls in; ranges end at
+   'entry 100%' so anything fully on screen (even on a page too short to scroll) is complete */
+.w>h2::after,.seo-body article>h2::after{{content:'';display:block;width:72px;height:1px;margin-top:12px;background:linear-gradient(90deg,#00e5ff,rgba(0,229,255,.1));transform-origin:left}}
+@supports (animation-timeline:view()){{.w>h2::after,.seo-body article>h2::after{{animation:csDimL linear both;animation-timeline:view();animation-range:entry 0% entry 100%}}
+  .work-shot{{animation:csScanIn linear both;animation-timeline:view();animation-range:entry 0% entry 100%}}}}
+@keyframes csDimL{{from{{transform:scaleX(0)}}to{{transform:scaleX(1)}}}}
+@keyframes csScanIn{{from{{clip-path:inset(0 0 100% 0);filter:saturate(0) brightness(1.3)}}to{{clip-path:inset(0 0 0 0);filter:none}}}}
+/* cards: a probe traces the outline while pointed at */
+.card{{position:relative}}
+.card::before,.tier::before{{content:'';position:absolute;inset:-1px;padding:1px;pointer-events:none;opacity:0;transition:opacity .3s;
+  background:conic-gradient(from var(--trace),transparent 0 72%,rgba(0,229,255,.2) 82%,#00e5ff 90%,transparent 91%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}}
+.card:hover::before,.card:focus-visible::before,.tier:hover::before{{opacity:1;animation:csTrace 2.4s linear infinite}}
+@keyframes csTrace{{to{{--trace:360deg}}}}
+/* caliper cursor: the jaws close on whatever you point at and read its size */
+.cs-caliper{{position:fixed;inset:0;pointer-events:none;z-index:2147483000}}
+.cs-caliper i{{position:fixed;left:0;top:0;opacity:0;transition:transform .32s cubic-bezier(.22,1,.36,1),height .32s cubic-bezier(.22,1,.36,1),width .32s cubic-bezier(.22,1,.36,1),opacity .2s}}
+.cs-caliper .jl,.cs-caliper .jr{{width:6px;border:1px solid #00e5ff}}.cs-caliper .jl{{border-right:0}}.cs-caliper .jr{{border-left:0}}
+.cs-caliper .dm{{height:1px;background:rgba(0,229,255,.55)}}
+.cs-caliper .dm::before,.cs-caliper .dm::after{{content:'';position:absolute;top:-3px;width:1px;height:7px;background:#00e5ff}}.cs-caliper .dm::before{{left:0}}.cs-caliper .dm::after{{right:0}}
+.cs-caliper .dm b{{position:absolute;left:50%;top:-15px;transform:translateX(-50%);font:400 8px/1 {MONO};letter-spacing:.14em;color:#00e5ff;background:rgba(10,12,14,.9);padding:2px 5px;white-space:nowrap}}
+.cs-caliper.on i{{opacity:.9}}
+@media(hover:none),(pointer:coarse){{.cs-caliper{{display:none}}}}
+@media(prefers-reduced-motion:reduce){{h1,.card::before,.tier::before,.work-shot,.w>h2::after,.seo-body article>h2::after,body::after{{animation:none!important}}body::after{{display:none}}}}
 """
 
 NAV_JS = """<script id="cs-nav-js">(function(){var n=document.querySelector('nav.nav');if(!n)return;var d=n.querySelector(':scope>div');if(!d)return;
@@ -111,6 +154,18 @@ function set(o){n.classList.toggle('open',o);b.setAttribute('aria-expanded',o?'t
 b.addEventListener('click',function(){set(!n.classList.contains('open'))});document.addEventListener('keydown',function(e){if(e.key==='Escape'&&n.classList.contains('open')){set(false);b.focus();}});
 d.addEventListener('click',function(e){if(e.target.closest('a'))set(false)});
 var mq=window.matchMedia&&matchMedia('(min-width:761px)');if(mq){var f=function(){if(mq.matches&&n.classList.contains('open'))set(false)};mq.addEventListener?mq.addEventListener('change',f):mq.addListener(f);}})();</script>"""
+
+CAL_JS = """<script id="cs-cal-js">(function(){if(!(window.matchMedia&&matchMedia('(hover:hover) and (pointer:fine)').matches)||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+var w=document.createElement('div');w.className='cs-caliper';w.setAttribute('aria-hidden','true');w.innerHTML='<i class="jl"></i><i class="jr"></i><i class="dm"><b></b></i>';document.body.appendChild(w);
+var jl=w.children[0],jr=w.children[1],dm=w.children[2],lb=dm.firstChild,t=null,r=0,px=-1e4,py=-1e4,h=document.querySelector('h1');
+function place(){r=0;if(h){var b=h.getBoundingClientRect();if(b.bottom>0&&b.width){h.style.setProperty('--sx',Math.max(-40,Math.min(140,(px-b.left)/b.width*100)).toFixed(1)+'%');h.style.setProperty('--sa',Math.max(0,1-Math.max(0,Math.abs(py-b.top-b.height/2)-b.height/2)/260).toFixed(2));}}
+if(!t||!t.isConnected){w.classList.remove('on');return}var q=t.getBoundingClientRect(),g=5,top=q.top-g,hh=q.height+g*2;if(q.width<2){w.classList.remove('on');return}
+jl.style.transform='translate('+(q.left-g-6)+'px,'+top+'px)';jr.style.transform='translate('+(q.right+g)+'px,'+top+'px)';jl.style.height=jr.style.height=hh+'px';
+var up=q.top>34;dm.style.transform='translate('+(q.left-g)+'px,'+(up?top-9:q.bottom+g+8)+'px)';dm.style.width=(q.width+g*2)+'px';lb.style.top=up?'-15px':'5px';lb.textContent=Math.round(q.width)+' \u00d7 '+Math.round(q.height);w.classList.add('on')}
+function k(){if(!r)r=requestAnimationFrame(place)}
+document.addEventListener('pointerover',function(e){t=e.target.closest&&e.target.closest('a,button,[role=button],input,textarea,select,summary,label');k()},{passive:true});
+document.addEventListener('pointermove',function(e){px=e.clientX;py=e.clientY;k()},{passive:true});addEventListener('scroll',k,{passive:true});
+document.documentElement.addEventListener('pointerleave',function(){t=null;w.classList.remove('on')})})();</script>"""
 
 FOOT = {
     "it": ('<div class="ft cs-legal-ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK 208725180 &middot; Bobov Dol, Bulgaria</p>'
@@ -130,7 +185,7 @@ SKIP = {"public/offline.html", "public/status/index.html"}  # the status page is
 
 STRIP = [re.compile(r'<link id="cs-theme-fonts(?:-pre\d?)?"[^>]*>'), re.compile(r'<script id="cs-js-flag">.*?</script>', re.S),
          re.compile(r'<style id="cs-theme">.*?</style>', re.S), re.compile(r'<script id="cs-nav-js">.*?</script>', re.S),
-         re.compile(r'<div class="ft cs-legal-ft">.*?</div>', re.S)]
+         re.compile(r'<div class="ft cs-legal-ft">.*?</div>', re.S), re.compile(r'<script id="cs-cal-js">.*?</script>', re.S)]
 
 
 LEGAL = {"it": ("/termini/", "Termini", "/note-legali/", "Note legali"),
@@ -157,6 +212,7 @@ def theme(path, html):
         html = html.replace("</body>", FOOT[lang_of(path, html)] + "</body>", 1)
     if 'class="nav"' in html:
         html = html.replace("</body>", NAV_JS + "</body>", 1)
+    html = html.replace("</body>", CAL_JS + "</body>", 1)
     # footer: "Terms" label in the page's own language, and a link to the legal notice (impressum),
     # which the law wants one click away from every page (audit 2026-10-05: only 9 pages linked it)
     lg = lang_of(path, html)

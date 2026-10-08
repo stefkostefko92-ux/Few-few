@@ -4,6 +4,7 @@ import ReverseLabShowcase from "./ReverseLabShowcase.jsx";
 import MonumentCrystal from "./MonumentCrystal.jsx";
 import CoverageMap from "./CoverageMap.jsx";
 import ScrollInstrument from "./ScrollInstrument.jsx";
+import { CaliperCursor, useChromeLight, useActiveSection, NavSlider, DrumNumber, useTilt, Magnetic, ProbeCloud, INSTRUMENT_CSS, finePointer, reducedMotion } from "./Instruments.jsx";
 // Ценоразписът: генерира се от scripts/generate-pricing.py заедно със
 // страниците /prezzi/, /en/pricing/, /bg/ceni/ — една таблица, две места.
 import PRICING from "./pricing.json";
@@ -1426,7 +1427,9 @@ const DISP = "'Space Grotesk','Onest','SG-fallback','Inter Tight',-apple-system,
 const MONO = "'Space Mono','JetBrains Mono','SM-fallback',ui-monospace,monospace"; // the instruments — dimensions, tolerances
 // Brushed-chrome fill for display type — the "CARBON" of the logo. Spread it
 // into a heading's inline style (inline colour would otherwise beat a class).
-const CHROME = {backgroundImage:"linear-gradient(180deg,#F4F7F8 0%,#D6DDE1 38%,#8E989F 50%,#E4E9EC 58%,#F4F7F8 100%)",backgroundSize:"100% 1lh",backgroundRepeat:"repeat-y",WebkitBackgroundClip:"text",backgroundClip:"text",color:"transparent",WebkitTextFillColor:"transparent"};
+// The first layer is the lamp (Instruments.jsx useChromeLight): a narrow specular band with a
+// cyan fringe at --sx, strength --sa; with no lamp it sits off-text (-40%) and is invisible.
+const CHROME = {backgroundImage:"linear-gradient(100deg,transparent calc(var(--sx,-40%) - 9%),rgba(0,229,255,calc(var(--sa,0) * .28)) calc(var(--sx,-40%) - 5%),rgba(255,255,255,var(--sa,0)) calc(var(--sx,-40%) - 1.5%),rgba(255,255,255,var(--sa,0)) calc(var(--sx,-40%) + 1.5%),rgba(0,229,255,calc(var(--sa,0) * .28)) calc(var(--sx,-40%) + 5%),transparent calc(var(--sx,-40%) + 9%)),linear-gradient(180deg,#F4F7F8 0%,#D6DDE1 38%,#8E989F 50%,#E4E9EC 58%,#F4F7F8 100%)",backgroundSize:"100% 100%,100% 1lh",backgroundRepeat:"no-repeat,repeat-y",WebkitBackgroundClip:"text",backgroundClip:"text",color:"transparent",WebkitTextFillColor:"transparent"};
 // Cyan halo behind a cyan-set line — the "STEALTH" of the logo.
 const CYAN_GLOW = {textShadow:"0 0 22px rgba(0,229,255,.38)"};
 // Primary action: the logo's ring glow, on a hairline button.
@@ -1620,8 +1623,9 @@ function ASCIISculpture() {
 // ═══════════════════════════════════════════════════
 // Display heading. Was a 5-layer cyan "echo/glow" (gratuitous decoration).
 // Reduced to a single confident neo-grotesque heading — restraint as the flex.
+function isChrome(st){return !!(st&&st.WebkitBackgroundClip==="text")}
 function EchoText(props) {
-  return <div style={Object.assign({
+  return <div className={isChrome(props.style)?"cs-chrome":undefined} style={Object.assign({
     position: "relative",
     color: props.color || INK,
     fontFamily: DISP,
@@ -1892,7 +1896,7 @@ function GenerativeCanvas() {
 // the main character, no decorative motion.
 function ProximityText(props) {
   return (
-    <div style={Object.assign({color:INK},props.style,{fontFamily:DISP})}>{props.text||""}</div>
+    <div className={isChrome(props.style)?"cs-chrome":undefined} style={Object.assign({color:INK},props.style,{fontFamily:DISP})}>{props.text||""}</div>
   );
 }
 
@@ -1903,7 +1907,7 @@ function ProximityText(props) {
 // cosplay) — demoted: the scan-reveal on its section already performs the one
 // "resolves into spec" motion, so the text itself stays legible.
 function ScrollDecode(props) {
-  return <div style={Object.assign({color:INK},props.style,{fontFamily:DISP})}>{props.text||""}</div>;
+  return <div className={isChrome(props.style)?"cs-chrome":undefined} style={Object.assign({color:INK},props.style,{fontFamily:DISP})}>{props.text||""}</div>;
 }
 
 // ═══════════════════════════════════════════════════
@@ -2377,28 +2381,7 @@ function Dim(props){
   </div>;
 }
 
-// Functional caliper cursor — a precision instrument, not a costume crosshair.
-// A small ring that reads out live X/Y coordinates and grows a measuring tick
-// when hovering an interactive target. Hidden on touch devices.
-function CaliperCursor(){
-  var dot=useRef(null),lbl=useRef(null);
-  useEffect(function(){
-    if(typeof window==="undefined")return;
-    try{ if(window.matchMedia&&window.matchMedia("(pointer:coarse)").matches)return; }catch(e){}
-    var x=window.innerWidth/2,y=window.innerHeight/2,cx=x,cy=y,raf,active=false;
-    function move(e){x=e.clientX;y=e.clientY;var tgt=e.target;active=!!(tgt&&tgt.closest&&tgt.closest("a,button,[role='button'],input,textarea,label"));}
-    function loop(){cx+=(x-cx)*0.35;cy+=(y-cy)*0.35;
-      if(dot.current){dot.current.style.transform="translate("+cx+"px,"+cy+"px) translate(-50%,-50%)";dot.current.style.width=active?"34px":"16px";dot.current.style.height=active?"34px":"16px";dot.current.style.borderColor=active?C:"rgba(201,209,214,.5)";}
-      if(lbl.current){lbl.current.style.transform="translate("+(cx+18)+"px,"+(cy+14)+"px)";lbl.current.textContent="X"+String(Math.round(x)).padStart(4,"0")+" Y"+String(Math.round(y)).padStart(4,"0");lbl.current.style.opacity=active?"1":"0.45";}
-      raf=requestAnimationFrame(loop);}
-    window.addEventListener("pointermove",move,{passive:true});raf=requestAnimationFrame(loop);
-    return function(){window.removeEventListener("pointermove",move);cancelAnimationFrame(raf);};
-  },[]);
-  return <React.Fragment>
-    <div ref={dot} className="cs-caliper" aria-hidden="true" style={{position:"fixed",left:0,top:0,width:16,height:16,border:"1px solid rgba(201,209,214,.5)",borderRadius:"50%",zIndex:2147483000,pointerEvents:"none",transition:"width .18s "+EASE+",height .18s "+EASE+",border-color .18s "+EASE}}/>
-    <div ref={lbl} className="cs-caliper" aria-hidden="true" style={{position:"fixed",left:0,top:0,fontFamily:MONO,fontSize:8,letterSpacing:".15em",color:C,zIndex:2147483000,pointerEvents:"none",whiteSpace:"nowrap"}}/>
-  </React.Fragment>;
-}
+// CaliperCursor now lives in Instruments.jsx: it measures the element you point at.
 
 // ═══════════════════════════════════════════════════
 // MAIN APP
@@ -2415,6 +2398,13 @@ export default function App(){
   const[showAdmin,setShowAdmin]=useState(false);
   const[mobileMenu,setMobileMenu]=useState(false);
   const[cookieOk,setCookieOk]=useState(function(){try{return localStorage.getItem("cs_cookie")!==null}catch(e){return false}});
+  useChromeLight(lang);
+  // every section is watched, so the carriage leaves the nav when you read a section it has no link for
+  var activeSec=useActiveSection(["hero","about","services","pricing","portfolio","products","lab","monument","coverage","contact","faq"],lang);
+  var workRef=useRef(null);useTilt(workRef,".cs-work-card",5);
+  var heroArtRef=useRef(null);
+  // the hero mark tilts toward the pointer (desktop only; CSS applies the vars)
+  useEffect(function(){var el=heroArtRef.current;if(!el||!finePointer()||reducedMotion())return;var raf=0,ex=0,ey=0;function ap(){raf=0;el.style.setProperty("--hry",((ex/innerWidth-.5)*14).toFixed(2)+"deg");el.style.setProperty("--hrx",((.5-ey/innerHeight)*10).toFixed(2)+"deg")}function mv(e){if(scrollY>innerHeight)return;ex=e.clientX;ey=e.clientY;if(!raf)raf=requestAnimationFrame(ap)}window.addEventListener("pointermove",mv,{passive:true});return function(){window.removeEventListener("pointermove",mv);if(raf)cancelAnimationFrame(raf)}},[]);
   const[formName,setFormName]=useState("");const[formEmail,setFormEmail]=useState("");const[formPhone,setFormPhone]=useState("");const[formMsg,setFormMsg]=useState("");const[formSent,setFormSent]=useState(false);
 
   // Translation helper
@@ -2764,7 +2754,9 @@ export default function App(){
       <SEOInjector />
       <CaliperCursor />
       <div className="cs-scroll-instr"><ScrollInstrument /></div>
-      <style>{"::selection{background:"+C+";color:"+BASE+"}*{margin:0;padding:0;box-sizing:border-box}html{cursor:none}body{background:"+BASE+";overflow-x:hidden;cursor:none}a,button,[role='button'],input,textarea,select{cursor:none}@media(hover:none),(pointer:coarse){html,body,a,button,[role='button']{cursor:auto}.cs-caliper{display:none}}@keyframes blink{50%{opacity:.3}}@keyframes tickerMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}input::placeholder{color:"+INK2+"}input:disabled{cursor:wait}.cs-scan{position:relative}.cs-scan-line{position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,"+C+",transparent);box-shadow:0 0 8px rgba("+CR+",.5);opacity:0;z-index:6;pointer-events:none}.cs-scan>*:not(.cs-scan-line){opacity:0;transform:translateY(14px);filter:blur(2px)}.cs-scan.in>*:not(.cs-scan-line){opacity:1;transform:none;filter:none;transition:opacity .6s "+EASE+",transform .6s "+EASE+",filter .6s "+EASE+"}.cs-scan.in .cs-scan-line{animation:csSweep .7s "+EASE+" forwards}@keyframes csSweep{0%{opacity:0;top:0}10%{opacity:1}100%{opacity:0;top:100%}}@media(prefers-reduced-motion:reduce){.cs-scan>*{opacity:1!important;transform:none!important;filter:none!important}.cs-scan-line{display:none}}#main section.cs-prep{opacity:0;transform:translateY(18px)}#main section.cs-prep::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,"+C+",transparent);box-shadow:0 0 8px rgba("+CR+",.5);opacity:0;z-index:6;pointer-events:none}#main section.cs-seen{opacity:1;transform:none;transition:opacity .55s "+EASE+",transform .55s "+EASE+"}#main section.cs-seen::after{animation:csSweep .7s "+EASE+" forwards}@media(prefers-reduced-motion:reduce){#main section.cs-prep{opacity:1;transform:none}#main section::after{display:none}}@media(max-width:767px){.cs-lab-grid{grid-template-columns:1fr !important}}.cs-brand-img{mix-blend-mode:screen}.cs-hero-art{position:absolute;right:clamp(16px,4vw,60px);top:clamp(72px,9vh,96px);width:min(28vw,380px);height:auto;z-index:2;pointer-events:none;mix-blend-mode:screen;opacity:.95;filter:saturate(1.05);-webkit-mask-image:radial-gradient(ellipse at 50% 50%,#000 52%,transparent 74%);mask-image:radial-gradient(ellipse at 50% 50%,#000 52%,transparent 74%)}@media(min-width:861px){.cs-hero-h1{max-width:min(16ch,calc(100vw - min(28vw,380px) - 2*clamp(20px,5vw,64px) - max(0px,(100vw - 2*clamp(20px,5vw,64px) - 1180px)/2) - 40px))!important}}@media(max-width:860px){.cs-hero-art{right:auto;left:50%;transform:translateX(-50%);top:64px;width:min(74vw,340px);opacity:.85}.cs-hero-coords{display:none}}.cs-glowline{height:1px;background:linear-gradient(90deg,transparent,rgba(0,229,255,.7),transparent);box-shadow:0 0 12px rgba(0,229,255,.35)}.cs-cta{transition:box-shadow .35s "+EASE+",background .35s "+EASE+"}.cs-cta:hover{background:rgba(0,229,255,.1)!important;box-shadow:0 0 34px rgba(0,229,255,.42), inset 0 0 18px rgba(0,229,255,.1)!important}#footer a{min-height:24px;align-items:center}.cs-work-card{transition:border-color .25s}.cs-work-card:hover,.cs-work-card:focus-visible{border-color:rgba(0,229,255,.55)!important}.cs-srv-row:hover .cs-srv-t,.cs-srv-row:focus-visible .cs-srv-t{color:"+C+"}@media(max-width:768px){.cs-scroll-instr{display:none}.cs-contactbar{flex-direction:column;gap:10px!important}}@media(max-width:1100px){.cs-price-grid{grid-template-columns:repeat(2,1fr)!important}}@media(max-width:600px){.cs-price-grid{grid-template-columns:1fr!important}}"}</style>
+      <style>{"::selection{background:"+C+";color:"+BASE+"}*{margin:0;padding:0;box-sizing:border-box}html{cursor:none}body{background:"+BASE+";overflow-x:hidden;cursor:none}a,button,[role='button'],input,textarea,select{cursor:none}@media(hover:none),(pointer:coarse){html,body,a,button,[role='button']{cursor:auto}.cs-caliper{display:none}}@keyframes blink{50%{opacity:.3}}@keyframes tickerMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}input::placeholder{color:"+INK2+"}input:disabled{cursor:wait}.cs-scan{position:relative}.cs-scan-line{position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,"+C+",transparent);box-shadow:0 0 8px rgba("+CR+",.5);opacity:0;z-index:6;pointer-events:none}.cs-scan>*:not(.cs-scan-line){opacity:0;transform:translateY(14px);filter:blur(2px)}.cs-scan.in>*:not(.cs-scan-line){opacity:1;transform:none;filter:none;transition:opacity .6s "+EASE+",transform .6s "+EASE+",filter .6s "+EASE+"}.cs-scan.in .cs-scan-line{animation:csSweep .7s "+EASE+" forwards}@keyframes csSweep{0%{opacity:0;top:0}10%{opacity:1}100%{opacity:0;top:100%}}@media(prefers-reduced-motion:reduce){.cs-scan>*{opacity:1!important;transform:none!important;filter:none!important}.cs-scan-line{display:none}}#main section.cs-prep{opacity:0;transform:translateY(18px)}#main section.cs-prep::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,"+C+",transparent) 0 0/100% 1px no-repeat,linear-gradient(90deg,transparent,rgba("+CR+",.10),transparent) 0 0/100% 12px no-repeat;opacity:0;z-index:6;pointer-events:none}#main section.cs-seen{opacity:1;transform:none;transition:opacity .55s "+EASE+",transform .55s "+EASE+"}#main section.cs-seen::after{animation:csSweepBg .7s "+EASE+" forwards}@keyframes csSweepBg{0%{opacity:0;background-position:0 0,0 0}10%{opacity:1}100%{opacity:0;background-position:0 100%,0 100%}}@media(prefers-reduced-motion:reduce){#main section.cs-prep{opacity:1;transform:none}#main section::after{display:none}}@media(max-width:767px){.cs-lab-grid{grid-template-columns:1fr !important}}.cs-brand-img{mix-blend-mode:screen}.cs-hero-art{position:absolute;right:clamp(16px,4vw,60px);top:clamp(72px,9vh,96px);width:min(28vw,380px);height:auto;z-index:2;pointer-events:none;mix-blend-mode:screen;opacity:.95;filter:saturate(1.05);-webkit-mask-image:radial-gradient(ellipse at 50% 50%,#000 52%,transparent 74%);mask-image:radial-gradient(ellipse at 50% 50%,#000 52%,transparent 74%)}@media(min-width:861px){.cs-hero-h1{max-width:min(16ch,calc(100vw - min(28vw,380px) - 2*clamp(20px,5vw,64px) - max(0px,(100vw - 2*clamp(20px,5vw,64px) - 1180px)/2) - 40px))!important}}@media(max-width:860px){.cs-hero-art{right:auto;left:50%;transform:translateX(-50%);top:64px;width:min(74vw,340px);opacity:.85}.cs-hero-coords{display:none}}.cs-glowline{height:1px;background:linear-gradient(90deg,transparent,rgba(0,229,255,.7),transparent);box-shadow:0 0 12px rgba(0,229,255,.35)}.cs-cta{transition:box-shadow .35s "+EASE+",background .35s "+EASE+"}.cs-cta:hover{background:rgba(0,229,255,.1)!important;box-shadow:0 0 34px rgba(0,229,255,.42), inset 0 0 18px rgba(0,229,255,.1)!important}#footer a{min-height:24px;align-items:center}.cs-work-card{transition:border-color .25s}.cs-work-card:hover,.cs-work-card:focus-visible{border-color:rgba(0,229,255,.55)!important}.cs-srv-row:hover .cs-srv-t,.cs-srv-row:focus-visible .cs-srv-t{color:"+C+"}@media(max-width:768px){.cs-scroll-instr{display:none}.cs-contactbar{flex-direction:column;gap:10px!important}}@media(max-width:1100px){.cs-price-grid{grid-template-columns:repeat(2,1fr)!important}}@media(max-width:600px){.cs-price-grid{grid-template-columns:1fr!important}}"}</style>
+
+      <style>{INSTRUMENT_CSS}</style>
 
       {/* Engineering-drawing grid over a faint carbon weave — the logo's
           twill texture as the page ground, kept far below legibility noise */}
@@ -2772,8 +2764,8 @@ export default function App(){
 
       {/* NAV */}
       <nav style={{position:"fixed",top:0,left:0,width:"100%",zIndex:10000,padding:"12px 20px",display:"flex",justifyContent:"space-between",alignItems:"center",borderBottom:"1px solid rgba("+CR+",.16)",boxShadow:"0 1px 18px rgba("+CR+",.10)",background:"rgba(0,0,0,.92)"}}>
-        <div style={{display:"flex",alignItems:"center",gap:8}}><div style={{width:8,height:8,background:C,animation:"blink 1s steps(1) infinite"}}/><img src="/logo-nav.webp" alt="Carbon Stealth VCC" width={80} height={34} fetchPriority="high" decoding="async" style={{height:34,width:80,objectFit:"contain",filter:"drop-shadow(0 0 6px rgba(0,229,255,0.3))"}}/></div>
-        <div className="cs-nav-links" style={{display:"flex",gap:20,alignItems:"center"}}>{[{txt:t("nav_manifesto"),id:"about"},{txt:t("nav_services"),id:"services"},{txt:t("nav_work"),id:"portfolio"},{txt:t("nav_pricing"),id:"pricing"},{txt:t("nav_lab"),id:"lab"},{txt:t("nav_contact"),id:"contact"}].map(function(item){return <div key={item.txt} {...kb(function(){scrollToId(item.id)},item.txt)} style={{cursor:"pointer"}}><Scr text={item.txt} style={{fontSize:9,letterSpacing:".2em"}}/></div>})}<a href={lang==="it"?"/test/":lang==="bg"?"/bg/test/":"/en/test/"} style={{textDecoration:"none"}}><Scr text={t("nav_test")} style={{fontSize:9,letterSpacing:".2em",cursor:"none",color:C,border:"1px solid rgba("+CR+",.3)",padding:"5px 10px"}}/></a></div>
+        <div style={{display:"flex",alignItems:"center",gap:8}}><div key={activeSec||"top"} className="cs-led" aria-hidden="true" style={{width:8,height:8,background:C}}/><img src="/logo-nav.webp" alt="Carbon Stealth VCC" width={80} height={34} fetchPriority="high" decoding="async" style={{height:34,width:80,objectFit:"contain",filter:"drop-shadow(0 0 6px rgba(0,229,255,0.3))"}}/></div>
+        <div className="cs-nav-links" style={{display:"flex",gap:20,alignItems:"center"}}>{[{txt:t("nav_manifesto"),id:"about"},{txt:t("nav_services"),id:"services"},{txt:t("nav_work"),id:"portfolio"},{txt:t("nav_pricing"),id:"pricing"},{txt:t("nav_lab"),id:"lab"},{txt:t("nav_contact"),id:"contact"}].map(function(item){return <div key={item.id} data-spy={item.id} className={activeSec===item.id?"on":undefined} {...kb(function(){scrollToId(item.id)},item.txt)} style={{cursor:"pointer"}}><span className="cs-navl">{item.txt}</span></div>})}<NavSlider active={activeSec} lang={lang}/><a href={lang==="it"?"/test/":lang==="bg"?"/bg/test/":"/en/test/"} style={{textDecoration:"none",fontSize:9,letterSpacing:".2em",color:C,border:"1px solid rgba("+CR+",.3)",padding:"5px 10px"}}>{t("nav_test")}</a></div>
         <div style={{display:"flex",gap:10,alignItems:"center"}}>
           <div className="cs-nav-lang" style={{display:"flex",gap:2,marginLeft:8}}>
             {["it","en","bg"].map(function(l){return <span key={l} role="button" tabIndex={0} aria-label={l.toUpperCase()} onKeyDown={function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();setLang(l);try{localStorage.setItem("cs_lang",l)}catch(err){}}}} onClick={function(){setLang(l);try{localStorage.setItem("cs_lang",l)}catch(e){}}} style={{fontSize:8,padding:"3px 6px",letterSpacing:".1em",cursor:"none",background:lang===l?"rgba("+CR+",.15)":"transparent",color:lang===l?C:"#ccc",border:"1px solid "+(lang===l?"rgba("+CR+",.3)":"rgba(245,245,240,.06)"),fontWeight:lang===l?700:400,textTransform:"uppercase"}}>{l}</span>})}
@@ -2804,11 +2796,11 @@ export default function App(){
         {/* The mark itself, rendered in its own scene — sits over the shader
             with screen blending so its black ground disappears and only the
             carbon, chrome and cyan ring remain. Static image: zero runtime cost. */}
-        <img className="cs-hero-art" src="/brand/cs-scene-800.webp" srcSet="/brand/cs-scene-800.webp 800w, /brand/cs-scene.webp 1254w" sizes="(max-width:860px) 72vw, 34vw" alt="" aria-hidden="true" width={800} height={800} fetchPriority="high" decoding="async"/>
+        <img ref={heroArtRef} className="cs-hero-art" src="/brand/cs-scene-800.webp" srcSet="/brand/cs-scene-800.webp 800w, /brand/cs-scene.webp 1254w" sizes="(max-width:860px) 72vw, 34vw" alt="" aria-hidden="true" width={800} height={800} fetchPriority="high" decoding="async"/>
 
         {/* Blueprint furniture - measured coordinates + tolerance callout */}
         <div className="cs-hero-coords" aria-hidden="true" style={{position:"absolute",top:96,right:"clamp(20px,5vw,64px)",fontFamily:MONO,fontSize:9,letterSpacing:".22em",color:INK2,textAlign:"right",lineHeight:2.1,zIndex:5}}>
-          42.3482{"°"}N {"·"} 23.0017{"°"}E<br/>BOBOV DOL {"·"} ALT 550M<br/><span style={{color:C}}>{"±"}0.02 TOL</span> {"·"} <span style={{color:C}}>{"◦"} MEASURING</span>
+          42.3482{"°"}N {"·"} 23.0017{"°"}E<br/>BOBOV DOL {"·"} ALT 550M<br/><span style={{color:C}}>{"±"}0.02 TOL</span> {"·"} <span style={{color:C}}><i className="cs-live"/>MEASURING</span>
         </div>
 
         <div style={{position:"relative",zIndex:10,maxWidth:1180,width:"100%",margin:"0 auto"}}>
@@ -2817,7 +2809,7 @@ export default function App(){
           </div>
 
           {/* Type is the hero - the single H1, keyword-forward, few words */}
-          <h1 className="cs-hero-h1" style={Object.assign({fontFamily:DISP,fontWeight:600,fontSize:"clamp(2.4rem,6vw,5.4rem)",lineHeight:.98,letterSpacing:"-.03em",margin:0,maxWidth:"16ch"},CHROME)}>
+          <h1 className="cs-hero-h1 cs-chrome" style={Object.assign({fontFamily:DISP,fontWeight:600,fontSize:"clamp(2.4rem,6vw,5.4rem)",lineHeight:.98,letterSpacing:"-.03em",margin:0,maxWidth:"16ch"},CHROME)}>
             {t("hero_title")}
           </h1>
 
@@ -2826,9 +2818,7 @@ export default function App(){
 
           <div style={{display:"flex",flexWrap:"wrap",justifyContent:"space-between",alignItems:"flex-end",gap:28,borderTop:"1px solid "+LINE,paddingTop:22,marginTop:"clamp(28px,5vh,44px)"}}>
             <p style={{maxWidth:380,fontSize:12,lineHeight:1.95,color:INK2}}>{t("hero_desc")}</p>
-            <div className="cs-cta" onClick={function(){scrollToId("contact")}} {...kb(function(){scrollToId("contact")},t("cta_btn"))} style={Object.assign({display:"inline-block"},CTA_GLOW)}>
-              <MagneticRepel text={t("cta_btn")+"  →"} style={{display:"inline-block",fontFamily:MONO,fontSize:11,letterSpacing:".28em",color:C,border:"1px solid rgba("+CR+",.4)",padding:"15px 30px",textTransform:"uppercase"}}/>
-            </div>
+            <Magnetic><div className="cs-cta" onClick={function(){scrollToId("contact")}} {...kb(function(){scrollToId("contact")},t("cta_btn"))} style={Object.assign({display:"inline-block",fontFamily:MONO,fontSize:11,letterSpacing:".28em",color:C,border:"1px solid rgba("+CR+",.4)",padding:"15px 30px",textTransform:"uppercase"},CTA_GLOW)}>{t("cta_btn")+"  →"}</div></Magnetic>
           </div>
         </div>
       </section>
@@ -2837,8 +2827,8 @@ export default function App(){
           ABOUT — Scroll-decode text
           ═══════════════════════════════════════════ */}
       <section id="about" style={{position:"relative",zIndex:5,padding:"120px 20px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:80}}>
-        <Constellation />
-        <div>
+        <ProbeCloud />
+        <div style={{position:"relative",zIndex:1}}>
           <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("about_tag")}</div>
           <ScrollDecode
             text={t("about_scroll")}
@@ -2846,7 +2836,7 @@ export default function App(){
           />
           <p style={{fontSize:12,lineHeight:2,color:"#ccc",maxWidth:420,marginTop:28}}>{t("about_body")}</p>
         </div>
-        <div style={{paddingTop:40}}>
+        <div style={{paddingTop:40,position:"relative",zIndex:1}}>
           {/* Brand plate — the third render (mark + the three promises) */}
           <div style={{maxWidth:420,marginBottom:32,border:"1px solid rgba("+CR+",.14)",boxShadow:"0 0 32px rgba("+CR+",.08)",background:"#000",overflow:"hidden"}}>
             <img src="/brand/cs-poster.webp" alt="Carbon Stealth VCC — design, development, performance" width={1024} height={1024} loading="lazy" decoding="async" style={{display:"block",width:"100%",height:"auto"}}/>
@@ -2854,7 +2844,7 @@ export default function App(){
           {[[t("stat_1"),"50+"],[t("stat_2"),"11"],[t("stat_3"),"IT \u00b7 EN \u00b7 BG"],[t("stat_4"),"0"]].map(function(item,i){
             return <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"14px 0",borderBottom:"1px solid rgba(245,245,240,.08)"}}>
               <span style={{fontSize:9,letterSpacing:".25em",textTransform:"uppercase",color:"#ddd"}}>{item[0]}</span>
-              <span style={{fontFamily:HEAD,fontWeight:900,fontSize:i===3?"2rem":"1.4rem",letterSpacing:"-.02em",color:i===3?C:"#C9D1D6"}}>{item[1]}</span></div>})}
+              <DrumNumber value={item[1]} style={{fontFamily:HEAD,fontWeight:900,fontSize:i===3?"2rem":"1.4rem",letterSpacing:"-.02em",color:i===3?C:"#C9D1D6"}}/></div>})}
         </div>
       </section>
 
@@ -2873,7 +2863,7 @@ export default function App(){
         {(SRV_DATA[lang]||SRV_DATA.en).map(function(s,i){
           var href=(SRV_LINKS[lang]||SRV_LINKS.it)[i]||"#contact";
           return <a key={i} href={href} className="cs-srv-row" style={{display:"grid",gridTemplateColumns:"100px 1fr",gap:20,padding:"28px 0",borderBottom:"1px solid rgba(245,245,240,.08)",position:"relative",textDecoration:"none",color:"inherit",cursor:"none"}}>
-            <div style={{fontFamily:HEAD,fontWeight:900,fontSize:"3.5rem",color:"rgba("+CR+",.06)",lineHeight:1,letterSpacing:"-.03em"}}>{s.n}</div>
+            <div className="cs-srv-n" aria-hidden="true" style={{fontFamily:HEAD,fontWeight:900,fontSize:"3.5rem",lineHeight:1,letterSpacing:"-.03em"}}>{s.n}</div>
             <div>
               <div className="cs-srv-t" style={{fontFamily:HEAD,fontWeight:700,fontSize:"1.1rem",textTransform:"uppercase",letterSpacing:"-.01em",marginBottom:6,transition:"color .2s"}}>{s.t} <span aria-hidden="true" style={{color:C}}>{"\u2192"}</span></div>
               <div style={{fontSize:10,color:"#ddd",lineHeight:1.8,marginBottom:8}}>{s.d}</div>
@@ -2899,7 +2889,8 @@ export default function App(){
               <div style={{fontSize:9,letterSpacing:".3em",color:C,marginBottom:6,textTransform:"uppercase",minHeight:"3.2em"}}>{tier.tag[lang]}</div>
               <div style={{fontFamily:HEAD,fontWeight:800,fontSize:"1.5rem",letterSpacing:"-.02em",color:INK,marginBottom:8}}>{tier.name[lang]}</div>
               <p style={{fontSize:11,lineHeight:1.7,color:INK2,minHeight:"6.8em"}}>{tier.desc[lang]}</p>
-              <div style={Object.assign({fontFamily:HEAD,fontWeight:900,fontSize:"2.1rem",letterSpacing:"-.03em",lineHeight:1,margin:"14px 0 4px"},CHROME)}>{fmtEur(tier.price[lang],lang)}</div>
+              <div className="cs-chrome" style={Object.assign({fontFamily:HEAD,fontWeight:900,fontSize:"2.1rem",letterSpacing:"-.03em",lineHeight:1,margin:"14px 0 4px"},CHROME)}>{fmtEur(tier.price[lang],lang)}</div>
+              <div className="cs-gauge" aria-hidden="true" style={{"--w":(tier.price[lang]/tier.market[lang]*100).toFixed(1)+"%"}}><b/><i/></div>
               <div style={{fontSize:10,color:INK2,lineHeight:1.6,marginBottom:14}}><s style={{color:"#8A949B"}}>{fmtEur(tier.market[lang],lang)}</s> {ui.market} {"·"} <b style={{color:C}}>{"−"}{tier.discount}% {ui.saving}</b></div>
               <ul style={{listStyle:"none",padding:0,margin:"0 0 14px",flex:1}}>{tier.features[lang].map(function(f){return <li key={f} style={{fontSize:11,lineHeight:1.6,paddingLeft:16,position:"relative",marginBottom:6,color:"#ccc"}}><span aria-hidden="true" style={{position:"absolute",left:0,color:C}}>{"✓"}</span>{f}</li>})}</ul>
               <div style={{fontSize:10,color:INK2,marginBottom:12}}>{ui.delivery}: {tier.days[0]}{"–"}{tier.days[1]} {ui.days}</div>
@@ -2927,7 +2918,7 @@ export default function App(){
         <div style={{height:48}}/>
 
         {/* Real screenshots of each live project (public/work/, captured from the live sites) */}
-        <div className="cs-work-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:16}}>
+        <div ref={workRef} className="cs-work-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:16}}>
         {[["001","PANEV ASCENSORI","STAFFE BREVETTATE · IT","https://panevascensori.it","panev-ascensori"],["002","ZA BOBOV DOL","CIVIC PORTAL · BG","https://zabobovdol.carbonstealth.eu","zabobovdol"],["003","NEXUS DOMINION","BROWSER MMO","https://nexus.carbonstealth.eu","nexus-dominion"],["004","OU VAPTSAROV","SCHOOL WEBSITE","https://ouvaptsarov.com","ou-vaptsarov"],["005","ERP ASCENSORI","ERP SYSTEM","https://erp.carbonstealth.eu","erp-ascensori"],["006","TRETI MART","MARKETPLACE BG","https://tretimart.carbonstealth.eu","treti-mart"],["007","EVANITA SPORT","KANGOO JUMPS STUDIO","https://evanita-bg.com","evanita-sport"],["008","ETERNAL TOUCH","ATELIER · GESSO","https://eternaltouch.it","eternal-touch"],["009","OSPEDALI TRASPARENTI","CIVIC DATA · IT","https://ospedalitrasparenti.it","ospedali-trasparenti"],["010","VIZITKA","QR BUSINESS CARD","https://vizitka-bg.com","vizitka"],["011","MASTILKO","PRINT TOOLS","https://mastilko-bg.com","mastilko"]].map(function(w){
           return <a key={w[0]} href={w[3]} target="_blank" rel="noopener" className="cs-work-card" style={{display:"flex",flexDirection:"column",border:"1px solid rgba("+CR+",.14)",background:"rgba("+CR+",.015)",cursor:"none",textDecoration:"none",color:"inherit",overflow:"hidden"}}>
             <img src={"/work/"+w[4]+"-480.webp"} srcSet={"/work/"+w[4]+"-480.webp 480w, /work/"+w[4]+".webp 960w"} sizes="(max-width:640px) 100vw, 33vw" width={480} height={300} loading="lazy" decoding="async" alt={w[1]+" \u2014 "+w[2]} style={{display:"block",width:"100%",height:"auto",aspectRatio:"16/10",objectFit:"cover",objectPosition:"top",borderBottom:"1px solid rgba("+CR+",.14)"}}/>
@@ -2967,7 +2958,7 @@ export default function App(){
             {name:"Мастилко",url:"https://mastilko-bg.com",tag:"PRINT · TOOLS",desc:{it:"Etichette, biglietti da visita e CV gratuiti, pronti per la stampa. Anteprima dal vivo su un vero foglio A4, senza registrazione.",en:"Free labels, business cards and CVs, print-ready. Live preview on a real A4 sheet, no signup.",bg:"Безплатни етикети, визитки и CV, готови за печат. Преглед на живо върху истински А4 лист, без регистрация."}},
             {name:"Vizitka",url:"https://vizitka-bg.com",tag:"QR · PROFILE",desc:{it:"Biglietto da visita digitale con QR permanente. Cambi lavoro o numero — tutti i biglietti già distribuiti si aggiornano da soli.",en:"Digital business card with a permanent QR. Change your job or number — every card you already handed out updates itself.",bg:"Дигитална визитка с постоянен QR код. Смениш ли телефон или длъжност — всички вече раздадени визитки се обновяват сами."}},
           ].map(function(p,i){
-            return <a key={i} href={p.url} target="_blank" rel="noopener" style={{border:"1px solid rgba("+CR+",.14)",padding:"22px 18px",display:"flex",flexDirection:"column",justifyContent:"space-between",minHeight:190,textDecoration:"none",color:"inherit",cursor:"none",background:"rgba("+CR+",.015)"}}>
+            return <a key={i} href={p.url} target="_blank" rel="noopener" className="cs-prod-card" style={{border:"1px solid rgba("+CR+",.14)",padding:"22px 18px",display:"flex",flexDirection:"column",justifyContent:"space-between",minHeight:190,textDecoration:"none",color:"inherit",cursor:"none",background:"rgba("+CR+",.015)"}}>
               <div>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10,gap:8}}>
                   <span style={{fontFamily:MONO,fontSize:8,letterSpacing:".25em",color:INK2}}>{p.tag}</span>
@@ -2992,7 +2983,7 @@ export default function App(){
             {name:"Treti Mart",desc:{it:"Il marketplace bulgaro. Compra e vendi prodotti in Bulgaria con annunci gratuiti e pagamenti sicuri.",en:"The Bulgarian marketplace. Buy and sell in Bulgaria with free listings and secure payments.",bg:"Българският маркетплейс. Купувай и продавай в България с безплатни обяви и сигурни плащания."},url:"https://tretimart.carbonstealth.eu",tag:"MARKETPLACE"},
             {name:"CS ERP Demo",desc:{it:"Demo live del sistema ERP. Prova i moduli CRM, magazzino, contabilità e dashboard BI.",en:"Live demo of the ERP system. Try the CRM, warehouse, accounting and BI dashboard modules.",bg:"Демо на живо на ERP системата. Пробвай модулите CRM, склад, счетоводство и BI табло."},url:"https://erp.carbonstealth.eu",tag:"ERP"},
           ].map(function(p,i){
-            return <a key={i} href={p.url} target="_blank" rel="noopener" style={{border:"1px solid rgba(245,245,240,.06)",padding:"24px 18px",display:"flex",flexDirection:"column",justifyContent:"space-between",minHeight:180,textDecoration:"none",color:"inherit",cursor:"none",background:"rgba("+CR+",.01)"}}>
+            return <a key={i} href={p.url} target="_blank" rel="noopener" className="cs-prod-card" style={{border:"1px solid rgba(245,245,240,.06)",padding:"24px 18px",display:"flex",flexDirection:"column",justifyContent:"space-between",minHeight:180,textDecoration:"none",color:"inherit",cursor:"none",background:"rgba("+CR+",.01)"}}>
               <div>
                 <div style={{fontSize:8,letterSpacing:".3em",color:C,marginBottom:8}}>{p.tag}</div>
                 <div style={{fontFamily:HEAD,fontWeight:700,fontSize:"1rem",textTransform:"uppercase",marginBottom:8,color:"#C9D1D6"}}>{p.name}</div>
@@ -3022,7 +3013,7 @@ export default function App(){
                 <span style={{fontSize:11,color:"#ddd",lineHeight:1.8,letterSpacing:".05em"}}>{b}</span>
               </div>
             })}
-            <div onClick={function(){scrollToId("contact")}} style={{marginTop:10,padding:"12px 24px",border:"1px solid "+C,color:C,fontSize:10,letterSpacing:".25em",cursor:"none",alignSelf:"flex-start"}}>{t("lab_cta")}</div>
+            <div className="cs-cta" {...kb(function(){scrollToId("contact")},t("lab_cta"))} style={Object.assign({marginTop:10,padding:"12px 24px",border:"1px solid "+C,color:C,fontSize:10,letterSpacing:".25em",cursor:"none",alignSelf:"flex-start"},CTA_GLOW)}>{t("lab_cta")}</div>
           </div>
         </div>
 
@@ -3057,13 +3048,14 @@ export default function App(){
         <div style={{maxWidth:700,margin:"0 auto"}}>
           <EchoText fontFamily={HEAD} fontSize="clamp(2rem,6vw,5rem)" lineHeight=".9" letterSpacing="-.04em" color={C} style={CYAN_GLOW}>{t("cta_title")}</EchoText>
           <div style={{height:24}}/>
-          <MagneticRepel text={t("cta_sub")} style={{fontSize:10,letterSpacing:".15em",color:"#ccc",marginBottom:32}}/>
+          <div style={{fontSize:10,letterSpacing:".15em",color:"#ccc",marginBottom:32}}>{t("cta_sub")}</div>
 
           {/* ═══ CONTACT FORM ═══ */}
           {formSent==="ok"||formSent==="sending" ? (
             <div style={{padding:"40px 20px",border:"1px solid rgba(0,255,136,.3)",textAlign:"center"}}>
               <div style={{fontFamily:HEAD,fontWeight:900,fontSize:18,color:"#00ff88",marginBottom:8}}>{formSent==="sending"?(lang==="it"?"INVIO IN CORSO...":lang==="bg"?"\u0418\u0417\u041F\u0420\u0410\u0429\u0410\u041D\u0415...":"SENDING..."):(lang==="it"?"INVIATO!":lang==="bg"?"\u0418\u0417\u041F\u0420\u0410\u0422\u0415\u041D\u041E!":"SENT!")}</div>
               <p style={{fontSize:11,color:"#ccc"}}>{t("form_sent")}</p>
+              {formSent==="ok" && <div className="cs-stamp" aria-hidden="true">{lang==="it"?"RICEVUTO":lang==="bg"?"ПРИЕТО":"RECEIVED"} {"\u00b7"} {new Date().toISOString().slice(0,10)}</div>}
             </div>
           ) : (
             <form onSubmit={function(e){e.preventDefault();handleFormSubmit()}} style={{display:"flex",flexDirection:"column",gap:10}}>
@@ -3121,7 +3113,8 @@ export default function App(){
             ["\u041A\u0430\u043A\u044A\u0432 \u0435 \u0442\u0435\u0445\u043D\u043E\u043B\u043E\u0433\u0438\u0447\u043D\u0438\u044F\u0442 \u0441\u0442\u0435\u043A?", "React, Node.js, TypeScript, Python, Prisma ORM, PostgreSQL, Redis, Docker, Nginx, Three.js, WebGL, GSAP, Socket.IO. \u0418\u043D\u0444\u0440\u0430\u0441\u0442\u0440\u0443\u043A\u0442\u0443\u0440\u0430: Hetzner VPS, Ubuntu 24.04, Let's Encrypt SSL."],
           ],
         }[lang] || []).map(function(pair, i) {
-          return <div key={i} itemScope itemProp="mainEntity" itemType="https://schema.org/Question" style={{borderBottom:"1px solid rgba(245,245,240,.08)",padding:"20px 0"}}>
+          return <div key={i} className="cs-faq-i" itemScope itemProp="mainEntity" itemType="https://schema.org/Question" style={{borderBottom:"1px solid rgba(245,245,240,.08)",padding:"20px 0"}}>
+            <span className="cs-faq-n" aria-hidden="true">Q.{String(i+1).padStart(2,"0")}</span>
             <h3 itemProp="name" style={{fontFamily:HEAD,fontWeight:700,fontSize:"1rem",textTransform:"uppercase",letterSpacing:"-.01em",marginBottom:8,color:"#C9D1D6",textShadow:"0 1px 10px rgba(0,0,0,0.5)"}}>{pair[0]}</h3>
             <div itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer">
               <p itemProp="text" className="about-answer" style={{fontSize:11,lineHeight:1.9,color:"#ccc",maxWidth:600}}>{pair[1]}</p>
@@ -3195,7 +3188,7 @@ export default function App(){
             ]}[lang]||[]).map(function(s){
               return <a key={s[0]} href={s[1]} style={{display:"block",fontSize:10,color:"#ccc",lineHeight:2.2,cursor:"none",textDecoration:"none"}}>{s[0]}</a>;
             })}
-            <div style={{marginTop:16,display:"flex",gap:12}}>
+            <div style={{marginTop:16,display:"flex",flexWrap:"wrap",gap:"6px 12px",whiteSpace:"nowrap"}}>
               <span style={{fontSize:8,color:"#ccc",letterSpacing:".15em"}}>SSL {lang==="it"?"PROTETTO":lang==="bg"?"\u0417\u0410\u0429\u0418\u0422\u0415\u041D":"SECURED"}</span>
               <span style={{fontSize:8,color:"#ccc",letterSpacing:".15em"}}>99.9% UPTIME</span>
               <a href="/status/" style={{fontSize:8,color:C,letterSpacing:".15em",textDecoration:"none",cursor:"none"}}>{"\u25CF"} {lang==="it"?"STATO LIVE":lang==="bg"?"\u0421\u0422\u0410\u0422\u0423\u0421 \u041D\u0410 \u0416\u0418\u0412\u041E":"LIVE STATUS"} {"\u2192"}</a>
@@ -3261,14 +3254,21 @@ export default function App(){
           </div>
         </div>
 
-        {/* POWERED BY */}
-        <div style={{padding:"10px 20px",textAlign:"center",borderTop:"1px solid rgba(245,245,240,.02)"}}>
-          <span style={{fontSize:7,color:"#7C868D",letterSpacing:".3em"}}>{lang==="it"?"CREATO E PROGETTATO DA CARBON STEALTH":lang==="bg"?"\u0421\u042A\u0417\u0414\u0410\u0414\u0415\u041D\u041E \u0418 \u041F\u0420\u041E\u0415\u041A\u0422\u0418\u0420\u0410\u041D\u041E \u041E\u0422 CARBON STEALTH":"CREATED AND DESIGNED BY CARBON STEALTH"} {"\u00b7"} WEBGL {"\u00b7"} REVERSE ENGINEERING {"\u00b7"} 3D PRINTING {"\u00b7"} {"\u00b1"}0.02MM</span>
+        {/* TITLE BLOCK — the footer signs the page like an engineering drawing */}
+        <div style={{padding:"4px 20px 0"}}>
+          <div className="cs-tblock">
+            {[[lang==="it"?"Progetto":lang==="bg"?"Проект":"Project","carbonstealth.eu"],
+              [lang==="it"?"Disegnato da":lang==="bg"?"Изчертал":"Drawn by","Carbon Stealth VCC"],
+              [lang==="it"?"Scala":lang==="bg"?"Мащаб":"Scale","1 : 1"],
+              [lang==="it"?"Tolleranza":lang==="bg"?"Толеранс":"Tolerance","\u00b1 0.02 mm"],
+              ["Rev.",(function(){try{var d=new Date(document.lastModified);return isNaN(d)?"\u2014":d.toISOString().slice(0,10)}catch(e){return "\u2014"}})()],
+              [lang==="it"?"Foglio":lang==="bg"?"Лист":"Sheet","1 / 1"]].map(function(c){return <div key={c[0]}><small>{c[0]}</small><span>{c[1]}</span></div>})}
+          </div>
         </div>
       </footer>
 
       {/* ═══ FLOATING WHATSAPP CTA (conversion) ═══ */}
-      <a href="https://wa.me/393792969699" target="_blank" rel="noopener" aria-label="WhatsApp"
+      <a href="https://wa.me/393792969699" target="_blank" rel="noopener" aria-label="WhatsApp" className="cs-wa"
         style={{position:"fixed",right:"clamp(16px,3vw,28px)",bottom:cookieOk?"clamp(16px,3vw,28px)":"92px",zIndex:99998,width:56,height:56,borderRadius:"50%",background:"#25D366",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 6px 24px rgba(37,211,102,.35)",transition:"transform .18s "+EASE}}
         onMouseEnter={function(e){e.currentTarget.style.transform="scale(1.08)"}} onMouseLeave={function(e){e.currentTarget.style.transform="scale(1)"}}>
         <svg width="30" height="30" viewBox="0 0 32 32" fill="#fff" aria-hidden="true"><path d="M16 3C9.4 3 4 8.4 4 15c0 2.1.6 4.1 1.6 5.9L4 29l8.3-1.6c1.7.9 3.6 1.4 5.7 1.4 6.6 0 12-5.4 12-12S22.6 3 16 3zm0 21.8c-1.8 0-3.5-.5-5-1.4l-.4-.2-3.7.7.7-3.6-.2-.4c-1-1.6-1.5-3.4-1.5-5.3 0-5.5 4.5-9.9 10-9.9s10 4.4 10 9.9-4.5 10.2-9.9 10.2zm5.5-7.4c-.3-.2-1.8-.9-2-.9-.3-.1-.5-.2-.7.2-.2.3-.8.9-.9 1.1-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.2-.2.2-.3.3-.5.1-.2.1-.4 0-.5-.1-.2-.7-1.7-1-2.3-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.3 5.2 4.6.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.5.3-.7.3-1.4.2-1.5-.1-.2-.3-.2-.6-.4z"/></svg>

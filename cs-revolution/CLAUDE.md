@@ -10,6 +10,15 @@ built to `dist/`. PHP-FPM backend in `api/`. Design system = "Tolerance" (carbon
 re-tuned to the 2026 logo: brushed-chrome display type (`CHROME` in `App.jsx`), cyan
 ring glow on primary CTAs (`CTA_GLOW`), faint carbon-weave page ground.
 
+## Motion system — `src/Instruments.jsx` (+ the same ideas in `scripts/static-theme.py`)
+One metaphor, a measuring bench: a lamp glints across chrome type (`.cs-chrome`, `--sx/--sa`),
+a caliper cursor measures the element you point at, sections calibrate (registration marks),
+figures roll on drums, cards are traced by a probe, the About background is a touch probe
+measuring a part. Rules: animate only `transform`/`opacity`/`background-position`/custom
+properties — never `top`/`inset`/`width` of something that moves (a `top` sweep line and an
+`inset` animation measured CLS 1.6); every effect has a reduced-motion static state; pointer
+effects only on `(hover:hover) and (pointer:fine)`; nothing blinks forever (WCAG 2.2.2).
+
 ## Brand assets — `public/brand/` + root icons
 All generated from the three logo renders (never hand-edit the PNGs):
 `logo.png`/`logo.webp`/`logo-nav.webp` = horizontal lockup at the historical 2.35:1

@@ -68,6 +68,14 @@ uniform vec3 uCyan;\n\
 uniform vec3 uInk2;\n\
 uniform vec3 uBase;\n\
 uniform float uQuality;\n\
+uniform vec3 uWarn;\n\
+\n\
+// the inspected surface: a smooth height field (same formula as surfDev() in JS)\n\
+float surf(vec2 p){\n\
+  return 0.55 * sin(p.x * 6.3 + sin(p.y * 4.1) * 1.4) * cos(p.y * 5.2 - p.x * 1.7)\n\
+       + 0.30 * sin(length(p - vec2(0.35, -0.12)) * 15.0)\n\
+       + 0.15 * sin(p.x * 13.0 - p.y * 9.0);\n\
+}\n\
 \n\
 float hash(vec2 p){\n\
   p = fract(p * vec2(123.34, 456.21));\n\
@@ -119,7 +127,21 @@ void main(){\n\
 \n\
   // caliper measurement ring — tracks the pointer, tick gradations, crosshair\n\
   float md = length(p - m);\n\
-  float ringR = 0.22 + sin(uTime * 0.5) * 0.008;\n\
+  float ringR = 0.165 + sin(uTime * 0.5) * 0.006;\n\
+\n\
+  // DEVIATION MAP inside the ring — what inspection software shows after a scan:\n\
+  // colour = distance from nominal (cyan in tolerance, warm outside), iso-lines = height.\n\
+  float lens = smoothstep(ringR, ringR - 0.035, md) * uMouseActive;\n\
+  if (lens > 0.001) {\n\
+    float hgt = surf(p);\n\
+    float dev = abs(hgt);\n\
+    vec3 inTol = uCyan * (0.10 + 0.22 * smoothstep(0.0, 0.5, dev));\n\
+    vec3 dcol = mix(inTol, uWarn * 0.32, smoothstep(0.62, 0.8, dev));\n\
+    float iso = abs(fract(hgt * 7.0) - 0.5);\n\
+    float isoL = 1.0 - smoothstep(0.0, fwidth(hgt * 7.0) * 1.2, iso);\n\
+    dcol += mix(uCyan, uWarn, smoothstep(0.62, 0.8, dev)) * isoL * 0.35;\n\
+    col = mix(col, uBase * 0.7 + dcol, lens * 0.7);\n\
+  }\n\
   float ring = lineAA(md - ringR, 0.0028) * uMouseActive;\n\
   col += uCyan * ring * 0.9;\n\
 \n\
@@ -224,7 +246,8 @@ export default function HeroSignature() {
         uCyan: { value: new THREE.Vector3(cyan[0], cyan[1], cyan[2]) },
         uInk2: { value: new THREE.Vector3(ink2[0], ink2[1], ink2[2]) },
         uBase: { value: new THREE.Vector3(base[0], base[1], base[2]) },
-        uQuality: { value: 1.0 }
+        uQuality: { value: 1.0 },
+        uWarn: { value: new THREE.Vector3(1.0, 0.416, 0.239) }
       };
 
       var material = new THREE.ShaderMaterial({
@@ -243,6 +266,20 @@ export default function HeroSignature() {
 
       function renderFrame() {
         renderer.render(scene, camera);
+      }
+      // DOM readout (aria-hidden): deviation at the probe centre, scaled to ±0.05 mm
+      var ro_el = el.querySelector('.cs-probe-read'), lastTxt = '';
+      function readout(x, y, a) {
+        if (!ro_el) return;
+        var w = el.clientWidth, h = el.clientHeight, asp = w / Math.max(h, 1);
+        var px = (x - 0.5) * asp, py = y - 0.5;
+        var hv = 0.55 * Math.sin(px * 6.3 + Math.sin(py * 4.1) * 1.4) * Math.cos(py * 5.2 - px * 1.7) + 0.30 * Math.sin(Math.hypot(px - 0.35, py + 0.12) * 15.0) + 0.15 * Math.sin(px * 13.0 - py * 9.0);
+        var mm = hv * 0.05, out = Math.abs(hv) > 0.7;
+        var txt = '\u0394 ' + (mm >= 0 ? '+' : '\u2212') + Math.abs(mm).toFixed(3) + ' MM' + (out ? ' \u00b7 OUT' : ' \u00b7 OK');
+        if (txt !== lastTxt) { ro_el.textContent = txt; ro_el.style.color = out ? '#FF6A3D' : C; lastTxt = txt; }
+        var R = 0.165 * h;
+        ro_el.style.transform = 'translate(' + (x * w + R * 0.78).toFixed(0) + 'px,' + ((1 - y) * h + R * 0.86).toFixed(0) + 'px)';
+        ro_el.style.opacity = a > 0.3 ? String(Math.min(1, a)) : '0';
       }
 
       function sizeToHost() {
@@ -263,6 +300,7 @@ export default function HeroSignature() {
       }
       sizeToHost();
       renderFrame();
+      readout(mx, my, active);
       var fadeRaf = requestAnimationFrame(function () { canvas.style.opacity = "1"; });
 
       function onMove(e) {
@@ -273,19 +311,24 @@ export default function HeroSignature() {
         }
         tmx = (e.clientX - r.left) / r.width;
         tmy = 1.0 - (e.clientY - r.top) / r.height;
-        tactive = 1;
+        tactive = 1; lastMove = performance.now();
       }
       function onLeave() { tactive = 0; }
 
+      var lastMove = -1e9;
       function loop(now) {
         if (!mounted) return;
         var t = (now - t0) / 1000;
         uniforms.uTime.value = t;
+        if (now - lastMove > 3500) { // auto-inspect: slow Lissajous path in the open field between the copy and the mark
+          tmx = 0.56 + 0.05 * Math.sin(t * 0.21); tmy = 0.5 + 0.12 * Math.sin(t * 0.13 + 1.1); tactive = 0.7;
+        }
         mx += (tmx - mx) * 0.08; my += (tmy - my) * 0.08;
         active += (tactive - active) * 0.08;
         uniforms.uMouse.value.set(mx, my);
         uniforms.uMouseActive.value = active;
         renderFrame();
+        readout(mx, my, active);
         raf = requestAnimationFrame(loop);
       }
 
@@ -382,6 +425,8 @@ export default function HeroSignature() {
         pointerEvents: "none",
         background: "radial-gradient(circle at 62% 38%, rgba(" + CR + ",.06), " + BASE + " 70%)"
       }}
-    />
+    >
+      <span className="cs-probe-read" style={{ position: "absolute", left: 0, top: 0, zIndex: 2, font: "9px/1 'Space Mono',ui-monospace,monospace", letterSpacing: ".16em", color: C, opacity: 0, transition: "opacity .4s", whiteSpace: "nowrap", pointerEvents: "none" }} />
+    </div>
   );
 }

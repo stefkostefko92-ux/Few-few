@@ -135,6 +135,21 @@ export default function CoverageMap() {
   var wrapRef = useRef(null);
   var milanoLineRef = useRef(null);
   var bobovLineRef = useRef(null);
+  var clockRef = useRef(null);
+
+  // Local time at both hubs, from the browser's own time-zone database — a real, live reading.
+  useEffect(function () {
+    var el = clockRef.current; if (!el || typeof Intl === "undefined") return;
+    function hm(tz) { try { return new Intl.DateTimeFormat("en-GB", { timeZone: tz, hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date()); } catch (e) { return "--:--"; } }
+    function offset(tz) { try { var d = new Date(); var s = d.toLocaleString("en-US", { timeZone: tz }); return (new Date(s) - new Date(d.toLocaleString("en-US", { timeZone: "UTC" }))) / 36e5; } catch (e) { return 0; } }
+    function tick() {
+      var dh = offset("Europe/Sofia") - offset("Europe/Rome");
+      el.textContent = "MILANO " + hm("Europe/Rome") + " \u00b7 BOBOV DOL " + hm("Europe/Sofia") + " \u00b7 \u0394 " + (dh >= 0 ? "+" : "\u2212") + Math.abs(dh) + " H";
+    }
+    tick();
+    var iv = setInterval(tick, 30000);
+    return function () { clearInterval(iv); };
+  }, []);
 
   useEffect(function () {
     var el = host.current, canvas = canvasRef.current;
@@ -192,61 +207,68 @@ export default function CoverageMap() {
       ctx.globalAlpha = 1;
     }
 
-    function drawArc(time) {
-      var i, p, scr;
-      // base hairline path (always visible, static)
-      ctx.beginPath();
-      for (i = 0; i < ARC_POINTS.length; i++) {
-        p = ARC_POINTS[i];
-        scr = project(p.lat, p.lon, w, h);
-        if (i === 0) ctx.moveTo(scr.x, scr.y); else ctx.lineTo(scr.x, scr.y);
+    // The link is drawn as a trajectory LIFTED off the sheet (height ∝ sin πt) over its own
+    // dashed ground track, with drop lines at the ruler stations — an elevation profile, so the
+    // flat plot reads in depth. The ground track is still the real great circle.
+    function arcScreen() {
+      var lift = Math.min(h * 0.22, 90), ground = [], air = [];
+      for (var i = 0; i < ARC_POINTS.length; i++) {
+        var p = ARC_POINTS[i], g = project(p.lat, p.lon, w, h), u = i / (ARC_POINTS.length - 1);
+        ground.push(g); air.push({ x: g.x, y: g.y - Math.sin(Math.PI * u) * lift });
       }
-      ctx.strokeStyle = "rgba(" + CR + ",0.22)";
-      ctx.lineWidth = 1;
-      ctx.stroke();
+      return { ground: ground, air: air };
+    }
+    function stroke(pts, style, width, dash) {
+      ctx.beginPath();
+      for (var i = 0; i < pts.length; i++) { if (i === 0) ctx.moveTo(pts[i].x, pts[i].y); else ctx.lineTo(pts[i].x, pts[i].y); }
+      ctx.setLineDash(dash || []); ctx.strokeStyle = style; ctx.lineWidth = width; ctx.stroke(); ctx.setLineDash([]);
+    }
 
-      // ruler ticks perpendicular to the path, every ~1/8th
+    function drawArc(time) {
+      var A = arcScreen(), i;
+      stroke(A.ground, "rgba(124,134,141,0.35)", 1, [2, 4]);          // ground track (great circle)
+      // drop lines + ruler stations every 1/8th
       var step = Math.floor(ARC_POINTS.length / 8);
       for (i = step; i < ARC_POINTS.length - 1; i += step) {
-        var a = project(ARC_POINTS[i - 1].lat, ARC_POINTS[i - 1].lon, w, h);
-        var b = project(ARC_POINTS[i + 1].lat, ARC_POINTS[i + 1].lon, w, h);
-        var mid = project(ARC_POINTS[i].lat, ARC_POINTS[i].lon, w, h);
-        var dx = b.x - a.x, dy = b.y - a.y;
-        var len = Math.max(0.001, Math.sqrt(dx * dx + dy * dy));
-        var nx = -dy / len, ny = dx / len;
-        ctx.beginPath();
-        ctx.moveTo(mid.x - nx * 4, mid.y - ny * 4);
-        ctx.lineTo(mid.x + nx * 4, mid.y + ny * 4);
-        ctx.strokeStyle = "rgba(124,134,141,0.4)";
-        ctx.lineWidth = 1;
-        ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(A.air[i].x, A.air[i].y); ctx.lineTo(A.ground[i].x, A.ground[i].y);
+        ctx.setLineDash([1, 3]); ctx.strokeStyle = "rgba(" + CR + ",0.18)"; ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = "rgba(124,134,141,0.55)"; ctx.fillRect(A.ground[i].x - 1, A.ground[i].y - 1, 2, 2);
       }
+      // the lifted link: soft glow under a crisp hairline
+      stroke(A.air, "rgba(" + CR + ",0.10)", 5);
+      stroke(A.air, "rgba(" + CR + ",0.55)", 1.1);
 
-      // distance label at the arc's midpoint
-      var midPt = project(ARC_POINTS[Math.floor(ARC_POINTS.length / 2)].lat, ARC_POINTS[Math.floor(ARC_POINTS.length / 2)].lon, w, h);
+      // distance label at the apex
+      var mid = A.air[Math.floor(A.air.length / 2)];
       ctx.font = "9px " + MONO;
-      ctx.fillStyle = "rgba(" + CR + ",0.65)";
+      ctx.fillStyle = "rgba(" + CR + ",0.75)";
       ctx.textAlign = "center";
-      ctx.fillText("≈ " + DISTANCE_KM + " KM", midPt.x, midPt.y - 10);
+      ctx.fillText("≈ " + DISTANCE_KM + " KM", mid.x, mid.y - 12);
 
-      // traveling signal ticks — continuous flow, phase-staggered, never a strobe
-      var TICKS = 5, PERIOD = 7; // seconds per full traverse
+      // traveling signal ticks — continuous flow, phase-staggered, never a strobe;
+      // each carries a short fading tail, and casts a dim dot on the ground track
+      var TICKS = 4, PERIOD = 7; // seconds per full traverse
       for (var k = 0; k < TICKS; k++) {
-        var u = staticFrame ? (k / TICKS) : (((time / PERIOD) + k / TICKS) % 1);
-        var idx = u * (ARC_POINTS.length - 1);
-        if (!isFinite(idx)) idx = 0; // guard: a NaN time must never index the arc out of range
-        var i0 = Math.max(0, Math.min(ARC_POINTS.length - 2, Math.floor(idx))), frac = idx - i0;
-        var i1 = i0 + 1;
-        var pa = ARC_POINTS[i0], pb = ARC_POINTS[i1];
-        var lat = pa.lat + (pb.lat - pa.lat) * frac, lon = pa.lon + (pb.lon - pa.lon) * frac;
-        var sp = project(lat, lon, w, h);
-        var grad = ctx.createRadialGradient(sp.x, sp.y, 0, sp.x, sp.y, 7);
+        var u = staticFrame ? ((k + 0.5) / TICKS) : (((time / PERIOD) + k / TICKS) % 1);
+        if (!isFinite(u)) u = 0; // guard: a NaN time must never index the arc out of range
+        var idx = u * (A.air.length - 1);
+        var i0 = Math.max(0, Math.min(A.air.length - 2, Math.floor(idx))), fr = idx - i0;
+        var sp = { x: A.air[i0].x + (A.air[i0 + 1].x - A.air[i0].x) * fr, y: A.air[i0].y + (A.air[i0 + 1].y - A.air[i0].y) * fr };
+        var gp = { x: A.ground[i0].x + (A.ground[i0 + 1].x - A.ground[i0].x) * fr, y: A.ground[i0].y + (A.ground[i0 + 1].y - A.ground[i0].y) * fr };
+        for (var tl = 1; tl <= 6; tl++) {
+          var ti = Math.max(0, i0 - tl);
+          ctx.fillStyle = "rgba(" + CR + "," + (0.5 - tl * 0.075) + ")";
+          ctx.beginPath(); ctx.arc(A.air[ti].x, A.air[ti].y, 1.4, 0, Math.PI * 2); ctx.fill();
+        }
+        var grad = ctx.createRadialGradient(sp.x, sp.y, 0, sp.x, sp.y, 8);
         grad.addColorStop(0, "rgba(" + CR + ",0.9)");
         grad.addColorStop(1, "rgba(" + CR + ",0)");
         ctx.fillStyle = grad;
-        ctx.beginPath(); ctx.arc(sp.x, sp.y, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(sp.x, sp.y, 8, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = "rgba(" + CR + ",0.95)";
-        ctx.beginPath(); ctx.arc(sp.x, sp.y, 1.6, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(sp.x, sp.y, 1.8, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "rgba(124,134,141,0.6)";
+        ctx.beginPath(); ctx.arc(gp.x, gp.y, 1.4, 0, Math.PI * 2); ctx.fill();
       }
     }
 
@@ -398,6 +420,7 @@ export default function CoverageMap() {
   }, []);
 
   return (
+    <div style={{ position: "relative" }}>
     <div
       ref={host}
       style={{
@@ -415,14 +438,17 @@ export default function CoverageMap() {
         <canvas ref={canvasRef} tabIndex={-1} style={{ display: "block", width: "100%", height: "100%", pointerEvents: "none" }} />
       </div>
 
-      {/* real, accessible readout — the actual data, not locked in pixels */}
-      <div style={{ position: "absolute", top: 12, left: 14, zIndex: 2, display: "flex", flexDirection: "column", gap: 5, fontFamily: MONO, fontSize: 9, letterSpacing: ".06em", lineHeight: 1.7 }}>
+      <div aria-hidden="true" style={{ position: "absolute", bottom: 10, right: 14, zIndex: 2, fontFamily: MONO, fontSize: 7, letterSpacing: ".2em", color: INK2, opacity: 0.6 }}>
+        GREAT-CIRCLE LINK {"·"} MEASURED, NOT MAPPED
+      </div>
+    </div>
+      {/* real, accessible readout — the actual data, not locked in pixels.
+          Over the plot on wide screens, under it on phones (it would cover the arc). */}
+      <div className="cs-cov-hud" style={{ zIndex: 2, display: "flex", flexDirection: "column", gap: 5, fontFamily: MONO, fontSize: 9, letterSpacing: ".06em", lineHeight: 1.7 }}>
         <span ref={milanoLineRef} style={{ color: INK2, transition: "color .2s " + EASE }}>MILANO {"·"} {fmtCoord(MILANO)}</span>
         <span ref={bobovLineRef} style={{ color: INK2, transition: "color .2s " + EASE }}>BOBOV DOL {"·"} {fmtCoord(BOBOV_DOL)}</span>
         <span style={{ color: C }}>{"≈"} {DISTANCE_KM} KM {"·"} AZIMUTH {AZIMUTH_DEG.toFixed(1)}{"°"}</span>
-      </div>
-      <div aria-hidden="true" style={{ position: "absolute", bottom: 10, right: 14, zIndex: 2, fontFamily: MONO, fontSize: 7, letterSpacing: ".2em", color: INK2, opacity: 0.6 }}>
-        GREAT-CIRCLE LINK {"·"} MEASURED, NOT MAPPED
+        <span ref={clockRef} style={{ color: INK }} />
       </div>
     </div>
   );
