@@ -83,11 +83,11 @@ async function paintDisk(N) {
         arms += (a < 2 ? 1 : 0.42) * Math.exp(-(d * d) / (2 * aw * aw)) * smooth(R0 * 0.7, R0 * 1.4, r);
       }
       var n = 0.3 + 0.7 * vnoise2(x * 0.08, z * 0.08) * (0.55 + 0.45 * vnoise2(x * 0.3, z * 0.3));
-      var fall = Math.exp(-Math.pow(r / R, 4));
+      var fall = Math.exp(-Math.pow(r / (0.92 * R), 6));   // ~0 at the texture's edge (no visible square border)
       var disk = Math.exp(-r / (0.24 * R)) * fall;
       var dust = dustAt(x, z) * 0.8;
-      var lc = bulge * 1.05 + bar * 0.62, la = arms * 0.5 * n * fall, ld = disk * 0.42;
-      var cr = (lc * 1.0 + la * 0.72 + ld * 1.0) * (1 - dust), cg = (lc * 0.84 + la * 0.8 + ld * 0.88) * (1 - dust), cbl = (lc * 0.6 + la * 1.0 + ld * 0.75) * (1 - dust * 0.9);
+      var lc = bulge * 0.8 + bar * 0.5, la = arms * 0.36 * n * fall, ld = disk * 0.3;
+      var cr = (lc * 1.0 + la * 0.84 + ld * 0.95) * (1 - dust), cg = (lc * 0.92 + la * 0.88 + ld * 0.92) * (1 - dust), cbl = (lc * 0.8 + la * 1.0 + ld * 0.9) * (1 - dust * 0.9);
       var o = (py * N + px) * 4;
       im.data[o] = 255 * (1 - Math.exp(-cr * 1.6)); im.data[o + 1] = 255 * (1 - Math.exp(-cg * 1.6)); im.data[o + 2] = 255 * (1 - Math.exp(-cbl * 1.6)); im.data[o + 3] = 255;
     }
@@ -121,24 +121,26 @@ async function buildGalaxy(scale) {
   var P = [], Cc = [], S = [], B = [];
   function add(x, y, z, c, s, b) { P.push(x, y, z); Cc.push(c[0], c[1], c[2]); S.push(s); B.push(b * (1 - 0.85 * dustAt(x, z))); }
   function mix(a, b, t) { return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]; }
-  var WARM = [1.0, 0.86, 0.66], GOLD = [1.0, 0.78, 0.5], WHITE = [1, 0.96, 0.9], BLUE = [0.62, 0.74, 1.0], ICE = [0.8, 0.88, 1.0], PINK = [1.0, 0.42, 0.62];
+  // restrained palette (owner, 2026-10-08: "too much"): ink and chrome like the rest of the site, a breath of warmth
+  // in the core and of blue in the arms; cyan is reserved for YOUR star
+  var WARM = [0.94, 0.9, 0.84], GOLD = [0.96, 0.9, 0.8], WHITE = [0.88, 0.91, 0.94], BLUE = [0.76, 0.83, 0.95], ICE = [0.84, 0.89, 0.96];
   var N = function (n) { return Math.round(n * scale); };
   var cb = Math.cos(BAR_ANGLE), sb = Math.sin(BAR_ANGLE), i, x, y, z, r, th;
   // bulge: old, warm, dense
-  for (i = 0; i < N(9000); i++) {
+  for (i = 0; i < N(6000); i++) {
     var rr = Math.abs(g()) * 0.075 * R + Math.abs(g()) * 0.02 * R, a = rnd() * Math.PI * 2, el = (rnd() - 0.5) * Math.PI;
     x = rr * Math.cos(el) * Math.cos(a); z = rr * Math.cos(el) * Math.sin(a); y = rr * Math.sin(el) * 0.62;
     add(x, y, z, mix(GOLD, WARM, rnd()), 0.26 + rnd() * 0.22, 0.32 + rnd() * 0.36);
   }
   // bar
-  for (i = 0; i < N(7000); i++) {
+  for (i = 0; i < N(4000); i++) {
     var bx = g() * 0.11 * R, bz = g() * 0.035 * R; y = g() * 0.022 * R;
     add(bx * cb - bz * sb, y, bx * sb + bz * cb, mix(WARM, WHITE, rnd() * 0.6), 0.26 + rnd() * 0.2, 0.4 + rnd() * 0.35);
   }
   await tick();
   // arms: young blue stars on the ridge, older white ones spread around it
   var ARMS = 4;
-  for (i = 0; i < N(42000); i++) {
+  for (i = 0; i < N(26000); i++) {
     var arm = i % 10 < 4 ? 0 : i % 10 < 8 ? 1 : i % 10 < 9 ? 2 : 3, major = arm < 2;
     r = R0 + Math.min(R * 0.85, -Math.log(1 - rnd() * 0.97) * 0.3 * R);
     var young = rnd() < (major ? 0.55 : 0.4);
@@ -146,31 +148,25 @@ async function buildGalaxy(scale) {
     th = armTheta(r, arm, ARMS) + g() * wd / r;
     y = g() * (0.008 * R + 0.012 * r);
     var col = young ? mix(BLUE, ICE, rnd()) : mix(WHITE, WARM, rnd() * 0.5);
-    add(Math.cos(th) * r, y, Math.sin(th) * r, col, (young ? 0.3 : 0.24) + rnd() * 0.3, (major ? 1 : 0.7) * (young ? 0.75 : 0.45) * (0.6 + rnd() * 0.7));
+    add(Math.cos(th) * r, y, Math.sin(th) * r, col, (young ? 0.28 : 0.22) + rnd() * 0.24, (major ? 1 : 0.65) * (young ? 0.55 : 0.36) * (0.6 + rnd() * 0.7));
     if (i % 13000 === 12999) await tick();
   }
   // old disk between the arms
-  for (i = 0; i < N(18000); i++) {
+  for (i = 0; i < N(10000); i++) {
     r = Math.min(R * 1.05, -Math.log(1 - rnd() * 0.98) * 0.32 * R + 0.04 * R); th = rnd() * Math.PI * 2; y = g() * (0.01 * R + 0.01 * r);
     add(Math.cos(th) * r, y, Math.sin(th) * r, mix(WARM, WHITE, rnd()), 0.22 + rnd() * 0.18, 0.28 + rnd() * 0.3);
   }
-  // HII regions: pink knots strung along the major arms
-  for (var k = 0; k < N(170); k++) {
-    var kr = R0 * 1.3 + rnd() * R * 0.62, karm = rnd() < 0.5 ? 0 : 1, kth = armTheta(kr, karm, ARMS) + g() * 0.03;
-    var kx = Math.cos(kth) * kr, kz = Math.sin(kth) * kr, n = 6 + Math.floor(rnd() * 14);
-    for (var j = 0; j < n; j++) add(kx + g() * 1.1, g() * 0.5, kz + g() * 1.1, mix(PINK, [1, 0.62, 0.78], rnd()), 0.9 + rnd() * 1.4, 0.16 + rnd() * 0.14);
-  }
   // stellar halo
-  for (i = 0; i < N(1200); i++) {
+  for (i = 0; i < N(600); i++) {
     r = Math.abs(g()) * 0.55 * R; th = rnd() * Math.PI * 2; var ph = Math.acos(2 * rnd() - 1);
     add(r * Math.sin(ph) * Math.cos(th), r * Math.cos(ph) * 0.7, r * Math.sin(ph) * Math.sin(th), WARM, 0.25, 0.35);
   }
   // fixed background sky (does not rotate with the galaxy)
   var SK = [], SKC = [], SKS = [], SKB = [];
-  for (i = 0; i < N(2600); i++) {
+  for (i = 0; i < N(1400); i++) {
     var sa = rnd() * Math.PI * 2, sz = 2 * rnd() - 1, sr = Math.sqrt(1 - sz * sz), d = 1400;
     SK.push(Math.cos(sa) * sr * d, sz * d, Math.sin(sa) * sr * d);
-    var c2 = classOf(rnd())[2]; SKC.push(c2[0], c2[1], c2[2]); SKS.push(2 + rnd() * 3.5); SKB.push(0.25 + Math.pow(rnd(), 4) * 1.2);
+    var c2 = mix(WHITE, classOf(rnd())[2], 0.35); SKC.push(c2[0], c2[1], c2[2]); SKS.push(2 + rnd() * 3.5); SKB.push(0.18 + Math.pow(rnd(), 5) * 0.7);
   }
   return { P: P, C: Cc, S: S, B: B, SK: SK, SKC: SKC, SKS: SKS, SKB: SKB };
 }
@@ -220,10 +216,10 @@ var VIS_FS = [
   "  for (int k = 0; k < 3; k++) {",
   "    float a = float(k) * 1.0471976 + 1.5707963; vec2 dir = vec2(cos(a), sin(a));",
   "    float along = abs(dot(d, dir)); float across = abs(d.x * dir.y - d.y * dir.x);",
-  "    sp += exp(-across * 70.0) * pow(1.0 - along, 2.2);",
+  "    sp += exp(-across * 95.0) * pow(1.0 - along, 3.0);",
   "  }",
   "  float hs = exp(-abs(d.y) * 110.0) * pow(1.0 - abs(d.x), 3.0) * 0.4;",
-  "  vec3 c = vColor * vBright * (core + (sp * 1.05 + hs) * (1.0 - r));",
+  "  vec3 c = vColor * vBright * (core + (sp * 0.55 + hs * 0.6) * (1.0 - r));",
   "  c += vec3(1.0) * exp(-r * r * 160.0) * vBright * 0.6;",          // white-hot centre
   "  gl_FragColor = vec4(c, 1.0);",
   "}"].join("\n");
@@ -348,10 +344,10 @@ export default function MonumentGalaxy(props) {
         }
         var coreTex = glowTex([[0, "rgba(255,236,200,1)"], [0.12, "rgba(255,214,160,.65)"], [0.4, "rgba(255,170,100,.16)"], [1, "rgba(255,150,90,0)"]]);
         var core1 = new THREE.Sprite(new THREE.SpriteMaterial({ map: coreTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.9 }));
-        core1.scale.set(R * 0.5, R * 0.5, 1); core1.material.opacity = 0.5; galaxy.add(core1);
+        core1.scale.set(R * 0.38, R * 0.38, 1); core1.material.opacity = 0.3; galaxy.add(core1);
         var hazeTex = glowTex([[0, "rgba(170,190,255,.22)"], [0.5, "rgba(120,140,220,.07)"], [1, "rgba(90,110,200,0)"]]);
         var haze = new THREE.Sprite(new THREE.SpriteMaterial({ map: hazeTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.7 }));
-        haze.scale.set(R * 2.4, R * 2.4, 1); galaxy.add(haze);
+        haze.scale.set(R * 2.4, R * 2.4, 1); haze.visible = false; galaxy.add(haze);
 
         // visitors
         var visGeo = new THREE.BufferGeometry();
@@ -365,7 +361,7 @@ export default function MonumentGalaxy(props) {
         var vis = new THREE.Points(visGeo, visMat); vis.frustumCulled = false; vis.renderOrder = 3; galaxy.add(vis);
         // your star's ring
         var ringCv = document.createElement("canvas"); ringCv.width = ringCv.height = 128;
-        var rx = ringCv.getContext("2d"); rx.strokeStyle = "rgba(0,229,255,1)"; rx.lineWidth = 4; rx.beginPath(); rx.arc(64, 64, 54, 0, Math.PI * 2); rx.stroke();
+        var rx = ringCv.getContext("2d"); rx.strokeStyle = "rgba(0,229,255,1)"; rx.lineWidth = 2.5; rx.beginPath(); rx.arc(64, 64, 54, 0, Math.PI * 2); rx.stroke();
         rx.lineWidth = 2; [0, 1, 2, 3].forEach(function (q) { var a = q * Math.PI / 2; rx.beginPath(); rx.moveTo(64 + Math.cos(a) * 46, 64 + Math.sin(a) * 46); rx.lineTo(64 + Math.cos(a) * 62, 64 + Math.sin(a) * 62); rx.stroke(); });
         var ringTex = new THREE.CanvasTexture(ringCv);
         var ring = new THREE.Sprite(new THREE.SpriteMaterial({ map: ringTex, transparent: true, depthWrite: false, depthTest: false, opacity: 0 }));
@@ -378,8 +374,8 @@ export default function MonumentGalaxy(props) {
           for (var i = 0; i < n; i++) {
             var s = starFor(seeds[i], i); placed.push(s);
             VP[i * 3] = s.x; VP[i * 3 + 1] = s.y; VP[i * 3 + 2] = s.z;
-            VC[i * 3] = s.col[0]; VC[i * 3 + 1] = s.col[1]; VC[i * 3 + 2] = s.col[2];
-            VS[i] = 6.2 * s.bright; VB[i] = 0.62 * s.bright; VPh[i] = s.phase; VPe[i] = s.per; VM[i] = i === mineIdx ? 1 : 0;
+            VC[i * 3] = 0.55 + 0.45 * s.col[0]; VC[i * 3 + 1] = 0.55 + 0.45 * s.col[1]; VC[i * 3 + 2] = 0.55 + 0.45 * s.col[2];
+            VS[i] = 4.2 * s.bright; VB[i] = 0.5 * s.bright; VPh[i] = s.phase; VPe[i] = s.per; VM[i] = i === mineIdx ? 1 : 0;
           }
           visGeo.setDrawRange(0, n);
           ["position", "aColor", "aSize", "aBright", "aPhase", "aPer", "aMine"].forEach(function (k) { visGeo.attributes[k].needsUpdate = true; });
@@ -399,7 +395,7 @@ export default function MonumentGalaxy(props) {
           uniforms.uScale.value = (h * dpr) / (2 * Math.tan(camera.fov * Math.PI / 360));
           uniforms.uMinPx.value = 1.25 * dpr;
           var vFov = camera.fov * Math.PI / 180, hFov = 2 * Math.atan(Math.tan(vFov / 2) * camera.aspect);
-          var halfW = R * 1.16, halfH = R * (Math.cos(tilt) * 1.16 + 0.16);
+          var halfW = R * 1.34, halfH = R * (Math.cos(tilt) * 1.34 + 0.2);
           frameDist = Math.max(halfW / Math.tan(hFov / 2), halfH / Math.tan(vFov / 2)) * 1.04 + R * 0.4;
           place();
         }
@@ -455,7 +451,7 @@ export default function MonumentGalaxy(props) {
         function loop(now) {
           if (!mounted) return;
           var dt = last == null ? 16 : Math.min(now - last, 50); last = now; t += dt / 1000;
-          spin += dt / 1000 * 0.022;                                  // one turn every ~5 minutes
+          spin += dt / 1000 * 0.014;                                  // one turn every ~7.5 minutes
           if (!drag && Math.abs(vYaw) > 1e-4) { yaw += vYaw; vYaw *= Math.pow(0.92, dt / 16.7); place(); }
           visUniforms.uTime.value = t;
           if (mineIdx >= 0) {
@@ -463,7 +459,7 @@ export default function MonumentGalaxy(props) {
             var e = 1 - Math.pow(1 - growT, 3);
             visUniforms.uMineGrow.value = e;
             var pulse = 0.5 + 0.5 * Math.sin(t * 1.3);
-            ring.material.opacity = (0.65 + 0.35 * pulse) * e;
+            ring.material.opacity = (0.55 + 0.25 * pulse) * e;
             ring.scale.setScalar(R * (0.1 + 0.02 * pulse) * (0.6 + 0.4 * e));
           }
           pose(); render(); labelMine();
