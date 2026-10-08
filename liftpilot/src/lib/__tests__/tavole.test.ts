@@ -85,12 +85,12 @@ function points(s: Shape): (readonly [number, number])[] {
 test('tavole: numero di fogli, tutto dentro il foglio A4, testi senza buchi', () => {
   const floors = ['-1', '0', '1', '2', '3', '4', '5'].map((label, i, a) => ({ label, rise: i < a.length - 1 ? 3000 : 0, door: 'A' as const }));
   const full = buildTavole(input({ ...defaultInputs(1740, 1445), Q: 400, access: 'none', vertical: { ...defaultInputs(1, 1).vertical, floors, main: 1 } }, true));
-  // data, 3 plans, 4 sections, machine room in plan and section, pit, the rails developed with their brackets
-  assert.equal(full.doc.pages.length, 12);
-  assert.equal(full.sheets.length, 12);
+  // data, 3 plans, 4 sections, machine room in plan and section, pit, the rails developed with their brackets, the checks
+  assert.equal(full.doc.pages.length, 13);
+  assert.equal(full.sheets.length, 13);
   const small = buildTavole(input({ ...defaultInputs(1740, 1445), Q: 400, access: 'none', room: null }));
   // main floor = lowest: one plan less; no machine room: two sheets less
-  assert.equal(small.doc.pages.length, 9);
+  assert.equal(small.doc.pages.length, 10);
   for (const r of [full, small]) {
     for (const [n, p] of r.doc.pages.entries()) {
       assert.deepEqual([p.w, p.h], [A4.w, A4.h]);
@@ -108,11 +108,13 @@ test('tavole: numero di fogli, tutto dentro il foglio A4, testi senza buchi', ()
   const fresh = buildTavole({ ...input({ ...defaultInputs(1740, 1445), Q: 400, access: 'none', room: null }), values: PRESETS.A });
   const sheet1 = fresh.doc.pages[0]?.shapes.flatMap((s) => (s.t === 'text' ? [s.text] : [])) ?? [];
   assert.ok(sheet1.includes('VERIFICA DELLE GUIDE DI CABINA') && !texts(0).includes('VERIFICA DELLE GUIDE DI CABINA'), 'nota delle guide');
-  for (const t of [texts(0), sheet1]) {
+  // (the checks on the last sheet of the set: checks-sheet.ts)
+  const lastOf = (r: typeof full) => r.doc.pages.at(-1)?.shapes.flatMap((s) => (s.t === 'text' ? [s.text] : [])) ?? [];
+  for (const t of [lastOf(full), lastOf(fresh)]) {
     assert.ok(['Guide di cabina: tensioni', 'Guide di cabina: frecce', 'Tipo di paracadute'].every((x) => t.some((y) => y.startsWith(x))), 'verifiche delle guide');
   }
   for (const s of fresh.doc.pages[0]?.shapes ?? []) for (const [x, y] of points(s)) assert.ok(x > -0.5 && x < A4.w + 0.5 && y > -0.5 && y < A4.h + 0.5, `${s.t} a ${x}, ${y}`);
-  assert.ok(texts(4).includes('PAGINA N° 5/12') && texts(4).includes('SCALA 1:50'), 'striscia e scala della sezione');
+  assert.ok(texts(4).includes('PAGINA N° 5/13') && texts(4).includes('SCALA 1:50'), 'striscia e scala della sezione');
   assert.ok(texts(1).some((t) => t.startsWith('LATO FERMAT')), 'lati delle fermate');
   // the same input gives the same drawing
   assert.equal(JSON.stringify(buildTavole(input({ ...defaultInputs(1740, 1445), Q: 400, access: 'none', room: null })).doc), JSON.stringify(small.doc));

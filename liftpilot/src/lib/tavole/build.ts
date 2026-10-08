@@ -1,7 +1,7 @@
 // The drawing set of a lift, A4 sheets: 1 the data; the plans of the shaft at the top floor (headroom), at the main
 // floor and at the lowest floor; section A-A whole and in three details (headroom, main floor, pit); the machine room
 // in plan and in section B-B — with the machine below, its room beside the shaft or under it in plan and in section
-// C-C —; the pit in plan with its loads; the rails developed with their brackets. Each view at the largest standard
+// C-C —; the pit in plan with its loads; the rails developed with their brackets; the checks of the design. Each view at the largest standard
 // scale that fits with its dimensions; the
 // count adapts (no machine room: no sheets of it; main floor = lowest floor: one plan less).
 import {
@@ -24,6 +24,7 @@ import { OVER_DOWN, OVER_UP, clientNotes, spaceLegend, type LegendItem } from '.
 import { makeFmt } from '../present/tr';
 import { belowGeoOf, belowView, headLoadsOf, machineOf, planView, roomView, sectionView, sheetLayoutOf } from './views';
 import { railsNotes, railsSheet } from './rails-sheet';
+import { CHECKS_SUBTITLE, CHECKS_TITLE, checksSheet } from './checks-sheet';
 import { roomLegend, titleSpares } from './room-legend';
 
 /** A sheet of the set after the data: a plan of the shaft, section A-A or a detail, the machine room. */
@@ -203,8 +204,9 @@ export function buildTavole(x: TavoleInput): TavoleResult {
   // the shaft's sheets with the lift's rope rig and the room over the shaft the lift has (views.ts sheetLayoutOf), and
   // the loads on the head of the shaft on its plan at the top floor
   const L = sheetLayoutOf(a, L0, M, g), head = g ? headLoadsOf(a, L, M, g) : [];
-  const list = specs(L, L.inputs.room !== null && a.ctx.I.layout !== 'bottom', scheme), pages = list.length + 1;
-  const [l1, l2] = placeLines(x.project), ds = dataSheet(x, a, pages);
+  // the data on sheet 1, the drawings, the checks of the design on the last sheet (checks-sheet.ts)
+  const list = specs(L, L.inputs.room !== null && a.ctx.I.layout !== 'bottom', scheme), pages = list.length + 2;
+  const [l1, l2] = placeLines(x.project), d0 = dataSheet(x, a, pages), ds = { ...d0, sheet: { ...d0.sheet, checksSheet: pages } };
   // the strip of every sheet: the revision the set is at (R0 and its date on a first issue) and the plant number as the
   // title block writes them
   const meta = (page: number): SheetMeta => ({
@@ -222,6 +224,9 @@ export function buildTavole(x: TavoleInput): TavoleResult {
     sheets.push({ title: s.title, scale: d.scale });
     hits.push(d.hits);
   });
+  out.push({ w: A4.w, h: A4.h, shapes: [...frame(), ...checksSheet(ds.sheet.checks, drawingArea(true)), ...sheetTitle(CHECKS_TITLE, CHECKS_SUBTITLE), ...strip(meta(pages))] });
+  sheets.push({ title: CHECKS_TITLE, scale: null });
+  hits.push([]);
   const doc: DrawingDoc = {
     meta: { title: `Tavole ${x.set.number} - ${x.project.name}`, subject: 'Progetto dell’ascensore: dati, piante e sezioni del vano, locale macchina', author: x.company.name },
     palette: PALETTE, patterns: { concrete: concreteTile() }, cond: COND, images: { ...(x.company.logo ? { logo: x.company.logo } : {}), ...(x.clientLogo ? { client: x.clientLogo } : {}) }, pages: out,

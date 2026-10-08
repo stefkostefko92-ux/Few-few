@@ -134,10 +134,13 @@ export function titleBlock(d: TitleData, yb: number): Shape[] {
  *  decides the issue; the table says which), the records the set goes with. Its height: REF_BAND_H. */
 export const REF_BAND_H = 7.4;
 
-export function refBand(yTop: number, failed: number, refs: string | null): Shape[] {
+export function refBand(yTop: number, failed: number, refs: string | null, sheet: number | null = null): Shape[] {
   const { xL, xR } = gridOf(0), y1 = yTop - 3, y2 = yTop - 6.2, out: Shape[] = [box(xL, yTop - REF_BAND_H, xR, yTop, 0.3)];
   out.push(fitted([xL + 1.4, y1], DIMENSIONS_NOTE, 2.3, 100, { bold: true }));
-  if (failed > 0) out.push(fitted([xR - 1.4, y1], `VERIFICHE NON SUPERATE: ${failed} — VEDI TABELLA`, 2.3, 88, { align: 'r', bold: true }));
+  // where the checks are: the table on this sheet, or their own sheet of the set (checks-sheet.ts)
+  const where = sheet === null ? 'VEDI TABELLA' : `VEDI FOGLIO ${sheet}`;
+  if (failed > 0) out.push(fitted([xR - 1.4, y1], `VERIFICHE NON SUPERATE: ${failed} — ${where}`, 2.3, 88, { align: 'r', bold: true }));
+  else if (sheet !== null) out.push(fitted([xR - 1.4, y1], `VERIFICHE DEL PROGETTO: FOGLIO ${sheet}`, 2.3, 88, { align: 'r' }));
   if (refs) out.push(fitted([xL + 1.4, y2], refs, 2, xR - xL - 2.8));
   return out;
 }

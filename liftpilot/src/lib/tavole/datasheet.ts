@@ -26,12 +26,17 @@ export interface DataSheet extends TitleData {
   loadNames?: readonly string[];
   /** the records the set goes with (title-data.ts refsText) */
   refs?: string | null;
+  /** the sheet of the set that holds the checks of the design (checks-sheet.ts); none: no such sheet */
+  checksSheet?: number | null;
 }
 
 /** The title block's height over the frame's foot [mm]: the same on every sheet 1. */
 export const TITLE_H = 52;
 /** The outcome of a check that does not pass, as the tables write it. */
 export const FAILED = 'NON PASSA';
+
+/** The notes' lettering at its largest [mm]. */
+const NOTE_MAX = 2.3;
 
 const L = (a: readonly [number, number], b: readonly [number, number], w = 0.25): Shape => ({ t: 'line', a, b, s: { ink: 'ink', w } });
 const T = (at: readonly [number, number], text: string, size: number, o: Partial<Extract<Shape, { t: 'text' }>> = {}): Shape => ({ t: 'text', at, text, size, cond: true, ...o });
@@ -79,12 +84,12 @@ export function dataSheetShapes(d: DataSheet): Shape[] {
   const e = table(split, yBlock - 38, [30, xR - split - 42, 12], 3.3, [[{ text: 'CARATTERISTICHE ELETTRICHE', size: 2.4 }], ...d.electric.map(([l, u, v]): Cell[] => [{ text: l }, { text: v }, { text: u, align: 'c' }])], 2.05);
   out.push(...e.shapes);
 
-  // the notes, then the checks of the shaft down to the block; the notes' lettering as large as the room allows
-  const noteW = xR - xM - 2.4, head = 5.2, titleH = 4.2, gap = 0.8, rowMin = 2.75, n = d.checks.length;
-  const checksH = n ? (n + 2) * rowMin + 1.6 : 0;
+  // the notes down to the block, lettered as large as the room allows (the checks of the design on their own sheet at
+  // the end of the set: checks-sheet.ts)
+  const noteW = xR - xM - 2.4, head = 5.2, titleH = 4.2, gap = 0.8;
   const height = (size: number): number => head + d.notes.reduce((h, x) => h + titleH + size * (1.3 + (wrap(x.text, noteW, { size, cond: true }).length - 1) * NOTE_LEAD) + gap, 0);
-  let size = 2.1;
-  while (size > 1.4 && height(size) > yTop - yBlock - 1 - checksH) size -= 0.05;
+  let size = NOTE_MAX;
+  while (size > 1.4 && height(size) > yTop - yBlock - 1) size -= 0.05;
   let y = yTop;
   out.push(fitted([(xM + xR) / 2, y - 3.9], 'NOTE PER IL CLIENTE', 3, xR - xM - 4, { align: 'c' }));
   y -= head;
@@ -93,16 +98,6 @@ export function dataSheetShapes(d: DataSheet): Shape[] {
     const p = paragraph(xM + 1.2, y - titleH, noteW, x.text, size, NOTE_LEAD);
     out.push(...p.shapes);
     y = p.bottom - gap;
-  }
-  if (n) {
-    const rowH = Math.min(3.3, (y - 1.6 - yBlock) / (n + 2)), cs = Math.min(1.95, rowH * 0.62), w = xR - xM;
-    const rows: Cell[][] = [
-      [{ text: 'VERIFICHE DEL PROGETTO (TRA PARENTESI I PUNTI DELLA UNI EN 81-20:2020)', size: Math.min(2.4, rowH * 0.72) }],
-      [{ text: 'VERIFICA', size: cs }, { text: 'VALORE', align: 'r', size: cs }, { text: 'LIMITE', align: 'r', size: cs }, { text: 'ESITO', align: 'c', size: cs }],
-      ...d.checks.map(([l, v, lim, o]): Cell[] => [{ text: l, size: cs }, { text: v, size: cs }, { text: lim, size: cs }, { text: o, align: 'c', size: cs, bold: o !== 'OK' && o !== 'ESISTENTE' }]),
-    ];
-    const t2 = table(xM, y - 1.6, [w - 57, 18, 18, 21], rowH, rows, cs);
-    out.push(...t2.shapes);
   }
 
   // distribution of the loads: each with its name, the value at the end of its cell
@@ -114,6 +109,6 @@ export function dataSheetShapes(d: DataSheet): Shape[] {
     if (col > 0 && row === 0) out.push(L([x0, yd - 4.6], [x0, yd - gridH], 0.2));
   }
 
-  out.push(...refBand(yBand, d.checks.filter((c) => c[3] === FAILED).length, d.refs ?? null), ...titleBlock(d, yb));
+  out.push(...refBand(yBand, d.checks.filter((c) => c[3] === FAILED).length, d.refs ?? null, d.checksSheet ?? null), ...titleBlock(d, yb));
   return out.filter((s) => s.t !== 'text' || s.text !== '');
 }

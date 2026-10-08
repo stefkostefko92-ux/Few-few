@@ -10,6 +10,7 @@ import { bracketHeights, bracketSpans, maxBracketSpan, railSpan } from '@/shaft/
 import { railsDev } from '@/shaft/rails-dev';
 import { carBracketCode } from '@/shaft/staffe-cabina';
 import { projectViews } from '../cad/project';
+import { CHECKS_TITLE } from '../tavole/checks-sheet';
 import { buildTavole, setLayout } from '../tavole/build';
 import { dataSheet } from '../tavole/data';
 import type { TavoleInput } from '../tavole/input';
@@ -49,15 +50,16 @@ test('foglio 1: l’interasse massimo delle staffe è la l della verifica delle 
   }
 });
 
-test('foglio delle guide: ultimo, a una scala normale, quote delle staffe e note sotto, tutto nel foglio', () => {
-  const r = buildTavole(input(I0)), last = r.sheets.at(-1), page = r.doc.pages.at(-1);
+test('foglio delle guide: l’ultimo dei disegni (poi le verifiche), a una scala normale, quote delle staffe e note sotto, tutto nel foglio', () => {
+  const r = buildTavole(input(I0)), last = r.sheets.at(-2), page = r.doc.pages.at(-2);
   assert.equal(last?.title, 'SVILUPPO DELLE GUIDE E POSIZIONE DELLE STAFFE');
+  assert.equal(r.sheets.at(-1)?.title, CHECKS_TITLE);
   assert.ok(last?.scale !== null && [50, 100, 200, 500].includes(last?.scale ?? 0), `scala ${last?.scale}`);
   const texts = page?.shapes.flatMap((s) => (s.t === 'text' ? [s.text] : [])) ?? [];
   for (const t of ['GUIDA DI CABINA', 'GUIDA DEL CONTRAPPESO']) assert.ok(texts.some((x) => x.startsWith(t)), t);
   assert.ok(texts.some((x) => x.startsWith('Guida ')), 'lunghezze delle guide');
   assert.ok(texts.join(' ').includes('interasse massimo'), 'note');
-  assert.ok(texts.includes(`PAGINA N° ${r.doc.pages.length}/${r.doc.pages.length}`));
+  assert.ok(texts.includes(`PAGINA N° ${r.doc.pages.length - 1}/${r.doc.pages.length}`));
   for (const s of page?.shapes ?? []) if (s.t === 'text') assert.ok(s.at[0] > 0 && s.at[0] < A4.w && s.at[1] > 0 && s.at[1] < A4.h, s.text);
 });
 

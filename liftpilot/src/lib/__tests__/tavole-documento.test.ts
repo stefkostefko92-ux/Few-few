@@ -121,9 +121,10 @@ test('foglio 1: quote da verificare, verifiche non superate, elaborati collegati
   loadNames(false).forEach((name, i) => assert.ok(t.includes(`P${i + 1} ${name}`), `P${i + 1} ${name}`));
   assert.equal(r.title.number, '26-189');
   assert.equal(currentRevision(r.title), 'R1 12/10/2026');
-  // the failed checks counted over the table of sheet 1
-  const failed = t.filter((x) => x === FAILED).length, band = t.find((x) => x.startsWith('VERIFICHE NON SUPERATE'));
-  assert.equal(band, failed ? `VERIFICHE NON SUPERATE: ${failed} — VEDI TABELLA` : undefined);
+  // the failed checks counted over their table, on the last sheet of the set (checks-sheet.ts); sheet 1 says where it is
+  const n = r.doc.pages.length, last = texts(r.doc.pages[n - 1]?.shapes ?? []), failed = last.filter((x) => x === FAILED).length;
+  assert.ok(t.includes(failed ? `VERIFICHE NON SUPERATE: ${failed} — VEDI FOGLIO ${n}` : `VERIFICHE DEL PROGETTO: FOGLIO ${n}`), 'dove sono le verifiche');
+  assert.ok(texts(refBand(100, 3, null, 12)).includes('VERIFICHE NON SUPERATE: 3 — VEDI FOGLIO 12'));
   assert.ok(texts(refBand(100, 3, null)).includes('VERIFICHE NON SUPERATE: 3 — VEDI TABELLA'));
   assert.ok(!texts(refBand(100, 0, null)).some((x) => x.startsWith('VERIFICHE')));
   // the governor's load not known: its maker gives it
