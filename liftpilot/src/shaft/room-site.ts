@@ -2,7 +2,7 @@
 // hitches hang (the slab's openings, the ropes in section B-B), the governor, the dimensions that change the rope drop.
 // A whole design gives them from its layout (layoutSite); a machine replacement from the survey of its room
 // (src/lib/room). Model entities and numbers; pure.
-import { chain, circle, edit as E, rect, type Box as DrawBox, type Edit, type Entity, type Pt } from '../drawing';
+import { chain, circle, edit as E, rect, textWidth, type Box as DrawBox, type Edit, type Entity, type Pt } from '../drawing';
 import { calataEdit } from './drop';
 import { governorSpot, type GovernorSpot } from './governor';
 import { hitchDepths } from './machine-room';
@@ -20,8 +20,9 @@ export interface RoomSite {
    *  the car halfway [mm] */
   ends: readonly (readonly [number, number])[];
   mid: readonly [number, number];
-  /** the governor drawn in the plan, and its footprint with its lettering (null: nothing drawn) */
-  governor: { entities: Entity[]; box: DrawBox | null };
+  /** the governor drawn in the plan, and its footprint with its lettering and dimensions (null: nothing drawn); `marks`:
+   *  tight boxes of its body, its name and its reference P4 (a lettering placed beside it keeps off them) */
+  governor: { entities: Entity[]; box: DrawBox | null; marks?: readonly DrawBox[] };
   /** the edit of a dimension of the rope drop, `less` shorter (the diverting pulley's dx), `exact`: along an axis only */
   calata: (less: number, exact: boolean) => Edit | null;
   /** the drawings may change the calculation's inputs (calc.h) */
@@ -33,9 +34,9 @@ export interface RoomSite {
 
 /** The site of a whole design: its shaft, its travel, its governor, its plan's edits. */
 export function layoutSite(L: Layout): RoomSite {
-  const I = L.inputs, H = hitchDepths(L), out: Entity[] = [], box = I.room ? governor(L, I.room, out) : null;
+  const I = L.inputs, H = hitchDepths(L), out: Entity[] = [], marks: DrawBox[] = [], box = I.room ? governor(L, I.room, out, marks) : null;
   return {
-    W: I.W, D: I.D, wall: I.wall, ends: H.ends, mid: H.mid, governor: { entities: out, box },
+    W: I.W, D: I.D, wall: I.wall, ends: H.ends, mid: H.mid, governor: { entities: out, box, marks },
     calata: (less, exact) => calataEdit(L, less, exact), calcEdits: true, drops: null,
   };
 }
@@ -61,10 +62,15 @@ export function governorFootprint(L: Layout, R: RoomInputs): Box | null {
   return [gx - half, Math.min(...ys), gx + half, Math.max(...ys)];
 }
 
+/** A reference's circle (view.ts tag) at 1:25, the plan's scale, as a box round it [mm]. */
+const TAG_R = 1.9 * 25;
+const tagBox = (c: Pt): DrawBox => ({ x0: c[0] - TAG_R, y0: c[1] - TAG_R, x1: c[0] + TAG_R, y1: c[1] + TAG_R });
+
 /** The governor over its rope where the 3D puts it (governor.ts): its base, the A-frame's cheeks, the sheave seen from
  *  above with the jaw's housing over it, the two strands through the slab; the model by the rated speed, written
- *  toward the wall it is nearer to, out of the machine's way. */
-function governor(L: Layout, R: RoomInputs, out: Entity[]): DrawBox | null {
+ *  toward the wall it is nearer to, out of the machine's way. Its body's, its name's and its reference's boxes into
+ *  `marks` (the name as wide as at 1:25). */
+function governor(L: Layout, R: RoomInputs, out: Entity[], marks: DrawBox[]): DrawBox | null {
   const at = governorPlace(L, R), I = L.inputs;
   if (!at) return null;
   const { spot, gx, gy } = at;
@@ -77,9 +83,11 @@ function governor(L: Layout, R: RoomInputs, out: Entity[]): DrawBox | null {
       const c: Pt = [gx, R.shaftY + y];
       out.push(rect(c[0] - 25, c[1] - 25, c[0] + 25, c[1] + 25, 'thin'), circle(c, g.rope, 'outline', 'steel'));
     }
-    const s = gx - R.shaftX < I.W / 2 ? -1 : 1;
-    out.push({ e: 'text', at: [gx + s * (g.baseA + 60), gy - 30], text: `Limitatore ${g.model}`, size: 1.6, align: s < 0 ? 'r' : 'l', halo: true });
-    out.push({ e: 'tag', at: [gx + s * (g.baseA + 200), gy + g.baseW + 230], text: 'P4', to: [gx + s * g.baseA, gy + g.baseW / 2] });
+    const s = gx - R.shaftX < I.W / 2 ? -1 : 1, name = `Limitatore ${g.model}`, p4: Pt = [gx + s * (g.baseA + 200), gy + g.baseW + 230];
+    out.push({ e: 'text', at: [gx + s * (g.baseA + 60), gy - 30], text: name, size: 1.6, align: s < 0 ? 'r' : 'l', halo: true });
+    out.push({ e: 'tag', at: p4, text: 'P4', to: [gx + s * g.baseA, gy + g.baseW / 2] });
+    const bx = Math.max(g.baseA, g.half), by = Math.max(g.baseW, g.R + 14), nx = gx + s * (g.baseA + 60), nw = textWidth(name, { size: 1.6, cond: true }) * 25;
+    marks.push({ x0: gx - bx, y0: gy - by, x1: gx + bx, y1: gy + by }, { x0: Math.min(nx, nx + s * nw), y0: gy - 40, x1: Math.max(nx, nx + s * nw), y1: gy + 20 }, tagBox(p4));
     // where it stands, as the shaft's plan dimensions its rope: from the shaft's wall on its side (below it) and its clamped
     // strand from the car rail's axis (on the side away from its name)
     const wallX = R.shaftX + (spot.side === 'left' ? 0 : I.W), ry = R.shaftY + spot.rail.y, sy = R.shaftY + spot.y1, cx = gx - s * (g.baseA + 70);
@@ -87,11 +95,14 @@ function governor(L: Layout, R: RoomInputs, out: Entity[]): DrawBox | null {
       text: ['Fune limitatore {v}'], edit: [E('plan.govX')] }));
     out.push(chain({ dir: 'y', pts: [Math.min(ry, sy), Math.max(ry, sy)], at: cx, from: ry <= sy ? [R.shaftX + spot.rail.x, gx] : [gx, R.shaftX + spot.rail.x],
       text: ['{v} da asse guida'], edit: [govYEdit(spot)] }));
-    // its footprint with its lettering and reference (the lettering about 1,6 mm high, 1:50 at most)
-    return { x0: gx - g.baseA - (s < 0 ? 900 : 0), y0: gy - g.baseW - 60, x1: gx + g.baseA + (s > 0 ? 900 : 0), y1: gy + g.baseW + 330 };
+    // its footprint with its lettering and reference (the lettering about 1,6 mm high, 1:50 at most) and the row of its
+    // dimension from the shaft's wall under it, with that lettering (the upright one's lettering steps round the others
+    // and keeps off the machine itself: room-view.ts)
+    return { x0: Math.min(gx - g.baseA - (s < 0 ? 900 : 0), wallX), y0: gy - g.baseW - 340, x1: Math.max(gx + g.baseA + (s > 0 ? 900 : 0), wallX), y1: gy + g.baseW + 330 };
   }
   // a cantilever sling: no place worked out, the governor shown by the car rail opposite the counterweight
   out.push(rect(gx - 150, gy - 90, gx + 150, gy + 90, 'outline', 'paper'), circle([gx, gy], 125, 'thin'));
   out.push({ e: 'tag', at: [gx + 330, gy + 160], text: 'P4', to: [gx + 150, gy] });
+  marks.push({ x0: gx - 150, y0: gy - 125, x1: gx + 150, y1: gy + 125 }, tagBox([gx + 330, gy + 160]));
   return { x0: gx - 150, y0: gy - 90, x1: gx + 420, y1: gy + 250 };
 }

@@ -16,6 +16,7 @@ import { shapePlan } from '@/shaft/machine-shape-view';
 import { ropeWidths, type MachineSpec } from '@/shaft/machine-room';
 import { section } from '@/shaft/section';
 import type { RoomInputs } from '@/shaft/room';
+import { doorSwing } from '@/shaft/room-draw';
 import { belowSwitchAt } from '@/shaft/room-floor';
 import type { Layout, Wall } from '@/shaft/types';
 import { OPPOSITE, belowMachine, belowRoom, exitAlong, type BottomGeo } from '../lift/bottom';
@@ -108,7 +109,7 @@ function fittings(R: RoomInputs, o: P2, s: number, kept: readonly Box[], room: B
 
 /** The machine's room below in plan, with the shaft at the lowest floor; the names kept clear of each other at 1:`s`
  *  (the scale the sheet draws it at: views.ts belowView). */
-export function belowPlanEntities(L: Layout, M: MachineSpec, g: BottomGeo, s = 25): { entities: Entity[]; bounds: Box } {
+export function belowPlanEntities(L: Layout, M: MachineSpec, g: BottomGeo, s = 25, shut = false): { entities: Entity[]; bounds: Box } {
   const I = L.inputs, T = I.wall, out: Entity[] = [], { F, xDir, zDir, C, ext, room: R, open } = placed(L, M, g), o: P2 = [-R.shaftX, -R.shaftY], under = g.scheme === 'under';
   const w = ropeWidths(M.n, M.d);
   // the shaft's walls; beside it the room past the wall behind the counterweight, that wall carried across the room
@@ -117,6 +118,10 @@ export function belowPlanEntities(L: Layout, M: MachineSpec, g: BottomGeo, s = 2
   }
   out.push(...roomWalls(R, o, null, (w) => (w === open ? T : WALL)));
   out.push(rect(o[0], o[1], o[0] + R.W, o[1] + R.D, 'wall'));
+  // its door open outward (room-draw.ts; `shut` in its frame where the swing would cost the sheet its scale)
+  const dw = R.doorWall, swing = doorSwing((a, t) => (dw === 'front' ? [o[0] + a, o[1] - t] : dw === 'rear' ? [o[0] + a, o[1] + R.D + t] : dw === 'left' ? [o[0] - t, o[1] + a]
+    : [o[0] + R.W + t, o[1] + a]), R.doorAt, R.doorW, dw === open ? T : WALL, shut);
+  out.push(...swing.entities);
   // the car at the lowest floor and the counterweight (over the room when it is under the pit)
   const seen = under ? 'hidden' : 'thin';
   out.push(rect(L.car.x, L.car.y, L.car.x + L.car.w, L.car.y + L.car.h, seen), rect(L.cw.x, L.cw.y, L.cw.x + L.cw.w, L.cw.y + L.cw.h, under ? 'hidden' : 'outline', under ? undefined : 'cw'));
@@ -159,7 +164,10 @@ export function belowPlanEntities(L: Layout, M: MachineSpec, g: BottomGeo, s = 2
   out.push(chain({ dir: doorAlongX ? 'x' : 'y', pts: [d0, d0 + R.doorAt, d0 + R.doorAt + R.doorW, d0 + doorLen], side: sideOf(R.doorWall), row: 0, text: [null, `Porta ${R.doorW}x H. ${R.doorH}`, null],
     edit: [E('below.doorAt'), E('below.doorW'), E('below.doorAt', doorLen - R.doorW, -1)] }));
   out.push(...(under || !open ? underChains(I, R, o) : besideChains(I, g, R, o, open, C)));
-  return { entities: out, bounds: { x0: x0 - WALL, y0: y0 - WALL, x1: x1 + WALL, y1: y1 + WALL } };
+  // (and the door's swing past its wall)
+  const out1 = (w: Wall): number => (dw === w ? swing.reach : 0);
+  return { entities: out, bounds: { x0: Math.min(x0 - WALL, o[0] - out1('left')), y0: Math.min(y0 - WALL, o[1] - out1('front')), x1: Math.max(x1 + WALL, o[0] + R.W + out1('right')),
+    y1: Math.max(y1 + WALL, o[1] + R.D + out1('rear')) } };
 }
 
 /** A chain's points with the segments shorter than a millimetre left out (their texts and edits with them). */

@@ -6,6 +6,7 @@ import { boxH, fitView, moveHits, moveShapes, renderView, type Box, type Entity,
 import { roomGeo, type MachineSpec, type RoomGeo } from '@/shaft/machine-room';
 import { planDims } from '@/shaft/plan-dims';
 import { planEntities, wallsAt, type PlanLevel } from '@/shaft/plan-view';
+import type { RoomDrawOpts } from '@/shaft/room-draw';
 import { roomPlanEntities, roomPlanOn, roomSectionEntities, roomSectionOn } from '@/shaft/room-view';
 import { section } from '@/shaft/section';
 import { sectionDims, type SectionKind } from '@/shaft/section-dims';
@@ -92,13 +93,27 @@ export function machineOf(a: Analysis, plant: Plant, L: Layout, catalog: { brand
   return machineSpec(a.ctx, a.ctx.N.mass, machineText(plant, catalog), L.inputs.room, catalog ? shapeOf(catalog.brand, catalog.model) : null, catalog);
 }
 
+/** A machine room's view as the sheet takes it, at 1:25 when it can be had: the plan with its door open outward, or
+ *  shut in its frame when the swing alone would cost it that scale; section B-B as it is, else with the door's and
+ *  the panel's heights in one row, else with its dimensions placed for the scale it takes (kept on paper). The entities
+ *  drawn go with it (a CAD file of the view takes the same). */
+type Drawn = { entities: Entity[]; bounds: Box };
+function roomPlaced(draw: (o: RoomDrawOpts) => Drawn, kind: 'plan' | 'section', area: Box): View & { entities: Entity[] } {
+  let d = draw({}), place = placeIn(d.bounds, d.entities, area, DETAIL_SCALES);
+  const best = DETAIL_SCALES[0], next = (o: RoomDrawOpts, keep: boolean): void => {
+    const e = draw(o), p = placeIn(e.bounds, e.entities, area, DETAIL_SCALES);
+    if (keep || p.scale < place.scale) [d, place] = [e, p];
+  };
+  if (place.scale !== best) next(kind === 'plan' ? { closedDoor: true } : { compact: true }, kind === 'section');
+  if (kind === 'section' && place.scale !== best) next({ compact: true, scale: place.scale }, true);
+  return { r: renderView(d.entities, place), place, entities: d.entities };
+}
+
 /** The machine room in plan or in section B-B; null when the design has no machine room. */
-export function roomView(L: Layout, M: MachineSpec, kind: 'plan' | 'section', area: Box): (View & { G: RoomGeo }) | null {
+export function roomView(L: Layout, M: MachineSpec, kind: 'plan' | 'section', area: Box): (View & { G: RoomGeo; entities: Entity[] }) | null {
   const G = roomGeo(L, M);
   if (!G) return null;
-  const { entities, bounds } = kind === 'plan' ? roomPlanEntities(L, M, G) : roomSectionEntities(L, M, G);
-  const place = placeIn(bounds, entities, area, DETAIL_SCALES);
-  return { r: renderView(entities, place), place, G };
+  return { ...roomPlaced((o) => (kind === 'plan' ? roomPlanEntities(L, M, G, o) : roomSectionEntities(L, M, G, o)), kind, area), G };
 }
 
 /** The geometry of the machine below for the calculation's machine (the 3D's: bottom.ts). */
@@ -106,24 +121,25 @@ export const belowGeoOf = (a: Analysis, L: Layout, M: MachineSpec, scheme: Botto
   bottomGeo(L, scheme, M.D, a.ctx.I.Dp, M.n, M.d, a.ctx.I.r, sheaveAxisBelow(M.D, M.shape ?? null));
 
 /** The machine's room with the machine below, in plan or in section C-C (below-view.ts). */
-export function belowView(L: Layout, M: MachineSpec, g: BottomGeo, kind: 'plan' | 'section', area: Box): View {
-  // the plan keeps its names clear of each other at the scale it is drawn at: placed once more when that is not 1:25
-  const at = (s: number) => (kind === 'plan' ? belowPlanEntities(L, M, g, s) : belowSectionEntities(L, M, g));
+export function belowView(L: Layout, M: MachineSpec, g: BottomGeo, kind: 'plan' | 'section', area: Box): View & { entities: Entity[] } {
+  // the plan keeps its names clear of each other at the scale it is drawn at: placed once more when that is not 1:25 —
+  // first with its door shut in its frame, when the swing alone costs it that scale
+  const at = (s: number, shut = false) => (kind === 'plan' ? belowPlanEntities(L, M, g, s, shut) : belowSectionEntities(L, M, g));
   let { entities, bounds } = at(DETAIL_SCALES[0]), place = placeIn(bounds, entities, area, DETAIL_SCALES);
   if (kind === 'plan' && place.scale !== DETAIL_SCALES[0]) {
-    ({ entities, bounds } = at(place.scale));
+    const shut = at(DETAIL_SCALES[0], true), p = placeIn(shut.bounds, shut.entities, area, DETAIL_SCALES);
+    ({ entities, bounds } = p.scale < place.scale ? (p.scale === DETAIL_SCALES[0] ? shut : at(p.scale, true)) : at(place.scale));
     place = placeIn(bounds, entities, area, DETAIL_SCALES);
   }
-  return { r: renderView(entities, place), place };
+  return { r: renderView(entities, place), place, entities };
 }
 
 /** The machine room of a replacement (its survey) in plan or in section B-B, the machine `M` (the derived one, or the
  *  same with the name the data of the installation give it); null with the machine below. */
-export function surveyView(d: RoomDerived, kind: 'plan' | 'section', area: Box, M = d.M): (View & { G: RoomGeo }) | null {
-  if (!d.G) return null;
-  const { entities, bounds } = kind === 'plan' ? roomPlanOn(d.site, M, d.G) : roomSectionOn(d.site, M, d.G);
-  const place = placeIn(bounds, entities, area, DETAIL_SCALES);
-  return { r: renderView(entities, place), place, G: d.G };
+export function surveyView(d: RoomDerived, kind: 'plan' | 'section', area: Box, M = d.M): (View & { G: RoomGeo; entities: Entity[] }) | null {
+  const G = d.G;
+  if (!G) return null;
+  return { ...roomPlaced((o) => (kind === 'plan' ? roomPlanOn(d.site, M, G, o) : roomSectionOn(d.site, M, G, o)), kind, area), G };
 }
 
 /** A view cropped to its extent with a margin, for the screens: shapes in a box w × h [mm], the scale, the editable

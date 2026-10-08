@@ -14,7 +14,6 @@ import { sectionEntities } from '@/shaft/section-view';
 import type { Layout } from '@/shaft/types';
 import type { BottomGeo } from '../lift/bottom';
 import { inset, specs } from '../tavole/build';
-import { belowPlanEntities, belowSectionEntities } from '../tavole/below-view';
 import { belowView, detailWindow, planView, realSection, roomView, sectionView } from '../tavole/views';
 import type { CadView } from './export';
 
@@ -39,11 +38,12 @@ export function projectViews(L: Layout, M: MachineSpec, room: boolean, below: Bo
     if (s.k === 'below-plan' || s.k === 'below-section') {
       if (!below) return [];
       // at the set's scale (its sheet insets the view as build.ts belowSheet does), the plan's names placed for it
-      const plan = s.k === 'below-plan', scale = belowView(L, M, below, plan ? 'plan' : 'section', inset(area, 8, 8, 8, 8)).place.scale;
-      return [{ title: s.title, scale, entities: (plan ? belowPlanEntities(L, M, below, scale) : belowSectionEntities(L, M, below)).entities }];
+      const v = belowView(L, M, below, s.k === 'below-plan' ? 'plan' : 'section', inset(area, 8, 8, 8, 8));
+      return [{ title: s.title, scale: v.place.scale, entities: v.entities }];
     }
     if (!G) return [];
+    // (as the view lays it out for its scale: the door shut, the section's heights in one row, as the sheet has them)
     const plan = s.k === 'room-plan', v = roomView(L, M, plan ? 'plan' : 'section', area);
-    return [{ title: s.title, scale: v?.place.scale ?? FULL_SCALE, entities: (plan ? roomPlanEntities : roomSectionEntities)(L, M, G).entities }];
+    return [{ title: s.title, scale: v?.place.scale ?? FULL_SCALE, entities: v?.entities ?? (plan ? roomPlanEntities : roomSectionEntities)(L, M, G).entities }];
   });
 }

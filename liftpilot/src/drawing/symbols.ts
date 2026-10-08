@@ -77,9 +77,10 @@ export function arrowhead(tip: Pt, dir: number, len = 2.2, half = 0.42): Shape {
   return { t: 'path', pts: [[x, y], [x - len * cx - half * cy, y - len * cy + half * cx], [x - len * cx + half * cy, y - len * cy - half * cx]], closed: true, fill: { k: 'solid', ink: 'ink' } };
 }
 
-/** Section mark: a short heavy stroke, the arrow of the direction of view and the letter. `dir` is the viewing direction. */
-export function sectionMark(at: Pt, dir: 'up' | 'down' | 'left' | 'right', letter: string): Shape[] {
-  const [x, y] = at, v: Pt = dir === 'up' ? [0, 1] : dir === 'down' ? [0, -1] : dir === 'left' ? [-1, 0] : [1, 0];
+/** Section mark: a short heavy stroke along the cut, the arrow of the direction of view square to it and the letter.
+ *  `dir` is the viewing direction: along an axis, or a unit vector (a cut askew: ISO 128-44). */
+export function sectionMark(at: Pt, dir: 'up' | 'down' | 'left' | 'right' | Pt, letter: string): Shape[] {
+  const [x, y] = at, v: Pt = typeof dir !== 'string' ? dir : dir === 'up' ? [0, 1] : dir === 'down' ? [0, -1] : dir === 'left' ? [-1, 0] : [1, 0];
   const n: Pt = [-v[1], v[0]], L = 6;
   return [
     { t: 'line', a: [x - n[0] * 2.4, y - n[1] * 2.4], b: [x + n[0] * 2.4, y + n[1] * 2.4], s: STYLES.heavy },

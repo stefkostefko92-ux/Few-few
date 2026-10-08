@@ -1,8 +1,10 @@
 // The drawing kernel: the scale a view gets, dimension texts that fit or step aside, lettering widths and wrapping by
-// the DejaVu metrics, shapes moved on paper, entities clipped to a band.
+// the DejaVu metrics, shapes moved on paper, entities clipped to a band; lettering askew round what is on the sheet,
+// off boxes to avoid and kept in a box past a chain's end.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { DIM, TEXT, chain, chainShapes, clipBand, fitView, line, moveShapes, rect, renderView, shapeBox, textWidth, wrap, type Box, type Shape } from '@/drawing';
+import { textQuad } from '@/drawing/metrics';
 
 test('fitView: la scala normalizzata più grande che entra, con le file delle quote', () => {
   const model = { x0: 0, y0: 0, x1: 2000, y1: 1500 };
@@ -95,4 +97,35 @@ test('forme spostate sulla carta e entità tagliate a una fascia', () => {
   const clipped = clipBand([line([0, -100], [0, 900]), line([10, 2000], [10, 3000])], 0, 1000);
   assert.equal(clipped.length, 1);
   assert.deepEqual(clipped[0]?.e === 'line' ? [clipped[0].a[1], clipped[0].b[1]] : null, [0, 900]);
+});
+
+test('quota di sbieco: il valore gira attorno alle scritte già sul foglio, col suo profilo girato; libero, resta in mezzo', () => {
+  const u = [Math.cos(1.3), Math.sin(1.3)] as const, place = { scale: 20, ox: 0, oy: 0 };
+  const oblique = (r: ReturnType<typeof renderView>) => r.shapes.find((s): s is Extract<Shape, { t: 'text' }> => s.t === 'text' && s.text.startsWith('Calata'));
+  const c = chain({ dir: 'x', on: { o: [0, 0], u }, pts: [0, 1600], at: -200, from: [0, 0], text: ['Calata {v}'] });
+  const free = oblique(renderView([c], place));
+  assert.ok(free);
+  // a label right where it stood: it goes elsewhere, its turned outline clear of the label's box
+  const label = { e: 'text' as const, at: [free.at[0] * 20, free.at[1] * 20 - 40] as const, text: 'P1 P1 P1', size: 2.5, align: 'c' as const };
+  const r = renderView([label, c], place), moved = oblique(r), box = r.shapes.find((s) => s.t === 'text' && s.text === 'P1 P1 P1');
+  assert.ok(moved && box && (moved.at[0] !== free.at[0] || moved.at[1] !== free.at[1]), 'spostato');
+  const b = shapeBox(box), q = textQuad(moved), axes: [number, number][] = [[1, 0], [0, 1], [q[1][0] - q[0][0], q[1][1] - q[0][1]], [q[3][0] - q[0][0], q[3][1] - q[0][1]]];
+  const corners: [number, number][] = [[b.x0, b.y0], [b.x1, b.y0], [b.x1, b.y1], [b.x0, b.y1]];
+  assert.ok(axes.some(([x, y]) => {
+    const on = (p: readonly [number, number]): number => p[0] * x + p[1] * y, a = q.map(on), k = corners.map(on);
+    return Math.max(...a) < Math.min(...k) || Math.max(...k) < Math.min(...a);
+  }), 'separati');
+});
+
+test('quote: lontano dalle scatole da evitare; oltre la fine, dentro la scatola data', () => {
+  const place = { scale: 10, ox: 0, oy: 0 }, text = (r: ReturnType<typeof renderView>) => r.shapes.find((s): s is Extract<Shape, { t: 'text' }> => s.t === 'text');
+  // the figure over the middle of its line, unless a box to avoid is there: under it
+  const free = text(renderView([line([0, 0], [1000, 0]), chain({ dir: 'x', pts: [0, 1000], at: 80 })], place));
+  const off = text(renderView([line([0, 0], [1000, 0]), chain({ dir: 'x', pts: [0, 1000], at: 80, avoid: [{ x0: 400, y0: 90, x1: 600, y1: 130 }] })], place));
+  assert.ok(free && off && free.at[1] > 8 && off.at[1] < 8, `${free?.at} ${off?.at}`);
+  // a short segment's lettering past its end stays in the box: else its figure alone
+  const ents = (within?: Box) => [rect(-200, -200, 1200, 200), chain({ dir: 'x', pts: [940, 1000], at: 0, text: ['{v} Telaio argano'], ...(within ? { within } : {}) })];
+  const out = text(renderView(ents(), place)), kept = text(renderView(ents({ x0: 0, y0: -200, x1: 1000, y1: 200 }), place));
+  assert.ok(out && shapeBox(out).x1 > 100, `${JSON.stringify(out && shapeBox(out))}`);
+  assert.ok(kept && shapeBox(kept).x1 <= 100 + 1e-9 && shapeBox(kept).x0 >= 0, `${kept?.text} ${JSON.stringify(kept && shapeBox(kept))}`);
 });

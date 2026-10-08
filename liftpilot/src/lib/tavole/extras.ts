@@ -65,8 +65,9 @@ export function sideLabels(L: Layout, extent: Box): Shape[] {
   });
 }
 
-/** Marks of a section line crossing the drawing: at both ends, arrows along the direction of view. */
-export function sectionMarks(a: Pt, b: Pt, view: 'up' | 'down' | 'left' | 'right', letter: string): Shape[] {
+/** Marks of a section line crossing the drawing: at both ends, arrows along the direction of view (along an axis, or a
+ *  unit vector square to a cut askew). */
+export function sectionMarks(a: Pt, b: Pt, view: 'up' | 'down' | 'left' | 'right' | Pt, letter: string): Shape[] {
   return [...sectionMark(a, view, letter), ...sectionMark(b, view, letter)];
 }
 
