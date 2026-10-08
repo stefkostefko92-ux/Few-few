@@ -5,8 +5,8 @@
 // rope rig in the shaft (Layout.rig: a machine below's pulleys hung under the slab, a 2:1 roping's dead ends) what hangs
 // lower than the refuge's height over the roof at its highest takes its plan off the roof too, and the free height over
 // every free part of the roof — where one stands, 5.2.5.7.3 — is to the lowest of it (registry spazi.tetto.appese). The
-// checks (h_stand and h_refuge: section.ts, and with the rig lib/lift/head.ts) and the drawings (plan-view.ts) take the
-// same place. Pure.
+// checks (h_stand and h_refuge: section.ts; with the rig h_stand_rig and h_refuge_rig in their place, lib/lift/head.ts)
+// and the drawings (plan-view.ts) take the same place. Pure.
 import type { Box } from '../drawing';
 import { KV_VERT } from './norme-vert';
 import { hangingOf } from './shaft-rig';

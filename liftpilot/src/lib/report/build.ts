@@ -6,7 +6,7 @@ import calcIt from '../../../messages/calc/it.json';
 import appIt from '../../../messages/it.json';
 import { PROFILO, VOCI, type Stato } from '@/calc/norme';
 import { COND, PALETTE, concreteTile, type SheetImage } from '@/drawing';
-import { mergeChecks, vociOfDesign } from '@/shaft';
+import { KV_VERT, mergeChecks, vociOfDesign } from '@/shaft';
 import type { CheckId, CheckStatus, FormValues } from '@/calc/types';
 import { belowChecks } from '../lift/below-checks';
 import { bottomGeo, sheaveHalfBelow, type BottomScheme } from '../lift/bottom';
@@ -62,6 +62,20 @@ const STATO: Record<Stato, string> = { confermato: 'confermato', da_verificare: 
 
 const cellText = (c: Cell | undefined): string => (c === undefined ? '' : typeof c === 'string' ? c : `${c.text}${c.flag ? ' ⚠' : ''}${c.sub ? `\n${c.sub}` : ''}`);
 const rowStatus = (row: readonly Cell[]): BlockStatus => { const s = row.find((c) => typeof c === 'object' && c.status); return typeof s === 'object' && s.status ? s.status : ''; };
+
+/** A machine under the pit: the space under the shaft as sheet 1 has it (its note, its row and the check sg_cw;
+ *  registry paracadute.contrappeso) — the pit floor for its load besides P5–P8, the counterweight's safety gear given in
+ *  the data of the installation, in a modification (UNI 10411-1/-11) an existing pillar in its place as the designer
+ *  chooses. */
+function underPitText(modification: boolean): string {
+  const K = KV_VERT, v = K.cwGearInstantV;
+  return `Spazio accessibile sotto il vano (UNI EN 81-20:2020, 5.2.5.4): fondo della fossa progettato per almeno ${K.pitFloorAccessible} N/m² oltre ai `
+    + 'carichi P5–P8 del foglio 1 delle tavole (sotto ogni guida del contrappeso anche la presa del paracadute); paracadute del contrappeso, '
+    + `progressivo oltre ${v} m/s e fino a ${v} m/s anche istantaneo, azionato dal limitatore o, fino a ${v} m/s, dalla rottura della sospensione o `
+    + 'da una fune di sicurezza: tipo e azionamento si indicano nei dati dell’impianto e la verifica del foglio 1 non passa finché mancano'
+    + (modification ? '; in una modifica può stare al suo posto un pilastro esistente fino al terreno sotto gli ammortizzatori del contrappeso, '
+      + 'verificato per i nuovi carichi (UNI 10411-1:2024, 6.14): è una scelta del progettista' : '');
+}
 
 export function buildReport(r: ReportInput): ReportDoc {
   const P = makePres(calcIt, 'it-IT'), X = textsFor(P), { t, fmt } = P;
@@ -253,7 +267,7 @@ export function buildReport(r: ReportInput): ReportDoc {
   const estimated = [
     ...(m.pEstimate ? [`Massa della cabina: è la stima del software (${P_ESTIMATE_RULE}); sostituirla con quella reale e ripetere il calcolo`] : []),
     ...(I.layout === 'bottom' && m.bottom ? [`Schema delle funi con la macchina in basso (${BOTTOM_IT[m.bottom]}): rinvii, rami e passaggi ricostruiti dal software; rilevarli sull’impianto`] : []),
-    ...(I.layout === 'bottom' && m.bottom === 'under' ? ['Spazio accessibile sotto il vano: paracadute del contrappeso, obbligatorio (la EN 81-20 non ammette più il pilastro pieno fino al terreno; UNI EN 81-20:2020, 5.2.5.4), e fondo della fossa per le reazioni degli ammortizzatori'] : []),
+    ...(I.layout === 'bottom' && m.bottom === 'under' ? [underPitText(C.norma !== 'en81')] : []),
   ];
   B.push({ t: 'list', items: [...estimated, ...X.verifyList(I, N, res)].map((x) => `⚠ ${x}`) });
 

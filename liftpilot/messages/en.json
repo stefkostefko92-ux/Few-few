@@ -611,6 +611,8 @@
     "c_h_clear": "Clearances from the ceiling (UNI EN 81-20, 5.2.5.7.2)",
     "c_h_top": "Car pulley at 2:1 under the shaft ceiling (UNI EN 81-20, 5.2.5.7.2 a)",
     "c_h_hung": "Highest part of the car under the diverting pulleys hung from the slab (UNI EN 81-20, 5.2.5.7.2)",
+    "c_h_refuge_rig": "Refuge space on the car roof: clear height up to what hangs under the slab (UNI EN 81-20, 5.2.5.7.1 and 5.2.5.7.3)",
+    "c_h_stand_rig": "Refuge space on the car roof: its plan fits clear of the crosshead, the operators and what hangs under the slab (margin) (UNI EN 81-20, 5.2.5.7.1)",
     "c_h_parapet": "Balustrade on the car roof (UNI EN 81-20, 5.4.7.4)",
     "c_p_refuge": "Refuge space in the pit (UNI EN 81-20, 5.2.5.8)",
     "c_p_apron": "Apron with the car on its buffers (UNI EN 81-20, 5.4.5)",

@@ -611,6 +611,8 @@
     "c_h_clear": "Distanze libere dal soffitto (UNI EN 81-20, 5.2.5.7.2)",
     "c_h_top": "Puleggia di cabina 2:1 sotto il soffitto del vano (UNI EN 81-20, 5.2.5.7.2 a)",
     "c_h_hung": "Parte più alta della cabina sotto le pulegge di rinvio appese alla soletta (UNI EN 81-20, 5.2.5.7.2)",
+    "c_h_refuge_rig": "Spazio di rifugio sul tetto di cabina: altezza libera fino a ciò che pende sotto la soletta (UNI EN 81-20, 5.2.5.7.1 e 5.2.5.7.3)",
+    "c_h_stand_rig": "Spazio di rifugio sul tetto di cabina: la pianta sta fuori dalla traversa, dagli operatori e da ciò che pende sotto la soletta (margine) (UNI EN 81-20, 5.2.5.7.1)",
     "c_h_parapet": "Balaustra sul tetto di cabina (UNI EN 81-20, 5.4.7.4)",
     "c_p_refuge": "Spazio di rifugio in fossa (UNI EN 81-20, 5.2.5.8)",
     "c_p_apron": "Grembiule con la cabina sugli ammortizzatori (UNI EN 81-20, 5.4.5)",

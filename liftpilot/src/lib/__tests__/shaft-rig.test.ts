@@ -1,26 +1,29 @@
 // The lift's rope rig in the shaft (shaft/shaft-rig.ts, lib/lift/shaft-rig.ts): the shaft's sheets and the spaces on the
 // car roof see what the 3D builds — the head pulleys of a machine below where the rope rig turns the ropes, the dead
-// ends of a 2:1 roping under the slab —; the refuge on the roof is measured to what hangs there (h_refuge, h_stand)
-// with the headroom that clears it; sheet 1 notes the room each scheme draws; with the machine under the pit the
+// ends of a 2:1 roping under the slab —; the refuge on the roof is measured to what hangs there (h_refuge_rig,
+// h_stand_rig in place of the shaft's h_refuge and h_stand, in the acceptance test with a new machine) with the headroom
+// that clears it; sheet 1 notes the room each scheme draws; with the machine under the pit the
 // counterweight has its safety gear (sg_cw) and its rails its load (P7); the sheets draw the rig.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { PRESETS } from '@/calc/presets';
-import { deriveLift, newLift, planeAt, ropeRig, type LiftInputs } from '@/lib/lift';
+import { defaultLift, deriveLift, newLift, planeAt, ropeRig, type LiftInputs } from '@/lib/lift';
+import { ambitoOf, collaudoOf, collaudoVerdict } from '@/lib/lift/collaudo';
 import { BOTTOM_SCHEMES, type BottomScheme } from '@/lib/lift/bottom';
 import { NO_MARKS } from '@/lib/lift/marks';
 import { analyse } from '@/lib/present/analysis';
+import { buildReport } from '@/lib/report/build';
 import { buildTavole, specs } from '@/lib/tavole/build';
 import { cwGearChecks, cwGearOf, cwGearRow } from '@/lib/tavole/cw-gear';
 import { dataSheet } from '@/lib/tavole/data';
 import type { TavoleInput } from '@/lib/tavole/input';
 import { loads } from '@/lib/tavole/loads';
 import { clientNotes } from '@/lib/tavole/notes';
-import { defaultInputs, layout, section, type ShaftInputs } from '@/shaft';
+import { defaultInputs, layout, mergeChecks, section, type ShaftInputs } from '@/shaft';
 import { hangingOf } from '@/shaft/shaft-rig';
 
-const below = (scheme: BottomScheme, headroom?: number): LiftInputs => {
-  const b = newLift(), V = b.shaft.vertical;
+const below = (scheme: BottomScheme, headroom?: number, start: LiftInputs = newLift()): LiftInputs => {
+  const b = start, V = b.shaft.vertical;
   return { ...b, calc: { ...b.calc, layout: 'bottom' }, bottom: scheme, shaft: headroom === undefined ? b.shaft : { ...b.shaft, vertical: { ...V, headroom } } };
 };
 const twoToOne = (): LiftInputs => {
@@ -58,22 +61,50 @@ test('rifugio sul tetto sotto i rinvii appesi: verificato fino a ciò che pende,
   for (const scheme of ['head', 'under'] as const) {
     const d = deriveLift(below(scheme)), ck = (id: string) => d.supportChecks.find((c) => c.id === id);
     assert.ok(ck('h_hung'), `${scheme}: la traversa sotto i rinvii`);
-    assert.ok(ck('h_refuge') && ck('h_stand'), `${scheme}: il rifugio misurato sotto ciò che pende`);
+    assert.ok(ck('h_refuge_rig') && ck('h_stand_rig'), `${scheme}: il rifugio misurato sotto ciò che pende`);
     assert.ok(d.refugeHead, `${scheme}: la testata del progetto non basta`);
-    assert.ok(ck('h_refuge')?.status === 'fail' || ck('h_stand')?.status === 'fail');
+    assert.ok(ck('h_refuge_rig')?.status === 'fail' || ck('h_stand_rig')?.status === 'fail');
+    // in place of the shaft's own, where it had them
+    const all = mergeChecks(d.layout.checks, d.supportChecks).map((c) => c.id);
+    assert.ok(!all.includes('h_refuge') && !all.includes('h_stand') && all.includes('h_refuge_rig') && all.includes('h_stand_rig'), scheme);
+    assert.equal(all.indexOf('h_refuge_rig'), d.layout.checks.findIndex((c) => c.id === 'h_refuge'), `${scheme}: al posto di h_refuge`);
     assert.ok(d.refugeHead.need > d.refugeHead.now && d.refugeHead.need % 10 === 0);
     // with the headroom the hint gives the refuge clears what hangs
     const e = deriveLift(below(scheme, d.refugeHead.need)), ok = (id: string) => e.supportChecks.find((c) => c.id === id)?.status;
-    assert.equal(ok('h_refuge'), 'ok', `${scheme}: h_refuge con ${d.refugeHead.need}`);
-    assert.equal(ok('h_stand'), 'ok', `${scheme}: h_stand con ${d.refugeHead.need}`);
+    assert.equal(ok('h_refuge_rig'), 'ok', `${scheme}: h_refuge_rig con ${d.refugeHead.need}`);
+    assert.equal(ok('h_stand_rig'), 'ok', `${scheme}: h_stand_rig con ${d.refugeHead.need}`);
     assert.equal(e.refugeHead, null);
   }
   // the pulleys over the slab in their room, the machine above at 1:1: nothing hangs, the shaft's own checks stand
   for (const inp of [below('room'), newLift()]) {
     const d = deriveLift(inp);
     assert.equal(d.refugeHead, null);
-    assert.ok(!d.supportChecks.some((c) => c.id === 'h_hung' || c.id === 'h_refuge'));
+    assert.ok(!d.supportChecks.some((c) => c.id === 'h_hung' || c.id === 'h_refuge_rig' || c.id === 'h_stand_rig'));
   }
+  // a headroom too low for the refuge under the slab alone (1:1, the machine above): the shaft's h_refuge says so, the
+  // hint about what hangs does not
+  const low = newLift(), lowD = deriveLift({ ...low, shaft: { ...low.shaft, vertical: { ...low.shaft.vertical, headroom: 3300 } } });
+  assert.equal(lowD.layout.checks.find((c) => c.id === 'h_refuge')?.status, 'fail');
+  assert.equal(lowD.refugeHead, null, 'niente appeso: nessuna testata per ciò che pende');
+});
+
+test('collaudo: il rifugio sotto ciò che pende entra con la macchina sostituita, quello del vano resta esistente', () => {
+  // a modification to UNI 10411-1 replacing the machine with one below and hung pulleys: the refuge under them fails and
+  // fails the test, as h_hung would
+  const d = deriveLift(below('head', undefined, defaultLift())), C = d.collaudo;
+  assert.equal(C.norma, '10411-1');
+  assert.deepEqual(C.parti, ['machine']);
+  const all = [...d.analysis.res.checks, ...mergeChecks(d.layout.checks, d.supportChecks)];
+  const rig = all.filter((c) => c.id === 'h_refuge_rig' || c.id === 'h_stand_rig');
+  assert.equal(rig.length, 2);
+  assert.ok(rig.some((c) => c.status === 'fail'), 'il rifugio non passa sotto i rinvii appesi');
+  for (const c of rig) assert.equal(ambitoOf(C, c.id), 'applies', c.id);
+  assert.equal(collaudoVerdict(C, all).verdict, 'fail');
+  assert.ok(collaudoVerdict(C, all).fails > collaudoVerdict(C, all.filter((c) => !rig.includes(c))).fails, 'conta nel collaudo');
+  // the shaft's own refuge stays with the car and its frame: a machine replaced above leaves it existing
+  for (const id of ['h_refuge', 'h_stand'] as const) assert.equal(ambitoOf(C, id), 'existing', id);
+  // a modification that replaces only the controller leaves the rig's refuge existing too
+  for (const id of ['h_refuge_rig', 'h_stand_rig'] as const) assert.equal(ambitoOf({ ...C, parti: ['controller'] }, id), 'existing', id);
 });
 
 test('foglio 1: una nota per ogni locale che le tavole disegnano, e i fogli del locale in basso la richiamano', () => {
@@ -140,6 +171,26 @@ test('macchina sotto la fossa: paracadute del contrappeso dichiarato e verificat
   assert.equal(row(head), undefined);
   assert.equal(sg(head), undefined);
   assert.ok(Number(String(under.P[6]).replace(/\D/g, '')) > Number(String(head.P[6]).replace(/\D/g, '')), 'P7 con la presa');
+});
+
+test('relazione: lo spazio sotto il vano come il foglio 1 (fondo della fossa, P5–P8, paracadute dai dati, pilastro solo in una modifica)', () => {
+  const item = (context: 'new' | 'repl'): string => {
+    const values = { ...PRESETS.A, context, layout: 'bottom', Hv: '14' };
+    const doc = buildReport({
+      calc: { id: 'cmtest0036', label: null, createdAt: new Date('2026-10-08T08:00:00Z'), sha256: 'f'.repeat(64), engineVersion: '1.0.0', profileId: 'IT-2026.1', author: null },
+      project: { name: 'Prova', address: 'Via Roma 12', city: 'Milano', province: 'MI', plantNumber: 'MI 1/98', client: null }, company: 'Ditta di prova',
+      values, reviews: [], generatedAt: new Date('2026-10-08T09:00:00Z'), marks: { ...NO_MARKS, bottom: 'under', collaudo: collaudoOf(values) },
+    });
+    return doc.blocks.flatMap((b) => (b.t === 'list' ? b.items : [])).find((x) => x.includes('Spazio accessibile sotto il vano')) ?? '';
+  };
+  const n = item('new'), r = item('repl');
+  for (const x of [n, r]) {
+    assert.match(x, /almeno 5000 N\/m² oltre ai carichi P5–P8/);
+    assert.match(x, /tipo e azionamento si indicano nei dati dell’impianto/);
+    assert.doesNotMatch(x, /non ammette più il pilastro/);
+  }
+  assert.doesNotMatch(n, /pilastro/, 'impianto nuovo: solo il paracadute');
+  assert.match(r, /pilastro esistente fino al terreno .*\(UNI 10411-1:2024, 6\.14\)/, 'modifica: il pilastro esistente come la nota del foglio 1');
 });
 
 test('i fogli del vano disegnano la taglia: gli attacchi della 2:1 (P2, P3), i rinvii e il limitatore della macchina in basso (P1, P4)', () => {

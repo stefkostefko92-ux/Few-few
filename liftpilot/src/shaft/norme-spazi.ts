@@ -58,7 +58,7 @@ export const VOCI_SPAZI: readonly VoceVano[] = [
       + 'rifugio sopra il tetto toglie la sua pianta dalle parti libere del tetto, come gli operatori: il rifugio deve stare tutto fuori; '
       + 'l’altezza libera del rifugio si misura fino alla parte più bassa sopra ogni parte libera del tetto, dove si sta in piedi',
     riferimento: 'UNI EN 81-20:2020, 5.2.5.7.1 (prospetto 3), 5.2.5.7.2 e 5.2.5.7.3', fonte: letto(T20, 'pp. 37–39'), stato: 'confermato',
-    verifiche: ['h_refuge', 'h_stand'],
+    verifiche: ['h_refuge_rig', 'h_stand_rig'],
     nota: 'pianta delle pulegge appese: Dp lungo il loro piano per la larghezza delle guance del telaio (come il 3D); con un riparo fisso sul '
       + 'tetto sotto le pulegge l’area non è più un posto in piedi: è una scelta del progettista. Fino alla versione 1.28.0 del motore del '
       + 'progetto il rifugio e la sua altezza non vedevano le pulegge appese',

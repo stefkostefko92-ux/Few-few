@@ -107,7 +107,7 @@ export function buildLiftWorld(renderer: THREE.WebGPURenderer, dv: LiftDerived, 
   // where the plans put them (roof.ts: clear of a low crosshead and of the operators; pit.ts: clear of the buffers)
   const cx = L.car.x + L.car.w / 2, cy = L.car.y + L.car.h / 2;
   const th = KV_VERT.refugeH[V.topRefuge], rr = roofSpaces(L).refuge, bad = (id: string): boolean => status(id) === 'fail';
-  const top = box(rr.x0, rr.y0, V.carOutH, rr.x1, rr.y1, V.carOutH + th, bad('h_refuge') || bad('h_stand') ? M.zoneBad : M.zoneOk);
+  const top = box(rr.x0, rr.y0, V.carOutH, rr.x1, rr.y1, V.carOutH + th, ['h_refuge', 'h_stand', 'h_refuge_rig', 'h_stand_rig'].some(bad) ? M.zoneBad : M.zoneOk);
   car.group.add(top);
   const pr = pitSpace(L), ph = Math.max(KV_VERT.pitClear, KV_VERT.refugeH[V.pitRefuge]);
   zones.add(box(pr.x0, pr.y0, S.pitFloor, pr.x1, pr.y1, S.pitFloor + ph, bad('p_refuge') || bad('v_buffer') ? M.zoneBad : M.zoneOk));

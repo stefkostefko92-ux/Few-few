@@ -182,7 +182,7 @@ export type ShaftCheckId =
   | 'm_pheight' | 'm_pdoor' | 'm_pabove'
   | 'm_heb' | 'm_hebf' | 'm_hebfeet' | 'm_hebrope' | 'm_hebwall'
   | 'gr_stress' | 'gr_flange' | 'gr_defl' | 'sg_type'
-  | 'h_hung' | 'sg_cw';
+  | 'h_hung' | 'sg_cw' | 'h_refuge_rig' | 'h_stand_rig';
 
 export interface ShaftCheck {
   id: ShaftCheckId;
