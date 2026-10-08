@@ -1737,7 +1737,7 @@
       "buffer_support_pu": "Polyurethane buffer support",
       "shoes_car": "Car guide shoe",
       "labour_installer": "Installer, piecework (installation)",
-      "labour_replacement": "Installer, piecework (machine replacement)",
+      "labour_replacement": "Installer, lump sum (UNI 10411 modification)",
       "labour_rails": "Rail cleaning",
       "custom": "{name}"
     },
@@ -1748,8 +1748,8 @@
     "missing": "{n, plural, one {# article} other {# articles}} without a price: the total leaves them out.",
     "toList": "Complete the price list",
     "costNoteDesign": "Quantities from the design: ropes at their cut length (measured on the pulleys from hitch to hitch, plus 1 m for the terminations and the adjustment, rounded up to the metre: the same as on sheet 1) with two wedge sockets per rope; with 2:1 roping the car and counterweight pulleys and the dead-end hitches; with the machine below the head pulleys and the anchored base; rails in 5 m bars from the pit floor to the slab, with a joint between two bars; a bracket every 2 m plus the first and the last; governor rope as on sheet 1; safety gear of the type in the installation data (progressive when missing); the ACOP/UCM protection of a new lift; travelling cable half the travel + 3 m; wiring and trunking from the pit floor to the machine room floor (the trunking also from the controller to the machine, square to the walls); shaft lighting over the shaft’s height; a push-button panel at every landing door; two guide shoes on each car and counterweight rail; a support under each spring or polyurethane buffer; the installer by the stop; cleaning of every metre of rail. The lengths are estimates: replace them with the site’s measures. It leaves out the building works.",
-    "costNoteCalc": "Machine replacement: the catalogue machine the calculation verified; the maker’s bedplate with the diverting pulley, when there is one (with the machine room surveyed, the one chosen in the survey and the pulley’s stand; with the machine below the anchored base); the ropes and the controller when the acceptance test names them replaced (every rope at the formula’s cut length, with two wedge sockets per rope); the adaptation of the ACOP/UCM protections under UNI 10411-11; the installer as a lump sum; the free lines for replacements.",
-    "costNoteModification": "Modification of an existing lift (UNI 10411): only the parts the acceptance test names replaced, with the design’s quantities (the others stay, as on sheet 1); the adaptation of the ACOP/UCM protections to the new machine under UNI 10411-11; the installer as a lump sum; the free lines for replacements. The lengths are estimates: replace them with the site’s measures. It leaves out the building works.",
+    "costNoteCalc": "Machine replacement: the catalogue machine the calculation verified; the maker’s bedplate with the diverting pulley, when there is one (with the machine room surveyed, the one chosen in the survey and the pulley’s stand; with the machine below the anchored base); the ropes and the controller when the acceptance test names them replaced (every rope at the formula’s cut length, with two wedge sockets per rope); the adaptation of the ACOP/UCM protections under UNI 10411-11; the installer as a lump sum; the free lines for modifications.",
+    "costNoteModification": "Modification of an existing lift (UNI 10411): only the parts the acceptance test names replaced, with the design’s quantities (the others stay, as on sheet 1); the adaptation of the ACOP/UCM protections to the new machine under UNI 10411-11; the installer as a lump sum; the free lines for modifications. The lengths are estimates: replace them with the site’s measures. It leaves out the building works.",
     "bases": {
       "LOT": "Lump sum (once per project)",
       "STOP": "By the stop",
@@ -1757,8 +1757,8 @@
     },
     "scopes": {
       "ALL": "All projects",
-      "FULL": "Whole projects",
-      "REPLACEMENT": "Machine replacements"
+      "FULL": "New lifts (UNI EN 81-20/50)",
+      "REPLACEMENT": "Modifications (UNI 10411: machine replacement, renovation)"
     },
     "freeTitle": "Free lines",
     "freeLead": "Your own lines, with a description and a price: the software adds them by itself to the cost of the projects you choose, with the quantity counted — once, by the stop or by the metre of travel. An empty row is deleted when you save.",

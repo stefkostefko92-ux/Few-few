@@ -28,7 +28,7 @@ export async function replacementRoom({ BASE, page, hydrated, calcUrl, stamp }) 
   await blankSurvey({ page, hydrated });
   await page.waitForSelector('figure.sheet-view .draw-stage svg');
   assert.equal(await page.locator('main .alert-bad').count(), 0, 'nothing stops the survey');
-  assert.match(await page.textContent('section[aria-labelledby="room-checks"]'), /Calate della nuova macchina/, 'the drops checked');
+  assert.match(await page.textContent('section[aria-labelledby="room-checks"]'), /Calate esistenti rilevate e calate del calcolo/, 'the drops checked');
   await page.fill('section[aria-labelledby="room-save"] input', 'Rilievo di prova');
   await Promise.all([page.waitForURL(/\/room-designs\/[a-z0-9]+$/, { timeout: 60000 }), page.click(save)]);
   const roomUrl = page.url(), roomId = roomUrl.split('/').pop();

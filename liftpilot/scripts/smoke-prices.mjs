@@ -1,6 +1,6 @@
-// The smoke test's price list: the owner prices an article and adds two free lines — one by the stop for the whole
-// projects, one a corpo for the replacements —; the saved design's cost then counts the first with its stops, the
-// replacement's machine room the second; then the two lines are removed again (the platform company keeps its list).
+// The smoke test's price list: the owner prices an article and adds two free lines — one by the stop for the new lifts,
+// one a corpo for the modifications (UNI 10411) —; the saved design's cost — a renovation, a modification — and the
+// replacement's machine room then count the second; then the two lines are removed again (the platform company keeps its list).
 import assert from 'node:assert/strict';
 import { step } from './smoke-kit.mjs';
 
@@ -30,11 +30,13 @@ export async function priceList({ BASE, page, hydrated, stamp, liftUrl, roomUrl 
   assert.equal(await page.locator(`main input[name="c:${n}:text"]`).inputValue(), stop);
   assert.equal(await page.locator(`main input[name="c:${n + 1}:price"]`).inputValue(), '300,00');
 
-  // the whole project counts the line by the stop and the plant from the design; the replacement the one a corpo
+  // the cost counts by the acceptance test: a new lift (UNI EN 81-20/50) the line by the stop, a modification tested to
+  // UNI 10411 the one a corpo — the smoke's whole project is a renovation keeping the sling (UNI 10411-11), so a
+  // modification: the parts it replaces and the installer as a lump sum, like the replacement
   await page.goto(liftUrl);
   const cost = await page.textContent('section[aria-labelledby="project-cost-h"]');
-  assert.ok(cost.includes(stop) && !cost.includes(lot), 'free lines of the whole projects');
-  assert.match(cost, /Quadro di manovra[\s\S]*Cottimista \(montaggio\)/, 'the plant counted from the design');
+  assert.ok(cost.includes(lot) && !cost.includes(stop), `free lines of the modifications: ${cost}`);
+  assert.match(cost, /Cottimista a corpo \(modifica UNI 10411\)/, 'the installer as a lump sum');
   await page.goto(roomUrl);
   const repl = await page.textContent('section[aria-labelledby="project-cost-h"]');
   assert.ok(repl.includes(lot) && !repl.includes(stop), 'free lines of the replacements');

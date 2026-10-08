@@ -205,7 +205,11 @@ try {
   step('data of the installation, company logo, drawing set and its revision');
   await page.goto(`${projectUrl}/impianto`);
   await page.click('.plant-form details summary');
-  await page.locator('.plant-form details input').first().fill('M 73 (Sx)');
+  // a machine name that contradicts the catalogue's machine of the design is flagged as typed; the set would not issue
+  const machineName = page.locator('.plant-form details input').first();
+  await machineName.fill('M 73 (Sx)');
+  await page.waitForSelector('.plant-form details .note.bad[role="alert"]');
+  await machineName.fill('');
   await page.click('.plant-form button[type="submit"]');
   await page.waitForSelector('.plant-form [role="status"]');
   // the client's logo, beside its name in the title block
@@ -228,9 +232,14 @@ try {
   // sheet 1 lists the check of the car rails (UNI EN 81-50, 5.10); here a renovation keeping the sling (UNI 10411-11):
   // the rails are new, so with the note of their check, and the test's note says the sling stays (the rails kept, without
   // the note: tavole.test.ts)
+  // (the checks themselves on the set's last sheet, which sheet 1 points to)
   const sheet1 = await page.textContent('.sheet-page svg.sheet-svg');
-  assert.ok(sheet1?.includes('Guide di cabina: tensioni') && sheet1.includes('VERIFICA DELLE GUIDE DI CABINA'), 'the rails\' check on sheet 1');
+  assert.ok(sheet1?.includes('VERIFICA DELLE GUIDE DI CABINA') && new RegExp(`VERIFICHE (DEL PROGETTO: FOGLIO|NON SUPERATE: \\d+ — VEDI FOGLIO) ${sheets}`).test(sheet1), 'the rails\' check on sheet 1');
   assert.ok(sheet1.includes("Rifacimento con l’arcata esistente"), 'the renovation in the test’s note');
+  await page.goto(`${setUrl}?p=${sheets}`);
+  await page.waitForSelector('.sheet-page svg.sheet-svg');
+  const checksSheet = await page.textContent('.sheet-page svg.sheet-svg');
+  assert.ok(checksSheet?.includes('VERIFICHE DEL PROGETTO') && checksSheet.includes('Guide di cabina: tensioni'), 'the checks on the last sheet');
   const setPdfHref = await page.getAttribute('a[href$="/pdf"]', 'href');
   const setPdf = await page.request.get(`${BASE}${setPdfHref}`);
   assert.equal(setPdf.status(), 200);
