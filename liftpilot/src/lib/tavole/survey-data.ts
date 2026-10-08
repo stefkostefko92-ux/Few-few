@@ -35,7 +35,7 @@ const mm = (x: number): string => fmt(Math.round(x), 0);
 /** The beams' count on the sheet. */
 const N_IT: Readonly<Record<number, string>> = { 2: 'DUE', 3: 'TRE' };
 /** The checks of the support the sheet counts again at its own load: the beams under the machine, the HEB beams. */
-const AT_SHEET_LOAD: ReadonlySet<string> = new Set(['m_beam', 'm_beamf', 'm_beamwall', 'm_heb', 'm_hebf', 'm_hebfeet', 'm_hebrope', 'm_hebwall']);
+const AT_SHEET_LOAD: ReadonlySet<string> = new Set(['m_beam', 'm_beamf', 'm_beamwall', 'm_heb', 'm_hebf', 'm_hebfeet', 'm_hebrope', 'm_hebkerb', 'm_hebwall']);
 
 export interface SurveySheet extends TitleData {
   /** the installation and the intervention */
@@ -86,16 +86,31 @@ const machineRows = (O: Machine | null, N: Machine, oldName: string, newName: st
 export const surveyedLabel = (id: string, label: string, s: Pick<SurveyTavoleInput['survey'], 'governor'>): string =>
   (id === 'm_quadro' && !s.governor ? `${label.replace('argano, limitatore e interruttore generale', 'argano e interruttore generale')} (limitatore non rilevato)` : label);
 
+/** How far each fall of a direct drive's new sheave slants down to the drops surveyed [mm] (negative: inward), as the
+ *  calculation places the sheave (room/derive.ts calcDrops, calc/geometry.ts wrapAngles): centred between the drops, each
+ *  by half the difference; aligned with the car's drop (dropAlign 'car'), the car's fall plumb and the counterweight's
+ *  by all of it. */
+export function fallSlants(d: RoomDerived): { car: number; cw: number; aligned: boolean } {
+  const spread = d.calata.measured - 2 * d.M.ropeIn - d.M.D, aligned = d.analysis.ctx.I.dropAlign === 'car';
+  return aligned ? { car: 0, cw: spread, aligned } : { car: spread / 2, cw: spread / 2, aligned };
+}
+
+/** A fall's slant as the sheet and the relazione write it [mm]: a decimal under 10, plumb as 0. */
+export const slantText = (x: number): string => (Math.abs(x) < 0.05 ? '0' : fmt(Math.abs(x), Math.abs(x) < 10 ? 1 : 0));
+
 /** The drops' row: on a direct drive replacement the surveyed ones beside the existing sheave's diameter the calculation
- *  takes (`oldD`; 0: none entered), and the slant of each fall of the new sheave down to them; else the calculation's
- *  and the surveyed (registry locale.calate). */
+ *  takes (`oldD`; 0: none entered), and the slant of each fall of the new sheave down to them — the same on each side, or
+ *  the car's and the counterweight's with the sheave aligned with the car's drop; else the calculation's and the surveyed
+ *  (registry locale.calate). */
 export function calataRows(d: RoomDerived, oldD: number): Row[] {
   const direct = d.M.Dp === 0 && !d.M.rinvio, mm0 = (x: number): string => fmt(Math.round(x), 0);
   if (!direct) return [['CALATE: CALCOLO - RILIEVO', 'mm', `${mm0(d.calata.calc)} - ${mm0(d.calata.measured)}`]];
-  const slant = (d.calata.measured - 2 * d.M.ropeIn - d.M.D) / 2;
+  const s = fallSlants(d), inward = s.car < 0 || s.cw < 0 ? ' (verso l’interno)' : '';
   return [
     [oldD > 0 ? 'CALATE ESISTENTI: RILIEVO - PULEGGIA ESISTENTE Ø' : 'CALATE ESISTENTI: RILIEVO - CALCOLO', 'mm', `${mm0(d.calata.measured)} - ${mm0(d.calata.calc)}`],
-    ['NUOVA PULEGGIA Ø - FUNI INCLINATE PER LATO', 'mm', `${mm0(d.M.D)} - ${fmt(Math.abs(slant), Math.abs(slant) < 10 ? 1 : 0)}${slant < 0 ? ' (verso l’interno)' : ''}`],
+    s.aligned
+      ? ['NUOVA PULEGGIA Ø - FUNI INCLINATE CABINA / CONTRAPPESO', 'mm', `${mm0(d.M.D)} - ${slantText(s.car)} / ${slantText(s.cw)}${inward}`]
+      : ['NUOVA PULEGGIA Ø - FUNI INCLINATE PER LATO', 'mm', `${mm0(d.M.D)} - ${slantText(s.car)}${inward}`],
   ];
 }
 
@@ -175,7 +190,7 @@ export function surveySheetData(x: SurveyTavoleInput, d: RoomDerived, pages: num
     ...hebRows(heb, fmt),
     // the hook (the heaviest piece lifted: the existing machine too) and the reactions on the support's bearings; P4
     // without the governor's load (round 36)
-    ...(G ? [hookRow(G, M, fmt, d.site.pieces ?? []), ...reactionRows(G, M, surveyLoadOf(d, Pl), G && heb ? hebDrawn(G, M, s.shaft) : null, fmt)] : []),
+    ...(G ? [hookRow(G, M, fmt, d.site.pieces ?? []), ...reactionRows(G, M, surveyLoadOf(d, Pl), G && heb ? hebDrawn(G, M, d.site) : null, fmt)] : []),
     ...(Pl.governorLoad == null ? [['P4 LIMITATORE: DATO DEL COSTRUTTORE, DA INSERIRE NEI DATI', '—', 'daN'] as const] : []),
   ];
   const P: SurveySheet['P'] = [

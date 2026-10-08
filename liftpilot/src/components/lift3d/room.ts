@@ -28,6 +28,7 @@ import { buildSupport, hebBeams, wallsAlong } from './support';
 import { FLOOR_REACH, hebRects, mainFeed, rectOf, roomPoint, stripRects, trunking, trunkingRoute, type Rect } from './wiring';
 import { SIDES, type LiftMaterials, type Side } from './materials';
 import { HEB_PAD } from '@/shaft/support';
+import type { Hook } from '@/shaft/room-hook';
 
 const SHIMS: MachineSupport = { kind: 'shims' };
 
@@ -78,9 +79,11 @@ export function machinePose(rig: RopeRig, wall: number, n: number, d: number, F:
  *  `shape`: the maker's machine as it is (null: the generic one scaled to the sheave); `rinvio`: where the diverting
  *  pulley turns in the room (src/shaft/rinvio.ts); `heb`: the HEB beams on the shaft's walls the support stands on;
  *  `turn`: the machine above turned round, its motor toward the car's drop (−1; machine-room.ts RoomGeo.dir); `legs`: the
- *  bedplate's legs in the machine's x and z [m] (rinvio.ts bedplateLegs). */
+ *  bedplate's legs in the machine's x and z [m] (rinvio.ts bedplateLegs); `hook`: the lifting hook as the drawings place
+ *  it (room-hook.ts, room axes; null: over the sheave). */
 export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: number, ceiling: number, M: LiftMaterials, openings: readonly Opening[], gov: GovernorSpot | null,
-  shape: MachineShape | null = null, rinvio: RinvioFrame | null = null, heb: HebLayout | null = null, turn: 1 | -1 = 1, legs: readonly (readonly [number, number])[] | null = null): RoomModel {
+  shape: MachineShape | null = null, rinvio: RinvioFrame | null = null, heb: HebLayout | null = null, turn: 1 | -1 = 1, legs: readonly (readonly [number, number])[] | null = null,
+  hookAt: Hook | null = null): RoomModel {
   const bySide = <T,>(make: () => T): Record<Side, T> => ({ front: make(), rear: make(), left: make(), right: make() });
   const I = L.inputs, sides = bySide(() => new THREE.Group()), mounted = bySide(() => new THREE.Group()), onWall = bySide(() => new Batch());
   const roof = new THREE.Group(), common = new THREE.Group(), overhead = new THREE.Group();
@@ -149,7 +152,7 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
     const x0 = -R.shaftX, y0 = -R.shaftY, pw = R.panelWall, across = pw === 'front' || pw === 'rear' ? 0 : 1;
     const uc = Math.min(R.panelAt + R.panelW - 120, Math.max(R.panelAt + 120, tip[across] - (across ? y0 : x0)));
     const from = roomPoint(R, x0, y0, pw, uc, R.panelD - 60), o = roomPoint(R, x0, y0, pw, uc, R.panelD - 59);
-    const blocked: Rect[] = rig.bottom ? [] : openings.map((op) => rectOf(op.pts, op.curb ? 25 : 0));
+    const blocked: Rect[] = rig.bottom ? [] : openings.map((op) => rectOf(op.pts, op.curb ? KV_VERT.kerbW : 0));
     // the bedframe (and a frame or plinth under it), the pulleys' stands on the floor, the governor, the way through
     // the door (it opens outward)
     base.updateMatrixWorld(true);
@@ -188,12 +191,14 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
   wires.into(common);
   for (const side of SIDES) onWall[side].into(mounted[side]);
 
-  // the lifting hook over the machine, on its plate under the roof
+  // the lifting hook over the machine, on its plate under the roof: where the drawings put it (over the machine's centre
+  // of gravity, its eye KV_VERT.hookDrop under the ceiling), else over the sheave
   if (R) {
-    const top = (z0 + R.H) / 1000, hook = new Batch(), hx = centre.x * 1000, hy = -centre.z * 1000;
+    const hook = new Batch(), hx = hookAt ? hookAt.at[0] - R.shaftX : centre.x * 1000, hy = hookAt ? hookAt.at[1] - R.shaftY : -centre.z * 1000;
+    const eye = z0 + (hookAt ? hookAt.eye : R.H - KV_VERT.hookDrop), ring = 45;
     hook.box(hx - 110, hy - 110, z0 + R.H - 14, hx + 110, hy + 110, z0 + R.H, M.galv);
-    hook.rod([hx, hy, z0 + R.H - 14], [hx, hy, z0 + R.H - 90], 14, M.steel, 12);
-    hook.add(new THREE.TorusGeometry(0.045, 0.012, 10, 24).translate(centre.x, top - 0.135, centre.z), M.steel);
+    hook.rod([hx, hy, z0 + R.H - 14], [hx, hy, eye + ring], 14, M.steel, 12);
+    hook.add(new THREE.TorusGeometry(ring / 1000, 0.012, 10, 24).translate(hx / 1000, eye / 1000, -hy / 1000), M.steel);
     hook.into(overhead);
   }
 

@@ -9,7 +9,7 @@ import { cropped, surveyView } from '../tavole/views';
 import type { MachineSpec } from '@/shaft/machine-room';
 import type { RoomDerived } from '../room/derive';
 import type { Survey } from '../room/survey';
-import { foundText, supportName } from '../tavole/survey-data';
+import { fallSlants, foundText, slantText, supportName } from '../tavole/survey-data';
 import { hebNote } from '../tavole/room-rows';
 import { rinvioRow } from './machine-shape';
 import type { ReportBlock, ReportDoc } from './model';
@@ -47,15 +47,18 @@ export function roomRows(s: Survey, d: RoomDerived, fmt: (x: number, dp?: number
 }
 
 /** The drops: with a direct drive the surveyed ones beside the existing sheave's diameter the calculation takes, and how
- *  much each fall of the new sheave slants down to them with the least wrap angle of the calculation; else the
- *  calculation's drops beside the surveyed. */
+ *  much each fall of the new sheave slants down to them (both alike, or the counterweight's alone with the sheave aligned
+ *  with the car's drop) with the least wrap angle of the calculation; else the calculation's drops beside the surveyed. */
 function calataText(d: RoomDerived, fmt: (x: number, dp?: number) => string): [string, string][] {
   const { ctx, res } = d.analysis, M = d.M, mm = (x: number): string => `${fmt(Math.round(x), 0)} mm`, off = mm(Math.abs(d.calata.measured - d.calata.calc));
   if (M.Dp > 0 || M.rinvio) return [['Calate della nuova macchina (dal calcolo)', `${mm(d.calata.calc)} (scarto dal rilievo ${off})`]];
-  const oldD = ctx.compare && ctx.O.D > 0 ? ctx.O.D : 0, slant = (d.calata.measured - 2 * M.ropeIn - M.D) / 2;
+  const oldD = ctx.compare && ctx.O.D > 0 ? ctx.O.D : 0, s = fallSlants(d), inward = (x: number): string => (x < 0 ? ' (verso l’interno)' : '');
+  const falls = s.aligned
+    ? ` allineata alla calata della cabina: il ramo lato cabina scende verticale, quello lato contrappeso inclinato di ${slantText(s.cw)} mm fino alla calata${inward(s.cw)}`
+    : `: ogni ramo inclinato di ${slantText(s.car)} mm per lato fino alle calate${inward(s.car)}`;
   return [
     ['Calate esistenti', `rilevate ${mm(d.calata.measured)}, ${oldD ? `coerenti con la puleggia esistente Ø ${fmt(oldD, 0)} del calcolo` : 'confrontate con il calcolo'} (scarto ${off}, al più ${KV_VERT.dropTol} mm)`],
-    ['Inclinazione delle funi della nuova puleggia', `nuova puleggia Ø ${fmt(M.D, 0)}: ogni ramo inclinato di ${fmt(Math.abs(slant), Math.abs(slant) < 10 ? 1 : 0)} mm per lato fino alle calate${slant < 0 ? ' (verso l’interno)' : ''}; `
+    ['Inclinazione delle funi della nuova puleggia', `nuova puleggia Ø ${fmt(M.D, 0)}${falls}; `
       + `angolo di avvolgimento ${fmt(res.alphaDeg, 1)}° (dal calcolo); i fori nella soletta seguono le funi al loro livello`],
   ];
 }

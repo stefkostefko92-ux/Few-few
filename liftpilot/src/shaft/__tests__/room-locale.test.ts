@@ -163,7 +163,7 @@ test('antivibranti e fissaggi: quanti, dove, del costruttore, da verificare', ()
 test('putrelle HEB su piastre e malta: l’argano più alto della piastra e del letto, le piastre negli appoggi', () => {
   assert.equal(HEB_PAD, KV_VERT.hebPlateT + KV_VERT.hebMortar);
   const { L, G } = geo({ support: { kind: 'frame' }, heb: {} });
-  const S = layoutSite(L), heb = hebDrawn(G, M, { W: S.W, D: S.D, wall: S.wall }, S.govRopes);
+  const S = layoutSite(L), heb = hebDrawn(G, M, S, S.govRopes);
   assert.ok(heb, 'putrelle');
   const named = chains(roomPlanEntities(L, M, G).entities).flatMap((c) => c.text ?? []);
   assert.ok(named.includes('{v} Appoggio') && named.includes('{v} Asse HEB'), 'appoggio e assi in pianta');

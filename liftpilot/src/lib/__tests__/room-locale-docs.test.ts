@@ -14,8 +14,11 @@ import { valueMarks } from '@/lib/lift/marks';
 import { buildTavole } from '@/lib/tavole/build';
 import { storedInput } from '@/lib/tavole/compose';
 import { roomNote } from '@/lib/tavole/notes';
+import { hebNote } from '@/lib/tavole/room-rows';
+import { KV_VERT } from '@/shaft/norme-vert';
 import { ROOM_LEGEND } from '@/lib/tavole/room-legend';
-import { surveySheetData } from '@/lib/tavole/survey-data';
+import { fallSlants, slantText, surveySheetData } from '@/lib/tavole/survey-data';
+import { roomRows } from '@/lib/report/tecnica-room';
 import type { SurveyTavoleInput } from '@/lib/tavole/survey-input';
 import { buildTecnica } from '@/lib/report/tecnica';
 import { designRoomBlocks } from '@/lib/report/tecnica-site';
@@ -117,4 +120,35 @@ test('relazione del progetto: aperture con il centro, gancio, reazioni e antivib
   const { ctx, res } = d.analysis, blocks = designRoomBlocks(L, d.machine, supportLoad(ctx, res.Mcw), (x, dp = 0) => x.toFixed(dp));
   const all = JSON.stringify(blocks);
   assert.ok(all.includes('Centro dal muro sinistro del vano') && all.includes('R1 ') && all.includes('antivibranti'));
+});
+
+test('tiro diretto con la puleggia allineata alla calata della cabina: il ramo della cabina verticale, tutta l’inclinazione al contrappeso', () => {
+  // round 36 review: dropAlign 'car' (calc/geometry.ts wrapAngles: dc = 0, dw = 2·half) — not half per side
+  const s = surveyed(), centred = deriveRoom(DIRECT, s), car = deriveRoom({ ...DIRECT, dropAlign: 'car' }, s);
+  const spread = centred.calata.measured - 2 * centred.M.ropeIn - centred.M.D;
+  assert.ok(spread > 1, 'calate più larghe della nuova puleggia');
+  assert.deepEqual(fallSlants(centred), { car: spread / 2, cw: spread / 2, aligned: false });
+  assert.deepEqual(fallSlants(car), { car: 0, cw: spread, aligned: true });
+  const row = (d: typeof car): string[] => surveySheetData(tavole(s), d, 3).room.find(([l]) => l.startsWith('NUOVA PULEGGIA'))?.map(String) ?? [];
+  assert.equal(row(centred)[0], 'NUOVA PULEGGIA Ø - FUNI INCLINATE PER LATO');
+  assert.ok(row(centred)[2]?.endsWith(` - ${slantText(spread / 2)}`), row(centred).join(' | '));
+  assert.equal(row(car)[0], 'NUOVA PULEGGIA Ø - FUNI INCLINATE CABINA / CONTRAPPESO');
+  assert.ok(row(car)[2]?.endsWith(` - 0 / ${slantText(spread)}`), row(car).join(' | '));
+  const text = (d: typeof car): string => roomRows(s, d, (x, dp = 0) => x.toFixed(dp)).find(([k]) => k === 'Inclinazione delle funi della nuova puleggia')?.[1] ?? '';
+  assert.ok(text(centred).includes(`ogni ramo inclinato di ${slantText(spread / 2)} mm per lato`), text(centred));
+  assert.ok(text(car).includes('il ramo lato cabina scende verticale') && text(car).includes(`contrappeso inclinato di ${slantText(spread)} mm`), text(car));
+});
+
+test('pianta del locale piena fino al bordo: la legenda accanto al titolo, più piccola — i simboli mai senza spiegazione', () => {
+  // round 36 review: a room 300 mm deeper fills the plan's area; the legend went missing while the symbols were drawn
+  const deep = { ...base, shaft: { ...base.shaft, room: { ...room, D: room.D + 300 } } }, r = sheets(deep), t = pageTexts(r, 7);
+  assert.ok(t.some((x) => x.startsWith('Punto luce')) && t.some((x) => x.startsWith('Presa 2P+PE')), 'legenda');
+  const legend = r.doc.pages[7]?.shapes.filter((s) => s.t === 'text' && s.text.startsWith('Punto luce')) ?? [];
+  // beside the title, between the strip and the drawing area
+  assert.ok(legend.every((s) => s.t === 'text' && s.at[1] < FRAME.y0 + 30), 'accanto al titolo');
+});
+
+test('nota delle putrelle HEB: le piastre come le disegnano la pianta e il 3D (lunghe quanto l’appoggio)', () => {
+  // round 36 review: the note wrote 250 × 250 × 15 while the plan, the 3D and the registry have 200 × 250 × 15
+  assert.ok(hebNote('').text.includes(`piastre ${KV_VERT.hebBearing} × ${KV_VERT.hebPlateW} × ${KV_VERT.hebPlateT} mm`), hebNote('').text);
 });

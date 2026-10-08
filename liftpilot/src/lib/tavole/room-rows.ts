@@ -2,7 +2,7 @@
 // carichi.reazioni, locale.putrelle.vano): the lifting hook's rated load, the reactions R1…Rn on the support's bearings
 // at the sheet's load (three to a row), the line on the governor’s load P4 when the data do not give it, and the note on the
 // HEB beams' bearings. Italian; pure.
-import { hebDrawn, type HebLayout } from '@/shaft/heb';
+import { hebDrawn, type HebLayout, type HebShaft } from '@/shaft/heb';
 import type { MachineSpec, RoomGeo } from '@/shaft/machine-room';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { hookOf } from '@/shaft/room-hook';
@@ -31,17 +31,18 @@ export function reactionRows(G: RoomGeo, M: MachineSpec, load: SupportLoad, heb:
 }
 
 /** The HEB beams the drawings take for the room of `G` (none without them): the beams of the reactions. */
-export const hebFor = (G: RoomGeo, M: MachineSpec, shaft: { W: number; D: number; wall: number }, govRopes: Parameters<typeof hebDrawn>[3] = []): HebLayout | null =>
+export const hebFor = (G: RoomGeo, M: MachineSpec, shaft: HebShaft, govRopes: Parameters<typeof hebDrawn>[3] = []): HebLayout | null =>
   hebDrawn(G, M, shaft, govRopes);
 
 /** P4 without the governor's load in the data of the installation: the line under the distribution of the loads. */
 export const P4_NOTE = 'P4 NON INDICATO: carico del limitatore sulla soletta (peso, tiro della fune con il tenditore, forza d’intervento) — dato del '
   + 'costruttore del limitatore, da inserire nei dati dell’impianto';
 
-/** The HEB beams over the shaft: their bearings and the fixing of the support to them (registry locale.putrelle.vano). */
+/** The HEB beams over the shaft: their bearings and the fixing of the support to them (registry locale.putrelle.vano): the
+ *  plates as long as the bearing, as wide and thick as the registry has them, as the plan and the 3D draw them. */
 export const hebNote = (tag: string): Note => ({
   title: 'PUTRELLE HEB SOPRA IL VANO', tag,
-  text: `Appoggi sui muri del vano su piastre ${KV_VERT.hebPlateW} × ${KV_VERT.hebPlateW} × ${KV_VERT.hebPlateT} mm e malta antiritiro di `
+  text: `Appoggi sui muri del vano su piastre ${KV_VERT.hebBearing} × ${KV_VERT.hebPlateW} × ${KV_VERT.hebPlateT} mm e malta antiritiro di `
     + `${KV_VERT.hebMortar} mm; fra gli appoggi le putrelle non toccano la soletta. Fissaggio del basamento alle ali (piastre e bulloni o `
     + 'morsetti) e dettaglio degli appoggi a cura del tecnico strutturale.',
 });

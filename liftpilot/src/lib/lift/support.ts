@@ -8,7 +8,7 @@ import { KV_VERT } from '@/shaft/norme-vert';
 import { roomChecksOf } from '@/shaft/machine-room';
 import { outlineGap, switchBox, type Box } from '@/shaft/room-floor';
 import type { PanelSpot } from '@/shaft/room-panel';
-import { governorFootprint, governorRopes as governorRopesIn } from '@/shaft/room-site';
+import { governorFootprint, governorRopes as governorRopesIn, shaftUnder } from '@/shaft/room-site';
 import { beamChecks, fitChecks, governorRoomChecks, machineParts, panelFloorChecks, panelPlace, rinvioChecks, type SupportLoad } from '@/shaft/support-check';
 
 /** Length of each traction rope [m]: the roping times the travel and twice the rope beyond it, with the diverting
@@ -59,8 +59,8 @@ export const governorRopes = (L: Layout, G: RoomGeo): Rope[] => governorRopesIn(
 /** The HEB beams on the shaft's walls under the machine of a whole design at `load` (heb.ts hebFor): the six weighed and
  *  the one taken; null without them or without a room over the shaft. */
 export function hebOf(L: Layout, M: MachineSpec, load: SupportLoad): { options: HebOption[]; chosen: HebOption } | null {
-  const G = roomGeo(L, M), I = L.inputs;
-  return G ? hebFor(G, M, { W: I.W, D: I.D, wall: I.wall }, load, governorRopes(L, G)) : null;
+  const G = roomGeo(L, M);
+  return G ? hebFor(G, M, shaftUnder(L), load, governorRopes(L, G)) : null;
 }
 
 /** What stands on the floor of the room over the shaft besides the machine: the governor as the plan draws it, the main

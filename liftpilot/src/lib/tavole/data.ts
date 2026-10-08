@@ -29,7 +29,7 @@ import { dateIt, placeLines, type TavoleInput } from './input';
 import { loads } from './loads';
 import { P4_NOTE, hebFor, hebNote, hookRow, reactionRows } from './room-rows';
 import { roomGeo } from '@/shaft/machine-room';
-import { governorRopes } from '@/shaft/room-site';
+import { governorRopes, shaftUnder } from '@/shaft/room-site';
 import { belowGeoOf, machineOf, machineText } from './views';
 import { clientNotes, estimateNote, railNote, safetyGearNote, spaceLegend } from './notes';
 import { NORMA_SIGLA, ambitoOf, collaudoOf } from '../lift/collaudo';
@@ -177,7 +177,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   // the machine room over the shaft: the hook's rated load and the reactions R1…Rn on the support's bearings (round 36)
   const Gr = !below ? roomGeo(L, M) : null, car0 = carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes: ropesKg, cables: cablesKg });
   const roomRows = Gr ? [hookRow(Gr, M, fmt), ...reactionRows(Gr, M, { machine, static: ld.static, dyn, car: car0 },
-    hebFor(Gr, M, { W: L.inputs.W, D: L.inputs.D, wall: L.inputs.wall }, governorRopes(L, Gr.room)), fmt)] : [];
+    hebFor(Gr, M, shaftUnder(L), governorRopes(L, Gr.room)), fmt)] : [];
   const each = [false, false, false, false, true, V.carBuffers > 1, true, false, false];
   const P = ld.P.map((p, i) => (p === null ? '—' : `${each[i] ? 'cad. ' : ''}${fmt(p, 0)}`));
   const gear = Pl.safetyGear ?? 'progressive', F = railForces(L, I.P, I.Q, gear);

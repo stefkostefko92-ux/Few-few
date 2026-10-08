@@ -5,7 +5,7 @@
 import { chain, circle, edit as E, rect, textWidth, type Box as DrawBox, type Edit, type Entity, type Pt } from '../drawing';
 import { calataEdit } from './drop';
 import { governorSpot, type GovernorSpot } from './governor';
-import type { Rope } from './heb';
+import type { HebShaft, Rope } from './heb';
 import { hitchDepths } from './machine-room';
 import { govYEdit } from './plan-governor';
 import type { RoomInputs } from './room';
@@ -53,6 +53,10 @@ export function layoutSite(L: Layout): RoomSite {
     railY: I.room ? railAxisY(L, I.room) : null,
   };
 }
+
+/** The shaft under the room of a whole design as the HEB beams take it (heb.ts HebShaft): its size, its walls, how deep
+ *  the hitches hang at the ends of the travel (the slab's openings, their upstands). */
+export const shaftUnder = (L: Layout): HebShaft => ({ W: L.inputs.W, D: L.inputs.D, wall: L.inputs.wall, ends: hitchDepths(L).ends });
 
 /** The car rails' axis across the shaft (y, room axes) when the governor's place is given from it; null: none. */
 export function railAxisY(L: Layout, R: Pick<RoomInputs, 'shaftY'>): number | null {

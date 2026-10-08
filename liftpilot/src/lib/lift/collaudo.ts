@@ -104,7 +104,7 @@ export const AMBITO_VERIFICHE: Readonly<Record<CheckId | ShaftCheckId, readonly 
   // the pulley room of a machine below is the building's; the free height over its pulleys follows a new machine's pulleys
   m_pheight: [], m_pdoor: [], m_pabove: ['machine'], m_gov: ['governor', 'machine', 'controller'], m_govfree: ['governor', 'machine', 'controller'],
   // the HEB beams on the shaft's walls under a new machine
-  m_heb: ['machine'], m_hebf: ['machine'], m_hebfeet: ['machine'], m_hebrope: ['machine'], m_hebwall: ['machine'],
+  m_heb: ['machine'], m_hebf: ['machine'], m_hebfeet: ['machine'], m_hebrope: ['machine'], m_hebkerb: ['machine'], m_hebwall: ['machine'],
   // over the new machine's unguarded rotating parts, the free area at its handwheel (UNI 10411-1/-11:2024, 9.2: EN 81-20
   // 5.2.6.3 round the machine replaced); an existing room's height under 2,0 m with a new machine (UNI 10411-1 only)
   m_above: ['machine'], m_wheel: ['machine'], m_hexist: ['machine'], m_holes: ['machine'],

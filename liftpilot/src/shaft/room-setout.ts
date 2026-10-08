@@ -8,34 +8,16 @@
 import { chain, edit as E, line, path, type Box, type Edit, type Entity, type Pt } from '../drawing';
 import { machineCorners, type MachineSpec, type RoomGeo } from './machine-room';
 import { KV_VERT } from './norme-vert';
-import { holesOf, onDrop } from './room-draw';
+import { kerbOf, onDrop, openingsOf, type SlabOpening } from './room-draw';
 import type { Hook } from './room-hook';
 import { AT, firstClear, letteringBox, tagBox, takenBy } from './room-label';
-import { ropeWidths } from './ropes';
 import type { RoomSite } from './room-site';
 
-/** A slab opening in plan: its corners (room axes), its middle, its sides along and across the drop line, whether a
- *  pulley dips into it. */
-export interface SlabOpening {
-  /** along the drop line from the car's drop */
-  u0: number;
-  u1: number;
-  pts: Pt[];
-  centre: Pt;
-  along: number;
-  across: number;
-  wheel: boolean;
-}
+export type { SlabOpening } from './room-draw';
 
-/** The slab's openings round the ropes (and a pulley dipping into the slab) of the machine `M` (machine-room.ts
- *  slabHoles), KV_VERT.holeGap clear. */
-export function slabOpenings(S: RoomSite, M: MachineSpec, G: RoomGeo): SlabOpening[] {
-  const w = ropeWidths(M.n, M.d);
-  return holesOf(S, M, G).map((h) => {
-    const a = (h.wheel ? Math.max(w.ropes, w.pulley) : w.ropes) + KV_VERT.holeGap;
-    return { u0: h.u0, u1: h.u1, pts: [onDrop(G, h.u0, -a), onDrop(G, h.u1, -a), onDrop(G, h.u1, a), onDrop(G, h.u0, a)], centre: onDrop(G, (h.u0 + h.u1) / 2, 0), along: h.u1 - h.u0, across: 2 * a, wheel: h.wheel };
-  });
-}
+/** The slab's openings round the ropes (and a pulley dipping into the slab) of the machine `M` (room-draw.ts
+ *  openingsOf). */
+export const slabOpenings = (S: RoomSite, M: MachineSpec, G: RoomGeo): SlabOpening[] => openingsOf(S, M, G);
 
 /** An opening's name on the plan: its sides along x and y of the room (L × P), or along and across the drop line askew. */
 export function openingName(o: SlabOpening, G: RoomGeo): string {
@@ -83,10 +65,10 @@ export function dropChains(S: RoomSite, G: RoomGeo, dimSide: 'top' | 'bottom' | 
 /** The slab openings' upstands in plan and their names with a leader, clear of what the plan has: `busy` the machine's
  *  parts and the places kept clear. */
 function openingMarks(S: RoomSite, M: MachineSpec, G: RoomGeo, busy: Box[], within: Box): Entity[] {
-  const out: Entity[] = [], k = KV_VERT.kerbW, g = G.dir;
+  const out: Entity[] = [], g = G.dir;
   for (const o of slabOpenings(S, M, G)) {
     // the upstand round it, as thick as KV_VERT.kerbW
-    out.push(path([onDrop(G, o.u0 - k, -o.across / 2 - k), onDrop(G, o.u1 + k, -o.across / 2 - k), onDrop(G, o.u1 + k, o.across / 2 + k), onDrop(G, o.u0 - k, o.across / 2 + k)], true, 'thin'));
+    out.push(path(kerbOf(G, o), true, 'thin'));
     const text = openingName(o, G), uc = (o.u0 + o.u1) / 2;
     // beside the machine on the side away from its gearbox, then the other, stepping out
     const vs = [-1, 1].flatMap((s) => [150, 300, 450, 600, 800].map((dv) => (s * -g > 0 ? G.across[1] + dv : G.across[0] - dv)));

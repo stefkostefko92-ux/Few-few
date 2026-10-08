@@ -104,7 +104,7 @@ export function designRoomBlocks(L: Layout, M: MachineSpec, load: SupportLoad, f
   const G = roomGeo(L, M);
   if (!G) return [];
   const S = layoutSite(L), R = G.room, ops = slabOpenings(S, M, G), onY = Math.abs(G.uy) > 0.999, r0 = (x: number): string => fmt(Math.round(x), 0);
-  const heb = hebDrawn(G, M, { W: L.inputs.W, D: L.inputs.D, wall: L.inputs.wall }, S.govRopes), rx = supportReactions(G, M, load, heb), hook = hookOf(G, M);
+  const heb = hebDrawn(G, M, S, S.govRopes), rx = supportReactions(G, M, load, heb), hook = hookOf(G, M);
   const out: ReportBlock[] = [{ t: 'h3', text: 'Locale macchina: aperture nella soletta, gancio, appoggi del basamento' }];
   if (ops.length) {
     out.push({ t: 'grid', head: ['Apertura nella soletta', 'L × P', 'Centro dal muro sinistro del vano', 'Centro dal muro dell’accesso A'], widths: [0.3, 0.2, 0.25, 0.25], align: ['l', 'r', 'r', 'r'],

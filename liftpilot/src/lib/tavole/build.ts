@@ -21,7 +21,7 @@ import { dateIt, placeLines, type TavoleInput } from './input';
 import { OVER_DOWN, OVER_UP, spaceLegend, type LegendItem } from './notes';
 import { makeFmt } from '../present/tr';
 import { belowGeoOf, belowView, machineOf, planView, roomView, sectionView } from './views';
-import { roomLegend } from './room-legend';
+import { roomLegend, titleSpares } from './room-legend';
 
 /** A sheet of the set after the data: a plan of the shaft, section A-A or a detail, the machine room. */
 export type Spec =
@@ -163,12 +163,12 @@ function belowSheet(L: Layout, M: MachineSpec, g: BottomGeo, kind: 'below-plan' 
   return { shapes: [...v.r.shapes, ...(kind === 'below-plan' ? belowMarks(g, v.place, v.r.extent) : [])], scale: v.place.scale, hits: v.r.hits };
 }
 
-function roomSheet(L: Layout, M: MachineSpec, kind: 'room-plan' | 'room-section', area: Box): Drawn {
+function roomSheet(L: Layout, M: MachineSpec, kind: 'room-plan' | 'room-section', area: Box, spare: readonly Box[]): Drawn {
   const v = roomView(L, M, kind === 'room-plan' ? 'plan' : 'section', inset(area, 8, 8, 8, 8));
   if (!v) throw new Error('no machine room');
   const shapes = [...v.r.shapes, ...(kind === 'room-plan' ? roomMarks(v.G, v.place, v.r.extent) : [])];
-  // (the plan's symbols named in a free band, round 36)
-  return { shapes: [...shapes, ...(kind === 'room-plan' ? roomLegend(shapes, area) : [])], scale: v.place.scale, hits: v.r.hits };
+  // (the plan's symbols named in a free band, else beside the title: round 36)
+  return { shapes: [...shapes, ...(kind === 'room-plan' ? roomLegend(shapes, area, spare) : [])], scale: v.place.scale, hits: v.r.hits };
 }
 
 export function buildTavole(x: TavoleInput): TavoleResult {
@@ -187,7 +187,7 @@ export function buildTavole(x: TavoleInput): TavoleResult {
   list.forEach((s, i) => {
     const sub = s.subtitle !== undefined, area = drawingArea(sub);
     const d = s.k === 'plan' ? planSheet(L, s, area) : s.k === 'section' ? sectionSheet(L, s, area)
-      : s.k === 'below-plan' || s.k === 'below-section' ? belowSheet(L, M, g ?? belowGeoOf(a, L, M, 'head'), s.k, area) : roomSheet(L, M, s.k, area);
+      : s.k === 'below-plan' || s.k === 'below-section' ? belowSheet(L, M, g ?? belowGeoOf(a, L, M, 'head'), s.k, area) : roomSheet(L, M, s.k, area, titleSpares(s.title, s.subtitle));
     out.push({ w: A4.w, h: A4.h, shapes: [...frame(), ...d.shapes, ...sheetTitle(s.title, s.subtitle), scaleLabel(d.scale, sub), ...strip(meta(i + 2))] });
     sheets.push({ title: s.title, scale: d.scale });
     hits.push(d.hits);

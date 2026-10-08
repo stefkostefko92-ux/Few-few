@@ -45,9 +45,9 @@ export const KV_LOCALE = {
   // software counts [mm]
   existingPadding: 50,
   // the slab's openings (registry locale.fori): this far clear of the ropes and of a pulley dipping into the slab, each
-  // with an upstand this thick round it [mm]
+  // with a steel upstand this thick round it (the 3D's: slab.ts) [mm]
   holeGap: 30,
-  kerbW: 100,
+  kerbW: 25,
   // the new support's bearings this far at least from the edge of an existing opening of the slab (m_holes) [mm]
   holeBearing: 100,
   // the lifting hook over the machine (registry locale.gancio): its rated load the heaviest piece rounded up to this step
@@ -169,14 +169,15 @@ export const VOCI_LOCALE: readonly VoceVano[] = [
     id: 'locale.fori', gruppo: 'locale', titolo: 'Fori nella soletta: misura, posizione e bordi',
     valore: 'ogni foro della soletta sopra il vano (funi di trazione, puleggia di rinvio che vi scende, attacchi delle funi in taglia 2:1) ha '
       + 'i lati a 30 mm dalle funi nelle due posizioni estreme della cabina e dalla puleggia; fori più vicini di 80 mm diventano uno; '
-      + 'ogni foro ha un bordo alto 50 mm sul pavimento finito e spesso 100 mm tutto attorno; la pianta del locale dà di ogni foro la misura '
+      + 'ogni foro ha un bordo in lamiera d’acciaio alto 50 mm sul pavimento finito e spesso 25 mm tutto attorno (lo stesso nel 3D), e le '
+      + 'putrelle HEB sui muri del vano, che stanno 30 mm sopra la soletta, ne restano fuori in pianta (m_hebkerb, locale.putrelle.vano); la pianta del locale dà di ogni foro la misura '
       + '(«FORO L × P»: L lungo x, P lungo y del locale; con la linea delle calate obliqua lungo e di traverso le calate) e la posizione del centro '
       + 'dai muri interni del vano (x dal muro di sinistra, y dal muro dell’accesso A, come nel rilievo); la sezione B-B disegna e quota i bordi; '
       + 'nella sostituzione le aperture esistenti rilevate sono disegnate tratteggiate e gli appoggi del nuovo basamento ne stanno ad almeno 100 mm '
       + 'dal bordo (m_holes, avviso: un’apertura si può chiudere)',
     riferimento: 'UNI EN 81-20:2020, 5.2.6.3.3 (aperture ridotte al minimo, bordi di almeno 50 mm); il gioco e lo spessore del bordo sono scelte '
       + 'del software',
-    fonte: `${letto(T20, 'p. 43')}; gioco di 30 mm come il 3D che taglia la soletta; bordo in calcestruzzo o lamiera, da adattare in sito`,
+    fonte: `${letto(T20, 'p. 43')}; gioco di 30 mm e bordo in lamiera di 25 mm come il 3D che taglia la soletta; un bordo in calcestruzzo, più spesso, si adatta in sito`,
     stato: 'scelta', verifiche: ['m_holes'],
   },
   {

@@ -3,6 +3,8 @@
 // lib/tavole/below-view.ts). Pure.
 import { path, type Entity, type Pt } from '../drawing';
 import { slabHoles, type MachineSpec, type RoomGeo } from './machine-room';
+import { KV_VERT } from './norme-vert';
+import { ropeWidths } from './ropes';
 import type { RoomSite } from './room-site';
 
 export const WALL = 250;
@@ -12,7 +14,36 @@ export const onDrop = (G: RoomGeo, u: number, v: number): Pt => [G.carDrop[0] + 
 export const quad = (G: RoomGeo, u0: number, v0: number, u1: number, v1: number): Pt[] => [onDrop(G, u0, v0), onDrop(G, u1, v0), onDrop(G, u1, v1), onDrop(G, u0, v1)];
 
 /** The slab's openings with the car at either end of its travel. */
-export const holesOf = (S: RoomSite, M: MachineSpec, G: RoomGeo): ReturnType<typeof slabHoles> => slabHoles(M, G, G.room.slab, S.ends);
+export const holesOf = (S: Pick<RoomSite, 'ends'>, M: MachineSpec, G: RoomGeo): ReturnType<typeof slabHoles> => slabHoles(M, G, G.room.slab, S.ends);
+
+/** A slab opening in plan: its corners (room axes), its middle, its sides along and across the drop line, whether a
+ *  pulley dips into it. */
+export interface SlabOpening {
+  /** along the drop line from the car's drop */
+  u0: number;
+  u1: number;
+  pts: Pt[];
+  centre: Pt;
+  along: number;
+  across: number;
+  wheel: boolean;
+}
+
+/** The slab's openings round the ropes (and a pulley dipping into the slab) of the machine `M` (machine-room.ts
+ *  slabHoles), KV_VERT.holeGap clear, with the hitches as deep as `S.ends` (RoomSite.ends). */
+export function openingsOf(S: Pick<RoomSite, 'ends'>, M: MachineSpec, G: RoomGeo): SlabOpening[] {
+  const w = ropeWidths(M.n, M.d);
+  return holesOf(S, M, G).map((h) => {
+    const a = (h.wheel ? Math.max(w.ropes, w.pulley) : w.ropes) + KV_VERT.holeGap;
+    return { u0: h.u0, u1: h.u1, pts: [onDrop(G, h.u0, -a), onDrop(G, h.u1, -a), onDrop(G, h.u1, a), onDrop(G, h.u0, a)], centre: onDrop(G, (h.u0 + h.u1) / 2, 0), along: h.u1 - h.u0, across: 2 * a, wheel: h.wheel };
+  });
+}
+
+/** The outer outline of the upstand round an opening, KV_VERT.kerbW thick (room axes; registry locale.fori). */
+export const kerbOf = (G: RoomGeo, o: SlabOpening): Pt[] => {
+  const k = KV_VERT.kerbW, a = o.across / 2 + k;
+  return [onDrop(G, o.u0 - k, -a), onDrop(G, o.u1 + k, -a), onDrop(G, o.u1 + k, a), onDrop(G, o.u0 - k, a)];
+};
 
 /** How a room's drawing is laid out for the sheet it goes on (views.ts tries them in turn to keep 1:25): the door drawn
  *  shut in its frame (its swing would cost the plan its scale); section B-B with the door's and the panel's heights in

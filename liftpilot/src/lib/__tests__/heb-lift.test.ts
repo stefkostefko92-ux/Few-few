@@ -18,7 +18,9 @@ import { hebRows } from '@/lib/tavole/heb-rows';
 import { deriveRoom } from '@/lib/room/derive';
 import { applySurveyEdit } from '@/lib/room/edit';
 import { startSurvey } from '@/lib/room/survey';
-import { HEB_PROFILES, PROFILES, roomGeo, roomPlanEntities, roomSectionEntities, type ShaftBeams } from '@/shaft';
+import { HEB_PROFILES, PROFILES, hebDrawn, roomGeo, roomPlanEntities, roomSectionEntities, type ShaftBeams } from '@/shaft';
+import { outlineFromBeam, upstands } from '@/shaft/heb-clear';
+import { layoutSite } from '@/shaft/room-site';
 import { bedplateLegs, rinvioRun } from '@/shaft/rinvio';
 import { roomPlanOn, roomSectionOn } from '@/shaft/room-view';
 
@@ -57,7 +59,8 @@ test('progetto: le putrelle più corte che passano, l’argano alzato della loro
   assert.ok(Math.abs(d.machine.axis - plain.machine.axis - PROFILES[chosen.profile].h - HEB_PAD) < 1e-6);
   assert.ok(Number(d.values.L0) > Number(plain.values.L0), 'la fune oltre la corsa segue l’asse');
   // its checks with the others of the support, as the chosen one does
-  assert.deepEqual(d.supportChecks.filter((c) => c.id.startsWith('m_heb')).map((c) => c.status), ['ok', 'ok', 'ok', 'ok', 'ok']);
+  assert.deepEqual(d.supportChecks.filter((c) => c.id.startsWith('m_heb')).map((c) => [c.id, c.status]),
+    [['m_heb', 'ok'], ['m_hebf', 'ok'], ['m_hebfeet', 'ok'], ['m_hebrope', 'ok'], ['m_hebkerb', 'ok'], ['m_hebwall', 'ok']]);
   // derived again from what it goes on with: the same
   const again = deriveLift({ ...base, shaft: d.shaft });
   assert.deepEqual(again.shaft.room?.heb, d.shaft.room?.heb);
@@ -174,4 +177,24 @@ test('progetto: il telaio con il rinvio scavalca le putrelle — le gambe dove i
   // turned round, the ropes in other places: the beams keep clear of them and pass
   const t = deriveLift(withHeb({ ...newLift(), shaft: { ...newLift().shaft, room: { ...(newLift().shaft.room ?? {}), motor: 'car' } } } as LiftInputs, {}));
   assert.ok(t.heb?.chosen.ok, 'girato');
+});
+
+test('progetto: le putrelle HEB fuori dai bordi dei fori in pianta, anche con le calate oblique o di lato (m_hebkerb)', () => {
+  // round 36 review: the beams stand HEB_PAD over the slab, under the top of an upstand; drawn over one they would cut it
+  const left = (inp: LiftInputs): LiftInputs => ({ ...inp, shaft: { ...inp.shaft, cw: 'left' } });
+  const diag = (inp: LiftInputs): LiftInputs => ({ ...left(inp), shaft: { ...left(inp).shaft, plan: { ...(inp.shaft.plan ?? {}), cwPos: 300 } } });
+  for (const [name, inp] of [['esempio', newLift()], ['contrappeso a sinistra', left(newLift())], ['calate oblique', diag(newLift())], ['telaio basso', onFrame()]] as const) {
+    const d = deriveLift(withHeb(inp, {}));
+    assert.ok(d.heb, name);
+    const G = roomGeo(d.layout, d.machine);
+    assert.ok(G, name);
+    const S = layoutSite(d.layout), lay = hebDrawn(G, d.machine, S, S.govRopes), kerbs = upstands(G, d.machine, S);
+    assert.ok(lay && kerbs.length > 0, name);
+    const least = Math.min(...kerbs.flatMap((k) => lay.at.map((ax) => outlineFromBeam(k, lay, ax))));
+    const check = d.supportChecks.find((c) => c.id === 'm_hebkerb');
+    assert.ok(check, `${name}: verifica`);
+    // the drawn beams are the derivation's: off every upstand when it passes, and the check tells otherwise
+    assert.equal(check.status === 'ok', least >= -1e-6, `${name}: ${least}`);
+    if (d.heb.chosen.ok) assert.ok(least >= -1e-6, `${name}: putrella sul bordo (${least})`);
+  }
 });

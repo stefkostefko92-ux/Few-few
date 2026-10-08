@@ -179,7 +179,7 @@ export type ShaftCheckId =
   | 'b_runby' | 'b_type' | 'b_car' | 'b_cw' | 'm_height' | 'm_panel' | 'm_door'
   | 'm_beam' | 'm_beamf' | 'm_beamwall' | 'm_rinvio' | 'm_bedplate' | 'm_base' | 'm_fit' | 'm_runs' | 'm_stand' | 'm_free' | 'm_calata' | 'm_quadro' | 'm_route' | 'm_gov' | 'm_govfree'
   | 'm_pheight' | 'm_pdoor' | 'm_pabove'
-  | 'm_heb' | 'm_hebf' | 'm_hebfeet' | 'm_hebrope' | 'm_hebwall'
+  | 'm_heb' | 'm_hebf' | 'm_hebfeet' | 'm_hebrope' | 'm_hebkerb' | 'm_hebwall'
   | 'm_above' | 'm_wheel' | 'm_hexist' | 'm_holes'
   | 'gr_stress' | 'gr_flange' | 'gr_defl' | 'sg_type';
 

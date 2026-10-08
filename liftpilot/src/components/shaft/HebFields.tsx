@@ -18,7 +18,7 @@ interface Props {
   deflector: boolean;
 }
 
-const WHY = { m_heb: 'sigma', m_hebf: 'f', m_hebfeet: 'feet', m_hebrope: 'rope', m_hebwall: 'wall' } as const;
+const WHY = { m_heb: 'sigma', m_hebf: 'f', m_hebfeet: 'feet', m_hebrope: 'rope', m_hebkerb: 'kerb', m_hebwall: 'wall' } as const;
 const isWhy = (id: string): id is keyof typeof WHY => Object.hasOwn(WHY, id);
 const keyOf = (o: Pick<HebOption, 'dir' | 'profile'>): string => `${o.dir}:${o.profile}`;
 

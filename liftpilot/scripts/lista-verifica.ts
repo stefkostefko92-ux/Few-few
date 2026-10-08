@@ -53,7 +53,7 @@ const VERIFICA_VANO: Record<ShaftCheckId, string> = {
   m_free: 'superficie libera accanto all’argano', m_quadro: 'quadro di manovra fuori dall’ingombro di argano, limitatore e interruttore generale',
   m_route: 'percorsi dalla porta alle superfici libere', m_gov: 'limitatore fuori dall’ingombro di argano, quadro e interruttore generale', m_govfree: 'superficie libera accanto al limitatore',
   m_heb: 'tensione nelle putrelle HEB sui muri del vano', m_hebf: 'freccia delle putrelle HEB sui muri del vano', m_hebfeet: 'basamento dell’argano sulle putrelle HEB',
-  m_hebrope: 'funi lontane dalle putrelle HEB', m_hebwall: 'appoggio delle putrelle HEB nei muri del vano',
+  m_hebrope: 'funi lontane dalle putrelle HEB', m_hebkerb: 'putrelle HEB fuori dai bordi dei fori nella soletta', m_hebwall: 'appoggio delle putrelle HEB nei muri del vano',
   m_calata: 'sostituzione: calate della nuova macchina sulle calate esistenti',
   m_above: 'spazio libero sopra le parti rotanti non protette dell’argano', m_wheel: 'superficie libera accanto all’argano presso il volantino',
   m_hexist: 'modifica (UNI 10411-1): altezza del locale esistente sotto 2,0 m',

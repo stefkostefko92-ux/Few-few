@@ -107,11 +107,11 @@ function deriveOnce(V: FormValues, s: Survey, a: Analysis): RoomDerived {
   const load = supportLoad(a.ctx, a.res.Mcw, { machine: a.ctx.N.mass + bedplateMass(M) });
   // what stands on the floor besides the machine: the main switch by the door, the existing governor when surveyed
   const off = Math.abs(measured - calata), others = [switchBox(R), ...(gov ? [gov] : [])];
-  const beams = G ? hebFor(G, M, s.shaft, load) : null, chosenBy = R.heb;
+  const beams = G ? hebFor(G, M, site, load) : null, chosenBy = R.heb;
   const checks: ShaftCheck[] = G ? [
     ...roomChecksOf(R, [...machineParts(G, M), ...others]), ...beamChecks(G, M, load), ...rinvioChecks(G, M), ...hebChecks(beams?.chosen.result ?? null), ...fitChecks(G, M, others),
     ...panelFloorChecks(G, M, others), check('m_calata', off <= KV_VERT.dropTol, Math.round(off), KV_VERT.dropTol, 0, 'mm'),
-    ...governorRoomChecks(gov, G, M), ...holesCheck(G, M, surveyOpenings(s), beams ? hebDrawn(G, M, s.shaft) : null),
+    ...governorRoomChecks(gov, G, M), ...holesCheck(G, M, surveyOpenings(s), beams ? hebDrawn(G, M, site) : null),
   ] : roomChecksOf(R);
   // the existing room's height under 2,0 m (UNI 10411-1:2024, 9.2; registry locale.esistente.altezza)
   if (G && I.context === 'repl') checks.push(existingRoomCheck(R));

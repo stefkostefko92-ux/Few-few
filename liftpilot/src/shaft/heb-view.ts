@@ -59,7 +59,7 @@ const bearing = (u0: number, u1: number): Entity[] => [rect(u0, 0, u1, KV_VERT.h
 
 /** The lettering of the bearings: plate, mortar and the gap left under the beam. */
 const FIX_TEXT = 'Basamento fissato alle ali delle putrelle con piastre e bulloni (o morsetti): dettaglio da confermare';
-const PAD_TEXT = `HEB su piastre ${KV_VERT.hebPlateW}×${KV_VERT.hebPlateT} e malta antiritiro ${KV_VERT.hebMortar} sopra i muri del vano · distacco ${HEB_PAD} dalla soletta fra gli appoggi`;
+const PAD_TEXT = `HEB su piastre ${KV_VERT.hebBearing}×${KV_VERT.hebPlateW}×${KV_VERT.hebPlateT} e malta antiritiro ${KV_VERT.hebMortar} sopra i muri del vano · distacco ${HEB_PAD} dalla soletta fra gli appoggi`;
 
 /** Section B-B along the drop line (u) over the room's floor: the beams seen along them (the section runs with them) or
  *  cut where the drop line crosses them, on their bearing plates over the walls and HEB_PAD clear of the slab between

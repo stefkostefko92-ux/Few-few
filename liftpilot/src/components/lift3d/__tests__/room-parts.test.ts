@@ -11,6 +11,9 @@ import { deriveLift, newLift, planeAt, ropeRig, type LiftInputs, type RopePlane 
 import { belowMachine } from '@/lib/lift/bottom';
 import { hebDrawn, roomGeo, section } from '@/shaft';
 import { groovePitch, ropeWidths } from '@/shaft/ropes';
+import { shaftUnder } from '@/shaft/room-site';
+import { hookOf } from '@/shaft/room-hook';
+import { KV_VERT } from '@/shaft/norme-vert';
 import { createLiftMaterials } from '../materials';
 import { slabOpenings } from '../slab';
 import { governorSpot } from '../governor';
@@ -35,9 +38,9 @@ const BEAMS = { kind: 'beams', profile: 'IPE 240' } as const;
 function scene(inp: LiftInputs) {
   const dv = deriveLift(inp), L = dv.layout, S = section(L), I = L.inputs, N = dv.analysis.ctx.N, M = createLiftMaterials(), rig = ropeRig(dv), gov = governorSpot(L), sim = dv.sim;
   const travel = [sim.levels[0], sim.levels.at(-1) ?? 0].map((s) => [s, sim.cw0 - s] as const), slab = (I.room?.slab ?? 250) / 1000;
-  const G = rig.bottom ? null : roomGeo(L, dv.machine), heb = G ? hebDrawn(G, dv.machine, { W: I.W, D: I.D, wall: I.wall }) : null;
+  const G = rig.bottom ? null : roomGeo(L, dv.machine), heb = G ? hebDrawn(G, dv.machine, shaftUnder(L)) : null;
   const r = buildRoom(L, rig, N.n, N.d, N.D, S.ceiling, M, slabOpenings(rig, N.n, N.d, S.ceiling / 1000, S.ceiling / 1000 + slab, travel, gov), gov,
-    dv.machine.shape ?? null, dv.machine.rinvio ?? null, heb, G?.dir ?? 1);
+    dv.machine.shape ?? null, dv.machine.rinvio ?? null, heb, G?.dir ?? 1, null, G ? hookOf(G, dv.machine) : null);
   const two = dv.analysis.ctx.I.r === 2, pcs = rig.pieces(0, 0), width = N.n * groovePitch(N.d) + 30;
   const hitch = (pl: RopePlane, u: number): Hitch => {
     const [x, y] = planeAt(pl, u);
@@ -56,7 +59,7 @@ function scene(inp: LiftInputs) {
   all.add(r.common, r.roof, r.overhead, car.group, cw, ...Object.values(r.sides));
   all.updateMatrixWorld(true);
   const body = rig.bottom && rig.scheme ? belowMachine(L, rig.scheme, N.D, N.n, N.d, dv.machine.shape ?? null).body : null;
-  return { dv, M, r, rig, car, cw, n: N.n, d: N.d, z0: rig.roomFloor * 1000, shells: shellsOf(L, rig, body) };
+  return { dv, M, r, rig, car, cw, n: N.n, d: N.d, z0: rig.roomFloor * 1000, shells: shellsOf(L, rig, body), G };
 }
 
 type V3 = readonly [number, number, number];
@@ -202,3 +205,20 @@ for (const [name, make] of DOORS) {
     });
   });
 }
+
+test('il gancio di sollevamento nel 3D dove lo mettono la pianta, la sezione B-B e il foglio 1 (sopra il baricentro, occhio 150 mm sotto il soffitto)', () => {
+  // round 36 review: the 3D hung it over the sheave's centre, ~135 mm under the ceiling
+  for (const [name, inp] of [['esempio', newLift()], ['contrappeso a sinistra', cwLeft(newLift())], ['tiro diretto, telaio', room(direct(newLift()), { support: { kind: 'frame' } })]] as const) {
+    const { M, r, z0, G, dv } = scene(inp);
+    assert.ok(G, name);
+    const hook = hookOf(G, dv.machine), R = G.room, at = [hook.at[0] - R.shaftX, hook.at[1] - R.shaftY] as const, steel: V3[] = [];
+    r.overhead.traverse((o) => {
+      if (o instanceof THREE.Mesh && o.material === M.steel) steel.push(...verts(o).filter((q) => Math.hypot(q[0] - at[0], q[1] - at[1]) < 70));
+    });
+    assert.ok(steel.length > 0, `${name}: gancio sopra il baricentro`);
+    // the eye's ring (45 mm, a 12 mm bar) round the eye's height
+    const low = Math.min(...steel.map((q) => q[2]));
+    assert.ok(Math.abs(low - (z0 + hook.eye - 45 - 12)) < 1, `${name}: occhio a ${low - z0}`);
+    assert.equal(hook.eye, R.H - KV_VERT.hookDrop);
+  }
+});
