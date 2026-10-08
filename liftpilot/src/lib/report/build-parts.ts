@@ -1,6 +1,7 @@
 // Parts of the relazione di calcolo (build.ts), kept apart for its size: the machine's proposal, the registry entries
 // used with their status, the note on the machine's mass the loads take, the rope geometry entered against the shaft
-// design's. Italian texts. Pure.
+// design's, the rope schemes of a machine below, the space under the shaft of one under the pit, the tables' cells.
+// Italian texts. Pure.
 import { VOCI, type Stato, type Voce } from '@/calc/norme';
 import type { Machine, Sizing } from '@/calc/types';
 import type { VoceVano } from '@/shaft';
@@ -12,7 +13,10 @@ import type { Texts } from '../present/texts';
 import type { MachineSpec } from '@/shaft/machine-room';
 import { LIMITI_MODELLO } from './cases';
 import { shapeRows } from './machine-shape';
-import type { ReportBlock } from './model';
+import type { BlockStatus, ReportBlock } from './model';
+import type { BottomScheme } from '../lift/bottom';
+import type { Cell } from '../present/tables';
+import { KV_VERT } from '@/shaft';
 
 type Fmt = (x: number, dec?: number) => string;
 
@@ -69,3 +73,27 @@ export function massNote(w: MachineMass, catalogue: number, fmt: Fmt): ReportBlo
 /** The rope beyond the travel or a machine below's Hv entered by hand, with the shaft design's value beside it. */
 export const drawnText = (entered: number, drawn: number | null | undefined, fmt: Fmt): string =>
   (drawn == null ? '' : Math.abs(entered - drawn) < 0.005 ? ' (inserita, uguale al progetto del vano)' : ` (inserita a mano; dal progetto del vano ${fmt(drawn, 2)} m ⚠)`);
+
+/** The rope schemes of a machine below, in the relazione's words (src/lib/lift/bottom.ts). */
+export const BOTTOM_IT: Readonly<Record<BottomScheme, string>> = {
+  head: 'in basso, rinvii in testata, macchina accanto al vano',
+  room: 'in basso, locale pulegge sopra il vano, macchina accanto al vano',
+  under: 'macchina sotto il vano, rinvii in testata',
+};
+
+export const cellText = (c: Cell | undefined): string => (c === undefined ? '' : typeof c === 'string' ? c : `${c.text}${c.flag ? ' ⚠' : ''}${c.sub ? `\n${c.sub}` : ''}`);
+export const rowStatus = (row: readonly Cell[]): BlockStatus => { const s = row.find((c) => typeof c === 'object' && c.status); return typeof s === 'object' && s.status ? s.status : ''; };
+
+/** A machine under the pit: the space under the shaft as sheet 1 has it (its note, its row and the check sg_cw;
+ *  registry paracadute.contrappeso) — the pit floor for its load besides P5–P8, the counterweight's safety gear given in
+ *  the data of the installation, in a modification (UNI 10411-1/-11) an existing pillar in its place as the designer
+ *  chooses. */
+export function underPitText(modification: boolean): string {
+  const K = KV_VERT, v = K.cwGearInstantV;
+  return `Spazio accessibile sotto il vano (UNI EN 81-20:2020, 5.2.5.4): fondo della fossa progettato per almeno ${K.pitFloorAccessible} N/m² oltre ai `
+    + 'carichi P5–P8 del foglio 1 delle tavole (sotto ogni guida del contrappeso anche la presa del paracadute); paracadute del contrappeso, '
+    + `progressivo oltre ${v} m/s e fino a ${v} m/s anche istantaneo, azionato dal limitatore o, fino a ${v} m/s, dalla rottura della sospensione o `
+    + 'da una fune di sicurezza: tipo e azionamento si indicano nei dati dell’impianto e la verifica del foglio 1 non passa finché mancano'
+    + (modification ? '; in una modifica può stare al suo posto un pilastro esistente fino al terreno sotto gli ammortizzatori del contrappeso, '
+      + 'verificato per i nuovi carichi (UNI 10411-1:2024, 6.14): è una scelta del progettista' : '');
+}

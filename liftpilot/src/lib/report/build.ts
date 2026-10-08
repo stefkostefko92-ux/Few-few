@@ -7,10 +7,10 @@ import appIt from '../../../messages/it.json';
 import { PROFILO, VOCI, type Stato } from '@/calc/norme';
 import type { Plant } from '../plant';
 import { COND, PALETTE, concreteTile, type SheetImage } from '@/drawing';
-import { KV_VERT, mergeChecks, vociOfDesign } from '@/shaft';
+import { mergeChecks, vociOfDesign } from '@/shaft';
 import type { CheckId, CheckStatus, FormValues } from '@/calc/types';
 import { belowChecks } from '../lift/below-checks';
-import { bottomGeo, sheaveHalfBelow, type BottomScheme } from '../lift/bottom';
+import { bottomGeo, sheaveHalfBelow } from '../lift/bottom';
 import { headTopChecks } from '../lift/head';
 import { withRig } from '../lift/shaft-rig';
 import { cwGapOver } from '@/shaft/cw-gap';
@@ -19,14 +19,14 @@ import { ambitoOf, collaudoOf } from '../lift/collaudo';
 import { carichiOf } from '../lift/modifica';
 import { analyse } from '../present/analysis';
 import { quickRows } from '../present/quick';
-import { techTables, type Cell } from '../present/tables';
+import { techTables } from '../present/tables';
 import { textsFor, verdictStatus } from '../present/texts';
 import { makePres } from '../present/tr';
-import type { BlockStatus, ReportBlock, ReportDoc } from './model';
+import type { ReportBlock, ReportDoc } from './model';
 import { shaftBlocks, type ReportDesign } from './shaft';
 import { casesBlocks, limitiBlocks } from './cases';
 import { checkRefs } from './refs';
-import { STATO, drawnText, massNote, proposalBlocks, vociBlocks } from './build-parts';
+import { BOTTOM_IT, STATO, cellText, drawnText, massNote, proposalBlocks, rowStatus, underPitText, vociBlocks } from './build-parts';
 import { guideSection } from './guide';
 import { cwGearOf } from '../tavole/cw-gear';
 import { elaboratiBlocks, type IssuedSet } from './elaborati';
@@ -43,13 +43,6 @@ import type { MachineAdvice } from '../lift/advice';
 import { catalogMachineOf, massModelOf, modelOf } from '../lift/known';
 import { existingRoomCheck } from '@/shaft/room-above';
 import { designRoomBlocks } from './tecnica-site';
-
-/** The rope schemes of a machine below, in the relazione's words (src/lib/lift/bottom.ts). */
-const BOTTOM_IT: Readonly<Record<BottomScheme, string>> = {
-  head: 'in basso, rinvii in testata, macchina accanto al vano',
-  room: 'in basso, locale pulegge sopra il vano, macchina accanto al vano',
-  under: 'macchina sotto il vano, rinvii in testata',
-};
 
 export interface ReportInput {
   calc: { id: string; label: string | null; createdAt: Date; sha256: string; engineVersion: string; profileId: string; author: string | null };
@@ -71,24 +64,6 @@ export interface ReportInput {
   /** the drawing sets issued on this calculation */
   drawings?: readonly IssuedSet[];
   generatedAt: Date;
-}
-
-
-const cellText = (c: Cell | undefined): string => (c === undefined ? '' : typeof c === 'string' ? c : `${c.text}${c.flag ? ' ⚠' : ''}${c.sub ? `\n${c.sub}` : ''}`);
-const rowStatus = (row: readonly Cell[]): BlockStatus => { const s = row.find((c) => typeof c === 'object' && c.status); return typeof s === 'object' && s.status ? s.status : ''; };
-
-/** A machine under the pit: the space under the shaft as sheet 1 has it (its note, its row and the check sg_cw;
- *  registry paracadute.contrappeso) — the pit floor for its load besides P5–P8, the counterweight's safety gear given in
- *  the data of the installation, in a modification (UNI 10411-1/-11) an existing pillar in its place as the designer
- *  chooses. */
-function underPitText(modification: boolean): string {
-  const K = KV_VERT, v = K.cwGearInstantV;
-  return `Spazio accessibile sotto il vano (UNI EN 81-20:2020, 5.2.5.4): fondo della fossa progettato per almeno ${K.pitFloorAccessible} N/m² oltre ai `
-    + 'carichi P5–P8 del foglio 1 delle tavole (sotto ogni guida del contrappeso anche la presa del paracadute); paracadute del contrappeso, '
-    + `progressivo oltre ${v} m/s e fino a ${v} m/s anche istantaneo, azionato dal limitatore o, fino a ${v} m/s, dalla rottura della sospensione o `
-    + 'da una fune di sicurezza: tipo e azionamento si indicano nei dati dell’impianto e la verifica del foglio 1 non passa finché mancano'
-    + (modification ? '; in una modifica può stare al suo posto un pilastro esistente fino al terreno sotto gli ammortizzatori del contrappeso, '
-      + 'verificato per i nuovi carichi (UNI 10411-1:2024, 6.14): è una scelta del progettista' : '');
 }
 
 export function buildReport(r: ReportInput): ReportDoc {

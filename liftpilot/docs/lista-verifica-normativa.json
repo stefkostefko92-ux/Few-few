@@ -240,6 +240,18 @@
     },
     {
       "n": 18,
+      "id": "gole.pressione",
+      "gruppo": "Gole",
+      "voce": "Pressione specifica nelle gole",
+      "valore": "p = T/(n·d·D) · 8·cos(β/2)/(π − β − sin β) nella gola semicircolare (β = 0 senza sottosquadro), p = T/(n·d·D) · 4,5/sin(γ/2) nella gola a V, nella gola a V con sottosquadro il maggiore dei due; T tiro statico delle funi lato cabina alla puleggia di frizione, con la cabina al piano più basso con la portata; p ≤ (12,5 + 4·v_c)/(1 + v_c), v_c velocità delle funi alla velocità nominale: entro il limite informazione, oltre «Attenzione»",
+      "riferimento": "UNI 10411-1:2024, appendice D.2 e 14.1 c)–d)",
+      "fonte": "UNI 10411-1:2024, testo della norma, letto il 2026-10-06, pp. 13 e 34",
+      "stato": "confermato",
+      "verifiche": "pressione specifica nelle gole (informazione)",
+      "nota": "obbligatoria solo quando i coefficienti di sicurezza minimi 12 e 16 sostituiscono il calcolo della UNI EN 81-50:2020, 5.12 (UNI 10411-1:2024, 14.1 c)–d)): il software calcola S_f secondo la 5.12 e riporta la pressione come informazione, come fa il progettista per l’organismo di verifica; la gola a V con sottosquadro non ha una formula nella D.2 (il maggiore dei due è una scelta del software)"
+    },
+    {
+      "n": 19,
       "id": "funi.Dd",
       "gruppo": "Funi",
       "voce": "Rapporto D/d della puleggia di frizione",
@@ -251,7 +263,7 @@
       "nota": ""
     },
     {
-      "n": 19,
+      "n": 20,
       "id": "funi.Dpd",
       "gruppo": "Funi",
       "voce": "Rapporto D/d delle pulegge di rinvio",
@@ -263,7 +275,7 @@
       "nota": "Il limite vale per ogni puleggia (5.5.2.1), mentre Dp è uno solo e nel calcolo di N_equiv(p) è la media delle pulegge di rinvio (UNI EN 81-50:2020, 5.12.2.3): con pulegge di diametro diverso si controlla la più piccola."
     },
     {
-      "n": 20,
+      "n": 21,
       "id": "funi.numero",
       "gruppo": "Funi",
       "voce": "Numero minimo di funi",
@@ -275,7 +287,7 @@
       "nota": "Con 2 sole funi serve anche il dispositivo contro l’allungamento anomalo (voce funi.due): il software lo ricorda, non lo verifica."
     },
     {
-      "n": 21,
+      "n": 22,
       "id": "funi.due",
       "gruppo": "Funi",
       "voce": "Cabina appesa a due funi",
@@ -287,7 +299,7 @@
       "nota": ""
     },
     {
-      "n": 22,
+      "n": 23,
       "id": "funi.trattenuta",
       "gruppo": "Funi",
       "voce": "Funi trattenute nelle gole",
@@ -299,7 +311,7 @@
       "nota": ""
     },
     {
-      "n": 23,
+      "n": 24,
       "id": "funi.diametro",
       "gruppo": "Funi",
       "voce": "Diametro nominale minimo",
@@ -311,7 +323,7 @@
       "nota": ""
     },
     {
-      "n": 24,
+      "n": 25,
       "id": "funi.Sf.minimo",
       "gruppo": "Funi",
       "voce": "Coefficiente di sicurezza minimo",
@@ -323,7 +335,7 @@
       "nota": "Con la trazione vale anche il valore calcolato secondo la UNI EN 81-50:2020, 5.12 (il maggiore dei due). Con la UNI 10411-1:2024 (14.1) 12 e 16 possono sostituire quel calcolo solo con la verifica della pressione nelle gole (appendice D.2)."
     },
     {
-      "n": 25,
+      "n": 26,
       "id": "funi.Sf.formula",
       "gruppo": "Funi",
       "voce": "Coefficiente di sicurezza richiesto S_f",
@@ -335,7 +347,7 @@
       "nota": ""
     },
     {
-      "n": 26,
+      "n": 27,
       "id": "funi.Nequiv.pulegge",
       "gruppo": "Funi",
       "voce": "N_equiv delle pulegge",
@@ -347,7 +359,7 @@
       "nota": "D: diametro della puleggia di frizione; Dp: media delle altre pulegge. La flessione è inversa solo tra due pulegge consecutive ad assi fissi, con i punti di contatto a meno di 200·d e i piani di flessione ruotati di oltre 120°: la classifica il progettista."
     },
     {
-      "n": 27,
+      "n": 28,
       "id": "funi.Nequiv.gola",
       "gruppo": "Funi",
       "voce": "N_equiv(t) della gola",
@@ -359,7 +371,7 @@
       "nota": ""
     },
     {
-      "n": 28,
+      "n": 29,
       "id": "funi.Nequiv.gola.VN",
       "gruppo": "Funi",
       "voce": "N_equiv(t) della gola a V con sottosquadro",
@@ -371,7 +383,7 @@
       "nota": "Scelta dal lato della sicurezza; la UNI EN 81-1:2008 (prospetto N.1) intitola la riga con sottosquadro «U/V»: con una macchina secondo quella norma l’ingegnere può prendere il valore di β."
     },
     {
-      "n": 29,
+      "n": 30,
       "id": "funi.Nequiv.gola.interpolazione",
       "gruppo": "Funi",
       "voce": "Angoli tra i punti della tabella di N_equiv(t)",
@@ -383,7 +395,7 @@
       "nota": ""
     },
     {
-      "n": 30,
+      "n": 31,
       "id": "funi.Nequiv.gola.estremi",
       "gruppo": "Funi",
       "voce": "Angoli fuori dalla tabella di N_equiv(t)",
@@ -395,7 +407,7 @@
       "nota": ""
     },
     {
-      "n": 31,
+      "n": 32,
       "id": "funi.Tmax",
       "gruppo": "Funi",
       "voce": "Tiro massimo per fune",
@@ -407,7 +419,7 @@
       "nota": "Con la macchina in basso il tiro sul primo tratto verso la testata è una derivazione del software."
     },
     {
-      "n": 32,
+      "n": 33,
       "id": "funi.stima",
       "gruppo": "Funi",
       "voce": "Stima di carico di rottura e massa delle funi",
@@ -419,7 +431,7 @@
       "nota": ""
     },
     {
-      "n": 33,
+      "n": 34,
       "id": "freno.gruppi",
       "gruppo": "Freno",
       "voce": "Gruppi meccanici del freno",
@@ -431,7 +443,7 @@
       "nota": ""
     },
     {
-      "n": 34,
+      "n": 35,
       "id": "freno.tutti",
       "gruppo": "Freno",
       "voce": "Freno, tutti i gruppi",
@@ -443,7 +455,7 @@
       "nota": ""
     },
     {
-      "n": 35,
+      "n": 36,
       "id": "freno.singolo",
       "gruppo": "Freno",
       "voce": "Freno, un solo gruppo",
@@ -455,7 +467,7 @@
       "nota": "La UNI 10411-1:2024 (11.1.4) e la UNI EN 81-1:2008 (12.4.2.1) chiedono a un solo gruppo di rallentare la cabina carica in discesa; il software applica la richiesta più completa della UNI EN 81-20."
     },
     {
-      "n": 36,
+      "n": 37,
       "id": "freno.rendimento",
       "gruppo": "Freno",
       "voce": "Attrito del riduttore nel fabbisogno del freno",
@@ -467,7 +479,7 @@
       "nota": ""
     },
     {
-      "n": 37,
+      "n": 38,
       "id": "freno.decelerazione.massima",
       "gruppo": "Freno",
       "voce": "Decelerazione massima del freno",
@@ -479,7 +491,7 @@
       "nota": "La norma non dà un numero per il freno: ne confronta la decelerazione media con quella del paracadute e dell’urto sugli ammortizzatori, che hanno 1 gn come limite. Il confronto vero è con i dati dei componenti montati."
     },
     {
-      "n": 38,
+      "n": 39,
       "id": "azionamento.rendimento.inverso",
       "gruppo": "Riduttore e motore",
       "voce": "Rendimento inverso del riduttore se non dato",
@@ -491,7 +503,7 @@
       "nota": "Da sostituire con il valore del costruttore: la decelerazione reale del freno ne dipende molto."
     },
     {
-      "n": 39,
+      "n": 40,
       "id": "azionamento.accelerazione",
       "gruppo": "Riduttore e motore",
       "voce": "Coppia di accelerazione",
@@ -503,7 +515,7 @@
       "nota": ""
     },
     {
-      "n": 40,
+      "n": 41,
       "id": "azionamento.margine",
       "gruppo": "Riduttore e motore",
       "voce": "Soglia di attenzione sui limiti del costruttore",
@@ -515,31 +527,31 @@
       "nota": ""
     },
     {
-      "n": 41,
+      "n": 42,
       "id": "azionamento.potenza",
       "gruppo": "Riduttore e motore",
       "voce": "Potenza statica del motore",
-      "valore": "P_st = ΔF·v_f / (η_d·η_vano) ≤ P_n, con ΔF il maggiore tra cabina carica in salita dal basso e vuota in discesa dall’alto; con la macchina più veloce della nominale (v_reale > v_f) P_st per v_reale/v_f: il motore sotto la frequenza base è limitato dalla coppia (M_st ≤ M_n)",
+      "valore": "P_st = ΔF·v_f / (η_d·η_vano) ≤ P_n, con ΔF il maggiore tra cabina carica in salita dal basso e vuota in discesa dall’alto; con la macchina più veloce della nominale (v_reale > v_f) P_st per v_reale/v_f: il motore sotto la frequenza base è limitato dalla coppia (M_st ≤ M_n); con un argano di catalogo il motore si sceglie con il rapporto del catalogo, non con quello ideale",
       "riferimento": "—",
       "fonte": "derivazione",
       "stato": "derivazione",
       "verifiche": "potenza del motore",
-      "nota": ""
-    },
-    {
-      "n": 42,
-      "id": "azionamento.coppia.uscita",
-      "gruppo": "Riduttore e motore",
-      "voce": "Coppia massima in uscita dal riduttore",
-      "valore": "M_p = ΔF·D/2 + J·i·α_m, confrontata con il valore di catalogo se inserito",
-      "riferimento": "dato del costruttore",
-      "fonte": "derivazione",
-      "stato": "derivazione",
-      "verifiche": "coppia in uscita",
-      "nota": ""
+      "nota": "fino al motore 1.4.0 la proposta da catalogo teneva il motore scelto con il rapporto ideale della griglia: con un rapporto del catalogo più veloce la potenza alla coppia statica poteva superare il motore proposto"
     },
     {
       "n": 43,
+      "id": "azionamento.coppia.uscita",
+      "gruppo": "Riduttore e motore",
+      "voce": "Coppia massima in uscita dal riduttore",
+      "valore": "M_p il maggiore tra: accelerazione, ΔF·D/2 + J·i·α_m (cabina con la portata in salita, vuota in discesa); frenatura di emergenza con il freno reale (tutti i gruppi), |T1 − T2|·D/2 + J_s·r·a/(D/2) nel caso più gravoso, l’inerzia della puleggia dal lato del lento sommata a quella delle funi (a favore di sicurezza); prova con 1,25·Q, |T1 − T2|·D/2; confrontata con il valore di catalogo se inserito; al costruttore si chiede il maggiore arrotondato per eccesso a 10 N·m",
+      "riferimento": "dato del costruttore; i casi delle verifiche di aderenza (UNI EN 81-50:2020, 5.11.2.2.1 e 5.11.2.2.2)",
+      "fonte": "derivazione",
+      "stato": "derivazione",
+      "verifiche": "coppia in uscita",
+      "nota": "fino al motore 1.4.0 la coppia contava solo l’accelerazione: in frenatura di emergenza con il freno reale la coppia sull’albero lento è di solito la maggiore (nell’esempio della revisione 1,9 volte)"
+    },
+    {
+      "n": 44,
       "id": "azionamento.tolleranza.velocita",
       "gruppo": "Riduttore e motore",
       "voce": "Tolleranza tra velocità reale e nominale",
@@ -551,7 +563,7 @@
       "nota": "Con la UNI 10411-1:2024 (15.1) una velocità oltre il 5 % sopra la maggiore tra quella del libretto e quella dopo il passaggio a 50 Hz è un aumento della velocità nominale (punti 15.2–15.15). Con la UNI 10411-11:2024 (15) ogni cambio della velocità nominale, in più o in meno, porta ai punti 15 a)–k) e alla valutazione 4.3."
     },
     {
-      "n": 44,
+      "n": 45,
       "id": "soccorso.forza",
       "gruppo": "Manovra di emergenza",
       "voce": "Forza al volantino per far salire la cabina con la portata",
@@ -563,7 +575,7 @@
       "nota": "La forza è quella per far salire la cabina con la portata dal piano più basso, con i rendimenti del riduttore (in avanti) e del vano."
     },
     {
-      "n": 45,
+      "n": 46,
       "id": "soccorso.meccanico",
       "gruppo": "Manovra di emergenza",
       "voce": "Mezzo meccanico per la manovra di emergenza",
@@ -575,7 +587,7 @@
       "nota": "Solo con la macchina secondo la UNI EN 81-20:2020: la UNI EN 81-1:2008 non ha la soglia dei 150 N né l’ora di autonomia. Il verso della forza non è dato dalla norma: il software prende il peggiore."
     },
     {
-      "n": 46,
+      "n": 47,
       "id": "soccorso.gravita",
       "gruppo": "Manovra di emergenza",
       "voce": "Movimento per gravità con il freno aperto a mano",
@@ -587,7 +599,7 @@
       "nota": "Il rendimento inverso η_i è quello inserito o la stima della voce azionamento.rendimento.inverso."
     },
     {
-      "n": 47,
+      "n": 48,
       "id": "albero.carico",
       "gruppo": "Albero e ancoraggi",
       "voce": "Carico sull’albero della puleggia",
@@ -599,19 +611,19 @@
       "nota": ""
     },
     {
-      "n": 48,
+      "n": 49,
       "id": "albero.sollevamento",
       "gruppo": "Albero e ancoraggi",
       "voce": "Sollevamento netto sugli ancoraggi (macchina in basso)",
-      "valore": "carico verso l’alto meno la massa della macchina: da verificare con il progettista strutturale",
-      "riferimento": "—",
-      "fonte": "derivazione",
+      "valore": "alla prova con 1,25·Q la risultante dei tiri verso l’alto meno la massa della macchina; con la portata Q la risultante per il coefficiente dinamico dei carichi sull’edificio (voce carichi.macchina) meno la massa della macchina, che non si moltiplica; la massa è quella del calcolo (per un argano di catalogo quella del catalogo, il limite inferiore), a favore di sicurezza; per tirafondi e ancoranti il maggiore dei due, da verificare con il progettista strutturale",
+      "riferimento": "UNI EN 81-20:2020, 5.2.1.8.1 e appendice E.1 (informativa)",
+      "fonte": "derivazione; UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 26, 148",
       "stato": "derivazione",
       "verifiche": "sollevamento netto",
-      "nota": ""
+      "nota": "fino a LIFT 1.28.0 il foglio 1 e la relazione davano solo il valore statico alla prova con 1,25·Q, senza il coefficiente dinamico che lo stesso foglio applica ai carichi sulla soletta"
     },
     {
-      "n": 49,
+      "n": 50,
       "id": "sostituzione.modifica",
       "gruppo": "Sostituzione (Italia)",
       "voce": "La sostituzione del macchinario è una modifica costruttiva",
@@ -623,7 +635,7 @@
       "nota": ""
     },
     {
-      "n": 50,
+      "n": 51,
       "id": "sostituzione.adeguamenti",
       "gruppo": "Sostituzione (Italia)",
       "voce": "Adeguamenti richiesti per la sostituzione del macchinario",
@@ -635,7 +647,7 @@
       "nota": ""
     },
     {
-      "n": 51,
+      "n": 52,
       "id": "sostituzione.funi",
       "gruppo": "Sostituzione (Italia)",
       "voce": "Funi nella sostituzione",
@@ -647,7 +659,7 @@
       "nota": ""
     },
     {
-      "n": 52,
+      "n": 53,
       "id": "modello.g",
       "gruppo": "Modello di calcolo",
       "voce": "Accelerazione di gravità",
@@ -659,7 +671,7 @@
       "nota": ""
     },
     {
-      "n": 53,
+      "n": 54,
       "id": "modello.percorso",
       "gruppo": "Modello di calcolo",
       "voce": "Tiri con il metodo del percorso della fune",
@@ -671,7 +683,7 @@
       "nota": "Il fattore (r² + 2)/3 vale esattamente r per le taglie 1:1 e 2:1, le sole del software."
     },
     {
-      "n": 54,
+      "n": 55,
       "id": "modello.percorso.pulegge",
       "gruppo": "Modello di calcolo",
       "voce": "Pulegge di cabina e di contrappeso nella taglia 2:1",
@@ -683,7 +695,7 @@
       "nota": "La velocità della fune rispetto all’asse della puleggia di cabina è quella della cabina: la massa ridotta è J_p/R_p². Con più pulegge o pulegge diverse da quelle di rinvio, l’ingegnere inserisce l’inerzia equivalente."
     },
     {
-      "n": 55,
+      "n": 56,
       "id": "modello.percorso.msr1",
       "gruppo": "Modello di calcolo",
       "voce": "Macchina in basso: tratto tra la macchina e le pulegge in testata",
@@ -695,7 +707,7 @@
       "nota": "Il testo stampa a in entrambe le edizioni; a 1:1 le due forme coincidono."
     },
     {
-      "n": 56,
+      "n": 57,
       "id": "modello.velocita",
       "gruppo": "Modello di calcolo",
       "voce": "Velocità nominale e compensazione",
@@ -707,7 +719,7 @@
       "nota": ""
     },
     {
-      "n": 57,
+      "n": 58,
       "id": "modello.compensazione",
       "gruppo": "Modello di calcolo",
       "voce": "Compensazione e cavo flessibile",
@@ -719,7 +731,7 @@
       "nota": "Nella 5.11.3 la massa della compensazione (0,5·H ± y) e del cavo (0,25·H ± 0,5·y) dipende dalla posizione della cabina e c’è anche sul lato del contrappeso; il software la tiene costante dentro P. Con catene o funi di compensazione il modello non vale."
     },
     {
-      "n": 58,
+      "n": 59,
       "id": "modello.sensibilita",
       "gruppo": "Modello di calcolo",
       "voce": "Analisi di sensibilità",
@@ -731,7 +743,7 @@
       "nota": ""
     },
     {
-      "n": 59,
+      "n": 60,
       "id": "vano.cabina.superficie",
       "gruppo": "Vano: cabina e portata",
       "voce": "Superficie utile massima della cabina per portata",
@@ -743,7 +755,7 @@
       "nota": "la norma misura la superficie a 1 m dal pavimento tra le pareti strutturali, senza finiture (5.4.2.1.2), conta le nicchie e conta per intero la rientranza dell’ingresso profonda più di 100 mm (5.4.2.1.3); il software usa larghezza × profondità interne: nicchie e rientranze vanno aggiunte a mano"
     },
     {
-      "n": 60,
+      "n": 61,
       "id": "vano.cabina.passeggeri",
       "gruppo": "Vano: cabina e portata",
       "voce": "Numero di passeggeri",
@@ -755,7 +767,7 @@
       "nota": ""
     },
     {
-      "n": 61,
+      "n": 62,
       "id": "vano.distanze.parete.entrata",
       "gruppo": "Vano: distanze in pianta",
       "voce": "Parete del vano di fronte all’entrata della cabina",
@@ -767,7 +779,7 @@
       "nota": "le deroghe della norma (fino a 0,20 m per un tratto alto non più di 0,50 m o con porte verticali di ascensori per merci; nessun limite con la porta di cabina bloccata meccanicamente) non sono usate: la verifica è più severa. Il software misura fino alla soglia; la figura 3 della norma porta il limite anche al telaio e al bordo di chiusura delle ante di cabina: con la porta scelta lo verifica l’ingegnere sui dati del fornitore."
     },
     {
-      "n": 62,
+      "n": 63,
       "id": "vano.distanze.soglie",
       "gruppo": "Vano: distanze in pianta",
       "voce": "Gioco tra soglia di cabina e soglia di piano",
@@ -779,7 +791,7 @@
       "nota": "Non calcolato: tra il bordo d’attacco delle ante di cabina e le porte di piano al massimo 0,12 m (5.3.4.2; 11.2.3 nella UNI EN 81-1:2008), dato del fornitore delle porte."
     },
     {
-      "n": 63,
+      "n": 64,
       "id": "vano.distanze.contrappeso",
       "gruppo": "Vano: distanze in pianta",
       "voce": "Distanza tra cabina e contrappeso",
@@ -791,7 +803,7 @@
       "nota": "il software misura tra le sagome di cabina e contrappeso: pattini e staffe non sono nel modello della pianta"
     },
     {
-      "n": 64,
+      "n": 65,
       "id": "vano.distanze.testata",
       "gruppo": "Vano: distanze in pianta",
       "voce": "Pareti all’ultimo piano e in testata diverse dal piano principale",
@@ -803,7 +815,7 @@
       "nota": ""
     },
     {
-      "n": 65,
+      "n": 66,
       "id": "vano.accessibilita.residenziale",
       "gruppo": "Vano: accessibilità (DM 236/1989)",
       "voce": "Edifici residenziali nuovi: cabina e porta minime",
@@ -815,7 +827,7 @@
       "nota": ""
     },
     {
-      "n": 66,
+      "n": 67,
       "id": "vano.accessibilita.non.residenziale",
       "gruppo": "Vano: accessibilità (DM 236/1989)",
       "voce": "Edifici non residenziali nuovi: cabina e porta minime",
@@ -827,7 +839,7 @@
       "nota": ""
     },
     {
-      "n": 67,
+      "n": 68,
       "id": "vano.accessibilita.esistenti",
       "gruppo": "Vano: accessibilità (DM 236/1989)",
       "voce": "Adeguamento di edifici esistenti: cabina e porta minime",
@@ -839,7 +851,7 @@
       "nota": "Per un ascensore nuovo in un edificio esistente il caso è a) o b) secondo la destinazione; il c) è l’eccezione, scelta dal progettista."
     },
     {
-      "n": 68,
+      "n": 69,
       "id": "vano.porte.ingombro",
       "gruppo": "Vano: porte",
       "voce": "Ingombro della porta di piano lungo la parete del vano",
@@ -851,7 +863,7 @@
       "nota": ""
     },
     {
-      "n": 69,
+      "n": 70,
       "id": "vano.porte.cabina",
       "gruppo": "Vano: porte",
       "voce": "Larghezza della cabina rispetto alla porta",
@@ -863,7 +875,7 @@
       "nota": ""
     },
     {
-      "n": 70,
+      "n": 71,
       "id": "vano.porte.operatore",
       "gruppo": "Vano: porte",
       "voce": "Vano porta di piano e operatore della porta di cabina",
@@ -875,7 +887,7 @@
       "nota": ""
     },
     {
-      "n": 71,
+      "n": 72,
       "id": "vano.porte.disassamento",
       "gruppo": "Vano: porte",
       "voce": "Porta di piano spostata rispetto alla porta di cabina (disassamento)",
@@ -887,7 +899,7 @@
       "nota": "nel 3D la leva della serratura con i rulli resta in linea con l’accoppiatore della porta di cabina: con il disassamento va montata spostata sull’anta della porta di piano (da concordare con il fornitore delle porte)"
     },
     {
-      "n": 72,
+      "n": 73,
       "id": "vano.porte.bottoniera",
       "gruppo": "Vano: porte",
       "voce": "Bottoniera di piano",
@@ -899,7 +911,7 @@
       "nota": ""
     },
     {
-      "n": 73,
+      "n": 74,
       "id": "vano.porte.imbotti",
       "gruppo": "Vano: porte",
       "voce": "Imbotti della porta di piano (sostituzione con una luce più piccola)",
@@ -911,7 +923,7 @@
       "nota": "Montanti e pannelli accanto alla porta più larghi di 150 mm che chiudono l’apertura vanno con la prova del pendolo della porta (UNI EN 81-20:2020, 5.3.5.3.4): la copre il fornitore."
     },
     {
-      "n": 74,
+      "n": 75,
       "id": "vano.porte.telaio",
       "gruppo": "Vano: porte",
       "voce": "Telaio proprio delle porte di piano",
@@ -923,7 +935,31 @@
       "nota": ""
     },
     {
-      "n": 75,
+      "n": 76,
+      "id": "vano.porte.soccorso",
+      "gruppo": "Vano: porte",
+      "voce": "Porte di soccorso tra due porte di piano lontane",
+      "valore": "più di 11000 mm tra le soglie di due porte di piano consecutive (piani contigui con porte, qualunque accesso): porte di soccorso intermedie alte almeno 1800 mm e larghe almeno 500 mm, oppure cabine adiacenti con porta di soccorso",
+      "riferimento": "UNI EN 81-20:2020, 5.2.3.1 e 5.2.3.2 d)",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 29",
+      "stato": "confermato",
+      "verifiche": "porte di soccorso oltre 11 m tra due porte di piano",
+      "nota": "il software non modella le porte di soccorso né le cabine adiacenti: oltre 11 m la verifica non passa e il progetto va completato a parte"
+    },
+    {
+      "n": 77,
+      "id": "vano.porte.sottosoglia",
+      "gruppo": "Vano: porte",
+      "voce": "Lamiera sotto la soglia di piano",
+      "valore": "zona di sbloccaggio non oltre 200 mm sopra e sotto il piano (350 mm con porte di cabina e di piano motorizzate insieme); sotto ogni soglia di piano una superficie liscia e dura unita alla soglia, alta almeno metà della zona di sbloccaggio + 50 mm e larga almeno la luce dell’accesso di cabina + 25 mm per lato, sporgenze non oltre 5 mm; sotto, unita all’architrave della porta successiva oppure con uno smusso ad almeno 60° sull’orizzontale e almeno 20 mm di proiezione orizzontale. Il disegno la mette sotto il bordo della soglia di ogni porta di piano, alta la zona di sbloccaggio indicata + 50 mm (senza: 200 + 50 = 250 mm, «Attenzione»), con lo smusso fino al muro",
+      "riferimento": "UNI EN 81-20:2020, 5.2.5.3.2 e 5.3.8.1",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 34, 58",
+      "stato": "confermato",
+      "verifiche": "lamiera sotto la soglia di piano",
+      "nota": "la zona di sbloccaggio sta sopra e sotto il piano: la metà della zona è la sua estensione da un lato (200 mm al massimo), lettura dal lato della sicurezza; rigidità (300 N su 5 cm²) e finitura sono del fornitore delle porte"
+    },
+    {
+      "n": 78,
       "id": "vano.ingombri.tipici",
       "gruppo": "Vano: ingombri tipici",
       "voce": "Ingombri tipici nel vano (modificabili su ogni progetto)",
@@ -935,7 +971,7 @@
       "nota": "pacchetto porta di catalogo (porta di cabina + gioco tra le soglie + porta di piano), da wittur.com: Hydra 210 mm a 2 ante telescopiche e 180 mm a 2 ante centrali, Hydra 3000 180 e 130, Augusta EVO 190 e 110, Sematic 2000 C-MOD 185 e 117, Fineline 115 e 85; Sematic 2000 B 255 e 165 (cabina 90 e 45, gioco 30, piano 135 e 90, da una copia della brochure). Con le porte scelte, i tre ingombri vanno portati alla somma del fornitore (oggi 80 + 30 + 80 = 190 mm)"
     },
     {
-      "n": 76,
+      "n": 79,
       "id": "vano.ingombri.contrappeso.laterale",
       "gruppo": "Vano: ingombri tipici",
       "voce": "Contrappeso laterale",
@@ -947,7 +983,7 @@
       "nota": ""
     },
     {
-      "n": 77,
+      "n": 80,
       "id": "vano.ingombri.arcata.zaino",
       "gruppo": "Vano: ingombri tipici",
       "voce": "Arcata a zaino (due accessi adiacenti a 90°)",
@@ -959,7 +995,7 @@
       "nota": ""
     },
     {
-      "n": 78,
+      "n": 81,
       "id": "vano.ingombri.nicchie",
       "gruppo": "Vano: ingombri tipici",
       "voce": "Nicchie nelle pareti del vano",
@@ -971,7 +1007,7 @@
       "nota": ""
     },
     {
-      "n": 79,
+      "n": 82,
       "id": "vano.ingombri.staffe.contrappeso",
       "gruppo": "Vano: ingombri tipici",
       "voce": "Staffe delle guide del contrappeso (catalogo Panev)",
@@ -983,7 +1019,7 @@
       "nota": ""
     },
     {
-      "n": 80,
+      "n": 83,
       "id": "vano.ingombri.staffe.porte",
       "gruppo": "Vano: ingombri tipici",
       "voce": "Staffe delle porte di piano (catalogo Panev)",
@@ -995,7 +1031,7 @@
       "nota": ""
     },
     {
-      "n": 81,
+      "n": 84,
       "id": "vano.ingombri.limitatore",
       "gruppo": "Vano: ingombri tipici",
       "voce": "Limitatore di velocità e tenditore (pianta, locale macchina, 3D)",
@@ -1007,7 +1043,7 @@
       "nota": "il disegno unico delle LK200–LK315 dà due altezze non spiegate (230 e 415 mm; un rivenditore scrive 370): è presa la maggiore. Per Bode la velocità nominale massima è nostra: la velocità di scatto massima diviso 1,15 (scatto ≥ 115 % della nominale), del GB 8 con 1,49 m/s del disegno invece dei 2,04 della brochure. Per le RQ-A e le RC Montanari 0,15–3,0 e 1,60–4,2 m/s sono i campi della famiglia: il limite di ogni taglia va letto sul manuale. Delle basi pubblicate non sempre è detto quale lato stia nel piano della puleggia (il lato lungo è disegnato in quel piano, come nel LK200). Tenditore a leva: lungo 700 mm (quota «A» del PFB R4KE per LK200 in un listino di rivenditore, senza definizione), puleggia a 255 mm dalla cerniera e blocco di 150 × 185 mm: scelte del software; le masse di 22 e 44 kg sono quelle delle tabelle PFB (tenditori R4K e R4R per LK200, confermate dalla brochure)"
     },
     {
-      "n": 82,
+      "n": 85,
       "id": "vano.limitatore.posto",
       "gruppo": "Vano: ingombri tipici",
       "voce": "Posizione del limitatore di velocità e della sua fune",
@@ -1019,7 +1055,7 @@
       "nota": "con l’arcata a zaino, o senza una parete laterale libera, il software non mette il limitatore: la verifica della fune resta «Attenzione» senza valore e il limitatore va posizionato a mano"
     },
     {
-      "n": 83,
+      "n": 86,
       "id": "vano.limitatore.fune",
       "gruppo": "Vano: ingombri tipici",
       "voce": "Pulegge del limitatore e diametro della fune",
@@ -1031,7 +1067,31 @@
       "nota": "un modello con la fune più grossa del rapporto (fune «in deroga» del costruttore) non passa: si sceglie un altro modello o la fune che il rapporto ammette, salvo una deroga documentata dal certificato del costruttore"
     },
     {
-      "n": 84,
+      "n": 87,
+      "id": "vano.limitatore.vano",
+      "gruppo": "Vano: ingombri tipici",
+      "voce": "Macchina in basso: limitatore di velocità nel vano",
+      "valore": "con le pulegge di rinvio appese sotto la soletta il limitatore sta nel vano, su una mensola fissata alla parete laterale della sua fune, con l’asse a 420 mm sotto il soffitto, fuori dalla pianta della cabina; non è raggiungibile da fuori del vano: si ordina con l’intervento comandato a distanza via cavo da fuori del vano (dal quadro), raggiungibile per ispezione e manutenzione dal tetto di cabina, con il ritorno automatico in posizione normale quando la cabina o il contrappeso salgono e le parti elettriche ripristinabili a distanza; la fune del limitatore va dal soffitto del vano alla fossa. Con il locale delle pulegge sopra il vano il limitatore sta in quel locale. Il carico del limitatore (P4) va sulla parete della mensola",
+      "riferimento": "UNI EN 81-20:2020, 5.6.2.2.1.4 a), b) e c) 1)–3), 5.6.2.2.1.5",
+      "fonte": "scelta del software (420 mm); UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 83",
+      "stato": "scelta del software",
+      "verifiche": "",
+      "nota": "la mensola, il cavo del comando a distanza e il ripristino sono del costruttore del limitatore: da confermare sulla sua scheda"
+    },
+    {
+      "n": 88,
+      "id": "vano.guide.staffe.cabina",
+      "gruppo": "Vano: ingombri tipici",
+      "voce": "Staffe delle guide di cabina (generiche)",
+      "valore": "una squadra alta 100 mm, larga 90 mm, spessa 8 mm, su una piastra a muro 160 × 200 × 12 mm con 2 tasselli M12; oltre 150 mm dal muro due squadre serrate da 4 bulloni M12 in asola; la guida sulla piastra con due graffe; il disegno dà il tipo, la distanza dal muro al piede della guida e le quote delle staffe; la reazione di ogni staffa per la verifica degli ancoraggi è la spinta sulla guida del foglio 1",
+      "riferimento": "—",
+      "fonte": "scelta del software, da dimensionare a parte con il fornitore e con la verifica degli ancoraggi",
+      "stato": "scelta del software",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 89,
       "id": "vano.spazi.rifugio",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Spazi di rifugio sul tetto di cabina e in fossa",
@@ -1043,7 +1103,7 @@
       "nota": ""
     },
     {
-      "n": 85,
+      "n": 90,
       "id": "vano.spazi.salto",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Posizione più alta della cabina",
@@ -1055,7 +1115,7 @@
       "nota": "vale per gli ascensori a frizione; le riduzioni di 5.2.5.6.1.2 (rallentamento controllato) e 5.2.5.6.1.3 (puleggia tenditrice con antirimbalzo) non sono usate: la verifica è più severa"
     },
     {
-      "n": 86,
+      "n": 91,
       "id": "vano.spazi.testata.parti",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Distanze libere dal soffitto con la cabina nella posizione più alta",
@@ -1067,7 +1127,7 @@
       "nota": "I valori 500, 100 e 300 mm sono confermati. Il software dà alla traversa dell’arcata i 100 mm di b) e avvisa sotto i 500 mm di a) (voce spazi.testata.traversa). Con il soffitto piano, 300 mm sopra il corrimano danno anche i 500 mm in obliquo oltre i 400 mm (c) 2)); sotto pulegge o travi appese no."
     },
     {
-      "n": 87,
+      "n": 92,
       "id": "vano.spazi.testata.traversa",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Traversa dell’arcata sotto il soffitto",
@@ -1079,7 +1139,7 @@
       "nota": "La b) nomina la traversa delle porte e le parti delle porte a scorrimento verticale; quella dell’arcata non è nominata. Da concordare con l’organismo."
     },
     {
-      "n": 88,
+      "n": 93,
       "id": "vano.spazi.testata.pulegge",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Parte più alta della cabina sotto ciò che pende sopra",
@@ -1087,11 +1147,23 @@
       "riferimento": "UNI EN 81-20:2020, 5.2.5.7.2 a) e b)",
       "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 38",
       "stato": "confermato",
-      "verifiche": "parte più alta della cabina sotto ciò che pende sopra",
+      "verifiche": "parte più alta della cabina sotto ciò che pende sopra; parte più alta della cabina sotto le pulegge appese alla soletta",
       "nota": "fino alla versione 1.17.0 del motore del progetto la puleggia di cabina era verificata a 100 mm; i 100 mm della traversa sono la stessa lettura di spazi.testata.parti"
     },
     {
-      "n": 89,
+      "n": 94,
+      "id": "vano.spazi.tetto.appese",
+      "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
+      "voce": "Spazio di rifugio sul tetto sotto le parti appese alla soletta",
+      "valore": "con la cabina nella posizione più alta, ciò che pende sotto la soletta (le pulegge di rinvio appese della macchina in basso con il loro telaio, il tratto orizzontale delle funi fra due rinvii a 90°, gli attacchi delle funi della taglia 2:1) più in basso dell’altezza del rifugio sopra il tetto toglie la sua pianta dalle parti libere del tetto, come gli operatori: il rifugio deve stare tutto fuori; l’altezza libera del rifugio si misura fino alla parte più bassa sopra ogni parte libera del tetto, dove si sta in piedi",
+      "riferimento": "UNI EN 81-20:2020, 5.2.5.7.1 (prospetto 3), 5.2.5.7.2 e 5.2.5.7.3",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 37–39",
+      "stato": "confermato",
+      "verifiche": "spazio di rifugio sul tetto di cabina: altezza libera fino a ciò che pende sotto la soletta; spazio di rifugio sul tetto di cabina fuori da ciò che pende sotto la soletta",
+      "nota": "pianta delle pulegge appese: Dp lungo il loro piano per la larghezza delle guance del telaio (come il 3D); con un riparo fisso sul tetto sotto le pulegge l’area non è più un posto in piedi: è una scelta del progettista. Fino alla versione 1.28.0 del motore del progetto il rifugio e la sua altezza non vedevano le pulegge appese"
+    },
+    {
+      "n": 95,
       "id": "vano.ammortizzatori.posizione",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Ammortizzatori e spazio di rifugio in fossa, in pianta",
@@ -1103,7 +1175,7 @@
       "nota": ""
     },
     {
-      "n": 90,
+      "n": 96,
       "id": "vano.spazi.fossa",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Distanze in fossa con la cabina sugli ammortizzatori compressi",
@@ -1115,7 +1187,7 @@
       "nota": ""
     },
     {
-      "n": 91,
+      "n": 97,
       "id": "vano.spazi.balaustra",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Balaustra sul tetto di cabina",
@@ -1127,7 +1199,7 @@
       "nota": "fino alla versione 2.12.0 del motore del vano il software misurava i 500 mm dal bordo del tetto; la norma vuole la balaustra entro 150 mm dal bordo: se è più interna, la distanza cresce e può servire l’altezza maggiore"
     },
     {
-      "n": 92,
+      "n": 98,
       "id": "vano.spazi.tetto.superficie",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Spazio di rifugio e posti in piedi sul tetto di cabina",
@@ -1139,7 +1211,7 @@
       "nota": "L’operatore delle porte sul tetto è profondo meno di 250 mm (cataloghi): non è un posto in piedi e conta come apparecchiatura (500 mm, h_clear). La UNI EN 81-1:2008 (8.13.2) chiedeva un’area ≥ 0,12 m² con il lato minore ≥ 0,25 m."
     },
     {
-      "n": 93,
+      "n": 99,
       "id": "vano.spazi.tetto.arcata",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Spazio di rifugio sul tetto: traversa dell’arcata e operatori delle porte",
@@ -1151,7 +1223,7 @@
       "nota": "fino alla versione 2.17.0 del motore del vano la verifica misurava il rifugio sull’intero tetto e il disegno lo metteva sopra la traversa; non contati: la puleggia di cabina della taglia 2:1 (verifica della testata del progetto) e il corrimano della balaustra"
     },
     {
-      "n": 94,
+      "n": 100,
       "id": "vano.spazi.altezze",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Altezza libera degli accessi e della cabina",
@@ -1163,7 +1235,7 @@
       "nota": "negli impianti esistenti (DPR 1497/1963, artt. 24, 27 e 29, non riletto) le porte possono essere alte 1,90 m e la cabina 2,00 m; con la sola sostituzione della macchina le altezze restano (parti esistenti); la UNI 10411-1:2024 ammette porte di piano nuove non più basse delle esistenti (19.1), una cabina nuova sotto 2 m se non più bassa dell’esistente e mai sotto 1,90 m (22 m)) e accessi di cabina mai sotto 1,80 m (22 n)), con avvertimenti: il software non conosce le esistenti e segnala ogni porta sotto 2000 mm"
     },
     {
-      "n": 95,
+      "n": 101,
       "id": "vano.contrappeso.guidato",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Corsa guidata in testata (contrappeso e cabina)",
@@ -1175,7 +1247,7 @@
       "nota": ""
     },
     {
-      "n": 96,
+      "n": 102,
       "id": "vano.contrappeso.schermo",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Schermo del contrappeso in fossa",
@@ -1184,10 +1256,10 @@
       "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 35",
       "stato": "confermato",
       "verifiche": "protezione del contrappeso in fossa",
-      "nota": "non verificati: il bordo inferiore dello schermo a non più di 300 mm dal fondo della fossa (5.2.5.5.1 c)) e la protezione dello spazio oltre 300 mm tra guide del contrappeso e parete (e))"
+      "nota": "bordo inferiore, larghezza e spazio tra le guide e la parete (5.2.5.5.1 c)–e)): voce contrappeso.schermo.pianta; fino alla versione 2.22.0 del motore del vano non erano verificati"
     },
     {
-      "n": 97,
+      "n": 103,
       "id": "vano.ammortizzatori.corsa",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Ammortizzatori ad accumulo di energia lineari (molle)",
@@ -1199,7 +1271,7 @@
       "nota": ""
     },
     {
-      "n": 98,
+      "n": 104,
       "id": "vano.ammortizzatori.poliuretano",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Ammortizzatori ad accumulo di energia non lineari (tamponi in poliuretano)",
@@ -1211,7 +1283,7 @@
       "nota": "il tampone tipico alto 80 mm è un dato di catalogo, non della norma: va sostituito con quello montato"
     },
     {
-      "n": 99,
+      "n": 105,
       "id": "vano.ammortizzatori.idraulici",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Ammortizzatori a dissipazione di energia (idraulici)",
@@ -1223,19 +1295,79 @@
       "nota": "gli ammortizzatori Oleo sono dati di catalogo, non della norma: vanno sostituiti con quelli montati"
     },
     {
-      "n": 100,
+      "n": 106,
+      "id": "vano.fossa.accesso",
+      "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
+      "voce": "Accesso alla fossa: scala nel vano",
+      "valore": "fossa profonda fino a 2500 mm: porta di accesso oppure scala dentro il vano, comoda da raggiungere dalla porta di piano più bassa; più profonda: porta di accesso. Scala custodita in fossa, di alluminio o acciaio: in uso i montanti arrivano ad almeno 1100 mm sopra la soglia di piano, pioli larghi almeno 280 mm con almeno 200 mm liberi dietro fino alla parete; a riposo a non più di 800 mm dal bordo dell’accesso, in uso la mezzeria dei pioli a non più di 600 mm; a riposo fuori dagli spazi di rifugio (se può urtare parti in moto fuori dal riposo, un contatto di sicurezza)",
+      "riferimento": "UNI EN 81-20:2020, 5.2.2.4 e appendice F (F.2.3, F.3.2, F.5)",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 28–29, 151–152",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 107,
+      "id": "vano.fossa.comandi",
+      "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
+      "voce": "Dotazioni della fossa: arresto, ispezione, presa, luce, cartello",
+      "valore": "fossa profonda fino a 1600 mm: un dispositivo di arresto (STOP) almeno 400 mm sopra il pavimento della fermata più bassa e non oltre 2000 mm dal fondo della fossa; più profonda: due, quello alto almeno 1000 mm sopra la fermata, quello basso non oltre 1200 mm dal fondo e manovrabile da uno spazio di rifugio; ogni arresto a non più di 750 mm in orizzontale dal bordo interno del telaio della porta di accesso; comando d’ispezione manovrabile da non oltre 300 mm da uno spazio di rifugio; una presa di corrente; comando della luce del vano a non più di 750 mm dal telaio e almeno 1000 mm sopra il pavimento di accesso; in fossa un cartello, leggibile dall’accesso, con il numero di persone ammesse e la postura dello spazio di rifugio",
+      "riferimento": "UNI EN 81-20:2020, 5.2.1.5.1 a)–d) e 5.2.5.8.1 (cartello)",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 25–26, 40",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 108,
+      "id": "vano.fossa.posizioni",
+      "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
+      "voce": "Scala e pulsantiera della fossa nei disegni",
+      "valore": "la scala disegnata larga 370 mm e profonda 100 mm, la pulsantiera della fossa (arresto, presa, comando della luce) larga 150 mm, profonda 80 mm, alta 120 mm per apparecchio, con l’arresto 500 mm e il comando della luce 1100 mm sopra la fermata più bassa (fossa oltre 1600 mm: l’arresto alto 1000 mm sopra la fermata e quello basso sotto la pulsantiera, con il bordo superiore 1200 mm sopra il fondo); ognuna contro una parete, il più vicino possibile al bordo dell’accesso di quella fermata (la scala entro il limite di uso, la pulsantiera entro quello dell’arresto), fuori dalla cabina con le soglie, dagli operatori delle porte se con la cabina sugli ammortizzatori compressi scendono fino a 100 mm sopra la scala o la pulsantiera, dal contrappeso e dalla sua protezione con tutto lo spazio che chiude fino alla parete, dalle guide con le staffe, dalla porta di piano, dalla fune del limitatore e, per la scala in fossa, dagli ammortizzatori, dallo spazio di rifugio e dal tenditore del limitatore; senza un posto libero il disegno non la mette e la nota lo dice",
+      "riferimento": "—",
+      "fonte": "scelta del software: tipo, misure e posizione definitivi del fornitore della scala e del quadro",
+      "stato": "scelta del software",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 109,
+      "id": "vano.contrappeso.schermo.pianta",
+      "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
+      "voce": "Protezione del contrappeso in fossa: bordo inferiore e larghezza",
+      "valore": "bordo inferiore non oltre 300 mm dal fondo della fossa; larga almeno quanto il contrappeso; se tra le guide del contrappeso e una parete ci sono più di 300 mm, la protezione arriva anche alla parete. Il disegno la mette davanti al contrappeso e alle sue guide, 40 mm oltre da ogni lato, fino alla parete dove resterebbero più di 300 mm",
+      "riferimento": "UNI EN 81-20:2020, 5.2.5.5.1 c)–e)",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 35",
+      "stato": "confermato",
+      "verifiche": "protezione del contrappeso: bordo inferiore; protezione del contrappeso: larghezza e spazio tra guide e parete",
+      "nota": "p_screenlo e p_screenw sono informazioni, non verifiche: il bordo e la larghezza sono quelli che il disegno dà accanto ai valori della norma; la protezione montata si controlla al collaudo"
+    },
+    {
+      "n": 110,
+      "id": "vano.contrappeso.cartello",
+      "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
+      "voce": "Gioco massimo tra contrappeso e ammortizzatore (cartello)",
+      "valore": "il cartello sulla protezione del contrappeso o accanto riporta il gioco massimo ammesso tra contrappeso e ammortizzatore con la cabina al piano più alto: l’extracorsa del progetto più il margine più piccolo delle verifiche che il gioco riduce (spazio di rifugio sul tetto, anche sotto le pulegge e gli attacchi appesi nel vano, distanze libere dal soffitto, parte più alta della cabina sotto ciò che pende sopra, corsa guidata del contrappeso con la cabina sugli ammortizzatori e, finché passano, gli avvisi della traversa sotto il soffitto e della corsa guidata della cabina), arrotondato per difetto a 5 mm: con quel gioco nessuna verifica del progetto cambia esito",
+      "riferimento": "UNI EN 81-20:2020, 5.2.5.7.1",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 37–38; il calcolo del margine è del software",
+      "stato": "confermato",
+      "verifiche": "gioco massimo contrappeso–ammortizzatore (cartello)",
+      "nota": ""
+    },
+    {
+      "n": 111,
       "id": "vano.locale.macchina",
       "gruppo": "Locale del macchinario",
       "voce": "Locale del macchinario",
-      "valore": "altezza libera delle zone di lavoro ≥ 2100 mm (1800 mm sui percorsi); davanti al quadro una superficie libera profonda ≥ 700 mm e larga ≥ 500 mm o quanto il quadro; per la manutenzione delle parti in movimento e la manovra di emergenza una superficie libera di almeno 500 × 600 mm (il software la cerca accanto all’argano, sul lato più libero, fino a muri, quadro, limitatore e interruttore generale); percorsi dalla porta alle superfici libere larghi ≥ 500 mm (il software chiede 500 mm ovunque, anche dove la norma ammette 0,40 m) e alti ≥ 1800 mm; porta di accesso ≥ 600 × 2000 mm, che non si apre verso l’interno del locale; aperture nella soletta sopra il vano ridotte al minimo, con manicotti o bordi che sporgono almeno 50 mm dal pavimento",
-      "riferimento": "UNI EN 81-20:2020, 5.2.6.3.2.1 (2,10 m e superfici libere), 5.2.6.3.2.2 (percorsi: 0,50 m di larghezza, 1,80 m di altezza), 5.2.3.2 a) (porta), 5.2.3.3 a) (verso di apertura) e 5.2.6.3.3 (aperture)",
+      "valore": "altezza libera delle zone di lavoro ≥ 2100 mm (1800 mm sui percorsi); davanti al quadro una superficie libera profonda ≥ 700 mm e larga ≥ 500 mm o quanto il quadro; per la manutenzione delle parti in movimento e la manovra di emergenza una superficie libera di almeno 500 × 600 mm (il software la cerca accanto all’argano, fino a muri, quadro, limitatore e interruttore generale, sul lato del volantino se ci sta: locale.volantino; la disegna in pianta con i percorsi dalla porta); almeno 300 mm liberi in verticale sopra le parti rotanti non protette (la puleggia di frizione con le funi, il volantino, la puleggia di rinvio nel locale); percorsi dalla porta alle superfici libere larghi ≥ 500 mm (il software chiede 500 mm ovunque, anche dove la norma ammette 0,40 m) e alti ≥ 1800 mm; porta di accesso ≥ 600 × 2000 mm, che non si apre verso l’interno del locale; aperture nella soletta sopra il vano ridotte al minimo, con manicotti o bordi che sporgono almeno 50 mm dal pavimento",
+      "riferimento": "UNI EN 81-20:2020, 5.2.6.3.2.1 (2,10 m e superfici libere), 5.2.6.3.2.2 (percorsi: 0,50 m di larghezza, 1,80 m di altezza), 5.2.6.3.2.3 (0,30 m sopra le parti rotanti non protette), 5.2.3.2 a) (porta), 5.2.3.3 a) (verso di apertura) e 5.2.6.3.3 (aperture)",
       "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 29–30, 43; le superfici libere anche in UNI EN 81-1:1999, 6.3.2.1 (edizione 2008: 6.3.3.1)",
       "stato": "confermato",
-      "verifiche": "altezza del locale macchina; superficie libera davanti al quadro; superficie libera accanto all’argano; percorsi dalla porta alle superfici libere; porta del locale macchina",
-      "nota": "davanti al quadro il software verifica la profondità libera fino a ciò che sta sul pavimento (l’argano con il basamento e il rinvio, il limitatore, l’interruttore generale) e che la parete sia lunga almeno quanto il maggiore tra 500 mm e il quadro; la larghezza dei percorsi la misura dalla porta su una griglia di circa 20 mm, per difetto; l’altezza dei percorsi segue quella del locale; il verso di apertura della porta non è un dato del progetto (i disegni la danno apribile verso l’esterno); non verificato: lo spazio di 0,30 m sopra le parti rotanti (5.2.6.3.2.3). Con la modifica di un impianto esistente (UNI 10411-1/-11:2024, 9.2) la superficie davanti al quadro entra nell’esito anche quando cambia solo la macchina, che le può stare davanti; l’altezza e la porta del locale restano «esistente» (la 9.2 ammette l’altezza attuale: le condizioni sono tra i punti da verificare in sito). Con la macchina in basso le stesse verifiche valgono per il suo locale, accanto al vano o sotto la fossa, con l’argano come ciò che sta sul pavimento; un locale sopra il vano non ha la macchina (con i rinvii è il locale delle pulegge, locale.pulegge)"
+      "verifiche": "altezza del locale macchina; superficie libera davanti al quadro; superficie libera accanto all’argano; percorsi dalla porta alle superfici libere; porta del locale macchina; spazio libero sopra le parti rotanti non protette dell’argano",
+      "nota": "davanti al quadro il software verifica la profondità libera fino a ciò che sta sul pavimento (l’argano con il basamento e il rinvio, il limitatore, l’interruttore generale) e che la parete sia lunga almeno quanto il maggiore tra 500 mm e il quadro; la larghezza dei percorsi la misura dalla porta su una griglia di circa 20 mm, per difetto; l’altezza dei percorsi segue quella del locale; il verso di apertura della porta non è un dato del progetto (i disegni la danno apribile verso l’esterno); lo spazio sopra le parti rotanti lo misura dal loro punto più alto al soffitto più basso (avvertimento: con le parti protette da un carter il tecnico lo indica e la verifica non serve; fino a LIFT 1.28.0 e ROOM 1.12.0 non era verificato). Con la modifica di un impianto esistente (UNI 10411-1/-11:2024, 9.2) la superficie davanti al quadro entra nell’esito anche quando cambia solo la macchina, che le può stare davanti; l’altezza e la porta del locale restano «esistente» (la 9.2 ammette l’altezza attuale: le condizioni sono tra i punti da verificare in sito). Con la macchina in basso le stesse verifiche valgono per il suo locale, accanto al vano o sotto la fossa, con l’argano come ciò che sta sul pavimento; un locale sopra il vano non ha la macchina (con i rinvii è il locale delle pulegge, locale.pulegge)"
     },
     {
-      "n": 101,
+      "n": 112,
       "id": "vano.locale.esistente",
       "gruppo": "Locale del macchinario",
       "voce": "Locale del macchinario esistente nella modifica",
@@ -1247,7 +1379,7 @@
       "nota": "nella nota del foglio della sostituzione; nell’esito l’altezza e la porta restano «esistente», la superficie davanti al quadro entra quando cambia la macchina"
     },
     {
-      "n": 102,
+      "n": 113,
       "id": "vano.locale.pulegge",
       "gruppo": "Locale del macchinario",
       "voce": "Locale delle pulegge di rinvio (macchina in basso)",
@@ -1259,7 +1391,7 @@
       "nota": "con la macchina in basso e i rinvii in un locale sopra il vano, il software verifica l’altezza e la porta di quel locale con questi valori e lo spazio sopra le pulegge, con i loro assi dove li mette il software (impianto.basso.schema; avvertimento: non serve con le pulegge protette); non verifica la superficie libera. Fino a LIFT 1.23.0 quel locale era verificato come un locale del macchinario (2100 mm, porta 600 × 2000 mm, quadro) e il locale della macchina in basso solo per l’ingombro"
     },
     {
-      "n": 103,
+      "n": 114,
       "id": "vano.locale.quadro",
       "gruppo": "Locale del macchinario",
       "voce": "Il quadro di manovra fuori dall’ingombro dell’argano",
@@ -1271,7 +1403,7 @@
       "nota": ""
     },
     {
-      "n": 104,
+      "n": 115,
       "id": "vano.locale.quadro.posto",
       "gruppo": "Locale del macchinario",
       "voce": "Dove il software mette il quadro di manovra",
@@ -1283,7 +1415,79 @@
       "nota": ""
     },
     {
-      "n": 105,
+      "n": 116,
+      "id": "vano.locale.volantino",
+      "gruppo": "Locale del macchinario",
+      "voce": "La superficie libera accanto all’argano presso il volantino",
+      "valore": "la superficie libera di 500 × 600 mm per la manutenzione serve anche la manovra manuale di emergenza: il software la prende sul lato dell’argano dove arriva entro 300 mm dal volantino (all’estremità del motore, o dove lo mette la scheda del costruttore) se lì è profonda quanto serve, altrimenti sul lato più libero; quando nessuna superficie libera arriva entro 300 mm dal volantino la verifica avverte (margine = 300 mm meno la distanza)",
+      "riferimento": "UNI EN 81-20:2020, 5.2.6.3.2.1 b) (superficie libera dove servono manutenzione e manovra manuale di emergenza, 5.9.2.3.1); la distanza dal volantino è una scelta del software",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 43; il volantino e la leva di sblocco del freno dalle schede dei costruttori o dall’argano generico del software",
+      "stato": "scelta del software",
+      "verifiche": "superficie libera accanto all’argano presso il volantino",
+      "nota": "la leva di sblocco del freno sta accanto al freno, fra riduttore e motore: il tecnico conferma che si manovra dalla stessa superficie"
+    },
+    {
+      "n": 117,
+      "id": "vano.locale.esistente.altezza",
+      "gruppo": "Locale del macchinario",
+      "voce": "Altezza del locale esistente sotto 2,0 m (modifica con la UNI 10411-1)",
+      "valore": "nella modifica collaudata con la UNI 10411-1 il software verifica l’altezza libera del locale esistente: almeno 2000 mm passa; fra 1800 mm più lo spessore del materiale ammortizzante (50 mm, se non indicato) e 2000 mm avverte — zone segnalate a strisce gialle e nere o con un cartello, materiale ammortizzante sotto il soffitto e almeno 1800 mm liberi sotto di esso; sotto non passa. Con la UNI 10411-11 l’altezza esistente resta e la verifica non entra nell’esito; per un impianto nuovo vale la verifica dell’altezza di 2100 mm",
+      "riferimento": "UNI 10411-1:2024, 9.2; UNI EN 81-21:2022, 5.9; UNI 10411-11:2024, 9.2",
+      "fonte": "UNI 10411-1:2024, testo della norma, letto il 2026-10-06, p. 9; UNI EN 81-21:2022, testo della norma, letto il 2026-10-06, p. 23; lo spessore di 50 mm del materiale ammortizzante è una scelta del software, da sostituire con quello del prodotto posato",
+      "stato": "scelta del software",
+      "verifiche": "modifica (UNI 10411-1): altezza del locale esistente sotto 2,0 m",
+      "nota": "fino a ROOM 1.12.0 e LIFT 1.28.0 le misure della UNI EN 81-21 erano solo nella nota del foglio, stampata sempre; ora la nota le dice quando il locale è più basso di 2000 mm"
+    },
+    {
+      "n": 118,
+      "id": "vano.locale.fori",
+      "gruppo": "Locale del macchinario",
+      "voce": "Fori nella soletta: misura, posizione e bordi",
+      "valore": "ogni foro della soletta sopra il vano (funi di trazione, puleggia di rinvio che vi scende, attacchi delle funi in taglia 2:1) ha i lati a 30 mm dalle funi nelle due posizioni estreme della cabina e dalla puleggia; fori più vicini di 80 mm diventano uno; ogni foro ha un bordo in lamiera d’acciaio alto 50 mm sul pavimento finito e spesso 25 mm tutto attorno (lo stesso nel 3D), e le putrelle HEB sui muri del vano, che stanno 30 mm sopra la soletta, ne restano fuori in pianta (m_hebkerb, locale.putrelle.vano); la pianta del locale dà di ogni foro la misura («FORO L × P»: L lungo x, P lungo y del locale; con la linea delle calate obliqua lungo e di traverso le calate) e la posizione del centro dai muri interni del vano (x dal muro di sinistra, y dal muro dell’accesso A, come nel rilievo); la sezione B-B disegna e quota i bordi; nella sostituzione le aperture esistenti rilevate sono disegnate tratteggiate e gli appoggi del nuovo basamento ne stanno ad almeno 100 mm dal bordo (m_holes, avviso: un’apertura si può chiudere)",
+      "riferimento": "UNI EN 81-20:2020, 5.2.6.3.3 (aperture ridotte al minimo, bordi di almeno 50 mm); il gioco e lo spessore del bordo sono scelte del software",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 43; gioco di 30 mm e bordo in lamiera di 25 mm come il 3D che taglia la soletta; un bordo in calcestruzzo, più spesso, si adatta in sito",
+      "stato": "scelta del software",
+      "verifiche": "sostituzione: appoggi del nuovo basamento lontani dalle aperture esistenti della soletta",
+      "nota": ""
+    },
+    {
+      "n": 119,
+      "id": "vano.locale.gancio",
+      "gruppo": "Locale del macchinario",
+      "voce": "Gancio di sollevamento sopra l’argano",
+      "valore": "un gancio di sollevamento fissato al soffitto sopra il baricentro dell’argano (al centro del suo ingombro in pianta), quotato in pianta da due muri del locale; la portata è il pezzo più pesante da sollevare — l’argano con il suo telaio, il telaio con il rinvio del costruttore, nella sostituzione anche l’argano esistente — arrotondato per eccesso al multiplo di 500 kg, almeno 1000 kg; l’occhio del gancio 150 mm sotto il soffitto: la sezione B-B quota l’altezza libera sotto di esso",
+      "riferimento": "UNI EN 81-20:2020, 5.2.1.7 (ganci o punti di ancoraggio con la portata indicata, ben posizionati); posizione, arrotondamento e minimo sono scelte del software",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 26; portate commerciali dei ganci e dei golfari da soffitto",
+      "stato": "scelta del software",
+      "verifiche": "",
+      "nota": "la portata va marcata sul gancio; il gancio e il suo ancoraggio nel solaio li verifica il tecnico strutturale (con un gancio esistente la portata targata va confrontata con quella del disegno); il tecnico può prescriverne un’altra"
+    },
+    {
+      "n": 120,
+      "id": "vano.locale.attacchi",
+      "gruppo": "Locale del macchinario",
+      "voce": "Attacchi delle funi in taglia 2:1",
+      "valore": "in taglia 2:1 le funi finiscono negli attacchi sulla soletta del locale: una piastra d’acciaio sotto la soletta, quadrata di 180 mm e spessa 20 mm, con tirafondi passanti e una contropiastra sul pavimento del locale; i carichi P2 (lato cabina) e P3 (lato contrappeso) agiscono lì, separati da P1 (il basamento dell’argano); la pianta del locale li segna e quota il loro centro dai muri interni del vano",
+      "riferimento": "UNI EN 81-20:2020, 5.2.1.8.1 (carichi sull’edificio) e 5.5.2.3.1 (attacchi delle funi ai punti fissi dei tratti morti); dimensioni scelta del software",
+      "fonte": "scelta del software (attacchi delle funi sulla soletta come nella pratica italiana), da verificare dal tecnico strutturale",
+      "stato": "scelta del software",
+      "verifiche": "",
+      "nota": "attacchi su una trave o sul telaio dell’argano sono un’alternativa: il tecnico lo indica, e allora P2 e P3 vanno nel carico del basamento"
+    },
+    {
+      "n": 121,
+      "id": "vano.locale.impianti",
+      "gruppo": "Locale del macchinario",
+      "voce": "Luce, interruttori, prese, aerazione e canaline nel locale",
+      "valore": "la pianta del locale disegna con la loro legenda: i punti luce sopra le zone di lavoro (almeno 200 lx al pavimento, illuminazione), l’interruttore della luce presso l’accesso, entro 1000 mm dalla porta, accanto all’interruttore generale; una presa 2P+PE per ogni area di lavoro (accanto all’argano e accanto al quadro); la griglia di aerazione; le canaline dal quadro all’argano e al vano, coperte dove si cammina",
+      "riferimento": "UNI EN 81-20:2020, 5.2.1.4.2 (luce), 5.2.1.5.2 a)–b) (interruttore a ogni accesso, una presa per area di lavoro), 5.10.7.2 (prese 2P+PE), 5.10.8.2 (interruttore entro 1 m dall’accesso), 5.2.1.3 (ventilazione) e 5.2.6.3.2.5 (canaline a pavimento coperte); le posizioni sono una proposta del software",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 25–26, 43, 119",
+      "stato": "scelta del software",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 122,
       "id": "vano.illuminazione",
       "gruppo": "Locale del macchinario",
       "voce": "Illuminazione del vano e del locale del macchinario",
@@ -1295,7 +1499,7 @@
       "nota": ""
     },
     {
-      "n": 106,
+      "n": 123,
       "id": "vano.locale.temperatura",
       "gruppo": "Locale del macchinario",
       "voce": "Temperatura dei locali del macchinario e degli armadi",
@@ -1307,7 +1511,7 @@
       "nota": ""
     },
     {
-      "n": 107,
+      "n": 124,
       "id": "vano.locale.basamento",
       "gruppo": "Locale del macchinario",
       "voce": "Basamento dell’argano",
@@ -1319,7 +1523,7 @@
       "nota": "fino a SHAFT 2.21.0, LIFT 1.27.0 e ROOM 1.11.0 sotto gli antivibranti dell’argano andavano altri 30 mm di tamponi (due stadi elastici in serie, l’asse 30 mm più alto) su telaio, putrelle, piastre e plinto; il telaio erano tre profilati senza traverse; telaio e plinto andavano 100 mm oltre l’argano anche dentro un muro"
     },
     {
-      "n": 108,
+      "n": 125,
       "id": "vano.locale.telaio",
       "gruppo": "Locale del macchinario",
       "voce": "Telaio sotto l’argano",
@@ -1331,7 +1535,7 @@
       "nota": "fino a LIFT 1.24.0, ROOM 1.8.0 e SHAFT 2.18.0 il telaio aveva due soli ferri, sotto le file di fori, con la puleggia a sbalzo oltre di essi; fino a LIFT 1.26.0, ROOM 1.10.0 e SHAFT 2.20.0 sotto l’argano di catalogo era alto quanto teneva l’asse dove lo tiene l’argano generico (fino a 285 mm, i ferri su ritti), anche sopra il telaio con rinvio"
     },
     {
-      "n": 109,
+      "n": 126,
       "id": "vano.locale.rinvio",
       "gruppo": "Locale del macchinario",
       "voce": "Puleggia di rinvio nel locale del macchinario",
@@ -1343,7 +1547,7 @@
       "nota": "fino a LIFT 1.27.0 e ROOM 1.11.0 il telaio del costruttore era disegnato e verificato lungo quanto il nostro (l’argano e il rinvio più 100 mm a ogni estremità), non quanto a catalogo"
     },
     {
-      "n": 110,
+      "n": 127,
       "id": "vano.locale.ingombro",
       "gruppo": "Locale del macchinario",
       "voce": "L’argano dentro il locale del macchinario",
@@ -1355,7 +1559,7 @@
       "nota": "fino a LIFT 1.25.0, ROOM 1.9.0 e SHAFT 2.19.0 l’argano stava sempre con il motore verso il contrappeso, anche quando così entrava nel muro, e l’ingombro non contava quanto il telaio o il plinto sporgono oltre il telaio dell’argano; fino a LIFT 1.27.0 i rami della macchina in basso stretti fra contrappeso e parete erano solo un avviso nel modulo, e a linea delle calate obliqua i rami, l’argano e il suo locale seguivano la linea delle calate invece della parete"
     },
     {
-      "n": 111,
+      "n": 128,
       "id": "vano.locale.putrelle",
       "gruppo": "Locale del macchinario",
       "voce": "Verifica delle putrelle sotto l’argano",
@@ -1367,7 +1571,7 @@
       "nota": "verifica semplice a carico concentrato in mezzeria su trave appoggiata; gli appoggi nei muri e la muratura vanno verificati dal progettista; fino a LIFT 1.24.0 e ROOM 1.8.0 le putrelle erano due, sotto le file di fori con la puleggia a sbalzo oltre di esse; fino a LIFT 1.27.0 e ROOM 1.11.0, a linea delle calate obliqua, le tre putrelle avevano la luce di quella sotto la linea delle calate"
     },
     {
-      "n": 112,
+      "n": 129,
       "id": "vano.locale.calate",
       "gruppo": "Locale del macchinario",
       "voce": "Sostituzione dell’argano: calate esistenti e calate della nuova macchina",
@@ -1376,22 +1580,22 @@
       "fonte": "tolleranza scelta dal software per il rilievo in sito (le funi a qualche metro dal basamento): da confermare con l’installatore",
       "stato": "scelta del software",
       "verifiche": "sostituzione: calate della nuova macchina sulle calate esistenti",
-      "nota": ""
+      "nota": "con il tiro diretto la nuova puleggia può essere più piccola delle calate esistenti: ogni ramo scende inclinato di (calate − D)/2 fino agli attacchi (la relazione tecnica lo scrive con l’angolo); i fori nella soletta seguono le funi al loro livello"
     },
     {
-      "n": 113,
+      "n": 130,
       "id": "vano.locale.putrelle.vano",
       "gruppo": "Locale del macchinario",
       "voce": "Putrelle HEB sui muri del vano sotto l’argano",
-      "valore": "quando la soletta tra il locale e il vano non ha una verifica strutturale, il basamento dell’argano (i suoi piedi, le estremità del telaio, le gambe del telaio con il rinvio, il supporto del rinvio) poggia su due putrelle HEB 120, HEB 140 o HEB 160 che scavalcano il vano da muro a muro, lungo la sua larghezza o la sua profondità, con un appoggio di 200 mm in ognuno dei due muri del vano; le due putrelle stanno sotto i piedi più esterni del basamento (le gambe del telaio con il rinvio del costruttore), e sotto il nostro telaio basso o il nostro telaio con il rinvio, che le attraversano, il più lontane possibile tra loro entro i muri del vano e a non meno di 50 mm dalle funi che attraversano la soletta (anche quella del limitatore): il telaio può sporgere oltre di esse, le gambe del nostro telaio con il rinvio stanno dove i suoi lati incrociano le putrelle, sulle loro ali, anche con la linea delle calate obliqua. Ognuna è una trave appoggiata tra i centri degli appoggi (luce libera più 200 mm) che porta la sua parte del carico dell’argano (il suo peso più il carico statico sull’asse per il coefficiente dinamico, nella risultante del peso dell’argano e delle due calate) per la regola della leva, più il proprio peso: σ = M/Wel,y ≤ fyk/γM0 e freccia ≤ 1/1500 della luce libera come per le putrelle sotto l’argano; la risultante tra le due putrelle, i piedi sulle ali delle putrelle (un telaio che le attraversa solo entro la loro lunghezza), le funi che attraversano la soletta (anche quella del limitatore) ad almeno 50 mm dalle putrelle, i muri del vano spessi almeno quanto l’appoggio e le due putrelle sopra i muri che le portano, entro le loro facce esterne (sotto piedi oltre il vano una putrella non poggia su nulla e la verifica non passa). Delle sei scelte (due direzioni, tre profili) il software prende le putrelle più corte che passano le verifiche, poi le più leggere — le più facili da portare nel locale, anche con l’argano girato; profilo e direzione si scelgono a mano",
+      "valore": "quando la soletta tra il locale e il vano non ha una verifica strutturale, il basamento dell’argano (i suoi piedi, le estremità del telaio, le gambe del telaio con il rinvio, il supporto del rinvio) poggia su due putrelle HEB 120, HEB 140 o HEB 160 che scavalcano il vano da muro a muro, lungo la sua larghezza o la sua profondità, con un appoggio di 200 mm in ognuno dei due muri del vano: ogni estremità poggia su una piastra di ripartizione sopra il muro, lunga quanto l’appoggio, larga 250 mm e spessa 15 mm, su un letto di malta antiritiro di 15 mm, così l’intradosso della putrella sta 30 mm sopra la soletta e non la tocca fra gli appoggi (il distacco supera la freccia ammessa più 10 mm: la verifica della freccia lo garantisce); le due putrelle stanno sotto i piedi più esterni del basamento (le gambe del telaio con il rinvio del costruttore), e sotto il nostro telaio basso o il nostro telaio con il rinvio, che le attraversano, il più lontane possibile tra loro entro i muri del vano e a non meno di 50 mm dalle funi che attraversano la soletta (anche quella del limitatore) e fuori dai bordi dei loro fori (locale.fori: la putrella sta 30 mm sopra la soletta, sotto la sommità del bordo di 50 mm): il telaio può sporgere oltre di esse, le gambe del nostro telaio con il rinvio stanno dove i suoi lati incrociano le putrelle, sulle loro ali, anche con la linea delle calate obliqua. Ognuna è una trave appoggiata tra i centri degli appoggi (luce libera più 200 mm) che porta la sua parte del carico dell’argano (il suo peso più il carico statico sull’asse per il coefficiente dinamico, nella risultante del peso dell’argano e delle due calate) per la regola della leva, più il proprio peso: σ = M/Wel,y ≤ fyk/γM0 e freccia ≤ 1/1500 della luce libera come per le putrelle sotto l’argano; la risultante tra le due putrelle, i piedi sulle ali delle putrelle (un telaio che le attraversa solo entro la loro lunghezza), le funi che attraversano la soletta (anche quella del limitatore) ad almeno 50 mm dalle putrelle, le putrelle fuori dai bordi dei fori in pianta (anche a filo), i muri del vano spessi almeno quanto l’appoggio e le due putrelle sopra i muri che le portano, entro le loro facce esterne (sotto piedi oltre il vano una putrella non poggia su nulla e la verifica non passa). Delle sei scelte (due direzioni, tre profili) il software prende le putrelle più corte che passano le verifiche, poi le più leggere — le più facili da portare nel locale, anche con l’argano girato; profilo e direzione si scelgono a mano",
       "riferimento": "UNI EN 81-20:2020, 5.2.1.8.1 e appendice E.1 (carichi sull’edificio); NTC 2018, §4.2.4.1.1 (γM0), Tab. 11.3.IX (S275), §11.3.4.1 (E); DPR 1497/1963, art. 5.1–5.2 (freccia ≤ 1/1500 della luce libera); proprietà dei profili EN 10365",
-      "fonte": "scelta del committente (putrelle HEB 120/140/160 sui muri del vano quando manca la verifica della soletta); scelta del software (appoggio di 200 mm, 50 mm dalle funi, le più corte e poi le più leggere); UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 26, 148",
+      "fonte": "scelta del committente (putrelle HEB 120/140/160 sui muri del vano quando manca la verifica della soletta); scelta del software (appoggio di 200 mm, piastre di ripartizione e malta antiritiro secondo la pratica di cantiere, 50 mm dalle funi, le più corte e poi le più leggere); UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 26, 148",
       "stato": "scelta del software",
-      "verifiche": "tensione nelle putrelle HEB sui muri del vano; freccia delle putrelle HEB sui muri del vano; basamento dell’argano sulle putrelle HEB; funi lontane dalle putrelle HEB; appoggio delle putrelle HEB nei muri del vano",
-      "nota": "verifica semplice di trave appoggiata con il carico nella risultante; gli appoggi nei muri del vano, la muratura sotto di essi, il fissaggio dell’argano alle putrelle, il collegamento tra le due putrelle e lo sbalzo del telaio oltre di esse vanno verificati dal progettista; fino a LIFT 1.27.0 e ROOM 1.11.0 il nostro telaio con il rinvio stava sulle gambe ai suoi angoli, le putrelle sotto di esse (oltre il muro di fondo nell’esempio: nessuna scelta passava), e le putrelle sotto un telaio che le attraversa non evitavano le funi; con un basamento sui piedi e la linea delle calate obliqua (spessori, piastre, il telaio del costruttore) i piedi non stanno tutti sulle ali: il telaio basso che le attraversa è la scelta che passa"
+      "verifiche": "tensione nelle putrelle HEB sui muri del vano; freccia delle putrelle HEB sui muri del vano; basamento dell’argano sulle putrelle HEB; funi lontane dalle putrelle HEB; putrelle HEB fuori dai bordi dei fori nella soletta; appoggio delle putrelle HEB nei muri del vano",
+      "nota": "verifica semplice di trave appoggiata con il carico nella risultante; i disegni mostrano le piastre sopra i muri, il distacco dalla soletta e l’appoggio quotato, e le gambe del basamento fissate alle ali con piastre e bulloni (o morsetti) — dettaglio da confermare; in alternativa le putrelle in tasche nei muri sotto la soletta, che il tecnico disegna a parte; fino a LIFT 1.28.0 e ROOM 1.12.0 le putrelle erano disegnate appoggiate sulla soletta per tutta la lunghezza e potevano passare sopra i bordi dei fori (nessuna verifica m_hebkerb); il bordo è quello in lamiera del disegno (locale.fori): un bordo in calcestruzzo, più spesso, il tecnico lo tiene fuori dalle putrelle; gli appoggi nei muri del vano, la muratura sotto di essi, il fissaggio dell’argano alle putrelle, il collegamento tra le due putrelle e lo sbalzo del telaio oltre di esse vanno verificati dal progettista; fino a LIFT 1.27.0 e ROOM 1.11.0 il nostro telaio con il rinvio stava sulle gambe ai suoi angoli, le putrelle sotto di esse (oltre il muro di fondo nell’esempio: nessuna scelta passava), e le putrelle sotto un telaio che le attraversa non evitavano le funi; con un basamento sui piedi e la linea delle calate obliqua (spessori, piastre, il telaio del costruttore) i piedi non stanno tutti sulle ali: il telaio basso che le attraversa è la scelta che passa"
     },
     {
-      "n": 114,
+      "n": 131,
       "id": "vano.carichi.fossa",
       "gruppo": "Carichi sull’edificio e spinte sulle guide",
       "voce": "Carichi sul pavimento della fossa",
@@ -1403,7 +1607,7 @@
       "nota": "non calcolato: con spazi accessibili sotto il vano (5.2.5.4) il contrappeso ha il paracadute, sotto le sue guide va anche k1·g·M_cw/n e il fondo della fossa regge almeno 5000 N/m². In P il software conta anche il cavo flessibile (metà corsa + 3 m, come sull’asse della macchina), come vuole la 5.2.1.8.5; la compensazione, se c’è, la aggiunge l’ingegnere"
     },
     {
-      "n": 115,
+      "n": 132,
       "id": "vano.guide.spinte",
       "gruppo": "Carichi sull’edificio e spinte sulle guide",
       "voce": "Spinte sulle guide di cabina",
@@ -1415,7 +1619,7 @@
       "nota": "h, la distanza tra i pattini, è una stima del software (l’ingombro verticale dell’arcata)"
     },
     {
-      "n": 116,
+      "n": 133,
       "id": "vano.carichi.macchina",
       "gruppo": "Carichi sull’edificio e spinte sulle guide",
       "voce": "Carico della macchina sulla soletta",
@@ -1427,7 +1631,7 @@
       "nota": ""
     },
     {
-      "n": 117,
+      "n": 134,
       "id": "vano.carichi.cavi",
       "gruppo": "Carichi sull’edificio e spinte sulle guide",
       "voce": "Massa dei cavi flessibili",
@@ -1439,7 +1643,7 @@
       "nota": ""
     },
     {
-      "n": 118,
+      "n": 135,
       "id": "vano.guide.staffe",
       "gruppo": "Carichi sull’edificio e spinte sulle guide",
       "voce": "Numero e posizione delle staffe delle guide",
@@ -1448,14 +1652,14 @@
       "fonte": "scelta del committente",
       "stato": "scelta del software",
       "verifiche": "",
-      "nota": "il passo delle staffe va confermato con la verifica delle guide (UNI EN 81-50:2020, 5.10), che usa la distanza tra le staffe"
+      "nota": "il foglio 1 delle tavole riporta l’interasse massimo tra le staffe montate, lo stesso l della verifica delle guide di cabina (UNI EN 81-50:2020, 5.10); le quote di ogni staffa dal fondo della fossa sono nel foglio dello sviluppo delle guide"
     },
     {
-      "n": 119,
+      "n": 136,
       "id": "vano.foglio.stime",
       "gruppo": "Carichi sull’edificio e spinte sulle guide",
       "voce": "Lunghezze stimate nel foglio dei dati",
-      "valore": "guide dal pavimento della fossa fino a 50 mm sotto la soletta del vano; fune del limitatore: due volte l’altezza dalla fossa al limitatore, posto 800 mm sopra il pavimento del locale; funi di sospensione: taglia × (corsa + 2 × tratto oltre la corsa), più deviazione o rinvii",
+      "valore": "guide dal pavimento della fossa fino a 50 mm sotto la soletta del vano; fune del limitatore: due volte l’altezza dalla fossa al limitatore, posto 800 mm sopra il pavimento del locale, arrotondata al metro superiore; funi di sospensione: la lunghezza di taglio (voce impianto.funi.taglio)",
       "riferimento": "—",
       "fonte": "stima del software, da sostituire con le misure di cantiere",
       "stato": "stima",
@@ -1463,7 +1667,19 @@
       "nota": ""
     },
     {
-      "n": 120,
+      "n": 137,
+      "id": "vano.carichi.reazioni",
+      "gruppo": "Carichi sull’edificio e spinte sulle guide",
+      "voce": "Reazioni sugli appoggi del basamento (R1…Rn)",
+      "valore": "il carico dell’argano sul basamento — la massa dell’argano con il suo telaio al centro del suo ingombro e il carico statico sul suo asse per il coefficiente dinamico, sui rami delle funi — ripartito sugli appoggi come da un corpo rigido su appoggi ugualmente cedevoli (regola della leva nelle due direzioni): sulla soletta sotto gli antivibranti (spessori, piastre), le estremità dei profilati del telaio, le gambe del telaio con rinvio, i blocchi del plinto; nei muri agli appoggi delle putrelle da muro a muro o delle HEB sopra il vano (ogni trave la sua quota di traverso, appoggiata lungo, con il peso proprio); il foglio 1 le scrive in daN, la pianta segna R1…Rn",
+      "riferimento": "UNI EN 81-20:2020, 5.2.1.8 (carichi sull’edificio); ripartizione scelta del software",
+      "fonte": "statica elementare (corpo rigido su appoggi elastici uguali; trave appoggiata); per il punzonamento della soletta sotto gambe e antivibranti, dati per il tecnico strutturale",
+      "stato": "scelta del software",
+      "verifiche": "",
+      "nota": "P1 resta il carico totale sul basamento; le reazioni non sono simultanee ai carichi P2…P8; la verifica della soletta e dei muri è del tecnico strutturale"
+    },
+    {
+      "n": 138,
       "id": "vano.guide.verifica",
       "gruppo": "Carichi sull’edificio e spinte sulle guide",
       "voce": "Verifica delle guide di cabina",
@@ -1475,7 +1691,7 @@
       "nota": "Confermati sul testo i coefficienti, le formule e i limiti, e il carico al piano per uso (UNI EN 81-20:2020, 5.7.2.3.6). Senza l’uso nei dati dell’impianto vale la regola per portata della UNI EN 81-1:2008 (G.2.5), che per un ascensore per persone da 2500 kg in su è dal lato della sicurezza. La formula di ω per Rm 370 è data da λ 20 a 250: sotto 20 il software usa ω di λ 20 (dal lato della sicurezza). Non contate: la spinta di scorrimento delle staffe (assestamento dell’edificio), le apparecchiature appese alle guide, le frecce di staffe ed edificio (la norma vuole la somma entro il limite) e le guide del contrappeso. La flessione della suola è quella dei pattini a rotelle (5.10.5 ha una formula a parte per quelli a scorrimento; il tipo di pattino non è un dato del software)."
     },
     {
-      "n": 121,
+      "n": 139,
       "id": "vano.guide.sezioni",
       "gruppo": "Carichi sull’edificio e spinte sulle guide",
       "voce": "Sezioni delle guide di cabina",
@@ -1487,7 +1703,7 @@
       "nota": ""
     },
     {
-      "n": 122,
+      "n": 140,
       "id": "vano.paracadute.tipo",
       "gruppo": "Carichi sull’edificio e spinte sulle guide",
       "voce": "Tipo di paracadute per la velocità nominale",
@@ -1499,7 +1715,19 @@
       "nota": ""
     },
     {
-      "n": 123,
+      "n": 141,
+      "id": "vano.paracadute.contrappeso",
+      "gruppo": "Carichi sull’edificio e spinte sulle guide",
+      "voce": "Spazio accessibile sotto il vano: paracadute del contrappeso e fondo della fossa",
+      "valore": "con uno spazio accessibile sotto il vano (macchina sotto la fossa) il contrappeso ha il paracadute e il fondo della fossa è progettato per almeno 5000 N/m² oltre alle reazioni degli ammortizzatori (P6, P8) e delle guide (P5, P7, con la presa del paracadute); il paracadute del contrappeso è progressivo oltre 1 m/s, fino a 1 m/s anche istantaneo, ed è azionato dal limitatore o, fino a 1 m/s, dalla rottura della sospensione o da una fune di sicurezza. Il tipo e l’azionamento si indicano nei dati dell’impianto: finché mancano la verifica non passa; il carico P7 conta la presa (progressivo se non indicato) su metà del contrappeso per guida",
+      "riferimento": "UNI EN 81-20:2020, 5.2.5.4, 5.2.1.8.4, 5.6.2.1.2.3, prospetto 11 (5.6.1.2), 5.6.2.2.2 e 5.6.2.2.3; UNI EN 81-50:2020, 5.10",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 27, 35, 79, 81",
+      "stato": "confermato",
+      "verifiche": "paracadute del contrappeso con spazi accessibili sotto il vano",
+      "nota": "le guide del contrappeso con la presa del paracadute (UNI EN 81-50:2020, 5.10) non sono verificate dal software (modello.non.calcolate); in una modifica la UNI 10411-1:2024 (6.14) accetta al posto del paracadute un pilastro esistente fino al terreno, verificato per i nuovi carichi: è una scelta del progettista"
+    },
+    {
+      "n": 142,
       "id": "vano.modello.passo",
       "gruppo": "Vano: limiti del progetto",
       "voce": "Dimensioni proposte della cabina",
@@ -1511,7 +1739,7 @@
       "nota": ""
     },
     {
-      "n": 124,
+      "n": 143,
       "id": "vano.modello.quote",
       "gruppo": "Vano: limiti del progetto",
       "voce": "Quote della pianta fissate a mano",
@@ -1523,7 +1751,7 @@
       "nota": ""
     },
     {
-      "n": 125,
+      "n": 144,
       "id": "vano.modello.limiti",
       "gruppo": "Vano: limiti del progetto",
       "voce": "Limiti del modello del vano",
@@ -1535,19 +1763,19 @@
       "nota": ""
     },
     {
-      "n": 126,
+      "n": 145,
       "id": "vano.modello.non.calcolate",
       "gruppo": "Vano: limiti del progetto",
       "voce": "Verifiche che il software non calcola",
-      "valore": "da fare a parte, con i dati dei fornitori: sollecitazioni e frecce delle staffe e delle guide del contrappeso (UNI EN 81-50:2020, 5.10: il software verifica le guide di cabina, sul foglio 1 delle tavole); puleggia del contrappeso in taglia 2:1 sotto il soffitto; paracadute del contrappeso con spazi accessibili sotto il vano; distanza tra le parti fisse più alte della fossa e quelle più basse della cabina sugli ammortizzatori; sporgenze nel vano oltre 150 mm senza balaustra; locale della macchina in basso (dimensioni e spazi di manovra: il software non lo disegna); movimento incontrollato della cabina (UCM) e velocità eccessiva in salita con la nuova macchina; muro sotto la soglia di piano (5.2.5.3.2 a)); le soluzioni della UNI EN 81-21:2022 per testata, fossa, locale e porte ridotti (le verifiche in sezione seguono solo la UNI EN 81-20:2020)",
-      "riferimento": "UNI EN 81-20:2020: guide e staffe 5.7.2–5.7.4 (con UNI EN 81-50:2020, 5.10); distanze in testata 5.2.5.7.2; spazi accessibili sotto il vano 5.2.5.4; parti fisse in fossa 5.2.5.8.2; sporgenze oltre 0,15 m 5.2.5.2.2.2; locale del macchinario 5.2.6.3; velocità eccessiva in salita 5.6.6; movimento incontrollato 5.6.7",
+      "valore": "da fare a parte, con i dati dei fornitori: sollecitazioni e frecce delle staffe e delle guide del contrappeso, anche con la presa del suo paracadute quando c’è uno spazio accessibile sotto il vano (UNI EN 81-50:2020, 5.10: il software verifica le guide di cabina, sul foglio 1 delle tavole; il paracadute del contrappeso lo chiede e ne conta il carico P7: paracadute.contrappeso); il fondo della fossa e la soletta sopra un locale sotto la fossa (5000 N/m² con le reazioni P5–P8: progetto strutturale); puleggia del contrappeso in taglia 2:1 sotto il soffitto con il contrappeso nella posizione più alta; uno spazio accessibile sotto il vano che non sia il locale della macchina (il software lo conosce solo con la macchina sotto la fossa); distanza tra le parti fisse più alte della fossa e quelle più basse della cabina sugli ammortizzatori; sporgenze nel vano oltre 150 mm senza balaustra; movimento incontrollato della cabina (UCM) e velocità eccessiva in salita con la nuova macchina; rigidità e sporgenze della lamiera sotto la soglia di piano (5.2.5.3.2 b)–c), dato del fornitore delle porte); porte di soccorso oltre 11 m tra due porte di piano (5.2.3.1: la verifica le chiede, il disegno non le ha); le soluzioni della UNI EN 81-21:2022 per testata, fossa, locale e porte ridotti (le verifiche in sezione seguono solo la UNI EN 81-20:2020). Il locale della macchina in basso è disegnato e verificato (altezza, porta, spazi davanti al quadro e accanto alla macchina) e le pulegge di rinvio appese sotto la soletta entrano nello spazio di rifugio sul tetto (spazi.tetto.appese)",
+      "riferimento": "UNI EN 81-20:2020: guide e staffe 5.7.2–5.7.4 (con UNI EN 81-50:2020, 5.10); distanze in testata 5.2.5.7.2; spazi accessibili sotto il vano 5.2.5.4 e fondo della fossa 5.2.1.8.4; parti fisse in fossa 5.2.5.8.2; sporgenze oltre 0,15 m 5.2.5.2.2.2; velocità eccessiva in salita 5.6.6; movimento incontrollato 5.6.7",
       "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 31–43, 89–97; analisi delle lacune del 2026-10-03",
       "stato": "scelta del software",
       "verifiche": "",
       "nota": ""
     },
     {
-      "n": 127,
+      "n": 146,
       "id": "impianto.corsa",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Corsa",
@@ -1559,7 +1787,7 @@
       "nota": ""
     },
     {
-      "n": 128,
+      "n": 147,
       "id": "impianto.portata",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Portata e velocità",
@@ -1571,7 +1799,7 @@
       "nota": "In una modifica il confronto con i carichi documentati è nella voce impianto.variazione.carico."
     },
     {
-      "n": 129,
+      "n": 148,
       "id": "impianto.variazione.carico",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Modifica: variazione dei carichi rispetto allo stato documentato",
@@ -1583,7 +1811,7 @@
       "nota": "T* della norma non comprende funi e cavi: P del calcolo comprende la quota del cavo flessibile, che si annulla nel confronto se resta la stessa. Quale portata decide la riga del prospetto non è detto nel testo (scelta prudente del software); con la -11 il 10 % si somma alle modifiche precedenti: lo stato documentato è quello dell’impianto originale"
     },
     {
-      "n": 130,
+      "n": 149,
       "id": "impianto.marcatura",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Modifica: UNI 10411-1 o UNI 10411-11",
@@ -1595,7 +1823,7 @@
       "nota": "la data dal DPR 162/1999 è una lettura dell’articolo 19 (messa in servizio secondo le regole precedenti fino al 30 giugno 1999)"
     },
     {
-      "n": 131,
+      "n": 150,
       "id": "impianto.collaudo",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Normativa di collaudo e parti sostituite o modificate",
@@ -1607,7 +1835,7 @@
       "nota": "lo scopo delle due UNI 10411 e i requisiti per la sostituzione del macchinario (punto 14) sono letti sul testo (voce sostituzione.adeguamenti); quali verifiche riguardano ciascuna parte e la matrice delle norme compatibili sono una lettura del software, da approvare dall’ingegnere"
     },
     {
-      "n": 132,
+      "n": 151,
       "id": "impianto.rifacimento",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Rifacimento con l’arcata esistente",
@@ -1619,7 +1847,7 @@
       "nota": "il DPR 162/1999 elenca le modifiche costruttive senza dire quando l’insieme diventa una sostituzione completa; la UNI 10411-1/-11:2024 (21.1) chiama modifica sostanziale il cambio insieme di quadro, macchina, almeno una porta di piano, cabina e arcata, con il risultato secondo la UNI EN 81-20:2020: tenendo l’arcata il 21.1 non si applica. Una cabina nuova nell’arcata esistente segue la UNI EN 81-20 5.4.1–5.4.10 (UNI 10411-1:2024, 22; con porte di cabina a battente fino a +0,10 m² di superficie senza cambiare la portata, 22 f)). La qualificazione dell’intervento la conferma il tecnico incaricato con il soggetto che esegue la verifica straordinaria"
     },
     {
-      "n": 133,
+      "n": 152,
       "id": "impianto.massa.cabina",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Massa della cabina non inserita",
@@ -1631,7 +1859,31 @@
       "nota": "va sostituita con la massa del libretto o con quella ricavata dalla prova di bilanciamento; la sensibilità ±10% ne mostra l’effetto"
     },
     {
-      "n": 134,
+      "n": 153,
+      "id": "impianto.massa.argano",
+      "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
+      "voce": "Massa dell’argano nei carichi sull’edificio",
+      "valore": "la massa di catalogo dice cose diverse secondo il costruttore (tutto l’argano; senza volano e puleggia; il solo riduttore, senza motore, volano e puleggia): nei carichi sull’edificio entra l’argano completo, aggiungendo la stima di ciò che manca — il motore dalla sua potenza (asincrono IEC a 4 poli in ghisa: 1,5 kW 25 kg, 2,2 kW 30 kg, 3 kW 33 kg, 4 kW 42 kg, 5,5 kW 62 kg, 7,5 kW 73 kg, 11 kW 115 kg, 15 kW 136 kg, 18,5 kW 175 kg, 22 kW 195 kg, 30 kW 255 kg, 37 kW 335 kg, 45 kW 370 kg, 55 kW 450 kg, 75 kW 560 kg, 90 kW 660 kg), la puleggia 0,00095 kg per mm di diametro primitivo e per mm di larghezza (le gole al loro passo — fino a Ø 12 passo 17, fino a Ø 14 passo 20, fino a Ø 16 passo 21 mm — più 12 mm di bordi, almeno 80 mm), il volano 21 kg; nel tiro sugli ancoraggi della macchina in basso conta solo la massa di catalogo (il limite inferiore, a favore di sicurezza); la massa inserita a mano, diversa da quella del catalogo, è presa come argano completo. Il modello è quello proposto dal catalogo o, con l’argano inserito a mano (anche dal calcolatore della sostituzione al progetto completo), quello che i valori del calcolo riconoscono — rapporto, carico statico, massa e puleggia, come la relazione lo nomina: lo stesso argano pesa lo stesso nel progetto, nel foglio 1, nella relazione e nella sostituzione",
+      "riferimento": "UNI EN 81-20:2020, 5.2.1.8.1 (carichi della macchina sulla struttura)",
+      "fonte": "definizioni delle masse nei documenti dei costruttori (ricerca, capitolo 17: Sassi senza volano e puleggia, LEO senza puleggia, Montanari massa del riduttore, PENTA e M105 con il motore); pulegge e volani dal catalogo Sassi REV 2023/01 (da 24 kg a Ø 450 × 80 a 135 kg a Ø 800 × 180; volani fino a 20,7 kg); motori: masse tipiche dei cataloghi dei motori asincroni in ghisa",
+      "stato": "stima",
+      "verifiche": "",
+      "nota": "la stima si sostituisce con la massa dell’argano completo dalla scheda del costruttore; fino a LIFT 1.28.0 e ROOM 1.12.0 la massa di catalogo entrava come quella dell’argano completo anche dove era il solo riduttore"
+    },
+    {
+      "n": 154,
+      "id": "impianto.massa.basamento",
+      "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
+      "voce": "Peso proprio del basamento sulla soletta",
+      "valore": "sulla soletta, oltre all’argano, il peso proprio di ciò che lo porta, con la geometria dei disegni: il telaio del software sotto un argano di catalogo (tre ferri a C alti quanto il telaio, ali di 70 mm, spessori 9 e 7 mm, con le traverse), il telaio di profilati (tre profilati e le due traverse), le putrelle (fra i muri con l’appoggio), le piastre sotto gli appoggi (180 × 120 mm), il plinto in calcestruzzo (2500 kg/m³, i due blocchi), il telaio con rinvio del software (travi UPN 160, gambe di tubo quadro da 9,2 kg/m, la puleggia di rinvio stimata come la puleggia di frizione), la puleggia sul suo supporto; acciaio 7850 kg/m³; il telaio con rinvio del costruttore con la sua massa di catalogo; le putrelle HEB sui muri del vano con la loro. Nel carico statico del foglio 1 (P9) e della relazione, senza coefficiente dinamico; nelle verifiche delle travi il peso proprio delle travi verificate è già nella verifica",
+      "riferimento": "UNI EN 81-20:2020, 5.2.1.8.1",
+      "fonte": "masse dei profilati EN 10365 (catalogo del software); calcestruzzo armato 25 kN/m³; geometria dei disegni del software",
+      "stato": "scelta del software",
+      "verifiche": "",
+      "nota": "fino a LIFT 1.28.0 e ROOM 1.12.0 il totale sulla soletta (P9) e la riga «Argano e telaio» contavano solo l’argano (e il telaio con rinvio del costruttore): plinto, telaio, putrelle e telaio con rinvio del software ne restavano fuori"
+    },
+    {
+      "n": 155,
       "id": "impianto.L0",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Fune oltre la corsa (L0)",
@@ -1640,10 +1892,10 @@
       "fonte": "dati verticali del vano; altezza dell’asse scelta dal software",
       "stato": "scelta del software",
       "verifiche": "",
-      "nota": ""
+      "nota": "inserita a mano (misurata sull’impianto) deve tornare con il progetto del vano entro 0,3 m, altrimenti va corretta: il progetto non si salva (scelta del software sulla tolleranza); passando dalla sostituzione al progetto completo il valore del calcolo non si porta come inserito, la geometria è quella del progetto del vano"
     },
     {
-      "n": 135,
+      "n": 156,
       "id": "impianto.dx",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Distanza orizzontale della puleggia di rinvio (dx)",
@@ -1655,7 +1907,7 @@
       "nota": "fino a LIFT 1.27.0 e ROOM 1.11.0 in taglia 2:1 le pulegge di cabina e di contrappeso giravano nel piano delle calate e la calata era quella tra i centri meno Dp: con il contrappeso sottile contro il muro la sua puleggia entrava nel muro e nella corsa della cabina"
     },
     {
-      "n": 136,
+      "n": 157,
       "id": "impianto.calata",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Tiro diretto (senza rinvio): calata uguale al diametro della puleggia",
@@ -1667,7 +1919,7 @@
       "nota": "con un diametro diverso dalla calata le funi si inclinano verso gli attacchi: nella sostituzione con il confronto il calcolo ne tiene conto per la nuova puleggia; oltre pochi millimetri servono una puleggia di rinvio o il contrappeso spostato (quota «Calata» in pianta)"
     },
     {
-      "n": 137,
+      "n": 158,
       "id": "impianto.Hv",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina in basso: altezza fino alle pulegge in alto (Hv)",
@@ -1676,14 +1928,14 @@
       "fonte": "dati verticali del vano",
       "stato": "derivazione",
       "verifiche": "",
-      "nota": ""
+      "nota": "inserita a mano deve tornare con il progetto del vano entro 0,5 m (scelta del software sulla tolleranza), altrimenti va corretta e il progetto non si salva: un Hv più lungo di quanto lo schema consente (con la macchina accanto al vano al piano più basso, oltre l’altezza della testata sopra la puleggia) darebbe funi, masse e lunghezze d’ordine sbagliate; passando dalla sostituzione al progetto completo il valore del calcolo (spesso quello dell’esempio) non si porta come inserito"
     },
     {
-      "n": 138,
+      "n": 159,
       "id": "impianto.basso.schema",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina in basso: schema delle funi",
-      "valore": "tre schemi: rinvii appesi sotto la soletta del vano (assi a Dp/2 + 120 mm sotto il soffitto), macchina nel locale al piano più basso oltre la parete del contrappeso con la puleggia nel vano; locale pulegge sopra la soletta (assi a 450 mm sul pavimento del locale, soletta di 250 mm se il locale non è progettato), macchina come sopra; macchina sotto il vano, in un locale alto 2400 mm sotto la soletta della fossa di 300 mm, rinvii sotto la soletta. Il locale della macchina accanto al vano è lungo 2200 mm oltre la parete, largo 2600 mm e alto 2400 mm, con la porta sul fianco e il quadro sulla parete di fondo; quello sotto il vano è grande quanto il vano. Tutti e due si allargano dove la macchina ne esce, fino a 500 mm oltre il suo ingombro; larghezza, profondità, altezza e porta del locale si cambiano sui suoi disegni (accanto al vano resta il lato al muro, sotto il vano l’angolo più vicino all’origine; sotto il vano la sua altezza abbassa la macchina) e la macchina deve restarci dentro. I due rami alla macchina salgono dietro il contrappeso a 50 mm dalla parete e dal contrappeso, la puleggia con il piano parallelo alla parete; per lato un rinvio a 180° se il ramo dista dalla calata in pianta non più di Dp, altrimenti due rinvii a 90° con un tratto orizzontale. Il calcolo conta due rinvii per la macchina in basso: gli altri entrano come flessioni semplici aggiuntive (nps)",
+      "valore": "tre schemi: rinvii appesi sotto la soletta del vano (assi a Dp/2 + 120 mm sotto il soffitto), macchina nel locale al piano più basso oltre la parete del contrappeso con la puleggia nel vano; locale pulegge sopra la soletta (assi a 450 mm sul pavimento del locale, soletta di 250 mm se il locale non è progettato), macchina come sopra; macchina sotto il vano, in un locale alto 2400 mm sotto la soletta della fossa di 300 mm, rinvii sotto la soletta. Il locale della macchina accanto al vano è lungo 2200 mm oltre la parete, largo 2600 mm e alto 2400 mm, con la porta sul fianco e il quadro sulla parete di fondo; quello sotto il vano è grande quanto il vano. Tutti e due si allargano dove la macchina ne esce, fino a 500 mm oltre il suo ingombro; larghezza, profondità, altezza e porta del locale si cambiano sui suoi disegni (accanto al vano resta il lato al muro, sotto il vano l’angolo più vicino all’origine; sotto il vano la sua altezza abbassa la macchina) e la macchina deve restarci dentro. I due rami alla macchina salgono dietro il contrappeso a 50 mm dalla parete e dal contrappeso, la puleggia con il piano parallelo alla parete (accanto al vano a 50 mm la puleggia, quando è più larga dei rami: tra i rami nel vano, con il corpo della macchina tutto nel locale a 50 mm dalla parete e nel muro solo l’albero lento nel suo manicotto); per lato un rinvio a 180° se il ramo dista dalla calata in pianta non più di Dp, altrimenti due rinvii a 90° con un tratto orizzontale. Il calcolo conta due rinvii per la macchina in basso: gli altri entrano come flessioni semplici aggiuntive (nps)",
       "riferimento": "ricerca, funi con la macchina in basso, capitoli 2–5; DPR 1497/1963 artt. 5–9, 33",
       "fonte": "geometria ricostruita dal software",
       "stato": "scelta del software",
@@ -1691,19 +1943,19 @@
       "nota": "lo schema reale va rilevato sull’impianto; con la macchina sotto il vano lo spazio sotto la fossa è accessibile: paracadute del contrappeso — la EN 81-20 non ammette più il pilastro pieno fino al terreno — (UNI EN 81-20:2020, 5.2.5.4) e fondo della fossa per le reazioni degli ammortizzatori; in una modifica la UNI 10411-1:2024 (6.14) accetta al posto del paracadute un pilastro esistente fino al terreno, verificato per i nuovi carichi"
     },
     {
-      "n": 139,
+      "n": 160,
       "id": "impianto.catalogo",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina proposta dal catalogo di un costruttore",
-      "valore": "tra le opzioni del dimensionamento solo quelle che un argano del costruttore scelto accetta: puleggia nella gamma del modello, carico statico sull’albero non oltre quello del catalogo, motore non oltre il più grande del catalogo, portata dichiarata; il rapporto è quello del catalogo più vicino al rapporto ideale, se la velocità che dà non si scosta da quella nominale più del 10 % (l’inverter adatta la frequenza); il calcolo usa quel rapporto, il carico statico ammesso e la massa del catalogo; i disegni e il 3D mostrano l’argano SICOR com’è (ingombri, piedi e fori, asse della puleggia, P ed E della scheda), sul telaio del software",
+      "valore": "tra le opzioni del dimensionamento solo quelle che un argano del costruttore scelto accetta: puleggia nella gamma del modello, carico statico sull’albero non oltre quello del catalogo, motore non oltre il più grande del catalogo, portata dichiarata; il rapporto è quello del catalogo più vicino al rapporto ideale, se la velocità che dà non si scosta da quella nominale più del 10 % (l’inverter adatta la frequenza); il calcolo usa quel rapporto, il carico statico ammesso e la massa del catalogo; con il rapporto del catalogo e la geometria dell’argano com’è (asse della puleggia, telaio con rinvio del costruttore: h, angolo di avvolgimento, fune oltre la corsa) motore, gola e freno sono dimensionati di nuovo con le regole del dimensionamento — il motore IEC più piccolo che copre la potenza statica alla velocità reale, non oltre il più grande del catalogo; la gola che aderisce col margine più largo e, se con essa il coefficiente di sicurezza delle funi non basta, quella che aderisce di più fra le meno incise, a mezzo grado, fino al margine successivo; l’argano che non passa ogni verifica così, o per cui la pianta non sa posizionare il rinvio, non prende l’opzione e si prova la successiva; i disegni e il 3D mostrano l’argano SICOR com’è (ingombri, piedi e fori, asse della puleggia, P ed E della scheda), sul telaio del software",
       "riferimento": "ricerca, capitolo 12 (catalogo degli argani)",
       "fonte": "SICOR: schede tecniche 2025 e modelli CAD scaricati da sicoritaly.com il 2 ottobre 2026 (solo le quote); Sassi, Montanari, GEM, FAER: estratti delle pagine dei costruttori e dei rivenditori, 1° ottobre 2026",
       "stato": "scelta del software",
       "verifiche": "",
-      "nota": "la tolleranza sul rapporto è una scelta del software: la velocità reale con l’inverter deve restare entro il 5 % sopra la nominale (UNI EN 81-20:2020, 5.9.2.4; buona pratica non oltre l'8 % sotto); i dati di Sassi, Montanari, GEM e FAER vengono da estratti dei motori di ricerca, non dai documenti; tutti vanno confermati sulla scheda del costruttore prima dell’ordine; per Montanari la massa è quella del riduttore (senza motore, puleggia e volano) e le pulegge sono quelle delle configurazioni tipiche; GEAT Elevators distribuisce argani Montanari, Sassi e FAER (P58F, P58S) e non ne costruisce"
+      "nota": "la tolleranza sul rapporto è una scelta del software: la velocità reale con l’inverter deve restare entro il 5 % sopra la nominale (UNI EN 81-20:2020, 5.9.2.4; buona pratica non oltre l'8 % sotto); i dati di Sassi, Montanari, GEM e FAER vengono da estratti dei motori di ricerca, non dai documenti; tutti vanno confermati sulla scheda del costruttore prima dell’ordine; per Montanari la massa è quella del riduttore (senza motore, puleggia e volano) e le pulegge sono quelle delle configurazioni tipiche; GEAT Elevators distribuisce argani Montanari, Sassi e FAER (P58F, P58S) e non ne costruisce; fino a LIFT 1.28.0 il motore e la gola restavano quelli della griglia, al rapporto ideale e con la geometria dell’argano generico: un argano più veloce poteva mancare la potenza statica e uno con l’asse più basso l’aderenza, e su plinto o telaio un argano con l’asse più alto era proposto anche quando la pianta non posizionava il rinvio (da inserire a mano)"
     },
     {
-      "n": 140,
+      "n": 161,
       "id": "impianto.macchina",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina proposta",
@@ -1715,7 +1967,163 @@
       "nota": "una griglia di calcolo, non un catalogo: il modello reale va scelto dal costruttore con questi valori. La puleggia cambia la geometria delle funi (fune oltre la corsa, distanza del rinvio): ogni puleggia della griglia è dimensionata con la propria, e con il rinvio dalla pianta solo le pulegge per cui la pianta sa posizionare il rinvio"
     },
     {
-      "n": 141,
+      "n": 162,
+      "id": "tavole.caratteri",
+      "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
+      "voce": "Altezza minima delle scritte dei disegni",
+      "valore": "nomi, sigle e richiami dei carichi a corpo 2,5 mm sul foglio (maiuscole alte 1,8 mm); una scritta che alla scala del foglio non ci sta non si rimpicciolisce: esce dal disegno con una linea di richiamo; le etichette del cartiglio e della striscia a corpo 2 mm, le quote con le proprie altezze",
+      "riferimento": "UNI EN ISO 3098-1 (serie delle altezze nominali della scrittura: 1,8 – 2,5 – 3,5 mm …)",
+      "fonte": "scelta del software sulla serie della norma; misura del carattere DejaVu Sans (maiuscole 0,73 del corpo)",
+      "stato": "scelta del software",
+      "verifiche": "",
+      "nota": "prima i nomi che non stavano si rimpicciolivano sotto i 2,5 mm di corpo, fino a non leggersi in stampa"
+    },
+    {
+      "n": 163,
+      "id": "tavole.matricola",
+      "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
+      "voce": "Numero di matricola nel cartiglio e nella striscia",
+      "valore": "quello dei dati dell’impianto; se manca, «DA ASSEGNARE» per un impianto nuovo (il Comune lo assegna dopo la comunicazione della messa in esercizio) e «DA COMUNICARE» per un impianto esistente modificato, che il Comune e l’organismo delle verifiche conoscono per matricola",
+      "riferimento": "DPR 162/1999 e s.m.i., art. 12 c.1–3 (matricola entro 30 giorni dalla comunicazione), c.4–5 (modifica)",
+      "fonte": "DPR 162/1999 (testo su Normattiva)",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 164,
+      "id": "tavole.revisioni",
+      "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
+      "voce": "Revisioni nel cartiglio",
+      "valore": "R0 «PRIMA EMISSIONE» con la data della prima emissione, poi R1, R2 … con la nota e la data di ciascuna; il cartiglio ne mostra le ultime 4; la casella del DIS. N° e la striscia di ogni foglio portano la revisione corrente con la sua data; una bozza (non emessa) non ha R0 e lascia la casella da compilare a mano; sotto il cartiglio la cella del timbro e della firma del progettista",
+      "riferimento": "ISO 7200 (campi del cartiglio: numero del disegno, indice di revisione, data)",
+      "fonte": "prassi dei disegni tecnici",
+      "stato": "prassi di cantiere",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 165,
+      "id": "tavole.argano",
+      "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
+      "voce": "Nome dell’argano nei disegni",
+      "valore": "il modello del catalogo su cui è fatto il calcolo, con accanto «(rif. impianto: …)» il testo dei dati dell’impianto quando è diverso; il testo deve nominare quel modello a parole intere (senza la nota fra parentesi, la puleggia «Ø…» e «con …»; «M 73» è M73, ma «Sx» è una parola a sé) e nessun altro modello o costruttore del catalogo (SH130G non è SH130, M73S non è M73): altrimenti l’emissione delle tavole si ferma finché non si corregge",
+      "riferimento": "relazione di calcolo e tavole dello stesso impianto: un solo argano",
+      "fonte": "scelta del software",
+      "stato": "scelta del software",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 166,
+      "id": "tavole.carichi",
+      "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
+      "voce": "Richiami dei carichi P1…P8 sulle tavole",
+      "valore": "dove ogni carico agisce: P1 sull’argano nel locale (con la macchina in basso sulle pulegge di rinvio in testata, tratteggiate nella pianta in testata, un richiamo con una linea a ciascuna), P2 e P3 sugli attacchi delle funi a 2:1, P4 sul limitatore, P5–P8 su guide e ammortizzatori nella pianta della fossa; ogni cerchio ad almeno 2r + 0,5 mm dagli altri e fuori dalle scritte, al primo posto libero intorno a ciò che indica",
+      "riferimento": "UNI EN 81-20:2020, 5.2.1.8 (carichi sulla struttura dell’edificio: voci carichi.macchina e carichi.fossa)",
+      "fonte": "scelta del software",
+      "stato": "scelta del software",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 167,
+      "id": "tavole.limitatore",
+      "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
+      "voce": "Carico del limitatore (P4) non noto",
+      "valore": "senza il carico del limitatore nei dati dell’impianto il foglio 1 scrive «DA FORNITORE» e non lo somma: lo dà il costruttore del limitatore (massa e tiro della fune all’intervento)",
+      "riferimento": "UNI EN 81-20:2020, 5.6.2.2 (limitatore di velocità)",
+      "fonte": "scelta del software",
+      "stato": "scelta del software",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 168,
+      "id": "tavole.elaborati",
+      "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
+      "voce": "Elaborati collegati sul foglio 1",
+      "valore": "sopra il cartiglio: «QUOTE IN mm, DA VERIFICARE IN CANTIERE», il numero delle verifiche non superate della tabella e i record da cui la serie è disegnata con l’inizio del loro SHA-256 (il calcolo e il progetto del vano, o il rilievo del locale e il calcolo per una sostituzione); la relazione tecnica della sostituzione cita le tavole emesse con numero, revisione e SHA-256",
+      "riferimento": "UNI 10411-1:2024, App. C (documenti della modifica)",
+      "fonte": "scelta del software",
+      "stato": "scelta del software",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 169,
+      "id": "tavole.cad",
+      "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
+      "voce": "File CAD della serie emessa",
+      "valore": "DXF (AutoCAD 2007) e DWG (AutoCAD 2000) della serie emessa, ridisegnati dal suo record solo se i motori danno lo stesso disegno: le viste in scala reale, il calcestruzzo campito ANSI31 (linee a 45° a 1,6 mm sul foglio), il foglio 1 alla scala della prima vista con il cartiglio come blocco CARTIGLIO i cui attributi sono numero, revisioni, date, matricola, committente e ubicazione; sotto la prima vista numero, revisione e SHA-256 della serie",
+      "riferimento": "prassi dello scambio dei disegni (blocco del cartiglio con attributi)",
+      "fonte": "scelta del software",
+      "stato": "scelta del software",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 170,
+      "id": "impianto.funi.taglio",
+      "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
+      "voce": "Lunghezza di taglio delle funi di sospensione",
+      "valore": "per ogni fune la lunghezza misurata sul progetto da attacco ad attacco con la cabina al piano più basso, su tutte le pulegge (puleggia di frizione, rinvio, pulegge in testata della macchina in basso, pulegge della taglia 2:1: tratti rettilinei e archi di avvolgimento), più 1 m per i due attacchi e la regolazione, arrotondata al metro superiore; un calcolo fatto da un progetto del vano la misura sulla geometria di quel progetto con il suo argano; senza il progetto del vano (sostituzione dell’argano) la lunghezza è taglia × (corsa + 2 × tratto oltre la corsa) più deviazione o rinvii. La stessa lunghezza nel foglio 1, nella distinta, nella bozza d’ordine e nella massa delle funi dei carichi sulla macchina; le funi che il collaudo lascia al loro posto il foglio 1 le dà come esistenti (la loro massa nei carichi resta a quella lunghezza)",
+      "riferimento": "—",
+      "fonte": "prassi di cantiere: la fune si taglia più lunga e si accorcia all’attacco; da misurare in sito prima del taglio",
+      "stato": "prassi di cantiere",
+      "verifiche": "",
+      "nota": "fino a LIFT 1.28.0 e ROOM 1.12.0 il foglio 1 dava la formula arrotondata al metro più vicino, i carichi la formula e la distinta la geometria senza aggiunta: con la macchina in basso circa 3 m di differenza per fune"
+    },
+    {
+      "n": 171,
+      "id": "impianto.basso.albero",
+      "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
+      "voce": "Macchina in basso accanto al vano: albero lento prolungato",
+      "valore": "con la macchina nel locale accanto al vano (rinvii in testata o locale pulegge) la puleggia di frizione sta nel vano, sull’albero lento che attraversa il muro: la proposta da un catalogo e il confronto tra SICOR e Montanari prendono solo le varianti ad albero lungo (SICOR LS, Montanari AL) o con supporto esterno (SICOR TS, Montanari S e i modelli con supporto, GEM L e CL, FAER P58F), con il carico statico ammesso con l’albero più lungo della scheda (SICOR SH140LS 1500 kg, SH160LS 3200 kg) o, se la scheda ne dà uno solo, quello del catalogo; un argano standard scelto per nome non si prende (lo schermo lo dice e nomina le varianti del costruttore). La bozza d’ordine riporta il piano medio della puleggia dalla faccia del muro verso il vano (la distanza dei rami dalla parete della voce impianto.basso.schema più metà del pacco funi), il muro attraversato, lo sbalzo minimo dalla faccia del riduttore a 50 mm dal muro e il supporto esterno; l’allungamento dell’albero rispetto al disegno del costruttore solo per un argano disegnato com’è che non sia già la variante ad albero lungo. Con la macchina sotto la fossa vale ogni argano",
+      "riferimento": "ricerca, capitolo 17 §2.1 (SICOR LS: carico statico per lunghezza dell’albero A e quota B) e §3 (Montanari AL e S)",
+      "fonte": "brochure SICOR Geared 2026, pp. 59 e 69; schede Montanari M73, M75, M93 e M98 (documenti del costruttore); scelta del software",
+      "stato": "da verificare",
+      "verifiche": "",
+      "nota": "come le quote A e B delle schede corrispondono allo sbalzo del progetto non è detto: il carico statico ammesso per lo sbalzo indicato va confermato con il costruttore prima dell’ordine. Nel calcolatore della sostituzione, che non conosce lo schema, la macchina in basso è presa accanto al vano"
+    },
+    {
+      "n": 172,
+      "id": "impianto.acop.ucm",
+      "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
+      "voce": "Protezioni ACOP e UCM nella bozza d’ordine e nella distinta",
+      "valore": "impianto nuovo (UNI EN 81-20/50): la bozza d’ordine chiede come si realizzano la protezione contro la sovravelocità in salita e quella contro i movimenti incontrollati, con l’organo d’arresto su cabina, contrappeso, funi, puleggia di frizione o albero della puleggia sostenuto in due soli punti — mai il freno sull’albero del motore di un argano con riduttore —: freno sull’albero lento o sulla puleggia certificato, bloccafuni certificato, oppure paracadute di cabina bidirezionale con il rilevamento dei movimenti incontrollati nel quadro; il numero del certificato di esame UE del tipo e i microinterruttori di controllo del freno; la distinta conta un dispositivo. Modifica con l’argano sostituito: la bozza chiede che le protezioni esistenti continuino a funzionare e, senza UCM conforme, il controllo dell’apertura del freno; con la UNI 10411-11 la distinta conta il loro adeguamento",
+      "riferimento": "UNI EN 81-20:2020, 5.6.6.2, 5.6.6.4, 5.6.6.11, 5.6.7.3, 5.6.7.4, 5.6.7.13 e 6.3.11–6.3.13; UNI 10411-1:2024, 14.4 c), d) e g); UNI 10411-11:2024, 14.3 a) e b), appendice A (14)",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 89–93; UNI 10411-1:2024, testo della norma, letto il 2026-10-06, p. 14; UNI 10411-11:2024, testo della norma, letto il 2026-10-06, p. 12; scelta del software (le righe dell’ordine e della distinta)",
+      "stato": "scelta del software",
+      "verifiche": "",
+      "nota": "la soluzione la sceglie il progettista con il costruttore: il software non verifica l’organo d’arresto né lo spazio d’arresto"
+    },
+    {
+      "n": 173,
+      "id": "ordine.esecuzione",
+      "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
+      "voce": "Esecuzione dell’argano (destra o sinistra) nella bozza d’ordine",
+      "valore": "dalla geometria del progetto: guardando l’argano dal lato della puleggia, destra se il motore sta a destra, sinistra se sta a sinistra, come lo disegnano la pianta del locale, il piano della macchina in basso e il 3D (girato di 180° resta della stessa mano); il lato del motore è quello della forma dell’argano (lo SICOR SV110, a vite verticale, ha il motore dall’altra parte dell’asse della puleggia rispetto agli argani a vite orizzontale e all’argano generico); senza la geometria (calcolo senza progetto del vano) la casella resta da segnare",
+      "riferimento": "—",
+      "fonte": "scelta del software: la convenzione di destra e sinistra cambia tra i costruttori",
+      "stato": "scelta del software",
+      "verifiche": "",
+      "nota": "la mano segnata va confermata con lo schema di esecuzione del costruttore prima dell’ordine"
+    },
+    {
+      "n": 174,
+      "id": "impianto.distinta",
+      "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
+      "voce": "Distinta dei materiali del progetto",
+      "valore": "guide in barre da 5 m (per guida le barre dal fondo della fossa alla soletta, l’ultima tagliata) con una giunzione tra due barre; funi alla lunghezza di taglio (voce impianto.funi.taglio) con due attacchi a cuneo con molla per fune; fune del limitatore come nel foglio 1; paracadute di cabina del tipo dei dati dell’impianto (senza dato progressivo, come nel foglio 1); due pattini per guida di cabina e di contrappeso; in taglia 2:1 la puleggia della cabina e quella del contrappeso, l’arcata e il contrappeso per la taglia 2:1 e due attacchi fissi sotto la soletta; con la macchina in basso le pulegge in testata con il loro telaio e il basamento dell’argano ancorato contro il sollevamento netto della prova; nella modifica secondo UNI 10411 solo le parti che il collaudo indica come sostituite (le altre restano, come nel foglio 1) e la manodopera a corpo",
+      "riferimento": "UNI EN 81-20:2020, 5.5.5.1 (uguagliamento automatico delle tensioni almeno a un’estremità delle funi)",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 75; scelta del software (le quantità)",
+      "stato": "scelta del software",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 175,
       "id": "sim.forze",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Forze nella simulazione",
@@ -1727,7 +2135,7 @@
       "nota": "agli estremi della corsa e alle accelerazioni della verifica i valori coincidono con quelli della verifica (test automatico)"
     },
     {
-      "n": 142,
+      "n": 176,
       "id": "sim.profilo",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Profilo del moto tra i piani",
@@ -1739,7 +2147,7 @@
       "nota": "accelerazione e strappo sono dati di progetto dell’azionamento, non limiti normativi"
     },
     {
-      "n": 143,
+      "n": 177,
       "id": "sim.aderenza.marcia",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Limite di aderenza mostrato durante la marcia",
@@ -1751,7 +2159,7 @@
       "nota": ""
     },
     {
-      "n": 144,
+      "n": 178,
       "id": "sim.porte",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Tempi delle porte",
@@ -1763,7 +2171,7 @@
       "nota": "La norma non dà tempi: per le porte automatiche orizzontali dà l’energia cinetica (≤ 10 J, ≤ 4 J con il dispositivo di protezione escluso) e la forza contro la chiusura (≤ 150 N) (UNI EN 81-20:2020, 5.3.6.2.2.1), dati del fornitore delle porte."
     },
     {
-      "n": 145,
+      "n": 179,
       "id": "sim.ammortizzatori",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Urto sugli ammortizzatori",
@@ -1775,7 +2183,7 @@
       "nota": "la rigidezza è una scelta del software coerente con i carichi sulla fossa (il tampone in poliuretano reale non è lineare: valori indicativi); la verifica della corsa resta quella della sezione. Le decelerazioni mostrate non sono una verifica: per i tamponi non lineari la norma vuole media ≤ 1 gn, oltre 2,5 gn per non più di 0,04 s, picco ≤ 6 gn e rimbalzo ≤ 1 m/s (5.8.2.1.2.1), per gli idraulici media ≤ 1 gn e oltre 2,5 gn per non più di 0,04 s (5.8.2.2.3); si provano per tipo (certificato del fornitore)"
     },
     {
-      "n": 146,
+      "n": 180,
       "id": "sim.bloccata",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Cabina bloccata: rotazione in salita",
@@ -1787,7 +2195,7 @@
       "nota": "La simulazione mostra il contrappeso sugli ammortizzatori con la cabina in alto; la norma chiede anche la cabina vuota in basso, che il calcolo verifica (tr_stall)."
     },
     {
-      "n": 147,
+      "n": 181,
       "id": "sim.passo",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Passo di campionamento",
@@ -1799,7 +2207,7 @@
       "nota": ""
     },
     {
-      "n": 148,
+      "n": 182,
       "id": "collaudo.adempimenti.nuovo.1",
       "gruppo": "Collaudo: adempimenti del DPR 162/1999 (impianto nuovo)",
       "voce": "DPR 162/1999, art. 4-bis",
@@ -1811,7 +2219,7 @@
       "nota": ""
     },
     {
-      "n": 149,
+      "n": 183,
       "id": "collaudo.adempimenti.nuovo.2",
       "gruppo": "Collaudo: adempimenti del DPR 162/1999 (impianto nuovo)",
       "voce": "DPR 162/1999 e s.m.i., artt. 6-bis e 7 c.3",
@@ -1823,7 +2231,7 @@
       "nota": ""
     },
     {
-      "n": 150,
+      "n": 184,
       "id": "collaudo.adempimenti.nuovo.3",
       "gruppo": "Collaudo: adempimenti del DPR 162/1999 (impianto nuovo)",
       "voce": "DPR 162/1999 e s.m.i., art. 12 c.1–3",
@@ -1835,7 +2243,7 @@
       "nota": ""
     },
     {
-      "n": 151,
+      "n": 185,
       "id": "collaudo.adempimenti.nuovo.4",
       "gruppo": "Collaudo: adempimenti del DPR 162/1999 (impianto nuovo)",
       "voce": "DPR 162/1999, artt. 13, 15 c.4 e 16 c.3",
@@ -1847,7 +2255,7 @@
       "nota": ""
     },
     {
-      "n": 152,
+      "n": 186,
       "id": "collaudo.adempimenti.modifica.1",
       "gruppo": "Collaudo: adempimenti del DPR 162/1999 (modifica)",
       "voce": "DPR 162/1999, art. 2 c.1 lett. cc)",
@@ -1859,7 +2267,7 @@
       "nota": ""
     },
     {
-      "n": 153,
+      "n": 187,
       "id": "collaudo.adempimenti.modifica.2",
       "gruppo": "Collaudo: adempimenti del DPR 162/1999 (modifica)",
       "voce": "DPR 162/1999, art. 12 c.4",
@@ -1871,7 +2279,7 @@
       "nota": ""
     },
     {
-      "n": 154,
+      "n": 188,
       "id": "collaudo.adempimenti.modifica.3",
       "gruppo": "Collaudo: adempimenti del DPR 162/1999 (modifica)",
       "voce": "DPR 162/1999, art. 12 c.4–5",
@@ -1883,7 +2291,7 @@
       "nota": ""
     },
     {
-      "n": 155,
+      "n": 189,
       "id": "collaudo.adempimenti.modifica.4",
       "gruppo": "Collaudo: adempimenti del DPR 162/1999 (modifica)",
       "voce": "DPR 162/1999 e s.m.i., art. 14 c.3; schema ICIM SCI 162 rev. 02",
@@ -1895,7 +2303,7 @@
       "nota": ""
     },
     {
-      "n": 156,
+      "n": 190,
       "id": "collaudo.adempimenti.modifica.5",
       "gruppo": "Collaudo: adempimenti del DPR 162/1999 (modifica)",
       "voce": "UNI 10411-1:2024 e UNI 10411-11:2024, 25",
@@ -1907,7 +2315,7 @@
       "nota": ""
     },
     {
-      "n": 157,
+      "n": 191,
       "id": "collaudo.en81.1",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "DPR 162/1999, All. V 3.3 (All. VIII 4)",
@@ -1919,7 +2327,7 @@
       "nota": ""
     },
     {
-      "n": 158,
+      "n": 192,
       "id": "collaudo.en81.2",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "DPR 162/1999, All. VIII 3 e), g), h)",
@@ -1931,7 +2339,7 @@
       "nota": ""
     },
     {
-      "n": 159,
+      "n": 193,
       "id": "collaudo.en81.3",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "Regolamento (UE) 2023/1230, art. 51 par. 2",
@@ -1943,7 +2351,7 @@
       "nota": ""
     },
     {
-      "n": 160,
+      "n": 194,
       "id": "collaudo.en81.4",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-50:2020, 5.12.1 e 5.12.2.1",
@@ -1955,7 +2363,7 @@
       "nota": ""
     },
     {
-      "n": 161,
+      "n": 195,
       "id": "collaudo.en81.5",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.6.2.2.1.2",
@@ -1967,7 +2375,7 @@
       "nota": ""
     },
     {
-      "n": 162,
+      "n": 196,
       "id": "collaudo.en81.6",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.8.2.1.2.1 e 5.8.2.2.3",
@@ -1979,7 +2387,7 @@
       "nota": ""
     },
     {
-      "n": 163,
+      "n": 197,
       "id": "collaudo.en81.7",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.2.5.7.1",
@@ -1991,7 +2399,7 @@
       "nota": ""
     },
     {
-      "n": 164,
+      "n": 198,
       "id": "collaudo.en81.8",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.2.2.4",
@@ -2003,7 +2411,7 @@
       "nota": ""
     },
     {
-      "n": 165,
+      "n": 199,
       "id": "collaudo.en81.9",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.2.1.5.1 b)",
@@ -2015,7 +2423,7 @@
       "nota": ""
     },
     {
-      "n": 166,
+      "n": 200,
       "id": "collaudo.en81.10",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.12.1.5.2.1 f)",
@@ -2027,7 +2435,7 @@
       "nota": ""
     },
     {
-      "n": 167,
+      "n": 201,
       "id": "collaudo.en81.11",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.2.5.7.1 e 5.2.5.8.1",
@@ -2039,7 +2447,7 @@
       "nota": ""
     },
     {
-      "n": 168,
+      "n": 202,
       "id": "collaudo.en81.12",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.2.1.4.1",
@@ -2051,7 +2459,7 @@
       "nota": ""
     },
     {
-      "n": 169,
+      "n": 203,
       "id": "collaudo.en81.13",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.4.10.1 e 5.4.10.4",
@@ -2063,7 +2471,7 @@
       "nota": ""
     },
     {
-      "n": 170,
+      "n": 204,
       "id": "collaudo.en81.14",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.4.4",
@@ -2075,7 +2483,7 @@
       "nota": ""
     },
     {
-      "n": 171,
+      "n": 205,
       "id": "collaudo.en81.15",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 6.3.1",
@@ -2087,7 +2495,7 @@
       "nota": ""
     },
     {
-      "n": 172,
+      "n": 206,
       "id": "collaudo.en81.16",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 6.3.2",
@@ -2099,7 +2507,7 @@
       "nota": ""
     },
     {
-      "n": 173,
+      "n": 207,
       "id": "collaudo.en81.17",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 6.3.3",
@@ -2111,7 +2519,7 @@
       "nota": ""
     },
     {
-      "n": 174,
+      "n": 208,
       "id": "collaudo.en81.18",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 6.3.4, 6.3.5 e 6.3.7",
@@ -2123,7 +2531,7 @@
       "nota": ""
     },
     {
-      "n": 175,
+      "n": 209,
       "id": "collaudo.en81.19",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 6.3.11, 6.3.12 e 6.3.13",
@@ -2135,7 +2543,7 @@
       "nota": ""
     },
     {
-      "n": 176,
+      "n": 210,
       "id": "collaudo.en81.20",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 6.3.14",
@@ -2147,7 +2555,7 @@
       "nota": ""
     },
     {
-      "n": 177,
+      "n": 211,
       "id": "collaudo.en81.21",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, C.2 e 7.3.2",
@@ -2159,7 +2567,7 @@
       "nota": ""
     },
     {
-      "n": 178,
+      "n": 212,
       "id": "collaudo.en81.22",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.3.5.3.2, 5.3.5.3.4, 5.3.6.2.2.1 b) e 5.3.15.2 b)",
@@ -2171,7 +2579,7 @@
       "nota": ""
     },
     {
-      "n": 179,
+      "n": 213,
       "id": "collaudo.en81.23",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.3.6.2.2.1 a)–d)",
@@ -2183,7 +2591,7 @@
       "nota": ""
     },
     {
-      "n": 180,
+      "n": 214,
       "id": "collaudo.10411-1.1",
       "gruppo": "Collaudo: UNI 10411-1:2024",
       "voce": "UNI 10411-1:2024, scopo",
@@ -2195,7 +2603,7 @@
       "nota": ""
     },
     {
-      "n": 181,
+      "n": 215,
       "id": "collaudo.10411-1.2",
       "gruppo": "Collaudo: UNI 10411-1:2024",
       "voce": "UNI 10411-1:2024, 9.1–9.2",
@@ -2207,7 +2615,7 @@
       "nota": ""
     },
     {
-      "n": 182,
+      "n": 216,
       "id": "collaudo.10411-1.3",
       "gruppo": "Collaudo: UNI 10411-1:2024",
       "voce": "UNI 10411-1:2024, 5 e App. C (5, 9 e 14)",
@@ -2219,7 +2627,7 @@
       "nota": ""
     },
     {
-      "n": 183,
+      "n": 217,
       "id": "collaudo.10411-1.4",
       "gruppo": "Collaudo: UNI 10411-1:2024",
       "voce": "UNI 10411-1:2024, 14.4 a)–g)",
@@ -2231,7 +2639,7 @@
       "nota": ""
     },
     {
-      "n": 184,
+      "n": 218,
       "id": "collaudo.10411-11.1",
       "gruppo": "Collaudo: UNI 10411-11:2024",
       "voce": "UNI 10411-11:2024, scopo",
@@ -2243,7 +2651,7 @@
       "nota": ""
     },
     {
-      "n": 185,
+      "n": 219,
       "id": "collaudo.10411-11.2",
       "gruppo": "Collaudo: UNI 10411-11:2024",
       "voce": "UNI 10411-11:2024, 14.3 a) e App. A (14); UNI EN 81-20:2020, 5.6.6.2 e 5.6.7.3",
@@ -2255,7 +2663,7 @@
       "nota": ""
     },
     {
-      "n": 186,
+      "n": 220,
       "id": "collaudo.10411-11.3",
       "gruppo": "Collaudo: UNI 10411-11:2024",
       "voce": "UNI 10411-11:2024, 5 e 9.2",
@@ -2267,7 +2675,7 @@
       "nota": ""
     },
     {
-      "n": 187,
+      "n": 221,
       "id": "collaudo.10411-11.4",
       "gruppo": "Collaudo: UNI 10411-11:2024",
       "voce": "UNI 10411-11:2024, 14.3 b)",
@@ -2279,7 +2687,7 @@
       "nota": ""
     },
     {
-      "n": 188,
+      "n": 222,
       "id": "collaudo.en81-21.1",
       "gruppo": "Collaudo: UNI EN 81-21:2022 (ascensori nuovi in edifici esistenti)",
       "voce": "UNI EN 81-21:2022, 1",
@@ -2291,7 +2699,7 @@
       "nota": ""
     },
     {
-      "n": 189,
+      "n": 223,
       "id": "collaudo.en81-21.2",
       "gruppo": "Collaudo: UNI EN 81-21:2022 (ascensori nuovi in edifici esistenti)",
       "voce": "UNI EN 81-21:2022, 6.2 e 7.1",
@@ -2303,7 +2711,7 @@
       "nota": ""
     },
     {
-      "n": 190,
+      "n": 224,
       "id": "collaudo.en81-21.3",
       "gruppo": "Collaudo: UNI EN 81-21:2022 (ascensori nuovi in edifici esistenti)",
       "voce": "DPR 162/1999, art. 17-bis; DM 19/03/2015; linee guida MIMIT 2022",
@@ -2315,7 +2723,7 @@
       "nota": ""
     },
     {
-      "n": 191,
+      "n": 225,
       "id": "collaudo.en81-28.1",
       "gruppo": "Collaudo: UNI EN 81-28:2022 (teleallarme)",
       "voce": "UNI EN 81-20:2020, 5.12.3.1; UNI EN 81-28:2004, 4.1.3, 4.2.1 e 7",
@@ -2327,7 +2735,7 @@
       "nota": ""
     },
     {
-      "n": 192,
+      "n": 226,
       "id": "collaudo.en81-28.2",
       "gruppo": "Collaudo: UNI EN 81-28:2022 (teleallarme)",
       "voce": "UNI EN 81-28:2022",
@@ -2339,7 +2747,7 @@
       "nota": ""
     },
     {
-      "n": 193,
+      "n": 227,
       "id": "collaudo.en81-58.1",
       "gruppo": "Collaudo: UNI EN 81-58:2022 (resistenza al fuoco delle porte di piano)",
       "voce": "UNI EN 81-58:2022; DM 15/09/2005, 3.2–3.3 e art. 1 c.2 lett. c)",
@@ -2351,7 +2759,7 @@
       "nota": ""
     },
     {
-      "n": 194,
+      "n": 228,
       "id": "collaudo.en81-70.1",
       "gruppo": "Collaudo: UNI EN 81-70:2022 (accessibilità)",
       "voce": "UNI EN 81-70:2022, 5.3.1",
@@ -2363,7 +2771,7 @@
       "nota": ""
     },
     {
-      "n": 195,
+      "n": 229,
       "id": "collaudo.en81-70.2",
       "gruppo": "Collaudo: UNI EN 81-70:2022 (accessibilità)",
       "voce": "UNI EN 81-70:2022, 5.3.2 e 5.4",
@@ -2375,7 +2783,7 @@
       "nota": ""
     },
     {
-      "n": 196,
+      "n": 230,
       "id": "collaudo.en81-70.3",
       "gruppo": "Collaudo: UNI EN 81-70:2022 (accessibilità)",
       "voce": "UNI EN 81-70:2022, scopo",
@@ -2387,7 +2795,7 @@
       "nota": ""
     },
     {
-      "n": 197,
+      "n": 231,
       "id": "collaudo.en81-71.1",
       "gruppo": "Collaudo: UNI EN 81-71 (ascensori antivandalo)",
       "voce": "UNI EN 81-71",
@@ -2399,7 +2807,7 @@
       "nota": ""
     },
     {
-      "n": 198,
+      "n": 232,
       "id": "collaudo.en81-72.1",
       "gruppo": "Collaudo: UNI EN 81-72:2020 (ascensori antincendio)",
       "voce": "DM 15/09/2005, punto 7 (valori); Codice V.3.3.4",
@@ -2411,7 +2819,7 @@
       "nota": ""
     },
     {
-      "n": 199,
+      "n": 233,
       "id": "collaudo.en81-72.2",
       "gruppo": "Collaudo: UNI EN 81-72:2020 (ascensori antincendio)",
       "voce": "Codice S.10, Tab. S.10-2",
@@ -2423,7 +2831,7 @@
       "nota": ""
     },
     {
-      "n": 200,
+      "n": 234,
       "id": "collaudo.en81-72.3",
       "gruppo": "Collaudo: UNI EN 81-72:2020 (ascensori antincendio)",
       "voce": "UNI EN 81-72:2020",
@@ -2435,7 +2843,7 @@
       "nota": ""
     },
     {
-      "n": 201,
+      "n": 235,
       "id": "collaudo.en81-73.1",
       "gruppo": "Collaudo: UNI EN 81-73:2020 (comportamento in caso d’incendio)",
       "voce": "DM 15/09/2005, punto 6; Codice V.3.3.1",
@@ -2447,7 +2855,7 @@
       "nota": ""
     },
     {
-      "n": 202,
+      "n": 236,
       "id": "collaudo.en81-73.2",
       "gruppo": "Collaudo: UNI EN 81-73:2020 (comportamento in caso d’incendio)",
       "voce": "UNI EN 81-73:2020",
@@ -2459,7 +2867,7 @@
       "nota": ""
     },
     {
-      "n": 203,
+      "n": 237,
       "id": "collaudo.en81-76.1",
       "gruppo": "Collaudo: UNI EN 81-76:2025 (evacuazione delle persone con disabilità)",
       "voce": "UNI EN 81-76:2025",
@@ -2471,7 +2879,7 @@
       "nota": ""
     },
     {
-      "n": 204,
+      "n": 238,
       "id": "collaudo.en81-77.1",
       "gruppo": "Collaudo: UNI EN 81-77:2022 (azioni sismiche)",
       "voce": "UNI EN 81-77:2022, 1",
@@ -2483,7 +2891,7 @@
       "nota": ""
     },
     {
-      "n": 205,
+      "n": 239,
       "id": "collaudo.en81-77.2",
       "gruppo": "Collaudo: UNI EN 81-77:2022 (azioni sismiche)",
       "voce": "UNI EN 81-77:2022, 5.4–5.10, All. A, B, D",
@@ -2495,7 +2903,7 @@
       "nota": ""
     },
     {
-      "n": 206,
+      "n": 240,
       "id": "collaudo.en81-77.3",
       "gruppo": "Collaudo: UNI EN 81-77:2022 (azioni sismiche)",
       "voce": "UNI EN 81-77:2022, 0.3",
@@ -2507,7 +2915,7 @@
       "nota": ""
     },
     {
-      "n": 207,
+      "n": 241,
       "id": "collaudo.en81-80.1",
       "gruppo": "Collaudo: UNI EN 81-80:2019 (miglioramento della sicurezza degli esistenti)",
       "voce": "UNI EN 81-80:2004 e 2009, 1 e appendice A",
@@ -2519,7 +2927,7 @@
       "nota": ""
     },
     {
-      "n": 208,
+      "n": 242,
       "id": "collaudo.en81-80.2",
       "gruppo": "Collaudo: UNI EN 81-80:2019 (miglioramento della sicurezza degli esistenti)",
       "voce": "UNI EN 81-80:2019",
@@ -2531,7 +2939,7 @@
       "nota": ""
     },
     {
-      "n": 209,
+      "n": 243,
       "id": "collaudo.en81-82.1",
       "gruppo": "Collaudo: UNI EN 81-82:2026 (accessibilità degli esistenti)",
       "voce": "UNI EN 81-82:2026",
@@ -2543,7 +2951,7 @@
       "nota": ""
     },
     {
-      "n": 210,
+      "n": 244,
       "id": "collaudo.en81-83.1",
       "gruppo": "Collaudo: UNI EN 81-83:2026 (antivandalo degli esistenti)",
       "voce": "UNI EN 81-83:2026",
@@ -2555,7 +2963,7 @@
       "nota": ""
     },
     {
-      "n": 211,
+      "n": 245,
       "id": "collaudo.dm236.1",
       "gruppo": "Collaudo: DM 236/1989 (barriere architettoniche)",
       "voce": "DM 236/1989, 8.1.12",
@@ -2567,7 +2975,7 @@
       "nota": ""
     },
     {
-      "n": 212,
+      "n": 246,
       "id": "collaudo.dm236.2",
       "gruppo": "Collaudo: DM 236/1989 (barriere architettoniche)",
       "voce": "DM 236/1989, 8.1.12",
@@ -2579,7 +2987,7 @@
       "nota": ""
     },
     {
-      "n": 213,
+      "n": 247,
       "id": "collaudo.dm236.3",
       "gruppo": "Collaudo: DM 236/1989 (barriere architettoniche)",
       "voce": "DM 236/1989, 8.1.12",
@@ -2591,7 +2999,7 @@
       "nota": ""
     },
     {
-      "n": 214,
+      "n": 248,
       "id": "collaudo.dm236.4",
       "gruppo": "Collaudo: DM 236/1989 (barriere architettoniche)",
       "voce": "DM 236/1989, 8.1.12 e 8.0.1",
@@ -2603,7 +3011,7 @@
       "nota": ""
     },
     {
-      "n": 215,
+      "n": 249,
       "id": "collaudo.dm236.5",
       "gruppo": "Collaudo: DM 236/1989 (barriere architettoniche)",
       "voce": "DM 236/1989, 8.1.12 e 4.1.12",
@@ -2615,7 +3023,7 @@
       "nota": ""
     },
     {
-      "n": 216,
+      "n": 250,
       "id": "collaudo.dm236.6",
       "gruppo": "Collaudo: DM 236/1989 (barriere architettoniche)",
       "voce": "DM 236/1989, 3.2; L. 13/1989, art. 1 c.3 lett. d)",
@@ -2627,7 +3035,7 @@
       "nota": ""
     },
     {
-      "n": 217,
+      "n": 251,
       "id": "collaudo.dm236.7",
       "gruppo": "Collaudo: DM 236/1989 (barriere architettoniche)",
       "voce": "DM 236/1989, 7.5; DPR 503/1996, art. 19",
@@ -2639,7 +3047,7 @@
       "nota": ""
     },
     {
-      "n": 218,
+      "n": 252,
       "id": "collaudo.antincendio.1",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "DM 3/8/2015, art. 5 c.1-bis lett. e)",
@@ -2651,7 +3059,7 @@
       "nota": ""
     },
     {
-      "n": 219,
+      "n": 253,
       "id": "collaudo.antincendio.2",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "DM 15/09/2005, art. 1 c.2",
@@ -2663,7 +3071,7 @@
       "nota": ""
     },
     {
-      "n": 220,
+      "n": 254,
       "id": "collaudo.antincendio.3",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "DM 15/09/2005, 3.1–3.3; Codice V.3.2",
@@ -2675,7 +3083,7 @@
       "nota": ""
     },
     {
-      "n": 221,
+      "n": 255,
       "id": "collaudo.antincendio.4",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "DM 15/09/2005, punto 2",
@@ -2687,7 +3095,7 @@
       "nota": ""
     },
     {
-      "n": 222,
+      "n": 256,
       "id": "collaudo.antincendio.5",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "DM 15/03/2005 (tabella di confronto); UNI EN 81-20:2020, 5.4.4",
@@ -2699,7 +3107,7 @@
       "nota": ""
     },
     {
-      "n": 223,
+      "n": 257,
       "id": "collaudo.antincendio.6",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "DM 15/09/2005, punto 5",
@@ -2711,7 +3119,7 @@
       "nota": ""
     },
     {
-      "n": 224,
+      "n": 258,
       "id": "collaudo.antincendio.7",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "DM 15/09/2005, punto 6; Codice V.3.3.1 c.5",
@@ -2723,7 +3131,7 @@
       "nota": ""
     },
     {
-      "n": 225,
+      "n": 259,
       "id": "collaudo.antincendio.8",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "Codice S.9, Tab. S.9-3",
@@ -2735,7 +3143,7 @@
       "nota": ""
     },
     {
-      "n": 226,
+      "n": 260,
       "id": "collaudo.ntc2018.1",
       "gruppo": "Collaudo: NTC 2018 (strutture e azioni sismiche)",
       "voce": "NTC 2018, §3.1.4",
@@ -2747,7 +3155,7 @@
       "nota": ""
     },
     {
-      "n": 227,
+      "n": 261,
       "id": "collaudo.ntc2018.2",
       "gruppo": "Collaudo: NTC 2018 (strutture e azioni sismiche)",
       "voce": "NTC 2018, §8.4.1",
@@ -2759,7 +3167,7 @@
       "nota": ""
     },
     {
-      "n": 228,
+      "n": 262,
       "id": "collaudo.ntc2018.3",
       "gruppo": "Collaudo: NTC 2018 (strutture e azioni sismiche)",
       "voce": "NTC 2018, §11.4.1",
@@ -2771,7 +3179,7 @@
       "nota": ""
     },
     {
-      "n": 229,
+      "n": 263,
       "id": "collaudo.ntc2018.4",
       "gruppo": "Collaudo: NTC 2018 (strutture e azioni sismiche)",
       "voce": "NTC 2018, §7.2.3–7.2.4",
@@ -2783,7 +3191,7 @@
       "nota": ""
     },
     {
-      "n": 230,
+      "n": 264,
       "id": "collaudo.ntc2018.5",
       "gruppo": "Collaudo: NTC 2018 (strutture e azioni sismiche)",
       "voce": "NTC 2018, Tab. 7.3.III e §7.3.6.3",
