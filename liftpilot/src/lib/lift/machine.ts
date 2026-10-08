@@ -55,7 +55,8 @@ export function machineSpec({ I, N }: Pick<ParsedInputs, 'I' | 'N'>, mass: numbe
   const defl = I.layout === 'topDefl', rinvio = defl ? rinvioOf(room, N.D, I.Dp, shape, made, I.h * 1000) : null;
   return {
     D: N.D, Dp: defl ? I.Dp : 0, n: N.n, d: N.d, mass, label, axis: sheaveAxis(room, N.D, shape, rinvio),
-    h: defl ? I.h * 1000 : 0, reverse: defl && (deflectorAngle(N.D, I.Dp, I.dx, I.h)?.reverse ?? false), ropeIn: I.r === 2 ? I.Dp / 2 : 0, shape, rinvio,
+    h: defl ? I.h * 1000 : 0, reverse: defl && (deflectorAngle(N.D, I.Dp, I.dx, I.h)?.reverse ?? false), ropeIn: 0, shape, rinvio,
+    ...(I.r === 2 && I.Dp > 0 ? { pulley2: I.Dp } : {}),
     ...(hebBase(room, rinvio !== null) ? { base: hebBase(room, rinvio !== null) } : {}),
   };
 }

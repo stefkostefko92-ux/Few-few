@@ -61,7 +61,11 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo): { entities:
     const a = (h.wheel ? Math.max(w.ropes, w.pulley) : w.ropes) + 30;
     out.push(path(quad(G, h.u0, -a, h.u1, a), true, 'thin'));
   }
-  if (M.ropeIn > 0) for (const u of [-M.ropeIn, G.calata + M.ropeIn]) out.push(path(quad(G, u - 90, -w.ropes - 50, u + 90, w.ropes + 50), true, 'hidden'));
+  // a 2:1 roping's dead ends, each opening along the plane its pulley turns in
+  for (const { at, dir } of G.deadEnds) {
+    const a = 90, b = w.ropes + 50, n: Pt = [-dir[1], dir[0]];
+    out.push(path([[-a, -b], [a, -b], [a, b], [-a, b]].map(([p, q]): Pt => [at[0] + p * dir[0] + q * n[0], at[1] + p * dir[1] + q * n[1]]), true, 'hidden'));
+  }
   // the diverting pulley under the machine: on a stand over the opening when its axle is above the slab's underside,
   // else hung under the slab; the machine over it, its sheave's rope plane on the drop line, the motor toward the
   // counterweight or, turned round, toward the car (G.dir); the pulley's outline again where the machine hides it
@@ -247,8 +251,10 @@ export function roomSectionOn(S: RoomSite, M: MachineSpec, G: RoomGeo): { entiti
     out.push(line(cut(p, q), cut(q, p), 'thin'));
   }
   if (M.Dp > 0) out.push(...pulleySection(M, G, s0, s1));
-  if (M.ropeIn > 0) {
-    for (const x of [-M.ropeIn, G.calata + M.ropeIn]) out.push(rect(x - 90, -R.slab - 16, x + 90, -R.slab, 'outline', 'steel'), line([x, -R.slab - 16], [x, ropeFoot], 'thin'));
+  // a 2:1 roping's dead ends hung under the slab, where they stand along the drop line
+  for (const { at } of G.deadEnds) {
+    const x = (at[0] - G.carDrop[0]) * G.ux + (at[1] - G.carDrop[1]) * G.uy;
+    out.push(rect(x - 90, -R.slab - 16, x + 90, -R.slab, 'outline', 'steel'), line([x, -R.slab - 16], [x, ropeFoot], 'thin'));
   }
   // dimensions and references: the axis' height, the pulley's h and dx as the calculation takes them
   out.push(chain({ dir: 'y', pts: [-R.slab, 0, top], side: 'left', row: 0, text: ['{v} Soletta', '{v} H. Locale'], edit: [E('room.slab'), E('room.H')] }));

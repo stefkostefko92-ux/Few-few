@@ -7,6 +7,7 @@
 // counterweight's head pulleys down to it; they meet on the vertical runs to the machine. Pure.
 import { deflectorAngle } from '@/calc/geometry';
 import { section, type Layout } from '@/shaft';
+import { fallsOf } from '@/shaft/falls';
 import { sheaveAxisBelow } from './machine';
 import { KL } from './norme';
 import type { BeltEl } from './belt';
@@ -61,9 +62,13 @@ export const planeAt = (p: RopePlane, u: number): P2 => [p.origin[0] + u * 1000 
 
 export function ropeRig(dv: LiftDerived, scheme: BottomScheme = dv.bottom ?? 'head'): RopeRig {
   const L: Layout = dv.layout, S = section(L), V = L.inputs.vertical, { I, N } = dv.analysis.ctx;
-  const car = [L.car.x + L.car.w / 2, L.car.y + L.car.h / 2] as const, cw = [L.cw.x + L.cw.w / 2, L.cw.y + L.cw.h / 2] as const;
+  // the falls: the parts' centres, or with 2:1 a side of each one's pulley, which turns between its guide rails
+  // (falls.ts): its own plane, from the dead end to the fall
+  const F = fallsOf(L, I.r, I.Dp), car = F.car, cw = F.cw;
   const cal = Math.hypot(cw[0] - car[0], cw[1] - car[1]) || 1, dir = [(cw[0] - car[0]) / cal, (cw[1] - car[1]) / cal] as const;
-  const cm = cal / 1000, R0 = N.D / 2000, Rp = I.Dp / 2000, two = I.r === 2;
+  const cm = cal / 1000, R0 = N.D / 2000, Rp = I.Dp / 2000, two = I.r === 2 && F.dead.length === 2;
+  const carPulley: RopePlane = two ? { origin: F.dead[0].at, dir: F.dead[0].dir } : { origin: car, dir };
+  const cwPulley: RopePlane = two ? { origin: cw, dir: [-F.dead[1].dir[0], -F.dead[1].dir[1]] } : { origin: cw, dir };
   const ceiling = S.ceiling / 1000, slab = (L.inputs.room?.slab ?? KL.slab) / 1000, bottom = I.layout === 'bottom';
   const deadY = ceiling - 0.05;
   const carHitch = (s: number): number => s + V.frameTop / 1000;
@@ -72,7 +77,7 @@ export function ropeRig(dv: LiftDerived, scheme: BottomScheme = dv.bottom ?? 'he
 
   if (!bottom) {
     // the car side of the rope rises at u0, the counterweight side comes down at u1
-    const u0 = two ? Rp : 0, u1 = two ? cm - Rp : cm;
+    const u0 = 0, u1 = cm;
     const roomFloor = ceiling + slab;
     const sheave: Wheel = { role: 'sheave', u: u0 + R0, y: roomFloor + dv.machine.axis / 1000, r: R0, plane: drop };
     const fixed: Wheel[] = [sheave], mid: BeltEl[] = [{ kind: 'wheel', u: sheave.u, y: sheave.y, r: R0, cw: true }];
@@ -82,15 +87,22 @@ export function ropeRig(dv: LiftDerived, scheme: BottomScheme = dv.bottom ?? 'he
       fixed.push(pulley);
       mid.push({ kind: 'wheel', u: pulley.u, y: pulley.y, r: Rp, cw: !rev });
     }
-    const start = (s: number): BeltEl[] => (two
-      ? [{ kind: 'pt', u: -Rp, y: deadY }, { kind: 'wheel', u: 0, y: carHitch(s) + Rp + CAR_PULLEY_GAP / 1000, r: Rp, cw: false }]
-      : [{ kind: 'pt', u: 0, y: carHitch(s) }]);
-    const end = (w: number): BeltEl[] => (two
-      ? [{ kind: 'wheel', u: cm, y: cwHitch(w) + Rp, r: Rp, cw: false }, { kind: 'pt', u: cm + Rp, y: deadY }]
-      : [{ kind: 'pt', u: cm, y: cwHitch(w) }]);
+    // 2:1: round the car's pulley from its dead end up to the fall, then over the machine, then down round the
+    // counterweight's up to its dead end — three planes meeting on the vertical runs under the slab
+    if (two) {
+      const carPiece: RopePiece = { plane: carPulley, els: [] }, cwPiece: RopePiece = { plane: cwPulley, els: [] };
+      return {
+        origin: car, dir, calata: cm, sheave, bottom, scheme: null, wheels: fixed, roomFloor, wallAt,
+        pieces: (s, w) => [
+          { ...carPiece, els: [{ kind: 'pt', u: 0, y: deadY }, { kind: 'wheel', u: Rp, y: carHitch(s) + Rp + CAR_PULLEY_GAP / 1000, r: Rp, cw: false }, { kind: 'pt', u: 2 * Rp, y: deadY }] },
+          { plane: drop, els: [{ kind: 'pt', u: 0, y: deadY }, ...mid, { kind: 'pt', u: cm, y: deadY }] },
+          { ...cwPiece, els: [{ kind: 'pt', u: 0, y: deadY }, { kind: 'wheel', u: Rp, y: cwHitch(w) + Rp, r: Rp, cw: false }, { kind: 'pt', u: 2 * Rp, y: deadY }] },
+        ],
+      };
+    }
     return {
       origin: car, dir, calata: cm, sheave, bottom, scheme: null, wheels: fixed, roomFloor, wallAt,
-      pieces: (s, w) => [{ plane: drop, els: [...start(s), ...mid, ...end(w)] }],
+      pieces: (s, w) => [{ plane: drop, els: [{ kind: 'pt', u: 0, y: carHitch(s) }, ...mid, { kind: 'pt', u: cm, y: cwHitch(w) }] }],
     };
   }
 
@@ -101,29 +113,30 @@ export function ropeRig(dv: LiftDerived, scheme: BottomScheme = dv.bottom ?? 'he
   };
   const pc: RopePlane = { origin: car, dir: unit(car, g.mc) }, pw: RopePlane = { origin: cw, dir: unit(cw, g.mw) }, ps: RopePlane = { origin: g.mc, dir: unit(g.mc, g.mw) };
   const sc = Math.hypot(g.mc[0] - car[0], g.mc[1] - car[1]) / 1000, sw = Math.hypot(g.mw[0] - cw[0], g.mw[1] - cw[1]) / 1000;
-  const yH = g.zHead / 1000, ys = g.zSheave / 1000, yb = ys + R0 + 0.05, side = two ? Rp : 0;
+  // the rises are the falls (2:1: a side of each part's pulley): the head pulley over each one from it
+  const yH = g.zHead / 1000, ys = g.zSheave / 1000, yb = ys + R0 + 0.05, yJ = yH - Rp;
   const sheave: Wheel = { role: 'sheave', u: R0, y: ys, r: R0, plane: ps };
   // the head: over the car's rise and over its run (two at 90°), or one at 180°; the same on the counterweight's side
   const carHead: Wheel[] = g.carPulleys === 2
-    ? [{ role: 'top', u: side + Rp, y: yH, r: Rp, plane: pc }, { role: 'top', u: sc - Rp, y: yH, r: Rp, plane: pc }]
-    : [{ role: 'top', u: side + Rp, y: yH, r: Rp, plane: pc }];
+    ? [{ role: 'top', u: Rp, y: yH, r: Rp, plane: pc }, { role: 'top', u: sc - Rp, y: yH, r: Rp, plane: pc }]
+    : [{ role: 'top', u: Rp, y: yH, r: Rp, plane: pc }];
   const cwHead: Wheel[] = g.cwPulleys === 2
-    ? [{ role: 'top', u: sw - Rp, y: yH, r: Rp, plane: pw }, { role: 'top', u: side + Rp, y: yH, r: Rp, plane: pw }]
-    : [{ role: 'top', u: side + Rp, y: yH, r: Rp, plane: pw }];
+    ? [{ role: 'top', u: sw - Rp, y: yH, r: Rp, plane: pw }, { role: 'top', u: Rp, y: yH, r: Rp, plane: pw }]
+    : [{ role: 'top', u: Rp, y: yH, r: Rp, plane: pw }];
   const wheel = (h: Wheel, cwise: boolean): BeltEl => ({ kind: 'wheel', u: h.u, y: h.y, r: h.r, cw: cwise });
-  const start = (s: number): BeltEl[] => (two
-    ? [{ kind: 'pt', u: -Rp, y: deadY }, { kind: 'wheel', u: 0, y: carHitch(s) + Rp + CAR_PULLEY_GAP / 1000, r: Rp, cw: false }]
-    : [{ kind: 'pt', u: 0, y: carHitch(s) }]);
+  // 2:1: round each part's pulley in its own plane (from the dead end to the rise, from the rise to the dead end), on the
+  // vertical run under the head pulleys onto the planes toward the machine; 1:1 from the hitches
+  const start = (s: number): BeltEl[] => [{ kind: 'pt', u: 0, y: two ? yJ : carHitch(s) }];
+  const end = (w: number): BeltEl[] => [{ kind: 'pt', u: 0, y: two ? yJ : cwHitch(w) }];
   // toward the sheave the counterweight's plane runs backwards (u grows toward the run): its wheels turn the other way
-  const end = (w: number): BeltEl[] => (two
-    ? [{ kind: 'wheel', u: 0, y: cwHitch(w) + Rp, r: Rp, cw: true }, { kind: 'pt', u: -Rp, y: deadY }]
-    : [{ kind: 'pt', u: 0, y: cwHitch(w) }]);
   return {
     origin: car, dir, calata: cm, sheave, bottom, scheme: g, wheels: [sheave, ...carHead, ...cwHead], roomFloor: g.roomFloor / 1000, wallAt,
     pieces: (s, w) => [
+      ...(two ? [{ plane: carPulley, els: [{ kind: 'pt', u: 0, y: deadY }, { kind: 'wheel', u: Rp, y: carHitch(s) + Rp + CAR_PULLEY_GAP / 1000, r: Rp, cw: false }, { kind: 'pt', u: 2 * Rp, y: yJ }] as BeltEl[] }] : []),
       { plane: pc, els: [...start(s), ...carHead.map((h) => wheel(h, true)), { kind: 'pt', u: sc, y: yb }] },
       { plane: ps, els: [{ kind: 'pt', u: 0, y: yb }, { kind: 'wheel', u: R0, y: ys, r: R0, cw: false }, { kind: 'pt', u: 2 * R0, y: yb }] },
       { plane: pw, els: [{ kind: 'pt', u: sw, y: yb }, ...cwHead.map((h) => wheel(h, false)), ...end(w)] },
+      ...(two ? [{ plane: cwPulley, els: [{ kind: 'pt', u: 0, y: yJ }, { kind: 'wheel', u: Rp, y: cwHitch(w) + Rp, r: Rp, cw: false }, { kind: 'pt', u: 2 * Rp, y: deadY }] as BeltEl[] }] : []),
     ],
   };
 }

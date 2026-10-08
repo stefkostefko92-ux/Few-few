@@ -65,7 +65,11 @@ export function calcDrops(a: Analysis, M: MachineSpec): { calata: number; sheave
  *  it is with the pulley under its beams). */
 export function surveyMachine(V: FormValues, a: Analysis, s: Pick<Survey, 'room'>): { M: MachineSpec; made: RoomDerived['made'] } {
   const c = calcMachine(V), made = c ? { brand: c.brand, model: c.model } : null, shape = made ? shapeOf(made.brand, made.model) : null;
-  const spec = (room: Survey['room']): MachineSpec => machineSpec(a.ctx, a.ctx.N.mass, made ? `${made.brand} ${made.model}` : '', room, shape, made);
+  // the drops as surveyed: with 2:1 the ropes rise half a pulley in from them along their line
+  const spec = (room: Survey['room']): MachineSpec => {
+    const { pulley2, ...m } = machineSpec(a.ctx, a.ctx.N.mass, made ? `${made.brand} ${made.model}` : '', room, shape, made);
+    return { ...m, ropeIn: pulley2 ? pulley2 / 2 : 0 };
+  };
   const M = spec(s.room), rf = M.rinvio;
   if (rf?.on !== 'frame' || rf.maker || s.room.support?.height !== undefined) return { M, made };
   const height = Math.round(Math.max(rinvioTopOf(M.Dp), rinvioAxisOf(M.Dp) + M.h - axisOverTop(M.D, shape)));

@@ -99,8 +99,8 @@ export function supportFeet(G: RoomGeo, M: MachineSpec): Pt[] {
 /** The ropes through the slab (room axes): the falls of the car's and of the counterweight's drops (2:1: either side of
  *  their pulleys), with the band of ropes side by side. */
 export function dropRopes(G: RoomGeo, M: MachineSpec): Rope[] {
-  const r = ropeWidths(M.n, M.d).ropes, falls = M.ropeIn > 0 ? [-M.ropeIn, M.ropeIn, G.calata - M.ropeIn, G.calata + M.ropeIn] : [0, G.calata];
-  return falls.map((u) => ({ at: onDrop(G, u, 0), r }));
+  const r = ropeWidths(M.n, M.d).ropes;
+  return [...[M.ropeIn, G.calata - M.ropeIn].map((u) => ({ at: onDrop(G, u, 0), r })), ...G.deadEnds.map((d) => ({ at: d.at, r }))];
 }
 
 /** The machine's load on the beams [N] and where it acts (room axes): the machine with its bedframe at the middle of its

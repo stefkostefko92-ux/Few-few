@@ -69,7 +69,7 @@ export function buildLiftWorld(renderer: THREE.WebGPURenderer, dv: LiftDerived, 
   const passage = machinePassage(rig, N.D), under = rig.scheme?.scheme === 'under';
   const pitHoles = under ? slabOpenings(rig, N.n, N.d, (S.pitFloor - KL.underSlab) / 1000, S.pitFloor / 1000, travel, null) : [];
   const shaft = buildShaft(L, S, M, openings, { walls: passage ? [passage] : [], pit: pitHoles });
-  // the ropes end on the car: a 1:1 hitch on the crosshead, or the car pulley of a 2:1 roping, in the plane of its rope
+  // the ropes end on the car: a 1:1 hitch on the crosshead, or the car pulley of a 2:1 roping, in its plane (rig.ts)
   const two = dv.analysis.ctx.I.r === 2, pcs = rig.pieces(0, 0), carPlane = pcs[0].plane, cwPlane = pcs[pcs.length - 1].plane;
   const Rp = dv.analysis.ctx.I.Dp / 2, width = N.n * groovePitch(N.d) + 30;
   const hitchAt = (pl: RopePlane, u: number): Hitch => {
@@ -77,8 +77,9 @@ export function buildLiftWorld(renderer: THREE.WebGPURenderer, dv: LiftDerived, 
     return two ? { kind: 'pulley', x, y, across: [-pl.dir[1], pl.dir[0]], r: Rp, width } : { kind: 'ropes', at: hitchSpots(pl, N.n, u) };
   };
   const labels = dv.sim.labels;
-  const car = buildCar(L, M, hitchAt(carPlane, 0), gov, labels);
-  const cw = buildCounterweight(L, M, hitchAt(cwPlane, rig.bottom ? 0 : rig.calata));
+  // (2:1: each pulley in its own plane, from its dead end or its fall, half a pulley along it)
+  const car = buildCar(L, M, hitchAt(carPlane, two ? Rp / 1000 : 0), gov, labels);
+  const cw = buildCounterweight(L, M, hitchAt(cwPlane, two ? Rp / 1000 : rig.bottom ? 0 : rig.calata));
   const rails = buildRails(L, S, M);
   const buffers = buildBuffers(L, S, M, car.bufferSpots);
   const ropes = buildRopes(rig, N.n, N.d, M, !two);

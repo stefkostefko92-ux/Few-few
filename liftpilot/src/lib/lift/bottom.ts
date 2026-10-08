@@ -15,6 +15,7 @@ import { MACHINE_TOP } from '@/shaft/machine-outline';
 import { ropeWidths, type MachineSpec } from '@/shaft/machine-room';
 import { bodyBox, machineFrame, type MachineFrame, type MachineShape } from '@/shaft/machine-shape';
 import { bracketSpan } from '@/shaft/plan-staffe';
+import { fallsOf } from '@/shaft/falls';
 import { KL } from './norme';
 
 export type BottomScheme = 'head' | 'room' | 'under';
@@ -73,8 +74,10 @@ export function bottomGeo(L: Layout, s: BottomScheme, D: number, Dp: number, n: 
   const dx = cw[0] - car[0], dy = cw[1] - car[1], alongX = Math.abs(dx) <= Math.abs(dy);
   const wall = alongX ? (dy > 0 ? 'rear' : 'front') : dx > 0 ? 'right' : 'left';
   const dir: P2 = alongX ? [0, dy > 0 ? 1 : -1] : [dx > 0 ? 1 : -1, 0], across: P2 = [-dir[1], dir[0]];
-  const cal = dx * dir[0] + dy * dir[1], vc = dx * across[0] + dy * across[1];
-  const wallAt = exitAlong(car, dir, I.W, I.D), ropes = ropeWidths(n, d).ropes, c = KL.bottomClear, side = r === 2 ? Dp / 2 : 0;
+  // the rises: the parts' centres, or with 2:1 a side of each one's pulley, which turns between its guide rails (falls.ts)
+  const F = fallsOf(L, r, Dp), rise = (p: P2): P2 => [(p[0] - car[0]) * dir[0] + (p[1] - car[1]) * dir[1], (p[0] - car[0]) * across[0] + (p[1] - car[1]) * across[1]];
+  const cal = dx * dir[0] + dy * dir[1], vc = rise(F.cw)[1];
+  const wallAt = exitAlong(car, dir, I.W, I.D), ropes = ropeWidths(n, d).ropes, c = KL.bottomClear;
   const half = Math.abs(dir[0]) * L.cw.w / 2 + Math.abs(dir[1]) * L.cw.h / 2, gap = wallAt - cal - half, um = wallAt - c - ropes;
   const at = (u: number, v: number): P2 => [car[0] + u * dir[0] + v * across[0], car[1] + u * dir[1] + v * across[1]];
   // what stands along the wall behind the counterweight: the rails' brackets and the side walls
@@ -91,11 +94,11 @@ export function bottomGeo(L: Layout, s: BottomScheme, D: number, Dp: number, n: 
     const u = wallU(v), walls = Math.min(u, width - u);
     return Math.min(walls, ...spans.map((b) => Math.max(b.u0 - u, u - b.u1, 0) || -Math.min(u - b.u0, b.u1 - u))) - ropes - c;
   };
-  // the counterweight's run Dp + side from its drop in plan: behind it when the gap allows, else along the wall
-  const gu = half + gap - c - ropes, need = Dp + side, vw = gu >= need ? 0 : Math.sqrt(need * need - gu * gu);
+  // the counterweight's run Dp from its rise in plan: behind it when the gap allows, else along the wall
+  const gu = half + gap - c - ropes - (rise(F.cw)[0] - cal), need = Dp, vw = gu >= need ? 0 : Math.sqrt(need * need - gu * gu);
   const pick = [1, -1].map((sg) => ({ sg, score: Math.min(room(vc + sg * vw), room(vc + sg * vw - sg * D)) })).sort((p, q) => q.score - p.score)[0];
   const mw = at(um, vc + pick.sg * vw), mc = at(um, vc + pick.sg * (vw - D)), clear = Math.min(pick.score, gap - 2 * (ropes + c)), fits = clear >= 0;
-  const sCar = Math.hypot(mc[0] - car[0], mc[1] - car[1]) - side, sCw = Math.hypot(mw[0] - cw[0], mw[1] - cw[1]) - side;
+  const sCar = Math.hypot(mc[0] - F.car[0], mc[1] - F.car[1]), sCw = Math.hypot(mw[0] - F.cw[0], mw[1] - F.cw[1]);
   const zHead = s === 'room' ? S.ceiling + (I.room?.slab ?? KL.slab) + KL.pulleyRoomAxis : S.ceiling - Dp / 2 - KL.headFrame;
   const roomFloor = s === 'under' ? S.pitFloor - KL.underSlab - (I.below?.H ?? KL.underRoomH) : 0;
   return {

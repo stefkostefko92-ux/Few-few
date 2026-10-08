@@ -18,6 +18,7 @@ import type { CatalogFit } from '@/lib/catalog/machines';
 import { machineShapeOf, machineSpec, rinvioOf, sheaveAxis, sheaveAxisBelow, type Made } from './machine';
 import type { MachineShape } from '@/shaft/machine-shape';
 import { rinvioClash, type RinvioFrame } from '@/shaft/rinvio';
+import { fallsOf } from '@/shaft/falls';
 import { headTopChecks } from './head';
 import { bedplateMass, governorSideFor, hebOf, placedPanel, supportChecks, supportLoad } from './support';
 import { collaudoOf, type Collaudo } from './collaudo';
@@ -111,10 +112,11 @@ function ropeBeyond(S: ShaftInputs, V: FormValues, headOver: number | null, shap
 }
 
 /** Spacing in the plan of the two falls of the rope over the machine [mm]: from the car's drop to the counterweight's,
- *  Dp less with 2:1 roping (the ropes run up from the inner sides of the car and counterweight pulleys). */
+ *  with 2:1 roping from a side of each one's pulley, which turns between its guide rails (falls.ts; until LIFT 1.27.0
+ *  the pulleys turned in the drops' plane and the falls stood Dp closer). */
 function fallSpacing(L: Layout, V: FormValues): number {
-  const car = [L.car.x + L.car.w / 2, L.car.y + L.car.h / 2], cw = [L.cw.x + L.cw.w / 2, L.cw.y + L.cw.h / 2];
-  return Math.hypot(cw[0] - car[0], cw[1] - car[1]) - (num(V, 'r') === 2 ? num(V, 'Dp') : 0);
+  const f = fallsOf(L, num(V, 'r'), num(V, 'Dp'));
+  return Math.hypot(f.cw[0] - f.car[0], f.cw[1] - f.car[1]);
 }
 
 /**

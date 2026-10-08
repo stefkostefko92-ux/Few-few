@@ -85,7 +85,7 @@ test('il rinvio sta nel locale, nel telaio dell’argano: mai nel vano', () => {
   assert.ok(low.issues.includes('rinvio'));
 });
 
-test('rinvio dalla pianta: semplice o inverso come lo legge l’angolo di avvolgimento; 2:1 dal lato interno delle pulegge', () => {
+test('rinvio dalla pianta: semplice o inverso come lo legge l’angolo di avvolgimento; 2:1 dai lati delle pulegge fra le guide', () => {
   const base = defaultLift();
   const spacing = (d: ReturnType<typeof deriveLift>): number => {
     const L = d.layout;
@@ -95,21 +95,26 @@ test('rinvio dalla pianta: semplice o inverso come lo legge l’angolo di avvolg
     const rig = ropeRig(d), defl = rig.wheels.find((w) => w.role === 'deflector');
     assert.ok(defl && Math.abs(defl.u - rig.sheave.u - Number(d.values.dx)) < 1e-9, 'stessa geometria nel 3D');
   };
-  // 2:1 in a deep shaft: a simple bend, the ropes Dp closer together
-  const deep = deriveLift({ ...base, shaft: { ...base.shaft, D: 2200 }, calc: { ...base.calc, r: '2' } });
-  const D1 = Number(deep.values.n_D), Dp = Number(deep.values.Dp);
-  assert.ok(Math.abs(Number(deep.values.dx) - Math.round(spacing(deep) - Dp - D1 / 2 - Dp / 2) / 1000) < 1e-12, `dx ${deep.values.dx}`);
-  assert.deepEqual(deep.issues, []);
-  same3d(deep);
-  // 2:1 in the example shaft: only a reverse bend places the rope drop where the plan has it (Dp/2 past the pulley)
-  const tight = deriveLift({ ...base, calc: { ...base.calc, r: '2' } }), D2 = Number(tight.values.n_D);
-  assert.deepEqual(tight.issues, []);
-  assert.ok(Math.abs(Number(tight.values.dx) - Math.round(spacing(tight) - Dp - D2 / 2 + Dp / 2) / 1000) < 1e-12, `dx ${tight.values.dx}`);
-  same3d(tight);
+  // 2:1, the counterweight at the rear: its pulley and the car's turn between their rails, both across the drops' line, so
+  // the ropes rise as far apart as the centres (until LIFT 1.27.0 Dp closer: the counterweight's pulley in the wall)
+  for (const D of [2200, 1750]) {
+    const d = deriveLift({ ...base, shaft: { ...base.shaft, D }, calc: { ...base.calc, r: '2' } }), nD = Number(d.values.n_D), Dp = Number(d.values.Dp);
+    assert.ok(Math.abs(Number(d.values.dx) - Math.round(spacing(d) - nD / 2 - Dp / 2) / 1000) < 1e-12, `D ${D}: dx ${d.values.dx}`);
+    assert.deepEqual(d.issues, []);
+    same3d(d);
+  }
   // a sheave entered by hand that leaves neither bend: the distance is reported, the form cannot be saved as is
-  const hand = deriveLift({ ...base, calc: { ...base.calc, r: '2', n_D: 560 }, auto: { ...AUTO_ALL, machine: false } });
+  const hand = deriveLift({ ...base, calc: { ...base.calc, r: '2', n_D: 900 }, auto: { ...AUTO_ALL, machine: false } });
   assert.deepEqual(hand.issues, ['dx']);
-  assert.deepEqual(deriveLift({ ...base, calc: { ...base.calc, r: '2', n_D: 560 }, auto: { ...AUTO_ALL, machine: false, dx: false } }).issues, []);
+  // dx and h by hand: the pulley hung under the frame is fine; one so high it rises into the machine over the frame's
+  // top is not (rinvioClash, LIFT 1.27.0), as one so low it reaches under the floor
+  const byHand = (h: number): ReturnType<typeof deriveLift> =>
+    deriveLift({ ...base, calc: { ...base.calc, r: '2', n_D: 900, h }, auto: { ...AUTO_ALL, machine: false, dx: false } });
+  assert.deepEqual(byHand(1.1).issues, []);
+  for (const [h, clash] of [[0.6, 'machine'], [1.4, 'floor']] as const) {
+    const d = byHand(h);
+    assert.deepEqual([d.issues, d.rinvioClash], [['rinvio'], clash], `h ${h}`);
+  }
 });
 
 test('tiro diretto: la puleggia è la calata della pianta; un diametro diverso o fuori gamma è segnalato', () => {

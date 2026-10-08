@@ -11,8 +11,10 @@ import { slabOpenings } from '../slab';
 
 type Shaft = ReturnType<typeof defaultLift>['shaft'];
 const VARIANTS: readonly (readonly ['top' | 'topDefl', '1' | '2', Partial<Shaft>])[] = [
-  // a direct pull at 2:1 needs falls a sheave apart: a deeper shaft than the example's (registry impianto.calata)
-  ['topDefl', '1', {}], ['topDefl', '2', {}], ['top', '1', {}], ['top', '2', { D: 2000 }], ['topDefl', '1', { cw: 'left' }], ['top', '1', { cw: 'right' }],
+  // a direct pull needs falls a sheave apart (registry impianto.calata): at 2:1 too, its pulleys turning between their
+  // guide rails, the falls as far apart as the centres (until LIFT 1.27.0 Dp closer: a deeper shaft than the example's)
+  ['topDefl', '1', {}], ['topDefl', '2', {}], ['top', '1', {}], ['top', '2', {}], ['topDefl', '1', { cw: 'left' }], ['top', '1', { cw: 'right' }],
+  ['topDefl', '2', { cw: 'left' }],
 ];
 
 for (const [layout, r, shaft] of VARIANTS) {

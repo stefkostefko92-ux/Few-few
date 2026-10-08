@@ -8,6 +8,7 @@ import { MACHINE_A } from './machine-outline';
 import { machineFrame, type MachineFrame, type MachineShape } from './machine-shape';
 import { KV_VERT } from './norme-vert';
 import { panelFree, type Outline } from './room-floor';
+import { fallsOf } from './falls';
 import { rinvioAcross, rinvioRun, standBox, type RinvioFrame } from './rinvio';
 import { PROFILES } from './profiles';
 import { cwPlateAt, section } from './section';
@@ -34,8 +35,12 @@ export interface MachineSpec {
   /** diverting pulley: its axis below the sheave's, and whether the ropes wrap it the other way (reverse bend) */
   h: number;
   reverse: boolean;
-  /** 2:1: the ropes rise to the machine half a pulley in from the car's and the counterweight's drops; 1:1: 0 */
+  /** a surveyed 2:1 (the replacement: the drops as measured): the ropes rise to the machine half a pulley in from them
+   *  along their line; 0 where the drops are the falls themselves (1:1, and the full project: falls.ts) */
   ropeIn: number;
+  /** the full project's 2:1: the car's and the counterweight's pulleys' diameter, each turning between its guide rails
+   *  (falls.ts); missing or 0: 1:1, or the drops as surveyed */
+  pulley2?: number;
   /** the maker's machine as it is (machine-shape.ts); missing or null: the generic machine scaled to the sheave */
   shape?: MachineShape | null;
   /** where the diverting pulley turns in the room (rinvio.ts); missing or null: no pulley, or no room */
@@ -70,6 +75,8 @@ export interface RoomGeo {
   s: number;
   /** where the machine is in its own frame: its axis, its sheave, its bedplate (machine-shape.ts) */
   frame: MachineFrame;
+  /** 2:1: the dead ends hanging from the slab (Drops.dead); none at 1:1 */
+  deadEnds: readonly DeadEnd[];
 }
 
 /** Where the drop line — or the line along it `v` to its left (a beam under an iron of the machine's frame) — runs
@@ -93,6 +100,15 @@ export interface Drops {
   ux: number;
   uy: number;
   calata: number;
+  /** 2:1: where the dead ends hang and the unit direction each one's pulley turns in, toward its fall (falls.ts);
+   *  missing: half a pulley past the surveyed drops along their line (MachineSpec.ropeIn), none at 1:1 */
+  dead?: readonly DeadEnd[];
+}
+
+/** A 2:1 roping's dead end in plan (room axes): where it hangs and the unit direction its pulley turns in. */
+export interface DeadEnd {
+  at: readonly [number, number];
+  dir: readonly [number, number];
 }
 
 /** The machine over the drops `P`: the sheave's car side over the car's drop (`sheaveAt`: its centre elsewhere on the
@@ -106,7 +122,10 @@ export function geoOn(R: RoomInputs, P: Drops, M: MachineSpec, sheaveAt = M.rope
   const vs = [dir * (F.zSheave - F.z[1]), dir * (F.zSheave - F.z[0])], across: readonly [number, number] = [Math.min(...vs), Math.max(...vs)];
   return {
     room: R, carDrop: P.car, cwDrop: P.cw, ux: P.ux, uy: P.uy, calata, sheaveAt, pulleyAt, pulleyZ: M.axis - M.h, frame0: Math.min(...us), frame1: Math.max(...us),
-    across, dir, s, frame: F,
+    across, dir, s, frame: F, deadEnds: P.dead ?? (M.ropeIn > 0 ? [
+      { at: [P.car[0] - M.ropeIn * P.ux, P.car[1] - M.ropeIn * P.uy], dir: [P.ux, P.uy] },
+      { at: [P.cw[0] + M.ropeIn * P.ux, P.cw[1] + M.ropeIn * P.uy], dir: [-P.ux, -P.uy] },
+    ] : []),
   };
 }
 
@@ -179,10 +198,12 @@ export function orientedGeo(R: RoomInputs, P: Drops, M: MachineSpec, sheaveAt = 
 export function roomGeo(L: Layout, M: MachineSpec): RoomGeo | null {
   const R = L.inputs.room;
   if (!R) return null;
-  const car: [number, number] = [R.shaftX + L.car.x + L.car.w / 2, R.shaftY + L.car.y + L.car.h / 2];
-  const cw: [number, number] = [R.shaftX + L.cw.x + L.cw.w / 2, R.shaftY + L.cw.y + L.cw.h / 2];
+  // the falls: the parts' centres, or with 2:1 a side of each one's pulley (falls.ts)
+  const f = M.pulley2 ? fallsOf(L, 2, M.pulley2) : null, room = (p: readonly [number, number]): [number, number] => [R.shaftX + p[0], R.shaftY + p[1]];
+  const car: [number, number] = f ? room(f.car) : [R.shaftX + L.car.x + L.car.w / 2, R.shaftY + L.car.y + L.car.h / 2];
+  const cw: [number, number] = f ? room(f.cw) : [R.shaftX + L.cw.x + L.cw.w / 2, R.shaftY + L.cw.y + L.cw.h / 2];
   const dx = cw[0] - car[0], dy = cw[1] - car[1], calata = Math.hypot(dx, dy) || 1;
-  return orientedGeo(R, { car, cw, ux: dx / calata, uy: dy / calata, calata }, M);
+  return orientedGeo(R, { car, cw, ux: dx / calata, uy: dy / calata, calata, ...(f ? { dead: f.dead.map((d) => ({ at: room(d.at), dir: d.dir })) } : {}) }, M);
 }
 
 
