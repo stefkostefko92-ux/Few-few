@@ -7,6 +7,9 @@ import Logo from "@/components/Logo";
 export const metadata: Metadata = {
   title: "Страницата не е намерена",
   robots: { index: false },
+  // Без това наследява canonical „/“ от layout-а → Google я брои за копие
+  // на началната („алтернативна страница с canonical“ в Search Console).
+  alternates: { canonical: null },
 };
 
 export default function NotFound() {
