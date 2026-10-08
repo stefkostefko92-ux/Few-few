@@ -8,7 +8,7 @@
 // x-ray). Plan and heights in millimetres, in the shaft's coordinates. Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
-import { PROFILES, type HebLayout, type RoomInputs } from '@/shaft';
+import { KV_VERT, PROFILES, type HebLayout, type RoomInputs } from '@/shaft';
 import { onWall, P, type Batch, type Point } from './geom';
 import type { LiftMaterials, Side } from './materials';
 
@@ -34,8 +34,11 @@ export function rectOf(pts: readonly Pt[], g = 0): Rect {
 }
 /** The HEB beams lying on the floor (support.ts hebBeams), each its plan rectangle in the shaft's axes. */
 export function hebRects(lay: HebLayout, R: RoomInputs): Rect[] {
-  const b = PROFILES[lay.profile].b / 2, [e0, e1] = lay.ends;
-  return lay.at.map((c) => rectOf(lay.dir === 'x' ? [[e0 - R.shaftX, c - b - R.shaftY], [e1 - R.shaftX, c + b - R.shaftY]] : [[c - b - R.shaftX, e0 - R.shaftY], [c + b - R.shaftX, e1 - R.shaftY]]));
+  const b = PROFILES[lay.profile].b / 2, [e0, e1] = lay.ends, pw = KV_VERT.hebPlateW / 2;
+  const rect = (a0: number, a1: number, c0: number, c1: number): Rect =>
+    rectOf(lay.dir === 'x' ? [[a0 - R.shaftX, c0 - R.shaftY], [a1 - R.shaftX, c1 - R.shaftY]] : [[c0 - R.shaftX, a0 - R.shaftY], [c1 - R.shaftX, a1 - R.shaftY]]);
+  // the beams, and their bearing plates over the walls, wider than the flanges (round 36)
+  return lay.at.flatMap((c) => [rect(e0, e1, c - b, c + b), rect(e0, lay.span[0], c - pw, c + pw), rect(lay.span[1], e1, c - pw, c + pw)]);
 }
 
 /** A strip `half` either side of the line from a to b (plan) as rectangles: one when it runs square to the axes, else

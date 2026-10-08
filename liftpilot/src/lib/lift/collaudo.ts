@@ -108,7 +108,10 @@ export const AMBITO_VERIFICHE: Readonly<Record<CheckId | ShaftCheckId, readonly 
   // the pulley room of a machine below is the building's; the free height over its pulleys follows a new machine's pulleys
   m_pheight: [], m_pdoor: [], m_pabove: ['machine'], m_gov: ['governor', 'machine', 'controller'], m_govfree: ['governor', 'machine', 'controller'],
   // the HEB beams on the shaft's walls under a new machine
-  m_heb: ['machine'], m_hebf: ['machine'], m_hebfeet: ['machine'], m_hebrope: ['machine'], m_hebwall: ['machine'],
+  m_heb: ['machine'], m_hebf: ['machine'], m_hebfeet: ['machine'], m_hebrope: ['machine'], m_hebkerb: ['machine'], m_hebwall: ['machine'],
+  // over the new machine's unguarded rotating parts, the free area at its handwheel (UNI 10411-1/-11:2024, 9.2: EN 81-20
+  // 5.2.6.3 round the machine replaced); an existing room's height under 2,0 m with a new machine (UNI 10411-1 only)
+  m_above: ['machine'], m_wheel: ['machine'], m_hexist: ['machine'], m_holes: ['machine'],
   // the car's rails under the safety gear and in use (sheet 1 of the drawing set); the safety gear is on the sling
   gr_stress: ['rails', 'car', 'sling', 'load'], gr_flange: ['rails', 'car', 'sling', 'load'], gr_defl: ['rails', 'car', 'sling', 'load'], sg_type: ['sling', 'speed'],
   // the car under a machine below's hung pulleys as h_top; the counterweight's safety gear over a space under the shaft
@@ -118,6 +121,10 @@ export const AMBITO_VERIFICHE: Readonly<Record<CheckId | ShaftCheckId, readonly 
   // the machine's pulleys and dead ends, so a new machine brings it in as it does h_hung
   h_refuge_rig: [...HEAD, 'machine'], h_stand_rig: [...HEAD, 'machine'],
 };
+
+/** Checks of one part of UNI 10411 only: the height of an existing room under 2,0 m takes the measures of UNI EN 81-21,
+ *  5.9 under UNI 10411-1:2024, 9.2; under UNI 10411-11 the existing height stays, a new lift has its own (m_height). */
+export const SOLO_10411_1: readonly ShaftCheckId[] = ['m_hexist'];
 
 /** Checks of the data, not of a part: the distances set by hand on the plan keep every part in its place
  *  (layout.ts). They apply to every test, whatever the intervention replaces. */
@@ -137,6 +144,7 @@ export const normeOf = (C: Collaudo): Norma[] => [C.norma, ...(C.aggiuntive ?? [
 
 /** Whether a check enters the test under one of its standards. */
 export function underNorma(C: Collaudo, n: Norma, id: CheckId | ShaftCheckId): boolean {
+  if (SOLO_10411_1.some((x) => x === id)) return n === '10411-1' && AMBITO_VERIFICHE[id].some((p) => C.parti.includes(p));
   if (n === 'en81') return true;
   if (n === 'dm236') return VERIFICHE_DM236.some((x) => x === id);
   if (n === 'ntc2018') return VERIFICHE_NTC.some((x) => x === id);

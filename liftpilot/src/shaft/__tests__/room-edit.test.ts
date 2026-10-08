@@ -55,7 +55,10 @@ for (const [name, patch] of VARIANTS) {
         }
       }));
     }
-    for (const k of ['room.W', 'room.D', 'room.shaftX', 'room.shaftY', 'room.panelAt', 'room.panelW', 'room.panelD', 'room.slab', 'room.H', 'room.doorH', 'room.panelH']) assert.ok(keys.has(k), k);
+    for (const k of ['room.W', 'room.D', 'room.shaftX', 'room.shaftY', 'room.panelAt', 'room.panelW', 'room.panelD', 'room.slab', 'room.H']) assert.ok(keys.has(k), k);
+    // the door's and the panel's heights in section B-B where it sees them, else written on the plan (round 36)
+    const R = I.room ?? DEFAULT_ROOM, planTexts = draw(I, 'plan').flatMap((c) => c.text ?? []);
+    for (const [k, h] of [['room.doorH', R.doorH], ['room.panelH', R.panelH]] as const) assert.ok(keys.has(k) || planTexts.some((t) => t?.includes(`H. ${h}`)), k);
     assert.ok(keys.has('cwWallGap') || keys.has('plan.carX'), 'la calata');
   });
 }

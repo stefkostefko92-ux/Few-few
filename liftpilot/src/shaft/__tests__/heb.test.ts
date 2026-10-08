@@ -7,7 +7,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { DEFAULT_ROOM, KV_VERT, PROFILES, defaultInputs, hebChecks, hebDrawn, hebLayout, hebPick, hebResult, layout, roomGeo, type HebOption, type MachineSpec } from '../index';
 import { HEB_KEYS, withHebChoice } from '../heb';
-import { hebBase, onHeb } from '../support';
+import { HEB_PAD, hebBase, onHeb } from '../support';
 
 const M: MachineSpec = { D: 400, Dp: 0, n: 5, d: 8, mass: 400, label: '', axis: 600, h: 0, reverse: false, ropeIn: 0 };
 const near = (a: number, b: number, tol = 1e-6): boolean => Math.abs(a - b) <= tol * Math.max(1, Math.abs(b));
@@ -79,10 +79,37 @@ test('putrelle HEB: tensione, freccia e reazione come a mano', () => {
   assert.deepEqual(hebChecks(bad).filter((c) => c.status === 'fail').map((c) => c.id), ['m_hebrope', 'm_hebwall']);
 });
 
+test('putrelle HEB: fuori dai bordi dei fori nella soletta (m_hebkerb), anche a filo; senza fori nessuna verifica', () => {
+  // round 36: the beams stand HEB_PAD over the slab, lower than an upstand (registry locale.fori, locale.putrelle.vano)
+  assert.ok(HEB_PAD < KV_VERT.slabKerb);
+  const lay = { dir: 'x' as const, profile: 'HEB 140' as const, at: [1000, 1600] as const, span: [500, 2100] as const, ends: [300, 2300] as const,
+    walls: [250, 2400] as const, bridge: false, length: 2000 }, half = PROFILES['HEB 140'].b / 2;
+  const feet = [[800, 1000], [1800, 1000], [800, 1600], [1800, 1600]] as const, res = { at: [1300, 1300] as const, F: 40000 };
+  const box = (y0: number, y1: number): [number, number][] => [[1200, y0], [1400, y0], [1400, y1], [1200, y1]];
+  const kerbOf = (r: ReturnType<typeof hebResult>) => hebChecks(r).find((c) => c.id === 'm_hebkerb');
+  // an upstand 20 mm under the first beam's flange: fails by as much; one touching it passes
+  const over = hebResult(lay, res, feet, [], 250, [box(1000 + half - 20, 1200)]);
+  assert.equal(over.kerb, -20);
+  assert.equal(kerbOf(over)?.status, 'fail');
+  const flush = hebResult(lay, res, feet, [], 250, [box(1000 + half, 1200)]);
+  assert.deepEqual([kerbOf(flush)?.status, kerbOf(flush)?.value], ['ok', 0]);
+  // none: no check (a machine below has no openings in a room)
+  assert.equal(hebResult(lay, res, feet, [], 250).kerb, null);
+  assert.equal(kerbOf(hebResult(lay, res, feet, [], 250)), undefined);
+  // the layout under a frame bridging the beams steps the beam past an upstand where it would stand
+  const R = { ...DEFAULT_ROOM, shaftX: 500, shaftY: 400 }, S = { W: 1600, D: 1750, wall: 250 }, h16 = PROFILES['HEB 160'].b / 2;
+  const frameFeet = [[900, 1000], [1600, 1000], [900, 2600], [1600, 2600]] as const;
+  const free = hebLayout(R, S, frameFeet, 'x', 'HEB 160', true);
+  assert.equal(free.at[0], 1000 + h16);
+  const kerb = box(1050, 1150), moved = hebLayout(R, S, frameFeet, 'x', 'HEB 160', true, [], [kerb]);
+  assert.deepEqual([moved.bridge, moved.at[0]], [true, 1150 + h16]);
+  assert.equal(hebResult(moved, res, frameFeet, [], 250, [kerb]).kerb, 0);
+});
+
 test('putrelle HEB: la scelta — le più corte che passano, poi le più leggere; a mano profilo e direzione', () => {
   const opt = (dir: 'x' | 'y', profile: HebOption['profile'], length: number, ok: boolean): HebOption => ({
     dir, profile, length, at: [0, 0], span: [0, 0], ends: [0, 0], walls: [0, 0], bridge: false, ok,
-    result: { sigma: ok ? 50 : 300, sigmaMax: 262, f: 1, fMax: 2, feet: 10, rope: 100, wall: 0, reaction: 1 },
+    result: { sigma: ok ? 50 : 300, sigmaMax: 262, f: 1, fMax: 2, feet: 10, rope: 100, kerb: null, wall: 0, reaction: 1 },
   });
   const opts = [opt('x', 'HEB 120', 2000, false), opt('x', 'HEB 140', 2000, true), opt('x', 'HEB 160', 2000, true), opt('y', 'HEB 120', 2150, true)];
   assert.equal(hebPick(opts, {}).profile, 'HEB 140');
@@ -103,8 +130,10 @@ test('putrelle HEB: scelte sui disegni, altezza sotto il basamento, non sotto pu
   assert.equal(withHebChoice(R, 'heb.option', 'x:HEB 200'), null);
   assert.equal(withHebChoice(R, 'sup.profile', 'x:HEB 140'), null);
   // the height: the profile chosen, else the tallest until the derivation puts its choice
-  assert.equal(hebBase(R), PROFILES['HEB 160'].h);
-  assert.equal(hebBase({ ...R, heb: { profile: 'HEB 120' } }), PROFILES['HEB 120'].h);
+  // (on their bearing plates over the mortar bed: round 36, registry locale.putrelle.vano)
+  assert.equal(HEB_PAD, KV_VERT.hebPlateT + KV_VERT.hebMortar);
+  assert.equal(hebBase(R), PROFILES['HEB 160'].h + HEB_PAD);
+  assert.equal(hebBase({ ...R, heb: { profile: 'HEB 120' } }), PROFILES['HEB 120'].h + HEB_PAD);
   assert.equal(hebBase(DEFAULT_ROOM), 0);
   for (const kind of ['beams', 'plinth'] as const) {
     const Rk = { ...R, support: { kind } };
@@ -112,10 +141,10 @@ test('putrelle HEB: scelte sui disegni, altezza sotto il basamento, non sotto pu
     assert.equal(hebBase(Rk), 0, kind);
     const G = roomGeo(layout({ ...defaultInputs(1600, 1750), room: Rk }), M);
     assert.ok(G);
-    assert.equal(hebDrawn(G, M, { W: 1600, D: 1750, wall: 200 }), null, kind);
+    assert.equal(hebDrawn(G, M, { W: 1600, D: 1750, wall: 200, ends: [] }), null, kind);
   }
   const G = roomGeo(layout({ ...defaultInputs(1600, 1750), room: { ...R, heb: { profile: 'HEB 120', dir: 'y' } } }), M);
   assert.ok(G);
-  const d = hebDrawn(G, M, { W: 1600, D: 1750, wall: 200 });
+  const d = hebDrawn(G, M, { W: 1600, D: 1750, wall: 200, ends: [] });
   assert.deepEqual([d?.profile, d?.dir, d?.length], ['HEB 120', 'y', 1750 + 2 * KV_VERT.hebBearing]);
 });

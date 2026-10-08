@@ -3,7 +3,7 @@
 // rope drops is room-section-view.ts. The machine is the 3D's (machine-outline.ts) scaled to the sheave, or a maker's
 // as it is (machine-shape-view.ts); the sheave's axis and the pulley stand where the calculation puts them
 // (machine-room.ts). Model entities for the drawing kernel; dimensions included.
-import { chain, edit as E, line, path, rect, type Box, type Edit, type Entity, type Pt } from '../drawing';
+import { chain, edit as E, line, path, rect, type Box, type Entity, type Pt } from '../drawing';
 import { rinvioAcross, rinvioRun } from './rinvio';
 import { rinvioName } from './rinvio-view';
 import { hebDrawn } from './heb';
@@ -14,11 +14,17 @@ import { shapePlan } from './machine-shape-view';
 import { dropSpan as span, machineU, machineV, ropeWidths, type MachineSpec, type RoomGeo } from './machine-room';
 import { WALL, doorSwing, holesOf, onDrop, quad, type RoomDrawOpts } from './room-draw';
 import { bbox, fittingsPlan } from './room-fittings-view';
-import { outlineBox } from './room-floor';
-import { machineParts } from './support-check';
+import { outlineBox, switchBox } from './room-floor';
+import { machineBox, machineParts } from './support-check';
+import { freeAreas, wayBands } from './room-ways';
+import { electricPlan } from './room-electric';
 import { supportOf } from './support';
 import { layoutSite, type RoomSite } from './room-site';
 import { roomSectionOn } from './room-section-view';
+import { hookOf } from './room-hook';
+import { reactionPoints } from './room-reactions';
+import { panelSeen } from './room-section-extra';
+import { dropChains, railAxis, reactionMarks, setoutPlan } from './room-setout';
 import type { Layout } from './types';
 
 export { roomSectionOn };
@@ -113,6 +119,11 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDrawO
   // control panel with its free area, main switch by the door (room-fittings-view.ts)
   const parts = machineParts(G, M).map(outlineBox).map(([x0, y0, x1, y1]) => ({ x0, y0, x1, y1 })), { entities: fittings, free, sw, swAt } = fittingsPlan(R, parts);
   out.push(...fittings);
+  // the free areas beside the machine and the governor, the ways from the door, the light, switches, sockets, grille
+  // and trunking (room-ways.ts, room-electric.ts): what stands on the floor as the room's checks take it
+  const others = [...(S.govFoot ? [S.govFoot] : []), switchBox(R)], fa = freeAreas(G, M, others, S.govFoot ?? null);
+  out.push(...fa.entities, ...wayBands(G, [...machineParts(G, M), ...others], fa.machine),
+    ...electricPlan(R, fa.machine, machineBox(G, M), [R.shaftX, R.shaftY, R.shaftX + S.W, R.shaftY + S.D]));
   // the sheave's size on the side away from the gearbox, along the drop line (an upright one would cross the frame's
   // dimension); the load P1 where the room is free, its leader to the gearbox (the gearbox's side of the drop line: g)
   const g = G.dir, clearV = Math.max(w.ropes + 60, M.Dp > 0 ? w.pulley + 40 : 0), um = (G.frame0 + G.frame1) / 2;
@@ -184,12 +195,13 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDrawO
   // dimensions: room, door, bedframe, rope drops; outside the walls the drops in the shaft first, the shaft under the
   // room (where it stands from the room's walls, and its size, from its outline), the room's own size outermost
   const dimSide = R.doorWall === 'front' ? 'bottom' : R.doorWall === 'rear' ? 'top' : R.doorWall;
-  const xSide = dimSide === 'top' ? 'bottom' : 'top', ySide = dimSide === 'right' ? 'left' : 'right', first = S.drops ? 1 : 0;
+  // (the drops' row nearest: a whole design's too, from its layout, since round 36)
+  const xSide = dimSide === 'top' ? 'bottom' : 'top', ySide = dimSide === 'right' ? 'left' : 'right', first = o.dropsInside ? 0 : 1;
   const shaftY = xSide === 'top' ? R.shaftY + S.D : R.shaftY, shaftX = ySide === 'right' ? R.shaftX + S.W : R.shaftX;
   const across = dimSide === 'top' || dimSide === 'bottom', wallLen = across ? R.W : R.D;
   out.push(chain({ dir: across ? 'x' : 'y', pts: [0, d0, d1, wallLen], side: dimSide, row: 0, text: [null, `Porta ${R.doorW}x H. ${R.doorH}`, null],
     edit: [E('room.doorAt'), E('room.doorW'), E('room.doorAt', wallLen - R.doorW, -1)] }));
-  if (S.drops) out.push(...dropChains(S, S.drops, R, dimSide));
+  out.push(...dropChains(S, G, dimSide, o.dropsInside === true));
   out.push(chain({ dir: 'x', pts: [0, R.shaftX, R.shaftX + S.W, R.W], side: xSide, row: first, text: [null, 'Vano {v}', null],
     edit: [E('room.shaftX'), E('W'), E('room.shaftX', R.W - S.W, -1)], from: [undefined, shaftY, shaftY, undefined] }));
   out.push(chain({ dir: 'y', pts: [0, R.shaftY, R.shaftY + S.D, R.D], side: ySide, row: first, text: [null, 'Vano {v}', null],
@@ -202,10 +214,12 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDrawO
   const face = pw === 'front' ? 0 : pw === 'rear' ? R.D : pw === 'left' ? 0 : R.W, into = pw === 'rear' || pw === 'right' ? -1 : 1, inner = face + into * R.panelD;
   // (from the nearer wall only: a chain across the room would cross the machine)
   const nearStart = R.panelAt <= panelLen - R.panelAt - R.panelW;
+  // (its height here when section B-B does not see it, round 36)
+  const panelName = panelSeen(G) ? 'Quadro {v}' : `Quadro {v} · H. ${R.panelH}`;
   out.push(chain(nearStart
-    ? { dir: alongP ? 'x' : 'y', pts: [0, R.panelAt, R.panelAt + R.panelW], at: inner + into * 150, from: [null, inner, inner], text: [null, 'Quadro {v}'],
+    ? { dir: alongP ? 'x' : 'y', pts: [0, R.panelAt, R.panelAt + R.panelW], at: inner + into * 150, from: [null, inner, inner], text: [null, panelName],
       edit: [E('room.panelAt'), E('room.panelW')], within }
-    : { dir: alongP ? 'x' : 'y', pts: [R.panelAt, R.panelAt + R.panelW, panelLen], at: inner + into * 150, from: [inner, inner, null], text: ['Quadro {v}', null],
+    : { dir: alongP ? 'x' : 'y', pts: [R.panelAt, R.panelAt + R.panelW, panelLen], at: inner + into * 150, from: [inner, inner, null], text: [panelName, null],
       edit: [E('room.panelW'), E('room.panelAt', panelLen - R.panelW, -1)], within }));
   // its depth past its end with room for it, else before it (a panel set 50 mm off a wall: the line would be in it)
   const side1 = R.panelAt + R.panelW, after = panelLen - side1 >= 150 || panelLen - side1 >= R.panelAt, at1 = after ? side1 : R.panelAt;
@@ -234,25 +248,18 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDrawO
     out.push(chain(askew ? { dir: ax ? 'y' : 'x', on, pts: [bed.u0, bed.u1], at: bv + 220 * g, from: [bv, bv], text, within }
       : { dir: ax ? 'y' : 'x', pts: sorted(c[ax], d[ax]), at: c[1 - ax], from: [side1, side1], text, within }));
   }
+  // the set-out (room-setout.ts): the openings named, the bedplate, the ropes' line and the sheave's axis from the walls,
+  // the angle askew, the hook, the hitches; then the support's bearings R1…Rn — clear of the lettering placed so far,
+  // the machine, the free areas and the switch
+  const keep = [...gearBoxes(parts, bed ? bbox(quad(G, bed.u0, bed.v0, bed.u1, bed.v1)) : null), bbox(free), bbox(sw), ...(S.governor.box ? [S.governor.box] : [])];
+  const band = (u0: number, u1: number, v: number): Box => bbox(quad(G, u0 - 80, v - 150, u1 + 80, v + 150));
+  const rowBands = [band(G.frame0, G.frame1, vFrame), band(0, G.calata, vDrop), ...(bed ? [band(bed.u0, bed.u1, (g > 0 ? bed.v1 : bed.v0) + 220 * g)] : [])];
+  out.push(...setoutPlan(S, M, G, hookOf(G, M, S.pieces ?? []), out, keep, rowBands));
+  out.push(...reactionMarks(reactionPoints(G, M, heb), out, keep, within));
+  if (S.railY !== undefined && S.railY !== null) out.push(...railAxis(S, G, S.railY, out, keep));
   const reach = (wl: typeof door): number => (wl === door ? out0 : WALL);
   return { entities: out, bounds: { x0: -reach('left'), y0: -reach('front'), x1: R.W + reach('right'), y1: R.D + reach('rear') } };
 }
 
-/** A survey's rope drops from the shaft's walls, one chain along each axis nearest the drawing (row 0, inside the
- *  shaft's own): the car's drop changes with its segment from the nearer wall; the counterweight's follows the
- *  calculation. */
-function dropChains(S: RoomSite, d: { car: Pt; cw: Pt }, R: RoomGeo['room'], dimSide: 'top' | 'bottom' | 'left' | 'right'): Entity[] {
-  const out: Entity[] = [];
-  for (const [ax, len, at0, side] of [[0, S.W, R.shaftX, dimSide === 'top' ? 'bottom' : 'top'], [1, S.D, R.shaftY, dimSide === 'right' ? 'left' : 'right']] as const) {
-    const car = Math.round(d.car[ax] * 2) / 2, cw = Math.round(d.cw[ax] * 2) / 2, mid = Math.abs(cw - car) < 1 ? [car] : [Math.min(car, cw), Math.max(car, cw)];
-    const key = ax ? 'drop.carY' : 'drop.carX', pts = [0, ...mid, len];
-    const edit = pts.slice(1).map((p, i): Edit | null => (i === 0 && p === car ? E(key) : i === pts.length - 2 && pts[i] === car ? E(key, len, -1) : null));
-    // each drop's extension line from the drop itself (two drops on one line: from the farther, through the nearer), the
-    // shaft's walls from the drawing's edge
-    const other = ax ? R.shaftX : R.shaftY, across = (q: Pt): number => other + q[1 - ax], up = side === 'top' || side === 'right';
-    const dropAt = (p: number): number => (mid.length === 1 ? (up ? Math.min : Math.max)(across(d.car), across(d.cw)) : across(Math.abs(p - car) < 1 ? d.car : d.cw));
-    const from = pts.map((p, i) => (i === 0 || i === pts.length - 1 ? undefined : dropAt(p)));
-    out.push(chain({ dir: ax ? 'y' : 'x', pts: pts.map((p) => at0 + p), side, row: 0, edit, from }));
-  }
-  return out;
-}
+/** The machine's parts and the bedplate with the pulley as boxes the set-out's lettering keeps off. */
+const gearBoxes = (parts: readonly Box[], bed: Box | null): Box[] => [...parts, ...(bed ? [bed] : [])];

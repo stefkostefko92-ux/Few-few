@@ -7,6 +7,7 @@
 import * as THREE from 'three/webgpu';
 import { belt, type RopeRig } from '@/lib/lift';
 import { ropeWidths } from '@/shaft/machine-room';
+import { KV_VERT } from '@/shaft/norme-vert';
 import type { Batch } from './geom';
 import type { GovernorSpot } from './governor';
 import type { LiftMaterials } from './materials';
@@ -17,8 +18,9 @@ export interface Opening {
   curb: boolean;
 }
 
-// clearance round the ropes and the pulleys in the openings, the curb's height and wall [mm]
-const CLEAR = 30, CURB_H = 50, CURB_T = 25;
+// clearance round the ropes and the pulleys in the openings, the curb's height and wall as the drawings have them
+// (registry locale.macchina, locale.fori) [mm]
+const CLEAR = KV_VERT.holeGap, CURB_H = KV_VERT.slabKerb, CURB_T = KV_VERT.kerbW;
 // the governor's rope and its holes [mm]
 const GOV_HOLE = 50;
 

@@ -11,6 +11,7 @@ import * as THREE from 'three/webgpu';
 import { KV_VERT, PROFILES, hasProfile, isChannel, profileOf, supportSpan, type HebLayout, type MachineSupport, type Profile, type RoomInputs } from '@/shaft';
 import { bedplateBeams, makerRun, type RinvioFrame } from '@/shaft/rinvio';
 import type { MachineFrame } from '@/shaft/machine-shape';
+import { HEB_PAD } from '@/shaft/support';
 import { Batch } from './geom';
 import type { LiftMaterials } from './materials';
 
@@ -162,15 +163,21 @@ function rinvioFrame3D(box: BoxFn, F: MachineFrame, gap: number, P: FramedPulley
 }
 
 /** The HEB beams on the shaft's walls (src/shaft/heb.ts) on the room's floor at `z0` [mm]: two H profiles across the
- *  shaft under the support, their ends in its walls; plan in the shaft's axes (the room's less where the shaft lies). */
+ *  shaft under the support, their ends over its walls on bearing plates and their mortar beds, HEB_PAD clear of the
+ *  slab between them (registry locale.putrelle.vano); plan in the shaft's axes (the room's less where the shaft lies). */
 export function hebBeams(b: Batch, lay: HebLayout, R: RoomInputs, z0: number, M: LiftMaterials): void {
-  const P = PROFILES[lay.profile], [e0, e1] = lay.ends, alongX = lay.dir === 'x';
+  const P = PROFILES[lay.profile], [e0, e1] = lay.ends, alongX = lay.dir === 'x', zb = z0 + HEB_PAD, pw = KV_VERT.hebPlateW / 2;
+  const box = (a0: number, a1: number, c0: number, c1: number, h0: number, h1: number, m: THREE.Material): void => (alongX
+    ? b.box(a0 - R.shaftX, c0 - R.shaftY, h0, a1 - R.shaftX, c1 - R.shaftY, h1, m)
+    : b.box(c0 - R.shaftX, a0 - R.shaftY, h0, c1 - R.shaftX, a1 - R.shaftY, h1, m));
   for (const c of lay.at) {
-    const put = (c0: number, c1: number, h0: number, h1: number): void => (alongX
-      ? b.box(e0 - R.shaftX, c0 - R.shaftY, z0 + h0, e1 - R.shaftX, c1 - R.shaftY, z0 + h1, M.steel)
-      : b.box(c0 - R.shaftX, e0 - R.shaftY, z0 + h0, c1 - R.shaftX, e1 - R.shaftY, z0 + h1, M.steel));
-    put(c - P.b / 2, c + P.b / 2, 0, P.tf);
-    put(c - P.tw / 2, c + P.tw / 2, P.tf, P.h - P.tf);
-    put(c - P.b / 2, c + P.b / 2, P.h - P.tf, P.h);
+    box(e0, e1, c - P.b / 2, c + P.b / 2, zb, zb + P.tf, M.steel);
+    box(e0, e1, c - P.tw / 2, c + P.tw / 2, zb + P.tf, zb + P.h - P.tf, M.steel);
+    box(e0, e1, c - P.b / 2, c + P.b / 2, zb + P.h - P.tf, zb + P.h, M.steel);
+    // the plates on their mortar beds over the walls, as long as the bearing
+    for (const [a0, a1] of [[e0, lay.span[0]], [lay.span[1], e1]] as const) {
+      box(a0, a1, c - pw, c + pw, z0, z0 + KV_VERT.hebMortar, M.slab);
+      box(a0, a1, c - pw, c + pw, z0 + KV_VERT.hebMortar, zb, M.steel);
+    }
   }
 }

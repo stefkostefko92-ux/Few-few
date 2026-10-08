@@ -14,11 +14,14 @@ import { PROFILES } from './profiles';
 import { rinvioRun, standBox } from './rinvio';
 import { profileOf, supportOf } from './support';
 import { outlineBox, outlineGap, panelBox, switchBox, type Box, type Outline } from './room-floor';
+import { freeBeside } from './room-free';
+import { aboveCheck, wheelAt, wheelCheck } from './room-above';
 import { panelChecks, placePanel, type PanelSpot } from './room-panel';
-import type { RoomInputs } from './room';
 import type { ShaftCheck } from './types';
 
 const G = 9.81;
+
+export { freeBeside };
 
 /** The machine's load on its support [kg]: the machine with its bedframe, the static load on its axis, the dynamic
  *  coefficient on the latter. */
@@ -184,34 +187,6 @@ export function standClearance(Gm: RoomGeo, M: MachineSpec): number | null {
   return Number.isFinite(clear) ? clear : null;
 }
 
-/** The free area beside the machine for its maintenance and the manual emergency operation (registry locale.macchina):
- *  on the side of the machine's outline `box` [x0, y0, x1, y1] (room axes, its bedplate and pulley stand with it) with
- *  the most room, the strip to the wall or to the nearest of `obstacles` beside it (the control panel; the governor and
- *  the main switch when given) — as deep as the area's longer side along a side at least as long as its shorter, or the
- *  other way round. Its depth, the depth it needs there [mm], and the strip as deep as it needs (or as it is). */
-export function freeBeside(R: RoomInputs, box: Box, obstacles: readonly Box[] = [panelBox(R)]): { depth: number; need: number; area: Box } {
-  const [x0, y0, x1, y1] = box, K = KV_VERT, [a, b] = [Math.min(K.maintW, K.maintD), Math.max(K.maintW, K.maintD)];
-  // how far each side is from the wall, or from what stands beside it
-  let left = x0, right = R.W - x1, front = y0, rear = R.D - y1;
-  for (const [px0, py0, px1, py1] of obstacles) {
-    const overX = px0 < x1 && x0 < px1, overY = py0 < y1 && y0 < py1;
-    if (overY && px1 <= x0) left = Math.min(left, x0 - px1);
-    if (overY && px0 >= x1) right = Math.min(right, px0 - x1);
-    if (overX && py1 <= y0) front = Math.min(front, y0 - py1);
-    if (overX && py0 >= y1) rear = Math.min(rear, py0 - y1);
-  }
-  const sides: { depth: number; len: number; strip: (d: number) => Box }[] = [
-    { depth: left, len: y1 - y0, strip: (d) => [x0 - d, y0, x0, y1] },
-    { depth: right, len: y1 - y0, strip: (d) => [x1, y0, x1 + d, y1] },
-    { depth: front, len: x1 - x0, strip: (d) => [x0, y0 - d, x1, y0] },
-    { depth: rear, len: x1 - x0, strip: (d) => [x0, y1, x1, y1 + d] },
-  ];
-  const ways = sides.flatMap((s) => [...(s.len >= a ? [{ s, need: b }] : []), ...(s.len >= b ? [{ s, need: a }] : [])]);
-  const all = ways.length ? ways : sides.map((s) => ({ s, need: b }));
-  const best = all.reduce((p, w) => (w.s.depth - w.need > p.s.depth - p.need ? w : p));
-  return { depth: best.s.depth, need: best.need, area: best.s.strip(Math.max(0, Math.min(best.s.depth, best.need))) };
-}
-
 const boxAround = (c: readonly (readonly [number, number])[]): Box => {
   const xs = c.map((p) => p[0]), ys = c.map((p) => p[1]);
   return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
@@ -243,26 +218,28 @@ export function baseUnderMounts(Gm: RoomGeo, M: MachineSpec): number | null {
 /** The checks m_base, m_fit and m_stand (registry locale.basamento, locale.ingombro): the machine on its support — with the bedplate of the
  *  diverting pulley or the pulley's own stand — inside the room in plan and under its ceiling: the least distance left to
  *  a wall or to the ceiling, at least 0 [mm]; the pulley on its stand under the machine clear of the support over it; the
- *  free area beside it up to the walls, the control panel and `others` (the governor, the main switch: m_free). */
+ *  free area beside it up to the walls, the control panel and `others` (the governor, the main switch: m_free), at its
+ *  handwheel (m_wheel); the free height over its rotating parts (m_above, room-above.ts). */
 export function fitChecks(Gm: RoomGeo | null, M: MachineSpec, others: readonly Box[] = []): ShaftCheck[] {
   if (!Gm) return [];
   const R = Gm.room;
   let clear = R.H - machineTop(M, Gm);
   for (const [x, y] of machineCorners(Gm, M)) clear = Math.min(clear, x, R.W - x, y, R.D - y);
-  const stand = standClearance(Gm, M), free = freeBeside(R, machineBox(Gm, M), [panelBox(R), ...others]), base = baseUnderMounts(Gm, M);
+  const stand = standClearance(Gm, M), free = freeBeside(R, machineBox(Gm, M), [panelBox(R), ...others], wheelAt(Gm, M)), base = baseUnderMounts(Gm, M);
   return [
     ...(base === null ? [] : [check('m_base', base >= 0, Math.round(base), 0, 0, 'mm')]),
     check('m_fit', clear >= 0, Math.round(clear), 0, 0, 'mm'), ...(stand === null ? [] : [check('m_stand', stand >= 0, Math.round(stand), 0, 0, 'mm')]),
     check('m_free', free.depth >= free.need, Math.round(free.depth), free.need, 0, 'mm'),
+    wheelCheck(free.wheel), aboveCheck(Gm, M),
   ];
 }
 
 /** The free area beside the machine with the panel standing at `panel` (null: none) and `others` beside it: whether it is
  *  as deep as it needs, and the strip where it is (null when it is not). */
 function freeWith(Gm: RoomGeo, M: MachineSpec, others: readonly Box[]): (panel: Box | null) => { ok: boolean; area: Box | null } {
-  const box = machineBox(Gm, M);
+  const box = machineBox(Gm, M), wheel = wheelAt(Gm, M);
   return (panel) => {
-    const f = freeBeside(Gm.room, box, [...(panel ? [panel] : []), ...others]), ok = f.depth >= f.need;
+    const f = freeBeside(Gm.room, box, [...(panel ? [panel] : []), ...others], wheel), ok = f.depth >= f.need;
     return { ok, area: ok ? f.area : null };
   };
 }

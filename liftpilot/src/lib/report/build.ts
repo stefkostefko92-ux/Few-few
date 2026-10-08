@@ -40,6 +40,8 @@ import { carriedMass, supportChecks, supportLoad, supportMass } from '../lift/su
 import { adviceBlocks } from './advice';
 import type { MachineAdvice } from '../lift/advice';
 import { catalogMachineOf, massModelOf, modelOf } from '../lift/known';
+import { existingRoomCheck } from '@/shaft/room-above';
+import { designRoomBlocks } from './tecnica-site';
 
 /** The rope schemes of a machine below, in the relazione's words (src/lib/lift/bottom.ts). */
 const BOTTOM_IT: Readonly<Record<BottomScheme, string>> = {
@@ -162,6 +164,8 @@ export function buildReport(r: ReportInput): ReportDoc {
   const beams = L && machine ? [...supportChecks(L, machine, ld, !scheme), ...headTopChecks(withRig(L, I.r, I.Dp, machine.n, machine.d, g), I.r, I.Dp, scheme), ...(g ? belowChecks(L, g, machine, I.Dp) : [])] : [];
   // the clearance on the counterweight's sign with the car's top under what hangs over it (cw-gap.ts), as sheet 1 gives it
   if (L) beams.push(...cwGapOver(L, beams));
+  // a modification: the existing room's height under 2,0 m (UNI 10411-1:2024, 9.2), as the design's verdict takes it
+  if (I.context === 'repl' && L?.inputs.room && !scheme) beams.push(existingRoomCheck(L.inputs.room));
   if (r.design) {
     section('Vano e cabina');
     B.push(...shaftBlocks(r.design, I.Q, { fmt, st, when, head: [t('col_item'), t('col_val'), t('col_lim'), t('col_res'), 'Riferimento'] }, beams, C));
@@ -171,6 +175,8 @@ export function buildReport(r: ReportInput): ReportDoc {
         + `${fmt(ld.dyn, 1)}: gli stessi carichi del foglio 1 delle tavole.` });
     }
     if (machine?.rinvio) B.push({ t: 'kv', rows: [rinvioRow(machine.rinvio, fmt)] });
+    // the machine room's openings, hook, bearings and mounts (round 36)
+    if (machine && L && !scheme) B.push(...designRoomBlocks(L, machine, ld, fmt));
   }
   // the rails and the loads on the building, with the data of the installation (guide.ts): as sheet 1 counts them
   const guide = r.design && machine ? guideSection(a, r.design.layout, r.plant ?? {}, machine, weighed, fmt, st, (c) => esitoOf(C, c.id, st(c.status), c.status),

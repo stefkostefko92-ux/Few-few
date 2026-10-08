@@ -16,6 +16,7 @@ import { massModelOf } from '../lift/known';
 import { hebRows } from './heb-rows';
 import { isUpperLimit, mergeChecks, shownValue } from '@/shaft/checks';
 import { KV_VERT } from '@/shaft/norme-vert';
+import { existingRoomCheck } from '@/shaft/room-above';
 import { bracketCount, maxBracketSpan, railSpan } from '@/shaft/brackets';
 import { cwGapOver } from '@/shaft/cw-gap';
 import { bufferType } from '@/shaft/buffers';
@@ -29,6 +30,9 @@ import { railChecks } from './rail-check';
 import { dateIt, placeLines, type TavoleInput } from './input';
 import { sheetLoads, sheetRails, supportRows } from './sheet-loads';
 import { cwGearChecks, cwGearOf, cwGearRow } from './cw-gear';
+import { P4_NOTE, hebFor, hebNote, hookRow, reactionRows } from './room-rows';
+import { roomGeo } from '@/shaft/machine-room';
+import { governorRopes, shaftUnder } from '@/shaft/room-site';
 import { belowGeoOf, machineOf, machineText } from './views';
 import { clientNotes, estimateNote, railNote, safetyGearNote, spaceLegend } from './notes';
 import { shaftDetailText } from './notes-vano';
@@ -184,6 +188,10 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
       [`TIRO ANCORAGGI ARGANO, PORTATA × ${fmt(dyn, 1)}`, fmt(Math.max(0, SL.anchor?.dyn ?? 0), 0), 'kg'] as const,
     ] : [[`ARGANO${SL.machine.estimate ? ' (STIMA)' : ''}`, fmt(SL.machine.kg, 0), 'kg'] as const, ...supportRows(SL.support, M, fmt), ...hebRows(SL.heb, fmt)]),
   ];
+  // the machine room over the shaft: the hook's rated load and the reactions R1…Rn on the support's bearings (round 36)
+  const Gr = !below ? roomGeo(L, M) : null, car0 = carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes: ropesKg, cables: cablesKg });
+  const roomRows = Gr ? [hookRow(Gr, M, fmt), ...reactionRows(Gr, M, { machine, static: ld.static, dyn, car: car0 },
+    hebFor(Gr, M, shaftUnder(L), governorRopes(L, Gr.room)), fmt)] : [];
   const each = [false, false, false, false, true, V.carBuffers > 1, true, false, false];
   const P = ld.P.map((p, i) => (p === null ? '—' : `${each[i] ? 'cad. ' : ''}${fmt(p, 0)}`));
   // the car rails between their brackets (the pitch declared or the rule's), at the loads of this sheet (sheet-loads.ts)
@@ -201,6 +209,8 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   const all = [...mergeChecks(L.checks, [...supportChecks(L, M, { machine: below ? 0 : machine, static: ld.static, dyn, car }, !below),
     ...(bg ? belowChecks(L, bg, M, I.Dp) : []), ...head, ...cwGapOver(L, head)]), ...railChecks(rc, gear, I.v),
     ...cwGearChecks(underPit, Pl, I.v, C.norma !== 'en81')];
+  // a modification: the existing room's height under 2,0 m (UNI 10411-1:2024, 9.2)
+  if (I.context === 'repl' && room && !below) all.push(existingRoomCheck(room));
   const checks: DataSheet['checks'] = all.map((c) => {
     const label = (labels[`c_${c.id}`] ?? c.id).replace(' (UNI EN 81-20, ', ' (');
     // a check of a part that stays as it is is out of the acceptance test (note on the sheet)
@@ -218,16 +228,18 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   if (!Pl.safetyGear) notes.push(safetyGearNote(`NOTA ${notes.length + 1}`));
   // the note of the rails' check wherever the check enters the acceptance test (new rails, or a change of load, car or sling)
   if (ambitoOf(C, 'gr_stress') === 'applies') notes.push(railNote(rc, railLabel(L.inputs.carRail), gear, Pl.liftUse, `NOTA ${notes.length + 1}`, fmt));
+  // the governor's load not given; the HEB beams' bearings (round 36)
+  if (Gr && SL.heb) notes.push(hebNote(`NOTA ${notes.length + 1}`));
   const test = collaudoNote(C, `NOTA ${notes.length + 1}`);
   if (test) notes.push(test);
 
   return {
     warnings, cwGap: gap, rails: { fx: fmt(F.fx, 0), fy: fmt(F.fy, 0), kept: oldRails },
     sheet: {
-      base, specs, loads: loadRows, notes, legend: [sp.free, sp.pit, sp.top],
+      base, specs, loads: [...loadRows, ...roomRows], notes, legend: [sp.free, sp.pit, sp.top],
       forces: { fx: fmt(F.fx, 0), fy: fmt(F.fy, 0) }, checks,
       electric: [['TENSIONE F.M.', 'V', num(Pl.voltage)], ['LUCE', 'V', num(Pl.lightVoltage)], ['FREQUENZA', 'Hz', num(Pl.frequency)], ['INTERMITTENZA', '%', num(Pl.duty)]],
-      P, client: x.project.client || '—', location: placeLines(x.project), author: x.set.author, date: dateIt(x.set.issuedAt),
+      P, ...(Pl.governorLoad == null ? { pNote: P4_NOTE } : {}), client: x.project.client || '—', location: placeLines(x.project), author: x.set.author, date: dateIt(x.set.issuedAt),
       revisions: x.set.revisions.map((r) => ({ mark: r.mark, text: r.text, date: dateIt(r.date) })),
       number: x.set.number, pages, plant: x.project.plantNumber || '—', company: x.company.name, logo: x.company.logo !== null, clientLogo: x.clientLogo != null,
     },

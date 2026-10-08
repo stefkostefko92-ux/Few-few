@@ -8,9 +8,9 @@ import { isUpperLimit, shownValue } from '@/shaft/checks';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { PROFILES } from '@/shaft/profiles';
 import { profileOf, supportOf } from '@/shaft/support';
-import { hebChecks, hebFor } from '@/shaft/heb';
+import { hebChecks, hebDrawn, hebFor } from '@/shaft/heb';
 import { hebRows } from './heb-rows';
-import { beamChecks } from '@/shaft/support-check';
+import { beamChecks, type SupportLoad } from '@/shaft/support-check';
 import type { ShaftCheck } from '@/shaft/types';
 import { NORMA_SIGLA, ambitoOf } from '../lift/collaudo';
 import { ADEMPIMENTI } from '../lift/norme-collaudo';
@@ -27,6 +27,7 @@ import { loads, type LoadsInput } from './loads';
 import { roomNote, type Note } from './notes';
 import type { SurveyTavoleInput } from './survey-input';
 import { machineText } from './views';
+import { hookRow, reactionRows } from './room-rows';
 
 const fmt = makeFmt('it-IT');
 const dec = (x: number): number => (Number.isInteger(x) ? 0 : Math.abs(x * 10 - Math.round(x * 10)) < 1e-9 ? 1 : 2);
@@ -36,7 +37,7 @@ const mm = (x: number): string => fmt(Math.round(x), 0);
 /** The beams' count on the sheet. */
 const N_IT: Readonly<Record<number, string>> = { 2: 'DUE', 3: 'TRE' };
 /** The checks of the support the sheet counts again at its own load: the beams under the machine, the HEB beams. */
-const AT_SHEET_LOAD: ReadonlySet<string> = new Set(['m_beam', 'm_beamf', 'm_beamwall', 'm_heb', 'm_hebf', 'm_hebfeet', 'm_hebrope', 'm_hebwall']);
+const AT_SHEET_LOAD: ReadonlySet<string> = new Set(['m_beam', 'm_beamf', 'm_beamwall', 'm_heb', 'm_hebf', 'm_hebfeet', 'm_hebrope', 'm_hebkerb', 'm_hebwall']);
 
 export interface SurveySheet extends TitleData {
   /** the installation and the intervention */
@@ -81,6 +82,51 @@ const machineRows = (O: Machine | null, N: Machine, oldName: string, newName: st
     ['CARICO STATICO AMMESSO', 'kg', ...both((m) => (m.shaftMax > 0 ? fmt(m.shaftMax, 0) : '—'))],
     ['MASSA', 'kg', ...both((m) => (m.mass > 0 ? fmt(m.mass, 0) : 'NON INSERITA'))],
   ];
+};
+
+/** A check's label as the survey has it: the control panel's clearance counts the governor only when surveyed. */
+export const surveyedLabel = (id: string, label: string, s: Pick<SurveyTavoleInput['survey'], 'governor'>): string =>
+  (id === 'm_quadro' && !s.governor ? `${label.replace('argano, limitatore e interruttore generale', 'argano e interruttore generale')} (limitatore non rilevato)` : label);
+
+/** How far each fall of a direct drive's new sheave slants down to the drops surveyed [mm] (negative: inward), as the
+ *  calculation places the sheave (room/derive.ts calcDrops, calc/geometry.ts wrapAngles): centred between the drops, each
+ *  by half the difference; aligned with the car's drop (dropAlign 'car'), the car's fall plumb and the counterweight's
+ *  by all of it. */
+export function fallSlants(d: RoomDerived): { car: number; cw: number; aligned: boolean } {
+  const spread = d.calata.measured - 2 * d.M.ropeIn - d.M.D, aligned = d.analysis.ctx.I.dropAlign === 'car';
+  return aligned ? { car: 0, cw: spread, aligned } : { car: spread / 2, cw: spread / 2, aligned };
+}
+
+/** A fall's slant as the sheet and the relazione write it [mm]: a decimal under 10, plumb as 0. */
+export const slantText = (x: number): string => (Math.abs(x) < 0.05 ? '0' : fmt(Math.abs(x), Math.abs(x) < 10 ? 1 : 0));
+
+/** The drops' row: on a direct drive replacement the surveyed ones beside the existing sheave's diameter the calculation
+ *  takes (`oldD`; 0: none entered), and the slant of each fall of the new sheave down to them — the same on each side, or
+ *  the car's and the counterweight's with the sheave aligned with the car's drop; else the calculation's and the surveyed
+ *  (registry locale.calate). */
+export function calataRows(d: RoomDerived, oldD: number): Row[] {
+  const direct = d.M.Dp === 0 && !d.M.rinvio, mm0 = (x: number): string => fmt(Math.round(x), 0);
+  if (!direct) return [['CALATE: CALCOLO - RILIEVO', 'mm', `${mm0(d.calata.calc)} - ${mm0(d.calata.measured)}`]];
+  const s = fallSlants(d), inward = s.car < 0 || s.cw < 0 ? ' (verso l’interno)' : '';
+  return [
+    [oldD > 0 ? 'CALATE ESISTENTI: RILIEVO - PULEGGIA ESISTENTE Ø' : 'CALATE ESISTENTI: RILIEVO - CALCOLO', 'mm', `${mm0(d.calata.measured)} - ${mm0(d.calata.calc)}`],
+    s.aligned
+      ? ['NUOVA PULEGGIA Ø - FUNI INCLINATE CABINA / CONTRAPPESO', 'mm', `${mm0(d.M.D)} - ${slantText(s.car)} / ${slantText(s.cw)}${inward}`]
+      : ['NUOVA PULEGGIA Ø - FUNI INCLINATE PER LATO', 'mm', `${mm0(d.M.D)} - ${slantText(s.car)}${inward}`],
+  ];
+}
+
+/** What the survey found besides the room and the drops, in a few words: the governor, the existing openings, the
+ *  existing support and whether it stays. */
+export function foundText(s: SurveyTavoleInput['survey']): string {
+  const old = s.existingSupport, kinds: Readonly<Record<string, string>> = { shims: 'SPESSORI', frame: 'TELAIO', beams: 'PUTRELLE', plinth: 'PLINTO', unknown: 'ALTRO' };
+  return `${s.governor ? 'SÌ' : 'NON RILEVATO'} - ${(s.openings ?? []).length || 'NESSUNA'} - ${old ? `${kinds[old.kind] ?? old.kind}${old.keep ? ' (RESTA)' : ' (SI TOGLIE)'}` : 'NON RILEVATO'}`;
+}
+
+/** The load on the support as the sheet counts it (surveyLoad's), for the reactions. */
+const surveyLoadOf = (d: RoomDerived, Pl: Plant): SupportLoad => {
+  const { ld, machine, dyn } = surveyLoad(d, Pl), { I, N } = d.analysis.ctx;
+  return { machine, static: ld.static, dyn, car: carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes: N.n * N.qf * ropeLength(I), cables: cablesMass(I.H) }) };
 };
 
 /** The load on the machine's support and on the slab as sheet 1 counts it — the machine's mass of the calculation with
@@ -130,7 +176,9 @@ export function surveySheetData(x: SurveyTavoleInput, d: RoomDerived, pages: num
     ['VANO SOTTO IL LOCALE (L × P - MURI)', 'mm', `${mm(s.shaft.W)} × ${mm(s.shaft.D)} - ${mm(s.shaft.wall)}`],
     ['FUNI CABINA: DAL VANO (X - Y)', 'mm', `${mm(s.car.x)} - ${mm(s.car.y)}`],
     ['FUNI CONTRAPPESO RILEVATE (X - Y)', 'mm', `${mm(s.cw.x)} - ${mm(s.cw.y)}`],
-    ['CALATE: CALCOLO - RILIEVO', 'mm', `${mm(d.calata.calc)} - ${mm(d.calata.measured)}`],
+    // (direct drive: the calculation's drops are the existing sheave's, the new one's ropes slant to them; round 36)
+    ...calataRows(d, compare ? ctx.O.D : 0),
+    ['RILIEVO: LIMITATORE - FORI - BASAMENTO ESISTENTE', '', foundText(s)],
     ['BASAMENTO', 'tipo', supportName(d)],
     ['ASSE PULEGGIA SUL PAVIMENTO', 'mm', mm(M.axis)],
     ...(M.Dp > 0 && G ? [['PULEGGIA DI RINVIO Ø - h - dx', 'mm', `${mm(M.Dp)} - ${mm(M.h)} - ${mm(G.pulleyAt - G.sheaveAt)}`] as Row] : []),
@@ -147,6 +195,10 @@ export function surveySheetData(x: SurveyTavoleInput, d: RoomDerived, pages: num
     // one beam under each iron of the machine's frame (three)
     ...(supportOf(R).kind === 'beams' && G ? [[`PUTRELLE (${N_IT[G.frame.beams.length] ?? G.frame.beams.length})`, `${profileOf(supportOf(R))}, ${fmt(G.frame.beams.length * PROFILES[profileOf(supportOf(R))].mass, 1)} kg/m`, ''] as const] : []),
     ...hebRows(heb, fmt),
+    // the hook (the heaviest piece lifted: the existing machine too) and the reactions on the support's bearings; P4
+    // without the governor's load (round 36)
+    ...(G ? [hookRow(G, M, fmt, d.site.pieces ?? []), ...reactionRows(G, M, surveyLoadOf(d, Pl), G && heb ? hebDrawn(G, M, d.site) : null, fmt)] : []),
+    ...(Pl.governorLoad == null ? [['P4 LIMITATORE: DATO DEL COSTRUTTORE, DA INSERIRE NEI DATI', '—', 'daN'] as const] : []),
   ];
   const P: SurveySheet['P'] = [
     ['P1 ARGANO', fmt(ld.P[0] ?? 0, 0)], ['P2 ATTACCO FUNI CABINA', ld.P[1] == null ? '—' : fmt(ld.P[1], 0)],
@@ -156,13 +208,15 @@ export function surveySheetData(x: SurveyTavoleInput, d: RoomDerived, pages: num
   const labels: Readonly<Record<string, string>> = appIt.shaft, OUTCOME = { ok: 'OK', warn: 'ATTENZIONE', fail: 'NON PASSA', info: '—' } as const;
   const withUnit = (v: number | null, dp: number, u: string): string => (v == null ? '—' : `${fmt(v, dp)}${u ? ` ${u}` : ''}`);
   const checks: SurveySheet['checks'] = all.map((c) => {
-    const label = (labels[`c_${c.id}`] ?? c.id).replace(' (UNI EN 81-20, ', ' (');
+    const named = (labels[`c_${c.id}`] ?? c.id).replace(' (UNI EN 81-20, ', ' (');
+    // (the governor counted only when surveyed, round 36)
+    const label = surveyedLabel(c.id, named, s);
     const outcome = ambitoOf(C, c.id) === 'existing' ? 'ESISTENTE' : OUTCOME[c.status];
     if (c.id === 'm_door') return [label.replace(', margine', ''), `${R.doorW} × ${R.doorH} mm`, `≥ ${KV_VERT.doorMinW} × ${KV_VERT.doorMinH} mm`, outcome];
     return [label, c.value == null ? '—' : `${shownValue(c, fmt)}${c.unit ? ` ${c.unit}` : ''}`, c.limit == null ? '—' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${withUnit(c.limit, c.dec, c.unit)}`, outcome];
   });
   const notes: Note[] = [
-    { ...roomNote(C.norma === 'en81' ? 'machine' : 'existing'), tag: 'NOTA 1' },
+    { ...roomNote(C.norma === 'en81' ? 'machine' : 'existing', R.H), tag: 'NOTA 1' },
     {
       title: 'SOLETTA, APPOGGI E BASAMENTO', tag: 'NOTA 2',
       text: 'La soletta del locale e gli appoggi del basamento devono sopportare i carichi di questo foglio, che non agiscono insieme: la verifica '

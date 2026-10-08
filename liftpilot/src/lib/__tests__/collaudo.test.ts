@@ -10,6 +10,7 @@ import { PRESETS } from '@/calc/presets';
 import { defaultInputs, layout, type ShaftCheckId, type ShaftInputs } from '@/shaft';
 import { liftInputsSchema } from '@/lib/lift-input';
 import { AMBITO_VERIFICHE, PARTI, adeguamentiDovuti, ambitoOf, collaudoOf, collaudoVerdict, defaultLift, deriveLift, esitiNorme, type Collaudo } from '@/lib/lift';
+import { SOLO_10411_1 } from '@/lib/lift/collaudo';
 import { buildReport } from '../report/build';
 import type { ReportDoc } from '../report/model';
 import { buildTavole } from '../tavole/build';
@@ -42,8 +43,13 @@ test('ambito: ogni verifica del calcolo e del vano ha le sue parti; la macchina 
   for (const id of ['v_area', 'v_fit', 'h_parapet', 'v_doorcar'] as const) assert.equal(ambitoOf(C, id), 'applies', id);
   // the building's machine room is never the intervention's
   for (const id of ['m_height', 'm_door'] as const) assert.equal(ambitoOf({ norma: '10411-1', parti: PARTI }, id), 'existing', id);
-  // tested as new, everything applies
-  for (const id of Object.keys(AMBITO_VERIFICHE) as (CheckId | ShaftCheckId)[]) assert.equal(ambitoOf(collaudoOf(NEW), id), 'applies', id);
+  // tested as new, everything applies — but the existing room's height under 2,0 m, a UNI 10411-1 measure only (new, the
+  // room's height is m_height's; round 36)
+  for (const id of Object.keys(AMBITO_VERIFICHE) as (CheckId | ShaftCheckId)[]) assert.equal(ambitoOf(collaudoOf(NEW), id), SOLO_10411_1.some((x) => x === id) ? 'existing' : 'applies', id);
+  assert.equal(ambitoOf({ norma: '10411-1', parti: ['machine'] }, 'm_hexist'), 'applies');
+  assert.equal(ambitoOf({ norma: '10411-11', parti: ['machine'] }, 'm_hexist'), 'existing');
+  assert.equal(ambitoOf({ norma: '10411-1', parti: ['ropes'] }, 'm_hexist'), 'existing');
+  for (const id of ['m_above', 'm_wheel', 'm_holes'] as const) assert.equal(ambitoOf({ norma: '10411-11', parti: ['machine'] }, id), 'applies', id);
 });
 
 test('esito del collaudo: solo le verifiche che si applicano', () => {

@@ -15,16 +15,18 @@ import { carriedMass, supportLoad } from '@/lib/lift/support';
 import { calcMachine } from '@/lib/order/machine';
 import { analyse, type Analysis } from '@/lib/present/analysis';
 import { check } from '@/shaft/checks';
-import { hebChecks, hebFor, type HebTaken } from '@/shaft/heb';
+import { hebChecks, hebDrawn, hebFor, type HebTaken } from '@/shaft/heb';
 import { orientedGeo, roomChecksOf, type MachineSpec, type RoomGeo } from '@/shaft/machine-room';
 import { KV_VERT } from '@/shaft/norme-vert';
+import { existingRoomCheck } from '@/shaft/room-above';
 import { axisOverTop, rinvioAxisOf, rinvioClash, rinvioTopOf } from '@/shaft/rinvio';
 import type { RoomSite } from '@/shaft/room-site';
 import { switchBox } from '@/shaft/room-floor';
-import { beamChecks, fitChecks, machineParts, panelFloorChecks, rinvioChecks, type SupportLoad } from '@/shaft/support-check';
+import { beamChecks, fitChecks, governorRoomChecks, machineParts, panelFloorChecks, rinvioChecks, type SupportLoad } from '@/shaft/support-check';
 import { ownAxis } from '@/shaft/support';
 import type { ShaftCheck } from '@/shaft/types';
 import type { Survey } from './survey';
+import { holesCheck, surveyFound, surveyGovernor, surveyOpenings } from './survey-site';
 
 export type RoomIssue = 'bottom' | 'drops' | 'rinvio';
 
@@ -88,9 +90,13 @@ function deriveOnce(V: FormValues, s: Survey, a: Analysis): RoomDerived {
   const top = Math.max(R.slab + 100, I.L0 * 1000 - M.axis), H = I.H * 1000;
   const ux = measured >= 1 ? mx / measured : 0, uy = measured >= 1 ? my / measured : 1;
   const car: [number, number] = [R.shaftX + s.car.x, R.shaftY + s.car.y], cw: [number, number] = [car[0] + calata * ux, car[1] + calata * uy];
+  // the existing governor and openings the survey found (round 36): drawn, and on the floor for the checks; the existing
+  // machine among the pieces the hook lifts
+  const found = surveyFound(s), gov = surveyGovernor(s), compare = a.ctx.compare && a.ctx.O.mass > 0;
   const site: RoomSite = {
     W: s.shaft.W, D: s.shaft.D, wall: s.shaft.wall, ends: [[top, top + H], [top + H, top]], mid: [top + H / 2, top + H / 2],
-    governor: { entities: [], box: null }, govRopes: [], calata: () => null, calcEdits: false, drops: { car: [s.car.x, s.car.y], cw: [cw[0] - R.shaftX, cw[1] - R.shaftY] },
+    governor: { entities: found.entities, box: found.box, marks: found.marks }, govRopes: [], calata: () => null, calcEdits: false,
+    drops: { car: [s.car.x, s.car.y], cw: [cw[0] - R.shaftX, cw[1] - R.shaftY] }, govFoot: gov, pieces: compare ? [a.ctx.O.mass] : [],
   };
   const G = issues.includes('bottom') ? null : orientedGeo(R, { car, cw, ux, uy, calata }, M, sheaveAt);
   // the diverting pulley under the room's floor, or in the bedplate up into the machine standing over it
@@ -100,13 +106,16 @@ function deriveOnce(V: FormValues, s: Survey, a: Analysis): RoomDerived {
   // bedplate, our bedframe, the support's own weight), the static load on its axis, the dynamic coefficient — as sheet 1
   // and the relazione tecnica count them
   const load = supportLoad(a.ctx, a.res.Mcw, { machine: carriedMass(G, M, a.ctx.N, made) });
-  // what stands on the floor besides the machine: the main switch by the door (no governor in the survey)
-  const off = Math.abs(measured - calata), others = [switchBox(R)];
-  const beams = G ? hebFor(G, M, s.shaft, load) : null, chosenBy = R.heb;
+  // what stands on the floor besides the machine: the main switch by the door, the existing governor when surveyed
+  const off = Math.abs(measured - calata), others = [switchBox(R), ...(gov ? [gov] : [])];
+  const beams = G ? hebFor(G, M, site, load) : null, chosenBy = R.heb;
   const checks: ShaftCheck[] = G ? [
     ...roomChecksOf(R, [...machineParts(G, M), ...others]), ...beamChecks(G, M, load), ...rinvioChecks(G, M), ...hebChecks(beams?.chosen.result ?? null), ...fitChecks(G, M, others),
     ...panelFloorChecks(G, M, others), check('m_calata', off <= KV_VERT.dropTol, Math.round(off), KV_VERT.dropTol, 0, 'mm'),
+    ...governorRoomChecks(gov, G, M), ...holesCheck(G, M, surveyOpenings(s), beams ? hebDrawn(G, M, site) : null),
   ] : roomChecksOf(R);
+  // the existing room's height under 2,0 m (UNI 10411-1:2024, 9.2; registry locale.esistente.altezza)
+  if (G && I.context === 'repl') checks.push(existingRoomCheck(R));
   const hMin = M.Dp > 0 ? Math.ceil((rf?.on === 'frame' ? axisOverTop(M.D, M.shape ?? null, rf.bed) : ownAxis(M.D, M.shape ?? null)) + r) : null;
   const heb = beams && chosenBy ? { ...beams, auto: { profile: !chosenBy.profile, dir: !chosenBy.dir } } : null;
   return { analysis: a, made, M, G, site, calata: { calc: calata, measured }, hMin, load, heb, checks, issues };

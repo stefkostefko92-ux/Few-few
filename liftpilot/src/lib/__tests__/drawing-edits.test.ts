@@ -35,7 +35,11 @@ const REFERENCES = new Set(['# Telaio argano', '# × # Telaio con rinvio', '# Te
   'survey-plan:#', 'Calata Funi #', '# Calata Funi (Rif.)', 'Vano # (Rif.)', 'survey-section:dx #', 'survey-section:h #',
   // round 36: what the counterweight sets (the screen's width), the standard's lower edge of the screen, the software's
   // places of the pit's kit
-  'plan-pit:Protezione #', 'section-pit:# max', 'plan-pit:Scala #', 'plan-pit:Pulsantiera #']);
+  'plan-pit:Protezione #', 'section-pit:# max', 'plan-pit:Scala #', 'plan-pit:Pulsantiera #',
+  // the set-out (round 36): the drops of a whole design from the shaft's walls (its layout sets them), the bedplate, the
+  // ropes' line, the sheave's axis and the hook from two walls, the HEB beams' axes and bearings, the upstands, the free
+  // height over the rotating parts — where the machine and the calculation put them
+  'room-plan:#', '# Telaio', '# Asse funi', '# Asse puleggia', '# Gancio', '# Appoggio', '# Asse HEB', 'Interasse #', '# Bordo', '# (≥ #)']);
 // the machine below beside the shaft: the opening of the slow shaft in the wall, where the ropes put it (below-view.ts)
 REFERENCES.add('below-plan:Foro # x #');
 const isReference = (view: string, text: string): boolean => REFERENCES.has(text) || REFERENCES.has(`${view}:${text}`);

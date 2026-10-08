@@ -24,6 +24,7 @@ import DraftBar from '../draft/DraftBar';
 import { useDraft, type DraftTarget } from '../draft/useDraft';
 import RoomFields from '../shaft/RoomFields';
 import SurveyDrawings from './SurveyDrawings';
+import SurveyFound from './SurveyFound';
 
 interface Props {
   calculationId: string;
@@ -93,6 +94,7 @@ export default function RoomSurvey({ calculationId, values, initial, draft = nul
           {num('cw.y', t('cwY'), s.cw.y, (v) => ({ ...s, cw: { ...s.cw, y: v } }))}
         </div>
         {d ? <p className="note" role="status">{t('calata', { calc: fmt(Math.round(d.calata.calc), 0), measured: fmt(Math.round(d.calata.measured), 0) })}</p> : null}
+        <SurveyFound survey={s} onChange={(next) => change(next, [])} />
       </section>
       {d ? null : <MissingPanel title={tb('title')} lead={tb('lead')} items={blank.map((k) => ({ id: `bk-${k.replace('.', '-')}`, label: labelOf(k) }))} />}
       {d?.issues.length ? <ul className="alert alert-bad" role="alert">{d.issues.map((k) => <li key={k}>{issue(k)}</li>)}</ul> : null}
@@ -106,7 +108,7 @@ export default function RoomSurvey({ calculationId, values, initial, draft = nul
               <tbody>
                 {d.checks.map((c) => (
                   <tr key={c.id}>
-                    <td className="row-title">{ts(`c_${c.id}`)}</td>
+                    <td className="row-title">{ts(`c_${c.id}`)}{c.id === 'm_quadro' && !s.governor ? ` ${t('govNotSurveyed')}` : ''}</td>
                     <td className="num" data-label={t('value')}>{c.value === null ? '—' : `${shownValue(c, fmt)} ${c.unit}`}</td>
                     <td className="num" data-label={t('limit')}>{c.limit === null ? '—' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${fmt(c.limit, c.dec)} ${c.unit}`}</td>
                     <td data-label={t('outcome')}><span className={`status-pill ${c.status}`}>{ts(`st_${c.status}`)}</span></td>

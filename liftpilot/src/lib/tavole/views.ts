@@ -115,6 +115,8 @@ function roomPlaced(draw: (o: RoomDrawOpts) => Drawn, kind: 'plan' | 'section', 
     if (keep || p.scale < place.scale) [d, place] = [e, p];
   };
   if (place.scale !== best) next(kind === 'plan' ? { closedDoor: true } : { compact: true }, kind === 'section');
+  // (the plan's drops inside the shaft when their row outside costs the scale, round 36)
+  if (kind === 'plan' && place.scale !== best) next({ closedDoor: true, dropsInside: true }, false);
   if (kind === 'section' && place.scale !== best) next({ compact: true, scale: place.scale }, true);
   return { r: renderView(d.entities, place), place, entities: d.entities };
 }

@@ -27,6 +27,7 @@ import { drawnIssues, type Drawn } from './drawn';
 import { collaudoOf, type Collaudo } from './collaudo';
 import { KL } from './norme';
 import { massModelOf } from './known';
+import { existingRoomCheck } from '@/shaft/room-above';
 
 /** Values the software fills in (true) or takes as entered (false). */
 export interface AutoFlags {
@@ -272,6 +273,8 @@ function deriveOnce(inp: LiftInputs): LiftDerived {
   const supportCk = [...supportChecks(Lp, machine, load, above), ...headTopChecks(Lr, I.r, I.Dp, scheme), ...(g ? belowChecks(Lp, g, machine, I.Dp) : [])];
   // the clearance on the counterweight's sign with the car's top under what hangs over it (cw-gap.ts)
   supportCk.push(...cwGapOver(Lp, supportCk));
+  // a modification: the existing room's height under 2,0 m (UNI 10411-1:2024, 9.2; registry locale.esistente.altezza)
+  if (V.context === 'repl' && above && Lp.inputs.room) supportCk.push(existingRoomCheck(Lp.inputs.room));
   const beams = above ? hebOf(Lp, machine, load) : null, chosenBy = Lp.inputs.room?.heb;
   const bottomGap = scheme && g && !g.fits ? { now: S.cwWallGap, need: bottomGapNeeded(S, scheme, N.D, I.Dp, N.n, N.d, I.r, sheaveHalfBelow(N.D, N.n, N.d, shape)) } : null;
   return {

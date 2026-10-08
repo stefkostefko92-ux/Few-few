@@ -5,7 +5,7 @@
 import { chain, circle, edit as E, rect, textWidth, type Box as DrawBox, type Edit, type Entity, type Pt } from '../drawing';
 import { calataEdit } from './drop';
 import { governorSpot, type GovernorSpot } from './governor';
-import type { Rope } from './heb';
+import type { HebShaft, Rope } from './heb';
 import { hitchDepths } from './machine-room';
 import { govYEdit } from './plan-governor';
 import type { RoomInputs } from './room';
@@ -35,6 +35,13 @@ export interface RoomSite {
   /** the rope drops surveyed in the shaft (from its inner corner of entrance A), dimensioned on the room's plan; null:
    *  the shaft's own plan dimensions them */
   drops: { car: Pt; cw: Pt } | null;
+  /** the other pieces lifted in the room besides the new machine [kg] (a replacement's existing machine): the hook's
+   *  rated load counts the heaviest (room-hook.ts) */
+  pieces?: readonly number[];
+  /** the governor's footprint on the floor as the room's checks take it (room-floor.ts Box; missing: none) */
+  govFoot?: Box | null;
+  /** the car rails' axis across the shaft (y, room axes) the governor's place is given from; missing: none */
+  railY?: number | null;
 }
 
 /** The site of a whole design: its shaft, its travel, its governor, its plan's edits. */
@@ -42,8 +49,19 @@ export function layoutSite(L: Layout): RoomSite {
   const I = L.inputs, H = hitchDepths(L), out: Entity[] = [], marks: DrawBox[] = [], box = I.room ? governor(L, I.room, out, marks) : null;
   return {
     W: I.W, D: I.D, wall: I.wall, ends: H.ends, mid: H.mid, governor: { entities: out, box, marks }, govRopes: I.room ? governorRopes(L, I.room) : [],
-    calata: (less, exact, slant) => calataEdit(L, less, exact, slant), calcEdits: true, drops: null,
+    calata: (less, exact, slant) => calataEdit(L, less, exact, slant), calcEdits: true, drops: null, govFoot: I.room ? governorFootprint(L, I.room) : null,
+    railY: I.room ? railAxisY(L, I.room) : null,
   };
+}
+
+/** The shaft under the room of a whole design as the HEB beams take it (heb.ts HebShaft): its size, its walls, how deep
+ *  the hitches hang at the ends of the travel (the slab's openings, their upstands). */
+export const shaftUnder = (L: Layout): HebShaft => ({ W: L.inputs.W, D: L.inputs.D, wall: L.inputs.wall, ends: hitchDepths(L).ends });
+
+/** The car rails' axis across the shaft (y, room axes) when the governor's place is given from it; null: none. */
+export function railAxisY(L: Layout, R: Pick<RoomInputs, 'shaftY'>): number | null {
+  const spot = governorSpot(L);
+  return spot ? R.shaftY + spot.rail.y : null;
 }
 
 /** The governor's rope where it goes through the room's floor, both strands (room axes); none without one placed. */

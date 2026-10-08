@@ -19,6 +19,8 @@ export interface DataSheet {
   electric: readonly Row[];
   /** P1 … P9, written */
   P: readonly string[];
+  /** a line under them: what a load not given is and who gives it (round 36: P4 without the governor's load) */
+  pNote?: string;
   client: string;
   location: readonly [string, string];
   author: string;
@@ -37,6 +39,11 @@ const L = (a: readonly [number, number], b: readonly [number, number], w = 0.25)
 const T = (at: readonly [number, number], text: string, size: number, o: Partial<Extract<Shape, { t: 'text' }>> = {}): Shape => ({ t: 'text', at, text, size, cond: true, ...o });
 const box = (x0: number, y0: number, x1: number, y1: number, w = 0.3): Shape => ({ t: 'path', pts: [[x0, y0], [x1, y0], [x1, y1], [x0, y1]], closed: true, s: { ink: 'ink', w } });
 
+/** The distribution of the loads' height; the title block's least height (the sheet with HEB beams until round 36) [mm]. */
+const GRID_H = 3 * 5.2 + 4.6, TITLE_MIN = 50.1, P_NOTE_H = 4.2;
+/** The least heights of the rows of the loads and of the data above them [mm]. */
+const LOAD_MIN = 3.2, ROW_MIN = 3.0;
+
 function rows3(rows: readonly Row[]): Cell[][] {
   return rows.map(([l, u, v]) => [{ text: l }, { text: u, align: 'c' }, { text: v }]);
 }
@@ -46,12 +53,20 @@ export function dataSheetShapes(d: DataSheet): Shape[] {
   const xL = FRAME.x0, xM = 98, xR = FRAME.x1, yTop = FRAME.y1;
   // left column: characteristics, specifications, analysis of the loads
   const w3 = [51, 12, xM - xL - 63];
-  let t = table(xL, yTop, w3, 3.35, [[{ text: 'CARATTERISTICHE DI BASE', size: 3 }], ...rows3(d.base)], 2.05);
+  // the column down to the distribution of the loads and the title block at their least: the data's rows 3,35 mm tall,
+  // closer (down to ROW_MIN) where the loads would otherwise go under LOAD_MIN and push the title block down (round 36)
+  const gridH = GRID_H + (d.pNote ? P_NOTE_H : 0), column = yTop - (FRAME.y0 + TITLE_MIN + 1.6 + gridH + 1.6) - 2 * 1.6;
+  const rowH = Math.max(ROW_MIN, Math.min(3.35, (column - LOAD_MIN * (d.loads.length + 1)) / (d.base.length + d.specs.length + 2)));
+  let t = table(xL, yTop, w3, rowH, [[{ text: 'CARATTERISTICHE DI BASE', size: 3 }], ...rows3(d.base)], 2.05);
   out.push(...t.shapes);
-  t = table(xL, t.bottom - 1.6, w3, 3.35, [[{ text: "SPECIFICHE DELL’IMPIANTO", size: 3 }], ...rows3(d.specs)], 2.05);
+  t = table(xL, t.bottom - 1.6, w3, rowH, [[{ text: "SPECIFICHE DELL’IMPIANTO", size: 3 }], ...rows3(d.specs)], 2.05);
   out.push(...t.shapes);
-  const loadRows: Cell[][] = d.loads.map(([l, v, u]) => [{ text: l, size: 2.5 }, { text: v, size: 2.5 }, { text: u, align: 'c', size: 2.5 }]);
-  t = table(xL, t.bottom - 1.6, [52, 26, xM - xL - 78], 4.15, [[{ text: 'ANALISI DEI CARICHI', size: 3 }], ...loadRows], 2.5);
+  // the rows as tall as the sheet allows down to the distribution of the loads and the title block at their least
+  // (round 36: the hook and the reactions added; until then always 4,15 mm)
+  const room = t.bottom - 1.6 - (FRAME.y0 + TITLE_MIN + 1.6 + gridH + 1.6), loadH = Math.max(LOAD_MIN, Math.min(4.15, room / (d.loads.length + 1)));
+  const ls = Math.min(2.5, loadH * 0.62);
+  const loadRows: Cell[][] = d.loads.map(([l, v, u]) => [{ text: l, size: ls }, { text: v, size: ls }, { text: u, align: 'c', size: ls }]);
+  t = table(xL, t.bottom - 1.6, [52, 26, xM - xL - 78], loadH, [[{ text: 'ANALISI DEI CARICHI', size: 3 }], ...loadRows], ls);
   out.push(...t.shapes);
   const yLoads = t.bottom;
 
@@ -103,13 +118,14 @@ export function dataSheetShapes(d: DataSheet): Shape[] {
   }
 
   // distribution of the loads
-  const yd = yLoads - 1.6, gridH = 3 * 5.2 + 4.6, cw = (xR - xL) / 3;
+  const yd = yLoads - 1.6, cw = (xR - xL) / 3;
   out.push(box(xL, yd - gridH, xR, yd, 0.3), fitted([(xL + xR) / 2, yd - 3.5], 'DISTRIBUZIONE DEI CARICHI daN (N.B. CARICHI NON CONTEMPORANEI)', 2.8, xR - xL - 4, { align: 'c' }));
   for (let i = 0; i < 9; i++) {
     const col = Math.floor(i / 3), row = i % 3, x0 = xL + col * cw, y0 = yd - 4.6 - row * 5.2;
     out.push(L([x0, y0], [x0 + cw, y0], 0.2), T([x0 + 1.4, y0 - 3.7], `CARICO P${i + 1} =`, 2.6), fitted([x0 + cw - 1.4, y0 - 3.7], d.P[i] ?? '—', 2.6, cw - 22, { align: 'r' }));
-    if (col > 0 && row === 0) out.push(L([x0, yd - 4.6], [x0, yd - gridH], 0.2));
+    if (col > 0 && row === 0) out.push(L([x0, yd - 4.6], [x0, yd - GRID_H], 0.2));
   }
+  if (d.pNote) out.push(L([xL, yd - GRID_H], [xR, yd - GRID_H], 0.2), fitted([xL + 1.4, yd - GRID_H - 3], d.pNote, 2.1, xR - xL - 2.8));
 
   out.push(...titleBlock(d, yd - gridH - 1.6));
   return out.filter((s) => s.t !== 'text' || s.text !== '');

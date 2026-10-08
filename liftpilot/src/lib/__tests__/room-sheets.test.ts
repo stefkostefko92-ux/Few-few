@@ -14,7 +14,10 @@ import { roomView } from '@/lib/tavole/views';
 import { dropSpan, roomGeo, ropeWidths } from '@/shaft/machine-room';
 import { editValue } from '@/shaft';
 import { WALL } from '@/shaft/room-draw';
-import { roomPlanEntities, roomSectionEntities } from '@/shaft/room-view';
+import { roomPlanEntities, roomSectionEntities, roomSectionOn } from '@/shaft/room-view';
+import { hebDrawn } from '@/shaft/heb';
+import { bedplateLegs, rinvioRun } from '@/shaft/rinvio';
+import { seenFittings } from '@/shaft/room-section-extra';
 import { rinvioPlan } from '@/shaft/rinvio-view';
 import { layoutSite } from '@/shaft/room-site';
 
@@ -43,11 +46,19 @@ test('sezione B-B alla scala della sua pianta anche con la calata di sbieco o il
     const r = sheets(inp);
     assert.equal(r.sheets[8]?.scale, r.sheets[7]?.scale, name);
     assert.equal(r.sheets[8]?.scale, 25, name);
-    // each read as it is and changed by what is typed on it (the higher one written whole)
-    const R = deriveLift(inp).layout.inputs.room;
-    assert.ok(R);
-    for (const [key, h] of [['room.doorH', R.doorH], ['room.panelH', R.panelH]] as const) {
+    // each the view sees read as it is and changed by what is typed on it (the higher one written whole); one it
+    // does not see (behind the cut) not there, its height on the plan (round 36)
+    const d = deriveLift(inp), R = d.layout.inputs.room, G = roomGeo(d.layout, d.machine);
+    assert.ok(R && G);
+    const [r0, r1] = dropSpan(G, 0, 0, R.W, R.D), fit = seenFittings(G, r0, r1);
+    for (const [key, h, seen] of [['room.doorH', R.doorH, fit.door !== null], ['room.panelH', R.panelH, fit.panel !== null]] as const) {
       const hit = r.hits[8]?.find((x) => x.edit.key === key);
+      if (!seen) {
+        assert.equal(hit, undefined, `${name}: ${key} non visto`);
+        const plan = chains(roomPlanEntities(d.layout, d.machine, G).entities).flatMap((c) => c.text ?? []);
+        assert.ok(plan.some((t) => t?.includes(`H. ${h}`)), `${name}: ${key} in pianta`);
+        continue;
+      }
       assert.ok(hit, `${name}: ${key}`);
       assert.equal(Math.round(hit.value), h, `${name}: ${key}`);
       assert.equal(editValue(hit.edit, hit.value + 10), h + 10, `${name}: ${key}`);
@@ -140,4 +151,40 @@ test('pianta: P1 lontano dal limitatore, dal suo nome e da P4, la sua guida non 
   assert.ok(marks.length === 3 && p1 && p1.e === 'tag' && p1.to);
   const [x, y] = p1.at, r = 1.9 * 25;
   for (const m of marks) assert.ok(Math.hypot(Math.max(m.x0 - x, 0, x - m.x1), Math.max(m.y0 - y, 0, y - m.y1)) >= r, `P1 ${p1.at} su ${JSON.stringify(m)}`);
+});
+
+test('sezione B-B compatta: l’altezza del quadro accanto al suo contorno, fuori dalla macchina e dalle altre quote in altezza', () => {
+  // round 36 review: with the door and the panel on opposite sides the panel's height went inside by its outline, across
+  // the sheave and the bedplate when the panel stands behind the machine
+  for (const [name, inp] of [['HEB, rinvio, sinistra 300', cw('left', 300, { heb: {} })], ...ASKEW] as [string, LiftInputs][]) {
+    const d = deriveLift(inp), L = d.layout, G = roomGeo(L, d.machine);
+    assert.ok(G, name);
+    const R = G.room, [r0, r1] = dropSpan(G, 0, 0, R.W, R.D), fit = seenFittings(G, r0, r1);
+    if (!fit.door || !fit.panel || fit.door === fit.panel) continue;
+    const cs = chains(roomSectionOn(layoutSite(L), d.machine, G, { compact: true }).entities), q = cs.find((c) => c.text?.includes('{v} H. Quadro'));
+    assert.ok(q, name);
+    if (q.at === undefined) continue;
+    const band = (at: number): [number, number] => [at - 110, at + 30], [a, b] = band(q.at), M = d.machine;
+    const held = [G.frame0, G.frame1, ...(M.rinvio?.on === 'frame' && M.Dp > 0 ? rinvioRun(M, G) : []), ...(M.Dp > 0 ? [G.pulleyAt - M.Dp / 2, G.pulleyAt + M.Dp / 2] : [])];
+    assert.ok(b < Math.min(...held) || a > Math.max(...held), `${name}: sulla macchina`);
+    assert.ok(a > r0 && b < r1, `${name}: nella stanza`);
+    for (const c of cs) {
+      if (c === q || c.dir !== 'y' || c.at === undefined || c.side || c.on) continue;
+      const [p, s] = band(c.at);
+      assert.ok(b < p || a > s, `${name}: su ${c.text?.join(' ')}`);
+    }
+  }
+});
+
+test('sezione B-B: la nota degli antivibranti indica la prima gamba del telaio con il rinvio dove la disegna, anche sulle putrelle HEB oblique', () => {
+  // round 36 review: askew over HEB beams the legs stand where the bedplate's sides cross them, not at its first end
+  for (const [name, inp] of [['rinvio', base], ['HEB, sinistra 300', cw('left', 300, { heb: {} })], ['HEB', cw('rear', undefined, { heb: {} })]] as [string, LiftInputs][]) {
+    const d = deriveLift(inp), L = d.layout, G = roomGeo(L, d.machine);
+    assert.ok(G, name);
+    const S = layoutSite(L), legs = bedplateLegs(G, d.machine, hebDrawn(G, d.machine, S, S.govRopes));
+    assert.ok(legs.length, name);
+    const dot = roomSectionEntities(L, d.machine, G).entities.find((e) => e.e === 'mark' && e.sym === 'dot');
+    assert.ok(dot && dot.e === 'mark', `${name}: richiamo`);
+    assert.ok(Math.abs(dot.at[0] - Math.min(...legs.map(([u]) => u))) < 1e-6, `${name}: ${dot.at[0]}`);
+  }
 });

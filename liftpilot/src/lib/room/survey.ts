@@ -1,8 +1,9 @@
 // The machine room of a machine replacement as surveyed on site (src/lib/room): the room over the shaft (its size,
 // height, slab, door, control panel and what the new machine stands on: room.ts), the shaft under it (inner size and
 // walls) and where the existing ropes come up through the slab — the car's drop and the counterweight's, measured from
-// the shaft's inner corner on the side of entrance A (x along that wall, y into the shaft). Millimetres as whole
-// numbers; the browser's values are validated here as the save validates them.
+// the shaft's inner corner on the side of entrance A (x along that wall, y into the shaft); and, when found, the existing
+// governor, the slab's existing openings and the existing machine's support. Millimetres as whole numbers; the
+// browser's values are validated here as the save validates them.
 import { z } from 'zod';
 import { roomSchema, supportAtLeastProfile } from '@/lib/shaft-input';
 import { DEFAULT_ROOM } from '@/shaft/room';
@@ -10,12 +11,27 @@ import { DEFAULT_ROOM } from '@/shaft/room';
 const mm = (min: number, max: number) => z.number().int().min(min).max(max);
 const point = z.object({ x: mm(0, 10000), y: mm(0, 10000) }).strict();
 
+/** What else the survey finds in the room (round 36, all optional): the existing governor on the floor — the middle of
+ *  its footprint from the room's inner corner (x from the left wall, y from the front wall), its size along x and y,
+ *  whether its ropes go down through the slab under it —; the slab's existing openings (their middles from the same
+ *  corner and their sizes); what the existing machine stands on and whether it stays. */
+const governorSchema = z.object({ x: mm(0, 10000), y: mm(0, 10000), W: mm(100, 2000), D: mm(100, 2000), ropes: z.boolean() }).strict();
+const openingSchema = z.object({ x: mm(0, 10000), y: mm(0, 10000), W: mm(20, 3000), D: mm(20, 3000) }).strict();
+export const EXISTING_SUPPORTS = ['shims', 'frame', 'beams', 'plinth', 'unknown'] as const;
+const existingSupportSchema = z.object({ kind: z.enum(EXISTING_SUPPORTS), keep: z.boolean() }).strict();
+
 export const surveySchema = z.object({
   room: roomSchema,
   shaft: z.object({ W: mm(500, 10000), D: mm(500, 10000), wall: mm(50, 1000) }).strict(),
   car: point,
   cw: point,
+  governor: governorSchema.optional(),
+  openings: z.array(openingSchema).max(12).optional(),
+  existingSupport: existingSupportSchema.optional(),
 }).strict();
+
+export type SurveyGovernor = z.infer<typeof governorSchema>;
+export type SurveyOpening = z.infer<typeof openingSchema>;
 
 export type Survey = z.infer<typeof surveySchema>;
 
