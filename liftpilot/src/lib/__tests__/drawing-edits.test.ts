@@ -32,7 +32,7 @@ function match(before: Chain[], after: Chain[], j: number): Chain | undefined {
 
 // the references: what the machine, the ropes and the calculation set, drawn to be read, not changed
 const REFERENCES = new Set(['# Telaio argano', '# × # Telaio con rinvio', '# Telaio con rinvio', 'Asse rinvio #', 'Asse argano #', 'below-section:Asse #', 'below-plan:#',
-  'survey-plan:#', 'Calata Funi #', '# Calata Funi (Rif.)', 'survey-section:dx #', 'survey-section:h #']);
+  'survey-plan:#', 'Calata Funi #', '# Calata Funi (Rif.)', 'Vano # (Rif.)', 'survey-section:dx #', 'survey-section:h #']);
 const isReference = (view: string, text: string): boolean => REFERENCES.has(text) || REFERENCES.has(`${view}:${text}`);
 
 type View = { name: string; draw: (d: LiftDerived, I: ShaftInputs) => Entity[] | null };
@@ -139,6 +139,10 @@ test('ogni quota di ogni foglio del progetto si cambia e legge il valore dato', 
   assert.ok(room);
   const LIFTS: [string, LiftInputs][] = [
     ['rinvio', base],
+    // a drop line askew (the counterweight off the car's axis): its true length typed (until LIFT 1.27.0 its leg along
+    // the axis); the machine fixed, or the proposal takes another sheave and dx moves with it
+    ['obliqua di lato', { ...sh({ cw: 'left', plan: { cwPos: 300 } }), auto: { ...base.auto, machine: false } }],
+    ['obliqua dietro', { ...sh({ cw: 'rear', plan: { cwPos: 550 } }), auto: { ...base.auto, machine: false } }],
     ['tiro diretto 2:1', calc({ layout: 'top', r: '2' })],
     ['putrelle HEB', sh({ room: { ...room, support: { kind: 'shims' }, heb: {} } })],
     ['limitatore a mano', sh({ plan: { govX: 90, govY: 700 } })],

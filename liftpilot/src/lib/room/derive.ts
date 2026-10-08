@@ -90,7 +90,7 @@ function deriveOnce(V: FormValues, s: Survey, a: Analysis): RoomDerived {
   const car: [number, number] = [R.shaftX + s.car.x, R.shaftY + s.car.y], cw: [number, number] = [car[0] + calata * ux, car[1] + calata * uy];
   const site: RoomSite = {
     W: s.shaft.W, D: s.shaft.D, wall: s.shaft.wall, ends: [[top, top + H], [top + H, top]], mid: [top + H / 2, top + H / 2],
-    governor: { entities: [], box: null }, calata: () => null, calcEdits: false, drops: { car: [s.car.x, s.car.y], cw: [cw[0] - R.shaftX, cw[1] - R.shaftY] },
+    governor: { entities: [], box: null }, govRopes: [], calata: () => null, calcEdits: false, drops: { car: [s.car.x, s.car.y], cw: [cw[0] - R.shaftX, cw[1] - R.shaftY] },
   };
   const G = issues.includes('bottom') ? null : orientedGeo(R, { car, cw, ux, uy, calata }, M, sheaveAt);
   // the diverting pulley under the room's floor, or in the bedplate up into the machine standing over it

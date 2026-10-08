@@ -47,7 +47,7 @@ export function roomSectionOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDr
   const bedRun = rf?.on === 'frame' && M.Dp > 0 && G.pulleyZ - M.Dp / 2 >= 0 ? rinvioRun(M, G) : null;
   const near = Math.max(G.pulleyAt + M.Dp / 2, G.frame1, bedRun ? bedRun[1] : -Infinity);
   const ue = Math.max(Math.min(near + (bedRun ? 300 : 160) * sk, r1 - 150 * sk), near + 60 * sk), hChain = M.Dp > 0 && Math.abs(M.h) > 1;
-  out.push(...supportSection(M, G, r0, r1, hChain ? ue : null, hebDrawn(G, M, S), sk));
+  out.push(...supportSection(M, G, r0, r1, hChain ? ue : null, hebDrawn(G, M, S, S.govRopes), sk));
   // (turned round, the machine seen from its other side: its elevation mirrored along the drop line)
   out.push(...(F.shape ? shapeElevation(F, D, (x, y) => [machineU(G, x), base + y]) : machineElevation((x, y) => [machineU(G, x * k), base + y * k])));
   const centre = (c: Pt, r: number): void => { out.push(line([c[0] - r - 40, c[1]], [c[0] + r + 40, c[1]], 'axis'), line([c[0], c[1] - r - 40], [c[0], c[1] + r + 40], 'axis')); };
@@ -98,14 +98,15 @@ export function roomSectionOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDr
     const less = 2 * M.ropeIn + M.D / 2 + (M.reverse ? -M.Dp / 2 : M.Dp / 2);
     // over the room, nearest to it: the frames' lengths in the rows beyond
     out.push(chain({ dir: 'x', pts: left ? [G.sheaveAt, G.pulleyAt] : [G.pulleyAt, G.sheaveAt], side: 'top', row: 0, from: left ? [zs, G.pulleyZ] : [G.pulleyZ, zs], text: ['dx {v}'],
-      edit: [left ? S.calata(less, true) : null] }));
+      edit: [left ? S.calata(less, false, true) : null] }));
   }
   // the bedframe's length over the room, from its ends (none on a bedplate's irons or the maker's pedestal); the rope
   // drop between the ropes' axes in the shaft
   if (F.on === 'frame') out.push(chain({ dir: 'x', pts: [G.frame0, G.frame1], side: 'top', row: M.Dp > 0 ? 1 : 0, from: [base, base], text: ['{v} Telaio argano'] }));
-  out.push(chain({ dir: 'x', pts: [0, G.calata], at: foot + 160 * sk, from: [ropeFoot, ropeFoot], axis: [true, true], text: ['{v} Calata Funi (Rif.)'], edit: [S.calata(0, true)] }));
+  out.push(chain({ dir: 'x', pts: [0, G.calata], at: foot + 160 * sk, from: [ropeFoot, ropeFoot], axis: [true, true], text: ['{v} Calata Funi (Rif.)'], edit: [S.calata(0, false, true)] }));
   const along = Math.abs(G.uy) > 0.999 ? 'D' : Math.abs(G.ux) > 0.999 ? 'W' : null;
-  out.push(chain({ dir: 'x', pts: [s0, s1], at: foot + 420 * sk, text: ['Vano {v}'], edit: [along ? E(along) : null] }));
+  // (askew, the shaft cut on the slant: a reference, no one input of the shaft gives it)
+  out.push(chain({ dir: 'x', pts: [s0, s1], at: foot + 420 * sk, text: [along ? 'Vano {v}' : 'Vano {v} (Rif.)'], edit: [along ? E(along) : null] }));
   // the sheave's diameter with its leader to the rim, on the side away from the motor
   const away = -G.dir, rim: Pt = [G.sheaveAt + away * (D / 2) * Math.SQRT1_2, zs + (D / 2) * Math.SQRT1_2], tag: Pt = [G.sheaveAt + away * (D / 2 + 40 * sk), zs + D / 2 + 60 * sk];
   out.push(line([tag[0] - away * 10 * sk, tag[1] + 20 * sk], rim, 'dim'), { e: 'text', at: tag, text: `Ø${M.D}`, size: 2.2, align: away < 0 ? 'r' : 'l', halo: true });

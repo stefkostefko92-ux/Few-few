@@ -32,7 +32,11 @@ const LEAST: Readonly<Record<string, number>> = { 'sup.height': 0, 'rinvio.heigh
 
 /** The bounds of the input an edit changes as bounds of its dimension: the lengths that give them. */
 export function lengthBounds(e: Edit, min: number | null, max: number | null): { min: number | null; max: number | null } {
-  const at = (v: number | null): number | null => (v === null ? null : Math.round((v - e.base) / e.k));
+  const at = (v: number | null): number | null => {
+    if (v === null) return null;
+    const along = (v - e.base) / e.k;
+    return Math.round(e.across ? Math.hypot(Math.max(0, along), e.across) - (e.plus ?? 0) : along);
+  };
   return e.k > 0 ? { min: at(min), max: at(max) } : { min: at(max), max: at(min) };
 }
 

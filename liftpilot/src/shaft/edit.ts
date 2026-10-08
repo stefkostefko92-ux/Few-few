@@ -54,9 +54,10 @@ const DOORS: readonly PlanKey[] = ['doorA', 'doorB', 'landA', 'landB', 'opLen'];
 const pick = <K extends string>(keys: readonly K[], k: string): K | undefined => keys.find((x) => x === k);
 const isAllowance = (k: string): k is Allowance => Object.hasOwn(DEFAULTS, k);
 
-/** The value an edit gives for a new length, to the millimetre: base + k · length, a half millimetre rounded the way
- *  that keeps the dimension reading the length typed. */
-export const editValue = (e: Edit, length: number): number => Math.round(e.base + e.k * length - Math.sign(e.k) * 1e-6);
+/** The value an edit gives for a new length, to the millimetre: base + k · length (a slanted length: its leg along
+ *  the input's axis), a half millimetre rounded the way that keeps the dimension reading the length typed. */
+export const editValue = (e: Edit, length: number): number =>
+  Math.round(e.base + e.k * (e.across ? Math.sqrt(Math.max(0, (length + (e.plus ?? 0)) ** 2 - e.across ** 2)) : length) - Math.sign(e.k) * 1e-6);
 
 /** A niche's size named by `n.<index>.<at|width|depth>`: its index and field, or null. */
 function nicheKey(I: ShaftInputs, head: string, sub: string): { i: number; f: (typeof N_KEYS)[number] } | null {

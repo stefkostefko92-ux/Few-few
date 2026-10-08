@@ -9,7 +9,9 @@ export type SymbolName = 'dot' | 'tri' | 'square' | 'overUp' | 'overDown' | 'plu
 
 /** What changing a dimension does on the screens: the input `key` becomes base + k · (the new length) [mm]; the
  *  inputs in `also` take the values given, so that what the dimension starts from stays where it is. `value`: the real
- *  length where the drawing shortens it. `pick`: a length a catalogue or a table gives (a rail's profile, a refuge
+ *  length where the drawing shortens it. `across`: a slanted length whose input moves its end along one axis while the
+ *  other axis stays `across` apart, `plus` longer than the dimension (a diverting pulley's dx is the drop less the
+ *  sheave's and the pulley's radii) — the input takes base + k · √((length + plus)² − across²). `pick`: a length a catalogue or a table gives (a rail's profile, a refuge
  *  space's type) is changed by choosing another entry: the input `key` takes the `set` of the option chosen. The
  *  sheets ignore it. */
 export interface Edit {
@@ -17,6 +19,8 @@ export interface Edit {
   base: number;
   k: number;
   value?: number;
+  across?: number;
+  plus?: number;
   also?: readonly { key: string; value: number }[];
   pick?: { options: readonly PickOption[]; current: number };
 }

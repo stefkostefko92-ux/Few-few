@@ -23,7 +23,7 @@ import { portalOf } from './frame';
 import { hasImbotti, marbleOpening } from './imbotti';
 import { landingKey, shiftDims } from './landing';
 import { cwNiche, nichesOf } from './niche';
-import { calataEdit } from './drop';
+import { calataEdit, dropAskew, slantDrop } from './drop';
 import { governorDims } from './plan-governor';
 import { doorOpDepthOf } from './operator';
 import { doorsAt, roofSpaces, wallsAt, type PlanLevel } from './plan-view';
@@ -176,9 +176,11 @@ export function planDims(L: Layout, level: PlanLevel, floor: number, labels: Pla
         push(rs, 'x', [0, cx, W], undefined, [E('plan.carX', -car.w / 2), E('plan.carX', W - car.w / 2, -1)], { from: [undefined, carEnd, undefined], axis: [false, true, false] });
       } else {
         dropOnAxes = true;
+        // (askew, the drops' axes only: the drop itself along its line, below)
+        const drop = dropAskew(L) ? '{v}' : 'Calata {v}';
         const [pts, text, edit] = L.cwSide === 'left'
-          ? [[0, ax, cx, W], [null, 'Calata {v}', null], [wallGap, calataEdit(L), E('plan.carX', W - car.w / 2, -1)]]
-          : [[0, cx, ax, W], [null, 'Calata {v}', null], [E('plan.carX', -car.w / 2), calataEdit(L), wallGap]];
+          ? [[0, ax, cx, W], [null, drop, null], [wallGap, calataEdit(L), E('plan.carX', W - car.w / 2, -1)]]
+          : [[0, cx, ax, W], [null, drop, null], [E('plan.carX', -car.w / 2), calataEdit(L), wallGap]];
         push(rs, 'x', pts, text, edit, { from: L.cwSide === 'left' ? [undefined, cwEnd, carEnd, undefined] : [undefined, carEnd, cwEnd, undefined], axis: [false, true, true, false] });
       }
     }
@@ -228,11 +230,14 @@ export function planDims(L: Layout, level: PlanLevel, floor: number, labels: Pla
   out.push(...shiftDims(L, open));
   const c = L.cw;
   if (L.cwSide === 'rear') {
-    // the counterweight moves with its wall gap; the car keeps its depth
-    out.push(chain({ dir: 'y', pts: [car.y + car.h / 2, c.y + c.h / 2], at: c.x + c.w / 2 - 120, text: ['Calata ({v})'], edit: [calataEdit(L)] }));
+    // the counterweight moves with its wall gap; the car keeps its depth (askew: the drop along its line, its true
+    // length — until SHAFT 2.21.0 the leg along y was named the drop)
+    out.push(slantDrop(L, 120) ?? chain({ dir: 'y', pts: [car.y + car.h / 2, c.y + c.h / 2], at: c.x + c.w / 2 - 120, text: ['Calata ({v})'], edit: [calataEdit(L)] }));
   } else {
     const cx = car.x + car.w / 2, ax = c.x + c.w / 2, y = L.frame.kind === 'central' ? L.frame.axis - 160 : c.y + c.h / 2 - 160;
-    if (!dropOnAxes) out.push(chain({ dir: 'x', pts: L.cwSide === 'left' ? [ax, cx] : [cx, ax], at: y, text: ['Calata ({v})'], edit: [calataEdit(L)] }));
+    const slant = slantDrop(L, 160);
+    if (slant) out.push(slant);
+    else if (!dropOnAxes) out.push(chain({ dir: 'x', pts: L.cwSide === 'left' ? [ax, cx] : [cx, ax], at: y, text: ['Calata ({v})'], edit: [calataEdit(L)] }));
     // the counterweight's thickness where no row over the plan gives it
     if (!cwOnRow) out.push(chain({ dir: 'x', pts: [c.x, c.x + c.w], at: c.y + c.h / 2 + 60, edit: [E('cwDepth')] }));
   }

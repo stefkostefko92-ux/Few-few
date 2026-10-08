@@ -6,7 +6,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { PRESETS } from '@/calc/presets';
-import { edit as E, type Chain, type Edit, type Entity } from '@/drawing';
+import { edit as E, type Chain, type Edit, type Entity, type Pt } from '@/drawing';
+import { KV_VERT } from '@/shaft/norme-vert';
 import { defaultLift, deriveLift, newLift, type LiftInputs } from '@/lib/lift';
 import { bedplateMass, hebOf, supportLoad } from '@/lib/lift/support';
 import { drawnShaft, enteredShaft } from '@/lib/lift/panel-form';
@@ -159,6 +160,15 @@ test('progetto: il telaio con il rinvio scavalca le putrelle — le gambe dove i
     assert.ok(c.at.some((a) => Math.abs(a - y) < 1e-6), `gamba a y ${y}`);
     assert.ok(u > u0 && u < u1);
   }
+  // the plan and section B-B draw them there, as the 3D sets them (until LIFT 1.27.0 the drawings kept them at the corners)
+  const leg = KV_VERT.rinvioLeg, steel = (es: readonly Entity[]): Pt[][] => es.flatMap((e) => (e.e === 'path' && e.fill === 'steel' && e.pts.length === 4 ? [[...e.pts]] : []));
+  const centres = steel(roomPlanEntities(d.layout, d.machine, G).entities).map((q): Pt => [(q[0][0] + q[2][0]) / 2, (q[0][1] + q[2][1]) / 2]);
+  for (const [u, v] of legs) {
+    const p: Pt = [G.carDrop[0] + u * G.ux - v * G.uy, G.carDrop[1] + u * G.uy + v * G.ux];
+    assert.ok(centres.some((q) => Math.hypot(q[0] - p[0], q[1] - p[1]) < 1e-6), `pianta: gamba a ${p.map(Math.round)}`);
+  }
+  const starts = steel(roomSectionEntities(d.layout, d.machine, G).entities).filter((q) => Math.abs(q[1][0] - q[0][0] - leg) < 1e-6).map((q) => q[0][0]);
+  for (const [u] of legs) assert.ok(starts.some((x) => Math.abs(x - (u - leg / 2)) < 1e-6), `sezione B-B: gamba a u ${Math.round(u)}`);
   // turned round, the ropes in other places: the beams keep clear of them and pass
   const t = deriveLift(withHeb({ ...newLift(), shaft: { ...newLift().shaft, room: { ...(newLift().shaft.room ?? {}), motor: 'car' } } } as LiftInputs, {}));
   assert.ok(t.heb?.chosen.ok, 'girato');

@@ -102,9 +102,9 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDrawO
     out.push(path(pulley, true, under ? 'hidden' : 'outline', under ? undefined : 'steel'), line(onDrop(G, u, -half - 22), onDrop(G, u, half + 22), under ? 'hidden' : 'thin'));
   }
   // from the lowest up: the HEB beams on the shaft's walls, the support on them, the machine on it
-  const [p0, p1] = span(G, 0, 0, R.W, R.D), heb = hebDrawn(G, M, S);
+  const [p0, p1] = span(G, 0, 0, R.W, R.D), heb = hebDrawn(G, M, S, S.govRopes);
   if (heb) out.push(...hebPlan(heb, G, M, S));
-  const supportEnts = supportPlan(M, G, (u, v) => onDrop(G, u, v), p0, p1), supportOutline = supportEnts.flatMap((e) => (e.e === 'path' ? [e.pts] : []));
+  const supportEnts = supportPlan(M, G, (u, v) => onDrop(G, u, v), p0, p1, heb), supportOutline = supportEnts.flatMap((e) => (e.e === 'path' ? [e.pts] : []));
   out.push(...supportEnts);
   const F = G.frame;
   out.push(...(F.shape ? shapePlan(F, M.D, M.n, M.d, (x, z) => onDrop(G, machineU(G, x), machineV(G, z)))
@@ -226,7 +226,7 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDrawO
   const [r0, r1] = G.carDrop[ax] <= G.cwDrop[ax] ? [G.carDrop, G.cwDrop] : [G.cwDrop, G.carDrop];
   out.push(chain(Math.max(Math.abs(G.ux), Math.abs(G.uy)) > 0.999
     ? { dir: ax ? 'y' : 'x', pts: [r0[ax], r1[ax]], at: drop[1 - ax], from: [r0[1 - ax], r1[1 - ax]], text: ['Calata Funi {v}'], edit: [S.calata(0, false)], within }
-    : { dir: ax ? 'y' : 'x', on: { o: G.carDrop, u: [G.ux, G.uy] }, pts: [0, G.calata], at: vDrop, from: [0, 0], text: ['Calata Funi {v}'], edit: [S.calata(0, false)], within }));
+    : { dir: ax ? 'y' : 'x', on: { o: G.carDrop, u: [G.ux, G.uy] }, pts: [0, G.calata], at: vDrop, from: [0, 0], text: ['Calata Funi {v}'], edit: [S.calata(0, false, true)], within }));
   // the bedplate with the diverting pulley: its length and width beside the machine, away from the drop's chains
   if (bed) {
     const bv = g > 0 ? bed.v1 : bed.v0, [c, d] = [onDrop(G, bed.u0, bv + 220 * g), onDrop(G, bed.u1, bv + 220 * g)], side1 = onDrop(G, bed.u0, bv)[1 - ax];

@@ -5,6 +5,7 @@
 import { chain, circle, edit as E, rect, textWidth, type Box as DrawBox, type Edit, type Entity, type Pt } from '../drawing';
 import { calataEdit } from './drop';
 import { governorSpot, type GovernorSpot } from './governor';
+import type { Rope } from './heb';
 import { hitchDepths } from './machine-room';
 import { govYEdit } from './plan-governor';
 import type { RoomInputs } from './room';
@@ -23,8 +24,12 @@ export interface RoomSite {
   /** the governor drawn in the plan, and its footprint with its lettering and dimensions (null: nothing drawn); `marks`:
    *  tight boxes of its body, its name and its reference P4 (a lettering placed beside it keeps off them) */
   governor: { entities: Entity[]; box: DrawBox | null; marks?: readonly DrawBox[] };
-  /** the edit of a dimension of the rope drop, `less` shorter (the diverting pulley's dx), `exact`: along an axis only */
-  calata: (less: number, exact: boolean) => Edit | null;
+  /** the governor's rope where it goes through the room's floor, both strands (room axes): the HEB beams keep off it, as
+   *  the checks and the 3D lay them; none in a replacement's survey */
+  govRopes: readonly Rope[];
+  /** the edit of a dimension of the rope drop, `less` shorter (the diverting pulley's dx), `exact`: along an axis only;
+   *  `slant`: the true distance along a drop line askew (drop.ts calataEdit) */
+  calata: (less: number, exact: boolean, slant?: boolean) => Edit | null;
   /** the drawings may change the calculation's inputs (calc.h) */
   calcEdits: boolean;
   /** the rope drops surveyed in the shaft (from its inner corner of entrance A), dimensioned on the room's plan; null:
@@ -36,10 +41,16 @@ export interface RoomSite {
 export function layoutSite(L: Layout): RoomSite {
   const I = L.inputs, H = hitchDepths(L), out: Entity[] = [], marks: DrawBox[] = [], box = I.room ? governor(L, I.room, out, marks) : null;
   return {
-    W: I.W, D: I.D, wall: I.wall, ends: H.ends, mid: H.mid, governor: { entities: out, box, marks },
-    calata: (less, exact) => calataEdit(L, less, exact), calcEdits: true, drops: null,
+    W: I.W, D: I.D, wall: I.wall, ends: H.ends, mid: H.mid, governor: { entities: out, box, marks }, govRopes: I.room ? governorRopes(L, I.room) : [],
+    calata: (less, exact, slant) => calataEdit(L, less, exact, slant), calcEdits: true, drops: null,
   };
 }
+
+/** The governor's rope where it goes through the room's floor, both strands (room axes); none without one placed. */
+export const governorRopes = (L: Layout, R: Pick<RoomInputs, 'shaftX' | 'shaftY'>): Rope[] => {
+  const spot = governorSpot(L);
+  return spot ? [spot.y1, spot.y2].map((y) => ({ at: [R.shaftX + spot.x, R.shaftY + y] as const, r: spot.G.rope })) : [];
+};
 
 /** Where the governor stands in the room's plan (room axes): over its rope where the 3D puts it (governor.ts), or — a
  *  cantilever sling, no place worked out — by the car rail opposite the counterweight; null: neither. */

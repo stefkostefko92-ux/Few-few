@@ -8,7 +8,7 @@ import { KV_VERT } from '@/shaft/norme-vert';
 import { roomChecksOf } from '@/shaft/machine-room';
 import { outlineGap, switchBox, type Box } from '@/shaft/room-floor';
 import type { PanelSpot } from '@/shaft/room-panel';
-import { governorFootprint } from '@/shaft/room-site';
+import { governorFootprint, governorRopes as governorRopesIn } from '@/shaft/room-site';
 import { beamChecks, fitChecks, governorRoomChecks, machineParts, panelFloorChecks, panelPlace, rinvioChecks, type SupportLoad } from '@/shaft/support-check';
 
 /** Length of each traction rope [m]: the roping times the travel and twice the rope beyond it, with the diverting
@@ -52,11 +52,9 @@ export function supportLoad({ I, N }: Pick<ParsedInputs, 'I' | 'N'>, Mcw: number
   };
 }
 
-/** The governor's rope where it goes through the slab, both strands (room axes); none without one placed. */
-export const governorRopes = (L: Layout, G: RoomGeo): Rope[] => {
-  const spot = governorSpot(L), R = G.room;
-  return spot ? [spot.y1, spot.y2].map((y) => ({ at: [R.shaftX + spot.x, R.shaftY + y] as const, r: spot.G.rope })) : [];
-};
+/** The governor's rope where it goes through the slab, both strands (room axes; room-site.ts — the drawings take the
+ *  same); none without one placed. */
+export const governorRopes = (L: Layout, G: RoomGeo): Rope[] => governorRopesIn(L, G.room);
 
 /** The HEB beams on the shaft's walls under the machine of a whole design at `load` (heb.ts hebFor): the six weighed and
  *  the one taken; null without them or without a room over the shaft. */

@@ -47,7 +47,7 @@ const dimsRight = (G: RoomGeo, run: readonly [number, number] | null, sk: number
 export function supportSection(M: MachineSpec, G: RoomGeo, r0: number, r1: number, after: number | null = null, heb: HebLayout | null = null, sk = 1): Entity[] {
   const s = supportOf(G.room, M.Dp > 0), k = 1000 * G.s, top = supportTop(M, s), out: Entity[] = [], F = G.frame, base = M.base ?? 0;
   const span = supportRunIn(G, M), run = span ? machineRun(G, span[0], span[1]) : null;
-  if (s.kind === 'rinvio' && M.rinvio?.on === 'frame') return [...(heb ? hebSection(heb, G, rinvioRun(M, G)[0] - 420 * sk) : []), ...rinvioSection(M, G, M.rinvio, sk)];
+  if (s.kind === 'rinvio' && M.rinvio?.on === 'frame') return [...(heb ? hebSection(heb, G, rinvioRun(M, G)[0] - 420 * sk) : []), ...rinvioSection(M, G, M.rinvio, sk, heb)];
   // the mounts along the drop line and their half sizes: the generic machine's scaled, a maker's on our bedframe
   const mounts = (F.shape ? F.mounts : MOUNTS.map((x) => x * k)).map((x) => machineU(G, x)), hm = F.shape ? 60 : 0.06 * k, hp = F.shape ? 90 : 0.09 * k;
   if (s.kind === 'shims') {
@@ -95,10 +95,11 @@ export function supportSection(M: MachineSpec, G: RoomGeo, r0: number, r1: numbe
   return out;
 }
 
-/** Plan: the support under the machine's bedplate (the drop line's u, across it v as the machine's plan is drawn). */
-export function supportPlan(M: MachineSpec, G: RoomGeo, onDrop: (u: number, v: number) => Pt, r0: number, r1: number): Entity[] {
+/** Plan: the support under the machine's bedplate (the drop line's u, across it v as the machine's plan is drawn); `heb`: the
+ *  HEB beams under it (a bedplate bridging them stands on them where its sides cross them). */
+export function supportPlan(M: MachineSpec, G: RoomGeo, onDrop: (u: number, v: number) => Pt, r0: number, r1: number, heb: HebLayout | null = null): Entity[] {
   const s = supportOf(G.room, M.Dp > 0), k = 1000 * G.s, out: Entity[] = [], F = G.frame, span = supportRunIn(G, M);
-  if (s.kind === 'rinvio' && M.rinvio?.on === 'frame') return rinvioPlan(M, G, M.rinvio, onDrop);
+  if (s.kind === 'rinvio' && M.rinvio?.on === 'frame') return rinvioPlan(M, G, M.rinvio, onDrop, heb);
   const quad = (u0: number, v0: number, u1: number, v1: number): Pt[] => [onDrop(u0, v0), onDrop(u1, v0), onDrop(u1, v1), onDrop(u0, v1)];
   // the mounts (the generic machine's scaled, a maker's on our bedframe), the irons' lines across and the plinth's blocks
   // on each side of the ropes [u, v], as the machine is turned
