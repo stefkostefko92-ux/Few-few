@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: "Внасяне на визитка",
   description: "Пренасяне на визитка от Визитка към Мастилко за печат.",
   robots: { index: false, follow: false },
+  // Без това наследява canonical „/“ от layout-а → Google я брои за копие
+  // на началната („алтернативна страница с canonical“ в Search Console).
+  alternates: { canonical: null },
 };
 
 export default function ImportPage() {
