@@ -31,7 +31,7 @@
   body {
     @apply text-cs-text font-sans;
     background: transparent;
-    overflow-x: hidden;
+    overflow-x: clip;
     letter-spacing: -0.01em;
   }
 
@@ -402,9 +402,13 @@
   main .p-8 { padding: 1.5rem !important; }
 }
 
-/* 3. Prevent body horizontal scroll on any viewport */
+/* 3. Prevent body horizontal scroll on any viewport.
+   `clip`, не `hidden`: с `hidden` на html И body браузърът прави body отделен
+   контейнер за скрол и всеки `position: sticky` на сайта спира да работи
+   (визуален преглед 08.10.2026 — заглавието на FAQ). `clip` реже същото, без
+   контейнер за скрол. */
 html, body {
-  overflow-x: hidden;
+  overflow-x: clip;
   max-width: 100vw;
 }
 
@@ -671,3 +675,45 @@ html, body {
 @keyframes bt-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
 @keyframes bt-roll { from { transform: translateY(60%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 @keyframes bt-ripple { from { transform: scale(0.4); opacity: 1; } to { transform: scale(2.2); opacity: 0; } }
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Живо демо на тикетите (TicketShowcase.jsx). Местата на всички съобщения са */
+/* запазени от начало (само opacity/transform) — нула изместване. Линията на  */
+/* времето е паметният елемент; при prefers-reduced-motion всичко е статично. */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.tk-window { background: #0b0f09; border: 1px solid #4b5a44; border-radius: 14px; overflow: hidden; box-shadow: 0 30px 80px -40px rgba(143, 230, 0, 0.35); }
+.tk-bar { display: flex; align-items: center; gap: 0.5rem; padding: 0.85rem 1.1rem; border-bottom: 1px solid #263021; }
+.tk-feed { padding: 1.1rem; display: grid; gap: 0.9rem; }
+.tk-panel { border-left: 4px solid #8fe600; background: #11170e; border-radius: 6px; padding: 0.8rem 0.95rem; transition: opacity 0.4s ease; }
+.tk-panel.tk-dim { opacity: 0.45; }
+.tk-btn { display: inline-block; margin-top: 0.6rem; padding: 0.35rem 0.8rem; border-radius: 6px; background: #248046; color: #fff; font-size: 0.8rem; font-weight: 700; }
+.tk-avatar { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; background: #4b5a44; color: #f0f0eb; }
+.tk-avatar-bot { background: #8fe600; color: #070a06; }
+.tk-avatar-staff { background: #2588c5; color: #fff; }
+.tk-ai { display: inline-flex; align-items: center; gap: 0.2rem; margin-left: 0.35rem; padding: 1px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 700; background: rgba(143, 230, 0, 0.15); color: #b7f24d; vertical-align: 1px; }
+.tk-system { font-size: 0.85rem; color: #aaaaaa; padding-left: 0.2rem; }
+.tk-closed { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; font-size: 0.85rem; color: #c9c9c2; border: 1px dashed rgba(143, 230, 0, 0.45); border-radius: 8px; padding: 0.55rem 0.8rem; }
+.tk-stars { display: inline-flex; gap: 2px; color: #fbbf24; }
+.tk-item { opacity: 0; }
+.tk-item.tk-on { opacity: 1; }
+
+.tk-rail { list-style: none; margin: 0; padding: 0; }
+.tk-step { position: relative; display: grid; grid-template-columns: 1.75rem 1fr; column-gap: 0.75rem; align-items: center; color: #9a9a9a; flex: none; }
+.tk-dot { width: 1.75rem; height: 1.75rem; border-radius: 50%; display: grid; place-items: center; font-size: 0.75rem; font-weight: 700; border: 1px solid #4b5a44; background: #0d130b; color: #9a9a9a; }
+.tk-label { font-weight: 600; }
+.tk-time { grid-column: 2; font-size: 0.75rem; color: #8fe600; min-height: 1rem; }
+.tk-step-on { color: #f0f0eb; }
+.tk-step-on .tk-dot { background: #8fe600; border-color: #8fe600; color: #070a06; }
+@media (min-width: 1024px) {
+  .tk-step { padding-bottom: 1.6rem; }
+  .tk-step:not(:last-child)::after { content: ""; position: absolute; left: calc(0.875rem - 1px); top: 1.85rem; bottom: 0.15rem; width: 2px; background: #263021; }
+  .tk-step-on:not(:last-child)::after { background: #8fe600; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tk-item { transform: translateY(6px); transition: opacity 0.35s ease, transform 0.45s cubic-bezier(.2,.8,.2,1); }
+  .tk-item.tk-on { transform: none; }
+  .tk-dot, .tk-step::after { transition: background-color 0.35s ease, border-color 0.35s ease, color 0.35s ease; }
+  .tk-btn-press { animation: tk-press 0.9s ease-in-out; }
+}
+@keyframes tk-press { 0%, 100% { transform: scale(1); } 45% { transform: scale(0.94); filter: brightness(1.2); } }

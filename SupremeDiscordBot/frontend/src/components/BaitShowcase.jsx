@@ -64,7 +64,7 @@ export default function BaitShowcase({ locale = "en", href = "/features/discord-
   const busy = phase !== "gone";
 
   return (
-    <section id="bait" className="bt-section relative px-6 sm:px-8 pb-24 pt-20 border-t border-cs-border/50 overflow-hidden">
+    <section id="bait" className="bt-section relative px-6 sm:px-8 py-24 overflow-hidden">
       <div aria-hidden="true" className="bt-water absolute inset-0 pointer-events-none" />
       <div className="relative max-w-6xl mx-auto grid lg:grid-cols-[0.9fr_1.1fr] gap-12 lg:gap-16 items-center">
         <div data-reveal>

@@ -1,0 +1,71 @@
+// frontend/src/components/LandingNav.jsx
+// Навигацията на лендинга — същата за английския и 7-те превода.
+// Визуалният одит (07.10.2026) намери, че на телефон има само „Sign in“: до
+// цените и въпросите се стигаше само със скрол. Тук: връзки на десктоп и бутон
+// „Меню“ на телефон, който отваря списък под хедъра. Esc и избор на връзка го
+// затварят; фокусът отива на първата връзка и се връща на бутона.
+import { useEffect, useRef, useState } from "react";
+import { Menu, X } from "lucide-react";
+
+export default function LandingNav({ links, ui, onSignIn, inviteUrl, extra = null, menuFooter = null }) {
+  const [open, setOpen] = useState(false);
+  const btnRef = useRef(null);
+  const panelRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    panelRef.current?.querySelector("a,button")?.focus();
+    const onKey = (e) => { if (e.key === "Escape") { setOpen(false); btnRef.current?.focus(); } };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  const close = () => setOpen(false);
+
+  return (
+    <>
+      <nav aria-label="Main" className="hidden lg:flex items-center gap-6 text-sm text-cs-muted">
+        {links.map((l) => (
+          <a key={l.href} href={l.href} className="hover:text-cs-text transition-colors">{l.label}</a>
+        ))}
+      </nav>
+      <div className="flex items-center gap-3">
+        {extra}
+        {inviteUrl && (
+          <a href={inviteUrl} target="_blank" rel="noopener noreferrer" className="hidden lg:inline-flex cs-btn-secondary text-xs">{ui.invite}</a>
+        )}
+        <button onClick={onSignIn} className="cs-btn-primary text-xs whitespace-nowrap">{ui.signIn}</button>
+        <button
+          ref={btnRef}
+          type="button"
+          className="lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-md border border-cs-border text-cs-text hover:border-cs-borderHi"
+          aria-expanded={open}
+          aria-controls="landing-mobile-menu"
+          aria-label={open ? ui.close : ui.menu}
+          onClick={() => setOpen((o) => !o)}
+        >
+          {open ? <X className="w-5 h-5" aria-hidden="true" /> : <Menu className="w-5 h-5" aria-hidden="true" />}
+        </button>
+      </div>
+      {open && (
+        <div
+          id="landing-mobile-menu"
+          ref={panelRef}
+          className="lg:hidden absolute left-0 right-0 top-full z-50 mx-4 rounded-xl border border-cs-border bg-cs-surface/95 backdrop-blur p-2 shadow-2xl"
+        >
+          {links.map((l) => (
+            <a key={l.href} href={l.href} onClick={close} className="block rounded-lg px-4 py-3 text-base text-cs-text hover:bg-cs-panel">
+              {l.label}
+            </a>
+          ))}
+          {inviteUrl && (
+            <a href={inviteUrl} target="_blank" rel="noopener noreferrer" onClick={close} className="block rounded-lg px-4 py-3 text-base text-cs-cyan hover:bg-cs-panel">
+              {ui.invite}
+            </a>
+          )}
+          {menuFooter}
+        </div>
+      )}
+    </>
+  );
+}

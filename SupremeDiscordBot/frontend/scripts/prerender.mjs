@@ -289,7 +289,7 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
   }</tbody></table>`;
   const upsellPassage = "Free gets you running; Premium gets you scaling. The Free tier gives one ticket panel, two application forms and 30-day transcript retention — enough to run real support today at no cost. Premium (€4.99 per server per month, sold as a monthly subscription in the Discord store) raises the limits to 50 panels, 50 forms and 50 questions each, and unlocks AI auto-replies, round-robin assignment, conditional form logic, 20 webhook integrations, a public REST API, advanced analytics and unlimited transcript retention. The White-label tier (€9.99/month) adds a custom bot that runs under your own brand. Billing is per server and handled by Discord, so a small community can stay on Free while your main server runs Premium; cancel anytime in Discord; panels, forms and settings are kept, while transcripts of tickets closed more than 30 days ago are deleted once the server is back on Free.";
   const rootSnapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
-    <p>One bot replaces six. Built in the EU.</p>
+    <p>One bot replaces eight. Built in the EU.</p>
     <h1>Supreme Bot — Discord Ticket Bot &amp; SaaS Platform</h1>
     <p>Eight bots. Eight bills. One dashboard. Tickets, applications, verification, giveaways, scheduled messages, webhooks and AI-powered replies for Discord communities that outgrew a folder full of single-purpose bots. Multi-tenant Discord bot management by Carbon Stealth VCC — EU-hosted (Germany), GDPR-native.</p>
     <section><h2>Free vs Premium</h2><p>${upsellPassage}</p>${compareHtml}</section>

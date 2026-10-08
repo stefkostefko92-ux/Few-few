@@ -6,13 +6,19 @@
 // Google requires).
 import { useMemo, useState, useRef, lazy, Suspense } from "react";
 import {
-  Ticket, FileText, ShieldCheck, BarChart3, Gift, Pin, CalendarClock,
-  Webhook, Sparkles, Check, Star, Zap, Crown, ArrowRight, Globe,
-  SmilePlus, ScrollText, UserPlus, BookOpen, ClipboardList, Gamepad2, Fish,
+  Sparkles, Check, Star, Zap, Crown, ArrowRight, Globe,
 } from "lucide-react";
 import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
 import Seo, { SITE, landingPath } from "../components/Seo";
 import GameShowcase from "../components/GameShowcase";
+import LandingNav from "../components/LandingNav";
+import SectionHead from "../components/SectionHead";
+import FeatureGroups from "../components/FeatureGroups";
+import DeferredSections from "../components/DeferredSections";
+import { LANDING_UI } from "../i18n/landingUi";
+const TicketShowcase = lazy(() => import("../components/TicketShowcase"));
+const ProductTour = lazy(() => import("../components/ProductTour"));
+const ReplaceBots = lazy(() => import("../components/ReplaceBots"));
 // Под сгъвката и със собствен текст на 8 езика → собствен чънк (бюджет 30 KB).
 const BaitShowcase = lazy(() => import("../components/BaitShowcase"));
 import FeatureLinks from "../components/FeatureLinks";
@@ -33,27 +39,10 @@ const SUPPORT_URL = import.meta.env.VITE_SUPPORT_URL || "https://discord.gg/wpCR
 // получи чуждата икона (верификацията излезе с графика, анкетите с подарък).
 // С ключ пренареждането или добавянето на карта е безобидно, а непозната
 // стойност пада на Sparkles вместо да размести всичко след себе си.
-const FEATURE_ICONS = {
-  ticket: Ticket,
-  forms: FileText,
-  reactionRoles: SmilePlus,
-  verification: ShieldCheck,
-  polls: BarChart3,
-  giveaways: Gift,
-  sticky: Pin,
-  scheduled: CalendarClock,
-  webhooks: Webhook,
-  ai: Sparkles,
-  activityLog: ScrollText,
-  welcomer: UserPlus,
-  knowledgeBase: BookOpen,
-  canned: ClipboardList,
-  game: Gamepad2,
-  bait: Fish,
-};
 
 export default function LandingLocalized({ locale }) {
   const t = LANDING_TRANSLATIONS[locale];
+  const ui = LANDING_UI[locale] || LANDING_UI.en;
 
   const rootRef = useRef(null);
   useScrollReveal(rootRef);
@@ -93,7 +82,7 @@ export default function LandingLocalized({ locale }) {
   if (!t) return null;
 
   return (
-    <div ref={rootRef} className="relative min-h-screen bg-transparent overflow-hidden">
+    <div ref={rootRef} className="relative min-h-screen bg-transparent overflow-x-clip">
       <Seo
         title={t.title}
         description={t.description}
@@ -108,20 +97,30 @@ export default function LandingLocalized({ locale }) {
 
       <div className="relative z-10 min-h-screen flex flex-col">
         {/* HEADER */}
-        <header className="px-6 sm:px-8 py-6 flex items-center justify-between">
+        <header className="relative px-6 sm:px-8 py-6 flex items-center justify-between gap-4">
           <a href="/" className="flex items-center gap-3 group">
             <SupremeLogo size={52} />
             <div>
               <SupremeWordmark className="text-lg leading-none" />
-              <div className="hidden sm:block font-mono text-[10px] tracking-[0.3em] uppercase text-cs-dim mt-0.5 group-hover:text-cs-cyan transition-colors">
+              <div className="hidden sm:block text-xs text-cs-dim mt-0.5 group-hover:text-cs-cyan transition-colors">
                 by {COMPANY_NAME}
               </div>
             </div>
           </a>
-          <div className="flex items-center gap-4">
-            <LanguageSwitcher current={locale} />
-            <button onClick={handleLogin} className="cs-btn-primary text-xs whitespace-nowrap">SIGN IN →</button>
-          </div>
+          <LandingNav
+            ui={ui.nav}
+            onSignIn={handleLogin}
+            extra={<LanguageSwitcher current={locale} />}
+            menuFooter={<LanguageSwitcher current={locale} inMenu />}
+            links={[
+              { href: "#features", label: ui.nav.features },
+              { href: "#demo", label: ui.nav.demo },
+              { href: "#game", label: ui.nav.game },
+              { href: "#bait", label: ui.nav.bait },
+              { href: "#pricing", label: ui.nav.pricing },
+              { href: "#faq", label: ui.nav.faq },
+            ]}
+          />
         </header>
 
         {/* HERO — WebGL is scoped to just this section (see Login.jsx for the
@@ -131,7 +130,7 @@ export default function LandingLocalized({ locale }) {
             <ShaderHero />
           </Suspense>
           <div className="relative z-10 w-full max-w-4xl text-center">
-            <div className="cs-eyebrow mb-4 justify-center flex">{t.eyebrow}</div>
+            <p className="text-sm text-cs-muted mb-5">{t.eyebrow.replace(/^→\s*/, "")}</p>
             <h1 className="font-display font-black text-5xl sm:text-7xl tracking-tight-4 text-balance text-cs-text leading-[0.95] mb-6">
               {t.h1a}<br />
               <span className="text-cs-cyan">{t.h1b}</span>
@@ -144,31 +143,26 @@ export default function LandingLocalized({ locale }) {
                 <span>{t.cta}</span>
                 <ArrowRight className="w-4 h-4 ml-1" />
               </button>
-              <a href="#pricing" className="text-cs-muted hover:text-cs-cyan transition-colors text-sm font-mono uppercase tracking-wider">
+              <a href="#pricing" className="cs-btn-secondary text-base px-8 py-4">
                 {t.seePricing}
               </a>
             </div>
-            <p className="text-xs text-cs-dim mt-6 font-mono">{t.ctaNote}</p>
+            <p className="text-sm text-cs-dim mt-6">{t.ctaNote}</p>
           </div>
         </section>
 
-        {/* FEATURES */}
-        <section id="features" className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
+        {/* Всичко под hero-то — след първото рисуване, на порции (TBT). */}
+        <DeferredSections>
+        {/* FEATURES — групирани по задача */}
+        <section id="features" className="px-6 sm:px-8 pt-24 pb-12">
           <div className="max-w-6xl mx-auto">
-            <div data-reveal className="text-center mb-16">
-              <h2 className="font-display font-black text-4xl sm:text-5xl text-cs-text mb-4">
-                {t.featuresHeading}
-              </h2>
-              <p className="text-cs-muted max-w-2xl mx-auto">{t.featuresSub}</p>
-            </div>
-            <div data-reveal className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-              {t.features.map((f, i) => {
-                const Icon = FEATURE_ICONS[f.key] || Sparkles;
-                return <FeatureTile key={f.title} icon={Icon} title={f.title} desc={f.desc} />;
-              })}
-            </div>
+            <SectionHead title={t.featuresHeading} sub={t.featuresSub} />
+            <FeatureGroups features={t.features} ui={ui} />
           </div>
         </section>
+
+        {/* Живо демо на тикетите */}
+        <Suspense fallback={null}><TicketShowcase locale={locale} /></Suspense>
 
         {/* SERVER SEASON — играта (текстът по локал, картинките общи) */}
         {t.game && <GameShowcase heading={t.game.heading} sub={t.game.sub} bullets={t.game.bullets} link={t.game.link} />}
@@ -176,14 +170,18 @@ export default function LandingLocalized({ locale }) {
         {/* v52 — канал-стръв за спам ботове (текстът по локал) */}
         <Suspense fallback={null}><BaitShowcase locale={locale} /></Suspense>
 
+        {/* Снимки от таблото и „Заменете ги“ — както на английския */}
+        <Suspense fallback={null}><ProductTour locale={locale} /></Suspense>
+        <Suspense fallback={null}><ReplaceBots locale={locale} /></Suspense>
+
         {/* EU TRUST */}
-        <section className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
-          <div data-reveal className="max-w-3xl mx-auto text-center">
-            <Globe className="w-8 h-8 text-cs-cyan mx-auto mb-4" />
-            <h2 className="font-display font-black text-3xl sm:text-4xl text-cs-text mb-8">
-              {t.euHeading}
-            </h2>
-            <ul className="space-y-3 text-left max-w-xl mx-auto">
+        <section className="px-6 sm:px-8 py-24">
+          <div data-reveal className="max-w-5xl mx-auto grid lg:grid-cols-[1fr_1.2fr] gap-10 items-start">
+            <div>
+              <Globe className="w-8 h-8 text-cs-cyan mb-4" aria-hidden="true" />
+              <h2 className="font-display font-black text-4xl sm:text-5xl text-cs-text leading-[1.02] tracking-tight text-balance">{t.euHeading}</h2>
+            </div>
+            <ul className="space-y-4">
               {t.euBullets.map((b) => (
                 <li key={b} className="flex items-start gap-3 text-cs-muted">
                   <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
@@ -195,12 +193,10 @@ export default function LandingLocalized({ locale }) {
         </section>
 
         {/* FAQ — visible content parity with the FAQPage JSON-LD above */}
-        <section id="faq" className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
-          <div className="max-w-3xl mx-auto">
-            <div data-reveal className="text-center mb-12">
-              <h2 className="font-display font-black text-3xl sm:text-4xl text-cs-text mb-4">
-                {t.faqHeading}
-              </h2>
+        <section id="faq" className="px-6 sm:px-8 py-24 bg-cs-surface/40 border-y border-cs-border/40">
+          <div className="max-w-6xl mx-auto grid lg:grid-cols-[minmax(0,20rem)_1fr] gap-10 lg:gap-16">
+            <div className="lg:sticky lg:top-8 self-start">
+              <SectionHead size="md" className="!mb-0" title={t.faqHeading} />
             </div>
             <div data-reveal className="space-y-3">
               {t.faq.map(({ q, a }) => (
@@ -218,13 +214,9 @@ export default function LandingLocalized({ locale }) {
 
         {/* COMPARE — Free vs Premium (content parity with prerender + Login.jsx EN) */}
         {t.compare && (
-          <section className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
-            <div className="max-w-3xl mx-auto">
-              <div data-reveal className="text-center mb-10">
-                <h2 className="font-display font-black text-3xl sm:text-4xl text-cs-text mb-4">
-                  {t.compare.heading}
-                </h2>
-              </div>
+          <section className="px-6 sm:px-8 py-24">
+            <div className="max-w-4xl mx-auto">
+              <SectionHead size="md" title={t.compare.heading} />
               <div data-reveal className="cs-card overflow-x-auto">
                 <table className="w-full text-sm border-collapse">
                   <thead>
@@ -250,14 +242,9 @@ export default function LandingLocalized({ locale }) {
         )}
 
         {/* PRICING */}
-        <section id="pricing" className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
+        <section id="pricing" className="px-6 sm:px-8 py-24">
           <div className="max-w-5xl mx-auto">
-            <div data-reveal className="text-center mb-10">
-              <h2 className="font-display font-black text-4xl sm:text-5xl text-cs-text mb-4">
-                {t.pricingHeading}
-              </h2>
-              <p className="text-cs-muted">{t.pricingSub}</p>
-            </div>
+            <SectionHead align="center" title={t.pricingHeading} sub={t.pricingSub} />
             <div data-reveal className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <TierCard icon={Zap} tier={t.tiers.free} onCta={handleLogin} />
               <TierCard icon={Star} tier={t.tiers.premium} onCta={handleLogin} highlighted />
@@ -266,14 +253,14 @@ export default function LandingLocalized({ locale }) {
             {/* Преддоговорна информация (чл. 6(1)(д),(о) Дир. 2011/83): ДДС в
                 цената + авто-подновяване — задължителна на ВСЕКИ език, не само EN. */}
             {t.priceNote && (
-              <p className="text-center text-xs text-cs-dim font-mono mt-8">{t.priceNote}</p>
+              <p className="text-center text-sm text-cs-dim mt-8 max-w-3xl mx-auto leading-relaxed">{t.priceNote}</p>
             )}
           </div>
         </section>
 
         {/* FINAL CTA */}
-        <section data-reveal className="px-6 sm:px-8 py-20 border-t border-cs-border/50 text-center">
-          <h2 className="font-display font-black text-3xl sm:text-5xl text-cs-text mb-6">
+        <section data-reveal className="px-6 sm:px-8 py-24 text-center">
+          <h2 className="font-display font-black text-4xl sm:text-6xl text-cs-text mb-6 tracking-tight">
             {t.finalH}
           </h2>
           <p className="text-cs-muted mb-8 max-w-lg mx-auto">{t.finalSub}</p>
@@ -283,6 +270,8 @@ export default function LandingLocalized({ locale }) {
           </button>
         </section>
 
+        </DeferredSections>
+
         {/* FOOTER */}
         <footer className="px-6 sm:px-8 py-10 border-t border-cs-border/50">
           <div className="max-w-6xl mx-auto flex flex-col gap-6">
@@ -291,10 +280,10 @@ export default function LandingLocalized({ locale }) {
                 <SupremeLogo size={36} />
                 <div className="flex flex-col leading-tight">
                   <SupremeWordmark className="text-base" />
-                  <span className="font-mono text-[10px] tracking-[0.25em] uppercase text-cs-dim mt-1">
+                  <span className="text-xs text-cs-dim mt-1">
                     © 2026 {COMPANY_NAME} · EIK 208725180 · VAT BG208725180 · EU-hosted
                   </span>
-                  <span className="font-mono text-[10px] tracking-[0.12em] text-cs-dim mt-1">
+                  <span className="text-xs text-cs-dim mt-1">
                     Carbon Stealth VCC · ul. Samuil 3, 2670 Bobov dol, Bulgaria ·{" "}
                     <a href="mailto:legal@carbonstealth.eu" className="text-cs-cyan underline">legal@carbonstealth.eu</a>
                   </span>
@@ -319,8 +308,8 @@ export default function LandingLocalized({ locale }) {
                 отваря. (Собственикът, 12.08.2026) */}
             {t.guides && (
               <nav aria-label={t.guides.heading}
-                   className="flex flex-wrap items-center justify-center gap-4 font-mono text-[10px] text-cs-dim border-t border-cs-border/30 pt-4">
-                <span className="text-cs-muted uppercase tracking-[0.15em]">{t.guides.heading}</span>
+                   className="flex flex-wrap items-center justify-center gap-4 text-xs text-cs-dim border-t border-cs-border/30 pt-4">
+                <span className="text-cs-muted font-semibold">{t.guides.heading}</span>
                 <a href="/guides/ticket-panel-setup" className="hover:text-cs-cyan transition-colors">{t.guides.panel}</a>
                 <a href="/guides/best-discord-ticket-bot" className="hover:text-cs-cyan transition-colors">{t.guides.best}</a>
                 <a href="/guides/gdpr-discord-bot" className="hover:text-cs-cyan transition-colors">{t.guides.gdpr}</a>
@@ -346,16 +335,6 @@ export default function LandingLocalized({ locale }) {
 
 // One feature card in the grid — real 3D pointer tilt (skipped under
 // reduced-motion / touch, see useTiltCard in useMicroInteractions.js).
-function FeatureTile({ icon: Icon, title, desc }) {
-  const tiltRef = useTiltCard();
-  return (
-    <div ref={tiltRef} className="cs-card hover:border-cs-cyan/50 hover:shadow-cs-cyan-sm transition-colors">
-      <Icon className="w-6 h-6 text-cs-cyan mb-3" />
-      <h3 className="text-cs-text font-bold mb-2">{title}</h3>
-      <p className="text-sm text-cs-muted leading-relaxed">{desc}</p>
-    </div>
-  );
-}
 
 // v3.3 — само месечни цени: Discord Premium Apps не поддържа годишни абонаменти.
 function TierCard({ icon: Icon, tier, onCta, ctaHref, highlighted = false, compact = false }) {
@@ -412,13 +391,13 @@ function TierCard({ icon: Icon, tier, onCta, ctaHref, highlighted = false, compa
 
 // Visible cross-links between language versions — crawlable <a href> links so
 // Google discovers every locale even without reading hreflang.
-function LanguageSwitcher({ current }) {
+function LanguageSwitcher({ current, inMenu = false }) {
   const locales = [
     ["en", "EN"], ["bg", "БГ"], ["de", "DE"], ["es", "ES"],
     ["fr", "FR"], ["it", "IT"], ["nl", "NL"], ["pl", "PL"],
   ];
   return (
-    <nav aria-label="Language" className="hidden md:flex items-center gap-1 font-mono text-[10px] text-cs-dim">
+    <nav aria-label="Language" className={`${inMenu ? "flex flex-wrap px-2 py-2 border-t border-cs-border/60 mt-1" : "hidden md:flex"} items-center gap-1 font-mono text-xs text-cs-dim`}>
       {locales.map(([loc, label]) => (
         <a
           key={loc}

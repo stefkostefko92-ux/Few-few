@@ -52,8 +52,10 @@ describe("landing · преводи", () => {
 });
 
 describe("landing · икони", () => {
+  // Иконите и групите живеят в components/FeatureGroups.jsx (една подредба за
+  // английския и 7-те превода, 08.10.2026).
   it("всеки ключ на функция има своя икона (иначе картата пада на Sparkles)", () => {
-    const src = read("pages", "LandingLocalized.jsx");
+    const src = read("components", "FeatureGroups.jsx");
     const block = src.match(/const FEATURE_ICONS = \{([\s\S]*?)\n\};/);
     expect(block, "FEATURE_ICONS не е намерен — преименуван ли е?").toBeTruthy();
     const mapped = [...block[1].matchAll(/^\s*(\w+):/gm)].map((m) => m[1]);
@@ -63,9 +65,18 @@ describe("landing · икони", () => {
   });
 
   it("иконите се избират по КЛЮЧ, не по позиция (позиционният масив вече ни счупи)", () => {
-    const src = read("pages", "LandingLocalized.jsx");
+    const src = read("components", "FeatureGroups.jsx");
     expect(src).toContain("FEATURE_ICONS[f.key]");
     expect(src).not.toMatch(/FEATURE_ICONS\[i\]/);
+  });
+
+  it("групите покриват всяка функция точно веднъж — иначе функция тихо изчезва от страницата", async () => {
+    const { FEATURE_GROUPS } = await import("../components/FeatureGroups.jsx");
+    const grouped = FEATURE_GROUPS.flatMap(([, keys]) => keys);
+    expect(new Set(grouped).size, "дублиран ключ в групите").toBe(grouped.length);
+    for (const [loc, t] of Object.entries(LANDING_TRANSLATIONS)) {
+      expect([...grouped].sort(), `${loc}: групи ≠ функции`).toEqual(t.features.map((f) => f.key).sort());
+    }
   });
 });
 

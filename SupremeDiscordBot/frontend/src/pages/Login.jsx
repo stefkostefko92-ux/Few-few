@@ -2,11 +2,7 @@
 import { useEffect, useState, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Ticket, FileText, ShieldCheck, BarChart3, Gift, Pin, CalendarClock,
-  Webhook, Sparkles, Check, Star, Zap, Crown, ArrowRight,
-  Lock, ScrollText, Shield, Building2, MessageCircle,
-  Layers, Shuffle, Database, Palette, Minus,
-  SmilePlus, BookOpen, ClipboardList, UserPlus, Gamepad2, Activity, Fish,
+  Ticket, FileText, ShieldCheck, Gift, CalendarClock, Webhook, Sparkles, Check, Star, Zap, Crown, ArrowRight, Lock, ScrollText, Shield, Building2, MessageCircle, Layers, Shuffle, Database, Palette, Minus, SmilePlus, Activity,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
@@ -14,6 +10,14 @@ import SignalFunnel from "../components/SignalFunnel";
 import Seo from "../components/Seo";
 import FeatureLinks from "../components/FeatureLinks";
 import GameShowcase from "../components/GameShowcase";
+import LandingNav from "../components/LandingNav";
+import DeferredSections from "../components/DeferredSections";
+import SectionHead from "../components/SectionHead";
+import FeatureGroups from "../components/FeatureGroups";
+import { LANDING_UI } from "../i18n/landingUi";
+const TicketShowcase = lazy(() => import("../components/TicketShowcase"));
+const ProductTour = lazy(() => import("../components/ProductTour"));
+const ReplaceBots = lazy(() => import("../components/ReplaceBots"));
 // Под сгъвката и със собствен текст на 8 езика → собствен чънк, извън LCP пътя.
 const BaitShowcase = lazy(() => import("../components/BaitShowcase"));
 import { useScrollReveal } from "../hooks/useScrollReveal";
@@ -28,6 +32,29 @@ const COMPANY_NAME = import.meta.env.VITE_COMPANY_NAME || "Carbon Stealth VCC";
 const SUPPORT_URL = import.meta.env.VITE_SUPPORT_URL || "https://discord.gg/wpCRpy8B";
 // Same permission set as Dashboard.jsx's "Add to a Server" invite link.
 const BOT_INVITE_URL = `https://discord.com/oauth2/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&permissions=361045814416&scope=bot+applications.commands`;
+
+const UI = LANDING_UI.en;
+
+// Функциите на английския лендинг — същите ключове като в i18n/landing.js,
+// за да ги групира FeatureGroups по един и същ начин на всички езици.
+const EN_FEATURES = [
+  { key: "ticket", title: "Ticket system", desc: "Unlimited tickets from button panels — claim, escalate, rename, priorities, two-step close, transcripts and archive links. Staff can reply straight from the dashboard." },
+  { key: "forms", title: "Forms & applications", desc: "Multi-step questionnaires with validation and branching, a review flow with reasons, and a private channel with the applicant before you decide." },
+  { key: "canned", title: "Canned replies & SLA", desc: "Saved replies your team drops in with one command, plus first-response and resolution timers that flag a ticket before it goes stale." },
+  { key: "knowledgeBase", title: "Knowledge base", desc: "Write answers once; the bot suggests the matching article the moment a ticket opens — and tracks whether it helped." },
+  { key: "ai", title: "AI first replies", desc: "The AI answers the first message in a ticket, clearly labelled as AI; your staff take over from there. Opt-in." },
+  { key: "reactionRoles", title: "Reaction roles", desc: "Up to 20 emoji-to-role pairs per message, pick-one mode, and the bot places the reactions for you." },
+  { key: "giveaways", title: "Giveaways", desc: "Prize drawings with required roles, an automatic end and rerolls — from the dashboard or a slash command." },
+  { key: "polls", title: "Polls", desc: "Live polls with up to 9 options, single or multiple choice and an auto-close timer." },
+  { key: "welcomer", title: "Welcomer & autorole", desc: "Greet new members in a channel or by DM and hand out roles automatically — separate rules for humans and bots." },
+  { key: "game", title: "Leveling & Server Season", desc: "XP from activity (never from message text), level roles, daily sparks, a server shop, 60 companions and weekly server quests." },
+  { key: "verification", title: "Verification", desc: "Button or math captcha and a minimum account age, brute-force protection, and ticket panels locked behind the verified role." },
+  { key: "bait", title: "Bait channel for spam bots", desc: "Whoever writes in the bait channel is kicked, banned or timed out on the spot. Owner and staff are never touched; message text is never read." },
+  { key: "activityLog", title: "Server activity log", desc: "Voice, member, moderation and message events in your own log channel — edited and deleted messages included." },
+  { key: "sticky", title: "Sticky messages", desc: "Important info stays at the bottom of a channel, reposted as new messages arrive." },
+  { key: "scheduled", title: "Scheduled messages", desc: "One-off or daily, weekly and monthly posts that run themselves." },
+  { key: "webhooks", title: "Webhooks & API", desc: "HMAC-signed events for tickets, applications, giveaways and verification, plus a public REST API." },
+];
 
 export default function Login() {
   const { user, loading } = useAuth();
@@ -49,7 +76,7 @@ export default function Login() {
   };
 
   return (
-    <div ref={rootRef} className="relative min-h-screen bg-transparent overflow-hidden">
+    <div ref={rootRef} className="relative min-h-screen bg-transparent overflow-x-clip">
       <Seo
         title="Supreme Bot — Discord Ticket Bot & SaaS Platform | Tickets, Forms, Applications | Carbon Stealth"
         description="Supreme Bot is a Discord ticket bot and all-in-one platform by Carbon Stealth: tickets, application forms, verification, a bait channel for spam bots, giveaways, a leveling game with companions and server quests, AI-assisted replies and white-label bots — one web dashboard, EU-hosted, Premium billed through Discord."
@@ -62,7 +89,11 @@ export default function Login() {
           index.css; the static state is an intentional aurora + grid poster.
           The hero H1 is plain text (the LCP element) and is never animated, so
           it paints immediately. */}
-      <div aria-hidden className="hero-backdrop absolute inset-0 overflow-hidden pointer-events-none">
+      {/* Фиксирана височина, НЕ inset-0: аврората е `inset: -20%` от контейнера, а
+          контейнерът растеше с цялата страница, когато React я дорисува — горният
+          ѝ ръб „скачаше“ и даваше CLS 0.29 на мобилен (измерено 08.10.2026), макар
+          визуално да не се вижда. Мрежата и аврората живеят само в горната част. */}
+      <div aria-hidden className="hero-backdrop absolute inset-x-0 top-0 h-[140vh] overflow-hidden pointer-events-none">
         <div className="hero-aurora" />
         <div className="grid-bg hero-grid-mask absolute inset-0" />
       </div>
@@ -70,27 +101,29 @@ export default function Login() {
 
       <div className="relative z-10 min-h-screen flex flex-col">
         {/* HEADER */}
-        <header className="px-6 sm:px-8 py-6 flex items-center justify-between">
+        <header className="relative px-6 sm:px-8 py-6 flex items-center justify-between gap-4">
           <a href="https://carbonstealth.eu" className="flex items-center gap-3 group" target="_blank" rel="noopener">
             <SupremeLogo size={52} />
             <div>
               <SupremeWordmark className="text-lg leading-none" />
-              <div className="font-mono text-[10px] tracking-[0.3em] uppercase text-cs-dim mt-0.5 group-hover:text-cs-cyan transition-colors">
+              <div className="text-xs text-cs-dim mt-0.5 group-hover:text-cs-cyan transition-colors">
                 by {COMPANY_NAME}
               </div>
             </div>
           </a>
-          <div className="hidden md:flex items-center gap-6 font-mono text-xs text-cs-dim">
-            <a href="#features" className="hover:text-cs-cyan transition-colors">FEATURES</a>
-            <a href="#game" className="hover:text-cs-cyan transition-colors">GAME</a>
-            <a href="#bait" className="hover:text-cs-cyan transition-colors">BAIT</a>
-            <a href="#pricing" className="hover:text-cs-cyan transition-colors">PRICING</a>
-            <a href="#faq" className="hover:text-cs-cyan transition-colors">FAQ</a>
-            <a href={SUPPORT_URL} target="_blank" rel="noopener" className="hover:text-cs-cyan transition-colors">DISCORD</a>
-            <a href={BOT_INVITE_URL} target="_blank" rel="noopener noreferrer" className="cs-btn-secondary text-xs">Invite Bot</a>
-            <button onClick={handleLogin} className="cs-btn-primary text-xs">SIGN IN →</button>
-          </div>
-          <button onClick={handleLogin} className="md:hidden cs-btn-primary text-xs">SIGN IN</button>
+          <LandingNav
+            ui={UI.nav}
+            onSignIn={handleLogin}
+            inviteUrl={BOT_INVITE_URL}
+            links={[
+              { href: "#features", label: UI.nav.features },
+              { href: "#demo", label: UI.nav.demo },
+              { href: "#game", label: UI.nav.game },
+              { href: "#bait", label: UI.nav.bait },
+              { href: "#pricing", label: UI.nav.pricing },
+              { href: "#faq", label: UI.nav.faq },
+            ]}
+          />
         </header>
 
         {/* HERO — the WebGL spectacle is SCOPED to just this section (not the
@@ -104,7 +137,7 @@ export default function Login() {
             {/* Left column — copy. The H1 here is the LCP element: plain text,
                 fully opaque, no entrance animation, so it paints on first frame. */}
             <div className="text-center lg:text-left">
-              <div className="cs-eyebrow mb-4 inline-flex">→ One bot replaces eight. Built in the EU.</div>
+              <p className="text-sm text-cs-muted mb-5">One bot replaces eight. Built in the EU.</p>
               <h1 className="font-display font-black text-5xl sm:text-6xl xl:text-7xl tracking-tight-4 text-balance text-cs-text leading-[0.95] mb-6">
                 Eight bots. Eight bills.<br />
                 <span className="text-cs-cyan">One dashboard.</span>
@@ -135,14 +168,14 @@ export default function Login() {
                   See what Premium unlocks →
                 </a>
               </div>
-              <p className="text-xs text-cs-dim mt-6 font-mono leading-relaxed">
+              <p className="text-sm text-cs-dim mt-6 leading-relaxed">
                 Free forever on the base tier · Premium billed through Discord · Cancel anytime · EU-hosted, GDPR-native
               </p>
               <a
                 href={BOT_INVITE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 mt-3 text-xs text-cs-dim hover:text-cs-cyan transition-colors font-mono"
+                className="inline-flex items-center gap-1.5 mt-3 text-sm text-cs-dim hover:text-cs-cyan transition-colors"
               >
                 Already have an account? Invite the bot directly →
               </a>
@@ -154,71 +187,22 @@ export default function Login() {
           </div>
         </section>
 
-        {/* FEATURES */}
-        <section id="features" className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
+        {/* Всичко под hero-то се рисува след първото рисуване, на порции
+            (startTransition) — без дълги задачи при старта (TBT, 08.10.2026). */}
+        <DeferredSections>
+        {/* FEATURES — групирани по задача, не 16 еднакви карти */}
+        <section id="features" className="px-6 sm:px-8 pt-24 pb-12">
           <div className="max-w-6xl mx-auto">
-            <div data-reveal className="text-center mb-16">
-              <div className="cs-eyebrow mb-4 justify-center flex">→ Features</div>
-              <h2 className="font-display font-black text-4xl sm:text-5xl text-cs-text mb-4">
-                Everything, <span className="text-cs-cyan">integrated.</span>
-              </h2>
-              <p className="text-cs-muted max-w-2xl mx-auto">
-                Stop juggling 8 different bots that don't talk to each other — each with its own dashboard, permissions and support channel.
-              </p>
-            </div>
-
-            <div data-reveal className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-              <FeatureCard icon={Ticket} title="Ticket System" badge="Free">
-                A complete Discord ticket bot: unlimited ticket volume via button panels — claim, escalate, rename, priority levels, two-step close, rich transcripts and archive links. Staff can reply straight from the dashboard.
-              </FeatureCard>
-              <FeatureCard icon={FileText} title="Forms & Applications" badge="Free">
-                Multi-step questionnaires with validation and conditional branching, a review workflow with approve/deny reasons, and a private discussion channel with the applicant before you decide — replaces Appy.bot entirely.
-              </FeatureCard>
-              <FeatureCard icon={SmilePlus} title="Reaction Roles" badge="Free">
-                Members react to a message to get a role and remove the reaction to drop it. Up to 20 emoji-to-role pairs per message, exclusive (pick-one) mode, and the bot places the reactions for you.
-              </FeatureCard>
-              <FeatureCard icon={ShieldCheck} title="Verification & Anti-Bot" badge="Free">
-                One-click button or math captcha. Account age gates. Brute-force protection. Gate ticket panels behind verification.
-              </FeatureCard>
-              <FeatureCard icon={BarChart3} title="Polls" badge="Free">
-                Live-updating embed polls with up to 9 options, single/multi-choice, auto-close timers — start one from the dashboard or with a slash command.
-              </FeatureCard>
-              <FeatureCard icon={Gift} title="Giveaways" badge="Free">
-                Prize drawings with required-role gating, auto-end scheduler and reroll support — start one from the dashboard or with a slash command.
-              </FeatureCard>
-              <FeatureCard icon={Pin} title="Sticky Messages">
-                Keep important info pinned at the bottom of channels — auto-reposted as new messages arrive.
-              </FeatureCard>
-              <FeatureCard icon={CalendarClock} title="Scheduled Messages">
-                One-shot or recurring (daily/weekly/monthly) automated posts.
-              </FeatureCard>
-              <FeatureCard icon={Webhook} title="Webhook Integrations">
-                HMAC-signed event delivery for tickets, applications, giveaways, verification — plug into your stack.
-              </FeatureCard>
-              <FeatureCard icon={Sparkles} title="AI Auto-Replies">
-                The AI replies instantly to the first message in a ticket, clearly labelled as an AI reply; your staff take over from there. Opt-in.
-              </FeatureCard>
-              <FeatureCard icon={ScrollText} title="Server Activity Logging" badge="Free">
-                Voice, member, moderation and message events relayed to your own log channel — including edited and deleted messages, with the original text kept.
-              </FeatureCard>
-              <FeatureCard icon={UserPlus} title="Welcomer & Autorole" badge="Free">
-                Greet new members in a channel or by DM, and assign roles automatically — separate rules for humans and bots.
-              </FeatureCard>
-              <FeatureCard icon={BookOpen} title="Knowledge Base">
-                Write answers once; the bot suggests the matching article the moment a ticket opens — and tracks whether it actually helped.
-              </FeatureCard>
-              <FeatureCard icon={ClipboardList} title="Canned Responses & SLA">
-                Saved replies your team can drop in with one command, plus first-response and resolution timers that flag a ticket before it goes stale.
-              </FeatureCard>
-              <FeatureCard icon={Fish} title="Bait Channel for Spam Bots" badge="Free">
-                A channel spam bots can't resist. Whoever writes there is kicked, banned or timed out on the spot — owner and staff are never touched, and message text is never read.
-              </FeatureCard>
-              <FeatureCard icon={Gamepad2} title="Leveling & Server Season" badge="Free">
-                XP from activity (never from message text), level roles, daily sparks with streaks, a server shop, 60 collectible companions and weekly server quests.
-              </FeatureCard>
-            </div>
+            <SectionHead
+              title="Everything a Discord server runs on, in one bot."
+              sub="Stop juggling eight bots that don't talk to each other — each with its own dashboard, permissions and support channel."
+            />
+            <FeatureGroups features={EN_FEATURES} ui={UI} />
           </div>
         </section>
+
+        {/* Живо демо на тикетите — основното, което продуктът прави */}
+        <Suspense fallback={null}><TicketShowcase locale="en" /></Suspense>
 
         {/* SERVER SEASON — играта; същият компонент като на преведените лендинги */}
         <GameShowcase
@@ -236,20 +220,13 @@ export default function Login() {
         {/* v52 — канал-стръв за спам ботове: живото демо е единственият голям момент */}
         <Suspense fallback={null}><BaitShowcase locale="en" /></Suspense>
 
-        {/* PRODUCT TOUR — реални скрийншоти на dashboard-а (демо данни).
-            Прост tab превключвател (aria-pressed), без анимации — само смяна
-            на src; изображенията са с фиксирани размери (без CLS) + lazy. */}
-        <ProductTour />
+        {/* PRODUCT TOUR — снимки от текущото табло (демо данни) */}
+        <Suspense fallback={null}><ProductTour locale="en" /></Suspense>
 
         {/* PREMIUM UPSELL */}
-        <section className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
+        <section className="px-6 sm:px-8 py-24">
           <div className="max-w-5xl mx-auto">
-            <div data-reveal className="text-center mb-14">
-              <div className="cs-eyebrow mb-4 justify-center flex">→ Why teams upgrade</div>
-              <h2 className="font-display font-black text-4xl sm:text-5xl text-cs-text mb-4">
-                Free gets you running. <span className="text-cs-cyan">Premium gets you scaling.</span>
-              </h2>
-            </div>
+            <SectionHead title="Free gets you running. Premium gets you scaling." />
 
             <div data-reveal className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8 mb-16">
               <OutcomeBullet icon={Sparkles} title="Answer first, triage later.">
@@ -302,51 +279,20 @@ export default function Login() {
                 <span>Start free with Discord</span>
                 <ArrowRight className="w-4 h-4 ml-1" />
               </button>
-              <p className="text-xs text-cs-dim mt-4 max-w-lg mx-auto font-mono leading-relaxed">
+              <p className="text-sm text-cs-dim mt-4 max-w-lg mx-auto leading-relaxed">
                 Start on Free today. When a server needs Premium, subscribe for it in the Discord store — monthly, billed by Discord, cancel anytime.
               </p>
             </div>
           </div>
         </section>
 
-        {/* REPLACE */}
-        <section className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="cs-eyebrow mb-4 justify-center flex">→ Why switch?</div>
-            <h2 className="font-display font-black text-3xl sm:text-4xl text-cs-text mb-10">
-              Replace these. <span className="text-cs-cyan">All of them.</span>
-            </h2>
-            <div data-reveal className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {/* Категории, не чужди марки и цени: цените на конкурентите се менят и не
-                  са сверени — недоказуемо твърдение не стои тук (одит 24.09.2026;
-                  сравненията със сверени източници са в /compare/*). */}
-              {[
-                ["Ticket bot", "tickets & transcripts"], ["Application bot", "forms & review"], ["Verification bot", "captcha & roles"],
-                ["Anti-spam bot", "scam cleanup"], ["Giveaway bot", "prizes & rerolls"], ["Leveling bot", "XP & level roles"],
-                ["Sticky / schedule bot", "pinned & timed posts"], ["Logging bot", "edits & deletions"],
-              ].map(([name, what]) => (
-                <div key={name} className="cs-card text-center !p-4">
-                  <div className="text-sm text-cs-text font-bold line-through decoration-red-500">{name}</div>
-                  <div className="text-xs text-cs-dim mt-1">{what}</div>
-                </div>
-              ))}
-            </div>
-            <p className="text-cs-muted mt-8 max-w-2xl mx-auto">
-              <span className="line-through decoration-red-500">8 bots, 8 dashboards, 8 sets of permissions, 8 support channels.</span><br />
-              <span className="text-cs-cyan font-bold">One subscription. One dashboard. One bot.</span>
-            </p>
-          </div>
-        </section>
+        {/* REPLACE — осемте бота, които заменя */}
+        <Suspense fallback={null}><ReplaceBots locale="en" /></Suspense>
 
         {/* ═══════════ TRUST / SOCIAL PROOF ═══════════ */}
-        <section className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
+        <section className="px-6 sm:px-8 py-24">
           <div className="max-w-5xl mx-auto">
-            <div data-reveal className="text-center mb-12">
-              <div className="cs-eyebrow mb-4 justify-center flex">→ Built for reliability</div>
-              <h2 className="font-display font-black text-3xl sm:text-4xl text-cs-text mb-4">
-                Why teams <span className="text-cs-cyan">trust</span> Supreme Bot
-              </h2>
-            </div>
+            <SectionHead size="md" title="Why teams trust Supreme Bot" sub="A registered EU company, encrypted secrets and a public status page — not promises." />
 
             <div data-reveal className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
               <TrustCard
@@ -381,7 +327,7 @@ export default function Login() {
               />
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-8 text-xs font-mono text-cs-dim border-t border-cs-border/50 pt-8">
+            <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-cs-dim border-t border-cs-border/50 pt-8">
               {/* Статичната значка „всичко работи“ беше твърдение без измерване —
                   сега води към живия статус (одит 24.09.2026). */}
               <a href="/status" className="flex items-center gap-2 hover:text-cs-cyan transition-colors"><Activity className="w-3.5 h-3.5" aria-hidden="true" /> Live system status →</a>
@@ -393,13 +339,10 @@ export default function Login() {
         </section>
 
         {/* FAQ */}
-        <section id="faq" className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
-          <div className="max-w-3xl mx-auto">
-            <div data-reveal className="text-center mb-12">
-              <div className="cs-eyebrow mb-4 justify-center flex">→ Frequently Asked</div>
-              <h2 className="font-display font-black text-3xl sm:text-4xl text-cs-text mb-4">
-                Common <span className="text-cs-cyan">questions</span>
-              </h2>
+        <section id="faq" className="px-6 sm:px-8 py-24 bg-cs-surface/40 border-y border-cs-border/40">
+          <div className="max-w-6xl mx-auto grid lg:grid-cols-[minmax(0,20rem)_1fr] gap-10 lg:gap-16">
+            <div className="lg:sticky lg:top-8 self-start">
+              <SectionHead size="md" className="!mb-0" title="Questions people ask before they switch" sub="Billing, data, limits and support — the short answers." />
             </div>
 
             <div data-reveal className="space-y-3">
@@ -444,15 +387,9 @@ export default function Login() {
         </section>
 
         {/* PRICING */}
-        <section id="pricing" className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
+        <section id="pricing" className="px-6 sm:px-8 py-24">
           <div className="max-w-5xl mx-auto">
-            <div data-reveal className="text-center mb-10">
-              <div className="cs-eyebrow mb-4 justify-center flex">→ Pricing</div>
-              <h2 className="font-display font-black text-4xl sm:text-5xl text-cs-text mb-4">
-                Simple. <span className="text-cs-cyan">Per server.</span>
-              </h2>
-              <p className="text-cs-muted">Pay only for what you need. Upgrade anytime.</p>
-            </div>
+            <SectionHead align="center" title="Simple, per server." sub="Pay only for the servers that need more. Upgrade or drop back anytime." />
 
             {/* Free · Premium · White-label */}
             <div data-reveal className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -514,16 +451,16 @@ export default function Login() {
               />
             </div>
 
-            <p className="text-center text-xs text-cs-dim font-mono mt-8">
+            <p className="text-center text-sm text-cs-dim mt-8 max-w-3xl mx-auto leading-relaxed">
               All prices VAT-inclusive · per server / month · Monthly subscriptions sold and billed through the Discord store · Renews automatically until cancelled · 99.9% uptime target (not a contractual SLA) · EU hosting · GDPR · Cancel anytime
             </p>
           </div>
         </section>
 
         {/* FINAL CTA */}
-        <section data-reveal className="px-6 sm:px-8 py-20 border-t border-cs-border/50 text-center">
-          <h2 className="font-display font-black text-3xl sm:text-5xl text-cs-text mb-6">
-            Ready to <span className="text-cs-cyan">consolidate</span>?
+        <section data-reveal className="px-6 sm:px-8 py-24 text-center">
+          <h2 className="font-display font-black text-4xl sm:text-6xl text-cs-text mb-6 tracking-tight">
+            Ready to consolidate?
           </h2>
           <p className="text-cs-muted mb-8 max-w-lg mx-auto">
             Takes 60 seconds. Sign in with Discord, pick a server, go live on Free.
@@ -535,6 +472,8 @@ export default function Login() {
           </button>
         </section>
 
+        </DeferredSections>
+
         {/* FOOTER */}
         <footer className="px-6 sm:px-8 py-10 border-t border-cs-border/50">
           <div className="max-w-6xl mx-auto flex flex-col gap-6">
@@ -543,10 +482,10 @@ export default function Login() {
                 <SupremeLogo size={36} />
                 <div className="flex flex-col leading-tight">
                   <SupremeWordmark className="text-base" />
-                  <span className="font-mono text-[10px] tracking-[0.25em] uppercase text-cs-dim mt-1">
+                  <span className="text-xs text-cs-dim mt-1">
                     © 2026 {COMPANY_NAME} · EIK 208725180 · VAT BG208725180 · EU-hosted
                   </span>
-                  <span className="font-mono text-[10px] tracking-[0.12em] text-cs-dim mt-1">
+                  <span className="text-xs text-cs-dim mt-1">
                     Carbon Stealth VCC · ul. Samuil 3, 2670 Bobov dol, Bulgaria ·{" "}
                     <a href="mailto:legal@carbonstealth.eu" className="text-cs-cyan underline">legal@carbonstealth.eu</a>
                   </span>
@@ -570,7 +509,7 @@ export default function Login() {
                 internal link equity either. (Owner, 12.08.2026: "why isn't it
                 on the landing page anywhere?") */}
             <nav aria-label="Guides and comparisons"
-                 className="flex flex-wrap items-center justify-center gap-4 font-mono text-[10px] text-cs-dim border-t border-cs-border/30 pt-4">
+                 className="flex flex-wrap items-center justify-center gap-4 text-xs text-cs-dim border-t border-cs-border/30 pt-4">
               <a href="/guides/ticket-panel-setup" className="hover:text-cs-cyan transition-colors">PANEL &amp; BUTTON SETUP</a>
               <a href="/guides/best-discord-ticket-bot" className="hover:text-cs-cyan transition-colors">CHOOSING A TICKET BOT</a>
               <a href="/guides/gdpr-discord-bot" className="hover:text-cs-cyan transition-colors">GDPR FOR DISCORD BOTS</a>
@@ -585,7 +524,7 @@ export default function Login() {
 
             {/* Language versions — visible crawlable links matching the
                 hreflang alternates (Seo.jsx + sitemap.xml). */}
-            <nav aria-label="Language" className="flex flex-wrap items-center justify-center gap-3 font-mono text-[10px] text-cs-dim border-t border-cs-border/30 pt-4">
+            <nav aria-label="Language" className="flex flex-wrap items-center justify-center gap-3 text-xs text-cs-dim border-t border-cs-border/30 pt-4">
               <span className="text-cs-cyan">EN</span>
               <a href="/bg" className="hover:text-cs-cyan transition-colors">БЪЛГАРСКИ</a>
               <a href="/de" className="hover:text-cs-cyan transition-colors">DEUTSCH</a>
@@ -595,7 +534,7 @@ export default function Login() {
               <a href="/nl" className="hover:text-cs-cyan transition-colors">NEDERLANDS</a>
               <a href="/pl" className="hover:text-cs-cyan transition-colors">POLSKI</a>
             </nav>
-            <div className="text-center text-xs font-mono text-cs-dim border-t border-cs-border/30 pt-4">
+            <div className="text-center text-xs text-cs-dim border-t border-cs-border/30 pt-4">
               Created and Designed by{" "}
               <a
                 href="https://carbonstealth.eu"
@@ -609,20 +548,6 @@ export default function Login() {
           </div>
         </footer>
       </div>
-    </div>
-  );
-}
-
-function FeatureCard({ icon: Icon, title, badge, children }) {
-  const tiltRef = useTiltCard();
-  return (
-    <div ref={tiltRef} className="cs-card hover:border-cs-cyan/50 hover:shadow-cs-cyan-sm transition-colors">
-      <div className="flex items-start justify-between mb-3">
-        <Icon className="w-6 h-6 text-cs-cyan" />
-        {badge && <span className="cs-badge text-[10px] text-success">{badge}</span>}
-      </div>
-      <h3 className="text-cs-text font-bold mb-2">{title}</h3>
-      <p className="text-sm text-cs-muted leading-relaxed">{children}</p>
     </div>
   );
 }
@@ -665,67 +590,6 @@ function PricingCheck({ children }) {
 /* Product tour: реални скрийншоти на dashboard-а с демо данни. Табовете са
    истински бутони (aria-pressed, клавиатурно достъпни); смяната е само на
    src — нула анимация (reduced-motion дисциплина). width/height пазят от CLS. */
-const TOUR_SCREENS = [
-  { key: "home",      label: "Overview",  alt: "Server overview — stats, setup checklist and feature cards" },
-  { key: "tickets",   label: "Tickets",   alt: "Ticket list with statuses, assignees and satisfaction ratings" },
-  { key: "panels",    label: "Panels",    alt: "Ticket panel builder with button styles and support roles" },
-  { key: "forms",     label: "Forms",     alt: "Application form builder with logic branching" },
-  { key: "analytics", label: "Analytics", alt: "Ticket analytics — volume, response times and staff leaderboard" },
-  { key: "premium",   label: "Premium",   alt: "Premium plans and billing management" },
-];
-
-function ProductTour() {
-  const [active, setActive] = useState(TOUR_SCREENS[0]);
-  return (
-    <section id="tour" className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-10">
-          <div className="cs-eyebrow mb-4 justify-center flex">→ See it in action</div>
-          <h2 className="font-display font-black text-4xl sm:text-5xl text-cs-text mb-4">
-            The dashboard, <span className="text-cs-cyan">for real.</span>
-          </h2>
-          <p className="text-cs-muted max-w-2xl mx-auto">
-            Not mockups — real screenshots of the current dashboard, filled with demo data.
-          </p>
-        </div>
-        <div className="flex flex-wrap justify-center gap-2 mb-6" role="group" aria-label="Dashboard screenshots">
-          {TOUR_SCREENS.map((s) => (
-            <button
-              key={s.key}
-              type="button"
-              aria-pressed={active.key === s.key}
-              onClick={() => setActive(s)}
-              className={`px-4 py-2 rounded-full font-mono text-xs uppercase tracking-wider transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cs-cyan ${
-                active.key === s.key
-                  ? "bg-cs-cyan text-black"
-                  : "border border-cs-border text-cs-muted hover:text-cs-text hover:border-cs-borderHi"
-              }`}
-            >
-              {s.label}
-            </button>
-          ))}
-        </div>
-        <div className="rounded-xl border border-cs-border overflow-hidden shadow-2xl shadow-cs-cyan/5 bg-cs-panel">
-          <img
-            src={`/screens/${active.key}.webp`}
-            alt={active.alt}
-            width="1440"
-            height="900"
-            loading="lazy"
-            decoding="async"
-            className="w-full h-auto block"
-          />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-
-/* One pricing tier card. `highlighted` renders the gold "Recommended" treatment;
-   `compact` is the tighter variant. v3.3: prices are monthly only — paid tiers
-   are sold through the Discord store, so the CTA leads to sign-in, not to a
-   checkout of ours. */
 function PricingCard({ icon: Icon, name, tagline, seats, price, per, badge, bullets, cta, onCta, highlighted = false, compact = false }) {
   const tiltRef = useTiltCard(highlighted ? 6 : 4);
   const cardCls = highlighted
