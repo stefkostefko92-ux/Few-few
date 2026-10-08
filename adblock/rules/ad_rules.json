@@ -4899,5 +4899,23 @@
     "main_frame"
    ]
   }
+ },
+ {
+  "id": 239,
+  "priority": 10,
+  "action": {
+   "type": "allow"
+  },
+  "condition": {
+   "urlFilter": "||facebook.com/platform/plugin/page/logging/",
+   "initiatorDomains": [
+    "facebook.com"
+   ],
+   "resourceTypes": [
+    "xmlhttprequest",
+    "ping",
+    "other"
+   ]
+  }
  }
 ]

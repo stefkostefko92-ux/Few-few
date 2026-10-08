@@ -92,6 +92,22 @@ for p in PATH_PATTERNS:
     })
     rid += 1
 
+# ---- Breakage fixes (allow, priority 10 — above every block rule) ----
+# EasyPrivacy blocks the Facebook Page Plugin's own logging call. For a visitor
+# logged into Facebook the plugin then throws ("ExceptionDialog", error 1357032)
+# and its posts never load, on every site that embeds it. Allowed only from
+# inside Facebook's own frame, so the call stays blocked everywhere else.
+UNBREAK_ALLOW = [
+    ("||facebook.com/platform/plugin/page/logging/", ["facebook.com"]),
+]
+for p, initiators in UNBREAK_ALLOW:
+    rules.append({
+        "id": rid, "priority": 10,
+        "action": {"type": "allow"},
+        "condition": {"urlFilter": p, "initiatorDomains": initiators, "resourceTypes": ["xmlhttprequest", "ping", "other"]}
+    })
+    rid += 1
+
 with open("rules/ad_rules.json","w") as f:
     json.dump(rules, f, indent=2)
 print("ad_rules.json: %d rules (ids 1..%d)" % (len(rules), rid-1))
