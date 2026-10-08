@@ -35,6 +35,9 @@ export interface FramedPulley {
   half: number;
   frame: RinvioFrame;
   turn: 1 | -1;
+  /** the legs' centres in the machine's x and z [m] (rinvio.ts bedplateLegs: over the HEB beams it bridges); missing: at
+   *  its corners */
+  legs?: readonly (readonly [number, number])[];
 }
 
 /**
@@ -136,8 +139,10 @@ function rinvioFrame3D(box: BoxFn, F: MachineFrame, gap: number, P: FramedPulley
   across(x0 + w / 2, -1, z0 + w, z1 - w);
   across(x1 - w / 2, 1, z0 + w, z1 - w);
   for (const z of irons) along(x0 + w, x1 - w, z, z > zs ? 1 : -1);
-  // the legs at the corners on their dampers
-  for (const x of [x0, x1 - leg]) for (const z of [z0, z1 - leg]) {
+  // the legs on their dampers: at the corners, or where its sides cross the HEB beams it bridges
+  const legs = P.legs ?? [x0, x1 - leg].flatMap((x) => [z0, z1 - leg].map((z) => [x + leg / 2, z + leg / 2] as const));
+  for (const [xc, zc] of legs) {
+    const x = xc - leg / 2, z = zc - leg / 2;
     box(x, x + leg, floor + base + pads, -h, z, z + leg, M.galv);
     box(x - 0.01, x + leg + 0.01, floor + base, floor + base + pads, z - 0.01, z + leg + 0.01, M.rubber);
   }

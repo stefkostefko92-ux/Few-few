@@ -72,9 +72,10 @@ export function machinePose(rig: RopeRig, wall: number, n: number, d: number, F:
 /** `ceiling`: the slab's underside over the shaft [mm]; `openings`: the slab's (slab.ts); `gov`: the governor's spot;
  *  `shape`: the maker's machine as it is (null: the generic one scaled to the sheave); `rinvio`: where the diverting
  *  pulley turns in the room (src/shaft/rinvio.ts); `heb`: the HEB beams on the shaft's walls the support stands on;
- *  `turn`: the machine above turned round, its motor toward the car's drop (−1; machine-room.ts RoomGeo.dir). */
+ *  `turn`: the machine above turned round, its motor toward the car's drop (−1; machine-room.ts RoomGeo.dir); `legs`: the
+ *  bedplate's legs in the machine's x and z [m] (rinvio.ts bedplateLegs). */
 export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: number, ceiling: number, M: LiftMaterials, openings: readonly Opening[], gov: GovernorSpot | null,
-  shape: MachineShape | null = null, rinvio: RinvioFrame | null = null, heb: HebLayout | null = null, turn: 1 | -1 = 1): RoomModel {
+  shape: MachineShape | null = null, rinvio: RinvioFrame | null = null, heb: HebLayout | null = null, turn: 1 | -1 = 1, legs: readonly (readonly [number, number])[] | null = null): RoomModel {
   const I = L.inputs, sides = { front: new THREE.Group(), rear: new THREE.Group(), left: new THREE.Group(), right: new THREE.Group() } as Record<Side, THREE.Group>;
   const roof = new THREE.Group(), common = new THREE.Group(), overhead = new THREE.Group();
   const at = (p: RopePlane, u: number, y: number): THREE.Vector3 => {
@@ -120,7 +121,7 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
   // the diverting pulley in the bedplate: along the machine from the sheave, as the rig places it (the machine turned
   // round, on its other side)
   const defl = rig.wheels.find((w) => w.role === 'deflector'), framed = !rig.bottom && rinvio?.on === 'frame' && defl !== undefined;
-  const inFrame = framed && defl && rinvio ? { x: turn * (defl.u - rig.sheave.u), r: defl.r, half: ropeWidths(n, d).pulley, frame: rinvio, turn } : null;
+  const inFrame = framed && defl && rinvio ? { x: turn * (defl.u - rig.sheave.u), r: defl.r, half: ropeWidths(n, d).pulley, frame: rinvio, turn, ...(legs ? { legs } : {}) } : null;
   // the HEB beams on the shaft's walls under it all (the support, the pulleys' stands), on the floor
   const beams = !rig.bottom && R && heb ? heb : null, hebH = beams ? PROFILES[beams.profile].h : 0;
   if (beams && R) {

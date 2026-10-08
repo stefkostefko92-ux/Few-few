@@ -111,12 +111,14 @@ export function hebResultant(G: RoomGeo, M: MachineSpec, load: SupportLoad): { a
   return { at: onDrop(G, c.u, c.v), F: c.F * G_ACC };
 }
 
-/** Whether the support is our low frame alone, lying on what is under it along its members: it rests on beams across
- *  it wherever it crosses them and may run past them. A machine on shims or plates, the bedplate with the diverting
- *  pulley on its legs, a pulley on its own stand: they stand on their feet. */
-function frameOnly(G: RoomGeo, M: MachineSpec): boolean {
+/** Whether the support may bridge beams across it, resting on them wherever it crosses them and running past them: our
+ *  low frame alone (lying on them along its members), our bedplate with the diverting pulley (its legs set where its
+ *  sides cross them: rinvio.ts bedplateLegs). A machine on shims or plates, a maker's bedplate, a pulley on its own
+ *  stand: they stand on their feet. */
+function bridges(G: RoomGeo, M: MachineSpec): boolean {
   const s = supportOf(G.room, M.Dp > 0), rf = M.rinvio ?? null;
-  return s.kind === 'frame' && !(rf?.on === 'stand' && M.Dp > 0);
+  if (s.kind === 'frame') return !(rf?.on === 'stand' && M.Dp > 0);
+  return s.kind === 'rinvio' && rf?.on === 'frame' && !rf.maker;
 }
 
 /** Whether beams along `dir` cross the frame, whose members run along the rope drop line (within 45° of square to it). */
@@ -133,16 +135,23 @@ function ironSpans(feet: readonly Pt[], across: number): [number, number][] {
 }
 
 /** The two beams of `profile` along `dir` under `feet` over the shaft `S` lying in the room (room axes): under the
- *  outermost feet across them; under a frame crossing them (`bridge`) as far apart under it as the walls let them, each
- *  iron lying on both with the whole flange (askew the irons' ends stand at other places: where all of them reach). */
-export function hebLayout(R: RoomInputs, S: HebShaft, feet: readonly Pt[], dir: HebDir, profile: HebProfile, bridge = false): HebLayout {
+ *  outermost feet across them; under a support bridging them (`bridge`: a frame's irons, our bedplate's sides) as far
+ *  apart under it as the walls let them, each iron lying on both with the whole flange (askew the irons' ends stand at
+ *  other places: where all of them reach), each KV_VERT.hebRopeGap clear of the `ropes` through the slab. */
+export function hebLayout(R: RoomInputs, S: HebShaft, feet: readonly Pt[], dir: HebDir, profile: HebProfile, bridge = false, ropes: readonly Rope[] = []): HebLayout {
   const along = dir === 'x' ? 0 : 1, across = 1 - along, b = KV_VERT.hebBearing, half = PROFILES[profile].b / 2;
   const s0 = along ? R.shaftY : R.shaftX, s1 = s0 + (along ? S.D : S.W), cs = feet.map((p) => p[across]), lo = Math.min(...cs), hi = Math.max(...cs);
   // the walls it bears on run across it from one outer face of the shaft to the other
   const c0 = across ? R.shaftY : R.shaftX, c1 = c0 + (across ? S.D : S.W), walls = [c0 - S.wall, c1 + S.wall] as const;
   const irons = bridge ? ironSpans(feet, across) : [];
   const reach0 = irons.length ? Math.max(...irons.map((r) => r[0])) : lo, reach1 = irons.length ? Math.min(...irons.map((r) => r[1])) : hi;
-  const a = Math.max(reach0 + half, walls[0] + half), z = Math.min(reach1 - half, walls[1] - half), fits = bridge && z - a >= 2 * half;
+  // where a beam's axis may lie: within the irons' reach and the walls, off every rope by the gap (the nearest such place
+  // to each end of that stretch)
+  const A = Math.max(reach0 + half, walls[0] + half), Z = Math.min(reach1 - half, walls[1] - half);
+  const banned = ropes.map((x): [number, number] => [x.at[across] - x.r - KV_VERT.hebRopeGap - half, x.at[across] + x.r + KV_VERT.hebRopeGap + half]);
+  const free = (c: number): boolean => c >= A - 1e-9 && c <= Z + 1e-9 && banned.every(([p, q]) => c <= p || c >= q);
+  const edges = [A, Z, ...banned.flat()].filter(free).sort((p, q) => p - q), a = edges[0] ?? A, z = edges[edges.length - 1] ?? Z;
+  const fits = bridge && edges.length > 0 && z - a >= 2 * half;
   return { dir, profile, at: fits ? [a, z] : [lo, hi], span: [s0, s1], ends: [s0 - b, s1 + b], walls, bridge: fits, length: s1 - s0 + 2 * b };
 }
 
@@ -200,17 +209,17 @@ export function hebChecks(r: HebResult | null): ShaftCheck[] {
 }
 
 /** The six beams (two directions, three profiles) under the machine `M` in the room of `G`, the shortest first, then the
- *  lightest. */
-export function hebLayouts(G: RoomGeo, M: MachineSpec, S: HebShaft): HebLayout[] {
-  const feet = supportFeet(G, M), frame = frameOnly(G, M);
-  return (['x', 'y'] as const).flatMap((dir) => HEB_PROFILES.map((profile) => hebLayout(G.room, S, feet, dir, profile, frame && crossing(G, dir))))
+ *  lightest; bridging beams clear of the ropes through the slab (`extra`: the governor's). */
+export function hebLayouts(G: RoomGeo, M: MachineSpec, S: HebShaft, extra: readonly Rope[] = []): HebLayout[] {
+  const feet = supportFeet(G, M), bridge = bridges(G, M), ropes = [...dropRopes(G, M), ...extra];
+  return (['x', 'y'] as const).flatMap((dir) => HEB_PROFILES.map((profile) => hebLayout(G.room, S, feet, dir, profile, bridge && crossing(G, dir), ropes)))
     .sort((p, q) => p.length - q.length || PROFILES[p.profile].mass - PROFILES[q.profile].mass);
 }
 
 /** The six beams the software weighs, in the order of hebLayouts, each with how it does at `load`. */
-export function hebOptions(G: RoomGeo, M: MachineSpec, S: HebShaft, load: SupportLoad, ropes: readonly Rope[]): HebOption[] {
+export function hebOptions(G: RoomGeo, M: MachineSpec, S: HebShaft, load: SupportLoad, ropes: readonly Rope[], extra: readonly Rope[] = []): HebOption[] {
   const feet = supportFeet(G, M), res = hebResultant(G, M, load);
-  return hebLayouts(G, M, S).map((lay): HebOption => {
+  return hebLayouts(G, M, S, extra).map((lay): HebOption => {
     const result = hebResult(lay, res, feet, ropes, S.wall);
     return { ...lay, result, ok: hebChecks(result).every((c) => c.status === 'ok') };
   });
@@ -234,17 +243,18 @@ export function hebPick(opts: readonly HebOption[], set: { profile?: HebProfile;
 export function hebFor(G: RoomGeo, M: MachineSpec, S: HebShaft, load: SupportLoad, extra: readonly Rope[] = []): { options: HebOption[]; chosen: HebOption } | null {
   const set = G.room.heb;
   if (!set || !onHeb(G.room, M.Dp > 0)) return null;
-  const options = hebOptions(G, M, S, load, [...dropRopes(G, M), ...extra]);
+  const options = hebOptions(G, M, S, load, [...dropRopes(G, M), ...extra], extra);
   return { options, chosen: hebPick(options, set) };
 }
 
 /** The beams as the drawings take them: those the room names (profile and direction, the derivation's choice in place),
- *  else the tallest along the shaft's shorter side; null without them. */
-export function hebDrawn(G: RoomGeo, M: MachineSpec, S: HebShaft): HebLayout | null {
+ *  else the tallest along the shaft's shorter side, placed as the derivation places them (`extra`: the governor's ropes
+ *  through the slab); null without them. */
+export function hebDrawn(G: RoomGeo, M: MachineSpec, S: HebShaft, extra: readonly Rope[] = []): HebLayout | null {
   const set = G.room.heb;
   if (!set || !onHeb(G.room, M.Dp > 0)) return null;
   const dir = set.dir ?? (S.W <= S.D ? 'x' : 'y');
-  return hebLayout(G.room, S, supportFeet(G, M), dir, set.profile ?? HEB_PROFILES[HEB_PROFILES.length - 1], frameOnly(G, M) && crossing(G, dir));
+  return hebLayout(G.room, S, supportFeet(G, M), dir, set.profile ?? HEB_PROFILES[HEB_PROFILES.length - 1], bridges(G, M) && crossing(G, dir), [...dropRopes(G, M), ...extra]);
 }
 
 /** The key of the drawings' choice of the beams: their profile and direction together (set `<dir>:<profile>`). */

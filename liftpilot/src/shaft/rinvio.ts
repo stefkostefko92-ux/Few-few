@@ -117,6 +117,19 @@ export function rinvioAcross(G: RoomGeo, rf: RinvioFrame): readonly [number, num
   return [Math.min(a, b), Math.max(a, b)];
 }
 
+/** Where the legs of the bedplate stand (drop-line axes u, v) [mm]: at its corners — or, ours bridging the HEB beams
+ *  `lay` (heb.ts: the beams cross it), where each of its sides crosses each beam's axis, so every leg stands on a beam's
+ *  flange and the bedplate runs past them; the maker's where the maker puts them. Its sides first, each from its car end. */
+export function bedplateLegs(G: RoomGeo, M: MachineSpec, lay: { dir: 'x' | 'y'; at: readonly [number, number]; bridge: boolean } | null): [number, number][] {
+  const rf = M.rinvio;
+  if (rf?.on !== 'frame') return [];
+  const [u0, u1] = rinvioRun(M, G), [v0, v1] = rinvioAcross(G, rf), h = KV_VERT.rinvioLeg / 2, sides = [v0 + h, v1 - h];
+  if (!lay?.bridge || rf.maker) return sides.flatMap((v) => [u0 + h, u1 - h].map((u): [number, number] => [u, v]));
+  // a beam's axis is a line of constant y (beams along x) or x; a point of the side v at u: carDrop + u·(ux, uy) + v·(−uy, ux)
+  const k = lay.dir === 'x' ? 1 : 0, du = k ? G.uy : G.ux, dv = k ? G.ux : -G.uy;
+  return sides.flatMap((v) => lay.at.map((c): [number, number] => [(c - G.carDrop[k] - v * dv) / du, v]).sort((a, b) => a[0] - b[0]));
+}
+
 /** Where the diverting pulley stands where it may not (one rule for the full project and the replacement): under the
  *  room's floor ('floor'), or in the bedplate up over its top into the machine standing on it ('machine': an h or a
  *  bedplate's height set by hand) — the pulley stays under the bedplate's beams or between them; null where it is right. */

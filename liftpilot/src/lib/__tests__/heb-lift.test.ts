@@ -17,6 +17,7 @@ import { deriveRoom } from '@/lib/room/derive';
 import { applySurveyEdit } from '@/lib/room/edit';
 import { startSurvey } from '@/lib/room/survey';
 import { HEB_PROFILES, PROFILES, roomGeo, roomPlanEntities, roomSectionEntities, type ShaftBeams } from '@/shaft';
+import { bedplateLegs, rinvioRun } from '@/shaft/rinvio';
 import { roomPlanOn, roomSectionOn } from '@/shaft/room-view';
 
 const chains = (es: readonly Entity[]): Chain[] => es.flatMap((e) => (e.e === 'chain' ? [e.c] : []));
@@ -139,11 +140,26 @@ test('progetto: il basamento del costruttore con il rinvio pesa sulle putrelle c
   assert.ok(reaction(ctx.N.mass) < reaction(ctx.N.mass + bed));
 });
 
-test('progetto: il telaio con il rinvio sulle sue gambe oltre il muro di fondo — nessuna putrella lo porta, e lo dice', () => {
-  // the example's bedplate runs 140 mm past the rear wall's outer face: its rear legs would stand on nothing
+test('progetto: il telaio con il rinvio scavalca le putrelle — le gambe dove i suoi lati le incrociano, il telaio oltre di esse', () => {
+  // the example's bedplate runs 140 mm past the rear wall's outer face: on its corners its rear legs would stand on
+  // nothing (until LIFT 1.27.0 no option passed); its legs go where its sides cross the beams, the beams inside the walls
   const d = deriveLift(withHeb(newLift(), {}));
-  assert.ok(d.heb);
-  assert.equal(d.heb.options.some((o) => o.ok), false);
-  assert.equal(d.heb.chosen.bridge, false);
-  assert.equal(d.supportChecks.find((c) => c.id === 'm_hebwall')?.status, 'fail');
+  assert.ok(d.heb && d.machine.rinvio?.on === 'frame' && !d.machine.rinvio.maker);
+  const c = d.heb.chosen;
+  assert.ok(c.ok && c.bridge, `${c.dir} ${c.profile}`);
+  assert.deepEqual([c.dir, c.profile], ['x', 'HEB 140'], 'le più corte, poi le più leggere');
+  assert.ok(d.supportChecks.filter((x) => x.id.startsWith('m_heb')).every((x) => x.status === 'ok'));
+  const G = roomGeo(d.layout, d.machine);
+  assert.ok(G);
+  const legs = bedplateLegs(G, d.machine, c), [u0, u1] = rinvioRun(d.machine, G);
+  assert.equal(legs.length, 4);
+  for (const [u, v] of legs) {
+    // on a beam's axis (beams along x: constant y), on the bedplate
+    const y = G.carDrop[1] + u * G.uy + v * G.ux;
+    assert.ok(c.at.some((a) => Math.abs(a - y) < 1e-6), `gamba a y ${y}`);
+    assert.ok(u > u0 && u < u1);
+  }
+  // turned round, the ropes in other places: the beams keep clear of them and pass
+  const t = deriveLift(withHeb({ ...newLift(), shaft: { ...newLift().shaft, room: { ...(newLift().shaft.room ?? {}), motor: 'car' } } } as LiftInputs, {}));
+  assert.ok(t.heb?.chosen.ok, 'girato');
 });

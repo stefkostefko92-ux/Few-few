@@ -842,7 +842,7 @@
     "heb_auto": "Automatica — le più corte che passano: {choice}",
     "heb_auto_none": "Automatica — nessuna passa, la più vicina: {choice}",
     "heb_wait": "Le putrelle si scelgono quando la macchina è definita.",
-    "heb_hint": "Due putrelle sotto il basamento — sotto i suoi piedi, o sotto un telaio che le attraversa il più lontane possibile tra loro — poggiano sui muri del vano, 200 mm in ogni muro e mai oltre le loro facce esterne: il software prende le più corte che passano le verifiche (tensione, freccia L/1500, basamento sulle putrelle, funi a 50 mm, muri), poi le più leggere — le più facili da portare nel locale, anche con l’argano girato. L’altezza della putrella alza l’argano: il calcolo, i disegni e il 3D la seguono.",
+    "heb_hint": "Due putrelle sotto il basamento — sotto i suoi piedi, o sotto un telaio che le attraversa il più lontane possibile tra loro — poggiano sui muri del vano, 200 mm in ogni muro e mai oltre le loro facce esterne: il software prende le più corte che passano le verifiche (tensione, freccia L/1500, basamento sulle putrelle, funi a 50 mm, muri), poi le più leggere — le più facili da portare nel locale, anche con l’argano girato. L’altezza della putrella alza l’argano: il calcolo, i disegni e il 3D la seguono. Il nostro telaio con il rinvio le attraversa: le gambe stanno dove i suoi lati le incrociano. Con la linea delle calate obliqua un basamento sui piedi (spessori, piastre) non ha tutti i piedi sulle putrelle: scegli il telaio, che le attraversa.",
     "su_height": "Basamento: altezza sul pavimento",
     "ri_height": "Piano del telaio con rinvio sul pavimento",
     "su_length": "Basamento: lunghezza lungo la calata",

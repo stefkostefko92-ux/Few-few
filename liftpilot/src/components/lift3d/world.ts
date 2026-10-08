@@ -8,7 +8,9 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { hebDrawn, pitSpace, roofSpaces, roomGeo, section } from '@/shaft';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { groovePitch } from '@/shaft/ropes';
+import { bedplateLegs } from '@/shaft/rinvio';
 import { KL, planeAt, ropeRig, type LiftDerived, type RopePlane } from '@/lib/lift';
+import { governorRopes } from '@/lib/lift/support';
 import type { Frame } from '@/sim';
 import { Batch, P, box, disposeTree } from './geom';
 import { createLiftMaterials, SIDES, type Side } from './materials';
@@ -81,8 +83,10 @@ export function buildLiftWorld(renderer: THREE.WebGPURenderer, dv: LiftDerived, 
   const buffers = buildBuffers(L, S, M, car.bufferSpots);
   const ropes = buildRopes(rig, N.n, N.d, M, !two);
   // the HEB beams on the shaft's walls, where the drawings put them
-  const G = rig.bottom ? null : roomGeo(L, dv.machine), heb = G ? hebDrawn(G, dv.machine, { W: I.W, D: I.D, wall: I.wall }) : null;
-  const machine = buildRoom(L, rig, N.n, N.d, N.D, S.ceiling, M, openings, gov, dv.machine.shape ?? null, dv.machine.rinvio ?? null, heb, G?.dir ?? 1);
+  const G = rig.bottom ? null : roomGeo(L, dv.machine), heb = G ? hebDrawn(G, dv.machine, { W: I.W, D: I.D, wall: I.wall }, governorRopes(L, G)) : null;
+  // the bedplate's legs in the machine's own axes, where the drawings put them
+  const legs = G ? bedplateLegs(G, dv.machine, heb).map(([u, v]) => [(G.dir * (u - G.sheaveAt)) / 1000, (G.frame.zSheave - G.dir * v) / 1000] as const) : null;
+  const machine = buildRoom(L, rig, N.n, N.d, N.D, S.ceiling, M, openings, gov, dv.machine.shape ?? null, dv.machine.rinvio ?? null, heb, G?.dir ?? 1, legs?.length ? legs : null);
   // the fittings of the shaft and the pit, the governor's loop, the travelling cable
   const fit = new Batch(), fittings = new THREE.Group();
   buildPit(L, S, M, fit);

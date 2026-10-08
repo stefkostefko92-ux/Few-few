@@ -18,9 +18,11 @@ export const VOCI_HEB: readonly VoceVano[] = [
     valore: 'quando la soletta tra il locale e il vano non ha una verifica strutturale, il basamento dell’argano (i suoi piedi, le estremità '
       + 'del telaio, le gambe del telaio con il rinvio, il supporto del rinvio) poggia su due putrelle HEB 120, HEB 140 o HEB 160 che '
       + 'scavalcano il vano da muro a muro, lungo la sua larghezza o la sua profondità, con un appoggio di 200 mm in ognuno dei due muri del '
-      + 'vano; le due putrelle stanno sotto i piedi più esterni del basamento (le gambe del telaio con il rinvio), e sotto il nostro telaio '
-      + 'basso, che le attraversa, il più lontane possibile tra loro sotto il telaio entro i muri del vano: il telaio può sporgere oltre di '
-      + 'esse. Ognuna è una trave appoggiata tra i centri degli appoggi '
+      + 'vano; le due putrelle stanno sotto i piedi più esterni del basamento (le gambe del telaio con il rinvio del costruttore), e sotto il '
+      + 'nostro telaio basso o il nostro telaio con il rinvio, che le attraversano, il più lontane possibile tra loro entro i muri del vano e a '
+      + 'non meno di 50 mm dalle funi che attraversano la soletta (anche quella del limitatore): il telaio può sporgere oltre di esse, le gambe '
+      + 'del nostro telaio con il rinvio stanno dove i suoi lati incrociano le putrelle, sulle loro ali, anche con la linea delle calate '
+      + 'obliqua. Ognuna è una trave appoggiata tra i centri degli appoggi '
       + '(luce libera più 200 mm) che porta la sua parte del carico dell’argano (il suo peso più il carico statico sull’asse per il coefficiente '
       + 'dinamico, nella risultante del peso dell’argano e delle due calate) per la regola della leva, più il proprio peso: σ = M/Wel,y ≤ fyk/γM0 '
       + 'e freccia ≤ 1/1500 della luce libera come per le putrelle sotto l’argano; la risultante tra le due putrelle, i piedi sulle ali delle '
@@ -35,7 +37,10 @@ export const VOCI_HEB: readonly VoceVano[] = [
     stato: 'scelta', verifiche: ['m_heb', 'm_hebf', 'm_hebfeet', 'm_hebrope', 'm_hebwall'],
     nota: 'verifica semplice di trave appoggiata con il carico nella risultante; gli appoggi nei muri del vano, la muratura sotto di essi, '
       + 'il fissaggio dell’argano alle putrelle, il collegamento tra le due putrelle e lo sbalzo del telaio oltre di esse vanno verificati dal '
-      + 'progettista',
+      + 'progettista; fino a LIFT 1.27.0 e ROOM 1.11.0 il nostro telaio con il rinvio stava sulle gambe ai suoi angoli, le putrelle sotto di '
+      + 'esse (oltre il muro di fondo nell’esempio: nessuna scelta passava), e le putrelle sotto un telaio che le attraversa non evitavano le funi; '
+      + 'con un basamento sui piedi e la linea delle calate obliqua (spessori, piastre, il telaio del costruttore) i piedi non stanno tutti sulle '
+      + 'ali: il telaio basso che le attraversa è la scelta che passa',
   },
 ];
 

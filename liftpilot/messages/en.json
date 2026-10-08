@@ -842,7 +842,7 @@
     "heb_auto": "Automatic — the shortest that pass: {choice}",
     "heb_auto_none": "Automatic — none passes, the closest: {choice}",
     "heb_wait": "The beams are chosen once the machine is defined.",
-    "heb_hint": "Two beams under the support — under its feet, or as far apart as they go under a frame crossing them — bear on the shaft walls, 200 mm into each wall and never past their outer faces: the software takes the shortest that pass the checks (stress, deflection L/1500, support on the beams, ropes 50 mm clear, walls), then the lightest — the easiest to carry into the room, with the machine turned too. The beam’s height raises the machine: the calculation, the drawings and the 3D follow it.",
+    "heb_hint": "Two beams under the support — under its feet, or as far apart as they go under a frame crossing them — bear on the shaft walls, 200 mm into each wall and never past their outer faces: the software takes the shortest that pass the checks (stress, deflection L/1500, support on the beams, ropes 50 mm clear, walls), then the lightest — the easiest to carry into the room, with the machine turned too. The beam’s height raises the machine: the calculation, the drawings and the 3D follow it. Our bedplate with the diverting pulley crosses them: its legs stand where its sides cross them. With the drop line askew a support on feet (shims, plates) cannot have every foot on the beams: choose the frame, which crosses them.",
     "su_height": "Support: height above the floor",
     "ri_height": "Top of the bedplate with diverting pulley over the floor",
     "su_length": "Support: length along the rope drop",
