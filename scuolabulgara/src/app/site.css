@@ -76,18 +76,13 @@ p { color: var(--ink-2); }
   background: repeating-linear-gradient(90deg, var(--red) 0 12px, transparent 12px 20px) top left / 100% 2px no-repeat;
 }
 
-/* A list whose bullet is a Bulgarian (Damask) rose, cut from the real photo
-   (rose-damascena, CC BY-SA, credited in the footer). Each one is turned a
-   little differently, as roses are. */
-.stitch-list { display: grid; gap: .6rem; margin-top: 1.1rem; }
-.stitch-list li { position: relative; padding-left: 2rem; color: var(--ink-2); }
+/* A list whose bullet is one cross-stitch. */
+.stitch-list { display: grid; gap: .55rem; margin-top: 1.1rem; }
+.stitch-list li { position: relative; padding-left: 1.55rem; color: var(--ink-2); }
 .stitch-list li::before {
-  content: ""; position: absolute; left: 0; top: .08em; width: 1.4em; height: 1.4em;
-  background: url("/assets/img/brand/rose-bullet.webp") center / contain no-repeat;
-  filter: drop-shadow(0 1px 1.5px rgba(74, 20, 34, .28));
+  content: ""; position: absolute; left: 0; top: .42em; width: .78em; height: .78em;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M2 8L8 2M2 2l6 6' stroke='%23b3171d' stroke-width='2.3' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
 }
-.stitch-list li:nth-child(3n+2)::before { transform: rotate(38deg); }
-.stitch-list li:nth-child(3n+3)::before { transform: rotate(-27deg); }
 
 /* Embroidered border band */
 .band { line-height: 0; }
@@ -167,27 +162,28 @@ body.menu-open .nav__toggle span::after { transform: rotate(-45deg); }
 
 /* The stitched photograph (StitchedPhoto.tsx). --zone and --out are set by the
    script once the stitches exist; until then (or without JS) the photo is whole. */
-/* The embroidery rises from the bottom edge (the hem) to knee height. */
-.stitched { position: relative; margin: 0; --stitch-axis: y; --stitch-cell: 10px; --stitch-depth: .3; --stitch-focus: 40% 50%; --zone: 0px; --out: 0px; }
+.stitched { position: relative; margin: 0; --stitch-axis: x; --stitch-cell: 10px; --stitch-focus: 40% 50%; --zone: 0px; --out: 0px; }
 .stitched__img { width: 100%; height: 100%; object-fit: cover; object-position: var(--stitch-focus); }
-.stitched__thread { position: absolute; pointer-events: none; left: 0; top: calc(100% - var(--zone)); width: 100%; height: calc(var(--zone) + var(--out)); z-index: 1; }
+.stitched__thread { position: absolute; pointer-events: none; top: 0; left: calc(-1 * var(--out)); width: calc(var(--zone) + var(--out)); height: 100%; z-index: 1; }
 .stitched.is-stitched .stitched__img {
-  -webkit-mask-image: linear-gradient(0deg, transparent calc(var(--zone) * .2), #000 calc(var(--zone) * .9));
-  mask-image: linear-gradient(0deg, transparent calc(var(--zone) * .2), #000 calc(var(--zone) * .9));
+  -webkit-mask-image: linear-gradient(90deg, transparent calc(var(--zone) * .2), #000 calc(var(--zone) * .9));
+  mask-image: linear-gradient(90deg, transparent calc(var(--zone) * .2), #000 calc(var(--zone) * .9));
 }
 
 .facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.25rem 2rem; padding-block: clamp(2rem, 4vw, 3rem) 1.75rem; }
 .facts li { display: flex; gap: .8rem; align-items: flex-start; font-weight: 550; line-height: 1.4; color: var(--ink-2); }
-.facts__rose { flex-shrink: 0; width: 1.6em; height: 1.6em; margin-top: -.1em; filter: drop-shadow(0 1px 1.5px rgba(74, 20, 34, .28)); }
-.facts li:nth-child(2) .facts__rose { transform: rotate(38deg); }
-.facts li:nth-child(3) .facts__rose { transform: rotate(-27deg); }
-.facts li:nth-child(4) .facts__rose { transform: rotate(72deg); }
+.facts svg { flex-shrink: 0; margin-top: .1rem; }
 
 @media (max-width: 900px) {
   .hero { padding-top: 0; }
   .hero__grid { grid-template-columns: [full-start] var(--g) [wrap-start] minmax(0, 1fr) [wrap-end] var(--g) [full-end]; }
-  .hero__photo { grid-column: full-start / full-end; grid-row: 1; height: auto; aspect-ratio: 4 / 3.2; --stitch-cell: 8px; --stitch-focus: 45% 40%; }
+  .hero__photo { grid-column: full-start / full-end; grid-row: 1; height: auto; aspect-ratio: 4 / 3.2; --stitch-axis: y; --stitch-cell: 8px; --stitch-focus: 45% 40%; }
   .hero__copy { grid-column: wrap-start / wrap-end; grid-row: 2; padding: 2.6rem 0 0; }
+  .stitched__thread { left: 0; top: calc(100% - var(--zone)); width: 100%; height: calc(var(--zone) + var(--out)); }
+  .stitched.is-stitched .stitched__img {
+    -webkit-mask-image: linear-gradient(0deg, transparent calc(var(--zone) * .2), #000 calc(var(--zone) * .9));
+    mask-image: linear-gradient(0deg, transparent calc(var(--zone) * .2), #000 calc(var(--zone) * .9));
+  }
   .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 520px) {
@@ -253,9 +249,7 @@ body.menu-open .nav__toggle span::after { transform: rotate(-45deg); }
 .abc__cloth[data-sewn] .abc__glyph { visibility: hidden; }
 .abc__info { display: grid; grid-template-columns: auto 1fr; gap: .3rem 1.5rem; align-items: baseline; margin-top: 1.5rem; }
 .abc__pair { font: 800 3.4rem/1 var(--font-display); color: var(--ink); grid-row: span 2; }
-.abc__word { font: 800 2.2rem/1 var(--font-display); color: var(--red-ink); display: flex; align-items: center; gap: .7rem; }
-.abc__speak { display: inline-grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; border: 2px solid var(--red); border-radius: 50%; background: var(--paper); color: var(--red); transition: background-color .15s, color .15s; }
-.abc__speak:hover, .abc__speak.is-playing { background: var(--red); color: #fff; }
+.abc__word { font: 800 2.2rem/1 var(--font-display); color: var(--red-ink); }
 .abc__info dl { grid-column: 2; display: grid; gap: .2rem; }
 .abc__info dl div { display: flex; gap: .5rem; flex-wrap: wrap; }
 .abc__info dt { color: var(--muted); font-size: .9rem; }
@@ -282,16 +276,8 @@ body.menu-open .nav__toggle span::after { transform: rotate(-45deg); }
 .dance h2, .dance h3 { color: #fff; }
 .dance p, .dance .lead { color: rgba(255,255,255,.88); }
 .dance .lead { margin: 1.5rem 0 1rem; color: #fff; }
-.dance__copy p + p { margin-top: 1rem; }
-.dance__copy > div { margin-top: 1rem; }
-/* The choreographer: portrait, name, career — under a running stitch in white. */
-.dance__teacher { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(120px, 200px) minmax(0, 1fr); gap: 1.5rem clamp(1.5rem, 4vw, 3.5rem); align-items: start; margin-top: clamp(1rem, 3vw, 2.5rem); padding-top: clamp(2rem, 4vw, 3rem); background: repeating-linear-gradient(90deg, rgba(255,255,255,.75) 0 12px, transparent 12px 20px) top left / 100% 2px no-repeat; }
-.dance__teacher img { width: 100%; aspect-ratio: 1; object-fit: cover; object-position: 50% 30%; }
-.dance__teacher h3 { font: 800 clamp(1.8rem, 3vw, 2.4rem)/1 var(--font-display); }
-.dance__role { margin-top: .5rem; font-weight: 600; color: #fff; }
-.dance__bio { margin-top: 1rem; columns: 2 22rem; column-gap: clamp(1.5rem, 4vw, 3.5rem); }
-.dance__bio p { break-inside: avoid; margin-bottom: 1rem; }
-@media (max-width: 600px) { .dance__teacher { grid-template-columns: 1fr; } .dance__teacher img { width: 160px; } }
+.dance__teacher { margin-top: 2rem; padding-top: 1.4rem; background: repeating-linear-gradient(90deg, rgba(255,255,255,.75) 0 12px, transparent 12px 20px) top left / 100% 2px no-repeat; }
+.dance__teacher b { display: block; font: 800 1.6rem/1.1 var(--font-display); color: #fff; margin-bottom: .2rem; }
 .dance__times h3 { margin-bottom: 1rem; }
 .dance table { width: 100%; border-collapse: collapse; }
 .dance th, .dance td { text-align: left; vertical-align: top; padding: 1rem 1rem 1rem 0; border-top: 1px solid rgba(255,255,255,.35); color: #fff; }
@@ -388,8 +374,8 @@ body.menu-open .nav__toggle span::after { transform: rotate(-45deg); }
 .welcome h2 { font-size: clamp(2.8rem, 6.2vw, 6rem); line-height: .92; }
 .welcome h2 [lang="bg"] { display: block; color: var(--red); }
 .welcome .lead { margin-top: 1.6rem; }
-.welcome__rosette { justify-self: center; max-width: 100%; height: auto; }
-@media (max-width: 900px) { .welcome__grid { grid-template-columns: 1fr; } .welcome__rosette { order: -1; justify-self: start; width: 120px; } }
+.welcome__star { justify-self: center; width: min(100%, 231px); height: auto; }
+@media (max-width: 900px) { .welcome__grid { grid-template-columns: 1fr; } .welcome__star { order: -1; justify-self: start; width: 120px; } }
 
 /* ---------- Footer ---------- */
 .footer { background: var(--ink); color: rgba(242,237,228,.78); }
@@ -444,38 +430,4 @@ body.menu-open .nav__toggle span::after { transform: rotate(-45deg); }
 .notfound__code { font: 800 clamp(5rem, 14vw, 10rem)/.85 var(--font-display); color: var(--red); }
 .notfound h1 { font-size: clamp(2.2rem, 4vw, 3.4rem); margin: 1rem 0 .8rem; }
 .notfound p + p { margin-top: .3rem; }
-@media (max-width: 700px) { .notfound__grid { grid-template-columns: 1fr; } .notfound__rosette { width: 120px; height: auto; } }
-
-/* ---------- Longer texts (from the school's own pages) ---------- */
-.prose p { color: var(--ink-2); max-width: 40rem; }
-.prose p + p { margin-top: 1rem; }
-.about__copy .prose { margin-top: 1.4rem; }
-.prose--cols { columns: 2 24rem; column-gap: clamp(2rem, 5vw, 5rem); margin-bottom: clamp(1rem, 3vw, 2rem); }
-.prose--cols p { break-inside: avoid; max-width: none; margin: 0 0 1rem; }
-.prose--narrow { max-width: 46rem; margin: calc(-1 * clamp(1rem, 3vw, 2.5rem)) 0 clamp(2rem, 4vw, 3rem); }
-.about__motto { margin-top: 1.8rem; padding-left: 1.4rem; border-left: 3px solid var(--red); }
-.about__motto p { font: italic 450 clamp(1.15rem, 1.6vw, 1.35rem)/1.45 var(--font-sofia-italic), var(--font-text); color: var(--ink); }
-
-/* ---------- Teachers: a register of portraits, not cards ---------- */
-.staff { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); gap: 2.4rem clamp(1.2rem, 2.5vw, 2rem); }
-.staff li { min-width: 0; }
-.staff img, .staff__none { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: 50% 25%; background: var(--paper); }
-.staff img { box-shadow: 0 1px 0 rgba(28,25,23,.08), 0 10px 24px -14px rgba(28,25,23,.45); }
-.staff h3 { margin-top: .9rem; font: 800 1.35rem/1.05 var(--font-display); color: var(--ink); }
-.staff p { margin-top: .35rem; font-size: .92rem; line-height: 1.4; color: var(--muted); }
-
-/* ---------- Documents and the school newspaper ---------- */
-.doclist { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: 0 clamp(2rem, 5vw, 5rem); margin-bottom: clamp(3rem, 6vw, 5rem); }
-.doclist a { display: grid; gap: .3rem; padding: 1.2rem 0 1.2rem 2.4rem; position: relative; text-decoration: none; border-top: 1px solid var(--rule); color: var(--ink); }
-.doclist a::before { content: ""; position: absolute; left: 0; top: 1.35rem; width: 1.5rem; height: 1.9rem; border: 2px solid var(--red); border-radius: 2px; background: linear-gradient(var(--red), var(--red)) 4px 7px / 10px 2px no-repeat, linear-gradient(var(--red), var(--red)) 4px 12px / 10px 2px no-repeat, linear-gradient(var(--red), var(--red)) 4px 17px / 6px 2px no-repeat; }
-.doclist__title { font: 800 1.45rem/1.1 var(--font-display); }
-.doclist a:hover .doclist__title { color: var(--red-ink); text-decoration: underline; text-underline-offset: .15em; }
-.doclist__text { color: var(--ink-2); font-size: .97rem; }
-.issues__title { font: 800 var(--h3)/1 var(--font-display); color: var(--ink); margin-bottom: 1.6rem; }
-.issues { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 2.4rem clamp(1.2rem, 2.5vw, 2rem); }
-.issues a { display: grid; gap: .45rem; text-decoration: none; color: var(--ink); }
-.issues img, .issues__none { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; object-position: top; background: var(--linen); box-shadow: 0 1px 0 rgba(28,25,23,.08), 0 12px 26px -16px rgba(28,25,23,.5); transition: transform .25s ease, box-shadow .25s ease; }
-.issues a:hover img { transform: translateY(-3px); box-shadow: 0 1px 0 rgba(28,25,23,.08), 0 18px 30px -16px rgba(28,25,23,.55); }
-.issues__no { margin-top: .5rem; font-weight: 700; font-size: .9rem; color: var(--red-ink); font-variant-numeric: tabular-nums; }
-.issues__head { font: 800 1.3rem/1.1 var(--font-display); }
-@media (prefers-reduced-motion: reduce) { .issues img { transition: none; } .issues a:hover img { transform: none; } }
+@media (max-width: 700px) { .notfound__grid { grid-template-columns: 1fr; } .notfound__star { width: 120px; height: auto; } }

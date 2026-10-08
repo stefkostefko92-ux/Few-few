@@ -6,8 +6,7 @@ import { DEFAULT_LOCALE, localeForCountry, type Locale } from "./i18n";
 //   1. nginx with the GeoIP2 module setting `X-Country` (recommended, see DEPLOY.md)
 //   2. Cloudflare in front of the origin (`CF-IPCountry`)
 //   3. Other CDNs (`X-Geo-Country`, `X-Vercel-IP-Country`, `Fastly-*`)
-// Italian unless there is a Bulgarian signal (country or the browser's first
-// language); English is never forced — the visitor picks it and it is remembered.
+// Falls back to the browser's Accept-Language, then the default locale.
 const COUNTRY_HEADERS = [
   "x-country",
   "cf-ipcountry",
@@ -25,16 +24,25 @@ export function countryFromHeaders(headers: Headers): string | null {
   return null;
 }
 
-/** True when the browser's most preferred language is Bulgarian. */
-export function prefersBulgarian(header: string | null): boolean {
-  const first = (header || "").split(",")[0]?.split(";")[0].trim().toLowerCase() || "";
-  return first.startsWith("bg");
+function localeFromAcceptLanguage(header: string | null): Locale | null {
+  if (!header) return null;
+  const langs = header
+    .split(",")
+    .map((p) => p.split(";")[0].trim().toLowerCase())
+    .filter(Boolean);
+  for (const l of langs) {
+    if (l.startsWith("it")) return "it";
+    if (l.startsWith("bg")) return "bg";
+    if (l.startsWith("en")) return "en";
+  }
+  return null;
 }
 
 // Decide which locale to serve when the visitor lands without an explicit one.
-// A Bulgarian browser wins over an Italian IP: a Bulgarian family in Milan.
 export function detectLocale(req: NextRequest): Locale {
-  if (prefersBulgarian(req.headers.get("accept-language"))) return "bg";
   const country = countryFromHeaders(req.headers);
-  return country ? localeForCountry(country) : DEFAULT_LOCALE;
+  if (country) return localeForCountry(country);
+  const fromLang = localeFromAcceptLanguage(req.headers.get("accept-language"));
+  if (fromLang) return fromLang;
+  return DEFAULT_LOCALE;
 }

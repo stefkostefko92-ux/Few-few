@@ -1,0 +1,10 @@
+{
+  "name": "Qui Bulgaria — Scuola bulgara di Milano",
+  "short_name": "Qui Bulgaria",
+  "description": "Lingua e cultura bulgara a Milano: scuola, corsi e danza tradizionale.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fdfcf9",
+  "theme_color": "#fdfcf9",
+  "icons": [{ "src": "/assets/img/brand/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

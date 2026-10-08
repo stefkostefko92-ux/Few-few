@@ -137,14 +137,14 @@ export type Hero = Pictured & {
 export type Simple = { title: string; lead?: string; body?: string };
 
 export type Feature = { title: string; text: string };
-export type About = Simple & Pictured & { body: string; motto: string; features: Feature[] };
+export type About = Simple & Pictured & { features: Feature[] };
 
-export type Letter = { letter: string; latin: string; word: string; meaning: string; audio: string };
+export type Letter = { letter: string; latin: string; word: string; meaning: string };
 export type Alphabet = { title: string; lead: string; letters: Letter[] };
 
 export type Card = { icon: string; title: string; text: string; bullets: string[] };
 export type Cards = Simple & { items: Card[] };
-export type School = Cards & Pictured & { body: string; quote: string; quoteCite: string };
+export type School = Cards & Pictured & { quote: string; quoteCite: string };
 
 export type ScheduleRow = { day: string; time: string; place: string };
 export type Dance = Simple & Pictured & {
@@ -152,20 +152,10 @@ export type Dance = Simple & Pictured & {
   scheduleTitle: string;
   schedule: ScheduleRow[];
   groupNote: string;
-  story: string;
-  instructorPhoto: string;
   instructorName: string;
   instructorRole: string;
-  instructorBio: string;
   cta: string;
 };
-
-export type Teacher = { photo: string; fullName: string; role: string };
-export type Teachers = Simple & { items: Teacher[] };
-
-export type DocFile = { title: string; text: string; file: string };
-export type Issue = DocFile & { coverImage: string };
-export type Documents = Simple & { items: DocFile[]; issuesTitle: string; issues: Issue[] };
 
 export type GalleryPhoto = { src: string; caption: string; alt: string };
 export type Gallery = Simple & { photos: GalleryPhoto[] };
@@ -179,7 +169,7 @@ export type Cta = { title: string; body: string; primary: string; secondary: str
 export type FaqItem = { q: string; a: string };
 export type Faq = { title: string; items: FaqItem[] };
 
-export type Seo = { title: string; description: string; keywords: string[]; shareImage: string; cardTitle: string; cardText: string };
+export type Seo = { title: string; description: string; keywords: string[]; shareImage: string };
 
 export type Org = {
   name: string;
@@ -202,13 +192,11 @@ export type ContentMap = {
   hero: Hero;
   about: About;
   school: School;
-  teachers: Teachers;
   alphabet: Alphabet;
   courses: Cards;
   dance: Dance;
   facebook: Facebook;
   gallery: Gallery;
-  documents: Documents;
   faq: Faq;
   contact: Contact;
   cta: Cta;

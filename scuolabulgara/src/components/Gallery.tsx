@@ -3,14 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import type { GalleryPhoto } from "@/lib/content";
 
-type Pic = { src: string; srcSet?: string; sizes?: string; width: number; height: number };
-type Photo = GalleryPhoto & { thumb?: Pic; full?: Pic };
-
 // Masonry of real photos at their natural proportions (no forced square crops),
 // with a lightbox on the native <dialog>: it traps focus, closes on Esc and
 // returns focus to the thumbnail by itself — no focus-trap library needed.
 export default function Gallery({ photos, labels }: {
-  photos: Photo[];
+  photos: GalleryPhoto[];
   labels: { close: string; prev: string; next: string; open: string };
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -52,7 +49,7 @@ export default function Gallery({ photos, labels }: {
         {photos.map((p, i) => (
           <figure className="masonry__item" key={`${p.src}-${i}`}>
             <button type="button" className="masonry__btn" onClick={() => open(i)} aria-label={`${labels.open}: ${p.caption || p.alt}`}>
-              <img {...(p.thumb ?? { src: p.src })} alt={p.alt} loading="lazy" decoding="async" />
+              <img src={p.src} alt={p.alt} loading="lazy" decoding="async" />
             </button>
             {p.caption && <figcaption>{p.caption}</figcaption>}
           </figure>
@@ -68,7 +65,7 @@ export default function Gallery({ photos, labels }: {
       >
         {isOpen && cur && (
           <div className="lightbox__inner">
-            <img {...(cur.full ?? { src: cur.src })} alt={cur.alt} />
+            <img src={cur.src} alt={cur.alt} />
             <div className="lightbox__bar">
               <span className="lightbox__caption">{cur.caption}</span>
               <span className="lightbox__count">{index + 1} / {count}</span>

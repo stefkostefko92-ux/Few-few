@@ -51,7 +51,7 @@ export default function SiteFooter({
           <ul>
             <li><a href={`tel:${phoneHref}`}>{phone}</a></li>
             <li><a href={`mailto:${email}`}>{email}</a></li>
-            {facebookUrl !== "#" && <li><a href={facebookUrl} target="_blank" rel="noopener noreferrer">{t(locale, "nav.facebook", ui)}</a></li>}
+            {facebookUrl !== "#" && <li><a href={facebookUrl} target="_blank" rel="noopener noreferrer">Facebook</a></li>}
             <li>{address}</li>
           </ul>
         </div>

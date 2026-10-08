@@ -25,10 +25,10 @@ describe("i18n — паритет на речниците", () => {
     expect(isLocale(undefined)).toBe(false);
   });
 
-  it("езикът по подразбиране е италиански; само България → bg", () => {
+  it("localeForCountry мапва IT/BG коректно и всичко друго → en", () => {
     expect(localeForCountry("IT")).toBe("it");
     expect(localeForCountry("bg")).toBe("bg"); // case-insensitive вход
-    expect(localeForCountry("US")).toBe("it");
-    expect(localeForCountry(null)).toBe("it");
+    expect(localeForCountry("US")).toBe("en");
+    expect(localeForCountry(null)).toBe("en");
   });
 });

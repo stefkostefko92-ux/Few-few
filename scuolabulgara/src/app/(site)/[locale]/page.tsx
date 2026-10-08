@@ -1,9 +1,7 @@
 import { Fragment, type ReactNode } from "react";
 import { isLocale, t, type Locale } from "@/lib/i18n";
 import { loadSite } from "@/lib/content";
-import { bundledWordAudio } from "@/lib/defaults";
-import { responsive } from "@/lib/responsive";
-import { isBrandIcon, safeAudio, safeFile, safeHref, safeImage, type SectionKey } from "@/lib/cms";
+import { isBrandIcon, safeHref, safeImage, type SectionKey } from "@/lib/cms";
 import { buildNav } from "@/lib/nav";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -14,7 +12,7 @@ import Gallery from "@/components/Gallery";
 import Icon from "@/components/Icon";
 import StitchedPhoto from "@/components/StitchedPhoto";
 import Alphabet from "@/components/Alphabet";
-import { RosetteMotif, StitchBand } from "@/components/Stitch";
+import { StarMotif, StitchBand } from "@/components/Stitch";
 
 export const dynamic = "force-dynamic";
 
@@ -23,21 +21,10 @@ const P = "/assets/img/photos";
 const CardIcon = ({ name, fallback }: { name: string; fallback: string }) => (
   <Icon name={isBrandIcon(name) ? name : fallback} size={64} />
 );
-// Cyrillic inside an Italian or English sentence (e.g. «Училищен вестник») is
-// still set in the Bulgarian letterforms: each Cyrillic run gets lang="bg".
-const CYR = /([\u0400-\u04FF](?:[\u0400-\u04FF\s.,!?–—-]*[\u0400-\u04FF])?)/;
-const Bg = ({ text }: { text: string }) => (
-  <>{text.split(CYR).map((part, i) => (i % 2 ? <span lang="bg" key={i}>{part}</span> : part))}</>
-);
-// Longer texts are edited as plain text: an empty line starts a new paragraph.
-const Paras = ({ text, className }: { text?: string; className?: string }) => {
-  const ps = (text || "").split(/\n\s*\n/).map((x) => x.trim()).filter(Boolean);
-  return ps.length ? <div className={className}>{ps.map((x, i) => <p key={i}>{x}</p>)}</div> : null;
-};
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: raw } = await params;
-  const locale = (isLocale(raw) ? raw : "it") as Locale;
+  const locale = (isLocale(raw) ? raw : "en") as Locale;
   const site = await loadSite(locale);
   const tt = (k: string) => t(locale, k, site.ui);
 
@@ -51,8 +38,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const facebook = site.get("facebook");
   const gallery = site.get("gallery");
   const faq = site.get("faq");
-  const teachers = site.get("teachers");
-  const documents = site.get("documents");
   const contact = site.get("contact");
   const cta = site.get("cta");
   const seo = site.get("seo");
@@ -70,40 +55,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const fbPoints = facebook.points.filter((x) => has(x));
   const topics = contact.topics.filter((x) => has(x));
   const highlights = hero.highlights.filter((h) => has(h.text));
-  const docs = documents.items.map((d) => ({ ...d, file: safeFile(d.file) })).filter((d) => has(d.title) && d.file);
-
-  // Photos as srcsets (AVIF/WebP, the width the screen needs), with their real
-  // dimensions — also for pictures uploaded from the admin.
-  const [heroImg, aboutImg, schoolImg, danceImg] = await Promise.all([
-    responsive(safeImage(hero.image, `${P}/ballerini-in-costume.webp`), "(max-width: 900px) 100vw, 50vw", { width: 1400, height: 784 }),
-    responsive(safeImage(about.image, `${P}/comunita-in-costume.webp`), "(max-width: 900px) 100vw, (max-width: 1440px) 55vw, 760px", { width: 1400, height: 933 }),
-    responsive(safeImage(school.image, `${P}/docenti.webp`), "(max-width: 900px) 100vw, 650px", { width: 1024, height: 768 }),
-    responsive(safeImage(dance.image, `${P}/gruppo-veselie.webp`), "100vw", { width: 1281, height: 707 }),
-  ]);
-  const staff = await Promise.all(
-    teachers.items
-      .filter((x) => has(x.fullName))
-      .map(async (x) => ({ ...x, pic: x.photo ? await responsive(safeImage(x.photo, ""), "(max-width: 600px) 40vw, 160px", { width: 280, height: 280 }) : null })),
-  );
-  const issues = await Promise.all(
-    documents.issues
-      .map((d) => ({ ...d, file: safeFile(d.file), cover: safeImage(d.coverImage, "") }))
-      .filter((d) => has(d.title) && d.file)
-      .map(async (d) => ({ ...d, pic: d.cover ? await responsive(d.cover, "(max-width: 700px) 90vw, 360px", { width: 560, height: 315 }) : null })),
-  );
-  const instructorPic = dance.instructorPhoto
-    ? await responsive(safeImage(dance.instructorPhoto, ""), "(max-width: 700px) 40vw, 200px", { width: 303, height: 253 })
-    : null;
-  const galleryPhotos = await Promise.all(
-    gallery.photos
-      .map((p) => ({ ...p, src: safeImage(p.src, "") }))
-      .filter((p) => p.src)
-      .map(async (p) => {
-        const thumb = await responsive(p.src, "(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 430px", { width: 1200, height: 800 });
-        const full = await responsive(p.src, "100vw", { width: 1200, height: 800 });
-        return { ...p, thumb, full };
-      }),
-  );
 
   const fbHref = safeHref(settings.facebookUrl);
   const fbPage = safeHref(settings.facebookPageHref);
@@ -156,7 +107,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const breadcrumbLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
-    itemListElement: [{ "@type": "ListItem", position: 1, name: tt("nav.home"), item: `${base}/${locale}` }],
+    itemListElement: [{ "@type": "ListItem", position: 1, name: "Home", item: `${base}/${locale}` }],
   };
   const courseLd = {
     "@context": "https://schema.org",
@@ -189,11 +140,9 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           <div className="about__copy">
             <h2 id="about-title">{about.title}</h2>
             <p className="lead">{about.lead}</p>
-            <Paras text={about.body} className="prose" />
-            {has(about.motto) && <blockquote className="about__motto"><p>{about.motto}</p></blockquote>}
           </div>
           <figure className="about__photo">
-            <img {...aboutImg} alt={about.imageAlt} loading="lazy" decoding="async" />
+            <img src={safeImage(about.image, `${P}/comunita-in-costume.webp`)} alt={about.imageAlt} width={1400} height={933} loading="lazy" decoding="async" />
           </figure>
           {features.length > 0 && (
             <dl className="trio about__trio">
@@ -214,8 +163,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             <p className="lead">{alphabet.lead}</p>
           </header>
           <Alphabet
-            letters={alphabet.letters.filter((l) => l.letter).map((l) => ({ ...l, audio: safeAudio(l.audio) || bundledWordAudio(l.word) }))}
-            labels={{ pick: tt("alpha.pick"), latin: tt("alpha.latin"), meaning: tt("alpha.meaning"), listen: tt("alpha.listen") }}
+            letters={alphabet.letters.filter((l) => l.letter)}
+            labels={{ pick: tt("alpha.pick"), latin: tt("alpha.latin"), meaning: tt("alpha.meaning") }}
           />
         </div>
       </section>
@@ -228,7 +177,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             <h2 id="school-title">{school.title}</h2>
             <p className="lead">{school.lead}</p>
           </header>
-          <Paras text={school.body} className="prose prose--cols" />
           <ul className="trio modes">
             {modes.map((c, i) => (
               <li key={i}>
@@ -239,7 +187,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             ))}
           </ul>
           <figure className="voice">
-            <img {...schoolImg} alt={school.imageAlt} loading="lazy" decoding="async" />
+            <img src={safeImage(school.image, `${P}/docenti.webp`)} alt={school.imageAlt} width={1024} height={768} loading="lazy" decoding="async" />
             <figcaption>
               <blockquote><p>{school.quote}</p></blockquote>
               <cite>{school.quoteCite}</cite>
@@ -249,26 +197,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       </section>
     ),
 
-    teachers: staff.length > 0 ? (
-      <section className="sec sec--linen teachers" id="insegnanti" aria-labelledby="teachers-title">
-        <div className="wrap">
-          <header className="sec__head">
-            <h2 id="teachers-title">{teachers.title}</h2>
-            {has(teachers.lead) && <p className="lead">{teachers.lead}</p>}
-          </header>
-          <ul className="staff">
-            {staff.map((x, i) => (
-              <li key={i}>
-                {x.pic ? <img {...x.pic} alt={x.fullName} loading="lazy" decoding="async" /> : <span className="staff__none" aria-hidden="true" />}
-                <h3>{x.fullName}</h3>
-                <p>{x.role}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-    ) : null,
-
     courses: (
       <section className="sec courses" id="corsi" aria-labelledby="courses-title">
         <div className="wrap">
@@ -276,7 +204,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             <h2 id="courses-title">{courses.title}</h2>
             <p className="lead">{courses.lead}</p>
           </header>
-          <Paras text={courses.body} className="prose prose--narrow" />
           <div className="trio course-list">
             {courseItems.map((c, i) => (
               <article className="course" key={i}>
@@ -299,14 +226,14 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     dance: (
       <section className="sec dance" id="danza" aria-labelledby="dance-title">
         <figure className="dance__photo">
-          <img {...danceImg} alt={dance.imageAlt} loading="lazy" decoding="async" />
+          <img src={safeImage(dance.image, `${P}/gruppo-veselie.webp`)} alt={dance.imageAlt} width={1281} height={707} loading="lazy" decoding="async" />
         </figure>
         <div className="wrap dance__grid">
           <div className="dance__copy">
             <h2 id="dance-title">{dance.title}</h2>
             <p className="lead">{dance.lead}</p>
             <p>{dance.body}</p>
-            <Paras text={dance.story} />
+            <p className="dance__teacher"><b>{dance.instructorName}</b> {dance.instructorRole}</p>
           </div>
           <div className="dance__times">
             <h3>{dance.scheduleTitle}</h3>
@@ -324,16 +251,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             <p className="dance__note">{dance.groupNote}</p>
             <a className="btn btn--paper" href="#contatti">{dance.cta}</a>
           </div>
-          {has(dance.instructorName) && (
-            <div className="dance__teacher">
-              {instructorPic && <img {...instructorPic} alt={dance.instructorName} loading="lazy" decoding="async" />}
-              <div>
-                <h3>{dance.instructorName}</h3>
-                <p className="dance__role">{dance.instructorRole}</p>
-                <Paras text={dance.instructorBio} className="dance__bio" />
-              </div>
-            </div>
-          )}
         </div>
       </section>
     ),
@@ -363,51 +280,14 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             <h2 id="gallery-title">{gallery.title}</h2>
           </header>
           <Gallery
-            photos={galleryPhotos}
+            photos={gallery.photos
+              .map((p) => ({ ...p, src: safeImage(p.src, "") }))
+              .filter((p) => p.src)}
             labels={{ open: tt("gallery.open"), close: tt("gallery.close"), prev: tt("gallery.prev"), next: tt("gallery.next") }}
           />
         </div>
       </section>
     ),
-
-    documents: docs.length + issues.length > 0 ? (
-      <section className="sec documents" id="documenti" aria-labelledby="docs-title">
-        <div className="wrap">
-          <header className="sec__head">
-            <h2 id="docs-title">{documents.title}</h2>
-            {has(documents.lead) && <p className="lead"><Bg text={documents.lead ?? ""} /></p>}
-          </header>
-          {docs.length > 0 && (
-            <ul className="doclist">
-              {docs.map((d, i) => (
-                <li key={i}>
-                  <a href={d.file} target="_blank" rel="noopener noreferrer">
-                    <span className="doclist__title"><Bg text={d.title} /></span>
-                    {has(d.text) && <span className="doclist__text">{d.text}</span>}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          )}
-          {issues.length > 0 && (
-            <>
-              <h3 className="issues__title"><Bg text={documents.issuesTitle} /></h3>
-              <ul className="issues">
-                {issues.map((d, i) => (
-                  <li key={i}>
-                    <a href={d.file} target="_blank" rel="noopener noreferrer">
-                      {d.pic ? <img {...d.pic} alt="" loading="lazy" decoding="async" /> : <span className="issues__none" aria-hidden="true" />}
-                      <span className="issues__no">{d.title}</span>
-                      {has(d.text) && <span className="issues__head"><Bg text={d.text} /></span>}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-        </div>
-      </section>
-    ) : null,
 
     faq: showFaq ? (
       <section className="sec faq" id="faq" aria-labelledby="faq-title">
@@ -435,7 +315,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               <div><dt>{tt("phone")}</dt><dd><a href={`tel:${settings.phoneHref}`}>{settings.phone}</a></dd></div>
               <div><dt>{tt("form.email")}</dt><dd><a href={`mailto:${settings.email}`}>{settings.email}</a></dd></div>
               <div><dt>{tt("addr")}</dt><dd>{mapHref ? <a href={mapHref} target="_blank" rel="noopener noreferrer">{settings.address}</a> : settings.address}</dd></div>
-              {fbHref !== "#" && <div><dt>{tt("nav.facebook")}</dt><dd><a href={fbHref} target="_blank" rel="noopener noreferrer">{fbHref.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}</a></dd></div>}
+              {fbHref !== "#" && <div><dt>Facebook</dt><dd><a href={fbHref} target="_blank" rel="noopener noreferrer">{fbHref.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}</a></dd></div>}
             </dl>
           </div>
           <ContactForm locale={locale} topics={topics} email={settings.email} />
@@ -456,7 +336,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               <a className="btn btn--line" href={`tel:${settings.phoneHref}`}>{cta.secondary}</a>
             </div>
           </div>
-          <RosetteMotif size={11} className="welcome__rosette" />
+          <StarMotif a={7} size={11} className="welcome__star" />
         </div>
       </section>
     ),
@@ -488,15 +368,17 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             </div>
             <StitchedPhoto
               className="hero__photo"
-              {...heroImg}
+              src={safeImage(hero.image, `${P}/ballerini-in-costume.webp`)}
               alt={hero.imageAlt}
+              width={1400}
+              height={784}
               priority
             />
           </div>
           {highlights.length > 0 && (
             <ul className="wrap facts" aria-label={hero.badge}>
               {highlights.map((h, i) => (
-                <li key={i}><img className="facts__rose" src="/assets/img/brand/rose-bullet.webp" alt="" aria-hidden="true" width={26} height={26} />{h.text}</li>
+                <li key={i}><StarMotif a={2} size={3} />{h.text}</li>
               ))}
             </ul>
           )}

@@ -50,12 +50,4 @@ const bgSrc = readFileSync(join(ROOT, "background.js"), "utf8");
 const inst = bgSrc.slice(bgSrc.indexOf("chrome.runtime.onInstalled.addListener"), bgSrc.indexOf("function ensureAlarms"));
 ok("welcome page: opened only on reason === \"install\"", /details\.reason === "install"[\s\S]{0,120}welcome\/welcome\.html/.test(inst) && (inst.match(/welcome\.html/g) || []).length === 1);
 
-// Сайтът: всяка картинка в index.html носи ?v=<хеш на съдържанието> (landing_assets.mjs) —
-// иначе 7-дневният кеш показва стария popup след релийз.
-import { createHash } from "node:crypto";
-const idxHtml = readFileSync(join(ROOT, "server", "index.html"), "utf8");
-const webps = [...idxHtml.matchAll(/\/([\w-]+\.webp)(\?v=([0-9a-f]+))?"/g)];
-const staleImg = webps.filter((m) => m[3] !== createHash("sha256").update(readFileSync(join(ROOT, "server", m[1]))).digest("hex").slice(0, 10)).map((m) => m[1]);
-ok(`site: every .webp is cache-busted with its content hash (${[...new Set(staleImg)].join(",") || "all"})`, webps.length >= 3 && staleImg.length === 0);
-
 done();

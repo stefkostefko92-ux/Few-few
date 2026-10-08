@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-10-06",
+    "updated": "2026-10-07",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -1173,7 +1173,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 517
+        "lessons": 519
       },
       "evolution": [
         {
@@ -1985,9 +1985,20 @@
           "date": "2026-09-25",
           "event": "v39.9 — възстановяване",
           "detail": "Версията беше свалена от 39.1 при сгъване на main в паметта (сливането взе по-стара история). Върната на 39.2 + 0.1 × 7 нови поуки."
+        },
+        {
+          "version": "40.1.0",
+          "date": "2026-10-07",
+          "event": "v40.1 — учене",
+          "detail": "Научи: liftpilot heb.ts — проверките на гредите HEB (m_heb*) не гарантират, че осите на гредит… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-07",
+          "type": "learning",
+          "summary": "Научи: „liftpilot heb.ts — проверките на гредите HEB (m_heb*) не гарантират, че осите на гредит…\" (+1 още)"
+        },
         {
           "date": "2026-10-06",
           "type": "learning",
@@ -14274,7 +14285,7 @@
           "Meta Advertising Standards + Conversions API + Platform Terms/Developer Policies",
           "OWASP ASVS/MASVS (via CASA/MASA), fastlane precheck (metadata lint модел)"
         ],
-        "lessons": 227
+        "lessons": 231
       },
       "evolution": [
         {
@@ -14372,9 +14383,20 @@
           "date": "2026-10-06",
           "event": "v21.0 — учене",
           "detail": "Научи: Capacitor major версия определя targetSdk по подразбиране: 6 → 34, 7 → 35, 8 → 36 (Cap … (+46 още)"
+        },
+        {
+          "version": "21.4.0",
+          "date": "2026-10-06",
+          "event": "v21.4 — учене",
+          "detail": "Научи: CWS best-listing (2024-08-02): summary — Don't include superlatives like 'greatest' and… (+3 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-06",
+          "type": "learning",
+          "summary": "Научи: „CWS best-listing (2024-08-02): summary — Don't include superlatives like 'greatest' and…\" (+3 още)"
+        },
         {
           "date": "2026-10-06",
           "type": "learning",

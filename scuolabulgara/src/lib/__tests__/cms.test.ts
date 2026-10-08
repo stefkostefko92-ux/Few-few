@@ -163,28 +163,3 @@ describe("mergeSection — елементи в списък, записани п
     expect((mergeSection(def, { features: [null, "x"] }).features as unknown[]).length).toBe(2);
   });
 });
-
-describe("звук за произношението", async () => {
-  const { safeAudio, isAudioKey } = await import("../cms");
-  const { sniffAudio } = await import("../audio");
-  it("приема само качени звукови файлове от сайта", () => {
-    expect(safeAudio("/uploads/zhaba-1a2b3c.mp3")).toBe("/uploads/zhaba-1a2b3c.mp3");
-    expect(safeAudio("https://evil.example/x.mp3")).toBe("");
-    expect(safeAudio("/uploads/../../etc/passwd.mp3")).toBe("");
-    expect(safeAudio("/uploads/script.js")).toBe("");
-    expect(safeAudio("/uploads/photo.webp")).toBe("");
-  });
-  it("звукът е общ за трите езика", () => {
-    expect(isAudioKey("audio")).toBe(true);
-    expect(isSharedKey("audio")).toBe(true);
-  });
-  it("форматът се познава по съдържанието, не по името", () => {
-    const b = (s: string, pad = 16) => new Uint8Array([...Buffer.from(s, "latin1"), ...new Array(pad).fill(0)]);
-    expect(sniffAudio(b("ID3\x04"))?.ext).toBe("mp3");
-    expect(sniffAudio(b("\0\0\0\x20ftypM4A "))?.ext).toBe("m4a");
-    expect(sniffAudio(b("OggS"))?.ext).toBe("ogg");
-    expect(sniffAudio(b("RIFF\0\0\0\0WAVEfmt "))?.ext).toBe("wav");
-    expect(sniffAudio(b("<script>alert(1)</script>"))).toBeNull();
-    expect(sniffAudio(b("\x89PNG\r\n\x1a\n"))).toBeNull();
-  });
-});

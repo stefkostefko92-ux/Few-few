@@ -9,9 +9,9 @@
   <title>Склад Авточасти</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>">
   <style>html,body,#root{margin:0;padding:0;min-height:100vh;background:#0f1419}body{overflow-y:scroll;-webkit-overflow-scrolling:touch}</style>
-  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="https://unpkg.com/@babel/standalone@7.26.4/babel.min.js" integrity="sha384-x/ilTFv/u/eu6YSmkFDZl5V5Mm/pkxxcVv2cVJOrr1J0rvILhMvRBCy6yA75wYBj" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.26.4/babel.min.js"></script>
 </head>
 <body>
   <div id="root"></div>
@@ -45,15 +45,29 @@ const ACTION_TYPES = {
   USER_EDITED: { label: "Редактиран потребител", icon: "edit", color: "#60a5fa" },
   USER_DELETED: { label: "Изтрит потребител", icon: "trash", color: "#ef4444" },
   LOGIN: { label: "Вход в системата", icon: "lock", color: "#667788" },
-  PIN_CHANGED: { label: "Сменен ПИН", icon: "lock", color: "#60a5fa" },
-  ROLE_CREATED: { label: "Създадена роля", icon: "plus", color: "#22c55e" },
-  ROLE_EDITED: { label: "Редактирана роля", icon: "edit", color: "#60a5fa" },
-  ROLE_DELETED: { label: "Изтрита роля", icon: "trash", color: "#ef4444" },
-  ROLES_RESET: { label: "Ролите по подразбиране", icon: "edit", color: "#e8a032" },
-  AUDIT_CLEARED: { label: "Изчистен одит", icon: "trash", color: "#ef4444" },
 };
 const DYUZA_BRANDS = ["Делфи", "Сименс", "Бош", "Пиезо", "Комън Рейл"];
 const CAR_BRANDS = ["Audi","BMW","Citroen","Dacia","Fiat","Ford","Honda","Hyundai","Iveco","Jaguar","Jeep","Kia","Land Rover","Mazda","Mercedes","Mini","Mitsubishi","Nissan","Opel","Peugeot","Porsche","Renault","Seat","Skoda","Ssangyong","Subaru","Suzuki","Toyota","Volkswagen","Volvo"];
+const DEMO_PARTS = [
+  { id: "P001", codice: "BRK-PAD-001", marchio: "Brembo", tipo: "", tipoValue: "", riferimento: "P 85 020", quantita: 48, prezzo: 42.50 },
+  { id: "P002", codice: "FLT-OIL-003", marchio: "Mann Filter", tipo: "", tipoValue: "", riferimento: "HU 721/5 x", quantita: 120, prezzo: 8.90 },
+  { id: "P003", codice: "BRK-DSC-007", marchio: "Brembo", tipo: "", tipoValue: "", riferimento: "09.A259.11", quantita: 24, prezzo: 67.80 },
+  { id: "P004", codice: "SPK-PLG-012", marchio: "NGK", tipo: "", tipoValue: "", riferimento: "BKR6EIX-11", quantita: 200, prezzo: 6.50 },
+  { id: "P005", codice: "CLT-KIT-002", marchio: "Valeo", tipo: "", tipoValue: "", riferimento: "826 803", quantita: 8, prezzo: 189.00 },
+  { id: "P006", codice: "SUS-AMR-005", marchio: "Monroe", tipo: "", tipoValue: "", riferimento: "G8102", quantita: 32, prezzo: 78.40 },
+  { id: "P007", codice: "BLT-TIM-009", marchio: "Gates", tipo: "", tipoValue: "", riferimento: "K015603XS", quantita: 15, prezzo: 112.00 },
+  { id: "P008", codice: "WPR-BLD-004", marchio: "Bosch", tipo: "", tipoValue: "", riferimento: "3 397 007 462", quantita: 60, prezzo: 22.30 },
+  { id: "P009", codice: "BAT-STR-001", marchio: "Varta", tipo: "", tipoValue: "", riferimento: "E11 Blue Dynamic", quantita: 18, prezzo: 95.00 },
+  { id: "P010", codice: "LAM-H7-006", marchio: "Philips", tipo: "", tipoValue: "", riferimento: "12972XV+S2", quantita: 150, prezzo: 18.90 },
+  { id: "P011", codice: "FLT-AIR-008", marchio: "Mann Filter", tipo: "", tipoValue: "", riferimento: "C 25 114/1", quantita: 85, prezzo: 14.20 },
+  { id: "P012", codice: "OIL-5W30-002", marchio: "Castrol", tipo: "", tipoValue: "", riferimento: "Edge 5W-30 LL", quantita: 40, prezzo: 38.50 },
+];
+const DEMO_USERS = [
+  { id: "U1", nome: "Стефко", email: "admin@carbonstealth.eu", ruolo: "SUPER_ADMIN", pin: "1234" },
+  { id: "U2", nome: "Марко", email: "marco@magazzino.it", ruolo: "ADMIN", pin: "5678" },
+  { id: "U3", nome: "Лука", email: "luca@magazzino.it", ruolo: "VIEWER_PRICE", pin: "9012" },
+  { id: "U4", nome: "Джовани", email: "giovanni@magazzino.it", ruolo: "VIEWER", pin: "3456" },
+];
 const DEFAULT_SETTINGS = { notifyEmail: "", emailEnabled: false, notifyOnPartChange: true, notifyOnOrder: true, notifyOnUserChange: true, lowStockEnabled: true, lowStockThreshold: 10 };
 
 const I = {
@@ -83,16 +97,15 @@ const I = {
   Cart: () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>,
 };
 
-// Сесията е в HttpOnly бисквитка (сървърът я слага при вход): JavaScript не държи и не вижда токена.
+let JWT = localStorage.getItem("sklad-jwt") || "";
 const apiCall = async (path, opts = {}) => {
   const res = await fetch("/api" + path, {
     method: opts.method || "GET",
-    credentials: "same-origin",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...(JWT ? { Authorization: "Bearer " + JWT } : {}) },
     ...(opts.body ? { body: JSON.stringify(opts.body) } : {}),
   });
-  if (res.status === 401 && !opts.login) throw new Error("AUTH");
-  const data = await res.json().catch(() => ({}));
+  if (res.status === 401) { JWT = ""; localStorage.removeItem("sklad-jwt"); throw new Error("AUTH"); }
+  const data = await res.json();
   if (!res.ok) throw new Error(data.error || "Грешка");
   return data;
 };
@@ -298,9 +311,8 @@ function App() {
   const mob = vw < 768;
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
-  const [mustChangePin, setMustChangePin] = useState(false); // вход със стар ПИН: първо смяната
-  const [users, setUsers] = useState([]);
-  const [parts, setParts] = useState([]);
+  const [users, setUsers] = useState(DEMO_USERS);
+  const [parts, setParts] = useState(DEMO_PARTS);
   const [orders, setOrders] = useState([]);
   const [auditLog, setAuditLog] = useState([]);
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
@@ -347,7 +359,7 @@ function App() {
     } catch (e) { if (e.message === "AUTH") { setUser(null); return; } }
     setLoading(false);
   }, []);
-  useEffect(() => { if (user && !mustChangePin) fetchAll(); }, [user, mustChangePin, fetchAll]);
+  useEffect(() => { if (user) fetchAll(); }, [user, fetchAll]);
 
   const refreshAudit = useCallback(async () => {
     try { const [au,n] = await Promise.all([apiCall("/audit").catch(()=>[]),apiCall("/notifications").catch(()=>[])]); setAuditLog(au); setNotifications(n); } catch(e) {}
@@ -434,14 +446,14 @@ function App() {
   };
 
   useEffect(() => {
-    apiCall("/auth/me").then(u=>{setMustChangePin(!!u.pinChangeRequired);setUser(u)}).catch(()=>setLoading(false));
+    if (JWT && !user) { apiCall("/auth/me").then(u=>setUser(u)).catch(()=>{JWT="";localStorage.removeItem("sklad-jwt");setLoading(false)}); }
+    else if (!JWT) setLoading(false);
   }, []);
 
   if (!user) {
     if (loading) return <div style={{ minHeight:"100vh",background:"#0f1419",display:"flex",alignItems:"center",justifyContent:"center",color:"#e8a032",fontFamily:"'DM Sans',sans-serif",fontSize:18 }}>Зареждане...</div>;
-    return <LoginScreen onLogin={(u,weak)=>{setMustChangePin(!!weak);setUser(u)}} />;
+    return <LoginScreen onLogin={(u,token)=>{JWT=token;localStorage.setItem("sklad-jwt",token);setUser(u)}} />;
   }
-  if (mustChangePin) return <ChangePinScreen onDone={(u)=>{setMustChangePin(false);setUser(u)}} onLogout={()=>{apiCall("/auth/logout",{method:"POST"}).catch(()=>{});setMustChangePin(false);setUser(null)}} />;
 
   // Tabs config
   const mainTabs = [
@@ -535,7 +547,7 @@ function App() {
             </div>
           )}
           {!mob && <div style={{ textAlign:"right", marginLeft:4 }}><div style={{ color:"#ccd6e0", fontSize:13, fontWeight:600 }}>{user.nome}</div><div style={{ color:"#556677", fontSize:11 }}>{roles[user.ruolo]?.label||user.ruolo}</div></div>}
-          <button onClick={()=>{apiCall("/auth/logout",{method:"POST"}).catch(()=>{});setUser(null);setCart([]);setTab("dashboard");setShowNotif(false);setMoreMenu(false)}} style={{ background:"rgba(239,68,68,0.1)", border:"1px solid rgba(239,68,68,0.2)", borderRadius:10, width:40, height:40, display:"flex", alignItems:"center", justifyContent:"center", color:"#ef4444" }}><I.Logout /></button>
+          <button onClick={()=>{JWT="";localStorage.removeItem("sklad-jwt");setUser(null);setCart([]);setTab("dashboard");setShowNotif(false);setMoreMenu(false)}} style={{ background:"rgba(239,68,68,0.1)", border:"1px solid rgba(239,68,68,0.2)", borderRadius:10, width:40, height:40, display:"flex", alignItems:"center", justifyContent:"center", color:"#ef4444" }}><I.Logout /></button>
         </div>
       </div>
 
@@ -1128,91 +1140,53 @@ function PartForm({ part, onSave, onClose, sp }) {
   </Modal>);
 }
 function UserForm({ usr, onSave, onClose, roles }) {
-  const [f, setF] = useState(usr ? { ...usr, pin:"" } : { nome:"", email:"", ruolo:"VIEWER", pin:"" });
-  const pinOk = usr ? (f.pin==="" || /^\d{6,12}$/.test(f.pin)) : /^\d{6,12}$/.test(f.pin);
+  const [f, setF] = useState(usr || { nome:"", email:"", ruolo:"VIEWER", pin:"" });
   const u = (k,v) => setF(p=>({...p,[k]:v}));
   return (<Modal title={usr?"Редакция":"Нов потребител"} onClose={onClose}>
     <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
       <Field label="Име"><input value={f.nome} onChange={e=>u("nome",e.target.value)} style={inp()} placeholder="Иван Иванов" /></Field>
       <Field label="Имейл"><input value={f.email} onChange={e=>u("email",e.target.value)} style={inp()} placeholder="ivan@firma.bg" /></Field>
       <Field label="Роля"><select value={f.ruolo} onChange={e=>u("ruolo",e.target.value)} style={inp()}>{Object.entries(roles).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}</select></Field>
-      <Field label={usr?"Нов ПИН (6–12 цифри, празно = без промяна)":"ПИН (6–12 цифри)"}><input type="password" inputMode="numeric" autoComplete="new-password" value={f.pin} maxLength={12} onChange={e=>u("pin",e.target.value.replace(/\D/g,""))} style={{ ...inp(true), letterSpacing:6, textAlign:"center", fontSize:22 }} placeholder="••••••" /></Field>
-      <Btn onClick={()=>{if(f.nome&&f.email&&pinOk)onSave(f)}} disabled={!(f.nome&&f.email&&pinOk)} style={{ marginTop:4 }}>{usr?"Запази":"Създай"}</Btn>
+      <Field label="ПИН (4 цифри)"><input value={f.pin} maxLength={4} onChange={e=>u("pin",e.target.value.replace(/\D/g,""))} style={{ ...inp(true), letterSpacing:10, textAlign:"center", fontSize:22 }} placeholder="••••" /></Field>
+      <Btn onClick={()=>{if(f.nome&&f.pin.length===4)onSave(f)}} style={{ marginTop:4 }}>{usr?"Запази":"Създай"}</Btn>
     </div>
   </Modal>);
 }
 
-// ─── Смяна на ПИН (задължителна след вход със стар 4-цифрен) ───
-function ChangePinScreen({ onDone, onLogout }) {
-  const [cur, setCur] = useState("");
-  const [next, setNext] = useState("");
-  const [again, setAgain] = useState("");
-  const [err, setErr] = useState("");
-  const [busy, setBusy] = useState(false);
-  const ok = cur.length >= 4 && /^\d{6,12}$/.test(next) && next === again;
-  const go = async () => {
-    if (!ok || busy) return;
-    setBusy(true); setErr("");
-    try { const d = await apiCall("/auth/pin", { method:"POST", body:{ currentPin:cur, newPin:next }, login:true }); onDone(d.user); }
-    catch (e) { setErr(e.message || "Грешка"); }
-    finally { setBusy(false); }
-  };
-  const pinInput = (id, label, value, set, ac) => (<>
-    <label htmlFor={id} style={{ color:"#8899aa", fontSize:11, fontWeight:600, letterSpacing:1, marginTop:6 }}>{label}</label>
-    <input id={id} type="password" inputMode="numeric" autoComplete={ac} value={value} maxLength={12} onChange={e=>{set(e.target.value.replace(/\D/g,""));setErr("")}} style={{ ...inp(true), textAlign:"center", fontSize:22, letterSpacing:8, padding:"12px" }} />
-  </>);
-  return (
-    <div style={{ minHeight:"100vh", background:"linear-gradient(135deg,#0f1419 0%,#1a1f2e 50%,#0f1419 100%)", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"'DM Sans',sans-serif", padding:16 }}>
-      <style>{CSS}</style>
-      <form onSubmit={e=>{e.preventDefault();go()}} style={{ background:"rgba(26,31,46,0.95)", border:"1px solid rgba(232,160,50,0.2)", borderRadius:20, padding:"28px 28px", width:"100%", maxWidth:380 }}>
-        <h1 style={{ color:"#e8a032", fontSize:18, fontWeight:700, margin:"0 0 6px" }}>Смени ПИН-а си</h1>
-        <p style={{ color:"#8899aa", fontSize:13, margin:"0 0 14px" }}>Новият ПИН е от 6 до 12 цифри. Дотогава системата не показва данни.</p>
-        <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-          {pinInput("pin-current", "Сегашен ПИН", cur, setCur, "current-password")}
-          {pinInput("pin-new", "Нов ПИН (6–12 цифри)", next, setNext, "new-password")}
-          {pinInput("pin-again", "Нов ПИН отново", again, setAgain, "new-password")}
-          {next && again && next !== again && <div style={{ color:"#f59e0b", fontSize:13 }}>Двата нови ПИН-а не съвпадат</div>}
-          {err && <div role="alert" style={{ color:"#ef4444", fontSize:13, textAlign:"center" }}>{err}</div>}
-          <Btn disabled={!ok || busy} style={{ marginTop:8 }}>{busy ? "Запазване…" : "Запази новия ПИН"}</Btn>
-          <button type="button" onClick={onLogout} style={{ marginTop:6, background:"none", border:"none", color:"#8899aa", fontSize:13, textDecoration:"underline", cursor:"pointer" }}>Изход</button>
-        </div>
-      </form>
-    </div>
-  );
-}
-
 // ─── Login ───
 function LoginScreen({ onLogin }) {
-  const [email, setEmail] = useState("");
+  const [users, setUsers] = useState([]);
+  const [sel, setSel] = useState(null);
   const [pin, setPin] = useState("");
   const [err, setErr] = useState("");
-  const [busy, setBusy] = useState(false);
-  const go = async () => {
-    if (!email.trim() || pin.length < 4 || busy) return;
-    setBusy(true); setErr("");
-    try { const d = await apiCall("/auth/login", { method:"POST", body:{ email:email.trim(), pin }, login:true }); setPin(""); onLogin(d.user, d.pinChangeRequired); }
-    catch (e) { setErr(e.message || "Грешка"); }
-    finally { setBusy(false); }
-  };
+  useEffect(() => { fetch("/api/auth/users").then(r=>r.json()).then(setUsers).catch(()=>{}); }, []);
+  const go = async () => { if(!sel)return; const u=users.find(x=>x.id===sel); if(!u)return; try{const r=await fetch("/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:u.email,pin})});const d=await r.json();if(!r.ok){setErr(d.error||"Грешка");setTimeout(()=>setErr(""),2000);return}onLogin(d.user,d.token)}catch(e){setErr("Грешка");setTimeout(()=>setErr(""),2000)} };
   return (
     <div style={{ minHeight:"100vh", background:"linear-gradient(135deg,#0f1419 0%,#1a1f2e 50%,#0f1419 100%)", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"'DM Sans',sans-serif", padding:16 }}>
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
       <style>{CSS}</style>
-      <form onSubmit={e=>{e.preventDefault();go()}} style={{ background:"rgba(26,31,46,0.95)", border:"1px solid rgba(232,160,50,0.2)", borderRadius:20, padding:"32px 28px", width:"100%", maxWidth:380, boxShadow:"0 25px 80px rgba(0,0,0,0.6)" }}>
+      <div style={{ background:"rgba(26,31,46,0.95)", border:"1px solid rgba(232,160,50,0.2)", borderRadius:20, padding:"32px 28px", width:"100%", maxWidth:380, boxShadow:"0 25px 80px rgba(0,0,0,0.6)" }}>
         <div style={{ textAlign:"center", marginBottom:28 }}>
           <div style={{ width:60, height:60, background:"linear-gradient(135deg,#e8a032,#d4880a)", borderRadius:16, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 14px" }}><I.Lock /></div>
           <h1 style={{ color:"#e8a032", fontSize:20, fontWeight:700, margin:0, letterSpacing:1 }}>СКЛАД АВТОЧАСТИ</h1>
           <p style={{ color:"#8899aa", fontSize:13, marginTop:5 }}>Система за управление</p>
         </div>
         <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-          <label htmlFor="login-email" style={{ color:"#8899aa", fontSize:11, fontWeight:600, letterSpacing:1 }}>Имейл</label>
-          <input id="login-email" type="email" autoComplete="username" value={email} onChange={e=>{setEmail(e.target.value);setErr("")}} style={inp()} />
-          <label htmlFor="login-pin" style={{ color:"#8899aa", fontSize:11, fontWeight:600, letterSpacing:1, marginTop:6 }}>ПИН код</label>
-          <input id="login-pin" type="password" inputMode="numeric" autoComplete="current-password" value={pin} maxLength={12} onChange={e=>{setPin(e.target.value.replace(/\D/g,""));setErr("")}} placeholder="••••••" style={{ ...inp(true), textAlign:"center", fontSize:22, letterSpacing:10, padding:"14px" }} />
-          {err && <div role="alert" style={{ color:"#ef4444", fontSize:13, textAlign:"center" }}>{err}</div>}
-          <Btn disabled={busy || !email.trim() || pin.length < 4} style={{ marginTop:6 }}>{busy ? "Вход…" : "Вход"}</Btn>
+          <label style={{ color:"#8899aa", fontSize:11, fontWeight:600, textTransform:"uppercase", letterSpacing:1 }}>Потребител</label>
+          {users.map(u=>(
+            <button key={u.id} onClick={()=>{setSel(u.id);setErr("")}} style={{ background:sel===u.id?"rgba(232,160,50,0.15)":"rgba(255,255,255,0.03)", border:sel===u.id?"1px solid rgba(232,160,50,0.5)":"1px solid rgba(255,255,255,0.06)", borderRadius:12, padding:"12px 14px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+              <span style={{ color:sel===u.id?"#e8a032":"#ccd6e0", fontWeight:500, fontSize:14 }}>{u.nome}</span>
+              <span style={{ color:"#667788", fontSize:11, fontFamily:"'JetBrains Mono',monospace", background:"rgba(255,255,255,0.04)", padding:"2px 8px", borderRadius:6 }}>{DEFAULT_ROLES[u.ruolo]?.label||u.ruolo}</span>
+            </button>
+          ))}
+          {sel && (<>
+            <label style={{ color:"#8899aa", fontSize:11, fontWeight:600, textTransform:"uppercase", letterSpacing:1, marginTop:6 }}>ПИН код</label>
+            <input type="password" value={pin} maxLength={4} onChange={e=>{setPin(e.target.value.replace(/\D/g,""));setErr("")}} onKeyDown={e=>e.key==="Enter"&&go()} placeholder="••••" style={{ ...inp(true), textAlign:"center", fontSize:22, letterSpacing:14, padding:"14px" }} />
+            {err && <div style={{ color:"#ef4444", fontSize:13, textAlign:"center" }}>{err}</div>}
+            <Btn onClick={go} style={{ marginTop:6 }}>Вход</Btn>
+          </>)}
         </div>
-      </form>
+      </div>
     </div>
   );
 }

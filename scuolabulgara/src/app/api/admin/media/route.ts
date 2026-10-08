@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { saveImage, saveAudio, savePdf, deleteUpload, isAllowedImage } from "@/lib/storage";
-import { AUDIO_MAX_BYTES, PDF_MAX_BYTES } from "@/lib/audio";
+import { saveImage, deleteUpload, isAllowedImage } from "@/lib/storage";
 
 export const runtime = "nodejs";
 
@@ -19,21 +18,10 @@ export async function POST(req: NextRequest) {
     const file = form.get("file");
     const alt = String(form.get("alt") || "");
     if (!(file instanceof File)) return NextResponse.json({ ok: false, error: "no file" }, { status: 400 });
-    let saved;
-    if (isAllowedImage(file.type)) {
-      if (file.size > 12 * 1024 * 1024) return NextResponse.json({ ok: false, error: "too large" }, { status: 413 });
-      saved = await saveImage(file);
-    } else if (file.type === "application/pdf" || /\.pdf$/i.test(file.name)) {
-      // A document: kept only if its bytes really are a PDF.
-      if (file.size > PDF_MAX_BYTES) return NextResponse.json({ ok: false, error: "too large" }, { status: 413 });
-      saved = await savePdf(file);
-      if (!saved) return NextResponse.json({ ok: false, error: "type" }, { status: 415 });
-    } else {
-      // Anything else is accepted only if its bytes are a known sound format.
-      if (file.size > AUDIO_MAX_BYTES) return NextResponse.json({ ok: false, error: "too large" }, { status: 413 });
-      saved = await saveAudio(file);
-      if (!saved) return NextResponse.json({ ok: false, error: "type" }, { status: 415 });
-    }
+    if (!isAllowedImage(file.type)) return NextResponse.json({ ok: false, error: "type" }, { status: 415 });
+    if (file.size > 12 * 1024 * 1024) return NextResponse.json({ ok: false, error: "too large" }, { status: 413 });
+
+    const saved = await saveImage(file);
     const media = await prisma.media.create({
       data: { filename: saved.filename, url: saved.url, mime: saved.mime, size: saved.size, width: saved.width, height: saved.height, alt },
     });

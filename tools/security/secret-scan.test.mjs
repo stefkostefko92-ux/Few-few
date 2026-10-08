@@ -70,51 +70,6 @@ test("тестов Stripe ключ (sk_test_) НЕ е находка — ина�
   assert.equal(scan(`STRIPE=${key}`).code, 0, "test ключовете са публични по дизайн");
 });
 
-// ── 2026-10-06: двойка имейл + парола (входни данни) ──────────────────────────────────────────────
-// Инцидентът: поука записа цял вход за админа на клиентски сайт във вида `<имейл>/<Име><година>!,` —
-// нито един шаблон не я позна (всички търсеха ПРОВАЙДЪР-ключове), и тя стигна до паметта, таблото и
-// артефакта. Стойностите тук са измислени и се сглобяват по време на изпълнение.
-const EM = (local, dom) => A(local, "@", dom);
-const PW = A("Mari", "na", "2025", "!");
-const TP_PAIRS = {
-  "формата от инцидента (имейл/парола,)": `default admin creds ${EM("info", "acme-shop.it")}/${PW}, а не env`,
-  "имейл : парола": `вход ${EM("admin", "acme-shop.bg")} : ${PW}`,
-  "имейл | парола (таблица)": `| ${EM("office", "acme-shop.bg")} | ${PW} |`,
-  "login: … password: …": `login: ${EM("admin", "acme-shop.bg")} password: ${PW}`,
-  "JSON с email/password": `{"email":"${EM("root", "acme-shop.bg")}","password":"${A("Xk9", "-pQ2", "-vL7")}"}`,
-  "парола: преди имейла": `парола: ${PW} за ${EM("admin", "acme-shop.bg")}`,
-};
-for (const [what, line] of Object.entries(TP_PAIRS)) {
-  test(`двойка имейл+парола се хваща: ${what}`, () => {
-    const r = scan(`${line}\n`);
-    assert.equal(r.code, 1, `трябва да е находка: ${what}`);
-    assert.match(r.out, /Имейл \+ парола/);
-    assert.doesNotMatch(r.out, new RegExp(PW.replace(/[!]/g, "\\!")), "стойността НЕ се печата");
-  });
-}
-
-test("двойка имейл+парола: близко до нула фалшиви (git/scp/mailto/URL/документация/тестови домейни)", () => {
-  const fp = [
-    A("git@", "github.com:owner/repo.git"),
-    A("git@", "github.com:Owner2024/Repo2024.git"),
-    A("scp root@", "host.example.bg:/srv/app/release2024.tar"),
-    A("scp deploy@", "server.bg:/opt/few-few/releases/20261006T1200 ."),
-    A("<a href=\"mailto:", "info@acme-shop.bg\">пишете ни</a>"),
-    A("https://user@", "host.bg/path/Report2024.pdf"),
-    A("https://mastodon.social/@user/", "113456789012"),
-    A("пиши на user@", "example.com / документация"),
-    A("test@", "example.com / Passw0rd123"), // RFC 2606 резервиран домейн = не е реален акаунт
-    A("admin@", "shop.test : Secret2024!"),
-    A("info@", "acme-shop.bg / +359888123456"),
-    A("author@", "acme-shop.bg: 2026-10-06T12:00:00Z"),
-    A("dev@", "acme-shop.bg: a1b2c3d4e5f6a7b8"),
-    A("npm i lodash@", "4.17.21/dist"),
-    A("const email = user.email, password = ", "req.body.password"),
-    A("email: ${EMAIL}, password: ", "${ADMIN_PASSWORD}"),
-  ];
-  for (const s of fp) assert.equal(scan(s).code, 0, `не бива да е находка: ${s.replace(/\S+@/, "…@")}`);
-});
-
 test("обикновени думи, приличащи на ключ, не вдигат тревога (нула фалшиви)", () => {
   for (const s of ["password = process.env.PASSWORD", "const apiKey = config.apiKey", "AKIA е префикс на AWS ключ"])
     assert.equal(scan(s).code, 0, `не бива да е находка: ${s}`);

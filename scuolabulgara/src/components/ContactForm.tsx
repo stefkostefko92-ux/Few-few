@@ -35,9 +35,8 @@ export default function ContactForm({ locale, topics, email }: { locale: Locale;
       form.reset();
     } catch {
       // Fallback to a mailto so the message is never lost.
-      const L = (k: string) => t(locale, k, ui);
-      const subject = encodeURIComponent(`${topic} — ${name}`);
-      const body = encodeURIComponent(`${L("form.name")}: ${name}\n${L("form.email")}: ${sender}\n${L("form.topic")}: ${topic}\n\n${message}`);
+      const subject = encodeURIComponent(`[Sito] ${topic} — ${name}`);
+      const body = encodeURIComponent(`Nome: ${name}\nEmail: ${sender}\nInteresse: ${topic}\n\n${message}`);
       window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
       setStatus({ msg: t(locale, "form.ok", ui), ok: true });
     } finally {

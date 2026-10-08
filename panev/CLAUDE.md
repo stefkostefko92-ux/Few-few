@@ -97,14 +97,7 @@ npm run build:site       # node site/build.mjs — регенерира 24-те 
 npm run dev              # nodemon server.js
 npm start                # node server.js
 npm run db:seed          # node scripts/seed.js (admin/legacy данни)
-npm test                 # node --test test/*.test.js — сесиите на админа и правилата за парола (временна SQLite)
-node scripts/admin-password.js --list | <имейл> | --stdin <имейл> | --revoke <имейл>   # на сървъра: случайна / своя (по тръба) парола / край на сесиите
 ```
-
-Админ сесиите носят `token_version` (колона в `admin_users`, добавя се сама при старт): всяка смяна на
-паролата (в `/admin` или със скрипта) и `--revoke` прекратяват всички по-стари сесии. Паролата е поне
-12 знака и не съдържа името на сайта, „admin“, „password“, имейла или „дума + година“ (`passwordProblem`
-в `lib/auth.js`).
 
 ## Конвенции (важно)
 

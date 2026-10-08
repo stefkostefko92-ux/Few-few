@@ -3,9 +3,7 @@
 
 export const LOCALES = ["it", "bg", "en"] as const;
 export type Locale = (typeof LOCALES)[number];
-// Italian is the default: a school in Milan. Bulgarian is chosen automatically
-// only for a clear Bulgarian signal; English only when the visitor picks it.
-export const DEFAULT_LOCALE: Locale = "it";
+export const DEFAULT_LOCALE: Locale = "en";
 
 export const LOCALE_META: Record<Locale, { label: string; flag: string; htmlLang: string }> = {
   it: { label: "Italiano", flag: "🇮🇹", htmlLang: "it" },
@@ -19,7 +17,10 @@ export function isLocale(value: string | undefined | null): value is Locale {
 
 // Map an ISO country code to the locale we serve to that audience.
 export function localeForCountry(country: string | undefined | null): Locale {
-  return (country || "").toUpperCase() === "BG" ? "bg" : DEFAULT_LOCALE;
+  const c = (country || "").toUpperCase();
+  if (c === "IT") return "it";
+  if (c === "BG") return "bg";
+  return "en";
 }
 
 // UI strings (navigation, buttons, labels). Content lives in the DB.
@@ -71,13 +72,8 @@ export const UI: Record<Locale, Dict> = {
     "alpha.pick": "Scegli una lettera",
     "alpha.latin": "Traslitterazione",
     "alpha.meaning": "Significato",
-    "alpha.listen": "Ascolta la pronuncia",
     "updated": "Ultimo aggiornamento",
     "backHome": "Torna alla home",
-    "nav.home": "Home",
-    "nav.label": "Menu principale",
-    "nav.menu": "Menu",
-    "notfound.text": "Pagina non trovata: il link potrebbe essere errato o non più valido.",
   },
   bg: {
     "nav.about": "За нас",
@@ -125,13 +121,8 @@ export const UI: Record<Locale, Dict> = {
     "alpha.pick": "Изберете буква",
     "alpha.latin": "На латиница",
     "alpha.meaning": "На италиански",
-    "alpha.listen": "Чуйте произношението",
     "updated": "Последна актуализация",
     "backHome": "Към началото",
-    "nav.home": "Начало",
-    "nav.label": "Основно меню",
-    "nav.menu": "Меню",
-    "notfound.text": "Страницата не е намерена.",
   },
   en: {
     "nav.about": "About",
@@ -179,13 +170,8 @@ export const UI: Record<Locale, Dict> = {
     "alpha.pick": "Choose a letter",
     "alpha.latin": "Transliteration",
     "alpha.meaning": "Meaning",
-    "alpha.listen": "Listen to the pronunciation",
     "updated": "Last updated",
     "backHome": "Back to home",
-    "nav.home": "Home",
-    "nav.label": "Main menu",
-    "nav.menu": "Menu",
-    "notfound.text": "Page not found: the link may be wrong or out of date.",
   },
 };
 

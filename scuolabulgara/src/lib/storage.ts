@@ -1,7 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
 import crypto from "crypto";
-import { sniffAudio, AUDIO_MAX_BYTES, isPdf, PDF_MAX_BYTES } from "./audio";
 
 // Uploaded files live on the VPS disk (persisted via a Docker volume). The
 // directory is configurable; default keeps everything under ./data/uploads.
@@ -77,31 +76,6 @@ export async function saveImage(file: File): Promise<SavedImage> {
   return { filename, url: `/uploads/${filename}`, mime: file.type, size, width, height };
 }
 
-/** A pronunciation clip. The format is decided by the file's own bytes; the
- *  stored name and served type follow from that, never from the upload. */
-export async function saveAudio(file: File): Promise<SavedImage | null> {
-  if (file.size > AUDIO_MAX_BYTES) throw new Error("too large");
-  const buf = Buffer.from(await file.arrayBuffer());
-  const kind = sniffAudio(buf);
-  if (!kind) return null;
-  await ensureUploadsDir();
-  const filename = `${slugify(file.name)}-${crypto.randomBytes(5).toString("hex")}.${kind.ext}`;
-  await fs.writeFile(path.join(UPLOADS_DIR, filename), buf);
-  return { filename, url: `/uploads/${filename}`, mime: kind.mime, size: buf.length };
-}
-
-/** A document (statute, form, newspaper issue). Accepted only if its bytes are
- *  a PDF; stored as .pdf whatever the uploaded name says. */
-export async function savePdf(file: File): Promise<SavedImage | null> {
-  if (file.size > PDF_MAX_BYTES) throw new Error("too large");
-  const buf = Buffer.from(await file.arrayBuffer());
-  if (!isPdf(buf)) return null;
-  await ensureUploadsDir();
-  const filename = `${slugify(file.name)}-${crypto.randomBytes(5).toString("hex")}.pdf`;
-  await fs.writeFile(path.join(UPLOADS_DIR, filename), buf);
-  return { filename, url: `/uploads/${filename}`, mime: "application/pdf", size: buf.length };
-}
-
 export async function deleteUpload(filename: string): Promise<void> {
   const safe = path.basename(filename);
   await fs.rm(path.join(UPLOADS_DIR, safe), { force: true });
@@ -114,11 +88,7 @@ export async function readUpload(rel: string): Promise<{ data: Buffer; mime: str
   try {
     const data = await fs.readFile(full);
     const ext = path.extname(safe).slice(1).toLowerCase();
-    const mimeByExt: Record<string, string> = {
-      jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp", gif: "image/gif",
-      mp3: "audio/mpeg", m4a: "audio/mp4", ogg: "audio/ogg", webm: "audio/webm", wav: "audio/wav",
-      pdf: "application/pdf",
-    };
+    const mimeByExt: Record<string, string> = { jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp", gif: "image/gif" };
     return { data, mime: mimeByExt[ext] || "application/octet-stream" };
   } catch {
     return null;

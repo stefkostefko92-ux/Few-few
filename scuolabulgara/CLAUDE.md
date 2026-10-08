@@ -45,14 +45,10 @@ scripts/          hash-password + helpers
 
 ## Design system — „Платно“ (the cloth)
 
-- **One idea: cross-stitch (кръстат бод), drawn by code.** `src/lib/stitch.ts` holds
-  the motifs as charts — the rosette and the „вълчи зъби“ border of a 1930s Divotino (Shopluk) cloth,
-  transcribed stitch by stitch from photos, never invented geometry — plus back-stitch contours and
-  photo → thread colours, with unit tests;
-  `components/Stitch.tsx` renders it as server SVG — one realistic stitch per colour (spindle legs pinched at
-  the holes, two twisted strands, top-left light, the top leg's shadow, holes in the linen) placed with `<use>`;
-  `lib/stitch-dom.ts` stamps the same thread from cached canvas sprites — `StitchedPhoto.tsx` (hero: embroidery in the
-  photo's own colours rises from the bottom edge to knee height, `--stitch-depth`, sewn once on load) and `Alphabet.tsx`
+- **One idea: cross-stitch (кръстат бод), drawn by code.** `src/lib/stitch.ts` holds the
+  pure geometry (8-pointed star, border tile, photo → thread colours) with unit tests;
+  `components/Stitch.tsx` renders it as server SVG, `StitchedPhoto.tsx` (hero: the photo's
+  edge unravels into stitches in its own colours, sewn once on load) and `Alphabet.tsx`
   (the chosen letter embroidered on Aida) draw it on canvas. Reduced motion → drawn at
   once; no JS → plain photo / plain letter.
 - **Type: Sofia Sans** (Bulgarian designer) — text + Extra Condensed display, self-hosted
@@ -67,8 +63,3 @@ scripts/          hash-password + helpers
   `src/lib/content-upgrade.ts` (untouched old defaults → new ones; edited text kept in the
   new shape). Runs once per process from `ensureSeeded`.
 - Empty list items (added in one language, not yet translated) are not rendered.
-- **Everything visible is editable** in `/admin` (sections, settings, SEO + share card, UI wording incl. 404
-  and aria labels, legal pages, llms.txt and the manifest are built from them). Locked on purpose: the agency
-  credit, the CC BY-SA photo credit and its rose bullet. Long texts: an empty line = a new paragraph.
-- **Documents (PDF):** `file` fields accept uploads sniffed as `%PDF-` (≤14 MB, served without CSP sandbox so
-  the browser viewer works) or https links; `scripts/import-docs.mjs` moves old-site links onto the server.

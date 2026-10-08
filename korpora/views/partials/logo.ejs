@@ -1,5 +1,0 @@
-<%#
-  Логото на Korpora: картина с името, затова alt е името. Изображенията са от brand/korpora-logo.png
-  (scripts/brand.mjs го изрязва до 2085 × 687 px — пропорцията тук; тестът я сверява с файловете).
-  h — височината в CSS пиксели; ширината следва пропорцията.
-%><% const logoH = typeof h !== 'undefined' ? h : 40; const logoW = Math.round((logoH * 2085) / 687); %><img class="logo" src="/static/img/brand/logo-320.webp?v=<%= v %>" srcset="/static/img/brand/logo-160.webp?v=<%= v %> 160w, /static/img/brand/logo-320.webp?v=<%= v %> 320w, /static/img/brand/logo-480.webp?v=<%= v %> 480w" sizes="<%= logoW %>px" width="<%= logoW %>" height="<%= logoH %>" alt="Korpora" decoding="async">

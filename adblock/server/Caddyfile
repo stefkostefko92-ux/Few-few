@@ -32,14 +32,9 @@ adblock.carbonstealth.eu {
 	@filtersjson path /filters.json
 	header @filtersjson Content-Type application/json
 
-	# Images change only with a release; index.html asks for them with ?v=<content hash>
-	# (tools/landing_assets.mjs), so a new image is a new URL.
+	# Images change only with a release.
 	@assets path *.webp *.png
 	header @assets Cache-Control "public, max-age=604800"
-
-	# Pages: the browser always revalidates (a 304 by ETag is cheap), never shows a stale release.
-	@pages not path *.webp *.png /filters.json /filters.json.sig
-	header @pages Cache-Control "no-cache"
 
 	# Pretty URL for the privacy policy (Web Store Privacy Policy URL).
 	@privacy path /privacy

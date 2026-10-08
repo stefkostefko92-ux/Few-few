@@ -38,7 +38,7 @@ file holds only what is true across all products. Keep it that way.
 | `vpsdash/` | Carbon Stealth VPS Dashboard — пълен контролен панел за сървъра (метрики, systemd, Docker, деплой, ъпдейти, сигурност, бекъпи, файлове, терминал, агентски флот) | Node ≥20 · `node:http` · vanilla ES modules · нула зависимости | BG · systemd на 127.0.0.1 зад Nginx+TLS · federation между двата VPS · owner: VPS-аджията |
 | `piuma/` | Piuma — Instagram контент-двигател с админ панел (чернова → човешко одобрение → публикуване) + управлявани страници (автопилот по план + Instagram Insights) | Node 22 · TS strict (ESM) · Express 5 · EJS · Prisma · PostgreSQL · BullMQ + Redis · Argon2id + TOTP · Anthropic SDK | BG/EN/IT · официален Instagram Platform API · витрина на `/` (нула JS, SEO/AEO пълен набор) · панел `/admin` (7 роли, 2FA, одит-верига, три езика) · агентът влиза с HMAC-подписани заявки, само чернови · акаунти се създават **ръчно** (ToS на Meta) |
 | `agentgw/` | Агентски шлюз — нашите агенти от собствен ЕС сървър за сайтовете чрез агентски ключове (ключ = сайт → позволени агенти + домейни) | Node 22 · TS strict (ESM) · Express 5 · Zod · Prisma · PostgreSQL · `@anthropic-ai/vertex-sdk` · ванилов уиджет | BG/EN/IT · Claude **само през Vertex AI в ЕС** (`eu`) · публичните агенти са само разговорни (нула инструменти) · разговорите не се пазят · `cs_pk_`/`cs_sk_` ключове с месечен таван |
-| `korpora/` | Korpora — проектиране на корпусни мебели в браузъра (3D, разкрой, чертежи с карта за пробиване, DXF/G-code) с акаунти и админ панел | Node 22 · TS strict (ESM) · Express 5 · EJS · Prisma · PostgreSQL · zod · Argon2id + TOTP · three.js (esbuild, без CDN) · Docker | BG/EN/IT (редакторът засега BG) · korpora.carbonstealth.eu · 30 дни тест от потвърждаване на имейла · Premium 25 €/мес. без ДДС (−5/10/20 % за 3/6/12) · Lifetime 750 € · плановете се активират **ръчно** · каталогът от магазините е в репото **само шифрован** (ключът е само на сървъра) |
+| `rendetto/` | Rendetto — проектиране на корпусни мебели в браузъра (3D, разкрой, чертежи с карта за пробиване, DXF/G-code) с акаунти и админ панел | Node 22 · TS strict (ESM) · Express 5 · EJS · Prisma · PostgreSQL · zod · Argon2id + TOTP · three.js (esbuild, без CDN) · Docker | BG/EN/IT (редакторът засега BG) · rendetto.carbonstealth.eu · 30 дни тест от потвърждаване на имейла · Premium 25 €/мес. без ДДС (−5/10/20 % за 3/6/12) · Lifetime 750 € · плановете се активират **ръчно** · каталогът от магазините е в репото **само шифрован** (ключът е само на сървъра) |
 
 Non-product dirs: `agents-dashboard/` (live agent dashboard → Netlify), `tools/`
 (agents' "hands" — real scripts), `deploy/` (autodeploy), `.claude/` (agents,
@@ -72,8 +72,8 @@ hooks, rules).
   **IndexNow** (Bing, Yandex, Seznam, Naver, Yep — one call reaches all):
   `node tools/seo/indexnow.mjs https://<live-domain>` (needs the site deployed with
   its `indexnow-key.txt` at web root). `deploy/autodeploy.sh` pings after a healthy release for
-  zabobovdol, SupremeDiscordBot, mastilko, ospedali, adblock and korpora (each its own way — there
-  is no generic `INDEXNOW_<PROJ>` switch; korpora only when its sitemap changed); for the rest run
+  zabobovdol, SupremeDiscordBot, mastilko, ospedali, adblock and rendetto (each its own way — there
+  is no generic `INDEXNOW_<PROJ>` switch; rendetto only when its sitemap changed); for the rest run
   the command yourself. zabobovdol also exposes a server-side admin action (`src/lib/indexnow.ts`). **Google does NOT
   support IndexNow** (sitemap ping retired 2023) — for Google keep the sitemap fresh
   (auto-discovered) and use Search Console (`tools/seo/gsc.mjs`).

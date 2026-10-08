@@ -34,7 +34,7 @@ export default function CookieBanner({ locale }: { locale: Locale }) {
   };
 
   return (
-    <div className="cookiebar" role="region" aria-label={t(locale, "legal.cookie", ui)}>
+    <div className="cookiebar" role="region" aria-label="Cookie">
       <p>
         {t(locale, "cookie.text", ui)}{" "}
         <a href={`/${locale}/cookie`}>{t(locale, "cookie.more", ui)}</a>

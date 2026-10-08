@@ -111,43 +111,6 @@ LEADS_NOTIFY_TO="centroquibulgaria@gmail.com"
 Se le lasci vuote, le richieste restano comunque consultabili nel pannello
 admin (sezione “Запитвания”).
 
-## 5c. Pronuncia dell'alfabeto (voce femminile, gratuita) — „Произношение“
-
-Le 30 parole dell'alfabeto vengono lette dalla voce neurale femminile **Kalina**
-di Microsoft Azure (`bg-BG-KalinaNeural`). Il piano gratuito **F0** basta per
-sempre (500 000 caratteri al mese; le 30 parole sono circa 200).
-
-1. Crea una risorsa **Speech** su https://portal.azure.com (piano **F0 – Free**,
-   regione per esempio **West Europe**).
-2. Da „Keys and Endpoint“ copia **KEY 1** e la **Location/Region**.
-3. Sul server, in `.env` (permessi 600 — la chiave non va mai nel repository):
-   ```ini
-   AZURE_SPEECH_KEY="…"
-   AZURE_SPEECH_REGION="westeurope"
-   ```
-4. Riavvia e genera:
-   ```bash
-   docker compose up -d
-   docker compose exec web node scripts/tts-alphabet.mjs
-   ```
-   I file finiscono nella libreria Media e vengono collegati alle lettere in tutte
-   e tre le lingue. `--force` rigenera tutto, `--only=Й,Я` solo quelle lettere.
-   Ogni suono si può anche sostituire a mano dall'admin (Contenuti → Alfabeto).
-
-## 5d. Giornalino della scuola — portare i PDF sul server (una volta)
-
-I numeri di „Училищен вестник“ sono ancora sul vecchio sito
-(scuolabulgaramilano.it). Prima di spegnerlo o di spostare il dominio, copiali
-sul server (finiscono nel volume `qb-data`, nella libreria Media):
-
-```bash
-docker compose exec web node scripts/import-docs.mjs
-```
-
-Si può rilanciare senza rischi: i file già copiati vengono saltati. Nuovi numeri,
-statuto e modulo di adesione si caricano dall'admin (Contenuti → Документи и
-училищен вестник → „Качи PDF“, fino a 14 MB).
-
 ## 6. Accesso all'amministrazione
 
 `https://il-tuo-dominio/admin` → login con `ADMIN_EMAIL` e la password scelta.

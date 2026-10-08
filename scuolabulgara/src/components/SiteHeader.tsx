@@ -99,7 +99,7 @@ export default function SiteHeader({
       <div className="menu-backdrop" aria-hidden="true" onClick={close} />
       <header className={`header ${scrolled ? "is-scrolled" : ""}`}>
         <div className="wrap header__bar">
-          <a className="brand" href={`/${locale}`} aria-label={`${brandName}, ${t(locale, "nav.home", ui)}`}>
+          <a className="brand" href={`/${locale}`} aria-label={`${brandName}, home`}>
             <img src={logo} alt="" width={120} height={104} />
             <span className="brand__text">
               <span className="brand__name">{brandName}</span>
@@ -107,7 +107,7 @@ export default function SiteHeader({
             </span>
           </a>
 
-          <nav aria-label={t(locale, "nav.label", ui)}>
+          <nav aria-label="Main">
             <ul className="nav__menu" id="nav-menu">
               {nav.map((n) => (
                 <li key={n.id}>
@@ -132,7 +132,7 @@ export default function SiteHeader({
             <button
               ref={toggleRef}
               className="nav__toggle"
-              aria-label={t(locale, "nav.menu", ui)}
+              aria-label="Menu"
               aria-expanded={menuOpen}
               aria-controls="nav-menu"
               onClick={() => setMenuOpen((v) => !v)}

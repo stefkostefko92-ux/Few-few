@@ -30,8 +30,8 @@
               <input type="password" id="pw-current" placeholder="••••••••" autocomplete="current-password">
             </div>
             <div class="form-group-admin">
-              <label>Nuova Password (min. 12 caratteri)</label>
-              <input type="password" id="pw-new" placeholder="Minimo 12 caratteri" autocomplete="new-password" minlength="12">
+              <label>Nuova Password (min. 8 caratteri)</label>
+              <input type="password" id="pw-new" placeholder="Minimo 8 caratteri" autocomplete="new-password">
             </div>
             <div class="form-group-admin">
               <label>Conferma Nuova Password</label>
@@ -133,7 +133,7 @@ async function changePassword() {
   const btn     = document.getElementById('pw-btn');
 
   if (!current) { adminToast('Inserisci la password attuale', 'error'); return; }
-  if (newPw.length < 12) { adminToast('La nuova password deve avere almeno 12 caratteri', 'error'); return; }
+  if (newPw.length < 8) { adminToast('La nuova password deve avere almeno 8 caratteri', 'error'); return; }
   if (newPw !== confirm) { adminToast('Le password non coincidono', 'error'); return; }
 
   btn.disabled = true;

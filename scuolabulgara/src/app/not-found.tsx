@@ -2,14 +2,10 @@ import "./base.css";
 import "./site.css";
 import { fontVars } from "@/lib/fonts";
 import NotFoundContent from "@/components/NotFoundContent";
-import { getOne } from "@/lib/content";
 
 // Global 404 for unmatched top-level routes (rendered standalone, e.g. when an
 // invalid locale makes the locale layout bail out), so it owns <html>/<body>.
-export async function generateMetadata() {
-  const settings = await getOne("it", "settings");
-  return { title: `404 · ${settings.brandName}`, robots: { index: false } };
-}
+export const metadata = { title: "404 · Qui Bulgaria", robots: { index: false } };
 
 export default function NotFound() {
   return (

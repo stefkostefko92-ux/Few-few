@@ -149,11 +149,6 @@
 .ad-image__meta { display: grid; gap: .55rem; min-width: 0; }
 .ad-image__meta b { font-size: .84rem; font-weight: 600; color: #4b5260; word-break: break-all; }
 .ad-image__actions { display: flex; flex-wrap: wrap; gap: .45rem; }
-.ad-audio { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
-.ad-audio audio { height: 40px; max-width: 320px; }
-.ad-file { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
-.ad-file a { font-weight: 600; word-break: break-all; }
-.ad-pdf { display: grid; place-items: center; width: 64px; height: 80px; border: 2px solid #b3171d; border-radius: 4px; background: #fff; color: #b3171d; font-weight: 800; text-decoration: none; }
 
 /* Icon chooser */
 .ad-icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: .5rem; }
