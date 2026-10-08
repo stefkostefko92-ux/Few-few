@@ -195,7 +195,11 @@ export function buildLiftWorld(renderer: THREE.WebGPURenderer, dv: LiftDerived, 
       const rb = machine.bounds;
       if (rb) {
         const roomOut: Record<Side, boolean> = { front: cam.z > -rb.y0 / 1000, rear: cam.z < -rb.y1 / 1000, left: cam.x < rb.x0 / 1000, right: cam.x > rb.x1 / 1000 };
-        for (const side of SIDES) if (M.ghost(M.roomWalls[side], roomOut[side], 0.1)) cast(roomWalls[side], !roomOut[side]);
+        for (const side of SIDES) {
+          if (M.ghost(M.roomWalls[side], roomOut[side], 0.1)) cast(roomWalls[side], !roomOut[side]);
+          // what is fixed on a ghost wall (door, cabinet, switch, conduit) goes with it, as the lamp with the roof
+          machine.mounted[side].visible = !roomOut[side];
+        }
       }
       const above = cam.y > (rb?.top ?? S.ceiling + 2600) / 1000;
       if (M.ghost(M.roof, above, 0.08)) cast(roof, !above);
