@@ -102,6 +102,9 @@ bash tools/package.sh                         # билд + самопровер�
   filters.json `requestFlags` може да ги пусне, с plain-retry резервата. `youtube_skip` само mute +
   родния Skip — **никога** 16× (YouTube го брои). Ако YouTube все пак откаже, bypass-ът (6 ч) маха
   и `sa-youtube`, и scriptlet-ите от YouTube страниците.
+- `rules/ad_rules.json` и `rules/youtube_rules.json` идват **само** от `tools/generate_rules.py` — правило се
+  добавя там, не в JSON-а. Id-тата са фиксирани (изваден id не се ползва повторно: YouTube 1001/1003);
+  `tests/generate_rules.test.mjs` ребилдва във временна папка и сравнява байт по байт.
 - Всички `chrome.*.on*.addListener` се регистрират **синхронно на top level** в
   service worker-а.
 - Smart Detection крие само cross-origin iframe с точен IAB рекламен размер —

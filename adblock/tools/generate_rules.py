@@ -1,4 +1,23 @@
+# Generates rules/ad_rules.json and rules/youtube_rules.json — the hand-curated
+# static rulesets (the public lists are built by tools/build_filters.mjs).
+#
+#   python3 tools/generate_rules.py [--out DIR]     # default: <adblock>/rules
+#
+# The output must be byte-identical to the committed files: rule ids are fixed
+# here (never renumbered — a retired id stays retired), and each file keeps the
+# format it is committed in. tests/generate_rules.test.mjs regenerates into a
+# temp dir and compares.
 import json
+import os
+import sys
+
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "rules")
+if "--out" in sys.argv:
+    OUT = sys.argv[sys.argv.index("--out") + 1]
+
+def write(name, data, indent, newline):
+    with open(os.path.join(OUT, name), "w") as f:
+        f.write(json.dumps(data, indent=indent) + ("\n" if newline else ""))
 
 # ---- Comprehensive ad / tracker domain blocklist ----
 AD_DOMAINS = [
@@ -92,6 +111,29 @@ for p in PATH_PATTERNS:
     })
     rid += 1
 
+# #238 (5.1.2): ad/analytics hosts of big first parties — blocked only as a THIRD
+# party, so youtube.com, yahoo.com, yandex.ru, x.com… keep working on their own
+# sites. main_frame excluded like every block rule (never block a navigation).
+THIRD_PARTY_ONLY = [
+    "adfstat.yandex.ru", "ads-api.tiktok.com", "ads-api.twitter.com", "ads-sg.tiktok.com",
+    "ads.youtube.com", "adsfs.oppomobile.com", "adtech.yahooinc.com", "adx.ads.oppomobile.com",
+    "an.facebook.com", "analytics.query.yahoo.com", "analytics.s3.amazonaws.com",
+    "analyticsengine.s3.amazonaws.com", "api-adservices.apple.com", "appmetrica.yandex.ru",
+    "bdapi-ads.realmemobile.com", "bdapi-in-ads.realmemobile.com", "books-analytics-events.apple.com",
+    "ck.ads.oppomobile.com", "data.ads.oppomobile.com", "data.mistat.india.xiaomi.com",
+    "data.mistat.rus.xiaomi.com", "data.mistat.xiaomi.com", "gemini.yahoo.com", "grs.hicloud.com",
+    "iadsdk.apple.com", "iot-eu-logser.realme.com", "iot-logser.realme.com", "log.byteoversea.com",
+    "log.fc.yahoo.com", "metrika.yandex.ru", "notes-analytics-events.apple.com", "offerwall.yandex.net",
+    "tracking.rus.miui.com", "udcm.yahoo.com", "weather-analytics-events.apple.com",
+]
+assert rid == 238, "ids 1..237 are the domain + path rules above"
+rules.append({
+    "id": 238, "priority": 1,
+    "action": {"type": "block"},
+    "condition": {"domainType": "thirdParty", "requestDomains": THIRD_PARTY_ONLY, "excludedResourceTypes": ["main_frame"]}
+})
+rid = 239
+
 # ---- Breakage fixes (allow, priority 10 — above every block rule) ----
 # EasyPrivacy blocks the Facebook Page Plugin's own logging call. For a visitor
 # logged into Facebook the plugin then throws ("ExceptionDialog", error 1357032)
@@ -108,8 +150,7 @@ for p, initiators in UNBREAK_ALLOW:
     })
     rid += 1
 
-with open("rules/ad_rules.json","w") as f:
-    json.dump(rules, f, indent=2)
+write("ad_rules.json", rules, indent=1, newline=True)
 print("ad_rules.json: %d rules (ids 1..%d)" % (len(rules), rid-1))
 
 # ---- YouTube-specific rules ----
@@ -128,35 +169,35 @@ print("ad_rules.json: %d rules (ids 1..%d)" % (len(rules), rid-1))
 # and most ATR pings are ordinary — a player that never reports playing anything
 # is one of the signals behind YouTube's "three strikes". The single ATR ping that
 # carries the ad state is answered locally by youtube_main.js (uBO's pattern).
+# Ids are fixed: 1001 (youtube.com/ptracking) and 1003 (youtube.com/api/stats/atr)
+# were retired in 5.1.3 and are never reused.
 YT_BLOCK = [
-    "youtube.com/pagead/",
-    "youtube.com/api/stats/ads",
-    "youtube.com/get_midroll_",
-    "youtube.com/get_video_info?*adformat",
-    "youtube.com/youtubei/v1/player/ad_break",
-    "s.youtube.com/api/stats/ads",
+    (1000, "youtube.com/pagead/"),
+    (1002, "youtube.com/api/stats/ads"),
+    (1004, "youtube.com/get_midroll_"),
+    (1005, "youtube.com/get_video_info?*adformat"),
+    (1006, "youtube.com/youtubei/v1/player/ad_break"),
+    (1007, "s.youtube.com/api/stats/ads"),
 ]
 
 # Player-init resources that must be allowed to load on YouTube.
 YT_ALLOW = [
-    "||doubleclick.net/instream/ad_status",
-    "||doubleclick.net/pagead/id",
-    "||googleads.g.doubleclick.net/pagead/id",
+    (1008, "||doubleclick.net/instream/ad_status"),
+    (1009, "||doubleclick.net/pagead/id"),
+    (1010, "||googleads.g.doubleclick.net/pagead/id"),
 ]
 
 yt = []
-yrid = 1000
-for p in YT_BLOCK:
+for yid, p in YT_BLOCK:
     yt.append({
-        "id": yrid, "priority": 2,
+        "id": yid, "priority": 2,
         "action": {"type": "block"},
         "condition": {"urlFilter": p, "resourceTypes": ["xmlhttprequest","image","sub_frame","script","ping","media"]}
     })
-    yrid += 1
 
-for p in YT_ALLOW:
+for yid, p in YT_ALLOW:
     yt.append({
-        "id": yrid, "priority": 10,
+        "id": yid, "priority": 10,
         "action": {"type": "allow"},
         "condition": {
             "urlFilter": p,
@@ -164,8 +205,6 @@ for p in YT_ALLOW:
             "resourceTypes": ["script", "image", "xmlhttprequest"],
         },
     })
-    yrid += 1
 
-with open("rules/youtube_rules.json","w") as f:
-    json.dump(yt, f, indent=2)
+write("youtube_rules.json", yt, indent=2, newline=False)
 print("youtube_rules.json: %d rules" % len(yt))
