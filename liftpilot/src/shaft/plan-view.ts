@@ -19,6 +19,7 @@ import { doorOpDepthOf } from './operator';
 import { bufferPlan, pitSpace } from './pit';
 import { roofRefuge } from './roof';
 import { RAILS } from './rails';
+import { rigPlan } from './rig-view';
 import type { DoorLayout, Layout, Rail } from './types';
 
 export type PlanLevel = 'top' | 'main' | 'bottom' | 'pit';
@@ -182,6 +183,8 @@ export function planEntities(L: Layout, level: PlanLevel, floor: number): Entity
     for (const b of bufferPlan(L).spots) out.push(circle(b.c, b.r, 'outline', 'paper'), circle(b.c, b.r * 0.55, 'thin'));
     out.push(...pitTags(L));
   }
+  // the lift's rope rig where the lift design has one (rig-view.ts)
+  out.push(...rigPlan(L, level));
   return out;
 }
 

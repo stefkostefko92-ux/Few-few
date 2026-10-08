@@ -108,6 +108,12 @@ export const AMBITO_VERIFICHE: Readonly<Record<CheckId | ShaftCheckId, readonly 
   m_heb: ['machine'], m_hebf: ['machine'], m_hebfeet: ['machine'], m_hebrope: ['machine'], m_hebwall: ['machine'],
   // the car's rails under the safety gear and in use (sheet 1 of the drawing set); the safety gear is on the sling
   gr_stress: ['rails', 'car', 'sling', 'load'], gr_flange: ['rails', 'car', 'sling', 'load'], gr_defl: ['rails', 'car', 'sling', 'load'], sg_type: ['sling', 'speed'],
+  // the car under a machine below's hung pulleys as h_top; the counterweight's safety gear over a space under the shaft
+  // goes with the counterweight and its rails
+  h_hung: [...HEAD, 'machine'], sg_cw: ['cw', 'rails', 'speed'],
+  // the refuge on the car roof under what the rope rig hangs under the slab (head.ts, in place of h_refuge and h_stand):
+  // the machine's pulleys and dead ends, so a new machine brings it in as it does h_hung
+  h_refuge_rig: [...HEAD, 'machine'], h_stand_rig: [...HEAD, 'machine'],
 };
 
 /** Checks of the data, not of a part: the distances set by hand on the plan keep every part in its place

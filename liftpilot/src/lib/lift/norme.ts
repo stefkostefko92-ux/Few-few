@@ -200,7 +200,9 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
       + `${KL.belowRoomClear} mm oltre il suo ingombro; larghezza, profondità, altezza e porta del locale si cambiano sui suoi disegni (accanto al `
       + 'vano resta il lato al muro, sotto il vano l’angolo più vicino all’origine; sotto il vano la sua altezza abbassa la macchina) e la '
       + 'macchina deve restarci dentro. I due rami alla macchina salgono dietro il '
-      + `contrappeso a ${KL.bottomClear} mm dalla parete e dal contrappeso, la puleggia con il piano parallelo alla parete; per lato un rinvio a 180° `
+      + `contrappeso a ${KL.bottomClear} mm dalla parete e dal contrappeso, la puleggia con il piano parallelo alla parete (accanto al vano a `
+      + `${KL.bottomClear} mm la puleggia, quando è più larga dei rami: tra i rami nel vano, con il corpo della macchina tutto nel locale a 50 mm dalla `
+      + 'parete e nel muro solo l’albero lento nel suo manicotto); per lato un rinvio a 180° '
       + 'se il ramo dista dalla calata in pianta non più di Dp, altrimenti due rinvii a 90° con un tratto orizzontale. Il calcolo conta due rinvii '
       + 'per la macchina in basso: gli altri entrano come flessioni semplici aggiuntive (nps)',
     riferimento: 'ricerca, funi con la macchina in basso, capitoli 2–5; DPR 1497/1963 artt. 5–9, 33', fonte: 'geometria ricostruita dal software',

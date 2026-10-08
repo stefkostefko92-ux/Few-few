@@ -16,6 +16,9 @@ export const KV_GOV = {
   govReach: 400,
   // 5.6.2.2.1.3 c): the pitch diameter of the governor's sheaves at least this many times the rope's nominal diameter
   govSheaveRatio: 30,
+  // a machine below with its pulleys hung under the slab: the governor on a bracket from the side wall, its axle this
+  // far under the slab (the 3D's) [mm]
+  govUnderCeiling: 420,
 } as const;
 
 export const VOCI_LIMITATORE: readonly VoceVano[] = [
@@ -46,7 +49,19 @@ export const VOCI_LIMITATORE: readonly VoceVano[] = [
       + 'il rapporto ammette, salvo una deroga documentata dal certificato del costruttore',
     verifiche: ['v_govdd'],
   },
+  {
+    id: 'limitatore.vano', gruppo: 'ingombri', titolo: 'Macchina in basso: limitatore di velocità nel vano',
+    valore: 'con le pulegge di rinvio appese sotto la soletta il limitatore sta nel vano, su una mensola fissata alla parete laterale della sua '
+      + 'fune, con l’asse a 420 mm sotto il soffitto, fuori dalla pianta della cabina; non è raggiungibile da fuori del vano: si ordina con '
+      + 'l’intervento comandato a distanza via cavo da fuori del vano (dal quadro), raggiungibile per ispezione e manutenzione dal tetto di '
+      + 'cabina, con il ritorno automatico in posizione normale quando la cabina o il contrappeso salgono e le parti elettriche ripristinabili '
+      + 'a distanza; la fune del limitatore va dal soffitto del vano alla fossa. Con il locale delle pulegge sopra il vano il limitatore sta '
+      + 'in quel locale. Il carico del limitatore (P4) va sulla parete della mensola',
+    riferimento: 'UNI EN 81-20:2020, 5.6.2.2.1.4 a), b) e c) 1)–3), 5.6.2.2.1.5', fonte: `scelta del software (420 mm); ${letto('UNI EN 81-20:2020', 'p. 83')}`,
+    stato: 'scelta',
+    nota: 'la mensola, il cavo del comando a distanza e il ripristino sono del costruttore del limitatore: da confermare sulla sua scheda',
+  },
 ];
 
 /** Constants of this registry, for the test that every one has its entry. */
-export const COSTANTI_LIMITATORE = { 'limitatore.posto': ['govGap', 'govStile', 'govReach'], 'limitatore.fune': ['govSheaveRatio'] } as const;
+export const COSTANTI_LIMITATORE = { 'limitatore.posto': ['govGap', 'govStile', 'govReach'], 'limitatore.fune': ['govSheaveRatio'], 'limitatore.vano': ['govUnderCeiling'] } as const;

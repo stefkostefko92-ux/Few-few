@@ -114,6 +114,10 @@ export default function LiftCalcFields({ P, X, inp, derived, complete, bad, need
               ) : null}
             </>
           ) : null}
+          {complete && derived?.refugeHead ? (
+            <p className="hint bad" role="alert">{t('hint_refuge_head', { now: derived.refugeHead.now, need: derived.refugeHead.need })}
+              {V.layout === 'bottom' && scheme !== 'room' ? ` ${t('hint_refuge_room')}` : ''}</p>
+          ) : null}
           {derived ? (
             <>
               {toggle('P', t('auto_P'))}

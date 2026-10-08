@@ -18,7 +18,7 @@ import { KL } from './norme';
 /** The machine's room below as the drawings show it (bottom.ts belowRoom) and the machine's corners in plan in the
  *  shaft's axes. */
 export function belowRoomOf(L: Layout, g: BottomGeo, M: MachineSpec): { R: RoomInputs; body: readonly (readonly [number, number])[] } {
-  const body = belowMachine(L, g, M.D, M.n, M.d, M.shape ?? null).body;
+  const body = belowMachine(L, g, M.D, M.shape ?? null).body;
   return { R: belowRoom(L, g, body).room, body };
 }
 

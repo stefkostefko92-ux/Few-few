@@ -18,7 +18,7 @@ for (const motor of [undefined, 'cw', 'car'] as const) {
     const dv = deriveLift(inp), G = roomGeo(dv.layout, dv.machine), rig = ropeRig(dv);
     assert.ok(G);
     assert.equal(G.dir, motor === 'cw' ? 1 : -1);
-    const pose = machinePose(rig, dv.shaft.wall, dv.machine.n, dv.machine.d, G.frame, G.dir);
+    const pose = machinePose(rig, dv.shaft.wall, G.frame, G.dir);
     // the worm along the drops' plane, toward the counterweight's drop or turned round toward the car's
     const along = pose.xDir[0] * rig.dir[0] + pose.xDir[1] * rig.dir[1];
     assert.ok(Math.abs(along - G.dir) < 1e-9, `${along}`);

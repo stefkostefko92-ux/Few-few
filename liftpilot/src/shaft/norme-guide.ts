@@ -29,12 +29,18 @@ export const KV_GUIDE = {
   railDeflK: 0.7,
   // UNI EN 81-20:2020, 5.6.2: instantaneous safety gear (also of the captive roller type) up to this rated speed [m/s]
   gearInstantV: 0.63,
+  // UNI EN 81-20:2020, 5.2.5.4: with a space people can reach under the shaft the pit floor is designed for at least
+  // this [N/m²] and the counterweight has a safety gear; 5.6.2.1.2.3 and prospetto 11: an instantaneous one, or one
+  // tripped by the suspension's breakage or by a safety rope instead of a governor, only up to this rated speed [m/s]
+  pitFloorAccessible: 5000,
+  cwGearInstantV: 1,
 } as const;
 
 export const COSTANTI_GUIDE = {
   'guide.verifica': ['railRm', 'railStRun', 'railStGear', 'railDeflection', 'sillLoad', 'sillLoadHeavy', 'sillLoadDevices', 'sillHeavyQ', 'railBend', 'omega370',
     'railCombine', 'railFlange', 'railDeflK'],
   'paracadute.tipo': ['gearInstantV'],
+  'paracadute.contrappeso': ['pitFloorAccessible', 'cwGearInstantV'],
 } as const;
 
 export const VOCI_GUIDE: readonly VoceVano[] = [
@@ -78,5 +84,18 @@ export const VOCI_GUIDE: readonly VoceVano[] = [
       + 'effetto ammortizzato fino a 1 m/s); il tipo viene dai dati dell’impianto (se manca: progressivo, con la nota sul foglio)',
     riferimento: 'UNI EN 81-20:2020, 5.6.2.1.2.1; la regola precedente in UNI EN 81-1 (1999, 2008), 9.8.2.1',
     fonte: `${letto('UNI EN 81-20:2020', 'p. 81')}; ${letto('UNI EN 81-1:2008', 'p. 58')}`, stato: 'confermato', verifiche: ['sg_type'],
+  },
+  {
+    id: 'paracadute.contrappeso', gruppo: 'carichi', titolo: 'Spazio accessibile sotto il vano: paracadute del contrappeso e fondo della fossa',
+    valore: 'con uno spazio accessibile sotto il vano (macchina sotto la fossa) il contrappeso ha il paracadute e il fondo della fossa è '
+      + 'progettato per almeno 5000 N/m² oltre alle reazioni degli ammortizzatori (P6, P8) e delle guide (P5, P7, con la presa del paracadute); '
+      + 'il paracadute del contrappeso è progressivo oltre 1 m/s, fino a 1 m/s anche istantaneo, ed è azionato dal limitatore o, fino a 1 m/s, '
+      + 'dalla rottura della sospensione o da una fune di sicurezza. Il tipo e l’azionamento si indicano nei dati dell’impianto: finché mancano '
+      + 'la verifica non passa; il carico P7 conta la presa (progressivo se non indicato) su metà del contrappeso per guida',
+    riferimento: 'UNI EN 81-20:2020, 5.2.5.4, 5.2.1.8.4, 5.6.2.1.2.3, prospetto 11 (5.6.1.2), 5.6.2.2.2 e 5.6.2.2.3; UNI EN 81-50:2020, 5.10',
+    fonte: letto('UNI EN 81-20:2020', 'pp. 27, 35, 79, 81'), stato: 'confermato', verifiche: ['sg_cw'],
+    nota: 'le guide del contrappeso con la presa del paracadute (UNI EN 81-50:2020, 5.10) non sono verificate dal software (modello.non.calcolate); '
+      + 'in una modifica la UNI 10411-1:2024 (6.14) accetta al posto del paracadute un pilastro esistente fino al terreno, verificato per i nuovi '
+      + 'carichi: è una scelta del progettista',
   },
 ];

@@ -10,7 +10,8 @@ import type { Layout } from '@/shaft';
 import type { Section } from '@/shaft/section';
 import { P, type Batch } from './geom';
 import { governorFrame, governorWheel } from './govparts';
-import { freeSides, governorSpot, type GovernorSpot } from '@/shaft/governor';
+import { GOV_BRACKET, freeSides, governorSpot, type GovernorSpot } from '@/shaft/governor';
+import { KV_VERT } from '@/shaft/norme-vert';
 
 export { freeSides, governorSpot, type GovernorSpot };
 import { tensionWeight } from './tension';
@@ -24,15 +25,17 @@ export interface GovernorModel {
 }
 
 export function buildGovernor(L: Layout, S: Section, g: GovernorSpot, roomFloor: number | null, M: LiftMaterials, B: Batch): GovernorModel {
-  const { x, y1, y2, G } = g, yc = (y1 + y2) / 2, zTension = S.pitFloor + 480, zGov = roomFloor !== null ? roomFloor + G.axle : S.ceiling - 420;
+  const { x, y1, y2, G } = g, yc = (y1 + y2) / 2, zTension = S.pitFloor + 480, zGov = roomFloor !== null ? roomFloor + G.axle : S.ceiling - KV_VERT.govUnderCeiling;
   const wallX = g.side === 'left' ? 0 : L.inputs.W, inward = g.side === 'left' ? 1 : -1;
   // the strands, tangent to both pulleys
   for (const y of [y1, y2]) B.rod([x, y, zTension], [x, y, zGov], G.rope, M.ropeCw, 6);
   // the governor on the room's floor, or on a bracket from the side wall, braced from below
   const zBase = zGov - G.axle;
   if (roomFloor === null) {
-    B.box(wallX, yc - G.baseW, zBase - 20, x + inward * 180, yc + G.baseW, zBase, M.galv);
-    for (const w of [-80, 80]) B.rod([wallX, yc + w, zBase - 260], [x + inward * 150, yc + w, zBase - 20], 12, M.galv, 10);
+    // the bracket's plate out to the base's inner edge, no further: over the car's plan the car would reach it
+    // (shaft/governor.ts GOV_BRACKET, the sheets draw the same)
+    B.box(wallX, yc - G.baseW, zBase - GOV_BRACKET.plate, x + inward * G.baseA, yc + G.baseW, zBase, M.galv);
+    for (const w of [-80, 80]) B.rod([wallX, yc + w, zBase - GOV_BRACKET.brace], [x + inward * (G.baseA - 30), yc + w, zBase - GOV_BRACKET.plate], 12, M.galv, 10);
   }
   governorFrame(B, M, [x, yc, zGov], inward, roomFloor === null ? wallX - x : null, roomFloor !== null, G);
   tensionWeight(B, M, [x, yc, zTension], G, g.rail, L.inputs.carRail, g.lever, y1 >= g.rail.y ? 1 : -1);

@@ -9,7 +9,7 @@ import { prisma } from '@/lib/db';
 import { analyse } from '@/lib/present/analysis';
 import { renderTavole } from '@/lib/report/render';
 import { initialsOf } from '@/lib/tavole/compose';
-import { belowGeoOf, machineOf } from '@/lib/tavole/views';
+import { belowGeoOf, machineOf, sheetLayoutOf } from '@/lib/tavole/views';
 import { composeFromCalculation } from './drawing-compose';
 import { slug } from './download';
 import { getLiftDesign } from './queries';
@@ -32,8 +32,10 @@ export async function exportLiftDesign(user: SessionUser, id: string, format: Ex
   if (!c.ok) return { ok: false, error: c.error === 'engineChanged' ? 'engineChanged' : 'notFound' };
   const date = d.createdAt.toISOString().slice(0, 10), name = `progetto-${slug(d.project.name)}-${date}.${format}`;
   if (format === 'pdf') return { ok: true, body: new Uint8Array(await renderTavole(c.doc)), mime: MIME.pdf, name, designId: d.id };
-  const L = c.input.layout, a = analyse(c.input.values), M = machineOf(a, c.input.plant, L, c.input.marks?.catalog ?? null), bottom = a.ctx.I.layout === 'bottom';
-  const views = projectViews(L, M, L.inputs.room !== null && !bottom, bottom ? belowGeoOf(a, L, M, c.input.marks?.bottom ?? 'head') : null);
+  const L0 = c.input.layout, a = analyse(c.input.values), M = machineOf(a, c.input.plant, L0, c.input.marks?.catalog ?? null), bottom = a.ctx.I.layout === 'bottom';
+  // the shaft's views as the sheets draw them: the lift's rope rig in the shaft, the room over it the lift has
+  const g = bottom ? belowGeoOf(a, L0, M, c.input.marks?.bottom ?? 'head') : null, L = sheetLayoutOf(a, L0, M, g);
+  const views = projectViews(L, M, L.inputs.room !== null && !bottom, g);
   const title = `${d.project.name} · progetto ${d.id} · ${date} · LiftPilot`;
   const body = format === 'dxf' ? new TextEncoder().encode(toDxf(views, title)) : new Uint8Array(toDwg(views, title));
   return { ok: true, body, mime: MIME[format], name, designId: d.id };

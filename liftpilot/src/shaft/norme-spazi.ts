@@ -49,7 +49,19 @@ export const VOCI_SPAZI: readonly VoceVano[] = [
     riferimento: 'UNI EN 81-20:2020, 5.2.5.7.2 a) e b)', fonte: letto(T20, 'p. 38'), stato: 'confermato',
     nota: 'fino alla versione 1.17.0 del motore del progetto la puleggia di cabina era verificata a 100 mm; i 100 mm della traversa sono la '
       + 'stessa lettura di spazi.testata.parti',
-    verifiche: ['h_top'],
+    verifiche: ['h_top', 'h_hung'],
+  },
+  {
+    id: 'spazi.tetto.appese', gruppo: 'sezione', titolo: 'Spazio di rifugio sul tetto sotto le parti appese alla soletta',
+    valore: 'con la cabina nella posizione più alta, ciò che pende sotto la soletta (le pulegge di rinvio appese della macchina in basso con il loro '
+      + 'telaio, il tratto orizzontale delle funi fra due rinvii a 90°, gli attacchi delle funi della taglia 2:1) più in basso dell’altezza del '
+      + 'rifugio sopra il tetto toglie la sua pianta dalle parti libere del tetto, come gli operatori: il rifugio deve stare tutto fuori; '
+      + 'l’altezza libera del rifugio si misura fino alla parte più bassa sopra ogni parte libera del tetto, dove si sta in piedi',
+    riferimento: 'UNI EN 81-20:2020, 5.2.5.7.1 (prospetto 3), 5.2.5.7.2 e 5.2.5.7.3', fonte: letto(T20, 'pp. 37–39'), stato: 'confermato',
+    verifiche: ['h_refuge_rig', 'h_stand_rig'],
+    nota: 'pianta delle pulegge appese: Dp lungo il loro piano per la larghezza delle guance del telaio (come il 3D); con un riparo fisso sul '
+      + 'tetto sotto le pulegge l’area non è più un posto in piedi: è una scelta del progettista. Fino alla versione 1.28.0 del motore del '
+      + 'progetto il rifugio e la sua altezza non vedevano le pulegge appese',
   },
   {
     id: 'ammortizzatori.posizione', gruppo: 'sezione', titolo: 'Ammortizzatori e spazio di rifugio in fossa, in pianta',

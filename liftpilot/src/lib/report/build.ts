@@ -7,11 +7,12 @@ import appIt from '../../../messages/it.json';
 import { PROFILO, VOCI, type Stato } from '@/calc/norme';
 import type { Plant } from '../plant';
 import { COND, PALETTE, concreteTile, type SheetImage } from '@/drawing';
-import { mergeChecks, vociOfDesign } from '@/shaft';
+import { KV_VERT, mergeChecks, vociOfDesign } from '@/shaft';
 import type { CheckId, CheckStatus, FormValues } from '@/calc/types';
 import { belowChecks } from '../lift/below-checks';
-import { bottomGeo, type BottomScheme } from '../lift/bottom';
+import { bottomGeo, sheaveHalfBelow, type BottomScheme } from '../lift/bottom';
 import { headTopChecks } from '../lift/head';
+import { withRig } from '../lift/shaft-rig';
 import { NO_MARKS, P_ESTIMATE_RULE, type ValueMarks } from '../lift/marks';
 import { ambitoOf, collaudoOf } from '../lift/collaudo';
 import { carichiOf } from '../lift/modifica';
@@ -26,6 +27,7 @@ import { casesBlocks, limitiBlocks } from './cases';
 import { checkRefs } from './refs';
 import { STATO, drawnText, massNote, proposalBlocks, vociBlocks } from './build-parts';
 import { guideSection } from './guide';
+import { cwGearOf } from '../tavole/cw-gear';
 import { elaboratiBlocks, type IssuedSet } from './elaborati';
 import { machineMass } from '../lift/machine-mass';
 import { roomGeo } from '@/shaft/machine-room';
@@ -70,6 +72,20 @@ export interface ReportInput {
 
 const cellText = (c: Cell | undefined): string => (c === undefined ? '' : typeof c === 'string' ? c : `${c.text}${c.flag ? ' ⚠' : ''}${c.sub ? `\n${c.sub}` : ''}`);
 const rowStatus = (row: readonly Cell[]): BlockStatus => { const s = row.find((c) => typeof c === 'object' && c.status); return typeof s === 'object' && s.status ? s.status : ''; };
+
+/** A machine under the pit: the space under the shaft as sheet 1 has it (its note, its row and the check sg_cw;
+ *  registry paracadute.contrappeso) — the pit floor for its load besides P5–P8, the counterweight's safety gear given in
+ *  the data of the installation, in a modification (UNI 10411-1/-11) an existing pillar in its place as the designer
+ *  chooses. */
+function underPitText(modification: boolean): string {
+  const K = KV_VERT, v = K.cwGearInstantV;
+  return `Spazio accessibile sotto il vano (UNI EN 81-20:2020, 5.2.5.4): fondo della fossa progettato per almeno ${K.pitFloorAccessible} N/m² oltre ai `
+    + 'carichi P5–P8 del foglio 1 delle tavole (sotto ogni guida del contrappeso anche la presa del paracadute); paracadute del contrappeso, '
+    + `progressivo oltre ${v} m/s e fino a ${v} m/s anche istantaneo, azionato dal limitatore o, fino a ${v} m/s, dalla rottura della sospensione o `
+    + 'da una fune di sicurezza: tipo e azionamento si indicano nei dati dell’impianto e la verifica del foglio 1 non passa finché mancano'
+    + (modification ? '; in una modifica può stare al suo posto un pilastro esistente fino al terreno sotto gli ammortizzatori del contrappeso, '
+      + 'verificato per i nuovi carichi (UNI 10411-1:2024, 6.14): è una scelta del progettista' : '');
+}
 
 export function buildReport(r: ReportInput): ReportDoc {
   const P = makePres(calcIt, 'it-IT'), X = textsFor(P), { t, fmt } = P;
@@ -140,8 +156,9 @@ export function buildReport(r: ReportInput): ReportDoc {
   // the checks that need the machine, as the design's verdict takes them: the beams, the car's top under what hangs over
   // it, a machine below in its rooms (below-checks.ts)
   const scheme = I.layout === 'bottom' ? m.bottom ?? 'head' : null, L = r.design?.layout;
-  const g = L && machine && scheme ? bottomGeo(L, scheme, machine.D, I.Dp, machine.n, machine.d, I.r, sheaveAxisBelow(machine.D, machine.shape ?? null)) : null;
-  const beams = L && machine ? [...supportChecks(L, machine, ld, !scheme), ...headTopChecks(L, I.r, I.Dp, scheme), ...(g ? belowChecks(L, g, machine, I.Dp) : [])] : [];
+  const g = L && machine && scheme ? bottomGeo(L, scheme, machine.D, I.Dp, machine.n, machine.d, I.r, sheaveAxisBelow(machine.D, machine.shape ?? null),
+    sheaveHalfBelow(machine.D, machine.n, machine.d, machine.shape ?? null)) : null;
+  const beams = L && machine ? [...supportChecks(L, machine, ld, !scheme), ...headTopChecks(withRig(L, I.r, I.Dp, machine.n, machine.d, g), I.r, I.Dp, scheme), ...(g ? belowChecks(L, g, machine, I.Dp) : [])] : [];
   if (r.design) {
     section('Vano e cabina');
     B.push(...shaftBlocks(r.design, I.Q, { fmt, st, when, head: [t('col_item'), t('col_val'), t('col_lim'), t('col_res'), 'Riferimento'] }, beams, C));
@@ -153,7 +170,8 @@ export function buildReport(r: ReportInput): ReportDoc {
     if (machine?.rinvio) B.push({ t: 'kv', rows: [rinvioRow(machine.rinvio, fmt)] });
   }
   // the rails and the loads on the building, with the data of the installation (guide.ts): as sheet 1 counts them
-  const guide = r.design && machine ? guideSection(a, r.design.layout, r.plant ?? {}, machine, weighed, fmt, st, (c) => esitoOf(C, c.id, st(c.status), c.status)) : null;
+  const guide = r.design && machine ? guideSection(a, r.design.layout, r.plant ?? {}, machine, weighed, fmt, st, (c) => esitoOf(C, c.id, st(c.status), c.status),
+    cwGearOf(scheme === 'under', r.plant ?? {})) : null;
   if (guide) {
     section('Guide e carichi sulle strutture');
     B.push(...guide.blocks);
@@ -258,7 +276,7 @@ export function buildReport(r: ReportInput): ReportDoc {
   const estimated = [
     ...(m.pEstimate ? [`Massa della cabina: è la stima del software (${P_ESTIMATE_RULE}); sostituirla con quella reale e ripetere il calcolo`] : []),
     ...(I.layout === 'bottom' && m.bottom ? [`Schema delle funi con la macchina in basso (${BOTTOM_IT[m.bottom]}): rinvii, rami e passaggi ricostruiti dal software; rilevarli sull’impianto`] : []),
-    ...(I.layout === 'bottom' && m.bottom === 'under' ? ['Spazio accessibile sotto il vano: paracadute del contrappeso, obbligatorio (la EN 81-20 non ammette più il pilastro pieno fino al terreno; UNI EN 81-20:2020, 5.2.5.4), e fondo della fossa per le reazioni degli ammortizzatori'] : []),
+    ...(I.layout === 'bottom' && m.bottom === 'under' ? [underPitText(C.norma !== 'en81')] : []),
   ];
   B.push({ t: 'list', items: [...estimated, ...X.verifyList(I, N, res)].map((x) => `⚠ ${x}`) });
 

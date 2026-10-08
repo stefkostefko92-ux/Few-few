@@ -42,7 +42,7 @@ export function scenarioForCheck(id: CheckId | ShaftCheckId, res: Results, m: Si
     case 'd_pst': case 'd_ratio': case 'd_mp': return { sc: { id: 'ride', p: { from: 0, to: top, load: m.I.Q } }, view: 'car' };
     case 'b_car': case 'b_runby': case 'p_apron': return { sc: { id: 'buffer', p: { side: 'car' } }, view: 'pit' };
     case 'b_cw': return { sc: { id: 'buffer', p: { side: 'cw' } }, view: 'pit' };
-    case 'h_refuge': case 'h_clear': case 'h_parapet': return { sc: { id: 'ride', p: { from: 0, to: top, load: 0 } }, view: 'car', zones: true };
+    case 'h_refuge': case 'h_refuge_rig': case 'h_clear': case 'h_parapet': return { sc: { id: 'ride', p: { from: 0, to: top, load: 0 } }, view: 'car', zones: true };
     case 'p_refuge': return { sc: { id: 'ride', p: { from: top, to: 0, load: 0 } }, view: 'pit', zones: true };
     default: return null;
   }

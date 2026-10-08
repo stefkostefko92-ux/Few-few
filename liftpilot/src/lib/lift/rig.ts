@@ -11,7 +11,7 @@ import { fallsOf } from '@/shaft/falls';
 import { sheaveAxisBelow } from './machine';
 import { KL } from './norme';
 import type { BeltEl } from './belt';
-import { bottomGeo, exitAlong, type BottomGeo, type BottomScheme } from './bottom';
+import { bottomGeo, exitAlong, sheaveHalfBelow, type BottomGeo, type BottomScheme } from './bottom';
 import type { LiftDerived } from './derive';
 import { CAR_PULLEY_GAP } from './head';
 
@@ -107,7 +107,7 @@ export function ropeRig(dv: LiftDerived, scheme: BottomScheme = dv.bottom ?? 'he
   }
 
   // machine below: the car's plane toward its run to the machine, the sheave's along the wall, the counterweight's
-  const g = bottomGeo(L, scheme, N.D, I.Dp, N.n, N.d, I.r, sheaveAxisBelow(N.D, dv.machine.shape ?? null)), unit = (a: P2, b: P2): P2 => {
+  const g = bottomGeo(L, scheme, N.D, I.Dp, N.n, N.d, I.r, sheaveAxisBelow(N.D, dv.machine.shape ?? null), sheaveHalfBelow(N.D, N.n, N.d, dv.machine.shape ?? null)), unit = (a: P2, b: P2): P2 => {
     const l = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
     return [(b[0] - a[0]) / l, (b[1] - a[1]) / l];
   };

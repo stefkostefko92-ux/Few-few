@@ -12,14 +12,15 @@ import type { MachineSpec } from '@/shaft/machine-room';
 import { analyse, mirrorRopes, proposalValues, type Analysis } from '@/lib/present/analysis';
 import { simModel, type SimModel } from '@/sim';
 import { belowChecks } from './below-checks';
-import { bottomGapNeeded, bottomGeo, extraBends, type BottomScheme } from './bottom';
+import { bottomGapNeeded, bottomGeo, extraBends, sheaveHalfBelow, type BottomScheme } from './bottom';
 import { bestFit, catalogValues, firstTaken, offGrid, type CatalogChoice } from './catalog';
 import type { CatalogFit } from '@/lib/catalog/machines';
 import { machineShapeOf, machineSpec, rinvioOf, sheaveAxis, sheaveAxisBelow, type Made } from './machine';
 import type { MachineShape } from '@/shaft/machine-shape';
 import { rinvioClash, type RinvioFrame } from '@/shaft/rinvio';
 import { fallsOf } from '@/shaft/falls';
-import { headTopChecks } from './head';
+import { headTopChecks, refugeHeadroom } from './head';
+import { withRig } from './shaft-rig';
 import { carriedMass, governorSideFor, hebOf, placedPanel, supportChecks, supportLoad } from './support';
 import { drawnIssues, type Drawn } from './drawn';
 import { collaudoOf, type Collaudo } from './collaudo';
@@ -88,6 +89,9 @@ export interface LiftDerived {
   bottomGap: { now: number; need: number | null } | null;
   /** the head pulleys of the scheme (the calculation counts two of them for the bottom layout) */
   headPulleys: number;
+  /** what the rig hangs over the car roof (the pulleys hung under the slab) reaches into the refuge's height: the
+   *  headroom as designed and the least that clears it [mm] (head.ts refugeHeadroom); null when nothing does */
+  refugeHead: { now: number; need: number } | null;
   /** the proposal from a catalogue: the maker's machine taken, or none of the choice passing (the grid's proposal) */
   catalog: { fit: CatalogFit | null; miss: boolean } | null;
   /** the standard the lift is tested to and what the intervention replaces: which checks apply (collaudo.ts) */
@@ -187,7 +191,8 @@ function deriveOnce(inp: LiftInputs): LiftDerived {
   // the rope geometry with the machine `sh` (`md`) where it stands; `drawn`: L0 and Hv from the design even where entered
   const geometryOf = (sh: MachineShape | null, md: Made | null, drawn = false) => (W: FormValues): FormValues => {
     let X = W;
-    const D = num(X, 'n_D'), g = scheme ? bottomGeo(L, scheme, D, num(X, 'Dp'), num(X, 'n_n'), num(X, 'n_d'), num(X, 'r'), sheaveAxisBelow(D, sh)) : null;
+    const D = num(X, 'n_D'), g = scheme ? bottomGeo(L, scheme, D, num(X, 'Dp'), num(X, 'n_n'), num(X, 'n_d'), num(X, 'r'), sheaveAxisBelow(D, sh),
+      sheaveHalfBelow(D, num(X, 'n_n'), num(X, 'n_d'), sh)) : null;
     const rf = rinvioFor(X, sh, md);
     if (g) X = { ...X, nps: npsEntered + extraBends(g), ...(inp.auto.Hv || drawn ? { Hv: m3((g.zHead - g.zSheave) / 1000) } : {}) };
     if (inp.auto.L0 || drawn) X = { ...X, L0: ropeBeyond(S, X, g ? g.zHead - Sec.ceiling : null, sh, rf) };
@@ -259,13 +264,16 @@ function deriveOnce(inp: LiftInputs): LiftDerived {
   // the diverting pulley up over the bedplate's top into the machine (an h or a height set by hand): as the replacement says
   const clash = rinvio && pulleyRim < 0 ? 'floor' : above && machine.rinvio ? rinvioClash(roomGeo(Lp, machine), machine) : null;
   if (clash && !issues.includes('rinvio')) issues.push('rinvio');
-  const g = scheme ? bottomGeo(L, scheme, N.D, I.Dp, N.n, N.d, I.r, sheaveAxisBelow(N.D, shape)) : null;
+  const g = scheme ? bottomGeo(L, scheme, N.D, I.Dp, N.n, N.d, I.r, sheaveAxisBelow(N.D, shape), sheaveHalfBelow(N.D, N.n, N.d, shape)) : null;
   // a machine below: its room as a machine room, the pulley room over the shaft (below-checks.ts)
-  const supportCk = [...supportChecks(Lp, machine, load, above), ...headTopChecks(Lp, I.r, I.Dp, scheme), ...(g ? belowChecks(Lp, g, machine, I.Dp) : [])];
+  // the rope rig in the shaft (shaft-rig.ts): the car roof's spaces under what hangs there, the 3D and the sheets
+  const Lr = withRig(Lp, I.r, I.Dp, N.n, N.d, g), head = refugeHeadroom(Lr);
+  const supportCk = [...supportChecks(Lp, machine, load, above), ...headTopChecks(Lr, I.r, I.Dp, scheme), ...(g ? belowChecks(Lp, g, machine, I.Dp) : [])];
   const beams = above ? hebOf(Lp, machine, load) : null, chosenBy = Lp.inputs.room?.heb;
-  const bottomGap = scheme && g && !g.fits ? { now: S.cwWallGap, need: bottomGapNeeded(S, scheme, N.D, I.Dp, N.n, N.d, I.r) } : null;
+  const bottomGap = scheme && g && !g.fits ? { now: S.cwWallGap, need: bottomGapNeeded(S, scheme, N.D, I.Dp, N.n, N.d, I.r, sheaveHalfBelow(N.D, N.n, N.d, shape)) } : null;
   return {
-    shaft: Lp.inputs, values: V, layout: Lp, analysis, origin, noProposal, issues, calata, rinvioClash: clash, machine, supportChecks: supportCk, bottom: scheme, bottomGap,
+    shaft: Lp.inputs, values: V, layout: Lr, analysis, origin, noProposal, issues, calata, rinvioClash: clash, machine, supportChecks: supportCk, bottom: scheme, bottomGap,
+    refugeHead: head !== null ? { now: Lp.inputs.vertical.headroom, need: head } : null,
     heb: beams && chosenBy ? { ...beams, auto: { profile: !chosenBy.profile, dir: !chosenBy.dir } } : null,
     headPulleys: g ? 2 + extraBends(g) : 0, catalog, collaudo: collaudoOf(V, inp.collaudo), drawn,
     sim: simModel(I, N, analysis.res, Sec, vt),

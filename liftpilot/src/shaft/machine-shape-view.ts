@@ -183,6 +183,10 @@ function drawElevation(p: ShapePart, at: At, out: Entity[]): void {
   if (p.role === 'handwheel') out.push(line(at((s0 + s1) / 2, a - r), at((s0 + s1) / 2, a + r), 'thin'));
 }
 
+/** Half a maker's sheave's width across as the drawings show it: its width E, at least as wide as its `n` grooves for
+ *  ropes of diameter `d` [mm]. */
+export const sheaveHalf = (F: MachineFrame, n: number, d: number): number => Math.max(F.width, n * groovePitch(d) + 12) / 2;
+
 /** The machine from above (toward −Y): our bedframe's irons round the sheave, the parts from the lowest with the ribs on the castings'
  *  backs, the brake's levers and springs, the sheave with its grooves, the worm's axis, the feet's holes (seen through
  *  the base when it has one; hidden under a compact gearbox). */
@@ -234,7 +238,7 @@ export function shapePlan(F: MachineFrame, D: number, n: number, d: number, at: 
   const xs = S.parts.map(partBox);
   out.push(line(at(Math.min(...xs.map((q) => q[0])) - 25, 0), at(Math.max(...xs.map((q) => q[3])) + 25, 0), 'axis'));
   // the sheave over the side: its rim and the grooves of the ropes
-  const R = F.zSheave, pitch = groovePitch(d), half = Math.max(F.width, n * pitch + 12) / 2, rs = D / 2 + 6;
+  const R = F.zSheave, pitch = groovePitch(d), half = sheaveHalf(F, n, d), rs = D / 2 + 6;
   quad(-rs, R - half, rs, R + half, 'outline', 'steel');
   for (let i = 0; i < Math.min(n, 64); i++) { // the input caps the ropes at 20; the loop never trusts it
     const z = R - (n * pitch) / 2 + pitch * (i + 0.5);

@@ -95,6 +95,11 @@ export const TENSION = {
   hinge: 80, bar: 26, barT: 8, lever: [113, 150, 185], hang: [150, 160, 250], weightAt: LEVER_REACH - 150 / 2 - 40, leverKg: 22, hangKg: 44,
 } as const;
 
+/** The governor's bracket from the side wall with a machine below (registry limitatore.vano): its plate under the
+ *  governor's base out to the base's inner edge, the two braces under it from this far down the wall [mm] (the 3D and
+ *  the sheets). */
+export const GOV_BRACKET = { plate: 20, brace: 260 } as const;
+
 export type FreeSide = 'left' | 'right';
 
 /** Where the governor rope runs: x of its plane, the strand clamped to the car (y1) and the free one (y2); the

@@ -5,7 +5,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { deriveLift, newLift, type LiftInputs } from '@/lib/lift';
-import { belowFit, belowMachine, belowRoom, bottomGeo, type BottomScheme } from '@/lib/lift/bottom';
+import { belowFit, belowMachine, belowRoom, bottomGeo, sheaveHalfBelow, type BottomScheme } from '@/lib/lift/bottom';
 import { belowSectionEntities } from '@/lib/tavole/below-view';
 import { sheaveAxisBelow } from '@/lib/lift/machine';
 import { DEFAULT_ROOM, mergeChecks, type BelowRoom, type ShaftCheckId, type ShaftInputs } from '@/shaft';
@@ -17,8 +17,8 @@ const below = (scheme: BottomScheme, p: Partial<ShaftInputs> = {}): LiftInputs =
 const roomOf = (inp: LiftInputs, set?: BelowRoom) => {
   const d = deriveLift(set ? { ...inp, shaft: { ...inp.shaft, below: set } } : inp), L = d.layout, M = d.machine, scheme = d.bottom;
   assert.ok(scheme);
-  const g = bottomGeo(L, scheme, M.D, d.analysis.ctx.I.Dp, M.n, M.d, d.analysis.ctx.I.r, sheaveAxisBelow(M.D, M.shape ?? null));
-  const m = belowMachine(L, g, M.D, M.n, M.d, M.shape ?? null);
+  const g = bottomGeo(L, scheme, M.D, d.analysis.ctx.I.Dp, M.n, M.d, d.analysis.ctx.I.r, sheaveAxisBelow(M.D, M.shape ?? null), sheaveHalfBelow(M.D, M.n, M.d, M.shape ?? null));
+  const m = belowMachine(L, g, M.D, M.shape ?? null);
   return { d, g, R: belowRoom(L, g, m.body).room, fit: belowFit(L, g, M)[0] };
 };
 

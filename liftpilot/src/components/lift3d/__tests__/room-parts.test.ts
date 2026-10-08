@@ -55,7 +55,7 @@ function scene(inp: LiftInputs) {
   const all = new THREE.Group();
   all.add(r.common, r.roof, r.overhead, car.group, cw, ...Object.values(r.sides));
   all.updateMatrixWorld(true);
-  const body = rig.bottom && rig.scheme ? belowMachine(L, rig.scheme, N.D, N.n, N.d, dv.machine.shape ?? null).body : null;
+  const body = rig.bottom && rig.scheme ? belowMachine(L, rig.scheme, N.D, dv.machine.shape ?? null).body : null;
   return { dv, M, r, rig, car, cw, n: N.n, d: N.d, z0: rig.roomFloor * 1000, shells: shellsOf(L, rig, body) };
 }
 

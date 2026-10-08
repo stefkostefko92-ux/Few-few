@@ -13,6 +13,7 @@ import { ropeLength } from '../lift/support';
 import type { Plant } from '../plant';
 import type { Analysis } from '../present/analysis';
 import { railChecks, railLimits } from '../tavole/rail-check';
+import type { SafetyGear } from '../tavole/forces';
 import { sheetLoads, sheetRails, supportRows } from '../tavole/sheet-loads';
 import type { BlockStatus, ReportBlock } from './model';
 
@@ -22,8 +23,8 @@ const GEAR_IT = { progressive: 'progressivo', roller: 'istantaneo a rulli', inst
 
 /** The rails' checks with the data of the installation (the result of the relazione takes them) and the section. */
 export function guideSection(a: Analysis, L: Layout, Pl: Plant, M: MachineSpec, made: { brand: string; model: string } | null, fmt: Fmt,
-  st: (s: CheckStatus) => string, esito: (c: ShaftCheck) => { text: string; status: BlockStatus }): { checks: ShaftCheck[]; blocks: ReportBlock[] } {
-  const { I, N } = a.ctx, R = sheetRails(L, I.P, I.Q, Pl), SL = sheetLoads(a, L, Pl, M, made, N.n * N.qf * ropeLength(I), R), rc = R.rc, lim = railLimits();
+  st: (s: CheckStatus) => string, esito: (c: ShaftCheck) => { text: string; status: BlockStatus }, cwGear: SafetyGear | null = null): { checks: ShaftCheck[]; blocks: ReportBlock[] } {
+  const { I, N } = a.ctx, R = sheetRails(L, I.P, I.Q, Pl), SL = sheetLoads(a, L, Pl, M, made, N.n * N.qf * ropeLength(I), R, cwGear), rc = R.rc, lim = railLimits();
   const checks = railChecks(rc, R.gear, I.v), MPa = (x: number | null): string => (x === null ? '—' : `${fmt(x, 1)} N/mm²`);
   const labels: Readonly<Record<string, string>> = appIt.shaft, rows = checks.map((c) => esito(c));
   const B: ReportBlock[] = [
@@ -60,7 +61,8 @@ export function guideSection(a: Analysis, L: Layout, Pl: Plant, M: MachineSpec, 
     ['P4', daN(P[3]), 'dato del costruttore del limitatore (dati dell’impianto)', 'limitatore nel locale'],
     ['P5', daN(P[4], true), `paracadute: k1·g·(P + Q)/2 + peso della guida (k1 ${R.gear === 'progressive' ? KV_VERT.k1Progressive : R.gear === 'roller' ? KV_VERT.k1Roller : KV_VERT.k1Instant})`, 'piede di ogni guida di cabina'],
     ['P6', daN(P[5], L.inputs.vertical.carBuffers > 1), `${KV_VERT.bufferFactor}·g·(P + Q) diviso tra ${L.inputs.vertical.carBuffers} ammortizzatori`, 'fondo della fossa, ammortizzatori di cabina'],
-    ['P7', daN(P[6], true), 'peso della guida', 'piede di ogni guida del contrappeso'],
+    ['P7', daN(P[6], true), cwGear ? `paracadute del contrappeso: k1·g·M_cw/2 + peso della guida (k1 ${cwGear === 'progressive' ? KV_VERT.k1Progressive : cwGear === 'roller' ? KV_VERT.k1Roller : KV_VERT.k1Instant})`
+      : 'peso della guida', 'piede di ogni guida del contrappeso'],
     ['P8', daN(P[7]), `${KV_VERT.bufferFactor}·g·M_cw`, 'fondo della fossa, ammortizzatore del contrappeso'],
     ['P9', daN(P[8]), below ? 'P1 + P2 + P3 (l’argano è in basso)' : 'P1 + P2 + P3 + argano, telaio, basamento e putrelle (senza coefficiente)', 'totale sulla soletta del locale'],
   ] });

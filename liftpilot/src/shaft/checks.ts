@@ -3,16 +3,23 @@ import type { ShaftCheck, ShaftCheckId } from './types';
 
 /** Checks whose limit is a maximum (value ≤ limit); for the others it is a minimum. */
 export const isUpperLimit = (id: ShaftCheckId): boolean => id === 'v_area' || id === 'v_wall' || id === 'v_sill' || id === 'v_land' || id === 'v_land2' || id === 'v_op' || id === 'b_type' || id === 'm_beam' || id === 'm_beamf' || id === 'm_heb' || id === 'm_hebf' || id === 'm_rinvio' || id === 'm_calata'
-  || id === 'gr_stress' || id === 'gr_flange' || id === 'gr_defl' || id === 'sg_type' || id === 'v_govrail';
+  || id === 'gr_stress' || id === 'gr_flange' || id === 'gr_defl' || id === 'sg_type' || id === 'v_govrail' || id === 'sg_cw';
 
 export function check(id: ShaftCheckId, ok: boolean, value: number | null, limit: number | null, dec: number, unit: ShaftCheck['unit'], soft = false): ShaftCheck {
   return { id, status: ok ? 'ok' : soft ? 'warn' : 'fail', value, limit, dec, unit };
 }
 
+/** Checks of the lift that take the place of one of the shaft's under their own id: the refuge on the car roof measured
+ *  to what the lift's rope rig hangs under the slab (lib/lift/head.ts) in place of the shaft's measured to the slab —
+ *  what hangs is the machine's, so their scope in the acceptance test is not the shaft's (collaudo.ts). */
+const IN_PLACE_OF: Readonly<Partial<Record<ShaftCheckId, ShaftCheckId>>> = { h_refuge_rig: 'h_refuge', h_stand_rig: 'h_stand' };
+const takesPlace = (o: ShaftCheck, id: ShaftCheckId): boolean => o.id === id || IN_PLACE_OF[o.id] === id;
+
 /** The checks of `base` followed by those of `over`, a check of `over` taking the place of the one of `base` with its id
- *  (the free area in front of the panel, measured up to the machine once the machine is known). */
+ *  (the free area in front of the panel, measured up to the machine once the machine is known) or of the one it stands
+ *  for (IN_PLACE_OF). */
 export const mergeChecks = (base: readonly ShaftCheck[], over: readonly ShaftCheck[]): ShaftCheck[] =>
-  [...base.map((c) => over.find((o) => o.id === c.id) ?? c), ...over.filter((o) => !base.some((c) => c.id === o.id))];
+  [...base.map((c) => over.find((o) => takesPlace(o, c.id)) ?? c), ...over.filter((o) => !base.some((c) => takesPlace(o, c.id)))];
 
 /** Checks whose value is kept rounded to the millimetre while the outcome is decided on the exact one. */
 const KEPT_ROUNDED: ReadonlySet<ShaftCheckId> = new Set<ShaftCheckId>(['m_calata', 'm_fit', 'm_stand', 'm_quadro', 'v_place', 'v_doorcar', 'v_niche', 'v_staffa']);

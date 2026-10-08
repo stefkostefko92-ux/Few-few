@@ -58,15 +58,17 @@ export interface SheetLoads {
 }
 
 /** The loads for the calculation `a` on the design `L` with the machine `M` (`made`: the maker's model) and the ropes'
- *  mass `ropesKg`, the rails `R`. */
-export function sheetLoads(a: Analysis, L: Layout, Pl: Plant, M: MachineSpec, made: { brand: string; model: string } | null, ropesKg: number, R: SheetRails): SheetLoads {
+ *  mass `ropesKg`, the rails `R`; `cwGear`: the counterweight's safety gear over a space under the shaft (cw-gear.ts
+ *  cwGearOf), none without. */
+export function sheetLoads(a: Analysis, L: Layout, Pl: Plant, M: MachineSpec, made: { brand: string; model: string } | null, ropesKg: number, R: SheetRails,
+  cwGear: SafetyGear | null = null): SheetLoads {
   const { ctx, res } = a, { I, N } = ctx, V = L.inputs.vertical, below = I.layout === 'bottom', dyn = KV_VERT.dynFactor;
   const cablesKg = cablesMass(section(L).top / 1000), machine = machineMass(N, made), support = supportMass(below ? null : roomGeo(L, M), M);
   const carried = carriedBy(support, machine.kg);
   const inp: LoadsInput = {
     P: I.P, Q: I.Q, Mcw: res.Mcw, ropes: ropesKg, cables: cablesKg, machine: carried, roping: I.r,
     carRailQ: RAILS[L.inputs.carRail].q, carRailLen: R.railLen, cwRailQ: RAILS[L.inputs.cwRail].q, cwRailLen: R.railLen,
-    safetyGear: R.gear, dyn, carBuffers: V.carBuffers, cwBuffers: 1, governor: Pl.governorLoad ?? null, below: below ? headStatic(ctx, res.Mcw) : null,
+    safetyGear: R.gear, dyn, carBuffers: V.carBuffers, cwBuffers: 1, governor: Pl.governorLoad ?? null, below: below ? headStatic(ctx, res.Mcw) : null, cwGear,
   };
   const car = carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes: ropesKg, cables: cablesKg });
   const heb = below ? null : hebOf(L, M, { machine: carried, static: loads(inp).static, dyn, car })?.chosen ?? null;

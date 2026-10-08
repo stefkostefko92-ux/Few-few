@@ -10,6 +10,7 @@ import type { Analysis } from '../present/analysis';
 import { makeFmt } from '../present/tr';
 import { belowChecks, belowRoomOf } from '../lift/below-checks';
 import { headTopChecks } from '../lift/head';
+import { withRig } from '../lift/shaft-rig';
 import { carSideStatic, ropeLength, supportChecks } from '../lift/support';
 import { massModelOf } from '../lift/known';
 import { hebRows } from './heb-rows';
@@ -26,9 +27,11 @@ import type { DataSheet, Row } from './datasheet';
 import { railChecks } from './rail-check';
 import { dateIt, placeLines, type TavoleInput } from './input';
 import { sheetLoads, sheetRails, supportRows } from './sheet-loads';
+import { cwGearChecks, cwGearOf, cwGearRow } from './cw-gear';
 import { belowGeoOf, machineOf, machineText } from './views';
 import { clientNotes, estimateNote, railNote, safetyGearNote, spaceLegend } from './notes';
 import { NORMA_SIGLA, ambitoOf, collaudoOf } from '../lift/collaudo';
+import { KL } from '../lift/norme';
 import { collaudoNote } from '../report/collaudo';
 
 /** The buffers by type as the data sheet writes them: the car's (plural) and the counterweight's. */
@@ -107,8 +110,12 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   const brackets = (pitch: number | undefined): string => (oldRails ? 'ESISTENTI' : `${2 * bracketCount(railLen * 1000, pitch ?? KV_VERT.bracketPitch)}`);
   const gov = govSize(V.v, L.inputs.governor), oldGov = kept('governor');
   const ropeLen = ropeLength(I);
-  const room = L.inputs.room, govLen = (2 * (V.pit + S.top + V.headroom + (room ? room.slab + KV_VERT.governorAbove : 0))) / 1000;
-  const g = N.groove, fRated = res.kin.fRated;
+  // the governor's rope up to the governor: in the room over the shaft (with a machine below, the pulley room), else on
+  // its bracket under the ceiling (registry limitatore.vano)
+  const room = L.inputs.room, low = I.layout === 'bottom', inShaft = low && (x.marks?.bottom ?? 'head') !== 'room';
+  const over = inShaft ? -KV_VERT.govUnderCeiling : low ? (room?.slab ?? KL.slab) + KV_VERT.governorAbove : room ? room.slab + KV_VERT.governorAbove : 0;
+  const govLen = (2 * (V.pit + S.top + V.headroom + over)) / 1000;
+  const g = N.groove, fRated = res.kin.fRated, underPit = low && (x.marks?.bottom ?? 'head') === 'under';
   const specs: Row[] = [
     ['ARGANO', 'tipo', txt(machineText(Pl, x.marks?.catalog ?? null))],
     ['RAPPORTO DI RIDUZIONE', '', `1 : ${num(N.i)}`],
@@ -137,15 +144,18 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     ['FUNE DEL LIMITATORE', 'm-Ø', oldGov ? 'ESISTENTE' : `${fmt(Math.ceil(govLen), 0)} - ${fmt(2 * gov.rope, 0)}`],
     ['AMMORTIZZATORI CABINA', 'N°-tipo', `${V.carBuffers} - ${BUFFER_TEXT[bufferType(V, 'car')][0]}${kept('buffers') ? ' ESISTENTI' : ''}`],
     ['AMMORTIZZATORE CONTRAPPESO', 'N°-tipo', `1 - ${BUFFER_TEXT[bufferType(V, 'cw')][1]}${kept('buffers') ? ' ESISTENTE' : ''}`],
+    // a machine under the pit: the counterweight's safety gear over the space under the shaft (cw-gear.ts)
+    ...(underPit ? [['PARACADUTE CONTRAPPESO', 'tipo', cwGearRow(Pl)] as Row] : []),
   ];
 
   // loads on the machine and on the building, as the calculation and the report take them (sheet-loads.ts): the whole
   // machine (a catalogue's parts estimated), its bedframe and support, the HEB beams, the cables and the dynamic
-  // coefficient of the registry; a machine below pulls its anchors up and the head pulleys carry both falls of each side.
+  // coefficient of the registry; a machine below pulls its anchors up and the head pulleys carry both falls of each side;
+  // a counterweight's safety gear over a space under the shaft loads its rails (P7, cw-gear.ts).
   // The machine drawn is the proposal's (its shape); its whole mass that of the catalogue's model the values are, also
   // one entered by hand (known.ts), as the design's derivation and the relazione count it
   const made = x.marks?.catalog ?? null, M = machineOf(a, Pl, L, made), below = I.layout === 'bottom';
-  const SL = sheetLoads(a, L, Pl, M, massModelOf(I, N, x.values, made), N.n * N.qf * ropeLen, R), { ropesKg, cablesKg, dyn, ld } = SL, machine = SL.carried;
+  const SL = sheetLoads(a, L, Pl, M, massModelOf(I, N, x.values, made), N.n * N.qf * ropeLen, R, cwGearOf(underPit, Pl)), { ropesKg, cablesKg, dyn, ld } = SL, machine = SL.carried;
   const kg = (v: number | undefined): string => (v == null ? '—' : fmt(v, 0));
   const loadRows: DataSheet['loads'] = [
     ['CABINA', kg(Pl.massShell), 'kg'],
@@ -176,8 +186,10 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   const car = carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes: ropesKg, cables: cablesKg });
   // a machine below: its own room in place of the one over the shaft (the pulley room's checks apart; below-checks.ts)
   const scheme = below ? x.marks?.bottom ?? 'head' : null, bg = scheme ? belowGeoOf(a, L, M, scheme) : null, mRoom = bg ? belowRoomOf(L, bg, M).R : room;
+  // (the car's top and the refuge on its roof under what the rope rig hangs in the shaft: head.ts)
   const all = [...mergeChecks(L.checks, [...supportChecks(L, M, { machine: below ? 0 : machine, static: ld.static, dyn, car }, !below),
-    ...(bg ? belowChecks(L, bg, M, I.Dp) : [])]), ...headTopChecks(L, I.r, I.Dp, scheme), ...railChecks(rc, gear, I.v)];
+    ...(bg ? belowChecks(L, bg, M, I.Dp) : []), ...headTopChecks(withRig(L, I.r, I.Dp, N.n, N.d, bg), I.r, I.Dp, scheme)]), ...railChecks(rc, gear, I.v),
+    ...cwGearChecks(underPit, Pl, I.v, C.norma !== 'en81')];
   const checks: DataSheet['checks'] = all.map((c) => {
     const label = (labels[`c_${c.id}`] ?? c.id).replace(' (UNI EN 81-20, ', ' (');
     // a check of a part that stays as it is is out of the acceptance test (note on the sheet)
@@ -186,7 +198,8 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     if (c.id === 'm_pdoor' && room) return [label.replace(', margine', ''), `${room.doorW} × ${room.doorH} mm`, `≥ ${KV_VERT.doorMinW} × ${KV_VERT.pulleyDoorH} mm`, outcome];
     return [label, c.value == null ? '—' : `${shownValue(c, fmt)}${c.unit ? ` ${c.unit}` : ''}`, c.limit == null ? '—' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${withUnit(c.limit, c.dec, c.unit)}`, outcome];
   });
-  const sp = spaceLegend(L, fmt), notes = clientNotes(L, below);
+  // the rooms as the scheme of a machine below has them, existing in a modification tested to UNI 10411-1/-11 (9.2)
+  const sp = spaceLegend(L, fmt), notes = clientNotes(L, below, { scheme, existing: C.norma !== 'en81' });
   if (pEstimate) notes.push(estimateNote(fmt(I.P, 0), `NOTA ${notes.length + 1}`));
   if (!Pl.safetyGear) notes.push(safetyGearNote(`NOTA ${notes.length + 1}`));
   // the note of the rails' check wherever the check enters the acceptance test (new rails, or a change of load, car or sling)
