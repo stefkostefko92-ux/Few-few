@@ -40,7 +40,9 @@ export const VOCI_MASSE: readonly VoceImpianto[] = [
       + `${it(KM.sheaveKgMm2)} kg per mm di diametro primitivo e per mm di larghezza (le gole al loro passo — ${KM.groovePitch.map(([d, p]) => `fino a Ø ${d} `
       + `passo ${p}`).join(', ')} mm — più ${KM.sheaveRims} mm di bordi, almeno ${KM.sheaveWidthMin} mm), il volano ${KM.flywheelKg} kg; nel tiro sugli `
       + 'ancoraggi della macchina in basso conta solo la massa di catalogo (il limite inferiore, a favore di sicurezza); la massa inserita a mano, '
-      + 'diversa da quella del catalogo, è presa come argano completo',
+      + 'diversa da quella del catalogo, è presa come argano completo. Il modello è quello proposto dal catalogo o, con l’argano inserito a mano '
+      + '(anche dal calcolatore della sostituzione al progetto completo), quello che i valori del calcolo riconoscono — rapporto, carico statico, '
+      + 'massa e puleggia, come la relazione lo nomina: lo stesso argano pesa lo stesso nel progetto, nel foglio 1, nella relazione e nella sostituzione',
     riferimento: 'UNI EN 81-20:2020, 5.2.1.8.1 (carichi della macchina sulla struttura)',
     fonte: 'definizioni delle masse nei documenti dei costruttori (ricerca, capitolo 17: Sassi senza volano e puleggia, LEO senza puleggia, '
       + 'Montanari massa del riduttore, PENTA e M105 con il motore); pulegge e volani dal catalogo Sassi REV 2023/01 (da 24 kg a Ø 450 × 80 a 135 kg a '

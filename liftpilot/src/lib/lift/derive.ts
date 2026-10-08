@@ -24,6 +24,7 @@ import { carriedMass, governorSideFor, hebOf, placedPanel, supportChecks, suppor
 import { drawnIssues, type Drawn } from './drawn';
 import { collaudoOf, type Collaudo } from './collaudo';
 import { KL } from './norme';
+import { massModelOf } from './known';
 
 /** Values the software fills in (true) or takes as entered (false). */
 export interface AutoFlags {
@@ -252,8 +253,9 @@ function deriveOnce(inp: LiftInputs): LiftDerived {
     machine: inp.auto.machine && !noProposal ? 'auto' : 'entered', panel: spot ? 'auto' : 'entered',
   };
   // the beams under the machine (with the maker's bedplate it stands on) and the machine in its room; the car's highest
-  // part under what hangs over it
-  const load = supportLoad(analysis.ctx, analysis.res.Mcw, { machine: carriedMass(roomGeo(Lp, machine), machine, N, made) }), above = I.layout !== 'bottom';
+  // part under what hangs over it. The whole machine is the catalogue's model the proposal took, else the one the values
+  // are (one entered by hand, carried from the replacement's calculator): as the relazione names it (known.ts)
+  const load = supportLoad(analysis.ctx, analysis.res.Mcw, { machine: carriedMass(roomGeo(Lp, machine), machine, N, massModelOf(I, N, V, made)) }), above = I.layout !== 'bottom';
   // the diverting pulley up over the bedplate's top into the machine (an h or a height set by hand): as the replacement says
   const clash = rinvio && pulleyRim < 0 ? 'floor' : above && machine.rinvio ? rinvioClash(roomGeo(Lp, machine), machine) : null;
   if (clash && !issues.includes('rinvio')) issues.push('rinvio');

@@ -6,6 +6,7 @@
 // the maker's address) left blank, the price too unless the downloader sees prices (then the company's list's). Every
 // value comes from the calculation and the catalogue, whose source the note names. Pure.
 import calcIt from '../../../messages/calc/it.json';
+import { ceilTo } from '@/calc/math';
 import type { SheetImage } from '@/drawing';
 import { CATALOG_READ_ON, MAKER_SITE } from '@/lib/catalog/machines';
 import type { DataSource, MachineCandidate } from '@/lib/lift/advice';
@@ -81,6 +82,8 @@ export function buildOrder(o: OrderInput): ReportDoc {
 
   section('Argano richiesto');
   const vMains = I.v * (1 + c.dv), hand = o.room.length ? ' — come nella pianta del locale (punto 4)' : '';
+  // a machine below: the pulls on its anchors where one is upward (anchor.ts)
+  const anchor = c.anchor && c.anchor.max > 0 ? c.anchor : null;
   B.push({ t: 'kv', rows: [
     ['Costruttore e modello', `${machineName(c)} · quantità 1`],
     ['Rapporto di riduzione', `${c.ratio} (i = ${fmt(c.i, 3)})`],
@@ -90,8 +93,10 @@ export function buildOrder(o: OrderInput): ReportDoc {
     ['Freno', `${N.brakeSets} × ${fmt(N.brakeNm, 0)} N·m sull’albero del motore (taratura; minimo richiesto dal calcolo ${fmt(c.brakeMin, 1)} N·m per gruppo, `
       + 'UNI EN 81-20:2020, 5.9.2.2)'],
     ['Carico sull’albero nella prova con 1,25·Q', `${fmt(c.testKg, 0)} kg${I.layout === 'bottom' ? ' verso l’alto (macchina in basso)' : ''}; ammessi a catalogo ${fmt(c.staticKg, 0)} kg`
-      + (c.uplift !== null && c.uplift > 0 ? `; sollevamento netto sugli ancoraggi ${fmt(c.uplift, 0)} kg (peso della macchina dedotto)` : '')],
-    ['Coppia in uscita dal riduttore', `${fmt(c.mpMax, 0)} N·m al massimo sull’albero lento, richiesta dal calcolo: da confermare con il catalogo del riduttore`
+      + (anchor ? `; tiro sugli ancoraggi, peso della macchina dedotto: ${fmt(Math.max(0, anchor.test), 0)} kg nella prova con 1,25·Q, `
+        + `${fmt(Math.max(0, anchor.dyn), 0)} kg con la portata × ${fmt(anchor.factor, 1)} (tirafondi e ancoranti: il maggiore, come nel foglio 1)` : '')],
+    // the largest the calculation asks, rounded up to 10 N·m as the proposal and the relazione ask it (registry azionamento.coppia.uscita)
+    ['Coppia in uscita dal riduttore', `≥ ${fmt(ceilTo(c.mpMax, 10), 0)} N·m sull’albero lento, la massima richiesta dal calcolo: da confermare con il catalogo del riduttore`
       + (N.MpCat > 0 ? ` (ammessa ${fmt(N.MpCat, 0)} N·m, dato inserito)` : '')],
     ['Massa (catalogo)', c.mass === null ? 'non indicata dal costruttore' : `${fmt(c.mass, 0)} kg`],
     ['Fonte dei dati di catalogo', c.src],

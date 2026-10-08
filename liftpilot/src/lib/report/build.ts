@@ -36,7 +36,7 @@ import { rinvioRow } from './machine-shape';
 import { carriedMass, supportChecks, supportLoad, supportMass } from '../lift/support';
 import { adviceBlocks } from './advice';
 import type { MachineAdvice } from '../lift/advice';
-import { catalogMachineOf, modelOf } from '../order/machine';
+import { catalogMachineOf, massModelOf, modelOf } from '../lift/known';
 
 /** The rope schemes of a machine below, in the relazione's words (src/lib/lift/bottom.ts). */
 const BOTTOM_IT: Readonly<Record<BottomScheme, string>> = {
@@ -131,8 +131,11 @@ export function buildReport(r: ReportInput): ReportDoc {
 
   const made = m.catalog ? { brand: m.catalog.brand, model: m.catalog.model } : null;
   const machine = r.design ? machineSpec(ctx, N.mass, '', r.design.layout.inputs.room, made ? shapeOf(made.brand, made.model) : null, made) : null;
+  // the maker's model whose whole machine the loads count: the proposal's, else the catalogue's machine the values are
+  // (one entered by hand) — the one named below, as the design's derivation and sheet 1 take it (known.ts)
+  const weighed = massModelOf(I, N, r.values, made);
   // the support's load as the design and sheet 1 count it: the whole machine with what carries it (support.ts)
-  const ld = supportLoad(ctx, res.Mcw, { machine: machine && r.design ? carriedMass(roomGeo(r.design.layout, machine), machine, N, made) : N.mass });
+  const ld = supportLoad(ctx, res.Mcw, { machine: machine && r.design ? carriedMass(roomGeo(r.design.layout, machine), machine, N, weighed) : N.mass });
   const bed = machine ? supportMass(null, machine).maker : 0;
   // the checks that need the machine, as the design's verdict takes them: the beams, the car's top under what hangs over
   // it, a machine below in its rooms (below-checks.ts)
@@ -150,7 +153,7 @@ export function buildReport(r: ReportInput): ReportDoc {
     if (machine?.rinvio) B.push({ t: 'kv', rows: [rinvioRow(machine.rinvio, fmt)] });
   }
   // the rails and the loads on the building, with the data of the installation (guide.ts): as sheet 1 counts them
-  const guide = r.design && machine ? guideSection(a, r.design.layout, r.plant ?? {}, machine, made, fmt, st, (c) => esitoOf(C, c.id, st(c.status), c.status)) : null;
+  const guide = r.design && machine ? guideSection(a, r.design.layout, r.plant ?? {}, machine, weighed, fmt, st, (c) => esitoOf(C, c.id, st(c.status), c.status)) : null;
   if (guide) {
     section('Guide e carichi sulle strutture');
     B.push(...guide.blocks);
@@ -170,7 +173,7 @@ export function buildReport(r: ReportInput): ReportDoc {
       + `rapporto, carico statico, massa e puleggia coincidono; fonte: ${known.src})`]] : [];
   B.push({ t: 'kv', rows: [...named, ...X.machineRows(N, res)] });
   // a catalogue's mass that is not the whole machine: what the loads on the building take instead (machine-mass.ts)
-  const whole = machineMass(N, made ?? known);
+  const whole = machineMass(N, weighed);
   B.push(...massNote(whole, N.mass, fmt));
   if (m.catalog || known) {
     // a catalogue's machine: what is the maker's and what the software's sizing (the sheave, the ropes, the groove, the

@@ -11,6 +11,7 @@ import { makeFmt } from '../present/tr';
 import { belowChecks, belowRoomOf } from '../lift/below-checks';
 import { headTopChecks } from '../lift/head';
 import { carSideStatic, ropeLength, supportChecks } from '../lift/support';
+import { massModelOf } from '../lift/known';
 import { hebRows } from './heb-rows';
 import { isUpperLimit, mergeChecks, shownValue } from '@/shaft/checks';
 import { KV_VERT } from '@/shaft/norme-vert';
@@ -140,9 +141,11 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
 
   // loads on the machine and on the building, as the calculation and the report take them (sheet-loads.ts): the whole
   // machine (a catalogue's parts estimated), its bedframe and support, the HEB beams, the cables and the dynamic
-  // coefficient of the registry; a machine below pulls its anchors up and the head pulleys carry both falls of each side
+  // coefficient of the registry; a machine below pulls its anchors up and the head pulleys carry both falls of each side.
+  // The machine drawn is the proposal's (its shape); its whole mass that of the catalogue's model the values are, also
+  // one entered by hand (known.ts), as the design's derivation and the relazione count it
   const made = x.marks?.catalog ?? null, M = machineOf(a, Pl, L, made), below = I.layout === 'bottom';
-  const SL = sheetLoads(a, L, Pl, M, made, N.n * N.qf * ropeLen, R), { ropesKg, cablesKg, dyn, ld } = SL, machine = SL.carried;
+  const SL = sheetLoads(a, L, Pl, M, massModelOf(I, N, x.values, made), N.n * N.qf * ropeLen, R), { ropesKg, cablesKg, dyn, ld } = SL, machine = SL.carried;
   const kg = (v: number | undefined): string => (v == null ? '—' : fmt(v, 0));
   const loadRows: DataSheet['loads'] = [
     ['CABINA', kg(Pl.massShell), 'kg'],

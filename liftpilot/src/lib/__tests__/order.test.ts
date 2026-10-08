@@ -118,6 +118,21 @@ test('bozza d’ordine con la macchina in basso: nessun locale sopra il vano, co
   assert.deepEqual(designRoom(L, d, order.machine, order.recorded), []);
   const doc = buildOrder({ ...sample(null), order, room: [] }), all = texts(doc);
   assert.ok(!doc.blocks.some((b) => b.t === 'plan') && !all.includes('Locale macchina con l’argano') && !all.includes('come nella pianta del locale'));
+  // the pulls on its anchors as sheet 1 gives them: at the test with 1,25·Q and with the rated load times the dynamic
+  // coefficient (registry albero.sollevamento), the machine's mass deducted
+  const a = order.machine.anchor, fmt = (x: number): string => new Intl.NumberFormat('it-IT', { maximumFractionDigits: 0 }).format(x);
+  assert.ok(a && a.max > 0, 'tiro verso l’alto sugli ancoraggi');
+  assert.ok(all.includes(`${fmt(Math.max(0, a.test))} kg nella prova con 1,25·Q, ${fmt(Math.max(0, a.dyn))} kg con la portata × 2,0`), 'i due tiri');
+});
+
+test('bozza d’ordine: la coppia in uscita come la chiedono la proposta e la relazione (il massimo, per eccesso a 10 N·m)', () => {
+  const o = sample({ brand: 'SICOR', model: 'SH140' }), mp = o.order.machine.mpMax, all = texts(buildOrder(o));
+  const asked = Math.ceil(mp / 10 - 1e-9) * 10;
+  assert.ok(asked >= mp && asked - mp < 10);
+  assert.ok(all.includes(`≥ ${new Intl.NumberFormat('it-IT', { maximumFractionDigits: 0 }).format(asked)} N·m sull’albero lento`), `${mp} → ${asked}`);
+  // above, nothing pulls the anchors up
+  assert.equal(o.order.machine.anchor, null);
+  assert.ok(!all.includes('tiro sugli ancoraggi'));
 });
 
 test('Word: le parti del pacchetto, il testo protetto, il logo e i disegni come immagini', () => {

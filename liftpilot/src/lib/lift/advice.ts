@@ -18,11 +18,14 @@ import { analyse, mirrorRopes, proposalValues, type Analysis } from '@/lib/prese
 import type { MakerBedplate } from '@/shaft/rinvio';
 import { sizeMachine } from '@/calc/sizing';
 import { bestFit, catalogValues, firstTaken, offGrid } from './catalog';
+import { anchorPull, type AnchorPull } from './anchor';
+import { ADVICE_BRANDS } from './known';
 import { machineMass } from './machine-mass';
 import { deriveLift, type LiftDerived, type LiftInputs } from './derive';
 
-/** The makers the advice compares, and every model of theirs it verifies (those proposed only by name are out). */
-export const ADVICE_BRANDS: readonly Brand[] = ['SICOR', 'Montanari'];
+/** The makers the advice compares (known.ts, which ranks them first in recognising a machine), and every model of
+ *  theirs it verifies (those proposed only by name are out). */
+export { ADVICE_BRANDS };
 export interface AdviceModel { brand: Brand; model: string }
 export const ADVICE_MODELS: readonly AdviceModel[] =
   ADVICE_BRANDS.flatMap((brand) => catalogOf(brand).filter((c) => !c.byName).map((c) => ({ brand, model: c.model })));
@@ -54,10 +57,11 @@ export interface MachineCandidate {
   Mcw: number;
   k: number;
   /** the largest torque on the reducer's output shaft the calculation asks [N·m]; the least brake torque each set must
-   *  give [N·m]; a machine below: the net uplift on its anchors in the test [kg] (null above) */
+   *  give [N·m]; a machine below: the pulls on its anchors, at the test with 1,25·Q and with the rated load times the
+   *  dynamic coefficient (anchor.ts; null above) */
   mpMax: number;
   brakeMin: number;
-  uplift: number | null;
+  anchor: AnchorPull | null;
   /** the load on the sheave's shaft in the test [kg] and what the machine allows */
   testKg: number;
   staticKg: number;
@@ -131,7 +135,7 @@ export function candidateOf(fit: CatalogFit, I: Plant, N: Machine, res: Results,
   if (!fit.ratio) return null;
   return {
     brand: c.brand, model: c.model, ratio: fit.ratio, i: fit.i, dv: fit.dv, I, N, Mcw: res.Mcw, k: res.k, mpMax: res.drive.MpMax,
-    brakeMin: Math.max(res.brake.all / Math.max(1, res.brake.sets), res.brake.one, res.brake.up), uplift: res.shaft.uplift, testKg: res.shaft.testKg, staticKg: c.staticKg,
+    brakeMin: Math.max(res.brake.all / Math.max(1, res.brake.sets), res.brake.one, res.brake.up), anchor: anchorPull(res.shaft, N.mass), testKg: res.shaft.testKg, staticKg: c.staticKg,
     mass: c.mass, massWhole: whole?.kg ?? null, massEstimated: whole?.estimate ?? false, kWmax: c.kWmax, bedplate, drawn: shapeOf(c.brand, c.model) !== null,
     fails, warns, src: c.src, sources: sourcesOf(c.src), values,
   };
