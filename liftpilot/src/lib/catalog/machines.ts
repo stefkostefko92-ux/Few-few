@@ -179,3 +179,25 @@ export function catalogFit(c: CatalogMachine, o: { D: number; iIdeal: number; Pn
 
 /** The machines of a brand (or one model of it) in the catalogue. */
 export const catalogOf = (brand: Brand, model?: string): readonly CatalogMachine[] => MACHINES.filter((c) => c.brand === brand && (!model || c.model === model));
+
+/** What a catalogue's mass is, as the maker defines it: the whole machine (`totale`), without flywheel and sheave
+ *  (`senza_volano_puleggia`), without the sheave (`senza_puleggia`), the gearbox alone, without motor, flywheel and
+ *  sheave (`riduttore`). The loads on the building count the whole machine: what the catalogue leaves out is estimated
+ *  (src/lib/lift/machine-mass.ts). */
+export type MassKind = 'totale' | 'senza_volano_puleggia' | 'senza_puleggia' | 'riduttore';
+
+/** By maker, as their documents define the mass (see the header); the models that differ from their maker's. SICOR's
+ *  sheets and GEM's give the machine's mass (GEM's «massa media» without a definition: taken as the whole machine), FAER
+ *  and ITG none. */
+const MASS_KIND: Readonly<Record<Brand, MassKind>> = {
+  SICOR: 'totale', Sassi: 'senza_volano_puleggia', Montanari: 'riduttore', GEM: 'totale', FAER: 'totale', ITG: 'totale',
+};
+const MASS_KIND_MODEL: Readonly<Record<string, MassKind>> = {
+  // Sassi: LEO's mass is without the sheave only; the MB series' without motor, flywheel and sheave
+  'Sassi LEO': 'senza_puleggia', 'Sassi MB94': 'riduttore', 'Sassi MB95': 'riduttore', 'Sassi MB108': 'riduttore',
+  // Montanari: PENTA's sheet and M105's page give the mass with the motor
+  'Montanari PENTA': 'senza_volano_puleggia', 'Montanari M105': 'senza_volano_puleggia',
+};
+
+/** What the catalogue's mass of the machine `c` includes. */
+export const massKindOf = (c: Pick<CatalogMachine, 'brand' | 'model'>): MassKind => MASS_KIND_MODEL[`${c.brand} ${c.model}`] ?? MASS_KIND[c.brand];

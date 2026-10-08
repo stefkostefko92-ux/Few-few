@@ -148,7 +148,9 @@ test('progetto: il telaio con il rinvio scavalca le putrelle — le gambe dove i
   assert.ok(d.heb && d.machine.rinvio?.on === 'frame' && !d.machine.rinvio.maker);
   const c = d.heb.chosen;
   assert.ok(c.ok && c.bridge, `${c.dir} ${c.profile}`);
-  assert.deepEqual([c.dir, c.profile], ['x', 'HEB 140'], 'le più corte, poi le più leggere');
+  // the bedplate's own weight (its irons, the pulley, its legs: support.ts supportMass, round 36) on the beams too: the
+  // HEB 140 deflects 1,09 mm over its 1,07 — the HEB 160 of the shortest
+  assert.deepEqual([c.dir, c.profile], ['x', 'HEB 160'], 'le più corte, poi le più leggere');
   assert.ok(d.supportChecks.filter((x) => x.id.startsWith('m_heb')).every((x) => x.status === 'ok'));
   const G = roomGeo(d.layout, d.machine);
   assert.ok(G);

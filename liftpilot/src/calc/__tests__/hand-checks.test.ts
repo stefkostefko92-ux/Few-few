@@ -107,10 +107,20 @@ test('D/d ≥ 40 sulle pulegge di rinvio e coppia in uscita contro il catalogo',
   assert.equal(status({ ...PRESETS.A, n_d: 10 }, 'r_ddp'), 'ok', 'Dp/d 400/10 = 40');
   assert.equal(status({ ...PRESETS.A, n_d: 11 }, 'r_ddp'), 'fail', 'Dp/d 400/11 = 36,4');
   assert.equal(status({ ...PRESETS.A, layout: 'top', nps: 0, npr: 0 }, 'r_ddp'), 'assente', 'senza pulegge nessuna verifica');
-  // example B with its 4 × Ø11 ropes: 1 514 N·m
-  near('coppia in uscita, esempio B', run({ ...PRESETS.B }).r.drive.MpMax, 1514, 1e-3);
-  assert.equal(status({ ...PRESETS.B, n_MpCat: '1400' }, 'd_mp'), 'fail');
-  assert.equal(status({ ...PRESETS.B, n_MpCat: '2000' }, 'd_mp'), 'ok');
+  // example B with its 4 × Ø11 ropes: 1 514 N·m in acceleration
+  const { r: rB, N: NB, I: IB } = run({ ...PRESETS.B }), dB = rB.drive, R = NB.D / 2000;
+  near('coppia in uscita all’accelerazione, esempio B', dB.MpAcc, 1514, 1e-3);
+  // emergency braking with the real brake (both sets): the ropes' pull difference on the sheave and the slow shaft's own
+  // inertia decelerated, M = (T1 − T2)·R + J_s·a·r/R — the largest of the real brake's cases
+  const brake = (c: { T1: number; T2: number; aEff: number }): number => (c.T1 - c.T2) * R + (NB.Js * c.aEff * IB.r) / R;
+  near('coppia in uscita alla frenatura di emergenza', dB.MpBrake, Math.max(...rB.brkReal.map(brake)), 1e-9);
+  near('esempio B: frenatura (20 031 − 4 261) N · 0,28 m + 2,5 · 4,94 / 0,28', dB.MpBrake, 4460, 1e-3);
+  // the static test at 1,25·Q: the pull difference only
+  near('coppia in uscita alla prova statica', dB.MpTest, Math.max(...rB.loadCases.map((c) => (c.T1 - c.T2) * R)), 1e-9);
+  assert.ok(dB.MpBrake > 2.5 * dB.MpAcc, 'la frenatura di emergenza domina: quasi 3 volte l’accelerazione');
+  near('coppia in uscita: la più grande delle tre', dB.MpMax, Math.max(dB.MpAcc, dB.MpBrake, dB.MpTest), 1e-12);
+  assert.equal(status({ ...PRESETS.B, n_MpCat: '2000' }, 'd_mp'), 'fail', 'sopra l’accelerazione, sotto la frenatura: KO');
+  assert.equal(status({ ...PRESETS.B, n_MpCat: '6000' }, 'd_mp'), 'ok');
   assert.equal(status({ ...PRESETS.B, n_MpCat: '' }, 'd_mp'), 'assente');
 });
 
@@ -123,4 +133,28 @@ test('esempio B della ricerca (capitolo 7.3): funi 4 × Ø11 come le esistenti',
   near('aderenza alla decelerazione reale', r.real.util, 4.17, 1e-3);
   near('decelerazione reale', r.real.aEff, 5.54, 1e-3);
   near('sollevamento netto', r.shaft.uplift ?? NaN, 2010, 1e-3);
+});
+
+test('pressione specifica nella gola (UNI 10411-1:2024, D.2): forma chiusa e limite con la velocità della fune', () => {
+  const { r, N, I } = run({ ...PRESETS.A });
+  const { T, p, limit } = r.ropes.press;
+  // example A: 4 × Ø10 on Ø560, U undercut β 90°: 8·cos 45° / (π − π/2 − sin 90°) = 9,910
+  assert.deepEqual([N.n, N.d, N.D, N.groove.type, N.groove.beta], [4, 10, 560, 'UU', 90]);
+  const b = Math.PI / 2, fU = (8 * Math.cos(b / 2)) / (Math.PI - b - Math.sin(b));
+  near('fattore della gola U con intaglio β 90°', fU, 9.910, 1e-3);
+  near('p = T/(n·d·D) · 8 cos(β/2)/(π − β − sin β)', p, (T / (4 * 10 * 560)) * fU, 1e-12);
+  near('esempio A: p', p, 5.89, 1e-3);
+  // limit (12,5 + 4·vc)/(1 + vc), vc = v·r = 1 m/s: 8,25 N/mm²
+  near('limite a vc = 1 m/s', limit, (12.5 + 4 * I.v * I.r) / (1 + I.v * I.r), 1e-12);
+  near('limite 8,25', limit, 8.25, 1e-12);
+  assert.equal(r.checks.find((c) => c.id === 'g_press')?.status, 'info', 'sotto il limite: informativa');
+  // U without undercut: 8/π; hardened V γ 35°: 4,5/sin 17,5° — the V groove presses harder
+  const pU = run({ ...PRESETS.A, n_groove: 'U' }).r.ropes.press.p, pV = run({ ...PRESETS.A, n_groove: 'VH', n_gamma: 35 }).r.ropes.press.p;
+  near('gola U', pU, (T / (4 * 10 * 560)) * (8 / Math.PI), 1e-9);
+  near('gola V', pV, (T / (4 * 10 * 560)) * (4.5 / Math.sin((17.5 * Math.PI) / 180)), 1e-9);
+  assert.ok(pV > p && p > pU);
+  // over the limit: a warning (the standard's informative appendix), never a KO
+  const fast = run({ ...PRESETS.A, n_groove: 'VH', n_gamma: 35, v: 2.5 }).r;
+  assert.ok(fast.ropes.press.p > fast.ropes.press.limit);
+  assert.equal(fast.checks.find((c) => c.id === 'g_press')?.status, 'warn');
 });

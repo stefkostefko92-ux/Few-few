@@ -39,6 +39,84 @@ export function grooveFor(r0: Results, type: 'UU' | 'VH', gamma: number, limit: 
   return null;
 }
 
+/** The groove's margins in the sizing's order: traction utilisation ≤ the warning threshold, then ≤ 1, first also at the
+ *  real brake's deceleration, then without it. */
+const GROOVE_TIERS: readonly (readonly [number, boolean])[] = [[K.tractionWarn, true], [1, true], [K.tractionWarn, false], [1, false]];
+
+/**
+ * Brake and groove of the machine M0 (its groove and brake are not read): the brake per set, the smallest setting that
+ * meets every requirement (they do not depend on the groove), up to 5 N·m; the groove that holds traction also at the
+ * real deceleration of both sets when the groove limits allow it (grooveFor, `pref` type, γ `gamma`), with its margins;
+ * and the results with both. The margins are tried in the order of GROOVE_TIERS from `from` on; `tier` is the one taken.
+ * null: no groove holds traction.
+ */
+export function sizeParts(I: Plant, M0: Machine, pref: 'UU' | 'VH', gamma: number, from = 0): { brakeSet: number; groove: Groove; tight: boolean; real: boolean; tier: number; M: Machine; res: Results } | null {
+  const r0 = compute(I, { ...M0, groove: { type: 'U', beta: 0, gamma }, brakeSets: 2, brakeNm: 0 }), brakeSet = ceilTo(Math.max(r0.brake.one, r0.brake.up, r0.brake.all / 2), 5);
+  const realCases = r0.brakeCasesAt(2 * brakeSet);
+  let groove: Groove | null = null, tight = false, real = false, tier = from;
+  for (; tier < GROOVE_TIERS.length; tier++) {
+    const [lim, rl] = GROOVE_TIERS[tier];
+    groove = grooveFor(r0, pref, gamma, lim, rl ? realCases : null);
+    if (groove) { tight = lim === 1; real = rl; break; }
+  }
+  if (!groove) return null;
+  const M: Machine = { ...M0, groove, brakeSets: 2, brakeNm: brakeSet };
+  return { brakeSet, groove, tight, real, tier, M, res: compute(I, M) };
+}
+
+
+/** Motor: the smallest IEC rating (up to `kWmax`) that covers the static power (at the static torque, with the machine
+ *  faster than the rated speed) with acceleration torque ≤ 2 × rated (the acceleration torque does not depend on the
+ *  rating: Jm is an assumption of the group); undefined: none. */
+export const motorFor = (res: Results, nm: number, kWmax: number | null = null): number | undefined =>
+  MOTOR_KW.find((kw) => kw >= res.drive.Peq / 1000 && res.drive.Macc / ((9550 * kw) / nm) <= K.accelTorqueRatioMax && (kWmax === null || kw <= kWmax));
+
+/** The grooves after `a` up to `b` by half degrees, each gripping less: less undercut (U with undercut: β down) or wider
+ *  (hardened V: γ up); only `b` when it grips no less than `a`. */
+function towards(a: Groove, b: Groove): Groove[] {
+  if (a.type === 'VH' && b.type === 'VH' && b.gamma > a.gamma) {
+    return Array.from({ length: Math.round(2 * (b.gamma - a.gamma)) }, (_, j) => ({ type: 'VH', beta: 0, gamma: a.gamma + (j + 1) / 2 }));
+  }
+  if (a.type !== 'VH' && b.type !== 'VH' && b.beta < a.beta) {
+    return Array.from({ length: Math.round(2 * (a.beta - b.beta)) }, (_, j) => {
+      const beta = a.beta - (j + 1) / 2;
+      return { type: beta > 0 ? 'UU' : 'U', beta, gamma: b.gamma };
+    });
+  }
+  return [b];
+}
+
+/**
+ * A maker's machine M (its ratio, sheave, ropes, static load allowed: the catalogue's and the option's) sized again by
+ * the sizing's rules at its own ratio and on the installation I as it is with that machine (its geometry): brake, groove
+ * and motor (no larger than the catalogue's `kWmax`). The groove that grips least within the widest margin
+ * (GROOVE_TIERS); a groove gripping more raises the rope's equivalent bends and the safety factor required, so when a
+ * check fails with it the grooves gripping less are tried by half degrees, down to the next margin's: the one with the
+ * most traction that passes every check. null when a part cannot be found or a check fails with every groove: the
+ * machine does not take the option.
+ */
+export function resizeMachine(I: Plant, M: Machine, kWmax: number | null): { M: Machine; res: Results } | null {
+  const pref = M.groove.type === 'VH' ? 'VH' : 'UU';
+  const passing = (M0: Machine, groove: Groove): { M: Machine; res: Results } | null => {
+    const r0 = compute(I, { ...M0, groove }), Pn = motorFor(r0, M.nm, kWmax);
+    if (!Pn) return null;
+    const N: Machine = { ...M0, groove, Pn }, res = Pn === M0.Pn ? r0 : compute(I, N);
+    return res.fails.length ? null : { M: N, res };
+  };
+  let prev: Groove | null = null;
+  for (let from = 0; from < GROOVE_TIERS.length; from++) {
+    const parts = sizeParts(I, M, pref, M.groove.gamma, from);
+    if (!parts) return null;
+    for (const g of prev ? towards(prev, parts.groove) : [parts.groove]) {
+      const ok = passing(parts.M, g);
+      if (ok) return ok;
+    }
+    prev = parts.groove;
+    from = parts.tier;
+  }
+  return null;
+}
+
 /**
  * For each rope diameter: the fewest ropes, then the smallest sheave that passes every check. base carries the
  * assumptions (poles, speed, frequency, η_d, η_i, inertias, groove type and γ); fixedD keeps a sheave; keep keeps the
@@ -54,26 +132,13 @@ export function sizeMachine(I: Plant, base: Machine, fixedD = 0, keep: RopeSet |
     if (D / d < K.ddMin) return null;
     const iIdeal = (Math.PI * (D / 1000) * base.nm) / (60 * I.v * I.r), i = Math.max(1, Math.round(iIdeal));
     const M0: Machine = { ...base, D, n, d, Fmin: rope.Fmin, qf: rope.qf, i, groove: { type: 'U', beta: 0, gamma: base.groove.gamma }, brakeSets: 2, brakeNm: 0, shaftMax: 0, MpCat: 0 };
-    // brake: the smallest setting per set that meets every requirement (they do not depend on the groove)
-    const r0 = compute(I, M0), brakeSet = ceilTo(Math.max(r0.brake.one, r0.brake.up, r0.brake.all / 2), 5);
-    // groove: traction held also at the real deceleration of both sets when the groove limits allow it
-    const realCases = r0.brakeCasesAt(2 * brakeSet);
-    let groove: Groove | null = null, tight = false, real = false;
-    for (const [lim, rl] of [[K.tractionWarn, true], [1, true], [K.tractionWarn, false], [1, false]] as const) {
-      groove = grooveFor(r0, pref, base.groove.gamma, lim, rl ? realCases : null);
-      if (groove) { tight = lim === 1; real = rl; break; }
-    }
-    if (!groove) return null;
-    let M: Machine = { ...M0, brakeNm: brakeSet, groove };
-    const res = compute(I, M);
+    const parts = sizeParts(I, M0, pref, base.groove.gamma);
+    if (!parts) return null;
+    const { brakeSet, groove, tight, real, res } = parts;
     if (!(res.ropes.SfAct >= res.ropes.SfReq)) return null;
-    // motor: the smallest IEC rating that covers the static power (at the static torque, with the machine faster than the
-    // rated speed) with acceleration torque ≤ 2 × rated (the acceleration torque does not depend on the rating: Jm is an
-    // assumption of the group)
-    const Preq = res.drive.Peq / 1000;
-    const Pn = MOTOR_KW.find((kw) => kw >= Preq && res.drive.Macc / ((9550 * kw) / base.nm) <= K.accelTorqueRatioMax);
+    const Preq = res.drive.Peq / 1000, Pn = motorFor(res, base.nm);
     if (!Pn) return null;
-    M = { ...M, Pn, shaftMax: ceilTo(res.shaft.testKg, 100) };
+    const M: Machine = { ...parts.M, Pn, shaftMax: ceilTo(res.shaft.testKg, 100) };
     const final = compute(I, M);
     // every option passes the whole verification (kept ropes may fail number, diameter or deflector checks)
     return final.fails.length ? null : { D, d, n, rope, groove, tight, real, iIdeal, i, Preq, Pn, brakeSet, M, res: final };

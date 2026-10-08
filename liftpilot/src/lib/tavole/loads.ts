@@ -1,6 +1,7 @@
 // Loads on the building for the data sheet and the drawings (P1…P9, daN; not simultaneous): the machine on its
 // supports with the dynamic coefficient (a machine below: the head pulleys, the machine off the slab), the rope hitches
-// of a 2:1 installation, the governor, the rails and the buffers on the pit floor, the whole on the slab. Registry: carichi.fossa, carichi.macchina (src/shaft/norme-vert.ts).
+// of a 2:1 installation, the governor, the rails and the buffers on the pit floor, the whole on the slab with the
+// machine's support's own weight. Registry: carichi.fossa, carichi.macchina (src/shaft/norme-vert.ts).
 import { KV_VERT } from '@/shaft/norme-vert';
 import { axisStatic } from '@/lib/lift/support';
 import { impactFactor, type SafetyGear } from './forces';
@@ -32,6 +33,9 @@ export interface LoadsInput {
   /** a machine below: the static load on the head pulleys [kg] (support.ts headStatic), which P1 then is; the machine
    *  does not stand on the slab */
   below?: number | null;
+  /** what stands on the slab with the machine: its support's own weight, the HEB beams [kg] (support.ts supportMass;
+   *  registry impianto.massa.basamento); not with the machine below */
+  base?: number;
 }
 
 export interface Loads {
@@ -55,6 +59,6 @@ export function loads(x: LoadsInput): Loads {
   const P6 = daN((KV_VERT.bufferFactor * (Pc + x.Q)) / Math.max(1, x.carBuffers));
   const P7 = daN(x.cwRailQ * x.cwRailLen);
   const P8 = daN((KV_VERT.bufferFactor * x.Mcw) / Math.max(1, x.cwBuffers));
-  const P9 = P1 + (P2 ?? 0) + (P3 ?? 0) + (x.below != null ? 0 : daN(x.machine));
+  const P9 = P1 + (P2 ?? 0) + (P3 ?? 0) + (x.below != null ? 0 : daN(x.machine + (x.base ?? 0)));
   return { static: stat, dynamic, P: [P1, P2, P3, x.governor, P5, P6, P7, P8, P9] };
 }

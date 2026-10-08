@@ -18,7 +18,7 @@ export function whyValues(a: MachineCandidate, b: MachineCandidate | undefined, 
   return {
     a: machineName(a), b: b ? machineName(b) : '', code: a.bedplate?.code ?? '', na: a.warns, nb: b?.warns ?? 0, fa: a.fails, fb: b?.fails ?? 0,
     sa: fmt(a.staticKg, 0), sb: b ? fmt(b.staticKg, 0) : '', test: fmt(a.testKg, 0), dva: dvText(a.dv, fmt), dvb: b ? dvText(b.dv, fmt) : '',
-    ma: a.mass === null ? '—' : fmt(a.mass, 0), mb: b && b.mass !== null ? fmt(b.mass, 0) : '—',
+    ma: a.massWhole === null ? '—' : fmt(a.massWhole, 0), mb: b && b.massWhole !== null ? fmt(b.massWhole, 0) : '—',
   };
 }
 

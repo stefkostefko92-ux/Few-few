@@ -26,13 +26,17 @@ export const STD_81_1 = ' Macchina secondo la norma di origine, UNI EN 81-1 (UNI
 const EN81_1 = ['UNI EN 81-1:2010', 'la macchina secondo la norma di origine (UNI 10411-1:2024, 14.1 b)): aderenza (9.3), funi (9.2.2), freno (12.4.2), '
   + 'manovra di emergenza (12.5); punti letti sulla UNI EN 81-1:2008'];
 
+/** UNI EN 81-20 in a calculation without a shaft design: only what it checks (the distances in the shaft and the car's
+ *  area are the shaft design's). */
+const EN81_20_MACCHINA = 'funi (5.5), freno (5.9.2.2) e manovra di emergenza (5.9.2.3)';
+
 /** The references of the relazione, by the case: an existing installation is modified under DPR 162/1999 and tested to
  *  the UNI 10411 part chosen; a new one is placed on the market and put into service (section «Adempimenti»), with no UNI
  *  10411 and no extraordinary inspection; DM 236/1989 with a shaft design; UNI EN 81-1 with a machine to it. */
 export function riferimentiRows(repl: boolean, norma: Collaudo['norma'], std: MachineStd, design: boolean): string[][] {
   const rows = PROFILO.documenti
     .filter((d) => (d.sigla.startsWith('UNI 10411') ? repl && d.sigla.startsWith(`UNI ${norma}:`) : d.sigla.startsWith('DM 236') ? design : true))
-    .map((d) => [d.sigla, !repl && d.sigla.startsWith('DPR 162/1999') ? DPR_NUOVO : d.ambito]);
+    .map((d) => [d.sigla, !repl && d.sigla.startsWith('DPR 162/1999') ? DPR_NUOVO : !design && d.sigla === 'UNI EN 81-20:2020' ? EN81_20_MACCHINA : d.ambito]);
   return std === 'en81-1' ? [...rows, EN81_1] : rows;
 }
 

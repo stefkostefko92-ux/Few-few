@@ -4,6 +4,7 @@
 import type { Stato } from '@/calc/norme';
 import { letto } from '@/calc/norme-fonti';
 import { SHEAVE_GRID } from '@/calc/sizing';
+import { VOCI_MASSE, type CostanteMasse } from './norme-masse';
 
 export const KL = {
   // estimate of the empty car mass when it is not entered: P = ratio · Q, rounded up to the step [kg]
@@ -31,6 +32,9 @@ export const KL = {
   catalogRatioTol: 0.1,
   // direct pull: the falls in the plan and the sheave's pitch diameter may differ by this much (the rounding) [mm]
   calataTol: 1,
+  // the rope beyond the travel and a machine below's Hv entered by hand may differ from the shaft design's by this much [m]
+  l0Tol: 0.3,
+  hvTol: 0.5,
   // UNI 10411-1:2024, 6.1: increases a modification makes without the checks of the load — prospetto 1, of the rated
   // load and of the car side's static load T* (rated load up to 500 kg, over it), prospetto 2, of the counterweight's
   // static load as a share of the rated load (fractions); UNI 10411-11:2024, 6.1: any increase, and 6.2: its §5 (the
@@ -54,7 +58,7 @@ export interface VoceImpianto {
   riferimento: string;
   fonte: string;
   stato: Stato;
-  costanti?: readonly CostanteImpianto[];
+  costanti?: readonly (CostanteImpianto | CostanteMasse)[];
   nota?: string;
 }
 
@@ -136,13 +140,17 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
     costanti: ['carMassRatio', 'carMassStep'],
     nota: 'va sostituita con la massa del libretto o con quella ricavata dalla prova di bilanciamento; la sensibilità ±10% ne mostra l’effetto',
   },
+  ...VOCI_MASSE,
   {
     id: 'impianto.L0', titolo: 'Fune oltre la corsa (L0)',
     valore: `dalla sommità dell’arcata con la cabina all’ultimo piano fino all’asse della puleggia: testata − sommità dell’arcata + soletta del locale + `
       + `asse della puleggia a ${it(KL.sheaveAxisPerD)}·D sul pavimento del locale (l’argano generico sugli spessori; quello di catalogo sugli stessi `
       + `spessori e sul suo telaio, l’asse dove lo porta il telaio); con la puleggia di rinvio, l’asse sul basamento o sul telaio che la `
       + 'porta (voce locale.rinvio); macchina in basso o senza locale: fino al soffitto del vano',
-    riferimento: '—', fonte: 'dati verticali del vano; altezza dell’asse scelta dal software', stato: 'scelta', costanti: ['sheaveAxisPerD'],
+    riferimento: '—', fonte: 'dati verticali del vano; altezza dell’asse scelta dal software', stato: 'scelta', costanti: ['sheaveAxisPerD', 'l0Tol'],
+    nota: `inserita a mano (misurata sull’impianto) deve tornare con il progetto del vano entro ${it(KL.l0Tol)} m, altrimenti va corretta: il progetto `
+      + 'non si salva (scelta del software sulla tolleranza); passando dalla sostituzione al progetto completo il valore del calcolo non si porta '
+      + 'come inserito, la geometria è quella del progetto del vano',
   },
   {
     id: 'impianto.dx', titolo: 'Distanza orizzontale della puleggia di rinvio (dx)',
@@ -175,6 +183,11 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
     valore: 'dall’asse dei rinvii in testata all’asse della puleggia di frizione, secondo lo schema delle funi (impianto.basso.schema); '
       + 'la puleggia ha l’asse a 0,9·D sul pavimento del suo locale',
     riferimento: 'ricerca, capitolo 5; funi con la macchina in basso, capitolo 2.6', fonte: 'dati verticali del vano', stato: 'derivazione',
+    costanti: ['hvTol'],
+    nota: `inserita a mano deve tornare con il progetto del vano entro ${it(KL.hvTol)} m (scelta del software sulla tolleranza), altrimenti va `
+      + 'corretta e il progetto non si salva: un Hv più lungo di quanto lo schema consente (con la macchina accanto al vano al piano più basso, '
+      + 'oltre l’altezza della testata sopra la puleggia) darebbe funi, masse e lunghezze d’ordine sbagliate; passando dalla sostituzione al '
+      + 'progetto completo il valore del calcolo (spesso quello dell’esempio) non si porta come inserito',
   },
   {
     id: 'impianto.basso.schema', titolo: 'Macchina in basso: schema delle funi',
@@ -202,7 +215,12 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
     valore: `tra le opzioni del dimensionamento solo quelle che un argano del costruttore scelto accetta: puleggia nella gamma del modello, `
       + `carico statico sull’albero non oltre quello del catalogo, motore non oltre il più grande del catalogo, portata dichiarata; il rapporto è quello del catalogo più `
       + `vicino al rapporto ideale, se la velocità che dà non si scosta da quella nominale più del ${it(KL.catalogRatioTol * 100)} % (l’inverter adatta `
-      + `la frequenza); il calcolo usa quel rapporto, il carico statico ammesso e la massa del catalogo; i disegni e il 3D mostrano l’argano SICOR `
+      + `la frequenza); il calcolo usa quel rapporto, il carico statico ammesso e la massa del catalogo; con il rapporto del catalogo e la geometria `
+      + `dell’argano com’è (asse della puleggia, telaio con rinvio del costruttore: h, angolo di avvolgimento, fune oltre la corsa) motore, gola e freno `
+      + `sono dimensionati di nuovo con le regole del dimensionamento — il motore IEC più piccolo che copre la potenza statica alla velocità reale, non `
+      + `oltre il più grande del catalogo; la gola che aderisce col margine più largo e, se con essa il coefficiente di sicurezza delle funi non basta, `
+      + `quella che aderisce di più fra le meno incise, a mezzo grado, fino al margine successivo; l’argano che non passa ogni verifica così, o per cui `
+      + `la pianta non sa posizionare il rinvio, non prende l’opzione e si prova la successiva; i disegni e il 3D mostrano l’argano SICOR `
       + `com’è (ingombri, piedi e fori, asse della puleggia, P ed E della scheda), sul telaio del software`,
     riferimento: 'ricerca, capitolo 12 (catalogo degli argani)',
     fonte: 'SICOR: schede tecniche 2025 e modelli CAD scaricati da sicoritaly.com il 2 ottobre 2026 (solo le quote); Sassi, Montanari, GEM, FAER: '
@@ -211,7 +229,10 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
     nota: 'la tolleranza sul rapporto è una scelta del software: la velocità reale con l’inverter deve restare entro il 5 % sopra la nominale '
       + '(UNI EN 81-20:2020, 5.9.2.4; buona pratica non oltre l\'8 % sotto); i dati di Sassi, Montanari, GEM e FAER vengono da estratti dei motori di ricerca, non dai documenti; tutti vanno confermati sulla scheda del costruttore prima dell’ordine; '
       + 'per Montanari la massa è quella del riduttore (senza motore, puleggia e volano) e le pulegge sono quelle delle configurazioni tipiche; '
-      + 'GEAT Elevators distribuisce argani Montanari, Sassi e FAER (P58F, P58S) e non ne costruisce',
+      + 'GEAT Elevators distribuisce argani Montanari, Sassi e FAER (P58F, P58S) e non ne costruisce; fino a LIFT 1.28.0 il motore e la gola '
+      + 'restavano quelli della griglia, al rapporto ideale e con la geometria dell’argano generico: un argano più veloce poteva mancare la '
+      + 'potenza statica e uno con l’asse più basso l’aderenza, e su plinto o telaio un argano con l’asse più alto era proposto anche quando la '
+      + 'pianta non posizionava il rinvio (da inserire a mano)',
   },
   {
     id: 'impianto.macchina', titolo: 'Macchina proposta',

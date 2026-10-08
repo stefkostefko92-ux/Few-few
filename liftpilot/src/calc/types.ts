@@ -171,6 +171,9 @@ export interface RopesResult {
   SfReq: number;
   Tmax: number;
   SfAct: number;
+  /** specific pressure in the grooves (UNI 10411-1:2024, D.2): the car side's static pull at the sheave with the car at the
+   *  lowest floor with its rated load [N], the pressure and its limit at the ropes' speed [N/mm²] */
+  press: { T: number; p: number; limit: number };
 }
 
 export interface Kinematics {
@@ -196,6 +199,12 @@ export interface DriveResult {
   Mn: number;
   Macc: number;
   accRatio: number;
+  /** torque on the reducer's output shaft [N·m]: in acceleration (rated load up, empty car down), at the emergency
+   *  braking with the real brake (its worst case) and at the test with 1,25·Q; the largest of the three */
+  MpAcc: number;
+  MpBrake: number;
+  MpBrakeCase: BrakeCase;
+  MpTest: number;
   MpMax: number;
   powerUtil: number;
 }
@@ -222,6 +231,9 @@ export interface RescueResult {
 
 export interface ShaftResult {
   testKg: number;
+  /** the resultant of the ropes' static pulls on the sheave with the rated load, car at the lowest floor [kg] (the base of
+   *  the dynamic pull on a bottom machine's anchors) */
+  ratedKg: number;
   up: boolean;
   uplift: number | null;
 }
@@ -239,7 +251,7 @@ export type CheckId =
   | 'd_pst' | 'd_ratio' | 'd_mp' | 's_shaft'
   | 'b_sets' | 'b_all' | 'b_one' | 'b_up' | 'b_amax'
   | 's_force' | 's_uplift'
-  | 'tr_msr1' | 'r_two' | 'v_comp' | 'g_retain' | 's_fa' | 's_gravity';
+  | 'tr_msr1' | 'r_two' | 'v_comp' | 'g_retain' | 's_fa' | 's_gravity' | 'g_press';
 
 export type CheckStatus = 'ok' | 'warn' | 'fail' | 'info';
 

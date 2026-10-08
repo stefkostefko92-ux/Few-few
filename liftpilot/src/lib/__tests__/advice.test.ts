@@ -47,7 +47,7 @@ test('graduatoria: un criterio dopo l’altro, con il suo perché', () => {
   assert.ok(base);
   const bp = base.bedplate;
   assert.ok(bp);
-  const c = (o: Partial<MachineCandidate>): MachineCandidate => ({ ...base, fails: 0, warns: 1, sources: ['D'], bedplate: null, staticKg: 2000, drawn: false, dv: 0.01, mass: 200, ...o });
+  const c = (o: Partial<MachineCandidate>): MachineCandidate => ({ ...base, fails: 0, warns: 1, sources: ['D'], bedplate: null, staticKg: 2000, drawn: false, dv: 0.01, mass: 200, massWhole: 200, ...o });
   // each pair: the first wins on the criterion named, the second is better on every one after it
   const cases: [Partial<MachineCandidate>, Partial<MachineCandidate>, string][] = [
     [{ fails: 0, warns: 5, sources: ['E'] }, { fails: 1, warns: 0, bedplate: bp }, 'checks'],
@@ -55,9 +55,10 @@ test('graduatoria: un criterio dopo l’altro, con il suo perché', () => {
     [{ bedplate: bp, staticKg: 5000, warns: 3 }, { staticKg: 2000, warns: 0, drawn: true }, 'bedplate'],
     [{ staticKg: 2000, warns: 3, dv: 0.04 }, { staticKg: 2600, warns: 0, drawn: true, dv: 0 }, 'smaller'],
     [{ warns: 1, dv: 0.04 }, { warns: 2, drawn: true, dv: 0 }, 'warns'],
-    [{ drawn: true, dv: 0.04, mass: 300 }, { dv: 0, mass: 100 }, 'drawn'],
-    [{ dv: -0.012, mass: 300 }, { dv: 0.04, mass: 100 }, 'speed'],
-    [{ dv: 0.012, mass: 150 }, { dv: -0.008, mass: 180 }, 'lighter'],
+    [{ drawn: true, dv: 0.04, massWhole: 300 }, { dv: 0, massWhole: 100 }, 'drawn'],
+    [{ dv: -0.012, massWhole: 300 }, { dv: 0.04, massWhole: 100 }, 'speed'],
+    // the whole machine's mass, not the catalogue's (Montanari's gearbox alone is lighter than a whole SICOR)
+    [{ dv: 0.012, mass: 180, massWhole: 150 }, { dv: -0.008, mass: 100, massWhole: 180 }, 'lighter'],
   ];
   assert.deepEqual(cases.map(([, , why]) => why), CRITERIA.map(([why]) => why), 'un caso per criterio, nell’ordine');
   for (const [x, y, why] of cases) {

@@ -11,6 +11,9 @@ type Fmt = (x: number, dec?: number) => string;
 const result = (c: MachineCandidate): string => (c.fails ? `${c.fails === 1 ? 'una verifica non passa' : `${c.fails} verifiche non passano`}`
   : c.warns ? `passa, ${c.warns === 1 ? 'un avviso' : `${c.warns} avvisi`}` : 'passa le verifiche del software');
 const status = (c: MachineCandidate): BlockStatus => (c.fails ? 'fail' : c.warns ? 'warn' : 'ok');
+/** The whole machine, with the catalogue's mass when the parts it leaves out are estimated (registry impianto.massa.argano). */
+const massText = (c: MachineCandidate, fmt: Fmt): string => (c.massWhole === null ? '—'
+  : c.massEstimated && c.mass !== null ? `≈ ${fmt(c.massWhole, 0)} kg ⚠ (catalogo ${fmt(c.mass, 0)} kg + stima)` : `${fmt(c.massWhole, 0)} kg`);
 
 export function adviceBlocks(A: MachineAdvice, fmt: Fmt): ReportBlock[] {
   const T = appIt.advice;
@@ -20,13 +23,14 @@ export function adviceBlocks(A: MachineAdvice, fmt: Fmt): ReportBlock[] {
   const widths = defl ? [0.17, 0.12, 0.13, 0.12, 0.08, 0.13, 0.07, 0.18] : [0.2, 0.14, 0.15, 0.14, 0.09, 0.08, 0.2];
   const rows = A.candidates.map((c, k) => [
     `${k + 1}. ${A.best.includes(c) ? '★ ' : ''}${machineName(c)}`, `${c.ratio} · ${dvText(c.dv, fmt)} %`, `Ø ${fmt(c.N.D, 0)} · ${c.N.n} × Ø ${d(c.N.d)}`,
-    `${fmt(c.staticKg, 0)} kg (${fmt(c.testKg, 0)} in prova)`, c.mass === null ? '—' : `${fmt(c.mass, 0)} kg`,
+    `${fmt(c.staticKg, 0)} kg (${fmt(c.testKg, 0)} in prova)`, massText(c, fmt),
     ...(defl ? [c.I.layout !== 'topDefl' ? '—' : c.bedplate ? `${c.bedplate.code} del costruttore` : 'su misura'] : []), c.sources.join(' + '), result(c),
   ]);
   const [a, b] = A.best, left = excludedText(A);
   return [
     { t: 'p', text: 'Ogni argano SICOR e Montanari a catalogo verificato con questo impianto, in ordine sui dati: verifiche, fonte dei dati, basamento con il '
-      + 'rinvio, taglia che basta, valori al limite, disegno, velocità, massa; il prezzo non entra nella scelta. ★ il primo di ogni costruttore. È un ordine '
+      + 'rinvio, taglia che basta, valori al limite, disegno, velocità, massa dell’argano completo (dove il catalogo dà solo il riduttore o lo dà senza '
+      + 'puleggia e volano, le parti mancanti sono stimate: voce impianto.massa.argano); il prezzo non entra nella scelta. ★ il primo di ogni costruttore. È un ordine '
       + 'tecnico sui dati dei cataloghi, non un giudizio sulla qualità né una raccomandazione commerciale; SICOR e Montanari sono marchi dei rispettivi '
       + 'titolari, citati solo per identificare i prodotti. La verifica di questa relazione resta quella dell’argano del calcolo.' },
     { t: 'grid', head, rows, status: A.candidates.map(status), statusCol: head.length - 1, widths, align: head.map((_, j) => (j === 3 || j === 4 ? 'r' : 'l')) },

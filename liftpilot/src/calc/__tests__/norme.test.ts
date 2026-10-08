@@ -7,7 +7,7 @@ import type { CheckId, Costante } from '../index';
 
 const CHECKS: readonly CheckId[] = ['tr_load', 'tr_dn', 'tr_up', 'tr_real', 'tr_stall', 'r_dd', 'r_ddp', 'r_nd', 'g_geom', 'r_sfa',
   'd_pst', 'd_ratio', 'd_mp', 's_shaft', 'b_sets', 'b_all', 'b_one', 'b_up', 'b_amax', 's_force', 's_uplift', 'tr_msr1', 'r_two', 'v_comp', 'g_retain',
-  's_fa', 's_gravity'];
+  's_fa', 's_gravity', 'g_press'];
 const it = (x: number, dec?: number): string => (dec == null ? String(x) : x.toFixed(dec)).replace('.', ',');
 const voce = (id: string) => {
   const v = VOCI.find((x) => x.id === id);
@@ -52,6 +52,7 @@ test('i testi delle voci riportano i numeri usati dal motore', () => {
     ['azionamento.accelerazione', `${K.accelTorqueRatioMax} volte`],
     ['azionamento.margine', `${Math.round(K.nearLimit * 100)}%`], ['modello.sensibilita', `P ±${Math.round(K.sensP * 100)}%`], ['modello.sensibilita', `k ±${it(K.sensK)}`],
     ['modello.g', `g = ${it(K.g)} m/s²`],
+    ['gole.pressione', `p ≤ (${it(K.pressBase)} + ${K.pressSpeed}·v_c)/(1 + v_c)`], ['gole.pressione', `${K.pressU}·cos(β/2)`], ['gole.pressione', `${it(K.pressV)}/sin(γ/2)`],
   ];
   for (const [id, text] of pairs) assert.ok(voce(id).valore.includes(text), `${id}: manca «${text}» in «${voce(id).valore}»`);
   // N_equiv(t) table: every point, as in the engine (UNI EN 81-50:2020, table 2)

@@ -5,12 +5,13 @@
 // Texts are in Italian: they go to the engineer and into the report.
 
 import { letto } from './norme-fonti';
+import { VOCI_ALBERO, VOCI_AZIONAMENTO } from './norme-azionamento';
 import { VOCI_FRENO } from './norme-freno';
 import { VOCI_FUNI } from './norme-funi';
 import { VOCI_GOLE } from './norme-gole';
 import { VOCI_MODELLO } from './norme-modello';
 import { VOCI_SOCCORSO } from './norme-soccorso';
-import type { CheckId } from './types';
+import type { CheckId, GrooveType } from './types';
 
 /** Numeric constants of the engine. Values are the ones of the prototype (research, chapter 4). */
 export const K = {
@@ -24,7 +25,12 @@ export const K = {
   aeMin: 0.5,
   aeReducedStroke: 0.8,
   tractionWarn: 0.97,
-  // grooves (UNI EN 81-50:2020, 5.11.2.3.1)
+  // grooves (UNI EN 81-50:2020, 5.11.2.3.1); the specific pressure in them (UNI 10411-1:2024, D.2): the limit
+  // (12,5 + 4·v_c)/(1 + v_c) and the factors of the semicircular (8) and the V groove (4,5)
+  pressBase: 12.5,
+  pressSpeed: 4,
+  pressU: 8,
+  pressV: 4.5,
   betaMax: 105,
   betaRecommended: 90,
   gammaMin: 35,
@@ -98,6 +104,10 @@ export interface Voce {
   costanti?: readonly Costante[];
   verifiche?: readonly CheckId[];
   nota?: string;
+  /** the clauses of the entry for one of its checks, where narrower than `riferimento` (the relazione's column) */
+  rifVerifica?: Partial<Readonly<Record<CheckId, string>>>;
+  /** the clauses by the machine's groove type: the relazione cites the entry only for the types listed */
+  rifGola?: Partial<Readonly<Record<GrooveType, string>>>;
 }
 
 export const PROFILO = {
@@ -124,6 +134,7 @@ export const VOCI: readonly Voce[] = [
       + 'vuota nella posizione più alta e in quella più bassa)',
     riferimento: 'UNI EN 81-50:2020, 5.11.2.1 e 5.11.2.2.3', fonte: letto(T50, 'pp. 39–40'), stato: 'confermato',
     verifiche: ['tr_load', 'tr_dn', 'tr_up', 'tr_stall'],
+    rifVerifica: { tr_load: `${T50}, 5.11.2.1 e 5.11.2.2.1`, tr_dn: `${T50}, 5.11.2.1 e 5.11.2.2.2`, tr_up: `${T50}, 5.11.2.1 e 5.11.2.2.2`, tr_stall: `${T50}, 5.11.2.2.3` },
     nota: 'Con la cabina o il contrappeso bloccati la condizione serve quando è l’aderenza a impedire il sollevamento: la UNI EN 81-20:2020 '
       + '(5.5.3 c)) ammette in alternativa un dispositivo elettrico di sicurezza (voce trazione.bloccata.dispositivo); la UNI EN 81-1:2008 '
       + '(9.3 c)) no.',
@@ -202,57 +213,11 @@ export const VOCI: readonly Voce[] = [
   // ---------- brake ----------
   ...VOCI_FRENO,
   // ---------- drive ----------
-  {
-    id: 'azionamento.rendimento.inverso', gruppo: 'azionamento', titolo: 'Rendimento inverso del riduttore se non dato', valore: 'η_i ≈ 2 − 1/η_d (0 = irreversibile)',
-    riferimento: '—', fonte: 'approssimazione della teoria della vite senza fine', stato: 'stima',
-    verifiche: ['tr_real', 'b_amax'],
-    nota: 'Da sostituire con il valore del costruttore: la decelerazione reale del freno ne dipende molto.',
-  },
-  {
-    id: 'azionamento.accelerazione', gruppo: 'azionamento', titolo: 'Coppia di accelerazione', valore: '≤ 2 volte la coppia nominale (oltre: «Attenzione»; nella proposta: criterio di scelta del motore)',
-    riferimento: '—', fonte: 'scelta del software; il limite vero è quello di motore e inverter', stato: 'scelta',
-    costanti: ['accelTorqueRatioMax'], verifiche: ['d_ratio'],
-  },
-  {
-    id: 'azionamento.margine', gruppo: 'azionamento', titolo: 'Soglia di attenzione sui limiti del costruttore', valore: 'oltre il 98% del limite di catalogo (albero, coppia in uscita) → «Attenzione»',
-    riferimento: '—', fonte: 'scelta del software', stato: 'scelta',
-    costanti: ['nearLimit'], verifiche: ['s_shaft', 'd_mp'],
-  },
-  {
-    id: 'azionamento.potenza', gruppo: 'azionamento', titolo: 'Potenza statica del motore', valore: 'P_st = ΔF·v_f / (η_d·η_vano) ≤ P_n, con ΔF il maggiore tra cabina carica in salita dal basso e vuota in discesa dall’alto; '
-      + 'con la macchina più veloce della nominale (v_reale > v_f) P_st per v_reale/v_f: il motore sotto la frequenza base è limitato dalla coppia '
-      + '(M_st ≤ M_n)',
-    riferimento: '—', fonte: 'derivazione', stato: 'derivazione',
-    verifiche: ['d_pst'],
-  },
-  {
-    id: 'azionamento.coppia.uscita', gruppo: 'azionamento', titolo: 'Coppia massima in uscita dal riduttore', valore: 'M_p = ΔF·D/2 + J·i·α_m, confrontata con il valore di catalogo se inserito',
-    riferimento: 'dato del costruttore', fonte: 'derivazione', stato: 'derivazione',
-    verifiche: ['d_mp'],
-  },
-  {
-    id: 'azionamento.tolleranza.velocita', gruppo: 'azionamento', titolo: 'Tolleranza tra velocità reale e nominale',
-    valore: 'con metà portata a metà corsa, in salita e in discesa, non oltre il 5 % sopra la nominale (buona pratica: non oltre l\'8 % sotto); '
-      + 'non verificata: il software mostra la velocità reale e la frequenza per la nominale',
-    riferimento: 'UNI EN 81-20:2020, 5.9.2.4; UNI 10411-1:2024, 15.1', fonte: `${letto(T20, 'p. 102')}; ${letto(U1, 'p. 14')}`, stato: 'confermato',
-    nota: 'Con la UNI 10411-1:2024 (15.1) una velocità oltre il 5 % sopra la maggiore tra quella del libretto e quella dopo il passaggio a 50 Hz '
-      + 'è un aumento della velocità nominale (punti 15.2–15.15). Con la UNI 10411-11:2024 (15) ogni cambio della velocità nominale, in più o in '
-      + 'meno, porta ai punti 15 a)–k) e alla valutazione 4.3.',
-  },
+  ...VOCI_AZIONAMENTO,
   // ---------- rescue ----------
   ...VOCI_SOCCORSO,
   // ---------- shaft ----------
-  {
-    id: 'albero.carico', gruppo: 'albero', titolo: 'Carico sull’albero della puleggia', valore: 'risultante dei tiri con 1,25·Q al piano più basso, confrontata con il limite del costruttore',
-    riferimento: 'dato del costruttore; 1,25·Q come nella verifica di caricamento (UNI EN 81-50:2020, 5.11.2.2.1)',
-    fonte: 'derivazione; la definizione del carico va confermata con il costruttore', stato: 'derivazione',
-    costanti: ['loadTestFactor'], verifiche: ['s_shaft'],
-  },
-  {
-    id: 'albero.sollevamento', gruppo: 'albero', titolo: 'Sollevamento netto sugli ancoraggi (macchina in basso)', valore: 'carico verso l’alto meno la massa della macchina: da verificare con il progettista strutturale',
-    riferimento: '—', fonte: 'derivazione', stato: 'derivazione',
-    verifiche: ['s_uplift'],
-  },
+  ...VOCI_ALBERO,
   // ---------- replacement (Italy) ----------
   {
     id: 'sostituzione.modifica', gruppo: 'sostituzione', titolo: 'La sostituzione del macchinario è una modifica costruttiva',
@@ -272,6 +237,7 @@ export const VOCI: readonly Voce[] = [
       + '(14.1); UCM esistenti che funzionano ancora e, senza UCM conforme alla 5.6.7 e con il rallentamento controllato, interruzione se il '
       + 'freno non si apre (14.3); funi nuove e attacchi come gli originali, altrimenti verificati con la valutazione 4.3 (17)',
     riferimento: 'UNI 10411-1:2024, 4, 14.1–14.4, 17.1, 25.5, appendice C; UNI 10411-11:2024, 14.1–14.3, 17',
+    rifVerifica: { b_sets: `${U1}, 14.1 a); ${U11}, 14.1` },
     fonte: `${letto(U1, 'pp. 6, 13–14, 16, 21 e 30')}; ${letto(U11, 'pp. 12 e 14')}`,
     stato: 'confermato',
     verifiche: ['b_sets'],

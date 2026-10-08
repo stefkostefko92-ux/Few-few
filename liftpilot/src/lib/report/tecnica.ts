@@ -69,7 +69,7 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
   ] });
 
   section('Oggetto');
-  B.push({ t: 'p', text: `Sostituzione dell’argano dell’impianto con un argano geared ${named ? `(${named}) ` : ''}— ${LAYOUT[I.layout] ?? I.layout}, taglia ${I.r}:1. `
+  B.push({ t: 'p', text: `Sostituzione dell’argano dell’impianto con un argano a riduttore ${named ? `(${named}) ` : ''}— ${LAYOUT[I.layout] ?? I.layout}, taglia ${I.r}:1. `
     + 'La relazione descrive l’impianto com’è, l’argano esistente e quello nuovo, la sistemazione del nuovo nel locale macchina (basamento, '
     + 'puleggia di rinvio, calate, aperture nella soletta), i carichi sulla soletta e le verifiche del locale; le verifiche della macchina sono nella '
     + `relazione di calcolo allegata, riassunte nella sezione «Verifiche della nuova macchina».${collaudoText(C, true, ESITI_TECNICA)}` });

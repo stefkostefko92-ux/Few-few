@@ -29,7 +29,7 @@ test(`proprietà su ${CASES} impianti casuali`, () => {
         if (Number.isNaN(v)) note('NaN ' + k);
         else if (!Number.isFinite(v)) {
           // a slack rope side (T2 = 0) is a physical answer: allowed where it can happen, and then traction fails
-          const allowed = ['stall.ratio', 'stallLow.ratio', 'shaft.uplift'].includes(k) || /^(brkReal\.\d+|real|brake\.aMaxCase|msr1)\.(ratio|util)$/.test(k)
+          const allowed = ['stall.ratio', 'stallLow.ratio', 'shaft.uplift'].includes(k) || /^(brkReal\.\d+|real|brake\.aMaxCase|drive\.MpBrakeCase|msr1)\.(ratio|util)$/.test(k)
             || (/^(brk\.\d+|up|dn)\.(ratio|util)$/.test(k) && !Number.isFinite(r.up.ratio));
           if (!allowed) note('Infinity ' + k);
         }
@@ -42,6 +42,11 @@ test(`proprietà su ${CASES} impianti casuali`, () => {
       if (!(r.shaft.testKg > 0)) note('carico sull’albero ≤ 0');
       for (const c of [r.load, r.dn, r.up]) if (!(c.util > 0)) note('utilizzo ≤ 0');
       if (!(r.ropes.SfAct > 0)) note('S_f effettivo ≤ 0');
+      // output torque: the largest of acceleration, emergency braking and the test load, finite and positive
+      const { MpAcc, MpBrake, MpTest, MpMax } = r.drive;
+      if (!(Number.isFinite(MpMax) && MpMax > 0 && MpMax === Math.max(MpAcc, MpBrake, MpTest))) note('coppia in uscita non è il massimo dei tre casi');
+      // groove pressure: positive, its limit (12,5 + 4·vc)/(1 + vc) between 4 and 12,5 N/mm²
+      if (!(r.ropes.press.p > 0 && r.ropes.press.limit > 4 && r.ropes.press.limit <= 12.5)) note('pressione nella gola fuori campo');
     }
     // monotonicity on the new machine
     const with_ = (patch: FormValues): Results => { const c2 = readInputs({ ...V, ...patch }); return compute(c2.I, c2.N); };

@@ -3,6 +3,7 @@
 import { brakeWindow } from '@/calc/compute';
 import { ceilTo, G } from '@/calc/math';
 import { K } from '@/calc/norme';
+import { ropeFamily } from '@/calc/sizing';
 import { decimalsShown } from '@/shaft/checks';
 import type {
   BrakeCase, BrakeWindow, Check, CheckId, CheckStatus, Groove, Machine, Plant, Results, SensitivityVariant, Sizing, SizingOption, TractionCase,
@@ -26,8 +27,12 @@ const AT_LEAST: ReadonlySet<CheckId> = new Set<CheckId>(['tr_stall', 'r_dd', 'r_
 /** The unit of a check's value and limit; none for a ratio, a utilisation, a safety factor or a count. */
 export const CHECK_UNIT: Readonly<Partial<Record<CheckId, string>>> = {
   g_geom: '°', d_pst: 'kW', d_mp: 'N·m', s_shaft: 'kg', b_all: 'N·m', b_one: 'N·m', b_up: 'N·m', b_amax: 'm/s²', s_force: 'N', s_uplift: 'kg',
-  s_fa: 'N', v_comp: 'm/s', g_retain: '°',
+  s_fa: 'N', v_comp: 'm/s', g_retain: '°', g_press: 'N/mm²',
 };
+
+/** The ropes are the software's estimate of the family of registry funi.stima (8×19 Seale, fibre core, 1570 N/mm²):
+ *  their strength and mass are the family's for the diameter. */
+export const ropesEstimated = (N: Machine): boolean => { const f = ropeFamily(N.d); return f.Fmin === N.Fmin && f.qf === N.qf; };
 
 export function textsFor(P: Pres) {
   const { t, fmt } = P;
@@ -123,7 +128,7 @@ export function textsFor(P: Pres) {
     [`${t('Jm')} · ${t('Js')}`, `${fmt(N.Jm, 3)} · ${fmt(N.Js, 2)} kg·m²`], [t('mass'), `${fmt(N.mass, 0)} kg`],
     [`${t('brakeSets')} × ${t('brakeNm')}`, `${N.brakeSets} × ${fmt(N.brakeNm, 0)} N·m`],
     [t('b_win'), windowText(brakeWindow(res))],
-    [t(old ? 'oldRopes' : 'g_ropes'), `${N.n} × Ø${fmt(N.d, 1)} mm · ${fmt(N.Fmin, 1)} kN · ${fmt(N.qf, 3)} kg/m`],
+    [t(old ? 'oldRopes' : 'g_ropes'), `${N.n} × Ø${fmt(N.d, 1)} mm · ${fmt(N.Fmin, 1)} kN · ${fmt(N.qf, 3)} kg/m · ${t(ropesEstimated(N) ? 'rope_est' : 'rope_std')}`],
     [t('shaftMax'), N.shaftMax > 0 ? `${fmt(N.shaftMax, 0)} kg` : '—'],
     [t('MpCat'), N.MpCat > 0 ? `${fmt(N.MpCat, 0)} N·m` : '—'],
   ];
