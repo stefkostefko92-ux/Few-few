@@ -5,6 +5,8 @@ import { stitchPhoto } from "@/lib/stitch-dom";
 
 type Props = {
   src: string;
+  srcSet?: string;
+  sizes?: string;
   alt: string;
   width: number;
   height: number;
@@ -20,7 +22,7 @@ type Props = {
  * visitor prefers reduced motion. Without JavaScript the plain photo shows —
  * the fade on its edge only appears once the stitches are there to fill it.
  */
-export default function StitchedPhoto({ src, alt, width, height, priority, className }: Props) {
+export default function StitchedPhoto({ src, srcSet, sizes, alt, width, height, priority, className }: Props) {
   const fig = useRef<HTMLElement>(null);
   const img = useRef<HTMLImageElement>(null);
   const cvs = useRef<HTMLCanvasElement>(null);
@@ -56,6 +58,8 @@ export default function StitchedPhoto({ src, alt, width, height, priority, class
         ref={img}
         className="stitched__img"
         src={src}
+        srcSet={srcSet}
+        sizes={sizes}
         alt={alt}
         width={width}
         height={height}

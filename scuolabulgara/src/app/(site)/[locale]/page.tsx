@@ -2,6 +2,7 @@ import { Fragment, type ReactNode } from "react";
 import { isLocale, t, type Locale } from "@/lib/i18n";
 import { loadSite } from "@/lib/content";
 import { bundledWordAudio } from "@/lib/defaults";
+import { responsive } from "@/lib/responsive";
 import { isBrandIcon, safeAudio, safeHref, safeImage, type SectionKey } from "@/lib/cms";
 import { buildNav } from "@/lib/nav";
 import SiteHeader from "@/components/SiteHeader";
@@ -56,6 +57,25 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const fbPoints = facebook.points.filter((x) => has(x));
   const topics = contact.topics.filter((x) => has(x));
   const highlights = hero.highlights.filter((h) => has(h.text));
+
+  // Photos as srcsets (AVIF/WebP, the width the screen needs), with their real
+  // dimensions — also for pictures uploaded from the admin.
+  const [heroImg, aboutImg, schoolImg, danceImg] = await Promise.all([
+    responsive(safeImage(hero.image, `${P}/ballerini-in-costume.webp`), "(max-width: 900px) 100vw, 50vw", { width: 1400, height: 784 }),
+    responsive(safeImage(about.image, `${P}/comunita-in-costume.webp`), "(max-width: 900px) 100vw, (max-width: 1440px) 55vw, 760px", { width: 1400, height: 933 }),
+    responsive(safeImage(school.image, `${P}/docenti.webp`), "(max-width: 900px) 100vw, 650px", { width: 1024, height: 768 }),
+    responsive(safeImage(dance.image, `${P}/gruppo-veselie.webp`), "100vw", { width: 1281, height: 707 }),
+  ]);
+  const galleryPhotos = await Promise.all(
+    gallery.photos
+      .map((p) => ({ ...p, src: safeImage(p.src, "") }))
+      .filter((p) => p.src)
+      .map(async (p) => {
+        const thumb = await responsive(p.src, "(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 430px", { width: 1200, height: 800 });
+        const full = await responsive(p.src, "100vw", { width: 1200, height: 800 });
+        return { ...p, thumb, full };
+      }),
+  );
 
   const fbHref = safeHref(settings.facebookUrl);
   const fbPage = safeHref(settings.facebookPageHref);
@@ -143,7 +163,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             <p className="lead">{about.lead}</p>
           </div>
           <figure className="about__photo">
-            <img src={safeImage(about.image, `${P}/comunita-in-costume.webp`)} alt={about.imageAlt} width={1400} height={933} loading="lazy" decoding="async" />
+            <img {...aboutImg} alt={about.imageAlt} loading="lazy" decoding="async" />
           </figure>
           {features.length > 0 && (
             <dl className="trio about__trio">
@@ -188,7 +208,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             ))}
           </ul>
           <figure className="voice">
-            <img src={safeImage(school.image, `${P}/docenti.webp`)} alt={school.imageAlt} width={1024} height={768} loading="lazy" decoding="async" />
+            <img {...schoolImg} alt={school.imageAlt} loading="lazy" decoding="async" />
             <figcaption>
               <blockquote><p>{school.quote}</p></blockquote>
               <cite>{school.quoteCite}</cite>
@@ -227,7 +247,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     dance: (
       <section className="sec dance" id="danza" aria-labelledby="dance-title">
         <figure className="dance__photo">
-          <img src={safeImage(dance.image, `${P}/gruppo-veselie.webp`)} alt={dance.imageAlt} width={1281} height={707} loading="lazy" decoding="async" />
+          <img {...danceImg} alt={dance.imageAlt} loading="lazy" decoding="async" />
         </figure>
         <div className="wrap dance__grid">
           <div className="dance__copy">
@@ -281,9 +301,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             <h2 id="gallery-title">{gallery.title}</h2>
           </header>
           <Gallery
-            photos={gallery.photos
-              .map((p) => ({ ...p, src: safeImage(p.src, "") }))
-              .filter((p) => p.src)}
+            photos={galleryPhotos}
             labels={{ open: tt("gallery.open"), close: tt("gallery.close"), prev: tt("gallery.prev"), next: tt("gallery.next") }}
           />
         </div>
@@ -369,10 +387,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             </div>
             <StitchedPhoto
               className="hero__photo"
-              src={safeImage(hero.image, `${P}/ballerini-in-costume.webp`)}
+              {...heroImg}
               alt={hero.imageAlt}
-              width={1400}
-              height={784}
               priority
             />
           </div>
