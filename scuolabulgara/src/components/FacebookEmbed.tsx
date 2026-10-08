@@ -7,38 +7,36 @@ import Icon from "@/components/Icon";
 
 const STORE_KEY = "qb-fb-consent";
 
+// Facebook's page plugin, loaded only after the visitor agrees (it sets
+// cookies). The iframe is rendered by React like everything else: writing it
+// into the DOM by hand (innerHTML) pulled the consent box out from under React,
+// whose next update then crashed the whole page.
 export default function FacebookEmbed({ locale, href }: { locale: Locale; href: string }) {
   const ui = useUi();
-  const [loaded, setLoaded] = useState(false);
+  const [frame, setFrame] = useState<{ src: string; width: number } | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
   const load = () => {
-    if (!ref.current) return;
-    setLoaded(true);
-    const width = Math.min(520, Math.max(320, Math.round(ref.current.clientWidth)));
-    const height = 600;
+    const width = Math.min(500, Math.max(180, Math.round(ref.current?.clientWidth || 500)));
     const src =
       "https://www.facebook.com/plugins/page.php?href=" +
       encodeURIComponent(href) +
-      `&tabs=timeline&width=${width}&height=${height}&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true`;
-    const iframe = document.createElement("iframe");
-    iframe.src = src;
-    iframe.title = "Facebook — Qui Bulgaria";
-    iframe.width = String(width);
-    iframe.height = String(height);
-    iframe.loading = "lazy";
-    iframe.style.width = "100%";
-    iframe.setAttribute("scrolling", "no");
-    iframe.setAttribute("frameborder", "0");
-    iframe.allow = "encrypted-media; clipboard-write; web-share";
-    ref.current.innerHTML = "";
-    ref.current.appendChild(iframe);
+      `&tabs=timeline&width=${width}&height=600&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true`;
+    setFrame({ src, width });
   };
 
   useEffect(() => {
     try {
       if (localStorage.getItem(STORE_KEY) === "1") load();
     } catch {}
+    // Withdrawn consent („Отказвам“, cookie settings) unloads the plugin again.
+    const off = () => setFrame(null);
+    window.addEventListener("qb:cookie-settings", off);
+    window.addEventListener("qb:consent-withdrawn", off);
+    return () => {
+      window.removeEventListener("qb:cookie-settings", off);
+      window.removeEventListener("qb:consent-withdrawn", off);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -49,7 +47,17 @@ export default function FacebookEmbed({ locale, href }: { locale: Locale; href: 
 
   return (
     <div className="fb-embed" ref={ref}>
-      {!loaded && (
+      {frame ? (
+        <iframe
+          src={frame.src}
+          title={t(locale, "nav.facebook", ui)}
+          width={frame.width}
+          height={600}
+          style={{ width: "100%", maxWidth: frame.width, border: 0 }}
+          scrolling="no"
+          allow="encrypted-media; clipboard-write; web-share"
+        />
+      ) : (
         <div className="fb-consent">
           <span className="fb-consent__logo">
             <Icon name="facebook-circle" size={56} />

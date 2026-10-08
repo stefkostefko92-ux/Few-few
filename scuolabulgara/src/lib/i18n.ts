@@ -3,7 +3,9 @@
 
 export const LOCALES = ["it", "bg", "en"] as const;
 export type Locale = (typeof LOCALES)[number];
-export const DEFAULT_LOCALE: Locale = "en";
+// Italian is the default: a school in Milan. Bulgarian is chosen automatically
+// only for a clear Bulgarian signal; English only when the visitor picks it.
+export const DEFAULT_LOCALE: Locale = "it";
 
 export const LOCALE_META: Record<Locale, { label: string; flag: string; htmlLang: string }> = {
   it: { label: "Italiano", flag: "🇮🇹", htmlLang: "it" },
@@ -17,10 +19,7 @@ export function isLocale(value: string | undefined | null): value is Locale {
 
 // Map an ISO country code to the locale we serve to that audience.
 export function localeForCountry(country: string | undefined | null): Locale {
-  const c = (country || "").toUpperCase();
-  if (c === "IT") return "it";
-  if (c === "BG") return "bg";
-  return "en";
+  return (country || "").toUpperCase() === "BG" ? "bg" : DEFAULT_LOCALE;
 }
 
 // UI strings (navigation, buttons, labels). Content lives in the DB.
@@ -60,7 +59,11 @@ export const UI: Record<Locale, Dict> = {
     "legal.terms": "Termini",
     "rights": "Tutti i diritti riservati.",
     "photoCredit": "Foto della rosa bulgara:",
-    "cookie.text": "Usiamo cookie tecnici e, solo con il tuo consenso, il plugin di Facebook.",
+    "cookie.text": "Usiamo cookie tecnici e, solo con il tuo consenso, Facebook e Google Maps.",
+    "map.title": "Mappa: come raggiungerci",
+    "map.consent": "Per mostrarti la mappa carichiamo Google Maps, che potrebbe impostare cookie sul tuo dispositivo.",
+    "map.show": "Mostra la mappa",
+    "map.open": "Apri in Google Maps",
     "cookie.accept": "Ho capito",
     "cookie.reject": "Rifiuta",
     "cookie.more": "Maggiori informazioni",
@@ -72,8 +75,13 @@ export const UI: Record<Locale, Dict> = {
     "alpha.pick": "Scegli una lettera",
     "alpha.latin": "Traslitterazione",
     "alpha.meaning": "Significato",
+    "alpha.listen": "Ascolta la pronuncia",
     "updated": "Ultimo aggiornamento",
     "backHome": "Torna alla home",
+    "nav.home": "Home",
+    "nav.label": "Menu principale",
+    "nav.menu": "Menu",
+    "notfound.text": "Pagina non trovata: il link potrebbe essere errato o non più valido.",
   },
   bg: {
     "nav.about": "За нас",
@@ -109,7 +117,11 @@ export const UI: Record<Locale, Dict> = {
     "legal.terms": "Условия",
     "rights": "Всички права запазени.",
     "photoCredit": "Снимка на българската роза:",
-    "cookie.text": "Използваме технически бисквитки и — само с ваше съгласие — плъгина на Facebook.",
+    "cookie.text": "Използваме технически бисквитки и — само с ваше съгласие — Facebook и Google Maps.",
+    "map.title": "Карта: как да ни намерите",
+    "map.consent": "За да ви покажем картата, зареждаме Google Maps, който може да зададе бисквитки на устройството ви.",
+    "map.show": "Покажи картата",
+    "map.open": "Отвори в Google Maps",
     "cookie.accept": "Разбрах",
     "cookie.reject": "Откажи",
     "cookie.more": "Повече информация",
@@ -121,8 +133,13 @@ export const UI: Record<Locale, Dict> = {
     "alpha.pick": "Изберете буква",
     "alpha.latin": "На латиница",
     "alpha.meaning": "На италиански",
+    "alpha.listen": "Чуйте произношението",
     "updated": "Последна актуализация",
     "backHome": "Към началото",
+    "nav.home": "Начало",
+    "nav.label": "Основно меню",
+    "nav.menu": "Меню",
+    "notfound.text": "Страницата не е намерена.",
   },
   en: {
     "nav.about": "About",
@@ -158,7 +175,11 @@ export const UI: Record<Locale, Dict> = {
     "legal.terms": "Terms",
     "rights": "All rights reserved.",
     "photoCredit": "Bulgarian rose photo:",
-    "cookie.text": "We use technical cookies and, only with your consent, the Facebook plugin.",
+    "cookie.text": "We use technical cookies and, only with your consent, Facebook and Google Maps.",
+    "map.title": "Map: how to find us",
+    "map.consent": "To show you the map we load Google Maps, which may set cookies on your device.",
+    "map.show": "Show the map",
+    "map.open": "Open in Google Maps",
     "cookie.accept": "Got it",
     "cookie.reject": "Decline",
     "cookie.more": "Learn more",
@@ -170,8 +191,13 @@ export const UI: Record<Locale, Dict> = {
     "alpha.pick": "Choose a letter",
     "alpha.latin": "Transliteration",
     "alpha.meaning": "Meaning",
+    "alpha.listen": "Listen to the pronunciation",
     "updated": "Last updated",
     "backHome": "Back to home",
+    "nav.home": "Home",
+    "nav.label": "Main menu",
+    "nav.menu": "Menu",
+    "notfound.text": "Page not found: the link may be wrong or out of date.",
   },
 };
 
