@@ -379,7 +379,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           {highlights.length > 0 && (
             <ul className="wrap facts" aria-label={hero.badge}>
               {highlights.map((h, i) => (
-                <li key={i}><StarMotif a={2} size={3} />{h.text}</li>
+                <li key={i}><img className="facts__rose" src="/assets/img/brand/rose-bullet.webp" alt="" aria-hidden="true" width={26} height={26} />{h.text}</li>
               ))}
             </ul>
           )}
