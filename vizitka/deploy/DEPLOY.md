@@ -54,6 +54,34 @@ sudo -u vizitka DATA_DIR=/opt/vizitka/data npm --prefix /opt/vizitka run admin:a
 # няма ли още такъв акаунт: ... run admin:add -- <имейл> --create
 ```
 
+### www.vizitka-bg.com сервираше чужд сайт (Search Console, 08.10.2026)
+
+`http://www.vizitka-bg.com/` отговаряше 200 със страницата на Supreme AdBlock (canonical
+към `adblock.carbonstealth.eu`), а `https://www.` не отговаряше: живият vhost няма блок за
+www и заявката пада в `default_server` на машината. Google го отчита като „алтернативна
+страница с canonical“ към ДРУГ домейн. Поправката е в `deploy/nginx/vizitka.conf` (www →
+голия домейн на 80 и 443 + ACME път) и в `server-setup.sh` (сертификатът се разширява с
+www). Еднократно на сървъра (autodeploy НЕ пипа nginx):
+
+```bash
+grep -rln "vizitka-bg.com" /etc/nginx/sites-enabled/   # трябва да остане САМО vizitka.conf
+#   ако има и друг (стар) файл — махни символната връзка му: rm /etc/nginx/sites-enabled/<старият>
+ln -sf ../sites-available/vizitka.conf /etc/nginx/sites-enabled/vizitka.conf
+install -d /var/www/html
+PORT_NOW="$(sed -n 's/^PORT=//p' /etc/vizitka/vizitka.env)"
+sed "s|127\.0\.0\.1:3105|127.0.0.1:${PORT_NOW:-3105}|g" \
+  /opt/few-few/current/vizitka/deploy/nginx/vizitka.conf > /etc/nginx/sites-available/vizitka.conf
+nginx -t && systemctl reload nginx            # 80: www → https://vizitka-bg.com (+ ACME)
+certbot certonly --webroot -w /var/www/html --cert-name vizitka-bg.com --expand \
+  -d vizitka-bg.com -d www.vizitka-bg.com
+nginx -t && systemctl reload nginx            # 443: www вече има валиден сертификат
+```
+
+Провери: `http://www.vizitka-bg.com/` и `https://www.vizitka-bg.com/` → 308 към
+`https://vizitka-bg.com/`; хедърът `x-content-type-options` на `https://vizitka-bg.com/` вече
+е един (беше два — от стария vhost). После в Search Console → „Индексиране на страници“ →
+„Проверка на поправката“ за „Алтернативна страница с подходящ канонически маркер“.
+
 ## 0. Бърз път — еднократен bootstrap (препоръчано)
 
 Скриптът `deploy/server-setup.sh` прави наведнъж стъпки 1–4 по-долу: системен
