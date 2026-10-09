@@ -342,7 +342,7 @@ function App() {
         apiCall("/audit").catch(()=>[]), apiCall("/settings").catch(()=>DEFAULT_SETTINGS),
         apiCall("/notifications").catch(()=>[]),
       ]);
-      setParts(p); setOrders(o); setRoles(r); setAuditLog(au); setSettings(s); setNotifications(n);
+      setParts(p); setOrders(o); setRoles(r); setAuditLog(au); setSettings({ ...DEFAULT_SETTINGS, ...s }); setNotifications(n);
       try { setUsers(await apiCall("/users")); } catch(e) {}
     } catch (e) { if (e.message === "AUTH") { setUser(null); return; } }
     setLoading(false);

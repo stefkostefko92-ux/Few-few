@@ -62,8 +62,10 @@ module.exports = function adminRoutes({ prisma }) {
   r.get("/settings", async (req, res, next) => {
     try {
       const role = await getRole(prisma, req.user.ruolo);
-      if (!role.canSettings) return res.json({});
       const s = await prisma.settings.upsert({ where: { id: "singleton" }, update: {}, create: { id: "singleton" } });
+      // Без „Настройки“ — само каквото пипа какво се вижда в самия склад (иначе предупрежденията, изключени
+      // от администратора, продължават да светят при всички останали). Имейлът и известията остават скрити.
+      if (!role.canSettings) return res.json({ lowStockEnabled: s.lowStockEnabled, lowStockThreshold: s.lowStockThreshold });
       res.json(s);
     } catch (err) {
       next(err);
