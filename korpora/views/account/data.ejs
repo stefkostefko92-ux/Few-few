@@ -10,6 +10,8 @@
 <section class="section danger" aria-labelledby="del-h">
   <h2 id="del-h"><%- include('../partials/icon', { name: 'trash' }) %><%= t('data.deleteTitle') %></h2>
   <p><%= t('data.deleteText') %></p>
+  <p class="muted"><%= t('data.ordersKept', { kept: ordersKept }) %></p>
+  <% if (openOrder) { %><div class="notice notice-warn"><%- include('../partials/icon', { name: 'clock' }) %><p><%= t('data.openOrder', { contact }) %></p></div><% } %>
   <form method="post" action="/account/data/delete" class="form" data-confirm="<%= t('data.deleteConfirm') %>">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <div class="form-row">

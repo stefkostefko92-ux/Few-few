@@ -66,7 +66,8 @@
     },
     "accountDeleted": {
       "subject": "Your Korpora account was deleted",
-      "body": "Your account and all its projects have been deleted permanently. They remain in the database backups only until those expire — the periods are in the privacy policy.\n\nIf you did not ask for this, write to us at the address below."
+      "body": "Your account and all its projects have been deleted permanently. They remain in the database backups only until those expire — the periods are in the privacy policy.{orders}\n\nIf you did not ask for this, write to us at the address below.",
+      "orders": "We keep your orders with the contract details only — name, email, amount, dates, the terms you accepted, early start and withdrawal — and delete them {kept} after the account is deleted."
     },
     "banned": {
       "subject": "Your access to Korpora has been blocked",
@@ -126,6 +127,10 @@
       },
       "early": "The customer asked for an early start: keep the part for the time the plan was active.",
       "full": "No early start: refund the full amount."
+    },
+    "staffAccountDeleted": {
+      "subject": "Deleted account with an order awaiting payment: {email}",
+      "body": "The account of {email} has been deleted. Order no. {ids} was awaiting payment and has been cancelled.\n\nIf a payment for it was received, refund it using the same means of payment. In the panel the order stays with the contract details only.\n\nPanel: {admin}"
     }
   }
 }

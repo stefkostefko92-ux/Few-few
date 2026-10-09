@@ -13,6 +13,8 @@ export const LABEL = {
   trialStarted: '@trial-started',
   withdrawal: '@withdrawal',
   createdByStaff: '@created-by-staff',
+  /** Поръчката чакаше плащане, когато акаунтът беше изтрит — вече не може да се изпълни. */
+  accountDeleted: '@account-deleted',
 } as const;
 
 export function customerLabel(userId: string): string {

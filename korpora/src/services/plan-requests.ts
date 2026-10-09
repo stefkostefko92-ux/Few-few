@@ -212,7 +212,8 @@ export async function withdrawFromOrder(
 
 /**
  * Поддръжката: потвърждение на договор или на отказ, което не е тръгнало (SMTP грешка), се праща пак.
- * Само за поръчки от последните дни и не по-млади от 10 минути — тези още ги праща самата заявка.
+ * Само за поръчки от последните дни и не по-млади от 10 минути — тези още ги праща самата заявка — и само
+ * на живи акаунти: от поръчката на изтрит акаунт е останал само договорът.
  */
 export async function resendOrderMail(now: Date = new Date()): Promise<number> {
   const recent = addDays(now, -(WITHDRAWAL_DAYS + 16));
@@ -220,6 +221,7 @@ export async function resendOrderMail(now: Date = new Date()): Promise<number> {
   const pending = await prisma.upgradeRequest.findMany({
     where: {
       termsVersion: { not: null },
+      userId: { not: null },
       OR: [
         {
           confirmationSentAt: null,
@@ -242,12 +244,14 @@ export async function resendOrderMail(now: Date = new Date()): Promise<number> {
   });
   let sent = 0;
   for (const order of pending) {
+    const { user } = order;
+    if (!user) continue;
     if (order.status === 'WITHDRAWN') {
       // заявката взима само поръчки с момент на отказа; проверката стеснява типа
       const { withdrawnAt } = order;
       if (!withdrawnAt) continue;
       const outcome = withdrawalOutcomeOf(order);
-      if (await sendWithdrawalReceipt({ ...order, withdrawnAt }, order.user, outcome)) {
+      if (await sendWithdrawalReceipt({ ...order, withdrawnAt }, user, outcome)) {
         await prisma.upgradeRequest.update({
           where: { id: order.id },
           data: { withdrawalAckSentAt: now },
@@ -257,7 +261,7 @@ export async function resendOrderMail(now: Date = new Date()): Promise<number> {
     } else if (
       await sendOrderConfirmation(
         order,
-        order.user,
+        user,
         order.supersedes.map((row) => row.id),
       )
     ) {

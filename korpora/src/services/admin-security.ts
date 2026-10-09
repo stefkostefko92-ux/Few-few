@@ -8,6 +8,7 @@ import { greetingName, mailBanned, mailResetPassword, mailTwoFactor } from '../m
 import { fail, isResult, targetFor, type ActionResult, type StaffActor } from './admin-common.js';
 import { ADMIN_LIMITS } from './admin-limits.js';
 import { hasUnsafeChars, hasUnsafeTextChars } from './names.js';
+import { keepOrdersAsContracts, notifyStaffOfDeletedOrders } from './order-retention.js';
 
 /* -------------------------------------- бан -------------------------------------- */
 
@@ -180,7 +181,10 @@ export async function sendPasswordReset(actor: StaffActor, id: string): Promise<
 
 /* ------------------------------------ изтриване ------------------------------------ */
 
-/** Изтриване завинаги (с проектите). Потвърждава се с изписване на имейла на акаунта. */
+/**
+ * Изтриване завинаги (с проектите). Потвърждава се с изписване на имейла на акаунта. Поръчките остават само
+ * с данните на договора — както при изтриване от самия човек (services/order-retention.ts).
+ */
 export async function deleteAccount(
   actor: StaffActor,
   id: string,
@@ -190,11 +194,24 @@ export async function deleteAccount(
   if (isResult(target)) return target;
   if (confirmEmail.trim().toLowerCase() !== target.email) return fail('admin.errors.confirmEmail');
   // В одита не остава имейл — само хеш, за да може да се провери при нужда.
-  await audited(actor, (tx) => tx.user.delete({ where: { id } }), {
-    action: 'admin.account.deleted',
-    targetType: 'user',
-    targetId: id,
-    detail: { emailSha256: sha256Hex(target.email) },
-  });
+  const kept = await audited(
+    actor,
+    async (tx) => {
+      const orders = await keepOrdersAsContracts(tx, target, new Date());
+      await tx.user.delete({ where: { id } });
+      return orders;
+    },
+    (orders) => ({
+      action: 'admin.account.deleted',
+      targetType: 'user',
+      targetId: id,
+      detail: {
+        emailSha256: sha256Hex(target.email),
+        ordersKept: orders.count,
+        ordersCancelled: orders.cancelled,
+      },
+    }),
+  );
+  notifyStaffOfDeletedOrders(target.email, kept);
   return { ok: true };
 }

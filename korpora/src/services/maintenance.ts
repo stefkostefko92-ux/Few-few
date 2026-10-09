@@ -9,6 +9,7 @@ import { TRIAL_REMINDER_DAYS } from '../plans/plan.js';
 import { LOGIN_RETENTION_DAYS, UNVERIFIED_RETENTION_DAYS } from '../retention.js';
 import { DAY, HOUR } from '../time.js';
 import { purgeUnconsentedFingerprints } from './device-consent.js';
+import { purgeExpiredOrders } from './order-retention.js';
 import { resendOrderMail } from './plan-requests.js';
 import { keepCurrentTermsCopies } from './terms-snapshots.js';
 
@@ -80,6 +81,8 @@ export async function runMaintenance(now: Date = new Date()): Promise<void> {
     const tokens = await prisma.emailToken.deleteMany({
       where: { expiresAt: { lt: new Date(now.getTime() - EXPIRED_TOKEN_DAYS * DAY) } },
     });
+    // поръчките на изтрити акаунти — след срока, който казва политиката
+    const orders = await purgeExpiredOrders(now);
     const reminders = await sendTrialReminders(now);
     // копието на условията в сила — преди повторните писма, които може да го поискат след смяна
     await keepCurrentTermsCopies();
@@ -103,6 +106,7 @@ export async function runMaintenance(now: Date = new Date()): Promise<void> {
         fingerprints,
         auditIps: auditIps.count,
         tokens: tokens.count,
+        orders,
         reminders,
         orderMail,
         auditEntries: chain.count,

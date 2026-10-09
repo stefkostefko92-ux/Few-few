@@ -234,10 +234,18 @@ enum BuyerType {
 
 /// Поръчка на Premium/Lifetime (със задължение за плащане). Цената се смята на сървъра от
 /// ценоразписа в момента на поръчката; договорът се сключва с потвърждението по имейл веднага след нея.
+/// Изтрит акаунт не взима поръчките си: те остават само с данните на договора (името и имейла по-долу) и
+/// поддръжката ги трие ORDER_RETENTION_DAYS след изтриването (src/retention.ts).
 model UpgradeRequest {
   id                    String           @id @default(cuid())
-  userId                String
-  user                  User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// null — акаунтът е изтрит; договорът остава с името и имейла от момента на изтриването.
+  userId                String?
+  user                  User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  /// Името и имейлът по договора — записват се при изтриването на акаунта (services/order-retention.ts).
+  customerName          String?
+  customerEmail         String?
+  /// Кога е изтрит акаунтът: оттук тече срокът за пазене на поръчката.
+  accountDeletedAt      DateTime?
   /// m1 | m3 | m6 | m12 | lifetime
   option                String
   months                Int?
@@ -272,6 +280,8 @@ model UpgradeRequest {
   @@index([status, createdAt])
   @@index([userId])
   @@index([supersededById])
+  /// Поддръжката търси поръчките на изтрити акаунти след срока.
+  @@index([accountDeletedAt])
 }
 
 /// Общите условия по версия и език, както са пратени с поръчките (самостоятелният HTML файл от

@@ -6,6 +6,7 @@ import { setFlash } from '../http/flash.js';
 import { resendLimiter, sensitiveLimiter } from '../http/limits.js';
 import { idParam, rawField, requestMeta, stringField } from '../http/meta.js';
 import { planView } from '../plans/plan.js';
+import { ORDER_RETENTION_DAYS, retentionText } from '../retention.js';
 import { priceTable, VAT_BG_PERCENT, withVatCents } from '../plans/pricing.js';
 import {
   canWithdraw,
@@ -14,7 +15,8 @@ import {
   WITHDRAWAL_DAYS,
   withdrawalLastDay,
 } from '../plans/withdrawal.js';
-import { deleteOwnAccount, exportOwnData, updateProfile } from '../services/account-self.js';
+import { exportOwnData } from '../services/account-export.js';
+import { deleteOwnAccount, updateProfile } from '../services/account-self.js';
 import { orderPlanName, withdrawalStatement } from '../services/order-mail.js';
 import {
   cancelOwnRequest,
@@ -170,7 +172,16 @@ accountRouter.post('/account/plan/withdraw/:id', sensitiveLimiter, async (req, r
 
 accountRouter.get('/account/data', async (req, res) => {
   const user = await me(req);
-  res.render('account/data', { user, section: 'data' });
+  // чакаща плащане поръчка се отменя с изтриването — страницата го казва преди бутона
+  const openOrder = await prisma.upgradeRequest.count({
+    where: { userId: user.id, status: 'OPEN' },
+  });
+  res.render('account/data', {
+    user,
+    openOrder: openOrder > 0,
+    ordersKept: retentionText(ORDER_RETENTION_DAYS, res.locals.t),
+    section: 'data',
+  });
 });
 
 accountRouter.post('/account/data/export', sensitiveLimiter, async (req, res) => {

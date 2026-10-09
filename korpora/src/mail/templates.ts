@@ -2,8 +2,8 @@ import type { TokenPurpose } from '@prisma/client';
 import { config } from '../config.js';
 import { LOCK_MINUTES } from '../auth/lock.js';
 import { linkHours } from '../auth/tokens.js';
-import { translate, type Locale } from '../i18n.js';
-import { UNVERIFIED_RETENTION_DAYS } from '../retention.js';
+import { translate, translatorFor, type Locale } from '../i18n.js';
+import { ORDER_RETENTION_DAYS, retentionText, UNVERIFIED_RETENTION_DAYS } from '../retention.js';
 import { legalPath } from '../seo/paths.js';
 import { sendMail, type MailAttachment } from './mailer.js';
 
@@ -258,10 +258,20 @@ export function mailBanned(
   );
 }
 
+/**
+ * Изтритият акаунт. `hadOrders` — поръчките остават само с данните на договора; писмото казва какво остава
+ * и до кога (срокът е от кода, src/retention.ts).
+ */
 export function mailAccountDeleted(
   to: string,
   locale: Locale,
   name: string | null,
+  hadOrders: boolean,
 ): Promise<boolean> {
-  return send(to, locale, 'accountDeleted', {}, name);
+  const orders = hadOrders
+    ? `\n\n${translate(locale, 'mail.accountDeleted.orders', {
+        kept: retentionText(ORDER_RETENTION_DAYS, translatorFor(locale)),
+      })}`
+    : '';
+  return send(to, locale, 'accountDeleted', { orders }, name);
 }

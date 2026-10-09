@@ -24,7 +24,7 @@ after(stopApp);
 
 const { changePlan, rejectRequest } = await import('../../src/services/admin-plan.js');
 const { banAccount } = await import('../../src/services/admin-security.js');
-const { exportOwnData } = await import('../../src/services/account-self.js');
+const { exportOwnData } = await import('../../src/services/account-export.js');
 const { runMaintenance } = await import('../../src/services/maintenance.js');
 const { resendOrderMail } = await import('../../src/services/plan-requests.js');
 const { LEGAL_UPDATED } = await import('../../src/company.js');

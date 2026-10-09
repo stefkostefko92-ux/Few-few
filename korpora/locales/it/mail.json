@@ -66,7 +66,8 @@
     },
     "accountDeleted": {
       "subject": "Il vostro account Korpora è stato eliminato",
-      "body": "il vostro account e tutti i suoi progetti sono stati eliminati definitivamente. Restano nelle copie di backup del database solo finché le copie non scadono: i termini sono nell'informativa sulla privacy.\n\nSe non l'avete chiesto voi, scriveteci all'indirizzo qui sotto."
+      "body": "il vostro account e tutti i suoi progetti sono stati eliminati definitivamente. Restano nelle copie di backup del database solo finché le copie non scadono: i termini sono nell'informativa sulla privacy.{orders}\n\nSe non l'avete chiesto voi, scriveteci all'indirizzo qui sotto.",
+      "orders": "Conserviamo i vostri ordini solo con i dati del contratto (nome, email, importo, date, condizioni accettate, inizio anticipato e recesso) e li eliminiamo {kept} dopo l'eliminazione dell'account."
     },
     "banned": {
       "subject": "Il vostro accesso a Korpora è stato bloccato",
@@ -126,6 +127,10 @@
       },
       "early": "Il cliente ha chiesto l'inizio anticipato: trattenete la parte per il periodo in cui il piano è stato attivo.",
       "full": "Senza inizio anticipato: rimborsate l'intero importo."
+    },
+    "staffAccountDeleted": {
+      "subject": "Account eliminato con un ordine in attesa di pagamento: {email}",
+      "body": "l'account di {email} è stato eliminato. L'ordine n. {ids} era in attesa di pagamento ed è stato annullato.\n\nSe per l'ordine è arrivato un pagamento, rimborsatelo con lo stesso mezzo di pagamento. Nel pannello l'ordine resta solo con i dati del contratto.\n\nPannello: {admin}"
     }
   }
 }

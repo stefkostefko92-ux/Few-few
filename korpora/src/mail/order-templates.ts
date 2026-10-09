@@ -56,9 +56,12 @@ export function mailOrderRejected(
   );
 }
 
-/** Известие до екипа (CONTACT_EMAIL), на български: нова поръчка или отказ със срок за връщане. */
+/**
+ * Известие до екипа (CONTACT_EMAIL), на български: нова поръчка, отказ със срок за връщане или изтрит акаунт
+ * с отменена поръчка, по която може вече да е платено.
+ */
 export function mailStaffNotice(
-  kind: 'staffOrder' | 'staffWithdrawal',
+  kind: 'staffOrder' | 'staffWithdrawal' | 'staffAccountDeleted',
   params: Record<string, string>,
 ): Promise<boolean> {
   return send(

@@ -109,7 +109,8 @@
       "refundBy": "If paid, refund by {date}",
       "planReverted": "The plan was returned automatically.",
       "planManual": "The plan was not returned automatically — check it.",
-      "notConfirmed": "The email confirmation has not gone out — the system resends it automatically."
+      "notConfirmed": "The email confirmation has not gone out — the system resends it automatically.",
+      "deletedAccount": "deleted account ({date})"
     },
     "new": {
       "title": "New account",
@@ -236,6 +237,7 @@
     "signup": "sign-up",
     "trialStarted": "trial started (email confirmed)",
     "withdrawal": "withdrawal from the contract",
-    "createdByStaff": "created by the team"
+    "createdByStaff": "created by the team",
+    "accountDeleted": "the account was deleted"
   }
 }
