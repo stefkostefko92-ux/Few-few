@@ -18,23 +18,25 @@
 </form>
 
 <% if (!rows.length) { %><p class="empty"><%= t('admin.accounts.none') %></p><% } else { %>
-<div class="table-wrap"><table class="stack">
+<div class="table-wrap"><table class="stack stack-kv">
   <thead><tr><th><%= t('admin.col.account') %></th><th><%= t('admin.col.plan') %></th><th><%= t('admin.col.status') %></th><th><%= t('admin.col.lastLogin') %></th><th class="num"><%= t('admin.col.projects') %></th><th><%= t('admin.col.created') %></th></tr></thead>
   <tbody>
   <% for (const u of rows) { %>
-    <tr>
+    <%# празните клетки (няма значка, вход, проекти) не стават редове с етикет в картата на телефона %>
+    <% const locked = u.lockedUntil && u.lockedUntil > now; const unverified = !u.emailVerifiedAt && u.planState.blockedBy !== 'unverified'; const flagged = u.bannedAt || locked || unverified || u.totpEnabledAt; %>
+    <tr<%- u.bannedAt ? ' class="is-banned"' : '' %>>
       <td data-label="<%= t('admin.col.account') %>" class="who"><a href="/admin/accounts/<%= u.id %>"><%= u.email %></a><small><%= u.name %><% if (u.role !== 'CUSTOMER') { %>, <%= t('role.' + u.role) %><% } %></small></td>
-      <td data-label="<%= t('admin.col.plan') %>"><%- include('../partials/plan-chip', { plan: u.planState }) %>
+      <td data-label="<%= t('admin.col.plan') %>"><%- include('../partials/plan-chip', { plan: u.planState, banned: !!u.bannedAt }) %>
         <% if (u.planExpiresAt && u.plan !== 'LIFETIME' && u.planState.state !== 'staff') { %><br><small class="nowrap"><%= t(u.planExpiresAt <= now ? 'plan.endedOn' : 'plan.endsOn', { date: fmt.shortDate(u.planExpiresAt) }) %></small><% } %></td>
-      <td data-label="<%= t('admin.col.status') %>"><div class="chips-row">
+      <td data-label="<%= t('admin.col.status') %>"<%- flagged ? '' : ' class="is-blank"' %>><div class="chips-row">
         <% if (u.bannedAt) { %><span class="chip chip-bad"><%- include('../partials/icon', { name: 'ban' }) %><%= t('admin.chip.banned') %></span><% } %>
-        <% if (u.lockedUntil && u.lockedUntil > now) { %><span class="chip chip-warn"><%- include('../partials/icon', { name: 'lock' }) %><%= t('admin.chip.locked') %></span><% } %>
+        <% if (locked) { %><span class="chip chip-warn"><%- include('../partials/icon', { name: 'lock' }) %><%= t('admin.chip.locked') %></span><% } %>
         <%# непотвърденият имейл на клиент вече го казва значката на плана %>
-        <% if (!u.emailVerifiedAt && u.planState.blockedBy !== 'unverified') { %><span class="chip chip-warn"><%- include('../partials/icon', { name: 'mail' }) %><%= t('admin.chip.unverified') %></span><% } %>
+        <% if (unverified) { %><span class="chip chip-warn"><%- include('../partials/icon', { name: 'mail' }) %><%= t('admin.chip.unverified') %></span><% } %>
         <% if (u.totpEnabledAt) { %><span class="chip chip-ok"><%- include('../partials/icon', { name: 'shield' }) %>2FA</span><% } %>
       </div></td>
-      <td data-label="<%= t('admin.col.lastLogin') %>"><% if (u.lastLoginAt) { %><span class="nowrap"><%= fmt.relative(u.lastLoginAt) %></span><% if (can('logins:view')) { %><br><small class="mono-sm"><%= u.lastLoginIp || '' %></small><% } %><% if (u.lastLoginCountry) { %> <small><%= fmt.country(u.lastLoginCountry) %></small><% } %><% } else { %><span class="muted">—</span><% } %></td>
-      <td data-label="<%= t('admin.col.projects') %>" class="num"><%= fmt.num(u._count.projects) %></td>
+      <td data-label="<%= t('admin.col.lastLogin') %>"<%- u.lastLoginAt ? '' : ' class="is-blank"' %>><% if (u.lastLoginAt) { %><span class="nowrap"><%= fmt.relative(u.lastLoginAt) %></span><% if (can('logins:view')) { %><br><small class="mono-sm"><%= u.lastLoginIp || '' %></small><% } %><% if (u.lastLoginCountry) { %> <small><%= fmt.country(u.lastLoginCountry) %></small><% } %><% } else { %><span class="muted">—</span><% } %></td>
+      <td data-label="<%= t('admin.col.projects') %>" class="num<%= u._count.projects ? '' : ' is-blank' %>"><%= fmt.num(u._count.projects) %></td>
       <td data-label="<%= t('admin.col.created') %>" class="nowrap"><%= fmt.shortDate(u.createdAt) %></td>
     </tr>
   <% } %>

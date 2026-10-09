@@ -16,10 +16,10 @@
   <div class="stat"><span class="stat-v"><%= fmt.num(counts.logins24h) %></span><span class="stat-k"><%= t('admin.dashboard.logins24h') %></span></div>
 </div>
 
-<div class="section-grid">
+<div class="section-grid dash-grid">
   <section class="section" aria-labelledby="new-h">
     <h2 id="new-h"><%- include('../partials/icon', { name: 'users' }) %><%= t('admin.dashboard.recent') %></h2>
-    <div class="table-wrap"><table class="stack">
+    <div class="table-wrap"><table class="stack stack-kv">
       <thead><tr><th><%= t('admin.col.account') %></th><th><%= t('admin.col.plan') %></th><th><%= t('admin.col.created') %></th></tr></thead>
       <tbody>
       <% for (const u of recent) { %>
@@ -34,7 +34,7 @@
   <section class="section" aria-labelledby="sec-h">
     <h2 id="sec-h"><%- include('../partials/icon', { name: 'shield' }) %><%= t('admin.dashboard.security') %></h2>
     <% if (!events.length) { %><p class="muted"><%= t('admin.dashboard.noEvents') %></p><% } else { %>
-    <div class="table-wrap"><table class="stack">
+    <div class="table-wrap"><table class="stack stack-kv">
       <thead><tr><th><%= t('security.col.when') %></th><th><%= t('security.col.result') %></th><th><%= t('admin.col.where') %></th></tr></thead>
       <tbody>
       <% for (const e of events) { %>

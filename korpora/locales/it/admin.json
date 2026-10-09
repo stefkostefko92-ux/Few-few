@@ -95,7 +95,8 @@
         "other": "Catena integra: {n} voci"
       },
       "chainBroken": "La catena si interrompe alla voce {id}",
-      "head": "L'ultima voce: n. {id}, hash {hash}. Conservate questa riga anche fuori dal server (per esempio a ogni controllo mensile): così si scopre perfino una fine della catena cancellata."
+      "head": "L'ultima voce: n. {id}, hash {hash}. Conservate questa riga anche fuori dal server (per esempio a ogni controllo mensile): così si scopre perfino una fine della catena cancellata.",
+      "none": "Nessuna voce corrisponde al filtro."
     },
     "requests": {
       "title": "Ordini di piani",
@@ -225,7 +226,11 @@
       "openOrders": "Ordini aperti — un piano a pagamento si attiva tramite l'ordine:",
       "openOrder": "N. {id}: {option} del {date}",
       "yes": "sì",
-      "no": "no"
+      "no": "no",
+      "back": "Tutti gli account",
+      "noPlanChanges": "Il piano non è ancora stato cambiato.",
+      "noAttempts": "Ancora nessun tentativo di accesso.",
+      "deviceMore": "dettagli"
     }
   },
   "label": {

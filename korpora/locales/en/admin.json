@@ -95,7 +95,8 @@
         "other": "Chain intact: {n} entries"
       },
       "chainBroken": "The chain breaks at entry {id}",
-      "head": "The latest entry: No. {id}, hash {hash}. Keep this line outside the server too (for example at each monthly check) — that way even a deleted end of the chain is caught."
+      "head": "The latest entry: No. {id}, hash {hash}. Keep this line outside the server too (for example at each monthly check) — that way even a deleted end of the chain is caught.",
+      "none": "No entries match this filter."
     },
     "requests": {
       "title": "Plan orders",
@@ -225,7 +226,11 @@
       "openOrders": "Open orders — a paid plan is activated through the order:",
       "openOrder": "No. {id}: {option} of {date}",
       "yes": "yes",
-      "no": "no"
+      "no": "no",
+      "back": "All accounts",
+      "noPlanChanges": "The plan has not been changed yet.",
+      "noAttempts": "No sign-in attempts yet.",
+      "deviceMore": "details"
     }
   },
   "label": {

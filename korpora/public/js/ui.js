@@ -98,6 +98,26 @@
     });
   }
 
+  // the admin tabs on a phone scroll sideways when they do not fit: the current tab comes into view, and the side
+  // where more tabs wait is marked (data-more) so the CSS fades it out
+  Array.prototype.forEach.call(document.querySelectorAll('.subnav-admin'), function (nav) {
+    var mark = function () {
+      var more = [];
+      if (nav.scrollLeft > 1) more.push('start');
+      if (nav.scrollLeft + nav.clientWidth < nav.scrollWidth - 1) more.push('end');
+      if (more.length) nav.setAttribute('data-more', more.join(' '));
+      else nav.removeAttribute('data-more');
+    };
+    var current = nav.querySelector('[aria-current="page"]');
+    if (current && nav.scrollWidth > nav.clientWidth) {
+      var left = current.getBoundingClientRect().left - nav.getBoundingClientRect().left;
+      nav.scrollLeft += left - (nav.clientWidth - current.offsetWidth) / 2;
+    }
+    mark();
+    nav.addEventListener('scroll', mark, { passive: true });
+    window.addEventListener('resize', mark);
+  });
+
   // plan forms: show only the fields of the chosen plan
   Array.prototype.forEach.call(document.querySelectorAll('[data-plan-form]'), function (form) {
     var select = form.querySelector('[data-plan-select]');
