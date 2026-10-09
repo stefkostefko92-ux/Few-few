@@ -14,6 +14,7 @@ import type { ModelDiagnosis } from '../../src/domain/response.js';
 import { createLogger } from '../../src/logger.js';
 import type { EmbeddingModel } from '../../src/ai/embeddings.js';
 import { EmbeddingIndexer } from '../../src/store/embeddings.js';
+import type { AttachmentDeps } from '../../src/services/attachments.js';
 import { PrismaKnowledgeStore } from '../../src/store/knowledge.js';
 import { knowledgeSnapshotId } from '../../src/store/snapshot.js';
 
@@ -182,7 +183,11 @@ export interface Harness {
 }
 
 export async function startApp(
-  opts: { diagnose?: 'real' | 'none' | Diagnoser; embedder?: EmbeddingModel } = {},
+  opts: {
+    diagnose?: 'real' | 'none' | Diagnoser;
+    embedder?: EmbeddingModel;
+    attachments?: AttachmentDeps | null;
+  } = {},
 ): Promise<Harness> {
   const model = new ScriptedModel();
   const sessions: SessionDeps = { db, pepper: PEPPER, ttlHours: 12, secureCookies: false };
@@ -216,6 +221,7 @@ export async function startApp(
     sessions,
     diagnose: choice === 'real' ? real : choice === 'none' ? null : choice,
     onDocumentPublished: indexer ? () => void indexer.kick() : undefined,
+    attachments: opts.attachments ?? null,
   });
   const server: Server = await new Promise((resolve) => {
     const s = app.listen(0, '127.0.0.1', () => resolve(s));
@@ -282,6 +288,44 @@ export class Client {
     const json =
       raw && res.headers.get('content-type')?.includes('json') ? JSON.parse(raw) : raw || null;
     return { status: res.status, body: json as T, headers: res.headers };
+  }
+
+  /** Същата сесия срещу друг екземпляр на приложението (друга конфигурация). */
+  withBase(base: string): Client {
+    return new Client(base, this.cookie, this.csrfToken);
+  }
+
+  /** Сурово тяло (качване на файл) — като браузъра: бисквитка + CSRF, без JSON. */
+  async upload<T = any>(
+    path: string,
+    bytes: Uint8Array,
+    contentType = 'application/octet-stream',
+    opts: ReqOpts = {},
+  ): Promise<Res<T>> {
+    const headers: Record<string, string> = { 'content-type': contentType };
+    if (this.cookie && opts.cookie !== false) headers.cookie = SESSION_COOKIE + '=' + this.cookie;
+    const csrf = opts.csrf === undefined ? this.csrfToken : opts.csrf;
+    if (csrf) headers['x-csrf-token'] = csrf;
+    if (opts.origin) headers.origin = opts.origin;
+    const res = await fetch(this.base + path, { method: 'POST', headers, body: bytes });
+    const raw = await res.text();
+    const json = raw && res.headers.get('content-type')?.includes('json') ? JSON.parse(raw) : raw;
+    return { status: res.status, body: json as T, headers: res.headers };
+  }
+
+  /** GET с байтовете на отговора (сваляне на файл). */
+  async download(
+    path: string,
+    opts: ReqOpts = {},
+  ): Promise<{ status: number; bytes: Buffer; headers: Headers }> {
+    const headers: Record<string, string> = {};
+    if (this.cookie && opts.cookie !== false) headers.cookie = SESSION_COOKIE + '=' + this.cookie;
+    const res = await fetch(this.base + path, { headers });
+    return {
+      status: res.status,
+      bytes: Buffer.from(await res.arrayBuffer()),
+      headers: res.headers,
+    };
   }
 
   get<T = any>(path: string, opts?: ReqOpts) {

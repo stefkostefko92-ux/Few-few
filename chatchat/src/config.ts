@@ -47,12 +47,38 @@ const EnvSchema = z.object({
   EMBEDDING_TIMEOUT_MS: z.coerce.number().int().min(500).max(30000).default(4000),
   /** През колко секунди фоновото индексиране търси непокрити публикувани парчета (0 = никога). */
   EMBEDDING_SWEEP_SECONDS: z.coerce.number().int().min(0).max(86400).default(600),
+  /** Частното хранилище на прикачените файлове (F2). Празно → прикачването е изключено. */
+  ATTACHMENTS_DIR: z.string().default(''),
+  /** HMAC ключ за краткотрайните подписани адреси за сваляне — различен от SESSION_PEPPER. */
+  ATTACHMENT_URL_KEY: z.string().default(''),
+  /** clamd (INSTREAM през TCP). Празно → без антивирус качването е изключено (fail-closed). */
+  CLAMAV_HOST: z.string().default(''),
+  CLAMAV_PORT: z.coerce.number().int().min(1).max(65535).default(3310),
+  CLAMAV_TIMEOUT_MS: z.coerce.number().int().min(1000).max(120000).default(30000),
+});
+
+/** Прикачването иска и ключ за подписите: хранилище без ключ е полуготов конфиг. */
+const ConfigSchema = EnvSchema.superRefine((c, ctx) => {
+  if (c.ATTACHMENTS_DIR === '') return;
+  if (c.ATTACHMENT_URL_KEY.length < 32) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['ATTACHMENT_URL_KEY'],
+      message: 'ATTACHMENT_URL_KEY трябва да е поне 32 знака, щом ATTACHMENTS_DIR е зададен',
+    });
+  } else if (c.ATTACHMENT_URL_KEY === c.SESSION_PEPPER) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['ATTACHMENT_URL_KEY'],
+      message: 'ATTACHMENT_URL_KEY трябва да е различен от SESSION_PEPPER',
+    });
+  }
 });
 
 export type Config = z.infer<typeof EnvSchema>;
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
-  const parsed = EnvSchema.safeParse(env);
+  const parsed = ConfigSchema.safeParse(env);
   if (!parsed.success) {
     const issues = parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ');
     throw new Error(`Невалидна конфигурация: ${issues}`);
@@ -70,4 +96,9 @@ export function embeddingsEnabled(
 /** AI е включен само с проект в GCP; без него /chat връща 503 (без резервен доставчик). */
 export function aiEnabled(cfg: Pick<Config, 'VERTEX_PROJECT_ID'>): boolean {
   return cfg.VERTEX_PROJECT_ID.length > 0;
+}
+
+/** Прикачването е включено само с хранилище (ключът е проверен в схемата). */
+export function attachmentsEnabled(cfg: Pick<Config, 'ATTACHMENTS_DIR'>): boolean {
+  return cfg.ATTACHMENTS_DIR.length > 0;
 }

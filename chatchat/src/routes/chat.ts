@@ -14,12 +14,19 @@ import {
 import { caseAudiences, coversAudiences } from '../auth/rbac.js';
 import type { DiagnosticAnswer } from '../domain/response.js';
 import { redactPii } from '../domain/pii.js';
+import {
+  attachmentsByMessage,
+  bindToMessage,
+  type MessageAttachment,
+} from '../services/attachments.js';
 import { addTimeline, contextOf, findCaseFor, isUniqueOn } from '../services/cases.js';
 
 /**
  * §14.1 POST /chat/messages — съобщение в случая и (по подразбиране) диагностика от AI.
  * Записът на човешкото съобщение е ПРЕДИ извикването на модела: ако AI падне, разговорът
  * остава. Повтор със същия clientMessageId не дублира нищо (NFR-12).
+ * Прикачените файлове (`attachmentIds`) се привързват към човешкото съобщение в същата
+ * транзакция и НЕ се подават на AI — анализът на снимки е отделна стъпка (§9.2).
  */
 
 const MessageInput = z.object({
@@ -28,19 +35,34 @@ const MessageInput = z.object({
   clientMessageId: z.uuid().optional(),
   /** false — съобщение до оператора без AI (FR-19). */
   askAi: z.boolean().default(true),
+  /** CLEAN файлове от същия случай, качени от същия човек и още непривързани (FR-06). */
+  attachmentIds: z.array(z.string().min(1).max(40)).max(5).default([]),
 });
+
+/** Невалиден файл в attachmentIds — транзакцията на съобщението се отменя. */
+class InvalidAttachments extends Error {}
 
 const HISTORY_MESSAGES = 12;
 const LOCALES = new Set(['it', 'en', 'bg']);
 
-function messageView(m: {
-  id: string;
-  kind: string;
-  body: string;
-  payload: Prisma.JsonValue;
-  createdAt: Date;
-}) {
-  return { id: m.id, kind: m.kind, body: m.body, payload: m.payload, createdAt: m.createdAt };
+function messageView(
+  m: {
+    id: string;
+    kind: string;
+    body: string;
+    payload: Prisma.JsonValue;
+    createdAt: Date;
+  },
+  attachments: MessageAttachment[] = [],
+) {
+  return {
+    id: m.id,
+    kind: m.kind,
+    body: m.body,
+    payload: m.payload,
+    createdAt: m.createdAt,
+    attachments,
+  };
 }
 
 export function chatRouter(deps: AppDeps): Router {
@@ -67,6 +89,7 @@ export function chatRouter(deps: AppDeps): Router {
         if (!parsed.success) return apiError(res, 400, 'invalid_input');
         const p = principalOf(req);
         const { caseId, clientMessageId, askAi } = parsed.data;
+        const attachmentIds = [...new Set(parsed.data.attachmentIds)];
         // Лични данни в свободния текст се маскират ПРЕДИ запис и преди модела (GDPR чл. 5(1)(c)).
         const text = redactPii(parsed.data.text);
         const c = await findCaseFor(deps.db, p, caseId);
@@ -83,7 +106,11 @@ export function chatRouter(deps: AppDeps): Router {
             where: { caseId: c.id, kind: 'AI', createdAt: { gte: prior.createdAt } },
             orderBy: { createdAt: 'asc' },
           });
-          res.json({ message: messageView(prior), answer: answer ? messageView(answer) : null });
+          const files = await attachmentsByMessage(deps.db, p.user.tenantId, [prior.id]);
+          res.json({
+            message: messageView(prior, files.get(prior.id)),
+            answer: answer ? messageView(answer) : null,
+          });
           return true;
         };
         if (clientMessageId && (await replay(clientMessageId))) return;
@@ -110,10 +137,21 @@ export function chatRouter(deps: AppDeps): Router {
                 clientMessageId: clientMessageId ?? null,
               },
             });
-            await addTimeline(tx, c.id, 'message.created', p.user.id, { messageId: created.id });
+            const bound = await bindToMessage(tx, attachmentIds, {
+              tenantId: p.user.tenantId,
+              caseId: c.id,
+              userId: p.user.id,
+              messageId: created.id,
+            });
+            if (!bound) throw new InvalidAttachments();
+            await addTimeline(tx, c.id, 'message.created', p.user.id, {
+              messageId: created.id,
+              ...(attachmentIds.length > 0 ? { attachmentIds } : {}),
+            });
             return created;
           });
         } catch (err) {
+          if (err instanceof InvalidAttachments) return apiError(res, 422, 'invalid_attachment');
           // Паралелен повтор със същия clientMessageId — първият печели, останалите го виждат.
           if (
             clientMessageId &&
@@ -124,7 +162,13 @@ export function chatRouter(deps: AppDeps): Router {
           throw err;
         }
 
-        if (!askAi) return res.status(201).json({ message: messageView(message), answer: null });
+        const files = attachmentIds.length
+          ? ((await attachmentsByMessage(deps.db, p.user.tenantId, [message.id])).get(message.id) ??
+            [])
+          : [];
+        if (!askAi) {
+          return res.status(201).json({ message: messageView(message, files), answer: null });
+        }
         if (!deps.diagnose) return apiError(res, 503, 'ai_unavailable');
 
         await deps.db.case.update({ where: { id: c.id }, data: { status: 'AI_IN_PROGRESS' } });
@@ -239,7 +283,9 @@ export function chatRouter(deps: AppDeps): Router {
             usage: result.usage,
           },
         });
-        res.status(201).json({ message: messageView(message), answer: messageView(aiMessage) });
+        res
+          .status(201)
+          .json({ message: messageView(message, files), answer: messageView(aiMessage) });
       } catch (err) {
         next(err);
       }

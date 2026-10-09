@@ -9,11 +9,14 @@ import { loadPrincipal, type SessionDeps } from './auth/sessions.js';
 import { adminCatalogRouter } from './routes/admin-catalog.js';
 import { adminDocumentsRouter } from './routes/admin-documents.js';
 import { adminErrorsRouter, auditRouter } from './routes/admin-errors.js';
+import { attachmentUploadRouter } from './routes/attachments.js';
 import { authRouter } from './routes/auth.js';
 import { casesRouter } from './routes/cases.js';
 import { catalogRouter } from './routes/catalog.js';
 import { chatRouter } from './routes/chat.js';
+import { filesRouter } from './routes/files.js';
 import { ticketsRouter } from './routes/tickets.js';
+import type { AttachmentDeps } from './services/attachments.js';
 
 export type Diagnoser = (input: DiagnoseInput, signal: AbortSignal) => Promise<DiagnoseOutput>;
 
@@ -30,6 +33,8 @@ export interface AppDeps {
   diagnose: Diagnoser | null;
   /** Сигнал след публикуване на документ (семантичният индекс); не блокира отговора. */
   onDocumentPublished?: (documentId: string) => void;
+  /** null → прикачването е изключено (няма ATTACHMENTS_DIR): маршрутите връщат 503. */
+  attachments: AttachmentDeps | null;
 }
 
 const PUBLIC_DIR = fileURLToPath(new URL('../public', import.meta.url));
@@ -74,6 +79,13 @@ export function createApp(deps: AppDeps): express.Express {
     }
   });
 
+  app.use('/api', (_req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store');
+    next();
+  });
+  // Качването на файлове е сурово тяло със собствен таван — само по своите пътища, СЛЕД сесия,
+  // CSRF, роля и достъп до случая, и ПРЕДИ JSON парсерите (JSON лог е файл, не заявка).
+  app.use('/api/v1', attachmentUploadRouter(deps));
   // Документите с хиляди страници са по-големи — по-високият таван е само за админ пътя и
   // СЛЕД проверката за роля: анонимен или портален потребител не кара сървъра да парсва 8 MB.
   app.use(
@@ -83,10 +95,6 @@ export function createApp(deps: AppDeps): express.Express {
     express.json({ limit: '8mb' }),
   );
   app.use('/api', express.json({ limit: '64kb' }));
-  app.use('/api', (_req, res, next) => {
-    res.setHeader('Cache-Control', 'no-store');
-    next();
-  });
   app.use('/api', loadPrincipal(deps.sessions));
 
   // Публично: каквото UI трябва да покаже ПРЕДИ вход (информация за поверителност).
@@ -102,6 +110,7 @@ export function createApp(deps: AppDeps): express.Express {
   app.use('/api/v1', casesRouter(deps));
   app.use('/api/v1', chatRouter(deps));
   app.use('/api/v1', ticketsRouter(deps));
+  app.use('/api/v1', filesRouter(deps));
   app.use('/api', (_req, res) => apiError(res, 404, 'not_found'));
 
   app.use(

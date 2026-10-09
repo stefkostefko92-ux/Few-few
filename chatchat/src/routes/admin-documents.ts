@@ -9,7 +9,13 @@ import {
   requireCsrf,
   requireUser,
 } from '../auth/guards.js';
-import { DocumentInputSchema, ingestDocument } from '../services/ingest.js';
+import {
+  DocumentRequestSchema,
+  ingestDocument,
+  pageWarnings,
+  type DocumentInput,
+} from '../services/ingest.js';
+import { extractPdfText, type PdfFailure } from '../services/pdf.js';
 
 /**
  * Управление на знанието (§4.1, §11.3, AC-10): Draft → Review → Published → Deprecated.
@@ -21,6 +27,33 @@ const Id = z.string().min(1).max(40);
 const ListQuery = z.object({
   status: z.enum(['DRAFT', 'REVIEW', 'PUBLISHED', 'DEPRECATED']).optional(),
 });
+
+type PdfSource =
+  | { ok: true; name: string; sha256: string; pages: DocumentInput['pages'] }
+  | { ok: false; status: number; code: string; reason?: PdfFailure };
+
+/**
+ * §7.3 т. 2: текстът на CLEAN PDF от същия клиент, по страници. Файлът е минал антивируса при
+ * качването (POST /admin/attachments); тук само се чете от частното хранилище.
+ */
+async function pdfSource(
+  deps: AppDeps,
+  tenantId: string,
+  attachmentId: string,
+): Promise<PdfSource> {
+  if (!deps.attachments) return { ok: false, status: 503, code: 'attachments_unavailable' };
+  const a = await deps.db.attachment.findFirst({ where: { id: attachmentId, tenantId } });
+  if (!a || a.kind !== 'DOCUMENT' || a.mime !== 'application/pdf' || a.scanStatus !== 'CLEAN') {
+    return { ok: false, status: 422, code: 'invalid_attachment' };
+  }
+  const bytes = await deps.attachments.store.get(a.objectKey);
+  if (!bytes) return { ok: false, status: 422, code: 'invalid_attachment' };
+  const extracted = await extractPdfText(bytes);
+  if (!extracted.ok) {
+    return { ok: false, status: 422, code: 'pdf_unreadable', reason: extracted.reason };
+  }
+  return { ok: true, name: a.originalName, sha256: a.sha256, pages: extracted.pages };
+}
 
 type Transition = 'submit' | 'reject' | 'publish' | 'deprecate';
 const FROM: Record<Transition, string> = {
@@ -79,7 +112,7 @@ export function adminDocumentsRouter(deps: AppDeps): Router {
 
   router.post('/documents', async (req, res, next) => {
     try {
-      const parsed = DocumentInputSchema.safeParse(req.body);
+      const parsed = DocumentRequestSchema.safeParse(req.body);
       if (!parsed.success) {
         return res.status(400).json({
           error: 'invalid_input',
@@ -88,7 +121,26 @@ export function adminDocumentsRouter(deps: AppDeps): Router {
         });
       }
       const p = principalOf(req);
-      const result = await ingestDocument(deps.db, p.user.tenantId, p.user.id, parsed.data);
+      const { pages, sourceAttachmentId, sourceFilename, ...meta } = parsed.data;
+      let input: DocumentInput;
+      let checksum: string | undefined;
+      if (sourceAttachmentId) {
+        // С PDF: checksum = sha256 на оригинала (§7.2), името — от файла.
+        const source = await pdfSource(deps, p.user.tenantId, sourceAttachmentId);
+        if (!source.ok) {
+          const { status, code, reason } = source;
+          return res.status(status).json({ error: code, code, ...(reason ? { reason } : {}) });
+        }
+        input = { ...meta, sourceFilename: source.name, pages: source.pages };
+        checksum = source.sha256;
+      } else if (pages && sourceFilename) {
+        input = { ...meta, sourceFilename, pages };
+      } else {
+        return apiError(res, 400, 'invalid_input');
+      }
+      const result = await ingestDocument(deps.db, p.user.tenantId, p.user.id, input, {
+        checksum,
+      });
       if (!result.ok) {
         const status = result.error.code === 'duplicate_revision' ? 409 : 422;
         return res.status(status).json({ error: result.error.code, ...result.error });
@@ -99,9 +151,19 @@ export function adminDocumentsRouter(deps: AppDeps): Router {
         action: 'kb.document.upload',
         objectType: 'document',
         objectId: result.documentId,
-        detail: { code: parsed.data.code, revision: parsed.data.revision, chunks: result.chunks },
+        detail: {
+          code: input.code,
+          revision: input.revision,
+          chunks: result.chunks,
+          sourceAttachmentId: sourceAttachmentId ?? null,
+        },
       });
-      res.status(201).json({ documentId: result.documentId, chunks: result.chunks });
+      res.status(201).json({
+        documentId: result.documentId,
+        chunks: result.chunks,
+        // Сканирана страница без текстов слой — OCR не правим; качилият решава.
+        warnings: pageWarnings(input.pages),
+      });
     } catch (err) {
       next(err);
     }

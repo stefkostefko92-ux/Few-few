@@ -370,6 +370,7 @@ export async function newCase(
 export interface AskOpts {
   clientMessageId?: string;
   askAi?: boolean;
+  attachmentIds?: string[];
 }
 
 export function ask(c: Client, caseId: string, text: string, opts: AskOpts = {}) {
