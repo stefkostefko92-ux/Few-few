@@ -21,6 +21,7 @@ import { ROOT } from '../src/paths.js';
  */
 export const DOMAIN = 'korpora.carbonstealth.eu';
 export const VHOST = join(ROOT, 'deploy', 'nginx', `${DOMAIN}.conf`);
+export const MAINT_PAGE = join(ROOT, 'deploy', 'nginx', 'maintenance.html');
 
 export interface Layout {
   base: string;
@@ -32,6 +33,8 @@ export interface Layout {
   log: string;
   systemd: string;
   sbin: string;
+  /** Where deploy.sh puts the page nginx shows while the app does not answer (/var/www/korpora). */
+  maint: string;
 }
 
 /** The deploy/ files the release carries for the daily backup (installed by backup-install.sh). */
@@ -49,6 +52,7 @@ function layout(): Layout {
   mkdirSync(join(app, 'deploy', 'nginx'), { recursive: true });
   copyFileSync(join(ROOT, 'deploy', 'deploy.sh'), join(app, 'deploy', 'deploy.sh'));
   copyFileSync(VHOST, join(app, 'deploy', 'nginx', `${DOMAIN}.conf`));
+  copyFileSync(MAINT_PAGE, join(app, 'deploy', 'nginx', 'maintenance.html'));
   mkdirSync(join(app, 'deploy', 'systemd'), { recursive: true });
   for (const file of BACKUP_FILES)
     copyFileSync(join(ROOT, 'deploy', file), join(app, 'deploy', file));
@@ -68,6 +72,7 @@ function layout(): Layout {
     log: join(base, 'log.txt'),
     systemd: join(base, 'systemd'),
     sbin: join(base, 'sbin'),
+    maint: join(base, 'www', 'korpora'),
   };
 }
 
@@ -138,6 +143,7 @@ export function deploy(L: Layout, env: Record<string, string> = {}) {
       KORPORA_HEALTH_WAIT: '0',
       KORPORA_SYSTEMD_DIR: L.systemd,
       KORPORA_SBIN: L.sbin,
+      KORPORA_MAINT_DIR: L.maint,
       // any existing command stands for age: the deploy only asks whether it is installed
       KORPORA_AGE: 'true',
       VOLUME_RC: '1',

@@ -71,15 +71,20 @@ sudo bash /opt/few-few/current/korpora/deploy/deploy.sh
 2. `docker compose build` на образа — при провал спира с код 1, работещите контейнери не са пипани;
 3. с `CATALOG_KEY` новият образ отваря шифрования каталог (`dist/scripts/catalog-check.js`) — грешен ключ
    или повреден файл спира с код 1, работещите контейнери не са пипани;
-4. бекъп на базата преди миграция в `/opt/few-few/shared/korpora/backups/` (пази последните 5;
-   `pg_dump --clean --if-exists`) — след build-а и точно преди смяната, за да не губи
+4. бекъп на базата преди миграция в `/opt/few-few/shared/korpora/backups/` (пази последните 5, не
+   по-стари от 30 дни; `pg_dump --clean --if-exists`) — след build-а и точно преди смяната, за да не губи
    възстановяването записите от минутите на build-а; без бекъп не мигрира (код 1). С
    `KORPORA_SKIP_BACKUP=1` (откатът) — без нов дъмп, за да не изтласка от ротацията дъмпа отпреди
    счупената миграция;
-5. `docker compose up` — entrypoint-ът чака базата и пуска `prisma migrate deploy` (никога `db push`);
+5. слага страницата за поддръжка (`deploy/nginx/maintenance.html` → `/var/www/korpora/`, 755/644): докато
+   приложението не отговаря (този рестарт, месечният за GeoIP, срив), nginx показва нея с кода 502/503/504
+   вместо голата си „502 Bad Gateway“; после `docker compose up` — entrypoint-ът чака базата и пуска
+   `prisma migrate deploy` (никога `db push`);
 6. чака `/health` да върне `{"status":"ok","app":"korpora"}` — маркерът доказва, че на порта
    отговаря Korpora, а не друго приложение (иначе код 4 и `autodeploy.sh` връща последния
-   работещ release); после записва папката на release-а в `/opt/few-few/shared/korpora/last-good`;
+   работещ release); после записва папката на release-а в `/opt/few-few/shared/korpora/last-good` и
+   маха висящите образи на проекта (`docker image prune -f --filter label=com.docker.compose.project=korpora`
+   — предишният `korpora-app` след новия build; чужди образи и build кешът остават);
 7. слага дневния шифрован бекъп (`deploy/backup-install.sh`: скриптът и таймерът; т. 9) и, ако няма
    бекъп от последните 26 ч, пуска един веднага;
 8. слага vhost-а от репото в nginx с порта от `HTTP_PORT` (`nginx -t`, после reload; при грешка
@@ -244,10 +249,15 @@ sudo docker compose exec -T db psql -U korpora -d korpora -tAc 'SELECT "lastId",
   остава в бекъпите до изтичането им (SECURITY.md). Провал → изход ≠ 0, нищо старо не се трие.
 - **Лог:** `journalctl -u korpora-backup -n 50` — само имена на файлове, размери и броеве.
 - **Пясъчник:** unit-ът е без capabilities и без мрежа (docker е през unix сокет), пише само в
-  `backups/daily` (`systemd-analyze security korpora-backup` — 1.5).
+  `backups/` (дневните — в `daily/`; горе трие само дъмповете над тавана по възраст)
+  (`systemd-analyze security korpora-backup` — 1.5).
 
 Бекъпите преди миграция (т. 3, стъпка 4: `pre-deploy-*.sql.gz`, последните 5) остават както са —
 некриптирани (600 в папка 700), за да се възстановят веднага на сървъра без ключа на собственика (т. 8).
+Всеки деплой трие и по-старите от 30 дни (освен току-що направения), а снимките `pre-restore-*.dump.age`
+(т. 10) и сумите им — по-старите от 60 дни. Същият таван налага и всеки успешен дневен бекъп, за да важи и
+между два деплоя — там без изключение за най-новия дъмп (откат към него би загубил месец данни, а
+дневните бекъпи го покриват).
 
 **Веднъж — ключът (собственикът).** На своята машина, не на сървъра:
 
@@ -323,4 +333,6 @@ ssh "$SRV" "cd $D && sha256sum -c --quiet $F.sha256 >&2 && cat $F" | age -d -i k
 дискът), `--identity /dev/shm/korpora-backup.key /opt/…/daily/$F`, после `shred -u` на ключа.
 
 Проверено с PostgreSQL 16 (`tests/integration/backup-restore.test.ts`): бекъп → възстановяване в празна
-база със същите акаунти и миграции; живо възстановяване връща изтрит акаунт; отрязан дъмп не променя нищо.
+база със същите акаунти и миграции (от файла и от stdin); живо възстановяване от stdin връща изтрит акаунт;
+отрязан дъмп не променя нищо. Преди pg_restore нито една команда в контейнера не получава stdin (`docker
+exec` без `-i`): `docker exec -i` го копира, дори командата да не го чете, и изяжда началото на дъмпа.
