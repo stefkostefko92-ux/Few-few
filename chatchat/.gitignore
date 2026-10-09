@@ -4,3 +4,5 @@ dist/
 .env.*
 !.env.example
 *.log
+# Отчетите от npm run eval (може да съдържат текстове на клиента) — не влизат в git
+evals/reports/

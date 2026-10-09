@@ -132,6 +132,12 @@ class MemoryStore implements KnowledgeStore {
       .map((x) => ({ ...x.r, rawScore: x.hits }));
   }
 
+  /** Без embeddings: семантичното е в tests/semantic.test.ts. */
+  async searchSemantic(scope: SearchScope, productModel: string): Promise<RawEvidence[]> {
+    this.calls.push({ fn: 'searchSemantic', scope, productModel });
+    return [];
+  }
+
   async getPage(): Promise<RawEvidence[]> {
     return [];
   }

@@ -139,6 +139,12 @@ class MemoryKnowledge implements KnowledgeStore {
       .map((x) => ({ ...this.forModel(x.r, productModel), rawScore: x.hits }));
   }
 
+  /** Без embeddings (както без VERTEX): семантичното не добавя нищо. */
+  async searchSemantic(scope: SearchScope, productModel: string) {
+    this.calls.push({ fn: 'searchSemantic', scope, productModel });
+    return [];
+  }
+
   async getPage(scope: SearchScope, documentId: string, page: number, productModel?: string) {
     this.calls.push({ fn: 'getPage', scope, productModel });
     // Като истинския: без productModel видимостта е по tenant; правилата — само за модела.
