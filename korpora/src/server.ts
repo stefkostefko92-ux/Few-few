@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, sep } from 'node:path';
 import cookieParser from 'cookie-parser';
 import express, { type Express, type NextFunction, type Request, type Response } from 'express';
 import helmet from 'helmet';
@@ -139,7 +139,12 @@ export function createServer(): Express {
     express.static(join(ROOT, 'public'), {
       maxAge: isProduction() ? '30d' : 0,
       immutable: isProduction(),
-      setHeaders: (res) => res.set('X-Content-Type-Options', 'nosniff'),
+      setHeaders: (res, path) => {
+        res.set('X-Content-Type-Options', 'nosniff');
+        // логото в писмата (mail/html.ts) го зарежда пощенската програма — друг произход
+        if (path.includes(`${sep}img${sep}brand${sep}`))
+          res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+      },
     }),
   );
 

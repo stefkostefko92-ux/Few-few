@@ -15,6 +15,7 @@ import {
   regenerateRecoveryCodes,
   startTotp,
 } from '../services/security.js';
+import { resumeTotpSetup } from '../services/totp-setup.js';
 import { back, me } from './account-common.js';
 
 /**
@@ -55,6 +56,7 @@ async function renderSecurity(
     recoveryLeft,
     staff: isStaff(user.role),
     setup: null,
+    setupError: null,
     codes: null,
     section: 'security',
     ...extra,
@@ -99,12 +101,19 @@ accountSecurityRouter.post('/account/security/2fa/start', sensitiveLimiter, asyn
 });
 
 accountSecurityRouter.post('/account/security/2fa/confirm', sensitiveLimiter, async (req, res) => {
-  const result = await confirmTotp(
-    await me(req),
-    stringField(req.body, 'code', 12),
-    requestMeta(req),
-  );
+  const user = await me(req);
+  const result = await confirmTotp(user, stringField(req.body, 'code', 12), requestMeta(req));
   if (!result.ok) {
+    // сгрешен код: същата настройка (QR и ключ) с грешката до полето — не отначало
+    const setup =
+      result.key === 'flash.codeMismatch'
+        ? await resumeTotpSetup(user, stringField(req.body, 'setup', 600))
+        : null;
+    if (setup) {
+      res.status(400);
+      await renderSecurity(req, res, { setup, setupError: result.key });
+      return;
+    }
     totpRefusal(res, result.key);
     return;
   }

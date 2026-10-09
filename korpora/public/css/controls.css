@@ -55,6 +55,15 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+/* a 320px phone: a long label („Прекрати всички други сесии“) wraps inside the button instead of widening the page */
+@media (max-width: 400px) {
+  .btn {
+    white-space: normal;
+    text-align: center;
+    line-height: 1.25;
+    padding-block: 6px;
+  }
+}
 
 /* forms */
 .field {
@@ -71,6 +80,13 @@
   font-size: 0.86rem;
   margin: 0;
   overflow-wrap: anywhere;
+}
+/* a hint between two fields belongs to the one above it: it keeps the rhythm of a field (16px) to the next label,
+   instead of sitting glued to it */
+.form > .hint,
+.auth-card > .hint,
+fieldset > .hint {
+  margin: 4px 0 16px;
 }
 input[type='text'],
 input[type='email'],

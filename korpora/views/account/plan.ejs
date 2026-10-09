@@ -8,25 +8,26 @@
   <h2 id="current-h"><%= t('plan.current') %></h2>
   <p><%- include('../partials/plan-chip', { plan }) %>
   <% if (plan.expiresAt && plan.plan !== 'LIFETIME') { %><span class="muted"> <%= t(plan.state === 'expired' ? 'plan.endedOn' : 'plan.endsOn', { date: fmt.date(plan.expiresAt) }) %></span><% } %></p>
-  <p class="muted"><%= t('plan.expiredRule') %></p>
+  <% if (plan.plan !== 'LIFETIME' && plan.state !== 'staff') { %><p class="muted"><%= t('plan.expiredRule') %></p><% } %>
 </section>
 
 <% if (requests.length) { %>
 <section class="section" aria-labelledby="req-h">
   <h2 id="req-h"><%= t('plan.requestsTitle') %></h2>
-  <p class="muted"><%= t('plan.withdraw.where', { days: withdrawalDays }) %></p>
+  <% if (requests.some((r) => r.buyerType === 'CONSUMER')) { %><p class="muted"><%= t('plan.withdraw.where', { days: withdrawalDays }) %></p><% } %>
   <div class="table-wrap"><table class="stack">
-    <thead><tr><th><%= t('plan.col.date') %></th><th><%= t('plan.col.option') %></th><th class="num"><%= t('plan.col.price') %></th><th><%= t('plan.col.status') %></th><th><%= t('plan.col.actions') %></th></tr></thead>
+    <thead><tr><th><%= t('plan.col.order') %></th><th><%= t('plan.col.option') %></th><th class="num"><%= t('plan.col.price') %></th><th><%= t('plan.col.status') %></th><th><%= t('plan.col.actions') %></th></tr></thead>
     <tbody>
     <% for (const r of requests) { %>
       <tr>
-        <td data-label="<%= t('plan.col.date') %>" class="nowrap"><%= fmt.dateTime(r.createdAt) %></td>
+        <td data-label="<%= t('plan.col.order') %>" class="nowrap"><span class="order-no"><%= fmt.orderNo(r) %></span><br><small class="muted"><%= fmt.dateTime(r.createdAt) %></small></td>
         <td data-label="<%= t('plan.col.option') %>"><%- include('../partials/order-option', { order: r }) %></td>
         <td data-label="<%= t('plan.col.price') %>" class="num"><% if (r.buyerType === 'CONSUMER') { %><%= fmt.money(r.withVatCents) %><br><small class="muted"><%= t('plan.withVatShort') %></small><% } else { %><%= fmt.money(r.listPriceCents) %><br><small class="muted"><%= t('plan.netShort') %></small><% } %></td>
         <td data-label="<%= t('plan.col.status') %>"><%- include('../partials/order-status', { order: r, warnWithdrawn: false }) %>
+          <% if (r.supersededBy) { %><br><small class="muted"><%= t('plan.supersededBy', { no: fmt.orderNo(r.supersededBy) }) %></small><% } %>
           <% if (r.status === 'OPEN' && r.activationFrom > now) { %><br><small class="muted"><%= t('plan.activationAfter', { date: fmt.date(r.lastDay) }) %></small><% } %>
           <% if (r.status === 'WITHDRAWN' && r.withdrawnAt) { %><br><small class="muted"><%= t('plan.withdrawnOn', { date: fmt.dateTime(r.withdrawnAt) }) %></small><% } %></td>
-        <td data-label="<%= t('plan.col.actions') %>"><% if (r.canWithdraw) { %><a class="btn btn-small" href="/account/plan/withdraw/<%= r.id %>"><%= t('plan.withdraw.button') %></a><small class="order-until"><%= t('plan.withdraw.until', { date: fmt.date(r.lastDay) }) %></small><% } else if (r.status === 'OPEN') { %><form method="post" action="/account/plan/request/<%= r.id %>/cancel"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-quiet btn-small" type="submit"><%= t('plan.cancel') %></button></form><% } else { %>—<% } %></td>
+        <td data-label="<%= t('plan.col.actions') %>"><% if (r.canWithdraw) { %><a class="btn btn-small" href="/account/plan/withdraw/<%= r.id %>"><%= t('plan.withdraw.button') %></a><small class="order-until"><%= t('plan.withdraw.until', { date: fmt.date(r.lastDay) }) %></small><% } else if (r.status === 'OPEN') { %><form method="post" action="/account/plan/request/<%= r.id %>/cancel" data-confirm="<%= t('plan.cancelConfirm', { no: fmt.orderNo(r) }) %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-quiet btn-small" type="submit"><%= t('plan.cancel') %></button></form><% } else { %>—<% } %></td>
       </tr>
     <% } %>
     </tbody>
@@ -39,7 +40,8 @@
   <h2 id="buy-h"><%= t('plan.requestTitle') %></h2>
   <% if (plan.blockedBy === 'unverified') { %><p><%= t('plan.errors.unverified') %></p><% } else { %>
   <p><%= t('plan.manualText') %></p>
-  <form method="post" action="/account/plan/request" class="form">
+  <%# data-draft: изборите се пазят в раздела (public/js/account.js) — смяната на езика не губи данните за фактурата. %>
+  <form method="post" action="/account/plan/request" class="form" data-draft="plan-order">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <fieldset>
       <legend><%= t('plan.choose') %></legend>
@@ -80,4 +82,4 @@
 </section>
 <% } %>
 
-<%- include('../partials/page-bottom') %>
+<%- include('../partials/page-bottom', { scripts: ['account'] }) %>

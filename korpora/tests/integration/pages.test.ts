@@ -87,7 +87,7 @@ test('one-time pages (QR, recovery codes, a used confirmation link) have no lang
   assert.equal(start.status, 200);
   assert.ok(!start.body.includes(LANGS), 'the QR page');
   const secret =
-    /<p class="secret">([A-Z2-7 ]+)<\/p>/.exec(start.body)?.[1]?.replace(/\s+/g, '') ?? '';
+    /<p class="secret"[^>]*>([A-Z2-7 ]+)<\/p>/.exec(start.body)?.[1]?.replace(/\s+/g, '') ?? '';
   const codes = await b.post('/account/security/2fa/confirm', {
     _csrf: Browser.csrf(start.body),
     code: totpCode(secret, Math.floor(Date.now() / 1000)),

@@ -22,6 +22,7 @@ import { accountLocale } from '../i18n.js';
 import { notifyNewDevice } from './notify.js';
 import { resendVerification } from './registration.js';
 import { attemptFailed, attemptSucceeded, reserveAttempt } from './lockout.js';
+import { phantomFailure } from '../auth/phantom-lock.js';
 
 const IP_WINDOW_MS = 15 * 60 * 1000;
 const IP_MAX_FAILURES = 20;
@@ -32,6 +33,8 @@ const MAX_MFA_FAILURES = 5;
 export type LoginResult =
   | { kind: 'ok'; user: User; session: NewSession; mfaRequired: boolean }
   | { kind: 'invalid' }
+  /** Входът с този имейл е спрян след MAX_FAILED_LOGINS грешни опита — еднакво с и без акаунт. */
+  | { kind: 'locked' }
   | { kind: 'throttled' }
   | { kind: 'banned'; reason: string }
   | { kind: 'unverified'; resent: boolean };
@@ -50,8 +53,18 @@ async function ipFailures(ip: string | null): Promise<number> {
 }
 
 /**
- * Вход с имейл и парола. Непознат имейл, грешна парола и заключен акаунт дават ЕДНО И СЪЩО
- * съобщение. Причината за бан се показва само след вярна парола — тя е доказателство, че това е
+ * Отказаният вход казва „входът е спрян“ или „грешен имейл или парола“ САМО по брояча на имейла в паметта
+ * (auth/phantom-lock.ts), който брои всеки грешен опит с този имейл еднакво — с акаунт и без. Заключването
+ * на акаунта в базата (services/lockout.ts) пази акаунта, но не говори: броячът му не намалява с времето и
+ * преживява рестарт, затова по него би се разбрало кои имейли имат акаунт.
+ */
+function refused(email: string): LoginResult {
+  return { kind: phantomFailure(email).locked ? 'locked' : 'invalid' };
+}
+
+/**
+ * Вход с имейл и парола. Непознат имейл, грешна парола и заключен акаунт дават едни и същи отговори в един и
+ * същи ред (refused). Причината за бан се показва само след вярна парола — тя е доказателство, че това е
  * собственикът на акаунта. Отпечатък на устройството се пази само при успешен вход в акаунт със
  * съгласие — при неуспешен опит кой опитва, не се знае, значи и съгласие няма.
  */
@@ -66,24 +79,25 @@ export async function attemptLogin(
     return { kind: 'throttled' };
   }
   const email = emailSchema.safeParse(rawEmail);
+  const asTyped = email.success ? email.data : rawEmail;
   const user = email.success
     ? await prisma.user.findUnique({ where: { email: email.data } })
     : null;
   if (!user) {
     await verifyPassword(password, await dummyHash());
     await recordLogin('UNKNOWN_EMAIL', meta);
-    return { kind: 'invalid' };
+    return refused(asTyped);
   }
   // Опитът се заема преди проверката: паралелни заявки не надхвърлят тавана преди заключването.
   if (!(await reserveAttempt(user, meta)).reserved) {
     await verifyPassword(password, await dummyHash());
     await recordLogin('LOCKED', meta, { userId: user.id });
-    return { kind: 'invalid' };
+    return refused(asTyped);
   }
   if (!(await verifyPassword(password, user.passwordHash))) {
     await attemptFailed(user, meta);
     await recordLogin('BAD_PASSWORD', meta, { userId: user.id });
-    return { kind: 'invalid' };
+    return refused(asTyped);
   }
   const mfaRequired = Boolean(user.totpEnabledAt);
   // С двуфакторна защита броячът пада едва след верния код: самата парола не изчиства опитите с кодове.
@@ -191,6 +205,8 @@ export async function completeMfa(
   if (step === null && !recovery) {
     await recordLogin('MFA_FAILED', meta, { userId: user.id, deviceId: session.deviceId });
     const account = await attemptFailed(user, meta);
+    // и в брояча на имейла: след заключването вярната парола чува „входът е спрян“, а не „грешна парола“
+    phantomFailure(user.email);
     const touched = await prisma.session.updateMany({
       where: { id: session.id },
       data: { mfaFailures: { increment: 1 } },

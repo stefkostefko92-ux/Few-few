@@ -16,7 +16,7 @@
 <% } %><link rel="preload" href="/static/fonts/geologica-latin.woff2" as="font" type="font/woff2" crossorigin>
 <%
   // Всеки CSS файл е под 300 реда; страницата иска пакет, пакетът изрежда файловете.
-  const bundles = { app: ['app', 'app-pages', 'app-admin', 'app-orders', 'stack'], site: ['site', 'site-story', 'site-stage', 'site-content', 'site-pricing', 'stack'] };
+  const bundles = { app: ['app', 'app-pages', 'app-admin', 'app-orders', 'app-account', 'stack'], site: ['site', 'site-story', 'site-stage', 'site-content', 'site-pricing', 'stack'] };
   const sheets = ['base', 'controls'].concat(...(typeof styles !== 'undefined' ? styles : []).map((name) => bundles[name] || [name]));
 %><% for (const sheet of sheets) { %><link rel="stylesheet" href="/static/css/<%= sheet %>.css?v=<%= v %>">
 <% } %>

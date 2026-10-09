@@ -18,7 +18,8 @@ import {
 } from '../auth/guards.js';
 import { clearSessionCookie, destroySessionById, setSessionCookie } from '../auth/sessions.js';
 import { isStaff } from '../auth/rbac.js';
-import { linkHours } from '../auth/tokens.js';
+import { LOCK_MINUTES, MAX_FAILED_LOGINS } from '../auth/lock.js';
+import { linkHours, spentLinkState } from '../auth/tokens.js';
 import { readCookie } from '../http/cookies.js';
 import { setFlash } from '../http/flash.js';
 import { errorMessage, logger } from '../logger.js';
@@ -105,6 +106,15 @@ authRouter.post('/login', loginLimiter, requirePreAuthCsrf, async (req, res) => 
   switch (result.kind) {
     case 'invalid':
       again('auth.errors.invalid', 401);
+      return;
+    case 'locked':
+      // „Забравена парола“ отключва веднага; текстът и кодът (401, като грешна парола) са еднакви с и без акаунт
+      again('auth.errors.locked', 401, {
+        errorParams: {
+          minutes: res.locals.t('common.minutes', { n: LOCK_MINUTES }),
+          n: MAX_FAILED_LOGINS,
+        },
+      });
       return;
     case 'throttled':
       again('auth.errors.throttled', 429);
@@ -197,8 +207,7 @@ authRouter.get('/register', (req, res) => {
   authPage(res, 'auth/register', {
     pre: preCsrf(req, res),
     values: { email: '', name: '', deviceConsent: false },
-    error: null,
-    field: null,
+    errors: {},
   });
 });
 
@@ -219,12 +228,7 @@ authRouter.post('/register', registerLimiter, requirePreAuthCsrf, async (req, re
     res.locals.locale,
   );
   if (!result.ok) {
-    authPage(
-      res,
-      'auth/register',
-      { pre: preCsrf(req, res), values, error: result.key, field: result.field },
-      400,
-    );
+    authPage(res, 'auth/register', { pre: preCsrf(req, res), values, errors: result.errors }, 400);
     return;
   }
   authPage(res, 'auth/check-email', { email: values.email, hours: linkHours('VERIFY_EMAIL') });
@@ -238,7 +242,9 @@ authRouter.get('/verify-email', async (req, res) => {
   const token = typeof req.query.token === 'string' ? req.query.token : '';
   const kind = token ? await emailLinkKind(token) : null;
   if (!kind) {
-    authPage(res, 'auth/verified', { result: { ok: false } }, 400);
+    // по-старо писмо или вече използвана връзка: страницата казва какво е станало, не само „не работи“
+    const state = token ? await spentLinkState(token) : null;
+    authPage(res, 'auth/verified', { result: { ok: false, state } }, 400);
     return;
   }
   authPage(res, 'auth/verify-email', { pre: preCsrf(req, res), token, kind });
@@ -257,7 +263,14 @@ authRouter.post('/verify-email', verifyLimiter, requirePreAuthCsrf, async (req, 
   }
   // токенът вече е изразходван: същият адрес с друг език би показал „връзката не работи“
   res.locals.hideLangs = true;
-  authPage(res, 'auth/verified', { result }, result.ok ? 200 : 400);
+  authPage(
+    res,
+    'auth/verified',
+    {
+      result: result.ok ? result : { ok: false, state: token ? await spentLinkState(token) : null },
+    },
+    result.ok ? 200 : 400,
+  );
 });
 
 /* ---------------------------------- нова парола ---------------------------------- */

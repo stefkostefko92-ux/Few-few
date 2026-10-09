@@ -13,6 +13,7 @@ import {
   mailWithdrawalReceived,
 } from '../mail/order-templates.js';
 import { greetingName } from '../mail/templates.js';
+import { orderNo } from '../plans/order-number.js';
 import { formatMoney, VAT_BG_PERCENT, withVatCents } from '../plans/pricing.js';
 import {
   paidStartAllowedFrom,
@@ -33,6 +34,7 @@ import { keepTermsCopy, keptTermsCopy } from './terms-snapshots.js';
 export type OrderRecord = Pick<
   UpgradeRequest,
   | 'id'
+  | 'number'
   | 'option'
   | 'months'
   | 'listPriceCents'
@@ -46,6 +48,13 @@ export type OrderRecord = Pick<
 /** Поръчка, от която потребителят се е отказал — моментът на отказа е задължителен за писмата. */
 export type WithdrawnOrder = OrderRecord & { withdrawnAt: Date };
 type Customer = Pick<User, 'email' | 'name' | 'locale' | 'emailVerifiedAt'>;
+/** Заменена поръчка — колкото да се изпише номерът ѝ. */
+export type ReplacedOrder = Pick<UpgradeRequest, 'number' | 'createdAt'>;
+
+/** „KP-2026-000001, KP-2026-000002“ — заменените поръчки в писмата. */
+function numbers(orders: readonly ReplacedOrder[]): string {
+  return orders.map(orderNo).join(', ');
+}
 
 /** Дата и час по София с отместването спрямо UTC — за момента на сключване и на отказа. */
 function sofiaDateTime(at: Date, locale: Locale): string {
@@ -135,7 +144,7 @@ async function acceptedTermsCopy(
 export async function sendOrderConfirmation(
   order: OrderRecord,
   user: Customer,
-  replaced: readonly string[] = [],
+  replaced: readonly ReplacedOrder[] = [],
 ): Promise<boolean> {
   const locale = accountLocale(user);
   const consumer = order.buyerType === 'CONSUMER';
@@ -147,7 +156,7 @@ export async function sendOrderConfirmation(
     greetingName(user),
     {
       when: sofiaDateTime(order.createdAt, locale),
-      id: order.id,
+      id: orderNo(order),
       plan: orderPlanName(order, locale),
       price: price(order, locale),
       buyer: translate(locale, consumer ? 'plan.buyer.consumer' : 'plan.buyer.business'),
@@ -159,7 +168,7 @@ export async function sendOrderConfirmation(
               term: translate(locale, 'plan.months', { n: order.months ?? 0 }),
             }),
       replaces: replaced.length
-        ? `\n\n${translate(locale, 'mail.order.replaces', { ids: replaced.join(', '), contact: config().CONTACT_EMAIL })}`
+        ? `\n\n${translate(locale, 'mail.order.replaces', { ids: numbers(replaced), contact: config().CONTACT_EMAIL })}`
         : '',
       withdrawal: consumer
         ? `${translate(locale, 'mail.order.withdrawalConsumer', {
@@ -208,12 +217,12 @@ export function sendWithdrawalReceipt(
 
 /** Поръчката е отхвърлена от екипа (плащането не е пристигнало): няма да се изпълни и не се плаща. */
 export function sendOrderRejected(
-  order: Pick<OrderRecord, 'id' | 'option' | 'months' | 'createdAt'>,
+  order: Pick<OrderRecord, 'number' | 'option' | 'months' | 'createdAt'>,
   user: Customer,
 ): Promise<boolean> {
   const locale = accountLocale(user);
   return mailOrderRejected(user.email, locale, greetingName(user), {
-    id: order.id,
+    id: orderNo(order),
     plan: orderPlanName(order, locale),
     date: longDate(order.createdAt, locale),
     contact: config().CONTACT_EMAIL,
@@ -224,7 +233,7 @@ export function sendOrderRejected(
 export function withdrawalStatement(order: OrderRecord, user: Customer, locale: Locale): string {
   return translate(locale, 'mail.withdrawn.statement', {
     plan: orderPlanName(order, locale),
-    id: order.id,
+    id: orderNo(order),
     date: longDate(order.createdAt, locale),
     name: user.name,
     email: user.email,
@@ -238,11 +247,11 @@ export function withdrawalStatement(order: OrderRecord, user: Customer, locale: 
 export function notifyStaffOfOrder(
   order: OrderRecord,
   user: Customer,
-  replaced: readonly string[] = [],
+  replaced: readonly ReplacedOrder[] = [],
 ): Promise<boolean> {
   const allowed = paidStartAllowedFrom(order);
   return mailStaffNotice('staffOrder', {
-    id: order.id,
+    id: orderNo(order),
     email: user.email,
     buyer: translate(
       'bg',
@@ -259,7 +268,7 @@ export function notifyStaffOfOrder(
         ? translate('bg', 'mail.staffOrder.activationAfter', { date: sofiaDateTime(allowed, 'bg') })
         : translate('bg', 'mail.staffOrder.activationNow'),
     replaces: replaced.length
-      ? `\n${translate('bg', 'mail.staffOrder.replaces', { ids: replaced.join(', ') })}`
+      ? `\n${translate('bg', 'mail.staffOrder.replaces', { ids: numbers(replaced) })}`
       : '',
   });
 }
@@ -271,7 +280,7 @@ export function notifyStaffOfWithdrawal(
   outcome: PlanOutcome,
 ): Promise<boolean> {
   return mailStaffNotice('staffWithdrawal', {
-    id: order.id,
+    id: orderNo(order),
     email: user.email,
     plan: orderPlanName(order, 'bg'),
     when: sofiaDateTime(order.withdrawnAt, 'bg'),

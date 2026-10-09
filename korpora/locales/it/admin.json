@@ -109,7 +109,8 @@
       "refundBy": "Se pagato, rimborso entro: {date}",
       "planReverted": "Il piano è stato riportato automaticamente.",
       "planManual": "Il piano non è stato riportato automaticamente: controllatelo.",
-      "notConfirmed": "La conferma per email non è partita: il sistema la reinvia automaticamente."
+      "notConfirmed": "La conferma per email non è partita: il sistema la reinvia automaticamente.",
+      "deletedAccount": "account eliminato ({date})"
     },
     "new": {
       "title": "Nuovo account",
@@ -232,10 +233,11 @@
     "system": "sistema",
     "customer": "cliente {id}",
     "superseded": "sostituito da un nuovo ordine",
-    "cancelledByCustomer": "ritirato dal cliente",
+    "cancelledByCustomer": "annullato dal cliente",
     "signup": "registrazione",
     "trialStarted": "periodo di prova iniziato (email confermata)",
     "withdrawal": "recesso dal contratto",
-    "createdByStaff": "creato dal team"
+    "createdByStaff": "creato dal team",
+    "accountDeleted": "account eliminato"
   }
 }

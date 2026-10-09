@@ -235,7 +235,9 @@ export async function rejectRequest(actor: StaffActor, requestId: string): Promi
         },
       })
     : null;
-  if (!order) return fail('admin.errors.notFound');
+  // поръчката на изтрит акаунт е само запис на договора: тя вече е затворена и не се отхвърля
+  if (!order?.userId || !order.user) return fail('admin.errors.notFound');
+  const customer = order.user;
   const target = await targetFor(actor, order.userId, 'requests:handle');
   if (isResult(target)) return target;
   const result = await audited(
@@ -256,6 +258,6 @@ export async function rejectRequest(actor: StaffActor, requestId: string): Promi
         : null,
   );
   if (result.count !== 1) return fail('admin.errors.notFound');
-  if (order.termsVersion !== null) void sendOrderRejected(order, order.user);
+  if (order.termsVersion !== null) void sendOrderRejected(order, customer);
   return { ok: true };
 }

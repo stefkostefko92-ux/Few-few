@@ -103,20 +103,55 @@ test('the same answer for a new and an existing email (no account enumeration)',
 test('five wrong passwords lock the account; the right one does not get in while locked', async () => {
   await customer('lock@example.test');
   const b = new Browser('9.9.9.9');
-  for (let i = 0; i < 5; i++)
-    assert.equal((await b.login('lock@example.test', `Wrong-Password-${i}00`)).status, 401);
+  // four wrong answers, then the fifth locks: „sign-in with this email is paused“
+  for (let i = 0; i < 5; i++) {
+    const reply = await b.login('lock@example.test', `Wrong-Password-${i}00`);
+    assert.equal(reply.status, 401);
+    assert.equal(/Входът с този имейл е спрян/.test(reply.body), i === 4, `try ${i + 1}`);
+  }
   const user = await prisma.user.findUniqueOrThrow({ where: { email: 'lock@example.test' } });
   assert.ok(
     user.lockedUntil && user.lockedUntil.getTime() > Date.now() + 14 * 60_000,
     'locked for about 15 minutes',
   );
   const right = await b.login('lock@example.test', CUSTOMER_PASSWORD);
-  assert.equal(right.status, 401, 'a locked account answers like a wrong password');
+  assert.equal(right.status, 401, 'a locked account says so, also to the right password');
+  assert.match(right.body, /Входът с този имейл е спрян за 15 минути/);
   await prisma.user.update({
     where: { id: user.id },
     data: { lockedUntil: new Date(Date.now() - 1000) },
   });
   assert.equal((await b.login('lock@example.test', CUSTOMER_PASSWORD)).status, 302);
+});
+
+test('“sign-in is paused” comes on the same try with and without an account, whatever the account counted before', async () => {
+  // wrong passwords from long ago stay in the account's count (it does not fade), and four from before a
+  // restart stay there too — the answer still follows the same count as for an email without an account
+  for (const [email, stale] of [
+    ['stale-two@example.test', 2],
+    ['stale-four@example.test', 4],
+  ] as const) {
+    await customer(email);
+    await prisma.user.update({ where: { email }, data: { failedLogins: stale } });
+  }
+  const answers = async (email: string) => {
+    const b = new Browser();
+    const seen: string[] = [];
+    for (let i = 0; i < 6; i++) {
+      const reply = await b.login(email, `Wrong-Password-${i}21`);
+      const paused = /Входът с този имейл е спрян/.test(reply.body);
+      const wrong = /Грешен имейл или парола/.test(reply.body);
+      seen.push(`${reply.status} ${paused ? 'paused' : wrong ? 'wrong' : 'other'}`);
+    }
+    return seen;
+  };
+  const nobody = await answers('nobody-stale@example.test');
+  assert.deepEqual(nobody, [...Array(4).fill('401 wrong'), '401 paused', '401 paused']);
+  assert.deepEqual(await answers('stale-two@example.test'), nobody);
+  assert.deepEqual(await answers('stale-four@example.test'), nobody);
+  // the account is still locked in the database from its own count — it only does not say so earlier
+  const four = await prisma.user.findUniqueOrThrow({ where: { email: 'stale-four@example.test' } });
+  assert.ok(four.lockedUntil && four.lockedUntil > new Date(), 'the account itself is locked');
 });
 
 test('weak passwords are refused at sign-up', async () => {

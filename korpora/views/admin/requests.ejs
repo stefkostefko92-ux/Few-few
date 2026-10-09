@@ -10,8 +10,8 @@
   <tbody>
   <% for (const r of requests) { %>
     <tr>
-      <td data-label="<%= t('plan.col.date') %>" class="nowrap"><%= fmt.dateTime(r.createdAt) %></td>
-      <td data-label="<%= t('admin.col.account') %>" class="who"><a href="/admin/accounts/<%= r.user.id %>"><%= r.user.email %></a><small><%= r.user.name %>, <%= t('plan.name.' + r.user.plan) %></small></td>
+      <td data-label="<%= t('plan.col.date') %>" class="nowrap"><%= fmt.dateTime(r.createdAt) %><br><small class="mono-sm"><%= fmt.orderNo(r) %></small></td>
+      <td data-label="<%= t('admin.col.account') %>" class="who"><% if (r.user) { %><a href="/admin/accounts/<%= r.user.id %>"><%= r.user.email %></a><small><%= r.user.name %>, <%= t('plan.name.' + r.user.plan) %></small><% } else { %><%= r.customerEmail || '—' %><small><%= r.customerName || '' %>, <%= t('admin.requests.deletedAccount', { date: fmt.date(r.accountDeletedAt) }) %></small><% } %></td>
       <td data-label="<%= t('plan.col.option') %>"><%- include('../partials/order-option', { order: r }) %></td>
       <td data-label="<%= t('plan.col.price') %>" class="num"><%= fmt.money(r.listPriceCents) %><br><small class="muted"><%= t('plan.netShort') %><% if (r.buyerType === 'CONSUMER') { %>; <%= fmt.money(r.withVatCents) %> <%= t('plan.withVatShort') %><% } %></small></td>
       <td data-label="<%= t('plan.message') %>" class="mini"><%= r.message || '—' %></td>
@@ -20,7 +20,7 @@
         <% if (r.status === 'OPEN' && r.activationFrom > now) { %><br><small><%= t('plan.activationAfter', { date: fmt.dateTime(r.activationFrom) }) %></small><% } %>
         <% if (r.status === 'WITHDRAWN') { %><br><small><%= t('plan.withdrawnOn', { date: fmt.dateTime(r.withdrawnAt) }) %></small><br><small><%= t('admin.requests.refundBy', { date: fmt.date(r.refundBy) }) %></small><% if (r.planOutcome === 'reverted' || r.planOutcome === 'manual') { %><br><small><%= t(r.planOutcome === 'reverted' ? 'admin.requests.planReverted' : 'admin.requests.planManual') %></small><% } %><% } %>
         <% if (r.termsVersion && !r.confirmationSentAt && (r.status === 'OPEN' || r.status === 'DONE')) { %><br><small class="bad-text"><%= t('admin.requests.notConfirmed') %></small><% } %></td>
-      <td data-label="<%= t('plan.col.actions') %>"><% if (r.status === 'OPEN') { %><div class="actions">
+      <td data-label="<%= t('plan.col.actions') %>"><% if (r.status === 'OPEN' && r.user) { %><div class="actions">
         <% if (can('accounts:plan')) { %><a class="btn btn-small btn-primary" href="/admin/accounts/<%= r.user.id %>?request=<%= r.id %>#plan"><%= t('admin.requests.activate') %></a><% } %>
         <% if (can('requests:handle')) { %><form method="post" action="/admin/requests/<%= r.id %>/reject" data-confirm="<%= t('admin.requests.rejectConfirm') %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-small btn-quiet" type="submit"><%= t('admin.requests.reject') %></button></form><% } %>
       </div><% } else { %>—<% } %></td>

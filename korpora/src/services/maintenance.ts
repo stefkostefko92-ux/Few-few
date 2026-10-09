@@ -4,11 +4,12 @@ import { errorMessage, logger } from '../logger.js';
 import { purgeExpiredSessions } from '../auth/sessions.js';
 import { accountLocale } from '../i18n.js';
 import { longDate } from '../mail/dates.js';
-import { greetingName, mailTrialEnding } from '../mail/templates.js';
-import { TRIAL_REMINDER_DAYS } from '../plans/plan.js';
+import { greetingName, mailPlanEnding, mailTrialEnding } from '../mail/templates.js';
+import { PREMIUM_REMINDER_DAYS, TRIAL_REMINDER_DAYS } from '../plans/plan.js';
 import { LOGIN_RETENTION_DAYS, UNVERIFIED_RETENTION_DAYS } from '../retention.js';
 import { DAY, HOUR } from '../time.js';
 import { purgeUnconsentedFingerprints } from './device-consent.js';
+import { purgeExpiredOrders } from './order-retention.js';
 import { resendOrderMail } from './plan-requests.js';
 import { keepCurrentTermsCopies } from './terms-snapshots.js';
 
@@ -37,6 +38,32 @@ async function sendTrialReminders(now: Date = new Date()): Promise<number> {
     const date = longDate(user.planExpiresAt ?? now, locale);
     if (!(await mailTrialEnding(user.email, locale, greetingName(user), date))) continue;
     await prisma.user.update({ where: { id: user.id }, data: { trialReminderAt: now } });
+    sent++;
+  }
+  return sent;
+}
+
+/**
+ * Писмата за наближаващия край на Premium — веднъж за всеки срок: `planReminderFor` пази края, за който е
+ * пратено; нов срок (подновяване от екипа) дава ново писмо. Отбелязва се само пратеното.
+ */
+async function sendPremiumReminders(now: Date = new Date()): Promise<number> {
+  const due = await prisma.$queryRaw<Array<{ id: string }>>`
+    SELECT "id" FROM "User"
+    WHERE "role" = 'CUSTOMER' AND "plan" = 'PREMIUM' AND "bannedAt" IS NULL
+      AND "emailVerifiedAt" IS NOT NULL
+      AND "planExpiresAt" > ${now}
+      AND "planExpiresAt" <= ${new Date(now.getTime() + PREMIUM_REMINDER_DAYS * DAY)}
+      AND ("planReminderFor" IS NULL OR "planReminderFor" <> "planExpiresAt")
+    LIMIT 200`;
+  let sent = 0;
+  for (const { id } of due) {
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user?.planExpiresAt) continue;
+    const locale = accountLocale(user);
+    const date = longDate(user.planExpiresAt, locale);
+    if (!(await mailPlanEnding(user.email, locale, greetingName(user), date))) continue;
+    await prisma.user.update({ where: { id }, data: { planReminderFor: user.planExpiresAt } });
     sent++;
   }
   return sent;
@@ -80,7 +107,9 @@ export async function runMaintenance(now: Date = new Date()): Promise<void> {
     const tokens = await prisma.emailToken.deleteMany({
       where: { expiresAt: { lt: new Date(now.getTime() - EXPIRED_TOKEN_DAYS * DAY) } },
     });
-    const reminders = await sendTrialReminders(now);
+    // поръчките на изтрити акаунти — след срока, който казва политиката
+    const orders = await purgeExpiredOrders(now);
+    const reminders = (await sendTrialReminders(now)) + (await sendPremiumReminders(now));
     // копието на условията в сила — преди повторните писма, които може да го поискат след смяна
     await keepCurrentTermsCopies();
     const orderMail = await resendOrderMail(now);
@@ -103,6 +132,7 @@ export async function runMaintenance(now: Date = new Date()): Promise<void> {
         fingerprints,
         auditIps: auditIps.count,
         tokens: tokens.count,
+        orders,
         reminders,
         orderMail,
         auditEntries: chain.count,

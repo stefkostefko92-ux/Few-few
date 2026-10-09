@@ -1,5 +1,8 @@
 </main>
 <%- include('app-footer') %>
 <script src="/static/js/ui.js?v=<%= v %>" defer></script>
+<% for (const s of (typeof scripts !== 'undefined' ? scripts : [])) { %><script src="/static/js/<%= s %>.js?v=<%= v %>" defer></script>
+<% } %>
+<%- include('form-check') %>
 </body>
 </html>
