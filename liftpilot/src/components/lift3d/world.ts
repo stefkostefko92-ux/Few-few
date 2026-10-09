@@ -9,15 +9,16 @@ import { hebDrawn, mergeChecks, pitSpace, roofSpaces, roomGeo, section } from '@
 import { KV_VERT } from '@/shaft/norme-vert';
 import { groovePitch } from '@/shaft/ropes';
 import { bedplateLegs } from '@/shaft/rinvio';
+import { roomElectrics } from '@/shaft/room-electric';
 import { hookOf } from '@/shaft/room-hook';
-import { shaftUnder } from '@/shaft/room-site';
-import { KL, planeAt, ropeRig, type LiftDerived, type RopePlane } from '@/lib/lift';
+import { layoutSite, shaftUnder } from '@/shaft/room-site';
+import { planeAt, ropeRig, type LiftDerived, type RopePlane } from '@/lib/lift';
 import { governorRopes } from '@/lib/lift/support';
 import type { Frame } from '@/sim';
 import { Batch, P, box, disposeTree } from './geom';
 import { createLiftMaterials, SIDES, type Side } from './materials';
 import { buildShaft } from './shaft';
-import { slabOpenings } from './slab';
+import { pitOpenings, shaftSlabOpenings } from './slab';
 import { buildCar } from './car';
 import { buildCounterweight } from './counterweight';
 import { buildRails } from './rails';
@@ -27,7 +28,7 @@ import type { Hitch } from './sling';
 import { buildRoom, machinePassage } from './room';
 import { buildPit } from './pit';
 import { buildCable } from './cable';
-import { buildGovernor, governorSpot } from './governor';
+import { buildGovernor, governorFloor, governorSpot } from './governor';
 import type { Quality } from '../machine/quality';
 
 export const LIFT_BG = '#10161f';
@@ -66,11 +67,13 @@ export function buildLiftWorld(renderer: THREE.WebGPURenderer, dv: LiftDerived, 
   const rig = ropeRig(dv);
   const gov = governorSpot(L), slab = (I.room?.slab ?? 250) / 1000, sim = dv.sim;
   const travel = [sim.levels[0], sim.levels[sim.levels.length - 1]].map((s) => [s, sim.cw0 - s] as const);
-  const openings = slabOpenings(rig, N.n, N.d, S.ceiling / 1000, S.ceiling / 1000 + slab, travel, gov);
-  // a machine below: its front through the wall behind the counterweight, or under the pit with the ropes through its slab
-  const passage = machinePassage(rig, N.D), under = rig.scheme?.scheme === 'under';
-  const pitHoles = under ? slabOpenings(rig, N.n, N.d, (S.pitFloor - KL.underSlab) / 1000, S.pitFloor / 1000, travel, null) : [];
-  const shaft = buildShaft(L, S, M, openings, { walls: passage ? [passage] : [], pit: pitHoles });
+  // the slab over the shaft: the governor's rope through it only where the governor stands over it (with the pulleys
+  // hung under the slab it is on its bracket under the ceiling)
+  const govFloor = governorFloor(rig, S, slab * 1000), openings = shaftSlabOpenings(rig, N.n, N.d, S, slab * 1000, travel, gov);
+  // a machine below: its front through the wall behind the counterweight, or under the pit with the ropes through its
+  // slab where the plan of the pit and section A-A open it
+  const passage = machinePassage(rig, N.D);
+  const shaft = buildShaft(L, S, M, openings, { walls: passage ? [passage] : [], pit: pitOpenings(L) });
   // the ropes end on the car: a 1:1 hitch on the crosshead, or the car pulley of a 2:1 roping, in its plane (rig.ts)
   const two = dv.analysis.ctx.I.r === 2, pcs = rig.pieces(0, 0), carPlane = pcs[0].plane, cwPlane = pcs[pcs.length - 1].plane;
   const Rp = dv.analysis.ctx.I.Dp / 2, width = N.n * groovePitch(N.d) + 30;
@@ -89,13 +92,13 @@ export function buildLiftWorld(renderer: THREE.WebGPURenderer, dv: LiftDerived, 
   const G = rig.bottom ? null : roomGeo(L, dv.machine), heb = G ? hebDrawn(G, dv.machine, shaftUnder(L), governorRopes(L, G)) : null;
   // the bedplate's legs in the machine's own axes, where the drawings put them
   const legs = G ? bedplateLegs(G, dv.machine, heb).map(([u, v]) => [(G.dir * (u - G.sheaveAt)) / 1000, (G.frame.zSheave - G.dir * v) / 1000] as const) : null;
-  // the lifting hook where the plan, section B-B and sheet 1 put it (room-hook.ts)
+  // the lifting hook where the plan, section B-B and sheet 1 put it (room-hook.ts), the light, switch, sockets and grille
+  // where the room's plan puts them (room-electric.ts)
   const machine = buildRoom(L, rig, N.n, N.d, N.D, S.ceiling, M, openings, gov, dv.machine.shape ?? null, dv.machine.rinvio ?? null, heb, G?.dir ?? 1, legs?.length ? legs : null,
-    G ? hookOf(G, dv.machine) : null);
+    G ? hookOf(G, dv.machine) : null, G ? roomElectrics(layoutSite(L), dv.machine, G) : null);
   // the fittings of the shaft and the pit, the governor's loop, the travelling cable
   const fit = new Batch(), fittings = new THREE.Group();
   buildPit(L, S, M, fit);
-  const govFloor = !rig.bottom ? rig.roomFloor * 1000 : rig.scheme?.scheme === 'room' ? S.ceiling + slab * 1000 : null;
   const governor = gov ? buildGovernor(L, S, gov, govFloor, M, fit) : null;
   fit.into(fittings);
   const cable = buildCable(L, S, M, gov);

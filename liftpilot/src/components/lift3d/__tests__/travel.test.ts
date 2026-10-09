@@ -11,10 +11,10 @@ import { section } from '@/shaft';
 import { Batch } from '../geom';
 import { createLiftMaterials } from '../materials';
 import { buildShaft } from '../shaft';
-import { slabOpenings } from '../slab';
+import { pitOpenings, shaftSlabOpenings } from '../slab';
 import { buildRails } from '../rails';
 import { buildPit } from '../pit';
-import { buildGovernor, governorSpot } from '../governor';
+import { buildGovernor, governorFloor, governorSpot } from '../governor';
 import { pulleyFrames } from '../pulleys';
 import { machinePassage } from '../room';
 
@@ -56,12 +56,12 @@ for (const [layout, r, name, over, bottom] of VARIANTS) {
     const L = dv.layout, S = section(L), I = L.inputs, V = I.vertical, N = dv.analysis.ctx.N, rig = ropeRig(dv), M = createLiftMaterials();
     const gov = governorSpot(L), sim = dv.sim, slab = (I.room?.slab ?? 250) / 1000;
     const travel = [sim.levels[0], sim.levels.at(-1) ?? 0].map((s) => [s, sim.cw0 - s] as const);
-    const passage = machinePassage(rig, N.D), pit = rig.scheme?.scheme === 'under' ? slabOpenings(rig, N.n, N.d, (S.pitFloor - 300) / 1000, S.pitFloor / 1000, travel, null) : [];
-    const shaft = buildShaft(L, S, M, slabOpenings(rig, N.n, N.d, S.ceiling / 1000, S.ceiling / 1000 + slab, travel, gov), { walls: passage ? [passage] : [], pit });
+    const passage = machinePassage(rig, N.D);
+    const shaft = buildShaft(L, S, M, shaftSlabOpenings(rig, N.n, N.d, S, slab * 1000, travel, gov), { walls: passage ? [passage] : [], pit: pitOpenings(L) });
     const fixed = new THREE.Group(), B = new Batch();
     fixed.add(shaft.common, ...Object.values(shaft.sides), buildRails(L, S, M));
     buildPit(L, S, M, B);
-    const above = !rig.bottom ? rig.roomFloor * 1000 : rig.scheme?.scheme === 'room' ? S.ceiling + slab * 1000 : null;
+    const above = governorFloor(rig, S, slab * 1000);
     if (gov) fixed.add(buildGovernor(L, S, gov, above, M, B).group);
     pulleyFrames(B, M, rig, N.n, N.d, above, S.ceiling);
     B.into(fixed);

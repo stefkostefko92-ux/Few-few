@@ -10,7 +10,7 @@ import { chain, circle, grow, line, path, rect, type Box, type Entity, type Pt }
 import { GOV_BRACKET, governorSpot } from './governor';
 import { roofRefuge } from './roof';
 import { cwPlateAt, type Section } from './section';
-import { pulleyBox, type RigP2, type RigPulley, type ShaftRig } from './shaft-rig';
+import { pack, pitSlabHoles, pulleyBox, type RigPulley } from './shaft-rig';
 import type { Layout } from './types';
 
 /** The wheel of a pulley inside its cheeks, the cheeks' plates along its plane, its frame's top plate under the slab and
@@ -51,22 +51,14 @@ function pulleyPlan(p: RigPulley, hung: boolean, seen: boolean, stand = false): 
   return out;
 }
 
-/** A rope pack at `m` in plan: half `along` across the ropes, half `wide` along `across` (the ropes side by side). */
-function pack(rig: ShaftRig, m: RigP2, along: number, wide: number): Pt[] {
-  const [ax, ay] = rig.across, [bx, by] = [-ay, ax];
-  return [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([i, j]): Pt => [m[0] + i * along * bx + j * wide * ax, m[1] + i * along * by + j * wide * ay]);
-}
-
 /** The rig in the plan at `level`. */
 export function rigPlan(L: Layout, level: 'top' | 'main' | 'bottom' | 'pit'): Entity[] {
   const rig = L.rig;
   if (!rig) return [];
   const { W, D } = L.inputs, out: Entity[] = [], within: Box = { x0: 0, y0: 0, x1: W, y1: D };
   // the runs down to a machine below, at every level; under the pit their openings in its slab
-  for (const m of rig.down) {
-    out.push(path(pack(rig, m, rig.d / 2 + 2, rig.ropes), true, 'outline', 'steel'));
-    if (level === 'pit' && rig.scheme === 'under') out.push(path(pack(rig, m, rig.d / 2 + 60, rig.ropes + 60), true, 'thin'));
-  }
+  for (const m of rig.down) out.push(path(pack(rig, m, rig.d / 2 + 2, rig.ropes), true, 'outline', 'steel'));
+  if (level === 'pit') for (const h of pitSlabHoles(rig)) out.push(path(h, true, 'thin'));
   if (level === 'pit') return out;
   // the car's pulley of a 2:1 roping on its crosshead: seen in the headroom, over the cut at a floor
   if (rig.car) out.push(...pulleyPlan(rig.car, false, level === 'top'));
@@ -171,15 +163,10 @@ export function solid(a: number, b: number, cuts: readonly (readonly [number, nu
   return out;
 }
 
-/** The openings of the pit's slab across the depth where the ropes of a machine under the pit go through it (as its
- *  plan draws them: 60 mm round the pack). */
+/** The openings of the pit's slab across the depth where the ropes of a machine under the pit go through it, as its
+ *  plan draws them (pitSlabHoles). */
 export function pitHoles(L: Layout): [number, number][] {
-  const rig = L.rig;
-  if (rig?.scheme !== 'under') return [];
-  return rig.down.map((m): [number, number] => {
-    const e = Math.abs(rig.across[1]) * (rig.ropes + 60) + Math.abs(rig.across[0]) * (rig.d / 2 + 60);
-    return [m[1] - e, m[1] + e];
-  });
+  return L.rig ? pitSlabHoles(L.rig).map((h): [number, number] => [Math.min(...h.map((p) => p[1])), Math.max(...h.map((p) => p[1]))]) : [];
 }
 
 /** The height the car's and the counterweight's ropes go up to in section A-A: the pulleys over the shaft of a machine

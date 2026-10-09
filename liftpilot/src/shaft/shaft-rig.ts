@@ -5,6 +5,7 @@
 // slab. src/lib/lift/shaft-rig.ts makes it from the calculation and the machine (as the 3D's rig.ts places them); a
 // shaft design alone has none (Layout.rig absent). Plan in the shaft's axes, heights from the lowest floor [mm]. Pure.
 import type { Box } from '../drawing';
+import { KV_VERT } from './norme-vert';
 
 export type RigP2 = readonly [number, number];
 
@@ -83,4 +84,27 @@ export function hangingOf(rig: ShaftRig | undefined): Hanging[] {
     out.push({ box: { x0: e.at[0] - ex, y0: e.at[1] - ey, x1: e.at[0] + ex, y1: e.at[1] + ey }, z: e.z });
   }
   return out;
+}
+
+/** A rope pack at `m` in plan: half `along` across the ropes, half `wide` along `across` (the ropes side by side); its
+ *  corners in order round it. */
+const packAt = (m: RigP2, across: RigP2, along: number, wide: number): RigP2[] => {
+  const [ax, ay] = across, [bx, by] = [-ay, ax];
+  return [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([i, j]): RigP2 => [m[0] + i * along * bx + j * wide * ax, m[1] + i * along * by + j * wide * ay]);
+};
+
+/** A rope pack of the rig at `m` in plan, the ropes side by side along `rig.across`. */
+export const pack = (rig: ShaftRig, m: RigP2, along: number, wide: number): RigP2[] => packAt(m, rig.across, along, wide);
+
+/** The openings of a slab round the runs `down` of `n` ropes of diameter `d` side by side along `across` (half the pack
+ *  `ropes` wide): KV_VERT.holeGap clear of each pack every way (registry locale.fori, as the slab over the shaft). */
+export const ropeHoles = (down: readonly RigP2[], across: RigP2, d: number, ropes: number): RigP2[][] =>
+  down.map((m) => packAt(m, across, d / 2 + KV_VERT.holeGap, ropes + KV_VERT.holeGap));
+
+/** The openings of the pit's slab where the ropes of a machine under the pit go through it (ropeHoles round each run):
+ *  the plan of the pit and section A-A (rig-view.ts), the room under the pit in plan and in section C-C
+ *  (lib/tavole/below-view.ts, from the same runs of its geometry) and the 3D (lift3d/slab.ts) cut the same; none for
+ *  the other schemes. */
+export function pitSlabHoles(rig: ShaftRig): RigP2[][] {
+  return rig.scheme === 'under' ? ropeHoles(rig.down, rig.across, rig.d, rig.ropes) : [];
 }

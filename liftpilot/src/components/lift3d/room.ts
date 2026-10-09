@@ -24,6 +24,7 @@ import { pulley, pulleyFrames } from './pulleys';
 import { ropeWidths, type Opening } from './slab';
 import type { GovernorSpot } from './governor';
 import { buildShell, shellsOf } from './roomshell';
+import type { ElectricSpots } from '@/shaft/room-electric';
 import { buildSupport, hebBeams, wallsAlong } from './support';
 import { FLOOR_REACH, hebRects, mainFeed, rectOf, roomPoint, stripRects, trunking, trunkingRoute, type Rect } from './wiring';
 import { SIDES, type LiftMaterials, type Side } from './materials';
@@ -81,10 +82,11 @@ export function machinePose(rig: RopeRig, wall: number, F: MachineFrame, turn: 1
  *  pulley turns in the room (src/shaft/rinvio.ts); `heb`: the HEB beams on the shaft's walls the support stands on;
  *  `turn`: the machine above turned round, its motor toward the car's drop (−1; machine-room.ts RoomGeo.dir); `legs`: the
  *  bedplate's legs in the machine's x and z [m] (rinvio.ts bedplateLegs); `hook`: the lifting hook as the drawings place
- *  it (room-hook.ts, room axes; null: over the sheave). */
+ *  it (room-hook.ts, room axes; null: over the sheave); `electrics`: the machine room's light, switch, sockets and grille
+ *  where its plan puts them (room-electric.ts; null: one lamp in the middle). */
 export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: number, ceiling: number, M: LiftMaterials, openings: readonly Opening[], gov: GovernorSpot | null,
   shape: MachineShape | null = null, rinvio: RinvioFrame | null = null, heb: HebLayout | null = null, turn: 1 | -1 = 1, legs: readonly (readonly [number, number])[] | null = null,
-  hookAt: Hook | null = null): RoomModel {
+  hookAt: Hook | null = null, electrics: ElectricSpots | null = null): RoomModel {
   const bySide = <T,>(make: () => T): Record<Side, T> => ({ front: make(), rear: make(), left: make(), right: make() });
   const I = L.inputs, sides = bySide(() => new THREE.Group()), mounted = bySide(() => new THREE.Group()), onWall = bySide(() => new Batch());
   const roof = new THREE.Group(), common = new THREE.Group(), overhead = new THREE.Group();
@@ -96,7 +98,7 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
   // below, the room grown round the machine's body where it reaches out (bottom.ts)
   const body = rig.bottom && rig.scheme ? belowMachine(L, rig.scheme, D, shape).body : null;
   const z0 = rig.roomFloor * 1000, shells = shellsOf(L, rig, body), shell = shells.find((sh) => sh.kind === 'machine') ?? null, R = shell?.room ?? null;
-  for (const sh of shells) buildShell(sh, M, { sides, onWall, roof, overhead, common });
+  for (const sh of shells) buildShell(sh, M, { sides, onWall, roof, overhead, common }, sh.kind === 'machine' && !rig.bottom ? electrics : null);
 
   // the machine: the generic one scaled to the sheave or the maker's as it is, its rope plane on the sheave's, the
   // sheave's centre where the rig puts it; on its frame of three irons round the sheave (below beside the shaft, the

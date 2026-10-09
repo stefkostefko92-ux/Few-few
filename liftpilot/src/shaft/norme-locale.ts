@@ -176,7 +176,8 @@ export const VOCI_LOCALE: readonly VoceVano[] = [
   {
     id: 'locale.fori', gruppo: 'locale', titolo: 'Fori nella soletta: misura, posizione e bordi',
     valore: 'ogni foro della soletta sopra il vano (funi di trazione, puleggia di rinvio che vi scende, attacchi delle funi in taglia 2:1) ha '
-      + 'i lati a 30 mm dalle funi nelle due posizioni estreme della cabina e dalla puleggia; fori più vicini di 80 mm diventano uno; '
+      + 'i lati a 30 mm dalle funi nelle due posizioni estreme della cabina e dalla puleggia (con l’argano sotto la fossa lo stesso per i fori della '
+      + 'soletta della fossa attorno alle funi che scendono all’argano: pianta della fossa, sezione A-A e 3D); fori più vicini di 80 mm diventano uno; '
       + 'ogni foro ha un bordo in lamiera d’acciaio alto 50 mm sul pavimento finito e spesso 25 mm tutto attorno (lo stesso nel 3D), e le '
       + 'putrelle HEB sui muri del vano, che stanno 30 mm sopra la soletta, ne restano fuori in pianta (m_hebkerb, locale.putrelle.vano); la pianta del locale dà di ogni foro la misura '
       + '(«FORO L × P»: L lungo x, P lungo y del locale; con la linea delle calate obliqua lungo e di traverso le calate) e la posizione del centro '
@@ -216,7 +217,7 @@ export const VOCI_LOCALE: readonly VoceVano[] = [
     valore: 'la pianta del locale disegna con la loro legenda: i punti luce sopra le zone di lavoro (almeno 200 lx al pavimento, illuminazione), '
       + 'l’interruttore della luce presso l’accesso, entro 1000 mm dalla porta, accanto all’interruttore generale; una presa 2P+PE per ogni area '
       + 'di lavoro (accanto all’argano e accanto al quadro); la griglia di aerazione; le canaline dal quadro all’argano e al vano, coperte dove si '
-      + 'cammina',
+      + 'cammina; interruttore, prese e griglia fuori dal vano della porta con il suo telaio',
     riferimento: 'UNI EN 81-20:2020, 5.2.1.4.2 (luce), 5.2.1.5.2 a)–b) (interruttore a ogni accesso, una presa per area di lavoro), 5.10.7.2 '
       + '(prese 2P+PE), 5.10.8.2 (interruttore entro 1 m dall’accesso), 5.2.1.3 (ventilazione) e 5.2.6.3.2.5 (canaline a pavimento coperte); '
       + 'le posizioni sono una proposta del software',

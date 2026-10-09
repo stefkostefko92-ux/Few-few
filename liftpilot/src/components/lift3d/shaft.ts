@@ -19,6 +19,7 @@ import { landingOf } from '@/shaft/landing';
 import { bracketsAlong, doorPairOf, topBracketsAt } from '@/shaft/staffe-porte';
 import { HEADER } from '@/shaft/sill';
 import { lampHeights, nichesOf } from '@/shaft/niche';
+import { TOE_T, toeOf, toeWidth } from '@/shaft/toe';
 import { Batch, P, onWall } from './geom';
 import { LANDING_PANEL, doorPanels, landingTracks, trackPlanes, type DoorPanels } from './doors';
 import { landingHeader } from './operator';
@@ -44,10 +45,11 @@ export function doorsOf(L: Layout, door: 'A' | 'B' | 'AB'): DoorLayout[] {
 }
 
 /** The hardware of a landing entrance at the level z, on the shaft side of the wall: the suspension on Panev's brackets,
- *  the panels (by the car's across the sill gap), the sill on Panev's brackets, the stone threshold through the wall;
- *  where the landing door stands, the lock's rollers where the car door's coupler takes them. `up`: the level of the
- *  floor above when its door is on the same wall (its sill's brackets may stand by those over this door, its sill may
- *  leave no wall for them). */
+ *  the panels (by the car's across the sill gap), the sill on Panev's brackets with the plate under it (src/shaft/toe.ts,
+ *  as section A-A draws it: down the sill's edge, then the bevel back to the wall, across the car's clear entrance and
+ *  KV_VERT.toeSide each side), the stone threshold through the wall; where the landing door stands, the lock's rollers
+ *  where the car door's coupler takes them. `up`: the level of the floor above when its door is on the same wall (its
+ *  sill's brackets may stand by those over this door, its sill may leave no wall for them). */
 export function landingEntrance(C: Batch, M: LiftMaterials, I: Layout['inputs'], car: DoorLayout, z: number, up?: number): DoorPanels {
   const W = I.W, D = I.D, tracks = landingTracks(I.landingDepth), d = landingOf(car), pair = doorPairOf(I);
   landingHeader(C, M, d.wall, W, D, d, tracks, LANDING_PANEL, z + d.height, I.landingDepth, portalOf(I).depth ?? 0);
@@ -57,6 +59,9 @@ export function landingEntrance(C: Batch, M: LiftMaterials, I: Layout['inputs'],
   const panels = doorPanels(d.wall, W, D, d, z, tracks, LANDING_PANEL, M.landing[d.wall], M, lock);
   sill(C, M, d.wall, W, D, d.u0 - 40, d.u1 + 40, -25, I.landingDepth, z, trackPlanes(d, tracks, LANDING_PANEL));
   doorBrackets(C, M, d.wall, W, D, bracketsAlong(d.u0 + 10, d.u1 - 10), z - SILL_H, I.landingDepth, pair);
+  const t = toeOf(I), um = (car.u0 + car.u1) / 2, tw = toeWidth(I.doorWidth) / 2, face = I.landingDepth - TOE_T / 2;
+  C.plate(d.wall, W, D, um - tw, um + tw, [face, z - SILL_H], [face, z - t.h], TOE_T, M.galv);
+  C.plate(d.wall, W, D, um - tw, um + tw, [face, z - t.h], [0, z - t.h - t.bevel], TOE_T, M.galv);
   const jamb = portalOf(I).jamb;
   C.wallBox(d.wall, W, D, d.u0 - jamb, d.u1 + jamb, -I.wall, -25, z - 30, z, M.stone);
   return panels;

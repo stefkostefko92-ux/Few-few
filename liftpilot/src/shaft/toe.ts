@@ -26,12 +26,15 @@ export function toeOf(I: ShaftInputs): Toe {
   return { h: zone + K.toeOver, zone, entered, bevel: I.landingDepth * Math.tan((K.toeBevelAngle * Math.PI) / 180) };
 }
 
+/** The plate's sheet thickness as the drawings and the 3D draw it (the software's) [mm]. */
+export const TOE_T = 3;
+
 /** Its width along the wall: the car's clear entrance and 25 mm each side [mm]. */
 export const toeWidth = (doorWidth: number): number => doorWidth + 2 * KV_VERT.toeSide;
 
 /** The plate in section under the sill of the landing at zf, its sill's edge `depth` from the wall's face: the sheet down
  *  the sill's edge, then the bevel to the wall; `P` maps (v from the wall's face into the shaft, z). */
 export function toeSection(I: ShaftInputs, zf: number, P: (v: number, z: number) => Pt): Entity[] {
-  const t = toeOf(I), dl = I.landingDepth, s = 3, z0 = zf - t.h, z1 = z0 - t.bevel;
+  const t = toeOf(I), dl = I.landingDepth, s = TOE_T, z0 = zf - t.h, z1 = z0 - t.bevel;
   return [path([P(dl - s, zf - SILL_H), P(dl, zf - SILL_H), P(dl, z0), P(0, z1), P(0, z1 + s * 2), P(dl - s, z0 + s * 0.6)], true, 'thin', 'zinc')];
 }

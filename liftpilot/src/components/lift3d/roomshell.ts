@@ -5,8 +5,11 @@
 // grown round the machine where it reaches out; for a pulley room over the slab, the room above from the design or one
 // as large as the shaft, 1.5 m high, with a door of 0.6 × 1.4 m. The walls (x-ray, by side) with the door — its frame
 // of steel angles and its closed leaf, the handle inside — the roof (and the floor of a room below), the cabinet and the
-// main switch of a machine's room — what is fixed on a wall goes with that wall —, the lamp. Plan and heights in
-// millimetres, in the shaft's coordinates. Loaded only through boot.ts (lazy).
+// main switch of a machine's room — what is fixed on a wall goes with that wall —, the lamps. The machine room over the
+// shaft has its light, switch, sockets and grille where its plan puts them (src/shaft/room-electric.ts electricSpots):
+// a lamp over each work area, the light's switch by the door, a 2P+PE socket by each work area, the ventilation grille;
+// the other rooms one lamp in the middle. Plan and heights in millimetres, in the shaft's coordinates. Loaded only
+// through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import type { Layout, RoomInputs } from '@/shaft';
@@ -14,11 +17,15 @@ import { KL, type RopeRig } from '@/lib/lift';
 import { belowRoom } from '@/lib/lift/bottom';
 import { pulleyRoomOf } from '@/lib/lift/shaft-rig';
 import { section } from '@/shaft';
+import { FIT_HALF, VENT_HALF, lampHalf, type ElectricSpots } from '@/shaft/room-electric';
 import { SWITCH, belowSwitchAt, switchSpan } from '@/shaft/room-floor';
 import { Batch, box, onWall, type Point } from './geom';
 import { SIDES, type LiftMaterials, type Side } from './materials';
 
 const WALL = 250;
+/** the light's switch's and the sockets' middles over the floor, the ventilation grille's under the ceiling (the
+ *  software's: the plan gives their places, not their heights) [mm] */
+const SWITCH_AT = 1100, SOCKET_AT = 1100, VENT_UNDER = 400;
 
 export interface Shell {
   room: RoomInputs;
@@ -68,8 +75,9 @@ export interface ShellGroups {
   common: THREE.Group;
 }
 
-/** The shell's walls with the door, its roof (and floor), the fittings of a machine's room and the lamp (ShellGroups). */
-export function buildShell(sh: Shell, M: LiftMaterials, G: ShellGroups): void {
+/** The shell's walls with the door, its roof (and floor), the fittings of a machine's room and the lamps (ShellGroups);
+ *  `elec`: where the room's plan puts its light, switch, sockets and grille (room axes), else one lamp in the middle. */
+export function buildShell(sh: Shell, M: LiftMaterials, G: ShellGroups, elec: ElectricSpots | null = null): void {
   const { room: R, z0 } = sh, x0 = -R.shaftX, y0 = -R.shaftY, Wr = R.W, Dr = R.D, H = R.H;
   // a box against a wall of the room: u along it, v out from it, z over the floor; a point there
   const fix = (wall: Side, u0: number, u1: number, v0: number, v1: number, za: number, zb: number, m: THREE.Material, into: Batch = G.onWall[wall]): void => {
@@ -107,14 +115,33 @@ export function buildShell(sh: Shell, M: LiftMaterials, G: ShellGroups): void {
   }
   if (sh.floor) G.common.add(box(X0, Y0, z0 - 200, X1, Y1, z0, M.slab));
   if (sh.kind === 'machine' && sh.switchSpan) machineFittings(fix, R, M, sh.switchSpan);
-  // the lamp under the roof (hidden with the roof turned into a ghost: it would hang in the air)
+  if (elec) wallFittings(fix, R, M, elec);
+  // the lamps under the roof (hidden with the roof turned into a ghost: they would hang in the air)
   const fitting = new Batch();
-  fix('front', Wr / 2 - 300, Wr / 2 + 300, Dr / 2 - 60, Dr / 2 + 60, H - 70, H, M.galv, fitting);
-  fix('front', Wr / 2 - 280, Wr / 2 + 280, Dr / 2 - 45, Dr / 2 + 45, H - 74, H - 70, M.carLight, fitting);
+  for (const { at: [lx, ly], alongX } of elec ? elec.lights : [{ at: [Wr / 2, Dr / 2] as const, alongX: true }]) {
+    const [hx, hy] = lampHalf(alongX), [ix, iy] = alongX ? [20, 15] : [15, 20];
+    fix('front', lx - hx, lx + hx, ly - hy, ly + hy, H - 70, H, M.galv, fitting);
+    fix('front', lx - hx + ix, lx + hx - ix, ly - hy + iy, ly + hy - iy, H - 74, H - 70, M.carLight, fitting);
+    const lamp = new THREE.PointLight(0xfff2de, 2.2, 7, 2);
+    lamp.position.set((x0 + lx) / 1000, (z0 + H - 150) / 1000, -(y0 + ly) / 1000);
+    G.common.add(lamp);
+  }
   fitting.into(G.overhead);
-  const lamp = new THREE.PointLight(0xfff2de, 2.2, 7, 2);
-  lamp.position.set((x0 + Wr / 2) / 1000, (z0 + H - 150) / 1000, -(y0 + Dr / 2) / 1000);
-  G.common.add(lamp);
+}
+
+/** On the room's walls where its plan puts them: the light's switch (its plate and rocker), the 2P+PE sockets (their
+ *  plates and pins), the ventilation grille (a frame with its louvres). */
+function wallFittings(fix: Fix, R: RoomInputs, M: LiftMaterials, e: ElectricSpots): void {
+  const { lightSwitch: s } = e;
+  fix(s.wall, s.at - FIT_HALF, s.at + FIT_HALF, 0, 12, SWITCH_AT - 40, SWITCH_AT + 40, M.chrome);
+  fix(s.wall, s.at - 15, s.at + 15, 12, 18, SWITCH_AT - 22, SWITCH_AT + 22, M.panel);
+  for (const k of e.sockets) {
+    fix(k.wall, k.at - FIT_HALF, k.at + FIT_HALF, 0, 12, SOCKET_AT - 40, SOCKET_AT + 40, M.chrome);
+    for (const d of [-10, 10]) fix(k.wall, k.at + d - 2.5, k.at + d + 2.5, 12, 13, SOCKET_AT - 6, SOCKET_AT + 6, M.rubber);
+  }
+  const v = e.vent, top = R.H - VENT_UNDER + 125, bottom = R.H - VENT_UNDER - 125;
+  fix(v.wall, v.at - VENT_HALF, v.at + VENT_HALF, 0, 15, bottom, top, M.galv);
+  for (let z = bottom + 25; z < top - 20; z += 40) fix(v.wall, v.at - VENT_HALF + 15, v.at + VENT_HALF - 15, 15, 18, z, z + 14, M.steel);
 }
 
 type Fix = (wall: Side, u0: number, u1: number, v0: number, v1: number, za: number, zb: number, m: THREE.Material) => void;
