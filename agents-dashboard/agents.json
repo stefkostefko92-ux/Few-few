@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-10-08",
+    "updated": "2026-10-09",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -1173,7 +1173,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 519
+        "lessons": 523
       },
       "evolution": [
         {
@@ -1991,9 +1991,31 @@
           "date": "2026-10-08",
           "event": "v40.1 — учене",
           "detail": "Научи: liftpilot heb.ts — проверките на гредите HEB (m_heb*) не гарантират, че осите на гредит… (+1 още)"
+        },
+        {
+          "version": "40.3.0",
+          "date": "2026-10-09",
+          "event": "v40.3 — учене",
+          "detail": "Научи: Nexus client lib/stream.ts:42 слуша само SSE събития ['notification','chat'], а сървъръ… (+1 още)"
+        },
+        {
+          "version": "40.5.0",
+          "date": "2026-10-09",
+          "event": "v40.5 — учене",
+          "detail": "Научи: SQLite: колона expires_at, записана с JS toISOString() ('YYYY-MM-DDTHH:MM:SS.sssZ') и с… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-09",
+          "type": "learning",
+          "summary": "Научи: „SQLite: колона expires_at, записана с JS toISOString() ('YYYY-MM-DDTHH:MM:SS.sssZ') и с…\" (+1 още)"
+        },
+        {
+          "date": "2026-10-09",
+          "type": "learning",
+          "summary": "Научи: „Nexus client lib/stream.ts:42 слуша само SSE събития ['notification','chat'], а сървъръ…\" (+1 още)"
+        },
         {
           "date": "2026-10-08",
           "type": "learning",
