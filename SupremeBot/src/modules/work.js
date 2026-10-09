@@ -16,7 +16,10 @@
       if (!c.enabled || !Api.ready() || busy()) return null;
 
       // Don't tie the character up on work if a free adventure is waiting.
-      if (c.stopWhenAdventureReady && (State.get().freeAdventures || 0) > 0) return null;
+      // Only meaningful when the adventures module will actually USE them;
+      // otherwise free adventures stay > 0 all day and work would never run.
+      const advOn = !!(Storage.section('adventures') || {}).enabled;
+      if (c.stopWhenAdventureReady && advOn && (State.get().freeAdventures || 0) > 0) return null;
 
       const info = State.get().work || {};
       if (!Object.keys(info).length || Date.now() - lastCheck > 300000) {
@@ -25,7 +28,7 @@
           await Api.getWorkData();
           // Keep freeAdventures current so stopWhenAdventureReady can actually
           // fire even when the adventures module itself is disabled.
-          if (c.stopWhenAdventureReady) { try { await Api.getAdventures(); } catch (_) {} }
+          if (c.stopWhenAdventureReady && advOn) { try { await Api.getAdventures(); } catch (_) {} }
         };
       }
 

@@ -538,4 +538,52 @@ await test('autologin: reconnecting remembers the engine was running, and the ne
   assert.equal(e.TB.Autologin.peekResume(), false);
 });
 
+await test('map: slot -> region is floor(slot/3) like the game (18 slots, 3 per territory)', async () => {
+  const e = freshEngine({
+    settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false },
+      map: { enabled: true, encounters: true, illusionCave: false, dragon: false, regions: "Oblivion Gorge, Dragon's Claw Mountains" } },
+    api: { getMapDetails: () => Promise.resolve({ energy: 5, nextAttack: 0, monsters: [{ location: 0, stars: 1 }, { location: 3, stars: 1 }] }) }
+  });
+  e.TB.Scheduler.start();
+  await e.advance(1500);
+  assert.equal(e.count('startLiberation'), 1);
+  assert.equal(e.calls.startLiberation[0][0], 3, 'slot 3 is Oblivion Gorge (region 1), the top priority');
+});
+
+await test('map: cave/dragon that cost bloodstones are skipped; free ones run', async () => {
+  const mk = (cost) => freshEngine({
+    settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false },
+      map: { enabled: true, encounters: false, illusionCave: true, dragon: false } },
+    api: { getCaveDetails: () => Promise.resolve({ cost }), directNum: (d, n) => (n === 'bloodstone_cost' ? d.cost : null) }
+  });
+  const paid = mk(2); paid.TB.Scheduler.start(); await paid.advance(3000);
+  assert.equal(paid.count('startIllusionCave'), 0, 'never spends bloodstones on the cave');
+  const free = mk(0); free.TB.Scheduler.start(); await free.advance(3000);
+  assert.equal(free.count('startIllusionCave'), 1, 'a free cave run still happens');
+});
+
+await test('work: "stop when adventure ready" does not block work when the adventures module is off', async () => {
+  const e = freshEngine({
+    settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false },
+      work: { enabled: true, durationHours: 2, stopWhenAdventureReady: true } },
+    state: { freeAdventures: 5 }
+  });
+  e.TB.Api.getWorkData = () => { e.TB.State.patch({ work: { maxHours: 8, goldFee: 0 } }); return Promise.resolve(); };
+  e.TB.Scheduler.start();
+  await e.advance(5000);
+  assert.equal(e.count('startWork'), 1, 'nobody will use those adventures, so work runs');
+});
+
+await test('guild: a refused donation backs off instead of retrying every cycle', async () => {
+  let attempts = 0;
+  const e = freshEngine({
+    settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false }, guild: { enabled: true, donateGold: true, minDonation: 1000 } },
+    state: { gold: 100000 },
+    api: { guildSpendGold: () => { attempts++; return Promise.reject(new Error('FAULT no guild')); } }
+  });
+  e.TB.Scheduler.start();
+  await e.advance(4 * 60 * 1000);
+  assert.equal(attempts, 1, `one refused donation, then back-off (got ${attempts})`);
+});
+
 console.log(`\n${pass} engine checks passed.`);

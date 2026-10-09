@@ -42,10 +42,11 @@
     return out.length ? out : REGIONS.map((name, idx) => ({ name, idx }));
   }
 
-  // Best-effort attribution of a map slot to a region (slots grouped in order).
-  function regionOfSlot(slot, maxSlot) {
-    if (maxSlot < 0) return 0;
-    return Math.min(REGIONS.length - 1, Math.floor((slot * REGIONS.length) / (maxSlot + 1)));
+  // Map slot -> region. The game client has 18 fixed slots, 3 per territory:
+  // configData[Math.floor(i / 3)].zones[i % 3]. Scaling by the highest
+  // VISIBLE slot (the old approach) put e.g. slot 3 into region 4 instead of 1.
+  function regionOfSlot(slot) {
+    return Math.max(0, Math.min(REGIONS.length - 1, Math.floor(slot / 3)));
   }
 
   Scheduler.register({
@@ -71,10 +72,9 @@
 
           const prio = priorityRegions(c);
           const rank = new Map(prio.map((r, i) => [r.idx, i])); // region idx -> priority position
-          const maxSlot = map.monsters.reduce((mx, m) => Math.max(mx, m.location), -1);
           const avail = map.monsters
             .filter((m) => m.stars >= 1)
-            .map((m) => Object.assign({}, m, { region: regionOfSlot(m.location, maxSlot) }))
+            .map((m) => Object.assign({}, m, { region: regionOfSlot(m.location) }))
             .filter((m) => rank.has(m.region))           // only enabled regions
             .sort((a, b) => rank.get(a.region) - rank.get(b.region)); // highest priority first
 
@@ -82,13 +82,27 @@
             const m = avail[0];
             const label = REGIONS[m.region] || ('#' + m.location);
             Logger.info(I18n.t('logMapEncounter', [label, String(map.energy != null ? map.energy : '?')]));
-            await Api.startLiberation(m.location);
+            try {
+              await Api.startLiberation(m.location);
+            } catch (e) {
+              // A server fault (map not unlocked yet, encounter gone, ...) must
+              // not be retried every cycle - three in a row would stop the engine.
+              encounterCooldown = Date.now() + 5 * 60000;
+              throw e;
+            }
             Stats.bump({ encounters: 1 });
             encounterCooldown = 0;       // more encounters may remain to clear
             stepAside = STEP_ASIDE;      // but let other modules run in between
             return;
           }
           if (map.energy != null && map.energy <= 0 && c.buyEnergy) {
+            // Energy is bought with BLOODSTONES (the game's top-up shows
+            // energy_cost in bloodstones). Never try without any left.
+            await Api.miniUpdate();
+            if ((Number(TB.State.get().bloodstones) || 0) <= 0) {
+              encounterCooldown = Date.now() + 30 * 60000;
+              return;
+            }
             Logger.info(I18n.t('logMapBuyEnergy'));
             try { await Api.buyLiberationEnergy(); encounterCooldown = 0; stepAside = STEP_ASIDE; }
             catch (e) { encounterCooldown = Date.now() + 30 * 60000; }
@@ -115,12 +129,17 @@
           eventNextAt = Date.now() + Math.max(2, Number(c.cooldownMinutes) || 10) * 60000;
           stepAside = STEP_ASIDE;
           try {
+            // Both details carry a top-level bloodstone_cost: the game charges
+            // that many bloodstones to start. The bot only does free runs.
+            const paid = (d) => (Api.directNum ? Api.directNum(d, 'bloodstone_cost') : null) || 0;
             if (pick === 'cave') {
               const d = await Api.getCaveDetails();
+              if (paid(d) > 0) { Logger.info(I18n.t('logMapPaidSkip', [I18n.t('opt_map_illusionCave'), String(paid(d))])); return; }
               Logger.info(I18n.t('logCaveStart', [String(Api.findValue(d, 'reward_gold', 'i4') ?? '?')]));
               await Api.startIllusionCave(); Stats.bump({ caveRuns: 1 });
             } else {
               const d = await Api.getDragonDetails();
+              if (paid(d) > 0) { Logger.info(I18n.t('logMapPaidSkip', [I18n.t('opt_map_dragon'), String(paid(d))])); return; }
               Logger.info(I18n.t('logDragonStart', [String(Api.findValue(d, 'reward_gold', 'i4') ?? '?')]));
               await Api.startDragon(); Stats.bump({ dragonRuns: 1 });
             }

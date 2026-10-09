@@ -125,6 +125,24 @@
     return null;
   }
 
+  // Text of a DIRECT member of a struct (any type tag, or bare text) - never a
+  // same-named field of a nested struct (an item's socketed gem, a fight
+  // result inside cave/dragon details, ...). `node` may be a document (its
+  // top-level struct is used) or a struct element. null when absent.
+  function directText(node, name) {
+    const struct = node && (node.tagName && node.tagName.toLowerCase() === 'struct' ? node : node.querySelector && node.querySelector('struct'));
+    const val = directMemberValue(struct, name);
+    if (!val) return null;
+    const inner = val.firstElementChild;
+    return (inner ? inner.textContent : val.textContent).trim();
+  }
+  function directNum(node, name) {
+    const v = directText(node, name);
+    if (v == null || v === '') return null;
+    const n = parseFloat(v);
+    return Number.isFinite(n) ? n : null;
+  }
+
   // Did the player win a duel? The response carries no "won" flag. The game
   // client (BattleGround.getFightersEndHP / playVictorySound) takes the
   // player's hitpoints, subtracts the damage of every round where self == 0
@@ -307,6 +325,8 @@
     findValue,
     findNum,
     directHas,
+    directText,
+    directNum,
 
     /* --------------------------- dungeon ---------------------------- */
     async getDungeon() {

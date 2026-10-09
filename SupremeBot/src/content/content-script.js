@@ -85,8 +85,14 @@
     // the panel. Without this, modules see a stale gold value (e.g. right after
     // an adventure reward) and wrongly decide "not enough gold". Only polls
     // while the engine is actually running, so an idle Tanoth tab stays quiet.
+    // Every 5 minutes also re-read the character (name / guild / level): it is
+    // the only source of the level, so without this level-up alerts and the
+    // "Lv" in notifications only ever updated when training ran.
+    let lastCharAt = Date.now();
     setInterval(() => {
-      if (Bridge.ready() && Scheduler.isRunning()) Api.refresh().catch(() => {});
+      if (!(Bridge.ready() && Scheduler.isRunning())) return;
+      Api.refresh().catch(() => {});
+      if (Date.now() - lastCharAt >= 5 * 60000) { lastCharAt = Date.now(); Api.getUserAttributes().catch(() => {}); }
     }, 30000);
 
     // Optional periodic activity report to the webhooks (0 = off): tells you

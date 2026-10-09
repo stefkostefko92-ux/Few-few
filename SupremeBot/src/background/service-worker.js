@@ -146,7 +146,9 @@ async function handleMessage(msg, sender) {
     case 'TEST_WEBHOOK':
       return { ok: true, sent: await sendWebhooks(
         msg.title || 'Tanoth Bot', msg.message || 'Test notification ✅', 'success',
-        [{ name: 'Status', value: 'Connected', inline: true }, { name: 'Version', value: chrome.runtime.getManifest().version, inline: true }]
+        [{ name: 'Status', value: 'Connected', inline: true }, { name: 'Version', value: chrome.runtime.getManifest().version, inline: true }],
+        // The options page sends what is typed in the form (not yet saved).
+        msg.webhooks && typeof msg.webhooks === 'object' ? msg.webhooks : null
       ) };
 
     case 'LIST_PROFILES':
@@ -369,9 +371,9 @@ async function activateLicense(key) {
 }
 
 /* ---- External notifications (Telegram / Discord) ---- */
-async function sendWebhooks(title, message, level, fields) {
+async function sendWebhooks(title, message, level, fields, override) {
   const settings = mergeSettings((await chrome.storage.local.get(STORAGE_KEY))[STORAGE_KEY]);
-  const w = settings.webhooks || {};
+  const w = override || settings.webhooks || {};
   const reqs = buildExternalNotifications({
     telegram: { enabled: w.telegramEnabled, botToken: w.telegramToken, chatId: w.telegramChat },
     discord: {

@@ -6,16 +6,17 @@
 
   const MAP = { strength: 'STR', dexterity: 'DEX', constitution: 'CON', intelligence: 'INT' };
 
-  // The daily spend cap survives page reloads via sessionStorage.
+  // The daily spend cap survives reloads AND closing the tab (localStorage of
+  // the game origin); it resets when the calendar day changes.
   const SS_KEY = 'tb_training';
   function loadPersisted() {
     try {
-      const v = JSON.parse(sessionStorage.getItem(SS_KEY) || '{}');
+      const v = JSON.parse(localStorage.getItem(SS_KEY) || '{}');
       return { spent: Number(v.spent) || 0, spentDay: v.spentDay || new Date().toDateString() };
     } catch (_) { return { spent: 0, spentDay: new Date().toDateString() }; }
   }
   function persist() {
-    try { sessionStorage.setItem(SS_KEY, JSON.stringify({ spent, spentDay })); } catch (_) {}
+    try { localStorage.setItem(SS_KEY, JSON.stringify({ spent, spentDay })); } catch (_) {}
   }
 
   let { spent, spentDay } = loadPersisted();

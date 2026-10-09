@@ -64,7 +64,8 @@ one-line change.
 ## Subscription
 
 Paid via Revolut, two plans: €4/month (31-day key) or €20 lifetime (one-off,
-locks to the first machine it's activated on). New installs get a 3-day trial
+bound to the browser it's activated in; a real one-machine lock across
+computers needs the licence server, see below). New installs get a 3-day trial
 with everything unlocked; after that, Start needs a key. The popup, options page
 and panel paywall all have pay buttons (they open the Revolut link; you enter
 the amount) and an Activate field for the key.

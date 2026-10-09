@@ -537,7 +537,8 @@ document.getElementById('profile-delete').addEventListener('click', async () => 
 
 // Test notification + stats link
 document.getElementById('notify-test').addEventListener('click', async () => {
-  const r = await chrome.runtime.sendMessage({ type: 'TEST_WEBHOOK', title: 'Tanoth Bot', message: t('toolTestBody') });
+  // Test what is typed in the form right now, not the last saved settings.
+  const r = await chrome.runtime.sendMessage({ type: 'TEST_WEBHOOK', title: 'Tanoth Bot', message: t('toolTestBody'), webhooks: settings.webhooks });
   flashTool(r && r.sent ? t('toolTestSent', [String(r.sent)]) : t('toolTestNone'), !!(r && r.sent));
 });
 document.getElementById('open-stats').addEventListener('click', () => {

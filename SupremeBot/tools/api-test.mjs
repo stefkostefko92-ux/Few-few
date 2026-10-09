@@ -134,6 +134,18 @@ await test('fight: an unreadable answer is unknown (null), never silently a defe
   assert.equal((await a.TB.Api.fight('Bob')).won, null);
 });
 
+await test('directText reads the item\'s OWN field, not a socketed gem\'s same-named field', async () => {
+  const a = makeApi();
+  const { DOMParser: DP } = await import('linkedom');
+  // The gem (nested) comes BEFORE the item's own is_equipped in document order.
+  const xml = resp(`<member><name>gem_set</name><value><struct><member><name>gem_1</name><value><struct>${m('is_equipped', 'i4', 1)}</struct></value></member></struct></value></member>` + m('is_equipped', 'i4', 0) + m('id', 'i4', 42));
+  const doc = new DP().parseFromString(xml, 'text/xml');
+  assert.equal(a.TB.Api.directText(doc, 'is_equipped'), '0', 'the item itself is NOT equipped');
+  assert.equal(a.TB.Api.findValue(doc, 'is_equipped', 'i4'), '1', 'a descendant search would have read the gem');
+  assert.equal(a.TB.Api.directNum(doc, 'id'), 42);
+  assert.equal(a.TB.Api.directNum(doc, 'missing'), null);
+});
+
 await test('getUserAttributes tolerates <int> type tags (not just <i4>)', async () => {
   const a = makeApi();
   a.setXml(resp(
