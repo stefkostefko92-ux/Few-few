@@ -20,7 +20,8 @@ import { KV_VERT } from '@/shaft/norme-vert';
 import { existingRoomCheck } from '@/shaft/room-above';
 import { slingCheck } from '../lift/arcata';
 import { carichiOf } from '../lift/modifica';
-import { bracketCount, maxBracketSpan, railSpan } from '@/shaft/brackets';
+import { withPitches } from '@/shaft/brackets';
+import { maxSpanOf, onBridge, railHeights } from '@/shaft/rail-brackets';
 import { cwGapOver } from '@/shaft/cw-gap';
 import { bufferType } from '@/shaft/buffers';
 import { govSize } from '@/shaft/governor';
@@ -127,10 +128,16 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   // (estimates); the governor the design takes (the one chosen, else by the speed)
   const R = sheetRails(L, I.P, I.Q, Pl), railLen = R.railLen, oldRails = kept('rails');
   const rails = (t: RailType): string => `${oldRails ? 'ESISTENTI ' : ''}${railLabel(t)}`;
-  const brackets = (pitch: number | undefined): string => (oldRails ? 'ESISTENTI' : `${2 * bracketCount(railLen * 1000, pitch ?? KV_VERT.bracketPitch)}`);
+  // the brackets of both rails of a kind where the design puts them (rail-brackets.ts; a side counterweight's bridge
+  // carries a car rail at its own heights)
+  const Lp = withPitches(L, { car: Pl.carBracketPitch, cw: Pl.cwBracketPitch }), count = (kind: 'car' | 'cw'): string => {
+    const rs = Lp.rails.filter((r) => r.kind === kind), n = rs.reduce((q, r) => q + railHeights(Lp, r).length, 0);
+    const on = rs.filter((r) => onBridge(Lp, r)).reduce((q, r) => q + railHeights(Lp, r).length, 0);
+    return oldRails ? 'ESISTENTI' : on > 0 ? `${n} (${on} SULLA STAFFA A PONTE)` : `${n}`;
+  };
   // the longest interval between two brackets actually mounted (brackets.ts), the one figure the sheet gives for their
   // spacing: the car's is the l of the car rails' check below (UNI EN 81-50:2020, 5.10; sheet-loads.ts sheetRails)
-  const [z0, z1] = railSpan(S), spanCar = R.span, spanCw = maxBracketSpan(z0, z1, L.inputs.cwRail, Pl.cwBracketPitch);
+  const spanCar = R.span, spanCw = maxSpanOf(Lp, 'cw');
   const gov = govSize(V.v, L.inputs.governor), oldGov = kept('governor');
   const ropeLen = ropeCut(I, layoutRigLength(L, a, x.marks?.catalog ?? null, x.marks?.bottom ?? null)), oldRopes = kept('ropes');
   // the governor's rope up to the governor: in the room over the shaft (with a machine below, the pulley room), else on
@@ -155,11 +162,11 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     ['ARCATA', 'tipo', kept('sling') ? 'ESISTENTE' : L.frame.kind === 'central' ? 'CENTRALE' : 'A ZAINO'],
     ['GUIDE DI CABINA', 'tipo', rails(L.inputs.carRail)],
     ['LUNGHEZZA GUIDE DI CABINA', 'm', oldRails ? 'ESISTENTI' : fmt(railLen, 1)],
-    ['STAFFE GUIDE DI CABINA', 'N°', brackets(Pl.carBracketPitch)],
+    ['STAFFE GUIDE DI CABINA', 'N°', count('car')],
     ['INTERASSE MASSIMO STAFFE CABINA', 'mm', fmt(spanCar, 0)],
     ['GUIDE CONTRAPPESO', 'tipo', rails(L.inputs.cwRail)],
     ['LUNGHEZZA GUIDE CONTRAPPESO', 'm', oldRails ? 'ESISTENTI' : fmt(railLen, 1)],
-    ['STAFFE GUIDE CONTRAPPESO', 'N°', brackets(Pl.cwBracketPitch)],
+    ['STAFFE GUIDE CONTRAPPESO', 'N°', count('cw')],
     ['INTERASSE MASSIMO STAFFE CONTRAPPESO', 'mm', fmt(spanCw, 0)],
     ['FUNI DI SOSPENSIONE', 'N°-Ø', `${N.n} - ${num(N.d)}${oldRopes ? ' ESISTENTI' : ''}`],
     ['LUNGHEZZA DI TAGLIO FUNI (CIASCUNA)', 'm', oldRopes ? 'ESISTENTI' : fmt(ropeLen, 0)],

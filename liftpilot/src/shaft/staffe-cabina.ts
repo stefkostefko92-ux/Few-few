@@ -1,10 +1,9 @@
 // The car rails' bracket where no catalogue's is chosen (registry guide.staffe.cabina; the plan's genericBracketPlan and
 // the 3D's railfix.ts draw it): its type as the drawings name it, its count per rail, and how far each car rail's foot
 // stands from the wall its bracket is anchored to. Pure.
-import { bracketCount, railSpan } from './brackets';
 import { KV_VERT } from './norme-vert';
+import { levelHeights, wallCarRail } from './rail-brackets';
 import { RAILS, railClip } from './rails';
-import { section } from './section';
 import type { Layout, Rail, Wall } from './types';
 
 /** The bracket's type: the angle, the wall plate with its anchors, the clips; two pieces past 150 mm from the wall. */
@@ -14,9 +13,10 @@ export function carBracketType(L: Layout): string {
     + `2 TASSELLI M${K.carBracketAnchor}, 2 GRAFFE M${clip}`;
 }
 
-/** The short type the plans write by the rail: count per rail, angle, anchors. */
-export function carBracketCode(L: Layout): string {
-  const K = KV_VERT, [z0, z1] = railSpan(section(L)), n = bracketCount(z1 - z0, L.carBracketPitch);
+/** The short type the plans write by the rail: count per rail at the walls of the plan (`head`: in the headroom),
+ *  angle, anchors. */
+export function carBracketCode(L: Layout, head = false): string {
+  const K = KV_VERT, r = wallCarRail(L), n = r ? levelHeights(L, r, head).length : 0;
   return `${n}× SQUADRA ${K.carBracketLeg}×${K.carBracketFlange}×${K.carBracketT} + PIASTRA ${K.carBracketPlateW}×${K.carBracketPlateH}, 2 M${K.carBracketAnchor}`;
 }
 

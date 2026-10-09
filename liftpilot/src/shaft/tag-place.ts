@@ -8,8 +8,10 @@
 // paper between them. Model millimetres. Pure.
 import { TEXT, letterSize, textWidth, type Box, type Entity, type Pt } from '../drawing';
 
-/** The scale the references are spaced for: the larger of the plans' own (views.ts PLAN_SCALES). */
-const K = 25;
+/** The scale the references are spaced for, and the plans' lettering kept apart at: the larger of the plans' own
+ *  (views.ts PLAN_SCALES). */
+export const PLAN_K = 25;
+const K = PLAN_K;
 /** A reference's circle and the paper between two of them, at 1:25 [mm of the model]. */
 export const TAG_R = 2.4 * K;
 const APART = 2 * TAG_R + 0.5 * K;
@@ -38,8 +40,8 @@ export interface TagKeep {
 }
 
 /** The boxes the plan's lettering, symbols and dimensions across the drawing (their line with its figures either side)
- *  take at 1:25, 0,8 mm of paper round them [mm of the model]: the references keep off them. */
-export function letteringBoxes(entities: readonly Entity[]): Box[] {
+ *  take at 1:25, 0,8 mm of paper round them (`m` round a lettering) [mm of the model]: the references keep off them. */
+export function letteringBoxes(entities: readonly Entity[], m = 0.8): Box[] {
   return entities.flatMap((e): Box[] => {
     if (e.e === 'chain') {
       const c = e.c, band = (TEXT.dim + 1.2) * K;
@@ -52,7 +54,7 @@ export function letteringBoxes(entities: readonly Entity[]): Box[] {
       return [{ x0: e.at[0] - h, y0: e.at[1] - h, x1: e.at[0] + h, y1: e.at[1] + h }];
     }
     if (e.e !== 'text') return [];
-    const size = letterSize(e.size), w = textWidth(e.text, { size, bold: e.bold, cond: true }), m = 0.8;
+    const size = letterSize(e.size), w = textWidth(e.text, { size, bold: e.bold, cond: true });
     const x0 = e.align === 'c' ? -w / 2 : e.align === 'r' ? -w : 0, a = ((e.angle ?? 0) * Math.PI) / 180, c = Math.cos(a), sn = Math.sin(a);
     const pts = [[x0 - m, -0.3 * size - m], [x0 + w + m, -0.3 * size - m], [x0 + w + m, 0.9 * size + m], [x0 - m, 0.9 * size + m]]
       .map(([u, v]) => [e.at[0] + K * (u * c - v * sn), e.at[1] + K * (u * sn + v * c)]);

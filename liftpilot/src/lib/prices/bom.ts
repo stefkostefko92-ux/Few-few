@@ -3,10 +3,11 @@
 // ours, or the support chosen, the pulley on its stand, the HEB beams with their bearing plates; a machine below its
 // head pulleys and its base: bom-parts.ts), the ropes at their cut length with their wedge sockets, the 2:1 roping's
 // pulleys and dead ends, the rails in 5 m bars from the pit floor to under the slab with a joint between two bars, a
-// bracket every 2 m plus the first and the last, Panev's articles (panevBom: the landing doors' pairs with the landing
-// doors, the counterweight rails' with the rails and their N1 clips), the doors of every stop and of the car, the
-// governors with their tension pulleys and ropes, the buffers, the car, its sling with the safety gear, the
-// counterweight's mass and its shoes (over a space under the shaft its safety gear and what trips it), the protection
+// bracket every 2 m plus the first and the last (a side counterweight's bridge at its rails' brackets, carrying a car
+// rail), Panev's articles (panevBom: the landing doors' pairs with the landing doors, the counterweight rails' with the
+// rails and their N1 clips), the doors of every stop and of the car, the governors with their tension pulleys and
+// ropes, the buffers, the car, its sling with the safety gear, the counterweight's mass and its shoes (over a space
+// under the shaft its safety gear and what trips it), the protection
 // ACOP/UCM; then what it counts from the design without drawing it (the electrical system, the signalling, the buffers'
 // supports, the car's shoes, the labour: plant-bom.ts). A modification tested to UNI 10411 counts only the parts the
 // acceptance test replaces, and the installer as a lump sum (parts.ts keptPart). Not counted: the building works, the
@@ -18,7 +19,8 @@ import { layoutRigLength, rigLength } from '@/lib/lift/rope';
 import { calcMachine } from '@/lib/order/machine';
 import type { Plant } from '@/lib/plant';
 import { analyse } from '@/lib/present/analysis';
-import { RAIL_LENGTH, bracketHeights, cwBracketsOf, railSpan, section, type Layout } from '@/shaft';
+import { RAIL_LENGTH, cwBracketsOf, railSpan, section, type Layout } from '@/shaft';
+import { bridgeHeights, onBridge, railHeights } from '@/shaft/rail-brackets';
 import { bufferType } from '@/shaft/buffers';
 import { railLabel, type RailType } from '@/shaft/rails';
 import { supportOf } from '@/shaft/support';
@@ -72,13 +74,20 @@ export function designBom(dv: LiftDerived, plant: Plant = {}): BomLine[] {
   const pb = panevBom(dv.layout), byType = new Map<RailType, number>();
   let rails = 0;
   for (const kind of ['car', 'cw'] as const) {
-    const n = dv.layout.rails.filter((r) => r.kind === kind).length, type = kind === 'car' ? I.carRail : I.cwRail;
+    const own = dv.layout.rails.filter((r) => r.kind === kind), n = own.length, type = kind === 'car' ? I.carRail : I.cwRail;
     rails += (n * span) / 1000;
     byType.set(type, (byType.get(type) ?? 0) + n);
+    // each rail's brackets where rail-brackets.ts puts them; the car rail on a side counterweight's bridge has none of
+    // its own (clipped to the bridge: its line below)
     if (kind === 'car' || cwBracketsOf(I) !== 'panev') {
-      add('rails', { key: `bracket:${kind}`, label: { item: `bracket_${kind}` }, qty: n * bracketHeights(z0, z1, type, kind === 'car' ? dv.layout.carBracketPitch : dv.layout.cwBracketPitch).length, unit: 'pz' });
+      const qty = own.filter((r) => !onBridge(dv.layout, r)).reduce((q, r) => q + railHeights(dv.layout, r).length, 0);
+      add('rails', { key: `bracket:${kind}`, label: { item: `bracket_${kind}` }, qty, unit: 'pz' });
     } else add('rails', { key: 'bracket:cw', label: { item: 'bracket_cw' }, qty: pb.missing, unit: 'pz' });
   }
+  // a side counterweight's bridge between its rails, at every bracket of theirs, with the plate and the clips of the car
+  // rail it carries (registry ingombri.contrappeso.laterale)
+  const B = dv.layout.bridge;
+  if (B) add('rails', { key: 'bracket:bridge', label: { item: 'bracket_bridge_len', args: { len: String(Math.round(B.y1 - B.y0)) } }, qty: bridgeHeights(dv.layout).length, unit: 'pz' });
   for (const [type, n] of byType) {
     add('rails', { key: `rail:${type}`, label: { item: 'rail_bars', name: railLabel(type), args: { bars: String(n * bars), len: sizeText(RAIL_LENGTH / 1000) } }, qty: (n * bars * RAIL_LENGTH) / 1000, unit: 'm' });
     add('rails', { key: `fishplate:${type}`, label: { item: 'fishplate', name: railLabel(type) }, qty: n * Math.max(0, bars - 1), unit: 'pz' });

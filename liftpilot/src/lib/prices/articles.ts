@@ -1,10 +1,11 @@
 // The articles a company prices: every one the software can put in a project — the machines of the catalogues, SICOR's
 // bedplates with the diverting pulley, the supports of the machine, the HEB beams with their bearing plates, a machine
 // below's head pulleys and base, the ropes and their wedge sockets and the rails by size, the brackets with the N1 clips
-// on Panev's SG, Panev's 48 articles, the doors, the governors with the tension pulley and their rope, the buffers and
-// their supports, the car, its sling (for 2:1 too) with the safety gear, the counterweight's safety gear and what trips
-// it on the suspension's breakage or by a safety rope, the guide shoes, the counterweight, the 2:1 roping's pulleys and
-// dead ends, ACOP/UCM, the electrical system and the signalling, the labour (bom.ts counts them).
+// on Panev's SG (a side counterweight's bridge too), Panev's 48 articles, the doors, the governors with the tension pulley
+// and their rope, the buffers and their supports, the car, its sling (for 2:1 too) with the safety gear, the
+// counterweight's safety gear and what trips it on the suspension's breakage or by a safety rope, the guide shoes, the
+// counterweight, the 2:1 roping's pulleys and dead ends, ACOP/UCM, the electrical system and the signalling, the labour
+// (bom.ts counts them).
 // Each company keeps its own prices (PriceItem); Panev's start from the 2026 list price (p. 65, VAT excluded), the
 // others from none. The names are the makers' and the catalogues'; what an article is, the screens say in their
 // language (messages `prices.items`). Pure.
@@ -93,6 +94,7 @@ export const PRICE_ARTICLES: readonly PriceArticle[] = [
   ...RAIL_TYPES.map((t): PriceArticle => ({ key: `fishplate:${t}`, group: 'rails', label: { item: 'fishplate', name: railLabel(t) }, unit: 'pz' })),
   { key: 'bracket:car', group: 'brackets', label: { item: 'bracket_car' }, unit: 'pz' },
   { key: 'bracket:cw', group: 'brackets', label: { item: 'bracket_cw' }, unit: 'pz' },
+  { key: 'bracket:bridge', group: 'brackets', label: { item: 'bracket_bridge' }, unit: 'pz' },
   { key: N1_KEY, group: 'brackets', label: { item: 'clip_n1' }, unit: 'pz' },
   ...PANEV_ARTICLES.map((a): PriceArticle => {
     const list = PANEV_LIST_PRICE[a.code];

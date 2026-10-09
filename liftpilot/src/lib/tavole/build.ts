@@ -1,9 +1,9 @@
 // The drawing set of a lift, A4 sheets: 1 the data; the plans of the shaft at the top floor (headroom), at the main
 // floor and at the lowest floor; section A-A whole and in three details (headroom, main floor, pit); the machine room
 // in plan and in section B-B — with the machine below, its room beside the shaft or under it in plan and in section
-// C-C —; the pit in plan with its loads; the rails developed with their brackets; the checks of the design. Each view at the largest standard
-// scale that fits with its dimensions; the
-// count adapts (no machine room: no sheets of it; main floor = lowest floor: one plan less).
+// C-C —; the pit in plan with its loads; the rails developed with their brackets (on more sheets when a tall shaft's
+// columns need them); the checks of the design. Each view at the largest standard scale that fits with its dimensions;
+// the count adapts (no machine room: no sheets of it; main floor = lowest floor: one plan less).
 import {
   A4, COND, FRAME, PALETTE, STRIP_H, concreteTile, drawingArea, frame, shapeBox, sheetTitle, strip, toPaper,
   type Box, type DrawingDoc, type Entity, type Hit, type Page, type Place, type Pt, type Shape, type SheetMeta,
@@ -24,7 +24,7 @@ import { OVER_DOWN, OVER_UP, clientNotes, spaceLegend, type LegendItem } from '.
 import { makeFmt } from '../present/tr';
 import { belowGeoOf, belowView, headLoadsOf, machineOf, planView, roomView, sectionView, sheetLayoutOf } from './views';
 import type { Uplift } from '@/shaft/room-reactions';
-import { railsNotes, railsSheet } from './rails-sheet';
+import { railsNotes, railsSheets } from './rails-sheet';
 import { CHECKS_SUBTITLE, CHECKS_TITLE, checksSheet } from './checks-sheet';
 import { roomLegend, titleSpares } from './room-legend';
 
@@ -225,15 +225,20 @@ export function setSheets(x: TavoleInput): SetSheets {
   // the loads on the head of the shaft on its plan at the top floor
   const L = sheetLayoutOf(a, L0, M, g), head = g ? headLoadsOf(a, L, M, g) : [];
   // the data on sheet 1, the drawings, the checks of the design on the last sheet (checks-sheet.ts)
-  const list = specs(L, L.inputs.room !== null && a.ctx.I.layout !== 'bottom', scheme), pages = list.length + 2;
-  const d0 = dataSheet(x, a, pages), ds = { ...d0, sheet: { ...d0.sheet, checksSheet: pages } };
-  const sheets = list.map((s) => {
+  // (the rails' development takes as many sheets as its columns need: rails-sheet.ts)
+  const list = specs(L, L.inputs.room !== null && a.ctx.I.layout !== 'bottom', scheme), at = list.findIndex((s) => s.k === 'rails');
+  let d0 = dataSheet(x, a, list.length + 2);
+  const rails = at < 0 ? [] : railsSheets(L, drawingArea(true), railsNotes(L, d0.rails, makeFmt('it-IT'))), pages = list.length + 2 + Math.max(0, rails.length - 1);
+  if (pages !== list.length + 2) d0 = dataSheet(x, a, pages);
+  const ds = { ...d0, sheet: { ...d0.sheet, checksSheet: pages } };
+  const sheets = list.flatMap((s): SetSheets['sheets'] => {
     const area = drawingArea(s.subtitle !== undefined);
+    // a sheet of the rails after the first says which it goes on from
+    if (s.k === 'rails') return rails.map((r, i) => ({ spec: i ? { ...s, subtitle: `SEGUITO DEL FOGLIO ${at + i + 1}: ${s.subtitle}` } : s, drawn: { ...r, hits: [] } }));
     const drawn: Drawn = s.k === 'plan' ? planSheet(L, s, area, s.level === 'top' ? head : []) : s.k === 'section' ? sectionSheet(L, s, area, ds.cwGap)
-      : s.k === 'rails' ? { ...railsSheet(L, area, railsNotes(L, ds.rails, makeFmt('it-IT'))), hits: [] }
       : s.k === 'below-plan' || s.k === 'below-section' ? belowSheet(L, M, g ?? belowGeoOf(a, L, M, 'head'), s.k, area)
       : roomSheet(L, M, s.k, area, titleSpares(s.title, s.subtitle), ds.uplift);
-    return { spec: s, drawn };
+    return [{ spec: s, drawn }];
   });
   return { L, ds, sheets, pages };
 }

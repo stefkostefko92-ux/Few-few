@@ -1692,6 +1692,8 @@
       "fishplate": "Fishplate of rail {name}",
       "bracket_car": "Car rail bracket",
       "bracket_cw": "Counterweight rail bracket (generic)",
+      "bracket_bridge": "Side counterweight bridge bracket, with the car rail’s plate and clips",
+      "bracket_bridge_len": "Side counterweight bridge bracket {len} mm long, with the car rail’s plate and clips",
       "panev_plateA": "Panev, plate {name}",
       "panev_bracketB": "Panev, bracket {name}",
       "panev_supportSU": "Panev, universal support {name}",

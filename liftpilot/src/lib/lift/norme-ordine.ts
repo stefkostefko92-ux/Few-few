@@ -86,11 +86,12 @@ export const VOCI_ORDINE: readonly VoceImpianto[] = [
   },
   {
     id: 'impianto.distinta', titolo: 'Distinta dei materiali del progetto',
-    valore: `guide in barre da ${RAIL_LENGTH / 1000} m (per guida le barre dal fondo della fossa alla soletta, l’ultima tagliata) con una `
-      + 'giunzione tra due barre; funi alla lunghezza di taglio (voce impianto.funi.taglio) con due attacchi a cuneo con molla per fune; '
-      + 'fune del limitatore come nel foglio 1; paracadute di cabina del tipo dei dati dell’impianto (senza dato progressivo, come nel '
-      + 'foglio 1); due pattini per guida di cabina e di contrappeso; in taglia 2:1 la puleggia della cabina e quella del contrappeso, '
-      + 'l’arcata e il contrappeso per la taglia 2:1 e due attacchi fissi sotto la soletta; con la macchina in basso le pulegge in testata '
+    valore: `guide in barre da ${RAIL_LENGTH / 1000} m (per guida le barre dal fondo della fossa alla soletta, l’ultima tagliata, o il primo `
+      + 'accorciato quando l’ultima resterebbe più corta del minimo della voce guide.staffe) con una giunzione tra due barre; funi alla '
+      + 'lunghezza di taglio (voce impianto.funi.taglio) con due attacchi a cuneo con molla per fune; fune del limitatore come nel foglio 1; '
+      + 'paracadute di cabina del tipo dei dati dell’impianto (senza dato progressivo, come nel foglio 1); due pattini per guida di cabina e '
+      + 'di contrappeso; in taglia 2:1 la puleggia della cabina e quella del contrappeso, l’arcata e il contrappeso per la taglia 2:1 e '
+      + 'due attacchi fissi sotto la soletta; con la macchina in basso le pulegge in testata '
       + 'con il loro telaio e il basamento dell’argano ancorato contro il sollevamento netto della prova; nella modifica secondo UNI 10411 '
       + 'solo le parti che il collaudo indica come sostituite (le altre restano, come nel foglio 1) e la manodopera a corpo',
     riferimento: 'UNI EN 81-20:2020, 5.5.5.1 (uguagliamento automatico delle tensioni almeno a un’estremità delle funi)',
