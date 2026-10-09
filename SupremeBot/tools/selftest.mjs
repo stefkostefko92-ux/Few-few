@@ -2,11 +2,14 @@
 /* Automated self-tests for the testable (non-browser) logic. Run: node tools/selftest.mjs */
 import assert from 'node:assert';
 import crypto from 'node:crypto';
+import fs from 'node:fs';
 import { DEFAULT_SETTINGS, mergeSettings } from '../src/shared/defaults.js';
 import { applyPreset, PRESET_IDS } from '../src/shared/presets.js';
 import { telegramRequest, discordRequest, buildExternalNotifications } from '../src/shared/notify.js';
 import { circleMultipliers, smartScore, chooseSmart } from '../src/shared/smart.js';
-import { verifyKey, handle } from '../server/license-server.mjs';
+import { verifyKey, handle, setPublicKey, SHIPPED_PUBLIC_KEY } from '../server/license-server.mjs';
+import { LICENSE_PUBLIC_KEY } from '../src/shared/payment.js';
+import { execSync } from 'node:child_process';
 import { validateConfig, normalizeAccount, enabledAccounts, accountSettings } from '../controller/lib/config.mjs';
 import { accountView, renderDashboardHtml, dashboardResponse } from '../controller/lib/dashboard.mjs';
 
@@ -131,18 +134,38 @@ test('export then import round-trips', () => {
 });
 
 console.log('- license keys + server -');
-const SECRET = 'TZ-b0d6632a1a185b2714f94eee965390232c763380df811d59-stealth';
-function genKey(days) {
+// A throw-away key pair for the tests: the real private key never exists in the repo.
+const seller = crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' });
+const attacker = crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' });
+setPublicKey(seller.publicKey.export({ type: 'spki', format: 'der' }).toString('base64url'));
+function genKey(days, signer = seller.privateKey) {
   const exp = Math.floor(Date.now() / 1000) + Math.round(days * 86400);
   const p = Buffer.from(JSON.stringify({ exp })).toString('base64url');
-  const sig = crypto.createHmac('sha256', SECRET).update(p).digest('base64url').slice(0, 24);
-  return `TZ1.${p}.${sig}`;
+  const sig = crypto.sign('sha256', Buffer.from(p), { key: signer, dsaEncoding: 'ieee-p1363' }).toString('base64url');
+  return `TZ2.${p}.${sig}`;
 }
+test('licence: a key signed with any other private key is rejected (no minting from the code)', () => {
+  assert.equal(verifyKey(genKey(365000, attacker.privateKey)), null);
+  assert.equal(verifyKey('TZ1.eyJleHAiOjMzMzE5MTYwOTc4fQ.4aVy1g5IxgYfI_ZWzw3ATwUt'), null, 'old HMAC keys are dead');
+});
+test('licence: the server ships the same public key as the extension', () => {
+  assert.equal(SHIPPED_PUBLIC_KEY, LICENSE_PUBLIC_KEY);
+});
+test('licence: no private key is tracked anywhere in the repository', () => {
+  // A real PEM block = the marker followed by base64 body (not a detector regex).
+  const pem = new RegExp('-----BEGIN (EC )?' + 'PRIVATE KEY-----\\s*\\n[A-Za-z0-9+/]{40,}');
+  const root = new URL('..', import.meta.url).pathname;
+  const files = execSync('git ls-files', { cwd: root }).toString().split('\n').filter(Boolean);
+  const hits = files.filter((f) => { try { return pem.test(fs.readFileSync(root + f, 'utf8')); } catch (_) { return false; } });
+  assert.deepEqual(hits, [], `private key material tracked in git: ${hits.join(', ')}`);
+});
 test('verifyKey accepts valid, rejects tampered/expired', () => {
   const k = genKey(31);
   assert.ok(verifyKey(k));
   // Flip the last sig char to a DIFFERENT one (it may already be 'X').
-  assert.equal(verifyKey(k.slice(0, -1) + (k.endsWith('X') ? 'Y' : 'X')), null);  // bad signature
+  const parts = k.split('.');
+  const otherPayload = Buffer.from(JSON.stringify({ exp: 9999999999 })).toString('base64url');
+  assert.equal(verifyKey(`${parts[0]}.${otherPayload}.${parts[2]}`), null);   // tampered payload
   assert.equal(verifyKey(genKey(-1)) && genKey(-1) ? verifyKey(genKey(-1)).exp * 1000 < Date.now() : false, true);
 });
 test('server binds key to first device, rejects second', () => {
@@ -178,6 +201,19 @@ test('server unbind releases the device binding (admin only)', () => {
   assert.equal(un.dirty, true);
   const r = handle('POST', '/activate', { key, device: 'PC-B' }, db);
   assert.equal(r.body.ok, true);
+});
+
+test('server: a key with stray spaces or a trailing newline is the SAME key (no extra bindings), device must be a string', () => {
+  const db = {};
+  const key = genKey(365000);
+  assert.equal(handle('POST', '/activate', { key, device: 'PC-A' }, db).body.ok, true);
+  assert.equal(handle('POST', '/activate', { key: ' ' + key, device: 'PC-B' }, db).body.error, 'BOUND_ELSEWHERE');
+  assert.equal(handle('POST', '/activate', { key: key + '\n', device: 'PC-C' }, db).body.error, 'BOUND_ELSEWHERE');
+  assert.equal(Object.keys(db).length, 1, 'exactly one binding');
+  assert.equal(handle('POST', '/activate', { key: genKey(31), device: { evil: 1 } }, {}).body.error, 'NO_DEVICE');
+});
+test('server: a malformed URL is a 400, not a crash', () => {
+  assert.equal(handle('GET', 'http://[', null, {}).status, 400);
 });
 
 console.log('- multi-account controller -');

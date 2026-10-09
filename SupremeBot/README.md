@@ -70,17 +70,26 @@ with everything unlocked; after that, Start needs a key. The popup, options page
 and panel paywall all have pay buttons (they open the Revolut link; you enter
 the amount) and an Activate field for the key.
 
-Issuing keys (seller side): set your own `REVOLUT_PAYMENT_URL` and
-`LICENSE_SECRET` in `src/shared/payment.js`, then:
+Issuing keys (seller side). Keys are **ECDSA P-256** signatures: you sign with
+a private key that only you hold; the extension and the licence server carry
+only the public key (`LICENSE_PUBLIC_KEY` in `src/shared/payment.js`), so a key
+can be checked offline but cannot be minted from the extension's code.
 
 ```
-node tools/genkey.mjs 31        # monthly
-node tools/genkey.mjs 365000    # lifetime
+# once: create a key pair OUTSIDE the repo, paste the printed public key into
+# LICENSE_PUBLIC_KEY (and set your own REVOLUT_PAYMENT_URL)
+node tools/genkey.mjs --new-keypair ~/.tanoth-license
+
+export LICENSE_PRIVATE_KEY_FILE=~/.tanoth-license/tanoth-license-private.pem
+node tools/genkey.mjs 31          # monthly
+node tools/genkey.mjs lifetime    # lifetime
 ```
 
-Offline keys are signed with `LICENSE_SECRET`. Because that secret ships in the
-extension, offline checks are a deterrent, not real DRM. For cross-machine
-enforcement run the license server (`server/`) and set `LICENSE_SERVER_URL`.
+Back the private key up: lose it and you cannot issue keys that the shipped
+extension accepts; leak it and anyone can. Rotating it invalidates every key
+issued so far. Offline, a lifetime key is bound to the browser it was activated
+in; for a one-machine lock across computers run the licence server (`server/`)
+and set `LICENSE_SERVER_URL`.
 
 ## Build for the Web Store
 
@@ -91,7 +100,7 @@ bash tools/package.sh
 Produces `dist/tanoth-master-bot-<version>.zip` with only the extension files
 (manifest, icons, _locales, popup, options, stats, src). It leaves out
 `controller/`, `server/`, `tools/` (including the key generator) and screenshots.
-Change `LICENSE_SECRET` before publishing.
+The zip only ever contains the public key.
 
 ## Tests
 

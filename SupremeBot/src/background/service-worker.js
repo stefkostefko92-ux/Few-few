@@ -13,7 +13,7 @@
 import { DEFAULT_SETTINGS, mergeSettings, SETTINGS_VERSION } from '../shared/defaults.js';
 import {
   PRICE_EUR, LIFETIME_PRICE_EUR, BILLING_PERIOD_DAYS, TRIAL_DAYS, LIFETIME_THRESHOLD_DAYS,
-  REVOLUT_PAYMENT_URL, LICENSE_SECRET, LICENSE_PREFIX, LICENSE_SERVER_URL,
+  REVOLUT_PAYMENT_URL, LICENSE_PUBLIC_KEY, LICENSE_PREFIX, LICENSE_SERVER_URL,
   MERCHANT_NAME, TERMS_URL, PRIVACY_URL, REFUND_URL
 } from '../shared/payment.js';
 import { buildExternalNotifications } from '../shared/notify.js';
@@ -257,31 +257,33 @@ function b64urlToBytes(s) {
   for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
   return out;
 }
-function bytesToB64url(bytes) {
-  let bin = '';
-  bytes.forEach((b) => { bin += String.fromCharCode(b); });
-  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+// Public key only: the extension can VERIFY a licence signature but holds
+// nothing that could create one (the private key never leaves the seller).
+let publicKeyPromise = null;
+function licensePublicKey() {
+  if (!publicKeyPromise) {
+    publicKeyPromise = crypto.subtle.importKey(
+      'spki', b64urlToBytes(LICENSE_PUBLIC_KEY),
+      { name: 'ECDSA', namedCurve: 'P-256' }, false, ['verify']
+    );
+  }
+  return publicKeyPromise;
 }
 
-async function hmac(payloadStr) {
-  const enc = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    'raw', enc.encode(LICENSE_SECRET),
-    { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
-  );
-  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(payloadStr));
-  return bytesToB64url(new Uint8Array(sig)).slice(0, 24);
-}
-
-// Key format: TZ1.<payloadB64url>.<sig>  where payload = {"exp":<epochSec>}
+// Key format: TZ2.<payloadB64url>.<sigB64url>, payload = {"exp":<epochSec>},
+// sig = ECDSA P-256 / SHA-256 over the payload text (IEEE P1363, 64 bytes).
 async function verifyKey(key) {
   try {
     if (typeof key !== 'string') return null;
     const parts = key.trim().split('.');
     if (parts.length !== 3 || parts[0] !== LICENSE_PREFIX) return null;
-    const [, payloadB64, sig] = parts;
-    const expected = await hmac(payloadB64);
-    if (sig !== expected) return null;
+    const [, payloadB64, sigB64] = parts;
+    const sig = b64urlToBytes(sigB64);
+    if (sig.length !== 64) return null;
+    const ok = await crypto.subtle.verify(
+      { name: 'ECDSA', hash: 'SHA-256' }, await licensePublicKey(), sig, new TextEncoder().encode(payloadB64)
+    );
+    if (!ok) return null;
     const payload = JSON.parse(new TextDecoder().decode(b64urlToBytes(payloadB64)));
     if (!payload || typeof payload.exp !== 'number') return null;
     return payload; // { exp: epochSeconds }
