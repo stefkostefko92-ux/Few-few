@@ -16,7 +16,8 @@ import { isVersion } from '../domain/versions.js';
 /**
  * Базата с кодове за грешка (FR-04): CRUD + версии. Всеки код сочи публикуван документ-източник
  * (без източник AI не може да го цитира). Нова версия при публикуване отписва предишната със
- * същата валидност (модел + HW + обхват на FW).
+ * същата валидност (модел + HW + обхват на FW). Публикува се от DRAFT или REVIEW (след нова
+ * ревизия на източника — `relink`).
  */
 
 const Id = z.string().min(1).max(40);
@@ -47,6 +48,10 @@ const ErrorInput = z.object({
     )
     .max(40),
 });
+
+const RelinkInput = z
+  .object({ sourceDocumentId: Id, sourcePage: z.number().int().min(1).max(100000).optional() })
+  .strict();
 
 export function adminErrorsRouter(deps: AppDeps): Router {
   const router = Router();
@@ -160,6 +165,69 @@ export function adminErrorsRouter(deps: AppDeps): Router {
     }
   });
 
+  // Нова ревизия на документа-източник прави кода REVIEW (не изчезва тихо): отговорникът го
+  // свързва с публикувания нов документ и го публикува отново. Страниците на старата ревизия не
+  // важат за новата — проверките, сочили стария документ, получават новата страница (или нищо).
+  router.post('/errors/:id/relink', async (req, res, next) => {
+    try {
+      const id = Id.safeParse(req.params.id);
+      const body = RelinkInput.safeParse(req.body);
+      if (!id.success || !body.success) return apiError(res, 400, 'invalid_input');
+      const p = principalOf(req);
+      const entry = await deps.db.errorCode.findFirst({
+        where: { id: id.data, tenantId: p.user.tenantId },
+      });
+      if (!entry) return apiError(res, 404, 'not_found');
+      if (entry.status !== 'DRAFT' && entry.status !== 'REVIEW') {
+        return apiError(res, 409, 'invalid_transition');
+      }
+      const source = await deps.db.document.findFirst({
+        where: { id: body.data.sourceDocumentId, tenantId: p.user.tenantId },
+        include: { applicability: { select: { productId: true } } },
+      });
+      if (!source) return apiError(res, 422, 'unknown_source_document');
+      if (source.status !== 'PUBLISHED') return apiError(res, 422, 'source_not_published');
+      if (!source.applicability.some((a) => a.productId === entry.productId)) {
+        return apiError(res, 422, 'source_not_applicable');
+      }
+      const page = body.data.sourcePage ?? null;
+      await deps.db.$transaction(async (tx) => {
+        await tx.errorCode.update({
+          where: { id: entry.id },
+          data: { sourceDocumentId: source.id, sourcePage: page },
+        });
+        if (entry.sourceDocumentId) {
+          await tx.errorRelation.updateMany({
+            where: { errorId: entry.id, sourceDocumentId: entry.sourceDocumentId },
+            data: { sourceDocumentId: source.id, sourcePage: page },
+          });
+        }
+        await appendAudit(tx, {
+          tenantId: p.user.tenantId,
+          actorId: p.user.id,
+          action: 'kb.error.relink',
+          objectType: 'error',
+          objectId: entry.id,
+          detail: {
+            code: entry.code,
+            version: entry.version,
+            from: entry.sourceDocumentId,
+            to: source.id,
+            page,
+          },
+        });
+      });
+      res.json({
+        errorId: entry.id,
+        status: entry.status,
+        sourceDocumentId: source.id,
+        sourcePage: page,
+      });
+    } catch (err) {
+      next(err);
+    }
+  });
+
   router.post('/errors/:id/deprecate', async (req, res, next) => {
     try {
       const id = Id.safeParse(req.params.id);
@@ -183,33 +251,5 @@ export function adminErrorsRouter(deps: AppDeps): Router {
     }
   });
 
-  return router;
-}
-
-/** §14.1 GET /audit — одитът на клиента, отзад напред, с курсор. */
-export function auditRouter(deps: AppDeps): Router {
-  const router = Router();
-  // Способността е на самия маршрут: рутерът е монтиран на /api/v1 и не бива да спира чужди пътища.
-  router.get('/audit', requireUser, requireCapability('audit:read'), async (req, res, next) => {
-    try {
-      const q = z
-        .object({ before: z.coerce.number().int().positive().optional() })
-        .safeParse(req.query);
-      if (!q.success) return apiError(res, 400, 'invalid_input');
-      const p = principalOf(req);
-      const where = p.user.role === 'PLATFORM_ADMIN' ? {} : { tenantId: p.user.tenantId };
-      const events = await deps.db.auditEvent.findMany({
-        where: { ...where, ...(q.data.before ? { id: { lt: q.data.before } } : {}) },
-        orderBy: { id: 'desc' },
-        take: 100,
-      });
-      res.json({
-        events,
-        next: events.length === 100 ? (events.at(-1)?.id ?? null) : null,
-      });
-    } catch (err) {
-      next(err);
-    }
-  });
   return router;
 }

@@ -52,6 +52,23 @@ export function isApplicable(rule: ApplicabilityRule, version: ProductVersion): 
   return true;
 }
 
+/**
+ * Фърмуерът на таблото е извън обхвата, който ревизията поддържа [fwMin, fwMax] (§13.1
+ * product_revisions). Непозната или невалидна версия → false: тогава не твърдим нищо.
+ */
+export function firmwareOutsideRevision(
+  revision: { fwMin: string; fwMax: string | null },
+  firmware: string | null,
+): boolean {
+  if (firmware === null || !isVersion(firmware) || !isVersion(revision.fwMin)) return false;
+  if (compareVersions(firmware, revision.fwMin) < 0) return true;
+  return (
+    revision.fwMax !== null &&
+    isVersion(revision.fwMax) &&
+    compareVersions(firmware, revision.fwMax) > 0
+  );
+}
+
 /** „Rev.B“, „rev b“, „B“ → „B“. */
 export function normalizeRevision(value: string): string {
   return value

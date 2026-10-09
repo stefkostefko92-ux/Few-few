@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { diagnose } from './ai/orchestrator.js';
 import { VertexDiagnosisModel } from './ai/model.js';
 import { createApp, type Diagnoser } from './app.js';
-import { aiEnabled, loadConfig } from './config.js';
+import { aiEnabled, loadConfig, mfaKey } from './config.js';
 import { createLogger } from './logger.js';
 import { PrismaKnowledgeStore } from './store/knowledge.js';
 import { knowledgeSnapshotId } from './store/snapshot.js';
@@ -42,6 +42,7 @@ const app = createApp({
     ttlHours: config.SESSION_TTL_HOURS,
     secureCookies: config.NODE_ENV === 'production',
   },
+  mfaKey: mfaKey(config),
   diagnose: diagnoser,
 });
 

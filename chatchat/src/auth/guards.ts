@@ -13,7 +13,11 @@ export function principalOf(req: Request): Principal {
   return req.principal;
 }
 
-export function requireUser(req: Request, res: Response, next: NextFunction): void {
+/**
+ * Само вписан (паролата е мината), без проверка на втория фактор — за `/auth/me`, `/auth/logout`
+ * и `/auth/mfa/*`: пътищата, по които човек довършва или настройва MFA.
+ */
+export function requireSession(req: Request, res: Response, next: NextFunction): void {
   if (!req.principal) {
     apiError(res, 401, 'login_required');
     return;
@@ -21,12 +25,42 @@ export function requireUser(req: Request, res: Response, next: NextFunction): vo
   next();
 }
 
-/** Authz след authn (§15.1): способността на ролята, не само „вписан е“. */
+/**
+ * Политиката за втори фактор: включен TOTP и неминат в тази сесия → 401 `mfa_required`;
+ * персонал без TOTP → 403 `mfa_setup_required` (до способностите си не стига, докато не го включи).
+ */
+export function mfaBlock(p: Principal): { status: number; code: string } | null {
+  if (p.mfa.enabled && !p.mfa.passed) return { status: 401, code: 'mfa_required' };
+  if (p.mfa.required && !p.mfa.enabled) return { status: 403, code: 'mfa_setup_required' };
+  return null;
+}
+
+/** Вписан И минал политиката за втори фактор — всеки път към данни минава оттук. */
+export function requireUser(req: Request, res: Response, next: NextFunction): void {
+  const principal = req.principal;
+  if (!principal) {
+    apiError(res, 401, 'login_required');
+    return;
+  }
+  const blocked = mfaBlock(principal);
+  if (blocked) {
+    apiError(res, blocked.status, blocked.code);
+    return;
+  }
+  next();
+}
+
+/** Authz след authn (§15.1): способността на ролята, не само „вписан е“ (и вторият фактор). */
 export function requireCapability(capability: Capability) {
   return (req: Request, res: Response, next: NextFunction): void => {
     const principal = req.principal;
     if (!principal) {
       apiError(res, 401, 'login_required');
+      return;
+    }
+    const blocked = mfaBlock(principal);
+    if (blocked) {
+      apiError(res, blocked.status, blocked.code);
       return;
     }
     if (!can(principal.user.role, capability)) {

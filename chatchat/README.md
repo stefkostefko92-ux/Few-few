@@ -30,11 +30,11 @@ flowchart LR
 ```bash
 cd chatchat
 npm ci
-cp .env.example .env            # попълни PUBLIC_BASE_URL, DATABASE_URL, SESSION_PEPPER (≥32 знака)
+cp .env.example .env            # попълни PUBLIC_BASE_URL, DATABASE_URL, SESSION_PEPPER (≥32 знака), MFA_ENC_KEY
 npx prisma migrate deploy
 npm run build
 TENANT_SLUG=demo TENANT_NAME="Demo" USER_EMAIL=ko@example.test USER_NAME="Knowledge owner" \
-  USER_PASSWORD='…поне 12 знака…' USER_ROLE=KNOWLEDGE_OWNER npm run tenant:create
+  USER_ROLE=KNOWLEDGE_OWNER npm run tenant:create   # печата еднократен линк /reset#… за паролата
 npm run dev                     # http://localhost:4330
 ```
 
@@ -53,16 +53,22 @@ AI вижда само `PUBLISHED`. Публикуване и отписване
 
 ## API (v1)
 
-| Метод      | Път                                                                                                                        | Роля                         |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| POST       | `/api/v1/auth/login` · `/logout` · GET `/me`                                                                               | всички                       |
-| GET        | `/api/v1/products/search` · `/devices/:serial` · `/errors/:code` · `/documents/:id/pages/:page`                            | вписан (по аудитория/фирма)  |
-| POST       | `/api/v1/sessions` (нов случай) · GET `/cases` · `/cases/:id` · `/cases/:id/timeline`                                      | техник+                      |
-| PATCH/POST | `/api/v1/cases/:id/context` · `/cases/:id/outcome` · `/cases/:id/assign` (поддръжка)                                       | техник+                      |
-| POST       | `/api/v1/chat/messages` · `/tickets` · `/feedback`                                                                         | техник+                      |
-| POST       | `/api/v1/admin/products` · `/devices` · `/documents` (+ submit/reject/publish/deprecate) · `/errors` (+ publish/deprecate) | KNOWLEDGE_OWNER              |
-| GET        | `/api/v1/audit`                                                                                                            | TENANT_ADMIN, PLATFORM_ADMIN |
-| GET        | `/healthz` (жив) · `/readyz` (базата + дали AI е включен)                                                                  | —                            |
+| Метод      | Път                                                                                                                         | Роля                         |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| POST       | `/api/v1/auth/login` · `/logout` · GET `/me`                                                                                | всички                       |
+| GET        | `/api/v1/products/search` · `/devices/:serial` · `/errors/:code` · `/documents/:id/pages/:page`                             | вписан (по аудитория/фирма)  |
+| POST       | `/api/v1/sessions` (нов случай) · GET `/cases` · `/cases/:id` · `/cases/:id/timeline`                                       | техник+                      |
+| PATCH/POST | `/api/v1/cases/:id/context` · `/cases/:id/outcome` · `/cases/:id/assign` (поддръжка)                                        | техник+                      |
+| POST       | `/api/v1/chat/messages` · `/tickets` · `/feedback`                                                                          | техник+                      |
+| POST       | `/api/v1/admin/products` · `/devices` · `/documents` (+ submit/reject/publish/deprecate) · `/errors` (+ publish/deprecate)  | KNOWLEDGE_OWNER              |
+| POST       | `/api/v1/auth/mfa/setup` · `/enable` · `/verify` · `/disable` (TOTP; персоналът — задължително)                             | вписан                       |
+| POST       | `/api/v1/auth/reset-password` (еднократният линк `/reset#…`)                                                                | публично                     |
+| GET/POST   | `/api/v1/admin/users` · PATCH `/users/:id/admin` · POST `/admin/users/:id/{reset-password,revoke-sessions,reset-mfa,erase}` | TENANT_ADMIN, PLATFORM_ADMIN |
+| GET/POST   | `/api/v1/admin/users/:id/export` · POST `/admin/users/bulk` (dryRun)                                                        | TENANT_ADMIN, PLATFORM_ADMIN |
+| GET/POST   | `/api/v1/saved-filters?scope=USERS\|CASES\|CONVERSATIONS` · DELETE `/saved-filters/:id`                                     | вписан                       |
+| POST       | `/api/v1/admin/devices/:serial/qr` · `/admin/errors/:id/relink` · GET `/devices/by-qr/:token`                               | KNOWLEDGE_OWNER / вписан     |
+| GET        | `/api/v1/audit`                                                                                                             | TENANT_ADMIN, PLATFORM_ADMIN |
+| GET        | `/healthz` (жив) · `/readyz` (базата + дали AI е включен)                                                                   | —                            |
 
 Всяка не-GET заявка иска хедър `x-csrf-token` (от `login`/`me`).
 
