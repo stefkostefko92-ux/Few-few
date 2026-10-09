@@ -52,7 +52,7 @@
       const c = cfg();
       if (!c.enabled || !Api.ready()) return null;
       if (!c.sellCommon && !c.sellSpecial) return null;     // nothing to do
-      if (Date.now() - lastScan < 60000) return null;
+      if (Date.now() - lastScan < 60000) { Scheduler.wakeAt(lastScan + 60000); return null; }
 
       return async () => {
         lastScan = Date.now();

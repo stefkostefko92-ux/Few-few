@@ -54,7 +54,7 @@
       if (!haveCosts) {
         // Throttled: if the server response lacks cost fields, an unthrottled
         // refetch would fire every single cycle.
-        if (Date.now() < costsFetchAt) return null;
+        if (Date.now() < costsFetchAt) { Scheduler.wakeAt(costsFetchAt); return null; }
         costsFetchAt = Date.now() + 60000;
         return async () => {
           const fetched = await Api.getUserAttributes();

@@ -104,3 +104,9 @@ button.tool-link { margin-left: auto; color: var(--accent-text); }
   .tool-label { width: 100%; }
   .tool-link { margin-left: 0; }
 }
+
+/* Hero picker (sidebar): which hero's settings this page edits. */
+.hero-box { display: grid; gap: 6px; margin: 4px 0 14px; }
+.hero-label { font-size: 11.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.hero-box select { width: 100%; min-height: 36px; font-weight: 600; }
+.hero-box .linkbtn { justify-self: start; font-size: 12px; }

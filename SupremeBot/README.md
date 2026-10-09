@@ -42,6 +42,21 @@ which game actions are covered and which are left out on purpose.
   happen, never earlier than the game's own busy timer.
 - **Reconnect.** If the session drops and auto-login reloads the page, a bot that
   was running starts again once you are back in.
+- **Timers, not polling.** While the hero is busy (adventure, work, mission,
+  cave) or a module waits on a cooldown or energy regen, the bot sleeps until
+  that exact moment and acts right after it ends (about 0.25 s with humanize
+  off, a short 0.3-1.2 s human-like beat with it on; a fixed interval, if set,
+  is respected). With nothing to wait for it only re-checks every 30 s.
+
+## Several heroes
+
+Every hero (server + name) has his **own saved settings**. The first time a
+hero is seen he starts from the defaults; from then on the panel, the popup and
+the options page change only that hero. Several heroes can run at once, each in
+his own tab. In the options page pick the hero under *Settings for*
+(*Default* = what a new hero starts with); the popup's Settings button opens
+the hero you are looking at, and with several hero tabs open (none in front)
+the popup lets you choose which one to control.
 
 ## Install (unpacked)
 

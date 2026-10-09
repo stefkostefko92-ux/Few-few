@@ -40,14 +40,63 @@ const els = {
 let entitled = false;
 
 function send(message) { return chrome.runtime.sendMessage(message).catch(() => null); }
-function control(action) { send({ type: 'CONTROL', action }).then(() => setTimeout(refresh, 150)); }
+
+// Which game tab this popup controls. The popup knows the window it belongs
+// to, so the tab you are LOOKING AT wins; the service worker used to guess
+// (first game tab it found), which with several heroes open drove the wrong
+// one. With no game tab in front and several heroes open, a picker appears.
+const GAME_URL = 'https://*.tanoth.gameforge.com/*';
+const isGame = (u) => /^https:\/\/[^/]*\.tanoth\.gameforge\.com\//.test(u || '');
+let targetTabId = null;
+async function resolveTarget() {
+  const [active] = await chrome.tabs.query({ active: true, currentWindow: true }).catch(() => []);
+  if (active && isGame(active.url)) { targetTabId = active.id; renderPicker([]); return; }
+  const games = await chrome.tabs.query({ url: GAME_URL }).catch(() => []);
+  if (!games.some((g) => g.id === targetTabId)) targetTabId = games[0] ? games[0].id : null;
+  renderPicker(games);
+}
+async function renderPicker(games) {
+  let pick = document.getElementById('hero-pick');
+  if (games.length < 2) { if (pick) pick.remove(); return; }
+  if (!pick) {
+    pick = document.createElement('select');
+    pick.id = 'hero-pick'; pick.className = 'hero-pick';
+    pick.setAttribute('aria-label', t('popupPickHero'));
+    pick.addEventListener('change', () => { targetTabId = Number(pick.value); refresh(); });
+    document.querySelector('header').after(pick);
+  }
+  const opts = await Promise.all(games.map(async (g) => {
+    const st = await send({ type: 'GET_STATUS', tabId: g.id });
+    const c = (st && st.state) || {};
+    const srv = (g.url.match(/^https:\/\/([\w-]+)\.tanoth/) || [])[1] || '';
+    return { id: g.id, label: (c.name || t('popupUnknownHero')) + (srv ? ' · ' + srv : '') };
+  }));
+  pick.replaceChildren(...opts.map((o) => { const op = document.createElement('option'); op.value = String(o.id); op.textContent = o.label; op.selected = o.id === targetTabId; return op; }));
+}
+
+async function control(action) {
+  const r = await send({ type: 'CONTROL', action, tabId: targetTabId });
+  if (!r || !r.ok) {
+    // Never fail silently: after an extension reload the old game tab cannot
+    // answer until it is reloaded, which looked like "Start does nothing".
+    els.statusText.textContent = t(r && r.error === 'TAB_UNREACHABLE' ? 'popupReloadGame' : 'popupNoGame');
+    els.noGame.classList.remove('hidden');
+    return;
+  }
+  setTimeout(refresh, 150);
+}
 
 els.start.addEventListener('click', () => control('start'));
 els.stop.addEventListener('click', () => control('stop'));
 els.pause.addEventListener('click', () => {
   control(els.pause.dataset.paused === '1' ? 'resume' : 'pause');
 });
-document.getElementById('open-options').addEventListener('click', () => chrome.runtime.openOptionsPage());
+// Settings open straight on the hero this popup controls (his own settings).
+let currentHeroKey = null;
+document.getElementById('open-options').addEventListener('click', () => {
+  if (currentHeroKey) chrome.tabs.create({ url: chrome.runtime.getURL('options/options.html') + '?hero=' + encodeURIComponent(currentHeroKey) });
+  else chrome.runtime.openOptionsPage();
+});
 document.getElementById('open-stats').addEventListener('click', () => chrome.tabs.create({ url: chrome.runtime.getURL('stats/stats.html') }));
 document.getElementById('show-panel').addEventListener('click', () => control('showPanel'));
 const consentBox = document.getElementById('consent');
@@ -109,14 +158,15 @@ async function refreshLicense() {
 }
 
 async function refresh() {
-  const res = await send({ type: 'GET_STATUS' });
+  const res = await send({ type: 'GET_STATUS', tabId: targetTabId });
   if (!res || !res.ok) {
     els.noGame.classList.remove('hidden');
     els.start.disabled = els.stop.disabled = els.pause.disabled = true;
-    els.statusText.textContent = t('popupNoGame');
+    els.statusText.textContent = t(res && res.error === 'TAB_UNREACHABLE' ? 'popupReloadGame' : 'popupNoGame');
     return;
   }
   els.noGame.classList.add('hidden');
+  currentHeroKey = res.heroKey || null;
 
   const st = res.status || {};
   els.dot.className = 'dot' + (st.running && !st.paused ? ' running' : st.paused ? ' paused' : '');
@@ -149,6 +199,7 @@ async function refresh() {
 
 localize();
 refreshLicense();
-refresh();
+resolveTarget().then(refresh);
 setInterval(refresh, 1500);
+setInterval(resolveTarget, 4000);   // a hero tab opened/closed while the popup is up
 setInterval(refreshLicense, 5000);

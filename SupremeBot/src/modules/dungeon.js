@@ -15,7 +15,7 @@
     async tick() {
       const c = cfg();
       if (!c.enabled || !Api.ready() || busy()) return null;
-      if (Date.now() < cooldownUntil) return null;
+      if (Date.now() < cooldownUntil) { Scheduler.wakeAt(cooldownUntil); return null; }
 
       const info = State.get().dungeon || {};
       if (!Object.keys(info).length || Date.now() - lastCheck > 120000) {

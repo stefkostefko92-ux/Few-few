@@ -24,6 +24,10 @@ const LICENSE_KEY = 'tanothBotLicense';   // { key, exp, device }
 const INSTALL_KEY = 'tanothBotInstall';   // { firstRun }
 const DEVICE_KEY = 'tanothBotDevice';     // stable per-install device id
 const PROFILES_KEY = 'tanothBotProfiles'; // { name: settings }
+// Per-hero settings: { "<server>:<name>": { name, server, settings, lastSeen } }.
+// Each hero (tab) runs on its own settings; the global STORAGE_KEY settings are
+// the template a NEW hero starts from (and what an unidentified tab uses).
+const HEROES_KEY = 'tanothBotHeroes';
 
 /* -------------------------------------------------------------------------- */
 /* Install / update                                                            */
@@ -107,21 +111,20 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 async function handleMessage(msg, sender) {
   switch (msg?.type) {
     case 'GET_SETTINGS':
-      return mergeSettings((await chrome.storage.local.get(STORAGE_KEY))[STORAGE_KEY]);
+      return getSettingsFor(heroKeyOf(msg.heroKey));
 
-    case 'SAVE_SETTINGS': {
-      const merged = mergeSettings(msg.settings);
-      await chrome.storage.local.set({ [STORAGE_KEY]: merged });
-      broadcastToGameTabs({ type: 'SETTINGS_UPDATED', settings: merged });
-      return { ok: true };
-    }
+    case 'SAVE_SETTINGS':
+      return saveSettingsFor(heroKeyOf(msg.heroKey), msg.settings);
 
     case 'RESET_SETTINGS': {
       const fresh = structuredClone(DEFAULT_SETTINGS);
-      await chrome.storage.local.set({ [STORAGE_KEY]: fresh });
-      broadcastToGameTabs({ type: 'SETTINGS_UPDATED', settings: fresh });
+      await saveSettingsFor(heroKeyOf(msg.heroKey), fresh);
       return { ok: true, settings: fresh };
     }
+
+    case 'BIND_HERO':     return bindHero(msg);
+    case 'LIST_HEROES':   return listHeroes();
+    case 'FORGET_HERO':   return forgetHero(heroKeyOf(msg.heroKey));
 
     case 'GET_STATS':
       return (await chrome.storage.local.get(STATS_KEY))[STATS_KEY] || emptyStats();
@@ -137,9 +140,10 @@ async function handleMessage(msg, sender) {
       // Two independent channels: a Chrome desktop popup (only when the desktop
       // toggle is on) and the Telegram/Discord webhooks (gated by their own
       // config). So you can send everything to Discord WITHOUT any Chrome popups.
-      const settings = mergeSettings((await chrome.storage.local.get(STORAGE_KEY))[STORAGE_KEY]);
+      // The sending hero's own settings decide where his alerts go.
+      const settings = await getSettingsFor(heroKeyOf(msg.heroKey));
       if (settings.general?.notifications && msg.desktop !== false) raiseNotification(msg.title, msg.message);
-      await sendWebhooks(msg.title, msg.message, msg.level, msg.fields);   // awaited so the SW survives the fetch
+      await sendWebhooks(msg.title, msg.message, msg.level, msg.fields, settings.webhooks);   // awaited so the SW survives the fetch
       return { ok: true };
     }
 
@@ -155,7 +159,7 @@ async function handleMessage(msg, sender) {
       return Object.keys((await chrome.storage.local.get(PROFILES_KEY))[PROFILES_KEY] || {});
 
     case 'SAVE_PROFILE':   return saveProfile(msg.name);
-    case 'LOAD_PROFILE':   return loadProfile(msg.name);
+    case 'LOAD_PROFILE':   return loadProfile(msg.name, heroKeyOf(msg.heroKey));
     case 'DELETE_PROFILE': return deleteProfile(msg.name);
 
     case 'OPEN_OPTIONS':
@@ -175,7 +179,7 @@ async function handleMessage(msg, sender) {
       return { ok: true };
 
     case 'CONTROL':     return forwardToActiveGameTab(msg);
-    case 'GET_STATUS':  return forwardToActiveGameTab({ type: 'GET_STATUS' });
+    case 'GET_STATUS':  return forwardToActiveGameTab({ type: 'GET_STATUS', tabId: msg.tabId });
 
     default: return { ok: false, error: 'UNKNOWN_MESSAGE' };
   }
@@ -209,6 +213,15 @@ async function broadcastToGameTabs(message) {
 }
 
 async function forwardToActiveGameTab(message) {
+  // The popup names the exact tab it controls (it knows its own window); only
+  // fall back to guessing when no tab id was given.
+  if (Number.isInteger(message.tabId)) {
+    const t = await chrome.tabs.get(message.tabId).catch(() => null);
+    if (t && /tanoth\.gameforge\.com/.test(t.url || '')) {
+      try { return await chrome.tabs.sendMessage(t.id, message); }
+      catch (e) { return { ok: false, error: 'TAB_UNREACHABLE' }; }
+    }
+  }
   let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab || !/tanoth\.gameforge\.com/.test(tab.url || '')) {
     const game = await chrome.tabs.query({ url: '*://*.tanoth.gameforge.com/*' });
@@ -404,13 +417,74 @@ async function saveProfile(name) {
   await chrome.storage.local.set({ [PROFILES_KEY]: Object.assign({}, clean) });
   return { ok: true, profiles: Object.keys(clean) };
 }
-async function loadProfile(name) {
+async function loadProfile(name, heroKey) {
   const profiles = (await chrome.storage.local.get(PROFILES_KEY))[PROFILES_KEY] || {};
   if (!Object.hasOwn(profiles, name)) return { ok: false, error: 'NOT_FOUND' };
   const merged = mergeSettings(profiles[name]);
-  await chrome.storage.local.set({ [STORAGE_KEY]: merged });
-  broadcastToGameTabs({ type: 'SETTINGS_UPDATED', settings: merged });
+  await saveSettingsFor(heroKey, merged);
   return { ok: true, settings: merged };
+}
+
+/* ---- Per-hero settings ---- */
+// "<server>:<name>" built by the content script; validated so it can never be
+// "__proto__"/"constructor" or carry junk into storage keys.
+function heroKeyOf(k) {
+  return typeof k === 'string' && /^[\w-]{1,32}:[^\u0000-\u001f]{1,64}$/.test(k) && !/^(__proto__|constructor|prototype)$/.test(k) ? k : null;
+}
+let heroChain = Promise.resolve();       // serialise read-modify-write across tabs
+function heroWrite(fn) {
+  const run = heroChain.then(async () => {
+    const heroes = Object.assign(Object.create(null), (await chrome.storage.local.get(HEROES_KEY))[HEROES_KEY] || {});
+    const out = await fn(heroes);
+    await chrome.storage.local.set({ [HEROES_KEY]: { ...heroes } });
+    return out;
+  });
+  heroChain = run.catch(() => {});
+  return run;
+}
+async function getSettingsFor(heroKey) {
+  if (heroKey) {
+    const heroes = (await chrome.storage.local.get(HEROES_KEY))[HEROES_KEY] || {};
+    if (Object.hasOwn(heroes, heroKey) && heroes[heroKey].settings) return mergeSettings(heroes[heroKey].settings);
+  }
+  return mergeSettings((await chrome.storage.local.get(STORAGE_KEY))[STORAGE_KEY]);
+}
+async function saveSettingsFor(heroKey, settings) {
+  const merged = mergeSettings(settings);
+  if (heroKey) {
+    await heroWrite((heroes) => {
+      const cur = Object.hasOwn(heroes, heroKey) ? heroes[heroKey] : { name: heroKey.split(':').slice(1).join(':'), server: heroKey.split(':')[0] };
+      heroes[heroKey] = { ...cur, settings: merged };
+    });
+  } else {
+    await chrome.storage.local.set({ [STORAGE_KEY]: merged });
+  }
+  // Each tab applies only the settings of the hero it is bound to.
+  broadcastToGameTabs({ type: 'SETTINGS_UPDATED', settings: merged, heroKey });
+  return { ok: true };
+}
+// A tab identified its hero: return that hero's settings, creating them on the
+// first visit as a copy of the current default settings.
+async function bindHero(msg) {
+  const key = heroKeyOf(msg.heroKey);
+  if (!key) return { ok: false, error: 'BAD_HERO' };
+  const global = mergeSettings((await chrome.storage.local.get(STORAGE_KEY))[STORAGE_KEY]);
+  return heroWrite((heroes) => {
+    const isNew = !Object.hasOwn(heroes, key);
+    const cur = isNew ? { settings: global } : heroes[key];
+    heroes[key] = { ...cur, name: String(msg.name || '').slice(0, 64), server: String(msg.server || '').slice(0, 32), lastSeen: Date.now() };
+    return { ok: true, isNew, settings: mergeSettings(heroes[key].settings) };
+  });
+}
+async function listHeroes() {
+  const heroes = (await chrome.storage.local.get(HEROES_KEY))[HEROES_KEY] || {};
+  return Object.keys(heroes).map((key) => ({ key, name: heroes[key].name, server: heroes[key].server, lastSeen: heroes[key].lastSeen || 0 }))
+    .sort((a, b) => b.lastSeen - a.lastSeen);
+}
+async function forgetHero(heroKey) {
+  if (!heroKey) return { ok: false, error: 'BAD_HERO' };
+  await heroWrite((heroes) => { delete heroes[heroKey]; });
+  return { ok: true };
 }
 async function deleteProfile(name) {
   const profiles = (await chrome.storage.local.get(PROFILES_KEY))[PROFILES_KEY] || {};

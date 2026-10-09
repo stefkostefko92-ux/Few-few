@@ -48,6 +48,9 @@
   "mod_autosell": {"message":"Автопродажба"},
   "mod_autologin": {"message":"Автовход"},
   "popupNoGame": {"message":"Отворете Tanoth в раздел, за да управлявате бота."},
+  "popupReloadGame": {"message":"Презареди таба с играта (разширението беше обновено)."},
+  "popupPickHero": {"message":"Герой за управление"},
+  "popupUnknownHero": {"message":"Герой"},
   "popupShowPanel": {"message":"Покажи панела"},
   "popupNoChar": {"message":"Изчакване на данни за героя..."},
   "logInjectReady": {"message":"Мрежовото прихващане е инсталирано."},
@@ -336,5 +339,11 @@
   "optv_uncommon": {"message":"Необикновен"},
   "optv_rare": {"message":"Рядък"},
   "optv_epic": {"message":"Епичен"},
-  "optv_legendary": {"message":"Легендарен"}
+  "optv_legendary": {"message":"Легендарен"},
+  "optHeroLabel": {"message":"Настройки за"},
+  "optHeroDefault": {"message":"По подразбиране (нови герои)"},
+  "optHeroForget": {"message":"Забрави героя"},
+  "optHeroForgetConfirm": {"message":"Да изтрия ли запазените настройки на този герой? Следващия път ще започне от настройките по подразбиране."},
+  "logHeroSettings": {"message":"Ползвам запазените настройки на $1."},
+  "logHeroNew": {"message":"Нов герой $1 - настройките са създадени от тези по подразбиране."}
 }

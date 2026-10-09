@@ -171,6 +171,9 @@ const SCHEMA = [
 ];
 
 let settings = mergeSettings(null);
+// Which hero's settings this page edits: null = the defaults a NEW hero starts
+// from; otherwise "<server>:<name>". Opened from the popup it arrives as ?hero=.
+let heroKey = new URLSearchParams(location.search).get('hero') || null;
 
 const navEl = document.getElementById('nav');
 const formEl = document.getElementById('form');
@@ -380,19 +383,65 @@ function renderField(section, f) {
 }
 
 async function load() {
-  settings = mergeSettings(await chrome.runtime.sendMessage({ type: 'GET_SETTINGS' }));
+  settings = mergeSettings(await chrome.runtime.sendMessage({ type: 'GET_SETTINGS', heroKey }));
   render();
 }
 
+// Hero picker: every hero has his own saved settings (several heroes can run
+// at once in different tabs). "Default" is what a hero gets on his first visit.
+async function renderHeroPicker() {
+  const heroes = (await chrome.runtime.sendMessage({ type: 'LIST_HEROES' })) || [];
+  if (heroKey && !heroes.some((h) => h.key === heroKey)) heroKey = null;
+  let box = document.getElementById('hero-box');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'hero-box'; box.className = 'hero-box';
+    const lab = document.createElement('label');
+    lab.htmlFor = 'hero-sel'; lab.className = 'hero-label'; lab.textContent = t('optHeroLabel');
+    const sel = document.createElement('select');
+    sel.id = 'hero-sel';
+    sel.addEventListener('change', async () => {
+      heroKey = sel.value || null;
+      const u = new URL(location.href);
+      if (heroKey) u.searchParams.set('hero', heroKey); else u.searchParams.delete('hero');
+      history.replaceState(null, '', u);
+      forget.hidden = !heroKey;
+      await load();
+    });
+    const forget = document.createElement('button');
+    forget.type = 'button'; forget.id = 'hero-forget'; forget.className = 'linkbtn';
+    forget.textContent = t('optHeroForget');
+    forget.addEventListener('click', async () => {
+      if (!heroKey || !confirm(t('optHeroForgetConfirm'))) return;
+      await chrome.runtime.sendMessage({ type: 'FORGET_HERO', heroKey });
+      heroKey = null;
+      await renderHeroPicker(); await load();
+    });
+    box.append(lab, sel, forget);
+    document.querySelector('aside .brand').after(box);
+  }
+  const sel = box.querySelector('select');
+  const def = document.createElement('option');
+  def.value = ''; def.textContent = t('optHeroDefault');
+  const opts = heroes.map((h) => {
+    const o = document.createElement('option');
+    o.value = h.key; o.textContent = `${h.name}${h.server ? ' · ' + h.server : ''}`;
+    return o;
+  });
+  sel.replaceChildren(def, ...opts);
+  sel.value = heroKey || '';
+  box.querySelector('#hero-forget').hidden = !heroKey;
+}
+
 document.getElementById('save').addEventListener('click', async () => {
-  await chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', settings });
+  await chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', settings, heroKey });
   hintEl.textContent = t('optSaved');
   setTimeout(() => { hintEl.textContent = ''; }, 2500);
 });
 
 document.getElementById('reset').addEventListener('click', async () => {
   if (!confirm(t('optConfirmReset'))) return;
-  const r = await chrome.runtime.sendMessage({ type: 'RESET_SETTINGS' });
+  const r = await chrome.runtime.sendMessage({ type: 'RESET_SETTINGS', heroKey });
   settings = mergeSettings(r.settings || DEFAULT_SETTINGS);
   render();
   hintEl.textContent = t('optResetDone');
@@ -488,7 +537,7 @@ PRESET_IDS.forEach((id) => {
 });
 document.getElementById('preset-apply').addEventListener('click', async () => {
   settings = applyPreset(settings, presetSel.value);
-  await chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', settings });
+  await chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', settings, heroKey });
   render();
   flashTool(t('toolPresetApplied', [t('preset_' + presetSel.value)]));
 });
@@ -519,7 +568,7 @@ document.getElementById('import-file').addEventListener('change', (ev) => {
       settings.webhooks = Object.assign({}, settings.webhooks, {
         telegramToken: keep.telegramToken || '', telegramChat: keep.telegramChat || '', discordWebhook: keep.discordWebhook || ''
       });
-      await chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', settings });
+      await chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', settings, heroKey });
       render(); flashTool(t('toolImported'));
     } catch (e) { flashTool(t('toolImportError'), false); }
   };
@@ -537,13 +586,13 @@ async function refreshProfiles() {
 document.getElementById('profile-save').addEventListener('click', async () => {
   const name = document.getElementById('profile-name').value.trim();
   if (!name) return flashTool(t('toolProfileNeedName'), false);
-  await chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', settings });
+  await chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', settings, heroKey });
   await chrome.runtime.sendMessage({ type: 'SAVE_PROFILE', name });
   await refreshProfiles(); flashTool(t('toolProfileSaved', [name]));
 });
 document.getElementById('profile-load').addEventListener('click', async () => {
   const name = profileSel.value; if (!name) return;
-  const r = await chrome.runtime.sendMessage({ type: 'LOAD_PROFILE', name });
+  const r = await chrome.runtime.sendMessage({ type: 'LOAD_PROFILE', heroKey, name });
   if (r && r.ok) { settings = mergeSettings(r.settings); render(); flashTool(t('toolProfileLoaded', [name])); }
 });
 document.getElementById('profile-delete').addEventListener('click', async () => {
@@ -572,5 +621,5 @@ document.querySelectorAll('[data-i18n-ph]').forEach((el) => {
   el.placeholder = t(el.getAttribute('data-i18n-ph'));
 });
 
-load();
+renderHeroPicker().then(load);
 renderSubscription();

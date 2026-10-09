@@ -48,6 +48,9 @@
   "mod_autosell": {"message":"Autoventa"},
   "mod_autologin": {"message":"Autoconexión"},
   "popupNoGame": {"message":"Abre Tanoth en una pestaña para controlar el bot."},
+  "popupReloadGame": {"message":"Recarga la pestaña del juego (la extensión se actualizó)."},
+  "popupPickHero": {"message":"Héroe a controlar"},
+  "popupUnknownHero": {"message":"Héroe"},
   "popupShowPanel": {"message":"Mostrar panel"},
   "popupNoChar": {"message":"Esperando datos del personaje..."},
   "logInjectReady": {"message":"Interceptor de red instalado."},
@@ -336,5 +339,11 @@
   "optv_uncommon": {"message":"Poco común"},
   "optv_rare": {"message":"Raro"},
   "optv_epic": {"message":"Épico"},
-  "optv_legendary": {"message":"Legendario"}
+  "optv_legendary": {"message":"Legendario"},
+  "optHeroLabel": {"message":"Ajustes de"},
+  "optHeroDefault": {"message":"Predeterminado (héroes nuevos)"},
+  "optHeroForget": {"message":"Olvidar este héroe"},
+  "optHeroForgetConfirm": {"message":"¿Borrar los ajustes guardados de este héroe? La próxima vez empezará con los predeterminados."},
+  "logHeroSettings": {"message":"Usando los ajustes guardados de $1."},
+  "logHeroNew": {"message":"Héroe nuevo $1: ajustes creados a partir de los predeterminados."}
 }

@@ -36,10 +36,24 @@
         message: opts.message,
         level: opts.level,
         desktop: opts.desktop,          // false -> webhooks only, no Chrome popup
+        heroKey: Storage.heroKey(),     // this hero's own alert settings
         fields: fields.concat(opts.fields || [])
       }).catch(() => {});
     } catch (_) {}
   };
+
+  // Bind this tab to its hero ("<server>:<name>") once the name is known.
+  async function ensureHero() {
+    const s = State.get();
+    if (Storage.heroKey() || !s.name) return;
+    const server = serverLabel();
+    const key = `${server}:${String(s.name).slice(0, 64)}`;
+    const r = await Storage.bindHero(key, String(s.name), server);
+    if (!r) return;
+    Logger.info(I18n.t(r.isNew ? 'logHeroNew' : 'logHeroSettings', [String(s.name)]));
+    Panel.refreshModules();
+    Scheduler.nudge();
+  }
 
   async function boot() {
     await Storage.load();
@@ -65,16 +79,16 @@
         State.patch({ loggedIn: true });
         Logger.success(I18n.t('logProtocolReady'));
         Api.refresh().catch(() => {});
-        // Pull the character identity (name / guild / level) so notifications
-        // can name the hero even before any activity runs.
-        Api.getUserAttributes().catch(() => {});
-        // Start when configured to, or when the auto-login reload interrupted a
-        // running engine (so reconnecting does not leave the bot silently idle).
+        // Pull the character identity (name / guild / level), switch to THIS
+        // hero's own saved settings, and only then decide whether to start -
+        // so every hero runs with his settings from the very first action.
         if (resumeAfterReload) TB.Autologin.clearResume();
-        if ((Storage.section('general') || {}).startOnLoad || resumeAfterReload) {
-          Logger.info(I18n.t('logAutoStart'));
-          Scheduler.start();
-        }
+        Api.getUserAttributes().catch(() => {}).then(ensureHero).then(() => {
+          if ((Storage.section('general') || {}).startOnLoad || resumeAfterReload) {
+            Logger.info(I18n.t('logAutoStart'));
+            Scheduler.start();
+          }
+        });
       }
     });
 
@@ -91,8 +105,16 @@
     let lastCharAt = Date.now();
     setInterval(() => {
       if (!(Bridge.ready() && Scheduler.isRunning())) return;
-      Api.refresh().catch(() => {});
-      if (Date.now() - lastCharAt >= 5 * 60000) { lastCharAt = Date.now(); Api.getUserAttributes().catch(() => {}); }
+      const before = State.get();
+      const was = { at: before.adventureReturnAt || 0, gold: before.gold };
+      Api.refresh().then(() => {
+        const now = State.get();
+        // A task ended earlier / a new timer appeared, or gold changed: let the
+        // scheduler re-plan instead of sleeping on a stale timer.
+        // (the task end is recomputed as now + remaining, so allow a little drift)
+        if (Math.abs((now.adventureReturnAt || 0) - was.at) > 2000 || now.gold !== was.gold) Scheduler.nudge();
+      }).catch(() => {});
+      if (Date.now() - lastCharAt >= 5 * 60000) { lastCharAt = Date.now(); Api.getUserAttributes().then(ensureHero).catch(() => {}); }
     }, 30000);
 
     // Optional periodic activity report to the webhooks (0 = off): tells you
@@ -144,10 +166,16 @@
         return false;
 
       case 'SETTINGS_UPDATED':
+        // Only the settings of the hero this tab runs (or the shared defaults
+        // while the hero is still unknown). Another hero's change is ignored.
+        if ((msg.heroKey || null) !== (Storage.heroKey() || null)) { sendResponse({ ok: true, ignored: true }); return false; }
         Storage._set(msg.settings);
         if ((Storage.section('general') || {}).enabled === false && Scheduler.isRunning()) {
           Scheduler.stop(I18n.t('logMasterOff'));
         }
+        // New settings (module on/off, interval, active hours) take effect now,
+        // not at the next planned wake.
+        Scheduler.nudge();
         Panel.refreshModules();
         sendResponse({ ok: true });
         return false;
@@ -156,6 +184,7 @@
         sendResponse({
           ok: true,
           status: Scheduler.status(),
+          heroKey: Storage.heroKey(),
           state: {
             loggedIn: State.get().loggedIn,
             name: State.get().name,

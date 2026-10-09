@@ -48,6 +48,9 @@
   "mod_autosell": {"message":"Autosprzedaż"},
   "mod_autologin": {"message":"Autologowanie"},
   "popupNoGame": {"message":"Otwórz Tanoth w karcie, aby sterować botem."},
+  "popupReloadGame": {"message":"Odśwież kartę gry (rozszerzenie zostało zaktualizowane)."},
+  "popupPickHero": {"message":"Bohater do sterowania"},
+  "popupUnknownHero": {"message":"Bohater"},
   "popupShowPanel": {"message":"Pokaż panel"},
   "popupNoChar": {"message":"Oczekiwanie na dane postaci..."},
   "logInjectReady": {"message":"Zainstalowano przechwytywanie sieci."},
@@ -336,5 +339,11 @@
   "optv_uncommon": {"message":"Niezwykły"},
   "optv_rare": {"message":"Rzadki"},
   "optv_epic": {"message":"Epicki"},
-  "optv_legendary": {"message":"Legendarny"}
+  "optv_legendary": {"message":"Legendarny"},
+  "optHeroLabel": {"message":"Ustawienia dla"},
+  "optHeroDefault": {"message":"Domyślne (nowi bohaterowie)"},
+  "optHeroForget": {"message":"Zapomnij bohatera"},
+  "optHeroForgetConfirm": {"message":"Usunąć zapisane ustawienia tego bohatera? Następnym razem zacznie od domyślnych."},
+  "logHeroSettings": {"message":"Używam zapisanych ustawień: $1."},
+  "logHeroNew": {"message":"Nowy bohater $1 - ustawienia utworzone z domyślnych."}
 }

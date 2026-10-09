@@ -48,6 +48,9 @@
   "mod_autosell": {"message":"Auto-sell"},
   "mod_autologin": {"message":"Auto-login"},
   "popupNoGame": {"message":"Open Tanoth in a tab to control the bot."},
+  "popupReloadGame": {"message":"Reload the game tab (the extension was updated)."},
+  "popupPickHero": {"message":"Hero to control"},
+  "popupUnknownHero": {"message":"Hero"},
   "popupShowPanel": {"message":"Show panel"},
   "popupNoChar": {"message":"Waiting for character data..."},
   "logInjectReady": {"message":"Network hook installed."},
@@ -336,5 +339,11 @@
   "optv_uncommon": {"message":"Uncommon"},
   "optv_rare": {"message":"Rare"},
   "optv_epic": {"message":"Epic"},
-  "optv_legendary": {"message":"Legendary"}
+  "optv_legendary": {"message":"Legendary"},
+  "optHeroLabel": {"message":"Settings for"},
+  "optHeroDefault": {"message":"Default (new heroes)"},
+  "optHeroForget": {"message":"Forget this hero"},
+  "optHeroForgetConfirm": {"message":"Delete this hero's saved settings? He will start from the defaults next time."},
+  "logHeroSettings": {"message":"Using the saved settings of $1."},
+  "logHeroNew": {"message":"New hero $1 - settings created from the defaults."}
 }

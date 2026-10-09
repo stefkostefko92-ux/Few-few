@@ -74,3 +74,6 @@ footer .linkbtn { font-size: 12.5px; padding: 0 var(--s-2); overflow-wrap: break
   @keyframes aurora-settle { from { transform: translate3d(-5%, 4%, 0) scale(1.18) rotate(-5deg); } to { transform: none; } }
   @keyframes shapes-settle { from { transform: translate3d(3%, -2%, 0) scale(1.06); } to { transform: none; } }
 }
+
+/* Hero picker: shown only when several game tabs are open and none is in front. */
+.hero-pick { width: 100%; min-height: 36px; margin-bottom: var(--s-3); font-weight: 600; }

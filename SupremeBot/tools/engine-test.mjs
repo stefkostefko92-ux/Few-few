@@ -314,7 +314,9 @@ await test('active-hours: loop-induced pause is auto-resumed by heartbeat', asyn
   // Close the window: the LOOP (not the heartbeat) must detect it and pause
   // in a way the heartbeat can undo later.
   e.TB.Storage._set(mergeSettings({ general: { enabled: true, humanize: false }, scheduler: { enabled: true, activeFrom: closed, activeTo: closedTo } }));
-  await e.advance(5000);
+  // An idle loop no longer re-checks every 2 s; it notices within its 30 s
+  // safety check (a real settings change also nudges it immediately).
+  await e.advance(31000);
   assert.equal(e.TB.Scheduler.isPaused(), true, 'paused outside the active window');
   // Reopen the window and fire the heartbeat: it must auto-resume.
   e.TB.Storage._set(mergeSettings({ general: { enabled: true, humanize: false }, scheduler: { enabled: false } }));
@@ -584,6 +586,42 @@ await test('guild: a refused donation backs off instead of retrying every cycle'
   e.TB.Scheduler.start();
   await e.advance(4 * 60 * 1000);
   assert.equal(attempts, 1, `one refused donation, then back-off (got ${attempts})`);
+});
+
+await test('timers: the next action fires right after the game timer ends (no delay set)', async () => {
+  const e = freshEngine({ settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false } } });
+  const end = e.nowMs() + 60700;                      // hero busy 60.7 s (not on any poll grid)
+  e.TB.State.patch({ adventureReturnAt: end });
+  let firedAt = 0;
+  e.TB.Scheduler.register({ id: 'probe', priority: 1, tick: () => (e.TB.State.get().adventureReturnAt > e.nowMs() || firedAt ? null : async () => { firedAt = e.nowMs(); }) });
+  e.TB.Scheduler.start();
+  await e.advance(59000);
+  assert.equal(firedAt, 0, 'nothing while the hero is busy');
+  await e.advance(2000);
+  assert.ok(firedAt >= end && firedAt - end <= 400, `fired ${firedAt - end} ms after the timer (want <= 400)`);
+});
+
+await test('timers: a busy hero is not polled every few seconds (sleeps to the timer)', async () => {
+  const e = freshEngine({ settings: { general: { enabled: true, humanize: true }, adventures: { enabled: false } } });
+  e.TB.State.patch({ adventureReturnAt: e.nowMs() + 10 * 60000 });   // 10-minute task
+  let ticks = 0;
+  e.TB.Scheduler.register({ id: 'probe', priority: 1, tick: () => { ticks++; return null; } });
+  e.TB.Scheduler.start();
+  await e.advance(10 * 60000 - 2000);
+  // Old loop: one pass every 8-9 s = ~70 passes. New: wakes at the timer, plus
+  // at most one 30 s safety check per window.
+  assert.ok(ticks <= 22, `only ${ticks} evaluation passes in 10 minutes`);
+});
+
+await test('timers: the "Next action in" target equals the real wake time', async () => {
+  const e = freshEngine({ settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false } } });
+  const end = e.nowMs() + 90000;
+  e.TB.State.patch({ adventureReturnAt: end });
+  e.TB.Scheduler.register({ id: 'probe', priority: 1, tick: () => null });
+  e.TB.Scheduler.start();
+  await e.advance(1000);
+  const next = e.TB.Scheduler.status().nextAt;
+  assert.ok(next <= end + 400, 'never planned past the timer');
 });
 
 console.log(`\n${pass} engine checks passed.`);

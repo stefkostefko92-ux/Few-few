@@ -18,6 +18,12 @@
   let currentAction = null;
   let lastAction = null;     // id of the most recent module that acted
   let nextAt = 0;            // epoch ms of the next scheduler evaluation
+  let lastActedAt = 0;       // when the last action finished (fixed interval is measured from here)
+  // With nothing to do and no known timer, re-check this often. It is only a
+  // safety net: every wait the bot knows about (task timer, cooldowns, energy
+  // regen) registers its exact end time, and the loop sleeps until then.
+  const IDLE_CHECK_MS = 30000;
+  let sleeping = false;      // true only while waiting in setTimeout (never mid-action)
 
   const statusListeners = new Set();
 
@@ -90,6 +96,17 @@
       if (g?.notifyOnStop) {
         TB.notify?.({ message: I18n.t('notifyStopped') + (reason ? `: ${reason}` : ''), level: 'warn' });
       }
+    },
+
+    // Something the bot waits on changed (task ended early, gold arrived): if
+    // the loop is asleep, re-evaluate now instead of at the planned wake.
+    // Never interrupts an action in progress (that could fire two at once).
+    nudge() {
+      if (!running || paused || !sleeping || nextAt - Date.now() < 1000) return;
+      clearTimeout(loopHandle);
+      sleeping = false;
+      loopGen++;
+      loop(loopGen);
     },
 
     // A module waiting on a cooldown calls this so the loop re-evaluates it
@@ -191,6 +208,7 @@
   }
 
   async function loop(gen) {
+    sleeping = false;
     const alive = () => gen === loopGen && running && !paused;
     if (!alive()) return;
 
@@ -202,8 +220,12 @@
     }
     if (!breaksEnabled()) onBreakUntil = 0;          // disabling breaks ends any current one
     if (Date.now() < onBreakUntil || maybeTakeBreak()) {
-      nextAt = Date.now() + 5000;
-      loopHandle = setTimeout(() => loop(gen), 5000);
+      // Sleep to the end of the break (re-checked at least every 30 s so that
+      // switching breaks off or Stop is honoured promptly).
+      const d = Math.max(500, Math.min(onBreakUntil - Date.now(), IDLE_CHECK_MS));
+      nextAt = Date.now() + d;
+      sleeping = true;
+      loopHandle = setTimeout(() => loop(gen), d);
       return;
     }
 
@@ -259,29 +281,36 @@
         }
         if (!alive()) return;
         acted = true;
+        lastActedAt = Date.now();
         break; // one action per cycle
       }
     }
 
-    // Between actions: the humanized delay (or spam when humanize is off).
-    // When nothing was actionable, idle - but if a module registered a precise
-    // wake (e.g. a map/pvp cooldown end), sleep exactly until then so it resends
-    // the moment the cooldown is over rather than on the next idle poll.
+    // Between actions: the humanized delay (or spam when humanize is off), or
+    // the user's fixed interval.
+    // When nothing was actionable: sleep until the EARLIEST real timer - the
+    // game's own task timer (adventure / work / mission / cave), a module
+    // cooldown or the energy regen - and act almost immediately after it ends.
+    // No more re-checking every few seconds while the hero is busy for 14 min.
     const g = Storage.section('general') || {};
-    // A fixed, user-programmed interval between actions overrides the humanized
-    // delay entirely (0 = auto: humanize / spam as before).
     const fixed = Math.max(0, Number(g.actionIntervalSec) || 0) * 1000;
     let delay;
     if (acted) {
       delay = fixed > 0 ? Math.max(300, fixed) : humanDelay();
     } else {
-      delay = fixed > 0 ? Math.max(300, fixed) : (g.humanize ? Math.max(8000, humanDelay() * 2) : 2000);
-      if (wakeAt) {
-        const floor = g.humanize ? 800 : 200;
-        delay = Math.min(delay, Math.max(floor, wakeAt - Date.now()));
-      }
+      const now = Date.now();
+      const busyUntil = Number(TB.State?.get().adventureReturnAt) || 0;
+      if (busyUntil > now) Scheduler.wakeAt(busyUntil);
+      // "Almost immediately" after the timer: a beat, so the server has
+      // closed the task; humanize adds a short random human-ish reaction.
+      const margin = g.humanize ? 300 + Math.round(Math.random() * 900) : 250;
+      let at = wakeAt ? wakeAt + margin : now + IDLE_CHECK_MS;
+      // A user-set interval is a minimum gap between actions, also here.
+      if (fixed > 0) at = Math.max(at, lastActedAt + fixed);
+      delay = Math.max(g.humanize ? 300 : 150, Math.min(at - now, IDLE_CHECK_MS));
     }
     nextAt = Date.now() + delay;
+    sleeping = true;
     loopHandle = setTimeout(() => loop(gen), delay);
   }
 

@@ -92,7 +92,7 @@
     async tick() {
       const c = cfg();
       if (!c.enabled || !Api.ready()) return null;
-      if (Date.now() < cooldownUntil) return null;
+      if (Date.now() < cooldownUntil) { Scheduler.wakeAt(cooldownUntil); return null; }
 
       return async () => {
         const circle = await Api.getCircle();

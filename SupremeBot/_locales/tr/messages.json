@@ -48,6 +48,9 @@
   "mod_autosell": {"message":"Oto-satış"},
   "mod_autologin": {"message":"Oto-giriş"},
   "popupNoGame": {"message":"Botu kontrol etmek için Tanoth'u bir sekmede açın."},
+  "popupReloadGame": {"message":"Oyun sekmesini yenileyin (eklenti güncellendi)."},
+  "popupPickHero": {"message":"Kontrol edilecek kahraman"},
+  "popupUnknownHero": {"message":"Kahraman"},
   "popupShowPanel": {"message":"Paneli göster"},
   "popupNoChar": {"message":"Karakter verisi bekleniyor..."},
   "logInjectReady": {"message":"Ağ kancası kuruldu."},
@@ -336,5 +339,11 @@
   "optv_uncommon": {"message":"Az bulunur"},
   "optv_rare": {"message":"Nadir"},
   "optv_epic": {"message":"Destansı"},
-  "optv_legendary": {"message":"Efsanevi"}
+  "optv_legendary": {"message":"Efsanevi"},
+  "optHeroLabel": {"message":"Ayarlar:"},
+  "optHeroDefault": {"message":"Varsayılan (yeni kahramanlar)"},
+  "optHeroForget": {"message":"Bu kahramanı unut"},
+  "optHeroForgetConfirm": {"message":"Bu kahramanın kayıtlı ayarları silinsin mi? Bir dahaki sefere varsayılanlarla başlar."},
+  "logHeroSettings": {"message":"$1 için kayıtlı ayarlar kullanılıyor."},
+  "logHeroNew": {"message":"Yeni kahraman $1 - ayarlar varsayılanlardan oluşturuldu."}
 }

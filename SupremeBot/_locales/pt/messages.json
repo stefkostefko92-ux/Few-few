@@ -48,6 +48,9 @@
   "mod_autosell": {"message":"Venda automática"},
   "mod_autologin": {"message":"Login automático"},
   "popupNoGame": {"message":"Abre o Tanoth num separador para controlar o bot."},
+  "popupReloadGame": {"message":"Recarrega o separador do jogo (a extensão foi atualizada)."},
+  "popupPickHero": {"message":"Herói a controlar"},
+  "popupUnknownHero": {"message":"Herói"},
   "popupShowPanel": {"message":"Mostrar painel"},
   "popupNoChar": {"message":"A aguardar dados da personagem..."},
   "logInjectReady": {"message":"Interceptor de rede instalado."},
@@ -336,5 +339,11 @@
   "optv_uncommon": {"message":"Pouco comum"},
   "optv_rare": {"message":"Raro"},
   "optv_epic": {"message":"Épico"},
-  "optv_legendary": {"message":"Lendário"}
+  "optv_legendary": {"message":"Lendário"},
+  "optHeroLabel": {"message":"Definições de"},
+  "optHeroDefault": {"message":"Predefinição (heróis novos)"},
+  "optHeroForget": {"message":"Esquecer este herói"},
+  "optHeroForgetConfirm": {"message":"Apagar as definições guardadas deste herói? Da próxima vez começa pelas predefinições."},
+  "logHeroSettings": {"message":"A usar as definições guardadas de $1."},
+  "logHeroNew": {"message":"Novo herói $1 - definições criadas a partir das predefinições."}
 }
