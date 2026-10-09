@@ -54,3 +54,37 @@ test('снимка: качване, привързване към въпроса
   expect(attachment.scanStatus).toBe('CLEAN');
   expect(attachment.caseMessageId).not.toBeNull();
 });
+
+/**
+ * Без съвместим източник моделът не се вика (AC-04) — привързаната снимка остава неанализирана и
+ * отговорът го казва видимо (не само в свитите подробности на Gate).
+ */
+test('снимка без съвместим източник: отговорът казва, че не е анализирана', async ({
+  page,
+  context,
+}) => {
+  const user = await newPortalUser('Paolo Senza Fonte');
+  await cookieLogin(context, user);
+  await page.goto('/');
+
+  await page.getByRole('button', { name: 'Nuovo caso' }).first().click();
+  const dialog = page.getByRole('dialog', { name: 'Nuovo caso' });
+  await dialog.getByLabel('Modello').fill('LTX-500');
+  await dialog.getByRole('button', { name: 'Crea caso' }).click();
+
+  const chooser = page.waitForEvent('filechooser');
+  await page.getByRole('button', { name: 'Scegli dalla galleria' }).click();
+  await (
+    await chooser
+  ).setFiles({ name: 'quadro.jpg', mimeType: 'image/jpeg', buffer: jpegSized(1600, 1200) });
+  await expect(page.getByRole('list', { name: 'File da inviare' })).toContainText(
+    'Controllato e pronto',
+  );
+
+  await page.getByLabel('Descriva cosa vede sul quadro').fill('Che cosa vede nella foto?');
+  await page.getByRole('button', { name: 'Invia' }).click();
+
+  const answer = page.getByRole('log', { name: 'Conversazione' }).getByRole('article').last();
+  await expect(answer.locator('.blk-unread')).toContainText('Allegati non analizzati');
+  await expect(answer.locator('.blk-photos')).toHaveCount(0);
+});

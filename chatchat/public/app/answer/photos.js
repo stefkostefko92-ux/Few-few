@@ -1,8 +1,8 @@
 // Снимките (§9.2): допълващо доказателство, никога източник — отделно от източниците, без E… значки.
 
 import { h } from '../dom.js';
-import { t, tMaybeCode } from '../i18n.js';
-import { arr, block, str } from './util.js';
+import { t, tCode, tMaybeCode } from '../i18n.js';
+import { arr, block, icon, str } from './util.js';
 
 const labelled = (label, values) =>
   values.length ? h('p', { class: 'small' }, `${label}: `, values.join(' · ')) : null;
@@ -43,6 +43,20 @@ export function photoItem(ph) {
 }
 
 export function appendPhotos(root, { p }) {
+  // Привързан файл, който моделът НЕ видя (няма съвместим източник → моделът не се вика, AC-04):
+  // видимо в отговора, не само в свитите подробности на Gate — иначе техникът мисли, че е анализиран.
+  const unread = arr(p.modelInputs?.notSent).some(
+    (n) => n?.reason === 'gate.attachment.notAnalyzed',
+  );
+  if (unread) {
+    root.append(
+      block(
+        null,
+        'blk-unread',
+        h('p', null, icon('info'), ' ', tCode('gate.attachment.notAnalyzed')),
+      ),
+    );
+  }
   const photos = arr(p.photos);
   if (!photos.length) return;
   root.append(
