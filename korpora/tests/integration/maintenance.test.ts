@@ -12,14 +12,14 @@ after(stopApp);
 const DAY = 86_400_000;
 const daysAgo = (days: number) => new Date(Date.now() - days * DAY);
 
-test('sign-in records, devices, sign-up fingerprint and audit IPs are erased after the retention period, and only then', async () => {
+test('sign-in records, devices, sign-up device hash and audit IPs are erased after the retention period, and only then', async () => {
   const keptEmail = 'retention-kept@example.test';
   const goneEmail = 'retention-gone@example.test';
   await customer(keptEmail);
   await customer(goneEmail);
   const kept = await prisma.user.findUniqueOrThrow({ where: { email: keptEmail } });
   const gone = await prisma.user.findUniqueOrThrow({ where: { email: goneEmail } });
-  assert.ok(kept.signupDeviceHash && kept.signupFingerprint, 'sign-up fingerprint is stored first');
+  assert.ok(kept.signupDeviceHash, 'the sign-up device cookie hash is stored first');
 
   const outside = daysAgo(LOGIN_RETENTION_DAYS + 1);
   const inside = daysAgo(LOGIN_RETENTION_DAYS - 1);
@@ -50,7 +50,6 @@ test('sign-in records, devices, sign-up fingerprint and audit IPs are erased aft
   assert.equal(await prisma.device.count({ where: { userId: gone.id } }), 0, 'devices erased');
   const goneAfter = await prisma.user.findUniqueOrThrow({ where: { id: gone.id } });
   assert.equal(goneAfter.signupDeviceHash, null);
-  assert.equal(goneAfter.signupFingerprint, null);
   assert.equal(
     await prisma.auditLog.count({ where: { actorId: gone.id, ip: { not: null } } }),
     0,
@@ -70,7 +69,7 @@ test('sign-in records, devices, sign-up fingerprint and audit IPs are erased aft
     'devices inside the term stay',
   );
   const keptAfter = await prisma.user.findUniqueOrThrow({ where: { id: kept.id } });
-  assert.ok(keptAfter.signupDeviceHash && keptAfter.signupFingerprint, 'fingerprint stays');
+  assert.ok(keptAfter.signupDeviceHash, 'the device cookie hash stays');
   assert.ok(
     await prisma.auditLog.count({ where: { actorId: kept.id, ip: '203.0.113.7' } }),
     'audit IPs inside the term stay',
