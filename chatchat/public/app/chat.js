@@ -161,7 +161,11 @@ async function send() {
     attempt = null;
     tray.clearSent();
     if (state.currentId === caseId && state.current) {
-      state.current.messages.push(data.message, data.answer);
+      // Повторът връща вече записаното — без дубликати по id и без празен отговор.
+      const known = new Set(state.current.messages.map((m) => m?.id));
+      for (const m of [data.message, data.answer]) {
+        if (m && !known.has(m.id)) state.current.messages.push(m);
+      }
       renderMessages({ scroll: 'answer' });
       const ans = data.answer;
       const blocked = ans?.payload?.safety?.level === 'blocked';
@@ -174,7 +178,7 @@ async function send() {
     refreshCases();
   } catch (err) {
     pendingText = null;
-    // Разговорът остава: презареждаме го; ако съобщението не е записано — връщаме текста.
+    // Разговорът остава: презареждаме го (записаното съобщение се вижда веднъж).
     try {
       const fresh = await api('GET', `/cases/${encodeURIComponent(caseId)}`);
       if (state.currentId === caseId) {
@@ -182,15 +186,19 @@ async function send() {
           case: fresh.case,
           messages: Array.isArray(fresh.messages) ? fresh.messages : [],
         };
-        const saved = [...state.current.messages].reverse().find((m) => m.kind === 'HUMAN');
-        if (!saved || saved.body !== text) area.value = text;
       }
     } catch {
-      area.value = text;
+      /* без опресняване: текстът се връща по-долу така или иначе */
     }
+    // Текстът се връща винаги и със СЪЩИЯ clientMessageId (`attempt` остава): ако съобщението е
+    // записано, повторното „Изпрати“ пита AI за него, без да го дублира (AC-12).
+    area.value = text;
     renderMessages({ scroll: 'end' });
+    const aiDown = err.code === 'ai_unavailable' || err.status === 503;
     composerError(
-      err.code === 'ai_unavailable' || err.status === 503 ? t('chat.unavailable') : errorText(err),
+      aiDown || err.code === 'ai_in_progress'
+        ? `${aiDown ? t('chat.unavailable') : errorText(err)} ${t('chat.retrySame')}`
+        : errorText(err),
     );
   } finally {
     setBusy(false);

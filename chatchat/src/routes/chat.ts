@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, type CaseMessage } from '@prisma/client';
 import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { z } from 'zod';
@@ -20,6 +20,7 @@ import {
 } from '../services/attachments.js';
 import { loadModelAttachments } from '../services/model-inputs.js';
 import { saveAiAnswer } from '../services/ai-answer.js';
+import { claimAi, findPrior, type PriorMessage } from '../services/chat-replay.js';
 import { addTimeline, contextOf, findCaseFor, isUniqueOn } from '../services/cases.js';
 import { caseAudience, notify } from '../services/collab/notify.js';
 
@@ -99,46 +100,138 @@ export function chatRouter(deps: WiredDeps): Router {
         if (!c) return apiError(res, 404, 'not_found');
         if (c.status === 'RESOLVED') return apiError(res, 409, 'case_closed');
 
-        /** Повтор със същия clientMessageId: вече записаното, без ново извикване (NFR-12). */
-        const replay = async (id: string) => {
-          const prior = await deps.db.caseMessage.findUnique({
-            where: { caseId_clientMessageId: { caseId: c.id, clientMessageId: id } },
-          });
-          if (!prior) return false;
-          // Отговорът на ТОВА съобщение: първият AI след него, но преди следващото човешко —
-          // иначе повтор на съобщение без AI (askAi=false) би взел чужд, по-късен отговор.
-          const next = await deps.db.caseMessage.findFirst({
-            where: { caseId: c.id, kind: 'HUMAN', createdAt: { gt: prior.createdAt } },
-            orderBy: { createdAt: 'asc' },
-            select: { createdAt: true },
-          });
-          const answer = await deps.db.caseMessage.findFirst({
-            where: {
-              caseId: c.id,
-              kind: 'AI',
-              createdAt: { gte: prior.createdAt, ...(next ? { lt: next.createdAt } : {}) },
-            },
-            orderBy: { createdAt: 'asc' },
-          });
-          const files = await attachmentsByMessage(deps.db, p.user.tenantId, [prior.id]);
+        const sendPrior = (found: PriorMessage) =>
           res.json({
-            message: messageView(prior, files.get(prior.id)),
-            answer: answer ? messageView(answer) : null,
+            message: messageView(found.prior, found.files),
+            answer: found.answer ? messageView(found.answer) : null,
           });
-          return true;
-        };
-        if (clientMessageId && (await replay(clientMessageId))) return;
 
         const audiences = caseAudiences(p.user.role, c.portal);
-        // Историята към модела — без AI отговори, търсени с аудитории, които питащият няма.
-        const history = (
-          await deps.db.caseMessage.findMany({
-            where: { caseId: c.id, kind: { in: ['HUMAN', 'AI'] } },
-            orderBy: { createdAt: 'desc' },
-            take: HISTORY_MESSAGES,
-            select: { kind: true, body: true, audiences: true },
-          })
-        ).filter((h) => h.kind !== 'AI' || coversAudiences(audiences, h.audiences));
+        // Заключване, останало от сринал се процес, не е статус за връщане.
+        const restoreStatus = c.status === 'AI_IN_PROGRESS' ? 'OPEN' : c.status;
+        /**
+         * AI стъпката за вече записано човешко съобщение (ново или повтор след провал). Случаят е
+         * вече заключен с claimAi; при провал се връща предишният статус.
+         */
+        const answerWith = async (
+          message: CaseMessage,
+          question: string,
+          files: MessageAttachment[],
+          created: 200 | 201,
+        ) => {
+          const diagnose = deps.diagnose;
+          if (!diagnose) {
+            await deps.db.case.update({ where: { id: c.id }, data: { status: restoreStatus } });
+            return apiError(res, 503, 'ai_unavailable');
+          }
+          // Историята към модела — без AI отговори, търсени с аудитории, които питащият няма.
+          const history = (
+            await deps.db.caseMessage.findMany({
+              where: { caseId: c.id, kind: { in: ['HUMAN', 'AI'] } },
+              orderBy: { createdAt: 'desc' },
+              take: HISTORY_MESSAGES,
+              select: { id: true, kind: true, body: true, audiences: true },
+            })
+          ).filter(
+            (h) =>
+              h.id !== message.id && (h.kind !== 'AI' || coversAudiences(audiences, h.audiences)),
+          );
+          // Само файловете на ТОВА съобщение (вече CLEAN и в същия случай — bindToMessage).
+          const modelFiles =
+            files.length > 0
+              ? await loadModelAttachments(
+                  deps.db,
+                  deps.attachments?.store ?? null,
+                  p.user.tenantId,
+                  message.id,
+                )
+              : undefined;
+          const controller = new AbortController();
+          res.on('close', () => {
+            if (!res.writableEnded) controller.abort();
+          });
+          let result;
+          try {
+            result = await diagnose(
+              {
+                scope: { tenantId: p.user.tenantId, audiences },
+                context: contextOf(c),
+                question,
+                history: history.reverse().map((h) => ({
+                  role: h.kind === 'AI' ? ('assistant' as const) : ('user' as const),
+                  content: h.body,
+                })),
+                locale: (LOCALES.has(p.user.locale) ? p.user.locale : 'it') as 'it' | 'en' | 'bg',
+                ...(modelFiles ? { attachments: modelFiles } : {}),
+              },
+              controller.signal,
+            );
+          } catch (err) {
+            await deps.db.case.update({ where: { id: c.id }, data: { status: restoreStatus } });
+            await appendAudit(deps.db, {
+              tenantId: p.user.tenantId,
+              actorId: p.user.id,
+              action: 'ai.error',
+              objectType: 'case',
+              objectId: c.id,
+              detail: { name: err instanceof Error ? err.name : 'unknown' },
+            });
+            // Само вид и код — тялото на грешката от доставчика може да носи части от заявката.
+            deps.logger.warn(
+              {
+                caseId: c.id,
+                errName: err instanceof Error ? err.name : 'unknown',
+                status:
+                  typeof err === 'object' && err !== null && 'status' in err ? err.status : null,
+              },
+              'AI извикването се провали',
+            );
+            return apiError(res, 503, 'ai_unavailable');
+          }
+
+          const aiMessage = await saveAiAnswer(deps.db, {
+            c,
+            tenantId: p.user.tenantId,
+            actorId: p.user.id,
+            audiences,
+            result,
+          });
+          // FR-18: нов AI отговор в собствен случай — за създателя/поелия, ако не е питал сам.
+          await notify(
+            deps,
+            caseAudience(c, p.user.id).map((userId) => ({
+              tenantId: c.tenantId,
+              userId,
+              eventType: 'case.ai_answer' as const,
+              objectType: 'case' as const,
+              objectId: c.id,
+              payload: { caseId: c.id, number: c.number, messageId: aiMessage.id },
+            })),
+            null,
+          );
+          return res
+            .status(created)
+            .json({ message: messageView(message, files), answer: messageView(aiMessage) });
+        };
+
+        if (clientMessageId) {
+          const found = await findPrior(deps.db, p.user.tenantId, c.id, clientMessageId);
+          if (found) {
+            // AC-12: AI е паднал (503, скъсана връзка) → повторът пита модела за СЪЩОТО
+            // съобщение, без второ човешко. Само авторът и само за последното му съобщение.
+            const retry =
+              askAi &&
+              !found.answer &&
+              found.latest &&
+              found.prior.kind === 'HUMAN' &&
+              found.prior.authorId === p.user.id &&
+              deps.diagnose !== null;
+            if (!retry) return sendPrior(found);
+            if (!(await claimAi(deps.db, c.id))) return apiError(res, 409, 'ai_in_progress');
+            return await answerWith(found.prior, found.prior.body, found.files, 200);
+          }
+        }
+
         let message;
         try {
           message = await deps.db.$transaction(async (tx) => {
@@ -167,12 +260,10 @@ export function chatRouter(deps: WiredDeps): Router {
         } catch (err) {
           if (err instanceof InvalidAttachments) return apiError(res, 422, 'invalid_attachment');
           // Паралелен повтор със същия clientMessageId — първият печели, останалите го виждат.
-          if (
-            clientMessageId &&
-            isUniqueOn(err, 'clientMessageId') &&
-            (await replay(clientMessageId))
-          )
-            return;
+          if (clientMessageId && isUniqueOn(err, 'clientMessageId')) {
+            const found = await findPrior(deps.db, p.user.tenantId, c.id, clientMessageId);
+            if (found) return sendPrior(found);
+          }
           throw err;
         }
 
@@ -184,84 +275,8 @@ export function chatRouter(deps: WiredDeps): Router {
           return res.status(201).json({ message: messageView(message, files), answer: null });
         }
         if (!deps.diagnose) return apiError(res, 503, 'ai_unavailable');
-
-        // Само файловете на ТОВА съобщение (вече CLEAN и в същия случай — bindToMessage).
-        const modelFiles =
-          files.length > 0
-            ? await loadModelAttachments(
-                deps.db,
-                deps.attachments?.store ?? null,
-                p.user.tenantId,
-                message.id,
-              )
-            : undefined;
-        await deps.db.case.update({ where: { id: c.id }, data: { status: 'AI_IN_PROGRESS' } });
-        const controller = new AbortController();
-        res.on('close', () => {
-          if (!res.writableEnded) controller.abort();
-        });
-        let result;
-        try {
-          result = await deps.diagnose(
-            {
-              scope: { tenantId: p.user.tenantId, audiences },
-              context: contextOf(c),
-              question: text,
-              history: history.reverse().map((h) => ({
-                role: h.kind === 'AI' ? ('assistant' as const) : ('user' as const),
-                content: h.body,
-              })),
-              locale: (LOCALES.has(p.user.locale) ? p.user.locale : 'it') as 'it' | 'en' | 'bg',
-              ...(modelFiles ? { attachments: modelFiles } : {}),
-            },
-            controller.signal,
-          );
-        } catch (err) {
-          await deps.db.case.update({ where: { id: c.id }, data: { status: c.status } });
-          await appendAudit(deps.db, {
-            tenantId: p.user.tenantId,
-            actorId: p.user.id,
-            action: 'ai.error',
-            objectType: 'case',
-            objectId: c.id,
-            detail: { name: err instanceof Error ? err.name : 'unknown' },
-          });
-          // Само вид и код — тялото на грешката от доставчика може да носи части от заявката.
-          deps.logger.warn(
-            {
-              caseId: c.id,
-              errName: err instanceof Error ? err.name : 'unknown',
-              status:
-                typeof err === 'object' && err !== null && 'status' in err ? err.status : null,
-            },
-            'AI извикването се провали',
-          );
-          return apiError(res, 503, 'ai_unavailable');
-        }
-
-        const aiMessage = await saveAiAnswer(deps.db, {
-          c,
-          tenantId: p.user.tenantId,
-          actorId: p.user.id,
-          audiences,
-          result,
-        });
-        // FR-18: нов AI отговор в собствен случай — за създателя/поелия, ако не е питал сам.
-        await notify(
-          deps,
-          caseAudience(c, p.user.id).map((userId) => ({
-            tenantId: c.tenantId,
-            userId,
-            eventType: 'case.ai_answer' as const,
-            objectType: 'case' as const,
-            objectId: c.id,
-            payload: { caseId: c.id, number: c.number, messageId: aiMessage.id },
-          })),
-          null,
-        );
-        res
-          .status(201)
-          .json({ message: messageView(message, files), answer: messageView(aiMessage) });
+        if (!(await claimAi(deps.db, c.id))) return apiError(res, 409, 'ai_in_progress');
+        await answerWith(message, text, files, 201);
       } catch (err) {
         next(err);
       }

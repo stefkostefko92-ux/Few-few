@@ -982,5 +982,7 @@
   "tl.d.ticket": "Номер {number}",
   "fb.rating.USEFUL": "Полезен",
   "fb.rating.NOT_USEFUL": "Не е полезен",
-  "fb.rating.TECHNICAL_ERROR": "Техническа грешка"
+  "fb.rating.TECHNICAL_ERROR": "Техническа грешка",
+  "err.ai_in_progress": "AI асистентът още отговаря по този случай. Изчакайте отговора и опитайте отново.",
+  "chat.retrySame": "Текстът е върнат в полето: „Изпрати“ пита AI отново за същото съобщение, без да го повтаря."
 }

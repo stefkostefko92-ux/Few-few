@@ -982,5 +982,7 @@
   "tl.d.ticket": "Numero {number}",
   "fb.rating.USEFUL": "Utile",
   "fb.rating.NOT_USEFUL": "Non utile",
-  "fb.rating.TECHNICAL_ERROR": "Errore tecnico"
+  "fb.rating.TECHNICAL_ERROR": "Errore tecnico",
+  "err.ai_in_progress": "L’assistente AI sta ancora rispondendo su questo caso. Attenda la risposta e riprovi.",
+  "chat.retrySame": "Il testo è di nuovo nel campo: „Invia“ ripete la domanda all’AI per lo stesso messaggio, senza duplicarlo."
 }
