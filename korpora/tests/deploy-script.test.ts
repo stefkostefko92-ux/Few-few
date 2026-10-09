@@ -109,7 +109,9 @@ test('a deploy also drops dumps older than 30 days (snapshots before a restore: 
       utimesSync(join(backups, name), at, at);
     };
     aged('pre-deploy-20260101-000000.sql.gz', 90);
-    aged('pre-deploy-20260801-000000.sql.gz', 32);
+    // 30 days less a day is the limit, as in backup.sh (its timer runs once a day)
+    aged('pre-deploy-20260801-000000.sql.gz', 29.1);
+    aged('pre-deploy-20260810-000000.sql.gz', 28.9);
     aged('pre-deploy-20260920-000000.sql.gz', 20);
     aged('notes.txt', 90);
     aged('pre-deploy-notes.txt', 90);
@@ -122,6 +124,10 @@ test('a deploy also drops dumps older than 30 days (snapshots before a restore: 
     assert.equal(r.status, 0, r.stderr);
     const left = readdirSync(backups).filter((n) => n !== 'daily');
     assert.ok(left.includes('pre-deploy-20260920-000000.sql.gz'), 'a recent one stays');
+    assert.ok(
+      left.includes('pre-deploy-20260810-000000.sql.gz'),
+      'still within 30 days less a day',
+    );
     for (const foreign of ['notes.txt', 'pre-deploy-notes.txt'])
       assert.ok(left.includes(foreign), `${foreign}: foreign files are not touched`);
     assert.ok(left.includes('pre-restore-20260815-000000.dump.age'), 'as old as a daily backup');
@@ -131,7 +137,7 @@ test('a deploy also drops dumps older than 30 days (snapshots before a restore: 
     assert.ok(left.includes('pre-restore-20260815-000000.dump.age.sha256'), left.join(' '));
     assert.ok(!left.includes('pre-deploy-20260101-000000.sql.gz'), left.join(' '));
     assert.ok(!left.includes('pre-deploy-20260801-000000.sql.gz'), left.join(' '));
-    assert.equal(left.filter((n) => /^pre-deploy-\d/.test(n)).length, 2, 'and the new dump');
+    assert.equal(left.filter((n) => /^pre-deploy-\d/.test(n)).length, 3, 'and the new dump');
   });
 });
 

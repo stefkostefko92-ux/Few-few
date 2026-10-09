@@ -216,12 +216,12 @@ test('the dumps before a deploy go after 30 days and the snapshots before a rest
       const at = new Date(Date.now() - days * 86_400_000);
       utimesSync(file, at, at);
     };
-    // the unencrypted dumps: 30 days; the snapshots: the timer runs once a day, so past 8 weeks less a
-    // day nothing outlives the 8 weeks of the policy
-    put('pre-deploy-19990101-000001.sql.gz', 31.5);
+    // the timer runs once a day: past 30 days (the unencrypted dumps) or 8 weeks (the snapshots) less a day,
+    // nothing outlives the periods of the policy
+    put('pre-deploy-19990101-000001.sql.gz', 29.1);
     put('pre-restore-19990101-000001.dump.age', 55.1);
     put('pre-restore-19990101-000001.dump.age.sha256', 55.1);
-    put('pre-deploy-19990101-000002.sql.gz', 20);
+    put('pre-deploy-19990101-000002.sql.gz', 28.9);
     put('pre-restore-19990101-000002.dump.age', 54.9);
     put('notes.txt', 100);
     // no recipient: no backup is made, but the old dumps still go

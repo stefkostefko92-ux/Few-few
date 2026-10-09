@@ -139,11 +139,11 @@ backup_db() {
   find "$dir" -maxdepth 1 -name 'pre-deploy-*.sql.gz' -printf '%T@ %p\n' | sort -rn |
     tail -n "+$((KEEP_BACKUPS + 1))" | cut -d' ' -f2- | xargs -r rm -f
   # Таван и по възраст: при рядък деплой петте дъмпа (некриптирани) иначе стигат месеци назад и изтрит
-  # акаунт остава в тях — трият се по-старите от $PREDEPLOY_DAYS дни (освен току-що направения), а
+  # акаунт остава в тях — трият се по-старите от $PREDEPLOY_DAYS дни без един (освен току-що направения), а
   # шифрованите снимки преди --live възстановяване (backup-restore.sh) и сумите им — по-старите от
   # $BACKUP_WEEKS седмици без един ден, колкото обещава политиката. Между два деплоя същото налага дневният
   # korpora-backup (backup.sh, expire_snapshots) — без изключението за най-новия дъмп.
-  find "$dir" -maxdepth 1 -type f \( \( -name 'pre-deploy-*.sql.gz' -mtime "+$PREDEPLOY_DAYS" ! -name "$(basename "$file")" \) \
+  find "$dir" -maxdepth 1 -type f \( \( -name 'pre-deploy-*.sql.gz' -mmin "+$(((PREDEPLOY_DAYS - 1) * 1440))" ! -name "$(basename "$file")" \) \
     -o \( \( -name 'pre-restore-*.dump.age' -o -name 'pre-restore-*.dump.age.sha256' \) \
     -mmin "+$(((BACKUP_WEEKS * 7 - 1) * 1440))" \) \) -delete ||
     warn "старите дъмпове в $dir не се изтриха докрай — провери правата"
