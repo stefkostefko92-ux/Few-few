@@ -1,0 +1,50 @@
+[Unit]
+# ChatChat — дневният шифрован бекъп: базата + прикачените файлове (deploy/backup.sh →
+# /usr/local/sbin/chatchat-backup). Слага го deploy/timers-install.sh при всеки деплой; пътят
+# /opt/few-few/shared/chatchat се сменя там с CHATCHAT_SHARED. Пуска го chatchat-backup.timer.
+# Лог: journalctl -u chatchat-backup -n 50
+Description=ChatChat — шифрован бекъп на базата и прикачените файлове
+Documentation=file:///opt/few-few/current/chatchat/DEPLOY.md
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/chatchat-backup
+Environment=CHATCHAT_SHARED=/opt/few-few/shared/chatchat
+TimeoutStartSec=2h
+Nice=10
+IOSchedulingClass=idle
+UMask=0077
+
+# --- Пясъчник ---
+# Върви като root заради сокета на docker. Единствената capability е ЧЕТЕНЕ през чужди права
+# (CAP_DAC_READ_SEARCH): прикачените файлове са на uid 1000 (node в контейнера), mode 700 — без нея root
+# без capabilities не влиза в папката. Писане в чужди файлове (CAP_DAC_OVERRIDE) няма. Пише само в
+# папката с дневните бекъпи (създава я deploy-ът — без нея systemd не пуска unit-а); мрежа не му трябва —
+# docker е през unix сокет.
+CapabilityBoundingSet=CAP_DAC_READ_SEARCH
+AmbientCapabilities=
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/opt/few-few/shared/chatchat/backups/daily
+ReadWritePaths=-/run/docker.sock
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+ProtectProc=invisible
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@mount @swap @reboot
+RestrictAddressFamilies=AF_UNIX
+IPAddressDeny=any

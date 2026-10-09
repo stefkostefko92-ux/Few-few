@@ -1,11 +1,12 @@
-# ChatChat в продукция: база + приложение.
+# ChatChat в продукция: база (PostgreSQL 16 + pgvector) + антивирус (ClamAV) + приложение.
 #
 # TLS и публичният вход са на nginx-а на ХОСТА (Let's Encrypt) — конфигът е
 # `deploy/nginx/chatchat.carbonstealth.eu.conf` в това репо, не се пише на ръка на сървъра.
 #
 # Тайните НЕ са тук — идват от `.env` до този файл (mode 600 на сървъра, никога в репото).
 # Задължителни: POSTGRES_PASSWORD (openssl rand -hex 32 — влиза некодирана в DATABASE_URL) ·
-# SESSION_PEPPER (openssl rand -hex 32) · PUBLIC_BASE_URL. За AI: VERTEX_PROJECT_ID + GCP_SA_FILE.
+# SESSION_PEPPER (openssl rand -hex 32) · ATTACHMENT_URL_KEY и MFA_ENC_KEY (openssl rand -base64 32) ·
+# PUBLIC_BASE_URL. За AI: VERTEX_PROJECT_ID + GCP_SA_FILE. Образецът и описанието — `.env.example`.
 # В контейнера влиза само изброеното в `environment:` — нова настройка от `.env` се добавя и там.
 name: chatchat
 
@@ -15,19 +16,31 @@ x-logging: &logging
     max-size: '10m'
     max-file: '3'
 
-# Двата контейнера: файловата система е само за четене (пише се само в тома и в tmpfs), без Linux
-# capabilities (базата пази само нужните ѝ, за да смени собственика на данните и потребителя), без
-# придобиване на права (no-new-privileges), с таван на памет, процесор и процеси.
+# Всички контейнери: файловата система е само за четене (пише се само в томовете и в tmpfs), без Linux
+# capabilities (базата и антивирусът пазят само нужните им, за да сменят собственика на данните и
+# потребителя), без придобиване на права (no-new-privileges), с таван на памет, процесор и процеси.
 x-hardening: &hardening
   read_only: true
   security_opt:
     - no-new-privileges:true
   pids_limit: 256
 
+# Мрежите: `backend` е вътрешна (internal: true — без изход навън и без публикувани портове); в нея са
+# и трите услуги. Базата е САМО там. `default` има изход навън: приложението (Vertex AI, публикуваният
+# порт на 127.0.0.1) и антивирусът (freshclam тегли сигнатурите от database.clamav.net).
+networks:
+  backend:
+    internal: true
+  default: {}
+
 services:
   db:
-    # закован по digest (същият като в korpora); обновяване: `docker buildx imagetools inspect postgres:16-alpine`
-    image: postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
+    # PostgreSQL 16 + разширението vector (семантичното търсене; миграцията прави CREATE EXTENSION vector).
+    # Debian (glibc), закован по digest на индекса (amd64 + arm64); тагът pg16 сочи същия digest.
+    # Обновяване: `docker buildx imagetools inspect pgvector/pgvector:<версия>-pg16` → новият Digest тук
+    # и в .github/workflows/chatchat.yml. Преминаването от postgres:16-alpine го прави deploy/deploy.sh
+    # (еднократен REINDEX заради смяната musl → glibc, DEPLOY.md, т. 11).
+    image: pgvector/pgvector:0.8.7-pg16@sha256:7b822b0aac60967beb1ea5e576b8602c94c300a157d187f385ae3e0da199b90a
     <<: *hardening
     cap_drop: [ALL]
     cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
@@ -43,12 +56,57 @@ services:
       POSTGRES_DB: chatchat
     volumes:
       - db-data:/var/lib/postgresql/data
-    # Без `ports:` — базата е достъпна само от мрежата на проекта, не и от хоста или отвън.
+    # Без `ports:` и само във вътрешната мрежа — базата не се вижда нито от хоста, нито отвън.
+    networks: [backend]
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U chatchat -d chatchat']
       interval: 10s
       timeout: 5s
       retries: 5
+    logging: *logging
+
+  clamav:
+    # Официалният образ на ClamAV (Cisco Talos), Debian вариантът — индексът е за amd64 И arm64
+    # (Alpine вариантът е само amd64). Закован по digest; тагът 1.5.4-debian сочи същия.
+    # Обновяване: `docker buildx imagetools inspect clamav/clamav:<версия>-debian` → новият Digest тук.
+    image: clamav/clamav:1.5.4-debian@sha256:9bb8712a50f0e75166e936c452cd82dd5e5be0b85586598930b5bbb84a99a578
+    <<: *hardening
+    cap_drop: [ALL]
+    # /init тече като root: chown на базата сигнатури, после freshclam/clamd сменят потребителя на clamav.
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
+    tmpfs:
+      # /run/clamav и /run/lock; /tmp — локалният сокет и временните файлове при сканиране; дневникът.
+      - /run:size=8m
+      - /tmp:size=128m
+      - /var/log/clamav:size=16m,mode=1777
+    # clamd с пълната база държи ~1 GB (измерено: 962 MiB, 1.5.4, 09.10.2026); с ConcurrentDatabaseReload
+    # no (deploy/clamav/clamd.conf) презареждането след ъпдейт не я удвоява. Таванът 2 GB е с резерв за
+    # растежа на базата и за сканиранията — DEPLOY.md, „ClamAV“.
+    mem_limit: 2g
+    cpus: 1
+    restart: unless-stopped
+    stop_grace_period: 30s
+    environment:
+      # Проверки за нови сигнатури на денонощие (freshclam --checks); огледалата на ClamAV ограничават
+      # по-честите заявки.
+      FRESHCLAM_CHECKS: '4'
+    volumes:
+      # Сигнатурите (~110 MB) — в том, за да не се теглят наново при всяко пресъздаване на контейнера.
+      # Нов том се пълни от базата, вградена в образа (по-стара) — clamd тръгва и без мрежа, freshclam я обновява.
+      - clamav-db:/var/lib/clamav
+      # deploy/clamav/clamd.conf от репото — deploy/deploy.sh го слага на СТАБИЛНИЯ път (не в release
+      # папката: там пътят се сменя с всеки release и compose би пресъздавал clamav при всеки деплой).
+      - ${CHATCHAT_SHARED:-/opt/few-few/shared/chatchat}/clamd.conf:/etc/clamav/clamd.conf:ro
+    # Без `ports:` — 3310 е достъпен само за приложението през вътрешната мрежа на проекта.
+    networks: [backend, default]
+    healthcheck:
+      # Скриптът на образа: PING → PONG на 3310. Зареждането на базата е 1–2 минути (повече на бавен
+      # диск) — затова дългият start_period (дотогава неуспешна проверка не брои).
+      test: ['CMD', 'clamdcheck.sh']
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 10m
     logging: *logging
 
   app:
@@ -77,6 +135,19 @@ services:
       # Един прокси отпред (nginx на хоста). Портът е публикуван през Docker: приложението вижда шлюза
       # на мрежата като пряк събеседник, а nginx презаписва X-Forwarded-For с истинския адрес.
       TRUST_PROXY: ${TRUST_PROXY:-1}
+      # Прикачени файлове (F2): антивирусът е услугата clamav (само вътрешната мрежа); файловете са в
+      # тома по-долу — единственото записваемо място на приложението освен /tmp.
+      CLAMAV_HOST: clamav
+      CLAMAV_PORT: '3310'
+      ATTACHMENTS_DIR: /data/attachments
+      # Подписът на краткотрайните адреси за сваляне на прикачен файл. Смяната обезсилва издадените адреси.
+      ATTACHMENT_URL_KEY: ${ATTACHMENT_URL_KEY:?липсва ATTACHMENT_URL_KEY}
+      # Шифроването на MFA (TOTP) тайните в базата. Смяната = всички MFA устройства се записват наново.
+      MFA_ENC_KEY: ${MFA_ENC_KEY:?липсва MFA_ENC_KEY}
+      # Семантично търсене (pgvector) — по избор; празно → само точното и пълнотекстовото търсене.
+      # Имената се сверяват със src/config.ts (празен низ трябва да значи „не е зададено“).
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-}
+      EMBEDDING_REGION: ${EMBEDDING_REGION:-}
       # AI — само Vertex AI в ЕС. Празен VERTEX_PROJECT_ID → AI е изключен, /chat/messages връща 503.
       VERTEX_PROJECT_ID: ${VERTEX_PROJECT_ID:-}
       VERTEX_REGION: ${VERTEX_REGION:-eu}
@@ -92,11 +163,19 @@ services:
       # JSON ключът на service account-а — само за четене, извън репото и образа. Без GCP_SA_FILE се
       # монтира /dev/null и променливата по-горе остава празна (Google ADC — на Hetzner няма такива).
       - ${GCP_SA_FILE:-/dev/null}:/run/secrets/gcp-sa.json:ro
+      # Прикачените файлове — папка на ХОСТА извън release-а (оцелява деплоя, бекъпва се дневно с
+      # базата от същия път). Собственик uid 1000 (node в образа), mode 700 — прави я deploy/deploy.sh.
+      - ${CHATCHAT_SHARED:-/opt/few-few/shared/chatchat}/attachments:/data/attachments
     ports:
       - '127.0.0.1:${HTTP_PORT:-4330}:4330'
+    networks: [backend, default]
     depends_on:
       db: { condition: service_healthy }
+      # Само „пуснат“, не „здрав“: зареждането на сигнатурите е минути, а без антивирус
+      # приложението пак работи — нов файл остава непоказан (PENDING/FAILED), докато clamd не го провери.
+      clamav: { condition: service_started }
     logging: *logging
 
 volumes:
   db-data:
+  clamav-db:

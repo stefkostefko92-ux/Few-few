@@ -1,0 +1,14 @@
+[Unit]
+# Всеки ден в 03:17 UTC — след бекъпа (02:45), за да е в него и последното преди триенето.
+Description=ChatChat — дневна ретенция (03:17 UTC)
+Documentation=file:///opt/few-few/current/chatchat/DEPLOY.md
+
+[Timer]
+OnCalendar=*-*-* 03:17:00 UTC
+Persistent=true
+RandomizedDelaySec=5min
+AccuracySec=1min
+Unit=chatchat-retention.service
+
+[Install]
+WantedBy=timers.target
