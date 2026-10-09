@@ -24,6 +24,9 @@ export const POSTS = {
   grbl: { id: 'grbl', name: 'GRBL (хоби, ръчна смяна на инструмента)', version: 'grbl-2.1' },
 };
 
+// The name of a sheet's CNC file — one rule for cnc.zip, project.zip (under cnc/) and the CNC tab: sheet-01.nc.
+export const cncFileName = (index, ext) => `sheet-${String(index).padStart(2, '0')}.${ext}`;
+
 // Finished-part (u, v) → cut-part offset (edge band) → placement on the sheet (with rotation).
 function placer(part, pl, compensate) {
   const cut = cutSize(part, compensate);

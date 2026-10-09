@@ -86,9 +86,9 @@ function cncFiles(b: Built, m: Machining): Record<string, Buffer> {
   const out: Record<string, Buffer> = {};
   const meta = { ...b.meta, sheetCount: m.nesting.sheets.length };
   for (const sheet of m.nesting.sheets) {
-    const n = String(sheet.index).padStart(2, '0');
-    out[`sheet-${n}.dxf`] = text(api.toDxf(b.model, sheet).text);
-    out[`sheet-${n}.nc`] = text(api.toGcode(b.model, sheet, meta).text);
+    // името идва от двигателя — същото показва и разделът CNC в редактора
+    out[api.cncFileName(sheet.index, 'dxf')] = text(api.toDxf(b.model, sheet).text);
+    out[api.cncFileName(sheet.index, 'nc')] = text(api.toGcode(b.model, sheet, meta).text);
   }
   return out;
 }

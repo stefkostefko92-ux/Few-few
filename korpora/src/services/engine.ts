@@ -92,6 +92,8 @@ interface EngineApi {
   cncBlockers(model: EngineModel, nesting: EngineNesting): string[];
   toGcode(model: EngineModel, sheet: EngineSheet, meta: DrawingMeta): { text: string };
   toDxf(model: EngineModel, sheet: EngineSheet): { text: string; layers: string[] };
+  /** Името на файла за CNC на един лист (`sheet-01.nc`) — същото в архивите и в раздела CNC. */
+  cncFileName(index: number, ext: 'nc' | 'dxf'): string;
   /** Номерът на фрезата за каналите в G-кода (`GROOVE_MILL`); другите фрези са за контура. */
   grooveToolId: string;
   /** Листът и броят листове в рамката идват от двигателя (`drawingSheets`). */
@@ -241,6 +243,7 @@ export async function loadEngine(catalogPath?: string): Promise<void> {
     cncBlockers: fn(cam, 'cncBlockers'),
     toGcode: fn(cam, 'toGcode'),
     toDxf: fn(dxf, 'toDxf'),
+    cncFileName: fn(cam, 'cncFileName'),
     grooveToolId: grooveMill.id,
     drawingAssembly: fn(assembly, 'drawingAssembly'),
     drawingSheets: fn(part, 'drawingSheets'),
