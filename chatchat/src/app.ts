@@ -9,6 +9,7 @@ import { TotpReplayGuard } from './auth/mfa.js';
 import { loadPrincipal, onSessionsRevoked, type SessionDeps } from './auth/sessions.js';
 import { RealtimeHub } from './realtime/hub.js';
 import { eventsRouter } from './realtime/stream.js';
+import { adminListsRouter } from './routes/admin-lists.js';
 import { adminCatalogRouter } from './routes/admin-catalog.js';
 import { adminDocumentsRouter } from './routes/admin-documents.js';
 import { adminErrorsRouter } from './routes/admin-errors.js';
@@ -156,6 +157,9 @@ export function createApp(appDeps: AppDeps): express.Express {
   app.use('/api/v1', adminUserActionsRouter(deps, totpReplay));
   app.use('/api/v1', adminSubjectRouter(deps, totpReplay));
   app.use('/api/v1', savedFiltersRouter(deps));
+  // Списъците (GET) — преди рутерите на знанието: фирмите са и за users:manage, а тяхното
+  // `router.use` иска kb:manage за всичко под /admin.
+  app.use('/api/v1/admin', adminListsRouter(deps));
   app.use('/api/v1/admin', adminCatalogRouter(deps));
   app.use('/api/v1/admin', adminDocumentsRouter(deps));
   app.use('/api/v1/admin', adminErrorsRouter(deps));

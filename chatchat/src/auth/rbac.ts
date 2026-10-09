@@ -110,6 +110,11 @@ export function roleRank(role: Role): number {
   return role === 'PLATFORM_ADMIN' ? 2 : role === 'TENANT_ADMIN' ? 1 : 0;
 }
 
+/** Способностите на ролята — UI ги ползва за навигацията (сървърът пак проверява всяко действие). */
+export function capabilitiesFor(role: Role): readonly Capability[] {
+  return CAPABILITIES[role];
+}
+
 export function can(role: Role, capability: Capability): boolean {
   return CAPABILITIES[role].includes(capability);
 }

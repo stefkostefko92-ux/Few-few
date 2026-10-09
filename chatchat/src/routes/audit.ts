@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client';
 import { Router } from 'express';
 import { z } from 'zod';
 import type { AppDeps } from '../app.js';
@@ -17,23 +18,48 @@ export const LOGIN_AUDIT_ACTIONS = [
   'auth.mfa_failed',
 ] as const;
 
+const short = z.string().trim().min(1).max(60);
+const isoDate = z.iso.datetime({ offset: true }).transform((v) => new Date(v));
+
+/** Филтрите на одита: само по изброените полета (`.strict()`), всички по избор. */
+const AuditQuery = z
+  .object({
+    before: z.coerce.number().int().positive().optional(),
+    /** Префикс на действието („kb.“, „user.admin_update“). */
+    action: short.optional(),
+    objectType: short.optional(),
+    objectId: z.string().trim().min(1).max(40).optional(),
+    actorId: z.string().trim().min(1).max(40).optional(),
+    from: isoDate.optional(),
+    to: isoDate.optional(),
+  })
+  .strict();
+
 /** §14.1 GET /audit — одитът на клиента, отзад напред, с курсор. */
 export function auditRouter(deps: AppDeps): Router {
   const router = Router();
   // Способността е на самия маршрут: рутерът е монтиран на /api/v1 и не бива да спира чужди пътища.
   router.get('/audit', requireUser, requireCapability('audit:read'), async (req, res, next) => {
     try {
-      const q = z
-        .object({ before: z.coerce.number().int().positive().optional() })
-        .safeParse(req.query);
+      const q = AuditQuery.safeParse(req.query);
       if (!q.success) return apiError(res, 400, 'invalid_input');
       const p = principalOf(req);
-      const where =
-        p.user.role === 'PLATFORM_ADMIN'
-          ? {}
-          : { tenantId: p.user.tenantId, action: { notIn: [...LOGIN_AUDIT_ACTIONS] } };
+      const f = q.data;
+      // Филтрите на потребителя СЕ ДОБАВЯТ към ограничението на ролята (AND), никога не го заместват:
+      // администраторът на клиента не стига до входовете и с `action=auth.`.
+      const and: Prisma.AuditEventWhereInput[] = [];
+      if (p.user.role !== 'PLATFORM_ADMIN') {
+        and.push({ tenantId: p.user.tenantId, action: { notIn: [...LOGIN_AUDIT_ACTIONS] } });
+      }
+      if (f.before) and.push({ id: { lt: f.before } });
+      if (f.action) and.push({ action: { startsWith: f.action } });
+      if (f.objectType) and.push({ objectType: f.objectType });
+      if (f.objectId) and.push({ objectId: f.objectId });
+      if (f.actorId) and.push({ actorId: f.actorId });
+      if (f.from) and.push({ at: { gte: f.from } });
+      if (f.to) and.push({ at: { lt: f.to } });
       const events = await deps.db.auditEvent.findMany({
-        where: { ...where, ...(q.data.before ? { id: { lt: q.data.before } } : {}) },
+        where: { AND: and },
         orderBy: { id: 'desc' },
         take: 100,
       });

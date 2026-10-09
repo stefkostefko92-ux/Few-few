@@ -3,6 +3,7 @@ import { rateLimit } from 'express-rate-limit';
 import { z } from 'zod';
 import type { AppDeps } from '../app.js';
 import { appendAudit } from '../audit.js';
+import { capabilitiesFor } from '../auth/rbac.js';
 import { apiError, requireCsrf, requireSameOrigin, requireSession } from '../auth/guards.js';
 import {
   dummyHash,
@@ -110,7 +111,12 @@ export function authRouter(deps: AppDeps): Router {
 
   router.get('/me', requireSession, (req, res) => {
     const p = req.principal as Principal;
-    res.json({ user: publicUser(p.user), csrfToken: p.session.csrfToken, mfa: p.mfa });
+    res.json({
+      user: publicUser(p.user),
+      csrfToken: p.session.csrfToken,
+      mfa: p.mfa,
+      capabilities: capabilitiesFor(p.user.role),
+    });
   });
 
   router.post('/logout', requireSession, requireCsrf(deps.publicOrigin), async (req, res, next) => {
