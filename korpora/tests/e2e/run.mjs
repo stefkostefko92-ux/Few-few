@@ -21,6 +21,16 @@ const VIEWPORTS = {
 };
 const PUBLIC = ['/', '/privacy', '/terms', '/login', '/register', '/forgot', '/no-such-page'];
 const CUSTOMER = ['/app', '/account', '/account/plan', '/account/security', '/account/data'];
+// sent empty, these forms answer in the page's language under the field (public/js/forms.js), not in the
+// browser's bubble — the browser here speaks English, the page does not
+const CHECKED_FORMS = ['/login', '/forgot'];
+const REQUIRED = Object.fromEntries(
+  LOCALES.map((l) => [
+    l,
+    JSON.parse(readFileSync(new URL(`../../locales/${l}/forms.json`, import.meta.url), 'utf8')).form
+      .required,
+  ]),
+);
 // a page that is not ready in this time is a finding for that screen, not a five-minute stall of the run
 const READY_MS = 30000;
 // unique per run: cleanup finds the project by name even if the editor never opened
@@ -61,6 +71,10 @@ async function check(browser, storageState, path, locale, scheme, viewport) {
     });
     await page.evaluate(AXE);
     const violations = await axe(page, null);
+    if (CHECKED_FORMS.includes(path)) {
+      violations.push(...(await sentEmpty(page, locale)));
+      for (const v of await axe(page, null)) violations.push(`after an empty submit: ${v}`);
+    }
     // the editor's picker (a listbox of hundreds of decors) is a dialog: checked open, on its own
     if (path.startsWith('/app/p/')) {
       await page.click('#pick-carcass');
@@ -84,6 +98,25 @@ const axe = (page, selector) =>
       ),
     [selector, TAGS],
   );
+
+// the first field takes the focus, is marked invalid and is described by the message under it, in the page's language
+async function sentEmpty(page, locale) {
+  await page.click('main form.form button[type=submit]');
+  await page.locator('main .field-error').first().waitFor({ timeout: READY_MS });
+  const seen = await page.evaluate(() => {
+    const field = document.activeElement;
+    const note = (field?.getAttribute('aria-describedby') ?? '')
+      .split(/\s+/)
+      .map((id) => id && document.getElementById(id))
+      .find((el) => el && el.classList.contains('field-error'));
+    return { invalid: field?.getAttribute('aria-invalid'), text: note?.textContent.trim() ?? '' };
+  });
+  const found = [];
+  if (seen.invalid !== 'true') found.push('empty submit: the focused field is not marked invalid');
+  if (seen.text !== REQUIRED[locale])
+    found.push(`empty submit: „${seen.text}“ instead of „${REQUIRED[locale]}“`);
+  return found;
+}
 
 const firstLine = (err) => (err instanceof Error ? err.message : String(err)).split('\n')[0];
 

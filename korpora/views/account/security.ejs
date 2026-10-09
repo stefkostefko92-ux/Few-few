@@ -58,7 +58,7 @@
         <form method="post" action="/account/security/2fa/confirm" class="form">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <input type="hidden" name="setup" value="<%= setup.sealed %>">
-          <div class="field"><label for="tfa-code"><%= t('security.confirmCode') %></label><input id="tfa-code" name="code" type="text" class="code-input" inputmode="numeric" autocomplete="one-time-code" required maxlength="6" pattern="[0-9]{6}"<% if (setupError) { %> aria-invalid="true" aria-describedby="tfa-error" autofocus<% } %>>
+          <div class="field"><label for="tfa-code"><%= t('security.confirmCode') %></label><input id="tfa-code" name="code" type="text" class="code-input" inputmode="numeric" autocomplete="one-time-code" required maxlength="6" pattern="[0-9]{6}" data-invalid="<%= t('auth.twofaText') %>"<% if (setupError) { %> aria-invalid="true" aria-describedby="tfa-error" autofocus<% } %>>
             <% if (setupError) { %><p class="field-error" id="tfa-error" role="alert"><%- include('../partials/icon', { name: 'alert' }) %><span><%= t(setupError) %> <%= t('security.sameKey') %></span></p><% } %></div>
           <div class="actions"><button class="btn btn-primary" type="submit"><%= t('security.enableButton') %></button></div>
         </form>
