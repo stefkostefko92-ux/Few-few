@@ -8,6 +8,7 @@
     "saveFailed": "Non salvato. Riprovate.",
     "catalogFailed": "Il catalogo non si è caricato, quindi il progetto è aperto solo in lettura: altrimenti la sua ferramenta e le sue finiture cambierebbero in silenzio con quelle di base. Ricaricate la pagina.",
     "engineFailed": "Questo valore non si può calcolare ed è tornato quello precedente. Provatene un altro; se l'errore resta, scriveteci.",
+    "openFailed": "Il progetto non si può calcolare, quindi è aperto solo in lettura. Ricaricate la pagina; se l'errore resta, scriveteci.",
     "showFailed": "Il progetto non si può mostrare. Ricaricate la pagina; se l'errore resta, scriveteci.",
     "driftTitle": "Una parte del progetto non è più nel catalogo",
     "driftText": "L'editor mostra il sostituto indicato qui sotto. Scegliete di nuovo oppure salvate il progetto così com'è: fino ad allora i file CNC non si scaricano e i disegni riportano la nota che non sono per la produzione.",

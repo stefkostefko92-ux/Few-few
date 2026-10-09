@@ -124,13 +124,15 @@ async function recompute(writeFocused = false) {
     bom = buildBom(model);
     blockers = cncBlockers(model, nesting);
   } catch {
-    // a value the engine cannot build is undone, so it is never saved; a first load has nothing to fall back to
-    showError(text.engineFailed);
-    if (!state.model) lockForReadingOnce(text.engineFailed);
-    else {
-      state.spec = state.model.spec;
-      writeForm(form, state.spec, true);
+    // a first load has nothing to fall back to: the project opens for reading only (no value was changed)
+    if (!state.model) {
+      lockForReadingOnce(text.openFailed);
+      return;
     }
+    // a value the engine cannot build is undone, so it is never saved
+    showError(text.engineFailed);
+    state.spec = state.model.spec;
+    writeForm(form, state.spec, true);
     return;
   }
   try {
@@ -267,7 +269,7 @@ function lockForReadingOnce(message) {
   if (locked) return;
   locked = true;
   readOnly = true;
-  lockForReading(message);
+  lockForReading(message, text.readOnlyState);
 }
 
 /* ---------- boot ---------- */
