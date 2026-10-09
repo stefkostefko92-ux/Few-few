@@ -23,3 +23,18 @@ test('не пипа кодове, сериини номера, версии и �
     assert.equal(redactPii(text), text);
   }
 });
+
+test('линейно време: дълъг низ без „@“ или с цифри не блокира процеса', () => {
+  for (const text of [
+    'a'.repeat(64_000),
+    '12-'.repeat(21_000),
+    '1'.repeat(64_000),
+    'a.'.repeat(32_000),
+  ]) {
+    const t0 = performance.now();
+    redactPii(text);
+    assert.ok(performance.now() - t0 < 250, `бавно за ${text.slice(0, 6)}…`);
+  }
+  // Имейлът в поредица от разрешени знаци пак се маскира — от началото на поредицата.
+  assert.equal(redactPii(`x_${email}`).includes(email), false);
+});

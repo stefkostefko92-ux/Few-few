@@ -35,6 +35,7 @@ function showLogin(message) {
   stopWorkspace();
   resetQuickResponses();
   resetChat();
+  show($('#btn-admin'), false);
   showScreen('login');
   const err = $('#login-error');
   err.textContent = message ?? '';
@@ -66,9 +67,23 @@ function showSetup() {
   mountMfaSetup($('#setup-host'), { onDone: () => showApp() });
 }
 
+/** Връзка към конзолата само за ролите с административна способност (сървърът пак проверява). */
+const ADMIN_CAPS = ['users:manage', 'kb:manage', 'audit:read'];
+
+async function showAdminLink() {
+  try {
+    const me = await api('GET', '/auth/me');
+    const caps = Array.isArray(me?.capabilities) ? me.capabilities : [];
+    show($('#btn-admin'), caps.some((c) => ADMIN_CAPS.includes(c)));
+  } catch {
+    show($('#btn-admin'), false);
+  }
+}
+
 async function showApp() {
   $('#user-name').textContent = state.user?.name ?? '';
   showScreen('app');
+  void showAdminLink();
   app().dataset.view = 'cases';
   app().dataset.main = 'case';
   renderContext();
