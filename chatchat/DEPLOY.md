@@ -103,7 +103,8 @@ sudo bash /opt/few-few/releases/<час>/<корен>/chatchat/deploy/deploy.sh
 Какво прави `deploy.sh`, по ред:
 
 1. `.env` от `/opt/few-few/shared/chatchat/.env` (няма го → изход 3); липсващите F2 ключове (т. 1);
-   папката `attachments/` (uid 1000, mode 700); `clamd.conf` от репото на стабилния път.
+   папката `attachments/` (uid 1000, mode 700); папката `eval-reports/` (755, монтирана само за четене);
+   `clamd.conf` от репото на стабилния път.
 2. `docker compose build app`; образите на db и clamav се теглят **само ако ги няма** (по digest).
 3. **Бекъп на базата преди миграцията** (`shared/chatchat/backups/pre-deploy-<час>.sql.gz`, последните 5)
    — без валиден дъмп няма миграция (изход 1).

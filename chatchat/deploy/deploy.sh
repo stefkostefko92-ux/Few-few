@@ -95,6 +95,12 @@ ensure_attachments() {
   install -d -m 700 -o 1000 -g 1000 "$SHARED/attachments"
 }
 
+# Отчетите на оценъчния набор (evals/) за KPI таблото: root ги копира, приложението само чете (755 +
+# :ro в compose). Без папката Docker би я създал сам — тук правата са явни.
+ensure_eval_reports() {
+  install -d -m 755 "$SHARED/eval-reports"
+}
+
 # Конфигът на clamd от репото → стабилния път, който compose монтира. Промяна → clamd се рестартира след
 # `up` (чете конфига само при старт; файлът е монтиран, compose не вижда промяната сам).
 CLAMD_CHANGED=0
@@ -309,6 +315,7 @@ main() {
   sync_env
   ensure_keys
   ensure_attachments
+  ensure_eval_reports
   sync_clamd_conf
   check_db_password
   port="$(env_value HTTP_PORT | tr -dc '0-9')"

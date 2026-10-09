@@ -159,6 +159,9 @@ services:
       AI_MAX_TOOL_ROUNDS: ${AI_MAX_TOOL_ROUNDS:-4}
       # Под proxy_read_timeout в nginx конфига (120 s); config.ts не пуска над 115000.
       AI_TIMEOUT_MS: ${AI_TIMEOUT_MS:-60000}
+      # Отчетите на оценъчния набор (evals/, §16.1) за KPI таблото — само за четене. Оценката не върви
+      # в образа (тестова база + tsx); отчетите (*.json) се копират ръчно в $CHATCHAT_SHARED/eval-reports.
+      EVAL_REPORTS_DIR: /data/eval-reports
     volumes:
       # JSON ключът на service account-а — само за четене, извън репото и образа. Без GCP_SA_FILE се
       # монтира /dev/null и променливата по-горе остава празна (Google ADC — на Hetzner няма такива).
@@ -166,6 +169,8 @@ services:
       # Прикачените файлове — папка на ХОСТА извън release-а (оцелява деплоя, бекъпва се дневно с
       # базата от същия път). Собственик uid 1000 (node в образа), mode 700 — прави я deploy/deploy.sh.
       - ${CHATCHAT_SHARED:-/opt/few-few/shared/chatchat}/attachments:/data/attachments
+      # Отчетите на оценъчния набор — само за четене (празна папка → метриките са „изисква оценка“).
+      - ${CHATCHAT_SHARED:-/opt/few-few/shared/chatchat}/eval-reports:/data/eval-reports:ro
     ports:
       - '127.0.0.1:${HTTP_PORT:-4330}:4330'
     networks: [backend, default]

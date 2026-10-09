@@ -101,6 +101,7 @@ test("пръв деплой: ключовете се раждат в shared/.env
   assert.doesNotMatch(r.stderr + r.log, /ATTACHMENT_URL_KEY=|MFA_ENC_KEY=/, "стойностите не се печатат");
   assert.equal(readFileSync(join(L.app, ".env"), "utf8"), env, "release-ът носи същия .env");
   assert.equal(mode(join(L.shared, "attachments")), "700");
+  assert.equal(mode(join(L.shared, "eval-reports")), "755", "отчетите на оценката — само за четене от приложението");
   assert.equal(readFileSync(join(L.shared, "clamd.conf"), "utf8"), readFileSync(join(L.app, "deploy", "clamav", "clamd.conf"), "utf8"));
   assert.doesNotMatch(r.log, /pg_dump|REINDEX/, "няма том — няма бекъп и REINDEX");
   assert.ok(existsSync(join(L.shared, ".db-pgvector")));
