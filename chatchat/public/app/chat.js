@@ -1,0 +1,213 @@
+import { api } from './api.js';
+import { answerSummaryText, renderAnswer } from './answer.js';
+import { $, announce, clear, h, show } from './dom.js';
+import { errorText } from './errors.js';
+import { openTicketDialog } from './context.js';
+import { openSource } from './docview.js';
+import { refreshCases } from './cases.js';
+import { getLang, t } from './i18n.js';
+import { on, state } from './store.js';
+
+const rated = new Map(); // messageId -> rating (за сесията на страницата)
+let pendingText = null; // текст, който се изпраща в момента (оптимистично показан)
+
+function fmtTime(iso) {
+  try {
+    return new Intl.DateTimeFormat(getLang(), {
+      hour: '2-digit',
+      minute: '2-digit',
+      day: '2-digit',
+      month: '2-digit',
+    }).format(new Date(iso));
+  } catch {
+    return '';
+  }
+}
+
+const onFeedback = async (messageId, rating) => {
+  await api('POST', '/feedback', { messageId, rating });
+  rated.set(messageId, rating);
+};
+
+function renderMessage(m) {
+  if (m.kind === 'AI') {
+    return renderAnswer(m, {
+      onOpenSource: openSource,
+      onOpenTicket: openTicketDialog,
+      onFeedback,
+      rated: (id) => rated.get(id) ?? null,
+    });
+  }
+  if (m.kind === 'SYSTEM') {
+    return h(
+      'div',
+      { class: 'msg msg-system' },
+      h('span', { class: 'sys-tag' }, t('chat.system')),
+      ' ',
+      String(m.body ?? ''),
+    );
+  }
+  return h(
+    'article',
+    { class: 'msg msg-human' },
+    h(
+      'header',
+      { class: 'msg-head' },
+      h('span', { class: 'who' }, m.authorName ? String(m.authorName) : t('chat.you')),
+      m.createdAt
+        ? h('time', { class: 'when', datetime: String(m.createdAt) }, fmtTime(m.createdAt))
+        : null,
+    ),
+    h('p', { class: 'msg-text' }, String(m.body ?? '')),
+  );
+}
+
+export function renderMessages({ scroll = 'keep' } = {}) {
+  const box = $('#messages');
+  const cur = state.current;
+  clear(box);
+  if (!cur) return;
+  const list = cur.messages;
+  if (!list.length && pendingText === null) {
+    box.append(h('p', { class: 'muted chat-hint' }, t('chat.empty')));
+  }
+  let lastAi = null;
+  for (const m of list) {
+    const el = renderMessage(m);
+    box.append(el);
+    if (m.kind === 'AI') lastAi = el;
+  }
+  if (pendingText !== null) {
+    box.append(
+      h(
+        'article',
+        { class: 'msg msg-human' },
+        h(
+          'header',
+          { class: 'msg-head' },
+          h('span', { class: 'who' }, state.user?.name ? String(state.user.name) : t('chat.you')),
+        ),
+        h('p', { class: 'msg-text' }, pendingText),
+      ),
+      h(
+        'div',
+        { class: 'msg msg-pending' },
+        h('span', { class: 'pending-bar', 'aria-hidden': 'true' }),
+        t('chat.waiting'),
+      ),
+    );
+  }
+  if (scroll === 'answer' && lastAi) lastAi.scrollIntoView({ block: 'start' });
+  else if (scroll === 'end') box.lastElementChild?.scrollIntoView({ block: 'end' });
+}
+
+function setBusy(busy) {
+  state.sending = busy;
+  $('#composer-send').disabled = busy;
+  $('#composer-text').readOnly = busy;
+  $('#composer').setAttribute('aria-busy', String(busy));
+  $('#composer-status').textContent = busy ? t('chat.waiting') : '';
+}
+
+function composerError(text) {
+  const el = $('#composer-error');
+  el.textContent = text;
+  show(el, text !== '');
+}
+
+async function send() {
+  const cur = state.current?.case;
+  const area = $('#composer-text');
+  const text = area.value.trim();
+  if (!cur || state.sending) return;
+  if (!text) {
+    area.focus();
+    return;
+  }
+  composerError('');
+  pendingText = text;
+  area.value = '';
+  setBusy(true);
+  renderMessages({ scroll: 'end' });
+  const caseId = cur.id;
+  try {
+    const data = await api('POST', '/chat/messages', { caseId, text }, { timeoutMs: 120000 });
+    pendingText = null;
+    if (state.currentId === caseId && state.current) {
+      state.current.messages.push(data.message, data.answer);
+      renderMessages({ scroll: 'answer' });
+      const ans = data.answer;
+      const blocked = ans?.payload?.safety?.level === 'blocked';
+      announce(
+        t('chat.newAnswer', {
+          summary: `${blocked ? t('ans.safety.blocked') + '. ' : ''}${answerSummaryText(ans?.payload) || String(ans?.body ?? '')}`,
+        }),
+      );
+    }
+    refreshCases();
+  } catch (err) {
+    pendingText = null;
+    // Разговорът остава: презареждаме го; ако съобщението не е записано — връщаме текста.
+    try {
+      const fresh = await api('GET', `/cases/${encodeURIComponent(caseId)}`);
+      if (state.currentId === caseId) {
+        state.current = {
+          case: fresh.case,
+          messages: Array.isArray(fresh.messages) ? fresh.messages : [],
+        };
+        const saved = [...state.current.messages].reverse().find((m) => m.kind === 'HUMAN');
+        if (!saved || saved.body !== text) area.value = text;
+      }
+    } catch {
+      area.value = text;
+    }
+    renderMessages({ scroll: 'end' });
+    composerError(
+      err.code === 'ai_unavailable' || err.status === 503 ? t('chat.unavailable') : errorText(err),
+    );
+  } finally {
+    setBusy(false);
+    refreshCases();
+  }
+}
+
+export function initChat() {
+  $('#composer').addEventListener('submit', (e) => {
+    e.preventDefault();
+    send();
+  });
+  $('#composer-text').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      send();
+    }
+  });
+
+  on('case:loading', () => {
+    show($('#chat-empty'), false);
+    show($('#chat-body'), true);
+    clear($('#messages')).append(h('p', { class: 'muted chat-hint' }, t('chat.loading')));
+    composerError('');
+  });
+  on('case:loaded', () => {
+    pendingText = null;
+    const last = state.current?.messages.at(-1);
+    renderMessages({ scroll: last?.kind === 'AI' ? 'answer' : 'end' });
+  });
+  on('case:error', (err) => {
+    clear($('#messages')).append(
+      h('p', { class: 'form-error' }, `${t('chat.loadError')} ${errorText(err)}`),
+    );
+  });
+  on('lang', () => {
+    if (state.current) renderMessages();
+    $('#composer-status').textContent = state.sending ? t('chat.waiting') : '';
+  });
+}
+
+export function resetChat() {
+  pendingText = null;
+  show($('#chat-empty'), true);
+  show($('#chat-body'), false);
+  clear($('#messages'));
+}
