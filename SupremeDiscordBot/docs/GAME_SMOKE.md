@@ -72,7 +72,11 @@
   Без искри → „costs ✨ N — you have ✨ M“. `/profile` показва новите статистики.
 - [ ] A и B с активни спътници. A: `/companion attack @B` → публичен embed, 3 кадъра за ~3 s,
   последният: „🏆 … wins!“ + награда (10 ✨ при равни; 15 ✨ ако B е по-силен; 0 при много по-
-  слаб) + „Attacks left today: 14“. Никой не е пингнат. Рекордът в `/companion info` се мени.
+  слаб) + „💔 … loses ✨ N (X % of their sparks)“ за загубилия (2 % при равни, по-малко срещу по-
+  силен, закръглено надолу — под 50 ✨ при равни е 0) + „Attacks left today: 14“. Никой не е
+  пингнат. Балансът на загубилия (`/profile`) е намалял точно с N; рекордът в `/companion info` се мени.
+- [ ] Защитникът плаща най-много 5 загуби за 24 ч: след петата платена → „keeps their sparks —
+  they already paid for 5 lost defenses today“.
 - [ ] Веднага пак `/companion attack @B` → ефимерно „next attack in 5 minutes“ (публичното „мисли…“
   изчезва). След 5 мин срещу B → „you fought @B recently“ (1 ч). Ако A е победил → C атакува B →
   „just lost a battle and has a shield“ (30 мин). `/companion attack @себе си` / бот → отказ.

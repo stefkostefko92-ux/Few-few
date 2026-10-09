@@ -830,7 +830,7 @@ export default {
   "game.quest.channel": "Canal de misiones del servidor",
   "game.quest.enabled": "Misiones semanales del servidor activas",
   "game.battles.enabled": "Batallas de compañeros activas",
-  "game.battles.hint": "Los miembros luchan con /companion attack y entrenan estadísticas con /companion train. Quien pierde no pierde nada; cualquiera puede salir con /companion pvp off.",
+  "game.battles.hint": "Los miembros luchan con /companion attack y entrenan estadísticas con /companion train. Quien pierde pierde el 1–3 % de sus chispas (menos contra un rival más fuerte); cualquiera puede salir con /companion pvp off.",
   "game.save": "Guardar",
   "game.saved": "Guardado.",
   "game.saveFailed": "No se pudo guardar.",

@@ -830,7 +830,7 @@ export default {
   "game.quest.channel": "Канал за сървърни куестове",
   "game.quest.enabled": "Седмични сървърни куестове включени",
   "game.battles.enabled": "Битки между спътници включени",
-  "game.battles.hint": "Членовете се бият с /companion attack и тренират статистики с /companion train. Загубилият не губи нищо; всеки може да излезе с /companion pvp off.",
+  "game.battles.hint": "Членовете се бият с /companion attack и тренират статистики с /companion train. Загубилият губи 1–3 % от искрите си (по-малко срещу по-силен противник); всеки може да излезе с /companion pvp off.",
   "game.save": "Запази",
   "game.saved": "Запазено.",
   "game.saveFailed": "Записът не успя.",

@@ -830,7 +830,7 @@ export default {
   "game.quest.channel": "Salon des quêtes du serveur",
   "game.quest.enabled": "Quêtes hebdomadaires du serveur activées",
   "game.battles.enabled": "Combats de compagnons activés",
-  "game.battles.hint": "Les membres combattent avec /companion attack et entraînent les statistiques avec /companion train. Le perdant ne perd rien ; chacun peut se retirer avec /companion pvp off.",
+  "game.battles.hint": "Les membres combattent avec /companion attack et entraînent les statistiques avec /companion train. Le perdant perd 1 à 3 % de ses étincelles (moins face à un adversaire plus fort) ; chacun peut se retirer avec /companion pvp off.",
   "game.save": "Enregistrer",
   "game.saved": "Enregistré.",
   "game.saveFailed": "L'enregistrement a échoué.",

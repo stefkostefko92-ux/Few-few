@@ -44,7 +44,7 @@ export const LANDING_TRANSLATIONS = {
       bullets: [
         "Нива по познатата крива на MEE6 и роли за награда — натрупващи се, само безопасни роли",
         "/daily искри със серия (×2 от 7-ия ден) и магазин с роли за период или ваши награди",
-        "60 оригинални спътника се появяват сами, докато хората пишат — улови, тренирай с искри и се бий с другите членове; загубилият не губи нищо",
+        "60 оригинални спътника се появяват сами, докато хората пишат — улови, тренирай с искри и се бий с другите членове; загубилият губи само 1–3 % от искрите си",
         "Седмични сървърни куестове, канал за броене и trivia — целият сървър играе като отбор",
       ],
       link: "Как работи играта →",
@@ -137,7 +137,7 @@ export const LANDING_TRANSLATIONS = {
       bullets: [
         "Level nach der bekannten MEE6-Kurve und Belohnungsrollen — kumulativ, nur sichere Rollen",
         "/daily-Funken mit Serie (×2 ab Tag 7) und ein Shop mit befristeten Rollen oder eigenen Belohnungen",
-        "60 originale Begleiter tauchen von selbst auf, während geschrieben wird — fangen, mit Funken trainieren, gegen andere kämpfen; wer verliert, verliert nichts",
+        "60 originale Begleiter tauchen von selbst auf, während geschrieben wird — fangen, mit Funken trainieren, gegen andere kämpfen; wer verliert, verliert nur 1–3 % der Funken",
         "Wöchentliche Server-Quests, ein Zählkanal und Trivia — der ganze Server spielt als Team",
       ],
       link: "So funktioniert das Spiel →",
@@ -230,7 +230,7 @@ export const LANDING_TRANSLATIONS = {
       bullets: [
         "Niveles con la curva conocida de MEE6 y roles de recompensa — acumulativos, solo roles seguros",
         "Chispas con /daily y racha (×2 desde el día 7) y una tienda con roles temporales o tus propias recompensas",
-        "60 compañeros originales aparecen solos mientras la gente escribe — atrápalos, entrénalos con chispas y lucha contra otros miembros; quien pierde no pierde nada",
+        "60 compañeros originales aparecen solos mientras la gente escribe — atrápalos, entrénalos con chispas y lucha contra otros miembros; quien pierde solo pierde el 1–3 % de sus chispas",
         "Misiones semanales del servidor, un canal de conteo y trivia — todo el servidor juega como un equipo",
       ],
       link: "Cómo funciona el juego →",
@@ -323,7 +323,7 @@ export const LANDING_TRANSLATIONS = {
       bullets: [
         "Des niveaux sur la courbe MEE6 bien connue et des rôles de récompense — cumulatifs, uniquement des rôles sûrs",
         "Des étincelles /daily avec série (×2 dès le 7e jour) et une boutique de rôles temporaires ou de vos propres récompenses",
-        "60 compagnons originaux apparaissent d'eux-mêmes pendant que les membres écrivent — attrape-les, entraîne-les et affronte les autres ; le perdant ne perd rien",
+        "60 compagnons originaux apparaissent d'eux-mêmes pendant que les membres écrivent — attrape-les, entraîne-les et affronte les autres ; le perdant ne perd que 1 à 3 % de ses étincelles",
         "Des quêtes de serveur hebdomadaires, un salon de comptage et du trivia — tout le serveur joue en équipe",
       ],
       link: "Comment fonctionne le jeu →",
@@ -416,7 +416,7 @@ export const LANDING_TRANSLATIONS = {
       bullets: [
         "Livelli con la nota curva di MEE6 e ruoli ricompensa — cumulativi, solo ruoli sicuri",
         "Scintille /daily con serie (×2 dal 7º giorno) e un negozio con ruoli a tempo o ricompense tue",
-        "60 compagni originali compaiono da soli mentre la gente scrive — catturali, allenali con le scintille e sfida gli altri membri; chi perde non perde nulla",
+        "60 compagni originali compaiono da soli mentre la gente scrive — catturali, allenali con le scintille e sfida gli altri membri; chi perde perde solo l'1–3 % delle scintille",
         "Missioni settimanali del server, un canale di conteggio e trivia — tutto il server gioca come una squadra",
       ],
       link: "Come funziona il gioco →",
@@ -509,7 +509,7 @@ export const LANDING_TRANSLATIONS = {
       bullets: [
         "Levels volgens de bekende MEE6-curve en beloningsrollen — cumulatief, alleen veilige rollen",
         "/daily-vonken met reeks (×2 vanaf dag 7) en een winkel met tijdelijke rollen of eigen beloningen",
-        "60 originele metgezellen verschijnen vanzelf terwijl er gechat wordt — vang ze, train ze met vonken en vecht tegen andere leden; wie verliest, verliest niets",
+        "60 originele metgezellen verschijnen vanzelf terwijl er gechat wordt — vang ze, train ze met vonken en vecht tegen andere leden; wie verliest, verliest maar 1–3 % van de vonken",
         "Wekelijkse serverquests, een telkanaal en trivia — de hele server speelt als één team",
       ],
       link: "Zo werkt het spel →",
@@ -602,7 +602,7 @@ export const LANDING_TRANSLATIONS = {
       bullets: [
         "Poziomy według znanej krzywej MEE6 i role w nagrodę — kumulowane, tylko bezpieczne role",
         "Iskry z /daily z serią (×2 od 7. dnia) i sklep z rolami na czas lub własnymi nagrodami",
-        "60 oryginalnych towarzyszy pojawia się samo, gdy ludzie piszą — złap, trenuj za iskry i walcz z innymi członkami; przegrany nic nie traci",
+        "60 oryginalnych towarzyszy pojawia się samo, gdy ludzie piszą — złap, trenuj za iskry i walcz z innymi członkami; przegrany traci tylko 1–3 % iskier",
         "Cotygodniowe misje serwera, kanał liczenia i trivia — cały serwer gra jak jedna drużyna",
       ],
       link: "Jak działa gra →",

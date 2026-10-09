@@ -841,7 +841,7 @@ export default {
   "game.quest.channel": "Server quest channel",
   "game.quest.enabled": "Weekly server quests enabled",
   "game.battles.enabled": "Companion battles enabled",
-  "game.battles.hint": "Members fight with /companion attack and train stats with /companion train. The loser loses nothing; anyone can opt out with /companion pvp off.",
+  "game.battles.hint": "Members fight with /companion attack and train stats with /companion train. The loser loses 1–3 % of their sparks (less against a stronger opponent); anyone can opt out with /companion pvp off.",
   "game.save": "Save",
   "game.saved": "Saved.",
   "game.saveFailed": "Saving failed.",

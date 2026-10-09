@@ -5,6 +5,8 @@
 // охлаждане, дневен брой, същата двойка веднъж на час, щит след загуба,
 // „не ме нападай“ (не веднага след собствена атака), награда с таван и нула
 // срещу много по-слаб. Ред за защитник, който не играе, не се създава.
+// v54: загубилият губи 1–3 % от искрите си (по-малко срещу по-силен), а
+// защитникът плаща най-много 5 загуби за 24 ч.
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import express from "express";
 import request from "supertest";
@@ -91,7 +93,7 @@ describe("trainStat", () => {
 
 // ─── Атака ───────────────────────────────────────────────────────────────────
 /** Настройва „чиста“ битка: двамата играят, без охлаждания и щит. */
-function arena({ atk = {}, def = {}, mine = {}, theirs = {}, recent = [], lost = null } = {}) {
+function arena({ atk = {}, def = {}, mine = {}, theirs = {}, recent = [], lost = null, paidDefenses = 0 } = {}) {
   prismaMock.memberProgress.findUnique.mockImplementation(async ({ where }) => {
     const uid = where.serverId_userId.userId;
     return uid === A ? progress(A, atk) : progress(D, def);
@@ -102,6 +104,8 @@ function arena({ atk = {}, def = {}, mine = {}, theirs = {}, recent = [], lost =
   prismaMock.companionBattle.findMany.mockResolvedValue(recent);
   prismaMock.companionBattle.findFirst.mockResolvedValue(lost);
   prismaMock.companionBattle.create.mockImplementation(async ({ data }) => ({ id: "bt_1", ...data }));
+  prismaMock.companionBattle.count.mockResolvedValue(paidDefenses);
+  prismaMock.memberProgress.updateMany.mockResolvedValue({ count: 1 });
   prismaMock.memberCompanion.update.mockResolvedValue({});
 }
 /** Зърно, с което нападателят печели / губи (детерминистично от симулатора). */
@@ -203,14 +207,61 @@ describe("attack — битката и наградата", () => {
     expect(B.simulateBattle(lime, wobble, seed).events).toEqual(out.events);
   });
 
-  it("загуба: нищо не се губи и нищо не се дава; рекордите — обратно", async () => {
-    arena();
+  it("загуба на нападателя: губи 2 % при равни (закръглено надолу), без награда; рекордите — обратно", async () => {
+    arena({ atk: { sparks: 1000 } });
     const seed = seedWhere(lime, wobble, "defender");
     const out = await ops.attack(SID, A, D, { now: NOW, seed });
-    expect(out).toMatchObject({ ok: true, winner: "defender", reward: { sparks: 0 }, sparksLeft: 100 });
+    expect(out).toMatchObject({ ok: true, winner: "defender", reward: { sparks: 0 }, loss: { userId: A, sparks: 20, pct: 2, capped: false }, sparksLeft: 980 });
+    expect(prismaMock.memberProgress.updateMany).toHaveBeenCalledWith({ where: { serverId: SID, userId: A, sparks: { gte: 20 } }, data: { sparks: { decrement: 20 } } });
     expect(prismaMock.memberProgress.update).not.toHaveBeenCalledWith(expect.objectContaining({ data: { sparks: expect.anything() } }));
+    expect(prismaMock.companionBattle.create).toHaveBeenCalledWith({ data: expect.objectContaining({ attackerWon: false, lostSparks: 20, rewardSparks: 0 }) });
+    // таванът за платени загуби е само за защитника — нападателят е избрал битката
+    expect(prismaMock.companionBattle.count).not.toHaveBeenCalled();
     expect(prismaMock.memberCompanion.update).toHaveBeenCalledWith({ where: { id: "own_a" }, data: { losses: { increment: 1 } } });
     expect(prismaMock.memberCompanion.update).toHaveBeenCalledWith({ where: { id: "own_d" }, data: { wins: { increment: 1 } } });
+  });
+
+  it("процентът следва силата: загубилият срещу по-силен губи по-малко, по-силният загубил — повече", async () => {
+    const strong = B.effectiveStats("lime-wobble", 3, {}); // противникът е по-силен
+    arena({ atk: { sparks: 1000 }, theirs: { stage: 3 } });
+    let out = await ops.attack(SID, A, D, { now: NOW, seed: seedWhere(lime, strong, "defender") });
+    const weakLoss = out.loss;
+    const trained = { atkLevel: 4, defLevel: 4, spdLevel: 4, hpLevel: 4 };
+    const me = B.effectiveStats("lime-blip", 1, B.levelsOf(trained)); // аз съм много по-силен
+    arena({ atk: { sparks: 1000 }, mine: trained });
+    out = await ops.attack(SID, A, D, { now: NOW, seed: seedWhere(me, wobble, "defender") });
+    const strongLoss = out.loss;
+    expect(weakLoss.pct).toBeGreaterThanOrEqual(1);
+    expect(weakLoss.pct).toBeLessThan(2);
+    expect(strongLoss.pct).toBeGreaterThan(2);
+    expect(strongLoss.pct).toBeLessThanOrEqual(3);
+    expect(weakLoss.sparks).toBeLessThan(strongLoss.sparks);
+    expect(weakLoss.sparks).toBe(Math.floor(1000 * B.lossPct(lime.power, strong.power) / 100));
+  });
+
+  it("загуба на защитника: губи процента; след 5 платени загуби за 24 ч — нищо", async () => {
+    const seed = seedWhere(lime, wobble, "attacker");
+    arena({ def: { sparks: 500 } });
+    let out = await ops.attack(SID, A, D, { now: NOW, seed });
+    expect(out.loss).toEqual({ userId: D, sparks: 10, pct: 2, capped: false });
+    expect(prismaMock.memberProgress.updateMany).toHaveBeenCalledWith({ where: { serverId: SID, userId: D, sparks: { gte: 10 } }, data: { sparks: { decrement: 10 } } });
+    expect(prismaMock.companionBattle.count).toHaveBeenCalledWith({ where: { serverId: SID, defenderId: D, attackerWon: true, lostSparks: { gt: 0 }, createdAt: { gt: minsAgo(24 * 60) } } });
+    vi.clearAllMocks();
+    arena({ def: { sparks: 500 }, paidDefenses: 5 });
+    out = await ops.attack(SID, A, D, { now: NOW, seed });
+    expect(out.loss).toMatchObject({ userId: D, sparks: 0, capped: true });
+    expect(out.lossLimit).toBe(5);
+    expect(prismaMock.memberProgress.updateMany).not.toHaveBeenCalled();
+    expect(prismaMock.companionBattle.create).toHaveBeenCalledWith({ data: expect.objectContaining({ lostSparks: 0 }) });
+  });
+
+  it("малък баланс → закръгля се надолу, никога над процента; празен баланс → 0", async () => {
+    const seed = seedWhere(lime, wobble, "defender");
+    arena({ atk: { sparks: 49 } });
+    expect((await ops.attack(SID, A, D, { now: NOW, seed })).loss.sparks).toBe(0);
+    arena({ atk: { sparks: 0 } });
+    expect((await ops.attack(SID, A, D, { now: NOW, seed })).loss.sparks).toBe(0);
+    expect(prismaMock.memberProgress.updateMany).not.toHaveBeenCalled();
   });
 
   it("победа над по-силен → 15; над много по-слаб → 0", async () => {

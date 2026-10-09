@@ -830,7 +830,7 @@ export default {
   "game.quest.channel": "Kanaal voor serverquests",
   "game.quest.enabled": "Wekelijkse serverquests ingeschakeld",
   "game.battles.enabled": "Metgezel-gevechten ingeschakeld",
-  "game.battles.hint": "Leden vechten met /companion attack en trainen statistieken met /companion train. Wie verliest, verliest niets; iedereen kan afhaken met /companion pvp off.",
+  "game.battles.hint": "Leden vechten met /companion attack en trainen statistieken met /companion train. Wie verliest, verliest 1–3 % van zijn vonken (minder tegen een sterkere tegenstander); iedereen kan afhaken met /companion pvp off.",
   "game.save": "Opslaan",
   "game.saved": "Opgeslagen.",
   "game.saveFailed": "Opslaan mislukt.",

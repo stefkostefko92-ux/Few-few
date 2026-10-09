@@ -96,6 +96,34 @@ describe("наградата", () => {
   });
 });
 
+describe("загубата (v54)", () => {
+  it("1 % срещу много по-силен, 2 % при равни, 3 % ако загубилият е бил много по-силен", () => {
+    expect(B.lossPct(80, 80)).toBeCloseTo(2, 5);
+    expect(B.lossPct(80, 200)).toBeCloseTo(1, 2);
+    expect(B.lossPct(200, 80)).toBeCloseTo(3, 2);
+    for (const [l, w] of [[1, 1e6], [1e6, 1]]) {
+      expect(B.lossPct(l, w)).toBeGreaterThanOrEqual(B.LOSS_MIN_PCT);
+      expect(B.lossPct(l, w)).toBeLessThanOrEqual(B.LOSS_MAX_PCT);
+    }
+  });
+
+  it("колкото по-силен е противникът, толкова по-малък процент", () => {
+    const pcts = [70, 80, 88, 96, 120].map((w) => B.lossPct(88, w));
+    for (let i = 1; i < pcts.length; i++) expect(pcts[i]).toBeLessThan(pcts[i - 1]);
+  });
+
+  it("искрите: процент от баланса, закръглен надолу, никога отрицателни", () => {
+    expect(B.sparksLost(1000, 2)).toBe(20);
+    expect(B.sparksLost(1000, 1.56)).toBe(15);
+    expect(B.sparksLost(49, 2)).toBe(0);
+    expect(B.sparksLost(0, 3)).toBe(0);
+    expect(B.sparksLost(-5, 3)).toBe(0);
+    for (const bal of [1, 33, 99, 101, 777, 12345]) {
+      for (const pct of [1, 1.5, 2, 2.7, 3]) expect(B.sparksLost(bal, pct)).toBeLessThanOrEqual((bal * pct) / 100);
+    }
+  });
+});
+
 describe("симулаторът", () => {
   const a = sideOf("ember-spark", 2, { atk: 3 });
   const d = sideOf("ice-frost", 2, { def: 2, hp: 1 });

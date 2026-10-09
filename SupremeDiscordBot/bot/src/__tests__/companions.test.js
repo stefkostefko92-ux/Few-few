@@ -251,7 +251,21 @@ describe("v53 — помощниците за битката", () => {
     b.winner = "defender";
     const j = battleEmbed(b, 6, "bg").toJSON();
     expect(j.title).toBe("🏆 Wobble печели!");
-    expect(j.fields[2].value).toBe(`🛡️ <@${THEM}> удържа. Нападателят не губи нищо.`);
+    expect(j.fields[2].value).toBe(`🛡️ <@${THEM}> удържа.`);
+  });
+  it("v54 — загубата: колко искри и процентът по езика; таван на защитника; нищо при 0", () => {
+    const b = battle();
+    b.loss = { userId: THEM, sparks: 14, pct: 1.6, capped: false };
+    expect(battleEmbed(b, 6, "en").toJSON().fields[2].value).toBe(`✨ +10 for <@${ME}>\n💔 <@${THEM}> loses ✨ 14 (1.6 % of their sparks)`);
+    expect(battleEmbed(b, 6, "bg").toJSON().fields[2].value).toContain(`💔 <@${THEM}> губи ✨ 14 (1,6 % от искрите си)`);
+    b.loss = { userId: THEM, sparks: 0, pct: 2, capped: true };
+    b.lossLimit = 5;
+    expect(battleEmbed(b, 6, "en").toJSON().fields[2].value).toContain("already paid for 5 lost defenses today");
+    b.loss = { userId: THEM, sparks: 0, pct: 2, capped: false };
+    expect(battleEmbed(b, 6, "en").toJSON().fields[2].value).toBe(`✨ +10 for <@${ME}>`);
+    // междинните кадри не издават изхода
+    b.loss = { userId: THEM, sparks: 14, pct: 1.6, capped: false };
+    expect(JSON.stringify(battleEmbed(b, 2, "en").toJSON())).not.toContain("💔");
   });
 });
 

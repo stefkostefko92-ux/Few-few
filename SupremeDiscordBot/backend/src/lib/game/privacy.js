@@ -29,7 +29,7 @@ export async function gameDataFor(userId) {
     // v53 — битките, в които членът е нападател или защитник (пазят се 30 дни).
     safe(() => prisma.companionBattle.findMany({ where: { OR: [{ attackerId: uid }, { defenderId: uid }] }, select: {
       serverId: true, attackerId: true, defenderId: true, attackerCompanionId: true, defenderCompanionId: true,
-      attackerStats: true, defenderStats: true, attackerWon: true, turns: true, rewardSparks: true, createdAt: true } })),
+      attackerStats: true, defenderStats: true, attackerWon: true, turns: true, rewardSparks: true, lostSparks: true, createdAt: true } })),
   ]);
   return { progress, xp_grants: xpGrants, companions, shop_purchases: purchases, quest_contributions: questContributions, trivia_answers: triviaAnswers, companion_trades: trades, companion_battles: battles };
 }

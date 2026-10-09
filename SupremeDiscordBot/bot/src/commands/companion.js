@@ -6,6 +6,7 @@
 // v53 — /companion train | attack | pvp: четири статистики, които се тренират
 // с искри, и битки срещу активния спътник на друг член. Битката се смята на
 // backend-а (lib/game/battles.js); тук само се разиграва в канала на 3 кадъра.
+// v54 — загубилият губи 1–3 % от искрите си; последният кадър казва колко.
 import { MessageFlags, SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 import api from "../utils/api.js";
 import { t, resolveLang, resolveLangSync } from "../i18n/index.js";
@@ -67,6 +68,21 @@ function eventLine(e, names, lang) {
   return t(e.crit ? "game.battle.crit" : "game.battle.hit", lang, { name: actor, dmg: e.dmg });
 }
 
+/** Процентът по езика: „1,6“ на български, „1.6“ на английски. */
+function fmtPct(pct, lang) {
+  try { return new Intl.NumberFormat(lang, { maximumFractionDigits: 1 }).format(pct); } catch { return String(pct); }
+}
+
+/** v54 — загубилият губи 1–3 % от искрите си (защитникът — най-много 5 пъти за 24 ч). */
+function lossLine(data, lang) {
+  const l = data.loss;
+  if (!l) return "";
+  const user = `<@${l.userId}>`;
+  if (l.capped) return t("game.battle.lostCapped", lang, { user, limit: data.lossLimit ?? 5 });
+  if (!(l.sparks > 0)) return "";
+  return t("game.battle.lost", lang, { user, sparks: l.sparks, pct: fmtPct(l.pct, lang) });
+}
+
 function rewardLine(data, lang) {
   const atk = `<@${data.attacker.userId}>`;
   if (data.winner !== "attacker") return t("game.battle.defended", lang, { user: `<@${data.defender.userId}>` });
@@ -101,7 +117,7 @@ export function battleEmbed(data, upto, lang) {
     .addFields(side(A, hpA), side(D, hpB))
     .setThumbnail((data.winner === "attacker" || !final ? A : D).companion.imageUrl);
   if (final) {
-    e.addFields({ name: "\u200b", value: rewardLine(data, lang), inline: false });
+    e.addFields({ name: "\u200b", value: [rewardLine(data, lang), lossLine(data, lang)].filter(Boolean).join("\n"), inline: false });
     e.setFooter({ text: t("game.battle.footer", lang, { n: data.attacksLeft ?? 0 }) });
   }
   return e;

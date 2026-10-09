@@ -1337,8 +1337,8 @@ model CompanionTrade {
 
 // v53 — битка между спътници (/companion attack). Редът е и одитът (зърното и
 // снимката на статистиките повтарят битката), и източникът на охлажданията и
-// дневните лимити (lib/game/battleOps.js). Загубилият не губи нищо; наградата е
-// само за нападател, който победи.
+// дневните лимити (lib/game/battleOps.js). Наградата е само за нападател, който
+// победи; загубилият (нападател или защитник) губи 1–3 % от искрите си (v54).
 model CompanionBattle {
   id                  String   @id @default(cuid())
   serverId            String
@@ -1354,6 +1354,7 @@ model CompanionBattle {
   turns               Int
   seed                Int
   rewardSparks        Int      @default(0)
+  lostSparks          Int      @default(0) // v54 — колко искри е изгубил загубилият
   createdAt           DateTime @default(now())
 
   server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)

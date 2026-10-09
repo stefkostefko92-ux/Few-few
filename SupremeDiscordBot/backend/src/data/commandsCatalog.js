@@ -327,7 +327,7 @@ export const COMMAND_CATALOG = [
         description: "Spend sparks to raise one of a companion's four stats — attack, defense, speed, health — by a level. Levels cost 20, 40, 60… sparks; each stage caps them (4 / 7 / 10), so evolving with /companion feed raises the limit.",
         dashboard: "N/A — Discord only", permission: "Everyone" },
       { name: "/companion attack", signature: "/companion attack <user>",
-        description: "Your active companion battles another member's active companion. The fight is decided on the server and replayed in the channel. The loser loses nothing; a win earns sparks (more against a stronger opponent, none against a much weaker one, up to 5 rewarded wins a day). Cooldowns and a shield after a lost battle keep it fair.",
+        description: "Your active companion battles another member's active companion. The fight is decided on the server and replayed in the channel. The loser loses 1–3 % of their sparks (less against a stronger opponent; a defender pays at most 5 times a day); a win earns sparks (more against a stronger opponent, none against a much weaker one, up to 5 rewarded wins a day). Cooldowns and a shield after a lost battle keep it fair.",
         dashboard: "Game page · Overview (battles on/off)", permission: "Everyone" },
       { name: "/companion pvp", signature: "/companion pvp on|off",
         description: "Leave or rejoin battles. With pvp off nobody can attack you and you can't attack; switching off is possible one hour after your own last attack.",

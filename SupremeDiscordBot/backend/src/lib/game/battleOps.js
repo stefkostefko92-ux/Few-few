@@ -4,18 +4,20 @@
 // и дневните лимити. Всяка надпревара (двоен клик, две атаки наведнъж, двама
 // срещу един) е ЕДНА транзакция със заключени редове и условни update-и.
 //
-// Срещу тормоз и ферми: загубилият не губи нищо; нападателят има охлаждане,
-// дневен брой атаки и същия противник само веднъж на час; загубилият защита
-// получава щит; наградата е с дневен таван и е нула срещу много по-слаб; всеки
-// може да се махне от битките с `/companion pvp off` (но не веднага след като
-// сам е нападнал).
+// Залогът (v54): загубилият губи 1–3 % от искрите си — по-малко, колкото по-
+// силен е бил противникът (battles.js → lossPct); изгубените искри изгарят.
+// Срещу тормоз и ферми: нападателят има охлаждане, дневен брой атаки и същия
+// противник само веднъж на час; загубилият защита получава щит и плаща
+// най-много DAILY_PAID_DEFENSES загуби за 24 ч; наградата е с дневен таван и е
+// нула срещу много по-слаб; всеки може да се махне от битките с
+// `/companion pvp off` (но не веднага след като сам е нападнал).
 import { randomInt } from "node:crypto";
 import { prisma } from "../prisma.js";
 import { companionById, publicCompanion, MAX_STAGE } from "./companions.js";
 import { getCurrentSeason } from "./seasons.js";
 import { ensureProgress } from "./xp.js";
 import {
-  STAT_KEYS, STAT_COLUMN, STAT_CAP, trainCost, statSheet, effectiveStats, levelsOf, simulateBattle, winReward,
+  STAT_KEYS, STAT_COLUMN, STAT_CAP, trainCost, statSheet, effectiveStats, levelsOf, simulateBattle, winReward, lossPct, sparksLost,
 } from "./battles.js";
 
 export const ATTACK_COOLDOWN_MS = 5 * 60 * 1000;   // между две твои атаки
@@ -23,6 +25,7 @@ export const PAIR_COOLDOWN_MS = 60 * 60 * 1000;    // същия противн�
 export const SHIELD_MS = 30 * 60 * 1000;           // щит след загубена защита
 export const DAILY_ATTACKS = 15;                   // атаки за 24 ч
 export const DAILY_REWARDED_WINS = 5;              // победи с награда за 24 ч
+export const DAILY_PAID_DEFENSES = 5;              // загубени защити, които струват искри, за 24 ч
 export const PVP_LOCK_MS = 60 * 60 * 1000;         // „pvp off“ не минава до час след твоя атака
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -146,17 +149,36 @@ export async function attack(serverId, attackerId, defenderId, { now = new Date(
       reward = { tier: r.tier, sparks: capped ? 0 : r.sparks, capped };
     }
 
+    // Загубилият губи 1–3 % от искрите си (закръглено надолу). Защитникът не е
+    // избрал битката — плаща най-много DAILY_PAID_DEFENSES загуби за 24 ч, за да
+    // не може група да го изцеди. Двата реда са заключени горе → балансът е точен.
+    const loserId = attackerWon ? defenderId : attackerId;
+    const loserP = attackerWon ? defP : atkP;
+    const pct = attackerWon ? lossPct(d.power, a.power) : lossPct(a.power, d.power);
+    let lossCapped = false;
+    if (attackerWon) {
+      const paid = await tx.companionBattle.count({
+        where: { serverId, defenderId, attackerWon: true, lostSparks: { gt: 0 }, createdAt: { gt: ago(now, DAY_MS) } },
+      });
+      lossCapped = paid >= DAILY_PAID_DEFENSES;
+    }
+    let lostSparks = lossCapped ? 0 : sparksLost(loserP.sparks, pct);
+    if (lostSparks > 0) {
+      const dec = await tx.memberProgress.updateMany({ where: { serverId, userId: loserId, sparks: { gte: lostSparks } }, data: { sparks: { decrement: lostSparks } } });
+      if (dec.count !== 1) lostSparks = 0; // никога повече от баланса
+    }
+
     const battle = await tx.companionBattle.create({
       data: {
         serverId, attackerId, defenderId,
         attackerOwnedId: mine.id, defenderOwnedId: theirs.id,
         attackerCompanionId: mine.companionId, defenderCompanionId: theirs.companionId,
-        attackerStats: a, defenderStats: d, attackerWon, turns: fight.turns, seed: battleSeed, rewardSparks: reward.sparks,
+        attackerStats: a, defenderStats: d, attackerWon, turns: fight.turns, seed: battleSeed, rewardSparks: reward.sparks, lostSparks,
       },
     });
     await tx.memberCompanion.update({ where: { id: mine.id }, data: attackerWon ? { wins: { increment: 1 } } : { losses: { increment: 1 } } });
     await tx.memberCompanion.update({ where: { id: theirs.id }, data: attackerWon ? { losses: { increment: 1 } } : { wins: { increment: 1 } } });
-    let sparksLeft = atkP.sparks;
+    let sparksLeft = atkP.sparks - (attackerWon ? 0 : lostSparks);
     if (reward.sparks > 0) {
       const p = await tx.memberProgress.update({ where: { serverId_userId: { serverId, userId: attackerId } }, data: { sparks: { increment: reward.sparks } } });
       sparksLeft = p.sparks;
@@ -170,6 +192,8 @@ export async function attack(serverId, attackerId, defenderId, { now = new Date(
       events: fight.events,
       reward,
       rewardLimit: DAILY_REWARDED_WINS,
+      loss: { userId: loserId, sparks: lostSparks, pct: Math.round(pct * 10) / 10, capped: lossCapped },
+      lossLimit: DAILY_PAID_DEFENSES,
       sparksLeft,
       attacksLeft: Math.max(0, DAILY_ATTACKS - recent.length - 1),
       attacker: { userId: attackerId, ownedId: mine.id, stage: mine.stage, stats: a, hpLeft: fight.hpA, companion: publicCompanion(companionById(mine.companionId), mine.stage, season) },
