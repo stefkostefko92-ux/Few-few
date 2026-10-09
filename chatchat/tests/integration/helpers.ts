@@ -215,6 +215,8 @@ export async function startApp(
     /** Само за ръчна проверка в браузър: фиксиран порт и Origin на страницата. */
     port?: number;
     origin?: string;
+    /** Папката с отчетите на оценъчния набор за KPI (§16.1). */
+    evalReportsDir?: string;
   } = {},
 ): Promise<Harness> {
   const hub = opts.hub ?? new RealtimeHub();
@@ -253,6 +255,7 @@ export async function startApp(
     onDocumentPublished: indexer ? () => void indexer.kick() : undefined,
     attachments: opts.attachments ?? null,
     hub,
+    evalReportsDir: opts.evalReportsDir ?? '',
   });
   const server: Server = await new Promise((resolve) => {
     const s = app.listen(opts.port ?? 0, '127.0.0.1', () => resolve(s));

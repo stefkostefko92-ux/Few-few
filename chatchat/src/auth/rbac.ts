@@ -19,6 +19,8 @@ export type Capability =
   | 'kb:manage' // качване, преглед, публикуване, отписване (§4.1); също бързите отговори (FR-20)
   | 'users:manage' // директория, роли, срокове, нулиране, права на субекта (FR-22/23/25)
   | 'audit:read'
+  // KPI §16.1 — само агрегати по клиента, k-анонимни (без разбивка по човек).
+  | 'kpi:read'
   // Работното пространство (§12.3). Операторът на платформата не е част от екипа на клиента —
   // няма разговори, присъствие и известия в него.
   | 'conversation:use' // участие в разговорите, в които е член; присъствие; известия
@@ -53,14 +55,22 @@ const STAFF_CHAT: readonly Capability[] = ['conversation:create', 'channel:creat
 const CAPABILITIES: Record<Role, readonly Capability[]> = {
   PORTAL_TECHNICIAN: TECH,
   INTERNAL_TECHNICIAN: [...TECH, 'device:readAll', 'conversation:create'],
-  SUPPORT: [...TECH, 'case:readAll', 'case:assign', 'device:readAll', ...STAFF_CHAT],
-  ENGINEERING: [...TECH, 'case:readAll', 'case:assign', 'device:readAll', ...STAFF_CHAT],
+  SUPPORT: [...TECH, 'case:readAll', 'case:assign', 'device:readAll', 'kpi:read', ...STAFF_CHAT],
+  ENGINEERING: [
+    ...TECH,
+    'case:readAll',
+    'case:assign',
+    'device:readAll',
+    'kpi:read',
+    ...STAFF_CHAT,
+  ],
   KNOWLEDGE_OWNER: [
     ...TECH,
     'case:readAll',
     'case:assign',
     'device:readAll',
     'kb:manage',
+    'kpi:read',
     ...STAFF_CHAT,
   ],
   TENANT_ADMIN: [
@@ -68,6 +78,7 @@ const CAPABILITIES: Record<Role, readonly Capability[]> = {
     'device:readAll',
     'users:manage',
     'audit:read',
+    'kpi:read',
     'conversation:use',
     ...STAFF_CHAT,
   ],

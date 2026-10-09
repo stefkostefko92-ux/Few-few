@@ -66,6 +66,8 @@ const EnvSchema = z.object({
   CLAMAV_HOST: z.string().default(''),
   CLAMAV_PORT: z.coerce.number().int().min(1).max(65535).default(3310),
   CLAMAV_TIMEOUT_MS: z.coerce.number().int().min(1000).max(120000).default(30000),
+  /** Папката с отчетите на оценъчния набор (`npm run eval --out`). Празно → KPI „изисква оценка“. */
+  EVAL_REPORTS_DIR: z.string().default(''),
 });
 
 /** Прикачването иска и ключ за подписите: хранилище без ключ е полуготов конфиг. */
