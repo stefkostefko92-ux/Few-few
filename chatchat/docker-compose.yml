@@ -159,6 +159,15 @@ services:
       AI_MAX_TOOL_ROUNDS: ${AI_MAX_TOOL_ROUNDS:-4}
       # Под proxy_read_timeout в nginx конфига (120 s); config.ts не пуска над 115000.
       AI_TIMEOUT_MS: ${AI_TIMEOUT_MS:-60000}
+      # Circuit breaker към Vertex (NFR-07): последователни провала до отваряне · секунди отворен.
+      AI_BREAKER_FAILURES: ${AI_BREAKER_FAILURES:-5}
+      AI_BREAKER_COOLDOWN_SECONDS: ${AI_BREAKER_COOLDOWN_SECONDS:-30}
+      # Метрики за Prometheus (NFR-09) — отделен слушател, НЕ публичният порт (nginx не го проксира).
+      # Включват се с METRICS_PORT в .env (порт на ХОСТА); вътре в контейнера слушателят е винаги 9464.
+      # 0.0.0.0 е само в мрежовото пространство на контейнера — Docker не стига до loopback-а му; на
+      # хоста портът е публикуван САМО като 127.0.0.1 (по-долу). Празно → изключено (config.ts).
+      METRICS_PORT: ${METRICS_PORT:+9464}
+      METRICS_HOST: 0.0.0.0
       # Отчетите на оценъчния набор (evals/, §16.1) за KPI таблото — само за четене. Оценката не върви
       # в образа (тестова база + tsx); отчетите (*.json) се копират ръчно в $CHATCHAT_SHARED/eval-reports.
       EVAL_REPORTS_DIR: /data/eval-reports
@@ -173,6 +182,9 @@ services:
       - ${CHATCHAT_SHARED:-/opt/few-few/shared/chatchat}/eval-reports:/data/eval-reports:ro
     ports:
       - '127.0.0.1:${HTTP_PORT:-4330}:4330'
+      # Метриките — САМО на loopback-а на хоста, никога 0.0.0.0. Без METRICS_PORT в .env хостът взима
+      # случаен свободен порт на 127.0.0.1 зад който нищо не слуша (няма сблъсък с други услуги).
+      - '127.0.0.1:${METRICS_PORT:-}:9464'
     networks: [backend, default]
     depends_on:
       db: { condition: service_healthy }

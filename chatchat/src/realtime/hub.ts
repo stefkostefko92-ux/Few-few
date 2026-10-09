@@ -51,7 +51,14 @@ export interface HubOptions {
   heartbeatMs?: number;
   now?: () => Date;
   onError?: (err: unknown) => void;
+  /**
+   * Наблюдаемост (NFR-11): след всяко събитие — типът, изходът и секундите от публикуването до
+   * записа в потоците (опашка + получатели + права). Без получатели и без съдържание.
+   */
+  onPublished?: (type: RealtimeEventType, result: PublishResult, seconds: number) => void;
 }
+
+export type PublishResult = 'delivered' | 'no_recipients' | 'error';
 
 /** Форматът на рамката (text/event-stream): монотонен `id`, тип и JSON на един ред. */
 export function sseFrame(id: number, type: string, payload: unknown): string {
@@ -65,6 +72,7 @@ export class RealtimeHub {
   private readonly maxStreams: number;
   private readonly now: () => Date;
   private readonly onError: (err: unknown) => void;
+  private readonly onPublished: HubOptions['onPublished'];
   readonly heartbeatMs: number;
 
   constructor(opts: HubOptions = {}) {
@@ -72,6 +80,7 @@ export class RealtimeHub {
     this.heartbeatMs = opts.heartbeatMs ?? 25_000;
     this.now = opts.now ?? (() => new Date());
     this.onError = opts.onError ?? (() => undefined);
+    this.onPublished = opts.onPublished;
   }
 
   /** Записва потока; връща функцията за отписване (при затваряне на връзката). */
@@ -116,6 +125,7 @@ export class RealtimeHub {
    * заявка към базата). Връща броя на потоците, в които е записано.
    */
   publish(event: RealtimeEvent, recipients: Recipients, authorize: Authorizer): Promise<number> {
+    const queuedAt = performance.now();
     const run = async (): Promise<number> => {
       if (this.streams.size === 0) return 0;
       const list = typeof recipients === 'function' ? await recipients() : recipients;
@@ -155,6 +165,14 @@ export class RealtimeHub {
     const result = this.queue.then(run);
     // Грешка в едно събитие не спира опашката; викащият я получава в своя Promise.
     this.queue = result.catch((err: unknown) => this.onError(err));
+    const observe = this.onPublished;
+    if (observe) {
+      const seconds = () => (performance.now() - queuedAt) / 1000;
+      result.then(
+        (written) => observe(event.type, written > 0 ? 'delivered' : 'no_recipients', seconds()),
+        () => observe(event.type, 'error', seconds()),
+      );
+    }
     return result;
   }
 

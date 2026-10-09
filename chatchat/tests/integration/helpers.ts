@@ -19,6 +19,9 @@ import type { EmbeddingModel } from '../../src/ai/embeddings.js';
 import { EmbeddingIndexer } from '../../src/store/embeddings.js';
 import type { AttachmentDeps } from '../../src/services/attachments.js';
 import { RealtimeHub } from '../../src/realtime/hub.js';
+import type { BreakerState } from '../../src/ai/breaker.js';
+import { instrumentDiagnoser } from '../../src/observability/ai.js';
+import type { Metrics } from '../../src/observability/catalog.js';
 import { PrismaKnowledgeStore } from '../../src/store/knowledge.js';
 import { knowledgeSnapshotId } from '../../src/store/snapshot.js';
 
@@ -217,6 +220,10 @@ export async function startApp(
     origin?: string;
     /** Папката с отчетите на оценъчния набор за KPI (§16.1). */
     evalReportsDir?: string;
+    /** Наблюдаемост (NFR-09): метрики + декоратор върху фалшивия модел (напр. circuit breaker). */
+    metrics?: Metrics;
+    wrapModel?: (model: DiagnosisModel) => DiagnosisModel;
+    aiCircuit?: () => BreakerState | null;
   } = {},
 ): Promise<Harness> {
   const hub = opts.hub ?? new RealtimeHub();
@@ -225,11 +232,12 @@ export async function startApp(
   const store = new PrismaKnowledgeStore(db, { embedder: opts.embedder ?? null });
   const silent = { info: () => undefined, warn: () => undefined };
   const indexer = opts.embedder ? new EmbeddingIndexer(db, opts.embedder, silent, 0) : null;
-  const real: Diagnoser = (input, signal) =>
+  const aiModel = opts.wrapModel ? opts.wrapModel(model) : model;
+  const scripted: Diagnoser = (input, signal) =>
     diagnose(
       {
         store,
-        model,
+        model: aiModel,
         snapshotId: () => knowledgeSnapshotId(db, input.scope.tenantId),
         config: {
           AI_MODEL: 'claude-test',
@@ -242,6 +250,7 @@ export async function startApp(
       input,
       signal,
     );
+  const real = opts.metrics ? instrumentDiagnoser(scripted, opts.metrics) : scripted;
   const choice = opts.diagnose ?? 'real';
   const app = createApp({
     db,
@@ -256,6 +265,8 @@ export async function startApp(
     attachments: opts.attachments ?? null,
     hub,
     evalReportsDir: opts.evalReportsDir ?? '',
+    ...(opts.metrics ? { metrics: opts.metrics } : {}),
+    ...(opts.aiCircuit ? { aiCircuit: opts.aiCircuit } : {}),
   });
   const server: Server = await new Promise((resolve) => {
     const s = app.listen(opts.port ?? 0, '127.0.0.1', () => resolve(s));
