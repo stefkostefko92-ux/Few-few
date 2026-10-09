@@ -4,7 +4,7 @@ export type LegalSection = { h: string; p?: string[]; list?: string[] };
 export type LegalDoc = { title: string; intro: string; sections: LegalSection[] };
 export type LegalKind = "privacy" | "cookie" | "termini";
 
-export const LEGAL_UPDATED = "25/06/2026";
+export const LEGAL_UPDATED = "08/10/2026";
 
 const CONTROLLER = {
   name: "Associazione Qui Bulgaria",
@@ -29,7 +29,7 @@ export const LEGAL: Record<LegalKind, Record<Locale, LegalDoc>> = {
           "Garantire sicurezza, integrità e corretto funzionamento del sito — legittimo interesse (art. 6.1.f GDPR).",
         ] },
         { h: "Conservazione dei dati", p: ["I dati del modulo sono conservati per il tempo necessario a gestire la richiesta e gli eventuali adempimenti conseguenti. I log tecnici sono conservati per periodi limitati e proporzionati alle finalità di sicurezza."] },
-        { h: "Comunicazione dei dati", p: ["I dati non sono venduti né diffusi. Possono essere trattati, per nostro conto, da fornitori tecnici nominati responsabili del trattamento: il provider di hosting (server in UE) e il servizio di posta elettronica/SMTP usato per ricevere e inoltrare i messaggi del modulo; se tale casella è fornita da un operatore con sede negli USA (es. Google LLC), l’eventuale trasferimento avviene sulla base del EU-US Data Privacy Framework e/o di clausole contrattuali standard. Il plugin di Facebook viene caricato solo previo consenso e comporta un trattamento da parte di Meta Platforms Ireland Ltd. (e Meta Platforms, Inc. negli USA) secondo la sua informativa; l’eventuale trasferimento negli Stati Uniti avviene sulla base del EU-US Data Privacy Framework e/o di clausole contrattuali standard."] },
+        { h: "Comunicazione dei dati", p: ["I dati non sono venduti né diffusi. Possono essere trattati, per nostro conto, da fornitori tecnici nominati responsabili del trattamento: il provider di hosting (server in UE) e il servizio di posta elettronica/SMTP usato per ricevere e inoltrare i messaggi del modulo; se tale casella è fornita da un operatore con sede negli USA (es. Google LLC), l’eventuale trasferimento avviene sulla base del EU-US Data Privacy Framework e/o di clausole contrattuali standard. Il plugin di Facebook viene caricato solo previo consenso e comporta un trattamento da parte di Meta Platforms Ireland Ltd. (e Meta Platforms, Inc. negli USA) secondo la sua informativa; l’eventuale trasferimento negli Stati Uniti avviene sulla base del EU-US Data Privacy Framework e/o di clausole contrattuali standard. Allo stesso modo, la mappa di Google Maps viene caricata solo previo consenso e comporta un trattamento da parte di Google Ireland Ltd. (e Google LLC negli USA) secondo la sua informativa, con le stesse garanzie per l’eventuale trasferimento negli Stati Uniti."] },
         { h: "Diritti dell’interessato", p: ["Puoi esercitare i diritti di accesso, rettifica, cancellazione, limitazione, opposizione e portabilità scrivendo a " + CONTROLLER.email + ". Hai inoltre diritto di proporre reclamo al Garante per la protezione dei dati personali."] },
         { h: "Minori", p: ["I corsi rivolti ai bambini sono gestiti con il coinvolgimento e il consenso dei genitori o di chi ne esercita la responsabilità genitoriale."] },
         { h: "Modifiche", p: ["Ci riserviamo di aggiornare la presente informativa. Le modifiche saranno pubblicate su questa pagina con la relativa data."] },
@@ -50,7 +50,7 @@ export const LEGAL: Record<LegalKind, Record<Locale, LegalDoc>> = {
           "Да гарантираме сигурността и правилното функциониране на сайта — легитимен интерес (чл. 6.1.f GDPR).",
         ] },
         { h: "Срок на съхранение", p: ["Данните от формата се съхраняват за времето, необходимо за обработка на запитването и свързаните задължения. Техническите логове се пазят за ограничени периоди, пропорционални на целите за сигурност."] },
-        { h: "Предоставяне на данни", p: ["Данните не се продават и не се разпространяват. Могат да се обработват от наше име от технически доставчици в качеството им на обработващи: хостинг доставчикът (сървъри в ЕС) и услугата за електронна поща/SMTP, чрез която получаваме и препращаме съобщенията от формата; ако тази пощенска кутия се предоставя от оператор със седалище в САЩ (напр. Google LLC), евентуалното предаване се основава на Рамката ЕС–САЩ за поверителност на данните и/или на стандартни договорни клаузи. Плъгинът на Facebook се зарежда само след съгласие и води до обработка от страна на Meta Platforms Ireland Ltd. (и Meta Platforms, Inc. в САЩ) съгласно нейната политика; евентуалното предаване към САЩ се основава на Рамката ЕС–САЩ за поверителност на данните (EU-US Data Privacy Framework) и/или на стандартни договорни клаузи."] },
+        { h: "Предоставяне на данни", p: ["Данните не се продават и не се разпространяват. Могат да се обработват от наше име от технически доставчици в качеството им на обработващи: хостинг доставчикът (сървъри в ЕС) и услугата за електронна поща/SMTP, чрез която получаваме и препращаме съобщенията от формата; ако тази пощенска кутия се предоставя от оператор със седалище в САЩ (напр. Google LLC), евентуалното предаване се основава на Рамката ЕС–САЩ за поверителност на данните и/или на стандартни договорни клаузи. Плъгинът на Facebook се зарежда само след съгласие и води до обработка от страна на Meta Platforms Ireland Ltd. (и Meta Platforms, Inc. в САЩ) съгласно нейната политика; евентуалното предаване към САЩ се основава на Рамката ЕС–САЩ за поверителност на данните (EU-US Data Privacy Framework) и/или на стандартни договорни клаузи. По същия начин картата на Google Maps се зарежда само след съгласие и води до обработка от страна на Google Ireland Ltd. (и Google LLC в САЩ) съгласно нейната политика, със същите гаранции при евентуално предаване към САЩ."] },
         { h: "Права на субекта на данни", p: ["Можете да упражните правата си на достъп, коригиране, изтриване, ограничаване, възражение и преносимост, като пишете на " + CONTROLLER.email + ". Имате право и да подадете жалба до надзорния орган за защита на личните данни."] },
         { h: "Непълнолетни", p: ["Курсовете за деца се организират с участието и съгласието на родителите или настойниците."] },
         { h: "Промени", p: ["Запазваме си правото да актуализираме тази политика. Промените се публикуват на тази страница с посочена дата."] },
@@ -71,7 +71,7 @@ export const LEGAL: Record<LegalKind, Record<Locale, LegalDoc>> = {
           "To ensure the security and proper functioning of the site — legitimate interest (Art. 6.1.f GDPR).",
         ] },
         { h: "Data retention", p: ["Form data is kept for as long as necessary to handle the request and any related obligations. Technical logs are kept for limited periods proportionate to security purposes."] },
-        { h: "Disclosure of data", p: ["Data is never sold or disclosed. It may be processed on our behalf by technical providers acting as processors: the hosting provider (servers in the EU) and the email/SMTP service used to receive and forward contact-form messages; where that mailbox is provided by a US-based operator (e.g. Google LLC), any transfer relies on the EU-US Data Privacy Framework and/or standard contractual clauses. The Facebook plugin loads only after consent and entails processing by Meta Platforms Ireland Ltd. (and Meta Platforms, Inc. in the USA) under its own policy; any transfer to the United States relies on the EU-US Data Privacy Framework and/or standard contractual clauses."] },
+        { h: "Disclosure of data", p: ["Data is never sold or disclosed. It may be processed on our behalf by technical providers acting as processors: the hosting provider (servers in the EU) and the email/SMTP service used to receive and forward contact-form messages; where that mailbox is provided by a US-based operator (e.g. Google LLC), any transfer relies on the EU-US Data Privacy Framework and/or standard contractual clauses. The Facebook plugin loads only after consent and entails processing by Meta Platforms Ireland Ltd. (and Meta Platforms, Inc. in the USA) under its own policy; any transfer to the United States relies on the EU-US Data Privacy Framework and/or standard contractual clauses. Likewise, the Google Maps map loads only after consent and entails processing by Google Ireland Ltd. (and Google LLC in the USA) under its own policy, with the same safeguards for any transfer to the United States."] },
         { h: "Your rights", p: ["You may exercise your rights of access, rectification, erasure, restriction, objection and portability by writing to " + CONTROLLER.email + ". You also have the right to lodge a complaint with the competent data protection authority."] },
         { h: "Minors", p: ["Courses for children are managed with the involvement and consent of parents or legal guardians."] },
         { h: "Changes", p: ["We may update this policy. Changes will be published on this page with the relevant date."] },
@@ -87,9 +87,9 @@ export const LEGAL: Record<LegalKind, Record<Locale, LegalDoc>> = {
         { h: "Cookie tecnici che usiamo", list: [
           "qb_lang — memorizza la lingua scelta (funzionale).",
           "qb_admin — sessione di accesso, solo per gli amministratori del sito.",
-          "qb-cookie-ack e qb-fb-consent — salvano le tue scelte (avviso cookie e consenso Facebook); sono memorizzati nel browser (localStorage).",
+          "qb-cookie-ack, qb-fb-consent e qb-map-consent — salvano le tue scelte (avviso cookie, consenso per Facebook e per Google Maps); sono memorizzati nel browser (localStorage).",
         ] },
-        { h: "Cookie di terze parti", p: ["Il plugin della pagina Facebook viene caricato solo dopo il tuo consenso esplicito e può impostare cookie di Meta Platforms, secondo l’informativa di Facebook."] },
+        { h: "Cookie di terze parti", p: ["Il plugin della pagina Facebook viene caricato solo dopo il tuo consenso esplicito e può impostare cookie di Meta Platforms, secondo l’informativa di Facebook.", "La mappa di Google Maps viene caricata solo dopo il tuo consenso esplicito (pulsante «Mostra la mappa») e può impostare cookie di Google, secondo l’informativa di Google."] },
         { h: "Nessuna profilazione", p: ["Non utilizziamo cookie pubblicitari né strumenti di analisi con profilazione dell’utente."] },
         { h: "Gestione dei cookie", p: ["Puoi bloccare o eliminare i cookie dalle impostazioni del browser. La disattivazione dei cookie tecnici può limitare alcune funzioni, come il ricordo della lingua."] },
         { h: "Aggiornamenti", p: ["Questa pagina può essere aggiornata; la data di revisione è indicata in alto."] },
@@ -103,9 +103,9 @@ export const LEGAL: Record<LegalKind, Record<Locale, LegalDoc>> = {
         { h: "Технически бисквитки, които използваме", list: [
           "qb_lang — запазва избрания език (функционална).",
           "qb_admin — сесия за вход, само за администраторите на сайта.",
-          "qb-cookie-ack и qb-fb-consent — запазват вашия избор (известие за бисквитки и съгласие за Facebook); съхраняват се в браузъра (localStorage).",
+          "qb-cookie-ack, qb-fb-consent и qb-map-consent — запазват вашия избор (известие за бисквитки, съгласие за Facebook и за Google Maps); съхраняват се в браузъра (localStorage).",
         ] },
-        { h: "Бисквитки на трети страни", p: ["Плъгинът на страницата във Facebook се зарежда само след вашето изрично съгласие и може да зададе бисквитки на Meta Platforms съгласно политиката на Facebook."] },
+        { h: "Бисквитки на трети страни", p: ["Плъгинът на страницата във Facebook се зарежда само след вашето изрично съгласие и може да зададе бисквитки на Meta Platforms съгласно политиката на Facebook.", "Картата на Google Maps се зарежда само след вашето изрично съгласие (бутон „Покажи картата“) и може да зададе бисквитки на Google съгласно политиката на Google."] },
         { h: "Без профилиране", p: ["Не използваме рекламни бисквитки, нито аналитични инструменти с профилиране на потребителя."] },
         { h: "Управление на бисквитките", p: ["Можете да блокирате или изтриете бисквитките от настройките на браузъра. Изключването на техническите бисквитки може да ограничи някои функции, като запомнянето на езика."] },
         { h: "Актуализации", p: ["Тази страница може да бъде актуализирана; датата на ревизия е посочена най-горе."] },
@@ -119,9 +119,9 @@ export const LEGAL: Record<LegalKind, Record<Locale, LegalDoc>> = {
         { h: "Technical cookies we use", list: [
           "qb_lang — stores your chosen language (functional).",
           "qb_admin — login session, only for site administrators.",
-          "qb-cookie-ack and qb-fb-consent — store your choices (cookie notice and Facebook consent); kept in your browser (localStorage).",
+          "qb-cookie-ack, qb-fb-consent and qb-map-consent — store your choices (cookie notice, consent for Facebook and for Google Maps); kept in your browser (localStorage).",
         ] },
-        { h: "Third-party cookies", p: ["The Facebook page plugin loads only after your explicit consent and may set cookies from Meta Platforms, in accordance with Facebook’s policy."] },
+        { h: "Third-party cookies", p: ["The Facebook page plugin loads only after your explicit consent and may set cookies from Meta Platforms, in accordance with Facebook’s policy.", "The Google Maps map loads only after your explicit consent (the “Show the map” button) and may set Google cookies, in accordance with Google’s policy."] },
         { h: "No profiling", p: ["We do not use advertising cookies or analytics tools that profile users."] },
         { h: "Managing cookies", p: ["You can block or delete cookies from your browser settings. Disabling technical cookies may limit some features, such as remembering your language."] },
         { h: "Updates", p: ["This page may be updated; the revision date is shown at the top."] },

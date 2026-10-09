@@ -168,6 +168,7 @@ def popup(blocked="1,204", data="68 MB", time="14 min", host="news.example.com",
     tmp = tempfile.mkdtemp(prefix="sa-popup-")
     try:
         shutil.copy(os.path.join(ADBLOCK, "popup", "popup.css"), tmp)
+        shutil.copytree(os.path.join(ADBLOCK, "popup", "img"), os.path.join(tmp, "img"))  # the shield frames (popup.css url(img/…))
         html = os.path.join(tmp, "popup.html")
         open(html, "w", encoding="utf-8").write(src)
         dom = subprocess.run([chrome_bin(), "--headless", "--no-sandbox", "--disable-gpu", "--dump-dom", "--virtual-time-budget=3000",

@@ -1,7 +1,7 @@
 import { prisma } from "./db";
 import type { Dict, Locale } from "./i18n";
 import { DEFAULT_CONTENT, defaultFor } from "./defaults";
-import { SECTION_KEYS, isSectionKey, mergeSection, type SectionKey } from "./cms";
+import { NO_FALLBACK, SECTION_KEYS, fillUntranslated, isSectionKey, mergeSection, type SectionKey } from "./cms";
 import { upgradeStored } from "./content-upgrade";
 
 let seedChecked = false;
@@ -57,6 +57,16 @@ function parseLocale(row: Row | undefined, locale: Locale): unknown {
   }
 }
 
+/** A stored row in one language, merged over its defaults; list items not yet
+ *  translated into it show in the language they were written in (Italian
+ *  first, then Bulgarian, then English). */
+function resolve(key: string, row: Row | undefined, locale: Locale): Record<string, unknown> {
+  const doc = mergeSection(defaultFor(key, locale), parseLocale(row, locale));
+  if (!row || NO_FALLBACK.has(key)) return doc;
+  const others = (["it", "bg", "en"] as const).filter((l) => l !== locale);
+  return fillUntranslated(doc, others.map((l) => mergeSection(defaultFor(key, l), parseLocale(row, l))));
+}
+
 /** One section, merged over its defaults for a locale (lightweight pages). */
 export async function getOne<K extends ContentKey>(locale: Locale, key: K): Promise<ContentMap[K]> {
   await ensureSeeded();
@@ -66,7 +76,7 @@ export async function getOne<K extends ContentKey>(locale: Locale, key: K): Prom
   } catch {
     // fall through to defaults
   }
-  return mergeSection(defaultFor(key, locale), parseLocale(row, locale)) as ContentMap[K];
+  return resolve(key, row, locale) as ContentMap[K];
 }
 
 export type Site = {
@@ -90,8 +100,7 @@ export async function loadSite(locale: Locale): Promise<Site> {
   }
   const byKey = new Map(rows.map((r) => [r.key, r] as const));
 
-  const get = <K extends ContentKey>(key: K) =>
-    mergeSection(defaultFor(key, locale), parseLocale(byKey.get(key), locale)) as ContentMap[K];
+  const get = <K extends ContentKey>(key: K) => resolve(key, byKey.get(key), locale) as ContentMap[K];
   const enabled = (key: string) => byKey.get(key)?.enabled ?? true;
 
   const orderOf = (k: SectionKey) =>
@@ -137,14 +146,14 @@ export type Hero = Pictured & {
 export type Simple = { title: string; lead?: string; body?: string };
 
 export type Feature = { title: string; text: string };
-export type About = Simple & Pictured & { features: Feature[] };
+export type About = Simple & Pictured & { body: string; motto: string; features: Feature[] };
 
-export type Letter = { letter: string; latin: string; word: string; meaning: string };
+export type Letter = { letter: string; latin: string; word: string; meaning: string; audio: string };
 export type Alphabet = { title: string; lead: string; letters: Letter[] };
 
 export type Card = { icon: string; title: string; text: string; bullets: string[] };
 export type Cards = Simple & { items: Card[] };
-export type School = Cards & Pictured & { quote: string; quoteCite: string };
+export type School = Cards & Pictured & { body: string; quote: string; quoteCite: string };
 
 export type ScheduleRow = { day: string; time: string; place: string };
 export type Dance = Simple & Pictured & {
@@ -152,10 +161,20 @@ export type Dance = Simple & Pictured & {
   scheduleTitle: string;
   schedule: ScheduleRow[];
   groupNote: string;
+  story: string;
+  instructorPhoto: string;
   instructorName: string;
   instructorRole: string;
+  instructorBio: string;
   cta: string;
 };
+
+export type Teacher = { photo: string; fullName: string; role: string };
+export type Teachers = Simple & { items: Teacher[] };
+
+export type DocFile = { title: string; text: string; file: string };
+export type Issue = DocFile & { coverImage: string };
+export type Documents = Simple & { items: DocFile[]; issuesTitle: string; issues: Issue[] };
 
 export type GalleryPhoto = { src: string; caption: string; alt: string };
 export type Gallery = Simple & { photos: GalleryPhoto[] };
@@ -169,7 +188,7 @@ export type Cta = { title: string; body: string; primary: string; secondary: str
 export type FaqItem = { q: string; a: string };
 export type Faq = { title: string; items: FaqItem[] };
 
-export type Seo = { title: string; description: string; keywords: string[]; shareImage: string };
+export type Seo = { title: string; description: string; keywords: string[]; shareImage: string; cardTitle: string; cardText: string };
 
 export type Org = {
   name: string;
@@ -192,11 +211,13 @@ export type ContentMap = {
   hero: Hero;
   about: About;
   school: School;
+  teachers: Teachers;
   alphabet: Alphabet;
   courses: Cards;
   dance: Dance;
   facebook: Facebook;
   gallery: Gallery;
+  documents: Documents;
   faq: Faq;
   contact: Contact;
   cta: Cta;

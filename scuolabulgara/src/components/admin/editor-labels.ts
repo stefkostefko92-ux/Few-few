@@ -15,8 +15,14 @@ export const LABELS: Record<string, string> = {
   instructorRole: "Длъжност на преподавателя", cta: "Текст на бутона", points: "Точки",
   topics: "Теми във формата", primary: "Основен бутон", secondary: "Втори бутон",
   day: "Ден", time: "Час", place: "Място", highlights: "Факти под интрото",
+  motto: "Мото (цитат)", story: "Историята на групата", instructorPhoto: "Снимка на преподавателя",
+  instructorBio: "Биография на преподавателя",
+  // teachers
+  fullName: "Име и фамилия", role: "Специалност / роля", photo: "Снимка",
+  // documents & newspaper
+  file: "Файл (PDF)", coverImage: "Корица", issuesTitle: "Заглавие над броевете", issues: "Броеве на вестника",
   // alphabet
-  letters: "Букви", letter: "Буква", latin: "На латиница", word: "Дума на български", meaning: "Значение",
+  letters: "Букви", letter: "Буква", latin: "На латиница", word: "Дума на български", meaning: "Значение", audio: "Произношение (звук)",
   // pictures
   image: "Снимка", imageAlt: "Описание на снимката", photos: "Снимки", src: "Снимка",
   caption: "Надпис под снимката", alt: "Описание на снимката",
@@ -24,6 +30,7 @@ export const LABELS: Record<string, string> = {
   q: "Въпрос", a: "Отговор",
   // SEO
   description: "Описание", keywords: "Ключови думи", shareImage: "Снимка при споделяне",
+  cardTitle: "Карта при споделяне — голям надпис", cardText: "Карта при споделяне — ред отдолу",
   // organisation
   name: "Официално име", alternateName: "Друго име", streetAddress: "Улица",
   postalCode: "Пощенски код", locality: "Град", region: "Област", country: "Държава (код)",
@@ -41,8 +48,10 @@ export const HINTS: Record<string, string> = {
   badge: "Един ред над голямото заглавие: името на училището и годината.",
   meaning: "На италианската и английската страница: преводът. На българската: думата на италиански.",
   latin: "Официалната транслитерация, напр. zh за Ж.",
+  audio: "Ако е празно и думата е стандартната, звучи вграденият запис (женски глас). Тук можете да качите свой: MP3, M4A, OGG или WAV, до 3 MB, общ за трите езика.",
   shareImage: "Показва се при споделяне във Facebook, WhatsApp и др. Ако е празно — автоматичната карта с логото.",
   description: "Показва се под заглавието в Google. Около 150 знака.",
+  cardTitle: "Автоматичната карта (с шевицата) при споделяне във Facebook, WhatsApp и др., ако не сте избрали своя снимка.",
   phoneHref: "Само цифри с код на държавата, напр. 393208479971.",
   facebookUrl: "Пълен адрес, започващ с https://",
   facebookPageHref: "Пълен адрес, започващ с https://",
@@ -51,6 +60,13 @@ export const HINTS: Record<string, string> = {
   longitude: "Например 9.1900",
   foundingDate: "Във формат ГГГГ-ММ-ДД, напр. 2014-01-12.",
   country: "Двубуквен код, напр. IT.",
+  body: "Празен ред между два абзаца ги разделя на сайта.",
+  story: "Празен ред между два абзаца ги разделя на сайта.",
+  instructorBio: "Празен ред между два абзаца ги разделя на сайта.",
+  file: "PDF до 14 MB, общ за трите езика. Отваря се в нов раздел.",
+  coverImage: "Снимка на първата страница на броя. Ако е празно, се показва само заглавието.",
+  photo: "Портретна снимка. Ако махнете име и фамилия, човекът не се показва.",
+  fullName: "На италиански и английски — на латиница, на български — на кирилица.",
 };
 
 /** Interface wording, grouped the way the admin thinks about it. */
@@ -61,6 +77,8 @@ export const UI_GROUPS: { title: string; keys: Record<string, string> }[] = [
       "nav.about": "За нас", "nav.school": "Училището", "nav.courses": "Курсове", "nav.dance": "Танци",
       "nav.alphabet": "Азбуката", "nav.contact": "Контакти", "nav.enroll": "Бутон „Запиши се“",
       "lang.label": "Етикет за избор на език", skip: "„Към съдържанието“ (за клавиатура)",
+      "nav.home": "„Начало“ (за екранни четци и Google)", "nav.label": "Име на менюто (за екранни четци)",
+      "nav.menu": "Бутон „Меню“ на телефон (за екранни четци)",
     },
   },
   {
@@ -89,19 +107,26 @@ export const UI_GROUPS: { title: string; keys: Record<string, string> }[] = [
     },
   },
   {
-    title: "Бисквитки и Facebook",
+    title: "Бисквитки, Facebook и карта",
     keys: {
       "cookie.text": "Текст на банера", "cookie.accept": "Бутон „Приемам“", "cookie.reject": "Бутон „Отказвам“",
       "cookie.more": "Връзка „Повече информация“", "cookie.manage": "Връзка „Настройки на бисквитките“",
       "fb.consent": "Текст преди зареждане на Facebook",
       "nav.facebook": "Заглавие на прозореца с Facebook",
+      "fb.blocked": "Facebook е блокиран в браузъра (напр. от блокер на реклами) — текст",
+      "map.title": "Картата — заглавие (и за екранни четци)", "map.consent": "Картата — текст преди зареждане",
+      "map.show": "Бутон „Покажи картата“", "map.open": "Връзка „Отвори в Google Maps“",
     },
+  },
+  {
+    title: "Страница „Не е намерена“ (404)",
+    keys: { "notfound.text": "Текстът на страницата (показва се на трите езика едновременно)" },
   },
   {
     title: "Азбуката",
     keys: {
       "alpha.pick": "„Изберете буква“ (за екранни четци)", "alpha.latin": "Етикет „На латиница“",
-      "alpha.meaning": "Етикет „Значение“",
+      "alpha.meaning": "Етикет „Значение“", "alpha.listen": "Бутон „Чуйте произношението“ (за екранни четци)",
     },
   },
   {
@@ -121,6 +146,7 @@ export const ICON_LABELS: Record<string, string> = {
 
 const LONG = new Set([
   "lead", "body", "text", "quote", "instructorRole", "meaning", "groupNote", "a", "description",
+  "motto", "story", "instructorBio", "role",
   "intro", "imageAlt", "alt", "p", "list", "fb.consent", "cookie.text", "form.ok", "form.note",
 ]);
 export const isLongField = (k: string, v: string) => LONG.has(k) || v.length > 70;

@@ -1,0 +1,193 @@
+/* Korpora — брошурата A4 за клиенти. Същата визия като витрината: лист W1000 върху леглото на машината,
+   а останалото се чете като пакета чертежи, който излиза от един проект. Всяка страница носи каре като
+   чертежите от програмата; картините са изход на двигателя, не рисунки. */
+/*FONTS*/
+:root {
+  --paper: #f6f7f1;
+  --panel: #fbfbf8;
+  --ink: #34302f;
+  --ink-2: #5d5752;
+  --ink-3: #6f6963;
+  --rule: #d9d9cf;
+  --rule-strong: #b9b9ad;
+  --green: #2c6a10;
+  --green-soft: #e3ecd8;
+  --gold: #a87406;
+  --gold-soft: #f4ead2;
+  --oak: #c2a588;
+  --mdf: #c9a97c;
+  --drill: #0f6e86;
+  --drawing-paper: #fbfcf9;
+  --f-text: 'Geologica', 'DejaVu Sans', sans-serif;
+  --f-mono: 'JetBrains Mono', 'DejaVu Sans Mono', monospace;
+}
+@page {
+  size: A4;
+  margin: 0;
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--paper);
+}
+body {
+  color: var(--ink);
+  font: 400 9.4pt/1.5 var(--f-text);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+h1,
+h2,
+h3,
+p,
+figure,
+ul,
+ol,
+dl,
+dd {
+  margin: 0;
+}
+a {
+  color: var(--green);
+  text-decoration: none;
+}
+.mono,
+code,
+pre {
+  font-family: var(--f-mono);
+}
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+figcaption {
+  margin-top: 2mm;
+  font-size: 7.8pt;
+  color: var(--ink-2);
+}
+.b-i {
+  flex: none;
+  width: 4.2mm;
+  height: 4.2mm;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* the page and its title block */
+.b-page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 210mm;
+  height: 297mm;
+  padding: 15mm 16mm 20mm;
+  overflow: hidden;
+  break-after: page;
+}
+.b-page:last-child {
+  break-after: auto;
+}
+.b-page h2 {
+  max-width: 150mm;
+  margin: 1mm 0 4mm;
+  font-size: 24pt;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-weight: 720;
+  font-variation-settings: 'SHRP' 60;
+}
+.b-page h3 {
+  font-size: 10.5pt;
+  line-height: 1.25;
+  font-weight: 650;
+}
+.b-lead {
+  max-width: 150mm;
+  margin-bottom: 7mm;
+  font-size: 11pt;
+  line-height: 1.5;
+}
+.b-tb {
+  position: absolute;
+  left: 16mm;
+  right: 16mm;
+  bottom: 9mm;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 2.4mm;
+  border-top: 0.3mm solid var(--rule-strong);
+  font-size: 7.5pt;
+  color: var(--ink-2);
+}
+.b-tb-brand,
+.b-brand {
+  display: inline-flex;
+  align-items: center;
+}
+.b-tb-brand img {
+  display: block;
+  height: 5mm;
+  width: auto;
+}
+
+/* 1 — cover: the first sheet of the example kitchen on the machine bed */
+.b-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 8.5pt;
+}
+.b-brand img {
+  display: block;
+  height: 12mm;
+  width: auto;
+}
+.b-cover h1 {
+  margin: 15mm 0 6mm;
+  font-size: 50pt;
+  line-height: 0.92;
+  letter-spacing: -0.045em;
+  font-weight: 760;
+  font-variation-settings: 'SHRP' 100;
+}
+.b-cover h1 span {
+  display: block;
+}
+.b-cover .b-lead {
+  max-width: 132mm;
+  margin-bottom: 2.5mm;
+  font-size: 11.5pt;
+}
+.b-for {
+  max-width: 132mm;
+  margin-bottom: 7mm;
+  color: var(--ink-2);
+}
+.b-trial {
+  display: flex;
+  gap: 2.5mm;
+  max-width: 150mm;
+  margin-top: 6mm;
+  font-size: 11pt;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.b-trial .b-i {
+  margin-top: 0.5mm;
+  color: var(--green);
+}
+.b-proof {
+  max-width: 160mm;
+  margin-top: auto;
+  padding-top: 3mm;
+  font-size: 8pt;
+  color: var(--ink-2);
+}

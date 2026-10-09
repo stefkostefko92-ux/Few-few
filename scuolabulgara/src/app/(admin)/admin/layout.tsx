@@ -6,6 +6,7 @@ import { fontVars } from "@/lib/fonts";
 export const metadata: Metadata = {
   title: "Админ панел · Qui Bulgaria",
   robots: { index: false, follow: false },
+  icons: { icon: "/assets/img/brand/favicon.svg" },
 };
 
 export const dynamic = "force-dynamic";
