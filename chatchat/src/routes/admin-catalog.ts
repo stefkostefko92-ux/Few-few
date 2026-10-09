@@ -10,7 +10,10 @@ import {
   requireCsrf,
   requireUser,
 } from '../auth/guards.js';
+import { qrSvg } from '../qr.js';
+import { hashToken, randomToken } from '../crypto.js';
 import { isVersion, normalizeRevision } from '../domain/versions.js';
+import { QR_TOKEN_BYTES } from '../services/devices.js';
 
 /**
  * Анаграфика (FR-01, §13.1): продукти с HW ревизии и обхват на FW, и физическите табла.
@@ -137,6 +140,37 @@ export function adminCatalogRouter(deps: AppDeps): Router {
         if (isUniqueViolation(err)) return apiError(res, 409, 'duplicate');
         throw err;
       }
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // FR-13: нов QR етикет за таблото. В базата — само HMAC на токена; старият етикет спира да
+  // важи веднага. Линкът и SVG-то се връщат ВЕДНЪЖ (за печат) — после не могат да се възстановят.
+  router.post('/devices/:serial/qr', async (req, res, next) => {
+    try {
+      const serial = z.string().trim().min(1).max(80).safeParse(req.params.serial);
+      if (!serial.success) return apiError(res, 400, 'invalid_input');
+      const p = principalOf(req);
+      const token = randomToken(QR_TOKEN_BYTES);
+      const updated = await deps.db.device.updateMany({
+        where: { tenantId: p.user.tenantId, serial: serial.data },
+        data: { qrTokenHash: hashToken(token, deps.sessions.pepper) },
+      });
+      if (updated.count === 0) return apiError(res, 404, 'not_found');
+      const device = await deps.db.device.findUniqueOrThrow({
+        where: { tenantId_serial: { tenantId: p.user.tenantId, serial: serial.data } },
+        select: { id: true },
+      });
+      await appendAudit(deps.db, {
+        tenantId: p.user.tenantId,
+        actorId: p.user.id,
+        action: 'catalog.device.qr',
+        objectType: 'device',
+        objectId: device.id,
+      });
+      const url = `${deps.publicOrigin}/q/${token}`;
+      res.json({ url, svg: await qrSvg(url) });
     } catch (err) {
       next(err);
     }

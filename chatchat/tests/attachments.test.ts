@@ -174,6 +174,7 @@ describe('конфигурация (fail-closed)', () => {
     PUBLIC_BASE_URL: 'https://chatchat.test',
     DATABASE_URL: 'postgresql://x@127.0.0.1/x',
     SESSION_PEPPER: 'p'.repeat(40),
+    MFA_ENC_KEY: Buffer.alloc(32, 7).toString('base64'),
   };
 
   test('без ATTACHMENTS_DIR — изключено; clamd по подразбиране на 3310', () => {

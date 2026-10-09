@@ -203,7 +203,7 @@ mark_pgvector() {
   printf '%s\n' "$TS" >"$PGVECTOR_MARK"
 }
 
-# Код 200 сам не казва КОЙ отговаря на порта: /readyz на ChatChat връща {"ok":true,"ai":…} само когато
+# Код 200 сам не казва КОЙ отговаря на порта: /readyz на ChatChat връща {"ok":true,"app":"chatchat","ai":…} само когато
 # базата отговаря — чака се точно това тяло.
 wait_ready() {
   local url="http://127.0.0.1:$1/readyz" body deadline=$((SECONDS + HEALTH_WAIT))

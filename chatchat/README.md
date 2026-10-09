@@ -30,11 +30,11 @@ flowchart LR
 ```bash
 cd chatchat
 npm ci
-cp .env.example .env            # попълни PUBLIC_BASE_URL, DATABASE_URL, SESSION_PEPPER (≥32 знака)
+cp .env.example .env            # попълни PUBLIC_BASE_URL, DATABASE_URL, SESSION_PEPPER (≥32 знака), MFA_ENC_KEY
 npx prisma migrate deploy
 npm run build
 TENANT_SLUG=demo TENANT_NAME="Demo" USER_EMAIL=ko@example.test USER_NAME="Knowledge owner" \
-  USER_PASSWORD='…поне 12 знака…' USER_ROLE=KNOWLEDGE_OWNER npm run tenant:create
+  USER_ROLE=KNOWLEDGE_OWNER npm run tenant:create   # печата еднократен линк /reset#… за паролата
 npm run dev                     # http://localhost:4330
 ```
 
@@ -69,6 +69,12 @@ AI вижда само `PUBLISHED`. Публикуване и отписване
 | GET        | `/api/v1/attachments/:id/url` → подписан адрес (5 мин.) · `/api/v1/files/:id?exp=…&sig=…`                                   | с достъп до файла            |
 | POST       | `/api/v1/admin/products` · `/devices` · `/documents` (+ submit/reject/publish/deprecate) · `/errors` (+ publish/deprecate)  | KNOWLEDGE_OWNER              |
 | POST       | `/api/v1/admin/attachments?name=…` (PDF до 50 MB, антивирус)                                                                | KNOWLEDGE_OWNER              |
+| POST       | `/api/v1/auth/mfa/setup` · `/enable` · `/verify` · `/disable` (TOTP; персоналът — задължително)                             | вписан                       |
+| POST       | `/api/v1/auth/reset-password` (еднократният линк `/reset#…`)                                                                | публично                     |
+| GET/POST   | `/api/v1/admin/users` · PATCH `/users/:id/admin` · POST `/admin/users/:id/{reset-password,revoke-sessions,reset-mfa,erase}` | TENANT_ADMIN, PLATFORM_ADMIN |
+| GET/POST   | `/api/v1/admin/users/:id/export` · POST `/admin/users/bulk` (dryRun)                                                        | TENANT_ADMIN, PLATFORM_ADMIN |
+| GET/POST   | `/api/v1/saved-filters?scope=USERS\|CASES\|CONVERSATIONS` · DELETE `/saved-filters/:id`                                     | вписан                       |
+| POST       | `/api/v1/admin/devices/:serial/qr` · `/admin/errors/:id/relink` · GET `/devices/by-qr/:token`                               | KNOWLEDGE_OWNER / вписан     |
 | GET        | `/api/v1/audit`                                                                                                             | TENANT_ADMIN, PLATFORM_ADMIN |
 | GET/POST   | `/api/v1/conversations` · GET `/conversations/:id` · POST/DELETE `…/members` · POST `…/star` · PATCH `…/preferences`        | вписан (по членство)         |
 | GET/POST   | `/api/v1/conversations/:id/messages` · POST `…/read` · PATCH/DELETE `/messages/:id` · POST/DELETE `/messages/:id/reactions` | вписан (по членство)         |

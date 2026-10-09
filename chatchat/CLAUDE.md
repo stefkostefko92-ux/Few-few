@@ -21,9 +21,11 @@ npm ci
 npm run gate              # prettier + typecheck (src + tests) + unit тестове + build — „готово“ = зелено
 npm test                  # unit: AI оркестратор (фалшив модел), речник за безопасност, gate, retrieval
 npm run test:integration  # иска жива PostgreSQL: DATABASE_URL=postgresql://…/chatchat_test
-npm run dev               # :4330, чете .env (PUBLIC_BASE_URL, DATABASE_URL, SESSION_PEPPER; VERTEX_* по избор)
-npm run tenant:create     # след build: клиент + първи потребител от средата (TENANT_*, USER_*)
-npm run user:create       # нов потребител в съществуващ клиент
+npm run dev               # :4330, чете .env (PUBLIC_BASE_URL, DATABASE_URL, SESSION_PEPPER, MFA_ENC_KEY; VERTEX_* по избор)
+npm run tenant:create     # след build: клиент + първи потребител от средата (TENANT_*, USER_*);
+                          # без USER_PASSWORD печата еднократен линк /reset#… (72 ч)
+npm run user:create       # нов потребител в съществуващ клиент (същото)
+npm run user:reset        # USER_EMAIL → нов линк за парола (24 ч); RESET_MFA=1 нулира и TOTP
 npm run retention         # дневно: стари сесии; затворени случаи само с RETENTION_CASE_DAYS; файлове-сираци
 npm run embed             # след build: вектори за публикуваните парчета без вектор (или от друг модел)
 npm run eval -- --set evals/sample.json [--db <url с „test“>]   # оценъчен набор §16 → evals/reports/
@@ -46,17 +48,22 @@ src/
   ai/          оркестраторът: промпт, инструменти само за четене, доказателствен пакет E1…En, Vertex клиент
   safety/      Safety Gate (§11.2) · screen.ts (свободен текст + връзка стъпка↔източник) · речник IT/EN/BG
                (terms.ts данни · patterns.ts блокове · lexicon.ts правила + сгъване срещу обфускация) · цитати · таван · ескалация
-  auth/        сесии в базата (httpOnly cookie), RBAC матрица §12.4, CSRF guards
-  routes/      тънки рутери: auth, catalog, cases, chat, tickets, attachments (качване), files (подписан адрес +
-               сваляне), admin-{catalog,documents,errors} + audit; работното пространство: conversations,
-               messages, presence, notifications, quick-responses
-  services/    случаи (достъп, номера, хронология, обобщение на тикет), приемане на документи, pdf (текст по
-               страници), прикачени файлове (filetype: магически байтове + имена; signed-url), retention
+  auth/        сесии в базата (httpOnly cookie) + отнемане/кука, RBAC матрица §12.4, CSRF guards,
+               TOTP (totp.ts от korpora, mfa.ts — пазач срещу повторен код)
+  routes/      тънки рутери: auth, auth-mfa, catalog, cases, chat, tickets, audit, saved-filters,
+               attachments (качване), files (подписан адрес + сваляне),
+               admin-{catalog,documents,errors}, admin-users (директория) · admin-user-actions · admin-subject (GDPR);
+               работното пространство: conversations, messages, presence, notifications, quick-responses
+  services/    случаи (достъп, номера, хронология, обобщение на тикет, изгледи), приемане на документи, pdf
+               (текст по страници), прикачени файлове (filetype: магически байтове + имена; signed-url),
+               retention, потребители (линкове, ранг, масови), филтри (позволени полета), субект
+               (експорт/изтриване), табла (QR)
   services/collab/  работното пространство (§12.3): access.ts (ЕДИНСТВЕНОТО място за правилата за достъп),
                разговори/членове, съобщения/нишки/курсор, известия (дедупликация), присъствие, publish → хъба
   realtime/    hub.ts (SSE потоци в паметта по потребител) · stream.ts (`GET /api/v1/events`)
   storage/     частното хранилище на файловете (файлово / в паметта) и clamd клиент (INSTREAM, node:net)
-  cli/         tenant.ts — клиент/потребител от средата; retention.ts — дневната ретенция
+  cli/         tenant.ts — клиент/потребител/линк за парола от средата; retention.ts — дневната ретенция;
+               embed.ts — векторите
 public/        интерфейсът (вход + работно пространство), i18n/{it,en,bg}.json
 evals/         оценъчният набор §16 (формат, фикстури, метрики, run.ts) — how-to в evals/README.md
 ```
@@ -79,8 +86,24 @@ evals/         оценъчният набор §16 (формат, фиксту�
 - Всеки AI отговор пази `knowledgeSnapshotId` + `promptVersion` (AC-09); смяна на промпта/правилата →
   нов `PROMPT_VERSION` (`ai/prompt.ts`) / `GATE_VERSION` (`safety/gate.ts`).
 - Одитът е верига (`audit.ts`, advisory lock, каноничен JSON) — никога съдържание на разговор, парола или токен.
+  Администраторът на клиента НЕ вижда вход/изход/MFA проверки (`routes/audit.ts`, чл. 4 Statuto dei
+  Lavoratori) — само платформеният. Причината на админ действие е в одита, маскирана с `redactPii`.
+- **Втори фактор:** персоналът (SUPPORT, ENGINEERING, KNOWLEDGE_OWNER, TENANT_ADMIN, PLATFORM_ADMIN) е
+  задължен — без TOTP стига само до `/auth/me`, `/auth/logout`, `/auth/mfa/*` (403 `mfa_setup_required`);
+  включен и неминат → 401 `mfa_required`. Проверката е в `requireUser`/`requireCapability` (`mfaBlock`) —
+  нов маршрут към данни ползва тях, никога само `requireSession`. Тайната — AES-256-GCM с `MFA_ENC_KEY`.
+- **Сесиите се отнемат само през `revokeUserSessions`** (`auth/sessions.ts`, AC-16: деактивиране, роля,
+  фирма, изтекъл срок, нова парола, MFA нулиране, изтриване); realtime модул се закача с
+  `onSessionsRevoked`. В транзакция — `announceRevocation` след commit.
+- **Парола никога не се показва и не се праща:** само еднократен линк `/reset#<токен>` (HMAC в
+  `PasswordReset`), върнат веднъж на администратора/CLI. Управлението е в клиента (tenantId), без себе си
+  и без по-висок ранг (`targetProblem`, `roleRank`).
+- Порталният техник вижда РОЛЯТА на служителя, не името (`services/case-views.ts`, `authorRole`).
+- Нова ревизия на документ (supersedes) → кодовете за грешка на старата стават REVIEW и се връщат в
+  отговора на publish; `relink` → `publish`. QR токенът на таблото — само HMAC в `Device.qrTokenHash`.
 - Кодовете, които gate/сървърът връщат (`gate.*`, `ctx.*`, `collect.*`, `ai.*`, грешките на API), се
-  превеждат в `public/i18n/*.json` — нов код = превод на трите езика.
+  превеждат в `public/i18n/*.json` — нов код = превод на трите езика (кодовете на F2 администрирането,
+  MFA, прикачените файлове и работното пространство още чакат UI стъпката).
 - **Семантичното е подкрепа, не доказателство:** никога „strong“; „high“ само ако поне един източник е
   лексикален (точен/пълнотекстов), а семантичният е от друг документ със сходство ≥ 0.8; под 0.6 — шум
   (`retrieval/retrieve.ts`). Вектори само за PUBLISHED; търсенето има същите SQL филтри + същия модел.
@@ -102,7 +125,7 @@ evals/         оценъчният набор §16 (формат, фиксту�
   членове са от ЕДНА фирма (и след като са махнати — фирмата се помни по авторите).
 - **SSE филтрира при изпращане**: `hub.publish(събитие, получатели, authorize)` — authorize чете
   текущите роля/активност/членство от базата за свързаните получатели и връща какво вижда всеки.
-  Никога не пращай payload в потока без authorize. Изход/`revokeAllSessions` затварят потоците
+  Никога не пращай payload в потока без authorize. Изход и всяко `revokeUserSessions` затварят потоците
   (`onSessionsRevoked`); heartbeat на 25 s проверява сесията наново.
 - **Един процес.** Хъбът е в паметта; при втори процес/машина събитие от другия не стига до
   тукашните потоци — хоризонталното мащабиране иска pub/sub между хъбовете (Redis или Postgres
@@ -113,7 +136,7 @@ evals/         оценъчният набор §16 (формат, фиксту�
 
 ## Извън тази стъпка (пътна карта §18)
 
-AI анализ на снимки (§9.2), UI за прикачените файлове и за работното пространство (API-то е готово),
-файлове в разговорите, извличане от DOCX и OCR на сканирани PDF, преглед на схеми, обаждания (§12.3),
-MFA/OIDC (Entra ID), реалните 200–500 случая на клиента в оценъчния набор (§16.2 — форматът и
-прогонът са в `evals/`).
+AI анализ на снимки (§9.2), UI за прикачените файлове, работното пространство, директорията, MFA, QR
+и запазените филтри (API-то е готово), файлове в разговорите, извличане от DOCX и OCR на сканирани PDF,
+преглед на схеми, обаждания (§12.3), OIDC (Entra ID), реалните 200–500 случая на клиента в оценъчния
+набор (§16.2 — форматът и прогонът са в `evals/`).

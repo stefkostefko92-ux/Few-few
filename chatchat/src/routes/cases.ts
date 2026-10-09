@@ -10,7 +10,7 @@ import {
   requireCsrf,
   requireUser,
 } from '../auth/guards.js';
-import { AUDIENCE_WITHHELD, can, caseAudiences, coversAudiences } from '../auth/rbac.js';
+import { can } from '../auth/rbac.js';
 import { DiagnosticContextSchema, redactContext } from '../domain/context.js';
 import { attachmentsByMessage } from '../services/attachments.js';
 import { notify } from '../services/collab/notify.js';
@@ -23,6 +23,7 @@ import {
   isParticipant,
   withUniqueRetry,
 } from '../services/cases.js';
+import { caseView, contextWarnings, messageViews } from '../services/case-views.js';
 
 /** Случаите (§12.4, §14.1): създаване, контекст, изход, поемане от оператор, хронология. */
 
@@ -32,28 +33,6 @@ const CreateCase = z.object({
   deviceSerial: z.string().trim().min(1).max(80).optional(),
 });
 const Outcome = z.object({ outcome: z.enum(['RESOLVED', 'NOT_RESOLVED']) });
-
-function caseView(c: {
-  id: string;
-  number: string;
-  status: string;
-  outcome: string | null;
-  context: Prisma.JsonValue;
-  portal: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}) {
-  return {
-    id: c.id,
-    number: c.number,
-    status: c.status,
-    outcome: c.outcome,
-    context: c.context,
-    portal: c.portal,
-    createdAt: c.createdAt,
-    updatedAt: c.updatedAt,
-  };
-}
 
 export function casesRouter(deps: WiredDeps): Router {
   const router = Router();
@@ -121,6 +100,7 @@ export function casesRouter(deps: WiredDeps): Router {
         }),
       );
       await addTimeline(deps.db, created.id, 'case.created', p.user.id, { context });
+      const warnings = await contextWarnings(deps.db, created.id, product.id, context);
       await appendAudit(deps.db, {
         tenantId: p.user.tenantId,
         actorId: p.user.id,
@@ -128,7 +108,7 @@ export function casesRouter(deps: WiredDeps): Router {
         objectType: 'case',
         objectId: created.id,
       });
-      res.status(201).json({ case: caseView(created) });
+      res.status(201).json({ case: caseView(created), warnings });
     } catch (err) {
       next(err);
     }
@@ -146,15 +126,6 @@ export function casesRouter(deps: WiredDeps): Router {
         orderBy: { createdAt: 'asc' },
         take: 500,
       });
-      const authorIds = [...new Set(messages.map((m) => m.authorId).filter(Boolean))] as string[];
-      const authors = new Map(
-        (
-          await deps.db.user.findMany({
-            where: { id: { in: authorIds }, tenantId: p.user.tenantId },
-            select: { id: true, name: true },
-          })
-        ).map((u) => [u.id, u.name]),
-      );
       const ticket = await deps.db.ticket.findUnique({ where: { caseId: c.id } });
       // Само CLEAN файлове, привързани към съобщение; самите байтове — през подписан адрес.
       const files = await attachmentsByMessage(
@@ -162,22 +133,11 @@ export function casesRouter(deps: WiredDeps): Router {
         p.user.tenantId,
         messages.map((m) => m.id),
       );
-      const reader = caseAudiences(p.user.role, c.portal);
+      const views = await messageViews(deps.db, p, c, messages);
       res.json({
         case: caseView(c),
         ticket: ticket ? { number: ticket.number, status: ticket.status } : null,
-        messages: messages.map((m) => {
-          const visible = m.kind !== 'AI' || coversAudiences(reader, m.audiences);
-          return {
-            id: m.id,
-            kind: m.kind,
-            authorName: m.authorId ? (authors.get(m.authorId) ?? null) : null,
-            body: visible ? m.body : AUDIENCE_WITHHELD,
-            payload: visible ? m.payload : null,
-            createdAt: m.createdAt,
-            attachments: files.get(m.id) ?? [],
-          };
-        }),
+        messages: views.map((m) => ({ ...m, attachments: files.get(m.id) ?? [] })),
       });
     } catch (err) {
       next(err);
@@ -209,7 +169,8 @@ export function casesRouter(deps: WiredDeps): Router {
         from: c.context,
         to: body.data.context,
       });
-      res.json({ case: caseView(updated) });
+      const warnings = await contextWarnings(deps.db, c.id, product.id, body.data.context);
+      res.json({ case: caseView(updated), warnings });
     } catch (err) {
       next(err);
     }

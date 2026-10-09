@@ -21,6 +21,7 @@ import { extractPdfText, type PdfFailure } from '../services/pdf.js';
  * Управление на знанието (§4.1, §11.3, AC-10): Draft → Review → Published → Deprecated.
  * Публикуване и отписване на ревизия НЕ иска преобучение — AI вижда само PUBLISHED.
  * Документ по безопасност: публикува го човек, различен от качилия (принцип на четирите очи).
+ * Нова ревизия (supersedes): кодовете за грешка на старата стават REVIEW и се връщат в отговора.
  */
 
 const Id = z.string().min(1).max(40);
@@ -182,6 +183,7 @@ export function adminDocumentsRouter(deps: AppDeps): Router {
         if (!doc) return apiError(res, 404, 'not_found');
         if (doc.status !== FROM[action]) return apiError(res, 409, 'invalid_transition');
         const now = new Date();
+        let errorsToReview: Array<{ id: string; code: string; version: number }> | null = null;
 
         if (action === 'publish') {
           // §7.3: търсим само с достатъчно метаданни за приложимостта.
@@ -191,7 +193,7 @@ export function adminDocumentsRouter(deps: AppDeps): Router {
           if (doc.safetyRelevant && doc.uploadedById === p.user.id) {
             return apiError(res, 409, 'four_eyes_required');
           }
-          await deps.db.$transaction(async (tx) => {
+          errorsToReview = await deps.db.$transaction(async (tx) => {
             await tx.document.update({
               where: { id: doc.id },
               data: {
@@ -201,12 +203,39 @@ export function adminDocumentsRouter(deps: AppDeps): Router {
                 publishedAt: now,
               },
             });
-            if (doc.supersedesId) {
-              await tx.document.updateMany({
-                where: { id: doc.supersedesId, tenantId: p.user.tenantId, status: 'PUBLISHED' },
-                data: { status: 'DEPRECATED', deprecatedAt: now },
+            if (!doc.supersedesId) return null;
+            await tx.document.updateMany({
+              where: { id: doc.supersedesId, tenantId: p.user.tenantId, status: 'PUBLISHED' },
+              data: { status: 'DEPRECATED', deprecatedAt: now },
+            });
+            // Решение на собственика: кодовете на отписаната ревизия не изчезват тихо — стават
+            // REVIEW (AI не ги вижда) и отговорникът ги свързва с новия документ (`relink`).
+            const affected = await tx.errorCode.findMany({
+              where: {
+                tenantId: p.user.tenantId,
+                sourceDocumentId: doc.supersedesId,
+                status: 'PUBLISHED',
+              },
+              select: { id: true, code: true, version: true },
+              orderBy: [{ code: 'asc' }, { version: 'asc' }],
+            });
+            if (affected.length > 0) {
+              await tx.errorCode.updateMany({
+                where: { id: { in: affected.map((e) => e.id) }, status: 'PUBLISHED' },
+                data: { status: 'REVIEW' },
               });
             }
+            for (const e of affected) {
+              await appendAudit(tx, {
+                tenantId: p.user.tenantId,
+                actorId: p.user.id,
+                action: 'kb.error.review_required',
+                objectType: 'error',
+                objectId: e.id,
+                detail: { code: e.code, version: e.version, supersededDocument: doc.supersedesId },
+              });
+            }
+            return affected;
           });
           deps.onDocumentPublished?.(doc.id);
         } else {
@@ -225,8 +254,15 @@ export function adminDocumentsRouter(deps: AppDeps): Router {
           action: `kb.document.${action}`,
           objectType: 'document',
           objectId: doc.id,
-          detail: { code: doc.code, revision: doc.revision, supersedes: doc.supersedesId },
+          detail: {
+            code: doc.code,
+            revision: doc.revision,
+            supersedes: doc.supersedesId,
+            ...(errorsToReview ? { errorsToReview: errorsToReview.map((e) => e.id) } : {}),
+          },
         });
+        // Публикуване на нова ревизия връща кодовете за преглед; останалите преходи — 204.
+        if (errorsToReview) return res.json({ errorsToReview });
         res.status(204).end();
       } catch (err) {
         next(err);

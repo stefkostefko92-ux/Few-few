@@ -3,7 +3,7 @@ import { diagnose } from './ai/orchestrator.js';
 import { VertexDiagnosisModel } from './ai/model.js';
 import { createApp, type Diagnoser } from './app.js';
 import { embeddingModelFrom } from './ai/embeddings.js';
-import { aiEnabled, attachmentsEnabled, loadConfig } from './config.js';
+import { aiEnabled, attachmentsEnabled, loadConfig, mfaKey } from './config.js';
 import { createLogger } from './logger.js';
 import type { AttachmentDeps } from './services/attachments.js';
 import { EmbeddingIndexer } from './store/embeddings.js';
@@ -88,6 +88,7 @@ const app = createApp({
     ttlHours: config.SESSION_TTL_HOURS,
     secureCookies: config.NODE_ENV === 'production',
   },
+  mfaKey: mfaKey(config),
   diagnose: diagnoser,
   onDocumentPublished: indexer ? () => void indexer?.kick() : undefined,
   attachments,

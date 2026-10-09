@@ -12,7 +12,7 @@ import type { StreamSink } from './hub.js';
  *   notification.created · case.assigned; всяко с tenant_id, conversation_id?, actor_id,
  *   timestamp, schema_version; `id:` е монотонен в процеса.
  * - На `hub.heartbeatMs` (25 s): коментар `: hb` + повторна проверка на сесията (отнета, изтекла,
- *   деактивиран акаунт → потокът се затваря). Изход и `revokeAllSessions` го затварят веднага.
+ *   деактивиран акаунт → потокът се затваря). Изход и всяко `revokeUserSessions` го затварят веднага.
  * - Fallback (§12.4): буфер за пропуснати събития НЯМА. При reconnect клиентът презарежда
  *   през REST — `GET /conversations` (непрочетени), `GET /conversations/:id/messages?after=<последно
  *   видяно>`, `GET /notifications`. Потокът е ускорител, източникът на истината е REST.

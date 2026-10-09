@@ -3,19 +3,32 @@ import { rateLimit } from 'express-rate-limit';
 import { z } from 'zod';
 import type { AppDeps } from '../app.js';
 import { appendAudit } from '../audit.js';
-import { apiError, requireCsrf, requireSameOrigin, requireUser } from '../auth/guards.js';
-import { dummyHash, PASSWORD_MAX_LENGTH, verifyPassword } from '../auth/password.js';
+import { apiError, requireCsrf, requireSameOrigin, requireSession } from '../auth/guards.js';
+import {
+  dummyHash,
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  verifyPassword,
+} from '../auth/password.js';
 import {
   clearSessionCookie,
   createSession,
+  mfaStateOf,
   revokeSession,
   setSessionCookie,
   type Principal,
 } from '../auth/sessions.js';
+import { resetPasswordWithToken } from '../services/users.js';
 
 const LoginSchema = z.object({
   email: z.string().trim().toLowerCase().email().max(254),
   password: z.string().min(1).max(PASSWORD_MAX_LENGTH),
+});
+
+/** Токенът от линка `/reset#…` (base64url) и новата парола. */
+const ResetSchema = z.object({
+  token: z.string().regex(/^[A-Za-z0-9_-]{20,100}$/),
+  newPassword: z.string().max(PASSWORD_MAX_LENGTH),
 });
 
 function publicUser(p: Principal['user']) {
@@ -28,6 +41,14 @@ export function authRouter(deps: AppDeps): Router {
 
   // Опитите за вход: по IP — срещу пробване на пароли от един адрес (§15.1 rate limiting).
   const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 10,
+    standardHeaders: 'draft-8',
+    legacyHeaders: false,
+    handler: (_req, res) => apiError(res, 429, 'too_many_attempts'),
+  });
+  // Нулирането е публично: токенът е 256 бита, лимитът пази Argon2 (64 MiB на опит) от претоварване.
+  const resetLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     limit: 10,
     standardHeaders: 'draft-8',
@@ -60,6 +81,8 @@ export function authRouter(deps: AppDeps): Router {
           }
           return apiError(res, 401, 'invalid_credentials');
         }
+        // Сесията започва без втори фактор: включен TOTP → /auth/mfa/verify; персонал без TOTP →
+        // /auth/mfa/setup. Дотогава сесията стига само до /auth/me, /auth/logout и /auth/mfa/*.
         const session = await createSession(sessionDeps, user.id);
         await deps.db.user.update({ where: { id: user.id }, data: { lastLoginAt: now } });
         await appendAudit(deps.db, {
@@ -77,6 +100,7 @@ export function authRouter(deps: AppDeps): Router {
             locale: user.locale,
           },
           csrfToken: session.csrfToken,
+          mfa: mfaStateOf(user, false),
         });
       } catch (err) {
         next(err);
@@ -84,15 +108,15 @@ export function authRouter(deps: AppDeps): Router {
     },
   );
 
-  router.get('/me', requireUser, (req, res) => {
+  router.get('/me', requireSession, (req, res) => {
     const p = req.principal as Principal;
-    res.json({ user: publicUser(p.user), csrfToken: p.session.csrfToken });
+    res.json({ user: publicUser(p.user), csrfToken: p.session.csrfToken, mfa: p.mfa });
   });
 
-  router.post('/logout', requireUser, requireCsrf(deps.publicOrigin), async (req, res, next) => {
+  router.post('/logout', requireSession, requireCsrf(deps.publicOrigin), async (req, res, next) => {
     try {
       const p = req.principal as Principal;
-      await revokeSession(deps.db, p.session.id);
+      await revokeSession(deps.db, p);
       await appendAudit(deps.db, {
         tenantId: p.user.tenantId,
         actorId: p.user.id,
@@ -104,6 +128,33 @@ export function authRouter(deps: AppDeps): Router {
       next(err);
     }
   });
+
+  // FR-25: нова парола по еднократния линк от администратора. Публично (човекът не е вписан);
+  // всяка грешка на токена е един и същ отговор — не издава дали линкът е съществувал.
+  router.post(
+    '/reset-password',
+    resetLimiter,
+    requireSameOrigin(deps.publicOrigin),
+    async (req, res, next) => {
+      try {
+        const parsed = ResetSchema.safeParse(req.body);
+        if (!parsed.success) return apiError(res, 400, 'invalid_input');
+        if (parsed.data.newPassword.length < PASSWORD_MIN_LENGTH) {
+          return apiError(res, 422, 'weak_password');
+        }
+        const ok = await resetPasswordWithToken(
+          deps.db,
+          sessionDeps.pepper,
+          parsed.data.token,
+          parsed.data.newPassword,
+        );
+        if (!ok) return apiError(res, 400, 'invalid_token');
+        res.status(204).end();
+      } catch (err) {
+        next(err);
+      }
+    },
+  );
 
   return router;
 }

@@ -20,6 +20,17 @@ const EnvSchema = z.object({
   /** HMAC „подправка“ за хешовете на сесийните токени и QR токените. */
   SESSION_PEPPER: z.string().min(32, 'SESSION_PEPPER трябва да е поне 32 знака'),
   SESSION_TTL_HOURS: z.coerce.number().int().min(1).max(720).default(12),
+  /**
+   * Ключ за AES-256-GCM на TOTP тайните (32 байта в base64: `openssl rand -base64 32`). Без него
+   * процесът не тръгва — персоналът е задължен да има втори фактор. Смяната обезсилва всички TOTP.
+   */
+  MFA_ENC_KEY: z
+    .string()
+    .trim()
+    .refine(
+      (v) => /^[A-Za-z0-9+/]+={0,2}$/.test(v) && Buffer.from(v, 'base64').length === 32,
+      'MFA_ENC_KEY трябва да е 32 байта в base64 (openssl rand -base64 32)',
+    ),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'silent']).default('info'),
   /** Информацията по чл. 13/14 GDPR на администратора (клиента) — връзка във входа и футъра. */
   PRIVACY_POLICY_URL: z.union([z.url(), z.literal('')]).default(''),
@@ -91,6 +102,11 @@ export function embeddingsEnabled(
   cfg: Pick<Config, 'VERTEX_PROJECT_ID' | 'EMBEDDING_MODEL'>,
 ): boolean {
   return aiEnabled(cfg) && cfg.EMBEDDING_MODEL !== 'off';
+}
+
+/** Ключът за TOTP тайните като байтове (валидиран от схемата). */
+export function mfaKey(cfg: Pick<Config, 'MFA_ENC_KEY'>): Buffer {
+  return Buffer.from(cfg.MFA_ENC_KEY, 'base64');
 }
 
 /** AI е включен само с проект в GCP; без него /chat връща 503 (без резервен доставчик). */

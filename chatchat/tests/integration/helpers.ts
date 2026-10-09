@@ -9,7 +9,10 @@ import type { DiagnosisModel } from '../../src/ai/model.js';
 import { diagnose } from '../../src/ai/orchestrator.js';
 import { createApp, type Diagnoser } from '../../src/app.js';
 import { hashPassword } from '../../src/auth/password.js';
+import { mfaRequired } from '../../src/auth/rbac.js';
 import { createSession, SESSION_COOKIE, type SessionDeps } from '../../src/auth/sessions.js';
+import { totpCode } from '../../src/auth/totp.js';
+import { encryptSecret } from '../../src/crypto.js';
 import type { ModelDiagnosis } from '../../src/domain/response.js';
 import { createLogger } from '../../src/logger.js';
 import type { EmbeddingModel } from '../../src/ai/embeddings.js';
@@ -28,6 +31,14 @@ import { knowledgeSnapshotId } from '../../src/store/snapshot.js';
 export const ORIGIN = 'https://chatchat.test';
 export const PEPPER = 'test-pepper-test-pepper-test-pepper-0123456789';
 export const PASSWORD = 'correct horse battery staple';
+/** Ключът за TOTP тайните в тестовете (32 байта) и общата тайна на фикстурите на персонала. */
+export const MFA_KEY = Buffer.alloc(32, 7);
+export const TOTP_SECRET = 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP';
+
+/** Текущият TOTP код (или този след `steps` стъпки по 30 s — за втори код в същия прозорец). */
+export function totpNow(secret = TOTP_SECRET, steps = 0): string {
+  return totpCode(secret, Math.floor(Date.now() / 1000) + steps * 30);
+}
 
 const url = process.env.DATABASE_URL;
 if (!url) {
@@ -224,6 +235,7 @@ export async function startApp(
     privacyPolicyUrl: 'https://chatchat.test/privacy',
     trustProxy: 0,
     sessions,
+    mfaKey: MFA_KEY,
     diagnose: choice === 'real' ? real : choice === 'none' ? null : choice,
     onDocumentPublished: indexer ? () => void indexer.kick() : undefined,
     attachments: opts.attachments ?? null,
@@ -345,6 +357,9 @@ export class Client {
   patch<T = any>(path: string, body?: unknown, opts?: ReqOpts) {
     return this.req<T>('PATCH', path, body ?? {}, opts);
   }
+  del<T = any>(path: string, opts?: ReqOpts) {
+    return this.req<T>('DELETE', path, undefined, opts);
+  }
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
@@ -363,6 +378,8 @@ export interface UserSpec {
   active?: boolean;
   expiresAt?: Date | null;
   locale?: string;
+  /** Включен TOTP (с TOTP_SECRET). По подразбиране — за ролите, които са задължени (персонала). */
+  mfa?: boolean;
 }
 
 export async function makeUser(spec: UserSpec): Promise<User> {
@@ -380,12 +397,26 @@ export async function makeUser(spec: UserSpec): Promise<User> {
       active: spec.active ?? true,
       expiresAt: spec.expiresAt ?? null,
       locale: spec.locale ?? 'it',
+      ...((spec.mfa ?? mfaRequired(spec.role))
+        ? { totpSecretEnc: encryptSecret(TOTP_SECRET, MFA_KEY), totpEnabledAt: new Date() }
+        : {}),
     },
   });
 }
 
-/** Вписан клиент без да минава през /login (лимитът на входа е по IP — не го хабим). */
-export async function signIn(h: Harness, user: User): Promise<Client> {
+/**
+ * Вписан клиент без да минава през /login (лимитът на входа е по IP — не го хабим). С включен
+ * TOTP сесията е минала втория фактор (както след /auth/mfa/verify), освен ако `mfaPassed: false`.
+ * Самият поток на MFA се проверява в admin-mfa.test.ts.
+ */
+export async function signIn(
+  h: Harness,
+  user: User,
+  opts: { mfaPassed?: boolean } = {},
+): Promise<Client> {
   const s = await createSession(h.sessions, user.id);
+  if (user.totpEnabledAt && opts.mfaPassed !== false) {
+    await db.session.update({ where: { id: s.id }, data: { mfaPassed: true } });
+  }
   return new Client(h.base, s.token, s.csrfToken);
 }

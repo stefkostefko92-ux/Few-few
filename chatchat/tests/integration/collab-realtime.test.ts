@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { after, before, beforeEach, describe, test } from 'node:test';
-import { revokeAllSessions } from '../../src/auth/sessions.js';
+import { revokeUserSessions } from '../../src/auth/sessions.js';
 import { RealtimeHub } from '../../src/realtime/hub.js';
 import { Client, db, startApp, type Harness } from './helpers.js';
 import {
@@ -20,7 +20,7 @@ import { newCase } from './world.js';
 /**
  * Реално време (§13.3, NFR-11): SSE със сесийната бисквитка; всеки получава само разрешеното
  * в момента на изпращане (членството се проверява наново); монотонни `id:`; изход,
- * `revokeAllSessions` и отнета сесия затварят потока. „Не получи“ се доказва с бариера: след
+ * `revokeUserSessions` и отнета сесия затварят потока. „Не получи“ се доказва с бариера: след
  * забраненото събитие идва разрешено — щом то е пристигнало, предишното също би било.
  */
 
@@ -217,7 +217,7 @@ describe('SSE', () => {
     );
   });
 
-  test('изход затваря потока на сесията; revokeAllSessions — всички потоци на човека', async () => {
+  test('изход затваря потока на сесията; revokeUserSessions — всички потоци на човека', async () => {
     const { c, users } = w;
     const s1 = await stream(c.engineering);
     assert.equal((await c.engineering.post('/api/v1/auth/logout')).status, 204);
@@ -229,7 +229,7 @@ describe('SSE', () => {
     const tab2 = await stream(await signIn(h, users.support));
     const other = await stream(c.owner);
     assert.equal(h.hub.size(users.support.id), 2);
-    await revokeAllSessions(db, users.support.id);
+    await revokeUserSessions(db, [users.support.id], 'admin_revoke');
     await Promise.all([tab1.closed, tab2.closed]);
     assert.equal(h.hub.size(users.support.id), 0);
     assert.equal(other.isClosed(), false);
