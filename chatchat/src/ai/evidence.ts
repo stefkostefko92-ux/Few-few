@@ -97,13 +97,17 @@ export class EvidencePack {
     return result;
   }
 
-  /** Финалният пакет — конфликтите се преизчисляват детерминистично върху всичко добавено. */
-  result(): RetrievalResult {
+  /**
+   * Финалният пакет — конфликтите се преизчисляват детерминистично върху всичко добавено.
+   * `cited` — референциите, които моделът е цитирал: документ с две ревизии, цитиран от модела,
+   * е конфликт, колкото и слабо да е намерен.
+   */
+  result(cited: ReadonlySet<string> = new Set()): RetrievalResult {
     const items = [...this.items];
     return {
       items,
       unknownIdentifiers: [...this.unknown],
-      conflicts: findConflicts(items),
+      conflicts: findConflicts(items, cited),
     };
   }
 }

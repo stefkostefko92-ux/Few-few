@@ -253,8 +253,8 @@ export async function diagnose(
     messages.push({ role: 'user', content: results });
   }
 
-  // 4–5. Финалният пакет (нивото и конфликтите — наново) → Safety Gate.
-  const retrieval = pack.result();
+  // 4–5. Финалният пакет (нивото и конфликтите — наново; цитираното от модела винаги се брои) → Safety Gate.
+  const retrieval = pack.result(citedRefs(draft));
   const level = cappedLevel(initialLevel, evidenceLevel(retrieval, caseIds));
   const answer = applyGate({
     draft: draft ?? safeDraft(failure),
@@ -273,4 +273,14 @@ export async function diagnose(
     answer.gate.decisions.push(failure);
   }
   return { answer, evidence: retrieval.items, usage, modelCalled: true };
+}
+
+/** Всички E… референции, на които моделът се позовава (преди Gate да е изпуснал невалидните). */
+export function citedRefs(draft: ModelDiagnosis | null): Set<string> {
+  if (draft === null) return new Set();
+  return new Set([
+    ...draft.causes.flatMap((c) => c.evidenceRefs),
+    ...draft.checks.flatMap((c) => c.evidenceRefs),
+    ...draft.evidenceUsed.map((e) => e.ref),
+  ]);
 }

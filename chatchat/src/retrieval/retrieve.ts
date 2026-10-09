@@ -201,10 +201,24 @@ export async function retrieve(
 }
 
 /**
- * Противоречия (§8.2 „при конфликт — изрично“): един и същ код за грешка с различни описания,
- * или един и същ документ в две ревизии — и двата записа съвместими с таблото.
+ * Парче, което реално говори по въпроса: лексикално над прага за подкрепа или семантично ≥ 0.8.
+ * Под прага е шум (обща дума като „piano“) — не подкрепя (`evidenceLevel`), значи и не опровергава.
  */
-export function findConflicts(items: EvidenceItem[]): RetrievalResult['conflicts'] {
+const isRelevant = (i: EvidenceItem): boolean =>
+  i.score >= LEXICAL_SUPPORT_SCORE ||
+  (i.matchedBy.includes('semantic') && (i.similarity ?? 0) >= SEMANTIC_HIGH_SIMILARITY);
+
+/**
+ * Противоречия (§8.2 „при конфликт — изрично“): един и същ код за грешка с различни описания,
+ * или един и същ документ в две ревизии — и двата записа съвместими с таблото. Ревизиите са
+ * конфликт само ако документът е източник за ТОЗИ въпрос: поне едно негово парче е релевантно
+ * (`isRelevant`) или е цитирано от модела (`cited`). Иначе две ревизии на несвързан бюлетин,
+ * хванати по обща дума, свалят точния код на случая до „conflict“ (реален случай от evals/).
+ */
+export function findConflicts(
+  items: EvidenceItem[],
+  cited: ReadonlySet<string> = new Set(),
+): RetrievalResult['conflicts'] {
   const conflicts: RetrievalResult['conflicts'] = [];
   const applicable = items.filter((i) => i.applicable);
 
@@ -231,7 +245,7 @@ export function findConflicts(items: EvidenceItem[]): RetrievalResult['conflicts
   }
   for (const [code, list] of byDoc) {
     const revisions = new Set(list.map((i) => i.revision));
-    if (revisions.size > 1) {
+    if (revisions.size > 1 && list.some((i) => isRelevant(i) || cited.has(i.ref))) {
       conflicts.push({ description: `revision:${code}`, refs: list.map((i) => i.ref) });
     }
   }
