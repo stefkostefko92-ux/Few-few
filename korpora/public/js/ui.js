@@ -17,16 +17,19 @@
     dialog.querySelector('#confirm-q').textContent = form.getAttribute('data-confirm');
     ok.textContent = (button && button.textContent.trim()) || '';
     if (!ok.textContent) ok.hidden = true;
+    var answered = false;
+    // "yes" submits within the same click, so the page leaves at once, as it did with the browser's box
+    ok.addEventListener('click', function (event) {
+      event.preventDefault();
+      answered = true;
+      dialog.close('ok');
+      confirmed.add(form);
+      if (form.requestSubmit) form.requestSubmit(button || undefined);
+      else form.submit();
+    });
     dialog.addEventListener('close', function () {
-      var yes = dialog.returnValue === 'ok';
       dialog.remove();
-      if (yes) {
-        confirmed.add(form);
-        if (form.requestSubmit) form.requestSubmit(button || undefined);
-        else form.submit();
-      } else if (button) {
-        button.focus();
-      }
+      if (!answered && button) button.focus();
     });
     document.body.appendChild(dialog);
     dialog.showModal();

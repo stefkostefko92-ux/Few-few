@@ -128,10 +128,11 @@ async function cleanUp({ ctx, page }) {
     for (let i = 0; i < 5; i++) {
       const row = page.locator('li.proj', { hasText: PROJECT_NAME }).first();
       if (!(await row.count())) return;
-      await Promise.all([
-        page.waitForURL(/\/app$/),
-        row.locator('form[action$="/delete"] button').click(),
-      ]);
+      // the question is the page's own dialog (public/js/ui.js), answered with the form's own button; the
+      // address is /app before and after, so the sign of the deletion is the row leaving the list
+      await row.locator('form[action$="/delete"] button').click();
+      await page.locator('dialog.confirm[open] [data-ok]').click();
+      await row.waitFor({ state: 'detached' });
     }
     throw new Error('the project is still listed after five deletions');
   } catch (err) {
