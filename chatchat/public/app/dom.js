@@ -36,6 +36,25 @@ export function show(node, visible) {
   node.hidden = !visible;
 }
 
+/** Диалог за потвърждение на необратимо действие → Promise<boolean>. Фокусът е върху „Отказ“. */
+export function confirmAction({ title, text, confirmLabel, cancelLabel }) {
+  const dlg = $('#dlg-confirm');
+  $('#confirm-title').textContent = title;
+  $('#confirm-text').textContent = text;
+  $('#confirm-yes').textContent = confirmLabel;
+  $('#confirm-no').textContent = cancelLabel;
+  return new Promise((resolve) => {
+    const onClose = () => {
+      dlg.removeEventListener('close', onClose);
+      resolve(dlg.returnValue === 'yes');
+    };
+    dlg.returnValue = 'no';
+    dlg.addEventListener('close', onClose);
+    dlg.showModal();
+    $('#confirm-no').focus();
+  });
+}
+
 export function announce(text) {
   const region = document.getElementById('announcer');
   if (!region) return;

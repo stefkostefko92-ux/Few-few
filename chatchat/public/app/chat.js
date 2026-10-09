@@ -5,11 +5,17 @@ import { errorText } from './errors.js';
 import { openTicketDialog } from './context.js';
 import { openSource } from './docview.js';
 import { refreshCases } from './cases.js';
+import { createTray } from './attachments/tray.js';
+import { renderAttachments } from './attachments/view.js';
+import { roleLabel } from './format.js';
 import { getLang, t } from './i18n.js';
+import { attachQuickResponses } from './workspace/quick.js';
 import { on, state } from './store.js';
 
 const rated = new Map(); // messageId -> rating (за сесията на страницата)
 let pendingText = null; // текст, който се изпраща в момента (оптимистично показан)
+let attempt = null; // { text, cmid } — повторният опит с ЕДИН текст ползва същия ключ (AC-12)
+let tray = null;
 
 function fmtTime(iso) {
   try {
@@ -53,12 +59,21 @@ function renderMessage(m) {
     h(
       'header',
       { class: 'msg-head' },
-      h('span', { class: 'who' }, m.authorName ? String(m.authorName) : t('chat.you')),
+      h(
+        'span',
+        { class: 'who' },
+        m.authorName
+          ? String(m.authorName)
+          : m.authorRole
+            ? t('chat.staffRole', { role: roleLabel(m.authorRole) })
+            : t('chat.you'),
+      ),
       m.createdAt
         ? h('time', { class: 'when', datetime: String(m.createdAt) }, fmtTime(m.createdAt))
         : null,
     ),
     h('p', { class: 'msg-text' }, String(m.body ?? '')),
+    renderAttachments(m.attachments),
   );
 }
 
@@ -104,6 +119,7 @@ export function renderMessages({ scroll = 'keep' } = {}) {
 function setBusy(busy) {
   state.sending = busy;
   $('#composer-send').disabled = busy;
+  tray?.setDisabled(busy);
   $('#composer-text').readOnly = busy;
   $('#composer').setAttribute('aria-busy', String(busy));
   $('#composer-status').textContent = busy ? t('chat.waiting') : '';
@@ -125,14 +141,25 @@ async function send() {
     return;
   }
   composerError('');
+  if (tray.uploading()) return composerError(t('att.wait'));
+  if (tray.hasFailed()) return composerError(t('att.failedBlock'));
+  if (!attempt || attempt.text !== text) attempt = { text, cmid: crypto.randomUUID() };
+  const attachmentIds = tray.ids();
   pendingText = text;
   area.value = '';
   setBusy(true);
   renderMessages({ scroll: 'end' });
   const caseId = cur.id;
   try {
-    const data = await api('POST', '/chat/messages', { caseId, text }, { timeoutMs: 120000 });
+    const data = await api(
+      'POST',
+      '/chat/messages',
+      { caseId, text, clientMessageId: attempt.cmid, attachmentIds },
+      { timeoutMs: 120000 },
+    );
     pendingText = null;
+    attempt = null;
+    tray.clearSent();
     if (state.currentId === caseId && state.current) {
       state.current.messages.push(data.message, data.answer);
       renderMessages({ scroll: 'answer' });
@@ -172,6 +199,9 @@ async function send() {
 }
 
 export function initChat() {
+  tray = createTray({ getCaseId: () => state.currentId });
+  $('#tray-host').append(tray.el);
+  attachQuickResponses($('#composer-text'), $('#composer-wrap'));
   $('#composer').addEventListener('submit', (e) => {
     e.preventDefault();
     send();
@@ -188,9 +218,12 @@ export function initChat() {
     show($('#chat-body'), true);
     clear($('#messages')).append(h('p', { class: 'muted chat-hint' }, t('chat.loading')));
     composerError('');
+    tray.reset();
+    attempt = null;
   });
   on('case:loaded', () => {
     pendingText = null;
+    tray.setDisabled(state.current?.case?.status === 'RESOLVED');
     const last = state.current?.messages.at(-1);
     renderMessages({ scroll: last?.kind === 'AI' ? 'answer' : 'end' });
   });
@@ -200,6 +233,7 @@ export function initChat() {
     );
   });
   on('lang', () => {
+    tray.refreshLabels();
     if (state.current) renderMessages();
     $('#composer-status').textContent = state.sending ? t('chat.waiting') : '';
   });
@@ -207,6 +241,8 @@ export function initChat() {
 
 export function resetChat() {
   pendingText = null;
+  attempt = null;
+  tray?.reset();
   show($('#chat-empty'), true);
   show($('#chat-body'), false);
   clear($('#messages'));

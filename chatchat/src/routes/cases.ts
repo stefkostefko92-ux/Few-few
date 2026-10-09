@@ -23,7 +23,13 @@ import {
   isParticipant,
   withUniqueRetry,
 } from '../services/cases.js';
-import { caseView, contextWarnings, messageViews } from '../services/case-views.js';
+import {
+  assigneeViews,
+  authorFor,
+  caseView,
+  contextWarnings,
+  messageViews,
+} from '../services/case-views.js';
 
 /** Случаите (§12.4, §14.1): създаване, контекст, изход, поемане от оператор, хронология. */
 
@@ -46,7 +52,13 @@ export function casesRouter(deps: WiredDeps): Router {
         orderBy: { updatedAt: 'desc' },
         take: 100,
       });
-      res.json({ cases: cases.map(caseView) });
+      const assignees = await assigneeViews(deps.db, p.user, cases);
+      res.json({
+        cases: cases.map((c) => ({
+          ...caseView(c),
+          assignedTo: c.assignedToId ? (assignees.get(c.assignedToId) ?? null) : null,
+        })),
+      });
     } catch (err) {
       next(err);
     }
@@ -134,8 +146,12 @@ export function casesRouter(deps: WiredDeps): Router {
         messages.map((m) => m.id),
       );
       const views = await messageViews(deps.db, p, c, messages);
+      const assignees = await assigneeViews(deps.db, p.user, [c]);
       res.json({
-        case: caseView(c),
+        case: {
+          ...caseView(c),
+          assignedTo: c.assignedToId ? (assignees.get(c.assignedToId) ?? null) : null,
+        },
         ticket: ticket ? { number: ticket.number, status: ticket.status } : null,
         messages: views.map((m) => ({ ...m, attachments: files.get(m.id) ?? [] })),
       });
@@ -268,10 +284,21 @@ export function casesRouter(deps: WiredDeps): Router {
         orderBy: { at: 'asc' },
         take: 1000,
       });
+      // Авторът на събитието по правилото на читателя: порталът вижда ролята, не името (AC-19).
+      const actorIds = [...new Set(events.map((e) => e.actorId).filter((x): x is string => !!x))];
+      const actors = new Map(
+        (
+          await deps.db.user.findMany({
+            where: { id: { in: actorIds }, tenantId: p.user.tenantId },
+            select: { id: true, name: true, role: true, kind: true },
+          })
+        ).map((u) => [u.id, u]),
+      );
       res.json({
         events: events.map((e) => ({
           type: e.type,
           actorId: e.actorId,
+          actor: e.actorId ? authorFor(p.user, actors.get(e.actorId)) : null,
           // Източникът на събитието (AC-19): човек, AI или системата.
           source: e.type.startsWith('ai.') ? 'ai' : e.actorId ? 'human' : 'system',
           payload: e.payload,

@@ -202,6 +202,9 @@ export async function startApp(
     embedder?: EmbeddingModel;
     attachments?: AttachmentDeps | null;
     hub?: RealtimeHub;
+    /** Само за ръчна проверка в браузър: фиксиран порт и Origin на страницата. */
+    port?: number;
+    origin?: string;
   } = {},
 ): Promise<Harness> {
   const hub = opts.hub ?? new RealtimeHub();
@@ -231,7 +234,7 @@ export async function startApp(
   const app = createApp({
     db,
     logger: createLogger(process.env.TEST_LOG_LEVEL ?? 'silent'),
-    publicOrigin: ORIGIN,
+    publicOrigin: opts.origin ?? ORIGIN,
     privacyPolicyUrl: 'https://chatchat.test/privacy',
     trustProxy: 0,
     sessions,
@@ -242,7 +245,7 @@ export async function startApp(
     hub,
   });
   const server: Server = await new Promise((resolve) => {
-    const s = app.listen(0, '127.0.0.1', () => resolve(s));
+    const s = app.listen(opts.port ?? 0, '127.0.0.1', () => resolve(s));
   });
   const { port } = server.address() as AddressInfo;
   return {

@@ -45,6 +45,10 @@ const ListQuery = z.object({
   cursor: z.string().max(200).optional(),
   limit: z.coerce.number().int().min(1).max(100).default(30),
 });
+const PeopleQuery = z.object({
+  q: z.string().trim().max(80).default(''),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
 const Members = z.object({ userIds: z.array(Id).min(1).max(50) });
 const Star = z.object({ starred: z.boolean() });
 const Preferences = z
@@ -74,6 +78,34 @@ export function conversationsRouter(deps: WiredDeps): Router {
       const cursor = q.data.cursor ? decodeCursor(q.data.cursor) : null;
       if (q.data.cursor && !cursor) return apiError(res, 400, 'invalid_input');
       res.json(await listMemberConversations(deps.db, viewer, { cursor, limit: q.data.limit }));
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // Колеги за нов директен/групов разговор или канал (UI: избор на хора). Само активен вътрешен
+  // персонал на клиента с достъп до работното пространство; порталните хора се канят от сървъра.
+  router.get('/people', use, requireCapability('conversation:create'), async (req, res, next) => {
+    try {
+      const q = PeopleQuery.safeParse(req.query);
+      if (!q.success) return apiError(res, 400, 'invalid_input');
+      const viewer = viewerOf(req);
+      const now = new Date();
+      const rows = await deps.db.user.findMany({
+        where: {
+          tenantId: viewer.tenantId,
+          active: true,
+          kind: 'INTERNAL',
+          id: { not: viewer.id },
+          role: { not: 'PLATFORM_ADMIN' },
+          OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+          ...(q.data.q ? { name: { contains: q.data.q, mode: 'insensitive' as const } } : {}),
+        },
+        orderBy: { name: 'asc' },
+        take: q.data.limit,
+        select: { id: true, name: true, role: true },
+      });
+      res.json({ people: rows });
     } catch (err) {
       next(err);
     }
