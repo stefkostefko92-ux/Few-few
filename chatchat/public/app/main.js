@@ -74,7 +74,10 @@ async function showAdminLink() {
   try {
     const me = await api('GET', '/auth/me');
     const caps = Array.isArray(me?.capabilities) ? me.capabilities : [];
-    show($('#btn-admin'), caps.some((c) => ADMIN_CAPS.includes(c)));
+    show(
+      $('#btn-admin'),
+      caps.some((c) => ADMIN_CAPS.includes(c)),
+    );
   } catch {
     show($('#btn-admin'), false);
   }
