@@ -17,6 +17,7 @@ export function buildDrawers(ctx, o, a) {
   const family = slideModel(o.slide);
   const sys = slideSystemOf(family);
   const { i, n, xa, xb, fl, fr, c, dzH, drawers, gap, zEnd, backFront, T, fs, frontGrain, bf, fT, nm, key, mod } = a;
+  const dz0 = a.dz0 ?? c; // bottom of the drawer zone: the carcass bottom, or the top of the doors below it
   if (!family || !sys) {
     ctx.warn('error', 'Няма избран водач с данни за пробиване.');
     return;
@@ -46,7 +47,7 @@ export function buildDrawers(ctx, o, a) {
   const product = family.products?.[NL] ?? null;
   const label = product ? `${product.brand ?? family.brand} ${product.sku ?? ''}`.trim() : `${family.brand} ${NL} mm`;
   for (let k = 0; k < drawers; k++) {
-    const y0 = c + gap / 2 + k * (fh + gap);
+    const y0 = dz0 + gap / 2 + k * (fh + gap);
     const y1 = y0 + fh;
     const dkey = key(`c${i + 1}dr${k + 1}`);
     const front = panel(ctx, {
@@ -56,7 +57,7 @@ export function buildDrawers(ctx, o, a) {
       bands: bf ? { '+x': bf, '-x': bf, '+y': bf, '-y': bf } : {}, explode: [0, 0, 2.2],
     });
     mountHandle(ctx, o, front, { orientation: 'horizontal', kind: o.kind });
-    const yb = Math.max(y0 + 12, c + T + 6);
+    const yb = Math.max(y0 + 12, dz0 + T + 6);
     const yt = y1 - TOP_GAP;
     const hb = r1(yt - yb);
     if (hb < MIN_BOX) {
