@@ -7,6 +7,7 @@ import {
   mkdirSync,
   readdirSync,
   readFileSync,
+  rmSync,
   statSync,
   utimesSync,
   writeFileSync,
@@ -206,6 +207,36 @@ test(
   },
 );
 
+test('the dumps before a deploy go after 30 days and the snapshots before a restore after 8 weeks less a day, even when no backup can run', () => {
+  withBox((box) => {
+    const dir = join(box.shared, 'backups');
+    const put = (name: string, days: number) => {
+      const file = join(dir, name);
+      writeFileSync(file, 'old');
+      const at = new Date(Date.now() - days * 86_400_000);
+      utimesSync(file, at, at);
+    };
+    // the unencrypted dumps: 30 days; the snapshots: the timer runs once a day, so past 8 weeks less a
+    // day nothing outlives the 8 weeks of the policy
+    put('pre-deploy-19990101-000001.sql.gz', 31.5);
+    put('pre-restore-19990101-000001.dump.age', 55.1);
+    put('pre-restore-19990101-000001.dump.age.sha256', 55.1);
+    put('pre-deploy-19990101-000002.sql.gz', 20);
+    put('pre-restore-19990101-000002.dump.age', 54.9);
+    put('notes.txt', 100);
+    // no recipient: no backup is made, but the old dumps still go
+    rmSync(box.recipients, { force: true });
+    const r = backup(box);
+    assert.notEqual(r.status, 0);
+    assert.deepEqual(readdirSync(dir).sort(), [
+      'notes.txt',
+      'pre-deploy-19990101-000002.sql.gz',
+      'pre-restore-19990101-000002.dump.age',
+    ]);
+    assert.match(r.stdout, /изтрих 3 стари снимки отпреди деплой или възстановяване/);
+  });
+});
+
 test(
   'between two deploys the daily backup drops dumps past the age cap, the newest one too',
   { skip },
@@ -220,16 +251,16 @@ test(
       // the only pre-deploy dump, 31 days old: deploy.sh would have spared it as the newest
       aged('pre-deploy-20260101-000000.sql.gz', 31);
       aged('pre-deploy-20260301-000000.sql.gz', 20);
-      aged('pre-restore-20260101-000000.dump.age', 61);
-      aged('pre-restore-20260101-000000.dump.age.sha256', 61);
-      aged('pre-restore-20260301-000000.dump.age', 59);
-      aged('pre-restore-20260301-000000.dump.age.sha256', 59);
+      aged('pre-restore-20260101-000000.dump.age', 56);
+      aged('pre-restore-20260101-000000.dump.age.sha256', 56);
+      aged('pre-restore-20260301-000000.dump.age', 54);
+      aged('pre-restore-20260301-000000.dump.age.sha256', 54);
       aged('notes.txt', 90);
 
-      // a failed backup deletes nothing old, not even up there
+      // the age cap does not wait for a good backup: a failed one already drops them, the daily ones stay
       const failed = backup(box, { DUMP_RC: '1' });
       assert.equal(failed.status, 1);
-      assert.ok(existsSync(join(top, 'pre-deploy-20260101-000000.sql.gz')));
+      assert.ok(!existsSync(join(top, 'pre-deploy-20260101-000000.sql.gz')));
 
       const r = backup(box);
       assert.equal(r.status, 0, r.stderr);

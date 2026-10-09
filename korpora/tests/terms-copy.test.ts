@@ -38,6 +38,9 @@ test('the terms copy is the full, self-contained terms page of the language', as
     );
     assert.ok(copy.content.includes('contact@korpora.example'), `${locale}: contact`);
     assert.doesNotMatch(copy.content, /<script|<link /, `${locale}: nothing loads from outside`);
+    // the label from the drawings stays Bulgarian in the other languages, and says so (WCAG 3.1.2)
+    if (locale !== 'bg')
+      assert.ok(copy.content.includes('<span lang="bg">наш избор</span>'), `${locale}: label lang`);
   }
 });
 

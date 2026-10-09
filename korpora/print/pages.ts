@@ -122,19 +122,28 @@ export function drilling(c: BrochureContext): string {
   const door = c.assets.door;
   if (!door) return '';
   const cupMm = viewBoxOf(door.cup.svg)[2];
+  // „наш избор“ is the drawings' label — Bulgarian in every language, so it carries lang="bg"; the
+  // translation is split around it so that both halves stay escaped (as on the landing). role="term":
+  // Chromium's tagged PDF keeps the language only of an element with a role — a bare span is dropped.
+  const [before = '', after = ''] = t('landing.drilling.checks', { mark: '\u0000' }).split(
+    '\u0000',
+  );
+  // each fact is ready HTML: escaped text, the mark as the only markup
   const facts = [
     [
       'drill',
-      t('landing.drilling.cup', {
-        c: c.num(door.c),
-        overlay: c.num(door.overlay),
-        plate: c.num(door.plate),
-      }),
+      esc(
+        t('landing.drilling.cup', {
+          c: c.num(door.c),
+          overlay: c.num(door.overlay),
+          plate: c.num(door.plate),
+        }),
+      ),
     ],
-    ['drill', t('landing.drilling.system32')],
-    ['drill', t('landing.drilling.handles')],
-    ['drill', t('landing.drilling.edges')],
-    ['alert', t('landing.drilling.checks')],
+    ['drill', esc(t('landing.drilling.system32'))],
+    ['drill', esc(t('landing.drilling.handles'))],
+    ['drill', esc(t('landing.drilling.edges'))],
+    ['alert', `${esc(before)}<span lang="bg" role="term">наш избор</span>${esc(after)}`],
   ] as const;
   return `<section class="b-page">
   <h2>${esc(t('landing.drilling.title'))}</h2>
@@ -142,7 +151,7 @@ export function drilling(c: BrochureContext): string {
   <figure class="b-sheet b-door">${drawing(door.elevation.svg, 172)}<figcaption>${esc(t('landing.drilling.caption', { h: c.num(door.height), w: c.num(door.width) }))}</figcaption></figure>
   <div class="b-drill">
     <figure class="b-sheet b-cup">${drawing(door.cup.svg, cupMm)}<figcaption>${esc(t('brochure.drilling.scale'))}</figcaption></figure>
-    <ul class="b-facts">${facts.map(([i, text]) => `<li>${icon(i)}<span>${esc(text)}</span></li>`).join('')}</ul>
+    <ul class="b-facts">${facts.map(([i, html]) => `<li>${icon(i)}<span>${html}</span></li>`).join('')}</ul>
   </div>
   ${titleBlock(c, 3)}
 </section>`;

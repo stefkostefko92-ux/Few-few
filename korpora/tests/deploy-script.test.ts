@@ -13,6 +13,9 @@ import { join } from 'node:path';
 import { gunzipSync } from 'node:zlib';
 import { deploy, mode, sha, sharedEnv, withLayout } from './deploy-harness.js';
 
+const DAY_MS = 86_400_000;
+const daysAgo = (days: number) => new Date(Date.now() - days * DAY_MS);
+
 test('without a .env anywhere it stops with code 3 and builds nothing', () => {
   withLayout((L) => {
     const r = deploy(L);
@@ -61,9 +64,7 @@ test('a redeploy builds first, dumps right before the swap, keeps the five newes
     const old = (i: number) => `pre-deploy-19990101-00000${i}.sql.gz`;
     for (let i = 0; i < 6; i++) {
       writeFileSync(join(backups, old(i)), 'old');
-      // within the 30-day cap: here only the count decides
-      const at = new Date(Date.now() - (6 - i) * 86_400_000);
-      utimesSync(join(backups, old(i)), at, at);
+      utimesSync(join(backups, old(i)), daysAgo(10 - i), daysAgo(10 - i));
     }
     writeFileSync(join(L.shared, 'indexnow-sitemap.sha256'), `${sha('<urlset/>')}\n`);
     const r = deploy(L, { VOLUME_RC: '0' });
@@ -97,7 +98,7 @@ test('a redeploy builds first, dumps right before the swap, keeps the five newes
   });
 });
 
-test('a deploy also drops dumps older than 30 days (snapshots before a restore: 60), however few', () => {
+test('a deploy also drops dumps older than 30 days (snapshots before a restore: 8 weeks less a day), however few', () => {
   withLayout((L) => {
     sharedEnv(L);
     const backups = join(L.shared, 'backups');
@@ -112,10 +113,11 @@ test('a deploy also drops dumps older than 30 days (snapshots before a restore: 
     aged('pre-deploy-20260920-000000.sql.gz', 20);
     aged('notes.txt', 90);
     aged('pre-deploy-notes.txt', 90);
-    aged('pre-restore-20260601-000000.dump.age', 61);
-    aged('pre-restore-20260601-000000.dump.age.sha256', 61);
-    aged('pre-restore-20260815-000000.dump.age', 59);
-    aged('pre-restore-20260815-000000.dump.age.sha256', 59);
+    aged('pre-restore-20260601-000000.dump.age', 55.1);
+    aged('pre-restore-20260601-000000.dump.age.sha256', 55.1);
+    // 8 weeks less a day is the limit, as in backup.sh (its timer runs once a day)
+    aged('pre-restore-20260815-000000.dump.age', 54.9);
+    aged('pre-restore-20260815-000000.dump.age.sha256', 54.9);
     const r = deploy(L, { VOLUME_RC: '0' });
     assert.equal(r.status, 0, r.stderr);
     const left = readdirSync(backups).filter((n) => n !== 'daily');

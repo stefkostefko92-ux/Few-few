@@ -66,7 +66,7 @@
     },
     "accountDeleted": {
       "subject": "Il vostro account Korpora è stato eliminato",
-      "body": "il vostro account e tutti i suoi progetti sono stati eliminati definitivamente.\n\nSe non l'avete chiesto voi, scriveteci all'indirizzo qui sotto."
+      "body": "il vostro account e tutti i suoi progetti sono stati eliminati definitivamente. Restano nelle copie di backup del database solo finché le copie non scadono: i termini sono nell'informativa sulla privacy.\n\nSe non l'avete chiesto voi, scriveteci all'indirizzo qui sotto."
     },
     "banned": {
       "subject": "Il vostro accesso a Korpora è stato bloccato",
@@ -80,7 +80,7 @@
       "paymentEarly": "Pagamento: con bonifico, secondo la fattura con i dati per il pagamento che vi invieremo. Avete chiesto che il piano inizi subito dopo il pagamento, prima della fine dei {days} giorni per il recesso. Se recedete, pagherete la parte del prezzo per il periodo in cui il piano è stato attivo.",
       "paymentWait": "Pagamento: con bonifico, secondo la fattura con i dati per il pagamento che vi invieremo. Non avete chiesto l'inizio anticipato, quindi il periodo a pagamento inizierà dopo la fine del periodo di recesso (ultimo giorno: {date}).",
       "paymentBusiness": "Pagamento: con bonifico, secondo la fattura con i dati per il pagamento che vi invieremo. Il piano viene attivato all'arrivo del pagamento.",
-      "withdrawalConsumer": "Diritto di recesso: potete recedere dal contratto senza indicarne il motivo (ultimo giorno: {date}) con il pulsante «Recedi dal contratto qui» in «Piano» del vostro account oppure con una dichiarazione esplicita a {contact}, ad esempio con il modulo tipo qui sotto. Se recedete, vi rimborseremo tutti i pagamenti ricevuti entro {refundDays} giorni, con lo stesso mezzo di pagamento e senza costi per voi. Se avete chiesto l'inizio anticipato, tratteniamo la parte del prezzo per il periodo in cui il piano è stato attivo.\n\n{form}",
+      "withdrawalConsumer": "Diritto di recesso: potete recedere dal contratto senza indicarne il motivo (ultimo giorno: {date}) con il pulsante «Recedi dal contratto qui» in «Piano» del vostro account oppure con una dichiarazione esplicita a {contact}, ad esempio con il modulo tipo qui sotto. Se recedete, entro {refundDays} giorni dal ricevimento del recesso vi rimborseremo tutti i pagamenti ricevuti da voi, con lo stesso mezzo di pagamento e senza costi per voi. Se avete chiesto l'inizio anticipato, tratteniamo la parte del prezzo per il periodo in cui il piano è stato attivo.\n\n{form}",
       "withdrawalBusiness": "Acquistate come azienda o professionista per scopi professionali, quindi il diritto di recesso dei consumatori non si applica.",
       "durationTerm": "Durata: {term}; Premium non si rinnova da solo: scade alla fine della durata.",
       "durationLifetime": "Durata: Lifetime vale finché Korpora è offerto.",

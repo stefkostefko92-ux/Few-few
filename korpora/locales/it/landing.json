@@ -83,7 +83,7 @@
       "system32": "Basette e reggipiani seguono il sistema 32 mm: la prima fila è a 37 mm dal bordo anteriore.",
       "handles": "Le maniglie si forano all'interasse del modello scelto, le guide secondo la dima del produttore.",
       "edges": "I fori orizzontali nelle teste (per le viti confirmat) sono nella tabella del disegno, separati dal G-code.",
-      "checks": "Se una cerniera, una guida o un foro esce dalla tabella del produttore, il programma dice cosa cambiare. Dove il documento non dice nulla, il programma sceglie da sé e indica il valore come «наш избор» (nostra scelta).",
+      "checks": "Se una cerniera, una guida o un foro esce dalla tabella del produttore, il programma dice cosa cambiare. Dove il documento non dice nulla, il programma sceglie da sé e indica il valore come «{mark}» (nostra scelta).",
       "imageAlt": "Disegno di un'anta {h} × {w} mm con misure, bordo e mappa di foratura delle tazze delle cerniere",
       "cupAlt": "Dettaglio della tazza della cerniera in scala 1:1: Ø35 a {c} mm dal bordo",
       "caption": "L'anta sinistra del primo mobile base, {h} × {w} mm: misure, bordo e mappa di foratura. Le etichette del disegno sono in bulgaro.",
@@ -96,7 +96,7 @@
       "modules": "{min}–{max} moduli da {wmin}–{wmax} mm",
       "mattress": "materasso {min}–{max} cm",
       "rules": "La costruzione segue le regole del laboratorio: fondo e cielo stanno tra i fianchi, lo schienale in HDF entra in una scanalatura, i mobili base hanno i traversi per il piano di lavoro e le misure di taglio sono ridotte del bordo.",
-      "lineupNote": "Le viste frontali sono l’output del motore con le misure predefinite, tutte nella stessa scala."
+      "lineupNote": "Le viste frontali sono l'output del motore con le misure predefinite, tutte nella stessa scala."
     },
     "machine": {
       "title": "Che cosa riceve la macchina?",
@@ -150,11 +150,11 @@
       "title": "Domande e risposte",
       "beta": {
         "q": "Che cosa vuol dire «beta»?",
-        "a": "Korpora è in beta aperta: tutto funziona e ogni output è reale, ma il software si sta ancora rifinendo con i riscontri delle prime falegnamerie. Scriveteci che cosa manca o non va — a {contact}."
+        "a": "Korpora è in beta aperta: le funzioni descritte in questa pagina sono disponibili e ogni output è reale, ma il software si sta ancora rifinendo con i riscontri delle prime falegnamerie: per questo controllate gli output prima della produzione. Scriveteci che cosa manca o non va — a {contact}."
       },
       "price": {
         "q": "Quanto costa Korpora?",
-        "a": "{month} al mese IVA inclusa ({monthNet} IVA esclusa). Pagando {terms} mesi in una volta lo sconto è del {discounts}. Lifetime costa {life} IVA inclusa ({lifeNet} IVA esclusa), si paga una volta e vale finché Korpora è offerto."
+        "a": "{month} al mese IVA inclusa ({monthNet} IVA esclusa). Pagando {terms} mesi in una volta lo sconto è rispettivamente del {discounts}. Lifetime costa {life} IVA inclusa ({lifeNet} IVA esclusa), si paga una volta e vale finché Korpora è offerto."
       },
       "afterTrial": {
         "q": "Che cosa succede quando finisce il periodo di prova?",
@@ -166,7 +166,7 @@
       },
       "machines": {
         "q": "Con quali macchine CNC funziona?",
-        "a": "Il programma fornisce un DXF a layer che si apre in qualsiasi programma CAM e G-code in due versioni: ISO/Fanuc e GRBL. I post-processori sono generici, quindi il primo taglio passa da una simulazione e da una prova a vuoto."
+        "a": "Il programma fornisce un DXF R12 a layer, in millimetri, per il vostro programma CAM e G-code in due versioni: ISO/Fanuc e GRBL. I post-processori sono generici, quindi il primo taglio passa da una simulazione e da una prova a vuoto."
       },
       "hardware": {
         "q": "Quale ferramenta supporta?",
@@ -182,11 +182,11 @@
       },
       "data": {
         "q": "Dove sono conservati i miei dati?",
-        "a": "Su un server nell'Unione europea. Le password sono conservate solo come hash Argon2id. I progetti li vedete solo voi; il team li apre solo per l'assistenza e ogni apertura viene registrata nel registro di controllo."
+        "a": "Su un server nell'Unione europea. Le password sono conservate solo come hash Argon2id. Il contenuto dei progetti (misure, materiali, disegni) il team lo apre solo per l'assistenza e ogni download viene registrato nel registro di controllo; il nome e il tipo del progetto sono visibili nel pannello di amministrazione."
       },
       "delete": {
         "q": "Posso eliminare il mio account?",
-        "a": "Sì, da «Dati» nell'account. Prima potete scaricare tutti i vostri dati; l'eliminazione è definitiva e rimuove anche i progetti."
+        "a": "Sì, da «Dati» nell'account. Prima potete scaricare tutti i vostri dati; l'eliminazione è definitiva e rimuove anche i progetti. Nelle copie di backup del database i dati restano finché le copie non scadono: i termini sono nell'informativa sulla privacy."
       }
     },
     "closing": {
@@ -199,7 +199,7 @@
     },
     "outputs": {
       "title": "Che cosa esce da un progetto?",
-      "lead": "I file veri della stessa cucina di esempio: il foglio di taglio con il percorso della fresa, i pezzi del primo modulo e l’inizio del G-code."
+      "lead": "I file veri della stessa cucina di esempio: lo schema di taglio del pannello con il percorso della fresa, i pezzi del primo modulo e l'inizio del G-code."
     },
     "story": {
       "model": "Modello",
@@ -208,12 +208,12 @@
       "sizeValue": "{w} × {h} × {d} mm",
       "parts": "Pezzi",
       "materials": "Materiali",
-      "sheets": "Fogli",
+      "sheets": "Pannelli",
       "sheetsValue": "{n} da {w} × {h} mm",
-      "yield": "Resa dei fogli",
-      "yieldValue": "{pct} %",
-      "sheet1": "Pezzi sul foglio 1",
-      "holes": "Fori sul foglio 1",
+      "yield": "Resa dei pannelli",
+      "yieldValue": "{pct}%",
+      "sheet1": "Pezzi sul pannello 1",
+      "holes": "Fori sul pannello 1",
       "program": "G-code"
     },
     "beta": {

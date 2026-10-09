@@ -103,8 +103,8 @@
       "orderNo": "ordine n. {id}",
       "email": "La conferma va a",
       "statementLabel": "La dichiarazione che inviate",
-      "effect": "Se avete già pagato, vi rimborseremo tutti i pagamenti ricevuti entro {refundDays} giorni, con lo stesso mezzo di pagamento e senza costi per voi. Se il piano è già stato attivato, lo riportiamo com'era prima dell'ordine.",
-      "effectEarly": "Se avete già pagato, vi rimborseremo i pagamenti ricevuti entro {refundDays} giorni, con lo stesso mezzo di pagamento e senza costi per voi, meno la parte per il periodo in cui il piano è stato attivo, perché avete chiesto l'inizio anticipato. Se il piano è già stato attivato, lo riportiamo com'era prima dell'ordine.",
+      "effect": "Se avete già pagato, entro {refundDays} giorni dal ricevimento del recesso vi rimborseremo tutti i pagamenti ricevuti da voi, con lo stesso mezzo di pagamento e senza costi per voi. Se il piano è già stato attivato, lo riportiamo com'era prima dell'ordine.",
+      "effectEarly": "Se avete già pagato, entro {refundDays} giorni dal ricevimento del recesso vi rimborseremo i pagamenti ricevuti da voi, con lo stesso mezzo di pagamento e senza costi per voi, meno la parte per il periodo in cui il piano è stato attivo, perché avete chiesto l'inizio anticipato. Se il piano è già stato attivato, lo riportiamo com'era prima dell'ordine.",
       "confirm": "Conferma recesso",
       "back": "Indietro, senza recedere",
       "unavailable": "Il periodo di recesso per questo ordine è scaduto o l'ordine è già chiuso."

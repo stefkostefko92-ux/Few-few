@@ -82,7 +82,7 @@ seoRouter.get('/sitemap.xml', (_req, res) => {
 const LLMS_LANDING_NOTE: Record<Locale, string> = {
   bg: 'product, prices, questions',
   en: 'product, prices, questions',
-  it: 'prodotto, prezzi, domande',
+  it: 'product, prices, questions',
 };
 const LLMS_LEGAL_TITLE: Record<LegalPage, string> = {
   privacy: 'Privacy policy',

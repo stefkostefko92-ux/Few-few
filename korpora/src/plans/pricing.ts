@@ -58,6 +58,24 @@ export function lifetimePriceCents(): number {
 }
 
 /**
+ * На колко месеца се разпределя цената на Lifetime, когато трябва да се смята част от нея: при отказ с
+ * ранно начало, при спиране на Korpora и при промяна на условията във вреда на клиента (общите условия).
+ * Толкова месеца Premium без отстъпка струва Lifetime: 2,5 × 12 = 30 (750 € = 30 × 25 €).
+ */
+export const LIFETIME_BASIS_MONTHS = (YEAR_MONTHS * LIFETIME_PERCENT_OF_YEAR) / 100;
+
+/** Предизвестието по имейл, преди Korpora да спре да се предлага (общите условия, „Ако Korpora спре“). */
+export const LIFETIME_NOTICE_MONTHS = 6;
+
+/** Месечната част от Lifetime по `LIFETIME_BASIS_MONTHS` — без ДДС и с ДДС, в цели центове. */
+export function lifetimeMonthShareCents(): { net: number; gross: number } {
+  return {
+    net: divideRoundHalfUp(lifetimePriceCents(), LIFETIME_BASIS_MONTHS),
+    gross: divideRoundHalfUp(withVatCents(lifetimePriceCents()), LIFETIME_BASIS_MONTHS),
+  };
+}
+
+/**
  * Правилото за Lifetime в текстовете („{multiple} пъти годишната цена без отстъпката за {months}
  * месеца“) — от ценоразписа, не написано на ръка. Само за показ, затова дробното число е допустимо.
  */

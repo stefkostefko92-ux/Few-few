@@ -28,8 +28,10 @@ NGINX_LINK="${KORPORA_NGINX_LINK:-/etc/nginx/sites-enabled/korpora}"
 LE_DIR="${KORPORA_LE_DIR:-/etc/letsencrypt}"
 HEALTH_WAIT="${KORPORA_HEALTH_WAIT:-90}"
 KEEP_BACKUPS="${KORPORA_KEEP_BACKUPS:-5}"
+# дъмповете преди миграция (некриптирани) живеят най-много толкова дни, а снимките преди възстановяване —
+# толкова седмици без един ден, колкото дневните бекъпи (backup.sh, expire_snapshots)
 PREDEPLOY_DAYS="${KORPORA_PREDEPLOY_DAYS:-30}"
-PRERESTORE_DAYS="${KORPORA_PRERESTORE_DAYS:-60}"
+BACKUP_WEEKS="${KORPORA_BACKUP_WEEKLY:-8}"
 INDEXNOW="${KORPORA_INDEXNOW:-1}"
 SKIP_BACKUP="${KORPORA_SKIP_BACKUP:-0}"
 LAST_GOOD="${KORPORA_LAST_GOOD:-$SHARED/last-good}"
@@ -137,12 +139,14 @@ backup_db() {
   find "$dir" -maxdepth 1 -name 'pre-deploy-*.sql.gz' -printf '%T@ %p\n' | sort -rn |
     tail -n "+$((KEEP_BACKUPS + 1))" | cut -d' ' -f2- | xargs -r rm -f
   # Таван и по възраст: при рядък деплой петте дъмпа (некриптирани) иначе стигат месеци назад и изтрит
-  # акаунт остава в тях. Шифрованите снимки преди --live възстановяване (backup-restore.sh) и сумите им —
-  # колкото най-стария дневен бекъп. Между два деплоя същият таван налага дневният korpora-backup
-  # (backup.sh, cap_age) — без изключението за най-новия дъмп.
-  find "$dir" -maxdepth 1 -type f \( -name 'pre-deploy-*.sql.gz' -mtime "+$PREDEPLOY_DAYS" \
-    ! -name "$(basename "$file")" -o -name 'pre-restore-*.dump.age' -mtime "+$PRERESTORE_DAYS" \
-    -o -name 'pre-restore-*.dump.age.sha256' -mtime "+$PRERESTORE_DAYS" \) -delete
+  # акаунт остава в тях — трият се по-старите от $PREDEPLOY_DAYS дни (освен току-що направения), а
+  # шифрованите снимки преди --live възстановяване (backup-restore.sh) и сумите им — по-старите от
+  # $BACKUP_WEEKS седмици без един ден, колкото обещава политиката. Между два деплоя същото налага дневният
+  # korpora-backup (backup.sh, expire_snapshots) — без изключението за най-новия дъмп.
+  find "$dir" -maxdepth 1 -type f \( \( -name 'pre-deploy-*.sql.gz' -mtime "+$PREDEPLOY_DAYS" ! -name "$(basename "$file")" \) \
+    -o \( \( -name 'pre-restore-*.dump.age' -o -name 'pre-restore-*.dump.age.sha256' \) \
+    -mmin "+$(((BACKUP_WEEKS * 7 - 1) * 1440))" \) \) -delete ||
+    warn "старите дъмпове в $dir не се изтриха докрай — провери правата"
 }
 
 # Код 200 сам не казва КОЙ отговаря на порта: чака се маркерът на Korpora и база, която отговаря.
