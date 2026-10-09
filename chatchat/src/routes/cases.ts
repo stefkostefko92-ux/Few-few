@@ -24,6 +24,7 @@ import {
   withUniqueRetry,
 } from '../services/cases.js';
 import {
+  assigneeFor,
   assigneeViews,
   authorFor,
   caseView,
@@ -242,8 +243,19 @@ export function casesRouter(deps: WiredDeps): Router {
       });
       await addTimeline(deps.db, c.id, 'case.assigned', p.user.id, { to: p.user.id });
       // FR-18: създателят научава кой е поел случая (известие + събитие в реално време).
-      const assignedTo = { id: p.user.id, name: p.user.name };
-      if (c.createdById !== p.user.id) {
+      // Порталният създател получава РОЛЯТА на служителя, не името (правният одит, т. 12).
+      const operator = {
+        id: p.user.id,
+        name: p.user.name,
+        role: p.user.role,
+        kind: p.user.kind,
+      };
+      const creator = await deps.db.user.findFirst({
+        where: { id: c.createdById, tenantId: c.tenantId },
+        select: { id: true, kind: true },
+      });
+      if (creator && c.createdById !== p.user.id) {
+        const assignedTo = assigneeFor(creator, operator);
         await notify(
           deps,
           [
@@ -259,7 +271,7 @@ export function casesRouter(deps: WiredDeps): Router {
           p.user.id,
         );
       }
-      publishCaseAssigned(deps, { ...c, assignedToId: p.user.id }, assignedTo);
+      publishCaseAssigned(deps, { ...c, assignedToId: p.user.id }, operator);
       res.json({ case: caseView(updated) });
     } catch (err) {
       next(err);

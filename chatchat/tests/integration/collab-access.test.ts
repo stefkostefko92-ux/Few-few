@@ -373,6 +373,44 @@ describe('кръстосан достъп', () => {
     assert.equal(stale.body.presence[0].status, 'OFFLINE');
   });
 
+  test('OWNER излиза: порталът не наследява правата — не трие, не кани, не маха персонала', async () => {
+    const { c, users } = w;
+    const id = await open(c.support, {
+      type: 'GROUP',
+      userIds: [users.portalAlfa.id, users.internal.id],
+      name: 'Cantiere Alfa',
+    });
+    const staffMsg = await say(c.internal, id, 'verifica il quadro');
+    // Порталният член е добавен преди вътрешния — по стария ред той щеше да наследи OWNER.
+    assert.equal(
+      (await del(c.support, `/api/v1/conversations/${id}/members/${users.support.id}`)).status,
+      204,
+    );
+    const members = await db.conversationMember.findMany({
+      where: { conversationId: id },
+      select: { userId: true, role: true },
+    });
+    const roleOf = (userId: string) => members.find((m) => m.userId === userId)?.role;
+    assert.equal(roleOf(users.portalAlfa.id), 'MEMBER');
+    assert.equal(roleOf(users.internal.id), 'OWNER');
+
+    // Дори стар ред да води портала OWNER — правата са само за персонала.
+    await db.conversationMember.update({
+      where: { conversationId_userId: { conversationId: id, userId: users.portalAlfa.id } },
+      data: { role: 'OWNER' },
+    });
+    assert.equal((await del(c.portalAlfa, `/api/v1/messages/${staffMsg.id}`)).status, 403);
+    const invite = await c.portalAlfa.post(`/api/v1/conversations/${id}/members`, {
+      userIds: [users.engineering.id],
+    });
+    assert.equal(invite.status, 403);
+    const kick = await del(
+      c.portalAlfa,
+      `/api/v1/conversations/${id}/members/${users.internal.id}`,
+    );
+    assert.equal(kick.status, 403);
+  });
+
   test('операторът на платформата няма работно пространство', async () => {
     const { makeUser, signIn } = await import('./helpers.js');
     const platform = await makeUser({ tenantId: w.tenantA.id, role: 'PLATFORM_ADMIN' });

@@ -205,7 +205,17 @@ describe('SSE', () => {
     assert.deepEqual(assigned.data.data, {
       caseId,
       number: assigned.data.data.number,
-      assignedTo: { id: users.support.id, name: 'Sara Supporto' },
+      // Порталът вижда РОЛЯТА на служителя, не името (правният одит, т. 12) — и в известието.
+      assignedTo: { id: users.support.id, name: null, role: 'SUPPORT' },
+    });
+    const inbox = await c.portalAlfa.get('/api/v1/notifications');
+    const note = inbox.body.notifications.find(
+      (n: { eventType: string }) => n.eventType === 'case.assigned',
+    );
+    assert.deepEqual(note.payload.assignedTo, {
+      id: users.support.id,
+      name: null,
+      role: 'SUPPORT',
     });
     assert.equal(
       sPortal2.events.some((e) => e.event === 'case.assigned'),

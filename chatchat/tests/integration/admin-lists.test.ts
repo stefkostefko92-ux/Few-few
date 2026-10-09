@@ -153,4 +153,16 @@ describe('Одит: филтри', () => {
     const seen = await pa.get('/api/v1/audit?action=auth.login');
     assert.ok(seen.body.events.some((e: { hash: string }) => e.hash === 'h-login-test'));
   });
+
+  test('платформеният администратор вижда само одита на своя клиент', async () => {
+    const platform = await makeUser({ tenantId: w.tenantA.id, role: 'PLATFORM_ADMIN' });
+    const pa = await signIn(h, platform);
+    await db.auditEvent.create({
+      data: { tenantId: w.tenantB.id, action: 'auth.login', prevHash: 'y', hash: 'h-other-tenant' },
+    });
+    const all = await pa.get('/api/v1/audit');
+    assert.equal(all.status, 200);
+    assert.ok(all.body.events.length > 0);
+    assert.ok(all.body.events.every((e: { tenantId: string }) => e.tenantId === w.tenantA.id));
+  });
 });

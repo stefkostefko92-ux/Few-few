@@ -46,12 +46,15 @@ export async function assigneeViews(
     where: { id: { in: ids }, tenantId: reader.tenantId },
     select: { id: true, name: true, role: true, kind: true },
   });
-  return new Map(
-    users.map((u) => {
-      const a = authorFor(reader, u);
-      return [u.id, { id: u.id, name: a.authorName, role: u.role }];
-    }),
-  );
+  return new Map(users.map((u) => [u.id, assigneeFor(reader, u)]));
+}
+
+/** Поелият случая, както го вижда читателят: порталът — ролята, не името (като `authorFor`). */
+export function assigneeFor(
+  reader: Pick<Principal['user'], 'id' | 'kind'>,
+  assignee: MessageAuthor,
+): { id: string; name: string | null; role: Role } {
+  return { id: assignee.id, name: authorFor(reader, assignee).authorName, role: assignee.role };
 }
 
 export interface MessageAuthor {

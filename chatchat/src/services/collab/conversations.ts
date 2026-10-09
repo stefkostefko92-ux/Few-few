@@ -10,6 +10,7 @@ import {
   type Candidate,
   type ConversationScope,
   type Loaded,
+  ownsConversation,
   type Viewer,
 } from './access.js';
 import { publishToConversation, publishToUser, type CollabDeps } from './publish.js';
@@ -182,7 +183,7 @@ export async function addMembers(
   const ids = [...new Set(userIds)];
   const selfOnly = ids.length === 1 && ids[0] === viewer.id;
   if (selfOnly && loaded.membership) return ok(c);
-  if (selfOnly ? !selfJoinAllowed : loaded.membership?.role !== 'OWNER') {
+  if (selfOnly ? !selfJoinAllowed : !ownsConversation(viewer, loaded.membership)) {
     return fail(403, 'forbidden');
   }
   const candidates = await loadCandidates(deps, viewer.tenantId, ids);
@@ -213,7 +214,10 @@ export async function addMembers(
   return ok(c);
 }
 
-/** Махане: OWNER маха другите, всеки може да излезе сам. Без OWNER остава най-старият член. */
+/**
+ * Махане: OWNER маха другите, всеки може да излезе сам. Без OWNER наследява най-старият АКТИВЕН
+ * ВЪТРЕШЕН член; няма такъв → разговорът остава без OWNER (порталът никога не наследява).
+ */
 export async function removeMember(
   deps: CollabDeps,
   viewer: Viewer,
@@ -223,7 +227,7 @@ export async function removeMember(
   const c = loaded.conversation;
   if (c.type === 'DIRECT') return fail(409, 'not_allowed_for_type');
   const self = userId === viewer.id;
-  if (!self && loaded.membership?.role !== 'OWNER') return fail(403, 'forbidden');
+  if (!self && !ownsConversation(viewer, loaded.membership)) return fail(403, 'forbidden');
   const removed = await deps.db.$transaction(async (tx) => {
     const gone = await tx.conversationMember.deleteMany({
       where: { conversationId: c.id, userId },
@@ -234,8 +238,8 @@ export async function removeMember(
     });
     if (owners === 0) {
       const next = await tx.conversationMember.findFirst({
-        where: { conversationId: c.id },
-        orderBy: { joinedAt: 'asc' },
+        where: { conversationId: c.id, user: { kind: 'INTERNAL', active: true } },
+        orderBy: [{ joinedAt: 'asc' }, { userId: 'asc' }],
       });
       if (next) {
         await tx.conversationMember.update({

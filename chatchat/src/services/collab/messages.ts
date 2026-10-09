@@ -2,7 +2,7 @@ import type { ConversationMember, Prisma, PrismaClient } from '@prisma/client';
 import { appendAudit } from '../../audit.js';
 import { redactPii } from '../../domain/pii.js';
 import { addTimeline, isUniqueOn } from '../cases.js';
-import { canSelfJoin, type Loaded, type Viewer } from './access.js';
+import { canSelfJoin, ownsConversation, type Loaded, type Viewer } from './access.js';
 import { mentionedUserIds, messageRecipients, notify } from './notify.js';
 import { publishToConversation, type CollabDeps } from './publish.js';
 import { fail, ok, type Result } from './result.js';
@@ -224,7 +224,7 @@ export async function deleteMessage(
   const { message, loaded } = target;
   const c = loaded.conversation;
   const author = message.senderId === viewer.id;
-  const moderator = loaded.membership?.role === 'OWNER' && c.type !== 'DIRECT';
+  const moderator = ownsConversation(viewer, loaded.membership) && c.type !== 'DIRECT';
   if (!author && !moderator) return fail(403, 'forbidden');
   if (message.deletedAt) return ok(null);
   await deps.db.$transaction(async (tx) => {

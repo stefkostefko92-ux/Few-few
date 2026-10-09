@@ -39,6 +39,15 @@ export interface ConversationScope {
 
 export const isStaff = (v: Pick<Viewer, 'kind'>): boolean => v.kind === 'INTERNAL';
 
+/**
+ * Правата на OWNER (покана, махане на други, модерация) — само за персонала: порталът само бива
+ * поканван, дори ред в базата да го води OWNER (стар запис или грешка при наследяване).
+ */
+export const ownsConversation = (
+  v: Pick<Viewer, 'kind'>,
+  membership: { role: string } | null,
+): boolean => isStaff(v) && membership?.role === 'OWNER';
+
 /** Каналите за инженеринг и спешни случаи са PRIVATE по подразбиране (§12.3); останалите — PUBLIC. */
 const SENSITIVE_CHANNEL = /engineer|ingegner|urgen|emergen|спешн|инженер|escalat|ескалац/i;
 

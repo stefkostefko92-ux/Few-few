@@ -8,7 +8,7 @@ import { apiError, principalOf, requireCapability, requireUser } from '../auth/g
  * Събитията по входа на хората. Администраторът на клиента (работодателят) НЕ ги вижда: това би
  * било дистанционно наблюдение на служителите (чл. 4 Statuto dei Lavoratori, L. 300/1970) —
  * целта на одита е сигурността на системата, не оценка на работата (правният одит, т. 7).
- * Вижда ги само администраторът на платформата (разследване на инцидент).
+ * Вижда ги само администраторът на платформата (разследване на инцидент) — и той само в своя клиент.
  */
 export const LOGIN_AUDIT_ACTIONS = [
   'auth.login',
@@ -47,9 +47,11 @@ export function auditRouter(deps: AppDeps): Router {
       const f = q.data;
       // Филтрите на потребителя СЕ ДОБАВЯТ към ограничението на ролята (AND), никога не го заместват:
       // администраторът на клиента не стига до входовете и с `action=auth.`.
-      const and: Prisma.AuditEventWhereInput[] = [];
+      // Само своят клиент — и за платформения администратор (като управлението на потребители):
+      // разследване през клиенти е работа на сървъра (базата), не на уеб сесия.
+      const and: Prisma.AuditEventWhereInput[] = [{ tenantId: p.user.tenantId }];
       if (p.user.role !== 'PLATFORM_ADMIN') {
-        and.push({ tenantId: p.user.tenantId, action: { notIn: [...LOGIN_AUDIT_ACTIONS] } });
+        and.push({ action: { notIn: [...LOGIN_AUDIT_ACTIONS] } });
       }
       if (f.before) and.push({ id: { lt: f.before } });
       if (f.action) and.push({ action: { startsWith: f.action } });

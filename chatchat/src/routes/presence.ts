@@ -45,11 +45,16 @@ export function presenceRouter(deps: WiredDeps): Router {
     if (deps.hub.size() === 0) return;
     const authorize: Authorizer = async (userIds) => {
       const viewers = await loadViewers(deps.db, userIds, subject.tenantId);
+      // Паралелно, не една по една: authorize държи опашката на хъба — последователни заявки
+      // по свързан получател бавят всички останали събития. Правилото е същото (presence.ts).
+      const seen = await Promise.all(
+        [...viewers].map(async ([id, v]) => {
+          const sees = await visiblePresenceSubjects(deps.db, v, [subject.id]);
+          return sees.has(subject.id) ? id : null;
+        }),
+      );
       const out = new Map<string, Record<string, unknown>>();
-      for (const [id, v] of viewers) {
-        const sees = await visiblePresenceSubjects(deps.db, v, [subject.id]);
-        if (sees.has(subject.id)) out.set(id, { userId: subject.id, ...view });
-      }
+      for (const id of seen) if (id) out.set(id, { userId: subject.id, ...view });
       return out;
     };
     deps.hub

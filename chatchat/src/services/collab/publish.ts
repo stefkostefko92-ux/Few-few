@@ -2,6 +2,7 @@ import type { PrismaClient } from '@prisma/client';
 import type { Logger } from 'pino';
 import { can } from '../../auth/rbac.js';
 import type { Authorizer, RealtimeEventType, RealtimeHub } from '../../realtime/hub.js';
+import { assigneeFor, type MessageAuthor } from '../case-views.js';
 import { canAccessConversation, loadViewers, type Viewer } from './access.js';
 
 /**
@@ -112,7 +113,7 @@ export function publishToUser(
 export function publishCaseAssigned(
   deps: CollabDeps,
   c: { id: string; number: string; tenantId: string; createdById: string; assignedToId: string },
-  actor: { id: string; name: string },
+  actor: MessageAuthor,
 ): void {
   const recipients = [c.createdById, c.assignedToId];
   if (recipients.every((id) => deps.hub.size(id) === 0)) return;
@@ -125,7 +126,7 @@ export function publishCaseAssigned(
       out.set(id, {
         caseId: c.id,
         number: c.number,
-        assignedTo: { id: actor.id, name: actor.name },
+        assignedTo: assigneeFor(v, actor),
       });
     }
     return out;
