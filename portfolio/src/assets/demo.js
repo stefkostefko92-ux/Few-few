@@ -59,11 +59,15 @@ document.querySelectorAll('[data-widget="tiles"]').forEach(function (w) {
   var lb = document.getElementById("lightbox"), items = Array.prototype.slice.call(document.querySelectorAll("[data-lightbox]")); if (!lb || !items.length) return;
   var img = lb.querySelector("img"), i = 0;
   var cap = lb.querySelector(".lb-cap"), cnt = lb.querySelector(".lb-count");
-  function show(n) { i = (n + items.length) % items.length; img.src = items[i].getAttribute("href"); img.alt = items[i].querySelector("img").alt; if (cap) cap.textContent = items[i].dataset.cap || ""; if (cnt) cnt.textContent = (i + 1) + " / " + items.length; lb.hidden = false; document.body.style.overflow = "hidden"; }
-  function hide() { lb.hidden = true; document.body.style.overflow = ""; }
+  var opener = null; // фокусът влиза в lightbox-а при отваряне и се връща на снимката при затваряне
+  function show(n) { var was = !lb.hidden; i = (n + items.length) % items.length; img.src = items[i].getAttribute("href"); img.alt = items[i].querySelector("img").alt; if (cap) cap.textContent = items[i].dataset.cap || ""; if (cnt) cnt.textContent = (i + 1) + " / " + items.length; lb.hidden = false; document.body.style.overflow = "hidden"; if (!was) { opener = document.activeElement; lb.querySelector(".lb-close").focus(); } }
+  function hide() { lb.hidden = true; document.body.style.overflow = ""; if (opener && opener.focus) opener.focus(); opener = null; }
   items.forEach(function (a, n) { a.addEventListener("click", function (e) { e.preventDefault(); show(n); }); });
   lb.querySelector(".lb-close").addEventListener("click", hide); lb.querySelector(".lb-prev").addEventListener("click", function () { show(i - 1); }); lb.querySelector(".lb-next").addEventListener("click", function () { show(i + 1); });
   lb.addEventListener("click", function (e) { if (e.target === lb) hide(); });
   var sx = null; lb.addEventListener("pointerdown", function (e) { sx = e.clientX; }); lb.addEventListener("pointerup", function (e) { if (sx === null) return; var dx = e.clientX - sx; sx = null; if (Math.abs(dx) > 50) show(dx < 0 ? i + 1 : i - 1); });
-  addEventListener("keydown", function (e) { if (lb.hidden) return; if (e.key === "Escape") hide(); if (e.key === "ArrowLeft") show(i - 1); if (e.key === "ArrowRight") show(i + 1); });
+  addEventListener("keydown", function (e) {
+    if (lb.hidden) return; if (e.key === "Escape") hide(); if (e.key === "ArrowLeft") show(i - 1); if (e.key === "ArrowRight") show(i + 1);
+    if (e.key === "Tab") { var els = lb.querySelectorAll("button"), first = els[0], last = els[els.length - 1]; if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); } else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); } else if (!lb.contains(document.activeElement)) { e.preventDefault(); first.focus(); } }
+  });
 })();

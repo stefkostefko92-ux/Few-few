@@ -5,7 +5,7 @@ export default {
     title: "Sito web per autofficina: prezzo, tempi, demo",
     desc: "Sito web per autofficina con prenotazione online, servizi con prezzi e recensioni. Demo pronta, prezzo fisso da {start} € e consegna in 5–7 giorni lavorativi.",
     intro: [
-      "Il cliente dell'officina cerca tre cose in 20 secondi dal telefono: quanto costa, quando c'è posto e dove siete. Il sito per autofficina che realizziamo risponde a tutte e tre sulla prima schermata: servizi con prezzi, modulo di prenotazione con data e ora, mappa e telefono con un tocco.",
+      "Il cliente dell'officina cerca tre cose in 20 secondi dal telefono: quanto costa, quando c'è posto e dove siete. Il sito per autofficina che realizziamo risponde a tutte e tre sulla prima schermata: servizi con prezzi, modulo di prenotazione con data e ora, indirizzo e telefono con un tocco.",
       "La demo Motor Lab è un sito finito: sei servizi con prezzi, offerta del mese, galleria, recensioni, FAQ e dati strutturati AutoRepair per Google. Ricevi lo stesso con i tuoi servizi, prezzi, foto e orari.",
     ],
     faq: [
@@ -37,17 +37,17 @@ export default {
       "La demo Oak & Linen è un sito finito con catalogo a tessere, contatore e totale, prova di materiale, galleria, recensioni e FAQ. Per un negozio che vende online lo estendiamo a un e-commerce completo con carrello e pagamento con carta.",
     ],
     faq: [
-      { q: "Il cliente può scegliere tessuto e colore e vedere il risultato?", a: "Sì, la prova materiale è integrata nella demo: scegli rovere, noce, lino o velluto e la foto e l'accento cambiano dal vivo. Funziona con i tuoi materiali e le tue foto reali." },
+      { q: "Il cliente può scegliere tessuto e colore e vedere il risultato?", a: "Sì, la prova materiale è integrata nella demo: scegli rovere, noce o lino e l'accento del sito cambia dal vivo. Con i tuoi materiali reali funziona allo stesso modo." },
       { q: "Abbiamo 300 prodotti: è una landing o un catalogo?", a: "Fino a 20–30 prodotti basta il pacchetto Business con catalogo per collezione. Centinaia di articoli con filtri, varianti e giacenze richiedono il pacchetto Shop: un vero catalogo con pannello admin." },
-      { q: "Gli ordini su misura possono passare dal sito?", a: "Sì, il modulo di richiesta accetta misure, foto della stanza e tempi desiderati e li invia alla tua email. Rispondi con un preventivo, senza descrizioni al telefono." },
+      { q: "Gli ordini su misura possono passare dal sito?", a: "Sì. Nella demo il modulo raccoglie una descrizione: misure e tempi il cliente li scrive nel messaggio, che arriva alla tua email. Il campo per la foto della stanza lo aggiungiamo su richiesta." },
     ],
   },
   advokati: {
     h1: "Realizzazione sito web per studio legale",
     title: "Sito web per studio legale: aree, team, consulenza",
-    desc: "Sito per studio legale o avvocato: aree di attività, team, richiesta di consulenza, pubblicazioni. Conforme al GDPR. Demo Lex Aurea, prezzo da {start} €.",
+    desc: "Sito per studio legale o avvocato: aree di attività, team, richiesta di consulenza. Conforme al GDPR. Demo Lex Aurea, prezzo da {start} €.",
     intro: [
-      "Il cliente di uno studio legale decide su due cose: se capite esattamente il suo problema e se può fidarsi. Il sito per studio legale ordina le aree per problema («separazione», «contenzioso commerciale», «immobile»), presenta il team con biografie reali e porta a una richiesta di consulenza con la descrizione del caso.",
+      "Il cliente di uno studio legale decide su due cose: se capite esattamente il suo problema e se può fidarsi. Il sito per studio legale ordina le aree per problema («separazione», «contenzioso commerciale», «immobile»), presenta il team e porta a una richiesta di consulenza con la descrizione del caso.",
       "La demo Lex Aurea è un sito pronto dal design sobrio: sei aree, team, come lavoriamo, recensioni, FAQ e modulo di consulenza. Pagina legale e trattamento dei dati sono conformi al GDPR dal primo giorno, non «dopo».",
     ],
     faq: [
@@ -66,17 +66,17 @@ export default {
     ],
     faq: [
       { q: "La prenotazione modifica la nostra agenda reale o invia solo una richiesta?", a: "In Start e Business il modulo invia una richiesta che confermi. In Premium la prenotazione gira su un sistema reale con calendario, slot liberi e conferma via SMS/email." },
-      { q: "Ogni operatrice può avere la sua pagina e i suoi orari?", a: "Sì, il team è una sezione a parte con profilo, specialità e foto di ciascuna; con Premium ognuna ha anche il proprio calendario." },
+      { q: "Ogni operatrice può avere la sua pagina e i suoi orari?", a: "Sì, su richiesta: ogni operatrice ha un profilo con specialità e foto e, con Premium, il proprio calendario. Nella demo il team è presentato nella sezione «Chi siamo»." },
       { q: "Ci troveranno su Instagram e Google allo stesso tempo?", a: "Il sito è la base: Google lo indicizza con dati LocalBusiness e il link in Instagram porta alla prenotazione. Il profilo Google Business viene collegato al sito per mappa e recensioni." },
     ],
   },
   hotel: {
     h1: "Realizzazione sito web per hotel o casa vacanze",
     title: "Sito per hotel e casa vacanze: prenotazioni dirette",
-    desc: "Sito per hotel, B&B o casa vacanze con prenotazioni dirette senza commissioni, camere con prezzi e foto, mappa e recensioni. Demo Silver Fir da {start} €.",
+    desc: "Sito per hotel, B&B o casa vacanze con prenotazioni dirette senza commissioni, camere con prezzi e foto, contatti e recensioni. Demo Silver Fir da {start} €.",
     intro: [
-      "Ogni prenotazione tramite un portale costa il 15–18% di commissione. Il sito per hotel o casa vacanze riporta le prenotazioni dirette: camere con foto reali e prezzi, modulo di prenotazione con date e ospiti, mappa, recensioni e tre lingue per gli ospiti stranieri.",
-      "La demo Silver Fir è un sito finito: camere, prenotazione, galleria, «nei dintorni», recensioni, FAQ e contatti con mappa. I dati strutturati LodgingBusiness dicono a Google che siete una struttura ricettiva, con indirizzo e prezzi.",
+      "Ogni prenotazione tramite un portale costa il 15–18% di commissione. Il sito per hotel o casa vacanze riporta le prenotazioni dirette: camere con foto reali e prezzi, modulo di richiesta di prenotazione con data, indirizzo, recensioni e tre lingue per gli ospiti stranieri.",
+      "La demo Silver Fir è un sito finito: camere, richiesta di prenotazione, galleria, recensioni, FAQ e contatti. I dati strutturati LodgingBusiness dicono a Google che siete una struttura ricettiva, con indirizzo e prezzi.",
     ],
     faq: [
       { q: "La prenotazione può verificare le date libere e incassare una caparra?", a: "In Start e Business il modulo invia una richiesta con le date che confermi. Per il calendario disponibilità e la caparra con carta serve il pacchetto Premium o Shop." },
@@ -101,7 +101,7 @@ export default {
   avtokashta: {
     h1: "Realizzazione sito web per concessionaria",
     title: "Sito per concessionaria: auto disponibili e test drive",
-    desc: "Sito per concessionaria con catalogo delle auto disponibili, filtri, calcolatore leasing e richiesta di test drive. Demo Drive Line, prezzo da {start} €.",
+    desc: "Sito per concessionaria con catalogo delle auto disponibili, calcolatore leasing e richiesta di test drive. Demo Drive Line, prezzo da {start} €.",
     intro: [
       "Chi compra un'auto guarda le vetture disponibili con foto, chilometri e prezzo, calcola la rata del leasing e vuole un test drive. Il sito per concessionaria ordina esattamente questo: catalogo a tessere, calcolatore leasing, richiesta di test drive e fiducia: garanzia, storia, recensioni.",
       "La demo Drive Line è un sito finito con nuovi arrivi, calcolatore leasing dal vivo, servizi, galleria, recensioni e FAQ. Lo ricevi con le tue auto e condizioni; quando cambia la disponibilità la aggiorni tu.",
@@ -118,7 +118,7 @@ export default {
     desc: "Sito per negozio di abbigliamento o boutique con collezioni, catalogo con carrello, taglie e giacenze. Demo NORD Studio da {start} €; e-commerce da {ecommerce} €.",
     intro: [
       "Una boutique vende con atmosfera e foto. Il sito per negozio di abbigliamento è editoriale: scatti grandi, collezioni per stagione, tessere con prezzo e taglie, carrello. Per un negozio fisico è la vetrina che porta il cliente alla porta; per la vendita online, un vero shop con pagamento con carta.",
-      "La demo NORD Studio è un sito pronto con collezione, catalogo a tessere con carrello e totale, lookbook, recensioni e FAQ. Il pacchetto Shop aggiunge varianti (taglia/colore), giacenze, ordini, pagamento con carta e spedizione con corriere.",
+      "La demo NORD Studio è un sito pronto con collezione, catalogo a tessere con selezione e totale, recensioni e FAQ. Il pacchetto Shop aggiunge carrello, varianti (taglia/colore), giacenze, ordini, pagamento con carta e spedizione con corriere.",
     ],
     faq: [
       { q: "Che differenza c'è tra «sito con catalogo» ed «e-commerce»?", a: "Il catalogo mostra i prodotti e raccoglie una richiesta. L'e-commerce ha carrello, varianti, giacenze, pagamento con carta, ordini e fatture: è il pacchetto Shop." },
@@ -129,9 +129,9 @@ export default {
   burger: {
     h1: "Realizzazione sito web per fast food",
     title: "Sito per fast food e hamburgeria: menu e ordini",
-    desc: "Sito per hamburgeria, pizzeria o fast food con menu e prezzi, ordini da asporto, orari e mappa. Demo Crunch Corner, prezzo da {start} €.",
+    desc: "Sito per hamburgeria, pizzeria o fast food con menu e prezzi, ordini da asporto, orari e indirizzo. Demo Crunch Corner, prezzo da {start} €.",
     intro: [
-      "Il cliente affamato vuole il menu con i prezzi e un pulsante «ordina» o «chiama», in pochi secondi. Il sito per fast food mostra il menu per categoria con prezzi e foto, raccoglie l'ordine con tessere e totale, dà orari e mappa. Senza app, senza commissioni ai portali.",
+      "Il cliente affamato vuole il menu con i prezzi e un pulsante «ordina» o «chiama», in pochi secondi. Il sito per fast food mostra il menu per categoria con prezzi e foto, raccoglie l'ordine con tessere e totale, dà orari e indirizzo. Senza app, senza commissioni ai portali.",
       "La demo Crunch Corner è un sito pronto con menu a tessere, contatore e totale, offerta, galleria, recensioni e FAQ. Lo ricevi con il tuo menu e i tuoi prezzi; per pagamento online e consegna lo estendiamo al pacchetto Shop.",
     ],
     faq: [
@@ -159,8 +159,8 @@ export default {
     title: "Sito per clinica e studio dentistico: prenotazione visite",
     desc: "Sito per poliambulatorio, studio dentistico o studio medico con prenotazione online, specialisti, listino e moduli conformi al GDPR. Demo Clinica Vita da {start} €.",
     intro: [
-      "Il paziente cerca uno specialista, un orario libero e un prezzo, e vuole prenotare senza aspettare al telefono. Il sito per clinica ordina le specialità, i medici con le qualifiche, il listino e la prenotazione; i dati del paziente sono trattati come dati sanitari (art. 9 GDPR), in modo sicuro ed esplicito.",
-      "La demo Clinica Vita è un sito finito: prenotazione per specialità, data e ora, medici, listino, galleria, recensioni e FAQ. Un vero sistema di appuntamenti con calendario e promemoria SMS è il pacchetto Premium.",
+      "Il paziente cerca uno specialista, un orario libero e un prezzo, e vuole prenotare senza aspettare al telefono. Il sito per clinica ordina le specialità, il listino e la prenotazione; i dati del paziente sono trattati come dati sanitari (art. 9 GDPR), in modo sicuro ed esplicito.",
+      "La demo Clinica Vita è un sito finito: prenotazione per specialità, data e ora, listino, galleria, recensioni e FAQ. Un vero sistema di appuntamenti con calendario e promemoria SMS è il pacchetto Premium.",
     ],
     faq: [
       { q: "Come sono protetti i dati dei pazienti dal modulo?", a: "Il modulo viaggia su HTTPS, invia solo alla vostra email di lavoro, non salva nulla in sistemi terzi e ha un consenso esplicito per i dati sanitari. L'informativa indica il periodo di conservazione. Non è una consulenza legale: lo costruiamo secondo il GDPR e lo verificate con il vostro titolare del trattamento." },
@@ -170,24 +170,24 @@ export default {
   },
   restorant: {
     h1: "Realizzazione sito web per ristorante",
-    title: "Sito web per ristorante: menu, prenotazione tavolo, mappa",
-    desc: "Sito per ristorante, bistrot o enoteca con menu per categoria, prenotazione del tavolo, eventi, galleria e recensioni. Demo Trattoria Sole da {start} €.",
+    title: "Sito web per ristorante: menu con prezzi, ordini, eventi",
+    desc: "Sito per ristorante, bistrot o enoteca con menu per categoria, ordini da asporto, eventi, galleria e recensioni. Demo Trattoria Sole da {start} €.",
     intro: [
-      "L'ospite sceglie il ristorante dal menu, dalle foto e dalla possibilità di prenotare un tavolo per sabato. Il sito per ristorante mostra il menu con prezzi e allergeni, raccoglie la prenotazione con data, ora e coperti, e racconta la cucina con galleria e recensioni: ciò che i portali di prenotazione non fanno per voi.",
-      "La demo Trattoria Sole è un sito pronto con menu a tessere, menu degustazione, eventi, galleria, recensioni e FAQ. Lo ricevi con il tuo menu e le tue foto in tre lingue, se hai ospiti stranieri.",
+      "L'ospite sceglie il ristorante dal menu, dalle foto e dalla possibilità di prenotare un tavolo per sabato. Il sito per ristorante mostra il menu con prezzi, raccoglie ordini da asporto e richieste di tavolo, e racconta la cucina con galleria e recensioni: ciò che i portali di prenotazione non fanno per voi.",
+      "La demo Trattoria Sole è un sito pronto con menu a tessere, eventi, galleria, recensioni e FAQ. Lo ricevi con il tuo menu e le tue foto in tre lingue, se hai ospiti stranieri.",
     ],
     faq: [
       { q: "La prenotazione del tavolo funziona in tempo reale?", a: "In Start/Business è una richiesta che confermi. Per una vera pianta dei tavoli con slot liberi serve il pacchetto Premium o l'integrazione con il vostro sistema di prenotazione." },
-      { q: "Il menu può avere allergeni e più lingue?", a: "Sì, ogni piatto ha un campo allergeni (Regolamento 1169/2011) e la traduzione; la demo è in italiano, inglese e bulgaro." },
+      { q: "Il menu può avere allergeni e più lingue?", a: "Sì: il campo allergeni (Regolamento 1169/2011) lo aggiungiamo a ogni piatto in fase di realizzazione e la traduzione è inclusa nel pacchetto; la demo è in italiano, inglese e bulgaro." },
       { q: "Compariremo su Google con menu e orari?", a: "I dati strutturati Restaurant portano menu, indirizzo, orari e fascia di prezzo; colleghiamo il sito al profilo Google Business per mappa e recensioni." },
     ],
   },
   imoti: {
     h1: "Realizzazione sito web per agenzia immobiliare",
-    title: "Sito per agenzia immobiliare: annunci, filtri, consulenza",
-    desc: "Sito per agenzia immobiliare con annunci per tipo e città, filtri, richiesta di visita e valutazione dell'immobile. Demo Casa Nova, prezzo da {start} €.",
+    title: "Sito per agenzia immobiliare: annunci, visite, valutazione",
+    desc: "Sito per agenzia immobiliare con annunci per tipo e città, richiesta di visita e valutazione dell'immobile. Demo Casa Nova, prezzo da {start} €.",
     intro: [
-      "Chi compra filtra: città, tipo, prezzo, locali, e vuole una visita. Chi vende vuole sapere quanto vale il suo immobile. Il sito per agenzia immobiliare serve entrambi: annunci con filtri e gallerie, richiesta di visita e modulo per la valutazione gratuita, più fiducia: team, processo, recensioni.",
+      "Chi compra filtra: città, tipo, prezzo, locali, e vuole una visita. Chi vende vuole sapere quanto vale il suo immobile. Il sito per agenzia immobiliare serve entrambi: annunci con gallerie, richiesta di visita e modulo per la valutazione gratuita, più fiducia: team, processo, recensioni.",
       "La demo Casa Nova è un sito pronto con annunci selezionati, servizi, richiesta di consulenza, galleria, recensioni e FAQ. Per centinaia di annunci con filtri e import dai portali serve il pacchetto Shop (catalogo con pannello admin).",
     ],
     faq: [
@@ -199,13 +199,13 @@ export default {
   stroitelstvo: {
     h1: "Realizzazione sito web per impresa edile",
     title: "Sito per impresa edile: lavori, servizi, preventivo",
-    desc: "Sito per impresa edile o di ristrutturazioni con portfolio «prima/dopo», servizi, richiesta di sopralluogo e preventivo. Demo Bauhaus Build da {start} €.",
+    desc: "Sito per impresa edile o di ristrutturazioni con servizi, lavori, richiesta di sopralluogo e preventivo. Demo Bauhaus Build da {start} €.",
     intro: [
-      "Il cliente di un'impresa edile vuole vedere lavori fatti e ricevere un preventivo. Il sito per impresa edile mostra i cantieri completati con foto «prima/dopo», i servizi con prezzi indicativi e un modulo di sopralluogo con indirizzo, tipo di lavoro e foto del luogo: la richiesta arriva già pronta per il preventivo.",
+      "Il cliente di un'impresa edile vuole vedere lavori fatti e ricevere un preventivo. Il sito per impresa edile mostra i cantieri completati, i servizi con prezzi indicativi e un modulo di richiesta di sopralluogo: la richiesta arriva già pronta per il preventivo.",
       "La demo Bauhaus Build è un sito finito: servizi, lavori, come lavoriamo, richiesta di consulenza, galleria, recensioni e FAQ. Lo ricevi con i tuoi lavori e servizi; ogni nuovo cantiere lo aggiungi tu dal pannello admin.",
     ],
     faq: [
-      { q: "Il cliente può allegare foto del luogo alla richiesta?", a: "Sì, il modulo accetta foto e descrizione, così puoi fare un preventivo senza primo sopralluogo. Arriva alla tua email." },
+      { q: "Il cliente può allegare foto del luogo alla richiesta?", a: "Nella demo il modulo raccoglie una descrizione; le foto il cliente le invia via email dopo il primo contatto. Il campo per allegare foto lo aggiungiamo su richiesta." },
       { q: "Come si aggiungono i nuovi lavori completati?", a: "Dal pannello admin: foto, descrizione, tipo di lavoro, tempi. Pubblichi e il cantiere è nel portfolio del sito." },
       { q: "Compariremo per «ristrutturazione bagno + città»?", a: "Realizziamo pagine separate per servizio e città con dati strutturati GeneralContractor e testo: è così che si compare nelle ricerche locali per tipo di lavoro." },
     ],

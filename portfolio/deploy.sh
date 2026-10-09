@@ -29,6 +29,7 @@ echo "[1/7] Билд…"
 
 # 2. Атомарна смяна: нов root до стария, после mv (нула секунди без сайт)
 echo "[2/7] Публикуване на файловете…"
+rm -rf "$WEB_ROOT.new"   # остатък от прекъснат деплой иначе се слива с новия (изтрити страници се връщат)
 mkdir -p "$WEB_ROOT.new"
 cp -r "$HERE/dist/." "$WEB_ROOT.new/"
 chown -R www-data:www-data "$WEB_ROOT.new"
@@ -51,9 +52,18 @@ fi
 
 # 4. Пълният конфиг от репото
 echo "[4/7] Nginx конфиг…"
+# Провален `nginx -t` не бива да оставя счупен файл в sites-enabled: всеки следващ reload (другите продукти,
+# certbot renew) би паднал на целия VPS. Затова — копие и връщане при провал.
+NGINX_BAK=""
+if [ -f "$NGINX_CONF" ]; then NGINX_BAK="$(mktemp)"; cp -p "$NGINX_CONF" "$NGINX_BAK"; fi
 cp "$HERE/nginx.conf" "$NGINX_CONF"
 ln -sf "$NGINX_CONF" "/etc/nginx/sites-enabled/$DOMAIN"
-nginx -t
+if ! nginx -t; then
+  echo "✗ nginx -t пада — връщам предишния конфиг"
+  if [ -n "$NGINX_BAK" ]; then cp -p "$NGINX_BAK" "$NGINX_CONF"; else rm -f "/etc/nginx/sites-enabled/$DOMAIN"; fi
+  exit 1
+fi
+if [ -n "$NGINX_BAK" ]; then rm -f "$NGINX_BAK"; fi
 
 # 5. Reload
 echo "[5/7] Reload…"
@@ -62,7 +72,8 @@ systemctl reload nginx
 # 6. Health: и трите езика трябва да отговарят 200
 echo "[6/7] Проверка…"
 for p in /bg/ /en/ /it/; do
-  code="$(curl -s -o /dev/null -w '%{http_code}' "https://$DOMAIN$p")"
+  # `|| true`: под set -e грешка на curl (отказана връзка, TLS, DNS) иначе спира скрипта ПРЕДИ отката.
+  code="$(curl -s --max-time 15 -o /dev/null -w '%{http_code}' "https://$DOMAIN$p")" || true
   if [ "$code" != "200" ]; then
     echo "✗ $p → HTTP $code — връщам предишната версия"
     if [ -d "$WEB_ROOT.prev" ]; then rm -rf "$WEB_ROOT"; mv "$WEB_ROOT.prev" "$WEB_ROOT"; systemctl reload nginx; fi
@@ -87,7 +98,7 @@ else
   systemctl enable portfolio-api >/dev/null 2>&1 || true
   systemctl restart portfolio-api
   sleep 1
-  hc="$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:4187/api/health")"
+  hc="$(curl -s --max-time 10 -o /dev/null -w '%{http_code}' "http://127.0.0.1:4187/api/health")" || true
   if [ "$hc" != "200" ]; then
     echo "  ✗ API health → HTTP $hc"; journalctl -u portfolio-api -n 20 --no-pager; exit 1
   fi

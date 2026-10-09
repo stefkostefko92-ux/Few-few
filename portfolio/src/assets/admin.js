@@ -28,6 +28,12 @@
     var li = document.createElement("li"); li.innerHTML = "<b>" + new Date().toLocaleTimeString().slice(0, 5) + "</b> " + keys.length + " " + L.changed; hist.prepend(li);
     binds.forEach(function (el) { initial[el.dataset.bind] = val(el); }); dirty = {}; dirtyEl.hidden = true; show(L.saved);
   });
-  app.querySelector("[data-undo]").addEventListener("click", function () { binds.forEach(function (el) { if (el.type === "checkbox") el.checked = initial[el.dataset.bind]; else el.value = initial[el.dataset.bind]; apply(el); }); });
+  // „Върни" връща и снимките: началните src се помнят при старт, ключовете photo-* се чистят от брояча.
+  var photo0 = {}; app.querySelectorAll("[data-photo],[data-pv-photo]").forEach(function (i) { photo0[(i.dataset.photo ? "p:" : "v:") + (i.dataset.photo || i.dataset.pvPhoto) + ":" + Array.prototype.indexOf.call(app.querySelectorAll("img"), i)] = i.getAttribute("src"); });
+  app.querySelector("[data-undo]").addEventListener("click", function () {
+    app.querySelectorAll("[data-photo],[data-pv-photo]").forEach(function (i) { var k = (i.dataset.photo ? "p:" : "v:") + (i.dataset.photo || i.dataset.pvPhoto) + ":" + Array.prototype.indexOf.call(app.querySelectorAll("img"), i); if (photo0[k] != null) i.setAttribute("src", photo0[k]); });
+    Object.keys(dirty).forEach(function (k) { if (k.indexOf("photo-") === 0) delete dirty[k]; });
+    binds.forEach(function (el) { if (el.type === "checkbox") el.checked = initial[el.dataset.bind]; else el.value = initial[el.dataset.bind]; apply(el); });
+  });
   var tm; function show(msg) { toast.textContent = msg; toast.hidden = false; clearTimeout(tm); tm = setTimeout(function () { toast.hidden = true; }, 2200); }
 })();

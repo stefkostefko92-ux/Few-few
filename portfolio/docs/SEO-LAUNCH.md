@@ -14,7 +14,7 @@
   Product/Offer на цените.
 - `sitemap.xml` (162 URL, hreflang, `image:image` за превютата), `robots.txt` (AI ботове позволени),
   `llms.txt` (компания · цени · вертикали · демота), `/.well-known/security.txt`, `indexnow-key.txt`.
-- Скорост: Lighthouse 95–100 (лаб., `perf/lab.json`), CLS 0, самостоятелно хостнати шрифтове.
+- Скорост: Lighthouse 95–100 (лаб., `perf/lab.json`), CLS ≤ 0,02 (гейтът е ≤ 0,1), самостоятелно хостнати шрифтове.
 - Достъпност: 0 грешки по `tools/a11y.mjs` (57 страници), декларация `/bg/dostapnost/`.
 
 ## Страниците, които целят търсенията

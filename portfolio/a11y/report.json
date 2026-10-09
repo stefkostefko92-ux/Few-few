@@ -1,5 +1,5 @@
 {
-  "date": "2026-09-25",
+  "date": "2026-10-09",
   "viewport": "1366×900",
   "rules": {
     "errors": [
@@ -34,12 +34,17 @@
     },
     "/bg/blog/": {
       "errors": 0,
-      "warnings": 2,
+      "warnings": 3,
       "issues": [
         {
           "rule": "target-size",
           "el": "a",
-          "detail": "30×13 /bg/blog/feed.xml"
+          "detail": "33×15 /bg/blog/feed.xml"
+        },
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "707×22 /bg/blog/kolko-struva-sait-2026/"
         },
         {
           "rule": "target-size",
@@ -531,6 +536,6 @@
   "summary": {
     "pages": 57,
     "errors": 0,
-    "warnings": 37
+    "warnings": 38
   }
 }

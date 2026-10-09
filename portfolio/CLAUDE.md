@@ -24,6 +24,7 @@ node tools/a11y.mjs                             # WCAG проверка в Chrom
 node tools/brochure.mjs                         # брошурата А5 → public/broshura/*.pdf (след промяна по цени/демота/проекти; иска dist/ + Chromium)
 node tools/project-shots.mjs [id] [--live] [--url id=http://…]   # скрийншотите на реалните проекти → public/img/projects/ (1920×1200 + -sm 960×600)
 node tools/og.mjs [lang] [demo]                 # OG изображения 1200×630 от превютата → public/og/<lang>/<id>.jpg (след previews.mjs)
+node tools/perf.mjs [demo] [--runs 3]           # лабораторен Lighthouse → perf/lab.json (гейтнат ≥95; след промяна по демо/CSS)
 node ../tools/qa/static-site-check.mjs dist     # препратки · ключови думи · title/lang (repo гейтът)
 node serve.mjs                                  # локален преглед на http://127.0.0.1:4180/
 node tools/brand.mjs                            # всички бранд асети от brand/logo-source.png (само при смяна на логото)
@@ -49,7 +50,7 @@ src/templates/demo.mjs      шаблонът на демо страница (е�
 src/templates/widgets.mjs   „живите" карти в hero-то: booking · schedule · tiles · stats · consult
 src/templates/hub.mjs       началната (бранд тема), pricing.mjs — цените, misc.mjs — правна/404/robots/llms/sitemap
 src/templates/photos.mjs    снимките на демо: чете public/img/<id>/credits.json, <picture> + srcset, кредити
-src/assets/                 site.css+js+raven.js+hero.js (хъб), demo.css+js + premium.css+js (демота), fx/ (4 продуктови добавки), fonts/*.css — без билд
+src/assets/                 site.css+js+raven.js+hero.js (хъб), demo.css+js + premium.css+js (демота), fx/ (4 продуктови добавки + `core.js` + `shop.js` — кошницата на онлайн магазина) · root.js (пренасочването на корена), fonts/*.css — без билд
 brand/logo-source.png       ЕДИНСТВЕНИЯТ източник на логото (1254², „CS" монограм + надпис) — не се редактира на ръка
 public/                     logo.png/webp (lockup) · logo-square · mark · icon-192/512 · apple-touch-icon · favicon.ico · og.png — всички от tools/brand.mjs; fonts/*.woff2, img/<demo>/, img/previews/<lang>/<demo>.webp (tools/previews.mjs), indexnow-key.txt
 photos.picks.json           ръчният подбор от Open Images (id · subset · автор · Flickr линк · CC BY 2.0) за всеки слот
@@ -81,6 +82,18 @@ tools/project-shots.mjs     скрийншотите на реалните пр�
 - **Asset версии**: `build.mjs` добавя `?v=<sha1 на файла>` към всеки `/assets/*.css|js` в HTML-а (гейтнато в теста) —
   nginx кешира css/js 7 дни и без това след деплой браузърът сглобява нов HTML със стар css/js. Не пиши URL към
   asset на ръка извън `head()`/шаблоните (root/404 страниците минават през същия `put()`).
+- **Продукционният CSP е `script-src 'self'` — нула inline скриптове.** Локалният `serve.mjs` не праща CSP, затова
+  inline `<script>` минава локално и мълчи в продукция (коренът `/` не пренасочваше). Всеки скрипт е файл в
+  `/assets/`. **Nginx: `add_header` в `location` ОТМЕНЯ наследените от `server`** — в asset блоковете хедърите
+  се повтарят; неверсионирани снимки (превюта, OG, проекти) са 7 дни без `immutable`.
+- **Конфигураторът на оферта** сумира БРУТНИТЕ цени при ДДС (ДДС = бруто − нето), не закръгленото нето ×1,2 —
+  иначе 69 € поддръжка ставаше 70 €. Числата трябва да съвпадат число по число със страницата с цени.
+- **Текстът на сайта обещава само това, което демото има** (одит 2026-10-09: „карта“, „кошница“ за всяко демо с
+  плочки, „лукбук“, „дегустационно меню“, „филтри“, качване на снимки — нищо от това го нямаше). Ново твърдение
+  във `verticals/*.mjs` или i18n → сверка с `src/demos/<id>.mjs`, `widgets.mjs` и `fx/`; функция „по поръчка“ се
+  казва като по поръчка.
+- **Превютата се снимат с `--force-prefers-reduced-motion`** (`tools/previews.mjs`) — иначе кадърът хваща
+  fade-up по средата и картата е избледняла.
 - **Никакви класове/id с префикс `ad-`, `ads`, `adv`, `banner`, `sponsor`, `promo`.** Adblock филтрите (EasyList) ги
   скриват козметично — демото на админ панела беше `ad-app`/`ad-wrap` и изчезваше при собственика с adblock (сега
   `cms-*`). Тестът гейтва `class="ad-` в dist/.

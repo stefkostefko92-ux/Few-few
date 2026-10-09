@@ -74,6 +74,7 @@ test("HTTP: health, 404, 405, 415, невалиден JSON", async () => {
     assert.equal((await fetch(`${base}/api/contact`)).status, 405);
     assert.equal((await post(base, "x", { "content-type": "text/plain" })).status, 415);
     assert.equal((await post(base, "{bad")).status, 400);
+    for (const v of ["null", "[]", "42", '"x"']) assert.equal((await post(base, v)).status, 400, `JSON ${v} не е форма → 400, не 500`);
   });
 });
 

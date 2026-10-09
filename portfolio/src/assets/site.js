@@ -96,7 +96,12 @@ addEventListener("pointerdown", function (e) {
 // --- меню + език ---
 (function () {
   var b = document.querySelector(".burger"), m = document.getElementById("menu");
-  if (b && m) { b.addEventListener("click", function () { var o = m.classList.toggle("open"); b.setAttribute("aria-expanded", String(o)); b.textContent = o ? "✕" : "≡"; }); m.addEventListener("click", function (e) { if (e.target.tagName === "A") { m.classList.remove("open"); b.textContent = "≡"; } }); }
+  if (b && m) {
+    var close = function (focus) { m.classList.remove("open"); b.setAttribute("aria-expanded", "false"); b.textContent = "≡"; if (focus) b.focus(); };
+    b.addEventListener("click", function () { var o = m.classList.toggle("open"); b.setAttribute("aria-expanded", String(o)); b.textContent = o ? "✕" : "≡"; });
+    m.addEventListener("click", function (e) { if (e.target.closest("a")) close(false); });
+    addEventListener("keydown", function (e) { if (e.key === "Escape" && m.classList.contains("open")) close(true); });
+  }
   try { localStorage.setItem("cs-lang", document.documentElement.lang); } catch (e) {}
 })();
 
@@ -202,5 +207,15 @@ document.querySelectorAll("[data-scramble]").forEach(function (el) { el.addEvent
   document.querySelectorAll(".dev-btn").forEach(function (b) { b.addEventListener("click", function () { show(b.dataset.device, b.dataset.name, b); }); });
   sw.forEach(function (b) { b.addEventListener("click", function () { set(+b.dataset.w); }); });
   m.querySelector(".dev-close").addEventListener("click", hide);
-  addEventListener("keydown", function (e) { if (!m.hidden && e.key === "Escape") hide(); });
+  // aria-modal: Escape затваря, Tab не излиза зад модала (цикли между първия и последния контрол).
+  addEventListener("keydown", function (e) {
+    if (m.hidden) return;
+    if (e.key === "Escape") return hide();
+    if (e.key !== "Tab") return;
+    var els = Array.prototype.filter.call(m.querySelectorAll("button, a[href], iframe"), function (el) { return el.offsetParent !== null; });
+    if (!els.length) return;
+    var first = els[0], lastEl = els[els.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); lastEl.focus(); }
+    else if (!e.shiftKey && document.activeElement === lastEl) { e.preventDefault(); first.focus(); }
+  });
 })();

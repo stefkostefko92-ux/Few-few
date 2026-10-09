@@ -388,3 +388,60 @@ body.hub::after{content:"";position:fixed;inset:0;z-index:3000;pointer-events:no
   url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .55 0 0 0 0 .6 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:.5}
 .lite body.hub::after{background:radial-gradient(ellipse 120% 90% at 50% 45%,transparent 58%,rgba(0,0,0,.34) 100%)}
 @media print{body.hub::after,.hero::before,.hero::after{display:none}}
+
+/* ── Премиум корекции (визуален одит 2026-10-09): подравняване на една ос, ритъм, нечупещи се етикети ────────
+   Езикът остава HUD на carbonstealth.eu — тук само дисциплина: всичко започва от една лява ос (x на .wrap),
+   нищо не се смачква до бутон, празните клетки в 1px решетките не светят сиво, заглавията дишат. */
+h1,h2,h3,h4{line-height:1;word-spacing:.12em}
+.h2,.hero h1,.contact-title{letter-spacing:-.025em}
+/* hero: .wrap във flex контейнер се свиваше до съдържанието и се центрираше (H1 на x=220, секциите на 140) */
+.hero .wrap{width:100%;padding-top:112px;padding-bottom:48px}
+.hero h1{max-width:min(1100px,100%)}
+/* тесните колони (820px) стоят на същата лява ос като останалото, не центрирани */
+.wrap[style*="max-width:820px"],.wrap[style*="max-width:860px"]{margin-left:max(0px,calc((100% - 1200px)/2));margin-right:auto}
+/* h2.tag / h3.tag (вертикали, градове): етикет, не 900-тежко заглавие с .5em разредка и застъпени редове */
+h1.tag,h2.tag,h3.tag{font-family:var(--mono);font-weight:700;font-size:9px;line-height:1.7;letter-spacing:.5em;color:var(--cyan);text-transform:uppercase;word-spacing:0;margin-bottom:20px}
+/* карти на демотата: метаданните на цялата ширина, действията на един ред под тях, линкът към браншa на дъното */
+.demo-meta{grid-template-columns:1fr;gap:14px;flex:1;align-content:start;align-items:start;padding-bottom:16px}
+.demo-meta .lab{display:flex;margin:8px 0 0;white-space:nowrap}
+.demo-meta .inc{display:flex;flex-wrap:wrap;gap:2px 0}
+.demo-meta .inc>span{white-space:nowrap}
+.demo-meta .inc>span:not(:last-child)::after{content:"·";margin:0 .55em;color:var(--ph)}
+.demo-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;padding-top:14px;border-top:1px solid rgba(var(--off-rgb),.06)}
+.demo-card .v-link{display:block;margin:auto 20px 20px;padding:12px 0 0;border-top:1px solid rgba(var(--off-rgb),.06)}
+/* празните клетки в 1px решетките (10 проекта, 5 статии, 7 добавки на 3/2 колони) — последната се разтяга */
+.grid1>:last-child:nth-child(3n+1){grid-column:1/-1}
+.grid1>:last-child:nth-child(3n+2){grid-column:span 2}
+.grid1.grid1-2>:last-child,.grid1.grid1-4>:last-child{grid-column:auto}
+.addons>:last-child:nth-child(odd){grid-column:1/-1}
+/* цени */
+.tier ul{align-content:start}
+.tier-market{font-size:11px}
+.mini b{white-space:nowrap;margin-left:12px}
+.mini a.pop{border-left:0;box-shadow:inset 2px 0 0 var(--cyan)}
+.q-form{background:#000;align-items:start}
+.q-summary{border-left:1px solid rgba(var(--off-rgb),.06)}
+/* бадж „на живо" върху светли снимки: плътен фон */
+.pj-cover .live,.demo-cover .live{background:#000;border-color:rgba(0,255,136,.5);font-size:9px;padding:4px 8px}
+/* четимост: въпросите и отговорите не по-ситни от основния текст; минимум 10px за HUD етикетите */
+.faq p{font-size:13px;line-height:1.9}
+.tag,.demo-meta .cat,.pj-meta .cat,.tier-tag,.post-meta .cat{font-size:10px}
+/* подножие: 15-те демота в две колони, за да не дърпат подножието на 600px */
+.foot-grid{grid-template-columns:1.2fr 2fr 1fr 1fr}
+.foot-grid>:nth-child(2) ul{columns:2;column-gap:32px;display:block}
+.foot-grid>:nth-child(2) li{break-inside:avoid;margin-bottom:10px}
+@media(max-width:900px){
+  .grid1>:last-child:nth-child(odd){grid-column:1/-1}
+  .grid1>:last-child:nth-child(even){grid-column:auto}
+  .foot-grid{grid-template-columns:1fr 1fr}
+  .foot-grid>:nth-child(2){grid-column:1/-1}
+  .table-wrap{-webkit-mask-image:linear-gradient(90deg,#000 86%,transparent);mask-image:linear-gradient(90deg,#000 86%,transparent)}
+  .table tbody th{position:sticky;left:0;background:#050507;z-index:1}
+}
+@media(max-width:560px){
+  .grid1>:last-child{grid-column:auto!important}
+  .addons>:last-child{grid-column:auto}
+  .foot-grid>:nth-child(2) ul{columns:1}
+  .cta-row .btn{width:100%;justify-content:center}
+  .hero .wrap{padding-top:100px}
+}

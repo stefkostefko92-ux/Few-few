@@ -49,7 +49,7 @@ function schema(lang, ui, path) {
     "@graph": [
       { "@type": "WebPage", "@id": SITE + path, url: SITE + path, name: tx(ui.meta.pricingTitle, lang), description: tx(ui.meta.pricingDesc, lang), inLanguage: lang, isPartOf: { "@id": `${SITE}/#website` }, publisher: ORG },
       { "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "Carbon Stealth Portfolio", item: SITE + PATHS.hub[lang] }, { "@type": "ListItem", position: 2, name: p.packagesTitle, item: SITE + path }] },
-      ...TIERS.map((t) => ({ "@type": "Product", name: `${p.tiers[t.id].name} — ${p.tiers[t.id].tag}`, description: p.tiers[t.id].desc, brand: { "@type": "Brand", name: "Carbon Stealth" }, offers: { "@type": "Offer", price: shown(t.price, lang), priceCurrency: "EUR", url: SITE + path + "#" + t.id, availability: "https://schema.org/InStock", priceValidUntil: "2026-12-31", priceSpecification: { "@type": "UnitPriceSpecification", price: shown(t.price, lang), priceCurrency: "EUR", valueAddedTaxIncluded: gross }, seller: { "@id": ORG["@id"] } } })),
+      ...TIERS.map((t) => ({ "@type": "Product", name: `${p.tiers[t.id].name} — ${p.tiers[t.id].tag}`, description: p.tiers[t.id].desc, brand: { "@type": "Brand", name: "Carbon Stealth" }, offers: { "@type": "Offer", price: shown(t.price, lang), priceCurrency: "EUR", url: SITE + path + "#" + t.id, availability: "https://schema.org/InStock", priceSpecification: { "@type": "UnitPriceSpecification", price: shown(t.price, lang), priceCurrency: "EUR", valueAddedTaxIncluded: gross }, seller: { "@id": ORG["@id"] } } })),
       { "@type": "FAQPage", mainEntity: p.faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) },
     ],
   });

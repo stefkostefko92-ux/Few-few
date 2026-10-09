@@ -8,7 +8,7 @@ import { siteNav, siteFooter, boot, HUB_FONTS, BRAND_BG } from "./hub.mjs";
 
 export function renderQuote(lang) {
   const ui = I18N[lang], q = ui.quote, p = ui.pricing, path = PATHS.quote[lang];
-  const cfg = { lang, tiers: TIERS.map((t) => ({ id: t.id, net: net(t.price), days: t.days, name: p.tiers[t.id].name })), addons: ADDONS.map((a) => ({ id: a.id, net: net(a.price), kind: a.kind, name: p.addons[a.id] })), labels: { ...q.lines, ...q.actions, months: q.months, qty: q.qty, mailSubject: q.mailSubject, mailIntro: q.mailIntro, email: BRAND_EMAIL, vatNote: q.vatNote, client: q.client }, sep: lang === "en" ? "," : lang === "it" ? "." : " ", pre: lang === "en" };
+  const cfg = { lang, tiers: TIERS.map((t) => ({ id: t.id, net: net(t.price), gross: t.price, days: t.days, name: p.tiers[t.id].name })), addons: ADDONS.map((a) => ({ id: a.id, net: net(a.price), gross: a.price, kind: a.kind, name: p.addons[a.id] })), labels: { ...q.lines, ...q.actions, months: q.months, qty: q.qty, mailSubject: q.mailSubject, mailIntro: q.mailIntro, email: BRAND_EMAIL, vatNote: q.vatNote, client: q.client }, sep: lang === "en" ? "," : lang === "it" ? "." : " ", pre: lang === "en" };
   const tiers = TIERS.map((t, i) => `<label class="q-tier${t.popular ? " pop" : ""}"><input type="radio" name="tier" value="${t.id}"${t.popular ? " checked" : ""}><span class="q-tier-tag">${esc(p.tiers[t.id].tag)}</span><strong>${esc(p.tiers[t.id].name)}</strong><b>${money(shown(t.price, lang), lang)}</b><small>${esc(p.delivery)}: ${t.days[0]}–${t.days[1]} ${esc(p.days)}</small></label>`).join("");
   const qtyOf = { language: [0, 5, 0], page: [0, 20, 0], copy: [0, 20, 0], logo: null, maintenance: [0, 24, 12], seo: [0, 24, 0], hosting: [0, 36, 0] };
   const addons = ADDONS.map((a) => {

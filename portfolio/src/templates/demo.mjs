@@ -1,8 +1,8 @@
-// demo.mjs — шаблонът на ВСЯКО демо: една структура, десет визуални идентичности (theme токени +
+// demo.mjs — шаблонът на ВСЯКО демо: една структура, петнадесет визуални идентичности (theme токени +
 // hero вариант + декоративна дума). Съдържанието идва от src/demos/<id>.mjs за текущия език.
 // Премиум слой: premium.css/js (киношен hero, ред с доказателства, оферта, галерия с надписи, навигация).
 // Снимки: ако tools/photos.mjs е свалил public/img/<id>/, hero/about/галерия ги ползват; иначе —
-// генеративна графика. Всичко интерактивно (форми, график, кошница, lightbox) живее в demo.js.
+// генеративна графика. Интерактивното (форми, график, lightbox) живее в demo.js; кошницата на онлайн магазина — в fx/shop.js.
 import { readable, onColor } from "../lib/color.mjs";
 import { verticalPath } from "../verticals/index.mjs";
 import { esc, join, head, credit, jsonLd, ICON, ORG, PATHS, demoPath, SITE, LANGS, ogPath } from "../lib/html.mjs";
@@ -109,7 +109,7 @@ function footer(t, c, lang) {
   return `<footer class="foot"><div class="wrap"><span class="brand">${esc(t.name)}</span><span class="tiny">${esc(c.demoNote)}</span>${credit(lang)}</div></footer>`;
 }
 
-const sticky = (t, c) => `<div class="sticky" aria-hidden="true"><a class="btn btn-ghost" href="tel:${t.phone.replace(/\s/g, "")}">${ICON.phone} ${esc(c.sticky.call)}</a><a class="btn btn-primary" href="#contact">${esc(c.sticky.book)} ${ICON.arrow}</a></div><a class="totop" href="#top" aria-label="${esc(c.top)}">↑</a>`;
+const sticky = (t, c) => `<div class="sticky"><a class="btn btn-ghost" href="tel:${t.phone.replace(/\s/g, "")}">${ICON.phone} ${esc(c.sticky.call)}</a><a class="btn btn-primary" href="#contact">${esc(c.sticky.book)} ${ICON.arrow}</a></div><a class="totop" href="#top" aria-label="${esc(c.top)}">↑</a>`;
 
 function schema(lang, demo, t, path, photos) {
   const tel = t.phone.replace(/\s/g, "");
@@ -133,9 +133,9 @@ export function renderDemo(lang, demo) {
   return join([
     head({ lang, title: t.metaTitle, description: t.metaDesc, keywords: demo.keywords[lang], path, paths, fonts: [...th.fonts, "brand"], css: ["/assets/demo.css", "/assets/premium.css"], themeColor: th.bg, ogImage: og, extra: themeCss(th) + schema(lang, demo, t, path, photos) }),
     `<body class="demo mode-${th.mode}" data-i18n="${esc(JSON.stringify({ tryColor: c.widget.tryColor }))}"${t.catalog ? ` data-shop="${esc(JSON.stringify({ currency: "€", format: lang === "en" ? "pre" : "post", freeFrom: t.catalog.freeFrom, shipping: t.catalog.shipping, added: c.shop.added, remove: c.shop.remove, free: c.shop.free }))}"` : ""}>`,
-    demoBar(lang, demo, ui),
+    `<a class="cs-skip" href="#main">${esc(I18N[lang].nav.skip)}</a>`, demoBar(lang, demo, ui),
     nav(t, c, t.phone, !!photos),
-    `<main>`, hero(t, th, c, demo, photos), catalog(t, c, demo, photos), services(t), offer(t), about(t, demo, photos), gallery(t, c, demo, photos), steps(t), list(t), reviews(t, c), faq(t, c), contact(t, c), `</main>`,
+    `<main id="main">`, hero(t, th, c, demo, photos), catalog(t, c, demo, photos), services(t), offer(t), about(t, demo, photos), gallery(t, c, demo, photos), steps(t), list(t), reviews(t, c), faq(t, c), contact(t, c), `</main>`,
     footer(t, c, lang), sticky(t, c),
     `<script src="/assets/demo.js" defer></script>${FX_MODULES.has(demo.id) ? `<script src="/assets/fx/core.js" defer></script><script src="/assets/fx/${demo.id}.js" defer></script>` : ""}${t.catalog ? `<script src="/assets/fx/shop.js" defer></script>` : ""}<script src="/assets/premium.js" defer></script>`,
     `</body></html>`,

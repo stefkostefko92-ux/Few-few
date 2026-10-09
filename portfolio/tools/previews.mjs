@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-// previews.mjs — статични превюта на 10-те демота за картите в хъба (BG/EN/IT): headless Chromium снима
+// previews.mjs — статични превюта на всички демота за картите в хъба (BG/EN/IT): headless Chromium снима
 // 1440×900 (същия кадър, който преди показваше живият iframe), sharp → webp 960×600 в public/img/previews/.
 // Пуска се РЪЧНО след промяна по демо (билд → snимки → commit); резултатът е проследен в git (асети).
-// Живият iframe остава само при hover на картата (най-много 2 наведнъж) — 10 живи документа лагваха.
+// Живият iframe остава само при hover на картата (най-много 2 наведнъж) — 10 живи документа (тогава демотата бяха 10) лагваха.
 //   node build.mjs && node tools/previews.mjs [demoId]
 import { spawn, execFileSync } from "node:child_process";
 import { mkdirSync, rmSync, existsSync } from "node:fs";
@@ -33,8 +33,9 @@ try {
       if (only && d.id !== only) continue;
       const url = `http://127.0.0.1:${PORT}${demoPath(lang, d)}`;
       const png = join(TMP, `${lang}-${d.id}.png`);
-      // virtual-time-budget: докарва CSS анимациите (fade-up, reveal) до края, преди да снима.
-      execFileSync(CHROME, ["--headless=new", "--no-sandbox", "--disable-gpu", "--hide-scrollbars", "--force-device-scale-factor=1", "--window-size=1440,900", "--virtual-time-budget=6000", `--screenshot=${png}`, url], { stdio: "ignore", timeout: 90000 });
+      // virtual-time-budget: докарва CSS анимациите (fade-up, reveal) до края, преди да снима; reduced-motion ги изключва
+      // изобщо (демотата го уважават) — иначе някои превюта (Balance Pro) излизаха избледнели по средата на fade-up.
+      execFileSync(CHROME, ["--headless=new", "--no-sandbox", "--disable-gpu", "--hide-scrollbars", "--force-device-scale-factor=1", "--window-size=1440,900", "--virtual-time-budget=10000", "--force-prefers-reduced-motion", `--screenshot=${png}`, url], { stdio: "ignore", timeout: 90000 });
       const out = join(OUT, lang, `${d.id}.webp`);
       const info = await sharp(png).resize(960, 600).webp({ quality: 80, effort: 6 }).toFile(out);
       console.log(`✓ img/previews/${lang}/${d.id}.webp (${Math.round(info.size / 1024)} KB)`);

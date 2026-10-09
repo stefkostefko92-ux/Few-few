@@ -1,5 +1,7 @@
-// quote.js — конфигураторът на оферта: чете data-quote (нето цени от src/pricing.mjs), смята редове,
+// quote.js — конфигураторът на оферта: чете data-quote (нето + бруто цени от src/pricing.mjs), смята редове,
 // нето, ДДС по типа клиент и общо (еднократно + месечно), пише mailto с готово тяло и печата. Нула зависимости.
+// С ДДС общото е СБОРЪТ НА БРУТНИТЕ цени (както са обявени), а ДДС = бруто − нето: иначе закръгленото нето × 1,2
+// дава друго число (69 € → 70 €/мес.), различно от страницата с цените.
 (function () {
   var f = document.getElementById("quote"); if (!f) return;
   var C = JSON.parse(f.dataset.quote), L = C.labels;
@@ -9,19 +11,19 @@
   function calc() {
     var tierId = (f.querySelector('[name="tier"]:checked') || {}).value, tier = C.tiers.filter(function (t) { return t.id === tierId; })[0];
     var client = (f.querySelector('[name="client"]:checked') || {}).value || "bgCompany", rate = VAT[client];
-    var once = 0, monthly = 0, rows = [];
-    if (tier) { once += tier.net; rows.push([tier.name, fmt(tier.net), ""]); }
+    var once = 0, onceG = 0, monthly = 0, monthlyG = 0, rows = [];
+    if (tier) { once += tier.net; onceG += tier.gross; rows.push([tier.name, fmt(tier.net), ""]); }
     C.addons.forEach(function (a) {
-      var el = f.querySelector('[name="' + a.id + '"]'), n = el.type === "checkbox" ? (el.checked ? 1 : 0) : Math.max(0, parseInt(el.value, 10) || 0); if (!n) return;
-      if (a.kind === "monthly") { monthly += a.net; once += a.net * n; rows.push([a.name + " × " + n + " " + L.months, fmt(a.net * n), fmt(a.net) + " " + L.monthly.toLowerCase()]); }
-      else { once += a.net * n; rows.push([a.name + (n > 1 ? " × " + n : ""), fmt(a.net * n), ""]); }
+      var el = f.querySelector('[name="' + a.id + '"]'), n = el.type === "checkbox" ? (el.checked ? 1 : 0) : Math.min(+el.max || Infinity, Math.max(0, parseInt(el.value, 10) || 0)); if (!n) return;
+      if (a.kind === "monthly") { monthly += a.net; monthlyG += a.gross; once += a.net * n; onceG += a.gross * n; rows.push([a.name + " × " + n + " " + L.months, fmt(a.net * n), fmt(a.net) + " " + L.monthly.toLowerCase()]); }
+      else { once += a.net * n; onceG += a.gross * n; rows.push([a.name + (n > 1 ? " × " + n : ""), fmt(a.net * n), ""]); }
     });
     lines.innerHTML = rows.length ? rows.map(function (r) { return "<li><span>" + r[0] + "</span><b>" + r[1] + "</b>" + (r[2] ? "<i>" + r[2] + "</i>" : "") + "</li>"; }).join("") : "<li class=\"q-empty\">" + L.empty + "</li>";
-    var vat = Math.round(once * rate), total = once + vat;
+    var total = rate ? onceG : once, vat = total - once, mo = rate ? monthlyG : monthly;
     netEl.textContent = fmt(once); vatEl.textContent = fmt(vat); vatRow.hidden = !rate; totEl.textContent = fmt(total);
-    moRow.hidden = !monthly; moEl.textContent = fmt(Math.round(monthly * (1 + rate)));
+    moRow.hidden = !monthly; moEl.textContent = fmt(mo);
     note.textContent = L.vatNote[NOTE[client]]; delEl.textContent = tier ? L.delivery + ": " + tier.days[0] + "–" + tier.days[1] + " " + L.days : "";
-    var body = L.mailIntro + "\n\n" + rows.map(function (r) { return "- " + r[0] + ": " + r[1] + (r[2] ? " (" + r[2] + ")" : ""); }).join("\n") + "\n\n" + L.net + ": " + fmt(once) + (rate ? "\n" + L.vat + ": " + fmt(vat) : "") + "\n" + L.total + ": " + fmt(total) + (monthly ? "\n" + L.totalMonthly + ": " + fmt(Math.round(monthly * (1 + rate))) : "") + "\n" + L.client[client] + " — " + L.vatNote[NOTE[client]] + "\n\n" + location.href;
+    var body = L.mailIntro + "\n\n" + rows.map(function (r) { return "- " + r[0] + ": " + r[1] + (r[2] ? " (" + r[2] + ")" : ""); }).join("\n") + "\n\n" + L.net + ": " + fmt(once) + (rate ? "\n" + L.vat + ": " + fmt(vat) : "") + "\n" + L.total + ": " + fmt(total) + (monthly ? "\n" + L.totalMonthly + ": " + fmt(mo) : "") + "\n" + L.client[client] + " — " + L.vatNote[NOTE[client]] + "\n\n" + location.href;
     mail.href = "mailto:" + L.email + "?subject=" + encodeURIComponent(L.mailSubject) + "&body=" + encodeURIComponent(body);
   }
   f.addEventListener("input", calc); f.addEventListener("change", calc);
