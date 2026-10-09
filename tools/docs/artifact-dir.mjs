@@ -62,7 +62,33 @@ export function pageFrom(indexHtml) {
     galaxy = Buffer.from(g[1], "base64");
     html = html.replace(GALAXY_RE, 'const GALAXY_SRC = "./galaxy.jpg";');
   }
-  return { html, galaxy };
+  return { ...splitInline(html), galaxy };
+}
+
+/**
+ * Вградените `<style>` и обикновени `<script>` → page-N.css/js на същото място и в същия ред.
+ * Публикуването винаги праща страницата, а публикуващият чете всичко, което праща — затова
+ * страницата е тънка обвивка (разметка + връзки), а кодът на таблото е във файлове, които се
+ * качват само когато се сменят. Класическите скриптове по `src` се изпълняват в реда си и делят
+ * глобалния обхват — поведението е същото като при вградените. importmap остава вграден.
+ */
+export function splitInline(html) {
+  const assets = [];
+  let n = 0;
+  // ЕДИН проход по реда на документа: съдържанието на скрипт се поглъща цяло, затова `<style>` в
+  // низ ВЪТРЕ в скрипт (SVG-то на маскота) не се пипа — реален бъг на първата версия.
+  html = html.replace(/<script\b([^>]*)>([\s\S]*?)<\/script>|<style>([\s\S]*?)<\/style>/g, (all, attrs, js, css) => {
+    if (css !== undefined) {
+      const path = `page-${++n}.css`;
+      assets.push({ path, data: `${css.trim()}\n` });
+      return `<link rel="stylesheet" href="./${path}" />`;
+    }
+    if (attrs.trim() !== "") return all; // src=…, type="importmap" — остават както са
+    const path = `page-${++n}.js`;
+    assets.push({ path, data: `${js.trim()}\n` });
+    return `<script src="./${path}"></script>`;
+  });
+  return { html, assets };
 }
 
 /** Данните по агент: data/index.json (meta + реда на агентите) и data/agents/<id>.json. */
@@ -78,9 +104,10 @@ export function dataFiles(agentsJson) {
 
 /** Целият билд като списък файлове {path, data, text}; страницата е `index.html`. */
 export function buildDir(reader) {
-  const { html, galaxy } = pageFrom(reader.read("index.html"));
-  const files = [{ path: "index.html", data: html, text: true }];
-  for (const f of SCRIPTS) if (html.includes(`./${f}`)) files.push({ path: f, data: reader.read(f), text: true });
+  const { html, galaxy, assets } = pageFrom(reader.read("index.html"));
+  const files = [{ path: "index.html", data: html, text: true }, ...assets.map((a) => ({ ...a, text: true }))];
+  const code = [html, ...assets.map((a) => a.data)].join("\n");
+  for (const f of SCRIPTS) if (code.includes(`./${f}`)) files.push({ path: f, data: reader.read(f), text: true });
   if (galaxy) files.push({ path: "galaxy.jpg", data: galaxy, text: false });
   for (const f of reader.list("mascots")) {
     if (f.endsWith("-icon3d.webp") || f.endsWith("-portrait3d.webp"))
@@ -89,6 +116,7 @@ export function buildDir(reader) {
   for (const d of dataFiles(JSON.parse(reader.read("agents.json")))) files.push({ ...d, text: true });
   // Тайни: по ЦЕЛИЯ текст, който излиза (страница, скриптове, данни) — като билда в един файл.
   assertPublishable(html);
+  if (/<script>|<style>/.test(html)) throw new Error("остана вграден <script>/<style> в страницата");
   const leaks = files.filter((f) => f.text).flatMap((f) => findSecretsIn(String(f.data)).map((l) => `${f.path}: ${l.name} · ред ${l.line}`));
   if (leaks.length) throw new Error(`шаблон за тайна в билда — НЕ публикувай:\n  ${leaks.join("\n  ")}`);
   return files;
