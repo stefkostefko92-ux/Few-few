@@ -28,6 +28,8 @@ export interface AppDeps {
   sessions: SessionDeps;
   /** null → AI е изключен (няма GCP проект): /chat/messages връща 503, без резервен доставчик. */
   diagnose: Diagnoser | null;
+  /** Сигнал след публикуване на документ (семантичният индекс); не блокира отговора. */
+  onDocumentPublished?: (documentId: string) => void;
 }
 
 const PUBLIC_DIR = fileURLToPath(new URL('../public', import.meta.url));

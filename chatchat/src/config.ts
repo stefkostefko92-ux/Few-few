@@ -37,6 +37,16 @@ const EnvSchema = z.object({
   /** Колко кръга инструменти най-много, преди отговорът да се поиска задължително. */
   AI_MAX_TOOL_ROUNDS: z.coerce.number().int().min(0).max(8).default(4),
   AI_TIMEOUT_MS: z.coerce.number().int().min(5000).max(115000).default(60000),
+
+  /**
+   * Семантично търсене (§8.1): embeddings в същия ЕС регион (VERTEX_REGION). `off` → само точно +
+   * пълнотекстово. Друг модел = нови вектори за всичко (`npm run embed`).
+   */
+  EMBEDDING_MODEL: z.enum(['gemini-embedding-001', 'off']).default('gemini-embedding-001'),
+  /** Таван на една заявка към embeddings — въпросът чака него, затова е кратък (fail-open). */
+  EMBEDDING_TIMEOUT_MS: z.coerce.number().int().min(500).max(30000).default(4000),
+  /** През колко секунди фоновото индексиране търси непокрити публикувани парчета (0 = никога). */
+  EMBEDDING_SWEEP_SECONDS: z.coerce.number().int().min(0).max(86400).default(600),
 });
 
 export type Config = z.infer<typeof EnvSchema>;
@@ -48,6 +58,13 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     throw new Error(`Невалидна конфигурация: ${issues}`);
   }
   return parsed.data;
+}
+
+/** Семантичното търсене иска AI (проект в GCP) и незабранен модел за embeddings. */
+export function embeddingsEnabled(
+  cfg: Pick<Config, 'VERTEX_PROJECT_ID' | 'EMBEDDING_MODEL'>,
+): boolean {
+  return aiEnabled(cfg) && cfg.EMBEDDING_MODEL !== 'off';
 }
 
 /** AI е включен само с проект в GCP; без него /chat връща 503 (без резервен доставчик). */

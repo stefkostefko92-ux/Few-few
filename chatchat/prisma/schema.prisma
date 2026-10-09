@@ -265,18 +265,23 @@ model DocumentApplicability {
 
 /// Индексът за търсене (§7.3): парче текст със страница и раздел — основата на всеки цитат.
 model DocumentChunk {
-  id            String                   @id @default(cuid())
-  documentId    String
-  ordinal       Int
-  page          Int
-  section       String?
-  text          String
+  id             String                      @id @default(cuid())
+  documentId     String
+  ordinal        Int
+  page           Int
+  section        String?
+  text           String
   /// Референции на компоненти, намерени в парчето (K1, X3, S12…) — точно съвпадение (§8.2).
-  componentRefs String[]
+  componentRefs  String[]
   /// Кодове за грешка, споменати в парчето — точно съвпадение (§8.2).
-  errorCodes    String[]
+  errorCodes     String[]
   /// to_tsvector('simple', section || text) — попълва се от src/store/prisma.ts при запис.
-  tsv           Unsupported("tsvector")?
+  tsv            Unsupported("tsvector")?
+  /// Семантичен вектор (pgvector, 768 измерения, косинус) — пише се само за PUBLISHED документи
+  /// (src/store/embeddings.ts). HNSW индексът е в миграцията 20261009100000_semantic_embeddings.
+  embedding      Unsupported("vector(768)")?
+  /// С кой модел е смятан векторът („gemini-embedding-001@768“) — друг модел → преизчисляване.
+  embeddingModel String?
 
   document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
@@ -285,6 +290,8 @@ model DocumentChunk {
   @@index([tsv], type: Gin)
   @@index([componentRefs], type: Gin)
   @@index([errorCodes], type: Gin)
+  /// USING hnsw (embedding vector_cosine_ops) — Prisma не изразява hnsw; създава го миграцията.
+  @@index([embedding], map: "DocumentChunk_embedding_hnsw_idx")
 }
 
 enum Severity {

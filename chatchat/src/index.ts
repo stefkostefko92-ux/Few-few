@@ -2,8 +2,10 @@ import { PrismaClient } from '@prisma/client';
 import { diagnose } from './ai/orchestrator.js';
 import { VertexDiagnosisModel } from './ai/model.js';
 import { createApp, type Diagnoser } from './app.js';
+import { embeddingModelFrom } from './ai/embeddings.js';
 import { aiEnabled, loadConfig } from './config.js';
 import { createLogger } from './logger.js';
+import { EmbeddingIndexer } from './store/embeddings.js';
 import { PrismaKnowledgeStore } from './store/knowledge.js';
 import { knowledgeSnapshotId } from './store/snapshot.js';
 
@@ -12,8 +14,23 @@ const logger = createLogger(config.LOG_LEVEL);
 const db = new PrismaClient();
 
 let diagnoser: Diagnoser | null = null;
+let indexer: EmbeddingIndexer | null = null;
 if (aiEnabled(config)) {
-  const store = new PrismaKnowledgeStore(db);
+  // Семантичното търсене е по избор и fail-open; генерирането остава fail-closed.
+  const embedder = embeddingModelFrom(config);
+  const store = new PrismaKnowledgeStore(db, {
+    embedder,
+    queryTimeoutMs: config.EMBEDDING_TIMEOUT_MS,
+    onError: (err) =>
+      logger.warn(
+        { err: (err as Error).name, status: (err as { status?: number }).status ?? null },
+        'семантичното търсене е пропуснато — точно + пълнотекстово',
+      ),
+  });
+  if (embedder) {
+    indexer = new EmbeddingIndexer(db, embedder, logger, config.EMBEDDING_SWEEP_SECONDS);
+    indexer.start();
+  }
   const model = new VertexDiagnosisModel(config);
   diagnoser = (input, signal) =>
     diagnose(
@@ -43,6 +60,7 @@ const app = createApp({
     secureCookies: config.NODE_ENV === 'production',
   },
   diagnose: diagnoser,
+  onDocumentPublished: indexer ? () => void indexer?.kick() : undefined,
 });
 
 const server = app.listen(config.PORT, config.HOST, () => {
@@ -51,6 +69,7 @@ const server = app.listen(config.PORT, config.HOST, () => {
 
 function shutdown(signal: string): void {
   logger.info({ signal }, 'спиране');
+  indexer?.stop();
   server.close(() => {
     db.$disconnect()
       .catch((err: unknown) => logger.error({ err }, 'грешка при затваряне на базата'))

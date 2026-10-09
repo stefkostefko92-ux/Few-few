@@ -146,6 +146,7 @@ export function adminDocumentsRouter(deps: AppDeps): Router {
               });
             }
           });
+          deps.onDocumentPublished?.(doc.id);
         } else {
           const data =
             action === 'submit'

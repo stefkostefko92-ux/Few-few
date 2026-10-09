@@ -17,7 +17,16 @@ export interface SearchScope {
   audiences: readonly Audience[];
 }
 
-export type MatchKind = 'exact_code' | 'exact_ref' | 'fulltext';
+/**
+ * Как е намерен записът. `semantic` (pgvector, §8.1 „semantic search“) е само подкрепа: никога не
+ * е „точно“ съвпадение и само по себе си не дава ниво „strong“ (виж evidenceLevel).
+ */
+export type MatchKind = 'exact_code' | 'exact_ref' | 'fulltext' | 'semantic';
+
+/** Точните съвпадения — привилегированият път (§8.2), не се режат от лимита. */
+export function isExactMatch(kind: MatchKind): boolean {
+  return kind === 'exact_code' || kind === 'exact_ref';
+}
 
 export interface ErrorCheck {
   ordinal: number;
@@ -46,8 +55,13 @@ export interface EvidenceItem {
   safetyRelevant: boolean;
   applicable: boolean;
   matchedBy: MatchKind[];
-  /** 0..1 — нормализирана релевантност след подреждането. */
+  /**
+   * 0..1 — ЛЕКСИКАЛНАТА релевантност (точно/пълнотекстово) след приложимостта. Семантичното
+   * съвпадение не я вдига — то е в `similarity` и влиза в подредбата през RRF.
+   */
   score: number;
+  /** Косинусово сходство 0..1 със семантичното търсене (само ако matchedBy съдържа semantic). */
+  similarity?: number;
   chunkId: string | null;
   errorId: string | null;
   errorCode: string | null;
@@ -91,6 +105,18 @@ export interface KnowledgeStore {
   ): Promise<RawEvidence[]>;
   /** Пълнотекстово търсене (Postgres tsvector) в документите за модела. */
   searchChunks(
+    scope: SearchScope,
+    productModel: string,
+    text: string,
+    limit: number,
+  ): Promise<RawEvidence[]>;
+  /**
+   * Семантично търсене (pgvector, косинус) в парчетата на документите за модела — със същите
+   * филтри в SQL (tenant, PUBLISHED, аудитория, модел). Fail-open: без embeddings или при грешка
+   * на доставчика връща [] и търсенето остава точно + пълнотекстово. rawScore = 0, сходството е
+   * в `similarity`.
+   */
+  searchSemantic(
     scope: SearchScope,
     productModel: string,
     text: string,

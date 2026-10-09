@@ -37,7 +37,8 @@ import {
  * Текстовете, които Gate добавя, са КОДОВЕ (`gate.*`, `ctx.*`, `collect.*`) — превежда ги UI.
  */
 
-export const GATE_VERSION = 'gate-2026-10-09.2';
+/** .3: праговете на §8.3 с семантично търсене (retrieve.ts: SEMANTIC_*_SIMILARITY, RRF). */
+export const GATE_VERSION = 'gate-2026-10-09.3';
 
 export interface GateInput {
   draft: ModelDiagnosis;

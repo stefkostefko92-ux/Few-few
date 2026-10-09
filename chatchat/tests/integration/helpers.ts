@@ -12,6 +12,8 @@ import { hashPassword } from '../../src/auth/password.js';
 import { createSession, SESSION_COOKIE, type SessionDeps } from '../../src/auth/sessions.js';
 import type { ModelDiagnosis } from '../../src/domain/response.js';
 import { createLogger } from '../../src/logger.js';
+import type { EmbeddingModel } from '../../src/ai/embeddings.js';
+import { EmbeddingIndexer } from '../../src/store/embeddings.js';
 import { PrismaKnowledgeStore } from '../../src/store/knowledge.js';
 import { knowledgeSnapshotId } from '../../src/store/snapshot.js';
 
@@ -174,15 +176,19 @@ export interface Harness {
   base: string;
   model: ScriptedModel;
   sessions: SessionDeps;
+  /** Само с opts.embedder: фоновото индексиране (тестовете чакат `indexer.kick()`). */
+  indexer: EmbeddingIndexer | null;
   close(): Promise<void>;
 }
 
 export async function startApp(
-  opts: { diagnose?: 'real' | 'none' | Diagnoser } = {},
+  opts: { diagnose?: 'real' | 'none' | Diagnoser; embedder?: EmbeddingModel } = {},
 ): Promise<Harness> {
   const model = new ScriptedModel();
   const sessions: SessionDeps = { db, pepper: PEPPER, ttlHours: 12, secureCookies: false };
-  const store = new PrismaKnowledgeStore(db);
+  const store = new PrismaKnowledgeStore(db, { embedder: opts.embedder ?? null });
+  const silent = { info: () => undefined, warn: () => undefined };
+  const indexer = opts.embedder ? new EmbeddingIndexer(db, opts.embedder, silent, 0) : null;
   const real: Diagnoser = (input, signal) =>
     diagnose(
       {
@@ -209,6 +215,7 @@ export async function startApp(
     trustProxy: 0,
     sessions,
     diagnose: choice === 'real' ? real : choice === 'none' ? null : choice,
+    onDocumentPublished: indexer ? () => void indexer.kick() : undefined,
   });
   const server: Server = await new Promise((resolve) => {
     const s = app.listen(0, '127.0.0.1', () => resolve(s));
@@ -218,6 +225,7 @@ export async function startApp(
     base: `http://127.0.0.1:${port}`,
     model,
     sessions,
+    indexer,
     close: () =>
       new Promise<void>((resolve, reject) => {
         server.closeAllConnections();
