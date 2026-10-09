@@ -12,7 +12,8 @@
     return tag.getAttribute('data-' + name) || '';
   };
   var serial = 0;
-  var toFocus = null;
+  // the browser names the wrong fields one after another in one go: the first of them takes the focus
+  var focused = false;
 
   // a group of radio buttons answers as one: its first button carries the message
   var owner = function (field) {
@@ -105,11 +106,11 @@
       event.preventDefault();
       var first = owner(field);
       show(first);
-      if (!toFocus) {
-        toFocus = first;
+      if (!focused) {
+        focused = true;
+        first.focus();
         window.setTimeout(function () {
-          toFocus.focus();
-          toFocus = null;
+          focused = false;
         }, 0);
       }
     },

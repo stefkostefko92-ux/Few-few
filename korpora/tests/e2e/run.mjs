@@ -102,7 +102,15 @@ const axe = (page, selector) =>
 // the first field takes the focus, is marked invalid and is described by the message under it, in the page's language
 async function sentEmpty(page, locale) {
   await page.click('main form.form button[type=submit]');
-  await page.locator('main .field-error').first().waitFor({ timeout: READY_MS });
+  try {
+    await page.waitForFunction(
+      () => document.activeElement?.getAttribute('aria-invalid') === 'true',
+      undefined,
+      { timeout: READY_MS },
+    );
+  } catch (err) {
+    return [`empty submit: no field took the focus as invalid — ${firstLine(err)}`];
+  }
   const seen = await page.evaluate(() => {
     const field = document.activeElement;
     const note = (field?.getAttribute('aria-describedby') ?? '')
