@@ -76,7 +76,7 @@
       "paymentEarly": "Payment: by bank transfer, using the invoice with the payment details that we will send you. You asked for the plan to start right after payment, before the {days}-day withdrawal period ends. If you withdraw, you will pay for the time the plan was active.",
       "paymentWait": "Payment: by bank transfer, using the invoice with the payment details that we will send you. You did not ask for an early start, so the paid period will start after the withdrawal period ends ({date}).",
       "paymentBusiness": "Payment: by bank transfer, using the invoice with the payment details that we will send you. The plan is activated once the payment arrives.",
-      "withdrawalConsumer": "Right of withdrawal: you may withdraw from the contract until {date} inclusive, without giving any reason — with the “Withdraw from contract here” button under “Plan” in your account, or with an unequivocal statement to {contact}, for example using the model form below. If you withdraw, we will refund all payments received within {refundDays} days, using the same means of payment and at no cost to you. If you asked for an early start, we keep the part of the price for the time the plan was active.\n\n{form}",
+      "withdrawalConsumer": "Right of withdrawal: you may withdraw from the contract until {date} inclusive, without giving any reason — with the “Withdraw from contract here” button under “Plan” in your account, or with an unequivocal statement to {contact}, for example using the model form below. If you withdraw, we will refund all payments we received from you no later than {refundDays} days after we receive your withdrawal, using the same means of payment and at no cost to you. If you asked for an early start, we keep the part of the price for the time the plan was active.\n\n{form}",
       "withdrawalBusiness": "You are buying as a business or self-employed person for professional purposes, so the consumer right of withdrawal does not apply.",
       "durationTerm": "Term: {term}; Premium does not renew by itself — it ends at the end of the term.",
       "durationLifetime": "Term: Lifetime is valid for as long as Korpora is offered.",
@@ -96,8 +96,8 @@
         "reverted": "Your plan has been returned to what it was before the order.",
         "manual": "We will end the plan you received with this order."
       },
-      "refund": "If you have already paid, we will refund all payments received by {date}, using the same means of payment and at no cost to you.",
-      "refundEarly": "If you have already paid, we will refund the payments received by {date}, using the same means of payment and at no cost to you. As you asked for an early start, we keep the part of the price for the time the plan was active."
+      "refund": "If you have already paid, we will refund all payments we received from you no later than {date}, using the same means of payment and at no cost to you.",
+      "refundEarly": "If you have already paid, we will refund the payments we received from you no later than {date}, using the same means of payment and at no cost to you. As you asked for an early start, we keep the part of the price for the time the plan was active."
     },
     "staffOrder": {
       "subject": "New Korpora order: {plan}",

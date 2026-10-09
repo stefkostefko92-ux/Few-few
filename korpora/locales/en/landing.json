@@ -150,11 +150,11 @@
       "title": "Questions and answers",
       "beta": {
         "q": "What does “beta” mean?",
-        "a": "Korpora is in open beta: everything works and every output is real, but the software is still being refined with the feedback of the first workshops. Tell us what is missing or not right — at {contact}."
+        "a": "Korpora is in open beta: the features on this page are available and every output is real, but the software is still being refined with the feedback of the first workshops — so check the outputs before production. Tell us what is missing or not right — at {contact}."
       },
       "price": {
         "q": "How much does Korpora cost?",
-        "a": "{month} per month including VAT ({monthNet} excluding VAT). Paying for {terms} months at once gives a {discounts} discount. Lifetime costs {life} including VAT ({lifeNet} excluding VAT), is paid once and is valid for as long as Korpora is offered."
+        "a": "{month} per month including VAT ({monthNet} excluding VAT). Paying for {terms} months at once gives a discount of {discounts} respectively. Lifetime costs {life} including VAT ({lifeNet} excluding VAT), is paid once and is valid for as long as Korpora is offered."
       },
       "afterTrial": {
         "q": "What happens when the trial ends?",

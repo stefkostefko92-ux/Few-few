@@ -150,11 +150,11 @@
       "title": "Domande e risposte",
       "beta": {
         "q": "Che cosa vuol dire «beta»?",
-        "a": "Korpora è in beta aperta: tutto funziona e ogni output è reale, ma il software si sta ancora rifinendo con i riscontri delle prime falegnamerie. Scriveteci che cosa manca o non va — a {contact}."
+        "a": "Korpora è in beta aperta: le funzioni descritte in questa pagina sono disponibili e ogni output è reale, ma il software si sta ancora rifinendo con i riscontri delle prime falegnamerie: per questo controllate gli output prima della produzione. Scriveteci che cosa manca o non va — a {contact}."
       },
       "price": {
         "q": "Quanto costa Korpora?",
-        "a": "{month} al mese IVA inclusa ({monthNet} IVA esclusa). Pagando {terms} mesi in una volta lo sconto è del {discounts}. Lifetime costa {life} IVA inclusa ({lifeNet} IVA esclusa), si paga una volta e vale finché Korpora è offerto."
+        "a": "{month} al mese IVA inclusa ({monthNet} IVA esclusa). Pagando {terms} mesi in una volta lo sconto è rispettivamente del {discounts}. Lifetime costa {life} IVA inclusa ({lifeNet} IVA esclusa), si paga una volta e vale finché Korpora è offerto."
       },
       "afterTrial": {
         "q": "Che cosa succede quando finisce il periodo di prova?",

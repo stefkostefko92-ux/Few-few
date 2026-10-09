@@ -103,8 +103,8 @@
       "orderNo": "order no. {id}",
       "email": "Confirmation goes to",
       "statementLabel": "The statement you are sending",
-      "effect": "If you have already paid, we will refund all payments received within {refundDays} days, using the same means of payment and at no cost to you. If the plan has already been activated, we return it to what it was before the order.",
-      "effectEarly": "If you have already paid, we will refund the payments received within {refundDays} days, using the same means of payment and at no cost to you — minus the part for the time the plan was active, because you asked for an early start. If the plan has already been activated, we return it to what it was before the order.",
+      "effect": "If you have already paid, we will refund all payments we received from you no later than {refundDays} days after we receive your withdrawal, using the same means of payment and at no cost to you. If the plan has already been activated, we return it to what it was before the order.",
+      "effectEarly": "If you have already paid, we will refund the payments we received from you no later than {refundDays} days after we receive your withdrawal, using the same means of payment and at no cost to you — minus the part for the time the plan was active, because you asked for an early start. If the plan has already been activated, we return it to what it was before the order.",
       "confirm": "Confirm withdrawal",
       "back": "Back, without withdrawing",
       "unavailable": "The withdrawal period for this order has ended or the order is already closed."
