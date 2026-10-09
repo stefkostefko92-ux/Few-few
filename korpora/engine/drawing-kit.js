@@ -13,7 +13,7 @@ const DIM = '#2c6a10';
 export const PAPER = '#fbfcf9';
 // The faces the site loads (public/css/base.css, the brochure): Geologica for text, JetBrains Mono for numbers; a
 // drawing opened on its own falls back to the system's.
-export const STYLE = `svg.rdw{font-family:'Geologica',Inter,system-ui,sans-serif}
+export const STYLE = `svg.rdw{font-family:'Geologica',Inter,system-ui,sans-serif;font-feature-settings:'locl' 0}
 svg.rdw .d-paper{fill:${PAPER}}
 svg.rdw .d-frm,svg.rdw .d-tb rect,svg.rdw .d-tb line{fill:none;stroke:${INK};stroke-width:.5}
 svg.rdw .d-vis{fill:${PAPER};stroke:${INK};stroke-width:.35}
