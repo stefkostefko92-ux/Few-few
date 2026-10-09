@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Дисплей шрифтът: Unbounded (SIL OFL 1.1, `public/fonts/Unbounded-OFL.txt`) ──
+   Хостваме го сами, НЕ от Google Fonts: заявка към fonts.googleapis.com изпраща
+   IP-то на всеки посетител на трета страна (решение на LG München, 20.01.2022),
+   а CSP-то и без това позволява само `font-src 'self'`.
+   Широкият геометричен строеж стои до широкия курсив на логото; ползва се САМО
+   за заглавия и числа — тялото остава системният шрифт (роден и мигновен).
+   Два сабсета с `unicode-range`: браузърът тегли само този, който страницата
+   реално ползва. Кирилицата е предварително заредена в layout.tsx, защото е в
+   LCP заглавието на българската начална. */
+@font-face {
+  font-family: 'Unbounded';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url('/fonts/unbounded-cyrillic.woff2') format('woff2-variations');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Unbounded';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url('/fonts/unbounded-latin.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+
+:root {
+  color-scheme: dark;
+
+  /* Маскотът се пребоядисва по бранда през собствените си променливи —
+     пакетът е направен точно за това. Зеленото от Carbon Stealth отстъпва на
+     цианa от логото, силуетът остава същият. */
+  --jm-deep: #08303c;
+  --jm-bottle: #106880;
+  --jm-neon: #20a8c0;
+  --jm-olive: #60e0f0;
+  --jm-pale: #a7f0fa;
+  --jm-soft-olive: #7f8f96;
+}
+
+body {
+  @apply bg-ink-950 text-silver-200 font-ui antialiased;
+}
+
+/* Родните отметки — в цианa на марката и 20 px вместо 13 px по подразбиране:
+   с етикета (свързан през `for`) целта минава 24 px по WCAG 2.5.8.
+   `:where()` държи специфичността на нула — `sr-only` и другите помощни
+   класове печелят, иначе скритият радио бутон в избора на оценка изплува. */
+:where(input[type='checkbox'], input[type='radio']) {
+  accent-color: #20a8c0;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+
+/* Видим фокус навсякъде — клавиатурната навигация е изискване (EAA/WCAG 2.4.7). */
+:focus-visible {
+  @apply outline-none ring-2 ring-cyan-300 ring-offset-2 ring-offset-ink-950;
+}
+
+/* Металният надпис от логото, като текст: същата сребърна стълбица.
+   САМО на героя на началната. Беше на 14 вътрешни заглавия, а на 3 не беше —
+   несъгласувано и разводняваше плаката: смелостта се харчи на едно място. */
+.text-chrome {
+  background: linear-gradient(180deg, #f8f8f8 0%, #d0d0d0 45%, #8a8a8a 55%, #f0f0f0 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@layer components {
+  /* Заглавието на всяка вътрешна страница — един клас, една скала. Дотук
+     всяка страница носеше свой низ от класове и те се разминаваха. */
+  .page-title {
+    @apply font-display text-[1.75rem] font-semibold leading-[1.15] tracking-[-0.015em] text-silver-100 sm:text-[2.25rem];
+    text-wrap: balance;
+  }
+  /* Заглавие на раздел вътре в страница (начална, ревюта, „За сървъра“). */
+  .section-title {
+    @apply font-display text-[1.375rem] font-semibold leading-tight tracking-[-0.01em] text-silver-100 sm:text-[1.75rem];
+    text-wrap: balance;
+  }
+}
+
+/* Трикольорът от логото — тънка лента, не декорация върху текст. */
+.flag-rule {
+  background: linear-gradient(
+    180deg,
+    theme('colors.flag.white') 0 33.33%,
+    theme('colors.flag.green') 33.33% 66.66%,
+    theme('colors.flag.red') 66.66% 100%
+  );
+}
+
+/* Уважаваме системната настройка за намалено движение. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
