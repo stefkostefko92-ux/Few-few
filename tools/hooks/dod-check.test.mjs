@@ -118,6 +118,13 @@ test("lastAssistantText: взема ПОСЛЕДНИЯ асистентски т
   assert.equal(lastAssistantText(jl), "последно");
 });
 
+test("lastAssistantText: фоновият агент приключва със SubagentHandback — неговото съобщение е отговорът", () => {
+  const handback = JSON.stringify({ message: { role: "assistant", content: [{ type: "tool_use", name: "SubagentHandback", input: { message: GOOD } }] } });
+  assert.equal(lastAssistantText([asst("междинно"), handback].join("\n")), GOOD);
+  const other = JSON.stringify({ message: { role: "assistant", content: [{ type: "tool_use", name: "Write", input: { content: "x" } }] } });
+  assert.equal(lastAssistantText([asst("последно"), other].join("\n")), "последно");
+});
+
 test("lastAssistantText: понася низов content и празен транскрипт", () => {
   assert.equal(lastAssistantText(JSON.stringify({ message: { role: "assistant", content: "гол низ" } })), "гол низ");
   assert.equal(lastAssistantText(""), "");

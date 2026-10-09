@@ -31,7 +31,7 @@ export const PREMIUM_FEATURES = {
   "panel.inactivityAutoClose": { label: "Inactivity Auto-Close",       category: "Tickets" },
   "panel.autoCloseOnLeave":    { label: "Auto-Close on User Leave",    category: "Tickets" },
   "panel.multipleCategories":  { label: "Separate Open/Closed Categories", category: "Tickets" },
-  "panel.unlimitedCount":      { label: "Unlimited Panels",            category: "Tickets" },
+  "panel.unlimitedCount":      { label: "Up to 50 Panels",             category: "Tickets" },
   "panel.sla":                 { label: "SLA Tracking",                category: "Tickets" },
 
   // ─── Ticket actions ────────────────────────────────────────────────────
@@ -46,7 +46,7 @@ export const PREMIUM_FEATURES = {
   "form.autoRoleOnReview":     { label: "Auto Role on Accept/Deny",    category: "Forms" },
   "form.customDmMessages":     { label: "Custom DM Messages",          category: "Forms" },
   "form.maxQuestions50":       { label: "50 Questions per Form",       category: "Forms" },
-  "form.unlimited":            { label: "Unlimited Forms",             category: "Forms" },
+  "form.unlimited":            { label: "Up to 50 Forms",              category: "Forms" },
 
   // ─── Verification ──────────────────────────────────────────────────────
   // НАРОЧНО ПРАЗНО. Защитата срещу рейд НЕ се продава.

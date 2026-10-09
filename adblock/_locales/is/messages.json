@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Lokar á auglýsingar alls staðar: YouTube-auglýsingar, borða, sprettiglugga, rekjara, kökuborða og anti-adblock-veggi. Ókeypis."
+    "message": "Lokar á auglýsingar alls staðar: YouTube-auglýsingar, borða, sprettiglugga, rekjara, kökuborða og anti-adblock-veggi."
   },
   "byCarbon": {
     "message": "frá Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Leyfi síulistanna"
+  },
+  "welPageTitle": {
+    "message": "Velkomin í Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Vörnin er virk",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock lokar nú á auglýsingar og rekjara á öllum vefsvæðum sem þú heimsækir. Það þarf ekkert að stilla.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Festu viðbótina á tækjastikuna",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Smelltu á púsluspilstáknið við hliðina á veffangastikunni og festu Supreme AdBlock. Þá sýnir einn smellur hvað var lokað á síðunni.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Ef vefsvæði lítur bilað út",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Opnaðu viðbótina og slökktu á lokun fyrir það vefsvæði, eða veldu „Virkar vefsvæðið ekki?“ fyrir skjótar lagfæringar.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Vafrið þitt verður eftir í tækinu þínu",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Síunin fer fram á tækinu. Viðbótin safnar engum persónuupplýsingum og sendir ekkert um síðurnar sem þú heimsækir.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Opna stillingar",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Ég skil",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

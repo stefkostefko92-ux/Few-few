@@ -18,7 +18,6 @@
 
   // Captured before any page script or IMPL (json-prune) can wrap them.
   var nativeParse = JSON.parse;
-  var nativeStringify = JSON.stringify;
   var nativeSlice = Array.prototype.slice;
   var nativeIsArray = Array.isArray;
   var nativeHasOwn = Object.prototype.hasOwnProperty;
@@ -136,6 +135,34 @@
 
   // Compile a uBO needle with optional leading "!" negation into a matcher.
   // A missing/empty needle matches everything; "!" inverts the result.
+  // Every native we replace is a Proxy of the native, and Function.prototype.toString
+  // answers for the native: fn.toString() stays "function fetch() { [native code] }".
+  // Anti-adblock scripts (YouTube's included) compare exactly that; a plain
+  // replacement function gave us away on every site that checks.
+  var NativeProxy = typeof Proxy === "function" ? Proxy : null;
+  var nativeReflectApply = typeof Reflect === "object" && Reflect ? Reflect.apply : null;
+  var cloakMap = typeof WeakMap === "function" ? new WeakMap() : null;
+  var cloakedToString = false;
+  function cloak(impl, orig) {
+    if (!NativeProxy || !nativeReflectApply || !cloakMap || typeof orig !== "function" || typeof impl !== "function") return impl;
+    try {
+      if (!cloakedToString) {
+        cloakedToString = true;
+        var ts = Function.prototype.toString;
+        var tsP = new NativeProxy(ts, { apply: function (t, self, args) {
+          var o = self, n = 0;
+          while (n++ < 8 && cloakMap.has(o)) o = cloakMap.get(o); // a native wrapped twice (two scriptlets) still answers as itself
+          return nativeReflectApply(t, o, args);
+        } });
+        cloakMap.set(tsP, ts);
+        Function.prototype.toString = tsP;
+      }
+      var p = new NativeProxy(orig, { apply: function (t, self, args) { return nativeReflectApply(impl, self, args); } });
+      cloakMap.set(p, orig);
+      return p;
+    } catch (e) { return impl; }
+  }
+
   function needleMatcher(raw) {
     var neg = typeof raw === "string" && raw.charAt(0) === "!";
     var body = neg ? raw.slice(1) : raw;
@@ -164,6 +191,7 @@
       } catch (e) {}
       return orig.apply(this, arguments);
     };
+    window[prop] = cloak(window[prop], orig);
   }
   // DOM-touching scriptlets: apply fn to every element matching sel, now and on mutation.
   function forEachMatch(sel, fn) {
@@ -293,6 +321,7 @@
         } catch (e) {}
         return orig.apply(this, arguments);
       };
+      proto.addEventListener = cloak(proto.addEventListener, orig);
     },
 
     // json-prune(props, needle): delete dotted `props` from every JSON.parse /
@@ -310,12 +339,12 @@
         return obj;
       };
       var origParse = JSON.parse;
-      JSON.parse = function () { return prune(origParse.apply(this, arguments)); };
+      JSON.parse = cloak(function () { return prune(origParse.apply(this, arguments)); }, origParse);
       try {
         var origJson = Response.prototype.json;
-        Response.prototype.json = function () {
+        Response.prototype.json = cloak(function () {
           return origJson.apply(this, arguments).then(prune);
-        };
+        }, origJson);
       } catch (e) {}
     },
 
@@ -340,6 +369,7 @@
         } catch (e) {}
         return origFetch.apply(this, arguments);
       };
+      window.fetch = cloak(window.fetch, origFetch);
     },
 
     // no-xhr-if(cond): the XMLHttpRequest twin of no-fetch-if — a matching request
@@ -364,6 +394,7 @@
         } catch (e) {}
         return origOpen.apply(this, arguments);
       };
+      P.open = cloak(P.open, origOpen);
       P.send = function () {
         if (!held.has(this)) return origSend.apply(this, arguments);
         var xhr = this, u = held.get(this);
@@ -381,6 +412,7 @@
           return origSend.apply(this, arguments);
         }
       };
+      P.send = cloak(P.send, origSend);
     },
 
     // no-window-open-if(search): block window.open() for matching URLs (leading
@@ -398,6 +430,7 @@
         } catch (e) {}
         return orig.apply(this, arguments);
       };
+      window.open = cloak(window.open, orig);
     },
 
     // remove-attr(attrs, selector): strip the given attributes (space/comma/pipe
@@ -573,7 +606,7 @@
     if (host) {
       var parts = host.split(".");
       // nativeSlice: a page-replaced Array.prototype.slice must not corrupt the
-      // host chain (it would silently drop every live directive for this frame).
+      // host chain (it would silently drop every baked directive for this frame).
       for (var i = 0; i < parts.length - 1; i++) chain.push(nativeSlice.call(parts, i).join("."));
     }
     return chain;
@@ -587,62 +620,6 @@
     if (typeof fn !== "function") return;
     try { fn.apply(null, nativeSlice.call(d, 1)); } catch (e) {}
   }
-
-  // ---- live directives (Level 2) -----------------------------------------
-  // Delivered by our ISOLATED content script from the Ed25519-signed,
-  // anti-rollback filters.json as a JSON STRING on a DOM event (objects don't
-  // cross worlds). Re-validated HERE against the same rules as the service
-  // worker (name allowlist = IMPL keys, argument safety, set-constant
-  // dictionary, selector/attribute/tag policy) — the engine never trusts a
-  // DOM message blindly. Threat model, stated honestly: a page can dispatch
-  // the same event, but only with directives we already allow, only against
-  // ITSELF in its own frame — no privilege escalation, no code/network sink.
-  // A cooperating page CAN opt itself out (pre-apply + restore its own APIs);
-  // it cannot reach other frames or other sites. The channel is therefore for
-  // non-timing-critical directives; timing-critical ones are baked into MAP.
-  // Live directives always carry an explicit host and never run on core
-  // video/CDN hosts (YouTube has dedicated handling).
-  // Live profile of the single policy (see SA_POLICY above): selector/attr/tag
-  // rules, cookie-name denylist, remove-cookie refused. IMPL membership is
-  // re-checked here as belt and braces (IMPL keys == policy CANON, gated by tests).
-  function directiveOk(d) {
-    if (!nativeIsArray(d) || d.length < 1) return false;
-    var name = d[0];
-    if (typeof name !== "string" || !nativeHasOwn.call(IMPL, name)) return false;
-    return SA_POLICY.validateDirective(name, nativeSlice.call(d, 1), true);
-  }
-  var liveSeen = Object.create(null);
-  function applyLive(raw) {
-    var items;
-    try { items = nativeParse(String(raw)); } catch (e) { return; }
-    if (!nativeIsArray(items)) return;
-    var chain = hostChain();
-    for (var p = 0; p < chain.length; p++) if (SA_POLICY.NEVER_LIVE.indexOf(chain[p]) >= 0) return;
-    for (var i = 0; i < items.length && i < SA_POLICY.LIVE_SCRIPTLET_MAX; i++) {
-      var it = items[i];
-      if (!it || typeof it !== "object") continue;
-      // Read once and materialise: a poisoned getter can't swap values between
-      // validation and execution.
-      var h = it.h, d = it.d;
-      if (typeof h !== "string" || h === "" || chain.indexOf(h) < 0) continue; // explicit host only
-      if (!nativeIsArray(d)) continue;
-      d = nativeSlice.call(d);   // native, so a page-replaced slice cannot split validate/execute
-      if (!directiveOk(d)) continue;
-      var key = nativeStringify(d);
-      if (liveSeen[key]) continue;                 // dedupe: re-delivery / replay
-      liveSeen[key] = true;
-      runDirective(d);
-    }
-  }
-  try {
-    // Capture listener on window: registered at document_start (before any
-    // page script), it fires before any document-level listener, and the page
-    // holds no reference to remove it. content.js dispatches on document; the
-    // capture phase runs regardless of `bubbles`.
-    window.addEventListener("sa-scriptlets", function (ev) {
-      try { applyLive(ev && ev.detail); } catch (e) {}
-    }, true);
-  } catch (e) {}
 
   // ---- bootstrap: baked directives — LAST, once every helper above is
   // initialised (var hoisting only hoists declarations; a helper used by an
@@ -694,6 +671,7 @@
         } catch (e) {}
         return nativeOpen.apply(this, arguments);
       };
+      window.open = cloak(window.open, nativeOpen);
     }
   } catch (e) {}
 })();

@@ -50,10 +50,19 @@
    corner pulsing forever (the cursor is never actually there); with
    reduce-motion the pulse alone is a vestibular trigger. */
 @media (hover: hover) and (pointer: fine) {
+  /* БЪГ (докладван визуално): златен кръг, залепнал в ъгъл (0,0) на всяка
+     снимка. Причина: реjoin нямаше JS, който да го мести — чист CSS
+     псевдо-елемент на top:0/left:0 завинаги, докато `cursor:none` крие
+     истинския показалец. LandingEffects.tsx вече пише --cursor-x/--cursor-y
+     при mousemove (виж по-долу); тук четем тези променливи и пазим кръга
+     невидим (opacity:0), докато не дойде първото движение (класът
+     .cursor-active го добавя JS-ът). На тъч устройства медия-заявката горе
+     изобщо не рендира правилото. */
   .landing::after {
     content: '';
     position: fixed;
-    top: 0; left: 0;
+    top: var(--cursor-y, 50%);
+    left: var(--cursor-x, 50%);
     width: 26px; height: 26px;
     border-radius: 50%;
     border: 1.5px solid rgba(214,161,61,.7);
@@ -61,6 +70,13 @@
     pointer-events: none;
     z-index: 9999;
     transform: translate(-50%, -50%);
+    opacity: 0;
+    /* animation-та тук НЕ бива — running keyframe анимация винаги
+       печели над статичната opacity:0 декларация (CSS каскада не важи за
+       анимирани свойства), затова пулсът се пуска чак с .cursor-active. */
+  }
+  .landing.cursor-active::after {
+    opacity: 1;
     animation: reticle-pulse 1.6s ease-in-out infinite;
   }
 }
@@ -164,6 +180,13 @@
 [data-reveal-stagger].revealed > *:nth-child(10) { opacity: 1; transform: translateY(0); transition-delay: .45s; }
 [data-reveal-stagger].revealed > *:nth-child(11) { opacity: 1; transform: translateY(0); transition-delay: .50s; }
 [data-reveal-stagger].revealed > *:nth-child(12) { opacity: 1; transform: translateY(0); transition-delay: .55s; }
+/* БЪГ (уловен при преглед на 21-те региона, втори проход): само 12 nth-child
+   правила съществуваха — .region-row вече носи 21 карти (виж Landing.tsx
+   „World"), картите от 13 нататък оставаха opacity:0 завинаги (revealed
+   стигаше до родителя, децата отвъд 12 никога не получаваха собствено
+   правило). Catch-all за всичко отвъд 12 — появяват се веднага след
+   последния изчислен delay, без нов стъпков ритъм до безкрайност. */
+[data-reveal-stagger].revealed > *:nth-child(n+13) { opacity: 1; transform: translateY(0); transition-delay: .55s; }
 
 /* ===== 3D tilt + glare ===== */
 [data-tilt] {
@@ -181,8 +204,17 @@
   z-index: 5;
 }
 
-/* Hero title fancy split-letter reveal */
-.hero-title .word { display: inline-block; overflow: hidden; }
+/* Hero title fancy split-letter reveal.
+   БЪГ (докладван визуално): зад всяка дума имаше видим тъмен правоъгълник.
+   Причина: .word е inline-block с overflow:hidden, ВЪТРЕ в елемент с
+   background-clip:text + filter:drop-shadow на предшественика (.hero-title).
+   Chromium/WebKit промотират overflow:hidden кутията в собствен compositing
+   слой заради filter-а на родителя — резултатът е плътен правоъгълник вместо
+   истински прозрачен текст. Потвърдено на живо (виж доклада — desk-0-hero.png/
+   mob-0-hero.png) и възпроизведено локално със скрийншот на .hero-title.
+   Премахнат overflow:hidden (буквите пак се плъзгат нагоре с opacity+translateY,
+   просто без маска-изрязване преди старта на анимацията). */
+.hero-title .word { display: inline-block; }
 .hero-title .letter {
   display: inline-block;
   animation: letter-reveal .8s cubic-bezier(.2,.8,.2,1) backwards;
@@ -242,6 +274,10 @@
   align-items: center;
   justify-content: space-between;
   padding: 18px 36px;
+  /* Notch/Dynamic Island в landscape/PWA — виж globals.css --safe-top. */
+  padding-top: calc(18px + var(--safe-top));
+  padding-left: max(36px, var(--safe-left));
+  padding-right: max(36px, var(--safe-right));
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   background: rgba(5,6,9,.78);
@@ -276,9 +312,15 @@
   text-align: center;
 }
 
+/* flex + fit-content: като inline-flex емблемата делеше един ред с
+   .hero-eyebrow (седеше вляво от него, не над него). position: relative
+   държи ::after блясъка в рамките на емблемата — иначе се разпъваше през
+   цялото .hero-content като диагонален лъч. */
 .hero-logo {
-  display: inline-flex;
-  margin-bottom: 28px;
+  position: relative;
+  display: flex;
+  width: fit-content;
+  margin: 0 auto 28px;
   animation: hero-logo-in 1.2s cubic-bezier(.3,.8,.2,1) backwards;
   filter: drop-shadow(0 12px 48px rgba(214,161,61,.45));
 }
@@ -288,33 +330,17 @@
   100% { opacity: 1; transform: scale(1) rotate(0); }
 }
 
-.hero-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 7px 18px;
-  border: 1px solid var(--gold-3);
-  background: rgba(214,161,61,.08);
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  color: var(--gold-1);
-  margin-bottom: 24px;
-  animation: fade-up .9s ease-out backwards;
-}
-.hero-eyebrow::before {
-  content: '';
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--gold-1);
-  box-shadow: 0 0 8px var(--gold-1);
-  animation: pulse-dot 1.8s ease-in-out infinite;
-}
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: .55; transform: scale(.8); }
+/* Замества старото .hero-eyebrow (ALL-CAPS чип с точки над заглавието) —
+   трите факта (браузър/безплатно/без инсталация) вече седят тихо ПОД CTA-то,
+   sentence case, Spectral италик, без pill/border/pulsing dot. */
+.hero-facts {
+  font-family: var(--font-read);
+  font-style: italic;
+  font-size: 14px;
+  color: rgba(244,228,186,.65);
+  margin: 22px 0 0;
+  animation: fade-up 1s ease-out backwards;
+  animation-delay: .35s;
 }
 
 .hero-title {
@@ -342,11 +368,12 @@
 }
 
 .hero-subtitle {
-  font-size: clamp(16px, 2vw, 21px);
+  font-family: var(--font-read);
+  font-size: clamp(17px, 2vw, 22px);
   color: var(--text-2);
-  max-width: 780px;
+  max-width: 720px;
   margin: 0 auto 38px;
-  line-height: 1.6;
+  line-height: 1.7;
   animation: fade-up 1s ease-out backwards;
   animation-delay: .2s;
 }
@@ -366,11 +393,14 @@
   letter-spacing: .08em;
   border-radius: 12px;
 }
+/* Основният CTA е жар/стомана, не злато — златото на страницата остава
+   резервирано за богатство/рядкост (валута, legendary), действието получава
+   собствен акцент. Виж PLAN.md „Цвят". */
 .btn-hero.btn-primary {
-  background: linear-gradient(180deg, #fff1c2, #d6a13d 60%, #8a6620);
-  border: 1px solid var(--gold-3);
-  color: #181307;
-  box-shadow: 0 12px 40px rgba(214,161,61,.32), inset 0 1px 0 rgba(255,255,255,.35);
+  background: linear-gradient(180deg, #ffcf94, var(--ember-1) 55%, var(--crimson-2));
+  border: 1px solid var(--crimson-2);
+  color: #1c0904;
+  box-shadow: 0 12px 40px rgba(198,60,26,.38), inset 0 1px 0 rgba(255,255,255,.35);
   position: relative;
   overflow: hidden;
 }
@@ -384,7 +414,7 @@
 }
 .btn-hero.btn-primary:hover::after { transform: translateX(100%); }
 .btn-hero.btn-primary:hover {
-  box-shadow: 0 16px 56px rgba(214,161,61,.5), inset 0 1px 0 rgba(255,255,255,.4);
+  box-shadow: 0 16px 56px rgba(198,60,26,.5), inset 0 1px 0 rgba(255,255,255,.4);
   transform: translateY(-2px);
 }
 
@@ -443,6 +473,7 @@
   color: var(--gold-1);
   text-shadow: 0 0 24px rgba(214,161,61,.4);
   line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 .stat-pill .label {
   font-size: 10px;
@@ -463,14 +494,16 @@
   max-width: 1240px;
   margin: 0 auto;
 }
+/* .section-eyebrow — вече само за forge-band-copy (единствен кинематографичен
+   надпис на цялата страница, не повторен урок за всяко заглавие); центрираните
+   секции по-долу вече нямат етикет над h2, заглавието+lead-ът говорят сами. */
 .section-eyebrow {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .18em;
-  text-transform: uppercase;
+  font-family: var(--font-read);
+  font-style: italic;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--gold-2);
-  margin-bottom: 14px;
-  text-align: center;
+  margin-bottom: 10px;
 }
 .section-title {
   font-family: var(--font-display);
@@ -483,13 +516,22 @@
           background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+/* Хладен металик за „територия"-секциите (Guilds/World) — трети усет наред
+   със злато (престиж) и жар (действие), вместо всичко да е позлатено. */
+.section[data-tone="steel"] .section-title {
+  background: linear-gradient(180deg, #eef2f8, #7d90ab);
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 .section-lead {
   text-align: center;
-  font-size: 17px;
+  font-family: var(--font-read);
+  font-size: 18px;
   color: var(--text-2);
-  max-width: 760px;
+  max-width: 720px;
   margin: 0 auto 64px;
-  line-height: 1.65;
+  line-height: 1.75;
 }
 
 /* ===== Feature grid ===== */
@@ -502,7 +544,9 @@
 .feature-card {
   background: linear-gradient(180deg, rgba(22,26,35,.85), rgba(11,13,18,.85));
   border: 1px solid var(--border-1);
-  border-radius: var(--radius-lg);
+  /* radius-md, не -lg: тези 12 карти са изброяване на възможности, не
+     витрина — по-тих радиус държи йерархията под class/set showcase-а. */
+  border-radius: var(--radius-md);
   padding: 28px;
   position: relative;
   overflow: hidden;
@@ -517,7 +561,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   padding: 1px;
   background: linear-gradient(135deg, rgba(214,161,61,.3), transparent 40%, transparent 60%, rgba(214,161,61,.2));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
@@ -560,7 +604,7 @@
   color: var(--gold-1);
   margin: 0 0 10px;
 }
-.feature-desc { font-size: 14px; color: var(--text-2); line-height: 1.6; }
+.feature-desc { font-family: var(--font-read); font-size: 15px; color: var(--text-2); line-height: 1.65; }
 
 /* ===== Class showcase ===== */
 .class-grid {
@@ -654,7 +698,7 @@
 .set-card[data-rarity="epic"] .set-name { color: var(--rare-epic); }
 .set-card[data-rarity="legendary"] .set-name { color: var(--rare-legendary); }
 .set-card .set-tier { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: .1em; }
-.set-card .set-lore { font-size: 13px; color: var(--text-3); font-style: italic; margin-bottom: 14px; line-height: 1.6; }
+.set-card .set-lore { font-family: var(--font-read); font-size: 14px; color: var(--text-3); font-style: italic; margin-bottom: 14px; line-height: 1.65; }
 .set-card .set-bonuses { display: flex; flex-direction: column; gap: 6px; }
 .set-card .bonus-row {
   display: flex;
@@ -686,7 +730,7 @@
 .region-card {
   background: linear-gradient(180deg, rgba(22,26,35,.92), rgba(11,13,18,.92));
   border: 1px solid var(--border-2);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -729,7 +773,7 @@
   flex: 0 0 280px;
   background: linear-gradient(180deg, rgba(22,26,35,.85), rgba(11,13,18,.85));
   border: 1px solid var(--border-1);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   padding: 22px;
   position: relative;
 }
@@ -750,7 +794,7 @@
   color: var(--gold-1);
   margin-bottom: 8px;
 }
-.roadmap-stop .detail { font-size: 13px; color: var(--text-2); line-height: 1.55; }
+.roadmap-stop .detail { font-family: var(--font-read); font-size: 14px; color: var(--text-2); line-height: 1.6; }
 
 /* ===== Social proof ===== */
 .testimonial-grid {
@@ -761,7 +805,7 @@
 .testimonial {
   background: linear-gradient(180deg, rgba(22,26,35,.85), rgba(11,13,18,.85));
   border: 1px solid var(--border-1);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   padding: 24px;
   position: relative;
 }
@@ -776,9 +820,10 @@
   line-height: 1;
 }
 .testimonial p {
-  font-size: 14px;
+  font-family: var(--font-read);
+  font-size: 15px;
   color: var(--text-2);
-  line-height: 1.65;
+  line-height: 1.7;
   margin: 16px 0 18px;
   position: relative;
   z-index: 2;
@@ -805,7 +850,10 @@
   z-index: 2;
   background: linear-gradient(135deg, rgba(214,161,61,.1), rgba(111,63,182,.08));
   border: 1px solid var(--gold-3);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-hero);
+  /* Единственото скосено ъгълче на цялата страница — печат на кралството,
+     не поредната заоблена карта (виж PLAN.md „Радиуси по йерархия"). */
+  clip-path: polygon(0 0, calc(100% - 40px) 0, 100% 40px, 100% 100%, 0 100%);
   padding: 72px 32px;
   text-align: center;
   margin: 60px 36px 100px;
@@ -897,6 +945,24 @@
 @media (max-width: 700px) {
   .landing-nav { padding: 14px 20px; }
   .landing-nav-links { display: none; }
+  /* БЪГ (докладван визуално, mob-0-hero.png): SIGN IN / PLAY FREE се
+     пренасяха на по 2 реда, навбарът изглеждаше претъпкан. На 402px
+     логото+wordmark + езиков превключвател + 2 бутона не се събират на
+     един ред с пълните им desktop отстояния — свиваме ги. */
+  .landing-nav { flex-wrap: nowrap; gap: 8px; }
+  /* !important задължително — Logo.tsx слага display:flex inline (React
+     style prop), който вика по-висок приоритет от външен CSS клас. */
+  .landing-nav .nd-logo-wordmark { display: none !important; }
+  .landing-nav-cta { gap: 6px; flex-wrap: nowrap; }
+  .landing-nav-cta .lang-selector { padding: 1px; gap: 1px; }
+  .landing-nav-cta .lang-btn { padding: 9px 7px; font-size: .64rem; min-height: 36px; }
+  .landing-nav-cta .btn {
+    padding: 10px 12px;
+    font-size: 12px;
+    letter-spacing: .02em;
+    white-space: nowrap;
+    min-height: 44px; /* тъч цел ≥44px (WCAG 2.5.5/2.5.8) */
+  }
   .hero { padding: 60px 20px; }
   .hero-fighters { display: none; }
   .stats-strip { grid-template-columns: repeat(2, 1fr); gap: 18px; padding: 22px 20px; }
@@ -910,7 +976,10 @@
 /* ===== Streak rows + wheel kept here for app-internal pages ===== */
 .streak-row {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  /* minmax(0,…) — без него all колоните имплицитно са minmax(auto,1fr) и НЕ
+     се свиват под min-content на съдържанието им (награда/число в клетката),
+     редът изтичаше до ~508px на 360px мобилен viewport (Daily.tsx). */
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 8px;
 }
 .streak-cell {
@@ -1118,12 +1187,13 @@
 /* =========================================================================
    HERO REWORK — video background replaces the SVG fighters trio.
    ========================================================================= */
+/* min-height вместо фиксирана височина: съдържанието (~950px) е по-високо
+   от 92vh на лаптоп/телефон и центрирането го избутваше над горния ръб —
+   емблемата оставаше под навбара. */
 .hero-video {
   position: relative;
-  min-height: 720px;
-  height: 92vh;
-  max-height: 1100px;
-  padding: 0;
+  min-height: max(720px, 92vh);
+  padding: 48px 0 72px;
   max-width: none;
   overflow: hidden;
   display: flex;
@@ -1137,9 +1207,19 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 38%;
+  /* „The Bard“ е портретна — кадрираме замъка на скалата и планините
+     (горната лява третина); нощен грейд в езика на boy. */
+  object-position: 22% 26%;
+  transform-origin: 30% 30%;
   z-index: 0;
-  filter: contrast(1.05) saturate(.86) brightness(.78);
+  filter: contrast(1.1) saturate(.7) brightness(.62) sepia(.18) hue-rotate(-6deg);
+  animation: hero-painting-drift 38s ease-in-out infinite alternate;
+}
+/* Бавно кинематографично приближаване (Ken Burns) — ~0.4%/s, далеч под
+   прага за вестибуларен дискомфорт; изключено при reduced-motion. */
+@keyframes hero-painting-drift {
+  from { transform: scale(1.04) translate3d(0, 0, 0); }
+  to   { transform: scale(1.14) translate3d(-1.5%, 1%, 0); }
 }
 .hero-video-shade {
   position: absolute;
@@ -1163,6 +1243,70 @@
   pointer-events: none;
   box-shadow: inset 0 0 240px 60px rgba(0,0,0,.7);
 }
+
+/* ===== boy-език в хероя: мъгла, филмово зърно, "film slate" HUD =====
+   Само CSS/SVG data-URI — нулев допълнителен HTTP заявка, нулево влияние
+   върху LCP (застава над вече заредения poster/видео слой). */
+.hero-mist {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 42%;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 0%, rgba(180,190,200,.10) 55%, rgba(200,208,216,.16) 100%);
+  filter: blur(6px);
+  animation: hero-mist-drift 26s ease-in-out infinite alternate;
+}
+@keyframes hero-mist-drift {
+  from { transform: translateX(-2%) scaleY(1); opacity: .8; }
+  to   { transform: translateX(2%) scaleY(1.08); opacity: 1; }
+}
+.hero-grain {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  opacity: .05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+/* Мото-баджа „slate" (Shot/Rec) — боен HUD език на boy, тук за атмосфера. */
+.hero-slate {
+  position: absolute;
+  top: calc(20px + var(--safe-top, 0px));
+  right: max(20px, var(--safe-right, 0px));
+  z-index: 4;
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+  padding: 8px 10px;
+  border: 1px solid rgba(235,226,206,.18);
+  background: rgba(7,7,10,.4);
+  font: 300 10px/1.2 var(--font-mono);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: rgba(235,226,206,.75);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+.hero-slate .rec { color: #ffe9b5; }
+.hero-slate .rec::before {
+  content: '';
+  display: inline-block;
+  width: 6px; height: 6px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--ember-1, #ffb159);
+  box-shadow: 0 0 8px var(--ember-1, #ffb159);
+  vertical-align: 1px;
+}
+@media (max-width: 700px) {
+  .hero-slate { display: none; } /* тесен viewport — приоритет на заглавието, не на декорацията */
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-mist { animation: none; }
+}
+
 .hero-content {
   position: relative;
   z-index: 3;
@@ -1179,11 +1323,6 @@
   text-shadow: 0 1px 8px rgba(0,0,0,.8);
   max-width: 720px;
   margin: 24px auto 32px;
-}
-.hero-content .hero-eyebrow {
-  background: rgba(8,6,3,.55);
-  -webkit-backdrop-filter: blur(8px); /* iOS Safari иска префикса */
-  backdrop-filter: blur(8px);
 }
 .hero-credit {
   position: absolute;
@@ -1207,7 +1346,7 @@
    its rules are inert; leaving them keeps git diff tight. */
 
 @media (max-width: 800px) {
-  .hero-video { height: 78vh; min-height: 560px; }
+  .hero-video { min-height: max(560px, 78vh); padding: 32px 0 56px; }
   .hero-content { padding-top: 24px; }
   .hero-credit { right: 12px; bottom: 10px; font-size: 10px; }
 }
@@ -1238,7 +1377,12 @@
   object-fit: cover;
   object-position: center 18%;
   display: block;
-  filter: saturate(.92) contrast(1.04);
+  /* БЪГ (докладван визуално): rogue.jpg е черно-бяла гравюра в изходника,
+     другите три класа са цветни платна — рамките изглеждаха несъвместими.
+     Общ топъл сепия грейд върху ВСИЧКИ четири ги обединява в една палитра
+     (и съвпада с кинематографичния "филмов грейд" език на boy) — сивата
+     гравюра получава същия тон вместо да стърчи като изключение. */
+  filter: sepia(.4) saturate(1.05) contrast(1.08) brightness(.94);
   transition: transform .6s ease;
 }
 .class-card:hover .class-portrait-frame img { transform: scale(1.04); }
@@ -1306,11 +1450,12 @@
   justify-content: center;
   gap: 12px;
 }
-.forge-band-copy .section-eyebrow { margin-bottom: 6px; }
+.forge-band-copy .section-eyebrow { margin-bottom: 6px; text-align: left; }
 .forge-band-copy .section-title { margin: 0 0 10px; }
 .forge-band-lead {
-  font-size: 16px;
-  line-height: 1.6;
+  font-family: var(--font-read);
+  font-size: 17px;
+  line-height: 1.65;
   color: var(--text-2);
   text-shadow: 0 2px 12px rgba(0,0,0,.6);
   max-width: 520px;
@@ -1338,4 +1483,169 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .forge-band-bg { animation: none; }
+}
+
+/* =====================================================================
+   ВТОРИ ПРОХОД — асиметрични заглавия, ритъм-групи, жив двубой, 3D сетове.
+   Виж scratchpad/design/PLAN.md „Втори проход" за пълния разбор.
+   ===================================================================== */
+
+/* Ляво подравнен заглавен блок (title + lead на две колони) — вариация
+   спрямо центрирания .section-title/.section-lead stack навсякъде другаде. */
+.section-asym { text-align: left; }
+.section-head-split {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 40px;
+  align-items: end;
+  margin-bottom: 56px;
+  max-width: none;
+}
+.section-head-split .section-title { text-align: left; margin: 0; }
+.section-head-split .section-lead { text-align: left; margin: 0; max-width: 46ch; }
+@media (max-width: 900px) {
+  .section-head-split { grid-template-columns: 1fr; gap: 16px; }
+}
+
+/* ===== Loop groups (Features) — заменя 12 еднакви карти 3×4 =====
+   Всяка група: 1 водеща FeatureCard (лявo, по-едра) + 3 компактни реда
+   (дясно). Три групи вместо еднородна мрежа. */
+.loop-groups { display: flex; flex-direction: column; gap: 48px; }
+.loop-group-when {
+  font-family: var(--font-read);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--gold-2);
+  margin-bottom: 16px;
+}
+.loop-group-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 22px;
+  align-items: stretch;
+}
+.feature-card-lead { padding: 32px; }
+.feature-card-lead .feature-icon { width: 68px; height: 68px; }
+.feature-card-lead .feature-title { font-size: 23px; }
+.feature-card-lead .feature-desc { font-size: 15.5px; }
+.loop-compact-list { display: flex; flex-direction: column; gap: 12px; }
+.loop-compact {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px;
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,.02);
+  transition: border-color .2s, background .2s;
+}
+.loop-compact:hover { border-color: var(--gold-3); background: rgba(255,255,255,.035); }
+.loop-compact-icon {
+  width: 40px; height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  filter: saturate(.9);
+}
+.loop-compact-body h4 { font-family: var(--font-display); font-size: 14.5px; color: var(--gold-1); margin: 0 0 4px; font-weight: 600; }
+.loop-compact-body p { font-family: var(--font-read); font-size: 13px; color: var(--text-2); margin: 0; line-height: 1.55; }
+@media (max-width: 900px) {
+  .loop-group-grid { grid-template-columns: 1fr; }
+}
+
+/* ===== Живият двубой ===== */
+.duel-section { text-align: left; }
+.duel-embed { position: relative; }
+.duel-poster {
+  position: relative;
+  min-height: 420px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-2);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  text-align: center;
+  /* Истински кадър от двубоя (20 KB webp) под тъмна завеса — без него на телефон
+     секцията беше празен градиент с бутон. Фон в CSS, не <img>: не се състезава
+     за LCP с hero-а и се тегли чак когато секцията се рендерира. */
+  background:
+    linear-gradient(180deg, rgba(7,8,12,.35) 0%, rgba(7,8,12,.55) 60%, rgba(7,8,12,.85) 100%),
+    url('/assets/landing/duel-poster.webp') center / cover no-repeat,
+    linear-gradient(180deg, #0c0a10 0%, #1a1008 55%, #200a06 100%);
+}
+.duel-poster-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 100%, rgba(255,177,89,.18), transparent 55%);
+}
+.duel-play {
+  position: relative;
+  z-index: 1;
+}
+.duel-caption {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-read);
+  font-style: italic;
+  font-size: 13px;
+  color: rgba(244,228,186,.6);
+}
+.duel-loading {
+  min-height: 420px;
+  display: grid;
+  place-items: center;
+  color: var(--text-3);
+  font-size: 14px;
+}
+
+/* ===== 3D sets showcase ===== */
+.sets-showcase {
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  margin-bottom: 40px;
+  background: linear-gradient(180deg, rgba(22,26,35,.7), rgba(11,13,18,.7));
+}
+.sets-showcase-head { margin-bottom: 18px; }
+.sets-showcase-title { font-family: var(--font-display); font-size: 24px; color: var(--gold-1); margin: 0 0 6px; }
+.sets-showcase-lead { font-family: var(--font-read); font-size: 15px; color: var(--text-2); margin: 0; max-width: 60ch; }
+.sets-showcase-loading { color: var(--text-3); font-size: 14px; padding: 20px 0; }
+.sets-showcase-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.sets-showcase-tab {
+  padding: 8px 14px;
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,.02);
+  color: var(--text-2);
+  font-size: 13px;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.sets-showcase-tab:hover { border-color: var(--gold-3); color: var(--text-1); }
+.sets-showcase-tab.active {
+  border-color: var(--gold-2);
+  background: rgba(214,161,61,.12);
+  color: var(--gold-1);
+}
+.sets-showcase-panel {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding-top: 6px;
+  border-top: 1px solid var(--border-1);
+  padding-top: 18px;
+}
+.sets-showcase-panel-name { font-family: var(--font-display); font-size: 19px; color: var(--gold-1); }
+.sets-showcase-panel-tier { font-size: 12px; color: var(--text-3); text-transform: uppercase; letter-spacing: .08em; }
+
+/* Вторичен (стар) set-grid — по-тих, radius-md вместо -lg, без легендарния
+   pulse-декор навсякъде (само тук, показно, вече не е единствената 3D точка). */
+.set-grid-secondary .set-card { border-radius: var(--radius-md); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sets-showcase-tab, .loop-compact { transition: none; }
 }

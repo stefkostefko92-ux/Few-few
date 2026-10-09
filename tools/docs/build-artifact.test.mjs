@@ -13,7 +13,7 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { build, stripDocumentWrapper, mascotDataUris, assertPublishable, versionRegressions, mascot3dAsGlobal, mascot3dLoader, mascotPortraitUris } from "./build-artifact.mjs";
+import { build, stripDocumentWrapper, mascotDataUris, assertPublishable, versionRegressions, mascot3dAsGlobal, mascot3dLoader, mascotPortraitUris, findSecretsIn } from "./build-artifact.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -147,5 +147,33 @@ test("реалният билд: 3D портретите са вградени, 
   assert.ok(!html.includes("-portrait3d.webp`"), "относителен път = блокиран от CSP");
   assert.ok(html.includes("MASCOT_PORTRAITS[agent.id]"), "профилът чете вградената карта");
   const m = /const MASCOT_PORTRAITS = (\{.*?\});/.exec(html);
-  assert.ok(m && Object.keys(JSON.parse(m[1])).length === 28, "портрет за всеки от 28-те агента");
+  // Бройката идва от регистъра, не е твърдо 28 — нов агент (Асансьорчика, 2026-10-05) иначе чупеше теста.
+  const n = JSON.parse(readFileSync(join(ROOT, "agents-dashboard", "agents.json"), "utf8")).agents.length;
+  assert.ok(m && Object.keys(JSON.parse(m[1])).length === n, `портрет за всеки от ${n}-те агента`);
+});
+
+// ── 2026-10-06: артефактът е ПУБЛИЧЕН изход — тайна в него е изтичане, не дефект на разметката ──────
+// Инцидентът: вход за админ (имейл/парола) стигна от поука до FALLBACK-а в index.html и оттам до
+// артефакта на флота. assertPublishable гледаше само разметката. Сега отказва всеки шаблон от ALL
+// (CREDENTIAL + COMMIT_ONLY) — fail closed, с име на шаблона и място, БЕЗ стойността.
+const J = (...p) => p.join("");
+test("ЗЪБИ: тайна в билда (имейл+парола) спира публикуването — с шаблон и ред, без стойността", () => {
+  const pw = J("Mari", "na2025", "!");
+  const html = J('<p>ок</p>\n<script>const FALLBACK = {"text": "admin creds ', "info@", "acme-shop.it/", pw, ', а не env"};</script>');
+  assert.throws(() => assertPublishable(html), (e) => {
+    assert.match(e.message, /Имейл \+ парола/, "трябва да назове шаблона");
+    assert.match(e.message, /ред 2/, "трябва да каже къде");
+    assert.ok(!e.message.includes(pw), "стойността НЕ влиза в съобщението");
+    return true;
+  });
+});
+
+test("ЗЪБИ: и COMMIT_ONLY шаблоните (JWT) спират публикуването — артефактът е публичен като commit", () => {
+  const jwt = J("eyJ", "a".repeat(12), ".eyJ", "b".repeat(12), ".", "c".repeat(24));
+  assert.throws(() => assertPublishable(`<p>${jwt}</p>`), /JWT/);
+});
+
+test("реалният билд НЕ съдържа нито един шаблон за тайна (ALL)", () => {
+  const { html } = build();
+  assert.deepEqual(findSecretsIn(html), [], "реалният артефакт трябва да е чист");
 });

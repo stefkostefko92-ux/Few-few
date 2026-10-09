@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Filtr siyahılarının lisenziyaları"
+  },
+  "welPageTitle": {
+    "message": "Supreme AdBlock-a xoş gəlmisiniz",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Qoruma aktivdir",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock artıq daxil olduğunuz hər saytda reklamları və izləyiciləri bloklayır. Heç nəyi ayarlamağa ehtiyac yoxdur.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Artırmanı alətlər panelinə bərkidin",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Ünvan sətrinin yanındakı tapmaca parçası ikonuna klikləyin və Supreme AdBlock-u bərkidin. Sonra bir kliklə səhifədə nəyin bloklandığını görəcəksiniz.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Sayt düzgün görünmürsə",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Artırmanı açın və həmin sayt üçün bloklamanı söndürün və ya sürətli düzəlişlər üçün «Sayt pozulub?» seçin.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Brauzerdəki fəaliyyətiniz cihazınızda qalır",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Filtrləmə cihazın özündə aparılır. Artırma şəxsi məlumat toplamır və daxil olduğunuz səhifələr haqqında heç nə göndərmir.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Ayarları açın",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Aydındır",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

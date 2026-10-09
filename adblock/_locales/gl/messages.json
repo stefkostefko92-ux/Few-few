@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Bloquea anuncios (tamén en YouTube), báners, pop-ups, rastrexadores, avisos de cookies e muros anti-adblock. Gratuíto e privado."
+    "message": "Bloquea anuncios (tamén en YouTube), báners, pop-ups, rastrexadores, avisos de cookies e muros anti-adblock."
   },
   "byCarbon": {
     "message": "de Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Licenzas das listas de filtros"
+  },
+  "welPageTitle": {
+    "message": "Dámoslle a benvida a Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Protección activada",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock xa bloquea anuncios e rastrexadores en todos os sitios que visita. Non hai nada que configurar.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Fixe a extensión na barra de ferramentas",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Prema na icona en forma de peza de crebacabezas xunto á barra de enderezos e fixe Supreme AdBlock. Despois, cun clic verá o que se bloqueou na páxina.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Se un sitio non se ve ben",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Abra a extensión e desactive o bloqueo para ese sitio, ou escolla «O sitio non funciona?» para solucións rápidas.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "A súa navegación queda no seu dispositivo",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "O filtrado faise localmente. A extensión non recolle datos persoais nin envía nada sobre as páxinas que visita.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Abrir axustes",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Entendido",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

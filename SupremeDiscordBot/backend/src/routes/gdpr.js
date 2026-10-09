@@ -183,6 +183,12 @@ router.get("/export", subjectRightsLimiter, async (req, res, next) => {
           // Блокирането е факт, който обработваме ЗА субекта → чл. 15(1) иска
           // да е видим в експорта.
           isBlacklisted: user.isBlacklisted,
+          // v51 — причината, датата и срокът на блокирането и вътрешната бележка
+          // на staff са лични данни ЗА субекта → също в експорта.
+          blacklistReason: user.blacklistReason ?? null,
+          blacklistedAt: user.blacklistedAt ?? null,
+          blacklistedUntil: user.blacklistedUntil ?? null,
+          adminNote: user.adminNote ?? null,
           language: user.language,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,

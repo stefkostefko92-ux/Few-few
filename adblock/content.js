@@ -21,20 +21,6 @@
   let unhideSelectors = [];
   let genericHideHost = false; // EasyList $generichide за този хост
 
-  // Live scriptlets (Level 2): hand the signed filters.json directives to the
-  // MAIN-world engine as a JSON STRING (objects don't cross worlds). The engine
-  // re-validates, filters by this frame's host and ignores duplicates. When the
-  // extension is off / the site is allowlisted the engine isn't registered, so
-  // the event simply has no listener.
-  function deliverScriptlets(cfg) {
-    // only from a signature-checked file (an older stored config may predate the check)
-    const list = cfg && cfg.verified === true && Array.isArray(cfg.scriptlets) ? cfg.scriptlets : [];
-    if (!list.length) return;
-    try {
-      document.dispatchEvent(new CustomEvent("sa-scriptlets", { detail: JSON.stringify(list) }));
-    } catch {}
-  }
-
   const host = location.hostname.replace(/^www\./, "");
   // Multi-part публични суфикси (co.uk, com.au, ...) — иначе isThirdParty би
   // третирал всички *.co.uk като first-party.
@@ -45,7 +31,11 @@
   // Gate for the bundled generic cosmetic CSS. Set optimistically at
   // document_start (ads never flash in); removed a moment later if the
   // extension turns out to be off or the site allowlisted.
+  // Not on YouTube: an attribute of ours on <html> is a tell its scripts can read;
+  // youtube.css (ungated) covers YouTube's ad surfaces there.
+  const isYouTube = /(^|\.)youtube(-nocookie)?\.com$/.test(host);
   const gate = (on) => {
+    if (isYouTube) return;
     try {
       if (on) document.documentElement.setAttribute("data-tbab-on", "1");
       else document.documentElement.removeAttribute("data-tbab-on");
@@ -647,7 +637,6 @@
       pickerMap = data.customHidden || {};
       userText = data.userFilters || "";
       liveCosmetic = (data.liveConfig && data.liveConfig.cosmetic) || [];
-      deliverScriptlets(data.liveConfig);
       rebuildSelectors();
       if (enabled && !allowed) {
         start();
@@ -716,10 +705,7 @@
     if (changes.customHidden || changes.userFilters || changes.liveConfig) {
       if (changes.customHidden) pickerMap = changes.customHidden.newValue || {};
       if (changes.userFilters) userText = changes.userFilters.newValue || "";
-      if (changes.liveConfig) {
-        liveCosmetic = (changes.liveConfig.newValue && changes.liveConfig.newValue.cosmetic) || [];
-        deliverScriptlets(changes.liveConfig.newValue);
-      }
+      if (changes.liveConfig) liveCosmetic = (changes.liveConfig.newValue && changes.liveConfig.newValue.cosmetic) || [];
       rebuildSelectors();
       if (enabled && !allowed) hide();
     }

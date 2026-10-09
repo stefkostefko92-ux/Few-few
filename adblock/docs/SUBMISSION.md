@@ -14,7 +14,7 @@ file. Follow it top to bottom; nothing else to figure out.
 ## 1. The upload package
 
 ```bash
-bash tools/package.sh      # → dist/supreme-adblock-5.1.2.zip
+bash tools/package.sh      # → dist/supreme-adblock-5.1.6.zip
 ```
 
 Runtime files only (manifest, scripts, styles, rules, icons, locales). Docs,
@@ -22,6 +22,13 @@ tools, store art, server files are excluded, and the script verifies every
 manifest-referenced file is present.
 
 ## 2. Graphic assets (all in `store/`)
+
+> **Text in images (rejected once — „Red Nickel“, 5.1.3, for „100% free“ on a screenshot).**
+> Screenshots, promo tiles and the listing video must not carry promotional keywords
+> („free“, „100%“, „#1“, „new“, „best“, „recommended“, „unique“, „premium“…) nor claims about
+> other products. Describe what the extension does. `tests/store.test.mjs` gates the slide
+> text and the store cut of the video; the CWS video is `supreme-adblock-promo-<v>-store-web.mp4`
+> (no comparison scene, no „free“).
 
 | Asset | Size | File | Required |
 |-------|------|------|----------|
@@ -39,7 +46,7 @@ via headless Chromium; see that script's header).
 
 - **Name:** `Supreme AdBlock`
 - **Summary (132 max):**
-  `Block ads everywhere, YouTube video ads, banners, pop-ups, trackers and cookie prompts. Free, fast and private.`
+  `Blocks ads everywhere: YouTube video ads, banners, pop-ups, trackers, cookie prompts and anti-adblock walls.` (= `extDescription` in `_locales/en`; the store takes it from the package)
 - **Category:** Productivity
 - **Language:** English
 - **Detailed description:** use the block in `docs/STORE_LISTING.md`.
@@ -61,7 +68,7 @@ via headless Chromium; see that script's header).
   - I do not use or transfer user data to determine creditworthiness / lending
 
 > Note on network requests: the extension fetches a public `filters.json`
-> (block rules, CSS selectors and allowlisted scriptlet directives) about twice
+> (ad/tracker domain names and CSS selectors) about twice
 > a day. It sends **no user data** and executes **no remote code** — this is
 > filter data, the same model established ad blockers use. The other requests
 > are user-initiated: a filter-list URL the user pastes into *Import filter list*,
@@ -90,11 +97,12 @@ via headless Chromium; see that script's header).
   anti-adblock detectors (uBlock-style `##+js` scriptlets): `scriptlets/main.js`
   everywhere, and on the sites the uBlock Origin filters target, a data chunk
   (`scriptlets/ubo/cNN.js`: host → routine name + arguments) placed before it. All
-  directive maps are baked at build time; optional per-site directive DATA may also
-  arrive via our Ed25519-signed filters.json and is re-validated against the same
-  allowlist. `insertCSS` applies the element-hiding style sheets of the filter lists
+  directive maps are baked at build time and ship in the package; nothing from the
+  network can add or change a scriptlet directive. `insertCSS` applies the element-hiding style sheets of the filter lists
   the user turned on (bundled files). No code is fetched or `eval`-ed at runtime, no
   personal data is read, nothing is sent.
+  On YouTube only, it also registers the bundled `youtube_main.js` (MAIN world,
+  `document_start`) — see the YouTube reviewer note below.
 - **host permissions `<all_urls>`** — a universal ad blocker must filter and
   cosmetically clean ads on every site the user visits; all processing is local.
 
@@ -113,14 +121,37 @@ via headless Chromium; see that script's header).
 > — and (b) a static table mapping hostnames to routine names plus arguments.
 > Arguments are restricted by grammar (property names, CSS selectors, text
 > needles; `set-constant` values come from a closed dictionary).
-> Our `filters.json` update is a **configuration file, not code**: it may add
-> rows to that table — hostname, routine name, arguments. It cannot add, name or
-> define a routine; anything not on the 19-name allowlist is discarded, twice
-> (service worker and again inside `main.js`). The file is Ed25519-signed and
-> version-monotonic, and the user can switch the update off in Settings.
+> Both the routines and the host table are **fixed in the package** (since 5.1.4):
+> nothing downloaded can add, change or trigger a scriptlet directive, and
+> `main.js` listens to no page or extension message. The routines run only the
+> rows baked at build time; `node tools/build_scriptlets.mjs` reproduces `main.js`
+> and `ubo/*` byte for byte from `scriptlets/list.txt` and the bundled uBlock
+> Origin filters.
 > There is no `eval`, no `Function()`, no `<script src>`, and no code path that
 > executes a string received over the network.
 > `content_security_policy.extension_pages` is `script-src 'self'`.
+>
+> **Reviewer note (YouTube, `youtube_main.js`).** On `youtube.com` pages only, the
+> service worker registers the bundled `youtube_main.js` as a MAIN-world
+> `document_start` content script (id `sa-youtube`; plain, commented code). It
+> removes YouTube's ad entries from the player and feed responses the page
+> requests — the strings `"adPlacements"`, `"adSlots"` and `"playerAds"` are
+> renamed in the response text before YouTube's own code parses it, so the
+> player has no ads to show. To do that it wraps `fetch`, `XMLHttpRequest`
+> (`open`/`send` and the response getters), `setTimeout` and the DOM insertion
+> methods (so a new iframe's `fetch` is covered too) in a `Proxy` of the original
+> function, and keeps `Function.prototype.toString` returning the native text,
+> because YouTube refuses playback when it detects a modified function. It reads no personal data,
+> sends nothing, makes no network request of its own and never blocks the video
+> servers. It is skipped for the whole site while the user pauses protection,
+> allowlists YouTube, or during the automatic 6-hour fallback after YouTube refuses
+> playback. The only network-supplied input are optional extra field names (plain
+> strings, validated, from the signed `filters.json`).
+>
+> **Welcome page.** On first install only (not on updates) the extension opens
+> its own local page `welcome/welcome.html`: how to pin it, what to do if a site
+> breaks, and that nothing leaves the device. It asks for nothing and sends
+> nothing.
 >
 > **Remote rules (dynamic DNR).** The bundled rulesets in `rules/` are static
 > and fully reviewable. In addition, the service worker may add **dynamic block
@@ -142,9 +173,13 @@ via headless Chromium; see that script's header).
 The listing is **already live** (`chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk`),
 so this is an **update of the existing item**, not a new one:
 
-1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-5.1.2.zip`.
-2. Refresh the listing (§3: description + the new feature bullets), replace the
-   5 screenshots + promo tiles (§2).
+1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-5.1.6.zip`.
+2. Refresh the listing (§3: description + the new feature bullets) **in every
+   language that has its own description** — a package update does NOT replace the
+   live text, and an old localised description still saying "100% free" fails the
+   review again. **Delete every old screenshot and tile, in every language**, then
+   upload the 5 screenshots + promo tiles (§2) and the 5.1.4 store-cut video. The
+   summary needs no edit: it is `extDescription` from the package.
 3. Re-check the **Privacy practices** tab (§4) and paste the permission
    justifications (§5) — `tabs` was removed in 5.0.0, so delete its entry.
 4. **Publisher identity:** the product, manifest and privacy policy say
@@ -155,7 +190,7 @@ so this is an **update of the existing item**, not a new one:
 
 ## 7. Pre-flight checklist
 
-- [ ] `manifest.json` and `package.json` versions match (5.1.2)
+- [ ] `manifest.json` and `package.json` versions match (5.1.6)
 - [ ] `npm test` (tests/) and `node tools/build_scriptlets.mjs --check` are green
 - [ ] Zip loads via `chrome://extensions → Load unpacked` with **no** console errors
 - [ ] Popup, settings, allowlist, picker, theme, pause, sync all work

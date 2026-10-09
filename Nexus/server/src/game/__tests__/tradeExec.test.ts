@@ -4,7 +4,7 @@ process.env.DB_PATH = ':memory:';
 import test from 'node:test';
 import assert from 'node:assert';
 import { getDb } from '../../db';
-import { executeTrade, type TradeRow } from '../../lib/tradeExec';
+import { executeTrade, tradeGoldFee, type TradeRow } from '../../lib/tradeExec';
 
 // Един базов item (inventory.item_id → items.id FK).
 getDb().prepare('INSERT INTO items (id, slug, name, category) VALUES (1, ?, ?, ?)').run('test_sword', 'Test Sword', 'weapon');
@@ -58,9 +58,9 @@ test('размяна: точен суап без дупликация + вярн
   assert.equal(inv(A) + inv(B), totalItemsBefore, 'общ брой предмети непроменен → без дупликация');
   assert.equal(owner(itemA), B, 'itemA отиде при B');
   assert.equal(owner(itemB), A, 'itemB отиде при A');
-  // Злато: A -100, B +100.
+  // Злато: A -100, B +95 (5% такса като пазара — изгаря).
   assert.equal(gold(A), 900);
-  assert.equal(gold(B), 600);
+  assert.equal(gold(B), 595);
   const st = getDb().prepare('SELECT status FROM trade_offers WHERE id = 1').get() as { status: string };
   assert.equal(st.status, 'completed');
 });
@@ -103,5 +103,27 @@ test('размяна: двойно изпълнение не дублира (ant
 
   assert.equal(owner(itemA), B, 'предметът е при B, само веднъж');
   assert.equal(gold(A), 800, 'A e платил само веднъж (‑200)');
-  assert.equal(gold(B), 1200, 'B e получил само веднъж (+200)');
+  assert.equal(gold(B), 1190, 'B e получил само веднъж (+200 − 5% такса)');
+});
+
+test('размяна: предаденото злато се облага като пазара (5%), дарителят плаща пълната сума', () => {
+  assert.equal(tradeGoldFee(0, 5), 0);
+  assert.equal(tradeGoldFee(1, 5), 1, 'закръгля нагоре — 1 злато не минава безплатно');
+  assert.equal(tradeGoldFee(1_000_000, 5), 50_000);
+  const A = makeChar(1_000_000);
+  const B = makeChar(0);
+  const offer = makeOffer({ id: 50, from_id: A, to_id: B, from_items: [], to_items: [], from_gold: 1_000_000, to_gold: 0 });
+  executeTrade(getDb(), offer);
+  assert.equal(gold(A), 0);
+  assert.equal(gold(B), 950_000, 'бустингът губи 5% — няма безплатен канал');
+  // Двупосочно: всяка страна плаща таксата върху своето злато; сумата изгаря.
+  const C = makeChar(1000);
+  const D = makeChar(1000);
+  executeTrade(getDb(), makeOffer({ id: 51, from_id: C, to_id: D, from_items: [], to_items: [], from_gold: 400, to_gold: 400 }));
+  assert.equal(gold(C) + gold(D), 2000 - 40, 'пинг-понг размяна не е безплатна');
+  // Таксата следва админ настройката (market_fee_pct) — явен параметър тук.
+  const E = makeChar(100);
+  const F = makeChar(0);
+  executeTrade(getDb(), makeOffer({ id: 52, from_id: E, to_id: F, from_items: [], to_items: [], from_gold: 100, to_gold: 0 }), 0);
+  assert.equal(gold(F), 100);
 });

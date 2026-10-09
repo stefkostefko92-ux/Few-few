@@ -109,8 +109,9 @@ export default function CharacterCreate(): React.ReactElement {
           </div>
           <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div className="field">
-              <label>{t('charCreate.heroName')}</label>
+              <label htmlFor="charcreate-name">{t('charCreate.heroName')}</label>
               <input
+                id="charcreate-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={t('charCreate.namePlaceholder')}
@@ -120,7 +121,7 @@ export default function CharacterCreate(): React.ReactElement {
                 required
               />
               <div className="muted text-sm">{t('charCreate.nameHint')}</div>
-              {err && <div className="error">{err}</div>}
+              {err && <div className="error" role="alert">{err}</div>}
             </div>
             <button className="btn btn-primary" type="submit" disabled={busy}>
               {busy ? t('auth.creatingButton') : t('charCreate.beginTale')}

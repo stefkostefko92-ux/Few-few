@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Ivimba izikhangiso zevidiyo ze-YouTube, amabhena, ama-pop-up, abalandeleli nezindonga ze-anti-adblock yonke indawo. Mahhala."
+    "message": "Ivimba izikhangiso zevidiyo ze-YouTube, amabhena, ama-pop-up, abalandeleli nezindonga ze-anti-adblock yonke indawo."
   },
   "byCarbon": {
     "message": "ngu-Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Amalayisense wezinhlu zezihlungi"
+  },
+  "welPageTitle": {
+    "message": "Wamukelekile ku-Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Uvikelekile",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "I-Supreme AdBlock manje ivimba izikhangiso nabalandeleli kuwo wonke amasayithi owavakashelayo. Akukho okudingeka ukusethe.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Phina isandiso kubha yamathuluzi",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Chofoza isithonjana sengcezu yephazili eduze kwebha yekheli bese uphina i-Supreme AdBlock. Ngemva kwalokho, ukuchofoza okukodwa kukhombisa okuvinjiwe ekhasini.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Uma isayithi libukeka lonakele",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Vula isandiso bese uvala ukuvimba kwaleyo sayithi, noma ukhethe “Isayithi yonakele?” ukuze uthole ukulungisa okusheshayo.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Ukuphequlula kwakho kuhlala kudivayisi yakho",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Ukuhlunga kwenzeka kudivayisi yakho. Isandiso asiqoqi datha yomuntu siqu futhi asithumeli lutho mayelana namakhasi owavakashelayo.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Vula izilungiselelo",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Ngiyezwa",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

@@ -1,4 +1,5 @@
 import type Database from 'better-sqlite3';
+import { getSetting } from '../game/settings';
 
 /**
  * Атомарно изпълнение на escrow размяна. Изнесено от routes/trade.ts, за да е
@@ -11,6 +12,12 @@ import type Database from 'better-sqlite3';
  *  • Всеки item се мести с пълния ITEM_GUARD (не е equipped/soul-bound/listed/
  *    vaulted) — CAS с `changes === 1`, иначе rollback.
  *  • Златото е CAS с проверка за наличност — не може да падне под 0.
+ *  • Предаденото злато се облага със СЪЩАТА такса като пазара
+ *    (market_fee_pct, по подразбиране 5%): дарителят плаща пълната сума,
+ *    получателят взима сумата минус таксата (таксата изгаря — мивка).
+ *    Преди P2P златото беше без такса → безплатен канал за бустинг/RMT
+ *    („продай" предмет за 1g на пазара е с такса, но „дай" 1M злато в
+ *    размяна — не) и начин да се заобиколи таксата на пазара.
  */
 export const ITEM_GUARD = 'equipped = 0 AND soul_bound = 0 AND listed = 0 AND vaulted_guild_id = 0';
 
@@ -29,7 +36,13 @@ export interface TradeRow {
  * оставя размяната pending и нулира ready). НЕ праща нотификации — това е
  * отговорност на маршрута.
  */
-export function executeTrade(db: Database.Database, fresh: TradeRow): void {
+/** Таксата върху предадено злато (цяло злато, закръглено нагоре — като пазара). */
+export function tradeGoldFee(amount: number, feePct: number): number {
+  if (amount <= 0 || feePct <= 0) return 0;
+  return Math.ceil(amount * feePct / 100);
+}
+
+export function executeTrade(db: Database.Database, fresh: TradeRow, feePct: number = getSetting<number>('market_fee_pct')): void {
   const fromItems: number[] = JSON.parse(fresh.from_items);
   const toItems: number[] = JSON.parse(fresh.to_items);
   const exec = db.transaction(() => {
@@ -52,7 +65,7 @@ export function executeTrade(db: Database.Database, fresh: TradeRow): void {
       if (amount <= 0) return;
       const d = db.prepare('UPDATE characters SET gold = gold - ? WHERE id = ? AND gold >= ?').run(amount, giver, amount);
       if (d.changes !== 1) throw new Error('Not enough gold.');
-      db.prepare('UPDATE characters SET gold = gold + ? WHERE id = ?').run(amount, receiver);
+      db.prepare('UPDATE characters SET gold = gold + ? WHERE id = ?').run(amount - tradeGoldFee(amount, feePct), receiver);
     };
     pay(fresh.from_id, fresh.to_id, fresh.from_gold);
     pay(fresh.to_id, fresh.from_id, fresh.to_gold);

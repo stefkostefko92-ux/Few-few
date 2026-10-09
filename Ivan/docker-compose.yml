@@ -1,3 +1,5 @@
+# Тайните идват само от .env на сървъра (mode 600, прави го deploy.sh) — стойности по подразбиране няма:
+# без тях compose спира с грешка, вместо да тръгне с ключ, който е известен на всеки.
 services:
   postgres:
     image: postgres:16-alpine
@@ -5,7 +7,7 @@ services:
     environment:
       POSTGRES_DB: sklad
       POSTGRES_USER: sklad_user
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-SkladSecure2026!}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD липсва в .env — пусни deploy.sh}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -21,9 +23,16 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://sklad_user:${DB_PASSWORD:-SkladSecure2026!}@postgres:5432/sklad
-      JWT_SECRET: ${JWT_SECRET:-SkladJWT2026SuperSecret!}
+      NODE_ENV: production
+      DATABASE_URL: postgresql://sklad_user:${DB_PASSWORD:?DB_PASSWORD липсва в .env — пусни deploy.sh}@postgres:5432/sklad
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET липсва в .env — пусни deploy.sh}
+      # nginx на хоста + nginx в контейнера: адресът на клиента е два скока назад
+      TRUST_PROXY: 2
       PORT: 4000
+      # само за празна база: първият Супер Админ (виж src/seed.js)
+      SKLAD_OWNER_EMAIL: ${SKLAD_OWNER_EMAIL:-}
+      SKLAD_OWNER_NAME: ${SKLAD_OWNER_NAME:-}
+      SKLAD_OWNER_PIN: ${SKLAD_OWNER_PIN:-}
     ports:
       - "127.0.0.1:4100:4000"
 

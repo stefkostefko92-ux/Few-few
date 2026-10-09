@@ -7,7 +7,8 @@
 //
 //   PW_ROOT=$(npm root -g) node tools/landing_assets.mjs
 import { createRequire } from "node:module";
-import { readFileSync, writeFileSync, mkdtempSync, copyFileSync, rmSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdtempSync, copyFileSync, cpSync, rmSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -50,6 +51,7 @@ for (const [w, name] of [[380, "shield-380.webp"], [96, "shield-96.webp"]]) {
 const tmp = mkdtempSync(join(tmpdir(), "sa-landing-"));
 try {
   copyFileSync(join(ROOT, "popup", "popup.css"), join(tmp, "popup.css"));
+  cpSync(join(ROOT, "popup", "img"), join(tmp, "img"), { recursive: true }); // кадрите на 3D щита (popup.css → url(img/…))
   const demo = {
     blocked: "1,204", data: "68 MB", time: "14 min", host: "news.example.com",
     log: [["EasyPrivacy", 14], ["EasyList", 9], ["Supreme core rules", 4], ["Tracking parameters", 2]],
@@ -81,6 +83,16 @@ try {
   writeFileSync(join(ROOT, "server", "popup-shot.webp"), buf);
   const dims = await p2.evaluate(() => [document.body.offsetWidth, document.body.offsetHeight]);
   console.log("popup-shot.webp", buf.length, "bytes, css size", dims.join("x"));
+  // index.html: нова картинка = нов адрес (?v=<хеш>), иначе 7-дневният кеш показва старата;
+  // размерите на popup-а — истинските (иначе скок при зареждане).
+  const idxPath = join(ROOT, "server", "index.html");
+  let idx = readFileSync(idxPath, "utf8");
+  for (const f of ["popup-shot.webp", "shield-380.webp", "shield-96.webp"]) {
+    const v = createHash("sha256").update(readFileSync(join(ROOT, "server", f))).digest("hex").slice(0, 10);
+    idx = idx.replace(new RegExp(`(/${f.replace(".", "\\.")})(\\?v=[0-9a-f]+)?"`, "g"), `$1?v=${v}"`);
+  }
+  idx = idx.replace(/(src="\/popup-shot\.webp\?v=[0-9a-f]+" width=")\d+(" height=")\d+"/, `$1${dims[0]}$2${dims[1]}"`);
+  writeFileSync(idxPath, idx);
 } finally {
   rmSync(tmp, { recursive: true, force: true });
   await browser.close();

@@ -1,48 +1,60 @@
 import { ImageResponse } from "next/og";
+import { borderTile, outlinePath, rosette, stitchPaths, type Motif } from "@/lib/stitch";
+import { getOne } from "@/lib/content";
+import { isLocale, type Locale } from "@/lib/i18n";
 
-// Branded 1200×630 social card (Open Graph / Twitter). Generated at request time
-// so we never ship a binary asset and it always matches the brand colours.
+// Branded 1200×630 social card (Open Graph / Twitter), in the site's own
+// language: linen, the Divotino border and rosette, drawn by the same stitch
+// charts as the page. Generated at request time — no binary
+// asset to keep in sync.
 export const runtime = "nodejs";
 export const alt = "Qui Bulgaria — Scuola bulgara di Milano";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-export default async function OgImage() {
+function Stitches({ motif, cell, pad = 0 }: { motif: Motif; cell: number; pad?: number }) {
+  const paths = stitchPaths(motif.cells, cell, cell * 0.12); // as dense as on the page
+  const w = cell * 0.34;
+  const W = motif.w * cell + 2 * pad, H = motif.h * cell + 2 * pad;
+  return (
+    <svg width={W} height={H} viewBox={`${-pad} ${-pad} ${W} ${H}`}>
+      {Object.entries(paths).map(([c, d]) => (
+        <path key={c} d={d} stroke={c} strokeWidth={w} strokeLinecap="round" fill="none" />
+      ))}
+      {motif.outline && <path d={outlinePath(motif.cells, cell)} stroke={motif.outline} strokeWidth={w * 0.55} strokeLinecap="round" fill="none" />}
+    </svg>
+  );
+}
+
+export default async function OgImage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale: raw } = await params;
+  const locale = (isLocale(raw) ? raw : "it") as Locale;
+  // The words on the card are the admin's (settings → name; SEO → the card's
+  // title and line), in the page's language.
+  const [settings, seo] = await Promise.all([getOne(locale, "settings"), getOne(locale, "seo")]);
+  const tile = borderTile();
+  const cell = 6;
+  const tiles = Math.ceil(1200 / (tile.w * cell));
+  const Band = () => (
+    <div style={{ display: "flex", width: "100%" }}>
+      {Array.from({ length: tiles }, (_, i) => <Stitches key={i} motif={tile} cell={cell} />)}
+    </div>
+  );
   return new ImageResponse(
     (
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          background: "linear-gradient(135deg, #0f7a3d 0%, #0c5e30 100%)",
-          color: "#fbf8f1",
-          padding: "72px",
-          fontFamily: "sans-serif",
-        }}
-      >
-        {/* Bulgarian tricolour */}
-        <div style={{ display: "flex", width: "220px", height: "16px", borderRadius: "8px", overflow: "hidden" }}>
-          <div style={{ flex: 1, background: "#ffffff" }} />
-          <div style={{ flex: 1, background: "#00966e" }} />
-          <div style={{ flex: 1, background: "#d62612" }} />
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          <div style={{ fontSize: "40px", fontWeight: 600, opacity: 0.85 }}>Qui Bulgaria</div>
-          <div style={{ fontSize: "82px", fontWeight: 800, lineHeight: 1.05, letterSpacing: "-0.02em" }}>
-            Scuola bulgara di Milano
+      <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", background: "#fdfcf9", color: "#1c1917", fontFamily: "sans-serif" }}>
+        <Band />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 80px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "14px", maxWidth: "760px" }}>
+            <div style={{ fontSize: "34px", fontWeight: 700, color: "#a3141a" }}>{settings.brandName}</div>
+            <div style={{ fontSize: "84px", fontWeight: 800, lineHeight: 1, letterSpacing: "-0.02em" }}>{seo.cardTitle || settings.brandSub}</div>
+            {seo.cardText.trim() && <div style={{ fontSize: "32px", color: "#45403b" }}>{seo.cardText}</div>}
           </div>
-          <div style={{ fontSize: "34px", opacity: 0.85 }}>
-            Lingua e cultura bulgara · Milano, Lombardia
-          </div>
+          <Stitches motif={rosette()} cell={11} pad={6} />
         </div>
-
-        <div style={{ fontSize: "26px", opacity: 0.75 }}>www.scuolabulgaramilano.it</div>
+        <Band />
       </div>
     ),
-    { ...size }
+    { ...size },
   );
 }

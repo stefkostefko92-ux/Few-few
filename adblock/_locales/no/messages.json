@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Blokker annonser overalt: YouTube-videoannonser, bannere, popup-vinduer, sporere, cookie-varsler og anti-adblock-vegger. Gratis."
+    "message": "Blokker annonser overalt: YouTube-videoannonser, bannere, popup-vinduer, sporere, cookie-varsler og anti-adblock-vegger."
   },
   "byCarbon": {
     "message": "av Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Lisenser for filterlistene"
+  },
+  "welPageTitle": {
+    "message": "Velkommen til Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Du er beskyttet",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock blokkerer nå annonser og sporere på alle nettsteder du besøker. Det er ingenting å sette opp.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Fest utvidelsen til verktøylinjen",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Klikk på puslespillikonet ved siden av adressefeltet, og fest Supreme AdBlock. Da viser ett klikk hva som ble blokkert på siden.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Hvis et nettsted ser ødelagt ut",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Åpne utvidelsen og slå av blokkering for det nettstedet, eller velg «Virker ikke nettstedet?» for raske løsninger.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Surfingen din blir på enheten din",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Filtreringen skjer lokalt. Utvidelsen samler ikke inn personopplysninger og sender ingenting om sidene du besøker.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Åpne innstillinger",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Skjønner",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

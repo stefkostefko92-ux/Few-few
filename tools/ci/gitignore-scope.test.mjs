@@ -12,8 +12,9 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, existsSync, readdirSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { spawnSync } from "node:child_process";
+import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -26,19 +27,29 @@ const productDirs = () => readdirSync(ROOT, { withFileTypes: true })
   .filter((n) => existsSync(join(ROOT, n, "package.json")) || existsSync(join(ROOT, n, "CLAUDE.md")));
 
 /** Истината за „игнориран ли е" идва от самия git, не от препрочитане на шаблоните. */
-const isIgnored = (rel) =>
-  spawnSync("git", ["check-ignore", "-q", rel], { cwd: ROOT }).status === 0;
+const isIgnored = (rel, root = ROOT) =>
+  spawnSync("git", ["check-ignore", "-q", rel], { cwd: root }).status === 0;
 
-// ПОВЕДЕНЧЕСКИ, не шаблонен. Първата версия гейтваше самия ШАБЛОН (неанкериран `data/`) и това ме
-// накара да „поправя" превантивно три несвързани продукта — при което scope-check с право падна:
-// монорепо закон №1 е един продукт на промяна. Правило, което за да е зелено иска да пипнеш чужди
-// продукти, е сгрешено правило. Затова тук се съди ЕФЕКТЪТ: игнориран ли е файл, който кодът внася.
-// Неанкериран `data/` в продукт без вложена `data/` папка е безобиден и не бива да гейтва нищо.
-test("нито един продукт не ИГНОРИРА файл, който собственият му код внася", () => {
-  const SRC = /\.(mjs|js|ts|tsx|jsx)$/;
-  const SKIP_DIR = new Set(["node_modules", ".next", "dist", "build", ".git", "coverage"]);
-  const offenders = [];
-  for (const p of productDirs()) {
+/** Кои от пътищата git игнорира — една заявка за целия списък (процес на файл е бавно). Проследен
+ *  файл не е игнориран, каквито и шаблони да съвпадат (така работи `git check-ignore` без --no-index). */
+function ignoredOf(rels, root = ROOT) {
+  if (!rels.length) return new Set();
+  const r = spawnSync("git", ["check-ignore", "--stdin"], { cwd: root, input: rels.join("\n") + "\n", encoding: "utf8" });
+  return new Set((r.stdout ?? "").split("\n").filter(Boolean));
+}
+
+const SRC = /\.(mjs|js|ts|tsx|jsx)$/;
+const SKIP_DIR = new Set(["node_modules", ".next", "dist", "build", ".git", "coverage"]);
+
+/**
+ * Сорс, който внася файл, скрит от .gitignore. Внасящият, който git САМ игнорира, не се съди: това е
+ * изход на билд (бъндъл, който внася собствените си парчета — korpora/public/editor/), прави се
+ * заедно с тях и никой не го очаква в git. Без това тестът падаше на всяка машина, събрала редактора,
+ * а в чист клон (CI) минаваше — гейт, който отговаря различно на двете места.
+ */
+function offenders(root, products) {
+  const found = [];
+  for (const p of products) {
     const files = [];
     (function walk(d) {
       let ents; try { ents = readdirSync(d, { withFileTypes: true }); } catch { return; }
@@ -46,20 +57,53 @@ test("нито един продукт не ИГНОРИРА файл, койт�
         if (e.isDirectory()) { if (!SKIP_DIR.has(e.name)) walk(join(d, e.name)); }
         else if (SRC.test(e.name)) files.push(join(d, e.name));
       }
-    })(join(ROOT, p));
-    for (const f of files.slice(0, 400)) {            // таван: държим теста бърз
+    })(join(root, p));
+    const rel = (f) => f.replace(root + "/", "");
+    const generated = ignoredOf(files.map(rel), root);
+    const sources = files.filter((f) => !generated.has(rel(f)));
+    for (const f of sources.slice(0, 400)) {          // таван: държим теста бърз
       let src; try { src = readFileSync(f, "utf8"); } catch { continue; }
       for (const m of src.matchAll(/(?:from|import)\s*\(?\s*['"](\.[^'"]+)['"]/g)) {
-        const target = join(dirname(f), m[1]).replace(ROOT + "/", "");
+        const target = rel(join(dirname(f), m[1]));
         // Съди ПАПКАТА на целта: липсващ файл е друг проблем (може да е .ts→.js), скрит е този.
         const dir = dirname(target);
-        if (isIgnored(dir) || isIgnored(target))
-          offenders.push(`${f.replace(ROOT + "/", "")} внася „${m[1]}" → „${target}", но git го ИГНОРИРА`);
+        if (isIgnored(dir, root) || isIgnored(target, root))
+          found.push(`${rel(f)} внася „${m[1]}" → „${target}", но git го ИГНОРИРА`);
       }
     }
   }
-  assert.deepEqual([...new Set(offenders)], [],
-    "код внася файл, който .gitignore крие (невидим за CI, за деплой архива и за ревюто):\n  " + offenders.join("\n  "));
+  return [...new Set(found)];
+}
+
+// ПОВЕДЕНЧЕСКИ, не шаблонен. Първата версия гейтваше самия ШАБЛОН (неанкериран `data/`) и това ме
+// накара да „поправя" превантивно три несвързани продукта — при което scope-check с право падна:
+// монорепо закон №1 е един продукт на промяна. Правило, което за да е зелено иска да пипнеш чужди
+// продукти, е сгрешено правило. Затова тук се съди ЕФЕКТЪТ: игнориран ли е файл, който кодът внася.
+// Неанкериран `data/` в продукт без вложена `data/` папка е безобиден и не бива да гейтва нищо.
+test("нито един продукт не ИГНОРИРА файл, който собственият му код внася", () => {
+  const found = offenders(ROOT, productDirs());
+  assert.deepEqual(found, [],
+    "код внася файл, който .gitignore крие (невидим за CI, за деплой архива и за ревюто):\n  " + found.join("\n  "));
+});
+
+// ЗЪБИТЕ на пропускането: в отделно git репо — сорс, който внася скрит файл, пак пада; изход на билд,
+// който внася своето парче, не пада. Без зависимост от наредбата на който и да е продукт.
+test("изход на билд, който внася своите парчета, не е нарушение — сорс, който внася скрит файл, е", () => {
+  const dir = mkdtempSync(join(tmpdir(), "gitignore-scope-"));
+  try {
+    assert.equal(spawnSync("git", ["init", "-q"], { cwd: dir }).status, 0, "git init");
+    mkdirSync(join(dir, "app", "src"), { recursive: true });
+    mkdirSync(join(dir, "app", "out", "chunks"), { recursive: true });
+    writeFileSync(join(dir, "app", ".gitignore"), "/out/\n");
+    writeFileSync(join(dir, "app", "src", "main.js"), 'import "../out/chunks/a.js";\n');
+    writeFileSync(join(dir, "app", "out", "entry.js"), 'import "./chunks/a.js";\n');
+    writeFileSync(join(dir, "app", "out", "chunks", "a.js"), "export {};\n");
+    assert.deepEqual(offenders(dir, ["app"]), [
+      'app/src/main.js внася „../out/chunks/a.js" → „app/out/chunks/a.js", но git го ИГНОРИРА',
+    ]);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test("panev: замисълът е запазен — базата се игнорира, site/data НЕ се игнорира", () => {
@@ -74,24 +118,21 @@ test("panev вече има собствен path-филтриран workflow (�
   const s = readFileSync(wf, "utf8");
   assert.match(s, /'panev\/\*\*'/, "тригерът трябва да е филтриран по panev/**");
   assert.match(s, /node --check/, "гейтът проверява поне синтаксиса на сорса");
-  // build:site СЪЗНАТЕЛНО липсва, докато site/data не е в репото — не слагаме червен гейт на main.
-  // Коментарите се махат преди проверката: самият workflow ОБЯСНЯВА защо го няма и наивният
-  // регекс щеше да съвпадне с обяснението (детектор, който чете проза вместо код).
-  // Махаме и коментарите, И ехо-редовете: workflow-ът вече ИЗБРОЯВА липсващите модули и в текста
-  // на предупреждението СПОМЕНАВА `npm run build:site` („щом ги има, добави тази стъпка"). Първата
-  // версия на този тест търсеше литерала навсякъде и падна точно на това — детектор, който брои
-  // СПОМЕНАВАНЕ вместо ИЗПЪЛНЕНИЕ. Същият клас, който хванах вече три пъти в този репо.
+  // Докато site/data липсваше (стар неанкериран `data/` в .gitignore), build:site нямаше място в гейта.
+  // От #255 site/data е в репото и билдът Е гейтът: генераторът минава и страниците съвпадат с
+  // репото. Тестът проверява ИЗПЪЛНЕНИЕ, не споменаване — коментарите и echo редовете се махат
+  // (детектор, който брои споменаване вместо изпълнение, вече е хващан три пъти в това репо).
+  assert.ok(existsSync(join(ROOT, "panev", "site", "data", "products.mjs")), "site/data/products.mjs трябва да е в репото");
   const code = s.split("\n")
-    .filter((l) => !/^\s*#/.test(l))          // YAML коментар
-    .filter((l) => !/^\s*echo\s/.test(l))     // ехо в лога, не изпълнена команда
+    .filter((l) => !/^\s*#/.test(l)) // YAML коментар
+    .filter((l) => !/^\s*echo\s/.test(l)) // ехо в лога, не изпълнена команда
     .join("\n");
-  assert.ok(!/npm run build:site/.test(code), "build:site не бива да е в гейта, докато site/data липсва");
+  assert.match(code, /^\s*npm run build:site\s*$/m, "build:site трябва да е изпълнена стъпка на гейта");
+  assert.match(code, /git status --porcelain/, "разминаване на генерираните страници с репото трябва да пада");
+  assert.match(code, /exit 1/, "при разминаване стъпката излиза с грешка");
 
-  // ЗЪБИТЕ: реална `run:` стъпка с build:site пак трябва да пада.
-  const withReal = code + "\n      - name: Билд\n        run: npm run build:site\n";
-  assert.ok(/npm run build:site/.test(withReal), "предпоставка — иначе горната проверка е празна");
-
-  // И обратното: блокерът трябва да е ВИДИМ в лога, не само в YAML коментар.
-  assert.match(s, /site\/data\/products\.mjs/, "стъпката трябва да изброява конкретните липсващи модули");
-  assert.match(s, /::warning/, "липсата се вижда като GitHub warning на всеки рън");
+  // ЗЪБИТЕ: build:site, останал само в коментар, не се брои за стъпка.
+  const onlyComment = code.replace(/^\s*npm run build:site\s*$/m, "          # npm run build:site");
+  const stripped = onlyComment.split("\n").filter((l) => !/^\s*#/.test(l)).join("\n");
+  assert.doesNotMatch(stripped, /^\s*npm run build:site\s*$/m, "предпоставка — иначе горната проверка е празна");
 });

@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Blokuoja reklamas visur: YouTube vaizdo reklamas, reklamjuostes, iššokančius langus, sekimą ir anti-adblock sienas. Nemokamai."
+    "message": "Blokuoja reklamas visur: YouTube vaizdo reklamas, reklamjuostes, iššokančius langus, sekimą ir anti-adblock sienas."
   },
   "byCarbon": {
     "message": "sukūrė Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Filtrų sąrašų licencijos"
+  },
+  "welPageTitle": {
+    "message": "Sveiki atvykę į Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Apsauga įjungta",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock dabar blokuoja reklamas ir sekimo elementus kiekvienoje svetainėje, kurioje lankotės. Nieko nereikia nustatyti.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Prisekite plėtinį prie įrankių juostos",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Spustelėkite dėlionės detalės piktogramą šalia adreso juostos ir prisekite Supreme AdBlock. Tada vienu spustelėjimu pamatysite, kas puslapyje buvo užblokuota.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Jei svetainė atrodo sugadinta",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Atidarykite plėtinį ir išjunkite blokavimą toje svetainėje arba pasirinkite „Svetainė neveikia?“, kad ją greitai pataisytumėte.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Naršymas lieka jūsų įrenginyje",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Filtruojama vietoje. Plėtinys nerenka asmens duomenų ir nesiunčia nieko apie lankomus puslapius.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Atidaryti nustatymus",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Supratau",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

@@ -137,8 +137,9 @@ export default function Profile(): React.ReactElement {
             <h3>{t('profile.renameTitle')}</h3>
             <p className="muted">{t('profile.renameDesc', { cost: profile.rename_cost })}</p>
             <div className="field" style={{ marginTop: 12 }}>
-              <label>{t('profile.newName')}</label>
+              <label htmlFor="profile-new-name">{t('profile.newName')}</label>
               <input
+                id="profile-new-name"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 placeholder={t('profile.newNamePlaceholder')}

@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "YouTube व्हिडिओ जाहिराती, बॅनर, पॉप-अप, ट्रॅकर, कुकी संदेश आणि अँटी-ॲडब्लॉक भिंती सर्वत्र ब्लॉक करा. विनामूल्य, जलद आणि खाजगी."
+    "message": "YouTube व्हिडिओ जाहिराती, बॅनर, पॉप-अप, ट्रॅकर, कुकी संदेश आणि अँटी-ॲडब्लॉक भिंती सर्वत्र ब्लॉक करा."
   },
   "byCarbon": {
     "message": "Carbon Stealth कडून"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "फिल्टर सूचींचे परवाने"
+  },
+  "welPageTitle": {
+    "message": "Supreme AdBlock मध्ये आपले स्वागत आहे",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "तुम्ही सुरक्षित आहात",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock आता तुम्ही भेट देता त्या प्रत्येक साइटवर जाहिराती आणि ट्रॅकर ब्लॉक करत आहे. काहीही सेट करण्याची गरज नाही.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "एक्स्टेंशन टूलबारवर पिन करा",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "ॲड्रेस बारशेजारील कोड्याच्या तुकड्याच्या आयकनवर क्लिक करा आणि Supreme AdBlock पिन करा. मग एका क्लिकमध्ये पेजवर काय ब्लॉक झाले ते दिसेल.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "एखादी साइट नीट दिसत नसल्यास",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "एक्स्टेंशन उघडा आणि त्या साइटसाठी ब्लॉकिंग बंद करा, किंवा झटपट उपायांसाठी “साइट नीट चालत नाही?” निवडा.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "तुमचे ब्राउझिंग तुमच्या डिव्हाइसवरच राहते",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "फिल्टरिंग स्थानिक पातळीवर होते. एक्स्टेंशन कोणताही वैयक्तिक डेटा गोळा करत नाही आणि तुम्ही भेट देता त्या पेजबद्दल काहीही पाठवत नाही.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "सेटिंग्ज उघडा",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "समजले",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

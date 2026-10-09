@@ -80,9 +80,7 @@ const cfg = bg.sanitizeConfig({ version: 7, blockDomains: ["||ads.example.com^",
   ] });
 ok("bg: blockDomains normalised, protected/invalid dropped", cfg.blockDomains.length === 1 && cfg.blockDomains[0] === "ads.example.com");
 ok("bg: cosmetic guards (form/password/cc/universal) applied", cfg.cosmetic.join() === ".ad,.sponsored-box");
-const names = cfg.scriptlets.map((s) => s.h + ":" + s.d.join(","));
-ok("bg: scriptlets — aliases canonicalised, global/remove-cookie/bad-cookie/protected/proto/trusted dropped",
-  names.length === 2 && names.includes("example.com:abort-on-property-read,adBlock") && names.includes("s.com:set-cookie,c,accepted"));
+ok("bg: filters.json can never carry scriptlets — the key is dropped, only data survives", !("scriptlets" in cfg));
 ok("bg: safeSelector refuses stylesheet escapes and the page itself as target",
   [".x{background:url(//t.example/b)}", ".y;", ".ad\\", ".a /* c", "body.x", ".a, body", "html > body:not(.a)", "body:has(.x)", ":root.x"].every((x) => !bg.safeSelector(x)) &&
   ["body.x .ad", ".ad-body", "html .ad", "#bodyx", ".tbody-ad"].every((x) => bg.safeSelector(x)));
@@ -133,6 +131,26 @@ ok("popup hosts are baked into shipped main.js", readFileSync(join(ROOT, "script
   const ad = JSON.parse(readFileSync(join(ROOT, "rules", "ad_rules.json"), "utf8")).find((r) => r.id === 238);
   ok("ad_rules: third-party tracker rule covers ads.youtube.com, Yahoo/Yandex/X/Huawei ad hosts — never first-party",
     ad.condition.domainType === "thirdParty" && ["ads.youtube.com", "gemini.yahoo.com", "adtech.yahooinc.com", "metrika.yandex.ru", "ads-api.twitter.com", "grs.hicloud.com"].every((d) => ad.condition.requestDomains.includes(d)));
+}
+
+// YouTube's own content pings must go out: a player that never reports playing is a strike signal.
+{
+  const yt = JSON.parse(readFileSync(join(ROOT, "rules", "youtube_rules.json"), "utf8"));
+  const blocks = yt.filter((r) => r.action.type === "block").map((r) => r.condition.urlFilter || "");
+  ok("youtube_rules: never block /ptracking (content playback) or ALL of /api/stats/atr — only ad endpoints",
+    !blocks.some((f) => /ptracking|stats\/atr|stats\/qoe|stats\/watchtime|log_event/.test(f)) && blocks.some((f) => /stats\/ads/.test(f)));
+}
+
+// Breakage fix: EasyPrivacy's ||facebook.com/platform/plugin/page/logging/ made the Facebook
+// Page Plugin throw for logged-in visitors (posts never load on any site that embeds it).
+{
+  const ad = JSON.parse(readFileSync(join(ROOT, "rules", "ad_rules.json"), "utf8"));
+  const ep = JSON.parse(readFileSync(join(ROOT, "rules", "easyprivacy.json"), "utf8"));
+  const fix = ad.find((r) => r.action.type === "allow" && r.condition.urlFilter === "||facebook.com/platform/plugin/page/logging/");
+  const topBlock = Math.max(...ep.filter((r) => r.action.type === "block").map((r) => r.priority || 1));
+  ok("ad_rules: the Facebook Page Plugin's logging is allowed from Facebook's own frame only, above every EasyPrivacy block",
+    !!fix && fix.priority > topBlock && JSON.stringify(fix.condition.initiatorDomains) === JSON.stringify(["facebook.com"]) &&
+    !fix.condition.resourceTypes.includes("main_frame") && !fix.condition.resourceTypes.includes("script"));
 }
 
 done();

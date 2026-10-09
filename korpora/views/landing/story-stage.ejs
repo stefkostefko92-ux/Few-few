@@ -1,0 +1,32 @@
+<%#
+  Сцената до стъпките: снимки от същата 3D сцена (по една за стъпка; първата е LCP и се зарежда веднага, останалите —
+  чак когато потрябват, от landing/main.js), мястото за живата сцена и отчетът с числата на примера (от сървъра; живата
+  сцена сменя само реда с G-кода). Декоративна е — стъпките казват същото с думи.
+%><div class="stage" data-story data-step="1" data-example="<%= JSON.stringify(storyExample) %>" aria-hidden="true">
+  <div class="stage-frame">
+    <% for (const n of howSteps) { const first = n === 1; %>
+    <img class="still" data-still="<%= n %>" <%- first ? '' : 'data-' %>src="/static/img/story/step-<%= n %>-1120.webp?v=<%= v %>" <%- first ? '' : 'data-' %>srcset="/static/img/story/step-<%= n %>-640.webp?v=<%= v %> 640w, /static/img/story/step-<%= n %>-1120.webp?v=<%= v %> 1120w" sizes="(min-width: 900px) 58vw, 100vw" width="1120" height="1400" alt="" decoding="async"<%- first ? ' fetchpriority="high"' : '' %>>
+    <% } %>
+    <div class="stage-gl" data-story-gl></div>
+    <% const story = assets.story; %>
+    <div class="stage-hud" data-story-hud>
+      <dl data-hud="1">
+        <div><dt><%= t('landing.story.model') %></dt><dd><%= t('landing.story.modelValue', { modules: storyExample.modules, width: fmt.num(storyExample.moduleWidth) }) %></dd></div>
+        <div><dt><%= t('landing.story.size') %></dt><dd><%= t('landing.story.sizeValue', { w: fmt.num(story.size.W), h: fmt.num(story.size.H), d: fmt.num(story.size.D) }) %></dd></div>
+      </dl>
+      <dl data-hud="2">
+        <div><dt><%= t('landing.story.parts') %></dt><dd><%= fmt.num(story.parts) %></dd></div>
+        <div><dt><%= t('landing.story.materials') %></dt><dd><%= fmt.num(story.materials) %></dd></div>
+      </dl>
+      <dl data-hud="3">
+        <div><dt><%= t('landing.story.sheets') %></dt><dd><%= t('landing.story.sheetsValue', { n: fmt.num(story.sheets), w: fmt.num(story.sheetW), h: fmt.num(story.sheetH) }) %></dd></div>
+        <div><dt><%= t('landing.story.yield') %></dt><dd><%= t('landing.story.yieldValue', { pct: fmt.num(story.yieldPct) }) %></dd></div>
+      </dl>
+      <dl data-hud="4">
+        <div><dt><%= t('landing.story.sheet1') %></dt><dd><%= fmt.num(story.sheet1Parts) %></dd></div>
+        <div><dt><%= t('landing.story.holes') %></dt><dd><%= fmt.num(story.sheet1Holes) %></dd></div>
+        <div class="hud-line"><dt><%= t('landing.story.program') %></dt><dd data-story-line><%= story.firstMove %></dd></div>
+      </dl>
+    </div>
+  </div>
+</div>

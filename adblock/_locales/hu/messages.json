@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "A szűrőlisták licencei"
+  },
+  "welPageTitle": {
+    "message": "Üdvözli a Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "A védelem be van kapcsolva",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "A Supreme AdBlock mostantól minden meglátogatott webhelyen blokkolja a hirdetéseket és a nyomkövetőket. Semmit sem kell beállítania.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Rögzítse a bővítményt az eszköztáron",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Kattintson a címsor melletti puzzle-darab ikonra, és rögzítse a Supreme AdBlockot. Ezután egy kattintással láthatja, mit blokkolt a bővítmény az oldalon.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Ha egy webhely hibásan jelenik meg",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Nyissa meg a bővítményt, és kapcsolja ki a blokkolást az adott webhelyen, vagy válassza a „Hibás a webhely?” lehetőséget a gyors javításokhoz.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "A böngészése az eszközén marad",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "A szűrés helyben történik. A bővítmény nem gyűjt személyes adatokat, és semmit sem küld a meglátogatott oldalakról.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Beállítások megnyitása",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Értem",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }
