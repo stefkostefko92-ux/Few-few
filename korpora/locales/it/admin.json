@@ -46,9 +46,11 @@
       "desc": "Decrescente",
       "asc": "Crescente",
       "apply": "Mostra",
+      "clear": "Azzera i filtri",
       "none": "Nessun account corrisponde a questi filtri.",
       "pages": "Pagine",
       "page": "Pagina {page} di {pages}",
+      "range": "{from}–{to} di {total}",
       "prev": "Precedente",
       "next": "Successiva"
     },

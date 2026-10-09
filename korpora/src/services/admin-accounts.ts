@@ -141,7 +141,9 @@ export async function listAccounts(query: AccountQuery, byIp: boolean, now: Date
       },
     }),
   ]);
-  return { total, rows, pages: Math.max(1, Math.ceil(total / PAGE_SIZE)) };
+  // „1–25 от 28“ под таблицата: първият ред на страницата
+  const first = total ? (query.page - 1) * PAGE_SIZE + 1 : 0;
+  return { total, rows, first, pages: Math.max(1, Math.ceil(total / PAGE_SIZE)) };
 }
 
 /**

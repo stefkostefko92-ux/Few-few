@@ -126,3 +126,19 @@ tr.is-banned {
 .audit-list .audit-by {
   color: var(--ink-2);
 }
+
+/* accounts: a column that sorts is a link in its header; the arrow shows the direction (aria-sort says it too) */
+.th-sort {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  color: inherit;
+  text-decoration: none;
+}
+.th-sort:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+.th-dir {
+  color: var(--green);
+}

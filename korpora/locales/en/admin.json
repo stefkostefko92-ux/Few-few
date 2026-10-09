@@ -46,9 +46,11 @@
       "desc": "Descending",
       "asc": "Ascending",
       "apply": "Show",
+      "clear": "Clear filters",
       "none": "No accounts match these filters.",
       "pages": "Pages",
       "page": "Page {page} of {pages}",
+      "range": "{from}–{to} of {total}",
       "prev": "Previous",
       "next": "Next"
     },
