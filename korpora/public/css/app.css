@@ -265,6 +265,12 @@ form.inline {
   flex-wrap: wrap;
   gap: 4px 18px;
 }
+/* every link a target of at least 24 px (WCAG 2.5.8), the text on the line of the words around it */
+.foot a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+}
 
 @media (max-width: 640px) {
   .section {
