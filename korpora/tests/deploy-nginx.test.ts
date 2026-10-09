@@ -146,3 +146,17 @@ test('the deploy puts that page where nginx reads it, before the app is restarte
     assert.deepEqual([mode(L.maint), mode(page)], ['755', '644']);
   });
 });
+
+test('TLS 1.2 offers only AEAD with forward secrecy, and neither server block names the nginx version', () => {
+  const vhost = readFileSync(VHOST, 'utf8');
+  const [plain = '', tls = ''] = vhost.split(/\n(?=server \{)/).slice(1);
+  assert.match(plain, /listen 80;/);
+  assert.match(tls, /listen 443 ssl/);
+  // nginx's own default is HIGH:!aNULL:!MD5 — CBC with SHA-1 MACs, DHE and CAMELLIA included
+  const ciphers = /\n {4}ssl_ciphers ([^;]+);/.exec(tls)?.[1]?.split(':') ?? [];
+  assert.ok(ciphers.length > 0, 'ssl_ciphers is set');
+  for (const c of ciphers)
+    assert.match(c, /^ECDHE-(ECDSA|RSA)-(AES(128|256)-GCM-SHA(256|384)|CHACHA20-POLY1305)$/, c);
+  assert.match(tls, /\n {4}ssl_session_tickets off;/);
+  for (const block of [plain, tls]) assert.match(block, /\n {4}server_tokens off;/);
+});
