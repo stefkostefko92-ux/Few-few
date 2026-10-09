@@ -54,6 +54,27 @@
   --r-s: 8px; --r-m: 12px; --r-l: 20px;
   --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 24px; --s-6: 32px;
   --spring: cubic-bezier(.3, 1.45, .5, 1);
+  --disc-bg: rgba(255, 255, 255, .08); --disc-ring: rgba(255, 255, 255, .28);
+  /* glyphs: decorative CSS-mask icons (stroke 2, 24 grid), tinted with currentColor */
+  --ic-sword: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 5L9 15M6 12l6 6M9 15l-4 4M15 5h4v4'/%3E%3C/svg%3E");
+  --ic-nodes: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='5' r='2'/%3E%3Ccircle cx='5' cy='18' r='2'/%3E%3Ccircle cx='19' cy='18' r='2'/%3E%3Cpath d='M12 7l-6 9M12 7l6 9M7 18h10'/%3E%3C/svg%3E");
+  --ic-coin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Ccircle cx='12' cy='12' r='4.5'/%3E%3C/svg%3E");
+  --ic-star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3l2.4 6.1 6.6.5-5 4.3 1.6 6.4-5.6-3.5L6.4 20.3 8 13.9 3 9.6l6.6-.5z'/%3E%3C/svg%3E");
+  --ic-warn: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3.5l9.5 16.5h-19z'/%3E%3Cpath d='M12 10v4.5M12 17.2v.3'/%3E%3C/svg%3E");
+  --ic-clock: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7v5l3.5 2'/%3E%3C/svg%3E");
+  --ic-door: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 21V4h10v17M4 21h16M14 12.5v.1'/%3E%3C/svg%3E");
+  --ic-moon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 14.5A8.5 8.5 0 119.5 4a7 7 0 0010.5 10.5z'/%3E%3C/svg%3E");
+  --ic-flag: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 21V4M6 5h11l-2 4 2 4H6'/%3E%3C/svg%3E");
+  --ic-mountain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 20L9 9l4 6 3-4 5 9z'/%3E%3C/svg%3E");
+  --ic-flame: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c1 4 5 5.5 5 10.5a5 5 0 01-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9.5z'/%3E%3C/svg%3E");
+  --ic-work: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='7' width='18' height='13' rx='2'/%3E%3Cpath d='M9 7V5h6v2M3 13h18'/%3E%3C/svg%3E");
+  --ic-up: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 17l6-6 4 4 6-7M15 8h5v5'/%3E%3C/svg%3E");
+  --ic-tag: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 12V4h8l10 10-8 8z'/%3E%3Ccircle cx='7.5' cy='8.5' r='1'/%3E%3C/svg%3E");
+  --ic-heart: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 20s-8-5-8-10.5A4.5 4.5 0 0112 7a4.5 4.5 0 018 2.5C20 15 12 20 12 20z'/%3E%3C/svg%3E");
+  --ic-target: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Ccircle cx='12' cy='12' r='4.5'/%3E%3Ccircle cx='12' cy='12' r='.8'/%3E%3C/svg%3E");
+  --ic-play: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M7 4.5v15l12.5-7.5z'/%3E%3C/svg%3E");
+  --ic-pause: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Crect x='6' y='4.5' width='4.2' height='15' rx='1.2'/%3E%3Crect x='13.8' y='4.5' width='4.2' height='15' rx='1.2'/%3E%3C/svg%3E");
+  --ic-stop: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Crect x='5.5' y='5.5' width='13' height='13' rx='2.5'/%3E%3C/svg%3E");
   --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 }
@@ -79,6 +100,7 @@
     --shadow: 0 24px 46px -22px rgba(18, 36, 56, .5), 0 8px 18px -8px rgba(18, 36, 56, .22);
     --rim: linear-gradient(142deg, #fff, rgba(255, 255, 255, .6) 24%, rgba(255, 255, 255, .25) 52%, rgba(40, 150, 110, .3) 80%, rgba(255, 255, 255, .9));
     --glass-solid: #f3f7f6; --plate-solid: #e6eeec;
+    --disc-bg: rgba(20, 40, 60, .07); --disc-ring: rgba(20, 40, 60, .32);
     --aurora:
       radial-gradient(48% 36% at 84% 6%, rgba(60, 220, 160, .6), transparent 72%),
       radial-gradient(54% 42% at 4% 40%, rgba(70, 190, 230, .5), transparent 72%),
@@ -188,7 +210,7 @@ select { cursor: pointer; padding-right: var(--s-2); }
 @media (prefers-color-scheme: light) { .mark .m-tile { fill: #0a0b0d; stroke: #0a0b0d; } .mark { filter: drop-shadow(0 4px 8px rgba(5, 96, 58, .3)); } }
 
 /* Status beacon: shape carries the state, colour only reinforces it. */
-.dot { width: 14px; height: 14px; border-radius: 50%; flex: 0 0 auto; border: 2px solid var(--muted); background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, .5), transparent 60%); }
+.dot { position: relative; width: 16px; height: 16px; border-radius: 50%; flex: 0 0 auto; border: 2px solid var(--muted); background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, .5), transparent 60%); }
 .dot.running { border-color: #b7ffe0; background: radial-gradient(circle at 35% 30%, #d6ffec, var(--accent) 55%, #0c8f55); box-shadow: 0 0 0 3px var(--accent-wash), 0 0 14px 2px var(--accent-line); }
 .dot.paused { border-radius: 4px; border-color: var(--warn-text); background: linear-gradient(90deg, transparent 0 26%, var(--warn-text) 26% 42%, transparent 42% 58%, var(--warn-text) 58% 74%, transparent 74%); }
 @media (prefers-color-scheme: light) { .dot.running { border-color: #0a8a55; background: radial-gradient(circle at 35% 30%, #9af0c6, #12b868 60%, #067a45); box-shadow: 0 0 0 3px rgba(10, 138, 85, .14); } }
@@ -196,6 +218,13 @@ select { cursor: pointer; padding-right: var(--s-2); }
 /* Callouts: icon glyph + coloured edge + text (never colour alone). */
 .callout { position: relative; padding: var(--s-2) var(--s-3) var(--s-2) 38px; border-radius: var(--r-m); border: 1px solid var(--warn-line); background: linear-gradient(0deg, var(--warn-wash), var(--warn-wash)), var(--surface-2); color: var(--text); font-size: 12px; line-height: 1.45; }
 .callout::before { content: '!'; position: absolute; left: 12px; top: 10px; width: 16px; height: 16px; border-radius: 50%; background: var(--warn-text); color: var(--bg); font-weight: 800; font-size: 11px; line-height: 16px; text-align: center; }
+
+/* Glyph slot: .glyph::before wears var(--ic). Decorative only; text always carries the meaning. */
+.btn.start::before, .btn.pause::before, .btn.stop::before, .stats .row::before, .card::before {
+  content: ''; display: block; flex: 0 0 auto; width: 15px; height: 15px; background: currentColor;
+  -webkit-mask: var(--ic, var(--ic-star)) center / contain no-repeat; mask: var(--ic, var(--ic-star)) center / contain no-repeat;
+}
+.btn.start { --ic: var(--ic-play); } .btn.pause { --ic: var(--ic-pause); } .btn.stop { --ic: var(--ic-stop); }
 
 /* Message line (ok / err) with glyph */
 .msg:empty, .pay-msg:empty, .sub-msg:empty, .tool-msg:empty { display: none; }
@@ -210,6 +239,9 @@ select { cursor: pointer; padding-right: var(--s-2); }
   button:hover:not(:disabled) { transform: translateY(-1px); }
   button:active:not(:disabled) { transform: translateY(1px) scale(.97); }
   button.linkbtn.inline:hover:not(:disabled), button.linkbtn.inline:active:not(:disabled) { transform: none; }
+  /* Live beacon: one ring on one 16px element, opacity/transform only, 2.6 s cycle; absent when the bot is not running. */
+  .dot.running::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid var(--accent); animation: dot-ping 2.6s ease-out infinite; }
+  @keyframes dot-ping { 0% { opacity: .75; transform: scale(.7); } 70%, 100% { opacity: 0; transform: scale(2.2); } }
 }
 
 /* ---- Fallbacks: opaque surfaces, no glass ---- */

@@ -10,6 +10,7 @@ import { circleMultipliers, smartScore, chooseSmart } from '../src/shared/smart.
 import { verifyKey, handle, setPublicKey, SHIPPED_PUBLIC_KEY } from '../server/license-server.mjs';
 import { LICENSE_PUBLIC_KEY } from '../src/shared/payment.js';
 import { execSync } from 'node:child_process';
+import { DOMParser as LinkedomParser } from 'linkedom';
 import { validateConfig, normalizeAccount, enabledAccounts, accountSettings } from '../controller/lib/config.mjs';
 import { accountView, renderDashboardHtml, dashboardResponse } from '../controller/lib/dashboard.mjs';
 
@@ -217,6 +218,19 @@ test('server: a malformed URL is a 400, not a crash', () => {
 });
 
 console.log('- multi-account controller -');
+test('dashboard: a hostile account id or token cannot break out (XSS)', () => {
+  const id = "x');alert(1);//\"<b>";
+  const html = renderDashboardHtml([accountView({ account: { id, label: id, world: 'https://w' }, status: 'stopped', lastStats: {} })], { token: 'a</script><script>alert(2)//' });
+  // The token never closes the inline script early.
+  assert.equal(html.split('</script>').length - 1, 1, 'exactly one closing script tag');
+  // Every Start/Stop onclick decodes to ctl('<verb>', <one JSON string literal>).
+  const doc = new LinkedomParser().parseFromString(html, 'text/html');
+  const clicks = [...doc.querySelectorAll('[onclick]')].map((b) => b.getAttribute('onclick'));
+  assert.ok(clicks.length >= 2);
+  for (const c of clicks) assert.match(c, /^ctl\('(start|stop)',("(?:[^"\\]|\\.)*")\)$/, c);
+  for (const c of clicks) assert.equal(JSON.parse(c.match(/,(".*")\)$/)[1]), id, 'the id arrives intact as data');
+});
+
 test('validateConfig accepts good config, normalizes defaults', () => {
   const r = validateConfig({ browser: { proxyDefault: '' }, accounts: [{ id: 'a', world: 'https://x/game' }] });
   assert.equal(r.ok, true);

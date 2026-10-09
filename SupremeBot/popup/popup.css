@@ -9,14 +9,14 @@ html { width: 360px; overflow: hidden; }
 body { width: auto; max-height: 600px; overflow-y: auto; overscroll-behavior: contain; padding: var(--s-4); }
 
 header { display: flex; align-items: center; gap: var(--s-3); margin-bottom: var(--s-4); padding: 0 var(--s-1); }
-header h1 { font-size: 16px; font-weight: 750; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+header h1 { font-size: 17px; font-weight: 800; letter-spacing: -.02em; flex: 1; min-width: 0; overflow-wrap: anywhere; }
 
 .banner { margin-bottom: var(--s-3); }
 
 /* Status card: beacon + state, character line, licence strip. The one hero surface. */
 .status-card { border-radius: 22px; padding: var(--s-4) var(--s-4) var(--s-3); margin-bottom: var(--s-3); overflow: hidden; }
 .status-card::before { content: ''; position: absolute; left: 22px; right: 22px; top: 0; height: 1px; z-index: 2; background: linear-gradient(90deg, var(--accent), transparent 75%); opacity: .9; box-shadow: 0 0 14px 1px var(--accent-line); }
-.status-row { display: flex; align-items: center; gap: var(--s-3); font-weight: 700; font-size: 15px; min-width: 0; }
+.status-row { display: flex; align-items: center; gap: var(--s-3); font-weight: 800; font-size: 19px; line-height: 1.15; letter-spacing: -.02em; min-width: 0; }
 .status-row #status-text { min-width: 0; overflow-wrap: anywhere; }
 .char {
   margin-top: var(--s-2); font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere;
@@ -31,6 +31,8 @@ header h1 { font-size: 16px; font-weight: 750; flex: 1; min-width: 0; overflow-w
 .license.expired::before { content: '✕ '; font-weight: 800; }
 
 .controls { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: var(--s-2); margin-bottom: var(--s-4); }
+.controls .btn { flex-direction: column; gap: 4px; min-height: 54px; padding: 6px var(--s-2); font-size: 12.5px; border-radius: 18px; }
+.controls .btn::before { width: 15px; height: 15px; }
 .btn { min-height: 40px; padding: 0 var(--s-2); }
 .btn.pause { color: var(--warn-text); }
 .btn.stop { color: var(--danger-text); }
@@ -50,9 +52,17 @@ header h1 { font-size: 16px; font-weight: 750; flex: 1; min-width: 0; overflow-w
 /* Session readouts: value above label. */
 .stats { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-2); margin-bottom: var(--s-3); }
 .stats:empty { display: none; }
-.stats .row { display: flex; flex-direction: column-reverse; gap: 1px; min-width: 0; padding: var(--s-2) var(--s-3); border-radius: 16px; font-size: 12px; color: var(--muted); }
+.stats .row {
+  --lamp: var(--accent-text); position: relative; display: flex; flex-direction: column-reverse; justify-content: center; gap: 0; min-width: 0; min-height: 54px; padding: 6px var(--s-3) 6px 50px; border-radius: 16px; font-size: 12px; color: var(--muted);
+  background: radial-gradient(circle at 26px 50%, var(--disc-bg) 0 14px, var(--disc-ring) 14px 15px, transparent 15.5px), linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, 0) 55%), var(--surface-2);
+}
+.stats .row::before { position: absolute; left: 18px; top: calc(50% - 8px); color: var(--lamp); width: 16px; height: 16px; }
+.stats .row:nth-child(1) { --ic: var(--ic-sword); }
+.stats .row:nth-child(2) { --ic: var(--ic-nodes); }
+.stats .row:nth-child(3) { --ic: var(--ic-coin); }
+.stats .row:nth-child(4) { --ic: var(--ic-star); }
 .stats .row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.stats .row b { font-size: 18px; font-weight: 750; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: -.01em; }
+.stats .row b { font-size: 21px; line-height: 1.15; font-weight: 800; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: -.025em; }
 
 footer { display: flex; justify-content: space-between; gap: var(--s-1); padding: var(--s-1); border-radius: 999px; background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, 0) 55%), var(--surface-2); border: 1px solid var(--line); box-shadow: var(--plate-lit); -webkit-backdrop-filter: var(--btn-bf); backdrop-filter: var(--btn-bf); }
 footer .linkbtn { font-size: 12.5px; padding: 0 var(--s-2); overflow-wrap: break-word; }

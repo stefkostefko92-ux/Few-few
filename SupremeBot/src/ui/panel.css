@@ -1,4 +1,4 @@
-/* Tanoth Master Bot - in-game overlay panel ("carbon & emerald", Liquid Glass).
+/* Tanoth Master Bot - in-game overlay panel ("carbon & emerald", Liquid Glass + HUD).
    Lives on a FOREIGN page (Gameforge), so it is fully isolated:
    - every selector is rooted at #tanoth-bot-panel / #tanoth-bot-fab, nothing global;
    - the host element resets with `all: initial`;
@@ -11,23 +11,31 @@
    Liquid Glass anatomy (one backdrop-filter per surface, never nested):
    - host::before  = the glass itself: backdrop blur + saturate over the live game,
                      tint, soft caustics, grain and the inner glow;
-   - host::after   = the specular rim (1px gradient ring, bright top-left);
+   - host::after   = the specular rim (1px gradient ring, bright top-left). The rim and
+                     the outer glow take the colour of the STATE (emerald running, amber
+                     paused, gold locked) so the frame itself tells the state at a glance;
    - everything inside is a translucent "plate" (tint + inset highlights + hairline),
      because a nested backdrop-filter would only see the parent glass, not the game.
+   HUD: the status readout is the one bold element - a plate with reticle corners, a
+   state lamp (icon disc) and, while running, a travelling scan line.
+   Icons: decorative, CSS masks over inline data: SVGs (stroke 2, 24 grid) tinted with
+   currentColor; they never carry meaning alone (text / check marks / shapes do).
    READABILITY: every text sits on a plate whose composite stays >= 4.5:1 even on
-   a pure white (dark theme) / pure black (light theme) game backdrop - measured,
+   a pure white (dark theme) / pure black (light theme) game backdrop - measured per pixel,
    not assumed. Fallbacks: no backdrop-filter, prefers-reduced-transparency and
    prefers-contrast: more all switch to solid opaque surfaces (variables below).
-   Motion: transitions and one-shot pop-ins only, all behind prefers-reduced-motion.
-   Nothing loops, nothing animates the backdrop. */
+   Motion (all behind prefers-reduced-motion: no-preference): springy hover/press, a
+   one-shot mount + paywall pop, and - ONLY while running (Pause/Stop end it) - a slow
+   beacon ring and a scan line on two tiny elements, opacity/transform only, <= 0.4 Hz,
+   never touching the backdrop. */
 
 #tanoth-bot-panel {
   all: initial;
   /* ink */
-  --text: #f1f4f8; --muted: #b9c2cd; --faint: #8e98a5;
+  --text: #f1f4f8; --muted: #c9d1db; --faint: #8e98a5;
   --accent: #27e08a; --accent-hover: #5cf2ab; --accent-ink: #03170c; --accent-text: #3aeb9a;
   --accent-wash: rgba(39, 224, 138, .16); --accent-line: rgba(80, 240, 165, .62);
-  --gold: #e6b34a; --gold-hover: #f4cb6c; --gold-ink: #1c1300;
+  --gold: #e6b34a; --gold-hover: #f4cb6c; --gold-ink: #1c1300; --gold-text: #f2c460; --gold-line: rgba(242, 196, 96, .6);
   --danger-text: #ff9f98; --danger-wash: rgba(255, 95, 86, .14); --danger-line: rgba(255, 120, 110, .6);
   --warn-text: #f5c95c; --warn-wash: rgba(241, 194, 78, .13); --warn-line: rgba(245, 201, 92, .55);
   --focus: #7ff5bd;
@@ -37,25 +45,56 @@
   --glass-solid: #0d1315;
   --glass-glow: inset 0 1.5px 0 rgba(255, 255, 255, .42), inset 0 -1px 0 rgba(0, 0, 0, .4), inset 14px 14px 30px -20px rgba(255, 255, 255, .16), inset -12px -16px 32px -22px rgba(70, 255, 180, .24);
   --glass-drop: 0 30px 60px -18px rgba(0, 0, 0, .65), 0 10px 22px -8px rgba(0, 0, 0, .4);
+  --state-glow: 0 0 0 0 transparent;
   --rim: linear-gradient(142deg, rgba(255, 255, 255, .95), rgba(255, 255, 255, .22) 24%, rgba(255, 255, 255, .06) 52%, rgba(160, 255, 215, .2) 80%, rgba(255, 255, 255, .55));
   --grain: .075; --grain-rgb: 255;
-  --plate: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, 0) 55%), rgba(3, 8, 9, .6);
+  --plate: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, 0) 55%), rgba(3, 8, 9, .7);
   --plate-solid: #151c1f;
   --plate-edge: rgba(255, 255, 255, .17);
   --plate-lit: inset 0 1px 0 rgba(255, 255, 255, .24), inset 0 -1px 0 rgba(0, 0, 0, .35), 0 6px 14px -8px rgba(0, 0, 0, .6);
-  --well: rgba(1, 4, 5, .62);
+  --well: rgba(1, 4, 5, .74);
   --well-solid: #070b0c;
   --well-edge: rgba(255, 255, 255, .34);
   --well-lit: inset 0 2px 7px rgba(0, 0, 0, .6), 0 1px 0 rgba(255, 255, 255, .1);
   --hover: rgba(255, 255, 255, .12);
   --chip-on-base: linear-gradient(rgba(0, 18, 10, .34), rgba(0, 18, 10, .34));
-  --bar: linear-gradient(180deg, rgba(255, 255, 255, .07), rgba(255, 255, 255, 0) 70%), rgba(2, 6, 7, .42);
+  --bar: linear-gradient(180deg, rgba(255, 255, 255, .07), rgba(255, 255, 255, 0) 70%), rgba(2, 6, 7, .6);
+  --hatch: repeating-linear-gradient(135deg, rgba(255, 255, 255, .045) 0 1px, transparent 1px 7px);
+  --disc-bg: rgba(255, 255, 255, .07); --disc-ring: rgba(255, 255, 255, .24);
+  --ret: rgba(255, 255, 255, .38);
   --line: rgba(255, 255, 255, .15); --line-strong: rgba(255, 255, 255, .42);
   --bg: #04080a;
-  --r-s: 8px; --r-m: 12px; --r-l: 22px;
+  --r-s: 8px; --r-m: 12px; --r-l: 24px;
   --spring: cubic-bezier(.3, 1.45, .5, 1);
   --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --ic-sword: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 5L9 15M6 12l6 6M9 15l-4 4M15 5h4v4'/%3E%3C/svg%3E");
+  --ic-nodes: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='5' r='2'/%3E%3Ccircle cx='5' cy='18' r='2'/%3E%3Ccircle cx='19' cy='18' r='2'/%3E%3Cpath d='M12 7l-6 9M12 7l6 9M7 18h10'/%3E%3C/svg%3E");
+  --ic-coin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Ccircle cx='12' cy='12' r='4.5'/%3E%3C/svg%3E");
+  --ic-star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3l2.4 6.1 6.6.5-5 4.3 1.6 6.4-5.6-3.5L6.4 20.3 8 13.9 3 9.6l6.6-.5z'/%3E%3C/svg%3E");
+  --ic-warn: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3.5l9.5 16.5h-19z'/%3E%3Cpath d='M12 10v4.5M12 17.2v.3'/%3E%3C/svg%3E");
+  --ic-clock: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7v5l3.5 2'/%3E%3C/svg%3E");
+  --ic-door: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 21V4h10v17M4 21h16M14 12.5v.1'/%3E%3C/svg%3E");
+  --ic-flag: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 21V4M6 5h11l-2 4 2 4H6'/%3E%3C/svg%3E");
+  --ic-pin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21s-6.5-6-6.5-11a6.5 6.5 0 0113 0c0 5-6.5 11-6.5 11z'/%3E%3Ccircle cx='12' cy='10' r='2.4'/%3E%3C/svg%3E");
+  --ic-bolt: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M13 3L5 13.5h6L10 21l9-11h-6z'/%3E%3C/svg%3E");
+  --ic-work: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='7' width='18' height='13' rx='2'/%3E%3Cpath d='M9 7V5h6v2M3 13h18'/%3E%3C/svg%3E");
+  --ic-up: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 17l6-6 4 4 6-7M15 8h5v5'/%3E%3C/svg%3E");
+  --ic-users: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='9' cy='8' r='3.2'/%3E%3Cpath d='M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6'/%3E%3Ccircle cx='17.5' cy='9' r='2.4'/%3E%3Cpath d='M17 14c2.6 0 4.5 1.9 4.5 5'/%3E%3C/svg%3E");
+  --ic-tag: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 12V4h8l10 10-8 8z'/%3E%3Ccircle cx='7.5' cy='8.5' r='1'/%3E%3C/svg%3E");
+  --ic-key: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='8' cy='15' r='4'/%3E%3Cpath d='M11 12l9-9M16 7l3 3M14 9l2 2'/%3E%3C/svg%3E");
+  --ic-lock: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5' y='11' width='14' height='10' rx='2'/%3E%3Cpath d='M8 11V8a4 4 0 018 0v3'/%3E%3C/svg%3E");
+  --ic-power: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v9M6.5 6.5a8 8 0 1011 0'/%3E%3C/svg%3E");
+  --ic-minus: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14'/%3E%3C/svg%3E");
+  --ic-close: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 6l12 12M18 6L6 18'/%3E%3C/svg%3E");
+  --ic-chev: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  --ic-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E");
+  --ic-crown: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z'/%3E%3C/svg%3E");
+  --ic-gear: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3Cpath d='M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1'/%3E%3C/svg%3E");
+  --ic-play: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M7 4.5v15l12.5-7.5z'/%3E%3C/svg%3E");
+  --ic-pause: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Crect x='6' y='4.5' width='4.2' height='15' rx='1.2'/%3E%3Crect x='13.8' y='4.5' width='4.2' height='15' rx='1.2'/%3E%3C/svg%3E");
+  --ic-stop: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Crect x='5.5' y='5.5' width='13' height='13' rx='2.5'/%3E%3C/svg%3E");
+  --ic-blade: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M12 2l3.2 3.9V16H8.8V5.9z'/%3E%3Crect x='5' y='17.2' width='14' height='2.6' rx='1.3'/%3E%3Ccircle cx='12' cy='22' r='1.4'/%3E%3C/svg%3E");
 
   position: fixed;
   top: 80px;
@@ -73,7 +112,7 @@
   background: transparent;
   border: 0;
   border-radius: var(--r-l);
-  box-shadow: var(--glass-drop);
+  box-shadow: var(--glass-drop), var(--state-glow);
   overflow: hidden;
   user-select: none;
   font-variant-numeric: tabular-nums;
@@ -82,6 +121,7 @@
 #tanoth-bot-panel.tb-light {
   --text: #0d1218; --muted: #364050; --faint: #566170;
   --accent-text: #05603a; --accent-wash: rgba(5, 96, 58, .1); --accent-line: rgba(5, 96, 58, .6);
+  --gold-text: #6b4600; --gold-line: rgba(107, 70, 0, .55);
   --danger-text: #a3190f; --danger-wash: rgba(163, 25, 15, .08); --danger-line: rgba(163, 25, 15, .55);
   --warn-text: #6b4600; --warn-wash: rgba(140, 90, 0, .1); --warn-line: rgba(107, 70, 0, .55);
   --focus: #05603a;
@@ -92,22 +132,64 @@
   --glass-drop: 0 28px 56px -18px rgba(18, 36, 56, .5), 0 10px 20px -8px rgba(18, 36, 56, .22);
   --rim: linear-gradient(142deg, rgba(255, 255, 255, 1), rgba(255, 255, 255, .55) 24%, rgba(255, 255, 255, .22) 52%, rgba(40, 150, 110, .3) 80%, rgba(255, 255, 255, .9));
   --grain: .06; --grain-rgb: 0;
-  --plate: linear-gradient(180deg, rgba(255, 255, 255, .55), rgba(255, 255, 255, .12) 60%), rgba(255, 255, 255, .62);
+  --plate: linear-gradient(180deg, rgba(255, 255, 255, .55), rgba(255, 255, 255, .12) 60%), rgba(255, 255, 255, .86);
   --plate-solid: #e7edf1;
   --plate-edge: rgba(255, 255, 255, .85);
   --plate-lit: inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 0 rgba(20, 40, 60, .12), 0 0 0 1px rgba(20, 40, 60, .1), 0 6px 14px -8px rgba(18, 36, 56, .35);
-  --well: rgba(255, 255, 255, .82);
+  --well: rgba(255, 255, 255, .93);
   --well-solid: #ffffff;
   --well-edge: rgba(20, 40, 60, .5);
   --well-lit: inset 0 2px 6px rgba(18, 36, 56, .2), 0 1px 0 rgba(255, 255, 255, .9);
   --hover: rgba(255, 255, 255, .6);
   --chip-on-base: linear-gradient(transparent, transparent);
-  --bar: linear-gradient(180deg, rgba(255, 255, 255, .5), rgba(255, 255, 255, .1) 70%), rgba(255, 255, 255, .44);
+  --bar: linear-gradient(180deg, rgba(255, 255, 255, .5), rgba(255, 255, 255, .1) 70%), rgba(255, 255, 255, .68);
+  --hatch: repeating-linear-gradient(135deg, rgba(20, 40, 60, .05) 0 1px, transparent 1px 7px);
+  --disc-bg: rgba(20, 40, 60, .06); --disc-ring: rgba(20, 40, 60, .3);
+  --ret: rgba(20, 40, 60, .45);
   --line: rgba(20, 40, 60, .16); --line-strong: rgba(20, 40, 60, .55);
   --bg: #ffffff;
 }
 #tanoth-bot-panel.tb-left { right: auto; left: 16px; }
 #tanoth-bot-panel.tb-collapsed { width: 272px; }
+
+/* State frame: the rim and the outer glow carry the state (static, no animation). */
+#tanoth-bot-panel.tb-running {
+  --rim: linear-gradient(142deg, rgba(200, 255, 230, 1), rgba(70, 240, 165, .55) 24%, rgba(60, 230, 150, .14) 52%, rgba(120, 255, 200, .42) 80%, rgba(200, 255, 230, .85));
+  --state-glow: 0 0 46px -12px rgba(39, 224, 138, .55);
+}
+#tanoth-bot-panel.tb-light.tb-running {
+  --rim: linear-gradient(142deg, #fff, rgba(80, 220, 160, .8) 24%, rgba(40, 190, 130, .35) 52%, rgba(40, 170, 120, .55) 80%, #fff);
+  --state-glow: 0 0 40px -12px rgba(10, 160, 95, .45);
+}
+#tanoth-bot-panel.tb-paused {
+  --rim: linear-gradient(142deg, rgba(255, 238, 190, 1), rgba(245, 201, 92, .6) 24%, rgba(245, 201, 92, .14) 52%, rgba(255, 220, 130, .4) 80%, rgba(255, 238, 190, .85));
+  --state-glow: 0 0 40px -14px rgba(245, 201, 92, .5);
+}
+#tanoth-bot-panel.tb-light.tb-paused {
+  --rim: linear-gradient(142deg, #fff, rgba(220, 160, 40, .8) 24%, rgba(200, 140, 20, .3) 52%, rgba(190, 130, 20, .5) 80%, #fff);
+  --state-glow: 0 0 36px -14px rgba(180, 120, 10, .4);
+}
+/* On break: a deliberate rest, not work and not a problem - cool blue, static. */
+#tanoth-bot-panel.tb-break {
+  --rim: linear-gradient(142deg, rgba(205, 225, 255, 1), rgba(110, 160, 255, .55) 24%, rgba(110, 160, 255, .14) 52%, rgba(160, 195, 255, .42) 80%, rgba(205, 225, 255, .85));
+  --state-glow: 0 0 40px -14px rgba(110, 160, 255, .45);
+}
+#tanoth-bot-panel.tb-light.tb-break {
+  --rim: linear-gradient(142deg, #fff, rgba(60, 110, 220, .7) 24%, rgba(40, 90, 200, .3) 52%, rgba(40, 90, 200, .5) 80%, #fff);
+  --state-glow: 0 0 36px -14px rgba(40, 90, 200, .35);
+}
+#tanoth-bot-panel.tb-break .tb-header .tb-dot { border-color: #9cc0ff !important; background: radial-gradient(circle at 35% 30%, #e4eeff, #6ea0ff 60%, #2f5fc0) !important; box-shadow: 0 0 0 3px rgba(110, 160, 255, .18) !important; }
+#tanoth-bot-panel.tb-light.tb-break .tb-header .tb-dot { border-color: #2f5fc0 !important; background: radial-gradient(circle at 35% 30%, #c9dbff, #3d6fd6 60%, #1f4aa0) !important; box-shadow: 0 0 0 3px rgba(47, 95, 192, .14) !important; }
+#tanoth-bot-panel.tb-break .tb-status { --ic: var(--ic-clock); --lamp: #9cc0ff; color: var(--text) !important; border-color: rgba(110, 160, 255, .45) !important; }
+#tanoth-bot-panel.tb-light.tb-break .tb-status { --lamp: #1f4aa0; border-color: rgba(47, 95, 192, .4) !important; }
+#tanoth-bot-panel.tb-locked {
+  --rim: linear-gradient(142deg, rgba(255, 240, 200, 1), rgba(242, 196, 96, .6) 24%, rgba(242, 196, 96, .12) 52%, rgba(255, 225, 150, .4) 80%, rgba(255, 240, 200, .85));
+  --state-glow: 0 0 40px -14px rgba(242, 196, 96, .45);
+}
+#tanoth-bot-panel.tb-light.tb-locked {
+  --rim: linear-gradient(142deg, #fff, rgba(210, 150, 30, .8) 24%, rgba(190, 130, 20, .3) 52%, rgba(190, 130, 20, .5) 80%, #fff);
+  --state-glow: 0 0 36px -14px rgba(170, 110, 10, .4);
+}
 
 /* The glass itself: the only backdrop-filter in the panel. */
 #tanoth-bot-panel::before {
@@ -139,108 +221,187 @@
 #tanoth-bot-panel :focus-visible { outline: 2px solid var(--focus) !important; outline-offset: 2px !important; }
 #tanoth-bot-panel input:focus-visible { outline-offset: 0 !important; }
 
-/* Header: a glass bar with a lit lower edge; beacon + title + window buttons */
+/* Icon slot: any pseudo-element that wears a glyph. Set --ic on the owner; falls back to a star. */
+#tanoth-bot-panel .tb-icon-btn::before, #tanoth-bot-panel .tb-btn::before, #tanoth-bot-panel .tb-chip::before,
+#tanoth-bot-panel .tb-stat::before, #tanoth-bot-panel .tb-status::before, #tanoth-bot-panel .tb-license::before,
+#tanoth-bot-panel .tb-footer a::before, #tanoth-bot-panel .tb-pay-alt::before {
+  content: '' !important; display: block !important; flex: 0 0 auto !important; width: 14px !important; height: 14px !important;
+  background: currentColor !important; -webkit-mask: var(--ic, var(--ic-star)) center / contain no-repeat !important; mask: var(--ic, var(--ic-star)) center / contain no-repeat !important;
+}
+
+/* Header: a glass bar with a lit lower edge; mark + title ... beacon + window buttons */
 #tanoth-bot-panel .tb-defs { position: absolute !important; width: 0 !important; height: 0 !important; overflow: hidden !important; pointer-events: none !important; }
-#tanoth-bot-panel .tb-header { display: flex !important; align-items: center !important; gap: 10px !important; flex: 0 0 auto !important; padding: 9px 9px 9px 16px !important; cursor: move !important; position: relative !important; background: var(--bar) !important; border-bottom: 1px solid var(--line) !important; color: var(--text) !important; font-weight: 700 !important; font-size: 13.5px !important; }
-#tanoth-bot-panel .tb-header::after { content: '' !important; position: absolute !important; left: 16px !important; right: 16px !important; bottom: -1px !important; height: 1px !important; background: linear-gradient(90deg, var(--accent), rgba(39, 224, 138, 0) 70%) !important; opacity: .9 !important; box-shadow: 0 0 12px 1px var(--accent-line) !important; }
+#tanoth-bot-panel .tb-header { display: flex !important; align-items: center !important; gap: 10px !important; flex: 0 0 auto !important; min-height: 52px !important; padding: 8px 8px 8px 14px !important; cursor: move !important; position: relative !important; background: var(--hatch), var(--bar) !important; border-bottom: 1px solid var(--line) !important; color: var(--text) !important; font-weight: 800 !important; font-size: 14px !important; }
+#tanoth-bot-panel .tb-header::after { content: '' !important; position: absolute !important; left: 14px !important; right: 14px !important; bottom: -1px !important; height: 1px !important; background: linear-gradient(90deg, var(--accent), rgba(39, 224, 138, 0) 70%) !important; opacity: .9 !important; box-shadow: 0 0 12px 1px var(--accent-line) !important; }
 #tanoth-bot-panel.tb-light .tb-header::after { background: linear-gradient(90deg, #0a8a55, rgba(10, 138, 85, 0) 70%) !important; box-shadow: none !important; }
-#tanoth-bot-panel .tb-header .tb-dot { position: relative !important; display: block !important; width: 14px !important; height: 14px !important; border-radius: 50% !important; flex: 0 0 auto !important; border: 2px solid var(--muted) !important; background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, .5), transparent 60%) !important; }
+#tanoth-bot-panel .tb-mark { display: block !important; order: 0 !important; width: 26px !important; height: 26px !important; flex: 0 0 auto !important; filter: drop-shadow(0 3px 8px rgba(39, 224, 138, .4)) !important; }
+#tanoth-bot-panel .tb-mark .m-tile { fill: var(--bg) !important; stroke: var(--accent-line) !important; }
+#tanoth-bot-panel .tb-mark .m-blade { fill: var(--accent) !important; }
+#tanoth-bot-panel .tb-mark .m-guard { stroke: var(--accent) !important; }
+#tanoth-bot-panel.tb-light .tb-mark .m-tile { fill: #0a0b0d !important; stroke: #0a0b0d !important; }
+#tanoth-bot-panel.tb-light .tb-mark { filter: drop-shadow(0 3px 6px rgba(5, 96, 58, .3)) !important; }
+#tanoth-bot-panel .tb-title { order: 1 !important; flex: 1 1 auto !important; min-width: 0 !important; letter-spacing: -.012em !important; line-height: 1.2 !important; display: -webkit-box !important; -webkit-box-orient: vertical !important; -webkit-line-clamp: 2 !important; overflow: hidden !important; overflow-wrap: anywhere !important; }
+/* Beacon: the state LED. Shape + colour: ring (idle) / lit core (running) / amber square with bars (paused). */
+#tanoth-bot-panel .tb-header .tb-dot { order: 2 !important; position: relative !important; display: block !important; width: 14px !important; height: 14px !important; margin: 0 4px !important; border-radius: 50% !important; flex: 0 0 auto !important; border: 2px solid var(--muted) !important; background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, .5), transparent 60%) !important; }
 #tanoth-bot-panel.tb-running .tb-header .tb-dot { border-color: #b7ffe0 !important; background: radial-gradient(circle at 35% 30%, #d6ffec, var(--accent) 55%, #0c8f55) !important; box-shadow: 0 0 0 3px var(--accent-wash), 0 0 14px 2px var(--accent-line) !important; }
 #tanoth-bot-panel.tb-light.tb-running .tb-header .tb-dot { border-color: #0a8a55 !important; background: radial-gradient(circle at 35% 30%, #9af0c6, #12b868 60%, #067a45) !important; box-shadow: 0 0 0 3px rgba(10, 138, 85, .14) !important; }
 #tanoth-bot-panel.tb-paused .tb-header .tb-dot { border-radius: 4px !important; border-color: var(--warn-text) !important; box-shadow: none !important; background: linear-gradient(90deg, transparent 0 26%, var(--warn-text) 26% 42%, transparent 42% 58%, var(--warn-text) 58% 74%, transparent 74%) !important; }
-#tanoth-bot-panel .tb-title { flex: 1 1 auto !important; min-width: 0 !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; }
-#tanoth-bot-panel .tb-icon-btn { display: inline-flex !important; align-items: center !important; justify-content: center !important; flex: 0 0 auto !important; cursor: pointer !important; width: 30px !important; height: 30px !important; padding: 0 !important; border-radius: 50% !important; font-size: 17px !important; font-weight: 600 !important; line-height: 1 !important; background: transparent !important; border: 1px solid transparent !important; color: var(--text) !important; }
+#tanoth-bot-panel .tb-icon-btn { order: 3 !important; position: relative !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; flex: 0 0 auto !important; cursor: pointer !important; width: 30px !important; height: 30px !important; padding: 0 !important; border-radius: 50% !important; font-size: 0 !important; line-height: 1 !important; background: transparent !important; border: 1px solid transparent !important; color: var(--text) !important; }
+#tanoth-bot-panel .tb-icon-btn::before { width: 15px !important; height: 15px !important; }
+#tanoth-bot-panel .tb-icon-btn[data-act="collapse"] { --ic: var(--ic-minus); }
+#tanoth-bot-panel .tb-icon-btn[data-act="hide"] { --ic: var(--ic-close); }
+#tanoth-bot-panel.tb-collapsed .tb-icon-btn[data-act="collapse"] { --ic: var(--ic-chev); }
 #tanoth-bot-panel .tb-icon-btn:hover { background: var(--hover) !important; color: var(--text) !important; border-color: var(--plate-edge) !important; box-shadow: var(--plate-lit) !important; }
+#tanoth-bot-panel .tb-icon-btn[data-act="hide"]:hover { color: var(--danger-text) !important; border-color: var(--danger-line) !important; }
 
 /* Scrolling body */
-#tanoth-bot-panel .tb-body { display: block !important; flex: 1 1 auto !important; min-height: 0 !important; overflow-y: auto !important; overscroll-behavior: contain !important; padding: 14px 14px 14px !important; scrollbar-width: thin !important; scrollbar-color: var(--line-strong) transparent !important; }
+#tanoth-bot-panel .tb-body { display: block !important; flex: 1 1 auto !important; min-height: 0 !important; overflow-y: auto !important; overscroll-behavior: contain !important; padding: 10px 12px 12px !important; scrollbar-width: thin !important; scrollbar-color: var(--line-strong) transparent !important; }
 #tanoth-bot-panel.tb-collapsed .tb-body { display: none !important; }
 #tanoth-bot-panel.tb-collapsed .tb-header { border-bottom-color: transparent !important; }
 #tanoth-bot-panel.tb-collapsed .tb-header::after { display: none !important; }
 
-#tanoth-bot-panel .tb-license { display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 8px !important; margin-bottom: 10px !important; font-size: 12px !important; color: var(--muted) !important; padding: 6px 6px 6px 12px !important; min-height: 38px !important; background: var(--plate) !important; border: 1px solid var(--plate-edge) !important; border-radius: var(--r-m) !important; box-shadow: var(--plate-lit) !important; }
+/* Licence bar: key glyph + text + subscribe pill. Expired = danger edge + warning glyph. */
+#tanoth-bot-panel .tb-license { --ic: var(--ic-key); display: flex !important; align-items: center !important; gap: 8px !important; margin-bottom: 10px !important; font-size: 12px !important; color: var(--muted) !important; padding: 6px 6px 6px 12px !important; min-height: 40px !important; background: var(--plate) !important; border: 1px solid var(--plate-edge) !important; border-radius: var(--r-m) !important; box-shadow: var(--plate-lit) !important; }
+#tanoth-bot-panel .tb-license::before { color: var(--accent-text) !important; }
 #tanoth-bot-panel .tb-license [data-el="license-text"] { flex: 1 1 auto !important; min-width: 0 !important; overflow-wrap: anywhere !important; }
 #tanoth-bot-panel .tb-license b { color: var(--text) !important; font-weight: 700 !important; }
 #tanoth-bot-panel .tb-license.tb-lic-expired, #tanoth-bot-panel .tb-license.tb-lic-expired b { color: var(--danger-text) !important; }
-#tanoth-bot-panel .tb-license.tb-lic-expired { border-color: var(--danger-line) !important; }
+#tanoth-bot-panel .tb-license.tb-lic-expired { --ic: var(--ic-warn); border-color: var(--danger-line) !important; background: linear-gradient(0deg, var(--danger-wash), var(--danger-wash)), var(--plate) !important; }
+#tanoth-bot-panel .tb-license.tb-lic-expired::before { color: var(--danger-text) !important; }
 #tanoth-bot-panel .tb-license.tb-lic-expired [data-el="license-text"]::before { content: '\2715\00a0' !important; font-weight: 800 !important; }
-#tanoth-bot-panel .tb-link { display: inline-flex !important; align-items: center !important; min-height: 28px !important; padding: 0 12px !important; cursor: pointer !important; flex: 0 0 auto !important; border: 1px solid var(--accent-line) !important; border-radius: 14px !important; color: var(--accent-text) !important; font-weight: 700 !important; font-size: 12px !important; background: var(--accent-wash) !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22) !important; }
+#tanoth-bot-panel .tb-link { display: inline-flex !important; align-items: center !important; min-height: 28px !important; padding: 0 12px !important; cursor: pointer !important; flex: 0 0 auto !important; border: 1px solid var(--accent-line) !important; border-radius: 14px !important; color: var(--accent-text) !important; font-weight: 700 !important; font-size: 12px !important; background: linear-gradient(0deg, var(--accent-wash), var(--accent-wash)), var(--plate) !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22) !important; }
 #tanoth-bot-panel .tb-link:hover { background: var(--accent) !important; color: var(--accent-ink) !important; border-color: transparent !important; }
 #tanoth-bot-panel.tb-light .tb-link:hover { background: #0a7a4b !important; color: #fff !important; }
 
-/* Controls: Start is a liquid emerald drop, Pause/Stop are clear glass */
+/* Controls: three keys, glyph over label. Start = liquid emerald drop, Pause/Stop = clear glass. */
 #tanoth-bot-panel .tb-controls { display: grid !important; grid-template-columns: 1.25fr 1fr 1fr !important; gap: 8px !important; margin-bottom: 10px !important; }
-#tanoth-bot-panel .tb-btn { display: inline-flex !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; min-height: 38px !important; padding: 0 8px !important; border: 1px solid var(--plate-edge) !important; border-radius: 19px !important; font-weight: 700 !important; font-size: 13px !important; line-height: 1.2 !important; color: var(--text) !important; background: var(--plate) !important; box-shadow: var(--plate-lit) !important; text-align: center !important; overflow-wrap: anywhere !important; }
+#tanoth-bot-panel .tb-btn { display: inline-flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; gap: 4px !important; cursor: pointer !important; min-height: 52px !important; padding: 6px 6px !important; border: 1px solid var(--plate-edge) !important; border-radius: 18px !important; font-weight: 700 !important; font-size: 12.5px !important; line-height: 1.15 !important; color: var(--text) !important; background: var(--plate) !important; box-shadow: var(--plate-lit) !important; text-align: center !important; overflow-wrap: anywhere !important; }
+#tanoth-bot-panel .tb-btn::before { width: 15px !important; height: 15px !important; }
+#tanoth-bot-panel .tb-btn.tb-start { --ic: var(--ic-play); }
+#tanoth-bot-panel .tb-btn.tb-pause { --ic: var(--ic-pause); }
+#tanoth-bot-panel .tb-btn.tb-stop { --ic: var(--ic-stop); }
 #tanoth-bot-panel .tb-btn:hover:not(:disabled) { background: linear-gradient(180deg, rgba(255, 255, 255, .16), rgba(255, 255, 255, 0) 60%), var(--hover) !important; border-color: var(--line-strong) !important; }
-#tanoth-bot-panel .tb-btn:active:not(:disabled) { transform: translateY(1px) scale(.97) !important; }
+#tanoth-bot-panel .tb-btn:active:not(:disabled) { transform: translateY(1px) scale(.96) !important; }
 #tanoth-bot-panel .tb-btn.tb-start { border-color: rgba(190, 255, 225, .8) !important; color: var(--accent-ink) !important; background: radial-gradient(120% 90% at 28% 0%, rgba(255, 255, 255, .6), rgba(255, 255, 255, 0) 55%), linear-gradient(180deg, #46f5a8, #14b96b) !important; box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .85), inset 0 -3px 6px rgba(0, 90, 50, .38), 0 8px 20px -6px rgba(39, 224, 138, .7), 0 2px 4px rgba(0, 0, 0, .3) !important; }
 #tanoth-bot-panel .tb-btn.tb-start:hover:not(:disabled) { background: radial-gradient(120% 90% at 28% 0%, rgba(255, 255, 255, .72), rgba(255, 255, 255, 0) 55%), linear-gradient(180deg, #6bffbd, #1ccb78) !important; border-color: #fff !important; }
 #tanoth-bot-panel .tb-btn.tb-stop { color: var(--danger-text) !important; }
+#tanoth-bot-panel .tb-btn.tb-stop:hover:not(:disabled) { background: linear-gradient(0deg, var(--danger-wash), var(--danger-wash)), var(--plate) !important; border-color: var(--danger-line) !important; }
 #tanoth-bot-panel .tb-btn.tb-pause { color: var(--warn-text) !important; }
+#tanoth-bot-panel .tb-btn.tb-pause:hover:not(:disabled) { background: linear-gradient(0deg, var(--warn-wash), var(--warn-wash)), var(--plate) !important; border-color: var(--warn-line) !important; }
 #tanoth-bot-panel .tb-btn:disabled { cursor: not-allowed !important; background: rgba(128, 140, 150, .12) !important; box-shadow: none !important; border: 1px dashed var(--line-strong) !important; color: var(--faint) !important; }
 #tanoth-bot-panel .tb-btn.tb-start:disabled { background: var(--accent-wash) !important; border: 1px dashed var(--accent-line) !important; color: var(--accent-text) !important; box-shadow: none !important; }
 #tanoth-bot-panel.tb-light .tb-btn.tb-start { border-color: rgba(255, 255, 255, .9) !important; color: #02140a !important; box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .9), inset 0 -3px 6px rgba(0, 90, 50, .3), 0 8px 18px -6px rgba(10, 160, 95, .6), 0 0 0 1px rgba(5, 96, 58, .35) !important; }
+#tanoth-bot-panel.tb-light .tb-btn.tb-start:disabled { color: var(--accent-text) !important; box-shadow: none !important; }
 
-/* Status readout: a glass strip with a lit state lamp on its left edge */
-#tanoth-bot-panel .tb-status { position: relative !important; min-height: 38px !important; display: flex !important; align-items: center !important; margin-bottom: 10px !important; padding: 7px 12px 7px 16px !important; font-size: 12.5px !important; color: var(--muted) !important; background: var(--plate) !important; border: 1px solid var(--plate-edge) !important; border-radius: var(--r-m) !important; box-shadow: var(--plate-lit) !important; overflow: hidden !important; overflow-wrap: anywhere !important; }
-#tanoth-bot-panel .tb-status::before { content: '' !important; position: absolute !important; left: 0 !important; top: 0 !important; bottom: 0 !important; width: 4px !important; min-width: 0 !important; background: var(--line-strong) !important; }
-#tanoth-bot-panel.tb-running .tb-status::before { background: var(--accent) !important; box-shadow: 0 0 12px 1px var(--accent-line) !important; }
-#tanoth-bot-panel.tb-paused .tb-status::before { background: var(--warn-text) !important; }
-#tanoth-bot-panel.tb-running .tb-status, #tanoth-bot-panel.tb-paused .tb-status { color: var(--text) !important; }
-#tanoth-bot-panel .tb-status b { color: var(--accent-text) !important; font-weight: 700 !important; }
+/* Status readout - the HUD. Reticle corners, a state lamp (disc + glyph), the state text,
+   and a scan rail along the bottom that travels while the bot runs. */
+#tanoth-bot-panel .tb-status {
+  --ic: var(--ic-power); --lamp: var(--muted); --ret-c: var(--ret);
+  position: relative !important; min-height: 52px !important; display: flex !important; flex-wrap: wrap !important; align-items: baseline !important; align-content: center !important; column-gap: .32em !important; margin-bottom: 10px !important; padding: 9px 14px 11px 52px !important; font-size: 13.5px !important; font-weight: 600 !important; line-height: 1.3 !important; color: var(--muted) !important; overflow: hidden !important; overflow-wrap: anywhere !important;
+  border: 1px solid var(--plate-edge) !important; border-radius: var(--r-m) !important; box-shadow: var(--plate-lit) !important;
+  background:
+    linear-gradient(var(--ret-c), var(--ret-c)) left 5px top 5px / 9px 1.5px no-repeat,
+    linear-gradient(var(--ret-c), var(--ret-c)) left 5px top 5px / 1.5px 9px no-repeat,
+    linear-gradient(var(--ret-c), var(--ret-c)) right 5px top 5px / 9px 1.5px no-repeat,
+    linear-gradient(var(--ret-c), var(--ret-c)) right 5px top 5px / 1.5px 9px no-repeat,
+    linear-gradient(var(--ret-c), var(--ret-c)) left 5px bottom 5px / 9px 1.5px no-repeat,
+    linear-gradient(var(--ret-c), var(--ret-c)) left 5px bottom 5px / 1.5px 9px no-repeat,
+    linear-gradient(var(--ret-c), var(--ret-c)) right 5px bottom 5px / 9px 1.5px no-repeat,
+    linear-gradient(var(--ret-c), var(--ret-c)) right 5px bottom 5px / 1.5px 9px no-repeat,
+    radial-gradient(circle at 29px 50%, var(--disc-bg) 0 15px, var(--disc-ring) 15px 16.5px, transparent 17px),
+    var(--plate) !important;
+}
+#tanoth-bot-panel .tb-status::before { position: absolute !important; left: 21px !important; top: calc(50% - 8px) !important; width: 16px !important; height: 16px !important; color: var(--lamp) !important; }
+#tanoth-bot-panel .tb-status::after { content: '' !important; position: absolute !important; left: 0 !important; bottom: 0 !important; width: 100% !important; height: 2px !important; background: var(--line) !important; }
+#tanoth-bot-panel.tb-running .tb-status { --ic: var(--ic-play); --lamp: var(--accent-text); --ret-c: var(--accent); --disc-bg: var(--accent-wash); --disc-ring: var(--accent-line); color: var(--text) !important; border-color: var(--accent-line) !important; }
+#tanoth-bot-panel.tb-running .tb-status::after { width: 42% !important; background: linear-gradient(90deg, rgba(39, 224, 138, 0), var(--accent) 70%, #d6ffec) !important; box-shadow: 0 0 10px 1px var(--accent-line) !important; }
+#tanoth-bot-panel.tb-light.tb-running .tb-status::after { background: linear-gradient(90deg, rgba(10, 138, 85, 0), #0a8a55 80%) !important; box-shadow: none !important; }
+#tanoth-bot-panel.tb-paused .tb-status { --ic: var(--ic-pause); --lamp: var(--warn-text); --ret-c: var(--warn-text); --disc-bg: var(--warn-wash); --disc-ring: var(--warn-line); color: var(--text) !important; border-color: var(--warn-line) !important; }
+#tanoth-bot-panel.tb-paused .tb-status::after { background: repeating-linear-gradient(90deg, var(--warn-text) 0 6px, transparent 6px 12px) !important; opacity: .8 !important; }
+#tanoth-bot-panel .tb-status b { color: var(--accent-text) !important; font-weight: 800 !important; font-size: 15px !important; letter-spacing: -.01em !important; }
 
-/* Session readouts: value above label, 3 columns */
-#tanoth-bot-panel .tb-stats { display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 6px !important; margin-bottom: 12px !important; }
-#tanoth-bot-panel .tb-stat { display: flex !important; flex-direction: column-reverse !important; gap: 1px !important; padding: 7px 9px !important; font-size: 11px !important; color: var(--muted) !important; background: var(--plate) !important; border: 1px solid var(--plate-edge) !important; border-radius: var(--r-m) !important; box-shadow: var(--plate-lit) !important; }
+/* Session readouts: lamp + big value above a quiet label, 2 columns (order is fixed by the
+   panel: adventures, circle, gold, xp, errors, runtime - glyphs follow that order). */
+#tanoth-bot-panel .tb-stats { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 5px !important; margin-bottom: 10px !important; }
+#tanoth-bot-panel .tb-stat {
+  --ic: var(--ic-star); --lamp: var(--accent-text);
+  position: relative !important; display: flex !important; flex-direction: column-reverse !important; justify-content: center !important; gap: 0 !important; min-height: 46px !important; padding: 5px 10px 5px 46px !important; font-size: 11.5px !important; color: var(--muted) !important;
+  border: 1px solid var(--plate-edge) !important; border-radius: var(--r-m) !important; box-shadow: var(--plate-lit) !important;
+  background: radial-gradient(circle at 24px 50%, var(--disc-bg) 0 13px, var(--disc-ring) 13px 14px, transparent 14.5px), var(--plate) !important;
+}
+#tanoth-bot-panel .tb-stat::before { position: absolute !important; left: 17px !important; top: calc(50% - 7px) !important; color: var(--lamp) !important; }
+#tanoth-bot-panel .tb-stat:nth-child(1) { --ic: var(--ic-sword); }
+#tanoth-bot-panel .tb-stat:nth-child(2) { --ic: var(--ic-nodes); }
+#tanoth-bot-panel .tb-stat:nth-child(3) { --ic: var(--ic-coin); }
+#tanoth-bot-panel .tb-stat:nth-child(4) { --ic: var(--ic-star); }
+#tanoth-bot-panel .tb-stat:nth-child(5) { --ic: var(--ic-warn); --lamp: var(--warn-text); }
+#tanoth-bot-panel .tb-stat:nth-child(6) { --ic: var(--ic-clock); --lamp: var(--muted); }
 #tanoth-bot-panel .tb-stat span { overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; }
-#tanoth-bot-panel .tb-stat b { font-size: 15px !important; font-weight: 700 !important; color: var(--text) !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; letter-spacing: -.01em !important; }
+#tanoth-bot-panel .tb-stat b { font-size: 18px !important; font-weight: 800 !important; line-height: 1.15 !important; color: var(--text) !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; letter-spacing: -.02em !important; }
 
-/* Module toggles: the check mark carries the state, not just the colour */
-#tanoth-bot-panel .tb-modules { display: flex !important; flex-wrap: wrap !important; gap: 6px !important; margin-bottom: 12px !important; }
-#tanoth-bot-panel .tb-chip { display: inline-flex !important; align-items: center !important; gap: 5px !important; min-height: 28px !important; padding: 0 11px !important; cursor: pointer !important; font-size: 12px !important; font-weight: 600 !important; border-radius: 14px !important; background: var(--plate) !important; border: 1px dashed var(--line-strong) !important; color: var(--muted) !important; max-width: 100% !important; }
+/* Module toggles: glyph + label; the state is carried by the check mark and the border
+   style (solid + check = on, dashed = off), never by colour alone. */
+#tanoth-bot-panel .tb-modules { display: flex !important; flex-wrap: wrap !important; gap: 5px !important; margin-bottom: 10px !important; }
+#tanoth-bot-panel .tb-chip { --ic: var(--ic-star); display: inline-flex !important; align-items: center !important; gap: 6px !important; min-height: 28px !important; padding: 0 11px 0 9px !important; cursor: pointer !important; font-size: 12px !important; font-weight: 600 !important; border-radius: 14px !important; background: var(--plate) !important; border: 1px dashed var(--line-strong) !important; color: var(--muted) !important; max-width: 100% !important; }
+#tanoth-bot-panel .tb-chip::before { width: 14px !important; height: 14px !important; }
+#tanoth-bot-panel .tb-chip[data-act="mod:adventures"] { --ic: var(--ic-sword); }
+#tanoth-bot-panel .tb-chip[data-act="mod:dungeon"] { --ic: var(--ic-door); }
+#tanoth-bot-panel .tb-chip[data-act="mod:eventquest"] { --ic: var(--ic-flag); }
+#tanoth-bot-panel .tb-chip[data-act="mod:map"] { --ic: var(--ic-pin); }
+#tanoth-bot-panel .tb-chip[data-act="mod:pvp"] { --ic: var(--ic-bolt); }
+#tanoth-bot-panel .tb-chip[data-act="mod:work"] { --ic: var(--ic-work); }
+#tanoth-bot-panel .tb-chip[data-act="mod:circle"] { --ic: var(--ic-nodes); }
+#tanoth-bot-panel .tb-chip[data-act="mod:training"] { --ic: var(--ic-up); }
+#tanoth-bot-panel .tb-chip[data-act="mod:guild"] { --ic: var(--ic-users); }
+#tanoth-bot-panel .tb-chip[data-act="mod:autosell"] { --ic: var(--ic-tag); }
+#tanoth-bot-panel .tb-chip[data-act="mod:autologin"] { --ic: var(--ic-key); }
 #tanoth-bot-panel .tb-chip:hover { color: var(--text) !important; background: linear-gradient(180deg, rgba(255, 255, 255, .14), rgba(255, 255, 255, 0)), var(--hover) !important; }
 #tanoth-bot-panel .tb-chip.tb-on { background: linear-gradient(180deg, rgba(255, 255, 255, .1), rgba(255, 255, 255, 0) 55%), linear-gradient(0deg, var(--accent-wash), var(--accent-wash)), var(--chip-on-base), var(--plate) !important; border: 1px solid var(--accent-line) !important; color: var(--accent-text) !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 0 14px -3px var(--accent-line) !important; }
 #tanoth-bot-panel.tb-light .tb-chip.tb-on { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 0 0 1px rgba(5, 96, 58, .1) !important; }
-#tanoth-bot-panel .tb-chip.tb-on::before { content: '\2713' !important; font-weight: 800 !important; font-size: 11px !important; }
+#tanoth-bot-panel .tb-chip.tb-on::after { content: '' !important; display: block !important; flex: 0 0 auto !important; width: 12px !important; height: 12px !important; background: currentColor !important; -webkit-mask: var(--ic-check) center / contain no-repeat !important; mask: var(--ic-check) center / contain no-repeat !important; }
 
 /* Inputs: recessed wells */
-#tanoth-bot-panel .tb-inputs { display: flex !important; flex-direction: column !important; gap: 6px !important; margin-bottom: 12px !important; }
+#tanoth-bot-panel .tb-inputs { display: flex !important; flex-direction: column !important; gap: 5px !important; margin-bottom: 10px !important; }
 #tanoth-bot-panel .tb-input, #tanoth-bot-panel .tb-key { display: block !important; width: 100% !important; min-height: 34px !important; padding: 0 12px !important; border-radius: var(--r-m) !important; font-size: 12.5px !important; line-height: 1.2 !important; background: var(--well) !important; border: 1px solid var(--well-edge) !important; box-shadow: var(--well-lit) !important; color: var(--text) !important; user-select: text !important; }
 #tanoth-bot-panel .tb-input:hover, #tanoth-bot-panel .tb-key:hover { border-color: var(--line-strong) !important; }
+#tanoth-bot-panel .tb-input:focus, #tanoth-bot-panel .tb-key:focus { border-color: var(--accent-line) !important; }
 #tanoth-bot-panel .tb-input::placeholder, #tanoth-bot-panel .tb-key::placeholder { color: var(--muted) !important; opacity: 1 !important; }
 /* A long (translated) hint must end in an ellipsis, not be cut mid-character. */
 #tanoth-bot-panel .tb-input, #tanoth-bot-panel .tb-key { text-overflow: ellipsis !important; }
 
-/* Log: a deep well, glyph prefix per level */
-#tanoth-bot-panel .tb-log { display: block !important; height: 132px !important; overflow-y: auto !important; background: var(--well) !important; border: 1px solid var(--plate-edge) !important; border-radius: var(--r-m) !important; box-shadow: var(--well-lit) !important; padding: 7px 9px !important; font-family: var(--mono) !important; font-size: 11.5px !important; user-select: text !important; scrollbar-width: thin !important; scrollbar-color: var(--line-strong) transparent !important; }
-#tanoth-bot-panel .tb-log .tb-line { display: block !important; margin: 0 0 3px !important; white-space: pre-wrap !important; overflow-wrap: anywhere !important; color: var(--text) !important; font-family: var(--mono) !important; line-height: 1.45 !important; }
+/* Log: a deep well, glyph prefix per level; error / warning lines carry a coloured edge. */
+#tanoth-bot-panel .tb-log { display: block !important; height: 104px !important; overflow-y: auto !important; background: var(--well) !important; border: 1px solid var(--plate-edge) !important; border-radius: var(--r-m) !important; box-shadow: var(--well-lit) !important; padding: 6px 8px !important; font-family: var(--mono) !important; font-size: 11.5px !important; user-select: text !important; scrollbar-width: thin !important; scrollbar-color: var(--line-strong) transparent !important; }
+#tanoth-bot-panel .tb-log .tb-line { display: block !important; margin: 0 0 2px !important; padding: 1px 0 1px 6px !important; border-left: 2px solid transparent !important; white-space: pre-wrap !important; overflow-wrap: anywhere !important; color: var(--text) !important; font-family: var(--mono) !important; line-height: 1.45 !important; }
 #tanoth-bot-panel .tb-log .tb-time { color: var(--muted) !important; font-family: var(--mono) !important; }
-#tanoth-bot-panel .tb-log .tb-line.tb-err { color: var(--danger-text) !important; }
-#tanoth-bot-panel .tb-log .tb-line.tb-warn { color: var(--warn-text) !important; }
-#tanoth-bot-panel .tb-log .tb-line.tb-ok { color: var(--accent-text) !important; }
+#tanoth-bot-panel .tb-log .tb-line.tb-err { color: var(--danger-text) !important; border-left-color: var(--danger-text) !important; background: linear-gradient(90deg, var(--danger-wash), transparent 85%) !important; }
+#tanoth-bot-panel .tb-log .tb-line.tb-warn { color: var(--warn-text) !important; border-left-color: var(--warn-text) !important; }
+#tanoth-bot-panel .tb-log .tb-line.tb-ok { color: var(--accent-text) !important; border-left-color: var(--accent-text) !important; }
 #tanoth-bot-panel .tb-log .tb-line.tb-err::before { content: '\2715\00a0' !important; font-weight: 800 !important; }
 #tanoth-bot-panel .tb-log .tb-line.tb-warn::before { content: '\25B2\00a0' !important; font-size: 9px !important; }
 #tanoth-bot-panel .tb-log .tb-line.tb-ok::before { content: '\2713\00a0' !important; font-weight: 800 !important; }
 
-#tanoth-bot-panel .tb-footer { display: flex !important; justify-content: space-between !important; align-items: center !important; gap: 8px !important; margin-top: 8px !important; padding: 4px 5px 4px 12px !important; min-height: 36px !important; font-size: 11.5px !important; color: var(--muted) !important; background: var(--plate) !important; border: 1px solid var(--plate-edge) !important; border-radius: var(--r-m) !important; box-shadow: var(--plate-lit) !important; }
+#tanoth-bot-panel .tb-footer { display: flex !important; justify-content: space-between !important; align-items: center !important; gap: 8px !important; margin-top: 8px !important; padding: 4px 5px 4px 12px !important; min-height: 38px !important; font-size: 11.5px !important; color: var(--muted) !important; background: var(--plate) !important; border: 1px solid var(--plate-edge) !important; border-radius: var(--r-m) !important; box-shadow: var(--plate-lit) !important; }
 #tanoth-bot-panel .tb-footer span { min-width: 0 !important; overflow-wrap: anywhere !important; }
-#tanoth-bot-panel .tb-footer a { display: inline-flex !important; align-items: center !important; min-height: 28px !important; padding: 0 11px !important; cursor: pointer !important; flex: 0 0 auto !important; border-radius: 14px !important; color: var(--text) !important; font-weight: 600 !important; border: 1px solid transparent !important; }
+#tanoth-bot-panel .tb-footer a { --ic: var(--ic-gear); display: inline-flex !important; align-items: center !important; gap: 6px !important; min-height: 30px !important; padding: 0 12px !important; cursor: pointer !important; flex: 0 0 auto !important; border-radius: 15px !important; color: var(--text) !important; font-weight: 600 !important; border: 1px solid transparent !important; }
+#tanoth-bot-panel .tb-footer a::before { width: 13px !important; height: 13px !important; }
 #tanoth-bot-panel .tb-footer a:hover { background: var(--hover) !important; color: var(--accent-text) !important; border-color: var(--plate-edge) !important; box-shadow: var(--plate-lit) !important; }
 
 /* Locked + paywall */
 #tanoth-bot-panel.tb-locked .tb-controls,
 #tanoth-bot-panel.tb-locked .tb-modules,
 #tanoth-bot-panel.tb-locked .tb-stats { opacity: .4 !important; pointer-events: none !important; filter: grayscale(1) !important; }
-#tanoth-bot-panel .tb-paywall { display: none !important; position: relative !important; margin-bottom: 12px !important; padding: 15px !important; text-align: left !important; background: radial-gradient(120% 70% at 50% -10%, rgba(39, 224, 138, .22), rgba(39, 224, 138, 0) 70%), var(--chip-on-base), var(--plate) !important; border: 1px solid var(--accent-line) !important; border-radius: 18px !important; box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .5), inset 0 -1px 0 rgba(0, 0, 0, .3), 0 14px 30px -14px rgba(0, 0, 0, .6), 0 0 26px -8px var(--accent-line) !important; }
+#tanoth-bot-panel .tb-paywall { display: none !important; position: relative !important; margin-bottom: 12px !important; padding: 16px 15px 15px !important; text-align: left !important; background: radial-gradient(120% 70% at 50% -10%, rgba(39, 224, 138, .22), rgba(39, 224, 138, 0) 70%), var(--chip-on-base), var(--plate) !important; border: 1px solid var(--accent-line) !important; border-radius: 20px !important; box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .5), inset 0 -1px 0 rgba(0, 0, 0, .3), 0 14px 30px -14px rgba(0, 0, 0, .6), 0 0 26px -8px var(--accent-line) !important; }
 #tanoth-bot-panel.tb-light .tb-paywall { background: radial-gradient(120% 70% at 50% -10%, rgba(39, 224, 138, .3), rgba(39, 224, 138, 0) 70%), var(--plate) !important; box-shadow: inset 0 1.5px 0 #fff, 0 14px 28px -14px rgba(18, 36, 56, .4) !important; }
 #tanoth-bot-panel.tb-show-paywall .tb-paywall { display: block !important; }
-#tanoth-bot-panel .tb-paywall h3 { font-size: 16px !important; font-weight: 750 !important; letter-spacing: -.01em !important; color: var(--text) !important; margin: 0 0 4px !important; }
+#tanoth-bot-panel .tb-paywall h3 { display: flex !important; align-items: center !important; gap: 10px !important; font-size: 17px !important; font-weight: 800 !important; letter-spacing: -.015em !important; line-height: 1.2 !important; color: var(--text) !important; margin: 0 0 8px !important; }
+#tanoth-bot-panel .tb-paywall h3::before { content: '' !important; display: block !important; flex: 0 0 auto !important; width: 32px !important; height: 32px !important; border-radius: 50% !important; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2303170c' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5' y='11' width='14' height='10' rx='2'/%3E%3Cpath d='M8 11V8a4 4 0 018 0v3'/%3E%3C/svg%3E") center / 16px 16px no-repeat, linear-gradient(180deg, #46f5a8, #14b96b) !important; box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .8), 0 6px 14px -4px rgba(39, 224, 138, .7) !important; }
 #tanoth-bot-panel .tb-paywall p { margin: 0 0 10px !important; font-size: 12px !important; color: var(--muted) !important; }
 #tanoth-bot-panel .tb-paywall p.tb-warn { position: relative !important; padding: 9px 11px 9px 36px !important; margin: 0 0 12px !important; border-radius: var(--r-m) !important; font-size: 11.5px !important; line-height: 1.45 !important; color: var(--text) !important; background: linear-gradient(0deg, var(--warn-wash), var(--warn-wash)), var(--well) !important; border: 1px solid var(--warn-line) !important; }
 #tanoth-bot-panel .tb-paywall p.tb-warn::before { content: '!' !important; position: absolute !important; left: 11px !important; top: 10px !important; width: 16px !important; height: 16px !important; border-radius: 50% !important; background: var(--warn-text) !important; color: var(--bg) !important; font-weight: 800 !important; font-size: 11px !important; line-height: 16px !important; text-align: center !important; }
 #tanoth-bot-panel .tb-paywall .tb-plans { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8px !important; margin: 0 0 12px !important; }
-#tanoth-bot-panel .tb-paywall .tb-pay { display: block !important; width: 100% !important; text-align: center !important; cursor: pointer !important; min-height: 42px !important; padding: 11px 8px !important; border: 1px solid rgba(190, 255, 225, .8) !important; border-radius: 21px !important; font-weight: 700 !important; font-size: 13px !important; line-height: 1.2 !important; color: var(--accent-ink) !important; background: radial-gradient(120% 90% at 28% 0%, rgba(255, 255, 255, .6), rgba(255, 255, 255, 0) 55%), linear-gradient(180deg, #46f5a8, #14b96b) !important; box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .85), inset 0 -3px 6px rgba(0, 90, 50, .38), 0 8px 18px -6px rgba(39, 224, 138, .65) !important; overflow-wrap: anywhere !important; }
-#tanoth-bot-panel .tb-paywall .tb-pay.tb-pay-alt { color: var(--gold-ink) !important; border-color: rgba(255, 236, 190, .85) !important; background: radial-gradient(120% 90% at 28% 0%, rgba(255, 255, 255, .6), rgba(255, 255, 255, 0) 55%), linear-gradient(180deg, #f5cf7a, #d49b2c) !important; box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .85), inset 0 -3px 6px rgba(120, 70, 0, .35), 0 8px 18px -6px rgba(230, 179, 74, .65) !important; }
+#tanoth-bot-panel .tb-paywall .tb-pay { display: block !important; width: 100% !important; text-align: center !important; cursor: pointer !important; min-height: 46px !important; padding: 12px 8px !important; border: 1px solid rgba(190, 255, 225, .8) !important; border-radius: 22px !important; font-weight: 800 !important; font-size: 13.5px !important; line-height: 1.2 !important; color: var(--accent-ink) !important; background: radial-gradient(120% 90% at 28% 0%, rgba(255, 255, 255, .6), rgba(255, 255, 255, 0) 55%), linear-gradient(180deg, #46f5a8, #14b96b) !important; box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .85), inset 0 -3px 6px rgba(0, 90, 50, .38), 0 8px 18px -6px rgba(39, 224, 138, .65) !important; overflow-wrap: anywhere !important; }
+#tanoth-bot-panel .tb-paywall .tb-pay.tb-pay-alt { --ic: var(--ic-crown); color: var(--gold-ink) !important; border-color: rgba(255, 236, 190, .85) !important; background: radial-gradient(120% 90% at 28% 0%, rgba(255, 255, 255, .6), rgba(255, 255, 255, 0) 55%), linear-gradient(180deg, #f5cf7a, #d49b2c) !important; box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .85), inset 0 -3px 6px rgba(120, 70, 0, .35), 0 8px 18px -6px rgba(230, 179, 74, .65) !important; }
+#tanoth-bot-panel .tb-paywall .tb-pay.tb-pay-alt::before { display: inline-block !important; width: 14px !important; height: 14px !important; margin-right: 6px !important; vertical-align: -2px !important; }
 #tanoth-bot-panel .tb-paywall .tb-pay:hover { background: radial-gradient(120% 90% at 28% 0%, rgba(255, 255, 255, .75), rgba(255, 255, 255, 0) 55%), linear-gradient(180deg, #6bffbd, #1ccb78) !important; border-color: #fff !important; }
 #tanoth-bot-panel .tb-paywall .tb-pay.tb-pay-alt:hover { background: radial-gradient(120% 90% at 28% 0%, rgba(255, 255, 255, .75), rgba(255, 255, 255, 0) 55%), linear-gradient(180deg, #ffe09b, #e3a93a) !important; }
 #tanoth-bot-panel .tb-paywall .tb-pay:active { transform: translateY(1px) scale(.97) !important; }
@@ -249,13 +410,13 @@
 #tanoth-bot-panel .tb-consent input { display: inline-block !important; flex: 0 0 auto !important; width: 22px !important; height: 22px !important; margin: 0 !important; padding: 0 !important; cursor: pointer !important; position: relative !important; border: 1.5px solid var(--well-edge) !important; border-radius: 7px !important; background: var(--well) !important; box-shadow: var(--well-lit) !important; }
 #tanoth-bot-panel .tb-consent input:checked { background: linear-gradient(180deg, #46f5a8, #14b96b) !important; border-color: #b7ffe0 !important; box-shadow: 0 0 12px -2px var(--accent-line), inset 0 1px 0 rgba(255, 255, 255, .7) !important; }
 #tanoth-bot-panel .tb-consent input:checked::after { content: '' !important; position: absolute !important; left: 6.5px !important; top: 2px !important; width: 5px !important; height: 10px !important; border: solid var(--accent-ink) !important; border-width: 0 2.5px 2.5px 0 !important; transform: rotate(45deg) !important; }
-#tanoth-bot-panel .tb-paywall .tb-key { min-height: 38px !important; font-family: var(--mono) !important; font-size: 12.5px !important; margin: 0 0 8px !important; }
-#tanoth-bot-panel .tb-paywall .tb-activate { display: flex !important; align-items: center !important; justify-content: center !important; width: 100% !important; min-height: 38px !important; padding: 0 12px !important; cursor: pointer !important; border: 1px solid var(--plate-edge) !important; border-radius: 19px !important; font-weight: 700 !important; font-size: 13px !important; color: var(--text) !important; background: var(--plate) !important; box-shadow: var(--plate-lit) !important; }
+#tanoth-bot-panel .tb-paywall .tb-key { min-height: 40px !important; font-family: var(--mono) !important; font-size: 12.5px !important; margin: 0 0 8px !important; }
+#tanoth-bot-panel .tb-paywall .tb-activate { display: flex !important; align-items: center !important; justify-content: center !important; width: 100% !important; min-height: 40px !important; padding: 0 12px !important; cursor: pointer !important; border: 1px solid var(--plate-edge) !important; border-radius: 20px !important; font-weight: 700 !important; font-size: 13px !important; color: var(--text) !important; background: var(--plate) !important; box-shadow: var(--plate-lit) !important; }
 #tanoth-bot-panel .tb-paywall .tb-activate:hover { background: linear-gradient(180deg, rgba(255, 255, 255, .16), rgba(255, 255, 255, 0) 60%), var(--hover) !important; border-color: var(--line-strong) !important; }
 #tanoth-bot-panel .tb-paywall .tb-activate:active { transform: translateY(1px) scale(.98) !important; }
 #tanoth-bot-panel .tb-paywall .tb-pay-msg { font-size: 12px !important; margin: 8px 0 0 !important; line-height: 1.4 !important; }
 #tanoth-bot-panel .tb-paywall .tb-pay-msg:empty { display: none !important; }
-#tanoth-bot-panel .tb-paywall .tb-pay-msg.tb-err { color: var(--danger-text) !important; }
+#tanoth-bot-panel .tb-paywall .tb-pay-msg.tb-err { color: var(--danger-text) !important; padding: 7px 10px !important; border: 1px solid var(--danger-line) !important; border-radius: var(--r-s) !important; background: linear-gradient(0deg, var(--danger-wash), var(--danger-wash)), var(--well) !important; }
 #tanoth-bot-panel .tb-paywall .tb-pay-msg.tb-ok { color: var(--accent-text) !important; }
 #tanoth-bot-panel .tb-paywall .tb-pay-msg.tb-err::before { content: '\2715\00a0' !important; font-weight: 800 !important; }
 #tanoth-bot-panel .tb-paywall .tb-pay-msg.tb-ok::before { content: '\2713\00a0' !important; font-weight: 800 !important; }
@@ -265,28 +426,48 @@
 #tanoth-bot-panel .tb-legal a.tb-link { display: inline !important; min-height: 0 !important; padding: 0 !important; border: 0 !important; background: none !important; box-shadow: none !important; font-size: inherit !important; font-weight: 600 !important; color: var(--text) !important; text-decoration: underline !important; }
 #tanoth-bot-panel .tb-legal a.tb-link:hover { background: none !important; color: var(--accent-text) !important; }
 
-/* Liquid motion: springy press/hover, a one-shot pop for the paywall and a
-   two-pulse beacon when the bot starts. Nothing loops (WCAG 2.2.2), nothing
-   touches the backdrop, and none of it runs under reduced motion. */
+/* Motion. NOTE: the reset above pins `transform`/`opacity` with !important on div/span/b/p/h3/label/a, and
+   !important beats keyframes - so keyframes on those use the individual `translate`/`scale` properties.
+   Everything here is behind prefers-reduced-motion: no-preference.
+   - spring hover/press on every key;
+   - one-shot: panel mount, paywall pop, value tick (a stat value re-renders => it ticks in);
+   - while RUNNING only (Pause/Stop end it): the beacon ring and the scan line - two tiny
+     elements, opacity/transform only, a slow 2.6 s / 3.2 s cycle (no flashing, <= 0.4 Hz),
+     nothing near the backdrop. Pause is the WCAG 2.2.2 "pause/stop" mechanism. */
 @media (prefers-reduced-motion: no-preference) {
   #tanoth-bot-panel .tb-btn, #tanoth-bot-panel .tb-chip, #tanoth-bot-panel .tb-icon-btn, #tanoth-bot-panel .tb-link, #tanoth-bot-panel .tb-footer a, #tanoth-bot-panel .tb-paywall .tb-pay, #tanoth-bot-panel .tb-paywall .tb-activate { transition: transform .35s var(--spring), background-color .18s, border-color .18s, color .18s, box-shadow .25s !important; }
-  #tanoth-bot-panel .tb-btn:hover:not(:disabled), #tanoth-bot-panel .tb-paywall .tb-pay:hover { transform: translateY(-1px) !important; }
+  #tanoth-bot-panel .tb-stat, #tanoth-bot-panel .tb-status, #tanoth-bot-panel .tb-license, #tanoth-bot-panel .tb-input, #tanoth-bot-panel .tb-key { transition: border-color .25s, box-shadow .25s !important; }
+  #tanoth-bot-panel .tb-btn:hover:not(:disabled), #tanoth-bot-panel .tb-paywall .tb-pay:hover { transform: translateY(-2px) !important; }
+  #tanoth-bot-panel .tb-chip:hover { transform: translateY(-1px) !important; }
   #tanoth-bot-panel .tb-chip:active { transform: scale(.94) !important; }
+  #tanoth-bot-panel .tb-icon-btn:hover { transform: scale(1.08) !important; }
+  #tanoth-bot-panel .tb-icon-btn:active { transform: scale(.9) !important; }
+  #tanoth-bot-panel { animation: tb-mount .55s var(--spring) both; }
   #tanoth-bot-panel.tb-show-paywall .tb-paywall { animation: tb-pop .42s var(--spring) both !important; }
-  #tanoth-bot-panel.tb-running .tb-header .tb-dot::after { content: '' !important; position: absolute !important; inset: -3px !important; border-radius: 50% !important; border: 2px solid var(--accent) !important; opacity: 0 !important; animation: tb-ping 1.6s ease-out 2 !important; }
-  @keyframes tb-pop { from { opacity: 0; transform: translateY(-8px) scale(.96); } to { opacity: 1; transform: none; } }
-  @keyframes tb-ping { from { opacity: .8; transform: scale(.7); } to { opacity: 0; transform: scale(2.3); } }
+  #tanoth-bot-panel .tb-stat b { animation: tb-tick .45s var(--spring) both !important; }
+  #tanoth-bot-panel.tb-running .tb-header .tb-dot::after { content: '' !important; position: absolute !important; inset: -3px !important; border-radius: 50% !important; border: 2px solid var(--accent) !important; animation: tb-ping 2.6s ease-out infinite !important; }
+  #tanoth-bot-panel.tb-running .tb-status::after { animation: tb-scan 3.2s cubic-bezier(.45, 0, .25, 1) infinite !important; }
+  @keyframes tb-mount { from { transform: translateY(10px) scale(.97); } to { transform: none; } }
+  @keyframes tb-pop { from { translate: 0 -8px; scale: .96; } to { translate: 0 0; scale: 1; } }
+  @keyframes tb-tick { from { translate: 0 6px; } to { translate: 0 0; } }
+  @keyframes tb-ping { 0% { opacity: .75; transform: scale(.7); } 70%, 100% { opacity: 0; transform: scale(2.4); } }
+  @keyframes tb-scan { from { transform: translateX(-100%); } to { transform: translateX(240%); } }
 }
 
-/* Re-open tab shown when the panel is hidden entirely: a glass pull-tab. */
+/* Re-open tab shown when the panel is hidden entirely: a glass pull-tab with the blade mark. */
 #tanoth-bot-fab {
-  all: initial; position: fixed; top: 80px; right: 0; z-index: 2147483600; display: block; box-sizing: border-box;
+  all: initial; position: fixed; top: 80px; right: 0; z-index: 2147483600; display: flex; align-items: center; gap: 8px; box-sizing: border-box;
   cursor: pointer; color: #3aeb9a; border: 1px solid rgba(255, 255, 255, .34); border-right: 0;
   background: linear-gradient(180deg, rgba(255, 255, 255, .14), rgba(255, 255, 255, 0) 55%), linear-gradient(165deg, rgba(16, 32, 30, .72), rgba(6, 10, 12, .78));
   -webkit-backdrop-filter: blur(18px) saturate(1.75) brightness(.7); backdrop-filter: blur(18px) saturate(1.75) brightness(.7);
-  font: 700 12.5px/1 system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; letter-spacing: normal; text-transform: none;
-  padding: 11px 13px 11px 16px; min-height: 38px; border-radius: 19px 0 0 19px;
+  font: 800 12.5px/1.1 system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; letter-spacing: normal; text-transform: none;
+  padding: 11px 14px 11px 12px; min-height: 40px; max-width: 220px; border-radius: 20px 0 0 20px;
   box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .5), inset 3px 0 0 #27e08a, -6px 10px 24px -8px rgba(0, 0, 0, .6), -2px 0 18px -6px rgba(39, 224, 138, .55);
+}
+#tanoth-bot-fab::before {
+  content: ''; display: block; flex: 0 0 auto; width: 16px; height: 16px; background: currentColor;
+  -webkit-mask: var(--fab-ic) center / contain no-repeat; mask: var(--fab-ic) center / contain no-repeat;
+  --fab-ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M12 2l3.2 3.9V16H8.8V5.9z'/%3E%3Crect x='5' y='17.2' width='14' height='2.6' rx='1.3'/%3E%3Ccircle cx='12' cy='22' r='1.4'/%3E%3C/svg%3E");
 }
 #tanoth-bot-fab:hover { color: #7ff5bd; background: linear-gradient(180deg, rgba(255, 255, 255, .22), rgba(255, 255, 255, 0) 55%), linear-gradient(165deg, rgba(22, 44, 40, .76), rgba(8, 14, 16, .8)); }
 #tanoth-bot-fab:focus-visible { outline: 2px solid #7ff5bd; outline-offset: 2px; }
@@ -294,7 +475,8 @@
 #tanoth-bot-panel.tb-light ~ #tanoth-bot-fab:hover { color: #034a2c; }
 @media (prefers-reduced-motion: no-preference) {
   #tanoth-bot-fab { transition: transform .35s cubic-bezier(.3, 1.45, .5, 1), color .18s, background .18s; }
-  #tanoth-bot-fab:hover { transform: translateX(-3px); }
+  #tanoth-bot-fab:hover { transform: translateX(-4px); }
+  #tanoth-bot-fab:active { transform: translateX(-1px) scale(.96); }
 }
 
 /* ---- Fallbacks: solid, opaque, no glass ---- */
@@ -307,7 +489,7 @@
   #tanoth-bot-panel.tb-light ~ #tanoth-bot-fab:hover { background: #e3ece9; }
 }
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
-  #tanoth-bot-panel, #tanoth-bot-panel.tb-light { --glass-bf: none; --plate: var(--plate-solid); --bar: var(--plate-solid); --well: var(--well-solid); --hover: var(--plate-solid); --plate-edge: var(--line-strong); --glass-tint: linear-gradient(var(--glass-solid), var(--glass-solid)); }
+  #tanoth-bot-panel, #tanoth-bot-panel.tb-light { --glass-bf: none; --plate: var(--plate-solid); --bar: var(--plate-solid); --well: var(--well-solid); --hover: var(--plate-solid); --plate-edge: var(--line-strong); --glass-tint: linear-gradient(var(--glass-solid), var(--glass-solid)); --hatch: linear-gradient(transparent, transparent); }
   #tanoth-bot-panel::before { background: var(--glass-tint) !important; }
   #tanoth-bot-fab { -webkit-backdrop-filter: none; backdrop-filter: none; background: #0d1315; }
   #tanoth-bot-panel.tb-light ~ #tanoth-bot-fab { -webkit-backdrop-filter: none; backdrop-filter: none; background: #f3f6f8; }
@@ -315,6 +497,6 @@
   #tanoth-bot-panel.tb-light ~ #tanoth-bot-fab:hover { background: #e3ece9; }
 }
 @media (prefers-contrast: more) {
-  #tanoth-bot-panel, #tanoth-bot-panel.tb-light { --line: var(--line-strong); --muted: var(--text); }
+  #tanoth-bot-panel, #tanoth-bot-panel.tb-light { --line: var(--line-strong); --muted: var(--text); --disc-ring: var(--text); --ret: var(--text); }
   #tanoth-bot-panel .tb-btn:disabled { border-color: var(--text) !important; }
 }

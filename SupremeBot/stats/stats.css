@@ -2,16 +2,24 @@
 body { padding: var(--s-5) var(--s-4) var(--s-6); max-width: 920px; margin: 0 auto; }
 
 header { display: flex; align-items: center; gap: var(--s-3); margin-bottom: var(--s-2); }
-header h1 { font-size: 22px; font-weight: 700; flex: 1; min-width: 0; }
+header h1 { font-size: 28px; font-weight: 800; letter-spacing: -.025em; flex: 1; min-width: 0; }
 .since { color: var(--muted); font-size: 13px; margin-bottom: var(--s-5); }
 
-.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: var(--s-3); margin-bottom: var(--s-5); }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--s-3); margin-bottom: var(--s-5); }
 .card {
-  display: grid; grid-template-areas: 'l' 'v' 'r'; align-content: start; gap: 2px; min-width: 0;
-  border-radius: 18px; padding: var(--s-3) var(--s-4);
+  --lamp: var(--accent-text);
+  display: grid; grid-template-columns: 44px minmax(0, 1fr); grid-template-areas: 'i v' 'i l' 'i r'; column-gap: var(--s-3); align-content: center; min-width: 0; min-height: 84px;
+  border-radius: 20px; padding: var(--s-3) var(--s-4) var(--s-3) var(--s-3);
+  background: radial-gradient(circle at 34px 50%, var(--disc-bg) 0 19px, var(--disc-ring) 19px 20px, transparent 20.5px), linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, 0) 55%), var(--surface-2);
 }
+.card::before { grid-area: i; align-self: center; justify-self: center; width: 20px; height: 20px; color: var(--lamp); }
+.card:nth-child(1) { --ic: var(--ic-sword); } .card:nth-child(2) { --ic: var(--ic-target); } .card:nth-child(3) { --ic: var(--ic-door); }
+.card:nth-child(4) { --ic: var(--ic-moon); } .card:nth-child(5) { --ic: var(--ic-flag); } .card:nth-child(6) { --ic: var(--ic-mountain); }
+.card:nth-child(7) { --ic: var(--ic-flame); } .card:nth-child(8) { --ic: var(--ic-work); } .card:nth-child(9) { --ic: var(--ic-nodes); }
+.card:nth-child(10) { --ic: var(--ic-up); } .card:nth-child(11) { --ic: var(--ic-tag); } .card:nth-child(12) { --ic: var(--ic-coin); }
+.card:nth-child(13) { --ic: var(--ic-heart); } .card:nth-child(14) { --ic: var(--ic-star); } .card:nth-child(15) { --ic: var(--ic-warn); --lamp: var(--warn-text); }
 .card .l { grid-area: l; font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
-.card .v { grid-area: v; font-size: 26px; line-height: 1.15; font-weight: 700; letter-spacing: -.02em; color: var(--text); overflow-wrap: anywhere; }
+.card .v { grid-area: v; font-size: 30px; line-height: 1.1; font-weight: 800; letter-spacing: -.03em; color: var(--text); overflow-wrap: anywhere; }
 .card .r { grid-area: r; font-size: 12px; color: var(--accent-text); font-weight: 600; margin-top: 2px; }
 
 .chart-card { border-radius: 26px; padding: var(--s-4) var(--s-5) var(--s-3); }

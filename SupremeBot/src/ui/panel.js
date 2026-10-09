@@ -33,6 +33,7 @@
     root.innerHTML = `
       <svg class="tb-defs" width="0" height="0" aria-hidden="true" focusable="false"><defs><filter id="tb-lens-9f3a" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feImage href="${LENS_MAP}" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="m"/><feDisplacementMap in="SourceGraphic" in2="m" scale="44" xChannelSelector="R" yChannelSelector="G"/></filter></defs></svg>
       <div class="tb-header">
+        <svg class="tb-mark" viewBox="0 0 28 28" aria-hidden="true" focusable="false"><rect class="m-tile" x=".75" y=".75" width="26.5" height="26.5" rx="7" stroke-width="1.5"/><path class="m-blade" d="M14 3.6l2.4 2.9v9.6h-4.8V6.5z"/><path class="m-guard" d="M8.8 16.9h10.4M14 16.9v4.6" stroke-width="2.2" stroke-linecap="round" fill="none"/><circle class="m-blade" cx="14" cy="23.6" r="1.4"/></svg>
         <span class="tb-dot" aria-hidden="true"></span>
         <span class="tb-title">${I18n.t('extName')}</span>
         <button class="tb-icon-btn" data-act="collapse" title="${I18n.t('uiCollapse')}" aria-label="${I18n.t('uiCollapse')}">\u2013</button>
@@ -276,8 +277,11 @@
   }
 
   function renderStatus(st) {
-    root.classList.toggle('tb-running', st.running && !st.paused);
-    root.classList.toggle('tb-paused', st.paused);
+    // On a break the engine is "running" but idle by design: show it as its own
+    // calm state, never with the live running glow.
+    root.classList.toggle('tb-running', !!(st.running && !st.paused && !st.onBreak));
+    root.classList.toggle('tb-paused', !!st.paused);
+    root.classList.toggle('tb-break', !!(st.running && !st.paused && st.onBreak));
     const startBtn = root.querySelector('[data-act="start"]');
     const stopBtn = root.querySelector('[data-act="stop"]');
     const pauseBtn = root.querySelector('[data-act="pause"]');
