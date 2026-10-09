@@ -1,6 +1,8 @@
 import { Router } from 'express';
+import { rateLimit } from 'express-rate-limit';
 import { z } from 'zod';
 import type { AppDeps } from '../app.js';
+import { appendAudit } from '../audit.js';
 import { apiError, principalOf, requireUser } from '../auth/guards.js';
 import { audiencesFor, can } from '../auth/rbac.js';
 import {
@@ -26,6 +28,15 @@ const PageParams = z.object({
 
 export function documentViewRouter(deps: AppDeps): Router {
   const router = Router();
+  // Оригиналът е до 50 MB и всеки преглед го чете и хешира — по-строго от общите справки (120/мин.).
+  const sourceLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    limit: 20,
+    standardHeaders: 'draft-8',
+    legacyHeaders: false,
+    keyGenerator: (req) => req.principal?.user.id ?? 'anonymous',
+    handler: (_req, res) => apiError(res, 429, 'too_many_requests'),
+  });
 
   // Страница на документа като текст (резервният вариант + позициите на компонентите).
   router.get('/documents/:id/pages/:page', requireUser, async (req, res, next) => {
@@ -112,7 +123,7 @@ export function documentViewRouter(deps: AppDeps): Router {
   });
 
   // Самият PDF. Подписът е за ТОЗИ човек и този документ; достъпът се проверява наново.
-  router.get('/documents/:id/source/file', requireUser, async (req, res, next) => {
+  router.get('/documents/:id/source/file', requireUser, sourceLimiter, async (req, res, next) => {
     try {
       const id = Id.safeParse(req.params.id);
       if (!id.success) return apiError(res, 400, 'invalid_input');
@@ -131,7 +142,17 @@ export function documentViewRouter(deps: AppDeps): Router {
       if (!document) return apiError(res, 404, 'not_found');
       const attachment = await sourceAttachment(deps.db, document);
       const bytes = attachment ? await readSourcePdf(deps.attachments, attachment) : null;
-      if (!bytes) return apiError(res, 404, 'not_found');
+      if (!bytes || !attachment) return apiError(res, 404, 'not_found');
+      // Следа за изтичане на схеми (както свалянето на оригинала през /files): само id и размер.
+      // Вижда я само платформеният администратор (`PERSON_ACTIVITY_AUDIT_ACTIONS`, чл. 4 Statuto).
+      await appendAudit(deps.db, {
+        tenantId: p.user.tenantId,
+        actorId: p.user.id,
+        action: 'document.source.view',
+        objectType: 'document',
+        objectId: document.id,
+        detail: { attachmentId: attachment.id, sizeBytes: attachment.sizeBytes },
+      });
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Length', String(bytes.length));
       res.setHeader('X-Content-Type-Options', 'nosniff');

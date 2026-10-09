@@ -16,6 +16,9 @@ import { buildToolbar } from './viewer/toolbar.js';
 import { fetchPageText, renderChunks } from './viewer/text-page.js';
 
 let teardown = null;
+// Всяко отваряне получава номер: по-старо, което още зарежда, не пипа диалога и не унищожава
+// документа на по-новото (смяна на ревизия/страница, Esc по време на голяма схема).
+let openGen = 0;
 
 function stop() {
   teardown?.();
@@ -27,22 +30,26 @@ export async function openSource(ev, answer = null) {
   const dlg = $('#dlg-doc');
   const body = $('#doc-body');
   stop();
+  const gen = ++openGen;
+  const alive = () => gen === openGen && dlg.open;
   clear(body).append(h('p', { class: 'muted' }, t('doc.loading')));
   if (!dlg.open) dlg.showModal();
   dlg.addEventListener('close', stop, { once: true });
   try {
     const meta = await api('GET', `/documents/${encodeURIComponent(ev.documentId)}/source`);
+    if (!alive()) return;
     const view = h('div', { class: 'vw' });
     const main = h('div', { class: 'vw-main' });
     const side = h('aside', { class: 'vw-side', 'aria-label': t('viewer.side') });
     append(clear(body), [identity(meta, ev), append(view, [main, side])]);
-    const opts = { ev, answer, meta, main, side };
+    const opts = { ev, answer, meta, main, side, alive };
     if (meta.source?.available) {
       try {
         await pdfMode(opts);
         return;
-      } catch (err) {
-        console.warn('viewer: pdf', err?.name, err?.message);
+      } catch {
+        // Затворено/сменено междувременно → тишина: новото отваряне си държи диалога.
+        if (!alive()) return;
         stop();
         clear(main);
         opts.notice = t('viewer.pdfError');
@@ -52,6 +59,7 @@ export async function openSource(ev, answer = null) {
     }
     await textMode(opts);
   } catch (err) {
+    if (!alive()) return;
     clear(body).append(h('p', { class: 'form-error' }, `${t('doc.error')} ${errorText(err)}`));
   }
 }
@@ -96,8 +104,16 @@ function textDetails(documentId, page) {
   return det;
 }
 
-async function pdfMode({ ev, answer, meta, main, side }) {
-  const { lib, pdf, destroy } = await openPdf(meta.source.url);
+async function pdfMode({ ev, answer, meta, main, side, alive }) {
+  // Teardown-ът е зает ПРЕДИ свалянето: Esc по време на голяма схема прекъсва и fetch-а, и разбора.
+  const ctrl = new AbortController();
+  teardown = () => ctrl.abort();
+  const { lib, pdf, destroy } = await openPdf(meta.source.url, ctrl.signal);
+  if (!alive()) {
+    destroy();
+    return;
+  }
+  teardown = destroy;
   const onOpen = (e) => void openSource({ ...ev, ...e, quote: undefined }, answer);
   const hint = h('p', { id: 'vw-keys', class: 'vw-keys muted small' }, t('viewer.keys'));
   const viewport = h('div', {
@@ -109,6 +125,7 @@ async function pdfMode({ ev, answer, meta, main, side }) {
   });
   let pageNum = 1;
   let marks = [];
+  let goSeq = 0;
   let go = () => undefined;
   const bar = buildToolbar({
     prev: () => go(pageNum - 1),
@@ -140,6 +157,8 @@ async function pdfMode({ ev, answer, meta, main, side }) {
   };
 
   go = async (n) => {
+    // Два бързи клика: печели последният, не по-бавната заявка.
+    const mine = ++goSeq;
     const target = Math.min(pdf.numPages, Math.max(1, n));
     const onPage = arr(answer?.evidence).filter(
       (e) => e.documentId === meta.document.id && e.page === target,
@@ -155,7 +174,9 @@ async function pdfMode({ ev, answer, meta, main, side }) {
         refs = []; // страница без текст — няма какво да се търси, остава оригиналът
       }
     }
+    if (mine !== goSeq || !alive()) return;
     const result = await pv.show(target, refs);
+    if (mine !== goSeq || !alive()) return;
     marks = refs.map((ref) => ({ ref, found: result.found.has(ref) }));
     bar.setMarks(pv.hasMarks());
     sidePanel(
@@ -167,13 +188,14 @@ async function pdfMode({ ev, answer, meta, main, side }) {
   await go(Number(ev.page) || 1);
 }
 
-async function textMode({ ev, answer, meta, main, side, notice }) {
+async function textMode({ ev, answer, meta, main, side, notice, alive }) {
   const page = Number(ev.page) || 1;
   const pages = arr(meta.textPages);
   const onOpen = (e) => void openSource({ ...ev, ...e, quote: undefined }, answer);
   clear(main).append(h('p', { class: 'notice' }, notice));
   try {
     const data = await fetchPageText(meta.document.id, page);
+    if (!alive()) return;
     append(main, [
       ev.quote
         ? h(

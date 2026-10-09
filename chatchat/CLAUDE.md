@@ -102,7 +102,8 @@ tests/e2e/     Playwright потоците (техник, мобилен, сни
   нов `PROMPT_VERSION` (`ai/prompt.ts`) / `GATE_VERSION` (`safety/gate.ts`).
 - Одитът е верига (`audit.ts`, advisory lock, каноничен JSON) — никога съдържание на разговор, парола или токен.
   Администраторът на клиента НЕ вижда вход/изход/MFA проверки (`routes/audit.ts`, чл. 4 Statuto dei
-  Lavoratori) — само платформеният. Причината на админ действие е в одита, маскирана с `redactPii`.
+  Lavoratori) — само платформеният; същото за прегледа на оригинал във визуализатора
+  (`document.source.view`, `PERSON_ACTIVITY_AUDIT_ACTIONS`). Причината на админ действие е в одита, маскирана с `redactPii`.
 - **Втори фактор:** персоналът (SUPPORT, ENGINEERING, KNOWLEDGE_OWNER, TENANT_ADMIN, PLATFORM_ADMIN) е
   задължен — без TOTP стига само до `/auth/me`, `/auth/logout`, `/auth/mfa/*` (403 `mfa_setup_required`);
   включен и неминат → 401 `mfa_required`. Проверката е в `requireUser`/`requireCapability` (`mfaBlock`) —
@@ -176,5 +177,4 @@ tests/e2e/     Playwright потоците (техник, мобилен, сни
 
 Файлове в разговорите, извличане от DOCX и OCR на сканирани PDF (без текстов слой няма и
 подчертаване във визуализатора), обаждания (§12.3), OIDC (Entra ID), реалните 200–500 случая на клиента в
-оценъчния набор (§16.2 — форматът и прогонът са в `evals/`), pub/sub между процеси (виж по-горе),
-одит на прегледа на оригинал във визуализатора (свалянето през `/files` се одитира).
+оценъчния набор (§16.2 — форматът и прогонът са в `evals/`), pub/sub между процеси (виж по-горе).

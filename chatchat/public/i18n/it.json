@@ -762,6 +762,7 @@
   "admin.audit.action.ai.error": "Errore dell’AI",
   "admin.audit.action.attachment.upload": "File caricato",
   "admin.audit.action.attachment.download": "File scaricato",
+  "admin.audit.action.document.source.view": "Originale del documento visualizzato",
   "admin.audit.action.attachment.infected": "File infetto",
   "admin.audit.action.conversation.create": "Nuova conversazione",
   "admin.audit.action.conversation.member_add": "Membro aggiunto",

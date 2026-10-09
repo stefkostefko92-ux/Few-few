@@ -20,7 +20,9 @@ export function createPageView({ viewport, pdf, lib, onPage, onBusy, onScale, on
   let base = { w: 1, h: 1 };
   let renderedAt = 0;
   let task = null;
-  let seq = 0;
+  // Отделни броячи: прерисуване след мащаб (draw) не бива да обезсилва смяна на страница (show).
+  let drawSeq = 0;
+  let showSeq = 0;
   let markEls = [];
   let markIdx = -1;
   let wanted = [];
@@ -37,7 +39,7 @@ export function createPageView({ viewport, pdf, lib, onPage, onBusy, onScale, on
     const cap = Math.sqrt(MAX_PIXELS / (base.w * base.h));
     const target = Math.min(Math.max(1, zoom) * dpr, cap);
     if (renderedAt && Math.abs(target - renderedAt) / renderedAt < 0.1) return;
-    const mine = ++seq;
+    const mine = ++drawSeq;
     task?.cancel();
     const vp = page.getViewport({ scale: baseScale * target });
     canvas.width = Math.floor(vp.width);
@@ -49,11 +51,11 @@ export function createPageView({ viewport, pdf, lib, onPage, onBusy, onScale, on
     onBusy(true);
     try {
       await task.promise;
-      if (mine === seq) renderedAt = target;
+      if (mine === drawSeq) renderedAt = target;
     } catch (err) {
       if (err?.name !== 'RenderingCancelledException') throw err;
     } finally {
-      if (mine === seq) onBusy(false);
+      if (mine === drawSeq) onBusy(false);
     }
   }
 
@@ -77,11 +79,12 @@ export function createPageView({ viewport, pdf, lib, onPage, onBusy, onScale, on
   async function show(n, refs = []) {
     const num = Math.min(pdf.numPages, Math.max(1, Math.round(n)));
     wanted = refs;
-    const mine = ++seq;
+    const mine = ++showSeq;
     task?.cancel();
     onBusy(true);
-    page = await pdf.getPage(num);
-    if (mine !== seq) return { found: new Set(), marks: 0 };
+    const next = await pdf.getPage(num);
+    if (mine !== showSeq) return { found: new Set(), marks: 0 };
+    page = next;
     pageNum = num;
     const natural = page.getViewport({ scale: 1 });
     const width = Math.max(240, viewport.clientWidth);
@@ -101,6 +104,8 @@ export function createPageView({ viewport, pdf, lib, onPage, onBusy, onScale, on
       } catch {
         // без текстов слой няма позиции — остава списъкът
       }
+      // Междувременно е поискана друга страница — тя печели, тази не пипа платното.
+      if (mine !== showSeq) return { found: new Set(), marks: 0 };
     }
     placeMarks(result.rects);
     onPage(num);
@@ -135,9 +140,13 @@ export function createPageView({ viewport, pdf, lib, onPage, onBusy, onScale, on
     pageNumber: () => pageNum,
     pageCount: () => pdf.numPages,
     destroy() {
+      showSeq += 1; // чакащ show() не докосва платното след затваряне
       ro.disconnect();
       task?.cancel();
       pz.destroy();
+      // iOS Safari освобождава паметта на платното късно — нулираме го изрично.
+      canvas.width = 0;
+      canvas.height = 0;
       stage.remove();
     },
   };

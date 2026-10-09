@@ -13,14 +13,19 @@ export function loadPdfjs() {
   return libPromise;
 }
 
-/** → { lib, pdf, destroy } или хвърля (повреден файл, изтекъл адрес, отказан достъп). */
-export async function openPdf(url) {
+/**
+ * → { lib, pdf, destroy } или хвърля (повреден файл, изтекъл адрес, отказан достъп, `signal`).
+ * `signal` прекъсва и свалянето, и разбора — затворен диалог не държи работника и буфера живи.
+ */
+export async function openPdf(url, signal) {
   const lib = await loadPdfjs();
   // Байтовете ги вземаме сами (бисквитка на сесията, подписан адрес) — pdf.js получава готов буфер.
-  const res = await fetch(url, { credentials: 'same-origin' });
+  const res = await fetch(url, { credentials: 'same-origin', signal });
   if (!res.ok) throw new Error(`pdf ${res.status}`);
+  const data = new Uint8Array(await res.arrayBuffer());
+  signal?.throwIfAborted();
   const task = lib.getDocument({
-    data: new Uint8Array(await res.arrayBuffer()),
+    data,
     isEvalSupported: false,
     enableXfa: false,
     useWasm: false,
@@ -30,6 +35,16 @@ export async function openPdf(url) {
     standardFontDataUrl: `${BASE}standard_fonts/`,
     iccUrl: `${BASE}iccs/`,
   });
-  const pdf = await task.promise;
-  return { lib, pdf, destroy: () => task.destroy() };
+  const onAbort = () => void task.destroy();
+  signal?.addEventListener('abort', onAbort, { once: true });
+  const destroy = () => {
+    signal?.removeEventListener('abort', onAbort);
+    void task.destroy();
+  };
+  try {
+    return { lib, pdf: await task.promise, destroy };
+  } catch (err) {
+    destroy();
+    throw err;
+  }
 }

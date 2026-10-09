@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { webcrypto } from 'node:crypto';
 import type { PrismaClient } from '@prisma/client';
 import { audiencesFor, can } from '../auth/rbac.js';
 import type { Principal } from '../auth/sessions.js';
@@ -69,6 +69,8 @@ export async function readSourcePdf(
 ): Promise<Buffer | null> {
   const bytes = await attachments.store.get(a.objectKey);
   if (!bytes) return null;
-  const buf = Buffer.from(bytes);
-  return createHash('sha256').update(buf).digest('hex') === a.sha256 ? buf : null;
+  // Хешът — асинхронно (webcrypto, пулът от нишки), не в главната нишка: PDF до 50 MB иначе
+  // държи event loop-а ~130 ms на всеки преглед. Без копие на буфера.
+  const digest = Buffer.from(await webcrypto.subtle.digest('SHA-256', bytes)).toString('hex');
+  return digest === a.sha256 ? bytes : null;
 }

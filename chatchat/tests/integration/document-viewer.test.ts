@@ -89,6 +89,15 @@ describe('оригиналният PDF на документа', () => {
     assert.equal(file.headers.get('x-content-type-options'), 'nosniff');
     assert.equal(file.headers.get('cache-control'), 'private, no-store');
     assert.equal(file.headers.get('content-security-policy'), 'sandbox');
+    // Прегледът е одитиран (само id и размер) — и не се вижда от администратора на клиента.
+    const audit = await db.auditEvent.findFirstOrThrow({
+      where: { action: 'document.source.view', objectId: id },
+    });
+    assert.equal(audit.actorId, w.users.portalAlfa.id);
+    assert.deepEqual(Object.keys(audit.detail as object).sort(), ['attachmentId', 'sizeBytes']);
+    const tenant = await w.tenantAdmin.get('/api/v1/audit?action=document.');
+    assert.equal(tenant.status, 200);
+    assert.equal(tenant.body.events.length, 0);
   });
 
   test('портал не чете ENGINEERING документ (нито метаданни, нито файл, нито текст)', async () => {
@@ -169,7 +178,8 @@ describe('/vendor/pdfjs', () => {
     assert.equal(lib.status, 200);
     assert.match(lib.headers.get('content-type') ?? '', /javascript/);
     assert.equal((await get('/vendor/pdfjs/build/pdf.worker.min.mjs')).status, 200);
-    assert.equal((await get('/vendor/pdfjs/build/pdf.min.mjs.map')).status, 404);
+    // Файлът СЪЩЕСТВУВА в legacy/build — 404 идва от отказа във vendor.ts, не от липса.
+    assert.equal((await get('/vendor/pdfjs/build/pdf.mjs.map')).status, 404);
     assert.equal((await get('/vendor/pdfjs/wasm/openjpeg.wasm')).status, 404);
     assert.equal((await get('/vendor/pdfjs/wasm/openjpeg_nowasm_fallback.js')).status, 200);
     assert.equal((await get('/vendor/pdfjs/../package.json')).status, 404);

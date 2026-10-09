@@ -762,6 +762,7 @@
   "admin.audit.action.ai.error": "Грешка на AI",
   "admin.audit.action.attachment.upload": "Качен файл",
   "admin.audit.action.attachment.download": "Свален файл",
+  "admin.audit.action.document.source.view": "Прегледан оригинал на документ",
   "admin.audit.action.attachment.infected": "Заразен файл",
   "admin.audit.action.conversation.create": "Нов разговор",
   "admin.audit.action.conversation.member_add": "Добавен член",

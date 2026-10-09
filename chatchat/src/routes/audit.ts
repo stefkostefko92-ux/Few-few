@@ -18,6 +18,15 @@ export const LOGIN_AUDIT_ACTIONS = [
   'auth.mfa_failed',
 ] as const;
 
+/**
+ * Действия на човек в работата му — като входа, само за платформения администратор: прегледът на
+ * оригинал на документ (визуализаторът) е следа за изтичане на схеми, не мярка за работата на техника.
+ */
+export const PERSON_ACTIVITY_AUDIT_ACTIONS = [
+  ...LOGIN_AUDIT_ACTIONS,
+  'document.source.view',
+] as const;
+
 const short = z.string().trim().min(1).max(60);
 const isoDate = z.iso.datetime({ offset: true }).transform((v) => new Date(v));
 
@@ -51,7 +60,7 @@ export function auditRouter(deps: AppDeps): Router {
       // разследване през клиенти е работа на сървъра (базата), не на уеб сесия.
       const and: Prisma.AuditEventWhereInput[] = [{ tenantId: p.user.tenantId }];
       if (p.user.role !== 'PLATFORM_ADMIN') {
-        and.push({ action: { notIn: [...LOGIN_AUDIT_ACTIONS] } });
+        and.push({ action: { notIn: [...PERSON_ACTIVITY_AUDIT_ACTIONS] } });
       }
       if (f.before) and.push({ id: { lt: f.before } });
       if (f.action) and.push({ action: { startsWith: f.action } });
