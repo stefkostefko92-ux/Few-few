@@ -10,6 +10,7 @@ import { TYPE_ORDER } from '../../engine/types.js';
 import { drawingAssembly } from '../../engine/drawing-assembly.js';
 import { drawingPart, drawingParts, drawingSheets } from '../../engine/drawing-part.js';
 import { PAPER, STYLE } from '../../engine/drawing-kit.js';
+import { partHoles } from '../../engine/drill.js';
 
 registerFixtures();
 const meta = { product: 'Korpora', hash: 'a'.repeat(64), owner: 'Carbon Stealth VCC', date: '2026-10-02' };
@@ -86,4 +87,30 @@ test('sheet numbers: 1 is the assembly, then every drawing part in order', () =>
     assert.deepEqual(parts.map((s) => s.no), parts.map((_, i) => i + 2), type);
     assert.equal(count, parts.length + 1, type);
   }
+});
+
+test('on a drilling map a filled circle is a through hole and nothing else, as the legend says', () => {
+  // the fill comes from the class: d-thru fills (grey, or orange with d-key), d-key and d-hole are outlines
+  assert.match(STYLE, /\.d-key\{fill:none;/);
+  assert.match(STYLE, /\.d-key\.d-thru\{fill:rgba/);
+  assert.match(STYLE, /\.d-hole\{fill:none;/);
+  let blindKey = 0;
+  for (const type of TYPE_ORDER) {
+    const model = buildModel({ type });
+    for (const p of drawingParts(model)) {
+      const svg = drawingPart(model, meta, p.id);
+      assert.ok(svg.includes('пълните кръгове са проходни, оранжевите са за обков'), `${type} ${p.id}: legend`);
+      // the main view draws its holes first, in the order of the hole table
+      const holes = partHoles(p).filter((h) => !h.mark);
+      const classes = [...svg.matchAll(/<circle class="([^"]+)"/g)].slice(0, holes.length).map((m) => m[1].split(' '));
+      holes.forEach((h, i) => {
+        assert.equal(classes[i].includes('d-thru'), h.through, `${type} ${p.id}: hole ${h.no} (${h.kind}, Ø${h.d} × ${h.depth}) drawn ${classes[i].join(' ')}`);
+        if (classes[i].includes('d-key') && !h.through) blindKey += 1;
+      });
+      // the enlarged hinge cup is blind too: an outline, not a filled circle
+      const cup = holes.find((h) => h.kind === 'cup');
+      if (cup) assert.ok(svg.includes(`<circle class="d-key" cx=`) && !new RegExp(`<circle class="[^"]*d-thru[^"]*" cx="[^"]+" cy="[^"]+" r="${cup.d / 2}"/>`).test(svg), `${type} ${p.id}: cup detail drawn filled`);
+    }
+  }
+  assert.ok(blindKey > 0, 'no blind hardware hole was checked');
 });

@@ -40,7 +40,8 @@ svg.rdw .d-alert{font:600 2.8px 'IBM Plex Sans',system-ui,sans-serif;fill:#b4231
 svg.rdw .d-cl{stroke:${INK};stroke-width:.16;stroke-dasharray:1.5 .6 .3 .6}
 svg.rdw .d-hole{fill:none;stroke:${INK};stroke-width:.22}
 svg.rdw .d-thru{fill:rgba(24,32,15,.18);stroke:${INK};stroke-width:.22}
-svg.rdw .d-key{fill:rgba(196,98,24,.16);stroke:#a8510f;stroke-width:.3}
+svg.rdw .d-key{fill:none;stroke:#a8510f;stroke-width:.3}
+svg.rdw .d-key.d-thru{fill:rgba(196,98,24,.16)}
 svg.rdw .d-mark{fill:none;stroke:#a8510f;stroke-width:.25}
 svg.rdw .d-edgeop{fill:none;stroke:#3b5bdb;stroke-width:.3}
 svg.rdw .d-groove{fill:rgba(24,32,15,.12);stroke:${INK};stroke-width:.2}
