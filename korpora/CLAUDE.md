@@ -164,7 +164,8 @@ Docker Compose (db + app) + nginx на хоста — `DEPLOY.md`. Веднъж 
 няма от последните 26 ч). `pg_dump -Fc` от контейнера на базата → age към публичния ключ на собственика в
 `/opt/few-few/shared/korpora/backup-recipients.txt` (частният ключ никога не е на сървъра) → атомично в
 `backups/daily/` (600/700, `.sha256`), потокът се чете докрай от `pg_restore`; ротация 14 дневни + 8
-седмични. Възстановяване: `deploy/backup-restore.sh` от папката на release-а — `--into korpora_restore_<…>`
+седмични; дъмповете преди миграция и снимките отпреди възстановяване в `backups/` — най-много 8 седмици
+(трие ги всеки пробег, и без бекъп). Възстановяване: `deploy/backup-restore.sh` от папката на release-а — `--into korpora_restore_<…>`
 (репетиция в празна база) или `--live --yes-i-know` (шифрована снимка, една транзакция с COMMIT само при
 цял дъмп); дъмпът идва разшифрован по ssh на stdin. Тестове: `tests/deploy-backup*.test.ts` (истински age,
 docker е заместен) и `tests/integration/backup-restore.test.ts` (истински бекъп и възстановяване в PostgreSQL;

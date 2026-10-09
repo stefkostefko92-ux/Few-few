@@ -28,6 +28,8 @@ NGINX_LINK="${KORPORA_NGINX_LINK:-/etc/nginx/sites-enabled/korpora}"
 LE_DIR="${KORPORA_LE_DIR:-/etc/letsencrypt}"
 HEALTH_WAIT="${KORPORA_HEALTH_WAIT:-90}"
 KEEP_BACKUPS="${KORPORA_KEEP_BACKUPS:-5}"
+# дъмповете преди миграция живеят най-много толкова седмици — колкото дневните бекъпи (backup.sh)
+BACKUP_WEEKS="${KORPORA_BACKUP_WEEKLY:-8}"
 INDEXNOW="${KORPORA_INDEXNOW:-1}"
 SKIP_BACKUP="${KORPORA_SKIP_BACKUP:-0}"
 LAST_GOOD="${KORPORA_LAST_GOOD:-$SHARED/last-good}"
@@ -133,6 +135,11 @@ backup_db() {
   fi
   find "$dir" -maxdepth 1 -name 'pre-deploy-*.sql.gz' -printf '%T@ %p\n' | sort -rn |
     tail -n "+$((KEEP_BACKUPS + 1))" | cut -d' ' -f2- | xargs -r rm -f
+  # и не по-стари от $BACKUP_WEEKS седмици без един ден, както в backup.sh: изтрит акаунт не остава в
+  # некриптиран дъмп по-дълго, отколкото казва политиката, и когато деплоите са редки (между тях ги трие
+  # дневният бекъп)
+  find "$dir" -maxdepth 1 -name 'pre-deploy-*.sql.gz' -mmin "+$(((BACKUP_WEEKS * 7 - 1) * 1440))" -delete ||
+    warn "старите дъмпове в $dir не се изтриха докрай — провери правата"
 }
 
 # Код 200 сам не казва КОЙ отговаря на порта: чака се маркерът на Korpora и база, която отговаря.

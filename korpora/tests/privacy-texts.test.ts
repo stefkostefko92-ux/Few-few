@@ -71,20 +71,55 @@ test('the backup periods in the policy are the ones the backup and deploy script
   assert.equal(defaultOf(backup, 'KORPORA_BACKUP_DAILY'), retention.BACKUP_KEEP_DAILY);
   assert.equal(defaultOf(backup, 'KORPORA_BACKUP_WEEKLY'), retention.BACKUP_KEEP_WEEKLY);
   assert.equal(defaultOf(deploy, 'KORPORA_KEEP_BACKUPS'), retention.PRE_DEPLOY_BACKUPS_KEPT);
+  // the dumps before a deploy (and before a restore) live no longer than the weekly backups
+  assert.equal(defaultOf(deploy, 'KORPORA_BACKUP_WEEKLY'), retention.BACKUP_KEEP_WEEKLY);
 });
 
 test('the policy states the backups, where they are and the invoice data, in every language', async () => {
   const said = {
-    bg: [/Резервни копия на базата/, /данните за фактурата/, /Банката/, /резервните копия/],
-    en: [/Database backups/, /invoice details/, /The bank/, /backups/],
-    it: [/Copie di backup del database/, /dati per la fattura/, /La banca/, /copie di backup/],
+    // „from them“: the weeks are the daily backups' limit, not of every copy
+    bg: [
+      /Резервни копия на базата/,
+      /данните за фактурата/,
+      /Банката/,
+      /резервните копия/,
+      /изтрити данни изчезват от тях/,
+    ],
+    en: [
+      /Database backups/,
+      /invoice details/,
+      /The bank/,
+      /backups/,
+      /deleted data disappears from them/,
+    ],
+    it: [
+      /Copie di backup del database/,
+      /dati per la fattura/,
+      /La banca/,
+      /copie di backup/,
+      /spariscono da queste copie/,
+    ],
   } as const;
   for (const locale of LOCALES) {
     const page = visible(await privacy(locale));
     const t = translatorFor(locale);
     assert.ok(page.includes(retention.retentionText(retention.BACKUP_KEEP_DAILY, t)), locale);
     assert.ok(page.includes(t('common.weeks', { n: retention.BACKUP_KEEP_WEEKLY })), locale);
-    assert.ok(page.includes(String(retention.PRE_DEPLOY_BACKUPS_KEPT)), locale);
+    // the whole phrase: a bare „5“ is also in „AES-256“ and „SHA-256“
+    const weeks = t('common.weeks', { n: retention.BACKUP_KEEP_WEEKLY });
+    const kept = retention.PRE_DEPLOY_BACKUPS_KEPT;
+    const preDeploy = {
+      bg: `не се съберат ${kept} по-нови, но не повече от ${weeks}`,
+      en: `until ${kept} newer ones exist, but no longer than ${weeks}`,
+      it: `finché non ce ne sono ${kept} più recenti, ma non oltre ${weeks}`,
+    } as const;
+    assert.ok(page.includes(preDeploy[locale]), `${locale}: the dumps before a deploy`);
+    const preRestore = {
+      bg: `снимка на базата отпреди възстановяването пазим също не повече от ${weeks}`,
+      en: `snapshot of the database taken before the restore is also kept no longer than ${weeks}`,
+      it: `istantanea cifrata del database fatta prima del ripristino è conservata non oltre ${weeks}`,
+    } as const;
+    assert.ok(page.includes(preRestore[locale]), `${locale}: the snapshot before a restore`);
     for (const pattern of said[locale]) assert.match(page, pattern, locale);
     // the Hetzner line names the backups too: that is where the copies are
     assert.match(

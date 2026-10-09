@@ -27,7 +27,11 @@ export const UNVERIFIED_RETENTION_DAYS = 7;
 export const BACKUP_KEEP_DAILY = 14;
 export const BACKUP_KEEP_WEEKLY = 8;
 
-/** Дъмповете на базата преди миграция при деплой (`deploy/deploy.sh`, KORPORA_KEEP_BACKUPS): последните толкова. */
+/**
+ * Дъмповете на базата преди миграция при деплой (`deploy/deploy.sh`, KORPORA_KEEP_BACKUPS): последните
+ * толкова, но не по-стари от BACKUP_KEEP_WEEKLY седмици — трият ги deploy.sh и дневният бекъп (заедно със
+ * снимките отпреди живо възстановяване).
+ */
 export const PRE_DEPLOY_BACKUPS_KEPT = 5;
 
 /**

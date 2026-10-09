@@ -13,6 +13,9 @@ import { join } from 'node:path';
 import { gunzipSync } from 'node:zlib';
 import { deploy, mode, sha, sharedEnv, withLayout } from './deploy-harness.js';
 
+const DAY_MS = 86_400_000;
+const daysAgo = (days: number) => new Date(Date.now() - days * DAY_MS);
+
 test('without a .env anywhere it stops with code 3 and builds nothing', () => {
   withLayout((L) => {
     const r = deploy(L);
@@ -61,7 +64,7 @@ test('a redeploy builds first, dumps right before the swap, keeps the five newes
     const old = (i: number) => `pre-deploy-19990101-00000${i}.sql.gz`;
     for (let i = 0; i < 6; i++) {
       writeFileSync(join(backups, old(i)), 'old');
-      utimesSync(join(backups, old(i)), new Date(2026, 0, i + 1), new Date(2026, 0, i + 1));
+      utimesSync(join(backups, old(i)), daysAgo(10 - i), daysAgo(10 - i));
     }
     writeFileSync(join(L.shared, 'indexnow-sitemap.sha256'), `${sha('<urlset/>')}\n`);
     const r = deploy(L, { VOLUME_RC: '0' });
@@ -92,6 +95,27 @@ test('a redeploy builds first, dumps right before the swap, keeps the five newes
     assert.equal(gunzipSync(readFileSync(join(backups, fresh))).toString(), '-- dump\n');
     assert.equal(mode(join(backups, fresh)), '600');
     assert.doesNotMatch(r.log, /^node /m, 'the same sitemap is not submitted again');
+  });
+});
+
+test('a dump before a deploy lives at most 8 weeks, even among the five newest', () => {
+  withLayout((L) => {
+    sharedEnv(L);
+    const backups = join(L.shared, 'backups');
+    mkdirSync(backups, { recursive: true });
+    // 8 weeks less a day is the limit, as in backup.sh (its timer runs once a day)
+    const expired = 'pre-deploy-19990101-000001.sql.gz';
+    const young = 'pre-deploy-19990101-000002.sql.gz';
+    writeFileSync(join(backups, expired), 'old');
+    utimesSync(join(backups, expired), daysAgo(55.1), daysAgo(55.1));
+    writeFileSync(join(backups, young), 'old');
+    utimesSync(join(backups, young), daysAgo(54.9), daysAgo(54.9));
+    const r = deploy(L, { VOLUME_RC: '0' });
+    assert.equal(r.status, 0, r.stderr);
+    const kept = readdirSync(backups).filter((name) => name.startsWith('pre-deploy-'));
+    assert.ok(!kept.includes(expired), 'older than the backups may be');
+    assert.ok(kept.includes(young), 'still within the weeks');
+    assert.equal(kept.length, 2, 'the young one and the new dump');
   });
 });
 

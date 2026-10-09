@@ -7,7 +7,9 @@ import {
   mkdirSync,
   readdirSync,
   readFileSync,
+  rmSync,
   statSync,
+  utimesSync,
   writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
@@ -204,6 +206,35 @@ test(
     });
   },
 );
+
+test('the dumps before a deploy or a restore go after 8 weeks less a day, even when no backup can run', () => {
+  withBox((box) => {
+    const dir = join(box.shared, 'backups');
+    const put = (name: string, days: number) => {
+      const file = join(dir, name);
+      writeFileSync(file, 'old');
+      const at = new Date(Date.now() - days * 86_400_000);
+      utimesSync(file, at, at);
+    };
+    // the timer runs once a day: past 8 weeks less a day, nothing outlives the 8 weeks of the policy
+    put('pre-deploy-19990101-000001.sql.gz', 55.1);
+    put('pre-restore-19990101-000001.dump.age', 55.1);
+    put('pre-restore-19990101-000001.dump.age.sha256', 55.1);
+    put('pre-deploy-19990101-000002.sql.gz', 54.9);
+    put('pre-restore-19990101-000002.dump.age', 54.9);
+    put('notes.txt', 100);
+    // no recipient: no backup is made, but the old dumps still go
+    rmSync(box.recipients, { force: true });
+    const r = backup(box);
+    assert.notEqual(r.status, 0);
+    assert.deepEqual(readdirSync(dir).sort(), [
+      'notes.txt',
+      'pre-deploy-19990101-000002.sql.gz',
+      'pre-restore-19990101-000002.dump.age',
+    ]);
+    assert.match(r.stdout, /изтрих 3 стари снимки отпреди деплой или възстановяване/);
+  });
+});
 
 test(
   'restore refuses before touching anything: no mode, a live restore without --yes-i-know, a bad name',
