@@ -7,7 +7,9 @@ import { readCad, CadReadError } from '../cad/read';
 import { castRays, dominantAngle, shaftSize, surveyCorners } from '../cad/measure';
 import { dwgVersion, MM_PER_UNIT } from '../cad/model';
 import { cp1252, planToDxf, toDwg, toDxf } from '../cad/export';
-import { projectViews } from '../cad/project';
+import { inputViews } from '../cad/project';
+import { valueMarks } from '../lift/marks';
+import { storedInput } from '../tavole/compose';
 import { defaultLift, deriveLift } from '../lift';
 import { defaultInputs, layout, travel } from '@/shaft';
 
@@ -121,7 +123,10 @@ function near(a: number, b: number, eps = 1e-6): void {
 }
 
 test('il progetto intero in DXF e DWG: tutte le viste affiancate, la stessa geometria letta da entrambi', () => {
-  const d = deriveLift(defaultLift()), views = projectViews(d.layout, d.machine, true);
+  const lift = defaultLift(), d = deriveLift(lift), project = { name: 'Prova', address: 'Via Roma 1', city: 'Monza', province: 'MB', plantNumber: '', client: '' };
+  const x = storedInput(d.values, d.layout, { number: '26-001', createdAt: new Date('2026-10-08T10:00:00Z'), authorInitials: 'M.R.', companyName: 'S', projectData: project, plant: {}, revisions: [] }, null, valueMarks(lift.auto, d, d.bottom, d.collaudo));
+  assert.ok(x);
+  const views = inputViews(x);
   // the drawing set's views: three plans, section A-A and its three details, the machine room twice, the rails developed
   assert.equal(views.length, 10);
   const dxf = new TextEncoder().encode(toDxf(views, 'Prova')), dwg = toDwg(views, 'Prova');

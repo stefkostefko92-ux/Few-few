@@ -14,7 +14,7 @@ import type { RoomDerived } from '@/lib/room/derive';
 import type { Survey } from '@/lib/room/survey';
 import { storedParts, type ProjectData, type StoredSet } from '@/lib/tavole/compose';
 import type { SetRecords, TavoleRevision } from '@/lib/tavole/input';
-import { buildSurveyTavole } from '@/lib/tavole/survey-build';
+import { buildSurveyTavole, type SurveyTavoleResult } from '@/lib/tavole/survey-build';
 import type { TitleData } from '@/lib/tavole/title-block';
 import type { SurveyTavoleInput } from '@/lib/tavole/survey-input';
 import { tavoleHash } from '@/lib/tavole-hash';
@@ -85,12 +85,12 @@ export function composeStoredRoom(s: StoredSet & {
   roomDesign: { id: string; inputs: unknown; sha256: string };
   logo: { mime: string; data: Uint8Array } | null;
   clientLogo?: { mime: string; data: Uint8Array } | null;
-}): { doc: DrawingDoc; input: SurveyTavoleInput; derived: RoomDerived; title: TitleData } | ComposeError {
+}): { doc: DrawingDoc; input: SurveyTavoleInput; derived: RoomDerived; title: TitleData; sheets: SurveyTavoleResult['sheets'] } | ComposeError {
   const rep = reproduceRoomRecord(s.roomDesign, s.calculation);
   if (!rep.ok) return rep;
   const parts = storedParts(s, usableLogo(s.logo), usableLogo(s.clientLogo ?? null));
   if (!parts) return { ok: false, error: 'notFound' };
   const input: SurveyTavoleInput = { values: rep.values, survey: rep.survey, collaudo: rep.collaudo, ...parts, records: roomRecords(s.calculation, s.roomDesign) };
-  const { doc, derived, title } = buildSurveyTavole(input);
-  return tavoleHash(doc) === s.sha256 ? { doc, input, derived, title } : { ok: false, error: 'engineChanged' };
+  const { doc, derived, title, sheets } = buildSurveyTavole(input);
+  return tavoleHash(doc) === s.sha256 ? { doc, input, derived, title, sheets } : { ok: false, error: 'engineChanged' };
 }

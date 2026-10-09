@@ -31,6 +31,9 @@ export interface View {
   place: Place;
 }
 
+/** A view with the entities it draws (a CAD file of the view takes the same: cad/project.ts). */
+export type Placed = View & { entities: Entity[] };
+
 /** Place a view: the largest scale of `scales` that fits, or throw (a drawing that does not fit even at 1:200). */
 function placeIn(model: Box, entities: readonly Entity[], area: Box, scales: readonly number[]): Place {
   const p = fitView(model, entities, area, scales);
@@ -40,10 +43,10 @@ function placeIn(model: Box, entities: readonly Entity[], area: Box, scales: rea
 
 /** Plan of the shaft at a level; `total` names the level in the overall dimensions (e.g. `in Testata`); `extra`: what
  *  the set draws on it besides (the loads on the head of a machine below: headLoadsOf). */
-export function planView(L: Layout, level: PlanLevel, floor: number, total: string, area: Box, extra: readonly Entity[] = []): View {
+export function planView(L: Layout, level: PlanLevel, floor: number, total: string, area: Box, extra: readonly Entity[] = []): Placed {
   const T = L.inputs.wall, B = wallsAt(L, level), ents = [...planEntities(L, level, floor), ...extra, ...planDims(L, level, floor, { level: total })];
   const place = placeIn({ x0: Math.min(0, B.x0) - T, y0: Math.min(0, B.y0) - T, x1: Math.max(L.inputs.W, B.x1) + T, y1: Math.max(L.inputs.D, B.y1) + T }, ents, area, PLAN_SCALES);
-  return { r: renderView(ents, place), place };
+  return { r: renderView(ents, place), place, entities: ents };
 }
 
 /** The top of section A-A over the shaft: `z`, or over a pulley room the pulleys in it (rig-view.ts). */
@@ -83,15 +86,25 @@ export function detailWindow(L: Layout, kind: SectionKind, floor: number): Secti
   return { carFloor: floor, lo: nearPit ? S.pitFloor - SLAB : zf - V.frameBelow - 700, hi: zf + S.highest + 600, zmap: null };
 }
 
-/** Section A-A: whole (`full`, car at the top floor) or a detail with the car at `floor`; `cwGap`, the clearance on the
- *  counterweight's sign sheet 1 gives, written on the screen where the pit is shown (cw-gap.ts). With the symbols it
- *  places (the legend shows those) and whether the travel is drawn shorter. */
-export function sectionView(L: Layout, kind: SectionKind, floor: number, area: Box, cwGap: number | null = null): View & { marks: SymbolName[]; compressed: boolean } {
-  const { v, scale } = kind === 'full' ? fullSection(L, area) : { v: detailWindow(L, kind, floor), scale: 0 };
+/** What section A-A draws of the heights `v` shows: the section, its dimensions for `kind` and, where the pit is shown
+ *  (whole or its detail), `cwGap` — the clearance on the counterweight's sign sheet 1 gives — on the screen (cw-gap.ts).
+ *  The sheets and the CAD files alike (cad/project.ts: section A-A whole at its real height). */
+export function sectionParts(L: Layout, kind: SectionKind, v: SectionView, cwGap: number | null): { entities: Entity[]; bounds: Box } {
   const { entities, bounds, S } = sectionEntities(L, v), ents = [...entities, ...sectionDims(L, S, kind, v.carFloor, v.zmap)];
   if (cwGap !== null && (kind === 'full' || kind === 'pit')) ents.push(...cwGapLabel(L, S, (x, z) => [x, mapZ(v.zmap, z)], cwGap));
+  return { entities: ents, bounds };
+}
+
+/** The symbols the entities place (a legend shows those). */
+export const marksOf = (ents: readonly Entity[]): SymbolName[] => [...new Set(ents.flatMap((e) => (e.e === 'mark' ? [e.sym] : [])))];
+
+/** Section A-A: whole (`full`, car at the top floor) or a detail with the car at `floor`; `cwGap` as `sectionParts`
+ *  writes it. With the symbols it places and whether the travel is drawn shorter. */
+export function sectionView(L: Layout, kind: SectionKind, floor: number, area: Box, cwGap: number | null = null): Placed & { marks: SymbolName[]; compressed: boolean } {
+  const { v, scale } = kind === 'full' ? fullSection(L, area) : { v: detailWindow(L, kind, floor), scale: 0 };
+  const { entities: ents, bounds } = sectionParts(L, kind, v, cwGap);
   const place = placeIn(bounds, ents, area, scale ? [scale] : DETAIL_SCALES);
-  return { r: renderView(ents, place), place, marks: [...new Set(ents.flatMap((e) => (e.e === 'mark' ? [e.sym] : [])))], compressed: v.zmap !== null };
+  return { r: renderView(ents, place), place, entities: ents, marks: marksOf(ents), compressed: v.zmap !== null };
 }
 
 // the machine's name on the sheets (machine-name.ts: pure, for the forms too)
@@ -109,7 +122,7 @@ export function machineOf(a: Analysis, plant: Plant, L: Layout, catalog: { brand
  *  the panel's heights in one row, else with its dimensions placed for the scale it takes (kept on paper). The entities
  *  drawn go with it (a CAD file of the view takes the same). */
 type Drawn = { entities: Entity[]; bounds: Box };
-function roomPlaced(draw: (o: RoomDrawOpts) => Drawn, kind: 'plan' | 'section', area: Box): View & { entities: Entity[] } {
+function roomPlaced(draw: (o: RoomDrawOpts) => Drawn, kind: 'plan' | 'section', area: Box): Placed {
   let d = draw({}), place = placeIn(d.bounds, d.entities, area, DETAIL_SCALES);
   const best = DETAIL_SCALES[0], next = (o: RoomDrawOpts, keep: boolean): void => {
     const e = draw(o), p = placeIn(e.bounds, e.entities, area, DETAIL_SCALES);
@@ -123,7 +136,7 @@ function roomPlaced(draw: (o: RoomDrawOpts) => Drawn, kind: 'plan' | 'section', 
 }
 
 /** The machine room in plan or in section B-B; null when the design has no machine room. */
-export function roomView(L: Layout, M: MachineSpec, kind: 'plan' | 'section', area: Box): (View & { G: RoomGeo; entities: Entity[] }) | null {
+export function roomView(L: Layout, M: MachineSpec, kind: 'plan' | 'section', area: Box): (Placed & { G: RoomGeo }) | null {
   const G = roomGeo(L, M);
   if (!G) return null;
   return { ...roomPlaced((o) => (kind === 'plan' ? roomPlanEntities(L, M, G, o) : roomSectionEntities(L, M, G, o)), kind, area), G };
@@ -142,7 +155,7 @@ export const belowGeoOf = (a: Analysis, L: Layout, M: MachineSpec, scheme: Botto
 export const headLoadsOf = (a: Analysis, L: Layout, M: MachineSpec, g: BottomGeo): Entity[] => headLoads(L, g, a.ctx.I.r, a.ctx.I.Dp, M.n, M.d);
 
 /** The machine's room with the machine below, in plan or in section C-C (below-view.ts). */
-export function belowView(L: Layout, M: MachineSpec, g: BottomGeo, kind: 'plan' | 'section', area: Box): View & { entities: Entity[] } {
+export function belowView(L: Layout, M: MachineSpec, g: BottomGeo, kind: 'plan' | 'section', area: Box): Placed {
   // the plan keeps its names clear of each other at the scale it is drawn at: placed once more when that is not 1:25 —
   // first with its door shut in its frame, when the swing alone costs it that scale
   const at = (s: number, shut = false) => (kind === 'plan' ? belowPlanEntities(L, M, g, s, shut) : belowSectionEntities(L, M, g));
@@ -157,7 +170,7 @@ export function belowView(L: Layout, M: MachineSpec, g: BottomGeo, kind: 'plan' 
 
 /** The machine room of a replacement (its survey) in plan or in section B-B, the machine `M` (the derived one, or the
  *  same with the name the data of the installation give it); null with the machine below. */
-export function surveyView(d: RoomDerived, kind: 'plan' | 'section', area: Box, M = d.M): (View & { G: RoomGeo; entities: Entity[] }) | null {
+export function surveyView(d: RoomDerived, kind: 'plan' | 'section', area: Box, M = d.M): (Placed & { G: RoomGeo }) | null {
   const G = d.G;
   if (!G) return null;
   return { ...roomPlaced((o) => (kind === 'plan' ? roomPlanOn(d.site, M, G, o) : roomSectionOn(d.site, M, G, o)), kind, area), G };

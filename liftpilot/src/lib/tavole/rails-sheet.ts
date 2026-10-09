@@ -3,7 +3,7 @@
 // profile, how many lengths and joints, how many brackets and the longest interval between them (the l of the car rails'
 // check on sheet 1), the brackets' type with their anchors and how far the wall stands from each rail's foot, and what a
 // car rail's bracket brings to the wall for the check of its anchors. Italian, like the drawings. Pure.
-import { boxH, fitView, moveShapes, paragraph, renderView, type Box, type Shape } from '@/drawing';
+import { boxH, fitView, moveShapes, paragraph, renderView, type Box, type Entity, type Place, type Shape } from '@/drawing';
 import { bracketHeights, maxBracketSpan, railPieces, railSpan } from '@/shaft/brackets';
 import { railLabel } from '@/shaft/rails';
 import { railsDev } from '@/shaft/rails-dev';
@@ -38,8 +38,10 @@ export function railsNotes(L: Layout, x: { fx: string; fy: string; kept: boolean
   ];
 }
 
-/** The elevation in `area` with the notes under it, at the largest of the scales that fits. */
-export function railsSheet(L: Layout, area: Box, notes: readonly string[]): { shapes: Shape[]; scale: number } {
+/** The elevation in `area` with the notes under it, at the largest of the scales that fits: the elevation drawn
+ *  (`shapes`, its `entities` placed by `place`) and the notes' paragraphs (`notes`), paper millimetres — the sheet draws
+ *  both, a CAD file the elevation's entities with the notes where the sheet has them (cad/project.ts). */
+export function railsSheet(L: Layout, area: Box, notes: readonly string[]): { shapes: Shape[]; notes: Shape[]; scale: number; place: Place; entities: Entity[] } {
   // the notes from the foot of the area up, the elevation over them
   const width = area.x1 - area.x0, size = 2.1, out: Shape[] = [];
   let y = area.y0, blocks: Shape[][] = [];
@@ -52,5 +54,5 @@ export function railsSheet(L: Layout, area: Box, notes: readonly string[]): { sh
   const dev = railsDev(L), view: Box = { ...area, y0: y + 3 };
   const place = fitView(dev.bounds, dev.entities, view, [50, 100, 200, 500]);
   if (!place || boxH(view) <= 0) throw new Error('rails do not fit on the sheet');
-  return { shapes: [...renderView(dev.entities, place).shapes, ...out], scale: place.scale };
+  return { shapes: renderView(dev.entities, place).shapes, notes: out, scale: place.scale, place, entities: dev.entities };
 }

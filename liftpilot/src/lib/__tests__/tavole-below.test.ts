@@ -10,9 +10,8 @@ import { PRESETS } from '@/calc/presets';
 import { defaultInputs, layout, type ShaftInputs } from '@/shaft';
 import { A4, chainShapes, shapeBox, type Shape } from '@/drawing';
 import { buildTavole } from '../tavole/build';
-import { belowGeoOf, machineOf } from '../tavole/views';
 import { analyse } from '../present/analysis';
-import { inputViews, projectViews } from '../cad/project';
+import { inputViews } from '../cad/project';
 import { dataSheet } from '../tavole/data';
 import { toDxf } from '../cad/export';
 import { readCad } from '../cad/read';
@@ -93,8 +92,8 @@ test('quota di una porta stretta: la larghezza sulla linea, le parole sotto senz
 
 test('progetto in DXF con la macchina in basso: le due viste del locale dopo le sezioni, come nelle tavole', () => {
   for (const scheme of BOTTOM_SCHEMES) {
-    const x = input(shaft(1600, 1750, 'rear', scheme === 'room'), scheme), a = analyse(x.values), M = machineOf(a, x.plant, x.layout);
-    const views = projectViews(x.layout, M, false, belowGeoOf(a, x.layout, M, scheme)), sheets = buildTavole(x).sheets;
+    const x = input(shaft(1600, 1750, 'rear', scheme === 'room'), scheme);
+    const views = inputViews(x), sheets = buildTavole(x).sheets;
     // the same views as the set's sheets after the data, in its order and at its scales
     assert.deepEqual(views.map((v) => [v.title, v.scale]).filter(([t]) => String(t).includes('LOCALE MACCHINA')),
       sheets.filter((s) => s.title.includes('LOCALE MACCHINA')).map((s) => [s.title, s.scale]), scheme);

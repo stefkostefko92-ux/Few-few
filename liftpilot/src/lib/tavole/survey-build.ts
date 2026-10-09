@@ -5,7 +5,9 @@
 // leaves its room out).
 import { A4, COND, PALETTE, concreteTile, drawingArea, frame, sheetTitle, strip, type DrawingDoc, type Hit, type Page, type SheetMeta } from '@/drawing';
 import { deriveRoom, type RoomDerived } from '../room/derive';
-import { inset, roomMarks } from './build';
+import type { MachineSpec } from '@/shaft/machine-room';
+import type { Plant } from '../plant';
+import { inset, roomMarks, type Drawn } from './build';
 import { scaleLabel } from './extras';
 import { roomLegend, titleSpares } from './room-legend';
 import { placeLines } from './input';
@@ -32,11 +34,33 @@ const SPECS = [
   { k: 'section', title: 'VISTA IN ELEVATO DEL LOCALE MACCHINA - SEZ. B-B', subtitle: LOADS },
 ] as const;
 
+/** A drawing sheet of the replacement's set: its title, its subtitle, its view and what it draws around it. */
+export interface SurveySheet {
+  title: string;
+  subtitle: string;
+  drawn: Drawn;
+}
+
+/** The machine room's sheets of `d` with the machine `M` (named as the set names it): the plan with the section line B-B
+ *  and the legend of its symbols, the section — the PDF (buildSurveyTavole) and the CAD files (cad/project.ts
+ *  surveyViews) take them from here. */
+export function surveySheets(d: RoomDerived, M: MachineSpec): SurveySheet[] {
+  return SPECS.map((s) => {
+    const area = drawingArea(true), v = surveyView(d, s.k, inset(area, 8, 8, 8, 8), M);
+    if (!v) throw new Error('no machine room');
+    const marks = s.k === 'plan' ? roomMarks(v.G, v.place, v.r.extent) : [];
+    const legend = s.k === 'plan' ? roomLegend([...v.r.shapes, ...marks], area, titleSpares(s.title, s.subtitle)) : [];
+    return { title: s.title, subtitle: s.subtitle, drawn: { entities: v.entities, place: v.place, shapes: v.r.shapes, notes: [...marks, ...legend], scale: v.place.scale, hits: v.r.hits } };
+  });
+}
+
+/** The machine as the replacement's set names it: the catalogue's, else as the data of the installation write it. */
+export const surveyMachine = (d: RoomDerived, plant: Plant): MachineSpec => ({ ...d.M, label: machineName(plant, d.made) });
+
 export function buildSurveyTavole(x: SurveyTavoleInput): SurveyTavoleResult {
   const d = deriveRoom(x.values, x.survey);
   if (!d.G) throw new Error('no machine room over the shaft');
-  // the machine named as the catalogue names it, else as the data of the installation
-  const M = { ...d.M, label: machineName(x.plant, d.made) }, pages = SPECS.length + 1;
+  const M = surveyMachine(d, x.plant), pages = SPECS.length + 1;
   const [l1, l2] = placeLines(x.project), sheet = surveySheetData(x, d, pages);
   // the strip of every sheet: the revision and the plant number as the title block writes them
   const meta = (page: number): SheetMeta => ({
@@ -44,13 +68,10 @@ export function buildSurveyTavole(x: SurveyTavoleInput): SurveyTavoleResult {
   });
   const out: Page[] = [{ w: A4.w, h: A4.h, shapes: [...frame(), ...surveySheetShapes(sheet)] }];
   const sheets: SurveyTavoleResult['sheets'] = [{ title: 'DATI DELLA SOSTITUZIONE DELL’ARGANO', scale: null }], hits: Hit[][] = [[]];
-  SPECS.forEach((s, i) => {
-    const area = drawingArea(true), v = surveyView(d, s.k, inset(area, 8, 8, 8, 8), M);
-    if (!v) throw new Error('no machine room');
-    const drawn = [...v.r.shapes, ...(s.k === 'plan' ? roomMarks(v.G, v.place, v.r.extent) : [])], shapes = [...drawn, ...(s.k === 'plan' ? roomLegend(drawn, area, titleSpares(s.title, s.subtitle)) : [])];
-    out.push({ w: A4.w, h: A4.h, shapes: [...frame(), ...shapes, ...sheetTitle(s.title, s.subtitle), scaleLabel(v.place.scale, true), ...strip(meta(i + 2))] });
-    sheets.push({ title: s.title, scale: v.place.scale });
-    hits.push(v.r.hits);
+  surveySheets(d, M).forEach(({ title, subtitle, drawn: v }, i) => {
+    out.push({ w: A4.w, h: A4.h, shapes: [...frame(), ...v.shapes, ...v.notes, ...sheetTitle(title, subtitle), scaleLabel(v.scale, true), ...strip(meta(i + 2))] });
+    sheets.push({ title, scale: v.scale });
+    hits.push(v.hits);
   });
   const doc: DrawingDoc = {
     meta: { title: `Tavole ${x.set.number} - ${x.project.name}`, subject: 'Sostituzione dell’argano: dati, pianta e sezione B-B del locale macchina', author: x.company.name },

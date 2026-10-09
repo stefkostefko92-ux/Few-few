@@ -13,7 +13,7 @@ import { hitchTags } from '@/shaft/room-loads';
 import { TAG_R, letteringBoxes, placeTags } from '@/shaft/tag-place';
 import { inputViews } from '../cad/project';
 import { readCad } from '../cad/read';
-import { TITLE_BLOCK, inTitleBlock, mendAttributes, setToDwg, setToDxf, type IssuedSet } from '../cad/set-export';
+import { TITLE_BLOCK, inTitleBlock, mendAttributes, paperSheets, setToDwg, setToDxf, type IssuedSet } from '../cad/set-export';
 import { VOCI_IMPIANTO } from '../lift/norme';
 import { buildTavole } from '../tavole/build';
 import { FAILED, TITLE_H } from '../tavole/datasheet';
@@ -202,7 +202,7 @@ test('registro di quello che le tavole scrivono: le costanti del foglio', () => 
 
 test('serie emessa in DXF e DWG: cartiglio come blocco con attributi, calcestruzzo campito, la stessa geometria', () => {
   const x = input(), r = buildTavole(x);
-  const set: IssuedSet = { views: inputViews(x), sheet: r.doc.pages[0]?.shapes ?? [], title: r.title, caption: 'Impianto di prova · DIS. N° 26-189 R1 12/10/2026' };
+  const set: IssuedSet = { views: inputViews(x), sheet: r.doc.pages[0]?.shapes ?? [], paper: paperSheets(r), title: r.title, caption: 'Impianto di prova · DIS. N° 26-189 R1 12/10/2026' };
   // the title block leaves sheet 1 for the block; the band over it stays on the sheet
   const yb = 7 + TITLE_H;
   assert.ok(titleBlock(r.title, yb).every(inTitleBlock));

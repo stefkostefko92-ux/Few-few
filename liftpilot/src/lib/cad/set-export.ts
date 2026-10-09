@@ -1,30 +1,47 @@
-// The CAD files of an issued drawing set, the same set as its signed PDF: its views at full size as a project's CAD
-// files have them (project.ts), sheet 1 as the PDF draws it (the data, the loads, the notes, the checks) at the scale
-// of the first view and to its left, and sheet 1's title block as the block CARTIGLIO, whose attributes are the words
-// that change from set to set (the drawing number, the revision, the dates, the plant number, the client, the place;
-// title-block.ts), so that a CAD program lists and edits them. Under the first view the set's number, revision and
-// SHA-256, not the id of a record. acad-ts 3.2.0 writes the attributes of a DXF as plain texts and the end of an
-// insert's attributes twice: the DXF is mended here (mendAttributes); its DWG has them right. Pure.
-import { A4, COND, FRAME, fitted, renderView, type Pt, type Shape } from '@/drawing';
+// The CAD files of an issued drawing set, the same set as its signed PDF — every sheet of it: its views at full size as
+// a project's CAD files have them (project.ts: with what each sheet draws around its view), sheet 1 as the PDF draws it
+// (the data, the loads, the notes) at the scale of the first view and to its left, the set's other sheets without a
+// view (the checks of the design, round 37) as the PDF draws them under sheet 1 at the same scale, each on its layer
+// FOGLIO_n and named under it — their strip left out, its words being sheet 1's title block —, and sheet 1's title block
+// as the block CARTIGLIO, whose attributes are the words that change from set to set (the drawing number, the revision,
+// the dates, the plant number, the client, the place; title-block.ts), so that a CAD program lists and edits them. Under
+// the first view the set's number, revision and SHA-256, not the id of a record. acad-ts 3.2.0 writes the attributes of
+// a DXF as plain texts and the end of an insert's attributes twice: the DXF is mended here (mendAttributes); its DWG has
+// them right. Pure.
+import { A4, COND, FRAME, STRIP_H, fitted, type Pt, type Shape } from '@/drawing';
 import { TITLE_H } from '../tavole/datasheet';
 import { titleFields, titleFrame, type TitleData, type TitleField } from '../tavole/title-block';
 import { acad } from './acad';
-import { GAP, cadDocument, cp1252, dxfText, writer, type CadFormat, type CadView } from './export';
+import { GAP, cadDocument, cp1252, dxfText, laidOut, writer, type CadFormat, type CadView } from './export';
 
 /** The name of the title block's block. */
 export const TITLE_BLOCK = 'CARTIGLIO';
 
-/** The layer of sheet 1 and of its title block's insert (the block's own lines on layer 0, taking the insert's; not a
- *  layer named as the block: acad-ts reads the two as one). */
-const SHEET_LAYER = 'FOGLIO_1';
+/** The layer of sheet `n` (of sheet 1, also of its title block's insert: the block's own lines on layer 0, taking the
+ *  insert's; not a layer named as the block: acad-ts reads the two as one). */
+export const sheetLayer = (n: number): string => `FOGLIO_${n}`;
+const SHEET_LAYER = sheetLayer(1);
 
 /** Paper millimetres around the title block within which a shape of sheet 1 belongs to it. */
 const EPS = 0.05;
+
+/** A sheet of the set without a view (the checks of the design), as the PDF draws it: its number and its shapes, paper
+ *  millimetres. */
+export interface PaperSheet {
+  page: number;
+  shapes: readonly Shape[];
+}
+
+/** A built set's sheets without a view after sheet 1 (its scale null: the checks of the design), by their number. */
+export const paperSheets = (r: { doc: { pages: readonly { shapes: readonly Shape[] }[] }; sheets: readonly { scale: number | null }[] }): PaperSheet[] =>
+  r.sheets.flatMap((s, i) => (i > 0 && s.scale === null ? [{ page: i + 1, shapes: r.doc.pages[i]?.shapes ?? [] }] : []));
 
 export interface IssuedSet {
   views: readonly CadView[];
   /** sheet 1 as the PDF draws it, paper millimetres */
   sheet: readonly Shape[];
+  /** the set's other sheets without a view, as the PDF draws them (build.ts: the checks of the design, the last one) */
+  paper: readonly PaperSheet[];
   /** what its title block writes */
   title: TitleData;
   /** the line under the first view: the set, its revision, its hash */
@@ -48,9 +65,16 @@ function pointsOf(s: Shape): Pt[] {
   }
 }
 
+/** Whether a shape lies within the frame's foot `h` millimetres high. */
+const inFoot = (s: Shape, h: number): boolean =>
+  pointsOf(s).every(([x, y]) => x >= FRAME.x0 - EPS && x <= FRAME.x1 + EPS && y >= FRAME.y0 - EPS && y <= FRAME.y0 + h + EPS);
+
 /** A shape of sheet 1 inside its title block (it leaves the sheet for the block). */
-export const inTitleBlock = (s: Shape): boolean =>
-  pointsOf(s).every(([x, y]) => x >= FRAME.x0 - EPS && x <= FRAME.x1 + EPS && y >= FRAME.y0 - EPS && y <= FRAME.y0 + TITLE_H + EPS);
+export const inTitleBlock = (s: Shape): boolean => inFoot(s, TITLE_H);
+
+/** A shape of a sheet's strip (sheet.ts strip: the drawing number, the page, the revision, the place, the plant number —
+ *  sheet 1's title block has them as attributes: a CAD file writes them once). */
+export const inStrip = (s: Shape): boolean => inFoot(s, STRIP_H);
 
 /** A text of the title block placed as the sheets letter it: capital height, insertion and alignment, condensed. */
 function letter(t: acad.TextEntity, at: Pt, size: number, align: TitleField['align'], M: (p: Pt) => acad.XYZ, scale: number): void {
@@ -78,11 +102,24 @@ export function setDocument(x: IssuedSet, format: CadFormat): { doc: acad.CadDoc
     e.layer = layer;
     space.entities.add(e);
   };
-  // sheet 1 to the left of the first view, at its scale, its foot level with the view's
-  const first = x.views[0], S = first?.scale ?? 50, ext = first ? renderView(first.entities, { scale: S, ox: 0, oy: 0 }).extent : { x0: 0, y0: 0 };
+  // sheet 1 to the left of the first view (with what its sheet draws around it), at its scale, its foot level with the
+  // view's
+  const first = x.views[0], S = first?.scale ?? 50, ext = first ? laidOut(first).extent : { x0: 0, y0: 0 };
   const dx = ext.x0 * S - GAP - A4.w * S, dy = ext.y0 * S;
   const emit = writer(add, S, dx, text, { dy, cond: COND, degrees });
   for (const s of x.sheet) if (!inTitleBlock(s)) emit(s, SHEET_LAYER);
+  // the other sheets without a view under it, in their order, each on its layer and named under its frame
+  x.paper.forEach((p, k) => {
+    const name = sheetLayer(p.page), l = new acad.Layer(name);
+    l.color = new acad.Color(7);
+    table.add(l);
+    const put = writer((e: acad.Entity): void => {
+      e.layer = l;
+      space.entities.add(e);
+    }, S, dx, text, { dy: dy - (k + 1) * (A4.h * S + GAP), cond: COND, degrees });
+    for (const s of p.shapes) if (!inStrip(s)) put(s, name);
+    put({ t: 'text', at: [FRAME.x0, FRAME.y0 - 8], text: `Foglio ${p.page}`, size: 3.5, cond: false }, name);
+  });
   // the title block: its lines and labels a block at paper size, its words the attributes of the insert at the scale
   // (the company by name: a CAD file carries no logo)
   const d: TitleData = { ...x.title, logo: false, clientLogo: false }, yb = FRAME.y0 + TITLE_H, fields = titleFields(d, yb);
