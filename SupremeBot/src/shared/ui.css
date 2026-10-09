@@ -204,10 +204,7 @@ select { cursor: pointer; padding-right: var(--s-2); }
 
 /* Brand mark (inline SVG) */
 .mark { width: 28px; height: 28px; flex: 0 0 auto; display: block; filter: drop-shadow(0 4px 10px rgba(39, 224, 138, .35)); }
-.mark .m-tile { fill: var(--bg); stroke: var(--accent-line); }
-.mark .m-blade { fill: var(--accent); }
-.mark .m-guard { stroke: var(--accent); }
-@media (prefers-color-scheme: light) { .mark .m-tile { fill: #0a0b0d; stroke: #0a0b0d; } .mark { filter: drop-shadow(0 4px 8px rgba(5, 96, 58, .3)); } }
+@media (prefers-color-scheme: light) { .mark { filter: drop-shadow(0 4px 8px rgba(5, 96, 58, .3)); } }
 
 /* Status beacon: shape carries the state, colour only reinforces it. */
 .dot { position: relative; width: 16px; height: 16px; border-radius: 50%; flex: 0 0 auto; border: 2px solid var(--muted); background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, .5), transparent 60%); }

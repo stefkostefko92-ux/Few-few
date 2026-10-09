@@ -235,10 +235,6 @@
 #tanoth-bot-panel .tb-header::after { content: '' !important; position: absolute !important; left: 14px !important; right: 14px !important; bottom: -1px !important; height: 1px !important; background: linear-gradient(90deg, var(--accent), rgba(39, 224, 138, 0) 70%) !important; opacity: .9 !important; box-shadow: 0 0 12px 1px var(--accent-line) !important; }
 #tanoth-bot-panel.tb-light .tb-header::after { background: linear-gradient(90deg, #0a8a55, rgba(10, 138, 85, 0) 70%) !important; box-shadow: none !important; }
 #tanoth-bot-panel .tb-mark { display: block !important; order: 0 !important; width: 26px !important; height: 26px !important; flex: 0 0 auto !important; filter: drop-shadow(0 3px 8px rgba(39, 224, 138, .4)) !important; }
-#tanoth-bot-panel .tb-mark .m-tile { fill: var(--bg) !important; stroke: var(--accent-line) !important; }
-#tanoth-bot-panel .tb-mark .m-blade { fill: var(--accent) !important; }
-#tanoth-bot-panel .tb-mark .m-guard { stroke: var(--accent) !important; }
-#tanoth-bot-panel.tb-light .tb-mark .m-tile { fill: #0a0b0d !important; stroke: #0a0b0d !important; }
 #tanoth-bot-panel.tb-light .tb-mark { filter: drop-shadow(0 3px 6px rgba(5, 96, 58, .3)) !important; }
 #tanoth-bot-panel .tb-title { order: 1 !important; flex: 1 1 auto !important; min-width: 0 !important; letter-spacing: -.012em !important; line-height: 1.2 !important; display: -webkit-box !important; -webkit-box-orient: vertical !important; -webkit-line-clamp: 2 !important; overflow: hidden !important; overflow-wrap: anywhere !important; }
 /* Beacon: the state LED. Shape + colour: ring (idle) / lit core (running) / amber square with bars (paused). */
