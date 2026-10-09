@@ -118,7 +118,7 @@ test("memory-preload показва схемата на агента при ст
     input: JSON.stringify({ agent_type: "seo" }), encoding: "utf8", env: { ...process.env, CLAUDE_PROJECT_DIR: ROOT },
   });
   const ctx = JSON.parse(r.stdout).hookSpecificOutput.additionalContext;
-  assert.ok(ctx.includes(LEARN_SCHEMA));
+  assert.ok(ctx.includes(LEARN_SCHEMA.replace("agent: <id>", "agent: seo")));
 });
 
 // Таваните (анти-раздуване) изхвърлят поуката цяла и тихо — 2026-10-09 така изчезна проверена поука
@@ -138,4 +138,46 @@ test("capture-transcript разпознава learn блок в реален JSO
   assert.equal(hasLearnBlock(jsonl), false, "суровият JSONL не носи истински нов ред — старият филтър слепее");
   assert.equal(transcriptHasLearn(jsonl), true);
   assert.equal(transcriptHasLearn(JSON.stringify({ type: "user", message: { role: "user", content: CANON } })), false, "learn блок в чуждо съобщение не се брои");
+});
+
+// 2026-10-09, същия ден: Летописецът написа „agent: letopisec“, Социалджията — „agent: socialdzhiyata“.
+// Файл с такова име няма → куката спираше тихо и проверените поуки изчезваха (пети път за деня).
+test("грешно изписан СОБСТВЕН id → поуката отива при агента, който е вървял; чужд познат id → отказ", async () => {
+  const { resolveAgent } = await import("../../.claude/hooks/memory-capture.mjs");
+  const exists = (id) => ["letopisetsa", "kasadjiyata", "seo"].includes(id);
+  assert.equal(resolveAgent("letopisec", "letopisetsa", exists), "letopisetsa");
+  assert.equal(resolveAgent("letopisetsa", "letopisetsa", exists), "letopisetsa");
+  assert.equal(resolveAgent("kasadjiyata", "seo", exists), null, "тровене на чужда памет остава забранено");
+  assert.equal(resolveAgent("kasadjiyata", "", exists), "kasadjiyata", "ръчен запис без бегач");
+  assert.equal(resolveAgent("letopisec", "", exists), null, "без бегач и без файл — няма къде");
+  assert.equal(resolveAgent("../../etc/x", "seo", exists), "seo", "id с път не се ползва като файл");
+});
+
+test("learnProblems: чужд познат агент в блока се казва; грешно изписан собствен — не (пренасочва се)", () => {
+  const known = new Set(["letopisetsa", "kasadjiyata"]);
+  const foreign = fence("agent: kasadjiyata\nlessons:\n  - text: поука\n    confidence: verified\n    source: https://a.example/x");
+  assert.match(learnProblems(foreign, { agent: "letopisetsa", known }).join(" "), /друг агент/);
+  const typo = fence("agent: letopisec\nlessons:\n  - text: поука\n    confidence: verified\n    source: https://a.example/x");
+  assert.deepEqual(learnProblems(typo, { agent: "letopisetsa", known }), []);
+});
+
+test("memory-preload показва схемата с ТОЧНИЯ id на агента", () => {
+  const r = spawnSync(process.execPath, [join(ROOT, ".claude", "hooks", "memory-preload.mjs")], {
+    input: JSON.stringify({ agent_type: "letopisetsa" }), encoding: "utf8", env: { ...process.env, CLAUDE_PROJECT_DIR: ROOT },
+  });
+  const ctx = JSON.parse(r.stdout).hookSpecificOutput.additionalContext;
+  // Статичният (кеширан) префикс на PROCEDURE.md споменава `agent: <id>` общо за флота — тук важи
+  // схемата в края, която е агент-специфична.
+  assert.match(ctx, /```learn\nagent: letopisetsa\n/);
+});
+
+test("capture-transcript подава кой агент е вървял (от .meta.json до транскрипта)", async () => {
+  const { agentTypeFor } = await import("../memory/capture-transcript.mjs");
+  const dir = mkdtempSync(join(tmpdir(), "learn-meta-"));
+  try {
+    writeFileSync(join(dir, "agent-x.jsonl"), "");
+    writeFileSync(join(dir, "agent-x.meta.json"), JSON.stringify({ agentType: "socialdjiyata" }));
+    assert.equal(agentTypeFor(join(dir, "agent-x.jsonl")), "socialdjiyata");
+    assert.equal(agentTypeFor(join(dir, "няма.jsonl")), "");
+  } finally { rmSync(dir, { recursive: true, force: true }); }
 });
