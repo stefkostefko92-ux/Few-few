@@ -93,9 +93,9 @@ els.pause.addEventListener('click', () => {
 });
 // Settings open straight on the hero this popup controls (his own settings).
 let currentHeroKey = null;
-document.getElementById('open-options').addEventListener('click', () => {
-  if (currentHeroKey) chrome.tabs.create({ url: chrome.runtime.getURL('options/options.html') + '?hero=' + encodeURIComponent(currentHeroKey) });
-  else chrome.runtime.openOptionsPage();
+document.getElementById('open-options').addEventListener('click', async () => {
+  await send({ type: 'OPEN_OPTIONS', heroKey: currentHeroKey });
+  window.close();
 });
 document.getElementById('open-stats').addEventListener('click', () => chrome.tabs.create({ url: chrome.runtime.getURL('stats/stats.html') }));
 document.getElementById('show-panel').addEventListener('click', () => control('showPanel'));

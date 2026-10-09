@@ -53,10 +53,16 @@ which game actions are covered and which are left out on purpose.
 Every hero (server + name) has his **own saved settings**. The first time a
 hero is seen he starts from the defaults; from then on the panel, the popup and
 the options page change only that hero. Several heroes can run at once, each in
-his own tab. In the options page pick the hero under *Settings for*
-(*Default* = what a new hero starts with); the popup's Settings button opens
-the hero you are looking at, and with several hero tabs open (none in front)
-the popup lets you choose which one to control.
+his own tab. Settings always open on the hero who is logged in:
+the panel's and the popup's Settings button open that hero's own page (an
+already open page for him is brought to the front instead of a copy), and
+opening Settings from `chrome://extensions` picks the hero of the game tab used
+last. Under *Settings for* you can switch to another hero or to *Default*
+(what a new hero starts with). An open settings page follows changes made in
+the game (module chips) until you start editing it. With several hero tabs
+open (none in front) the popup lets you choose which one to control; Start /
+Pause / Stop from the popup show in that tab's panel at once, and a hidden
+panel's corner button lights up while the bot runs.
 
 ## Install (unpacked)
 

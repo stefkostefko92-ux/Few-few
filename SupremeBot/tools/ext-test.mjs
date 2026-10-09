@@ -154,6 +154,94 @@ try {
     check('heroes: options page offers a hero picker', pick.length === 2 && /Ragnar/.test(pick[1]), JSON.stringify(pick));
     await page.close();
   }
+  // A LOGGED-IN hero (faked session + XML-RPC): the panel's Settings opens HIS
+  // page, a change saved there shows in the game, a chip toggled in the game
+  // shows on the open settings page, and Start from the popup marks the panel.
+  {
+    const HERO = 's3-bg:Bjorn';
+    const xml = '<?xml version="1.0"?><methodResponse><params><param><value><struct>' +
+      '<member><name>name</name><value><string>Bjorn</string></value></member>' +
+      '<member><name>level</name><value><i4>42</i4></value></member>' +
+      '<member><name>gold</name><value><i4>1000</i4></value></member>' +
+      '</struct></value></param></params></methodResponse>';
+    await context.route('https://s3-bg.tanoth.gameforge.com/**', (route) => {
+      if (/xmlrpc/.test(route.request().url())) return route.fulfill({ status: 200, contentType: 'text/xml', body: xml });
+      return route.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html><html><head><script>window.flashvars={sessionID:"fake-session"}</script></head><body><div id="game"></div></body></html>' });
+    });
+    const game = await context.newPage();
+    const gameErrors = [];
+    game.on('pageerror', (e) => gameErrors.push(e.message));
+    await game.goto('https://s3-bg.tanoth.gameforge.com/webroot/game/', { waitUntil: 'load' }).catch(() => {});
+    const panelSel = '#tanoth-bot-panel';
+    let bound = false;
+    for (let i = 0; i < 20 && !bound; i++) {
+      await game.waitForTimeout(500);
+      bound = await game.evaluate(() => /Bjorn/.test(document.querySelector('#tanoth-bot-panel [data-el="log"]')?.textContent || ''));
+    }
+    check('hero tab: the logged-in hero is recognised', bound);
+
+    // Panel "Settings" -> options page of THIS hero.
+    const opened = context.waitForEvent('page', { timeout: 8000 }).catch(() => null);
+    await game.click(`${panelSel} [data-act="options"]`);
+    const opt = await opened;
+    if (opt) await opt.waitForLoadState('load');
+    await (opt || game).waitForTimeout(900);
+    const optUrl = opt ? new URL(opt.url()) : null;
+    check('panel Settings opens the logged-in hero\'s page', optUrl && optUrl.searchParams.get('hero') === HERO, opt ? opt.url() : 'no tab opened');
+    const picked = opt ? await opt.evaluate(() => document.getElementById('hero-sel')?.value) : null;
+    check('settings page edits that hero', picked === HERO, String(picked));
+
+    // Clicking Settings again focuses the same tab instead of piling up copies.
+    const before = context.pages().length;
+    await game.click(`${panelSel} [data-act="options"]`);
+    await game.waitForTimeout(900);
+    check('the hero\'s settings tab is reused, not duplicated', context.pages().length === before, `${before} -> ${context.pages().length}`);
+
+    if (opt) {
+      // Change in Settings + Save -> the game panel shows it.
+      const dungeonOn = () => game.evaluate(() => document.querySelector('#tanoth-bot-panel [data-act="mod:dungeon"]')?.getAttribute('aria-checked'));
+      const was = await dungeonOn();
+      await opt.evaluate(() => { const cb = document.querySelector('input[data-field="dungeon.enabled"]'); cb.click(); });
+      await opt.click('#save');
+      await game.waitForTimeout(800);
+      const now = await dungeonOn();
+      check('a module switched in Settings shows in the game panel', was !== now && (now === 'true' || now === 'false'), `${was} -> ${now}`);
+
+      // Toggle in the game -> the open settings page follows (no stale copy).
+      await game.click(`${panelSel} [data-act="mod:work"]`);
+      await game.waitForTimeout(800);
+      const panelWork = await game.evaluate(() => document.querySelector('#tanoth-bot-panel [data-act="mod:work"]')?.getAttribute('aria-checked') === 'true');
+      const s = await opt.evaluate((k) => chrome.runtime.sendMessage({ type: 'GET_SETTINGS', heroKey: k }), HERO);
+      const pageWork = await opt.evaluate(() => { const cb = document.querySelector('input[data-field="work.enabled"]'); return cb ? cb.checked : null; });
+      check('a chip toggled in the game updates the open settings page', s.work.enabled === panelWork && pageWork === panelWork, JSON.stringify({ panelWork, saved: s.work.enabled, pageWork }));
+
+      // Options opened without ?hero (chrome://extensions) picks the live hero.
+      const plain = await context.newPage();
+      await plain.goto(`chrome-extension://${extId}/options/options.html`, { waitUntil: 'load' });
+      await plain.waitForTimeout(1200);
+      const auto = await plain.evaluate(() => document.getElementById('hero-sel')?.value);
+      check('plain Settings page opens on the logged-in hero', auto === HERO, String(auto));
+      await plain.close();
+
+      // Start from the popup -> the panel is marked as running (also while
+      // it is hidden: the corner button lights up).
+      await game.click(`${panelSel} [data-act="hide"]`);
+      const r = await opt.evaluate(async () => {
+        const [t] = await chrome.tabs.query({ url: 'https://s3-bg.tanoth.gameforge.com/*' });
+        return chrome.runtime.sendMessage({ type: 'CONTROL', action: 'start', tabId: t.id });
+      });
+      await game.waitForTimeout(700);
+      const running = await game.evaluate(() => ({ cls: document.getElementById('tanoth-bot-panel').classList.contains('tb-running') || document.getElementById('tanoth-bot-panel').classList.contains('tb-break'), start: document.querySelector('#tanoth-bot-panel [data-act="start"]').disabled, fab: !!document.querySelector('#tanoth-bot-fab.tb-running') }));
+      check('Start from the popup marks the in-game panel as running', r && r.ok && running.cls && running.start && running.fab, JSON.stringify({ r, running }));
+      await opt.evaluate(async () => {
+        const [t] = await chrome.tabs.query({ url: 'https://s3-bg.tanoth.gameforge.com/*' });
+        return chrome.runtime.sendMessage({ type: 'CONTROL', action: 'stop', tabId: t.id });
+      });
+      await opt.close();
+    }
+    check('hero tab: no uncaught JS errors', gameErrors.length === 0, gameErrors.join('\n     '));
+    await game.close();
+  }
 } finally {
   await context.close();
   try { fs.rmSync(userDataDir, { recursive: true, force: true }); } catch {}

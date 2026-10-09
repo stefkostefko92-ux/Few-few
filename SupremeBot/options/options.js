@@ -172,12 +172,39 @@ const SCHEMA = [
 
 let settings = mergeSettings(null);
 // Which hero's settings this page edits: null = the defaults a NEW hero starts
-// from; otherwise "<server>:<name>". Opened from the popup it arrives as ?hero=.
+// from; otherwise "<server>:<name>". Opened from the popup or the in-game
+// panel it arrives as ?hero=<key>; an EMPTY ?hero= means the defaults on
+// purpose. With no ?hero at all (chrome://extensions, right-click > Options)
+// the page edits the hero logged in most recently in a game tab.
+const heroGiven = new URLSearchParams(location.search).has('hero');
 let heroKey = new URLSearchParams(location.search).get('hero') || null;
+// Unsaved edits in the form. While clean, the page follows changes made
+// elsewhere (in-game panel chips, another settings tab) instead of showing,
+// and later saving back, a stale copy.
+let dirty = false;
 
 const navEl = document.getElementById('nav');
 const formEl = document.getElementById('form');
 const hintEl = document.getElementById('saved-hint');
+formEl.addEventListener('change', () => { dirty = true; });
+formEl.addEventListener('click', (e) => { if (e.target.closest('button')) dirty = true; });
+
+function setHeroUrl() {
+  const u = new URL(location.href);
+  u.searchParams.set('hero', heroKey || '');
+  history.replaceState(null, '', u);
+}
+
+// The hero of the most recently used game tab that already knows its hero.
+async function liveHeroKey() {
+  const games = await chrome.tabs.query({ url: 'https://*.tanoth.gameforge.com/*' }).catch(() => []);
+  games.sort((a, b) => (b.lastAccessed || 0) - (a.lastAccessed || 0));
+  for (const g of games) {
+    const st = await chrome.runtime.sendMessage({ type: 'GET_STATUS', tabId: g.id }).catch(() => null);
+    if (st && st.ok && st.heroKey) return st.heroKey;
+  }
+  return null;
+}
 
 function fieldLabel(section, key) { return t(`opt_${section}_${key}`); }
 function optionLabel(value) { return t(`optv_${value}`); }
@@ -333,6 +360,7 @@ function renderField(section, f) {
   if (f.type === 'bool') {
     input = document.createElement('input');
     input.type = 'checkbox';
+    input.dataset.field = section + '.' + f.k;
     input.checked = !!val;
     input.addEventListener('change', () => { settings[section][f.k] = input.checked; });
   } else if (f.type === 'select') {
@@ -384,6 +412,7 @@ function renderField(section, f) {
 
 async function load() {
   settings = mergeSettings(await chrome.runtime.sendMessage({ type: 'GET_SETTINGS', heroKey }));
+  dirty = false;
   render();
 }
 
@@ -402,10 +431,9 @@ async function renderHeroPicker() {
     sel.id = 'hero-sel';
     sel.addEventListener('change', async () => {
       heroKey = sel.value || null;
-      const u = new URL(location.href);
-      if (heroKey) u.searchParams.set('hero', heroKey); else u.searchParams.delete('hero');
-      history.replaceState(null, '', u);
+      setHeroUrl();
       forget.hidden = !heroKey;
+      setTitle(sel);
       await load();
     });
     const forget = document.createElement('button');
@@ -415,6 +443,7 @@ async function renderHeroPicker() {
       if (!heroKey || !confirm(t('optHeroForgetConfirm'))) return;
       await chrome.runtime.sendMessage({ type: 'FORGET_HERO', heroKey });
       heroKey = null;
+      setHeroUrl();
       await renderHeroPicker(); await load();
     });
     box.append(lab, sel, forget);
@@ -431,9 +460,34 @@ async function renderHeroPicker() {
   sel.replaceChildren(def, ...opts);
   sel.value = heroKey || '';
   box.querySelector('#hero-forget').hidden = !heroKey;
+  setTitle(sel);
 }
 
+// The tab title names the hero, so several settings tabs are told apart.
+function setTitle(sel) {
+  const o = sel.options[sel.selectedIndex];
+  document.title = (heroKey && o ? o.textContent + ' · ' : '') + t('extName') + ' - ' + t('uiOptions');
+}
+
+// Follow changes made elsewhere while the form has no unsaved edits.
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== 'local') return;
+  const h = changes.tanothBotHeroes;
+  if (h && Object.keys(h.newValue || {}).sort().join('|') !== Object.keys(h.oldValue || {}).sort().join('|')) {
+    renderHeroPicker().then(() => { if (!heroKey) load(); });   // hero added / forgotten
+  }
+  if (dirty) return;
+  const nv = heroKey ? h && h.newValue && h.newValue[heroKey] && h.newValue[heroKey].settings : changes.tanothBotSettings && changes.tanothBotSettings.newValue;
+  const ov = heroKey ? h && h.oldValue && h.oldValue[heroKey] && h.oldValue[heroKey].settings : changes.tanothBotSettings && changes.tanothBotSettings.oldValue;
+  if (!nv || JSON.stringify(nv) === JSON.stringify(ov)) return;
+  const y = window.scrollY;
+  settings = mergeSettings(nv);
+  render();
+  window.scrollTo(0, y);
+});
+
 document.getElementById('save').addEventListener('click', async () => {
+  dirty = false;
   await chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', settings, heroKey });
   hintEl.textContent = t('optSaved');
   setTimeout(() => { hintEl.textContent = ''; }, 2500);
@@ -621,5 +675,6 @@ document.querySelectorAll('[data-i18n-ph]').forEach((el) => {
   el.placeholder = t(el.getAttribute('data-i18n-ph'));
 });
 
-renderHeroPicker().then(load);
+(heroGiven ? Promise.resolve() : liveHeroKey().then((k) => { if (k) { heroKey = k; setHeroUrl(); } }))
+  .then(renderHeroPicker).then(load);
 renderSubscription();

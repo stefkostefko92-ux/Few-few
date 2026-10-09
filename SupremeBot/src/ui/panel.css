@@ -467,12 +467,18 @@
 }
 #tanoth-bot-fab:hover { color: #7ff5bd; background: linear-gradient(180deg, rgba(255, 255, 255, .22), rgba(255, 255, 255, 0) 55%), linear-gradient(165deg, rgba(22, 44, 40, .76), rgba(8, 14, 16, .8)); }
 #tanoth-bot-fab:focus-visible { outline: 2px solid #7ff5bd; outline-offset: 2px; }
+/* Скритият панел също показва, че ботът върви (напр. пуснат от popup). */
+#tanoth-bot-fab::after { content: ''; display: none; flex: 0 0 auto; width: 8px; height: 8px; border-radius: 50%; background: #27e08a; box-shadow: 0 0 0 3px rgba(39, 224, 138, .22), 0 0 10px #27e08a; }
+#tanoth-bot-fab.tb-running::after { display: block; }
+#tanoth-bot-fab.tb-paused::after { display: block; background: #f5b83d; box-shadow: 0 0 0 3px rgba(245, 184, 61, .22); }
 #tanoth-bot-panel.tb-light ~ #tanoth-bot-fab { color: #05603a; border-color: rgba(255, 255, 255, .9); background: linear-gradient(180deg, rgba(255, 255, 255, .8), rgba(255, 255, 255, .3) 60%), linear-gradient(165deg, rgba(255, 255, 255, .62), rgba(232, 242, 246, .55)); -webkit-backdrop-filter: blur(20px) saturate(1.9) brightness(1.12); backdrop-filter: blur(20px) saturate(1.9) brightness(1.12); box-shadow: inset 0 1.5px 0 #fff, inset 3px 0 0 #0a8a55, -6px 10px 24px -8px rgba(18, 36, 56, .45); }
 #tanoth-bot-panel.tb-light ~ #tanoth-bot-fab:hover { color: #034a2c; }
 @media (prefers-reduced-motion: no-preference) {
   #tanoth-bot-fab { transition: transform .35s cubic-bezier(.3, 1.45, .5, 1), color .18s, background .18s; }
   #tanoth-bot-fab:hover { transform: translateX(-4px); }
   #tanoth-bot-fab:active { transform: translateX(-1px) scale(.96); }
+  #tanoth-bot-fab.tb-running::after { animation: tb-fab-pulse 1.6s ease-in-out infinite; }
+  @keyframes tb-fab-pulse { 50% { opacity: .45; } }
 }
 
 /* ---- Fallbacks: solid, opaque, no glass ---- */

@@ -126,7 +126,8 @@
       case 'pause': Scheduler.isPaused() ? Scheduler.resume() : Scheduler.pause(); break;
       case 'collapse': root.classList.toggle('tb-collapsed'); break;
       case 'hide': hide(); break;
-      case 'options': chrome.runtime.sendMessage({ type: 'OPEN_OPTIONS' }).catch(() => chrome.runtime.openOptionsPage?.()); break;
+      // Настройките на ТОЗИ герой, не общите по подразбиране.
+      case 'options': chrome.runtime.sendMessage({ type: 'OPEN_OPTIONS', heroKey: Storage.heroKey() }).catch(() => {}); break;
       case 'subscribe': TB.Panel.showPaywall(); break;
       case 'paywall-close': root.classList.remove('tb-show-paywall'); break;
       case 'pay-monthly': if (requireConsent()) TB.License.openPayment(); break;
@@ -289,6 +290,11 @@
     stopBtn.disabled = !st.running;
     pauseBtn.disabled = !st.running;
     pauseBtn.textContent = st.paused ? I18n.t('uiResume') : I18n.t('uiPause');
+    const fab = document.getElementById('tanoth-bot-fab');
+    if (fab) {
+      fab.classList.toggle('tb-running', !!(st.running && !st.paused));
+      fab.classList.toggle('tb-paused', !!(st.running && st.paused));
+    }
 
     const status = root.querySelector('[data-el="status"]');
     const returnAt = TB.State.get().adventureReturnAt || 0;

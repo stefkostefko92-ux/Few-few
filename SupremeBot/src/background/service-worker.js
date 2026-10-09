@@ -163,8 +163,7 @@ async function handleMessage(msg, sender) {
     case 'DELETE_PROFILE': return deleteProfile(msg.name);
 
     case 'OPEN_OPTIONS':
-      chrome.runtime.openOptionsPage();
-      return { ok: true };
+      return openOptionsFor(heroKeyOf(msg.heroKey));
 
     case 'GET_LICENSE':       return getLicenseStatus();
     case 'ACTIVATE_LICENSE':  return activateLicense(msg.key);
@@ -233,6 +232,28 @@ async function forwardToActiveGameTab(message) {
   } catch (e) {
     return { ok: false, error: 'TAB_UNREACHABLE' };
   }
+}
+
+// Настройките се отварят за героя, с когото е логнато: всеки герой има своя
+// страница (?hero=<сървър>:<име>). Ако вече е отворена за същия герой, само се
+// фокусира — не се трупат еднакви табове; за друг герой се отваря нов.
+async function openOptionsFor(heroKey) {
+  const base = chrome.runtime.getURL('options/options.html');
+  const want = heroKey || '';
+  // getContexts вижда адресите на собствените ни страници без правото "tabs".
+  const pages = await chrome.runtime.getContexts({ contextTypes: ['TAB'] }).catch(() => []);
+  const same = pages.find((c) => {
+    if (!c.documentUrl || !c.documentUrl.startsWith(base) || !(c.tabId >= 0)) return false;
+    try { return (new URL(c.documentUrl).searchParams.get('hero') || '') === want; } catch (_) { return false; }
+  });
+  if (same) {
+    const tab = await chrome.tabs.update(same.tabId, { active: true }).catch(() => null);
+    if (tab && tab.windowId != null) await chrome.windows.update(tab.windowId, { focused: true }).catch(() => {});
+    if (tab) return { ok: true, tabId: tab.id, reused: true };
+  }
+  // ?hero= (празно) изрично значи „по подразбиране“ — страницата не гадае героя.
+  const t = await chrome.tabs.create({ url: base + '?hero=' + encodeURIComponent(want) });
+  return { ok: true, tabId: t.id, reused: false };
 }
 
 /* -------------------------------------------------------------------------- */
