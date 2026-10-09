@@ -9,6 +9,7 @@
     },
     "nav": {
       "label": "Page sections",
+      "menu": "Menu",
       "how": "How it works",
       "drilling": "Drilling",
       "kinds": "Furniture",

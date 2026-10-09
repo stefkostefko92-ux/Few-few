@@ -4,8 +4,10 @@
   сцена сменя само реда с G-кода). Декоративна е — стъпките казват същото с думи.
 %><div class="stage" data-story data-step="1" data-example="<%= JSON.stringify(storyExample) %>" aria-hidden="true">
   <div class="stage-frame">
-    <% for (const n of howSteps) { const first = n === 1; %>
-    <img class="still" data-still="<%= n %>" <%- first ? '' : 'data-' %>src="/static/img/story/step-<%= n %>-1120.webp?v=<%= v %>" <%- first ? '' : 'data-' %>srcset="/static/img/story/step-<%= n %>-640.webp?v=<%= v %> 640w, /static/img/story/step-<%= n %>-1120.webp?v=<%= v %> 1120w" sizes="(min-width: 900px) 58vw, 100vw" width="1120" height="1400" alt="" decoding="async"<%- first ? ' fetchpriority="high"' : '' %>>
+    <%# Снимки 2–4 носят прозрачен пиксел в src (валиден <img> и без скрипт); истинският адрес е в data-src до първата нужда %>
+    <% const blank = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='; %>
+    <% for (const n of howSteps) { const first = n === 1; const still = (w) => `/static/img/story/step-${n}-${w}.webp?v=${v}`; const set = `${still(640)} 640w, ${still(1120)} 1120w`; %>
+    <img class="still" data-still="<%= n %>" src="<%= first ? still(1120) : blank %>" <%- first ? 'srcset="' + set + '"' : 'data-src="' + still(1120) + '" data-srcset="' + set + '"' %> sizes="(min-width: 900px) 58vw, 100vw" width="1120" height="1400" alt="" decoding="async"<%- first ? ' fetchpriority="high"' : '' %>>
     <% } %>
     <div class="stage-gl" data-story-gl></div>
     <% const story = assets.story; %>

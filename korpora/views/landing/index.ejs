@@ -6,7 +6,7 @@
   const sheet = assets.sheet;
   const door = assets.door;
   const register = '/register?lang=' + locale;
-  const LINEUP_PX = 0.085; // един мащаб за всички изгледи отпред: пиксела на милиметър
+  const LINEUP_PX = 0.12; // един мащаб за всички изгледи отпред: пиксела на милиметър
 %><%- include('../partials/head', { title, description, styles: ['site'], extraHead: include('../partials/public-meta', { title, description, keywords: t('landing.meta.keywords') }) }) %>
 <body class="site">
 <%- include('../partials/site-bar', { sections: true }) %>
@@ -138,7 +138,7 @@
         <ul class="lineup-row">
           <% for (const item of group.items) { const r = item.kind.range; %>
           <li>
-            <svg class="elev" viewBox="<%= item.x0 %> 0 <%= item.width %> <%= group.rowHeight %>" width="<%= Math.round(item.width * LINEUP_PX) %>" height="<%= Math.round(group.rowHeight * LINEUP_PX) %>" aria-hidden="true" focusable="false"><%- item.inner %></svg>
+            <svg class="elev" viewBox="<%= item.x0 %> <%= item.top %> <%= item.width %> <%= group.rowHeight - item.top %>" width="<%= Math.round(item.width * LINEUP_PX) %>" height="<%= Math.round((group.rowHeight - item.top) * LINEUP_PX) %>" aria-hidden="true" focusable="false"><%- item.inner %></svg>
             <span class="lineup-name"><%= t('furniture.' + item.kind.id) %></span>
             <% if (r) { %><small class="muted"><%= r.kind === 'modules' ? t('landing.kinds.modules', { min: r.min, max: r.max, wmin: mm(r.widthMin), wmax: mm(r.widthMax) }) : r.kind === 'mattress' ? t('landing.kinds.mattress', { min: mm(r.min), max: mm(r.max) }) : t('landing.kinds.width', { min: mm(r.min), max: mm(r.max) }) %></small><% } %>
           </li>

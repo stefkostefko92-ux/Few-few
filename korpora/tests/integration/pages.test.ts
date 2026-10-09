@@ -155,3 +155,15 @@ test('the read-out beside the story carries the example’s numbers from the eng
     assert.match(cells[8]!, /^G[0-3]\b/, path);
   }
 });
+
+test('every landing image has a src, the page is cached only privately (it carries the CSP nonce) and the section menu opens without script', async () => {
+  for (const path of ['/', '/en/', '/it/']) {
+    const res = await get(path);
+    assert.match(res.headers.get('cache-control') ?? '', /^private,/, path);
+    const page = await res.text();
+    const imgs = page.match(/<img\b[^>]*>/g) ?? [];
+    assert.ok(imgs.length > 0, path);
+    for (const tag of imgs) assert.match(tag, /\ssrc="[^"]+"/, `${path}: ${tag.slice(0, 80)}`);
+    assert.match(page, /<details class="site-menu">\s*<summary>[^<]+<\/summary>\s*<nav /, path);
+  }
+});

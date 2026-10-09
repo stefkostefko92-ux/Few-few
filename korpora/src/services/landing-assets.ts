@@ -163,12 +163,14 @@ function sheetArt(model: EngineModel, sheet: SheetLike, meta: DrawingMeta) {
     .map((path, i) => path.replace('{wave}', String(Math.floor((i * WAVES) / cuts.length) + 1)))
     .join('');
   let parts = '';
+  let labels = '';
   for (const p of sheet.placements) {
     const y = fy(p.y + p.h);
-    const size = Math.min(110, Math.max(44, Math.min(p.w, p.h) * 0.36));
-    parts += `<rect x="${p.x}" y="${y}" width="${p.w}" height="${p.h}" class="part"/><text x="${p.x + 24}" y="${y + size + 12}" font-size="${size}" class="pid">${p.partId}</text>`;
+    const size = Math.min(64, Math.max(32, Math.min(p.w, p.h) * 0.2));
+    parts += `<rect x="${p.x}" y="${y}" width="${p.w}" height="${p.h}" class="part"/>`;
+    labels += `<text x="${p.x + 22}" y="${y + size + 10}" font-size="${size}" class="pid">${p.partId}</text>`;
   }
-  const svg = `<svg viewBox="-30 -30 ${sheet.w + 60} ${sheet.h + 60}" class="sheet-art" aria-hidden="true" focusable="false"><rect x="10" y="22" width="${sheet.w}" height="${sheet.h}" class="board-shadow"/><rect x="0" y="0" width="${sheet.w}" height="${sheet.h}" class="board"/>${parts}<g class="paths">${paths}</g><g>${drills}</g></svg>`;
+  const svg = `<svg viewBox="-30 -30 ${sheet.w + 60} ${sheet.h + 60}" class="sheet-art" aria-hidden="true" focusable="false"><rect x="10" y="22" width="${sheet.w}" height="${sheet.h}" class="board-shadow"/><rect x="0" y="0" width="${sheet.w}" height="${sheet.h}" class="board"/>${parts}<g class="paths">${paths}</g>${labels}<g>${drills}</g></svg>`;
   const used = new Set(
     g.moves.map((m) => m.tool).filter((id): id is string => typeof id === 'string'),
   );

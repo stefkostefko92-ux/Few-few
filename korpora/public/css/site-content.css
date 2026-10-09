@@ -63,6 +63,20 @@
 .output table {
   font-size: 0.86rem;
 }
+.output th {
+  white-space: nowrap;
+}
+/* a sideways scroll says so: a soft shade on the edge that still has more behind it (no script — the cover gradients
+   scroll with the content, the shades stay) */
+.output .table-wrap {
+  background:
+    linear-gradient(to right, var(--panel) 30%, transparent) 0 0 / 36px 100% local no-repeat,
+    linear-gradient(to left, var(--panel) 30%, transparent) 100% 0 / 36px 100% local no-repeat,
+    radial-gradient(farthest-side at 0 50%, var(--rule-strong), transparent) 0 0 / 14px 100% scroll
+      no-repeat,
+    radial-gradient(farthest-side at 100% 50%, var(--rule-strong), transparent) 100% 0 / 14px 100%
+      scroll no-repeat;
+}
 .output pre {
   margin: 0;
   padding: 14px 16px;
@@ -176,6 +190,10 @@
   justify-items: start;
 }
 .elev {
+  /* the fronts and the oak top are light boards in both themes, so what is drawn on them stays graphite; the legs,
+     the carcass outline and the floor line sit on the page and follow its ink */
+  --on-board: #34302f;
+  --on-board-2: #6f6963;
   display: block;
   max-width: 100%;
   height: auto;
@@ -191,7 +209,7 @@
 }
 .elev .l-front {
   fill: #e8dbc9;
-  stroke: var(--ink);
+  stroke: var(--on-board);
   stroke-width: 1px;
   vector-effect: non-scaling-stroke;
 }
@@ -200,20 +218,20 @@
 }
 .elev .l-top {
   fill: var(--oak);
-  stroke: var(--ink);
+  stroke: var(--on-board);
   stroke-width: 1px;
   vector-effect: non-scaling-stroke;
 }
 .elev .l-open,
 .elev .l-mattress {
   fill: none;
-  stroke: var(--ink-3);
+  stroke: var(--on-board-2);
   stroke-width: 0.8px;
   stroke-dasharray: 5 4;
   vector-effect: non-scaling-stroke;
 }
 .elev .l-handle {
-  stroke: var(--ink);
+  stroke: var(--on-board);
   stroke-width: 2px;
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
