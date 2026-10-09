@@ -61,8 +61,31 @@
   height: 100%;
   touch-action: none;
 }
+/* no WebGL: an honest empty stage — what happened, what to do, and the way to the tabs that work */
 .nogl {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
   padding: 24px;
+  text-align: center;
+}
+.nogl p {
+  margin: 0;
+  max-width: 52ch;
+  color: var(--ink-2);
+}
+.nogl strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--ink);
+}
+.nogl > .i {
+  width: 28px;
+  height: 28px;
+  color: var(--amber);
 }
 .viewbar {
   display: flex;

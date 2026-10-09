@@ -240,6 +240,8 @@ function bindUi() {
 
   // 3D, and full screen for it and the drawings
   viewer = createViewer(text);
+  for (const b of $$('[data-tab-go]'))
+    b.addEventListener('click', () => selectTab(b.dataset.tabGo, true));
   bindFullscreens(text);
 
   // saving and downloads

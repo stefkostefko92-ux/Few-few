@@ -24,6 +24,8 @@
     "driftTitle": "Una parte del progetto non è più nel catalogo",
     "driftText": "L'editor mostra il sostituto indicato qui sotto. Scegliete di nuovo oppure salvate il progetto così com'è: fino ad allora i file CNC non si scaricano e i disegni riportano la nota che non sono per la produzione.",
     "noWebgl": "Il browser non supporta WebGL 2, quindi la vista 3D non può essere mostrata. Le altre schede funzionano.",
+    "noWebglHint": "Attivate l'accelerazione hardware nelle impostazioni del browser oppure aprite il progetto su un altro dispositivo.",
+    "toBom": "Vai alla distinta",
     "save": "Salva",
     "download": "Scarica",
     "readOnlyState": "Sola lettura",
