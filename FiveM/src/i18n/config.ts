@@ -24,6 +24,13 @@ export function isLocale(value: string | undefined): value is Locale {
 }
 
 /**
+ * Хедърът, с който middleware подава езика на `not-found.tsx` — той се рендира
+ * без `params`. Задава се (не се добавя) в middleware, значи клиентът не може
+ * да го подхвърли; четецът пак минава стойността през `isLocale`.
+ */
+export const LOCALE_HEADER = 'x-fivem-locale';
+
+/**
  * Избира език по `Accept-Language`. Само за пътя без езиков префикс —
  * веднъж избрал, потребителят стои на своя (URL-ът е носителят, не бисквитка:
  * така всяка страница е споделяема и индексируема на точния си език).

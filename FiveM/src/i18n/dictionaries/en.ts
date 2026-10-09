@@ -41,7 +41,7 @@ export const en: Dictionary = {
   home: {
     title: 'Bulgarian FiveM RP servers — live list with status and players',
     description:
-      'Every Bulgarian FiveM RP server in one place: online status, player count, framework (ESX, QBCore, Qbox), whitelist, Discord and rules. Updated automatically.',
+      'Bulgarian FiveM RP servers in one place: online status, player count, framework (ESX, QBCore, Qbox), whitelist, Discord and rules. Updated automatically.',
     h1: 'This is where Bulgaria plays.',
     intro:
       'Bulgarian FiveM RP servers in one place: online status, player count, framework and whitelist — read straight from the servers themselves.',
@@ -56,7 +56,6 @@ export const en: Dictionary = {
     faqHeading: 'Frequently asked questions',
     discordCta: 'Ask in the community Discord',
     discordLead: 'Looking for the right server, or have a question?',
-    heroKicker: 'Live data, read straight from the servers',
     ctaBrowse: 'Browse all servers',
     ctaOr: 'or',
     ctaSubmitInline: 'add your server',
@@ -93,10 +92,10 @@ export const en: Dictionary = {
     newsAll: 'All news',
   },
   servers: {
-    title: 'All Bulgarian FiveM RP servers — live list',
+    title: 'Bulgarian FiveM RP servers — live list',
     description:
       'The full catalogue of Bulgarian FiveM RP servers: live status, player count, framework (ESX, QBCore, Qbox), whitelist and Discord. Search and filters.',
-    h1: 'All Bulgarian FiveM servers',
+    h1: 'Bulgarian FiveM servers',
     intro:
       'A live list with each server’s status: whether it is up, how many are playing, which framework it runs and whether it is whitelisted. Read straight from the servers themselves.',
   },
@@ -128,6 +127,7 @@ export const en: Dictionary = {
     reviewOk: 'Thank you. The review goes into the review queue and is published once approved.',
     leaveReview: 'Leave a review',
     ratingLabel: 'Rating (1–5)',
+    outOfFive: 'out of 5',
     aliasLabel: 'Nickname (optional)',
     bodyLabel: 'Your opinion',
     reviewHelp:
@@ -272,7 +272,7 @@ export const en: Dictionary = {
     intro:
       'This form is the notice mechanism under Art. 16 of Regulation (EU) 2022/2065. We review every report in a timely, non-arbitrary manner, send a confirmation of receipt, and notify you of the decision together with information about the available redress.',
     ok: 'We received your report. A confirmation has been sent to the email you provided and we will write once a decision is made.',
-    urlLabel: 'Exact address of the content',
+    urlLabel: 'Exact address of the content on this site',
     urlHelp: 'Copy the address from your browser’s address bar — Art. 16(2)(b).',
     reasonLabel: 'Why you consider the content illegal',
     reasonHelp: 'A sufficiently substantiated and detailed explanation — Art. 16(2)(a).',
@@ -292,7 +292,7 @@ export const en: Dictionary = {
   },
   notFound: {
     h1: 'This page does not exist',
-    body: 'The server may have been removed from the directory, or the address is wrong.',
+    body: 'The address is wrong, or the page no longer exists — for example a server removed from the directory.',
     toList: 'To the server list',
     submit: 'Add a server',
   },

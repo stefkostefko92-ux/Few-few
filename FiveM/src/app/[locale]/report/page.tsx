@@ -35,8 +35,8 @@ export default async function ReportPage({ params, searchParams }: Props) {
 
   return (
     <div className="max-w-xl">
-      <h1 className="text-3xl font-semibold tracking-tight">
-        <span className="text-chrome">{t.report.h1}</span>
+      <h1 className="page-title">
+        {t.report.h1}
       </h1>
       <p className="mt-3 text-silver-400">{t.report.intro}</p>
 
@@ -98,7 +98,7 @@ export default async function ReportPage({ params, searchParams }: Props) {
             id="anonymousAllowed"
             name="anonymousAllowed"
             type="checkbox"
-            className="mt-1"
+            className="mt-0.5"
             aria-describedby="anon-help"
           />
           <div>
@@ -141,7 +141,7 @@ export default async function ReportPage({ params, searchParams }: Props) {
             name="goodFaith"
             type="checkbox"
             required
-            className="mt-1 h-4 w-4"
+            className="mt-0.5"
             aria-describedby="goodfaith-help"
           />
           <label htmlFor="goodFaith" id="goodfaith-help" className="text-sm text-silver-400">

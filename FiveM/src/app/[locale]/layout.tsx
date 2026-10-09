@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { preload } from 'react-dom';
 
 import { JsonLd } from '@/components/JsonLd';
 import { Icon } from '@/components/Icon';
@@ -48,6 +49,16 @@ export default async function LocaleLayout({ children, params }: Props) {
   if (!isLocale(raw)) notFound();
   const locale: Locale = raw;
   const t = getDictionary(locale);
+
+  // Сабсетът на дисплей шрифта, в който е LCP заглавието на ТОЗИ език —
+  // предварително, за да пристигне преди първото рисуване и замяната на
+  // резервния шрифт да не мести страницата (CLS). Другият сабсет се тегли
+  // само ако страницата реално има знаци от него (`unicode-range`).
+  preload(locale === 'bg' ? '/fonts/unbounded-cyrillic.woff2' : '/fonts/unbounded-latin.woff2', {
+    as: 'font',
+    type: 'font/woff2',
+    crossOrigin: 'anonymous',
+  });
 
   // Типът е явен, защото `exact` днес не се ползва от нито един раздел и без
   // анотация TS го изхвърля от извода — а той пази реален капан: върне ли се
@@ -148,7 +159,7 @@ export default async function LocaleLayout({ children, params }: Props) {
               <a
                 href={DISCORD_INVITE}
                 rel="noopener nofollow"
-                className="flex items-center gap-1.5 text-sm text-silver-400 hover:text-cyan-300"
+                className="flex min-h-11 items-center gap-1.5 text-sm text-silver-400 hover:text-cyan-300"
               >
                 <Icon group="brand" name="discord" size={16} />
                 {t.nav.discord}

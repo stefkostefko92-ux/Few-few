@@ -43,6 +43,36 @@ export function displayName(raw: string | null | undefined, fallback = 'Без �
 }
 
 /**
+ * Същото чистене като `displayName`, но за ТЕКСТ, не за име: свой таван и —
+ * при `multiline` — запазени нови редове (най-много един празен ред подред).
+ *
+ * `displayName` реже до 80 и слива редовете. Ползван за отговора под ревю
+ * (таван 1000) той режеше 115 знака до 80 и правеше абзаците един ред;
+ * ползван за заглавие на новина (схемата пуска 160) режеше и него.
+ */
+export function cleanText(
+  raw: string | null | undefined,
+  max: number,
+  { multiline = false }: { multiline?: boolean } = {},
+): string {
+  if (!raw) return '';
+  const lines = raw
+    .replace(/\r\n?/g, '\n')
+    .split('\n')
+    .map((line) =>
+      line
+        .replace(/[\u0000-\u001f\u007f]/g, '')
+        .replace(/[\u200b-\u200f\u2028\u2029\u202a-\u202e\u2066-\u2069\ufeff]/g, '')
+        .replace(/[ \t]+/g, ' ')
+        .trim(),
+    );
+  const joined = multiline
+    ? lines.join('\n').replace(/\n{3,}/g, '\n\n')
+    : lines.filter(Boolean).join(' ');
+  return trimToLength(joined.trim(), max).trim();
+}
+
+/**
  * Реже до `max` ЕДИНИЦИ КОД, но никога по средата на сурогатна двойка.
  * Имената на чуждите сървъри са пълни с емоджи; рязането на сляпо оставя
  * самотен сурогат — невалиден UTF-16, който после чупи сериализацията към
@@ -210,7 +240,7 @@ export function serverEndpoints(address: ServerAddress) {
   return {
     info: `${base}/info.json`,
     dynamic: `${base}/dynamic.json`,
-    /** НЕ се ползва: връща имена и identifiers на играчи (лични данни). */
+    /** Оттук се четат САМО имената (`readPlayerNames`), идентификаторите никога. */
     players: `${base}/players.json`,
   };
 }

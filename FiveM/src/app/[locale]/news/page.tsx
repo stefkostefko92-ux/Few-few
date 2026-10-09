@@ -47,8 +47,8 @@ export default async function NewsPage({ params }: Props) {
 
   return (
     <div>
-      <h1 className="text-3xl font-semibold tracking-tight">
-        <span className="text-chrome">{t.news.h1}</span>
+      <h1 className="page-title">
+        {t.news.h1}
       </h1>
       {posts.length === 0 ? (
         <p className="mt-6 text-silver-400">{t.news.empty}</p>
@@ -64,7 +64,7 @@ export default async function NewsPage({ params }: Props) {
               <p className="mt-1 text-silver-400">{post.excerpt}</p>
               {post.publishedAt && (
                 <time dateTime={post.publishedAt.toISOString()} className="text-sm text-silver-500">
-                  {post.publishedAt.toLocaleDateString(locale === 'bg' ? 'bg-BG' : 'en-GB')}
+                  {post.publishedAt.toLocaleDateString(locale === 'bg' ? 'bg-BG' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
                 </time>
               )}
             </li>

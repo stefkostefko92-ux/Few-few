@@ -1,13 +1,27 @@
 import type { Metadata } from 'next';
 
 import { DEFAULT_LOCALE, LOCALES, OG_LOCALE, type Locale } from '@/i18n/config';
+import { readEnv } from '@/lib/env';
 import { DISCORD_INVITE } from '@/lib/site';
 
 export const SITE_NAME = 'FiveM BG';
-export const SITE_URL = (process.env.PUBLIC_BASE_URL ?? 'https://fivembulgaria.carbonstealth.eu').replace(
+export const SITE_URL = (readEnv('PUBLIC_BASE_URL') ?? 'https://fivembulgaria.carbonstealth.eu').replace(
   /\/+$/,
   '',
 );
+
+/**
+ * Дали адресът е от НАШИЯ сайт (същият хост, http/https). Ползва се от
+ * формата за сигнали — виж `actions/report.ts`.
+ */
+export function isOurUrl(value: string, base: string = SITE_URL): boolean {
+  try {
+    const url = new URL(value);
+    return (url.protocol === 'https:' || url.protocol === 'http:') && url.host === new URL(base).host;
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Базовите ключови думи по език. Правило на репото: ≥5, като **„Carbon
@@ -52,6 +66,12 @@ type PageMetaInput = {
   path?: string;
   keywords?: string[];
   noindex?: boolean;
+  /**
+   * Страницата съществува САМО на своя език (новините: `getPost` филтрира по
+   * `locale`). Тогава hreflang изброява само нея — иначе обявява близнак, който
+   * е 404, и търсачката отхвърля целия набор. `sitemap.ts` прави същото.
+   */
+  singleLocale?: boolean;
 };
 
 /**
@@ -66,12 +86,17 @@ export function pageMetadata({
   path = '/',
   keywords = [],
   noindex = false,
+  singleLocale = false,
 }: PageMetaInput): Metadata {
   const url = localeUrl(locale, path);
 
   const languages: Record<string, string> = {};
-  for (const other of LOCALES) languages[other] = localeUrl(other, path);
-  languages['x-default'] = localeUrl(DEFAULT_LOCALE, path);
+  if (singleLocale) {
+    languages[locale] = url;
+  } else {
+    for (const other of LOCALES) languages[other] = localeUrl(other, path);
+    languages['x-default'] = localeUrl(DEFAULT_LOCALE, path);
+  }
 
   return {
     title,

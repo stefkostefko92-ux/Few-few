@@ -56,14 +56,17 @@ export default async function WhitelistPage({ params }: Props) {
   return (
     <div>
       <nav aria-label={t.common.breadcrumbLabel} className="text-sm text-silver-500">
-        <Link href={`/${locale}`} className="underline underline-offset-2 hover:text-cyan-300">
+        <Link
+          href={`/${locale}/servers`}
+          className="inline-flex min-h-6 items-center underline underline-offset-4 hover:text-cyan-300"
+        >
           {t.server.breadcrumb}
         </Link>{' '}
         / <span aria-current="page">{t.filters.whitelist}</span>
       </nav>
 
-      <h1 className="mt-3 text-3xl font-semibold tracking-tight">
-        <span className="text-chrome">{copy.title}</span>
+      <h1 className="page-title mt-3">
+        {copy.title}
       </h1>
       <p className="mt-3 max-w-2xl text-silver-400">{copy.intro}</p>
 
@@ -85,7 +88,7 @@ export default async function WhitelistPage({ params }: Props) {
 
       <JsonLd data={serverListJsonLd(locale, servers)} />
       <JsonLd data={breadcrumbJsonLd(locale, [
-              { name: t.server.breadcrumb, path: '/' },
+              { name: t.server.breadcrumb, path: '/servers' },
               { name: t.filters.whitelist, path: '/servers/whitelist' },
             ])} />
     </div>

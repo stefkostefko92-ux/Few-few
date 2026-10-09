@@ -4,7 +4,13 @@ import { LOCALES } from '@/i18n/config';
 import { prisma } from '@/lib/db';
 import { localeUrl } from '@/lib/seo';
 
-export const revalidate = 3600;
+/**
+ * Динамичен, не ISR. С `revalidate = 3600` `next build` го рендираше
+ * статично БЕЗ база (в билда я няма) — тоест първия час след всеки деплой
+ * sitemap-ът беше само статичните адреси, а `autodeploy` подава точно него на
+ * IndexNow веднага след здравната проба. Заявките са две и с индекс.
+ */
+export const dynamic = 'force-dynamic';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   /** Пътища без езиков префикс — умножават се по езиците. */
@@ -80,7 +86,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ];
   } catch (error) {
     // Без база пак връщаме валиден sitemap — по-добре непълен, отколкото 500.
-    // Логваме: иначе срутването до 5 URL-а се кешира за час, без никаква следа.
+    // Логваме: иначе срутването до статичните адреси минава без никаква следа.
     console.error('[sitemap] динамичните адреси не се прочетоха', error);
     return staticEntries;
   }

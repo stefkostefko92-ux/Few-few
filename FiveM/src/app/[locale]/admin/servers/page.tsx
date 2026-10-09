@@ -25,7 +25,9 @@ export default async function AdminServers({ params, searchParams }: Props) {
 
   const servers = await prisma.server.findMany({
     where: q ? { name: { contains: q, mode: 'insensitive' } } : undefined,
-    orderBy: [{ featuredUntil: 'desc' }, { players: 'desc' }, { name: 'asc' }],
+    // `nulls: 'last'` — Postgres подрежда NULL ПЪРВО при DESC, тоест при над 60
+    // сървъра промотираните излизаха извън списъка. Капанът от `CLAUDE.md`.
+    orderBy: [{ featuredUntil: { sort: 'desc', nulls: 'last' } }, { players: 'desc' }, { name: 'asc' }],
     take: 60,
   });
 
@@ -62,17 +64,23 @@ export default async function AdminServers({ params, searchParams }: Props) {
               )}
             </div>
 
-            <form action={setFeaturedAction} className="mt-3 flex flex-wrap items-end gap-2 text-sm">
-              <input type="hidden" name="id" value={server.id} />
-              <label className="flex flex-col gap-1">
-                <span className="text-silver-500">Промоция (дни)</span>
-                <input name="days" type="number" min={0} max={365} defaultValue={0} className={input} />
-              </label>
-              <button className="rounded bg-cyan-500 px-3 py-1 font-medium text-ink-950 hover:bg-cyan-400">
-                Приложи
-              </button>
-              <span className="text-silver-500">0 спира промоцията</span>
-            </form>
+            {server.source === 'DISCOVERED' ? (
+              <p className="mt-3 text-sm text-silver-500">
+                Открит автоматично — не се промотира, докато собственикът не поеме листинга.
+              </p>
+            ) : (
+              <form action={setFeaturedAction} className="mt-3 flex flex-wrap items-end gap-2 text-sm">
+                <input type="hidden" name="id" value={server.id} />
+                <label className="flex flex-col gap-1">
+                  <span className="text-silver-500">Промоция (дни)</span>
+                  <input name="days" type="number" min={0} max={365} defaultValue={0} className={input} />
+                </label>
+                <button className="rounded bg-cyan-500 px-3 py-1 font-medium text-ink-950 hover:bg-cyan-400">
+                  Приложи
+                </button>
+                <span className="text-silver-500">0 спира промоцията</span>
+              </form>
+            )}
 
             <details className="mt-3">
               <summary className="cursor-pointer text-sm text-cyan-300">Редакция</summary>

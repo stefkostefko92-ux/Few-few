@@ -221,10 +221,10 @@ export default async function HomePage({ params }: Props) {
             <div className="flag-rule w-1.5 shrink-0 rounded-full" aria-hidden="true" />
 
             <div className="max-w-3xl">
-              <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">
-                {t.home.heroKicker}
-              </p>
-              <h1 className="mt-4 text-5xl font-semibold leading-[0.98] tracking-tight sm:text-6xl lg:text-[5.5rem]">
+              {/* Без етикет с разредени главни над заглавието: той повтаряше
+                  водещия абзац („четени директно от самите сървъри“) и е
+                  най-честият белег на шаблонна страница. */}
+              <h1 className="font-display text-[2.6rem] font-semibold leading-[1.02] tracking-[-0.03em] sm:text-6xl lg:text-[4.75rem]">
                 <span className="text-chrome">{t.home.h1}</span>
               </h1>
               <p className="mt-6 max-w-2xl text-lg leading-relaxed text-silver-300 sm:text-xl">
@@ -268,11 +268,11 @@ export default async function HomePage({ params }: Props) {
               key={stat.label}
               className={`flex flex-col-reverse ${index === 0 ? 'py-7' : 'py-7 sm:ps-7'}`}
             >
-              <dt className="mt-1 text-xs uppercase tracking-[0.12em] text-silver-500">
+              <dt className="mt-1.5 text-sm text-silver-400">
                 {stat.label}
               </dt>
               <dd
-                className={`text-4xl font-semibold tabular-nums tracking-tight ${
+                className={`font-display text-[2.5rem] font-medium leading-none tabular-nums tracking-[-0.02em] ${
                   stat.accent ? 'text-cyan-300' : 'text-silver-200'
                 }`}
               >
@@ -287,12 +287,12 @@ export default async function HomePage({ params }: Props) {
       {featured.length > 0 && (
         <section className="mt-14" aria-labelledby="teaser-heading">
           <div className="flex flex-wrap items-baseline justify-between gap-3">
-            <h2 id="teaser-heading" className="text-3xl font-semibold tracking-tight">
+            <h2 id="teaser-heading" className="section-title">
               {t.home.teaserHeading}
             </h2>
             <Link
               href={`/${locale}/servers`}
-              className="text-sm text-cyan-300 underline underline-offset-4"
+              className="inline-flex min-h-11 items-center text-sm text-cyan-300 underline underline-offset-4"
             >
               {t.home.teaserAll} ({servers.length})
             </Link>
@@ -355,17 +355,21 @@ export default async function HomePage({ params }: Props) {
 
       {/* ── Как работи ───────────────────────────────────────────────────── */}
       <section className="mt-16" aria-labelledby="how-heading">
-        <h2 id="how-heading" className="text-3xl font-semibold tracking-tight">
+        <h2 id="how-heading" className="section-title">
           {t.home.howHeading}
         </h2>
         <ol className="mt-7 grid gap-6 sm:grid-cols-3 sm:gap-8">
           {steps.map((step, index) => (
             <li key={step.title} className="border-t border-white/10 pt-5">
-              <p className="flex items-center gap-2 text-sm text-cyan-300">
-                <span className="tabular-nums">{index + 1}</span>
-                <Icon group="ui" name={step.icon} size={16} />
+              {/* Номерът тук Е информация (стъпките са последователност), значи
+                  се вижда — за разлика от декоративните маркери другаде. */}
+              <p className="flex items-center gap-3">
+                <span className="font-display text-3xl font-semibold leading-none tabular-nums text-cyan-300">
+                  {index + 1}
+                </span>
+                <Icon group="ui" name={step.icon} size={18} />
               </p>
-              <h3 className="mt-2 text-lg font-medium">{step.title}</h3>
+              <h3 className="mt-3 text-lg font-semibold">{step.title}</h3>
               <p className="mt-1.5 text-[15px] leading-relaxed text-silver-400">{step.body}</p>
             </li>
           ))}
@@ -377,7 +381,7 @@ export default async function HomePage({ params }: Props) {
         <section className="mt-16 border-y border-white/10 py-7">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl font-semibold tracking-tight">{t.home.streamersHeading}</h2>
+              <h2 className="font-display text-xl font-semibold tracking-[-0.01em]">{t.home.streamersHeading}</h2>
               <p className="mt-1 text-sm text-silver-400">
                 {streamers.live > 0
                   ? `${streamers.live} ${t.home.streamersLive}`
@@ -398,12 +402,12 @@ export default async function HomePage({ params }: Props) {
       {news.length > 0 && (
         <section className="mt-16" aria-labelledby="news-heading">
           <div className="flex flex-wrap items-baseline justify-between gap-3">
-            <h2 id="news-heading" className="text-3xl font-semibold tracking-tight">
+            <h2 id="news-heading" className="section-title">
               {t.home.newsHeading}
             </h2>
             <Link
               href={`/${locale}/news`}
-              className="text-sm text-cyan-300 underline underline-offset-4"
+              className="inline-flex min-h-11 items-center text-sm text-cyan-300 underline underline-offset-4"
             >
               {t.home.newsAll}
             </Link>
@@ -420,7 +424,7 @@ export default async function HomePage({ params }: Props) {
                 {post.publishedAt && (
                   <p className="mt-2 text-xs text-silver-500">
                     <time dateTime={post.publishedAt.toISOString()}>
-                      {post.publishedAt.toISOString().slice(0, 10)}
+                      {post.publishedAt.toLocaleDateString(locale === 'bg' ? 'bg-BG' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </time>
                   </p>
                 )}
@@ -447,7 +451,7 @@ export default async function HomePage({ params }: Props) {
 
       {/* ── FAQ ──────────────────────────────────────────────────────────── */}
       <section className="mt-16" aria-labelledby="faq-heading">
-        <h2 id="faq-heading" className="text-3xl font-semibold tracking-tight">
+        <h2 id="faq-heading" className="section-title">
           {t.home.faqHeading}
         </h2>
         <dl className="mt-7 space-y-7">

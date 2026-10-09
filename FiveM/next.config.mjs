@@ -27,7 +27,7 @@ const nextConfig = {
     // пренаписва всеки под-ресурс към https и страницата остава без CSS.
     // Пренасочването http→https го прави nginx/certbot. Само в production:
     // `next dev` ползва eval за HMR и websocket за презареждане.
-    // Проверено: 40 адреса в Chromium, нула нарушения (виж scripts/csp-sweep).
+    // Проверено: 38 адреса (19 × 2 езика) в Chromium, нула нарушения (виж scripts/csp-sweep).
     const csp = [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline'",

@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-import { bestLocale, isLocale } from '@/i18n/config';
+import { bestLocale, isLocale, LOCALE_HEADER } from '@/i18n/config';
 
 /**
  * Езикът живее в URL-а (`/bg/...`, `/en/...`), не в бисквитка: така всяка
@@ -12,7 +12,15 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const first = pathname.split('/')[1];
-  if (isLocale(first)) return NextResponse.next();
+  if (isLocale(first)) {
+    // Езикът надолу към `not-found.tsx`: той се рендира без `params`, а без това
+    // английската 404 говореше на български. Хедърът се ЗАДАВА тук (не се
+    // добавя), тоест подаден от клиента `x-fivem-locale` се презаписва — и
+    // въпреки това четецът пак го минава през `isLocale`.
+    const headers = new Headers(request.headers);
+    headers.set(LOCALE_HEADER, first);
+    return NextResponse.next({ request: { headers } });
+  }
 
   const locale = bestLocale(request.headers.get('accept-language'));
   const url = request.nextUrl.clone();

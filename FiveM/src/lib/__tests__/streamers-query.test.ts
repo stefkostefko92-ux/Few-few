@@ -55,9 +55,10 @@ test('липсващ ключ пропуска платформата и НЕ п
   delete process.env.KICK_CLIENT_SECRET;
   delete process.env.YOUTUBE_API_KEY;
 
-  assert.deepEqual(await discoverTwitch(), []);
-  assert.deepEqual(await discoverKick(), []);
-  assert.deepEqual(await discoverYouTube(), []);
+  // `null` = „не знаем“, не „никой не излъчва“: по него скриптът НЕ гаси.
+  assert.equal(await discoverTwitch(), null);
+  assert.equal(await discoverKick(), null);
+  assert.equal(await discoverYouTube(), null);
   assert.equal(calls.length, 0, 'направена е заявка без ключ');
 });
 
@@ -75,7 +76,7 @@ test('Twitch: чете полетата и обявява български е�
     },
   });
 
-  const [found] = await discoverTwitch();
+  const [found] = (await discoverTwitch())!;
   assert.equal(found.channel, 'galaxyrp', 'каналът се нормализира до малки букви');
   assert.equal(found.displayName, 'Galaxy RP');
   assert.equal(found.profileUrl, 'https://www.twitch.tv/galaxyrp');
@@ -93,13 +94,23 @@ test('Twitch: чужд език НЕ влиза публично автомат�
     'id.twitch.tv': token,
     'api.twitch.tv': { body: { data: [{ user_login: 'ru_guy', language: 'ru', viewer_count: 9 }] } },
   });
-  const [found] = await discoverTwitch();
+  const [found] = (await discoverTwitch())!;
   assert.equal(found.declaredBulgarian, false);
 });
 
 test('Twitch: отказан токен спира тихо, без изключение', async () => {
   stub({ 'id.twitch.tv': { status: 401, body: { message: 'нема' } } });
+  assert.equal(await discoverTwitch(), null);
+});
+
+test('Twitch: успешен ПРАЗЕН отговор е `[]` — никой не излъчва, гаси се', async () => {
+  stub({ 'id.twitch.tv': token, 'api.twitch.tv': { body: { data: [] } } });
   assert.deepEqual(await discoverTwitch(), []);
+});
+
+test('Twitch: провалена заявка за излъчванията е `null`, не празно', async () => {
+  stub({ 'id.twitch.tv': token, 'api.twitch.tv': { status: 503, body: {} } });
+  assert.equal(await discoverTwitch(), null);
 });
 
 // ── Kick ────────────────────────────────────────────────────────────────────
@@ -113,7 +124,7 @@ test('Kick: намира категорията по име и после изл
     },
   });
 
-  const [found] = await discoverKick();
+  const [found] = (await discoverKick())!;
   assert.equal(found.channel, 'kickbg');
   assert.equal(found.profileUrl, 'https://kick.com/kickbg');
   assert.equal(found.declaredBulgarian, true);
@@ -128,7 +139,7 @@ test('Kick: „Bulgarian“ и „bg“ значат едно и също', asyn
     // самите платформи не позволяват такива.
     '/livestreams': { body: { data: [{ slug: 'bgkick', language: 'Bulgarian' }] } },
   });
-  const [found] = await discoverKick();
+  const [found] = (await discoverKick())!;
   assert.equal(found.declaredBulgarian, true, 'форматът на езика в Kick не е документиран');
 });
 
@@ -137,7 +148,7 @@ test('Kick: ненамерена категория спира, вместо д�
     'id.kick.com': token,
     '/categories': { body: { data: [{ id: 3, name: 'Just Chatting' }] } },
   });
-  assert.deepEqual(await discoverKick(), []);
+  assert.equal(await discoverKick(), null);
   assert.ok(!calls.some((u) => u.includes('/livestreams')), 'дърпа излъчвания без категория');
 });
 
@@ -151,7 +162,7 @@ test('YouTube НИКОГА не обявява български — платф
       },
     },
   });
-  const found = await discoverYouTube();
+  const found = (await discoverYouTube())!;
   assert.equal(found.length, 1);
   assert.equal(found[0].declaredBulgarian, false, 'иначе непроверен канал влиза публично');
   assert.equal(found[0].profileUrl, 'https://www.youtube.com/channel/UCabc123');
@@ -168,15 +179,16 @@ test('YouTube: един канал в два резултата се брои в
       },
     },
   });
-  assert.equal((await discoverYouTube()).length, 1);
+  assert.equal((await discoverYouTube())!.length, 1);
 });
 
 // ── ВРАЖДЕБЕН / счупен отговор ──────────────────────────────────────────────
 
-test('чужд тип вместо масив не хвърля, а дава празен резултат', async () => {
+test('чужд тип вместо масив не хвърля, а дава „не знаем“ (`null`)', async () => {
+  // Счупен договор НЕ е „никой не излъчва“ — иначе гаси цялата секция.
   for (const hostile of [{ data: 'низ' }, { data: null }, {}, [], 'просто текст', 42]) {
     stub({ 'id.twitch.tv': token, 'api.twitch.tv': { body: hostile } });
-    assert.deepEqual(await discoverTwitch(), [], `падна при ${JSON.stringify(hostile)}`);
+    assert.equal(await discoverTwitch(), null, `падна при ${JSON.stringify(hostile)}`);
   }
 });
 
@@ -195,7 +207,7 @@ test('запис без задължително поле се пропуска,
       },
     },
   });
-  const found = await discoverTwitch();
+  const found = (await discoverTwitch())!;
   assert.equal(found.length, 1);
   assert.equal(found[0].channel, 'ok');
 });
@@ -217,7 +229,7 @@ test('чуждото число минава през таван, чуждият
       },
     },
   });
-  const [found] = await discoverTwitch();
+  const [found] = (await discoverTwitch())!;
   assert.ok(found.viewers <= 10_000_000, `зрителите не са клампнати: ${found.viewers}`);
   assert.ok(!found.streamTitle?.includes('‮'), 'двупосочният маркер остана в заглавието');
 });
@@ -256,7 +268,7 @@ test('Kick пробва следващия формат на езика, ако 
     return new Response(JSON.stringify({ data }), { status: 200 });
   }) as typeof fetch;
 
-  const found = await discoverKick();
+  const found = (await discoverKick())!;
   assert.deepEqual(seen, ['bg', 'Bulgarian'], `пробваните формати: ${seen.join(', ')}`);
   assert.equal(found.length, 1, 'вторият формат трябваше да намери канала');
   assert.equal(found[0].channel, 'bgkick');

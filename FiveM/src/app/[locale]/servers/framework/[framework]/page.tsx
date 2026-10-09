@@ -53,10 +53,19 @@ function titleFor(locale: Locale, id: FrameworkId): string {
   return locale === 'bg' ? `${label} сървъри в България` : `${label} servers in Bulgaria`;
 }
 
+/**
+ * Само СОБСТВЕНИТЕ ключове. `FILTERS['__proto__']` и `FILTERS['constructor']`
+ * намираха прототипа на обекта, `filter.intro[locale]` хвърляше TypeError и
+ * `/servers/framework/__proto__` даваше 500 вместо 404.
+ */
+function filterFor(framework: string) {
+  return Object.hasOwn(FILTERS, framework) ? FILTERS[framework] : null;
+}
+
 export async function generateMetadata({ params }: Props) {
   const { locale: raw, framework } = await params;
   const locale = resolveLocale(raw);
-  const filter = FILTERS[framework];
+  const filter = filterFor(framework);
   if (!filter) return pageMetadata({ locale, title: '404', description: '', noindex: true });
 
   return pageMetadata({
@@ -72,7 +81,7 @@ export default async function FrameworkPage({ params }: Props) {
   const { locale: raw, framework } = await params;
   const locale = resolveLocale(raw);
   const t = getDictionary(locale);
-  const filter = FILTERS[framework];
+  const filter = filterFor(framework);
   if (!filter) notFound();
 
   const servers = await listPublicServers({ framework: filter.id });
@@ -81,14 +90,17 @@ export default async function FrameworkPage({ params }: Props) {
   return (
     <div>
       <nav aria-label={t.common.breadcrumbLabel} className="text-sm text-silver-500">
-        <Link href={`/${locale}`} className="underline underline-offset-2 hover:text-cyan-300">
+        <Link
+          href={`/${locale}/servers`}
+          className="inline-flex min-h-6 items-center underline underline-offset-4 hover:text-cyan-300"
+        >
           {t.server.breadcrumb}
         </Link>{' '}
         / <span aria-current="page">{t.frameworks[filter.id]}</span>
       </nav>
 
-      <h1 className="mt-3 text-3xl font-semibold tracking-tight">
-        <span className="text-chrome">{title}</span>
+      <h1 className="page-title mt-3">
+        {title}
       </h1>
       <p className="mt-3 max-w-2xl text-silver-400">{filter.intro[locale]}</p>
 
@@ -110,7 +122,7 @@ export default async function FrameworkPage({ params }: Props) {
 
       <JsonLd data={serverListJsonLd(locale, servers)} />
       <JsonLd data={breadcrumbJsonLd(locale, [
-              { name: t.server.breadcrumb, path: '/' },
+              { name: t.server.breadcrumb, path: '/servers' },
               { name: t.frameworks[filter.id], path: `/servers/framework/${framework}` },
             ])} />
     </div>

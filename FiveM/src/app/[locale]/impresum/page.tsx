@@ -32,8 +32,8 @@ export default async function ImpresumPage({ params }: Props) {
 
   return (
     <article className="max-w-2xl">
-      <h1 className="text-3xl font-semibold tracking-tight">
-        <span className="text-chrome">{l.title}</span>
+      <h1 className="page-title">
+        {l.title}
       </h1>
       <p className="mt-2 text-sm text-silver-500">{l.lead}</p>
 

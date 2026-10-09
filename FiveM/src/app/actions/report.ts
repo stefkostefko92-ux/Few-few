@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import { reportReceipt, sendMail } from '@/lib/email';
 import { withinGlobalRateLimit } from '@/lib/rate-limit';
+import { isOurUrl } from '@/lib/seo';
 import { readLocale } from './locale';
 
 /**
@@ -16,7 +17,17 @@ import { readLocale } from './locale';
  */
 const reportSchema = z
   .object({
-    targetUrl: z.string().trim().max(300).url('Посочи точния адрес на съдържанието'),
+    /**
+     * Само адрес ОТ НАШИЯ сайт: сигналът по чл. 16 DSA е за съдържание, което
+     * ние хостваме. Без това формата беше релей — произволен линк в писмо от
+     * нашия домейн до произволен адрес (потвърждението по чл. 16, ал. 4).
+     */
+    targetUrl: z
+      .string()
+      .trim()
+      .max(300)
+      .url('Посочи точния адрес на съдържанието')
+      .refine(isOurUrl, 'Адресът трябва да е от този сайт'),
     reason: z.string().trim().min(20, 'Опиши защо съдържанието е незаконно').max(4000),
     reporterName: z.string().trim().min(2, 'Името е задължително').max(120).optional(),
     reporterEmail: z.string().trim().max(120).email('Невалиден имейл').optional(),

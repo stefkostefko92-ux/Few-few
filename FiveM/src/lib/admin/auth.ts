@@ -3,6 +3,7 @@ import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 import { prisma } from '@/lib/db';
+import { readEnv } from '@/lib/env';
 
 /**
  * Автентикация на единствения администратор.
@@ -37,7 +38,7 @@ import { prisma } from '@/lib/db';
  * грозен canonical, тук значи мълчаливо слаба сесийна бисквитка. Продукция без
  * `PUBLIC_BASE_URL` вече не минава тихо — вика се в лога при всеки старт.
  */
-const OVER_HTTPS = (process.env.PUBLIC_BASE_URL ?? '').startsWith('https://');
+const OVER_HTTPS = (readEnv('PUBLIC_BASE_URL') ?? '').startsWith('https://');
 if (!OVER_HTTPS && process.env.NODE_ENV === 'production') {
   console.error(
     '[admin] PUBLIC_BASE_URL не е https:// — сесийната бисквитка е БЕЗ `__Host-` и БЕЗ `secure`. ' +
@@ -84,7 +85,9 @@ function sha256(value: string): string {
  * съзнателен избор на оператора, вписан в `.env`, не подразбиране.
  */
 export function trustedIpHeader(): string {
-  return (process.env.TRUST_PROXY_IP_HEADER ?? 'x-real-ip').toLowerCase();
+  // През `readEnv`: с кавички от `.env` името ставаше `"x-real-ip"`, никога не
+  // съвпадаше, и всички опити за вход се брояха като един подател.
+  return (readEnv('TRUST_PROXY_IP_HEADER') ?? 'x-real-ip').toLowerCase();
 }
 
 /**

@@ -62,7 +62,7 @@ export default async function ServersPage({ params, searchParams }: Props) {
 
   return (
     <>
-      <h1 className="text-3xl font-semibold tracking-tight">{t.servers.h1}</h1>
+      <h1 className="page-title">{t.servers.h1}</h1>
       <p className="mt-3 max-w-2xl text-silver-400">{t.servers.intro}</p>
       {servers.length > 0 && (
         <p className="mt-4 text-sm text-silver-500">
@@ -90,7 +90,7 @@ export default async function ServersPage({ params, searchParams }: Props) {
             name="q"
             defaultValue={query ?? ''}
             maxLength={60}
-            className="rounded-lg border border-white/15 bg-ink-900 px-3 py-2 text-silver-100"
+            className="min-h-11 rounded-lg border border-white/15 bg-ink-900 px-3 text-silver-100"
           />
         </label>
         <label className="flex flex-col gap-1 text-sm">
@@ -98,14 +98,14 @@ export default async function ServersPage({ params, searchParams }: Props) {
           <select
             name="sort"
             defaultValue={chosen}
-            className="rounded-lg border border-white/15 bg-ink-900 px-3 py-2 text-silver-100"
+            className="min-h-11 rounded-lg border border-white/15 bg-ink-900 px-3 text-silver-100"
           >
             <option value="default">{t.filters.sortDefault}</option>
             <option value="players">{t.filters.sortPlayers}</option>
             <option value="name">{t.filters.sortName}</option>
           </select>
         </label>
-        <button className="rounded-lg border border-white/15 px-4 py-2 text-sm hover:border-cyan-500 hover:text-cyan-300">
+        <button className="min-h-11 rounded-lg border border-white/15 px-4 text-sm transition-colors hover:border-cyan-500 hover:text-cyan-300">
           {t.filters.searchButton}
         </button>
         {query && (

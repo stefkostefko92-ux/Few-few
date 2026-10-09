@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import { averageRating, compareFeatured, compareServers, isFeatured } from '../rating';
-import { BASE_KEYWORDS, faqJsonLd, jsonLdString, pageMetadata, serverListJsonLd } from '../seo';
+import { BASE_KEYWORDS, faqJsonLd, isOurUrl, jsonLdString, pageMetadata, serverListJsonLd } from '../seo';
 
 test('правилото на репото: ≥5 ключови думи, една е „Carbon Stealth“ — на ВСЕКИ език', () => {
   for (const locale of ['bg', 'en'] as const) {
@@ -100,4 +100,19 @@ test('избраната подредба не отменя платеното �
     (a, b) => compareFeatured(a, b, now) || a.name.localeCompare(b.name, 'bg'),
   );
   assert.equal(byName[0].name, 'Я последен по азбука');
+});
+
+test('singleLocale: новината обявява само своя език, без несъществуващ близнак', () => {
+  const meta = pageMetadata({ locale: 'en', title: 'T', description: 'D', path: '/news/x', singleLocale: true });
+  const languages = meta.alternates?.languages as Record<string, string>;
+  assert.deepEqual(Object.keys(languages), ['en']);
+});
+
+test('isOurUrl приема само адрес от нашия хост', () => {
+  const base = 'https://fivembulgaria.carbonstealth.eu';
+  assert.equal(isOurUrl('https://fivembulgaria.carbonstealth.eu/bg/servers/x', base), true);
+  assert.equal(isOurUrl('https://evil.example/fivembulgaria.carbonstealth.eu', base), false);
+  assert.equal(isOurUrl('https://fivembulgaria.carbonstealth.eu.evil.example/', base), false);
+  assert.equal(isOurUrl('javascript:alert(1)', base), false);
+  assert.equal(isOurUrl('не е адрес', base), false);
 });

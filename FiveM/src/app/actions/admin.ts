@@ -17,6 +17,7 @@ import {
 import { prisma } from '@/lib/db';
 import { reportDecision, sendMail, submissionDecision } from '@/lib/email';
 import {
+  cleanText,
   displayName,
   parseCfxJoinCode,
   parseServerAddress,
@@ -89,6 +90,12 @@ export async function setFeaturedAction(formData: FormData): Promise<void> {
   if (!id || !Number.isInteger(days) || days < 0 || days > MAX_FEATURED_DAYS) return;
 
   const featuredUntil = days > 0 ? new Date(Date.now() + days * DAY_MS) : null;
+  // Открит автоматично сървър НЕ е подаден от собственика си — платено
+  // промотиране на чужд листинг няма кой да е поръчал (`ServerSource` в
+  // схемата). Спирането (0 дни) е позволено винаги.
+  const target = await prisma.server.findUnique({ where: { id }, select: { source: true } });
+  if (!target || (featuredUntil && target.source === 'DISCOVERED')) return;
+
   const server = await prisma.server.update({
     where: { id },
     data: { featuredUntil },
@@ -191,10 +198,9 @@ export async function replyToReviewAction(formData: FormData): Promise<void> {
   const id = String(formData.get('id') ?? '');
   if (!id) return;
 
-  // Текстът е от собственика на сървъра, тоест недоверен: минава през
-  // `displayName` (маха управляващи и двупосочни символи) и през таван.
-  const raw = String(formData.get('reply') ?? '').trim();
-  const reply = raw === '' ? null : displayName(raw.slice(0, 1000), '');
+  // Текстът е от собственика на сървъра, тоест недоверен: `cleanText` маха
+  // управляващите и двупосочните символи, но пази абзаците; таванът е 1000.
+  const reply = cleanText(String(formData.get('reply') ?? ''), 1000, { multiline: true }) || null;
 
   await prisma.review.update({
     where: { id },
@@ -228,42 +234,84 @@ export async function approveSubmissionAction(formData: FormData): Promise<void>
    * подателят получаваше два имейла „публикуван“. Третото щракване гърмеше с
    * необработен `P2002` на slug-а.
    */
-  const claimed = await prisma.submission.updateMany({
-    where: { id, status: 'PENDING' },
-    data: { status: 'APPROVED' },
-  });
-  if (claimed.count === 0) return;
-
   const joinCode = parseCfxJoinCode(submission.cfxJoinCode);
-  const address = parseServerAddress(submission.address);
+  const parsedAddress = parseServerAddress(submission.address);
+  const address = parsedAddress ? formatServerAddress(parsedAddress) : null;
 
-  const base = slugify(submission.serverName);
-  const slug = isValidSlug(base) ? base : `server-${submission.id.slice(0, 8)}`;
-  const taken = await prisma.server.findUnique({ where: { slug }, select: { id: true } });
+  // Името идва от АНОНИМЕН подател и досега влизаше дословно в публичния
+  // списък, в JSON-LD и в темата на изходящия имейл. `jsonLdString` екранира
+  // `<`, но не и двупосочните маркери (U+202E), с които името може да обърне
+  // текста наоколо. Правилото на продукта е недоверен низ да минава през
+  // `displayName` — тук не минаваше.
+  const name = displayName(submission.serverName, 'Сървър');
 
-  await prisma.server.create({
-    data: {
-      slug: taken ? `${slug}-${submission.id.slice(0, 6)}` : slug,
-      // Името идва от АНОНИМЕН подател и досега влизаше дословно в публичния
-      // списък, в JSON-LD и в темата на изходящия имейл. `jsonLdString` екранира
-      // `<`, но не и двупосочните маркери (U+202E), с които името може да обърне
-      // текста наоколо. Правилото на продукта е недоверен низ да минава през
-      // `displayName` — тук не минаваше.
-      name: displayName(submission.serverName, 'Сървър'),
-      cfxJoinCode: joinCode,
-      address: address ? formatServerAddress(address) : null,
-      discordUrl: submission.discordUrl,
-      description: submission.note,
-      source: 'SUBMITTED',
-      status: 'APPROVED',
-    },
+  /**
+   * Заемането и записът на сървъра са ЕДНА транзакция. Дотук заявката се
+   * заемаше първо, а `create` после гърмеше с `P2002` на `cfxJoinCode`, когато
+   * собственик подаваше вече ОТКРИТ сървър — точно „поемането на листинга“,
+   * което условията и ЧЗВ обещават. Заявката изчезваше от опашката като
+   * одобрена, сървър не се появяваше и имейл не тръгваше.
+   *
+   * Поемането: съществуващият ред се ОБНОВЯВА (slug-ът остава — адресът на
+   * страницата и ревютата не се губят), `source` става `SUBMITTED`.
+   */
+  const outcome = await prisma.$transaction(async (tx) => {
+    const claimed = await tx.submission.updateMany({
+      where: { id, status: 'PENDING' },
+      data: { status: 'APPROVED' },
+    });
+    if (claimed.count === 0) return null;
+
+    const existing = joinCode
+      ? await tx.server.findUnique({ where: { cfxJoinCode: joinCode }, select: { id: true } })
+      : address
+        ? await tx.server.findFirst({ where: { address }, select: { id: true } })
+        : null;
+
+    if (existing) {
+      await tx.server.update({
+        where: { id: existing.id },
+        data: {
+          name,
+          ...(address ? { address } : {}),
+          ...(submission.discordUrl ? { discordUrl: submission.discordUrl } : {}),
+          ...(submission.note ? { description: submission.note } : {}),
+          source: 'SUBMITTED',
+          status: 'APPROVED',
+        },
+      });
+      return 'claimed' as const;
+    }
+
+    const base = slugify(submission.serverName);
+    const slug = isValidSlug(base) ? base : `server-${submission.id.slice(0, 8)}`;
+    const taken = await tx.server.findUnique({ where: { slug }, select: { id: true } });
+
+    await tx.server.create({
+      data: {
+        slug: taken ? `${slug}-${submission.id.slice(0, 6)}` : slug,
+        name,
+        cfxJoinCode: joinCode,
+        address,
+        discordUrl: submission.discordUrl,
+        description: submission.note,
+        source: 'SUBMITTED',
+        status: 'APPROVED',
+      },
+    });
+    return 'created' as const;
   });
+  if (!outcome) return;
 
   await sendMail({
     to: submission.contactEmail,
     ...submissionDecision(submission.serverName, true),
   });
-  await audit('submission', submission.serverName, 'одобрена и публикувана');
+  await audit(
+    'submission',
+    submission.serverName,
+    outcome === 'claimed' ? 'одобрена — поет съществуващ листинг' : 'одобрена и публикувана',
+  );
   revalidatePath('/', 'layout');
 }
 
@@ -443,10 +491,14 @@ export async function handleReportAction(formData: FormData): Promise<void> {
   if (!id || (decision !== 'APPROVED' && decision !== 'REJECTED')) return;
 
   // `handledAt` не е козметика: от него тече уведомяването по чл. 16(5) DSA.
-  const report = await prisma.report.update({
-    where: { id },
+  // Заемане само на ЧАКАЩ сигнал (като при заявките): иначе повторно
+  // натискане праща второ, евентуално противоречащо решение на подателя.
+  const claimed = await prisma.report.updateMany({
+    where: { id, status: 'PENDING' },
     data: { status: decision, handledAt: new Date() },
   });
+  if (claimed.count === 0) return;
+  const report = await prisma.report.findUniqueOrThrow({ where: { id } });
   // Чл. 16(5) дължи уведомяване „при предоставени данни за контакт“. Сигналът
   // по чл. 3–7 от Дир. 2011/93/ЕС може да е анонимен — тогава няма къде да се
   // пише и това не е пропуск, а изричното изключение.
@@ -512,9 +564,9 @@ export async function savePostAction(formData: FormData): Promise<void> {
   const data = parsed.data;
 
   const id = String(formData.get('id') ?? '');
-  // Заглавието идва от нас, но пак минава през `displayName`: то влиза в
+  // Заглавието идва от нас, но пак минава през `cleanText`: то влиза в
   // `<title>` и в JSON-LD, а управляващ символ там чупи повече от вида.
-  const title = displayName(data.title, 'Без заглавие');
+  const title = cleanText(data.title, 160) || 'Без заглавие';
   const slug = await freePostSlug(slugify(data.slug || title), id || undefined);
 
   if (id) {

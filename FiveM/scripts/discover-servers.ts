@@ -88,7 +88,15 @@ async function main() {
     if (known.has(server.endPoint)) {
       // Името и описанието НЕ се презаписват: ако собственикът е поел
       // листинга и ги е редактирал, списъкът не бива да ги връща назад.
-      await prisma.server.update({ where: { cfxJoinCode: server.endPoint }, data: fromList });
+      //
+      // СВАЛЕНИЯТ (`REJECTED`) не се пипа изобщо. Обикновено той още е в
+      // списъка на Cfx.re, и обновяването му вдигаше `updatedAt` на всеки
+      // пробег — а `prune.ts` брои шестте месеца до изтриването на ревютата
+      // именно от `updatedAt`, тоест срокът не изтичаше никога.
+      await prisma.server.updateMany({
+        where: { cfxJoinCode: server.endPoint, status: { not: 'REJECTED' } },
+        data: fromList,
+      });
       updated += 1;
       continue;
     }

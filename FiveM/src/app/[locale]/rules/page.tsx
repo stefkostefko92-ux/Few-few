@@ -38,8 +38,8 @@ export default async function RulesPage({ params }: Props) {
 
   return (
     <article className="max-w-3xl">
-      <h1 className="text-3xl font-semibold tracking-tight">
-        <span className="text-chrome">{t.rules.h1}</span>
+      <h1 className="page-title">
+        {t.rules.h1}
       </h1>
       <p className="mt-3 text-silver-400">{t.rules.intro}</p>
 
@@ -117,7 +117,7 @@ export default async function RulesPage({ params }: Props) {
       </p>
 
       <JsonLd data={breadcrumbJsonLd(locale, [
-              { name: t.nav.servers, path: '/' },
+              { name: t.nav.servers, path: '/servers' },
               { name: t.rules.h1, path: '/rules' },
             ])} />
     </article>

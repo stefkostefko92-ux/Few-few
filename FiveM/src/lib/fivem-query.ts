@@ -22,6 +22,7 @@
 import { lookup } from 'node:dns/promises';
 
 import { CFX_API_BASE } from './cfx';
+import { readEnv } from './env';
 
 import {
   buildStatus,
@@ -47,7 +48,7 @@ export const MAX_BODY_BYTES = 512 * 1024;
 const USER_AGENT = 'FiveMBulgaria/1.0 (+https://fivembulgaria.carbonstealth.eu)';
 
 function timeoutMs(): number {
-  const raw = Number(process.env.FIVEM_PING_TIMEOUT_MS);
+  const raw = Number(readEnv('FIVEM_PING_TIMEOUT_MS'));
   return Number.isFinite(raw) && raw > 0 ? raw : 4000;
 }
 

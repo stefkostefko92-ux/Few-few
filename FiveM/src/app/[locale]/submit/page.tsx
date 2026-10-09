@@ -48,8 +48,8 @@ export default async function SubmitPage({ params, searchParams }: Props) {
 
   return (
     <div className="max-w-xl">
-      <h1 className="text-3xl font-semibold tracking-tight">
-        <span className="text-chrome">{t.submit.h1}</span>
+      <h1 className="page-title">
+        {t.submit.h1}
       </h1>
       <p className="mt-3 text-silver-400">
         {t.submit.intro}{' '}

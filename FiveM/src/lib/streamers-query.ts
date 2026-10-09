@@ -74,11 +74,27 @@ function text(value: unknown): string | null {
   return typeof value === 'string' && value.trim() !== '' ? value : null;
 }
 function rows(payload: unknown, key: string): Record<string, unknown>[] {
-  const root = record(payload);
-  const list = root?.[key];
-  if (!Array.isArray(list)) return [];
+  return listOf(payload, key) ?? [];
+}
+
+/**
+ * Като `rows`, но различава „празен списък“ от „няма списък“. Второто е
+ * провалена заявка или счупен договор — тогава НЕ знаем кой излъчва, а
+ * `discover-streamers` гаси „на живо“ само когато знаем.
+ */
+function listOf(payload: unknown, key: string): Record<string, unknown>[] | null {
+  const list = record(payload)?.[key];
+  if (!Array.isArray(list)) return null;
   return list.map(record).filter((row): row is Record<string, unknown> => row !== null);
 }
+
+/**
+ * Договорът на `discover*`: `null` — НЕ ЗНАЕМ (липсва ключ, провалена заявка,
+ * чужд формат на отговора); `[]` — питахме успешно и никой не излъчва.
+ * Дотук и двете бяха `[]`, затова скриптът не смееше да гаси „на живо“ при
+ * празен резултат и последният излъчвал стриймър оставаше „на живо“ с часове.
+ */
+export type Discovery = FoundStream[] | null;
 
 // ── Twitch ──────────────────────────────────────────────────────────────────
 
@@ -120,13 +136,13 @@ async function twitchToken(id: string, secret: string): Promise<string | null> {
  * от самия стриймър, не гадаене от наша страна. Затова тези записи могат да
  * влязат публично без ръчен преглед.
  */
-export async function discoverTwitch(): Promise<FoundStream[]> {
+export async function discoverTwitch(): Promise<Discovery> {
   const id = readEnv('TWITCH_CLIENT_ID');
   const secret = readEnv('TWITCH_CLIENT_SECRET');
-  if (!id || !secret) return [];
+  if (!id || !secret) return null;
 
   const token = await twitchToken(id, secret);
-  if (!token) return [];
+  if (!token) return null;
 
   const url = `https://api.twitch.tv/helix/streams?game_id=${TWITCH_GTA_V}&language=bg&first=100`;
   const payload = await getJson(url, {
@@ -134,8 +150,11 @@ export async function discoverTwitch(): Promise<FoundStream[]> {
     authorization: `Bearer ${token}`,
   });
 
+  const data = listOf(payload, 'data');
+  if (!data) return null;
+
   const found: FoundStream[] = [];
-  for (const row of rows(payload, 'data')) {
+  for (const row of data) {
     const login = text(row.user_login);
     if (!login) continue;
     const channel = normalizeChannel('TWITCH', login);
@@ -261,22 +280,23 @@ async function kickBulgarianStreams(
   return last;
 }
 
-export async function discoverKick(): Promise<FoundStream[]> {
+export async function discoverKick(): Promise<Discovery> {
   const id = readEnv('KICK_CLIENT_ID');
   const secret = readEnv('KICK_CLIENT_SECRET');
-  if (!id || !secret) return [];
+  if (!id || !secret) return null;
 
   const token = await kickToken(id, secret);
-  if (!token) return [];
+  if (!token) return null;
   const auth = { authorization: `Bearer ${token}` };
 
   const category = await kickCategoryId(auth);
-  if (category === null) return [];
+  if (category === null) return null;
 
-  const payload = await kickBulgarianStreams(category, auth);
+  const data = listOf(await kickBulgarianStreams(category, auth), 'data');
+  if (!data) return null;
 
   const found: FoundStream[] = [];
-  for (const row of rows(payload, 'data')) {
+  for (const row of data) {
     const slug = text(row.slug);
     if (!slug) continue;
     const channel = normalizeChannel('KICK', slug);
@@ -312,18 +332,21 @@ export async function discoverKick(): Promise<FoundStream[]> {
  */
 const YOUTUBE_QUERIES = ['FiveM Bulgaria', 'GTA RP България'];
 
-export async function discoverYouTube(): Promise<FoundStream[]> {
+export async function discoverYouTube(): Promise<Discovery> {
   const key = readEnv('YOUTUBE_API_KEY');
-  if (!key) return [];
+  if (!key) return null;
 
   const found = new Map<string, FoundStream>();
   for (const query of YOUTUBE_QUERIES) {
     const url =
       `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&eventType=live` +
       `&regionCode=BG&relevanceLanguage=bg&maxResults=25&q=${encodeURIComponent(query)}&key=${key}`;
-    const payload = await getJson(url, {});
+    // Провали ли се едно от търсенията, партидата е НЕПЪЛНА — по нея не се
+    // гаси никой, затова целият резултат е „не знаем“.
+    const items = listOf(await getJson(url, {}), 'items');
+    if (!items) return null;
 
-    for (const row of rows(payload, 'items')) {
+    for (const row of items) {
       const snippet = record(row.snippet);
       const channelId = text(snippet?.channelId);
       if (!channelId) continue;
@@ -349,7 +372,7 @@ export async function discoverYouTube(): Promise<FoundStream[]> {
 
 // ── Оркестрация ─────────────────────────────────────────────────────────────
 
-export const DISCOVERY: Record<string, () => Promise<FoundStream[]>> = {
+export const DISCOVERY: Record<string, () => Promise<Discovery>> = {
   twitch: discoverTwitch,
   kick: discoverKick,
   youtube: discoverYouTube,

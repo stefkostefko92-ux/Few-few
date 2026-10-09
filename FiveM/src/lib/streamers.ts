@@ -11,7 +11,7 @@ export function isStreamPlatform(value: string): value is StreamPlatformId {
   return (STREAM_PLATFORMS as readonly string[]).includes(value);
 }
 
-/** Значка за платформата. `kick` още го няма — виж `docs/ICONS.md`. */
+/** Значка за платформата. Растер днес няма за нито една — `Badge` рисува вектора от `icons/brand/` (виж `docs/ICONS.md` §7). */
 export const PLATFORM_BADGE: Record<StreamPlatformId, string> = {
   TWITCH: 'twitch',
   KICK: 'kick',

@@ -17,7 +17,8 @@ import { isFeatured, type PublicServer } from '@/lib/servers';
  * каталогът дава решетка за сравняване по признаци, началната дава четене
  * отгоре надолу. Смениш ли единия, другият НЕ се мени.
  *
- * Номерът е ДЕКОРАЦИЯ и затова е `aria-hidden`. Причината не е стилова: „01“ до
+ * Номерът е ВИДИМ (silver-600, 3,62:1 — минава прага 3:1 за едър текст ≥24 px),
+ * но е `aria-hidden` за екранния четец. Причината не е стилова: „01“ до
  * платено промотиран сървър, прочетено на глас, звучи като редакционна оценка
  * „най-добрият“ — твърдение, което не можем да подкрепим (ревютата не са
  * проверени, а подредбата е обявена в условията, не заслужена). Видимо е
@@ -45,7 +46,7 @@ export function ServerRow({
       <div className="flex flex-wrap items-center gap-x-5 gap-y-3 py-5 sm:flex-nowrap sm:gap-x-7">
         <span
           aria-hidden="true"
-          className="w-10 shrink-0 text-2xl font-semibold tabular-nums tracking-tight text-ink-700 sm:w-14 sm:text-3xl"
+          className="w-11 shrink-0 font-display text-2xl font-medium tabular-nums tracking-[-0.02em] text-silver-600 sm:w-16 sm:text-[1.875rem]"
         >
           {String(rank).padStart(2, '0')}
         </span>
@@ -80,7 +81,7 @@ export function ServerRow({
               <Badge name={FRAMEWORK_ICON[server.framework as FrameworkId]} size={20} />
               {t.frameworks[server.framework as FrameworkId]}
             </span>
-            <span aria-hidden="true" className="text-ink-700">
+            <span aria-hidden="true" className="text-silver-500">
               ·
             </span>
             <span>{server.whitelist ? t.filters.whitelist : t.server.open}</span>
@@ -105,7 +106,7 @@ export function ServerRow({
             trigger={
               server.lastProbe === 'ONLINE' ? (
                 <span className="flex items-baseline gap-2">
-                  <span className="text-2xl font-semibold tabular-nums text-cyan-300">
+                  <span className="font-display text-2xl font-medium tabular-nums tracking-[-0.02em] text-cyan-300">
                     {server.players}
                   </span>
                   <span className="tabular-nums text-silver-500">

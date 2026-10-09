@@ -47,7 +47,7 @@ const bg: LegalSet = {
       {
         ul: [
           'Заявка за листване: име на сървъра, адрес/cfx код, Discord линк, имейл за връзка и бележката ти. Основание: чл. 6, ал. 1, б. „б“ и „е“ ОРЗД. Срок: 24 месеца. Имейлът е задължителен — без него не можем да отговорим, нито да изпратим мотивирано решение при отказ.',
-          'Ревю: оценка, текст и избран псевдоним. Основание: чл. 6, ал. 1, б. „е“. Не искаме име, имейл или IP адрес към ревюто. Публикуваните се пазят, докато сървърът е в директорията; отхвърлените се изтриват след 6 месеца.',
+          'Ревю: оценка, текст и избран псевдоним. Основание: чл. 6, ал. 1, б. „е“. Не искаме име, имейл или IP адрес към ревюто. Публикуваните се пазят, докато сървърът е в директорията, и се изтриват 6 месеца след свалянето му; отхвърлените се изтриват след 6 месеца.',
           'Сигнал по DSA: име, имейл, адрес на съдържанието и обосновка. Основание: чл. 6, ал. 1, б. „в“ (правно задължение по Регламент (ЕС) 2022/2065). Срок: 24 месеца.',
           'Технически дневник на уеб сървъра: IP адрес, време, заявен адрес — само за сигурност и диагностика, чл. 6, ал. 1, б. „е“. Срок: 14 дни. Този дневник не се свързва с конкретно ревю или заявка.',
           'Брояч на опитите за вход в администраторския панел: НЕОБРАТИМ ХЕШ на IP адреса (не самият адрес), време и дали опитът е успешен. Единствената му цел е таванът на опитите да е по подател, а не общ — общият таван позволява един човек да заключи собственика. Основание: чл. 6, ал. 1, б. „е“. Срок: 24 часа, изтрива се автоматично.',
@@ -91,7 +91,7 @@ const bg: LegalSet = {
         ],
       },
       {
-        p: 'Преценката, накратко. ЗА: никнеймът е публично видим за всеки, който влезе в сървъра, а самият сървър го публикува на общодостъпен адрес; „има ли хора вътре и кои“ е основният въпрос преди влизане. ПРОТИВ: ние го събираме на едно място и го показваме извън контекста на самата игра, което усилва видимостта отвъд очакванията на играча (Съобр. 47). Затова: без идентификатори, без история, без архив, без индексиране на самите имена, и сваляне по искане. Ако си непълнолетен, кажи ни — при дете тежестта пада на другата страна (Съобр. 38) и те махаме веднага.',
+        p: 'Преценката, накратко. ЗА: никнеймът е публично видим за всеки, който влезе в сървъра, а самият сървър го публикува на общодостъпен адрес; „има ли хора вътре и кои“ е основният въпрос преди влизане. ПРОТИВ: ние го събираме на едно място и го показваме извън контекста на самата игра, което усилва видимостта отвъд очакванията на играча (Съобр. 47). Затова: без идентификатори, без история, без архив, без откъси с имената в резултатите на търсачките, и сваляне по искане. Ако си непълнолетен, кажи ни — при дете тежестта пада на другата страна (Съобр. 38) и те махаме веднага.',
       },
       {
         p: 'Право на възражение (чл. 21 ОРЗД): пиши ни на privacy@carbonstealth.eu с никнейма и сървъра — спираме показването му. Не уведомяваме всеки играч поотделно: имената се четат автоматично и нямаме адрес за връзка, което чл. 14, ал. 5, б. „б“ допуска при несъразмерни усилия; тази секция е публична преди първото показване и при всяко нейно четене.',
@@ -106,7 +106,7 @@ const bg: LegalSet = {
           'Източник: публичните интерфейси на Twitch (helix/streams), Kick (public/v1/livestreams) и YouTube (Data API v3), както и ръчно въвеждане от нас за TikTok.',
           'Основание: чл. 6, ал. 1, б. „е“ ОРЗД — законен интерес на общността да намери български roleplay съдържание, и на самите стриймъри да бъдат намерени. Обработваме само публично излъчена професионална изява, не поведение в частния живот.',
           'Не сваляме и не вграждаме профилни снимки. Причината е техническа и е в твоя полза: вградената снимка кара браузъра на всеки посетител да прави заявка към чуждия CDN, тоест платформата научава кой чете тази страница.',
-          'Срок: 180 дни след последното засечено излъчване. За каналите от YouTube срокът е 30 дни — толкова допускат условията за разработчици на самата платформа (III.E.4.г), а те са по-строги от нашите. Ръчно добавените канали (TikTok) падат 365 дни след последната ни проверка. Изтриването е автоматично, всяка нощ.',
+          'Срок: 180 дни след последното засечено излъчване. За каналите от YouTube срокът е 30 дни — толкова допускат условията за разработчици на самата платформа (III.E.4.г), а те са по-строги от нашите. Ръчно добавените канали (TikTok) падат 365 дни след последната ни проверка. Изтриването е автоматично, на всеки час.',
           'Не се прави профилиране и няма автоматизирано решение по чл. 22 ОРЗД. Канал, чийто език платформата не обявява като български, изобщо не се публикува автоматично — минава през човек. Заглавието на текущото предаване се показва едва след като човек е видял записа.',
           'Данните от YouTube идват през YouTube API Services. Ползвайки страницата, се съгласяваш и с Условията на YouTube: https://www.youtube.com/t/terms · За обработката от Google важи политиката за поверителност на Google: https://policies.google.com/privacy',
         ],
@@ -219,7 +219,7 @@ const en: LegalSet = {
       {
         ul: [
           'Listing submission: server name, address/cfx code, Discord link, contact email and your note. Basis: Art. 6(1)(b) and (f) GDPR. Retention: 24 months. The email is mandatory — without it we cannot reply, nor send a statement of reasons if the listing is refused.',
-          'Review: rating, text and chosen nickname. Basis: Art. 6(1)(f). We do not ask for a name, email or IP address with a review. Published reviews are kept while the server is listed; rejected ones are deleted after 6 months.',
+          'Review: rating, text and chosen nickname. Basis: Art. 6(1)(f). We do not ask for a name, email or IP address with a review. Published reviews are kept while the server is listed and are deleted 6 months after it is removed; rejected ones are deleted after 6 months.',
           'DSA report: name, email, the content’s address and the explanation. Basis: Art. 6(1)(c) (legal obligation under Regulation (EU) 2022/2065). Retention: 24 months.',
           'Web server technical log: IP address, time, requested path — for security and diagnostics only, Art. 6(1)(f). Retention: 14 days. This log is not linked to a specific review or submission.',
           'Admin panel login counter: an IRREVERSIBLE HASH of the IP address (not the address itself), the time and whether the attempt succeeded. Its only purpose is to make the attempt limit per-sender rather than global — a global limit lets one person lock the owner out. Basis: Art. 6(1)(f). Retention: 24 hours, deleted automatically.',
@@ -263,7 +263,7 @@ const en: LegalSet = {
         ],
       },
       {
-        p: 'The balancing test, briefly. FOR: the nickname is visible to anyone who joins the server, and the server itself publishes it at a public endpoint; “are there people inside, and who” is the main question before joining. AGAINST: we aggregate it in one place and show it outside the context of the game itself, which amplifies visibility beyond a player’s expectations (Recital 47). Hence: no identifiers, no history, no archive, no indexing of the names themselves, and removal on request. If you are a minor, tell us — for a child the balance tips the other way (Recital 38) and we remove you immediately.',
+        p: 'The balancing test, briefly. FOR: the nickname is visible to anyone who joins the server, and the server itself publishes it at a public endpoint; “are there people inside, and who” is the main question before joining. AGAINST: we aggregate it in one place and show it outside the context of the game itself, which amplifies visibility beyond a player’s expectations (Recital 47). Hence: no identifiers, no history, no archive, no snippets of the names in search results, and removal on request. If you are a minor, tell us — for a child the balance tips the other way (Recital 38) and we remove you immediately.',
       },
       {
         p: 'Right to object (Art. 21 GDPR): write to privacy@carbonstealth.eu with the nickname and the server and we stop showing it. We do not notify each player individually: the names are read automatically and we have no contact address, which Art. 14(5)(b) allows where the effort would be disproportionate; this section is public before the first display and on every reading of it.',
@@ -278,7 +278,7 @@ const en: LegalSet = {
           'Source: the public interfaces of Twitch (helix/streams), Kick (public/v1/livestreams) and YouTube (Data API v3), plus manual entry by us for TikTok.',
           'Basis: Art. 6(1)(f) GDPR — the community’s legitimate interest in finding Bulgarian roleplay content, and the streamers’ own interest in being found. We process only publicly broadcast professional activity, not private-life behaviour.',
           'We neither download nor embed profile pictures. The reason is technical and in your favour: an embedded picture makes every visitor’s browser call the third-party CDN, which tells the platform who reads this page.',
-          'Retention: 180 days after the last detected broadcast. For YouTube channels it is 30 days — that is what the platform’s own developer policies allow (III.E.4.d), and they are stricter than ours. Manually added channels (TikTok) are dropped 365 days after our last check. Deletion is automatic, every night.',
+          'Retention: 180 days after the last detected broadcast. For YouTube channels it is 30 days — that is what the platform’s own developer policies allow (III.E.4.d), and they are stricter than ours. Manually added channels (TikTok) are dropped 365 days after our last check. Deletion is automatic, every hour.',
           'No profiling and no automated decision under Art. 22 GDPR. A channel whose language the platform does not declare as Bulgarian is never published automatically — a person reviews it. The current stream title is shown only once a person has looked at the record.',
           'Data from YouTube comes through the YouTube API Services. By using this page you also agree to the YouTube Terms of Service: https://www.youtube.com/t/terms · Google’s privacy policy applies to Google’s processing: https://policies.google.com/privacy',
         ],

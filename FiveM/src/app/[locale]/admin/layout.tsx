@@ -33,10 +33,9 @@ export default async function AdminLayout({
 
   return (
     <div>
-      <div className="flag-rule mb-6 h-[3px] rounded" aria-hidden="true" />
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          <span className="text-chrome">Админ панел</span>
+        <h1 className="page-title">
+          Админ панел
         </h1>
         {authed && (
           <form action={logoutAction}>

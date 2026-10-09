@@ -1,7 +1,15 @@
 # Разгръщане — FiveM BG
 
-Каноничният поток на репото: GitHub ZIP се качва **ръчно** в `/root`, после
-`deploy/autodeploy.sh` върши останалото. Тук е само специфичното за продукта.
+Каноничният поток на репото: сървърът тегли **неизменим архив за точен ref**
+през `deploy/fetch-deploy.sh` и го подава на `deploy/autodeploy.sh` (виж
+`deploy/README.md`). Ръчно качен ZIP в `/root` остава резервата, когато кутията
+няма изходяща мрежа. Тук е само специфичното за продукта.
+
+```bash
+curl -fsSL https://codeload.github.com/stefkostefko92-ux/Few-few/tar.gz/main \
+  | tar -xz -C /root --strip-components=1 --wildcards '*/deploy/fetch-deploy.sh'
+sudo REF=main PROJECTS="fivem" bash /root/deploy/fetch-deploy.sh
+```
 
 ## Еднократно, преди първия деплой
 
@@ -129,7 +137,7 @@ bash scripts/deploy.sh
 
 | Ключ | Задължителен | Защо |
 |---|---|---|
-| `POSTGRES_PASSWORD`, `DATABASE_URL` | да | базата |
+| `POSTGRES_PASSWORD`, `DATABASE_URL` | да | базата. В Compose хостът е **`db`**, не `localhost`: `postgresql://fivem:<POSTGRES_PASSWORD>@db:5432/fivem`. Стойностите се пишат **без кавички** |
 | `PUBLIC_BASE_URL` | да | canonical, hreflang, OG. **Трябва да е `https://…`** — иначе сесийната бисквитка на панела пада до слабата форма |
 | `ADMIN_PASSWORD_HASH` | да | панелът. `npm run admin:hash -- "дълга парола"`; паролата не се пази никъде |
 | `RESEND_API_KEY` | **да, на живо** | без него уведомленията по чл. 16 и чл. 17 DSA не тръгват. Липсата се логва, но обещанието остава неизпълнено |
@@ -192,7 +200,7 @@ PROBE_ADMIN_PASSWORD="…" node scripts/authz-probe.mjs    # авторизац�
 | `discover-servers` | 45 мин | снапшотът на Cfx.re е около 19 MB — по-често е неприлично |
 | `discover-streamers twitch kick` | 10 мин | „на живо“ остарява за минути; квотите са щедри |
 | `discover-streamers youtube` | 2 ч | 100 ед. на заявка при 10 000/ден — 12 пробега дневно са ~2 400 ед. |
-| `prune` | 24 ч | изтрива по обявените в `/privacy` срокове |
+| `prune` | 1 ч | изтрива по обявените в `/privacy` срокове. На час, не на ден: при дневен пробег ред с 24-часов срок (броячът за вход) живееше до ~48 ч |
 
 **Свалянето на стриймър НЕ е изтриване.** В панела се ползва „свален по
 възражение“ (чл. 21 ОРЗД): изтрит запис се появява пак при следващия пробег до

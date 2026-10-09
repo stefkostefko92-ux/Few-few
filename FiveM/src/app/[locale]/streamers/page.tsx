@@ -39,9 +39,8 @@ export default async function StreamersPage({ params }: Props) {
 
   return (
     <div>
-      <div className="flag-rule mb-6 h-[3px] rounded" aria-hidden="true" />
-      <h1 className="text-3xl font-semibold tracking-tight">
-        <span className="text-chrome">{t.streamers.h1}</span>
+      <h1 className="page-title">
+        {t.streamers.h1}
       </h1>
       <p className="mt-3 max-w-3xl text-silver-400">{t.streamers.intro}</p>
 
@@ -58,7 +57,7 @@ export default async function StreamersPage({ params }: Props) {
       ) : (
         groups.map((group) => (
           <section key={group.platform} className="mt-12">
-            <h2 className="flex items-center gap-3 text-2xl font-semibold tracking-tight">
+            <h2 className="section-title flex items-center gap-3">
               <Badge name={PLATFORM_BADGE[group.platform]} size={40} />
               {t.streamers.platforms[group.platform]}
               <span className="text-base font-normal text-silver-500">
@@ -110,7 +109,7 @@ export default async function StreamersPage({ params }: Props) {
       </section>
 
       <JsonLd data={breadcrumbJsonLd(locale, [
-              { name: t.nav.servers, path: '/' },
+              { name: t.nav.servers, path: '/servers' },
               { name: t.streamers.h1, path: '/streamers' },
             ])} />
     </div>

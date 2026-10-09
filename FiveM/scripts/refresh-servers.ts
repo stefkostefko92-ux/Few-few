@@ -14,12 +14,13 @@ import {
   listSaysOnline,
   parseCfxJoinCode,
 } from '../src/lib/fivem';
+import { readEnv } from '../src/lib/env';
 import { probeServer, resolveJoinCode } from '../src/lib/fivem-query';
 
 const prisma = new PrismaClient();
 
 function concurrency(): number {
-  const raw = Number(process.env.FIVEM_PING_CONCURRENCY);
+  const raw = Number(readEnv('FIVEM_PING_CONCURRENCY'));
   return Number.isFinite(raw) && raw > 0 ? Math.min(raw, 16) : 6;
 }
 

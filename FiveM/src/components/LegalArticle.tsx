@@ -10,8 +10,8 @@ import { ADDRESS_ONE_LINE, PUBLISHER } from '@/lib/site';
 export function LegalArticle({ doc, withController = false }: { doc: LegalDoc; withController?: boolean }) {
   return (
     <article className="max-w-2xl space-y-4 text-silver-300">
-      <h1 className="text-3xl font-semibold tracking-tight">
-        <span className="text-chrome">{doc.title}</span>
+      <h1 className="page-title">
+        {doc.title}
       </h1>
 
       {/* Дата на редакцията — чл. 12, ал. 1 ОРЗД и чл. 14, ал. 2 DSA. Без нея
