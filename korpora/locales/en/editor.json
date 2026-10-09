@@ -94,7 +94,7 @@
     "zoomOut": "Zoom out",
     "zoomFit": "Whole sheet",
     "zoomHint": "Wheel or two fingers — zoom · drag — move · double click — whole sheet",
-    "zoomTap": "Click on the drawing — full screen, zoomed in on that spot",
+    "zoomTap": "Click or tap the drawing — full screen, zoomed in on that spot",
     "photoPreparing": "Preparing the photorealistic view…",
     "photoProgress": "Computing the light: {pct}%",
     "photoReady": "The image is ready.",

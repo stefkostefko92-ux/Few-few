@@ -94,7 +94,7 @@
     "zoomOut": "Riduci",
     "zoomFit": "Foglio intero",
     "zoomHint": "Rotella o due dita — zoom · trascina — sposta · doppio clic — foglio intero",
-    "zoomTap": "Clic sul disegno — schermo intero, ingrandito in quel punto",
+    "zoomTap": "Clic o tocco sul disegno — schermo intero, ingrandito in quel punto",
     "photoPreparing": "Preparazione della vista fotorealistica…",
     "photoProgress": "Calcolo della luce: {pct}%",
     "photoReady": "L'immagine è pronta.",
