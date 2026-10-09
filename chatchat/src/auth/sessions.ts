@@ -132,11 +132,36 @@ export function loadPrincipal(deps: SessionDeps) {
   };
 }
 
+/**
+ * Отнета сесия затваря и отворените потоци в реално време (§13.3): хъбът се абонира тук, за да
+ * не зависи всеки, който отнема сесии, от него. Слушател, който хвърли, не спира отнемането.
+ */
+export type RevocationTarget = { userId: string } | { sessionId: string };
+const revocationListeners = new Set<(target: RevocationTarget) => void>();
+
+export function onSessionsRevoked(listener: (target: RevocationTarget) => void): () => void {
+  revocationListeners.add(listener);
+  return () => {
+    revocationListeners.delete(listener);
+  };
+}
+
+function emitRevoked(target: RevocationTarget): void {
+  for (const listener of revocationListeners) {
+    try {
+      listener(target);
+    } catch {
+      // Потокът се проверява и на всеки heartbeat — пропуснат слушател не оставя достъп.
+    }
+  }
+}
+
 export async function revokeSession(db: PrismaClient, sessionId: string): Promise<void> {
   await db.session.updateMany({
     where: { id: sessionId, revokedAt: null },
     data: { revokedAt: new Date() },
   });
+  emitRevoked({ sessionId });
 }
 
 /** Отнема всички сесии на човека — при деактивиране, смяна на роля или нулиране (AC-16). */
@@ -145,5 +170,6 @@ export async function revokeAllSessions(db: PrismaClient, userId: string): Promi
     where: { userId, revokedAt: null },
     data: { revokedAt: new Date() },
   });
+  emitRevoked({ userId });
   return result.count;
 }

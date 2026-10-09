@@ -15,6 +15,7 @@ import { createLogger } from '../../src/logger.js';
 import type { EmbeddingModel } from '../../src/ai/embeddings.js';
 import { EmbeddingIndexer } from '../../src/store/embeddings.js';
 import type { AttachmentDeps } from '../../src/services/attachments.js';
+import { RealtimeHub } from '../../src/realtime/hub.js';
 import { PrismaKnowledgeStore } from '../../src/store/knowledge.js';
 import { knowledgeSnapshotId } from '../../src/store/snapshot.js';
 
@@ -179,6 +180,8 @@ export interface Harness {
   sessions: SessionDeps;
   /** Само с opts.embedder: фоновото индексиране (тестовете чакат `indexer.kick()`). */
   indexer: EmbeddingIndexer | null;
+  /** Хъбът за реално време (SSE) на приложението. */
+  hub: RealtimeHub;
   close(): Promise<void>;
 }
 
@@ -187,8 +190,10 @@ export async function startApp(
     diagnose?: 'real' | 'none' | Diagnoser;
     embedder?: EmbeddingModel;
     attachments?: AttachmentDeps | null;
+    hub?: RealtimeHub;
   } = {},
 ): Promise<Harness> {
+  const hub = opts.hub ?? new RealtimeHub();
   const model = new ScriptedModel();
   const sessions: SessionDeps = { db, pepper: PEPPER, ttlHours: 12, secureCookies: false };
   const store = new PrismaKnowledgeStore(db, { embedder: opts.embedder ?? null });
@@ -222,6 +227,7 @@ export async function startApp(
     diagnose: choice === 'real' ? real : choice === 'none' ? null : choice,
     onDocumentPublished: indexer ? () => void indexer.kick() : undefined,
     attachments: opts.attachments ?? null,
+    hub,
   });
   const server: Server = await new Promise((resolve) => {
     const s = app.listen(0, '127.0.0.1', () => resolve(s));
@@ -232,8 +238,10 @@ export async function startApp(
     model,
     sessions,
     indexer,
+    hub,
     close: () =>
       new Promise<void>((resolve, reject) => {
+        hub.closeAll();
         server.closeAllConnections();
         server.close((err) => (err ? reject(err) : resolve()));
       }),

@@ -9,6 +9,7 @@ import type { AttachmentDeps } from './services/attachments.js';
 import { EmbeddingIndexer } from './store/embeddings.js';
 import { ClamdScanner } from './storage/antivirus.js';
 import { FileAttachmentStore } from './storage/attachments.js';
+import { RealtimeHub } from './realtime/hub.js';
 import { PrismaKnowledgeStore } from './store/knowledge.js';
 import { knowledgeSnapshotId } from './store/snapshot.js';
 
@@ -69,6 +70,11 @@ if (attachmentsEnabled(config)) {
 } else {
   logger.warn('ATTACHMENTS_DIR липсва — прикачените файлове са изключени');
 }
+// Един процес = един хъб за SSE. Втори процес/машина иска pub/sub между хъбовете (CLAUDE.md).
+const hub = new RealtimeHub({
+  onError: (err) =>
+    logger.warn({ errName: err instanceof Error ? err.name : 'unknown' }, 'поток в реално време'),
+});
 
 const app = createApp({
   db,
@@ -85,6 +91,7 @@ const app = createApp({
   diagnose: diagnoser,
   onDocumentPublished: indexer ? () => void indexer?.kick() : undefined,
   attachments,
+  hub,
 });
 
 const server = app.listen(config.PORT, config.HOST, () => {
@@ -102,6 +109,8 @@ const server = app.listen(config.PORT, config.HOST, () => {
 function shutdown(signal: string): void {
   logger.info({ signal }, 'спиране');
   indexer?.stop();
+  // Отворените SSE потоци държат сървъра жив — затваряме ги, клиентите се връщат по REST.
+  hub.closeAll();
   server.close(() => {
     db.$disconnect()
       .catch((err: unknown) => logger.error({ err }, 'грешка при затваряне на базата'))

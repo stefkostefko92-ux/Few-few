@@ -5,7 +5,9 @@ import { fileURLToPath } from 'node:url';
 import type { Logger } from 'pino';
 import type { DiagnoseInput, DiagnoseOutput } from './ai/orchestrator.js';
 import { apiError, requireCapability } from './auth/guards.js';
-import { loadPrincipal, type SessionDeps } from './auth/sessions.js';
+import { loadPrincipal, onSessionsRevoked, type SessionDeps } from './auth/sessions.js';
+import { RealtimeHub } from './realtime/hub.js';
+import { eventsRouter } from './realtime/stream.js';
 import { adminCatalogRouter } from './routes/admin-catalog.js';
 import { adminDocumentsRouter } from './routes/admin-documents.js';
 import { adminErrorsRouter, auditRouter } from './routes/admin-errors.js';
@@ -15,6 +17,11 @@ import { casesRouter } from './routes/cases.js';
 import { catalogRouter } from './routes/catalog.js';
 import { chatRouter } from './routes/chat.js';
 import { filesRouter } from './routes/files.js';
+import { conversationsRouter } from './routes/conversations.js';
+import { messagesRouter } from './routes/messages.js';
+import { notificationsRouter } from './routes/notifications.js';
+import { presenceRouter } from './routes/presence.js';
+import { quickResponsesRouter } from './routes/quick-responses.js';
 import { ticketsRouter } from './routes/tickets.js';
 import type { AttachmentDeps } from './services/attachments.js';
 
@@ -35,11 +42,32 @@ export interface AppDeps {
   onDocumentPublished?: (documentId: string) => void;
   /** null → прикачването е изключено (няма ATTACHMENTS_DIR): маршрутите връщат 503. */
   attachments: AttachmentDeps | null;
+  /** Хъбът за реално време (SSE) — един на процес; без него createApp прави свой. */
+  hub?: RealtimeHub;
 }
+
+/** Зависимостите след сглобяване — с хъба, който рутерите на работното пространство ползват. */
+export type WiredDeps = AppDeps & { hub: RealtimeHub };
 
 const PUBLIC_DIR = fileURLToPath(new URL('../public', import.meta.url));
 
-export function createApp(deps: AppDeps): express.Express {
+export function createApp(appDeps: AppDeps): express.Express {
+  const hub =
+    appDeps.hub ??
+    new RealtimeHub({
+      onError: (err) =>
+        appDeps.logger.warn(
+          { errName: err instanceof Error ? err.name : 'unknown' },
+          'поток в реално време',
+        ),
+    });
+  const deps: WiredDeps = { ...appDeps, hub };
+  // Изход, деактивиране, отнети сесии → отворените потоци се затварят веднага (§13.3).
+  onSessionsRevoked((target) =>
+    'userId' in target
+      ? hub.disconnectUser(target.userId)
+      : hub.disconnectSession(target.sessionId),
+  );
   const app = express();
   app.disable('x-powered-by');
   app.set('trust proxy', deps.trustProxy);
@@ -111,6 +139,13 @@ export function createApp(deps: AppDeps): express.Express {
   app.use('/api/v1', chatRouter(deps));
   app.use('/api/v1', ticketsRouter(deps));
   app.use('/api/v1', filesRouter(deps));
+  // Работното пространство (§12.3): разговори, съобщения, присъствие, известия, бързи отговори, SSE.
+  app.use('/api/v1', conversationsRouter(deps));
+  app.use('/api/v1', messagesRouter(deps));
+  app.use('/api/v1', presenceRouter(deps));
+  app.use('/api/v1', notificationsRouter(deps));
+  app.use('/api/v1', quickResponsesRouter(deps));
+  app.use('/api/v1', eventsRouter(deps));
   app.use('/api', (_req, res) => apiError(res, 404, 'not_found'));
 
   app.use(

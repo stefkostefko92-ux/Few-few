@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { Router } from 'express';
 import { z } from 'zod';
-import type { AppDeps } from '../app.js';
+import type { WiredDeps } from '../app.js';
 import { appendAudit } from '../audit.js';
 import {
   apiError,
@@ -13,6 +13,8 @@ import {
 import { AUDIENCE_WITHHELD, can, caseAudiences, coversAudiences } from '../auth/rbac.js';
 import { DiagnosticContextSchema, redactContext } from '../domain/context.js';
 import { attachmentsByMessage } from '../services/attachments.js';
+import { notify } from '../services/collab/notify.js';
+import { publishCaseAssigned } from '../services/collab/publish.js';
 import {
   addTimeline,
   caseWhereFor,
@@ -53,7 +55,7 @@ function caseView(c: {
   };
 }
 
-export function casesRouter(deps: AppDeps): Router {
+export function casesRouter(deps: WiredDeps): Router {
   const router = Router();
   router.use(requireUser, requireCsrf(deps.publicOrigin));
 
@@ -262,6 +264,25 @@ export function casesRouter(deps: AppDeps): Router {
         data: { assignedToId: p.user.id, status: 'IN_PROGRESS' },
       });
       await addTimeline(deps.db, c.id, 'case.assigned', p.user.id, { to: p.user.id });
+      // FR-18: създателят научава кой е поел случая (известие + събитие в реално време).
+      const assignedTo = { id: p.user.id, name: p.user.name };
+      if (c.createdById !== p.user.id) {
+        await notify(
+          deps,
+          [
+            {
+              tenantId: c.tenantId,
+              userId: c.createdById,
+              eventType: 'case.assigned',
+              objectType: 'case',
+              objectId: c.id,
+              payload: { caseId: c.id, number: c.number, assignedTo },
+            },
+          ],
+          p.user.id,
+        );
+      }
+      publishCaseAssigned(deps, { ...c, assignedToId: p.user.id }, assignedTo);
       res.json({ case: caseView(updated) });
     } catch (err) {
       next(err);
@@ -275,8 +296,14 @@ export function casesRouter(deps: AppDeps): Router {
       const p = principalOf(req);
       const c = await findCaseFor(deps.db, p, id.data);
       if (!c) return apiError(res, 404, 'not_found');
+      // Вътрешната дискусия на персонала (internal.*) не се вижда от портала и от техниците
+      // без `case:readAll` — дори като идентификатори (AC-18).
+      const staff = p.user.kind === 'INTERNAL' && can(p.user.role, 'case:readAll');
       const events = await deps.db.caseTimelineEvent.findMany({
-        where: { caseId: c.id },
+        where: {
+          caseId: c.id,
+          ...(staff ? {} : { NOT: { type: { startsWith: 'internal.' } } }),
+        },
         orderBy: { at: 'asc' },
         take: 1000,
       });

@@ -2,7 +2,7 @@ import { Prisma } from '@prisma/client';
 import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { z } from 'zod';
-import type { AppDeps } from '../app.js';
+import type { WiredDeps } from '../app.js';
 import { appendAudit } from '../audit.js';
 import {
   apiError,
@@ -20,6 +20,7 @@ import {
   type MessageAttachment,
 } from '../services/attachments.js';
 import { addTimeline, contextOf, findCaseFor, isUniqueOn } from '../services/cases.js';
+import { caseAudience, notify } from '../services/collab/notify.js';
 
 /**
  * §14.1 POST /chat/messages — съобщение в случая и (по подразбиране) диагностика от AI.
@@ -65,7 +66,7 @@ function messageView(
   };
 }
 
-export function chatRouter(deps: AppDeps): Router {
+export function chatRouter(deps: WiredDeps): Router {
   const router = Router();
   router.use(requireUser, requireCsrf(deps.publicOrigin));
 
@@ -283,6 +284,19 @@ export function chatRouter(deps: AppDeps): Router {
             usage: result.usage,
           },
         });
+        // FR-18: нов AI отговор в собствен случай — за създателя/поелия, ако не е питал сам.
+        await notify(
+          deps,
+          caseAudience(c, p.user.id).map((userId) => ({
+            tenantId: c.tenantId,
+            userId,
+            eventType: 'case.ai_answer' as const,
+            objectType: 'case' as const,
+            objectId: c.id,
+            payload: { caseId: c.id, number: c.number, messageId: aiMessage.id },
+          })),
+          null,
+        );
         res
           .status(201)
           .json({ message: messageView(message, files), answer: messageView(aiMessage) });
