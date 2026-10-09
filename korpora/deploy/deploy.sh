@@ -28,6 +28,8 @@ NGINX_LINK="${KORPORA_NGINX_LINK:-/etc/nginx/sites-enabled/korpora}"
 LE_DIR="${KORPORA_LE_DIR:-/etc/letsencrypt}"
 HEALTH_WAIT="${KORPORA_HEALTH_WAIT:-90}"
 KEEP_BACKUPS="${KORPORA_KEEP_BACKUPS:-5}"
+PREDEPLOY_DAYS="${KORPORA_PREDEPLOY_DAYS:-30}"
+PRERESTORE_DAYS="${KORPORA_PRERESTORE_DAYS:-60}"
 INDEXNOW="${KORPORA_INDEXNOW:-1}"
 SKIP_BACKUP="${KORPORA_SKIP_BACKUP:-0}"
 LAST_GOOD="${KORPORA_LAST_GOOD:-$SHARED/last-good}"
@@ -134,6 +136,11 @@ backup_db() {
   fi
   find "$dir" -maxdepth 1 -name 'pre-deploy-*.sql.gz' -printf '%T@ %p\n' | sort -rn |
     tail -n "+$((KEEP_BACKUPS + 1))" | cut -d' ' -f2- | xargs -r rm -f
+  # Таван и по възраст: при рядък деплой петте дъмпа (некриптирани) иначе стигат месеци назад и изтрит
+  # акаунт остава в тях. Шифрованите снимки преди --live възстановяване (backup-restore.sh) — колкото
+  # най-стария дневен бекъп. Между два деплоя таванът не се налага (korpora-backup пише само в daily/).
+  find "$dir" -maxdepth 1 -type f \( -name 'pre-deploy-*.sql.gz' -mtime "+$PREDEPLOY_DAYS" \
+    ! -name "$(basename "$file")" -o -name 'pre-restore-*.dump.age' -mtime "+$PRERESTORE_DAYS" \) -delete
 }
 
 # Код 200 сам не казва КОЙ отговаря на порта: чака се маркерът на Korpora и база, която отговаря.
