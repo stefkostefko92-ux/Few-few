@@ -67,7 +67,7 @@
   "ticketstatus.IN_PROGRESS": "in progress",
   "ticketstatus.WAITING": "waiting",
   "ticketstatus.CLOSED": "closed",
-  "disclaimer.text": "The assistant is a decision aid. Responsibility for operations on the control panel and for making the installation safe lies with the technician and the company’s procedures.",
+  "disclaimer.text": "You are interacting with an artificial intelligence (AI) system. Answers may contain errors: check them against the cited sources. The assistant is a decision aid and does not replace the manufacturer’s procedures or the safety rules; decisions and work on the control panel, including making the installation safe, remain with the technician and the company’s procedures.",
   "chat.emptyTitle": "No case open",
   "chat.emptyText": "Open a new case with the control panel model, revision and error code.",
   "chat.log": "Conversation",
@@ -212,5 +212,12 @@
   "code.collect.eventLog": "The control panel event log",
   "code.collect.serial": "Control panel serial number",
   "code.collect.firmware": "Firmware version",
-  "code.collect.hardwareRevision": "Hardware revision"
+  "code.collect.hardwareRevision": "Hardware revision",
+  "login.aiNotice": "ChatChat uses an artificial intelligence (AI) assistant to support diagnosis.",
+  "chat.privacyHint": "Do not enter personal data (names, addresses, phone numbers, health data).",
+  "footer.privacy": "Privacy notice",
+  "code.gate.textWithheld": "Text withheld: it contained an instruction the safety check does not allow",
+  "code.gate.audienceWithheld": "Answer not visible to your role: it cites restricted documents",
+  "code.gate.causes.withheld": "A proposed cause was removed by the safety check",
+  "code.gate.decisionPoint.withheld": "A conditional step was removed: it requires a documented procedure"
 }

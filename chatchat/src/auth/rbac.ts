@@ -11,6 +11,7 @@ import type { Audience } from '../retrieval/types.js';
 export type Capability =
   | 'case:create'
   | 'case:readAll' // всички случаи на клиента (триаж); иначе — само свои/възложени
+  | 'case:assign' // поемане на случай като оператор (FR-19)
   | 'chat:ask'
   | 'ticket:create'
   | 'feedback:create'
@@ -23,9 +24,9 @@ const TECH: readonly Capability[] = ['case:create', 'chat:ask', 'ticket:create',
 const CAPABILITIES: Record<Role, readonly Capability[]> = {
   PORTAL_TECHNICIAN: TECH,
   INTERNAL_TECHNICIAN: [...TECH, 'device:readAll'],
-  SUPPORT: [...TECH, 'case:readAll', 'device:readAll'],
-  ENGINEERING: [...TECH, 'case:readAll', 'device:readAll'],
-  KNOWLEDGE_OWNER: [...TECH, 'case:readAll', 'device:readAll', 'kb:manage'],
+  SUPPORT: [...TECH, 'case:readAll', 'case:assign', 'device:readAll'],
+  ENGINEERING: [...TECH, 'case:readAll', 'case:assign', 'device:readAll'],
+  KNOWLEDGE_OWNER: [...TECH, 'case:readAll', 'case:assign', 'device:readAll', 'kb:manage'],
   TENANT_ADMIN: ['case:readAll', 'device:readAll', 'audit:read'],
   PLATFORM_ADMIN: ['audit:read'],
 };
@@ -56,3 +57,14 @@ export function caseAudiences(role: Role, portalCase: boolean): readonly Audienc
   const own = audiencesFor(role);
   return portalCase ? own.filter((a) => a === 'PORTAL') : own;
 }
+
+/** Читателят вижда AI отговор само ако има ВСИЧКИ аудитории, с които е търсено за него. */
+export function coversAudiences(
+  reader: readonly Audience[],
+  message: readonly Audience[],
+): boolean {
+  return message.every((a) => reader.includes(a));
+}
+
+/** Код вместо съдържанието на AI отговор, търсен с по-широки аудитории от тези на читателя. */
+export const AUDIENCE_WITHHELD = 'gate.audienceWithheld';

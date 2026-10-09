@@ -21,6 +21,8 @@ const EnvSchema = z.object({
   SESSION_PEPPER: z.string().min(32, 'SESSION_PEPPER трябва да е поне 32 знака'),
   SESSION_TTL_HOURS: z.coerce.number().int().min(1).max(720).default(12),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'silent']).default('info'),
+  /** Информацията по чл. 13/14 GDPR на администратора (клиента) — връзка във входа и футъра. */
+  PRIVACY_POLICY_URL: z.union([z.url(), z.literal('')]).default(''),
 
   VERTEX_PROJECT_ID: z.string().default(''),
   VERTEX_REGION: z

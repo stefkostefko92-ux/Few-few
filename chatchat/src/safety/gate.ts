@@ -12,9 +12,17 @@ import {
   type SafetyLevel,
 } from '../domain/response.js';
 import type { EvidenceItem, RetrievalResult } from '../retrieval/types.js';
-import { citationOf, quoteIsVerbatim } from './citations.js';
+import { capsFor, lowerOutcome } from './caps.js';
+import { citationOf, verifyCitations } from './citations.js';
 import { collectFor } from './escalation.js';
-import { classifyActionText, detectBypassIntent, foldText } from './lexicon.js';
+import { detectBypassIntent } from './lexicon.js';
+import {
+  approvesSafetyStep,
+  isDangerousText,
+  screenText,
+  sourceDocumentsStep,
+  WITHHELD,
+} from './screen.js';
 
 /**
  * Safety Gate (§11) — детерминистичен, след модела, независимо какво е казал моделът.
@@ -29,10 +37,7 @@ import { classifyActionText, detectBypassIntent, foldText } from './lexicon.js';
  * Текстовете, които Gate добавя, са КОДОВЕ (`gate.*`, `ctx.*`, `collect.*`) — превежда ги UI.
  */
 
-export const GATE_VERSION = 'gate-2026-10-09.1';
-
-/** Типове документи, които могат да носят одобрена процедура по безопасност. */
-const SAFETY_PROCEDURE_TYPES = new Set(['PROCEDURE', 'MANUAL']);
+export const GATE_VERSION = 'gate-2026-10-09.2';
 
 export interface GateInput {
   draft: ModelDiagnosis;
@@ -51,63 +56,30 @@ type RemovalReason =
   | 'gate.removed.configNeedsContext'
   | 'gate.removed.bypassRequest';
 
-/** Одобрена процедура за действие по безопасност: публикуван, маркиран safety-relevant източник. */
-function isApprovedSafetySource(item: EvidenceItem): boolean {
-  if (!item.applicable || !item.safetyRelevant) return false;
-  if (item.kind === 'error') {
-    return item.checks.some((c) => c.actionClass === 'SAFETY_RELEVANT');
-  }
-  return SAFETY_PROCEDURE_TYPES.has(item.documentType);
-}
-
-/** Таванът на увереността и на изхода по нивото на доказателствата (§8.3). */
-function capsFor(level: EvidenceLevel): { confidence: Confidence; outcome: Outcome } {
-  switch (level) {
-    case 'strong':
-    case 'high':
-      return { confidence: 'high', outcome: 'identified' };
-    case 'weak':
-      return { confidence: 'low', outcome: 'probable' };
-    case 'conflict':
-      return { confidence: 'low', outcome: 'probable' };
-    case 'none':
-      return { confidence: 'low', outcome: 'undetermined' };
-  }
-}
-
-const OUTCOME_ORDER: readonly Outcome[] = ['undetermined', 'probable', 'identified'];
-function lowerOutcome(a: Outcome, b: Outcome): Outcome {
-  return OUTCOME_ORDER.indexOf(a) <= OUTCOME_ORDER.indexOf(b) ? a : b;
-}
-
 export function applyGate(input: GateInput): DiagnosticAnswer {
   const { draft, retrieval, context } = input;
   const byRef = new Map(retrieval.items.map((i) => [i.ref, i]));
   const decisions = new Set<string>();
-  const dropped: DiagnosticAnswer['gate']['droppedCitations'] = [];
   const removed: DiagnosticAnswer['gate']['removedSteps'] = [];
   const missing = new Set<string>(draft.missingData);
   let safety: SafetyLevel = 'standard';
   let escalate = draft.escalation.recommended;
+  /** Моделът е предложил мост/пряка команда в свободен текст — блок и ескалация. */
+  const blockForText = (decision: string): void => {
+    safety = 'blocked';
+    escalate = true;
+    decisions.add(decision);
+  };
+  /** Свободен текст към техника: опасният се заменя с код. */
+  const screened = (text: string, block: boolean): string => {
+    if (!isDangerousText(text)) return text;
+    if (block) blockForText('gate.textWithheld');
+    else decisions.add('gate.textWithheld');
+    return WITHHELD;
+  };
 
   // 1. Цитатите: само от пакета, само съвместими, откъсът — дословен.
-  const verifiedQuotes = new Map<string, string>();
-  for (const used of draft.evidenceUsed) {
-    const item = byRef.get(used.ref);
-    if (!item) {
-      dropped.push({ ref: used.ref, reason: 'gate.citation.notInPack' });
-      continue;
-    }
-    if (!item.applicable) {
-      dropped.push({ ref: used.ref, reason: 'gate.citation.notApplicable' });
-      continue;
-    }
-    if (!quoteIsVerbatim(used.quote, item.text)) {
-      dropped.push({ ref: used.ref, reason: 'gate.citation.quoteNotFound' });
-      continue;
-    }
-    if (!verifiedQuotes.has(used.ref)) verifiedQuotes.set(used.ref, used.quote.trim());
-  }
+  const { verifiedQuotes, dropped } = verifyCitations(draft.evidenceUsed, byRef);
   const supporting = (refs: string[]): string[] =>
     refs.filter((r) => {
       const item = byRef.get(r);
@@ -127,25 +99,28 @@ export function applyGate(input: GateInput): DiagnosticAnswer {
   const kept: DiagnosticAnswer['checks'] = [];
   for (const check of draft.checks) {
     const refs = supporting(check.evidenceRefs);
-    const lexical = classifyActionText(`${check.action} ${check.expected}`).actionClass;
-    let cls: ActionClass = stricterClass(check.actionClass, lexical);
+    const stepText = `${check.action} ${check.expected}`;
+    const lexical = screenText(stepText);
+    let cls: ActionClass = stricterClass(check.actionClass, lexical.actionClass);
+    // Класът от базата с кодове важи за проверката, която стъпката реално повтаря.
     for (const r of refs) {
-      const item = byRef.get(r);
-      for (const c of item?.checks ?? []) {
-        if (foldText(check.action).includes(foldText(c.text).slice(0, 40))) {
-          cls = stricterClass(cls, c.actionClass);
-        }
+      for (const c of byRef.get(r)?.checks ?? []) {
+        if (sourceDocumentsStep(check.action, c.text)) cls = stricterClass(cls, c.actionClass);
       }
     }
 
     let reason: RemovalReason | null = null;
     let requiresConfirmation = false;
-    if (cls === 'DIRECT_COMMAND') {
+    if (lexical.bypass) {
+      // Мост/байпас в самата стъпка — каквото и да цитира (червен екип: изходът е недоверен).
+      reason = 'gate.removed.bypassRequest';
+    } else if (cls === 'DIRECT_COMMAND') {
       reason = 'gate.removed.directCommand';
     } else if (cls === 'SAFETY_RELEVANT') {
+      // Одобрена е само ако източникът документира ИМЕННО тази стъпка.
       const approved = refs.some((r) => {
         const item = byRef.get(r);
-        return item !== undefined && isApprovedSafetySource(item);
+        return item !== undefined && approvesSafetyStep(item, stepText);
       });
       if (bypass.bypass) reason = 'gate.removed.bypassRequest';
       else if (!approved) reason = 'gate.removed.safetyUnapproved';
@@ -184,14 +159,42 @@ export function applyGate(input: GateInput): DiagnosticAnswer {
     });
   }
 
-  // 4. Причините — само подкрепените; несъвместимото не е основен източник.
-  const causes = draft.causes
-    .map((c) => ({ text: c.text, evidenceRefs: supporting(c.evidenceRefs) }))
-    .filter((c) => c.evidenceRefs.length > 0);
-  if (causes.length < draft.causes.length) decisions.add('gate.causes.unsupportedDropped');
+  // 4. Причините — само подкрепените и безопасните; несъвместимото не е основен източник.
+  const causes: DiagnosticAnswer['causes'] = [];
+  for (const cause of draft.causes) {
+    const refs = supporting(cause.evidenceRefs);
+    const verdict = screenText(cause.text);
+    if (verdict.bypass || verdict.actionClass === 'DIRECT_COMMAND') {
+      blockForText('gate.causes.withheld');
+      continue;
+    }
+    const safetyOk =
+      verdict.actionClass !== 'SAFETY_RELEVANT' ||
+      refs.some((r) => {
+        const item = byRef.get(r);
+        return item !== undefined && approvesSafetyStep(item, cause.text);
+      });
+    if (refs.length === 0 || !safetyOk) {
+      decisions.add('gate.causes.unsupportedDropped');
+      continue;
+    }
+    causes.push({ text: cause.text, evidenceRefs: refs });
+  }
 
-  // 5. Решенията „ако X → A“ остават само ако има поне една запазена стъпка.
-  const decisionPoints = kept.length > 0 ? draft.decisionPoints : [];
+  // 5. Решенията „ако X → A“: само ако има запазена стъпка, и без нищо, което Gate би махнал
+  // като стъпка (нямат референции, затова и действие по безопасност не минава).
+  const decisionPoints = (kept.length > 0 ? draft.decisionPoints : []).filter((dp) => {
+    const verdict = screenText(`${dp.condition} ${dp.then}`);
+    if (verdict.bypass || verdict.actionClass === 'DIRECT_COMMAND') {
+      blockForText('gate.decisionPoint.withheld');
+      return false;
+    }
+    if (verdict.actionClass === 'SAFETY_RELEVANT' || verdict.actionClass === 'CONFIGURATIVE') {
+      decisions.add('gate.decisionPoint.withheld');
+      return false;
+    }
+    return true;
+  });
 
   // 6. Увереност и изход по прага (§8.3) — моделът не може да ги вдигне.
   const caps = capsFor(input.level);
@@ -236,10 +239,18 @@ export function applyGate(input: GateInput): DiagnosticAnswer {
   // 7. Конфликтите — от търсенето (детерминистично) + от модела, ако са с валидни референции.
   const conflicts = [
     ...retrieval.conflicts,
-    ...draft.conflicts.filter((c) => c.refs.every((r) => byRef.has(r))),
+    ...draft.conflicts
+      .filter((c) => c.refs.every((r) => byRef.has(r)))
+      .map((c) => ({ description: screened(c.description, true), refs: c.refs })),
   ];
 
-  // 8. Източниците, които стигат до техника: цитираните и реално подкрепящите.
+  // 8. Свободният текст към техника — преди да се фиксират нивото на безопасност и ескалацията.
+  const summary = screened(draft.summary, true);
+  const confidenceReason = screened(draft.confidenceReason, true);
+  const escalationReason = screened(draft.escalation.reason, true);
+  const safetyNotes = draft.safetyNotes.map((n) => screened(n, false));
+
+  // 9. Източниците, които стигат до техника: цитираните и реално подкрепящите.
   const used = new Set<string>([
     ...verifiedQuotes.keys(),
     ...kept.flatMap((k) => k.evidenceRefs),
@@ -255,18 +266,19 @@ export function applyGate(input: GateInput): DiagnosticAnswer {
     generatedBy: 'ai',
     status,
     confidence,
-    confidenceReason: draft.confidenceReason,
-    summary: draft.summary,
+    confidenceReason,
+    summary,
     causes,
     checks: kept,
     decisionPoints,
     evidence,
     conflicts,
-    safety: { level: safety, notes: draft.safetyNotes },
+    // Предупреждение, което споменава мост („никога не мостете…“), се заменя с код, но не блокира.
+    safety: { level: safety, notes: safetyNotes },
     missingData: [...missing],
     escalation: {
       recommended: escalate,
-      reason: draft.escalation.reason,
+      reason: escalationReason,
       collect: escalate ? collectFor(context) : [],
     },
     gate: {
@@ -276,6 +288,7 @@ export function applyGate(input: GateInput): DiagnosticAnswer {
       decisions: [...decisions],
     },
     knowledgeSnapshotId: input.knowledgeSnapshotId,
-    promptVersion: input.promptVersion,
+    // AC-09: версията на промпта И на правилата на Gate, дали отговора.
+    promptVersion: `${input.promptVersion}+${GATE_VERSION}`,
   };
 }

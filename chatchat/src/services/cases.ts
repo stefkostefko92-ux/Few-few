@@ -1,6 +1,7 @@
 import { Prisma, type PrismaClient, type Case } from '@prisma/client';
 import { randomInt } from 'node:crypto';
-import { can } from '../auth/rbac.js';
+import { can, coversAudiences } from '../auth/rbac.js';
+import type { Audience } from '../retrieval/types.js';
 import type { Principal } from '../auth/sessions.js';
 import { DiagnosticContextSchema, type DiagnosticContext } from '../domain/context.js';
 import type { DiagnosticAnswer } from '../domain/response.js';
@@ -24,6 +25,17 @@ export async function findCaseFor(
   return db.case.findFirst({ where: { AND: [{ id: caseId }, caseWhereFor(p)] } });
 }
 
+/**
+ * Променя случая (контекст, изход) само участник — създателят или поелият го оператор.
+ * `case:readAll` е право за ЧЕТЕНЕ (триаж, одит), не за затваряне на чужд случай.
+ */
+export function isParticipant(
+  p: Principal,
+  c: Pick<Case, 'createdById' | 'assignedToId'>,
+): boolean {
+  return c.createdById === p.user.id || c.assignedToId === p.user.id;
+}
+
 export function contextOf(c: Pick<Case, 'context'>): DiagnosticContext {
   return DiagnosticContextSchema.parse(c.context);
 }
@@ -33,16 +45,21 @@ export function humanNumber(prefix: 'CASE' | 'TS', now = new Date()): string {
   return `${prefix}-${now.getUTCFullYear()}-${String(randomInt(0, 1_000_000)).padStart(6, '0')}`;
 }
 
+/** Нарушен уникален индекс, който включва полето `field` (P2002). */
+export function isUniqueOn(err: unknown, field: string): boolean {
+  return (
+    err instanceof Prisma.PrismaClientKnownRequestError &&
+    err.code === 'P2002' &&
+    JSON.stringify(err.meta ?? {}).includes(field)
+  );
+}
+
 export async function withUniqueRetry<T>(create: () => Promise<T>, attempts = 5): Promise<T> {
   for (let i = 1; ; i += 1) {
     try {
       return await create();
     } catch (err) {
-      const unique =
-        err instanceof Prisma.PrismaClientKnownRequestError &&
-        err.code === 'P2002' &&
-        JSON.stringify(err.meta ?? {}).includes('number');
-      if (!unique || i >= attempts) throw err;
+      if (!isUniqueOn(err, 'number') || i >= attempts) throw err;
     }
   }
 }
@@ -67,12 +84,25 @@ export async function addTimeline(
  * проверките, които AI е предложил, консултираните източници, решенията на Safety Gate и
  * липсващите данни — техникът не въвежда нищо повторно.
  */
-export async function buildTicketSummary(db: PrismaClient, c: Case) {
-  const aiMessages = await db.caseMessage.findMany({
-    where: { caseId: c.id, kind: 'AI' },
-    orderBy: { createdAt: 'asc' },
-    select: { id: true, payload: true, knowledgeSnapshotId: true, createdAt: true },
-  });
+export async function buildTicketSummary(
+  db: PrismaClient,
+  c: Case,
+  readerAudiences: readonly Audience[],
+) {
+  // Само отговорите, които авторът на тикета вижда — обобщението не разширява достъпа.
+  const aiMessages = (
+    await db.caseMessage.findMany({
+      where: { caseId: c.id, kind: 'AI' },
+      orderBy: { createdAt: 'asc' },
+      select: {
+        id: true,
+        payload: true,
+        knowledgeSnapshotId: true,
+        createdAt: true,
+        audiences: true,
+      },
+    })
+  ).filter((m) => coversAudiences(readerAudiences, m.audiences));
   const humanCount = await db.caseMessage.count({ where: { caseId: c.id, kind: 'HUMAN' } });
   const answers = aiMessages
     .map((m) => ({ id: m.id, at: m.createdAt, answer: m.payload as DiagnosticAnswer | null }))
@@ -98,6 +128,9 @@ export async function buildTicketSummary(db: PrismaClient, c: Case) {
     aiAnswers: answers.length,
     lastAnswer: last
       ? {
+          // AI Act чл. 50(2): генерираното от AI е маркирано и в тикета.
+          generatedBy: 'ai' as const,
+          promptVersion: last.promptVersion,
           status: last.status,
           confidence: last.confidence,
           summary: last.summary,

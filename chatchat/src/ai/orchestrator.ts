@@ -10,7 +10,13 @@ import type {
 import type { Config } from '../config.js';
 import type { DiagnosticContext } from '../domain/context.js';
 import type { DiagnosticAnswer, ModelDiagnosis } from '../domain/response.js';
-import { evidenceLevel, retrieve, versionOf } from '../retrieval/retrieve.js';
+import {
+  cappedLevel,
+  caseIdentifiers,
+  evidenceLevel,
+  retrieve,
+  versionOf,
+} from '../retrieval/retrieve.js';
 import type { EvidenceItem, KnowledgeStore, SearchScope } from '../retrieval/types.js';
 import { noEvidenceAnswer } from '../safety/escalation.js';
 import { applyGate } from '../safety/gate.js';
@@ -119,7 +125,8 @@ export async function diagnose(
     retrieve(deps.store, request),
     deps.snapshotId(),
   ]);
-  const initialLevel = evidenceLevel(initial);
+  const caseIds = caseIdentifiers(input.context, input.question);
+  const initialLevel = evidenceLevel(initial, caseIds);
   const usage = { inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, toolRounds: 0 };
 
   // 1. Нищо съвместимо → без модела: нищо не може да бъде измислено (AC-04, NFR-05).
@@ -278,7 +285,7 @@ export async function diagnose(
 
   // 4–5. Финалният пакет (нивото и конфликтите — наново) → Safety Gate.
   const retrieval = pack.result();
-  const level = evidenceLevel(retrieval);
+  const level = cappedLevel(initialLevel, evidenceLevel(retrieval, caseIds));
   const answer = applyGate({
     draft: draft ?? safeDraft(failure),
     retrieval,

@@ -97,6 +97,10 @@ export const BYPASS_ALONE: readonly string[] = [
   String.raw`байпас\p{L}*(?! клапан)`,
   String.raw`(?:дай|дайте|даваш|давам|свържи|свържете|сложи|сложете) (?:накъсо|на късо)`,
   String.raw`без (?:защити|защитите|предпазн\p{L}* верига(?:та)?|верига(?:та)? за безопасност)`,
+  // DE/FR/ES — само най-очевидните; отговорите са на IT/EN/BG, но изходът на модела е недоверен
+  String.raw`u(?:e)?berbr(?:u|ue)ck\p{L}*`,
+  String.raw`pont(?:er|age|ez|ons)|shunter`,
+  String.raw`puente(?:ar|o|a|an)\p{L}*`,
 ];
 
 /** Глаголи за изключване/мостване — само с защитен обект до тях. */
@@ -118,6 +122,8 @@ export const BYPASS_OBJECTS: readonly string[] = [
   // голите думи важат само до глагол за изключване
   String.raw`contatt\p{L}*|(?:le|la|una|ogni|tutte le|alcune) sicurezz\p{L}*|protezion\p{L}*|dispositiv\p{L}* di sicurezza`,
   String.raw`(?:the|a|any|all) safet(?:y|ies)|safety (?:device|function|switch|contact)s?|contacts?|protection`,
+  // в този занаят голата „верига“ до глагол за мост е веригата за безопасност
+  String.raw`(?:the )?chain|(?:la )?catena|верига(?:та)?`,
   String.raw`защит(?:ата|ите)|защитн\p{L}* (?:устройств\p{L}*|функци\p{L}*|контакт\p{L}*)|предпазн\p{L}* (?:устройств\p{L}*|контакт\p{L}*)`,
 ];
 

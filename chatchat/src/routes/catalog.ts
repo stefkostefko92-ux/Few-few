@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { rateLimit } from 'express-rate-limit';
 import { z } from 'zod';
 import type { AppDeps } from '../app.js';
 import { apiError, principalOf, requireUser } from '../auth/guards.js';
@@ -22,7 +23,16 @@ const PageParams = z.object({
 
 export function catalogRouter(deps: AppDeps): Router {
   const router = Router();
-  router.use(requireUser);
+  // Справките са евтини, но изброяването на сериини номера/кодове не бива да е безплатно.
+  const lookupLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    limit: 120,
+    standardHeaders: 'draft-8',
+    legacyHeaders: false,
+    keyGenerator: (req) => req.principal?.user.id ?? 'anonymous',
+    handler: (_req, res) => apiError(res, 429, 'too_many_requests'),
+  });
+  router.use(['/products', '/devices', '/errors', '/documents'], requireUser, lookupLimiter);
 
   router.get('/products/search', async (req, res, next) => {
     try {

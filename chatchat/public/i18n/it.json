@@ -67,7 +67,7 @@
   "ticketstatus.IN_PROGRESS": "in lavorazione",
   "ticketstatus.WAITING": "in attesa",
   "ticketstatus.CLOSED": "chiuso",
-  "disclaimer.text": "L’assistente è un supporto decisionale. La responsabilità delle operazioni sul quadro e della messa in sicurezza resta in capo al tecnico e alle procedure aziendali.",
+  "disclaimer.text": "Sta interagendo con un sistema di intelligenza artificiale (AI). Le risposte possono contenere errori: le verifichi sulle fonti citate. L’assistente è un supporto decisionale e non sostituisce le procedure del costruttore né le norme di sicurezza; le decisioni e gli interventi sul quadro, inclusa la messa in sicurezza dell’impianto, restano in capo al tecnico e alle procedure aziendali.",
   "chat.emptyTitle": "Nessun caso aperto",
   "chat.emptyText": "Apra un nuovo caso indicando modello, revisione e codice errore del quadro.",
   "chat.log": "Conversazione",
@@ -212,5 +212,12 @@
   "code.collect.eventLog": "Registro eventi del quadro",
   "code.collect.serial": "Numero di serie del quadro",
   "code.collect.firmware": "Versione firmware",
-  "code.collect.hardwareRevision": "Revisione hardware"
+  "code.collect.hardwareRevision": "Revisione hardware",
+  "login.aiNotice": "ChatChat utilizza un assistente di intelligenza artificiale (AI) a supporto della diagnosi.",
+  "chat.privacyHint": "Non inserisca dati personali (nomi, indirizzi, telefoni, dati sanitari).",
+  "footer.privacy": "Informativa privacy",
+  "code.gate.textWithheld": "Testo non mostrato: conteneva un’indicazione non consentita dal controllo di sicurezza",
+  "code.gate.audienceWithheld": "Risposta non visibile con il Suo ruolo: cita documenti riservati",
+  "code.gate.causes.withheld": "Una causa proposta è stata rimossa dal controllo di sicurezza",
+  "code.gate.decisionPoint.withheld": "Un passaggio condizionale è stato rimosso: richiede una procedura documentata"
 }

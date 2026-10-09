@@ -1,0 +1,17 @@
+node_modules
+dist
+.env
+.env.*
+!.env.example
+*.log
+# ключ на GCP service account — само на сървъра, никога в образа
+gcp-sa*.json
+*-sa.json
+*.pem
+tests
+coverage
+.git
+Dockerfile
+docker-compose.yml
+DEPLOY.md
+deploy

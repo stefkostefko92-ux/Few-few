@@ -33,6 +33,7 @@
       <div class="login-card">
         <h1 class="brand brand-lg">ChatChat</h1>
         <p class="login-sub" data-i18n="app.subtitle">Workspace tecnico</p>
+        <p class="login-ai" data-i18n="login.aiNotice"></p>
         <form id="login-form" novalidate>
           <div class="field">
             <label for="login-email" data-i18n="login.email">Email</label>
@@ -228,6 +229,7 @@
                 <label for="composer-text" data-i18n="chat.label"
                   >Descrivi cosa vedi sul quadro</label
                 >
+                <p class="composer-hint" data-i18n="chat.privacyHint"></p>
                 <textarea
                   id="composer-text"
                   name="text"
@@ -251,6 +253,9 @@
 
       <footer class="foot">
         <small>
+          <a id="privacy-link" class="privacy-link" hidden target="_blank" rel="noopener"
+            ><span data-i18n="footer.privacy">Informativa privacy</span></a
+          >
           Created and Designed by
           <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a>
         </small>

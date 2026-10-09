@@ -92,6 +92,7 @@ export function readCookie(req: Request, name: string): string | null {
 export function loadPrincipal(deps: SessionDeps) {
   return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
     try {
+      if (req.principal) return next();
       const token = readCookie(req, SESSION_COOKIE);
       if (!token) return next();
       const session = await deps.db.session.findUnique({

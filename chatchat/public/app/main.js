@@ -41,7 +41,23 @@ async function changeLang(l) {
   renderCases();
 }
 
+/** Връзката към информацията за поверителност (по чл. 13/14 GDPR), ако администраторът я е дал. */
+async function loadMeta() {
+  try {
+    const meta = await api('GET', '/meta');
+    const url = typeof meta?.privacyUrl === 'string' ? meta.privacyUrl : '';
+    if (/^https:\/\//.test(url)) {
+      const link = $('#privacy-link');
+      link.href = url;
+      show(link, true);
+    }
+  } catch {
+    // Без мета данни приложението работи; връзката просто не се показва.
+  }
+}
+
 async function init() {
+  void loadMeta();
   let session = null;
   try {
     session = await api('GET', '/auth/me');

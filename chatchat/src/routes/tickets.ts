@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import type { AppDeps } from '../app.js';
 import { appendAudit } from '../audit.js';
+import { redactPii } from '../domain/pii.js';
 import {
   apiError,
   principalOf,
@@ -15,8 +16,10 @@ import {
   buildTicketSummary,
   findCaseFor,
   humanNumber,
+  isUniqueOn,
   withUniqueRetry,
 } from '../services/cases.js';
+import { caseAudiences } from '../auth/rbac.js';
 
 /** Ескалация с тикет (FR-09, AC-08) и обратна връзка върху AI отговор (FR-10). */
 
@@ -39,33 +42,46 @@ export function ticketsRouter(deps: AppDeps): Router {
       const p = principalOf(req);
       const c = await findCaseFor(deps.db, p, parsed.data.caseId);
       if (!c) return apiError(res, 404, 'not_found');
+      if (c.status === 'RESOLVED') return apiError(res, 409, 'case_closed');
       const existing = await deps.db.ticket.findUnique({ where: { caseId: c.id } });
       if (existing) return apiError(res, 409, 'ticket_exists');
-      const summary = await buildTicketSummary(deps.db, c);
-      const ticket = await withUniqueRetry(() =>
-        deps.db.ticket.create({
-          data: {
-            caseId: c.id,
-            number: humanNumber('TS'),
-            reason: parsed.data.reason,
-            summary: summary as unknown as Prisma.InputJsonValue,
-            createdById: p.user.id,
-          },
-        }),
-      );
-      await deps.db.case.update({
-        where: { id: c.id },
-        data: { status: 'WAITING_TECHNICIAN', outcome: 'ESCALATED' },
-      });
-      await addTimeline(deps.db, c.id, 'ticket.created', p.user.id, { number: ticket.number });
-      await appendAudit(deps.db, {
-        tenantId: p.user.tenantId,
-        actorId: p.user.id,
-        action: 'ticket.create',
-        objectType: 'ticket',
-        objectId: ticket.id,
-        detail: { caseId: c.id },
-      });
+      const summary = await buildTicketSummary(deps.db, c, caseAudiences(p.user.role, c.portal));
+      // Тикет + ескалиран случай + хронология + одит — всичко или нищо. Повторът при съвпаднал
+      // номер е около цялата транзакция (грешка в Postgres прекратява текущата).
+      let ticket;
+      try {
+        ticket = await withUniqueRetry(() =>
+          deps.db.$transaction(async (tx) => {
+            const created = await tx.ticket.create({
+              data: {
+                caseId: c.id,
+                number: humanNumber('TS'),
+                reason: redactPii(parsed.data.reason),
+                summary: summary as unknown as Prisma.InputJsonValue,
+                createdById: p.user.id,
+              },
+            });
+            await tx.case.update({
+              where: { id: c.id },
+              data: { status: 'WAITING_TECHNICIAN', outcome: 'ESCALATED' },
+            });
+            await addTimeline(tx, c.id, 'ticket.created', p.user.id, { number: created.number });
+            await appendAudit(tx, {
+              tenantId: p.user.tenantId,
+              actorId: p.user.id,
+              action: 'ticket.create',
+              objectType: 'ticket',
+              objectId: created.id,
+              detail: { caseId: c.id },
+            });
+            return created;
+          }),
+        );
+      } catch (err) {
+        // Паралелна заявка за същия случай вече създаде тикета.
+        if (isUniqueOn(err, 'caseId')) return apiError(res, 409, 'ticket_exists');
+        throw err;
+      }
       res.status(201).json({
         ticket: { number: ticket.number, status: ticket.status, summary },
       });
@@ -92,9 +108,12 @@ export function ticketsRouter(deps: AppDeps): Router {
           messageId: message.id,
           userId: p.user.id,
           rating: parsed.data.rating,
-          comment: parsed.data.comment ?? null,
+          comment: parsed.data.comment ? redactPii(parsed.data.comment) : null,
         },
-        update: { rating: parsed.data.rating, comment: parsed.data.comment ?? null },
+        update: {
+          rating: parsed.data.rating,
+          comment: parsed.data.comment ? redactPii(parsed.data.comment) : null,
+        },
       });
       await addTimeline(deps.db, c.id, 'feedback', p.user.id, {
         messageId: message.id,

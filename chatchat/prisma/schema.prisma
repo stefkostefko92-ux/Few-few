@@ -433,6 +433,9 @@ model CaseMessage {
   promptVersion       String?
   /// Идентификатор от клиента за идемпотентно изпращане (NFR-12): повтор не дублира съобщението.
   clientMessageId     String?
+  /// Аудиториите, с които е търсено за този AI отговор. Читател без всички тях не вижда
+  /// съдържанието (цитати от вътрешни/инженерни документи не изтичат към по-тесни роли).
+  audiences           Audience[]  @default([])
   createdAt           DateTime    @default(now())
 
   case              Case               @relation(fields: [caseId], references: [id], onDelete: Cascade)
@@ -499,7 +502,8 @@ model Ticket {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
-  case Case @relation(fields: [caseId], references: [id], onDelete: Restrict)
+  /// Cascade: ретенцията изтрива затворения случай заедно с тикета (GDPR чл. 5(1)(e)).
+  case Case @relation(fields: [caseId], references: [id], onDelete: Cascade)
 
   @@index([ownerId])
 }

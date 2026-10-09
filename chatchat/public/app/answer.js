@@ -48,8 +48,8 @@ export function renderAnswer(message, { onOpenSource, onOpenTicket, onFeedback, 
   );
 
   if (!p || typeof p !== 'object') {
-    root.append(h('p', { class: 'msg-text' }, str(message.body)));
-    root.append(feedbackRow(message, onFeedback, rated));
+    // Без payload: съдържанието е скрито за ролята (gate.audienceWithheld) — тялото е код.
+    root.append(h('p', { class: 'msg-text' }, str(tMaybeCode(message.body))));
     return root;
   }
 

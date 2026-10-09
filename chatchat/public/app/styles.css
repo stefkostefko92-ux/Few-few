@@ -307,7 +307,18 @@ textarea::placeholder {
 }
 .login-sub {
   color: var(--ink-2);
+  margin-bottom: 0.75rem;
+}
+/* AI Act чл. 50: техникът знае, че говори с AI, още преди входа. */
+.login-ai {
+  color: var(--ink-2);
+  font-size: 0.875rem;
   margin-bottom: 1.5rem;
+}
+.composer-hint {
+  color: var(--ink-2);
+  font-size: 0.875rem;
+  margin: 0.25rem 0 0.5rem;
 }
 .login-lang {
   display: flex;
@@ -383,6 +394,9 @@ textarea::placeholder {
   border-top: 1px solid var(--line);
   color: var(--ink-2);
   text-align: center;
+}
+.privacy-link {
+  margin-right: 1rem;
 }
 
 .only-narrow {

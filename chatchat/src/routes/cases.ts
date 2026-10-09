@@ -10,13 +10,14 @@ import {
   requireCsrf,
   requireUser,
 } from '../auth/guards.js';
-import { can } from '../auth/rbac.js';
-import { DiagnosticContextSchema } from '../domain/context.js';
+import { AUDIENCE_WITHHELD, can, caseAudiences, coversAudiences } from '../auth/rbac.js';
+import { DiagnosticContextSchema, redactContext } from '../domain/context.js';
 import {
   addTimeline,
   caseWhereFor,
   findCaseFor,
   humanNumber,
+  isParticipant,
   withUniqueRetry,
 } from '../services/cases.js';
 
@@ -75,7 +76,7 @@ export function casesRouter(deps: AppDeps): Router {
       const parsed = CreateCase.safeParse(req.body);
       if (!parsed.success) return apiError(res, 400, 'invalid_input');
       const p = principalOf(req);
-      let context = parsed.data.context;
+      let context = redactContext(parsed.data.context);
       let deviceId: string | null = null;
       if (parsed.data.deviceSerial) {
         const device = await deps.db.device.findUnique({
@@ -152,17 +153,21 @@ export function casesRouter(deps: AppDeps): Router {
         ).map((u) => [u.id, u.name]),
       );
       const ticket = await deps.db.ticket.findUnique({ where: { caseId: c.id } });
+      const reader = caseAudiences(p.user.role, c.portal);
       res.json({
         case: caseView(c),
         ticket: ticket ? { number: ticket.number, status: ticket.status } : null,
-        messages: messages.map((m) => ({
-          id: m.id,
-          kind: m.kind,
-          authorName: m.authorId ? (authors.get(m.authorId) ?? null) : null,
-          body: m.body,
-          payload: m.payload,
-          createdAt: m.createdAt,
-        })),
+        messages: messages.map((m) => {
+          const visible = m.kind !== 'AI' || coversAudiences(reader, m.audiences);
+          return {
+            id: m.id,
+            kind: m.kind,
+            authorName: m.authorId ? (authors.get(m.authorId) ?? null) : null,
+            body: visible ? m.body : AUDIENCE_WITHHELD,
+            payload: visible ? m.payload : null,
+            createdAt: m.createdAt,
+          };
+        }),
       });
     } catch (err) {
       next(err);
@@ -178,6 +183,7 @@ export function casesRouter(deps: AppDeps): Router {
       const p = principalOf(req);
       const c = await findCaseFor(deps.db, p, id.data);
       if (!c) return apiError(res, 404, 'not_found');
+      if (!isParticipant(p, c)) return apiError(res, 403, 'forbidden');
       if (c.status === 'RESOLVED') return apiError(res, 409, 'case_closed');
       const product = await deps.db.product.findUnique({
         where: {
@@ -187,7 +193,7 @@ export function casesRouter(deps: AppDeps): Router {
       if (!product) return apiError(res, 422, 'unknown_product');
       const updated = await deps.db.case.update({
         where: { id: c.id },
-        data: { context: body.data.context as Prisma.InputJsonValue },
+        data: { context: redactContext(body.data.context) as Prisma.InputJsonValue },
       });
       await addTimeline(deps.db, c.id, 'context.updated', p.user.id, {
         from: c.context,
@@ -208,6 +214,8 @@ export function casesRouter(deps: AppDeps): Router {
       const p = principalOf(req);
       const c = await findCaseFor(deps.db, p, id.data);
       if (!c) return apiError(res, 404, 'not_found');
+      if (!isParticipant(p, c)) return apiError(res, 403, 'forbidden');
+      if (c.status === 'RESOLVED') return apiError(res, 409, 'case_closed');
       const resolved = body.data.outcome === 'RESOLVED';
       const updated = await deps.db.case.update({
         where: { id: c.id },
@@ -233,7 +241,7 @@ export function casesRouter(deps: AppDeps): Router {
   });
 
   // FR-19: оператор поема случая — AI → човек, със същата история и контекст.
-  router.post('/cases/:id/assign', requireCapability('case:readAll'), async (req, res, next) => {
+  router.post('/cases/:id/assign', requireCapability('case:assign'), async (req, res, next) => {
     try {
       const id = Id.safeParse(req.params.id);
       if (!id.success) return apiError(res, 400, 'invalid_input');

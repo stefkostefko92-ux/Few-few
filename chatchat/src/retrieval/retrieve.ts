@@ -1,3 +1,4 @@
+import type { DiagnosticContext } from '../domain/context.js';
 import { canonicalIdentifier, normalizeQuery } from '../domain/normalize.js';
 import type { EvidenceLevel } from '../domain/response.js';
 import { isApplicable, type ProductVersion } from '../domain/versions.js';
@@ -39,16 +40,21 @@ export function baseScore(matchedBy: MatchKind[], fulltextShare: number): number
   return 0.7 * fulltextShare;
 }
 
+/** Идентификаторите на СЛУЧАЯ: от въпроса и кода в контекста (без самия модел). */
+export function caseIdentifiers(context: DiagnosticContext, query: string): Set<string> {
+  const identifiers = new Set(normalizeQuery(query).identifiers);
+  if (context.errorCode) identifiers.add(canonicalIdentifier(context.errorCode));
+  // „LTX-500“ във въпроса е самият модел, не код или клема.
+  identifiers.delete(canonicalIdentifier(context.productModel));
+  return identifiers;
+}
+
 export async function retrieve(
   store: KnowledgeStore,
   req: RetrievalRequest,
 ): Promise<RetrievalResult> {
   const normalized = normalizeQuery(req.query);
-  const identifiers = new Set(normalized.identifiers);
-  if (req.context.errorCode) identifiers.add(canonicalIdentifier(req.context.errorCode));
-  // „LTX-500“ във въпроса е самият модел, не код или клема.
-  identifiers.delete(canonicalIdentifier(req.context.productModel));
-  const ids = [...identifiers];
+  const ids = [...caseIdentifiers(req.context, req.query)];
   const model = req.context.productModel;
 
   const [errors, byRef, fulltext] = await Promise.all([
@@ -155,13 +161,39 @@ export function findConflicts(items: EvidenceItem[]): RetrievalResult['conflicts
  *  conflict — противоречие между съвместими източници → без автоматична сигурност
  *  none     — нищо съвместимо → ескалация или искане на нови данни
  */
-export function evidenceLevel(result: RetrievalResult): EvidenceLevel {
+export function evidenceLevel(
+  result: RetrievalResult,
+  caseIds?: ReadonlySet<string>,
+): EvidenceLevel {
   const applicable = result.items.filter((i) => i.applicable);
   if (applicable.length === 0) return 'none';
   if (result.conflicts.length > 0) return 'conflict';
-  if (applicable.some((i) => i.kind === 'error' && i.matchedBy.includes('exact_code'))) {
-    return 'strong';
-  }
+  // „Точен код“ е кодът на СЛУЧАЯ — не всеки код, който моделът е потърсил с инструмент.
+  const strong = applicable.some(
+    (i) =>
+      i.kind === 'error' &&
+      i.matchedBy.includes('exact_code') &&
+      i.errorCode !== null &&
+      (caseIds === undefined || caseIds.has(canonicalIdentifier(i.errorCode))),
+  );
+  if (strong) return 'strong';
   const docs = new Set(applicable.filter((i) => i.score >= 0.35).map((i) => i.documentId));
   return docs.size >= 2 ? 'high' : 'weak';
+}
+
+const LEVEL_RANK: Readonly<Record<EvidenceLevel, number>> = {
+  none: 0,
+  weak: 1,
+  conflict: 1,
+  high: 2,
+  strong: 3,
+};
+
+/**
+ * Нивото след инструментите не може да е по-високо от началното (моделът сам си избира какво
+ * да търси), освен „strong“ — то е възможно само с кода на случая. Конфликт и „none“ се пазят.
+ */
+export function cappedLevel(initial: EvidenceLevel, final: EvidenceLevel): EvidenceLevel {
+  if (final === 'strong' || final === 'conflict') return final;
+  return LEVEL_RANK[final] > LEVEL_RANK[initial] ? initial : final;
 }

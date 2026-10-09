@@ -36,6 +36,7 @@
     "prisma:migrate": "prisma migrate deploy",
     "tenant:create": "node dist/cli/tenant.js tenant",
     "user:create": "node dist/cli/tenant.js user",
+    "retention": "node dist/cli/retention.js",
     "gate": "npm run lint && npm run typecheck && npm test && npm run build"
   },
   "dependencies": {

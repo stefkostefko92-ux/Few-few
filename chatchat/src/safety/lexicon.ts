@@ -106,11 +106,57 @@ export function foldText(value: string): string {
   return value.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
 }
 
-/** Сгъване + еднакви апострофи и интервали (шаблоните са с единичен интервал). */
+/**
+ * Хомоглифи (Unicode confusables), които изглеждат като латински букви след toLowerCase —
+ * кирилица и гръцки. Прилагат се само върху смесени думи (виж `unmixScripts`), за да не
+ * пипаме истинския български текст.
+ */
+const TO_LATIN: Readonly<Record<string, string>> = {
+  а: 'a', е: 'e', о: 'o', р: 'p', с: 'c', у: 'y', х: 'x', і: 'i', ј: 'j', ѕ: 's', к: 'k',
+  ԁ: 'd', һ: 'h', ӏ: 'l', ԛ: 'q', ԝ: 'w', в: 'b', м: 'm', н: 'h', т: 't',
+  α: 'a', ο: 'o', ρ: 'p', ε: 'e', ι: 'i', κ: 'k', ν: 'v', τ: 't', υ: 'u', χ: 'x',
+}; // prettier-ignore
+/** Обратното: латински букви, вмъкнати в кирилска дума („мocт“ с латински o, c). */
+const TO_CYRILLIC: Readonly<Record<string, string>> = {
+  a: 'а', b: 'в', c: 'с', e: 'е', h: 'н', k: 'к', m: 'м', o: 'о', p: 'р', t: 'т', x: 'х', y: 'у',
+}; // prettier-ignore
+
+const LATIN = /\p{Script=Latin}/u;
+const NON_LATIN_LETTER = /[\p{Script=Cyrillic}\p{Script=Greek}]/u;
+
+/** Смесена дума → в писмеността на мнозинството ѝ букви („ponticellаre“ с кирилско „а“). */
+function unmixScripts(text: string): string {
+  return text.replace(/[\p{L}]+/gu, (word) => {
+    let latin = 0;
+    let other = 0;
+    for (const ch of word) {
+      if (LATIN.test(ch)) latin += 1;
+      else if (NON_LATIN_LETTER.test(ch)) other += 1;
+    }
+    if (latin === 0 || other === 0) return word;
+    const map = latin >= other ? TO_LATIN : TO_CYRILLIC;
+    return [...word].map((ch) => map[ch] ?? ch).join('');
+  });
+}
+
+/**
+ * Сгъване срещу заобикаляне (червен екип, OWASP LLM01): NFKC (широки/лигатури), махане на
+ * невидимите форматиращи знаци (zero-width, мек пренос, bidi, BOM), смесени писмености,
+ * еднакви апострофи и интервали, слепване на разредени букви („p o n t i c e l l a r e“).
+ */
 function prepare(value: string): string {
-  return foldText(value)
+  const visible = value.normalize('NFKC').replace(/\p{Cf}/gu, '');
+  return unmixScripts(foldText(visible))
     .replace(/[’`´]/gu, "'")
-    .replace(/[^\S\n]+/gu, ' ');
+    .replace(/[^\S\n]+/gu, ' ')
+    .replace(/(?<![\p{L}\p{N}])(?:\p{L}[ ._*·-]){3,}\p{L}(?![\p{L}\p{N}])/gu, (m) =>
+      m.replace(/[ ._*·-]/gu, ''),
+    );
+}
+
+/** Втори вариант за проверка: разделители между букви в една дума („ponti-cellare“, „by.pass“). */
+function squash(prepared: string): string {
+  return prepared.replace(/(?<=\p{L})[._*·/|\\-]+(?=\p{L})/gu, '');
 }
 
 export interface Classification {
@@ -120,11 +166,12 @@ export interface Classification {
 
 /** Най-строгият клас, който речникът открива в текста; INFORMATIVE ако нищо не съвпада. */
 export function classifyActionText(text: string): Classification {
-  const folded = prepare(text);
+  const prepared = prepare(text);
+  const variants = [prepared, squash(prepared)];
   let actionClass: ActionClass = 'INFORMATIVE';
   const matched: string[] = [];
   for (const rule of RULES) {
-    const hit = rule.pattern.exec(folded);
+    const hit = variants.map((v) => rule.pattern.exec(v)).find((h) => h !== null);
     if (!hit) continue;
     matched.push(hit[0]);
     if (actionClass === 'INFORMATIVE') actionClass = rule.actionClass;
@@ -137,6 +184,7 @@ export function classifyActionText(text: string): Classification {
  * Не е нужен глагол на молба — самото споменаване на мост/байпас на защита стига.
  */
 export function detectBypassIntent(text: string): { bypass: boolean; matched: string[] } {
-  const hit = BYPASS_RULE.pattern.exec(prepare(text));
+  const prepared = prepare(text);
+  const hit = BYPASS_RULE.pattern.exec(prepared) ?? BYPASS_RULE.pattern.exec(squash(prepared));
   return hit ? { bypass: true, matched: [hit[0]] } : { bypass: false, matched: [] };
 }

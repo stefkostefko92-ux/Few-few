@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { redactPii } from './pii.js';
 
 /**
  * Диагностичният контекст (§10.1). Задължителен за всеки случай (FR-02) и винаги видим в UI;
@@ -31,6 +32,15 @@ export const DiagnosticContextSchema = z.object({
 });
 
 export type DiagnosticContext = z.infer<typeof DiagnosticContextSchema>;
+
+/** Свободните полета на контекста без лични данни (имейл, телефон…) — преди запис. */
+export function redactContext(ctx: DiagnosticContext): DiagnosticContext {
+  return {
+    ...ctx,
+    symptoms: ctx.symptoms.map(redactPii),
+    observations: ctx.observations.map(redactPii),
+  };
+}
 
 /** Кои полета липсват за „точен продуктов контекст“ (§11.2 exact_product_context). */
 export function missingContext(ctx: DiagnosticContext): Array<'hardwareRevision' | 'firmware'> {

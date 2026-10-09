@@ -35,6 +35,7 @@ const app = createApp({
   logger,
   publicOrigin: new URL(config.PUBLIC_BASE_URL).origin,
   trustProxy: config.TRUST_PROXY,
+  privacyPolicyUrl: config.PRIVACY_POLICY_URL,
   sessions: {
     db,
     pepper: config.SESSION_PEPPER,

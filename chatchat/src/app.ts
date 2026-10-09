@@ -4,7 +4,7 @@ import helmet from 'helmet';
 import { fileURLToPath } from 'node:url';
 import type { Logger } from 'pino';
 import type { DiagnoseInput, DiagnoseOutput } from './ai/orchestrator.js';
-import { apiError } from './auth/guards.js';
+import { apiError, requireCapability } from './auth/guards.js';
 import { loadPrincipal, type SessionDeps } from './auth/sessions.js';
 import { adminCatalogRouter } from './routes/admin-catalog.js';
 import { adminDocumentsRouter } from './routes/admin-documents.js';
@@ -23,6 +23,8 @@ export interface AppDeps {
   /** https://chatchat.carbonstealth.eu — за проверката на Origin. */
   publicOrigin: string;
   trustProxy: number;
+  /** Информацията за поверителност на администратора (празно → не се показва връзка). */
+  privacyPolicyUrl: string;
   sessions: SessionDeps;
   /** null → AI е изключен (няма GCP проект): /chat/messages връща 503, без резервен доставчик. */
   diagnose: Diagnoser | null;
@@ -70,8 +72,14 @@ export function createApp(deps: AppDeps): express.Express {
     }
   });
 
-  // Документите с хиляди страници са по-големи — по-високият таван е само за админ пътя.
-  app.use('/api/v1/admin', express.json({ limit: '8mb' }));
+  // Документите с хиляди страници са по-големи — по-високият таван е само за админ пътя и
+  // СЛЕД проверката за роля: анонимен или портален потребител не кара сървъра да парсва 8 MB.
+  app.use(
+    '/api/v1/admin',
+    loadPrincipal(deps.sessions),
+    requireCapability('kb:manage'),
+    express.json({ limit: '8mb' }),
+  );
   app.use('/api', express.json({ limit: '64kb' }));
   app.use('/api', (_req, res, next) => {
     res.setHeader('Cache-Control', 'no-store');
@@ -79,6 +87,10 @@ export function createApp(deps: AppDeps): express.Express {
   });
   app.use('/api', loadPrincipal(deps.sessions));
 
+  // Публично: каквото UI трябва да покаже ПРЕДИ вход (информация за поверителност).
+  app.get('/api/v1/meta', (_req, res) => {
+    res.json({ privacyUrl: deps.privacyPolicyUrl || null });
+  });
   app.use('/api/v1/auth', authRouter(deps));
   app.use('/api/v1/admin', adminCatalogRouter(deps));
   app.use('/api/v1/admin', adminDocumentsRouter(deps));

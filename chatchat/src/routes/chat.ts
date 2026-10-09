@@ -11,9 +11,10 @@ import {
   requireCsrf,
   requireUser,
 } from '../auth/guards.js';
-import { caseAudiences } from '../auth/rbac.js';
+import { caseAudiences, coversAudiences } from '../auth/rbac.js';
 import type { DiagnosticAnswer } from '../domain/response.js';
-import { addTimeline, contextOf, findCaseFor } from '../services/cases.js';
+import { redactPii } from '../domain/pii.js';
+import { addTimeline, contextOf, findCaseFor, isUniqueOn } from '../services/cases.js';
 
 /**
  * §14.1 POST /chat/messages — съобщение в случая и (по подразбиране) диагностика от AI.
@@ -65,43 +66,63 @@ export function chatRouter(deps: AppDeps): Router {
         const parsed = MessageInput.safeParse(req.body);
         if (!parsed.success) return apiError(res, 400, 'invalid_input');
         const p = principalOf(req);
-        const { caseId, text, clientMessageId, askAi } = parsed.data;
+        const { caseId, clientMessageId, askAi } = parsed.data;
+        // Лични данни в свободния текст се маскират ПРЕДИ запис и преди модела (GDPR чл. 5(1)(c)).
+        const text = redactPii(parsed.data.text);
         const c = await findCaseFor(deps.db, p, caseId);
         if (!c) return apiError(res, 404, 'not_found');
         if (c.status === 'RESOLVED') return apiError(res, 409, 'case_closed');
 
-        if (clientMessageId) {
+        /** Повтор със същия clientMessageId: вече записаното, без ново извикване (NFR-12). */
+        const replay = async (id: string) => {
           const prior = await deps.db.caseMessage.findUnique({
-            where: { caseId_clientMessageId: { caseId: c.id, clientMessageId } },
+            where: { caseId_clientMessageId: { caseId: c.id, clientMessageId: id } },
           });
-          if (prior) {
-            const answer = await deps.db.caseMessage.findFirst({
-              where: { caseId: c.id, kind: 'AI', createdAt: { gte: prior.createdAt } },
-              orderBy: { createdAt: 'asc' },
-            });
-            return res.json({
-              message: messageView(prior),
-              answer: answer ? messageView(answer) : null,
-            });
-          }
-        }
+          if (!prior) return false;
+          const answer = await deps.db.caseMessage.findFirst({
+            where: { caseId: c.id, kind: 'AI', createdAt: { gte: prior.createdAt } },
+            orderBy: { createdAt: 'asc' },
+          });
+          res.json({ message: messageView(prior), answer: answer ? messageView(answer) : null });
+          return true;
+        };
+        if (clientMessageId && (await replay(clientMessageId))) return;
 
-        const history = await deps.db.caseMessage.findMany({
-          where: { caseId: c.id, kind: { in: ['HUMAN', 'AI'] } },
-          orderBy: { createdAt: 'desc' },
-          take: HISTORY_MESSAGES,
-          select: { kind: true, body: true },
-        });
-        const message = await deps.db.caseMessage.create({
-          data: {
-            caseId: c.id,
-            kind: 'HUMAN',
-            authorId: p.user.id,
-            body: text,
-            clientMessageId: clientMessageId ?? null,
-          },
-        });
-        await addTimeline(deps.db, c.id, 'message.created', p.user.id, { messageId: message.id });
+        const audiences = caseAudiences(p.user.role, c.portal);
+        // Историята към модела — без AI отговори, търсени с аудитории, които питащият няма.
+        const history = (
+          await deps.db.caseMessage.findMany({
+            where: { caseId: c.id, kind: { in: ['HUMAN', 'AI'] } },
+            orderBy: { createdAt: 'desc' },
+            take: HISTORY_MESSAGES,
+            select: { kind: true, body: true, audiences: true },
+          })
+        ).filter((h) => h.kind !== 'AI' || coversAudiences(audiences, h.audiences));
+        let message;
+        try {
+          message = await deps.db.$transaction(async (tx) => {
+            const created = await tx.caseMessage.create({
+              data: {
+                caseId: c.id,
+                kind: 'HUMAN',
+                authorId: p.user.id,
+                body: text,
+                clientMessageId: clientMessageId ?? null,
+              },
+            });
+            await addTimeline(tx, c.id, 'message.created', p.user.id, { messageId: created.id });
+            return created;
+          });
+        } catch (err) {
+          // Паралелен повтор със същия clientMessageId — първият печели, останалите го виждат.
+          if (
+            clientMessageId &&
+            isUniqueOn(err, 'clientMessageId') &&
+            (await replay(clientMessageId))
+          )
+            return;
+          throw err;
+        }
 
         if (!askAi) return res.status(201).json({ message: messageView(message), answer: null });
         if (!deps.diagnose) return apiError(res, 503, 'ai_unavailable');
@@ -115,10 +136,7 @@ export function chatRouter(deps: AppDeps): Router {
         try {
           result = await deps.diagnose(
             {
-              scope: {
-                tenantId: p.user.tenantId,
-                audiences: caseAudiences(p.user.role, c.portal),
-              },
+              scope: { tenantId: p.user.tenantId, audiences },
               context: contextOf(c),
               question: text,
               history: history.reverse().map((h) => ({
@@ -139,15 +157,28 @@ export function chatRouter(deps: AppDeps): Router {
             objectId: c.id,
             detail: { name: err instanceof Error ? err.name : 'unknown' },
           });
-          deps.logger.warn({ caseId: c.id, err }, 'AI извикването се провали');
+          // Само вид и код — тялото на грешката от доставчика може да носи части от заявката.
+          deps.logger.warn(
+            {
+              caseId: c.id,
+              errName: err instanceof Error ? err.name : 'unknown',
+              status:
+                typeof err === 'object' && err !== null && 'status' in err ? err.status : null,
+            },
+            'AI извикването се провали',
+          );
           return apiError(res, 503, 'ai_unavailable');
         }
 
         const answer: DiagnosticAnswer = result.answer;
+        // Поет от оператор → остава при него; ескалиран с тикет → чака оператора, каквото и да
+        // каже AI; иначе по отговора.
         const status =
           c.status === 'IN_PROGRESS'
             ? 'IN_PROGRESS'
-            : answer.escalation.recommended || answer.status === 'undetermined'
+            : c.outcome === 'ESCALATED' ||
+                answer.escalation.recommended ||
+                answer.status === 'undetermined'
               ? 'WAITING_TECHNICIAN'
               : 'OPEN';
         const aiMessage = await deps.db.$transaction(async (tx) => {
@@ -159,6 +190,7 @@ export function chatRouter(deps: AppDeps): Router {
               payload: answer as unknown as Prisma.InputJsonValue,
               knowledgeSnapshotId: answer.knowledgeSnapshotId,
               promptVersion: answer.promptVersion,
+              audiences: [...audiences],
             },
           });
           if (answer.evidence.length > 0) {
