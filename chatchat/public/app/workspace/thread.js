@@ -46,7 +46,13 @@ export function mountThread(host, convId, { scope, compact = false }) {
   let known = new Set(slot.messages.keys());
   let loadError = '';
 
-  const list = h('ol', { class: 'cmsgs', role: 'log', 'aria-live': 'off', tabindex: '0' });
+  // role=log на обвивка: ролята на <ol> би скрила <li> от списъчната семантика (axe: listitem).
+  const list = h('ol', { class: 'cmsgs' });
+  const scroller = h(
+    'div',
+    { class: 'cmsgs-log', role: 'log', 'aria-live': 'off', tabindex: '0' },
+    list,
+  );
   const state_ = h('p', { class: 'muted chat-hint', role: 'status' });
   const older = h(
     'button',
@@ -79,7 +85,7 @@ export function mountThread(host, convId, { scope, compact = false }) {
     { class: `thread${compact ? ' thread-compact' : ''}` },
     bar,
     older,
-    list,
+    scroller,
     state_,
     composer.el,
   );
@@ -106,7 +112,7 @@ export function mountThread(host, convId, { scope, compact = false }) {
   };
 
   function render({ stick } = {}) {
-    const near = list.scrollHeight - list.scrollTop - list.clientHeight < NEAR_BOTTOM;
+    const near = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < NEAR_BOTTOM;
     const items = visibleItems();
     reconcile(list, cache, items, {
       key: (m) => m.id,
@@ -117,7 +123,7 @@ export function mountThread(host, convId, { scope, compact = false }) {
     state_.hidden = items.length > 0 && !loadError;
     state_.textContent = loadError || (slot.loaded ? t('conv.empty') : t('conv.loading'));
     state_.classList.toggle('form-error', Boolean(loadError));
-    if (stick ?? near) list.scrollTop = list.scrollHeight;
+    if (stick ?? near) scroller.scrollTop = scroller.scrollHeight;
   }
 
   /* ---- събития ---- */
@@ -166,14 +172,14 @@ export function mountThread(host, convId, { scope, compact = false }) {
   }
 
   async function more() {
-    const before = list.scrollHeight;
+    const before = scroller.scrollHeight;
     try {
       await loadOlder(convId);
     } catch (err) {
       loadError = errorText(err);
     }
     render({ stick: false });
-    list.scrollTop += list.scrollHeight - before;
+    scroller.scrollTop += scroller.scrollHeight - before;
   }
 
   async function openThread(rootId) {

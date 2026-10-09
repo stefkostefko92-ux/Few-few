@@ -64,7 +64,12 @@ async function enter(session) {
 
 function showSetup() {
   showScreen('setup');
-  mountMfaSetup($('#setup-host'), { onDone: () => showApp() });
+  mountMfaSetup($('#setup-host'), {
+    onDone: () => {
+      interactiveEntry = true;
+      return showApp();
+    },
+  });
 }
 
 /** Връзка към конзолата само за ролите с административна способност (сървърът пак проверява). */
@@ -83,9 +88,16 @@ async function showAdminLink() {
   }
 }
 
+/** Влязъл е през форма (парола/код): екранът за вход изчезва, а фокусът не бива да остане в нищото. */
+let interactiveEntry = false;
+
 async function showApp() {
   $('#user-name').textContent = state.user?.name ?? '';
   showScreen('app');
+  if (interactiveEntry) {
+    interactiveEntry = false;
+    $('#chat-pane')?.focus({ preventScroll: true });
+  }
   void showAdminLink();
   app().dataset.view = 'cases';
   app().dataset.main = 'case';
@@ -147,6 +159,7 @@ function wireLogin() {
     try {
       const data = await api('POST', '/auth/login', { email, password });
       $('#login-password').value = '';
+      interactiveEntry = true;
       await enter(data);
     } catch (ex) {
       err.textContent =
@@ -182,7 +195,13 @@ async function init() {
 
   wireLogin();
   initReset();
-  initMfaVerify({ onPassed: () => showApp(), onCancel: logout });
+  initMfaVerify({
+    onPassed: () => {
+      interactiveEntry = true;
+      return showApp();
+    },
+    onCancel: logout,
+  });
   $('#setup-cancel').addEventListener('click', logout);
   $('#btn-logout').addEventListener('click', logout);
   $('#btn-security').addEventListener('click', openSecurityDialog);
