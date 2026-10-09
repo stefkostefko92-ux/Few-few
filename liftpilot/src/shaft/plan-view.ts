@@ -94,10 +94,11 @@ function rail(L: Layout, r0: Rail, shoes: boolean, label = false, head = false):
   const [ux, uy] = r.dir === 'right' ? [1, 0] : r.dir === 'left' ? [-1, 0] : r.dir === 'back' ? [0, 1] : [0, -1];
   const at = (u: number, v: number): Pt => [r.x + u * ux - v * uy, r.y + u * uy + v * ux];
   const out: Entity[] = [path(local.map(([u, v]) => at(u, v)), true, 'steel', 'steel')];
-  // the bracket under the rail: Panev's support, or the generic one out to the wall or the bridge
-  const hw = head ? headOf(L.inputs) : undefined, br = panevSupportPlan(L, r0, label, hw) ?? genericBracketPlan(L, r);
+  // the bracket under the rail: Panev's support, or the generic one out to the wall or the bridge (on a counterweight
+  // rail of a Panev design with the code it stands for)
+  const hw = head ? headOf(L.inputs) : undefined, pv = panevSupportPlan(L, r0, label, hw), br = pv ?? genericBracketPlan(L, r);
   out.unshift(...br.under);
-  out.push(...br.over, ...specialPlanLabel(L, r, label ? cwPlanCode(L, r0, hw) : null));
+  out.push(...br.over, ...(pv ? [] : specialPlanLabel(L, r, label ? cwPlanCode(L, r0, hw) : null)));
   // guide shoe of the guided part, at the tip
   if (shoes) out.push(rect(...shoe(at), 'thin'));
   return out;
@@ -174,8 +175,8 @@ export function planEntities(L: Layout, level: PlanLevel, floor: number): Entity
     const k = cws.indexOf(r);
     out.push(...rail(L, r, level !== 'pit', k === 0 || (k > 0 && codes[k] !== codes[0]), level === 'top'));
   });
-  // the car rails' brackets named by their rail (plan-car-brackets.ts)
-  out.push(...axes(L), ...governorPlan(L, level === 'pit'), ...carBracketLabel(L));
+  // the car rails' brackets named by their rail, counted at the walls of this plan (plan-car-brackets.ts)
+  out.push(...axes(L), ...governorPlan(L, level === 'pit'), ...carBracketLabel(L, level === 'top'));
   if (level === 'top') {
     const { refuge: r, free: f } = roofSpaces(L);
     out.push(...space(r.x0, r.y0, r.x1, r.y1), { e: 'mark', at: [r.x1 - 110, r.y1 - 150], sym: 'tri' });

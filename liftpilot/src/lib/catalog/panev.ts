@@ -3,11 +3,11 @@
 // never in the screens' code). And the bill of materials of a design: the articles its landing doors (under the sills
 // and over the doors) and counterweight rails take, as many as the software places (src/shaft/staffe-*.ts). Pure.
 import {
-  bracketCode, bracketHeights, cwBracket, cwBracketsOf, cwSpecialOf, doorBracketCount, doorPairOf, landingOf, plateReach, railSpan, topBracketSpan, topPairStops,
-  type Layout,
+  bracketCode, cwBracket, cwBracketsOf, cwSpecialOf, doorBracketCount, doorPairOf, landingOf, plateReach, topBracketSpan, topPairStops, type Layout,
 } from '@/shaft';
 import { cwNiche, wallLength } from '@/shaft/niche';
-import { hasHead, headOf } from '@/shaft/head';
+import { headOf } from '@/shaft/head';
+import { headFrom, railHeights } from '@/shaft/rail-brackets';
 import { section } from '@/shaft/section';
 
 export type PanevKind = 'plateA' | 'bracketB' | 'supportSU' | 'supportSD' | 'supportSC' | 'guideSG' | 'madeSC' | 'madeSG' | 'cornerSN' | 'squareSN' | 'arm';
@@ -86,10 +86,10 @@ export function panevBom(L: Layout): PanevBom {
   let missing = 0;
   if (cwBracketsOf(I) === 'panev') {
     const special = cwSpecialOf(I), niche = cwNiche(I, L.cwSide), span = niche ? [niche.at, niche.at + niche.width] as const : undefined;
-    const zHead = hasHead(I) ? S.levels[I.vertical.floors.length - 1] ?? Infinity : Infinity, [z0, z1] = railSpan(S);
+    const zHead = headFrom(L);
     for (const r of L.rails.filter((x) => x.kind === 'cw')) {
       const main = special ? null : cwBracket(I, L.doors, r, span), head = special ? null : cwBracket(I, L.doors, r, span, headOf(I));
-      for (const z of bracketHeights(z0, z1, I.cwRail, L.cwBracketPitch)) {
+      for (const z of railHeights(L, r)) {
         const br = z >= zHead ? head : main;
         if (special) for (const code of special.split(' + ')) add(code, 1, 'cw', { drawing: true });
         else if (br) for (const code of bracketCode(br).split(' + ')) add(code, 1, 'cw');

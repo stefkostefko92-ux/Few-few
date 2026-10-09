@@ -4,8 +4,9 @@
 // it shares with its neighbours and an arrowhead from outside at an end of the chain. Chains outside the drawing sit
 // in rows at fixed paper distances from its edge; chains across it sit at a model coordinate. Every value keeps its
 // words and a size that reads: inside its segment, else past the end of the chain on the dimension line run on under
-// it, else beside its segment, else set off it with a leader; a lettering already on the sheet is stepped round
-// (`chainShapes`). The values are masked from the lines they cross (a band of paper round the letters).
+// it, else beside its segment, else set off it with a leader; a lettering already on the sheet is stepped round, and
+// where nothing is free the place it covers least is taken (`chainShapes`). The values are masked from the lines they
+// cross (a band of paper round the letters).
 import { toPaper, type Place } from './geom';
 import { textBox, textWidth } from './metrics';
 import type { Chain, Side } from './model';
@@ -46,6 +47,10 @@ const paperBox = (place: Place, b: Box): Box => {
 
 /** Boxes closer than 0.2 mm on both axes. */
 const clash = (a: Box, b: Box): boolean => Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0) > -0.2 && Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0) > -0.2;
+
+/** How much of a box the others cover [mm²]. */
+const covered = (a: Box, others: readonly Box[]): number =>
+  others.reduce((n, b) => n + Math.max(0, Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0)) * Math.max(0, Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0)), 0);
 
 /** One segment's lettering on its dimension line (paper coordinates along the chain and across it). */
 interface Seg {
@@ -211,9 +216,16 @@ export function chainShapes(c: Chain, place: Place, edges: Box, onText?: (s: Tex
   const inBand = (b: Box): boolean => (horiz ? b.y0 >= band[0] && b.y1 <= band[1] : b.x0 >= band[0] && b.x1 <= band[1]);
   const avoid = (c.avoid ?? []).map((b) => paperBox(place, b));
   const placed = new Map<number, Spot>(), free = (b: Box): boolean => inBand(b) && !taken?.some((t) => clash(b, t)) && !avoid.some((t) => clash(b, t));
+  // with no spot free, the one the lettering already there covers least (within the row's band first), never one on top
+  // of another value by default (round 37)
+  const cost = (q: Spot): number => [q.s, ...(q.words ? [q.words] : [])].reduce((n, t) => {
+    const b = textBox(t);
+    return n + covered(b, [...(taken ?? []), ...avoid]) + (inBand(b) ? 0 : 1e6);
+  }, 0);
   for (const g of order) {
     const spots = spotsOf(g, horiz, mk);
-    const spot = spots.find((q) => free(textBox(q.s)) && (!q.words || free(textBox(q.words)))) ?? spots[0];
+    const spot = spots.find((q) => free(textBox(q.s)) && (!q.words || free(textBox(q.words))))
+      ?? spots.reduce((best, q) => (cost(q) < cost(best) - 1e-9 ? q : best));
     taken?.push(textBox(spot.s));
     if (spot.words) taken?.push(textBox(spot.words));
     placed.set(g.i, spot);

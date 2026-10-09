@@ -3,19 +3,20 @@
 // the flange's top with the two slots of its arm and the apron folded down along it, the SG laid on the arm with its
 // slots and its flange seen edge-on behind the rail's foot, the two bolts holding the SG, the two N1 clips over the
 // foot's edges with their bolts through the flange and the nuts behind it; an SC along the wall behind the foot
-// (plan-staffe-sc.ts); and its catalogue code with the count per rail (brackets.ts). Null when the design uses generic
-// brackets or none of the catalogue takes the rail (then the check v_staffa says so); a solution to the site's drawing
-// keeps the generic bracket with its articles' code. A generic bracket as the 3D's railfix.ts builds it: the plate
+// (plan-staffe-sc.ts); and its catalogue code with the count per rail at the walls the plan draws (rail-brackets.ts:
+// the headroom's from the top floor up, the main floor's under it). None when the design uses generic brackets or none
+// of the catalogue takes the rail (then the check v_staffa says so, and the generic bracket drawn is labelled as such);
+// a solution to the site's drawing keeps the generic bracket with its articles' code. A generic bracket as the 3D's
+// railfix.ts builds it: the plate
 // behind the foot with its two clips, one angle out to the wall (two bolted together past 150 mm), the wall plate and
 // its anchors.
 import { TEXT, circle, line, path, type Entity, type Pt } from '../drawing';
-import { bracketCount, railSpan } from './brackets';
 import { cwNiche } from './niche';
 import { ANCHOR, HEAD, hex, slot, type BracketPlan } from './plan-parts';
 import { slidePlan } from './plan-staffe-sc';
 import { onWall } from './plan-walls';
+import { levelHeights } from './rail-brackets';
 import { GENERIC_BRACKET as GB, RAILS, railClip } from './rails';
-import { section } from './section';
 import { N1, PLATES, SG_T, STATIONS, cwBracketsOf, seatRail } from './staffe';
 import { bracketCode, cwBracket, cwSpecialOf, type CwBracket } from './staffe-scelta';
 import type { HeadWalls, Layout, Rail, Wall } from './types';
@@ -31,14 +32,21 @@ function panevOf(L: Layout, r: Rail, head?: HeadWalls): CwBracket | null {
   return r.kind === 'cw' && cwBracketsOf(I) === 'panev' ? cwBracket(I, L.doors, r, n ? [n.at, n.at + n.width] : undefined, head) : null;
 }
 
-/** The articles of a counterweight rail's bracket with their count per rail, as the plan writes them: Panev's support
- *  with its SG, or the solution to the site's drawing chosen; null with generic brackets or when none takes it. */
+/** What a generic bracket stands for on a counterweight rail of a Panev design where no article of the catalogue
+ *  takes it (as the list of articles counts it: bracket_cw). */
+export const NO_PANEV = 'STAFFA DA DIMENSIONARE A PARTE (NESSUNA PANEV)';
+
+/** The articles of a counterweight rail's bracket with their count per rail at the walls of a plan (`head`: the walls
+ *  where they stand in the headroom — the plan at the top floor), as the plan and the rails' sheet write them: Panev's
+ *  support with its SG, the solution to the site's drawing chosen, or NO_PANEV when none takes it there; null with
+ *  generic brackets, or without brackets at those walls. */
 export function cwPlanCode(L: Layout, r: Rail, head?: HeadWalls): string | null {
   const I = L.inputs, special = cwSpecialOf(I);
   if (r.kind !== 'cw' || cwBracketsOf(I) !== 'panev') return null;
-  const [z0, z1] = railSpan(section(L)), n = bracketCount(z1 - z0, L.cwBracketPitch), g = special ? null : panevOf(L, r, head);
+  const n = levelHeights(L, r, head !== undefined).length, g = special ? null : panevOf(L, r, head);
+  if (n === 0) return null;
   if (special) return `${n}× ${special.startsWith('SN') ? 'SN + BRACCIO 160 190' : special}`;
-  return g ? `${n}× ${bracketCode(g)}` : null;
+  return `${n}× ${g ? bracketCode(g) : NO_PANEV}`;
 }
 
 /** How far along its wall the bracket of a counterweight rail reaches [mm in the wall's own u]: Panev's plate with
@@ -100,11 +108,11 @@ export function panevSupportPlan(L: Layout, r: Rail, label: boolean, head?: Head
   return { under: out, over };
 }
 
-/** The code of a solution to the site's drawing by the rail's generic bracket, in the thickness of the wall it reaches,
- *  from the rail toward the middle of the wall. */
+/** The code a counterweight rail's generic bracket stands for (a solution to the site's drawing, or NO_PANEV), in the
+ *  thickness of the wall it reaches, from the rail toward the middle of the wall. */
 export function specialPlanLabel(L: Layout, r: Rail, code: string | null): Entity[] {
   const I = L.inputs;
-  if (!code || !cwSpecialOf(I)) return [];
+  if (!code) return [];
   const x = r.bracketAxis === 'x', wall: Wall = x ? (r.bracketTo > I.W / 2 ? 'right' : 'left') : r.bracketTo > I.D / 2 ? 'rear' : 'front';
   const u = x ? r.y : r.x, first = 2 * u < (x ? I.D : I.W);
   return [{ e: 'text', at: onWall(L, wall, u, -I.wall / 2), text: code, size: TEXT.min, align: first ? 'l' : 'r', halo: true, angle: x ? 90 : 0 }];

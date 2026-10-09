@@ -224,7 +224,9 @@ export const VOCI_VERT: readonly VoceVano[] = [
     valore: `una staffa ogni ${KV_VERT.bracketPitch} mm di guida, più una all’inizio e una alla fine: per guida ⌊L / ${KV_VERT.bracketPitch}⌋ + 2 `
       + `(L la lunghezza della guida); la prima a ${KV_VERT.bracketFirst} mm dal piede della guida, l’ultima a ${KV_VERT.bracketLast} mm dalla `
       + 'sua sommità, le altre a passo uguale tra le due; una staffa che cadrebbe sulla piastra di una giunzione (guide da 5 m dal fondo della '
-      + `fossa) si sposta appena oltre la piastra. Il passo inserito nei dati dell’impianto sostituisce i ${KV_VERT.bracketPitch} mm`,
+      + 'fossa) si sposta appena oltre la piastra, dal lato dove resta sulla guida; l’ultimo spezzone non è mai più corto di metà della piastra '
+      + 'più lunga, del suo franco e di una staffa (altrimenti si accorcia il primo); dalla quota dell’ultimo piano in su le staffe vanno alle '
+      + `pareti della testata e le piante le contano a parte. Il passo inserito nei dati dell’impianto sostituisce i ${KV_VERT.bracketPitch} mm`,
     riferimento: 'regola di montaggio indicata dal committente', fonte: 'scelta del committente', stato: 'scelta',
     nota: 'il foglio 1 delle tavole riporta l’interasse massimo tra le staffe montate, lo stesso l della verifica delle guide di cabina (UNI EN '
       + '81-50:2020, 5.10); le quote di ogni staffa dal fondo della fossa sono nel foglio dello sviluppo delle guide',

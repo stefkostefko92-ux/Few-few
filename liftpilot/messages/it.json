@@ -1685,6 +1685,8 @@
       "fishplate": "Piastra di giunzione della guida {name}",
       "bracket_car": "Staffa della guida di cabina",
       "bracket_cw": "Staffa della guida di contrappeso (generica)",
+      "bracket_bridge": "Staffa a ponte del contrappeso laterale, con piastra e graffe della guida di cabina",
+      "bracket_bridge_len": "Staffa a ponte del contrappeso laterale lunga {len} mm, con piastra e graffe della guida di cabina",
       "panev_plateA": "Panev, piastra {name}",
       "panev_bracketB": "Panev, staffa {name}",
       "panev_supportSU": "Panev, supporto universale {name}",

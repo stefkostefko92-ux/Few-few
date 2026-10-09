@@ -5,7 +5,8 @@
 // walls, the ropes and the cables, the dynamic coefficient (registry carichi.macchina), P1…P9, and a bottom machine's
 // pull on its anchors. Pure.
 import { KV_VERT } from '@/shaft/norme-vert';
-import { bracketHeights, maxBracketSpan, railSpan } from '@/shaft/brackets';
+import { railSpan, withPitches } from '@/shaft/brackets';
+import { maxSpanOf, railHeights } from '@/shaft/rail-brackets';
 import { PROFILES } from '@/shaft/profiles';
 import { section } from '@/shaft/section';
 import type { HebOption } from '@/shaft/heb';
@@ -37,7 +38,11 @@ export interface SheetRails {
  *  bracket pitch, the lift's use). */
 export function sheetRails(L: Layout, P: number, Q: number, Pl: Plant): SheetRails {
   const V = L.inputs.vertical, S = section(L), railLen = (V.pit + S.top + V.headroom - KV_VERT.railTopGap) / 1000, gear = Pl.safetyGear ?? 'progressive';
-  const [z0, z1] = railSpan(S), hs = bracketHeights(z0, z1, L.inputs.carRail, Pl.carBracketPitch), span = maxBracketSpan(z0, z1, L.inputs.carRail, Pl.carBracketPitch);
+  // the brackets where the design puts them at the pitches of the data (rail-brackets.ts): the l of the check is the
+  // longest interval on either car rail (one on a side counterweight's bridge takes the bridge's), the count the most
+  // spaced rail's
+  const Lp = withPitches(L, { car: Pl.carBracketPitch, cw: Pl.cwBracketPitch }), [z0, z1] = railSpan(S), span = maxSpanOf(Lp, 'car');
+  const hs = Lp.rails.filter((r) => r.kind === 'car').map((r) => railHeights(Lp, r)).sort((a, b) => a.length - b.length)[0] ?? [];
   return { railLen, hs, span, gear, rc: railCheck(L, L.inputs.carRail, P, Q, gear, span, z1 - z0, Pl.liftUse), F: railForces(L, P, Q, gear) };
 }
 

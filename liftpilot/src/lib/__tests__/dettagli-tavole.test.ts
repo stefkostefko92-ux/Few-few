@@ -72,7 +72,7 @@ test('DXF e DWG: il foglio delle guide e le sigle delle staffe al passo dei dati
   // the brackets' chain at the pitch of the data, its longest interval the l of sheet 1 and of the rails' check
   const cs = view.entities.flatMap((e) => (e.e === 'chain' ? [e.c] : []));
   assert.ok(cs.some((c) => c.pts.length === hs.length + 2), 'catena delle staffe al passo dei dati');
-  assert.deepEqual(view.entities, railsDev(L).entities);
+  assert.deepEqual(view.entities, railsDev(L, view.scale).entities);
   const row = dataSheet(x, a, 12).sheet.specs.find((r) => r[0] === 'INTERASSE MASSIMO STAFFE CABINA');
   assert.equal(row?.[2], fmt(Math.max(...bracketSpans(hs)), 0));
   // the plans name the car rails' brackets with the same count

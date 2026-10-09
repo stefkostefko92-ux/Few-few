@@ -21,7 +21,8 @@ export const VOCI_INGOMBRI: readonly VoceVano[] = [
   {
     id: 'ingombri.contrappeso.laterale', gruppo: 'ingombri', titolo: 'Contrappeso laterale',
     valore: 'tra la parete e la guida della cabina, centrato sull’asse delle guide di cabina, con le sue guide alle estremità (pattini 20 mm) '
-      + 'e la guida di cabina su una staffa a ponte; a 40 mm dalle zone delle porte; lunghezza in pianta da 400 a 900 mm (sotto 400 mm: '
+      + 'e la guida di cabina su una staffa a ponte (a ogni staffa delle guide del contrappeso, al passo più fitto tra cabina e contrappeso, '
+      + 'con la guida di cabina fissata alle stesse quote); a 40 mm dalle zone delle porte; lunghezza in pianta da 400 a 900 mm (sotto 400 mm: '
       + '«Attenzione»); con il contrappeso sul fondo, al massimo la larghezza tra le guide della cabina',
     riferimento: '—', fonte: 'scelta del software', stato: 'scelta',
     costanti: ['cwMinLength', 'cwMaxLength', 'cwEndGap', 'cwShoe'], verifiche: ['v_cwlen'],

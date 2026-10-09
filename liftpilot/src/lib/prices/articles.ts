@@ -1,6 +1,6 @@
 // The articles a company prices: every one the software can put in a project — the machines of the catalogues, SICOR's
 // bedplates with the diverting pulley, the supports of the machine, a machine below's head pulleys and base, the ropes
-// and their wedge sockets and the rails by size, the brackets, Panev's 48 articles, the doors, the governors with the
+// and their wedge sockets and the rails by size, the brackets (a side counterweight's bridge too), Panev's 48 articles, the doors, the governors with the
 // tension pulley and their rope, the buffers and their supports, the car, its sling (for 2:1 too) with the safety gear,
 // the guide shoes, the counterweight, the 2:1 roping's pulleys and dead ends, ACOP/UCM, the electrical system and the
 // signalling, the labour (bom.ts counts them).
@@ -82,6 +82,7 @@ export const PRICE_ARTICLES: readonly PriceArticle[] = [
   ...RAIL_TYPES.map((t): PriceArticle => ({ key: `fishplate:${t}`, group: 'rails', label: { item: 'fishplate', name: railLabel(t) }, unit: 'pz' })),
   { key: 'bracket:car', group: 'brackets', label: { item: 'bracket_car' }, unit: 'pz' },
   { key: 'bracket:cw', group: 'brackets', label: { item: 'bracket_cw' }, unit: 'pz' },
+  { key: 'bracket:bridge', group: 'brackets', label: { item: 'bracket_bridge' }, unit: 'pz' },
   ...PANEV_ARTICLES.map((a): PriceArticle => {
     const list = PANEV_LIST_PRICE[a.code];
     return {
