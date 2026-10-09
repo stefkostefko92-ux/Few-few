@@ -187,3 +187,8 @@
 {"t":"handoff","ts":"2026-10-06T20:52:55.591Z","id":"r907e9b29","from":"tayniyat-agent","to":"hromadjiyata","status":"блокер","run":"60b5c378"}
 {"t":"start","ts":"2026-10-06T21:19:51.181Z","id":"r51437eb7","flow":"авто","lead":"prevodach","auto":true}
 {"t":"handoff","ts":"2026-10-06T21:19:51.182Z","id":"r51437eb7","from":"prevodach","to":"човек","status":"има бележки","run":"79132612"}
+{"t":"start","ts":"2026-10-09T07:20:00.781Z","id":"rc13a900e","flow":"авто","lead":"seo","auto":true}
+{"t":"handoff","ts":"2026-10-09T07:20:00.781Z","id":"rc13a900e","from":"seo","to":"човек","status":"има бележки","run":"680d99b1"}
+{"t":"start","ts":"2026-10-09T07:21:14.305Z","id":"r0ed49c87","flow":"авто","lead":"pravniyat-razbirach","auto":true}
+{"t":"handoff","ts":"2026-10-09T07:21:14.306Z","id":"r0ed49c87","from":"pravniyat-razbirach","to":"vps-adjiyata","status":"блокер","run":"825a2d60"}
+{"t":"handoff","ts":"2026-10-09T07:21:52.321Z","id":"r0ed49c87","from":"kodadjiyata","to":"kachestveniyat","status":"блокер","run":"15d1b5a4"}
