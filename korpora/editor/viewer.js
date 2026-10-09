@@ -9,6 +9,7 @@ import { Stage, TONE_MAPPING, studioEnvironment } from './viewer-studio.js';
 import { Pipeline } from './viewer-render.js';
 import { PhotoMode } from './viewer-photo-mode.js';
 import { addSlides } from './viewer-slides.js';
+import { frameCamera, explodeCamera } from './viewer-camera.js';
 import { pixelRatio } from './viewer-device.js';
 import { reduceMotion } from './dom.js';
 import {
@@ -19,9 +20,6 @@ import {
   boardMeshes,
   faceMaterials,
 } from './viewer-parts.js';
-
-// How much farther the camera stands for an exploded assembly (e: 0 assembled … 1 fully exploded).
-const explodeZoom = (e) => 1 + 0.55 * e;
 
 export class Viewer {
   constructor(host) {
@@ -224,23 +222,7 @@ export class Viewer {
   }
 
   frame() {
-    const e = this.ext;
-    const W = (e.x1 - e.x0) * S;
-    const D = (e.z1 - e.z0) * S;
-    const H = e.y1 * S;
-    const radius = Math.hypot(W, H, D) * 0.5;
-    const vHalf = THREE.MathUtils.degToRad(this.camera.fov / 2);
-    const hHalf = Math.atan(Math.tan(vHalf) * Math.max(this.camera.aspect, 0.2));
-    const dist = (radius / Math.sin(Math.min(vHalf, hHalf))) * 1.06 * explodeZoom(this.explode);
-    const dir = new THREE.Vector3(0.62, 0.42, 1).normalize();
-    this.controls.target.set(0, H / 2, 0);
-    this.camera.position.copy(this.controls.target).addScaledVector(dir, dist);
-    this.camera.near = dist / 60;
-    this.camera.far = dist * 20;
-    this.camera.updateProjectionMatrix();
-    this.controls.minDistance = radius * 0.5;
-    this.controls.maxDistance = dist * 3;
-    this.controls.update();
+    frameCamera(this.camera, this.controls, this.ext, this.explode);
   }
 
   setOpen(f) {
@@ -249,15 +231,8 @@ export class Viewer {
   }
 
   setExplode(e) {
-    const prev = explodeZoom(this.explode);
+    explodeCamera(this.camera, this.controls, this.explode, e);
     this.explode = e;
-    const next = explodeZoom(e);
-    const offset = this.camera.position.clone().sub(this.controls.target);
-    this.camera.position.copy(this.controls.target).addScaledVector(offset, next / prev);
-    this.controls.maxDistance = Math.max(
-      this.controls.maxDistance,
-      offset.length() * (next / prev) * 1.2,
-    );
     this.applyPose();
   }
 
