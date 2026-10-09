@@ -11,6 +11,9 @@
 import { $ } from './dom.js';
 import { showError } from './session.js';
 
+// the server's other refusals in the editor's language (its own texts), not in the account's
+const MESSAGE = { 'app.errors.name': 'nameInvalid', 'app.errors.spec': 'specInvalid' };
+
 const PROBLEM = {
   'app.errors.planExpired': 'plan',
   'app.errors.unverified': 'unverified',
@@ -118,7 +121,7 @@ export function createSaver({
           onProblem(kind);
           return false;
         }
-        return fail(body.error || text.saveFailed);
+        return fail(text[MESSAGE[body.code]] || body.error || text.saveFailed);
       }
       state.problem = null;
       state.savedHash = body.hash;

@@ -41,6 +41,7 @@ const TEXT = {
   saved: 'Записано',
   saveFailed: 'Не успя',
   notSaved: 'Не е записано',
+  nameInvalid: 'Името е твърде дълго',
 };
 const fields: Record<string, object> = {};
 // the tab title is written on the stand-in document, as the browser's would be
@@ -288,6 +289,19 @@ test('an ended plan says so and does not reload the page', async (t) => {
   assert.equal(await saver.save(), false);
   assert.deepEqual([problems, state.problem], [['plan'], 'plan']);
   assert.equal(timers.mock.callCount(), 0);
+});
+
+test("a refused name is told in the editor's language, not in the account's", async (t) => {
+  const { saver, error } = setup(
+    t,
+    () =>
+      Promise.resolve(
+        Response.json({ error: 'Name too long', code: 'app.errors.name' }, { status: 400 }),
+      ),
+    { hash: 'h2' },
+  );
+  assert.equal(await saver.save(), false);
+  assert.deepEqual([error.hidden, error.textContent], [false, TEXT.nameInvalid]);
 });
 
 test('a failed request is not saved: the error is shown and the label says unsaved', async (t) => {
