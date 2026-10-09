@@ -886,7 +886,7 @@
     "issueClient": "Manca il committente: nel cartiglio resterà un trattino.",
     "plantLink": "Apri i dati dell’impianto",
     "cadTitle": "File CAD della serie emessa",
-    "cadLead": "Le stesse viste in scala reale, con il cartiglio del numero e della revisione, i muri campiti e il foglio 1: da inviare al posto della bozza.",
+    "cadLead": "Tutti i fogli del PDF: le viste in scala reale con le loro legende e note, il foglio 1 con il cartiglio del numero e della revisione, le verifiche del progetto, i muri campiti: da inviare al posto della bozza.",
     "cadDxf": "DXF della serie",
     "cadDwg": "DWG della serie",
     "number": "Disegno n°",

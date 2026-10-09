@@ -1,11 +1,12 @@
 import 'server-only';
 // The saved machine room of a replacement as files: the relazione tecnica, the drawing set as a PDF draft (not issued:
-// no number from the counter, no record), and the plan and section B-B in DXF and DWG at full size. Drawn again from
-// the stored survey and calculation only when the running engines reproduce them (otherwise refused, like the
-// documents).
+// no number from the counter, no record), and the plan and section B-B in DXF and DWG at full size (the sheets and
+// values they name being the PDF draft's, which the file names under the plan: cad/project.ts draftCaption). Drawn
+// again from the stored survey and calculation only when the running engines reproduce them (otherwise refused, like
+// the documents).
 import type { SessionUser } from '@/lib/auth';
 import { toDwg, toDxf } from '@/lib/cad/export';
-import { surveyViews } from '@/lib/cad/project';
+import { draftCaption, surveyViews } from '@/lib/cad/project';
 import { prisma } from '@/lib/db';
 import { plantReadSchema } from '@/lib/plant';
 import { renderPdf, renderTavole } from '@/lib/report/render';
@@ -27,11 +28,11 @@ export async function exportRoomDesign(user: SessionUser, id: string, format: Ro
   if (!r) return { ok: false, error: 'notFound' };
   const rep = reproduceRoomRecord(r, r.calculation);
   if (!rep.ok) return { ok: false, error: rep.error === 'engineChanged' ? 'engineChanged' : 'notFound' };
-  const date = r.createdAt.toISOString().slice(0, 10), base = `${slug(r.project.name)}-${date}`;
+  const date = r.createdAt.toISOString().slice(0, 10), base = `${slug(r.project.name)}-${date}`, pdf = `tavole-sostituzione-${base}.pdf`;
   if (format === 'pdf') {
     const c = await composeFromRoom(prisma, user, r.id, { number: 'BOZZA', issuedAt: new Date(), author: initialsOf(user.name) || '—', revisions: [] }, true);
     if (!c.ok) return { ok: false, error: c.error === 'engineChanged' ? 'engineChanged' : 'notFound' };
-    return { ok: true, body: new Uint8Array(await renderTavole(c.doc)), mime: MIME.pdf, name: `tavole-sostituzione-${base}.pdf` };
+    return { ok: true, body: new Uint8Array(await renderTavole(c.doc)), mime: MIME.pdf, name: pdf };
   }
   const d = rep.derived, plant = plantReadSchema.safeParse(r.project.plant ?? {}), P = plant.success ? plant.data : {};
   if (format === 'relazione') {
@@ -44,10 +45,11 @@ export async function exportRoomDesign(user: SessionUser, id: string, format: Ro
     });
     return { ok: true, body: new Uint8Array(await renderPdf(doc)), mime: MIME.relazione, name: `relazione-tecnica-${base}.pdf` };
   }
-  // the plan and the section at full size, lettered for the scale the drawing set prints them at
+  // the plan and the section at full size, lettered for the scale the drawing set prints them at (no sheet 1 in a
+  // draft's CAD file: the sheets and values they name are the PDF draft's, named under them)
   const views = surveyViews(d, P);
   if (!views.length) return { ok: false, error: 'notFound' };
-  const title = `${r.project.name} · locale macchina ${r.id} · ${date} · LiftPilot`;
+  const title = draftCaption(`${r.project.name} · locale macchina ${r.id} · ${date}`, pdf);
   const body = format === 'dxf' ? new TextEncoder().encode(toDxf(views, title)) : new Uint8Array(toDwg(views, title));
   return { ok: true, body, mime: MIME[format], name: `locale-macchina-${base}.${format}` };
 }

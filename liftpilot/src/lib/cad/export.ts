@@ -80,8 +80,12 @@ export function laidOut(v: CadView): { parts: Shape[][]; notes: Shape[]; extent:
 export type CadFormat = 'dxf' | 'dwg';
 const VERSION: Readonly<Record<CadFormat, acad.ACadVersion>> = { dxf: acad.ACadVersion.AC1021, dwg: acad.ACadVersion.AC1015 };
 
-/** The views in one document; `title` under the first view (what the drawing is, its record and its hash). */
-export function cadDocument(views: readonly CadView[], title: string, format: CadFormat): acad.CadDocument {
+/** The line or lines under the first view of a file: what the drawing is, its record or its set and hash (and of a
+ *  draft, where the sheets and values its views name are: project.ts draftCaption). */
+export type Caption = string | readonly string[];
+
+/** The views in one document; `title` under the first view. */
+export function cadDocument(views: readonly CadView[], title: Caption, format: CadFormat): acad.CadDocument {
   const doc = new acad.CadDocument(), version = VERSION[format];
   const { header, layers: table, modelSpace: space } = doc;
   if (!header || !table || !space) throw new Error('empty CAD document');
@@ -100,6 +104,7 @@ export function cadDocument(views: readonly CadView[], title: string, format: Ca
   };
   let cursor: number | null = null;
   const text = version < acad.ACadVersion.AC1021 ? cp1252 : (t: string): string => t;
+  const under = typeof title === 'string' ? (title ? [title] : []) : title;
   views.forEach((v, i) => {
     // the view as the sheets lay it out (the values where the sheets put them), each entity on its layer; the notes of
     // its sheet where the sheet has them; lettered as the sheet letters them (its texts condensed, as they were placed)
@@ -113,7 +118,7 @@ export function cadDocument(views: readonly CadView[], title: string, format: Ca
     });
     for (const s of notes) emit(s, noteLayer(s));
     // under it all: the title, the subtitle, the sheet and the scale (and under the first view what the file is)
-    const lines = [v.title, ...(v.subtitle ? [v.subtitle] : []), `${v.sheet ? `Foglio ${v.sheet} · ` : ''}Scala di stampa 1:${v.scale}`, ...(i === 0 && title ? [title] : [])];
+    const lines = [v.title, ...(v.subtitle ? [v.subtitle] : []), `${v.sheet ? `Foglio ${v.sheet} · ` : ''}Scala di stampa 1:${v.scale}`, ...(i === 0 ? under : [])];
     lines.forEach((text, k) => emit({ t: 'text', at: [extent.x0, extent.y0 - 8 - 5 * k], text, size: k ? 2.5 : 3.5, cond: false }, 'TESTI'));
     cursor = extent.x1 * v.scale + dx + GAP;
   });
@@ -224,10 +229,10 @@ export function dxfText(doc: acad.CadDocument): string {
 }
 
 /** DXF text (AutoCAD 2007). */
-export const toDxf = (views: readonly CadView[], title: string): string => dxfText(cadDocument(views, title, 'dxf'));
+export const toDxf = (views: readonly CadView[], title: Caption): string => dxfText(cadDocument(views, title, 'dxf'));
 
 /** DWG bytes (AutoCAD 2000). */
-export const toDwg = (views: readonly CadView[], title: string): Uint8Array => acad.DwgWriter.writeToBuffer(cadDocument(views, title, 'dwg'));
+export const toDwg = (views: readonly CadView[], title: Caption): Uint8Array => acad.DwgWriter.writeToBuffer(cadDocument(views, title, 'dwg'));
 
 /** The plan of a shaft design at its main floor, at 1:scale. */
 export function planToDxf(L: Layout, title: string, scale = 20): string {

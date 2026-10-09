@@ -44,6 +44,13 @@ export function inputViews(x: TavoleInput): CadView[] {
   });
 }
 
+/** The lines under the first view of a draft's CAD file — a saved project's (server/project-export.ts), a replacement's
+ *  machine room's (server/room-export.ts): `what` it is, then where the sheets and the values its views name are
+ *  ("Foglio n", "VALORI NEL FOGLIO 1"). A draft's file has its views alone, without sheet 1 and the sheets without a
+ *  view (an issued set's has them: set-export.ts), so those are its PDF draft's, named by its file `pdf`. */
+export const draftCaption = (what: string, pdf: string): string[] =>
+  [`${what} · LiftPilot`, `BOZZA: i fogli e i valori citati sono quelli del PDF ${pdf}`];
+
 /** The machine room of a replacement in plan and in section B-B, as its set's sheets draw them (the section line B-B and
  *  the legend of the plan's symbols with them); none without a room over the shaft. */
 export function surveyViews(d: RoomDerived, plant: Plant): CadView[] {

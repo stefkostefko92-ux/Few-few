@@ -886,7 +886,7 @@
     "issueClient": "No client is entered: the title block will show a dash.",
     "plantLink": "Open the data of the installation",
     "cadTitle": "CAD files of the issued set",
-    "cadLead": "The same views at full size, with the title block of the number and revision, the walls hatched and sheet 1: send these instead of the draft.",
+    "cadLead": "Every sheet of the PDF: the views at full size with their legends and notes, sheet 1 with the title block of the number and revision, the checks of the design, the walls hatched: send these instead of the draft.",
     "cadDxf": "DXF of the set",
     "cadDwg": "DWG of the set",
     "number": "Drawing no.",
