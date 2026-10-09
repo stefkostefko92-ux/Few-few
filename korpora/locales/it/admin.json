@@ -172,7 +172,7 @@
       "firstSeen": "visto per la prima volta il {date}",
       "loginsTitle": "Ultimi tentativi di accesso",
       "linkedTitle": "Account collegati",
-      "linkedHint": "Altri account con lo stesso dispositivo, lo stesso HWID o lo stesso indirizzo IP: segno di una prova ripetuta o di un account condiviso. Dispositivo e HWID collegano solo account che hanno dato il consenso all'impronta alla registrazione; senza consenso resta solo l'indirizzo IP. Telefoni identici danno lo stesso HWID, e uffici e operatori mobili condividono gli indirizzi, quindi un HWID o un IP comune a più di 10 account non collega nessuno; un IP in comune da solo non è una prova.",
+      "linkedHint": "Altri account con lo stesso dispositivo, lo stesso HWID o lo stesso indirizzo IP: segno di una prova ripetuta o di un account condiviso. Dispositivo e HWID collegano solo account che hanno dato il consenso all'impronta alla registrazione; senza consenso resta solo l'indirizzo IP. Telefoni identici danno lo stesso HWID, e uffici e operatori mobili condividono gli indirizzi, quindi un HWID o un IP comune a più di 10 account non collega nessuno; un IP in comune da solo non è una prova. Quanto è diffuso un HWID si conta solo tra gli account con consenso, quindi un HWID senza dispositivo o IP in comune è un indizio debole.",
       "noLinked": "Nessun account collegato.",
       "sharedBy": "In comune",
       "shared": {
