@@ -1,0 +1,9 @@
+/* Без JavaScript: менюто остава видимо и достъпно. */
+.nav-toggle{display:none!important}
+.nav-panel{position:static!important;display:flex!important;flex-wrap:wrap;opacity:1!important;visibility:visible!important;transform:none!important;box-shadow:none!important;padding:0!important;max-height:none!important}
+.nav-links{display:flex!important;flex-wrap:wrap}
+.nav-links li{border:0!important}
+.nav-links a{font:600 .98rem/1.2 var(--sans)!important;padding:.6rem .85rem!important}
+.site-header__bar{flex-wrap:wrap}
+.nav-extra{display:none!important}
+[data-reveal]{opacity:1!important;transform:none!important;animation:none!important}

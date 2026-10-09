@@ -31,6 +31,7 @@ file holds only what is true across all products. Keep it that way.
 | `linketto/` | Linketto — многоезичен „link in bio“ (конкурент на Linktree) | Next.js 15 · React 19 · TS · Prisma · PostgreSQL · Tailwind · next-intl · Stripe | 27 локала (24 ЕС езика + nap/scn/lmo диалекти) · комисиони 8/4/0% · linketto.carbonstealth.eu |
 | `eternaltouch/` | Eternal Touch — атѐлие за ръчни гипсови декорации (витрина/каталог) | Express · EJS · Prisma · PostgreSQL · Docker · plain JS ESM | IT/BG/EN · eternaltouch.it · витрина, **не** e-commerce |
 | `evanitasport/` | Evanita Sport — дамско студио за Kangoo Jumps и силови тренировки (Дупница) | static HTML/CSS/JS · Nginx | BG · evanita-bg.com |
+| `hospis/` | Хоспис „Борис Дали“ — сайт на хоспис и дом за възрастни хора (Бобов дол) | static HTML/CSS/JS · Nginx | BG · hospis.carbonstealth.eu · витрина, **не** e-commerce · без бисквитки/сървърна форма · съдържание само от реални източници |
 | `adblock/` | Supreme AdBlock — блокира реклами, тракери и anti-adblock стени | Chrome MV3 · vanilla JS (без билд) · `declarativeNetRequest` | EN UI · Chrome Web Store |
 | `SupremeBot/` | Tanoth Master Bot — автоматизира дневната рутина в браузърната игра Tanoth | Chrome MV3 · vanilla JS · XML-RPC към играта · лиценз-сървър (Node · Docker · Caddy) | EN/многоезичен · **автоматизацията може да наруши ToS на Gameforge → бан на акаунта**; не се качва в Web Store |
 | `ospedalitrasparenti/` | Ospedali Trasparenti — ETL + статичен сайт + „follow the money" разследване за финансите на публичните болници в Италия (BDAP/MEF + dati.salute) | Node ≥20 · plain JS ESM · нула зависимости | IT · сайт + отчет за всяка SSN структура · счетоводни сигнали + разходни аномалии спрямо връстници · официални open data |
@@ -77,6 +78,9 @@ hooks, rules).
   the command yourself. zabobovdol also exposes a server-side admin action (`src/lib/indexnow.ts`). **Google does NOT
   support IndexNow** (sitemap ping retired 2023) — for Google keep the sitemap fresh
   (auto-discovered) and use Search Console (`tools/seo/gsc.mjs`).
+- **E-commerce задача → първо прочети `docs/ecommerce-strategy.md`** — проверена стратегия за B2C магазин
+  (BG/ЕС, 2026: ЗЗП/право на отказ, ДДС 2026 + OSS/IOSS, Н-18/СУПТО, SAF-T, PSD2/SCA, платформи, плащания,
+  логистика). Стъпвай на нея и я допълвай, не проучвай наново; фискализацията по Н-18 се потвърждава с НАП.
 - **Keywords: always ≥5, one always „Carbon Stealth“.** Every site we build/touch
   carries a keywords set (Next `metadata.keywords` array, or `<meta name="keywords">`
   on static/EJS pages) with **at least 5** relevant keywords, and **„Carbon Stealth“
