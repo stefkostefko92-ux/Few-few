@@ -9,12 +9,12 @@ import { defaultInputs, layout, section, type ShaftInputs } from '@/shaft';
 import { bracketHeights, bracketSpans, maxBracketSpan, railSpan } from '@/shaft/brackets';
 import { railsDev } from '@/shaft/rails-dev';
 import { carBracketCode } from '@/shaft/staffe-cabina';
-import { projectViews } from '../cad/project';
+import { inputViews } from '../cad/project';
 import { CHECKS_TITLE } from '../tavole/checks-sheet';
 import { buildTavole, setLayout } from '../tavole/build';
 import { dataSheet } from '../tavole/data';
 import type { TavoleInput } from '../tavole/input';
-import { machineOf, sectionView } from '../tavole/views';
+import { sectionView } from '../tavole/views';
 import { analyse } from '../present/analysis';
 import { makeFmt } from '../present/tr';
 import { deriveLift } from '../lift/derive';
@@ -64,8 +64,8 @@ test('foglio delle guide: l’ultimo dei disegni (poi le verifiche), a una scala
 });
 
 test('DXF e DWG: il foglio delle guide e le sigle delle staffe al passo dei dati dell’impianto, come il PDF', () => {
-  const x = input(I0, 1500), L = setLayout(x), a = analyse(x.values), M = machineOf(a, x.plant, L, null);
-  const views = projectViews(L, M, L.inputs.room !== null), view = views.find((v) => v.title === 'SVILUPPO DELLE GUIDE E POSIZIONE DELLE STAFFE');
+  const x = input(I0, 1500), L = setLayout(x), a = analyse(x.values);
+  const views = inputViews(x), view = views.find((v) => v.title === 'SVILUPPO DELLE GUIDE E POSIZIONE DELLE STAFFE');
   assert.ok(view, 'vista delle guide');
   const [z0, z1] = railSpan(section(L)), hs = bracketHeights(z0, z1, L.inputs.carRail, 1500);
   assert.notEqual(hs.length, bracketHeights(z0, z1, L.inputs.carRail).length, 'il passo dei dati cambia il numero di staffe');

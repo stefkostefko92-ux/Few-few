@@ -61,9 +61,12 @@ export const VOCI_TAVOLE: readonly VoceImpianto[] = [
   },
   {
     id: 'tavole.cad', titolo: 'File CAD della serie emessa',
-    valore: 'DXF (AutoCAD 2007) e DWG (AutoCAD 2000) della serie emessa, ridisegnati dal suo record solo se i motori danno lo stesso disegno: le viste '
-      + 'in scala reale, il calcestruzzo campito ANSI31 (linee a 45° a 1,6 mm sul foglio), il foglio 1 alla scala della prima vista con il cartiglio '
-      + 'come blocco CARTIGLIO i cui attributi sono numero, revisioni, date, matricola, committente e ubicazione; sotto la prima vista numero, '
+    valore: 'DXF (AutoCAD 2007) e DWG (AutoCAD 2000) della serie emessa, ridisegnati dal suo record solo se i motori danno lo stesso disegno: tutti i '
+      + 'fogli del PDF. Le viste in scala reale, impaginate come le impagina il loro foglio e con quanto il foglio vi disegna intorno (legende, lati '
+      + 'delle fermate, segni delle sezioni, cartello del contrappeso, note delle guide, legenda dei simboli del locale), con titolo, sottotitolo, '
+      + 'numero del foglio e scala; il calcestruzzo campito ANSI31 (linee a 45° a 1,6 mm sul foglio); il foglio 1 alla scala della prima vista con '
+      + 'il cartiglio come blocco CARTIGLIO i cui attributi sono numero, revisioni, date, matricola, committente e ubicazione; sotto il foglio 1 il '
+      + 'foglio delle verifiche del progetto (senza la striscia, le cui parole sono gli attributi del cartiglio); sotto la prima vista numero, '
       + 'revisione e SHA-256 della serie',
     riferimento: 'prassi dello scambio dei disegni (blocco del cartiglio con attributi)', fonte: 'scelta del software', stato: 'scelta',
   },

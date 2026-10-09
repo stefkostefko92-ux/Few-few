@@ -15,7 +15,7 @@ import type { Layout } from '@/shaft/types';
 import { withPitches } from '@/shaft/brackets';
 import type { BottomGeo, BottomScheme } from '../lift/bottom';
 import { analyse, type Analysis } from '../present/analysis';
-import { dataSheet, type Mismatch } from './data';
+import { dataSheet, type DataSheetResult, type Mismatch } from './data';
 import { dataSheetShapes } from './datasheet';
 import { legendColumn, legendHeight, legendRow, scaleLabel, sectionMarks, sideLabels } from './extras';
 import { placeLines, type TavoleInput } from './input';
@@ -47,7 +47,8 @@ export interface TavoleResult {
   title: TitleData;
 }
 
-const LEGEND_W = 34;
+/** The width of a column of the legend's boxes [mm]. */
+export const LEGEND_W = 34;
 
 /** The scheme of the machine below as the subtitles name it (the research's three). */
 const BELOW_SUB: Readonly<Record<BottomScheme, string>> = {
@@ -92,8 +93,14 @@ export function specs(L: Layout, room: boolean, below: BottomScheme | null = nul
 
 export const inset = (b: Box, l: number, r: number, bottom: number, top: number): Box => ({ x0: b.x0 + l, y0: b.y0 + bottom, x1: b.x1 - r, y1: b.y1 - top });
 
-interface Drawn {
+/** A drawing sheet's content: its view — the `entities` placed by `place`, drawn as `shapes` — and what the sheet adds
+ *  around it in paper millimetres (`notes`: the legends, the landings' sides, the section marks, the notes of the rails).
+ *  The PDF draws both; the CAD files take the entities with the notes where the sheet has them (cad/project.ts). */
+export interface Drawn {
+  entities: readonly Entity[];
+  place: Place;
   shapes: Shape[];
+  notes: Shape[];
   scale: number;
   hits: Hit[];
 }
@@ -109,23 +116,23 @@ function planSheet(L: Layout, s: Extract<Spec, { k: 'plan' }>, area: Box, extra:
   // room around the view for the "LATO FERMATE" labels (rotated on a side wall) and the section marks
   const side = (w: 'left' | 'right'): number => (L.doors.some((d) => d.wall === w) ? 11 : 4);
   const drawn = (a: Box): Drawn => {
-    const { r, place } = planView(L, s.level, s.floor, s.total, inset(a, side('left'), side('right'), 9, 8), extra);
+    const { r, place, entities } = planView(L, s.level, s.floor, s.total, inset(a, side('left'), side('right'), 9, 8), extra);
     const px = toPaper(place, [L.car.x + L.car.w / 2, 0])[0];
     const marks = sectionMarks([px, r.extent.y1 + 3.5], [px, r.extent.y0 - 3.5], 'left', 'A');
-    return { shapes: [...r.shapes, ...sideLabels(L, r.extent), ...marks], scale: place.scale, hits: r.hits };
+    return { entities, place, shapes: r.shapes, notes: [...sideLabels(L, r.extent), ...marks], scale: place.scale, hits: r.hits };
   };
   // the legend's boxes as the trade's sheets have them: in a free corner on the right of the drawing, the first ones
   // at the top and the rest at the foot when one corner cannot take them all; else in a row under a smaller drawing
   const d = drawn(area), x0 = area.x1 - LEGEND_W, fits = (items: readonly LegendItem[], top: boolean): Box | null => {
     const h = legendHeight(items, LEGEND_W), b = top ? { x0, y0: area.y1 - h, x1: area.x1, y1: area.y1 } : { x0, y0: area.y0, x1: area.x1, y1: area.y0 + h };
-    return clear(d.shapes, b) ? b : null;
+    return clear([...d.shapes, ...d.notes], b) ? b : null;
   };
   const all = fits(s.legend, true) ?? fits(s.legend, false), head = s.legend.slice(0, 1), rest = s.legend.slice(1);
-  if (all) return { ...d, shapes: [...d.shapes, ...legendColumn(s.legend, all, LEGEND_W)] };
+  if (all) return { ...d, notes: [...d.notes, ...legendColumn(s.legend, all, LEGEND_W)] };
   const a = fits(head, true), b = fits(rest, false);
-  if (a && b) return { ...d, shapes: [...d.shapes, ...legendColumn(head, a, LEGEND_W), ...legendColumn(rest, b, LEGEND_W)] };
+  if (a && b) return { ...d, notes: [...d.notes, ...legendColumn(head, a, LEGEND_W), ...legendColumn(rest, b, LEGEND_W)] };
   const lg = legendRow(s.legend, area), small = drawn(inset(area, 0, 0, lg.height + 7, 0));
-  return { ...small, shapes: [...small.shapes, ...lg.shapes] };
+  return { ...small, notes: [...small.notes, ...lg.shapes] };
 }
 
 function sectionSheet(L: Layout, s: Extract<Spec, { k: 'section' }>, area: Box, cwGap: number | null = null): Drawn {
@@ -142,7 +149,7 @@ function sectionSheet(L: Layout, s: Extract<Spec, { k: 'section' }>, area: Box, 
   // the travel drawn shorter between the break marks: said by the scale
   const note: Shape[] = v.compressed ? [{ t: 'text', at: [FRAME.x1 - 3, FRAME.y0 + STRIP_H + (s.subtitle !== undefined ? 11 : 8) - 3.4], text: 'TRATTO TRA LE INTERRUZIONI FUORI SCALA',
     size: 2, align: 'r', cond: true }] : [];
-  return { shapes: [...v.r.shapes, ...lg.shapes, ...note], scale: v.place.scale, hits: v.r.hits };
+  return { entities: v.entities, place: v.place, shapes: v.r.shapes, notes: [...lg.shapes, ...note], scale: v.place.scale, hits: v.r.hits };
 }
 
 /** Section line B-B on the room plan: along the rope drops, beyond the drawing and its dimensions at both ends, looking
@@ -181,15 +188,16 @@ function belowMarks(g: BottomGeo, p: Place, edges: Box): Shape[] {
 
 function belowSheet(L: Layout, M: MachineSpec, g: BottomGeo, kind: 'below-plan' | 'below-section', area: Box): Drawn {
   const v = belowView(L, M, g, kind === 'below-plan' ? 'plan' : 'section', inset(area, 8, 8, 8, 8));
-  return { shapes: [...v.r.shapes, ...(kind === 'below-plan' ? belowMarks(g, v.place, v.r.extent) : [])], scale: v.place.scale, hits: v.r.hits };
+  return { entities: v.entities, place: v.place, shapes: v.r.shapes, notes: kind === 'below-plan' ? belowMarks(g, v.place, v.r.extent) : [], scale: v.place.scale, hits: v.r.hits };
 }
 
 function roomSheet(L: Layout, M: MachineSpec, kind: 'room-plan' | 'room-section', area: Box, spare: readonly Box[]): Drawn {
   const v = roomView(L, M, kind === 'room-plan' ? 'plan' : 'section', inset(area, 8, 8, 8, 8));
   if (!v) throw new Error('no machine room');
-  const shapes = [...v.r.shapes, ...(kind === 'room-plan' ? roomMarks(v.G, v.place, v.r.extent) : [])];
+  const marks = kind === 'room-plan' ? roomMarks(v.G, v.place, v.r.extent) : [];
   // (the plan's symbols named in a free band, else beside the title: round 36)
-  return { shapes: [...shapes, ...(kind === 'room-plan' ? roomLegend(shapes, area, spare) : [])], scale: v.place.scale, hits: v.r.hits };
+  const legend = kind === 'room-plan' ? roomLegend([...v.r.shapes, ...marks], area, spare) : [];
+  return { entities: v.entities, place: v.place, shapes: v.r.shapes, notes: [...marks, ...legend], scale: v.place.scale, hits: v.r.hits };
 }
 
 /** The design the set draws: the stored one with the brackets' pitches the installation's data declare, so the plans'
@@ -197,7 +205,18 @@ function roomSheet(L: Layout, M: MachineSpec, kind: 'room-plan' | 'room-section'
 export const setLayout = (x: Pick<TavoleInput, 'layout' | 'plant'>): Layout =>
   withPitches(x.layout, { car: x.plant.carBracketPitch, cw: x.plant.cwBracketPitch });
 
-export function buildTavole(x: TavoleInput): TavoleResult {
+/** The set laid out: the design its sheets draw (`L`), sheet 1's data (`ds`, the checks' sheet named in it), the
+ *  sheets between them, each with what it draws (`sheets`: sheet 2 first), and how many sheets the set has. */
+export interface SetSheets {
+  L: Layout;
+  ds: DataSheetResult;
+  sheets: { spec: Spec; drawn: Drawn }[];
+  pages: number;
+}
+
+/** Every sheet of the set drawn from `x`: the PDF (buildTavole) and the CAD files (cad/project.ts inputViews) both take
+ *  them from here, so a CAD view carries what its sheet draws around it, at the sheet's scale. */
+export function setSheets(x: TavoleInput): SetSheets {
   const L0: Layout = setLayout(x), a: Analysis = analyse(x.values), M = machineOf(a, x.plant, L0, x.marks?.catalog ?? null);
   // the machine below: its room's sheets for the scheme the design chose (the head pulleys under the slab when none)
   const scheme = a.ctx.I.layout === 'bottom' ? x.marks?.bottom ?? 'head' : null, g = scheme ? belowGeoOf(a, L0, M, scheme) : null;
@@ -206,7 +225,20 @@ export function buildTavole(x: TavoleInput): TavoleResult {
   const L = sheetLayoutOf(a, L0, M, g), head = g ? headLoadsOf(a, L, M, g) : [];
   // the data on sheet 1, the drawings, the checks of the design on the last sheet (checks-sheet.ts)
   const list = specs(L, L.inputs.room !== null && a.ctx.I.layout !== 'bottom', scheme), pages = list.length + 2;
-  const [l1, l2] = placeLines(x.project), d0 = dataSheet(x, a, pages), ds = { ...d0, sheet: { ...d0.sheet, checksSheet: pages } };
+  const d0 = dataSheet(x, a, pages), ds = { ...d0, sheet: { ...d0.sheet, checksSheet: pages } };
+  const sheets = list.map((s) => {
+    const area = drawingArea(s.subtitle !== undefined);
+    const drawn: Drawn = s.k === 'plan' ? planSheet(L, s, area, s.level === 'top' ? head : []) : s.k === 'section' ? sectionSheet(L, s, area, ds.cwGap)
+      : s.k === 'rails' ? { ...railsSheet(L, area, railsNotes(L, ds.rails, makeFmt('it-IT'))), hits: [] }
+      : s.k === 'below-plan' || s.k === 'below-section' ? belowSheet(L, M, g ?? belowGeoOf(a, L, M, 'head'), s.k, area)
+      : roomSheet(L, M, s.k, area, titleSpares(s.title, s.subtitle));
+    return { spec: s, drawn };
+  });
+  return { L, ds, sheets, pages };
+}
+
+export function buildTavole(x: TavoleInput): TavoleResult {
+  const { ds, sheets: drawn, pages } = setSheets(x), [l1, l2] = placeLines(x.project);
   // the strip of every sheet: the revision the set is at (R0 and its date on a first issue) and the plant number as the
   // title block writes them
   const meta = (page: number): SheetMeta => ({
@@ -214,13 +246,9 @@ export function buildTavole(x: TavoleInput): TavoleResult {
   });
   const out: Page[] = [{ w: A4.w, h: A4.h, shapes: [...frame(), ...dataSheetShapes(ds.sheet)] }];
   const sheets: TavoleResult['sheets'] = [{ title: 'DATI DELL’IMPIANTO', scale: null }], hits: Hit[][] = [[]];
-  list.forEach((s, i) => {
-    const sub = s.subtitle !== undefined, area = drawingArea(sub);
-    const d = s.k === 'plan' ? planSheet(L, s, area, s.level === 'top' ? head : []) : s.k === 'section' ? sectionSheet(L, s, area, ds.cwGap)
-      : s.k === 'rails' ? { ...railsSheet(L, area, railsNotes(L, ds.rails, makeFmt('it-IT'))), hits: [] }
-      : s.k === 'below-plan' || s.k === 'below-section' ? belowSheet(L, M, g ?? belowGeoOf(a, L, M, 'head'), s.k, area)
-      : roomSheet(L, M, s.k, area, titleSpares(s.title, s.subtitle));
-    out.push({ w: A4.w, h: A4.h, shapes: [...frame(), ...d.shapes, ...sheetTitle(s.title, s.subtitle), scaleLabel(d.scale, sub), ...strip(meta(i + 2))] });
+  drawn.forEach(({ spec: s, drawn: d }, i) => {
+    const sub = s.subtitle !== undefined;
+    out.push({ w: A4.w, h: A4.h, shapes: [...frame(), ...d.shapes, ...d.notes, ...sheetTitle(s.title, s.subtitle), scaleLabel(d.scale, sub), ...strip(meta(i + 2))] });
     sheets.push({ title: s.title, scale: d.scale });
     hits.push(d.hits);
   });

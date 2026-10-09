@@ -9,7 +9,7 @@ import type { Prisma } from '@prisma/client';
 import type { SessionUser } from '@/lib/auth';
 import { plantReadSchema } from '@/lib/plant';
 import type { StoredDesign } from '@/lib/shaft-hash';
-import { buildTavole } from '@/lib/tavole/build';
+import { buildTavole, type TavoleResult } from '@/lib/tavole/build';
 import type { Mismatch } from '@/lib/tavole/data';
 import { projectData, storedInput, type ProjectData, type StoredSet } from '@/lib/tavole/compose';
 import type { SetRecords, TavoleInput, TavoleRevision } from '@/lib/tavole/input';
@@ -117,11 +117,11 @@ export function composeStored(s: StoredSet & {
   shaftDesign: StoredDesign;
   logo: { mime: string; data: Uint8Array } | null;
   clientLogo?: { mime: string; data: Uint8Array } | null;
-}): { doc: DrawingDoc; warnings: Mismatch[]; input: TavoleInput; title: TitleData } | ComposeError {
+}): { doc: DrawingDoc; warnings: Mismatch[]; input: TavoleInput; title: TitleData; sheets: TavoleResult['sheets'] } | ComposeError {
   const r = reproduce({ ...s.calculation, shaftDesign: s.shaftDesign });
   if (!r.ok) return r;
   const input = storedInput(r.values, r.layout, s, usableLogo(s.logo), r.marks, usableLogo(s.clientLogo ?? null), recordsOf(s.calculation.id, { sha256: s.calculation.sha256, shaftDesign: s.shaftDesign }));
   if (!input) return { ok: false, error: 'notFound' };
-  const { doc, warnings, title } = buildTavole(input);
-  return tavoleHash(doc) === s.sha256 ? { doc, warnings, input, title } : { ok: false, error: 'engineChanged' };
+  const { doc, warnings, title, sheets } = buildTavole(input);
+  return tavoleHash(doc) === s.sha256 ? { doc, warnings, input, title, sheets } : { ok: false, error: 'engineChanged' };
 }
