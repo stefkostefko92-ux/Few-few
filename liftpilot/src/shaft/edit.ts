@@ -16,6 +16,7 @@ import { imbottiOf, marbleHeight, marbleWidth, withImbotti, withMarbleHeight, wi
 import { governorSpot } from './governor';
 import { HEB_KEYS, withHebChoice } from './heb';
 import { counterweightSide, layout } from './layout';
+import { withStandardBuffers, withVerticalValue } from './buffers';
 import { bufferPlan } from './pit';
 import { PROFILE_NAMES } from './profiles';
 import { RAIL_TYPES } from './rails';
@@ -117,7 +118,8 @@ export function withValue(I: ShaftInputs, key: string, value: number): ShaftInpu
   const p = head === 'plan' ? pick(PLAN_KEYS, sub) : undefined;
   if (p) return { ...I, plan: { ...I.plan, [p]: value } };
   const v = head === 'v' ? pick(V_KEYS, sub) : undefined;
-  if (v) return { ...I, vertical: { ...I.vertical, [v]: value } };
+  // a buffer's size over 1 m/s with no type chosen: on the standard the drawing shows first (buffers.ts withOwnBuffer)
+  if (v) return { ...I, vertical: withVerticalValue(I.vertical, v, value) };
   const r = head === 'room' ? pick(R_KEYS, sub) : undefined;
   if (r && I.room) return { ...I, room: { ...I.room, [r]: value } };
   const m = head === 'imb' ? pick(IMB_KEYS, sub) : undefined;
@@ -199,7 +201,8 @@ export function valueOf(I: ShaftInputs, key: string): number | null {
   const p = head === 'plan' ? pick(PLAN_KEYS, sub) : undefined;
   if (p) return I.plan?.[p] ?? null;
   const v = head === 'v' ? pick(V_KEYS, sub) : undefined;
-  if (v) return I.vertical[v] ?? null;
+  // as the layout takes it: the buffers left to the software over 1 m/s their standard (buffers.ts)
+  if (v) return withStandardBuffers(I.vertical)[v] ?? null;
   const r = head === 'room' ? pick(R_KEYS, sub) : undefined;
   if (r) return I.room ? I.room[r] : null;
   const m = head === 'imb' ? pick(IMB_KEYS, sub) : undefined;

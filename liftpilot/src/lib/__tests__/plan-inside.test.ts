@@ -51,5 +51,7 @@ test('contrappeso oltre la parete con l’argano in basso: nessuna verifica NaN,
     const d = deriveLift(inp);
     assert.deepEqual(d.supportChecks.filter((c) => c.value !== null && !Number.isFinite(c.value)).map((c) => c.id), [], bottom);
     if (d.bottomGap) assert.ok(Number.isFinite(d.bottomGap.now), bottom);
+    // a record saved so before the save refused it: the derivation names the distance, its documents wait (lift-record.ts)
+    assert.ok(d.issues.includes('shaft.plan.cwPos'), bottom);
   }
 });

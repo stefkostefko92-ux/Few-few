@@ -3,8 +3,8 @@
 // stroke of at least 0,0674·v². Changing the type proposes a typical buffer and keeps the buffer's top (the run-by).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { KV_VERT, bufferStroke, bufferType, defaultInputs, layout, section, standardBufferType, typicalBuffer, withBufferType, withStandardBuffers, type ShaftInputs,
-  type VerticalInputs } from '../index';
+import { DEFAULT_VERTICAL, KV_VERT, bufferStroke, bufferType, defaultInputs, layout, section, standardBufferType, typicalBuffer, withBufferType, withOwnBuffer,
+  valueOf, withStandardBuffers, withValue, withVerticalValue, type ShaftInputs, type VerticalInputs } from '../index';
 
 const withV = (patch: Partial<VerticalInputs>): ShaftInputs => {
   const I = defaultInputs(1600, 1750);
@@ -68,4 +68,43 @@ test('cambiando tipo il supporto si sposta: la testa dell’ammortizzatore e l�
     assert.equal(V.cwBufferBase + V.cwBufferH, V0.cwBufferBase + V0.cwBufferH, t);
     assert.equal(section(layout(withV(V))).cwLow, section(layout(withV(V0))).cwLow, t);
   }
+});
+
+test('oltre 1 m/s, senza tipo scelto: il valore mostrato è quello tenuto, un altro valore è preso così com’è', () => {
+  const I = withV({ v: 1.6 }), sizes = (S: ShaftInputs, side: 'car' | 'cw') => {
+    const V = layout(S).inputs.vertical;
+    return side === 'car' ? [V.carBufferBase, V.carBufferH, V.carBufferStroke] : [V.cwBufferBase, V.cwBufferH, V.cwBufferStroke];
+  };
+  for (const side of ['car', 'cw'] as const) {
+    const before = sizes(I, side), keys = [`${side}BufferBase`, `${side}BufferH`, `${side}BufferStroke`] as const, t = typicalBuffer('oil', 1.6);
+    // the standard hydraulic one, its top where the springs' was
+    assert.deepEqual(before.slice(1), [t.h, t.stroke], side);
+    keys.forEach((k, i) => {
+      // the form shows the standard and the drawing reads it: typed back, nothing moves
+      assert.equal(withStandardBuffers(I.vertical)[k], before[i], `${side} ${k}`);
+      assert.equal(valueOf(I, `v.${k}`), before[i], `${side} ${k}`);
+      const form = withV(withVerticalValue(I.vertical, k, before[i])), drawn = withValue(I, `v.${k}`, before[i]);
+      assert.deepEqual(sizes(form, side), before, `${side} ${k} form`);
+      assert.deepEqual(drawn && sizes(drawn, side), before, `${side} ${k} drawing`);
+      // and it stays: the record is a fixed point (the form shows what it holds)
+      assert.equal(withStandardBuffers(form.vertical)[k], before[i], `${side} ${k}`);
+      assert.equal(withOwnBuffer(form.vertical, side), form.vertical, `${side} ${k}`);
+      // another value, even the standard springs' height or stroke: exactly it, the rest as it was
+      for (const x of [k.endsWith('Base') ? 250 : DEFAULT_VERTICAL[k], 400]) {
+        const want = before.map((y, j) => (j === i ? x : y));
+        assert.deepEqual(sizes(withV(withVerticalValue(I.vertical, k, x)), side), want, `${side} ${k} ${x} form`);
+        const d = withValue(I, `v.${k}`, x);
+        assert.deepEqual(d && sizes(d, side), want, `${side} ${k} ${x} drawing`);
+        assert.equal(d && valueOf(d, `v.${k}`), x, `${side} ${k} ${x}`);
+      }
+    });
+    // the other side is left to the software
+    const other = side === 'car' ? 'cw' : 'car', V1 = withOwnBuffer(I.vertical, side);
+    assert.equal(V1[`${other}BufferType`], undefined);
+    assert.deepEqual(sizes(withV(V1), other), sizes(I, other));
+  }
+  // up to 1 m/s (or with a type chosen) the value goes in as it is
+  const D = defaultInputs(1600, 1750).vertical, own = withBufferType({ ...D, v: 1.6 }, 'car', 'pu');
+  assert.deepEqual(withVerticalValue(D, 'carBufferBase', 444), { ...D, carBufferBase: 444 });
+  assert.deepEqual(withVerticalValue(own, 'carBufferH', 120), { ...own, carBufferH: 120 });
 });

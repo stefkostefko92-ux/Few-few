@@ -17,7 +17,8 @@ export { NO_HEAD, hasHead, headBox, headCheck, headClearances, headOf, mainBox, 
 export type { Fishplate, RailClip, RailSize, RailType } from './rails';
 export { DEFAULT_FLOORS, DEFAULT_VERTICAL, levels, travel } from './vertical';
 export type { BufferType, Floor, VerticalInputs } from './vertical';
-export { BUFFER_TYPES, bufferStroke, bufferType, maxSpeed, standardBufferType, strokeNeeded, typicalBuffer, withBufferType, withStandardBuffers } from './buffers';
+export { BUFFER_TYPES, bufferSideOf, bufferStroke, bufferType, maxSpeed, standardBufferType, strokeNeeded, typicalBuffer, withBufferType, withOwnBuffer, withStandardBuffers,
+  withVerticalValue } from './buffers';
 export { DEFAULT_ROOM } from './room';
 export { PROFILES, PROFILE_NAMES, isChannel } from './profiles';
 export type { Profile, ProfileName } from './profiles';

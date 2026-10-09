@@ -17,8 +17,8 @@ const calcRow = (values: typeof PRESETS.B) => {
 };
 
 /** The three records a save of the one form makes, as the database keeps them. */
-function liftRows(engineVersion = LIFT_ENGINE_VERSION) {
-  const inputs = defaultLift(), dv = deriveLift(inputs), S = shaftSnapshot(dv.shaft);
+function liftRows(engineVersion = LIFT_ENGINE_VERSION, inputs = defaultLift()) {
+  const dv = deriveLift(inputs), S = shaftSnapshot(dv.shaft);
   const shaftDesign = {
     id: 'd1', label: null, createdAt: new Date(0), sha256: shaftHash(S.snapshot), engineVersion: S.snapshot.engine, profileId: S.snapshot.profile,
     inputs: S.snapshot.inputs, source: null, user: null,
@@ -48,6 +48,17 @@ test('documenti: calcolo, progetto del vano e progetto dell’impianto tutti rip
   const shaftOld = calcRecord({ ...rows, shaftDesign: { ...rows.shaftDesign, sha256: '0'.repeat(64) } });
   assert.equal(shaftOld?.designSame, false);
   assert.equal(shaftOld?.ok, false);
+});
+
+test('progetto salvato con una distanza della pianta oltre le pareti del vano: i documenti aspettano, il campo è nominato', () => {
+  // a record saved before the save refused it (round 37): read as it was, the hashes reproduce, but the sheets would
+  // place the counterweight off their views; the refresh leads to the form, which names plan.cwPos (pk_cwPos)
+  const base = defaultLift(), inputs = { ...base, shaft: { ...base.shaft, plan: { cwPos: 10000 } } };
+  assert.ok(deriveLift(inputs).issues.includes('shaft.plan.cwPos'));
+  const rec = calcRecord(liftRows(LIFT_ENGINE_VERSION, inputs));
+  assert.deepEqual([rec?.calcSame, rec?.designSame, rec?.liftSame, rec?.ok], [true, true, false, false]);
+  // inside the shaft the same record issues its set
+  assert.equal(calcRecord(liftRows(LIFT_ENGINE_VERSION, { ...base, shaft: { ...base.shaft, plan: { cwPos: 0 } } }))?.ok, true);
 });
 
 test('calcolo senza progetti: solo il suo hash conta', () => {

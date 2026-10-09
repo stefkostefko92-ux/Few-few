@@ -13,7 +13,7 @@ import { snapshotHash } from './snapshot-hash';
 export interface LiftRecord {
   inputs: LiftInputs;
   dv: LiftDerived;
-  /** the running engines give the same records: its documents may be made */
+  /** the running engines give the same records, none with a part beyond the shaft's walls: its documents may be made */
   same: boolean;
 }
 
@@ -21,7 +21,9 @@ export function liftRecord(d: { inputs: unknown; engineVersion: string }, shaftS
   const p = liftInputsReadSchema.safeParse(d.inputs);
   if (!p.success) return null;
   const dv = deriveLift(p.data);
+  // a distance of the plan set by hand beyond the shaft's walls (saved before the save refused it): its documents wait,
+  // the refresh leads to the form, which names the distance (derive-types.ts PlanIssue)
   const same = d.engineVersion === LIFT_ENGINE_VERSION && shaftHash(shaftSnapshot(dv.shaft).snapshot) === shaftSha256
-    && snapshotHash(snapshotOf(dv.values)) === calcSha256;
+    && snapshotHash(snapshotOf(dv.values)) === calcSha256 && !dv.issues.some((k) => k.startsWith('shaft.plan.'));
   return { inputs: p.data, dv, same };
 }

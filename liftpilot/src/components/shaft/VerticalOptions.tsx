@@ -6,8 +6,8 @@
 // A new installation starts with the speed, pit, headroom and the number of stops to enter: the stops' rows come with
 // that number, each rise (and door, with two entrances) and the main floor to enter (src/lib/lift/blank.ts).
 import { useTranslations } from 'next-intl';
-import { BUFFER_TYPES, DEFAULT_VERTICAL, bufferStroke, bufferType, withBufferType, withStandardBuffers, type BufferType, type Floor, type ShaftInputs,
-  type VerticalInputs } from '@/shaft';
+import { BUFFER_TYPES, DEFAULT_VERTICAL, bufferStroke, bufferType, withBufferType, withStandardBuffers, withVerticalValue, type BufferType, type Floor,
+  type ShaftInputs, type VerticalInputs } from '@/shaft';
 import { screenOf, standOf } from '@/shaft/section';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { filled, floorRemoved, floorsTo, type BlankKey } from '@/lib/lift/blank';
@@ -31,14 +31,15 @@ export default function VerticalOptions({ I, set, open = false, blank = NO_BLANK
   const t = useTranslations('shaft'), tb = useTranslations('blank'), V = I.vertical, floors = V.floors, is = blank.is;
   const multi = !is('entrances') && I.entrances !== 'one';
   const put = (patch: Partial<VerticalInputs>, entered: readonly BlankKey[] = []): void => set({ vertical: { ...V, ...patch } }, (b) => filled(b, entered));
-  // the buffers left to the software as the drawings have them: over 1 m/s the typical hydraulic one (buffers.ts)
+  // the buffers left to the software as the drawings have them: over 1 m/s the typical hydraulic one (buffers.ts); a size
+  // of one entered on that standard first (withVerticalValue), so what is shown is what is kept
   const std = withStandardBuffers(V);
   const shown = (key: NumKey): number | undefined => (key === 'cwScreen' ? screenOf(V) : key === 'standW' ? standOf(V)[0] : key === 'standD' ? standOf(V)[1] : std[key]);
   const field = (key: NumKey, min: number, max: number, step = 10) => (
     <label className="field" key={key}>
       <span>{t(`vt_${key}`)}<StdBadge on={WORKED_OUT.includes(key) ? V[key] === undefined : V[key] === DEFAULT_VERTICAL[key]} /></span>
       <input className="input num" type="number" inputMode="decimal" min={min} max={max} step={step} value={shown(key)}
-        onChange={(e) => { const v = num(e.target.value); if (Number.isFinite(v)) put({ [key]: Math.round(v) }); }} />
+        onChange={(e) => { const v = num(e.target.value); if (Number.isFinite(v)) set({ vertical: withVerticalValue(V, key, Math.round(v)) }, (b) => filled(b, [])); }} />
     </label>
   );
   // the project's own values: empty until entered

@@ -69,3 +69,31 @@ export function withStandardBuffers(V: VerticalInputs): VerticalInputs {
   }
   return X;
 }
+
+/** The inputs of the vertical data that are plain numbers (set or not). */
+export type VerticalNumKey = { [K in keyof VerticalInputs]-?: NonNullable<VerticalInputs[K]> extends number ? (number extends NonNullable<VerticalInputs[K]> ? K : never) : never }[keyof VerticalInputs];
+
+/** The side whose buffer an input of the vertical data sizes (its height, stroke or base); null: none. */
+export const bufferSideOf = (key: string): 'car' | 'cw' | null =>
+  key === 'carBufferH' || key === 'carBufferStroke' || key === 'carBufferBase' ? 'car' : key === 'cwBufferH' || key === 'cwBufferStroke' || key === 'cwBufferBase' ? 'cw' : null;
+
+/** The vertical data before a size of the side's buffer is entered: a side left to the software over KV_VERT.springMaxV
+ *  takes its standard as its own (the type, height, stroke and base withStandardBuffers gives it), so the value the form
+ *  and the drawings show is the one kept and the value entered next is taken as it is, even the standard springs' (a
+ *  raw base under a typical height would move by the difference of the heights each time). A fixed point: nothing the
+ *  layout takes changes. Else the data as they are (the same object). */
+export function withOwnBuffer(V: VerticalInputs, side: 'car' | 'cw'): VerticalInputs {
+  const t = standardBufferType(V.v);
+  if (t === 'spring' || (side === 'car' ? V.carBufferType : V.cwBufferType)) return V;
+  const S = withStandardBuffers(V);
+  return side === 'car'
+    ? { ...V, carBufferType: t, carBufferH: S.carBufferH, carBufferStroke: S.carBufferStroke, carBufferBase: S.carBufferBase }
+    : { ...V, cwBufferType: t, cwBufferH: S.cwBufferH, cwBufferStroke: S.cwBufferStroke, cwBufferBase: S.cwBufferBase };
+}
+
+/** The vertical data with an input set to a value: a size of a buffer left to the software over KV_VERT.springMaxV on
+ *  its standard first (withOwnBuffer). */
+export function withVerticalValue(V: VerticalInputs, key: VerticalNumKey, value: number): VerticalInputs {
+  const side = bufferSideOf(key);
+  return { ...(side ? withOwnBuffer(V, side) : V), [key]: value };
+}

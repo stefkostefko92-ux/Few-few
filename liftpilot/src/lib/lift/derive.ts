@@ -7,7 +7,7 @@
 import { SHEAVE_GRID, readInputs, sizeMachine } from '@/calc/index';
 import { deflectorAngle } from '@/calc/geometry';
 import type { FormValues, SizingOption } from '@/calc/types';
-import { HEB_PROFILES, layout, roomGeo, section, travel, type Layout, type ShaftInputs } from '@/shaft';
+import { HEB_PROFILES, layout, planOutside, roomGeo, section, travel, type Layout, type ShaftInputs } from '@/shaft';
 import type { MachineSpec } from '@/shaft/machine-room';
 import { analyse, mirrorRopes, proposalValues } from '@/lib/present/analysis';
 import { simModel } from '@/sim';
@@ -216,6 +216,9 @@ function deriveOnce(inp: LiftInputs): LiftDerived {
   // the diverting pulley up over the bedplate's top into the machine (an h or a height set by hand): as the replacement says
   const clash = rinvio && pulleyRim < 0 ? 'floor' : above && machine.rinvio ? rinvioClash(roomGeo(Lp, machine), machine) : null;
   if (clash && !issues.includes('rinvio')) issues.push('rinvio');
+  // a distance of the plan set by hand that puts a part beyond the shaft's walls (a record saved before the save refused
+  // it): its sheets would place the part off their views, so the design is not issued until it is corrected there
+  for (const o of planOutside(Lp)) issues.push(`shaft.plan.${o.key}`);
   const g = scheme ? bottomGeo(L, scheme, N.D, I.Dp, N.n, N.d, I.r, sheaveAxisBelow(N.D, shape), sheaveHalfBelow(N.D, N.n, N.d, shape)) : null;
   // a machine below: its room as a machine room, the pulley room over the shaft (below-checks.ts)
   // the rope rig in the shaft (shaft-rig.ts): the car roof's spaces under what hangs there, the 3D and the sheets
