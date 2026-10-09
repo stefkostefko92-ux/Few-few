@@ -10,7 +10,7 @@ import { readInputs } from '@/calc/index';
 import type { FormValues } from '@/calc/types';
 import { MACHINE, ROPES } from '@/components/calc/fields';
 import { visibleBad } from '@/lib/calc-input';
-import { DEFAULT_ROOM, type Floor, type ShaftInputs, type VerticalInputs } from '@/shaft';
+import { DEFAULT_ROOM, type Floor, type RoomInputs, type ShaftInputs, type VerticalInputs } from '@/shaft';
 import type { BottomScheme } from './bottom';
 import { LIFT_STANDARD, newLift } from './defaults';
 import type { LiftInputs } from './derive';
@@ -192,3 +192,12 @@ export const Q_PLACEHOLDER = 630;
 
 /** The placeholder room a machine room added starts from (never shown). */
 export const ROOM_PLACEHOLDER = DEFAULT_ROOM;
+
+/** The pulley room of a design saved without one (scheme room), once a measure of it is entered in the form
+ *  (RoomOptions): the software's standard room it was drawn and checked as (shaft-rig.ts pulleyRoomOf), now the
+ *  design's own, with the placeholder's control panel. A pulley room has no panel — none drawn, checked or asked for
+ *  (relevant) — but the save takes no room without one (shaft-input.ts roomSchema), and the standard room's is none. */
+export const ownPulleyRoom = (standard: RoomInputs): RoomInputs => ({
+  ...standard, panelWall: ROOM_PLACEHOLDER.panelWall, panelAt: ROOM_PLACEHOLDER.panelAt, panelW: ROOM_PLACEHOLDER.panelW,
+  panelD: ROOM_PLACEHOLDER.panelD, panelH: ROOM_PLACEHOLDER.panelH,
+});

@@ -12,6 +12,7 @@
 // machine below (scheme room) holds neither machine nor panel: its size, height, slab and door only.
 import { useTranslations } from 'next-intl';
 import type { HebTaken, RoomInputs } from '@/shaft';
+import { KV_VERT } from '@/shaft/norme-vert';
 import { PROFILE_NAMES } from '@/shaft/profiles';
 import { SUPPORT_KINDS, hasProfile, profileOf, supportHeight, supportLength, supportOf, type MachineSupport } from '@/shaft/support';
 import type { MachineShape } from '@/shaft/machine-shape';
@@ -160,7 +161,7 @@ export default function RoomFields({ R, put, machine, blank = () => false, choos
         {wall('doorWall')}
         {field('doorAt', 0, 20000)}
         {field('doorW', 500, 3000)}
-        {field('doorH', 1500, 3000)}
+        {field('doorH', KV_VERT.pulleyDoorH, 3000)}
       </div>
       {panel && !pulley ? (
         <label className="check">

@@ -6,11 +6,11 @@
 // it. With a machine below and its pulleys over the slab (scheme room) it is the pulley room the scheme cannot do
 // without: no switch, its size, height, slab and door only, checked for its height, its door and the space over the
 // pulleys (src/lib/lift/below-checks.ts); a design saved without one shows the software's standard room it is drawn and
-// checked as, until a measure is entered.
+// checked as, until a measure is entered (the design's own from then: ownPulleyRoom).
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { RoomInputs, ShaftInputs } from '@/shaft';
-import { ROOM_FIELDS, ROOM_PLACEHOLDER, filled, isBlankKey, roomAdded, type BlankKey } from '@/lib/lift/blank';
+import { ROOM_FIELDS, ROOM_PLACEHOLDER, filled, isBlankKey, ownPulleyRoom, roomAdded, type BlankKey } from '@/lib/lift/blank';
 import { NO_BLANK, StdBadge, type FormBlank, type ShaftSet } from '../blank';
 import RoomFields, { type RoomMachine, type RoomPanel } from './RoomFields';
 
@@ -46,8 +46,10 @@ export default function RoomOptions({ I, set, open = false, machine, blank = NO_
   const [unfolded] = useState(() => open || std || (own !== null && ROOM_FIELDS.some((k) => blank.is(`room.${k}`))));
   // the measures entered (the ridge of a flat roof and the support are no project data to enter)
   const keys = (entered: readonly string[]): BlankKey[] => entered.map((k) => `room.${k}`).filter(isBlankKey);
+  // the first measure entered makes the standard room the design's own, with a panel the save takes (none to enter)
   const put = (patch: Partial<RoomInputs>, entered: readonly (keyof RoomInputs)[] = []): void => {
-    if (R) set({ room: { ...R, ...patch } }, (b) => filled(b, keys(entered)));
+    const base = std && pulley ? ownPulleyRoom(pulley.standard) : R;
+    if (base) set({ room: { ...base, ...patch } }, (b) => filled(b, keys(entered)));
   };
   return (
     <details className="room-options" open={unfolded || undefined}>

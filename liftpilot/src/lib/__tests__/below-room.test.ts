@@ -11,8 +11,11 @@ import { belowSectionEntities } from '@/lib/tavole/below-view';
 import { sheaveAxisBelow } from '@/lib/lift/machine';
 import { KL } from '@/lib/lift/norme';
 import { pulleyRoomOf, sheetLayout } from '@/lib/lift/shaft-rig';
+import { ROOM_PLACEHOLDER, ownPulleyRoom } from '@/lib/lift/blank';
+import { liftInputsSchema } from '@/lib/lift-input';
+import { shaftInputsSchema } from '@/lib/shaft-input';
 import { KV_VERT } from '@/shaft/norme-vert';
-import { DEFAULT_ROOM, mergeChecks, type BelowRoom, type ShaftCheckId, type ShaftInputs } from '@/shaft';
+import { DEFAULT_ROOM, mergeChecks, type BelowRoom, type RoomInputs, type ShaftCheckId, type ShaftInputs } from '@/shaft';
 
 const below = (scheme: BottomScheme, p: Partial<ShaftInputs> = {}): LiftInputs => {
   const b = newLift();
@@ -122,4 +125,30 @@ test('schema room senza un locale nel progetto: le verifiche del locale delle pu
   const ownAt = (id: ShaftCheckId) => mergeChecks(own.d.layout.checks, own.d.supportChecks).find((c) => c.id === id);
   assert.deepEqual([ownAt('m_pheight')?.value, ownAt('m_pheight')?.status, ownAt('m_pdoor')?.status], [1450, 'fail', 'ok']);
   assert.equal(sheetLayout(own.d.layout, I.r, I.Dp, M.n, M.d, own.g).inputs.room?.H, 1450);
+});
+
+test('schema room: il locale standard reso proprio da una misura si salva; la porta minima del locale delle pulegge', () => {
+  // a design saved without a pulley room: the form shows the standard one, and the first measure entered makes it the
+  // design's own (RoomOptions). Until round 37's review the save refused it (no panel, a door under 1500 mm) and the
+  // form had no field to mend it: it starts now from the placeholder's panel, which a pulley room neither draws nor checks
+  const inp = below('room', { room: null }), own = ownPulleyRoom(pulleyRoomOf(inp.shaft));
+  const saved = (room: RoomInputs) => liftInputsSchema.safeParse({ ...inp, shaft: { ...inp.shaft, room } });
+  assert.equal(shaftInputsSchema.safeParse({ ...inp.shaft, room: { ...own, H: 1600 } }).success, true);
+  assert.equal(saved({ ...own, H: 1600 }).success, true);
+  const checks = (i: LiftInputs) => {
+    const d = deriveLift(i), m = mergeChecks(d.layout.checks, d.supportChecks);
+    return ['m_pheight', 'm_pdoor', 'm_pabove'].map((id) => m.find((c) => c.id === id)).map((c) => [c?.status, c?.value]);
+  };
+  // made its own, the room is checked as the standard one was
+  assert.deepEqual(checks({ ...inp, shaft: { ...inp.shaft, room: own } }), checks(inp));
+  // a door as small as a pulley room's may be (600 × 1400 mm): saved and passed; lower, refused by the save
+  const door = { ...ROOM_PLACEHOLDER, H: 1600, doorW: KV_VERT.doorMinW, doorH: KV_VERT.pulleyDoorH };
+  assert.equal(saved(door).success, true);
+  assert.deepEqual(checks({ ...inp, shaft: { ...inp.shaft, room: door } })[1], ['ok', 0]);
+  const low = saved({ ...door, doorH: KV_VERT.pulleyDoorH - 10 });
+  assert.equal(low.success, false);
+  assert.deepEqual(low.error?.issues.map((i) => i.path.join('.')), ['shaft.room.doorH']);
+  // the same door to a machine room is saved too, and fails its own check (2000 mm: m_door)
+  const top = deriveLift({ ...inp, calc: { ...inp.calc, layout: 'topDefl' }, shaft: { ...inp.shaft, room: door } });
+  assert.equal(mergeChecks(top.layout.checks, top.supportChecks).find((c) => c.id === 'm_door')?.status, 'fail');
 });
