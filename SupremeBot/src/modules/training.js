@@ -6,16 +6,17 @@
 
   const MAP = { strength: 'STR', dexterity: 'DEX', constitution: 'CON', intelligence: 'INT' };
 
-  // The daily spend cap survives page reloads via sessionStorage.
+  // The daily spend cap survives reloads AND closing the tab (localStorage of
+  // the game origin); it resets when the calendar day changes.
   const SS_KEY = 'tb_training';
   function loadPersisted() {
     try {
-      const v = JSON.parse(sessionStorage.getItem(SS_KEY) || '{}');
+      const v = JSON.parse(localStorage.getItem(SS_KEY) || '{}');
       return { spent: Number(v.spent) || 0, spentDay: v.spentDay || new Date().toDateString() };
     } catch (_) { return { spent: 0, spentDay: new Date().toDateString() }; }
   }
   function persist() {
-    try { sessionStorage.setItem(SS_KEY, JSON.stringify({ spent, spentDay })); } catch (_) {}
+    try { localStorage.setItem(SS_KEY, JSON.stringify({ spent, spentDay })); } catch (_) {}
   }
 
   let { spent, spentDay } = loadPersisted();
@@ -53,7 +54,7 @@
       if (!haveCosts) {
         // Throttled: if the server response lacks cost fields, an unthrottled
         // refetch would fire every single cycle.
-        if (Date.now() < costsFetchAt) return null;
+        if (Date.now() < costsFetchAt) { Scheduler.wakeAt(costsFetchAt); return null; }
         costsFetchAt = Date.now() + 60000;
         return async () => {
           const fetched = await Api.getUserAttributes();
@@ -70,6 +71,9 @@
       const stat = c.priorityStat === 'mix' ? cheapest(costs) : (MAP[c.priorityStat] || 'STR');
       const cost = costs[stat];
       if (!Number.isFinite(cost)) return null;
+      // The cap is a ceiling on what is spent today: a purchase that would
+      // cross it is refused (not just the next one after crossing it).
+      if (c.maxGoldSpend && spent + cost > c.maxGoldSpend) { noteSkip('logTrainSkipCap'); return null; }
 
       // Gate on the cached gold (kept fresh by the 30s global MiniUpdate) so we
       // don't poll the server every cycle while unaffordable. Reserve is the
@@ -88,6 +92,7 @@
         await Api.miniUpdate();
         const gold = Number(State.get().gold) || 0;
         if (cost > gold - reserve) return;
+        if (c.maxGoldSpend && spent + cost > c.maxGoldSpend) return;
         Logger.info(I18n.t('logTrain', [stat, String(cost)]));
         await Api.raiseAttribute(stat);
         spent += cost;

@@ -23,6 +23,7 @@ export const DEFAULT_SETTINGS = {
     humanize: true,                 // randomise delays to look human
     minActionDelayMs: 1500,         // lower bound between actions
     maxActionDelayMs: 4500,         // upper bound between actions
+    actionIntervalSec: 0,           // fixed seconds between actions (0 = auto humanize/spam)
     pauseAfterErrors: 3,            // consecutive errors before auto-pausing
     notifications: true,            // desktop notifications on key events
     notifyOnLevelUp: true,
@@ -137,7 +138,8 @@ export const DEFAULT_SETTINGS = {
     discordThreadId: '',             // post into this thread / forum thread id
     discordMention: '',              // ping prefix, e.g. <@&ROLE_ID>, <@USER_ID>, @here
     discordFooter: '',               // custom embed footer text
-    statusMinutes: 0                 // periodic "what the hero is doing" report (0 = off)
+    statusMinutes: 0,                // periodic "what the hero is doing" report (0 = off)
+    notifyEachAction: false          // send a webhook for EVERY action (can be spammy / rate-limited)
   },
 
   /* ---- Scheduler ---- */
