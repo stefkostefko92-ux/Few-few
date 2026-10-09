@@ -1,14 +1,17 @@
 // The room of a machine below with its sizes set on its drawings (ShaftInputs.below): beside the shaft it keeps its side
 // at the wall it stands past and grows away from it, across from its side nearest the origin; under the pit from its
 // corner nearest the origin, its height taking the machine's floor down; the machine has to stay inside it (m_fit), and
-// the room is checked as a machine room; a pulley room over the shaft with its own values (below-checks.ts).
+// the room is checked as a machine room; a pulley room over the shaft with its own values (below-checks.ts); under the pit
+// its plan and section C-C cut the pit's slab where the shaft's sheets and the 3D cut it (pitSlabHoles, round 37).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { deriveLift, newLift, type LiftInputs } from '@/lib/lift';
 import { belowFit, belowMachine, belowRoom, bottomGeo, sheaveHalfBelow, type BottomScheme } from '@/lib/lift/bottom';
-import { belowSectionEntities } from '@/lib/tavole/below-view';
+import { belowPlanEntities, belowSectionEntities } from '@/lib/tavole/below-view';
+import { belowGeoOf, sheetLayoutOf } from '@/lib/tavole/views';
 import { sheaveAxisBelow } from '@/lib/lift/machine';
-import { DEFAULT_ROOM, mergeChecks, type BelowRoom, type ShaftCheckId, type ShaftInputs } from '@/shaft';
+import { DEFAULT_ROOM, mergeChecks, section, type BelowRoom, type ShaftCheckId, type ShaftInputs } from '@/shaft';
+import { pitSlabHoles } from '@/shaft/shaft-rig';
 
 const below = (scheme: BottomScheme, p: Partial<ShaftInputs> = {}): LiftInputs => {
   const b = newLift();
@@ -99,4 +102,25 @@ test('macchina in basso con i rinvii sopra il vano: il locale delle pulegge con 
   assert.equal(tight.at('m_pabove')?.status, 'warn');
   // the other schemes have no pulley room
   assert.equal(deriveLift(below('head', { room: { ...DEFAULT_ROOM } })).supportChecks.some((c) => c.id.startsWith('m_p') && c.id !== 'm_panel'), false);
+});
+
+test('macchina sotto la fossa: i fori nella soletta della fossa sui fogli del locale sono quelli della pianta della fossa e del 3D', () => {
+  const ext = (pts: readonly (readonly [number, number])[]): number[] =>
+    [Math.min(...pts.map((p) => p[0])), Math.max(...pts.map((p) => p[0])), Math.min(...pts.map((p) => p[1])), Math.max(...pts.map((p) => p[1]))].map(Math.round);
+  for (const cw of ['rear', 'left', 'right'] as const) {
+    const d = deriveLift(below('under', { cw })), g = belowGeoOf(d.analysis, d.layout, d.machine, 'under'), L = sheetLayoutOf(d.analysis, d.layout, d.machine, g);
+    assert.ok(L.rig, cw);
+    const holes = pitSlabHoles(L.rig);
+    assert.equal(holes.length, 2, cw);
+    // the plan of the room under the pit: the same two openings (until round 37 60 mm round the ropes, the shaft's 30)
+    const quads = belowPlanEntities(L, d.machine, g).entities.flatMap((e) => (e.e === 'path' && e.st === 'thin' && e.pts.length === 4 ? [ext(e.pts)] : []));
+    for (const h of holes) assert.ok(quads.some((q) => q.every((v, i) => v === ext(h)[i])), `${cw}: foro ${ext(h).join(',')} nella pianta del locale`);
+    // section C-C: the slab cut across the openings' extent along the section (square to the wall behind the counterweight)
+    const S = section(L), along = (p: readonly [number, number]): number => (p[0] - g.car[0]) * g.dir[0] + (p[1] - g.car[1]) * g.dir[1];
+    const hs = holes.flat().map(along), slab = belowSectionEntities(L, d.machine, g).entities.flatMap((e) =>
+      e.e === 'path' && e.fill === 'concrete' && Math.max(...e.pts.map((p) => p[1])) === S.pitFloor ? [ext(e.pts)] : []);
+    assert.equal(slab.length, 2, cw);
+    const [a, b] = slab.sort((p, q) => p[0] - q[0]);
+    assert.deepEqual([a[1], b[0]], [Math.round(Math.min(...hs)), Math.round(Math.max(...hs))], `${cw}: apertura in C-C`);
+  }
 });

@@ -2,17 +2,23 @@
 // contrappeso.schermo.pianta): a sheet between the car and the counterweight's run, from its lower edge at most 300 mm
 // over the pit floor (c)) up to its top (b), screenOf), along the counterweight's wall across the counterweight and its
 // rails and 40 mm past them (d)), on to the wall — or to a car rail standing between — wherever more than 300 mm would
-// be left open there (e)). The plan of the pit, section A-A, their dimensions and the informations of its lower edge and
-// width take it from here. Pure.
+// be left open there (e)) — short of a landing on that wall where the sheet would meet what it puts in front of the wall
+// (landing.ts landingZone: the frame with the panels stacked, the sill with the plate under it), I.landingDepth + CLEAR
+// from it. The plan of the pit, section A-A, their dimensions, the informations of its lower edge and width and the 3D
+// (lift3d/pit.ts) take it from here. Pure.
 import { chain, path, type Entity, type Pt } from '../drawing';
+import { landingZone } from './landing';
 import { KV_VERT } from './norme-vert';
 import { onWall, quad } from './plan-walls';
 import { RAILS } from './rails';
 import { screenOf } from './section';
+import { levels } from './vertical';
 import type { Layout, Rail, ShaftCheck, Wall } from './types';
 
 /** The sheet's distance in front of the counterweight's face toward the car: from, to [mm] (as section A-A draws it). */
 const SHEET: readonly [number, number] = [15, 25];
+/** How far the sheet keeps from a landing it stops short of (the software's, as pit-kit.ts keeps its items) [mm]. */
+const CLEAR = 15;
 
 export interface CwScreen {
   /** the wall the counterweight runs by; along it (its own u) the sheet's ends */
@@ -40,18 +46,36 @@ function railExtent(L: Layout, r: Rail, wall: Wall): { u: [number, number]; v: [
   return { u: [Math.min(...along), Math.max(...along)], v: [Math.min(...from), Math.max(...from)] };
 }
 
+/** How far from the wall at the end `end` of the screen along its wall `wall` (the one at u = 0, or at `len`) the sheet
+ *  stops: past what a landing on that wall puts in front of it (landingZone) where the sheet's line, `v0`…`v1` from
+ *  `wall`, meets it and the sheet, up to `top` over the lowest landing, reaches up to it [mm]; 0 when none does. */
+function landingClear(L: Layout, wall: Wall, end: 0 | 1, len: number, v0: number, v1: number, top: number): number {
+  const I = L.inputs, at: Wall = wall === 'rear' ? (end ? 'right' : 'left') : end ? 'rear' : 'front', lv = levels(I.vertical.floors);
+  // the sheet's line along that wall (its u), CLEAR each side
+  const us = [v0, v1].map((v) => onWall(L, wall, end * len, v)[at === 'front' || at === 'rear' ? 0 : 1]);
+  const lo = Math.min(...us) - CLEAR, hi = Math.max(...us) + CLEAR, meets = (r: readonly [number, number]): boolean => r[0] < hi && lo < r[1];
+  const hit = I.vertical.floors.some((f, i) => L.doors.some((d) => {
+    if (d.wall !== at || !f.door.includes(d.side)) return false;
+    const z = landingZone(I, d), zf = lv[i] ?? 0;
+    return (top > zf && meets(z.over)) || (top > zf - z.down && meets(z.under));
+  }));
+  return hit ? I.landingDepth + CLEAR : 0;
+}
+
 export function cwScreen(L: Layout): CwScreen {
-  const I = L.inputs, K = KV_VERT, c = L.cw, wall: Wall = L.cwSide, along = wall === 'rear';
+  const I = L.inputs, K = KV_VERT, c = L.cw, wall: Wall = L.cwSide, along = wall === 'rear', high = screenOf(I.vertical);
   // the counterweight's face toward the car, from its wall's face
   const face = wall === 'rear' ? I.D - c.y : wall === 'left' ? c.x + c.w : I.W - c.x;
   const [c0, c1] = along ? [c.x, c.x + c.w] : [c.y, c.y + c.h], len = along ? I.W : I.D;
   const cwRails = L.rails.filter((r) => r.kind === 'cw').map((r) => railExtent(L, r, wall));
   const a = Math.min(c0, ...cwRails.map((e) => e.u[0])) - K.cwScreenPast, b = Math.max(c1, ...cwRails.map((e) => e.u[1])) + K.cwScreenPast;
   // what closes the run toward each end along the wall: the wall, or a car rail standing in the sheet's line between
-  const v1 = face + SHEET[1], inLine = L.rails.filter((r) => r.kind === 'car').map((r) => railExtent(L, r, wall)).filter((e) => e.v[0] <= v1 + 1);
+  const v0 = face + SHEET[0], v1 = face + SHEET[1], inLine = L.rails.filter((r) => r.kind === 'car').map((r) => railExtent(L, r, wall)).filter((e) => e.v[0] <= v1 + 1);
   const stop0 = Math.max(0, ...inLine.filter((e) => e.u[1] <= a).map((e) => e.u[1])), stop1 = Math.min(len, ...inLine.filter((e) => e.u[0] >= b).map((e) => e.u[0]));
-  const u0 = Math.max(0, a - stop0 > K.cwScreenWall ? stop0 : a), u1 = Math.min(len, stop1 - b > K.cwScreenWall ? stop1 : b);
-  return { wall, u0, u1, v0: face + SHEET[0], v1, low: K.cwScreenLow, high: screenOf(I.vertical), cwLen: c1 - c0, bare: [Math.max(0, a), Math.min(len, b)] };
+  // closed to a wall, the sheet stops short of a landing on it (what stays open there is the landing's depth)
+  const top = high - I.vertical.pit, end0 = Math.max(stop0, landingClear(L, wall, 0, len, v0, v1, top)), end1 = Math.min(stop1, len - landingClear(L, wall, 1, len, v0, v1, top));
+  const u0 = Math.max(0, a - stop0 > K.cwScreenWall ? end0 : a), u1 = Math.min(len, stop1 - b > K.cwScreenWall ? end1 : b);
+  return { wall, u0, u1, v0, v1, low: K.cwScreenLow, high, cwLen: c1 - c0, bare: [Math.max(0, a), Math.min(len, b)] };
 }
 
 /** The screen's lower edge (c)) and its width with the space beside the rails (d), e)) as the drawings give them, beside

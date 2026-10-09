@@ -15,6 +15,7 @@ import { IRON, bodyBox } from '@/shaft/machine-shape';
 import { shapePlan, sheaveHalf } from '@/shaft/machine-shape-view';
 import { ropeWidths, type MachineSpec } from '@/shaft/machine-room';
 import { section } from '@/shaft/section';
+import { ropeHoles } from '@/shaft/shaft-rig';
 import type { RoomInputs } from '@/shaft/room';
 import { doorSwing } from '@/shaft/room-draw';
 import { belowSwitchAt } from '@/shaft/room-floor';
@@ -27,6 +28,10 @@ const WALL = 250, SLAB = 200, FREE = 700;
 type P2 = readonly [number, number];
 const add = (a: P2, b: P2, k = 1): Pt => [a[0] + k * b[0], a[1] + k * b[1]];
 const dot = (a: P2, b: P2): number => a[0] * b[0] + a[1] * b[1];
+
+/** The openings of the pit's slab round the two runs down to the machine under the pit: the shaft's rule
+ *  (shaft-rig.ts ropeHoles, as pitSlabHoles cuts them for the plan of the pit, section A-A and the 3D). */
+const pitOpenings = (g: BottomGeo, M: MachineSpec) => ropeHoles([g.mc, g.mw], g.dir, M.d, ropeWidths(M.n, M.d).ropes);
 
 /** The machine of `M` below (bottom.ts belowMachine) and its room grown round it where it reaches out. */
 const placed = (L: Layout, M: MachineSpec, g: BottomGeo) => {
@@ -156,10 +161,8 @@ export function belowPlanEntities(L: Layout, M: MachineSpec, g: BottomGeo, s = 2
   // the two runs to the sheave, the ropes side by side across its plane; under the pit their openings in its slab
   const along: Pt = [g.mw[0] - g.mc[0], g.mw[1] - g.mc[1]], n = Math.hypot(along[0], along[1]) || 1, a: Pt = [along[0] / n, along[1] / n];
   const box = (c: P2, du: number, dz: number): Pt[] => [add(add(c, a, -du), zDir, -dz), add(add(c, a, du), zDir, -dz), add(add(c, a, du), zDir, dz), add(add(c, a, -du), zDir, dz)];
-  for (const m of [g.mc, g.mw]) {
-    out.push(path(box(m, M.d / 2 + 2, w.ropes), true, 'outline', 'steel'));
-    if (under) out.push(path(box(m, M.d / 2 + 60, w.ropes + 60), true, 'thin'));
-  }
+  for (const m of [g.mc, g.mw]) out.push(path(box(m, M.d / 2 + 2, w.ropes), true, 'outline', 'steel'));
+  if (under) for (const h of pitOpenings(g, M)) out.push(path(h, true, 'thin'));
   // the machine: its sheave between the runs, the gearbox and the motor past it; beside the shaft the slow shaft through
   // the wall in its sleeve
   out.push(...belowMachinePlan(L, M, g).entities);
@@ -246,7 +249,7 @@ export function belowSectionEntities(L: Layout, M: MachineSpec, g: BottomGeo): {
   if (under) {
     // its floor and walls, the pit's slab over it with the ropes' opening
     out.push(rect(r0 - T, floor - SLAB, r1 + T, floor, 'wall', 'concrete'), rect(r0 - T, floor, r0, sLow, 'wall', 'concrete'), rect(r1, floor, r1 + T, sLow, 'wall', 'concrete'));
-    const h0 = uC - w.ropes - 60, h1 = uC + w.ropes + 60;
+    const hs = pitOpenings(g, M).flat().map(along), h0 = Math.min(...hs), h1 = Math.max(...hs);
     out.push(rect(r0 - T, sLow, h0, S.pitFloor, 'wall', 'concrete'), rect(h1, sLow, r1 + T, S.pitFloor, 'wall', 'concrete'));
     out.push({ e: 'text', at: [(r0 + r1) / 2, floor + H - 400], text: 'LOCALE MACCHINA SOTTO IL VANO', size: 2.2, align: 'c', halo: true });
   } else {

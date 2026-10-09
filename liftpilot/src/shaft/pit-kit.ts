@@ -15,7 +15,7 @@
 // drawings leave it out and sheet 1's note says where it must go. Pure.
 import { chain, line, path, type Box, type Entity, type Pt } from '../drawing';
 import { governorSpot, TENSION } from './governor';
-import { landingOf } from './landing';
+import { landingOf, landingZone } from './landing';
 import { KV_VERT } from './norme-vert';
 import { doorOpDepthOf } from './operator';
 import { bufferFoot, bufferPlan, pitSpace } from './pit';
@@ -31,8 +31,10 @@ const STEP = 10, GAP = 15;
 /** the least height of a door operator's underside over the kit's top, the car on its compressed buffers, for the kit to
  *  stand under it (registry fossa.posizioni) [mm] */
 const OP_CLEAR = 100;
-/** how much further from the wall the box's name and dimension go in the plan beside the ladder on its wall [mm] */
-const KIT_LABEL_OFF = 250;
+/** in the plan, an item's name this far from its face and its dimension's row this far past the name (the dimension's
+ *  lettering, on the wall's side of an upright line or over a level one, then keeps clear of the name at the sheets'
+ *  scales); the box's name and dimension that much further from the wall beside the ladder on its wall [mm] */
+const NAME_AT = 70, DIM_PAST = 150, KIT_LABEL_OFF = 250;
 /** the pit's lamp (the software's, the 3D's only): its fitting along the wall, from it and high; its middle this far
  *  over the pit floor, and at least this far under the lowest landing [mm] */
 const LAMP = { w: 180, d: 60, h: 90, over: 1000, under: 300 } as const;
@@ -90,9 +92,9 @@ function obstacles(L: Layout, at: 'landing' | 'pit' | 'both'): Box[] {
   for (const d of L.doors) {
     out.push(bboxOf(quad(L, d.wall, d.u0 - 40, v0, d.u1 + 40, v0 + I.carDoorDepth + I.carWall)));
     if (opLow <= top + OP_CLEAR) out.push(bboxOf(quad(L, d.wall, d.op0, v0, d.op1, v0 + doorOpDepthOf(I))));
-    const l = landingOf(d);
-    if (over) out.push(bboxOf(quad(L, d.wall, d.frame0, 0, d.frame1, I.landingDepth)));
-    if (pit) out.push(bboxOf(quad(L, d.wall, Math.min(l.u0 - 60, d.u0 - K.toeSide), 0, Math.max(l.u1 + 60, d.u1 + K.toeSide), I.landingDepth + 10)));
+    const z = landingZone(I, d);
+    if (over) out.push(bboxOf(quad(L, d.wall, z.over[0], 0, z.over[1], I.landingDepth)));
+    if (pit) out.push(bboxOf(quad(L, d.wall, z.under[0], 0, z.under[1], I.landingDepth + 10)));
   }
   // the counterweight's run closed off by its screen: all from the wall to the sheet, end to end (nothing behind it is
   // reached from the door or from the pit)
@@ -187,13 +189,14 @@ export function pitKitPlan(L: Layout): Entity[] {
   const item = (it: PitItem, name: string, dimText: string, off = 0): void => {
     const P = (u: number, v: number): Pt => onWall(L, it.wall, u, v), along = it.wall === 'front' || it.wall === 'rear';
     out.push(path(quad(L, it.wall, it.u - it.w / 2, 0, it.u + it.w / 2, it.d), true, 'outline', 'paper'));
-    if (name === 'SCALA') for (const s of [-1, 1]) out.push(line(P(it.u + s * (it.w / 2 - 35), 0), P(it.u + s * (it.w / 2 - 35), it.d), 'thin'));
+    if (name === 'SCALA') for (const s of [-1, 1]) out.push(line(P(it.u + s * (it.w / 2 - KV_VERT.ladderStile), 0), P(it.u + s * (it.w / 2 - KV_VERT.ladderStile), it.d), 'thin'));
     else out.push(path(quad(L, it.wall, it.u - it.w / 2 + 25, it.d - 25, it.u + it.w / 2 - 25, it.d), true, 'thin', 'dark'));
-    out.push({ e: 'text', at: P(it.u, it.d + 70 + off), text: name, size: 1.6, align: 'c', angle: along ? 0 : 90, halo: true });
+    const nameV = it.d + NAME_AT + off, dimV = nameV + DIM_PAST;
+    out.push({ e: 'text', at: P(it.u, nameV), text: name, size: 1.6, align: 'c', angle: along ? 0 : 90, halo: true });
     // from the end of the wall nearer the door's opening to the item's middle
     const ends = along ? [0, L.inputs.W] : [0, L.inputs.D], e0 = Math.abs(it.u - ends[0]) <= Math.abs(it.u - ends[1]) ? ends[0] : ends[1];
     const across = (v: number): number => (along ? P(0, v)[1] : P(0, v)[0]), corner = across(0), face = across(it.d);
-    out.push(chain({ dir: along ? 'x' : 'y', pts: e0 < it.u ? [e0, it.u] : [it.u, e0], at: across(it.d + 160 + off), from: e0 < it.u ? [corner, face] : [face, corner], text: [dimText] }));
+    out.push(chain({ dir: along ? 'x' : 'y', pts: e0 < it.u ? [e0, it.u] : [it.u, e0], at: across(dimV), from: e0 < it.u ? [corner, face] : [face, corner], text: [dimText] }));
   };
   if (k.ladder) item(k.ladder, 'SCALA', 'Scala {v}');
   if (k.box) item(k.box, 'STOP · PRESA · LUCE', 'Pulsantiera {v}', k.ladder?.wall === k.box.wall ? KIT_LABEL_OFF : 0);
@@ -202,8 +205,8 @@ export function pitKitPlan(L: Layout): Entity[] {
 
 /** The kit in the pit's detail of section A-A (a cut along the depth, the plan's y across the sheet): the ladder in use,
  *  its stiles from the pit floor to their top over the sill (F.2.3) with that height between them, its rungs up to the
- *  sill (ladderRungs), the box's stop and light switch at their heights, a deep pit's lower stop under them; the ones on
- *  the far wall half dashed (behind the cut). */
+ *  sill (ladderRungs), the box's stop and light switch at their heights, a deep pit's lower stop under them, their
+ *  heights over each stack of cases; the ones on the far wall half dashed (behind the cut). */
 export function pitKitSection(L: Layout, P: (x: number, z: number) => Pt, pitFloor: number): Entity[] {
   const k = pitKit(L), out: Entity[] = [], cut = L.car.x + L.car.w / 2;
   const behind = (b: Box): boolean => (b.x0 + b.x1) / 2 > cut;
@@ -216,11 +219,20 @@ export function pitKitSection(L: Layout, P: (x: number, z: number) => Pt, pitFlo
     if (top > 0) out.push(chain({ dir: 'y', at: mid, pts: [P(mid, 0)[1], P(mid, top)[1]], text: ['Scala +{v}'], from: [null, null] }));
   }
   if (k.box) {
-    const b = k.box.box, st = behind(b) ? 'hidden' : 'outline', h = KV_VERT.pitBoxH;
-    for (const [z, name] of [[k.stop, 'STOP'], [k.light, 'LUCE'], ...(k.lowStop !== null ? [[k.lowStop, 'STOP'] as const] : [])] as const) {
+    const b = k.box.box, st = behind(b) ? 'hidden' : 'outline', h = KV_VERT.pitBoxH, stacks: (readonly [number, string])[][] = [];
+    // a case for each device, top down; cases touching one another make a stack
+    const devices = ([[k.stop, 'STOP'], [k.light, 'LUCE'], ...(k.lowStop !== null ? [[k.lowStop, 'STOP'] as const] : [])] as const).slice().sort((p, q) => q[0] - p[0]);
+    for (const d of devices) {
+      const z = d[0], last = stacks.at(-1), under = last?.at(-1);
       out.push(path([P(b.y0, z - h / 2), P(b.y1, z - h / 2), P(b.y1, z + h / 2), P(b.y0, z + h / 2)], true, st, 'paper'));
-      // its height over the lowest landing (a reference: the software's within the standard's band)
-      out.push({ e: 'text', at: P(b.y1 + 40, z - 20), text: `${name} ${z < 0 ? '-' : '+'}${Math.abs(Math.round(z))}`, size: 1.6, align: 'l', halo: true });
+      if (last && under && under[0] - z <= h) last.push(d);
+      else stacks.push([d]);
+    }
+    // over each stack, centred on it, its devices' heights over the lowest landing top down (references: the software's
+    // within the standard's band): clear of each other and of the dimensions of the pit's extremes beside the car
+    for (const s of stacks) {
+      const text = s.map(([z, name]) => `${name} ${z < 0 ? '-' : '+'}${Math.abs(Math.round(z))}`).join(' · ');
+      out.push({ e: 'text', at: P((b.y0 + b.y1) / 2, s[0][0] + h / 2 + 30), text, size: 1.6, align: 'c', halo: true });
     }
   }
   return out;

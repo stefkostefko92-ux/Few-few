@@ -199,8 +199,9 @@ test('fossa: scala entro 600 mm e pulsantiera entro 750 mm dal vano porta, liber
   // the lower stop under the box, its top at most 1200 mm over the pit floor: the section draws both
   assert.equal(deep.lowStop, KV_VERT.stopLower - KV_VERT.pitBoxH / 2 - 2600);
   assert.equal(pitKit(layout(I)).lowStop, null);
+  // (the heights over each stack of the box's cases: touching cases share one label, «LUCE +1100 · STOP +1000»)
   const stops = (J: ShaftInputs): number => pitKitSection(layout(J), (x, z) => [x, z], -J.vertical.pit)
-    .filter((e) => e.e === 'text' && e.text.startsWith('STOP ')).length;
+    .flatMap((e) => (e.e === 'text' ? e.text.split(' · ') : [])).filter((t) => /^STOP [+-]\d+$/.test(t)).length;
   assert.equal(stops({ ...I, vertical: { ...I.vertical, pit: 2600 } }), 2);
   assert.equal(stops(I), 1);
 });

@@ -209,7 +209,7 @@ export const VOCI_LOCALE: readonly VoceVano[] = [
     valore: 'la pianta del locale disegna con la loro legenda: i punti luce sopra le zone di lavoro (almeno 200 lx al pavimento, illuminazione), '
       + 'l’interruttore della luce presso l’accesso, entro 1000 mm dalla porta, accanto all’interruttore generale; una presa 2P+PE per ogni area '
       + 'di lavoro (accanto all’argano e accanto al quadro); la griglia di aerazione; le canaline dal quadro all’argano e al vano, coperte dove si '
-      + 'cammina',
+      + 'cammina; interruttore, prese e griglia fuori dal vano della porta con il suo telaio',
     riferimento: 'UNI EN 81-20:2020, 5.2.1.4.2 (luce), 5.2.1.5.2 a)–b) (interruttore a ogni accesso, una presa per area di lavoro), 5.10.7.2 '
       + '(prese 2P+PE), 5.10.8.2 (interruttore entro 1 m dall’accesso), 5.2.1.3 (ventilazione) e 5.2.6.3.2.5 (canaline a pavimento coperte); '
       + 'le posizioni sono una proposta del software',

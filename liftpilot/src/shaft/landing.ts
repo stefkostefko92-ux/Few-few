@@ -4,12 +4,25 @@
 // stays with the car door (its door, the operator, the coupler, whose vanes the lock's rollers keep meeting). In the
 // plans the axes of both doors and the distance between them (registry porte.disassamento). Pure.
 import { chain, edit as E, line, type Entity } from '../drawing';
+import { KV_VERT } from './norme-vert';
 import { onWall } from './plan-walls';
-import type { DoorLayout, Layout, Wall } from './types';
+import { toeOf } from './toe';
+import type { DoorLayout, Layout, ShaftInputs, Wall } from './types';
 
 /** The landing door of an entrance as a door of its own: its clear opening where the landing door is (the drawings and
  *  the 3D build a landing door from it as they build any door). */
 export const landingOf = (d: DoorLayout): DoorLayout => (d.l0 === d.u0 ? d : { ...d, u0: d.l0, u1: d.l1 });
+
+/** What a landing entrance puts in front of its wall on the shaft's side, along the wall (its u) and as high as it reaches
+ *  over and under the landing level [mm], I.landingDepth from the wall's face: over the landing its frame with the panels
+ *  stacked (`over`, up to the door's height `up`); under it the sill on its brackets past the landing door's opening and
+ *  the plate under it (`under`: toe.ts, the car's entrance and KV_VERT.toeSide each side), down to the plate's bevel at
+ *  the wall (`down`). The pit's ladder and control box (pit-kit.ts) and the counterweight's screen (screen.ts) keep
+ *  clear of it. */
+export function landingZone(I: ShaftInputs, d: DoorLayout): { over: readonly [number, number]; up: number; under: readonly [number, number]; down: number } {
+  const l = landingOf(d), t = toeOf(I), side = KV_VERT.toeSide;
+  return { over: [d.frame0, d.frame1], up: I.doorHeight, under: [Math.min(l.u0 - 60, d.u0 - side), Math.max(l.u1 + 60, d.u1 + side)], down: t.h + t.bevel };
+}
 
 /** How far the landing door stands from the car door along the wall [mm] (+: toward higher u). */
 export const landingShift = (d: DoorLayout): number => d.l0 - d.u0;

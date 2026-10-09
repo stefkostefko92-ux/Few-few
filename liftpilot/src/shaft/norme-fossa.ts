@@ -33,11 +33,13 @@ export const KV_FOSSA = {
   inspReach: 300,
   lightOver: 1000,
   // the ladder and the pit's control box as the drawings show them (the software's): the ladder 370 wide (300 clear
-  // between 35 mm stiles) and 100 deep, its rungs 280 mm apart (within the constant pitch of F.3.2 b)) from the one
-  // flush with the landing sill (F.5 d)) down; the box 150 wide, 80 deep, 120 high, its stop 500 mm and the light's
-  // switch 1100 mm over the lowest landing [mm]
+  // between 35 mm stiles, the most of F.3.1 a)) and 100 deep, its round rungs 30 mm across (within F.3.2 c)) 280 mm
+  // apart (within the constant pitch of F.3.2 b)) from the one flush with the landing sill (F.5 d)) down; the box 150
+  // wide, 80 deep, 120 high, its stop 500 mm and the light's switch 1100 mm over the lowest landing [mm]
   ladderW: 370,
   ladderD: 100,
+  ladderStile: 35,
+  ladderRungD: 30,
   ladderPitch: 280,
   pitBoxW: 150,
   pitBoxD: 80,
@@ -84,7 +86,7 @@ export const KV_FOSSA = {
 export const COSTANTI_FOSSA = {
   'fossa.accesso': ['pitLadderMax', 'ladderOverSill', 'ladderRung', 'ladderBehind', 'ladderRest', 'ladderUse'],
   'fossa.comandi': ['stopPitOne', 'stopOverLanding', 'stopOverPit', 'stopUpper', 'stopLower', 'pitReach', 'inspReach', 'lightOver'],
-  'fossa.posizioni': ['ladderW', 'ladderD', 'ladderPitch', 'pitBoxW', 'pitBoxD', 'pitBoxH', 'stopAt', 'lightAt'],
+  'fossa.posizioni': ['ladderW', 'ladderD', 'ladderStile', 'ladderRungD', 'ladderPitch', 'pitBoxW', 'pitBoxD', 'pitBoxH', 'stopAt', 'lightAt'],
   'porte.soccorso': ['emergencyRise', 'emergencyH', 'emergencyW'],
   'porte.sottosoglia': ['unlockMax', 'unlockCoupled', 'toeOver', 'toeSide', 'toeProj', 'toeBevelAngle', 'toeBevel'],
   'contrappeso.schermo.pianta': ['cwScreenLow', 'cwScreenWall', 'cwScreenPast'],
@@ -115,7 +117,8 @@ export const VOCI_FOSSA: readonly VoceVano[] = [
   },
   {
     id: 'fossa.posizioni', gruppo: 'sezione', titolo: 'Scala e pulsantiera della fossa nei disegni',
-    valore: 'la scala disegnata larga 370 mm e profonda 100 mm, in uso con i montanti fino a 1100 mm sopra la soglia e i pioli a passo di 280 mm '
+    valore: 'la scala disegnata larga 370 mm e profonda 100 mm, con montanti da 35 mm (il massimo di F.3.1 a)) e pioli tondi da 30 mm (entro '
+      + 'F.3.2 c)), in uso con i montanti fino a 1100 mm sopra la soglia e i pioli a passo di 280 mm '
       + 'dal primo, a filo della soglia, in giù fino al fondo; la pulsantiera della fossa (arresto, presa, comando della luce) larga 150 mm, '
       + 'profonda 80 mm, alta 120 mm per apparecchio, con l’arresto 500 mm e il comando della luce 1100 mm sopra la fermata più bassa (fossa oltre '
       + '1600 mm: l’arresto alto 1000 mm sopra la fermata e quello basso sotto la pulsantiera, con il bordo superiore 1200 mm sopra il fondo); '
@@ -151,7 +154,8 @@ export const VOCI_FOSSA: readonly VoceVano[] = [
     id: 'contrappeso.schermo.pianta', gruppo: 'sezione', titolo: 'Protezione del contrappeso in fossa: bordo inferiore e larghezza',
     valore: 'bordo inferiore non oltre 300 mm dal fondo della fossa; larga almeno quanto il contrappeso; se tra le guide del contrappeso e una parete '
       + 'ci sono più di 300 mm, la protezione arriva anche alla parete. Il disegno la mette davanti al contrappeso e alle sue guide, 40 mm oltre da '
-      + 'ogni lato, fino alla parete dove resterebbero più di 300 mm',
+      + 'ogni lato, fino alla parete dove resterebbero più di 300 mm; davanti a una porta di piano su quella parete si ferma prima della soglia, '
+      + 'della lamiera sottosoglia e delle ante impacchettate (resta aperta la sola profondità della soglia)',
     riferimento: 'UNI EN 81-20:2020, 5.2.5.5.1 c)–e)', fonte: letto(T20, 'p. 35'), stato: 'confermato', verifiche: ['p_screenlo', 'p_screenw'],
     nota: 'p_screenlo e p_screenw sono informazioni, non verifiche: il bordo e la larghezza sono quelli che il disegno dà accanto ai valori della '
       + 'norma; la protezione montata si controlla al collaudo',

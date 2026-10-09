@@ -3,7 +3,7 @@
 // the pit's detail of section A-A draw the same: the ladder in use, its stiles KV_VERT.ladderOverSill over the sill, its
 // rungs at ladderRungs; no ladder in a pit that needs a door), the counterweight's screen as src/shaft/screen.ts sizes
 // it (from its lower edge over the pit floor up to its height, across the counterweight and its rails, on to the wall
-// where the gap is too wide) on its frame of angles; along the shaft the lighting, one fitting a floor and one under
+// where the gap is too wide, short of a landing on that wall) on its frame of angles; along the shaft the lighting, one fitting a floor and one under
 // the slab, on their conduit (in their niche when the shaft has one), and the cable trunking in its chase. Plan and
 // heights in millimetres, into the shaft's batch. Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
@@ -20,10 +20,10 @@ import type { LiftMaterials } from './materials';
 
 // a lamp's height without a niche [mm]
 const LAMP_H = 600;
-// the ladder's stiles along the wall (KV_VERT.ladderW: 300 clear between them), their brackets off the wall and the
-// rungs' radius (within F.3.2 c)); the screen's sheet and its frame of flat bars, wide and thick, behind the sheet on
-// the car's side of its zone (the counterweight's buffer may reach under the rest) [mm]
-const STILE = 35, STANDOFF = 30, RUNG_R = 15, SHEET = 2, BAR = 30, BAR_T = 2;
+// the ladder's stiles (KV_VERT.ladderStile) and rungs (KV_VERT.ladderRungD) as the registry has them, the stiles'
+// brackets off the wall; the screen's sheet and its frame of flat bars, wide and thick, behind the sheet on the car's
+// side of its zone (the counterweight's buffer may reach under the rest) [mm]
+const STILE = KV_VERT.ladderStile, STANDOFF = 30, RUNG_R = KV_VERT.ladderRungD / 2, SHEET = 2, BAR = 30, BAR_T = 2;
 
 /** The access ladder in use: two stiles from the pit floor to `top` over the lowest landing z0, on brackets off the
  *  wall, the rungs between them where the drawings put them. */

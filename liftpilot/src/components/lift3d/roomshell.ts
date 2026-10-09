@@ -17,7 +17,7 @@ import { KL, type RopeRig } from '@/lib/lift';
 import { belowRoom } from '@/lib/lift/bottom';
 import { pulleyRoomOf } from '@/lib/lift/shaft-rig';
 import { section } from '@/shaft';
-import type { ElectricSpots } from '@/shaft/room-electric';
+import { FIT_HALF, VENT_HALF, lampHalf, type ElectricSpots } from '@/shaft/room-electric';
 import { SWITCH, belowSwitchAt, switchSpan } from '@/shaft/room-floor';
 import { Batch, box, onWall, type Point } from './geom';
 import { SIDES, type LiftMaterials, type Side } from './materials';
@@ -118,9 +118,10 @@ export function buildShell(sh: Shell, M: LiftMaterials, G: ShellGroups, elec: El
   if (elec) wallFittings(fix, R, M, elec);
   // the lamps under the roof (hidden with the roof turned into a ghost: they would hang in the air)
   const fitting = new Batch();
-  for (const [lx, ly] of elec ? elec.lights : [[Wr / 2, Dr / 2] as const]) {
-    fix('front', lx - 300, lx + 300, ly - 60, ly + 60, H - 70, H, M.galv, fitting);
-    fix('front', lx - 280, lx + 280, ly - 45, ly + 45, H - 74, H - 70, M.carLight, fitting);
+  for (const { at: [lx, ly], alongX } of elec ? elec.lights : [{ at: [Wr / 2, Dr / 2] as const, alongX: true }]) {
+    const [hx, hy] = lampHalf(alongX), [ix, iy] = alongX ? [20, 15] : [15, 20];
+    fix('front', lx - hx, lx + hx, ly - hy, ly + hy, H - 70, H, M.galv, fitting);
+    fix('front', lx - hx + ix, lx + hx - ix, ly - hy + iy, ly + hy - iy, H - 74, H - 70, M.carLight, fitting);
     const lamp = new THREE.PointLight(0xfff2de, 2.2, 7, 2);
     lamp.position.set((x0 + lx) / 1000, (z0 + H - 150) / 1000, -(y0 + ly) / 1000);
     G.common.add(lamp);
@@ -132,15 +133,15 @@ export function buildShell(sh: Shell, M: LiftMaterials, G: ShellGroups, elec: El
  *  plates and pins), the ventilation grille (a frame with its louvres). */
 function wallFittings(fix: Fix, R: RoomInputs, M: LiftMaterials, e: ElectricSpots): void {
   const { lightSwitch: s } = e;
-  fix(s.wall, s.at - 40, s.at + 40, 0, 12, SWITCH_AT - 40, SWITCH_AT + 40, M.chrome);
+  fix(s.wall, s.at - FIT_HALF, s.at + FIT_HALF, 0, 12, SWITCH_AT - 40, SWITCH_AT + 40, M.chrome);
   fix(s.wall, s.at - 15, s.at + 15, 12, 18, SWITCH_AT - 22, SWITCH_AT + 22, M.panel);
   for (const k of e.sockets) {
-    fix(k.wall, k.at - 40, k.at + 40, 0, 12, SOCKET_AT - 40, SOCKET_AT + 40, M.chrome);
+    fix(k.wall, k.at - FIT_HALF, k.at + FIT_HALF, 0, 12, SOCKET_AT - 40, SOCKET_AT + 40, M.chrome);
     for (const d of [-10, 10]) fix(k.wall, k.at + d - 2.5, k.at + d + 2.5, 12, 13, SOCKET_AT - 6, SOCKET_AT + 6, M.rubber);
   }
   const v = e.vent, top = R.H - VENT_UNDER + 125, bottom = R.H - VENT_UNDER - 125;
-  fix(v.wall, v.at - 200, v.at + 200, 0, 15, bottom, top, M.galv);
-  for (let z = bottom + 25; z < top - 20; z += 40) fix(v.wall, v.at - 185, v.at + 185, 15, 18, z, z + 14, M.steel);
+  fix(v.wall, v.at - VENT_HALF, v.at + VENT_HALF, 0, 15, bottom, top, M.galv);
+  for (let z = bottom + 25; z < top - 20; z += 40) fix(v.wall, v.at - VENT_HALF + 15, v.at + VENT_HALF - 15, 15, 18, z, z + 14, M.steel);
 }
 
 type Fix = (wall: Side, u0: number, u1: number, v0: number, v1: number, za: number, zb: number, m: THREE.Material) => void;

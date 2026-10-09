@@ -1,7 +1,8 @@
 // The slabs and the machine room in 3D from the drawings' own models (round 37): the slab over the shaft open for the
 // governor's rope only where the governor stands over it (closed under hung pulleys, as the sheets have it); the pit's
 // slab under a machine below cut where its plan and section A-A cut it, the 3D ropes through it clear of its edges; the
-// machine room's lamps, light switch, sockets and grille where its plan puts them.
+// machine room's lamps, light switch, sockets and grille where its plan puts them — the lamps inside the room, the wall
+// fittings clear of the door's opening.
 // Motion: none, nothing is drawn here; the scene's prefers-reduced-motion handling is in LiftStage.tsx.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -9,7 +10,7 @@ import * as THREE from 'three/webgpu';
 import { belt, deriveLift, newLift, ropeRig, type BottomScheme, type LiftInputs, type RopePlane } from '@/lib/lift';
 import { KV_VERT, section } from '@/shaft';
 import { roomGeo } from '@/shaft/machine-room';
-import { roomElectrics } from '@/shaft/room-electric';
+import { DOOR_JAMB, FIT_HALF, VENT_HALF, lampHalf, roomElectrics } from '@/shaft/room-electric';
 import { layoutSite } from '@/shaft/room-site';
 import { roomPlanEntities } from '@/shaft/room-view';
 import { groovePitch } from '@/shaft/ropes';
@@ -94,7 +95,7 @@ test('locale macchina in 3D: luci, interruttore, prese e griglia dove li mette l
     const e = roomElectrics(layoutSite(L), dv.machine, G), M = createLiftMaterials();
     // the plan's own marks are these places
     const marks = roomPlanEntities(L, dv.machine, G).entities.flatMap((x) => (x.e === 'mark' && x.sym === 'light' ? [[Math.round(x.at[0]), Math.round(x.at[1])]] : []));
-    assert.deepEqual(marks, e.lights.map((p) => [Math.round(p[0]), Math.round(p[1])]), name);
+    assert.deepEqual(marks, e.lights.map((l) => [Math.round(l.at[0]), Math.round(l.at[1])]), name);
     const sh = shellsOf(L, ropeRig(dv))[0], groups = {
       sides: { front: new THREE.Group(), rear: new THREE.Group(), left: new THREE.Group(), right: new THREE.Group() },
       onWall: { front: new Batch(), rear: new Batch(), left: new Batch(), right: new Batch() }, roof: new THREE.Group(), overhead: new THREE.Group(), common: new THREE.Group(),
@@ -102,7 +103,7 @@ test('locale macchina in 3D: luci, interruttore, prese e griglia dove li mette l
     buildShell(sh, M, groups, e);
     // a lamp over each work area
     const lamps = groups.common.children.flatMap((o) => (o instanceof THREE.PointLight ? [[Math.round(o.position.x * 1000 + R.shaftX), Math.round(-o.position.z * 1000 + R.shaftY)]] : []));
-    assert.deepEqual(lamps, e.lights.map((p) => [Math.round(p[0]), Math.round(p[1])]), name);
+    assert.deepEqual(lamps, e.lights.map((l) => [Math.round(l.at[0]), Math.round(l.at[1])]), name);
     // the switch, the sockets and the grille on their walls, in those walls' groups (hidden with their x-ray)
     const wall = new THREE.Group();
     for (const s of SIDES) groups.onWall[s].into(wall);
@@ -116,5 +117,43 @@ test('locale macchina in 3D: luci, interruttore, prese e griglia dove li mette l
       const [x, y] = onWall(k.wall, R.W, R.D, k.at, 0);
       assert.ok(pts.some((p) => Math.hypot(p[0] - x, p[1] - y) < 210), `${name}: ${k.wall} a ${Math.round(k.at)}`);
     }
+  }
+});
+
+test('locale macchina: le plafoniere dentro il locale, interruttore, prese e griglia fuori dal vano della porta', () => {
+  type Room = NonNullable<LiftInputs['shaft']['room']>;
+  const base = newLift(), room = (I: LiftInputs, r: Partial<Room>): LiftInputs => ({ ...I, shaft: { ...I.shaft, room: { ...(I.shaft.room as Room), ...r } } });
+  const cw = (I: LiftInputs, side: 'left' | 'right' | 'rear', cwPos?: number): LiftInputs =>
+    ({ ...I, shaft: { ...I.shaft, cw: side, ...(cwPos !== undefined ? { plan: { ...(I.shaft.plan ?? {}), cwPos } } : {}) } });
+  const direct = (I: LiftInputs): LiftInputs => ({ ...I, calc: { ...I.calc, layout: 'top' } });
+  const cases: readonly (readonly [string, LiftInputs])[] = [
+    ['esempio', base], ['contrappeso a sinistra', cw(base, 'left')], ['contrappeso a destra', cw(base, 'right')],
+    ['contrappeso sul fondo spostato', cw(base, 'rear', 150)], ['motore verso la cabina', room(base, { motor: 'car' })],
+    ['a sinistra, motore verso la cabina', room(cw(base, 'left'), { motor: 'car' })], ['calate oblique a sinistra', cw(base, 'left', 300)],
+    ['calate oblique a destra', cw(base, 'right', 700)], ['calate oblique sul fondo', cw(base, 'rear', 550)],
+    ['tiro diretto su travi, calate oblique', room(direct(cw(base, 'rear', 550)), { support: { kind: 'beams', profile: 'IPE 240' } })],
+    ['TORO, calate oblique, motore verso la cabina', room({ ...cw(base, 'right', 700), catalog: { brand: 'Sassi', model: 'TORO' } }, { motor: 'car' })],
+  ];
+  for (const [name, inp] of cases) {
+    const dv = deriveLift(inp), L = dv.layout, G = roomGeo(L, dv.machine);
+    assert.ok(G, name);
+    const R = G.room, e = roomElectrics(layoutSite(L), dv.machine, G);
+    for (const l of e.lights) {
+      const [hx, hy] = lampHalf(l.alongX);
+      assert.ok(l.at[0] - hx >= 0 && l.at[0] + hx <= R.W && l.at[1] - hy >= 0 && l.at[1] + hy <= R.D, `${name}: plafoniera a ${l.at.map(Math.round).join(', ')}`);
+    }
+    for (const [s, half] of [[e.lightSwitch, FIT_HALF], ...e.sockets.map((k) => [k, FIT_HALF] as const), [e.vent, VENT_HALF]] as const) {
+      const inDoor = s.wall === R.doorWall && s.at + half > R.doorAt - DOOR_JAMB && s.at - half < R.doorAt + R.doorW + DOOR_JAMB;
+      assert.ok(!inDoor, `${name}: ${s.wall} a ${Math.round(s.at)} nel vano della porta (${R.doorAt}…${R.doorAt + R.doorW})`);
+    }
+    // the 3D fittings under the roof inside the room too
+    const sh = shellsOf(L, ropeRig(dv))[0], groups = {
+      sides: { front: new THREE.Group(), rear: new THREE.Group(), left: new THREE.Group(), right: new THREE.Group() },
+      onWall: { front: new Batch(), rear: new Batch(), left: new Batch(), right: new Batch() }, roof: new THREE.Group(), overhead: new THREE.Group(), common: new THREE.Group(),
+    };
+    buildShell(sh, createLiftMaterials(), groups, e);
+    const b = new THREE.Box3().setFromObject(groups.overhead);
+    assert.ok(b.min.x * 1000 + R.shaftX >= -0.5 && b.max.x * 1000 + R.shaftX <= R.W + 0.5, `${name}: plafoniere in x ${Math.round(b.min.x * 1000 + R.shaftX)}…${Math.round(b.max.x * 1000 + R.shaftX)}`);
+    assert.ok(-b.max.z * 1000 + R.shaftY >= -0.5 && -b.min.z * 1000 + R.shaftY <= R.D + 0.5, `${name}: plafoniere in y`);
   }
 });
