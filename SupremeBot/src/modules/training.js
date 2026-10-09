@@ -71,6 +71,9 @@
       const stat = c.priorityStat === 'mix' ? cheapest(costs) : (MAP[c.priorityStat] || 'STR');
       const cost = costs[stat];
       if (!Number.isFinite(cost)) return null;
+      // The cap is a ceiling on what is spent today: a purchase that would
+      // cross it is refused (not just the next one after crossing it).
+      if (c.maxGoldSpend && spent + cost > c.maxGoldSpend) { noteSkip('logTrainSkipCap'); return null; }
 
       // Gate on the cached gold (kept fresh by the 30s global MiniUpdate) so we
       // don't poll the server every cycle while unaffordable. Reserve is the
@@ -89,6 +92,7 @@
         await Api.miniUpdate();
         const gold = Number(State.get().gold) || 0;
         if (cost > gold - reserve) return;
+        if (c.maxGoldSpend && spent + cost > c.maxGoldSpend) return;
         Logger.info(I18n.t('logTrain', [stat, String(cost)]));
         await Api.raiseAttribute(stat);
         spent += cost;

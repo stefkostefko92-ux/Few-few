@@ -242,7 +242,7 @@
         } catch (e) {
           // Transient transport / session errors shouldn't trip the error-stop;
           // they recover on their own (or via auto-login).
-          const transient = /TIMEOUT|INJECT_NOT_READY|SESSION_EXPIRED|NO_SESSION|NO_GATEWAY|HTTP_|BAD_XML/.test(e.message || '');
+          const transient = /TIMEOUT|INJECT_NOT_READY|SESSION_EXPIRED|NO_SESSION|NO_GATEWAY|HTTP_|BAD_XML|GAME_INFO/.test(e.message || '');
           Logger[transient ? 'warn' : 'error'](`[${mod.id}]`, e.message);
           if (!transient) {
             consecutiveErrors++;

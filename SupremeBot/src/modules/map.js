@@ -137,11 +137,15 @@
               if (paid(d) > 0) { Logger.info(I18n.t('logMapPaidSkip', [I18n.t('opt_map_illusionCave'), String(paid(d))])); return; }
               Logger.info(I18n.t('logCaveStart', [String(Api.findValue(d, 'reward_gold', 'i4') ?? '?')]));
               await Api.startIllusionCave(); Stats.bump({ caveRuns: 1 });
+              // Cave/dragon run on a timer (illusion_duration): pick it up so
+              // the other modules wait instead of firing into a busy hero.
+              try { await Api.miniUpdate(); } catch (_) {}
             } else {
               const d = await Api.getDragonDetails();
               if (paid(d) > 0) { Logger.info(I18n.t('logMapPaidSkip', [I18n.t('opt_map_dragon'), String(paid(d))])); return; }
               Logger.info(I18n.t('logDragonStart', [String(Api.findValue(d, 'reward_gold', 'i4') ?? '?')]));
               await Api.startDragon(); Stats.bump({ dragonRuns: 1 });
+              try { await Api.miniUpdate(); } catch (_) {}
             }
           } catch (e) {
             Logger.warn(I18n.t('logMapUnavailable', [pick, e.message]));

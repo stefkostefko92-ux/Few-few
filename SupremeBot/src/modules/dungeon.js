@@ -37,7 +37,13 @@
           // Start -> fight a bounded number of rounds (stop early on any fault,
           // e.g. defeat) -> claim the accumulated reward.
           Logger.info(I18n.t('logShadowStart'));
-          await Api.startShadowdungeon();
+          try {
+            await Api.startShadowdungeon();
+          } catch (e) {
+            cooldownUntil = Date.now() + 10 * 60000;
+            lastCheck = 0;
+            throw e;
+          }
           const rounds = Math.max(1, Math.min(50, Number(c.shadowRounds) || 10));
           let fought = 0;
           for (let i = 0; i < rounds; i++) {
@@ -49,7 +55,14 @@
           Logger.success(I18n.t('logShadowDone', [String(fought)]));
         } else {
           Logger.info(I18n.t('logDungeonStart', [String(info.level || 0)]));
-          await Api.startDungeon();
+          try {
+            await Api.startDungeon();
+          } catch (e) {
+            // Refused (hero busy, no tries left server-side): back off.
+            cooldownUntil = Date.now() + 10 * 60000;
+            lastCheck = 0;
+            throw e;
+          }
           Stats.bump({ dungeonRuns: 1 });
           Logger.success(I18n.t('logDungeonDone'));
         }

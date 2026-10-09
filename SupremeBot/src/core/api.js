@@ -199,8 +199,25 @@
       }
       throw new Error('FAULT:' + (faultStr || method));
     }
+    // The game reports almost every failure IN-BAND, as a normal response whose
+    // top-level struct carries an `error` string (client: "if(!response.error)
+    // routeResponse else _handleError"). Without this a refused purchase
+    // ("insufficient_gold") looked like a success and an expired session
+    // ("no_valid_session") never triggered auto-login.
+    const top = doc.querySelector('methodResponse > params > param > value > struct');
+    const gErr = top ? directText(top, 'error') : null;
+    if (gErr) {
+      if (gErr === 'no_valid_session') {
+        State.patch({ loggedIn: false, sessionLost: Date.now() });
+        throw new Error('SESSION_EXPIRED:' + gErr);
+      }
+      // The client itself shrugs these off (Model.whitelsitedErrors).
+      if (GAME_INFO_ERRORS.includes(gErr)) throw new Error('GAME_INFO:' + gErr);
+      throw new Error('FAULT:' + gErr + ' (' + method + ')');
+    }
     return doc;
   }
+  const GAME_INFO_ERRORS = ['no_auction_active', 'max_dungeon_level_reached', 'game_event_not_activated'];
 
   const Api = {
     ready: () => Bridge.ready(),

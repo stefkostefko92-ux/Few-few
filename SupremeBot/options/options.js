@@ -28,12 +28,12 @@ const CIRCLE_NODES = [
   { n: 8, label: 'Amethyst (adventure gold)', aliases: ['amethyst', 'advgold', 'adventuregold'] },
   { n: 9, label: 'Diamond (shop discount)', aliases: ['diamond', 'discount', 'cheaper'] },
   { n: 10, label: "Tiger's Eye (travel speed)", aliases: ["tiger's eye", 'tigers eye', 'tigerseye', 'tiger', 'speed', 'travel'] },
-  { n: 11, label: 'Negotiation Rune (INT)', aliases: ['negotiation', 'int', 'intelligence'] },
+  { n: 11, label: 'Negotiation Rune (INT)', aliases: ['negotiation', 'int', 'intelligence', 'преговор'] },
   { n: 12, label: 'Wisdom Rune (CON)', aliases: ['wisdom', 'con', 'constitution'] },
   { n: 13, label: 'Diligence Rune (DEX)', aliases: ['diligence', 'dex', 'dexterity'] },
   { n: 14, label: 'Courage Rune (STR)', aliases: ['courage', 'str', 'strength'] },
   { n: 15, label: 'Glory Rune (drop rate)', aliases: ['glory', 'drop', 'droprate', 'loot'] },
-  { n: 16, label: 'Demon Skull (major bonuses)', aliases: ['demon skull', 'skull', 'demon'] }
+  { n: 16, label: 'Demon Skull (major bonuses)', aliases: ['demon skull', 'skull', 'demon', 'череп'] }
 ];
 
 // Same resolution rule as circle.js resolveNodes: numbers pass through,
@@ -220,8 +220,15 @@ function renderChecklist(section, f) {
   const current = String(settings[section][f.k] || '').split(/[\n,;]+/).map((s) => s.trim()).filter(Boolean);
   const selected = new Set(current.map(resolveNodeToken).filter((n) => n != null).map(String));
 
+  // Manual mode buys in LIST order, so keep the order already set (from the
+  // panel or earlier clicks) and append newly ticked nodes at the end.
+  const order = current.map(resolveNodeToken).filter((n) => n != null).map(String)
+    .filter((v, i, a) => a.indexOf(v) === i);
   function commit() {
-    const chosen = Array.from(box.querySelectorAll('input:checked')).map((cb) => cb.value);
+    const checked = new Set(Array.from(box.querySelectorAll('input:checked')).map((cb) => cb.value));
+    for (let i = order.length - 1; i >= 0; i--) if (!checked.has(order[i])) order.splice(i, 1);
+    checked.forEach((v) => { if (!order.includes(v)) order.push(v); });
+    const chosen = order.slice();
     settings[section][f.k] = chosen.join(', ');
     settings.circle.mode = chosen.length ? 'manual' : 'auto';
     // Keep the visible Mode dropdown in sync with the checklist.
@@ -488,7 +495,11 @@ document.getElementById('preset-apply').addEventListener('click', async () => {
 
 // Export / Import
 document.getElementById('export-btn').addEventListener('click', () => {
-  const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' });
+  // Webhook credentials stay on this machine: a settings file gets shared,
+  // and a Telegram token / Discord webhook URL is a secret.
+  const out = JSON.parse(JSON.stringify(settings));
+  if (out.webhooks) { out.webhooks.telegramToken = ''; out.webhooks.telegramChat = ''; out.webhooks.discordWebhook = ''; }
+  const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = 'tanoth-bot-settings.json';
@@ -501,7 +512,13 @@ document.getElementById('import-file').addEventListener('change', (ev) => {
   const reader = new FileReader();
   reader.onload = async () => {
     try {
+      // Keep the CURRENT webhook destinations: a file from someone else must not
+      // silently redirect your alerts (with hero/server data) to their webhook.
+      const keep = settings.webhooks || {};
       settings = mergeSettings(JSON.parse(reader.result));
+      settings.webhooks = Object.assign({}, settings.webhooks, {
+        telegramToken: keep.telegramToken || '', telegramChat: keep.telegramChat || '', discordWebhook: keep.discordWebhook || ''
+      });
       await chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', settings });
       render(); flashTool(t('toolImported'));
     } catch (e) { flashTool(t('toolImportError'), false); }

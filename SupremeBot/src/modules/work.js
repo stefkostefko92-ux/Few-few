@@ -5,6 +5,7 @@
   const { Api, State, Storage, Stats, Logger, I18n, Scheduler } = TB;
 
   let lastCheck = 0;
+  let failUntil = 0;           // back-off after the server refused a shift
   function cfg() { return Storage.section('work') || {}; }
   function busy() { return State.get().adventureReturnAt > Date.now(); }
 
@@ -14,6 +15,7 @@
     async tick() {
       const c = cfg();
       if (!c.enabled || !Api.ready() || busy()) return null;
+      if (Date.now() < failUntil) { Scheduler.wakeAt(failUntil); return null; }
 
       // Don't tie the character up on work if a free adventure is waiting.
       // Only meaningful when the adventures module will actually USE them;
@@ -38,7 +40,14 @@
         // No gold gate: gold_fee is the hourly WAGE the character earns (the
         // game's own work screen shows "gold: goldFee x hours"), not a cost.
         // Gating on it would stop exactly the players who are low on gold.
-        await Api.startWork(want);
+        try {
+          await Api.startWork(want);
+        } catch (e) {
+          // Server refused (hero busy, ...): back off instead of firing every
+          // cycle - three faults in a row would stop the whole engine.
+          failUntil = Date.now() + 10 * 60000;
+          throw e;
+        }
         await Api.miniUpdate();           // picks up the running-task timer
         // Prefer the server-reported shift timer (speed servers run shorter
         // than real time); fall back to the nominal duration if absent.

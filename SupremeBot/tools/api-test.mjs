@@ -199,4 +199,36 @@ await test('fault: ordinary faultString -> FAULT (does not flip session)', async
   assert.equal(a.TB.State.get().loggedIn, true, 'ordinary fault must NOT log the user out');
 });
 
+// The game's REAL error convention: a normal response whose top-level struct has
+// an `error` string (TanothHtml5.js Model._handleResponse: if(!response.error)).
+await test('in-band error "no_valid_session" -> SESSION_EXPIRED + sessionLost (auto-login fires)', async () => {
+  const a = makeApi();
+  a.TB.State.patch({ loggedIn: true });
+  a.setXml(resp(m('error', 'string', 'no_valid_session')));
+  await assert.rejects(a.TB.Api.miniUpdate(), /SESSION_EXPIRED:no_valid_session/);
+  assert.equal(a.TB.State.get().loggedIn, false);
+  assert.ok(a.TB.State.get().sessionLost > 0);
+});
+
+await test('in-band error "insufficient_gold" is a FAULT, never a silent success', async () => {
+  const a = makeApi();
+  a.TB.State.patch({ loggedIn: true });
+  a.setXml(resp(m('error', 'string', 'insufficient_gold')));
+  await assert.rejects(a.TB.Api.raiseAttribute('STR'), /^Error: FAULT:insufficient_gold/);
+  assert.equal(a.TB.State.get().loggedIn, true, 'a refused purchase does not log you out');
+});
+
+await test('errors the game itself ignores -> GAME_INFO (not counted toward the error stop)', async () => {
+  const a = makeApi();
+  a.setXml(resp(m('error', 'string', 'max_dungeon_level_reached')));
+  await assert.rejects(a.TB.Api.startDungeon(), /^Error: GAME_INFO:max_dungeon_level_reached/);
+});
+
+await test('empty error string and a nested "error" field are NOT errors', async () => {
+  const a = makeApi();
+  a.setXml(resp(m('error', 'string', '') + m('gold', 'i4', 50) + `<member><name>item</name><value><struct>${m('error', 'string', 'x')}</struct></value></member>`));
+  const r = await a.TB.Api.miniUpdate();
+  assert.equal(r.gold, 50);
+});
+
 console.log(`\n${pass} api checks passed.`);

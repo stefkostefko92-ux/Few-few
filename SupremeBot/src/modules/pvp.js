@@ -4,18 +4,18 @@
   const TB = window.TanothBot;
   const { Api, State, Storage, Stats, Logger, I18n, Scheduler } = TB;
 
-  // Persisted in sessionStorage so the daily cap and the arena cooldown
-  // survive page reloads (autologin reloads the tab; an in-memory cooldown
+  // Persisted in localStorage (game origin) so the daily cap and the arena
+  // cooldown survive page reloads AND a new/second game tab (autologin reloads the tab; an in-memory cooldown
   // would otherwise let a reload trigger a bloodstone-charged early fight).
   const SS_KEY = 'tb_pvp';
   function loadPersisted() {
     try {
-      const v = JSON.parse(sessionStorage.getItem(SS_KEY) || '{}');
+      const v = JSON.parse(localStorage.getItem(SS_KEY) || '{}');
       return { foughtToday: Number(v.foughtToday) || 0, dayStamp: v.dayStamp || today(), cooldownUntil: Number(v.cooldownUntil) || 0 };
     } catch (_) { return { foughtToday: 0, dayStamp: today(), cooldownUntil: 0 }; }
   }
   function persist() {
-    try { sessionStorage.setItem(SS_KEY, JSON.stringify({ foughtToday, dayStamp, cooldownUntil })); } catch (_) {}
+    try { localStorage.setItem(SS_KEY, JSON.stringify({ foughtToday, dayStamp, cooldownUntil })); } catch (_) {}
   }
 
   function today() { return new Date().toDateString(); }
