@@ -1,4 +1,4 @@
-<%- include('../partials/page-top', { title: account.email }) %>
+<%- include('../partials/page-top', { title: account.email, styles: ['app', 'app-admin-tables'] }) %>
 <% const locked = account.lockedUntil && account.lockedUntil > now; %>
 <%# заглавието е над подменюто, както на останалите страници на панела; връщането към списъка е над него %>
 <a class="back-link" href="/admin/accounts"><%- include('../partials/icon', { name: 'back' }) %><%= t('admin.account.back') %></a>
@@ -214,9 +214,9 @@
   <% if (audit.length) { %>
   <section class="section" aria-labelledby="aud-h" id="audit">
     <h2 id="aud-h"><%- include('../partials/icon', { name: 'history' }) %><%= t('admin.account.auditTitle') %></h2>
-    <ul class="mini">
-      <% for (const a of audit) { %><li><span class="nowrap"><%= fmt.dateTime(a.at) %></span>: <code><%= a.action %></code>, <%= fmt.label(a.actorLabel) %></li><% } %>
-    </ul>
+    <ol class="audit-list">
+      <% for (const a of audit) { %><li><time class="nowrap" datetime="<%= fmt.isoDate(a.at) %>"><%= fmt.dateTime(a.at) %></time><span class="audit-label" title="<%= a.code %>"><%= a.label %></span><span class="audit-by"><%- include('../partials/audit-ref', { ref: a.actor }) %></span><% if (a.details.length) { %><small class="audit-detail"><%= a.details.join(' · ') %></small><% } %></li><% } %>
+    </ol>
   </section>
   <% } %>
 

@@ -1,0 +1,128 @@
+/* Korpora — the tables of the admin panel, loaded by its pages only (views/admin/*.ejs: styles ['app',
+   'app-admin-tables']): orders, the account sheet, the audit log and the phone cards. */
+
+/* orders: the e-mail and the price never break mid-word; the customer's free text gets what is left */
+@media (min-width: 641px) {
+  .orders-table td.who {
+    min-width: 14rem;
+    max-width: 16rem;
+  }
+  .orders-table td.num {
+    white-space: nowrap;
+  }
+  .orders-table td.mini {
+    min-width: 15ch;
+    max-width: 30ch;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* a blocked account reads as inert: a grey row, and a grey plan chip (views/partials/plan-chip.ejs) */
+tr.is-banned {
+  background: var(--panel-2);
+}
+
+/* a device: OS and browser in the cell, the rest of the description (screen, GPU, time zone) folded */
+.more {
+  margin: 2px 0;
+}
+.more > summary {
+  width: max-content;
+  color: var(--ink-2);
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+/* phone cards of the admin tables (class "stack-kv" next to "stack"): the label to the left of a short value
+   instead of above it, and a cell with nothing to say (no chip, no sign-in, no project) is not a row at all */
+@media (max-width: 640px) {
+  table.stack td.is-blank {
+    display: none;
+  }
+  table.stack-kv td[data-label]:not(.who) {
+    position: relative;
+    padding-left: calc(34% + 12px);
+  }
+  table.stack-kv td[data-label]:not(.who)::before {
+    position: absolute;
+    left: 0;
+    width: 34%;
+    padding-top: 2px;
+  }
+}
+/* a finger needs more than a line of text: the links in the cards get a taller hit area */
+@media (max-width: 640px) and (pointer: coarse) {
+  table.stack td a,
+  a.tap {
+    display: inline-block;
+    padding-block: 4px;
+  }
+}
+
+/* the audit log (views/admin/audit.ejs, services/admin-audit-view.ts): the action in words with its code under it
+   (the filter works on the codes), the details as a line of text, e-mails instead of ids; long e-mails and IPv6
+   addresses break anywhere, so the IP column never hides behind a sideways scroll */
+.audit-label {
+  display: block;
+  font-weight: 550;
+}
+.audit-code {
+  display: block;
+  font-size: 0.76rem;
+  color: var(--ink-3);
+}
+.audit-detail {
+  display: block;
+  max-width: 52ch;
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+}
+.ref-kind {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--ink-2);
+}
+.audit-table td.audit-ref,
+.audit-table td.audit-ip {
+  overflow-wrap: anywhere;
+}
+@media (min-width: 641px) {
+  .audit-table td.audit-ref {
+    min-width: 11rem;
+    max-width: 16rem;
+  }
+  /* an IPv4 address fits on one line; only the long IPv6 ones break */
+  .audit-table td.audit-ip {
+    min-width: 9.5rem;
+    max-width: 12rem;
+  }
+}
+/* the account sheet: the same entries as a list — time, action, who, and the details under them */
+.audit-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.9rem;
+}
+.audit-list li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.audit-list li:last-child {
+  border-bottom: 0;
+}
+.audit-list time {
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.audit-list .audit-by,
+.audit-list .audit-detail {
+  grid-column: 2;
+  overflow-wrap: anywhere;
+}
+.audit-list .audit-by {
+  color: var(--ink-2);
+}

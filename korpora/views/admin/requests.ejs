@@ -1,4 +1,4 @@
-<%- include('../partials/page-top', { title: t('admin.requests.title') }) %>
+<%- include('../partials/page-top', { title: t('admin.requests.title'), styles: ['app', 'app-admin-tables'] }) %>
 <div class="page-head"><h1><%= t('admin.requests.title') %></h1>
   <p><a class="tap" href="/admin/requests<%= status === 'all' ? '' : '?status=all' %>"><%= t(status === 'all' ? 'admin.requests.onlyOpen' : 'admin.requests.showAll') %></a></p></div>
 <%- include('../partials/admin-nav') %>

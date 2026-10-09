@@ -7,6 +7,7 @@ import { planView } from '../../plans/plan.js';
 import { optionPriceCents, priceTable } from '../../plans/pricing.js';
 import { paidStartAllowedFrom } from '../../plans/withdrawal.js';
 import { accountDetail } from '../../services/admin-accounts.js';
+import { auditLines } from '../../services/admin-audit-view.js';
 import {
   accountAudit,
   accountIpSummary,
@@ -54,7 +55,7 @@ accountAdminRouter.get('/admin/accounts/:id', requireStaff('accounts:view'), asy
     logins,
     ips,
     linked,
-    audit,
+    audit: await auditLines(audit, res.locals.t, res.locals.fmt),
     recoveryLeft,
     showLogins,
     request,

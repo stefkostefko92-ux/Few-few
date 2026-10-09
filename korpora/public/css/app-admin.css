@@ -148,38 +148,6 @@ a.stat:hover {
   margin-bottom: 18px;
 }
 
-/* orders: the e-mail and the price never break mid-word; the customer's free text gets what is left */
-@media (min-width: 641px) {
-  .orders-table td.who {
-    min-width: 14rem;
-    max-width: 16rem;
-  }
-  .orders-table td.num {
-    white-space: nowrap;
-  }
-  .orders-table td.mini {
-    min-width: 15ch;
-    max-width: 30ch;
-    overflow-wrap: anywhere;
-  }
-}
-
-/* a blocked account reads as inert: a grey row, and a grey plan chip (views/partials/plan-chip.ejs) */
-tr.is-banned {
-  background: var(--panel-2);
-}
-
-/* a device: OS and browser in the cell, the rest of the description (screen, GPU, time zone) folded */
-.more {
-  margin: 2px 0;
-}
-.more > summary {
-  width: max-content;
-  color: var(--ink-2);
-  font-size: 0.82rem;
-  cursor: pointer;
-}
-
 /* phone: the five admin tabs stay on one row. "New account" keeps only its plus sign (the name stays for screen
    readers); where the row is still wider than the phone it scrolls sideways, ui.js brings the current tab into view
    and marks the side where more tabs wait (data-more), which fades out */
@@ -235,31 +203,5 @@ tr.is-banned {
     overflow: hidden;
     clip-path: inset(50%);
     white-space: nowrap;
-  }
-}
-
-/* phone cards of the admin tables (class "stack-kv" next to "stack"): the label to the left of a short value
-   instead of above it, and a cell with nothing to say (no chip, no sign-in, no project) is not a row at all */
-@media (max-width: 640px) {
-  table.stack td.is-blank {
-    display: none;
-  }
-  table.stack-kv td[data-label]:not(.who) {
-    position: relative;
-    padding-left: calc(34% + 12px);
-  }
-  table.stack-kv td[data-label]:not(.who)::before {
-    position: absolute;
-    left: 0;
-    width: 34%;
-    padding-top: 2px;
-  }
-}
-/* a finger needs more than a line of text: the links in the cards get a taller hit area */
-@media (max-width: 640px) and (pointer: coarse) {
-  table.stack td a,
-  a.tap {
-    display: inline-block;
-    padding-block: 4px;
   }
 }
