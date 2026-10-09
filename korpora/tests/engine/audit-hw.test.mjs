@@ -84,6 +84,8 @@ test('two drawer columns side by side: the slides on the two faces of a partitio
       const m = buildModel(spec);
       assert.deepEqual(errorsOf(m), [], label);
       assert.deepEqual(blockers(m), [], label);
+      // holes exactly MIN_WEB apart are not reported as overlapping
+      assert.ok(!m.warnings.some((w) => w.text.includes('се застъпват')), `${label}: ${m.warnings.map((w) => w.text).join(' | ')}`);
       const partitions = byRole(m, 'partition').filter((p) => p.features.some((f) => f.kind === 'slide'));
       assert.ok(partitions.length > 0, `${label}: no partition between drawer columns`);
       for (const part of partitions) {
@@ -110,7 +112,7 @@ test('two drawer columns side by side: the slides on the two faces of a partitio
       for (const height of [700, 1000, 1300]) {
         for (const drawers of [2, 3, 4, 5, 6]) {
           const m = buildModel({ type: 'chest', columns: 2, width, height, drawers, slide });
-          assert.ok(!m.warnings.some((w) => w.text.includes('от двете му страни')), `${slide} ${width} ${height} ${drawers}: ${errorsOf(m).join(' | ')}`);
+          assert.ok(!m.warnings.some((w) => /от двете му страни|се застъпват/.test(w.text)), `${slide} ${width} ${height} ${drawers}: ${m.warnings.map((w) => w.text).join(' | ')}`);
         }
       }
     }

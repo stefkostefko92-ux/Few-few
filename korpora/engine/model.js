@@ -211,7 +211,8 @@ function checkHoles(ctx, p, spec) {
       const b = holes[j];
       if (a.hw === 'hinge' && b.hw === 'hinge' && a.ref === b.ref && a.hingeY === b.hingeY) continue; // one hinge: its cup and its own dowels
       const dist = Math.hypot(a.u - b.u, a.v - b.v);
-      if (dist - (a.d + b.d) / 2 < MIN_WEB) {
+      // holes exactly MIN_WEB apart are fine: 1e-6 absorbs the floating-point error of positions on the 0,1 mm grid
+      if (dist - (a.d + b.d) / 2 < MIN_WEB - 1e-6) {
         ctx.warn(a.kind === 'cup' && b.kind === 'cup' ? 'error' : 'warn', `${p.name}: отворите Ø${dimTxt(a.d)} „${purposeOf(a.kind)}“ и Ø${dimTxt(b.d)} „${purposeOf(b.kind)}“ при u ${dimTxt(a.u)}, v ${dimTxt(a.v)} се застъпват — преместете единия.`);
       }
     }
