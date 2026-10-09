@@ -43,7 +43,8 @@ export function buildDrawers(ctx, o, a) {
   }
   const L = sys.drawerLength(NL);
   const fh = r1((dzH - drawers * gap) / drawers);
-  const box = { stock: boxStock.id, decor: 'demo:white', grain: false, module: mod };
+  // the top edges of the box sides, front and back show whenever the drawer is open: banded like the carcass
+  const box = { stock: boxStock.id, decor: 'demo:white', grain: false, module: mod, bands: { '+y': o.bands?.carcass ?? 1 } };
   const product = family.products?.[NL] ?? null;
   const label = product ? `${product.brand ?? family.brand} ${product.sku ?? ''}`.trim() : `${family.brand} ${NL} mm`;
   // height of the slide's screw axis for a box starting at yb

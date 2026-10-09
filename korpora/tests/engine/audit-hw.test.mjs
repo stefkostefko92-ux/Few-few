@@ -1,5 +1,6 @@
-// Geometry and hardware rules found in the audit of the engine: a base cabinet's drawer above its door and drawer
-// columns side by side that still reach the CNC. Runs on the base catalog and the documented hinge and slide systems.
+// Geometry and hardware rules found in the audit of the engine: a base cabinet's drawer above its door, drawer columns
+// side by side that still reach the CNC and edge bands on the ends seen from below and on the top edges of drawer
+// boxes. Runs on the base catalog and the documented hinge and slide systems.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { registerCatalog, baseCatalogData } from '../../engine/catalog.js';
@@ -112,5 +113,66 @@ test('two drawer columns side by side: the slides on the two faces of a partitio
         }
       }
     }
+  }
+});
+
+test('wall-mounted carcasses: the lower ends of the sides are edge-banded, the floor-standing ones are not', () => {
+  const sidesOf = (m, wall) => byRole(m, 'side').filter((p) => wall(p.module));
+  const cases = [
+    [{ type: 'wall' }, () => true, () => false],
+    [{ type: 'wall', bandCarcass: 2 }, () => true, () => false],
+    [{ type: 'kitchen' }, (mod) => mod.startsWith('Г'), (mod) => mod.startsWith('М')],
+    [{ type: 'wallunit' }, (mod) => mod === 'Р', (mod) => mod !== 'Р'],
+  ];
+  for (const [spec, wall, floor] of cases) {
+    const m = buildModel(spec);
+    const bc = m.spec.bandCarcass;
+    const hung = sidesOf(m, wall);
+    assert.ok(hung.length >= 2, `${spec.type}: no wall-mounted sides`);
+    for (const p of hung) {
+      assert.equal(p.bands['-y'], bc, `${spec.type} ${p.name}: lower end ${JSON.stringify(p.bands)}`);
+      // the band comes off the cut length (the side runs along y)
+      assert.ok(Math.abs(cutSize(p, true).L - (p.L - bc - (p.bands['+y'] || 0))) < 0.01, `${spec.type} ${p.name}: cut length`);
+    }
+    for (const p of sidesOf(m, floor)) assert.ok(!p.bands['-y'], `${spec.type} ${p.name}: a floor-standing side got a band at the floor`);
+  }
+  for (const type of ['base', 'tall', 'wardrobe', 'chest', 'nightstand', 'bookcase', 'tv']) {
+    for (const p of byRole(buildModel({ type }), 'side')) assert.ok(!p.bands['-y'], `${type} ${p.name}: band at the floor`);
+  }
+});
+
+test('drawer boxes: the top edges of the sides, the front and the back are edge-banded, the holes stay where they were', () => {
+  for (const slide of SLIDES) {
+    for (const spec of [{ type: 'chest' }, { type: 'nightstand', bandCarcass: 2 }, { type: 'desk', bandCarcass: 0.8 }, { type: 'base', fronts: 'drawers' }]) {
+      const m = buildModel({ ...spec, slide });
+      const bc = m.spec.bandCarcass;
+      const box = [...byRole(m, 'drawer-side'), ...byRole(m, 'drawer-back')];
+      assert.ok(box.length > 0, `${spec.type}: no drawer box`);
+      for (const p of box) {
+        assert.deepEqual(p.bands, { '+y': bc }, `${spec.type} ${slide} ${p.name}`);
+        // the box runs along z or x and its height along y: the band comes off the cut width
+        assert.ok(Math.abs(cutSize(p, true).W - (p.W - bc)) < 0.01, `${spec.type} ${p.name}: cut width`);
+      }
+      for (const p of byRole(m, 'drawer-bottom')) assert.deepEqual(p.bands, {}, `${spec.type} ${p.name}`);
+      assert.deepEqual(errorsOf(m), [], `${spec.type} ${slide}`);
+      assert.deepEqual(blockers(m), [], `${spec.type} ${slide}`);
+    }
+  }
+  // the holes and grooves keep their distance from the cut bottom edge of the board (the groove and the confirmats are
+  // set from the bottom of the box), with or without the band at the top; an explicit 0 means no band
+  const fromBottom = (p) => {
+    const cut = cutSize(p, true);
+    const up = p.frame.ev === '+y';
+    return p.features.map((f) => (f.type === 'hole' ? [f.kind, up ? f.v - cut.dv0 : cut.dv0 + cut.W - f.v] : [f.kind, up ? f.v1 - cut.dv0 : cut.dv0 + cut.W - f.v1]));
+  };
+  for (const slide of SLIDES) {
+    const banded = [...byRole(buildModel({ type: 'chest', slide }), 'drawer-side'), ...byRole(buildModel({ type: 'chest', slide }), 'drawer-back')];
+    const plain = [...byRole(buildModel({ type: 'chest', slide, bandCarcass: 0 }), 'drawer-side'), ...byRole(buildModel({ type: 'chest', slide, bandCarcass: 0 }), 'drawer-back')];
+    assert.equal(banded.length, plain.length);
+    banded.forEach((p, k) => {
+      assert.deepEqual(plain[k].bands, { '+y': 0 }, plain[k].name);
+      assert.ok(p.features.length > 0, p.name);
+      assert.deepEqual(fromBottom(p), fromBottom(plain[k]), `${slide} ${p.name}`);
+    });
   }
 });

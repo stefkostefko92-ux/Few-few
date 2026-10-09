@@ -43,6 +43,7 @@ export function buildCarcass(ctx, o) {
   const carc = { stock: CARCASS.id, decor: o.carcassDecor, grain: hasGrain(o.carcassDecor), module: mod };
   const out = { panels: {}, columns: [], dims: { x0, y0, z0, W, H, D, T, c, Hc, plinthH, backFront } };
   const sideBands = { '+z': bc, ...(top === 'over' ? {} : { '+y': o.visibleTop ? bc : 0 }) };
+  if (o.mount === 'wall') sideBands['-y'] = bc; // a wall cabinet is seen from below: the lower ends of its sides show
 
   const sideL = panel(ctx, { ...carc, key: key('sideL'), name: nm('Страница лява'), role: 'side', box: { min: [x0, c, z0], max: [x0 + T, sideTop, zEnd] }, n: '+x', L: 'y', bands: sideBands, explode: [-1, 0, 0] });
   const sideR = panel(ctx, { ...carc, key: key('sideR'), name: nm('Страница дясна'), role: 'side', box: { min: [x0 + W - T, c, z0], max: [x0 + W, sideTop, zEnd] }, n: '-x', L: 'y', bands: sideBands, explode: [1, 0, 0] });
