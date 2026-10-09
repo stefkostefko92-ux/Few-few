@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { SiteHeader } from '@/components/SiteChrome';
+import { AuthShell, AUTH_SUBMIT_CLASS } from '@/components/AuthShell';
 import type { Locale } from '@/i18n/locales';
 import { registerAction } from '@/app/actions/auth';
 
@@ -18,41 +19,50 @@ export default async function RegisterPage({
   return (
     <>
       <SiteHeader locale={locale as Locale} />
-      <main className="mx-auto max-w-sm px-6 py-16">
-        <h1 className="text-2xl font-bold">{t('registerTitle')}</h1>
+      <AuthShell
+        title={t('registerTitle')}
+        footer={
+          <Link
+            href={`/${locale}/login`}
+            className="font-semibold text-linketto-700 underline-offset-4 hover:underline"
+          >
+            {t('haveAccount')}
+          </Link>
+        }
+      >
         {error && (
-          <p role="alert" className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+          <p role="alert" className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">
             {error === 'exists' ? t('errorExists') : t('errorGeneric')}
           </p>
         )}
         {ref && (
-          <p className="mt-4 rounded-lg bg-linketto-50 p-3 text-sm text-linketto-700">
+          <p className="mt-5 rounded-xl border border-sky-200 bg-linketto-50 px-4 py-3 text-sm text-linketto-900">
             {t('referredBanner')}
           </p>
         )}
-        <form action={registerAction} className="mt-6 space-y-4">
+        <form action={registerAction} className="mt-6 space-y-5">
           <input type="hidden" name="locale" value={locale} />
           {ref && <input type="hidden" name="ref" value={ref} />}
-          <label className="block text-sm font-medium">
+          <label className="block text-sm font-semibold text-slate-800">
             {t('name')}
             <input
               type="text"
               name="name"
               autoComplete="name"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+              className="auth-field"
             />
           </label>
-          <label className="block text-sm font-medium">
+          <label className="block text-sm font-semibold text-slate-800">
             {t('email')}
             <input
               type="email"
               name="email"
               required
               autoComplete="email"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+              className="auth-field"
             />
           </label>
-          <label className="block text-sm font-medium">
+          <label className="block text-sm font-semibold text-slate-800">
             {t('password')}
             <input
               type="password"
@@ -60,22 +70,17 @@ export default async function RegisterPage({
               required
               minLength={8}
               autoComplete="new-password"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+              className="auth-field"
             />
           </label>
           <button
             type="submit"
-            className="w-full rounded-full bg-linketto-600 py-2.5 font-semibold text-white hover:bg-linketto-700"
+            className={AUTH_SUBMIT_CLASS}
           >
             {t('submitRegister')}
           </button>
         </form>
-        <p className="mt-4 text-sm text-slate-600">
-          <Link href={`/${locale}/login`} className="hover:underline">
-            {t('haveAccount')}
-          </Link>
-        </p>
-      </main>
+      </AuthShell>
     </>
   );
 }

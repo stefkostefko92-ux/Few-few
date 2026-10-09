@@ -60,7 +60,11 @@ export async function generateBio(input: {
       },
       body: JSON.stringify({
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 400 },
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 400,
+          ...noThinking(model),
+        },
       }),
       signal: AbortSignal.timeout(30_000),
     });
@@ -74,7 +78,36 @@ export async function generateBio(input: {
   }
 }
 
+// gemini-2.5-flash брои токените за „мислене“ в maxOutputTokens — при малък
+// таван отговорът излиза празен/отрязан (одит M10). За flash моделите
+// мисленето се изключва; pro моделите не позволяват 0, затова не се пипат.
+function noThinking(model: string): Record<string, unknown> {
+  return /flash/i.test(model) ? { thinkingConfig: { thinkingBudget: 0 } } : {};
+}
+
+// Преводът върви на партиди по ≤5 езика: един отговор за 26 езика +
+// линкове + продукти не се събира в токените и JSON-ът се реже.
+const TRANSLATE_BATCH = 5;
+
 export async function translateProfileContent(
+  source: TranslatableContent,
+  fromLocale: string,
+  toLocales: string[],
+): Promise<TranslatedByLocale | null> {
+  if (!process.env.GEMINI_API_KEY || toLocales.length === 0) return null;
+  const merged: TranslatedByLocale = {};
+  for (let i = 0; i < toLocales.length; i += TRANSLATE_BATCH) {
+    const part = await translateBatch(
+      source,
+      fromLocale,
+      toLocales.slice(i, i + TRANSLATE_BATCH),
+    );
+    if (part) Object.assign(merged, part);
+  }
+  return Object.keys(merged).length > 0 ? merged : null;
+}
+
+async function translateBatch(
   source: TranslatableContent,
   fromLocale: string,
   toLocales: string[],
@@ -125,13 +158,14 @@ export async function translateProfileContent(
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       generationConfig: {
         temperature: 0.2,
-        maxOutputTokens: 4000,
+        maxOutputTokens: 8000,
         responseMimeType: 'application/json',
+        ...noThinking(model),
       },
     }),
     signal: AbortSignal.timeout(30_000),
-  });
-  if (!res.ok) return null;
+  }).catch(() => null);
+  if (!res || !res.ok) return null;
 
   const data: unknown = await res.json();
   const text = extractText(data);

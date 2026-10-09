@@ -1,6 +1,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { dash } from '@/lib/dashboard-url';
 import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import { getSessionUser } from '@/lib/auth';
@@ -34,16 +35,16 @@ export async function createProfileAction(formData: FormData): Promise<void> {
     user.name ||
     slug;
   if (!isValidSlug(slug)) {
-    redirect(`/${uiLocale}/dashboard?error=slug`);
+    redirect(await dash(uiLocale, '?error=slug'));
   }
   // Лимит на профили по плана (няколко профила = Business).
   const owned = await prisma.profile.count({ where: { userId: user.id } });
   if (owned >= planFor(user.plan).maxProfiles) {
-    redirect(`/${uiLocale}/dashboard?error=profiles`);
+    redirect(await dash(uiLocale, '?error=profiles'));
   }
   const existing = await prisma.profile.findUnique({ where: { slug } });
   if (existing) {
-    redirect(`/${uiLocale}/dashboard?error=slug`);
+    redirect(await dash(uiLocale, '?error=slug'));
   }
   await prisma.profile.create({
     data: {
@@ -55,7 +56,7 @@ export async function createProfileAction(formData: FormData): Promise<void> {
       },
     },
   });
-  redirect(`/${uiLocale}/dashboard`);
+  redirect(await dash(uiLocale));
 }
 
 const settingsSchema = z.object({
@@ -83,7 +84,7 @@ export async function updateProfileAction(formData: FormData): Promise<void> {
     published: formData.get('published') === 'on',
   });
   if (!parsed.success) {
-    redirect(`/${uiLocale}/dashboard?error=generic`);
+    redirect(await dash(uiLocale, '?error=generic'));
   }
 
   // Собствен домейн — само за платени планове.
@@ -92,11 +93,11 @@ export async function updateProfileAction(formData: FormData): Promise<void> {
     .toLowerCase();
   const customDomain = rawDomain === '' ? null : rawDomain;
   if (customDomain) {
-    if (planFor(user.plan).id === 'FREE') {
-      redirect(`/${uiLocale}/dashboard?error=limit`);
+    if (!planFor(user.plan).customDomain) {
+      redirect(await dash(uiLocale, '?error=limit'));
     }
     if (!DOMAIN_RE.test(customDomain) || customDomain.length > 253) {
-      redirect(`/${uiLocale}/dashboard?error=domain`);
+      redirect(await dash(uiLocale, '?error=domain'));
     }
   }
 
@@ -111,7 +112,7 @@ export async function updateProfileAction(formData: FormData): Promise<void> {
         customDomain,
       },
     });
-    if (count === 0) redirect(`/${uiLocale}/dashboard?error=generic`);
+    if (count === 0) redirect(await dash(uiLocale, '?error=generic'));
   } catch (error) {
     // P2002 = зает домейн (unique)
     if (
@@ -120,11 +121,11 @@ export async function updateProfileAction(formData: FormData): Promise<void> {
       'code' in error &&
       error.code === 'P2002'
     ) {
-      redirect(`/${uiLocale}/dashboard?error=domain`);
+      redirect(await dash(uiLocale, '?error=domain'));
     }
     throw error;
   }
-  redirect(`/${uiLocale}/dashboard`);
+  redirect(await dash(uiLocale));
 }
 
 // Стиловият енджин: всичко от секцията „Персонализация“ минава оттук.
@@ -158,18 +159,18 @@ export async function updateStyleAction(formData: FormData): Promise<void> {
     mediaKit: formData.get('mediaKit') === 'on',
   });
   if (!parsed.success) {
-    redirect(`/${uiLocale}/dashboard?error=style`);
+    redirect(await dash(uiLocale, '?error=style'));
   }
   // Скриването на Linketto баджа е привилегия на платените планове.
-  if (parsed.data.hideBadge && planFor(user.plan).id === 'FREE') {
-    redirect(`/${uiLocale}/dashboard?error=limit`);
+  if (parsed.data.hideBadge && !planFor(user.plan).hideBadge) {
+    redirect(await dash(uiLocale, '?error=limit'));
   }
   const { count } = await prisma.profile.updateMany({
     where: { id: profileId, userId: user.id },
     data: { style: parsed.data },
   });
-  if (count === 0) redirect(`/${uiLocale}/dashboard?error=generic`);
-  redirect(`/${uiLocale}/dashboard`);
+  if (count === 0) redirect(await dash(uiLocale, '?error=generic'));
+  redirect(await dash(uiLocale));
 }
 
 // Качване на снимка (фон на профила или аватар) — sharp я преоразмерява,
@@ -181,15 +182,15 @@ export async function uploadImageAction(formData: FormData): Promise<void> {
   const kind = String(formData.get('kind') ?? '') as 'bg' | 'avatar';
   const file = formData.get('file');
   if ((kind !== 'bg' && kind !== 'avatar') || !(file instanceof File)) {
-    redirect(`/${uiLocale}/dashboard?error=upload`);
+    redirect(await dash(uiLocale, '?error=upload'));
   }
   const profile = await prisma.profile.findFirst({
     where: { id: profileId, userId: user.id },
   });
-  if (!profile) redirect(`/${uiLocale}/dashboard?error=generic`);
+  if (!profile) redirect(await dash(uiLocale, '?error=generic'));
 
   const mediaPath = await saveUploadedImage(file, kind);
-  if (!mediaPath) redirect(`/${uiLocale}/dashboard?error=upload`);
+  if (!mediaPath) redirect(await dash(uiLocale, '?error=upload'));
 
   const style = parseStyle(profile.style);
   const nextStyle =
@@ -200,7 +201,7 @@ export async function uploadImageAction(formData: FormData): Promise<void> {
     where: { id: profile.id },
     data: { style: nextStyle },
   });
-  redirect(`/${uiLocale}/dashboard`);
+  redirect(await dash(uiLocale));
 }
 
 export async function upsertProfileTranslationAction(
@@ -214,13 +215,13 @@ export async function upsertProfileTranslationAction(
     .trim()
     .slice(0, 100);
   const bio = String(formData.get('bio') ?? '').trim().slice(0, 500) || null;
-  if (!isLocale(locale)) redirect(`/${uiLocale}/dashboard?error=generic`);
+  if (!isLocale(locale)) redirect(await dash(uiLocale, '?error=generic'));
 
   const profile = await prisma.profile.findFirst({
     where: { id: profileId, userId: user.id },
     include: { translations: true },
   });
-  if (!profile) redirect(`/${uiLocale}/dashboard?error=generic`);
+  if (!profile) redirect(await dash(uiLocale, '?error=generic'));
 
   const hasIt = profile.translations.some((t) => t.locale === locale);
   if (!displayName) {
@@ -230,7 +231,7 @@ export async function upsertProfileTranslationAction(
         where: { profileId_locale: { profileId, locale } },
       });
     }
-    redirect(`/${uiLocale}/dashboard`);
+    redirect(await dash(uiLocale));
   }
 
   // Лимит на плана: Free = 2 езикови версии.
@@ -240,7 +241,7 @@ export async function upsertProfileTranslationAction(
     plan.maxLocales !== null &&
     profile.translations.length >= plan.maxLocales
   ) {
-    redirect(`/${uiLocale}/dashboard?error=limit`);
+    redirect(await dash(uiLocale, '?error=limit'));
   }
 
   await prisma.profileTranslation.upsert({
@@ -248,7 +249,7 @@ export async function upsertProfileTranslationAction(
     create: { profileId, locale, displayName, bio },
     update: { displayName, bio },
   });
-  redirect(`/${uiLocale}/dashboard`);
+  redirect(await dash(uiLocale));
 }
 
 export async function addLinkAction(formData: FormData): Promise<void> {
@@ -266,13 +267,13 @@ export async function addLinkAction(formData: FormData): Promise<void> {
     options: String(formData.get('options') ?? ''),
   });
   if (!input || !title) {
-    redirect(`/${uiLocale}/dashboard?error=block`);
+    redirect(await dash(uiLocale, '?error=block'));
   }
   const profile = await prisma.profile.findFirst({
     where: { id: profileId, userId: user.id },
     include: { _count: { select: { links: true } } },
   });
-  if (!profile) redirect(`/${uiLocale}/dashboard?error=generic`);
+  if (!profile) redirect(await dash(uiLocale, '?error=generic'));
   await prisma.link.create({
     data: {
       profileId,
@@ -287,7 +288,7 @@ export async function addLinkAction(formData: FormData): Promise<void> {
       },
     },
   });
-  redirect(`/${uiLocale}/dashboard`);
+  redirect(await dash(uiLocale));
 }
 
 // datetime-local → Date (или null при празно/невалидно)
@@ -305,7 +306,7 @@ export async function deleteLinkAction(formData: FormData): Promise<void> {
   await prisma.link.deleteMany({
     where: { id: linkId, profile: { userId: user.id } },
   });
-  redirect(`/${uiLocale}/dashboard`);
+  redirect(await dash(uiLocale));
 }
 
 export async function upsertLinkTranslationAction(
@@ -317,25 +318,25 @@ export async function upsertLinkTranslationAction(
   const locale = String(formData.get('locale') ?? '');
   const title = String(formData.get('title') ?? '').trim().slice(0, 100);
   if (!isLocale(locale) || !(LOCALES as readonly string[]).includes(locale)) {
-    redirect(`/${uiLocale}/dashboard?error=generic`);
+    redirect(await dash(uiLocale, '?error=generic'));
   }
   const link = await prisma.link.findFirst({
     where: { id: linkId, profile: { userId: user.id } },
     include: { profile: true },
   });
-  if (!link) redirect(`/${uiLocale}/dashboard?error=generic`);
+  if (!link) redirect(await dash(uiLocale, '?error=generic'));
   if (!title) {
     if (locale !== link.profile.defaultLocale) {
       await prisma.linkTranslation
         .delete({ where: { linkId_locale: { linkId, locale } } })
         .catch(() => undefined);
     }
-    redirect(`/${uiLocale}/dashboard`);
+    redirect(await dash(uiLocale));
   }
   await prisma.linkTranslation.upsert({
     where: { linkId_locale: { linkId, locale } },
     create: { linkId, locale, title },
     update: { title },
   });
-  redirect(`/${uiLocale}/dashboard`);
+  redirect(await dash(uiLocale));
 }

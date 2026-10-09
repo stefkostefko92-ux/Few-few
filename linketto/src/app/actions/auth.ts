@@ -1,6 +1,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { clientIp, rateLimit } from '@/lib/rate-limit';
 import { z } from 'zod';
 import {
   createSession,
@@ -11,6 +12,7 @@ import {
 import { isLocale } from '@/i18n/locales';
 import { requestIp } from '@/lib/admin';
 import { prisma } from '@/lib/db';
+import { RETENTION_DAYS, daysAgo } from '@/lib/retention-days';
 import { generateReferralCode } from '@/lib/referral';
 
 // Сигурност на входа (декларирано в политиката): IP при успешен вход,
@@ -23,7 +25,7 @@ async function logLoginIp(userId: string): Promise<void> {
     .catch(() => undefined);
   await prisma.loginEvent
     .deleteMany({
-      where: { createdAt: { lt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) } },
+      where: { createdAt: { lt: daysAgo(RETENTION_DAYS.loginEvent) } },
     })
     .catch(() => undefined);
 }
@@ -88,6 +90,16 @@ export async function loginAction(formData: FormData): Promise<void> {
     password: formData.get('password'),
   });
   if (!parsed.success) {
+    redirect(`/${locale}/login?error=invalid`);
+  }
+  // Лимит на опитите: 10 за 10 мин по IP и 5 за 10 мин по имейл (bcrypt е
+  // скъп и няма друг праг срещу налучкване на пароли).
+  const ip = await clientIp();
+  const email = parsed.data.email.toLowerCase();
+  if (
+    !rateLimit(`login-ip:${ip}`, 10, 10 * 60_000) ||
+    !rateLimit(`login-email:${email}`, 5, 10 * 60_000)
+  ) {
     redirect(`/${locale}/login?error=invalid`);
   }
   const user = await verifyLogin(parsed.data.email, parsed.data.password);

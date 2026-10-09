@@ -27,6 +27,14 @@ export async function registerUser(
   });
 }
 
+// Валиден 60-знаков bcrypt хеш (cost 12): bcryptjs връща веднага при
+// невалидна форма, а изравняването на времето иска реалната работа.
+let dummy: string | null = null;
+function dummyHash(): string {
+  dummy ??= bcrypt.hashSync('linketto-timing-equalizer', 12);
+  return dummy;
+}
+
 export async function verifyLogin(
   email: string,
   password: string,
@@ -34,7 +42,7 @@ export async function verifyLogin(
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
     // Изравняване на времето — да не издаваме кой имейл съществува.
-    await bcrypt.compare(password, '$2a$12$invalidinvalidinvalidinvalidinvali');
+    await bcrypt.compare(password, dummyHash());
     return null;
   }
   const ok = await bcrypt.compare(password, user.passwordHash);

@@ -1,6 +1,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { dash } from '@/lib/dashboard-url';
 import { prisma } from '@/lib/db';
 import { getSessionUser } from '@/lib/auth';
 import { isLocale, LOCALES } from '@/i18n/locales';
@@ -15,16 +16,16 @@ export async function aiGenerateBioAction(formData: FormData): Promise<void> {
   const uiLocale = isLocale(raw) ? raw : 'en';
   const user = await getSessionUser();
   if (!user) redirect(`/${uiLocale}/login`);
-  if (!aiConfigured()) redirect(`/${uiLocale}/dashboard?error=aikey`);
+  if (!aiConfigured()) redirect(await dash(uiLocale, '?error=aikey'));
 
   const profileId = String(formData.get('profileId') ?? '');
   const keywords = String(formData.get('keywords') ?? '').trim();
-  if (!keywords) redirect(`/${uiLocale}/dashboard?error=ai`);
+  if (!keywords) redirect(await dash(uiLocale, '?error=ai'));
   const profile = await prisma.profile.findFirst({
     where: { id: profileId, userId: user.id },
     select: { id: true, slug: true, defaultLocale: true },
   });
-  if (!profile) redirect(`/${uiLocale}/dashboard?error=generic`);
+  if (!profile) redirect(await dash(uiLocale, '?error=generic'));
 
   const base = await prisma.profileTranslation.findUnique({
     where: {
@@ -40,7 +41,7 @@ export async function aiGenerateBioAction(formData: FormData): Promise<void> {
     keywords,
     locale: profile.defaultLocale,
   });
-  if (!bio) redirect(`/${uiLocale}/dashboard?error=ai`);
+  if (!bio) redirect(await dash(uiLocale, '?error=ai'));
 
   await prisma.profileTranslation.upsert({
     where: {
@@ -57,7 +58,7 @@ export async function aiGenerateBioAction(formData: FormData): Promise<void> {
     },
     update: { bio },
   });
-  redirect(`/${uiLocale}/dashboard?generated=1`);
+  redirect(await dash(uiLocale, '?generated=1'));
 }
 
 // „Преведи профила с един клик“ — флагманът на Linketto. Превежда името,
@@ -68,7 +69,7 @@ export async function aiTranslateAction(formData: FormData): Promise<void> {
   const uiLocale = isLocale(raw) ? raw : 'en';
   const user = await getSessionUser();
   if (!user) redirect(`/${uiLocale}/login`);
-  if (!aiConfigured()) redirect(`/${uiLocale}/dashboard?error=aikey`);
+  if (!aiConfigured()) redirect(await dash(uiLocale, '?error=aikey'));
 
   const profileId = String(formData.get('profileId') ?? '');
   const profile = await prisma.profile.findFirst({
@@ -79,12 +80,12 @@ export async function aiTranslateAction(formData: FormData): Promise<void> {
       products: { include: { translations: true } },
     },
   });
-  if (!profile) redirect(`/${uiLocale}/dashboard?error=generic`);
+  if (!profile) redirect(await dash(uiLocale, '?error=generic'));
 
   const source =
     profile.translations.find((t) => t.locale === profile.defaultLocale) ??
     profile.translations[0];
-  if (!source) redirect(`/${uiLocale}/dashboard?error=generic`);
+  if (!source) redirect(await dash(uiLocale, '?error=generic'));
 
   const existing = new Set(profile.translations.map((t) => t.locale));
   const plan = planFor(user.plan);
@@ -96,7 +97,7 @@ export async function aiTranslateAction(formData: FormData): Promise<void> {
     0,
     capacity === Infinity ? undefined : capacity,
   );
-  if (targets.length === 0) redirect(`/${uiLocale}/dashboard?error=limit`);
+  if (targets.length === 0) redirect(await dash(uiLocale, '?error=limit'));
 
   const sourceLinks = profile.links
     .map((link) => ({
@@ -132,7 +133,7 @@ export async function aiTranslateAction(formData: FormData): Promise<void> {
     profile.defaultLocale,
     targets,
   );
-  if (!translated) redirect(`/${uiLocale}/dashboard?error=ai`);
+  if (!translated) redirect(await dash(uiLocale, '?error=ai'));
 
   for (const [locale, entry] of Object.entries(translated)) {
     await prisma.profileTranslation.upsert({
@@ -173,5 +174,5 @@ export async function aiTranslateAction(formData: FormData): Promise<void> {
       });
     }
   }
-  redirect(`/${uiLocale}/dashboard?translated=1`);
+  redirect(await dash(uiLocale, '?translated=1'));
 }

@@ -1,8 +1,8 @@
 # Linketto
 
 > Linketto is the multilingual "link in bio" page: all your links, products
-> and contacts on one page that speaks every visitor's language (Bulgarian,
-> English, Italian, Spanish, German, French — more coming). EU-hosted,
+> and contacts on one page that speaks every visitor's language (27 interface
+> locales: all 24 official EU languages plus Neapolitan, Sicilian and Lombard dialects, chosen manually). EU-hosted,
 > GDPR by default, cookie-free analytics, sales commissions 8/4/0/0% by plan
 > (vs 12%/9% at Linktree). A product of Carbon Stealth VCC (Bulgaria, EU) —
 > https://carbonstealth.eu.

@@ -117,6 +117,8 @@ model Profile {
   subscribers   Subscriber[]
   bookings      Booking[]
   shortLinks    ShortLink[]
+
+  @@index([userId])
 }
 
 // Съкратен линк с брояч на кликове (/s/<code>). Броячът е агрегат без
@@ -297,7 +299,7 @@ model Lesson {
 model Entitlement {
   id                   String    @id @default(cuid())
   productId            String
-  product              Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product              Product   @relation(fields: [productId], references: [id], onDelete: Restrict) // платеният достъп не се губи при изтриване
   profileId            String
   email                String
   active               Boolean   @default(true)
@@ -350,7 +352,7 @@ model ProductTranslation {
 model Purchase {
   id              String   @id @default(cuid())
   productId       String
-  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Restrict) // фискални/OSS записи — пазят се 10 г.
   profileId       String
   stripeSessionId String   @unique
   stripePaymentIntentId String?  @unique // за refund/dispute проследяване

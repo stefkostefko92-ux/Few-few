@@ -1,10 +1,11 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { dash } from '@/lib/dashboard-url';
 import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import { getSessionUser } from '@/lib/auth';
-import { getStripe, stripeTaxEnabled } from '@/lib/stripe';
+import { getStripe, shopSalesAllowed, stripeTaxEnabled } from '@/lib/stripe';
 import { isLocale } from '@/i18n/locales';
 import {
   membershipFeePercent,
@@ -37,7 +38,7 @@ export async function connectStripeAction(formData: FormData): Promise<void> {
   const user = await getSessionUser();
   if (!user) redirect(`/${uiLocale}/login`);
   const stripe = getStripe();
-  if (!stripe) redirect(`/${uiLocale}/dashboard?error=stripe`);
+  if (!stripe) redirect(await dash(uiLocale, '?error=stripe'));
 
   let accountId = user.stripeAccountId;
   if (!accountId) {
@@ -95,7 +96,9 @@ export async function startProductPurchaseAction(
     !product ||
     !owner?.stripeAccountId ||
     !owner.stripeChargesEnabled ||
-    !stripe
+    !stripe ||
+    // Live без включен Stripe Tax → няма продажба (ДДС ролята, TAX.md).
+    !shopSalesAllowed()
   ) {
     redirect(`${back}${hl ? '&' : '?'}shopError=1`);
   }
@@ -220,7 +223,7 @@ export async function setTraderStatusAction(
     where: { id: user.id },
     data: { isTrader: formData.get('isTrader') === 'on' },
   });
-  redirect(`/${uiLocale}/dashboard`);
+  redirect(await dash(uiLocale));
 }
 
 // Продавачът сам връща пари за своя продажба (merchant-of-record носи
@@ -248,7 +251,7 @@ export async function sellerRefundAction(formData: FormData): Promise<void> {
     purchase.refundedAt ||
     !stripe
   ) {
-    redirect(`/${uiLocale}/dashboard?error=refund`);
+    redirect(await dash(uiLocale, '?error=refund'));
   }
   try {
     if (purchase.chargedOn === 'platform') {
@@ -272,7 +275,7 @@ export async function sellerRefundAction(formData: FormData): Promise<void> {
       });
     }
   } catch {
-    redirect(`/${uiLocale}/dashboard?error=refund`);
+    redirect(await dash(uiLocale, '?error=refund'));
   }
   await prisma.purchase.update({
     where: { id: purchaseId },
@@ -291,7 +294,7 @@ export async function sellerRefundAction(formData: FormData): Promise<void> {
       })
       .catch(() => undefined);
   }
-  redirect(`/${uiLocale}/dashboard`);
+  redirect(await dash(uiLocale));
 }
 
 const PRODUCT_TYPES = ['DIGITAL', 'COURSE', 'MEMBERSHIP'] as const;
@@ -319,18 +322,18 @@ export async function addProductAction(formData: FormData): Promise<void> {
     deliveryUrl: formData.get('deliveryUrl') || undefined,
   });
   if (!parsed.success) {
-    redirect(`/${uiLocale}/dashboard?error=product`);
+    redirect(await dash(uiLocale, '?error=product'));
   }
   const type = parsed.data.type;
   // Членствата са зад флаг до правния пакет — не се създават още.
   if (type === 'MEMBERSHIP' && !MEMBERSHIPS_ENABLED) {
-    redirect(`/${uiLocale}/dashboard?error=product`);
+    redirect(await dash(uiLocale, '?error=product'));
   }
   // DIGITAL иска валиден линк за доставка; COURSE/MEMBERSHIP ползват уроци.
   let deliveryUrl: string | null = null;
   if (type === 'DIGITAL') {
     const du = (parsed.data.deliveryUrl ?? '').trim();
-    if (!httpUrl(du)) redirect(`/${uiLocale}/dashboard?error=product`);
+    if (!httpUrl(du)) redirect(await dash(uiLocale, '?error=product'));
     deliveryUrl = du;
   }
   const interval = type === 'MEMBERSHIP' ? (parsed.data.interval ?? 'month') : null;
@@ -338,7 +341,7 @@ export async function addProductAction(formData: FormData): Promise<void> {
     where: { id: profileId, userId: user.id },
     include: { _count: { select: { products: true } } },
   });
-  if (!profile) redirect(`/${uiLocale}/dashboard?error=generic`);
+  if (!profile) redirect(await dash(uiLocale, '?error=generic'));
   await prisma.product.create({
     data: {
       profileId,
@@ -352,7 +355,7 @@ export async function addProductAction(formData: FormData): Promise<void> {
       },
     },
   });
-  redirect(`/${uiLocale}/dashboard`);
+  redirect(await dash(uiLocale));
 }
 
 // Редакция на цена, линк за доставка и активност (типът не се мени след
@@ -368,18 +371,18 @@ export async function updateProductAction(formData: FormData): Promise<void> {
     .max(10000)
     .safeParse(formData.get('priceEur'));
   if (!priceEur.success) {
-    redirect(`/${uiLocale}/dashboard?error=product`);
+    redirect(await dash(uiLocale, '?error=product'));
   }
   const product = await prisma.product.findFirst({
     where: { id: productId, profile: { userId: user.id } },
     select: { id: true, type: true },
   });
-  if (!product) redirect(`/${uiLocale}/dashboard?error=generic`);
+  if (!product) redirect(await dash(uiLocale, '?error=generic'));
   // deliveryUrl важи само за DIGITAL.
   let deliveryUrl: string | null | undefined = undefined;
   if (product.type === 'DIGITAL') {
     const du = String(formData.get('deliveryUrl') ?? '').trim();
-    if (!httpUrl(du)) redirect(`/${uiLocale}/dashboard?error=product`);
+    if (!httpUrl(du)) redirect(await dash(uiLocale, '?error=product'));
     deliveryUrl = du;
   }
   await prisma.product.update({
@@ -390,7 +393,7 @@ export async function updateProductAction(formData: FormData): Promise<void> {
       ...(deliveryUrl !== undefined ? { deliveryUrl } : {}),
     },
   });
-  redirect(`/${uiLocale}/dashboard`);
+  redirect(await dash(uiLocale));
 }
 
 // ── Уроци (за COURSE/MEMBERSHIP) ──────────────────────────────────────
@@ -410,12 +413,12 @@ export async function addLessonAction(formData: FormData): Promise<void> {
     body: formData.get('body') || undefined,
     videoUrl: formData.get('videoUrl') || undefined,
   });
-  if (!parsed.success) redirect(`/${uiLocale}/dashboard?error=product`);
+  if (!parsed.success) redirect(await dash(uiLocale, '?error=product'));
   const product = await prisma.product.findFirst({
     where: { id: productId, profile: { userId: user.id } },
     include: { _count: { select: { lessons: true } } },
   });
-  if (!product) redirect(`/${uiLocale}/dashboard?error=generic`);
+  if (!product) redirect(await dash(uiLocale, '?error=generic'));
   await prisma.lesson.create({
     data: {
       productId,
@@ -425,7 +428,7 @@ export async function addLessonAction(formData: FormData): Promise<void> {
       position: product._count.lessons,
     },
   });
-  redirect(`/${uiLocale}/dashboard`);
+  redirect(await dash(uiLocale));
 }
 
 export async function deleteLessonAction(formData: FormData): Promise<void> {
@@ -436,7 +439,7 @@ export async function deleteLessonAction(formData: FormData): Promise<void> {
   await prisma.lesson.deleteMany({
     where: { id: lessonId, product: { profile: { userId: user.id } } },
   });
-  redirect(`/${uiLocale}/dashboard`);
+  redirect(await dash(uiLocale));
 }
 
 export async function deleteProductAction(formData: FormData): Promise<void> {
@@ -444,10 +447,24 @@ export async function deleteProductAction(formData: FormData): Promise<void> {
   const user = await getSessionUser();
   if (!user) redirect(`/${uiLocale}/login`);
   const productId = String(formData.get('productId') ?? '');
-  await prisma.product.deleteMany({
+  const product = await prisma.product.findFirst({
     where: { id: productId, profile: { userId: user.id } },
+    select: { id: true, _count: { select: { purchases: true, entitlements: true } } },
   });
-  redirect(`/${uiLocale}/dashboard`);
+  if (!product) redirect(await dash(uiLocale));
+  if (product._count.purchases > 0 || product._count.entitlements > 0) {
+    // Покупките (OSS/Н-18, 10 г.) и платеният достъп на купувачите не се
+    // трият — продуктът се архивира (скрива се от витрината; притежателите
+    // му пазят достъпа). FK-ът е Restrict, така че и директно изтриване
+    // би се провалило.
+    await prisma.product.update({
+      where: { id: product.id },
+      data: { active: false },
+    });
+  } else {
+    await prisma.product.delete({ where: { id: product.id } });
+  }
+  redirect(await dash(uiLocale));
 }
 
 export async function upsertProductTranslationAction(
@@ -461,26 +478,26 @@ export async function upsertProductTranslationAction(
   const title = String(formData.get('title') ?? '').trim().slice(0, 100);
   const description =
     String(formData.get('description') ?? '').trim().slice(0, 500) || null;
-  if (!isLocale(locale)) redirect(`/${uiLocale}/dashboard?error=generic`);
+  if (!isLocale(locale)) redirect(await dash(uiLocale, '?error=generic'));
   const product = await prisma.product.findFirst({
     where: { id: productId, profile: { userId: user.id } },
     include: { profile: true },
   });
-  if (!product) redirect(`/${uiLocale}/dashboard?error=generic`);
+  if (!product) redirect(await dash(uiLocale, '?error=generic'));
   if (!title) {
     if (locale !== product.profile.defaultLocale) {
       await prisma.productTranslation
         .delete({ where: { productId_locale: { productId, locale } } })
         .catch(() => undefined);
     }
-    redirect(`/${uiLocale}/dashboard`);
+    redirect(await dash(uiLocale));
   }
   await prisma.productTranslation.upsert({
     where: { productId_locale: { productId, locale } },
     create: { productId, locale, title, description },
     update: { title, description },
   });
-  redirect(`/${uiLocale}/dashboard`);
+  redirect(await dash(uiLocale));
 }
 
 // ── Промо кодове ──────────────────────────────────────────────────────
@@ -510,19 +527,19 @@ export async function addCouponAction(formData: FormData): Promise<void> {
   });
   const code = parsed.success ? normalizeCouponCode(parsed.data.code) : '';
   if (!parsed.success || code.length < 3) {
-    redirect(`/${uiLocale}/dashboard?error=coupon`);
+    redirect(await dash(uiLocale, '?error=coupon'));
   }
   // Собственост: профилът трябва да е на текущия потребител.
   const profile = await prisma.profile.findFirst({
     where: { id: profileId, userId: user.id },
     select: { id: true },
   });
-  if (!profile) redirect(`/${uiLocale}/dashboard?error=generic`);
+  if (!profile) redirect(await dash(uiLocale, '?error=generic'));
   const expiresAt = parsed.data.expiresAt
     ? new Date(parsed.data.expiresAt)
     : null;
   if (expiresAt && Number.isNaN(expiresAt.getTime())) {
-    redirect(`/${uiLocale}/dashboard?error=coupon`);
+    redirect(await dash(uiLocale, '?error=coupon'));
   }
   try {
     await prisma.coupon.create({
@@ -536,9 +553,9 @@ export async function addCouponAction(formData: FormData): Promise<void> {
     });
   } catch {
     // Уникалност (profileId, code) — кодът вече съществува.
-    redirect(`/${uiLocale}/dashboard?error=coupon`);
+    redirect(await dash(uiLocale, '?error=coupon'));
   }
-  redirect(`/${uiLocale}/dashboard`);
+  redirect(await dash(uiLocale));
 }
 
 export async function deleteCouponAction(formData: FormData): Promise<void> {
@@ -549,5 +566,5 @@ export async function deleteCouponAction(formData: FormData): Promise<void> {
   await prisma.coupon.deleteMany({
     where: { id: couponId, profile: { userId: user.id } },
   });
-  redirect(`/${uiLocale}/dashboard`);
+  redirect(await dash(uiLocale));
 }

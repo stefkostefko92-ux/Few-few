@@ -8,6 +8,7 @@ import {
   type BlockMeta,
 } from "@/lib/blocks";
 import { isSensitiveUrl } from "@/lib/brands";
+import { maybePurgeOldClicks } from "@/lib/retention";
 import { isLocale } from "@/i18n/locales";
 import { countryOf, localeOf } from "@/lib/analytics";
 
@@ -51,6 +52,8 @@ async function handle(
 
   const recordClick = async () => {
     if (!record) return;
+    // Срок за съхранение на аналитиката (до 13 месеца) — лениво чистене.
+    void maybePurgeOldClicks();
     await prisma.clickEvent
       .create({
         data: {

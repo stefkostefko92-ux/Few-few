@@ -81,12 +81,21 @@ export default async function DashboardPage({
     connected?: string;
     payout?: string;
     broadcast?: string;
+    upgraded?: string;
     p?: string;
   }>;
 }) {
   const { locale } = await params;
-  const { error, translated, generated, connected, payout, broadcast, p } =
-    await searchParams;
+  const {
+    error,
+    translated,
+    generated,
+    connected,
+    payout,
+    broadcast,
+    upgraded,
+    p,
+  } = await searchParams;
   const user = await getSessionUser();
   if (!user) redirect(`/${locale}/login`);
   const t = await getTranslations('dashboard');
@@ -218,7 +227,7 @@ export default async function DashboardPage({
     : [0, 0];
   const purchaseTotals = profile
     ? await prisma.purchase.aggregate({
-        where: { profileId: profile.id },
+        where: { profileId: profile.id, refundedAt: null, disputedAt: null },
         _count: { _all: true },
         _sum: { amountCents: true },
       })
@@ -267,8 +276,40 @@ export default async function DashboardPage({
   return (
     <>
       <SiteHeader locale={locale as Locale} />
-      <main className="mx-auto max-w-3xl space-y-10 px-6 py-10">
-        <h1 className="text-2xl font-bold">{t('title')}</h1>
+      <main className="dash mx-auto max-w-3xl space-y-10 px-6 py-10">
+        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
+          {t('title')}
+        </h1>
+        {profile && (
+          <nav
+            aria-label={t('title')}
+            className="dash-nav sticky top-[4.1rem] z-30 -mx-6 !mt-4 overflow-x-auto bg-slate-50/95 px-6 py-2.5 backdrop-blur-md lg:-mx-20 lg:px-0"
+          >
+            <ul className="mx-auto flex w-max gap-2">
+              {(
+                [
+                  ['profile', t('profileSection')],
+                  ['style', t('styleSection')],
+                  ['languages', t('translationsSection')],
+                  ['links', t('linksSection')],
+                  ['stats', t('statsSection')],
+                  ['shop', t('shopSection')],
+                  ['referral', t('referralSection')],
+                  ['plan', t('planSection')],
+                ] as const
+              ).map(([id, label]) => (
+                <li key={id}>
+                  <a
+                    href={`#${id}`}
+                    className="block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[13px] font-medium text-slate-600 shadow-sm transition hover:border-linketto-500 hover:text-linketto-700"
+                  >
+                    {label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
         {error && (
           <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
             {error === 'slug'
@@ -301,7 +342,19 @@ export default async function DashboardPage({
                                         ? t('errorShortlink')
                                         : error === 'profiles'
                                           ? t('errorProfiles')
-                                          : t('errorGeneric')}
+                                          : error === 'stripe'
+                                            ? t('errorStripe')
+                                            : error === 'plan'
+                                              ? t('errorPlan')
+                                              : t('errorGeneric')}
+          </p>
+        )}
+        {upgraded && plan.id === 'FREE' && (
+          <p
+            role="status"
+            className="rounded-lg bg-sky-50 p-3 text-sm text-sky-800"
+          >
+            {t('upgradedProcessing')}
           </p>
         )}
         {translated && (
@@ -395,7 +448,7 @@ export default async function DashboardPage({
         )}
 
         {!profile ? (
-          <section className="rounded-2xl border border-slate-200 bg-white p-6">
+          <section className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
             <p className="font-medium">{t('noProfile')}</p>
             <form action={createProfileAction} className="mt-4 flex gap-3">
               <input type="hidden" name="uiLocale" value={locale} />
@@ -422,9 +475,9 @@ export default async function DashboardPage({
           </section>
         ) : (
           <>
-            <section className="rounded-2xl border border-slate-200 bg-white p-6">
-              <div className="flex items-center justify-between">
-                <h2 className="font-semibold">{t('profileSection')}</h2>
+            <section id="profile" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+              <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+                <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('profileSection')}</h2>
                 <a
                   href={`/u/${profile.slug}`}
                   className="text-sm font-medium text-linketto-700 hover:underline"
@@ -508,8 +561,8 @@ export default async function DashboardPage({
               </form>
             </section>
 
-            <section className="rounded-2xl border border-slate-200 bg-white p-6">
-              <h2 className="font-semibold">{t('styleSection')}</h2>
+            <section id="style" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('styleSection')}</h2>
               <p className="mt-1 text-sm text-slate-500">{t('styleHint')}</p>
               {(() => {
                 const styleCfg = parseStyle(profile.style);
@@ -807,9 +860,9 @@ export default async function DashboardPage({
               </div>
             </section>
 
-            <section className="rounded-2xl border border-slate-200 bg-white p-6">
+            <section id="languages" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="font-semibold">{t('translationsSection')}</h2>
+                <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('translationsSection')}</h2>
                 <form action={aiTranslateAction}>
                   <input type="hidden" name="uiLocale" value={locale} />
                   <input type="hidden" name="profileId" value={profile.id} />
@@ -851,54 +904,80 @@ export default async function DashboardPage({
                 </button>
               </form>
               <div className="mt-4 space-y-4">
-                {LOCALES.map((loc) => {
-                  const translation = profile.translations.find(
-                    (item) => item.locale === loc,
-                  );
-                  return (
-                    <form
-                      key={loc}
-                      action={upsertProfileTranslationAction}
-                      className="grid items-end gap-3 sm:grid-cols-[6rem_1fr_1fr_auto]"
-                    >
-                      <input type="hidden" name="uiLocale" value={locale} />
-                      <input type="hidden" name="profileId" value={profile.id} />
-                      <input type="hidden" name="locale" value={loc} />
-                      <span className="text-sm font-semibold">
-                        {LOCALE_NAMES[loc]}
-                      </span>
-                      <label className="block text-sm">
-                        {t('displayName')}
-                        <input
-                          type="text"
-                          name="displayName"
-                          defaultValue={translation?.displayName ?? ''}
-                          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
-                        />
-                      </label>
-                      <label className="block text-sm">
-                        {t('bio')}
-                        <input
-                          type="text"
-                          name="bio"
-                          defaultValue={translation?.bio ?? ''}
-                          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
-                        />
-                      </label>
-                      <button
-                        type="submit"
-                        className="rounded-full border border-linketto-600 px-4 py-2 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                {(() => {
+                  const row = (loc: (typeof LOCALES)[number]) => {
+                    const translation = profile.translations.find(
+                      (item) => item.locale === loc,
+                    );
+                    return (
+                      <form
+                        key={loc}
+                        action={upsertProfileTranslationAction}
+                        className="grid items-end gap-3 sm:grid-cols-[6rem_1fr_1fr_auto]"
                       >
-                        {t('save')}
-                      </button>
-                    </form>
+                        <input type="hidden" name="uiLocale" value={locale} />
+                        <input
+                          type="hidden"
+                          name="profileId"
+                          value={profile.id}
+                        />
+                        <input type="hidden" name="locale" value={loc} />
+                        <span className="text-sm font-semibold">
+                          {LOCALE_NAMES[loc]}
+                        </span>
+                        <label className="block text-sm">
+                          {t('displayName')}
+                          <input
+                            type="text"
+                            name="displayName"
+                            defaultValue={translation?.displayName ?? ''}
+                            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                          />
+                        </label>
+                        <label className="block text-sm">
+                          {t('bio')}
+                          <input
+                            type="text"
+                            name="bio"
+                            defaultValue={translation?.bio ?? ''}
+                            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                          />
+                        </label>
+                        <button
+                          type="submit"
+                          className="rounded-full border border-linketto-600 px-4 py-2 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                        >
+                          {t('save')}
+                        </button>
+                      </form>
+                    );
+                  };
+                  const hasTranslation = (loc: string) =>
+                    profile.translations.some((item) => item.locale === loc);
+                  const filled = LOCALES.filter(hasTranslation);
+                  const empty = LOCALES.filter((loc) => !hasTranslation(loc));
+                  return (
+                    <>
+                      {filled.map(row)}
+                      {empty.length > 0 && (
+                        <details className="faq-item rounded-xl border border-dashed border-slate-300 px-4 py-3 open:border-solid open:bg-slate-50/60">
+                          <summary className="cursor-pointer list-none text-sm font-semibold text-linketto-700">
+                            <span>{t('moreLanguages', { count: empty.length })}</span>
+                            <span aria-hidden className="faq-plus" />
+                          </summary>
+                          <div className="mt-4 space-y-4">
+                            {empty.map(row)}
+                          </div>
+                        </details>
+                      )}
+                    </>
                   );
-                })}
+                })()}
               </div>
             </section>
 
-            <section className="rounded-2xl border border-slate-200 bg-white p-6">
-              <h2 className="font-semibold">{t('linksSection')}</h2>
+            <section id="links" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('linksSection')}</h2>
               <div className="mt-4 space-y-6">
                 {profile.links.map((link) => (
                   <div
@@ -923,7 +1002,7 @@ export default async function DashboardPage({
                         <input type="hidden" name="linkId" value={link.id} />
                         <button
                           type="submit"
-                          className="text-sm text-red-600 hover:underline"
+                          className="shrink-0 text-sm font-medium text-red-700 hover:underline"
                         >
                           {t('delete')}
                         </button>
@@ -951,7 +1030,7 @@ export default async function DashboardPage({
                               name="locale"
                               value={translation.locale}
                             />
-                            <span className="w-8 text-xs font-semibold uppercase text-slate-400">
+                            <span className="w-8 text-xs font-semibold uppercase text-slate-500">
                               {translation.locale}
                             </span>
                             <input
@@ -959,11 +1038,11 @@ export default async function DashboardPage({
                               name="title"
                               defaultValue={linkTitle?.title ?? ''}
                               placeholder={t('linkTitle')}
-                              className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                              className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
                             />
                             <button
                               type="submit"
-                              className="text-sm font-medium text-linketto-700 hover:underline"
+                              className="shrink-0 rounded-full border border-linketto-600 px-3 py-1 text-xs font-semibold text-linketto-700 hover:bg-linketto-50"
                             >
                               {t('save')}
                             </button>
@@ -1099,8 +1178,8 @@ export default async function DashboardPage({
               </form>
             </section>
 
-            <section className="rounded-2xl border border-slate-200 bg-white p-6">
-              <h2 className="font-semibold">{t('qrSection')}</h2>
+            <section id="qr" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('qrSection')}</h2>
               <p className="mt-1 text-sm text-slate-500">{t('qrHint')}</p>
               <div className="mt-4 flex items-center gap-6">
                 {/* eslint-disable-next-line @next/next/no-img-element -- динамичен SVG route */}
@@ -1134,8 +1213,8 @@ export default async function DashboardPage({
             </section>
 
             {/* Съкратени линкове с брояч на кликове */}
-            <section className="rounded-2xl border border-slate-200 bg-white p-6">
-              <h2 className="font-semibold">{t('shortLinksSection')}</h2>
+            <section id="short" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('shortLinksSection')}</h2>
               <p className="mt-1 text-sm text-slate-500">
                 {t('shortLinksHint')}
               </p>
@@ -1214,9 +1293,9 @@ export default async function DashboardPage({
               </form>
             </section>
 
-            <section className="rounded-2xl border border-slate-200 bg-white p-6">
+            <section id="stats" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="font-semibold">{t('statsSection')}</h2>
+                <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('statsSection')}</h2>
                 <Link
                   href={`/${locale}/dashboard/analytics?p=${profile.id}`}
                   className="inline-flex items-center gap-1.5 rounded-full border border-linketto-600 px-4 py-1.5 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
@@ -1262,7 +1341,7 @@ export default async function DashboardPage({
                       </li>
                     ))}
                     {byLink.length === 0 && (
-                      <li className="text-slate-400">—</li>
+                      <li className="text-slate-500">—</li>
                     )}
                   </ul>
                 </div>
@@ -1283,7 +1362,7 @@ export default async function DashboardPage({
                       </li>
                     ))}
                     {byLocale.length === 0 && (
-                      <li className="text-slate-400">—</li>
+                      <li className="text-slate-500">—</li>
                     )}
                   </ul>
                 </div>
@@ -1304,7 +1383,7 @@ export default async function DashboardPage({
                       </li>
                     ))}
                     {byCountry.length === 0 && (
-                      <li className="text-slate-400">—</li>
+                      <li className="text-slate-500">—</li>
                     )}
                   </ul>
                 </div>
@@ -1313,14 +1392,14 @@ export default async function DashboardPage({
 
             {/* Езикова дупка — уникалната ни функция: аудиторията по език
                 срещу наличните преводи, с подкана за AI превод. */}
-            <section className="rounded-2xl border border-slate-200 bg-white p-6">
+            <section id="gap" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
               <div className="flex items-center gap-2">
                 <SparklesIcon className="h-5 w-5 text-linketto-600" />
-                <h2 className="font-semibold">{t('gapSection')}</h2>
+                <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('gapSection')}</h2>
               </div>
               <p className="mt-1 text-sm text-slate-500">{t('gapHint')}</p>
               {!gap || gap.mappedVisitors === 0 ? (
-                <p className="mt-4 text-sm text-slate-400">{t('gapNoData')}</p>
+                <p className="mt-4 text-sm text-slate-500">{t('gapNoData')}</p>
               ) : (
                 <>
                   <ul className="mt-4 space-y-2">
@@ -1394,8 +1473,8 @@ export default async function DashboardPage({
               )}
             </section>
 
-            <section className="rounded-2xl border border-slate-200 bg-white p-6">
-              <h2 className="font-semibold">{t('messagesSection')}</h2>
+            <section id="messages" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('messagesSection')}</h2>
               {messages.length === 0 ? (
                 <p className="mt-2 text-sm text-slate-500">{t('noMessages')}</p>
               ) : (
@@ -1406,7 +1485,7 @@ export default async function DashboardPage({
                       className="rounded-xl border border-slate-100 p-3 text-sm"
                     >
                       <p className="text-slate-700">{message.message}</p>
-                      <p className="mt-1 text-xs text-slate-400">
+                      <p className="mt-1 text-xs text-slate-500">
                         {[message.name, message.email]
                           .filter(Boolean)
                           .join(' · ')}{' '}
@@ -1419,8 +1498,8 @@ export default async function DashboardPage({
             </section>
 
             {/* Заявки за час (BOOKING блок) */}
-            <section className="rounded-2xl border border-slate-200 bg-white p-6">
-              <h2 className="font-semibold">{t('bookingsSection')}</h2>
+            <section id="bookings" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('bookingsSection')}</h2>
               {bookings.length === 0 ? (
                 <p className="mt-2 text-sm text-slate-500">{t('noBookings')}</p>
               ) : (
@@ -1480,8 +1559,8 @@ export default async function DashboardPage({
             </section>
 
             {/* Аудитория — бюлетин (email capture), износ и разпращане */}
-            <section className="rounded-2xl border border-slate-200 bg-white p-6">
-              <h2 className="font-semibold">{t('audienceSection')}</h2>
+            <section id="audience" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('audienceSection')}</h2>
               <p className="mt-1 text-sm text-slate-500">{t('audienceHint')}</p>
               <div className="mt-4 flex flex-wrap items-center gap-4">
                 <div className="rounded-xl bg-slate-50 px-5 py-3 text-center">
@@ -1493,7 +1572,7 @@ export default async function DashboardPage({
                   </p>
                 </div>
                 <div className="rounded-xl bg-slate-50 px-5 py-3 text-center">
-                  <p className="text-2xl font-extrabold text-slate-400">
+                  <p className="text-2xl font-extrabold text-slate-500">
                     {subPending}
                   </p>
                   <p className="text-xs text-slate-500">
@@ -1545,8 +1624,8 @@ export default async function DashboardPage({
               </form>
             </section>
 
-            <section className="rounded-2xl border border-slate-200 bg-white p-6">
-              <h2 className="font-semibold">{t('shopSection')}</h2>
+            <section id="shop" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('shopSection')}</h2>
               <p className="mt-1 text-sm text-slate-500">
                 {t('feeNote', { fee: plan.feePercent })}
               </p>
@@ -1705,7 +1784,7 @@ export default async function DashboardPage({
                                   name="locale"
                                   value={translation.locale}
                                 />
-                                <span className="mt-2 w-8 text-xs font-semibold uppercase text-slate-400">
+                                <span className="mt-2 w-8 text-xs font-semibold uppercase text-slate-500">
                                   {translation.locale}
                                 </span>
                                 <div className="flex-1 space-y-1">
@@ -2024,7 +2103,7 @@ export default async function DashboardPage({
                                 €{(purchase.amountCents / 100).toFixed(2)}
                               </span>
                               {purchase.refundedAt ? (
-                                <span className="text-xs text-slate-400">
+                                <span className="text-xs text-slate-500">
                                   {t('refunded')}
                                 </span>
                               ) : (
@@ -2053,7 +2132,7 @@ export default async function DashboardPage({
                       </ul>
                     </>
                   ) : (
-                    <p className="mt-1 text-sm text-slate-400">
+                    <p className="mt-1 text-sm text-slate-500">
                       {t('noPurchases')}
                     </p>
                   )}
@@ -2061,8 +2140,8 @@ export default async function DashboardPage({
               )}
             </section>
 
-            <section className="rounded-2xl border border-slate-200 bg-white p-6">
-              <h2 className="font-semibold">{t('referralSection')}</h2>
+            <section id="referral" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('referralSection')}</h2>
               <p className="mt-1 text-sm text-slate-500">
                 {t('referralReward')}
               </p>
@@ -2139,12 +2218,12 @@ export default async function DashboardPage({
               )}
             </section>
 
-            <section className="rounded-2xl border border-slate-200 bg-white p-6">
-              <h2 className="font-semibold">{t('planSection')}</h2>
+            <section id="plan" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('planSection')}</h2>
               <p className="mt-2 text-sm text-slate-600">
                 {t('currentPlan')}: <strong>{plan.id}</strong>
               </p>
-              {plan.id === 'FREE' && (
+              {plan.id === 'FREE' && !upgraded && (
                 <div className="mt-4 space-y-4">
                   {/* Абонаментни планове с избор на период (с намаления) */}
                   {(
