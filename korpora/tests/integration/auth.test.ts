@@ -103,15 +103,20 @@ test('the same answer for a new and an existing email (no account enumeration)',
 test('five wrong passwords lock the account; the right one does not get in while locked', async () => {
   await customer('lock@example.test');
   const b = new Browser('9.9.9.9');
+  // four wrong answers, then the fifth locks: „sign-in with this email is paused“
   for (let i = 0; i < 5; i++)
-    assert.equal((await b.login('lock@example.test', `Wrong-Password-${i}00`)).status, 401);
+    assert.equal(
+      (await b.login('lock@example.test', `Wrong-Password-${i}00`)).status,
+      i < 4 ? 401 : 429,
+    );
   const user = await prisma.user.findUniqueOrThrow({ where: { email: 'lock@example.test' } });
   assert.ok(
     user.lockedUntil && user.lockedUntil.getTime() > Date.now() + 14 * 60_000,
     'locked for about 15 minutes',
   );
   const right = await b.login('lock@example.test', CUSTOMER_PASSWORD);
-  assert.equal(right.status, 401, 'a locked account answers like a wrong password');
+  assert.equal(right.status, 429, 'a locked account says so, also to the right password');
+  assert.match(right.body, /Входът с този имейл е спрян за 15 минути/);
   await prisma.user.update({
     where: { id: user.id },
     data: { lockedUntil: new Date(Date.now() - 1000) },

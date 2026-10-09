@@ -17,6 +17,7 @@ after(stopApp);
 const { runMaintenance } = await import('../../src/services/maintenance.js');
 const { exportOwnData } = await import('../../src/services/account-export.js');
 const { ORDER_RETENTION_DAYS } = await import('../../src/retention.js');
+const { orderNo } = await import('../../src/plans/order-number.js');
 
 const DAY = 86_400_000;
 
@@ -90,6 +91,7 @@ test('deleting your own account removes the account and the projects; the orders
   // the team learns about the cancelled order: a payment may already be on its way
   const notice = await mailTo(STAFF_INBOX, /изтрит акаунт/i);
   assert.match(notice.text, new RegExp(email.replace('.', '\\.')));
+  assert.match(notice.text, new RegExp(`Поръчка № ${orderNo(open)} чакаше плащане`));
   // the person learns what is kept and for how long
   const bye = await mailTo(email, /изтрит/);
   assert.match(bye.text, /5 години/);

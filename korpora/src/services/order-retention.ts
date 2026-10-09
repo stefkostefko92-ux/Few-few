@@ -1,6 +1,7 @@
 import type { Prisma, User } from '@prisma/client';
 import { prisma } from '../db.js';
 import { LABEL } from '../labels.js';
+import { orderNo } from '../plans/order-number.js';
 import { mailStaffNotice } from '../mail/order-templates.js';
 import { ORDER_RETENTION_DAYS } from '../retention.js';
 import { DAY } from '../time.js';
@@ -15,6 +16,7 @@ import { DAY } from '../time.js';
 /** Полетата от износа на поръчките, които остават след изтриването на акаунта (services/account-export.ts). */
 export const ORDER_FIELDS_KEPT = [
   'id',
+  'number',
   'at',
   'option',
   'months',
@@ -35,7 +37,7 @@ export const ORDER_FIELDS_KEPT = [
 export interface KeptOrders {
   /** Колко поръчки остават като договори. */
   count: number;
-  /** Чакащите плащане — отменени с изтриването: изпълнение вече няма на кого. */
+  /** Номерата на чакащите плащане — отменени с изтриването: изпълнение вече няма на кого. */
   cancelled: string[];
 }
 
@@ -53,7 +55,7 @@ export async function keepOrdersAsContracts(
   const cancelled = await tx.upgradeRequest.updateManyAndReturn({
     where: { userId: user.id, status: 'OPEN' },
     data: { status: 'CANCELLED', handledAt: now, handledByLabel: LABEL.accountDeleted },
-    select: { id: true },
+    select: { number: true, createdAt: true },
   });
   const kept = await tx.upgradeRequest.updateMany({
     where: { userId: user.id },
@@ -64,7 +66,7 @@ export async function keepOrdersAsContracts(
       message: null,
     },
   });
-  return { count: kept.count, cancelled: cancelled.map((row) => row.id) };
+  return { count: kept.count, cancelled: cancelled.map(orderNo) };
 }
 
 /**

@@ -3,6 +3,7 @@ import { prisma } from '../db.js';
 import { hwidLabel } from '../auth/device.js';
 import { accountLocale, translatorFor } from '../i18n.js';
 import { LABEL } from '../labels.js';
+import { orderNo } from '../plans/order-number.js';
 import { ORDER_RETENTION_DAYS, retentionText } from '../retention.js';
 import { ORDER_FIELDS_KEPT } from './order-retention.js';
 
@@ -131,6 +132,7 @@ export async function exportOwnData(userId: string): Promise<Record<string, unkn
     bans: user.bans.map((b) => ({ at: b.createdAt, reason: b.reason, liftedAt: b.liftedAt })),
     orders: user.upgradeRequests.map((r) => ({
       id: r.id,
+      number: orderNo(r),
       at: r.createdAt,
       option: r.option,
       months: r.months,

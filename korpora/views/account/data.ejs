@@ -16,7 +16,7 @@
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <div class="form-row">
       <div class="field"><label for="del-pw"><%= t('account.currentPassword') %></label><input id="del-pw" name="password" type="password" required autocomplete="current-password"></div>
-      <% if (user.totpEnabledAt) { %><div class="field"><label for="del-code"><%= t('security.currentCode') %></label><input id="del-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" required maxlength="20"></div><% } %>
+      <% if (user.totpEnabledAt) { %><div class="field"><label for="del-code"><%= t('security.currentCode') %></label><input id="del-code" name="code" type="text" autocomplete="one-time-code" autocapitalize="off" autocorrect="off" spellcheck="false" required maxlength="20"></div><% } %>
     </div>
     <label class="check"><input type="checkbox" name="confirm" value="yes" required><span><%= t('data.deleteCheck') %></span></label>
     <div class="actions"><button class="btn btn-danger" type="submit"><%= t('data.deleteButton') %></button></div>

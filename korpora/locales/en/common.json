@@ -104,7 +104,8 @@
     "cncBlockedTitle": "The CNC files are withheld",
     "cncBlockedText": "The construction checks found errors, and G-code and DXF must never be wrong. Fix them in the editor — the download unlocks as soon as the errors are gone. The editor and the error list are in Bulgarian.",
     "toProject": "Back to the project",
-    "tooLarge": "What was sent is too large."
+    "tooLarge": "What was sent is too large.",
+    "tooManyIn": "Too many requests came from this network. Try again in {minutes}."
   },
   "flash": {
     "accountCreated": "The account has been created.",
@@ -140,7 +141,8 @@
     "verificationResent": "We sent a new confirmation link.",
     "wrongCode": "Wrong code.",
     "wrongPassword": "Wrong password.",
-    "withdrawn": "Your withdrawal has been received. We have emailed you a confirmation."
+    "withdrawn": "Your withdrawal has been received. We have emailed you a confirmation.",
+    "requestSentReplaces": "Your order has been accepted and replaces order no. {ids}, which is cancelled. We have emailed you a confirmation; the invoice with the payment details follows."
   },
   "furniture": {
     "base": "Base cabinet",

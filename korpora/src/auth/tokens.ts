@@ -90,3 +90,21 @@ export async function consumeEmailToken(token: string, purpose: TokenPurpose) {
   });
   return result.count === 1 ? row : null;
 }
+
+/**
+ * Връзка, която вече не върши работа (използвана, заменена или изтекла): какво е станало с нея — за текста
+ * на страницата, без да променя нищо. 'verified' — имейлът вече е потвърден; 'changed' — смяната на
+ * имейла вече е станала; null — непозната или просто изтекла. Само притежателят на пощата има токена.
+ */
+export async function spentLinkState(token: string): Promise<'verified' | 'changed' | null> {
+  if (!/^[A-Za-z0-9_-]{43}$/.test(token)) return null;
+  const row = await prisma.emailToken.findUnique({
+    where: { tokenHash: sha256Hex(token) },
+    include: { user: { select: { email: true, emailVerifiedAt: true } } },
+  });
+  if (!row) return null;
+  if (row.purpose === 'VERIFY_EMAIL' && row.user.emailVerifiedAt) return 'verified';
+  if (row.purpose === 'CHANGE_EMAIL' && row.newEmail && row.user.email === row.newEmail)
+    return 'changed';
+  return null;
+}

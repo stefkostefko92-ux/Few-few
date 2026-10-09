@@ -1,5 +1,7 @@
-<%- include('_top', { titleKey: fromVerify ? 'auth.setPasswordTitle' : 'auth.resetTitle' }) %>
-<h1><%= t(fromVerify ? 'auth.setPasswordTitle' : 'auth.resetTitle') %></h1>
+<%# Изтекла връзка: заглавието казва това, не обещава форма, която я няма. %>
+<% const titleKey = !valid ? 'auth.verifyFailedTitle' : fromVerify ? 'auth.setPasswordTitle' : 'auth.resetTitle'; -%>
+<%- include('_top', { titleKey }) %>
+<h1><%= t(titleKey) %></h1>
 <% if (fromVerify && valid) { %><p><%= t('auth.setPasswordText') %></p><% } %>
 <% if (!valid) { %>
 <p><%= t('auth.errors.linkExpired') %></p>

@@ -104,7 +104,8 @@
     "cncBlockedTitle": "I file CNC non vengono generati",
     "cncBlockedText": "I controlli della costruzione hanno trovato errori, e G-code e DXF non devono mai essere sbagliati. Correggeteli nell'editor: il download si sblocca appena gli errori spariscono. L'editor e l'elenco degli errori sono in bulgaro.",
     "toProject": "Torna al progetto",
-    "tooLarge": "Quanto inviato è troppo grande."
+    "tooLarge": "Quanto inviato è troppo grande.",
+    "tooManyIn": "Da questa rete sono arrivate troppe richieste. Riprovate tra {minutes}."
   },
   "flash": {
     "accountCreated": "L'account è stato creato.",
@@ -121,7 +122,7 @@
     "projectDeleted": "Il progetto è stato eliminato.",
     "projectDuplicated": "Il progetto è stato copiato.",
     "recoveryUsed": "Avete effettuato l'accesso con un codice di recupero. Se i codici stanno finendo, createne di nuovi in «Sicurezza».",
-    "requestCancelled": "L'ordine è stato ritirato.",
+    "requestCancelled": "L'ordine è stato annullato.",
     "requestRejected": "L'ordine è stato respinto.",
     "requestSent": "L'ordine è stato accettato. Vi abbiamo inviato una conferma per email; seguirà la fattura con i dati per il pagamento.",
     "resetSent": "Abbiamo inviato un link per una nuova password.",
@@ -140,7 +141,8 @@
     "verificationResent": "Abbiamo inviato un nuovo link di conferma.",
     "wrongCode": "Codice sbagliato.",
     "wrongPassword": "Password sbagliata.",
-    "withdrawn": "Il vostro recesso è stato ricevuto. Vi abbiamo inviato una conferma per email."
+    "withdrawn": "Il vostro recesso è stato ricevuto. Vi abbiamo inviato una conferma per email.",
+    "requestSentReplaces": "L'ordine è stato accettato e sostituisce l'ordine n. {ids}, che è annullato. Vi abbiamo inviato una conferma per email; seguirà la fattura con i dati per il pagamento."
   },
   "furniture": {
     "base": "Mobile base",

@@ -10,7 +10,7 @@
   <tbody>
   <% for (const r of requests) { %>
     <tr>
-      <td data-label="<%= t('plan.col.date') %>" class="nowrap"><%= fmt.dateTime(r.createdAt) %></td>
+      <td data-label="<%= t('plan.col.date') %>" class="nowrap"><%= fmt.dateTime(r.createdAt) %><br><small class="mono-sm"><%= fmt.orderNo(r) %></small></td>
       <td data-label="<%= t('admin.col.account') %>" class="who"><% if (r.user) { %><a href="/admin/accounts/<%= r.user.id %>"><%= r.user.email %></a><small><%= r.user.name %>, <%= t('plan.name.' + r.user.plan) %></small><% } else { %><%= r.customerEmail || '—' %><small><%= r.customerName || '' %>, <%= t('admin.requests.deletedAccount', { date: fmt.date(r.accountDeletedAt) }) %></small><% } %></td>
       <td data-label="<%= t('plan.col.option') %>"><%- include('../partials/order-option', { order: r }) %></td>
       <td data-label="<%= t('plan.col.price') %>" class="num"><%= fmt.money(r.listPriceCents) %><br><small class="muted"><%= t('plan.netShort') %><% if (r.buyerType === 'CONSUMER') { %>; <%= fmt.money(r.withVatCents) %> <%= t('plan.withVatShort') %><% } %></small></td>

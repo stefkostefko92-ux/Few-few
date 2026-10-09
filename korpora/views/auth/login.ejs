@@ -2,6 +2,8 @@
 <h1><%= t('auth.loginTitle') %></h1>
 <%- include('_error') %>
 <% if (error === 'auth.errors.unverified') { %><p class="hint"><%= t(typeof resent !== 'undefined' && resent ? 'auth.unverifiedResent' : 'auth.unverifiedWait') %></p><% } %>
+<%# Само „грешен имейл или парола“ е грешка в полетата: паролата получава фокуса, а четецът чете грешката с нея. %>
+<% const badFields = error === 'auth.errors.invalid'; %>
 <%# Отпечатъкът се чете само в браузър, от който са влизали единствено акаунти със съгласие (routes/auth.ts); след неуспешен опит — не. %>
 <% const readsFingerprint = typeof fingerprint !== 'undefined' && fingerprint === true; %>
 <form method="post" action="/login" class="form"<% if (readsFingerprint) { %> data-fingerprint<% } %>>
@@ -10,15 +12,15 @@
   <% if (readsFingerprint) { %><input type="hidden" name="fp" value=""><% } %>
   <div class="field">
     <label for="email"><%= t('auth.email') %></label>
-    <input id="email" name="email" type="email" autocomplete="username" inputmode="email" required maxlength="254" value="<%= email %>"<% if (error) { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
+    <input id="email" name="email" type="email" autocomplete="username" inputmode="email" required maxlength="254" value="<%= email %>"<% if (badFields) { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
   </div>
   <div class="field">
     <label for="password"><%= t('auth.password') %></label>
-    <input id="password" name="password" type="password" autocomplete="current-password" required maxlength="<%= passwordMax %>"<% if (error) { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
+    <input id="password" name="password" type="password" autocomplete="current-password" required maxlength="<%= passwordMax %>"<% if (badFields) { %> aria-invalid="true" aria-describedby="form-error" autofocus<% } %>>
   </div>
   <button class="btn btn-primary btn-wide" type="submit"><%= t('auth.loginButton') %></button>
 </form>
-<p class="hint"><%= t('auth.lockHint', { n: lockout.attempts, minutes: t('common.minutes', { n: lockout.minutes }) }) %></p>
+<% if (error !== 'auth.errors.locked') { %><p class="hint"><%= t('auth.lockHint', { n: lockout.attempts, minutes: t('common.minutes', { n: lockout.minutes }) }) %></p><% } %>
 <div class="auth-links">
   <a href="/forgot"><%= t('auth.forgotLink') %></a>
   <a href="/register"><%= t('auth.registerLink') %></a>

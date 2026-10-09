@@ -22,6 +22,7 @@ import { accountLocale } from '../i18n.js';
 import { notifyNewDevice } from './notify.js';
 import { resendVerification } from './registration.js';
 import { attemptFailed, attemptSucceeded, reserveAttempt } from './lockout.js';
+import { phantomFailure } from '../auth/phantom-lock.js';
 
 const IP_WINDOW_MS = 15 * 60 * 1000;
 const IP_MAX_FAILURES = 20;
@@ -32,6 +33,8 @@ const MAX_MFA_FAILURES = 5;
 export type LoginResult =
   | { kind: 'ok'; user: User; session: NewSession; mfaRequired: boolean }
   | { kind: 'invalid' }
+  /** Входът с този имейл е спрян след MAX_FAILED_LOGINS грешни опита — еднакво с и без акаунт. */
+  | { kind: 'locked' }
   | { kind: 'throttled' }
   | { kind: 'banned'; reason: string }
   | { kind: 'unverified'; resent: boolean };
@@ -50,8 +53,9 @@ async function ipFailures(ip: string | null): Promise<number> {
 }
 
 /**
- * Вход с имейл и парола. Непознат имейл, грешна парола и заключен акаунт дават ЕДНО И СЪЩО
- * съобщение. Причината за бан се показва само след вярна парола — тя е доказателство, че това е
+ * Вход с имейл и парола. Непознат имейл и грешна парола дават ЕДНО И СЪЩО съобщение; заключването след
+ * MAX_FAILED_LOGINS грешни опита — също еднакво: за имейл без акаунт го води phantomFailure по същото
+ * правило, затова „входът е спрян“ не издава дали акаунт има. Причината за бан се показва само след вярна парола — тя е доказателство, че това е
  * собственикът на акаунта. Отпечатък на устройството се пази само при успешен вход в акаунт със
  * съгласие — при неуспешен опит кой опитва, не се знае, значи и съгласие няма.
  */
@@ -72,18 +76,20 @@ export async function attemptLogin(
   if (!user) {
     await verifyPassword(password, await dummyHash());
     await recordLogin('UNKNOWN_EMAIL', meta);
-    return { kind: 'invalid' };
+    return {
+      kind: phantomFailure(email.success ? email.data : rawEmail).locked ? 'locked' : 'invalid',
+    };
   }
   // Опитът се заема преди проверката: паралелни заявки не надхвърлят тавана преди заключването.
   if (!(await reserveAttempt(user, meta)).reserved) {
     await verifyPassword(password, await dummyHash());
     await recordLogin('LOCKED', meta, { userId: user.id });
-    return { kind: 'invalid' };
+    return { kind: 'locked' };
   }
   if (!(await verifyPassword(password, user.passwordHash))) {
-    await attemptFailed(user, meta);
+    const failed = await attemptFailed(user, meta);
     await recordLogin('BAD_PASSWORD', meta, { userId: user.id });
-    return { kind: 'invalid' };
+    return { kind: failed.locked ? 'locked' : 'invalid' };
   }
   const mfaRequired = Boolean(user.totpEnabledAt);
   // С двуфакторна защита броячът пада едва след верния код: самата парола не изчиства опитите с кодове.

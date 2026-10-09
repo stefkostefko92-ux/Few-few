@@ -153,8 +153,10 @@ form.inline {
 .section-grid > .section {
   margin: 0;
 }
+/* one column that may shrink: a wide table inside (the prices) scrolls in its own box instead of widening the page */
 .form {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 2px;
 }
 .form-row {

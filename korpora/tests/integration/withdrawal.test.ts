@@ -1,6 +1,7 @@
 import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mailTo, prisma, STAFF_INBOX, startApp, stopApp } from './harness.js';
+import { orderNo } from '../../src/plans/order-number.js';
 import { placeOrder, sessionCsrf, staff, withdraw } from './people.js';
 
 before(startApp);
@@ -55,7 +56,7 @@ test('withdrawal: a button, a confirmation step, the plan goes back, and a recei
   );
   const receipt = await mailTo('withdraw@example.test', /Получихме отказа ви/);
   assert.match(receipt.text, /подадено на \d+ \S+ \d{4} г\. в \d{1,2}:\d{2} \(UTC\+0[23]:00\)/);
-  assert.match(receipt.text, new RegExp(`поръчка № ${row.id}`));
+  assert.match(receipt.text, new RegExp(`поръчка № ${orderNo(row)}`));
   assert.match(receipt.text, /Планът ви е върнат такъв, какъвто беше преди поръчката\./);
   assert.match(receipt.text, /задържаме частта от цената/);
   const notice = await mailTo(STAFF_INBOX, /Отказ от договора в Korpora: withdraw@example\.test/);

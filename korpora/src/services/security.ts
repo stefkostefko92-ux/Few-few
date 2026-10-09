@@ -1,5 +1,4 @@
 import type { User } from '@prisma/client';
-import QRCode from 'qrcode';
 import { audit, audited, SYSTEM_ACTOR } from '../audit.js';
 import { config } from '../config.js';
 import { decryptSecret, encryptSecret } from '../crypto.js';
@@ -16,7 +15,7 @@ import {
   recentTokenCount,
   revokeEmailTokens,
 } from '../auth/tokens.js';
-import { generateTotpSecret, otpauthUrl, verifyTotp } from '../auth/totp.js';
+import { generateTotpSecret, verifyTotp } from '../auth/totp.js';
 import { accountLocale } from '../i18n.js';
 import type { RequestMeta } from '../http/meta.js';
 import {
@@ -31,6 +30,7 @@ import { HOUR } from '../time.js';
 import { customerActor, emailSchema, newPasswordProblem } from './auth-common.js';
 import { reauthCode, reauthPassword } from './reauth.js';
 import { markEmailVerified } from './registration.js';
+import { totpSetupView, type TotpSetup } from './totp-setup.js';
 
 /* ----------------------------------- пароли ----------------------------------- */
 
@@ -122,11 +122,6 @@ export async function resetPassword(
 
 /* ------------------------------- втори фактор (TOTP) ------------------------------- */
 
-export interface TotpSetup {
-  secret: string;
-  qrDataUrl: string;
-}
-
 export type TotpStart = { ok: true; setup: TotpSetup } | { ok: false; key: string };
 
 /**
@@ -149,9 +144,7 @@ export async function startTotp(
     data: { totpSecretEnc: encryptSecret(secret, config().ENC_KEY), totpLastStep: null },
   });
   if (started.count !== 1) return { ok: false, key: 'flash.twoFactorAlreadyOn' };
-  const url = otpauthUrl(config().TOTP_ISSUER, user.email, secret);
-  const setup = { secret, qrDataUrl: await QRCode.toDataURL(url, { margin: 1, width: 232 }) };
-  return { ok: true, setup };
+  return { ok: true, setup: await totpSetupView(user, secret) };
 }
 
 export type TotpConfirm = { ok: true; codes: string[] } | { ok: false; key: string };

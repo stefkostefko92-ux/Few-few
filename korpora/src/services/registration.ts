@@ -33,8 +33,10 @@ export interface RegisterInput {
   deviceConsent: boolean;
 }
 
-export type RegisterResult =
-  { ok: true } | { ok: false; field: 'email' | 'name' | 'password' | 'terms'; key: string };
+export type RegisterField = 'name' | 'email' | 'password' | 'terms';
+/** Всички грешки наведнъж, по поле — по реда на формата (име, имейл, парола, условия). */
+export type RegisterErrors = Partial<Record<RegisterField, string>>;
+export type RegisterResult = { ok: true } | { ok: false; errors: RegisterErrors };
 
 /**
  * Регистрация. Отговорът е ЕДНАКЪВ за нов и за вече регистриран имейл („провери пощата си“) —
@@ -47,14 +49,20 @@ export async function registerAccount(
   device: DeviceContext,
   locale: Locale,
 ): Promise<RegisterResult> {
-  const email = emailSchema.safeParse(input.email);
-  if (!email.success) return { ok: false, field: 'email', key: 'auth.errors.email' };
+  // Всички полета се проверяват наведнъж — човекът поправя всичко с един опит, не по едно.
+  const errors: RegisterErrors = {};
   const name = nameSchema.safeParse(input.name);
-  if (!name.success) return { ok: false, field: 'name', key: 'auth.errors.name' };
-  if (!input.acceptTerms) return { ok: false, field: 'terms', key: 'auth.errors.terms' };
+  if (!name.success) errors.name = 'auth.errors.name';
+  const email = emailSchema.safeParse(input.email);
+  if (!email.success) errors.email = 'auth.errors.email';
   // Паролата се проверява преди имейла: слаба парола дава същия отговор за свободен и за зает адрес.
-  const problem = await newPasswordProblem(input.password, [email.data, name.data]);
-  if (problem) return { ok: false, field: 'password', key: problem };
+  const problem = await newPasswordProblem(input.password, [
+    email.success ? email.data : input.email,
+    name.success ? name.data : input.name,
+  ]);
+  if (problem) errors.password = problem;
+  if (!input.acceptTerms) errors.terms = 'auth.errors.terms';
+  if (!email.success || !name.success || Object.keys(errors).length) return { ok: false, errors };
 
   const existing = await prisma.user.findUnique({ where: { email: email.data } });
   if (existing) {

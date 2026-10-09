@@ -63,11 +63,14 @@ test('wrong passwords sent at the same moment still lock the account after five'
   const tries = await Promise.all(
     Array.from({ length: 8 }, () => new Browser().login('parallel@example.test', 'not-the-pass-1')),
   );
-  assert.ok(tries.every((r) => r.status === 401));
+  // wrong password (401) until the lock, then „sign-in is paused“ (429) — the same for any email
+  assert.ok(tries.every((r) => r.status === 401 || r.status === 429));
+  assert.ok(tries.filter((r) => r.status === 401).length <= 4, 'no more than four wrong answers');
   const user = await prisma.user.findUniqueOrThrow({ where: { email: 'parallel@example.test' } });
   assert.ok(user.lockedUntil && user.lockedUntil > new Date(), 'locked');
   const right = await new Browser().login('parallel@example.test', CUSTOMER_PASSWORD);
-  assert.equal(right.status, 401, 'even the right password waits for the lock to pass');
+  assert.equal(right.status, 429, 'even the right password waits for the lock to pass');
+  assert.match(right.body, /Входът с този имейл е спрян за 15 минути/);
 });
 
 test('wrong codes count for the account: new sign-ins with the password give no new tries', async () => {
@@ -86,7 +89,8 @@ test('wrong codes count for the account: new sign-ins with the password give no 
 
   const late = new Browser();
   const login = await late.login('codes@example.test', CUSTOMER_PASSWORD);
-  assert.equal(login.status, 401, 'the password alone does not open a new round');
+  assert.equal(login.status, 429, 'the password alone does not open a new round');
+  assert.match(login.body, /Входът с този имейл е спрян/);
 });
 
 test('one authenticator step is accepted once, even when sent twice at the same moment', async () => {

@@ -22,7 +22,7 @@ async function capAt(allowed: number, send: (k: number) => Promise<Reply>): Prom
 
 test('the sign-up, forgotten password, reset and email-link forms are capped per network', async () => {
   const cases: Array<[string, number, (b: Browser, k: number) => Promise<Reply>]> = [
-    ['/register', 5, (b, k) => b.register('Лимит', `limit-${k}@example.test`, 'abc')],
+    ['/register', 20, (b, k) => b.register('Лимит', `limit-${k}@example.test`, 'abc')],
     ['/forgot', 5, (b) => b.submit('/forgot', '/forgot', { email: 'nobody@example.test' })],
     ['/reset', 10, (b) => b.post('/reset', { token: 'x', password: 'Short-1' })],
     ['/verify-email', 10, (b) => b.post('/verify-email', { token: 'x' })],
@@ -51,8 +51,12 @@ test('sensitive account actions are capped: the data export after thirty in a ro
   await capAt(30, () => b.post('/account/data/export', { _csrf: csrf }));
 });
 
-test('project downloads are capped per minute', async () => {
+test('project downloads are capped per minute and per account, not per network', async () => {
   const b = await customer('export-limit@example.test');
   const id = await newProject(b);
-  await capAt(30, () => b.get(`/app/p/${id}/export/cut-list.csv`));
+  await capAt(120, () => b.get(`/app/p/${id}/export/cut-list.csv`));
+  // a colleague behind the same address still downloads
+  const colleague = await customer('export-colleague@example.test', undefined, b.ip);
+  const own = await newProject(colleague);
+  assert.equal((await colleague.get(`/app/p/${own}/export/cut-list.csv`)).status, 200);
 });

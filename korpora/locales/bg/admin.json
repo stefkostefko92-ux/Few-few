@@ -233,7 +233,7 @@
     "system": "система",
     "customer": "клиент {id}",
     "superseded": "заменена от нова поръчка",
-    "cancelledByCustomer": "оттеглена от клиента",
+    "cancelledByCustomer": "отменена от клиента",
     "signup": "регистрация",
     "trialStarted": "тестовият период започна (потвърден имейл)",
     "withdrawal": "отказ от договора",

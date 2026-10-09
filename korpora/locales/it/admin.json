@@ -233,7 +233,7 @@
     "system": "sistema",
     "customer": "cliente {id}",
     "superseded": "sostituito da un nuovo ordine",
-    "cancelledByCustomer": "ritirato dal cliente",
+    "cancelledByCustomer": "annullato dal cliente",
     "signup": "registrazione",
     "trialStarted": "periodo di prova iniziato (email confermata)",
     "withdrawal": "recesso dal contratto",

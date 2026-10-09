@@ -238,6 +238,9 @@ enum BuyerType {
 /// поддръжката ги трие ORDER_RETENTION_DAYS след изтриването (src/retention.ts).
 model UpgradeRequest {
   id                    String           @id @default(cuid())
+  /// Поредният номер за хората — в писмата, на екрана и във фактурата („KP-2026-000123“,
+  /// plans/order-number.ts). cuid остава вътрешен.
+  number                Int              @unique @default(autoincrement())
   /// null — акаунтът е изтрит; договорът остава с името и имейла от момента на изтриването.
   userId                String?
   user                  User?            @relation(fields: [userId], references: [id], onDelete: SetNull)

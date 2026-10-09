@@ -3,6 +3,8 @@ import { prisma } from '../db.js';
 import { principalOf, requireCsrf, requireUser } from '../auth/guards.js';
 import { clearSessionCookie } from '../auth/sessions.js';
 import { setFlash } from '../http/flash.js';
+import { rememberLocale } from '../http/locale.js';
+import { isLocale } from '../i18n.js';
 import { resendLimiter, sensitiveLimiter } from '../http/limits.js';
 import { idParam, rawField, requestMeta, stringField } from '../http/meta.js';
 import { planView } from '../plans/plan.js';
@@ -57,12 +59,15 @@ accountRouter.get('/account', async (req, res) => {
 });
 
 accountRouter.post('/account/profile', async (req, res) => {
+  const locale = stringField(req.body, 'locale', 5);
   const result = await updateProfile(
     await me(req),
     stringField(req.body, 'name', 80),
-    stringField(req.body, 'locale', 5),
+    locale,
     requestMeta(req),
   );
+  // езикът на акаунта става и езикът на екрана на това устройство
+  if (result.ok && isLocale(locale)) rememberLocale(res, locale);
   back(res, '/account', result.ok ? 'ok' : 'error', result.ok ? 'flash.profileSaved' : result.key);
 });
 
@@ -99,6 +104,8 @@ accountRouter.get('/account/plan', async (req, res) => {
     where: { userId: user.id },
     orderBy: { createdAt: 'desc' },
     take: 10,
+    // заменената поръчка казва с коя — номерът на новата
+    include: { supersededBy: { select: { number: true, createdAt: true } } },
   });
   const now = new Date();
   res.render('account/plan', {
@@ -120,12 +127,15 @@ accountRouter.get('/account/plan', async (req, res) => {
 
 accountRouter.post('/account/plan/request', sensitiveLimiter, async (req, res) => {
   const result = await createUpgradeRequest(await me(req), req.body, requestMeta(req));
-  back(
-    res,
-    '/account/plan',
-    result.ok ? 'ok' : 'error',
-    result.ok ? 'flash.requestSent' : result.key,
-  );
+  if (!result.ok) {
+    back(res, '/account/plan', 'error', result.key);
+    return;
+  }
+  // заменената поръчка се казва и на екрана, не само в писмото
+  if (result.replaced.length)
+    setFlash(res, 'ok', 'flash.requestSentReplaces', { ids: result.replaced.join(', ') });
+  else setFlash(res, 'ok', 'flash.requestSent');
+  res.redirect('/account/plan');
 });
 
 accountRouter.post('/account/plan/request/:id/cancel', async (req, res) => {

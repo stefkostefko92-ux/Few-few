@@ -19,7 +19,7 @@ export async function enable2fa(
     'the setup is shown in the answer, never stored in a page you can reload',
   );
   const secret =
-    /<p class="secret">([A-Z2-7 ]+)<\/p>/.exec(page.body)?.[1]?.replace(/\s+/g, '') ?? '';
+    /<p class="secret"[^>]*>([A-Z2-7 ]+)<\/p>/.exec(page.body)?.[1]?.replace(/\s+/g, '') ?? '';
   assert.ok(secret.length >= 32, 'secret shown once for manual entry');
   const enrolCode = totpCode(secret, Math.floor(Date.now() / 1000));
   const confirm = await b.post('/account/security/2fa/confirm', {

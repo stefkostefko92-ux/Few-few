@@ -4,11 +4,19 @@
 <%- include('../partials/flash') %>
 
 <% if (codes) { %>
-<section class="section" aria-labelledby="codes-h">
+<%# Кодовете се показват веднъж: копиране, файл и печат — запис на хартия или на диск, не само в паметта. %>
+<% const codesFile = t('security.codesFileHead', { email: user.email, date: fmt.date(new Date()) }) + '\n\n' + codes.join('\n') + '\n\n' + t('security.codesFileFoot') + '\n'; %>
+<section class="section codes" id="codes" aria-labelledby="codes-h">
   <h2 id="codes-h"><%- include('../partials/icon', { name: 'key' }) %><%= t('security.codesTitle') %></h2>
   <p><%= t('security.codesText') %></p>
+  <p class="codes-print-head"><%= t('security.codesFileHead', { email: user.email, date: fmt.date(new Date()) }) %></p>
   <ul class="recovery" id="recovery-codes"><% for (const c of codes) { %><li><%= c %></li><% } %></ul>
-  <div class="actions"><button class="btn" type="button" data-copy="#recovery-codes" data-status="#copy-status" data-done="<%= t('common.copied') %>" data-failed="<%= t('security.copyFailed') %>"><%- include('../partials/icon', { name: 'copy' }) %><%= t('security.copyCodes') %></button><span class="hint" role="status" id="copy-status"></span></div>
+  <div class="actions codes-actions">
+    <button class="btn" type="button" data-copy="#recovery-codes" data-status="#copy-status" data-done="<%= t('common.copied') %>" data-failed="<%= t('security.copyFailed') %>"><%- include('../partials/icon', { name: 'copy' }) %><%= t('security.copyCodes') %></button>
+    <a class="btn" href="data:text/plain;charset=utf-8,<%= encodeURIComponent(codesFile) %>" download="korpora-recovery-codes.txt"><%- include('../partials/icon', { name: 'download' }) %><%= t('security.downloadCodes') %></a>
+    <button class="btn" type="button" data-print hidden><%- include('../partials/icon', { name: 'print' }) %><%= t('security.printCodes') %></button>
+    <span class="hint" role="status" id="copy-status"></span>
+  </div>
 </section>
 <% } %>
 
@@ -21,7 +29,7 @@
       <form method="post" action="/account/security/recovery" class="form">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <h3><%= t('security.newCodes') %></h3>
-        <div class="field"><label for="rc-code"><%= t('security.currentCode') %></label><input id="rc-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" required maxlength="20"></div>
+        <div class="field"><label for="rc-code"><%= t('security.currentCode') %></label><input id="rc-code" name="code" type="text" autocomplete="one-time-code" autocapitalize="off" autocorrect="off" spellcheck="false" required maxlength="20" aria-describedby="rc-hint"><p class="hint" id="rc-hint"><%= t('security.codeOrRecovery') %></p></div>
         <div class="actions"><button class="btn" type="submit"><%= t('security.newCodesButton') %></button></div>
       </form>
       <% if (!staff) { %>
@@ -29,7 +37,7 @@
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <h3><%= t('security.disableTitle') %></h3>
         <div class="field"><label for="dis-pw"><%= t('account.currentPassword') %></label><input id="dis-pw" name="password" type="password" required autocomplete="current-password"></div>
-        <div class="field"><label for="dis-code"><%= t('security.currentCode') %></label><input id="dis-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" required maxlength="20"></div>
+        <div class="field"><label for="dis-code"><%= t('security.currentCode') %></label><input id="dis-code" name="code" type="text" autocomplete="one-time-code" autocapitalize="off" autocorrect="off" spellcheck="false" required maxlength="20" aria-describedby="dis-hint"><p class="hint" id="dis-hint"><%= t('security.codeOrRecovery') %></p></div>
         <div class="actions"><button class="btn btn-danger" type="submit"><%= t('security.disableButton') %></button></div>
       </form>
       <% } else { %><p class="hint"><%= t('security.staffKeeps') %></p><% } %>
@@ -39,11 +47,19 @@
     <div class="qr">
       <img src="<%= setup.qrDataUrl %>" width="232" height="232" alt="<%= t('security.qrAlt') %>">
       <div>
-        <p class="hint"><%= t('security.manualKey') %></p>
-        <p class="secret"><%= setup.secret %></p>
+        <p class="hint" id="manual-key-h"><%= t('security.manualKey') %></p>
+        <%# Групи по 4 за преписване на ръка; „Копирай“ дава ключа без интервали. %>
+        <div class="secret-row">
+          <p class="secret" aria-describedby="manual-key-h" translate="no"><%= setup.grouped %></p>
+          <span id="totp-secret" hidden><%= setup.secret %></span>
+          <button class="btn btn-small" type="button" data-copy="#totp-secret" data-status="#key-status" data-done="<%= t('common.copied') %>" data-failed="<%= t('security.copyFailed') %>"><%- include('../partials/icon', { name: 'copy' }) %><%= t('security.copyKey') %></button>
+          <span class="hint" role="status" id="key-status"></span>
+        </div>
         <form method="post" action="/account/security/2fa/confirm" class="form">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-          <div class="field"><label for="tfa-code"><%= t('security.confirmCode') %></label><input id="tfa-code" name="code" type="text" class="code-input" inputmode="numeric" autocomplete="one-time-code" required maxlength="6" pattern="[0-9]{6}"></div>
+          <input type="hidden" name="setup" value="<%= setup.sealed %>">
+          <div class="field"><label for="tfa-code"><%= t('security.confirmCode') %></label><input id="tfa-code" name="code" type="text" class="code-input" inputmode="numeric" autocomplete="one-time-code" required maxlength="6" pattern="[0-9]{6}"<% if (setupError) { %> aria-invalid="true" aria-describedby="tfa-error" autofocus<% } %>>
+            <% if (setupError) { %><p class="field-error" id="tfa-error" role="alert"><%- include('../partials/icon', { name: 'alert' }) %><span><%= t(setupError) %> <%= t('security.sameKey') %></span></p><% } %></div>
           <div class="actions"><button class="btn btn-primary" type="submit"><%= t('security.enableButton') %></button></div>
         </form>
       </div>
@@ -132,4 +148,4 @@
     </tbody>
   </table></div>
 </section>
-<%- include('../partials/page-bottom') %>
+<%- include('../partials/page-bottom', { scripts: ['account'] }) %>
