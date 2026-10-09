@@ -28,6 +28,7 @@ const { exportOwnData } = await import('../../src/services/account-export.js');
 const { runMaintenance } = await import('../../src/services/maintenance.js');
 const { resendOrderMail } = await import('../../src/services/plan-requests.js');
 const { LEGAL_UPDATED } = await import('../../src/company.js');
+const { orderNo } = await import('../../src/plans/order-number.js');
 const { LOGIN_RETENTION_DAYS } = await import('../../src/retention.js');
 
 const DAY = 86_400_000;
@@ -223,7 +224,7 @@ test('business:A4 — a rejected order is told to the customer by email, with it
   const { row } = await placeOrder('rejected@example.test', { option: 'm3', buyer: 'consumer' });
   assert.deepEqual(await rejectRequest(manager.actor, row.id), { ok: true });
   const mail = await mailTo('rejected@example.test', /отхвърлена/);
-  assert.ok(mail.text.includes(row.id), 'the order number');
+  assert.ok(mail.text.includes(orderNo(row)), 'the order number');
   assert.ok(mail.text.includes(STAFF_INBOX), 'where to write');
 });
 

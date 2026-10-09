@@ -28,7 +28,8 @@ test('sign-in is paused after five wrong tries the same way with and without an 
   for (let i = 0; i < 6; i++) {
     const a = await real.login('paused@example.test', `Wrong-Password-${i}00`);
     const b = await ghost.login('ghost-paused@example.test', `Wrong-Password-${i}00`);
-    assert.equal(a.status, i < 4 ? 401 : 429, `try ${i + 1}`);
+    assert.equal(a.status, 401, `try ${i + 1}`);
+    assert.equal(/Входът с този имейл е спрян/.test(a.body), i >= 4, `try ${i + 1}: paused`);
     assert.equal(b.status, a.status, `try ${i + 1}: the same status`);
     assert.equal(
       same(b.body, 'ghost-paused@example.test'),
@@ -37,7 +38,7 @@ test('sign-in is paused after five wrong tries the same way with and without an 
     );
   }
   const right = await real.login('paused@example.test', CUSTOMER_PASSWORD);
-  assert.equal(right.status, 429);
+  assert.equal(right.status, 401);
   assert.match(right.body, /Входът с този имейл е спрян за 15 минути след 5 грешни опита/);
   assert.match(right.body, /href="\/forgot"/);
 });

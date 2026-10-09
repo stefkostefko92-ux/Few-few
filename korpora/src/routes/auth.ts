@@ -108,8 +108,8 @@ authRouter.post('/login', loginLimiter, requirePreAuthCsrf, async (req, res) => 
       again('auth.errors.invalid', 401);
       return;
     case 'locked':
-      // „Забравена парола“ отключва веднага; текстът е еднакъв с и без акаунт
-      again('auth.errors.locked', 429, {
+      // „Забравена парола“ отключва веднага; текстът и кодът (401, като грешна парола) са еднакви с и без акаунт
+      again('auth.errors.locked', 401, {
         errorParams: {
           minutes: res.locals.t('common.minutes', { n: LOCK_MINUTES }),
           n: MAX_FAILED_LOGINS,
