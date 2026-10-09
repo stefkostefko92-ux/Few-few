@@ -1163,6 +1163,8 @@
     "ch_vs": "Velocità: cabina e puleggia",
     "ch_car": "cabina",
     "ch_sheave": "puleggia",
+    "ch_vcw": "Velocità: cabina e contrappeso",
+    "ch_cw": "contrappeso",
     "ch_a": "Accelerazione della cabina",
     "ch_ratio": "Aderenza: T1/T2",
     "ch_limit": "limite e^(f·α)",

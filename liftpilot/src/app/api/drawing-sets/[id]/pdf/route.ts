@@ -32,7 +32,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         : s.shaftDesign ? composeStored({ ...s, firstIssuedAt: first, calculation: s.calculation, shaftDesign: s.shaftDesign, logo: s.logo, clientLogo: s.clientLogo }) : null;
       if (!r) return text(404, 'Not found');
       if ('ok' in r) return text(r.error === 'engineChanged' ? 409 : 404, r.error === 'engineChanged' ? 'The running engines do not reproduce this drawing set' : 'Not found');
-      pdf = await keepSetPdf(s.id, r.doc);
+      pdf = await keepSetPdf(s.id, r.doc, s.createdAt);
     }
     await audit({ companyId: user.companyId, userId: user.id, action: 'DRAWING_SET_DOWNLOADED', entity: 'DrawingSet', entityId: s.id });
     const name = `tavole-${s.number}${s.revision ? `-R${s.revision}` : ''}.pdf`;

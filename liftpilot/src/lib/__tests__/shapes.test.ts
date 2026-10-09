@@ -253,7 +253,7 @@ test('relazione: le quote dell’argano SICOR, Montanari o Sassi proposto, per i
   const doc = buildReport({
     calc: { id: 'cmtest0002', label: null, createdAt: new Date('2026-10-02T08:00:00Z'), sha256: 'e'.repeat(64), engineVersion: '1.0.0', profileId: 'IT-2026.1', author: null },
     project: { name: 'Impianto di prova', address: null, city: 'Milano', province: 'MI', plantNumber: null, client: null },
-    company: 'Ditta di prova', values: PRESETS.B, generatedAt: new Date('2026-10-02T09:00:00Z'), reviews: [],
+    company: 'Ditta di prova', values: PRESETS.B, reviews: [],
     marks: { pEstimate: false, geometry: [], machineProposed: true, catalog: { brand: 'SICOR', model: 'SH140', ratio: '1/45', staticKg: 3300, src: 'scheda' } },
   });
   const rows = new Map(doc.blocks.flatMap((b) => (b.t === 'kv' ? b.rows : [])));
@@ -263,7 +263,7 @@ test('relazione: le quote dell’argano SICOR, Montanari o Sassi proposto, per i
   const mt = buildReport({
     calc: { id: 'cmtest0003', label: null, createdAt: new Date('2026-10-03T08:00:00Z'), sha256: 'f'.repeat(64), engineVersion: '1.0.0', profileId: 'IT-2026.1', author: null },
     project: { name: 'Impianto di prova', address: null, city: 'Milano', province: 'MI', plantNumber: null, client: null },
-    company: 'Ditta di prova', values: PRESETS.B, generatedAt: new Date('2026-10-03T09:00:00Z'), reviews: [],
+    company: 'Ditta di prova', values: PRESETS.B, reviews: [],
     marks: { pEstimate: false, geometry: [], machineProposed: true, catalog: { brand: 'Montanari', model: 'M93', ratio: '1/50', staticKg: 5000, src: 'scheda' } },
   });
   const mr = new Map(mt.blocks.flatMap((b) => (b.t === 'kv' ? b.rows : [])));
@@ -273,7 +273,7 @@ test('relazione: le quote dell’argano SICOR, Montanari o Sassi proposto, per i
   const leo = buildReport({
     calc: { id: 'cmtest0004', label: null, createdAt: new Date('2026-10-04T08:00:00Z'), sha256: 'a'.repeat(64), engineVersion: '1.0.0', profileId: 'IT-2026.1', author: null },
     project: { name: 'Impianto di prova', address: null, city: 'Milano', province: 'MI', plantNumber: null, client: null },
-    company: 'Ditta di prova', values: PRESETS.B, generatedAt: new Date('2026-10-04T09:00:00Z'), reviews: [],
+    company: 'Ditta di prova', values: PRESETS.B, reviews: [],
     marks: { pEstimate: false, geometry: [], machineProposed: true, catalog: { brand: 'Sassi', model: 'LEO', ratio: '1/55', staticKg: 3000, src: 'catalogo' } },
   });
   const lr = new Map(leo.blocks.flatMap((b) => (b.t === 'kv' ? b.rows : [])));

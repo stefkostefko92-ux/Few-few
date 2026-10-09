@@ -104,7 +104,7 @@ test('relazione tecnica della sostituzione: punto 5 della UNI 10411-1, fori con 
     room: { id: 'r', label: null, createdAt: new Date('2026-10-08T10:00:00Z'), sha256: '0'.repeat(64), engineVersion: 'x', author: null },
     calc: { id: 'c', label: null, createdAt: new Date('2026-10-08T10:00:00Z'), sha256: '0'.repeat(64), engineVersion: 'x', profileId: 'it' },
     project: { name: 'R', address: null, city: null, province: null, plantNumber: null, client: null }, company: 'S',
-    values: DIRECT, survey: s, derived: d, collaudo: { norma: '10411-1', parti: ['machine'] }, plant: {}, sets: [], generatedAt: new Date('2026-10-08T10:00:00Z'),
+    values: DIRECT, survey: s, derived: d, collaudo: { norma: '10411-1', parti: ['machine'] }, plant: {}, sets: [],
   });
   const all = JSON.stringify(doc.blocks);
   assert.ok(all.includes('UNI 10411-1:2024, punto 5') && all.includes('da confermare dal tecnico'), 'punto 5');

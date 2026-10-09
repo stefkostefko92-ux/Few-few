@@ -1,6 +1,7 @@
 // A pit buffer in section A-A, standing on its base (plinth and support): a spring, a polyurethane pad (dashed where
 // it is fully compressed, at 90 % of its height) or a hydraulic buffer with its plunger. Model entities.
 import { line, path, type Entity, type Pt } from '../drawing';
+import { PU_PLATE } from './buffers';
 import type { BufferType } from './vertical';
 
 export function buffer(P: (x: number, z: number) => Pt, x: number, floor: number, base: number, h: number, type: BufferType): Entity[] {
@@ -10,8 +11,8 @@ export function buffer(P: (x: number, z: number) => Pt, x: number, floor: number
   if (type === 'pu') {
     // a polyurethane pad: a cylinder on its plate, the top rounded off; dashed where it is fully compressed
     const top = zb + h, r = 60;
-    out.push(box(x - 75, zb, x + 75, zb + 8, 'outline', 'steel'));
-    out.push(path([P(x - r, zb + 8), P(x + r, zb + 8), P(x + r, top - 18), P(x + r - 18, top), P(x - r + 18, top), P(x - r, top - 18)], true, 'outline', 'paper'));
+    out.push(box(x - 75, zb, x + 75, zb + PU_PLATE, 'outline', 'steel'));
+    out.push(path([P(x - r, zb + PU_PLATE), P(x + r, zb + PU_PLATE), P(x + r, top - 18), P(x + r - 18, top), P(x - r + 18, top), P(x - r, top - 18)], true, 'outline', 'paper'));
     out.push(line(P(x - r - 15, zb + 0.1 * h), P(x + r + 15, zb + 0.1 * h), 'hidden'));
     return out;
   }

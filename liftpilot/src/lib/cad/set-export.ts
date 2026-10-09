@@ -46,6 +46,8 @@ export interface IssuedSet {
   title: TitleData;
   /** the line under the first view: the set, its revision, its hash */
   caption: string;
+  /** when the set was issued (its revision's row): the files' date, the same at every download */
+  date: Date;
 }
 
 /** The points a shape of a sheet is drawn through (a text by its anchor). */
@@ -92,7 +94,7 @@ export type AttributeTags = ReadonlyMap<string, { tag: string; prompt?: string }
 
 /** The set in one document, with the tags of its attributes. */
 export function setDocument(x: IssuedSet, format: CadFormat): { doc: acad.CadDocument; tags: AttributeTags } {
-  const doc = cadDocument(x.views, x.caption, format), { layers: table, modelSpace: space, blockRecords: blocks } = doc;
+  const doc = cadDocument(x.views, x.caption, format, x.date), { layers: table, modelSpace: space, blockRecords: blocks } = doc;
   if (!table || !space || !blocks) throw new Error('empty CAD document');
   const text = format === 'dwg' ? cp1252 : (t: string): string => t, degrees = format === 'dxf';
   const layer = new acad.Layer(SHEET_LAYER);

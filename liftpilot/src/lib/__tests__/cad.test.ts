@@ -99,7 +99,7 @@ test('misura del vano con quattro raggi, anche su una pianta ruotata', () => {
 });
 
 test('la pianta esportata in DXF si rilegge, in millimetri e con i layer', () => {
-  const text = planToDxf(layout(defaultInputs(1600, 1750)), 'Impianto di prova');
+  const text = planToDxf(layout(defaultInputs(1600, 1750)), 'Impianto di prova', new Date('2026-10-08T10:00:00Z'));
   assert.match(text, /\$INSUNITS\s+70\s+4/);
   const m = readCad(new TextEncoder().encode(text), 'progetto.dxf');
   // layers with segments (the reader keeps lines for measuring); the lettering is on TESTI
@@ -129,7 +129,7 @@ test('il progetto intero in DXF e DWG: tutte le viste affiancate, la stessa geom
   const views = inputViews(x);
   // the drawing set's views: three plans, section A-A and its three details, the machine room twice, the rails developed
   assert.equal(views.length, 10);
-  const dxf = new TextEncoder().encode(toDxf(views, 'Prova')), dwg = toDwg(views, 'Prova');
+  const at = new Date('2026-10-08T10:00:00Z'), dxf = new TextEncoder().encode(toDxf(views, 'Prova', at)), dwg = toDwg(views, 'Prova', at);
   assert.equal(new TextDecoder().decode(dwg.subarray(0, 6)), 'AC1015');
   const a = readCad(dxf, 'progetto.dxf'), b = readCad(dwg, 'progetto.dwg');
   assert.ok(a.count > 1000);

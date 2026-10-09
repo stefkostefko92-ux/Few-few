@@ -17,7 +17,7 @@ import type { ReportDesign } from '../report/shaft';
 const input = (k: 'A' | 'B' | 'C') => ({
   calc: { id: 'cmtest0001', label: 'offerta 1', createdAt: new Date('2026-09-30T08:00:00Z'), sha256: 'f'.repeat(64), engineVersion: '1.0.0', profileId: 'IT-2026.1', author: 'Mario Rossi' },
   project: { name: 'Impianto di prova', address: 'Via Roma 12', city: 'Milano', province: 'MI', plantNumber: 'MI 1/98', client: null },
-  company: 'Ditta di prova', values: PRESETS[k], generatedAt: new Date('2026-09-30T09:00:00Z'),
+  company: 'Ditta di prova', values: PRESETS[k],
   reviews: [{ name: 'Ing. Bianchi', role: 'ENGINEER' as const, note: null, createdAt: new Date('2026-09-30T08:30:00Z') }],
 });
 const design = (inputs: ShaftInputs): ReportDesign => ({

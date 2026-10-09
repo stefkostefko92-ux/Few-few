@@ -70,13 +70,18 @@ export const VOCI_SIM: readonly VoceSim[] = [
     id: 'sim.ammortizzatori', titolo: 'Urto sugli ammortizzatori',
     valore: `velocità d’urto ${it(KS.bufferSpeed)} volte la nominale; molle e tamponi in poliuretano come ammortizzatori lineari con la corsa piena `
       + `a ${KV_VERT.bufferFactor} volte il carico statico (lo stesso valore dei carichi sulla fossa; per i tamponi la corsa utile è ${it(KV_VERT.puStroke)}·H); `
-      + 'ammortizzatori idraulici con decelerazione costante v₀²/(2·corsa) su tutta la corsa; la cabina e il contrappeso si separano all’urto',
+      + 'ammortizzatori idraulici con decelerazione costante v₀²/(2·corsa) su tutta la corsa; all’urto nulla spinge l’altra parte (una fune tira '
+      + 'soltanto): segue la compressione a funi tese finché l’ammortizzatore frena la sua parte meno di g, poi sale libera frenata da g (funi '
+      + 'allentate) e ricade sulle funi tese, senza salto di velocità all’urto',
     riferimento: 'UNI EN 81-20:2020, 5.8.2.1.1.1–5.8.2.1.1.2 (urto al 115 %; corsa piena con un carico statico tra 2,5 e 4 volte: il software prende 4), '
       + '5.8.2.1.2.2 (90 %), 5.8.2.2.1 e 5.8.2.2.3 a)', fonte: letto('UNI EN 81-20:2020', 'pp. 98–99'), stato: 'scelta',
     costanti: ['bufferSpeed'], nota: 'la rigidezza è una scelta del software coerente con i carichi sulla fossa (il tampone in poliuretano reale non è lineare: '
       + 'valori indicativi); la verifica della corsa resta quella della sezione. Le decelerazioni mostrate non sono una verifica: per i tamponi non '
       + 'lineari la norma vuole media ≤ 1 gn, oltre 2,5 gn per non più di 0,04 s, picco ≤ 6 gn e rimbalzo ≤ 1 m/s (5.8.2.1.2.1), per gli idraulici '
-      + 'media ≤ 1 gn e oltre 2,5 gn per non più di 0,04 s (5.8.2.2.3); si provano per tipo (certificato del fornitore)',
+      + 'media ≤ 1 gn e oltre 2,5 gn per non più di 0,04 s (5.8.2.2.3); si provano per tipo (certificato del fornitore). Il salto convenzionale '
+      + 'della verifica della sezione (UNI EN 81-20:2020, 5.2.5.6.1: voce spazi.salto) è uno spazio da lasciare libero, non un moto: nella '
+      + 'simulazione l’altra parte vola solo da dove le funi si allentano (con una molla, al doppio della compressione statica, di nuovo alla '
+      + 'velocità d’urto) e lo spazio resta quello verificato nella sezione',
   },
   {
     id: 'sim.bloccata', titolo: 'Cabina bloccata: rotazione in salita',

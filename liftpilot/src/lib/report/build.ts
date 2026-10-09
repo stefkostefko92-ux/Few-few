@@ -64,7 +64,6 @@ export interface ReportInput {
   plant?: Plant | null;
   /** the drawing sets issued on this calculation */
   drawings?: readonly IssuedSet[];
-  generatedAt: Date;
 }
 
 export function buildReport(r: ReportInput): ReportDoc {
@@ -94,8 +93,8 @@ export function buildReport(r: ReportInput): ReportDoc {
     ['Proprietario o committente', pr.client ?? '—'], ['Calcolo', `${r.calc.id}${r.calc.label ? ` · ${r.calc.label}` : ''}`],
     ['Data del calcolo', when(r.calc.createdAt)], ['Eseguito da', r.calc.author ?? '—'],
     ['Visti interni (non sono firme)', r.reviews.length ? r.reviews.map((v) => `${v.name ?? '—'}${v.role ? ` (${appIt.roles[v.role]})` : ''}, ${when(v.createdAt)}${v.note ? `: ${v.note}` : ''}`).join('\n') : 'nessuno'],
+    // no date of the download: the document is the calculation's, dated as it (every download gives the same bytes)
     ['Motore di calcolo', `LiftPilot ${r.calc.engineVersion} · profilo normativo ${r.calc.profileId}`], ['Impronta SHA-256 del calcolo', r.calc.sha256],
-    ['Documento generato il', when(r.generatedAt)],
   ] });
 
   section('Oggetto');

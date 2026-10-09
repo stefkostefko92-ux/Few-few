@@ -97,7 +97,7 @@ test('progetto in DXF con la macchina in basso: le due viste del locale dopo le 
     // the same views as the set's sheets after the data, in its order and at its scales
     assert.deepEqual(views.map((v) => [v.title, v.scale]).filter(([t]) => String(t).includes('LOCALE MACCHINA')),
       sheets.filter((s) => s.title.includes('LOCALE MACCHINA')).map((s) => [s.title, s.scale]), scheme);
-    assert.ok(readCad(new TextEncoder().encode(toDxf(views, 'Prova')), 'progetto.dxf').count > 1000, scheme);
+    assert.ok(readCad(new TextEncoder().encode(toDxf(views, 'Prova', new Date('2026-10-08T10:00:00Z'))), 'progetto.dxf').count > 1000, scheme);
   }
 });
 

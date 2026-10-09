@@ -47,7 +47,6 @@ export interface OrderInput {
   /** the company's prices of the machine and of the maker's bedplate [cents, VAT excluded], for a downloader who sees
    *  prices; missing: the price is left blank (null: not in the company's list) */
   prices?: { machine: number | null; bedplate: number | null };
-  generatedAt: Date;
 }
 
 const BLANK = '______________________';
@@ -75,7 +74,8 @@ export function buildOrder(o: OrderInput): ReportDoc {
     to: ['Spett.le', `${c.brand} — ufficio commerciale`, MAKER_SITE[c.brand], `Indirizzo: ${BLANK}`],
   });
   B.push({ t: 'h1', text: `Bozza d’ordine — argano ${machineName(c)}` });
-  B.push({ t: 'sub', text: `${o.companyCity ? `${o.companyCity}, ` : ''}${when(o.generatedAt)} · bozza da completare e verificare prima dell’invio` });
+  // dated as the record (not the download): every download of the record gives the same document
+  B.push({ t: 'sub', text: `${o.companyCity ? `${o.companyCity}, ` : ''}${when(o.record.createdAt)} · bozza da completare e verificare prima dell’invio` });
   if (!recorded) {
     B.push({ t: 'box', text: `Il ${what} salvato verifica un argano diverso da questo. ${machineName(c)} è il primo del confronto fra SICOR e Montanari per lo stesso impianto, `
       + `verificato dal software con i suoi dati: per avere relazione e disegni coerenti con l’ordine, sceglierlo nel ${o.record.kind === 'design' ? 'progetto' : 'calcolatore'} `
@@ -180,7 +180,7 @@ export function buildOrder(o: OrderInput): ReportDoc {
   return {
     meta: {
       title: `Bozza d’ordine argano ${machineName(c)}`, subject: `Ordine dell’argano per ${pr.name}`, author: o.author ?? o.company,
-      header: `${o.company} · Bozza d’ordine · ${pr.name}`, footer: `LiftPilot · bozza del ${when(o.generatedAt)}`,
+      header: `${o.company} · Bozza d’ordine · ${pr.name}`, footer: `LiftPilot · bozza del ${when(o.record.createdAt)}`,
       code: `${o.record.kind === 'design' ? 'Progetto' : 'Calcolo'} ${o.record.id} · SHA-256 ${o.record.sha256.slice(0, 16)}…`,
     },
     blocks: B,

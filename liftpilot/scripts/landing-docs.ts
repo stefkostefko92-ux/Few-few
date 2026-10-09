@@ -16,6 +16,7 @@ import { PROFILO } from '../src/calc/norme';
 import { SHAFT_ENGINE_VERSION, shaftSnapshot } from '../src/shaft';
 import { buildTavole } from '../src/lib/tavole/build';
 import { buildReport } from '../src/lib/report/build';
+import { rendererInput } from '../src/lib/report/payload';
 import { deriveLift, newLift, valueMarks } from '../src/lib/lift';
 
 const root = path.resolve(new URL('..', import.meta.url).pathname), out = process.argv[2] ?? mkdtempSync(path.join(tmpdir(), 'lp-docs-'));
@@ -32,13 +33,14 @@ const set = buildTavole({
 });
 const report = buildReport({
   calc: { id: 'esempio', label: 'impianto di esempio', createdAt: when, sha256: calcSha, engineVersion: ENGINE_VERSION, profileId: PROFILO.id, author: null },
-  project, company: 'Ditta di esempio', reviews: [], values, generatedAt: when,
+  project, company: 'Ditta di esempio', reviews: [], values,
   design: { id: 'esempio', label: null, createdAt: when, sha256: shaftSha, engineVersion: SHAFT_ENGINE_VERSION, profileId: PROFILO.id, author: null,
     layout: shaft.layout, source: null },
 });
 
-const render = (script: string, doc: unknown, pdf: string): void => {
-  const r = spawnSync('python3', [path.join(root, 'report', script)], { input: JSON.stringify(doc), env: { ...process.env, REPORT_FONT_DIR: fonts }, maxBuffer: 1 << 28 });
+// dated as the sample's records, as the server dates a record's documents (payload.ts)
+const render = (script: string, doc: Parameters<typeof rendererInput>[0], pdf: string): void => {
+  const r = spawnSync('python3', [path.join(root, 'report', script)], { input: rendererInput(doc, when), env: { ...process.env, REPORT_FONT_DIR: fonts }, maxBuffer: 1 << 28 });
   if (r.status !== 0) throw new Error(`${script}: ${r.stderr.toString().slice(0, 400)}`);
   writeFileSync(pdf, r.stdout);
 };

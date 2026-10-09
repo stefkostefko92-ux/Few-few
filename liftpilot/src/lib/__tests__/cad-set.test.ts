@@ -58,7 +58,7 @@ const below = (): TavoleInput => ({
 
 const issued = (x: TavoleInput): { set: IssuedSet; r: ReturnType<typeof buildTavole> } => {
   const r = buildTavole(x);
-  return { r, set: { views: inputViews(x), sheet: r.doc.pages[0]?.shapes ?? [], paper: paperSheets(r), title: r.title, caption: `Prova · DIS. N° 26-037 · ${r.doc.pages.length} fogli` } };
+  return { r, set: { views: inputViews(x), sheet: r.doc.pages[0]?.shapes ?? [], paper: paperSheets(r), title: r.title, caption: `Prova · DIS. N° 26-037 · ${r.doc.pages.length} fogli`, date: new Date('2026-10-08T10:00:00Z') } };
 };
 
 for (const [name, make] of [['progetto tipico', lift], ['macchina in basso', below]] as const) {
@@ -147,7 +147,7 @@ test('sostituzione: pianta e sezione B-B del locale con i segni B, la legenda de
   const r = buildSurveyTavole(x), views = surveyViews(r.derived, {});
   assert.equal(views.length, 2);
   assert.deepEqual(paperSheets(r), [], 'le verifiche sul foglio 1');
-  const dxf = setToDxf({ views, sheet: r.doc.pages[0]?.shapes ?? [], paper: [], title: r.title, caption: 'R' }), have = dxfTexts(dxf);
+  const dxf = setToDxf({ views, sheet: r.doc.pages[0]?.shapes ?? [], paper: [], title: r.title, caption: 'R', date: new Date('2026-10-08T10:00:00Z') }), have = dxfTexts(dxf);
   for (const it of ROOM_LEGEND) assert.ok(have.has(it.text) || have.has(it.short), it.text);
   assert.ok(have.has('B') && have.has('CARICHI SULLA SOLETTA: VALORI NEL FOGLIO 1'));
   r.doc.pages.forEach((p, i) => {

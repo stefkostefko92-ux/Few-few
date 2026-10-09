@@ -234,7 +234,7 @@ test('registro di quello che le tavole scrivono: le costanti del foglio', () => 
 
 test('serie emessa in DXF e DWG: cartiglio come blocco con attributi, calcestruzzo campito, la stessa geometria', () => {
   const x = input(), r = buildTavole(x);
-  const set: IssuedSet = { views: inputViews(x), sheet: r.doc.pages[0]?.shapes ?? [], paper: paperSheets(r), title: r.title, caption: 'Impianto di prova · DIS. N° 26-189 R1 12/10/2026' };
+  const set: IssuedSet = { views: inputViews(x), sheet: r.doc.pages[0]?.shapes ?? [], paper: paperSheets(r), title: r.title, caption: 'Impianto di prova · DIS. N° 26-189 R1 12/10/2026', date: new Date('2026-10-12T10:00:00Z') };
   // the title block leaves sheet 1 for the block; the band over it stays on the sheet
   const yb = 7 + TITLE_H;
   assert.ok(titleBlock(r.title, yb).every(inTitleBlock));

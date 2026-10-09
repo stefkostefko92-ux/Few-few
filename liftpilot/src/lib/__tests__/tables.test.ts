@@ -41,7 +41,7 @@ test('la relazione ha le stesse etichette: contrappeso in alto, cabina in basso'
   const doc = buildReport({
     calc: { id: 'cmtest0001', label: null, createdAt: new Date('2026-10-05T08:00:00Z'), sha256: 'f'.repeat(64), engineVersion: '1.0.0', profileId: 'IT-2026.1', author: null },
     project: { name: 'Impianto di prova', address: null, city: null, province: null, plantNumber: null, client: null },
-    company: 'Ditta di prova', values: PRESETS.C, generatedAt: new Date('2026-10-05T09:00:00Z'), reviews: [],
+    company: 'Ditta di prova', values: PRESETS.C, reviews: [],
   });
   const grid = doc.blocks.find((b) => b.t === 'grid' && b.head[8] === 'Condizione');
   assert.ok(grid && grid.t === 'grid');

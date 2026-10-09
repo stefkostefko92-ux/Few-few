@@ -50,7 +50,7 @@ const project = { name: 'Condominio Roma', address: 'Via Roma 1', city: 'Monza',
 function relazione(inp: LiftInputs, d: LiftDerived, advice = adviceOf([])): ReportDoc {
   return buildReport({
     calc: { id: 'cmtest0037', label: null, createdAt: new Date('2026-10-09T08:00:00Z'), sha256: 'f'.repeat(64), engineVersion: '1.0.0', profileId: 'IT-2026.1', author: null },
-    project, company: 'Elevatori di prova', advice, values: d.values, generatedAt: new Date('2026-10-09T09:00:00Z'), reviews: [], plant: {},
+    project, company: 'Elevatori di prova', advice, values: d.values, reviews: [], plant: {},
     marks: valueMarks(inp.auto, d, d.bottom, d.collaudo),
     design: { id: 'cmdesign37', label: null, createdAt: new Date('2026-10-09T07:00:00Z'), sha256: 'e'.repeat(64), engineVersion: SHAFT_ENGINE_VERSION, profileId: 'IT-2026.1', author: null, source: null, layout: d.layout },
   });

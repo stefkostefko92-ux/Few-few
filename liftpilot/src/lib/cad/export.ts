@@ -6,11 +6,16 @@
 // model space, the first at its own coordinates (the shaft's corner at the origin, a section's 0 at the lowest floor),
 // the next ones moved along x only, each with its title, subtitle, sheet and scale under it. One layer per kind of
 // part; dimensions drawn as lines, arrowheads and texts, so that every CAD program shows them the same way; concrete
-// hatched with ANSI31, the dark fills solid. The plan of a shaft design alone here, every view of a project in
-// project.ts, an issued set with its sheet 1 and its other paper sheets in set-export.ts.
+// hatched with ANSI31, the dark fills solid. Angles typed in a CAD program run counter-clockwise ($ANGDIR 0, as in
+// AutoCAD's own templates). A file is dated as its record (the set's issue, the design's saving: never the download)
+// and its identifiers come from that date and from what it is, so every download of a record gives the same bytes, in
+// any time zone of the host (stamp.ts). The
+// plan of a shaft design alone here, every view of a project in project.ts, an issued set with its sheet 1 and its
+// other paper sheets in set-export.ts.
 import { COND, moveShapes, renderView, shapeBox, union, type Box, type Entity, type Fill, type Pt, type Shape } from '@/drawing';
 import { planDims, planEntities, type Layout } from '@/shaft';
 import { acad } from './acad';
+import { stamp } from './stamp';
 
 export type DxfLayer = 'MURI' | 'VANO' | 'CABINA' | 'PORTE' | 'GUIDE' | 'CONTRAPPESO' | 'ASSI' | 'SPAZI' | 'NASCOSTE' | 'DETTAGLI' | 'QUOTE' | 'TESTI' | 'SIMBOLI';
 
@@ -22,9 +27,18 @@ const LAYERS: Readonly<Record<DxfLayer, number>> = {
 /** Model millimetres between two views side by side. */
 export const GAP = 2500;
 
-// Windows-1252 beyond Latin-1, and the signs of the drawings outside it in ASCII
+// Windows-1252 beyond Latin-1, and the signs of the drawings outside it in ASCII: the Greek letters by their names
+// (lower case for the small ones — λ, ω, δ of the rails' note: lambda, omega, delta —, capitalised for the capitals)
 const CP1252 = '€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ';
-const ASCII: Readonly<Record<string, string>> = { '≥': '>=', '≤': '<=', '≠': '<>', '≈': '~', '→': '->', '←': '<-', '−': '-', 'α': 'alfa', 'β': 'beta', 'γ': 'gamma', 'μ': 'mu', 'σ': 'sigma' };
+const GREEK = 'alfa beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau upsilon phi chi psi omega'.split(' ');
+const ASCII: Readonly<Record<string, string>> = {
+  '≥': '>=', '≤': '<=', '≠': '<>', '≈': '~', '→': '->', '←': '<-', '−': '-', '√': 'sqrt', '∞': 'inf', 'ς': 'sigma', 'ϕ': 'phi',
+  // α (U+03B1) to ω and Α (U+0391) to Ω, past the final sigma (U+03C2) and the empty U+03A2
+  ...Object.fromEntries(GREEK.flatMap((name, i) => {
+    const k = i + (i >= 17 ? 1 : 0);
+    return [[String.fromCharCode(0x3b1 + k), name], [String.fromCharCode(0x391 + k), name.charAt(0).toUpperCase() + name.slice(1)]];
+  })),
+};
 
 /** A text for code page 1252 (a DWG before AutoCAD 2007). */
 export const cp1252 = (t: string): string =>
@@ -84,13 +98,14 @@ const VERSION: Readonly<Record<CadFormat, acad.ACadVersion>> = { dxf: acad.ACadV
  *  draft, where the sheets and values its views name are: project.ts draftCaption). */
 export type Caption = string | readonly string[];
 
-/** The views in one document; `title` under the first view. */
-export function cadDocument(views: readonly CadView[], title: Caption, format: CadFormat): acad.CadDocument {
+/** The views in one document; `title` under the first view; dated `at` (its record's date). */
+export function cadDocument(views: readonly CadView[], title: Caption, format: CadFormat, at: Date): acad.CadDocument {
   const doc = new acad.CadDocument(), version = VERSION[format];
   const { header, layers: table, modelSpace: space } = doc;
   if (!header || !table || !space) throw new Error('empty CAD document');
   header.version = version;
   header.insUnits = acad.UnitsType.Millimeters;
+  header.angularDirection = acad.AngularDirection.CounterClockWise;
   const layer = {} as Record<DxfLayer, acad.Layer>;
   for (const [name, color] of Object.entries(LAYERS) as [DxfLayer, number][]) {
     const l = new acad.Layer(name);
@@ -105,6 +120,7 @@ export function cadDocument(views: readonly CadView[], title: Caption, format: C
   let cursor: number | null = null;
   const text = version < acad.ACadVersion.AC1021 ? cp1252 : (t: string): string => t;
   const under = typeof title === 'string' ? (title ? [title] : []) : title;
+  stamp(doc, header, at, under);
   views.forEach((v, i) => {
     // the view as the sheets lay it out (the values where the sheets put them), each entity on its layer; the notes of
     // its sheet where the sheet has them; lettered as the sheet letters them (its texts condensed, as they were placed)
@@ -228,14 +244,14 @@ export function dxfText(doc: acad.CadDocument): string {
   return out.join('');
 }
 
-/** DXF text (AutoCAD 2007). */
-export const toDxf = (views: readonly CadView[], title: Caption): string => dxfText(cadDocument(views, title, 'dxf'));
+/** DXF text (AutoCAD 2007), dated `at`. */
+export const toDxf = (views: readonly CadView[], title: Caption, at: Date): string => dxfText(cadDocument(views, title, 'dxf', at));
 
-/** DWG bytes (AutoCAD 2000). */
-export const toDwg = (views: readonly CadView[], title: Caption): Uint8Array => acad.DwgWriter.writeToBuffer(cadDocument(views, title, 'dwg'));
+/** DWG bytes (AutoCAD 2000), dated `at`. */
+export const toDwg = (views: readonly CadView[], title: Caption, at: Date): Uint8Array => acad.DwgWriter.writeToBuffer(cadDocument(views, title, 'dwg', at));
 
-/** The plan of a shaft design at its main floor, at 1:scale. */
-export function planToDxf(L: Layout, title: string, scale = 20): string {
+/** The plan of a shaft design at its main floor, at 1:scale, dated `at` (the design's saving). */
+export function planToDxf(L: Layout, title: string, at: Date, scale = 20): string {
   const V = L.inputs.vertical, f = Math.min(V.main, V.floors.length - 1), label = V.floors[f]?.label ?? '';
-  return toDxf([{ title, scale, entities: [...planEntities(L, 'main', f), ...planDims(L, 'main', f, { level: `piano "${label}"` })] }], '');
+  return toDxf([{ title, scale, entities: [...planEntities(L, 'main', f), ...planDims(L, 'main', f, { level: `piano "${label}"` })] }], '', at);
 }

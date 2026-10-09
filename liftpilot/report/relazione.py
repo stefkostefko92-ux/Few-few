@@ -23,6 +23,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.platypus import CondPageBreak, Image, KeepTogether, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 import fonts
+import stamp
 from images import decodable
 from plan_drawing import Plan
 
@@ -267,8 +268,11 @@ def main():
     meta = doc_model["meta"]
     DRAWING.update(doc_model.get("drawing") or {})
     out = sys.stdout.buffer
+    # dated as its record, in Italian (stamp.py)
+    stamp.date_from(meta)
     doc = SimpleDocTemplate(out, pagesize=A4, leftMargin=MARGIN, rightMargin=MARGIN, topMargin=17 * mm, bottomMargin=17 * mm,
-                            title=meta["title"], author=meta["author"], subject=meta["subject"], creator="LiftPilot · Carbon Stealth VCC")
+                            title=meta["title"], author=meta["author"], subject=meta["subject"], creator="LiftPilot · Carbon Stealth VCC",
+                            lang=stamp.LANG)
     doc.build(flow(doc_model["blocks"]), canvasmaker=numbered_canvas(meta))
 
 
