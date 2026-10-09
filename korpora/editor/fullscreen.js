@@ -2,7 +2,8 @@
 // (iPhone Safari) the same layout as a fixed layer over the page. The button (then „Close“) and Escape leave it; one
 // view at a time. While it is open everything outside it is inert, so Tab and a screen reader stay in it (in the
 // browser's own full screen the page is hidden, yet still focusable); on leaving, the focus goes back to the button.
-// A drawing on full screen can be zoomed and moved (panzoom.js); the zoom buttons show only there.
+// A drawing on full screen can be zoomed and moved (panzoom.js); the zoom buttons show only there. On the page a click
+// on a drawing opens it there, zoomed in on that spot.
 import { PanZoom, ZOOM_STEP } from './panzoom.js';
 
 let active = null; // { host, overlay, button, pz, text, inert }
@@ -137,6 +138,17 @@ function zoomBar(pz, text) {
   return bar;
 }
 
+// On the page a click on a drawing opens it on full screen, zoomed in on the spot clicked until its smallest
+// lettering (the notes, the title block) is CLOSE_PX tall. The full screen button stays the way in from the keyboard.
+const CLOSE_PX = 13;
+async function lookCloser(entry, ev) {
+  if (active === entry || !entry.pz) return;
+  const p = entry.pz.at(ev.clientX, ev.clientY);
+  await enter(entry);
+  // a frame later: the browser's own full screen has given the drawing its new size by then
+  if (active === entry && p) requestAnimationFrame(() => entry.pz.focus(p, CLOSE_PX));
+}
+
 // The state of one full screen button: `host` goes full screen; `box` (optional) holds the drawing that zooms.
 function createEntry(button, host, box, text) {
   const entry = {
@@ -157,6 +169,9 @@ function bindFullscreen(button, host, box, text) {
     if (active === entry) void leave();
     else void enter(entry);
   });
+  if (!box) return;
+  box.classList.add('zoom-in');
+  box.addEventListener('click', (ev) => void lookCloser(entry, ev));
 }
 
 // The buttons in the page (data-fs = the element that goes full screen, data-fs-zoom = the drawing inside it) and
@@ -169,15 +184,19 @@ export function bindFullscreens(text) {
   }
   const sheets = document.getElementById('nest-sheets');
   sheets?.addEventListener('click', (ev) => {
+    // the card's full screen button, or the sheet itself (a closer look at the spot clicked)
     const b = ev.target.closest('[data-fs-sheet]');
-    if (!b) return;
-    const card = b.closest('.sheetcard');
+    const card = (b ?? ev.target.closest('.sheetcard > svg'))?.closest('.sheetcard');
+    if (!card) return;
     if (active?.host === card) {
-      void leave();
+      if (b) void leave();
       return;
     }
     // a nesting sheet: the card is redrawn with every change of the model, so its entry lives on the card
-    const entry = card.fsEntry ?? (card.fsEntry = createEntry(b, card, card, text));
-    void enter(entry);
+    const button = b ?? card.querySelector('[data-fs-sheet]');
+    if (!button) return;
+    const entry = card.fsEntry ?? (card.fsEntry = createEntry(button, card, card, text));
+    if (b) void enter(entry);
+    else void lookCloser(entry, ev);
   });
 }

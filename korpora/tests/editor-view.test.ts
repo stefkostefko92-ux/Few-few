@@ -19,6 +19,7 @@ interface PanZoomLike {
   adopt(): void;
   zoomAt(factor: number, cx: number, cy: number): void;
   pan(dx: number, dy: number): void;
+  focus(p: { x: number; y: number }, px: number): void;
 }
 interface PanZoomModule {
   PanZoom: new (box: object) => PanZoomLike;
@@ -34,6 +35,7 @@ interface DomModule {
 const SCREEN = { left: 0, top: 0, width: 840, height: 594 };
 let shown = ''; // the viewBox the drawing shows
 let current: object | null = null; // the <svg> in the box
+let lettering = [3.6, 2.1, 2.6]; // the font sizes of the drawing's texts, in drawing units
 const listeners = new Map<string, (ev: object) => void>();
 
 function sheet(label: string, id: string | null = null) {
@@ -45,6 +47,7 @@ function sheet(label: string, id: string | null = null) {
       if (name === 'viewBox') shown = value;
     },
     getBoundingClientRect: () => SCREEN,
+    querySelectorAll: () => lettering.map((size) => ({ size })),
     // screen → drawing for the viewBox on screen (fitted whole: one scale for both axes)
     getScreenCTM: () => {
       const [x = 0, y = 0, w = 420] = shown.split(' ').map(Number);
@@ -77,6 +80,7 @@ browserGlobals({
     observe() {}
   },
   DOMPoint: FakePoint,
+  getComputedStyle: (text: { size: number }) => ({ fontSize: `${String(text.size)}px` }),
 });
 const { PanZoom, ZOOM_STEP } = await editorModule<PanZoomModule>('panzoom.js', [
   'PanZoom',
@@ -227,4 +231,31 @@ test('two parts with the same name are two sheets: the id tells them apart', () 
   current = sheet(name, 'P27'); // the other side of the drawer, same name
   pz.adopt();
   assert.deepEqual(viewOf(pz), { x: 0, y: 0, w: 420, h: 297 });
+});
+
+test('a click on the page looks closer: the smallest lettering 13 px tall, centred on the spot, on the sheet', () => {
+  lettering = [3.6, 2.1, 2.6];
+  const pz = openSheet();
+  pz.focus({ x: 100, y: 280 }, 13); // the notes, near the bottom edge
+  const v = viewOf(pz);
+  const scale = SCREEN.width / v.w; // screen pixels per unit
+  assert.ok(close(2.1 * scale, 13), String(2.1 * scale));
+  assert.ok(close(v.x + v.w / 2, 100), 'centred across');
+  assert.ok(close(v.y + v.h, 297), 'held at the bottom of the sheet, not past it');
+  assert.ok(v.x >= 0 && v.y >= 0);
+  assert.equal(shown, Object.values(v).join(' '));
+});
+
+test('a closer look is at least twice the whole sheet and stops at 40 times', () => {
+  lettering = [30];
+  const pz = openSheet();
+  pz.focus({ x: 0, y: 0 }, 13); // lettering already readable: still twice, from the corner
+  assert.deepEqual(viewOf(pz), { x: 0, y: 0, w: 210, h: 148.5 });
+  lettering = [0.01];
+  pz.focus({ x: 210, y: 148.5 }, 13);
+  assert.ok(close(viewOf(pz).w, 420 / 40), String(viewOf(pz).w));
+  lettering = [];
+  pz.focus({ x: 420, y: 297 }, 13); // no text at all: twice
+  assert.deepEqual(viewOf(pz), { x: 210, y: 148.5, w: 210, h: 148.5 });
+  lettering = [3.6, 2.1, 2.6];
 });

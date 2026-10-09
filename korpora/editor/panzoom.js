@@ -1,6 +1,7 @@
 // Zoom and pan of a drawing through its viewBox, so the lines stay sharp at any scale: the wheel or two fingers zoom
 // at the pointer, a drag moves the sheet, a double click or 0 shows the whole sheet again, + − and the arrows work
-// from the keyboard. Only while the drawing is on full screen — on the page the wheel scrolls the page.
+// from the keyboard. Only while the drawing is on full screen — on the page the wheel scrolls the page; a click there
+// opens it on full screen, zoomed in on the spot (focus(), fullscreen.js).
 const MAX_ZOOM = 40;
 const STEP = 1.25;
 
@@ -117,6 +118,32 @@ export class PanZoom {
   fit() {
     if (!this.base) return;
     this.view = { ...this.base };
+    this.apply();
+  }
+
+  // A closer look at point p of the drawing: zoomed in until its smallest lettering (its font size, in drawing units)
+  // is `px` screen pixels tall — at least twice the whole sheet — and centred on p as far as the sheet goes: what is
+  // on screen stays on the sheet (the element is wider or taller than the sheet's shape, so more than the viewBox
+  // shows along one axis).
+  focus(p, px) {
+    if (!this.base || !this.svg || !p) return;
+    const b = this.base;
+    const r = this.svg.getBoundingClientRect();
+    const fit = Math.min(r.width / b.w, r.height / b.h); // screen pixels per unit, whole sheet
+    const sizes = [...this.svg.querySelectorAll('text')].map((t) =>
+      parseFloat(getComputedStyle(t).fontSize),
+    );
+    const smallest = Math.min(...sizes.filter((s) => s > 0));
+    const want = Number.isFinite(smallest) && fit > 0 ? px / (smallest * fit) : 2;
+    const k = Math.min(MAX_ZOOM, Math.max(2, want));
+    const w = b.w / k;
+    const h = b.h / k;
+    // half of what shows along each axis at this zoom, never more than half the sheet
+    const hw = Math.min(b.w, r.width / (fit * k)) / 2;
+    const hh = Math.min(b.h, r.height / (fit * k)) / 2;
+    const cx = Math.min(b.x + b.w - hw, Math.max(b.x + hw, p.x));
+    const cy = Math.min(b.y + b.h - hh, Math.max(b.y + hh, p.y));
+    this.view = { x: cx - w / 2, y: cy - h / 2, w, h };
     this.apply();
   }
 

@@ -78,6 +78,11 @@ html.fs-lock body {
   flex: 1 1 auto;
   min-height: 0;
 }
+/* on the page a click on a drawing opens it on full screen, zoomed in on that spot (fullscreen.js) */
+.zoom-in:not(.pz),
+.sheetcard:not(.pz) > svg {
+  cursor: zoom-in;
+}
 .pz {
   cursor: grab;
   touch-action: none;

@@ -150,6 +150,7 @@
           <p class="hint" id="drill-axes"></p>
           <div class="paperwrap" id="drill-map"></div>
         </div>
+        <p class="hint"><%= te('editor.zoomTap') %></p>
         <div class="tablewrap" tabindex="0" role="region" aria-labelledby="drill-map-h"><table id="drill-table"><thead><tr><th>№</th><th><%= te('editor.col.letter') %></th><th>X (u)</th><th>Y (v)</th><th>Ø</th><th><%= te('editor.col.depth') %></th><th><%= te('editor.col.purpose') %></th><th><%= te('editor.col.hardware') %></th></tr></thead><tbody></tbody></table></div>
         <p class="note"><%= te('editor.drillNote') %></p>
       </section>
@@ -166,6 +167,7 @@
           <div class="row"><h2><%= te('editor.drawings') %></h2><div class="acts"><select id="draw-part" class="pick" aria-label="<%= te('editor.sheet') %>"></select><button type="button" class="btn btn-small" id="copy-svg"><%= te('editor.copySvg') %></button><button type="button" class="btn btn-small fs-btn" data-fs="draw-fs" data-fs-zoom="drawing"><%- include('../partials/icon', { name: 'expand' }) %><span><%= te('editor.fullscreen') %></span></button></div></div>
           <div class="paperwrap" id="drawing"></div>
         </div>
+        <p class="hint"><%= te('editor.zoomTap') %></p>
         <p class="note"><%= te('editor.drawNote') %></p>
       </section>
 
