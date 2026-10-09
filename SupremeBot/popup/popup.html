@@ -2,22 +2,25 @@
 <html>
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <link rel="stylesheet" href="../src/shared/ui.css">
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
   <header>
-    <span class="logo">⚔️</span>
+    <svg class="mark" viewBox="0 0 28 28" aria-hidden="true" focusable="false"><rect class="m-tile" x=".75" y=".75" width="26.5" height="26.5" rx="7" stroke-width="1.5"/><path class="m-blade" d="M14 3.6l2.4 2.9v9.6h-4.8V6.5z"/><path class="m-guard" d="M8.8 16.9h10.4M14 16.9v4.6" stroke-width="2.2" stroke-linecap="round" fill="none"/><circle class="m-blade" cx="14" cy="23.6" r="1.4"/></svg>
     <h1 data-i18n="extName">Tanoth Master Bot</h1>
   </header>
 
-  <div id="no-game" class="banner hidden" data-i18n="popupNoGame">
+  <div id="no-game" class="banner callout hidden" role="status" data-i18n="popupNoGame">
     Open Tanoth in a tab to control the bot.
   </div>
 
   <section class="status-card">
     <div class="status-row">
-      <span class="dot" id="dot"></span>
-      <span id="status-text" data-i18n="uiIdle">Idle</span>
+      <span class="dot" id="dot" aria-hidden="true"></span>
+      <span id="status-text" role="status" data-i18n="uiIdle">Idle</span>
     </div>
     <div class="char" id="char"></div>
     <div class="license" id="license"></div>
@@ -30,7 +33,7 @@
   </div>
 
   <section id="subscribe" class="subscribe hidden">
-    <p class="warn" data-i18n="legalBanWarning"></p>
+    <p class="warn callout" data-i18n="legalBanWarning"></p>
     <div class="plans">
       <button id="pay-monthly" class="btn pay">€<span id="price-m">4</span> / <span data-i18n="uiMonth">month</span></button>
       <button id="pay-lifetime" class="btn pay alt">€<span id="price-l">20</span> <span data-i18n="uiLifetime">lifetime</span></button>
@@ -40,15 +43,15 @@
     <input id="key" class="key" data-i18n-ph="uiKeyPlaceholder" placeholder="License key">
     <button id="btn-activate" class="btn activate" data-i18n="uiActivate">Activate</button>
     <div id="pay-msg" class="pay-msg"></div>
-    <div class="legal"><span id="merchant"></span> · <a id="open-terms" data-i18n="legalTerms"></a> · <a id="open-privacy" data-i18n="legalPrivacy"></a></div>
+    <div class="legal"><span id="merchant"></span> · <button type="button" class="linkbtn inline" id="open-terms" data-i18n="legalTerms"></button> · <button type="button" class="linkbtn inline" id="open-privacy" data-i18n="legalPrivacy"></button></div>
   </section>
 
   <section class="stats" id="stats"></section>
 
   <footer>
-    <a id="open-options" data-i18n="uiOptions">Settings</a>
-    <a id="open-stats" data-i18n="uiStats">Stats</a>
-    <a id="show-panel" data-i18n="popupShowPanel">Show panel</a>
+    <button type="button" class="linkbtn" id="open-options" data-i18n="uiOptions">Settings</button>
+    <button type="button" class="linkbtn" id="open-stats" data-i18n="uiStats">Stats</button>
+    <button type="button" class="linkbtn" id="show-panel" data-i18n="popupShowPanel">Show panel</button>
   </footer>
 
   <script type="module" src="popup.js"></script>

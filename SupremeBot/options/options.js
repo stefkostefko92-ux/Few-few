@@ -453,8 +453,9 @@ async function renderSubscription() {
     const mer = document.getElementById('sub-merchant');
     if (mer) mer.textContent = t('legalMerchant', [lic.payment.merchant || 'Carbon Stealth VCC']);
   }
-  subEl.note.textContent = t('subNote', [String(lic.payment ? lic.payment.trialDays : 3)]);
-  subEl.card.classList.toggle('expired', lic.status === 'expired' || lic.wrongDevice);
+  // Never render "undefined-day": fall back to the default trial length.
+  subEl.note.textContent = t('subNote', [String(Number(lic.payment && lic.payment.trialDays) || 3)]);
+  subEl.card.classList.toggle('expired', !!(lic.status === 'expired' || lic.wrongDevice));
   if (lic.wrongDevice) subEl.status.innerHTML = '<b>' + t('licWrongDevice') + '</b>';
   else if (lic.status === 'lifetime') subEl.status.innerHTML = t('licLifetime');
   else if (lic.status === 'active') subEl.status.innerHTML = t('licActive', [String(lic.daysLeft)]);

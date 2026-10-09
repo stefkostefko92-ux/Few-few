@@ -97,7 +97,7 @@ async function refreshLicense() {
     const mer = document.getElementById('merchant');
     if (mer) mer.textContent = t('legalMerchant', [lic.payment.merchant || 'Carbon Stealth VCC']);
   }
-  els.license.classList.toggle('expired', lic.status === 'expired' || lic.wrongDevice);
+  els.license.classList.toggle('expired', !!(lic.status === 'expired' || lic.wrongDevice));
   if (lic.wrongDevice) els.license.innerHTML = '<b>' + t('licWrongDevice') + '</b>';
   else if (lic.status === 'lifetime') els.license.innerHTML = t('licLifetime');
   else if (lic.status === 'active') els.license.innerHTML = t('licActive', [String(lic.daysLeft)]);

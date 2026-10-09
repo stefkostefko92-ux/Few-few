@@ -1,0 +1,123 @@
+/* Tanoth Master Bot - shared design system for the extension's own pages
+   (popup, options, stats). "Carbon & emerald": matte carbon surfaces, one emerald
+   signal colour, gold only for the lifetime plan. System font stack, no remote
+   resources. Light variant follows prefers-color-scheme.
+   (The in-game panel has its own isolated stylesheet: src/ui/panel.css.) */
+
+:root {
+  color-scheme: dark;
+  --bg: #0a0b0d; --surface: #111316; --surface-2: #171a1e; --raised: #1e2227; --raised-hover: #272c33;
+  --line: #2a2f36; --line-strong: #566070;
+  --text: #e6e9ee; --muted: #9ba3ae; --faint: #6f7782;
+  --accent: #27e08a; --accent-hover: #52f0a6; --accent-ink: #04150c; --accent-text: #27e08a;
+  --accent-wash: rgba(39, 224, 138, .1); --accent-line: rgba(39, 224, 138, .5);
+  --gold: #e6b34a; --gold-hover: #f2c767; --gold-ink: #1c1300;
+  --danger-text: #ff938b; --danger-wash: rgba(255, 95, 86, .1); --danger-line: rgba(255, 95, 86, .55);
+  --warn-text: #f1c24e; --warn-wash: rgba(241, 194, 78, .09); --warn-line: rgba(241, 194, 78, .5);
+  --focus: #6bf2b3;
+  --weave: repeating-linear-gradient(135deg, rgba(255, 255, 255, .014) 0 2px, transparent 2px 5px);
+  --r-s: 6px; --r-m: 10px; --r-l: 14px;
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 24px; --s-6: 32px;
+  --shadow: 0 1px 0 rgba(255, 255, 255, .035) inset, 0 10px 28px rgba(0, 0, 0, .38);
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --bg: #eceff3; --surface: #fafbfc; --surface-2: #f0f2f5; --raised: #e4e8ed; --raised-hover: #d9dee5;
+    --line: #cdd3db; --line-strong: #6b7685;
+    --text: #12161c; --muted: #4a5360; --faint: #6b7380;
+    --accent-hover: #52f0a6; --accent-text: #096d42;
+    --accent-wash: rgba(9, 109, 66, .09); --accent-line: rgba(9, 109, 66, .55);
+    --danger-text: #b42318; --danger-wash: rgba(180, 35, 24, .07); --danger-line: rgba(180, 35, 24, .5);
+    --warn-text: #7d5200; --warn-wash: rgba(160, 105, 0, .09); --warn-line: rgba(125, 82, 0, .5);
+    --focus: #0a7a4b;
+    --weave: repeating-linear-gradient(135deg, rgba(0, 0, 0, .018) 0 2px, transparent 2px 5px);
+    --shadow: 0 1px 0 rgba(255, 255, 255, .8) inset, 0 8px 22px rgba(20, 30, 45, .1);
+  }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; overflow-x: hidden; }
+body {
+  font-family: var(--font); font-size: 13.5px; line-height: 1.45; color: var(--text);
+  background: var(--bg) var(--weave); font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased; overflow-wrap: break-word;
+}
+h1, h2, h3 { line-height: 1.2; letter-spacing: -.005em; }
+.hidden { display: none !important; }
+
+/* Focus: one ring for everything interactive. */
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: var(--r-s); }
+input:focus-visible, select:focus-visible { outline-offset: 0; }
+
+/* Buttons */
+button {
+  font: inherit; font-weight: 600; line-height: 1.2; color: var(--text); cursor: pointer;
+  min-height: 36px; padding: 0 var(--s-3); border-radius: var(--r-m);
+  background: var(--raised); border: 1px solid var(--line);
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2);
+  text-align: center; overflow-wrap: anywhere;
+}
+button:hover:not(:disabled) { background: var(--raised-hover); border-color: var(--line-strong); }
+button:active:not(:disabled) { transform: translateY(1px); }
+button:disabled { cursor: not-allowed; color: var(--faint); background: transparent; border-style: dashed; }
+button.primary, .btn.start, .btn-pay, .btn.pay {
+  background: var(--accent); border-color: transparent; color: var(--accent-ink); font-weight: 700;
+}
+button.primary:hover:not(:disabled), .btn.start:hover:not(:disabled), .btn-pay:hover:not(:disabled), .btn.pay:hover:not(:disabled) {
+  background: var(--accent-hover); border-color: transparent;
+}
+.btn.start:disabled { background: var(--accent-wash); border: 1px dashed var(--accent-line); color: var(--accent-text); opacity: .75; }
+.btn-pay, .btn.pay { display: block; padding-top: 11px; padding-bottom: 11px; line-height: 1.25; }
+.btn-pay.alt, .btn.pay.alt { background: var(--gold); color: var(--gold-ink); }
+.btn-pay.alt:hover:not(:disabled), .btn.pay.alt:hover:not(:disabled) { background: var(--gold-hover); }
+
+/* Text-style buttons that used to be bare anchors (keyboard reachable now). */
+button.linkbtn {
+  min-height: 32px; padding: 0 var(--s-2); background: transparent; border-color: transparent;
+  color: var(--muted); font-weight: 600; border-radius: var(--r-s);
+}
+button.linkbtn:hover:not(:disabled) { background: var(--raised); border-color: transparent; color: var(--accent-text); }
+button.linkbtn.inline { display: inline; min-height: 0; padding: 0 1px; text-decoration: underline; text-underline-offset: 2px; color: inherit; font-weight: inherit; vertical-align: baseline; }
+button.linkbtn.inline:hover:not(:disabled) { background: transparent; }
+
+/* Fields */
+input[type="text"], input[type="number"], input[type="time"], input:not([type]), select {
+  font: inherit; font-size: 13px; color: var(--text); background: var(--bg);
+  border: 1px solid var(--line); border-radius: var(--r-s); min-height: 36px; padding: 0 var(--s-3);
+  max-width: 100%;
+}
+input:hover:not(:disabled), select:hover:not(:disabled) { border-color: var(--line-strong); }
+input::placeholder { color: var(--muted); opacity: 1; }
+input[type="checkbox"] { width: 24px; height: 24px; flex: 0 0 auto; accent-color: var(--accent); cursor: pointer; }
+select { cursor: pointer; padding-right: var(--s-2); }
+
+/* Brand mark (inline SVG) */
+.mark { width: 28px; height: 28px; flex: 0 0 auto; display: block; }
+.mark .m-tile { fill: var(--bg); stroke: var(--accent-line); }
+.mark .m-blade { fill: var(--accent); }
+.mark .m-guard { stroke: var(--accent); }
+@media (prefers-color-scheme: light) { .mark .m-tile { fill: #0a0b0d; stroke: #0a0b0d; } }
+
+/* Status beacon: shape carries the state, colour only reinforces it. */
+.dot { width: 12px; height: 12px; border-radius: 50%; flex: 0 0 auto; border: 2px solid var(--muted); background: transparent; }
+.dot.running { border-color: var(--accent); background: var(--accent); box-shadow: 0 0 0 3px var(--accent-wash), 0 0 10px var(--accent-line); }
+.dot.paused { border-radius: 3px; border-color: var(--warn-text); background: linear-gradient(90deg, transparent 0 28%, var(--warn-text) 28% 42%, transparent 42% 58%, var(--warn-text) 58% 72%, transparent 72%); }
+
+/* Callouts: icon glyph + coloured edge + text (never colour alone). */
+.callout { position: relative; padding: var(--s-2) var(--s-3) var(--s-2) 34px; border-radius: var(--r-s); border: 1px solid var(--warn-line); background: var(--warn-wash); color: var(--text); font-size: 12px; line-height: 1.45; }
+.callout::before { content: '!'; position: absolute; left: 10px; top: 9px; width: 16px; height: 16px; border-radius: 50%; background: var(--warn-text); color: var(--bg); font-weight: 800; font-size: 11px; line-height: 16px; text-align: center; }
+
+/* Message line (ok / err) with glyph */
+.msg:empty, .pay-msg:empty, .sub-msg:empty, .tool-msg:empty { display: none; }
+.msg, .pay-msg, .sub-msg, .tool-msg { font-size: 12px; line-height: 1.4; }
+.msg.ok, .pay-msg.ok, .sub-msg.ok, .tool-msg.ok { color: var(--accent-text); }
+.msg.err, .pay-msg.err, .sub-msg.err, .tool-msg.err { color: var(--danger-text); }
+.msg.ok::before, .pay-msg.ok::before, .sub-msg.ok::before, .tool-msg.ok::before { content: '✓ '; font-weight: 800; }
+.msg.err::before, .pay-msg.err::before, .sub-msg.err::before, .tool-msg.err::before { content: '✕ '; font-weight: 800; }
+
+@media (prefers-reduced-motion: no-preference) {
+  button, input, select { transition: background-color .12s, border-color .12s, color .12s; }
+}

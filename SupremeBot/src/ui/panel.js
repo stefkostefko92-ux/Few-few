@@ -27,15 +27,15 @@
 
     root.innerHTML = `
       <div class="tb-header">
-        <span class="tb-dot"></span>
+        <span class="tb-dot" aria-hidden="true"></span>
         <span class="tb-title">${I18n.t('extName')}</span>
-        <button class="tb-icon-btn" data-act="collapse" title="${I18n.t('uiCollapse')}">-</button>
-        <button class="tb-icon-btn" data-act="hide" title="${I18n.t('uiHide')}">×</button>
+        <button class="tb-icon-btn" data-act="collapse" title="${I18n.t('uiCollapse')}" aria-label="${I18n.t('uiCollapse')}">\u2013</button>
+        <button class="tb-icon-btn" data-act="hide" title="${I18n.t('uiHide')}" aria-label="${I18n.t('uiHide')}">×</button>
       </div>
       <div class="tb-body">
         <div class="tb-license" data-el="license">
           <span data-el="license-text"></span>
-          <a class="tb-link" data-act="subscribe">${I18n.t('uiSubscribe')}</a>
+          <a class="tb-link" data-act="subscribe" role="button" tabindex="0">${I18n.t('uiSubscribe')}</a>
         </div>
         <div class="tb-paywall">
           <h3>${I18n.t('paywallTitle')}</h3>
@@ -49,25 +49,25 @@
           <input class="tb-key" data-el="key" placeholder="${I18n.t('uiKeyPlaceholder')}" />
           <button class="tb-activate" data-act="activate">${I18n.t('uiActivate')}</button>
           <div class="tb-pay-msg" data-el="pay-msg"></div>
-          <div class="tb-legal"><span data-el="merchant"></span> · <a class="tb-link" data-act="open-terms">${I18n.t('legalTerms')}</a> · <a class="tb-link" data-act="open-privacy">${I18n.t('legalPrivacy')}</a></div>
-          <a class="tb-link" data-act="paywall-close" style="cursor:pointer;font-size:11px">${I18n.t('uiClose')}</a>
+          <div class="tb-legal"><span data-el="merchant"></span> · <a class="tb-link" data-act="open-terms" role="button" tabindex="0">${I18n.t('legalTerms')}</a> · <a class="tb-link" data-act="open-privacy" role="button" tabindex="0">${I18n.t('legalPrivacy')}</a></div>
+          <a class="tb-link" data-act="paywall-close" role="button" tabindex="0">${I18n.t('uiClose')}</a>
         </div>
         <div class="tb-controls">
           <button class="tb-btn tb-start" data-act="start">${I18n.t('uiStart')}</button>
           <button class="tb-btn tb-pause" data-act="pause" disabled>${I18n.t('uiPause')}</button>
           <button class="tb-btn tb-stop" data-act="stop" disabled>${I18n.t('uiStop')}</button>
         </div>
-        <div class="tb-status" data-el="status">${I18n.t('uiIdle')}</div>
+        <div class="tb-status" data-el="status" role="status">${I18n.t('uiIdle')}</div>
         <div class="tb-stats" data-el="stats"></div>
         <div class="tb-modules" data-el="modules"></div>
         <div class="tb-inputs">
           <input class="tb-input" data-el="in-pvp" placeholder="${I18n.t('uiPvpPlaceholder')}" />
           <input class="tb-input" data-el="in-circle" placeholder="${I18n.t('uiCirclePlaceholder')}" />
         </div>
-        <div class="tb-log" data-el="log"></div>
+        <div class="tb-log" data-el="log" role="log" tabindex="0"></div>
         <div class="tb-footer">
           <span data-el="proto">${I18n.t('uiProtoWaiting')}</span>
-          <a data-act="options">${I18n.t('uiOptions')}</a>
+          <a data-act="options" role="button" tabindex="0">${I18n.t('uiOptions')}</a>
         </div>
       </div>`;
 
@@ -75,6 +75,13 @@
     logEl = root.querySelector('[data-el="log"]');
 
     root.addEventListener('click', onClick);
+    // Keyboard: Enter/Space activates the non-<button> controls (chips, text actions).
+    root.addEventListener('keydown', (ev) => {
+      const t = ev.target;
+      if ((ev.key === 'Enter' || ev.key === ' ') && t && t.getAttribute && t.getAttribute('data-act') && t.tagName !== 'BUTTON') {
+        ev.preventDefault(); t.click();
+      }
+    });
     makeDraggable(root.querySelector('.tb-header'), root);
 
     renderModules();
@@ -171,7 +178,7 @@
       const mer = root.querySelector('[data-el="merchant"]');
       if (mer) mer.textContent = I18n.t('legalMerchant', [lic.payment.merchant || 'Carbon Stealth VCC']);
     }
-    bar.classList.toggle('tb-lic-expired', lic.status === 'expired' || lic.wrongDevice);
+    bar.classList.toggle('tb-lic-expired', !!(lic.status === 'expired' || lic.wrongDevice));
     if (lic.wrongDevice) text.innerHTML = `<b>${I18n.t('licWrongDevice')}</b>`;
     else if (lic.status === 'lifetime') text.innerHTML = I18n.t('licLifetime');
     else if (lic.status === 'active') text.innerHTML = I18n.t('licActive', [String(lic.daysLeft)]);
@@ -183,6 +190,8 @@
   function hide() {
     root.style.display = 'none';
     const fab = el('div'); fab.id = 'tanoth-bot-fab'; fab.textContent = I18n.t('extNameShort');
+    fab.setAttribute('role', 'button'); fab.tabIndex = 0;
+    fab.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); fab.click(); } });
     fab.onclick = () => { root.style.display = ''; fab.remove(); };
     document.body.appendChild(fab);
   }
@@ -193,7 +202,7 @@
     settings[id].enabled = !settings[id].enabled;
     await Storage.save(settings);
     renderModules();
-    Logger.info(I18n.t(settings[id].enabled ? 'logModuleOn' : 'logModuleOff', [id]));
+    Logger.info(I18n.t(settings[id].enabled ? 'logModuleOn' : 'logModuleOff', [I18n.t('mod_' + id)]));
   }
 
   function setupInputs() {
@@ -238,6 +247,9 @@
       const on = settings[id]?.enabled;
       const chip = el('span', 'tb-chip' + (on ? ' tb-on' : ''), I18n.t('mod_' + id));
       chip.setAttribute('data-act', 'mod:' + id);
+      chip.setAttribute('role', 'switch');
+      chip.setAttribute('aria-checked', on ? 'true' : 'false');
+      chip.tabIndex = 0;
       wrap.appendChild(chip);
     });
   }
@@ -270,10 +282,13 @@
 
     const status = root.querySelector('[data-el="status"]');
     const returnAt = TB.State.get().adventureReturnAt || 0;
-    // "Next action in" = soonest of the game busy-timer and the scheduler's own
-    // next tick (which reflects the programmed action interval / humanized delay).
-    const nexts = [returnAt, st.nextAt || 0].filter((t) => t > Date.now());
-    const nextAt = nexts.length ? Math.min.apply(null, nexts) : 0;
+    // "Next action in" = the earliest moment the next action CAN happen: the
+    // scheduler's next evaluation (programmed interval / humanized delay), but
+    // never before the game's busy timer ends - while the character is on a
+    // 14-minute task the scheduler's idle polls are not actions and must not
+    // be shown as "in 8s".
+    const nextTick = st.nextAt || 0;
+    const nextAt = returnAt > Date.now() ? Math.max(returnAt, nextTick) : (nextTick > Date.now() ? nextTick : 0);
     if (!st.running) status.textContent = I18n.t('uiIdle');
     else if (st.onBreak) status.textContent = I18n.t('uiOnBreak');
     else if (st.paused) status.textContent = I18n.t('uiPaused');

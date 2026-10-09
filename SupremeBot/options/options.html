@@ -2,13 +2,16 @@
 <html>
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
   <title>Tanoth Master Bot - Settings</title>
+  <link rel="stylesheet" href="../src/shared/ui.css">
   <link rel="stylesheet" href="options.css">
 </head>
 <body>
   <div class="wrap">
     <aside>
-      <div class="brand"><span>⚔️</span><b data-i18n="extName">Tanoth Master Bot</b></div>
+      <div class="brand"><svg class="mark" viewBox="0 0 28 28" aria-hidden="true" focusable="false"><rect class="m-tile" x=".75" y=".75" width="26.5" height="26.5" rx="7" stroke-width="1.5"/><path class="m-blade" d="M14 3.6l2.4 2.9v9.6h-4.8V6.5z"/><path class="m-guard" d="M8.8 16.9h10.4M14 16.9v4.6" stroke-width="2.2" stroke-linecap="round" fill="none"/><circle class="m-blade" cx="14" cy="23.6" r="1.4"/></svg><b data-i18n="extName">Tanoth Master Bot</b></div>
       <nav id="nav"></nav>
       <div class="aside-actions">
         <button id="save" class="primary" data-i18n="optSave">Save</button>
@@ -23,19 +26,19 @@
           <h2 data-i18n="subTitle">Subscription</h2>
         </div>
         <div class="sub-status" id="sub-status"></div>
-        <p class="sub-warn" data-i18n="legalBanWarning"></p>
+        <p class="sub-warn callout" data-i18n="legalBanWarning"></p>
         <div class="sub-plans">
           <button class="btn-pay" id="sub-pay-monthly">€<span id="sub-price-m">4</span> / <span data-i18n="uiMonth">month</span></button>
           <button class="btn-pay alt" id="sub-pay-lifetime">€<span id="sub-price-l">20</span> <span data-i18n="uiLifetime">lifetime</span></button>
         </div>
         <label class="sub-consent"><input type="checkbox" id="sub-consent"> <span data-i18n="legalConsent"></span></label>
-        <div class="sub-row" style="margin-top:14px">
+        <div class="sub-row">
           <input id="sub-key" type="text" data-i18n-ph="uiKeyPlaceholder" placeholder="License key">
           <button id="sub-activate" data-i18n="uiActivate">Activate</button>
         </div>
         <div class="sub-msg" id="sub-msg"></div>
         <p class="sub-note"></p>
-        <div class="sub-legal"><span id="sub-merchant"></span> · <a id="sub-terms" data-i18n="legalTerms"></a> · <a id="sub-privacy" data-i18n="legalPrivacy"></a></div>
+        <div class="sub-legal"><span id="sub-merchant"></span> · <button type="button" class="linkbtn inline" id="sub-terms" data-i18n="legalTerms"></button> · <button type="button" class="linkbtn inline" id="sub-privacy" data-i18n="legalPrivacy"></button></div>
       </section>
 
       <section class="tools-card">
@@ -62,7 +65,7 @@
         <div class="tool-row">
           <span class="tool-label" data-i18n="toolNotify">Notifications</span>
           <button id="notify-test" data-i18n="toolTestNotify">Send test notification</button>
-          <a id="open-stats" class="tool-link" data-i18n="toolStats">Open statistics ↗</a>
+          <button type="button" id="open-stats" class="linkbtn tool-link" data-i18n="toolStats">Open statistics ↗</button>
         </div>
         <div class="tool-msg" id="tool-msg"></div>
       </section>
