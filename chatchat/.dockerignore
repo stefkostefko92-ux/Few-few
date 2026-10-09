@@ -10,6 +10,11 @@ gcp-sa*.json
 *.pem
 tests
 coverage
+# отчетите на оценката (може да носят текстове на клиента) и изходът на e2e — не влизат и в билд слоя
+evals/reports
+test-results
+playwright-report
+playwright.config.ts
 .git
 Dockerfile
 docker-compose.yml
