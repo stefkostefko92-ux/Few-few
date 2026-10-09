@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-10-06",
+    "updated": "2026-10-09",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -1173,7 +1173,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 517
+        "lessons": 523
       },
       "evolution": [
         {
@@ -1985,9 +1985,42 @@
           "date": "2026-09-25",
           "event": "v39.9 — възстановяване",
           "detail": "Версията беше свалена от 39.1 при сгъване на main в паметта (сливането взе по-стара история). Върната на 39.2 + 0.1 × 7 нови поуки."
+        },
+        {
+          "version": "40.1.0",
+          "date": "2026-10-08",
+          "event": "v40.1 — учене",
+          "detail": "Научи: liftpilot heb.ts — проверките на гредите HEB (m_heb*) не гарантират, че осите на гредит… (+1 още)"
+        },
+        {
+          "version": "40.3.0",
+          "date": "2026-10-09",
+          "event": "v40.3 — учене",
+          "detail": "Научи: Nexus client lib/stream.ts:42 слуша само SSE събития ['notification','chat'], а сървъръ… (+1 още)"
+        },
+        {
+          "version": "40.5.0",
+          "date": "2026-10-09",
+          "event": "v40.5 — учене",
+          "detail": "Научи: SQLite: колона expires_at, записана с JS toISOString() ('YYYY-MM-DDTHH:MM:SS.sssZ') и с… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-09",
+          "type": "learning",
+          "summary": "Научи: „SQLite: колона expires_at, записана с JS toISOString() ('YYYY-MM-DDTHH:MM:SS.sssZ') и с…\" (+1 още)"
+        },
+        {
+          "date": "2026-10-09",
+          "type": "learning",
+          "summary": "Научи: „Nexus client lib/stream.ts:42 слуша само SSE събития ['notification','chat'], а сървъръ…\" (+1 още)"
+        },
+        {
+          "date": "2026-10-08",
+          "type": "learning",
+          "summary": "Научи: „liftpilot heb.ts — проверките на гредите HEB (m_heb*) не гарантират, че осите на гредит…\" (+1 още)"
+        },
         {
           "date": "2026-10-06",
           "type": "learning",
@@ -13845,7 +13878,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 219
+        "lessons": 222
       },
       "evolution": [
         {
@@ -13913,9 +13946,20 @@
           "date": "2026-09-25",
           "event": "v20.8 — учене",
           "detail": "Научи: Vertex AI: единичните региони (europe-west1 и др.) поддържат само Claude Sonnet 4.6 и п… (+35 още)"
+        },
+        {
+          "version": "21.1.0",
+          "date": "2026-10-09",
+          "event": "v21.1 — учене",
+          "detail": "Научи: Vertex gemini-embedding-001: по REST :predict приема САМО един текст на заявка (батч = … (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-09",
+          "type": "learning",
+          "summary": "Научи: „Vertex gemini-embedding-001: по REST :predict приема САМО един текст на заявка (батч = …\" (+2 още) · 1 в карантина"
+        },
         {
           "date": "2026-10-06",
           "type": "learning",
@@ -14274,7 +14318,7 @@
           "Meta Advertising Standards + Conversions API + Platform Terms/Developer Policies",
           "OWASP ASVS/MASVS (via CASA/MASA), fastlane precheck (metadata lint модел)"
         ],
-        "lessons": 227
+        "lessons": 231
       },
       "evolution": [
         {
@@ -14372,9 +14416,20 @@
           "date": "2026-10-06",
           "event": "v21.0 — учене",
           "detail": "Научи: Capacitor major версия определя targetSdk по подразбиране: 6 → 34, 7 → 35, 8 → 36 (Cap … (+46 още)"
+        },
+        {
+          "version": "21.4.0",
+          "date": "2026-10-08",
+          "event": "v21.4 — учене",
+          "detail": "Научи: CWS best-listing (2024-08-02): summary — Don't include superlatives like 'greatest' and… (+3 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-08",
+          "type": "learning",
+          "summary": "Научи: „CWS best-listing (2024-08-02): summary — Don't include superlatives like 'greatest' and…\" (+3 още)"
+        },
         {
           "date": "2026-10-06",
           "type": "learning",
