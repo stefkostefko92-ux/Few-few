@@ -30,6 +30,12 @@ export function hasLearnBlock(text) {
   return /```learn\s*\n[\s\S]*?```/.test(String(text || ""));
 }
 
+/** Кой агент е вървял: харнесът пише `agent-<id>.meta.json` до транскрипта (`agentType`). Без него
+ *  куката не може да пренасочи грешно изписан собствен id и поуките се губеха и по резервния път. */
+export function agentTypeFor(transcriptPath) {
+  try { return String(JSON.parse(readFileSync(String(transcriptPath).replace(/\.jsonl$/, ".meta.json"), "utf8")).agentType || ""); } catch { return ""; }
+}
+
 /** Има ли learn блок в ТЕКСТА на агента (транскриптът е JSONL с екранирани нови редове). */
 export function transcriptHasLearn(jsonl) {
   return hasLearnBlock(assistantTexts(String(jsonl || "").split("\n")).join("\n"));
@@ -50,7 +56,7 @@ async function main() {
     // пропускаше като „без learn блок“ (2026-10-09) — резервният път беше мъртъв.
     if (!transcriptHasLearn(readFileSync(abs, "utf8"))) { console.log(`· ${p}: няма learn блок — пропускам`); skipped++; continue; }
     const r = spawnSync(process.execPath, [HOOK], {
-      input: JSON.stringify({ transcript_path: abs }), encoding: "utf8", timeout: 30000,
+      input: JSON.stringify({ transcript_path: abs, agent_type: agentTypeFor(abs) }), encoding: "utf8", timeout: 30000,
       env: { ...process.env, CLAUDE_PROJECT_DIR: ROOT },
     });
     if (r.status !== 0) console.error(`⚠ hook излезе с ${r.status} за ${p}: ${(r.stderr || "").slice(0, 200)}`);

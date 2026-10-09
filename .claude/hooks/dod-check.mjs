@@ -288,9 +288,9 @@ export function checkDoD(uses, root) {
 // Поуки, които агентът е проверил, но написал в схема, която куката не разчита, изчезваха тихо
 // (2026-10-09: 5 в Карантина, 6 изобщо незаписани в една задача). Тук те връщат агента да препише
 // блока, докато още има контекста — по същия начин като ПРЕДАВАНЕ.
-export function checkLearnViolation(jsonl) {
+export function checkLearnViolation(jsonl, agent = "", known = null) {
   const lines = String(jsonl).split("\n");
-  const problems = learnProblems(assistantTexts(lines).join("\n"));
+  const problems = learnProblems(assistantTexts(lines).join("\n"), { agent, known });
   return problems.length ? { kind: "learn", files: ["(блокът learn)"], gate: problems.join(" · ") } : null;
 }
 
@@ -322,7 +322,7 @@ function main() {
   // защото инструкцията е различна: не „пусни гейта", а „поправи го, той е червен".
   const fg = checkFailedGates(collectBashRuns(jsonl));
   if (fg) violations.push({ ...fg, kind: "failed" });
-  const lv = checkLearnViolation(jsonl);
+  const lv = checkLearnViolation(jsonl, payload.agent_type || "", knownAgentIds(join(ROOT, ".claude", "agents")));
   if (lv) violations.push(lv);
   if (!violations.length) process.exit(0);
   const msg = violations.map(violationMessage).join("\n");

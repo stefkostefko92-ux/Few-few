@@ -243,12 +243,14 @@ function listItems(block) {
  * и `- id:` + `rule: >` (6 поуки — нула записани). Всеки път парсерът се разширяваше след щетата;
  * тук неразчетеното се хваща ПРЕДИ агентът да приключи (dod-check го връща да го препише).
  */
-export function learnProblems(text) {
+export function learnProblems(text, { agent = "", known = null } = {}) {
   const block = lastLearnBlock(String(text || ""));
   if (block == null) return [];
   const items = listItems(block);
-  const lessons = parseLearn(block).lessons;
+  const { agent: blockAgent, lessons } = parseLearn(block);
   const out = [];
+  // Грешно изписан собствен id се пренасочва към бегача (resolveAgent); ЧУЖД познат id се отхвърля цял.
+  if (agent && blockAgent && blockAgent !== agent && known?.has?.(blockAgent)) out.push(`„agent: ${blockAgent}“ е друг агент — блокът ще бъде отхвърлен цял; твоят е „agent: ${agent}“`);
   if (items && lessons.length < items) out.push(`разчетени са ${lessons.length} от ${items} поуки (началото на всяка е „- text:“)`);
   const folded = lessons.filter((l) => /^[>|][+-]?$/.test(String(l.text).trim()) || !String(l.text).trim()).length;
   if (folded) out.push(`${folded} поуки с многоредов или празен текст (\`>\`/\`|\`) — текстът е на един ред`);
@@ -286,6 +288,17 @@ export function runnerMatches(runner, agent) {
   const r = String(runner || "").trim();
   if (!r) return true;
   return r === agent;
+}
+
+// Агентът грешно изписва СОБСТВЕНИЯ си id (2026-10-09: „letopisec“, „socialdzhiyata“ — транслитерацията
+// варира) → файл няма → поуките изчезваха тихо. Непознат id не е чужд агент: поуката отива при агента,
+// който РЕАЛНО е вървял. Познат ЧУЖД id остава отказ — защитата срещу тровене на чужда памет не се пипа.
+export const safeAgentId = (id) => /^[a-z0-9][a-z0-9-]*$/i.test(String(id || ""));
+export function resolveAgent(blockAgent, runner, exists) {
+  const a = String(blockAgent || "").trim(), r = String(runner || "").trim();
+  if (safeAgentId(a) && exists(a)) return runnerMatches(r, a) ? a : null;
+  if (safeAgentId(r) && exists(r)) return r;
+  return null;
 }
 
 function atomicWrite(file, content) {
@@ -370,13 +383,14 @@ function main() {
   if (!block) process.exit(0);
 
   const parsed = parseLearn(block);
-  if (!parsed.agent) process.exit(0);
-  const file = join(MEM_DIR, `${parsed.agent}.md`);
-  if (!existsSync(file)) process.exit(0); // не е от нашия списък — no-op
   // Блокът пише само в паметта на агента, който РЕАЛНО е вървял. Иначе razbivacha (или прочетено
   // съдържание) с `agent: kasadjiyata` тровеше чужда памет (Разбивача, 2026-09-24). Ръчен запис без
-  // agent_type (оркестраторът прихваща изгубени поуки) остава възможен.
-  if (!runnerMatches(payload.agent_type, parsed.agent)) process.exit(0);
+  // agent_type (оркестраторът прихваща изгубени поуки) остава възможен. Грешно изписан собствен id →
+  // агентът, който е вървял (resolveAgent); не от нашия списък → no-op.
+  const agentId = resolveAgent(parsed.agent, payload.agent_type, (id) => existsSync(join(MEM_DIR, `${id}.md`)));
+  if (!agentId) process.exit(0);
+  parsed.agent = agentId;
+  const file = join(MEM_DIR, `${agentId}.md`);
 
   const date = clampDate(parsed.date);
   const working = readFileSync(file, "utf8");
