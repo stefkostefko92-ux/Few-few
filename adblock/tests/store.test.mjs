@@ -66,4 +66,13 @@ const minGap = (st) => { const ts = st.map((x) => x.t).sort((a, b) => a - b); re
 const tight = Object.entries({ full: promoTL, ...promoTL.cuts }).filter(([, c]) => minGap(c.strikes || promoTL.strikes) < 2).map(([k]) => k);
 ok(`promo: lightning strikes ≥ 2 s apart in every cut (${tight.join(",") || "all"})`, tight.length === 0);
 
+// Сайтът: badge-ът „Established Publisher“ води към листинга (проверимо твърдение), а броят езици
+// на страницата и в llms.txt е броят на _locales (беше „70“ след 73).
+const listing = "https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk";
+const pills = [...idxHtml.matchAll(/<a class="verified" href="([^"]+)"[\s\S]*?<\/a>/g)];
+ok("site: the Established Publisher mark links to the store listing", pills.length >= 1 && pills.every((m) => m[1] === listing && /Established Publisher/.test(m[0])));
+const llms = readFileSync(join(ROOT, "server", "llms.txt"), "utf8");
+const langClaims = [...(idxHtml + llms).matchAll(/(\d+) languages/g)].map((m) => +m[1]).filter((n) => n !== 31);
+ok(`site: “N languages” = ${locs.length} locales everywhere (${[...new Set(langClaims)].join(",")})`, langClaims.length >= 3 && langClaims.every((n) => n === locs.length));
+
 done();

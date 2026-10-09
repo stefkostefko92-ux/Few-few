@@ -64,7 +64,7 @@ try {
         var d = ${JSON.stringify(demo)};
         $("blockedTotal").textContent = d.blocked; $("savedData").textContent = d.data;
         $("savedTime").textContent = d.time; $("siteHost").textContent = d.host;
-        $("listDot").textContent = "40,000+ filters";
+        $("listDot").textContent = "60,000+ filters"; // same as the store art and the page (60,000+ rules)
         var total = 0;
         d.log.forEach(function (it) {
           var li = document.createElement("li"), a = document.createElement("span"), b = document.createElement("span");
