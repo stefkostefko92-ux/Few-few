@@ -32,6 +32,7 @@ const CHECKS = [
   { id: "drift-lint", desc: "счупени референции + бройка/ростер consistency", cmd: ["tools/agents/drift-lint.mjs"] },
   { id: "eval-check", desc: "структурна валидност на golden spec-овете (без агент)", cmd: ["tools/agents/evals/eval.mjs", "--check"] },
   { id: "invariant-check", desc: "критичните method/safety котви на домейн-собствениците са в материала (детерм. behavioral слой)", cmd: ["tools/agents/invariant-check.mjs", "--check"] },
+  { id: "teams", desc: "екипите: всеки агент в точно един екип, поток ≤3 стъпки с човешка точка, 45 тестови задачи рутират вярно, _teams.md свеж", cmd: ["tools/agents/teams.mjs", "--check"] },
   { id: "coverage", desc: "покритие на домейни (картата не сочи несъществуващи агенти)", cmd: ["tools/agents/coverage.mjs", "--json"], quiet: true },
   { id: "skills-lint", desc: "skills frontmatter/name/тяло + правилата от наръчника на Anthropic", cmd: ["tools/skills/lint.mjs"] },
   { id: "skill-triggers", desc: "всяко умение има тригер-случаи и описание, което ги „чува“", cmd: ["tools/skills/trigger-check.mjs", "--check"] },

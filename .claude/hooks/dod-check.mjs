@@ -15,7 +15,7 @@ import { fileURLToPath } from "node:url";
 import { checkScope } from "../../tools/agents/scope-check.mjs";
 import { validateHandoff, knownAgentIds } from "../../tools/agents/handoff.mjs";
 import { evalMode } from "../../tools/lib/eval-mode.mjs";
-import { isHandback } from "./memory-capture.mjs";
+import { isHandback, assistantTexts, learnProblems, LEARN_SCHEMA } from "./memory-capture.mjs";
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -285,6 +285,21 @@ export function checkDoD(uses, root) {
   return violations;
 }
 
+// Поуки, които агентът е проверил, но написал в схема, която куката не разчита, изчезваха тихо
+// (2026-10-09: 5 в Карантина, 6 изобщо незаписани в една задача). Тук те връщат агента да препише
+// блока, докато още има контекста — по същия начин като ПРЕДАВАНЕ.
+export function checkLearnViolation(jsonl, agent = "", known = null) {
+  const lines = String(jsonl).split("\n");
+  const problems = learnProblems(assistantTexts(lines).join("\n"), { agent, known });
+  return problems.length ? { kind: "learn", files: ["(блокът learn)"], gate: problems.join(" · ") } : null;
+}
+
+export function violationMessage(v) {
+  if (v.kind === "failed") return `DoD НЕ е изпълнен: ${v.gate}. Поправи причината и пусни отново, преди да приключиш.`;
+  if (v.kind === "learn") return `Блокът learn няма да стигне до паметта: ${v.gate}. Препиши го точно по схемата (всяко поле на свой ред, текстът и източникът на един ред):\n${LEARN_SCHEMA}`;
+  return `DoD гейт НЕ е пуснат: писа ${v.files.join(", ")} без да пуснеш „${v.gate}". Пусни гейта сега и поправи HIGH находките, преди да приключиш.`;
+}
+
 function main() {
   let payload = {};
   try { payload = JSON.parse(readStdin()); } catch { process.exit(0); }
@@ -307,10 +322,10 @@ function main() {
   // защото инструкцията е различна: не „пусни гейта", а „поправи го, той е червен".
   const fg = checkFailedGates(collectBashRuns(jsonl));
   if (fg) violations.push({ ...fg, kind: "failed" });
+  const lv = checkLearnViolation(jsonl, payload.agent_type || "", knownAgentIds(join(ROOT, ".claude", "agents")));
+  if (lv) violations.push(lv);
   if (!violations.length) process.exit(0);
-  const msg = violations.map((v) => v.kind === "failed"
-    ? `DoD НЕ е изпълнен: ${v.gate}. Поправи причината и пусни отново, преди да приключиш.`
-    : `DoD гейт НЕ е пуснат: писа ${v.files.join(", ")} без да пуснеш „${v.gate}". Пусни гейта сега и поправи HIGH находките, преди да приключиш.`).join("\n");
+  const msg = violations.map(violationMessage).join("\n");
   if (payload.stop_hook_active) { console.log(`⚠ dod-check (advisory, без повторно връщане): ${msg}`); process.exit(0); }
   console.error(msg);
   process.exit(2); // харнесът връща агента с инструкцията

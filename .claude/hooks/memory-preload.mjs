@@ -10,6 +10,8 @@ import { readFileSync, existsSync } from "node:fs";
 import { pendingLessons } from "../../tools/lib/memory-branch.mjs";
 import { select, estTok as estTokR, taskFromTranscript, crossAgentPicks } from "../../tools/lib/memory-retrieval.mjs";
 import { evalMode } from "../../tools/lib/eval-mode.mjs";
+import { cardFor } from "../../tools/agents/teams.mjs";
+import { LEARN_SCHEMA } from "./memory-capture.mjs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -124,6 +126,9 @@ function main() {
 
   // Статичен, кешируем префикс (агент-независим) — ВИНАГИ първо и в фиксиран ред.
   const parts = staticPrefixParts();
+  // Картата на агента (екип, вход/изход, на кого предава, къде е човекът) — агент-специфична, затова
+  // СЛЕД статичния префикс (кешът остава общ). Липсва ли _teams.json — тихо без нея.
+  try { const card = cardFor(agent); if (card) parts.push(card); } catch { /* без карта */ }
   // Динамичното (лична проверена памет) идва СЛЕД статичното. ВСИЧКИ поуки — собствените и чакащите в
   // agents/memory — минават през едно подреждане: релевантност към задачата, после дата от реда.
   const task = taskTextOf(payload) || taskFromTranscript(payload.transcript_path, agent);
@@ -148,8 +153,10 @@ function main() {
     );
   }
   if (!parts.length) process.exit(0);
+  // Схемата, не само препратка към PROTOCOL.md: агентът не чете файла и си измисляше ключове
+  // (`status:`, `- id:` + `rule: >`), а куката не ги разчиташе — проверено знание изчезваше тихо.
   parts.push(
-    `Накрая на отговора си добави блок \`\`\`learn (виж _memory/PROTOCOL.md) само с НОВО проверено знание.`,
+    `Накрая на отговора си добави блок learn само с НОВО проверено знание — точно по тази схема, иначе поуката не стига до паметта:\n${LEARN_SCHEMA.replace("agent: <id>", `agent: ${agent}`)}`,
   );
 
   process.stdout.write(JSON.stringify({
