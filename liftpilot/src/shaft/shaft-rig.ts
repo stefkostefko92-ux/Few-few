@@ -5,6 +5,7 @@
 // slab. src/lib/lift/shaft-rig.ts makes it from the calculation and the machine (as the 3D's rig.ts places them); a
 // shaft design alone has none (Layout.rig absent). Plan in the shaft's axes, heights from the lowest floor [mm]. Pure.
 import type { Box } from '../drawing';
+import { KV_VERT } from './norme-vert';
 
 export type RigP2 = readonly [number, number];
 
@@ -83,4 +84,20 @@ export function hangingOf(rig: ShaftRig | undefined): Hanging[] {
     out.push({ box: { x0: e.at[0] - ex, y0: e.at[1] - ey, x1: e.at[0] + ex, y1: e.at[1] + ey }, z: e.z });
   }
   return out;
+}
+
+/** A rope pack at `m` in plan: half `along` across the ropes, half `wide` along `rig.across` (the ropes side by side);
+ *  its corners in order round it. */
+export function pack(rig: ShaftRig, m: RigP2, along: number, wide: number): RigP2[] {
+  const [ax, ay] = rig.across, [bx, by] = [-ay, ax];
+  return [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([i, j]): RigP2 => [m[0] + i * along * bx + j * wide * ax, m[1] + i * along * by + j * wide * ay]);
+}
+
+/** The openings of the pit's slab where the ropes of a machine under the pit go through it: round each run's pack,
+ *  KV_VERT.holeGap clear of it every way (registry locale.fori, as the slab over the shaft), the ropes side by side along
+ *  `rig.across` — the plan of the pit and section A-A (rig-view.ts) and the 3D (lift3d/slab.ts) cut the same; none for
+ *  the other schemes. */
+export function pitSlabHoles(rig: ShaftRig): RigP2[][] {
+  const g = KV_VERT.holeGap;
+  return rig.scheme === 'under' ? rig.down.map((m) => pack(rig, m, rig.d / 2 + g, rig.ropes + g)) : [];
 }

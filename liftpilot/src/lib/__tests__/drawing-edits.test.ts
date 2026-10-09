@@ -36,6 +36,8 @@ const REFERENCES = new Set(['# Telaio argano', '# × # Telaio con rinvio', '# Te
   // round 36: what the counterweight sets (the screen's width), the standard's lower edge of the screen, the software's
   // places of the pit's kit
   'plan-pit:Protezione #', 'section-pit:# max', 'plan-pit:Scala #', 'plan-pit:Pulsantiera #',
+  // round 37: the ladder's stiles over the sill in use, the standard's figure (annex F, F.2.3)
+  'section-pit:Scala +#',
   // the set-out (round 36): the drops of a whole design from the shaft's walls (its layout sets them), the bedplate, the
   // ropes' line, the sheave's axis and the hook from two walls, the HEB beams' axes and bearings, the upstands, the free
   // height over the rotating parts — where the machine and the calculation put them

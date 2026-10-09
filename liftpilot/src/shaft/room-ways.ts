@@ -12,6 +12,8 @@ import { wheelAt } from './room-above';
 import { freeBeside } from './room-free';
 import { outlineBox, panelArea, panelBox, switchBox, type Box, type Outline } from './room-floor';
 import { grid, leastIn, walkOf, type Grid } from './room-route';
+import type { RoomInputs } from './room';
+import type { RoomSite } from './room-site';
 
 const corners = ([x0, y0, x1, y1]: Box): Pt[] => [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
 
@@ -21,6 +23,9 @@ function hatched(b: Box, text: string): Entity[] {
   return [path(corners(b), true, 'space'), line([x0, y0], [x1, y1], 'space'), line([x0, y1], [x1, y0], 'space'),
     { e: 'text', at: [(x0 + x1) / 2, y0 + 40], text, size: 1.6, align: 'c', halo: true }];
 }
+
+/** What stands on the room's floor besides the machine: the governor's footprint, the main switch. */
+export const floorOthers = (S: Pick<RoomSite, 'govFoot'>, R: RoomInputs): Box[] => [...(S.govFoot ? [S.govFoot] : []), switchBox(R)];
 
 /** The free area beside the machine (as m_free and m_wheel take it) and beside the governor (as m_govfree), the
  *  machine's handwheel marked; `others` what stands on the floor besides the machine (the governor's footprint, the

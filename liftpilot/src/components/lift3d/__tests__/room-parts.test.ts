@@ -11,11 +11,12 @@ import { deriveLift, newLift, planeAt, ropeRig, type LiftInputs, type RopePlane 
 import { belowMachine } from '@/lib/lift/bottom';
 import { hebDrawn, roomGeo, section } from '@/shaft';
 import { groovePitch, ropeWidths } from '@/shaft/ropes';
-import { shaftUnder } from '@/shaft/room-site';
+import { layoutSite, shaftUnder } from '@/shaft/room-site';
+import { roomElectrics } from '@/shaft/room-electric';
 import { hookOf } from '@/shaft/room-hook';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { createLiftMaterials } from '../materials';
-import { slabOpenings } from '../slab';
+import { shaftSlabOpenings } from '../slab';
 import { governorSpot } from '../governor';
 import { buildRoom } from '../room';
 import { shellsOf } from '../roomshell';
@@ -39,8 +40,8 @@ function scene(inp: LiftInputs) {
   const dv = deriveLift(inp), L = dv.layout, S = section(L), I = L.inputs, N = dv.analysis.ctx.N, M = createLiftMaterials(), rig = ropeRig(dv), gov = governorSpot(L), sim = dv.sim;
   const travel = [sim.levels[0], sim.levels.at(-1) ?? 0].map((s) => [s, sim.cw0 - s] as const), slab = (I.room?.slab ?? 250) / 1000;
   const G = rig.bottom ? null : roomGeo(L, dv.machine), heb = G ? hebDrawn(G, dv.machine, shaftUnder(L)) : null;
-  const r = buildRoom(L, rig, N.n, N.d, N.D, S.ceiling, M, slabOpenings(rig, N.n, N.d, S.ceiling / 1000, S.ceiling / 1000 + slab, travel, gov), gov,
-    dv.machine.shape ?? null, dv.machine.rinvio ?? null, heb, G?.dir ?? 1, null, G ? hookOf(G, dv.machine) : null);
+  const r = buildRoom(L, rig, N.n, N.d, N.D, S.ceiling, M, shaftSlabOpenings(rig, N.n, N.d, S, slab * 1000, travel, gov), gov,
+    dv.machine.shape ?? null, dv.machine.rinvio ?? null, heb, G?.dir ?? 1, null, G ? hookOf(G, dv.machine) : null, G ? roomElectrics(layoutSite(L), dv.machine, G) : null);
   const two = dv.analysis.ctx.I.r === 2, pcs = rig.pieces(0, 0), width = N.n * groovePitch(N.d) + 30;
   const hitch = (pl: RopePlane, u: number): Hitch => {
     const [x, y] = planeAt(pl, u);

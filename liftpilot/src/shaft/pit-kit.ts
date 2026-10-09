@@ -4,9 +4,15 @@
 // door's clear opening as it may stand clear of the car with its sills and operators, the counterweight and its screen
 // with all it closes off, the rails with their brackets, the landing door, the governor's rope and, in the pit, the
 // buffers, the refuge space and the governor's tension weight; the ladder within 600 mm of the opening's edge (annex F,
-// F.5 c)), the box's stop within 750 mm (5.2.1.5.1 a)), a deep pit's lower stop under the box. The plan of the pit draws
-// them with their places, the pit's detail of section A-A with their heights; where none fits, the drawings leave it out
-// and sheet 1's note says where it must go. Pure.
+// F.5 c)), the box's stop within 750 mm (5.2.1.5.1 a)), a deep pit's lower stop under the box. The ladder's stiles reach
+// KV_VERT.ladderOverSill over the sill in use (F.2.3): it keeps clear of the landing doors' frames with their panels
+// stacked, as the box does, and in the pit of the sills with the plate under them; where no such place is within reach,
+// it stands under the stacked panels with its stiles ending at the sill, and sheet 1's note asks for a handhold up to
+// that height instead (F.2.3: or other handholds). Its rungs from the one flush with the sill (F.5 d)) down at
+// KV_VERT.ladderPitch. The pit's lamp in the free place nearest the door under the landing (only the 3D draws it: the
+// drawings leave the well's lighting to the electrical design). The plan of the pit draws them with their places, the
+// pit's detail of section A-A with their heights, the 3D (lift3d/pit.ts) builds them from here; where none fits, the
+// drawings leave it out and sheet 1's note says where it must go. Pure.
 import { chain, line, path, type Box, type Entity, type Pt } from '../drawing';
 import { governorSpot, TENSION } from './governor';
 import { landingOf } from './landing';
@@ -25,6 +31,11 @@ const STEP = 10, GAP = 15;
 /** the least height of a door operator's underside over the kit's top, the car on its compressed buffers, for the kit to
  *  stand under it (registry fossa.posizioni) [mm] */
 const OP_CLEAR = 100;
+/** how much further from the wall the box's name and dimension go in the plan beside the ladder on its wall [mm] */
+const KIT_LABEL_OFF = 250;
+/** the pit's lamp (the software's, the 3D's only): its fitting along the wall, from it and high; its middle this far
+ *  over the pit floor, and at least this far under the lowest landing [mm] */
+const LAMP = { w: 180, d: 60, h: 90, over: 1000, under: 300 } as const;
 
 export interface PitItem {
   wall: Wall;
@@ -44,6 +55,9 @@ export interface PitKit {
   /** a ladder in the well (pit up to 2500 mm) and where it stands, null when the pit needs a door or none fits */
   ladderAllowed: boolean;
   ladder: PitItem | null;
+  /** the ladder's stiles' top over the lowest landing in use: KV_VERT.ladderOverSill, or 0 under the stacked panels of a
+   *  landing door (a handhold up to that height instead) [mm] */
+  ladderTop: number;
   box: PitItem | null;
   /** over the lowest landing: the (upper) stop and the light's switch [mm]; a pit over 1600 mm has a second, lower stop */
   stop: number;
@@ -52,6 +66,8 @@ export interface PitKit {
   /** the lower stop of a pit over 1600 mm, under the box, its top at the most over the pit floor (reached from the pit's
    *  refuge): its middle over the lowest landing [mm]; null with one stop */
   lowStop: number | null;
+  /** the pit's lamp (the 3D's only), its fitting's size and its middle over the lowest landing [mm]; null where none fits */
+  lamp: (PitItem & { h: number; at: number }) | null;
 }
 
 const bboxOf = (pts: readonly Pt[]): Box => ({
@@ -59,20 +75,24 @@ const bboxOf = (pts: readonly Pt[]): Box => ({
 });
 const overlaps = (a: Box, b: Box): boolean => a.x0 < b.x1 + GAP && b.x0 < a.x1 + GAP && a.y0 < b.y1 + GAP && b.y0 < a.y1 + GAP;
 
-/** What the ladder and the box keep clear of in plan: the car with its sills and — where the car on its compressed
- *  buffers brings them down to the kit's top — its door operators, the counterweight with its screen and all the screen
- *  closes off to the wall, each rail with its bracket out to its wall, the governor's rope; for the box (over the landing)
- *  the landing doors' whole width, for the ladder (in the pit) their sills, the buffers' footprints, the refuge space and
- *  the governor's tension weight. */
-function obstacles(L: Layout, over: boolean): Box[] {
+/** What the ladder, the box and the lamp keep clear of in plan, at their level (`landing`: the box, over the landing;
+ *  `pit`: the lamp, under it; `both`: the ladder, from the pit floor to its stiles' top over the sill): the car with its
+ *  sills and — where the car on its compressed buffers brings them down to the kit's top — its door operators, the
+ *  counterweight with its screen and all the screen closes off to the wall, each rail with its bracket out to its wall,
+ *  the governor's rope; over the landing the landing doors' frames with their panels stacked, in the pit their sills on
+ *  their brackets with the plate under each (toe.ts: the car's entrance and KV_VERT.toeSide each side), the buffers'
+ *  footprints, the refuge space and the governor's tension weight. */
+function obstacles(L: Layout, at: 'landing' | 'pit' | 'both'): Box[] {
   const I = L.inputs, c = L.car, v0 = I.landingDepth + I.sillGap, out: Box[] = [{ x0: c.x, y0: c.y, x1: c.x + c.w, y1: c.y + c.h }];
+  const over = at !== 'pit', pit = at !== 'landing';
   // the operators hang over the car's doors: their underside at the car's lowest against the ladder's or the box's top
   const K = KV_VERT, top = Math.max(K.ladderOverSill, K.lightAt + K.pitBoxH / 2), opLow = I.doorHeight - section(L).moveDown;
   for (const d of L.doors) {
     out.push(bboxOf(quad(L, d.wall, d.u0 - 40, v0, d.u1 + 40, v0 + I.carDoorDepth + I.carWall)));
     if (opLow <= top + OP_CLEAR) out.push(bboxOf(quad(L, d.wall, d.op0, v0, d.op1, v0 + doorOpDepthOf(I))));
     const l = landingOf(d);
-    out.push(bboxOf(over ? quad(L, d.wall, d.frame0, 0, d.frame1, I.landingDepth) : quad(L, d.wall, l.u0 - 60, 0, l.u1 + 60, I.landingDepth + 10)));
+    if (over) out.push(bboxOf(quad(L, d.wall, d.frame0, 0, d.frame1, I.landingDepth)));
+    if (pit) out.push(bboxOf(quad(L, d.wall, Math.min(l.u0 - 60, d.u0 - K.toeSide), 0, Math.max(l.u1 + 60, d.u1 + K.toeSide), I.landingDepth + 10)));
   }
   // the counterweight's run closed off by its screen: all from the wall to the sheet, end to end (nothing behind it is
   // reached from the door or from the pit)
@@ -85,7 +105,7 @@ function obstacles(L: Layout, over: boolean): Box[] {
     out.push(bboxOf([[r.x - dy * half, r.y - dx * half], [r.x + dy * half, r.y + dx * half], [foot[0] - dy * half, foot[1] - dx * half], [foot[0] + dy * half, foot[1] + dx * half]]));
     out.push(bboxOf([[foot[0] - 100, foot[1] - 100], [foot[0] + 100, foot[1] + 100], [wall[0] - 100, wall[1] - 100], [wall[0] + 100, wall[1] + 100]]));
   }
-  if (!over) {
+  if (pit) {
     const base = I.vertical.carBufferBase;
     for (const b of bufferPlan(L).spots) {
       const f = b.kind === 'car' ? bufferFoot(base) : Math.max(b.r, bufferFoot(I.vertical.cwBufferBase));
@@ -97,7 +117,7 @@ function obstacles(L: Layout, over: boolean): Box[] {
   // the rope: the weight hangs near the pit floor)
   const g = governorSpot(L);
   if (g) {
-    const reach = over ? 60 : Math.max(g.G.R, TENSION.weightAt + TENSION.lever[1]) + 60;
+    const reach = pit ? Math.max(g.G.R, TENSION.weightAt + TENSION.lever[1]) + 60 : 60;
     out.push({ x0: g.x - g.G.half - 80, y0: Math.min(g.y1, g.rail.y) - reach, x1: g.x + g.G.half + 80, y1: Math.max(g.y2, g.rail.y) + reach });
   }
   return out;
@@ -133,47 +153,67 @@ export function pitKit(L: Layout): PitKit {
   const K = KV_VERT, pit = L.inputs.vertical.pit, door = accessDoor(L), l = landingOf(door);
   const edges: readonly [Pt, Pt] = [onWall(L, door.wall, l.u0, 0), onWall(L, door.wall, l.u1, 0)];
   const ladderAllowed = pit <= K.pitLadderMax, twoStops = pit > K.stopPitOne;
-  const ladder = ladderAllowed ? place(L, edges, K.ladderW, K.ladderD, K.ladderUse, obstacles(L, false)) : null;
-  const box = place(L, edges, K.pitBoxW, K.pitBoxD, K.pitReach, [...obstacles(L, true), ...(ladder ? [ladder.box] : [])]);
+  // the ladder with its stiles over the sill clear of the landing doors' panels, else under them up to the sill
+  const over = ladderAllowed ? place(L, edges, K.ladderW, K.ladderD, K.ladderUse, obstacles(L, 'both')) : null;
+  const ladder = over ?? (ladderAllowed ? place(L, edges, K.ladderW, K.ladderD, K.ladderUse, obstacles(L, 'pit')) : null);
+  const ladderTop = over ? K.ladderOverSill : 0;
+  const box = place(L, edges, K.pitBoxW, K.pitBoxD, K.pitReach, [...obstacles(L, 'landing'), ...(ladder ? [ladder.box] : [])]);
   // the stop between 400 mm over the landing and 2000 mm over the pit floor (one stop), or 1000 mm over the landing (two)
   const stop = twoStops ? K.stopUpper : Math.max(K.stopOverLanding, Math.min(K.stopAt, K.stopOverPit - pit));
   const lowStop = twoStops ? K.stopLower - K.pitBoxH / 2 - pit : null;
-  const kit: PitKit = { door, edges, ladderAllowed, ladder, box, stop, light: Math.max(K.lightAt, K.lightOver), twoStops, lowStop };
+  // the lamp under the landing, clear of the ladder and the box too
+  const spot = place(L, edges, LAMP.w, LAMP.d, Infinity, [...obstacles(L, 'pit'), ...[ladder, box].flatMap((it) => (it ? [it.box] : []))]);
+  const lamp = spot ? { ...spot, h: LAMP.h, at: Math.min(LAMP.over - pit, -LAMP.under) } : null;
+  const kit: PitKit = { door, edges, ladderAllowed, ladder, ladderTop, box, stop, light: Math.max(K.lightAt, K.lightOver), twoStops, lowStop, lamp };
   kits.set(L, kit);
   return kit;
+}
+
+/** The heights of the ladder's rungs over the lowest landing, in a pit `pit` deep: from the one flush with the landing
+ *  sill (annex F, F.5 d)) down at KV_VERT.ladderPitch, the lowest at least half a pitch over the pit floor [mm]. The
+ *  section and the 3D take them from here. */
+export function ladderRungs(pit: number): number[] {
+  const p = KV_VERT.ladderPitch, out: number[] = [];
+  for (let z = 0; z >= p / 2 - pit; z -= p) out.push(z);
+  return out;
 }
 
 /** The kit in the plan of the pit: the ladder with its rungs seen from above, the box, their names, and where each stands
  *  along its wall from the corner nearer the door (references: the software's places within the standard's reach). */
 export function pitKitPlan(L: Layout): Entity[] {
   const k = pitKit(L), out: Entity[] = [];
-  const item = (it: PitItem, name: string, dimText: string): void => {
+  // `off`: the name and the dimension that far further from the wall (the box beside the ladder on the same wall: their
+  // names along it side by side, not one over the other)
+  const item = (it: PitItem, name: string, dimText: string, off = 0): void => {
     const P = (u: number, v: number): Pt => onWall(L, it.wall, u, v), along = it.wall === 'front' || it.wall === 'rear';
     out.push(path(quad(L, it.wall, it.u - it.w / 2, 0, it.u + it.w / 2, it.d), true, 'outline', 'paper'));
     if (name === 'SCALA') for (const s of [-1, 1]) out.push(line(P(it.u + s * (it.w / 2 - 35), 0), P(it.u + s * (it.w / 2 - 35), it.d), 'thin'));
     else out.push(path(quad(L, it.wall, it.u - it.w / 2 + 25, it.d - 25, it.u + it.w / 2 - 25, it.d), true, 'thin', 'dark'));
-    out.push({ e: 'text', at: P(it.u, it.d + 70), text: name, size: 1.6, align: 'c', angle: along ? 0 : 90, halo: true });
+    out.push({ e: 'text', at: P(it.u, it.d + 70 + off), text: name, size: 1.6, align: 'c', angle: along ? 0 : 90, halo: true });
     // from the end of the wall nearer the door's opening to the item's middle
     const ends = along ? [0, L.inputs.W] : [0, L.inputs.D], e0 = Math.abs(it.u - ends[0]) <= Math.abs(it.u - ends[1]) ? ends[0] : ends[1];
     const across = (v: number): number => (along ? P(0, v)[1] : P(0, v)[0]), corner = across(0), face = across(it.d);
-    out.push(chain({ dir: along ? 'x' : 'y', pts: e0 < it.u ? [e0, it.u] : [it.u, e0], at: across(it.d + 160), from: e0 < it.u ? [corner, face] : [face, corner], text: [dimText] }));
+    out.push(chain({ dir: along ? 'x' : 'y', pts: e0 < it.u ? [e0, it.u] : [it.u, e0], at: across(it.d + 160 + off), from: e0 < it.u ? [corner, face] : [face, corner], text: [dimText] }));
   };
   if (k.ladder) item(k.ladder, 'SCALA', 'Scala {v}');
-  if (k.box) item(k.box, 'STOP · PRESA · LUCE', 'Pulsantiera {v}');
+  if (k.box) item(k.box, 'STOP · PRESA · LUCE', 'Pulsantiera {v}', k.ladder?.wall === k.box.wall ? KIT_LABEL_OFF : 0);
   return out;
 }
 
-/** The kit in the pit's detail of section A-A (a cut along the depth, the plan's y across the sheet): the ladder from the
- *  pit floor to the sill with its rungs, the box's stop and light switch at their heights, a deep pit's lower stop under
- *  them; the ones on the far wall half dashed (behind the cut). */
+/** The kit in the pit's detail of section A-A (a cut along the depth, the plan's y across the sheet): the ladder in use,
+ *  its stiles from the pit floor to their top over the sill (F.2.3) with that height between them, its rungs up to the
+ *  sill (ladderRungs), the box's stop and light switch at their heights, a deep pit's lower stop under them; the ones on
+ *  the far wall half dashed (behind the cut). */
 export function pitKitSection(L: Layout, P: (x: number, z: number) => Pt, pitFloor: number): Entity[] {
   const k = pitKit(L), out: Entity[] = [], cut = L.car.x + L.car.w / 2;
   const behind = (b: Box): boolean => (b.x0 + b.x1) / 2 > cut;
   if (k.ladder) {
-    const b = k.ladder.box, st = behind(b) ? 'hidden' : 'thin';
-    out.push(path([P(b.y0, pitFloor), P(b.y1, pitFloor), P(b.y1, 0), P(b.y0, 0)], true, st));
-    for (let z = pitFloor + 280; z < -100; z += 280) out.push(line(P(b.y0, z), P(b.y1, z), st));
-    out.push({ e: 'text', at: P((b.y0 + b.y1) / 2, pitFloor + 140), text: 'SCALA', size: 1.6, align: 'c', halo: true });
+    const b = k.ladder.box, st = behind(b) ? 'hidden' : 'thin', top = k.ladderTop, mid = (b.y0 + b.y1) / 2;
+    out.push(path([P(b.y0, pitFloor), P(b.y1, pitFloor), P(b.y1, top), P(b.y0, top)], true, st));
+    for (const z of ladderRungs(-pitFloor)) out.push(line(P(b.y0, z), P(b.y1, z), st));
+    out.push({ e: 'text', at: P(mid, pitFloor + 140), text: 'SCALA', size: 1.6, align: 'c', halo: true });
+    // the stiles' top over the landing sill between them (a reference: the standard's figure, no input changes it)
+    if (top > 0) out.push(chain({ dir: 'y', at: mid, pts: [P(mid, 0)[1], P(mid, top)[1]], text: ['Scala +{v}'], from: [null, null] }));
   }
   if (k.box) {
     const b = k.box.box, st = behind(b) ? 'hidden' : 'outline', h = KV_VERT.pitBoxH;

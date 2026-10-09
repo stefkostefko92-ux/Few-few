@@ -168,7 +168,8 @@ export const VOCI_LOCALE: readonly VoceVano[] = [
   {
     id: 'locale.fori', gruppo: 'locale', titolo: 'Fori nella soletta: misura, posizione e bordi',
     valore: 'ogni foro della soletta sopra il vano (funi di trazione, puleggia di rinvio che vi scende, attacchi delle funi in taglia 2:1) ha '
-      + 'i lati a 30 mm dalle funi nelle due posizioni estreme della cabina e dalla puleggia; fori più vicini di 80 mm diventano uno; '
+      + 'i lati a 30 mm dalle funi nelle due posizioni estreme della cabina e dalla puleggia (con l’argano sotto la fossa lo stesso per i fori della '
+      + 'soletta della fossa attorno alle funi che scendono all’argano: pianta della fossa, sezione A-A e 3D); fori più vicini di 80 mm diventano uno; '
       + 'ogni foro ha un bordo in lamiera d’acciaio alto 50 mm sul pavimento finito e spesso 25 mm tutto attorno (lo stesso nel 3D), e le '
       + 'putrelle HEB sui muri del vano, che stanno 30 mm sopra la soletta, ne restano fuori in pianta (m_hebkerb, locale.putrelle.vano); la pianta del locale dà di ogni foro la misura '
       + '(«FORO L × P»: L lungo x, P lungo y del locale; con la linea delle calate obliqua lungo e di traverso le calate) e la posizione del centro '

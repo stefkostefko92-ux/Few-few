@@ -6,6 +6,7 @@
 // the frames into the shaft's batch. Loaded only through boot.ts (lazy).
 // Motion: the pulleys turn as the car travels; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
+import type { RopeRig } from '@/lib/lift';
 import type { Layout } from '@/shaft';
 import type { Section } from '@/shaft/section';
 import { P, type Batch } from './geom';
@@ -22,6 +23,14 @@ export interface GovernorModel {
   group: THREE.Group;
   /** the car's floor at s [m] */
   set(s: number): void;
+}
+
+/** The floor the governor stands on [mm]: the machine room's over the shaft, or the pulley room's on the slab (`slab`
+ *  thick [mm]) of a machine below; null with the pulleys hung under the slab, the governor on its bracket under the
+ *  ceiling and its rope not through the slab (lib/lift/shaft-rig.ts: no openings there). */
+export function governorFloor(rig: RopeRig, S: Section, slab: number): number | null {
+  if (!rig.bottom) return rig.roomFloor * 1000;
+  return rig.scheme?.scheme === 'room' ? S.ceiling + slab : null;
 }
 
 export function buildGovernor(L: Layout, S: Section, g: GovernorSpot, roomFloor: number | null, M: LiftMaterials, B: Batch): GovernorModel {

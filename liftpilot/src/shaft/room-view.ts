@@ -15,9 +15,9 @@ import { dropSpan as span, machineU, machineV, ropeWidths, type MachineSpec, typ
 import { WALL, doorSwing, holesOf, onDrop, quad, type RoomDrawOpts } from './room-draw';
 import { hitchTags } from './room-loads';
 import { bbox, fittingsPlan } from './room-fittings-view';
-import { outlineBox, switchBox } from './room-floor';
+import { outlineBox } from './room-floor';
 import { machineBox, machineParts } from './support-check';
-import { freeAreas, wayBands } from './room-ways';
+import { floorOthers, freeAreas, wayBands } from './room-ways';
 import { electricPlan } from './room-electric';
 import { supportOf } from './support';
 import { layoutSite, type RoomSite } from './room-site';
@@ -124,7 +124,7 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDrawO
   out.push(...fittings);
   // the free areas beside the machine and the governor, the ways from the door, the light, switches, sockets, grille
   // and trunking (room-ways.ts, room-electric.ts): what stands on the floor as the room's checks take it
-  const others = [...(S.govFoot ? [S.govFoot] : []), switchBox(R)], fa = freeAreas(G, M, others, S.govFoot ?? null);
+  const others = floorOthers(S, R), fa = freeAreas(G, M, others, S.govFoot ?? null);
   out.push(...fa.entities, ...wayBands(G, [...machineParts(G, M), ...others], fa.machine),
     ...electricPlan(R, fa.machine, machineBox(G, M), [R.shaftX, R.shaftY, R.shaftX + S.W, R.shaftY + S.D]));
   // the sheave's size on the side away from the gearbox, along the drop line (an upright one would cross the frame's

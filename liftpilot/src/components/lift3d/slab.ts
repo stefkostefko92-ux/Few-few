@@ -8,8 +8,11 @@ import * as THREE from 'three/webgpu';
 import { belt, type RopeRig } from '@/lib/lift';
 import { ropeWidths } from '@/shaft/machine-room';
 import { KV_VERT } from '@/shaft/norme-vert';
+import { pitSlabHoles } from '@/shaft/shaft-rig';
+import type { Section } from '@/shaft/section';
+import type { Layout } from '@/shaft/types';
 import type { Batch } from './geom';
-import type { GovernorSpot } from './governor';
+import { governorFloor, type GovernorSpot } from './governor';
 import type { LiftMaterials } from './materials';
 
 /** An opening in plan [mm], its corners in order round it; `curb`: a raised curb round it on the room's floor. */
@@ -69,6 +72,17 @@ export function slabOpenings(rig: RopeRig, n: number, d: number, zb: number, zt:
   }
   return out;
 }
+
+/** The openings of the slab over the shaft, `slab` thick [mm]: round the ropes and the pulleys of `rig`, and the
+ *  governor's rope's holes only where the governor stands over the slab (governorFloor: the machine room, a machine
+ *  below's pulley room) — with the pulleys hung under the slab nothing else goes through it, as the drawings have it. */
+export function shaftSlabOpenings(rig: RopeRig, n: number, d: number, S: Section, slab: number, travel: readonly (readonly [number, number])[], gov: GovernorSpot | null): Opening[] {
+  return slabOpenings(rig, n, d, S.ceiling / 1000, (S.ceiling + slab) / 1000, travel, governorFloor(rig, S, slab) !== null ? gov : null);
+}
+
+/** The openings of the pit's slab where the ropes of a machine under the pit go through it: the drawings' own
+ *  (src/shaft/rig-view.ts pitSlabHoles, the plan of the pit and section A-A cut the same); none for the other schemes. */
+export const pitOpenings = (L: Layout): Opening[] => (L.rig ? pitSlabHoles(L.rig).map((pts) => ({ pts, curb: false })) : []);
 
 const loop = (pts: readonly (readonly [number, number])[]): THREE.Vector2[] => pts.map(([x, y]) => new THREE.Vector2(x / 1000, y / 1000));
 

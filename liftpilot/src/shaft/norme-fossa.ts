@@ -33,10 +33,12 @@ export const KV_FOSSA = {
   inspReach: 300,
   lightOver: 1000,
   // the ladder and the pit's control box as the drawings show them (the software's): the ladder 370 wide (300 clear
-  // between 35 mm stiles) and 100 deep; the box 150 wide, 80 deep, 120 high, its stop 500 mm and the light's switch
-  // 1100 mm over the lowest landing [mm]
+  // between 35 mm stiles) and 100 deep, its rungs 280 mm apart (within the constant pitch of F.3.2 b)) from the one
+  // flush with the landing sill (F.5 d)) down; the box 150 wide, 80 deep, 120 high, its stop 500 mm and the light's
+  // switch 1100 mm over the lowest landing [mm]
   ladderW: 370,
   ladderD: 100,
+  ladderPitch: 280,
   pitBoxW: 150,
   pitBoxD: 80,
   pitBoxH: 120,
@@ -82,7 +84,7 @@ export const KV_FOSSA = {
 export const COSTANTI_FOSSA = {
   'fossa.accesso': ['pitLadderMax', 'ladderOverSill', 'ladderRung', 'ladderBehind', 'ladderRest', 'ladderUse'],
   'fossa.comandi': ['stopPitOne', 'stopOverLanding', 'stopOverPit', 'stopUpper', 'stopLower', 'pitReach', 'inspReach', 'lightOver'],
-  'fossa.posizioni': ['ladderW', 'ladderD', 'pitBoxW', 'pitBoxD', 'pitBoxH', 'stopAt', 'lightAt'],
+  'fossa.posizioni': ['ladderW', 'ladderD', 'ladderPitch', 'pitBoxW', 'pitBoxD', 'pitBoxH', 'stopAt', 'lightAt'],
   'porte.soccorso': ['emergencyRise', 'emergencyH', 'emergencyW'],
   'porte.sottosoglia': ['unlockMax', 'unlockCoupled', 'toeOver', 'toeSide', 'toeProj', 'toeBevelAngle', 'toeBevel'],
   'contrappeso.schermo.pianta': ['cwScreenLow', 'cwScreenWall', 'cwScreenPast'],
@@ -97,8 +99,8 @@ export const VOCI_FOSSA: readonly VoceVano[] = [
     valore: 'fossa profonda fino a 2500 mm: porta di accesso oppure scala dentro il vano, comoda da raggiungere dalla porta di piano più bassa; più '
       + 'profonda: porta di accesso. Scala custodita in fossa, di alluminio o acciaio: in uso i montanti arrivano ad almeno 1100 mm sopra la soglia di '
       + 'piano, pioli larghi almeno 280 mm con almeno 200 mm liberi dietro fino alla parete; a riposo a non più di 800 mm dal bordo dell’accesso, in '
-      + 'uso la mezzeria dei pioli a non più di 600 mm; a riposo fuori dagli spazi di rifugio (se può urtare parti in moto fuori dal riposo, un '
-      + 'contatto di sicurezza)',
+      + 'uso la mezzeria dei pioli a non più di 600 mm e il primo piolo il più possibile a filo della soglia di piano; a riposo fuori dagli spazi '
+      + 'di rifugio (se può urtare parti in moto fuori dal riposo, un contatto di sicurezza)',
     riferimento: 'UNI EN 81-20:2020, 5.2.2.4 e appendice F (F.2.3, F.3.2, F.5)', fonte: letto(T20, 'pp. 28–29, 151–152'), stato: 'confermato',
   },
   {
@@ -113,14 +115,16 @@ export const VOCI_FOSSA: readonly VoceVano[] = [
   },
   {
     id: 'fossa.posizioni', gruppo: 'sezione', titolo: 'Scala e pulsantiera della fossa nei disegni',
-    valore: 'la scala disegnata larga 370 mm e profonda 100 mm, la pulsantiera della fossa (arresto, presa, comando della luce) larga 150 mm, '
+    valore: 'la scala disegnata larga 370 mm e profonda 100 mm, in uso con i montanti fino a 1100 mm sopra la soglia e i pioli a passo di 280 mm '
+      + 'dal primo, a filo della soglia, in giù fino al fondo; la pulsantiera della fossa (arresto, presa, comando della luce) larga 150 mm, '
       + 'profonda 80 mm, alta 120 mm per apparecchio, con l’arresto 500 mm e il comando della luce 1100 mm sopra la fermata più bassa (fossa oltre '
       + '1600 mm: l’arresto alto 1000 mm sopra la fermata e quello basso sotto la pulsantiera, con il bordo superiore 1200 mm sopra il fondo); '
       + 'ognuna contro una parete, il più vicino possibile al bordo dell’accesso di quella fermata (la scala entro il limite di uso, la pulsantiera '
       + 'entro quello dell’arresto), fuori dalla cabina con le soglie, dagli operatori delle porte se con la cabina sugli ammortizzatori compressi '
       + 'scendono fino a 100 mm sopra la scala o la pulsantiera, dal contrappeso e dalla sua protezione con tutto lo spazio che chiude fino alla '
       + 'parete, dalle guide con le staffe, dalla porta di '
-      + 'piano, dalla fune del limitatore e, per la scala in fossa, dagli ammortizzatori, dallo spazio di rifugio e dal tenditore del limitatore; '
+      + 'piano (la scala, che sale sopra la soglia, anche dal telaio con le ante impacchettate, e dalla lamiera sottosoglia), dalla fune del '
+      + 'limitatore e, per la scala in fossa, dagli ammortizzatori, dallo spazio di rifugio e dal tenditore del limitatore; '
       + 'senza un posto libero il disegno non la mette e la nota '
       + 'lo dice',
     riferimento: '—', fonte: 'scelta del software: tipo, misure e posizione definitivi del fornitore della scala e del quadro', stato: 'scelta',
