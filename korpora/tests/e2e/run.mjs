@@ -60,18 +60,30 @@ async function check(browser, storageState, path, locale, scheme, viewport) {
       await frame();
     });
     await page.evaluate(AXE);
-    const violations = await page.evaluate(
-      async (tags) =>
-        (await window.axe.run(document, { runOnly: { type: 'tag', values: tags } })).violations.map(
-          (v) => `${v.impact} ${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`,
-        ),
-      TAGS,
-    );
+    const violations = await axe(page, null);
+    // the editor's picker (a listbox of hundreds of decors) is a dialog: checked open, on its own
+    if (path.startsWith('/app/p/')) {
+      await page.click('#pick-carcass');
+      await page.locator('#picker[open]').waitFor({ timeout: READY_MS });
+      for (const v of await axe(page, '#picker')) violations.push(`picker: ${v}`);
+    }
     return [...violations, ...errors.map((e) => `error: ${e.slice(0, 300)}`)];
   } finally {
     await ctx.close();
   }
 }
+
+// axe over the page, or over one part of it (a selector)
+const axe = (page, selector) =>
+  page.evaluate(
+    async ([sel, tags]) =>
+      (
+        await window.axe.run(sel ?? document, { runOnly: { type: 'tag', values: tags } })
+      ).violations.map(
+        (v) => `${v.impact} ${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`,
+      ),
+    [selector, TAGS],
+  );
 
 const firstLine = (err) => (err instanceof Error ? err.message : String(err)).split('\n')[0];
 

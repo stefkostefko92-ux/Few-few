@@ -195,12 +195,13 @@
 </main>
 
 <dialog id="picker" class="picker" lang="bg" aria-labelledby="picker-title">
-  <form method="dialog" class="pk">
-    <header><h2 id="picker-title"><%= te('editor.pick') %></h2><button value="close" class="btn btn-small"><%= te('editor.close') %></button></header>
+  <div class="pk">
+    <header><h2 id="picker-title"><%= te('editor.pick') %></h2><button type="button" class="btn btn-small" data-close><%= te('editor.close') %></button></header>
     <div class="pk-tools"><input type="search" id="pk-q" placeholder="<%= te('editor.search') %>" aria-label="<%= te('editor.search') %>"><div class="chips" id="pk-chips"></div><div class="chips" id="pk-chips2"></div></div>
     <p class="hint" id="pk-count"></p>
     <div class="pk-list" id="pk-list" role="listbox" aria-label="<%= te('editor.results') %>"></div>
-  </form>
+    <div class="pk-more" id="pk-more"></div>
+  </div>
 </dialog>
 <%- include('../partials/app-footer') %>
 <script type="application/json" id="boot"><%- boot %></script>
