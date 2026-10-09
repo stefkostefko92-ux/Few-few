@@ -35,6 +35,8 @@ import { GOVERNOR_LOAD_UNSET, loadNames } from './loads';
 import { refsText, titleOf } from './title-data';
 import { sheetLoads, sheetRails, supportRows } from './sheet-loads';
 import { cwGearChecks, cwGearOf, cwGearRow } from './cw-gear';
+import { tripText } from './governor-trip';
+import { cwRails } from './cw-rail-check';
 import { hebFor, hebNote, hookRow, reactionRows } from './room-rows';
 import { roomGeo } from '@/shaft/machine-room';
 import { governorRopes, shaftUnder } from '@/shaft/room-site';
@@ -158,6 +160,8 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     ['FUNI DI SOSPENSIONE', 'N°-Ø', `${N.n} - ${num(N.d)}${oldRopes ? ' ESISTENTI' : ''}`],
     ['LUNGHEZZA DI TAGLIO FUNI (CIASCUNA)', 'm', oldRopes ? 'ESISTENTI' : fmt(ropeLen, 0)],
     ['LIMITATORE DI VELOCITÀ', 'tipo', oldGov ? 'ESISTENTE' : `${gov.brand} ${gov.model}`],
+    // the tripping speed to set for the rated speed and the car's safety gear (registry limitatore.scatto)
+    ['VELOCITÀ D’INTERVENTO DA TARARE', 'm/s', tripText(V.v, Pl)],
     ['FUNE DEL LIMITATORE', 'm-Ø', oldGov ? 'ESISTENTE' : `${fmt(governorRopeLength(V, S.top, room, scheme), 0)} - ${fmt(2 * gov.rope, 0)}`],
     ['AMMORTIZZATORI CABINA', 'N°-tipo', `${V.carBuffers} - ${BUFFER_TEXT[bufferType(V, 'car')][0]}${kept('buffers') ? ' ESISTENTI' : ''}`],
     ['AMMORTIZZATORE CONTRAPPESO', 'N°-tipo', `1 - ${BUFFER_TEXT[bufferType(V, 'cw')][1]}${kept('buffers') ? ' ESISTENTE' : ''}`],
@@ -214,7 +218,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   const head = headTopChecks(withRig(L, I.r, I.Dp, N.n, N.d, bg), I.r, I.Dp, scheme);
   const all = [...mergeChecks(L.checks, [...supportChecks(L, M, { machine: below ? 0 : machine, static: ld.static, dyn, car }, !below),
     ...(bg ? belowChecks(L, bg, M, I.Dp) : []), ...head, ...cwGapOver(L, head)]), ...railChecks(rc, gear, I.v),
-    ...cwGearChecks(underPit, Pl, I.v, C.norma !== 'en81')];
+    ...cwGearChecks(underPit, Pl, I.v, C.norma !== 'en81'), ...cwRails(L, res.Mcw, cwGearOf(underPit, Pl), Pl)];
   // a modification: the existing room's height under 2,0 m (UNI 10411-1:2024, 9.2)
   if (I.context === 'repl' && room && !below) all.push(existingRoomCheck(room));
   // the existing sling under a new car or rated load (arcata.ts)
@@ -236,7 +240,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   if (pEstimate) notes.push(estimateNote(fmt(I.P, 0), `NOTA ${notes.length + 1}`));
   if (!Pl.safetyGear) notes.push(safetyGearNote(`NOTA ${notes.length + 1}`));
   // the note of the rails' check wherever the check enters the acceptance test (new rails, or a change of load, car or sling)
-  if (ambitoOf(C, 'gr_stress') === 'applies') notes.push(railNote(rc, railLabel(L.inputs.carRail), gear, Pl.liftUse, `NOTA ${notes.length + 1}`, fmt));
+  if (ambitoOf(C, 'gr_stress') === 'applies') notes.push(railNote(rc, railLabel(L.inputs.carRail), gear, Pl.liftUse, `NOTA ${notes.length + 1}`, fmt, !!cwGearOf(underPit, Pl)));
   // the governor's load not given; the HEB beams' bearings (round 36)
   if (Gr && SL.heb) notes.push(hebNote(`NOTA ${notes.length + 1}`));
   const test = collaudoNote(C, `NOTA ${notes.length + 1}`, carichiOf(x.values));

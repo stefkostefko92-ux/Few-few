@@ -4,6 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { K, PRESETS, compute, readInputs } from '../../calc/index';
+import { brakeLoad } from '../../calc/compute';
 import { DEFAULT_VERTICAL, defaultInputs, layout, section, type Floor } from '../../shaft/index';
 import { G } from '../../calc/math';
 import { frameAt, duration, motionProfile, physics, runScenario, simModel, type SimModel } from '../index';
@@ -51,12 +52,14 @@ test('forze della simulazione = forze della verifica agli estremi della corsa', 
       near(P.efa('loading', at(c.pos)), c.efa, 1e-12);
     }
     for (const c of r.brk) {
-      const load = c.load === 'q' ? m.I.Q : 0, dir = c.dir === 'dn' ? 1 : -1;
+      const load = brakeLoad(c.load, m.I.Q), dir = c.dir === 'dn' ? 1 : -1;
       near(P.pull(at(c.pos), dir * c.aEff, load).ratio, c.ratio, 1e-12, `${pr} frenatura ${c.load} ${c.dir} ${c.pos}`);
       near(P.efa('braking', at(c.pos)), c.efa, 1e-12);
     }
+    // with the real brake also the acceptance test's 1,25·Q moving down at the bottom (UNI EN 81-20:2020, 6.3.3 b))
+    assert.deepEqual(r.brkReal.filter((c) => c.load === 'q125').map((c) => [c.pos, c.dir]), [['b', 'dn']], pr);
     for (const c of r.brkReal) {
-      const load = c.load === 'q' ? m.I.Q : 0, dir = c.dir === 'dn' ? 1 : -1;
+      const load = brakeLoad(c.load, m.I.Q), dir = c.dir === 'dn' ? 1 : -1;
       near(P.brakeDecel(at(c.pos), dir, load), c.a, 1e-12, `${pr} decelerazione del freno`);
     }
     near(P.pull(m.I.H, 0, 0, 0).ratio, r.stall.ratio, 1e-12, `${pr} cabina bloccata`);

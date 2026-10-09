@@ -6,15 +6,17 @@
 // rate, the car only at the rate traction allows, over a longer distance; if traction cannot hold the car at all, or
 // the brake cannot hold it, the car runs on to the buffers. Pure.
 import { K } from '../calc/norme';
+import { brakeLoad } from '../calc/compute';
 import { runPhases, type Phase } from './phases';
 import type { Frame } from './series';
-import { travelLimits, type BrakeParams, type SimModel, type SimRun } from './model';
+import { brakeParams, travelLimits, type BrakeParams, type SimModel, type SimRun } from './model';
 
 const CRUISE = 2;
 const HOLD = 2.5;
 
-export function brake(m: SimModel, p: BrakeParams): SimRun {
-  const P = m.phys, I = m.I, H = m.H, real = p.decel === 'real', load = p.load === 'q' ? I.Q : 0, dir: 1 | -1 = p.dir === 'dn' ? 1 : -1;
+export function brake(m: SimModel, asked: BrakeParams): SimRun {
+  const p = brakeParams(asked), P = m.phys, I = m.I, H = m.H, real = p.decel === 'real', dir: 1 | -1 = p.dir === 'dn' ? 1 : -1;
+  const load = brakeLoad(p.load, I.Q);
   // the end position of this case in the verification
   const cases = (real ? m.res.brkReal : m.res.brk).filter((c) => c.load === p.load && c.dir === p.dir);
   const cs = cases.find((c) => c.pos === p.pos) ?? cases.reduce((a, b) => (b.util > a.util ? b : a));

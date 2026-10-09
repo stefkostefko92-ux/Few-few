@@ -16,12 +16,13 @@ import type { Layout, Rail, ShaftCheck } from './types';
 
 export type GovernorBrand = 'PFB' | 'Bode' | 'Dynatech' | 'Wittur' | 'Montanari';
 
-/** A governor: maker, model, highest rated speed, sheave pitch radius and rope radius, the rim's half width, the
- *  axle's height over the base and the frame's top over the axle, the base's half sizes across the rope and along it
- *  [mm]. */
+/** A governor: maker, model, lowest and highest rated speed (vMin 0: none published), sheave pitch radius and rope
+ *  radius, the rim's half width, the axle's height over the base and the frame's top over the axle, the base's half
+ *  sizes across the rope and along it [mm]. */
 export interface Governor {
   brand: GovernorBrand;
   model: string;
+  vMin: number;
   vMax: number;
   R: number;
   rope: number;
@@ -37,7 +38,7 @@ export interface Governor {
  *  speeds up to vMax; `h` its published height over all, when there is one. */
 const scaled = (brand: GovernorBrand, model: string, vMax: number, dia: number, ropeD: number, h?: number): Governor => {
   const k = dia - 200, axle = 240 + 0.9 * k, top = 130 + 0.8 * k, f = h ? h / (axle + top) : 1;
-  return { brand, model, vMax, R: dia / 2, rope: ropeD / 2, half: 15 + 0.05 * k, axle: axle * f, top: top * f, baseA: 82.5 + 0.375 * k, baseW: 110 + 0.08 * k };
+  return { brand, model, vMin: 0, vMax, R: dia / 2, rope: ropeD / 2, half: 15 + 0.05 * k, axle: axle * f, top: top * f, baseA: 82.5 + 0.375 * k, baseW: 110 + 0.08 * k };
 };
 
 /** A governor as its maker's drawing gives it: the height over all, the axle over the base and the base [mm] (its long
@@ -45,8 +46,12 @@ const scaled = (brand: GovernorBrand, model: string, vMax: number, dia: number, 
 const drawn = (brand: GovernorBrand, model: string, vMax: number, dia: number, ropeD: number, h: number, axle: number, base: readonly [number, number]): Governor =>
   ({ ...scaled(brand, model, vMax, dia, ropeD), axle, top: h - axle, baseW: base[0] / 2, baseA: base[1] / 2 });
 
-/** The highest rated speed whose tripping speed, at least 115 % of it, a governor reaching `vTrip` [m/s] gives. */
-const fromTrip = (vTrip: number): number => Math.floor((vTrip / 1.15) * 100) / 100;
+/** The highest rated speed whose tripping speed, at least 115 % of it (KV_GOV.govTripMin), a governor reaching `vTrip`
+ *  [m/s] gives. */
+const fromTrip = (vTrip: number): number => Math.floor((vTrip / KV_GOV.govTripMin) * 100) / 100;
+
+/** A governor's lowest rated speed where its maker publishes the range [m/s]. */
+const from = (g: Governor, vMin: number): Governor => ({ ...g, vMin });
 
 /** PFB's governors by rated speed: LK200 Ø 200 rope 6 to 1,48 m/s, LK250 Ø 250 rope 6–8 to 1,74 m/s, LK300 Ø 300 rope
  *  6–8 to 2,93 m/s; over that the R12BF (Ø 345, rope 8–10, to 4,00 m/s, rope-clamping, one way). The rest can be
@@ -54,7 +59,9 @@ const fromTrip = (vTrip: number): number => Math.floor((vTrip / 1.15) * 100) / 1
  *  rated speed from the highest tripping speed, of the GB 8 the drawing's 1,49 m/s rather than the brochure's 2,04);
  *  Dynatech's VEGA 200 (sold in Italy by Donati); Wittur's OL20, OL35, EOS and OL100 (OL20's base from a copy of its
  *  manual); Montanari's RQ-A 200/250/300 and RC 200/300 (the family's rated speeds 0,15–3,0 and 1,60–4,2 m/s: the limit
- *  of each size is not published), NOR Ø 300 to 1,50 m/s, RG 200 to 0,30 m/s (an older range). */
+ *  of each size is not published), NOR Ø 300 to 1,50 m/s, RG 200 to 0,30 m/s (an older range). The lowest rated speed
+ *  where the maker publishes it: Dynatech's VEGA 200 0,1, Wittur's OL20 and OL35 0,30, EOS 0,15, OL100 0,51, Montanari's
+ *  RQ-A 0,15, RC 1,60, NOR 0,30, RG 200 0,15 m/s; PFB and Bode give the tripping speed's range instead (research §3). */
 export const GOVERNORS: readonly Governor[] = [
   drawn('PFB', 'LK200', 1.48, 200, 6, 415, 165, [220, 165]), drawn('PFB', 'LK250', 1.74, 250, 6, 415, 165, [220, 165]),
   drawn('PFB', 'LK300', 2.93, 300, 8, 415, 165, [220, 165]), drawn('PFB', 'R12BF', 4, 345, 8, 524, 337, [520, 116]),
@@ -66,20 +73,35 @@ export const GOVERNORS: readonly Governor[] = [
   drawn('PFB', 'R3LR', 1.73, 250, 6, 348, 157, [196, 115]), drawn('PFB', 'R5', 1.55, 200, 6, 261, 120, [204, 150]),
   drawn('PFB', 'R6', 2.09, 300, 8, 335, 168, [238, 150]),
   drawn('Bode', 'GB 7', fromTrip(3.43), 300, 8, 360, 205, [325, 165]), drawn('Bode', 'GB 8', fromTrip(1.49), 200, 6, 315, 205, [221, 170]),
-  drawn('Dynatech', 'VEGA 200', 2.4, 200, 6, 332, 199.5, [200, 117]),
-  { ...scaled('Wittur', 'OL20', 1.75, 180, 6), baseW: 95, baseA: 62.5 }, scaled('Wittur', 'OL35', 3, 200, 6), scaled('Wittur', 'EOS', 2.5, 200, 6),
-  scaled('Wittur', 'EOS 300', 2.5, 300, 8), scaled('Wittur', 'OL100', 10, 304, 8),
-  scaled('Montanari', 'RQ-A 200', 3, 200, 6), scaled('Montanari', 'RQ-A 250', 3, 250, 6), scaled('Montanari', 'RQ-A 300', 3, 300, 8),
-  scaled('Montanari', 'RC 200', 4.2, 200, 6), scaled('Montanari', 'RC 300', 4.2, 300, 8),
-  scaled('Montanari', 'NOR', 1.5, 300, 8), scaled('Montanari', 'RG 200', 0.3, 200, 6),
+  from(drawn('Dynatech', 'VEGA 200', 2.4, 200, 6, 332, 199.5, [200, 117]), 0.1),
+  from({ ...scaled('Wittur', 'OL20', 1.75, 180, 6), baseW: 95, baseA: 62.5 }, 0.3), from(scaled('Wittur', 'OL35', 3, 200, 6), 0.3),
+  from(scaled('Wittur', 'EOS', 2.5, 200, 6), 0.15), from(scaled('Wittur', 'EOS 300', 2.5, 300, 8), 0.15), from(scaled('Wittur', 'OL100', 10, 304, 8), 0.51),
+  from(scaled('Montanari', 'RQ-A 200', 3, 200, 6), 0.15), from(scaled('Montanari', 'RQ-A 250', 3, 250, 6), 0.15), from(scaled('Montanari', 'RQ-A 300', 3, 300, 8), 0.15),
+  from(scaled('Montanari', 'RC 200', 4.2, 200, 6), 1.6), from(scaled('Montanari', 'RC 300', 4.2, 300, 8), 1.6),
+  from(scaled('Montanari', 'NOR', 1.5, 300, 8), 0.3), from(scaled('Montanari', 'RG 200', 0.3, 200, 6), 0.15),
 ];
 
-/** The governor for a rated speed [m/s]: the model chosen when it takes the speed, else the smallest of the LK series
- *  (and the R12BF) that does. */
+/** Whether a governor's maker gives it for the rated speed `v` [m/s]: within its range (round 37: below its lowest
+ *  rated speed too it was taken — Montanari's RC from 1,60 m/s at 0,63). */
+export const takesSpeed = (g: Governor, v: number): boolean => v >= g.vMin - 1e-9 && v <= g.vMax + 1e-9;
+
+/** The governor for a rated speed [m/s]: the model chosen when its range takes the speed, else the smallest of the LK
+ *  series (and the R12BF) that does. */
 export const govSize = (v: number, model?: string): Governor => {
   const chosen = model ? GOVERNORS.find((g) => g.model === model) : undefined;
-  return chosen && v <= chosen.vMax + 1e-9 ? chosen : GOVERNORS.slice(0, 4).find((g) => v <= g.vMax + 1e-9) ?? GOVERNORS[3];
+  return chosen && takesSpeed(chosen, v) ? chosen : GOVERNORS.slice(0, 4).find((g) => takesSpeed(g, v)) ?? GOVERNORS[3];
 };
+
+/** The car's safety gear the governor trips (the data of the installation's; none given: progressive). */
+export type GovernedGear = 'progressive' | 'roller' | 'instantaneous';
+
+/** The range the governor's tripping speed is set in for the rated speed `v` [m/s] and the car's safety gear (registry
+ *  limitatore.scatto, UNI EN 81-20:2020, 5.6.2.2.1.1 a)): from KV_GOV.govTripMin·v, below the gear's limit. */
+export function tripWindow(v: number, gear: GovernedGear): { lo: number; hi: number } {
+  const K = KV_GOV, hi = gear === 'instantaneous' ? K.govTripInstant : gear === 'roller' ? K.govTripRoller
+    : v <= K.govTripProgressiveV ? K.govTripProgressive : K.govTripK * v + K.govTripC / v;
+  return { lo: K.govTripMin * v, hi };
+}
 
 /** How far the lever kind of tension weight reaches past its pulley's centre along the rope's plane [mm]: 700 mm over
  *  all (dimension "A" of the PFB R4KE for the LK200 in a reseller's listing, its meaning not stated) with the pulley

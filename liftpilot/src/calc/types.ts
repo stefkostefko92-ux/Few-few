@@ -136,7 +136,9 @@ export interface TractionCase {
 }
 
 export interface BrakeCase extends TractionCase {
-  load: 'q' | 'e';
+  /** the rated load, the empty car, or (with the real brake only) the acceptance test's 1,25·Q moving down at the
+   *  bottom (UNI EN 81-20:2020, 6.3.3 b)) */
+  load: 'q' | 'e' | 'q125';
   dir: 'dn' | 'up';
   /** deceleration of the case and the one used in the check (never below the minimum) [m/s²] */
   a: number;

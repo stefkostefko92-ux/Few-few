@@ -219,14 +219,15 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
   {
     id: 'impianto.catalogo', titolo: 'Macchina proposta dal catalogo di un costruttore',
     valore: `tra le opzioni del dimensionamento solo quelle che un argano del costruttore scelto accetta: puleggia nella gamma del modello, `
-      + `carico statico sull’albero non oltre quello del catalogo, motore non oltre il più grande del catalogo, portata dichiarata; il rapporto è quello del catalogo più `
+      + `carico statico sull’albero non oltre quello del catalogo, portata dichiarata; il rapporto è quello del catalogo più `
       + `vicino al rapporto ideale, se la velocità che dà non si scosta da quella nominale più del ${it(KL.catalogRatioTol * 100)} % (l’inverter adatta `
       + `la frequenza); il calcolo usa quel rapporto, il carico statico ammesso e la massa del catalogo; con il rapporto del catalogo e la geometria `
       + `dell’argano com’è (asse della puleggia, telaio con rinvio del costruttore: h, angolo di avvolgimento, fune oltre la corsa) motore, gola e freno `
       + `sono dimensionati di nuovo con le regole del dimensionamento — il motore IEC più piccolo che copre la potenza statica alla velocità reale, non `
       + `oltre il più grande del catalogo; la gola che aderisce col margine più largo e, se con essa il coefficiente di sicurezza delle funi non basta, `
-      + `quella che aderisce di più fra le meno incise, a mezzo grado, fino al margine successivo; l’argano che non passa ogni verifica così, o per cui `
-      + `la pianta non sa posizionare il rinvio, non prende l’opzione e si prova la successiva; i disegni e il 3D mostrano l’argano SICOR `
+      + `quella che aderisce di più fra le meno incise, a mezzo grado, fino al margine successivo; per ogni opzione si provano gli argani che la `
+      + `accettano dal più piccolo; quello che non passa ogni verifica così, o per cui la pianta non sa posizionare il rinvio, lascia l’opzione al `
+      + `successivo del costruttore e, se nessuno la prende, si prova l’opzione successiva; i disegni e il 3D mostrano l’argano SICOR `
       + `com’è (ingombri, piedi e fori, asse della puleggia, P ed E della scheda), sul telaio del software`,
     riferimento: 'ricerca, capitolo 12 (catalogo degli argani)',
     fonte: 'SICOR: schede tecniche 2025 e modelli CAD scaricati da sicoritaly.com il 2 ottobre 2026 (solo le quote); Sassi, Montanari, GEM, FAER: '
@@ -238,7 +239,9 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
       + 'GEAT Elevators distribuisce argani Montanari, Sassi e FAER (P58F, P58S) e non ne costruisce; fino a LIFT 1.28.0 il motore e la gola '
       + 'restavano quelli della griglia, al rapporto ideale e con la geometria dell’argano generico: un argano più veloce poteva mancare la '
       + 'potenza statica e uno con l’asse più basso l’aderenza, e su plinto o telaio un argano con l’asse più alto era proposto anche quando la '
-      + 'pianta non posizionava il rinvio (da inserire a mano)',
+      + 'pianta non posizionava il rinvio (da inserire a mano); fino a LIFT 1.30.0 un argano era escluso anche quando il motore della griglia '
+      + '(al rapporto ideale) superava il più grande del catalogo, benché al rapporto del catalogo ne bastasse uno entro quel limite, e '
+      + 'per ogni opzione si provava solo l’argano più piccolo: se non passava, l’opzione si perdeva anche quando un argano più grande la prendeva',
   },
   {
     id: 'impianto.macchina', titolo: 'Macchina proposta',

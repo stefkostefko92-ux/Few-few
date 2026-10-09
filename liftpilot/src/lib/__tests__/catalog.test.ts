@@ -1,5 +1,5 @@
 // The makers' machines: the data read as numbers, the fit of an option of the sizing (ratio nearest the ideal one,
-// sheave, static load, motor, payload), and the proposal that takes the smallest machine of the maker chosen (a
+// sheave, static load, payload; the motor is sized again at the catalogue's ratio), and the proposal that takes the smallest machine of the maker chosen (a
 // historic machine or a special variant only when named) or, when none passes, the calculation grid's.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -43,12 +43,12 @@ test('catalogo degli argani: rapporti, pulegge, carichi e potenze leggibili', ()
 test('un argano del catalogo accetta un’opzione: rapporto più vicino, scarto di velocità, i motivi del no', () => {
   const sh140 = MACHINES.find((c) => c.model === 'SH140');
   assert.ok(sh140);
-  const ok = catalogFit(sh140, { D: 560, iIdeal: 67, Pn: 7.5, staticKg: 2400, Q: 630, r: 1 }, KL.catalogRatioTol);
+  const ok = catalogFit(sh140, { D: 560, iIdeal: 67, staticKg: 2400, Q: 630, r: 1 }, KL.catalogRatioTol);
   assert.equal(ok.ratio, '1/71');
   assert.ok(Math.abs(ok.dv - (67 / 71 - 1)) < 1e-12);
   assert.deepEqual(ok.fails, []);
-  const no = catalogFit(sh140, { D: 560, iIdeal: 90, Pn: 15, staticKg: 3400, Q: 630, r: 1 }, KL.catalogRatioTol);
-  assert.deepEqual([...no.fails].sort(), ['motor', 'ratio', 'static']);
+  const no = catalogFit(sh140, { D: 900, iIdeal: 90, staticKg: 3400, Q: 1600, r: 1 }, KL.catalogRatioTol);
+  assert.deepEqual([...no.fails].sort(), ['payload', 'ratio', 'sheave', 'static']);
 });
 
 test('proposta dal catalogo: il più piccolo argano che passa, con il suo rapporto e il carico statico; altrimenti la griglia', () => {
@@ -60,10 +60,12 @@ test('proposta dal catalogo: il più piccolo argano che passa, con il suo rappor
     assert.equal(Number(d.values.n_shaftMax), f.machine.staticKg);
     assert.ok(Math.abs(f.dv) <= KL.catalogRatioTol);
     assert.ok(!f.machine.byName, `${brand}: ${f.machine.model} si propone solo per nome`);
-    // a smaller machine of the brand that takes the same option does not exist
+    // a smaller machine of the brand that takes the same option does not exist: named alone, it takes another option
+    // (one later in the sizing's order) or none
+    const same = (x: typeof d) => [x.values.n_D, x.values.n_n, x.values.n_d].join(' ');
     for (const c of MACHINES.filter((x) => x.brand === brand && !x.byName && x.staticKg < f.machine.staticKg)) {
-      const o = { D: Number(d.values.n_D), iIdeal: f.i * (1 + f.dv), Pn: Number(d.values.n_Pn), staticKg: d.analysis.res.shaft.testKg, Q: d.layout.Q, r: 1 };
-      assert.ok(catalogFit(c, o, KL.catalogRatioTol).fails.length > 0, `${c.model} passerebbe`);
+      const alone = deriveLift({ ...base, catalog: { brand, model: c.model } });
+      assert.ok(alone.catalog?.miss || same(alone) !== same(d), `${c.model} passerebbe`);
     }
     assert.deepEqual(valueMarks(base.auto, d).catalog, { brand, model: f.machine.model, ratio: f.ratio, staticKg: f.machine.staticKg, src: f.machine.src });
   }

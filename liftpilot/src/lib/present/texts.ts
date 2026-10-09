@@ -113,13 +113,15 @@ export function textsFor(P: Pres) {
     ...(I.r === 2 ? [t('v_r2')] : []), t('v_geom', { b: K.betaMax, g: K.gammaMin, gu: K.gammaMinU, br: K.betaRecommended }),
     t('v_rescue', { f: K.rescueForceMech, fmax: K.rescueForceMax }), t('v_eta'), t('v_inertia')];
 
-  // which case a row is: "cabina vuota in salita, in alto, a 0,50 m/s² (minimo della norma)"
+  // which case a row is: "cabina vuota in salita, in alto, a 0,50 m/s² (minimo della norma)"; the acceptance test's
+  // 1,25·Q says which test it is
   function caseText(c: TractionCase | BrakeCase | null | undefined, withA = true): string {
     if (!c || !c.pos) return '';
     const parts: string[] = [];
-    if (isBrakeCase(c)) parts.push(`${t(c.load === 'q' ? 'cs_q' : 'cs_e')} ${t(c.dir === 'dn' ? 'dir_dn' : 'dir_up')}`);
+    if (isBrakeCase(c)) parts.push(`${t(c.load === 'q' ? 'cs_q' : c.load === 'q125' ? 'cs_q125' : 'cs_e')} ${t(c.dir === 'dn' ? 'dir_dn' : 'dir_up')}`);
     parts.push(t(c.pos === 'b' ? 'at_b' : 'at_t'));
     if (withA && isBrakeCase(c)) parts.push(`a ${fmt(c.aEff, 2)} m/s² (${t(c.fromBrake ? 'src_brake' : 'src_std')})`);
+    if (isBrakeCase(c) && c.load === 'q125') parts.push(t('cs_test'));
     return parts.join(', ');
   }
   const etaText = (M: Machine): string => `${fmt(M.etaI, 2)}${M.etaIest ? ` (${t('est')})` : ''}`;

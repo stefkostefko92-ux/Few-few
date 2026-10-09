@@ -155,23 +155,23 @@ export const ratioValue = (r: string): number => {
 };
 
 /** How a machine of the catalogue takes an option of the sizing: the ratio nearest the ideal one and the speed it
- *  gives, or why it does not (sheave, static load, motor, payload, ratio farther than `tol`). */
+ *  gives, or why it does not (sheave, static load, payload, ratio farther than `tol`). The motor is sized again at the
+ *  catalogue's ratio, up to the catalogue's largest (src/lib/lift/catalog.ts catalogValues): not a reason here. */
 export interface CatalogFit {
   machine: CatalogMachine;
   ratio: string | null;
   i: number;
   /** the car's speed with that ratio over the rated one, less 1 */
   dv: number;
-  fails: readonly ('sheave' | 'static' | 'motor' | 'payload' | 'ratio')[];
+  fails: readonly ('sheave' | 'static' | 'payload' | 'ratio')[];
 }
 
-export function catalogFit(c: CatalogMachine, o: { D: number; iIdeal: number; Pn: number; staticKg: number; Q: number; r: number }, tol: number): CatalogFit {
+export function catalogFit(c: CatalogMachine, o: { D: number; iIdeal: number; staticKg: number; Q: number; r: number }, tol: number): CatalogFit {
   const near = [...c.ratios].sort((a, b) => Math.abs(ratioValue(a) / o.iIdeal - 1) - Math.abs(ratioValue(b) / o.iIdeal - 1))[0] ?? null;
   const i = near ? ratioValue(near) : 0, dv = near ? o.iIdeal / i - 1 : Infinity;
   const pay = o.r === 2 ? c.payload.r2 : c.payload.r1, fails: CatalogFit['fails'][number][] = [];
   if (c.sheaves && (o.D < c.sheaves[0] || o.D > c.sheaves[1])) fails.push('sheave');
   if (o.staticKg > c.staticKg) fails.push('static');
-  if (c.kWmax !== null && o.Pn > c.kWmax) fails.push('motor');
   if (pay !== null && o.Q > pay) fails.push('payload');
   if (!(Math.abs(dv) <= tol)) fails.push('ratio');
   return { machine: c, ratio: near, i, dv, fails };

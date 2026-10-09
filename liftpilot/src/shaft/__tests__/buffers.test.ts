@@ -3,7 +3,8 @@
 // stroke of at least 0,0674·v². Changing the type proposes a typical buffer and keeps the buffer's top (the run-by).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { KV_VERT, bufferStroke, defaultInputs, layout, section, typicalBuffer, withBufferType, type ShaftInputs, type VerticalInputs } from '../index';
+import { KV_VERT, bufferStroke, bufferType, defaultInputs, layout, section, standardBufferType, typicalBuffer, withBufferType, withStandardBuffers, type ShaftInputs,
+  type VerticalInputs } from '../index';
 
 const withV = (patch: Partial<VerticalInputs>): ShaftInputs => {
   const I = defaultInputs(1600, 1750);
@@ -33,8 +34,31 @@ test('ammortizzatore idraulico: a ogni velocità, corsa almeno 0,0674·v²', () 
   assert.equal(checkOf(I, 'b_car')?.status, 'ok');
   assert.equal(checkOf(I, 'b_car')?.limit, Math.ceil(KV_VERT.oilStrokeK * 1.6 * 1.6 * 1000));
   assert.equal(checkOf(withV({ ...V, carBufferStroke: 150 }), 'b_car')?.status, 'fail');
-  // springs at that speed are not allowed
-  assert.equal(checkOf(withV(V0), 'b_type')?.status, 'fail');
+  // springs chosen at that speed are not allowed
+  assert.equal(checkOf(withV(withBufferType(V0, 'car', 'spring')), 'b_type')?.status, 'fail');
+});
+
+test('oltre 1 m/s, senza tipo scelto, il software prende gli idraulici tipici per la velocità', () => {
+  const I0 = defaultInputs(1600, 1750), D = I0.vertical;
+  // up to 1 m/s the standard springs, the data as they are
+  assert.equal(withStandardBuffers(D), D);
+  assert.equal(standardBufferType(KV_VERT.springMaxV), 'spring');
+  for (const v of [1.6, 2]) {
+    const V0 = { ...D, v }, L = layout(withV(V0)), V = L.inputs.vertical, t = typicalBuffer('oil', v);
+    assert.deepEqual([bufferType(V0, 'car'), bufferType(V0, 'cw')], ['oil', 'oil'], `${v}`);
+    assert.deepEqual([V.carBufferH, V.carBufferStroke, V.cwBufferH, V.cwBufferStroke], [t.h, t.stroke, t.h, t.stroke], `${v}`);
+    // the base moved so the top stays (down to the pit floor)
+    assert.equal(V.carBufferBase, Math.max(0, D.carBufferBase + D.carBufferH - t.h));
+    for (const id of ['b_type', 'b_car', 'b_cw']) assert.equal(checkOf(withV(V0), id)?.status, 'ok', `${v} ${id}`);
+    // the stroke asked is the hydraulic one (0,0674·v²), never the springs' 0,135·v² for a type not allowed
+    assert.equal(checkOf(withV(V0), 'b_car')?.limit, Math.ceil(KV_VERT.oilStrokeK * v * v * 1000));
+  }
+  // a height or a stroke entered stays; a type chosen stays as it is
+  const own = { ...D, v: 1.6, carBufferStroke: 200 }, V = layout(withV(own)).inputs.vertical;
+  assert.deepEqual([V.carBufferStroke, V.carBufferH], [200, typicalBuffer('oil', 1.6).h]);
+  const pu = withBufferType({ ...D, v: 1.6 }, 'car', 'pu');
+  assert.equal(layout(withV(pu)).inputs.vertical.carBufferH, pu.carBufferH);
+  assert.equal(checkOf(withV(pu), 'b_type')?.status, 'fail');
 });
 
 test('cambiando tipo il supporto si sposta: la testa dell’ammortizzatore e l’extracorsa restano', () => {

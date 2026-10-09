@@ -7,7 +7,12 @@ import { DEFAULT_VERTICAL, type BufferType, type VerticalInputs } from './vertic
 
 export const BUFFER_TYPES: readonly BufferType[] = ['spring', 'pu', 'oil'];
 
-export const bufferType = (V: VerticalInputs, side: 'car' | 'cw'): BufferType => (side === 'car' ? V.carBufferType : V.cwBufferType) ?? 'spring';
+/** The buffers' type the software takes where none is chosen: springs up to KV_VERT.springMaxV, energy dissipation
+ *  (hydraulic) over it, the only type the rated speed allows there (UNI EN 81-20:2020, 5.8.1.5; registry
+ *  ammortizzatori.idraulici). */
+export const standardBufferType = (v: number): BufferType => (v > KV_VERT.springMaxV + 1e-9 ? 'oil' : 'spring');
+
+export const bufferType = (V: VerticalInputs, side: 'car' | 'cw'): BufferType => (side === 'car' ? V.carBufferType : V.cwBufferType) ?? standardBufferType(V.v);
 
 /** The stroke the section takes [mm]: a polyurethane pad's 90 % of its height, else the one entered. */
 export function bufferStroke(V: VerticalInputs, side: 'car' | 'cw'): number {
@@ -42,4 +47,25 @@ export function withBufferType(V: VerticalInputs, side: 'car' | 'cw', t: BufferT
   const b = typicalBuffer(t, V.v);
   if (side === 'car') return { ...V, carBufferType: t, carBufferH: b.h, carBufferStroke: b.stroke, carBufferBase: Math.max(0, V.carBufferBase + V.carBufferH - b.h) };
   return { ...V, cwBufferType: t, cwBufferH: b.h, cwBufferStroke: b.stroke, cwBufferBase: Math.max(0, V.cwBufferBase + V.cwBufferH - b.h) };
+}
+
+/** The vertical data with the buffers left to the software as its standard for the rated speed: a side whose type is
+ *  not chosen takes standardBufferType and, where its height and stroke are still the standard springs' (DEFAULT_VERTICAL),
+ *  the typical buffer of that type, its base moved so that its top stays (as withBufferType). Up to KV_VERT.springMaxV,
+ *  or with the type chosen, the data as they are (the same object). The layout takes the shaft through it (layout.ts),
+ *  so the section, the checks, the drawings and the 3D show the one buffer; the form shows it as the software's. */
+export function withStandardBuffers(V: VerticalInputs): VerticalInputs {
+  const t = standardBufferType(V.v), D = DEFAULT_VERTICAL;
+  if (t === 'spring') return V;
+  const b = typicalBuffer(t, V.v), own = (x: number, std: number, typical: number): number => (x === std ? typical : x);
+  let X = V;
+  if (!V.carBufferType) {
+    const h = own(V.carBufferH, D.carBufferH, b.h);
+    X = { ...X, carBufferH: h, carBufferStroke: own(V.carBufferStroke, D.carBufferStroke, b.stroke), carBufferBase: Math.max(0, V.carBufferBase + V.carBufferH - h) };
+  }
+  if (!V.cwBufferType) {
+    const h = own(V.cwBufferH, D.cwBufferH, b.h);
+    X = { ...X, cwBufferH: h, cwBufferStroke: own(V.cwBufferStroke, D.cwBufferStroke, b.stroke), cwBufferBase: Math.max(0, V.cwBufferBase + V.cwBufferH - h) };
+  }
+  return X;
 }

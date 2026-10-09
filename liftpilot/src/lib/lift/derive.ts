@@ -13,7 +13,7 @@ import { analyse, mirrorRopes, proposalValues } from '@/lib/present/analysis';
 import { simModel } from '@/sim';
 import { belowChecks } from './below-checks';
 import { bottomGapNeeded, bottomGeo, extraBends, sheaveHalfBelow, type BottomScheme } from './bottom';
-import { bestFit, catalogValues, choiceMachines, firstTaken, offGrid, throughWall } from './catalog';
+import { catalogFits, catalogValues, choiceMachines, firstTaken, offGrid, throughWall } from './catalog';
 import type { CatalogFit } from '@/lib/catalog/machines';
 import { machineShapeOf, machineSpec, rinvioOf, sheaveAxis, sheaveAxisBelow, type Made } from './machine';
 import type { MachineShape } from '@/shaft/machine-shape';
@@ -84,10 +84,11 @@ function deflectorDx(L: Layout, V: FormValues): { dx: number; fits: boolean } {
  * then the smallest sheave (ropes kept: every sheave), then compareOptions. With the geometry entered by hand this is
  * exactly the sizing of the calculator. null: nothing passes (the machine entered is checked).
  */
-function propose(V0: FormValues, L: Layout, geometry: (W: FormValues) => FormValues, planned: boolean, fitOf: ((o: SizingOption, W: FormValues) => CatalogFit | null) | null, only: readonly number[] | null,
+function propose(V0: FormValues, L: Layout, geometry: (W: FormValues) => FormValues, planned: boolean, fitsOf: ((o: SizingOption, W: FormValues) => readonly CatalogFit[]) | null, only: readonly number[] | null,
   extra: readonly number[] = [], finish: (fit: CatalogFit, W: FormValues) => FormValues | null = () => null): { V: FormValues; fit: CatalogFit | null } | null {
   // (`finish`: the maker's machine taken for an option, as it stands, its parts sized again on it; null: it does not
-  // take the option after all, the next one in the sizing's order is tried)
+  // take the option after all, the next machine of the choice that takes it is tried, then the next option in the
+  // sizing's order)
   // (`extra`: a chosen model's own sheave off the grid)
   const c0 = readInputs(V0), sheaves = c0.fixedD ? [c0.fixedD] : only ?? [...SHEAVE_GRID, ...extra.filter((D) => !SHEAVE_GRID.includes(D))].sort((a, b) => a - b);
   const found: { o: SizingOption; V: FormValues; fit: CatalogFit | null }[] = [];
@@ -96,8 +97,9 @@ function propose(V0: FormValues, L: Layout, geometry: (W: FormValues) => FormVal
     if (planned && !deflectorDx(L, W).fits) continue;
     const c = readInputs(W);
     for (const o of sizeMachine(c.I, c.N, D, c.rope).options) {
-      const fit = fitOf ? fitOf(o, W) : null;
-      if (!fitOf || fit) found.push({ o, V: W, fit });
+      // the machines that take the option in their order, one after the other (pickOption keeps the first of equal ones)
+      if (fitsOf) for (const fit of fitsOf(o, W)) found.push({ o, V: W, fit });
+      else found.push({ o, V: W, fit: null });
     }
   }
   const taken = firstTaken(found, !!c0.rope, (best) => {
@@ -155,7 +157,7 @@ function deriveOnce(inp: LiftInputs): LiftDerived {
       return Y && !(planned && !deflectorDx(L, Y).fits) ? Y : null;
     };
     const choice = inp.catalog && throughWall(V.layout, scheme) ? { ...inp.catalog, wall: true } : inp.catalog;
-    const fromCat = choice ? propose(V, L, geometry, planned, (o, W) => bestFit(choice, o, num(W, 'Q'), num(W, 'r')), only, offGrid(choice), finish) : null;
+    const fromCat = choice ? propose(V, L, geometry, planned, (o, W) => catalogFits(choice, o, num(W, 'Q'), num(W, 'r')), only, offGrid(choice), finish) : null;
     const proposed = fromCat ?? propose(V, L, geometry, planned, null, only);
     if (choice) catalog = { fit: fromCat?.fit ?? null, miss: fromCat ? false : choice.wall && !choiceMachines(choice).length ? 'wall' : 'checks' };
     if (proposed) V = proposed.V;

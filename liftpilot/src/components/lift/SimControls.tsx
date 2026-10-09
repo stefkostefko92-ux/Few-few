@@ -5,7 +5,7 @@
 // re-rendering React on every frame.
 import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { useTranslations } from 'next-intl';
-import type { ScenarioParams } from '@/sim';
+import { brakeParams, type ScenarioParams } from '@/sim';
 import type { SimClock } from './clock';
 import { SCENARIOS, type ScenarioKey } from './scenarios';
 
@@ -79,11 +79,12 @@ export default function SimControls({ sc, choose, set, labels, here, Q, T, clock
         ) : null}
         {sc.id === 'brake' ? (
           <>
-            <Seg label={t('load')} value={sc.p.load} onChange={(load) => set({ id: 'brake', p: { ...sc.p, load } }, true)}
-              options={[{ v: 'q', label: t('loadQ') }, { v: 'e', label: t('loadEmpty') }]} />
-            <Seg label={t('direction')} value={sc.p.dir} onChange={(dir) => set({ id: 'brake', p: { ...sc.p, dir } }, true)}
+            {/* the acceptance test's 1,25·Q moves down with the real brake (brakeParams keeps any other choice consistent) */}
+            <Seg label={t('load')} value={sc.p.load} onChange={(load) => set({ id: 'brake', p: load === 'q125' ? { ...sc.p, load, dir: 'dn', decel: 'real' } : { ...sc.p, load } }, true)}
+              options={[{ v: 'q', label: t('loadQ') }, { v: 'e', label: t('loadEmpty') }, { v: 'q125', label: t('loadTest') }]} />
+            <Seg label={t('direction')} value={sc.p.dir} onChange={(dir) => set({ id: 'brake', p: brakeParams({ ...sc.p, dir }) }, true)}
               options={[{ v: 'dn', label: t('dir_dn') }, { v: 'up', label: t('dir_up') }]} />
-            <Seg label={t('decel')} value={sc.p.decel} onChange={(decel) => set({ id: 'brake', p: { ...sc.p, decel } }, true)}
+            <Seg label={t('decel')} value={sc.p.decel} onChange={(decel) => set({ id: 'brake', p: brakeParams({ ...sc.p, decel }) }, true)}
               options={[{ v: 'real', label: t('decel_real') }, { v: 'norm', label: t('decel_norm') }]} />
           </>
         ) : null}

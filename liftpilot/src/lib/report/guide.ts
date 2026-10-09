@@ -7,14 +7,17 @@ import type { CheckStatus } from '@/calc/types';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { KV_GUIDE } from '@/shaft/norme-guide';
 import type { MachineSpec } from '@/shaft/machine-room';
+import { govSize } from '@/shaft/governor';
 import { railLabel } from '@/shaft/rails';
 import type { Layout, ShaftCheck } from '@/shaft/types';
 import { ropeCut } from '../lift/support';
 import type { Plant } from '../plant';
 import type { Analysis } from '../present/analysis';
 import { railChecks, railLimits } from '../tavole/rail-check';
+import { cwRailCheck, cwRailChecks } from '../tavole/cw-rail-check';
 import type { SafetyGear } from '../tavole/forces';
 import { sheetLoads, sheetRails, supportRows } from '../tavole/sheet-loads';
+import { tripText } from '../tavole/governor-trip';
 import type { BlockStatus, ReportBlock } from './model';
 
 type Fmt = (x: number, dec?: number) => string;
@@ -28,12 +31,19 @@ export function guideSection(a: Analysis, L: Layout, Pl: Plant, M: MachineSpec, 
   rope: number | null = null): { checks: ShaftCheck[]; blocks: ReportBlock[] } {
   // the ropes at their cut length on the design's rope rig (`rope`: rope.ts rigLength), as sheet 1 counts them
   const { I, N } = a.ctx, R = sheetRails(L, I.P, I.Q, Pl), SL = sheetLoads(a, L, Pl, M, made, N.n * N.qf * ropeCut(I, rope), R, cwGear), rc = R.rc, lim = railLimits();
-  const checks = railChecks(rc, R.gear, I.v), MPa = (x: number | null): string => (x === null ? '—' : `${fmt(x, 1)} N/mm²`);
+  // the counterweight's rails under its safety gear's grip, where it has one (cw-rail-check.ts; registry guide.contrappeso)
+  const cwc = cwGear ? cwRailCheck(L, a.res.Mcw, cwGear, Pl) : null;
+  const checks = [...railChecks(rc, R.gear, I.v), ...(cwc ? cwRailChecks(cwc) : [])], MPa = (x: number | null): string => (x === null ? '—' : `${fmt(x, 1)} N/mm²`);
   const labels: Readonly<Record<string, string>> = appIt.shaft, rows = checks.map((c) => esito(c));
+  const v = L.inputs.vertical.v, gov = govSize(v, L.inputs.governor);
   const B: ReportBlock[] = [
     { t: 'p', text: `Guide di cabina ${railLabel(L.inputs.carRail)} in acciaio Rm ${KV_GUIDE.railRm} N/mm² (ipotesi del software), paracadute ${Pl.safetyGear ? GEAR_IT[Pl.safetyGear] : `${GEAR_IT[R.gear]} (preso dal software: non indicato nei dati dell’impianto)`}, `
       + `staffe al più ogni ${fmt(R.span, 0)} mm (${R.hs.length} staffe per guida${Pl.carBracketPitch ? `, passo dei dati dell’impianto ${fmt(Pl.carBracketPitch, 0)} mm` : `, passo della regola ${fmt(KV_VERT.bracketPitch, 0)} mm`}). `
       + 'Le stesse forze e gli stessi limiti del foglio 1 delle tavole (voce guide.verifica).' },
+    // the governor's tripping speed to set for the rated speed and that gear (registry limitatore.scatto)
+    { t: 'p', text: `Limitatore di velocità ${gov.brand} ${gov.model}: velocità d’intervento da tarare ${tripText(v, Pl)} m/s per la velocità nominale `
+      + `di ${fmt(v, 2)} m/s e il paracadute ${GEAR_IT[R.gear]} (UNI EN 81-20:2020, 5.6.2.2.1.1 a); voce limitatore.scatto); la velocità tarata va sulla `
+      + 'targa del limitatore (5.6.2.2.1.8 d)).' },
     { t: 'kv', rows: [
       ['Campata più lunga · snellezza λ · ω', `${fmt(rc.l, 0)} mm · ${fmt(rc.lambda, 0)} · ${rc.omega === null ? 'oltre la tabella' : fmt(rc.omega, 2)}`],
       ['Spinte all’intervento del paracadute Fx · Fy', `${fmt(R.F.fx, 0)} · ${fmt(R.F.fy, 0)} daN`],
@@ -42,6 +52,12 @@ export function guideSection(a: Analysis, L: Layout, Pl: Plant, M: MachineSpec, 
       [`Caricamento (${fmt(rc.load.sill, 2)}·g·Q sulla soglia): σm · σ`, `${MPa(rc.load.sm)} · ${MPa(rc.load.s)} (ammessa ${MPa(lim.use)})`],
       ['Flessione della suola: paracadute · uso', `${MPa(rc.flange.gear)} · ${MPa(rc.flange.use)}`],
       ['Frecce δx · δy', `${fmt(rc.dx, 1)} · ${fmt(rc.dy, 1)} mm (ammessa ${fmt(KV_GUIDE.railDeflection, 0)} mm)`],
+      ...(cwc ? [
+        [`Guide del contrappeso ${railLabel(L.inputs.cwRail)}, paracadute ${GEAR_IT[cwGear ?? 'progressive']} (k1 ${fmt(cwc.k1, 0)}): campata · λ · ω`,
+          `${fmt(cwc.l, 0)} mm · ${fmt(cwc.lambda, 0)} · ${cwc.omega === null ? 'oltre la tabella' : fmt(cwc.omega, 2)}`],
+        ['Guide del contrappeso: Fv · forze di guida Fx · Fy', `${fmt(cwc.fv, 0)} · ${fmt(cwc.fx, 0)} · ${fmt(cwc.fy, 0)} N`],
+        ['Guide del contrappeso: σm · σ · σk · σc', `${MPa(cwc.sm)} · ${MPa(cwc.s)} · ${MPa(cwc.sk)} · ${MPa(cwc.sc)} (ammessa ${MPa(lim.gear)})`],
+      ] as [string, string][] : []),
     ] },
     { t: 'grid', head: ['Verifica', 'Valore', 'Limite', 'Esito'], rows: checks.map((c, i) => [(labels[`c_${c.id}`] ?? c.id), c.value === null ? '—' : `${fmt(c.value, c.dec)}${c.unit ? ` ${c.unit}` : ''}`,
       c.limit === null ? '' : `≤ ${fmt(c.limit, c.dec)}${c.unit ? ` ${c.unit}` : ''}`, rows[i]?.text ?? st(c.status)]),

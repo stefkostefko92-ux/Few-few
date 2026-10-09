@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 import { PRESETS, compute, readInputs, sizeMachine } from '@/calc/index';
 import { resizeMachine } from '@/calc/sizing';
 import { KL, defaultLift, deriveLift, newLift, type LiftInputs } from '@/lib/lift';
+import * as drawnModule from '@/lib/lift/drawn';
 import { drawnIssues } from '@/lib/lift/drawn';
 
 test('argano di catalogo più veloce della griglia: il motore scelto di nuovo con il suo rapporto, fino al massimo del costruttore', () => {
@@ -55,7 +56,32 @@ test('proposta dal catalogo: con l’asse e il telaio dell’argano com’è, og
   }
 });
 
+test('argano di catalogo: il motore della griglia non lo esclude, e l’opzione passa al successivo del costruttore', () => {
+  // Q 630 at 1 m/s: the grid's 5 × Ø9 on Ø 480 takes 7,5 kW at its ideal ratio 36,44 (i 36); GEM HW134L lists no
+  // motor over 6,8 kW, but at its own 1/37 the machine runs slower and 5,5 kW cover the static power — until round 37
+  // the grid's motor excluded it and the proposal fell back on the grid
+  const L0 = newLift(), base: LiftInputs = { ...L0, shaft: { ...L0.shaft, Q: 630, vertical: { ...L0.shaft.vertical, v: 1 } } };
+  for (const model of ['HW134L', 'HW134VF con supporto']) {
+    const d = deriveLift({ ...base, catalog: { brand: 'GEM', model } }), N = d.analysis.ctx.N;
+    assert.equal(d.catalog?.fit?.machine.model, model);
+    assert.equal(d.catalog?.miss, false);
+    assert.deepEqual([N.D, N.n, N.d, N.i, N.Pn], [480, 5, 9, 37, 5.5], model);
+    assert.deepEqual(d.analysis.res.fails, [], model);
+  }
+  // the smallest machine of the maker that takes an option but fails a check sized again on it leaves the option to the
+  // next one of the maker, not to the next option: on our frame with the pulley SICOR's MR21 takes Ø 520 (until round
+  // 37 nothing was proposed)
+  const room = L0.shaft.room;
+  assert.ok(room);
+  const s = deriveLift({ ...L0, shaft: { ...L0.shaft, room: { ...room, support: { kind: 'frame' } } }, catalog: { brand: 'SICOR' } });
+  assert.equal(s.catalog?.miss, false);
+  assert.equal(s.catalog?.fit?.machine.model, 'MR21');
+  assert.deepEqual(s.analysis.res.fails, []);
+});
+
 test('Hv e L0 inseriti contro il progetto del vano: oltre la tolleranza sono da correggere', () => {
+  // the module gives the check and its type only (round 37: no default value nobody reads)
+  assert.deepEqual(Object.keys(drawnModule), ['drawnIssues']);
   // the tolerance: within it the value measured stays
   assert.deepEqual(drawnIssues({ L0: 1.0, Hv: 15 }, { L0: 1.0 + KL.l0Tol - 0.01, Hv: 15 - KL.hvTol + 0.01 }), []);
   assert.deepEqual(drawnIssues({ L0: 1.0, Hv: 15 }, { L0: 1.0 + KL.l0Tol + 0.01, Hv: 15 - KL.hvTol - 0.01 }), ['L0', 'Hv']);

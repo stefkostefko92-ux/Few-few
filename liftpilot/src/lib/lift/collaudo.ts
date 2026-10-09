@@ -117,6 +117,8 @@ export const AMBITO_VERIFICHE: Readonly<Record<CheckId | ShaftCheckId, readonly 
   // the car under a machine below's hung pulleys as h_top; the counterweight's safety gear over a space under the shaft
   // goes with the counterweight and its rails
   h_hung: [...HEAD, 'machine'], sg_cw: ['cw', 'rails', 'speed'],
+  // the counterweight's rails under its safety gear's grip go with the counterweight and its rails
+  gr_cw: ['cw', 'rails'],
   // the refuge on the car roof under what the rope rig hangs under the slab (head.ts, in place of h_refuge and h_stand):
   // the machine's pulleys and dead ends, so a new machine brings it in as it does h_hung
   h_refuge_rig: [...HEAD, 'machine'], h_stand_rig: [...HEAD, 'machine'],

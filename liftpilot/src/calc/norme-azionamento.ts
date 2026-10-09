@@ -35,10 +35,11 @@ export const VOCI_AZIONAMENTO: readonly Voce[] = [
   {
     id: 'azionamento.coppia.uscita', gruppo: 'azionamento', titolo: 'Coppia massima in uscita dal riduttore',
     valore: 'M_p il maggiore tra: accelerazione, ΔF·D/2 + J·i·α_m (cabina con la portata in salita, vuota in discesa); frenatura di emergenza con il '
-      + 'freno reale (tutti i gruppi), |T1 − T2|·D/2 + J_s·r·a/(D/2) nel caso più gravoso, l’inerzia della puleggia dal lato del lento sommata a '
+      + 'freno reale (tutti i gruppi; anche la prova di aderenza con 1,25·Q in discesa, in basso), |T1 − T2|·D/2 + J_s·r·a/(D/2) nel caso più '
+      + 'gravoso, l’inerzia della puleggia dal lato del lento sommata a '
       + 'quella delle funi (a favore di sicurezza); prova con 1,25·Q, |T1 − T2|·D/2; confrontata con il valore di catalogo se inserito; al '
       + 'costruttore si chiede il maggiore arrotondato per eccesso a 10 N·m',
-    riferimento: 'dato del costruttore; i casi delle verifiche di aderenza (UNI EN 81-50:2020, 5.11.2.2.1 e 5.11.2.2.2)', fonte: 'derivazione', stato: 'derivazione',
+    riferimento: 'dato del costruttore; i casi delle verifiche di aderenza (UNI EN 81-50:2020, 5.11.2.2.1 e 5.11.2.2.2; UNI EN 81-20:2020, 6.3.3 b))', fonte: 'derivazione', stato: 'derivazione',
     verifiche: ['d_mp'],
     nota: 'fino al motore 1.4.0 la coppia contava solo l’accelerazione: in frenatura di emergenza con il freno reale la coppia sull’albero lento è '
       + 'di solito la maggiore (nell’esempio della revisione 1,9 volte)',

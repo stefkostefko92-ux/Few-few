@@ -25,6 +25,7 @@ import { bedplateKey, governorKey, hebKey, machineKey, ropeEndKey, ropeKey } fro
 import { acopLines, belowLines, keptPart, plantPart, ropeLines, ropingLines, safetyLines, sizeText, type TaggedLine } from './bom-parts';
 import type { BomLine } from './cost';
 import { plantLines } from './plant-bom';
+import { tripRange } from '../tavole/governor-trip';
 import type { Collaudo } from '@/lib/lift/collaudo';
 import { ropeCut } from '@/lib/lift/support';
 import type { RoomDerived } from '@/lib/room/derive';
@@ -89,8 +90,10 @@ export function designBom(dv: LiftDerived, plant: Plant = {}): BomLine[] {
   }
   // the plate under each landing sill (UNI EN 81-20:2020, 5.2.5.3.2; src/shaft/toe.ts): one per landing door
   add('landingDoors', { key: 'door:toe', label: { item: 'door_toe' }, qty: dv.layout.doors.reduce((n, d) => n + V.floors.filter((f) => f.door.includes(d.side)).length, 0), unit: 'pz' });
-  const g = govSize(V.v, I.governor);
-  add('governor', { key: governorKey(g.brand, g.model), label: { item: 'governor', name: `${g.brand} ${g.model}` }, qty: 1, unit: 'pz' });
+  // the governor with the tripping speed to set for the rated speed and the car's safety gear (registry limitatore.scatto)
+  const g = govSize(V.v, I.governor), trip = tripRange(V.v, plant);
+  add('governor', { key: governorKey(g.brand, g.model), label: trip ? { item: 'governor_trip', name: `${g.brand} ${g.model}`, args: { lo: trip.lo.toFixed(2).replace('.', ','), hi: trip.hi.toFixed(2).replace('.', ',') } }
+    : { item: 'governor', name: `${g.brand} ${g.model}` }, qty: 1, unit: 'pz' });
   add('governor', { key: 'tension', label: { item: 'tension' }, qty: 1, unit: 'pz' });
   const ct = bufferType(V, 'car'), wt = bufferType(V, 'cw');
   add('buffers', { key: `buffer:${ct}`, label: { item: `buffer_${ct}` }, qty: Math.max(1, V.carBuffers), unit: 'pz' });

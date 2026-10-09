@@ -11,6 +11,7 @@ import { detailChecks } from './detail-checks';
 import { roomChecks } from './machine-room';
 import { check } from './checks';
 import { bufferChecks } from './pit';
+import { withStandardBuffers } from './buffers';
 import { cwNiche, nicheMargin } from './niche';
 import { hasHead, headCheck, headFacingExtra, headOf } from './head';
 import { PANEV_BACK, cwBracketsOf } from './staffe';
@@ -113,8 +114,9 @@ function placed(d: DoorLayout, at: number | undefined, opLen: number | undefined
   return s === 0 ? r : { ...r, l0: r.l0 + s, l1: r.l1 + s, frame0: r.frame0 + s, frame1: r.frame1 + s };
 }
 
-export function layout(I: ShaftInputs): Layout {
-  const { W, D, carWall } = I, step = KV.sizeStep, cwSide = counterweightSide(I), fix = I.plan ?? {};
+export function layout(given: ShaftInputs): Layout {
+  // the buffers left to the software, the standard type and size for the rated speed (buffers.ts)
+  const V = withStandardBuffers(given.vertical), I = V === given.vertical ? given : { ...given, vertical: V }, { W, D, carWall } = I, step = KV.sizeStep, cwSide = counterweightSide(I), fix = I.plan ?? {};
   const cr = RAILS[I.carRail], wr = RAILS[I.cwRail];
   const doorZone = I.landingDepth + I.sillGap + I.carDoorDepth; // wall of an entrance to the outside of the car
   const lateralZone = I.cwWallGap + I.cwDepth + I.cwRailGap + cr.h + I.shoeGap; // wall to the car across a side counterweight
