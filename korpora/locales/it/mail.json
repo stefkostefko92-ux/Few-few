@@ -135,6 +135,20 @@
     "planEnding": {
       "subject": "Il vostro piano Korpora Premium scade il {date}",
       "body": "il {date} il vostro piano Premium scade: non si rinnova da solo. Dopo, i progetti restano e si possono scaricare, ma nuovi progetti e modifiche richiedono un piano attivo.\n\nPer continuare, ordinate un nuovo periodo: {plan}"
+    },
+    "buttonFallback": "Se il pulsante non funziona, aprite questo indirizzo:",
+    "action": {
+      "confirmEmail": "Conferma l'email",
+      "confirmNewEmail": "Conferma la nuova email",
+      "signIn": "Accedi a Korpora",
+      "newPassword": "Imposta una nuova password",
+      "setPassword": "Imposta la password",
+      "security": "Apri «Sicurezza»",
+      "plans": "Piani e prezzi",
+      "renew": "Ordina un nuovo periodo",
+      "account": "Vai all'account",
+      "orders": "I vostri ordini",
+      "panel": "Apri il pannello"
     }
   }
 }

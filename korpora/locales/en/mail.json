@@ -135,6 +135,20 @@
     "planEnding": {
       "subject": "Your Korpora Premium plan ends on {date}",
       "body": "Your Premium plan ends on {date} — it does not renew by itself. After that your projects stay and can be downloaded, but new projects and changes need an active plan.\n\nTo continue, order a new term: {plan}"
+    },
+    "buttonFallback": "If the button does not work, open this address:",
+    "action": {
+      "confirmEmail": "Confirm your email",
+      "confirmNewEmail": "Confirm the new email",
+      "signIn": "Sign in to Korpora",
+      "newPassword": "Set a new password",
+      "setPassword": "Set your password",
+      "security": "Open “Security”",
+      "plans": "Plans and prices",
+      "renew": "Order a new term",
+      "account": "Go to your account",
+      "orders": "Your orders",
+      "panel": "Open the panel"
     }
   }
 }

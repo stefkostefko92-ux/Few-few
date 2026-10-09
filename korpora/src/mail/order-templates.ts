@@ -1,7 +1,11 @@
 import { config } from '../config.js';
 import type { Locale } from '../i18n.js';
 import type { MailAttachment } from './mailer.js';
+import type { MailAction } from './compose.js';
 import { link, send } from './templates.js';
+
+/** Писмата за поръчките водят към „План“ на акаунта — бутонът в HTML варианта. */
+const ORDERS: MailAction = { param: 'orders', label: 'orders' };
 
 /*
  * Писмата за поръчките: потвърждението на договора, отказът, отхвърлянето и известията до екипа.
@@ -20,14 +24,10 @@ export function mailOrderConfirmed(
   params: Record<string, string>,
   attachments: MailAttachment[] = [],
 ): Promise<boolean> {
-  return send(
-    to,
-    locale,
-    'order',
-    { ...params, orders: link('/account/plan', locale) },
-    name,
+  return send(to, locale, 'order', { ...params, orders: link('/account/plan', locale) }, name, {
     attachments,
-  );
+    action: ORDERS,
+  });
 }
 
 /** Потвърждението, че изявлението за отказ е получено — със съдържанието и часа му (чл. 11а, пар. 4). */
@@ -37,7 +37,9 @@ export function mailWithdrawalReceived(
   name: string | null,
   params: Record<string, string>,
 ): Promise<boolean> {
-  return send(to, locale, 'withdrawn', { ...params, orders: link('/account/plan', locale) }, name);
+  return send(to, locale, 'withdrawn', { ...params, orders: link('/account/plan', locale) }, name, {
+    action: ORDERS,
+  });
 }
 
 /** Отхвърлената поръчка: договорът няма да се изпълни и по него не се плаща (общите условия, „Плащане“). */
@@ -53,6 +55,7 @@ export function mailOrderRejected(
     'orderRejected',
     { ...params, orders: link('/account/plan', locale) },
     name,
+    { action: ORDERS },
   );
 }
 
@@ -70,5 +73,6 @@ export function mailStaffNotice(
     kind,
     { ...params, admin: `${config().PUBLIC_BASE_URL}/admin/requests?status=all` },
     null,
+    { action: { param: 'admin', label: 'panel' } },
   );
 }
