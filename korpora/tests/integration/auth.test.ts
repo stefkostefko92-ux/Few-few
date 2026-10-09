@@ -124,6 +124,36 @@ test('five wrong passwords lock the account; the right one does not get in while
   assert.equal((await b.login('lock@example.test', CUSTOMER_PASSWORD)).status, 302);
 });
 
+test('“sign-in is paused” comes on the same try with and without an account, whatever the account counted before', async () => {
+  // wrong passwords from long ago stay in the account's count (it does not fade), and four from before a
+  // restart stay there too — the answer still follows the same count as for an email without an account
+  for (const [email, stale] of [
+    ['stale-two@example.test', 2],
+    ['stale-four@example.test', 4],
+  ] as const) {
+    await customer(email);
+    await prisma.user.update({ where: { email }, data: { failedLogins: stale } });
+  }
+  const answers = async (email: string) => {
+    const b = new Browser();
+    const seen: string[] = [];
+    for (let i = 0; i < 6; i++) {
+      const reply = await b.login(email, `Wrong-Password-${i}21`);
+      const paused = /Входът с този имейл е спрян/.test(reply.body);
+      const wrong = /Грешен имейл или парола/.test(reply.body);
+      seen.push(`${reply.status} ${paused ? 'paused' : wrong ? 'wrong' : 'other'}`);
+    }
+    return seen;
+  };
+  const nobody = await answers('nobody-stale@example.test');
+  assert.deepEqual(nobody, [...Array(4).fill('401 wrong'), '401 paused', '401 paused']);
+  assert.deepEqual(await answers('stale-two@example.test'), nobody);
+  assert.deepEqual(await answers('stale-four@example.test'), nobody);
+  // the account is still locked in the database from its own count — it only does not say so earlier
+  const four = await prisma.user.findUniqueOrThrow({ where: { email: 'stale-four@example.test' } });
+  assert.ok(four.lockedUntil && four.lockedUntil > new Date(), 'the account itself is locked');
+});
+
 test('weak passwords are refused at sign-up', async () => {
   for (const password of ['short', 'Korpora2026!', 'aaaaaaaaaaaaaaaa', 'weak-ivanov-123']) {
     const reply = await new Browser().register('Иван', 'ivanov@example.test', password);
