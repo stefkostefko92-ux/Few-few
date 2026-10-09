@@ -81,3 +81,22 @@ test('the project list shows a wall cabinet with its own height, like the editor
     `${String(spec.width)} × ${String(spec.height)} × ${String(spec.depth)} mm`,
   );
 });
+
+test('the CNC files are named as the CNC tab names them: sheet-01.nc, under cnc/ in project.zip', () => {
+  const example = project({ type: 'kitchen', modules: 6 });
+  const sheets = engine().nest(engine().buildModel({ type: 'kitchen', modules: 6 })).sheets;
+  assert.ok(sheets.length > 1, 'the example needs more than one sheet');
+  const names = sheets.flatMap((s) =>
+    (['dxf', 'nc'] as const).map((ext) => engine().cncFileName(s.index, ext)),
+  );
+  assert.deepEqual(names.slice(0, 2), ['sheet-01.dxf', 'sheet-01.nc']);
+  const cnc = files(buildExport(example, 'Тест', 'cnc.zip').body);
+  assert.deepEqual(Object.keys(cnc).sort(), [...names].sort());
+  const all = files(buildExport(example, 'Тест', 'project.zip').body);
+  assert.deepEqual(
+    Object.keys(all)
+      .filter((n) => n.startsWith('cnc/'))
+      .sort(),
+    names.map((n) => `cnc/${n}`).sort(),
+  );
+});

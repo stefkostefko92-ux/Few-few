@@ -17,6 +17,7 @@ import {
   GAP_RANGE,
   TOOL_DIAMETERS,
 } from '../engine/model.js';
+import { STEP_DOWN_RANGE, MAX_FEED_RANGE } from '../engine/cam.js';
 import { $, $$, esc, money, swatchStyle, setHtml } from './dom.js';
 import { typeIcon, handleIcon } from './icons.js';
 
@@ -109,6 +110,14 @@ export function renderHardwareOptions() {
   const gap = $('#f-gap');
   gap.min = String(GAP_RANGE[0]);
   gap.max = String(GAP_RANGE[1]);
+  // the GRBL limits of the machine: the ranges normalizeSpec keeps them in
+  for (const [id, [min, max]] of [
+    ['#f-grblStepDown', STEP_DOWN_RANGE],
+    ['#f-grblMaxFeed', MAX_FEED_RANGE],
+  ]) {
+    $(id).min = String(min);
+    $(id).max = String(max);
+  }
 }
 
 function groupOptions(list, groupOf, labelOf) {
@@ -143,6 +152,7 @@ export function writeForm(form, spec, writeFocused = false) {
   $('#row-frontDecor').hidden = ral;
   $('#row-frontRal').hidden = !ral;
   $('#row-bedFitting').hidden = spec.type !== 'bed';
+  for (const id of ['#row-grblStepDown', '#row-grblMaxFeed']) $(id).hidden = spec.post !== 'grbl';
   $('#f-frontMaterial-ral').disabled = !ralList().length;
   pickButton('carcassDecor', decor(spec.carcassDecor), decorName(spec.carcassDecor));
   pickButton('frontDecor', decor(spec.frontDecor), decorName(spec.frontDecor));

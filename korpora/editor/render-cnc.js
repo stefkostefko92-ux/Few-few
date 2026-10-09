@@ -1,6 +1,6 @@
 // CNC tab: per-sheet G-code and DXF, the tool table, time estimate and the toolpath simulation.
 import { $, esc, fmt, stat, reduceMotion, setHtml } from './dom.js';
-import { toGcode, POSTS, GROOVE_MILL, CLEAR } from '../engine/cam.js';
+import { toGcode, POSTS, GROOVE_MILL, CLEAR, cncFileName } from '../engine/cam.js';
 import { toDxf } from '../engine/dxf.js';
 import { sheetSvg, sheetTitle } from './render-nest.js';
 
@@ -165,9 +165,11 @@ export function renderCnc(state, meta) {
     : '';
   $('#gcode').textContent = g.text;
   $('#dxf').textContent = dxf.text;
+  // the names in cnc.zip (and under cnc/ in project.zip)
   $('#gcode-meta').textContent =
-    `${POSTS[state.spec.post].name} · ${g.text.split('\n').length - 1} реда · list-${sh.index}.nc`;
-  $('#dxf-meta').textContent = `DXF R12 · ${dxf.layers.length} слоя · list-${sh.index}.dxf`;
+    `${POSTS[state.spec.post].name} · ${g.text.split('\n').length - 1} реда · ${cncFileName(sh.index, 'nc')}`;
+  $('#dxf-meta').textContent =
+    `DXF R12 · ${dxf.layers.length} слоя · ${cncFileName(sh.index, 'dxf')}`;
   $('#dxf-layers').innerHTML = dxf.layers.map((l) => `<code>${esc(l)}</code>`).join(' ');
   drawToolpath(state);
 }
