@@ -1,9 +1,12 @@
 // The CAD files as files (round 37): a DWG (code page 1252) loses no sign the drawings write — the Greek letters of the
 // rails' note (λ, ω, δ) by their names, like σ —; angles typed in a CAD program run counter-clockwise ($ANGDIR 0, in
 // the DXF and in the DWG); a file is dated as its record (the set's issue, the design's saving), local and universal,
-// and two downloads of the same record are the same bytes, in DXF and DWG, a project's views and an issued set alike.
+// and two downloads of the same record are the same bytes, in DXF and DWG, a project's views and an issued set alike,
+// whatever the time zone of the host (also in the hour a daylight saving change skips).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import path from 'node:path';
 import { PRESETS } from '@/calc/presets';
 import type { Shape } from '@/drawing';
 import { defaultInputs, layout } from '@/shaft';
@@ -127,4 +130,28 @@ test('due scaricamenti dello stesso record: gli stessi byte (DXF e DWG, progetto
   const other = toDwg(views, caption, new Date('2026-10-09T10:00:00Z')), h = acad.DwgReader.readFromStream(other.slice().buffer, null).header;
   const h0 = acad.DwgReader.readFromStream((first[1] ?? new Uint8Array()).slice().buffer, null).header;
   assert.ok(h && h0 && h.fingerPrintGuid !== h0.fingerPrintGuid && h.versionGuid !== h0.versionGuid && h.fingerPrintGuid !== h.versionGuid);
+});
+
+test('le date del DXF e del DWG non dipendono dal fuso orario della macchina, anche nell’ora saltata dall’ora legale', () => {
+  // the record's instant: an ordinary one; 02:30 UTC on the night Italy moves to summer time (a Rome host has no 02:30);
+  // 02:30 in Italy on the night New York does (a New York host has none); a winter one
+  const dates = ['2026-10-08T10:00:00Z', '2026-03-29T02:30:00Z', '2026-03-08T01:30:00Z', '2026-01-15T10:00:00Z'];
+  const run = (tz: string): unknown => {
+    const r = spawnSync(process.execPath, ['--import', 'tsx', path.join(process.cwd(), 'src/lib/__tests__/cad-tz-child.ts'), ...dates], { env: { ...process.env, TZ: tz }, encoding: 'utf8' });
+    assert.equal(r.status, 0, `${tz}: ${r.stderr}`);
+    return JSON.parse(r.stdout);
+  };
+  const utc = run('UTC');
+  for (const tz of ['Europe/Rome', 'America/New_York', 'Asia/Kolkata']) assert.deepEqual(run(tz), utc, tz);
+  // the dates themselves: Italy's wall clock (04:30 in summer time, 02:30 and 11:00 in winter) and the universal time
+  assert.ok(Array.isArray(utc) && utc.length === dates.length);
+  const rows = utc.map((r: unknown) => {
+    assert.ok(r !== null && typeof r === 'object' && 'local' in r && 'universal' in r && typeof r.local === 'string' && typeof r.universal === 'string');
+    return { local: r.local, universal: r.universal };
+  });
+  const rome = ['2026-10-08T12:00:00Z', '2026-03-29T04:30:00Z', '2026-03-08T02:30:00Z', '2026-01-15T11:00:00Z'];
+  rows.forEach((r, i) => {
+    assert.ok(Math.abs(Number(r.local) - julian(new Date(rome[i] ?? ''))) < 1e-7, `${dates[i]}: ${r.local}`);
+    assert.ok(Math.abs(Number(r.universal) - julian(new Date(dates[i] ?? ''))) < 1e-7, `${dates[i]}: ${r.universal}`);
+  });
 });

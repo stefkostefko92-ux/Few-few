@@ -8,13 +8,14 @@
 // part; dimensions drawn as lines, arrowheads and texts, so that every CAD program shows them the same way; concrete
 // hatched with ANSI31, the dark fills solid. Angles typed in a CAD program run counter-clockwise ($ANGDIR 0, as in
 // AutoCAD's own templates). A file is dated as its record (the set's issue, the design's saving: never the download)
-// and its identifiers come from that date and from what it is, so every download of a record gives the same bytes. The
+// and its identifiers come from that date and from what it is, so every download of a record gives the same bytes, in
+// any time zone of the host (stamp.ts). The
 // plan of a shaft design alone here, every view of a project in project.ts, an issued set with its sheet 1 and its
 // other paper sheets in set-export.ts.
-import { createHash } from 'node:crypto';
 import { COND, moveShapes, renderView, shapeBox, union, type Box, type Entity, type Fill, type Pt, type Shape } from '@/drawing';
 import { planDims, planEntities, type Layout } from '@/shaft';
 import { acad } from './acad';
+import { stamp } from './stamp';
 
 export type DxfLayer = 'MURI' | 'VANO' | 'CABINA' | 'PORTE' | 'GUIDE' | 'CONTRAPPESO' | 'ASSI' | 'SPAZI' | 'NASCOSTE' | 'DETTAGLI' | 'QUOTE' | 'TESTI' | 'SIMBOLI';
 
@@ -96,36 +97,6 @@ const VERSION: Readonly<Record<CadFormat, acad.ACadVersion>> = { dxf: acad.ACadV
 /** The line or lines under the first view of a file: what the drawing is, its record or its set and hash (and of a
  *  draft, where the sheets and values its views name are: project.ts draftCaption). */
 export type Caption = string | readonly string[];
-
-/** The wall-clock time in Italy of an instant, as a date whose UTC fields read it (a CAD file's local dates). */
-function romeClock(at: Date): Date {
-  const p = new Map<string, number>(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Rome', hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })
-    .formatToParts(at).map((x) => [x.type, Number(x.value)]));
-  const n = (k: string): number => p.get(k) ?? 0;
-  return new Date(Date.UTC(n('year'), n('month') - 1, n('day'), n('hour'), n('minute'), n('second'), at.getUTCMilliseconds()));
-}
-
-/** A GUID made from a text (a name-based one: the same text, the same GUID). */
-function guidOf(text: string): string {
-  const h = createHash('sha256').update(text).digest('hex');
-  return `${h.slice(0, 8)}-${h.slice(8, 12)}-5${h.slice(13, 16)}-${((parseInt(h.charAt(16), 16) & 3) | 8).toString(16)}${h.slice(17, 20)}-${h.slice(20, 32)}`;
-}
-
-/** A file's dates — created and saved at `at`, local (Italy) and universal — and its fingerprint and version GUIDs
- *  (acad-ts would take the clock and random ones) from that date and the lines under its first view. */
-function stamp(doc: acad.CadDocument, header: acad.CadHeader, at: Date, under: readonly string[]): void {
-  const local = romeClock(at), what = `${under.join('\n')}\n${at.toISOString()}`;
-  header.createDateTime = local;
-  header.updateDateTime = new Date(local.getTime());
-  header.universalCreateDateTime = new Date(at.getTime());
-  header.universalUpdateDateTime = new Date(at.getTime());
-  header.fingerPrintGuid = guidOf(`fingerprint\n${what}`);
-  header.versionGuid = guidOf(`version\n${what}`);
-  if (doc.summaryInfo) {
-    doc.summaryInfo.createdDate = new Date(local.getTime());
-    doc.summaryInfo.modifiedDate = new Date(local.getTime());
-  }
-}
 
 /** The views in one document; `title` under the first view; dated `at` (its record's date). */
 export function cadDocument(views: readonly CadView[], title: Caption, format: CadFormat, at: Date): acad.CadDocument {
