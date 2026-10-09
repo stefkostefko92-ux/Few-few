@@ -74,6 +74,8 @@
     "photo": "Fotorealistico",
     "photoSave": "Salva l'immagine (PNG)",
     "fullscreen": "Schermo intero",
+    "fullscreenExit": "Chiudi",
+    "zoomArea": "Disegno: le frecce spostano il foglio, + e − ingrandiscono o riducono, 0 mostra il foglio intero",
     "zoomIn": "Ingrandisci",
     "zoomOut": "Riduci",
     "zoomFit": "Foglio intero",

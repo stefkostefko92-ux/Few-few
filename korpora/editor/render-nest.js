@@ -52,7 +52,7 @@ export const sheetTitle = (sh) =>
 
 // one sheet on full screen (fullscreen.js binds the click); the label is the page's own (editor.fullscreen)
 const fsButton = (label) =>
-  `<button type="button" class="btn btn-small fs-btn" data-fs-sheet aria-pressed="false"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-expand"/></svg><span>${esc(label)}</span></button>`;
+  `<button type="button" class="btn btn-small fs-btn" data-fs-sheet><svg class="i" aria-hidden="true" focusable="false"><use href="#i-expand"/></svg><span>${esc(label)}</span></button>`;
 
 export function renderNesting(state, fullscreenLabel) {
   const button = fsButton(fullscreenLabel);

@@ -74,6 +74,8 @@
     "photo": "Photorealistic",
     "photoSave": "Save the image (PNG)",
     "fullscreen": "Full screen",
+    "fullscreenExit": "Close",
+    "zoomArea": "Drawing: the arrow keys move the sheet, + and − zoom, 0 shows the whole sheet",
     "zoomIn": "Zoom in",
     "zoomOut": "Zoom out",
     "zoomFit": "Whole sheet",

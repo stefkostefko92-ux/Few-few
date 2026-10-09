@@ -6,11 +6,6 @@
   gap: 12px;
   min-width: 0;
 }
-.fs-btn[aria-pressed='true'] {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-ink);
-}
 .zoombar {
   display: none;
   flex-wrap: wrap;
@@ -87,8 +82,25 @@ html.fs-lock body {
   outline: 2px solid var(--accent);
   outline-offset: -2px;
 }
+/* the sheet list keeps to a readable width: the buttons stay beside it, not on a row of their own */
+.row .acts select.pick {
+  max-width: min(100%, 420px);
+}
 @media (max-width: 640px) {
   .zoomhint {
     display: none;
+  }
+  /* phone: the sheet gets the screen — the heading and the copy button wait on the page; the sheet list takes
+     one row, „Close“ and the zoom buttons the next */
+  .is-full > .row > h2,
+  .is-full #copy-svg {
+    display: none;
+  }
+  .is-full > .row .acts {
+    width: 100%;
+  }
+  .is-full > .row .acts select.pick {
+    flex: 1 1 100%;
+    max-width: none;
   }
 }
