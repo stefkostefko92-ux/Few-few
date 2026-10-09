@@ -86,3 +86,46 @@ export const MAGIC = {
   /** Изпълним файл на Windows („MZ“) — трябва да бъде отказан, каквото и да е името. */
   exe: Buffer.concat([Buffer.from('MZ', 'latin1'), Buffer.alloc(62, 0x90)]),
 } as const;
+
+/**
+ * Заглавки със зададен размер в пиксели (не се декодират — моделът в тестовете е фалшив).
+ * `pad` удължава файла (за таваните по байтове).
+ */
+export function pngSized(width: number, height: number, pad = 32): Buffer {
+  const ihdr = Buffer.alloc(25);
+  ihdr.writeUInt32BE(13, 0);
+  ihdr.write('IHDR', 4, 'latin1');
+  ihdr.writeUInt32BE(width, 8);
+  ihdr.writeUInt32BE(height, 12);
+  ihdr[16] = 8; // битова дълбочина
+  ihdr[17] = 2; // RGB
+  return Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    ihdr,
+    Buffer.alloc(pad, 7),
+  ]);
+}
+
+export function jpegSized(width: number, height: number, sof = 0xc0): Buffer {
+  const app0 = Buffer.concat([Buffer.from([0xff, 0xe0, 0x00, 0x10]), Buffer.alloc(14, 0)]);
+  const frame = Buffer.alloc(19);
+  frame.writeUInt16BE(0xff00 | sof, 0);
+  frame.writeUInt16BE(17, 2);
+  frame[4] = 8;
+  frame.writeUInt16BE(height, 5);
+  frame.writeUInt16BE(width, 7);
+  return Buffer.concat([Buffer.from([0xff, 0xd8]), app0, frame, Buffer.alloc(16, 9)]);
+}
+
+export function webpSized(width: number, height: number): Buffer {
+  const vp8x = Buffer.alloc(18);
+  vp8x.write('VP8X', 0, 'latin1');
+  vp8x.writeUInt32LE(10, 4);
+  vp8x.writeUIntLE(width - 1, 12, 3);
+  vp8x.writeUIntLE(height - 1, 15, 3);
+  const body = Buffer.concat([Buffer.from('WEBP', 'latin1'), vp8x, Buffer.alloc(16, 3)]);
+  const riff = Buffer.alloc(8);
+  riff.write('RIFF', 0, 'latin1');
+  riff.writeUInt32LE(body.length, 4);
+  return Buffer.concat([riff, body]);
+}

@@ -1,22 +1,22 @@
 import { hasExactProductContext, type DiagnosticContext } from '../domain/context.js';
-import { canonicalIdentifier } from '../domain/normalize.js';
 import {
   lowerConfidence,
   stricterClass,
   type ActionClass,
-  type Confidence,
   type DiagnosticAnswer,
   type EvidenceLevel,
   type ModelDiagnosis,
-  type Outcome,
+  type ModelInputs,
   type SafetyLevel,
+  NO_MODEL_INPUTS,
 } from '../domain/response.js';
 import type { EvidenceItem, RetrievalResult } from '../retrieval/types.js';
-import { capsFor, lowerOutcome } from './caps.js';
+import { applyThresholds, lowerOutcome } from './caps.js';
 import { citationOf, verifyCitations } from './citations.js';
 import { collectFor } from './escalation.js';
 import { GATE_VERSION } from './version.js';
 import { detectBypassIntent } from './lexicon.js';
+import { applyPhotoRules, PHOTO_ONLY_BASIS } from './photos.js';
 import {
   approvesSafetyStep,
   isDangerousText,
@@ -48,6 +48,8 @@ export interface GateInput {
   question: string;
   knowledgeSnapshotId: string;
   promptVersion: string;
+  /** Кои прикачени файлове са стигнали до модела (P…/L…) и кои не — с код защо. */
+  inputs?: ModelInputs;
 }
 
 type RemovalReason =
@@ -197,44 +199,40 @@ export function applyGate(input: GateInput): DiagnosticAnswer {
     return true;
   });
 
-  // 6. Увереност и изход по прага (§8.3) — моделът не може да ги вдигне.
-  const caps = capsFor(input.level);
-  let confidence = lowerConfidence(draft.confidence, caps.confidence);
-  let status = lowerOutcome(draft.status, caps.outcome);
-  if (input.level === 'high' && status === 'identified' && confidence === 'high') {
-    // Две съгласни фрази без точен код — „висока/средно-висока“, не сигурност.
-    confidence = 'medium';
-  }
-  if (kept.length === 0 && causes.length === 0) {
-    status = 'undetermined';
-    confidence = 'low';
-    decisions.add('gate.noSupportedContent');
-  }
-  if (causes.length > 1 && status === 'identified') {
-    // Няколко подкрепени причини — не представяме една като сигурна (§10.3).
-    status = 'probable';
-    decisions.add('gate.multipleCauses');
-  }
-  if (input.level === 'weak') {
-    decisions.add('gate.weakEvidence');
-    for (const field of ['hardwareRevision', 'firmware'] as const) {
-      if (context[field] === null) missing.add(`ctx.${field}`);
-    }
-  }
-  if (input.level === 'conflict') decisions.add('gate.conflict');
-  for (const id of retrieval.unknownIdentifiers) {
-    decisions.add('gate.unknownIdentifier');
-    missing.add(`ctx.unknownIdentifier:${id}`);
-  }
-  // Кодът на случая го няма за този модел/версия (§16.3 „код, който не съществува“): никаква
-  // сигурност, дори ако пакетът има текст за подобен код.
-  const caseCode = context.errorCode ? canonicalIdentifier(context.errorCode) : null;
-  if (caseCode !== null && retrieval.unknownIdentifiers.includes(caseCode)) {
-    status = lowerOutcome(status, 'probable');
-    confidence = 'low';
-    escalate = true;
-    decisions.add('gate.unknownErrorCode');
-  }
+  // 6. Увереност и изход по прага (§8.3) — моделът не може да ги вдигне (`caps.ts`).
+  const t = applyThresholds({
+    level: input.level,
+    status: draft.status,
+    confidence: draft.confidence,
+    keptSteps: kept.length,
+    keptCauses: causes.length,
+    context,
+    unknownIdentifiers: retrieval.unknownIdentifiers,
+  });
+  let { status, confidence } = t;
+  for (const d of t.decisions) decisions.add(d);
+  for (const m of t.missing) missing.add(m);
+  if (t.escalate) escalate = true;
+
+  // 6a. Снимките (§9.2, AC-06): допълващи — само свалят изхода, никога не го вдигат (`photos.ts`).
+  const modelInputs = input.inputs ?? NO_MODEL_INPUTS;
+  const photo = applyPhotoRules({
+    observations: draft.photoObservations ?? [],
+    inputs: modelInputs,
+    context,
+  });
+  for (const d of photo.decisions) decisions.add(d);
+  for (const m of photo.missing) missing.add(m);
+  if (photo.maxOutcome) status = lowerOutcome(status, photo.maxOutcome);
+  if (photo.maxConfidence) confidence = lowerConfidence(confidence, photo.maxConfidence);
+  if (photo.escalate) escalate = true;
+  if (photo.block) blockForText('gate.textWithheld');
+  // Без подкрепена причина/стъпка снимката е единствената основа → без диагноза, само искане.
+  const photoOnly =
+    modelInputs.attachments.some((a) => a.kind === 'PHOTO') &&
+    kept.length === 0 &&
+    causes.length === 0;
+  if (photoOnly) decisions.add(PHOTO_ONLY_BASIS);
   if (status === 'undetermined' || input.level === 'conflict') escalate = true;
 
   // 7. Конфликтите — от търсенето (детерминистично) + от модела, ако са с валидни референции.
@@ -246,8 +244,8 @@ export function applyGate(input: GateInput): DiagnosticAnswer {
   ];
 
   // 8. Свободният текст към техника — преди да се фиксират нивото на безопасност и ескалацията.
-  const summary = screened(draft.summary, true);
-  const confidenceReason = screened(draft.confidenceReason, true);
+  const summary = photoOnly ? PHOTO_ONLY_BASIS : screened(draft.summary, true);
+  const confidenceReason = photoOnly ? PHOTO_ONLY_BASIS : screened(draft.confidenceReason, true);
   const escalationReason = screened(draft.escalation.reason, true);
   const safetyNotes = draft.safetyNotes.map((n) => screened(n, false));
 
@@ -288,6 +286,8 @@ export function applyGate(input: GateInput): DiagnosticAnswer {
       droppedCitations: dropped,
       decisions: [...decisions],
     },
+    photos: photo.photos,
+    modelInputs,
     knowledgeSnapshotId: input.knowledgeSnapshotId,
     // AC-09: версията на промпта И на правилата на Gate, дали отговора.
     promptVersion: `${input.promptVersion}+${GATE_VERSION}`,

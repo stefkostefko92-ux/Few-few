@@ -26,6 +26,8 @@ const answer = (over: Partial<DiagnosticAnswer> = {}): DiagnosticAnswer => ({
   missingData: [],
   escalation: { recommended: false, reason: '', collect: [] },
   gate: { evidenceLevel: 'strong', removedSteps: [], droppedCitations: [], decisions: [] },
+  photos: [],
+  modelInputs: { attachments: [], notSent: [] },
   knowledgeSnapshotId: 'ks_x',
   promptVersion: 'p+g',
   ...over,

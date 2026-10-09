@@ -12,13 +12,14 @@ import {
   requireUser,
 } from '../auth/guards.js';
 import { caseAudiences, coversAudiences } from '../auth/rbac.js';
-import type { DiagnosticAnswer } from '../domain/response.js';
 import { redactPii } from '../domain/pii.js';
 import {
   attachmentsByMessage,
   bindToMessage,
   type MessageAttachment,
 } from '../services/attachments.js';
+import { loadModelAttachments } from '../services/model-inputs.js';
+import { saveAiAnswer } from '../services/ai-answer.js';
 import { addTimeline, contextOf, findCaseFor, isUniqueOn } from '../services/cases.js';
 import { caseAudience, notify } from '../services/collab/notify.js';
 
@@ -27,7 +28,8 @@ import { caseAudience, notify } from '../services/collab/notify.js';
  * Записът на човешкото съобщение е ПРЕДИ извикването на модела: ако AI падне, разговорът
  * остава. Повтор със същия clientMessageId не дублира нищо (NFR-12).
  * Прикачените файлове (`attachmentIds`) се привързват към човешкото съобщение в същата
- * транзакция и НЕ се подават на AI — анализът на снимки е отделна стъпка (§9.2).
+ * транзакция; PHOTO/LOG от ТОВА съобщение отиват към модела като допълващо доказателство (§9.2,
+ * `services/model-inputs.ts` → `ai/attachments.ts`), само за този отговор, през Vertex в ЕС.
  */
 
 const MessageInput = z.object({
@@ -183,6 +185,16 @@ export function chatRouter(deps: WiredDeps): Router {
         }
         if (!deps.diagnose) return apiError(res, 503, 'ai_unavailable');
 
+        // Само файловете на ТОВА съобщение (вече CLEAN и в същия случай — bindToMessage).
+        const modelFiles =
+          files.length > 0
+            ? await loadModelAttachments(
+                deps.db,
+                deps.attachments?.store ?? null,
+                p.user.tenantId,
+                message.id,
+              )
+            : undefined;
         await deps.db.case.update({ where: { id: c.id }, data: { status: 'AI_IN_PROGRESS' } });
         const controller = new AbortController();
         res.on('close', () => {
@@ -200,6 +212,7 @@ export function chatRouter(deps: WiredDeps): Router {
                 content: h.body,
               })),
               locale: (LOCALES.has(p.user.locale) ? p.user.locale : 'it') as 'it' | 'en' | 'bg',
+              ...(modelFiles ? { attachments: modelFiles } : {}),
             },
             controller.signal,
           );
@@ -226,74 +239,12 @@ export function chatRouter(deps: WiredDeps): Router {
           return apiError(res, 503, 'ai_unavailable');
         }
 
-        const answer: DiagnosticAnswer = result.answer;
-        // Поет от оператор → остава при него; ескалиран с тикет → чака оператора, каквото и да
-        // каже AI; иначе по отговора.
-        const status =
-          c.status === 'IN_PROGRESS'
-            ? 'IN_PROGRESS'
-            : c.outcome === 'ESCALATED' ||
-                answer.escalation.recommended ||
-                answer.status === 'undetermined'
-              ? 'WAITING_TECHNICIAN'
-              : 'OPEN';
-        const aiMessage = await deps.db.$transaction(async (tx) => {
-          const created = await tx.caseMessage.create({
-            data: {
-              caseId: c.id,
-              kind: 'AI',
-              body: answer.summary,
-              payload: answer as unknown as Prisma.InputJsonValue,
-              knowledgeSnapshotId: answer.knowledgeSnapshotId,
-              promptVersion: answer.promptVersion,
-              audiences: [...audiences],
-            },
-          });
-          if (answer.evidence.length > 0) {
-            await tx.caseEvidence.createMany({
-              data: answer.evidence.map((e) => ({
-                caseId: c.id,
-                messageId: created.id,
-                documentId: e.documentId,
-                chunkId: e.chunkId,
-                errorId: e.errorId,
-                page: e.page,
-                quote: e.quote,
-              })),
-            });
-          }
-          await tx.case.update({ where: { id: c.id }, data: { status } });
-          await addTimeline(tx, c.id, 'ai.answer', null, {
-            messageId: created.id,
-            status: answer.status,
-            confidence: answer.confidence,
-            evidenceLevel: answer.gate.evidenceLevel,
-            decisions: answer.gate.decisions,
-          });
-          return created;
-        });
-        // FR-12: retrieval, извиквания на инструменти, версия на знанието и решенията на Gate.
-        await appendAudit(deps.db, {
+        const aiMessage = await saveAiAnswer(deps.db, {
+          c,
           tenantId: p.user.tenantId,
           actorId: p.user.id,
-          action: 'ai.answer',
-          objectType: 'case_message',
-          objectId: aiMessage.id,
-          detail: {
-            caseId: c.id,
-            modelCalled: result.modelCalled,
-            evidenceLevel: answer.gate.evidenceLevel,
-            evidenceRefs: result.evidence.map((e) => e.chunkId ?? e.errorId),
-            citations: answer.evidence.length,
-            removedSteps: answer.gate.removedSteps,
-            droppedCitations: answer.gate.droppedCitations,
-            decisions: answer.gate.decisions,
-            safety: answer.safety.level,
-            escalation: answer.escalation.recommended,
-            knowledgeSnapshotId: answer.knowledgeSnapshotId,
-            promptVersion: answer.promptVersion,
-            usage: result.usage,
-          },
+          audiences,
+          result,
         });
         // FR-18: нов AI отговор в собствен случай — за създателя/поелия, ако не е питал сам.
         await notify(
