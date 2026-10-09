@@ -46,6 +46,15 @@
     --t8: #b5a6e8;
   }
 }
+/* Owner's decision: Geologica's Bulgarian localized letterforms (OpenType locl) are off everywhere. The font
+   shorthand used across the editor resets font-feature-settings, so every element of the editor and its picker
+   carries it — the id outranks those rules. A font-feature-settings added in the editor keeps 'locl' 0 too. */
+:is(#main, #picker),
+:is(#main, #picker) *,
+:is(#main, #picker) *::before,
+:is(#main, #picker) *::after {
+  font-feature-settings: 'locl' 0;
+}
 .tc0 {
   --c: var(--ink-2);
 }

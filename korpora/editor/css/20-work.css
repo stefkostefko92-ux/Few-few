@@ -92,7 +92,10 @@
   color: var(--accent-ink);
 }
 .viewbar #photo-state {
-  font: 400 13px var(--f-ui);
+  /* longhands: the font shorthand would reset font-feature-settings ('locl' 0, 00-shell.css) */
+  font-family: var(--f-ui);
+  font-size: 13px;
+  font-weight: 400;
   min-width: 0;
 }
 .stats {

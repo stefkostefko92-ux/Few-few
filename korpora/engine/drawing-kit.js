@@ -12,8 +12,10 @@ const DIM = '#2c6a10';
 // print/brochure.css)
 export const PAPER = '#fbfcf9';
 // The faces the site loads (public/css/base.css, the brochure): Geologica for text, JetBrains Mono for numbers; a
-// drawing opened on its own falls back to the system's.
-export const STYLE = `svg.rdw{font-family:'Geologica',Inter,system-ui,sans-serif}
+// drawing opened on its own falls back to the system's. The Bulgarian localized letterforms (OpenType locl) are off,
+// as everywhere in the product; the font shorthand resets font-feature-settings, so it follows every font.
+const LOCL = "font-feature-settings:'locl' 0";
+export const STYLE = `svg.rdw{font-family:'Geologica',Inter,system-ui,sans-serif;${LOCL}}
 svg.rdw .d-paper{fill:${PAPER}}
 svg.rdw .d-frm,svg.rdw .d-tb rect,svg.rdw .d-tb line{fill:none;stroke:${INK};stroke-width:.5}
 svg.rdw .d-vis{fill:${PAPER};stroke:${INK};stroke-width:.35}
@@ -24,21 +26,21 @@ svg.rdw .d-cut{stroke:${INK};stroke-width:.35}
 svg.rdw .d-hl{stroke:${INK};stroke-width:.16}
 svg.rdw .d-dim,svg.rdw .d-ext{fill:none;stroke:${DIM};stroke-width:.18}
 svg.rdw .d-arwh{fill:${DIM}}
-svg.rdw .d-dt{font:500 2.9px 'JetBrains Mono',ui-monospace,monospace;fill:${DIM}}
-svg.rdw .d-vt{font:600 3.6px 'Geologica',system-ui,sans-serif;fill:${INK}}
-svg.rdw .d-note{font:400 2.6px 'Geologica',system-ui,sans-serif;fill:#2b3527}
-svg.rdw .d-small{font:400 2.2px 'Geologica',system-ui,sans-serif;fill:#2b3527}
-svg.rdw .d-tag{font:700 2.4px 'JetBrains Mono',ui-monospace,monospace;fill:${INK}}
-svg.rdw .d-tl{font:400 2.1px 'Geologica',system-ui,sans-serif;fill:#5b6656}
-svg.rdw .d-tv{font:500 3px 'JetBrains Mono',ui-monospace,monospace;fill:${INK}}
-svg.rdw .d-tv.d-big{font:600 3.6px 'Geologica',system-ui,sans-serif}
+svg.rdw .d-dt{font:500 2.9px 'JetBrains Mono',ui-monospace,monospace;${LOCL};fill:${DIM}}
+svg.rdw .d-vt{font:600 3.6px 'Geologica',system-ui,sans-serif;${LOCL};fill:${INK}}
+svg.rdw .d-note{font:400 2.6px 'Geologica',system-ui,sans-serif;${LOCL};fill:#2b3527}
+svg.rdw .d-small{font:400 2.2px 'Geologica',system-ui,sans-serif;${LOCL};fill:#2b3527}
+svg.rdw .d-tag{font:700 2.4px 'JetBrains Mono',ui-monospace,monospace;${LOCL};fill:${INK}}
+svg.rdw .d-tl{font:400 2.1px 'Geologica',system-ui,sans-serif;${LOCL};fill:#5b6656}
+svg.rdw .d-tv{font:500 3px 'JetBrains Mono',ui-monospace,monospace;${LOCL};fill:${INK}}
+svg.rdw .d-tv.d-big{font:600 3.6px 'Geologica',system-ui,sans-serif;${LOCL}}
 svg.rdw .d-open{fill:none;stroke:${INK};stroke-width:.16;stroke-dasharray:1.2 1}
 svg.rdw .d-gnd{stroke:${INK};stroke-width:.35}
 svg.rdw .d-cpl{stroke:${INK};stroke-width:.25;stroke-dasharray:6 1 1 1}
 svg.rdw .d-cplt{stroke:${INK};stroke-width:.7}
 svg.rdw .d-cpa{stroke:${INK};stroke-width:.25}
 svg.rdw .d-cpah{fill:${INK}}
-svg.rdw .d-alert{font:600 2.8px 'Geologica',system-ui,sans-serif;fill:#b42318}
+svg.rdw .d-alert{font:600 2.8px 'Geologica',system-ui,sans-serif;${LOCL};fill:#b42318}
 svg.rdw .d-cl{stroke:${INK};stroke-width:.16;stroke-dasharray:1.5 .6 .3 .6}
 svg.rdw .d-hole{fill:none;stroke:${INK};stroke-width:.22}
 svg.rdw .d-thru{fill:rgba(24,32,15,.18);stroke:${INK};stroke-width:.22}
