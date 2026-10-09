@@ -254,12 +254,12 @@ export default function Landing(): React.ReactElement {
         <LandingSetShowcase />
         <div className="set-grid set-grid-secondary" data-reveal-stagger>
           <SetCard rarity="common"    name="Wayfarer's Garb"     tier={t('landing.setWayfarerTier')}  iconSrc="/assets/icons/boots-t1.jpg"  lore={t('landing.setWayfarerLore')} bonuses={[['2', '+8 HP, +1 DEX'], ['4', '+18 HP, +2 DEX, +2 DEF']]} />
-          <SetCard rarity="uncommon"  name="Ironguard Plate"     tier={t('landing.setIronguardTier')} iconSrc="/assets/icons/armor-t2.jpg"  lore={t('landing.setIronguardLore')} bonuses={[['2', '+25 HP, +2 STR'], ['4', '+55 HP, +6 DEF, +3 STR'], ['6', '+100 HP, +12 DEF, +5 STR, +4 ATK']]} />
-          <SetCard rarity="uncommon"  name="Sylvan Marshal"      tier={t('landing.setSylvanTier')}    iconSrc="/assets/icons/bow-t2.jpg"    lore={t('landing.setSylvanLore')} bonuses={[['2', '+3 DEX, +3% Crit'], ['4', '+5 DEX, +4% Dodge, +3 ATK']]} />
-          <SetCard rarity="uncommon"  name="Arcane Conclave"     tier={t('landing.setArcaneTier')}    iconSrc="/assets/icons/staff-t2.jpg"  lore={t('landing.setArcaneLore')} bonuses={[['2', '+25 MP, +3 INT'], ['4', '+50 MP, +5 INT, +3 WIS']]} />
-          <SetCard rarity="uncommon"  name="Nightveil"           tier={t('landing.setNightveilTier')} iconSrc="/assets/icons/dagger-t2.jpg" lore={t('landing.setNightveilLore')} bonuses={[['2', '+3 DEX, +4% Dodge'], ['4', '+5 DEX, +5% Crit, +3 ATK']]} />
-          <SetCard rarity="rare"      name="Sunforged Champion"  tier={t('landing.setSunforgedTier')} iconSrc="/assets/icons/sword-t6.jpg"  lore={t('landing.setSunforgedLore')} bonuses={[['2', '+80 HP, +4 STR'], ['4', '+180 HP, +18 DEF, +6 STR, +8 ATK']]} />
-          <SetCard rarity="epic"      name="Voidshard Adept"     tier={t('landing.setVoidshardTier')} iconSrc="/assets/icons/staff-t8.jpg"  lore={t('landing.setVoidshardLore')} bonuses={[['2', '+60 MP, +6 INT'], ['4', '+120 MP, +10 INT, +8 WIS'], ['6', '+220 MP, +16 INT, +14 WIS, +16 ATK, +8% Crit']]} />
+          <SetCard rarity="uncommon"  name="Ironguard Plate"     tier={t('landing.setIronguardTier')} iconSrc="/assets/icons/armor-t2.jpg"  lore={t('landing.setIronguardLore')} bonuses={[['2', '+36 HP, +4 DEF, +2 STR'], ['4', '+63 HP, +6 DEF, +3 STR, +4 ATK'], ['6', '+81 HP, +8 DEF, +4 STR, +5 ATK']]} />
+          <SetCard rarity="uncommon"  name="Sylvan Marshal"      tier={t('landing.setSylvanTier')}    iconSrc="/assets/icons/bow-t2.jpg"    lore={t('landing.setSylvanLore')} bonuses={[['2', '+36 HP, +4 DEF, +2 DEX, +2% Crit'], ['4', '+63 HP, +6 DEF, +3 DEX, +4 ATK'], ['6', '+81 HP, +8 DEF, +4 DEX, +5 ATK, +2% Crit']]} />
+          <SetCard rarity="uncommon"  name="Arcane Conclave"     tier={t('landing.setArcaneTier')}    iconSrc="/assets/icons/staff-t2.jpg"  lore={t('landing.setArcaneLore')} bonuses={[['2', '+36 HP, +4 DEF, +2 INT, +18 MP'], ['4', '+63 HP, +6 DEF, +3 INT, +4 ATK, +31 MP'], ['6', '+81 HP, +8 DEF, +4 INT, +5 ATK, +41 MP, +1 WIS']]} />
+          <SetCard rarity="uncommon"  name="Nightveil"           tier={t('landing.setNightveilTier')} iconSrc="/assets/icons/dagger-t2.jpg" lore={t('landing.setNightveilLore')} bonuses={[['2', '+36 HP, +4 DEF, +2 DEX, +2% Dodge'], ['4', '+63 HP, +6 DEF, +3 DEX, +4 ATK'], ['6', '+81 HP, +8 DEF, +4 DEX, +5 ATK, +2% Crit']]} />
+          <SetCard rarity="rare"      name="Sunforged Champion"  tier={t('landing.setSunforgedTier')} iconSrc="/assets/icons/sword-t6.jpg"  lore={t('landing.setSunforgedLore')} bonuses={[['2', '+94 HP, +7 DEF, +3 STR'], ['4', '+165 HP, +12 DEF, +5 STR, +8 ATK'], ['6', '+212 HP, +15 DEF, +6 STR, +11 ATK']]} />
+          <SetCard rarity="epic"      name="Voidshard Adept"     tier={t('landing.setVoidshardTier')} iconSrc="/assets/icons/staff-t8.jpg"  lore={t('landing.setVoidshardLore')} bonuses={[['2', '+112 HP, +10 DEF, +4 INT, +56 MP'], ['4', '+196 HP, +17 DEF, +6 INT, +9 ATK, +98 MP'], ['6', '+252 HP, +22 DEF, +8 INT, +12 ATK, +126 MP, +2 WIS']]} />
           <SetCard rarity="legendary" name="Solar Mythwoven"     tier={t('landing.setSolarTier')}     iconSrc="/assets/icons/sword-t10.jpg" lore={t('landing.setSolarLore')} bonuses={[['2', '+150 HP, +6 STR'], ['4', '+320 HP, +24 DEF, +10 STR, +14 ATK'], ['6', '+600 HP, +50 DEF, +18 STR, +30 ATK, +10% Crit, +5% Dodge']]} />
         </div>
       </section>
@@ -382,11 +382,11 @@ export default function Landing(): React.ReactElement {
               REGION_BANDS) — заместват старата измислена сборна карта „Beyond
               the End“ (Lv 351–500), която не отговаряше на нито едно истинско
               владение. Виж PLAN.md „Факти" (втори проход). */}
-          <RegionCard color="#5a4a5a" art="/assets/regions/shadowfell.jpg"       name="The Ashen Veil"    range="Lv 351 – 381">{t('landing.regionAshenVeilBody')}</RegionCard>
-          <RegionCard color="#4a2a7a" art="/assets/regions/crystal_caverns.jpg"  name="Starfall Abyss"    range="Lv 381 – 411">{t('landing.regionStarfallBody')}</RegionCard>
-          <RegionCard color="#c78a2a" art="/assets/regions/ashen_wastes.jpg"     name="The Forge of Dawn" range="Lv 411 – 441">{t('landing.regionForgeOfDawnBody')}</RegionCard>
-          <RegionCard color="#3a0a14" art="/assets/regions/shadowfell.jpg"       name="Crown of Night"    range="Lv 441 – 471">{t('landing.regionCrownOfNightBody')}</RegionCard>
-          <RegionCard color="#f0e2b6" art="/assets/regions/crystal_caverns.jpg"  name="The First Light"   range="Lv 471 – 501">{t('landing.regionFirstLightBody')}</RegionCard>
+          <RegionCard color="#5a4a5a" art="/assets/regions/shadowfell.jpg"       name="The Ashen Veil"    range="Lv 351 – 380">{t('landing.regionAshenVeilBody')}</RegionCard>
+          <RegionCard color="#4a2a7a" art="/assets/regions/crystal_caverns.jpg"  name="The Starfall Abyss" range="Lv 381 – 410">{t('landing.regionStarfallBody')}</RegionCard>
+          <RegionCard color="#c78a2a" art="/assets/regions/ashen_wastes.jpg"     name="The Forge of Dawn" range="Lv 411 – 440">{t('landing.regionForgeOfDawnBody')}</RegionCard>
+          <RegionCard color="#3a0a14" art="/assets/regions/shadowfell.jpg"       name="The Crown of Night" range="Lv 441 – 470">{t('landing.regionCrownOfNightBody')}</RegionCard>
+          <RegionCard color="#f0e2b6" art="/assets/regions/crystal_caverns.jpg"  name="The First Light"   range="Lv 471 – 500">{t('landing.regionFirstLightBody')}</RegionCard>
         </div>
       </section>
 

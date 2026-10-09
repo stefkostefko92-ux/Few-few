@@ -10,7 +10,6 @@ export default function Settings(): React.ReactElement {
   const navigate = useNavigate();
   const toast = useStore((s) => s.toast);
   const logout = useStore((s) => s.logout);
-  const refresh = useStore((s) => s.refreshCharacter);
   const char = useStore((s) => s.character);
   const user = useStore((s) => s.user);
   const [acct, setAcct] = useState<{ username: string; email: string; created_at: number } | null>(null);
@@ -60,7 +59,9 @@ export default function Settings(): React.ReactElement {
     try {
       await api.post('/account/delete-character', { confirm: 'DELETE' });
       toast(t('settings.charDeleted'), 'info');
-      await refresh();
+      // Героят е изтрит на сървъра — нулирай го локално ПРЕДИ navigate, иначе
+      // /create вижда стария character и пренасочва обратно към /app.
+      useStore.setState({ character: null, derived: null, cooldowns: {} });
       navigate('/create');
     } catch (ex: any) {
       toast(ex.message, 'error');

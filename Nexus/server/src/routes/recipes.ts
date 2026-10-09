@@ -252,13 +252,15 @@ router.post('/socket', (req, res) => {
     const result = db.transaction(() => {
       const gem = db
         .prepare(
-          `SELECT inv.id AS inv_id, inv.quantity, inv.vaulted_guild_id, items.slug, items.name
+          `SELECT inv.id AS inv_id, inv.quantity, inv.vaulted_guild_id, inv.listed, items.slug, items.name
            FROM inventory inv JOIN items ON items.id = inv.item_id
            WHERE inv.id = ? AND inv.character_id = ?`,
         )
         .get(parse.data.gemInventoryId, char.id) as any;
       if (!gem) { const e: any = new Error('Gem not in your bag'); e.clientSafe = true; e.status = 404; throw e; }
       if (gem.vaulted_guild_id) { const e: any = new Error('Withdraw the gem from the guild vault first'); e.clientSafe = true; e.status = 400; throw e; }
+      // Обявен на пазара камък не се вгражда — иначе обявата оставаше „призрачна“.
+      if (gem.listed) { const e: any = new Error('Delist the gem from the market first'); e.clientSafe = true; e.status = 400; throw e; }
       const recipe = RECIPES.find((r) => r.gem_slug === gem.slug);
       if (!recipe) { const e: any = new Error('That item is not a gem.'); e.clientSafe = true; e.status = 400; throw e; }
       const weapon = db

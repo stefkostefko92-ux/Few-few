@@ -179,8 +179,9 @@ function settleWeek(isoWeekKey: string): void {
 }
 
 router.post('/claim', (req, res) => {
-  const wk = req.body?.iso_week as string | undefined;
-  if (!wk) { res.status(400).json({ error: 'iso_week required' }); return; }
+  const wk = req.body?.iso_week;
+  // Формат 2026-W41; нестроков/грешен вход беше 500 вместо 400.
+  if (typeof wk !== 'string' || !/^\d{4}-W\d{2}$/.test(wk)) { res.status(400).json({ error: 'iso_week required' }); return; }
   settleWeek(wk);
   const db = getDb();
   const char = db.prepare('SELECT * FROM characters WHERE user_id = ?').get(req.auth!.uid) as Character | undefined;

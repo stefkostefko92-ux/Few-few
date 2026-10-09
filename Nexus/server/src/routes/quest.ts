@@ -10,6 +10,7 @@ import { liveCombatTuning } from '../game/settings';
 import { applyCombatEvent } from '../game/events';
 import { loadEquipped } from '../game/equipment';
 import { applyGuildMultipliers } from '../game/rewards';
+import { loadGuildBuffsForCharacter } from '../game/guild';
 import { grantDrop, grantUniqueItem, DROP_RATES } from '../game/drops';
 import { claimCooldown } from '../game/cooldowns';
 import { trackBattlePass } from './battlepass';
@@ -173,7 +174,7 @@ router.post('/start', (req, res) => {
     }
     if (!rewardGranted && quest.monster_slug && Math.random() < DROP_RATES.quest) {
       const drop = grantDrop(char.id, char.level, char.class || '', monster.level);
-      if (drop.slug) itemRewardSlug = drop.slug;
+      if (drop.slug && !drop.duplicate) itemRewardSlug = drop.slug; // дубликатът е авто-продаден (refundGold), не е нов предмет
       if (drop.refundGold > 0) { goldGain += drop.refundGold; char.gold += drop.refundGold; }
     }
   }
@@ -182,7 +183,9 @@ router.post('/start', (req, res) => {
   // Загуба: −10% злато, но не повече от наградата на куеста — преди губеше
   // 10% от ЦЯЛОТО състояние (милиони на endgame) срещу залог от ~3k.
   if (result.winner === 'foe') {
-    char.gold -= questLossPenalty(char.gold, quest);
+    // Гилдийният Strongroom пази злато до тавана си — преди беше обещан, но без ефект.
+    const shield = loadGuildBuffsForCharacter(char.id)?.protected_gold ?? 0;
+    char.gold -= Math.min(questLossPenalty(char.gold, quest), Math.max(0, char.gold - shield));
   }
   db.prepare(
     `UPDATE characters SET xp = ?, level = ?, stat_points = ?, skill_points = ?, hp_max = ?, mp_max = ?, hp = ?, mp = ?, gold = ? WHERE id = ?`,

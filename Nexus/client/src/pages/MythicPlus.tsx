@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 
@@ -13,7 +14,6 @@ export default function MythicPlus(): React.ReactElement {
   const toast = useStore((s) => s.toast);
   const refresh = useStore((s) => s.refreshCharacter);
   const [state, setState] = useState<any>(null);
-  const [active, setActive] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   async function load() {
@@ -28,7 +28,6 @@ export default function MythicPlus(): React.ReactElement {
     try {
       await api.post('/mythic-plus/enter', { slug, tier });
       toast(t('mythicPlus.enteredToast', { name: slug, tier }), 'success');
-      setActive(slug);
       await load();
     } catch (e: any) { toast(e.message, 'error'); }
     finally { setBusy(false); }
@@ -58,7 +57,6 @@ export default function MythicPlus(): React.ReactElement {
       const r = await api.post('/mythic-plus/claim', { slug });
       const drop = r.milestoneDrop ? t('mythicPlus.dropSuffix', { name: r.milestoneDrop }) : '';
       toast(t('mythicPlus.claimToast', { tier: r.tier, gold: r.gold, xp: r.xp, drop }), 'success');
-      setActive(null);
       await load();
       refresh();
     } catch (e: any) { toast(e.message, 'error'); }
@@ -78,11 +76,21 @@ export default function MythicPlus(): React.ReactElement {
         {t('mythicPlus.description')}
       </p>
 
+      {/* Без изчистено скриптовано подземие списъкът е празен — страницата изглеждаше счупена. */}
+      {state.dungeons.length === 0 && (
+        <div className="panel empty-state">
+          <div className="empty-state-title">{t('mythicPlus.emptyTitle')}</div>
+          <p className="muted">{t('mythicPlus.emptyBody')}</p>
+          <Link to="/app/dungeons" className="btn btn-primary">{t('mythicPlus.emptyCta')}</Link>
+        </div>
+      )}
+
       <div className="dungeon-grid">
         {state.dungeons.map((d: any) => {
-          const isActive = active === d.slug;
-          const inProgress = d.current_stage > 0 || isActive;
-          const cleared = d.current_stage >= d.stages && d.current_stage > 0;
+          // run_active идва от сървъра (run_started_at) — оцелява при
+          // презареждане и се нулира при загуба, без локално състояние.
+          const inProgress = !!d.run_active;
+          const cleared = inProgress && d.current_stage >= d.stages;
           return (
             <div key={d.slug} className="card dungeon-card">
               <h3>{d.name}</h3>
@@ -109,11 +117,7 @@ export default function MythicPlus(): React.ReactElement {
                       </button>
                     )
                   ))}
-                  {d.best_tier === 0 && (
-                    <button className="btn btn-sm btn-primary" disabled={busy} onClick={() => enter(d.slug, 1)}>
-                      {t('mythicPlus.enterTier', { tier: 1 })}
-                    </button>
-                  )}
+                  {/* При best_tier 0 списъкът по-горе вече дава „ниво 1“ — без дубликат. */}
                 </div>
               )}
               {inProgress && !cleared && (

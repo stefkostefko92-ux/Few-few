@@ -145,7 +145,7 @@ export default function Sidebar(): React.ReactElement {
             {(char as any).current_title && <div className="sidebar-hero-title">{(char as any).current_title}</div>}
             {/* Нивото вече седи като бадж върху аватара (sidebar-hero-lvl) —
                 тук само класът, без повторение и без средна точка. */}
-            <div className="sidebar-hero-class">{char.class}</div>
+            <div className="sidebar-hero-class">{t(`common.class.${char.class}`, { defaultValue: char.class })}</div>
           </div>
         </div>
       )}

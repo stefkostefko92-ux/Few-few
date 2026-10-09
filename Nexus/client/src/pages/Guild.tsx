@@ -434,19 +434,47 @@ function ChatTab({ guildId, myCharId }: { guildId: number; myCharId?: number }) 
   const [messages, setMessages] = useState<any[]>([]);
   const [text, setText] = useState('');
   const [report, setReport] = useState<ReportTarget | null>(null);
+  const [sending, setSending] = useState(false);
   const lastIdRef = useRef(0);
   const streamRef = useRef<HTMLDivElement>(null);
 
+  // inFlight/again: SSE + polling + send пускаха паралелни load() с едно и
+  // също `after` → двойни съобщения. guildRef: отговор за предишна гилдия
+  // (смяна/напускане) се изхвърля, вместо да се смеси с новия чат.
+  const inFlight = useRef(false);
+  const again = useRef(false);
+  const guildRef = useRef(guildId);
+  guildRef.current = guildId;
+
   async function load() {
+    if (inFlight.current) { again.current = true; return; }
+    inFlight.current = true;
+    const forGuild = guildId;
     try {
       const r = await api.get(`/guild/chat?after=${lastIdRef.current}`);
+      if (guildRef.current !== forGuild) return;
       if (r.messages.length) {
-        setMessages((prev) => [...prev, ...r.messages]);
-        lastIdRef.current = r.messages[r.messages.length - 1].id;
+        setMessages((prev) => {
+          const seen = new Set(prev.map((m) => m.id));
+          const fresh = r.messages.filter((m: any) => !seen.has(m.id));
+          return fresh.length ? [...prev, ...fresh] : prev;
+        });
+        lastIdRef.current = Math.max(lastIdRef.current, r.messages[r.messages.length - 1].id);
       }
     } catch { /* ignore */ }
+    finally {
+      inFlight.current = false;
+      // Повторът минава през loadRef — най-новата версия (текущата гилдия).
+      if (again.current) { again.current = false; void loadRef.current(); }
+    }
   }
+  const loadRef = useRef(load);
+  loadRef.current = load;
   useEffect(() => {
+    // Нова гилдия → чист старт (иначе `after` от старата пропуска съобщения).
+    setMessages([]);
+    lastIdRef.current = 0;
+    again.current = false;
     load();
     // SSE: щом друг член прати съобщение, дръпни новите веднага. Polling-ът
     // (4s) остава fallback при паднала връзка.
@@ -459,12 +487,15 @@ function ChatTab({ guildId, myCharId }: { guildId: number; myCharId?: number }) 
   }, [messages]);
 
   async function send() {
-    if (!text.trim()) return;
+    // sending: Enter + клик пращаха едно съобщение многократно.
+    if (!text.trim() || sending) return;
+    setSending(true);
     try {
       await api.post('/guild/chat', { message: text.trim() });
       setText('');
       await load();
     } catch (e: any) { toast(e.message, 'error'); }
+    finally { setSending(false); }
   }
 
   return (
@@ -495,7 +526,7 @@ function ChatTab({ guildId, myCharId }: { guildId: number; myCharId?: number }) 
       {report && <ReportModal target={report} onClose={() => setReport(null)} />}
       <div className="chat-input">
         <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && send()} placeholder={t('guild.chat.placeholder')} maxLength={280} />
-        <button className="btn btn-primary" disabled={!text.trim()} onClick={send}>{t('guild.chat.send')}</button>
+        <button className="btn btn-primary" disabled={sending || !text.trim()} onClick={send}>{t('guild.chat.send')}</button>
       </div>
     </div>
   );
@@ -713,14 +744,19 @@ function UpgradeTab({ data, onChanged, onRefreshChar }: { data: GuildData; onCha
   const char = useStore((s) => s.character);
   const [donate, setDonate] = useState(100);
   const [currency, setCurrency] = useState<'gold' | 'gems'>('gold');
+  const [donating, setDonating] = useState(false);
 
   async function doDonate() {
+    // busy: двоен клик = двойно дарение (двойно изтеглено злато/гемове).
+    if (donating) return;
+    setDonating(true);
     try {
       const r = await api.post('/guild/donate', { amount: donate, currency });
       const tag = currency === 'gems' ? '💎' : 'g';
       toast(t('guild.upgrade.donated', { amount: donate, tag, xp: r.gold_equivalent }), 'success');
       await Promise.all([onChanged(), onRefreshChar()]);
     } catch (e: any) { toast(e.message, 'error'); }
+    finally { setDonating(false); }
   }
 
   async function doUpgrade() {
@@ -759,7 +795,7 @@ function UpgradeTab({ data, onChanged, onRefreshChar }: { data: GuildData; onCha
           onChange={(e) => setDonate(Number(e.target.value))}
           style={{ width: 140 }}
         />
-        <button className="btn btn-primary" disabled={!canAfford} onClick={doDonate}>
+        <button className="btn btn-primary" disabled={donating || !canAfford} onClick={doDonate}>
           {t('guild.upgrade.donateButton', { amount: donate, tag: currency === 'gems' ? ' 💎' : 'g' })}
         </button>
       </div>
@@ -816,10 +852,10 @@ function TrackUpgradePanel({ role, guildXp, onChanged }: { role: string; guildXp
         return (
           <div key={tr.key} className="card" style={{ padding: 14 }}>
             <div className="flex between">
-              <strong style={{ color: 'var(--gold-1)', fontFamily: 'var(--font-display)' }}>{tr.label}</strong>
+              <strong style={{ color: 'var(--gold-1)', fontFamily: 'var(--font-display)' }}>{t(`guild.upgrade.names.${tr.key}`, { defaultValue: tr.label })}</strong>
               <span className="tag" style={{ fontFamily: 'var(--font-mono)' }}>{t('guild.tracks.levelOf', { level: tr.level, max: tr.max })}</span>
             </div>
-            <div className="muted text-sm" style={{ marginTop: 4 }}>{tr.description}</div>
+            <div className="muted text-sm" style={{ marginTop: 4 }}>{t(`guild.upgrade.desc.${tr.key}`, { defaultValue: tr.description })}</div>
             <div className="bar" style={{ marginTop: 10 }}>
               <div className="bar-fill xp" style={{ width: `${pct}%` }} />
             </div>

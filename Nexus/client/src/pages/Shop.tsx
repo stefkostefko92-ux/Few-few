@@ -16,6 +16,7 @@ export default function Shop(): React.ReactElement {
   // Дневни оферти: item_id → промо цена (сървърът е авторитетен за отстъпката).
   const [deals, setDeals] = useState<Record<number, number>>({});
   const [dealsExpireAt, setDealsExpireAt] = useState(0);
+  const [busy, setBusy] = useState(false);
 
   async function load() {
     try {
@@ -38,12 +39,17 @@ export default function Shop(): React.ReactElement {
   const hoursLeft = Math.max(0, Math.ceil((dealsExpireAt - Date.now()) / 3_600_000));
 
   async function buy(id: number) {
+    // busy: двоен клик = двойна покупка (и двойно теглене на злато).
+    if (busy) return;
+    setBusy(true);
     try {
       await api.post('/shop/buy', { itemId: id, quantity: 1 });
       await refresh();
       toast(t('shop.purchaseComplete'), 'success');
     } catch (e: any) {
       toast(e.message, 'error');
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -78,7 +84,7 @@ export default function Shop(): React.ReactElement {
                       <span className="muted" style={{ textDecoration: 'line-through', fontSize: 12, marginRight: 6 }}>{it.buy_price.toLocaleString()}g</span>
                       <span className="gold" style={{ fontWeight: 700 }}>{deals[it.id].toLocaleString()}g</span>
                     </span>
-                    <button className="btn btn-primary btn-sm" disabled={!char || char.gold < deals[it.id] || it.level_req > (char?.level ?? 0)} onClick={() => buy(it.id)}>
+                    <button className="btn btn-primary btn-sm" disabled={busy || !char || char.gold < deals[it.id] || it.level_req > (char?.level ?? 0)} onClick={() => buy(it.id)}>
                       {t('shop.buy')}
                     </button>
                   </div>
@@ -119,7 +125,7 @@ export default function Shop(): React.ReactElement {
                 ) : (
                   <span className="gold">{t('shop.goldAmount', { n: it.buy_price })}</span>
                 )}
-                <button className="btn btn-primary btn-sm" disabled={!char || char.gold < priceOf(it)} onClick={() => buy(it.id)}>
+                <button className="btn btn-primary btn-sm" disabled={busy || !char || char.gold < priceOf(it)} onClick={() => buy(it.id)}>
                   {t('shop.buy')}
                 </button>
               </div>

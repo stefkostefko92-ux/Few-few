@@ -7,27 +7,43 @@ import type { MailEntry } from '../lib/types';
 export default function Mail(): React.ReactElement {
   const { t } = useTranslation();
   const refreshMail = useStore((s) => s.refreshMail);
+  const toast = useStore((s) => s.toast);
   const [mails, setMails] = useState<MailEntry[]>([]);
   const [selected, setSelected] = useState<MailEntry | null>(null);
+  // null = още се зарежда; без това празен списък изглеждаше като „няма поща“
+  // и при грешка (необработен reject).
+  const [loaded, setLoaded] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   async function load() {
-    const r = await api.get('/mail');
-    setMails(r.mails);
-    await refreshMail();
+    try {
+      const r = await api.get('/mail');
+      setMails(r.mails);
+      setLoaded(true);
+      setLoadError(false);
+      await refreshMail();
+    } catch (e: any) {
+      toast(e.message, 'error');
+      setLoadError(true);
+    }
   }
   useEffect(() => { load(); }, []);
 
   async function open(m: MailEntry) {
     setSelected(m);
     if (!m.read_at) {
-      await api.post(`/mail/${m.id}/read`);
-      await load();
+      try {
+        await api.post(`/mail/${m.id}/read`);
+        await load();
+      } catch (e: any) { toast(e.message, 'error'); }
     }
   }
   async function remove(m: MailEntry) {
-    await api.delete(`/mail/${m.id}`);
-    setSelected(null);
-    await load();
+    try {
+      await api.delete(`/mail/${m.id}`);
+      setSelected(null);
+      await load();
+    } catch (e: any) { toast(e.message, 'error'); }
   }
 
   return (
@@ -56,7 +72,14 @@ export default function Mail(): React.ReactElement {
               <div className="muted text-sm">{m.from_name}</div>
             </div>
           ))}
-          {mails.length === 0 && <div className="muted">{t('mail.noMail')}</div>}
+          {loadError && !loaded ? (
+            <div role="alert">
+              <div className="muted" style={{ marginBottom: 10 }}>{t('common.loadFailed')}</div>
+              <button className="btn btn-sm btn-primary" onClick={load}>{t('common.retry')}</button>
+            </div>
+          ) : !loaded ? (
+            <div className="muted">{t('common.loading')}</div>
+          ) : mails.length === 0 && <div className="muted">{t('mail.noMail')}</div>}
         </div>
         <div className="card" style={{ minHeight: 400 }}>
           {selected ? (

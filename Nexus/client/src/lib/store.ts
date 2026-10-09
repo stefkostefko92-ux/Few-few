@@ -124,7 +124,8 @@ export const useStore = create<State>((set, get) => ({
       set({ token: r.token, user: r.user });
       try {
         const c = await api.get('/character/me');
-        set({ character: c.character, derived: c.derived });
+        // cooldowns също — иначе до първия refresh таймерите изглеждат „готови“.
+        set({ character: c.character, derived: c.derived, cooldowns: c.cooldowns || {} });
         try {
           const m = await api.get('/mail');
           set({ unreadMail: m.unread ?? 0 });
@@ -157,8 +158,13 @@ export const useStore = create<State>((set, get) => ({
     try {
       const r = await api.get('/character/me');
       set({ character: r.character, derived: r.derived, cooldowns: r.cooldowns || {} });
-    } catch {
-      /* ignore */
+    } catch (e) {
+      // 404 = героят вече не съществува (изтрит) — без нулиране старият герой
+      // остава в store-а и /create връща обратно към /app. Временните грешки
+      // (мрежа/5xx) не пипат текущото състояние.
+      if ((e as { status?: number })?.status === 404) {
+        set({ character: null, derived: null, cooldowns: {} });
+      }
     }
   },
 

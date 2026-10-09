@@ -36,7 +36,7 @@ router.get('/active', (req, res) => {
   const other = offer.from_id === me.id ? offer.to_id : offer.from_id;
   const otherChar = db.prepare('SELECT id, name FROM characters WHERE id = ?').get(other) as { id: number; name: string };
   const hydrate = (ids: number[]) => ids.length
-    ? db.prepare(`SELECT inv.id AS inv_id, items.slug, items.name, items.rarity, items.icon FROM inventory inv JOIN items ON items.id = inv.item_id WHERE inv.id IN (${ids.map(() => '?').join(',')})`).all(...ids)
+    ? db.prepare(`SELECT inv.id AS inv_id, inv.quantity, items.slug, items.name, items.rarity, items.icon FROM inventory inv JOIN items ON items.id = inv.item_id WHERE inv.id IN (${ids.map(() => '?').join(',')})`).all(...ids)
     : [];
   const feePct = getSetting<number>('market_fee_pct');
   const myGold = offer.from_id === me.id ? offer.from_gold : offer.to_gold;

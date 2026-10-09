@@ -73,11 +73,11 @@ export default function Tower(): React.ReactElement {
         {status && (
           <div className="card" style={{ padding: 18, position: 'relative', overflow: 'hidden' }}>
             <div className="ambient-stars" />
-            <div className="flex" style={{ gap: 20, position: 'relative', alignItems: 'center' }}>
-              <div style={{ width: 80, height: 80, display: 'grid', placeItems: 'center', background: 'radial-gradient(circle, rgba(194,148,255,.22), transparent 70%)', borderRadius: 14 }}>
+            <div className="flex tower-gate" style={{ gap: 20, position: 'relative', alignItems: 'center' }}>
+              <div style={{ width: 80, height: 80, flexShrink: 0, display: 'grid', placeItems: 'center', background: 'radial-gradient(circle, rgba(194,148,255,.22), transparent 70%)', borderRadius: 14 }}>
                 <Sprite name="icon-portal" tone="mage" size={64} />
               </div>
-              <div style={{ flex: 1 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="muted text-sm" style={{ textTransform: 'uppercase', letterSpacing: '.12em' }}>{t('tower.nextGate')}</div>
                 <h2 style={{ margin: 0, fontFamily: 'var(--font-display)', color: 'var(--gold-1)' }}>
                   {t('tower.floor', { n: status.next_floor })}
@@ -85,8 +85,6 @@ export default function Tower(): React.ReactElement {
                 </h2>
                 <div className="muted text-sm" style={{ marginTop: 6 }}>
                   {t('tower.reward', { gold: status.next_reward.gold, xp: status.next_reward.xp })}{status.next_reward.vault ? t('tower.doubled') : ''}
-                </div>
-                <div className="muted text-sm">
                 </div>
               </div>
               <button className="btn btn-primary" onClick={climb} disabled={climbing} style={{ fontSize: 16 }}>

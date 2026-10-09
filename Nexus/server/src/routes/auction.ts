@@ -156,7 +156,10 @@ router.get('/', (_req, res) => {
   });
 });
 
-const bidSchema = z.object({ amount: z.number().int().min(1) });
+// listingId е по избор (стари клиенти), но ако е подаден, трябва да е текущата
+// обява — иначе залог, пратен в последната секунда на часа, би паднал върху
+// следващия предмет.
+const bidSchema = z.object({ amount: z.number().int().min(1), listingId: z.number().int().positive().optional() });
 router.post('/bid', (req, res) => {
   const parse = bidSchema.safeParse(req.body);
   if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
@@ -166,6 +169,10 @@ router.post('/bid', (req, res) => {
   if (!char) { res.status(404).json({ error: 'No character' }); return; }
   const listing = getOrCreateCurrent();
   if (!listing) { res.status(404).json({ error: 'No auction running' }); return; }
+  if (parse.data.listingId !== undefined && parse.data.listingId !== listing.id) {
+    res.status(409).json({ error: 'That auction has already closed — a new item is up. Refresh and bid again.' });
+    return;
+  }
   // Отменена от админ обява на текущия час остава затворена до следващия.
   if (listing.settled || listing.cancelled_at) { res.status(409).json({ error: 'This auction was closed by the realm administrators.' }); return; }
   if (listing.bidder_id === char.id) {

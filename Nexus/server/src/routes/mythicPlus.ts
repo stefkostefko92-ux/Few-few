@@ -67,6 +67,10 @@ router.get('/', (req, res) => {
         current_tier: p.current_tier,
         current_stage: p.current_stage,
         consecutive_fails: p.consecutive_fails,
+        // Авторитетният флаг за активно бягане: след /enter current_stage е 0,
+        // затова клиентът не може да го извежда от него (губеше бягането при
+        // презареждане, а след загуба го „помнеше“ локално).
+        run_active: !!p.run_started_at,
         next_tier_scaling_pct: Math.round(((p.current_tier + 1) * TIER_SCALE) * 100),
       };
     });

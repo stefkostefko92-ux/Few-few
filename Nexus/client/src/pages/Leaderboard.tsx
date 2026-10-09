@@ -40,16 +40,16 @@ export default function Leaderboard(): React.ReactElement {
 
       {tab === 'arena' && (
         <div className="table-scroll">
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <table className="lb-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr>
               <Th>#</Th>
               <Th>{t('leaderboard.th.name')}</Th>
-              <Th>{t('leaderboard.th.class')}</Th>
-              <Th>{t('leaderboard.th.level')}</Th>
+              <Th className="lb-wide">{t('leaderboard.th.class')}</Th>
+              <Th className="lb-wide">{t('leaderboard.th.level')}</Th>
               <Th>{t('leaderboard.th.rating')}</Th>
-              <Th>{t('leaderboard.th.wins')}</Th>
-              <Th>{t('leaderboard.th.losses')}</Th>
+              <Th className="lb-wide">{t('leaderboard.th.wins')}</Th>
+              <Th className="lb-wide">{t('leaderboard.th.losses')}</Th>
             </tr>
           </thead>
           <tbody>
@@ -65,12 +65,14 @@ export default function Leaderboard(): React.ReactElement {
                     <strong style={{ color: 'var(--text-1)' }}>{r.name}</strong>
                   </Link>
                   {r.is_npc ? <span className="tag" style={{ marginLeft: 8 }}>{t('leaderboard.npc')}</span> : null}
+                  {/* Само на телефон (виж .lb-sub): колоните отдясно не се побират в 390px. */}
+                  <div className="lb-sub">{t(`common.class.${r.class}`, { defaultValue: r.class })} · {t('common.lv', { defaultValue: 'Lv' })} {r.level} · <span className="emerald">{r.wins}</span>/<span className="crimson">{r.losses}</span></div>
                 </Td>
-                <Td style={{ textTransform: 'capitalize' }}>{t(`common.class.${r.class}`, { defaultValue: r.class })}</Td>
-                <Td>{r.level}</Td>
+                <Td className="lb-wide" style={{ textTransform: 'capitalize' }}>{t(`common.class.${r.class}`, { defaultValue: r.class })}</Td>
+                <Td className="lb-wide">{r.level}</Td>
                 <Td><span className="gold">{r.arena_rating}</span></Td>
-                <Td className="emerald">{r.wins}</Td>
-                <Td className="crimson">{r.losses}</Td>
+                <Td className="emerald lb-wide">{r.wins}</Td>
+                <Td className="crimson lb-wide">{r.losses}</Td>
               </tr>
             ))}
             {rows.length === 0 && (
@@ -105,13 +107,13 @@ export default function Leaderboard(): React.ReactElement {
             </div>
           )}
           <div className="table-scroll">
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <table className="lb-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
                 <Th>#</Th>
                 <Th>{t('leaderboard.th.name')}</Th>
-                <Th>{t('leaderboard.th.class')}</Th>
-                <Th>{t('leaderboard.th.level')}</Th>
+                <Th className="lb-wide">{t('leaderboard.th.class')}</Th>
+                <Th className="lb-wide">{t('leaderboard.th.level')}</Th>
                 <Th>{t('leaderboard.th.points', { defaultValue: 'Points' })}</Th>
               </tr>
             </thead>
@@ -125,9 +127,10 @@ export default function Leaderboard(): React.ReactElement {
                     <Link to={`/app/player/${encodeURIComponent(r.name)}`} style={{ color: 'var(--text-1)', textDecoration: 'none' }}>
                       <strong style={{ color: 'var(--text-1)' }}>{r.name}</strong>
                     </Link>
+                    <div className="lb-sub">{t(`common.class.${r.class}`, { defaultValue: r.class })} · {t('common.lv', { defaultValue: 'Lv' })} {r.level}</div>
                   </Td>
-                  <Td style={{ textTransform: 'capitalize' }}>{t(`common.class.${r.class}`, { defaultValue: r.class })}</Td>
-                  <Td>{r.level}</Td>
+                  <Td className="lb-wide" style={{ textTransform: 'capitalize' }}>{t(`common.class.${r.class}`, { defaultValue: r.class })}</Td>
+                  <Td className="lb-wide">{r.level}</Td>
                   <Td><span className="gold">{r.points.toLocaleString()}</span></Td>
                 </tr>
               ))}
@@ -143,5 +146,5 @@ export default function Leaderboard(): React.ReactElement {
   );
 }
 
-function Th({ children }: any) { return <th style={{ textAlign: 'left', padding: '12px 16px', fontSize: 11, textTransform: 'uppercase', letterSpacing: '.08em', color: 'var(--text-3)' }}>{children}</th>; }
+function Th({ children, className }: any) { return <th className={className} style={{ textAlign: 'left', padding: '12px 16px', fontSize: 11, textTransform: 'uppercase', letterSpacing: '.08em', color: 'var(--text-3)' }}>{children}</th>; }
 function Td({ children, ...rest }: any) { return <td style={{ padding: '12px 16px' }} {...rest}>{children}</td>; }

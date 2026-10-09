@@ -55,7 +55,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   // Bestiary / collection
   { slug: 'bestiary_5',  name: 'Tracker',      description: 'Defeat 5 different kinds of monster.',  icon: '📖', goldReward: 40,  unlockedAt: (s) => s.unique_bestiary >= 5 },
   { slug: 'bestiary_10', name: 'Naturalist',   description: 'Defeat 10 different kinds of monster.', icon: '📜', goldReward: 150, unlockedAt: (s) => s.unique_bestiary >= 10 },
-  { slug: 'bestiary_all', name: 'Loremaster',  description: 'Catalog every monster in Nexus Dominion.',      icon: '📚', title: 'Loremaster', goldReward: 1500, unlockedAt: (s) => s.unique_bestiary >= 17 },
+  { slug: 'bestiary_all', name: 'Loremaster',  description: 'Defeat 17 different kinds of monster.', icon: '📚', title: 'Loremaster', goldReward: 1500, unlockedAt: (s) => s.unique_bestiary >= 17 },
 
   // Dungeons
   { slug: 'dungeon_1',   name: 'Delver',       description: 'Clear your first dungeon.',  icon: '🗝', goldReward: 80, unlockedAt: (s) => s.dungeons_cleared >= 1 },

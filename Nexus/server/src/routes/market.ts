@@ -46,7 +46,7 @@ router.get('/', (req, res) => {
   const rows = db
     .prepare(
       `SELECT m.id AS listing_id, m.price_gold, m.listed_at, m.seller_id,
-              items.*, s.name AS seller_name, s.class AS seller_class, s.level AS seller_level,
+              items.*, s.name AS seller_name, s.class AS seller_class, s.level AS seller_level, s.is_npc AS seller_is_npc,
               (SELECT MIN(m2.price_gold) FROM marketplace_listings m2
                 WHERE m2.item_id = m.item_id AND m2.status = 'active') AS cheapest_active,
               (SELECT m3.price_gold FROM marketplace_listings m3

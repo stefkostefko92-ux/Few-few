@@ -98,10 +98,15 @@ export default function Dungeons(): React.ReactElement {
 
   async function abandon() {
     if (!confirm(t('dungeons.abandonConfirm'))) return;
-    await api.post('/dungeon/abandon');
-    setActive(null);
-    setFight(null);
-    await load();
+    // try: необработен reject при грешка оставяше UI без обратна връзка.
+    try {
+      await api.post('/dungeon/abandon');
+      setActive(null);
+      setFight(null);
+      await load();
+    } catch (e: any) {
+      toast(e.message, 'error');
+    }
   }
 
   if (fight) {
@@ -195,8 +200,10 @@ export default function Dungeons(): React.ReactElement {
             {(() => {
               const onCd = !!d.cooldown_until && d.cooldown_until > Date.now();
               const cdMs = onCd ? (d.cooldown_until as number) - Date.now() : 0;
-              const cdH = Math.floor(cdMs / 3_600_000);
-              const cdM = Math.ceil((cdMs % 3_600_000) / 60_000);
+              // ceil на ОБЩИТЕ минути, после h/m — иначе 1:59:30 → „1h 60m“.
+              const cdTotalM = Math.ceil(cdMs / 60_000);
+              const cdH = Math.floor(cdTotalM / 60);
+              const cdM = cdTotalM % 60;
               return (
                 <button
                   className="btn btn-primary"

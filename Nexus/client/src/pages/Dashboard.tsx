@@ -19,8 +19,12 @@ export default function Dashboard(): React.ReactElement {
 
   if (!char || !derived) return <div className="muted">{t('common.loading')}</div>;
 
-  const xpForNext = Math.floor(50 * Math.pow(char.level + 1, 1.7));
-  const xpCurrent = Math.floor(50 * Math.pow(char.level, 1.7));
+  // Огледало на сървърната крива (server/src/game/progression.ts) и
+  // Sidebar: xpForLevel(1) === 0 — суровата формула на ниво 1 даваше 50 и
+  // барът изоставаше от Sidebar-а.
+  const xpForLevel = (lvl: number) => (lvl <= 1 ? 0 : Math.floor(50 * Math.pow(lvl, 1.7)));
+  const xpForNext = xpForLevel(char.level + 1);
+  const xpCurrent = xpForLevel(char.level);
   const pct = Math.max(0, Math.min(100, ((char.xp - xpCurrent) / (xpForNext - xpCurrent)) * 100));
   // char.xp идва от сървъра по собствена крива на нивелиране; тази клиентска
   // формула е само за прогрес-бара и може да не съвпадне 1:1 (напр. herald
@@ -50,7 +54,7 @@ export default function Dashboard(): React.ReactElement {
             <div>
               <h1 style={{ color: 'var(--gold-1)' }}>{char.name}</h1>
               <div className="muted" style={{ textTransform: 'uppercase', letterSpacing: '.12em', fontSize: 12 }}>
-                {t(`common.class.${char.class}`, { defaultValue: char.class })} · {t('dashboard.heroOfTheRealm')}
+                {t(`common.class.${char.class}`, { defaultValue: char.class })}{(char as any).current_title ? ` · ${(char as any).current_title}` : ''}
               </div>
             </div>
             <div className="flex gap-md" style={{ flexWrap: 'wrap' }}>

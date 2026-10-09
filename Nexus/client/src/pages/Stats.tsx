@@ -1,16 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
+import { useStore } from '../lib/store';
 
 export default function Stats(): React.ReactElement {
   const { t } = useTranslation();
+  const toast = useStore((s) => s.toast);
   const [data, setData] = useState<any>(null);
+  const [loadError, setLoadError] = useState(false);
 
-  useEffect(() => {
-    api.get('/stats').then(setData).catch(() => {});
-  }, []);
+  // Грешката се показва (toast + повторен опит) — иначе вечно „зареждане…“.
+  const load = () => {
+    setLoadError(false);
+    api.get('/stats').then(setData).catch((e: any) => { toast(e.message, 'error'); setLoadError(true); });
+  };
+  useEffect(() => { load(); }, []);
 
-  if (!data) return <div className="muted">{t('common.loading')}</div>;
+  if (!data) {
+    if (loadError) {
+      return (
+        <div className="panel" role="alert">
+          <div className="muted" style={{ marginBottom: 12 }}>{t('common.loadFailed')}</div>
+          <button className="btn btn-primary" onClick={load}>{t('common.retry')}</button>
+        </div>
+      );
+    }
+    return <div className="muted">{t('common.loading')}</div>;
+  }
 
   const c = data.character;
   const l = data.lifetime;

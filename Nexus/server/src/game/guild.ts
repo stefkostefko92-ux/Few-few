@@ -29,13 +29,14 @@ import { getSetting } from './settings';
 export type TrackKey =
   | 'attr' | 'power' | 'defence' | 'exp_bonus' | 'gold_bonus' | 'gold_protected';
 
+// Описанията трябва да съвпадат с computeBuffs() по-долу (преди обещаваха 2× повече XP/злато).
 export const GUILD_TRACKS: { key: TrackKey; column: string; label: string; description: string; max: number }[] = [
   { key: 'attr',           column: 'attr_level',         label: 'Bloodlines',      description: '+0.5% to every attribute per level (str / dex / con / int / wis / cha).', max: 100 },
   { key: 'power',          column: 'power_level',        label: 'Guild Power',      description: '+0.5% attack damage per level.', max: 100 },
-  { key: 'defence',        column: 'defence_level',      label: 'Guild Defence',    description: '+1.0% defense per level.', max: 100 },
-  { key: 'exp_bonus',      column: 'exp_bonus_level',    label: 'Scholarship',      description: '+2% XP gained per level — applies to every reward.', max: 100 },
-  { key: 'gold_bonus',     column: 'gold_bonus_level',   label: 'Merchant Charter', description: '+2% gold earned per level — applies to every reward.', max: 100 },
-  { key: 'gold_protected', column: 'gold_level',         label: 'Strongroom',       description: '+500 protected gold per level. Gold under this cap cannot be lost in PvP.', max: 100 },
+  { key: 'defence',        column: 'defence_level',      label: 'Guild Defence',    description: '+0.5% defense per level.', max: 100 },
+  { key: 'exp_bonus',      column: 'exp_bonus_level',    label: 'Scholarship',      description: '+0.75% XP gained per level — applies to every reward.', max: 100 },
+  { key: 'gold_bonus',     column: 'gold_bonus_level',   label: 'Merchant Charter', description: '+0.75% gold earned per level — applies to every reward.', max: 100 },
+  { key: 'gold_protected', column: 'gold_level',         label: 'Strongroom',       description: '+500 protected gold per level. Gold up to this amount is never lost when you fall on a quest.', max: 100 },
 ];
 
 export interface GuildLevels {

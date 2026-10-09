@@ -38,6 +38,7 @@ export default function Recipes(): React.ReactElement {
   const [data, setData] = useState<{ gold: number; recipes: Recipe[]; tallies: Record<string, number> } | null>(null);
   const [bag, setBag] = useState<InventoryItem[]>([]);
   const [socketSel, setSocketSel] = useState<{ gemId: number | null; weaponId: number | null }>({ gemId: null, weaponId: null });
+  const [busy, setBusy] = useState(false);
 
   async function load() {
     try {
@@ -48,22 +49,28 @@ export default function Recipes(): React.ReactElement {
   }
   useEffect(() => { load(); }, []);
 
+  // busy: двоен клик = две варения/вграждания (двойно похарчени трофеи/злато).
   async function brew(slug: string) {
+    if (busy) return;
+    setBusy(true);
     try {
       const r = await api.post('/recipes/brew', { slug });
       toast(t('recipes.brewedToast', { gem: r.gem }), 'success');
       await Promise.all([load(), refresh()]);
     } catch (e: any) { toast(e.message, 'error'); }
+    finally { setBusy(false); }
   }
 
   async function socket() {
-    if (!socketSel.gemId || !socketSel.weaponId) return;
+    if (!socketSel.gemId || !socketSel.weaponId || busy) return;
+    setBusy(true);
     try {
       const r = await api.post('/recipes/socket', { gemInventoryId: socketSel.gemId, weaponInventoryId: socketSel.weaponId });
       toast(t('recipes.socketedToast', { amount: r.amount, stat: STAT_LABEL[r.stat] || r.stat }), 'success');
       setSocketSel({ gemId: null, weaponId: null });
       await Promise.all([load(), refresh()]);
     } catch (e: any) { toast(e.message, 'error'); }
+    finally { setBusy(false); }
   }
 
   const gems = bag.filter((b) => ['gem_might', 'gem_swiftness', 'gem_mind'].includes(b.slug));
@@ -114,7 +121,7 @@ export default function Recipes(): React.ReactElement {
 
                 <button
                   className="btn btn-primary"
-                  disabled={!r.can_brew}
+                  disabled={busy || !r.can_brew}
                   onClick={() => brew(r.slug)}
                   style={{ marginTop: 12, width: '100%' }}
                 >
@@ -168,7 +175,7 @@ export default function Recipes(): React.ReactElement {
         )}
         <button
           className="btn btn-primary"
-          disabled={!socketSel.gemId || !socketSel.weaponId}
+          disabled={busy || !socketSel.gemId || !socketSel.weaponId}
           onClick={socket}
           style={{ marginTop: 16, width: '100%' }}
         >
