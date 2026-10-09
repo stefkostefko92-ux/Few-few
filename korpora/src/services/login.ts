@@ -3,7 +3,6 @@ import { audit } from '../audit.js';
 import { config } from '../config.js';
 import { decryptSecret } from '../crypto.js';
 import { prisma } from '../db.js';
-import { fingerprintHash } from '../auth/device.js';
 import { MAX_FAILED_LOGINS } from '../auth/lock.js';
 import { dummyHash, hashPassword, needsRehash, verifyPassword } from '../auth/password.js';
 import { consumeRecoveryCode } from '../auth/recovery.js';
@@ -53,7 +52,8 @@ async function ipFailures(ip: string | null): Promise<number> {
 /**
  * Вход с имейл и парола. Непознат имейл, грешна парола и заключен акаунт дават ЕДНО И СЪЩО
  * съобщение. Причината за бан се показва само след вярна парола — тя е доказателство, че това е
- * собственикът на акаунта.
+ * собственикът на акаунта. Отпечатък на устройството се пази само при успешен вход в акаунт със
+ * съгласие — при неуспешен опит кой опитва, не се знае, значи и съгласие няма.
  */
 export async function attemptLogin(
   rawEmail: string,
@@ -61,9 +61,8 @@ export async function attemptLogin(
   meta: RequestMeta,
   device: DeviceContext,
 ): Promise<LoginResult> {
-  const fp = device.fingerprint ? fingerprintHash(device.fingerprint) : null;
   if ((await ipFailures(meta.ip)) >= IP_MAX_FAILURES) {
-    await recordLogin('THROTTLED', meta, { fingerprint: fp });
+    await recordLogin('THROTTLED', meta);
     return { kind: 'throttled' };
   }
   const email = emailSchema.safeParse(rawEmail);
@@ -72,18 +71,18 @@ export async function attemptLogin(
     : null;
   if (!user) {
     await verifyPassword(password, await dummyHash());
-    await recordLogin('UNKNOWN_EMAIL', meta, { fingerprint: fp });
+    await recordLogin('UNKNOWN_EMAIL', meta);
     return { kind: 'invalid' };
   }
   // Опитът се заема преди проверката: паралелни заявки не надхвърлят тавана преди заключването.
   if (!(await reserveAttempt(user, meta)).reserved) {
     await verifyPassword(password, await dummyHash());
-    await recordLogin('LOCKED', meta, { userId: user.id, fingerprint: fp });
+    await recordLogin('LOCKED', meta, { userId: user.id });
     return { kind: 'invalid' };
   }
   if (!(await verifyPassword(password, user.passwordHash))) {
     await attemptFailed(user, meta);
-    await recordLogin('BAD_PASSWORD', meta, { userId: user.id, fingerprint: fp });
+    await recordLogin('BAD_PASSWORD', meta, { userId: user.id });
     return { kind: 'invalid' };
   }
   const mfaRequired = Boolean(user.totpEnabledAt);
@@ -97,15 +96,15 @@ export async function attemptLogin(
     });
   }
   if (user.bannedAt) {
-    await recordLogin('BANNED', meta, { userId: user.id, fingerprint: fp });
+    await recordLogin('BANNED', meta, { userId: user.id });
     return { kind: 'banned', reason: user.banReason ?? '' };
   }
   if (!user.emailVerifiedAt) {
-    await recordLogin('UNVERIFIED', meta, { userId: user.id, fingerprint: fp });
+    await recordLogin('UNVERIFIED', meta, { userId: user.id });
     return { kind: 'unverified', resent: await resendVerification(user) };
   }
 
-  const dev = await touchDevice(user.id, device, meta);
+  const dev = await touchDevice(user.id, device, meta, user.deviceConsentAt !== null);
   const session = await createSession(
     user,
     { ip: meta.ip, country: meta.country, userAgent: meta.userAgent, deviceId: dev.id },

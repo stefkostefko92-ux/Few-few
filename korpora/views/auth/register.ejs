@@ -22,6 +22,12 @@
     <input type="checkbox" name="terms" value="yes" required<% if (field === 'terms') { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
     <span><%- t('auth.termsLabel', { terms: '<a href="' + legalPath(locale, 'terms') + '" target="_blank" rel="noopener">' + t('auth.termsLink') + '</a>', privacy: '<a href="' + legalPath(locale, 'privacy') + '" target="_blank" rel="noopener">' + t('auth.privacyLink') + '</a>' }) %></span>
   </label>
+  <%# Отделна отметка по желание, никога отметната предварително: без нея отпечатък не се чете (public/js/auth.js) и не се пази. %>
+  <label class="check">
+    <input type="checkbox" name="deviceConsent" value="yes" aria-describedby="consent-hint"<% if (values.deviceConsent) { %> checked<% } %>>
+    <span><%= t('auth.deviceConsentLabel') %></span>
+  </label>
+  <p class="hint" id="consent-hint"><%= t('auth.deviceConsentHint') %></p>
   <button class="btn btn-primary btn-wide" type="submit"><%= t('auth.registerButton') %></button>
 </form>
 <div class="auth-links">

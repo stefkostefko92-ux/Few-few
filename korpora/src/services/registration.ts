@@ -19,6 +19,7 @@ import { HOUR } from '../time.js';
 import { trialStart } from '../plans/plan.js';
 import { isUniqueViolation } from './admin-common.js';
 import { customerActor, emailSchema, nameSchema, newPasswordProblem } from './auth-common.js';
+import { consentGiven, DEVICE_CONSENT_VERSION } from './device-consent.js';
 import type { DeviceContext } from './devices.js';
 
 /* ---------------------------------- регистрация ---------------------------------- */
@@ -28,6 +29,8 @@ export interface RegisterInput {
   name: string;
   password: string;
   acceptTerms: boolean;
+  /** Отделната отметка за отпечатъка на устройството — по желание, не е условие за акаунта. */
+  deviceConsent: boolean;
 }
 
 export type RegisterResult =
@@ -35,7 +38,8 @@ export type RegisterResult =
 
 /**
  * Регистрация. Отговорът е ЕДНАКЪВ за нов и за вече регистриран имейл („провери пощата си“) —
- * формата не издава кой има акаунт. Тестовият период тръгва при потвърждаване на имейла.
+ * формата не издава кой има акаунт. Тестовият период тръгва при потвърждаване на имейла и не зависи
+ * от съгласието за отпечатъка: без него отпечатъкът не се пази, дори браузърът да го е изпратил.
  */
 export async function registerAccount(
   input: RegisterInput,
@@ -98,7 +102,9 @@ export async function registerAccount(
         signupIp: meta.ip,
         signupCountry: meta.country,
         signupDeviceHash: deviceCookieHash(device.cookieId),
-        signupFingerprint: device.fingerprint ? fingerprintHash(device.fingerprint) : null,
+        signupFingerprint:
+          input.deviceConsent && device.fingerprint ? fingerprintHash(device.fingerprint) : null,
+        ...(input.deviceConsent ? consentGiven() : {}),
         planChanges: {
           create: { actorLabel: LABEL.system, toPlan: 'TRIAL', note: LABEL.signup },
         },
@@ -115,6 +121,8 @@ export async function registerAccount(
     action: 'account.registered',
     targetType: 'user',
     targetId: user.id,
+    // съгласието в одитната верига: на коя версия на текста (кога — часът на записа)
+    ...(input.deviceConsent ? { detail: { deviceConsent: DEVICE_CONSENT_VERSION } } : {}),
   });
   return { ok: true };
 }

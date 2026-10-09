@@ -107,6 +107,7 @@
     "accountSaved": "Modifiche salvate.",
     "banned": "L'account è bloccato e tutte le sue sessioni sono state chiuse.",
     "codeMismatch": "Il codice non corrisponde. Riprovate.",
+    "deviceConsentWithdrawn": "Consenso revocato; l'impronta conservata è stata eliminata.",
     "emailChangeSent": "Abbiamo inviato un link al nuovo indirizzo. L'email cambia quando lo aprite.",
     "passwordChanged": "Password cambiata. Le altre sessioni sono state chiuse.",
     "passwordReset": "Password cambiata. Accedete con quella nuova.",

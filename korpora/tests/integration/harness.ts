@@ -220,12 +220,22 @@ export class Browser {
     return this.post('/verify-email', { _csrf: Browser.csrf(page.body), token });
   }
 
-  async register(name: string, email: string, password: string): Promise<Reply> {
+  /**
+   * The sign-up form. The fingerprint goes along either way, as an old cached script would send it:
+   * the server keeps it only when the separate consent box is ticked (`deviceConsent`).
+   */
+  async register(
+    name: string,
+    email: string,
+    password: string,
+    deviceConsent = false,
+  ): Promise<Reply> {
     return this.submit('/register', '/register', {
       name,
       email,
       password,
       terms: 'yes',
+      ...(deviceConsent ? { deviceConsent: 'yes' } : {}),
       fp: JSON.stringify(this.fingerprint),
     });
   }

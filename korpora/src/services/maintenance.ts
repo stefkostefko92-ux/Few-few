@@ -8,6 +8,7 @@ import { greetingName, mailTrialEnding } from '../mail/templates.js';
 import { TRIAL_REMINDER_DAYS } from '../plans/plan.js';
 import { LOGIN_RETENTION_DAYS, UNVERIFIED_RETENTION_DAYS } from '../retention.js';
 import { DAY, HOUR } from '../time.js';
+import { purgeUnconsentedFingerprints } from './device-consent.js';
 import { resendOrderMail } from './plan-requests.js';
 
 /** Изтеклите връзки от писмата се пазят още толкова дни, после се трият. */
@@ -64,6 +65,8 @@ export async function runMaintenance(now: Date = new Date()): Promise<void> {
       },
       data: { signupDeviceHash: null, signupFingerprint: null },
     });
+    // отпечатък без съгласие не се пази — и взетият преди отметката за съгласие
+    const fingerprints = await purgeUnconsentedFingerprints();
     const auditIps = await prisma.auditLog.updateMany({
       where: { at: { lt: ipCutoff }, ip: { not: null } },
       data: { ip: null },
@@ -89,6 +92,7 @@ export async function runMaintenance(now: Date = new Date()): Promise<void> {
         logins: logins.count,
         devices: devices.count,
         signups: signups.count,
+        fingerprints,
         auditIps: auditIps.count,
         tokens: tokens.count,
         reminders,

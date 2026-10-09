@@ -107,6 +107,7 @@
     "accountSaved": "Changes saved.",
     "banned": "The account is blocked and all its sessions have ended.",
     "codeMismatch": "The code does not match. Try again.",
+    "deviceConsentWithdrawn": "Consent withdrawn; the fingerprint we kept is deleted.",
     "emailChangeSent": "We sent a link to the new address. The email changes when you open it.",
     "passwordChanged": "Password changed. Other sessions have ended.",
     "passwordReset": "Password changed. Sign in with the new one.",

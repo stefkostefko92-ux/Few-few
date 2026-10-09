@@ -27,10 +27,8 @@ test('sign-up → email confirmation → a 30-day trial that starts at the confi
   assert.equal(before.planExpiresAt, null, 'the trial does not run before the confirmation');
   assert.equal(before.signupIp, '8.8.8.8');
   assert.equal(before.signupCountry, expectedCountry());
-  assert.ok(
-    before.signupDeviceHash && before.signupFingerprint,
-    'device cookie hash and HWID stored at sign-up',
-  );
+  assert.ok(before.signupDeviceHash, 'device cookie hash stored at sign-up');
+  assert.equal(before.signupFingerprint, null, 'no HWID without the consent box');
   assert.notEqual(before.passwordHash, CUSTOMER_PASSWORD);
   assert.match(before.passwordHash, /^\$argon2id\$/);
 
@@ -56,8 +54,8 @@ test('a confirmation link works once', async () => {
   assert.equal((await b.confirmEmail(link)).status, 400);
 });
 
-test('signing in records IP, country, device and HWID', async () => {
-  const b = await customer('records@example.test', undefined, '8.8.8.8');
+test('signing in records IP, country, device and — with consent — HWID', async () => {
+  const b = await customer('records@example.test', undefined, '8.8.8.8', true);
   const user = await prisma.user.findUniqueOrThrow({
     where: { email: 'records@example.test' },
     include: { devices: true, logins: true },

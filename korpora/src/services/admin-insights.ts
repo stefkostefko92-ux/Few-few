@@ -1,6 +1,7 @@
 import type { Plan } from '@prisma/client';
 import { prisma } from '../db.js';
 import { addDays } from '../plans/plan.js';
+import { CONSENTED } from './device-consent.js';
 import { SUCCESSFUL_LOGINS } from './login-outcome.js';
 
 /**
@@ -66,17 +67,29 @@ async function rare(
  * Бисквитката е силен сигнал за повторен тестов период. HWID и IP са по-слаби: еднакви телефони дават
  * еднакъв отпечатък, мобилен оператор и офис — общо IP. Затова отпечатък или IP, общ за повече от
  * MAX_SHARED акаунта, не свързва никого, и всяка справка е с таван.
+ *
+ * Устройството и HWID служат на целите на доставчика, затова искат съгласие: свързват само акаунт
+ * със съгласие с акаунт със съгласие. За човек без съгласие остава само IP адресът.
  */
 export async function linkedAccounts(userId: string): Promise<LinkedAccount[]> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { signupDeviceHash: true, signupFingerprint: true, signupIp: true, lastLoginIp: true },
+    select: {
+      signupDeviceHash: true,
+      signupFingerprint: true,
+      signupIp: true,
+      lastLoginIp: true,
+      deviceConsentAt: true,
+    },
   });
   if (!user) return [];
-  const devices = await prisma.device.findMany({
-    where: { userId },
-    select: { cookieHash: true, fingerprintHash: true },
-  });
+  const consented = user.deviceConsentAt !== null;
+  const devices = consented
+    ? await prisma.device.findMany({
+        where: { userId },
+        select: { cookieHash: true, fingerprintHash: true },
+      })
+    : [];
   const recentIps = await prisma.loginEvent.findMany({
     where: {
       userId,
@@ -89,23 +102,24 @@ export async function linkedAccounts(userId: string): Promise<LinkedAccount[]> {
   });
   const cookies = [
     ...new Set(
-      [user.signupDeviceHash, ...devices.map((d) => d.cookieHash)].filter((v): v is string =>
-        Boolean(v),
+      [consented ? user.signupDeviceHash : null, ...devices.map((d) => d.cookieHash)].filter(
+        (v): v is string => Boolean(v),
       ),
     ),
   ];
   const prints = await rare(
     [
       ...new Set(
-        [user.signupFingerprint, ...devices.map((d) => d.fingerprintHash)].filter(
-          (v): v is string => Boolean(v),
-        ),
+        [
+          consented ? user.signupFingerprint : null,
+          ...devices.map((d) => d.fingerprintHash),
+        ].filter((v): v is string => Boolean(v)),
       ),
     ],
     async (fp) => [
       ...(
         await prisma.device.findMany({
-          where: { fingerprintHash: fp },
+          where: { fingerprintHash: fp, user: CONSENTED },
           select: { userId: true },
           distinct: ['userId'],
           take: LOOKUP,
@@ -113,7 +127,7 @@ export async function linkedAccounts(userId: string): Promise<LinkedAccount[]> {
       ).map((d) => d.userId),
       ...(
         await prisma.user.findMany({
-          where: { signupFingerprint: fp },
+          where: { signupFingerprint: fp, ...CONSENTED },
           select: { id: true },
           take: LOOKUP,
         })
@@ -146,13 +160,13 @@ export async function linkedAccounts(userId: string): Promise<LinkedAccount[]> {
   };
   if (cookies.length) {
     for (const d of await prisma.device.findMany({
-      where: { cookieHash: { in: cookies } },
+      where: { cookieHash: { in: cookies }, user: CONSENTED },
       select: { userId: true },
       take: 200,
     }))
       add(d.userId, 'device');
     for (const u of await prisma.user.findMany({
-      where: { signupDeviceHash: { in: cookies } },
+      where: { signupDeviceHash: { in: cookies }, ...CONSENTED },
       select: { id: true },
       take: 200,
     }))
@@ -160,13 +174,13 @@ export async function linkedAccounts(userId: string): Promise<LinkedAccount[]> {
   }
   if (prints.length) {
     for (const d of await prisma.device.findMany({
-      where: { fingerprintHash: { in: prints } },
+      where: { fingerprintHash: { in: prints }, user: CONSENTED },
       select: { userId: true },
       take: 200,
     }))
       add(d.userId, 'hwid');
     for (const u of await prisma.user.findMany({
-      where: { signupFingerprint: { in: prints } },
+      where: { signupFingerprint: { in: prints }, ...CONSENTED },
       select: { id: true },
       take: 200,
     }))

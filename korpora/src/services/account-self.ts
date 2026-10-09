@@ -200,6 +200,10 @@ export async function exportOwnData(userId: string): Promise<Record<string, unkn
       signupIp: user.signupIp,
       signupCountry: user.signupCountry,
       signupHwid: user.signupFingerprint ? hwidLabel(user.signupFingerprint) : null,
+      // съгласието за отпечатъка: кога и на коя версия на текста (null — не е дадено или оттеглено)
+      deviceConsent: user.deviceConsentAt
+        ? { givenAt: user.deviceConsentAt, textVersion: user.deviceConsentVersion }
+        : null,
       bannedAt: user.bannedAt,
       banReason: user.banReason,
     },
