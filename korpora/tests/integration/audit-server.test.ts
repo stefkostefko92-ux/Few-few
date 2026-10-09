@@ -354,3 +354,14 @@ test('legal:A10 — a terms copy that cannot be built holds the confirmation bac
     (await prisma.upgradeRequest.findUniqueOrThrow({ where: { id: row.id } })).confirmationSentAt,
   );
 });
+
+/* ------------------------------------- кеш ------------------------------------- */
+
+test('ops:A2 — the manifest icons carry the version of the static files', async () => {
+  const manifest = JSON.parse((await new Browser().get('/site.webmanifest')).body) as {
+    icons: Array<{ src: string }>;
+  };
+  assert.ok(manifest.icons.length > 0);
+  for (const icon of manifest.icons)
+    assert.match(icon.src, /^\/static\/img\/icon-\d+\.png\?v=[0-9a-f]{10}$/);
+});

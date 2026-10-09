@@ -188,7 +188,7 @@
       "unban": "Restore access",
       "notBanned": "Access is allowed.",
       "banReason": "Reason for blocking",
-      "banHint": "The person sees this reason when trying to sign in and gets it by email. Write clearly and without other people's personal data.",
+      "banHint": "The person sees this reason when trying to sign in and gets it by email if their address is confirmed. Write clearly and without other people's personal data.",
       "ban": "Block",
       "banConfirm": "Block this account? All its sessions will end.",
       "banHistory": "Blocking history",
