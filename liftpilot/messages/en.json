@@ -910,6 +910,7 @@
     "list": "Issued drawing sets",
     "none": "No drawing set issued for this installation.",
     "mismatch": "The calculation and the shaft design disagree: {list}. The sheets use the geometry of the design and the machine of the calculation.",
+    "plantChanged": "The installation data of the project changed after this set was issued ({list}): sheet 1 stays as it was issued, while the calculation report and the technical report read the current data and point out the difference. To bring them in line, issue a new revision.",
     "mm_travel": "travel {calc} m in the calculation, {shaft} m in the shaft",
     "mm_speed": "speed {calc} m/s in the calculation, {shaft} m/s in the shaft",
     "mm_load": "rated load {calc} kg in the calculation, {shaft} kg in the shaft",

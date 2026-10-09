@@ -41,7 +41,7 @@ import { governorRopes, shaftUnder } from '@/shaft/room-site';
 import { belowGeoOf, machineOf, machineText } from './views';
 import { clientNotes, estimateNote, railNote, safetyGearNote, spaceLegend } from './notes';
 import { shaftDetailText } from './notes-vano';
-import { NORMA_SIGLA, ambitoOf, collaudoOf } from '../lift/collaudo';
+import { NORMA_SIGLA, ambitoOf, collaudoOf, partKept } from '../lift/collaudo';
 import { collaudoNote } from '../report/collaudo';
 
 /** The buffers by type as the data sheet writes them: the car's (plural) and the counterweight's. */
@@ -87,7 +87,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   const parts = carParts(Pl);
   if (parts !== null && Math.abs(parts - I.P) > 0.5) warnings.push({ what: 'carMass', calc: I.P, shaft: parts });
   // the parts the intervention leaves in place (a lift tested as new, UNI EN 81-20/50: none)
-  const kept = (p: (typeof C.parti)[number]): boolean => C.norma !== 'en81' && !C.parti.includes(p);
+  const kept = (p: (typeof C.parti)[number]): boolean => partKept(C, p);
 
   // stops and landing doors actually served
   const served = (f: (typeof V.floors)[number]): number => [...f.door].filter((s) => L.doors.some((d) => d.side === s)).length;
@@ -194,7 +194,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   ];
   // the machine room over the shaft: the hook's rated load and the reactions R1…Rn on the support's bearings (round 36)
   const Gr = !below ? roomGeo(L, M) : null, car0 = carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes: ropesKg, cables: cablesKg });
-  const roomRows = Gr ? [hookRow(Gr, M, fmt), ...reactionRows(Gr, M, { machine, static: ld.static, dyn, car: car0 },
+  const roomRows = Gr ? [hookRow(Gr, M, fmt), ...reactionRows(Gr, M, { machine, static: ld.static, dyn, car: car0, stand: SL.support.stand },
     hebFor(Gr, M, shaftUnder(L), governorRopes(L, Gr.room)), fmt)] : [];
   const each = [false, false, false, false, true, V.carBuffers > 1, true, false, false];
   const P = ld.P.map((p, i) => (p === null ? (i === 3 ? GOVERNOR_LOAD_UNSET : '—') : `${each[i] ? 'cad. ' : ''}${fmt(p, 0)}`));

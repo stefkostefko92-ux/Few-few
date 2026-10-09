@@ -12,7 +12,7 @@ import { ceilTo } from '@/calc/math';
 import type { SheetImage } from '@/drawing';
 import { CATALOG_READ_ON, MAKER_SITE } from '@/lib/catalog/machines';
 import type { DataSource, MachineCandidate } from '@/lib/lift/advice';
-import { NORMA_SIGLA, type Collaudo } from '@/lib/lift/collaudo';
+import { NORMA_SIGLA, partKept, type Collaudo } from '@/lib/lift/collaudo';
 import { dvText, machineName } from '@/lib/present/advice';
 import { textsFor } from '@/lib/present/texts';
 import { makePres } from '@/lib/present/tr';
@@ -96,7 +96,7 @@ export function buildOrder(o: OrderInput): ReportDoc {
   // a machine below: the pulls on its anchors where one is upward (anchor.ts)
   const anchor = c.anchor && c.anchor.max > 0 ? c.anchor : null;
   // the ropes at the cut length of sheet 1 and of the bill, when the intervention replaces them
-  const cut = o.collaudo.norma === 'en81' || o.collaudo.parti.includes('ropes') ? o.site?.ropeCut ?? null : null;
+  const cut = partKept(o.collaudo, 'ropes') ? null : o.site?.ropeCut ?? null;
   B.push({ t: 'kv', rows: [
     ['Costruttore e modello', `${machineName(c)} · quantità 1`],
     ['Rapporto di riduzione', `${c.ratio} (i = ${fmt(c.i, 3)})`],

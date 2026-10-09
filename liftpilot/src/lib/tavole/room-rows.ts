@@ -1,7 +1,7 @@
 // What sheet 1 and the replacement's sheet 1 write about the machine room besides the loads (registry locale.gancio,
 // carichi.reazioni, locale.putrelle.vano): the lifting hook's rated load, the reactions R1…Rn on the support's bearings
-// at the sheet's load (three to a row), the line on the governor’s load P4 when the data do not give it, and the note on the
-// HEB beams' bearings. Italian; pure.
+// at the sheet's load (three to a row) and on the legs of the pulley's own stand, the line on the governor’s load P4 when
+// the data do not give it, and the note on the HEB beams' bearings. Italian; pure.
 import { hebDrawn, type HebLayout, type HebShaft } from '@/shaft/heb';
 import type { MachineSpec, RoomGeo } from '@/shaft/machine-room';
 import { KV_VERT } from '@/shaft/norme-vert';
@@ -19,14 +19,19 @@ export function hookRow(G: RoomGeo, M: MachineSpec, fmt: Fmt, pieces: readonly n
   return ['GANCIO DI SOLLEVAMENTO SOPRA L’ARGANO: PORTATA', fmt(hookOf(G, M, pieces).load, 0), 'kg'];
 }
 
-/** The reactions R1…Rn on the support's bearings at `load` (with the dynamic coefficient), three to a row. */
+/** The reactions R1…Rn on the support's bearings at `load` (with the dynamic coefficient), three to a row; then those
+ *  of the legs of the pulley's own stand on the floor, numbered on. */
 export function reactionRows(G: RoomGeo, M: MachineSpec, load: SupportLoad, heb: HebLayout | null, fmt: Fmt): LoadRow[] {
-  const r = supportReactions(G, M, load, heb), where = r.on === 'walls' ? 'NEI MURI' : 'SULLA SOLETTA', out: LoadRow[] = [];
-  for (let i = 0; i < r.R.length; i += 3) {
-    const part = r.R.slice(i, i + 3), names = part.map((_, k) => `R${i + k + 1}`).join(' / ');
-    // (a bearing pulled up — the load's centre off the bearings' — is written negative: its anchor in tension)
-    out.push([`REAZIONI APPOGGI ${names} ${where}${part.some((x) => x < -0.5) ? ' (− = TRAZIONE)' : ''}`, part.map((x) => fmt(x, 0)).join(' / '), 'daN']);
-  }
+  const r = supportReactions(G, M, load, heb), out: LoadRow[] = [];
+  const rows = (R: readonly number[], first: number, what: string, where: string): void => {
+    for (let i = 0; i < R.length; i += 3) {
+      const part = R.slice(i, i + 3), names = part.map((_, k) => `R${first + i + k}`).join(' / ');
+      // (a bearing pulled up — the load's centre off the bearings' — is written negative: its anchor in tension)
+      out.push([`REAZIONI ${what} ${names} ${where}${part.some((x) => x < -0.5) ? ' (− = TRAZIONE)' : ''}`, part.map((x) => fmt(x, 0)).join(' / '), 'daN']);
+    }
+  };
+  rows(r.R, 1, 'APPOGGI', r.on === 'walls' ? 'NEI MURI' : 'SULLA SOLETTA');
+  if (r.stand) rows(r.stand.R, r.R.length + 1, 'PIEDI DEL RINVIO', 'SULLA SOLETTA');
   return out;
 }
 

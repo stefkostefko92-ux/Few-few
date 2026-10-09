@@ -83,3 +83,9 @@ export function plantData(raw: unknown): Plant {
   const p = plantReadSchema.safeParse(raw ?? {});
   return p.success ? p.data : {};
 }
+
+/** The fields where two sets of data of an installation differ (a field missing in one and empty in the other: the same). */
+export function plantDiff(a: Plant, b: Plant): (keyof Plant)[] {
+  const keys = Object.keys(plantSchema.shape) as (keyof Plant)[];
+  return keys.filter((k) => a[k] !== b[k]);
+}

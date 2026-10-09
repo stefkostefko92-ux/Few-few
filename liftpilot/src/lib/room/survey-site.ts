@@ -9,7 +9,7 @@ import type { HebLayout } from '@/shaft/heb';
 import type { MachineSpec, RoomGeo } from '@/shaft/machine-room';
 import { KV_VERT } from '@/shaft/norme-vert';
 import type { Box } from '@/shaft/room-floor';
-import { reactionPoints } from '@/shaft/room-reactions';
+import { bearingPoints } from '@/shaft/room-reactions';
 import type { ShaftCheck } from '@/shaft/types';
 import type { Survey } from './survey';
 
@@ -50,9 +50,10 @@ function edgeGap(p: Pt, [x0, y0, x1, y1]: Box): number {
 }
 
 /** m_holes (soft: the opening can be closed): the new support's bearings at least KV_VERT.holeBearing from the edge of
- *  every existing opening of the slab; none surveyed: no check. */
+ *  every existing opening of the slab; none surveyed: no check. (The legs of the pulley's own stand are not counted:
+ *  the stand straddles the opening its ropes go down through.) */
 export function holesCheck(G: RoomGeo, M: MachineSpec, openings: readonly Box[], heb: HebLayout | null = null): ShaftCheck[] {
   if (!openings.length) return [];
-  const gap = Math.min(...reactionPoints(G, M, heb).flatMap((p) => openings.map((o) => edgeGap(p, o))));
+  const gap = Math.min(...bearingPoints(G, M, heb).flatMap((p) => openings.map((o) => edgeGap(p, o))));
   return [check('m_holes', gap >= KV_VERT.holeBearing, Math.round(gap), KV_VERT.holeBearing, 0, 'mm', true)];
 }

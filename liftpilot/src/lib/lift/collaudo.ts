@@ -213,6 +213,10 @@ export function withAggiunta(isNew: boolean, chosen: Collaudo | undefined, value
 /** Whether a check applies to the acceptance test of this intervention: under any of its standards. */
 export const ambitoOf = (C: Collaudo, id: CheckId | ShaftCheckId): Ambito => (normeOf(C).some((n) => underNorma(C, n, id)) ? 'applies' : 'existing');
 
+/** A part the intervention leaves in place: one its acceptance test does not replace (a lift tested as new, UNI EN
+ *  81-20/50: none). Sheet 1 writes it as existing, the bill and the draft order leave it out, the relazione names it so. */
+export const partKept = (C: Collaudo, p: Parte): boolean => C.norma !== 'en81' && !C.parti.includes(p);
+
 /** The adaptations a machine replaced under UNI 10411-1 brings (registry sostituzione.adeguamenti); none otherwise. */
 export const adeguamentiDovuti = (C: Collaudo): boolean => C.norma === '10411-1' && C.parti.includes('machine');
 

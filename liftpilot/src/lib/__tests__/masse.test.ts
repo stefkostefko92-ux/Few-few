@@ -9,7 +9,7 @@ import { KV_VERT } from '@/shaft/norme-vert';
 import { defaultLift, deriveLift, VOCI_IMPIANTO } from '@/lib/lift';
 import { KM, VOCI_MASSE } from '@/lib/lift/norme-masse';
 import { machineMass, motorKg, sheaveKg } from '@/lib/lift/machine-mass';
-import { carriedBy, carriedMass, supportMass } from '@/lib/lift/support';
+import { besideMass, carriedBy, carriedMass, supportMass } from '@/lib/lift/support';
 import { anchorPull } from '@/lib/lift/anchor';
 import { catalogOf, massKindOf } from '@/lib/catalog/machines';
 import { sheetLoads, sheetRails } from '../tavole/sheet-loads';
@@ -74,14 +74,20 @@ test('peso proprio del basamento: plinto, telaio, putrelle, piastre, telaio con 
   assert.equal(plinth.m.kind, 'plinth');
   assert.ok(plinth.m.base > 800, `plinto ${plinth.m.base}`);
   assert.ok(plates.m.base < frame.m.base && frame.m.base < plinth.m.base, `${plates.m.base} < ${frame.m.base} < ${plinth.m.base}`);
-  // the checks of the beams count their own weight: what they carry leaves it out; every other support is carried
+  // the checks of the beams count their own weight: what they carry leaves it out; every other support is carried, but
+  // the pulley's own stand beside it on the floor (the example's pulley stands on its stand beside a plinth): its legs
+  // bear it on the slab (round 37)
   assert.equal(carriedBy(beams.m, 400), 400 + beams.m.maker + beams.m.frame);
-  assert.equal(carriedBy(plinth.m, 400), 400 + plinth.m.base);
+  assert.ok(plinth.m.stand > 30 && plinth.m.stand < plinth.m.base, `supporto del rinvio ${plinth.m.stand}`);
+  assert.equal(carriedBy(plinth.m, 400), 400 + plinth.m.base - plinth.m.stand);
+  assert.equal(rinvio.m.stand, 0);
+  // what the checks take and what stands beside it are the whole support, whatever it is
+  for (const { m } of [rinvio, plinth, frame, beams, plates]) assert.equal(carriedBy(m, 400) + besideMass(m), 400 + m.maker + m.frame + m.base);
   // sheet 1 and the relazione: P9 = P1 (+ P2 + P3) + the machine with what carries it, static
   for (const { d, m } of [rinvio, plinth, beams]) {
     const Pl = { governorLoad: 300, safetyGear: 'progressive' as const }, R = sheetRails(d.layout, d.analysis.ctx.I.P, d.analysis.ctx.I.Q, Pl);
     const S = sheetLoads(d.analysis, d.layout, Pl, d.machine, null, 50, R), P = S.ld.P;
-    near(P[8] ?? NaN, (P[0] ?? 0) + (P[1] ?? 0) + (P[2] ?? 0) + daN(S.carried + (m.kind === 'beams' ? m.base : 0) + S.hebKg), 1e-6);
+    near(P[8] ?? NaN, (P[0] ?? 0) + (P[1] ?? 0) + (P[2] ?? 0) + daN(S.carried + besideMass(m) + S.hebKg), 1e-6);
     near(S.carried, carriedBy(m, S.machine.kg));
   }
 });

@@ -6,7 +6,7 @@
 // pulleys with their frames and its base anchored against the uplift, the car's safety gear by its type, the
 // governor's rope as sheet 1 counts it, the protection against the car's overspeed upward and its uncontrolled movement
 // (registry impianto.acop.ucm). Pure.
-import type { Collaudo, Parte } from '@/lib/lift/collaudo';
+import { partKept, type Collaudo, type Parte } from '@/lib/lift/collaudo';
 import type { LiftDerived } from '@/lib/lift/derive';
 import { rigLength } from '@/lib/lift/rope';
 import { governorRopeLength, ropeCut } from '@/lib/lift/support';
@@ -26,7 +26,7 @@ export const sizeText = (d: number): string => String(d).replace('.', ',');
 
 /** A part the intervention leaves in place: a modification tested to UNI 10411 that does not replace it (a new lift,
  *  UNI EN 81-20/50: none) — the rule of sheet 1 (src/lib/tavole/data.ts). */
-export const keptPart = (C: Collaudo, p: BomPart): boolean => p !== 'always' && C.norma !== 'en81' && !C.parti.includes(p);
+export const keptPart = (C: Collaudo, p: BomPart): boolean => p !== 'always' && partKept(C, p);
 
 /** The kind of project the cost counts by (the company's free lines, the labour): a new lift is a whole project, a
  *  modification tested to UNI 10411 one of the replacements. */

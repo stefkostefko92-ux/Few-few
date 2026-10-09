@@ -14,7 +14,7 @@ import { check } from './checks';
 import { machineU, machineV, ropeWidths, supportRunIn, type MachineSpec, type RoomGeo } from './machine-room';
 import { KV_VERT } from './norme-vert';
 import { PROFILES } from './profiles';
-import { rinvioAcross, rinvioRun, standBox } from './rinvio';
+import { rinvioAcross, rinvioRun, standLegs } from './rinvio';
 import { extentOf, fromBeam, outlineFromBeam, upstands } from './heb-clear';
 import type { RoomInputs } from './room';
 import { HEB_PROFILES, onHeb, supportOf, type HebDir, type HebProfile } from './support';
@@ -71,7 +71,7 @@ export interface HebResult {
   kerb: number | null;
   /** the walls' thickness less the bearing, and each beam's flange within the walls' outer faces: the least [mm] */
   wall: number;
-  /** the largest force on a bearing [N] */
+  /** the largest force on a bearing [N]: its share of the load and half the beam's own weight over its whole length */
   reaction: number;
 }
 
@@ -96,10 +96,7 @@ export function supportFeet(G: RoomGeo, M: MachineSpec): Pt[] {
   const span = supportRunIn(G, M);
   const us = (s.kind === 'frame' && span ? span : F.mounts).map((x) => machineU(G, x));
   for (const u of us) for (const z of F.beams) out.push(onDrop(G, u, machineV(G, z)));
-  if (rf?.on === 'stand' && M.Dp > 0) {
-    const [u0, v0, u1, v1] = standBox(M, G);
-    for (const u of [u0, u1]) for (const v of [v0, v1]) out.push(onDrop(G, u, v));
-  }
+  if (rf?.on === 'stand' && M.Dp > 0) for (const [u, v] of standLegs(M, G)) out.push(onDrop(G, u, v));
   return out;
 }
 
@@ -184,7 +181,8 @@ export function hebResult(lay: HebLayout, res: { at: Pt; F: number }, feet: read
     const fp = s > 0 ? (F * s * (L * L - s * s) ** 1.5) / (9 * Math.sqrt(3) * L * E * I) : 0;
     sigma = Math.max(sigma, M / W);
     f = Math.max(f, fp + (5 * q * L ** 4) / (384 * E * I));
-    reaction = Math.max(reaction, (F * (L - s)) / L + (q * L) / 2);
+    // (each end carries half the beam's whole own weight, the part in the walls too: as its mass on sheet 1 counts it)
+    reaction = Math.max(reaction, (F * (L - s)) / L + (q * lay.length) / 2);
   }
   let onBeams = d > 1 ? Math.min(c[across] - a, b - c[across]) : 0;
   // the feet on the flanges, within the beams' ends; a frame crossing the beams only over their length, each of its

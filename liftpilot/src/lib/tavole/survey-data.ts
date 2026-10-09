@@ -14,7 +14,7 @@ import { beamChecks, type SupportLoad } from '@/shaft/support-check';
 import type { ShaftCheck } from '@/shaft/types';
 import { NORMA_SIGLA, ambitoOf } from '../lift/collaudo';
 import { ADEMPIMENTI } from '../lift/norme-collaudo';
-import { cablesMass, carSideStatic, carriedBy, ropeCut, supportMass } from '../lift/support';
+import { besideMass, cablesMass, carSideStatic, carriedBy, ropeCut, supportMass } from '../lift/support';
 import { machineMass } from '../lift/machine-mass';
 import { supportRows } from './sheet-loads';
 import type { Plant } from '../plant';
@@ -130,8 +130,8 @@ export function foundText(s: SurveyTavoleInput['survey']): string {
 
 /** The load on the support as the sheet counts it (surveyLoad's), for the reactions. */
 const surveyLoadOf = (d: RoomDerived, Pl: Plant): SupportLoad => {
-  const { ld, machine, dyn, ropesKg, cablesKg } = surveyLoad(d, Pl), { I } = d.analysis.ctx;
-  return { machine, static: ld.static, dyn, car: carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes: ropesKg, cables: cablesKg }) };
+  const { ld, machine, dyn, ropesKg, cablesKg, support } = surveyLoad(d, Pl), { I } = d.analysis.ctx;
+  return { machine, static: ld.static, dyn, car: carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes: ropesKg, cables: cablesKg }), stand: support.stand };
 };
 
 /** The load on the machine's support and on the slab as sheet 1 counts it — the machine's mass of the calculation with
@@ -151,7 +151,7 @@ export function surveyLoad(d: RoomDerived, Pl: Plant) {
   const load = { machine, static: loads(inp).static, dyn, car: carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes: ropesKg, cables: cablesKg }) };
   const heb = d.G ? hebFor(d.G, d.M, d.site, load) : null, beams = d.G ? [...beamChecks(d.G, d.M, load), ...hebChecks(heb?.chosen.result ?? null)] : [];
   const hebKg = heb ? (2 * PROFILES[heb.chosen.profile].mass * heb.chosen.length) / 1000 : 0;
-  const ld = loads({ ...inp, base: (support.kind === 'beams' ? support.base : 0) + hebKg });
+  const ld = loads({ ...inp, base: besideMass(support) + hebKg });
   const checks: ShaftCheck[] = [...d.checks.filter((c) => !AT_SHEET_LOAD.has(c.id)), ...beams];
   return { ropesKg, cablesKg, bedplate, machine, whole, support, dyn, ld, checks, heb: heb?.chosen ?? null };
 }
