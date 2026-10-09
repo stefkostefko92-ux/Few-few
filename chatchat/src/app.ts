@@ -23,6 +23,8 @@ import { authMfaRouter } from './routes/auth-mfa.js';
 import { authRouter } from './routes/auth.js';
 import { casesRouter } from './routes/cases.js';
 import { catalogRouter } from './routes/catalog.js';
+import { documentViewRouter } from './routes/document-view.js';
+import { mountPdfjs } from './vendor.js';
 import { chatRouter } from './routes/chat.js';
 import { conversationsRouter } from './routes/conversations.js';
 import { filesRouter } from './routes/files.js';
@@ -170,6 +172,7 @@ export function createApp(appDeps: AppDeps): express.Express {
   app.use('/api/v1/admin', adminErrorsRouter(deps));
   app.use('/api/v1', auditRouter(deps));
   app.use('/api/v1', catalogRouter(deps));
+  app.use('/api/v1', documentViewRouter(deps));
   app.use('/api/v1', casesRouter(deps));
   app.use('/api/v1', chatRouter(deps));
   app.use('/api/v1', ticketsRouter(deps));
@@ -197,6 +200,7 @@ export function createApp(appDeps: AppDeps): express.Express {
     res.sendFile('index.html', { root: PUBLIC_DIR });
   });
 
+  mountPdfjs(app);
   app.use(
     express.static(PUBLIC_DIR, {
       index: 'index.html',

@@ -12,9 +12,18 @@ export const URL_TTL_SECONDS = 5 * 60;
 /** Толеранс за разминаване на часовниците — срок по-далеч в бъдещето е подправен. */
 const SKEW_SECONDS = 30;
 
-function signature(key: string, attachmentId: string, userId: string, exp: number): string {
+/** Домейн на подписа: адрес за файл не отваря оригинала на документ и обратно. */
+type Purpose = 'chatchat.file.v1' | 'chatchat.docsrc.v1';
+
+function signature(
+  key: string,
+  subjectId: string,
+  userId: string,
+  exp: number,
+  purpose: Purpose = 'chatchat.file.v1',
+): string {
   return createHmac('sha256', key)
-    .update(`chatchat.file.v1|${attachmentId}|${userId}|${exp}`)
+    .update(`${purpose}|${subjectId}|${userId}|${exp}`)
     .digest('base64url');
 }
 
@@ -32,6 +41,21 @@ export function signFileUrl(
   };
 }
 
+/** Адрес към оригиналния PDF на документ (визуализатор на схеми, §9.2) — същият срок и обвързване. */
+export function signDocumentSourceUrl(
+  key: string,
+  documentId: string,
+  userId: string,
+  nowMs = Date.now(),
+): { url: string; expiresAt: Date } {
+  const exp = Math.floor(nowMs / 1000) + URL_TTL_SECONDS;
+  const sig = signature(key, documentId, userId, exp, 'chatchat.docsrc.v1');
+  return {
+    url: `/api/v1/documents/${encodeURIComponent(documentId)}/source/file?exp=${exp}&sig=${sig}`,
+    expiresAt: new Date(exp * 1000),
+  };
+}
+
 export type UrlCheck = 'ok' | 'expired' | 'invalid';
 
 /** Подписът първо (без база); изтекъл адрес се отличава от подправен само след верен подпис. */
@@ -42,12 +66,24 @@ export function verifyFileUrl(
   expRaw: unknown,
   sigRaw: unknown,
   nowMs = Date.now(),
+  purpose: Purpose = 'chatchat.file.v1',
 ): UrlCheck {
   if (typeof expRaw !== 'string' || typeof sigRaw !== 'string') return 'invalid';
   if (!/^\d{1,12}$/.test(expRaw) || !/^[A-Za-z0-9_-]{43}$/.test(sigRaw)) return 'invalid';
   const exp = Number(expRaw);
-  if (!safeEqual(sigRaw, signature(key, attachmentId, userId, exp))) return 'invalid';
+  if (!safeEqual(sigRaw, signature(key, attachmentId, userId, exp, purpose))) return 'invalid';
   const now = Math.floor(nowMs / 1000);
   if (exp > now + URL_TTL_SECONDS + SKEW_SECONDS) return 'invalid';
   return exp < now ? 'expired' : 'ok';
+}
+
+export function verifyDocumentSourceUrl(
+  key: string,
+  documentId: string,
+  userId: string,
+  expRaw: unknown,
+  sigRaw: unknown,
+  nowMs = Date.now(),
+): UrlCheck {
+  return verifyFileUrl(key, documentId, userId, expRaw, sigRaw, nowMs, 'chatchat.docsrc.v1');
 }

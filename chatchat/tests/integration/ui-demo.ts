@@ -8,6 +8,7 @@ import { totpNow, PASSWORD, db, makeUser, startApp } from './helpers.js';
 import { open, resetCollab, say } from './collab-world.js';
 import { FakeScanner, SpyStore, URL_KEY } from './files.js';
 import { ask, newCase, seedWorld } from './world.js';
+import { seedViewerDemo } from './ui-demo-viewer.js';
 
 const PORT = Number(process.env.UI_DEMO_PORT ?? 4391);
 const ORIGIN = `http://127.0.0.1:${PORT}`;
@@ -79,6 +80,9 @@ await ask(w.portalAlfa, caseId, 'Il display mostra E37 e la cabina non parte');
 await w.support.post(`/api/v1/cases/${caseId}/assign`);
 const caseId2 = await newCase(w.support);
 
+// Визуализатор на схеми (§9.2)
+const viewer = await seedViewerDemo(h, w);
+
 // QR етикет
 const qrLabel = await w.ownerA1.post('/api/v1/admin/devices/SN-ALFA-1/qr');
 const token = new URL(qrLabel.body.url as string, ORIGIN).pathname.split('/').pop();
@@ -116,6 +120,7 @@ writeFileSync(
       support: w.users.support.id,
       engineering: engineering.id,
     },
+    viewer: { ...viewer, jsonDoc: w.docs.manFw4 },
     qrToken: token,
     resetUrl: reset.body.url,
   }),

@@ -82,15 +82,31 @@ export function createTray({ getCaseId, onChange }) {
     { class: 'btn btn-primary btn-photo', type: 'button', onclick: () => camera.click() },
     t('att.photo'),
   );
+  // На телефон бутоните са в един ред: кратко име видимо, пълното — в името за екранен четец
+  // (видимото е част от пълното, WCAG 2.5.3). На широк екран — пълният текст.
+  const shortLabel = (key, shortKey) => [
+    h('span', { class: 'lbl-long' }, t(key)),
+    h('span', { class: 'lbl-short', 'aria-hidden': 'true' }, t(shortKey)),
+  ];
   const btnGallery = h(
     'button',
-    { class: 'btn btn-secondary', type: 'button', onclick: () => gallery.click() },
-    t('att.gallery'),
+    {
+      class: 'btn btn-secondary',
+      type: 'button',
+      'aria-label': t('att.gallery'),
+      onclick: () => gallery.click(),
+    },
+    shortLabel('att.gallery', 'att.galleryShort'),
   );
   const btnLog = h(
     'button',
-    { class: 'btn btn-secondary', type: 'button', onclick: () => logs.click() },
-    t('att.log'),
+    {
+      class: 'btn btn-secondary',
+      type: 'button',
+      'aria-label': t('att.log'),
+      onclick: () => logs.click(),
+    },
+    shortLabel('att.log', 'att.logShort'),
   );
 
   const el = h(
