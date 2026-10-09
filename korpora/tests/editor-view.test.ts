@@ -2,6 +2,9 @@
 // of a drawing on full screen (editor/panzoom.js) on a stand-in element with an A3 sheet two pixels per unit.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { ROOT } from '../src/paths.js';
 import { browserGlobals, editorModule } from './editor-modules.js';
 
 interface View {
@@ -25,6 +28,7 @@ interface DomModule {
   localDate(d?: Date): string;
   externalLink(url: unknown, text: string): string;
   money(v: unknown, cur?: string): string;
+  pct(v: number, d?: number): string;
 }
 
 const SCREEN = { left: 0, top: 0, width: 840, height: 594 };
@@ -78,10 +82,11 @@ const { PanZoom, ZOOM_STEP } = await editorModule<PanZoomModule>('panzoom.js', [
   'PanZoom',
   'ZOOM_STEP',
 ]);
-const { localDate, externalLink, money } = await editorModule<DomModule>('dom.js', [
+const { localDate, externalLink, money, pct } = await editorModule<DomModule>('dom.js', [
   'localDate',
   'externalLink',
   'money',
+  'pct',
 ]);
 
 function openSheet(label = 'Лист 1', id: string | null = null): PanZoomLike {
@@ -131,6 +136,23 @@ test('a price keeps its amount and currency on one line (no-break space)', () =>
   assert.ok(!money(3, 'EUR').includes(' '), 'no plain space');
   assert.equal(money(Number.NaN, 'EUR'), '—');
   assert.ok(!money(4, undefined).endsWith(nbsp), 'no currency, no trailing space');
+});
+
+test('a percentage keeps its sign on the same line, in the editor code and its page', () => {
+  const nbsp = String.fromCharCode(0xa0);
+  assert.equal(pct(52.34, 1), `52,3${nbsp}%`);
+  assert.equal(pct(100), `100${nbsp}%`);
+  // the locale test reads only locales/*.json: a number glued to % in the editor's own strings is caught here
+  const sources = [
+    ...readdirSync(join(ROOT, 'editor'))
+      .filter((f) => f.endsWith('.js'))
+      .map((f) => join('editor', f)),
+    join('views', 'app', 'editor.ejs'),
+  ];
+  for (const file of sources) {
+    const text = readFileSync(join(ROOT, file), 'utf8');
+    assert.doesNotMatch(text, /\}%[`<]|>\d+%</, file);
+  }
 });
 
 test('a drawing opens whole and zooms at the pointer, keeping that point still', () => {

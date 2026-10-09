@@ -1,5 +1,5 @@
 // CNC tab: per-sheet G-code and DXF, the tool table, time estimate and the toolpath simulation.
-import { $, esc, fmt, stat, reduceMotion, setHtml } from './dom.js';
+import { $, esc, fmt, pct, stat, reduceMotion, setHtml } from './dom.js';
 import { toGcode, POSTS, GROOVE_MILL, CLEAR } from '../engine/cam.js';
 import { toDxf } from '../engine/dxf.js';
 import { sheetSvg, sheetTitle } from './render-nest.js';
@@ -178,7 +178,7 @@ export function drawToolpath(state) {
   setHtml($('#toolpath'), sheetSvg(sh, { paths: pathsFor(state.gcode, state.progress) }));
   const slider = $('#sim-progress');
   slider.value = String(Math.round(state.progress * Number(slider.max)));
-  $('#sim-label').textContent = `${Math.round(state.progress * 100)}%`;
+  $('#sim-label').textContent = pct(Math.round(state.progress * 100));
 }
 
 export function stopSim() {

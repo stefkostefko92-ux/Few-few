@@ -107,8 +107,8 @@
       <section id="panel-view" role="tabpanel" aria-labelledby="tab-view">
         <div class="stage" id="stage"></div>
         <div class="viewbar">
-          <div class="ctl"><label for="open"><%= te('editor.open') %></label><input type="range" id="open" min="0" max="100" value="0" step="1"><output id="open-out" for="open">0%</output></div>
-          <div class="ctl"><label for="explode"><%= te('editor.explode') %></label><input type="range" id="explode" min="0" max="100" value="0" step="1"><output id="explode-out" for="explode">0%</output></div>
+          <div class="ctl"><label for="open"><%= te('editor.open') %></label><input type="range" id="open" min="0" max="100" value="0" step="1"><output id="open-out" for="open">0&nbsp;%</output></div>
+          <div class="ctl"><label for="explode"><%= te('editor.explode') %></label><input type="range" id="explode" min="0" max="100" value="0" step="1"><output id="explode-out" for="explode">0&nbsp;%</output></div>
           <button type="button" class="btn btn-small" id="explode-play"><%= te('editor.explodePlay') %></button>
           <label class="check" for="ops"><input type="checkbox" id="ops" checked><span><%= te('editor.showHoles') %></span></label>
           <label class="check" for="room"><input type="checkbox" id="room"><span><%= te('editor.room') %></span></label>
@@ -168,7 +168,7 @@
         <div class="stats" id="cnc-stats"></div>
         <div id="cnc-manual"></div>
         <div class="card fs" id="cnc-fs">
-          <div class="sim"><button type="button" class="btn btn-primary btn-small" id="sim-play" aria-pressed="false"><%= te('editor.simulate') %></button><input type="range" id="sim-progress" min="0" max="1000" value="1000" aria-label="<%= te('editor.progress') %>"><output id="sim-label" for="sim-progress">100%</output><button type="button" class="btn btn-small fs-btn" data-fs="cnc-fs" data-fs-zoom="toolpath" aria-pressed="false"><%- include('../partials/icon', { name: 'expand' }) %><span><%= te('editor.fullscreen') %></span></button></div>
+          <div class="sim"><button type="button" class="btn btn-primary btn-small" id="sim-play" aria-pressed="false"><%= te('editor.simulate') %></button><input type="range" id="sim-progress" min="0" max="1000" value="1000" aria-label="<%= te('editor.progress') %>"><output id="sim-label" for="sim-progress">100&nbsp;%</output><button type="button" class="btn btn-small fs-btn" data-fs="cnc-fs" data-fs-zoom="toolpath" aria-pressed="false"><%- include('../partials/icon', { name: 'expand' }) %><span><%= te('editor.fullscreen') %></span></button></div>
           <div id="toolpath"></div>
           <div class="legend" id="cnc-tools"></div>
         </div>

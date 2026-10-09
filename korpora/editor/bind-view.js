@@ -1,7 +1,7 @@
 // The 3D view and its controls: open the fronts, explode the assembly (animated unless reduced motion is on),
 // show the drilled holes, put the furniture in a room, the photorealistic view and its PNG. Without WebGL the other
 // tabs still work.
-import { $, esc, localDate, reduceMotion } from './dom.js';
+import { $, esc, localDate, pct, reduceMotion } from './dom.js';
 import { Viewer } from './viewer.js';
 
 export function createViewer(text) {
@@ -15,14 +15,14 @@ export function createViewer(text) {
   }
   $('#open').addEventListener('input', (ev) => {
     viewer?.setOpen(Number(ev.target.value) / 100);
-    $('#open-out').textContent = `${ev.target.value}%`;
+    $('#open-out').textContent = pct(Number(ev.target.value));
   });
   // the explode animation running now (its number); a new click or a hand on the slider takes over from it
   let playing = 0;
   $('#explode').addEventListener('input', (ev) => {
     if (ev.isTrusted) playing += 1;
     viewer?.setExplode(Number(ev.target.value) / 100);
-    $('#explode-out').textContent = `${ev.target.value}%`;
+    $('#explode-out').textContent = pct(Number(ev.target.value));
   });
   $('#ops').addEventListener('change', (ev) => viewer?.setShowOps(ev.target.checked));
   $('#room').addEventListener('change', (ev) => viewer?.setRoom(ev.target.checked));

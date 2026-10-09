@@ -1,5 +1,5 @@
 // Nesting tab and the sheet SVG shared with the CNC simulation.
-import { $, esc, fmt, mm, stat } from './dom.js';
+import { $, esc, fmt, mm, pct, stat } from './dom.js';
 import { STOCK, decor, decorName, hasGrain } from '../engine/materials.js';
 
 // Readable ink on a decor colour (relative luminance).
@@ -61,7 +61,7 @@ export function renderNesting(state, fullscreenLabel) {
   const used = sheets.reduce((a, s) => a + s.yield * s.w * s.h, 0);
   $('#nest-summary').innerHTML = [
     stat('Листове', fmt(sheets.length)),
-    stat('Оползотворяване', `${fmt(total ? (used / total) * 100 : 0, 1)}%`),
+    stat('Оползотворяване', pct(total ? (used / total) * 100 : 0, 1)),
     stat('Отстояние', `${spacing} mm`),
     stat('Кант компенсиран', state.spec.bandCompensation ? 'да' : 'не'),
   ].join('');
@@ -69,7 +69,7 @@ export function renderNesting(state, fullscreenLabel) {
   $('#nest-sheets').innerHTML = sheets
     .map(
       (sh) =>
-        `<figure class="sheetcard"><figcaption><strong>Лист ${sh.index}</strong> · ${esc(sheetTitle(sh))}<span class="num">${sh.placements.length} дет. · ${fmt(sh.yield * 100, 1)}%</span>${button}</figcaption>${sheetSvg(sh)}</figure>`,
+        `<figure class="sheetcard"><figcaption><strong>Лист ${sh.index}</strong> · ${esc(sheetTitle(sh))}<span class="num">${sh.placements.length} дет. · ${pct(sh.yield * 100, 1)}</span>${button}</figcaption>${sheetSvg(sh)}</figure>`,
     )
     .join('');
 }
