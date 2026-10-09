@@ -26,6 +26,8 @@ export const mm = (v) => {
   return fmt(x, Number.isInteger(x) ? 0 : 1);
 };
 export { esc };
+// a percentage keeps its sign on the same line (U+00A0 before %), as in every Bulgarian text of the product
+export const pct = (v, d = 0) => `${fmt(v, d)}\u00a0%`;
 // amount and currency are kept on one line (U+00A0), as in every text of the product
 export const money = (v, cur) =>
   Number.isFinite(v)

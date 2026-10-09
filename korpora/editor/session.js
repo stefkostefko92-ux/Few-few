@@ -64,11 +64,18 @@ export function showError(message) {
   box.hidden = false;
 }
 
-export function lockForReading(message) {
+// The state label says so too: from here on the saver no longer updates it, so „Saved“ would stay next to the
+// disabled Save button.
+export function lockForReading(message, stateLabel) {
   $('#params fieldset')?.setAttribute('disabled', '');
   $('#project-name')?.setAttribute('readonly', '');
   const button = $('#save');
   if (button) button.disabled = true;
+  const label = $('#save-state');
+  if (label && stateLabel) {
+    label.textContent = stateLabel;
+    label.dataset.state = 'readonly';
+  }
   showError(message);
 }
 

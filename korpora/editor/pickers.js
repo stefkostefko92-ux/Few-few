@@ -85,7 +85,7 @@ const MODES = {
       (!st.c || d.category === st.c) &&
       (!q || `${d.code} ${d.name} ${d.nameEn ?? ''} ${d.manufacturer}`.toLowerCase().includes(q)),
     render: (d, sel) =>
-      `<button type="button" class="sw-card" role="option" aria-selected="${d.id === sel}" data-id="${esc(d.id)}"><i class="sw" data-css="${esc(swatchStyle(d))}"></i><span><b>${esc(d.code)}</b> ${esc(d.name)}<small>${esc(d.manufacturer)}${d.availableBg === false ? ' · по поръчка' : ''}</small></span></button>`,
+      `<button type="button" class="sw-card" role="option" tabindex="-1" aria-selected="${d.id === sel}" data-id="${esc(d.id)}"><i class="sw" data-css="${esc(swatchStyle(d))}"></i><span><b>${esc(d.code)}</b> ${esc(d.name)}<small>${esc(d.manufacturer)}${d.availableBg === false ? ' · по поръчка' : ''}</small></span></button>`,
     grid: true,
   },
   ral: {
@@ -107,7 +107,7 @@ const MODES = {
     match: (r, st, q) =>
       (!st.g || r.group === st.g) && (!q || `${r.id} ${r.name}`.toLowerCase().includes(q)),
     render: (r, sel) =>
-      `<button type="button" class="sw-card" role="option" aria-selected="${r.id === sel}" data-id="${esc(r.id)}"><i class="sw" data-css="${esc(`background:${r.hex}`)}"></i><span><b>${esc(r.id)}</b> ${esc(r.name)}</span></button>`,
+      `<button type="button" class="sw-card" role="option" tabindex="-1" aria-selected="${r.id === sel}" data-id="${esc(r.id)}"><i class="sw" data-css="${esc(`background:${r.hex}`)}"></i><span><b>${esc(r.id)}</b> ${esc(r.name)}</span></button>`,
     grid: true,
   },
   handle: {
@@ -151,7 +151,7 @@ const MODES = {
               .toLowerCase()
               .includes(q)),
     render: (h, sel) =>
-      `<button type="button" class="pk-row" role="option" aria-selected="${h.id === sel}" data-id="${esc(h.id)}">${handleIcon(h)}<span class="pk-main"><b>${esc(h.name)}</b><small>${esc(h.none ? 'TIP-ON или профил — не е включен' : [h.brand, h.sku, HANDLE_TYPE_BG[h.type], h.finish].filter(Boolean).join(' · '))}</small></span><span class="pk-side">${h.none ? '' : `${esc(handleHoles(h).label)}<small>${esc(money(h.price, h.currency))}${h.shop ? ` · ${esc(h.shop)}` : ''}</small>`}</span></button>`,
+      `<button type="button" class="pk-row" role="option" tabindex="-1" aria-selected="${h.id === sel}" data-id="${esc(h.id)}">${handleIcon(h)}<span class="pk-main"><b>${esc(h.name)}</b><small>${esc(h.none ? 'TIP-ON или профил — не е включен' : [h.brand, h.sku, HANDLE_TYPE_BG[h.type], h.finish].filter(Boolean).join(' · '))}</small></span><span class="pk-side">${h.none ? '' : `${esc(handleHoles(h).label)}<small>${esc(money(h.price, h.currency))}${h.shop ? ` · ${esc(h.shop)}` : ''}</small>`}</span></button>`,
     grid: false,
   },
 };
@@ -180,11 +180,40 @@ function draw() {
     hits
       .slice(0, shown)
       .map((x) => m.render(x, selected))
-      .join('') +
-      (hits.length > shown
-        ? `<button type="button" class="btn more" data-more="1">Покажи още ${fmt(Math.min(PAGE, hits.length - shown))}</button>`
-        : ''),
+      .join(''),
   );
+  rove($('#pk-list'));
+  // outside the listbox: a listbox holds options only
+  $('#pk-more').innerHTML =
+    hits.length > shown
+      ? `<button type="button" class="btn more" data-more="1">Покажи още ${fmt(Math.min(PAGE, hits.length - shown))}</button>`
+      : '';
+}
+
+// The listbox is one tab stop (WAI-ARIA APG): the option given, else the chosen one, else the first. Returns it.
+function rove(list, to) {
+  const options = [...list.children];
+  const stop =
+    to ?? options.find((o) => o.getAttribute('aria-selected') === 'true') ?? options[0] ?? null;
+  for (const o of options) o.tabIndex = o === stop ? 0 : -1;
+  return stop;
+}
+
+// Up/Down (and Left/Right, as the decors are laid out in a grid) move to the previous/next option, Home/End to
+// the first/last; Enter or Space on an option picks it (it is a button).
+const KEY_STEP = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 };
+function onListKey(ev) {
+  const list = ev.currentTarget;
+  const options = [...list.children];
+  const i = options.indexOf(ev.target.closest('[role="option"]'));
+  if (i < 0) return;
+  let to;
+  if (ev.key in KEY_STEP) to = Math.min(options.length - 1, Math.max(0, i + KEY_STEP[ev.key]));
+  else if (ev.key === 'Home') to = 0;
+  else if (ev.key === 'End') to = options.length - 1;
+  else return;
+  ev.preventDefault();
+  rove(list, options[to])?.focus();
 }
 
 export function bindPicker() {
@@ -194,8 +223,13 @@ export function bindPicker() {
     current.shown = PAGE;
     draw();
   });
+  $('#pk-list').addEventListener('keydown', onListKey);
   dlg().addEventListener('click', (ev) => {
     if (!current) return;
+    if (ev.target.closest('[data-close]')) {
+      dlg().close();
+      return;
+    }
     // draw() replaces the chips and the list: the focus goes back to the pressed chip, or to the first new item
     const chip = ev.target.closest('[data-chip]');
     if (chip) {
@@ -210,7 +244,7 @@ export function bindPicker() {
       const before = current.shown;
       current.shown += PAGE;
       draw();
-      $('#pk-list').children[before]?.focus();
+      rove($('#pk-list'), $('#pk-list').children[before])?.focus();
       return;
     }
     const item = ev.target.closest('[data-id]');

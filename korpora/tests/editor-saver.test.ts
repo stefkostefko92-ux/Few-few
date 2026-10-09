@@ -39,7 +39,12 @@ const TEXT = {
   saveFailed: 'Не успя',
 };
 const fields: Record<string, object> = {};
-browserGlobals({ document: { querySelector: (sel: string) => fields[sel] ?? null } });
+// the tab title is written on the stand-in document, as the browser's would be
+const doc: { querySelector(sel: string): object | null; title: string } = {
+  querySelector: (sel: string) => fields[sel] ?? null,
+  title: 'Кухня — Korpora',
+};
+browserGlobals({ document: doc });
 const { createSaver } = await editorModule<SaverModule>('saver.js', ['createSaver']);
 
 interface Call {
@@ -126,6 +131,16 @@ test('a save sends the version it was opened on and takes the new one from the a
   assert.deepEqual([label.textContent, label.dataset.state], [TEXT.saved, 'saved']);
   assert.equal(await saver.save(), true);
   assert.equal(calls.length, 1, 'nothing new on screen: no second write');
+});
+
+test('a saved new name reaches the tab title and the page heading, as after a reload', async (t) => {
+  const heading = { textContent: 'Кухня' };
+  const { saver, name } = setup(t, saved);
+  fields['#main > h1'] = heading;
+  t.after(() => delete fields['#main > h1']);
+  name.value = 'Кухня 2';
+  assert.equal(await saver.save(), true);
+  assert.deepEqual([doc.title, heading.textContent], ['Кухня 2 — Korpora', 'Кухня 2']);
 });
 
 test('saves run one after another, and the second is based on the version the first wrote', async (t) => {
