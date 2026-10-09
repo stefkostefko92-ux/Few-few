@@ -302,3 +302,17 @@ test('the maintenance deletes fingerprints kept without consent, also from befor
     'consent: kept',
   );
 });
+
+test('the privacy policy gives consent as the basis for the fingerprint and the cookie, in all three languages', async () => {
+  for (const [path, basis] of [
+    ['/privacy', /Съгласие, чл\. 6, пар\. 1, б\. „а“ ОРЗД/],
+    ['/en/privacy', /Consent, Art\. 6\(1\)\(a\) GDPR/],
+    ['/it/privacy', /Consenso, art\. 6, par\. 1, lett\. a\) GDPR/],
+  ] as const) {
+    const page = await new Browser().get(path);
+    assert.equal(page.status, 200, path);
+    assert.match(page.body, basis, `${path}: consent is the basis`);
+    const cookie = /<code>__Host-rd_dev<\/code><\/td><td[^>]*>([^<]*)<\/td>/.exec(page.body)?.[1];
+    assert.match(cookie ?? '', /съгласие|consent|consenso/i, `${path}: the cookie row says when`);
+  }
+});
