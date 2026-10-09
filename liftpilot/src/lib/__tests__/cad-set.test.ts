@@ -68,7 +68,12 @@ for (const [name, make] of [['progetto tipico', lift], ['macchina in basso', bel
     assert.deepEqual(set.paper.map((p) => p.page), [pages]);
     assert.ok(dxf.includes(`\n  8\n${sheetLayer(pages)}\n`), 'livello del foglio delle verifiche');
     assert.ok(have.has(CHECKS_TITLE));
-    for (const [label, value, limit, outcome] of setSheets(x).ds.sheet.checks) for (const t of [label, value, limit, outcome]) assert.ok(have.has(norm(t)), `verifica «${t}»`);
+    // (a label longer than its column at the least size goes on two lines, as on the sheet: its words in the file)
+    const all = [...have].join(' ');
+    for (const [label, value, limit, outcome] of setSheets(x).ds.sheet.checks) {
+      for (const t of [value, limit, outcome]) assert.ok(have.has(norm(t)), `verifica «${t}»`);
+      assert.ok(have.has(norm(label)) || norm(label).split(' ').every((w) => all.includes(w)), `verifica «${label}»`);
+    }
     // its strip left out (its words are the title block's attributes), its number under it
     assert.ok(!have.has(`PAGINA N° ${pages}/${pages}`), 'niente striscia');
     assert.ok(have.has(`Foglio ${pages}`));
