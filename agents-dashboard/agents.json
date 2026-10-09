@@ -15087,7 +15087,7 @@
           "Docusaurus/MkDocs/VitePress (docs сайтове, версиониране, i18n); markdownlint/Vale",
           "Това репо: per-product CLAUDE.md/README, BG източник, runbook-и (deploy/DEPLOY.md), safety-critical низове"
         ],
-        "lessons": 220
+        "lessons": 223
       },
       "evolution": [
         {
@@ -15149,9 +15149,20 @@
           "date": "2026-10-09",
           "event": "v21.0 — учене",
           "detail": "Научи: Concreteness fading - Fyfe, McNeil, Son & Goldstone, systematic review, Educ Psychol Re… (+2 още)"
+        },
+        {
+          "version": "21.3.0",
+          "date": "2026-10-09",
+          "event": "v21.3 — учене",
+          "detail": "Научи: Ефект на въпросите преди дълга лекция (Toftness и съавт., 2018): при лекции над 20 мин … (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-09",
+          "type": "learning",
+          "summary": "Научи: „Ефект на въпросите преди дълга лекция (Toftness и съавт., 2018): при лекции над 20 мин …\" (+2 още)"
+        },
         {
           "date": "2026-10-09",
           "type": "learning",
