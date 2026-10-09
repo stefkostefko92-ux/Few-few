@@ -1,6 +1,5 @@
 import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { totpCode } from '../../src/auth/totp.js';
 import {
   BASE,
   Browser,
@@ -18,11 +17,9 @@ import { enable2fa } from './twofa.js';
 before(startApp);
 after(stopApp);
 
-const now = () => Math.floor(Date.now() / 1000);
-
 test('two-factor sign-in: the code is required, a used code cannot be replayed, recovery codes work once', async () => {
   const b = await customer('twofa@example.test');
-  const { secret, codes } = await enable2fa(b);
+  const { secret, codes, enrolCode } = await enable2fa(b);
   assert.equal(codes.length, 10);
   const stored = await prisma.user.findUniqueOrThrow({ where: { email: 'twofa@example.test' } });
   assert.ok(
@@ -39,7 +36,7 @@ test('two-factor sign-in: the code is required, a used code cannot be replayed, 
   const replay = await c.post('/login/2fa', {
     _csrf: Browser.csrf(page.body),
     next: '/app',
-    code: totpCode(secret, now()),
+    code: enrolCode,
   });
   assert.equal(replay.status, 401, 'the enrolment code cannot be used again');
   const recovery = await c.post('/login/2fa', {
@@ -162,7 +159,7 @@ test('session and device cookies are HttpOnly and SameSite', async () => {
 
 test('the personal data export has everything about the person and no secrets', async () => {
   const b = await customer('export@example.test');
-  await enable2fa(b);
+  const { secret, codes } = await enable2fa(b);
   const res = await b.post('/account/data/export', {
     _csrf: await sessionCsrf(b, '/account/data'),
   });
@@ -171,6 +168,14 @@ test('the personal data export has everything about the person and no secrets', 
   const data = JSON.parse(res.body) as Record<string, unknown>;
   assert.ok(data.account && data.projects && data.devices && data.logins);
   assert.doesNotMatch(res.body, /argon2|passwordHash|totpSecret|csrfToken|tokenHash|codeHash/i);
+  for (const [what, value] of [
+    ['the 2FA secret', secret],
+    ['the session cookie', b.cookies.get('rd_sid') ?? ''],
+    ...codes.map((code) => ['a recovery code', code] as const),
+  ] as const) {
+    assert.ok(value.length >= 8, `${what} to look for is present`);
+    assert.ok(!res.body.includes(value), `the export does not carry ${what}`);
+  }
 });
 
 test('email change: the old address is told, the new one confirms', async () => {

@@ -112,9 +112,10 @@ test('activation after a withdrawal is refused; a plan changed since activation 
 
 test('after the period there is no withdrawal button; an unpaid order can still be cancelled', async () => {
   const { c, row } = await placeOrder('late@example.test', { option: 'm6', buyer: 'consumer' });
+  // 40 days: longer than any possible period (14 days plus up to 5 non-working days), whatever today is
   await prisma.upgradeRequest.update({
     where: { id: row.id },
-    data: { createdAt: new Date(Date.now() - 20 * DAY) },
+    data: { createdAt: new Date(Date.now() - 40 * DAY) },
   });
   const page = await c.get('/account/plan');
   assert.doesNotMatch(page.body, /Откажете се от договора тук<\/a>/);

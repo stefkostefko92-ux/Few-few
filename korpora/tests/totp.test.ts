@@ -44,6 +44,18 @@ test('one step of clock drift is accepted, two are not', () => {
   assert.equal(verifyTotp(SECRET, totpCode(SECRET, t).replace(/^(\d{3})/, '$1 '), null, t), step);
 });
 
+test('a step already accepted cannot be used again; only a later one can', () => {
+  const t = 1234567890;
+  const step = totpStep(t);
+  const code = totpCode(SECRET, t);
+  assert.equal(verifyTotp(SECRET, code, step - 1, t), step, 'a later step than the last is taken');
+  assert.equal(verifyTotp(SECRET, code, step, t), null, 'the same step again is refused');
+  assert.equal(verifyTotp(SECRET, code, step + 1, t), null, 'an earlier step is refused');
+  // the same string, a step later (clock moved on while the code was still shown): still the old step
+  assert.equal(verifyTotp(SECRET, code, step, t + 30), null);
+  assert.equal(verifyTotp(SECRET, totpCode(SECRET, t + 30), step, t + 30), step + 1);
+});
+
 test('an app code is told apart from a recovery code by its digits', () => {
   assert.equal(isTotpCode('123456'), true);
   assert.equal(isTotpCode(' 123 456 '), true);
