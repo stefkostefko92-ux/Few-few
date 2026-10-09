@@ -72,7 +72,7 @@ export function adminDocumentsRouter(deps: AppDeps): Router {
     try {
       const q = ListQuery.safeParse(req.query);
       if (!q.success) return apiError(res, 400, 'invalid_input');
-      const { tenantId } = principalOf(req).user;
+      const { tenantId, id: me } = principalOf(req).user;
       const docs = await deps.db.document.findMany({
         where: { tenantId, ...(q.data.status ? { status: q.data.status } : {}) },
         include: {
@@ -96,6 +96,8 @@ export function adminDocumentsRouter(deps: AppDeps): Router {
           checksum: d.checksum,
           chunks: d._count.chunks,
           supersedesId: d.supersedesId,
+          // Четирите очи: качилият не публикува документ по безопасност — UI го казва предварително.
+          uploadedByMe: d.uploadedById === me,
           applicability: d.applicability.map((a) => ({
             productModel: a.product.model,
             hwRevision: a.hwRevision,

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ChatChat — Amministrazione | Carbon Stealth</title>
+    <meta
+      name="description"
+      content="ChatChat: console di amministrazione — utenti, base di conoscenza, quadri ed etichette QR, registro di audit."
+    />
+    <meta name="robots" content="noindex" />
+    <meta
+      name="keywords"
+      content="ChatChat, Carbon Stealth, amministrazione, gestione utenti, base di conoscenza, quadri di manovra, audit"
+    />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#0b5a8c" />
+    <link rel="stylesheet" href="/app/admin/admin.css" />
+    <link rel="stylesheet" href="/app/admin/admin-views.css" />
+    <script type="module" src="/app/admin/main.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#view" data-i18n="admin.skip">Vai al contenuto</a>
+    <div id="announcer" class="sr-only" role="status" aria-live="polite"></div>
+
+    <noscript>
+      <p class="noscript">
+        ChatChat richiede JavaScript. / ChatChat изисква JavaScript. / ChatChat requires JavaScript.
+      </p>
+    </noscript>
+
+    <div id="shell" class="shell" hidden>
+      <header class="topbar">
+        <div class="topbar-brand">
+          <span class="brand">ChatChat</span>
+          <span class="brand-sub" data-i18n="admin.title">Amministrazione</span>
+        </div>
+        <div class="topbar-tools">
+          <label class="sr-only" for="lang-select" data-i18n="lang.label">Lingua</label>
+          <select id="lang-select" class="lang-select" data-lang-select>
+            <option value="it">Italiano</option>
+            <option value="en">English</option>
+            <option value="bg">Български</option>
+          </select>
+          <span class="who"
+            ><span id="who-name"></span> <span id="who-role" class="muted"></span
+          ></span>
+          <a class="btn btn-secondary btn-sm" href="/" data-i18n="admin.workspace">Workspace</a>
+          <button
+            id="btn-logout"
+            type="button"
+            class="btn btn-secondary btn-sm"
+            data-i18n="auth.logout"
+          >
+            Esci
+          </button>
+        </div>
+      </header>
+
+      <nav id="nav" class="side" data-i18n-attr="aria-label:admin.nav"></nav>
+      <main id="view" class="view" tabindex="-1"></main>
+    </div>
+
+    <p id="denied" class="denied" role="alert" hidden>
+      <span data-i18n="admin.denied">Nessuna sezione di amministrazione per il tuo ruolo.</span>
+      <a href="/" data-i18n="admin.workspace">Workspace</a>
+    </p>
+
+    <div id="toasts" class="toasts"></div>
+
+    <!-- Foglio di stampa dell'etichetta QR: visibile solo in stampa -->
+    <div id="print-sheet" class="print-sheet" aria-hidden="true"></div>
+  </body>
+</html>
