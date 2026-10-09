@@ -245,7 +245,7 @@ function drawerBoxes(m) {
 test('GTV H45: a drawer wider than the nominal slide length gets the maker’s warning, a narrower one does not', () => {
   const tooWide = (m) => m.warnings.filter((w) => w.text.includes('не бива да е по-широко от водача'));
   // GTV: the box is as long as NL (drawerLength = NL)
-  const wide = [{ type: 'kitchen' }, { type: 'chest' }, { type: 'nightstand' }, { type: 'base', fronts: 'drawers', width: 1200 }];
+  const wide = [{ type: 'kitchen' }, { type: 'chest' }, { type: 'nightstand' }, { type: 'wallunit' }, { type: 'base', fronts: 'drawers', width: 1200 }];
   const narrow = [{ type: 'chest', columns: 2 }, { type: 'nightstand', width: 350 }, { type: 'base', fronts: 'drawers', width: 400 }];
   for (const extra of [...wide, ...narrow]) {
     const spec = { ...extra, slide: GTV };
@@ -261,6 +261,8 @@ test('GTV H45: a drawer wider than the nominal slide length gets the maker’s w
       for (const n of notes) assert.equal(n.level, 'warn', n.text);
       const { width, length } = over[0];
       assert.ok(notes.some((n) => n.text.includes(`${String(width).replace('.', ',')} mm`) && n.text.includes(`${length} mm`)), notes.map((n) => n.text).join(' | '));
+      // "add a column" only for a type whose form has columns (the chest), not for the base cabinet, nightstand, kitchen
+      for (const n of notes) assert.equal(n.text.includes('Добавете колона'), spec.type === 'chest', n.text);
     } else assert.deepEqual(notes, [], label);
     // a recommendation from the slide maker, not a blocker
     assert.deepEqual(errorsOf(m), [], label);
@@ -285,7 +287,7 @@ test('Blum TANDEM: a cabinet wider than KB 1400 gets a warning — Blum’s side
     assert.ok(byRole(m, 'drawer-side').length > 0, `${label}: no drawers`);
     const notes = stab(m);
     assert.equal(notes.length > 0, expected, `${label}: ${m.warnings.map((w) => w.text).join(' | ')}`);
-    for (const n of notes) assert.ok(n.level === 'warn' && n.text.includes('1400 mm'), n.text);
+    for (const n of notes) assert.ok(n.level === 'warn' && n.text.includes('1400 mm') && n.text.includes('Добавете колона'), n.text);
     assert.deepEqual(errorsOf(m), [], label);
     assert.deepEqual(blockers(m), [], label);
   }

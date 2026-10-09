@@ -106,6 +106,8 @@ export function normalizeParams(type, input) {
 const common = (s) => ({
   carcassDecor: s.carcassDecor, frontDecor: s.frontDecor, frontMaterial: s.frontMaterial, frontRal: s.frontRal,
   bands: { carcass: s.bandCarcass, front: s.bandFront }, gap: s.gap, hinge: s.hinge, handle: s.handle, slide: s.slide, kind: s.type,
+  // the form has a columns parameter: "add a column" is advice the user can follow
+  columnsParam: TYPES[s.type]?.params.some((p) => p.key === 'columns') ?? false,
 });
 
 function baseCabinet(ctx, s, at = {}) {
