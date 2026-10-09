@@ -27,6 +27,7 @@ import { bindPanels } from './bind-panels.js';
 import { renderCatalog, bindCatalog } from './render-catalog.js';
 import { createViewer } from './bind-view.js';
 import { bindFullscreens } from './fullscreen.js';
+import { bindMenus } from './menus.js';
 import { createSaver } from './saver.js';
 import {
   loadCatalog,
@@ -39,8 +40,8 @@ import {
   guardLeaving,
 } from './session.js';
 import { renderHeader } from './header.js';
+import { TABS, showTab, bindTabs, followHash } from './tabs.js';
 
-const TABS = ['view', 'bom', 'drill', 'nest', 'draw', 'cnc', 'cat'];
 const boot = JSON.parse($('#boot').textContent);
 const root = $('#main');
 const csrf = root.dataset.csrf;
@@ -177,14 +178,7 @@ async function flushPending() {
 
 function selectTab(id, focus = false) {
   state.tab = id;
-  for (const t of $$('[role="tab"]')) {
-    const on = t.dataset.tab === id;
-    t.setAttribute('aria-selected', String(on));
-    t.tabIndex = on ? 0 : -1;
-    if (on && focus) t.focus();
-  }
-  for (const p of $$('[role="tabpanel"]')) p.hidden = p.id !== `panel-${id}`;
-  if (history.replaceState) history.replaceState(null, '', `#${id}`);
+  showTab(id, focus);
   if (id !== 'cnc') stopSim();
   renderTab(id);
   if (id === 'view') viewer?.resize();
@@ -233,16 +227,7 @@ function bindUi() {
     void recompute(true);
   });
 
-  for (const t of $$('[role="tab"]')) {
-    t.addEventListener('click', () => selectTab(t.dataset.tab));
-    t.addEventListener('keydown', (ev) => {
-      const i = TABS.indexOf(t.dataset.tab);
-      if (ev.key === 'ArrowRight') selectTab(TABS[(i + 1) % TABS.length], true);
-      else if (ev.key === 'ArrowLeft') selectTab(TABS[(i + TABS.length - 1) % TABS.length], true);
-      else return;
-      ev.preventDefault();
-    });
-  }
+  bindTabs(selectTab);
 
   bindPanels(state, meta);
   bindCatalog(CATALOG);
@@ -267,6 +252,7 @@ function bindUi() {
     guardLeaving(() => isDirty() || pending !== null || state.saving);
   }
   bindDownloads({ save, onBlocked: () => selectTab('cnc', true) });
+  bindMenus($$('.ed-actions details'));
 }
 
 let locked = false;
@@ -289,12 +275,7 @@ async function start() {
   if (!catalog.ok && !readOnly) lockForReadingOnce(text.catalogFailed);
   showDrift(state.drift, { title: text.driftTitle, text: text.driftText });
   writeForm(form, state.spec, true);
-  const tabOfHash = () => location.hash.replace('#', '');
-  selectTab(TABS.includes(tabOfHash()) ? tabOfHash() : 'view');
-  // a link or the address bar can change the tab later too (replaceState in selectTab fires no hashchange)
-  window.addEventListener('hashchange', () => {
-    if (TABS.includes(tabOfHash()) && tabOfHash() !== state.tab) selectTab(tabOfHash());
-  });
+  followHash(selectTab, () => state.tab);
   await recompute(true);
   // what was just loaded counts as saved, even if this browser's catalog normalizes it slightly differently
   state.savedHash = state.hash;
