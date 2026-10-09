@@ -4,6 +4,7 @@
   const life = row('lifetime');
   const terms = prices.filter((p) => p.discountPercent);
   const list = (items) => items.slice(0, -1).join(', ') + ' o ' + items[items.length - 1];
+  const listAnd = (items) => items.slice(0, -1).join(', ') + ' e ' + items[items.length - 1];
 %>
 <p>Queste condizioni regolano l'uso di Korpora. Registrando un account le accettate e, quando ordinate un piano a pagamento, diventano parte del relativo contratto.</p>
 
@@ -29,8 +30,8 @@
 
 <h2>Piani e prezzi</h2>
 <ul>
-  <li>Premium: <%= fmt.money(m1.totalWithVatCents) %> al mese IVA inclusa (<%= fmt.money(m1.totalCents) %> IVA esclusa). Pagando <%= list(terms.map((p) => String(p.months))) %> mesi in una volta lo sconto è rispettivamente del <%= list(terms.map((p) => p.discountPercent + '%')) %>. Premium non si rinnova da solo: scade alla fine del periodo pagato.</li>
-  <li>Lifetime: <%= fmt.money(life.totalWithVatCents) %> IVA inclusa (<%= fmt.money(life.totalCents) %> IVA esclusa), pagamento unico: <%= lifetimeTimes %> volte il prezzo annuale senza lo sconto per 12 mesi. Lifetime vale finché Korpora è offerto (sezione «Cessazione del servizio»). Quando si deve calcolare una parte del suo prezzo (recesso dopo l'inizio anticipato, chiusura di Korpora o modifica delle condizioni a vostro svantaggio), il prezzo si ripartisce in parti uguali sui primi <%= lifetimeBasis %> dal pagamento: <%= fmt.money(lifetimeShare.gross) %> IVA inclusa (<%= fmt.money(lifetimeShare.net) %> IVA esclusa) al mese. Trascorsi questi mesi, Lifetime è interamente utilizzato.</li>
+  <li>Premium: <%= fmt.money(m1.totalWithVatCents) %> al mese IVA inclusa (<%= fmt.money(m1.totalCents) %> IVA esclusa). Pagando <%= list(terms.map((p) => String(p.months))) %> mesi in una volta lo sconto è rispettivamente del <%= listAnd(terms.map((p) => p.discountPercent + '%')) %>. Premium non si rinnova da solo: scade alla fine del periodo pagato.</li>
+  <li>Lifetime: <%= fmt.money(life.totalWithVatCents) %> IVA inclusa (<%= fmt.money(life.totalCents) %> IVA esclusa), pagamento unico: <%= lifetimeTimes %> volte il prezzo annuale senza lo sconto per 12 mesi. Lifetime vale finché Korpora è offerto (sezione «Cessazione del servizio»). Quando si deve calcolare una parte del suo prezzo (recesso dopo l'inizio anticipato, chiusura di Korpora o modifica del servizio o delle condizioni a vostro svantaggio), il prezzo si ripartisce in parti uguali sui primi <%= lifetimeBasis %> dal pagamento: <%= fmt.money(lifetimeShare.gross) %> IVA inclusa (<%= fmt.money(lifetimeShare.net) %> IVA esclusa) al mese. Trascorsi questi mesi, Lifetime è interamente utilizzato.</li>
   <li>Per i consumatori i prezzi sono finali, IVA <%= vatPercent %>% inclusa. È l'IVA bulgara e vale per i consumatori di tutti i paesi dell'UE: il luogo della prestazione è la Bulgaria (articolo 59 quater della direttiva 2006/112/CE). Per le aziende l'IVA si applica secondo le regole del paese dell'acquirente.</li>
   <li>Possiamo cambiare i prezzi per gli ordini futuri. Un piano già ordinato non cambia.</li>
 </ul>
@@ -85,7 +86,7 @@
 <p>Cerchiamo di far funzionare Korpora senza interruzioni, ma non lo garantiamo: a volte c'è manutenzione. Conservate i progetti importanti anche come file scaricati.</p>
 
 <h2>Modifiche al servizio</h2>
-<p>Possiamo modificare Korpora anche oltre la correzione degli errori, quando c'è un motivo valido: sicurezza, nuova documentazione dei produttori di ferramenta o nuove norme, miglioramenti del programma. La modifica non vi costa nulla in più. Se peggiora in modo significativo il vostro accesso a Korpora o il suo utilizzo e avete un piano a pagamento, vi scriveremo per email in anticipo, come per una modifica delle condizioni (sezione «Modifiche alle condizioni»), e avete lo stesso diritto di recedere gratuitamente e di ottenere la parte di prezzo non utilizzata; il termine per recedere decorre dall'avviso o dalla modifica stessa, se successiva.</p>
+<p>Possiamo modificare Korpora anche oltre la correzione degli errori, quando c'è un motivo valido: sicurezza, nuova documentazione dei produttori di ferramenta o nuove norme, miglioramenti del programma. La modifica non vi costa nulla in più. Se peggiora in modo significativo il vostro accesso a Korpora o il suo utilizzo e avete un piano a pagamento, vi scriveremo per email in anticipo, come per una modifica delle condizioni (sezione «Modifiche alle condizioni»), e avete lo stesso diritto di recedere gratuitamente e di ottenere la parte di prezzo non utilizzata (per Lifetime, secondo la quota mensile della sezione «Piani e prezzi»); il termine per recedere decorre dall'avviso o dalla modifica stessa, se successiva. Per ogni modifica di Korpora vi diciamo chiaramente che cosa cambia, nel programma o per email.</p>
 
 <h2>Cessazione del servizio</h2>
 <p>Se decidiamo di chiudere Korpora, vi scriveremo per email almeno <%= lifetimeNotice %> prima. Fino ad allora l'account funziona come sempre e potete scaricare tutti i vostri progetti e i loro risultati. Se avete Lifetime e Korpora chiude nei primi <%= lifetimeBasis %> dal pagamento, vi rimborsiamo la parte di prezzo non utilizzata secondo la quota mensile della sezione «Piani e prezzi», per il periodo dalla chiusura fino allo scadere di <%= lifetimeBasis %> dal pagamento. Se avete Premium, vi rimborsiamo quanto pagato per il periodo successivo alla chiusura.</p>

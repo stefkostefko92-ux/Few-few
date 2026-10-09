@@ -40,6 +40,8 @@ export function landingTextParams(locale: Locale, prices: PriceRow[]) {
   };
   const money = (cents: number) => formatMoney(cents, locale);
   const or = new Intl.ListFormat(LOCALE_TAG[locale], { type: 'disjunction' });
+  // „3, 6 или 12 месеца … съответно 5 %, 10 % и 20 %“ — сроковете са избор, отстъпките са двойките им
+  const and = new Intl.ListFormat(LOCALE_TAG[locale], { type: 'conjunction' });
   const terms = prices.filter((p) => p.discountPercent > 0);
   const percent = (n: number) => (locale === 'bg' ? `${n}\u00a0%` : `${n}%`);
   const faq: Partial<Record<FaqId, Record<string, string>>> = {
@@ -48,7 +50,7 @@ export function landingTextParams(locale: Locale, prices: PriceRow[]) {
       month: money(row('m1').totalWithVatCents),
       monthNet: money(row('m1').totalCents),
       terms: or.format(terms.map((p) => String(p.months))),
-      discounts: or.format(terms.map((p) => percent(p.discountPercent))),
+      discounts: and.format(terms.map((p) => percent(p.discountPercent))),
       life: money(row('lifetime').totalWithVatCents),
       lifeNet: money(row('lifetime').totalCents),
     },

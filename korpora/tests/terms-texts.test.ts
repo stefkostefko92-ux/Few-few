@@ -15,6 +15,7 @@ const { LOCALES, translate } = await import('../src/i18n.js');
 type Locale = (typeof LOCALES)[number];
 const pricing = await import('../src/plans/pricing.js');
 const { termsCopy } = await import('../src/services/terms-copy.js');
+const { landingTextParams } = await import('../src/seo/structured-data.js');
 
 const CONTACT = 'contact@korpora.example';
 /** The visible text of a page: no tags, one space between words. */
@@ -60,10 +61,10 @@ test('the terms give notice before Korpora stops and one refund basis for Lifeti
     assert.ok(page.includes(months(pricing.LIFETIME_BASIS_MONTHS)), `${locale}: the basis`);
     assert.ok(page.includes(pricing.formatMoney(share.gross, locale)), `${locale}: gross share`);
     assert.ok(page.includes(pricing.formatMoney(share.net, locale)), `${locale}: net share`);
-    // the share is stated once, under the prices; the withdrawal, the discontinuation and the
-    // changes of the terms point to that section
+    // the share is stated once, under the prices; the withdrawal, the changes of the service, the
+    // discontinuation and the changes of the terms point to that section
     const plans = page.split(headings[locale][3]).length - 1;
-    assert.ok(plans >= 4, `${locale}: the prices section is referred to (${plans})`);
+    assert.ok(plans >= 5, `${locale}: the prices section is referred to (${plans})`);
   }
 });
 
@@ -78,10 +79,32 @@ test('the terms say why the VAT is Bulgarian for consumers from every country', 
 
 test('the discounts are paired with their terms: „respectively“ in the terms and in the FAQ', async () => {
   const word = { bg: /отстъпката е съответно/, en: /respectively/, it: /rispettivamente/ } as const;
+  // the terms are a choice („3, 6 or 12“), the discounts are their pairs („5 %, 10 % and 20 %“)
+  const and = { bg: ' и ', en: ' and ', it: ' e ' } as const;
+  const percents = pricing
+    .priceTable()
+    .filter((p) => p.discountPercent > 0)
+    .map((p) => p.discountPercent);
   for (const locale of LOCALES) {
-    assert.match(await terms(locale), word[locale], `${locale}: terms`);
+    const page = await terms(locale);
+    assert.match(page, word[locale], `${locale}: terms`);
     assert.match(translate(locale, 'landing.faq.price.a'), word[locale], `${locale}: FAQ`);
+    const unit = locale === 'bg' ? '\u00a0%' : '%';
+    const shown = percents.map((n) => `${n}${unit}`);
+    const pairs = shown.slice(0, -1).join(', ') + and[locale] + shown[shown.length - 1];
+    assert.ok(page.includes(pairs), `${locale}: terms list ${pairs}`);
+    const faq = landingTextParams(locale, pricing.priceTable()).faq.price?.discounts;
+    assert.equal(faq, pairs, `${locale}: FAQ list`);
   }
+});
+
+test('the terms say that every change of the service is explained', async () => {
+  const said = {
+    bg: /За всяка промяна в Korpora ви казваме ясно какво се променя/,
+    en: /For every change to Korpora we tell you clearly what changes/,
+    it: /Per ogni modifica di Korpora vi diciamo chiaramente che cosa cambia/,
+  } as const;
+  for (const locale of LOCALES) assert.match(await terms(locale), said[locale], locale);
 });
 
 test('the refund deadline reads as a deadline, counted from the withdrawal, in every language', () => {
