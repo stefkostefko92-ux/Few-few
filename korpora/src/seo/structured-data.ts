@@ -64,9 +64,12 @@ function decimal(cents: number): string {
 /**
  * Фирмата — един възел и за Organization, и за LocalBusiness (едно `@id`, без раздвояване на субекта).
  * Работно време няма, защото фирмата не е обявила такова; `geo` е същото като в geo мета таговете, а
- * ценовият диапазон идва от ценоразписа (от месечния план до Lifetime, с ДДС).
+ * ценовият диапазон идва от ценоразписа (от месечния план до Lifetime, с ДДС). `knowsAbout` е на езика на
+ * страницата; марката е Korpora с логото на продукта (фирмено лого няма). `sameAs` липсва, докато
+ * собственикът не посочи истинските профили на фирмата — не се измислят.
  */
 function organization(t: Translator, locale: Locale) {
+  const base = config().PUBLIC_BASE_URL;
   const gross = priceTable().map((row) => row.totalWithVatCents);
   return {
     '@type': ['Organization', 'LocalBusiness'],
@@ -100,6 +103,10 @@ function organization(t: Translator, locale: Locale) {
       longitude: COMPANY.geo.longitude,
     },
     areaServed: { '@type': 'Place', name: t('company.areaServed') },
+    knowsAbout: t('company.knowsAbout')
+      .split(',')
+      .map((topic) => topic.trim()),
+    brand: { '@type': 'Brand', name: 'Korpora', logo: `${base}/static/img/brand/logo.png` },
     priceRange: `${formatMoney(Math.min(...gross), locale)} – ${formatMoney(Math.max(...gross), locale)}`,
   };
 }

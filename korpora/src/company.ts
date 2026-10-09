@@ -29,8 +29,12 @@ export const COMPANY = {
 /** Публичният адрес на Korpora — за печатните материали (сайтът взима своя от PUBLIC_BASE_URL). */
 export const PRODUCT_URL = 'https://korpora.carbonstealth.eu';
 
-/** Датата на последна промяна на витрината — сменя се ръчно, когато се промени съдържанието ѝ. */
-export const CONTENT_UPDATED = '2026-10-06';
+/**
+ * Датата на последна промяна на витрината (lastmod в sitemap, dateModified, датата на цените в брошурата) —
+ * сменя се ръчно, когато се промени съдържанието ѝ. tests/content-updated.test.ts пази отпечатък на текстовете
+ * на витрината и на ценоразписа: смени ли се някое от тях без тази дата, тестът пада.
+ */
+export const CONTENT_UPDATED = '2026-10-09';
 
 /** Последна промяна на всеки правен текст — показва се на страницата и отива в sitemap. */
 export const LEGAL_UPDATED = { privacy: '2026-10-09', terms: '2026-10-09' } as const;

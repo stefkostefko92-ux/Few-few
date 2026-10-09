@@ -207,6 +207,32 @@ test('LocalBusiness is the one company node, with the geo of the meta tags and t
   );
 });
 
+test('the company node says what it knows about and carries the Korpora brand with its logo', async () => {
+  for (const [locale, path] of [...LANDINGS, ['en', '/en/privacy'] as const]) {
+    const org = ofType(graph(await html(path)), 'Organization');
+    const topics = org.knowsAbout as string[];
+    assert.ok(Array.isArray(topics) && topics.length >= 5, `${path}: knowsAbout`);
+    assert.deepEqual(
+      topics,
+      translate(locale, 'company.knowsAbout')
+        .split(',')
+        .map((topic) => topic.trim()),
+      `${path}: in the language of the page`,
+    );
+    const brand = org.brand as Record<string, string>;
+    assert.deepEqual(
+      [brand['@type'], brand.name, brand.logo],
+      ['Brand', 'Korpora', `${BASE}/static/img/brand/logo.png`],
+      path,
+    );
+    // no profile is claimed until the owner names the real ones
+    assert.equal(org.sameAs, undefined, `${path}: no invented sameAs`);
+  }
+  const logo = await get('/static/img/brand/logo.png');
+  assert.equal(logo.status, 200);
+  assert.equal(logo.headers.get('content-type'), 'image/png');
+});
+
 test('Speakable points at text that is on the page', async () => {
   for (const [, path] of LANDINGS) {
     const body = await html(path);
