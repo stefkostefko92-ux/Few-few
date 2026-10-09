@@ -12,6 +12,8 @@ import { getProject } from '@/server/queries';
 import { readDraft } from '@/server/drafts';
 import Calculator from '@/components/calc/Calculator';
 import Crumbs from '@/components/Crumbs';
+import RefreshNotice from '@/components/RefreshNotice';
+import { openedByRefresh } from '@/lib/refresh-form';
 
 export async function generateMetadata() {
   const t = await getTranslations('calculations');
@@ -20,15 +22,16 @@ export async function generateMetadata() {
 
 // The calculator of a machine replacement: it starts from the values of the chosen saved calculation (?from=), else
 // from the form's draft, else from the latest calculation of the project, else empty (src/lib/calc-blank.ts): nothing of
-// the installation or the machines filled in. A whole project has one form, which saves its calculation with it.
-export default async function CalcPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ from?: string }> }) {
+// the installation or the machines filled in. A whole project has one form, which saves its calculation with it. Opened
+// by «Aggiorna con il software attuale» on a calculation that no longer saves as it was (&aggiorna=1), it says so on top.
+export default async function CalcPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ from?: string; aggiorna?: string }> }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
   const user = await requireCapability(locale, 'calc:create');
   const p = await getProject(user, id);
   if (!p || p.archivedAt) notFound();
   if (p.kind === 'FULL') redirect(`/${locale}/app/projects/${p.id}/progetto`);
-  const from = idSchema.safeParse((await searchParams).from);
+  const sp = await searchParams, from = idSchema.safeParse(sp.from);
   const draft = from.success ? null : await readDraft(user, p.id, 'calc', calcDraftSchema);
   const source = draft ? null : await prisma.calculation.findFirst({
     where: { projectId: p.id, companyId: user.companyId, ...(from.success ? { id: from.data } : {}) },
@@ -48,6 +51,7 @@ export default async function CalcPage({ params, searchParams }: { params: Promi
           <p className="lead">{t('newLead')}</p>
         </div>
       </div>
+      {from.success && openedByRefresh(sp) ? <RefreshNotice kind="calc" /> : null}
       <Calculator projectId={p.id} initial={initial} preset={null} brand={user.companyName} collaudo={collaudo}
         draft={{ projectId: p.id, scope: 'calc', resumed: draft ? dateFormat(locale).dateTime(new Date(draft.at)) : null }} />
     </main>

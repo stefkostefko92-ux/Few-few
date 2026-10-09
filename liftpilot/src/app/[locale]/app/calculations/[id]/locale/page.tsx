@@ -12,6 +12,8 @@ import { getCalculation } from '@/server/queries';
 import { readDraft } from '@/server/drafts';
 import { readCalc } from '@/server/records';
 import Crumbs from '@/components/Crumbs';
+import RefreshNotice from '@/components/RefreshNotice';
+import { openedByRefresh } from '@/lib/refresh-form';
 import RoomSurvey from '@/components/room/RoomSurvey';
 
 export async function generateMetadata() {
@@ -21,7 +23,8 @@ export async function generateMetadata() {
 
 // The survey of the machine room for a replacement's calculation: it starts from the saved room chosen with ?from=, else
 // from the survey's draft, else from the latest saved room of the installation, else empty (every measure to enter).
-export default async function RoomSurveyPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ from?: string }> }) {
+// Opened by «Aggiorna con il software attuale» on a survey the calculation no longer takes (&aggiorna=1), it says so.
+export default async function RoomSurveyPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ from?: string; aggiorna?: string }> }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
   const user = await requireCapability(locale, 'calc:create');
@@ -31,7 +34,7 @@ export default async function RoomSurveyPage({ params, searchParams }: { params:
   if (!calc) notFound();
   const [t, tp, tc] = await Promise.all([getTranslations('room'), getTranslations('projects'), getTranslations('calculations')]);
   const { values, same } = calc;
-  const from = idSchema.safeParse((await searchParams).from), scope = `room:${c.id}` as const;
+  const sp = await searchParams, from = idSchema.safeParse(sp.from), scope = `room:${c.id}` as const;
   const draft = from.success ? null : await readDraft(user, c.projectId, scope, surveyDraftSchema);
   const prev = draft ? null : await prisma.roomDesign.findFirst({
     where: { projectId: c.projectId, companyId: user.companyId, ...(from.success ? { id: from.data } : {}) }, orderBy: { createdAt: 'desc' }, select: { inputs: true },
@@ -52,6 +55,7 @@ export default async function RoomSurveyPage({ params, searchParams }: { params:
       <dl className="cartiglio">
         <div className="wide"><dt>{tc('col_machine')}</dt><dd className="num">{c.summary}</dd></div>
       </dl>
+      {same && from.success && openedByRefresh(sp) ? <RefreshNotice kind="room" /> : null}
       {same ? <RoomSurvey calculationId={c.id} values={values} initial={start}
         draft={{ projectId: c.projectId, scope, resumed: draft ? dateFormat(locale).dateTime(new Date(draft.at)) : null }} /> : <p className="alert alert-warn">{t('calcChanged')}</p>}
     </main>

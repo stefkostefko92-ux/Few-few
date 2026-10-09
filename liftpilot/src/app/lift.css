@@ -5,6 +5,8 @@
 
 .lift-work { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; align-items: start; }
 .lift-main, .lift-view { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+/* «Aggiorna con il software attuale» on a record that no longer saves as it was: what to correct, across the top */
+.lift-work > .refresh-notice { grid-column: 1 / -1; }
 .lift-work > .savebar { grid-column: 1 / -1; border: 1px solid var(--rule); border-radius: 12px 12px 0 0; box-shadow: 0 -10px 24px -20px rgb(0 0 0 / .45); }
 @media (min-width: 1080px) {
   .lift-work { grid-template-columns: minmax(340px, 420px) minmax(0, 1fr); }

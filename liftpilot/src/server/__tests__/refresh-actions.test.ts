@@ -161,7 +161,7 @@ test('il blocco è tolto anche se il salvataggio fallisce', async () => {
   const { refreshCalculationAction } = await actions();
   db.calc = [calcRow('old1', stale)];
   created = { ok: false, error: 'invalidFields' };
-  assert.equal(await go(refreshCalculationAction, 'old1'), `${APP}/projects/p1/calc?from=old1`);
+  assert.equal(await go(refreshCalculationAction, 'old1'), `${APP}/projects/p1/calc?from=old1&aggiorna=1`);
   created = { ok: true, id: 'new1' };
   assert.equal(await go(refreshCalculationAction, 'old1'), `${APP}/calculations/new1?da=old1`);
 });
@@ -170,10 +170,10 @@ test('dati che il software non accetta più: si apre il modulo su di essi, nessu
   const { refreshCalculationAction } = await actions();
   db.calc = [calcRow('old1', stale)];
   created = { ok: false, error: 'invalidFields' };
-  assert.equal(await go(refreshCalculationAction, 'old1'), `${APP}/projects/p1/calc?from=old1`);
+  assert.equal(await go(refreshCalculationAction, 'old1'), `${APP}/projects/p1/calc?from=old1&aggiorna=1`);
   db.calc = [calcRow('bad1', { inputs: { nonsense: true }, sha256: '0'.repeat(64) })];
   calls.calc = [];
-  assert.equal(await go(refreshCalculationAction, 'bad1'), `${APP}/projects/p1/calc?from=bad1`);
+  assert.equal(await go(refreshCalculationAction, 'bad1'), `${APP}/projects/p1/calc?from=bad1&aggiorna=1`);
   assert.equal(calls.calc.length, 0, 'valori illeggibili: non si salva');
 });
 
@@ -228,11 +228,16 @@ test('progetto dell’impianto: due richieste insieme, un solo record', async ()
   assert.equal(calls.lift.length, 1);
 });
 
-test('progetto dell’impianto che non passa più: al modulo con ?from=', async () => {
+test('progetto dell’impianto che non passa più: al modulo con ?from= e il segno che lo dice in cima (aggiorna=1)', async () => {
   const { refreshLiftDesignAction } = await actions();
   db.lift = [liftRow('lift1', { engineVersion: '0.0.0' })];
   created = { ok: false, error: 'invalidFields' };
-  assert.equal(await go(refreshLiftDesignAction, 'lift1'), `${APP}/projects/p1/progetto?from=lift1`);
+  const to = await go(refreshLiftDesignAction, 'lift1');
+  assert.equal(to, `${APP}/projects/p1/progetto?from=lift1&aggiorna=1`);
+  // the form reads the mark and says at its top why it opened (refresh-form.ts); opened from the record's page, it does not
+  const { openedByRefresh } = await import(src('lib/refresh-form.ts'));
+  assert.equal(openedByRefresh(Object.fromEntries(new URL(to, 'http://x').searchParams)), true);
+  assert.equal(openedByRefresh({ from: 'lift1' }), false);
 });
 
 test('progetto dell’impianto di un’altra ditta o archiviato: al tabellone', async () => {
@@ -267,7 +272,7 @@ test('machinale con rilievo che il nuovo calcolo non prende più: si rifà il ca
   const { refreshRoomDesignAction } = await actions();
   db.room = [roomRow('room1')];
   db.calc = [calcRow('new1')]; // the calculation made again, as the database then has it
-  assert.equal(await go(refreshRoomDesignAction, 'room1'), `${APP}/calculations/new1/locale?from=room1`);
+  assert.equal(await go(refreshRoomDesignAction, 'room1'), `${APP}/calculations/new1/locale?from=room1&aggiorna=1`);
   assert.equal(calls.calc.length, 1);
   assert.equal(calls.room.length, 0, 'il rilievo illeggibile non è salvato');
 });

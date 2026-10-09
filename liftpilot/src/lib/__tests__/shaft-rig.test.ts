@@ -14,7 +14,7 @@ import { NO_MARKS } from '@/lib/lift/marks';
 import { analyse } from '@/lib/present/analysis';
 import { buildReport } from '@/lib/report/build';
 import { buildTavole, specs } from '@/lib/tavole/build';
-import { cwGearChecks, cwGearOf, cwGearRow } from '@/lib/tavole/cw-gear';
+import { cwGearChecks, cwGearOf, cwGearPicked, cwGearRow } from '@/lib/tavole/cw-gear';
 import { dataSheet } from '@/lib/tavole/data';
 import type { TavoleInput } from '@/lib/tavole/input';
 import { loads } from '@/lib/tavole/loads';
@@ -171,6 +171,17 @@ test('macchina sotto la fossa: paracadute del contrappeso dichiarato e verificat
   assert.equal(row(head), undefined);
   assert.equal(sg(head), undefined);
   assert.ok(Number(String(under.P[6]).replace(/\D/g, '')) > Number(String(head.P[6]).replace(/\D/g, '')), 'P7 con la presa');
+});
+
+test('paracadute del contrappeso: scelto il pilastro, l’azionamento scelto prima non resta dietro il campo disattivato', () => {
+  const tripped = { cwSafetyGear: 'instantaneous' as const, cwGearTrip: 'rupture' as const, control: 'APB' };
+  // a pillar: nothing trips it, the choice goes away with the gear; the rest of the data stays as it was
+  assert.deepEqual(cwGearPicked(tripped, 'pillar'), { cwSafetyGear: 'pillar', cwGearTrip: undefined, control: 'APB' });
+  // a gear chosen (or none) keeps what trips it: the two fields are filled in either order
+  assert.deepEqual(cwGearPicked(tripped, 'progressive'), { ...tripped, cwSafetyGear: 'progressive' });
+  assert.deepEqual(cwGearPicked({ cwGearTrip: 'governor' }, undefined), { cwGearTrip: 'governor', cwSafetyGear: undefined });
+  // and sheet 1 reads the pillar alone, as before
+  assert.equal(cwGearRow(cwGearPicked(tripped, 'pillar')), 'PILASTRO ESISTENTE FINO AL TERRENO');
 });
 
 test('relazione: lo spazio sotto il vano come il foglio 1 (fondo della fossa, P5–P8, paracadute dai dati, pilastro solo in una modifica)', () => {

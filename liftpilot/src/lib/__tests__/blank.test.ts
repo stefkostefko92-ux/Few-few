@@ -11,8 +11,8 @@ import { shaftInputsSchema } from '@/lib/shaft-input';
 import { deriveLift, newLift } from '@/lib/lift';
 import { LIFT_STANDARD, isLiftStandard } from '@/lib/lift/defaults';
 import {
-  ROOM_FIELDS, blankLift, emptied, enteredBy, entrancesTo, existingMissing, filled, floorRemoved, floorsTo, layoutTo, missingOf, relevant, roomAdded,
-  type BlankKey, type LiftDraft,
+  ROOM_FIELDS, ROOM_PLACEHOLDER, blankLift, bottomTo, emptied, enteredBy, entrancesTo, existingMissing, filled, floorRemoved, floorsTo, layoutTo, missingOf,
+  relevant, roomAdded, type BlankKey, type LiftDraft,
 } from '@/lib/lift/blank';
 import { carriedOver } from '@/lib/lift/carry';
 import { panelEntered } from '@/lib/lift/panel-form';
@@ -78,6 +78,26 @@ test('una scelta porta i suoi dati da inserire: portata data, secondo accesso, c
   // a room added again starts empty
   assert.deepEqual(roomAdded(filled(d.blank, roomKeys)).filter((k) => k.startsWith('room.')), roomKeys);
   assert.deepEqual(layoutTo('bottom', filled(d.blank, ['bottom']), 'bottom'), filled(d.blank, ['bottom', 'layout']));
+});
+
+test('macchina in basso con lo schema room: il locale delle pulegge da inserire (senza quadro), negli altri schemi nessun locale', () => {
+  let d = calc(shaft(blankLift(), { Q: 630 }), { layout: 'bottom' });
+  const pulley = roomKeys.filter((k) => !k.startsWith('room.panel')), entered = filled(d.blank, roomKeys);
+  // the pulley room comes with the scheme: its size, height, slab and door; no panel stands in it
+  const room = bottomTo(d, 'room');
+  assert.equal(room.inputs.bottom, 'room');
+  assert.deepEqual(missingOf(room).filter((k) => k.startsWith('room.')), pulley);
+  for (const s of ['head', 'under'] as const) assert.equal(missingOf(bottomTo(d, s)).some((k) => k.startsWith('room.')), false, s);
+  // a design with no room over the shaft: scheme room adds one, every measure of it to enter
+  d = { inputs: { ...d.inputs, shaft: { ...d.inputs.shaft, room: null } }, blank: entered };
+  const added = bottomTo(d, 'room');
+  assert.deepEqual(added.inputs.shaft.room, ROOM_PLACEHOLDER);
+  assert.deepEqual(missingOf(added).filter((k) => k.startsWith('room.')), pulley);
+  assert.equal(bottomTo(d, 'head').inputs.shaft.room, null, 'no room with the pulleys under the slab');
+  // a room entered for a machine above stays as entered and becomes the pulley room
+  const kept = bottomTo({ inputs: { ...d.inputs, shaft: { ...d.inputs.shaft, room: { ...ROOM_PLACEHOLDER, H: 2100 } } }, blank: entered }, 'room');
+  assert.deepEqual([kept.inputs.shaft.room?.H, missingOf(kept).some((k) => k.startsWith('room.'))], [2100, false]);
+  assert.ok(liftDraftSchema.safeParse(added).success, 'the draft keeps it');
 });
 
 test('fermate: righe dal numero, interpiani e accessi da inserire; aggiunte, tolte, la principale', () => {

@@ -8,7 +8,8 @@ interface Item {
   label: string;
 }
 
-function goTo(id: string): void {
+/** Opens the groups round the field `id`, puts it in view and the cursor in it. */
+export function goToField(id: string): void {
   const el = document.getElementById(id);
   if (!el) return;
   for (let p: HTMLElement | null = el.parentElement; p; p = p.parentElement) if (p instanceof HTMLDetailsElement) p.open = true;
@@ -23,7 +24,7 @@ export default function MissingPanel({ title, lead, items, id = 'missing' }: { t
       <p className="note">{lead}</p>
       <ul className="missing-list">
         {items.map((i) => (
-          <li key={i.id}><a href={`#${i.id}`} onClick={(e) => { e.preventDefault(); goTo(i.id); }}>{i.label}</a></li>
+          <li key={i.id}><a href={`#${i.id}`} onClick={(e) => { e.preventDefault(); goToField(i.id); }}>{i.label}</a></li>
         ))}
       </ul>
     </section>

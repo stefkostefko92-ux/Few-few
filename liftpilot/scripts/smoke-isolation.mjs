@@ -1,14 +1,17 @@
 // The smoke test's second company: made by the platform's administrator, its owner changes the password, accepts the
 // terms and downloads the company's data (no secrets in it), and opens nothing of the first company (404 everywhere),
-// its replacement's machine room and documents included.
+// its replacement's machine room and documents included. On the way, the header of the administrator (8 sections) and
+// of the owner (7) fits the window at desktop widths (smoke-topbar.mjs).
 import assert from 'node:assert/strict';
 import { step } from './smoke-kit.mjs';
+import { headerFits } from './smoke-topbar.mjs';
 
 export async function secondCompany({ BASE, page, kit, ADMIN, stamp, urls }) {
   const { login, logout, hydrated } = kit;
   const { calcUrl, href, designUrl, dxfHref, setUrl, setPdfHref, liftUrl, liftRelHref, roomUrl, roomId } = urls;
   step('second company cannot see the first one');
   await login(page, ADMIN.email, ADMIN.password);
+  await headerFits({ page, url: (l) => `${BASE}/${l}/app`, who: 'the platform’s administrator' });
   await page.goto(`${BASE}/it/app/admin`);
   const ownerEmail = `titolare.${stamp}@example.com`;
   await page.fill('input[name="name"]', `Ditta ${stamp}`);
@@ -30,6 +33,7 @@ export async function secondCompany({ BASE, page, kit, ADMIN, stamp, urls }) {
   for (const k of ['accept', 'business', 'drafts', 'clauses']) await page.check(`main input[name="${k}"]`);
   await page.click('main form:has(input[name="clauses"]) button');
   await page.waitForSelector('main form:has(input[name="clauses"])', { state: 'detached' });
+  await headerFits({ page, url: (l) => `${BASE}/${l}/app`, who: 'an owner' });
   // the company's data, all of it, without secrets (terms of use, «exit»)
   const exported = await page.request.get(`${BASE}/api/company/export`);
   assert.equal(exported.status(), 200, 'company export');

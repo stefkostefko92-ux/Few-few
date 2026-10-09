@@ -19,11 +19,11 @@ import { makeFmt } from '@/lib/present/tr';
 import { roomHash } from '@/lib/room-hash';
 import { deriveRoom } from '@/lib/room/derive';
 import { roomSnapshot, roomVerdict } from '@/lib/room/snapshot';
+import { encodeRoomSummary, roomSummaryOf } from '@/lib/room/summary';
 import type { Survey } from '@/lib/room/survey';
 import { shaftHash } from '@/lib/shaft-hash';
 import type { ShaftSource } from '@/lib/shaft-input';
 import { snapshotHash } from '@/lib/snapshot-hash';
-import { supportName } from '@/lib/tavole/survey-data';
 import { mergeChecks, shaftSnapshot, verdictOf } from '@/shaft';
 import { readCalc, storedCollaudo } from './records';
 
@@ -118,9 +118,9 @@ export async function createRoomDesign(
   const d = deriveRoom(calc.values, survey);
   if (d.issues.length) return { ok: false, error: 'roomIssues', fields: d.issues };
   const C = storedCollaudo(calc.values, c.collaudo);
-  const snap = roomSnapshot(survey, c.sha256, d), sha256 = roomHash(snap), v = roomVerdict(d.checks, C), R = survey.room;
-  const machine = d.made ? `${d.made.brand} ${d.made.model}` : 'argano';
-  const summary = `Locale ${fmt(R.W, 0)} × ${fmt(R.D, 0)} · ${machine} su ${supportName(d).toLowerCase()} · calate ${fmt(Math.round(d.calata.calc), 0)} mm`;
+  const snap = roomSnapshot(survey, c.sha256, d), sha256 = roomHash(snap), v = roomVerdict(d.checks, C);
+  // the line that names it in the lists: data, written in the reader's language where it is shown (room/summary.ts)
+  const summary = encodeRoomSummary(roomSummaryOf(d, survey.room));
   const created = await prisma.roomDesign.create({
     data: {
       companyId: user.companyId, projectId: c.projectId, calculationId: c.id, userId: user.id, label, inputs: snap.inputs ?? {}, results: snap.results ?? {},

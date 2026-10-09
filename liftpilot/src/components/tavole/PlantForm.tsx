@@ -12,6 +12,7 @@ import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { useRouter } from '@/i18n/routing';
 import { makeFmt } from '@/lib/present/tr';
 import { PLANT_RANGE, type Plant, type PlantNumber } from '@/lib/plant';
+import { cwGearPicked } from '@/lib/tavole/cw-gear';
 import { machineConflict } from '@/lib/tavole/machine-name';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { savePlantAction } from '@/server/drawing-actions';
@@ -92,7 +93,7 @@ export default function PlantForm({ projectId, initial, readOnly, whole, catalog
               <label className="field">
                 <span>{t('f_cwSafetyGear')}</span>
                 <select className="input" value={P.cwSafetyGear ?? ''} disabled={readOnly}
-                  onChange={(e) => put({ cwSafetyGear: CW_GEARS.find((g) => g === e.target.value) })}>
+                  onChange={(e) => { const g = CW_GEARS.find((x) => x === e.target.value); setP((prev) => cwGearPicked(prev, g)); setMsg(null); }}>
                   <option value="">{t('r_unset')}</option>
                   {CW_GEARS.map((g) => <option key={g} value={g}>{t(`s_${g}`)}</option>)}
                 </select>

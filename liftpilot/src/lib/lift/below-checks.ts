@@ -4,7 +4,8 @@
 // both — the checks, with the ids, of the room over the shaft of a machine above: they take the place of the shaft's own
 // for the room over the shaft (mergeChecks), which holds no machine. With the head pulleys in a room over the shaft
 // (scheme room) that room is a pulley room: the height of its ways, its door, the free height over the pulleys (soft:
-// pulleys with guards need none). Room axes [mm]; pure.
+// pulleys with guards need none) — the room the sheets and the 3D draw (shaft-rig.ts pulleyRoomOf): the design's, else
+// the software's standard one. Room axes [mm]; pure.
 import type { Layout, RoomInputs, ShaftCheck } from '@/shaft';
 import { check } from '@/shaft/checks';
 import { roomChecksOf, type MachineSpec } from '@/shaft/machine-room';
@@ -14,6 +15,7 @@ import { panelChecks } from '@/shaft/room-panel';
 import { freeBeside } from '@/shaft/support-check';
 import { belowFit, belowMachine, belowRoom, type BottomGeo } from './bottom';
 import { KL } from './norme';
+import { pulleyRoomOf } from './shaft-rig';
 
 /** The machine's room below as the drawings show it (bottom.ts belowRoom) and the machine's corners in plan in the
  *  shaft's axes. */
@@ -36,10 +38,11 @@ export function belowRoomChecks(L: Layout, g: BottomGeo, M: MachineSpec): ShaftC
 }
 
 /** The pulley room over the shaft of scheme room, its head pulleys of diameter `Dp` with their axes KL.pulleyRoomAxis over
- *  its floor: m_pheight, m_pdoor and m_pabove (soft); none in the other schemes or without a room over the shaft. */
+ *  its floor: m_pheight, m_pdoor and m_pabove (soft) — on the room drawn, the design's or, without one, the software's
+ *  standard room (up to LIFT 1.29.0 a design without a room had none of them); none in the other schemes. */
 export function pulleyRoomChecks(L: Layout, g: BottomGeo, Dp: number): ShaftCheck[] {
-  const R = L.inputs.room, K = KV_VERT;
-  if (g.scheme !== 'room' || !R) return [];
+  if (g.scheme !== 'room') return [];
+  const R = pulleyRoomOf(L.inputs), K = KV_VERT;
   const over = R.H - (KL.pulleyRoomAxis + Dp / 2);
   return [
     check('m_pheight', R.H >= K.pulleyRoomH, R.H, K.pulleyRoomH, 0, 'mm'),

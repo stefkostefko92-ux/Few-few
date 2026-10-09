@@ -13,6 +13,7 @@ import { setProjectArchivedAction, upgradeProjectAction } from '@/server/project
 import Crumbs from '@/components/Crumbs';
 import RefreshForm from '@/components/RefreshForm';
 import RecordTable from '@/components/project/RecordTable';
+import { roomSummaryLine } from '@/server/room-summary';
 import { pitchesOf } from '@/lib/plant';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -42,7 +43,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
   // the records of a lift design are reached from it; the others of a whole project are its archive
   const calcRows = calcs.filter((c) => replacement || !c.liftDesign).map((c) => ({ ...c, old: outdated.calc(c) }));
   const shaftRows = designs.filter((d) => !d.liftDesign).map((d) => ({ ...d, old: outdated.shaft(d) }));
-  const roomRows = rooms.map((r) => ({ ...r, old: outdated.room(r) }));
+  const roomLine = await roomSummaryLine(), roomRows = rooms.map((r) => ({ ...r, summary: roomLine(r), old: outdated.room(r) }));
   const liftRows = lifts.map((d) => ({ ...d, old: outdated.lift(d) }));
   const archive = !replacement && (calcRows.length > 0 || shaftRows.length > 0 || roomRows.length > 0);
   const setList = sets.length ? (

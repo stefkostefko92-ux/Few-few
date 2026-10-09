@@ -9,5 +9,8 @@ td.need > input[type=radio] { outline: 1px dashed var(--warn); outline-offset: 2
 .missing h2 { margin-bottom: 4px; }
 .missing-list { margin: 10px 0 0; padding-left: 1.1rem; columns: 2 15rem; column-gap: 24px; }
 .missing-list li { padding-block: 2px; break-inside: avoid; font-size: 14px; }
+/* what «Aggiorna con il software attuale» left to correct in a form (RefreshNotice) */
+.refresh-notice { display: flex; flex-direction: column; gap: 6px; }
+.refresh-notice .missing-list { margin: 0; }
 @media (max-width: 720px) { .missing-list { columns: 1; max-height: 15rem; overflow-y: auto; } }
 .draft-bar { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }

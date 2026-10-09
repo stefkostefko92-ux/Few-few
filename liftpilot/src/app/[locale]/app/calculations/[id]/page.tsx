@@ -4,12 +4,13 @@ import { Link } from '@/i18n/routing';
 import { requireCapability } from '@/lib/auth';
 import { can } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
-import { NORMA_BREVE, normeOf } from '@/lib/lift/collaudo';
+import { NORMA_BREVE, ambitoOf, normeOf } from '@/lib/lift/collaudo';
 import { calcMachine, calcOrder, designMachine, designOrder } from '@/lib/order/machine';
 import { savedLiftAdvice, savedLiftAlternative, savedValuesAdvice } from '@/lib/lift/advice-cache';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { makeFmt } from '@/lib/present/tr';
 import { getCalculation, latestRoomOf, listDrawingSets, listRoomDesigns, refreshedFrom } from '@/server/queries';
+import { roomSummaryLine } from '@/server/room-summary';
 import { projectCost } from '@/server/prices';
 import { calcRecord, recordMarks, storedCollaudo } from '@/server/records';
 import { designBasis } from '@/lib/prices/plant-bom';
@@ -58,7 +59,8 @@ export default async function CalculationPage({ params, searchParams }: {
     refreshedFrom(user, 'calculation', da.data, c.projectId)]);
   // a replacement's project: the machine room surveyed on this calculation, its relazione tecnica and drawing sets
   const replacement = c.project.kind === 'REPLACEMENT' && !c.liftDesign;
-  const rooms = replacement ? (await listRoomDesigns(user, c.projectId)).filter((x) => x.calculationId === c.id) : [];
+  const roomLine = await roomSummaryLine();
+  const rooms = replacement ? (await listRoomDesigns(user, c.projectId)).filter((x) => x.calculationId === c.id).map((x) => ({ ...x, summary: roomLine(x) })) : [];
   const below = V.layout === 'bottom', open = can(user, 'calc:create') && !c.project.archivedAt;
   // made again in one click: a lift design's calculation with the design, a replacement's with its machine room; one in
   // the archive of a whole project is made again from the project's form (refresh-actions.ts)
@@ -83,7 +85,9 @@ export default async function CalculationPage({ params, searchParams }: {
   // before an issue: the machine the data of the installation name against the catalogue's the set would carry (the
   // marks of the record, as the issue reads them), the plant number of an existing lift, the client
   const plant = plantReadSchema.safeParse(c.project.plant ?? {});
-  const checks = issueChecks(plant.success ? plant.data : {}, recordMarks(rec, c.collaudo).catalog ?? null, c.project, C.norma !== 'en81');
+  const marks = recordMarks(rec, c.collaudo);
+  const checks = issueChecks(plant.success ? plant.data : {}, marks.catalog ?? null, c.project, C.norma !== 'en81',
+    { whole: true, rails: ambitoOf(C, 'gr_stress') === 'applies', underPit: below && (marks.bottom ?? 'head') === 'under' });
   const mine = sets.filter((x) => x.calculationId === c.id);
   const fd = dateFormat(locale);
   return (

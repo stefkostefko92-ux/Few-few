@@ -1,13 +1,17 @@
 // The room of a machine below with its sizes set on its drawings (ShaftInputs.below): beside the shaft it keeps its side
 // at the wall it stands past and grows away from it, across from its side nearest the origin; under the pit from its
 // corner nearest the origin, its height taking the machine's floor down; the machine has to stay inside it (m_fit), and
-// the room is checked as a machine room; a pulley room over the shaft with its own values (below-checks.ts).
+// the room is checked as a machine room; a pulley room over the shaft with its own values (below-checks.ts), the
+// software's standard one — the room the sheets draw — when the design has none.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { deriveLift, newLift, type LiftInputs } from '@/lib/lift';
 import { belowFit, belowMachine, belowRoom, bottomGeo, sheaveHalfBelow, type BottomScheme } from '@/lib/lift/bottom';
 import { belowSectionEntities } from '@/lib/tavole/below-view';
 import { sheaveAxisBelow } from '@/lib/lift/machine';
+import { KL } from '@/lib/lift/norme';
+import { pulleyRoomOf, sheetLayout } from '@/lib/lift/shaft-rig';
+import { KV_VERT } from '@/shaft/norme-vert';
 import { DEFAULT_ROOM, mergeChecks, type BelowRoom, type ShaftCheckId, type ShaftInputs } from '@/shaft';
 
 const below = (scheme: BottomScheme, p: Partial<ShaftInputs> = {}): LiftInputs => {
@@ -99,4 +103,23 @@ test('macchina in basso con i rinvii sopra il vano: il locale delle pulegge con 
   assert.equal(tight.at('m_pabove')?.status, 'warn');
   // the other schemes have no pulley room
   assert.equal(deriveLift(below('head', { room: { ...DEFAULT_ROOM } })).supportChecks.some((c) => c.id.startsWith('m_p') && c.id !== 'm_panel'), false);
+});
+
+test('schema room senza un locale nel progetto: le verifiche del locale delle pulegge sul locale standard che si disegna', () => {
+  // a design saved without a room over the shaft (up to LIFT 1.29.0 none of the three checks ran)
+  const { d, g } = roomOf(below('room', { room: null })), I = d.analysis.ctx.I, M = d.machine;
+  const at = (id: ShaftCheckId) => mergeChecks(d.layout.checks, d.supportChecks).find((c) => c.id === id);
+  const drawn = sheetLayout(d.layout, I.r, I.Dp, M.n, M.d, g).inputs.room;
+  assert.ok(drawn);
+  // the room the sheets draw is the one measured: the standard one, as high as a pulley room must be, its door the least
+  assert.deepEqual(drawn, pulleyRoomOf({ ...d.layout.inputs, room: null }));
+  assert.deepEqual([at('m_pheight')?.value, at('m_pheight')?.status], [drawn.H, 'ok']);
+  assert.equal(drawn.H, KV_VERT.pulleyRoomH);
+  assert.deepEqual([drawn.doorW, drawn.doorH, at('m_pdoor')?.value, at('m_pdoor')?.status], [KV_VERT.doorMinW, KV_VERT.pulleyDoorH, 0, 'ok']);
+  assert.equal(at('m_pabove')?.value, drawn.H - (KL.pulleyRoomAxis + I.Dp / 2));
+  // a room entered takes its place, in the checks and on the sheets alike
+  const own = roomOf(below('room', { room: { ...DEFAULT_ROOM, H: 1450, doorW: 650, doorH: 1450 } }));
+  const ownAt = (id: ShaftCheckId) => mergeChecks(own.d.layout.checks, own.d.supportChecks).find((c) => c.id === id);
+  assert.deepEqual([ownAt('m_pheight')?.value, ownAt('m_pheight')?.status, ownAt('m_pdoor')?.status], [1450, 'fail', 'ok']);
+  assert.equal(sheetLayout(own.d.layout, I.r, I.Dp, M.n, M.d, own.g).inputs.room?.H, 1450);
 });

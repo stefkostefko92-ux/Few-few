@@ -18,7 +18,8 @@ import { VOCI_IMPIANTO } from '../lift/norme';
 import { buildTavole } from '../tavole/build';
 import { FAILED, TITLE_H } from '../tavole/datasheet';
 import type { TavoleInput } from '../tavole/input';
-import { issueChecks } from '../tavole/issue-check';
+import { emptyPlant, issueChecks } from '../tavole/issue-check';
+import type { Plant } from '../plant';
 import { GOVERNOR_LOAD_UNSET, loadNames } from '../tavole/loads';
 import { machineConflict, machineName, machineText, modelCore } from '../tavole/machine-name';
 import { MACHINES } from '../catalog/machines';
@@ -49,8 +50,28 @@ test('argano: il nome del catalogo, il testo dell’impianto per riferimento, la
   assert.equal(machineConflict({ machine: 'Sicor SH 140 Dx' }, cat), false);
   assert.equal(machineConflict({}, cat), false);
   assert.equal(machineConflict({ machine: 'M 73' }, null), false);
-  assert.deepEqual(issueChecks({ machine: 'M 73' }, cat, { plantNumber: null, client: ' ' }, true), { machine: { named: 'M 73', catalog: 'SICOR SH140' }, plantNumber: true, client: true });
-  assert.deepEqual(issueChecks({}, cat, { plantNumber: null, client: 'Condominio' }, false), { machine: null, plantNumber: false, client: false });
+  const full: Plant = { control: 'APB', voltage: 400, lightVoltage: 230, frequency: 50, duty: 40, safetyGear: 'progressive', governorLoad: 300 };
+  assert.deepEqual(issueChecks({ ...full, machine: 'M 73' }, cat, { plantNumber: null, client: ' ' }, true, { whole: false }),
+    { machine: { named: 'M 73', catalog: 'SICOR SH140' }, plantNumber: true, client: true, empty: [] });
+  assert.deepEqual(issueChecks(full, cat, { plantNumber: null, client: 'Condominio' }, false, { whole: false }), { machine: null, plantNumber: false, client: false, empty: [] });
+});
+
+test('emissione: i dati dell’impianto che il foglio 1 legge e nessuno ha inserito, nell’ordine del loro modulo', () => {
+  const cat = { brand: 'SICOR', model: 'SH140' };
+  // a whole design with nothing entered: everything its sheet 1 reads; the machine named by the catalogue
+  assert.deepEqual(emptyPlant({}, cat, { whole: true, rails: true }), ['control', 'shaft', 'carFinish', 'safetyGear', 'liftUse', 'governorLoad', 'currentIn',
+    'currentStart', 'voltage', 'lightVoltage', 'frequency', 'duty']);
+  // the lift's use only with the check of the rails; a machine off the catalogue: its name; under the pit: the
+  // counterweight's gear and what trips it (nothing trips a pillar)
+  assert.equal(emptyPlant({}, cat, { whole: true, rails: false }).includes('liftUse'), false);
+  assert.equal(emptyPlant({}, null, { whole: true })[0], 'machine');
+  assert.deepEqual(emptyPlant({}, cat, { whole: true, underPit: true }).filter((k) => k.startsWith('cw')), ['cwSafetyGear', 'cwGearTrip']);
+  assert.deepEqual(emptyPlant({ cwSafetyGear: 'pillar' }, cat, { whole: true, underPit: true }).filter((k) => k.startsWith('cw')), []);
+  // a replacement's sheet 1: no shaft, car finish, lift's use or currents
+  assert.deepEqual(emptyPlant({}, cat, { whole: false, rails: true, underPit: true }), ['control', 'safetyGear', 'governorLoad', 'voltage', 'lightVoltage', 'frequency', 'duty']);
+  // a blank text counts as not entered, every value entered leaves nothing
+  assert.deepEqual(emptyPlant({ control: '  ', shaft: 'muratura', carFinish: 'inox', liftUse: 'passengers', currentIn: 12, currentStart: 40, voltage: 400,
+    lightVoltage: 230, frequency: 50, duty: 40, safetyGear: 'progressive', governorLoad: 300 }, cat, { whole: true, rails: true }), ['control']);
 });
 
 test('argano: il modello del catalogo a parole intere — un modello che ne comincia un altro, un altro costruttore contraddicono', () => {

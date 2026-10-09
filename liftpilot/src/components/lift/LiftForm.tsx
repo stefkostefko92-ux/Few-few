@@ -2,15 +2,17 @@
 
 // The one form of an installation, on the left of its screen: the intervention (the machine replaced, the lift renewed
 // keeping its existing sling, a new lift: src/lib/lift/intervento.ts) and its test, the shaft (its size, or measured on a
-// drawing), the load, doors and counterweight, the floors with pit and headroom, the machine room, the
-// lift and its machine. A new installation starts empty (src/lib/lift/blank.ts); the software's own values (rails,
+// drawing), the load, doors and counterweight, the floors with pit and headroom, the machine room (with a machine below
+// and its pulleys over the slab, the pulley room), the lift and its machine. A new installation starts empty (src/lib/lift/blank.ts); the software's own values (rails,
 // allowances, heights, niches, frames…) come once the project's data are in.
 import { useTranslations } from 'next-intl';
 import type { FormValues } from '@/calc/types';
 import { INTERVENTI, KL, collaudoOf, interventoOf, interventoTo, type AutoFlags, type BottomScheme, type Collaudo, type Intervento, type LiftDerived,
   type LiftInputs } from '@/lib/lift';
 import type { CatalogChoice } from '@/lib/lift/catalog';
+import { pulleyRoomOf } from '@/lib/lift/shaft-rig';
 import { roomGeo } from '@/shaft/machine-room';
+import { KV_VERT } from '@/shaft/norme-vert';
 import type { Texts } from '@/lib/present/texts';
 import type { Pres } from '@/lib/present/tr';
 import type { ShaftSource } from '@/lib/shaft-input';
@@ -62,8 +64,11 @@ export default function LiftForm({ P, X, inp, derived, complete, blank, bad, nee
     setCalc(r.calc);
     if (r.collaudo) setCollaudo(r.collaudo);
   };
-  // the machine room comes with a machine above (once its place is chosen)
+  // the machine room comes with a machine above (once its place is chosen); the pulley room with a machine below whose
+  // pulleys stand over the slab (scheme room): the room the sheets and the 3D draw and the checks measure
   const above = !is('layout') && inp.calc.layout !== 'bottom';
+  const pulley = !is('layout') && inp.calc.layout === 'bottom' && !is('bottom') && inp.bottom === 'room'
+    ? { standard: pulleyRoomOf({ ...inp.shaft, room: null }), minH: KV_VERT.pulleyRoomH, doorW: KV_VERT.doorMinW, doorH: KV_VERT.pulleyDoorH, above: KV_VERT.pulleyAbove } : undefined;
   const size = (key: 'W' | 'D') => (
     <label className={`field${is(key) ? ' need' : ''}`}>
       <span>{ts(key)}</span>
@@ -110,7 +115,7 @@ export default function LiftForm({ P, X, inp, derived, complete, blank, bad, nee
         <RoomOptions I={inp.shaft} set={setShaft} blank={blank}
           machine={derived && complete ? { D: derived.machine.D, shimsAxis: KL.sheaveAxisPerD * derived.machine.D, shape: derived.machine.shape ?? null, rinvio: derived.machine.rinvio ?? null, heb: derived.heb, turn: roomGeo(derived.layout, derived.machine)?.dir } : undefined}
           panel={{ auto: !!inp.auto.panel, set: (on) => setAuto({ panel: on }), placed: derived && complete && derived.origin.panel === 'auto' ? derived.shaft.room : null }} />
-      ) : null}
+      ) : pulley ? <RoomOptions I={inp.shaft} set={setShaft} blank={blank} pulley={pulley} /> : null}
       <h2>{t('s_drive')}</h2>
       <LiftCalcFields P={P} X={X} inp={inp} derived={derived} complete={complete} bad={bad} need={need} blank={blank} texts={texts} setCalc={setCalc} setAuto={setAuto} setBottom={setBottom}
         setCatalog={setCatalog} t={(k, v) => t(k, v)} />

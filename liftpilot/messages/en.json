@@ -694,6 +694,9 @@
     "vt_reset": "Typical values",
     "rm_title": "Machine room above the shaft",
     "rm_on": "The design has a machine room",
+    "rm_pulley_title": "Pulley room above the shaft",
+    "rm_pulley_hint": "With the machine beside the shaft the diverting pulleys stand in this room, over the slab: no machine, no control panel. Its clear height (at least {H} mm), its door (at least {W} × {D} mm) and the space over unguarded pulleys (at least {above} mm) are checked.",
+    "rm_pulley_std": "The design was saved without the pulley room: it is drawn and checked as the software’s standard room, as large as the shaft, {H} mm high, with a door of {W} × {D} mm. Enter the measures of the real room.",
     "rm_W": "Inside width (mm)",
     "rm_D": "Inside depth (mm)",
     "rm_shaftX": "Shaft from the room’s left wall (mm)",
@@ -884,6 +887,8 @@
     "issueMachine": "The data of the installation call the machine “{named}”, but the calculation checks the {catalog}: correct the name in the data of the installation before issuing the drawing set.",
     "issuePlantNumber": "The lift exists but has no plant number: the sheets will write “DA COMUNICARE”. Enter it in the installation before issuing, if you know it.",
     "issueClient": "No client is entered: the title block will show a dash.",
+    "issueEmpty": "Data of the installation not entered ({n}): sheet 1 shows them as a dash or with the software’s assumption — {list}.",
+    "issuePlantFull": "The data of the installation sheet 1 reads are all entered.",
     "plantLink": "Open the data of the installation",
     "cadTitle": "CAD files of the issued set",
     "cadLead": "The same views at full size, with the title block of the number and revision, the walls hatched and sheet 1: send these instead of the draft.",
@@ -1852,7 +1857,11 @@
     "setsFromRoom": "For a replacement, drawing sets are issued from the machine room survey.",
     "projectTitle": "Replacement project",
     "projectEmpty": "No machine room survey yet. Open it from a saved calculation: “Survey the machine room”.",
-    "col_room": "Room and machine"
+    "col_room": "Room and machine",
+    "summary": "Room {W} × {D} mm · {machine} on {support} · rope drops {calata} mm",
+    "sum_machine": "machine",
+    "sum_own": "(made to measure)",
+    "sum_heb": "{support} on two {profile} on the shaft walls"
   },
   "drawing": {
     "full": "Full screen",
@@ -1876,7 +1885,13 @@
     "roomRedo": "The machine room survey saved with the previous calculation does not pass with the current software: redo it starting from that survey.",
     "roomOpen": "Open the survey",
     "outdated": "to update",
-    "archive": "The software has changed since this was saved: the documents are not regenerated. It is in the archive of the installation, now a whole project: the design is updated from its form."
+    "archive": "The software has changed since this was saved: the documents are not regenerated. It is in the archive of the installation, now a whole project: the design is updated from its form.",
+    "formTitle": "Update with the current software: data to correct",
+    "form_lift": "With the current software some data of this design no longer pass, so it could not be saved again on its own. Correct the data marked and save: the save makes a new version of the design; the one saved before stays as it was.",
+    "form_calc": "With the current software some data of this calculation no longer pass, so it could not be redone on its own. Correct the data marked and save: the save makes a new calculation; the one saved before stays as it was.",
+    "form_room": "With the current software some measures of this survey no longer pass on the calculation, so it could not be saved again on its own. Correct the measures marked and save: the save makes a new survey; the one saved before stays as it was.",
+    "formFix": "To correct:",
+    "formDone": "The data now pass: save to make the new version."
   },
   "draft": {
     "resumed": "Draft resumed, saved on {at}.",

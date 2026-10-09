@@ -10,7 +10,7 @@ import type { Analysis } from '../present/analysis';
 import { makeFmt } from '../present/tr';
 import { belowChecks, belowRoomOf } from '../lift/below-checks';
 import { headTopChecks } from '../lift/head';
-import { withRig } from '../lift/shaft-rig';
+import { pulleyRoomOf, withRig } from '../lift/shaft-rig';
 import { carSideStatic, governorRopeLength, ropeCut, supportChecks } from '../lift/support';
 import { layoutRigLength } from '../lift/rope';
 import { massModelOf } from '../lift/known';
@@ -205,6 +205,8 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   const car = carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes: ropesKg, cables: cablesKg });
   // a machine below: its own room in place of the one over the shaft (the pulley room's checks apart; below-checks.ts)
   const bg = scheme ? belowGeoOf(a, L, M, scheme) : null, mRoom = bg ? belowRoomOf(L, bg, M).R : room;
+  // the pulley room the sheets draw and the checks measure (the design's, else the software's standard one)
+  const pRoom = scheme === 'room' ? pulleyRoomOf(L.inputs) : null;
   // the car's top and the refuge on its roof under what the rope rig hangs in the shaft (head.ts), and with them the
   // clearance on the counterweight's sign (cw-gap.ts) in place of the shaft's own
   const head = headTopChecks(withRig(L, I.r, I.Dp, N.n, N.d, bg), I.r, I.Dp, scheme);
@@ -218,7 +220,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     // a check of a part that stays as it is is out of the acceptance test (note on the sheet)
     const outcome = ambitoOf(C, c.id) === 'existing' ? 'ESISTENTE' : OUTCOME[c.status];
     if (c.id === 'm_door' && mRoom) return [label.replace(', margine', ''), `${mRoom.doorW} × ${mRoom.doorH} mm`, `≥ ${KV_VERT.doorMinW} × ${KV_VERT.doorMinH} mm`, outcome];
-    if (c.id === 'm_pdoor' && room) return [label.replace(', margine', ''), `${room.doorW} × ${room.doorH} mm`, `≥ ${KV_VERT.doorMinW} × ${KV_VERT.pulleyDoorH} mm`, outcome];
+    if (c.id === 'm_pdoor' && pRoom) return [label.replace(', margine', ''), `${pRoom.doorW} × ${pRoom.doorH} mm`, `≥ ${KV_VERT.doorMinW} × ${KV_VERT.pulleyDoorH} mm`, outcome];
     return [label, c.value == null ? '—' : `${shownValue(c, fmt)}${c.unit ? ` ${c.unit}` : ''}`, c.limit == null ? '—' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${withUnit(c.limit, c.dec, c.unit)}`, outcome];
   });
   // the rooms as the scheme of a machine below has them, existing in a modification tested to UNI 10411-1/-11 (9.2); the

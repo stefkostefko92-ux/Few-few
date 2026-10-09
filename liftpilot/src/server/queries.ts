@@ -154,7 +154,8 @@ export function getDrawingSet(user: SessionUser, id: string) {
   return prisma.drawingSet.findFirst({
     where: { id, companyId: user.companyId },
     include: {
-      project: { select: { id: true, name: true, archivedAt: true } },
+      // (the data of the installation, its plant number and client: what a revision's sheet 1 reads, issue-check.ts)
+      project: { select: { id: true, name: true, archivedAt: true, plant: true, plantNumber: true, client: true } },
       user: { select: { name: true } },
       logo: { select: { mime: true, data: true } },
       clientLogo: { select: { mime: true, data: true } },
@@ -254,7 +255,8 @@ export function listRoomDesigns(user: SessionUser, projectId: string) {
     take: 100,
     select: {
       id: true, label: true, verdict: true, failCount: true, warnCount: true, summary: true, createdAt: true, calculationId: true, engineVersion: true,
-      calculation: { select: { engineVersion: true } }, user: { select: { name: true } },
+      // (the survey and the results: the line of a record saved before round 37 is read again from them, room-summary.ts)
+      inputs: true, results: true, calculation: { select: { engineVersion: true } }, user: { select: { name: true } },
     },
   });
 }
