@@ -9,7 +9,7 @@ import { buildModel } from '../../engine/model.js';
 import { TYPE_ORDER } from '../../engine/types.js';
 import { drawingAssembly } from '../../engine/drawing-assembly.js';
 import { drawingPart, drawingParts, drawingSheets } from '../../engine/drawing-part.js';
-import { PAPER, STYLE } from '../../engine/drawing-kit.js';
+import { PAPER, STYLE, frame } from '../../engine/drawing-kit.js';
 import { partHoles } from '../../engine/drill.js';
 
 registerFixtures();
@@ -113,4 +113,12 @@ test('on a drilling map a filled circle is a through hole and nothing else, as t
     }
   }
   assert.ok(blindKey > 0, 'no blind hardware hole was checked');
+});
+
+test('the title block cuts a long owner to its cell instead of running into the drawing number', () => {
+  const owner = 'Мебелна работилница Иванов и синове ЕООД'; // 40 characters, the cell takes 30
+  const svg = frame('Врата', { ...meta, owner }, 10, 2, 5, 'ПДЧ 18 · Бяло');
+  assert.ok(!svg.includes(owner), 'the whole owner is printed');
+  assert.ok(svg.includes(`>${owner.slice(0, 29)}…</text>`), 'the owner is not cut to 30 characters');
+  assert.ok(frame('Врата', { ...meta, owner: 'Carbon Stealth VCC' }, 10, 2, 5, 'ПДЧ').includes('>Carbon Stealth VCC</text>'), 'a short owner is cut');
 });

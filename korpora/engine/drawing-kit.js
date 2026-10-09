@@ -95,6 +95,12 @@ function projectionSymbol(x, y) {
   return `<g class="d-proj" transform="translate(${x} ${y})"><path d="M0 -2.4 L6 -3.6 L6 3.6 L0 2.4 Z"/><line x1="-1" y1="0" x2="7" y2="0" class="d-cl"/><circle cx="12" cy="0" r="3.6"/><circle cx="12" cy="0" r="2.4"/><line x1="7.6" y1="0" x2="16.4" y2="0" class="d-cl"/></g>`;
 }
 
+// A title-block value cut to what its cell holds: a 60 mm cell takes 30 characters of the 3 px monospace.
+export const fit = (text, n) => {
+  const s = String(text ?? '');
+  return s.length > n ? `${s.slice(0, n - 1)}…` : s;
+};
+
 // Frame (20 mm binding margin left, 10 mm elsewhere) and a 180 × 36 title block at the bottom right. sheetNo null:
 // a part without a sheet of its own (its drilling map only) — the drawing number has no sheet and the sheet is „—“.
 export function frame(title, meta, scale, sheetNo, sheetCount, material) {
@@ -106,10 +112,10 @@ export function frame(title, meta, scale, sheetNo, sheetCount, material) {
 <g class="d-tb"><rect x="${x}" y="${y}" width="180" height="36"/>
 <line x1="${x}" y1="${y + 12}" x2="${x + 180}" y2="${y + 12}"/><line x1="${x}" y1="${y + 24}" x2="${x + 180}" y2="${y + 24}"/>
 <line x1="${x + 60}" y1="${y + 12}" x2="${x + 60}" y2="${y + 36}"/><line x1="${x + 110}" y1="${y + 12}" x2="${x + 110}" y2="${y + 36}"/><line x1="${x + 145}" y1="${y + 12}" x2="${x + 145}" y2="${y + 36}"/>
-${cell(x, y, 'Наименование', title.length > 58 ? `${title.slice(0, 57)}…` : title, 'd-tv d-big')}
-${cell(x, y + 12, 'Собственик', meta.owner)}${cell(x + 60, y + 12, 'Чертеж №', drawingNo)}
+${cell(x, y, 'Наименование', fit(title, 58), 'd-tv d-big')}
+${cell(x, y + 12, 'Собственик', fit(meta.owner, 30))}${cell(x + 60, y + 12, 'Чертеж №', drawingNo)}
 ${cell(x + 110, y + 12, 'Мащаб', `1:${scale}`)}${cell(x + 145, y + 12, 'Лист', sheetNo == null ? '—' : `${sheetNo}/${sheetCount}`)}
-${cell(x, y + 24, 'Материал', material.length > 30 ? `${material.slice(0, 29)}…` : material)}${cell(x + 60, y + 24, 'Дата', meta.date)}
+${cell(x, y + 24, 'Материал', fit(material, 30))}${cell(x + 60, y + 24, 'Дата', meta.date)}
 ${cell(x + 110, y + 24, 'Размери', 'mm')}<text class="d-tl" x="${x + 147}" y="${y + 27.6}">Проекция</text>${projectionSymbol(x + 158, y + 31.2)}</g>`;
 }
 
