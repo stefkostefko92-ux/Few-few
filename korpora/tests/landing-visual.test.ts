@@ -1,6 +1,6 @@
 import { before, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { ROOT } from '../src/paths.js';
 import { loadEngine } from '../src/services/engine.js';
@@ -46,4 +46,20 @@ test('the labels on the sheet drawing are small and sit above the router path', 
     'labels are drawn after the path',
   );
   assert.ok(svg.lastIndexOf('class="pid"') < svg.indexOf('class="hole'), 'holes stay on top');
+});
+
+test('the stills of the story are drawn without the top bar (it is a layer of its own above the stage)', () => {
+  const style =
+    /addStyleTag\(\{\s*content:\s*'([^']+)'/.exec(read('scripts/landing-stills.ts'))?.[1] ?? '';
+  assert.match(style, /\.site-bar[^{]*\{display:none!important\}/);
+});
+
+test('the cut list sits beside the G-code only where its seven columns fit; every stylesheet stays under 300 lines', () => {
+  const css = read('public/css/site-content.css');
+  assert.match(css, /@media \(min-width: 1200px\) \{\s*\.outputs \{\s*grid-template-columns/);
+  assert.match(css, /\.output th \{\s*white-space: nowrap;/);
+  for (const file of readdirSync(`${ROOT}/public/css`).filter((f) => f.endsWith('.css'))) {
+    const lines = read(`public/css/${file}`).split('\n').length;
+    assert.ok(lines <= 300, `${file}: ${lines} lines`);
+  }
 });

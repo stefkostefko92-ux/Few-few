@@ -76,6 +76,10 @@ export function createServer(): Express {
   const version = assetVersion(join(ROOT, 'public'));
   const preload = editorPreload();
   app.disable('x-powered-by');
+  // Всяка страница носи nonce на своя отговор (CSP), затова ETag от тялото е различен при всяка заявка и условната
+  // заявка никога не връща 304. 304 със стара страница пък би сблъскал стария nonce с новия CSP. Без ETag: страницата
+  // се пази по Cache-Control; статичните файлове имат свой ETag (express.static), каталогът — собствен.
+  app.set('etag', false);
   app.set('trust proxy', cfg.TRUST_PROXY);
   app.set('view engine', 'ejs');
   app.set('views', join(ROOT, 'views'));

@@ -160,6 +160,8 @@ test('every landing image has a src, the page is cached only privately (it carri
   for (const path of ['/', '/en/', '/it/']) {
     const res = await get(path);
     assert.match(res.headers.get('cache-control') ?? '', /^private,/, path);
+    // the body carries this response's nonce: an ETag of it would never match again
+    assert.equal(res.headers.get('etag'), null, path);
     const page = await res.text();
     const imgs = page.match(/<img\b[^>]*>/g) ?? [];
     assert.ok(imgs.length > 0, path);
