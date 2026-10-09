@@ -9,7 +9,7 @@
     "tooManyDownloads": "Troppi download in un minuto. Riprovate tra {s} s.",
     "notSaved": "Non salvato",
     "conflictTitle": "Il progetto è stato modificato altrove",
-    "conflictText": "Da quando l'avete aperto qui, il progetto è stato salvato da un'altra finestra o da un altro dispositivo. Le modifiche su questa schermata non sono salvate, ma non sono perse: salvatele come progetto separato. «Ricarica» mostra l'altra versione e le modifiche qui vengono scartate.",
+    "conflictText": "Da quando l'avete aperto qui, il progetto è stato salvato da un'altra finestra o da un altro dispositivo. Le modifiche su questa schermata non sono salvate, ma non sono perse: salvatele come progetto separato. «Ricarica» mostra l'altra versione e le modifiche qui vengono scartate. I file si generano dal progetto salvato: per questa versione, scaricateli dalla copia.",
     "saveCopy": "Salva come copia",
     "reload": "Ricarica",
     "copyFailed": "La copia non è stata creata (forse avete raggiunto il numero massimo di progetti). Le modifiche sono ancora sullo schermo: riprovate.",

@@ -9,7 +9,7 @@
     "tooManyDownloads": "Too many downloads in a minute. Try again in {s} s.",
     "notSaved": "Not saved",
     "conflictTitle": "The project was changed elsewhere",
-    "conflictText": "Since you opened it here, the project has been saved from another window or device. The changes on this screen are not saved, but they are not lost: save them as a separate project. “Reload” shows the other version, and the changes here are dropped.",
+    "conflictText": "Since you opened it here, the project has been saved from another window or device. The changes on this screen are not saved, but they are not lost: save them as a separate project. “Reload” shows the other version, and the changes here are dropped. Files are made from the saved project — for this version, download them from the copy.",
     "saveCopy": "Save as a copy",
     "reload": "Reload",
     "copyFailed": "The copy was not created (you may have reached the maximum number of projects). The changes are still on screen — try again.",
