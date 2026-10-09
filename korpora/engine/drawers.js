@@ -41,6 +41,17 @@ export function buildDrawers(ctx, o, a) {
     ctx.warn('error', `${nm(`Колона ${i + 1}`)}: колоната е твърде тясна за чекмедже.`);
     return;
   }
+  // the slide makers' limits on the width (engine/data/slide-systems.js): a GTV H45 drawer no wider than its NL; a Blum
+  // stabilisation set, recommended for wide drawers on short slides, only up to the cabinet width KB (the column's
+  // inner width and the two panels it stands between). Recommendations for the drawer to run well, not blockers.
+  const boxW = r1(xr - xl);
+  if (sys.maxWidth && boxW > sys.maxWidth(NL)) {
+    ctx.warn('warn', `${nm(`Колона ${i + 1}`)}: чекмеджето (${dimTxt(boxW)} mm) не бива да е по-широко от водача (NL ${NL} mm) — изискване на ${sys.brand} за правилната му работа. Добавете колона или стеснете мебела, задълбочете шкафа за по-дълъг водач или изберете скрит водач.`);
+  }
+  const KB = r1(xb - xa + 2 * T);
+  if (sys.stabiliserKB && KB > sys.stabiliserKB) {
+    ctx.warn('warn', `${nm(`Колона ${i + 1}`)}: шкаф ${dimTxt(KB)} mm — ${sys.brand} препоръчва странична стабилизация за широки чекмеджета с къс водач, а комплектът е за шкафове до ${sys.stabiliserKB} mm. Добавете колона или стеснете мебела.`);
+  }
   const L = sys.drawerLength(NL);
   const fh = r1((dzH - drawers * gap) / drawers);
   // the top edges of the box sides, front and back show whenever the drawer is open: banded like the carcass

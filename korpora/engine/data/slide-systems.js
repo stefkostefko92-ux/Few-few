@@ -17,6 +17,7 @@ export const SLIDE_SYSTEMS = [
     hole: { d: 3, depth: 10, note: 'пилот за винт за ПДЧ — наш избор (GTV не посочва винта)' },
     axisAboveBox: 22.3, // наш избор: долният ръб на профила 44,5 mm = долният ръб на кутията
     drawerLength: (nl) => nl,
+    maxWidth: (nl) => nl, // „Uwagi montażowe“ в картата: за правилната работа чекмеджето не е по-широко от NL
     depthNeeded: (nl) => nl + 10, // наш избор (GTV не дава минимална дълбочина)
     boxSide: 16,
     bottomUp: 10,
@@ -39,9 +40,10 @@ export const SLIDE_SYSTEMS = [
     boxSide: 16,
     bottomUp: 13, // дъното е вдлъбнато 12–15 mm
     rearHook: { d: 6, depth: 10, fromOuter: 7, fromBottom: 11 },
+    stabiliserKB: 1400, // комплектът за странична стабилизация ZST — за шкаф до KB 1400 mm; препоръчан за широки чекмеджета с къс NL (стр. 4)
     loadKg: 30,
     extension: 'full',
-    source: { title: 'Blum TD-127/3 EN/07.23 TANDEM 16 mm — Technical data sheet, стр. 5 и 24', url: 'https://d2.blum.com/services/BEC003/me12694698_td_dok_bau_$sen_$aof_$v3.pdf' },
+    source: { title: 'Blum TD-127/3 EN/07.23 TANDEM 16 mm — Technical data sheet, стр. 4, 5 и 24', url: 'https://d2.blum.com/services/BEC003/me12694698_td_dok_bau_$sen_$aof_$v3.pdf' },
   },
   {
     id: 'blum_movento_760h',
@@ -58,8 +60,9 @@ export const SLIDE_SYSTEMS = [
     boxSide: 16,
     bottomUp: 13,
     rearHook: { d: 6, depth: 10, fromOuter: 7, fromBottom: 11 },
+    stabiliserKB: 1400, // комплектът за странична стабилизация ZS7M — за KB 1400 mm (стр. 4)
     loadKg: 40,
     extension: 'full',
-    source: { title: 'Blum TD-132/1 EN/06.22 MOVENTO — Technical data sheet, стр. 5, 13 и 19 (отворите — само за NL 600)', url: 'https://d2.blum.com/services/BEC003/me13029704_td_dok_bau_$sen_$aof_$v1.pdf' },
+    source: { title: 'Blum TD-132/1 EN/06.22 MOVENTO — Technical data sheet, стр. 4, 5, 13 и 19 (отворите — само за NL 600)', url: 'https://d2.blum.com/services/BEC003/me13029704_td_dok_bau_$sen_$aof_$v1.pdf' },
   },
 ];
