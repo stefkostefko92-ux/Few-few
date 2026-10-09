@@ -4,8 +4,9 @@ description: >-
   Готови промптове „Claude като учител" за учене/менторство по дадена тема или
   умение. Ползвай, когато потребителят иска да учи, да провери разбирането си,
   да получи учебен план, обяснение от първи принципи, spaced repetition, active
-  recall, техниката на Фейнман или обяснение в четири форми (текст, диаграма,
-  интерактивна страница, видео). Замести `[topic]`/`[skill]` с темата.
+  recall, техниката на Фейнман, обяснение в четири форми (текст, диаграма,
+  интерактивна страница, видео) или кратко обяснително видео с история.
+  Замести `[topic]`/`[skill]` с темата.
 ---
 
 # Учебни промптове — Claude като учител (reusable)
@@ -87,7 +88,48 @@ description: >-
   FAQ: https://www.asd-ste100.org/STE_faq.html. Стандартът е за **английски** технически текст и
   не е за общо писане; на български ползвай само принципите. Картинката, приложена към поста на
   Карпати, греши за ABOUT/APPROXIMATELY и за страдателния залог — сверявай с FAQ, не с нея.
-- **„Предскажи, преди да покажа“** е наш избор от дидактиката, **не** е цитат на Карпати — не го
-  приписвай на него.
+- **„Предскажи, преди да покажа“** **не** е цитат на Карпати — не го приписвай на него. Подкрепено е
+  от изследвания: предвиждането преди резултата подсилва ученето чрез изненадата (Brod, Hasselhorn &
+  Bunge, 2018, https://doi.org/10.1016/j.learninstruc.2018.01.013). Въпросите преди видео помагат
+  най-вече за попитаното съдържание (Toftness и съавт., 2018, https://doi.org/10.1016/j.jarmac.2018.06.003)
+  — питай за ключовите точки.
 - Ако видеото иска API ключ (напр. за глас), ключът се чете от променлива на средата и никога не
   се печата и не влиза в репото.
+
+9. **Story-Led Explainer Animation** — Turn [topic] into a 75–90 second animated lesson for
+   [audience] that teaches one idea through a short story: a surprising question, a familiar
+   situation, the problem, the mechanism shown working, the principle named only after it is
+   shown, why it matters, and a recap that answers the opening question. Use [mascot] as the
+   guide and keep it visually consistent. Before each major reveal, ask the viewer to predict
+   what happens. Show concrete examples before terms. Narrate at about 120–150 words per minute,
+   slower for non-native or young viewers, one idea per sentence. Make the narration describe
+   every visual detail the viewer needs, so the lesson works without the picture. Do not repeat
+   the narration as on-screen text; use only short labels for key terms. Provide closed captions
+   that identify the speaker and the meaningful sounds. Keep every essential label inside the
+   graphics-safe area: 5% from each edge, which is 96 px at the sides and 54 px at the top and
+   bottom of a 1920×1080 frame. Never use colour alone to carry meaning. Add no detail, effect or
+   transition that does not explain a relationship. For each scene give the time range, the
+   learning purpose, the visual, the motion, the narration, the sound, and the transition that
+   turns an object already on screen into the next scene. Finish with two checks: watch it once
+   without sound and listen to it once without the picture; both must teach the same idea.
+
+### Откъде е № 9 (сверено 2026-10-09)
+
+Основа е споделен промпт „story-led educational animation“. Взети са само проверените части, с поправки:
+
+- **Гласът носи всичко съществено от картината.** Оригиналът иска картината да „допълва“ гласа, без да
+  го повтаря. По WCAG 2.1/2.2 AA (EN 301 549, EAA) картина с информация, която гласът не казва, иска
+  аудиоописание. SC 1.2.5 не се прилага само ако всичко важно вече е в звука:
+  https://www.w3.org/WAI/WCAG22/Understanding/audio-description-prerecorded.html
+- **Надписите посочват кой говори и важните звуци.** Затворените надписи стигат (SC 1.2.2, ниво A):
+  https://www.w3.org/WAI/WCAG22/Understanding/captions-prerecorded.html
+- **Без дублиращ текст и без декоративни детайли.** Текст на екрана, който повтаря гласа, и
+  интересни, но несвързани детайли влошават ученето (Mayer, Heiser & Lonn, 2001):
+  https://doi.org/10.1037/0022-0663.93.1.187
+- **Безопасната зона** е по EBU R 95 v1.1 (2017): action safe 3,5 %, graphics safe 5 % от всеки ръб:
+  https://tech.ebu.ch/docs/r/r095.pdf
+- **Темпото на гласа** (оригиналът: 125–145 думи в минута) е практическа конвенция, не изследване.
+  Обичайните ориентири са около 120–160.
+- **Предвиждане преди разкриване** — Brod и съавт. 2018 и Toftness и съавт. 2018 (виж № 8).
+- **Маскотът.** Оригиналът ползва пикселния персонаж на Claude Code („Clawd“) — чужд бранд. В нашите
+  продукти `[mascot]` е маскотът на Carbon Stealth (`mascot/`). Чужди брандови персонажи не ползваме.
