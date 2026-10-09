@@ -60,7 +60,7 @@ export function renderAnswer(message, { onOpenSource, onOpenTicket, onFeedback, 
           class: 'ref-badge',
           type: 'button',
           'aria-label': `${t('ans.refLabel', { ref, code: str(ev.documentCode) })} ${t('ans.page')} ${ev.page}`,
-          onclick: () => onOpenSource(ev),
+          onclick: () => onOpenSource(ev, p),
         },
         str(ref),
       );

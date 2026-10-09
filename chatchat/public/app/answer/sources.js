@@ -4,7 +4,7 @@ import { h } from '../dom.js';
 import { t } from '../i18n.js';
 import { arr, block, str } from './util.js';
 
-export function appendSources(root, { evidence, onOpenSource }) {
+export function appendSources(root, { p, evidence, onOpenSource }) {
   if (!evidence.length) return;
   {
     root.append(
@@ -42,7 +42,7 @@ export function appendSources(root, { evidence, onOpenSource }) {
                       {
                         class: 'btn btn-secondary btn-sm',
                         type: 'button',
-                        onclick: () => onOpenSource(e),
+                        onclick: () => onOpenSource(e, p),
                       },
                       t('ans.openPage'),
                       ` ${t('ans.page')} ${e.page}`,

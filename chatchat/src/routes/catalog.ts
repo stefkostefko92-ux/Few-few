@@ -18,10 +18,6 @@ const ErrorQuery = z.object({
   hw: z.string().trim().max(20).optional(),
   fw: z.string().trim().max(20).optional(),
 });
-const PageParams = z.object({
-  id: z.string().min(1).max(40),
-  page: z.coerce.number().int().min(1).max(100000),
-});
 
 export function catalogRouter(deps: AppDeps): Router {
   const router = Router();
@@ -159,33 +155,6 @@ export function catalogRouter(deps: AppDeps): Router {
             : null,
         })),
       });
-    } catch (err) {
-      next(err);
-    }
-  });
-
-  router.get('/documents/:id/pages/:page', async (req, res, next) => {
-    try {
-      const parsed = PageParams.safeParse(req.params);
-      if (!parsed.success) return apiError(res, 400, 'invalid_input');
-      const { user } = principalOf(req);
-      const document = await deps.db.document.findFirst({
-        where: {
-          id: parsed.data.id,
-          tenantId: user.tenantId,
-          status: 'PUBLISHED',
-          audience: { in: [...audiencesFor(user.role)] },
-        },
-        select: { id: true, code: true, title: true, revision: true, type: true },
-      });
-      if (!document) return apiError(res, 404, 'not_found');
-      const chunks = await deps.db.documentChunk.findMany({
-        where: { documentId: document.id, page: parsed.data.page },
-        orderBy: { ordinal: 'asc' },
-        select: { section: true, text: true },
-      });
-      if (chunks.length === 0) return apiError(res, 404, 'not_found');
-      res.json({ document, page: parsed.data.page, chunks });
     } catch (err) {
       next(err);
     }

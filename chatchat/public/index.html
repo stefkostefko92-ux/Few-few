@@ -18,6 +18,8 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="/app/styles.css" />
     <link rel="stylesheet" href="/app/workspace.css" />
+    <link rel="stylesheet" href="/app/viewer.css" />
+    <link rel="stylesheet" href="/app/composer.css" />
     <script type="module" src="/app/main.js"></script>
   </head>
   <body>
@@ -627,7 +629,7 @@
     </dialog>
 
     <!-- Dialog: pagina del documento -->
-    <dialog id="dlg-doc" class="dlg dlg-doc" aria-labelledby="dlg-doc-title">
+    <dialog id="dlg-doc" class="dlg dlg-doc dlg-viewer" aria-labelledby="dlg-doc-title">
       <div class="dlg-head">
         <h2 id="dlg-doc-title" data-i18n="doc.title">Fonte</h2>
         <button class="btn btn-quiet" type="button" data-close>

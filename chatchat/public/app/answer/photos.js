@@ -7,7 +7,7 @@ import { arr, block, str } from './util.js';
 const labelled = (label, values) =>
   values.length ? h('p', { class: 'small' }, `${label}: `, values.join(' · ')) : null;
 
-function photoItem(ph) {
+export function photoItem(ph) {
   const plate = ph.nameplate && typeof ph.nameplate === 'object' ? ph.nameplate : {};
   const plateValues = [
     ['ctx.model', plate.model],
