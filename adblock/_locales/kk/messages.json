@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Жарнаманы барлық жерде бұғаттайды: YouTube бейнежарнамалары, баннерлер, қалқымалы терезелер, трекерлер, cookie сұраулары. Тегін."
+    "message": "Жарнаманы барлық жерде бұғаттайды: YouTube бейнежарнамалары, баннерлер, қалқымалы терезелер, трекерлер, cookie сұраулары."
   },
   "byCarbon": {
     "message": "Carbon Stealth әзірлеген"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Сүзгі тізімдерінің лицензиялары"
+  },
+  "welPageTitle": {
+    "message": "Supreme AdBlock-қа қош келдіңіз",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Қорғаныс қосулы",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock енді сіз кіретін әр сайттағы жарнама мен трекерлерді бұғаттайды. Ештеңені баптаудың қажеті жоқ.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Кеңейтімді құралдар тақтасына бекітіңіз",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Мекенжай жолағының жанындағы пазл белгішесін басып, Supreme AdBlock-ты бекітіңіз. Сонда бір басу арқылы беттегі не бұғатталғанын көресіз.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Сайт дұрыс көрсетілмесе",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Кеңейтімді ашып, сол сайт үшін бұғаттауды өшіріңіз немесе жылдам түзетулер үшін «Сайт бұзылды ма?» тармағын таңдаңыз.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Шолу деректеріңіз құрылғыңызда қалады",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Сүзу жергілікті түрде жүреді. Кеңейтім жеке деректерді жинамайды және сіз кіретін беттер туралы ештеңе жібермейді.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Параметрлерді ашу",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Түсінікті",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

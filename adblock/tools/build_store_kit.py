@@ -155,7 +155,7 @@ https://addons.mozilla.org/developers/ → Submit a New Add-on → On this site 
 """
 
 KIT.mkdir(parents=True, exist_ok=True)
-for old in KIT.glob("supreme-adblock-*.zip"):
+for old in [*KIT.glob("supreme-adblock-*.zip"), *KIT.glob("supreme-adblock-promo-*")]:  # стари версии (вкл. миниатюри) не пътуват
     old.unlink()
 (KIT / "CWS-copy-paste.md").write_text(md)
 for f in ["store_icon_128.png", "promo_small_440x280.png", "marquee_1400x560.png"]:

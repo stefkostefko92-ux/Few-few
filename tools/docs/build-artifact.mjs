@@ -30,6 +30,9 @@ import { readFileSync, writeFileSync, readdirSync } from "node:fs";
 import { dirname, join, isAbsolute } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
+// Тайните в билда — по единствения списък (същият като secret-scan/куките), в отделен модул.
+import { findSecretsIn } from "./artifact-secrets.mjs";
+export { findSecretsIn };
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const DASH = join(ROOT, "agents-dashboard");
@@ -160,7 +163,7 @@ export function mascotDataUris(dir, reader = null) {
 }
 
 /**
- * Проверява, че резултатът е ГОДЕН за публикуване. Гледа САМО разметката.
+ * Проверява, че резултатът е ГОДЕН за публикуване. Гледа разметката + тайни (findSecretsIn).
  *
  * Първата версия сканираше целия файл за „<html“ и падна върху ПРОЗА: `docs.js` съдържа
  * CLAUDE.md текст, в който е споменат `<html>`. Това е низ в JavaScript, който никога не се
@@ -172,6 +175,13 @@ export function mascotDataUris(dir, reader = null) {
  * блока по-рано и чупи всичко след него.
  */
 export function assertPublishable(html, embedded = {}) {
+  // 2026-10-06: артефактът е ПУБЛИЧЕН — вход за админ (имейл/парола) от поука стигна до FALLBACK-а и
+  // оттам до артефакта, защото гардът гледаше само разметката. Fail closed по ЦЕЛИЯ набор (ALL, вкл.
+  // COMMIT_ONLY: публичен артефакт е изход като commit); съобщението носи шаблон и място, НЕ стойността.
+  const leaks = findSecretsIn(html);
+  if (leaks.length)
+    throw new Error(`билдът съдържа шаблон за тайна — НЕ публикувай (махни я от източника: _memory → sync-dashboard):\n  ${
+      leaks.map((l) => `${l.name} · ред ${l.line}, кол. ${l.col}${l.agent ? ` · агент ${l.agent}` : ""}`).join("\n  ")}`);
   const markup = html
     .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "<script></script>")
     .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, "<style></style>");
@@ -263,7 +273,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const out = argv.find((a, i) => !a.startsWith("--") && argv[i - 1] !== "--ref") || join(ROOT, "galaxy-artifact.html");
   const ref = flag("--ref") ?? memoryTip();
   const reader = dashReader(ref);
-  const r = build(DASH, ref ? reader : null);
+  let r;
+  try { r = build(DASH, ref ? reader : null); } catch (e) { // чисто съобщение, без стек; изход 1 = не публикувай
+    console.error(`\x1b[31m✗ ${e.message}\x1b[0m`);
+    process.exit(1);
+  }
   // Пазач: независимо откъде чете билдът, версиите не могат да са под върха на паметта.
   const tip = memoryTip();
   if (tip) {

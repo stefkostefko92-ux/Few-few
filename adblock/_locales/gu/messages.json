@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "YouTube વીડિયો જાહેરાતો, બૅનર, પૉપ-અપ, ટ્રૅકર, કુકી સંદેશા અને ઍન્ટિ-ઍડબ્લૉક દીવાલો દરેક જગ્યાએ બ્લૉક કરો. મફત, ઝડપી અને ખાનગી."
+    "message": "YouTube વીડિયો જાહેરાતો, બૅનર, પૉપ-અપ, ટ્રૅકર, કુકી સંદેશા અને ઍન્ટિ-ઍડબ્લૉક દીવાલો દરેક જગ્યાએ બ્લૉક કરો."
   },
   "byCarbon": {
     "message": "Carbon Stealth દ્વારા"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "ફિલ્ટર સૂચિઓના લાઇસન્સ"
+  },
+  "welPageTitle": {
+    "message": "Supreme AdBlock માં તમારું સ્વાગત છે",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "તમે સુરક્ષિત છો",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock હવે તમે મુલાકાત લો છો તે દરેક સાઇટ પર જાહેરાતો અને ટ્રૅકર બ્લૉક કરી રહ્યું છે. કંઈ પણ સેટ કરવાની જરૂર નથી.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "એક્સટેન્શનને ટૂલબાર પર પિન કરો",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "ઍડ્રેસ બારની બાજુમાં કોયડાના ટુકડાના આઇકન પર ક્લિક કરો અને Supreme AdBlock પિન કરો. પછી એક ક્લિકમાં દેખાશે કે પેજ પર શું બ્લૉક થયું.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "જો કોઈ સાઇટ બરાબર ન દેખાય",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "એક્સટેન્શન ખોલો અને તે સાઇટ માટે બ્લૉકિંગ બંધ કરો, અથવા ઝડપી ઉકેલ માટે “સાઇટ બરાબર નથી ચાલતી?” પસંદ કરો.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "તમારું બ્રાઉઝિંગ તમારા ડિવાઇસ પર જ રહે છે",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "ફિલ્ટરિંગ સ્થાનિક રીતે થાય છે. એક્સટેન્શન કોઈ વ્યક્તિગત ડેટા એકત્ર કરતું નથી અને તમે મુલાકાત લો છો તે પેજ વિશે કંઈ મોકલતું નથી.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "સેટિંગ ખોલો",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "સમજાઈ ગયું",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

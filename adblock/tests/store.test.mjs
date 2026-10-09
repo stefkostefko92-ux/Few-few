@@ -1,7 +1,7 @@
 // Chrome Web Store: текстът В ИЗОБРАЖЕНИЯТА (екрани, промо плочки, клипа за магазина) не
 // бива да носи рекламни ключови думи или сравнение с други продукти. 5.1.2 беше отхвърлен
 // („Red Nickel“) заради „100% free“ на екран 5 — затова е гейт, не навик.
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { ROOT, ok, done } from "./_harness.mjs";
 
@@ -27,5 +27,35 @@ const film = readFileSync(join(ROOT, "tools", "promo", "film.html"), "utf8");
 const visible = film.replace(/<script[\s\S]*?<\/script>/g, "").replace(/<style[\s\S]*?<\/style>/g, "").replace(/<!--[\s\S]*?-->/g, "").replace(/<[^>]+>/g, " ");
 ok("promo film: no 'free' on screen", !/\bfree\b/i.test(visible));
 ok("promo film: the comparison scene is marked out of the store cut", /id="s4"[^>]*data-cut="full"/.test(film));
+
+// Summary-то на живия запис е дословно extDescription от пакета (не текст от таблото):
+// без цена/скорост/превъзходни степени (best-listing), ≤132 знака на всеки език.
+const locs = readdirSync(join(ROOT, "_locales"));
+const descs = locs.map((l) => [l, JSON.parse(readFileSync(join(ROOT, "_locales", l, "messages.json"), "utf8")).extDescription.message]);
+const en = descs.find(([l]) => l === "en")[1];
+ok(`summary (en): no promotional words (${en})`, !BANNED.test(en) && !/\b(fast|private|no cost)\b/i.test(en));
+const sub = readFileSync(join(ROOT, "docs", "SUBMISSION.md"), "utf8");
+ok("SUBMISSION.md summary == extDescription (en)", sub.includes("`" + en + "`"));
+const long = descs.filter(([, d]) => d.length > 132).map(([l]) => l);
+ok(`summary: ≤132 chars in every locale (${long.join(",") || "all"})`, long.length === 0);
+
+// Без промо карта в UI-а на разширението (5.1.4): нито в popup-а, нито в настройките.
+for (const f of ["popup/popup.html", "options/options.html"]) {
+  const h = readFileSync(join(ROOT, f), "utf8");
+  ok(`${f}: no promo card / link to our own site`, !/class="promo"/.test(h) && !/href="https?:\/\/(www\.)?carbonstealth\.eu/.test(h));
+}
+
+// Страницата „Добре дошли“ се отваря САМО при първа инсталация, никога при ъпдейт.
+const bgSrc = readFileSync(join(ROOT, "background.js"), "utf8");
+const inst = bgSrc.slice(bgSrc.indexOf("chrome.runtime.onInstalled.addListener"), bgSrc.indexOf("function ensureAlarms"));
+ok("welcome page: opened only on reason === \"install\"", /details\.reason === "install"[\s\S]{0,120}welcome\/welcome\.html/.test(inst) && (inst.match(/welcome\.html/g) || []).length === 1);
+
+// Сайтът: всяка картинка в index.html носи ?v=<хеш на съдържанието> (landing_assets.mjs) —
+// иначе 7-дневният кеш показва стария popup след релийз.
+import { createHash } from "node:crypto";
+const idxHtml = readFileSync(join(ROOT, "server", "index.html"), "utf8");
+const webps = [...idxHtml.matchAll(/\/([\w-]+\.webp)(\?v=([0-9a-f]+))?"/g)];
+const staleImg = webps.filter((m) => m[3] !== createHash("sha256").update(readFileSync(join(ROOT, "server", m[1]))).digest("hex").slice(0, 10)).map((m) => m[1]);
+ok(`site: every .webp is cache-busted with its content hash (${[...new Set(staleImg)].join(",") || "all"})`, webps.length >= 3 && staleImg.length === 0);
 
 done();

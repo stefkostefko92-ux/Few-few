@@ -4,18 +4,18 @@
 Supreme AdBlock
 
 ## Summary (132 chars max)
-Block ads everywhere, YouTube video ads, banners, pop-ups, trackers and cookie prompts. Free, fast and private.
+Blocks ads everywhere: YouTube video ads, banners, pop-ups, trackers, cookie prompts and anti-adblock walls.
 
 ## Category
 Productivity
 
 ## Detailed description
 
-Supreme AdBlock keeps the web clean and fast, without watching what you do.
+Supreme AdBlock removes ads and trackers from the pages you visit, without watching what you do.
 
 - Blocks YouTube video ads (pre-roll & mid-roll) at the source, plus feed
   and search ads
-- EasyList, EasyPrivacy and the uBlock Origin filters built in, plus the list for
+- EasyList, EasyPrivacy and other open filter lists built in, plus the list for
   your language — 31 regional lists, the one for your browser's language on by itself
 - Removes banners, pop-ups, pop-unders and native sponsored-content widgets
 - Hides sponsored posts on Facebook & Instagram
@@ -44,28 +44,27 @@ Supreme AdBlock keeps the web clean and fast, without watching what you do.
 - Daily signed (Ed25519), data-only filter updates, so blocking never goes stale
 - Live stats: ads blocked, data saved, time saved
 - Sleek Carbon Stealth theme (dark) with a light option
-- Available in 70 languages
+- Available in 73 languages
 
-WHY CHOOSE SUPREME ADBLOCK
+HOW IT WORKS
 
 Built for Chrome's current extension platform, not retrofitted to it. Manifest
 V3 took away the old way of blocking requests; this extension was written on the
 new API from the first line, so nothing in it is a workaround on borrowed time.
 
-YouTube ads are stopped at the source, so videos simply play. We never block
-YouTube's video servers — blocking those is what makes other setups stall,
-buffer or show a black player. The ad entries are taken out of the player's
-data before the player reads it, and the page sees no sign of a blocker.
+YouTube ads are stopped at the source, so videos simply play. YouTube's video
+servers are never blocked; the ad entries are taken out of the player's data
+before the player reads it.
 
 Protection that does not go stale. Ad networks rotate domains daily, while a
 store review takes days. Our filter data refreshes twice a day, Ed25519-signed
 and version-locked, so a new ad network is handled within hours — and no new
 code is shipped to do it.
 
-No remote code, enforced rather than promised. The engine ships inside the
-package. What arrives over the network is data only: hostnames, CSS selectors
-and directives drawn from a fixed list of 19 named routines, re-checked twice
-before anything runs. No eval, no Function(), no script fetched from a server.
+No remote code. All logic ships inside the package, including the 19
+anti-adblock routines and the sites they apply to. What arrives over the network
+is data only: hostnames and CSS selectors. No eval, no Function(), no script
+fetched from a server.
 
 You can read every line. No bundler, no minifier: unzip the extension and the
 code you audit is exactly the code that runs; the few generated files (rule sets,
@@ -89,13 +88,8 @@ You can see what it did. A per-page breakdown of what each filter list
 blocked, live counters for data and time saved, and a health card in the
 settings that confirms every part is actually running.
 
-No cost, no account, no telemetry, no data collection, everything stays on
-your device. If it makes your browsing better, donations are welcome but never
-required.
-
-The popup and settings show one small, clearly labelled promo for Carbon
-Stealth, our own brand, and an optional donation link. Nothing is third-party,
-nothing is personalised, no data leaves your device for it.
+No account, no telemetry, no data collection: everything stays on your
+device. The popup and settings have an optional donation link.
 
 ## Detailed description, localised (Edge requires one per packaged locale, ≥250 chars)
 
@@ -104,7 +98,7 @@ The long versions for bg / it / de are below. For every other language packaged 
 
 **bg**
 
-Supreme AdBlock пази уеб-а чист и бърз, без да следи какво правите.
+Supreme AdBlock маха рекламите и тракерите от страниците, които отваряте, без да следи какво правите.
 
 - Блокира видеорекламите в YouTube (pre-roll и mid-roll) при източника, както и рекламите във feed-а и търсенето
 - Вградени EasyList и EasyPrivacy (десетки хиляди правила)
@@ -115,7 +109,7 @@ Supreme AdBlock пази уеб-а чист и бърз, без да следи 
 - Чисти проследяващите параметри (utm_*, fbclid, gclid, …) от линковете
 - Опционална защита от зловреден софтуер (списък URLhaus)
 - Обработва банерите за бисквитки: натиска „Отхвърли“, когато го има, маха останалия блър и заключения скрол и никога не натиска бутон за вход, OAuth или плащане
-- Филтрите на uBlock Origin и 31 регионални листа — този за езика на браузъра се включва сам
+- Още отворени филтър-листи и 31 регионални листа — този за езика на браузъра се включва сам
 - Режим „Фокус“: скрива чат балончета, прозорци за бюлетини, покани за известия, социални джаджи, AI прозорци, „Вход с Google“ и YouTube Shorts
 - Сайтът е счупен? Страница за поправка с едно кликване — или ни кажете; нищо не се изпраща, без първо да го видите
 - Запазва страниците използваеми, когато детектор на адблокър се опита да ги счупи
@@ -125,17 +119,17 @@ Supreme AdBlock пази уеб-а чист и бърз, без да следи 
 - „Блокирано на тази страница“ в popup-а — виждате колко е спрял всеки филтър-лист
 - Подписани (Ed25519), само-данни ъпдейти на филтрите — блокирането не остарява
 - Статистика на живо: блокирани реклами, спестени данни, спестено време
-- Тема Carbon Stealth (тъмна) и светла опция; интерфейс на 70 езика
+- Тема Carbon Stealth (тъмна) и светла опция; интерфейс на 73 езика
 
-ЗАЩО ДА ИЗБЕРЕТЕ SUPREME ADBLOCK
+КАК РАБОТИ
 
 Създаден за днешната платформа за разширения на Chrome, не преправен набързо за нея. Manifest V3 отне стария начин за блокиране на заявки; това разширение е писано върху новия API от първия ред, така че в него няма заобиколно решение, което утре ще спре да работи.
 
-Рекламите в YouTube се спират при източника, затова видеата просто тръгват. Никога не блокираме видео сървърите на YouTube — точно това кара други решения да заглъхват, да буферират или да показват черен плейър. Рекламните записи се махат от данните на плейъра, преди той да ги прочете, и страницата не вижда никаква следа от блокер.
+Рекламите в YouTube се спират при източника, затова видеата просто тръгват. Видео сървърите на YouTube никога не се блокират; рекламните записи се махат от данните на плейъра, преди той да ги прочете.
 
 Защита, която не остарява. Рекламните мрежи сменят домейни всеки ден, а ревюто в магазина отнема дни. Филтърните ни данни се обновяват два пъти дневно, подписани с Ed25519 и заключени по версия — нова рекламна мрежа се покрива за часове, без да се качва нов код.
 
-Нула отдалечен код — наложено, не обещано. Двигателят е в самия пакет. От мрежата идват само данни: хостове, CSS селектори и директиви от фиксиран списък от 19 именувани рутини, проверени два пъти, преди да се изпълни каквото и да е. Без eval, без Function(), без скрипт, издърпан от сървър.
+Нула отдалечен код. Цялата логика е в пакета, включително 19-те анти-адблок рутини и сайтовете, за които важат. От мрежата идват само данни: хостове и CSS селектори. Без eval, без Function(), без скрипт, издърпан от сървър.
 
 Можете да прочетете всеки ред. Няма билд стъпка и нищо не е минифицирано: разархивирайте разширението и кодът, който одитирате, е точно кодът, който се изпълнява. Лиценз MIT.
 
@@ -147,11 +141,11 @@ Supreme AdBlock пази уеб-а чист и бърз, без да следи 
 
 Виждате какво е свършило. Разбивка по филтър-листи за всяка страница, броячи на живо за спестени данни и време, и карта за здравето на двигателя в настройките, която потвърждава, че всяка част наистина работи.
 
-Без заплащане, без акаунт, без телеметрия, без събиране на данни — всичко остава на вашето устройство. Popup-ът и настройките показват една малка, ясно обозначена реклама на собствената ни марка Carbon Stealth и незадължителен линк за дарение; нищо не е от трета страна и никакви данни не напускат устройството ви заради това.
+Без акаунт, без телеметрия, без събиране на данни — всичко остава на вашето устройство. В popup-а и настройките има незадължителен линк за дарение.
 
 **it**
 
-Supreme AdBlock mantiene il web pulito e veloce, senza osservare cosa fai.
+Supreme AdBlock toglie annunci e tracker dalle pagine che visiti, senza osservare cosa fai.
 
 - Blocca gli annunci video di YouTube (pre-roll e mid-roll) alla fonte, oltre agli annunci nel feed e nella ricerca
 - EasyList ed EasyPrivacy integrate (decine di migliaia di regole)
@@ -162,7 +156,7 @@ Supreme AdBlock mantiene il web pulito e veloce, senza osservare cosa fai.
 - Elimina i parametri di tracciamento (utm_*, fbclid, gclid, …) dai link
 - Protezione antimalware opzionale (lista URLhaus)
 - Gestisce i banner dei cookie: preme «Rifiuta» quando c'è, toglie la sfocatura e il blocco dello scorrimento rimasti e non preme mai un pulsante di accesso, OAuth o pagamento
-- I filtri di uBlock Origin e 31 liste regionali: quella per la lingua del browser si attiva da sola
+- Altre liste di filtri aperte e 31 liste regionali: quella per la lingua del browser si attiva da sola
 - Modalità Focus: nasconde bolle di chat, pop-up delle newsletter, richieste di notifiche, widget social, pop-up IA, «Accedi con Google» e YouTube Shorts
 - Sito rotto? Una pagina di riparazione lo sistema con un clic, oppure segnalacelo: nulla viene inviato senza che tu lo veda prima
 - Mantiene le pagine utilizzabili quando un rilevatore di adblock prova a romperle
@@ -172,17 +166,17 @@ Supreme AdBlock mantiene il web pulito e veloce, senza osservare cosa fai.
 - «Bloccato in questa pagina» nel popup: vedi quanto ha fermato ogni lista di filtri
 - Aggiornamenti dei filtri firmati (Ed25519) e composti solo da dati: il blocco non invecchia
 - Statistiche in tempo reale: annunci bloccati, dati risparmiati, tempo risparmiato
-- Tema Carbon Stealth (scuro) con opzione chiara; interfaccia in 70 lingue
+- Tema Carbon Stealth (scuro) con opzione chiara; interfaccia in 73 lingue
 
-PERCHÉ SCEGLIERE SUPREME ADBLOCK
+COME FUNZIONA
 
 Costruito per l'attuale piattaforma delle estensioni di Chrome, non adattato a posteriori. Manifest V3 ha eliminato il vecchio modo di bloccare le richieste; questa estensione è stata scritta sulla nuova API dalla prima riga, quindi non contiene ripieghi destinati a smettere di funzionare.
 
-Gli annunci di YouTube vengono fermati alla fonte, così i video partono e basta. Non blocchiamo mai i server video di YouTube: è proprio questo che fa bloccare, bufferizzare o mostrare un player nero alle altre soluzioni. Le voci pubblicitarie vengono tolte dai dati del player prima che li legga, e la pagina non vede alcuna traccia di un blocker.
+Gli annunci di YouTube vengono fermati alla fonte, così i video partono e basta. I server video di YouTube non vengono mai bloccati; le voci pubblicitarie vengono tolte dai dati del player prima che li legga.
 
 Una protezione che non invecchia. Le reti pubblicitarie cambiano dominio ogni giorno, mentre una revisione dello store richiede giorni. I nostri dati dei filtri si aggiornano due volte al giorno, firmati con Ed25519 e vincolati alla versione: una nuova rete pubblicitaria è coperta in poche ore, senza distribuire nuovo codice.
 
-Nessun codice remoto: imposto, non promesso. Il motore è dentro il pacchetto. Dalla rete arrivano solo dati: nomi host, selettori CSS e direttive tratte da un elenco fisso di 19 routine con nome, verificate due volte prima che venga eseguito qualcosa. Nessun eval, nessuna Function(), nessuno script scaricato da un server.
+Nessun codice remoto. Tutta la logica è nel pacchetto, comprese le 19 routine anti-adblock e i siti a cui si applicano. Dalla rete arrivano solo dati: nomi host e selettori CSS. Nessun eval, nessuna Function(), nessuno script scaricato da un server.
 
 Puoi leggere ogni riga. Non c'è alcuna fase di build e nulla è minificato: decomprimi l'estensione e il codice che verifichi è esattamente quello che viene eseguito. Licenza MIT.
 
@@ -194,11 +188,11 @@ Se un sito si rompe, lo sistemi con un clic. Consenti l'intero sito, oppure mant
 
 Vedi cosa ha fatto. Per ogni pagina, quanto ha bloccato ciascuna lista di filtri, contatori in tempo reale di dati e tempo risparmiati e una scheda di stato nelle impostazioni che conferma che ogni componente è davvero attivo.
 
-Nessun costo, nessun account, nessuna telemetria, nessuna raccolta di dati: tutto resta sul tuo dispositivo. Il popup e le impostazioni mostrano una piccola promozione, chiaramente etichettata, del nostro marchio Carbon Stealth e un link facoltativo per le donazioni; nulla è di terze parti e nessun dato lascia il tuo dispositivo per questo.
+Nessun account, nessuna telemetria, nessuna raccolta di dati: tutto resta sul tuo dispositivo. Nel popup e nelle impostazioni c'è un link facoltativo per le donazioni.
 
 **de**
 
-Supreme AdBlock hält das Web sauber und schnell, ohne zu beobachten, was Sie tun.
+Supreme AdBlock entfernt Werbung und Tracker von den Seiten, die Sie besuchen, ohne zu beobachten, was Sie tun.
 
 - Blockiert YouTube-Videoanzeigen (Pre-Roll und Mid-Roll) an der Quelle sowie Anzeigen im Feed und in der Suche
 - EasyList und EasyPrivacy integriert (Zehntausende Regeln)
@@ -209,7 +203,7 @@ Supreme AdBlock hält das Web sauber und schnell, ohne zu beobachten, was Sie tu
 - Entfernt Tracking-Parameter (utm_*, fbclid, gclid, …) aus Links
 - Optionaler Malware-Schutz (URLhaus-Liste)
 - Behandelt Cookie-Banner: drückt „Ablehnen“, wenn angeboten, entfernt zurückgebliebene Unschärfe und Scroll-Sperren und drückt nie eine Anmelde-, OAuth- oder Zahlungsschaltfläche
-- Die uBlock-Origin-Filter und 31 regionale Listen – die für die Sprache Ihres Browsers schaltet sich selbst ein
+- Weitere offene Filterlisten und 31 regionale Listen – die für die Sprache Ihres Browsers schaltet sich selbst ein
 - Fokusmodus: blendet Chat-Blasen, Newsletter-Pop-ups, Benachrichtigungs-Aufforderungen, Social-Widgets, KI-Pop-ups, „Mit Google anmelden“ und YouTube Shorts aus
 - Seite kaputt? Eine Reparaturseite behebt es mit einem Klick – oder melden Sie es uns; nichts wird gesendet, ohne dass Sie es vorher sehen
 - Hält Seiten nutzbar, wenn ein Adblock-Detektor sie zu stören versucht
@@ -219,17 +213,17 @@ Supreme AdBlock hält das Web sauber und schnell, ohne zu beobachten, was Sie tu
 - „Auf dieser Seite blockiert“ im Popup: Sie sehen, wie viel jede Filterliste gestoppt hat
 - Signierte (Ed25519), reine Daten-Updates der Filter: das Blockieren veraltet nicht
 - Live-Statistik: blockierte Anzeigen, gesparte Daten, gesparte Zeit
-- Carbon-Stealth-Design (dunkel) mit heller Option; Oberfläche in 70 Sprachen
+- Carbon-Stealth-Design (dunkel) mit heller Option; Oberfläche in 73 Sprachen
 
-WARUM SUPREME ADBLOCK
+SO FUNKTIONIERT ES
 
 Für die aktuelle Erweiterungsplattform von Chrome gebaut, nicht nachträglich angepasst. Manifest V3 hat den alten Weg zum Blockieren von Anfragen abgeschafft; diese Erweiterung wurde von der ersten Zeile an auf der neuen API geschrieben — hier gibt es keine Behelfslösung auf Zeit.
 
-YouTube-Anzeigen werden an der Quelle gestoppt, deshalb laufen Videos einfach. Wir blockieren nie die Videoserver von YouTube — genau das lässt andere Lösungen hängen, puffern oder einen schwarzen Player zeigen. Die Werbeeinträge werden aus den Daten des Players entfernt, bevor er sie liest, und die Seite sieht keine Spur eines Blockers.
+YouTube-Anzeigen werden an der Quelle gestoppt, deshalb laufen Videos einfach. Die Videoserver von YouTube werden nie blockiert; die Werbeeinträge werden aus den Daten des Players entfernt, bevor er sie liest.
 
 Schutz, der nicht veraltet. Werbenetzwerke wechseln täglich die Domain, eine Store-Prüfung dauert Tage. Unsere Filterdaten aktualisieren sich zweimal täglich, Ed25519-signiert und versionsgebunden: Ein neues Werbenetzwerk ist in Stunden abgedeckt — ohne neuen Code auszuliefern.
 
-Kein Code aus dem Netz — erzwungen, nicht versprochen. Die Engine steckt im Paket. Aus dem Netz kommen nur Daten: Hostnamen, CSS-Selektoren und Direktiven aus einer festen Liste von 19 benannten Routinen, zweimal geprüft, bevor irgendetwas läuft. Kein eval, kein Function(), kein vom Server geladenes Skript.
+Kein Code aus dem Netz. Die gesamte Logik steckt im Paket, einschließlich der 19 Anti-Adblock-Routinen und der Seiten, für die sie gelten. Aus dem Netz kommen nur Daten: Hostnamen und CSS-Selektoren. Kein eval, kein Function(), kein vom Server geladenes Skript.
 
 Sie können jede Zeile lesen. Es gibt keinen Build-Schritt und nichts ist minifiziert: Entpacken Sie die Erweiterung, und der Code, den Sie prüfen, ist genau der Code, der läuft. MIT-Lizenz.
 
@@ -241,7 +235,7 @@ Wenn eine Seite kaputtgeht, reparieren Sie es mit einem Klick. Erlauben Sie die 
 
 Sie sehen, was es getan hat. Pro Seite, wie viel jede Filterliste blockiert hat, Live-Zähler für gesparte Daten und Zeit und eine Statuskarte in den Einstellungen, die bestätigt, dass jeder Teil wirklich läuft.
 
-Keine Kosten, kein Konto, keine Telemetrie, keine Datensammlung: Alles bleibt auf Ihrem Gerät. Popup und Einstellungen zeigen eine kleine, klar gekennzeichnete Eigenwerbung für unsere Marke Carbon Stealth und einen optionalen Spendenlink; nichts stammt von Dritten, und dafür verlassen keine Daten Ihr Gerät.
+Kein Konto, keine Telemetrie, keine Datensammlung: Alles bleibt auf Ihrem Gerät. Popup und Einstellungen bieten einen optionalen Spendenlink.
 
 ## Privacy
 Single purpose: content blocker — blocks ads, trackers and page annoyances (pop-ups,

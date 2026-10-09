@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "YouTube வீடியோ விளம்பரங்கள், பேனர்கள், பாப்-அப்கள், டிராக்கர்கள், குக்கீ அறிவிப்புகளைத் தடுக்கிறது. இலவசம், தனிப்பட்டது."
+    "message": "YouTube வீடியோ விளம்பரங்கள், பேனர்கள், பாப்-அப்கள், டிராக்கர்கள், குக்கீ அறிவிப்புகளைத் தடுக்கிறது."
   },
   "byCarbon": {
     "message": "Carbon Stealth வழங்கும்"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "வடிப்பான் பட்டியல்களின் உரிமங்கள்"
+  },
+  "welPageTitle": {
+    "message": "Supreme AdBlock-க்கு வரவேற்கிறோம்",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "நீங்கள் பாதுகாக்கப்பட்டுள்ளீர்கள்",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "நீங்கள் பார்வையிடும் ஒவ்வொரு தளத்திலும் Supreme AdBlock இப்போது விளம்பரங்களையும் டிராக்கர்களையும் தடுக்கிறது. அமைக்க வேண்டியது எதுவும் இல்லை.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "நீட்டிப்பைக் கருவிப்பட்டியில் பின் செய்யுங்கள்",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "முகவரிப் பட்டிக்கு அருகிலுள்ள புதிர்த் துண்டு ஐகானைக் கிளிக் செய்து Supreme AdBlock-ஐப் பின் செய்யுங்கள். பிறகு ஒரே கிளிக்கில் பக்கத்தில் என்ன தடுக்கப்பட்டது என்பதைக் காணலாம்.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "ஒரு தளம் சரியாகத் தெரியவில்லை என்றால்",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "நீட்டிப்பைத் திறந்து அந்தத் தளத்திற்குத் தடுப்பதை முடக்குங்கள், அல்லது விரைவான தீர்வுகளுக்கு “தளம் உடைந்ததா?” என்பதைத் தேர்ந்தெடுங்கள்.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "உங்கள் உலாவல் உங்கள் சாதனத்திலேயே இருக்கும்",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "வடிகட்டுதல் உள்ளூரில் நடக்கிறது. நீட்டிப்பு எந்தத் தனிப்பட்ட தரவையும் சேகரிப்பதில்லை, நீங்கள் பார்வையிடும் பக்கங்களைப் பற்றி எதையும் அனுப்புவதில்லை.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "அமைப்புகளைத் திற",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "புரிந்தது",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

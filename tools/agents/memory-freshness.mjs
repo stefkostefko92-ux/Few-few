@@ -29,6 +29,11 @@ import { readdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { emitJsonNow } from "../lib/emit.mjs";
+// ЕДИН парсер на поуки с oversee (2026-10-06): тук се четеше само ПЪРВИЯТ ред на поуката, а oversee —
+// целия блок (continuation редовете). Поука, чийто източник е на втория ред, получаваше различен клас
+// → oversee=63 срещу memory-freshness=61 просрочени в един и същ ден (2 поуки на treydara). Гейтът
+// чете блока, както всички останали консуматори.
+import { sectionBullets } from "./oversee-lib.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..", "..");
@@ -98,15 +103,10 @@ export function collect({ dir = MEM } = {}) {
   const files = readdirSync(dir).filter((f) => f.endsWith(".md") && !f.startsWith("_") && !["SECURITY.md", "PROTOCOL.md"].includes(f));
   for (const f of files) {
     const agent = f.replace(/\.md$/, "");
-    const L = readFileSync(join(dir, f), "utf8").split("\n");
-    const p = L.findIndex((l) => /^##\s*Проверени поуки/.test(l));
-    const q = L.findIndex((l) => /^##\s*Карантина/.test(l));
-    if (p < 0) continue;
-    for (const l of L.slice(p + 1, q < 0 ? L.length : q)) {
-      if (!/^-\s/.test(l)) continue;
+    for (const l of sectionBullets(readFileSync(join(dir, f), "utf8"), "Проверени поуки")) {
       const dm = l.match(/\*\*(\d{4}-\d{2}-\d{2})/);
       if (!dm) continue;                                   // без дата → не може да се съди срок
-      const explicit = (l.match(/re-verify:\s*(\d{4}-\d{2}-\d{2})/i) || [])[1];
+      const explicit = (l.match(/re-?verify:?\s*(\d{4}-\d{2}-\d{2})/i) || [])[1]; // = REVERIFY_RE в oversee
       const cls = classify(l);
       out.push({
         agent, date: dm[1], cls: explicit ? "изричен" : cls.id,

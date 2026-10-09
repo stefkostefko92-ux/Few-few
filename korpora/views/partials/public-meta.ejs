@@ -1,0 +1,26 @@
+<link rel="canonical" href="<%= canonical %>">
+<% for (const alt of alternates) { %><link rel="alternate" hreflang="<%= alt.locale %>" href="<%= alt.href %>">
+<% } %><link rel="alternate" hreflang="x-default" href="<%= alternates[0].href %>">
+<meta name="keywords" content="<%= keywords %>">
+<meta name="author" content="Carbon Stealth VCC">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Korpora">
+<meta property="og:title" content="<%= title %>">
+<meta property="og:description" content="<%= description %>">
+<meta property="og:url" content="<%= canonical %>">
+<meta property="og:locale" content="<%= ogLocale(locale) %>">
+<% for (const alt of alternates.filter((a) => a.locale !== locale)) { %><meta property="og:locale:alternate" content="<%= ogLocale(alt.locale) %>">
+<% } %><meta property="og:image" content="<%= publicBase %>/static/img/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="<%= t('landing.meta.imageAlt') %>">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="<%= title %>">
+<meta name="twitter:description" content="<%= description %>">
+<meta name="twitter:image" content="<%= publicBase %>/static/img/og.png">
+<meta name="twitter:image:alt" content="<%= t('landing.meta.imageAlt') %>">
+<meta name="geo.region" content="<%= company.geo.region %>">
+<meta name="geo.placename" content="<%= t('company.city') %>">
+<meta name="geo.position" content="<%= company.geo.latitude %>;<%= company.geo.longitude %>">
+<meta name="ICBM" content="<%= company.geo.latitude %>, <%= company.geo.longitude %>">
+<script type="application/ld+json" nonce="<%= cspNonce %>"><%- jsonLd %></script>

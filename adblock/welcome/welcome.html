@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="carbon">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="../theme.js"></script>
+  <script src="../i18n.js"></script>
+  <link rel="stylesheet" href="welcome.css" />
+  <title data-i18n="welPageTitle">Welcome to Supreme AdBlock</title>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <img class="logo" src="../icons/icon128.png" alt="" width="72" height="72" />
+      <h1 data-i18n="welTitle">You're protected</h1>
+      <p data-i18n="welLead">Supreme AdBlock is now blocking ads and trackers on every site you visit. There is nothing to set up.</p>
+    </section>
+
+    <ol class="steps">
+      <li>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3h-4v3H7a1 1 0 0 0-1 1v3h3a2 2 0 1 1 0 4H6v4a1 1 0 0 0 1 1h4v-3a2 2 0 1 1 4 0v3h2a1 1 0 0 0 1-1v-4h-1a2 2 0 1 1 0-4h1V7a1 1 0 0 0-1-1h-3V3Z"/></svg>
+        <div>
+          <b data-i18n="welPinTitle">Pin it to the toolbar</b>
+          <span data-i18n="welPinText">Click the puzzle-piece icon next to the address bar and pin Supreme AdBlock. One click then shows what was blocked on the page.</span>
+        </div>
+      </li>
+      <li>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 20h20L12 3Zm0 6v5m0 3v.5"/></svg>
+        <div>
+          <b data-i18n="welBrokenTitle">If a site looks broken</b>
+          <span data-i18n="welBrokenText">Open the extension and switch blocking off for that site, or choose "Site broken?" for quick fixes.</span>
+        </div>
+      </li>
+      <li>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg>
+        <div>
+          <b data-i18n="welPrivacyTitle">Your browsing stays on your device</b>
+          <span data-i18n="welPrivacyText">Filtering happens locally. The extension collects no personal data and sends nothing about the pages you visit.</span>
+        </div>
+      </li>
+    </ol>
+
+    <div class="actions">
+      <button id="done" class="btn" type="button" data-i18n="welDone">Got it</button>
+      <button id="settings" class="btn ghost" type="button" data-i18n="welSettings">Open settings</button>
+    </div>
+  </main>
+  <script src="welcome.js"></script>
+</body>
+</html>

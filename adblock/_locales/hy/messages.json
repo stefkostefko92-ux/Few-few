@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Զտիչների ցուցակների լիցենզիաները"
+  },
+  "welPageTitle": {
+    "message": "Բարի գալուստ Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Պաշտպանությունը միացված է",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock-ն այժմ արգելափակում է գովազդն ու հետագծիչները ձեր այցելած բոլոր կայքերում։ Ոչինչ կարգավորելու կարիք չկա։",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Ամրացրեք ընդլայնումը գործիքագոտում",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Սեղմեք հասցեագոտու կողքի գլուխկոտրուկի կտորի պատկերակը և ամրացրեք Supreme AdBlock-ը։ Այնուհետև մեկ սեղմումով կտեսնեք, թե ինչ է արգելափակվել էջում։",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Եթե կայքը սխալ է ցուցադրվում",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Բացեք ընդլայնումը և անջատեք արգելափակումն այդ կայքի համար կամ ընտրեք «Կայքը փչացե՞լ է» արագ շտկումների համար։",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Ձեր դիտարկումը մնում է ձեր սարքում",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Զտումը կատարվում է տեղում։ Ընդլայնումը չի հավաքում անձնական տվյալներ և ոչինչ չի ուղարկում ձեր այցելած էջերի մասին։",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Բացել կարգավորումները",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Հասկանալի է",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

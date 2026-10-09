@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Suodatinluetteloiden lisenssit"
+  },
+  "welPageTitle": {
+    "message": "Tervetuloa käyttämään Supreme AdBlockia",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Olet suojattu",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock estää nyt mainokset ja seurannan kaikilla vierailemillasi sivustoilla. Mitään ei tarvitse määrittää.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Kiinnitä laajennus työkalupalkkiin",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Napsauta osoitepalkin vieressä olevaa palapelin palan kuvaketta ja kiinnitä Supreme AdBlock. Sen jälkeen näet yhdellä napsautuksella, mitä sivulla estettiin.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Jos sivusto näyttää rikkinäiseltä",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Avaa laajennus ja poista esto käytöstä kyseisellä sivustolla tai valitse ”Sivusto rikki?” saadaksesi pikakorjauksia.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Selaamisesi pysyy laitteellasi",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Suodatus tapahtuu paikallisesti. Laajennus ei kerää henkilötietoja eikä lähetä mitään vierailemistasi sivuista.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Avaa asetukset",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Selvä",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

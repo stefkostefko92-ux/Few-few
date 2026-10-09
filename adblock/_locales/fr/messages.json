@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Bloque les publicités (YouTube compris), les bannières, pop-ups, traqueurs, bandeaux cookies et murs anti-adblock. Gratuit."
+    "message": "Bloque les publicités (YouTube compris), les bannières, pop-ups, traqueurs, bandeaux cookies et murs anti-adblock."
   },
   "byCarbon": {
     "message": "par Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Licences des listes de filtres"
+  },
+  "welPageTitle": {
+    "message": "Bienvenue dans Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Protection activée",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock bloque désormais les pubs et les traqueurs sur tous les sites que vous visitez. Il n’y a rien à configurer.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Épinglez l’extension à la barre d’outils",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Cliquez sur l’icône en forme de pièce de puzzle à côté de la barre d’adresse et épinglez Supreme AdBlock. Un clic suffit ensuite pour voir ce qui a été bloqué sur la page.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Si un site semble cassé",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Ouvrez l’extension et désactivez le blocage pour ce site, ou choisissez « Site cassé ? » pour des corrections rapides.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Votre navigation reste sur votre appareil",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Le filtrage se fait localement. L’extension ne collecte aucune donnée personnelle et n’envoie rien sur les pages que vous visitez.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Ouvrir les paramètres",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "J’ai compris",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }
