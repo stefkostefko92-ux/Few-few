@@ -107,7 +107,8 @@ dump_to() {
   local -a st
   local vrc=0
   set +e
-  docker exec -i "$cid" pg_dump -Fc -U "$DB_USER" -d "$DB_NAME" |
+  # pg_dump само пише — без -i, иначе при `backup-restore.sh --live -` изяжда дъмпа от stdin
+  docker exec "$cid" pg_dump -Fc -U "$DB_USER" -d "$DB_NAME" |
     tee -p "$WORK/check" | "$AGE" -e -R "$RECIPIENTS" -o "$tmp"
   st=("${PIPESTATUS[@]}")
   wait "$vpid"

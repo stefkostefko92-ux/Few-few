@@ -48,7 +48,7 @@ test(
       assert.equal(check.status, 0, 'the checksum file verifies with sha256sum -c');
       // the same stream was read through by pg_restore while it was encrypted
       assert.match(logOf(box), /docker exec -i dbid pg_restore -f \/dev\/null\n/);
-      assert.match(logOf(box), /docker exec -i dbid pg_dump -Fc -U korpora -d korpora\n/);
+      assert.match(logOf(box), /docker exec dbid pg_dump -Fc -U korpora -d korpora\n/);
       assert.deepEqual(
         readdirSync(box.daily).filter((n) => n.startsWith('.work')),
         [],
@@ -240,3 +240,29 @@ test('restore from a file checks its checksum first', { skip }, () => {
     assert.doesNotMatch(logOf(box), /psql/, 'no database is created for a damaged file');
   });
 });
+
+test(
+  'a dump streamed on stdin reaches pg_restore whole: no docker exec before it eats the input',
+  { skip },
+  () => {
+    // DEPLOY.md, т. 10: the owner decrypts at home and pipes the dump in over ssh. `docker exec -i`
+    // copies stdin into the container even when the command never reads it, so a psql -c or pg_dump
+    // with -i before the restore would swallow the start of the dump.
+    const dump = Buffer.concat([Buffer.from('PGDMP'), Buffer.alloc(20000, 'x')]);
+    withBox((box) => {
+      const drill = restore(box, ['--into', 'korpora_restore_t', '-'], {}, dump);
+      assert.equal(drill.status, 0, drill.stderr);
+      assert.match(drill.stdout, /възстановено в korpora_restore_t: 12 таблици/);
+      assert.match(drill.stdout, /репетицията мина/);
+      const live = restore(box, ['--live', '--yes-i-know', '-'], {}, dump);
+      assert.equal(live.status, 0, live.stderr);
+      assert.match(live.stdout, /възстановено в korpora: 12 таблици/);
+      assert.match(logOf(box), /docker stop appid\n[\s\S]*docker start appid\n/);
+      // stdin goes only to the restore itself (pg_restore and the psql that reads its SQL)
+      for (const line of logOf(box)
+        .split('\n')
+        .filter((l) => l.startsWith('docker exec -i ')))
+        assert.match(line, /^docker exec -i dbid (pg_restore -f |psql .* -f -$)/, line);
+    });
+  },
+);
