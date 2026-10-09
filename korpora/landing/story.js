@@ -50,10 +50,11 @@ export async function startStory(host, { example, ...options }) {
   }
 }
 
-// What the scene holds, given back: its loop, its observer, the GPU context and the canvas.
+// What the scene holds, given back: its loop, its observer, its theme listener, the GPU context and the canvas.
 function release(viewer) {
   cancelAnimationFrame(viewer.raf);
   viewer.ro?.disconnect();
+  viewer.stage.dispose();
   viewer.renderer.dispose();
   viewer.renderer.forceContextLoss?.();
   viewer.renderer.domElement.remove();
