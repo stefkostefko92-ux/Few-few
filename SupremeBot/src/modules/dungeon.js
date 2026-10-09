@@ -22,7 +22,11 @@
         return async () => { lastCheck = Date.now(); await Api.getDungeon(); };
       }
 
-      if ((info.freeTries || 0) <= 0) {
+      // free_tries_today is the DAILY CAP, not what is left. The game itself
+      // treats a run as free only while dungeon_made_today < free_tries_today
+      // and charges a bloodstone from then on - so never go past the cap.
+      const freeLeft = (info.freeTries || 0) - (info.madeToday || 0);
+      if (freeLeft <= 0) {
         cooldownUntil = Date.now() + 30 * 60000; // re-check in 30 min
         return null;
       }
@@ -50,8 +54,8 @@
           Logger.success(I18n.t('logDungeonDone'));
         }
         await Api.miniUpdate();        // picks up a running-task timer if any
-        // Optimistically drop a try and force a fresh GetDungeon next cycle.
-        State.patch({ dungeon: Object.assign({}, info, { freeTries: (info.freeTries || 1) - 1 }) });
+        // Optimistically count the run and force a fresh GetDungeon next cycle.
+        State.patch({ dungeon: Object.assign({}, info, { madeToday: (info.madeToday || 0) + 1 }) });
         lastCheck = 0;
         // Local cooldown so we never re-fire back-to-back even if MiniUpdate
         // didn't surface a running-task timer.

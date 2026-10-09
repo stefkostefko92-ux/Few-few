@@ -32,17 +32,9 @@
       const want = Math.max(1, Math.min(Number(c.durationHours) || 2, info.maxHours || 1));
 
       return async () => {
-        // Fresh gold check: work charges a fee, and this was the only spending
-        // path without one.
-        const fee = Number(info.goldFee) || 0;
-        if (fee > 0) {
-          const mu = await Api.miniUpdate();
-          if ((Number(mu.gold) || 0) < fee) {
-            Logger.info(I18n.t('logWorkSkipGold', [String(fee)]));
-            lastCheck = Date.now();   // re-check on the next 5-minute pass
-            return;
-          }
-        }
+        // No gold gate: gold_fee is the hourly WAGE the character earns (the
+        // game's own work screen shows "gold: goldFee x hours"), not a cost.
+        // Gating on it would stop exactly the players who are low on gold.
         await Api.startWork(want);
         await Api.miniUpdate();           // picks up the running-task timer
         // Prefer the server-reported shift timer (speed servers run shorter

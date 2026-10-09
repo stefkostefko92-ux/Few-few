@@ -56,6 +56,9 @@
     // Once the gateway + session are discovered, mark logged in, pull the first
     // resource snapshot and optionally auto-start the engine.
     let primed = false;
+    // Read BEFORE the session is up: the page may first show the login screen,
+    // and the flag has to survive until the player is actually back in.
+    const resumeAfterReload = TB.Autologin ? TB.Autologin.peekResume() : false;
     Bridge.onContext((ctx) => {
       if (!primed && ctx && ctx.url && ctx.hasSession) {
         primed = true;
@@ -65,7 +68,10 @@
         // Pull the character identity (name / guild / level) so notifications
         // can name the hero even before any activity runs.
         Api.getUserAttributes().catch(() => {});
-        if ((Storage.section('general') || {}).startOnLoad) {
+        // Start when configured to, or when the auto-login reload interrupted a
+        // running engine (so reconnecting does not leave the bot silently idle).
+        if (resumeAfterReload) TB.Autologin.clearResume();
+        if ((Storage.section('general') || {}).startOnLoad || resumeAfterReload) {
           Logger.info(I18n.t('logAutoStart'));
           Scheduler.start();
         }

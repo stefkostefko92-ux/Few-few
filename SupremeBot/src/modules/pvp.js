@@ -78,12 +78,16 @@
         foughtToday++;
         cooldownUntil = Date.now() + Math.max(1, Number(c.cooldownSeconds) || 600) * 1000;
         persist();
-        if (res.won) {
+        // won is true / false, or null when the response could not be read -
+        // an unreadable fight is neither a win nor a defeat (do not skew stats).
+        if (res.won === true) {
           Stats.bump({ duelsWon: 1, goldEarned: res.gold || 0 });
           Logger.success(I18n.t('logPvpWon', [name, String(res.gold || 0)]));
-        } else {
+        } else if (res.won === false) {
           Stats.bump({ duelsLost: 1 });
           Logger.warn(I18n.t('logPvpLost', [name]));
+        } else {
+          Logger.info(I18n.t('logPvpFight', [name]));
         }
         await Api.miniUpdate();              // refresh gold/bloodstones
         Scheduler.wakeAt(cooldownUntil);

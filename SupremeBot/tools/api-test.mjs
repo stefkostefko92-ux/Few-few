@@ -102,6 +102,38 @@ await test('getUserAttributes captures character name / guild / level into State
   assert.equal(s.level, 42);
 });
 
+// A duel answer shaped like the real one: gold/xp, both combatants, and the
+// rounds. NB "self" appears twice at different depths: the player struct and
+// the flag inside every round (0 = the player takes the hit).
+const rnd = (self, damage, magic = 0) =>
+  `<value><struct>${m('self', 'i4', self)}${m('damage', 'i4', damage)}${m('magicDamage', 'i4', magic)}</struct></value>`;
+const hpStruct = (name, hp) => `<member><name>${name}</name><value><struct>${m('hitpoints', 'i4', hp)}</struct></value></member>`;
+const duel = ({ myHp, rounds, gold = 120, xp = 35, withRounds = true }) => resp(
+  `<member><name>answer</name><value><struct>${m('robbed_gold', 'i4', gold)}${m('xp', 'i4', xp)}${hpStruct('self', myHp)}${hpStruct('opponent', 80)}` +
+  (withRounds ? `<member><name>fightrounds</name><value><array><data>${rounds.join('')}</data></array></value></member>` : '') +
+  `</struct></value></member>`);
+
+await test('fight: win = player HP stays above 0 after the rounds (client logic); gold/xp from robbed_gold/xp', async () => {
+  const a = makeApi();
+  a.setXml(duel({ myHp: 100, rounds: [rnd(1, 30), rnd(0, 20), rnd(1, 40)] }));
+  const r = await a.TB.Api.fight('Bob');
+  assert.equal(r.won, true, '100 - 20 = 80 > 0');
+  assert.equal(r.gold, 120, 'robbed_gold, not the non-existent reward_gold');
+  assert.equal(r.exp, 35, 'xp, not reward_exp');
+});
+
+await test('fight: loss when the damage taken (magicDamage first) brings HP to 0 or below', async () => {
+  const a = makeApi();
+  a.setXml(duel({ myHp: 100, rounds: [rnd(0, 60), rnd(0, 10, 50)] }));   // 60 + 50 (magic wins over damage) = 110
+  assert.equal((await a.TB.Api.fight('Bob')).won, false);
+});
+
+await test('fight: an unreadable answer is unknown (null), never silently a defeat', async () => {
+  const a = makeApi();
+  a.setXml(duel({ myHp: 100, rounds: [], withRounds: false }));
+  assert.equal((await a.TB.Api.fight('Bob')).won, null);
+});
+
 await test('getUserAttributes tolerates <int> type tags (not just <i4>)', async () => {
   const a = makeApi();
   a.setXml(resp(
