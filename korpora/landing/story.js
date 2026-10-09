@@ -50,10 +50,13 @@ export async function startStory(host, { example, ...options }) {
   }
 }
 
-// What the scene holds, given back: its loop, its observer, its theme listener, the GPU context and the canvas.
+// What the scene holds, given back: its loop, its observer, its controls, its theme listener, the GPU context and
+// the canvas. The controls go while the canvas is still in the page: OrbitControls hangs a keydown listener on the
+// canvas's root node (the document) and takes it off the same root, which after remove() is the canvas itself.
 function release(viewer) {
   cancelAnimationFrame(viewer.raf);
   viewer.ro?.disconnect();
+  viewer.controls.dispose();
   viewer.stage.dispose();
   viewer.renderer.dispose();
   viewer.renderer.forceContextLoss?.();
