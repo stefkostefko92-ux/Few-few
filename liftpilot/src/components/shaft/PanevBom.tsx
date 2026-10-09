@@ -11,9 +11,10 @@ import { panevCounted } from '@/lib/prices/parts';
 import type { Layout } from '@/shaft';
 
 /** `framed`: a panel of its own (false inside another panel); `prices`: the company's [cents by key], null: none shown;
- *  `C`: the lift's acceptance test (none: a shaft design alone, every bracket). */
-export default function PanevBom({ L, prices, framed = true, C = null }: {
-  L: Layout; prices: Readonly<Record<string, number>> | null; framed?: boolean; C?: Collaudo | null;
+ *  `C`: the lift's acceptance test, null only for a shaft design alone (every bracket) — required, so that every caller
+ *  of a lift decides it and none counts the brackets of the parts a modification keeps. */
+export default function PanevBom({ L, prices, framed = true, C }: {
+  L: Layout; prices: Readonly<Record<string, number>> | null; framed?: boolean; C: Collaudo | null;
 }) {
   const t = useTranslations('bom'), locale = useLocale(), all = panevBom(L), bom = panevCounted(all, C);
   if (!bom.rows.length && !bom.missing) return null;

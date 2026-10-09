@@ -6,6 +6,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { PRESETS } from '@/calc/presets';
+import type PanevBom from '@/components/shaft/PanevBom';
 import { panevBom } from '@/lib/catalog/panev';
 import { defaultLift, deriveLift, newLift, type LiftInputs } from '@/lib/lift';
 import { PARTI, collaudoOf, type Collaudo, type Parte } from '@/lib/lift/collaudo';
@@ -78,6 +79,10 @@ test('W2-G7-05: the Panev table counts with the acceptance test, as the bill', (
     if (!parti.includes('rails')) assert.equal(shown.missing, 0);
   }
   assert.equal(panevCounted(pb, { norma: '10411-1', parti: ['machine'] }).rows.length, 0);
+  // the table's acceptance test is required (tsc fails here if it turns optional): no caller can forget it and show the
+  // brackets of the parts a modification keeps; a shaft design alone passes null
+  const required: Record<string, never> extends Pick<Parameters<typeof PanevBom>[0], 'C'> ? false : true = true;
+  assert.equal(required, true);
   // the table's note on the rows left out, in the three languages
   for (const m of [it, en, bg]) assert.ok(m.bom.kept.includes('UNI 10411'));
 });
@@ -94,9 +99,10 @@ test('W2-G7-06: two N1 clips on every SG of the counterweight rails, with the ra
   assert.equal(qty(designBom(generic), N1_KEY), 0);
   // the rails kept in a modification: the clips stay with them
   assert.equal(qty(designBom(modification(dv, ['machine', 'landingDoors'])), N1_KEY), 0);
-  // the cost's note says the clips are counted and the anchors and bolts are not
+  // the cost's note says the clips are counted and the anchors and bolts are not: a new lift's and a modification's
+  // (a lift design tested to UNI 10411 shows costNoteModification)
   for (const [m, w] of [[it, 'tasselli'], [en, 'anchors'], [bg, 'анкерите']] as const) {
-    assert.ok(m.prices.costNoteDesign.includes('N1') && m.prices.costNoteDesign.includes(w), w);
+    for (const note of [m.prices.costNoteDesign, m.prices.costNoteModification]) assert.ok(note.includes('N1') && note.includes(w), `${w}: ${note}`);
   }
 });
 
@@ -176,17 +182,24 @@ test('W2-G3-02: with the machine under the pit, the counterweight’s safety gea
 
 test('W2-G7-04: a machine replacement names the replaced parts it cannot count', () => {
   const V = deriveLift(defaultLift()).values;
-  assert.deepEqual(calcUncounted(null), []);
-  assert.deepEqual(calcUncounted(collaudoOf(V, { norma: '10411-1', parti: ['machine', 'ropes', 'controller', 'speed', 'load', 'travel'] })), []);
+  assert.deepEqual(calcUncounted(null), { parts: [], newLift: false });
+  assert.deepEqual(calcUncounted(collaudoOf(V, { norma: '10411-1', parti: ['machine', 'ropes', 'controller', 'speed', 'load', 'travel'] })).parts, []);
   const C = collaudoOf(V, { norma: '10411-1', parti: ['machine', 'ropes', 'governor', 'buffers', 'cw', 'sling', 'car'] });
-  assert.deepEqual(calcUncounted(C), ['car', 'sling', 'cw', 'buffers', 'governor']);
+  assert.deepEqual(calcUncounted(C), { parts: ['car', 'sling', 'cw', 'buffers', 'governor'], newLift: false });
   // what it counts: the ropes, not the others
   const bom = calcBom(V, C);
   assert.ok(bom.some((l) => l.key?.startsWith('rope:')) && !bom.some((l) => /^(governor|buffer|cw|sling|car)\b/.test(l.key ?? '')));
-  assert.deepEqual(calcUncounted(collaudoOf(V, { norma: '10411-1', parti: ['machine', 'landingDoors', 'carDoors', 'rails'] })), ['rails', 'landingDoors', 'carDoors']);
-  // the cost's warning names them with the acceptance test's words, in the three languages
-  for (const m of [it, en, bg]) {
-    assert.ok(m.prices.uncounted.includes('{list}'));
+  assert.deepEqual(calcUncounted(collaudoOf(V, { norma: '10411-1', parti: ['machine', 'landingDoors', 'carDoors', 'rails'] })).parts, ['rails', 'landingDoors', 'carDoors']);
+  // a new lift calculated without its design (a standalone calculation saved with context 'new'): nothing is replaced,
+  // every part the design would count is new — named so, never as "replaced"
+  const fresh = calcUncounted(collaudoOf({ ...V, context: 'new' }));
+  assert.deepEqual(fresh, { parts: ['car', 'sling', 'cw', 'rails', 'landingDoors', 'carDoors', 'buffers', 'governor'], newLift: true });
+  assert.equal(calcUncounted({ norma: 'en81', parti: ['machine', 'ropes', 'controller'] }).newLift, true);
+  // the cost's warning names them with the acceptance test's words, in the three languages, a new lift's in words of
+  // its own that never call them replaced
+  for (const [m, w] of [[it, 'sostitu'], [en, 'replaced'], [bg, 'смен']] as const) {
+    assert.ok(m.prices.uncounted.includes('{list}') && m.prices.uncountedNew.includes('{list}'));
+    assert.ok(m.prices.uncounted.includes(w) && !m.prices.uncountedNew.includes(w), w);
     for (const p of PARTI) assert.ok((m.lift as Record<string, string>)[`parte_${p}`], p);
   }
 });

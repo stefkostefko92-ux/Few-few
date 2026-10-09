@@ -109,9 +109,15 @@ export function designBom(dv: LiftDerived, plant: Plant = {}): BomLine[] {
  *  ropes, the controller; the speed, the load and the travel change without a part of their own. */
 const CALC_COUNTED: readonly Parte[] = ['machine', 'ropes', 'controller', 'speed', 'load', 'travel'];
 
-/** The parts the acceptance test `C` names replaced that a machine replacement's bill does not count (calcBom): they
- *  need the design of the lift (its shaft, doors, rails, car), so the cost says so, never silently leaves them out. */
-export const calcUncounted = (C: Collaudo | null): Parte[] => (C?.parti ?? []).filter((p) => !CALC_COUNTED.includes(p));
+/** The parts a calculation's bill (calcBom) does not count; `newLift`: a new lift calculated without its design (EN
+ *  81-20/50), whose parts are new, not replaced, so the cost says it in words of its own (prices.uncountedNew). */
+export type Uncounted = { parts: Parte[]; newLift: boolean };
+
+/** The parts the acceptance test `C` puts in the lift that a machine replacement's bill does not count (calcBom): under
+ *  UNI 10411 those it names replaced, under EN 81-20/50 every part of the new lift. They need the design of the lift
+ *  (its shaft, doors, rails, car), so the cost says so, never silently leaves them out. */
+export const calcUncounted = (C: Collaudo | null): Uncounted =>
+  ({ parts: (C?.parti ?? []).filter((p) => !CALC_COUNTED.includes(p)), newLift: C?.norma === 'en81' });
 
 /** The replacement of the machine: the machine (the catalogue's whose values the calculator holds), what it stands on
  *  (the maker's bedplate with the pulley; with the machine room surveyed `room`, the support chosen there, the pulley's

@@ -128,7 +128,7 @@ export default async function CalculationPage({ params, searchParams }: {
       </dl>
       <AdviceView advice={advice} alt={alt && lift ? { advice: alt, sheave: lift.dv.machine.D } : null} fmt={fmt} where={where}
         inUse={(x) => own !== null && own.brand === x.brand && own.model === x.model && (!lift || own.I.layout === x.I.layout)} />
-      {costed ? <ProjectCost cost={costed.cost} skipped={costed.skipped} uncounted={lift ? [] : calcUncounted(C)} locale={locale} scope={!lift ? 'calc' : costKind === 'full' ? 'design' : 'modification'}
+      {costed ? <ProjectCost cost={costed.cost} skipped={costed.skipped} uncounted={lift ? null : calcUncounted(C)} locale={locale} scope={!lift ? 'calc' : costKind === 'full' ? 'design' : 'modification'}
         editable={can(user, 'prices:edit')} /> : null}
       {download ? (
         <section className="panel">
