@@ -138,7 +138,7 @@
   "paywallTitle": {"message":"Unlock Tanoth Master Bot"},
   "paywallBody": {"message":"Your trial has ended. Subscribe to keep automating."},
   "subTitle": {"message":"Subscription"},
-  "subNote": {"message":"New installs include a $1-day free trial. Pay €4/month or €20 once for lifetime via Revolut, then paste the license key here. A lifetime key locks to the first computer it is activated on."},
+  "subNote": {"message":"New installs include a $1-day free trial. Pay €4/month or €20 once for lifetime via Revolut, then paste the license key here."},
   "legalConsent": {"message":"I agree the service starts immediately and I lose my 14-day right of withdrawal."},
   "legalBanWarning": {"message":"Warning: automation breaks the game's Terms of Service and may get your account banned. Use at your own risk."},
   "legalMerchant": {"message":"Seller: $1. Prices include VAT."},

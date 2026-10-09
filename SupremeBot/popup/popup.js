@@ -81,6 +81,7 @@ async function activate() {
 }
 
 function fmt(n) {
+  if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
   if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
   if (n >= 1e3) return (n / 1e3).toFixed(1) + 'k';
   return String(n);
@@ -132,7 +133,7 @@ async function refresh() {
 
   const c = res.state || {};
   els.char.textContent = c.loggedIn
-    ? `${c.name || '?'} · ${fmt(c.gold || 0)}g · ${c.bloodstones || 0}💎`
+    ? `${c.name || '?'} · ${fmt(c.gold || 0)} ${t('nfGold').toLowerCase()} · ${c.bloodstones || 0} 💎`
     : (res.protocolReady ? t('popupNoChar') : t('uiProtoWaiting'));
 
   const s = res.session || {};

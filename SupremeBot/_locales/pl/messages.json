@@ -138,7 +138,7 @@
   "paywallTitle": {"message":"Odblokuj Tanoth Master Bot"},
   "paywallBody": {"message":"Okres próbny dobiegł końca. Subskrybuj, aby dalej automatyzować."},
   "subTitle": {"message":"Subskrypcja"},
-  "subNote": {"message":"Nowe instalacje obejmują $1-dniowy darmowy okres próbny. Zapłać przez Revolut 4 €/miesiąc lub jednorazowo 20 € za licencję dożywotnią, a następnie wklej tutaj klucz licencyjny. Klucz dożywotni przypisuje się do pierwszego komputera, na którym zostanie aktywowany."},
+  "subNote": {"message":"Nowe instalacje obejmują $1-dniowy darmowy okres próbny. Zapłać przez Revolut 4 €/miesiąc lub jednorazowo 20 € za licencję dożywotnią, a następnie wklej tutaj klucz licencyjny."},
   "legalConsent": {"message":"Zgadzam się, że usługa rozpocznie się natychmiast i tracę prawo do 14-dniowego odstąpienia."},
   "legalBanWarning": {"message":"Uwaga: automatyzacja narusza Regulamin gry i może doprowadzić do bana konta. Używasz na własne ryzyko."},
   "legalMerchant": {"message":"Sprzedawca: $1. Ceny zawierają VAT."},

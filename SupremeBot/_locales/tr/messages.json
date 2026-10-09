@@ -138,7 +138,7 @@
   "paywallTitle": {"message":"Tanoth Master Bot'un kilidini açın"},
   "paywallBody": {"message":"Deneme süreniz sona erdi. Otomasyona devam etmek için abone olun."},
   "subTitle": {"message":"Abonelik"},
-  "subNote": {"message":"Yeni kurulumlar $1 günlük ücretsiz deneme içerir. Revolut üzerinden ayda 4 € ödeyin veya ömür boyu lisans için tek seferlik 20 € ödeyin, ardından lisans anahtarını buraya yapıştırın. Ömür boyu anahtar, etkinleştirildiği ilk bilgisayara kilitlenir."},
+  "subNote": {"message":"Yeni kurulumlar $1 günlük ücretsiz deneme içerir. Revolut üzerinden ayda 4 € ödeyin veya ömür boyu lisans için tek seferlik 20 € ödeyin, ardından lisans anahtarını buraya yapıştırın."},
   "legalConsent": {"message":"Hizmetin hemen başlamasını ve 14 günlük cayma hakkımı kaybettiğimi kabul ediyorum."},
   "legalBanWarning": {"message":"Uyarı: otomasyon oyunun Kullanım Şartları'nı ihlal eder ve hesabınızın yasaklanmasına yol açabilir. Kendi sorumluluğunuzda kullanın."},
   "legalMerchant": {"message":"Satıcı: $1. Fiyatlara KDV dahildir."},

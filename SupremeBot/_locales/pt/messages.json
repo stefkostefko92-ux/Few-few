@@ -138,7 +138,7 @@
   "paywallTitle": {"message":"Desbloqueia o Tanoth Master Bot"},
   "paywallBody": {"message":"O teu período experimental terminou. Subscreve para continuar a automatizar."},
   "subTitle": {"message":"Subscrição"},
-  "subNote": {"message":"As novas instalações incluem um período experimental gratuito de $1 dias. Paga 4 €/mês ou 20 € uma única vez (vitalício) através do Revolut e depois cola aqui a chave de licença. Uma chave vitalícia fica associada ao primeiro computador em que for ativada."},
+  "subNote": {"message":"As novas instalações incluem um período experimental gratuito de $1 dias. Paga 4 €/mês ou 20 € uma única vez (vitalício) através do Revolut e depois cola aqui a chave de licença."},
   "legalConsent": {"message":"Concordo que o serviço começa imediatamente e que perco o meu direito de retratação de 14 dias."},
   "legalBanWarning": {"message":"Aviso: a automação viola os Termos do jogo e pode levar ao banimento da conta. Usa por tua conta e risco."},
   "legalMerchant": {"message":"Vendedor: $1. Os preços incluem IVA."},

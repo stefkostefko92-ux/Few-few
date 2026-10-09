@@ -138,7 +138,7 @@
   "paywallTitle": {"message":"Desbloquea Tanoth Master Bot"},
   "paywallBody": {"message":"Tu periodo de prueba ha terminado. Suscríbete para seguir automatizando."},
   "subTitle": {"message":"Suscripción"},
-  "subNote": {"message":"Las instalaciones nuevas incluyen una prueba gratuita de $1 días. Paga 4 €/mes o 20 € una sola vez (de por vida) mediante Revolut y luego pega aquí la clave de licencia. Una clave de por vida queda vinculada al primer ordenador en el que se activa."},
+  "subNote": {"message":"Las instalaciones nuevas incluyen una prueba gratuita de $1 días. Paga 4 €/mes o 20 € una sola vez (de por vida) mediante Revolut y luego pega aquí la clave de licencia."},
   "legalConsent": {"message":"Acepto que el servicio comience de inmediato y que pierdo mi derecho de desistimiento de 14 días."},
   "legalBanWarning": {"message":"Aviso: la automatización infringe las Condiciones del juego y puede provocar el bloqueo de tu cuenta. Úsalo bajo tu propio riesgo."},
   "legalMerchant": {"message":"Vendedor: $1. Los precios incluyen IVA."},
