@@ -16,6 +16,10 @@
     "days": {
       "one": "1 day",
       "other": "{n} days"
+    },
+    "weeks": {
+      "one": "1 week",
+      "other": "{n} weeks"
     }
   },
   "company": {

@@ -66,7 +66,7 @@
     },
     "accountDeleted": {
       "subject": "Il vostro account Korpora è stato eliminato",
-      "body": "il vostro account e tutti i suoi progetti sono stati eliminati definitivamente.\n\nSe non l'avete chiesto voi, scriveteci all'indirizzo qui sotto."
+      "body": "il vostro account e tutti i suoi progetti sono stati eliminati definitivamente. Restano nelle copie di backup del database solo finché le copie non scadono: i termini sono nell'informativa sulla privacy.\n\nSe non l'avete chiesto voi, scriveteci all'indirizzo qui sotto."
     },
     "order": {
       "subject": "Conferma del vostro ordine Korpora",

@@ -182,11 +182,11 @@
       },
       "data": {
         "q": "Where is my data kept?",
-        "a": "On a server in the European Union. Passwords are kept only as Argon2id hashes. Only you see your projects; the team opens them only for support, and every opening is recorded in the audit log."
+        "a": "On a server in the European Union. Passwords are kept only as Argon2id hashes. The team opens the contents of your projects (sizes, materials, drawings) only for support, and every download is recorded in the audit log; the project name and type are visible in the admin panel."
       },
       "delete": {
         "q": "Can I delete my account?",
-        "a": "Yes, under “Data” in your account. Before that you can download all your data; deletion is permanent and removes the projects too."
+        "a": "Yes, under “Data” in your account. Before that you can download all your data; deletion is permanent and removes the projects too. The data stays in the database backups until those expire — the periods are in the privacy policy."
       }
     },
     "closing": {

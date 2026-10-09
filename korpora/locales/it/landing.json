@@ -182,11 +182,11 @@
       },
       "data": {
         "q": "Dove sono conservati i miei dati?",
-        "a": "Su un server nell'Unione europea. Le password sono conservate solo come hash Argon2id. I progetti li vedete solo voi; il team li apre solo per l'assistenza e ogni apertura viene registrata nel registro di controllo."
+        "a": "Su un server nell'Unione europea. Le password sono conservate solo come hash Argon2id. Il contenuto dei progetti (misure, materiali, disegni) il team lo apre solo per l'assistenza e ogni download viene registrato nel registro di controllo; il nome e il tipo del progetto sono visibili nel pannello di amministrazione."
       },
       "delete": {
         "q": "Posso eliminare il mio account?",
-        "a": "Sì, da «Dati» nell'account. Prima potete scaricare tutti i vostri dati; l'eliminazione è definitiva e rimuove anche i progetti."
+        "a": "Sì, da «Dati» nell'account. Prima potete scaricare tutti i vostri dati; l'eliminazione è definitiva e rimuove anche i progetti. Nelle copie di backup del database i dati restano finché le copie non scadono: i termini sono nell'informativa sulla privacy."
       }
     },
     "closing": {

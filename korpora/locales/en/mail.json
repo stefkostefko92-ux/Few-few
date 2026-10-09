@@ -66,7 +66,7 @@
     },
     "accountDeleted": {
       "subject": "Your Korpora account was deleted",
-      "body": "Your account and all its projects have been deleted permanently.\n\nIf you did not ask for this, write to us at the address below."
+      "body": "Your account and all its projects have been deleted permanently. They remain in the database backups only until those expire — the periods are in the privacy policy.\n\nIf you did not ask for this, write to us at the address below."
     },
     "order": {
       "subject": "Confirmation of your Korpora order",

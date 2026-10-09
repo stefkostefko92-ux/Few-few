@@ -283,6 +283,10 @@ sudo ls -l /opt/few-few/shared/korpora/backups/daily/
 устройствата и одитната верига от бекъпа не се проверяват) и котвата `data/audit-head.json`: те **не** са в
 бекъпа на базата — пазете ги отделно (т. 1, т. 7).
 
+**Политиката за поверителност** казва сроковете на копията и че са на сървъра при Hetzner (числата идват от
+`src/retention.ts`, а тестът ги сверява с `backup.sh` и `deploy.sh`). Копие при друг доставчик или друга
+ротация (`KORPORA_BACKUP_DAILY`/`KORPORA_BACKUP_WEEKLY`, `KORPORA_KEEP_BACKUPS`) иска и промяна в политиката.
+
 ## 10. Възстановяване от дневния бекъп
 
 Скриптът е `deploy/backup-restore.sh` в папката на работещия release. Разшифроването е при собственика:
@@ -318,6 +322,20 @@ ssh "$SRV" "cd $D && sha256sum -c --quiet $F.sha256 >&2 && cat $F" | age -d -i k
 заменя схемата като една транзакция и пуска приложението отново (и при грешка). COMMIT има само ако дъмпът
 е прочетен докрай: отрязан или повреден вход оставя базата каквато е. След това — котвата на одита (т. 8,
 „Одитът“) и `curl -fsS https://korpora.carbonstealth.eu/health`.
+
+**Изтритите междувременно акаунти.** Политиката обещава, че акаунт, изтрит след датата на бекъпа, се изтрива
+отново. Снимката `pre-restore-…` е базата точно преди възстановяването: върнете я настрана като репетицията
+(`--into korpora_restore_check --keep`), после от папката на release-а:
+
+```bash
+q='SELECT id FROM "User" ORDER BY 1'
+sudo docker compose exec -T db psql -U korpora -d korpora -tAc "$q" >/tmp/restored.txt
+sudo docker compose exec -T db psql -U korpora -d korpora_restore_check -tAc "$q" >/tmp/before.txt
+comm -23 /tmp/restored.txt /tmp/before.txt   # върнати от бекъпа, но изтрити след него
+```
+
+Всеки от тези акаунти изтрийте пак от панела (действието влиза в одита), после
+`DROP DATABASE korpora_restore_check` и `rm /tmp/restored.txt /tmp/before.txt`.
 
 Ако ssh не е възможно, файлът се разшифрова и на сървъра: ключът временно в `/dev/shm` (паметта, не
 дискът), `--identity /dev/shm/korpora-backup.key /opt/…/daily/$F`, после `shred -u` на ключа.

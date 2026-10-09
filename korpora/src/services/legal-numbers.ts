@@ -15,8 +15,11 @@ import {
 } from '../plans/pricing.js';
 import { REFUND_DAYS, WITHDRAWAL_DAYS } from '../plans/withdrawal.js';
 import {
+  BACKUP_KEEP_DAILY,
+  BACKUP_KEEP_WEEKLY,
   durationText,
   LOGIN_RETENTION_DAYS,
+  PRE_DEPLOY_BACKUPS_KEPT,
   retentionText,
   UNVERIFIED_RETENTION_DAYS,
 } from '../retention.js';
@@ -41,7 +44,8 @@ export function legalNumbers(locale: Locale) {
 
 /**
  * Сроковете в политиката за поверителност, които държи кодът: изтриването на непотвърдена
- * регистрация, сесиите, бисквитките, напомнянето за края на тестовия период и заключването на входа.
+ * регистрация, сесиите, бисквитките, напомнянето за края на тестовия период, заключването на входа и
+ * резервните копия на базата.
  * Всеки идва от константата, по която работи кодът, като готов текст на езика („30 дни“, „24 часа“).
  */
 export function privacyNumbers(locale: Locale) {
@@ -55,6 +59,9 @@ export function privacyNumbers(locale: Locale) {
     preCsrfKept: durationText(PRE_CSRF_MAX_AGE_MS, t),
     langKept: durationText(LOCALE_COOKIE_MAX_AGE_MS, t),
     flashKept: durationText(FLASH_MAX_AGE_MS, t),
+    backupDaily: retentionText(BACKUP_KEEP_DAILY, t),
+    backupWeekly: t('common.weeks', { n: BACKUP_KEEP_WEEKLY }),
+    preDeployKept: PRE_DEPLOY_BACKUPS_KEPT,
     trialReminder: t('common.days', { n: TRIAL_REMINDER_DAYS }),
     failedLogins: MAX_FAILED_LOGINS,
     lockFor: t('common.minutes', { n: LOCK_MINUTES }),
