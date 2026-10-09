@@ -51,9 +51,14 @@ export const kerbOf = (G: RoomGeo, o: SlabOpening): Pt[] => {
 export interface RoomDrawOpts {
   closedDoor?: boolean;
   compact?: boolean;
+  /** the scale the view is drawn at when not 1:25: section B-B's dimensions placed for it, the plan's names and
+   *  references measured at it (round 37) */
   scale?: number;
   /** the plan's rope drops dimensioned inside the shaft, not in a row outside (the plan keeps its scale; round 36) */
   dropsInside?: boolean;
+  /** the paper the view has [mm]: a name, a reference or a note set outside the drawing takes no more of it than the
+   *  scale leaves (round 37 review) */
+  paper?: { w: number; h: number };
 }
 
 /** A room's door, opening outward (UNI EN 81-20 5.2.3.3 a), drawn open 90° in plan: the steel leaf from its hinge at the

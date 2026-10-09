@@ -80,25 +80,45 @@ export interface Cell {
   size?: number;
 }
 
+/** The pitch of the lines of a cell's wrapped text, in its size. */
+const LEAD = 1.2;
+
+/** A cell's text in lines as a ruled table letters it in a column `width` wide at `size`: one line, shrunk to fit; when
+ *  that would take it under `min`, wrapped at its size instead. */
+export function cellLines(c: Cell, width: number, size: number, min = 0): string[] {
+  const f = { size: c.size ?? size, bold: c.bold, cond: true };
+  return min > 0 && c.text && fitSize(c.text, width - 2, f) < min - 1e-9 ? wrap(c.text, width - 2, f) : [c.text];
+}
+
+/** How much taller than its row height a row of a ruled table is with its cells' wrapped lines. */
+export function rowExtra(row: readonly Cell[], widths: readonly number[], size: number, min = 0): number {
+  if (row.length === 1) return 0;
+  return Math.max(0, ...row.map((c, j) => (cellLines(c, widths[j] ?? 0, size, min).length - 1) * LEAD * (c.size ?? size)));
+}
+
 /**
  * A ruled table: `widths` of the columns, a row height, rows of cells (a row with one cell spans the table and is a
- * heading). Texts shrink to fit their cell. Returns the shapes and the y of the bottom edge.
+ * heading). Texts shrink to fit their cell; never under `min` (when given): a text that would is wrapped at its size,
+ * its row as much taller (rowExtra). Returns the shapes and the y of the bottom edge.
  */
-export function table(x: number, yTop: number, widths: readonly number[], rowH: number, rows: readonly (readonly Cell[])[], size = 2.2): { shapes: Shape[]; bottom: number } {
+export function table(x: number, yTop: number, widths: readonly number[], rowH: number, rows: readonly (readonly Cell[])[], size = 2.2, min = 0): { shapes: Shape[]; bottom: number } {
   const out: Shape[] = [], W = widths.reduce((a, b) => a + b, 0);
   let y = yTop;
   out.push(L([x, y], [x + W, y], 0.3));
   for (const row of rows) {
-    const yb = y - rowH, base = yb + rowH / 2 - (row[0]?.size ?? size) * 0.36;
+    const h = rowH + rowExtra(row, widths, size, min), yb = y - h, base = yb + h / 2 - (row[0]?.size ?? size) * 0.36;
     if (row.length === 1) {
       const c = row[0], s = c.size ?? size + 0.6;
       out.push(fitted([x + W / 2, base], c.text, s, W - 2, { align: 'c', bold: c.bold }));
     } else {
       let cx = x;
       row.forEach((c, j) => {
-        const w = widths[j] ?? 0, s = c.size ?? size, a = c.align ?? (j === 0 ? 'l' : 'r');
-        const at: Pt = [a === 'l' ? cx + 1 : a === 'c' ? cx + w / 2 : cx + w - 1, base];
-        if (c.text) out.push(fitted(at, c.text, s, w - 2, { align: a, bold: c.bold }));
+        const w = widths[j] ?? 0, s = c.size ?? size, a = c.align ?? (j === 0 ? 'l' : 'r'), lines = cellLines(c, w, size, min);
+        // (lines past the first, LEAD apart, the block centred in the row)
+        lines.forEach((t, i) => {
+          const at: Pt = [a === 'l' ? cx + 1 : a === 'c' ? cx + w / 2 : cx + w - 1, base + ((lines.length - 1) / 2 - i) * LEAD * s];
+          if (t) out.push(fitted(at, t, s, w - 2, { align: a, bold: c.bold }));
+        });
         if (j > 0) out.push(L([cx, y], [cx, yb], 0.18));
         cx += w;
       });

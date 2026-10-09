@@ -2,7 +2,7 @@
 // a detail, the machine room in plan or in section B-B, each laid out at the largest standard scale that fits an area
 // with its dimensions. The sheets add titles, legends and marks; the screens show the views alone.
 import { shapeOf } from '@/lib/catalog/shapes';
-import { boxH, fitView, moveHits, moveShapes, renderView, type Box, type Entity, type Hit, type Place, type Shape, type SymbolName, type ViewResult } from '@/drawing';
+import { boxH, boxW, fitView, moveHits, moveShapes, renderView, type Box, type Entity, type Hit, type Place, type Shape, type SymbolName, type ViewResult } from '@/drawing';
 import { cwGapLabel } from '@/shaft/cw-gap';
 import { roomGeo, type MachineSpec, type RoomGeo } from '@/shaft/machine-room';
 import { planDims } from '@/shaft/plan-dims';
@@ -105,20 +105,24 @@ export function machineOf(a: Analysis, plant: Plant, L: Layout, catalog: { brand
 }
 
 /** A machine room's view as the sheet takes it, at 1:25 when it can be had: the plan with its door open outward, or
- *  shut in its frame when the swing alone would cost it that scale; section B-B as it is, else with the door's and
- *  the panel's heights in one row, else with its dimensions placed for the scale it takes (kept on paper). The entities
- *  drawn go with it (a CAD file of the view takes the same). */
+ *  shut in its frame when the swing alone would cost it that scale, its names placed for the scale it takes; section
+ *  B-B as it is, else with the door's and the panel's heights in one row, else with its dimensions placed for the scale
+ *  it takes (kept on paper). The entities drawn go with it (a CAD file of the view takes the same). */
 type Drawn = { entities: Entity[]; bounds: Box };
-function roomPlaced(draw: (o: RoomDrawOpts) => Drawn, kind: 'plan' | 'section', area: Box): View & { entities: Entity[] } {
-  let d = draw({}), place = placeIn(d.bounds, d.entities, area, DETAIL_SCALES);
+function roomPlaced(drawOn: (o: RoomDrawOpts) => Drawn, kind: 'plan' | 'section', area: Box): View & { entities: Entity[] } {
+  // (the paper the view has: what is set outside the drawing keeps to it — round 37 review)
+  const draw = (o: RoomDrawOpts): Drawn => drawOn({ ...o, paper: { w: boxW(area), h: boxH(area) } });
+  let opts: RoomDrawOpts = {}, d = draw(opts), place = placeIn(d.bounds, d.entities, area, DETAIL_SCALES);
   const best = DETAIL_SCALES[0], next = (o: RoomDrawOpts, keep: boolean): void => {
     const e = draw(o), p = placeIn(e.bounds, e.entities, area, DETAIL_SCALES);
-    if (keep || p.scale < place.scale) [d, place] = [e, p];
+    if (keep || p.scale < place.scale) [d, place, opts] = [e, p, o];
   };
   if (place.scale !== best) next(kind === 'plan' ? { closedDoor: true } : { compact: true }, kind === 'section');
   // (the plan's drops inside the shaft when their row outside costs the scale, round 36)
   if (kind === 'plan' && place.scale !== best) next({ closedDoor: true, dropsInside: true }, false);
   if (kind === 'section' && place.scale !== best) next({ compact: true, scale: place.scale }, true);
+  // (the plan's names and references kept clear at the scale it takes — its lettering is as large on paper, round 37)
+  if (kind === 'plan' && place.scale !== best) next({ ...opts, scale: place.scale }, true);
   return { r: renderView(d.entities, place), place, entities: d.entities };
 }
 

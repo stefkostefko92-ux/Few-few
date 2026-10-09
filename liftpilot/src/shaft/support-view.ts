@@ -10,7 +10,7 @@
 // walls, the HEB beams' height. Model entities.
 import { chain, edit as E, path, pickEdit, rect, type Edit, type Entity, type Pt } from '../drawing';
 import type { HebLayout } from './heb';
-import { hebSection } from './heb-view';
+import { hebSection, hebUnder, onHebTop } from './heb-view';
 import { dropSpan, machineRun, machineU, machineV, supportRunIn, type MachineSpec, type RoomGeo } from './machine-room';
 import { KV_VERT } from './norme-vert';
 import { PROFILES, PROFILE_NAMES } from './profiles';
@@ -47,7 +47,9 @@ const dimsRight = (G: RoomGeo, run: readonly [number, number] | null, sk: number
 export function supportSection(M: MachineSpec, G: RoomGeo, r0: number, r1: number, after: number | null = null, heb: HebLayout | null = null, sk = 1): Entity[] {
   const s = supportOf(G.room, M.Dp > 0), k = 1000 * G.s, top = supportTop(M, s), out: Entity[] = [], F = G.frame, base = M.base ?? 0;
   const span = supportRunIn(G, M), run = span ? machineRun(G, span[0], span[1]) : null;
-  if (s.kind === 'rinvio' && M.rinvio?.on === 'frame') return [...(heb ? hebSection(heb, G, rinvioRun(M, G)[0] - 420 * sk) : []), ...rinvioSection(M, G, M.rinvio, sk, heb)];
+  if (s.kind === 'rinvio' && M.rinvio?.on === 'frame') {
+    return [...(heb ? hebSection(heb, G, rinvioRun(M, G)[0] - 420 * sk, !onHebTop(heb, M.rinvio.base ?? 0)) : []), ...rinvioSection(M, G, M.rinvio, sk, heb)];
+  }
   // the mounts along the drop line and their half sizes: the generic machine's scaled, a maker's on our bedframe
   const mounts = (F.shape ? F.mounts : MOUNTS.map((x) => x * k)).map((x) => machineU(G, x)), hm = F.shape ? 60 : 0.06 * k, hp = F.shape ? 90 : 0.09 * k;
   if (s.kind === 'shims') {
@@ -77,8 +79,11 @@ export function supportSection(M: MachineSpec, G: RoomGeo, r0: number, r1: numbe
   // from the support's end nearest them: the last mount's shims or plate, a frame's or a plinth's end (beams from wall
   // to wall run under them)
   const end = s.kind === 'beams' ? null : run ? run[1] : Math.max(...mounts) + (s.kind === 'plates' ? hp : hm);
-  if (top - base > 0.5) out.push(chain({ dir: 'y', pts: [base, top], at: right, from: [end, end], text: [`{v} ${NAME[s.kind]}`], edit: [E('sup.height')] }));
-  if (heb) out.push(...hebSection(heb, G, right));
+  // (on the HEB beams, one chain with their height under it: heb-view.ts hebUnder)
+  const under = heb ? hebUnder(heb, G, right, base, top, end, `{v} ${NAME[s.kind]}`, E('sup.height')) : null;
+  if (under) out.push(under);
+  else if (top - base > 0.5) out.push(chain({ dir: 'y', pts: [base, top], at: right, from: [end, end], text: [`{v} ${NAME[s.kind]}`], edit: [E('sup.height')] }));
+  if (heb) out.push(...hebSection(heb, G, right, under === null));
   if (hasProfile(s)) {
     const h = PROFILES[profileOf(s)].h;
     out.push(chain({ dir: 'y', pts: [top - h, top], at: right + 260 * sk, from: [end, end], text: [`${profileOf(s)} {v}`], edit: [profilePick(s)] }));

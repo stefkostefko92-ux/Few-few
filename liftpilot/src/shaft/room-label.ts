@@ -1,38 +1,170 @@
 // Where a name or a reference goes on the machine room's plan among what is drawn there (room-setout.ts): the boxes the
-// lettering, the references and the symbols already placed take — measured as they are at 1:25, the plan's scale —
-// and the first of the places offered whose box keeps off them and off what else is given. Model millimetres; pure.
-import { textWidth, type Box, type Entity, type Pt } from '../drawing';
+// lettering, the references, the symbols and the dimension lines already placed take — measured as the drawing kernel
+// draws them (lettering at letterSize, never under TEXT.min; a reference's circle tagRadius: view.ts), at the plan's
+// scale — and the first of the places offered whose box keeps off them and off what else is given; none of them, the
+// next nearest on a grid over the room, last in the band beyond the wall no row of dimensions takes (the name or the
+// reference with its leader). Model millimetres; pure.
+import { TEXT, letterSize, tagRadius, textBox, textQuad, textWidth, type Align, type Box, type Entity, type Pt } from '../drawing';
+import { WALL } from './room-draw';
+import type { RoomInputs } from './room';
 
 /** The plan's scale the boxes are measured at (paper millimetres to model millimetres). */
 export const AT = 25;
-/** A reference's circle (view.ts tag) and a symbol's half size (symbols.ts) at the plan's scale [mm]. */
-const TAG_R = 1.9 * AT, MARK_R = 1.9 * AT;
 
 const grow = (b: Box, d: number): Box => ({ x0: b.x0 - d, y0: b.y0 - d, x1: b.x1 + d, y1: b.y1 + d });
 export const meets = (a: Box, b: Box): boolean => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
 
-/** The box of a lettering at `at` (its baseline), `size` high on paper, aligned left, centred or right, upright or turned
- *  by a quarter. */
-export function letteringBox(at: Pt, text: string, size: number, align: 'l' | 'c' | 'r' = 'l', angle = 0): Box {
-  const w = textWidth(text, { size, cond: true }) * AT, h = size * AT, a0 = align === 'l' ? 0 : align === 'c' ? -w / 2 : -w;
-  const quarter = Math.abs(Math.abs(angle) - 90) < 1;
-  return quarter ? { x0: at[0] - 0.85 * h, y0: at[1] + a0, x1: at[0] + 0.3 * h, y1: at[1] + a0 + w } : { x0: at[0] + a0, y0: at[1] - 0.3 * h, x1: at[0] + a0 + w, y1: at[1] + 0.85 * h };
+/** The box of a lettering at `at` (its baseline) as the kernel letters it — at letterSize(`size`), its box the kernel's
+ *  (metrics.ts textBox) —, aligned left, centred or right, turned by `angle`; `k` model millimetres to one of paper. */
+export function letteringBox(at: Pt, text: string, size: number | undefined, align: Align = 'l', angle = 0, bold = false, k = AT): Box {
+  const b = textBox({ t: 'text', at: [0, 0], text, size: letterSize(size), align, angle, bold, cond: true });
+  return { x0: at[0] + b.x0 * k, y0: at[1] + b.y0 * k, x1: at[0] + b.x1 * k, y1: at[1] + b.y1 * k };
+}
+
+/** The same turned askew as boxes along it, each about as long as the lettering is high (one box round the whole
+ *  would take a square of paper beside a slanted name). */
+function letteringBoxes(at: Pt, text: string, size: number | undefined, align: Align, angle: number, bold: boolean, k: number): Box[] {
+  if (Math.abs(Math.sin((angle * Math.PI) / 90)) < 1e-9) return [letteringBox(at, text, size, align, angle, bold, k)];
+  const s = letterSize(size), [q0, q1, q2, q3] = textQuad({ t: 'text', at: [0, 0], text, size: s, align, angle, bold, cond: true });
+  const n = Math.max(1, Math.ceil(Math.hypot(q1[0] - q0[0], q1[1] - q0[1]) / (1.3 * s))), lerp = (a: Pt, b: Pt, t: number): Pt => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+  return Array.from({ length: n }, (_, i) => {
+    const ps = [lerp(q0, q1, i / n), lerp(q0, q1, (i + 1) / n), lerp(q3, q2, i / n), lerp(q3, q2, (i + 1) / n)], xs = ps.map((p) => p[0]), ys = ps.map((p) => p[1]);
+    return { x0: at[0] + Math.min(...xs) * k, y0: at[1] + Math.min(...ys) * k, x1: at[0] + Math.max(...xs) * k, y1: at[1] + Math.max(...ys) * k };
+  });
+}
+
+/** A reference's box at `c`: its circle as the kernel draws it round `text`. */
+export const tagBox = (c: Pt, text: string, k = AT): Box => {
+  const r = tagRadius(text) * k;
+  return { x0: c[0] - r, y0: c[1] - r, x1: c[0] + r, y1: c[1] + r };
+};
+
+/** A symbol's box at `c` (symbols.ts: the light's rays reach 1,15 of its half size, the widest). */
+const markBox = (c: Pt, size: number | undefined, k: number): Box => {
+  const h = ((size ?? 3.4) / 2) * 1.15 * k;
+  return { x0: c[0] - h, y0: c[1] - h, x1: c[0] + h, y1: c[1] + h };
+};
+
+/** Where and how large the kernel letters a text with a room it must fit (`fit`): smaller down to TEXT.min, and past
+ *  that at `out` (view.ts lettering), at the scale `k`. */
+function fitted(e: Extract<Entity, { e: 'text' }>, k: number): { at: Pt; size: number | undefined } {
+  if (!e.fit) return { at: e.at, size: e.size };
+  const asked = letterSize(e.size), w = textWidth(e.text, { size: asked, bold: e.bold, cond: true }), room = e.fit / k;
+  const size = w > room && room > 0 ? Math.max(TEXT.min, (asked * room) / w) : asked, over = room > 0 && (w * size) / asked > room + 1e-9;
+  return { at: over && e.out ? e.out : e.at, size };
 }
 
 /** What the lettering, the references and the symbols among `es` take. */
-export function takenBy(es: readonly Entity[]): Box[] {
+export function takenBy(es: readonly Entity[], k = AT): Box[] {
   return es.flatMap((e): Box[] => {
-    if (e.e === 'text') return [letteringBox(e.at, e.text, e.size ?? 2.5, e.align ?? 'l', e.angle ?? 0)];
-    if (e.e === 'tag') return [{ x0: e.at[0] - TAG_R, y0: e.at[1] - TAG_R, x1: e.at[0] + TAG_R, y1: e.at[1] + TAG_R }];
-    if (e.e === 'mark') return [{ x0: e.at[0] - MARK_R, y0: e.at[1] - MARK_R, x1: e.at[0] + MARK_R, y1: e.at[1] + MARK_R }];
+    if (e.e === 'text') {
+      const { at, size } = fitted(e, k);
+      return letteringBoxes(at, e.text, size, e.align ?? 'l', e.angle ?? 0, e.bold === true, k);
+    }
+    if (e.e === 'tag') return [tagBox(e.at, e.text, k)];
+    if (e.e === 'mark') return [markBox(e.at, e.size, k)];
     return [];
   });
 }
 
-/** The first box of `places` (each with what it is for) clear of `busy` by `gap`, and inside `within`; null: none. */
-export function firstClear<T extends { box: Box }>(places: readonly T[], busy: readonly Box[], within: Box, gap = 20): T | null {
-  return places.find((p) => p.box.x0 >= within.x0 && p.box.x1 <= within.x1 && p.box.y0 >= within.y0 && p.box.y1 <= within.y1 && busy.every((b) => !meets(grow(p.box, gap), b))) ?? null;
+/** What the dimension lines across the drawing among `es` take with their figures either side (TEXT.dim and a margin),
+ *  run on past each end as far as the longest lettering that does not fit its segment (dims.ts may write it there):
+ *  along an axis one box, along a line askew (`on`) a box for each stretch of it. */
+export function dimBands(es: readonly Entity[], k = AT): Box[] {
+  const band = (TEXT.dim + 1.2) * k;
+  return es.flatMap((e): Box[] => {
+    if (e.e !== 'chain' || e.c.at === undefined || e.c.pts.length < 2) return [];
+    // (only a lettering longer than its segment goes past an end)
+    const { pts, at, on, text } = e.c, over = pts.slice(1).map((q, i) => {
+      const len = Math.abs(q - pts[i]), w = (textWidth((text?.[i] ?? '{v}').replace('{v}', String(Math.round(len))), { size: TEXT.dim, cond: true }) + 1) * k;
+      return w > len ? w : 0;
+    });
+    const past = Math.max(0, ...over), a = Math.min(...pts) - past, b = Math.max(...pts) + past;
+    if (!on) return [e.c.dir === 'x' ? { x0: a, y0: at - band, x1: b, y1: at + band } : { x0: at - band, y0: a, x1: at + band, y1: b }];
+    // askew: the line `at` to the left of the drop line, in stretches of about 8 mm of paper
+    const n: Pt = [-on.u[1], on.u[0]], steps = Math.max(1, Math.ceil((b - a) / (8 * k)));
+    const p = (t: number): Pt => [on.o[0] + t * on.u[0] + at * n[0], on.o[1] + t * on.u[1] + at * n[1]];
+    return Array.from({ length: steps }, (_, i) => {
+      const p0 = p(a + ((b - a) * i) / steps), p1 = p(a + ((b - a) * (i + 1)) / steps);
+      return { x0: Math.min(p0[0], p1[0]) - band, y0: Math.min(p0[1], p1[1]) - band, x1: Math.max(p0[0], p1[0]) + band, y1: Math.max(p0[1], p1[1]) + band };
+    });
+  });
 }
 
-/** A reference's box at `c`. */
-export const tagBox = (c: Pt): Box => ({ x0: c[0] - TAG_R, y0: c[1] - TAG_R, x1: c[0] + TAG_R, y1: c[1] + TAG_R });
+const inside = (b: Box, within: Box): boolean => b.x0 >= within.x0 && b.x1 <= within.x1 && b.y0 >= within.y0 && b.y1 <= within.y1;
+
+/** The first box of `places` (each with what it is for) clear of `busy` by `gap`, and inside `within`; null: none. */
+export function firstClear<T extends { box: Box }>(places: readonly T[], busy: readonly Box[], within: Box, gap = 20): T | null {
+  return places.find((p) => inside(p.box, within) && busy.every((b) => !meets(grow(p.box, gap), b))) ?? null;
+}
+
+/** Points over `within` `step` apart, the nearest to `to` first: where a name or a reference is tried when none of its
+ *  usual places is clear (farther from what it names, with its leader). */
+export function gridNear(within: Box, to: Pt, step = 100): Pt[] {
+  const out: Pt[] = [];
+  for (let x = within.x0 + step / 2; x <= within.x1; x += step) for (let y = within.y0 + step / 2; y <= within.y1; y += step) out.push([x, y]);
+  const d = (p: Pt): number => Math.hypot(p[0] - to[0], p[1] - to[1]);
+  return out.sort((p, q) => d(p) - d(q));
+}
+
+/** The place of `places` (inside `within`, when given) whose box lies least on `busy`: only when not one of them is
+ *  clear. */
+export function leastOn<T extends { box: Box }>(places: readonly T[], busy: readonly Box[], within?: Box): T {
+  const over = (a: Box): number => busy.reduce((t, b) => t + Math.max(0, Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0)) * Math.max(0, Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0)), 0);
+  const kept = within ? places.filter((p) => inside(p.box, within)) : places;
+  return (kept.length ? kept : places).reduce((p, q) => (over(q.box) < over(p.box) ? q : p));
+}
+
+/** Places tried together and the box they keep inside: the room's, or the band beyond its wall no row of dimensions
+ *  takes (`beyond`: room-view.ts). */
+export interface Tries<T> {
+  places: () => readonly T[];
+  within: Box;
+}
+
+/** The first clear place of the groups in turn — the usual places, the grid over the room, the lettering in two lines…,
+ *  last the band beyond the room's wall; each group made only when the ones before are all taken —, else the one least
+ *  on what is there (a failure: the tests of the machine room's sheets find none). Never a place the check turned down
+ *  while another is clear. */
+export function placeOf<T extends { box: Box }>(groups: readonly Tries<T>[], busy: readonly Box[], gap = 20): T {
+  const tried: T[] = [];
+  for (const g of groups) {
+    const places = g.places(), spot = firstClear(places, busy, g.within, gap);
+    if (spot) return spot;
+    tried.push(...places.filter((p) => inside(p.box, g.within)));
+  }
+  return leastOn(tried.length ? tried : groups.flatMap((g) => g.places()), busy);
+}
+
+/** The band beyond the plan's wall that no row of dimensions takes — the door's wall and the shaft's two sides take
+ *  the other three (room-view.ts): left of the room with the door at the front or the rear, under it with the door on
+ *  a side —, from 1,5 mm of paper off the wall out to `depth` (the paper the sheet leaves there, BEYOND at most),
+ *  between the walls' outer faces (the rows' lettering run past their ends stops short of it: dims.ts); where a name
+ *  or a reference goes, with its leader, when none is clear in the room; null: no paper for it. `k` the plan's scale;
+ *  room axes. */
+export function beyondWall(R: Pick<RoomInputs, 'W' | 'D' | 'doorWall'>, k = AT, depth = BEYOND): Box | null {
+  if (depth < 6) return null;
+  const a = WALL + 1.5 * k, b = WALL + depth * k;
+  return R.doorWall === 'front' || R.doorWall === 'rear' ? { x0: -b, y0: -WALL, x1: -a, y1: R.D + WALL } : { x0: -WALL, y0: -b, x1: R.W + WALL, y1: -a };
+}
+
+/** How far the band beyond the wall reaches at most [mm of paper]. */
+export const BEYOND = 75;
+
+/** Whether the segment p–q crosses the box (Liang–Barsky). */
+export function segMeets(p: Pt, q: Pt, b: Box): boolean {
+  let t0 = 0, t1 = 1;
+  for (const [dd, lo, hi, c] of [[q[0] - p[0], b.x0, b.x1, p[0]], [q[1] - p[1], b.y0, b.y1, p[1]]]) {
+    if (Math.abs(dd) < 1e-12) {
+      if (c < lo || c > hi) return false;
+      continue;
+    }
+    const a = (lo - c) / dd, e = (hi - c) / dd;
+    t0 = Math.max(t0, Math.min(a, e));
+    t1 = Math.min(t1, Math.max(a, e));
+  }
+  return t0 <= t1;
+}
+
+/** Where a leader leaves a lettering's box toward `to`: the point of the box nearest it. */
+export const leaderFrom = (b: Box, to: Pt): Pt => [Math.min(Math.max(to[0], b.x0), b.x1), Math.min(Math.max(to[1], b.y0), b.y1)];

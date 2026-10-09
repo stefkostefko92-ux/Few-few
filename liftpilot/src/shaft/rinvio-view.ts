@@ -8,6 +8,7 @@ import { machineV, ropeWidths, type MachineSpec, type RoomGeo } from './machine-
 import { KV_VERT } from './norme-vert';
 import { PROFILES } from './profiles';
 import type { HebLayout } from './heb';
+import { hebUnder } from './heb-view';
 import { axisOverTop, bedplateBeams, bedplateLegs, rinvioAcross, rinvioRun, type RinvioFrame } from './rinvio';
 
 /** Section B-B: the bedplate, its legs and dampers, the pulley's plates; its heights left of it (`sk`: the section's
@@ -32,7 +33,9 @@ export function rinvioSection(M: MachineSpec, G: RoomGeo, rf: RinvioFrame, sk = 
   // the pulley's axis: the bedplate's own, or the sheave's axis less an h entered by hand (whose change may take
   // another machine: its h is the dimension to change)
   out.push(chain({ dir: 'y', pts: [0, zp], at: u0 - 220 * sk, from: [null, pu], text: ['Asse rinvio {v}'], edit: [null] }));
-  out.push(chain({ dir: 'y', pts: [base, top], at: u0 - 420 * sk, from: [null, u0], text: [`{v} ${fixed ? rf.maker?.code : 'Telaio'}`], edit: [fixed ? null : E('rinvio.height')] }));
+  // (on the HEB beams, one chain with their height under it: heb-view.ts hebUnder)
+  const text = `{v} ${fixed ? rf.maker?.code : 'Telaio'}`, edit = fixed ? null : E('rinvio.height'), at = u0 - 420 * sk;
+  out.push((heb ? hebUnder(heb, G, at, base, top, u0, text, edit) : null) ?? chain({ dir: 'y', pts: [base, top], at, from: [null, u0], text: [text], edit: [edit] }));
   // over the room past dx and the machine's frame (room-section-view.ts)
   out.push(chain({ dir: 'x', pts: [u0, u1], side: 'top', row: 2, from: [top, top], text: [`{v} ${rinvioName(rf)}`] }));
   return out;

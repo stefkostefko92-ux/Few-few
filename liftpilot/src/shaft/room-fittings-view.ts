@@ -9,14 +9,15 @@ import type { RoomInputs } from './room';
 
 const SWITCH_NAME = 'INTERRUTTORE GENERALE';
 
-/** The panel, its free area and the main switch drawn, the switch's name clear of `gear` too (the machine's parts);
- *  the outlines and the name's place the rest of the plan keeps clear of. */
-export function fittingsPlan(R: RoomInputs, gear: readonly Box[] = []): { entities: Entity[]; free: Pt[]; sw: Pt[]; swAt: Pt } {
+/** The panel, its free area and the main switch drawn, the switch's name clear of `gear` too (the machine's parts) at
+ *  the plan's scale `k` (model millimetres to one of paper); the outlines and the name's place the rest of the plan keeps
+ *  clear of. */
+export function fittingsPlan(R: RoomInputs, gear: readonly Box[] = [], k = 25): { entities: Entity[]; free: Pt[]; sw: Pt[]; swAt: Pt } {
   const side = R.panelWall === 'left' || R.panelWall === 'right', [b0, b1] = panelBand(R), pan = wallBox(R, R.panelWall, R.panelAt, R.panelW, R.panelD), free = wallBox(R, R.panelWall, b0, b1 - b0, R.panelD + KV_VERT.panelFreeDepth);
   const front = wallBand(R, R.panelWall, b0, b1 - b0, R.panelD, R.panelD + KV_VERT.panelFreeDepth);
   const [w0, w1] = switchSpan(R), sw = wallBox(R, R.doorWall, w0, w1 - w0, 120);
   const inward: Pt = R.doorWall === 'front' ? [0, 1] : R.doorWall === 'rear' ? [0, -1] : R.doorWall === 'left' ? [1, 0] : [-1, 0];
-  const [swAt] = switchName(R, mid(sw), inward, [bbox(pan), bbox(free), ...gear]);
+  const [swAt] = switchName(R, mid(sw), inward, [bbox(pan), bbox(free), ...gear], k);
   // the panel's name in it; too long for it at the smallest lettering, in the free area in front of it on a leader
   const into: Pt = R.panelWall === 'front' ? [0, 1] : R.panelWall === 'rear' ? [0, -1] : R.panelWall === 'left' ? [1, 0] : [-1, 0], pm = mid(pan);
   const panelOut: Pt = [pm[0] + into[0] * (R.panelD / 2 + 320), pm[1] + into[1] * (R.panelD / 2 + 320)];
@@ -32,13 +33,13 @@ export function fittingsPlan(R: RoomInputs, gear: readonly Box[] = []): { entiti
 }
 
 /** Where the main switch's name goes: 260 mm into the room from the switch at `c` as always; where its lettering (the
- *  smallest, at 1:25, the plan's scale) would meet `busy` (the panel and the free area in front of it, the machine), the
+ *  smallest, at the plan's scale `k`) would meet `busy` (the panel and the free area in front of it, the machine), the
  *  nearest place along the wall or further in that stays clear and in the room — none, where it was, and whether it lies
  *  on them (then on a halo). */
-function switchName(R: RoomInputs, c: Pt, inward: Pt, busy: readonly Box[]): [Pt, boolean] {
-  const S = TEXT.min, k = 25, hw = (textWidth(SWITCH_NAME, { size: S, cond: true }) / 2 + 0.8) * k, along: Pt = [Math.abs(inward[1]), Math.abs(inward[0])];
+function switchName(R: RoomInputs, c: Pt, inward: Pt, busy: readonly Box[], k: number): [Pt, boolean] {
+  const S = TEXT.min, hw = (textWidth(SWITCH_NAME, { size: S, cond: true }) / 2 + 0.8) * k, along: Pt = [Math.abs(inward[1]), Math.abs(inward[0])];
   const lo = (0.3 * S + 0.8) * k, hi = (0.9 * S + 0.8) * k;
-  const at = (d: number, k: number): Pt => [c[0] + inward[0] * d + along[0] * k, c[1] + inward[1] * d + along[1] * k - 30];
+  const at = (d: number, a: number): Pt => [c[0] + inward[0] * d + along[0] * a, c[1] + inward[1] * d + along[1] * a - 30];
   const hits = (p: Pt): boolean => busy.some((b) => p[0] - hw < b.x1 && b.x0 < p[0] + hw && p[1] - lo < b.y1 && b.y0 < p[1] + hi);
   const first = at(260, 0);
   if (!hits(first)) return [first, false];
