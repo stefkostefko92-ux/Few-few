@@ -104,6 +104,11 @@ test('orders and the dashboard: the rejection names the customer, the open order
     /data-confirm="Да отхвърля ли поръчката на dash2\.buyer@example\.test \(12 месеца\)\?"/,
   );
   assert.match(orders.body, /<table class="stack stack-kv orders-table">/);
+  // the option breaks only between its phrases, never inside „12 месеца“
+  assert.match(
+    orders.body,
+    /<span class="nowrap">12 месеца<\/span><br><small class="muted"><span class="nowrap">фирма<\/span><\/small>/,
+  );
   const dash = await owner.browser.get('/admin');
   for (const group of ['Планове', 'Чака екипа', 'Движение'])
     assert.match(dash.body, new RegExp(`<h2 class="stat-h" id="g-[a-z]+">${group}</h2>`));

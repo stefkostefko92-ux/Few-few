@@ -18,13 +18,12 @@
     grid-column: 1 / -1;
   }
 }
+/* a group heading in sentence case, like every other heading in the panel — no tracked capitals */
 .stat-h {
   margin: 0 0 8px;
   color: var(--ink-2);
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-weight: 650;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 .stat-groups .stats {
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
