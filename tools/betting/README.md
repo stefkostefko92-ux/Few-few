@@ -5,14 +5,14 @@
 
 | Модул | Какво |
 |---|---|
-| **`golad-fit.mjs`** | **Напаснат Диксън-Коулс от история на резултати** (MLE + time-decay) → атака/защита рейтинги + домакинско предимство + ρ → предсказва λ. CLI: `golad-fit.mjs results.json "Дом" "Гост"`. Скок от ръчна λ. |
-| `golad-model.mjs` | Поасон pmf · Диксън-Коулс τ(ρ) · матрица · пазари: 1X2/О-У/BTTS/точен · **азиатски хендикап (вкл. четвърт)** · двоен шанс · draw-no-bet · λ от рейтинги · time-decay |
-| `devig.mjs` | Обезмаржване: **power** (база — favorite-longshot корекция) · proportional · Shin · overround |
+| **`golad-fit.mjs`** | **Напаснат Диксън-Коулс от история на резултати** (MLE + time-decay, полуживот 365 дни) → атака/защита рейтинги + домакинско предимство + ρ∈[−0.2,+0.2] → предсказва λ. `attack` има геом. средна 1, `defense` носи базовото ниво на голове на гост, `homeAdv` е чист множител (не интерсепт). CLI: `golad-fit.mjs results.json "Дом" "Гост"`. |
+| `golad-model.mjs` | Поасон pmf · Диксън-Коулс τ(ρ, свито в валидния интервал) · матрица · пазари: 1X2/О-У (вкл. четвърт тотали)/BTTS/точен · **азиатски хендикап (вкл. четвърт)** · двоен шанс · draw-no-bet · λ от рейтинги · time-decay |
+| `devig.mjs` | Обезмаржване: **power** (база — favorite-longshot корекция) · proportional · Shin · overround. **CLI:** `node tools/betting/devig.mjs 1.91 3.20 4.20 [--method …] [--json]` — не го смятай на ръка |
 | **`golad-portfolio.mjs`** | **Bankroll над единичен Kelly:** симултанен дробен Kelly + тавани (залог/мач/общо) + **drawdown kill-switch** |
 | **`golad-backtest.mjs`** | **walk-forward** калибрация (напасни на миналото → предскажи бъдещето, нула look-ahead) → Brier/log-loss/RPS vs база |
 | `calibration.mjs` | market-anchor смес · EV · **дробен Kelly** с таван · Brier · log-loss · **RPS** · **CLV** |
 | `golad.mjs` | CLI — цялата верига λ → матрица → пазари → обезмаржване → смес → EV → Kelly |
-| `*.test.mjs` | **20 теста** доказват математиката + fit-възстановяване + walk-forward бие база — в CI |
+| `*.test.mjs` | **26 теста** доказват математиката + fit-възстановяване **и калибриране на нивото на λ** (гост-база ≠ 1) + четвърт тотали + walk-forward бие база — в CI |
 
 ## Употреба
 ```bash

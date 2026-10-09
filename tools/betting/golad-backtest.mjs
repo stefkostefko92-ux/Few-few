@@ -4,11 +4,11 @@
 // (не „уцелвания" на happy-path, а out-of-sample Brier/log-loss/RPS върху хронология).
 
 import { fitDixonColes, predictLambdas } from "./golad-fit.mjs";
-import { scoreMatrix, markets } from "./golad-model.mjs";
+import { scoreMatrix, markets, DEFAULT_HALF_LIFE_DAYS } from "./golad-model.mjs";
 import { brier, logLoss, rps } from "./calibration.mjs";
 
 // matches: [{home,away,hg,ag,date}] (сортират се по дата). Връща records + метрики out-of-sample.
-export function walkForward(matches, { halfLifeDays = 180, minTrain = 60, refitEvery = 10, iters = 250 } = {}) {
+export function walkForward(matches, { halfLifeDays = DEFAULT_HALF_LIFE_DAYS, minTrain = 60, refitEvery = 10, iters = 250 } = {}) {
   const sorted = [...matches].sort((a, b) => a.date.localeCompare(b.date));
   const records = [];
   let fit = null;

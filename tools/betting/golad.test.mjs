@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { join, dirname } from "node:path";
-import { poisson, tau, scoreMatrix, markets, lambdaFromRatings, timeDecayWeight } from "./golad-model.mjs";
+import { poisson, tau, scoreMatrix, markets, lambdaFromRatings, timeDecayWeight, rhoBounds } from "./golad-model.mjs";
 
 const CLI = join(dirname(fileURLToPath(import.meta.url)), "golad.mjs");
 import { proportional, power, shin, overround, devig } from "./devig.mjs";
@@ -118,4 +118,44 @@ test("CLI golad.mjs: невалиден вход не дава тих NaN (exit�
   assert.notEqual(run({ lambdaHome: -1, lambdaAway: 1 }), 0, "≤0 λ → грешка");
   assert.notEqual(run({ lambdaHome: "x", lambdaAway: 1 }), 0, "нечислена λ → грешка");
   assert.equal(run({ lambdaHome: 1.5, lambdaAway: 1.0 }), 0, "валидни λ → ок");
+});
+
+test("markets: четвърт тотал 2.25 = ½·(2.0) + ½·(2.5); при 2 гола половината се връща, половината се губи", () => {
+  const M = scoreMatrix(1.5, 1.2, { rho: -0.05 });
+  const q = markets(M, { totalsLine: 2.25 }), a = markets(M, { totalsLine: 2.0 }), b = markets(M, { totalsLine: 2.5 });
+  approx(q.over, (a.over + b.over) / 2, 1e-12);
+  approx(q.under, (a.under + b.under) / 2, 1e-12);
+  approx(q.over + q.under + q.totalsPush, 1, 1e-9);
+  let p2 = 0; for (let x = 0; x <= 2; x++) p2 += M[x][2 - x];
+  approx(q.totalsPush, p2 / 2, 1e-12); // push дял = ½·P(точно 2 гола)
+  assert.ok(q.totalsPush > 0.1, "старият код връщаше push=0 и губеше половин залог");
+  // 2.75 е огледално: ½·(2.5) + ½·(3.0)
+  const q2 = markets(M, { totalsLine: 2.75 }), c = markets(M, { totalsLine: 3.0 });
+  approx(q2.over, (b.over + c.over) / 2, 1e-12);
+});
+
+test("scoreMatrix: ρ извън валидния интервал се свива към границата (τ ≥ 0, маргиналите се пазят)", () => {
+  const lh = 9, la = 1.1; // −1/λд = −0.111 → ρ=−0.2 е невалидно (τ(0,1)=1+9·(−0.2)<0)
+  approx(rhoBounds(lh, la).min, -1 / 9, 1e-12);
+  const M = scoreMatrix(lh, la, { rho: -0.2, maxGoals: 45 }); // без отрязване на опашката (λ=9)
+  for (const row of M) for (const v of row) assert.ok(v >= 0);
+  approx(sum(M.flat()), 1, 1e-9);
+  // при валидно ρ DC запазва маргиналите ТОЧНО: Σ_y P(x,y) = Поасон(x;λд)
+  const margH = M.map((r) => sum(r));
+  for (let x = 0; x <= 12; x++) approx(margH[x], poisson(x, lh), 1e-9);
+});
+
+test("timeDecayWeight: по подразбиране полуживот ≈365 дни (ξ≈0.0019/ден), не 120", () => {
+  approx(timeDecayWeight(365), 0.5, 1e-9);
+  assert.ok(timeDecayWeight(365) > 0.45, "мач отпреди година още тежи ~½");
+});
+
+test("CLI devig.mjs: power по подразбиране, Σ=1, и трите метода с --json", () => {
+  const out = JSON.parse(execFileSync("node", [join(dirname(fileURLToPath(import.meta.url)), "devig.mjs"), "1.91", "3.20", "4.20", "--json"], { encoding: "utf8" }));
+  assert.equal(out.method, "power");
+  approx(sum(out.p), 1, 1e-9);
+  approx(out.overround, 1 / 1.91 + 1 / 3.2 + 1 / 4.2 - 1, 1e-9);
+  assert.deepEqual(Object.keys(out.all).sort(), ["power", "proportional", "shin"]);
+  assert.ok(out.p[0] > out.all.proportional[0], "power вдига фаворита спрямо proportional (favorite-longshot корекция)");
+  assert.throws(() => execFileSync("node", [join(dirname(fileURLToPath(import.meta.url)), "devig.mjs"), "1.0", "3", "4"], { stdio: "pipe" }), /./, "коефициент ≤1 е невалиден → exit≠0");
 });

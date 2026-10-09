@@ -17,7 +17,7 @@ const argv = process.argv.slice(2);
 const JSON_OUT = argv.includes("--json");
 const fileArg = argv.find((a) => !a.startsWith("--"));
 let input = {};
-try { input = JSON.parse(fileArg ? readFileSync(fileArg, "utf8") : readFileSync(0, "utf8")); } catch { /* */ }
+try { input = JSON.parse(fileArg ? readFileSync(fileArg, "utf8") : readFileSync(0, "utf8")); } catch (e) { console.error("Невалиден или нечетим JSON вход: " + e.message); process.exit(1); }
 
 let { lambdaHome, lambdaAway } = input;
 if ((lambdaHome == null || lambdaAway == null) && input.ratings) ({ lambdaHome, lambdaAway } = lambdaFromRatings(input.ratings));

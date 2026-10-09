@@ -7,6 +7,10 @@
 // (∂LL/∂logAtt_h = Σ w·(x−λ) и т.н. — стандартни), с ренормализация на att/def (геом. средна=1)
 // за идентифицируемост; ρ се оценява по мрежа върху τ-частта (влиянието му върху att/def е нищожно —
 // както отбелязват Dixon & Coles 1997). Итерира att/def/home ↔ ρ до сходимост.
+// Изход: attack (геом. средна 1), defense (носи базовото ниво на голове на гост), homeAdv = чист множител.
+
+import { pathToFileURL } from "node:url";
+import { DEFAULT_HALF_LIFE_DAYS } from "./golad-model.mjs";
 
 const tauLog = (x, y, lh, la, rho) => {
   let t = 1;
@@ -18,7 +22,7 @@ const tauLog = (x, y, lh, la, rho) => {
 };
 
 // matches: [{home, away, hg, ag, date:"YYYY-MM-DD"}]. asOf по подразбиране = най-новата дата.
-export function fitDixonColes(matches, { halfLifeDays = 180, iters = 500, lr = 0.3, asOf = null } = {}) {
+export function fitDixonColes(matches, { halfLifeDays = DEFAULT_HALF_LIFE_DAYS, iters = 500, lr = 0.3, asOf = null } = {}) {
   if (!matches.length) throw new Error("няма мачове за напасване");
   const dayMs = 86400000;
   const ref = asOf ? new Date(asOf + "T00:00:00Z").getTime() : Math.max(...matches.map((m) => new Date(m.date + "T00:00:00Z").getTime()));
@@ -52,14 +56,19 @@ export function fitDixonColes(matches, { halfLifeDays = 180, iters = 500, lr = 0
     }
     for (let i = 0; i < n; i++) { a[i] = clamp(a[i] + lr * ga[i] / W); d[i] = clamp(d[i] + lr * gd[i] / W); }
     g = clamp(g + lr * gg / W);
-    // идентифицируемост: средна на log-att =0 (геом. средна att=1) → изнеси в home; същото за def.
-    const ma = a.reduce((s, v) => s + v, 0) / n; for (let i = 0; i < n; i++) a[i] -= ma; g += ma;
-    const md = d.reduce((s, v) => s + v, 0) / n; for (let i = 0; i < n; i++) d[i] -= md; g += md;
+    // идентифицируемост: λ са инвариантни само спрямо a+c, d−c (една степен на свобода), затова центрираме
+    // САМО атаката (геом. средна att=1) и връщаме отместването в защитата. Центриране и на двете с изнасяне
+    // само в g закова гост-интерсепта на exp(0)=1 → λ_гост изостава (~−10…−15%) и g поема лигавата база.
+    // След това defense носи базовото ниво на голове на гост, а g е чистият множител на домакинското предимство.
+    const ma = a.reduce((s, v) => s + v, 0) / n; for (let i = 0; i < n; i++) { a[i] -= ma; d[i] += ma; }
   }
 
-  // Оцени ρ по мрежа върху τ-частта (att/def фиксирани).
+  // Оцени ρ по мрежа върху τ-частта (att/def фиксирани). Интервалът е [−0.2, +0.2]: скорошните сезони са
+  // около 0, а на моменти положителни (EPL 22/23 ≈ +0.06) — отрязването на [−0.2, 0] ги принуждава към 0.
+  // τ извън валидния интервал се наказва от tauLog (клампнат лог), затова невалидни ρ не печелят.
   let best = -Infinity;
-  for (let r = -0.2; r <= 0.001; r += 0.005) {
+  for (let k = 0; k <= 80; k++) {
+    const r = -0.2 + k * 0.005;
     let ll = 0;
     for (const m of M) {
       const h = idx[m.home], aw = idx[m.away];
@@ -86,7 +95,7 @@ export function predictLambdas(fit, home, away) {
 // CLI: напасни от файл с резултати и предскажи мач.
 //   node tools/betting/golad-fit.mjs results.json "Home Team" "Away Team"
 // results.json = [{home,away,hg,ag,date}] (реални резултати, които ТИ вадиш и цитираш).
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const [file, home, away] = process.argv.slice(2);
   if (!file) { console.error('Употреба: node golad-fit.mjs results.json "Домакин" "Гост"'); process.exit(1); }
   const { readFileSync } = await import("node:fs");
