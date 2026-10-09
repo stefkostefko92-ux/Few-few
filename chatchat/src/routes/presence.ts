@@ -80,6 +80,7 @@ export function presenceRouter(deps: WiredDeps): Router {
       if (previous !== others.status) announce(viewer, others);
       res.json({
         presence: effectivePresence(row, now, true),
+        showLastSeen: row.showLastSeen,
         heartbeatEveryMs: HEARTBEAT_EVERY_MS,
       });
     } catch (err) {

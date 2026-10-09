@@ -14,6 +14,7 @@ export function caseView(c: {
   outcome: string | null;
   context: Prisma.JsonValue;
   portal: boolean;
+  assignedToId?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }) {
@@ -24,9 +25,33 @@ export function caseView(c: {
     outcome: c.outcome,
     context: c.context,
     portal: c.portal,
+    assignedToId: c.assignedToId ?? null,
     createdAt: c.createdAt,
     updatedAt: c.updatedAt,
   };
+}
+
+/**
+ * Кой е поел случая, както го вижда читателят (UI: панелът на случая, „Casi assegnati“): порталният
+ * техник вижда РОЛЯТА на служителя, не името му (същото правило като `authorFor`).
+ */
+export async function assigneeViews(
+  db: PrismaClient,
+  reader: Pick<Principal['user'], 'id' | 'kind' | 'tenantId'>,
+  cases: ReadonlyArray<{ assignedToId: string | null }>,
+): Promise<Map<string, { id: string; name: string | null; role: Role }>> {
+  const ids = [...new Set(cases.map((c) => c.assignedToId).filter((x): x is string => !!x))];
+  if (ids.length === 0) return new Map();
+  const users = await db.user.findMany({
+    where: { id: { in: ids }, tenantId: reader.tenantId },
+    select: { id: true, name: true, role: true, kind: true },
+  });
+  return new Map(
+    users.map((u) => {
+      const a = authorFor(reader, u);
+      return [u.id, { id: u.id, name: a.authorName, role: u.role }];
+    }),
+  );
 }
 
 export interface MessageAuthor {

@@ -3,34 +3,89 @@ import { $, $$, show } from './dom.js';
 import { guessLang, setLang, t } from './i18n.js';
 import { initChat, resetChat } from './chat.js';
 import { initContext, renderContext } from './context.js';
-import { initNewCase, loadCases, renderCases, selectCase } from './cases.js';
+import {
+  initNewCase,
+  loadCases,
+  openNewCaseWithDevice,
+  refreshCases,
+  renderCases,
+  selectCase,
+} from './cases.js';
 import { emit, on, state } from './store.js';
+import { showScreen } from './auth/screens.js';
+import { initMfaVerify, showMfaVerify } from './auth/mfa-verify.js';
+import { mountMfaSetup } from './auth/mfa-setup.js';
+import { initReset, showReset, takeResetToken } from './auth/reset.js';
+import { openSecurityDialog } from './auth/security.js';
+import { hasPendingQr, initScan, resolvePendingQr, takeQrFromUrl } from './qr/scan.js';
+import { initWorkspace, startWorkspace, stopWorkspace } from './workspace/index.js';
+import { resetQuickResponses } from './workspace/quick.js';
+import { wide } from './workspace/windows.js';
 
 const app = () => $('#app-view');
-const wide = () => window.matchMedia('(min-width: 1100px)').matches;
 
-function showLogin() {
+function showLogin(message) {
   state.user = null;
   state.csrf = null;
+  state.mfa = { enabled: false, passed: false, required: false };
   state.cases = [];
   state.currentId = null;
   state.current = null;
   state.tickets.clear();
-  show($('#app-view'), false);
-  show($('#login-view'), true);
+  stopWorkspace();
+  resetQuickResponses();
   resetChat();
+  showScreen('login');
+  const err = $('#login-error');
+  err.textContent = message ?? '';
+  show(err, Boolean(message));
   $('#login-email').focus();
 }
 
-async function showApp(session) {
+async function logout() {
+  try {
+    await api('POST', '/auth/logout');
+  } catch {
+    /* излизаме от интерфейса така или иначе */
+  }
+  showLogin();
+}
+
+/** След парола: втори фактор (код / настройка) или самото приложение. */
+async function enter(session) {
   state.user = session.user;
-  state.csrf = session.csrfToken;
-  $('#user-name').textContent = session.user?.name ?? '';
-  show($('#login-view'), false);
-  show($('#app-view'), true);
+  state.csrf = session.csrfToken ?? state.csrf;
+  state.mfa = session.mfa ?? state.mfa;
+  if (state.mfa.enabled && !state.mfa.passed) return showMfaVerify();
+  if (state.mfa.required && !state.mfa.enabled) return showSetup();
+  return showApp();
+}
+
+function showSetup() {
+  showScreen('setup');
+  mountMfaSetup($('#setup-host'), { onDone: () => showApp() });
+}
+
+async function showApp() {
+  $('#user-name').textContent = state.user?.name ?? '';
+  showScreen('app');
   app().dataset.view = 'cases';
+  app().dataset.main = 'case';
   renderContext();
   await loadCases();
+  await startWorkspace();
+  // QR етикет от адреса: таблото → нов случай с неговия контекст.
+  if (hasPendingQr()) {
+    try {
+      const device = await resolvePendingQr();
+      if (device) {
+        openNewCaseWithDevice(device);
+        return;
+      }
+    } catch {
+      /* непознат/чужд етикет: продължаваме нормално; ръчното сканиране остава */
+    }
+  }
   // На десктоп работното пространство е пълно: отваряме последния случай.
   if (wide() && state.cases.length) await selectCase(state.cases[0].id);
 }
@@ -56,21 +111,7 @@ async function loadMeta() {
   }
 }
 
-async function init() {
-  void loadMeta();
-  let session = null;
-  try {
-    session = await api('GET', '/auth/me');
-  } catch {
-    session = null;
-  }
-  await setLang(guessLang(session?.user?.locale), { persist: false });
-
-  for (const sel of $$('[data-lang-select]')) {
-    sel.addEventListener('change', () => changeLang(sel.value));
-  }
-
-  // Вход
+function wireLogin() {
   const form = $('#login-form');
   const err = $('#login-error');
   form.addEventListener('submit', async (e) => {
@@ -88,7 +129,7 @@ async function init() {
     try {
       const data = await api('POST', '/auth/login', { email, password });
       $('#login-password').value = '';
-      await showApp(data);
+      await enter(data);
     } catch (ex) {
       err.textContent =
         ex.status === 401
@@ -101,16 +142,32 @@ async function init() {
       btn.disabled = false;
     }
   });
+}
 
-  $('#btn-logout').addEventListener('click', async () => {
+async function init() {
+  // Първо чувствителните неща от адреса: токенът за парола и QR токенът се махат веднага.
+  const isReset = takeResetToken();
+  takeQrFromUrl();
+  void loadMeta();
+  let session = null;
+  if (!isReset) {
     try {
-      await api('POST', '/auth/logout');
+      session = await api('GET', '/auth/me');
     } catch {
-      /* излизаме от интерфейса така или иначе */
+      session = null;
     }
-    showLogin();
-  });
+  }
+  await setLang(guessLang(session?.user?.locale), { persist: false });
+  for (const sel of $$('[data-lang-select]')) {
+    sel.addEventListener('change', () => changeLang(sel.value));
+  }
 
+  wireLogin();
+  initReset();
+  initMfaVerify({ onPassed: () => showApp(), onCancel: logout });
+  $('#setup-cancel').addEventListener('click', logout);
+  $('#btn-logout').addEventListener('click', logout);
+  $('#btn-security').addEventListener('click', openSecurityDialog);
   $('#btn-show-cases').addEventListener('click', () => {
     app().dataset.view = 'cases';
     window.scrollTo(0, 0);
@@ -131,20 +188,24 @@ async function init() {
   initContext();
   initNewCase();
   initChat();
+  initScan(openNewCaseWithDevice);
+  initWorkspace({ selectCase, refreshCases });
 
-  // Изтекла сесия по средата на работа
+  // Изтекла сесия по средата на работа / втори фактор, поискан от API-то
   on('auth:expired', () => {
-    if (state.user) {
-      showLogin();
-      const err = $('#login-error');
-      err.textContent = t('err.unauthorized');
-      show(err, true);
-    }
+    if (state.user) showLogin(t('err.unauthorized'));
+  });
+  on('auth:mfa', (kind) => {
+    if (!state.user) return;
+    stopWorkspace();
+    if (kind === 'setup') showSetup();
+    else showMfaVerify();
   });
 
-  if (session?.user) {
-    state.csrf = session.csrfToken;
-    await showApp(session);
+  if (isReset) {
+    showReset();
+  } else if (session?.user) {
+    await enter(session);
   } else {
     showLogin();
   }
