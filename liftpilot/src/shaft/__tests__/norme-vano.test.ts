@@ -12,6 +12,8 @@ const CHECKS: readonly ShaftCheckId[] = [
   // round 36: the car's pulley or crosshead under hung pulleys, the counterweight's safety gear over a space under the shaft,
   // the refuge on the car roof under what the rope rig hangs
   'h_hung', 'sg_cw', 'h_refuge_rig', 'h_stand_rig',
+  // round 37: the existing sling under a new car or rated load (a modification)
+  'sl_frame',
 ];
 const it = (x: number, dec?: number): string => (dec == null ? String(x) : x.toFixed(dec)).replace('.', ',');
 const voce = (id: string) => {

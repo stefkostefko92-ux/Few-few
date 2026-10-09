@@ -4,7 +4,7 @@
 import type { Voce } from './norme';
 import { letto } from './norme-fonti';
 
-const T20 = 'UNI EN 81-20:2020', T1 = 'UNI EN 81-1:2008';
+const T20 = 'UNI EN 81-20:2020', T1 = 'UNI EN 81-1:2008', U1 = 'UNI 10411-1:2024', U11 = 'UNI 10411-11:2024';
 
 export const VOCI_SOCCORSO: readonly Voce[] = [
   {
@@ -14,6 +14,8 @@ export const VOCI_SOCCORSO: readonly Voce[] = [
     riferimento: 'UNI EN 81-20:2020, 5.9.2.3.3 e 5.12.1.6; UNI EN 81-1:2008, 12.5.1–12.5.2 e 14.2.1.4',
     fonte: `${letto(T20, 'pp. 102 e 129')}; ${letto(T1, 'pp. 69 e 89–90')}`, stato: 'confermato',
     costanti: ['rescueForceMax', 'rescueSpeed', 'rescueSpeedOld'], verifiche: ['s_force'],
+    // the machine's own standard: UNI EN 81-1's clauses only for a machine to it, in the edition of the test
+    rifStd: { 'en81-20': `${T20}, 5.9.2.3.3 e 5.12.1.6`, 'en81-1': `UNI EN 81-1, 12.5.1–12.5.2 e 14.2.1.4; ${U1}, 14.1 b); ${U11}, 14.1` },
     nota: 'La forza è quella per far salire la cabina con la portata dal piano più basso, con i rendimenti del riduttore (in avanti) e del vano.',
   },
   {

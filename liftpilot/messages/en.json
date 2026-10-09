@@ -816,6 +816,7 @@
     "c_m_above": "Free height over the machine's unguarded rotating parts (UNI EN 81-20, 5.2.6.3.2.3)",
     "c_m_wheel": "Free area beside the machine at the handwheel (manual operation), margin",
     "c_m_hexist": "Existing room: clear height under 2.0 m (UNI 10411-1, 9.2; UNI EN 81-21, 5.9)",
+    "c_sl_frame": "Existing car frame with T* increased or not documented: to be checked for the new loads (UNI 10411, 6.9)",
     "c_m_holes": "New support’s bearings from the edge of the slab’s existing openings: least distance",
     "c_gr_stress": "Car rails: stresses, safety gear and running (UNI EN 81-50, 5.10)",
     "c_gr_flange": "Car rails: flange bending (UNI EN 81-50, 5.10.5)",

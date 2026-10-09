@@ -115,6 +115,11 @@ export const VOCI_SUPPORTO: readonly VoceVano[] = [
       + 'dalle tabelle EN 10365 di eurocodeapplied.com e dalla scheda tecnica degli IPE di STAD, concordi, lette il 7 ottobre 2026; DPR 1497/1963 '
       + 'letto per intero (research/argano-geared, cap. 15, §1.1)', stato: 'da_verificare',
     verifiche: ['m_beam', 'm_beamf', 'm_beamwall'],
+    // the stress, the deflection and the bearing (a choice of the software) each with its own source
+    rifVerifica: {
+      m_beam: 'NTC 2018, §4.2.4.1.1 (γM0), Tab. 11.3.IX (S275) e §3.1.4 (carichi del macchinario)',
+      m_beamf: 'NTC 2018, §11.3.4.1 (E); DPR 1497/1963, art. 5.1–5.2 (freccia ≤ 1/1500 della luce libera)', m_beamwall: '—',
+    },
     nota: 'verifica semplice a carico concentrato in mezzeria su trave appoggiata; gli appoggi nei muri e la muratura vanno verificati dal '
       + 'progettista; fino a LIFT 1.24.0 e ROOM 1.8.0 le putrelle erano due, sotto le file di fori con la puleggia a sbalzo oltre di esse; fino a '
       + 'LIFT 1.27.0 e ROOM 1.11.0, a linea delle calate obliqua, le tre putrelle avevano la luce di quella sotto la linea delle calate',

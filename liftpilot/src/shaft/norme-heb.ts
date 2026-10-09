@@ -44,6 +44,13 @@ export const VOCI_HEB: readonly VoceVano[] = [
     fonte: `scelta del committente (putrelle HEB 120/140/160 sui muri del vano quando manca la verifica della soletta); scelta del software `
       + `(appoggio di 200 mm, piastre di ripartizione e malta antiritiro secondo la pratica di cantiere, 50 mm dalle funi, le più corte e poi le più leggere); ${letto('UNI EN 81-20:2020', 'pp. 26, 148')}`,
     stato: 'scelta', verifiche: ['m_heb', 'm_hebf', 'm_hebfeet', 'm_hebrope', 'm_hebkerb', 'm_hebwall'],
+    // the stress and the deflection with their sources; the feet, the ropes and the bearings are the plan's geometry; the
+    // kerbs of the holes those of 5.2.6.3.3
+    rifVerifica: {
+      m_heb: 'UNI EN 81-20:2020, 5.2.1.8.1 e appendice E.1 (carichi sull’edificio); NTC 2018, §4.2.4.1.1 (γM0) e Tab. 11.3.IX (S275); proprietà dei profili EN 10365',
+      m_hebf: 'NTC 2018, §11.3.4.1 (E); DPR 1497/1963, art. 5.1–5.2 (freccia ≤ 1/1500 della luce libera); proprietà dei profili EN 10365',
+      m_hebfeet: '—', m_hebrope: '—', m_hebwall: '—', m_hebkerb: 'UNI EN 81-20:2020, 5.2.6.3.3 (bordi dei fori)',
+    },
     nota: 'verifica semplice di trave appoggiata con il carico nella risultante; i disegni mostrano le piastre sopra i muri, il distacco dalla '
       + 'soletta e l’appoggio quotato, e le gambe del basamento fissate alle ali con piastre e bulloni (o morsetti) — dettaglio da confermare; in '
       + 'alternativa le putrelle in tasche nei muri sotto la soletta, che il tecnico disegna a parte; fino a LIFT 1.28.0 e ROOM 1.12.0 le putrelle '

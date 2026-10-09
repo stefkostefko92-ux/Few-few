@@ -12,7 +12,7 @@ export const VOCI_SPAZI: readonly VoceVano[] = [
     valore: 'tipo 1 (in piedi) 400 × 500 mm in pianta, alto 2000 mm; tipo 2 (accucciato) 500 × 700 mm, alto 1000 mm; tipo 3 (disteso, solo in fossa) '
       + '700 × 1000 mm, alto 500 mm; in testata con la cabina nella posizione più alta, in fossa con la cabina sugli ammortizzatori compressi',
     riferimento: 'UNI EN 81-20:2020, 5.2.5.7.1 (Prospetto 3) e 5.2.5.8.1 (Prospetto 4)', fonte: letto(T20, 'pp. 37–40'), stato: 'confermato',
-    verifiche: ['h_refuge', 'p_refuge'],
+    verifiche: ['h_refuge', 'p_refuge'], rifVerifica: { h_refuge: `${T20}, 5.2.5.7.1 (Prospetto 3)`, p_refuge: `${T20}, 5.2.5.8.1 (Prospetto 4)` },
   },
   {
     id: 'spazi.salto', gruppo: 'sezione', titolo: 'Posizione più alta della cabina',
@@ -78,7 +78,7 @@ export const VOCI_SPAZI: readonly VoceVano[] = [
     valore: '≥ 500 mm dal pavimento della fossa alle parti più basse della cabina; grembiule sotto la soglia di cabina: tratto verticale ≥ 750 mm, poi '
       + 'uno smusso a ≥ 60° sull’orizzontale con proiezione orizzontale ≥ 20 mm (circa 35 mm più in basso), con ≥ 100 mm liberi dal pavimento della fossa',
     riferimento: 'UNI EN 81-20:2020, 5.2.5.8.2 a) e 5.4.5.1–5.4.5.2', fonte: letto(T20, 'pp. 40–41, 69'), stato: 'confermato',
-    verifiche: ['p_refuge', 'p_apron'],
+    verifiche: ['p_refuge', 'p_apron'], rifVerifica: { p_refuge: `${T20}, 5.2.5.8.2 a)` },
   },
   {
     id: 'spazi.balaustra', gruppo: 'sezione', titolo: 'Balaustra sul tetto di cabina',
@@ -96,7 +96,8 @@ export const VOCI_SPAZI: readonly VoceVano[] = [
       + 'l’altezza del rifugio (h_refuge per il tetto); l’area disegnata (400 × 300 mm) indica dove stare',
     riferimento: 'UNI EN 81-20:2020, 5.2.5.7.1 (prospetto 3) e 5.2.5.7.3; UNI EN 81-1:2008, 8.13.2', fonte: `${letto(T20, 'pp. 38–39')}; ${letto('UNI EN 81-1:2008', 'p. 52')}`,
     stato: 'confermato',
-    verifiche: ['h_stand', 'h_refuge'],
+    // the old standard's clause is in the note: the values are those of 5.2.5.7.3
+    verifiche: ['h_stand', 'h_refuge'], rifVerifica: { h_stand: `${T20}, 5.2.5.7.1 (prospetto 3) e 5.2.5.7.3`, h_refuge: `${T20}, 5.2.5.7.3` },
     nota: 'L’operatore delle porte sul tetto è profondo meno di 250 mm (cataloghi): non è un posto in piedi e conta come apparecchiatura '
       + '(500 mm, h_clear). La UNI EN 81-1:2008 (8.13.2) chiedeva un’area ≥ 0,12 m² con il lato minore ≥ 0,25 m.',
   },
@@ -133,7 +134,8 @@ export const VOCI_SPAZI: readonly VoceVano[] = [
     riferimento: 'UNI EN 81-20:2020, 5.2.5.6.2 e 5.2.5.6.1.1 (Prospetto 2: cabina sugli ammortizzatori compressi più 0,035·v²); stesso valore in '
       + 'UNI EN 81-1 (1999, 2008), 5.7.1.2',
     fonte: `${letto(T20, 'p. 36')}; ${letto('UNI EN 81-1:2008', 'p. 27')}`, stato: 'confermato',
-    verifiche: ['h_cw', 'h_guide'],
+    // the old standard's same value is the counterweight's (h_cw)
+    verifiche: ['h_cw', 'h_guide'], rifVerifica: { h_guide: `${T20}, 5.2.5.6.2 e 5.2.5.6.1.1 (Prospetto 2)` },
   },
   {
     id: 'contrappeso.schermo', gruppo: 'sezione', titolo: 'Schermo del contrappeso in fossa',

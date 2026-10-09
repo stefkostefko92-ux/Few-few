@@ -57,9 +57,16 @@ test('la relazione di calcolo porta le voci di ADAPT', () => {
 });
 
 test('senza le voci dovute (altra norma o altre parti) la sezione non le elenca', () => {
-  const t = makeTr(calcIt as CalcDict);
+  const t = makeTr(calcIt as CalcDict), adapt = JSON.stringify(ADAPT.map((k) => t(k)));
   for (const C of [{ norma: '10411-1', parti: ['ropes'] }, { norma: '10411-11', parti: ['machine'] }, { norma: 'en81', parti: [] }] as Collaudo[]) {
     const s = adaptSection(collaudoOf({ context: 'repl' }, C), true, t);
-    assert.ok(!s.blocks.some((b) => b.t === 'list'), JSON.stringify(C));
+    assert.ok(!s.blocks.some((b) => b.t === 'list' && JSON.stringify(b.items) === adapt), JSON.stringify(C));
   }
+  // round 37 (L2-02): the other parts replaced have their own points — the ropes under UNI 10411-1, 17; the machine alone none
+  const ropes = adaptSection(collaudoOf({ context: 'repl' }, { norma: '10411-1', parti: ['ropes'] }), true, t).blocks;
+  const items = ropes.flatMap((b) => (b.t === 'list' ? b.items : []));
+  assert.equal(items.length, 1);
+  assert.ok(items[0]?.startsWith('UNI 10411-1:2024, 17: funi nuove secondo la UNI EN 81-20 5.5.1'), items[0]);
+  const machine = adaptSection(collaudoOf({ context: 'repl' }, { norma: '10411-11', parti: ['machine'] }), true, t).blocks;
+  assert.ok(!machine.some((b) => b.t === 'list' || b.t === 'h3'));
 });

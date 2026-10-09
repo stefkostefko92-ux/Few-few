@@ -32,7 +32,8 @@ export const VOCI_FUNI: readonly Voce[] = [
       + 'macchina se una fune si allunga in modo anomalo rispetto all’altra (informazione)',
     riferimento: 'UNI EN 81-20:2020, 5.5.5.3 a); UNI EN 81-1:2008, 9.5.3', fonte: `${letto(T20, 'p. 76')}; ${letto('UNI EN 81-1:2008', 'p. 56')}`,
     stato: 'confermato',
-    costanti: ['ropesMin'], verifiche: ['r_two'],
+    // the clause of the old standard is the same rule, not the check's source
+    costanti: ['ropesMin'], verifiche: ['r_two'], rifVerifica: { r_two: `${T20}, 5.5.5.3 a)` },
   },
   {
     id: 'funi.trattenuta', gruppo: 'funi', titolo: 'Funi trattenute nelle gole', valore: 'un fermo dove le funi entrano ed escono dalla puleggia e '

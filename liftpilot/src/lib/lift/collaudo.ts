@@ -120,6 +120,8 @@ export const AMBITO_VERIFICHE: Readonly<Record<CheckId | ShaftCheckId, readonly 
   // the refuge on the car roof under what the rope rig hangs under the slab (head.ts, in place of h_refuge and h_stand):
   // the machine's pulleys and dead ends, so a new machine brings it in as it does h_hung
   h_refuge_rig: [...HEAD, 'machine'], h_stand_rig: [...HEAD, 'machine'],
+  // the existing sling under a new car or a new rated load (arcata.ts: emitted when T* increases or is not known)
+  sl_frame: ['car', 'load'],
 };
 
 /** Checks of one part of UNI 10411 only: the height of an existing room under 2,0 m takes the measures of UNI EN 81-21,

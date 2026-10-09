@@ -1,10 +1,29 @@
-// The clauses of the relazione's «Riferimento» column (Italian): for each check the registry entries behind it, each
-// with the clause it has for that check (rifVerifica) and for the machine's groove (rifGola: an entry about another
-// groove is not cited), only the UNI 10411 part the lift is tested to (none for a new lift: UNI EN 81-20/50), then the
-// clauses of one document merged into one reference, each once, in the standard's order. Pure.
-import type { CheckId, GrooveType } from '@/calc/types';
+// The clauses of the relazione's «Riferimento» columns (Italian), the machine's checks and the shaft's: for each check
+// the registry entries behind it, each with the clause it has for that check (rifVerifica), for the machine's groove
+// and standard (rifGola, rifStd: an entry about another groove or standard is not cited), for the buffer types the check
+// concerns (an entry about another type is not cited) and for the reduced-stroke buffers (only with them); only the UNI
+// 10411 part the lift is tested to (none for a new lift: UNI EN 81-20/50), with the edition of UNI EN 81-1 that part
+// names; then the clauses of one document merged into one reference, each once, in the standard's order. Pure.
+import type { CheckId, GrooveType, MachineStd } from '@/calc/types';
+import type { ShaftCheckId } from '@/shaft/types';
+import type { BufferType } from '@/shaft/vertical';
 import type { Collaudo } from '../lift/collaudo';
-import { refsOf } from './shaft';
+
+/** The clauses of a registry entry, split at its "; " outside parentheses, each marked ⚠ when the entry is still to be
+ *  verified on the text in force (the box at the head of the relazione says what the mark means). */
+export function refsOf(v: { riferimento: string; stato: string }): string[] {
+  const out: string[] = [], r = v.riferimento;
+  let depth = 0, cur = '';
+  for (let i = 0; i < r.length; i++) {
+    const ch = r.charAt(i);
+    if (ch === '(') depth += 1;
+    else if (ch === ')') depth = Math.max(0, depth - 1);
+    if (depth === 0 && r.startsWith('; ', i)) { out.push(cur); cur = ''; i += 1; continue; }
+    cur += ch;
+  }
+  out.push(cur);
+  return out.map((x) => x.trim()).filter((x) => x && x !== '—').map((x) => (v.stato === 'da_verificare' ? `${x} ⚠` : x));
+}
 
 /** The clauses of a document's reference, split at ", " and " e " outside parentheses. */
 function clauses(s: string): string[] {
@@ -62,17 +81,62 @@ function once(cl: readonly string[]): string[] {
 export const otherNorma = (ref: string, norma: Collaudo['norma']): boolean =>
   (ref.startsWith('UNI 10411-11:') && norma !== '10411-11') || (ref.startsWith('UNI 10411-1:') && norma !== '10411-1');
 
-interface Entry { riferimento: string; stato: string; verifiche?: readonly string[]; rifVerifica?: Partial<Readonly<Record<CheckId, string>>>; rifGola?: Partial<Readonly<Record<GrooveType, string>>> }
+/** A machine to UNI EN 81-1 (its original standard) under each test: the edition the registry's «UNI EN 81-1» (no year)
+ *  stands for and the clause of UNI 10411 that admits it — UNI 10411-1:2024, 14.1 b) names the 2010 edition; UNI
+ *  10411-11:2024, 14.1 the standard the lift was placed on the market with. Tested as new (UNI EN 81-20/50) the software
+ *  reads the last edition, with no clause that admits it. The analogies of the registry name their edition (2008). */
+export const MACCHINA_81_1: Readonly<Record<Collaudo['norma'], { sigla: string; via: string | null }>> = {
+  en81: { sigla: 'UNI EN 81-1:2010', via: null },
+  '10411-1': { sigla: 'UNI EN 81-1:2010', via: 'UNI 10411-1:2024, 14.1 b)' },
+  '10411-11': { sigla: 'UNI EN 81-1 (edizione dell’impianto)', via: 'UNI 10411-11:2024, 14.1' },
+};
+const EN81_1 = 'UNI EN 81-1, ';
+const edition = (ref: string, norma: Collaudo['norma']): string => (ref.startsWith(EN81_1) ? `${MACCHINA_81_1[norma].sigla}, ${ref.slice(EN81_1.length)}` : ref);
 
-/** The clauses of the check `id` from the registry entries `voci`: the lift's test standard and, for the machine's
- *  checks, its groove. */
-export function checkRefs(voci: readonly Entry[], id: string, norma: Collaudo['norma'], groove: GrooveType | null = null, max = 4): string {
-  const refs = voci.filter((v) => v.verifiche?.includes(id) && (!v.rifGola || (groove !== null && v.rifGola[groove] !== undefined))).flatMap((v) => {
+/** A registry entry as the references read it (src/calc/norme.ts Voce, src/shaft/norme.ts VoceVano). */
+interface Entry {
+  riferimento: string;
+  stato: string;
+  verifiche?: readonly string[];
+  rifVerifica?: Partial<Readonly<Record<CheckId | ShaftCheckId, string>>>;
+  rifGola?: Partial<Readonly<Record<GrooveType, string>>>;
+  rifStd?: Partial<Readonly<Record<MachineStd, string>>>;
+  /** the clauses cited when none of the entry's is of the lift's test standard (the other part's formula, a check of
+   *  one part only); absent: the entry is not cited then */
+  rifFuoriNorma?: string;
+  /** an entry about one buffer type: cited only for the checks of the buffers of that type */
+  ammortizzatore?: BufferType;
+  /** an entry about the reduced-stroke buffers: cited only with them */
+  corsaRidotta?: true;
+}
+
+/** What a check's clauses hang on besides the check. */
+export interface RefContext {
+  /** the lift's test standard */
+  norma: Collaudo['norma'];
+  /** the machine's checks: its groove, its standard and whether its buffers have a reduced stroke */
+  groove?: GrooveType | null;
+  std?: MachineStd | null;
+  corsaRidotta?: boolean;
+  /** the shaft's checks of the buffers: the types the check concerns (the car's, the counterweight's or both) */
+  ammortizzatori?: readonly BufferType[];
+}
+
+/** An entry keyed by a property of the machine (groove, standard): cited only for the keys it lists. */
+const keyed = <K extends string>(by: Partial<Readonly<Record<K, string>>> | undefined, k: K | null): boolean => !by || (k !== null && by[k] !== undefined);
+
+/** The clauses of the check `id` from the registry entries `voci`, as `ctx` has the lift and its machine. */
+export function checkRefs(voci: readonly Entry[], id: string, ctx: RefContext, max = 4): string {
+  const { norma, groove = null, std = null } = ctx;
+  const cited = voci.filter((v) => v.verifiche?.includes(id) && keyed(v.rifGola, groove) && keyed(v.rifStd, std)
+    && (!v.corsaRidotta || ctx.corsaRidotta === true) && (!v.ammortizzatore || !ctx.ammortizzatori || ctx.ammortizzatori.includes(v.ammortizzatore)));
+  const refs = cited.flatMap((v) => {
     const byCheck: Partial<Readonly<Record<string, string>>> | undefined = v.rifVerifica;
-    const own = byCheck?.[id] ?? (groove !== null ? v.rifGola?.[groove] : undefined);
+    const own = byCheck?.[id] ?? (groove !== null ? v.rifGola?.[groove] : undefined) ?? (std !== null ? v.rifStd?.[std] : undefined);
     return refsOf({ riferimento: own ?? v.riferimento, stato: v.stato });
   });
-  // a check whose only source is the other part's formula (the specific pressure of UNI 10411-1, D.2) cites it as such
-  const own = refs.filter((r) => !otherNorma(r, norma));
-  return own.length || !refs.length ? mergeRefs(own, max) : `${mergeRefs(refs, max)} (formula)`;
+  const own = refs.filter((r) => !otherNorma(r, norma)).map((r) => edition(r, norma));
+  if (own.length || !refs.length) return mergeRefs(own, max);
+  // a check whose only sources are of the other UNI 10411 part: as the entries say to cite them
+  return mergeRefs(cited.flatMap((v) => (v.rifFuoriNorma ? refsOf({ riferimento: v.rifFuoriNorma, stato: v.stato }) : [])), max);
 }

@@ -816,6 +816,7 @@
     "c_m_above": "Spazio libero sopra le parti rotanti non protette dell’argano (UNI EN 81-20, 5.2.6.3.2.3)",
     "c_m_wheel": "Superficie libera accanto all’argano presso il volantino (manovra manuale), margine",
     "c_m_hexist": "Locale esistente: altezza libera sotto 2,0 m (UNI 10411-1, 9.2; UNI EN 81-21, 5.9)",
+    "c_sl_frame": "Arcata esistente con T* aumentato o non documentato: da verificare per i nuovi carichi (UNI 10411, 6.9)",
     "c_m_holes": "Appoggi del nuovo basamento dal bordo delle aperture esistenti della soletta: distanza minima",
     "c_gr_stress": "Guide di cabina: tensioni, paracadute e marcia (UNI EN 81-50, 5.10)",
     "c_gr_flange": "Guide di cabina: flessione della suola (UNI EN 81-50, 5.10.5)",

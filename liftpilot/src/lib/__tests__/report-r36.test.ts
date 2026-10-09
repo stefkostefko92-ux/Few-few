@@ -49,8 +49,8 @@ test('riferimenti delle verifiche: un documento una volta, le sue clausole in or
   assert.ok(otherNorma('UNI 10411-1:2024, 14.1', '10411-11') && !otherNorma('UNI 10411-1:2024, 14.1', '10411-1'));
   assert.ok(otherNorma('UNI 10411-11:2024, 14.1', 'en81') && !otherNorma('UNI EN 81-20:2020, 5.5', 'en81'));
   // the groove's references: an entry of another groove is not cited
-  assert.ok(!checkRefs(VOCI, 'tr_load', 'en81', 'VH').includes('5.11.2.3.1.1'), 'gola V: non la clausola della gola U');
-  assert.ok(checkRefs(VOCI, 'tr_load', 'en81', 'UU').includes('5.11.2.3.1.1'));
+  assert.ok(!checkRefs(VOCI, 'tr_load', { norma: 'en81', groove: 'VH' }).includes('5.11.2.3.1.1'), 'gola V: non la clausola della gola U');
+  assert.ok(checkRefs(VOCI, 'tr_load', { norma: 'en81', groove: 'UU' }).includes('5.11.2.3.1.1'));
 });
 
 test('relazione: la norma di collaudo dell’impianto nei riferimenti delle verifiche, nessuna dell’altra parte', () => {

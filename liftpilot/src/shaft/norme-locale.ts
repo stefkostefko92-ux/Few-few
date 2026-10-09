@@ -6,7 +6,7 @@
 import { letto } from '../calc/norme-fonti';
 import type { VoceVano } from './norme';
 
-const T20 = 'UNI EN 81-20:2020';
+const T20 = 'UNI EN 81-20:2020', U1 = 'UNI 10411-1:2024', U11 = 'UNI 10411-11:2024';
 
 export const KV_LOCALE = {
   // 5.2.6.3.2.1 and 5.2.3: machine room: clear height of working areas, free area in front of the panel, access door [mm]
@@ -89,6 +89,10 @@ export const VOCI_LOCALE: readonly VoceVano[] = [
       + 'stesse verifiche valgono per il suo locale, accanto al vano o sotto la fossa, con l’argano come ciò che sta sul pavimento; un locale '
       + 'sopra il vano non ha la macchina (con i rinvii è il locale delle pulegge, locale.pulegge)',
     verifiche: ['m_height', 'm_panel', 'm_free', 'm_route', 'm_door', 'm_above'],
+    rifVerifica: {
+      m_height: `${T20}, 5.2.6.3.2.1 (altezza libera)`, m_panel: `${T20}, 5.2.6.3.2.1 a)`, m_free: `${T20}, 5.2.6.3.2.1 b)`, m_route: `${T20}, 5.2.6.3.2.2`,
+      m_door: `${T20}, 5.2.3.2 a)`, m_above: `${T20}, 5.2.6.3.2.3`,
+    },
   },
   {
     id: 'locale.esistente', gruppo: 'locale', titolo: 'Locale del macchinario esistente nella modifica',
@@ -114,6 +118,7 @@ export const VOCI_LOCALE: readonly VoceVano[] = [
       + 'pulegge protette); non verifica la superficie libera. Fino a LIFT 1.23.0 quel locale era verificato come un locale del macchinario (2100 mm, porta 600 × 2000 mm, quadro) e '
       + 'il locale della macchina in basso solo per l’ingombro',
     verifiche: ['m_pheight', 'm_pdoor', 'm_pabove'],
+    rifVerifica: { m_pheight: `${T20}, 5.2.6.7.1.1 a)`, m_pdoor: `${T20}, 5.2.3.2 b)`, m_pabove: `${T20}, 5.2.6.7.1.2` },
   },
   {
     id: 'locale.quadro', gruppo: 'locale', titolo: 'Il quadro di manovra fuori dall’ingombro dell’argano',
@@ -162,6 +167,9 @@ export const VOCI_LOCALE: readonly VoceVano[] = [
     fonte: `${letto('UNI 10411-1:2024', 'p. 9')}; ${letto('UNI EN 81-21:2022', 'p. 23')}; lo spessore di 50 mm del materiale ammortizzante è una `
       + 'scelta del software, da sostituire con quello del prodotto posato',
     stato: 'scelta', verifiche: ['m_hexist'],
+    // the measures of UNI EN 81-21 only through UNI 10411-1; tested as new (UNI EN 81-20/50) the check is of UNI 10411-1 only
+    rifVerifica: { m_hexist: `${U1}, 9.2 (misure della UNI EN 81-21:2022, 5.9); ${U11}, 9.2 (resta l’altezza esistente)` },
+    rifFuoriNorma: `${U1}, 9.2 (verifica della sola UNI 10411-1)`,
     nota: 'fino a ROOM 1.12.0 e LIFT 1.28.0 le misure della UNI EN 81-21 erano solo nella nota del foglio, stampata sempre; ora la nota le dice '
       + 'quando il locale è più basso di 2000 mm',
   },
