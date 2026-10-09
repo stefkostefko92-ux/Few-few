@@ -2,7 +2,7 @@
 // a detail, the machine room in plan or in section B-B, each laid out at the largest standard scale that fits an area
 // with its dimensions. The sheets add titles, legends and marks; the screens show the views alone.
 import { shapeOf } from '@/lib/catalog/shapes';
-import { boxH, boxW, fitView, moveHits, moveShapes, renderView, type Box, type Entity, type Hit, type Place, type Shape, type SymbolName, type ViewResult } from '@/drawing';
+import { TEXT, boxH, boxW, clipBand, fitView, moveHits, moveShapes, renderView, textWidth, type Box, type Entity, type Hit, type Place, type Shape, type SymbolName, type ViewResult } from '@/drawing';
 import { cwGapLabel } from '@/shaft/cw-gap';
 import { roomGeo, type MachineSpec, type RoomGeo } from '@/shaft/machine-room';
 import { planDims } from '@/shaft/plan-dims';
@@ -12,6 +12,7 @@ import { roomPlanEntities, roomPlanOn, roomSectionEntities, roomSectionOn } from
 import { section } from '@/shaft/section';
 import { sectionDims, type SectionKind } from '@/shaft/section-dims';
 import { mapZ, sectionEntities, type SectionView } from '@/shaft/section-view';
+import { TAG_SCALE, letteringBoxes } from '@/shaft/tag-place';
 import type { Layout } from '@/shaft/types';
 import type { RoomDerived } from '../room/derive';
 import { bottomGeo, sheaveHalfBelow, type BottomGeo, type BottomScheme } from '../lift/bottom';
@@ -42,10 +43,19 @@ function placeIn(model: Box, entities: readonly Entity[], area: Box, scales: rea
 }
 
 /** Plan of the shaft at a level; `total` names the level in the overall dimensions (e.g. `in Testata`); `extra`: what
- *  the set draws on it besides (the loads on the head of a machine below: headLoadsOf). */
-export function planView(L: Layout, level: PlanLevel, floor: number, total: string, area: Box, extra: readonly Entity[] = []): Placed {
-  const T = L.inputs.wall, B = wallsAt(L, level), ents = [...planEntities(L, level, floor), ...extra, ...planDims(L, level, floor, { level: total })];
-  const place = placeIn({ x0: Math.min(0, B.x0) - T, y0: Math.min(0, B.y0) - T, x1: Math.max(L.inputs.W, B.x1) + T, y1: Math.max(L.inputs.D, B.y1) + T }, ents, area, PLAN_SCALES);
+ *  the set draws on it besides, for the scale it is drawn at (the loads on the head of a machine below: headLoadsOf).
+ *  The references of the loads are placed for that scale: once more when it is past 1:25 (tag-place.ts). */
+export function planView(L: Layout, level: PlanLevel, floor: number, total: string, area: Box, extra: (scale: number) => readonly Entity[] = () => []): Placed {
+  const T = L.inputs.wall, B = wallsAt(L, level), dims = planDims(L, level, floor, { level: total });
+  const model: Box = { x0: Math.min(0, B.x0) - T, y0: Math.min(0, B.y0) - T, x1: Math.max(L.inputs.W, B.x1) + T, y1: Math.max(L.inputs.D, B.y1) + T };
+  // (the references off the dimensions across the plan too)
+  const at = (k: number): Entity[] => [...planEntities(L, level, floor, k, letteringBoxes(dims, k)), ...extra(k), ...dims];
+  let k = TAG_SCALE, ents = at(k), place = placeIn(model, ents, area, PLAN_SCALES);
+  while (place.scale > k) {
+    k = place.scale;
+    ents = at(k);
+    place = placeIn(model, ents, area, PLAN_SCALES);
+  }
   return { r: renderView(ents, place), place, entities: ents };
 }
 
@@ -53,19 +63,51 @@ export function planView(L: Layout, level: PlanLevel, floor: number, total: stri
 const overTop = (L: Layout, z: number): number =>
   Math.max(z, ...(L.rig?.scheme === 'room' ? L.rig.head.map((p) => p.z + p.r + 100) : []));
 
+/** The least paper between two floors' levels in section A-A whole [mm]: a floor's number (3 mm) and 1 mm over it; and
+ *  past its rise's figure (TEXT.dim), so that each sits in its own segment of the row of rises (dims.ts). */
+export const FLOOR_GAP = 4, RISE_PAST = 1;
+
 /** Section A-A whole: the travel between the lowest floor's door and the car at the top floor drawn shorter, so the
- *  rest stays at 1:50 (or the next scale); the machine room as a stub over its floor slab. */
+ *  rest stays at 1:50 (or the next scale); the machine room as a stub over its floor slab. Each floor drawn stays
+ *  readable: where the shortened travel brings two floors closer on paper than FLOOR_GAP or the figure of the rise
+ *  between them, the floors of the shortened travel are left out but its first and its last where they read against the
+ *  floors next to them (`omit`: the sheet gives their heights in a table, the dimensions their sum). */
 function fullSection(L: Layout, area: Box): { v: SectionView; scale: number } {
-  const S = section(L), I = L.inputs, V = I.vertical, r = I.room;
+  const S = section(L), I = L.inputs, V = I.vertical, r = I.room, top = V.floors.length - 1;
   const zTop = overTop(L, r ? S.ceiling + r.slab + 600 : S.ceiling + SLAB), zBot = S.pitFloor - SLAB;
   const z0 = (S.levels[0] ?? 0) + I.doorHeight + 250, z1 = S.top - V.frameBelow - 600, band = z1 - z0;
-  for (const scale of [50, 100, 200]) {
+  const view = (scale: number, omit: readonly number[]): SectionView | null => {
     const room = boxH(area) - 4, fixed = zTop - zBot - Math.max(0, band);
     const f = band > 1000 ? ((room * scale - fixed) / band) * 0.97 : 1;
-    if (f < 0.03) continue;
-    const v: SectionView = { carFloor: V.floors.length - 1, lo: -Infinity, hi: zTop, zmap: f >= 1 ? null : { z0, z1, f } };
+    if (f < 0.03) return null;
+    return { carFloor: top, lo: -Infinity, hi: zTop, zmap: f >= 1 ? null : { z0, z1, f }, scale, ...(omit.length ? { omit } : {}) };
+  };
+  const fits = (v: SectionView, scale: number): boolean => {
     const { entities, bounds } = sectionEntities(L, v);
-    if (fitView(bounds, [...entities, ...sectionDims(L, S, 'full', v.carFloor, v.zmap)], area, [scale])) return { v, scale };
+    return !!fitView(bounds, [...entities, ...sectionDims(L, S, 'full', v.carFloor, v.zmap, v.omit)], area, [scale]);
+  };
+  // the floors drawn: each pair apart on paper by FLOOR_GAP and by the figure of the rise between them
+  const readable = (v: SectionView, scale: number): boolean => {
+    const drawn = S.levels.filter((_, i) => !v.omit?.includes(i));
+    return drawn.every((z, i) => {
+      if (i === 0) return true;
+      const gap = (mapZ(v.zmap, z) - mapZ(v.zmap, drawn[i - 1])) / scale;
+      return gap >= Math.max(FLOOR_GAP, textWidth(String(Math.round(z - drawn[i - 1])), { size: TEXT.dim, cond: true }) + RISE_PAST) - 1e-9;
+    });
+  };
+  // at each scale every floor; else the floors of the shortened travel left out, then its first and its last drawn
+  // again where they read
+  const inside = S.levels.flatMap((z, i) => (z > z0 && z < z1 ? [i] : []));
+  for (const scale of [50, 100, 200]) {
+    const all = view(scale, []);
+    if (!all) continue;
+    if (readable(all, scale) && fits(all, scale)) return { v: all, scale };
+    let v = view(scale, inside) ?? all;
+    for (const i of new Set([inside[0], inside[inside.length - 1]])) {
+      const w = view(scale, (v.omit ?? []).filter((j) => j !== i));
+      if (i !== undefined && w && readable(w, scale)) v = w;
+    }
+    if (fits(v, scale)) return { v, scale };
   }
   throw new Error('section A-A does not fit on the sheet');
 }
@@ -86,12 +128,15 @@ export function detailWindow(L: Layout, kind: SectionKind, floor: number): Secti
   return { carFloor: floor, lo: nearPit ? S.pitFloor - SLAB : zf - V.frameBelow - 700, hi: zf + S.highest + 600, zmap: null };
 }
 
-/** What section A-A draws of the heights `v` shows: the section, its dimensions for `kind` and, where the pit is shown
- *  (whole or its detail), `cwGap` — the clearance on the counterweight's sign sheet 1 gives — on the screen (cw-gap.ts).
- *  The sheets and the CAD files alike (cad/project.ts: section A-A whole at its real height). */
+/** What section A-A draws of the heights `v` shows: the section, its dimensions for `kind` (those, too, only where the
+ *  view shows the heights they measure: clipBand) and, where the pit is shown (whole or its detail), `cwGap` — the
+ *  clearance on the counterweight's sign sheet 1 gives — on the screen (cw-gap.ts). The sheets and the CAD files alike
+ *  (cad/project.ts: section A-A whole at its real height). */
 export function sectionParts(L: Layout, kind: SectionKind, v: SectionView, cwGap: number | null): { entities: Entity[]; bounds: Box } {
-  const { entities, bounds, S } = sectionEntities(L, v), ents = [...entities, ...sectionDims(L, S, kind, v.carFloor, v.zmap)];
-  if (cwGap !== null && (kind === 'full' || kind === 'pit')) ents.push(...cwGapLabel(L, S, (x, z) => [x, mapZ(v.zmap, z)], cwGap));
+  // (the dimensions first: the pit kit's heights keep off their lettering, the sign off all the view letters)
+  const k = v.scale ?? TAG_SCALE, dims = sectionDims(L, section(L), kind, v.carFloor, v.zmap, v.omit);
+  const { entities, bounds, S, kit } = sectionEntities(L, { ...v, avoid: letteringBoxes(dims, k) }), ents = [...entities, ...clipBand(dims, bounds.y0, bounds.y1)];
+  if (cwGap !== null && (kind === 'full' || kind === 'pit')) ents.push(...cwGapLabel(L, S, (x, z) => [x, mapZ(v.zmap, z)], cwGap, letteringBoxes(ents, k), k, letteringBoxes(kit, k)));
   return { entities: ents, bounds };
 }
 
@@ -100,11 +145,16 @@ export const marksOf = (ents: readonly Entity[]): SymbolName[] => [...new Set(en
 
 /** Section A-A: whole (`full`, car at the top floor) or a detail with the car at `floor`; `cwGap` as `sectionParts`
  *  writes it. With the symbols it places and whether the travel is drawn shorter. */
-export function sectionView(L: Layout, kind: SectionKind, floor: number, area: Box, cwGap: number | null = null): Placed & { marks: SymbolName[]; compressed: boolean } {
-  const { v, scale } = kind === 'full' ? fullSection(L, area) : { v: detailWindow(L, kind, floor), scale: 0 };
-  const { entities: ents, bounds } = sectionParts(L, kind, v, cwGap);
-  const place = placeIn(bounds, ents, area, scale ? [scale] : DETAIL_SCALES);
-  return { r: renderView(ents, place), place, entities: ents, marks: marksOf(ents), compressed: v.zmap !== null };
+export function sectionView(L: Layout, kind: SectionKind, floor: number, area: Box, cwGap: number | null = null): Placed & { marks: SymbolName[]; compressed: boolean; omit: readonly number[] } {
+  const { v: v0, scale } = kind === 'full' ? fullSection(L, area) : { v: detailWindow(L, kind, floor), scale: 0 };
+  let v = v0, { entities: ents, bounds } = sectionParts(L, kind, v, cwGap), place = placeIn(bounds, ents, area, scale ? [scale] : DETAIL_SCALES);
+  // (a detail past 1:25 lettered once more for the scale it takes)
+  while (!scale && place.scale > (v.scale ?? TAG_SCALE)) {
+    v = { ...v, scale: place.scale };
+    ({ entities: ents, bounds } = sectionParts(L, kind, v, cwGap));
+    place = placeIn(bounds, ents, area, DETAIL_SCALES);
+  }
+  return { r: renderView(ents, place), place, entities: ents, marks: marksOf(ents), compressed: v.zmap !== null, omit: v.omit ?? [] };
 }
 
 // the machine's name on the sheets (machine-name.ts: pure, for the forms too)
@@ -155,8 +205,8 @@ export const belowGeoOf = (a: Analysis, L: Layout, M: MachineSpec, scheme: Botto
   bottomGeo(L, scheme, M.D, a.ctx.I.Dp, M.n, M.d, a.ctx.I.r, sheaveAxisBelow(M.D, M.shape ?? null), sheaveHalfBelow(M.D, M.n, M.d, M.shape ?? null));
 
 /** The loads on the head of the shaft of a machine below for the calculation's machine, on the plan at the top floor
- *  (head-loads.ts). */
-export const headLoadsOf = (a: Analysis, L: Layout, M: MachineSpec, g: BottomGeo): Entity[] => headLoads(L, g, a.ctx.I.r, a.ctx.I.Dp, M.n, M.d);
+ *  drawn at `scale` (head-loads.ts). */
+export const headLoadsOf = (a: Analysis, L: Layout, M: MachineSpec, g: BottomGeo, scale: number = TAG_SCALE): Entity[] => headLoads(L, g, a.ctx.I.r, a.ctx.I.Dp, M.n, M.d, scale);
 
 /** The machine's room with the machine below, in plan or in section C-C (below-view.ts). */
 export function belowView(L: Layout, M: MachineSpec, g: BottomGeo, kind: 'plan' | 'section', area: Box): Placed {

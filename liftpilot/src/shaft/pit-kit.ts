@@ -13,9 +13,10 @@
 // drawings leave the well's lighting to the electrical design). The plan of the pit draws them with their places, the
 // pit's detail of section A-A with their heights, the 3D (lift3d/pit.ts) builds them from here; where none fits, the
 // drawings leave it out and sheet 1's note says where it must go. Pure.
-import { chain, line, path, type Box, type Entity, type Pt } from '../drawing';
+import { chain, letterSize, line, path, type Box, type Entity, type Pt } from '../drawing';
 import { governorSpot, TENSION } from './governor';
 import { landingOf, landingZone } from './landing';
+import { firstClear } from './lettering-place';
 import { KV_VERT } from './norme-vert';
 import { doorOpDepthOf } from './operator';
 import { bufferFoot, bufferPlan, pitSpace } from './pit';
@@ -23,6 +24,7 @@ import { onWall, quad } from './plan-walls';
 import { RAILS } from './rails';
 import { cwScreen } from './screen';
 import { section } from './section';
+import { TAG_SCALE, letteringBoxes } from './tag-place';
 import type { DoorLayout, Layout, Wall } from './types';
 
 const WALLS: readonly Wall[] = ['front', 'left', 'right', 'rear'];
@@ -31,10 +33,11 @@ const STEP = 10, GAP = 15;
 /** the least height of a door operator's underside over the kit's top, the car on its compressed buffers, for the kit to
  *  stand under it (registry fossa.posizioni) [mm] */
 const OP_CLEAR = 100;
-/** in the plan, an item's name this far from its face and its dimension's row this far past the name (the dimension's
- *  lettering, on the wall's side of an upright line or over a level one, then keeps clear of the name at the sheets'
- *  scales); the box's name and dimension that much further from the wall beside the ladder on its wall [mm] */
-const NAME_AT = 70, DIM_PAST = 150, KIT_LABEL_OFF = 250;
+/** in the plan at 1:25, an item's name this far from its face and its dimension's row this far past the name (the
+ *  dimension's lettering, on the wall's side of an upright line or over a level one, then keeps clear of the name); a
+ *  name with its dimension that much further from the wall when the first row is taken [mm] (as much paper at a larger
+ *  scale) */
+const NAME_AT = 70, DIM_PAST = 150, KIT_ROW = 250;
 /** the pit's lamp (the software's, the 3D's only): its fitting along the wall, from it and high; its middle this far
  *  over the pit floor, and at least this far under the lowest landing [mm] */
 const LAMP = { w: 180, d: 60, h: 90, over: 1000, under: 300 } as const;
@@ -181,33 +184,49 @@ export function ladderRungs(pit: number): number[] {
 }
 
 /** The kit in the plan of the pit: the ladder with its rungs seen from above, the box, their names, and where each stands
- *  along its wall from the corner nearer the door (references: the software's places within the standard's reach). */
-export function pitKitPlan(L: Layout): Entity[] {
-  const k = pitKit(L), out: Entity[] = [];
-  // `off`: the name and the dimension that far further from the wall (the box beside the ladder on the same wall: their
-  // names along it side by side, not one over the other)
-  const item = (it: PitItem, name: string, dimText: string, off = 0): void => {
+ *  along its wall from the corner nearer the door (references: the software's places within the standard's reach) —
+ *  each name with its dimension in the first row off its item, and the first place along it (over the item's middle,
+ *  else from either of its ends, else beside it), clear of the plan's lettering so far and of the other item's (`taken`, at the plan's
+ *  `scale`: lettering-place.ts; the rows as much paper apart at any scale) — where nothing is, off the other item's and
+ *  the screen's (`keep`) above all, then off the plan's names (`names`). */
+export function pitKitPlan(L: Layout, taken: Box[] = [], scale: number = TAG_SCALE, keep: readonly Box[] = [], names: readonly Box[] = []): Entity[] {
+  const k = pitKit(L), out: Entity[] = [], f = Math.max(TAG_SCALE, scale) / TAG_SCALE, own: Box[] = [...keep];
+  const item = (it: PitItem, name: string, dimText: string): void => {
     const P = (u: number, v: number): Pt => onWall(L, it.wall, u, v), along = it.wall === 'front' || it.wall === 'rear';
     out.push(path(quad(L, it.wall, it.u - it.w / 2, 0, it.u + it.w / 2, it.d), true, 'outline', 'paper'));
     if (name === 'SCALA') for (const s of [-1, 1]) out.push(line(P(it.u + s * (it.w / 2 - KV_VERT.ladderStile), 0), P(it.u + s * (it.w / 2 - KV_VERT.ladderStile), it.d), 'thin'));
     else out.push(path(quad(L, it.wall, it.u - it.w / 2 + 25, it.d - 25, it.u + it.w / 2 - 25, it.d), true, 'thin', 'dark'));
-    const nameV = it.d + NAME_AT + off, dimV = nameV + DIM_PAST;
-    out.push({ e: 'text', at: P(it.u, nameV), text: name, size: 1.6, align: 'c', angle: along ? 0 : 90, halo: true });
     // from the end of the wall nearer the door's opening to the item's middle
     const ends = along ? [0, L.inputs.W] : [0, L.inputs.D], e0 = Math.abs(it.u - ends[0]) <= Math.abs(it.u - ends[1]) ? ends[0] : ends[1];
     const across = (v: number): number => (along ? P(0, v)[1] : P(0, v)[0]), corner = across(0), face = across(it.d);
-    out.push(chain({ dir: along ? 'x' : 'y', pts: e0 < it.u ? [e0, it.u] : [it.u, e0], at: across(dimV), from: e0 < it.u ? [corner, face] : [face, corner], text: [dimText] }));
+    const place = (r: number, u: number, align: 'c' | 'l' | 'r'): Entity[] => {
+      const nameV = it.d + (NAME_AT + r * KIT_ROW) * f, dimV = nameV + DIM_PAST * f;
+      return [
+        { e: 'text', at: P(u, nameV), text: name, size: 1.6, align, angle: along ? 0 : 90, halo: true },
+        chain({ dir: along ? 'x' : 'y', pts: e0 < it.u ? [e0, it.u] : [it.u, e0], at: across(dimV), from: e0 < it.u ? [corner, face] : [face, corner], text: [dimText] }),
+      ];
+    };
+    // (over the item from either of its ends, else beside it reading away from either end: the wall's u runs with the
+    // paper's x or y, the other way on some walls)
+    const byEnds = (r: number): Entity[][] => [place(r, it.u - it.w / 2, 'l'), place(r, it.u + it.w / 2, 'r'), place(r, it.u + it.w / 2, 'l'), place(r, it.u - it.w / 2, 'r')];
+    const options = [0, 1].flatMap((r) => [place(r, it.u, 'c'), ...byEnds(r)]);
+    // (the names inside the shaft; never over the other item's, nor over the screen's (`keep`), then never over the
+    // plan's other names)
+    const got = firstClear(options, taken, scale, { x0: 0, y0: 0, x1: L.inputs.W, y1: L.inputs.D }, [own, names]);
+    own.push(...letteringBoxes(got, scale));
+    out.push(...got);
   };
   if (k.ladder) item(k.ladder, 'SCALA', 'Scala {v}');
-  if (k.box) item(k.box, 'STOP · PRESA · LUCE', 'Pulsantiera {v}', k.ladder?.wall === k.box.wall ? KIT_LABEL_OFF : 0);
+  if (k.box) item(k.box, 'STOP · PRESA · LUCE', 'Pulsantiera {v}');
   return out;
 }
 
 /** The kit in the pit's detail of section A-A (a cut along the depth, the plan's y across the sheet): the ladder in use,
  *  its stiles from the pit floor to their top over the sill (F.2.3) with that height between them, its rungs up to the
  *  sill (ladderRungs), the box's stop and light switch at their heights, a deep pit's lower stop under them, their
- *  heights over each stack of cases; the ones on the far wall half dashed (behind the cut). */
-export function pitKitSection(L: Layout, P: (x: number, z: number) => Pt, pitFloor: number): Entity[] {
+ *  heights over each stack of cases — else under it, else beside it, clear of `avoid` (the lettering of the detail's
+ *  dimensions, at its `scale`: lettering-place.ts); the ones on the far wall half dashed (behind the cut). */
+export function pitKitSection(L: Layout, P: (x: number, z: number) => Pt, pitFloor: number, avoid: readonly Box[] = [], scale: number = TAG_SCALE): Entity[] {
   const k = pitKit(L), out: Entity[] = [], cut = L.car.x + L.car.w / 2;
   const behind = (b: Box): boolean => (b.x0 + b.x1) / 2 > cut;
   if (k.ladder) {
@@ -230,9 +249,13 @@ export function pitKitSection(L: Layout, P: (x: number, z: number) => Pt, pitFlo
     }
     // over each stack, centred on it, its devices' heights over the lowest landing top down (references: the software's
     // within the standard's band): clear of each other and of the dimensions of the pit's extremes beside the car
+    const K = Math.max(TAG_SCALE, scale), f = K / TAG_SCALE, size = letterSize(1.6), taken = [...avoid, ...letteringBoxes(out, scale)];
     for (const s of stacks) {
       const text = s.map(([z, name]) => `${name} ${z < 0 ? '-' : '+'}${Math.abs(Math.round(z))}`).join(' · ');
-      out.push({ e: 'text', at: P((b.y0 + b.y1) / 2, s[0][0] + h / 2 + 30), text, size: 1.6, align: 'c', halo: true });
+      const top = s[0][0] + h / 2, bottom = (s[s.length - 1]?.[0] ?? s[0][0]) - h / 2, mid = (top + bottom) / 2 - 0.3 * size * K;
+      const at = (x: number, z: number, align: 'c' | 'l' | 'r'): Entity[] => [{ e: 'text', at: P(x, z), text, size: 1.6, align, halo: true }];
+      out.push(...firstClear([at((b.y0 + b.y1) / 2, top + 30 * f, 'c'), at((b.y0 + b.y1) / 2, bottom - 30 * f - 0.9 * size * K, 'c'),
+        at(b.y1 + 40 * f, mid, 'l'), at(b.y0 - 40 * f, mid, 'r')], taken, scale));
     }
   }
   return out;

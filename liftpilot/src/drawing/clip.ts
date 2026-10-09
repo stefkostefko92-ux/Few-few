@@ -1,7 +1,8 @@
 // Cut model entities to a horizontal band (a window of heights of a section): polygons by Sutherland–Hodgman against
-// the two edges, segments by their end parameters; lettering, symbols and circles outside the band are dropped,
-// dimension chains are kept whole.
-import type { Entity } from './model';
+// the two edges, segments by their end parameters; lettering, symbols and circles outside the band are dropped, a
+// reference too when what it names (its leaders' ends) is not all in the band; dimension chains keep the segments with
+// both ends in it (a height that starts or ends outside the view cannot be read there), split where one is left out.
+import type { Chain, Entity } from './model';
 import type { Pt } from './types';
 
 function clipPoly(pts: readonly Pt[], closed: boolean, y0: number, y1: number): Pt[][] {
@@ -47,6 +48,32 @@ function clipSeg(a: Pt, b: Pt, y0: number, y1: number): [Pt, Pt] | null {
   return [P(t0), P(t1)];
 }
 
+/** The parts of chain `c` inside the band: along y the runs of its points in it (each with its own segments' texts,
+ *  edits, extension lines and axes), across it the chain whole when its line is in it. */
+function clipChain(c: Chain, y0: number, y1: number): Chain[] {
+  const inBand = (y: number): boolean => y >= y0 - 0.5 && y <= y1 + 0.5;
+  if (c.on) return [c];
+  if (c.dir === 'x') return c.at === undefined || inBand(c.at) ? [c] : [];
+  if (c.pts.every(inBand)) return [c];
+  const out: Chain[] = [];
+  let i = 0;
+  while (i < c.pts.length) {
+    if (!inBand(c.pts[i])) { i++; continue; }
+    let j = i;
+    while (j + 1 < c.pts.length && inBand(c.pts[j + 1])) j++;
+    if (j > i) {
+      const from = c.from;
+      out.push({
+        ...c, pts: c.pts.slice(i, j + 1),
+        ...(c.text ? { text: c.text.slice(i, j) } : {}), ...(c.edit ? { edit: c.edit.slice(i, j) } : {}),
+        ...(c.axis ? { axis: c.axis.slice(i, j + 1) } : {}), ...(Array.isArray(from) ? { from: from.slice(i, j + 1) } : {}),
+      });
+    }
+    i = j + 1;
+  }
+  return out;
+}
+
 export function clipBand(entities: readonly Entity[], y0: number, y1: number): Entity[] {
   const out: Entity[] = [];
   for (const e of entities) {
@@ -67,11 +94,13 @@ export function clipBand(entities: readonly Entity[], y0: number, y1: number): E
         break;
       case 'text':
       case 'mark':
-      case 'tag':
         if (e.at[1] >= y0 && e.at[1] <= y1) out.push(e);
         break;
+      case 'tag':
+        if ([e.at, ...(e.to ? [e.to] : []), ...(e.also ?? [])].every((p) => p[1] >= y0 && p[1] <= y1)) out.push(e);
+        break;
       case 'chain':
-        out.push(e);
+        for (const c of clipChain(e.c, y0, y1)) out.push({ e: 'chain', c });
         break;
     }
   }
