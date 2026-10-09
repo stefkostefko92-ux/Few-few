@@ -41,11 +41,15 @@ export const VOCI_AMMORTIZZATORI: readonly VoceVano[] = [
     id: 'ammortizzatori.idraulici', gruppo: 'sezione', titolo: 'Ammortizzatori a dissipazione di energia (idraulici)',
     valore: 'a ogni velocità; corsa ≥ 0,0674·v² m (arresto per gravità al 115 % della velocità nominale); la corsa ridotta con il controllo del '
       + 'rallentamento non è considerata; ammortizzatori tipici: Oleo LSB10 fino a 1 m/s, alto 222,2 mm con corsa 73,4 mm; LSB16 fino a 1,6 m/s, '
-      + 'alto 485,5 mm con corsa 173,5 mm',
+      + 'alto 485,5 mm con corsa 173,5 mm; senza tipo scelto, oltre 1 m/s (dove le molle e i tamponi non sono ammessi) il software prende gli '
+      + 'idraulici con l’ammortizzatore tipico per la velocità, per la cabina e per il contrappeso: altezza e corsa lasciate allo standard '
+      + 'diventano le sue, la base si sposta perché la sommità resti dov’era',
     riferimento: 'UNI EN 81-20:2020, 5.8.1.6 e 5.8.2.2.1 (corsa); la corsa ridotta di 5.8.2.2.2 non è usata',
     fonte: `${letto(T20, 'p. 99')}; gli ammortizzatori tipici dal catalogo Oleo LSB e SEB (oleo.co.uk), estratti di ricerca del 1° ottobre 2026`,
     stato: 'confermato',
-    nota: 'gli ammortizzatori Oleo sono dati di catalogo, non della norma: vanno sostituiti con quelli montati',
+    nota: 'gli ammortizzatori Oleo sono dati di catalogo, non della norma: vanno sostituiti con quelli montati. Fino al vano 2.24.0 senza tipo '
+      + 'scelto restavano le molle anche oltre 1 m/s: la verifica del tipo non passava e quella della corsa chiedeva la corsa delle molle (0,135·v²) '
+      + 'per un tipo non ammesso',
     verifiche: ['b_type', 'b_car', 'b_cw'], ammortizzatore: 'oil', rifVerifica: { b_type: `${T20}, 5.8.1.6`, b_car: OIL, b_cw: OIL },
   },
 ];

@@ -215,8 +215,9 @@ const USE: Readonly<Record<LiftUse, string>> = {
   passengers: 'ascensore per persone', goods: 'per merci accompagnate', goodsHeavy: 'per merci accompagnate con mezzi di carico pesanti',
 };
 
-/** The check of the car rails in numbers, with what it assumes and what it leaves out (registry guide.verifica). */
-export function railNote(R: RailCheck, rail: string, gear: SafetyGear, use: LiftUse | undefined, tag: string, fmt: Fmt): Note {
+/** The check of the car rails in numbers, with what it assumes and what it leaves out (registry guide.verifica);
+ *  `cwChecked`: the counterweight's rails checked under its safety gear's grip (gr_cw, registry guide.contrappeso). */
+export function railNote(R: RailCheck, rail: string, gear: SafetyGear, use: LiftUse | undefined, tag: string, fmt: Fmt, cwChecked = false): Note {
   const K = KV_VERT, s = (x: number | null): string => (x === null ? '—' : fmt(x, 0)), lim = railLimits();
   // the factor as the standard writes it (0,4, 0,6, 0,85) and what it follows: the lift's use, or the rated load
   const sill = `${fmt(R.load.sill, Math.round(R.load.sill * 100) % 10 ? 2 : 1)}·g·Q alla soglia, ${use ? USE[use] : 'secondo la portata'}`;
@@ -227,7 +228,8 @@ export function railNote(R: RailCheck, rail: string, gear: SafetyGear, use: Lift
       + `${s(R.gear.sc)} N/mm² (ammissibile Rm/${fmt(K.railStGear, 1)} = ${fmt(lim.gear, 1)}); marcia: σ ${s(R.run.s)}; carico al piano (${sill}): `
       + `σ ${s(R.load.s)} N/mm² (ammissibile Rm/${fmt(K.railStRun, 2)} = ${fmt(lim.use, 1)}); suola σF ${s(R.flange.gear)} N/mm² col paracadute, `
       + `${s(R.flange.use)} in uso; frecce δx ${fmt(R.dx, 1)} mm, δy ${fmt(R.dy, 1)} mm (al più ${K.railDeflection}). Non contate: la spinta di `
-      + 'scorrimento delle staffe, le apparecchiature appese alle guide, le frecce di staffe ed edificio e le guide del contrappeso. '
+      + `scorrimento delle staffe, le apparecchiature appese alle guide, le frecce di staffe ed edificio e ${cwChecked
+        ? 'delle guide del contrappeso le frecce, la suola e la marcia (la presa del suo paracadute ha la sua verifica)' : 'le guide del contrappeso'}. `
       + 'Riferimenti: UNI EN 81-50:2020, 5.10; UNI EN 81-20:2020, 5.7.',
   };
 }

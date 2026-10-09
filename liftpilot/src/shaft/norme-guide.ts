@@ -34,6 +34,10 @@ export const KV_GUIDE = {
   // tripped by the suspension's breakage or by a safety rope instead of a governor, only up to this rated speed [m/s]
   pitFloorAccessible: 5000,
   cwGearInstantV: 1,
+  // UNI EN 81-20:2020, 5.7.2.3.3: a counterweight guided and hung at its middle — its mass acts off the centre of its
+  // plan by at least this share of its width (between its rails) and of its depth
+  cwEccWidth: 0.05,
+  cwEccDepth: 0.1,
 } as const;
 
 export const COSTANTI_GUIDE = {
@@ -41,6 +45,7 @@ export const COSTANTI_GUIDE = {
     'railCombine', 'railFlange', 'railDeflK'],
   'paracadute.tipo': ['gearInstantV'],
   'paracadute.contrappeso': ['pitFloorAccessible', 'cwGearInstantV'],
+  'guide.contrappeso': ['cwEccWidth', 'cwEccDepth'],
 } as const;
 
 export const VOCI_GUIDE: readonly VoceVano[] = [
@@ -65,7 +70,7 @@ export const VOCI_GUIDE: readonly VoceVano[] = [
       + 'dal lato della sicurezza. La formula di ω per Rm 370 è data '
       + 'da λ 20 a 250: sotto 20 il software usa ω di λ 20 (dal lato della sicurezza). Non contate: la spinta di scorrimento delle staffe (assestamento '
       + 'dell’edificio), le apparecchiature appese alle guide, le frecce di staffe ed edificio (la norma vuole la somma entro il limite) e le '
-      + 'guide del contrappeso. La flessione della suola è quella dei pattini a rotelle (5.10.5 ha una formula a parte per quelli a scorrimento; '
+      + 'guide del contrappeso senza paracadute (con il paracadute: guide.contrappeso). La flessione della suola è quella dei pattini a rotelle (5.10.5 ha una formula a parte per quelli a scorrimento; '
       + 'il tipo di pattino non è un dato del software).',
   },
   {
@@ -94,9 +99,27 @@ export const VOCI_GUIDE: readonly VoceVano[] = [
       + 'la verifica non passa; il carico P7 conta la presa (progressivo se non indicato) su metà del contrappeso per guida',
     riferimento: 'UNI EN 81-20:2020, 5.2.5.4, 5.2.1.8.4, 5.6.2.1.2.3, prospetto 11 (5.6.1.2), 5.6.2.2.2 e 5.6.2.2.3; UNI EN 81-50:2020, 5.10',
     fonte: letto('UNI EN 81-20:2020', 'pp. 27, 35, 79, 81'), stato: 'confermato', verifiche: ['sg_cw'],
-    nota: 'le guide del contrappeso con la presa del paracadute (UNI EN 81-50:2020, 5.10) non sono verificate dal software (modello.non.calcolate); '
+    nota: 'con la presa del paracadute le guide del contrappeso si verificano a carico di punta e con le forze di guida dell’eccentricità del '
+      + 'contrappeso (guide.contrappeso, verifica gr_cw); frecce, flessione della suola e staffe restano da verificare a parte (modello.non.calcolate); '
       + 'in una modifica la UNI 10411-1:2024 (6.14) accetta al posto del paracadute un pilastro esistente fino al terreno, verificato per i nuovi '
       + 'carichi: è una scelta del progettista; con la UNI 10411-11:2024 il pilastro è quello che l’impianto ha secondo la sua edizione della UNI '
       + 'EN 81-1 (5.5 a)), verificato per i nuovi carichi (6.6 e 6.13)',
+  },
+  {
+    id: 'guide.contrappeso', gruppo: 'carichi', titolo: 'Guide del contrappeso con la presa del suo paracadute',
+    valore: 'con il paracadute del contrappeso (spazio accessibile sotto il vano), per ognuna delle due guide del contrappeso tra due staffe '
+      + '(l = distanza massima tra le sue staffe): forza verticale Fv = k1·g·Mcw/2 più il peso della guida, con k1 del paracadute del '
+      + 'contrappeso (Prospetto 14: 5 istantaneo, 3 a rulli, 2 progressivo), carico di punta con il metodo omega come le guide di cabina '
+      + '(guide.verifica); forze di guida all’intervento dall’eccentricità della massa del contrappeso, 0,05 della sua larghezza tra le guide '
+      + '(lungo la linea delle guide, sulla punta di una guida) e 0,1 della sua profondità (di traverso, sulle facce delle due), per k1, con i '
+      + 'pattini a distanza pari all’altezza del contrappeso: flessione M = 3·F·l/16; σ = σm + Fv/A e σc = σk + 0,9·σm, il maggiore entro '
+      + 'Rm/1,8 = 205,6 N/mm² (Rm 370)',
+    riferimento: 'UNI EN 81-20:2020, 5.7.2.3.3, 5.7.2.3.5, Prospetto 14 e 5.7.4.5; UNI EN 81-50:2020, 5.10.2–5.10.4',
+    fonte: `${letto('UNI EN 81-20:2020', 'pp. 94–97')}; ${letto('UNI EN 81-50:2020', 'pp. 35–38')}; la distanza fra i pattini è scelta del software`,
+    stato: 'confermato', verifiche: ['gr_cw'],
+    nota: 'casi di carico per la cabina (portata spostata, carico al piano) non valgono per il contrappeso: conta l’intervento del suo paracadute. '
+      + 'Non contate: frecce, flessione della suola, marcia (k2), funi o catene di compensazione, spinta delle staffe; restano fra le verifiche '
+      + 'che il software non calcola. Fino al vano 2.24.0 le guide del contrappeso non erano verificate e il foglio 1 mostrava il paracadute del '
+      + 'contrappeso «OK» anche con le guide T45/A che alla presa istantanea arrivavano a 365 N/mm²',
   },
 ];

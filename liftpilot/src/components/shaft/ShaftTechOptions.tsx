@@ -5,7 +5,7 @@
 // allowances with their typical values. A value still as the software set it carries the standard badge.
 import { useTranslations } from 'next-intl';
 import {
-  CW_SPECIALS, CW_SUPPORTS, DEFAULTS, DOOR_PAIRS, DOOR_PAIR_DEFAULT, GOVERNORS, RAIL_TYPES, callStationOf, cwBracketsOf, defaultInputs, freeSides, govSize, layout, railLabel,
+  CW_SPECIALS, CW_SUPPORTS, DEFAULTS, DOOR_PAIRS, DOOR_PAIR_DEFAULT, GOVERNORS, RAIL_TYPES, callStationOf, cwBracketsOf, defaultInputs, freeSides, govSize, layout, railLabel, takesSpeed,
   type Allowance, type CwChoice, type DoorPairId, type RailType, type ShaftInputs,
 } from '@/shaft';
 import { ALLOWANCE_RANGE } from '@/lib/shaft-input';
@@ -86,7 +86,7 @@ export default function ShaftTechOptions({ I, set, govSide }: Props) {
         <span>{t('gov_title')}</span>
         <select className="input" value={I.governor ?? ''} onChange={(e) => set({ governor: e.target.value || undefined })}>
           <option value="">{t('gov_auto', { model: govSize(I.vertical.v).model })}</option>
-          {GOVERNORS.filter((g) => I.vertical.v <= g.vMax).map((g) => <option key={g.model} value={g.model}>{`${g.brand} ${g.model} · Ø ${2 * g.R} · ≤ ${g.vMax} m/s`}</option>)}
+          {GOVERNORS.filter((g) => takesSpeed(g, I.vertical.v)).map((g) => <option key={g.model} value={g.model}>{`${g.brand} ${g.model} · Ø ${2 * g.R} · ${g.vMin > 0 ? `${g.vMin}–${g.vMax}` : `≤ ${g.vMax}`} m/s`}</option>)}
         </select>
       </label>
       {free.length > 0 && auto ? (

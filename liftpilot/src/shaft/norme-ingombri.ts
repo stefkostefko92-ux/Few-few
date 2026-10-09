@@ -83,15 +83,17 @@ export const VOCI_INGOMBRI: readonly VoceVano[] = [
   {
     id: 'ingombri.limitatore', gruppo: 'ingombri', titolo: 'Limitatore di velocità e tenditore (pianta, locale macchina, 3D)',
     valore: 'per velocità il più piccolo PFB che la regge: LK200 (Ø 200, fune 6) fino a 1,48 m/s, LK250 fino a 1,74, LK300 fino a 2,93, R12BF fino a '
-      + '4,00; oppure il modello scelto se regge la velocità: PFB (LX, LK, R1, R3LR, R5, R6, R10BF), Bode (GB 7 fino a 2,98 m/s, GB 8 fino a 1,29), '
-      + 'Dynatech (VEGA 200 fino a 2,40), Wittur (OL20 fino a 1,75, OL35 fino a 3,00, EOS fino a 2,50, OL100 fino a 10,00) o Montanari (RQ-A 200, 250 e '
-      + '300, RC 200 e 300, NOR fino a 1,50 m/s, RG 200 fino a 0,30). Con le quote dei disegni dei costruttori (altezza totale, tra parentesi l’asse '
+      + '4,00; oppure il modello scelto se il suo campo comprende la velocità: PFB (LX, LK, R1, R3LR, R5, R6, R10BF), Bode (GB 7 fino a 2,98 m/s, GB 8 '
+      + 'fino a 1,29), Dynatech (VEGA 200 da 0,10 a 2,40), Wittur (OL20 da 0,30 a 1,75, OL35 da 0,30 a 3,00, EOS da 0,15 a 2,50, OL100 da 0,51 a '
+      + '10,00) o Montanari (RQ-A 200, 250 e 300 da 0,15 a 3,00, RC 200 e 300 da 1,60 a 4,20, NOR da 0,30 a 1,50 m/s, RG 200 da 0,15 a 0,30); un '
+      + 'modello fuori dal suo campo resta quello della serie per la velocità. Con le quote dei disegni dei costruttori (altezza totale, tra parentesi l’asse '
       + 'dalla base): LK200, LK250, LK300 e LK315 415 (165) su base 220 × 165 (LK315 220 × 130); LX120 178 (70,5), LK120 270 (71), LX150 274 (86), '
       + 'LX180 322 (107), LX200 349 (110); R1 344 (190,5) su base 285 × 80; R3LR 348 (157); R5 261 (120); R6 335 (168); R10BF 488 (303) su base '
       + '460 × 196; R12BF 524 (337) su base 520 × 116; Bode GB 7 360 (205) e GB 8 315 (205); Dynatech VEGA 200 332 (199,5); Wittur e Montanari nelle '
       + 'proporzioni del software (Ø 200: alto 370, asse a 240). Tenditore in fossa sulla guida di cabina: a leva con 22 kg (come PFB R4K) o '
       + 'verticale con 44 kg (come PFB R4R)',
-    riferimento: 'dati del fornitore del limitatore; dalla norma solo lo scatto ≥ 115 % della velocità nominale (UNI EN 81-20:2020, 5.6.2.2.1.1 a))',
+    riferimento: 'dati del fornitore del limitatore; la velocità d’intervento da tarare (almeno il 115 % della nominale e sotto il limite del '
+      + 'paracadute di cabina): UNI EN 81-20:2020, 5.6.2.2.1.1 a) 1)–4), voce limitatore.scatto',
     stato: 'stima',
     fonte: 'manuali d’uso PFB con i disegni quotati (download.pfb.it), brochure Bode e Wittur, manuale Dynatech VEGA e disegni Bode in copia '
       + 'presso un rivenditore (elevatorequipment.co.uk), letti il 2 ottobre 2026; basi delle LK da un listino di rivenditore; Montanari da estratti '
@@ -99,7 +101,8 @@ export const VOCI_INGOMBRI: readonly VoceVano[] = [
     nota: 'il disegno unico delle LK200–LK315 dà due altezze non spiegate (230 e 415 mm; un rivenditore scrive 370): è presa la maggiore. Per Bode '
       + 'la velocità nominale massima è nostra: la velocità di scatto massima diviso 1,15 (scatto ≥ 115 % della nominale), del GB 8 con 1,49 m/s del '
       + 'disegno invece dei 2,04 della brochure. Per le RQ-A e le RC Montanari 0,15–3,0 e 1,60–4,2 m/s sono i campi della famiglia: il limite di ogni '
-      + 'taglia va letto sul manuale. Delle basi pubblicate non sempre è detto quale lato stia nel piano della puleggia (il lato lungo è disegnato in '
+      + 'taglia va letto sul manuale; fino al vano 2.24.0 il limite inferiore non era considerato e un RC si prendeva anche a 0,63 m/s. Delle basi '
+      + 'pubblicate non sempre è detto quale lato stia nel piano della puleggia (il lato lungo è disegnato in '
       + 'quel piano, come nel LK200). Tenditore a leva: lungo 700 mm (quota «A» del PFB R4KE per LK200 in un listino di rivenditore, senza '
       + 'definizione), puleggia a 255 mm dalla cerniera e blocco di 150 × 185 mm: scelte del software; le masse di 22 e 44 kg sono quelle delle '
       + 'tabelle PFB (tenditori R4K e R4R per LK200, confermate dalla brochure)',

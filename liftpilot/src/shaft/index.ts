@@ -17,7 +17,8 @@ export { NO_HEAD, hasHead, headBox, headCheck, headClearances, headOf, mainBox, 
 export type { Fishplate, RailClip, RailSize, RailType } from './rails';
 export { DEFAULT_FLOORS, DEFAULT_VERTICAL, levels, travel } from './vertical';
 export type { BufferType, Floor, VerticalInputs } from './vertical';
-export { BUFFER_TYPES, bufferStroke, bufferType, maxSpeed, strokeNeeded, typicalBuffer, withBufferType } from './buffers';
+export { BUFFER_TYPES, bufferSideOf, bufferStroke, bufferType, maxSpeed, standardBufferType, strokeNeeded, typicalBuffer, withBufferType, withOwnBuffer, withStandardBuffers,
+  withVerticalValue } from './buffers';
 export { DEFAULT_ROOM } from './room';
 export { PROFILES, PROFILE_NAMES, isChannel } from './profiles';
 export type { Profile, ProfileName } from './profiles';
@@ -30,6 +31,7 @@ export { section, sectionChecks, roofGap } from './section';
 export type { Section } from './section';
 export { planEntities, doorsAt, roofSpaces } from './plan-view';
 export { BUFFER_R, bufferChecks, bufferMargin, bufferPlan, pitSpace } from './pit';
+export { planOutside, type PlanOutside } from './plan-inside';
 export type { BufferPlan, BufferSpot } from './pit';
 export type { PlanLevel } from './plan-view';
 export { planDims } from './plan-dims';
@@ -46,8 +48,8 @@ export { SC_SUPPORTS } from './staffe-sc';
 export type { ScPlace, ScSupport } from './staffe-sc';
 export { bracketCode, cwBracket, cwBracketMargin, cwSpecialOf } from './staffe-scelta';
 export type { ArmBracket, CwBracket, SlideBracket } from './staffe-scelta';
-export { GOVERNORS, LEVER_REACH, freeSides, govSize, governorSpot } from './governor';
-export type { Governor, GovernorSpot } from './governor';
+export { GOVERNORS, LEVER_REACH, freeSides, govSize, governorSpot, takesSpeed, tripWindow } from './governor';
+export type { GovernedGear, Governor, GovernorSpot } from './governor';
 export { CALC_KEYS, PLAN_KEYS, applyEdit, editKeys, editLabel, editValue, inputPath, keptPlan, planValues, valueOf, withChoice, withValue, withoutFix } from './edit';
 export { FRAME_STD, portalOf, withFrame } from './frame';
 export {

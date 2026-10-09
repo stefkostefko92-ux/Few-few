@@ -19,7 +19,7 @@ import { shapeOf } from '@/lib/catalog/shapes';
 import { analyse, mirrorRopes, proposalValues, type Analysis } from '@/lib/present/analysis';
 import type { MakerBedplate } from '@/shaft/rinvio';
 import { sizeMachine } from '@/calc/sizing';
-import { bestFit, catalogValues, firstTaken, offGrid, throughWall } from './catalog';
+import { catalogFits, catalogValues, firstTaken, offGrid, throughWall } from './catalog';
 import { anchorPull, type AnchorPull } from './anchor';
 import { ADVICE_BRANDS } from './known';
 import { machineMass } from './machine-mass';
@@ -176,7 +176,7 @@ export function valuesCandidate(V: FormValues, a: Analysis, m: AdviceModel): Mac
   const { I, fixedD, rope } = a.ctx, choice = { ...m, wall: throughWall(I.layout, null) };
   // the grid's options, and those of the model's own sheave off the grid (catalog.ts offGrid) unless the sheave is kept
   const own = fixedD ? [] : offGrid(choice).flatMap((D) => sizeMachine(I, a.ctx.N, D, rope).options);
-  const fits = [...a.sizing.options, ...own].flatMap((o) => { const fit = bestFit(choice, o, I.Q, I.r); return fit ? [{ o, fit }] : []; });
+  const fits = [...a.sizing.options, ...own].flatMap((o) => catalogFits(choice, o, I.Q, I.r).map((fit) => ({ o, fit })));
   // the first in the sizing's order the machine takes with its own ratio (motor, groove and brake sized again on it)
   const taken = firstTaken(fits, a.sizing.keep !== null, (x) => {
     const option = proposalValues(x.o), own = catalogValues(x.fit, mirrorRopes({ ...V, ...option }));

@@ -58,8 +58,13 @@ export function travelLimits(m: SimModel, s: number): { s: number; bufCar: numbe
 export type ScenarioId = 'ride' | 'brake' | 'loading' | 'stall' | 'buffer';
 
 export interface RideParams { from: number; to: number; load: number }
-/** pos: the end position of the verification's case (default: the governing one for this load and direction) */
-export interface BrakeParams { load: 'q' | 'e'; dir: 'dn' | 'up'; decel: 'real' | 'norm'; pos?: 'b' | 't' }
+/** pos: the end position of the verification's case (default: the governing one for this load and direction); load
+ *  'q125': the acceptance test's 1,25·Q, moving down with the real brake only (UNI EN 81-20:2020, 6.3.3 b)) */
+export interface BrakeParams { load: 'q' | 'e' | 'q125'; dir: 'dn' | 'up'; decel: 'real' | 'norm'; pos?: 'b' | 't' }
+
+/** The braking case as the verification has it: the test's 1,25·Q exists only moving down with the real brake; asked
+ *  otherwise, the rated load. */
+export const brakeParams = (p: BrakeParams): BrakeParams => (p.load === 'q125' && (p.dir !== 'dn' || p.decel !== 'real') ? { ...p, load: 'q' } : p);
 export interface BufferParams { side: 'car' | 'cw' }
 
 export type ScenarioParams =

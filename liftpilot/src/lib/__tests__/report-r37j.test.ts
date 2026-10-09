@@ -217,11 +217,11 @@ test('dati dell’impianto: la relazione di calcolo confronta solo i campi che l
 
 test('dati dell’impianto: GUIDE_PLANT_FIELDS sono tutti e soli i campi che la relazione di calcolo legge', () => {
   // every other field, given: the relazione is the same as without them (a new field is put in one list or the other)
-  const OTHER: Plant = { machine: 'MONTANARI M 73 (Sx)', control: 'APM', shaft: 'MURATURA', carFinish: 'INOX', cwBracketPitch: 2500, currentIn: 20, currentStart: 60,
+  const OTHER: Plant = { machine: 'MONTANARI M 73 (Sx)', control: 'APM', shaft: 'MURATURA', carFinish: 'INOX', currentIn: 20, currentStart: 60,
     voltage: 400, lightVoltage: 230, frequency: 50, duty: 40, massShell: 300, massFloor: 50, massDoors: 100, massFrame: 250 };
   assert.deepEqual([...GUIDE_PLANT_FIELDS, ...Object.keys(OTHER)].sort(), Object.keys(plantSchema.shape).sort());
   assert.ok(plantSchema.safeParse(OTHER).success);
-  const GUIDE: Plant = { safetyGear: 'instantaneous', carBracketPitch: 4500, liftUse: 'goodsHeavy', governorLoad: 350, cwSafetyGear: 'roller', cwGearTrip: 'rupture' };
+  const GUIDE: Plant = { safetyGear: 'instantaneous', carBracketPitch: 4500, cwBracketPitch: 2500, liftUse: 'goodsHeavy', governorLoad: 350, cwSafetyGear: 'roller', cwGearTrip: 'rupture' };
   for (const inp of [newLift(), below('under')]) {
     const base = all(relazione(inp));
     assert.deepEqual(all(relazione(inp, OTHER)), base, String(inp.bottom));

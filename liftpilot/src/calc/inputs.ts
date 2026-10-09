@@ -69,13 +69,16 @@ export function readInputs(V: FormValues): ParsedInputs {
     const g = V[p + 'groove'];
     const type: GrooveType = oneOf(GROOVES, g) ? g : 'UU';
     if (!oneOf(GROOVES, g) && rep) bad.push(p + 'groove');
+    // β only for a groove with an undercut (UU, VN), as the form shows it: a U groove is the semicircle without one
+    // (β = 0, UNI EN 81-50:2020, 5.11.2.3.1.1), a hardened V groove grips by γ alone (5.11.2.3.1.2)
+    const undercut = type === 'UU' || type === 'VN';
     const etaD = f('etaD', 0.7, 0, 1);
     // reverse efficiency: blank = estimate for a worm gear, η_i ≈ 2 − 1/η_d (0 = self-locking)
     const etaIest = blank(V[p + 'etaI']);
     const etaI = etaIest ? Math.max(0, 2 - 1 / etaD) : f('etaI', Math.max(0, 2 - 1 / etaD), 0, 1, false);
     return {
       D: f('D', 560, 0), i: f('i', 43, 0), etaD, etaI, etaIest, poles: poles(p),
-      groove: { type, beta: f('beta', 90, 0, 180), gamma: f('gamma', 35, 0, 180) },
+      groove: { type, beta: undercut ? f('beta', 90, 0, 180) : 0, gamma: f('gamma', 35, 0, 180) },
       fn: f('fn', 50, 0), nm: f('nm', 1450, 0), Pn: f('Pn', 7.5, 0), Jm: f('Jm', 0.08, 0, Infinity, false), Js: f('Js', 2.5, 0, Infinity, false),
       brakeSets: count(p + 'brakeSets', 2, 1, MAX_BRAKE_SETS, rep), brakeNm: f('brakeNm', 60, 0), shaftMax: blank(V[p + 'shaftMax']) ? 0 : f('shaftMax', 0, 0, Infinity, false),
       MpCat: blank(V[p + 'MpCat']) ? 0 : f('MpCat', 0, 0, Infinity, false), mass: f('mass', 0, 0, Infinity, false),

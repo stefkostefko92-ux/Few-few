@@ -16,6 +16,16 @@ export const KV_GOV = {
   govReach: 400,
   // 5.6.2.2.1.3 c): the pitch diameter of the governor's sheaves at least this many times the rope's nominal diameter
   govSheaveRatio: 30,
+  // 5.6.2.2.1.1 a): the tripping speed at least this many times the rated speed, and below the safety gear's limit — an
+  // instantaneous one 0,80 m/s, one with a roller 1 m/s, a progressive one 1,5 m/s up to a rated speed of 1 m/s and
+  // 1,25·v + 0,25/v over it [m/s]
+  govTripMin: 1.15,
+  govTripInstant: 0.8,
+  govTripRoller: 1,
+  govTripProgressive: 1.5,
+  govTripProgressiveV: 1,
+  govTripK: 1.25,
+  govTripC: 0.25,
   // a machine below with its pulleys hung under the slab: the governor on a bracket from the side wall, its axle this
   // far under the slab (the 3D's) [mm]
   govUnderCeiling: 420,
@@ -53,11 +63,28 @@ export const VOCI_LIMITATORE: readonly VoceVano[] = [
   {
     id: 'limitatore.fune', gruppo: 'ingombri', titolo: 'Pulegge del limitatore e diametro della fune',
     valore: 'diametro primitivo delle pulegge del limitatore almeno 30 volte il diametro nominale della sua fune (dai dati del modello: '
-      + 'diametro della puleggia e fune)',
-    riferimento: 'UNI EN 81-20:2020, 5.6.2.2.1.3 c)', fonte: letto('UNI EN 81-20:2020', 'p. 83'), stato: 'confermato',
+      + 'diametro della puleggia e fune); dato del fornitore, da verificare: il carico minimo di rottura della fune almeno 8 volte la forza '
+      + 'di trazione che il limitatore produce nella fune all’intervento (μ massimo 0,2 per i limitatori ad aderenza), e quella forza non '
+      + 'sotto il doppio della forza che fa prendere il paracadute né sotto 300 N',
+    riferimento: 'UNI EN 81-20:2020, 5.6.2.2.1.3 c); 5.6.2.2.1.3 b) e 5.6.2.2.1.1 d) (dati del fornitore)', fonte: letto('UNI EN 81-20:2020', 'pp. 82–83'), stato: 'confermato',
     nota: 'un modello con la fune più grossa del rapporto (fune «in deroga» del costruttore) non passa: si sceglie un altro modello o la fune che '
-      + 'il rapporto ammette, salvo una deroga documentata dal certificato del costruttore',
+      + 'il rapporto ammette, salvo una deroga documentata dal certificato del costruttore. La forza all’intervento è del limitatore e la forza di '
+      + 'presa del paracadute è del paracadute, entrambi componenti con esame di tipo: il software non le conosce e non verifica il coefficiente '
+      + 'della fune (il carico P4 dei dati dell’impianto è quello sulla soletta, non questa forza); lo dice la relazione fra le verifiche che '
+      + 'il software non calcola',
     verifiche: ['v_govdd'],
+  },
+  {
+    id: 'limitatore.scatto', gruppo: 'ingombri', titolo: 'Velocità d’intervento del limitatore da tarare',
+    valore: 'almeno 1,15 volte la velocità nominale e sotto il limite del paracadute di cabina: 0,80 m/s con presa istantanea, 1 m/s con presa '
+      + 'istantanea a rullo, 1,5 m/s con presa progressiva fino a una velocità nominale di 1 m/s, 1,25·v + 0,25/v oltre; il foglio 1, la relazione '
+      + 'e la distinta dei materiali la danno per la velocità e il paracadute dei dati dell’impianto (senza paracadute indicato: progressivo); '
+      + 'un modello del limitatore scelto a mano che non copre la velocità nominale (fuori dal campo del costruttore) non si prende e resta '
+      + 'quello della serie per la velocità',
+    riferimento: 'UNI EN 81-20:2020, 5.6.2.2.1.1 a) 1)–4); la velocità tarata sulla targa del limitatore: 5.6.2.2.1.8 d)',
+    fonte: letto('UNI EN 81-20:2020', 'pp. 82 e 84'), stato: 'confermato',
+    nota: 'la velocità d’intervento di un modello la tara il costruttore del limitatore: il software non la conosce e dà il campo da chiedere '
+      + 'nell’ordine; la norma consiglia, oltre 1 m/s, di tararla il più vicino possibile al limite superiore e, con velocità basse, a quello inferiore',
   },
   {
     id: 'limitatore.vano', gruppo: 'ingombri', titolo: 'Macchina in basso: limitatore di velocità nel vano',
@@ -74,4 +101,7 @@ export const VOCI_LIMITATORE: readonly VoceVano[] = [
 ];
 
 /** Constants of this registry, for the test that every one has its entry. */
-export const COSTANTI_LIMITATORE = { 'limitatore.posto': ['govGap', 'govStile', 'govReach'], 'limitatore.fune': ['govSheaveRatio'], 'limitatore.vano': ['govUnderCeiling'] } as const;
+export const COSTANTI_LIMITATORE = {
+  'limitatore.posto': ['govGap', 'govStile', 'govReach'], 'limitatore.fune': ['govSheaveRatio'], 'limitatore.vano': ['govUnderCeiling'],
+  'limitatore.scatto': ['govTripMin', 'govTripInstant', 'govTripRoller', 'govTripProgressive', 'govTripProgressiveV', 'govTripK', 'govTripC'],
+} as const;

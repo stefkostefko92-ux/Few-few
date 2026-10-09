@@ -31,7 +31,7 @@ test('sezione: posizione più alta e più bassa della cabina, spazi in testata e
 test('testata troppo bassa e molle oltre 1 m/s: le verifiche lo dicono', () => {
   const I = defaultInputs(1600, 1750);
   assert.equal(check({ ...I, vertical: { ...I.vertical, headroom: 3000 } }, 'h_refuge')?.status, 'fail');
-  assert.equal(check({ ...I, vertical: { ...I.vertical, v: 1.6 } }, 'b_car')?.status, 'fail');
+  assert.equal(check({ ...I, vertical: { ...I.vertical, v: 1.6, carBufferType: 'spring' } }, 'b_car')?.status, 'fail');
   // a balustrade lower than the gap to the wall asks
   const wide = { ...defaultInputs(2400, 2400), Q: 400, access: 'none' as const };
   assert.equal(check({ ...wide, vertical: { ...wide.vertical, parapet: 700 } }, 'h_parapet')?.status, 'fail');

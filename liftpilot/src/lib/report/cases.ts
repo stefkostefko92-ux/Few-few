@@ -1,5 +1,6 @@
 // The traction cases of the relazione, each with its tensions (UNI EN 81-50:2020, 5.11): the loading, the emergency
-// braking at the minimum deceleration and at the brake's real one (a warning), the stalled car or counterweight; and the
+// braking at the minimum deceleration and at the brake's real one (a warning; with the acceptance test of UNI EN
+// 81-20:2020, 6.3.3 b) among its cases), the stalled car or counterweight; and the
 // limits of the calculation model stated before the checks. Pure.
 import { deg } from '@/calc/math';
 import { K, VOCI } from '@/calc/norme';
@@ -24,7 +25,7 @@ export function casesBlocks(P: Pres, I: Plant, N: Machine, res: Results, caseTex
   };
   cases(`${t('tr_load')} (UNI EN 81-50:2020, 5.11)`, res.loadCases);
   cases(`Frenatura di emergenza alla decelerazione minima di ${fmt(I.ae, 1)} m/s² (UNI EN 81-50:2020, 5.11.2.2.2)`, res.brk);
-  cases(`${t('tr_real')}: decelerazione data dal freno (${N.brakeSets} × ${fmt(N.brakeNm, 0)} N·m), solo avviso`, res.brkReal, true);
+  cases(`${t('tr_real')}: decelerazione data dal freno (${N.brakeSets} × ${fmt(N.brakeNm, 0)} N·m), con la prova di aderenza della UNI EN 81-20:2020, 6.3.3 b); solo avviso`, res.brkReal, true);
   B.push({ t: 'h3', text: `${t('tr_stall')} (UNI EN 81-50:2020, 5.11.2.2.3): cabina vuota nella posizione più alta e in quella più bassa` });
   const stalls = [res.stall, res.stallLow], stallStatus = stalls.map((s) => (s.ratio >= s.efa ? 'ok' : 'fail'));
   B.push({ t: 'grid', head: [...caseHead.slice(0, 8), 'Condizione'], rows: stalls.map((s, k) => [`${t(s.pos === 'b' ? 'st_car' : 'st_cw')}: ${t('cs_e')}, ${t(s.pos === 'b' ? 'at_b' : 'at_t')}`,

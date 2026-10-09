@@ -3,7 +3,8 @@
 // ranges wide enough for any lift and narrow enough to refuse nonsense. A design saved before the vertical data
 // existed (engine 1) reads with the typical values of what it lacks.
 import { z } from 'zod';
-import { DEFAULTS, DEFAULT_VERTICAL, GOVERNORS, HEB_PROFILES, KV, KV_VERT, PROFILES, PROFILE_NAMES, RAIL_TYPES, SUPPORT_KINDS, hasProfile, profileOf, reasonText } from '@/shaft';
+import { DEFAULTS, DEFAULT_VERTICAL, GOVERNORS, HEB_PROFILES, KV, KV_VERT, PROFILES, PROFILE_NAMES, RAIL_TYPES, SUPPORT_KINDS, hasProfile, layout, planOutside, profileOf, reasonText,
+  type ShaftInputs } from '@/shaft';
 import { CW_CHOICES, DOOR_PAIRS } from '@/shaft/staffe-ids';
 
 const mm = (min: number, max: number) => z.number().int().min(min).max(max);
@@ -195,7 +196,21 @@ export const shaftInputsSchema = shaftInputsReadSchema.superRefine((S, ctx) => {
     if (f.rise < min) ctx.addIssue({ code: z.ZodIssueCode.too_small, minimum: min, inclusive: true, type: 'number', path: ['vertical', 'floors', i, 'rise'], message: 'stops too close' });
   });
   supportAtLeastProfile(S.room?.support, ctx);
+  planInside(S, ctx);
 });
+
+/** A rule of a new record: no distance of the plan set by hand puts a part beyond the shaft's walls (the car, the
+ *  counterweight, a door's opening, the buffers, the governor's rope; src/shaft/plan-inside.ts) — refused at that
+ *  distance, with the range it may take (the drawing's edit shows it). Stored records read without it. */
+function planInside(S: ShaftInputs, ctx: z.RefinementCtx): void {
+  if (!S.plan) return;
+  for (const o of planOutside(layout(S))) {
+    const v = S.plan[o.key] ?? 0, path = ['plan', o.key];
+    if (o.min > o.max) ctx.addIssue({ code: z.ZodIssueCode.custom, path, message: 'outside the shaft' });
+    else if (v < o.min) ctx.addIssue({ code: z.ZodIssueCode.too_small, minimum: o.min, inclusive: true, type: 'number', path, message: 'outside the shaft' });
+    else ctx.addIssue({ code: z.ZodIssueCode.too_big, maximum: o.max, inclusive: true, type: 'number', path, message: 'outside the shaft' });
+  }
+}
 
 /** A rule of a new record (the full project's shaft, the replacement's survey): a frame or beams never lower than their
  *  profile, whose top their height is (raised beams higher) — a lower axis is another profile or the shims

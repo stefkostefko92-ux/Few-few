@@ -12,8 +12,6 @@ export interface Drawn {
   Hv: number | null;
 }
 
-export const NOT_DRAWN: Drawn = { L0: null, Hv: null };
-
 /** The values entered that the drawing contradicts. */
 export function drawnIssues(entered: { L0: number; Hv: number }, drawn: Drawn): ('L0' | 'Hv')[] {
   return [

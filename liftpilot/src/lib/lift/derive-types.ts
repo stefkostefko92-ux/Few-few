@@ -1,7 +1,7 @@
 // The types of the one form's derivation (derive.ts): what is entered, what the software fills in and what it derives
 // from them. Pure types.
 import type { FormValues } from '@/calc/types';
-import type { HebTaken, Layout, ShaftCheck, ShaftInputs } from '@/shaft';
+import type { HebTaken, Layout, PlanKey, ShaftCheck, ShaftInputs } from '@/shaft';
 import type { MachineSpec } from '@/shaft/machine-room';
 import type { Analysis } from '@/lib/present/analysis';
 import type { SimModel } from '@/sim';
@@ -39,8 +39,11 @@ export interface LiftInputs {
 export type Origin = 'entered' | 'auto' | 'estimate';
 export type DerivedKey = 'Q' | 'v' | 'H' | 'P' | 'L0' | 'dx' | 'Hv' | 'machine' | 'panel';
 /** What the plan cannot give or contradicts: the diverting pulley's distance, a direct pull's falls (calata), a pulley
- *  the h entered by hand puts under the room's floor (rinvio: it stays in the room). */
-export type IssueKey = DerivedKey | 'calata' | 'rinvio';
+ *  the h entered by hand puts under the room's floor (rinvio: it stays in the room), a distance of the plan set by hand
+ *  that puts a part beyond the shaft's walls (`shaft.plan.<key>`, src/shaft/plan-inside.ts: a record saved before the
+ *  save refused it is read as it was, and its documents wait for it to be corrected, lift-record.ts). */
+export type IssueKey = DerivedKey | 'calata' | 'rinvio' | PlanIssue;
+export type PlanIssue = `shaft.plan.${PlanKey}`;
 
 export interface LiftDerived {
   shaft: ShaftInputs;

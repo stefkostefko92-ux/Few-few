@@ -101,8 +101,9 @@ export function bottomGeo(L: Layout, s: BottomScheme, D: number, Dp: number, n: 
     const u = wallU(v), walls = Math.min(u, width - u);
     return Math.min(walls, ...spans.map((b) => Math.max(b.u0 - u, u - b.u1, 0) || -Math.min(u - b.u0, b.u1 - u))) - ropes - c;
   };
-  // the counterweight's run Dp from its rise in plan: behind it when the gap allows, else along the wall
-  const gu = half + gap - c - pack - (rise(F.cw)[0] - cal), need = Dp, vw = gu >= need ? 0 : Math.sqrt(need * need - gu * gu);
+  // the counterweight's run Dp from its rise in plan: behind it when the gap allows, else along the wall (a counterweight
+  // past the wall — refused by the save — leaves no gap at all: the run stays behind it and `clear` says it does not fit)
+  const gu = half + gap - c - pack - (rise(F.cw)[0] - cal), need = Dp, vw = gu >= need ? 0 : Math.sqrt(Math.max(0, need * need - gu * gu));
   const pick = [1, -1].map((sg) => ({ sg, score: Math.min(room(vc + sg * vw), room(vc + sg * vw - sg * D)) })).sort((p, q) => q.score - p.score)[0];
   const mw = at(um, vc + pick.sg * vw), mc = at(um, vc + pick.sg * (vw - D)), clear = Math.min(pick.score, gap - 2 * (pack + c)), fits = clear >= 0;
   const sCar = Math.hypot(mc[0] - F.car[0], mc[1] - F.car[1]), sCw = Math.hypot(mw[0] - F.cw[0], mw[1] - F.cw[1]);

@@ -41,13 +41,16 @@ export function offGrid(choice: CatalogChoice): number[] {
     });
 }
 
-/** The machine of the choice that takes an option: no failure, the lowest static load (the smallest machine), then
- *  the ratio nearest the ideal one; null when none does. Without a model, the machines proposed only by name are out. */
-export function bestFit(choice: CatalogChoice, o: SizingOption, Q: number, r: number): CatalogFit | null {
-  const fits = choiceMachines(choice)
-    .map((c) => catalogFit(c, { D: o.D, iIdeal: o.iIdeal, Pn: o.Pn, staticKg: o.res.shaft.testKg, Q, r }, KL.catalogRatioTol))
-    .filter((f) => f.fails.length === 0);
-  return fits.sort((a, b) => a.machine.staticKg - b.machine.staticKg || Math.abs(a.dv) - Math.abs(b.dv))[0] ?? null;
+/** The machines of the choice that take an option, in the order the proposal tries them: the lowest static load (the
+ *  smallest machine) first, then the ratio nearest the ideal one; empty when none does. Without a model, the machines
+ *  proposed only by name are out. The motor is no filter here: the option's motor is the grid's, sized at the ideal
+ *  ratio, while the maker's machine runs at its catalogue's ratio — its motor is sized again there, up to the largest the
+ *  catalogue lists (catalogValues), and a machine that passes no check so drops out for the next one. */
+export function catalogFits(choice: CatalogChoice, o: SizingOption, Q: number, r: number): CatalogFit[] {
+  return choiceMachines(choice)
+    .map((c) => catalogFit(c, { D: o.D, iIdeal: o.iIdeal, staticKg: o.res.shaft.testKg, Q, r }, KL.catalogRatioTol))
+    .filter((f) => f.fails.length === 0)
+    .sort((a, b) => a.machine.staticKg - b.machine.staticKg || Math.abs(a.dv) - Math.abs(b.dv));
 }
 
 /** What the machine of the catalogue sets in the calculation `V` (the sizing option's values already in it, and the

@@ -114,7 +114,13 @@ test('D/d ≥ 40 sulle pulegge di rinvio e coppia in uscita contro il catalogo',
   // inertia decelerated, M = (T1 − T2)·R + J_s·a·r/R — the largest of the real brake's cases
   const brake = (c: { T1: number; T2: number; aEff: number }): number => (c.T1 - c.T2) * R + (NB.Js * c.aEff * IB.r) / R;
   near('coppia in uscita alla frenatura di emergenza', dB.MpBrake, Math.max(...rB.brkReal.map(brake)), 1e-9);
-  near('esempio B: frenatura (20 031 − 4 261) N · 0,28 m + 2,5 · 4,94 / 0,28', dB.MpBrake, 4460, 1e-3);
+  const rated = rB.brkReal.find((c) => c.load === 'q' && c.pos === 'b' && c.dir === 'dn');
+  assert.ok(rated);
+  near('esempio B, portata: frenatura (20 031 − 4 261) N · 0,28 m + 2,5 · 4,94 / 0,28', brake(rated), 4460, 1e-3);
+  // the largest is the acceptance test's: 1,25·Q moving down at the bottom (UNI EN 81-20:2020, 6.3.3 b)), the gear
+  // takes it at the test
+  assert.deepEqual([dB.MpBrakeCase.load, dB.MpBrakeCase.pos, dB.MpBrakeCase.dir], ['q125', 'b', 'dn']);
+  near('esempio B, prova 1,25·Q: frenatura (21 741 − 4 680) N · 0,28 m + 2,5 · 4,56 / 0,28', dB.MpBrake, 4818, 1e-3);
   // the static test at 1,25·Q: the pull difference only
   near('coppia in uscita alla prova statica', dB.MpTest, Math.max(...rB.loadCases.map((c) => (c.T1 - c.T2) * R)), 1e-9);
   assert.ok(dB.MpBrake > 2.5 * dB.MpAcc, 'la frenatura di emergenza domina: quasi 3 volte l’accelerazione');

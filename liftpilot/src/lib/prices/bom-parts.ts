@@ -14,6 +14,7 @@ import { rigLength } from '@/lib/lift/rope';
 import { governorRopeLength, ropeCut } from '@/lib/lift/support';
 import type { Plant } from '@/lib/plant';
 import { cwGearOf, cwTripOf } from '@/lib/tavole/cw-gear';
+import { tripRange } from '@/lib/tavole/governor-trip';
 import type { HebLayout } from '@/shaft/heb';
 import { section } from '@/shaft/section';
 import { govSize } from '@/shaft/governor';
@@ -91,13 +92,15 @@ export function panevLines(rows: readonly BomRow[]): TaggedLine[] {
  *  speed), and with a space under the shaft whose counterweight gear a governor trips, its own — the same model with
  *  the same rope (cw-gear.ts cwTripOf: the car's rope is clamped to the car). */
 export function governorLines(dv: LiftDerived, plant: Plant): TaggedLine[] {
-  const L = dv.layout, V = L.inputs.vertical, g = govSize(V.v, L.inputs.governor), d = 2 * g.rope;
-  const one: TaggedLine[] = [
-    ['governor', { key: governorKey(g.brand, g.model), label: { item: 'governor', name: `${g.brand} ${g.model}` }, qty: 1, unit: 'pz' }],
+  const L = dv.layout, V = L.inputs.vertical, g = govSize(V.v, L.inputs.governor), d = 2 * g.rope, name = `${g.brand} ${g.model}`;
+  // the car's with the tripping speed to set for the rated speed and the car's safety gear (registry limitatore.scatto)
+  const trip = tripRange(V.v, plant), comma = (x: number): string => x.toFixed(2).replace('.', ',');
+  const one = (car: boolean): TaggedLine[] => [
+    ['governor', { key: governorKey(g.brand, g.model), label: car && trip ? { item: 'governor_trip', name, args: { lo: comma(trip.lo), hi: comma(trip.hi) } } : { item: 'governor', name }, qty: 1, unit: 'pz' }],
     ['governor', { key: 'tension', label: { item: 'tension' }, qty: 1, unit: 'pz' }],
     ['governor', { key: governorRopeKey(d), label: { item: 'governor_rope', name: sizeText(d) }, qty: governorRopeLength(V, section(L).top, L.inputs.room, dv.bottom), unit: 'm' }],
   ];
-  return cwTripOf(dv.bottom === 'under', plant) === 'governor' ? [...one, ...one] : one;
+  return cwTripOf(dv.bottom === 'under', plant) === 'governor' ? [...one(true), ...one(false)] : one(true);
 }
 
 /** The car's safety gear of the type the data of the installation give (none: progressive, as sheet 1 takes it), on

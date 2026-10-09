@@ -205,11 +205,15 @@ export const VOCI: readonly Voce[] = [
   },
   {
     id: 'trazione.decelerazione.reale', gruppo: 'trazione', titolo: 'Aderenza alla decelerazione reale del freno',
-    valore: 'Seconda verifica con la decelerazione data dal freno (tutti i gruppi, mai sotto il minimo); oggi solo avviso',
-    riferimento: 'UNI EN 81-50:2020, 5.11.2.2.2', fonte: letto(T50, 'p. 40'), stato: 'scelta',
-    verifiche: ['tr_real'],
+    valore: 'Seconda verifica con la decelerazione data dal freno (tutti i gruppi, mai sotto il minimo), negli otto casi della verifica di '
+      + 'progetto e nella prova di aderenza: cabina con 1,25·Q in discesa verso il fondo della corsa; oggi solo avviso',
+    riferimento: 'UNI EN 81-50:2020, 5.11.2.2.2; UNI EN 81-20:2020, 6.3.3 b)', fonte: `${letto(T50, 'p. 40')}; ${letto(T20, 'p. 137')}`, stato: 'scelta',
+    costanti: ['loadTestFactor'], verifiche: ['tr_real'],
     nota: 'La norma vuole ogni massa in moto con la sua accelerazione e una decelerazione di calcolo mai sotto 0,5 m/s²; non dice con quanti '
-      + 'gruppi del freno. Se contarla come esito lo decide l’ingegnere: nell’esempio B del capitolo 7 l’utilizzo passa da 1,005 a 4,17.',
+      + 'gruppi del freno. Se contarla come esito lo decide l’ingegnere: nell’esempio B del capitolo 7 l’utilizzo passa da 1,005 a 4,17. '
+      + 'La prova di aderenza alla messa in servizio frena con la decelerazione più severa dell’impianto: in salita con la cabina vuota in alto '
+      + '(caso già fra gli otto) e in discesa con 1,25·Q verso il basso, che la verifica di progetto con la portata non copre; fino al motore '
+      + '1.5.0 quest’ultimo caso mancava e con k basso l’utilizzo mostrato era sottostimato del 3–11 %.',
   },
   {
     id: 'trazione.margine', gruppo: 'trazione', titolo: 'Soglia di attenzione sull’utilizzo dell’aderenza', valore: 'utilizzo > 0,97 → «Attenzione»',

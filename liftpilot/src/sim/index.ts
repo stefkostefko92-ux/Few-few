@@ -6,7 +6,7 @@ export { motionProfile } from './profile';
 export type { Profile, ProfilePoint } from './profile';
 export { physics } from './physics';
 export type { Friction, Physics, Pull } from './physics';
-export { simModel, travelLimits } from './model';
+export { brakeParams, simModel, travelLimits } from './model';
 export type { BrakeParams, BufferParams, RideParams, ScenarioId, ScenarioParams, SimModel, SimRun, SimSummary } from './model';
 export { CHANNELS, duration, frameAt, peak } from './series';
 export type { Channel, EventId, Frame, Series, SimEvent } from './series';

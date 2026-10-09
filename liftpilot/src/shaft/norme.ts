@@ -225,9 +225,12 @@ export const VOCI_VANO: readonly VoceVano[] = [
   },
   {
     id: 'modello.non.calcolate', gruppo: 'modello_vano', titolo: 'Verifiche che il software non calcola',
-    valore: 'da fare a parte, con i dati dei fornitori: sollecitazioni e frecce delle staffe e delle guide del contrappeso, anche con la presa '
-      + 'del suo paracadute quando c’è uno spazio accessibile sotto il vano (UNI EN 81-50:2020, 5.10: il software verifica le guide di cabina, '
-      + 'sul foglio 1 delle tavole; il paracadute del contrappeso lo chiede e ne conta il carico P7: paracadute.contrappeso); il fondo della '
+    valore: 'da fare a parte, con i dati dei fornitori: sollecitazioni e frecce delle staffe e delle guide del contrappeso (UNI EN 81-50:2020, '
+      + '5.10: il software verifica le guide di cabina sul foglio 1 delle tavole e, quando c’è uno spazio accessibile sotto il vano, le guide del '
+      + 'contrappeso alla presa del suo paracadute, a carico di punta e con le forze di guida: guide.contrappeso; ne restano frecce, flessione '
+      + 'della suola e marcia; il paracadute del contrappeso lo chiede e ne conta il carico P7: paracadute.contrappeso); il coefficiente di '
+      + 'sicurezza della fune del limitatore (carico minimo di rottura almeno 8 volte la forza di trazione all’intervento) e quella forza (almeno '
+      + 'il doppio della forza che fa prendere il paracadute e almeno 300 N), dati dei fornitori del limitatore e del paracadute (limitatore.fune); il fondo della '
       + 'fossa e la soletta sopra un locale sotto la fossa (5000 N/m² con le reazioni P5–P8: progetto strutturale); puleggia del contrappeso '
       + 'in taglia 2:1 sotto il soffitto con il contrappeso nella posizione più alta; uno spazio accessibile sotto il vano che non sia il locale '
       + 'della macchina (il software lo conosce solo con la macchina sotto la fossa); distanza tra le parti fisse più alte della fossa e quelle '
@@ -239,7 +242,7 @@ export const VOCI_VANO: readonly VoceVano[] = [
       + 'appese sotto la soletta entrano nello spazio di rifugio sul tetto (spazi.tetto.appese)',
     riferimento: 'UNI EN 81-20:2020: guide e staffe 5.7.2–5.7.4 (con UNI EN 81-50:2020, 5.10); distanze in testata 5.2.5.7.2; spazi accessibili sotto '
       + 'il vano 5.2.5.4 e fondo della fossa 5.2.1.8.4; parti fisse in fossa 5.2.5.8.2; sporgenze oltre 0,15 m 5.2.5.2.2.2; velocità eccessiva '
-      + 'in salita 5.6.6; movimento incontrollato 5.6.7', fonte: `${letto(T20, 'pp. 31–43, 89–97')}; analisi delle lacune del 2026-10-03`,
+      + 'in salita 5.6.6; movimento incontrollato 5.6.7; fune del limitatore e forza all’intervento 5.6.2.2.1.3 b) e 5.6.2.2.1.1 d)', fonte: `${letto(T20, 'pp. 31–43, 89–97')}; analisi delle lacune del 2026-10-03`,
     stato: 'scelta',
   },
   ...VOCI_PORTE,

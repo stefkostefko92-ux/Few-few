@@ -14,6 +14,10 @@ interface End { pos: EndPosition; p: RopePath; alpha: number }
 
 const worst = <T extends { util: number }>(list: readonly T[]): T => list.reduce((a, b) => (b.util > a.util ? b : a));
 
+/** The load in the car of an emergency braking case [kg]: the rated one, none, or the acceptance test's 1,25·Q (UNI EN
+ *  81-20:2020, 6.3.3 b)). The verification and the simulation take it from here. */
+export const brakeLoad = (kind: BrakeCase['load'], Q: number): number => (kind === 'q' ? Q : kind === 'q125' ? K.loadTestFactor * Q : 0);
+
 export function compute(I: Plant, M: Machine): Results {
   const Q = I.Q, P = I.P, r = I.r;
   // masses, rope paths, the pull at the sheave, the inertia and the brake's deceleration (model.ts)
@@ -36,22 +40,29 @@ export function compute(I: Plant, M: Machine): Results {
 
   // traction, emergency braking (UNI EN 81-50 5.11.2.2.2): empty and loaded car, moving down and up, at both end
   // positions. The standard's check uses its minimum deceleration; a second pass uses the deceleration the brake
-  // really gives with all its sets (never below that minimum).
+  // really gives with all its sets (never below that minimum), and predicts the acceptance test: with it also the car
+  // with 1,25·Q moving down toward the bottom of the travel (UNI EN 81-20:2020, 6.3.3 b); its a) is the empty car up
+  // at the top, among the cases already).
   const Tb = M.brakeNm * M.brakeSets;
   const vf = I.v * r, muB = K.muBrakingBase / (1 + vf / K.muBrakingSpeed), fB = grooveF(muB, M.groove, 'braking');
   // tb null: the minimum deceleration of the standard; a number: the brake's own deceleration with that total torque
   // phys: the rope from a bottom machine to the top at its own acceleration (model.ts), for the remark tr_msr1
-  const brakeCase = (load: number, e: End, dir: 1 | -1, tb: number | null, ub: number, phys = false): BrakeCase => {
+  const brakeCase = (load: number, kind: BrakeCase['load'], e: End, dir: 1 | -1, tb: number | null, ub: number, phys = false): BrakeCase => {
     const a = tb == null ? I.ae : brakeDecel(tb, dir * ub * R, load), aEff = Math.max(I.ae, a);
     const aUp = dir * aEff; // a car moving down (dir 1) decelerates upwards
     const Tc = walk(P + load, aUp, e.p.car, phys), Tw = walk(Mcw, -aUp, e.p.cwt, phys), efa = Math.exp(fB * e.alpha), q = ratio(Tc, Tw);
-    return { load: load > 0 ? 'q' : 'e', pos: e.pos, dir: dir > 0 ? 'dn' : 'up', a, aEff, fromBrake: tb != null && a > I.ae,
+    return { load: kind, pos: e.pos, dir: dir > 0 ? 'dn' : 'up', a, aEff, fromBrake: tb != null && a > I.ae,
       alpha: e.alpha, mu: muB, f: fB, efa, T1: Math.max(Tc, Tw), T2: Math.min(Tc, Tw), ratio: q, util: q / efa };
   };
-  const brakeCases = (tb: number | null, phys = false): BrakeCase[] => [Q, 0].flatMap((load) => ends.flatMap((e) => {
-    const ub = tb == null ? 0 : unbalance(load, e);
-    return ([1, -1] as const).map((dir) => brakeCase(load, e, dir, tb, ub, phys));
-  }));
+  const brakeCases = (tb: number | null, phys = false): BrakeCase[] => {
+    const design = (['q', 'e'] as const).flatMap((kind) => ends.flatMap((e) => {
+      const load = brakeLoad(kind, Q), ub = tb == null ? 0 : unbalance(load, e);
+      return ([1, -1] as const).map((dir) => brakeCase(load, kind, e, dir, tb, ub, phys));
+    }));
+    if (tb == null) return design;
+    const test = brakeLoad('q125', Q);
+    return [...design, brakeCase(test, 'q125', eB, 1, tb, unbalance(test, eB), phys)];
+  };
   const brk = brakeCases(null);
   const msr1 = I.layout === 'bottom' && r > 1 ? worst(brakeCases(null, true)) : null;
   const dn = worst(brk.filter((c) => c.dir === 'dn'));
@@ -110,8 +121,9 @@ export function compute(I: Plant, M: Machine): Results {
     // the limit: the static power at its rated speed for the static torque (registry azionamento.potenza)
     const Peq = g.Pst * Math.max(1, kin.vReal / I.v);
     // the output shaft's torque (registry azionamento.coppia.uscita): in acceleration; at the emergency braking with the
-    // real brake, the ropes' pull difference on the sheave and the sheave's own inertia the gear decelerates (r·a/R),
-    // both taken with the same sense, on the safe side; at the test with 1,25·Q, static
+    // real brake (the test with 1,25·Q moving down among its cases), the ropes' pull difference on the sheave and the
+    // sheave's own inertia the gear decelerates (r·a/R), both taken with the same sense, on the safe side; at the test
+    // with 1,25·Q, static
     const MpAcc = Math.max(upRun.MpMax, dnRun.MpMax), mpBrake = (c: BrakeCase): number => (c.T1 - c.T2) * R + (M.Js * c.aEff * r) / R;
     const MpBrakeCase = brkReal.reduce((a, b) => (mpBrake(b) > mpBrake(a) ? b : a)), MpBrake = mpBrake(MpBrakeCase);
     const MpTest = Math.max(...loadCases.map((c) => (c.T1 - c.T2) * R));

@@ -8,6 +8,7 @@ import { formValuesSchema, visibleBad } from '../calc-input';
 import { shaftInputsSchema } from '../shaft-input';
 import { loginSchema, newPasswordSchema, projectSchema, userCreateSchema } from '../schemas';
 import { passwordPolicyOk } from '../password-policy';
+import { deriveLift, newLift, type LiftInputs } from '../lift';
 
 test('valori del calcolatore: gli esempi passano, il resto no', () => {
   for (const k of ['A', 'B', 'C'] as const) assert.ok(formValuesSchema.safeParse(PRESETS[k]).success, k);
@@ -57,4 +58,24 @@ test('vano: due fermate con porta sullo stesso lato almeno a una porta di distan
   // case c)'s reason goes into the relazione as written: no hidden characters
   assert.ok(shaftInputsSchema.safeParse({ ...S, accessReason: 'vano nella tromba delle scale' }).success);
   assert.equal(shaftInputsSchema.safeParse({ ...S, accessReason: 'vano nella\u200b tromba delle scale' }).success, false);
+});
+
+test('gola senza intaglio (U) e a cuneo temprata (VH): β non si legge, la gola U proposta è un dato valido', () => {
+  const read = (patch: Record<string, string | number>) => readInputs({ ...PRESETS.B, ...patch });
+  for (const g of ['U', 'VH']) {
+    for (const beta of [0, '', 90]) {
+      const r = read({ n_groove: g, n_beta: beta, o_groove: g, o_beta: beta, compare: 1 });
+      assert.ok(!r.bad.includes('n_beta') && !r.bad.includes('o_beta'), `${g} β ${beta}`);
+      assert.equal(r.N.groove.beta, 0);
+    }
+  }
+  // with an undercut β stays a datum in (0°, 180°]
+  for (const g of ['UU', 'VN']) assert.ok(read({ n_groove: g, n_beta: 0 }).bad.includes('n_beta') && read({ n_groove: g, n_beta: '' }).bad.includes('n_beta'), g);
+  assert.equal(read({ n_groove: 'UU', n_beta: 95 }).N.groove.beta, 95);
+  // the machine below in a pulley room with a heavy car: the sizing's groove is a U one (β 0); until round 37 the
+  // design could not be saved (n_beta flagged, the field hidden for a U groove)
+  const n = newLift(), L: LiftInputs = { ...n, shaft: { ...n.shaft, room: null }, calc: { ...n.calc, P: 1540, layout: 'bottom' }, auto: { ...n.auto, P: false }, bottom: 'room' };
+  const d = deriveLift(L);
+  assert.deepEqual([d.values.n_groove, d.values.n_beta], ['U', 0]);
+  assert.deepEqual(d.analysis.ctx.bad, []);
 });

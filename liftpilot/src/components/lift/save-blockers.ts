@@ -21,6 +21,7 @@ function shaftLabelKey(path: readonly string[]): string {
   if (b && a === 'room') return `rm_${b}`;
   if (b && a === 'imbotti') return `im_${b}`;
   if (b && a === 'frame') return `fr_${b}`;
+  if (b && a === 'plan') return `pk_${b}`;
   return a && a in DEFAULTS ? `a_${a}` : a ?? '';
 }
 
