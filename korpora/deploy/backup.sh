@@ -16,8 +16,9 @@
 #
 # Ред: ключалка → `pg_dump -Fc` в контейнера на базата → едновременно age (във временен файл) и
 # проверка с pg_restore → размер и заглавие на age → права 600, fsync, rename → ротация (14 дневни +
-# 8 седмични). При провал преди rename: изход ≠ 0 и нищо старо не се трие. Некриптиран дъмп не стъпва
-# на диска. Логът казва само имена на файлове, размери и броеве — нищо от данните в базата.
+# 8 седмични) → таван по възраст за дъмповете в горната папка (cap_age). При провал преди rename:
+# изход ≠ 0 и нищо старо не се трие. Некриптиран дъмп не стъпва на диска. Логът казва само имена на
+# файлове, размери и броеве — нищо от данните в базата.
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 umask 077
@@ -27,6 +28,9 @@ DIR="${KORPORA_BACKUP_DIR:-$SHARED/backups/daily}"
 RECIPIENTS="${KORPORA_BACKUP_RECIPIENTS:-$SHARED/backup-recipients.txt}"
 KEEP_DAILY="${KORPORA_BACKUP_DAILY:-14}"
 KEEP_WEEKLY="${KORPORA_BACKUP_WEEKLY:-8}"
+# Таванът по възраст за дъмповете в горната папка — същите имена и стойности като в deploy.sh.
+PREDEPLOY_DAYS="${KORPORA_PREDEPLOY_DAYS:-30}"
+PRERESTORE_DAYS="${KORPORA_PRERESTORE_DAYS:-60}"
 # Празна база дава под 1 KiB, мигрирана без нито един акаунт — десетки KiB: под прага е провал.
 MIN_BYTES="${KORPORA_BACKUP_MIN_BYTES:-8192}"
 DB_NAME="${KORPORA_DB_NAME:-korpora}"
@@ -169,6 +173,17 @@ rotate() {
   log "ротация: пазя $kept (до $KEEP_DAILY дневни + $KEEP_WEEKLY седмични), изтрих $dropped"
 }
 
+# Таванът по възраст и между два деплоя (deploy.sh го налага само при деплой): некриптираните
+# pre-deploy-*.sql.gz над $PREDEPLOY_DAYS дни и шифрованите снимки преди възстановяване (със сумите им)
+# над $PRERESTORE_DAYS дни. Тук и най-новият дъмп — откат към него би загубил вече месец данни; дневните
+# бекъпи го покриват. Само след успешен нов бекъп; провалът е предупреждение — бекъпът вече е готов.
+cap_age() {
+  find "$SHARED/backups" -maxdepth 1 -type f \( -name 'pre-deploy-*.sql.gz' -mtime "+$PREDEPLOY_DAYS" \
+    -o -name 'pre-restore-*.dump.age' -mtime "+$PRERESTORE_DAYS" \
+    -o -name 'pre-restore-*.dump.age.sha256' -mtime "+$PRERESTORE_DAYS" \) -delete ||
+    warn "старите дъмпове в $SHARED/backups не се изтриха — следващият пробег опитва пак"
+}
+
 backup() {
   local cid
   [ "$(id -u)" = 0 ] || die "пусни като root (sudo)."
@@ -180,6 +195,7 @@ backup() {
     die "няма работещ контейнер на базата (compose проект $PROJECT, услуга db) — бекъп НЕ е направен."
   dump_to "$cid" "$DIR/korpora-$(date -u +%Y%m%d-%H%M%S).dump.age"
   rotate
+  cap_age
 }
 
 # Изпълнен — прави бекъп; зареден със `source` (тестовете, backup-restore.sh) — само дефинира функциите.

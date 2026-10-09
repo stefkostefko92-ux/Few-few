@@ -137,10 +137,12 @@ backup_db() {
   find "$dir" -maxdepth 1 -name 'pre-deploy-*.sql.gz' -printf '%T@ %p\n' | sort -rn |
     tail -n "+$((KEEP_BACKUPS + 1))" | cut -d' ' -f2- | xargs -r rm -f
   # Таван и по възраст: при рядък деплой петте дъмпа (некриптирани) иначе стигат месеци назад и изтрит
-  # акаунт остава в тях. Шифрованите снимки преди --live възстановяване (backup-restore.sh) — колкото
-  # най-стария дневен бекъп. Между два деплоя таванът не се налага (korpora-backup пише само в daily/).
+  # акаунт остава в тях. Шифрованите снимки преди --live възстановяване (backup-restore.sh) и сумите им —
+  # колкото най-стария дневен бекъп. Между два деплоя същият таван налага дневният korpora-backup
+  # (backup.sh, cap_age) — без изключението за най-новия дъмп.
   find "$dir" -maxdepth 1 -type f \( -name 'pre-deploy-*.sql.gz' -mtime "+$PREDEPLOY_DAYS" \
-    ! -name "$(basename "$file")" -o -name 'pre-restore-*.dump.age' -mtime "+$PRERESTORE_DAYS" \) -delete
+    ! -name "$(basename "$file")" -o -name 'pre-restore-*.dump.age' -mtime "+$PRERESTORE_DAYS" \
+    -o -name 'pre-restore-*.dump.age.sha256' -mtime "+$PRERESTORE_DAYS" \) -delete
 }
 
 # Код 200 сам не казва КОЙ отговаря на порта: чака се маркерът на Korpora и база, която отговаря.

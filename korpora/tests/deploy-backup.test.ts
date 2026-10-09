@@ -8,6 +8,7 @@ import {
   readdirSync,
   readFileSync,
   statSync,
+  utimesSync,
   writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
@@ -201,6 +202,48 @@ test(
       );
       assert.ok(existsSync(join(box.shared, 'backups', 'pre-deploy-19990101-000000.sql.gz')));
       assert.match(r.stdout, /ротация: пазя \d+ \(до 14 дневни \+ 8 седмични\), изтрих \d+/);
+    });
+  },
+);
+
+test(
+  'between two deploys the daily backup drops dumps past the age cap, the newest one too',
+  { skip },
+  () => {
+    withBox((box) => {
+      const top = join(box.shared, 'backups');
+      const aged = (name: string, days: number) => {
+        writeFileSync(join(top, name), 'old');
+        const at = new Date(Date.now() - days * 86_400_000);
+        utimesSync(join(top, name), at, at);
+      };
+      // the only pre-deploy dump, 31 days old: deploy.sh would have spared it as the newest
+      aged('pre-deploy-20260101-000000.sql.gz', 31);
+      aged('pre-deploy-20260301-000000.sql.gz', 20);
+      aged('pre-restore-20260101-000000.dump.age', 61);
+      aged('pre-restore-20260101-000000.dump.age.sha256', 61);
+      aged('pre-restore-20260301-000000.dump.age', 59);
+      aged('pre-restore-20260301-000000.dump.age.sha256', 59);
+      aged('notes.txt', 90);
+
+      // a failed backup deletes nothing old, not even up there
+      const failed = backup(box, { DUMP_RC: '1' });
+      assert.equal(failed.status, 1);
+      assert.ok(existsSync(join(top, 'pre-deploy-20260101-000000.sql.gz')));
+
+      const r = backup(box);
+      assert.equal(r.status, 0, r.stderr);
+      const left = readdirSync(top).filter((n) => n !== 'daily');
+      assert.deepEqual(
+        left.sort(),
+        [
+          'notes.txt',
+          'pre-deploy-20260301-000000.sql.gz',
+          'pre-restore-20260301-000000.dump.age',
+          'pre-restore-20260301-000000.dump.age.sha256',
+        ].sort(),
+      );
+      assert.equal(backups(box.daily).length, 1, 'the new backup itself is there');
     });
   },
 );
