@@ -122,11 +122,23 @@ function countLayoutShifts() {
 // the download menu.
 async function editorKeys(page) {
   const found = [];
-  await page.fill('#pk-q', 'a');
+  // a query that finds something in any catalog (the base one or the shop catalog): the start of the first result
+  const name = await page.evaluate(
+    () => document.querySelector('#pk-list [role="option"] b')?.textContent?.trim() ?? '',
+  );
+  await page.fill('#pk-q', name.slice(0, 3));
   await page.keyboard.press('Enter');
-  if (!(await page.evaluate(() => document.getElementById('picker').open)))
-    found.push('keys: Enter in the picker search closed the dialog');
+  const picked = await page.evaluate(() => ({
+    open: document.getElementById('picker').open,
+    inList: !!document.activeElement?.closest('#pk-list'),
+  }));
+  if (!picked.open) found.push('keys: Enter in the picker search closed the dialog');
+  else if (!picked.inList) found.push('keys: Enter in the picker search did not go to the results');
   await page.keyboard.press('Escape');
+  if (await page.evaluate(() => document.getElementById('picker').open)) {
+    found.push('keys: Escape in the picker results did not close the dialog');
+    await page.click('#picker [data-close]');
+  }
   await page.click('#tab-draw');
   await page.evaluate(() => {
     Element.prototype.requestFullscreen = undefined;
