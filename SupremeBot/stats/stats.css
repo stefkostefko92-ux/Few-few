@@ -8,18 +8,18 @@ header h1 { font-size: 22px; font-weight: 700; flex: 1; min-width: 0; }
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: var(--s-3); margin-bottom: var(--s-5); }
 .card {
   display: grid; grid-template-areas: 'l' 'v' 'r'; align-content: start; gap: 2px; min-width: 0;
-  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-m); padding: var(--s-3) var(--s-4);
+  border-radius: 18px; padding: var(--s-3) var(--s-4);
 }
 .card .l { grid-area: l; font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
 .card .v { grid-area: v; font-size: 26px; line-height: 1.15; font-weight: 700; letter-spacing: -.02em; color: var(--text); overflow-wrap: anywhere; }
 .card .r { grid-area: r; font-size: 12px; color: var(--accent-text); font-weight: 600; margin-top: 2px; }
 
-.chart-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-l); padding: var(--s-4) var(--s-5) var(--s-3); box-shadow: var(--shadow); }
+.chart-card { border-radius: 26px; padding: var(--s-4) var(--s-5) var(--s-3); }
 .chart-card h2 { font-size: 15px; margin-bottom: var(--s-3); }
 .bar { display: grid; grid-template-columns: minmax(110px, 180px) 1fr minmax(64px, auto); align-items: center; gap: var(--s-3); padding: 5px 0; font-size: 13px; }
 .bar .name { color: var(--muted); overflow-wrap: anywhere; line-height: 1.25; }
-.bar .track { display: block; background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; height: 14px; overflow: hidden; }
-.bar .fill { display: block; height: 100%; min-width: 3px; background: var(--accent); border-radius: 3px; }
+.bar .track { display: block; background: var(--well); border: 1px solid var(--line-strong); border-radius: 999px; height: 14px; overflow: hidden; box-shadow: inset 0 2px 5px rgba(0, 0, 0, .35); }
+.bar .fill { display: block; height: 100%; min-width: 6px; background: linear-gradient(180deg, #6bffbd, #14b96b); border-radius: 999px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), 0 0 10px -1px var(--accent-line); }
 .bar .val { text-align: right; font-weight: 700; white-space: nowrap; }
 
 @media (max-width: 560px) {

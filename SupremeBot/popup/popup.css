@@ -1,18 +1,22 @@
-/* Popup: 360px remote control. Tokens + buttons live in ../src/shared/ui.css. */
-body { width: 360px; padding: var(--s-4); }
+/* Popup: 360px remote control. Tokens, glass surfaces + buttons live in ../src/shared/ui.css.
+   Here: layout, plus the popup's own aurora motion - a single finite "settle" (<= 5 s,
+   transform only, WCAG 2.2.2) that never loops and is dropped under reduced motion. */
+/* Shape centres sized for the 360px popup: they sit half behind the cards so the glass bends them. */
+:root { --p1: 306px 92px; --p2: 22px 292px; --p3: 340px 410px; --p4: 120px 330px; }
+html { width: 360px; overflow: hidden; }
+/* Chrome caps a popup at 600px tall; scroll INSIDE body so the window never
+   gets its own scrollbar (which would steal width and clip the right edge). */
+body { width: auto; max-height: 600px; overflow-y: auto; overscroll-behavior: contain; padding: var(--s-4); }
 
-header { display: flex; align-items: center; gap: var(--s-3); margin-bottom: var(--s-4); }
-header h1 { font-size: 16px; font-weight: 700; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+header { display: flex; align-items: center; gap: var(--s-3); margin-bottom: var(--s-4); padding: 0 var(--s-1); }
+header h1 { font-size: 16px; font-weight: 750; flex: 1; min-width: 0; overflow-wrap: anywhere; }
 
 .banner { margin-bottom: var(--s-3); }
 
-/* Status card: beacon + state, character line, licence strip. */
-.status-card {
-  position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-l);
-  padding: var(--s-3) var(--s-4); margin-bottom: var(--s-3); box-shadow: var(--shadow); overflow: hidden;
-}
-.status-card::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 2px; background: linear-gradient(90deg, var(--accent), transparent 70%); opacity: .8; }
-.status-row { display: flex; align-items: center; gap: var(--s-3); font-weight: 700; font-size: 14.5px; min-width: 0; }
+/* Status card: beacon + state, character line, licence strip. The one hero surface. */
+.status-card { border-radius: 22px; padding: var(--s-4) var(--s-4) var(--s-3); margin-bottom: var(--s-3); overflow: hidden; }
+.status-card::before { content: ''; position: absolute; left: 22px; right: 22px; top: 0; height: 1px; z-index: 2; background: linear-gradient(90deg, var(--accent), transparent 75%); opacity: .9; box-shadow: 0 0 14px 1px var(--accent-line); }
+.status-row { display: flex; align-items: center; gap: var(--s-3); font-weight: 700; font-size: 15px; min-width: 0; }
 .status-row #status-text { min-width: 0; overflow-wrap: anywhere; }
 .char {
   margin-top: var(--s-2); font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere;
@@ -27,15 +31,15 @@ header h1 { font-size: 16px; font-weight: 700; flex: 1; min-width: 0; overflow-w
 .license.expired::before { content: '✕ '; font-weight: 800; }
 
 .controls { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: var(--s-2); margin-bottom: var(--s-4); }
-.btn { min-height: 38px; padding: 0 var(--s-2); }
+.btn { min-height: 40px; padding: 0 var(--s-2); }
 .btn.pause { color: var(--warn-text); }
 .btn.stop { color: var(--danger-text); }
 .btn.pause:disabled, .btn.stop:disabled { color: var(--faint); }
 
 /* Subscription (paywall) */
-.subscribe { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-l); padding: var(--s-3); margin-bottom: var(--s-4); display: flex; flex-direction: column; gap: var(--s-3); }
+.subscribe { border-radius: 22px; padding: var(--s-4); margin-bottom: var(--s-4); display: flex; flex-direction: column; gap: var(--s-3); }
 .subscribe .plans { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-2); }
-.subscribe .btn.pay { min-height: 42px; white-space: normal; }
+.subscribe .btn.pay { min-height: 44px; white-space: normal; padding-inline: var(--s-2); }
 .pay-note { font-size: 12px; color: var(--muted); text-align: center; }
 .subscribe .consent { display: flex; gap: var(--s-2); align-items: flex-start; font-size: 12px; line-height: 1.4; cursor: pointer; color: var(--text); }
 .subscribe .consent input { margin-top: 0; }
@@ -46,9 +50,17 @@ header h1 { font-size: 16px; font-weight: 700; flex: 1; min-width: 0; overflow-w
 /* Session readouts: value above label. */
 .stats { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-2); margin-bottom: var(--s-3); }
 .stats:empty { display: none; }
-.stats .row { display: flex; flex-direction: column-reverse; gap: 1px; min-width: 0; padding: var(--s-2) var(--s-3); background: var(--surface-2); border-radius: var(--r-m); border: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+.stats .row { display: flex; flex-direction: column-reverse; gap: 1px; min-width: 0; padding: var(--s-2) var(--s-3); border-radius: 16px; font-size: 12px; color: var(--muted); }
 .stats .row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.stats .row b { font-size: 17px; font-weight: 700; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: -.01em; }
+.stats .row b { font-size: 18px; font-weight: 750; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: -.01em; }
 
-footer { margin-inline: calc(var(--s-2) * -1); display: flex; justify-content: space-between; gap: var(--s-1); border-top: 1px solid var(--line); padding-top: var(--s-2); }
-footer .linkbtn { font-size: 12.5px; }
+footer { display: flex; justify-content: space-between; gap: var(--s-1); padding: var(--s-1); border-radius: 999px; background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, 0) 55%), var(--surface-2); border: 1px solid var(--line); box-shadow: var(--plate-lit); -webkit-backdrop-filter: var(--btn-bf); backdrop-filter: var(--btn-bf); }
+footer .linkbtn { font-size: 12.5px; padding: 0 var(--s-2); overflow-wrap: break-word; }
+
+/* The aurora settles once when the popup opens. Compositor-only (transform), finite, 4.8 s. */
+@media (prefers-reduced-motion: no-preference) {
+  body::before { animation: aurora-settle 4.8s cubic-bezier(.2, .6, .2, 1) both; }
+  body::after { animation: shapes-settle 4.8s cubic-bezier(.2, .6, .2, 1) both; }
+  @keyframes aurora-settle { from { transform: translate3d(-5%, 4%, 0) scale(1.18) rotate(-5deg); } to { transform: none; } }
+  @keyframes shapes-settle { from { transform: translate3d(3%, -2%, 0) scale(1.06); } to { transform: none; } }
+}

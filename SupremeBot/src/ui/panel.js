@@ -25,7 +25,13 @@
     if (g.theme === 'light') root.classList.add('tb-light');
     if (g.panelPosition === 'left') root.classList.add('tb-left');
 
+    // Liquid-glass lens: displaces the backdrop near the panel's edges (see panel.css
+    // `--glass-bf`). Purely decorative; if the filter or its data: map is blocked the
+    // glass still works, just without the edge refraction.
+    const LENS_MAP = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='340' height='700' viewBox='0 0 340 700' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='x' x1='0' x2='1' y1='0' y2='0'%3E%3Cstop offset='0' stop-color='%23f00'/%3E%3Cstop offset='.06' stop-color='%23800'/%3E%3Cstop offset='.94' stop-color='%23800'/%3E%3Cstop offset='1' stop-color='%23000'/%3E%3C/linearGradient%3E%3ClinearGradient id='y' x1='0' x2='0' y1='0' y2='1'%3E%3Cstop offset='0' stop-color='%230f0'/%3E%3Cstop offset='.03' stop-color='%23080'/%3E%3Cstop offset='.97' stop-color='%23080'/%3E%3Cstop offset='1' stop-color='%23000'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='%23000'/%3E%3Crect width='100%25' height='100%25' fill='url(%23x)'/%3E%3Crect width='100%25' height='100%25' fill='url(%23y)' style='mix-blend-mode:screen'/%3E%3C/svg%3E";
+
     root.innerHTML = `
+      <svg class="tb-defs" width="0" height="0" aria-hidden="true" focusable="false"><defs><filter id="tb-lens-9f3a" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feImage href="${LENS_MAP}" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="m"/><feDisplacementMap in="SourceGraphic" in2="m" scale="44" xChannelSelector="R" yChannelSelector="G"/></filter></defs></svg>
       <div class="tb-header">
         <span class="tb-dot" aria-hidden="true"></span>
         <span class="tb-title">${I18n.t('extName')}</span>
@@ -348,6 +354,7 @@
   }
 
   function formatNum(n) {
+    if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
     if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
     if (n >= 1e3) return (n / 1e3).toFixed(1) + 'k';
     return String(n);
