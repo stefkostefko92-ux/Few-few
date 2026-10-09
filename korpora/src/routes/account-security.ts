@@ -7,6 +7,7 @@ import { isStaff } from '../auth/rbac.js';
 import { sensitiveLimiter } from '../http/limits.js';
 import { idParam, rawField, requestMeta, stringField } from '../http/meta.js';
 import { listSessions, revokeOtherSessions, revokeOwnSession } from '../services/account-self.js';
+import { withdrawDeviceConsent } from '../services/device-consent.js';
 import {
   changePassword,
   confirmTotp,
@@ -17,8 +18,9 @@ import {
 import { back, me } from './account-common.js';
 
 /**
- * „Сигурност“ в акаунта: парола, двуфакторна защита, резервни кодове, сесии. Закача се ВЪТРЕ в
- * accountRouter, затова минава през неговата защита (вход + CSRF + no-store).
+ * „Сигурност“ в акаунта: парола, двуфакторна защита, резервни кодове, сесии, съгласието за
+ * отпечатъка. Закача се ВЪТРЕ в accountRouter, затова минава през неговата защита (вход + CSRF +
+ * no-store).
  */
 export const accountSecurityRouter: Router = Router();
 
@@ -152,4 +154,10 @@ accountSecurityRouter.post('/account/security/sessions/:id/revoke', async (req, 
 accountSecurityRouter.post('/account/security/sessions/revoke-others', async (req, res) => {
   await revokeOtherSessions(await me(req), principalOf(req).session.id, requestMeta(req));
   back(res, '/account/security', 'ok', 'flash.sessionsRevoked');
+});
+
+/** Оттеглянето на съгласието за отпечатъка — без парола: толкова лесно, колкото се дава. */
+accountSecurityRouter.post('/account/security/device-consent/withdraw', async (req, res) => {
+  await withdrawDeviceConsent(await me(req), requestMeta(req));
+  back(res, '/account/security', 'ok', 'flash.deviceConsentWithdrawn');
 });

@@ -106,6 +106,21 @@
   </table></div>
 </section>
 
+<%# Съгласието за отпечатъка: оттегля се с едно натискане, както се дава с една отметка при регистрация. %>
+<section class="section" aria-labelledby="consent-h">
+  <h2 id="consent-h"><%- include('../partials/icon', { name: 'info' }) %><%= t('security.consentTitle') %></h2>
+  <% if (user.deviceConsentAt) { %>
+    <p><span class="chip chip-ok"><%- include('../partials/icon', { name: 'check' }) %><%= t('security.consentOn', { date: fmt.date(user.deviceConsentAt) }) %></span></p>
+    <p><%= t('security.consentOnText') %></p>
+    <form method="post" action="/account/security/device-consent/withdraw" class="actions">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="btn" type="submit"><%= t('security.consentWithdraw') %></button>
+    </form>
+  <% } else { %>
+    <p class="muted"><%= t('security.consentOff') %></p>
+  <% } %>
+</section>
+
 <section class="section" aria-labelledby="log-h">
   <h2 id="log-h"><%- include('../partials/icon', { name: 'history' }) %><%= t('security.loginsTitle') %></h2>
   <div class="table-wrap"><table class="stack">

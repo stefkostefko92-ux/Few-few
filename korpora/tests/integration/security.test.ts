@@ -144,10 +144,13 @@ test('security headers on every kind of page', async () => {
 
 test('session and device cookies are HttpOnly and SameSite', async () => {
   const b = new Browser();
-  const login = await b.get('/login');
-  const cookies = login.headers.getSetCookie().join('\n');
+  const page = await b.get('/login');
+  const opened = page.headers.getSetCookie().join('\n');
+  assert.match(opened, /rd_pre=[^;]+;[^\n]*HttpOnly[^\n]*SameSite=Strict/i);
+  assert.doesNotMatch(opened, /rd_dev=/, 'the device cookie comes with a sent form, not a page');
+  const tried = await b.login('nobody-cookies@example.test', 'Wrong-Password-000');
+  const cookies = tried.headers.getSetCookie().join('\n');
   assert.match(cookies, /rd_dev=[^;]+;[^\n]*HttpOnly[^\n]*SameSite=Lax/i);
-  assert.match(cookies, /rd_pre=[^;]+;[^\n]*HttpOnly[^\n]*SameSite=Strict/i);
   await customer('cookies@example.test');
   const c = new Browser();
   const signed = await c.login('cookies@example.test', CUSTOMER_PASSWORD);

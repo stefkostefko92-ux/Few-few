@@ -28,39 +28,45 @@ enum Plan {
 
 /// Един акаунт. Планът е състояние на акаунта, плащанията засега са извън системата (ръчно).
 model User {
-  id                String    @id @default(cuid())
-  email             String    @unique
-  name              String
-  passwordHash      String
-  role              Role      @default(CUSTOMER)
-  locale            String    @default("bg")
-  emailVerifiedAt   DateTime?
-  plan              Plan      @default(TRIAL)
+  id                   String    @id @default(cuid())
+  email                String    @unique
+  name                 String
+  passwordHash         String
+  role                 Role      @default(CUSTOMER)
+  locale               String    @default("bg")
+  emailVerifiedAt      DateTime?
+  plan                 Plan      @default(TRIAL)
   /// Край на плана. TRIAL и PREMIUM имат дата; LIFETIME — null. TRIAL без дата = още не е започнал
   /// (тестовият период тръгва при потвърждаване на имейла).
-  planExpiresAt     DateTime?
+  planExpiresAt        DateTime?
   /// Кога е пратено напомнянето, че тестовият период свършва — праща се веднъж.
-  trialReminderAt   DateTime?
+  trialReminderAt      DateTime?
   /// TOTP тайна, AES-256-GCM в покой. Без `totpEnabledAt` тайната е само започната настройка.
-  totpSecretEnc     String?
-  totpEnabledAt     DateTime?
+  totpSecretEnc        String?
+  totpEnabledAt        DateTime?
   /// Последната приета 30-секундна стъпка — един и същ код не минава два пъти.
-  totpLastStep      Int?
-  failedLogins      Int       @default(0)
-  lockedUntil       DateTime?
+  totpLastStep         Int?
+  failedLogins         Int       @default(0)
+  lockedUntil          DateTime?
   /// Текущ бан (историята е в AccountBan). Причината се показва на човека при вход.
-  bannedAt          DateTime?
-  banReason         String?
-  lastLoginAt       DateTime?
-  lastLoginIp       String?
-  lastLoginCountry  String?
-  /// Откъде е регистриран акаунтът — за „свързани акаунти“ (повторни тестови периоди от едно устройство).
-  signupIp          String?
-  signupCountry     String?
-  signupDeviceHash  String?
-  signupFingerprint String?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  bannedAt             DateTime?
+  banReason            String?
+  lastLoginAt          DateTime?
+  lastLoginIp          String?
+  lastLoginCountry     String?
+  /// Откъде е регистриран акаунтът. IP адресът и бисквитката на устройството служат на сигурността на
+  /// входа; за „свързани акаунти“ (повторни тестови периоди) устройството и отпечатъкът се ползват само
+  /// със съгласие (`deviceConsentAt`), а отпечатък без съгласие не се пази.
+  signupIp             String?
+  signupCountry        String?
+  signupDeviceHash     String?
+  signupFingerprint    String?
+  /// Съгласието за отпечатъка на устройството — отделна отметка при регистрация: кога и коя версия на
+  /// текста (датата на политиката за поверителност). Оттеглянето ги изтрива заедно с пазения отпечатък.
+  deviceConsentAt      DateTime?
+  deviceConsentVersion String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
   sessions        Session[]
   devices         Device[]

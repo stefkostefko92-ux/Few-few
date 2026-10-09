@@ -2,10 +2,12 @@
 <h1><%= t('auth.loginTitle') %></h1>
 <%- include('_error') %>
 <% if (error === 'auth.errors.unverified') { %><p class="hint"><%= t(typeof resent !== 'undefined' && resent ? 'auth.unverifiedResent' : 'auth.unverifiedWait') %></p><% } %>
-<form method="post" action="/login" class="form" data-fingerprint>
+<%# Отпечатъкът се чете само в браузър, от който са влизали единствено акаунти със съгласие (routes/auth.ts); след неуспешен опит — не. %>
+<% const readsFingerprint = typeof fingerprint !== 'undefined' && fingerprint === true; %>
+<form method="post" action="/login" class="form"<% if (readsFingerprint) { %> data-fingerprint<% } %>>
   <input type="hidden" name="_csrf" value="<%= pre %>">
   <input type="hidden" name="next" value="<%= next %>">
-  <input type="hidden" name="fp" value="">
+  <% if (readsFingerprint) { %><input type="hidden" name="fp" value=""><% } %>
   <div class="field">
     <label for="email"><%= t('auth.email') %></label>
     <input id="email" name="email" type="email" autocomplete="username" inputmode="email" required maxlength="254" value="<%= email %>"<% if (error) { %> aria-invalid="true" aria-describedby="form-error"<% } %>>

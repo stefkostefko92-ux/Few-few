@@ -172,7 +172,7 @@
       "firstSeen": "first seen on {date}",
       "loginsTitle": "Recent sign-in attempts",
       "linkedTitle": "Linked accounts",
-      "linkedHint": "Other accounts with the same device, the same HWID or the same IP address — a sign of a repeated trial or a shared account. Identical phones give the same HWID, and offices and mobile networks share addresses, so an HWID or IP shared by more than 10 accounts links nobody; a shared IP alone is no proof.",
+      "linkedHint": "Other accounts with the same device, the same HWID or the same IP address — a sign of a repeated trial or a shared account. Device and HWID link only accounts that consented to the fingerprint at sign-up; without consent only the IP address is left. Identical phones give the same HWID, and offices and mobile networks share addresses, so an HWID or IP shared by more than 10 accounts links nobody; a shared IP alone is no proof.",
       "noLinked": "No linked accounts.",
       "sharedBy": "Shared",
       "shared": {

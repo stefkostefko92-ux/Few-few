@@ -16,14 +16,15 @@ import {
   type Reply,
 } from './harness.js';
 
-/** A verified customer with a signed-in browser. */
+/** A verified customer with a signed-in browser; `deviceConsent` ticks the fingerprint box. */
 export async function customer(
   email: string,
   password = CUSTOMER_PASSWORD,
   ip = nextIp(),
+  deviceConsent = false,
 ): Promise<Browser> {
   const browser = new Browser(ip);
-  await browser.register('Тест Клиент', email, password);
+  await browser.register('Тест Клиент', email, password, deviceConsent);
   await browser.confirmEmail(
     linkIn((await mailTo(email, /Потвърдете имейла/)).text, '/verify-email?token='),
   );
