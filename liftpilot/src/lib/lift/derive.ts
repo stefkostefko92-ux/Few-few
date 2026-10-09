@@ -29,6 +29,8 @@ import { rigLength } from './rope';
 import { KL } from './norme';
 import { massModelOf } from './known';
 import { existingRoomCheck } from '@/shaft/room-above';
+import { slingCheck } from './arcata';
+import { carichiOf } from './modifica';
 
 export type { AutoFlags, DerivedKey, IssueKey, LiftDerived, LiftInputs, Origin } from './derive-types';
 import type { DerivedKey, IssueKey, LiftDerived, LiftInputs, Origin } from './derive-types';
@@ -209,13 +211,16 @@ function deriveOnce(inp: LiftInputs): LiftDerived {
   supportCk.push(...cwGapOver(Lp, supportCk));
   // a modification: the existing room's height under 2,0 m (UNI 10411-1:2024, 9.2; registry locale.esistente.altezza)
   if (V.context === 'repl' && above && Lp.inputs.room) supportCk.push(existingRoomCheck(Lp.inputs.room));
+  // a modification that keeps the sling under a new car or rated load: the sling for the new loads (arcata.ts)
+  const collaudo = collaudoOf(V, inp.collaudo), sling = slingCheck(collaudo, carichiOf(V));
+  if (sling) supportCk.push(sling);
   const beams = above ? hebOf(Lp, machine, load) : null, chosenBy = Lp.inputs.room?.heb;
   const bottomGap = scheme && g && !g.fits ? { now: S.cwWallGap, need: bottomGapNeeded(S, scheme, N.D, I.Dp, N.n, N.d, I.r, sheaveHalfBelow(N.D, N.n, N.d, shape)) } : null;
   return {
     shaft: Lp.inputs, values: V, layout: Lr, analysis, origin, noProposal, issues, calata, rinvioClash: clash, machine, supportChecks: supportCk, bottom: scheme, bottomGap,
     refugeHead: head !== null ? { now: Lp.inputs.vertical.headroom, need: head } : null,
     heb: beams && chosenBy ? { ...beams, auto: { profile: !chosenBy.profile, dir: !chosenBy.dir } } : null,
-    headPulleys: g ? 2 + extraBends(g) : 0, catalog, collaudo: collaudoOf(V, inp.collaudo), drawn,
+    headPulleys: g ? 2 + extraBends(g) : 0, catalog, collaudo, drawn,
     sim: simModel(I, N, analysis.res, Sec, vt),
   };
 }

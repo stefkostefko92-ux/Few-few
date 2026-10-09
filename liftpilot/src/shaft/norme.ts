@@ -10,6 +10,7 @@ import { VOCI_INGOMBRI } from './norme-ingombri';
 import { VOCI_PORTE } from './norme-porte';
 import { VOCI_VERT } from './norme-vert';
 import type { Access, ShaftCheckId } from './types';
+import type { BufferType } from './vertical';
 
 export const KV = {
   // UNI EN 81-20:2020, 5.4.2.1.1 (Prospetto 6): rated load [kg] → maximum available car area [m²], linear in between
@@ -116,6 +117,12 @@ export interface VoceVano {
   costanti?: readonly CostanteVano[];
   verifiche?: readonly ShaftCheckId[];
   nota?: string;
+  /** the clauses of the entry for one of its checks, where narrower than `riferimento` (the relazione's column) */
+  rifVerifica?: Partial<Readonly<Record<ShaftCheckId, string>>>;
+  /** the clauses the relazione cites when none of the entry's is of the lift's test standard (a check of one part only) */
+  rifFuoriNorma?: string;
+  /** about one buffer type: the relazione cites it only for the checks of the buffers of that type */
+  ammortizzatore?: BufferType;
 }
 
 const T20 = 'UNI EN 81-20:2020';

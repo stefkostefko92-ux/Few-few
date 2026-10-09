@@ -4,37 +4,13 @@
 import appIt from '../../../messages/it.json';
 import type { CheckStatus } from '@/calc/types';
 import { fitView, renderView, moveShapes, type Box } from '@/drawing';
-import { DEFAULTS, PLAN_KEYS, isUpperLimit, mergeChecks, planDims, planEntities, shownValue, travel, verdictOf, vociOfDesign, type Allowance, type Layout, type ShaftCheck, type ShaftCheckId } from '@/shaft';
+import { DEFAULTS, PLAN_KEYS, bufferType, isUpperLimit, mergeChecks, planDims, planEntities, shownValue, travel, verdictOf, vociOfDesign, type Allowance, type Layout, type ShaftCheck, type ShaftCheckId } from '@/shaft';
+import type { BufferType } from '@/shaft/vertical';
 import type { ShaftSource } from '../shaft-input';
 import { ambitoOf, type Collaudo } from '../lift/collaudo';
 import { EXISTING_NOTE, esitoOf } from './collaudo';
 import type { ReportBlock } from './model';
-
-/** The clauses of a registry entry, split at its "; " outside parentheses, each marked ⚠ when the entry is still to be
- *  verified on the text in force (the box at the head of the relazione says what the mark means). */
-export function refsOf(v: { riferimento: string; stato: string }): string[] {
-  const out: string[] = [], r = v.riferimento;
-  let depth = 0, cur = '';
-  for (let i = 0; i < r.length; i++) {
-    const ch = r.charAt(i);
-    if (ch === '(') depth += 1;
-    else if (ch === ')') depth = Math.max(0, depth - 1);
-    if (depth === 0 && r.startsWith('; ', i)) { out.push(cur); cur = ''; i += 1; continue; }
-    cur += ch;
-  }
-  out.push(cur);
-  return out.map((x) => x.trim()).filter((x) => x && x !== '—').map((x) => (v.stato === 'da_verificare' ? `${x} ⚠` : x));
-}
-
-/** The clauses of the entries behind a check, each once (marked when any entry of it is to be verified). */
-export function refsText(list: readonly string[], max = Infinity): string {
-  const seen = new Map<string, string>();
-  for (const x of list) {
-    const base = x.replace(/ ⚠$/, '');
-    if (!seen.has(base) || x.endsWith('⚠')) seen.set(base, x);
-  }
-  return [...seen.values()].slice(0, max).join('; ');
-}
+import { checkRefs } from './refs';
 
 export interface ReportDesign {
   id: string;
@@ -110,8 +86,11 @@ export function shaftBlocks(d: ReportDesign, calcQ: number, x: ShaftTexts, extra
     ['Motore del progetto', `LiftPilot vano ${d.engineVersion} · profilo normativo ${d.profileId}`],
     ['Impronta SHA-256 del progetto', d.sha256],
   ] });
-  const voci = vociOfDesign(I.access);
-  const refOf = (id: ShaftCheckId): string => refsText(voci.filter((v) => v.verifiche?.includes(id)).flatMap((v) => refsOf(v)), 3) || 'modello di calcolo del software';
+  // the clauses of each check (refs.ts): its own in each entry, the buffer types it concerns (b_car the car's, b_cw the
+  // counterweight's, b_type both), the UNI 10411 part of the test; every document once, none left out
+  const voci = vociOfDesign(I.access), norma = collaudo?.norma ?? 'en81', car = bufferType(V, 'car'), cw = bufferType(V, 'cw');
+  const buffers = (id: ShaftCheckId): readonly BufferType[] | undefined => (id === 'b_car' ? [car] : id === 'b_cw' ? [cw] : id === 'b_type' ? [car, cw] : undefined);
+  const refOf = (id: ShaftCheckId): string => checkRefs(voci, id, { norma, ammortizzatori: buffers(id) }, Infinity) || 'modello di calcolo del software';
   B.push({ t: 'h3', text: 'Verifiche del vano: pianta, sezione e locale macchina' });
   const esiti = checks.map((c) => (collaudo ? esitoOf(collaudo, c.id, st(c.status), c.status) : { text: st(c.status), status: c.status }));
   B.push({ t: 'grid', head: x.head, rows: checks.map((c, i) => {

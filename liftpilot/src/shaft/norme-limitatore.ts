@@ -21,6 +21,10 @@ export const KV_GOV = {
   govUnderCeiling: 420,
 } as const;
 
+/** The governor rope's distance: none in the standard, the software's choice by analogy with another clause. */
+const GOV_ROPE = 'nessuna distanza della fune del limitatore nella norma (UNI EN 81-20:2020, 5.6.2.2.1); 50 mm scelta del software, come tra '
+  + 'cabina e contrappeso in UNI EN 81-1:2008, 11.3; con la balaustra sul tetto 100 mm dentro il bordo, i 0,10 m di 5.4.7.4 d) sono rispettati';
+
 export const VOCI_LIMITATORE: readonly VoceVano[] = [
   {
     id: 'limitatore.posto', gruppo: 'ingombri', titolo: 'Posizione del limitatore di velocità e della sua fune',
@@ -32,11 +36,15 @@ export const VOCI_LIMITATORE: readonly VoceVano[] = [
       + 'agganciato si scelgono a mano; altrimenti il software mette la fune a metà dello spazio accanto alla cabina, 145 mm dietro l’asse della '
       + 'guida, sull’ultima parete libera — o sull’altra parete libera quando solo lì il limitatore resta fuori dall’ingombro dell’argano nel '
       + 'locale (l’argano girato con il motore verso la cabina può arrivare sopra la fune)',
-    riferimento: 'nessuna distanza della fune del limitatore nella norma (UNI EN 81-20:2020, 5.6.2.2.1); 50 mm come tra cabina e contrappeso in '
-      + 'UNI EN 81-1:2008, 11.3; con la balaustra sul tetto 100 mm dentro il bordo, i 0,10 m di 5.4.7.4 d) sono rispettati; superficie libera per '
-      + 'la manutenzione delle parti in movimento: UNI EN 81-20:2020, 5.2.6.3.2.1 b)',
+    riferimento: `${GOV_ROPE}; superficie libera per la manutenzione delle parti in movimento: UNI EN 81-20:2020, 5.2.6.3.2.1 b)`,
     fonte: `scelta del software (50, 60 e 400 mm); ${letto('UNI EN 81-20:2020', 'pp. 43, 71–72, 82–83')}; ${letto('UNI EN 81-1:2008', 'p. 67')}`, stato: 'scelta',
     verifiche: ['v_gov', 'v_govrail', 'm_gov', 'm_govfree'],
+    // each check its own source: the rope's distance by analogy, the strand's reach and the governor's place in the room
+    // the software's (the plan's geometry), the free area beside it the standard's
+    rifVerifica: {
+      v_gov: GOV_ROPE, v_govrail: 'scelta del software, dove arriva la leva del paracadute (nessuna distanza nella norma: UNI EN 81-20:2020, 5.6.2.2.1)',
+      m_gov: '—', m_govfree: 'UNI EN 81-20:2020, 5.2.6.3.2.1 b)',
+    },
     nota: 'con l’arcata a zaino, o senza una parete laterale libera, il software non mette il limitatore: la verifica della fune resta '
       + '«Attenzione» senza valore e il limitatore va posizionato a mano',
   },

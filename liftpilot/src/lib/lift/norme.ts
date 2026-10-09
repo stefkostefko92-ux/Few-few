@@ -213,7 +213,8 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
       'slab'],
     nota: 'lo schema reale va rilevato sull’impianto; con la macchina sotto il vano lo spazio sotto la fossa è accessibile: paracadute del '
       + 'contrappeso — la EN 81-20 non ammette più il pilastro pieno fino al terreno — (UNI EN 81-20:2020, 5.2.5.4) e fondo della fossa per le reazioni degli ammortizzatori; '
-      + 'in una modifica la UNI 10411-1:2024 (6.14) accetta al posto del paracadute un pilastro esistente fino al terreno, verificato per i nuovi carichi',
+      + 'in una modifica la UNI 10411-1:2024 (6.14) accetta al posto del paracadute un pilastro esistente fino al terreno, verificato per i nuovi carichi; '
+      + 'con la UNI 10411-11:2024 quello che l’impianto ha secondo la sua edizione della UNI EN 81-1 (5.5 a)), verificato per i nuovi carichi (6.6 e 6.13)',
   },
   {
     id: 'impianto.catalogo', titolo: 'Macchina proposta dal catalogo di un costruttore',

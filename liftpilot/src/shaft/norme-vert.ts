@@ -10,6 +10,7 @@ import { COSTANTI_HEB, KV_HEB, VOCI_HEB } from './norme-heb';
 import { COSTANTI_LIMITATORE, KV_GOV, VOCI_LIMITATORE } from './norme-limitatore';
 import { COSTANTI_LOCALE, KV_LOCALE, VOCI_LOCALE } from './norme-locale';
 import { VOCI_SPAZI } from './norme-spazi';
+import { VOCI_AMMORTIZZATORI } from './norme-ammortizzatori';
 import { VOCI_SUPPORTO } from './norme-supporto';
 
 const T20 = 'UNI EN 81-20:2020', T50 = 'UNI EN 81-50:2020';
@@ -151,36 +152,7 @@ export type CostanteVert = keyof typeof KV_VERT;
 
 export const VOCI_VERT: readonly VoceVano[] = [
   ...VOCI_SPAZI,
-  {
-    id: 'ammortizzatori.corsa', gruppo: 'sezione', titolo: 'Ammortizzatori ad accumulo di energia lineari (molle)',
-    valore: 'ammessi fino a 1 m/s; corsa ≥ 0,135·v² m e comunque ≥ 65 mm; extracorsa della cabina e del contrappeso ≥ 0 (nessun minimo nella norma)',
-    riferimento: 'UNI EN 81-20:2020, 5.8.1.5 (fino a 1 m/s) e 5.8.2.1.1.1 (corsa); nessuna extracorsa minima in metri: l’interruttore di extracorsa '
-      + 'interviene prima che la cabina o il contrappeso tocchino gli ammortizzatori (5.12.2.1)', fonte: letto(T20, 'pp. 98, 131'), stato: 'confermato',
-    verifiche: ['b_type', 'b_car', 'b_cw', 'b_runby'],
-  },
-  {
-    id: 'ammortizzatori.poliuretano', gruppo: 'sezione', titolo: 'Ammortizzatori ad accumulo di energia non lineari (tamponi in poliuretano)',
-    valore: 'ammessi fino a 1 m/s come le molle; nessuna corsa minima da formula: il campo di masse del certificato di esame di tipo per la velocità '
-      + 'deve comprendere, per ogni tampone, la cabina vuota e a pieno carico (o il contrappeso); «completamente compresso» vuol dire compresso del '
-      + '90 % dell’altezza, quindi la corsa è 0,9·H negli spazi in fossa e in testata; tampone tipico alti 80 mm (P+S Diepocell D, Ø da 80 a 220 mm; '
-      + 'ACLA AUTAN XL)',
-    riferimento: 'UNI EN 81-20:2020, 5.8.1.5, 5.8.1.7, 5.8.2.1.2.1 e 5.8.2.1.2.2 (compresso al 90 %); UNI EN 81-50:2020, 5.5.4 (esame di tipo)',
-    fonte: `${letto(T20, 'pp. 98–99')}; ${letto(T50, 'p. 24')}; il tampone tipico dai cataloghi P+S Diepocell (wwlift.de) e ACLA AUTAN XL `
-      + '(acla.de), estratti di ricerca del 1° ottobre 2026', stato: 'confermato',
-    nota: 'il tampone tipico alto 80 mm è un dato di catalogo, non della norma: va sostituito con quello montato',
-    verifiche: ['b_type', 'b_car', 'b_cw'],
-  },
-  {
-    id: 'ammortizzatori.idraulici', gruppo: 'sezione', titolo: 'Ammortizzatori a dissipazione di energia (idraulici)',
-    valore: 'a ogni velocità; corsa ≥ 0,0674·v² m (arresto per gravità al 115 % della velocità nominale); la corsa ridotta con il controllo del '
-      + 'rallentamento non è considerata; ammortizzatori tipici: Oleo LSB10 fino a 1 m/s, alto 222,2 mm con corsa 73,4 mm; LSB16 fino a 1,6 m/s, '
-      + 'alto 485,5 mm con corsa 173,5 mm',
-    riferimento: 'UNI EN 81-20:2020, 5.8.1.6 e 5.8.2.2.1 (corsa); la corsa ridotta di 5.8.2.2.2 non è usata',
-    fonte: `${letto(T20, 'p. 99')}; gli ammortizzatori tipici dal catalogo Oleo LSB e SEB (oleo.co.uk), estratti di ricerca del 1° ottobre 2026`,
-    stato: 'confermato',
-    nota: 'gli ammortizzatori Oleo sono dati di catalogo, non della norma: vanno sostituiti con quelli montati',
-    verifiche: ['b_type', 'b_car', 'b_cw'],
-  },
+  ...VOCI_AMMORTIZZATORI,
   ...VOCI_LOCALE,
   {
     id: 'carichi.fossa', gruppo: 'carichi', titolo: 'Carichi sul pavimento della fossa',
@@ -207,6 +179,18 @@ export const VOCI_VERT: readonly VoceVano[] = [
       + 'coefficiente dinamico; sulla soletta anche la massa di macchina e telaio',
     riferimento: 'UNI EN 81-20:2020, 5.2.1.8.1 e appendice E.1 (informativa: l’effetto dinamico delle masse in moto con un fattore 2); il DPR '
       + '1497/1963, art. 5.1, per gli impianti costruiti secondo esso chiedeva 1,5 volte il carico statico delle funi', fonte: letto(T20, 'pp. 26, 148'), stato: 'confermato',
+  },
+  {
+    id: 'arcata.carichi', gruppo: 'carichi', titolo: 'Arcata esistente sotto la cabina nuova o la portata nuova: verifica per i nuovi carichi',
+    valore: 'nella modifica che lascia l’arcata esistente e cambia la cabina o la portata, T* (cabina con arcata, porte e operatore più la portata) '
+      + 'e la portata si confrontano con i carichi documentati: se vanno oltre i limiti (con la UNI 10411-1 T* o la portata oltre il prospetto 1, con '
+      + 'la UNI 10411-11 qualunque aumento di T*) o non si possono confrontare perché i carichi documentati mancano, l’arcata va verificata per i '
+      + 'nuovi carichi con i dati del suo costruttore o il calcolo del tecnico; il software non ha il modello dell’arcata: «Attenzione» senza valore. '
+      + 'Con T* che diminuisce valgono gli ammortizzatori e il paracadute progressivo per i nuovi carichi (verifiche del carico nell’esito)',
+    riferimento: 'UNI 10411-1:2024, 6.1 e 6.9; UNI 10411-11:2024, 6.1, 6.9 e 22',
+    fonte: `${letto('UNI 10411-1:2024', 'pp. 7–8')}; ${letto('UNI 10411-11:2024', 'pp. 7–8 e 15')}`, stato: 'confermato',
+    verifiche: ['sl_frame'],
+    nota: 'la UNI 10411-11:2024 (6.1) esclude la 6.9 quando aumenta solo il carico lato contrappeso; con l’arcata sostituita la verifica non si fa',
   },
   {
     id: 'carichi.cavi', gruppo: 'carichi', titolo: 'Massa dei cavi flessibili',

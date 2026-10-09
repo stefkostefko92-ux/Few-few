@@ -52,6 +52,8 @@ export const VOCI_GOLE: readonly Voce[] = [
       + 'informazione, oltre «Attenzione»',
     riferimento: 'UNI 10411-1:2024, appendice D.2 e 14.1 c)–d)', fonte: `${letto(U1, 'pp. 13 e 34')}`, stato: 'confermato',
     costanti: ['pressBase', 'pressSpeed', 'pressU', 'pressV'], verifiche: ['g_press'], rifVerifica: { g_press: `${U1}, appendice D.2` },
+    // tested to another standard, the software still reports the pressure by this formula
+    rifFuoriNorma: `${U1}, appendice D.2 (formula)`,
     nota: 'obbligatoria solo quando i coefficienti di sicurezza minimi 12 e 16 sostituiscono il calcolo della UNI EN 81-50:2020, 5.12 (UNI '
       + '10411-1:2024, 14.1 c)–d)): il software calcola S_f secondo la 5.12 e riporta la pressione come informazione, come fa il progettista '
       + 'per l’organismo di verifica; la gola a V con sottosquadro non ha una formula nella D.2 (il maggiore dei due è una scelta del software)',

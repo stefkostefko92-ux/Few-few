@@ -5,6 +5,8 @@ import type { SymbolName } from '@/drawing';
 import { KV_VERT } from '@/shaft/norme-vert';
 import type { Layout } from '@/shaft/types';
 import type { BottomScheme } from '../lift/bottom';
+import type { NormaCollaudo } from '../lift/collaudo';
+import { pilastroRif } from '../report/collaudo';
 import { P_ESTIMATE_RULE } from '../lift/marks';
 import type { Fmt } from '../present/tr';
 import type { LiftUse, SafetyGear } from './forces';
@@ -30,7 +32,10 @@ export interface Note {
  *  the sills, the counterweight's sign and the brackets' anchors (notes-vano.ts), in NOTA 1 before its references. */
 export interface NoteCase {
   scheme?: BottomScheme | null;
-  existing?: boolean;
+  /** the test's base standard: a part of UNI 10411 makes the rooms the existing ones (9.2) and, under the pit, names the
+   *  clause of the pillar that may stand in place of the counterweight's safety gear (pilastroRif); absent or UNI EN
+   *  81-20/50: a new lift */
+  norma?: NormaCollaudo;
   detail?: string;
 }
 
@@ -39,7 +44,8 @@ export interface NoteCase {
  *  shaft), and the space under the shaft of a machine under the pit —; the control cabinet. `below`: the machine stands
  *  below, its scheme in `c` (the pulleys hung under the slab when none). */
 export function clientNotes(L: Layout, below = false, c: NoteCase = {}): Note[] {
-  const K = KV_VERT, room = L.inputs.room !== null, ex = c.existing === true, scheme = below ? c.scheme ?? 'head' : null, detail = c.detail ?? '';
+  const K = KV_VERT, room = L.inputs.room !== null, norma = c.norma ?? 'en81', ex = norma !== 'en81', scheme = below ? c.scheme ?? 'head' : null;
+  const detail = c.detail ?? '';
   const notes: Omit<Note, 'tag'>[] = [
     {
       title: 'VANO DI CORSA',
@@ -58,7 +64,7 @@ export function clientNotes(L: Layout, below = false, c: NoteCase = {}): Note[] 
     // the machine's room below, then over the shaft what the scheme has there
     notes.push(belowRoomNote(scheme === 'under', ex));
     notes.push(scheme === 'room' ? roomNote(ex && room ? 'pulleysExisting' : 'pulleys') : hungNote());
-    if (scheme === 'under') notes.push(underNote(ex));
+    if (scheme === 'under') notes.push(underNote(norma));
   }
   notes.push({
     title: 'ARMADIO DEL QUADRO (SE PRESENTE)',
@@ -171,8 +177,9 @@ export function hungNote(): Omit<Note, 'tag'> {
 }
 
 /** A machine under the pit: a space people reach under the shaft (UNI EN 81-20:2020, 5.2.5.4; registry
- *  paracadute.contrappeso). */
-export function underNote(existing: boolean): Omit<Note, 'tag'> {
+ *  paracadute.contrappeso), in a modification with the pillar that may stand in place of the counterweight's safety gear
+ *  under the part of UNI 10411 of the test (pilastroRif). */
+export function underNote(norma: NormaCollaudo): Omit<Note, 'tag'> {
   const K = KV_VERT;
   return {
     title: 'SPAZIO ACCESSIBILE SOTTO IL VANO',
@@ -180,8 +187,8 @@ export function underNote(existing: boolean): Omit<Note, 'tag'> {
       + 'oltre ai carichi P5-P8 di questo foglio (sotto ogni guida anche la presa del paracadute). Il contrappeso ha il paracadute: progressivo '
       + `oltre ${K.cwGearInstantV} m/s, fino a ${K.cwGearInstantV} m/s anche istantaneo, azionato dal limitatore di velocità o, fino a `
       + `${K.cwGearInstantV} m/s, dalla rottura della sospensione o da una fune di sicurezza; tipo e azionamento si indicano nei dati dell’impianto. `
-      + (existing ? 'In una modifica può mancare se sotto gli ammortizzatori del contrappeso c’è già un pilastro fondato sul terreno, verificato per '
-        + 'i nuovi carichi (UNI 10411-1:2024, 6.14). ' : '')
+      + (norma !== 'en81' ? 'In una modifica può mancare se sotto gli ammortizzatori del contrappeso c’è già un pilastro fondato sul terreno, '
+        + `verificato per i nuovi carichi (${pilastroRif(norma)}). ` : '')
       + 'Riferimenti: UNI EN 81-20:2020, punti 5.2.5.4, 5.2.1.8.4, 5.6.2.1.2 e prospetto 11.',
   };
 }

@@ -4,14 +4,14 @@
 // correction made on the purchased text changes the engine, the checklist and the report together.
 // Texts are in Italian: they go to the engineer and into the report.
 
-import { letto } from './norme-fonti';
+import { MACCHINA_AMMESSA, letto } from './norme-fonti';
 import { VOCI_ALBERO, VOCI_AZIONAMENTO } from './norme-azionamento';
 import { VOCI_FRENO } from './norme-freno';
 import { VOCI_FUNI } from './norme-funi';
 import { VOCI_GOLE } from './norme-gole';
 import { VOCI_MODELLO } from './norme-modello';
 import { VOCI_SOCCORSO } from './norme-soccorso';
-import type { CheckId, GrooveType } from './types';
+import type { CheckId, GrooveType, MachineStd } from './types';
 
 /** Numeric constants of the engine. Values are the ones of the prototype (research, chapter 4). */
 export const K = {
@@ -108,6 +108,13 @@ export interface Voce {
   rifVerifica?: Partial<Readonly<Record<CheckId, string>>>;
   /** the clauses by the machine's groove type: the relazione cites the entry only for the types listed */
   rifGola?: Partial<Readonly<Record<GrooveType, string>>>;
+  /** the clauses by the machine's standard (UNI EN 81-1 without a year: the edition of the test, report/refs.ts): the
+   *  relazione cites the entry only for the standards listed */
+  rifStd?: Partial<Readonly<Record<MachineStd, string>>>;
+  /** the clauses the relazione cites when none of the entry's is of the lift's test standard (the other part's formula) */
+  rifFuoriNorma?: string;
+  /** about the reduced-stroke buffers: the relazione cites it only with them */
+  corsaRidotta?: true;
 }
 
 export const PROFILO = {
@@ -147,6 +154,8 @@ export const VOCI: readonly Voce[] = [
     riferimento: 'UNI EN 81-20:2020, 5.5.3 c) 2); UNI EN 81-1:2008, 9.3 c); UNI 10411-1:2024, 14.1 a)–b)',
     fonte: `${letto(T20, 'p. 75')}; ${letto('UNI EN 81-1:2008', 'p. 55')}; ${letto(U1, 'p. 13')}`, stato: 'confermato',
     verifiche: ['tr_stall'],
+    // the machine's own standard: UNI EN 81-1's clause only for a machine to it, in the edition of the test
+    rifStd: { 'en81-20': `${T20}, 5.5.3 c) 2); ${MACCHINA_AMMESSA['en81-20']}`, 'en81-1': `UNI EN 81-1, 9.3 c); ${MACCHINA_AMMESSA['en81-1']}` },
     nota: 'La norma non dice quale dispositivo: deve accorgersi del blocco e fermare la macchina prima di un sollevamento pericoloso. Il '
       + 'temporizzatore della 5.9.2.7 è un obbligo distinto. Con la UNI 10411-11:2024 vale solo se la macchina è verificata secondo la UNI EN 81-20.',
   },
@@ -183,7 +192,8 @@ export const VOCI: readonly Voce[] = [
     id: 'trazione.decelerazione.corsa.ridotta', gruppo: 'trazione', titolo: 'Decelerazione della verifica di frenatura con ammortizzatori a corsa ridotta',
     valore: '0,8 m/s²', riferimento: 'UNI EN 81-1:2008, M.2.1.2; UNI EN 81-50:2020, 5.11.2.2.2',
     fonte: `${letto('UNI EN 81-1:2008', 'p. 167')}; ${letto(T50, 'p. 40')}`, stato: 'scelta',
-    costanti: ['aeReducedStroke'], verifiche: ['tr_dn', 'tr_up'],
+    costanti: ['aeReducedStroke'], verifiche: ['tr_dn', 'tr_up'], corsaRidotta: true,
+    rifVerifica: { tr_dn: `${T50}, 5.11.2.2.2; valore scelto dal software come nella UNI EN 81-1:2008, M.2.1.2`, tr_up: `${T50}, 5.11.2.2.2; valore scelto dal software come nella UNI EN 81-1:2008, M.2.1.2` },
     nota: 'La UNI EN 81-50:2020 non dà un numero: con ammortizzatori a corsa ridotta la decelerazione è la minima che porta cabina e contrappeso '
       + 'alla velocità di progetto degli ammortizzatori, mai sotto 0,5 m/s². Il software tiene 0,8 m/s², il valore della UNI EN 81-1:2008: '
       + 'l’ingegnere lo sostituisce con quello calcolato dai dati degli ammortizzatori.',
@@ -237,7 +247,8 @@ export const VOCI: readonly Voce[] = [
       + '(14.1); UCM esistenti che funzionano ancora e, senza UCM conforme alla 5.6.7 e con il rallentamento controllato, interruzione se il '
       + 'freno non si apre (14.3); funi nuove e attacchi come gli originali, altrimenti verificati con la valutazione 4.3 (17)',
     riferimento: 'UNI 10411-1:2024, 4, 14.1–14.4, 17.1, 25.5, appendice C; UNI 10411-11:2024, 14.1–14.3, 17',
-    rifVerifica: { b_sets: `${U1}, 14.1 a); ${U11}, 14.1` },
+    // the machine's own standard: 14.1 a) for one to UNI EN 81-20, b) for one to UNI EN 81-1 (as freno.gruppi)
+    rifStd: MACCHINA_AMMESSA,
     fonte: `${letto(U1, 'pp. 6, 13–14, 16, 21 e 30')}; ${letto(U11, 'pp. 12 e 14')}`,
     stato: 'confermato',
     verifiche: ['b_sets'],

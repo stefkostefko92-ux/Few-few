@@ -18,6 +18,8 @@ import { hebRows } from './heb-rows';
 import { isUpperLimit, mergeChecks, shownValue } from '@/shaft/checks';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { existingRoomCheck } from '@/shaft/room-above';
+import { slingCheck } from '../lift/arcata';
+import { carichiOf } from '../lift/modifica';
 import { bracketCount, maxBracketSpan, railSpan } from '@/shaft/brackets';
 import { cwGapOver } from '@/shaft/cw-gap';
 import { bufferType } from '@/shaft/buffers';
@@ -213,6 +215,9 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     ...cwGearChecks(underPit, Pl, I.v, C.norma !== 'en81')];
   // a modification: the existing room's height under 2,0 m (UNI 10411-1:2024, 9.2)
   if (I.context === 'repl' && room && !below) all.push(existingRoomCheck(room));
+  // the existing sling under a new car or rated load (arcata.ts)
+  const sling = slingCheck(C, carichiOf(x.values));
+  if (sling) all.push(sling);
   const checks: DataSheet['checks'] = all.map((c) => {
     const label = (labels[`c_${c.id}`] ?? c.id).replace(' (UNI EN 81-20, ', ' (');
     // a check of a part that stays as it is is out of the acceptance test (note on the sheet)
@@ -224,7 +229,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   // the rooms as the scheme of a machine below has them, existing in a modification tested to UNI 10411-1/-11 (9.2); the
   // shaft's note with the pit, the sills, the counterweight's sign and the brackets' anchors (notes-vano.ts)
   const gap = all.find((c) => c.id === 'h_cwgap')?.value ?? null;
-  const sp = spaceLegend(L, fmt), notes = clientNotes(L, below, { scheme, existing: C.norma !== 'en81',
+  const sp = spaceLegend(L, fmt), notes = clientNotes(L, below, { scheme, norma: C.norma,
     detail: shaftDetailText(L, { cwGap: gap === null ? null : num(gap), fx: fmt(F.fx, 0), fy: fmt(F.fy, 0) }) });
   if (pEstimate) notes.push(estimateNote(fmt(I.P, 0), `NOTA ${notes.length + 1}`));
   if (!Pl.safetyGear) notes.push(safetyGearNote(`NOTA ${notes.length + 1}`));
@@ -232,7 +237,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   if (ambitoOf(C, 'gr_stress') === 'applies') notes.push(railNote(rc, railLabel(L.inputs.carRail), gear, Pl.liftUse, `NOTA ${notes.length + 1}`, fmt));
   // the governor's load not given; the HEB beams' bearings (round 36)
   if (Gr && SL.heb) notes.push(hebNote(`NOTA ${notes.length + 1}`));
-  const test = collaudoNote(C, `NOTA ${notes.length + 1}`);
+  const test = collaudoNote(C, `NOTA ${notes.length + 1}`, carichiOf(x.values));
   if (test) notes.push(test);
 
   return {

@@ -96,6 +96,7 @@ export const VOCI_GUIDE: readonly VoceVano[] = [
     fonte: letto('UNI EN 81-20:2020', 'pp. 27, 35, 79, 81'), stato: 'confermato', verifiche: ['sg_cw'],
     nota: 'le guide del contrappeso con la presa del paracadute (UNI EN 81-50:2020, 5.10) non sono verificate dal software (modello.non.calcolate); '
       + 'in una modifica la UNI 10411-1:2024 (6.14) accetta al posto del paracadute un pilastro esistente fino al terreno, verificato per i nuovi '
-      + 'carichi: è una scelta del progettista',
+      + 'carichi: è una scelta del progettista; con la UNI 10411-11:2024 il pilastro è quello che l’impianto ha secondo la sua edizione della UNI '
+      + 'EN 81-1 (5.5 a)), verificato per i nuovi carichi (6.6 e 6.13)',
   },
 ];

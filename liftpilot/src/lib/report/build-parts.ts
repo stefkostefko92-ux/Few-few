@@ -17,6 +17,8 @@ import type { BlockStatus, ReportBlock } from './model';
 import type { BottomScheme } from '../lift/bottom';
 import type { Cell } from '../present/tables';
 import { KV_VERT } from '@/shaft';
+import type { NormaCollaudo } from '../lift/collaudo';
+import { pilastroRif } from './collaudo';
 
 type Fmt = (x: number, dec?: number) => string;
 
@@ -88,12 +90,12 @@ export const rowStatus = (row: readonly Cell[]): BlockStatus => { const s = row.
  *  registry paracadute.contrappeso) — the pit floor for its load besides P5–P8, the counterweight's safety gear given in
  *  the data of the installation, in a modification (UNI 10411-1/-11) an existing pillar in its place as the designer
  *  chooses. */
-export function underPitText(modification: boolean): string {
+export function underPitText(norma: NormaCollaudo): string {
   const K = KV_VERT, v = K.cwGearInstantV;
   return `Spazio accessibile sotto il vano (UNI EN 81-20:2020, 5.2.5.4): fondo della fossa progettato per almeno ${K.pitFloorAccessible} N/m² oltre ai `
     + 'carichi P5–P8 del foglio 1 delle tavole (sotto ogni guida del contrappeso anche la presa del paracadute); paracadute del contrappeso, '
     + `progressivo oltre ${v} m/s e fino a ${v} m/s anche istantaneo, azionato dal limitatore o, fino a ${v} m/s, dalla rottura della sospensione o `
     + 'da una fune di sicurezza: tipo e azionamento si indicano nei dati dell’impianto e la verifica del foglio 1 non passa finché mancano'
-    + (modification ? '; in una modifica può stare al suo posto un pilastro esistente fino al terreno sotto gli ammortizzatori del contrappeso, '
-      + 'verificato per i nuovi carichi (UNI 10411-1:2024, 6.14): è una scelta del progettista' : '');
+    + (norma !== 'en81' ? '; in una modifica può stare al suo posto un pilastro esistente fino al terreno sotto gli ammortizzatori del contrappeso, '
+      + `verificato per i nuovi carichi (${pilastroRif(norma)}): è una scelta del progettista` : '');
 }

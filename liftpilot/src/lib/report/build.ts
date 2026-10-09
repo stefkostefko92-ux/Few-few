@@ -17,6 +17,7 @@ import { cwGapOver } from '@/shaft/cw-gap';
 import { NO_MARKS, P_ESTIMATE_RULE, type ValueMarks } from '../lift/marks';
 import { ambitoOf, collaudoOf } from '../lift/collaudo';
 import { carichiOf } from '../lift/modifica';
+import { slingCheck } from '../lift/arcata';
 import { analyse } from '../present/analysis';
 import { quickRows } from '../present/quick';
 import { techTables } from '../present/tables';
@@ -32,7 +33,7 @@ import { cwGearOf } from '../tavole/cw-gear';
 import { elaboratiBlocks, type IssuedSet } from './elaborati';
 import { machineMass } from '../lift/machine-mass';
 import { roomGeo } from '@/shaft/machine-room';
-import { ESITI_CALCOLO, EXISTING_NOTE, STD_81_1, adaptSection, adempimentiBlocks, collaudoRows, collaudoText, esitiBlocks, esitoOf, riferimentiRows } from './collaudo';
+import { ESITI_CALCOLO, EXISTING_NOTE, adaptSection, adempimentiBlocks, collaudoRows, collaudoText, esitiBlocks, esitoOf, riferimentiRows, std81_1 } from './collaudo';
 import { machineSpec, sheaveAxisBelow } from '../lift/machine';
 import { shapeOf } from '../catalog/shapes';
 import { rinvioRow } from './machine-shape';
@@ -98,9 +99,9 @@ export function buildReport(r: ReportInput): ReportDoc {
   ] });
 
   section('Oggetto');
-  B.push({ t: 'p', text: `Verifica dell’argano a riduttore ${rif ? "per il rifacimento di un impianto esistente che ne mantiene l’arcata" : repl ? "in sostituzione su impianto esistente" : "per un impianto nuovo"} (${layoutText}, ${I.r}:1): aderenza al caricamento, in frenatura di emergenza e a cabina bloccata (UNI EN 81-50:2020, 5.11); funi e coefficiente di sicurezza (UNI EN 81-20:2020, 5.5; UNI EN 81-50:2020, 5.12); freno (UNI EN 81-20:2020, 5.9.2.2); azionamento, manovra di emergenza e carico sull’albero secondo il modello di calcolo del software.${I.std === 'en81-1' ? STD_81_1 : ''}${collaudoText(C, repl)}${r.design ? ' La pianta del vano e della cabina, con le sue verifiche, viene dal progetto del vano del software (sezione «Vano e cabina»).' : ''}` });
+  B.push({ t: 'p', text: `Verifica dell’argano a riduttore ${rif ? "per il rifacimento di un impianto esistente che ne mantiene l’arcata" : repl ? "in sostituzione su impianto esistente" : "per un impianto nuovo"} (${layoutText}, ${I.r}:1): aderenza al caricamento, in frenatura di emergenza e a cabina bloccata (UNI EN 81-50:2020, 5.11); funi e coefficiente di sicurezza (UNI EN 81-20:2020, 5.5; UNI EN 81-50:2020, 5.12); freno (UNI EN 81-20:2020, 5.9.2.2); azionamento, manovra di emergenza e carico sull’albero secondo il modello di calcolo del software.${I.std === 'en81-1' ? std81_1(C.norma) : ''}${collaudoText(C, repl)}${r.design ? ' La pianta del vano e della cabina, con le sue verifiche, viene dal progetto del vano del software (sezione «Vano e cabina»).' : ''}` });
   section('Riferimenti normativi');
-  B.push({ t: 'grid', head: ['Documento', 'Ambito'], rows: riferimentiRows(repl, C.norma, I.std, !!r.design), widths: [0.38, 0.62], align: ['l', 'l'] });
+  B.push({ t: 'grid', head: ['Documento', 'Ambito'], rows: riferimentiRows(repl, C, I.std, !!r.design), widths: [0.38, 0.62], align: ['l', 'l'] });
 
   section("Dati dell’impianto");
   const plant: [string, string][] = [
@@ -144,6 +145,9 @@ export function buildReport(r: ReportInput): ReportDoc {
   if (L) beams.push(...cwGapOver(L, beams));
   // a modification: the existing room's height under 2,0 m (UNI 10411-1:2024, 9.2), as the design's verdict takes it
   if (I.context === 'repl' && L?.inputs.room && !scheme) beams.push(existingRoomCheck(L.inputs.room));
+  // the existing sling under a new car or rated load (arcata.ts), as the design's verdict takes it
+  const sling = slingCheck(C, carichiOf(r.values));
+  if (L && sling) beams.push(sling);
   if (r.design) {
     section('Vano e cabina');
     B.push(...shaftBlocks(r.design, I.Q, { fmt, st, when, head: [t('col_item'), t('col_val'), t('col_lim'), t('col_res'), 'Riferimento'] }, beams, C));
@@ -203,8 +207,9 @@ export function buildReport(r: ReportInput): ReportDoc {
 
   section('Verifiche');
   // clauses of the registry entries behind a check, each once; entries without a clause are the calculation model
-  // of the standard the lift is tested to and of the machine's groove, merged by document (refs.ts)
-  const refOf = (id: CheckId): string => checkRefs(VOCI, id, C.norma, N.groove.type) || 'modello di calcolo del software';
+  // of the standard the lift is tested to, of the machine's groove and standard and of its buffers, merged by document
+  // (refs.ts)
+  const refOf = (id: CheckId): string => checkRefs(VOCI, id, { norma: C.norma, groove: N.groove.type, std: I.std, corsaRidotta: I.buffers }) || 'modello di calcolo del software';
   const esiti = res.checks.map((c) => esitoOf(C, c.id, st(c.status), c.status));
   B.push({ t: 'grid', head: [t('col_item'), t('col_val'), t('col_lim'), t('col_res'), 'Riferimento'],
     rows: res.checks.map((c, i) => [X.checkText(c), X.checkValue(c, N), X.checkLimit(c, N), esiti[i]?.text ?? '', refOf(c.id)]),
@@ -263,7 +268,7 @@ export function buildReport(r: ReportInput): ReportDoc {
   const estimated = [
     ...(m.pEstimate ? [`Massa della cabina: è la stima del software (${P_ESTIMATE_RULE}); sostituirla con quella reale e ripetere il calcolo`] : []),
     ...(I.layout === 'bottom' && m.bottom ? [`Schema delle funi con la macchina in basso (${BOTTOM_IT[m.bottom]}): rinvii, rami e passaggi ricostruiti dal software; rilevarli sull’impianto`] : []),
-    ...(I.layout === 'bottom' && m.bottom === 'under' ? [underPitText(C.norma !== 'en81')] : []),
+    ...(I.layout === 'bottom' && m.bottom === 'under' ? [underPitText(C.norma)] : []),
   ];
   B.push({ t: 'list', items: [...estimated, ...X.verifyList(I, N, res)].map((x) => `⚠ ${x}`) });
 

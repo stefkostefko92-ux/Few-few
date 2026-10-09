@@ -8,7 +8,7 @@ import type { CheckId, Gruppo, Stato } from '../src/calc/index';
 import { VOCI_VANO } from '../src/shaft/index';
 import type { GruppoVano, ShaftCheckId } from '../src/shaft/index';
 import { VOCI_IMPIANTO } from '../src/lib/lift/norme';
-import { ADEMPIMENTI, NORME_INFO, type PuntoInSito } from '../src/lib/lift/norme-collaudo';
+import { ADEMPIMENTI, NORME_INFO, OBBLIGHI_PARTI, type PuntoInSito } from '../src/lib/lift/norme-collaudo';
 import { NORMA_SIGLA, NORME_AGGIUNTIVE, NORME_COLLAUDO, VERIFICHE_DM236, VERIFICHE_NTC } from '../src/lib/lift/collaudo';
 import { VOCI_SIM } from '../src/sim/norme';
 
@@ -66,6 +66,7 @@ const VERIFICA_VANO: Record<ShaftCheckId, string> = {
   h_hung: 'parte più alta della cabina sotto le pulegge appese alla soletta', sg_cw: 'paracadute del contrappeso con spazi accessibili sotto il vano',
   h_refuge_rig: 'spazio di rifugio sul tetto di cabina: altezza libera fino a ciò che pende sotto la soletta',
   h_stand_rig: 'spazio di rifugio sul tetto di cabina fuori da ciò che pende sotto la soletta',
+  sl_frame: 'modifica: arcata esistente con carichi oltre i limiti (T* o portata) o non documentati, da verificare per i nuovi carichi',
 };
 const ORDER_VANO: readonly GruppoVano[] = ['cabina', 'distanze', 'accessibilita', 'porte', 'ingombri', 'sezione', 'locale', 'carichi', 'modello_vano'];
 const IMPIANTO = 'Impianto: valori calcolati dai dati inseriti una volta', SIMULAZIONE = 'Simulazione nel tempo (3D e grafici)';
@@ -89,6 +90,10 @@ const rows = [
     ...[...NORME_COLLAUDO, ...NORME_AGGIUNTIVE.filter((n) => !NORME_COLLAUDO.some((b) => b === n))].map((n) => ({
       key: n, gruppo: `Collaudo: ${NORMA_SIGLA[n]}`, punti: NORME_INFO[n].punti,
       verifiche: (n === 'dm236' ? VERIFICHE_DM236 : n === 'ntc2018' ? VERIFICHE_NTC : []).map((c) => VERIFICA_VANO[c]).join('; '),
+    })),
+    // what each part of UNI 10411 asks of the parts replaced besides the machine (the relazione's adaptations)
+    ...(['10411-1', '10411-11'] as const).map((n) => ({
+      key: `parti.${n}`, gruppo: `Collaudo: ${NORMA_SIGLA[n]}, parti sostituite oltre la macchina`, punti: Object.values(OBBLIGHI_PARTI[n]), verifiche: '',
     }))].flatMap(({ key, gruppo, punti, verifiche }) => punti.map((p: PuntoInSito, i) => ({
     id: `collaudo.${key}.${i + 1}`, gruppo, voce: p.rif, valore: p.testo, riferimento: p.rif, fonte: p.fonte ?? 'ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)',
     stato: STATO[p.stato], verifiche, nota: '',
