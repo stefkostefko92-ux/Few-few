@@ -22,7 +22,7 @@
         <% if (r.termsVersion && !r.confirmationSentAt && (r.status === 'OPEN' || r.status === 'DONE')) { %><br><small class="bad-text"><%= t('admin.requests.notConfirmed') %></small><% } %></td>
       <td data-label="<%= t('plan.col.actions') %>"><% if (r.status === 'OPEN') { %><div class="actions">
         <% if (can('accounts:plan')) { %><a class="btn btn-small btn-primary" href="/admin/accounts/<%= r.user.id %>?request=<%= r.id %>#plan"><%= t('admin.requests.activate') %></a><% } %>
-        <% if (can('requests:handle')) { %><form method="post" action="/admin/requests/<%= r.id %>/reject" data-confirm="<%= t('admin.requests.rejectConfirm') %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-small btn-quiet" type="submit"><%= t('admin.requests.reject') %></button></form><% } %>
+        <% if (can('requests:handle')) { %><form method="post" action="/admin/requests/<%= r.id %>/reject" data-confirm="<%= t('admin.requests.rejectConfirm', { email: r.user.email, option: r.option === 'lifetime' ? t('plan.lifetime') : t('plan.months', { n: r.months }) }) %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-small btn-quiet" type="submit"><%= t('admin.requests.reject') %></button></form><% } %>
       </div><% } else { %>—<% } %></td>
     </tr>
   <% } %>

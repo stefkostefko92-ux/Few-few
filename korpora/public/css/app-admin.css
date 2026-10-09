@@ -205,3 +205,72 @@ a.stat:hover {
     white-space: nowrap;
   }
 }
+
+/* the question before a destructive action (public/js/ui.js builds it from data-confirm and the template in
+   views/partials/page-bottom.ejs) — on every signed-in page, so it lives in this bundle */
+.confirm {
+  width: min(460px, calc(100vw - 32px));
+  max-width: none;
+  padding: 0;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+.confirm::backdrop {
+  background: rgb(20 18 17 / 0.5);
+}
+.confirm-box {
+  display: grid;
+  gap: 20px;
+  margin: 0;
+  padding: 22px 22px 18px;
+}
+.confirm-q {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 550;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.confirm-q > .i {
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  color: var(--red);
+}
+.confirm .actions {
+  justify-content: flex-end;
+  margin: 0;
+}
+.confirm [data-ok] {
+  background: var(--red);
+  border-color: var(--red);
+  color: var(--panel);
+}
+.confirm [data-ok]:hover {
+  border-color: var(--ink);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .confirm[open] {
+    animation: confirm-in 0.16s ease-out;
+  }
+  .confirm[open]::backdrop {
+    animation: confirm-fade 0.16s ease-out;
+  }
+}
+@keyframes confirm-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+@keyframes confirm-fade {
+  from {
+    opacity: 0;
+  }
+}

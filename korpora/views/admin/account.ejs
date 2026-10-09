@@ -140,7 +140,7 @@
     <% } else { %>
       <p class="ok-text"><%= t('admin.account.notBanned') %></p>
       <% if (manageable && can('accounts:ban')) { %>
-      <form method="post" action="/admin/accounts/<%= account.id %>/ban#access" class="form" data-confirm="<%= t('admin.account.banConfirm') %>">
+      <form method="post" action="/admin/accounts/<%= account.id %>/ban#access" class="form" data-confirm="<%= t('admin.account.banConfirm', { email: account.email }) %>">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <div class="field"><label for="ban-reason"><%= t('admin.account.banReason') %></label><textarea id="ban-reason" name="reason" required minlength="<%= limits.banReason.min %>" maxlength="<%= limits.banReason.max %>" aria-describedby="ban-hint"></textarea><p class="hint" id="ban-hint"><%= t('admin.account.banHint') %></p></div>
         <div class="actions"><button class="btn btn-danger" type="submit"><%- include('../partials/icon', { name: 'ban' }) %><%= t('admin.account.ban') %></button></div>
@@ -165,10 +165,10 @@
     </dl>
     <% if (manageable && can('accounts:security')) { %>
     <div class="actions">
-      <form method="post" action="/admin/accounts/<%= account.id %>/sessions/revoke#security"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-small" type="submit"><%- include('../partials/icon', { name: 'logout' }) %><%= t('admin.account.revokeSessions') %></button></form>
+      <form method="post" action="/admin/accounts/<%= account.id %>/sessions/revoke#security" data-confirm="<%= t('admin.account.revokeConfirm', { email: account.email }) %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-small" type="submit"><%- include('../partials/icon', { name: 'logout' }) %><%= t('admin.account.revokeSessions') %></button></form>
       <form method="post" action="/admin/accounts/<%= account.id %>/reset-password#security"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-small" type="submit"><%- include('../partials/icon', { name: 'mail' }) %><%= t('admin.account.sendReset') %></button></form>
       <% if (locked) { %><form method="post" action="/admin/accounts/<%= account.id %>/unlock#security"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-small" type="submit"><%- include('../partials/icon', { name: 'unlock' }) %><%= t('admin.account.unlock') %></button></form><% } %>
-      <% if (account.totpEnabledAt) { %><form method="post" action="/admin/accounts/<%= account.id %>/2fa-reset#security" data-confirm="<%= t('admin.account.reset2faConfirm') %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-small btn-danger" type="submit"><%- include('../partials/icon', { name: 'key' }) %><%= t('admin.account.reset2fa') %></button></form><% } %>
+      <% if (account.totpEnabledAt) { %><form method="post" action="/admin/accounts/<%= account.id %>/2fa-reset#security" data-confirm="<%= t('admin.account.reset2faConfirm', { email: account.email }) %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-small btn-danger" type="submit"><%- include('../partials/icon', { name: 'key' }) %><%= t('admin.account.reset2fa') %></button></form><% } %>
     </div>
     <% } %>
   </section>
@@ -186,7 +186,7 @@
       </fieldset>
     </form>
     <% if (manageable && can('staff:manage') && roles.length) { %>
-    <form method="post" action="/admin/accounts/<%= account.id %>/role#profile" class="form" data-confirm="<%= t('admin.account.roleConfirm') %>">
+    <form method="post" action="/admin/accounts/<%= account.id %>/role#profile" class="form" data-confirm="<%= t('admin.account.roleConfirm', { email: account.email }) %>">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="form-row">
         <div class="field"><label for="e-role"><%= t('admin.account.role') %></label><select id="e-role" name="role"><% for (const r of roles) { %><option value="<%= r %>"<%= account.role === r ? ' selected' : '' %>><%= t('role.' + r) %></option><% } %></select></div>
@@ -196,7 +196,7 @@
     </form>
     <% } %>
     <% if (manageable && canGrantOwner) { %>
-    <form method="post" action="/admin/accounts/<%= account.id %>/owner#profile" class="form" data-confirm="<%= t('admin.account.ownerConfirm') %>">
+    <form method="post" action="/admin/accounts/<%= account.id %>/owner#profile" class="form" data-confirm="<%= t('admin.account.ownerConfirm', { email: account.email }) %>">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <fieldset>
         <legend><%= t('admin.account.ownerTitle') %></legend>
@@ -224,7 +224,7 @@
   <section class="section danger" aria-labelledby="del-h" id="delete">
     <h2 id="del-h"><%- include('../partials/icon', { name: 'trash' }) %><%= t('admin.account.deleteTitle') %></h2>
     <p><%= t('admin.account.deleteText') %></p>
-    <form method="post" action="/admin/accounts/<%= account.id %>/delete" class="form" data-confirm="<%= t('admin.account.deleteConfirm') %>">
+    <form method="post" action="/admin/accounts/<%= account.id %>/delete" class="form">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="field"><label for="d-email"><%= t('admin.account.typeEmail', { email: account.email }) %></label><input id="d-email" name="confirmEmail" type="email" required autocomplete="off"></div>
       <div class="actions"><button class="btn btn-danger" type="submit"><%= t('admin.account.deleteButton') %></button></div>

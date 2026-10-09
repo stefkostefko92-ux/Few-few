@@ -1,5 +1,7 @@
 </main>
 <%- include('app-footer') %>
+<%# въпросът преди необратимо действие (ui.js го пълни от data-confirm); без JS формата се изпраща направо %>
+<template id="confirm-dialog"><dialog class="confirm" aria-labelledby="confirm-q"><form method="dialog" class="confirm-box"><p class="confirm-q"><%- include('icon', { name: 'alert' }) %><span id="confirm-q"></span></p><div class="actions"><button class="btn" type="submit" value="cancel" autofocus><%= t('common.back') %></button><button class="btn btn-danger" type="submit" value="ok" data-ok></button></div></form></dialog></template>
 <script src="/static/js/ui.js?v=<%= v %>" defer></script>
 </body>
 </html>
