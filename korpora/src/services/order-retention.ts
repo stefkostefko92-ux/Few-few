@@ -3,13 +3,12 @@ import { prisma } from '../db.js';
 import { LABEL } from '../labels.js';
 import { orderNo } from '../plans/order-number.js';
 import { mailStaffNotice } from '../mail/order-templates.js';
-import { ORDER_RETENTION_DAYS } from '../retention.js';
-import { DAY } from '../time.js';
+import { ORDER_RETENTION_YEARS, yearsBefore } from '../retention.js';
 
 /*
  * Поръчките на изтрит акаунт (решение на собственика): акаунтът и проектите се трият, а поръчките остават
  * само с данните на договора — кой (име и имейл), какво и за колко, кога, по кои условия, ранното начало и
- * отказа — и се трият ORDER_RETENTION_DAYS след изтриването. Съобщението към поръчката (данни за фактура,
+ * отказа — и се трият ORDER_RETENTION_YEARS календарни години след изтриването. Съобщението към поръчката (данни за фактура,
  * свободен текст) си отива с акаунта.
  */
 
@@ -78,12 +77,15 @@ export function notifyStaffOfDeletedOrders(email: string, kept: KeptOrders): voi
   void mailStaffNotice('staffAccountDeleted', { email, ids: kept.cancelled.join(', ') });
 }
 
-/** Поддръжката: поръчките на изтрити акаунти след срока за пазене. Връща колко са изтрити. */
+/**
+ * Поддръжката: поръчките на изтрити акаунти, навършили срока за пазене — пълни календарни години от
+ * изтриването. Връща колко са изтрити.
+ */
 export async function purgeExpiredOrders(now: Date): Promise<number> {
   const result = await prisma.upgradeRequest.deleteMany({
     where: {
       userId: null,
-      accountDeletedAt: { lt: new Date(now.getTime() - ORDER_RETENTION_DAYS * DAY) },
+      accountDeletedAt: { lt: yearsBefore(now, ORDER_RETENTION_YEARS) },
     },
   });
   return result.count;

@@ -8,7 +8,7 @@ import { isLocale } from '../i18n.js';
 import { resendLimiter, sensitiveLimiter } from '../http/limits.js';
 import { idParam, rawField, requestMeta, stringField } from '../http/meta.js';
 import { planView } from '../plans/plan.js';
-import { ORDER_RETENTION_DAYS, retentionText } from '../retention.js';
+import { ordersKeptText } from '../retention.js';
 import { priceTable, VAT_BG_PERCENT, withVatCents } from '../plans/pricing.js';
 import {
   canWithdraw,
@@ -189,7 +189,7 @@ accountRouter.get('/account/data', async (req, res) => {
   res.render('account/data', {
     user,
     openOrder: openOrder > 0,
-    ordersKept: retentionText(ORDER_RETENTION_DAYS, res.locals.t),
+    ordersKept: ordersKeptText(res.locals.t),
     section: 'data',
   });
 });

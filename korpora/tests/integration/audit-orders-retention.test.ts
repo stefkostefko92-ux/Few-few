@@ -16,7 +16,7 @@ after(stopApp);
 
 const { runMaintenance } = await import('../../src/services/maintenance.js');
 const { exportOwnData } = await import('../../src/services/account-export.js');
-const { ORDER_RETENTION_DAYS } = await import('../../src/retention.js');
+const { ORDER_RETENTION_YEARS, yearsBefore } = await import('../../src/retention.js');
 const { orderNo } = await import('../../src/plans/order-number.js');
 
 const DAY = 86_400_000;
@@ -114,7 +114,7 @@ test('a staff deletion keeps the orders the same way', async () => {
   assert.match(list.body, new RegExp(email.replace('.', '\\.')));
 });
 
-test('the maintenance deletes the orders of a deleted account five years after the deletion, and only them', async () => {
+test('the maintenance deletes the orders of a deleted account five calendar years after the deletion, and only them', async () => {
   const email = 'five-years@example.test';
   const { c, ids } = await customerWithOrders(email);
   await c.post('/account/data/delete', {
@@ -124,19 +124,21 @@ test('the maintenance deletes the orders of a deleted account five years after t
   });
   const [old, young, other] = ids as [string, string, string];
   const now = new Date();
+  // a day either side of the fifth anniversary of the deletion — in calendar years, leap days included
+  const anniversary = yearsBefore(now, ORDER_RETENTION_YEARS);
   await prisma.upgradeRequest.update({
     where: { id: old },
-    data: { accountDeletedAt: new Date(now.getTime() - (ORDER_RETENTION_DAYS + 1) * DAY) },
+    data: { accountDeletedAt: new Date(anniversary.getTime() - DAY) },
   });
   await prisma.upgradeRequest.update({
     where: { id: young },
-    data: { accountDeletedAt: new Date(now.getTime() - (ORDER_RETENTION_DAYS - 1) * DAY) },
+    data: { accountDeletedAt: new Date(anniversary.getTime() + DAY) },
   });
   // an order of a living account is kept, however old
   const live = await customerWithOrders('still-here@example.test');
   await prisma.upgradeRequest.updateMany({
     where: { id: { in: live.ids } },
-    data: { createdAt: new Date(now.getTime() - (ORDER_RETENTION_DAYS + 400) * DAY) },
+    data: { createdAt: new Date(anniversary.getTime() - 400 * DAY) },
   });
 
   await runMaintenance(now);
@@ -147,16 +149,16 @@ test('the maintenance deletes the orders of a deleted account five years after t
 });
 
 test('the data export and the privacy policy in three languages say what stays and for how long', async () => {
-  assert.equal(ORDER_RETENTION_DAYS, 5 * 365);
+  assert.equal(ORDER_RETENTION_YEARS, 5);
   const c = await customer('export-retention@example.test');
   const user = await prisma.user.findUniqueOrThrow({
     where: { email: 'export-retention@example.test' },
   });
   const data = (await exportOwnData(user.id)) as {
-    retention?: { ordersAfterAccountDeletion?: { deletedAfterDays?: number; kept?: string[] } };
+    retention?: { ordersAfterAccountDeletion?: { deletedAfterYears?: number; kept?: string[] } };
   };
   const rule = data.retention?.ordersAfterAccountDeletion;
-  assert.equal(rule?.deletedAfterDays, ORDER_RETENTION_DAYS);
+  assert.equal(rule?.deletedAfterYears, ORDER_RETENTION_YEARS);
   assert.ok(rule?.kept?.includes('customerEmail') && !rule.kept.includes('message'));
   const page = await c.get('/account/data');
   assert.match(page.body, /Поръчките остават само с данните на договора/);

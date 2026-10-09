@@ -19,7 +19,7 @@ import {
   BACKUP_KEEP_WEEKLY,
   durationText,
   LOGIN_RETENTION_DAYS,
-  ORDER_RETENTION_DAYS,
+  ordersKeptText,
   PRE_DEPLOY_BACKUPS_KEPT,
   PRE_DEPLOY_MAX_DAYS,
   retentionText,
@@ -54,7 +54,7 @@ export function privacyNumbers(locale: Locale) {
   const t = translatorFor(locale);
   return {
     unverifiedKept: retentionText(UNVERIFIED_RETENTION_DAYS, t),
-    ordersKept: retentionText(ORDER_RETENTION_DAYS, t),
+    ordersKept: ordersKeptText(t),
     sessionMax: durationText(MAX_SESSION_MS, t),
     customerSession: durationText(SESSION_LIMITS.customer.absoluteMs, t),
     customerIdle: durationText(SESSION_LIMITS.customer.idleMs, t),

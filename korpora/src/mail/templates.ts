@@ -1,7 +1,7 @@
 import { config } from '../config.js';
 import { LOCK_MINUTES } from '../auth/lock.js';
 import { translate, translatorFor, type Locale } from '../i18n.js';
-import { ORDER_RETENTION_DAYS, retentionText, UNVERIFIED_RETENTION_DAYS } from '../retention.js';
+import { ordersKeptText, UNVERIFIED_RETENTION_DAYS } from '../retention.js';
 import { legalPath } from '../seo/paths.js';
 import { link, period, send, validFor } from './compose.js';
 
@@ -246,7 +246,7 @@ export function mailAccountDeleted(
 ): Promise<boolean> {
   const orders = hadOrders
     ? `\n\n${translate(locale, 'mail.accountDeleted.orders', {
-        kept: retentionText(ORDER_RETENTION_DAYS, translatorFor(locale)),
+        kept: ordersKeptText(translatorFor(locale)),
       })}`
     : '';
   return send(to, locale, 'accountDeleted', { orders }, name);
