@@ -1,7 +1,8 @@
 // MedQR service worker — офлайн достъп до съществените екрани.
 // Сценарий: няма сигнал (метро, сграда, планина). Запазено копие на личния
-// SOS екран, таблото, спешния изглед и статичните ресурси работи и офлайн.
-const VERSION = 'v5';
+// SOS екран и таблото на собственика (чистят се при изход) и статичните ресурси.
+// Спешният профил на ДРУГ човек (/e/<токен>) никога не се кешира на устройството.
+const VERSION = 'v6';
 const SHELL = `medqr-shell-${VERSION}`;
 const RUNTIME = `medqr-runtime-${VERSION}`;
 const PRIVATE = `medqr-private-${VERSION}`; // чувствителни лични екрани — чистят се при изход
@@ -11,10 +12,8 @@ const SHELL_ASSETS = [
   '/styles.css',
   '/app.js',
   '/manifest.webmanifest',
-  '/icon-192.png',
-  '/icon-512.png',
-  '/apple-touch-icon.png',
-  '/logo.jpg',
+  '/icon-48.png',
+  '/logo-112.webp',
   '/fonts/inter-cyrillic-400-normal.woff2',
   '/fonts/inter-latin-400-normal.woff2',
 ];
@@ -46,9 +45,17 @@ self.addEventListener('message', (e) => {
   if (e.data && e.data.type === 'clear-private') caches.delete(PRIVATE);
 });
 
-const STATIC_RE = /\.(?:css|js|woff2|svg|png|jpe?g|webmanifest)$/;
-// /i: сървърът приема и /E/<token> — същите данни, същият личен кеш (чисти се при изход).
-const PRIVATE_RE = /^\/(sos|dashboard|e\/)/i;
+// Само СТАТИЧНИ ресурси се кешират трайно. Динамични QR/етикети (/qr.png, /label.svg)
+// съдържат спешния токен и НЕ са статични.
+const STATIC_RE =
+  /^\/(?!qr\.png|label\.svg|e\/)[^?]*\.(?:css|js|woff2|svg|png|jpe?g|webp|webmanifest)$/i;
+// Публичен маркетингов/правен контент — безопасен за общия кеш.
+const PUBLIC_PAGE_RE = /^\/(?:about|contact|privacy|cookies|terms|accessibility)?\/?$/i;
+// Лични екрани на самия собственик — отделен кеш, който се чисти при изход/изтриване.
+const PRIVATE_RE = /^\/(?:sos|dashboard)\/?$/i;
+// ВСЕ ОСТАНАЛО (/e/<токен> — чужд медицински профил на телефона на спасителя, /profile/*,
+// /card, /login, /2fa …) НЕ се кешира никога: иначе чувствителни данни остават на устройство,
+// което може да не е на собственика, и не се чистят (GDPR чл. 5(1)(е), чл. 32).
 
 // Записът в кеша задължително минава през waitUntil, за да не бъде прекъснат
 // преди да завърши (service worker-ът може да заспи след respondWith).
@@ -85,9 +92,14 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // Навигации: network-first, резерва от кеша при липса на връзка.
+  // Навигации: network-first. Кешираме само публични страници и личните /sos, /dashboard.
   if (request.mode === 'navigate') {
-    const cacheName = PRIVATE_RE.test(url.pathname) ? PRIVATE : RUNTIME;
+    const cacheName = PRIVATE_RE.test(url.pathname)
+      ? PRIVATE
+      : PUBLIC_PAGE_RE.test(url.pathname)
+        ? RUNTIME
+        : null;
+    if (!cacheName) return; // без кеш и без офлайн копие — браузърът ходи директно в мрежата
     e.respondWith(
       (async () => {
         try {

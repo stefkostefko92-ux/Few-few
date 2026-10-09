@@ -37,7 +37,7 @@ function emergencyUrl(req, token) {
 router.get('/dashboard', requireAuth, (req, res) => {
   const profile = getByUserId(req.user.id);
   const account = db
-    .prepare('SELECT email, totp_enabled, consent_at FROM users WHERE id = ?')
+    .prepare('SELECT email, email_verified, totp_enabled, consent_at FROM users WHERE id = ?')
     .get(req.user.id);
   const recentAccess = db
     .prepare(
@@ -255,12 +255,23 @@ router.get('/profile/2fa', requireAuth, async (req, res) => {
     const secret = decrypt(user.totp_secret);
     const uri = authenticator.keyuri(user.email, 'MedQR', secret);
     const qr = await QRCode.toDataURL(uri, { margin: 1, width: 220 });
-    return res.render('2fa-setup', { user: req.user, state: 'pending', qr, error: null });
+    return res.render('2fa-setup', {
+      user: req.user,
+      state: 'pending',
+      qr,
+      manualKey: secret,
+      error: null,
+    });
   }
   res.render('2fa-setup', { user: req.user, state: 'disabled', qr: null, error: null });
 });
 
 router.post('/profile/2fa/init', requireAuth, (req, res) => {
+  // Преди това този маршрут нулираше секрета и ИЗКЛЮЧВАШЕ 2FA без парола — с откраднат
+  // сесиен бисквит нападател сваляше втория фактор. Изключването става само през
+  // /profile/2fa/disable (с парола).
+  const current = db.prepare('SELECT totp_enabled FROM users WHERE id = ?').get(req.user.id);
+  if (current && current.totp_enabled) return res.redirect('/profile/2fa');
   const secret = authenticator.generateSecret();
   db.prepare('UPDATE users SET totp_secret = ?, totp_enabled = 0 WHERE id = ?').run(
     encrypt(secret),
@@ -280,6 +291,7 @@ router.post('/profile/2fa/enable', requireAuth, async (req, res) => {
       user: req.user,
       state: 'pending',
       qr,
+      manualKey: secret,
       error: res.locals.t('err.bad_code'),
     });
   }

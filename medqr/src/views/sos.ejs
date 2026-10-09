@@ -18,7 +18,7 @@
     </a>
 
     <dl class="sos-info">
-      <% if (profile.blood_type) { %><dt><%= t('emerg.blood') %></dt><dd><%= profile.blood_type %></dd><% } %>
+      <% if (profile.blood_type) { %><dt><%= t('emerg.blood') %></dt><dd><%= clin(profile.blood_type) %></dd><% } %>
       <% const sosAllergy = [allergyLabels(profile.allergy_keys).join(', '), profile.allergies].filter(Boolean).join(' · '); %>
       <% if (sosAllergy) { %><dt><%= t('emerg.allergies') %></dt><dd><%= sosAllergy %></dd><% } %>
       <% const sosCond = [conditionLabels(profile.condition_keys).join(', '), profile.chronic_conditions].filter(Boolean).join(' · '); %>

@@ -25,6 +25,9 @@
       relationship) and other notes.</li>
     <li><strong>Technical/audit data:</strong> emergency-profile access records (time, IP address,
       device type), a security action log and active-session metadata.</li>
+    <li><strong>Location (only when you choose to share it):</strong> if you press SOS, or a person
+      who found your profile taps “share location”, the coordinates are forwarded by email to your
+      emergency contact. We do <strong>not</strong> store the coordinates in our database.</li>
   </ul>
 
   <h2>3. Purposes and legal bases</h2>
@@ -53,14 +56,18 @@
       PIN; every access is logged and a lost code can be invalidated.</li>
     <li><strong>Two-factor authentication</strong> and <strong>passkeys (WebAuthn)</strong>,
       brute-force lockout and a tamper-evident audit log are supported.</li>
-    <li>For offline use the app may <strong>store a copy of key screens (incl. SOS) on your
-      device</strong>; therefore keep your device locked. This copy is cleared when you log out.</li>
+    <li>For offline use the app may <strong>store a copy of your own key screens (SOS and
+      dashboard) on your device</strong>; therefore keep your device locked. This copy is cleared when
+      you log out or delete the account. <strong>Another person’s emergency profile opened via a QR/NFC
+      code is never stored on the device.</strong></li>
   </ul>
 
   <h2>5. Retention periods</h2>
   <ul>
-    <li><strong>Account and medical profile:</strong> while the account exists. On deletion all data
-      is permanently removed (cascading).</li>
+    <li><strong>Account and medical profile:</strong> while the account exists. On deletion the
+      account, profile, sessions and access records are permanently removed (cascading).
+      Security audit-log entries (event, time, IP address) are kept for up to 730 days, and encrypted
+      backups are overwritten within 30 days.</li>
     <li><strong>Emergency-profile access records:</strong> up to 365 days.</li>
     <li><strong>Security audit log:</strong> up to 730 days.</li>
     <li><strong>Temporary tokens and pending logins:</strong> until they expire (minutes to hours).</li>
@@ -75,8 +82,9 @@
   <p>We do not sell data or use it for advertising. The emergency profile is accessible to anyone who
     scans your QR/NFC code (hence we recommend a PIN for more sensitive profiles). The hosting
     provider (Hetzner Online GmbH) acts as a data processor under a Data Processing Agreement (GDPR
-    Art. 28). When notifications are enabled we send an email to the contact you specify — without
-    medical data.</p>
+    Art. 28). Emails (account confirmation, password reset and, when enabled, notifications to the
+    contact you specify — without medical data) are sent through an email-delivery provider acting
+    as a processor under Art. 28.</p>
 
   <h2>8. Automated decision-making</h2>
   <p>We do not carry out automated decision-making with legal or similarly significant effects, nor
@@ -135,6 +143,9 @@
       (име, телефон, имейл, роднинска връзка) и други бележки.</li>
     <li><strong>Технически/одит данни:</strong> записи за достъп до спешния профил (време, IP адрес,
       тип устройство), журнал на действията по сигурността и метаданни на активните сесии.</li>
+    <li><strong>Местоположение (само ако решите да го споделите):</strong> при натискане на SOS или
+      когато намерилият профила докосне „сподели местоположение“, координатите се препращат по имейл
+      до спешния ви контакт. Координатите <strong>не се съхраняват</strong> в нашата база.</li>
   </ul>
 
   <h2>3. Цели и правни основания</h2>
@@ -164,15 +175,19 @@
       достъп се записва, а изгубен код може да бъде обезсилен.</li>
     <li>Поддържат се <strong>двуфакторна автентикация</strong> и <strong>паскейове (WebAuthn)</strong>,
       заключване срещу брутфорс и tamper-evident одит журнал.</li>
-    <li>За работа без интернет приложението може да <strong>запази копие на ключови
-      екрани (вкл. SOS) на вашето устройство</strong>; затова заключвайте устройството си.
-      Това копие се изчиства при изход от профила.</li>
+    <li>За работа без интернет приложението може да <strong>запази копие на ваши собствени
+      екрани (SOS и табло) на вашето устройство</strong>; затова заключвайте устройството си.
+      Това копие се изчиства при изход от профила или изтриване на акаунта.
+      <strong>Спешен профил на друг човек, отворен чрез QR/NFC код, никога не се запазва на
+      устройството.</strong></li>
   </ul>
 
   <h2>5. Срокове на съхранение</h2>
   <ul>
-    <li><strong>Акаунт и медицински профил:</strong> докато съществува акаунтът. При изтриване всички
-      данни се премахват окончателно (каскадно).</li>
+    <li><strong>Акаунт и медицински профил:</strong> докато съществува акаунтът. При изтриване
+      акаунтът, профилът, сесиите и записите за достъп се премахват окончателно (каскадно).
+      Записите в одит журнала по сигурността (събитие, време, IP адрес) се пазят до 730 дни, а
+      криптираните резервни копия се презаписват до 30 дни.</li>
     <li><strong>Записи за достъп до спешния профил:</strong> до 365 дни.</li>
     <li><strong>Одит журнал по сигурността:</strong> до 730 дни.</li>
     <li><strong>Временни токени и чакащи входове:</strong> до изтичането им (минути до часове).</li>
@@ -187,8 +202,9 @@
   <p>Не продаваме данни и не ги използваме за реклама. Спешният профил е достъпен за всеки, който
     сканира вашия QR/NFC код (затова препоръчваме PIN за по-чувствителни профили). Доставчикът на
     хостинг (Hetzner Online GmbH) действа като обработващ данните въз основа на договор за обработка
-    (DPA) по чл. 28 GDPR. При активирано известяване изпращаме имейл до посочения от вас близък —
-    без медицински данни.</p>
+    (DPA) по чл. 28 GDPR. Имейлите (потвърждение на акаунт, нова парола и — при активирано
+    известяване — до посочения от вас близък, без медицински данни) се изпращат чрез доставчик на
+    имейл услуга, който действа като обработващ по чл. 28.</p>
 
   <h2>8. Автоматизирано вземане на решения</h2>
   <p>Не извършваме автоматизирано вземане на решения с правен или сходно значим ефект, нито

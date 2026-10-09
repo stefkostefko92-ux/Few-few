@@ -158,7 +158,7 @@ ensureColumn('profiles', 'allergy_keys', 'TEXT');
 ensureColumn('profiles', 'condition_keys', 'TEXT');
 ensureColumn('profiles', 'emergency_contact_country', 'TEXT');
 ensureColumn('profiles', 'emergency_contact_email', 'TEXT');
-ensureColumn('profiles', 'notify_on_scan', 'INTEGER NOT NULL DEFAULT 1');
+ensureColumn('profiles', 'notify_on_scan', 'INTEGER NOT NULL DEFAULT 0');
 ensureColumn('profiles', 'last_notified_at', 'TEXT');
 ensureColumn('profiles', 'last_sos_at', 'TEXT');
 ensureColumn('profiles', 'last_located_at', 'TEXT');
