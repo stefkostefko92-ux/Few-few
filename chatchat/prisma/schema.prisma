@@ -64,26 +64,36 @@ model Company {
 }
 
 model User {
-  id           String      @id @default(cuid())
-  tenantId     String
-  companyId    String?
+  id                String      @id @default(cuid())
+  tenantId          String
+  companyId         String?
   /// Малки букви, без интервали — уникален в цялата платформа (входът е по имейл).
-  email        String      @unique
-  name         String
-  role         Role
-  kind         AccountKind
-  passwordHash String
-  active       Boolean     @default(true)
+  email             String      @unique
+  name              String
+  role              Role
+  kind              AccountKind
+  passwordHash      String
+  active            Boolean     @default(true)
   /// Срок на акаунта (§12.4) — след него входът е отказан.
-  expiresAt    DateTime?
-  locale       String      @default("it")
-  lastLoginAt  DateTime?
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  expiresAt         DateTime?
+  locale            String      @default("it")
+  lastLoginAt       DateTime?
+  /// TOTP (RFC 6238) — тайната е шифрована с AES-256-GCM (ключът е само на сървъра).
+  totpSecretEnc     String?
+  totpEnabledAt     DateTime?
+  passwordChangedAt DateTime?
+  deactivatedAt     DateTime?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
 
-  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  company  Company?  @relation(fields: [companyId], references: [id], onDelete: Restrict)
-  sessions Session[]
+  tenant         Tenant               @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  company        Company?             @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  sessions       Session[]
+  passwordResets PasswordReset[]
+  memberships    ConversationMember[]
+  presence       UserPresence?
+  notifications  Notification[]
+  savedFilters   SavedFilter[]
 
   @@index([tenantId])
   @@index([companyId])
@@ -100,6 +110,8 @@ model Session {
   expiresAt  DateTime
   lastSeenAt DateTime  @default(now())
   revokedAt  DateTime?
+  /// Вторият фактор е минат (TOTP) — без него персоналът с включен TOTP не минава requireUser.
+  mfaPassed  Boolean   @default(false)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -400,13 +412,15 @@ model Case {
   updatedAt    DateTime     @updatedAt
   closedAt     DateTime?
 
-  tenant   Tenant              @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  company  Company?            @relation(fields: [companyId], references: [id], onDelete: Restrict)
-  device   Device?             @relation(fields: [deviceId], references: [id], onDelete: Restrict)
-  messages CaseMessage[]
-  evidence CaseEvidence[]
-  timeline CaseTimelineEvent[]
-  ticket   Ticket?
+  tenant       Tenant              @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  company      Company?            @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  device       Device?             @relation(fields: [deviceId], references: [id], onDelete: Restrict)
+  messages     CaseMessage[]
+  evidence     CaseEvidence[]
+  timeline     CaseTimelineEvent[]
+  ticket       Ticket?
+  attachments  Attachment[]
+  conversation Conversation?
 
   @@index([tenantId, status])
   @@index([companyId])
@@ -442,6 +456,7 @@ model CaseMessage {
   knowledgeSnapshot KnowledgeSnapshot? @relation(fields: [knowledgeSnapshotId], references: [id], onDelete: Restrict)
   evidence          CaseEvidence[]
   feedback          Feedback[]
+  attachments       Attachment[]
 
   @@unique([caseId, clientMessageId])
   @@index([caseId, createdAt])
@@ -542,4 +557,261 @@ model AuditEvent {
 
   @@index([tenantId, at])
   @@index([actorId])
+}
+
+// ─── Прикачени файлове (F2, FR-06, §13.1 message_attachments) ─────────────────────────────────
+
+enum AttachmentKind {
+  PHOTO // снимка от телефона: дисплей, табелка, платка, клемореди
+  LOG // CSV / TXT / JSON от таблото
+  DOCUMENT // PDF за приемане в базата знания (само KNOWLEDGE_OWNER)
+}
+
+/// Антивирус ПРЕДИ всичко друго (§7.3 т. 1): докато не е CLEAN, файлът не се показва и не стига до AI.
+enum ScanStatus {
+  PENDING
+  CLEAN
+  INFECTED
+  FAILED
+}
+
+model Attachment {
+  id                    String         @id @default(cuid())
+  tenantId              String
+  caseId                String?
+  caseMessageId         String?
+  conversationMessageId String?
+  uploadedById          String
+  kind                  AttachmentKind
+  /// MIME по съдържанието (магически байтове), не по името или заглавката на клиента.
+  mime                  String
+  sizeBytes             Int
+  sha256                String
+  /// Път в частното хранилище — никога публичен URL; сваляне само с подписан краткотраен адрес.
+  objectKey             String         @unique
+  /// Името от клиента, изчистено (без пътища и контролни знаци) — само за показване.
+  originalName          String
+  scanStatus            ScanStatus     @default(PENDING)
+  scannedAt             DateTime?
+  /// AI анализ на снимката (FR-06, §9.2): допълнително доказателство, не основно.
+  analysis              Json?
+  createdAt             DateTime       @default(now())
+
+  case                Case?                @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  caseMessage         CaseMessage?         @relation(fields: [caseMessageId], references: [id], onDelete: SetNull)
+  conversationMessage ConversationMessage? @relation(fields: [conversationMessageId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([caseId])
+  @@index([caseMessageId])
+  @@index([conversationMessageId])
+  @@index([uploadedById])
+}
+
+// ─── Идентичност (FR-22/25, §12.4) ────────────────────────────────────────────────────────────
+
+/// Нулиране на парола: еднократен линк, генериран от админа; паролата никога не се показва/праща.
+model PasswordReset {
+  id          String    @id @default(cuid())
+  userId      String
+  /// HMAC на токена — самият токен е само в линка.
+  tokenHash   String    @unique
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdById String
+  createdAt   DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+enum SavedFilterScope {
+  USERS
+  CASES
+  CONVERSATIONS
+}
+
+/// Запазени филтри (FR-23): лични или споделени в клиента; само по разрешени полета.
+model SavedFilter {
+  id        String           @id @default(cuid())
+  tenantId  String
+  userId    String
+  scope     SavedFilterScope
+  name      String
+  filter    Json
+  shared    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, scope])
+  @@index([userId])
+}
+
+// ─── Работно пространство (§12.3, FR-15…FR-20, §13.1) ────────────────────────────────────────
+
+enum ConversationType {
+  DIRECT // двама души
+  GROUP // няколко души, без име
+  CHANNEL // именуван канал на екип/семейство продукти
+  CASE // разговорът на технически случай (1:1 с Case)
+}
+
+enum ConversationVisibility {
+  PUBLIC // каналът се вижда от вътрешните хора на клиента
+  PRIVATE // само членовете (Engineering, Urgenze — §12.3 по подразбиране)
+}
+
+model Conversation {
+  id          String                 @id @default(cuid())
+  tenantId    String
+  type        ConversationType
+  name        String?
+  visibility  ConversationVisibility @default(PRIVATE)
+  /// Разговор с портални участници: вътрешни канали/документи не изтичат в него (AC-18).
+  portal      Boolean                @default(false)
+  caseId      String?                @unique
+  createdById String
+  createdAt   DateTime               @default(now())
+  archivedAt  DateTime?
+
+  case     Case?                 @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  members  ConversationMember[]
+  messages ConversationMessage[]
+
+  @@index([tenantId, type])
+}
+
+enum MemberRole {
+  OWNER
+  MEMBER
+}
+
+enum NotificationPref {
+  ALL
+  MENTIONS
+  NONE
+}
+
+model ConversationMember {
+  conversationId    String
+  userId            String
+  role              MemberRole       @default(MEMBER)
+  joinedAt          DateTime         @default(now())
+  /// Курсор за прочетено (FR-16, NFR-12) — непрочетените са след него.
+  lastReadMessageId String?
+  lastReadAt        DateTime?
+  notificationPref  NotificationPref @default(ALL)
+  /// „Предпочитани“ в лявата лента (FR-15).
+  starred           Boolean          @default(false)
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([conversationId, userId])
+  @@index([userId])
+}
+
+enum ConversationMessageKind {
+  HUMAN
+  AI
+  SYSTEM
+}
+
+model ConversationMessage {
+  id              String                  @id @default(cuid())
+  conversationId  String
+  senderId        String?
+  kind            ConversationMessageKind @default(HUMAN)
+  body            String
+  replyToId       String?
+  /// Идемпотентно изпращане (NFR-12).
+  clientMessageId String?
+  editedAt        DateTime?
+  deletedAt       DateTime?
+  createdAt       DateTime                @default(now())
+
+  conversation Conversation          @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  replyTo      ConversationMessage?  @relation("Thread", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies      ConversationMessage[] @relation("Thread")
+  reactions    MessageReaction[]
+  attachments  Attachment[]
+
+  @@unique([conversationId, clientMessageId])
+  @@index([conversationId, createdAt])
+  @@index([replyToId])
+}
+
+/// Реакции (§13.1): незадължителни, никога доказателство.
+model MessageReaction {
+  messageId String
+  userId    String
+  reaction  String
+  createdAt DateTime @default(now())
+
+  message ConversationMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@id([messageId, userId, reaction])
+}
+
+enum PresenceStatus {
+  ONLINE
+  AWAY
+  OFFLINE
+}
+
+/// Присъствие (FR-18, §15): само за координация — не е доказателство за дежурство; кратка ретенция.
+model UserPresence {
+  userId       String         @id
+  status       PresenceStatus @default(OFFLINE)
+  lastSeenAt   DateTime       @default(now())
+  /// false → другите виждат само ONLINE/OFFLINE без „последно видян“.
+  showLastSeen Boolean        @default(true)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// Бързи отговори (FR-20, AC-15): по роля/група, версионирани, редактируеми преди изпращане.
+model QuickResponse {
+  id          String          @id @default(cuid())
+  tenantId    String
+  shortcut    String
+  locale      String
+  title       String
+  body        String
+  roleScope   Role[]
+  version     Int             @default(1)
+  status      KnowledgeStatus @default(DRAFT)
+  createdById String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@unique([tenantId, shortcut, locale, version])
+  @@index([tenantId, status])
+}
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+}
+
+/// Известия (FR-18): дедупликация по (потребител, събитие, обект) в рамките на непрочетените.
+model Notification {
+  id          String              @id @default(cuid())
+  tenantId    String
+  userId      String
+  eventType   String
+  objectType  String
+  objectId    String
+  payload     Json                @default("{}")
+  channel     NotificationChannel @default(IN_APP)
+  createdAt   DateTime            @default(now())
+  deliveredAt DateTime?
+  readAt      DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@index([tenantId, createdAt])
 }
