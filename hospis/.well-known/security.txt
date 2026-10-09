@@ -1,0 +1,4 @@
+Contact: https://carbonstealth.eu
+Preferred-Languages: bg, en
+Canonical: https://hospis.carbonstealth.eu/.well-known/security.txt
+Expires: 2027-10-01T00:00:00.000Z
