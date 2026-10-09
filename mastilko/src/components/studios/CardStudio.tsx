@@ -3,8 +3,9 @@
 import { z } from "zod";
 import { CARD, cardGrid } from "@/lib/print";
 import { type WarmTheme } from "@/lib/themes";
-import { resolveTheme, fontVars, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, sheetBg, photoFilterCss, qrSafeColor, accentTextOn, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
+import { useFitWidth } from "@/lib/use-fit-width";
 import { vCard } from "@/lib/vcard";
 import { vizitkaRegisterUrl } from "@/lib/vizitka-import";
 import AiAssist from "@/components/AiAssist";
@@ -26,10 +27,18 @@ interface CardState extends StyleState {
   themeId: string;
   layout: "lenta" | "klasik" | "linia" | "ramka" | "gorna" | "duo";
   cutLines: boolean;
-  /** QR код с контактите (vCard) в долния десен ъгъл. */
+  /** QR код с контактите (vCard) в долния ъгъл. */
   qr: boolean;
-  /** Лого (data URL) — показва се в акцентния панел. */
+  /** Размер на QR кода в mm. */
+  qrSize: number;
+  /** QR в долния ЛЯВ ъгъл (иначе десен). */
+  qrLeft: boolean;
+  /** Лого/снимка (data URL) — показва се в акцентния панел. */
   logo: string;
+  /** Форма на логото/снимката. */
+  logoShape: "circle" | "square";
+  /** Размер на логото/снимката в mm. */
+  logoSize: number;
   /** Гръб на визитката (втори лист за двустранен печат). */
   back: boolean;
 }
@@ -46,7 +55,11 @@ const INITIAL: CardState = {
   layout: "lenta",
   cutLines: true,
   qr: false,
+  qrSize: 11,
+  qrLeft: false,
   logo: "",
+  logoShape: "square",
+  logoSize: 16,
   back: false,
 };
 
@@ -64,7 +77,11 @@ const ProjectSchema = z
     layout: z.enum(["lenta", "klasik", "linia", "ramka", "gorna", "duo"]),
     cutLines: z.boolean(),
     qr: z.boolean(),
+    qrSize: z.number().min(8).max(18),
+    qrLeft: z.boolean(),
     logo: z.string().max(500000),
+    logoShape: z.enum(["circle", "square"]),
+    logoSize: z.number().min(8).max(30),
     back: z.boolean(),
   })
   .partial();
@@ -80,6 +97,25 @@ const LAYOUTS: Array<{ id: CardState["layout"]; name: string }> = [
 
 /** Размерна единица: на листа — mm; в големия преглед — px (mm × mult). */
 type Unit = (v: number) => string;
+
+// Размер на текста с глобален мащаб (--sheet-scale) — само шрифтът, не
+// оформлението. В екранния близък преглед var-ът липсва → пада на 1 (натурален).
+const fontUnit = (s: StyleState, u: Unit) => (v: number) =>
+  typeof s.textScale === "number" ? `calc(${s.textScale} * ${u(v)})` : u(v);
+
+/** Лого/снимка на визитката — кръг (снимка, cover) или квадрат (лого, contain). */
+function CardLogo({ s, u }: { s: CardState; u: Unit }) {
+  if (s.logoShape === "circle") {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={s.logo} alt="" style={{ width: u(s.logoSize), height: u(s.logoSize), objectFit: "cover", borderRadius: "50%", display: "block", filter: photoFilterCss(s) }} />
+    );
+  }
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={s.logo} alt="" style={{ maxWidth: u(s.logoSize * 1.5), maxHeight: u(s.logoSize), objectFit: "contain", display: "block", filter: photoFilterCss(s) }} />
+  );
+}
 
 /** Обвивка: шаблонът + (по желание) QR с vCard в долния десен ъгъл. */
 function CardFace({
@@ -101,10 +137,10 @@ function CardFace({
           src={qrSrc}
           style={{
             position: "absolute",
-            right: u(3),
+            ...(s.qrLeft ? { left: u(3) } : { right: u(3) }),
             bottom: s.layout === "linia" ? u(6.5) : u(3),
-            width: u(11),
-            height: u(11),
+            width: u(s.qrSize),
+            height: u(s.qrSize),
             background: "#FFFFFF",
             padding: u(0.7),
             borderRadius: u(1),
@@ -118,6 +154,7 @@ function CardFace({
 
 /** Гръб на визитката: акцентен фон с лого/инициал + слоган. */
 function CardBack({ s, theme, u }: { s: CardState; theme: WarmTheme; u: Unit }) {
+  const fu = fontUnit(s, u);
   const initials = s.name
     .split(/\s+/)
     .filter(Boolean)
@@ -141,15 +178,14 @@ function CardBack({ s, theme, u }: { s: CardState; theme: WarmTheme; u: Unit }) 
       }}
     >
       {s.logo ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={s.logo} alt="" style={{ maxWidth: u(40), maxHeight: u(24), objectFit: "contain" }} />
+        <CardLogo s={s} u={u} />
       ) : (
-        <div style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: u(14) }}>
+        <div style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: fu(14) }}>
           {initials || "М"}
         </div>
       )}
-      {s.company && <div style={{ fontWeight: 700, fontSize: u(4) }}>{s.company}</div>}
-      {s.slogan && <div style={{ fontStyle: "italic", fontSize: u(3) }}>„{s.slogan}“</div>}
+      {s.company && <div style={{ fontWeight: 700, fontSize: fu(4) }}>{s.company}</div>}
+      {s.slogan && <div style={{ fontStyle: "italic", fontSize: fu(3) }}>„{s.slogan}“</div>}
     </div>
   );
 }
@@ -163,6 +199,7 @@ function CardFaceInner({
   theme: WarmTheme;
   u: Unit;
 }) {
+  const fu = fontUnit(s, u);
   const initials = s.name
     .split(/\s+/)
     .filter(Boolean)
@@ -175,7 +212,7 @@ function CardFaceInner({
   const base: React.CSSProperties = {
     width: u(CARD.w),
     height: u(CARD.h),
-    background: theme.bg,
+    background: sheetBg(s, theme),
     color: theme.fg,
     overflow: "hidden",
     display: "flex",
@@ -194,13 +231,12 @@ function CardFaceInner({
             alignItems: "center",
             justifyContent: "center",
             fontWeight: 800,
-            fontSize: u(9),
+            fontSize: fu(9),
             fontFamily: "var(--font-display)",
           }}
         >
           {s.logo ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={s.logo} alt="" style={{ maxWidth: u(20), maxHeight: u(20), objectFit: "contain" }} />
+            <CardLogo s={s} u={u} />
           ) : (
             initials || "М"
           )}
@@ -214,27 +250,27 @@ function CardFaceInner({
             justifyContent: "center",
           }}
         >
-          <div style={{ fontWeight: 800, fontSize: u(4.6), lineHeight: 1.15 }}>
+          <div style={{ fontWeight: 800, fontSize: fu(4.6), lineHeight: 1.15 }}>
             {s.name || "Твоето име"}
           </div>
           {(s.role || s.company) && (
-            <div style={{ fontSize: u(2.9), marginTop: u(0.8), opacity: 0.85 }}>
+            <div style={{ fontSize: fu(2.9), marginTop: u(0.8), opacity: 0.85 }}>
               {[s.role, s.company].filter(Boolean).join(" · ")}
             </div>
           )}
           {s.slogan && (
             <div
               style={{
-                fontSize: u(2.6),
+                fontSize: fu(2.6),
                 marginTop: u(1.6),
                 fontStyle: "italic",
-                color: theme.accent,
+                color: accentTextOn(theme.accent, theme.bg, theme.fg),
               }}
             >
               „{s.slogan}“
             </div>
           )}
-          <div style={{ marginTop: u(2.4), fontSize: u(2.7), lineHeight: 1.5 }}>
+          <div style={{ marginTop: u(2.4), fontSize: fu(2.7), lineHeight: 1.5 }}>
             {contact.map((c) => (
               <div key={c}>{c}</div>
             ))}
@@ -259,7 +295,7 @@ function CardFaceInner({
         <div
           style={{
             fontWeight: 800,
-            fontSize: u(5),
+            fontSize: fu(5),
             fontFamily: "var(--font-display)",
           }}
         >
@@ -275,23 +311,23 @@ function CardFaceInner({
           }}
         />
         {(s.role || s.company) && (
-          <div style={{ fontSize: u(3), opacity: 0.85 }}>
+          <div style={{ fontSize: fu(3), opacity: 0.85 }}>
             {[s.role, s.company].filter(Boolean).join(" · ")}
           </div>
         )}
         {s.slogan && (
           <div
             style={{
-              fontSize: u(2.6),
+              fontSize: fu(2.6),
               marginTop: u(1.4),
               fontStyle: "italic",
-              color: theme.accent,
+              color: accentTextOn(theme.accent, theme.bg, theme.fg),
             }}
           >
             „{s.slogan}“
           </div>
         )}
-        <div style={{ marginTop: u(2.2), fontSize: u(2.7), lineHeight: 1.5 }}>
+        <div style={{ marginTop: u(2.2), fontSize: fu(2.7), lineHeight: 1.5 }}>
           {contact.map((c) => (
             <div key={c}>{c}</div>
           ))}
@@ -320,30 +356,30 @@ function CardFaceInner({
           <div
             style={{
               fontWeight: 800,
-              fontSize: u(4.8),
+              fontSize: fu(4.8),
               fontFamily: "var(--font-display)",
             }}
           >
             {s.name || "Твоето име"}
           </div>
           {(s.role || s.company) && (
-            <div style={{ fontSize: u(2.9), marginTop: u(1), opacity: 0.85 }}>
+            <div style={{ fontSize: fu(2.9), marginTop: u(1), opacity: 0.85 }}>
               {[s.role, s.company].filter(Boolean).join(" · ")}
             </div>
           )}
           {s.slogan && (
             <div
               style={{
-                fontSize: u(2.5),
+                fontSize: fu(2.5),
                 marginTop: u(1.4),
                 fontStyle: "italic",
-                color: theme.accent,
+                color: accentTextOn(theme.accent, theme.bg, theme.fg),
               }}
             >
               „{s.slogan}“
             </div>
           )}
-          <div style={{ marginTop: u(2), fontSize: u(2.6), lineHeight: 1.5 }}>
+          <div style={{ marginTop: u(2), fontSize: fu(2.6), lineHeight: 1.5 }}>
             {contact.map((c) => (
               <div key={c}>{c}</div>
             ))}
@@ -366,7 +402,7 @@ function CardFaceInner({
           <div
             style={{
               fontWeight: 800,
-              fontSize: u(4.6),
+              fontSize: fu(4.6),
               fontFamily: "var(--font-display)",
               lineHeight: 1.1,
             }}
@@ -374,7 +410,7 @@ function CardFaceInner({
             {s.name || "Твоето име"}
           </div>
           {(s.role || s.company) && (
-            <div style={{ fontSize: u(2.8), marginTop: u(0.6), opacity: 0.9 }}>
+            <div style={{ fontSize: fu(2.8), marginTop: u(0.6), opacity: 0.9 }}>
               {[s.role, s.company].filter(Boolean).join(" · ")}
             </div>
           )}
@@ -388,7 +424,7 @@ function CardFaceInner({
             justifyContent: "center",
           }}
         >
-          <div style={{ fontSize: u(2.7), lineHeight: 1.55 }}>
+          <div style={{ fontSize: fu(2.7), lineHeight: 1.55 }}>
             {contact.map((c) => (
               <div key={c}>{c}</div>
             ))}
@@ -396,10 +432,10 @@ function CardFaceInner({
           {s.slogan && (
             <div
               style={{
-                fontSize: u(2.5),
+                fontSize: fu(2.5),
                 marginTop: u(1.6),
                 fontStyle: "italic",
-                color: theme.accent,
+                color: accentTextOn(theme.accent, theme.bg, theme.fg),
                 textAlign: "right",
               }}
             >
@@ -423,15 +459,15 @@ function CardFaceInner({
             justifyContent: "center",
           }}
         >
-          <div style={{ fontWeight: 800, fontSize: u(4.5), lineHeight: 1.15 }}>
+          <div style={{ fontWeight: 800, fontSize: fu(4.5), lineHeight: 1.15 }}>
             {s.name || "Твоето име"}
           </div>
           {(s.role || s.company) && (
-            <div style={{ fontSize: u(2.8), marginTop: u(0.8), opacity: 0.85 }}>
+            <div style={{ fontSize: fu(2.8), marginTop: u(0.8), opacity: 0.85 }}>
               {[s.role, s.company].filter(Boolean).join(" · ")}
             </div>
           )}
-          <div style={{ marginTop: u(2.2), fontSize: u(2.6), lineHeight: 1.5 }}>
+          <div style={{ marginTop: u(2.2), fontSize: fu(2.6), lineHeight: 1.5 }}>
             {contact.map((c) => (
               <div key={c}>{c}</div>
             ))}
@@ -453,13 +489,12 @@ function CardFaceInner({
           <div
             style={{
               fontWeight: 800,
-              fontSize: u(8),
+              fontSize: fu(8),
               fontFamily: "var(--font-display)",
             }}
           >
             {s.logo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={s.logo} alt="" style={{ maxWidth: u(18), maxHeight: u(18), objectFit: "contain" }} />
+              <CardLogo s={s} u={u} />
             ) : (
               initials || "М"
             )}
@@ -467,7 +502,7 @@ function CardFaceInner({
           {s.slogan && (
             <div
               style={{
-                fontSize: u(2.1),
+                fontSize: fu(2.1),
                 fontStyle: "italic",
                 textAlign: "center",
                 opacity: 0.9,
@@ -493,18 +528,18 @@ function CardFaceInner({
           justifyContent: "center",
         }}
       >
-        <div style={{ fontWeight: 800, fontSize: u(4.8), lineHeight: 1.15 }}>
+        <div style={{ fontWeight: 800, fontSize: fu(4.8), lineHeight: 1.15 }}>
           {s.name || "Твоето име"}
         </div>
         {(s.role || s.company) && (
-          <div style={{ fontSize: u(2.9), marginTop: u(0.8), opacity: 0.85 }}>
+          <div style={{ fontSize: fu(2.9), marginTop: u(0.8), opacity: 0.85 }}>
             {[s.role, s.company].filter(Boolean).join(" · ")}
           </div>
         )}
         <div
           style={{
             marginTop: u(2.4),
-            fontSize: u(2.7),
+            fontSize: fu(2.7),
             lineHeight: 1.5,
             display: "flex",
             flexWrap: "wrap",
@@ -525,16 +560,18 @@ export default function CardStudio() {
   const [s, setS] = useLocalState<CardState>("mastilko-cards", INITIAL, (r) => ProjectSchema.parse(r));
   const theme = resolveTheme(s);
   const grid = cardGrid();
-  const px: Unit = (v) => `${v * 3.4}px`;
+  // Преглед отблизо: до 3.4 px/mm, но не по-широк от картата (телефон).
+  const [zoomRef, perMm] = useFitWidth<HTMLDivElement>(CARD.w, 3.4);
+  const px: Unit = (v) => `${v * perMm}px`;
   const mm: Unit = (v) => `${v}mm`;
 
   const set = (patch: Partial<CardState>) => setS({ ...s, ...patch });
 
   // Един QR за целия лист + близкия преглед — не по един на визитка.
-  const qrSrc = useQrDataUrl(s.qr && s.name.trim() ? vCard(s) : "");
+  const qrSrc = useQrDataUrl(s.qr && s.name.trim() ? vCard(s) : "", s.qrColor ? qrSafeColor(theme.accent) : undefined);
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-8 md:grid-cols-[minmax(0,300px)_minmax(0,1fr)] lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
       {/* Контроли */}
       <div className="no-print space-y-5">
         <div className="card-warm space-y-4 p-5">
@@ -575,7 +612,7 @@ export default function CardStudio() {
             </select>
           </div>
 
-          <StyleControls value={s} onChange={set} hideDecor />
+          <StyleControls value={s} onChange={set} hideDecor hideBorder showPhotoFx />
 
           <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
             <input
@@ -603,7 +640,80 @@ export default function CardStudio() {
             </span>
           </label>
 
-          <ImageUpload value={s.logo} onChange={(v) => set({ logo: v })} label="Лого (по желание)" />
+          {s.qr && (
+            <div className="grid grid-cols-2 gap-3">
+              <label className="block text-xs font-semibold text-ink-soft">
+                Ъгъл на QR
+                <select
+                  className="field-input mt-1"
+                  value={s.qrLeft ? "left" : "right"}
+                  onChange={(e) => set({ qrLeft: e.target.value === "left" })}
+                >
+                  <option value="right">Долу вдясно</option>
+                  <option value="left">Долу вляво</option>
+                </select>
+              </label>
+              <label className="block text-xs font-semibold text-ink-soft">
+                <span className="flex items-baseline justify-between">
+                  <span>Размер на QR</span>
+                  <span className="tabular-nums text-ink-faint">{s.qrSize} mm</span>
+                </span>
+                <input
+                  type="range"
+                  min={8}
+                  max={18}
+                  step={0.5}
+                  value={s.qrSize}
+                  onChange={(e) => set({ qrSize: Number(e.target.value) })}
+                  className="mt-1 h-4 w-full accent-tera"
+                  aria-label="Размер на QR кода"
+                />
+              </label>
+              <label className="col-span-2 flex items-center gap-2 text-sm font-semibold text-ink-soft">
+                <input
+                  type="checkbox"
+                  checked={!!s.qrColor}
+                  onChange={(e) => set({ qrColor: e.target.checked })}
+                  className="h-4 w-4 accent-tera"
+                />
+                QR в акцентния цвят (ако е скенируем)
+              </label>
+            </div>
+          )}
+
+          <ImageUpload value={s.logo} onChange={(v) => set({ logo: v })} label="Лого / снимка (по желание)" />
+
+          {s.logo && (
+            <div className="grid grid-cols-2 gap-3">
+              <label className="block text-xs font-semibold text-ink-soft">
+                Форма
+                <select
+                  className="field-input mt-1"
+                  value={s.logoShape}
+                  onChange={(e) => set({ logoShape: e.target.value as CardState["logoShape"] })}
+                >
+                  <option value="square">Лого (квадрат)</option>
+                  <option value="circle">Снимка (кръг)</option>
+                </select>
+              </label>
+              <label className="block text-xs font-semibold text-ink-soft">
+                <span className="flex items-baseline justify-between">
+                  <span>Размер</span>
+                  <span className="tabular-nums text-ink-faint">{s.logoSize} mm</span>
+                </span>
+                <input
+                  type="range"
+                  min={8}
+                  max={30}
+                  step={1}
+                  value={s.logoSize}
+                  onChange={(e) => set({ logoSize: Number(e.target.value) })}
+                  className="mt-1 h-4 w-full accent-tera"
+                  aria-label="Размер на логото"
+                />
+              </label>
+            </div>
+          )}
 
           <label className="flex items-start gap-2 text-sm font-semibold text-ink-soft">
             <input
@@ -652,7 +762,7 @@ export default function CardStudio() {
           <a
             href={vizitkaRegisterUrl(s)}
             target="_blank"
-            rel="noopener"
+            rel="noopener noreferrer"
             className="btn-secondary inline-flex w-fit"
           >
             Направи я жива визитка →
@@ -664,7 +774,7 @@ export default function CardStudio() {
       <div className="space-y-4">
         <div className="no-print card-warm p-5">
           <p className="field-label">Преглед отблизо</p>
-          <div className="overflow-x-auto rounded-xl">
+          <div ref={zoomRef} className="rounded-xl">
             <div className="w-fit shadow-lift" style={{ borderRadius: 6 }}>
               <CardFace s={s} theme={theme} u={px} qrSrc={qrSrc} />
             </div>
@@ -718,7 +828,7 @@ export default function CardStudio() {
 
         <ProjectFile
           state={s}
-          filename="mastilko-vizitki"
+          filename="mastilko-vizitki" storageKey="mastilko-cards"
           onLoad={(data) => setS({ ...INITIAL, ...ProjectSchema.parse(data) })}
         />
       </div>

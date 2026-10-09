@@ -21,6 +21,9 @@ process.env.STRIPE_SECRET_KEY = "sk_test_fake";
 process.env.STRIPE_WEBHOOK_SECRET = "whsec_test_fake";
 process.env.FRONTEND_URL = "https://supreme.example.com";
 process.env.STRIPE_PRICE_PREMIUM_MONTH = "price_pm";
+// v3.3 — по подразбиране Stripe вече не ПРОДАВА (Discord-only); този тест е за
+// легаси режима, в който checkout е позволен.
+process.env.BILLING_PROVIDER = "stripe";
 
 const prismaMock = createPrismaMock();
 vi.mock("../lib/prisma.js", () => ({ prisma: prismaMock }));

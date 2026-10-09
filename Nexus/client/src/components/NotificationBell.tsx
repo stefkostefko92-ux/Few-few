@@ -12,7 +12,7 @@ interface Notif { id: number; kind: string; message: string; ref: string; read_a
  * непрочетени, dropdown feed. Deep-link по `ref` (char:/trade:).
  */
 export default function NotificationBell(): React.ReactElement | null {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const nav = useNavigate();
   const character = useStore((s) => s.character);
   const [items, setItems] = useState<Notif[]>([]);
@@ -84,7 +84,7 @@ export default function NotificationBell(): React.ReactElement | null {
                 style={{ padding: '10px 12px', borderBottom: '1px solid var(--border, #2a2f3a)', cursor: n.ref ? 'pointer' : 'default', background: n.read_at ? 'transparent' : 'rgba(214,161,61,.06)' }}
               >
                 <div style={{ fontSize: 13 }}>{n.message}</div>
-                <div className="muted" style={{ fontSize: 11, marginTop: 2 }}>{new Date(n.created_at).toLocaleString()}</div>
+                <div className="muted" style={{ fontSize: 11, marginTop: 2 }}>{new Date(n.created_at).toLocaleString(i18n.language)}</div>
               </div>
             ))}
         </div>

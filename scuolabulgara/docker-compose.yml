@@ -4,7 +4,12 @@ services:
     image: scuolabulgaramilano:latest
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      # Bind to loopback ONLY: nginx is the sole entry point. A public bind
+      # (0.0.0.0) is reachable directly because Docker's DNAT rules sit in front
+      # of ufw — that would let an attacker skip nginx and forge X-Real-IP,
+      # defeating the login rate limit.
+      # QB_PORT in .env when 3000 is taken on the host (medqr uses it).
+      - "127.0.0.1:${QB_PORT:-3000}:3000"
     environment:
       NODE_ENV: production
       DATABASE_URL: "file:/app/data/app.db"
@@ -24,6 +29,9 @@ services:
       SMTP_PASS: "${SMTP_PASS:-}"
       SMTP_FROM: "${SMTP_FROM:-}"
       LEADS_NOTIFY_TO: "${LEADS_NOTIFY_TO:-}"
+      # Optional: Azure Speech (free F0 tier) for scripts/tts-alphabet.mjs.
+      AZURE_SPEECH_KEY: "${AZURE_SPEECH_KEY:-}"
+      AZURE_SPEECH_REGION: "${AZURE_SPEECH_REGION:-}"
     volumes:
       # Persists the SQLite database and uploaded images across deploys.
       - qb-data:/app/data

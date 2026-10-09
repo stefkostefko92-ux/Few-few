@@ -1,0 +1,168 @@
+/* Korpora public page — the first act: the hero and the four steps on the left, one stage on the right that stays in
+   view while they scroll past (its own styles: site-stage.css). The live scene of landing/story.js explodes the kitchen,
+   flies its parts onto the sheets and runs the router — one orchestrated motion; the rest of the page stays still. */
+
+.workbench {
+  --studio: #eeeee9; /* the 3D studio as rendered (STUDIO in landing/story.js after tone mapping): panel and scene meet seamlessly */
+  --stage-pad: clamp(10px, 1.4vw, 18px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 900px) {
+  .workbench {
+    grid-template-columns: minmax(0, min(560px, 42%)) minmax(0, 1fr);
+    column-gap: clamp(28px, 4vw, 64px);
+    /* the text column starts where the page's 1200 px column starts */
+    padding-left: max(var(--gutter), calc(50% - 600px + var(--gutter)));
+  }
+  .workbench > .hero {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .workbench > .story {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .workbench > .stage {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+}
+
+/* hero copy */
+.workbench .hero {
+  display: flex;
+  align-items: center;
+  padding-block: clamp(36px, 6vw, 72px);
+  padding-inline: var(--gutter);
+}
+@media (min-width: 900px) {
+  .workbench .hero {
+    min-height: calc(100svh - 70px);
+    padding-inline: 0;
+  }
+}
+.workbench .hero h1 {
+  font-size: clamp(3rem, 6.6vw, 6.6rem);
+}
+/* a phone: tighter room and a smaller lead, so the stage's first still starts within the first screen */
+@media (max-width: 899px) {
+  .workbench .hero {
+    padding-block: 22px 18px;
+  }
+  .workbench .hero .lead {
+    font-size: 1.02rem;
+    line-height: 1.45;
+    margin-bottom: 20px;
+  }
+  .workbench .hero .trial-note {
+    margin-top: 14px;
+    font-size: 0.9rem;
+  }
+}
+
+/* the four steps: scroll beats that turn the stage */
+/* the room under the last step keeps the stage in view while the router finishes the sheet (on a desktop it needs
+   about 43svh with 64svh steps; on a phone the stage sits on top and needs little) */
+.story {
+  padding: clamp(28px, 5vw, 64px) var(--gutter) 24svh;
+}
+@media (min-width: 900px) {
+  .story {
+    padding-inline: 0;
+    padding-bottom: 48svh;
+  }
+}
+.story-head h2 {
+  font-size: clamp(1.8rem, 3.2vw, 2.6rem);
+  letter-spacing: -0.03em;
+  font-weight: 720;
+  font-variation-settings: 'SHRP' 60;
+  max-width: 18ch;
+  margin-bottom: 14px;
+}
+.story .steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: block;
+  border: 0;
+}
+.story .steps li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 62svh;
+  padding: 0 0 0 58px;
+  border: 0;
+}
+@media (min-width: 900px) {
+  .story .steps li {
+    min-height: 64svh;
+  }
+}
+/* the first step follows the heading directly: a screen of room above it would read as a hole in the page */
+.story .steps li:first-child {
+  min-height: 0;
+  padding-block: clamp(28px, 6svh, 56px);
+}
+/* the steps hang on one line, like the balloons of an assembly drawing on their leaders */
+.story .steps li::before {
+  content: '';
+  position: absolute;
+  left: 17px;
+  top: 0;
+  bottom: 0;
+  width: 1.5px;
+  background: var(--rule);
+}
+.story .steps li:first-child::before {
+  top: 50%;
+}
+.story .steps li:last-child::before {
+  bottom: 50%;
+}
+/* the step numbers are position balloons, the way an assembly drawing points at its parts */
+.story .step-n {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  translate: 0 -50%;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  background: var(--paper);
+  font: 650 1rem/1 var(--f-text);
+  font-variant-numeric: tabular-nums;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+/* the balloon of the step being read fills in (landing/main.js marks it; without JS all four stay open) */
+.story .steps li.is-current .step-n {
+  background: var(--ink);
+  color: var(--paper);
+}
+.story .steps h3 {
+  font-size: clamp(1.3rem, 2.2vw, 1.75rem);
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+}
+.story .steps p {
+  max-width: 36em;
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story .step-n {
+    transition: none;
+  }
+}

@@ -1,9 +1,12 @@
 // backend/src/routes/admin.js
 import { Router } from "express";
+import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { guildIconUrl } from "../lib/discordCdn.js";
 import { planConfig, effectivePremiumWhere } from "../lib/premium.js";
 import { requireAuth, loadUser, requireSuperUser, requireMainOwner } from "../middleware/auth.js";
+import { requireMfa, requireFreshMfa } from "../middleware/mfa.js";
+import { adminIpAllowlist } from "../middleware/adminIpAllowlist.js";
 
 // Активен ПЛАТЕН абонамент (Stripe, Discord или покриваща агенция). Ръчните
 // админски действия не бива да го презаписват: клиентът продължава да плаща, а
@@ -25,7 +28,48 @@ function activePaidSubscription(server) {
 
 const router = Router();
 
-router.use(requireAuth, loadUser, requireSuperUser);
+// Одитни записи, които „Purge Old“ НИКОГА не трие: всичко, което staff прави
+// през конзолата, промени в достъпа и заявки по GDPR. Списъкът пазеше 7 вида,
+// а UI обещаваше „always preserved“ — трийха се ръчни смени на план, DSR,
+// нулиране на MFA и дори предишните purge записи (одит 26.09.2026).
+export const PRESERVED_AUDIT_ACTIONS = Object.freeze([
+  "USER_BLACKLISTED", "USER_UNBLACKLISTED", "USER_DELETED", "USER_ROLE_CHANGED", "USER_SESSIONS_REVOKED", "USER_NOTE_UPDATED", "USERS_EXPORTED",
+  "SERVER_DELETED", "SERVER_RESET", "SERVER_EDITED_ADMIN", "ADMIN_BROADCAST",
+  "PREMIUM_GRANTED_MANUAL", "PREMIUM_REVOKED_MANUAL", "PLAN_CHANGED_MANUAL", "PAYMENT_LOG_DELETED",
+  "ENTITLEMENT_RECONCILE_MANUAL", "WHITELABEL_RECONCILE_MANUAL",
+  "WHITELABEL_PAUSE_BY_ADMIN", "WHITELABEL_RESUME_BY_ADMIN", "WHITELABEL_RESTART_BY_ADMIN", "WHITELABEL_BRANDING_BY_ADMIN", "WHITELABEL_TOKEN_REMOVED_BY_ADMIN",
+  "MFA_RESET_BY_ADMIN", "MFA_DISABLED", "SECURITY_UNBLOCK", "API_KEY_REVOKED_ADMIN",
+  "DSR_ERASED", "GDPR_ACCOUNT_DELETED", "GDPR_DATA_EXPORT", "GDPR_CONSENT_WITHDRAWN",
+  "GAME_SEASON_CREATED", "GAME_SEASON_UPDATED", "GAME_SEASON_DELETED", "GAME_RESET_BY_ADMIN",
+  "GAME_MEMBER_ADJUSTED", "GAME_COMPANION_GRANTED", "GAME_COMPANION_REVOKED", "TICKET_DELETED_BY_ADMIN",
+  "PANEL_DELETED_BY_ADMIN", "FORM_DELETED_BY_ADMIN",
+  "AUDIT_LOG_PURGE",
+]);
+
+// ?page=0 / ?page=abc давали отрицателен или NaN skip → 500, а limit нямаше
+// таван (одит 26.09.2026). Едно нормализиране за всички списъци.
+function paging(query, { def = 50, max = 100 } = {}) {
+  const page = Math.max(1, Math.floor(Number(query.page)) || 1);
+  const limit = Math.min(max, Math.max(1, Math.floor(Number(query.limit)) || def));
+  return { page, limit, skip: (page - 1) * limit };
+}
+
+// Какво от потребителя излиза в админ конзолата. НИКОГА mfaSecret,
+// mfaBackupCodes, mfaLastUsedStep или имейл: детайлът и отговорите на
+// role/blacklist връщаха целия ред (include / res.json(updated)), тоест
+// шифрованата TOTP тайна и хешовете на резервните кодове стигаха до браузъра на
+// всеки SUPER_USER (одит 26.09.2026).
+export const ADMIN_USER_FIELDS = Object.freeze({
+  id: true, username: true, discriminator: true, avatar: true, globalRole: true, language: true,
+  isBlacklisted: true, blacklistReason: true, blacklistedAt: true, blacklistedUntil: true, adminNote: true,
+  mfaEnabledAt: true, createdAt: true, updatedAt: true,
+});
+
+// v3.4 — админ конзолата иска записан + потвърден втори фактор (TOTP) за всяка
+// staff роля; разрушителните маршрути по-долу искат и СВЕЖО потвърждение
+// (step-up ≤10 min) — виж middleware/mfa.js.
+router.use(requireAuth, loadUser, adminIpAllowlist, requireSuperUser, requireMfa);
+const stepUp = requireFreshMfa();
 
 // ─── GET /api/admin/analytics ─────────────────────────────────────────────────
 
@@ -100,6 +144,9 @@ router.get("/users", async (req, res, next) => {
   const page = Math.max(1, Number(req.query.page) || 1);
   const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 50));
   const { query, role } = req.query;
+  // v51: ?blacklisted=true — само потребителите в черния списък (вкл. изтекли
+  // срокове, за да се виждат и чистят).
+  const onlyBlacklisted = req.query.blacklisted === "true";
 
   try {
     const where = {
@@ -110,6 +157,7 @@ router.get("/users", async (req, res, next) => {
         ],
       }),
       ...(role && { globalRole: role }),
+      ...(onlyBlacklisted && { isBlacklisted: true }),
     };
 
     const [users, total] = await Promise.all([
@@ -121,7 +169,8 @@ router.get("/users", async (req, res, next) => {
         // броячи, не от контактите.
         select: {
           id: true, username: true, discriminator: true, avatar: true,
-          globalRole: true, isBlacklisted: true, language: true, createdAt: true,
+          globalRole: true, isBlacklisted: true, blacklistReason: true, blacklistedAt: true, blacklistedUntil: true,
+          language: true, createdAt: true,
           _count: { select: { tickets: true, applications: true, serverMembers: true } },
         },
         orderBy: { createdAt: "desc" },
@@ -143,11 +192,12 @@ router.get("/users/:userId", async (req, res, next) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.params.userId },
-      include: {
+      select: {
+        ...ADMIN_USER_FIELDS,
         serverMembers: {
           include: { server: { select: { id: true, name: true, isPremium: true } } },
         },
-        tickets: { take: 5, orderBy: { createdAt: "desc" } },
+        tickets: { take: 5, orderBy: { createdAt: "desc" }, select: { id: true, serverId: true, number: true, status: true, createdAt: true, closedAt: true } },
         sessions: { select: { createdAt: true, expiresAt: true }, take: 5 },
       },
     });
@@ -173,7 +223,7 @@ router.get("/users/:userId", async (req, res, next) => {
 
 // ─── PATCH /api/admin/users/:userId/role ──────────────────────────────────────
 
-router.patch("/users/:userId/role", requireMainOwner, async (req, res, next) => {
+router.patch("/users/:userId/role", requireMainOwner, stepUp, async (req, res, next) => {
   const { role } = req.body;
   const validRoles = ["SUPER_USER", "SUPPORT_STAFF", "USER"];
 
@@ -203,6 +253,7 @@ router.patch("/users/:userId/role", requireMainOwner, async (req, res, next) => 
     const updated = await prisma.user.update({
       where: { id: req.params.userId },
       data: { globalRole: role },
+      select: ADMIN_USER_FIELDS,
     });
 
     await prisma.auditLog.create({
@@ -214,6 +265,19 @@ router.patch("/users/:userId/role", requireMainOwner, async (req, res, next) => 
       },
     });
 
+        // v3.4 — staff роля без записан втори фактор: собственикът научава веднага
+    // (човекът няма достъп до конзолата, докато не запише TOTP, но това е
+    // сигнал за онбординг и за одит).
+    if (["MAIN_OWNER", "SUPER_USER", "SUPPORT_STAFF"].includes(role)) {
+      Promise.resolve().then(async () => {
+        const u = await prisma.user.findUnique({ where: { id: req.params.userId }, select: { username: true, mfaEnabledAt: true } });
+        if (u && !u.mfaEnabledAt) {
+          const { alertOwner, ALERT_KINDS } = await import("../lib/securityAlerts.js");
+          await alertOwner(ALERT_KINDS.STAFF_WITHOUT_MFA, "Staff role granted to an account without a second factor",
+            `${u.username} (${req.params.userId}) is now ${role} and has NOT enrolled TOTP. The admin console stays closed to them until they do (Account security page).`);
+        }
+      }).catch(() => {});
+    }
     res.json(updated);
   } catch (err) {
     next(err);
@@ -222,8 +286,18 @@ router.patch("/users/:userId/role", requireMainOwner, async (req, res, next) => 
 
 // ─── PATCH /api/admin/users/:userId/blacklist ─────────────────────────────────
 
-router.patch("/users/:userId/blacklist", requireMainOwner, async (req, res, next) => {
-  const { blacklisted } = req.body;
+router.patch("/users/:userId/blacklist", requireMainOwner, stepUp, async (req, res, next) => {
+  // v51: причина и срок. `until` = ISO дата в бъдещето или null (безсрочно).
+  const body = z.object({
+    blacklisted: z.boolean(),
+    reason: z.string().trim().max(500).optional().nullable(),
+    until: z.string().datetime({ offset: true }).optional().nullable(),
+  }).safeParse(req.body || {});
+  if (!body.success) return res.status(400).json({ error: "blacklisted (boolean), optional reason (≤500) and until (ISO date) are expected" });
+  const { blacklisted, reason = null, until = null } = body.data;
+  if (blacklisted && until && new Date(until) <= new Date()) {
+    return res.status(400).json({ error: "until must be in the future", code: "UNTIL_IN_PAST" });
+  }
 
   if (req.query.confirm !== "true") {
     return res.status(400).json({
@@ -235,27 +309,41 @@ router.patch("/users/:userId/blacklist", requireMainOwner, async (req, res, next
   }
 
   try {
-    const target = await prisma.user.findUnique({ where: { id: req.params.userId } });
+    const target = await prisma.user.findUnique({ where: { id: req.params.userId }, select: { id: true, globalRole: true } });
     if (!target) return res.status(404).json({ error: "User not found" });
 
     if (target.globalRole === "MAIN_OWNER") {
       return res.status(403).json({ error: "Cannot blacklist the Main Owner" });
     }
+    if (target.id === req.user.id) {
+      return res.status(400).json({ error: "You cannot blacklist yourself", code: "SELF" });
+    }
 
     const updated = await prisma.user.update({
       where: { id: req.params.userId },
-      data: { isBlacklisted: !!blacklisted },
+      data: blacklisted
+        ? { isBlacklisted: true, blacklistReason: reason || null, blacklistedUntil: until ? new Date(until) : null, blacklistedAt: new Date() }
+        : { isBlacklisted: false, blacklistReason: null, blacklistedUntil: null, blacklistedAt: null },
+      select: ADMIN_USER_FIELDS,
     });
+
+    // Живите сесии падат веднага — иначе вече влезлият потребител продължава
+    // до изтичане на бисквитката (loadUser го спира при СЛЕДВАЩАТА заявка, но
+    // сесията остава в таблицата и се брои като активна).
+    const sessionsRevoked = blacklisted
+      ? Number(await prisma.$executeRaw`DELETE FROM express_sessions WHERE sess->>'userId' = ${target.id}`.catch(() => 0)) || 0
+      : 0;
 
     await prisma.auditLog.create({
       data: {
         actorId: req.user.id,
         action: blacklisted ? "USER_BLACKLISTED" : "USER_UNBLACKLISTED",
         targetId: req.params.userId,
+        metadata: blacklisted ? { reason: reason || null, until: until || null, sessionsRevoked } : {},
       },
     });
 
-    res.json(updated);
+    res.json({ ...updated, sessionsRevoked });
   } catch (err) {
     next(err);
   }
@@ -278,20 +366,27 @@ function adminServerView(server) {
 // ─── GET /api/admin/servers ───────────────────────────────────────────────────
 
 router.get("/servers", async (req, res, next) => {
-  const { page = 1, limit = 50, premium } = req.query;
+  const { premium } = req.query;
+  const { page, limit, skip } = paging(req.query);
+  // Търсене по име или id — над 100 сървъра по-старите не можеха да се
+  // намерят и управляват от конзолата (одит 26.09.2026).
+  const q = String(req.query.query || "").trim().slice(0, 100);
 
   try {
     const where = {
       ...(premium !== undefined && { isPremium: premium === "true" }),
+      ...(q && { OR: [{ name: { contains: q, mode: "insensitive" } }, { id: { contains: q } }] }),
     };
 
     const [servers, total] = await Promise.all([
       prisma.server.findMany({
         where,
-        include: { _count: { select: { tickets: true, panels: true, forms: true, members: true } } },
+        // agency.plan: модалът за план предлагаше „Agency 5“ за всяко агентско
+        // място и „Set“ сваляше agency10 на 5 места (одит 26.09.2026).
+        include: { _count: { select: { tickets: true, panels: true, forms: true, members: true } }, agency: { select: { plan: true } } },
         orderBy: { createdAt: "desc" },
-        skip: (Number(page) - 1) * Number(limit),
-        take: Number(limit),
+        skip,
+        take: limit,
       }),
       prisma.server.count({ where }),
     ]);
@@ -300,7 +395,7 @@ router.get("/servers", async (req, res, next) => {
     // пак таен) и Stripe идентификаторите. Детайлният маршрут по-долу ги маха, а
     // списъкът не: същият клас „едно правило, две определения". И `icon` излиза
     // като АДРЕС, за да не строи всеки клиент URL сам. (07.08.2026)
-    res.json({ servers: servers.map(adminServerView), total });
+    res.json({ servers: servers.map(adminServerView), total, page, limit });
   } catch (err) {
     next(err);
   }
@@ -309,7 +404,8 @@ router.get("/servers", async (req, res, next) => {
 // ─── GET /api/admin/payments ──────────────────────────────────────────────────
 
 router.get("/payments", async (req, res, next) => {
-  const { page = 1, limit = 50, status } = req.query;
+  const { status } = req.query;
+  const { page, limit, skip } = paging(req.query);
 
   try {
     const where = { ...(status && { status }) };
@@ -318,8 +414,8 @@ router.get("/payments", async (req, res, next) => {
       prisma.paymentLog.findMany({
         where,
         orderBy: { createdAt: "desc" },
-        skip: (Number(page) - 1) * Number(limit),
-        take: Number(limit),
+        skip,
+        take: limit,
       }),
       prisma.paymentLog.count({ where }),
       cashCollectedThisMonth(),
@@ -328,7 +424,7 @@ router.get("/payments", async (req, res, next) => {
     // `collectedThisMonth` е КАСА (реално платени фактури този календарен месец),
     // НЕ MRR. Преди се връщаше под името `mrr` — грешно: сумата подскача при
     // годишни фактури, нулира се на 1-во число и не вижда agency плащания.
-    res.json({ payments, total, collectedThisMonth });
+    res.json({ payments, total, collectedThisMonth, page, limit });
   } catch (err) {
     next(err);
   }
@@ -337,7 +433,8 @@ router.get("/payments", async (req, res, next) => {
 // ─── GET /api/admin/audit-logs ────────────────────────────────────────────────
 
 router.get("/audit-logs", async (req, res, next) => {
-  const { page = 1, limit = 100, action, actorId } = req.query;
+  const { action, actorId } = req.query;
+  const { page, limit, skip } = paging(req.query, { def: 100, max: 200 });
 
   try {
     const where = {
@@ -351,13 +448,13 @@ router.get("/audit-logs", async (req, res, next) => {
         include: { actor: { select: { id: true, username: true, avatar: true } } },
         // actorTag is on the log itself (for SYSTEM entries where actor is null)
         orderBy: { createdAt: "desc" },
-        skip: (Number(page) - 1) * Number(limit),
-        take: Number(limit),
+        skip,
+        take: limit,
       }),
       prisma.auditLog.count({ where }),
     ]);
 
-    res.json({ logs, total });
+    res.json({ logs, total, page, limit });
   } catch (err) {
     next(err);
   }
@@ -433,8 +530,14 @@ function normalizeServerPlan(s) {
  *   брои се отделно като „потенциален“ MRR.
  * - `planSource === "manual"` (подарени) НЕ е приход — отделен ред „gifted“ с
  *   каталожна стойност, за да се вижда колко подаряваме.
- * - `planSource === "discord"` (Discord Premium Apps) е приход, но НЕ минава
- *   през Stripe и Discord удържа комисиона → отделен ред, извън Stripe MRR.
+ * - `planSource === "discord"` (Discord Premium Apps — ЕДИНСТВЕНИЯТ канал за
+ *   продажба от v3.3) е приход, но парите не минават през нас: Discord е
+ *   препродавач — начислява/внася ДДС и удържа своя дял (85/15 до $1M годишно,
+ *   после 70/30; Monetization Terms, сверено 12.09.2026). Затова е ОТДЕЛЕН
+ *   блок `discord`: каталожна (списъчна) стойност с ДДС + ОЦЕНКА на нетото
+ *   (÷1.20 ДДС × 0.85). Реалната сума е в Developer Portal → Payouts; локалната
+ *   цена в Discord може да се различава от каталожната. `totalMrrGross` събира
+ *   Stripe MRR + Discord списъчен MRR, за да не изглежда бизнесът „нула“.
  * - `past_due` НЕ се брои в MRR (плащането е пропаднало; dunning тече) —
  *   показва се като „приход в риск“.
  * - Churn 30d = отпаднали (stripeStatus="canceled" с updatedAt в прозореца) /
@@ -443,6 +546,12 @@ function normalizeServerPlan(s) {
  *   по-късна промяна по реда го мести в/извън прозореца; изтритите сървъри
  *   изобщо не се броят. За точен churn — Stripe Billing отчетите.
  */
+// Делът на разработчика при Discord Premium Apps: 85% до $1M нетен приход за
+// календарна година, после 70% (Discord Monetization Terms, сверено 12.09.2026).
+// Държим по-консервативния праг като константа — при надхвърляне на $1M смени
+// на 0.70 (и празнувай).
+export const DISCORD_DEVELOPER_SHARE = 0.85;
+
 export function calculateMrr({ servers = [], agencies = [], now = new Date(), churnWindowDays = 30 } = {}) {
   const cutoff = new Date(now.getTime() - churnWindowDays * 24 * 60 * 60 * 1000);
 
@@ -534,15 +643,6 @@ export function calculateMrr({ servers = [], agencies = [], now = new Date(), ch
   const activeNow = paidSubscriptions;
   const churnBase = activeNow + canceled30d;
 
-  // Trial фуния. ПРИБЛИЖЕНИЕ (исторически, не кохортен): `trialUsed` няма дата,
-  // затова конверсията е „колко от всякога пробвалите са премиум СЕГА“ — който
-  // е конвертирал и после отпаднал, се брои като неконвертирал, а ръчен grant
-  // или agency място вдигат числителя. Точна кохортна конверсия иска
-  // trialStartedAt + история на абонамента.
-  const trialActive = servers.filter((s) => s.trialEndsAt && new Date(s.trialEndsAt) > now).length;
-  const trialUsed = servers.filter((s) => s.trialUsed).length;
-  const trialConverted = servers.filter((s) => s.trialUsed && s.isPremium).length;
-
   const byTier = [...tiers.values()]
     .sort((a, b) => planConfig(b.plan).rank - planConfig(a.plan).rank)
     .map((t) => ({
@@ -554,6 +654,11 @@ export function calculateMrr({ servers = [], agencies = [], now = new Date(), ch
 
   const monthlyCount = byTier.reduce((n, t) => n + t.monthlyCount, 0);
   const yearlyCount = byTier.reduce((n, t) => n + t.yearlyCount, 0);
+
+  // Discord Premium Apps (v3.3): списъчна стойност с ДДС → нето след ДДС и
+  // дела на Discord. Оценка, не касова истина (тя е в Developer Portal).
+  const discordList = excluded.discord.listValue;
+  const discordNet = (discordList / (1 + VAT_RATE)) * DISCORD_DEVELOPER_SHARE;
 
   return {
     currency: "EUR",
@@ -577,6 +682,14 @@ export function calculateMrr({ servers = [], agencies = [], now = new Date(), ch
       monthlyMrr: round2(byTier.reduce((n, t) => n + t.monthlyMrr, 0)),
       yearlyMrr: round2(byTier.reduce((n, t) => n + t.yearlyMrr, 0)),
     },
+    discord: {
+      count: excluded.discord.count,
+      listMrrGross: round2(discordList),
+      netEstimate: round2(discordNet),
+      developerShare: DISCORD_DEVELOPER_SHARE,
+    },
+    totalMrrGross: round2(mrr + discordList),
+    totalSubscriptions: paidSubscriptions + excluded.discord.count,
     excluded: {
       trialing: { count: excluded.trialing.count, potentialMrr: round2(excluded.trialing.potentialMrr) },
       gifted:   { count: excluded.gifted.count,   listValue: round2(excluded.gifted.listValue) },
@@ -589,12 +702,6 @@ export function calculateMrr({ servers = [], agencies = [], now = new Date(), ch
       canceled: canceled30d,
       activeNow,
       rate: churnBase ? round2((canceled30d / churnBase) * 100) : 0,
-    },
-    trials: {
-      active: trialActive,
-      used: trialUsed,
-      converted: trialConverted,
-      conversionRate: trialUsed ? round2((trialConverted / trialUsed) * 100) : 0,
     },
     diagnostics,
   };
@@ -625,14 +732,12 @@ router.get("/revenue", async (req, res, next) => {
           OR: [
             { plan: { not: "free" } },
             { isPremium: true },
-            { trialUsed: true },
-            { trialEndsAt: { gt: now } },
             { stripeStatus: { in: ["canceled", "past_due", "unpaid", "trialing"] } },
           ],
         },
         select: {
           plan: true, billingInterval: true, planSource: true, stripeStatus: true,
-          isPremium: true, trialUsed: true, trialEndsAt: true, updatedAt: true,
+          isPremium: true, updatedAt: true,
         },
       }),
       prisma.agency.findMany({
@@ -654,13 +759,13 @@ router.get("/revenue", async (req, res, next) => {
 
 // ─── PATCH /api/admin/servers/:serverId/premium ──────────────────────────────
 // Manually grant or revoke Premium on a server. Bypasses Stripe entirely.
-// Used by Main Owner / Super User to give Premium as a gift, for trials,
+// Used by Main Owner / Super User to give Premium as a gift, for partners,
 // for partners, or for testing.
 // When revoking, if the server had an active Stripe subscription, we DON'T
 // cancel it — we just flip the flag. To cancel Stripe subscriptions, use the
 // Stripe Dashboard directly.
 
-router.patch("/servers/:serverId/premium", requireSuperUser, async (req, res, next) => {
+router.patch("/servers/:serverId/premium", requireSuperUser, stepUp, async (req, res, next) => {
   const { enabled, reason } = req.body;
 
   if (typeof enabled !== "boolean") {
@@ -710,10 +815,9 @@ router.patch("/servers/:serverId/premium", requireSuperUser, async (req, res, ne
           planSource: null,
           billingInterval: null,
           archiveRetentionDays: 30,
-          // Без това getServerTier връща активен ПРОБЕН tier след ръчен revoke —
-          // достъпът си остава. /plan вече го чисти; тук липсваше.
+          // Заварен (sunset) пробен период също пада — ръчният revoke е
+          // окончателен; без това getServerTier би върнал Premium от trialEndsAt.
           trialEndsAt: null,
-          trialStartedAt: null,
           pastDueSince: null,
           // И гратисът пада: ръчният revoke е окончателен, не оставя достъп до
           // край на период. Без това „revoked“ сървър пазеше gracePlan tier.
@@ -760,7 +864,7 @@ router.patch("/servers/:serverId/premium", requireSuperUser, async (req, res, ne
 // от Agency UI-то. planSource="manual" → изключен от MRR (виж /revenue).
 // Активен Stripe/Discord абонамент НЕ се отменя оттук — само Stripe Dashboard.
 
-router.patch("/servers/:serverId/plan", requireSuperUser, async (req, res, next) => {
+router.patch("/servers/:serverId/plan", requireSuperUser, stepUp, async (req, res, next) => {
   const { plan, reason } = req.body;
   const VALID_PLANS = ["free", "premium", "whitelabel", "agency5", "agency10"];
   if (!VALID_PLANS.includes(plan)) {
@@ -847,10 +951,9 @@ router.patch("/servers/:serverId/plan", requireSuperUser, async (req, res, next)
           isPremium: false,
           billingInterval: null,
           archiveRetentionDays: 30,
-          // Чистим trial следите — иначе getServerTier може да върне активен
-          // пробен tier след ръчен revoke (Кодаджията).
+          // Заварен (sunset) пробен период също пада — ръчният revoke е
+          // окончателен; без това getServerTier би върнал Premium от trialEndsAt.
           trialEndsAt: null,
-          trialStartedAt: null,
           pastDueSince: null,
           // И гратисът пада: ръчният revoke е окончателен.
           accessUntil: null,
@@ -925,13 +1028,20 @@ router.get("/servers/:serverId", async (req, res, next) => {
 // ─── PATCH /api/admin/servers/:serverId ───────────────────────────────────────
 // Admin edit of server settings (log channels, retention, custom bot name/avatar)
 
-router.patch("/servers/:serverId", async (req, res, next) => {
+router.patch("/servers/:serverId", stepUp, async (req, res, next) => {
   const {
     name, logChannelId, archiveChannelId, archiveRetentionDays,
     customBotName, customBotAvatar,
     aiRepliesEnabled, aiRepliesPrompt,
     roundRobinEnabled, roundRobinRoleId,
   } = req.body;
+
+  // null = пази завинаги; иначе цели дни 1–3650. 0 правеше границата „сега“ и
+  // нощната метла триеше ВСИЧКИ затворени транскрипти (одит 26.09.2026).
+  if (archiveRetentionDays !== undefined && archiveRetentionDays !== null
+      && !(Number.isInteger(archiveRetentionDays) && archiveRetentionDays >= 1 && archiveRetentionDays <= 3650)) {
+    return res.status(400).json({ error: "archiveRetentionDays must be null (forever) or a whole number from 1 to 3650", code: "INVALID_RETENTION" });
+  }
 
   try {
     const updated = await prisma.server.update({
@@ -970,7 +1080,7 @@ router.patch("/servers/:serverId", async (req, res, next) => {
 // due to Prisma onDelete: CASCADE). Requires ?confirm=true.
 // The bot will still be in the Discord guild — use the bot to leave manually if needed.
 
-router.delete("/servers/:serverId", requireMainOwner, async (req, res, next) => {
+router.delete("/servers/:serverId", requireMainOwner, stepUp, async (req, res, next) => {
   if (req.query.confirm !== "true") {
     return res.status(400).json({
       error: "Destructive action requires confirmation",
@@ -1010,7 +1120,7 @@ router.delete("/servers/:serverId", requireMainOwner, async (req, res, next) => 
 // Tickets/applications created by this user are NOT deleted (onDelete: RESTRICT) —
 // they remain anonymized with the old userId referenced.
 
-router.delete("/users/:userId", requireMainOwner, async (req, res, next) => {
+router.delete("/users/:userId", requireMainOwner, stepUp, async (req, res, next) => {
   if (req.query.confirm !== "true") {
     return res.status(400).json({
       error: "Destructive action requires confirmation",
@@ -1065,7 +1175,7 @@ router.delete("/users/:userId", requireMainOwner, async (req, res, next) => {
 // Remove an erroneous manual payment log entry. Stripe-logged entries should
 // NOT be deleted — they're part of the financial audit trail.
 
-router.delete("/payments/:paymentId", requireMainOwner, async (req, res, next) => {
+router.delete("/payments/:paymentId", requireMainOwner, stepUp, async (req, res, next) => {
   if (req.query.confirm !== "true") {
     return res.status(400).json({
       error: "Destructive action requires confirmation",
@@ -1097,7 +1207,7 @@ router.delete("/payments/:paymentId", requireMainOwner, async (req, res, next) =
 // ─── POST /api/admin/audit-logs/purge ─────────────────────────────────────────
 // Bulk-purge audit logs older than N days. MAIN_OWNER only.
 
-router.post("/audit-logs/purge", requireMainOwner, async (req, res, next) => {
+router.post("/audit-logs/purge", requireMainOwner, stepUp, async (req, res, next) => {
   const { olderThanDays } = req.body;
   if (!Number.isInteger(olderThanDays) || olderThanDays < 30) {
     return res.status(400).json({
@@ -1111,11 +1221,7 @@ router.post("/audit-logs/purge", requireMainOwner, async (req, res, next) => {
       where: {
         createdAt: { lt: cutoff },
         // Never purge destructive actions — they must be preserved forever
-        action: { notIn: [
-          "USER_BLACKLISTED", "USER_UNBLACKLISTED", "USER_DELETED",
-          "USER_ROLE_CHANGED", "SERVER_DELETED",
-          "PREMIUM_GRANTED_MANUAL", "PREMIUM_REVOKED_MANUAL",
-        ]},
+        action: { notIn: [...PRESERVED_AUDIT_ACTIONS] },
       },
     });
     await prisma.auditLog.create({
@@ -1133,7 +1239,7 @@ router.post("/audit-logs/purge", requireMainOwner, async (req, res, next) => {
 // Wipe all panels/forms/tickets/applications for a server but keep the server record.
 // Useful for "start fresh" without deleting the server itself or Stripe subscription.
 
-router.post("/servers/:serverId/reset", requireMainOwner, async (req, res, next) => {
+router.post("/servers/:serverId/reset", requireMainOwner, stepUp, async (req, res, next) => {
   if (req.query.confirm !== "true") {
     return res.status(400).json({
       error: "Destructive action requires confirmation",
@@ -1184,20 +1290,25 @@ router.post("/servers/:serverId/reset", requireMainOwner, async (req, res, next)
 // Post a system message to a specific server channel (admin broadcast).
 // Sends via the bot internal API.
 
-router.post("/servers/:serverId/broadcast", async (req, res, next) => {
+router.post("/servers/:serverId/broadcast", stepUp, async (req, res, next) => {
   const { channelId, title, message } = req.body;
   if (!channelId || !message) return res.status(400).json({ error: "channelId and message required" });
 
   try {
-    // Dynamically import to avoid circular dep
-    const { notifyBot } = await import("../services/botNotifier.js");
-    const result = await notifyBot("ADMIN_BROADCAST", {
+    // Dynamically import to avoid circular dep. Verbose: notifyBot връщаше null
+    // при офлайн бот/грешен канал, а маршрутът пак казваше ok:true и пишеше
+    // одит за съобщение, което никога не е тръгнало (одит 26.09.2026).
+    const { notifyBotVerbose } = await import("../services/botNotifier.js");
+    const result = await notifyBotVerbose("ADMIN_BROADCAST", {
       serverId: req.params.serverId,
       channelId,
       title: title || "Platform Notice",
       message,
       senderTag: req.user.username,
     });
+    if (!result || result.botError) {
+      return res.status(502).json({ error: `The bot did not post the notice: ${result?.botError || "no response"}`, code: "BOT_FAILED" });
+    }
 
     await prisma.auditLog.create({
       data: {

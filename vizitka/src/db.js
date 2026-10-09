@@ -91,6 +91,19 @@ db.exec(`
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
+  -- Одитна следа за админските действия върху ЧУЖДИ визитки. Админ панелът дава
+  -- достъп до всички профили; без запис кой какво е направил няма отчетност
+  -- (чл. 5(2) ОРЗД) и няма как да се разследва спор.
+  CREATE TABLE IF NOT EXISTS admin_audit (
+    id INTEGER PRIMARY KEY,
+    admin_user_id INTEGER NOT NULL,
+    admin_email TEXT NOT NULL,
+    profile_id INTEGER NOT NULL,
+    action TEXT NOT NULL,              -- hide | unhide | edit | photo | cover
+    detail TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
   -- Регистрации на устройства за Apple Wallet auto-update (пуш при промяна).
   CREATE TABLE IF NOT EXISTS apple_pass_registrations (
     id INTEGER PRIMARY KEY,
@@ -127,6 +140,22 @@ if (!profileCols.has('font'))
   db.exec("ALTER TABLE profiles ADD COLUMN font TEXT NOT NULL DEFAULT 'system'");
 if (!profileCols.has('cover'))
   db.exec("ALTER TABLE profiles ADD COLUMN cover TEXT NOT NULL DEFAULT ''");
+// Скрита ли е визитката от АДМИН (модерация), а не от самия собственик. Разликата
+// е важна: админът може да върне собственото си скриване, но НЕ може да публикува
+// визитка, която потребителят сам е скрил (privacy-by-default, чл. 25(2) ОРЗД).
+if (!profileCols.has('hidden_by_admin'))
+  db.exec('ALTER TABLE profiles ADD COLUMN hidden_by_admin INTEGER NOT NULL DEFAULT 0');
+// Съгласие визитката да се вижда през MCP конектора (ChatGPT/Claude). ПО
+// ПОДРАЗБИРАНЕ 0 и това не е предпазливост, а последователност: robots.txt спира
+// GPTBot/ClaudeBot от /p/, значи да подадем същите данни на същите доставчици през
+// наш конектор без изричен избор би било заобикаляне на собственото ни правило.
+// Публичността на визитката НЕ е съгласие за това (чл. 25(2) ОРЗД).
+if (!profileCols.has('ai_discoverable'))
+  db.exec('ALTER TABLE profiles ADD COLUMN ai_discoverable INTEGER NOT NULL DEFAULT 0');
+// Кога съгласието последно е дадено или оттеглено (чл. 7(1) ОРЗД — администраторът
+// трябва да може да докаже съгласието). NULL = никога не е пипано.
+if (!profileCols.has('ai_consent_at'))
+  db.exec('ALTER TABLE profiles ADD COLUMN ai_consent_at TEXT');
 // Таблицата `links` се създава в главната схема по-горе (CREATE TABLE IF NOT EXISTS).
 
 const userCols = new Set(

@@ -36,7 +36,7 @@
 
 ```bash
 npm install
-npm start        # http://localhost:3100
+npm start        # http://localhost:3105
 ```
 
 Продукция: виж `.env.example` (`NODE_ENV=production`, `PUBLIC_BASE_URL`,

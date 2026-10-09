@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import WifiStudio from "@/components/studios/WifiStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
+import RelatedTools from "@/components/RelatedTools";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатен WiFi стикер с QR код";
 const DESC =
-  "Направи стикер за WiFi с QR код — гостите сканират и телефонът се свързва сам, без да въвеждат парола. За кафенета, къщи за гости, офиси. Безплатно, на български.";
+  "Направи стикер за WiFi с QR код — гостите сканират и телефонът се свързва сам, без да въвеждат парола. За кафенета и къщи за гости. Безплатно, на български.";
 
 const HOWTO = {
   name: "Как да направиш WiFi QR стикер",
@@ -40,6 +42,7 @@ export const metadata: Metadata = {
     "QR код за WiFi парола",
     "wifi табелка",
     "QR парола за интернет",
+    "Carbon Stealth",
   ],
   alternates: { canonical: "/wifi" },
   ...pageMeta(TITLE, DESC, "/wifi"),
@@ -49,7 +52,10 @@ export default function WifiPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <header className="no-print mb-8">
-        <h1 className="font-display text-3xl font-bold sm:text-4xl">📶 WiFi стикер с QR</h1>
+        <h1 className="font-display flex items-center gap-3 text-3xl font-bold sm:text-4xl">
+          <Image src="/icons/wifi.webp" alt="" width={56} height={56} unoptimized className="h-12 w-12 object-contain sm:h-14 sm:w-14" aria-hidden />
+          WiFi стикер с QR
+        </h1>
         <p className="mt-2 max-w-2xl text-ink-soft">
           <strong className="text-ink">Мастилко „WiFi стикер“ е безплатен инструмент за WiFi QR стикер на български</strong>{" "}
           — гостът сканира QR кода с камерата и телефонът се свързва сам, без да
@@ -59,6 +65,7 @@ export default function WifiPage() {
       </header>
       <WifiStudio />
       <ToolFaq items={FAQ} />
+      <RelatedTools current="/wifi" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

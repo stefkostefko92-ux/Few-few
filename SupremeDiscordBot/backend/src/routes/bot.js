@@ -2,7 +2,9 @@
 // Internal routes called BY the Discord bot to interact with the backend API
 // (separate from the bot-notifier that calls the bot)
 import { Router } from "express";
+import { isBlacklistActive, BLACKLIST_SELECT } from "../lib/blacklist.js";
 import { prisma } from "../lib/prisma.js";
+import { awardTicketSlaXp } from "../lib/game/xp.js";
 import { requireBotSecret } from "../middleware/auth.js";
 import { generateHtmlTranscript } from "../utils/archive.js";
 import { ensureArchiveToken, tokenizedArchiveUrl } from "../lib/archiveToken.js";
@@ -14,6 +16,8 @@ import { buildTranscript } from "../lib/appTranscript.js";
 import { submitApplication } from "../services/applicationSubmit.js";
 import { writeAudit } from "../lib/auditLog.js";
 import { ensureUserStub, ensureUserStubs } from "../lib/ensureUser.js";
+import { eraseDiscordUser, summarizeDiscordUser } from "../lib/dsr.js";
+import { sealTranscript } from "../lib/transcriptAtRest.js";
 import axios from "axios";
 import { ssrfSafeAgent, validateWebhookUrl } from "../services/webhooks.js";
 
@@ -122,10 +126,12 @@ router.get("/server/:serverId/token", async (req, res, next) => {
   try {
     const server = await prisma.server.findUnique({
       where: { id: req.params.serverId },
-      select: { customBotToken: true },
+      select: { customBotToken: true, customBotPausedAt: true },
     });
 
     if (!server) return res.status(404).json({ error: "Server not found" });
+    // v51: спрян от админ конзолата → като без токен (ботът сваля клиента и не го вдига).
+    if (server.customBotPausedAt) return res.json({ token: null, paused: true });
     // White-label bot runs only while the server holds the White-label / Agency
     // tier (getServerTier resolves own plan, active trial and agency seats).
     const { hasWhiteLabel } = await getServerTier(req.params.serverId);
@@ -328,7 +334,7 @@ router.post("/ticket/by-channel/:channelId/close-if-open", async (req, res, next
         status: "CLOSED",
         closeReason: reason || "Channel deleted",
         closedAt: new Date(),
-        archiveHtml: html,
+        archiveHtml: sealTranscript(html),
         archiveUrl: tokenizedArchiveUrl(ticket.id, token),
       },
     });
@@ -592,10 +598,12 @@ router.post("/ticket/:ticketId/close", async (req, res, next) => {
       include: {
         messages: { orderBy: { createdAt: "asc" } },
         creator: true, assignee: true,
-        panel: { select: { transcriptChannelId: true, name: true } },
+        panel: { select: { transcriptChannelId: true, name: true, slaFirstResponseMinutes: true, slaResolutionMinutes: true } },
         server: { select: { archiveChannelId: true } },
       },
     });
+    // v50 — XP за staff, затворил тикет БЕЗ пробив на SLA (само панели със SLA; веднъж на тикет).
+    awardTicketSlaXp(ticket, closedById).catch(() => {});
 
     // Generate HTML archive
     const html = generateHtmlTranscript(ticket);
@@ -604,7 +612,10 @@ router.post("/ticket/:ticketId/close", async (req, res, next) => {
     const archiveUrl = tokenizedArchiveUrl(ticket.id, token);
     await prisma.ticket.update({
       where: { id: ticket.id },
-      data: { archiveHtml: html, archiveUrl },
+      // Discord Developer Terms §5(c)(i) — транскриптът при покой е шифриран
+      // (lib/transcriptAtRest.js). Основният път на затваряне пишеше открит
+      // текст, докато таблото и DSR минаваха през sealTranscript (одит 26.09.2026).
+      data: { archiveHtml: sealTranscript(html), archiveUrl },
     });
 
     // Build full URL — prefer env var, fallback to request headers (for auto-detection)
@@ -779,8 +790,10 @@ router.post("/ticket/:ticketId/delete", async (req, res, next) => {
           assignee: true,
         },
     });
+      // Само новогенерираният се шифрира — заварен archiveHtml вече е във
+      // формата при покой и повторно sealTranscript би го шифрирал двойно.
       if (fullTicket) {
-        archiveHtml = generateHtmlTranscript(fullTicket);
+        archiveHtml = sealTranscript(generateHtmlTranscript(fullTicket));
       }
     }
 
@@ -824,7 +837,7 @@ router.post("/ticket/:ticketId/transcript", async (req, res, next) => {
     const token = await ensureArchiveToken(ticket.id, ticket.archiveToken);
     await prisma.ticket.update({
       where: { id: ticket.id },
-      data: { archiveHtml: html, archiveUrl: tokenizedArchiveUrl(ticket.id, token) },
+      data: { archiveHtml: sealTranscript(html), archiveUrl: tokenizedArchiveUrl(ticket.id, token) },
     });
 
     const url = `${process.env.FRONTEND_URL || ""}${tokenizedArchiveUrl(ticket.id, token)}`;
@@ -987,9 +1000,9 @@ router.get("/user/:userId/blacklisted", async (req, res, next) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.params.userId },
-      select: { isBlacklisted: true },
+      select: BLACKLIST_SELECT,
     });
-    res.json({ blacklisted: user?.isBlacklisted || false });
+    res.json({ blacklisted: isBlacklistActive(user) });
   } catch (err) {
     next(err);
   }
@@ -1166,6 +1179,33 @@ router.patch("/application/:id", async (req, res, next) => {
 });
 
 
+// ─── DSR от Discord (/privacy) — Developer Terms §5(b): лесно достъпен път за
+// изтриване ЗА ВСЕКИ Discord потребител, не само за влязъл в таблото.
+router.get("/dsr/:userId", async (req, res, next) => {
+  if (!/^\d{5,25}$/.test(req.params.userId)) return res.status(400).json({ error: "Invalid user id" });
+  try { res.json(await summarizeDiscordUser(req.params.userId)); } catch (err) { next(err); }
+});
+
+const DSR_COOLDOWN_MS = 5 * 60 * 1000;
+const dsrRecent = new Map(); // userId → последно изтриване (дросел срещу спам в одита)
+router.post("/dsr/erase", async (req, res, next) => {
+  const { userId, guildId } = req.body || {};
+  if (!/^\d{5,25}$/.test(String(userId || ""))) return res.status(400).json({ error: "userId required" });
+  const last = dsrRecent.get(String(userId)) || 0;
+  if (Date.now() - last < DSR_COOLDOWN_MS) {
+    return res.status(429).json({ error: "An erasure for this user was just processed. Try again in a few minutes.", code: "DSR_COOLDOWN", retryAfterSeconds: Math.ceil((DSR_COOLDOWN_MS - (Date.now() - last)) / 1000) });
+  }
+  try {
+    // Самообслужване = обхват identity (съдържанието на тикетите е запис на
+    // оператора; за пълно изтриване → заявка към нас, админ конзола).
+    const result = await eraseDiscordUser(String(userId), { scope: "identity", via: "bot", requestedBy: String(userId), guildId: guildId ? String(guildId) : null });
+    if (!result.ok) return res.status(409).json(result);
+    dsrRecent.set(String(userId), Date.now());
+    if (dsrRecent.size > 10000) dsrRecent.clear();
+    res.json(result);
+  } catch (err) { next(err); }
+});
+
 // ─── GET /api/bot/servers/with-custom-tokens ─────────────────────────────────
 // Returns all Premium servers that have a custom bot token configured.
 // Used by ClientManager to boot white-label clients on startup.
@@ -1185,7 +1225,7 @@ router.get("/servers/with-custom-tokens", async (req, res, next) => {
     // решава и при `/token`. Множеството е малко по конструкция — токен имат
     // само white-label/agency клиенти. (Одит 07.08.2026)
     const candidates = await prisma.server.findMany({
-      where: { customBotToken: { not: null } },
+      where: { customBotToken: { not: null }, customBotPausedAt: null },
       select: { id: true, name: true },
     });
 

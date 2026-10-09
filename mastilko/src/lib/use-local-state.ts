@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { takeSharedState } from "@/lib/share";
+import { BACKUPS_EVENT, pushBackup } from "@/lib/backups";
 
 // Пази състоянието на редактора в localStorage — данните остават само на
 // устройството на потребителя (нямаме сървърна база). Първият рендер е с
@@ -14,10 +15,15 @@ export function useLocalState<T extends object>(
   key: string,
   initial: T,
   parse?: (raw: unknown) => Partial<T>,
+  /** Подразбирания, зависещи от момента (напр. текущият месец). Прилагат се
+   *  само при първо посещение — без запис и без споделен линк. В `initial` не
+   *  може: той се рендира и на сървъра, а там „днес“ е денят на билда. */
+  fresh?: () => Partial<T>,
 ) {
   const [state, setState] = useState<T>(initial);
   const initialRef = useRef(initial);
   const parseRef = useRef(parse);
+  const freshRef = useRef(fresh);
   const loaded = useRef(false);
 
   useEffect(() => {
@@ -26,19 +32,75 @@ export function useLocalState<T extends object>(
 
     const shared = takeSharedState<unknown>();
     if (shared !== null) {
+      // Валидираме ПРЕДИ да питаме и преди да пипнем каквото и да било. Преди
+      // невалиден линк след „ОК“ оставяше състоянието на подразбиранията, а
+      // вторият effect ги записваше ВЪРХУ проекта на човека — пълна загуба.
+      // Сега счупен или несъвместим линк се пренебрегва изцяло.
+      let incoming: Partial<T> | null = null;
       try {
-        setState({ ...initialRef.current, ...clean(shared) });
+        incoming = clean(shared);
       } catch {
-        // невалиден линк → остани на подразбиранията, не срива
+        incoming = null;
       }
-      loaded.current = true;
-      return;
+
+      if (incoming) {
+        // Споделеният линк НЕ бива да трие тихо запазената работа — питаме и
+        // пазим копие. Копията са до три (виж lib/backups.ts) и се връщат от
+        // „Предишни версии“ в ProjectFile.
+        let existing: string | null = null;
+        try {
+          existing = localStorage.getItem(key);
+        } catch {
+          /* забранено хранилище → няма какво да губим */
+        }
+        let apply = true;
+        if (existing) {
+          apply = window.confirm(
+            "Този линк съдържа споделен дизайн.\n\n" +
+              "„ОК“ — зареждам споделения. Твоят проект се пази и можеш да го върнеш от „Предишни версии“ под редактора.\n" +
+              "„Отказ“ — оставам на твоя проект.",
+          );
+          if (apply) {
+            try {
+              pushBackup(localStorage, key, existing);
+              // ProjectFile е дете на студиото и ефектът му вече е минал, преди
+              // да стигнем тук — казваме му да прочете списъка наново.
+              window.dispatchEvent(new CustomEvent(BACKUPS_EVENT, { detail: key }));
+            } catch {
+              /* пълно хранилище → продължаваме, но без резервно копие */
+            }
+          }
+        }
+        if (apply) {
+          setState({ ...initialRef.current, ...incoming });
+          loaded.current = true;
+          return;
+        }
+      }
+      // отказал, или линкът е невалиден → зареждаме неговия запис както обикновено
     }
+    let raw: string | null = null;
+    let restored = false;
     try {
-      const raw = localStorage.getItem(key);
-      if (raw) setState({ ...initialRef.current, ...clean(JSON.parse(raw)) });
+      raw = localStorage.getItem(key);
+      if (raw) {
+        setState({ ...initialRef.current, ...clean(JSON.parse(raw)) });
+        restored = true;
+      }
     } catch {
-      // повреден/несъвместим запис → започваме начисто
+      // Повреден или несъвместим запис (например след затягане на схемата).
+      // Започваме начисто, НО първо го местим в копията: иначе ефектът долу
+      // веднага записва подразбиранията върху него и проектът изчезва.
+      if (raw) {
+        try {
+          pushBackup(localStorage, key, raw);
+        } catch {
+          /* пълно/забранено хранилище → няма къде да го спасим */
+        }
+      }
+    }
+    if (!restored && freshRef.current) {
+      setState({ ...initialRef.current, ...freshRef.current() });
     }
     loaded.current = true;
   }, [key]);

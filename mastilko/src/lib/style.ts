@@ -92,9 +92,27 @@ export const DECORS: Array<{ id: string; name: string }> = [
   { id: "diagonal", name: "Диагонални линии" },
   { id: "stripes", name: "Ивици" },
   { id: "confetti", name: "Конфети" },
+  { id: "waves", name: "Вълни" },
+  { id: "hearts", name: "Сърца" },
+  { id: "stars", name: "Звезди" },
+  { id: "fireworks", name: "Фойерверк" },
+  { id: "laurel", name: "Лаврови клонки" },
+  { id: "texture", name: "Фина текстура" },
   { id: "corners", name: "Ъглови орнаменти" },
   { id: "frame", name: "Двойна рамка" },
   { id: "gradient", name: "Меко сияние" },
+];
+
+// Стилови пакети (kit packs) — един клик слага съгласуван вид (тема/цветове/
+// шрифт/украса/ефекти) навсякъде. Прилагат се върху персонализацията, важат за
+// всичките инструменти. Всеки задава customColors изрично, за да е чист изходът.
+export const STYLE_KITS: Array<{ id: string; name: string; patch: Partial<StyleState> }> = [
+  { id: "prazni", name: "Празничен", patch: { themeId: "med", customColors: false, font: "pacifico", decor: "confetti", titleShadow: true, titleGradient: false } },
+  { id: "elegant", name: "Елегантен", patch: { themeId: "nebe", customColors: false, font: "cormorant", decor: "frame", tracking: 0.06, titleGradient: true, titleShadow: false } },
+  { id: "detski", name: "Детски", patch: { themeId: "gora", customColors: false, font: "nunito", decor: "stars", weight: 700, titleShadow: true, titleGradient: false } },
+  { id: "retro", name: "Ретро", patch: { customColors: true, cbg: "#F3E7CE", cfg: "#4A3B2A", cacc: "#B5561E", font: "oswald", decor: "diagonal", titleGradient: false, titleShadow: false } },
+  { id: "luks", name: "Луксозен", patch: { customColors: true, cbg: "#141210", cfg: "#F2E6C9", cacc: "#C9A24B", font: "prata", decor: "frame", titleGradient: true, titleShadow: false } },
+  { id: "minimal", name: "Минимал", patch: { themeId: "tera", customColors: false, font: "inter", decor: "none", tracking: 0.02, titleGradient: false, titleShadow: false, ecoMode: true } },
 ];
 
 export interface StyleState {
@@ -107,8 +125,58 @@ export interface StyleState {
   font?: string;
   /** Шрифт за конкретен елемент/ред: ключ → font id. */
   fonts?: Record<string, string>;
+  /** Разредка (letter-spacing) в em: -0.03 … 0.3. */
+  tracking?: number;
+  /** Тегло на шрифта: 300 … 800. */
+  weight?: number;
+  /** Редова разредка (line-height): 1 … 2. */
+  leading?: number;
+  /** Наклонен (курсив) текст. */
+  italic?: boolean;
+  /** Градиентен фон на листа (вместо плътен). */
+  bgGrad?: boolean;
+  /** Втори цвят на градиента. */
+  cbg2?: string;
+  /** Ъгъл на градиента в градуси: 0 … 360. */
+  bgAngle?: number;
+  /** Глобален мащаб на текста върху листа: 0.8 … 1.3. */
+  textScale?: number;
+  /** Своя рамка на листа (вместо стандартната). */
+  bord?: boolean;
+  /** Стил на рамката. */
+  bstyle?: "solid" | "dashed" | "dotted" | "double" | "none";
+  /** Цвят на рамката. */
+  bcolor?: string;
+  /** Дебелина на рамката в mm: 0 … 8. */
+  bwidth?: number;
+  /** Заобляне на ъглите в mm: 0 … 20. */
+  bradius?: number;
   /** Украса на фона. */
   decor?: string;
+  /** Свой цвят на украсата (по подразбиране — акцентният). */
+  decorColor?: string;
+  /** Прозрачност на украсата (множител): 0.05 … 1. */
+  decorOpacity?: number;
+  /** Мащаб на украсата: 0.5 … 2. */
+  decorScale?: number;
+  /** Филтър на снимки/лога. */
+  photoFilter?: "none" | "gray" | "sepia" | "duo";
+  /** Градиентен текст на декоративните заглавия. */
+  titleGradient?: boolean;
+  /** Релефна сянка на заглавията. */
+  titleShadow?: boolean;
+  /** QR кодът в акцентния цвят (с проверка за скенируемост). */
+  qrColor?: boolean;
+  /** Мастило-пестелив режим — бял фон, за да не хаби мастило/тонер. */
+  ecoMode?: boolean;
+  /** Четим режим за дислексия (по-голяма разредка, тегло и редова разредка). */
+  dyslexia?: boolean;
+  /** Своя снимка за фон на листа (data URL). */
+  bgImage?: string;
+  /** Видимост на фоновата снимка (0.05 … 1) — останалото е скрим за контраст. */
+  bgImageOpacity?: number;
+  /** Как ляга снимката. */
+  bgImageFit?: "cover" | "contain" | "tile";
 }
 
 export const StyleSchemaShape = {
@@ -119,7 +187,48 @@ export const StyleSchemaShape = {
   customColors: z.boolean(),
   font: z.string().max(20),
   fonts: z.record(z.string().max(30), z.string().max(20)),
+  tracking: z.number().min(-0.03).max(0.3),
+  weight: z.number().int().min(300).max(800),
+  leading: z.number().min(1).max(2),
+  italic: z.boolean(),
+  bgGrad: z.boolean(),
+  cbg2: z.string().max(20),
+  bgAngle: z.number().min(0).max(360),
+  textScale: z.number().min(0.8).max(1.3),
+  bord: z.boolean(),
+  bstyle: z.enum(["solid", "dashed", "dotted", "double", "none"]),
+  bcolor: z.string().max(20),
+  bwidth: z.number().min(0).max(8),
+  bradius: z.number().min(0).max(20),
   decor: z.string().max(20),
+  decorColor: z.string().max(20),
+  decorOpacity: z.number().min(0.05).max(1),
+  decorScale: z.number().min(0.5).max(2),
+  photoFilter: z.enum(["none", "gray", "sepia", "duo"]),
+  titleGradient: z.boolean(),
+  titleShadow: z.boolean(),
+  qrColor: z.boolean(),
+  ecoMode: z.boolean(),
+  dyslexia: z.boolean(),
+  // Само data:image/… — точно това произвежда ImageUpload (canvas.toDataURL).
+  // Иначе през споделен линк (#p=…) стойността излизаше от `url("…")` в
+  // sheetBg() и добавяше втори, външен url() (CSP го блокира, но валидацията
+  // не бива да разчита само на втората линия).
+  bgImage: z
+    .string()
+    .max(1500000)
+    // Закотвено ЦЯЛОТО, не само префиксът: стойността се вгражда в CSS като
+    // `url("…")`, а `"` в низа затваряше кавичките и отваряше втори url() —
+    // например „data:image/png;base64,AA"), url("https://…“ минаваше префикса.
+    // Сега след `base64,` са позволени само знаците на base64. Типовете са
+    // тези, които ImageUpload реално произвежда (WebP; браузър без WebP
+    // кодиране тихо пада на PNG) плюс JPEG за стари проекти.
+    .refine(
+      (v) => v === "" || /^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(v),
+      "Фонът трябва да е качено изображение",
+    ),
+  bgImageOpacity: z.number().min(0.05).max(1),
+  bgImageFit: z.enum(["cover", "contain", "tile"]),
 };
 
 const hex = /^#[0-9a-fA-F]{3,8}$/;
@@ -135,11 +244,126 @@ export function resolveTheme(s: StyleState): WarmTheme {
   };
 }
 
-/** CSS променливи за глобалния шрифт — подават се на SheetPreview (style). */
+/**
+ * CSS променливи за типографията — подават се на SheetPreview (style) и се
+ * НАСЛЕДЯВАТ от цялото съдържание на листа. Затова разредка/тегло/редова
+ * разредка/наклон важат за всичките 8 инструмента без промяна по студиата.
+ * Печатната математика (mm) не се влияе — тук няма размери.
+ */
 export function fontVars(s: StyleState): React.CSSProperties {
-  if (!s.font) return {};
-  const css = fontCss(s.font);
-  return { fontFamily: css, ["--font-display" as string]: css };
+  const v: React.CSSProperties = {};
+  // Четим режим за дислексия — база от добри стойности; изричните избори на
+  // потребителя (шрифт/разредка/тегло/редова разредка) я прегазват по-долу.
+  if (s.dyslexia) {
+    const css = "var(--font-nunito)"; // закръглен, четим безсерифен
+    v.fontFamily = css;
+    (v as Record<string, string>)["--font-display"] = css;
+    v.letterSpacing = "0.05em";
+    v.wordSpacing = "0.14em";
+    v.lineHeight = 1.7;
+    v.fontWeight = 500;
+  }
+  if (s.font) {
+    const css = fontCss(s.font);
+    v.fontFamily = css;
+    (v as Record<string, string>)["--font-display"] = css;
+  }
+  if (typeof s.tracking === "number") v.letterSpacing = `${s.tracking}em`;
+  if (typeof s.weight === "number") v.fontWeight = s.weight;
+  if (typeof s.leading === "number") v.lineHeight = s.leading;
+  if (s.italic) v.fontStyle = "italic";
+  if (typeof s.textScale === "number") {
+    (v as Record<string, string>)["--sheet-scale"] = String(s.textScale);
+  }
+  return v;
+}
+
+interface BorderFallback { width: number; style: string; color: string; radius: number }
+
+/**
+ * Числовите части на рамката (mm): стандартната (fallback) или изцяло по
+ * избор. Всяко студио ги форматира със собствената си единица (mm или u()),
+ * за да работи и в екранния преглед, и при печат.
+ */
+export function borderParts(s: StyleState, fb: BorderFallback): BorderFallback {
+  const on = !!s.bord;
+  return {
+    style: on && s.bstyle ? s.bstyle : fb.style,
+    width: on && typeof s.bwidth === "number" ? s.bwidth : fb.width,
+    color: on && s.bcolor && hex.test(s.bcolor) ? s.bcolor : fb.color,
+    radius: on && typeof s.bradius === "number" ? s.bradius : fb.radius,
+  };
+}
+
+/**
+ * Рамка, форматирана с дадена единица (mm за печат, u() за екранен преглед).
+ * Печатната математика не се влияе — размерите се задават в mm числа.
+ */
+export function borderWith(
+  s: StyleState,
+  fb: BorderFallback,
+  unit: (n: number) => string,
+): { border: string; borderRadius: string } {
+  const p = borderParts(s, fb);
+  return {
+    border: p.style === "none" ? "none" : `${unit(p.width)} ${p.style} ${p.color}`,
+    borderRadius: unit(p.radius),
+  };
+}
+
+/** Рамка в mm — за студиата, които рендират директно в mm. */
+export function borderCss(s: StyleState, fb: BorderFallback): { border: string; borderRadius: string } {
+  return borderWith(s, fb, (n) => `${n}mm`);
+}
+
+/**
+ * Фон на листа: плътен (theme.bg) или мек градиент към втори цвят. Ползва се
+ * навсякъде, където студиото рендира цветна повърхност на листа.
+ */
+export function sheetBg(s: StyleState, theme: WarmTheme): string {
+  // Базов фон: еко (бял) → градиент → плътна тема.
+  const base =
+    s.ecoMode
+      ? "#FFFFFF"
+      : s.bgGrad && s.cbg2 && hex.test(s.cbg2)
+        ? `linear-gradient(${typeof s.bgAngle === "number" ? s.bgAngle : 135}deg, ${theme.bg}, ${s.cbg2})`
+        : theme.bg;
+
+  // Своя снимка за фон: наслагва се НАД базата, а отгоре — скрим в цвета на
+  // фона (color-mix), за да остане текстът четим. Повече „видимост“ = по-слаб
+  // скрим. Размерите (mm) не се влияят — само фонов слой.
+  if (s.bgImage) {
+    const op = typeof s.bgImageOpacity === "number" ? s.bgImageOpacity : 0.5;
+    const scrimPct = Math.round((1 - op) * 100);
+    const scrimColor = s.ecoMode ? "#FFFFFF" : theme.bg;
+    const scrim = `color-mix(in srgb, ${scrimColor} ${scrimPct}%, transparent)`;
+    const size = s.bgImageFit === "contain" ? "contain" : s.bgImageFit === "tile" ? "auto" : "cover";
+    const repeat = s.bgImageFit === "tile" ? "repeat" : "no-repeat";
+    return `linear-gradient(${scrim}, ${scrim}), url("${s.bgImage}") center / ${size} ${repeat}, ${base}`;
+  }
+  return base;
+}
+
+/**
+ * Груба оценка на мастилената покривност от цвета на фона (по-тъмен фон =
+ * повече мастило). Връща етикет за потребителя — ориентир, не точна стойност.
+ */
+export function inkCoverage(s: StyleState, theme: WarmTheme): { label: string; heavy: boolean } {
+  if (s.ecoMode) return { label: "ниска (еко)", heavy: false };
+  const lum = relLuminance(s.customColors && s.cbg && hex.test(s.cbg) ? s.cbg : theme.bg);
+  if (lum === null) return { label: "средна", heavy: false };
+  if (lum < 0.35) return { label: "висока", heavy: true };
+  if (lum < 0.7) return { label: "средна", heavy: false };
+  return { label: "ниска", heavy: false };
+}
+
+/** Резолюция на украсата — свой цвят/прозрачност/мащаб с безопасни граници. */
+export function resolveDecor(s: StyleState, accent: string) {
+  return {
+    color: s.decorColor && hex.test(s.decorColor) ? s.decorColor : accent,
+    opacity: typeof s.decorOpacity === "number" ? s.decorOpacity : 1,
+    scale: typeof s.decorScale === "number" ? s.decorScale : 1,
+  };
 }
 
 /**
@@ -151,4 +375,211 @@ export function elementFont(s: StyleState, key: string, fallback?: string): stri
   if (perEl) return fontCss(perEl);
   if (s.font) return fontCss(s.font);
   return fallback ?? "var(--font-sans)";
+}
+
+/** CSS filter за снимки/лога (ч-б, сепия, дуотон) или undefined. */
+export function photoFilterCss(s: StyleState): string | undefined {
+  switch (s.photoFilter) {
+    case "gray":
+      return "grayscale(1)";
+    case "sepia":
+      return "sepia(0.6)";
+    case "duo":
+      return "grayscale(1) sepia(1) hue-rotate(175deg) saturate(1.3) brightness(0.95)";
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * Ефекти за ДЕКОРАТИВНИ заглавия (едри) — градиентен текст и/или релефна сянка.
+ * Ползва САМО акцент/втори цвят (никога theme.bg, който на места е текст-цвят).
+ * Спреа се върху заглавния стил, затова прегазва color при градиент.
+ */
+export function titleFx(s: StyleState, theme: WarmTheme): React.CSSProperties {
+  const fx: React.CSSProperties = {};
+  if (s.titleGradient) {
+    const c2 = s.cbg2 && hex.test(s.cbg2) ? s.cbg2 : theme.fg;
+    fx.backgroundImage = `linear-gradient(90deg, ${theme.accent}, ${c2})`;
+    fx.WebkitBackgroundClip = "text";
+    fx.backgroundClip = "text";
+    fx.color = "transparent";
+    fx.WebkitTextFillColor = "transparent";
+  }
+  if (s.titleShadow) {
+    fx.textShadow = "0 0.3mm 0 rgba(0,0,0,0.18)";
+  }
+  return fx;
+}
+
+/**
+ * Приблизителна проверка дали цветът е извън CMYK обхвата на типичен принтер
+ * (много наситени/неонови RGB тонове излизат по-матово/различно на хартия).
+ * Груба евристика по HSV: висока яркост + висока насиченост.
+ */
+export function cmykRisk(hexColor: string): boolean {
+  const m = /^#([0-9a-fA-F]{6})$/.exec(hexColor);
+  if (!m) return false;
+  const n = parseInt(m[1]!, 16);
+  const r = ((n >> 16) & 255) / 255;
+  const g = ((n >> 8) & 255) / 255;
+  const b = (n & 255) / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const chroma = max - min; // ≈ насиденост × яркост
+  return max > 0.82 && chroma > 0.55;
+}
+
+/** Относителна осветеност (WCAG) на hex цвят, или null при невалиден. */
+export function relLuminance(hexColor: string): number | null {
+  const m = /^#([0-9a-fA-F]{6})$/.exec(hexColor);
+  if (!m) return null;
+  const n = parseInt(m[1]!, 16);
+  const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((c) => {
+    const x = c / 255;
+    return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * ch[0]! + 0.7152 * ch[1]! + 0.0722 * ch[2]!;
+}
+
+/** Контрастно съотношение (WCAG) между два hex цвята, или null. */
+export function contrastRatio(a: string, b: string): number | null {
+  const la = relLuminance(a);
+  const lb = relLuminance(b);
+  if (la === null || lb === null) return null;
+  const hi = Math.max(la, lb);
+  const lo = Math.min(la, lb);
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+/** Степен по WCAG за нормален текст: AAA ≥7, AA ≥4.5, AA-голям ≥3, иначе слаб. */
+export function contrastGrade(ratio: number): { label: string; ok: boolean } {
+  if (ratio >= 7) return { label: "AAA", ok: true };
+  if (ratio >= 4.5) return { label: "AA", ok: true };
+  if (ratio >= 3) return { label: "AA (едър текст)", ok: true };
+  return { label: "слаб", ok: false };
+}
+
+/**
+ * Цвят за ДРЕБЕН акцентен текст (слоган и подобни) върху фона на визитката.
+ * Акцентът на топлите теми е светъл — напр. Теракота дава `#c25e3f` върху
+ * `#f7dfd3` = 3.31:1, под AA 4.5:1 при 6.6pt (реално трудно четимо и на печат).
+ * Връща акцента, само ако стига за AA; иначе основния цвят на текста.
+ */
+export function accentTextOn(accent: string, bg: string, fg: string): string {
+  const ratio = contrastRatio(accent, bg);
+  return ratio !== null && ratio >= 4.5 ? accent : fg;
+}
+
+/** Разлага `#rrggbb` на три канала 0–255, или null при невалиден цвят. */
+function toRgb(hexColor: string): [number, number, number] | null {
+  const m = /^#([0-9a-fA-F]{6})$/.exec(hexColor);
+  if (!m) return null;
+  const n = parseInt(m[1]!, 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+function toHex([r, g, b]: [number, number, number]): string {
+  const h = (c: number) => Math.round(Math.min(255, Math.max(0, c))).toString(16).padStart(2, "0");
+  return `#${h(r)}${h(g)}${h(b)}`;
+}
+
+/**
+ * Бута цвят към бяло (`towardsWhite`) или към черно, докато мине `target`
+ * спрямо `bg`. Мащабирането е в sRGB и запазва тона; двоично търсене по
+ * коефициента намира НАЙ-МАЛКАТА намеса, която стига.
+ *
+ * Ако дори крайната стъпка не стига, връща нея — това пак е най-четимото,
+ * което тази посока може да даде.
+ */
+function pushUntilReadable(
+  hexColor: string,
+  bg: string,
+  target: number,
+  towardsWhite: boolean,
+): string {
+  const rgb = toRgb(hexColor);
+  if (!rgb) return hexColor;
+  const at = (t: number): [number, number, number] =>
+    towardsWhite
+      ? [rgb[0] + (255 - rgb[0]) * t, rgb[1] + (255 - rgb[1]) * t, rgb[2] + (255 - rgb[2]) * t]
+      : [rgb[0] * (1 - t), rgb[1] * (1 - t), rgb[2] * (1 - t)];
+
+  let lo = 0;
+  let hi = 1;
+  for (let i = 0; i < 24; i++) {
+    const mid = (lo + hi) / 2;
+    const ratio = contrastRatio(toHex(at(mid)), bg);
+    if (ratio !== null && ratio >= target) hi = mid;
+    else lo = mid;
+  }
+  return toHex(at(hi));
+}
+
+/**
+ * Прави акцента ЧЕТИМ върху даден фон, без да губи тона му.
+ *
+ * Защо не `accentTextOn`: той пада на основния цвят на текста, което е добре
+ * за дребен слоган на визитка, но убива печатните листове, където акцентът
+ * НОСИ дизайна — златното „ГРАМОТА“ върху кремаво, заглавието на поканата,
+ * съботата и неделята в календара. Кафяво вместо злато не е грамота.
+ *
+ * Затова тук акцентът само се затъмнява (или изсветлява, ако фонът е тъмен) —
+ * точно толкова, колкото е нужно. Тонът и насищането остават; по-тъмното
+ * злато пак е злато и на печат излиза по-добре.
+ */
+export function readableAccent(accent: string, bg: string, target = 4.5): string {
+  const bgLum = relLuminance(bg);
+  if (toRgb(accent) === null || bgLum === null) return accent;
+
+  const current = contrastRatio(accent, bg);
+  if (current !== null && current >= target) return accent;
+
+  // Тъмен фон → изсветляваме към бяло; светъл → затъмняваме към черно.
+  return pushUntilReadable(accent, bg, target, bgLum < 0.18);
+}
+
+/**
+ * Надпис върху плътна цветна плоскост (лентата на баджа, панелът на ваучера,
+ * отбелязаният празник в календара). Обратната задача на `readableAccent`:
+ * фонът е акцентът, а трябва да решим светъл или тъмен да е текстът.
+ *
+ * ВАЖНО (платено с два провалени теста): не е достатъчно да върнем
+ * „по-добрия от двата“, нито да изберем посоката по него.
+ *
+ * Средно тъмните плоскости не носят AA в нито една от двете посоки — върху
+ * теракотата `#C25E3F` бледото розово дава 3.15:1, а кафявото на текста
+ * 3.10:1, тоест и двете падат. Бледото изглежда „по-добрият кандидат“, но
+ * ТАВАНЪТ му е чисто бяло = 4.23:1, което пак не стига, докато таванът на
+ * тъмната посока е чисто черно = 4.96:1 и минава.
+ *
+ * Затова посоката се избира по ДОСТИЖИМИЯ таван (бяло срещу черно спрямо
+ * фона), а не по подадените цветове. При равни тавани печели тъмната посока
+ * — на печат тъмно мастило върху цвят е по-сигурно от светло.
+ */
+export function textOnSolid(bg: string, light: string, dark: string, target = 4.5): string {
+  if (relLuminance(bg) === null) return dark;
+  const ceilLight = contrastRatio("#ffffff", bg) ?? 0;
+  const ceilDark = contrastRatio("#000000", bg) ?? 0;
+  const useLight = ceilLight > ceilDark;
+
+  // Ако подадената крайност липсва/е невалидна, тръгваме от самата крайност.
+  const chosen = (useLight ? light : dark) || "";
+  const start = toRgb(chosen) !== null ? chosen : useLight ? "#ffffff" : "#000000";
+
+  const ratio = contrastRatio(start, bg);
+  if (ratio !== null && ratio >= target) return start;
+  return pushUntilReadable(start, bg, target, useLight);
+}
+
+/**
+ * Безопасен цвят за QR модулите: връща акцента само ако е достатъчно тъмен
+ * спрямо бял фон (иначе чисто черно — скенируемостта е над естетиката).
+ */
+export function qrSafeColor(accent: string): string {
+  const FALLBACK = "#1B1B1B";
+  const lum = relLuminance(accent);
+  if (lum === null) return FALLBACK;
+  // Контраст спрямо бяло (L=1): (1+0.05)/(lum+0.05) ≥ 4 → достатъчно тъмен.
+  return 1.05 / (lum + 0.05) >= 4 ? accent : FALLBACK;
 }

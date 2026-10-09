@@ -1,0 +1,184 @@
+{
+  "piuma": {
+    "src": "hybrid"
+  },
+  "dashboard": {
+    "src": "home"
+  },
+  "posts": {
+    "src": "content-lines"
+  },
+  "compose": {
+    "src": "edit"
+  },
+  "brands": {
+    "src": "ticket"
+  },
+  "instagram": {
+    "src": "media-image"
+  },
+  "users": {
+    "src": "users"
+  },
+  "key": {
+    "src": "key"
+  },
+  "audit": {
+    "src": "shield-check"
+  },
+  "settings": {
+    "src": "settings"
+  },
+  "status-draft": {
+    "src": "file-text"
+  },
+  "status-rejected": {
+    "src": "arrow-left"
+  },
+  "status-approved": {
+    "src": "check"
+  },
+  "status-scheduled": {
+    "src": "calendar-clock"
+  },
+  "status-publishing": {
+    "src": "refresh"
+  },
+  "status-published": {
+    "src": "send"
+  },
+  "status-failed": {
+    "src": "bell"
+  },
+  "status-active": {
+    "src": "presence"
+  },
+  "status-token-expired": {
+    "src": "key"
+  },
+  "status-disabled": {
+    "src": "lock"
+  },
+  "severity-high": {
+    "src": "bell"
+  },
+  "severity-medium": {
+    "src": "help"
+  },
+  "severity-info": {
+    "src": "info"
+  },
+  "approve": {
+    "src": "check"
+  },
+  "reject": {
+    "src": "arrow-left"
+  },
+  "schedule": {
+    "src": "calendar-clock"
+  },
+  "publish": {
+    "src": "send"
+  },
+  "retry": {
+    "src": "refresh"
+  },
+  "refresh": {
+    "src": "refresh"
+  },
+  "play": {
+    "src": "arrow-right"
+  },
+  "edit": {
+    "src": "edit"
+  },
+  "copy": {
+    "src": "download"
+  },
+  "plus": {
+    "src": "upload"
+  },
+  "filter": {
+    "src": "filter"
+  },
+  "search": {
+    "src": "search"
+  },
+  "close": {
+    "src": "trash"
+  },
+  "chevron-down": {
+    "src": "chevron-down"
+  },
+  "external": {
+    "src": "external-link"
+  },
+  "logout": {
+    "src": "logout"
+  },
+  "metric-views": {
+    "src": "eye"
+  },
+  "metric-reach": {
+    "src": "globe"
+  },
+  "metric-likes": {
+    "src": "heart"
+  },
+  "metric-comments": {
+    "src": "message-square"
+  },
+  "metric-saved": {
+    "src": "pin"
+  },
+  "metric-shares": {
+    "src": "webhook"
+  },
+  "metric-followers": {
+    "src": "adults"
+  },
+  "metric-engaged": {
+    "src": "sparkles"
+  },
+  "image": {
+    "src": "media-image"
+  },
+  "reels": {
+    "src": "chevron-right"
+  },
+  "quota": {
+    "src": "dashboard"
+  },
+  "clock": {
+    "src": "calendar-clock"
+  },
+  "autopilot": {
+    "src": "explore"
+  },
+  "agent": {
+    "src": "bot"
+  },
+  "human": {
+    "src": "person"
+  },
+  "system": {
+    "src": "webhook"
+  },
+  "shield": {
+    "src": "shield"
+  },
+  "sparkle": {
+    "src": "sparkles"
+  },
+  "trend-up": {
+    "src": "arrow-right",
+    "rotate": -45
+  },
+  "trend-down": {
+    "src": "arrow-right",
+    "rotate": 45
+  },
+  "empty": {
+    "src": "more"
+  }
+}

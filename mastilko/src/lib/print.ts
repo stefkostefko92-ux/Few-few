@@ -3,6 +3,13 @@
 
 export const A4 = { w: 210, h: 297 } as const;
 
+/**
+ * Таван на листовете, които рендираме наведнъж при серия (грамоти/покани — там
+ * едно име = цял А4 лист). Без него дълъг поставен списък правеше стотици
+ * листове, всеки с ResizeObserver и украса, и браузърът замръзваше.
+ */
+export const MAX_SHEETS = 100;
+
 export type LabelShape = "rect" | "round" | "circle";
 
 export interface LabelPreset {

@@ -1,19 +1,27 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
+
+const TITLE = "Условия за ползване";
+const DESC =
+  "Условия за ползване на Мастилко — безплатен инструмент за етикети, визитки и CV. Просто, честно и на разбираем български.";
 
 export const metadata: Metadata = {
-  title: "Условия за ползване",
-  description:
-    "Условия за ползване на Мастилко — безплатен инструмент за етикети, визитки и CV. Просто, честно и на разбираем български.",
+  title: TITLE,
+  description: DESC,
   alternates: { canonical: "/usloviya" },
+  ...pageMeta(`${TITLE} · Мастилко`, DESC, "/usloviya"),
 };
 
 export default function UsloviyaPage() {
   return (
     <article className="mx-auto max-w-3xl px-4 py-10">
       <h1 className="font-display text-3xl font-bold">Условия за ползване</h1>
-      <p className="mt-2 text-sm text-ink-faint">В сила от 7 юли 2026 г.</p>
+      <p className="mt-2 text-sm text-ink-faint">
+        В сила от 7 юли 2026 г. · Последна промяна: 25 септември 2026 г. (добавен
+        раздел „Конектор за ChatGPT и Claude“)
+      </p>
 
-      <section className="mt-8 space-y-6 text-ink-soft [&_h2]:font-display [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-ink">
+      <section className="mt-8 space-y-6 text-ink-soft [&_h2]:font-display [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-ink dark:[&_h2]:text-paper vivid:[&_h2]:text-paper">
         <div>
           <h2>Какво е Мастилко</h2>
           <p className="mt-2">
@@ -52,6 +60,18 @@ export default function UsloviyaPage() {
             вреди от ползването на безплатната услуга — доколкото законът
             позволява. Забранена е злоупотреба (претоварване, автоматизирано
             източване на AI заявки, опити за пробив).
+          </p>
+        </div>
+        <div>
+          <h2>Конектор за ChatGPT и Claude</h2>
+          <p className="mt-2">
+            Ползването на Мастилко през{" "}
+            <a className="text-tera-dark underline" href="/konektor">конектора за ChatGPT и Claude</a>{" "}
+            е разрешено автоматизирано ползване — то не е „автоматизирано
+            източване“ по смисъла на предходния раздел. Сървърът ограничава броя
+            заявки, за да остане услугата достъпна за всички. Когато подаваш през
+            конектора данни на други хора (например списък с гости за баджове),
+            ти отговаряш да имаш основание да ги споделиш.
           </p>
         </div>
         <div>

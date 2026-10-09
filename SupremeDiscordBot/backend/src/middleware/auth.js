@@ -1,5 +1,6 @@
 // backend/src/middleware/auth.js
 import axios from "axios";
+import { isBlacklistActive } from "../lib/blacklist.js";
 import { timingSafeEqual } from "crypto";
 import { prisma } from "../lib/prisma.js";
 import { encrypt, decryptSafe } from "../lib/crypto.js";
@@ -30,7 +31,7 @@ export async function loadUser(req, res, next) {
       req.session.destroy();
       return res.status(401).json({ error: "User not found" });
     }
-    if (user.isBlacklisted) {
+    if (isBlacklistActive(user)) {
       return res.status(403).json({ error: "You have been blacklisted from this platform" });
     }
     req.user = user;
@@ -118,9 +119,14 @@ export async function requireServerAdmin(req, res, next) {
   const { serverId } = req.params;
   if (!serverId) return res.status(400).json({ error: "serverId required" });
 
-  // Platform-level admins bypass server-level checks
+  // Platform-level admins bypass server-level checks — v3.4: САМО с потвърден
+  // втори фактор в тази сесия (иначе staff акаунт без MFA = ключ за всеки
+  // сървър). Без потвърждение падаме на обикновената проверка на правата в
+  // Discord — тоест staff вижда собствените си сървъри, не чуждите.
   if (["MAIN_OWNER", "SUPER_USER"].includes(req.user?.globalRole)) {
-    return next();
+    const { mfaSessionState, mfaEnforced } = await import("./mfa.js");
+    const mfaOk = !!req.user.mfaEnabledAt && mfaSessionState(req.session).verified;
+    if (mfaOk || (!mfaEnforced() && !req.user.mfaEnabledAt)) return next();
   }
 
   try {

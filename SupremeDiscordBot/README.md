@@ -1,7 +1,7 @@
 # Supreme Bot — Discord SaaS Platform
 
 Multi-tenant Discord bot management SaaS. Ticket systems, forms, applications,
-AI auto-replies, round-robin assignment, white-label bots, Stripe subscriptions.
+AI auto-replies, round-robin assignment, white-label bots, per-server subscriptions sold through Discord Premium Apps.
 
 **Stack:** Node.js · React 18 · Discord.js v14 · PostgreSQL · Redis · Docker · nginx
 
@@ -54,7 +54,7 @@ openssl rand -base64 24 | tr -d '/+='
 #   (Redis runs with --requirepass; compose fails fast if REDIS_PASSWORD is unset.
 #    On an existing server autodeploy.sh generates it and rewrites both REDIS_URLs.)
 
-# 4. Fill in Discord + Stripe credentials (see tables below)
+# 4. Fill in Discord credentials + SKU ids (see tables below)
 
 # 5. Deploy
 chmod +x deploy.sh
@@ -94,11 +94,17 @@ The deploy script will:
 | `API_SECRET` | ✅ | Must match `bot/.env` exactly |
 | `FRONTEND_URL` | ✅ | `https://yourdomain.com` (no trailing slash) |
 | `BOT_API_URL` | ✅ | `http://bot:3001` |
-| `STRIPE_SECRET_KEY` | ⚠️ | Required for payments |
-| `STRIPE_WEBHOOK_SECRET` | ⚠️ | From Stripe Dashboard → Webhooks |
-| `STRIPE_PRICE_ID` | ⚠️ | Monthly Premium recurring price |
-| `STRIPE_TRIAL_DAYS` | ➖ | Default `14`, set `0` to disable |
-| `GEMINI_API_KEY` | ➖ | Required only for the AI auto-reply feature (Google Gemini Flash, free tier) |
+| `BILLING_PROVIDER` | ➖ | `discord` (default — only Discord Premium Apps sells; Stripe checkout → 410) · `stripe` · `both` |
+| `DISCORD_SKU_PREMIUM` | ✅ | Guild subscription SKU id (Developer Portal → Monetization); also in `bot/.env` |
+| `DISCORD_SKU_WHITELABEL` | ✅ | Guild subscription SKU id |
+| `STRIPE_SECRET_KEY` | ➖ | Legacy subscribers only (webhook + portal); no new purchases |
+| `STRIPE_WEBHOOK_SECRET` | ➖ | From Stripe Dashboard → Webhooks (legacy) |
+| `GEMINI_API_KEY` | ➖ | Required only for the AI auto-reply feature (Google Gemini Flash) |
+| `AI_REPLY_TRAINING_ATTESTED` | ➖ | Must be `true` for AI replies to run — you attest a paid Gemini tier that does not train on submitted content (Discord Developer Policy §21) |
+| `MFA_ENFORCE_STAFF` | ➖ | Default `true`: staff roles need a TOTP second factor before the admin console |
+| `ADMIN_IP_ALLOWLIST` | ➖ | Optional: comma-separated IPs/CIDRs allowed to reach `/api/admin` (binary match, IPv4/IPv6) |
+| `SECURITY_ALERTS_DM` | ➖ | Default `true`: DM the owner on brute-force blocks, MFA changes, denied admin IPs, full erasures |
+| `VERIFICATION_ATTEMPT_RETENTION_DAYS` | ➖ | Default `90`: verification attempts older than this are deleted nightly |
 | `BOT_TOKEN` | ⚠️ | Same token as `bot/.env` — needed for round-robin role lookups |
 | `REDIS_URL` | ➖ | `redis://redis:6379` — status page cache health check |
 | `SENTRY_DSN` | ➖ | Error monitoring |
@@ -190,7 +196,13 @@ least-privilege bitmask the bot actually needs (see `bot/src/utils/permissionChe
 https://discord.com/oauth2/authorize?client_id=CLIENT_ID&scope=bot+applications.commands&permissions=361045814416
 ```
 
-### 3. Stripe Webhook
+### 3. Discord Premium Apps (the only way to buy)
+Follow `docs/DISCORD_MONETIZATION.md`: verified Team-owned app, two monthly guild SKUs,
+SKU ids in both `.env` files. Entitlements arrive over the bot's gateway — no webhook to configure.
+Ready-to-paste answers for App Verification, the Privileged Intent review (10,000+ users,
+renewed yearly) and Premium onboarding: `docs/DISCORD_VERIFICATION.md`.
+
+### 3a. Stripe Webhook (legacy subscribers only)
 ```
 Stripe Dashboard → Developers → Webhooks → Add endpoint
 URL: https://yourdomain.com/api/stripe/webhook
@@ -271,16 +283,18 @@ docker compose exec bot     npm test
 ## Features
 
 ### Free Tier
-- Up to 3 ticket panels, 2 forms, 10 questions/form
+- 1 ticket panel, 2 forms with 5 questions each, 1 verification panel (numbers = `backend/src/lib/premium.js` BASE_LIMITS)
 - HTML transcripts (30-day retention)
 - Core slash commands
+- **Server Season game (v50):** levels/XP from activity events (never message text), `/daily` sparks with streaks, server shop, 5 level roles, 5 shop items, common/uncommon companions (1 slot), 1 weekly server quest, counting channel, weekly trivia
 
-### Premium (€4.99/server/month · 14-day free trial)
-- Unlimited panels, forms, questions
+### Premium (€4.99/server/month, sold through the Discord store — no trial)
+- 50 panels, 50 forms, 50 questions per form, 10 verification panels (PREMIUM_LIMITS)
 - HTML transcripts (forever) + real PDF export (pdfkit) + CSV export
 - AI auto-replies (Google Gemini Flash)
 - Round-robin ticket assignment
 - White-label bot (custom name, avatar, token — AES-256-GCM encrypted)
+- **Server Season:** 100 level roles, 50 shop items, unlimited companion slots + all rarities incl. seasonal, 3 active quests, daily trivia + knowledge-base questions, `/wyr` and `/tod`
 
 ---
 
@@ -295,6 +309,9 @@ docker compose exec bot     npm test
 | `/form review <id> <action>` | Approve/deny/interview an application |
 | `/setup sync` | Re-sync panels from dashboard |
 | `/premium status/custombot/export` | Premium commands |
+| `/daily`, `/profile`, `/leaderboard`, `/shop` | Server Season: daily sparks, level card, top 10, server shop |
+| `/companion list/info/feed/activate/release/trade` | Server Season: companion collection |
+| `/quest`, `/trivia`, `/spawn`, `/wyr`, `/tod` | Server Season: server quests, trivia round and manual companion spawn (Manage Server), party commands (Premium) |
 
 ---
 

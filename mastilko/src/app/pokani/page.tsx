@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import PokanaStudio from "@/components/studios/PokanaStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
+import RelatedTools from "@/components/RelatedTools";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
-const TITLE = "Безплатни покани за печат";
+const TITLE = "Безплатни покани и картички за печат";
 const DESC =
   "Направи покана за рожден ден, кръщене, сватба или юбилей — топъл шаблон, 2 на лист А4, готови за рязане. Безплатно, на български, без регистрация.";
 
@@ -41,6 +43,7 @@ export const metadata: Metadata = {
     "покана за сватба",
     "детска покана шаблон",
     "покана образец",
+    "Carbon Stealth",
   ],
   alternates: { canonical: "/pokani" },
   ...pageMeta(TITLE, DESC, "/pokani"),
@@ -50,7 +53,10 @@ export default function PokaniPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <header className="no-print mb-8">
-        <h1 className="font-display text-3xl font-bold sm:text-4xl">🎉 Покани и картички</h1>
+        <h1 className="font-display flex items-center gap-3 text-3xl font-bold sm:text-4xl">
+          <Image src="/icons/pokani.webp" alt="" width={56} height={56} unoptimized className="h-12 w-12 object-contain sm:h-14 sm:w-14" aria-hidden />
+          Покани и картички
+        </h1>
         <p className="mt-2 max-w-2xl text-ink-soft">
           <strong className="text-ink">Мастилко „Покани“ е безплатен инструмент за покани за печат на български</strong>{" "}
           — топъл шаблон за рожден ден, кръщене, сватба или юбилей, две покани
@@ -60,6 +66,7 @@ export default function PokaniPage() {
       </header>
       <PokanaStudio />
       <ToolFaq items={FAQ} />
+      <RelatedTools current="/pokani" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

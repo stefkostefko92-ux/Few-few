@@ -50,7 +50,17 @@ export function sshFindings(out) {
         severity: 'critical',
         title: 'SSH приема пароли',
         why: 'Ботовете налучкват пароли денонощно. С ключове това просто не е възможно.',
-        fix: 'Сложи си ключ (ssh-copy-id), после в /etc/ssh/sshd_config: PasswordAuthentication no; systemctl restart ssh',
+        // „yes" е ВГРАДЕНОТО подразбиране на OpenSSH — коментиран ред в
+        // sshd_config не го променя. На Ubuntu cloud образи често и
+        // 50-cloud-init.conf го задава изрично. `Include` е най-отгоре и при sshd
+        // печели ПЪРВАТА стойност, затова поправката е drop-in с име, което се
+        // сортира преди 50-: задава стойността изрично И преди всеки друг.
+        // Открито на живо — първо реших, че е cloud-init; grep показа само
+        // коментирания ред. Съветът трябва да е верен и в двата случая.
+        fix:
+          'Сложи си ключ (ssh-copy-id). После: printf "PasswordAuthentication no\\nKbdInteractiveAuthentication no\\nMaxAuthTries 3\\n" ' +
+          '> /etc/ssh/sshd_config.d/00-hardening.conf && sshd -t && systemctl reload ssh. ' +
+          'Без изричен ред „yes" е вграденото подразбиране; името 00- гарантира, че печели преди всеки друг drop-in (напр. 50-cloud-init.conf).',
         // Изричното предупреждение е важно: изключено преди работещ ключ = заключен навън.
         note: 'Първо провери, че влизаш с ключ в ВТОРА сесия — иначе се заключваш отвън.',
       });
@@ -63,7 +73,10 @@ export function sshFindings(out) {
         why: 'Всеки бот знае името „root" — остава му само паролата/ключа. Отделен потребител + sudo оставя и следа кой какво е направил.',
         fix: '/etc/ssh/sshd_config: PermitRootLogin prohibit-password (или no)',
       });
-    } else if (rootLogin === 'prohibit-password') {
+    } else if (rootLogin === 'prohibit-password' || rootLogin === 'without-password') {
+      // `without-password` е старият правопис на същото — `sshd -T` на Ubuntu
+      // 24.04 го печата така. Открито от реален изход: панелът мълчеше за root,
+      // защото не разпознаваше думата, а мълчание тук се чете като „наред".
       add({ id: 'ssh-root-key', severity: 'low', ok: true, title: 'root влиза само с ключ', why: 'Разумна настройка.', fix: '' });
     }
     // „PasswordAuthentication no" НЕ изключва паролите само по себе си.

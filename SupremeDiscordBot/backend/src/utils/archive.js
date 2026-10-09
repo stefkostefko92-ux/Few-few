@@ -184,10 +184,19 @@ function messageRow(msg, ticket) {
     ? `<span class="chip">Member</span>`
     : `<span class="chip chip-staff">Staff</span>`;
 
+  // Линк се прави САМО от http(s) адрес. `esc()` спира HTML инжекция, но не и
+  // схемата: `javascript:`/`data:` в href е навигация, не разметка. CSP-то на
+  // вратите (`script-src 'none'`) я блокира в днешните браузъри — това е втора
+  // ключалка, за да не зависи транскриптът от една. Адресите идват от Discord
+  // (CDN на прикачените файлове), но правилото не се крепи на това откъде идват.
+  const safeHref = (u) => (/^https?:\/\//i.test(String(u)) ? esc(u) : null);
   const attachments = (msg.attachments || []).length
-    ? `<div style="margin-top:6px;">${msg.attachments.map((url) =>
-        `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" style="display:block;font-size:12px;">📎 ${esc(url)}</a>`
-      ).join("")}</div>`
+    ? `<div style="margin-top:6px;">${msg.attachments.map((url) => {
+        const href = safeHref(url);
+        return href
+          ? `<a href="${href}" target="_blank" rel="noopener noreferrer" style="display:block;font-size:12px;">📎 ${esc(url)}</a>`
+          : `<span style="display:block;font-size:12px;">📎 ${esc(url)}</span>`;
+      }).join("")}</div>`
     : "";
 
   // v36 — одитната следа. Изтритото съобщение НЕ изчезва: показва се зачертано

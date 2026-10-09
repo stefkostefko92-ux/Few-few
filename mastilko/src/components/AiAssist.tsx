@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Icon from "@/components/Icon";
 import { askAi, splitSuggestions, type AiMode } from "@/lib/ai-client";
 
 interface Props {
@@ -15,16 +16,21 @@ interface Props {
   single?: boolean;
 }
 
-// Бележка за поверителност според режима. За CV/писмо потребителят по
-// природа описва СЕБЕ СИ (законно, със съгласие) — там не бива да го караме
-// да не пише за себе си, а да внимава с чужди лични данни (напр. името на
-// HR лицето при „Подобри текста“).
+// Бележка за поверителност според режима. За CV/писмо човек по природа
+// описва СЕБЕ СИ — затова тук не казваме „не пиши за себе си“, а „опиши
+// професията и опита ОБЩО“. Доскоро бележката гласеше „Опиши себе си
+// спокойно“: това насърчаваше точно онова, срещу което /poveritelnost
+// предупреждава („не въвеждай лични данни — без имена и контакти“) при
+// безплатния план на Gemini, където заявките може да се ползват за обучение
+// и да се преглеждат от хора. Двата текста трябва да казват едно и също.
 const PRIVACY_NOTE: Record<AiMode, string> = {
   label: "Не включвай лични данни (имена, телефони).",
   card: "Не включвай лични данни (имена, телефони).",
-  "cv-summary": "Опиши себе си спокойно — това отива към Google. Само не добавяй имена и контакти на други хора.",
+  "cv-summary":
+    "Това отива към Google (безплатен план — може да се ползва за подобряване на услугите, вкл. преглед от хора). Опиши професията и опита си общо — без име, телефон, имейл и без данни на други хора.",
   "cv-improve": "Преди да пратиш текста, махни името на човека, до когото пишеш, и чужди лични данни — те отиват към Google.",
-  letter: "Опиши себе си спокойно — това отива към Google. Само не добавяй имена и контакти на други хора.",
+  letter:
+    "Това отива към Google (безплатен план — може да се ползва за подобряване на услугите, вкл. преглед от хора). Опиши професията и опита си общо — без име, телефон, имейл и без данни на други хора.",
   "translate-en": "Текстът за превод се изпраща към Google. Махни чужди лични данни преди това.",
 };
 
@@ -68,7 +74,7 @@ export default function AiAssist({ mode, input, label, onPick, single }: Props) 
         aria-busy={busy}
         className="btn-secondary text-sm"
       >
-        <span aria-hidden>✨</span>
+        <Icon name="sparkles" className="h-4 w-4" />
         {busy ? "Мастилко мисли…" : label}
       </button>
       <p className="mt-1 text-xs text-ink-faint">
@@ -92,7 +98,7 @@ export default function AiAssist({ mode, input, label, onPick, single }: Props) 
                     onPick(s);
                     setSuggestions([]);
                   }}
-                  className="w-full rounded-xl border border-tera/30 bg-tera-pale/60 px-3 py-2 text-left text-sm transition hover:border-tera hover:bg-tera-pale"
+                  className="w-full rounded-xl border border-tera/30 bg-tera-pale/60 px-3 py-2 text-left text-sm transition hover:border-tera hover:bg-tera-pale dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10 vivid:border-white/15 vivid:bg-white/5 vivid:hover:bg-white/10"
                 >
                   {s}
                 </button>

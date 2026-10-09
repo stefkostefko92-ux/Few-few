@@ -1,27 +1,32 @@
-import { Fraunces, Inter, Caveat } from "next/font/google";
+import { Sofia_Sans, Sofia_Sans_Extra_Condensed } from "next/font/google";
 
-// Self-hosted at build time (no runtime request to Google → GDPR-friendly and
-// faster). Exposed as CSS variables consumed by the design system.
-export const fraunces = Fraunces({
-  subsets: ["latin"],
-  style: ["normal", "italic"],
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-  variable: "--font-fraunces",
-});
-
-export const inter = Inter({
+// Sofia Sans, by the Bulgarian type designer Lasko Dzhurovski: one family, two
+// widths. Its Cyrillic follows the Bulgarian letterforms (д, л, ж… drawn the
+// way Bulgarian schoolbooks draw them), switched on by lang="bg". Self-hosted at
+// build time — no runtime request to Google, so nothing leaves for a third party.
+// Only latin + cyrillic are preloaded (Italian and Bulgarian); latin-ext still
+// loads on demand for a rare name, and the italic only where a quote needs it.
+export const sofia = Sofia_Sans({
   subsets: ["latin", "cyrillic"],
-  weight: ["400", "500", "600", "700"],
+  weight: "variable",
   display: "swap",
-  variable: "--font-inter",
+  variable: "--font-sofia",
 });
 
-export const caveat = Caveat({
+export const sofiaItalic = Sofia_Sans({
   subsets: ["latin", "cyrillic"],
-  weight: ["600", "700"],
+  weight: "variable",
+  style: "italic",
   display: "swap",
-  variable: "--font-caveat",
+  preload: false,
+  variable: "--font-sofia-italic",
 });
 
-export const fontVars = `${inter.variable} ${fraunces.variable} ${caveat.variable}`;
+export const sofiaCondensed = Sofia_Sans_Extra_Condensed({
+  subsets: ["latin", "cyrillic"],
+  weight: "variable",
+  display: "swap",
+  variable: "--font-sofia-xc",
+});
+
+export const fontVars = `${sofia.variable} ${sofiaItalic.variable} ${sofiaCondensed.variable}`;

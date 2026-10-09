@@ -92,7 +92,17 @@ export function acceptStep(state, step) {
   if (step === null || step === undefined) return false;
   const last = state?.lastTotpStep;
   if (last !== undefined && last !== null && step <= last) return false;
-  if (state) state.lastTotpStep = step;
+  if (state) {
+    state.lastTotpStep = step;
+    // Стъпката трябва да ПРЕЖИВЕЕ рестарт. Иначе деплой или срив нулира брояча и
+    // заснет код, вече изгорен от собственика, оживява за остатъка от прозореца
+    // (до 90 s). Тесен процеп, но точно от вида „изглежда затворено".
+    try {
+      state.persistTotpStep?.(step);
+    } catch {
+      /* записът не бива да чупи входа */
+    }
+  }
   return true;
 }
 

@@ -8,11 +8,12 @@ import QRCode from "qrcode";
 // Генерирай ВЕДНЪЖ в редактора с useQrDataUrl и подай готовия src на
 // клетките — иначе всяка от 24-те клетки на листа смята същия QR наново.
 
-export function useQrDataUrl(text: string): string | null {
+export function useQrDataUrl(text: string, dark: string = "#1B1B1B"): string | null {
   const [url, setUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (!text) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setUrl(null);
       return;
     }
@@ -21,14 +22,14 @@ export function useQrDataUrl(text: string): string | null {
       width: 512,
       margin: 0,
       errorCorrectionLevel: "M",
-      color: { dark: "#1B1B1B", light: "#FFFFFF" },
+      color: { dark, light: "#FFFFFF" },
     })
       .then((u) => alive && setUrl(u))
       .catch(() => alive && setUrl(null));
     return () => {
       alive = false;
     };
-  }, [text]);
+  }, [text, dark]);
 
   return url;
 }

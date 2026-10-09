@@ -1,0 +1,68 @@
+<%- include('../partials/shell-start', { active: 'brands' }) %>
+<div class="topbar">
+  <div>
+    <h1><%= title %></h1>
+    <p class="sub"><%= t('brandForm.subtitle') %></p>
+  </div>
+  <a class="btn ghost" href="/admin/brands"><%- icon('brands') %> <%= t('brands.allBrands') %></a>
+</div>
+<% if (errors.length) { %><div class="flash error"><%- icon('status-failed') %><span><%= errors.join(' · ') %></span></div><% } %>
+
+<form method="post" action="<%= brand && brand.id ? '/admin/brands/' + brand.id : '/admin/brands' %>" class="stack">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+  <section class="panel">
+    <h2><%- icon('brands') %> <%= t('brandForm.who') %></h2>
+    <div class="stack">
+      <label><%= t('brandForm.name') %><input name="name" required minlength="2" value="<%= brand ? brand.name : '' %>"></label>
+      <div class="grid2">
+        <label><%= t('brandForm.slug') %> <span class="hint"><%= t('brandForm.slugHint') %></span><input name="slug" required pattern="[a-z0-9-]{2,40}" value="<%= brand ? brand.slug : '' %>"></label>
+        <label><%= t('brands.language') %> <span class="hint"><%= t('brandForm.languageHint') %></span><input name="language" required value="<%= brand ? brand.language : 'bg' %>"></label>
+      </div>
+      <label><%= t('brandForm.website') %><input type="url" name="websiteUrl" value="<%= brand && brand.websiteUrl ? brand.websiteUrl : '' %>"></label>
+      <label><%= t('brandForm.summary') %> <span class="hint"><%= t('brandForm.summaryHint') %></span><textarea name="summary" required minlength="10" rows="3"><%= brand ? brand.summary : '' %></textarea></label>
+      <label><%= t('brandForm.voice') %><textarea name="voice" required minlength="5" rows="3"><%= brand ? brand.voice : '' %></textarea></label>
+    </div>
+  </section>
+
+  <% const v = (k) => (plan && typeof plan[k] === 'string' ? plan[k] : ''); %>
+  <% const cross = Array.isArray(plan && plan.crossPost) ? plan.crossPost : (plan && plan.crossPost ? [plan.crossPost] : []); %>
+
+  <section class="panel">
+    <h2><%- icon('autopilot') %> <%= t('brandForm.management') %></h2>
+    <p class="sub mb-2"><%= t('brandForm.managementHint') %></p>
+    <div class="stack">
+      <label class="check"><input type="checkbox" name="managed" <%= managed ? 'checked' : '' %>> <span><%= t('brandForm.managed') %></span></label>
+      <div class="grid2">
+        <label><%= t('brandForm.postsPerWeek') %> <span class="hint"><%= t('brandForm.postsPerWeekHint') %></span><input type="number" name="postsPerWeek" min="1" max="14" value="<%= v('postsPerWeek') || '3' %>"></label>
+        <label><%= t('brandForm.reelsShare') %> <span class="hint"><%= t('brandForm.reelsShareHint') %></span><input type="number" name="reelsShare" min="0" max="1" step="0.1" value="<%= v('reelsShare') || '0.5' %>"></label>
+      </div>
+      <label><%= t('brandForm.pillars') %> <span class="hint"><%= t('brandForm.pillarsHint') %></span><textarea name="pillars" rows="4" placeholder="<%= t('brandForm.pillarsPlaceholder') %>"><%= v('pillars') %></textarea></label>
+      <label><%= t('brandForm.postingTimes') %> <span class="hint"><%= t('brandForm.postingTimesHint') %></span><input name="postingTimes" value="<%= v('postingTimes') || '08:30, 20:00' %>"></label>
+      <label><%= t('brandForm.goals') %> <span class="hint"><%= t('brandForm.goalsHint') %></span><textarea name="goals" rows="2" maxlength="1000"><%= v('goals') %></textarea></label>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2><%- icon('search') %> <%= t('brandForm.discovery') %></h2>
+    <div class="stack">
+      <label><%= t('brandForm.keywords') %> <span class="hint"><%= t('brandForm.keywordsHint') %></span><input name="keywords" value="<%= v('keywords') %>"></label>
+      <label><%= t('brandForm.hashtagSets') %> <span class="hint"><%= t('brandForm.hashtagSetsHint') %></span><textarea name="hashtagSets" rows="3" placeholder="#kangoojumps #дупница&#10;#силовитренировки"><%= v('hashtagSets') %></textarea></label>
+      <label><%= t('brandForm.cta') %><input name="cta" maxlength="200" value="<%= v('cta') %>"></label>
+      <label><%= t('brandForm.avoid') %> <span class="hint"><%= t('brandForm.avoidHint') %></span><textarea name="avoid" rows="2" maxlength="1000"><%= v('avoid') %></textarea></label>
+      <fieldset>
+        <legend><%= t('brandForm.crossPost') %></legend>
+        <% ['facebook', 'tiktok', 'linkedin', 'x'].forEach((pl) => { %><label class="check"><input type="checkbox" name="crossPost" value="<%= pl %>" <%= cross.includes(pl) ? 'checked' : '' %>> <span><%= pl %></span></label><% }) %>
+      </fieldset>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2><%- icon('image') %> <%= t('brandForm.library') %></h2>
+    <p class="sub mb-2"><%- t('brandForm.libraryHint') %></p>
+    <label class="mono"><textarea name="assets" rows="7" class="mono" placeholder="https://cdn.example.com/foto.jpg | …"><%= v('assets') %></textarea></label>
+  </section>
+
+  <div class="row"><button class="btn primary" type="submit"><%- icon('approve') %> <%= t('common.save') %></button><a class="btn ghost" href="/admin/brands"><%= t('common.cancel') %></a></div>
+</form>
+<%- include('../partials/shell-end') %>

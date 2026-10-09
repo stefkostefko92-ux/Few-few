@@ -22,32 +22,39 @@ jobs:
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # Тестовете на входа, правата и поръчките вървят срещу истински PostgreSQL (backend/test/harness.js
+    # иска база, чието име завършва на _test, и сам слага схемата).
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: sklad
+          POSTGRES_PASSWORD: sklad
+          POSTGRES_DB: sklad_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U sklad"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          # БЕЗ cache: npm — Ivan/backend няма package-lock.json (затова и npm install, не ci);
-          # cache с несъществуващ lockfile проваля setup-node стъпката. Кеш ще има, когато има lock.
-      # Продуктът няма тестове и няма lockfile. Не измисляме гейт, който не съществува —
-      # проверяваме това, което Е проверимо: валидна Prisma схема и синтаксис на сорса.
-      # Prisma на ПРОДУКТА (^6.8.0), не `npx --yes prisma` — той дърпа latest (7.x), който
-      # премахна `url` в datasource и обяви валидна схема за невалидна. Гейт, който ползва друга
-      # версия от продукта, мери грешното нещо.
+          cache: npm
+          cache-dependency-path: Ivan/backend/package-lock.json
+      - name: Зависимости (lockfile)
+        working-directory: Ivan/backend
+        run: npm ci --no-audit --no-fund
+      # Prisma на ПРОДУКТА (от lockfile-а), не `npx --yes prisma` — той дърпа latest, който може да
+      # обяви валидна схема за невалидна. `validate` не се свързва, но иска DATABASE_URL да съществува.
       - name: Валидна Prisma схема (версията на продукта)
         working-directory: Ivan/backend
         env:
-          # `prisma validate` НЕ се свързва, но иска променливата да съществува, защото схемата я
-          # реферира. Стойността е фиктивна и БЕЗ идентификационни данни — низ с `user:pass@` би
-          # бил находка за нашия собствен secret-scan.
           DATABASE_URL: postgresql://localhost:5432/validate_only
-        run: |
-          if [ -f prisma/schema.prisma ]; then
-            npm install --no-audit --no-fund
-            npx prisma validate
-          else
-            echo "няма схема — пропускам"
-          fi
+        run: npx prisma validate
       - name: Синтаксис на сорса
         run: |
           fail=0
@@ -55,3 +62,10 @@ jobs:
             node --check "$f" || { echo "::error file=$f::синтактична грешка"; fail=1; }
           done < <(find Ivan -name '*.js' -o -name '*.mjs' | grep -v node_modules)
           exit $fail
+      - name: Тестове (вход, сесии, права, поръчки, seed)
+        working-directory: Ivan/backend
+        env:
+          TEST_DATABASE_URL: postgresql://sklad:sklad@127.0.0.1:5432/sklad_test
+        run: |
+          npx prisma generate
+          npm test

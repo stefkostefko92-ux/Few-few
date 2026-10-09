@@ -1,163 +1,492 @@
-/* Admin panel — dense tables, editors, control surfaces */
+/* =========================================================================
+   Admin panel — плътни таблици, чекмеджета, контролни повърхности.
+   Само токени от globals.css (--bg-*, --border-*, --text-*, --gold-* …).
+   Мобилно (≤ 760px): навигацията става хоризонтална лента с чипове,
+   таблиците — карти с етикети (data-label), модалите — цял екран.
+   ========================================================================= */
+
+.sr-only {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap; border: 0;
+}
 
 .admin-shell {
   display: grid;
-  grid-template-columns: 240px 1fr;
+  grid-template-columns: 248px minmax(0, 1fr);
   min-height: calc(100vh - var(--nav-h));
   background: var(--bg-1);
 }
 
+.adm-skip {
+  position: absolute; left: 12px; top: -48px; z-index: 400;
+  background: var(--gold-2); color: var(--bg-0); padding: 8px 14px; border-radius: var(--radius-sm);
+  font-weight: 700; text-decoration: none;
+}
+.adm-skip:focus { top: calc(var(--nav-h) + 8px); }
+
+/* ---------- Навигация ---------- */
 .admin-sidebar {
   background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
   border-right: 1px solid var(--border-1);
-  padding: 24px 16px;
+  padding: 22px 14px 32px;
+  position: sticky;
+  top: var(--nav-h);
+  align-self: start;
+  max-height: calc(100vh - var(--nav-h));
+  overflow-y: auto;
 }
-.admin-sidebar h2 {
-  font-size: 14px;
+.admin-sidebar-title {
+  font-family: var(--font-display);
+  font-size: 13px;
   text-transform: uppercase;
-  letter-spacing: .14em;
+  letter-spacing: .16em;
   color: var(--gold-1);
-  margin-bottom: 16px;
-  padding: 0 8px;
+  margin: 0 0 14px;
+  padding: 0 10px;
+}
+.admin-nav-group { margin-bottom: 14px; }
+.admin-nav-label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--text-4);
+  margin: 0 0 4px;
+  padding: 0 12px;
+  font-weight: 700;
 }
 .admin-sidebar a {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
+  padding: 8px 12px;
   border-radius: var(--radius-sm);
-  font-size: 14px;
+  font-size: 13.5px;
   color: var(--text-2);
   text-decoration: none;
-  margin-bottom: 2px;
-}
-.admin-sidebar a.active {
-  background: linear-gradient(90deg, rgba(214,161,61,.16), rgba(214,161,61,.04));
-  color: var(--gold-1);
-  border-left: 2px solid var(--gold-2);
-  padding-left: 10px;
+  border-left: 2px solid transparent;
+  transition: background .15s var(--ease-smooth), color .15s var(--ease-smooth);
 }
 .admin-sidebar a:hover { background: rgba(255,255,255,.04); color: var(--gold-1); }
+.admin-sidebar a.active {
+  background: linear-gradient(90deg, rgba(214,161,61,.16), rgba(214,161,61,.03));
+  color: var(--gold-1);
+  border-left-color: var(--gold-2);
+}
 
 .admin-main {
-  padding: 28px 36px;
-  overflow-x: auto;
+  padding: 28px 36px 64px;
+  min-width: 0;
 }
+.admin-main:focus { outline: none; }
 
-.admin-toolbar {
+/* ---------- Заглавие / лента с филтри ---------- */
+.adm-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.adm-head h1 {
+  font-family: var(--font-display);
+  font-size: 26px;
+  line-height: 1.2;
+  color: var(--gold-1);
+  margin: 0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  gap: 12px;
+  gap: 10px;
 }
-.admin-toolbar h1 {
+.adm-count {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-2);
+  background: var(--bg-3);
+  border: 1px solid var(--border-2);
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+.adm-sub { margin: 6px 0 0; color: var(--text-3); font-size: 13.5px; max-width: 760px; }
+.adm-head-actions { display: flex; gap: 8px; align-items: center; }
+
+.adm-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.adm-search { flex: 1 1 260px; max-width: 420px; display: block; }
+.adm-search.narrow { flex: 0 1 160px; }
+.adm-search input, .adm-select select, .adm-select input { width: 100%; }
+.adm-select { display: block; flex: 0 1 200px; }
+
+.adm-h2 { font-family: var(--font-display); font-size: 17px; color: var(--gold-1); margin: 26px 0 10px; }
+.adm-h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .1em; color: var(--text-3); margin: 18px 0 8px; }
+.adm-section + .adm-section { margin-top: 8px; }
+
+/* ---------- Статистики ---------- */
+.admin-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 12px;
+  margin-bottom: 26px;
+}
+.admin-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
+  border: 1px solid var(--border-1);
+  border-left: 3px solid var(--gold-3);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  text-decoration: none;
+  color: inherit;
+  min-width: 0;
+}
+.admin-stat.link { transition: border-color .15s, transform .15s var(--ease-out-expo); }
+.admin-stat.link:hover { border-color: var(--border-3); border-left-color: var(--gold-2); transform: translateY(-1px); }
+.admin-stat.alert { border-left-color: var(--crimson-1); }
+.admin-stat.alert .num { color: var(--crimson-1); }
+.admin-stat.ok { border-left-color: var(--emerald-1); }
+.admin-stat .label { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--text-3); }
+.admin-stat .num {
   font-family: var(--font-display);
   font-size: 24px;
   color: var(--gold-1);
+  overflow-wrap: anywhere;
 }
-.admin-toolbar .search {
-  flex: 1;
-  max-width: 360px;
-}
-
-.admin-stat-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 16px;
-  margin-bottom: 32px;
-}
-.admin-stat {
-  background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
-  border: 1px solid var(--border-1);
-  border-left: 3px solid var(--gold-2);
+.adm-banner {
+  display: block;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border: 1px solid rgba(232,90,79,.4);
+  background: rgba(182,38,27,.12);
+  color: var(--crimson-1);
   border-radius: var(--radius-md);
-  padding: 18px;
+  text-decoration: none;
+  font-weight: 600;
 }
-.admin-stat .label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: .1em;
-  color: var(--text-3);
-}
-.admin-stat .num {
-  font-family: var(--font-display);
-  font-size: 28px;
-  color: var(--gold-1);
-  margin-top: 4px;
-}
+.adm-banner:hover { background: rgba(182,38,27,.2); }
+.adm-two-col { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.adm-two-col .adm-h2 { margin-top: 0; }
+.adm-two-col .adm-table { min-width: 0; }
 
-.admin-table {
-  width: 100%;
-  border-collapse: collapse;
+/* ---------- Таблица ---------- */
+.adm-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-md);
   background: var(--bg-2);
-  border: 1px solid var(--border-1);
-  border-radius: var(--radius-md);
-  overflow: hidden;
+  transition: opacity .15s;
 }
-.admin-table th {
+.adm-table-wrap.is-dim { opacity: .6; }
+.adm-table { width: 100%; border-collapse: collapse; min-width: 560px; }
+.adm-table th {
   text-align: left;
   padding: 10px 12px;
   font-size: 11px;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: .08em;
   color: var(--text-3);
   background: var(--bg-3);
   border-bottom: 1px solid var(--border-2);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
 }
-.admin-table td {
+.adm-table td {
   padding: 10px 12px;
   border-bottom: 1px solid var(--border-1);
   font-size: 13px;
   color: var(--text-2);
   vertical-align: middle;
 }
-.admin-table tr:hover td { background: rgba(255,255,255,.02); }
+.adm-table tbody tr:last-child td { border-bottom: 0; }
+.adm-table tbody tr:hover td { background: rgba(255,255,255,.02); }
+.adm-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.adm-table td strong { color: var(--text-1); }
+.adm-row-actions { white-space: nowrap; text-align: right; }
+.adm-row-actions .btn + .btn { margin-left: 6px; }
 
-.admin-editor {
-  position: fixed;
-  top: 0; right: 0; bottom: 0;
-  width: 480px;
-  background: var(--bg-2);
-  border-left: 1px solid var(--border-2);
-  padding: 28px;
-  overflow-y: auto;
-  z-index: 200;
-  box-shadow: -24px 0 64px rgba(0,0,0,.5);
-  animation: slide-in .2s ease-out;
+.mono { font-family: var(--font-mono); font-size: 12px; }
+.cap { text-transform: capitalize; }
+.small { font-size: 12px; }
+.break { overflow-wrap: anywhere; word-break: break-word; }
+.gold { color: var(--gold-1); }
+.gem { color: var(--amethyst-1); }
+.adm-stack { display: flex; flex-direction: column; gap: 4px; }
+.adm-tags { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.adm-clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-width: 340px;
 }
-@keyframes slide-in {
-  from { transform: translateX(20px); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-.admin-editor h3 {
-  font-family: var(--font-display);
-  color: var(--gold-1);
-  margin-bottom: 16px;
-}
-.admin-editor .field { margin-bottom: 12px; }
-.admin-editor .field-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-.admin-editor .actions {
+
+.adm-pager {
   display: flex;
-  gap: 10px;
-  margin-top: 18px;
-  border-top: 1px solid var(--border-1);
-  padding-top: 16px;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 16px 0 4px;
+  flex-wrap: wrap;
 }
 
-.admin-overlay {
+/* ---------- Състояния ---------- */
+.adm-state {
+  border: 1px dashed var(--border-2);
+  border-radius: var(--radius-md);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+  color: var(--text-3);
+}
+.adm-state-empty { align-items: center; text-align: center; }
+.adm-state-error { border-style: solid; border-color: rgba(232,90,79,.4); background: rgba(182,38,27,.08); color: var(--text-2); }
+.adm-state-error strong { color: var(--crimson-1); }
+.adm-skeleton {
+  width: 100%;
+  height: 14px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--bg-3), var(--bg-4), var(--bg-3));
+  background-size: 200% 100%;
+  animation: adm-shimmer 1.4s linear infinite;
+}
+.adm-skeleton.short { width: 60%; }
+@keyframes adm-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+/* ---------- Карти / бележки ---------- */
+.adm-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  margin-bottom: 18px;
+}
+.adm-card .adm-h2:first-child { margin-top: 0; }
+.adm-note {
+  border: 1px solid var(--border-2);
+  border-left: 3px solid var(--sapphire-1);
+  background: rgba(43,88,196,.08);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  margin-bottom: 14px;
+  font-size: 13px;
+}
+.adm-note strong { color: var(--sapphire-1); }
+.adm-warn {
+  border-left: 3px solid var(--ember-1);
+  background: rgba(199,100,26,.12);
+  color: var(--ember-1);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+/* ---------- Табове ---------- */
+.adm-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border-2);
+  margin-bottom: 18px;
+  overflow-x: auto;
+}
+.adm-tabs button {
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--text-3);
+  padding: 10px 14px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.adm-tabs button:hover { color: var(--text-1); }
+.adm-tabs button.active { color: var(--gold-1); border-bottom-color: var(--gold-2); }
+
+/* ---------- Форми ---------- */
+.adm-form { display: flex; flex-direction: column; gap: 14px; }
+.adm-form.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 14px; }
+.adm-form.grid .wide, .adm-form.grid .adm-check, .adm-form.grid .adm-form-actions { grid-column: 1 / -1; }
+.adm-form.inline { flex-direction: row; flex-wrap: wrap; align-items: flex-end; }
+.adm-form.inline .adm-field { flex: 1 1 180px; max-width: 280px; }
+.adm-form.narrow { max-width: 760px; }
+.adm-field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.adm-field label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text-3);
+}
+.adm-field input, .adm-field select, .adm-field textarea { width: 100%; }
+.adm-field textarea { resize: vertical; min-height: 72px; }
+.adm-field.has-error input, .adm-field.has-error select, .adm-field.has-error textarea,
+.adm-toolbar input[aria-invalid='true'], .adm-field input[aria-invalid='true'] { border-color: var(--crimson-1); }
+.adm-field-hint { font-size: 11.5px; color: var(--text-4); }
+.adm-field-hint code { color: var(--text-3); }
+.adm-field-error { font-size: 12px; color: var(--crimson-1); }
+.adm-check { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--text-2); cursor: pointer; }
+.adm-check input { width: 16px; height: 16px; min-height: 0; accent-color: var(--gold-2); }
+.adm-form-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.adm-found { display: inline-flex; gap: 10px; align-items: center; padding-bottom: 8px; }
+
+/* ---------- Настройки ---------- */
+.adm-settings { display: flex; flex-direction: column; gap: 8px; }
+.adm-setting {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: start;
+  background: var(--bg-2);
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+}
+.adm-setting-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.adm-setting-info strong { color: var(--text-1); }
+.adm-setting-ctrl { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.adm-setting-ctrl input, .adm-setting-ctrl select { width: 100%; font-family: var(--font-mono); }
+.adm-setting-actions { display: flex; gap: 6px; }
+
+/* ---------- Модерация ---------- */
+.adm-target-list { display: flex; flex-direction: column; gap: 10px; }
+.adm-target {
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-md);
+  background: var(--bg-3);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.adm-target-head { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.adm-target-foot { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.adm-quote {
+  margin: 0;
+  padding: 8px 12px;
+  border-left: 3px solid var(--crimson-2);
+  background: var(--bg-1);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--text-1);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Ключ–стойност, хронология, одит-разлика ---------- */
+.adm-kv {
+  display: grid;
+  grid-template-columns: minmax(110px, auto) minmax(0, 1fr);
+  gap: 6px 14px;
+  margin: 0;
+  font-size: 13px;
+}
+.adm-kv dt { color: var(--text-3); }
+.adm-kv dd { margin: 0; color: var(--text-1); min-width: 0; }
+.adm-actions-bar { display: flex; flex-wrap: wrap; gap: 6px; padding-bottom: 12px; border-bottom: 1px solid var(--border-1); }
+.adm-timeline { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.adm-timeline li { display: flex; flex-direction: column; gap: 2px; font-size: 13px; border-left: 2px solid var(--border-2); padding-left: 10px; }
+.adm-meta pre {
+  margin: 10px 0 0;
+  padding: 12px;
+  background: var(--bg-1);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-2);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.adm-diff { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.adm-diff th { text-align: left; color: var(--text-3); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; padding: 6px 8px; border-bottom: 1px solid var(--border-2); }
+.adm-diff td { padding: 6px 8px; border-bottom: 1px solid var(--border-1); font-family: var(--font-mono); overflow-wrap: anywhere; }
+.adm-diff .from { color: var(--crimson-1); }
+.adm-diff .to { color: var(--emerald-1); }
+.adm-url { display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+
+/* ---------- Модал / чекмедже (портал към body) ---------- */
+body.adm-modal-open { overflow: hidden; }
+.adm-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,.5);
-  z-index: 150;
-  animation: overlay-in .15s ease-out;
+  z-index: 300;
+  background: rgba(3,4,8,.62);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: adm-fade .15s ease-out;
 }
-@keyframes overlay-in { from { opacity: 0; } to { opacity: 1; } }
+.adm-modal {
+  width: min(560px, 100%);
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-3);
+  animation: adm-pop .18s var(--ease-out-expo);
+}
+.adm-modal.danger { border-top: 3px solid var(--crimson-1); }
+.adm-modal.drawer {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: min(560px, 100%);
+  max-height: none;
+  border-radius: 0;
+  border-width: 0 0 0 1px;
+  animation: adm-slide .2s var(--ease-out-expo);
+}
+.adm-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px 12px;
+  border-bottom: 1px solid var(--border-1);
+}
+.adm-modal-head h2 { font-family: var(--font-display); font-size: 18px; color: var(--gold-1); margin: 0; line-height: 1.3; }
+.adm-modal-body { padding: 16px 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 12px; }
+.adm-modal-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 12px 20px calc(12px + var(--safe-bottom));
+  border-top: 1px solid var(--border-1);
+}
+.adm-icon-btn {
+  background: none;
+  border: 1px solid transparent;
+  color: var(--text-3);
+  font-size: 22px;
+  line-height: 1;
+  width: 34px; height: 34px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+.adm-icon-btn:hover { color: var(--text-1); background: var(--bg-3); border-color: var(--border-2); }
+.adm-confirm-body { margin: 0; color: var(--text-2); font-size: 14px; }
+.adm-confirm-body code, .adm-field-hint code { font-family: var(--font-mono); background: var(--bg-3); padding: 1px 6px; border-radius: 4px; color: var(--gold-1); }
 
+@keyframes adm-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes adm-pop { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes adm-slide { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+
+/* ---------- Рядкост (каталог) ---------- */
 .rarity-pill {
   display: inline-block;
   font-size: 11px;
@@ -173,3 +502,179 @@
 .rarity-pill.rare { color: var(--rare-rare); background: rgba(106,167,255,.1); }
 .rarity-pill.epic { color: var(--rare-epic); background: rgba(194,148,255,.1); }
 .rarity-pill.legendary { color: var(--rare-legendary); background: rgba(255,193,106,.12); }
+
+/* ---------- Таблет ---------- */
+@media (max-width: 1100px) {
+  .admin-main { padding: 24px 22px 56px; }
+  /* minmax(0,…) — без него единствената 1fr писта пази implicit min-width:auto
+     и не се свива под min-content на таблицата вътре (Overview „Последни
+     регистрации"), панелът изтичаше извън admin-shell-а на таблет 768px
+     (бисекция: scrollWidth 861>768). Същия капан като .chat-grid/.streak-row
+     (виж client/src/styles/globals.css). */
+  .adm-two-col { grid-template-columns: minmax(0, 1fr); }
+  .adm-setting { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .adm-setting-actions { grid-column: 1 / -1; }
+}
+
+/* ---------- Мобилно ---------- */
+@media (max-width: 760px) {
+  /* auto 1fr: иначе min-height разпределя празното място и между редовете
+     (голяма дупка между лентата с чипове и заглавието). */
+  .admin-shell { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; align-content: start; }
+  .admin-sidebar {
+    position: sticky;
+    top: var(--nav-h);
+    z-index: 20;
+    max-height: none;
+    padding: 8px 16px;
+    border-right: 0;
+    border-bottom: 1px solid var(--border-1);
+    background: var(--bg-2);
+  }
+  .admin-sidebar-title { display: none; }
+  .admin-sidebar nav {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    position: relative;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+  }
+  .admin-sidebar nav::-webkit-scrollbar { display: none; }
+  .admin-nav-group { display: contents; }
+  .admin-nav-label { display: none; }
+  .admin-sidebar a {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    border: 1px solid var(--border-2);
+    border-radius: 999px;
+    padding: 8px 14px;
+    min-height: 40px;
+    scroll-snap-align: start;
+    font-size: 13px;
+  }
+  .admin-sidebar a.active { border-color: var(--gold-2); background: rgba(214,161,61,.14); }
+
+  .admin-main { padding: 18px 16px 48px; }
+  .adm-head h1 { font-size: 21px; }
+  .adm-search, .adm-select, .adm-search.narrow { flex: 1 1 100%; max-width: none; }
+  .admin-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .admin-stat { padding: 12px; }
+  .admin-stat .num { font-size: 20px; }
+
+  /* Таблици → карти с етикети от data-label. */
+  .adm-table-wrap { border: 0; background: none; overflow: visible; }
+  .adm-table { min-width: 0; display: block; }
+  .adm-table thead { display: none; }
+  .adm-table tbody { display: flex; flex-direction: column; gap: 10px; }
+  .adm-table tr {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-2);
+    border: 1px solid var(--border-2);
+    border-radius: var(--radius-md);
+    padding: 10px 14px;
+  }
+  .adm-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 14px;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--border-1);
+    text-align: right;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .adm-table td::before {
+    content: attr(data-label);
+    flex: 0 0 auto;
+    max-width: 45%;
+    text-align: left;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--text-4);
+  }
+  .adm-table td.primary {
+    order: -1;
+    justify-content: flex-start;
+    text-align: left;
+    font-size: 14.5px;
+    padding-top: 2px;
+    border-bottom: 1px solid var(--border-2);
+  }
+  .adm-table td.primary::before { display: none; }
+  .adm-table td.adm-row-actions {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 6px;
+    border-bottom: 0;
+    padding-top: 10px;
+  }
+  .adm-table td.adm-row-actions::before { display: none; }
+  .adm-table td.adm-row-actions:empty { display: none; }
+  .adm-row-actions .btn + .btn { margin-left: 0; }
+  .adm-table tbody tr:hover td { background: none; }
+  .adm-clamp { max-width: none; }
+  .adm-stack { align-items: flex-start; }
+
+  .adm-form.grid { grid-template-columns: minmax(0, 1fr); }
+  .adm-form.inline .adm-field { max-width: none; flex-basis: 100%; }
+  .adm-setting { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+
+  .adm-overlay { padding: 0; align-items: flex-end; }
+  .adm-modal { width: 100%; max-height: 92vh; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+  .adm-modal.drawer { width: 100%; top: 0; border-left: 0; }
+  .adm-modal-foot .btn { flex: 1 1 0; }
+  .adm-kv { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .adm-kv dd { margin-bottom: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adm-overlay, .adm-modal, .adm-modal.drawer, .adm-skeleton { animation: none; }
+  .admin-stat.link, .admin-sidebar a, .adm-table-wrap { transition: none; }
+}
+
+/* ---------- Широко чекмедже, избор на герой, лента, решетка ---------- */
+.adm-modal.drawer.wide { width: min(920px, 100%); }
+.adm-picker { position: relative; }
+.adm-picker input { width: 100%; }
+.adm-picker-list {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 4px;
+  background: var(--bg-3);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  max-height: 240px;
+  overflow-y: auto;
+}
+.adm-picker-list button {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  color: var(--text-1);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  cursor: pointer;
+  min-height: 40px;
+}
+.adm-picker-list button:hover, .adm-picker-list button:focus-visible { background: var(--bg-2); }
+.adm-picked { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: 8px 10px; border: 1px solid var(--border-2); border-radius: var(--radius-sm); background: var(--bg-3); }
+.adm-meter { height: 10px; border-radius: 999px; background: var(--bg-3); border: 1px solid var(--border-1); overflow: hidden; }
+.adm-meter span { display: block; height: 100%; background: var(--gold-2); border-radius: inherit; }
+.adm-meter.crimson span { background: var(--crimson-1); }
+.adm-meter.emerald span { background: var(--emerald-1); }
+.adm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+.adm-grid .adm-card { margin: 0; }
+.adm-inline-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.adm-bonus { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+fieldset.adm-check-row { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 8px 20px; }
+/* Колоната на модала е flex — без това лентата с раздели (overflow-x) се
+   свива до 0 височина и разделите изчезват. */
+.adm-modal-body > * { flex-shrink: 0; }
+.adm-tabs { flex-shrink: 0; }

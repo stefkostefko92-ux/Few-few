@@ -1,13 +1,16 @@
 import { Router } from 'express';
 import { getDb } from '../db';
+import { REALM_DROP_ITEMS, ensureRuntimeItems } from '../seed/runtimeItems';
 import { authRequired } from '../middleware/auth';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
+import { liveCombatTuning } from '../game/settings';
 import { loadEquipped } from '../game/equipment';
 import { applyXp } from '../game/progression';
 import { applyGuildMultipliers } from '../game/rewards';
 import { logFromRequest } from '../lib/logger';
 import type { Character } from '../types/domain';
+import { REALM_BOSSES, ensureWeekBoss } from '../game/realmBoss';
 
 /**
  * Weekly Realm Boss — one server-wide boss per ISO week.
@@ -29,105 +32,11 @@ import type { Character } from '../types/domain';
 const router = Router();
 router.use(authRequired);
 
-/** ISO-week key like "2026-W23". Must match weekly.ts. */
-function isoWeek(d = new Date()): string {
-  const t = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
-  const day = t.getUTCDay() || 7;
-  t.setUTCDate(t.getUTCDate() + 4 - day);
-  const yearStart = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
-  const wk = Math.ceil(((t.getTime() - yearStart.getTime()) / 86_400_000 + 1) / 7);
-  return `${t.getUTCFullYear()}-W${String(wk).padStart(2, '0')}`;
-}
-
-interface RealmBossDef {
-  slug: string;
-  name: string;
-  flavor: string;
-  hp_per_active_char: number; // scales with realm population
-  hp_floor: number;
-  atk_min: number;
-  atk_max: number;
-  defense: number;
-  speed: number;
-  level: number;
-  sprite: string;
-  drop_slug: string;
-}
-
-/** Six bosses rotate weekly. Boss is picked by iso_week hash → modulo. */
-const REALM_BOSSES: RealmBossDef[] = [
-  { slug: 'rb_thalion',  name: 'Thalion, the Sunless Crown',  flavor: 'A king who outlived his kingdom and forgot how to stop wearing the throne.',
-    hp_per_active_char: 80_000, hp_floor: 600_000, level: 250, atk_min: 1100, atk_max: 1800, defense: 380, speed: 7, sprite: 'shadowlord', drop_slug: 'realm_thalion_crown' },
-  { slug: 'rb_vethryx',  name: 'Vethryx, the Spine-of-Sky',   flavor: 'A wyrm long enough to wrap the high mountains. Sleeps for centuries, wakes for grudges.',
-    hp_per_active_char: 90_000, hp_floor: 700_000, level: 270, atk_min: 1250, atk_max: 2000, defense: 360, speed: 6, sprite: 'drake',      drop_slug: 'realm_vethryx_scale' },
-  { slug: 'rb_orsis',    name: 'Orsis, the Drowned God',      flavor: 'The drowned do not stay drowned forever. Orsis just remembered why he sank.',
-    hp_per_active_char: 100_000, hp_floor: 800_000, level: 290, atk_min: 1400, atk_max: 2250, defense: 400, speed: 8, sprite: 'serpent',    drop_slug: 'realm_orsis_pendant' },
-  { slug: 'rb_kallosh',  name: 'Kallosh, the Marrow-Keeper',  flavor: 'The librarian who ate the books. Knows every spell, casts none, but the dead do walk now.',
-    hp_per_active_char: 110_000, hp_floor: 900_000, level: 310, atk_min: 1550, atk_max: 2480, defense: 420, speed: 6, sprite: 'witch',      drop_slug: 'realm_kallosh_grimoire' },
-  { slug: 'rb_dawn_unmaker', name: 'The Dawn-Unmaker',       flavor: 'A figure who walks the line of every morning and unmakes one star at a time.',
-    hp_per_active_char: 125_000, hp_floor: 1_000_000, level: 330, atk_min: 1750, atk_max: 2800, defense: 460, speed: 8, sprite: 'shadowlord', drop_slug: 'realm_dawn_unmaker_ash' },
-  { slug: 'rb_unnamed',  name: 'The One Who Wasn\'t Named',   flavor: 'The clergy refuses to record this name. There is a reason.',
-    hp_per_active_char: 140_000, hp_floor: 1_100_000, level: 340, atk_min: 1950, atk_max: 3100, defense: 500, speed: 8, sprite: 'shadowlord', drop_slug: 'realm_unnamed_sigil' },
-];
-
-function pickBossForWeek(wk: string): RealmBossDef {
-  // Cheap stable hash of the iso-week string → boss index.
-  let h = 0;
-  for (let i = 0; i < wk.length; i++) h = ((h << 5) - h + wk.charCodeAt(i)) | 0;
-  return REALM_BOSSES[Math.abs(h) % REALM_BOSSES.length];
-}
-
-/** Lazy-create the week's row if it doesn't exist. */
-function ensureWeekBoss(): { iso_week: string; boss_slug: string; boss_name: string; hp_max: number; hp_remaining: number; started_at: number; ends_at: number; cleared_at: number; kill_blow_character_id: number; settled_at: number } {
-  const db = getDb();
-  const wk = isoWeek();
-  let row = db.prepare('SELECT * FROM realm_boss WHERE iso_week = ?').get(wk) as any;
-  if (row) return row;
-  const boss = pickBossForWeek(wk);
-  const activeChars = (db.prepare("SELECT COUNT(*) AS c FROM characters WHERE level >= 100 AND is_npc = 0").get() as { c: number }).c;
-  const hp_max = Math.max(boss.hp_floor, boss.hp_per_active_char * Math.max(1, activeChars));
-  const started_at = Date.now();
-  const now = new Date();
-  const days = (8 - (now.getUTCDay() || 7)) % 7 || 7;
-  const ends_at = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + days, 0, 0, 0);
-  db.prepare(
-    `INSERT INTO realm_boss (iso_week, boss_slug, boss_name, hp_max, hp_remaining, started_at, ends_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(iso_week) DO NOTHING`,
-  ).run(wk, boss.slug, boss.name, hp_max, hp_max, started_at, ends_at);
-  row = db.prepare('SELECT * FROM realm_boss WHERE iso_week = ?').get(wk) as any;
-  return row;
-}
-
-/** Ensure the unique realm-boss drop items exist in the items table. */
+/** Уникалните дропове на realm боса — статовете живеят в seed/runtimeItems.ts
+ *  (по кривата, game/itemCurve.ts); UPSERT → стар ред получава текущите
+ *  статове и продажна цена и без ре-сийд. */
 function ensureRealmDropItems() {
-  const db = getDb();
-  const items: Array<[string, string, string, string, number, number, number, number, number]> = [
-    // [slug, name, category, sub_type, hp, mp, primary_stat, atk_min, atk_max]
-    ['realm_thalion_crown',     'Sunless Crown of Thalion',         'helm',   '',      420, 150, 24, 0, 0],
-    ['realm_vethryx_scale',     'Spine-of-Sky Scaleplate',          'armor',  '',      500, 0,   28, 0, 0],
-    ['realm_orsis_pendant',     'Drowned-God Pendant of Orsis',     'amulet', '',      380, 220, 0,  0, 0],
-    ['realm_kallosh_grimoire',  "Kallosh's Marrow Grimoire",        'weapon', 'staff', 280, 320, 0,  600, 950],
-    ['realm_dawn_unmaker_ash',  'Ash of the Dawn-Unmaker',          'cloak',  '',      460, 280, 22, 0, 0],
-    ['realm_unnamed_sigil',     "The Sigil That Wasn't Named",      'ring',   '',      350, 200, 26, 0, 0],
-  ];
-  for (const [slug, name, cat, sub, hp, mp, primary, amin, amax] of items) {
-    const have = db.prepare('SELECT 1 FROM items WHERE slug = ?').get(slug);
-    if (have) continue;
-    const defense = cat === 'helm' ? 120 : cat === 'armor' ? 140 : cat === 'cloak' ? 90 : 0;
-    db.prepare(
-      `INSERT INTO items (slug, name, category, sub_type, tier, rarity, level_req, class_req,
-         atk_min, atk_max, defense, hp_bonus, mp_bonus, str_bonus, dex_bonus, con_bonus,
-         int_bonus, cha_bonus, wis_bonus, heal_hp, heal_mp, buy_price, sell_price, icon, description, set_slug)
-       VALUES (?, ?, ?, ?, 10, 'legendary', 250, '', ?, ?, ?, ?, ?, ?, 0, ?, ?, 0, 0, 0, 0, 0, 500000, ?, ?, '')`,
-    ).run(
-      slug, name, cat, sub, amin, amax, defense, hp, mp,
-      cat === 'weapon' || cat === 'armor' || cat === 'ring' ? primary : 0,
-      cat === 'helm' || cat === 'cloak' ? Math.floor(primary * 0.7) : 0,
-      cat === 'amulet' || cat === 'weapon' && sub === 'staff' ? primary : 0,
-      cat === 'helm' ? 'helm' : cat === 'armor' ? 'armor' : cat === 'amulet' ? 'amulet' : cat === 'cloak' ? 'cloak' : cat === 'ring' ? 'ring' : 'staff',
-      `One of the six Realm Boss legendaries. Only drops to the hero who lands the killing blow.`,
-    );
-  }
+  ensureRuntimeItems(getDb(), REALM_DROP_ITEMS);
 }
 ensureRealmDropItems();
 
@@ -201,7 +110,7 @@ router.post('/strike', (req, res) => {
     atk_min: bossDef.atk_min, atk_max: bossDef.atk_max, defense: bossDef.defense, speed: bossDef.speed,
     crit_chance: 0.08, dodge_chance: 0.02, sprite: bossDef.sprite,
   };
-  const result = simulateCombat(hero, foe);
+  const result = simulateCombat(hero, foe, liveCombatTuning());
   const damageDealt = Math.max(0, segHp - result.foe.hp);
   // Atomic update — boss HP can't go negative; contribution row CAS-inserted.
   try {

@@ -37,6 +37,7 @@ const app = fs.readFileSync(path.join(ROOT, 'public/app.js'), 'utf8');
 // ── Списъкът. Редът „защо" е задължителен: клас без обосновка е клас наизуст. ──
 const CLASS = new Map(Object.entries({
   // A — необратимо
+  '/api/auth/password': 'A · сменя паролата и убива ВСИЧКИ сесии, включително тази (sudo + текуща парола + потвърждение)',
   '/api/power': 'A · изключва/рестартира машината',
   '/api/backups/restore/apply': 'A · излива стар архив върху жива база',
   '/api/volumes/restore/apply': 'A · изпразва том и излива архив',

@@ -25,7 +25,7 @@ export default function PlayerView(): React.ReactElement {
     setP(null); setErr('');
     api.get(`/profile/character/${encodeURIComponent(name || '')}`)
       .then(setP)
-      .catch((e: any) => setErr(e.message || 'Not found'));
+      .catch((e: any) => setErr(e.message || t('social.playerNotFound', { defaultValue: 'Player not found.' })));
   }, [name]);
 
   if (err) return <div className="panel"><p className="muted">{err}</p><Link className="btn" to="/app/leaderboard">← {t('common.back', { defaultValue: 'Back' })}</Link></div>;
@@ -45,7 +45,7 @@ export default function PlayerView(): React.ReactElement {
         <Avatar avatar={p.avatar} frame={p.frame_slug} size={72} />
         <div style={{ flex: 1, minWidth: 200 }}>
           <h2 style={{ margin: 0 }}>
-            {p.name} {p.is_npc ? <span className="muted" style={{ fontSize: 13 }}>· NPC</span> : null}
+            {p.name} {p.is_npc ? <span className="muted" style={{ fontSize: 13 }}>· {t('leaderboard.npc')}</span> : null}
           </h2>
           <div className="muted">
             {t('common.lv', { defaultValue: 'Lv' })} {p.level} · {t(`common.class.${p.class}`, { defaultValue: p.class })}
@@ -79,7 +79,7 @@ export default function PlayerView(): React.ReactElement {
             >{t('social.block', { defaultValue: 'Block' })}</button>
             <button
               className="btn btn-sm"
-              onClick={() => setReport({ contentKind: 'character_name', contentRef: `char:${p.name}`, label: `Player ${p.name}` })}
+              onClick={() => setReport({ contentKind: 'character_name', contentRef: `char:${p.name}`, label: t('report.player', { defaultValue: 'Player {{name}}', name: p.name }) })}
             >⚑ {t('common.report', { defaultValue: 'Report' })}</button>
           </div>
         )}

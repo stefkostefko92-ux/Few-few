@@ -1,16 +1,32 @@
 // vCard 3.0 — „Запази контакта“ директно в телефонния указател.
+// ВАЖНО: екранира се ВСЯКА форма на нов ред — включително самостоятелен `\r`.
+// Пропуснатият CR позволяваше инжекция: стойност с `\r` разцепваше файла и
+// добавяше втори, изцяло контролиран от подателя контакт в указателя на посетителя.
 const esc = (value) =>
   String(value ?? '')
     .replace(/\\/g, '\\\\')
-    .replace(/\n/g, '\\n')
+    .replace(/\r\n|[\r\n]/g, '\\n')
     .replace(/[,;]/g, (m) => `\\${m}`);
 
-// RFC 2426: редовете се сгъват на ~75 октета; продължението започва с интервал.
+// RFC 2426: редовете се сгъват на 75 ОКТЕТА (не знака); продължението започва с
+// интервал. Кирилицата е 2 байта/знак, затова броенето по знаци даваше двойно
+// по-дълги редове; рязането по кодови точки пази емоджи да не се счупи наполовина.
 function fold(line) {
-  if (line.length <= 75) return line;
-  const parts = [line.slice(0, 75)];
-  for (let i = 75; i < line.length; i += 74) parts.push(' ' + line.slice(i, i + 74));
-  return parts.join('\r\n');
+  if (Buffer.byteLength(line, 'utf8') <= 75) return line;
+  const parts = [];
+  let current = '';
+  let limit = 75; // първият ред е 75; продълженията са 74 + водещия интервал
+  for (const ch of line) {
+    if (Buffer.byteLength(current + ch, 'utf8') > limit) {
+      parts.push(current);
+      current = ch;
+      limit = 74;
+    } else {
+      current += ch;
+    }
+  }
+  if (current) parts.push(current);
+  return parts.map((p, i) => (i === 0 ? p : ' ' + p)).join('\r\n');
 }
 
 const PHOTO_TYPE = { jpg: 'JPEG', png: 'PNG', webp: 'WEBP' };

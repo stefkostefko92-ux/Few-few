@@ -7,11 +7,13 @@
 import { useMemo, useState, useRef, lazy, Suspense } from "react";
 import {
   Ticket, FileText, ShieldCheck, BarChart3, Gift, Pin, CalendarClock,
-  Webhook, Sparkles, Check, Star, Zap, Crown, ArrowRight, Globe, Building2,
-  SmilePlus, ScrollText, UserPlus, BookOpen, ClipboardList,
+  Webhook, Sparkles, Check, Star, Zap, Crown, ArrowRight, Globe,
+  SmilePlus, ScrollText, UserPlus, BookOpen, ClipboardList, Gamepad2,
 } from "lucide-react";
 import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
 import Seo, { SITE, landingPath } from "../components/Seo";
+import GameShowcase from "../components/GameShowcase";
+import FeatureLinks from "../components/FeatureLinks";
 import { LANDING_TRANSLATIONS } from "../i18n/landing";
 import { useScrollReveal } from "../hooks/useScrollReveal";
 import { useMagnetic, useTiltCard } from "../hooks/useMicroInteractions";
@@ -44,14 +46,12 @@ const FEATURE_ICONS = {
   welcomer: UserPlus,
   knowledgeBase: BookOpen,
   canned: ClipboardList,
+  game: Gamepad2,
 };
 
 export default function LandingLocalized({ locale }) {
   const t = LANDING_TRANSLATIONS[locale];
 
-  // Billing interval for the pricing section — a real keyboard-operable control
-  // (radiogroup below). Free is always €0; paid tiers switch price/per.
-  const [interval, setInterval] = useState("month");
   const rootRef = useRef(null);
   useScrollReveal(rootRef);
   const heroCtaRef = useMagnetic();
@@ -110,14 +110,14 @@ export default function LandingLocalized({ locale }) {
             <SupremeLogo size={52} />
             <div>
               <SupremeWordmark className="text-lg leading-none" />
-              <div className="font-mono text-[9px] tracking-[0.3em] uppercase text-cs-dim mt-0.5 group-hover:text-cs-cyan transition-colors">
+              <div className="hidden sm:block font-mono text-[9px] tracking-[0.3em] uppercase text-cs-dim mt-0.5 group-hover:text-cs-cyan transition-colors">
                 by {COMPANY_NAME}
               </div>
             </div>
           </a>
           <div className="flex items-center gap-4">
             <LanguageSwitcher current={locale} />
-            <button onClick={handleLogin} className="cs-btn-primary text-xs">SIGN IN →</button>
+            <button onClick={handleLogin} className="cs-btn-primary text-xs whitespace-nowrap">SIGN IN →</button>
           </div>
         </header>
 
@@ -166,6 +166,9 @@ export default function LandingLocalized({ locale }) {
             </div>
           </div>
         </section>
+
+        {/* SERVER SEASON — играта (текстът по локал, картинките общи) */}
+        {t.game && <GameShowcase heading={t.game.heading} sub={t.game.sub} bullets={t.game.bullets} link={t.game.link} />}
 
         {/* EU TRUST */}
         <section className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
@@ -249,17 +252,10 @@ export default function LandingLocalized({ locale }) {
               </h2>
               <p className="text-cs-muted">{t.pricingSub}</p>
             </div>
-            {t.pricingToggle && (
-              <BillingToggle labels={t.pricingToggle} interval={interval} onChange={setInterval} />
-            )}
             <div data-reveal className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <TierCard icon={Zap} tier={t.tiers.free} interval={interval} onCta={handleLogin} />
-              <TierCard icon={Star} tier={t.tiers.premium} interval={interval} onCta={handleLogin} highlighted />
-              <TierCard icon={Crown} tier={t.tiers.whitelabel} interval={interval} onCta={handleLogin} />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-              <TierCard icon={Building2} tier={t.tiers.agency5} interval={interval} onCta={handleLogin} compact />
-              <TierCard icon={Building2} tier={t.tiers.agency10} interval={interval} onCta={handleLogin} compact />
+              <TierCard icon={Zap} tier={t.tiers.free} onCta={handleLogin} />
+              <TierCard icon={Star} tier={t.tiers.premium} onCta={handleLogin} highlighted />
+              <TierCard icon={Crown} tier={t.tiers.whitelabel} onCta={handleLogin} />
             </div>
             {/* Преддоговорна информация (чл. 6(1)(д),(о) Дир. 2011/83): ДДС в
                 цената + авто-подновяване — задължителна на ВСЕКИ език, не само EN. */}
@@ -326,6 +322,7 @@ export default function LandingLocalized({ locale }) {
                 <a href="/compare/appy-alternative" className="hover:text-cs-cyan transition-colors">{t.guides.vsAppy}</a>
               </nav>
             )}
+            <FeatureLinks heading={t.guides?.features || "Features"} />
 
             <div className="text-center text-xs font-mono text-cs-dim border-t border-cs-border/30 pt-4">
               Created and Designed by{" "}
@@ -340,39 +337,6 @@ export default function LandingLocalized({ locale }) {
   );
 }
 
-// Accessible monthly/annual switch — a radiogroup of two buttons (aria-checked),
-// fully keyboard-operable. The annual option carries a "2 months free" badge.
-// All motion is via a CSS transition that prefers-reduced-motion neutralizes.
-function BillingToggle({ labels, interval, onChange }) {
-  return (
-    <div className="flex flex-col items-center gap-2 mb-10">
-      <div
-        role="radiogroup"
-        aria-label={labels.monthly + " / " + labels.annual}
-        className="inline-flex items-center gap-1 p-1 rounded-full border border-cs-border bg-cs-surface/60"
-      >
-        {[["month", labels.monthly], ["year", labels.annual]].map(([value, label]) => {
-          const active = interval === value;
-          return (
-            <button
-              key={value}
-              type="button"
-              role="radio"
-              aria-checked={active}
-              onClick={() => onChange(value)}
-              className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cs-cyan ${
-                active ? "bg-cs-gold text-black" : "text-cs-muted hover:text-cs-text"
-              }`}
-            >
-              {label}
-            </button>
-          );
-        })}
-      </div>
-      <span className="cs-badge-cyan text-[10px]">{labels.annualBadge}</span>
-    </div>
-  );
-}
 
 // One feature card in the grid — real 3D pointer tilt (skipped under
 // reduced-motion / touch, see useTiltCard in useMicroInteractions.js).
@@ -387,12 +351,11 @@ function FeatureTile({ icon: Icon, title, desc }) {
   );
 }
 
-function TierCard({ icon: Icon, tier, interval = "month", onCta, ctaHref, highlighted = false, compact = false }) {
+// v3.3 — само месечни цени: Discord Premium Apps не поддържа годишни абонаменти.
+function TierCard({ icon: Icon, tier, onCta, ctaHref, highlighted = false, compact = false }) {
   const tiltRef = useTiltCard(highlighted ? 6 : 4);
-  // Free has no yearly price; paid tiers switch on the interval toggle.
-  const yearly = interval === "year" && tier.priceYearly;
-  const price = yearly ? tier.priceYearly : tier.price;
-  const per = yearly ? tier.perYear : tier.per;
+  const price = tier.price;
+  const per = tier.per;
   const cardCls = highlighted
     ? "cs-card flex flex-col border-2 border-cs-gold/50 bg-cs-gold/5 relative shadow-cs-gold-sm"
     : "cs-card flex flex-col";
@@ -416,11 +379,6 @@ function TierCard({ icon: Icon, tier, interval = "month", onCta, ctaHref, highli
       <div className="mb-6" aria-live="polite">
         <div className="font-display text-4xl font-black text-cs-text">{price}</div>
         <div className="text-xs text-cs-dim font-mono">{per}</div>
-        {tier.trial && (
-          <div className={`text-xs font-mono mt-1 ${highlighted ? "text-cs-gold" : "text-cs-dim"}`}>
-            {tier.trial}
-          </div>
-        )}
       </div>
       <ul className={`space-y-2 text-sm text-cs-text flex-1 ${compact ? "mb-6" : "mb-8"}`}>
         {tier.bullets.map((b) => (

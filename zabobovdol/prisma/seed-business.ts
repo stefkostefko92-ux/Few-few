@@ -113,29 +113,8 @@ const services: ServiceSeed[] = [
     hours: "Приемно време: Пон и Пет 08:30–17:30, Чет 10:00–16:00",
     order: 4,
   },
-  {
-    slug: "su-hristo-botev-bobov-dol",
-    name: "СУ „Христо Ботев“ — Бобов дол",
-    category: "EDUCATION",
-    description: "Средно училище в град Бобов дол.",
-    address: "ул. „Кирил и Методий“ № 12, гр. Бобов дол",
-    phone: "0702 62115",
-    phone2: "0702 62256",
-    email: "sou_bobovdol@abv.bg",
-    website: "https://www.soubobovdol.com",
-    order: 5,
-  },
-  {
-    slug: "dg-druzhba-bobov-dol",
-    name: "Детска градина „Дружба“ — Бобов дол",
-    category: "EDUCATION",
-    description: "Детска градина в град Бобов дол.",
-    address: "ул. „Дружба“ 1, гр. Бобов дол",
-    phone: "0702 65101",
-    phone2: "0895 656125",
-    email: "info-1000069@edu.mon.bg",
-    order: 6,
-  },
+  // СУ „Христо Ботев“ и ДГ „Дружба“ живеят САМО в seed-education.ts (по-подробни, върви по-късно
+  // в db:seed:all) — два файла за един slug = тихо last-write-wins.
   {
     slug: "chitalishte-prosveta-1903",
     name: "НЧ „Просвета-1903“ — Бобов дол",

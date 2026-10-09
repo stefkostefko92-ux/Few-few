@@ -25,3 +25,13 @@ test("vCard: празните полета не създават редове", 
   assert.ok(!v.includes("URL"));
   assert.ok(!v.includes("ORG"));
 });
+
+test("vCard: самостоятелен CR се екранира — не вкарва ново свойство", () => {
+  // Скенерите цепят по /\r\n|\r|\n/; неекраниран \r вкарваше чужд TEL в QR-а.
+  const out = vCard({ name: "Мария\rTEL:+359888000000" });
+  assert.ok(!/\r(?!\n)/.test(out), "не трябва да остава самостоятелен CR");
+  assert.ok(out.includes("FN:Мария\\nTEL:+359888000000"), "CR-ът е екраниран в полето");
+  // Единственият TEL ред трябва да липсва (не сме подавали телефон).
+  const telLines = out.split("\r\n").filter((l) => l.startsWith("TEL"));
+  assert.equal(telLines.length, 0);
+});

@@ -1,0 +1,32 @@
+{
+  "name": "mascot-cinematic",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Кинематографична 3D витрина на маскота на Carbon Stealth (WebGL, three.js): процедурна желирана геометрия, лакирани очила, академична шапка със златен пискюл и папийонка, рендерирани на живо в браузъра.",
+  "keywords": [
+    "Carbon Stealth",
+    "маскот",
+    "3D маскот",
+    "WebGL",
+    "three.js",
+    "желиран герой",
+    "кинематографичен рендер"
+  ],
+  "license": "UNLICENSED",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "node build.mjs",
+    "bake": "node bake/index.mjs",
+    "lint": "node check.mjs",
+    "test": "node --test test/*.test.js",
+    "gate": "node check.mjs && node --test test/*.test.js && node build.mjs",
+    "smoke": "node build.mjs && node scripts/smoke.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "playwright": "1.56.1",
+    "sharp": "0.33.5",
+    "three": "0.186.0"
+  }
+}

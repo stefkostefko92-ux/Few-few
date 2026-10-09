@@ -21,6 +21,8 @@ def main():
     ap.add_argument("--ply", type=float, default=1.0, help="дебелина на ламината (mm) → offset")
     ap.add_argument("--draft", type=float, default=3.0, help="draft ъгъл (°) — информативно")
     ap.add_argument("--flange", type=float, default=8.0, help="trim-allowance фланец (mm) — информативно")
+    ap.add_argument("--open", required=True,
+                    help="cadquery селектор на лицето, което остава отворено за layup (напр. \"<Z\" или \">Z\"); задължителен")
     ap.add_argument("--out", default="mold.step")
     a = ap.parse_args()
 
@@ -34,12 +36,13 @@ def main():
     except Exception as e:
         sys.exit(f"✘ Не мога да заредя STEP: {e}")
 
-    # Offset навън с дебелината на ламината → работната повърхнина на формата.
+    # Offset навън с дебелината на ламината, с ОТВОРЕНО лице за layup. Без селекция .shell() не
+    # гърми, а дава запечатана черупка (watertight, но безполезна като форма); .faces().shell()
+    # винаги гърми (StdFail_NotDone) — затова лицето е задължителен аргумент (3D Maniac, 2026-09-24).
     try:
-        shell = part.shell(a.ply)  # положителна дебелина = навън
-    except Exception:
-        # резервен вариант: външен offset solid
-        shell = part.faces().shell(a.ply)
+        shell = part.faces(a.open).shell(a.ply)  # положителна дебелина = навън
+    except Exception as e:
+        sys.exit(f"✘ Черупката не се получи с отворено лице „{a.open}“: {e}. Провери селектора спрямо ориентацията на class-A страната.")
 
     cq.exporters.export(shell, a.out)
     print(f"✔ Заготовка за форма → {a.out}")

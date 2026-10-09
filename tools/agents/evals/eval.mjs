@@ -142,11 +142,12 @@ if (has("--run")) {
 
 report(results);
 
-// --record: запиши обобщението в trend.jsonl (тренд на качеството във времето; git-ignored runtime).
+// --record: запиши обобщението в trend.jsonl (проследен в git). --label различава варианти на живата проверка
+// (напр. „с-памет“ / „без-памет“ / „medium“) — без етикет двете линии се сливат в един шум.
 if (has("--record") && results.length) {
   const s = summarize(results);
   const stamp = process.env.OVERSEE_TODAY || new Date().toISOString().slice(0, 10);
-  appendFileSync(join(HERE, "trend.jsonl"), JSON.stringify({ date: stamp, ...s }) + "\n");
+  appendFileSync(join(HERE, "trend.jsonl"), JSON.stringify({ date: stamp, ...(val("--label") ? { label: val("--label") } : {}), ...s, perSpec: results.map((r) => ({ id: r.id, passed: r.passed, total: r.total })) }) + "\n");
   if (!JSON_OUT) console.log(dim("↳ записано в trend.jsonl (тренд на качеството)"));
 }
 

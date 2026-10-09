@@ -8,14 +8,13 @@ import {
   Zap, BookOpen, Lightbulb,
   LineChart, Key,
   Menu, X as CloseIcon, MessageSquareText,
-} from "lucide-react";
+ KeyRound, Gamepad2 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useT } from "../contexts/I18nContext";
-import { getServers, logout } from "../api";
+import { getServers, getServer, logout } from "../api";
 import LanguageSwitcher from "./LanguageSwitcher";
 import PremiumToast from "./PremiumToast";
 import ToastHost from "./ToastHost";
-import TrialBanner from "./TrialBanner";
 import PastDueBanner from "./PastDueBanner";
 import GraceBanner from "./GraceBanner";
 import SupremeLogo, { SupremeWordmark } from "./SupremeLogo";
@@ -37,12 +36,23 @@ export default function Layout() {
   const { t } = useT();
   const navigate = useNavigate();
 
-  const { data: servers = [] } = useQuery({
+  const { data: servers = [], isSuccess: serversLoaded } = useQuery({
     queryKey: ["servers"],
     queryFn: getServers,
   });
 
   const currentServer = servers.find((s) => s.id === serverId);
+  const isPlatformAdmin = ["MAIN_OWNER", "SUPER_USER"].includes(user?.globalRole);
+  // Платформен админ в чужд сървър (от админ конзолата → „Open dashboard“):
+  // сървърът не е в неговия списък, затова името се взима отделно, а горе
+  // стои ясна лента, че работи от чуждо име (одит 26.09.2026).
+  const foreignServer = isPlatformAdmin && !!serverId && serversLoaded && !currentServer;
+  const { data: foreignInfo } = useQuery({
+    queryKey: ["server", serverId],
+    queryFn: () => getServer(serverId),
+    enabled: foreignServer,
+  });
+  const serverName = currentServer?.name || foreignInfo?.name || "Server";
 
   const handleLogout = async () => {
     await logout();
@@ -186,7 +196,7 @@ export default function Layout() {
             </>
           ) : (
             <>
-              <SectionLabel truncate>{currentServer?.name || "Server"}</SectionLabel>
+              <SectionLabel truncate>{serverName}</SectionLabel>
               <NavItem to={`/dashboard/${serverId}`}              icon={LayoutDashboard} end>{t("nav.overview")}</NavItem>
               <NavItem to={`/dashboard/${serverId}/panels`}       icon={LayoutIcon}>{t("nav.panels")}</NavItem>
               <NavItem to={`/dashboard/${serverId}/forms`}        icon={FileText}>{t("nav.forms")}</NavItem>
@@ -194,6 +204,7 @@ export default function Layout() {
               <NavItem to={`/dashboard/${serverId}/applications`} icon={Users}>{t("nav.applications")}</NavItem>
               <NavItem to={`/dashboard/${serverId}/verification`} icon={ShieldCheck}>{t("nav.verification")}</NavItem>
               <NavItem to={`/dashboard/${serverId}/automation`} icon={Zap}>{t("nav.automation")}</NavItem>
+              <NavItem to={`/dashboard/${serverId}/game`} icon={Gamepad2}>{t("nav.game")}</NavItem>
               <NavItem to={`/dashboard/${serverId}/analytics`} icon={LineChart}>{t("nav.analytics")}</NavItem>
               <NavItem to={`/dashboard/${serverId}/apikeys`} icon={Key}>{t("nav.apikeys")}</NavItem>
               <NavItem to={`/dashboard/${serverId}/commands`} icon={BookOpen}>{t("nav.commands")}</NavItem>
@@ -246,6 +257,12 @@ export default function Layout() {
 
         {/* User footer */}
         <div className="p-3 border-t border-cs-border bg-cs-surface">
+          {/* ДВА реда, не един. Лентата е 256px; аватар (36) + четири икони по
+              32 + пет междини по 12 = 224 → за името оставаха 7px и то се
+              режеше до една буква („Z“), а ролята — до „0“. Дефектът се появи с
+              четвъртата икона (Сигурност, 3.4.0) и се вижда само на екран —
+              статичният гейт не мери ширини. Мерено с Chromium на 1280 и 390:
+              clientWidth 7 / scrollWidth 54. (17.09.2026) */}
           <div className="flex items-center gap-3">
             {/* `src` НИКОГА не бива да е undefined: тогава браузърът рисува
                 счупено изображение с alt текста, което разпъва реда и реже
@@ -267,13 +284,25 @@ export default function Layout() {
                 {t(`role.${user?.globalRole || "USER"}`)}
               </p>
             </div>
-            <LanguageSwitcher compact />
+          </div>
+          <div className="mt-2 flex items-center justify-between">
+            {/* Менюто за език се отваря НАЛЯВО спрямо иконата (align="left"):
+                с right-0 при икона в левия край 160px списък излизаше на
+                −49px извън екрана и се режеше („ски“, „ch“, „ol“). */}
+            <LanguageSwitcher compact align="left" />
             <a
               href="/dashboard/privacy-settings"
               className="text-cs-dim hover:text-cs-cyan p-2 transition-colors"
               title={t("nav.privacy")}
             >
               <Shield className="w-4 h-4" />
+            </a>
+            <a
+              href="/dashboard/security"
+              className="text-cs-dim hover:text-cs-cyan p-2 transition-colors"
+              title={t("nav.security")}
+            >
+              <KeyRound className="w-4 h-4" />
             </a>
             <button
               onClick={handleLogout}
@@ -288,12 +317,16 @@ export default function Layout() {
 
       {/* Main content */}
       <main id="main-content" className="flex-1 overflow-y-auto bg-cs-black flex flex-col">
-        {/* Провалено плащане стои НАД пробния период — то е по-спешното. */}
+        {/* Провалено плащане стои най-отгоре — то е по-спешното. */}
         <PastDueBanner />
         {/* v40 — отменен, но платен до края: показваме докога работи. */}
         <GraceBanner />
-        {/* v2.0 — Trial banner appears on per-server pages */}
-        <TrialBanner />
+        {foreignServer && (
+          <div className="border-b border-premium/40 bg-premium/10 px-4 sm:px-6 py-2 text-xs text-premium flex items-center gap-2" role="status">
+            <Shield className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
+            <span>{t("nav.adminView")}</span>
+          </div>
+        )}
         <div className="flex-1">
           <Outlet />
         </div>

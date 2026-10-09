@@ -1,5 +1,6 @@
 // backend/src/routes/auth.js
 import { Router } from "express";
+import { isBlacklistActive } from "../lib/blacklist.js";
 import { randomBytes } from "crypto";
 import { encrypt } from "../lib/crypto.js";
 import axios from "axios";
@@ -107,7 +108,7 @@ router.get("/callback", async (req, res) => {
       },
     });
 
-    if (user.isBlacklisted) {
+    if (isBlacklistActive(user)) {
       return res.redirect(`${process.env.FRONTEND_URL}/?error=blacklisted`);
     }
 
@@ -145,8 +146,12 @@ router.get("/callback", async (req, res) => {
 
 // ─── GET /api/auth/me ─────────────────────────────────────────────────────────
 
-router.get("/me", requireAuth, loadUser, (req, res) => {
+router.get("/me", requireAuth, loadUser, async (req, res) => {
   const { id, username, discriminator, avatar, globalRole, language } = req.user;
+  // v3.4 — таблото решава от тук дали да покаже записване/потвърждение на
+  // втория фактор преди админ конзолата (без втора заявка при всеки рендер).
+  const { mfaPolicyFor } = await import("../middleware/mfa.js");
+  const mfa = mfaPolicyFor(req.user, req.session);
   res.json({
     id,
     username,
@@ -154,6 +159,7 @@ router.get("/me", requireAuth, loadUser, (req, res) => {
     avatar,
     globalRole,
     language: language || "en",
+    mfa: { enabled: mfa.enabled, required: mfa.required, enrollmentRequired: mfa.enrollmentRequired, verifiedInSession: mfa.verifiedInSession },
     avatarUrl: (() => {
       if (avatar) {
         const ext = avatar.startsWith('a_') ? 'gif' : 'png';

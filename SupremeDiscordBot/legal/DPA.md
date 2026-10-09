@@ -1,6 +1,6 @@
 # Data Processing Agreement (DPA) — Supreme Bot
 
-**Version:** 1.0  
+**Version:** 1.1 (2026-09-13 — sub-processor table: Discord Inc. also acts as seller of record for subscriptions purchased in its Premium Apps store; Stripe limited to legacy subscriptions. No new sub-processor was added.)  
 **Effective Date:** 2026-04-22  
 **Controller:** [Customer Name] ("Customer")  
 **Processor:** Carbon Stealth VCC, EIK 208725180, VAT BG208725180, ul. Samuil 3, Bobov Dol, Bulgaria ("Supreme Bot")
@@ -15,7 +15,7 @@
 
 ## 2. Nature and Purpose of Processing
 
-2.1 **Purpose:** Supreme Bot processes personal data solely to provide the contracted service (Discord server management, ticket systems, application forms, AI auto-replies, white-label bot functionality).
+2.1 **Purpose:** Supreme Bot processes personal data solely to provide the contracted service (Discord server management, ticket systems, application forms, AI auto-replies, white-label bot functionality, and — where the Customer enables it — the optional in-server "Server Season" game: activity-based levels, sparks, companions, server quests, counting and trivia).
 
 2.2 **Nature:** Collection, storage, organization, retrieval, consultation, disclosure to Customer's authorized staff, erasure.
 
@@ -26,6 +26,7 @@
 - IP addresses (for rate limiting and security)
 - Session identifiers (for authentication)
 - Payment metadata (transaction IDs, customer IDs — payment data itself is processed by Stripe)
+- Game progress data, only where the Customer enables the Server Season game (per-member counters such as XP, level, sparks and streak; shop purchases; caught companions and trades; quest contributions; trivia answers; the counting channel's current number and last counter). Message content is never stored for the game; in the Customer-designated counting channel a message is read only to check whether it is the next number
 
 2.4 **Categories of data subjects:**
 - Customer's Discord server members
@@ -57,9 +58,9 @@
 | Sub-processor | Role | Location | Safeguard |
 |---|---|---|---|
 | Hetzner Online GmbH | Infrastructure hosting | Germany (EU) | Within EEA |
-| Stripe Payments Europe Ltd | Payment processing | Ireland (EU) | Within EEA |
+| Stripe Payments Europe Ltd | Payment processing for legacy subscriptions only (no new purchases) | Ireland (EU) | Within EEA |
 | Google LLC (Gemini API) | AI inference (optional, Premium feature) | USA | Standard Contractual Clauses |
-| Discord Inc. | Authentication + bot delivery | USA | Standard Contractual Clauses |
+| Discord Inc. | Authentication + bot delivery; seller of record for subscriptions purchased in Discord's Premium Apps store (entitlement/subscription identifiers) | USA | Standard Contractual Clauses |
 | Functional Software, Inc. (Sentry) | Error monitoring and performance tracing | USA / EU region | Standard Contractual Clauses |
 
 4.3 Supreme Bot will provide 30 days' notice of any intended changes to sub-processors (via email to the Customer's admin contact) and publish an updated list at the Customer's dashboard under Privacy Settings.

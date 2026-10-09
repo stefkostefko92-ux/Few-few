@@ -1,5 +1,13 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Logo from "@/components/Logo";
+
+// Без собствено заглавие 404 наследяваше това на началната — в раздела на
+// браузъра и в историята изглеждаше като работеща страница.
+export const metadata: Metadata = {
+  title: "Страницата не е намерена",
+  robots: { index: false },
+};
 
 export default function NotFound() {
   return (

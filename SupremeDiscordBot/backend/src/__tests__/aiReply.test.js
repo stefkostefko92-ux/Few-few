@@ -17,7 +17,11 @@ const fetchMock = vi.fn().mockResolvedValue(
 );
 vi.stubGlobal("fetch", fetchMock);
 
-const { generateAutoReply, aiRateLimitOk } = await import("../services/aiReply.js");
+// v3.4 — Discord Developer Policy §21: без удостоверен платен tier без обучение
+// функцията е fail-closed (виж теста най-долу). Тук я удостоверяваме, за да
+// тестваме останалото поведение.
+process.env.AI_REPLY_TRAINING_ATTESTED = "true";
+const { generateAutoReply, aiRateLimitOk, aiTrainingAttested } = await import("../services/aiReply.js");
 
 describe("generateAutoReply", () => {
   beforeEach(() => {
@@ -105,5 +109,22 @@ describe("aiRateLimitOk", () => {
       expect(aiRateLimitOk(serverId)).toBe(true);
     }
     expect(aiRateLimitOk(serverId)).toBe(false);
+  });
+});
+
+// ─── Discord Developer Policy §21 — съдържание от Discord не храни обучение ──
+describe("AI_REPLY_TRAINING_ATTESTED (Developer Policy §21)", () => {
+  it("без удостоверение НЕ праща нищо навън и връща null, дори с ключ", async () => {
+    const saved = process.env.AI_REPLY_TRAINING_ATTESTED;
+    process.env.AI_REPLY_TRAINING_ATTESTED = "false";
+    process.env.GEMINI_API_KEY = "key";
+    const fetchSpy = vi.spyOn(globalThis, "fetch");
+    expect(aiTrainingAttested()).toBe(false);
+    const out = await generateAutoReply({ userMessage: "hi", serverName: "s", customPrompt: null, customApiKey: "custom-key" });
+    expect(out).toBeNull();
+    expect(fetchSpy).not.toHaveBeenCalled();
+    fetchSpy.mockRestore();
+    process.env.AI_REPLY_TRAINING_ATTESTED = saved;
+    expect(aiTrainingAttested()).toBe(true);
   });
 });

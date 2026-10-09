@@ -242,6 +242,40 @@ test('атака: сесийната бисквитка е HttpOnly + SameSite=S
   assert.ok(!/Domain=/i.test(set), 'Domain би позволил на поддомейн да я вижда');
 });
 
+// ── 9b. Смяна на парола обезсилва ВСИЧКИ сесии ───────────────────────────────
+test('атака: смяната на парола убива откраднатата сесия в същия миг', async () => {
+  const NEW = 'нова-парола-7734-дълга';
+  const post = (route, body, c = cookie) =>
+    fetch(BASE + route, { method: 'POST', headers: { cookie: c, 'content-type': 'application/json', 'x-csd': '1' }, body: JSON.stringify(body) });
+
+  // Без sudo → 428. Открадната сесия не може да смени паролата „между другото".
+  assert.equal((await post('/api/auth/password', { current: PASS, next: NEW })).status, 428);
+  assert.equal((await post('/api/sudo', { password: PASS })).status, 200, 'повторното потвърждаване минава');
+  // Грешна текуща → 401; къса нова → 400; същата → 400.
+  assert.equal((await post('/api/auth/password', { current: 'не', next: NEW })).status, 401);
+  assert.equal((await post('/api/auth/password', { current: PASS, next: 'къса' })).status, 400);
+  assert.equal((await post('/api/auth/password', { current: PASS, next: PASS })).status, 400);
+
+  // Успех: „откраднатата" (= текущата) сесия умира ВЕДНАГА, не след 12 часа.
+  const stolen = cookie;
+  assert.equal((await post('/api/auth/password', { current: PASS, next: NEW })).status, 200);
+  assert.equal((await fetch(BASE + '/api/overview', { headers: { cookie: stolen } })).status, 401, 'старата сесия трябва да е мъртва');
+
+  // Старата парола вече не влиза; новата — да.
+  const login = (pw) => fetch(BASE + '/api/login', { method: 'POST', headers: { 'content-type': 'application/json', 'x-csd': '1' }, body: JSON.stringify({ user: 'admin', password: pw }) });
+  assert.equal((await login(PASS)).status, 401);
+  const fresh = await login(NEW);
+  assert.equal(fresh.status, 200);
+  cookie = fresh.headers.getSetCookie()[0].split(';')[0];
+
+  // Връщаме старата парола, за да не зависят следващите тестове от реда.
+  assert.equal((await post('/api/sudo', { password: NEW })).status, 200);
+  assert.equal((await post('/api/auth/password', { current: NEW, next: PASS })).status, 200);
+  const back = await login(PASS);
+  assert.equal(back.status, 200);
+  cookie = back.headers.getSetCookie()[0].split(';')[0];
+});
+
 // ── 10. Залп срещу входа ─────────────────────────────────────────────────────
 test('атака: паралелен залп не пробива лимита на входа', async () => {
   // Този тест ГО ИМА и на ниво модул, но там мери функция. Тук мери ЖИВАТА

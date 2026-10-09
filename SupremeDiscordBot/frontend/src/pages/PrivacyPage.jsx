@@ -8,7 +8,7 @@ export default function PrivacyPage() {
   const COUNTRY    = import.meta.env.VITE_COMPANY_COUNTRY || "Bulgaria";
 
   return (
-    <LegalPage title="Privacy Policy" updated="7 August 2026">
+    <LegalPage title="Privacy Policy" updated="19 September 2026">
       <Seo
         title="Privacy Policy — Supreme Bot"
         description="Privacy Policy for Supreme Bot: what data we process, EU data residency, GDPR rights, subprocessors, and retention periods."
@@ -17,8 +17,8 @@ export default function PrivacyPage() {
 
       <div className="bg-cs-cyan/10 border border-cs-cyan/20 rounded-lg p-4 mb-8 text-sm text-cs-text">
         <strong className="text-cs-text">Summary:</strong> We collect only the data necessary to run the
-        Service. We do not sell your data. We do not serve ads. We use Discord, Stripe, and optionally
-        Google to provide our features. You can request deletion of your data at any time.
+        Service. We do not sell your data. We do not serve ads. We use Discord (including Discord's store for
+        subscriptions), Stripe for legacy subscriptions, and optionally Google to provide our features. You can request deletion of your data at any time.
       </div>
 
       <S title="1. Data Controller">
@@ -88,6 +88,13 @@ export default function PrivacyPage() {
                 <Td>Free: 30 days after closure. Premium: indefinite (or until deleted)</Td>
               </Tr>
               <Tr>
+                <Td>Verification attempts</Td>
+                <Td>Discord user ID, verification panel, outcome, captcha answer, timestamp</Td>
+                <Td>Human/age verification before roles are granted</Td>
+                <Td>Processed on behalf of the server operator (controller) under Art. 28 — typically Art. 6(1)(f)</Td>
+                <Td>90 days, then deleted automatically; immediately on request</Td>
+              </Tr>
+              <Tr>
                 <Td>Application form answers</Td>
                 <Td>Text answers submitted by Discord users in application forms</Td>
                 <Td>Provide application management feature</Td>
@@ -96,14 +103,21 @@ export default function PrivacyPage() {
               </Tr>
               <Tr>
                 <Td>Server activity events (optional, off by default)</Td>
-                <Td>Member actions the server operator chooses to log — voice mute/deaf/join, role &amp; nickname changes, timeouts, bans/kicks (no message content)</Td>
+                <Td>Member actions the server operator chooses to log — voice mute/deaf/join, role &amp; nickname changes, timeouts, bans/kicks, channel changes; and, only if the operator enables the <em>Messages</em> category, the text of edited and deleted messages</Td>
                 <Td>Server moderation and audit trail, enabled and configured by the server operator</Td>
                 <Td>Processed on behalf of the server operator (controller) under Art. 28 — the operator enables the feature and determines the legal basis and member notice</Td>
                 <Td>Relayed in real time to the operator's chosen Discord channel only — not stored in our database</Td>
               </Tr>
               <Tr>
+                <Td>Server Season game data (optional, off by default)</Td>
+                <Td>Discord user ID with per-server counters (XP, level, season XP, sparks, daily streak, message-event count, voice minutes), one-off reward keys, shop purchases, caught companions and trades, quest contributions, trivia answers and wins, and the counting channel's current number and last counter. <strong>No message content is stored or read to award XP</strong> — only that a message event happened. In the counting channel the operator designates, a message is read only to check whether it is the next number; the text is not stored</Td>
+                <Td>Provide the in-server leveling and collecting game (levels, shop, companions, server quests, counting, trivia) when the server operator enables it</Td>
+                <Td>Processed on behalf of the server operator (controller) under Art. 28 — the operator enables the game and determines the legal basis (typically Art. 6(1)(f))</Td>
+                <Td>While the game is enabled in that server; purged 30 days after the bot is removed from the server; deleted on your request (<code>/privacy delete</code>) — trivia wins and companion catches are anonymised so server statistics stay consistent</Td>
+              </Tr>
+              <Tr>
                 <Td>Billing data</Td>
-                <Td>Stripe customer ID, subscription ID, payment status, invoice amounts</Td>
+                <Td>Discord entitlement ID, SKU ID, subscription ID, status and period end; for legacy subscriptions: Stripe customer ID, subscription ID, payment status, invoice amounts</Td>
                 <Td>Process payments; manage subscription state; provide invoices</Td>
                 <Td>Art. 6(1)(b) — contract; Art. 6(1)(c) — legal obligation (tax records)</Td>
                 <Td>7 years (legal obligation for financial records)</Td>
@@ -127,7 +141,7 @@ export default function PrivacyPage() {
                 <Td>Stack traces, request context (anonymised), error messages</Td>
                 <Td>Debug and improve the Service (Sentry)</Td>
                 <Td>Art. 6(1)(f) — legitimate interest (service quality)</Td>
-                <Td>30 days (Sentry default)</Td>
+                <Td>Up to 90 days (Sentry retention)</Td>
               </Tr>
             </tbody>
           </table>
@@ -158,9 +172,15 @@ export default function PrivacyPage() {
         authorised personnel on a need-to-know basis. Administrative actions are logged in the
         audit trail.</p>
 
+        <p><strong>4.3a Transcripts at rest.</strong> Ticket transcripts are encrypted
+        with AES-256-GCM before they are stored, in addition to disk-level encryption; bot tokens,
+        OAuth tokens, webhook secrets and two-factor secrets are encrypted the same way.</p>
+
         <p><strong>4.4 Payment data.</strong> We do not store credit card numbers or payment
-        instrument details. All payment processing is performed by Stripe, Inc., which is
-        PCI DSS Level 1 certified.</p>
+        instrument details. Subscriptions are purchased through Discord's store, where Discord
+        Inc. collects the payment; we receive only entitlement and subscription identifiers and
+        status. Legacy card subscriptions are processed by Stripe, Inc., which is PCI DSS Level 1
+        certified.</p>
       </S>
 
       <S title="5. Third-Party Processors">
@@ -195,15 +215,15 @@ export default function PrivacyPage() {
                 <Td>SCC (Standard Contractual Clauses)</Td>
               </Tr>
               <Tr>
-                <Td>Discord, Inc. (merchant of record)</Td>
-                <Td>Payment processing for purchases made through Discord's Premium App checkout</Td>
-                <Td>Discord user ID, entitlement and SKU identifiers, purchase status</Td>
+                <Td>Discord, Inc. (seller of record)</Td>
+                <Td>Payment processing for all subscriptions purchased through Discord's Premium Apps store</Td>
+                <Td>Discord user ID, entitlement, SKU and subscription identifiers, status, period end</Td>
                 <Td>USA</Td>
                 <Td>SCC (Standard Contractual Clauses); Discord acts as merchant of record</Td>
               </Tr>
               <Tr>
                 <Td>Stripe Payments Europe, Ltd.</Td>
-                <Td>Payment processing</Td>
+                <Td>Payment processing for legacy card subscriptions only (no new subscriptions)</Td>
                 <Td>Email (if provided), billing amounts, subscription metadata</Td>
                 <Td>Ireland (EU)</Td>
                 <Td>Within EEA; PCI DSS Level 1</Td>
@@ -342,6 +362,7 @@ export default function PrivacyPage() {
           <li><strong>Ticket transcripts (Free tier)</strong> — 30 days after ticket closure, then automatically purged;</li>
           <li><strong>Ticket transcripts (Premium)</strong> — Indefinitely until manually deleted or subscription lapses;</li>
           <li><strong>Application data</strong> — Until deleted by the server operator;</li>
+          <li><strong>Server Season game data</strong> — While the game is enabled in the server; purged 30 days after the bot leaves the server; deleted (or anonymised where a record is shared, e.g. a trivia win) on your <code>/privacy delete</code> request;</li>
           <li><strong>Billing records</strong> — 7 years (tax and accounting legal obligation);</li>
           <li><strong>Audit logs</strong> — 2 years (records tied to GDPR requests or abuse reports are retained longer where legally required);</li>
           <li><strong>Error logs (Sentry)</strong> — 30 days;</li>

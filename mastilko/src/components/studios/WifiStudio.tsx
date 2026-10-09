@@ -2,15 +2,20 @@
 
 import { z } from "zod";
 import { sheetGrid } from "@/lib/print";
-import { resolveTheme, fontVars, elementFont, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, borderCss, qrSafeColor, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { wifiQr, type WifiAuth } from "@/lib/wifi";
 import { useLocalState } from "@/lib/use-local-state";
 import BackgroundDecor from "@/components/BackgroundDecor";
+import Icon from "@/components/Icon";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
 import QrImage, { useQrDataUrl } from "@/components/QrImage";
 import SheetPreview from "@/components/SheetPreview";
 import StyleControls from "@/components/StyleControls";
+
+// Размер на текста с глобален мащаб (--sheet-scale); печатната математика в mm
+// не се влияе — само размерите на шрифта се умножават.
+const fs = (n: number) => `calc(var(--sheet-scale, 1) * ${n}mm)`;
 
 interface WifiState extends StyleState {
   title: string;
@@ -21,6 +26,8 @@ interface WifiState extends StyleState {
   note: string;
   themeId: string;
   perSheet: number;
+  /** Дял на QR кода спрямо стикера: 0.3 … 0.7. */
+  qrScale: number;
 }
 
 const INITIAL: WifiState = {
@@ -32,6 +39,7 @@ const INITIAL: WifiState = {
   note: "Сканирай кода и се свързваш автоматично",
   themeId: "nebe",
   perSheet: 6,
+  qrScale: 0.5,
 };
 
 const ProjectSchema = z
@@ -43,6 +51,7 @@ const ProjectSchema = z
     hidden: z.boolean(),
     note: z.string().max(120),
     perSheet: z.number().int().min(1).max(12),
+    qrScale: z.number().min(0.3).max(0.7),
     ...StyleSchemaShape,
   })
   .partial();
@@ -63,10 +72,11 @@ export default function WifiStudio() {
   const size = SIZES[s.perSheet] ?? SIZES[6]!;
   const grid = sheetGrid(size.w, size.h, 8, 4, 6);
   const total = Math.min(grid.total, s.perSheet);
-  const qrSrc = useQrDataUrl(s.ssid.trim() ? wifiQr(s) : "");
+  const qrSrc = useQrDataUrl(s.ssid.trim() ? wifiQr(s) : "", s.qrColor ? qrSafeColor(theme.accent) : undefined);
+  const confusable = /[0OIl1|]/.test(s.password);
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-8 md:grid-cols-[minmax(0,300px)_minmax(0,1fr)] lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
       <div className="no-print space-y-5">
         <div className="card-warm space-y-4 p-5">
           <div>
@@ -92,6 +102,12 @@ export default function WifiStudio() {
                 Паролата влиза само в QR кода, генериран в твоя браузър — не се
                 изпраща никъде.
               </p>
+              {confusable && (
+                <p className="mt-1 text-xs font-semibold text-tera-dark">
+                  Паролата съдържа лесно объркващи знаци (0/O, l/1/I) — равноширокият
+                  шрифт на стикера ги разграничава ясно.
+                </p>
+              )}
             </div>
           )}
           <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
@@ -116,14 +132,28 @@ export default function WifiStudio() {
               {[2, 4, 6, 9].map((n) => <option key={n} value={n}>{n}</option>)}
             </select>
           </label>
+          <label className="block text-xs font-semibold text-ink-soft">
+            <span className="flex items-baseline justify-between">
+              <span>Размер на QR кода</span>
+              <span className="tabular-nums text-ink-faint">{Math.round(s.qrScale * 100)}%</span>
+            </span>
+            <input type="range" min={0.3} max={0.7} step={0.05} value={s.qrScale}
+              onChange={(e) => set({ qrScale: Number(e.target.value) })}
+              className="mt-1 h-4 w-full accent-tera" aria-label="Размер на QR кода" />
+          </label>
+          <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
+            <input type="checkbox" checked={!!s.qrColor}
+              onChange={(e) => set({ qrColor: e.target.checked })} className="h-4 w-4 accent-tera" />
+            QR в акцентния цвят (ако е скенируем)
+          </label>
           <StyleControls value={s} onChange={set} />
         </div>
 
         <p className="text-xs text-ink-faint">
-          💡 Съвет: разлепен стикер с паролата е достъпен за всеки, който вижда
+          <Icon name="bulb" className="mr-1 h-4 w-4 align-[-3px]" /> Съвет: разлепен стикер с паролата е достъпен за всеки, който вижда
           листа — за заведения ползвай отделна гост-мрежа.
         </p>
-        <ProjectFile state={s} filename="mastilko-wifi"
+        <ProjectFile state={s} filename="mastilko-wifi" storageKey="mastilko-wifi"
           onLoad={(data) => setS({ ...INITIAL, ...ProjectSchema.parse(data) })} />
       </div>
 
@@ -139,25 +169,38 @@ export default function WifiStudio() {
               <div key={i} style={{
                 position: "absolute", left: `${left}mm`, top: `${top}mm`,
                 width: `${size.w}mm`, height: `${size.h}mm`,
-                background: theme.bg, color: theme.fg, borderRadius: "3mm",
-                border: `0.3mm dashed rgba(120,110,100,0.5)`, overflow: "hidden",
+                background: sheetBg(s, theme), color: theme.fg,
+                ...borderCss(s, { width: 0.3, style: "dashed", color: "rgba(120,110,100,0.5)", radius: 3 }), overflow: "hidden",
                 display: "flex", flexDirection: "column", alignItems: "center",
                 justifyContent: "center", textAlign: "center", padding: "4mm", gap: "2mm",
               }}>
-                <BackgroundDecor decor={s.decor} color={theme.accent} />
-                <div style={{ fontWeight: 800, fontSize: "5mm", fontFamily: elementFont(s, "title", "var(--font-display)"), position: "relative", zIndex: 1 }}>
+                <BackgroundDecor decor={s.decor} {...resolveDecor(s, theme.accent)} />
+                <div style={{ fontWeight: 800, fontSize: fs(5), fontFamily: elementFont(s, "title", "var(--font-display)"), position: "relative", zIndex: 1 }}>
                   📶 {s.title || "WiFi"}
                 </div>
-                {qrSrc && <QrImage src={qrSrc} style={{ width: `${Math.min(size.w, size.h) * 0.5}mm`, height: `${Math.min(size.w, size.h) * 0.5}mm`, background: "#fff", padding: "1.5mm", borderRadius: "1.5mm" }} />}
-                <div style={{ fontSize: "3.2mm", wordBreak: "break-all" }}>
+                {qrSrc ? (
+                  <QrImage src={qrSrc} style={{ width: `${Math.min(size.w, size.h) * s.qrScale}mm`, height: `${Math.min(size.w, size.h) * s.qrScale}mm`, background: "#fff", padding: "1.5mm", borderRadius: "1.5mm" }} />
+                ) : (
+                  // Без мрежа няма QR — празното място изглеждаше като счупен
+                  // лист. Само на екрана (no-print): празен лист не е за печат.
+                  <div className="no-print" style={{
+                    width: `${Math.min(size.w, size.h) * s.qrScale}mm`, height: `${Math.min(size.w, size.h) * s.qrScale}mm`,
+                    border: "0.4mm dashed currentColor", borderRadius: "1.5mm", fontStyle: "italic",
+                    display: "flex", alignItems: "center", justifyContent: "center", padding: "2mm", fontSize: fs(2.8),
+                  }}>
+                    QR кодът ще се появи, щом въведеш име на мрежата
+                  </div>
+                )}
+                <div style={{ fontSize: fs(3.2), wordBreak: "break-all" }}>
                   <strong>Мрежа:</strong> {s.ssid || "…"}
                 </div>
                 {s.auth !== "nopass" && (
-                  <div style={{ fontSize: "3.2mm", wordBreak: "break-all" }}>
-                    <strong>Парола:</strong> {s.password || "…"}
+                  <div style={{ fontSize: fs(3.2), wordBreak: "break-all" }}>
+                    <strong>Парола:</strong>{" "}
+                    <span style={{ fontFamily: "var(--font-jetbrains)" }}>{s.password || "…"}</span>
                   </div>
                 )}
-                {s.note && <div style={{ fontSize: "2.6mm", opacity: 0.8 }}>{s.note}</div>}
+                {s.note && <div style={{ fontSize: fs(2.6), opacity: 0.8 }}>{s.note}</div>}
               </div>
             );
           })}

@@ -70,6 +70,34 @@ describe("generateHtmlTranscript", () => {
     expect(html).toContain("&lt;script&gt;");
   });
 
+  // Одит по сигурност, 08.09.2026: `esc()` спира HTML инжекция, но не и
+  // СХЕМАТА на href — `javascript:`/`data:` в href е навигация, не разметка.
+  // CSP-то на вратите я блокира днес; това е втората ключалка, за да не зависи
+  // транскриптът от една. Линк се прави само от http(s).
+  it("прикачен файл с не-http схема НЕ става линк, а http(s) става", () => {
+    const ticket = {
+      ...baseTicket,
+      messages: [{
+        id: "msg3",
+        authorTag: "Attacker",
+        authorId: "999",
+        content: "виж прикачените",
+        attachments: [
+          "javascript:alert(1)",
+          "data:text/html,<b>x</b>",
+          "https://cdn.discordapp.com/attachments/1/2/file.png",
+        ],
+        createdAt: new Date(),
+      }],
+    };
+    const html = generateHtmlTranscript(ticket);
+    expect(html).not.toMatch(/href="javascript:/i);
+    expect(html).not.toMatch(/href="data:/i);
+    expect(html).toContain('href="https://cdn.discordapp.com/attachments/1/2/file.png"');
+    // Текстът на опасния адрес остава видим (одитен документ), само не е кликаем.
+    expect(html).toContain("javascript:alert(1)");
+  });
+
   it("handles missing optional fields gracefully", () => {
     const minimal = {
       id: "min-1",

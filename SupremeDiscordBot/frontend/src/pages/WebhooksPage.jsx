@@ -16,6 +16,10 @@ const defaultForm = () => ({
   name: "",
   url: "",
   secret: "",
+  // Тайната НИКОГА не идва обратно от API-то (само `hasSecret`). „Промени" е
+  // празно поле: празно при запис = запази старата; отметката = махни я.
+  hasSecret: false,
+  clearSecret: false,
   enabled: true,
   events: [],
 });
@@ -64,7 +68,9 @@ export default function WebhooksPage() {
   const openNew = () => { setForm(defaultForm()); setFormError(null); setEditing("new"); };
   const openEdit = (h) => {
     setForm({
-      name: h.name, url: h.url, secret: h.secret || "",
+      name: h.name, url: h.url,
+      // API-то вече не връща тайната — само дали има такава.
+      secret: "", hasSecret: Boolean(h.hasSecret), clearSecret: false,
       enabled: h.enabled, events: h.events || [],
     });
     setFormError(null);
@@ -90,8 +96,13 @@ export default function WebhooksPage() {
       url: form.url,
       enabled: form.enabled,
       events: form.events,
-      secret: form.secret || null,
     };
+    // Договор с API-то: липсващ ключ = не пипай · null = махни · низ = смени.
+    // Досега празното поле пращаше `null` и при всяко редактиране на име или
+    // събития тихо ТРИЕШЕ тайната — клиентът виждаше „запазено", а подписването
+    // спираше. Сега празно значи „запази", а махането е изрично действие.
+    if (form.clearSecret) payload.secret = null;
+    else if (form.secret) payload.secret = form.secret;
     if (editing === "new") createMut.mutate(payload);
     else updateMut.mutate({ id: editing, data: payload });
   };
@@ -193,13 +204,23 @@ export default function WebhooksPage() {
 
           <label className="block">
             <span className="cs-label">{t("webhooks.secretLabel")}</span>
-            <input className="cs-input font-mono text-xs" value={form.secret}
+            <input className="cs-input font-mono text-xs disabled:opacity-40" value={form.secret}
               onChange={(e) => setForm((f) => ({ ...f, secret: e.target.value }))}
-              placeholder={t("webhooks.secretPh")} />
+              disabled={form.clearSecret}
+              autoComplete="off"
+              placeholder={t(form.hasSecret ? "webhooks.secretKeepPh" : "webhooks.secretPh")} />
             <p className="text-xs text-cs-dim mt-1">
               {t("webhooks.secretHint")}
             </p>
           </label>
+          {form.hasSecret && (
+            <label className="flex items-center gap-2 cursor-pointer text-sm text-cs-text">
+              <input type="checkbox" className="w-4 h-4 rounded accent-cs-cyan"
+                checked={form.clearSecret}
+                onChange={(e) => setForm((f) => ({ ...f, clearSecret: e.target.checked, secret: "" }))} />
+              {t("webhooks.secretClear")}
+            </label>
+          )}
 
           <fieldset>
             <legend className="cs-label">{t("webhooks.eventsLabel")}</legend>

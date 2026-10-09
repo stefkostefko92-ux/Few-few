@@ -81,16 +81,19 @@ export function applyXp(char: Character, xpGain: number): LevelUpResult {
 
 export const ENERGY_REGEN_MS = 6 * 60 * 1000; // 1 energy per 6 minutes (200 energy in 20 hours)
 
-export function regenerateEnergy(char: Character, now: number = Date.now()): void {
+/** `regenMs` = интервал за +1 енергия (маршрутът подава админ настройката
+ *  energy_regen_minutes; по подразбиране ENERGY_REGEN_MS). */
+export function regenerateEnergy(char: Character, now: number = Date.now(), regenMs: number = ENERGY_REGEN_MS): void {
   if (char.energy >= char.energy_max) {
     char.energy_updated_at = now;
     return;
   }
+  const step = Math.max(1, regenMs);
   const elapsed = now - char.energy_updated_at;
-  const gained = Math.floor(elapsed / ENERGY_REGEN_MS);
+  const gained = Math.floor(elapsed / step);
   if (gained <= 0) return;
   char.energy = Math.min(char.energy_max, char.energy + gained);
-  char.energy_updated_at += gained * ENERGY_REGEN_MS;
+  char.energy_updated_at += gained * step;
 }
 
 export function classBaseStats(cls: CharacterClass) {

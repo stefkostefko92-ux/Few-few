@@ -6,7 +6,8 @@ import { applyGuildMultipliers } from '../game/rewards';
 import { evaluateAchievements } from '../game/events';
 import { trackBattlePass } from './battlepass';
 import { logFromRequest } from '../lib/logger';
-import type { Character, Quest } from '../types/domain';
+import type { Character, Monster, Quest } from '../types/domain';
+import { questBaseXp, questBaseGold } from '../game/rewardFormulas';
 
 const router = Router();
 router.use(authRequired);
@@ -168,15 +169,24 @@ router.get('/quests', (req, res) => {
     );
   }
   const details = db
-    .prepare(`SELECT slug, title, region, level_req, xp_reward, gold_reward FROM quests WHERE slug IN (${slugs.map(() => '?').join(',')})`)
+    .prepare(`SELECT slug, title, region, level_req, xp_reward, gold_reward, monster_slug FROM quests WHERE slug IN (${slugs.map(() => '?').join(',')})`)
     .all(...slugs) as Quest[];
+  const monStmt = db.prepare('SELECT level, xp_reward, gold_min, gold_max FROM monsters WHERE slug = ?');
   res.json({
-    quests: details.map((q) => ({
-      ...q,
-      completed: completed.includes(q.slug),
-      bonus_gold: Math.floor(q.gold_reward * 2),
-      bonus_xp: Math.floor(q.xp_reward * 2),
-    })),
+    quests: details.map(({ monster_slug, ...q }) => {
+      // Ефективните (клампнати) награди — същите, които /quests/claim плаща.
+      const m = monster_slug ? (monStmt.get(monster_slug) as Monster | undefined) : undefined;
+      const xp = questBaseXp(q as Quest);
+      const gold = questBaseGold(q as Quest, m);
+      return {
+        ...q,
+        xp_reward: xp,
+        gold_reward: gold,
+        completed: completed.includes(q.slug),
+        bonus_gold: Math.floor(gold * 2),
+        bonus_xp: Math.floor(xp * 2),
+      };
+    }),
     resetAt: (today + 1) * 86_400_000,
   });
 });
@@ -201,7 +211,7 @@ router.post('/quests/claim', (req, res) => {
       if (!slugs.includes(questSlug)) { const e: any = new Error("Not one of today's daily quests."); e.clientSafe = true; e.status = 400; throw e; }
       if (completed.includes(questSlug)) { const e: any = new Error('Already claimed today.'); e.clientSafe = true; e.status = 400; throw e; }
       const todayStart = dayIndex() * 86_400_000;
-      const quest = db.prepare('SELECT id, xp_reward, gold_reward FROM quests WHERE slug = ?').get(questSlug) as { id: number; xp_reward: number; gold_reward: number } | undefined;
+      const quest = db.prepare('SELECT id, level_req, xp_reward, gold_reward, monster_slug FROM quests WHERE slug = ?').get(questSlug) as { id: number; level_req: number; xp_reward: number; gold_reward: number; monster_slug: string } | undefined;
       if (!quest) { const e: any = new Error('Quest not found'); e.clientSafe = true; e.status = 404; throw e; }
       const success = db
         .prepare("SELECT id FROM quest_log WHERE character_id = ? AND quest_id = ? AND result = 'success' AND completed_at >= ?")
@@ -212,8 +222,13 @@ router.post('/quests/claim', (req, res) => {
         'UPDATE daily_state SET completed_json = ? WHERE character_id = ? AND completed_json = ?',
       ).run(JSON.stringify(newCompleted), ch.id, state.completed_json);
       if (upd.changes !== 1) { const e: any = new Error('Already claimed today.'); e.clientSafe = true; e.status = 400; throw e; }
-      const bonusGold = quest.gold_reward * 2;
-      const bonusXp = quest.xp_reward * 2;
+      // Бонусът се смята от ЕФЕКТИВНАТА (клампната) награда — иначе дневният
+      // бонус на act-1 куест (shadowfell: 3000 XP ×2) заобикаляше клампа.
+      const qMon = quest.monster_slug
+        ? (db.prepare('SELECT level, xp_reward, gold_min, gold_max FROM monsters WHERE slug = ?').get(quest.monster_slug) as Monster | undefined)
+        : undefined;
+      const bonusGold = questBaseGold(quest, qMon) * 2;
+      const bonusXp = questBaseXp(quest) * 2;
       const char = db.prepare('SELECT * FROM characters WHERE id = ?').get(ch.id) as Character;
       char.gold += bonusGold;
       const lvlRes = applyXp(char, bonusXp);

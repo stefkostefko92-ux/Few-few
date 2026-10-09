@@ -2,40 +2,66 @@
 
 import { useEffect, useRef, useState } from "react";
 import { t, type Locale } from "@/lib/i18n";
+import { useUi } from "./UiProvider";
+import Icon from "@/components/Icon";
 
 const STORE_KEY = "qb-fb-consent";
 
+// Facebook's page plugin, loaded only after the visitor agrees (it sets
+// cookies). The iframe is rendered by React like everything else: writing it
+// into the DOM by hand (innerHTML) pulled the consent box out from under React,
+// whose next update then crashed the whole page.
 export default function FacebookEmbed({ locale, href }: { locale: Locale; href: string }) {
-  const [loaded, setLoaded] = useState(false);
+  const ui = useUi();
+  const [frame, setFrame] = useState<{ src: string; width: number } | null>(null);
+  const [blocked, setBlocked] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<HTMLIFrameElement>(null);
 
-  const load = () => {
-    if (!ref.current) return;
-    setLoaded(true);
-    const width = Math.min(520, Math.max(320, Math.round(ref.current.clientWidth)));
-    const height = 600;
+  // An ad or social-widget blocker either refuses the request (the frame stays
+  // an empty box) or hides the frame with CSS. Both are checked, and instead of
+  // a hole the visitor gets a plain link to the page.
+  const load = async () => {
+    const width = Math.min(500, Math.max(180, Math.round(ref.current?.clientWidth || 500)));
     const src =
       "https://www.facebook.com/plugins/page.php?href=" +
       encodeURIComponent(href) +
-      `&tabs=timeline&width=${width}&height=${height}&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true`;
-    const iframe = document.createElement("iframe");
-    iframe.src = src;
-    iframe.title = "Facebook — Qui Bulgaria";
-    iframe.width = String(width);
-    iframe.height = String(height);
-    iframe.loading = "lazy";
-    iframe.style.width = "100%";
-    iframe.setAttribute("scrolling", "no");
-    iframe.setAttribute("frameborder", "0");
-    iframe.allow = "encrypted-media; clipboard-write; web-share";
-    ref.current.innerHTML = "";
-    ref.current.appendChild(iframe);
+      `&tabs=timeline&width=${width}&height=600&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true`;
+    setBlocked(false);
+    try {
+      // Opaque, cookie-less probe of the same address: a blocked request fails at once.
+      await fetch(src, { mode: "no-cors", credentials: "omit", cache: "no-store", signal: AbortSignal.timeout(8000) });
+    } catch (e) {
+      const slow = e instanceof DOMException && (e.name === "TimeoutError" || e.name === "AbortError");
+      if (!slow) { setBlocked(true); return; } // a slow line is not a blocker: try the frame anyway
+    }
+    setFrame({ src, width });
   };
+
+  useEffect(() => {
+    if (!frame) return;
+    const id = window.setTimeout(() => {
+      const f = frameRef.current;
+      if (f && (f.offsetHeight === 0 || getComputedStyle(f).display === "none" || getComputedStyle(f).visibility === "hidden")) {
+        setFrame(null);
+        setBlocked(true);
+      }
+    }, 1500);
+    return () => window.clearTimeout(id);
+  }, [frame]);
 
   useEffect(() => {
     try {
       if (localStorage.getItem(STORE_KEY) === "1") load();
     } catch {}
+    // Withdrawn consent („Отказвам“, cookie settings) unloads the plugin again.
+    const off = () => { setFrame(null); setBlocked(false); };
+    window.addEventListener("qb:cookie-settings", off);
+    window.addEventListener("qb:consent-withdrawn", off);
+    return () => {
+      window.removeEventListener("qb:cookie-settings", off);
+      window.removeEventListener("qb:consent-withdrawn", off);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -46,14 +72,34 @@ export default function FacebookEmbed({ locale, href }: { locale: Locale; href: 
 
   return (
     <div className="fb-embed" ref={ref}>
-      {!loaded && (
+      {frame ? (
+        <iframe
+          ref={frameRef}
+          src={frame.src}
+          title={t(locale, "nav.facebook", ui)}
+          width={frame.width}
+          height={600}
+          style={{ width: "100%", maxWidth: frame.width, border: 0 }}
+          scrolling="no"
+          allow="encrypted-media; clipboard-write; web-share"
+        />
+      ) : blocked ? (
+        <div className="fb-consent" role="status">
+          <span className="fb-consent__logo">
+            <Icon name="facebook-circle" size={56} />
+          </span>
+          <h3>{t(locale, "nav.facebook", ui)}</h3>
+          <p>{t(locale, "fb.blocked", ui)}</p>
+          <a className="btn btn--red" href={href} target="_blank" rel="noopener noreferrer">{t(locale, "fb.open", ui)}</a>
+        </div>
+      ) : (
         <div className="fb-consent">
           <span className="fb-consent__logo">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 22 12Z" /></svg>
+            <Icon name="facebook-circle" size={56} />
           </span>
-          <h3>{t(locale, "nav.facebook")}</h3>
-          <p>{t(locale, "fb.consent")}</p>
-          <button className="btn btn--primary" type="button" onClick={onLoad}>{t(locale, "fb.show")}</button>
+          <h3>{t(locale, "nav.facebook", ui)}</h3>
+          <p>{t(locale, "fb.consent", ui)}</p>
+          <button className="btn btn--red" type="button" onClick={onLoad}>{t(locale, "fb.show", ui)}</button>
         </div>
       )}
     </div>

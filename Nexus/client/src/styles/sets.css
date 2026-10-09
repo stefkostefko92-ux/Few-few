@@ -1,0 +1,27 @@
+.sets-page { padding: 20px; max-width: 1100px; margin: 0 auto; }
+.sets-sub { color: #a89468; font-size: 13px; margin-bottom: 16px; }
+.sets-loading { color: #a89468; padding: 20px 0; }
+
+.sets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.set-card {
+  background: linear-gradient(180deg, rgba(24, 16, 8, 0.85), rgba(10, 6, 3, 0.9));
+  border: 1px solid var(--border-1, #5a4322);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.set-card.rarity-epic { border-color: #a860e6; }
+.set-card.rarity-legendary { border-color: #ffd34d; }
+
+.set-card-head { display: flex; justify-content: space-between; align-items: baseline; }
+.set-card-name { font-family: var(--font-display, serif); color: var(--gold-1, #ffd34d); font-size: 15px; }
+.set-card-tier { font-size: 11px; color: #8a7a58; }
+
+.set-card-pieces { display: flex; flex-wrap: wrap; gap: 6px; }
+.set-card-bonuses { font-size: 11px; color: #b8a888; line-height: 1.5; }
+.set-card-lore { font-size: 11px; color: #786a52; font-style: italic; margin: 0; }

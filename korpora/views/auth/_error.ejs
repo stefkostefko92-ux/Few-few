@@ -1,0 +1,6 @@
+<% if (error) { %>
+<div class="flash flash-error" role="alert" id="form-error">
+  <%- include('../partials/icon', { name: 'alert' }) %>
+  <span><%= t(error) %></span>
+</div>
+<% } %>

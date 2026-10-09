@@ -10,9 +10,14 @@ export interface VCardData {
   website?: string;
 }
 
-/** Екранира , ; \ и нови редове по RFC 2426. */
+/**
+ * Екранира , ; \ и нови редове по RFC 2426. Самостоятелният CR също се
+ * екранира: редовете се съединяват с „\r\n“, а масовите скенери цепят по
+ * /\r\n|\r|\n/ → един `\r` в поле вкарваше ЦЯЛО ново свойство в vCard-а
+ * (напр. чужд TEL в QR кода на визитката) през споделен линк/качен проект.
+ */
 function esc(s: string): string {
-  return s.replace(/([\\,;])/g, "\\$1").replace(/\n/g, "\\n");
+  return s.replace(/([\\,;])/g, "\\$1").replace(/\r\n|\r|\n/g, "\\n");
 }
 
 export function vCard(d: VCardData): string {

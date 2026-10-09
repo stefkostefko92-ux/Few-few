@@ -17,24 +17,24 @@ export default function LeadsTable({ initial }: { initial: Lead[] }) {
     setLeads((ls) => ls.filter((l) => l.id !== id));
   }
 
-  if (leads.length === 0) return <div className="ad-empty">Все още няма получени запитвания.</div>;
+  if (leads.length === 0) return <div className="qba-empty">Все още няма получени запитвания.</div>;
 
   return (
-    <table className="ad-table">
+    <table className="qba-table">
       <thead>
         <tr><th>Дата</th><th>Контакт</th><th>Интерес</th><th>Съобщение</th><th>Статус</th><th /></tr>
       </thead>
       <tbody>
         {leads.map((l) => (
           <tr key={l.id}>
-            <td style={{ whiteSpace: "nowrap" }}>{new Date(l.createdAt).toLocaleDateString("bg-BG")}<br /><small style={{ color: "var(--ad-muted)" }}>{l.locale.toUpperCase()}</small></td>
-            <td><b>{l.name}</b><br /><a href={`mailto:${l.email}`} style={{ color: "var(--ad-brand)" }}>{l.email}</a></td>
+            <td style={{ whiteSpace: "nowrap" }}>{new Date(l.createdAt).toLocaleDateString("bg-BG")}<br /><small style={{ color: "var(--qba-muted)" }}>{l.locale.toUpperCase()}</small></td>
+            <td><b>{l.name}</b><br /><a href={`mailto:${l.email}`} style={{ color: "var(--qba-brand)" }}>{l.email}</a></td>
             <td>{l.topic}</td>
             <td style={{ maxWidth: 320 }}>{l.message}</td>
-            <td><span className={`ad-badge ${l.handled ? "on" : "off"}`}>{l.handled ? "Обработено" : "Ново"}</span></td>
+            <td><span className={`qba-badge ${l.handled ? "on" : "off"}`}>{l.handled ? "Обработено" : "Ново"}</span></td>
             <td style={{ whiteSpace: "nowrap" }}>
-              <button className="ad-btn ad-btn--ghost" style={{ padding: ".35rem .6rem", fontSize: ".8rem" }} onClick={() => toggle(l.id, !l.handled)}>{l.handled ? "Отвори отново" : "Маркирай обработено"}</button>{" "}
-              <button className="ad-btn ad-btn--danger" style={{ padding: ".35rem .6rem", fontSize: ".8rem" }} onClick={() => remove(l.id)}>Изтрий</button>
+              <button className="qba-btn qba-btn--ghost" style={{ padding: ".35rem .6rem", fontSize: ".8rem" }} onClick={() => toggle(l.id, !l.handled)}>{l.handled ? "Отвори отново" : "Маркирай обработено"}</button>{" "}
+              <button className="qba-btn qba-btn--danger" style={{ padding: ".35rem .6rem", fontSize: ".8rem" }} onClick={() => remove(l.id)}>Изтрий</button>
             </td>
           </tr>
         ))}

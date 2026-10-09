@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Icon from "@/components/Icon";
 import { encodeState } from "@/lib/share";
 
 // Копира линк, който съдържа целия дизайн (кодиран в URL) — пращаш го на
@@ -16,7 +17,7 @@ export default function ShareButton({ state }: { state: object }) {
     }
     try {
       await navigator.clipboard.writeText(url);
-      setMsg("Линкът е копиран ✔");
+      setMsg("Линкът е копиран.");
     } catch {
       setMsg(url);
     }
@@ -25,7 +26,7 @@ export default function ShareButton({ state }: { state: object }) {
   return (
     <div className="no-print">
       <button type="button" onClick={share} className="btn-secondary text-sm">
-        🔗 Копирай линк за споделяне
+        <Icon name="link" className="h-4 w-4" /> Копирай линк за споделяне
       </button>
       {msg && (
         <p aria-live="polite" className="mt-1 break-all text-xs text-ink-soft">

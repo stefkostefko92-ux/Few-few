@@ -93,6 +93,51 @@ test("cat на частен ключ ОЩЕ е изтичане", () => {
   assert.ok(codes(f).has("secret-echo"));
 });
 
+// ─── secret-echo: СТОЙНОСТ, не ДУМА (24.09.2026) ────────────────────────────
+// Шумът от думи („check BOT_TOKEN“) крие истинското. Закотвяме и двете посоки.
+
+test("реалното изтичане от stripe-setup.sh (${WH_SECRET} в echo) е хванато", () => {
+  const f = lintShell('set -euo pipefail\necho "  ЗАПИШИ: STRIPE_WEBHOOK_SECRET=${WH_SECRET}"', "stripe-setup.sh");
+  assert.ok(codes(f).has("secret-echo"));
+});
+
+test("разгъване на тайна променлива без „ИМЕ=“ е изтичане", () => {
+  const f = lintShell('set -euo pipefail\necho "value: $API_TOKEN"', "deploy.sh");
+  assert.ok(codes(f).has("secret-echo"));
+});
+
+test("имена на тайни в инструкция НЕ са изтичане", () => {
+  const f = lintShell('set -euo pipefail\necho "Fill in ENCRYPTION_KEY, SESSION_SECRET, API_SECRET"\necho -e "${YELLOW}check BOT_TOKEN${NC}"\necho "  STRIPE_SECRET_KEY=<ключът>"', "deploy.sh");
+  assert.ok(!codes(f).has("secret-echo"));
+});
+
+test("думата „token“ в текст с НЕтайна променлива НЕ е изтичане", () => {
+  const f = lintShell('set -euo pipefail\necho "rejects invalid bearer token [$local_code]"', "smoke.sh");
+  assert.ok(!codes(f).has("secret-echo"));
+});
+
+test("печат само на ДЪЛЖИНАТА (${#VAR}) не е изтичане — стойността не излиза", () => {
+  const f = lintShell('set -euo pipefail\necho "secret (${#WH_SECRET} chars)"', "x.sh");
+  assert.ok(!codes(f).has("secret-echo"));
+});
+
+test("брояч $pass в smoke тест НЕ е парола", () => {
+  const f = lintShell('set -euo pipefail\nok() { printf "  ✓ %s\\n" "$1"; pass=$((pass+1)); }\nprintf "passed: %s\\n" "$pass"', "smoke.sh");
+  assert.ok(!codes(f).has("secret-echo"));
+});
+
+test("присвояване WH_SECRET=$(echo … | grep …) НЕ е печат; печатът му след това — е", () => {
+  const assign = lintShell(`set -euo pipefail\nWH_SECRET=$(echo "$WH_JSON" | grep -o whsec_x)`, "x.sh");
+  assert.ok(!codes(assign).has("secret-echo"));
+  const printed = lintShell(`set -euo pipefail\nWH_SECRET=$(echo "$WH_JSON" | grep -o whsec_x)\necho "$WH_SECRET"`, "x.sh");
+  assert.ok(codes(printed).has("secret-echo"));
+});
+
+test("$DB_PASSWD и $ADMIN_PASSWORD в echo са изтичане", () => {
+  assert.ok(codes(lintShell('set -euo pipefail\necho "$DB_PASSWD"', "x.sh")).has("secret-echo"));
+  assert.ok(codes(lintShell('set -euo pipefail\necho "pw: $ADMIN_PASSWORD"', "x.sh")).has("secret-echo"));
+});
+
 // ─── Незащитен subshell под `set -e` ────────────────────────────────────────
 // Реален дефект (07.08.2026): `( cd "$d"; bash deploy.sh )` без `||` в
 // autodeploy.sh. При `set -e` провалът на ЕДИН продукт прекратява целия пробег —
@@ -167,6 +212,80 @@ test("реалният autodeploy.sh минава и това правило", a
   const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
   const src = readFileSync(join(root, "deploy", "autodeploy.sh"), "utf-8");
   assert.ok(!codes(lintShell(src, "deploy/autodeploy.sh")).has("cleanup-kills-script"));
+});
+
+// ── assign-kills-script ──────────────────────────────────────────────────────
+// Реален инцидент: липсващ /etc/vizitka/vizitka.env спираше ЦЕЛИЯ autodeploy в
+// блока КОНФИГУРАЦИЯ, без нито един ред изход, дори при PROJECTS="adblock".
+test("присвояване от конвейер със заглушен stderr без || true → HIGH assign-kills-script", () => {
+  const src = 'set -euo pipefail\nX="${X:-$(sed -n \'s/^PORT=//p\' /etc/x.env 2>/dev/null | head -1)}"\n';
+  assert.ok(lintShell(src, "deploy.sh").some((f) => f.code === "assign-kills-script" && f.sev === "HIGH"));
+});
+
+test("същото присвояване с || true → чисто", () => {
+  const src = 'set -euo pipefail\nX="${X:-$(sed -n \'s/^PORT=//p\' /etc/x.env 2>/dev/null | head -1 || true)}"\n';
+  assert.ok(!codes(lintShell(src, "deploy.sh")).has("assign-kills-script"));
+});
+
+test("local присвояване от конвейер → hit; без конвейер и без 2>/dev/null → не", () => {
+  const bad = 'set -euo pipefail\n  local p; p="$(grep -E \'^PORT=\' "$d/.env" 2>/dev/null | head -1)"\n';
+  const fine = 'set -euo pipefail\nver="$(node -p "require(\'./package.json\').version")"\n';
+  assert.ok(codes(lintShell(bad, "x.sh")).has("assign-kills-script"));
+  assert.ok(!codes(lintShell(fine, "x.sh")).has("assign-kills-script"));
+});
+
+test("без pipefail правилото не важи", () => {
+  const src = 'set -e\nX="$(sed -n p /etc/x.env 2>/dev/null | head -1)"\n';
+  assert.ok(!codes(lintShell(src, "x.sh")).has("assign-kills-script"));
+});
+
+test("реалният autodeploy.sh минава и това правило", async () => {
+  const { readFileSync } = await import("node:fs");
+  const { fileURLToPath } = await import("node:url");
+  const { dirname, join } = await import("node:path");
+  const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+  const src = readFileSync(join(root, "deploy", "autodeploy.sh"), "utf8");
+  assert.ok(!codes(lintShell(src, "deploy/autodeploy.sh")).has("assign-kills-script"));
+});
+
+test("блокът КОНФИГУРАЦИЯ оцелява без /etc/vizitka/vizitka.env (изпълнява се наистина)", async () => {
+  const { readFileSync } = await import("node:fs");
+  const { execFileSync } = await import("node:child_process");
+  const { fileURLToPath } = await import("node:url");
+  const { dirname, join } = await import("node:path");
+  const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+  const src = readFileSync(join(root, "deploy", "autodeploy.sh"), "utf8").split("\n");
+  const end = src.findIndex((l) => l.startsWith("# ╚"));
+  assert.ok(end > 20, "намерен край на блока КОНФИГУРАЦИЯ");
+  const cfg = src.slice(0, end).join("\n") + '\necho __CONFIG_OK__\n';
+  const out = execFileSync("bash", ["-c", cfg], { encoding: "utf8" });
+  assert.match(out, /__CONFIG_OK__/);
+});
+
+// ─── secret-echo: група `{ … } > file` (фалшива аларма в vizitka/server-setup.sh) ─
+test("echo на тайна в `{ … } > file` е ЗАПИС, не лог", () => {
+  const f = lintShell('set -euo pipefail\n{\n  echo "PRINT_API_SECRET=$s"\n  echo "SMTP_PASS=$p"\n} > "$ENV_FILE"', "setup.sh");
+  assert.ok(!codes(f).has("secret-echo"));
+});
+test("същото в `( … ) >> file` subshell", () => {
+  const f = lintShell('set -euo pipefail\n(\n  echo "TOKEN=$t"\n) >> "$d/.env"', "setup.sh");
+  assert.ok(!codes(f).has("secret-echo"));
+});
+test("група, пренасочена към stderr, ОЩЕ е лог", () => {
+  const f = lintShell('set -euo pipefail\n{\n  echo "SECRET=$s"\n} >&2', "setup.sh");
+  assert.ok(codes(f).has("secret-echo"));
+});
+test("група БЕЗ пренасочване ОЩЕ е лог", () => {
+  const f = lintShell('set -euo pipefail\n{\n  echo "SECRET=$s"\n}', "setup.sh");
+  assert.ok(codes(f).has("secret-echo"));
+});
+test(">&2 вътре във файлова група ОЩЕ е лог", () => {
+  const f = lintShell('set -euo pipefail\n{\n  echo "SECRET=$s" >&2\n} > "$f"', "setup.sh");
+  assert.ok(codes(f).has("secret-echo"));
+});
+test("функция `f() {` с тайна след нея не се освобождава", () => {
+  const f = lintShell('set -euo pipefail\nf() {\n  echo "SECRET=$s"\n} > "$log"', "setup.sh");
+  assert.ok(codes(f).has("secret-echo"));
 });
 
 // ── undefined-function: извикана помощна функция без дефиниция ───────────────

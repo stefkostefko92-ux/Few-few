@@ -41,13 +41,53 @@ export function lintShell(src, rel) {
   // стига до CI/journalctl. Първата версия не различаваше двете и обяви точно
   // този запис за изтичане. Затова редът се брои за нарушение САМО ако НЯМА
   // пренасочване към файл — или ако пренасочва към самия stdout/stderr.
-  const LOGS_A_SECRET =
-    /(echo|printf|cat)\s+[^\n]*(SECRET|PASSWORD|TOKEN|API_KEY|PRIVATE_KEY|_KEY)\b/i;
+  //
+  // СТОЙНОСТ, не ДУМА (одит 24.09.2026): първата версия хващаше самата дума —
+  // „Fill in ENCRYPTION_KEY, SESSION_SECRET…“, „check BOT_TOKEN“, „rejects invalid
+  // bearer token“ бяха „изтичания“, а 4 от 5 находки в SupremeDiscordBot/ бяха
+  // такъв шум. Шумът заглушава истинското: сред тях стоеше реален ред, който
+  // печаташе `STRIPE_WEBHOOK_SECRET=${WH_SECRET}`. Сега ред се брои, само ако
+  // печата СТОЙНОСТ: (а) разгъва тайно наречена променлива ($DB_PASSWORD,
+  // ${WH_SECRET}, $secret_value); (б) `ИМЕ=` на тайна, последвано от %s/$…
+  // (`printf "API_KEY=%s" "$k"`); (в) `cat` на файл с тайно име. Шестте
+  // закотвени изтичания в deploy-check.test.mjs остават хванати.
+  // Без гола дума PASS: тя хваща брояча `$pass` в smoke тестовете (pass/fail).
+  const SECRET_WORD = "(?:SECRET|PASSWORD|PASSWD|TOKEN|API_KEY|PRIVATE_KEY|_KEY)";
+  const PRINTS = /\b(echo|printf|cat)\b/;
+  const EXPANDS_SECRET = new RegExp(`\\$\\{?[A-Za-z_]*${SECRET_WORD}[A-Za-z_]*`, "i");
+  const NAME_EQ_VALUE = new RegExp(`${SECRET_WORD}[A-Za-z_]*=\\s*(?:%s|\\$)`, "i");
+  const CATS_SECRET_FILE = new RegExp(`\\bcat\\s+[^\\n|;&]*${SECRET_WORD}`, "i");
+  // Гледаме САМО аргументите СЛЕД командата за печат: `WH_SECRET=$(echo "$json" | …)`
+  // е присвояване (изходът се улавя), не печат — „ИМЕ=“ е ПРЕДИ echo.
+  const LOGS_A_SECRET = {
+    test: (l) => {
+      const m = PRINTS.exec(l);
+      if (!m) return false;
+      const args = l.slice(m.index);
+      return EXPANDS_SECRET.test(args) || NAME_EQ_VALUE.test(args) || CATS_SECRET_FILE.test(args);
+    },
+  };
   const REDIRECT_TO_FILE = />>?\s*("?\$?\{?[A-Za-z_./][^\n|&]*)/;
   const REDIRECT_TO_STD = />>?\s*("?\/dev\/(stdout|stderr|fd\/[12])"?|&[12])/;
-  const secretToLog = lines.some((l) => {
+  // Група `{ … } > file` / `( … ) > file`: пренасочването стои на ЗАТВАРЯЩИЯ ред,
+  // а echo-тата вътре пишат във файла, не в лога (vizitka/deploy/server-setup.sh
+  // ражда vizitka.env точно така). Отварящият ред трябва да е гола скоба — функции
+  // (`f() {`) и subshell с команда (`( cd … `) не се броят.
+  const inFileGroup = new Set();
+  const open = [];
+  lines.forEach((l, i) => {
+    if (/^\s*[{(]\s*(#.*)?$/.test(l)) open.push(i);
+    else if (open.length && /^\s*[})]/.test(l)) {
+      const start = open.pop();
+      const tail = l.replace(/^\s*[})]\s*/, "");
+      if (REDIRECT_TO_FILE.test(tail) && !REDIRECT_TO_STD.test(tail))
+        for (let j = start + 1; j < i; j++) inFileGroup.add(j);
+    }
+  });
+  const secretToLog = lines.some((l, i) => {
     if (!LOGS_A_SECRET.test(l)) return false;
-    if (REDIRECT_TO_STD.test(l)) return true;        // /dev/stdout е ЛОГ
+    if (REDIRECT_TO_STD.test(l)) return true;        // /dev/stdout е ЛОГ (и вътре в група)
+    if (inFileGroup.has(i)) return false;            // тялото на `{ … } > file` е ЗАПИС
     return !REDIRECT_TO_FILE.test(l);                // без пренасочване → ЛОГ
   });
   if (secretToLog)
@@ -136,8 +176,9 @@ export function lintShell(src, rel) {
   // ПРЕДИ него трие единствения `.bak`, значи провалът беше 100% възпроизводим.
   if (/set\s+-[a-z]*e[a-z]*o?\s+pipefail|set\s+-o\s+pipefail/.test(src)) {
     const bad = [];
-    // Само редове, ЗАПОЧВАЩИ с `ls` — присвояване (`x="$(ls …)"`) и заместване
-    // на процес (`done < <(ls …)`) не разпространяват кода по същия начин.
+    // Само редове, ЗАПОЧВАЩИ с `ls` — заместването на процес (`done < <(ls …)`)
+    // не разпространява кода. ПРИСВОЯВАНЕТО го разпространява и е още по-тихо —
+    // то има свое правило по-долу (`assign-kills-script`).
     const RX = /^[ \t]*ls\s+-1[^\n]*\|[^\n]*$/gm;
     let m;
     while ((m = RX.exec(src)) !== null) {
@@ -151,6 +192,49 @@ export function lintShell(src, rel) {
         `Чистене с \`ls\` без \`|| true\` при \`set -euo pipefail\` (${bad.length} бр.) — празен шаблон връща 2, ` +
         `pipefail го вдига, set -e убива скрипта БЕЗ изход и всичко след него (current symlink, чистене на релийзи) ` +
         `не се изпълнява. Добави \`|| true\`. Места: ${bad.join(" · ")}`);
+  }
+
+  // ── Присвояване от конвейер, който МОЖЕ да се провали ───────────────────────
+  //
+  // Същият клас като горното, но още по-тих и по-рано: `X="$(cmd 2>/dev/null |
+  // head -1)"` при `set -euo pipefail`. Липсва ли файлът, `sed`/`grep`/`ls`
+  // връща 2, `pipefail` вдига кода на конвейера, присвояването наследява кода,
+  // `set -e` прекратява скрипта — а stderr е заглушен, значи НУЛА изход.
+  //
+  // Реален инцидент: `VIZITKA_PORT="${VIZITKA_PORT:-$(sed -n 's/^PORT=//p'
+  // /etc/vizitka/vizitka.env 2>/dev/null | head -1)}"` в блока КОНФИГУРАЦИЯ. На
+  // сървър без vizitka целият autodeploy умираше още преди първия проект —
+  // включително при `PROJECTS="adblock"`, който няма нищо общо с vizitka.
+  // Диагнозата е трудна точно защото няма съобщение: `bash -x` показва реда, а
+  // после нищо.
+  //
+  // `2>/dev/null` в такова присвояване е ДЕКЛАРАЦИЯ на автора, че стойността е
+  // по избор → тогава провалът е ОЧАКВАН и трябва да е обезвреден с `|| true`.
+  if (/set\s+-[a-z]*e[a-z]*o?\s+pipefail|set\s+-o\s+pipefail/.test(src)) {
+    const bad = [];
+    // присвояване (вкл. `local x=`, `${X:-$(…)}`), чиято стойност е command
+    // substitution с конвейер ИЛИ със заглушен stderr.
+    // Присвояването може да НЕ е в началото на реда: `local p; p="$(…)"` е
+    // честият шаблон в този скрипт и точно той се изплъзна на първата версия
+    // на правилото.
+    const RX = /^[^\n]*(?:^|;)[ \t]*(?:local\s+|export\s+|declare\s+)?[A-Za-z_][A-Za-z0-9_]*=(?:"?\$\(|"\$\{[A-Za-z_][A-Za-z0-9_]*:-\$\()[^\n]*$/gm;
+    let m;
+    while ((m = RX.exec(src)) !== null) {
+      const line = m[0].trim();
+      // `2>/dev/null` е ДЕКЛАРАЦИЯТА „очаквам провал" — без нея генераторите
+      // (`openssl rand | tr`) биха вдигали шум, а те не се провалят на практика.
+      if (!/2>\/dev\/null/.test(line)) continue;
+      // ВСЯКО `||` обезврежда конвейера, не само `|| true`: `|| echo 100` е
+      // легитимният начин да дадеш стойност по подразбиране на място.
+      if (/\|\|/.test(line)) continue;
+      const n = src.slice(0, m.index).split("\n").length;
+      bad.push(`${n}: ${line.slice(0, 80)}`);
+    }
+    if (bad.length)
+      add("HIGH", "assign-kills-script",
+        `Присвояване от конвейер, който може да се провали, без \`|| true\` при \`set -euo pipefail\` (${bad.length} бр.) — ` +
+        `липсващ файл връща 2, pipefail го вдига, присвояването наследява кода и set -e убива скрипта БЕЗ изход ` +
+        `(stderr е заглушен). Добави \`|| true\` вътре в \`$( … )\`. Места: ${bad.join(" · ")}`);
   }
 
   // ── Извикана, но недефинирана функция ────────────────────────────────────

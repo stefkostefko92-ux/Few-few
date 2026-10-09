@@ -1,0 +1,64 @@
+<%- include('../partials/page-top', { title: t('admin.dashboard.title') }) %>
+<div class="page-head"><h1><%= t('admin.dashboard.title') %></h1></div>
+<%- include('../partials/admin-nav') %>
+<%- include('../partials/flash') %>
+
+<div class="stats">
+  <a class="stat" href="/admin/accounts?plan=TRIAL&status=active"><span class="stat-v"><%= fmt.num(counts.trialActive) %></span><span class="stat-k"><%= t('admin.dashboard.trialActive') %></span></a>
+  <a class="stat" href="/admin/accounts?plan=TRIAL&status=expired"><span class="stat-v"><%= fmt.num(counts.trialExpired) %></span><span class="stat-k"><%= t('admin.dashboard.trialExpired') %></span></a>
+  <a class="stat" href="/admin/accounts?plan=PREMIUM&status=active"><span class="stat-v"><%= fmt.num(counts.premiumActive) %></span><span class="stat-k"><%= t('admin.dashboard.premiumActive') %></span></a>
+  <a class="stat" href="/admin/accounts?plan=PREMIUM&status=expired"><span class="stat-v"><%= fmt.num(counts.premiumExpired) %></span><span class="stat-k"><%= t('admin.dashboard.premiumExpired') %></span></a>
+  <a class="stat" href="/admin/accounts?plan=LIFETIME"><span class="stat-v"><%= fmt.num(counts.lifetime) %></span><span class="stat-k"><%= t('admin.dashboard.lifetime') %></span></a>
+  <a class="stat" href="/admin/accounts?status=unverified"><span class="stat-v"><%= fmt.num(counts.unverified) %></span><span class="stat-k"><%= t('admin.dashboard.unverified') %></span></a>
+  <a class="stat" href="/admin/accounts?status=banned"><span class="stat-v"><%= fmt.num(counts.banned) %></span><span class="stat-k"><%= t('admin.dashboard.banned') %></span></a>
+  <a class="stat" href="/admin/requests"><span class="stat-v"><%= fmt.num(counts.openRequests) %></span><span class="stat-k"><%= t('admin.dashboard.openRequests') %></span></a>
+  <div class="stat"><span class="stat-v"><%= fmt.num(counts.newWeek) %> / <%= fmt.num(counts.newMonth) %></span><span class="stat-k"><%= t('admin.dashboard.newAccounts') %></span></div>
+  <div class="stat"><span class="stat-v"><%= fmt.num(counts.logins24h) %></span><span class="stat-k"><%= t('admin.dashboard.logins24h') %></span></div>
+</div>
+
+<div class="section-grid">
+  <section class="section" aria-labelledby="new-h">
+    <h2 id="new-h"><%- include('../partials/icon', { name: 'users' }) %><%= t('admin.dashboard.recent') %></h2>
+    <div class="table-wrap"><table class="stack">
+      <thead><tr><th><%= t('admin.col.account') %></th><th><%= t('admin.col.plan') %></th><th><%= t('admin.col.created') %></th></tr></thead>
+      <tbody>
+      <% for (const u of recent) { %>
+        <tr><td data-label="<%= t('admin.col.account') %>" class="who"><a href="/admin/accounts/<%= u.id %>"><%= u.email %></a><small><%= u.name %><% if (u.signupCountry) { %>, <%= fmt.country(u.signupCountry) %><% } %></small></td>
+        <td data-label="<%= t('admin.col.plan') %>"><%= t('plan.name.' + u.plan) %><% if (!u.emailVerifiedAt) { %><br><small><%= t('account.notVerified') %></small><% } %></td>
+        <td data-label="<%= t('admin.col.created') %>" class="nowrap"><%= fmt.relative(u.createdAt) %></td></tr>
+      <% } %>
+      </tbody>
+    </table></div>
+  </section>
+  <% if (can('logins:view')) { %>
+  <section class="section" aria-labelledby="sec-h">
+    <h2 id="sec-h"><%- include('../partials/icon', { name: 'shield' }) %><%= t('admin.dashboard.security') %></h2>
+    <% if (!events.length) { %><p class="muted"><%= t('admin.dashboard.noEvents') %></p><% } else { %>
+    <div class="table-wrap"><table class="stack">
+      <thead><tr><th><%= t('security.col.when') %></th><th><%= t('security.col.result') %></th><th><%= t('admin.col.where') %></th></tr></thead>
+      <tbody>
+      <% for (const e of events) { %>
+        <tr><td data-label="<%= t('security.col.when') %>" class="nowrap"><%= fmt.relative(e.createdAt) %></td>
+        <td data-label="<%= t('security.col.result') %>"><span class="chip chip-bad"><%- include('../partials/icon', { name: 'x' }) %><%= t('outcome.' + e.outcome) %></span><% if (e.user) { %><br><small><a href="/admin/accounts/<%= e.user.id %>"><%= e.user.email %></a></small><% } %></td>
+        <td data-label="<%= t('admin.col.where') %>"><span class="mono-sm"><%= e.ip || '—' %></span><% if (e.country) { %><br><small><%= fmt.country(e.country) %></small><% } %></td></tr>
+      <% } %>
+      </tbody>
+    </table></div>
+    <% } %>
+  </section>
+  <% } %>
+</div>
+
+<section class="section" aria-labelledby="sys-h">
+  <h2 id="sys-h"><%- include('../partials/icon', { name: 'gauge' }) %><%= t('admin.dashboard.system') %></h2>
+  <dl class="dl">
+    <dt><%= t('admin.dashboard.auditChain') %></dt>
+    <dd><% if (chain.ok) { %><span class="chip chip-ok"><%- include('../partials/icon', { name: 'check' }) %><%= t('admin.audit.chainOk', { n: chain.count }) %></span><% } else { %><span class="chip chip-bad"><%- include('../partials/icon', { name: 'alert' }) %><%= t('admin.audit.chainBroken', { id: chain.brokenAt }) %></span><% } %></dd>
+    <dt><%= t('admin.dashboard.geoip') %></dt>
+    <dd><% if (geoip) { %><span class="chip chip-ok"><%- include('../partials/icon', { name: 'globe' }) %><%= t('admin.dashboard.geoipOn') %></span><% } else { %><span class="chip chip-warn"><%- include('../partials/icon', { name: 'alert' }) %><%= t('admin.dashboard.geoipOff') %></span><% } %></dd>
+    <dt><%= t('admin.dashboard.catalog') %></dt>
+    <dd><% if (catalogMode === 'shop') { %><span class="chip chip-ok"><%- include('../partials/icon', { name: 'check' }) %><%= t('admin.dashboard.catalogShop') %></span><% } else { %><span class="chip chip-warn"><%- include('../partials/icon', { name: 'alert' }) %><%= t('admin.dashboard.catalogBase') %></span><% } %></dd>
+  </dl>
+  <p class="hint"><%= t('admin.dashboard.dbip') %> <a href="https://db-ip.com" target="_blank" rel="noopener">IP Geolocation by DB-IP</a></p>
+</section>
+<%- include('../partials/page-bottom') %>

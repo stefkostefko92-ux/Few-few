@@ -1,4 +1,19 @@
-/* Hide common cookie / consent banners (toggled via the tbab-cookies class). */
+/* Cookie / consent banners — driven by cookies.js:
+   html.tbab-cookies       CLOAK: the banner is not painted and not hit-testable,
+                           BUT keeps layout — so cookies.js can still find its
+                           Reject/Accept button as "visible" and click it. A
+                           clicked CMP tears down its own backdrop, blur and
+                           scroll lock; a display:none'd one never does.
+                           A banner that could not be dismissed is removed from
+                           layout PER ELEMENT by cookies.js, HARD_MS after it
+                           first rendered (a page-wide class would also swallow
+                           banners that appear late, before we could click them).
+   html.tbab-cookies-seen  a banner WAS rendered on this page and we are inside the
+                           short cleanup window around it: only then are backdrops
+                           and scroll locks killed. .modal-backdrop & co. are
+                           generic (Bootstrap) — cookies.js drops this class when
+                           the window closes, so later, legitimate modals are left
+                           alone. */
 
 html.tbab-cookies #onetrust-banner-sdk,
 html.tbab-cookies #onetrust-consent-sdk,
@@ -28,11 +43,14 @@ html.tbab-cookies .cookie-law-info-bar,
 html.tbab-cookies #cookie-law-info-bar,
 html.tbab-cookies .cmplz-cookiebanner,
 html.tbab-cookies .iubenda-cs-container,
+html.tbab-cookies #iubenda-cs-banner,
 html.tbab-cookies .osano-cm-window,
 html.tbab-cookies .termly-styles-root,
 html.tbab-cookies .cky-consent-container,
 html.tbab-cookies #cookie-consent-banner,
 html.tbab-cookies #gdpr-consent-tool-wrapper,
+html.tbab-cookies ytd-consent-bump-v2-lightbox,
+html.tbab-cookies [id^="sp_message_container_"],
 html.tbab-cookies [class*="cookie-consent"],
 html.tbab-cookies [class*="cookie-banner"],
 html.tbab-cookies [class*="cookie-notice"],
@@ -44,19 +62,46 @@ html.tbab-cookies [id*="cookieConsent"],
 html.tbab-cookies [aria-label*="cookie" i][role="dialog"],
 html.tbab-cookies [aria-label*="consent" i][role="dialog"],
 html.tbab-cookies [aria-describedby*="cookie" i] {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Backdrops, veils and dark filters the banners leave behind — only inside the
+   cleanup window (see above). Same list as BACKDROPS in cookies.js. */
+html.tbab-cookies-seen .modal-backdrop,
+html.tbab-cookies-seen .cookie-overlay,
+html.tbab-cookies-seen .cc-overlay,
+html.tbab-cookies-seen .cc-backdrop,
+html.tbab-cookies-seen .sp_veil,
+html.tbab-cookies-seen .sp_dialog_overlay,
+html.tbab-cookies-seen #onetrust-pc-dark-filter,
+html.tbab-cookies-seen .onetrust-pc-dark-filter,
+html.tbab-cookies-seen .didomi-popup-backdrop,
+html.tbab-cookies-seen .fc-dialog-overlay,
+html.tbab-cookies-seen .cky-overlay,
+html.tbab-cookies-seen .cmplz-overlay,
+html.tbab-cookies-seen .iubenda-cs-overlay,
+html.tbab-cookies-seen .osano-cm-dialog__backdrop,
+html.tbab-cookies-seen .termly-overlay,
+html.tbab-cookies-seen .cmpboxBG,
+html.tbab-cookies-seen .uc-overlay,
+html.tbab-cookies-seen .usercentrics-overlay,
+html.tbab-cookies-seen .tp-backdrop,
+html.tbab-cookies-seen .gdpr-overlay,
+html.tbab-cookies-seen .cookie-modal-backdrop,
+html.tbab-cookies-seen .cookiewall-overlay,
+html.tbab-cookies-seen .cookie-wall-overlay,
+html.tbab-cookies-seen .consent-overlay,
+html.tbab-cookies-seen [class*="cookie-overlay"],
+html.tbab-cookies-seen [class*="cookie-backdrop"],
+html.tbab-cookies-seen [class*="consent-overlay"],
+html.tbab-cookies-seen [class*="consent-backdrop"],
+html.tbab-cookies-seen [id*="cookie-overlay"],
+html.tbab-cookies-seen [id*="consent-overlay"] {
   display: none !important;
 }
 
-/* Remove scroll locks / dimming overlays these banners add. */
-html.tbab-cookies .modal-backdrop,
-html.tbab-cookies .cookie-overlay,
-html.tbab-cookies .cc-overlay,
-html.tbab-cookies .sp_veil,
-html.tbab-cookies .sp_dialog_overlay {
-  display: none !important;
-}
-
-html.tbab-cookies,
-html.tbab-cookies body {
+html.tbab-cookies-seen,
+html.tbab-cookies-seen body {
   overflow: auto !important;
 }

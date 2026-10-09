@@ -1,4 +1,4 @@
-export const MONSTER_SEED = [
+const RAW_MONSTER_SEED = [
   // ===== Whispering Woods (lvl 1-5) =====
   { slug: 'forest_rat', name: 'Forest Rat', level: 1, hp: 18, atk_min: 2, atk_max: 4, defense: 0, speed: 6, xp_reward: 4, gold_min: 1, gold_max: 3, sprite: 'rat', family: 'beast', region: 'whispering_woods' },
   { slug: 'wild_boar', name: 'Wild Boar', level: 2, hp: 30, atk_min: 3, atk_max: 6, defense: 1, speed: 5, xp_reward: 8, gold_min: 2, gold_max: 5, sprite: 'boar', family: 'beast', region: 'whispering_woods' },
@@ -24,7 +24,12 @@ export const MONSTER_SEED = [
   { slug: 'lava_titan', name: 'Lava Titan', level: 22, hp: 920, atk_min: 50, atk_max: 80, defense: 20, speed: 4, xp_reward: 520, gold_min: 100, gold_max: 180, sprite: 'titan', family: 'giant', region: 'ashen_wastes' },
 
   // ===== Shadowfell ridge (lv 24-25) — the first end-of-act-1 boss =====
-  { slug: 'shadow_lord', name: 'The Shadow Lord', level: 25, hp: 1500, atk_min: 70, atk_max: 110, defense: 25, speed: 8, xp_reward: 900, gold_min: 250, gold_max: 400, sprite: 'shadowlord', family: 'demon', region: 'shadowfell' },
+  // Баланс: беше 1500 HP / 70-110 — изглеждаше „на кривата" само защото
+  // референтният герой на lv 24 трупаше бонусите на ТРИ legacy сета от
+  // общите plate/chain части (sunforged + mythwoven + ironguard). Без това
+  // броене вход lv 24 = 11% победи; сега ~75% (магазин) / 99% (класов сет),
+  // под lv 26 емберийския imp (1566 / 63-99), както подобава на lv 25.
+  { slug: 'shadow_lord', name: 'The Shadow Lord', level: 25, hp: 1300, atk_min: 55, atk_max: 88, defense: 22, speed: 8, xp_reward: 900, gold_min: 250, gold_max: 400, sprite: 'shadowlord', family: 'demon', region: 'shadowfell' },
 
   // =====================================================================
 
@@ -243,6 +248,32 @@ export const MONSTER_SEED = [
   { slug: 'firstlight_unwritten_flame', name: "The Unwritten Flame", level: 499, hp: 40307, atk_min: 1859, atk_max: 2943, defense: 672, speed: 5, xp_reward: 716, gold_min: 3992, gold_max: 6986, sprite: 'witch', family: 'elemental', region: 'first_light' },
   { slug: 'firstlight_apex_aurelion', name: "Aurelion, the First Light", level: 500, hp: 68381, atk_min: 2417, atk_max: 3829, defense: 878, speed: 6, xp_reward: 4248, gold_min: 16000, gold_max: 28000, sprite: 'titan', family: 'magic', region: 'first_light' },
 ];
+
+/* =========================================================================
+ * Endgame крива (баланс одит). Ръчно въведените банди растат линейно
+ * (hp ≈ 77–81·L, atk ≈ 4.5–4.8·L), а героите на lv 291+ получават T10–T12
+ * екипировка + сетове, които скалират по-стръмно. Симулацията (детерминистичен
+ * харнес, бюджети ×0.25/×0.5/×1) показа, че СЛЕД lv ~291 всеки следващ регион
+ * е ПО-ЛЕСЕН от предишния (остатъчно HP при вход 36% → 75%, победа 100%,
+ * APEX-ите от lv 380 нагоре ≥ 90% на своето ниво). Над ENDGAME_CURVE_FROM
+ * hp и атаката на чудовищата растат с ENDGAME_CURVE_SLOPE на 100 нива, за да
+ * е входът на всеки endgame регион поне толкова труден, колкото предишният.
+ * Наградите (XP/злато) не се пипат — те са закотвени в темпото.
+ * ======================================================================= */
+export const ENDGAME_CURVE_FROM = 261;
+export const ENDGAME_CURVE_SLOPE = 0.3;
+
+export function endgameMonsterMult(level: number): number {
+  return level <= ENDGAME_CURVE_FROM ? 1 : 1 + (ENDGAME_CURVE_SLOPE * (level - ENDGAME_CURVE_FROM)) / 100;
+}
+
+function withEndgameCurve<M extends { level: number; hp: number; atk_min: number; atk_max: number }>(m: M): M {
+  const f = endgameMonsterMult(m.level);
+  if (f === 1) return m;
+  return { ...m, hp: Math.round(m.hp * f), atk_min: Math.round(m.atk_min * f), atk_max: Math.round(m.atk_max * f) };
+}
+
+export const MONSTER_SEED = RAW_MONSTER_SEED.map(withEndgameCurve);
 
 /* =========================================================================
  * REGION_BANDS retained as metadata for hunting.ts (region gates +

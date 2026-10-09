@@ -1,0 +1,14 @@
+<%- include('_top', { titleKey: 'auth.bannedTitle' }) %>
+<div class="banned">
+  <%- include('../partials/icon', { name: 'ban' }) %>
+  <h1><%= t('auth.bannedTitle') %></h1>
+</div>
+<p><%= t('auth.bannedText') %></p>
+<% if (reason) { %>
+<figure class="ban-reason">
+  <figcaption><%= t('auth.bannedReason') %></figcaption>
+  <blockquote><%= reason %></blockquote>
+</figure>
+<% } %>
+<p class="hint"><%= t('auth.bannedContact', { email: contact }) %></p>
+<%- include('_bottom') %>

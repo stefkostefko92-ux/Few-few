@@ -24,7 +24,10 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const run = (rel, args = [], env = {}) =>
   spawnSync(process.execPath, [join(ROOT, rel), ...args], {
-    cwd: ROOT, encoding: "utf8", timeout: 90000,
+    // maxBuffer: по подразбиране е 1 MB и spawnSync ТИХО реже изхода (status null) — `quarantine-review
+    // --json` мина прага, когато събраните от клоновете поуки напълниха карантината (2026-09-23). Изходът
+    // расте с паметта; тестът съди договора на инструмента, не размера на паметта.
+    cwd: ROOT, encoding: "utf8", timeout: 90000, maxBuffer: 256 * 1024 * 1024,
     env: { ...process.env, NO_COLOR: "1", ...env },
   });
 

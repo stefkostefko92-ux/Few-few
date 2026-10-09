@@ -25,6 +25,9 @@ export default function Hunting(): React.ReactElement {
   const [region, setRegion] = useState<string | null>(null);
   const [fight, setFight] = useState<any>(null);
   const [busy, setBusy] = useState(false);
+  // 4a.3-fix: панелът с изхода ("Foe down"/"Hunt again") трябва да чака анимацията да свърши —
+  // преди издаваше резултата от първия кадър, докато боят още тече (докладван реален бъг).
+  const [animDone, setAnimDone] = useState(false);
   const [searchParams] = useSearchParams();
   // „Влез в региона" от картата на света (?region=...): стартираме лов там
   // веднага (веднъж) — това Е влизането в гората, не празен списък.
@@ -52,6 +55,7 @@ export default function Hunting(): React.ReactElement {
     setRegion(slug);
     try {
       const r = await api.post('/hunting/hunt', { region: slug });
+      setAnimDone(false);
       setFight(r);
       if (r.levelUp) showLevelUp(r.levelUp);
       showUnlocks(r.unlocked);
@@ -74,10 +78,11 @@ export default function Hunting(): React.ReactElement {
           reward={{ xp: fight.xp, gold: fight.gold, itemReward: fight.itemReward || null, itemDrop: fight.itemDrop || null }}
           onClose={() => { setFight(null); }}
           onReplay={() => hunt(region!)}
+          onDone={() => setAnimDone(true)}
           introTitle={t('hunting.wildEncounter', { name: fight.foe.name })}
           region={region || undefined}
         />
-        <div className="panel" style={{ padding: 16 }}>
+        {animDone && <div className="panel" style={{ padding: 16 }}>
           {/* Momentum badges: първа победа за деня (×2) + ловно комбо. */}
           {fight.success && (fight.firstWin || (fight.combo || 0) > 1) && (
             <div className="flex gap-sm" style={{ marginBottom: 10, flexWrap: 'wrap' }}>
@@ -102,7 +107,7 @@ export default function Hunting(): React.ReactElement {
               </button>
             </div>
           </div>
-        </div>
+        </div>}
       </div>
     );
   }

@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import plugin from "tailwindcss/plugin";
 
 // Топла „хартиена“ палитра: крем хартия, мастилено кафяво, теракота, мед.
 const config: Config = {
@@ -48,7 +49,12 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    // Вариант `vivid:` — огледало на вградения `dark:`, за „живата“ тема (.vivid на <html>).
+    plugin(({ addVariant }) => {
+      addVariant("vivid", ".vivid &");
+    }),
+  ],
 };
 
 export default config;

@@ -1,32 +1,53 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/ThemeToggle";
 
 const TOOLS = [
-  { href: "/etiketi", label: "Етикети", emoji: "🏷️" },
-  { href: "/vizitki", label: "Визитки", emoji: "💼" },
-  { href: "/cv", label: "Автобиография (CV)", emoji: "📄" },
-  { href: "/pismo", label: "Мотивационно писмо", emoji: "✉️" },
-  { href: "/gramoti", label: "Грамоти и сертификати", emoji: "🏆" },
-  { href: "/pokani", label: "Покани и картички", emoji: "🎉" },
-  { href: "/tabelki", label: "Табелки и надписи", emoji: "🪧" },
-  { href: "/wifi", label: "WiFi стикер", emoji: "📶" },
+  { href: "/etiketi", label: "Етикети", icon: "/icons/etiketi.webp" },
+  { href: "/vizitki", label: "Визитки", icon: "/icons/vizitki.webp" },
+  { href: "/cv", label: "Автобиография (CV)", icon: "/icons/cv.webp" },
+  { href: "/pismo", label: "Мотивационно писмо", icon: "/icons/pismo.webp" },
+  { href: "/gramoti", label: "Грамоти и сертификати", icon: "/icons/gramoti.webp" },
+  { href: "/pokani", label: "Покани и картички", icon: "/icons/pokani.webp" },
+  { href: "/tabelki", label: "Табелки и надписи", icon: "/icons/tabelki.webp" },
+  { href: "/wifi", label: "WiFi стикер", icon: "/icons/wifi.webp" },
+  { href: "/badzhove", label: "Баджове за събития", icon: "/icons/vizitki.webp" },
+  { href: "/obyava", label: "Обява с ресни", icon: "/icons/tabelki.webp" },
+  { href: "/vaucheri", label: "Ваучери и талони", icon: "/icons/pokani.webp" },
+  { href: "/kalendar", label: "Календар за печат", icon: "/icons/gramoti.webp" },
+  { href: "/menu", label: "Меню и ценоразпис", icon: "/icons/etiketi.webp" },
+  { href: "/dokumentni-snimki", label: "Снимки за документи", icon: "/icons/cv.webp" },
 ];
 
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  // Escape затваря менюто и връща фокуса на бутона (WAI-ARIA disclosure) —
+  // иначе от клавиатурата то се затваряше само с нов клик.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setOpen(false);
+      buttonRef.current?.focus();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
 
   return (
     <header className="no-print sticky top-0 z-40 border-b border-ink/10 bg-paper/85 backdrop-blur dark:bg-[#241d19]/85">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-        <Link href="/" className="flex items-center gap-2.5 text-xl font-bold tracking-tight">
-          <Logo className="h-9 w-9" />
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-3 py-3 sm:gap-4 sm:px-4">
+        <Link href="/" className="flex min-w-0 items-center gap-2.5 text-xl font-bold tracking-tight">
+          <Logo className="h-9 w-9" decorative />
           <span>
-            Мастилко
-            <span className="ml-2 hidden rounded-full bg-med-pale px-2 py-0.5 text-xs font-semibold text-ink-soft sm:inline dark:bg-white/10">
+            <span className="wordmark">Мастилко</span>
+            <span className="ml-2 hidden rounded-full bg-med-pale px-2 py-0.5 text-xs font-semibold text-ink-soft sm:inline dark:bg-white/10 vivid:bg-[#5bb4e8]/15 vivid:text-[#8fd0f5]">
               безплатно
             </span>
           </span>
@@ -35,36 +56,40 @@ export default function Header() {
         <div className="flex items-center gap-1">
           <div className="relative">
             <button
+              ref={buttonRef}
               type="button"
               onClick={() => setOpen((v) => !v)}
               aria-expanded={open}
               aria-haspopup="true"
-              className="flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold text-ink-soft transition hover:bg-tera-pale hover:text-tera-dark sm:text-base dark:hover:bg-white/10"
+              aria-controls="menyu-instrumenti"
+              className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold text-ink-soft transition hover:bg-tera-pale hover:text-tera-dark sm:px-4 sm:text-base dark:hover:bg-white/10 vivid:hover:bg-white/10"
             >
               Инструменти
               <span aria-hidden className={`transition ${open ? "rotate-180" : ""}`}>▾</span>
             </button>
             {open && (
-              <>
-                <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} aria-hidden />
-                <nav
-                  aria-label="Инструменти"
-                  className="card-warm absolute right-0 z-20 mt-2 w-64 overflow-hidden p-2 dark:bg-[#2e2620]"
-                >
-                  {TOOLS.map((t) => (
-                    <Link
-                      key={t.href}
-                      href={t.href}
-                      onClick={() => setOpen(false)}
-                      className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-ink-soft transition hover:bg-tera-pale hover:text-tera-dark dark:hover:bg-white/10"
-                    >
-                      <span aria-hidden className="text-lg">{t.emoji}</span>
-                      {t.label}
-                    </Link>
-                  ))}
-                </nav>
-              </>
+              <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} aria-hidden />
             )}
+            {/* Менюто се рендира ВИНАГИ (само се скрива с CSS), за да стоят
+                всичките 14 връзки в сървърния HTML — иначе търсачките и AI
+                обхождачите не виждат вътрешните линкове към инструментите. */}
+            <nav
+              id="menyu-instrumenti"
+              aria-label="Инструменти"
+              className={`tools-menu card-warm absolute right-0 z-20 mt-2 w-64 overflow-hidden p-2 ${open ? "" : "hidden"}`}
+            >
+              {TOOLS.map((t) => (
+                <Link
+                  key={t.href}
+                  href={t.href}
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-ink-soft transition hover:bg-tera-pale hover:text-tera-dark dark:hover:bg-white/10"
+                >
+                  <Image src={t.icon} alt="" width={36} height={36} unoptimized className="h-8 w-8 shrink-0 object-contain" aria-hidden />
+                  {t.label}
+                </Link>
+              ))}
+            </nav>
           </div>
           <ThemeToggle />
         </div>

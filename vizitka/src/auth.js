@@ -7,8 +7,8 @@ const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 дни
 export const SESSION_COOKIE = 'vz_sid';
 const prod = process.env.NODE_ENV === 'production';
 
-// Админите се задават през ADMIN_EMAILS (запетая-разделени) на сървъра — никой не
-// може да се самопровъзгласи. При старт маркираме съществуващите акаунти.
+// Админите се задават през ADMIN_EMAILS (запетая-разделени) на сървъра. При старт
+// маркираме СЪЩЕСТВУВАЩИТЕ акаунти с is_admin = 1.
 const ADMIN_EMAILS = new Set(
   (process.env.ADMIN_EMAILS || '')
     .split(',')
@@ -22,15 +22,35 @@ export function seedAdmins() {
   for (const email of ADMIN_EMAILS) mark.run(email);
 }
 
-export const isAdmin = (user) =>
-  Boolean(user) && (user.is_admin === 1 || ADMIN_EMAILS.has(user.email));
+// Резервиран ли е този имейл за админ? Саморегистрацията с такъв имейл се ОТКАЗВА:
+// иначе първият, който познае адреса, си взема админ правата (акаунтът още не
+// съществува → няма кой да го заеме). Провизионирането е от сървъра — виж
+// `npm run admin:add` и DEPLOY.md.
+export const isReservedAdminEmail = (email) =>
+  ADMIN_EMAILS.has(
+    String(email || '')
+      .trim()
+      .toLowerCase()
+  );
 
-export function hashPassword(password) {
-  return bcrypt.hashSync(password, 12);
+// Правата идват САМО от колоната в базата. Преди тук имаше и жива проверка срещу
+// ADMIN_EMAILS, която превръщаше „познай имейла" в „стани админ".
+export const isAdmin = (user) => Boolean(user) && user.is_admin === 1;
+
+export async function hashPassword(password) {
+  return bcrypt.hash(password, 12);
 }
 
-export function verifyPassword(password, hash) {
-  return bcrypt.compareSync(password, hash);
+export async function verifyPassword(password, hash) {
+  return bcrypt.compare(password, hash);
+}
+
+// Фиктивен хеш със същата цена — сравняваме срещу него, когато потребителят не
+// съществува, за да не издава времето на отговора кои имейли са регистрирани.
+let dummyHash = null;
+export async function verifyDummyPassword(password) {
+  dummyHash ??= await bcrypt.hash(crypto.randomBytes(16).toString('hex'), 12);
+  return bcrypt.compare(password, dummyHash);
 }
 
 const sha256 = (value) => crypto.createHash('sha256').update(value).digest('hex');

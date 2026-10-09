@@ -60,9 +60,12 @@
       .forEach(kill);
   }
 
+  let wired = false;
   function start() {
     run = true;
     scan();
+    if (wired) return; // one observer per page, however often the gate flips
+    wired = true;
     // Feeds mutate constantly; throttle the scan.
     let queued = false;
     new MutationObserver(() => {
@@ -75,17 +78,26 @@
     }).observe(document.documentElement, { childList: true, subtree: true });
   }
 
-  chrome.storage?.local.get(["enabled", "features", "allowlist"], (data) => {
-    const allowed = (data.allowlist || []).some(hostMatches);
-    const metaOn = (data.features || {}).meta !== false;
-    if (data.enabled !== false && metaOn && !allowed) start();
+  // Same gate as the other cosmetic scripts: protection on, feature on, site
+  // not allowlisted and cosmetics not switched off for it — on every change.
+  const st = { enabled: true, feature: true, allowed: false, noCosm: false };
+  function applyGate() {
+    const want = st.enabled && st.feature && !st.allowed && !st.noCosm;
+    if (want && !run) start();
+    else if (!want) run = false;
+  }
+  chrome.storage?.local.get(["enabled", "features", "allowlist", "noCosmetics"], (data) => {
+    st.enabled = data.enabled !== false;
+    st.feature = (data.features || {}).meta !== false;
+    st.allowed = (data.allowlist || []).some(hostMatches);
+    st.noCosm = (data.noCosmetics || []).some(hostMatches);
+    applyGate();
   });
-
   chrome.storage?.onChanged.addListener((c) => {
-    if (c.features) {
-      const metaOn = (c.features.newValue || {}).meta !== false;
-      if (metaOn && !run) start();
-      else if (!metaOn) run = false;
-    }
+    if (c.enabled) st.enabled = c.enabled.newValue !== false;
+    if (c.features) st.feature = (c.features.newValue || {}).meta !== false;
+    if (c.allowlist) st.allowed = (c.allowlist.newValue || []).some(hostMatches);
+    if (c.noCosmetics) st.noCosm = (c.noCosmetics.newValue || []).some(hostMatches);
+    if (c.enabled || c.features || c.allowlist || c.noCosmetics) applyGate();
   });
 })();

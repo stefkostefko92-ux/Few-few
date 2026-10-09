@@ -1,0 +1,1267 @@
+/* Piuma · дизайн система на ПАНЕЛА
+   Цветовете, радиусите, сенките и аврората живеят в `tokens.css`, който се зарежда
+   преди този файл и се дели с витрината (`landing.css`) — марката не може да се
+   разминава между двете. Тук са само компонентите на панела.
+
+   Двете правила оттам важат и тук: статус-цветът никога не носи смисъл сам (винаги с
+   икона и дума), а всеки контраст е мерен, не подбиран на око. */
+
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font:
+    15px/1.55 system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+a {
+  color: var(--data);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+  box-shadow: 0 0 0 5px rgba(34, 211, 238, 0.28);
+}
+::selection {
+  background: var(--accent-soft);
+}
+
+/* ---------- икони ---------- */
+.ic {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  vertical-align: -3px;
+}
+.ic-sm {
+  width: 15px;
+  height: 15px;
+  vertical-align: -2px;
+}
+.ic-lg {
+  width: 22px;
+  height: 22px;
+  vertical-align: -5px;
+}
+.ic-xl {
+  width: 32px;
+  height: 32px;
+  stroke-width: 1.5;
+}
+
+/* ---------- скелет ---------- */
+.layout {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  min-height: 100vh;
+}
+.sidebar {
+  background: var(--surface);
+  -webkit-backdrop-filter: var(--glass);
+  backdrop-filter: var(--glass);
+  border-right: 1px solid var(--line);
+  padding: 20px 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 650;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+  padding: 0 8px;
+  margin-bottom: 18px;
+  color: var(--text);
+}
+.brand .ic {
+  color: var(--accent);
+  filter: drop-shadow(0 0 14px rgba(255, 45, 120, 0.7));
+}
+/* Марката е ЕДИН flex елемент — иначе разстоянието между думите разкъсва името.
+   Името носи брандовия градиент, но СТАТИЧЕН: вечно движещ се градиент върху текст
+   вреди на четимостта и няма как да се спре отвътре. Преливането се пуска само при
+   посочване — един ход, после спира. */
+.brand .wordmark {
+  font-size: 18px;
+  letter-spacing: 0.01em;
+  background: var(--brand-sweep);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  transition: background-position 0.9s ease;
+}
+.brand:hover .wordmark {
+  background-position: 100% center;
+}
+.nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--r-sm);
+  color: var(--text-2);
+  font-size: 14.5px;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
+}
+.nav a .ic {
+  color: var(--muted);
+  transition: color 0.12s ease;
+}
+.nav a:hover {
+  background: var(--surface-2);
+  color: var(--text);
+  text-decoration: none;
+}
+.nav a:hover .ic {
+  color: var(--text-2);
+}
+.nav a.active {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 45, 120, 0.2),
+    rgba(139, 92, 246, 0.1) 60%,
+    transparent
+  );
+  color: var(--text);
+  font-weight: 550;
+  position: relative;
+}
+.nav a.active::before {
+  content: '';
+  position: absolute;
+  left: -14px;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--brand-sweep);
+  box-shadow: 0 0 12px rgba(255, 45, 120, 0.8);
+}
+.nav a.active .ic {
+  color: var(--accent-lift);
+}
+.nav small {
+  display: block;
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 18px 10px 6px;
+}
+/* Превключвателят на езика — три кратки кода, без падащо меню. */
+.langbar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+.langbar a {
+  flex: 1;
+  text-align: center;
+  padding: 4px 0;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  background: var(--surface-2);
+}
+.langbar a:hover {
+  color: var(--text);
+  text-decoration: none;
+}
+.langbar a.active {
+  background: var(--accent-soft);
+  border: 1px solid rgba(255, 45, 120, 0.32);
+  color: var(--accent-lift);
+}
+.login .langbar {
+  margin: 18px 0 0;
+}
+.who {
+  margin-top: auto;
+  font-size: 13px;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+  padding: 12px 8px 0;
+  display: grid;
+  gap: 6px;
+}
+.who .name {
+  color: var(--text);
+  font-weight: 550;
+}
+/* Старата мека светлина тук отпадна — аврората на `body` я пое и я разпростря
+   върху целия изглед, включително под страничната лента. */
+main {
+  padding: 24px 32px 56px;
+  max-width: 1320px;
+  width: 100%;
+  /* В решетка елементът не се свива под съдържанието си без това — иначе широка
+     таблица разтяга цялата страница и изнася лентата и картите извън екрана. */
+  min-width: 0;
+}
+
+/* ---------- заглавна лента ---------- */
+.topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.topbar .title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+h1 {
+  font-size: 23px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+h2 {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  margin: 26px 0 10px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+h2 .ic {
+  color: var(--muted);
+}
+h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 16px 0 8px;
+}
+.sub {
+  color: var(--muted);
+  font-size: 13.5px;
+  margin: 4px 0 0;
+}
+
+/* ---------- карти с числа ---------- */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+/* Картите с тренд носят линия — под 200px тя става нечетима. */
+.cards.trend {
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+.card {
+  background: var(--surface);
+  -webkit-backdrop-filter: var(--glass);
+  backdrop-filter: var(--glass);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 15px 16px 14px;
+  display: block;
+  color: inherit;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+/* Брандовият градиент минава по ГОРНИЯ ръб на всяка карта — тънка светлинна нишка,
+   която свързва картите в един ред. Угасва към краищата, за да не изглежда като линия. */
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: var(--brand-sweep);
+  opacity: 0.55;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+}
+a.card {
+  transition:
+    border-color 0.18s ease,
+    transform 0.18s cubic-bezier(0.22, 0.75, 0.3, 1),
+    box-shadow 0.18s ease;
+}
+/* Картата се повдига и лумва в акцента — жестът е кратък и еднократен, без пулс. */
+a.card:hover {
+  border-color: var(--line-strong);
+  transform: translateY(-3px);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.5),
+    0 24px 56px -22px rgba(255, 45, 120, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  text-decoration: none;
+}
+a.card:hover::before {
+  opacity: 1;
+}
+.card .l {
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.35;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  /* Два реда етикет — за да са всички карти в реда еднакво високи. */
+  min-height: 34px;
+}
+.card .l .ic-sm {
+  margin-top: 1px;
+}
+.card .l .ic-sm {
+  color: var(--muted);
+}
+/* Едрото число е холографско: светло мастило отгоре, брандов тон отдолу. Градиентът е
+   само украса — стойността се чете и без него (етикетът и `small` носят смисъла). */
+.card .n {
+  font-size: 32px;
+  font-weight: 660;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin: 6px 0 3px;
+  color: var(--text);
+}
+/* Холограмата е НАДГРАЖДАНЕ, не основа: `color: transparent` без работещ
+   `background-clip: text` прави числото невидимо, а числото е самата информация в
+   картата. Затова градиентът влиза само където изрязването по текст наистина работи.
+   Всеки стоп е мерен — най-тъмният (`--accent-2-lift`) дава 5.64:1 върху стъклото. */
+@supports ((background-clip: text) or (-webkit-background-clip: text)) {
+  .card .n {
+    /* Отвесно, не косо: кутията е на цялата ширина на картата, а глифата стои вляво —
+       косият градиент ѝ подаваше само първите проценти и числото излизаше просто бяло.
+       По височина преходът минава през цялата цифра, каквато и да е ширината ѝ. */
+    background: linear-gradient(
+      180deg,
+      #ffffff 0%,
+      var(--text) 30%,
+      var(--accent-2-lift) 82%,
+      var(--accent-3) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+.card .n small {
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0;
+}
+.card .delta {
+  font-size: 12.5px;
+  font-weight: 550;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+}
+.card .delta.up {
+  color: var(--good);
+}
+.card .delta.down {
+  color: var(--serious);
+}
+
+/* тренд-линия (една серия, затова без легенда) */
+.spark {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 10px;
+  overflow: visible;
+}
+.spark-line {
+  fill: none;
+  stroke: var(--data);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  /* Линията свети като неонова тръба — това е единственото ярко нещо в картата. */
+  filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.85));
+}
+.spark-area {
+  stroke: none;
+}
+/* Площта угасва надолу и минава от циан към виолет — брандовият преход,
+   само че легнал под линията. */
+.spark-stop-top {
+  stop-color: var(--accent-2);
+  stop-opacity: 0.38;
+}
+.spark-stop-bottom {
+  stop-color: var(--data);
+  stop-opacity: 0;
+}
+.spark-end {
+  fill: #ffffff;
+  stroke: var(--data);
+  stroke-width: 2.5;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 7px rgba(34, 211, 238, 0.95));
+}
+.spark-hit {
+  fill: transparent;
+}
+.spark-hit:hover {
+  fill: var(--data);
+  fill-opacity: 0.25;
+}
+
+/* ---------- таблици ---------- */
+.table-wrap {
+  background: var(--surface);
+  -webkit-backdrop-filter: var(--glass);
+  backdrop-filter: var(--glass);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  overflow-x: auto;
+  box-shadow: var(--shadow);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+.table-wrap table {
+  border: none;
+  border-radius: 0;
+}
+th,
+td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+  font-size: 14px;
+}
+th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  background: rgba(139, 92, 246, 0.1);
+  white-space: nowrap;
+}
+tbody tr:last-child td {
+  border-bottom: none;
+}
+tbody tr {
+  transition: background 0.1s ease;
+}
+tbody tr:hover {
+  background: rgba(139, 92, 246, 0.09);
+}
+td.num,
+th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+/* Дати и часове никога не се пренасят на нов ред в таблица. */
+td.when {
+  white-space: nowrap;
+}
+td .sub-line {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+/* ---------- чипове за състояние ---------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px 3px 7px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+  background: var(--surface-3);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: var(--text-2);
+  border: 1px solid var(--line);
+}
+.chip .ic-sm {
+  width: 14px;
+  height: 14px;
+}
+.chip.good {
+  background: rgba(52, 224, 161, 0.13);
+  border-color: rgba(52, 224, 161, 0.3);
+  color: var(--good);
+}
+.chip.warn {
+  background: rgba(255, 197, 61, 0.13);
+  border-color: rgba(255, 197, 61, 0.3);
+  color: var(--warn);
+}
+.chip.serious {
+  background: rgba(255, 138, 61, 0.13);
+  border-color: rgba(255, 138, 61, 0.3);
+  color: var(--serious);
+}
+.chip.critical {
+  background: rgba(255, 84, 112, 0.13);
+  border-color: rgba(255, 84, 112, 0.3);
+  color: var(--critical);
+}
+.chip.info {
+  background: rgba(34, 211, 238, 0.14);
+  border-color: rgba(34, 211, 238, 0.32);
+  color: var(--data);
+}
+/* Акцентният чип носи ПОВДИГНАТИЯ тон: магентата върху собствения си тинт е 4.30:1,
+   повдигнатата е 5.87:1. Ръбът и фонът остават в графичния цвят. */
+.chip.accent {
+  background: var(--accent-soft);
+  border-color: rgba(255, 45, 120, 0.34);
+  color: var(--accent-lift);
+}
+
+/* ---------- мярка (квота) ---------- */
+.meter {
+  display: grid;
+  gap: 5px;
+  min-width: 120px;
+}
+.meter-track {
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(139, 92, 246, 0.16);
+  overflow: hidden;
+}
+.meter-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent-2), var(--accent-3));
+  box-shadow: 0 0 12px -2px rgba(34, 211, 238, 0.8);
+}
+.meter-fill.warn {
+  background: linear-gradient(90deg, var(--serious), var(--warn));
+  box-shadow: 0 0 12px -2px rgba(255, 197, 61, 0.75);
+}
+.meter-fill.critical {
+  background: linear-gradient(90deg, #ff2d78, var(--critical));
+  box-shadow: 0 0 12px -2px rgba(255, 84, 112, 0.85);
+}
+.meter-label {
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- бутони ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line-strong);
+  background: var(--surface-2);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 550;
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease;
+}
+.btn:hover {
+  background: var(--surface-3);
+  border-color: rgba(139, 92, 246, 0.6);
+  text-decoration: none;
+}
+.btn:disabled,
+.btn[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+/* Първичният бутон НОСИ брандовия градиент. Мастилото е тъмно, защото бялото върху
+   магента е само 3.41:1 — тъмното дава 5.64:1 и на най-тъмната спирка (виолета) 4.74:1. */
+.btn.primary {
+  background: var(--brand-sweep);
+  background-size: 180% auto;
+  border-color: transparent;
+  color: var(--accent-ink);
+  font-weight: 650;
+  box-shadow: var(--glow-accent);
+  position: relative;
+  overflow: hidden;
+  transition:
+    background-position 0.5s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+/* Блясъкът минава ВЕДНЪЖ при посочване — не се върти в цикъл, значи няма пулс. */
+.btn.primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-120%);
+  background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.45), transparent 80%);
+}
+.btn.primary:hover {
+  background-position: 100% center;
+  box-shadow: 0 12px 34px -8px rgba(255, 45, 120, 0.75);
+  transform: translateY(-1px);
+}
+.btn.primary:hover::after {
+  animation: sheen 0.62s ease-out;
+}
+@keyframes sheen {
+  to {
+    transform: translateX(120%);
+  }
+}
+.btn.danger {
+  background: rgba(255, 84, 112, 0.13);
+  border-color: rgba(255, 84, 112, 0.38);
+  color: var(--critical);
+}
+.btn.danger:hover {
+  background: rgba(255, 84, 112, 0.22);
+}
+.btn.ghost {
+  background: transparent;
+  border-color: var(--line);
+  color: var(--text-2);
+}
+.btn.ghost:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.btn.small {
+  padding: 5px 10px;
+  font-size: 13px;
+  gap: 5px;
+}
+.btn.small .ic {
+  width: 15px;
+  height: 15px;
+}
+
+/* ---------- подредби ---------- */
+.row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+/* Вложена форма-ред не бива да се разтяга — иначе полето ѝ отскача над съседния бутон. */
+.row > form.row {
+  display: inline-flex;
+  flex: 0 1 auto;
+  margin: 0;
+}
+.inline {
+  display: inline;
+}
+.grid2 {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+/* Дете на решетка не се свива под съдържанието си по подразбиране — без това
+   широка таблица в колоната изнася цялата страница. */
+.grid2 > * {
+  min-width: 0;
+}
+/* В една форма двете колони са равни; несиметричното деление е за съдържателни страници. */
+form.stack .grid2,
+.stack .grid2 {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+}
+.panel {
+  background: var(--surface);
+  -webkit-backdrop-filter: var(--glass);
+  backdrop-filter: var(--glass);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 18px 20px;
+  margin-bottom: 18px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.panel::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: var(--brand-sweep);
+  opacity: 0.5;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 70%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 70%, transparent);
+}
+.panel > h2:first-child {
+  margin-top: 0;
+}
+
+/* ---------- съобщения ---------- */
+.flash {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 11px 14px;
+  border-radius: var(--r-sm);
+  margin-bottom: 18px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  -webkit-backdrop-filter: var(--glass);
+  backdrop-filter: var(--glass);
+  font-size: 14px;
+}
+.flash .ic {
+  margin-top: 1px;
+}
+.flash.ok {
+  border-color: rgba(52, 224, 161, 0.42);
+  background: rgba(52, 224, 161, 0.09);
+}
+.flash.ok .ic {
+  color: var(--good);
+}
+.flash.error {
+  border-color: rgba(255, 84, 112, 0.42);
+  background: rgba(255, 84, 112, 0.09);
+}
+.flash.error .ic {
+  color: var(--critical);
+}
+.flash.info {
+  border-color: rgba(34, 211, 238, 0.42);
+  background: rgba(34, 211, 238, 0.09);
+}
+.flash.info .ic {
+  color: var(--data);
+}
+
+/* ---------- празно състояние ---------- */
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 22px 20px;
+  color: var(--muted);
+  text-align: center;
+  font-size: 13.5px;
+}
+/* В панел празното състояние е бележка, не цял екран. */
+.panel > .empty {
+  padding: 12px 8px;
+}
+.empty .ic-xl {
+  color: var(--line-strong);
+}
+.empty strong {
+  color: var(--text-2);
+  font-weight: 550;
+  font-size: 14.5px;
+}
+
+/* ---------- форми ---------- */
+form.stack {
+  display: grid;
+  gap: 14px;
+  max-width: 760px;
+}
+label {
+  display: grid;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 550;
+  color: var(--text-2);
+}
+label .hint {
+  font-weight: 400;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  background: var(--well);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  /* Полето НЕ наследява тежестта на етикета — иначе всяка стойност излиза получер. */
+  font-weight: 400;
+  transition: border-color 0.12s ease;
+}
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: rgba(139, 92, 246, 0.6);
+}
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow:
+    0 0 0 3px var(--accent-soft),
+    0 0 18px -4px rgba(255, 45, 120, 0.55);
+}
+textarea {
+  min-height: 110px;
+  resize: vertical;
+  line-height: 1.5;
+}
+textarea[rows] {
+  min-height: 0;
+}
+label.check {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+}
+label.check input[type='checkbox'] {
+  width: 17px;
+  height: 17px;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+fieldset {
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+  margin: 0;
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+legend {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 0 6px;
+}
+.filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: end;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  background: var(--surface);
+  -webkit-backdrop-filter: var(--glass);
+  backdrop-filter: var(--glass);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+}
+.filters label {
+  min-width: 170px;
+}
+.form-section {
+  margin-top: 10px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+/* ---------- разни ---------- */
+.muted {
+  color: var(--muted);
+}
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+}
+.secret {
+  background: var(--well);
+  border: 1px dashed var(--warn);
+  padding: 12px 14px;
+  border-radius: var(--r-sm);
+  word-break: break-all;
+}
+.preview {
+  background: var(--well);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 14px 16px;
+  white-space: pre-wrap;
+  line-height: 1.6;
+  max-width: 580px;
+}
+details {
+  margin: 12px 0 0;
+}
+details summary {
+  cursor: pointer;
+  color: var(--text-2);
+  font-size: 13.5px;
+  padding: 6px 0;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+details summary::-webkit-details-marker {
+  display: none;
+}
+details summary .ic-sm {
+  color: var(--muted);
+  transition: transform 0.15s ease;
+}
+details[open] summary .ic-sm {
+  transform: rotate(180deg);
+}
+.pager {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  align-items: center;
+}
+/* Входът е витрината: единственият екран, който човек вижда преди да е влязъл.
+   Затова тук стъклото е най-плътно, а около картата има собствен брандов ореол. */
+.login {
+  max-width: 400px;
+  margin: 11vh auto;
+  background: var(--surface-2);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  backdrop-filter: blur(28px) saturate(160%);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-lg);
+  padding: 32px;
+  position: relative;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.6),
+    0 40px 90px -40px rgba(139, 92, 246, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.login::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--brand-sweep);
+  background-size: 200% auto;
+  opacity: 0.7;
+  /* Рамка-градиент: пълним правоъгълника и изрязваме сърцевината, остава само ръбът. */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  animation: sweep 11s linear infinite;
+}
+/* Единственото безкрайно движение върху елемент в потока — и то по РЪБА на картата,
+   не върху текст: цикълът е 11 s, тоест два порядъка под прага за проблясък (WCAG
+   2.3.1), а `prefers-reduced-motion` го спира напълно. */
+@keyframes sweep {
+  to {
+    background-position: 200% center;
+  }
+}
+.login .brand {
+  justify-content: center;
+  font-size: 19px;
+  margin-bottom: 6px;
+}
+.login h1 {
+  font-size: 18px;
+  text-align: center;
+  margin-bottom: 20px;
+  font-weight: 550;
+}
+.stat-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  font-size: 13.5px;
+  color: var(--text-2);
+}
+.stat-row b {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+    padding: 14px;
+  }
+  /* Хоризонталната лента се СКРОЛИРА, не разтяга: без `min-width: 0` елемент с
+     overflow в flex контейнер пак расте до съдържанието си и изнася цялата страница. */
+  .sidebar,
+  .who,
+  .who .row {
+    min-width: 0;
+  }
+  .nav {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+    min-width: 0;
+  }
+  .who > div {
+    overflow-wrap: anywhere;
+  }
+  /* Действията в заглавната лента се редят една под друга вместо да изнесат страницата. */
+  .topbar,
+  .topbar > div {
+    min-width: 0;
+    width: 100%;
+  }
+  .topbar .row .btn {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+  .nav a {
+    white-space: nowrap;
+  }
+  .nav small {
+    display: none;
+  }
+  .who {
+    margin-top: 12px;
+  }
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+  main {
+    padding: 18px 16px 40px;
+  }
+  .who .row {
+    justify-content: flex-start;
+  }
+}
+
+/* Едно кратко появяване при зареждане. Без движение по скрол, без повторение. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+main > .topbar,
+main > .cards,
+main > .panel,
+main > .table-wrap,
+main > .grid2,
+main > h2,
+main > form {
+  animation: rise 0.32s cubic-bezier(0.22, 0.75, 0.3, 1) both;
+}
+main > .cards {
+  animation-delay: 0.04s;
+}
+main > .panel,
+main > .table-wrap {
+  animation-delay: 0.07s;
+}
+main > .grid2 {
+  animation-delay: 0.09s;
+}
+
+/* Скролбарове в тона на панела, не системни. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+/* Общото спиране на движението живее в `tokens.css`; тук остава само това, което
+   `animation: none` не покрива — преобразуванията и блясъкът при посочване. */
+@media (prefers-reduced-motion: reduce) {
+  a.card:hover,
+  .btn.primary:hover {
+    transform: none;
+  }
+  .btn.primary::after {
+    display: none;
+  }
+}
+
+/* ---------- помощни класове ----------
+   Строгият CSP (`style-src 'self'`) блокира всеки `style="…"` атрибут — затова
+   оформлението живее в класове, а не в разметката. Динамичната ширина на мярката
+   се закръгля до стъпка от 5%; точното число стои до лентата. */
+.mt-1 {
+  margin-top: 8px;
+}
+.mt-2 {
+  margin-top: 14px;
+}
+.mb-1 {
+  margin-bottom: 8px;
+}
+.mb-2 {
+  margin-bottom: 14px;
+}
+.m-0 {
+  margin: 0;
+}
+.block {
+  display: block;
+}
+.spread {
+  justify-content: space-between;
+}
+.center {
+  text-align: center;
+}
+.shrink {
+  width: 1%;
+  white-space: nowrap;
+}
+.w-full {
+  width: 100%;
+  justify-content: center;
+}
+.field-sm {
+  max-width: 170px;
+}
+.field-md {
+  max-width: 240px;
+}
+.field-lg {
+  max-width: 320px;
+}
+.panel.warn-edge {
+  border-color: var(--warn);
+}
+.meter-fill.p-0 {
+  width: 0%;
+}
+.meter-fill.p-5 {
+  width: 5%;
+}
+.meter-fill.p-10 {
+  width: 10%;
+}
+.meter-fill.p-15 {
+  width: 15%;
+}
+.meter-fill.p-20 {
+  width: 20%;
+}
+.meter-fill.p-25 {
+  width: 25%;
+}
+.meter-fill.p-30 {
+  width: 30%;
+}
+.meter-fill.p-35 {
+  width: 35%;
+}
+.meter-fill.p-40 {
+  width: 40%;
+}
+.meter-fill.p-45 {
+  width: 45%;
+}
+.meter-fill.p-50 {
+  width: 50%;
+}
+.meter-fill.p-55 {
+  width: 55%;
+}
+.meter-fill.p-60 {
+  width: 60%;
+}
+.meter-fill.p-65 {
+  width: 65%;
+}
+.meter-fill.p-70 {
+  width: 70%;
+}
+.meter-fill.p-75 {
+  width: 75%;
+}
+.meter-fill.p-80 {
+  width: 80%;
+}
+.meter-fill.p-85 {
+  width: 85%;
+}
+.meter-fill.p-90 {
+  width: 90%;
+}
+.meter-fill.p-95 {
+  width: 95%;
+}
+.meter-fill.p-100 {
+  width: 100%;
+}

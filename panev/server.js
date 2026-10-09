@@ -95,10 +95,6 @@ function validatePrice(price) {
   return Number.isFinite(n) && n >= 0 && n < 100000;
 }
 
-function validPassword(pw) {
-  return typeof pw === 'string' && pw.length >= 8 && pw.length < 200;
-}
-
 // ─────────────────────────────────────────────────────────────
 //  Security headers
 // ─────────────────────────────────────────────────────────────
@@ -113,7 +109,7 @@ function securityHeaders(req, res, next) {
     "font-src 'self'",
     "img-src 'self' data: https: blob:",
     "connect-src 'self' https://api.stripe.com",
-    "frame-src https://js.stripe.com https://hooks.stripe.com",
+    "frame-src 'self' https://js.stripe.com https://hooks.stripe.com", // 'self': 3D изгледът на началната страница
     "object-src 'self'",   // каталожният PDF се вгражда с <object>
     "base-uri 'self'",
     "form-action 'self'",
@@ -182,11 +178,13 @@ app.use((req, res, next) => {
   // Мачваме срещу НОРМАЛИЗИРАНИЯ път: Express не percent-decode-ва req.path,
   // а express.static го декодира преди да резолвне файла — затова /li%62/db.js
   // би подминал prefix-правило върху req.path и би разкрил изходния код.
-  // Декодираме веднъж и колабсираме повтарящи се слешове (заради %2f).
-  const norm = decodedPath.replace(/\/{2,}/g, '/');
-  if (norm.includes('..') || norm.includes('\0')) {
+  // Декодираме веднъж и нормализираме като send: колабсира повтарящите се слешове (заради %2f)
+  // и единичните „.“ сегменти — иначе /./server.js или /%2e/3d/src/app.js подминаваха всички
+  // prefix-правила, а send ги сервираше (и /./data/<снимка на базата> от autodeploy.sh).
+  if (decodedPath.includes('..') || decodedPath.includes('\0')) {
     return res.status(404).send('Not found');
   }
+  const norm = path.posix.normalize(decodedPath);
   // Case-insensitive: on case-insensitive filesystems /Data/panev.DB etc. would
   // otherwise bypass the blocklist and disclose the SQLite DB (hashes + PII).
   const blocked = [/^\/data\b/i, /^\/scripts\b/i, /^\/lib\b/i, /^\/node_modules\b/i,
@@ -197,7 +195,9 @@ app.use((req, res, next) => {
                    // under Apache; the app runs under Node behind Nginx, so enforce here.
                    /^\/README\.md$/i, /^\/server\.js$/i, /\.php$/i, /\.sh$/i, /^\/\.htaccess$/i,
                    // изходният код на генератора и вътрешните бележки не се сервират
-                   /^\/site\b/i, /^\/CLAUDE\.md$/i];
+                   /^\/site\b/i, /^\/CLAUDE\.md$/i, /^\/DEPLOY\.md$/i,
+                   // изходният пакет на 3D каталога; сайтът сервира само билда му от /3d-viewer/
+                   /^\/3d(\/|$)/i];
   if (blocked.some(r => r.test(norm))) return res.status(404).send('Not found');
   next();
 });
@@ -310,7 +310,9 @@ app.use(express.static(path.join(__dirname), {
   index: ['index.html'],
   setHeaders(res, filePath) {
     if (filePath.endsWith('.pdf')) {
-      res.setHeader('Cache-Control', 'public, max-age=604800');
+      // Каталогът се подменя под същия, раздаден на клиенти адрес — браузърът проверява всеки път
+      // (ETag → 304, ако не е сменен), иначе би показвал старо копие до седмица.
+      res.setHeader('Cache-Control', 'public, no-cache');
       res.setHeader('Content-Disposition', 'inline');
     }
     if (filePath.endsWith('.svg') || filePath.endsWith('.js') || filePath.endsWith('.css')) {
@@ -785,15 +787,16 @@ app.get('/api/admin/me', auth.requireAdmin, (req, res) => {
 app.post('/api/admin/password', auth.requireAdmin, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body || {};
-    if (!currentPassword || !validPassword(newPassword)) {
-      return res.status(400).json({ error: 'Nuova password deve avere almeno 8 caratteri' });
-    }
+    if (!currentPassword) return res.status(400).json({ error: 'Inserisci la password attuale' });
     const user = db.getAdminById(req.adminUser.id);
+    const problem = auth.passwordProblem(newPassword, user.email);
+    if (problem) return res.status(400).json({ error: problem });
     const ok = await auth.verifyPassword(currentPassword, user.password_hash);
     if (!ok) return res.status(401).json({ error: 'Password attuale non corretta' });
 
     const hash = await auth.hashPassword(newPassword);
-    db.updateAdminPassword(user.id, hash);
+    db.updateAdminPassword(user.id, hash); // ends every other session (token_version + 1)
+    auth.setAuthCookie(res, auth.issueToken(db.getAdminById(user.id)), IS_PROD); // this one stays
     res.json({ ok: true });
   } catch (err) {
     console.error('[password]', err.message);

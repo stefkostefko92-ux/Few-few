@@ -192,6 +192,10 @@ function auditBlock(scope, key, failures, blockMs, kind) {
           metadata: { scope, kind, key: keyLabel(key), failures, blockMs },
         },
       });
+      // v3.4 — собственикът научава за блокировката (дроселирано на 15 min).
+      const { alertOwner, ALERT_KINDS } = await import("./securityAlerts.js");
+      await alertOwner(ALERT_KINDS.BRUTE_FORCE_BLOCK, "Brute-force block engaged",
+        `Scope ${scope} (${kind}): ${keyLabel(key)} blocked for ${Math.round(blockMs / 60000)} min after ${failures} failures. See Admin → Security.`);
     })
     .catch(() => { /* одитът никога не бива да чупи защитата */ });
 }
@@ -404,6 +408,53 @@ export function bruteForceGuard(scope, keyFn = (req) => req.ip) {
 }
 
 /** Само за тестове. */
+/**
+ * Снимка на текущите блокировки (само паметта на този процес + маркер дали
+ * има Redis). За админ таблото „Security": кой е спрян, за какво и докога.
+ * Ключовете се ОБОБЩАВАТ (keyLabel) — таблото не бива да е регистър на IP-та.
+ */
+export function snapshot() {
+  const t = now();
+  const blocked = [];
+  for (const [k, v] of state.entries()) {
+    if (!v.blockedUntil || v.blockedUntil <= t) continue;
+    const idx = k.indexOf(":");
+    const scope = k.slice(0, idx);
+    const key = k.slice(idx + 1);
+    blocked.push({
+      scope,
+      key,                       // пълният ключ — нужен за отблокиране
+      label: keyLabel(key),
+      failures: v.times.length,
+      blockedUntil: new Date(v.blockedUntil).toISOString(),
+      retryAfterSec: Math.ceil((v.blockedUntil - t) / 1000),
+    });
+  }
+  blocked.sort((a, b) => b.retryAfterSec - a.retryAfterSec);
+  return {
+    blocked,
+    trackedEntries: state.size,
+    redis: !!getRedis(),
+    windowSec: WINDOW_SEC,
+    steps: STEPS,
+  };
+}
+
+/**
+ * Ръчно отблокиране (админ действие, одитирано от повикващия): чисти паметта
+ * И Redis за точно този ключ в този обхват. Не пипа подмрежите — те се
+ * отблокират отделно, ако са били блокирани.
+ */
+export async function unblock(scope, key) {
+  const k = entryKey(scope, key);
+  const had = state.delete(k);
+  const redis = getRedis();
+  if (redis) {
+    try { await redis.del(`bf:blk:${scope}:${key}`, `bf:ip:${scope}:${key}`); } catch { /* fail-open */ }
+  }
+  return { removed: had };
+}
+
 export function _resetBruteForceState() {
   state.clear();
   globalFails.clear();

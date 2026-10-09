@@ -1,42 +1,59 @@
 // llms.txt — concise, AI-friendly summary of the site (AEO/GEO).
-// See https://llmstxt.org/. Plain text, served at /llms.txt.
+// See https://llmstxt.org/. Plain text, served at /llms.txt. Built from the
+// same content the admin edits (Italian, the site's main language), so it can
+// never drift from the pages. Only the agency credit at the end is fixed.
+import { loadSite } from "@/lib/content";
 
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
-export function GET() {
+const oneLine = (s: string) => s.replace(/\s+/g, " ").trim();
+
+export async function GET() {
   const base = process.env.SITE_URL || "https://www.scuolabulgaramilano.it";
-  const body = `# Qui Bulgaria — Scuola bulgara di Milano
+  const site = await loadSite("it");
+  const seo = site.get("seo");
+  const org = site.get("org");
+  const settings = site.get("settings");
+  const courses = site.get("courses");
+  const dance = site.get("dance");
+  const faq = site.get("faq");
+  const has = (s: string) => s.trim() !== "";
 
-> Centro linguistico e culturale a Milano (Lombardia, Italia): lingua e cultura
-> bulgara, scuola "P. Yavorov", corsi di bulgaro per bambini e adulti (in
-> presenza, online o ibridi) e danza tradizionale bulgara. Associazione no-profit.
-> Sito trilingue: italiano, български, English.
+  const facts = [
+    `Nome: ${org.name}${has(org.alternateName) ? ` — ${org.alternateName}` : ""}`,
+    `Luogo: ${settings.address}`,
+    has(org.foundingDate) ? `Fondata: ${org.foundingDate}` : "",
+    ...courses.items.filter((c) => has(c.title)).map((c) => `${c.title}: ${oneLine(c.text)}`),
+    has(dance.title) ? `${oneLine(dance.title)} — ${oneLine(dance.lead || "")}` : "",
+    ...dance.schedule.filter((r) => has(r.day)).map((r) => `${r.day} ${r.time}: ${oneLine(r.place)}`),
+    `Email: ${settings.email}`,
+    `Telefono: ${settings.phone}`,
+  ].filter(Boolean);
 
-## Fatti chiave
-- Nome: Associazione "Qui Bulgaria" — Scuola bulgara "P. Yavorov"
-- Luogo: Via Giovanni Battista Piazzetta, 20138 Milano (MI), Italia
-- Lingue dei corsi: bulgaro (per madrelingua e principianti)
-- Diplomi riconosciuti nel sistema educativo bulgaro (Ministero dell'Istruzione e della Scienza)
-- Danza tradizionale con il gruppo "Veselie"
-- Email: centroquibulgaria@gmail.com
-
-## Pagine principali
-- [Home (IT)](${base}/it)
-- [Home (BG)](${base}/bg)
-- [Home (EN)](${base}/en)
-- [Privacy](${base}/it/privacy)
-- [Cookie](${base}/it/cookie)
-- [Termini](${base}/it/termini)
-
-## Domande frequenti
-- Dove si trova la scuola bulgara di Milano? A Milano, in Lombardia (Via Giovanni Battista Piazzetta, 20138).
-- A chi sono rivolti i corsi? A bambini di famiglie bulgare e miste e ad adulti di ogni livello.
-- I diplomi sono riconosciuti? Sì, nel sistema educativo bulgaro.
-- Offrite danza tradizionale? Sì, con il gruppo "Veselie", due appuntamenti settimanali a Milano.
-
-Creato, disegnato e donato da Carbon Stealth VCC (https://carbonstealth.eu).
-`;
+  const body = [
+    `# ${seo.title}`,
+    "",
+    `> ${oneLine(seo.description)}`,
+    "> Sito trilingue: italiano, български, English.",
+    "",
+    "## Fatti chiave",
+    ...facts.map((f) => `- ${f}`),
+    "",
+    "## Pagine principali",
+    `- [Home (IT)](${base}/it)`,
+    `- [Home (BG)](${base}/bg)`,
+    `- [Home (EN)](${base}/en)`,
+    `- [Privacy](${base}/it/privacy)`,
+    `- [Cookie](${base}/it/cookie)`,
+    `- [Termini](${base}/it/termini)`,
+    "",
+    "## Domande frequenti",
+    ...faq.items.filter((f) => has(f.q) && has(f.a)).map((f) => `- ${oneLine(f.q)} ${oneLine(f.a)}`),
+    "",
+    "Creato, disegnato e donato da Carbon Stealth VCC (https://carbonstealth.eu).",
+    "",
+  ].join("\n");
   return new Response(body, {
-    headers: { "Content-Type": "text/plain; charset=utf-8" },
+    headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "public, max-age=3600" },
   });
 }

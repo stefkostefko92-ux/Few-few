@@ -1,0 +1,13 @@
+# Паметта на агентите е append-only: всеки ред е една поука. Две страни, добавили различни поуки на
+# едно и също място (под заглавието на раздела), не са конфликт — искаме и двете. Вграденият драйвер
+# `union` пази редовете от двете страни без конфликтни маркери. Точните дубли, ако се появят, ги лови
+# гейтът memory-curate (`node tools/memory/curate.mjs --write` ги оправя). Виж tools/lib/memory-branch.mjs.
+.claude/agents/_memory/*.md merge=union
+.claude/agents/_memory/_flows.jsonl merge=union
+# Реалната употреба на токени (usage-report.mjs) — append-only, пътува с клона agents/memory.
+tools/agents/evals/usage.jsonl merge=union
+# Доктрината НЕ е append-only — там противоречащи редакции трябва да спрат човек (обикновен 3-way).
+.claude/agents/_memory/_shared.md merge=text
+.claude/agents/_memory/SECURITY.md merge=text
+.claude/agents/_memory/PROCEDURE.md merge=text
+.claude/agents/_memory/PROTOCOL.md merge=text

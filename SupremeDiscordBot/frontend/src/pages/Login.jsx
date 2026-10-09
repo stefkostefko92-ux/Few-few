@@ -6,12 +6,14 @@ import {
   Webhook, Sparkles, Check, Star, Zap, Crown, ArrowRight,
   Lock, ScrollText, Shield, Building2, MessageCircle,
   Layers, Shuffle, Database, Palette, Minus,
-  SmilePlus, BookOpen, ClipboardList, UserPlus,
+  SmilePlus, BookOpen, ClipboardList, UserPlus, Gamepad2, Activity,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
 import SignalFunnel from "../components/SignalFunnel";
 import Seo from "../components/Seo";
+import FeatureLinks from "../components/FeatureLinks";
+import GameShowcase from "../components/GameShowcase";
 import { useScrollReveal } from "../hooks/useScrollReveal";
 import { useMagnetic, useTiltCard } from "../hooks/useMicroInteractions";
 
@@ -31,9 +33,6 @@ export default function Login() {
   const params = new URLSearchParams(window.location.search);
   const error = params.get("error");
 
-  // Billing interval for the pricing section (monthly | annual). Real
-  // keyboard-operable control below (radiogroup of aria-checked buttons).
-  const [billing, setBilling] = useState("month");
   const rootRef = useRef(null);
   useScrollReveal(rootRef);
   const heroCtaRef = useMagnetic();
@@ -51,7 +50,7 @@ export default function Login() {
     <div ref={rootRef} className="relative min-h-screen bg-transparent overflow-hidden">
       <Seo
         title="Supreme Bot — Discord Ticket Bot & SaaS Platform | Tickets, Forms, Applications | Carbon Stealth"
-        description="Supreme Bot is a Discord ticket bot and multi-tenant SaaS platform by Carbon Stealth. Manage tickets, application forms, panels, white-label bots, AI auto-replies, and Stripe subscriptions — all through a modern web dashboard."
+        description="Supreme Bot is a Discord ticket bot and all-in-one platform by Carbon Stealth: tickets, application forms, verification, giveaways, a leveling game with companions and server quests, AI-assisted replies and white-label bots — one web dashboard, EU-hosted, Premium billed through Discord."
         path="/"
         lang="en"
         hreflang
@@ -81,6 +80,7 @@ export default function Login() {
           </a>
           <div className="hidden md:flex items-center gap-6 font-mono text-xs text-cs-dim">
             <a href="#features" className="hover:text-cs-cyan transition-colors">FEATURES</a>
+            <a href="#game" className="hover:text-cs-cyan transition-colors">GAME</a>
             <a href="#pricing" className="hover:text-cs-cyan transition-colors">PRICING</a>
             <a href="#faq" className="hover:text-cs-cyan transition-colors">FAQ</a>
             <a href={SUPPORT_URL} target="_blank" rel="noopener" className="hover:text-cs-cyan transition-colors">DISCORD</a>
@@ -107,7 +107,7 @@ export default function Login() {
                 <span className="text-cs-cyan">One dashboard.</span>
               </h1>
               <p className="text-cs-muted text-lg sm:text-xl leading-relaxed mb-8 text-pretty max-w-2xl mx-auto lg:mx-0">
-                Tickets, applications, verification, reaction roles, giveaways, activity logging, scheduled messages, webhooks and AI-powered replies — for Discord communities that outgrew a folder full of single-purpose bots.
+                Tickets, applications, verification, reaction roles, giveaways, activity logging, a leveling game with collectible companions, scheduled messages, webhooks and AI-assisted replies — for Discord communities that outgrew a folder full of single-purpose bots.
               </p>
 
               {error && (
@@ -133,7 +133,7 @@ export default function Login() {
                 </a>
               </div>
               <p className="text-xs text-cs-dim mt-6 font-mono leading-relaxed">
-                Free forever on the base tier · 14-day Premium trial, no card · Cancel anytime · EU-hosted, GDPR-native
+                Free forever on the base tier · Premium billed through Discord · Cancel anytime · EU-hosted, GDPR-native
               </p>
               <a
                 href={BOT_INVITE_URL}
@@ -160,7 +160,7 @@ export default function Login() {
                 Everything, <span className="text-cs-cyan">integrated.</span>
               </h2>
               <p className="text-cs-muted max-w-2xl mx-auto">
-                Stop paying €5–20/month for 8 different bots that don't talk to each other.
+                Stop juggling 8 different bots that don't talk to each other — each with its own dashboard, permissions and support channel.
               </p>
             </div>
 
@@ -193,7 +193,7 @@ export default function Login() {
                 HMAC-signed event delivery for tickets, applications, giveaways, verification — plug into your stack.
               </FeatureCard>
               <FeatureCard icon={Sparkles} title="AI Auto-Replies">
-                The AI drafts the first reply to common questions; your staff review and send — assistive, with a human in the loop.
+                The AI replies instantly to the first message in a ticket, clearly labelled as an AI reply; your staff take over from there. Opt-in.
               </FeatureCard>
               <FeatureCard icon={ScrollText} title="Server Activity Logging" badge="Free">
                 Voice, member, moderation and message events relayed to your own log channel — including edited and deleted messages, with the original text kept.
@@ -207,9 +207,25 @@ export default function Login() {
               <FeatureCard icon={ClipboardList} title="Canned Responses & SLA">
                 Saved replies your team can drop in with one command, plus first-response and resolution timers that flag a ticket before it goes stale.
               </FeatureCard>
+              <FeatureCard icon={Gamepad2} title="Leveling & Server Season" badge="Free">
+                XP from activity (never from message text), level roles, daily sparks with streaks, a server shop, 60 collectible companions and weekly server quests.
+              </FeatureCard>
             </div>
           </div>
         </section>
+
+        {/* SERVER SEASON — играта; същият компонент като на преведените лендинги */}
+        <GameShowcase
+          heading="A game that brings members back every day"
+          sub="Server Season turns activity in your server into progress: levels, rewards and a collection that live inside your server. No gambling, and sparks can't be bought."
+          bullets={[
+            "Levels on the MEE6 curve members already know, with stacking level roles — only safe roles are ever assigned",
+            "/daily sparks with a streak (×2 from day 7) and a shop with timed roles or your own custom rewards",
+            "60 original companions spawn in active channels — the first member to press Catch keeps it",
+            "Weekly server quests, a counting channel and trivia — the whole server plays as one team",
+          ]}
+          link="See how the game works"
+        />
 
         {/* PRODUCT TOUR — реални скрийншоти на dashboard-а (демо данни).
             Прост tab превключвател (aria-pressed), без анимации — само смяна
@@ -263,21 +279,22 @@ export default function Login() {
                   <CompareRow label="Form logic"              free="—"                    premium="Branching + regex" />
                   <CompareRow label="Verification"            free="Button only"          premium="+ Math captcha + age gate" />
                   <CompareRow label="Ticket workflow"         free="Basic open/close"     premium="Claim · escalate · round-robin" />
-                  <CompareRow label="AI replies"              free="—"                    premium="AI-powered (assistive)" />
+                  <CompareRow label="AI replies"              free="—"                    premium="Automatic first reply, labelled as AI" />
                   <CompareRow label="Webhooks"                free="—"                    premium="20 integrations" />
                   <CompareRow label="Transcript retention"    free="30 days"              premium="Unlimited" />
-                  <CompareRow label="Price"                   free="€0, forever"          premium="€4.99/mo · €49/yr · 14-day trial" />
+                  <CompareRow label="Server Season game"      free="5 level roles · 5 shop items · 1 companion · 1 quest" premium="100 roles · 50 items · every companion · 3 quests" />
+                  <CompareRow label="Price"                   free="€0, forever"          premium="€4.99/mo · billed through Discord" />
                 </tbody>
               </table>
             </div>
 
             <div className="text-center">
               <button onClick={handleLogin} className="cs-btn-primary text-base px-8 py-4">
-                <span>Start your 14-day Premium trial</span>
+                <span>Start free with Discord</span>
                 <ArrowRight className="w-4 h-4 ml-1" />
               </button>
               <p className="text-xs text-cs-dim mt-4 max-w-lg mx-auto font-mono leading-relaxed">
-                Full Premium, no credit card. Reverts to Free automatically if you don't subscribe — nothing to cancel, nothing charged.
+                Start on Free today. When a server needs Premium, subscribe for it in the Discord store — monthly, billed by Discord, cancel anytime.
               </p>
             </div>
           </div>
@@ -291,18 +308,21 @@ export default function Login() {
               Replace these. <span className="text-cs-cyan">All of them.</span>
             </h2>
             <div data-reveal className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+              {/* Категории, не чужди марки и цени: цените на конкурентите се менят и не
+                  са сверени — недоказуемо твърдение не стои тук (одит 24.09.2026;
+                  сравненията със сверени източници са в /compare/*). */}
               {[
-                ["TicketTool", "€5/mo"], ["Appy.bot", "€5/mo"], ["GiveawayBot", "€3/mo"],
-                ["Stickyboard", "€4/mo"], ["Dyno Poll", "€2/mo"], ["Webhook.io", "€10/mo"],
-              ].map(([name, price]) => (
+                ["Ticket bot", "tickets & transcripts"], ["Application bot", "forms & review"], ["Giveaway bot", "prizes & rerolls"],
+                ["Leveling bot", "XP & level roles"], ["Sticky / schedule bot", "pinned & timed posts"], ["Logging bot", "edits & deletions"],
+              ].map(([name, what]) => (
                 <div key={name} className="cs-card text-center !p-4">
                   <div className="text-sm text-cs-text font-bold line-through decoration-red-500">{name}</div>
-                  <div className="text-xs text-cs-dim mt-1">{price}</div>
+                  <div className="text-xs text-cs-dim mt-1">{what}</div>
                 </div>
               ))}
             </div>
             <p className="text-cs-muted mt-8 max-w-2xl mx-auto">
-              Total: <span className="line-through decoration-red-500">€29/month, 6 dashboards, 6 support channels.</span><br />
+              <span className="line-through decoration-red-500">6 bots, 6 dashboards, 6 sets of permissions, 6 support channels.</span><br />
               <span className="text-cs-cyan font-bold">One subscription. One dashboard. One bot.</span>
             </p>
           </div>
@@ -342,7 +362,7 @@ export default function Login() {
               <TrustCard
                 icon={Building2}
                 title="Registered business"
-                body="Carbon Stealth VCC · EIK 208725180 · VAT BG208725180. Real company, real invoices, real support."
+                body="Carbon Stealth VCC · EIK 208725180 · VAT BG208725180. A real company and real support; purchases are receipted by Discord as the seller of record."
               />
               <TrustCard
                 icon={MessageCircle}
@@ -352,7 +372,9 @@ export default function Login() {
             </div>
 
             <div className="flex flex-wrap items-center justify-center gap-8 text-xs font-mono text-cs-dim border-t border-cs-border/50 pt-8">
-              <div className="flex items-center gap-2"><span className="text-success">●</span> All systems operational</div>
+              {/* Статичната значка „всичко работи“ беше твърдение без измерване —
+                  сега води към живия статус (одит 24.09.2026). */}
+              <a href="/status" className="flex items-center gap-2 hover:text-cs-cyan transition-colors"><Activity className="w-3.5 h-3.5" aria-hidden="true" /> Live system status →</a>
               <div>GDPR compliant</div>
               <div>Ad-free · no advertising trackers</div>
               <div>Cancel anytime · no lock-in</div>
@@ -372,8 +394,8 @@ export default function Login() {
 
             <div data-reveal className="space-y-3">
               <FaqItem
-                q="Will I be charged for the 14-day trial?"
-                a="No. Starting a trial needs no credit card, and nothing is charged during or after it unless you actively choose to subscribe. If you don't subscribe, the server reverts to the Free tier automatically when the trial ends — there is nothing to cancel and nothing is billed. Your panels, forms and settings stay exactly as you left them."
+                q="How do I pay for Premium?"
+                a="Through Discord only. Open the Discord store for Supreme Bot, pick Premium or White-label for your server and complete Discord's checkout. Discord is the seller of record: it shows the final price with VAT, charges you and sends the receipt — we never see your card. Subscriptions are monthly; cancel anytime from Discord's User Settings → Subscriptions and keep access until the end of the paid period."
               />
               <FaqItem
                 q="How is pricing calculated?"
@@ -385,11 +407,11 @@ export default function Login() {
               />
               <FaqItem
                 q="Can I use my own Discord bot?"
-                a="Yes — on the White-label tier (€9.99/mo or €99/yr) you upload your own bot token and it runs under your brand: your bot's name, avatar and server presence. Agencies can cover up to 5 or 10 servers under one White-label subscription (Agency 5 / Agency 10)."
+                a="Yes — on the White-label tier (€9.99 per server per month, bought in the Discord store) you upload your own bot token and it runs under your brand: your bot's name, avatar and server presence. The token is encrypted at rest with AES-256-GCM."
               />
               <FaqItem
                 q="What happens if I cancel — can I take my data?"
-                a="No lock-in. Cancel anytime from the dashboard — access continues until the end of the period you paid for, then the server reverts to the Free tier. Panels, forms, applications and settings are kept; transcripts of tickets closed more than 30 days ago are deleted on the Free tier. Export what you need to CSV or PDF before the period ends."
+                a="No lock-in. Cancel anytime in Discord (User Settings → Subscriptions) — access continues until the end of the period you paid for, then the server reverts to the Free tier. Panels, forms, applications and settings are kept; transcripts of tickets closed more than 30 days ago are deleted on the Free tier. Export what you need to CSV or PDF before the period ends."
               />
               <FaqItem
                 q="Do you support multiple servers?"
@@ -398,6 +420,10 @@ export default function Login() {
               <FaqItem
                 q="Is there an API?"
                 a="Yes — a public REST API is available on Premium at /public/v1 with bearer token authentication and scoped permissions. Rate limit is 300 req/min per key."
+              />
+              <FaqItem
+                q="Does the leveling game read our messages?"
+                a="No. XP is counted per message event with a cooldown — the text is never read or stored for the game. The only exception is the counting channel an admin designates, where the bot checks whether a message is the next number and stores nothing else. The game is off by default, has no gambling, and sparks can't be bought; members can delete their game data with /privacy delete."
               />
               <FaqItem
                 q="How do I get support?"
@@ -418,8 +444,6 @@ export default function Login() {
               <p className="text-cs-muted">Pay only for what you need. Upgrade anytime.</p>
             </div>
 
-            <BillingToggle interval={billing} onChange={setBilling} />
-
             {/* Free · Premium · White-label */}
             <div data-reveal className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <PricingCard
@@ -435,6 +459,7 @@ export default function Login() {
                   "2 application forms (up to 5 questions)",
                   "1 verification panel",
                   "Unlimited polls & giveaways",
+                  "Server Season game: levels, shop, 1 companion slot",
                   "Persistent transcripts (30-day retention)",
                 ]}
               />
@@ -445,20 +470,20 @@ export default function Login() {
                 badge="Recommended"
                 name="Premium"
                 tagline="For servers where support is a job, not a side task."
-                price={billing === "year" ? "€49" : "€4.99"}
-                per={billing === "year" ? "/ year" : "/ month"}
-                trial="14-day free trial, no card"
+                price="€4.99"
+                per="/ month · via Discord"
                 onCta={handleLogin}
-                cta="Start 14-day trial"
+                cta="Get Premium"
                 bullets={[
                   "50 panels · 50 forms · 50 questions",
                   "Math captcha + account-age gates",
                   "Claim · escalate · round-robin",
                   "Sticky + scheduled + recurring messages",
                   "Advanced analytics",
-                  "AI auto-replies (assistive, human-in-the-loop)",
+                  "AI auto-replies (labelled as AI)",
                   "Webhooks (HMAC) + public REST API",
                   "Unlimited transcript retention",
+                  "Full game: every companion, 3 quests, daily trivia",
                 ]}
               />
 
@@ -466,8 +491,8 @@ export default function Login() {
                 icon={Crown}
                 name="White-label"
                 tagline="Run Supreme under your own brand."
-                price={billing === "year" ? "€99" : "€9.99"}
-                per={billing === "year" ? "/ year" : "/ month"}
+                price="€9.99"
+                per="/ month · via Discord"
                 onCta={handleLogin}
                 cta="Get White-label"
                 bullets={[
@@ -478,45 +503,8 @@ export default function Login() {
               />
             </div>
 
-            {/* Agency — up to 5 / up to 10 servers, one subscription */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-              <PricingCard
-                icon={Building2}
-                compact
-                name="Agency 5"
-                seats="Up to 5 servers"
-                tagline="White-label for up to 5 servers, one subscription. Reseller-friendly."
-                price={billing === "year" ? "€199" : "€19.99"}
-                per={billing === "year" ? "/ year" : "/ month"}
-                onCta={handleLogin}
-                cta="Get Agency 5"
-                bullets={[
-                  "Everything in White-label",
-                  "Up to 5 servers, one subscription",
-                  "Reseller-friendly",
-                ]}
-              />
-
-              <PricingCard
-                icon={Building2}
-                compact
-                name="Agency 10"
-                seats="Up to 10 servers"
-                tagline="White-label for up to 10 servers, one subscription."
-                price={billing === "year" ? "€399" : "€39.99"}
-                per={billing === "year" ? "/ year" : "/ month"}
-                onCta={handleLogin}
-                cta="Get Agency 10"
-                bullets={[
-                  "Everything in White-label",
-                  "Up to 10 servers, one subscription",
-                  "Reseller-friendly",
-                ]}
-              />
-            </div>
-
             <p className="text-center text-xs text-cs-dim font-mono mt-8">
-              All prices VAT-inclusive · per server / month unless noted · Annual = ~2 months free · Renews automatically until cancelled · 99.9% uptime target (not a contractual SLA) · EU hosting · GDPR · Cancel anytime
+              All prices VAT-inclusive · per server / month · Monthly subscriptions sold and billed through the Discord store · Renews automatically until cancelled · 99.9% uptime target (not a contractual SLA) · EU hosting · GDPR · Cancel anytime
             </p>
           </div>
         </section>
@@ -527,7 +515,7 @@ export default function Login() {
             Ready to <span className="text-cs-cyan">consolidate</span>?
           </h2>
           <p className="text-cs-muted mb-8 max-w-lg mx-auto">
-            Takes 60 seconds. Sign in with Discord, pick a server, start your 14-day trial.
+            Takes 60 seconds. Sign in with Discord, pick a server, go live on Free.
           </p>
           <button ref={finalCtaRef} onClick={handleLogin} className="cs-btn-primary text-base px-8 py-4">
             <DiscordIcon />
@@ -578,6 +566,11 @@ export default function Login() {
               <a href="/compare/ticket-tool-alternative" className="hover:text-cs-cyan transition-colors">VS TICKET TOOL</a>
               <a href="/compare/appy-alternative" className="hover:text-cs-cyan transition-colors">VS APPY</a>
             </nav>
+            {/* Страници по функция (/features/*) — това, което хората търсят като
+                отделни ботове („verification bot", „giveaway bot", „logging
+                bot"…). Едно определение за всички начални страници и за
+                pre-render снимката: components/FeatureLinks.jsx. */}
+            <FeatureLinks heading="Features" uppercase />
 
             {/* Language versions — visible crawlable links matching the
                 hreflang alternates (Seo.jsx + sitemap.xml). */}
@@ -717,42 +710,12 @@ function ProductTour() {
   );
 }
 
-function BillingToggle({ interval, onChange }) {
-  return (
-    <div className="flex flex-col items-center gap-2 mb-10">
-      <div
-        role="radiogroup"
-        aria-label="Billing interval"
-        className="inline-flex items-center gap-1 p-1 rounded-full border border-cs-border bg-cs-surface/60"
-      >
-        {[["month", "Monthly"], ["year", "Annual"]].map(([value, label]) => {
-          const active = interval === value;
-          return (
-            <button
-              key={value}
-              type="button"
-              role="radio"
-              aria-checked={active}
-              onClick={() => onChange(value)}
-              className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cs-cyan ${
-                active ? "bg-cs-gold text-black" : "text-cs-muted hover:text-cs-text"
-              }`}
-            >
-              {label}
-            </button>
-          );
-        })}
-      </div>
-      <span className="cs-badge-cyan text-[10px]">Save ~17% — 2 months free</span>
-    </div>
-  );
-}
 
 /* One pricing tier card. `highlighted` renders the gold "Recommended" treatment;
-   `compact` is the tighter Agency variant. Price/per are computed by the caller
-   from the billing interval; the price block is an aria-live region so the change
-   is announced when the toggle flips. */
-function PricingCard({ icon: Icon, name, tagline, seats, price, per, trial, badge, bullets, cta, onCta, highlighted = false, compact = false }) {
+   `compact` is the tighter variant. v3.3: prices are monthly only — paid tiers
+   are sold through the Discord store, so the CTA leads to sign-in, not to a
+   checkout of ours. */
+function PricingCard({ icon: Icon, name, tagline, seats, price, per, badge, bullets, cta, onCta, highlighted = false, compact = false }) {
   const tiltRef = useTiltCard(highlighted ? 6 : 4);
   const cardCls = highlighted
     ? "cs-card flex flex-col border-2 border-cs-gold/50 bg-cs-gold/5 relative shadow-cs-gold-sm"
@@ -777,9 +740,6 @@ function PricingCard({ icon: Icon, name, tagline, seats, price, per, trial, badg
       <div className="mb-6" aria-live="polite">
         <div className="font-display text-4xl font-black text-cs-text">{price}</div>
         <div className="text-xs text-cs-dim font-mono">{per}</div>
-        {trial && (
-          <div className={`text-xs font-mono mt-1 ${highlighted ? "text-cs-gold" : "text-cs-dim"}`}>{trial}</div>
-        )}
       </div>
       <ul className={`space-y-2 text-sm text-cs-text flex-1 ${compact ? "mb-6" : "mb-8"}`}>
         {bullets.map((b) => (

@@ -42,6 +42,13 @@ note() { printf '  \033[33m·\033[0m %s\n' "$1"; }
 # ненулево — старото `|| echo "000"` добавяше ВТОРО „000" и изходът беше „000000".
 code() { curl -s -o /dev/null -w '%{http_code}' --max-time "$TIMEOUT" "$1" 2>/dev/null; }
 body() { curl -s --max-time "$TIMEOUT" "$1" 2>/dev/null || echo ""; }
+# nginx на фронтенда има SPA fallback (`try_files … /index.html`): ЛИПСВАЩ файл
+# или страница връща 200 с index.html. Затова 200 не доказва нищо за статичен
+# файл или пререндирана страница (одит на VPS-аджията 25.09.2026) — сверяваме
+# СЪДЪРЖАНИЕТО: пререндираната страница носи собствения си canonical, файлът —
+# своя Content-Type / подпис.
+ctype() { curl -s -o /dev/null -w '%{content_type}' --max-time "$TIMEOUT" "$1" 2>/dev/null; }
+prerendered() { body "$BASE$1" | grep -q "<link rel=\"canonical\" href=\"[^\"]*$1\""; }
 
 echo "── Smoke: $BASE ──"
 
@@ -53,8 +60,8 @@ if [ "$c" = "200" ]; then
   else bad "фронтендът връща 200, но без React корен — счупен билд?"; fi
   # Билдът пререндира 19 маршрута; липсата им значи, че prerender стъпката е
   # пропаднала тихо и SEO-то е нула.
-  if [ "$(code "$BASE/terms")" = "200" ]; then ok "статичните маршрути са пререндирани"
-  else bad "/terms не се отдава — prerender стъпката е пропаднала"; fi
+  if prerendered /terms; then ok "статичните маршрути са пререндирани"
+  else bad "/terms не носи собствения си canonical — prerender стъпката е пропаднала (SPA fallback)"; fi
 else
   bad "фронтендът върна $c"
 fi
@@ -120,26 +127,53 @@ c=$(code "$API/api/servers")
 if [ "$c" = "401" ] || [ "$c" = "403" ]; then ok "защитените маршрути искат вход"
 else bad "GET /api/servers върна $c за нелогнат — гардът е паднал"; fi
 
-# ─── 6. Stripe е конфигуриран за ПРОДАЖБА ───────────────────────────────────
-# Липсваща цена значи, че клиент може да плати и да получи грешен план.
+# ─── 6. Плащанията през Discord са КОНФИГУРИРАНИ (v3.3) ─────────────────────
+# Без SKU/магазин никой не може да купи — ботът и таблото водят в нищото.
+# /api/billing/config е публичен и без тайни; провайдърът трябва да е discord
+# (или both), а configured=true значи DISCORD_CLIENT_ID + двете SKU са налице.
+b=$(body "$API/api/billing/config")
+if echo "$b" | grep -q '"provider":"discord"\|"provider":"both"'; then
+  if echo "$b" | grep -q '"configured":true'; then ok "Discord магазинът е конфигуриран (SKU + client id)"
+  # СЪЗНАТЕЛЕН деплой без магазин (напр. играта/SEO преди SKU-тата да са готови):
+  # SMOKE_ALLOW_BILLING_UNCONFIGURED=1 сваля това до бележка, за да мръдне `current`.
+  # Не е подразбиране и не остава за постоянно — клиент не може да купи.
+  elif [ "${SMOKE_ALLOW_BILLING_UNCONFIGURED:-0}" = "1" ]; then note "Discord магазинът НЕ е конфигуриран (SKU/client id) — допуснато изрично със SMOKE_ALLOW_BILLING_UNCONFIGURED=1; продажби няма"
+  else bad "BILLING_PROVIDER е discord, но SKU/client id липсват — клиент НЕ може да купи (виж backend/.env; съзнателно без магазин: SMOKE_ALLOW_BILLING_UNCONFIGURED=1)"; fi
+elif echo "$b" | grep -q '"provider":"stripe"'; then note "BILLING_PROVIDER=stripe — продажбата е през Stripe (нарочно ли?)"
+else bad "GET /api/billing/config не отговори с провайдър: $b"; fi
+# Легаси Stripe: маршрутите трябва да живеят (заварени абонати), 503 = няма ключ.
 c=$(code "$API/api/stripe/status/000000000000000000")
-if [ "$c" = "503" ]; then bad "Stripe не е конфигуриран (STRIPE_SECRET_KEY липсва)"
-elif [ "$c" = "401" ] || [ "$c" = "403" ] || [ "$c" = "404" ]; then ok "Stripe маршрутите живеят"
+if [ "$c" = "401" ] || [ "$c" = "403" ] || [ "$c" = "404" ]; then ok "Stripe (легаси) маршрутите живеят"
+elif [ "$c" = "503" ]; then note "Stripe не е конфигуриран — добре, ако няма заварени абонати"
 else note "Stripe статус върна $c"; fi
 
 # ─── 7. Правните страници се отдават ────────────────────────────────────────
 # Импресум/условия недостъпни = правен проблем, не UX дребулия.
 legal_ok=1
 for p in /privacy /cookies /eula /accessibility; do
-  [ "$(code "$BASE$p")" = "200" ] || { bad "$p не се отдава"; legal_ok=0; }
+  prerendered "$p" || { bad "$p не се отдава като собствена страница"; legal_ok=0; }
 done
 [ "$legal_ok" = "1" ] && ok "правните страници се отдават"
 
 # ─── 8. SEO артефактите са на място ─────────────────────────────────────────
-for f in /robots.txt /sitemap.xml /llms.txt; do
-  [ "$(code "$BASE$f")" = "200" ] || bad "$f липсва"
-done
-[ "$(code "$BASE/robots.txt")" = "200" ] && ok "robots/sitemap/llms са на място"
+seo_ok=1
+body "$BASE/robots.txt"  | grep -qi '^User-agent:'  || { bad "/robots.txt липсва (SPA fallback)"; seo_ok=0; }
+body "$BASE/sitemap.xml" | grep -q '<urlset'       || { bad "/sitemap.xml липсва (SPA fallback)"; seo_ok=0; }
+body "$BASE/llms.txt"    | grep -q '^# Supreme Bot' || { bad "/llms.txt липсва (SPA fallback)"; seo_ok=0; }
+[ "$seo_ok" = "1" ] && ok "robots/sitemap/llms са на място"
+
+# ─── 9. Играта (v50): картинките на спътниците и страницата ѝ се отдават ─────
+# Discord embed-ите сочат $FRONTEND_URL/game/companions/<id>-<stage>.jpg — ако
+# nginx не ги отдава (липсваща public/ папка в билда), всяка поява е без
+# картинка, а никой тест в CI не гледа живия сървър. Проверяваме един файл от
+# каталога (lime-blip е първият common) и SEO страницата на функцията.
+t=$(ctype "$BASE/game/companions/lime-blip-1.jpg")
+case "$t" in
+  image/jpeg*) ok "картинките на спътниците се отдават" ;;
+  *) bad "/game/companions/lime-blip-1.jpg върна „${t:-нищо}“, не image/jpeg — embed-ите на играта са без картинки (public/game липсва в билда?)" ;;
+esac
+if prerendered /features/discord-leveling-game; then ok "страницата на играта е пререндирана"
+else bad "/features/discord-leveling-game не е пререндирана (SPA fallback)"; fi
 
 echo
 if [ "$fail" -eq 0 ]; then

@@ -59,13 +59,13 @@ export default function Reset(): React.ReactElement {
         ) : (
           <form className="auth-form" onSubmit={onSubmit}>
             <div className="field">
-              <label>{t('reset.newPassword', { defaultValue: 'New password' })}</label>
-              <input type="password" value={pw} onChange={(e) => setPw(e.target.value)} autoFocus required minLength={8} />
+              <label htmlFor="reset-pw">{t('reset.newPassword', { defaultValue: 'New password' })}</label>
+              <input id="reset-pw" type="password" value={pw} onChange={(e) => setPw(e.target.value)} autoFocus required minLength={8} />
             </div>
             <div className="field">
-              <label>{t('reset.confirm', { defaultValue: 'Confirm password' })}</label>
-              <input type="password" value={pw2} onChange={(e) => setPw2(e.target.value)} required minLength={8} />
-              {err && <div className="error">{err}</div>}
+              <label htmlFor="reset-pw2">{t('reset.confirm', { defaultValue: 'Confirm password' })}</label>
+              <input id="reset-pw2" type="password" value={pw2} onChange={(e) => setPw2(e.target.value)} required minLength={8} />
+              {err && <div className="error" role="alert">{err}</div>}
             </div>
             <button className="btn btn-primary" type="submit" disabled={loading || pw.length < 8}>
               {loading ? '…' : t('reset.submit', { defaultValue: 'Update password' })}

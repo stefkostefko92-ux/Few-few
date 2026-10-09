@@ -51,3 +51,15 @@ test("чист сървърен ресурс → 0 находки", () => {
   const f = lintFile("local src = source\nMySQL.query('SELECT 1 WHERE id = ?', { id })", "server.lua");
   assert.equal(f.length, 0);
 });
+
+// Геймъра (2026-09-24): basename „main.lua“ изключваше двете HIGH проверки за server/ и client/.
+test("server/main.lua и client/main.lua се разпознават по пътя", () => {
+  assert.ok(codes(lintFile("RegisterNetEvent('x:buy')\nAddEventHandler('x:buy', function(a) end)", "server/main.lua")).has("no-source-check"));
+  assert.ok(codes(lintFile("RegisterCommand('r', function() AddMoney(1000) end)", "client/main.lua")).has("client-authoritative"));
+  assert.ok(!codes(lintFile("RegisterCommand('r', function() AddMoney(1000) end)", "server/main.lua")).has("client-authoritative"));
+});
+
+test("SQL конкатенация с кавичка вътре в низа не минава за чисто", () => {
+  const src = `MySQL.update("UPDATE users SET name='" .. name .. "' WHERE id=" .. id)`;
+  assert.ok(codes(lintFile(src, "server/db.lua")).has("sql-concat"));
+});

@@ -2,14 +2,17 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
-import { applyXp, paceXpForKill } from '../game/progression';
+import { applyXp } from '../game/progression';
+import { dungeonStageReward } from '../game/rewardFormulas';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
+import { liveCombatTuning } from '../game/settings';
 import { applyCombatEvent, evaluateAchievements } from '../game/events';
 import { DUNGEONS, findDungeon } from '../seed/dungeons';
 import { loadEquipped } from '../game/equipment';
 import { applyGuildMultipliers } from '../game/rewards';
 import { assertReady, setCooldown } from '../game/cooldowns';
+import { pickClassLoot } from '../game/drops';
 import { trackBattlePass } from './battlepass';
 import type { Character, Item, InventoryEntry, Monster } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
@@ -137,7 +140,7 @@ router.post('/advance', (req, res) => {
     atk_min: monster.atk_min, atk_max: monster.atk_max, defense: monster.defense, speed: monster.speed,
     crit_chance: 0.08, dodge_chance: 0.04, sprite: monster.sprite,
   };
-  const result = simulateCombat(hero, foe);
+  const result = simulateCombat(hero, foe, liveCombatTuning());
   const replayHero = { ...result.hero, hp: hero.hp };
   const replayFoe = { ...result.foe, hp: foe.hp };
 
@@ -147,14 +150,14 @@ router.post('/advance', (req, res) => {
     // Pace-clamp per-stage XP the same way hunting does, so a dungeon stage
     // can't hand out a monster's raw (act-1-inflated) xp_reward. The big
     // once-per-lock completion bonus is where the dungeon payoff lives.
-    const stageXp = Math.min(Math.round(paceXpForKill(monster.level) * 1.8), Math.floor(monster.xp_reward * 1.5));
-    const stageGold = Math.floor((monster.gold_min + monster.gold_max) / 2);
+    const { xp: stageXp, gold: stageGold } = dungeonStageReward(monster);
     const newStage = run.stage + 1;
     const items = JSON.parse(run.items_json || '[]') as string[];
-    // 25% chance for a random shop-style item from the loot pool mid-run
+    // 25% шанс за предмет от loot_pool по време на рейда — съобразен с
+    // класа (game/drops.ts → pickClassLoot; честотата е непроменена).
     if (Math.random() < 0.25 && dungeon.loot_pool.length) {
-      const slug = dungeon.loot_pool[Math.floor(Math.random() * dungeon.loot_pool.length)];
-      items.push(slug);
+      const slug = pickClassLoot(dungeon.loot_pool, char.class);
+      if (slug) items.push(slug);
     }
     db.prepare(
       'UPDATE dungeon_run SET stage = ?, hp = ?, gold_pile = gold_pile + ?, xp_pile = xp_pile + ?, items_json = ? WHERE character_id = ?',
@@ -210,7 +213,7 @@ router.post('/advance', (req, res) => {
 
 router.post('/claim', (req, res) => {
   const db = getDb();
-  const ch = db.prepare('SELECT id FROM characters WHERE user_id = ?').get(req.auth!.uid) as { id: number } | undefined;
+  const ch = db.prepare('SELECT id, class FROM characters WHERE user_id = ?').get(req.auth!.uid) as { id: number; class: string } | undefined;
   if (!ch) {
     res.status(404).json({ error: 'No character' });
     return;
@@ -235,7 +238,8 @@ router.post('/claim', (req, res) => {
       if (del.changes !== 1) { const e: any = new Error('Already claimed.'); e.clientSafe = true; e.status = 400; throw e; }
       const items: string[] = JSON.parse(run.items_json || '[]');
       if (dungeon.loot_pool.length) {
-        items.push(dungeon.loot_pool[Math.floor(Math.random() * dungeon.loot_pool.length)]);
+        const slug = pickClassLoot(dungeon.loot_pool, ch.class);
+        if (slug) items.push(slug);
       }
       const baseXp = run.xp_pile + dungeon.xp_bonus;
       const baseGold = run.gold_pile + dungeon.gold_bonus;

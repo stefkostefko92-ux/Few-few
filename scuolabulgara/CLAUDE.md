@@ -42,3 +42,41 @@ scripts/          hash-password + helpers
 - **SQLite via Prisma** — file DB; images stored on disk (optimize with `sharp`).
 - `nodemailer` for contact/enquiry email; validate + rate-limit form input.
 - Escape all user-generated content; SEO/JSON-LD per locale (`hreflang`).
+
+## Design system — „Платно“ (the cloth)
+
+- **One idea: cross-stitch (кръстат бод), drawn by code.** `src/lib/stitch.ts` holds
+  the motifs as charts — the rosette and the „вълчи зъби“ border of a 1930s Divotino (Shopluk) cloth,
+  transcribed stitch by stitch from photos, never invented geometry — plus back-stitch contours and
+  photo → thread colours, with unit tests;
+  `components/Stitch.tsx` renders it as server SVG — one realistic stitch per colour (spindle legs pinched at
+  the holes, two twisted strands, top-left light, the top leg's shadow, holes in the linen) placed with `<use>`;
+  `lib/stitch-dom.ts` stamps the same thread from cached canvas sprites — `StitchedPhoto.tsx` (hero: embroidery in the
+  photo's own colours rises from the bottom edge to knee height, `--stitch-depth`, sewn once on load) and `Alphabet.tsx`
+  (the chosen letter embroidered on Aida) draw it on canvas. Reduced motion → drawn at
+  once; no JS → plain photo / plain letter.
+- **Type: Sofia Sans** (Bulgarian designer) — text + Extra Condensed display, self-hosted
+  via `next/font`. Every Cyrillic string carries `lang="bg"` so the **Bulgarian
+  letterforms** switch on (also on IT/EN pages). The admin turns them off (`locl` 0).
+- **Palette:** linen `#fdfcf9`/`#f2ede4`, thread red `#b3171d`, black `#1c1917`; the
+  dance section is the one red field. Tokens at the top of `src/app/site.css`.
+- **Avoid template tells:** no labels above headings (no `eyebrow` fields), no pill
+  badges, no big-number stats, no rounded card kit, no fade-in on every section, no
+  arrows appended to buttons.
+- **Content upgrades:** stored rows beat defaults, so a redesign must ship an upgrade in
+  `src/lib/content-upgrade.ts` (untouched old defaults → new ones; edited text kept in the
+  new shape). Runs once per process from `ensureSeeded`.
+- **Untranslated list items** (added in one language only) show in the language they were written in
+  (`fillUntranslated` in `cms.ts`, it → bg → en) until translated; the editor flags them. Plain fields are
+  never filled in — emptying one hides it. Items empty in every language are not rendered.
+- **Ad-blocker-safe names:** EasyList (uBlock/AdBlock/AdGuard/Brave/Supreme AdBlock) hides `.ad-*` classes and
+  `#facebook` — they hid the admin login form and the Facebook section. Admin classes use `qba-`; the FB
+  section is `#seguici`; `__tests__/adblock-safe.test.ts` guards it. A blocked Facebook plugin shows a
+  message + link (`fb.blocked`) instead of an empty box.
+- **Embeds only after consent:** Facebook and Google Maps (`MapEmbed`, `qb-map-consent`) load on click;
+  „Отказвам“ and the footer cookie link withdraw consent and unload them.
+- **Everything visible is editable** in `/admin` (sections, settings, SEO + share card, UI wording incl. 404
+  and aria labels, legal pages, llms.txt and the manifest are built from them). Locked on purpose: the agency
+  credit, the CC BY-SA photo credit and its rose bullet. Long texts: an empty line = a new paragraph.
+- **Documents (PDF):** `file` fields accept uploads sniffed as `%PDF-` (≤14 MB, served without CSP sandbox so
+  the browser viewer works) or https links; `scripts/import-docs.mjs` moves old-site links onto the server.

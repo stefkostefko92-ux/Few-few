@@ -1,0 +1,16 @@
+<%- include('_top', { titleKey: 'auth.twofaTitle' }) %>
+<h1><%= t('auth.twofaTitle') %></h1>
+<p><%= t('auth.twofaText') %></p>
+<%- include('_error') %>
+<% if (left !== null) { %><p class="hint"><%= t('auth.twofaLeft', { n: left }) %></p><% } %>
+<form method="post" action="/login/2fa" class="form">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <input type="hidden" name="next" value="<%= next %>">
+  <div class="field">
+    <label for="code"><%= t('auth.twofaCode') %></label>
+    <input id="code" name="code" type="text" class="code-input" autocomplete="one-time-code" inputmode="numeric" required maxlength="20" autofocus<% if (error) { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
+    <p class="hint"><%= t('auth.twofaRecoveryHint') %></p>
+  </div>
+  <button class="btn btn-primary btn-wide" type="submit"><%= t('auth.twofaButton') %></button>
+</form>
+<%- include('_bottom') %>
