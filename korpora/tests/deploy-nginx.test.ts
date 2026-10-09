@@ -1,8 +1,19 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, readlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { certificate, deploy, DOMAIN, sharedEnv, VHOST, withLayout } from './deploy-harness.js';
+import { ROOT } from '../src/paths.js';
+import {
+  certificate,
+  deploy,
+  DOMAIN,
+  MAINT_PAGE,
+  mode,
+  sharedEnv,
+  VHOST,
+  withLayout,
+} from './deploy-harness.js';
 
 test('with a certificate the vhost from the repo is installed and reloaded; a refused one is rolled back', () => {
   withLayout((L) => {
@@ -80,5 +91,58 @@ test('HTTP_PORT from .env is written into the vhost, so the domain points at Kor
     const site = readFileSync(L.site, 'utf8');
     assert.match(site, /proxy_pass http:\/\/127\.0\.0\.1:4400;/);
     assert.doesNotMatch(site, /127\.0\.0\.1:4320;/);
+  });
+});
+
+test("while the app does not answer, nginx shows Korpora's own page instead of its bare 502", () => {
+  const vhost = readFileSync(VHOST, 'utf8');
+  const tls = vhost.slice(vhost.indexOf('listen 443'));
+  // only the errors nginx makes itself (no upstream): the app's own 503 answers stay as they are
+  assert.match(tls, /\n {4}error_page 502 503 504 \/maintenance\.html;\n/);
+  assert.doesNotMatch(vhost, /^\s*proxy_intercept_errors\s+on/m);
+  const loc = /location = \/maintenance\.html \{([\s\S]*?)\n {4}\}/.exec(tls)?.[1] ?? '';
+  assert.match(loc, /\n {8}root \/var\/www\/korpora;/);
+  assert.match(loc, /\n {8}internal;/, 'not a page of its own: only the target of error_page');
+  assert.match(loc, /add_header Retry-After 30 always;/);
+  assert.match(loc, /\n {8}charset utf-8;/);
+  assert.match(loc, /add_header Cache-Control "no-store" always;/);
+  assert.match(loc, /add_header X-Content-Type-Options "nosniff" always;/);
+
+  const page = readFileSync(MAINT_PAGE, 'utf8');
+  // self-contained: /static goes to the same upstream that is down, and nothing leaves the server
+  assert.doesNotMatch(page, /<script|<link|@import|url\(|(src|href)="(?!data:)[^"]/i);
+  const logo = readFileSync(join(ROOT, 'public', 'img', 'brand', 'logo-320.webp')).toString(
+    'base64',
+  );
+  assert.ok(page.includes(`src="data:image/webp;base64,${logo}"`), 'the logo of the brand, inline');
+  const styles = [...page.matchAll(/<style>([\s\S]*?)<\/style>/g)].map((m) => m[1] ?? '');
+  assert.equal(styles.length, 1);
+  const hash = createHash('sha256')
+    .update(styles[0] ?? '')
+    .digest('base64');
+  assert.match(
+    loc,
+    new RegExp(
+      `add_header Content-Security-Policy "default-src 'none'; style-src 'sha256-${hash.replace(/[+/]/g, '\\$&')}'; img-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" always;`,
+    ),
+    "a strict CSP that lets in only this page's style (its hash) and the inline logo",
+  );
+  assert.match(page, /<html lang="bg">/);
+  for (const lang of ['en', 'it']) assert.match(page, new RegExp(`<section lang="${lang}">`));
+  assert.match(page, /<meta name="robots" content="noindex, nofollow" \/>/);
+  const keywords = /name="keywords"\s+content="([^"]+)"/.exec(page)?.[1]?.split(', ') ?? [];
+  assert.ok(keywords.length >= 5 && keywords.includes('Carbon Stealth'), keywords.join(' | '));
+});
+
+test('the deploy puts that page where nginx reads it, before the app is restarted', () => {
+  withLayout((L) => {
+    sharedEnv(L);
+    // `up` fails: the page must already be in place, since the restart is when nginx needs it
+    const r = deploy(L, { UP_RC: '1' });
+    assert.equal(r.status, 4);
+    const page = join(L.maint, 'maintenance.html');
+    assert.equal(readFileSync(page, 'utf8'), readFileSync(MAINT_PAGE, 'utf8'));
+    // nginx (www-data) reads it; the deploy's umask 077 must not make it root-only
+    assert.deepEqual([mode(L.maint), mode(page)], ['755', '644']);
   });
 });

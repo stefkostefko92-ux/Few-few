@@ -31,6 +31,7 @@ KEEP_BACKUPS="${KORPORA_KEEP_BACKUPS:-5}"
 INDEXNOW="${KORPORA_INDEXNOW:-1}"
 SKIP_BACKUP="${KORPORA_SKIP_BACKUP:-0}"
 LAST_GOOD="${KORPORA_LAST_GOOD:-$SHARED/last-good}"
+MAINT_DIR="${KORPORA_MAINT_DIR:-/var/www/korpora}"
 TS="$(date +%Y%m%d-%H%M%S)"
 
 log()  { printf '\033[1;36m▸ korpora: %s\033[0m\n' "$*"; }
@@ -166,6 +167,15 @@ remember_live() {
     printf '%s\n' "$real" >"$LAST_GOOD.tmp" && mv -f "$LAST_GOOD.tmp" "$LAST_GOOD"
 }
 
+# Страницата, която nginx показва, докато приложението не отговаря (error_page във vhost-а). Слага се
+# преди `up`, за да я има още при рестарта на този деплой. Чете я nginx (www-data) — затова 755/644
+# въпреки umask 077 на скрипта; в нея няма нищо тайно.
+install_maint() {
+  local page="$APP_DIR/deploy/nginx/maintenance.html"
+  [ -f "$page" ] || return 1
+  (umask 022 && install -d -m 755 "$MAINT_DIR" && install -m 644 "$page" "$MAINT_DIR/maintenance.html")
+}
+
 # Vhost-ът е файл в репото: щом има сертификат, сървърът носи точно него, с порта от HTTP_PORT (nginx -t,
 # после reload; при грешка се връща старият). Сертификатът се взема веднъж на ръка, когато DNS вече
 # сочи насам. Тече след сондата: всяка грешка е предупреждение и код ≠ 0 само към main.
@@ -282,6 +292,7 @@ main() {
   plan_backup
   check_catalog
   backup_db
+  install_maint || warn "страницата за поддръжка не е в $MAINT_DIR — докато приложението тръгва, nginx показва голата си 502"
   log "up (entrypoint-ът прилага миграциите)…"
   docker compose up -d --remove-orphans || fail 4 "docker compose up се провали."
   wait_healthy "$port" ||

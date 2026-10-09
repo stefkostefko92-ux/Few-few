@@ -76,7 +76,10 @@ sudo bash /opt/few-few/current/korpora/deploy/deploy.sh
    възстановяването записите от минутите на build-а; без бекъп не мигрира (код 1). С
    `KORPORA_SKIP_BACKUP=1` (откатът) — без нов дъмп, за да не изтласка от ротацията дъмпа отпреди
    счупената миграция;
-5. `docker compose up` — entrypoint-ът чака базата и пуска `prisma migrate deploy` (никога `db push`);
+5. слага страницата за поддръжка (`deploy/nginx/maintenance.html` → `/var/www/korpora/`, 755/644): докато
+   приложението не отговаря (този рестарт, месечният за GeoIP, срив), nginx показва нея с кода 502/503/504
+   вместо голата си „502 Bad Gateway“; после `docker compose up` — entrypoint-ът чака базата и пуска
+   `prisma migrate deploy` (никога `db push`);
 6. чака `/health` да върне `{"status":"ok","app":"korpora"}` — маркерът доказва, че на порта
    отговаря Korpora, а не друго приложение (иначе код 4 и `autodeploy.sh` връща последния
    работещ release); после записва папката на release-а в `/opt/few-few/shared/korpora/last-good`;
