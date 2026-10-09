@@ -93,7 +93,7 @@ People look for what we do under many names — all of these are us:
 ## Products
 
 - **Ospedali Trasparenti** — Civic portal for the transparency of Italian hospitals. URL: https://ospedalitrasparenti.it
-- **Supreme AdBlock** — Chrome (MV3) extension blocking every ad, YouTube video ads, FB/IG sponsored, trackers and anti-adblock walls; zero telemetry. URL: https://adblock.carbonstealth.eu
+- **Supreme AdBlock** — Chrome (MV3) extension blocking every ad, YouTube video ads, FB/IG sponsored, trackers and anti-adblock walls; zero telemetry. Verified publisher badge on the Chrome Web Store (created by the owner of the listed website, no history of violations); 63 languages. Store: https://chromewebstore.google.com/detail/supreme-adblock/chbjbiabkgocfbbfhednpbhfeipjcclk. URL: https://adblock.carbonstealth.eu
 - **Mastilko** — Free print-ready labels, business cards and CVs, previewed live on a real A4 sheet. URL: https://mastilko-bg.com
 - **Vizitka** — Digital business card with a permanent QR code that always points to your current details. URL: https://vizitka-bg.com
 

@@ -488,6 +488,9 @@ export var INSTRUMENT_CSS = [
   ".cs-prod-card:hover::before,.cs-prod-card:focus-visible::before{opacity:1;animation:csTrace 2.4s linear infinite}",
   ".cs-prod-card:hover{background:rgba(" + CR + ",.035)!important}",
   "@keyframes csTrace{to{--trace:360deg}}",
+  // verified product card: the title link covers the card (one target), the store link sits above it
+  ".cs-stretch::after{content:'';position:absolute;inset:0;z-index:1}",
+  ".cs-prod-verified:hover{background:linear-gradient(160deg,rgba(" + CR + ",.13),rgba(" + CR + ",.03) 55%)!important}",
   // contact: caliper corners close on the focused field
   "#contact input,#contact textarea{background-image:linear-gradient(" + C + "," + C + "),linear-gradient(" + C + "," + C + "),linear-gradient(" + C + "," + C + "),linear-gradient(" + C + "," + C + ");" +
     "background-repeat:no-repeat;background-size:0 1px,1px 0,0 1px,1px 0;background-position:0 0,0 0,100% 100%,100% 100%;transition:background-size .35s " + EASE + ",border-color .25s,box-shadow .25s!important}",
