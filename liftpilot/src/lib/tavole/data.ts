@@ -229,7 +229,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   // the rooms as the scheme of a machine below has them, existing in a modification tested to UNI 10411-1/-11 (9.2); the
   // shaft's note with the pit, the sills, the counterweight's sign and the brackets' anchors (notes-vano.ts)
   const gap = all.find((c) => c.id === 'h_cwgap')?.value ?? null;
-  const sp = spaceLegend(L, fmt), notes = clientNotes(L, below, { scheme, existing: C.norma !== 'en81', norma: C.norma,
+  const sp = spaceLegend(L, fmt), notes = clientNotes(L, below, { scheme, norma: C.norma,
     detail: shaftDetailText(L, { cwGap: gap === null ? null : num(gap), fx: fmt(F.fx, 0), fy: fmt(F.fy, 0) }) });
   if (pEstimate) notes.push(estimateNote(fmt(I.P, 0), `NOTA ${notes.length + 1}`));
   if (!Pl.safetyGear) notes.push(safetyGearNote(`NOTA ${notes.length + 1}`));

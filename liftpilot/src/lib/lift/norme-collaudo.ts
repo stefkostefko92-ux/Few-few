@@ -210,9 +210,10 @@ export const OBBLIGHI_PARTI: Readonly<Record<'10411-1' | '10411-11', Partial<Rea
   '10411-1': {
     car: lt('UNI 10411-1:2024, 22', 'cabina nuova sull’arcata esistente: la cabina e ciò che vi è montato secondo la UNI EN 81-20 da 5.4.1 a 5.4.10, la '
       + 'superficie utile entro il prospetto 6 per la portata, e le lettere a)–n) del punto (tra cui il grembiule 5.4.5, la presa di corrente in fossa, '
-      + 'il parapetto 5.4.7.4 oltre 0,30 m dalla parete, altezze sotto 2 m solo non inferiori alle esistenti e con gli avvertimenti); con T* oltre il '
-      + 'prospetto 1 anche i punti 6.3–6.12, tra cui l’arcata (6.9)'),
-    carDoors: lt('UNI 10411-1:2024, 12.1–12.3', 'meccanismi delle porte di cabina nuovi secondo la UNI EN 81-20 5.3.3.2, 5.3.3.3 e da 5.3.8 a 5.3.14; porte '
+      + 'il parapetto 5.4.7.4 oltre 0,30 m dalla parete, altezze sotto 2 m solo non inferiori alle esistenti e con gli avvertimenti); con T* o la '
+      + 'portata oltre il prospetto 1 i punti 6.3–6.12 e 6.15, tra cui l’arcata (6.9)'),
+    // 12.2 of UNI 10411-1 is the landing doors' locking devices (below, with them); of UNI 10411-11 it is general
+    carDoors: lt('UNI 10411-1:2024, 12.1 e 12.3', 'meccanismi delle porte di cabina nuovi secondo la UNI EN 81-20 5.3.3.2, 5.3.3.3 e da 5.3.8 a 5.3.14; porte '
       + 'motorizzate anche 5.3.6.2 e 5.3.6.3'),
     landingDoors: lt('UNI 10411-1:2024, 19 e 12.2', 'porte di piano nuove secondo la UNI EN 81-20 5.3, mai più basse delle esistenti (sotto 1,9 m la UNI EN '
       + '81-21 5.12); resistenza al fuoco non inferiore all’esistente; presenza della cabina segnalata (5.3.7.2); grembiule della soglia di cabina '

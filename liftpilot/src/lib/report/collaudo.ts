@@ -89,12 +89,16 @@ export function variazioneText(v: Variazione, arcata = false): string {
   return `${head}${lim}${over}${str}.${arcata ? ARCATA : ''} Aggiornare la documentazione con i nuovi carichi.`;
 }
 
-/** The existing sling under an increased or unknown T*: what the engineer does (the check sl_frame of the result). */
-const ARCATA = ' L’arcata esistente va verificata per i nuovi carichi (6.9) con i dati del suo costruttore o il calcolo del tecnico.';
+/** The existing sling under loads beyond the limits or not known (the check sl_frame of the result, arcata.ts): one
+ *  sentence for sheet 1's note and the relazione, which adds what the engineer does. */
+const ARCATA_FRASE = 'L’arcata esistente va verificata per i nuovi carichi (6.9)';
+const ARCATA_BREVE = ` ${ARCATA_FRASE}.`, ARCATA = ` ${ARCATA_FRASE} con i dati del suo costruttore o il calcolo del tecnico.`;
 
-/** A modification that changes the car or the load without the documented loads: T* cannot be compared. */
-const carichiMancanti = (norma: Norma10411, arcata: boolean): string => `⚠ carichi documentati mancanti: T* non confrontabile con quello del verbale `
-  + `di collaudo o dell’ultima verifica straordinaria (UNI ${norma}, 6.1); indicarli nei dati del collaudo.${arcata ? ARCATA : ''}`;
+/** A modification that changes the car or the load without the documented loads: T* cannot be compared (UNI 10411-x,
+ *  6.1). One sentence for sheet 1's note and the relazione, which adds what to do. */
+const mancanti = (norma: Norma10411): string => `Carichi documentati mancanti: T* non confrontabile (UNI ${norma}, 6.1)`;
+const carichiMancanti = (norma: Norma10411, arcata: boolean): string => `⚠ ${mancanti(norma)}: indicare nei dati del collaudo quelli del verbale di `
+  + `collaudo o dell’ultima verifica straordinaria.${arcata ? ARCATA : ''}`;
 
 /** The rows of the data of the installation: the standards and, for a modification, what it replaces or changes, the
  *  answer about the CE marking and the change of the loads from the documented ones (`ora`: the design's). */
@@ -179,8 +183,8 @@ export function collaudoNote(C: Collaudo, tag: string, ora?: Carichi | null): { 
   const added = C.aggiuntive?.length ? ` Anche secondo ${(C.aggiuntive ?? []).map((n) => NORMA_BREVE[n]).join(' e ')}: ogni normativa ha il suo esito, quello del collaudo è il peggiore.` : '';
   if (C.norma === 'en81') return added ? { title: 'COLLAUDO', tag, text: `Collaudo secondo ${NORMA_SIGLA.en81}.${added}` } : null;
   const rif = C.rifacimento ? " Rifacimento con l’arcata esistente: l’arcata resta quella dell’impianto, collaudato come modifica." : '';
-  const carichi = ora !== undefined && tStarOf(C, ora) === 'ignoto' ? ` Carichi documentati mancanti: T* non confrontabile (UNI ${C.norma}, 6.1).` : '';
-  const arcata = ora !== undefined && slingCheck(C, ora) ? ' L’arcata esistente va verificata per i nuovi carichi (6.9).' : '';
+  const carichi = ora !== undefined && tStarOf(C, ora) === 'ignoto' ? ` ${mancanti(C.norma)}.` : '';
+  const arcata = ora !== undefined && slingCheck(C, ora) ? ARCATA_BREVE : '';
   return { title: 'COLLAUDO', tag, text: `Collaudo secondo ${NORMA_SIGLA[C.norma]}.${rif}${carichi}${arcata}${added} Parti sostituite o modificate: ${partiText(C)}. Le verifiche con esito `
     + "«ESISTENTE» riguardano parti che restano come sono e non entrano nell’esito delle verifiche." };
 }

@@ -183,10 +183,10 @@ export const VOCI_VERT: readonly VoceVano[] = [
   {
     id: 'arcata.carichi', gruppo: 'carichi', titolo: 'Arcata esistente sotto la cabina nuova o la portata nuova: verifica per i nuovi carichi',
     valore: 'nella modifica che lascia l’arcata esistente e cambia la cabina o la portata, T* (cabina con arcata, porte e operatore più la portata) '
-      + 'si confronta con i carichi documentati: se aumenta (con la UNI 10411-1 oltre il prospetto 1, con la UNI 10411-11 qualunque aumento) o non '
-      + 'si può confrontare perché i carichi documentati mancano, l’arcata va verificata per i nuovi carichi con i dati del suo costruttore o il '
-      + 'calcolo del tecnico; il software non ha il modello dell’arcata: «Attenzione» senza valore. Con T* che diminuisce valgono gli ammortizzatori '
-      + 'e il paracadute progressivo per i nuovi carichi (verifiche del carico nell’esito)',
+      + 'e la portata si confrontano con i carichi documentati: se vanno oltre i limiti (con la UNI 10411-1 T* o la portata oltre il prospetto 1, con '
+      + 'la UNI 10411-11 qualunque aumento di T*) o non si possono confrontare perché i carichi documentati mancano, l’arcata va verificata per i '
+      + 'nuovi carichi con i dati del suo costruttore o il calcolo del tecnico; il software non ha il modello dell’arcata: «Attenzione» senza valore. '
+      + 'Con T* che diminuisce valgono gli ammortizzatori e il paracadute progressivo per i nuovi carichi (verifiche del carico nell’esito)',
     riferimento: 'UNI 10411-1:2024, 6.1 e 6.9; UNI 10411-11:2024, 6.1, 6.9 e 22',
     fonte: `${letto('UNI 10411-1:2024', 'pp. 7–8')}; ${letto('UNI 10411-11:2024', 'pp. 7–8 e 15')}`, stato: 'confermato',
     verifiche: ['sl_frame'],

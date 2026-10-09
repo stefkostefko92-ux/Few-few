@@ -190,7 +190,7 @@ test('arcata esistente: T* aumentato o non noto chiede la sua verifica per i nuo
 test('relazione del rifacimento: carichi mancanti, arcata da verificare, obblighi di ogni parte (L2-02)', () => {
   const doc = relazione(withCollaudo(defaultLift(), RIF11)), rows = kv(doc);
   const v = rows.get('Variazione dei carichi') ?? '';
-  assert.ok(v.startsWith('⚠ carichi documentati mancanti: T* non confrontabile') && v.includes('(UNI 10411-11, 6.1)'), v);
+  assert.ok(v.startsWith('⚠ Carichi documentati mancanti: T* non confrontabile (UNI 10411-11, 6.1): indicare nei dati del collaudo'), v);
   assert.ok(v.includes('L’arcata esistente va verificata per i nuovi carichi (6.9)'), v);
   assert.equal(shaftRef(doc, 'sl_frame'), 'UNI 10411-11:2024, 6.1, 6.9 e 22');
   // the documented loads with T* increased: the variation says what it brings, the sling among it
@@ -214,7 +214,11 @@ test('relazione del rifacimento: carichi mancanti, arcata da verificare, obbligh
 
 test('obblighi delle parti: la cabina solo sull’arcata esistente, la modifica sostanziale (L2-02)', () => {
   const rif = obblighiParti({ norma: '10411-1', parti: PARTI_RIFACIMENTO }).map((p) => p.rif);
-  assert.deepEqual(rif, ['UNI 10411-1:2024, 22', 'UNI 10411-1:2024, 12.1–12.3', 'UNI 10411-1:2024, 19 e 12.2', 'UNI 10411-1:2024, 11.1', 'UNI 10411-1:2024, 17', 'UNI 10411-1:2024, 18']);
+  // the car doors under -1: 12.1 and 12.3 (its 12.2 is the landing doors' locks, with them)
+  assert.deepEqual(rif, ['UNI 10411-1:2024, 22', 'UNI 10411-1:2024, 12.1 e 12.3', 'UNI 10411-1:2024, 19 e 12.2', 'UNI 10411-1:2024, 11.1', 'UNI 10411-1:2024, 17', 'UNI 10411-1:2024, 18']);
+  // the new car on the old sling under -1: T* or the rated load beyond prospetto 1 bring 6.3–6.12 and 6.15 (6.1)
+  const car1 = obblighiParti({ norma: '10411-1', parti: ['car'] })[0]?.testo ?? '';
+  assert.ok(car1.endsWith('con T* o la portata oltre il prospetto 1 i punti 6.3–6.12 e 6.15, tra cui l’arcata (6.9)'), car1);
   const all = obblighiParti({ norma: '10411-11', parti: [...PARTI_RIFACIMENTO, 'sling'] }).map((p) => p.rif);
   assert.equal(all[0], 'UNI 10411-11:2024, 21.1');
   assert.ok(!all.includes('UNI 10411-11:2024, 22'), 'cabina e arcata nuove insieme: non è la 22');
@@ -247,7 +251,7 @@ test('pilastro al posto del paracadute del contrappeso: la clausola della parte 
   assert.equal(pilastroRif('10411-1'), 'UNI 10411-1:2024, 6.14');
   assert.equal(pilastroRif('10411-11'), 'UNI EN 81-1 (edizione dell’impianto), 5.5 a); UNI 10411-11:2024, 6.6 e 6.13');
   const L = layout({ ...defaultInputs(1740, 1445), Q: 630, access: 'none', room: null });
-  const note = (norma: Collaudo['norma']): string => clientNotes(L, true, { scheme: 'under', existing: norma !== 'en81', norma })
+  const note = (norma: Collaudo['norma']): string => clientNotes(L, true, { scheme: 'under', norma })
     .find((n) => n.title === 'SPAZIO ACCESSIBILE SOTTO IL VANO')?.text ?? '';
   assert.ok(note('10411-11').includes('pilastro fondato sul terreno, verificato per i nuovi carichi (UNI EN 81-1 (edizione dell’impianto), 5.5 a); UNI 10411-11:2024, 6.6 e 6.13)'));
   assert.ok(!note('10411-11').includes('UNI 10411-1:2024'));

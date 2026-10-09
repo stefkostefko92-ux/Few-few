@@ -4,7 +4,7 @@
 // correction made on the purchased text changes the engine, the checklist and the report together.
 // Texts are in Italian: they go to the engineer and into the report.
 
-import { letto } from './norme-fonti';
+import { MACCHINA_AMMESSA, letto } from './norme-fonti';
 import { VOCI_ALBERO, VOCI_AZIONAMENTO } from './norme-azionamento';
 import { VOCI_FRENO } from './norme-freno';
 import { VOCI_FUNI } from './norme-funi';
@@ -155,7 +155,7 @@ export const VOCI: readonly Voce[] = [
     fonte: `${letto(T20, 'p. 75')}; ${letto('UNI EN 81-1:2008', 'p. 55')}; ${letto(U1, 'p. 13')}`, stato: 'confermato',
     verifiche: ['tr_stall'],
     // the machine's own standard: UNI EN 81-1's clause only for a machine to it, in the edition of the test
-    rifStd: { 'en81-20': `${T20}, 5.5.3 c) 2); ${U1}, 14.1 a); ${U11}, 14.1`, 'en81-1': `UNI EN 81-1, 9.3 c); ${U1}, 14.1 b); ${U11}, 14.1` },
+    rifStd: { 'en81-20': `${T20}, 5.5.3 c) 2); ${MACCHINA_AMMESSA['en81-20']}`, 'en81-1': `UNI EN 81-1, 9.3 c); ${MACCHINA_AMMESSA['en81-1']}` },
     nota: 'La norma non dice quale dispositivo: deve accorgersi del blocco e fermare la macchina prima di un sollevamento pericoloso. Il '
       + 'temporizzatore della 5.9.2.7 è un obbligo distinto. Con la UNI 10411-11:2024 vale solo se la macchina è verificata secondo la UNI EN 81-20.',
   },
@@ -247,7 +247,8 @@ export const VOCI: readonly Voce[] = [
       + '(14.1); UCM esistenti che funzionano ancora e, senza UCM conforme alla 5.6.7 e con il rallentamento controllato, interruzione se il '
       + 'freno non si apre (14.3); funi nuove e attacchi come gli originali, altrimenti verificati con la valutazione 4.3 (17)',
     riferimento: 'UNI 10411-1:2024, 4, 14.1–14.4, 17.1, 25.5, appendice C; UNI 10411-11:2024, 14.1–14.3, 17',
-    rifVerifica: { b_sets: `${U1}, 14.1 a); ${U11}, 14.1` },
+    // the machine's own standard: 14.1 a) for one to UNI EN 81-20, b) for one to UNI EN 81-1 (as freno.gruppi)
+    rifStd: MACCHINA_AMMESSA,
     fonte: `${letto(U1, 'pp. 6, 13–14, 16, 21 e 30')}; ${letto(U11, 'pp. 12 e 14')}`,
     stato: 'confermato',
     verifiche: ['b_sets'],

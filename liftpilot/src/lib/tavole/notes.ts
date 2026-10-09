@@ -32,9 +32,9 @@ export interface Note {
  *  the sills, the counterweight's sign and the brackets' anchors (notes-vano.ts), in NOTA 1 before its references. */
 export interface NoteCase {
   scheme?: BottomScheme | null;
-  existing?: boolean;
-  /** the test's base standard: under the pit, what may stand in place of the counterweight's safety gear in a
-   *  modification and by which clause (pilastroRif) */
+  /** the test's base standard: a part of UNI 10411 makes the rooms the existing ones (9.2) and, under the pit, names the
+   *  clause of the pillar that may stand in place of the counterweight's safety gear (pilastroRif); absent or UNI EN
+   *  81-20/50: a new lift */
   norma?: NormaCollaudo;
   detail?: string;
 }
@@ -44,7 +44,8 @@ export interface NoteCase {
  *  shaft), and the space under the shaft of a machine under the pit —; the control cabinet. `below`: the machine stands
  *  below, its scheme in `c` (the pulleys hung under the slab when none). */
 export function clientNotes(L: Layout, below = false, c: NoteCase = {}): Note[] {
-  const K = KV_VERT, room = L.inputs.room !== null, ex = c.existing === true, scheme = below ? c.scheme ?? 'head' : null, detail = c.detail ?? '';
+  const K = KV_VERT, room = L.inputs.room !== null, norma = c.norma ?? 'en81', ex = norma !== 'en81', scheme = below ? c.scheme ?? 'head' : null;
+  const detail = c.detail ?? '';
   const notes: Omit<Note, 'tag'>[] = [
     {
       title: 'VANO DI CORSA',
@@ -63,7 +64,7 @@ export function clientNotes(L: Layout, below = false, c: NoteCase = {}): Note[] 
     // the machine's room below, then over the shaft what the scheme has there
     notes.push(belowRoomNote(scheme === 'under', ex));
     notes.push(scheme === 'room' ? roomNote(ex && room ? 'pulleysExisting' : 'pulleys') : hungNote());
-    if (scheme === 'under') notes.push(underNote(ex ? c.norma ?? '10411-1' : 'en81'));
+    if (scheme === 'under') notes.push(underNote(norma));
   }
   notes.push({
     title: 'ARMADIO DEL QUADRO (SE PRESENTE)',

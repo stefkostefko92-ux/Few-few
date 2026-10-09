@@ -110,7 +110,7 @@ test('collaudo: il rifugio sotto ciò che pende entra con la macchina sostituita
 test('foglio 1: una nota per ogni locale che le tavole disegnano, e i fogli del locale in basso la richiamano', () => {
   const L = deriveLift(below('head')).layout, room = layout({ ...defaultInputs(1600, 1750) });
   const titles = (Lx: typeof L, scheme: BottomScheme | null, existing = false): string[] =>
-    clientNotes(Lx, scheme !== null, { scheme: scheme ?? undefined, existing }).map((n) => n.title);
+    clientNotes(Lx, scheme !== null, { scheme: scheme ?? undefined, norma: existing ? '10411-1' : undefined }).map((n) => n.title);
   assert.deepEqual(titles(L, 'head'), ['VANO DI CORSA', 'LOCALE MACCHINA IN BASSO', 'PULEGGE DI RINVIO APPESE SOTTO LA SOLETTA', 'ARMADIO DEL QUADRO (SE PRESENTE)']);
   assert.deepEqual(titles(L, 'under'), ['VANO DI CORSA', 'LOCALE MACCHINA SOTTO IL VANO', 'PULEGGE DI RINVIO APPESE SOTTO LA SOLETTA', 'SPAZIO ACCESSIBILE SOTTO IL VANO',
     'ARMADIO DEL QUADRO (SE PRESENTE)']);
