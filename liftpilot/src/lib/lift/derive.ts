@@ -27,7 +27,8 @@ import { drawnIssues, type Drawn } from './drawn';
 import { collaudoOf } from './collaudo';
 import { rigLength } from './rope';
 import { KL } from './norme';
-import { massModelOf } from './known';
+import { catalogMachineOf, massModelOf, modelOf } from './known';
+import { dropSheaves, planFalls } from './direct';
 import { existingRoomCheck } from '@/shaft/room-above';
 import { slingCheck } from './arcata';
 import { carichiOf } from './modifica';
@@ -138,11 +139,11 @@ function deriveOnce(inp: LiftInputs): LiftDerived {
   // the diverting pulley's distance comes from the plan: only geometries the wrap-angle model reads as drawn
   const p0 = readInputs(V), c0 = p0.I, planned = inp.auto.dx && c0.layout === 'topDefl' && c0.alphaMode !== 'manual';
   // a direct pull hangs the falls from the sheave's two sides: its pitch diameter is their spacing in the plan, so the
-  // proposal takes that sheave (within the grid's range); when the existing machine is compared, its sheave set the
-  // hitches and the new one may differ (the calculation inclines the ropes)
-  const direct = c0.layout === 'top', oldHitches = direct && p0.compare && c0.context === 'repl';
+  // proposal takes that sheave (within the grid's range; direct.ts); when the existing machine is compared, its sheave
+  // set the hitches and the new one may differ (the calculation inclines the ropes)
+  const direct = c0.layout === 'top', oldHitches = direct && !planFalls(p0);
   const fallD = direct ? Math.round(fallSpacing(L, V)) : 0;
-  const only = direct && !oldHitches ? (fallD >= SHEAVE_GRID[0] && fallD <= SHEAVE_GRID[SHEAVE_GRID.length - 1] ? [fallD] : []) : null;
+  const only = direct && !oldHitches ? dropSheaves(fallD) : null;
   let noProposal = false, catalog: LiftDerived['catalog'] = null;
   if (inp.auto.machine) {
     // from the maker chosen when one of its machines takes an option, else from the calculation grid; the machine below
@@ -165,7 +166,18 @@ function deriveOnce(inp: LiftInputs): LiftDerived {
     made = proposed && fromCat?.fit ? fromCat.fit.machine : null;
     if (shape || made) V = geometry(V);
   }
-  const analysis = analyse(V), { I, N, O } = analysis.ctx;
+  // a machine entered by hand (switched off from the proposal, carried from the calculator) whose values are a
+  // catalogue's — ratio, static load, mass, sheave (known.ts: as the relazione names it and the loads weigh it): that
+  // machine as it stands, as if proposed (its axis, its bedplate), so the drawings, the 3D and its support's checks are
+  // the machine the documents name
+  const own = made || (inp.auto.machine && !noProposal) ? null : readInputs(V), known = own ? catalogMachineOf(own.I, own.N, modelOf(V)) : null;
+  if (known) {
+    shape = machineShapeOf(known);
+    made = known.machine;
+    catalog = { fit: known, miss: catalog?.miss ?? false };
+    V = geometry(V);
+  }
+  const analysis = analyse(V, true), { I, N, O } = analysis.ctx;
   // a distance the plan cannot give is reported: it must be measured and entered; falls of a direct pull that are not
   // the sheave's diameter apart contradict the plan (registry impianto.calata)
   const calata = direct ? fallSpacing(L, V) : null;

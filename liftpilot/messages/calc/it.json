@@ -243,6 +243,7 @@
   "p_applied": "Proposta caricata nel gruppo «Argano nuovo»: le verifiche qui sotto sono le sue.",
   "p_util": "aderenza {u} (alla decelerazione reale del freno {ur}) · S_f {sa} (richiesto {sr})",
   "p_fixed": "diametro dell’argano esistente",
+  "p_drop": "calata del tiro diretto nel piano",
   "keepD": "Nella proposta mantieni il diametro della puleggia esistente",
   "keepRopes": "Stesso numero e diametro delle funi esistenti",
   "hint_keepRopes": "Come si fa nella sostituzione: numero e diametro dalle funi esistenti ({n} × Ø{d}), anche nella proposta. Qui carico di rottura e massa delle funi nuove.",

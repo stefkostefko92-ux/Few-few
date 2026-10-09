@@ -243,6 +243,7 @@
   "p_applied": "Proposal loaded into the “New machine” group: the checks below are its checks.",
   "p_util": "traction {u} (at the real brake deceleration {ur}) · S_f {sa} (required {sr})",
   "p_fixed": "existing machine diameter",
+  "p_drop": "the direct pull’s rope drop in the plan",
   "keepD": "Keep the existing sheave diameter in the proposal",
   "keepRopes": "Same number and diameter as the existing ropes",
   "hint_keepRopes": "As done in a replacement: number and diameter from the existing ropes ({n} × Ø{d}), in the proposal too. Here the breaking load and mass of the new ropes.",

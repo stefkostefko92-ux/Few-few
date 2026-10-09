@@ -37,7 +37,7 @@ function ProposalCard({ P, X, a, onUse, propMsg }: Pick<Props, 'P' | 'X' | 'a' |
   const p = sizing.pick;
   return (
     <Card title={t('c_prop')} refText={t('prop_ref')}>
-      <KV rows={X.proposalRows(p, N, sizing.fixedD, !!sizing.keep)} />
+      <KV rows={X.proposalRows(p, N, a.hold, !!sizing.keep)} />
       {onUse ? (
         <div className="btnrow">
           <button type="button" className="primary" onClick={() => onUse('pick')}>{t('p_use')}</button>

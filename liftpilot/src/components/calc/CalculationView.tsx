@@ -1,7 +1,9 @@
 'use client';
 
 // A saved calculation, shown with the same components as the calculator (read only): the browser recomputes
-// the stored values with the same engine; the server has already checked that the stored hash is reproduced.
+// the stored values with the same engine; the server has already checked that the stored hash is reproduced. One made
+// from a shaft design (`design`) proposes on a direct pull only the sheave its plan hangs the falls from, as its
+// relazione (lift/direct.ts).
 import { useMemo, useState } from 'react';
 import { useLocale, useMessages } from 'next-intl';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
@@ -16,11 +18,11 @@ import Verdict from './Verdict';
 import Results from './Results';
 import LegalNotice from './LegalNotice';
 
-export default function CalculationView({ values, brand, collaudo }: { values: FormValues; brand: string; collaudo: Collaudo }) {
+export default function CalculationView({ values, brand, collaudo, design = false }: { values: FormValues; brand: string; collaudo: Collaudo; design?: boolean }) {
   const locale = useLocale(), messages = useMessages();
   const P = useMemo(() => makePres(asCalcDict(messages.calc), INTL_LOCALE[isLocale(locale) ? locale : 'it']), [messages.calc, locale]);
   const X = useMemo(() => textsFor(P), [P]);
-  const a = useMemo(() => analyse(values), [values]);
+  const a = useMemo(() => analyse(values, design), [values, design]);
   const [mode, setMode] = useState<'simple' | 'expert'>('simple');
   const { t } = P;
   return (

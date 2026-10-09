@@ -163,9 +163,12 @@ export function derivedCandidate(d: LiftDerived): MachineCandidate | null {
 }
 
 /** One model for the one form: derived as the form derives it with that model chosen (proposed even when the machine
- *  is entered by hand). */
-export const liftCandidate = (inp: LiftInputs, m: AdviceModel): MachineCandidate | null =>
-  derivedCandidate(deriveLift({ ...inp, catalog: { brand: m.brand, model: m.model }, auto: { ...inp.auto, machine: true } }));
+ *  is entered by hand). A candidate only where the proposal took it: where nothing is proposed the derivation falls back
+ *  on the values entered, and the catalogue's machine they are (derive.ts, known.ts) is not the model tried. */
+export function liftCandidate(inp: LiftInputs, m: AdviceModel): MachineCandidate | null {
+  const d = deriveLift({ ...inp, catalog: { brand: m.brand, model: m.model }, auto: { ...inp.auto, machine: true } });
+  return d.origin.machine === 'auto' ? derivedCandidate(d) : null;
+}
 
 /** One model for the calculator's values `V` (their analysis `a`): the option of the sizing it takes, the calculation
  *  with its values, the maker's bedplate by the sheave and the diverting pulley of the values. */

@@ -22,8 +22,9 @@ export interface OrderMachine {
 const pick = (machine: MachineCandidate | null | undefined, recorded: boolean, advice: MachineAdvice): OrderMachine | null =>
   (machine ? { machine, recorded, advice } : null);
 
-/** The machine a saved design verified, when the software proposed it from a catalogue. */
-export const designMachine = (d: LiftDerived): MachineCandidate | null => (d.origin.machine === 'auto' ? derivedCandidate(d) : null);
+/** The machine a saved design verified, when it is a catalogue's: the one the proposal took, or the one the machine
+ *  entered by hand is (derive.ts; known.ts, as for a saved calculation). */
+export const designMachine = (d: LiftDerived): MachineCandidate | null => derivedCandidate(d);
 
 /** The order of a saved design (the one form's inputs); the advice and the derivation when the caller has them. */
 export function designOrder(inp: LiftInputs, advice: MachineAdvice = liftAdvice(inp), d: LiftDerived = deriveLift(inp)): OrderMachine | null {

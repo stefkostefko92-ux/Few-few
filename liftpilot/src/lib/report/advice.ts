@@ -1,6 +1,7 @@
 // The machine to order among SICOR's and Montanari's in the relazione (Italian): every model that takes the
 // installation in the order of the advice (src/lib/lift/advice.ts), the first of each maker marked, why the first comes
-// first, where each machine's data come from. Informative: the calculation verifies the machine of the record. Pure.
+// first, where each machine's data come from. Informative: the calculation verifies the machine of the record. With a
+// lift design's direct pull and none of them taking it, why: the sheave is the plan's drop (direct.ts). Pure.
 import appIt from '../../../messages/it.json';
 import type { MachineAdvice, MachineCandidate } from '../lift/advice';
 import { dvText, excludedText, fillText, machineName, whyValues } from '../present/advice';
@@ -15,9 +16,13 @@ const status = (c: MachineCandidate): BlockStatus => (c.fails ? 'fail' : c.warns
 const massText = (c: MachineCandidate, fmt: Fmt): string => (c.massWhole === null ? '—'
   : c.massEstimated && c.mass !== null ? `≈ ${fmt(c.massWhole, 0)} kg ⚠ (catalogo ${fmt(c.mass, 0)} kg + stima)` : `${fmt(c.massWhole, 0)} kg`);
 
-export function adviceBlocks(A: MachineAdvice, fmt: Fmt): ReportBlock[] {
+/** `drop`: the sheave [mm] a lift design's direct pull hangs its falls from (its plan's drop), null otherwise. */
+export function adviceBlocks(A: MachineAdvice, fmt: Fmt, drop: number | null = null): ReportBlock[] {
   const T = appIt.advice;
-  if (!A.candidates.length) return [{ t: 'p', text: T.none_all }];
+  if (!A.candidates.length) {
+    return drop ? [{ t: 'p', text: 'Nessun argano SICOR o Montanari a catalogo prende questo impianto con questi dati: resta l’argano verificato nel '
+      + 'progetto, con la puleggia della calata del piano.' }, { t: 'p', style: 'note', text: dropNone(drop, fmt) }] : [{ t: 'p', text: T.none_all }];
+  }
   const defl = A.candidates.some((c) => c.I.layout === 'topDefl'), d = (x: number): string => fmt(x, Number.isInteger(x) ? 0 : 1);
   const head = ['Argano', 'Rapporto · v', 'Puleggia · funi', 'Statico ammesso', 'Massa', ...(defl ? ['Basamento con rinvio'] : []), 'Fonte', 'Esito'];
   const widths = defl ? [0.17, 0.12, 0.13, 0.12, 0.08, 0.13, 0.07, 0.18] : [0.2, 0.14, 0.15, 0.14, 0.09, 0.08, 0.2];
@@ -41,3 +46,10 @@ export function adviceBlocks(A: MachineAdvice, fmt: Fmt): ReportBlock[] {
     { t: 'p', style: 'note', text: T.data_note },
   ];
 }
+
+/** None of the advice's makers takes a direct pull: its sheave is the plan's drop, which no machine of theirs takes with
+ *  these data; another sheave asks for another project (the engineer's choice). */
+const dropNone = (D: number, fmt: Fmt): string => `⚠ Con il tiro diretto la puleggia di frizione deve avere Ø ${fmt(D, 0)} mm, quanto la calata del piano `
+  + '(voce impianto.calata), e nessun argano SICOR o Montanari a catalogo la prende con questi dati. Per un argano a catalogo serve la puleggia di '
+  + 'rinvio nel locale macchina, che lascia libera la puleggia di frizione, oppure gli attacchi delle funi spostati perché la calata sia quella di una '
+  + 'puleggia a catalogo: in entrambi i casi il progetto va ripetuto, e la scelta è del progettista.';

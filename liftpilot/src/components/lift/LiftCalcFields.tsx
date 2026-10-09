@@ -83,7 +83,7 @@ export default function LiftCalcFields({ P, X, inp, derived, complete, bad, need
   const num = (id: string): number => Number(DV[id] ?? 0);
   // a value the software works out with the machine: none shown until the machine is in
   const worked = (text: string): string => (complete ? text : '—');
-  const pick = derived?.analysis.sizing.pick ?? null, repl = V.context === 'repl', keep = repl && !!V.keepRopes;
+  const repl = V.context === 'repl', keep = repl && !!V.keepRopes;
   const ropesFromProposal = !!derived && auto.machine && !derived.noProposal && !keep;
   const bottomBlank = blank.is('bottom'), scheme = derived?.bottom ?? inp.bottom ?? 'head';
   // the ropes: kept from the existing ones in a replacement (to enter), else the proposal's once there is one
@@ -164,7 +164,7 @@ export default function LiftCalcFields({ P, X, inp, derived, complete, bad, need
                     </select>
                   </div>
                 ) : null}
-                {derived.catalog?.fit ? (
+                {derived.catalog?.fit && !derived.noProposal ? (
                   <p className="hint">{t('cat_fit', {
                     model: `${derived.catalog.fit.machine.brand} ${derived.catalog.fit.machine.model}`, ratio: derived.catalog.fit.ratio ?? '',
                     stat: fmt(derived.catalog.fit.machine.staticKg, 0), dv: `${derived.catalog.fit.dv >= 0 ? '+' : ''}${fmt(derived.catalog.fit.dv * 100, 1)}`,
@@ -172,10 +172,15 @@ export default function LiftCalcFields({ P, X, inp, derived, complete, bad, need
                 ) : null}
                 {derived.catalog?.miss && inp.catalog ? <p className="hint bad" role="alert">{missText(inp.catalog, derived.catalog.miss, t)}</p> : null}
                 <p className="hint">{derived.noProposal ? t('no_proposal') : t('hint_machine_auto')}</p>
-                {pick && !derived.noProposal ? <p className="proposal-line num">{X.proposalShort(pick)}</p> : null}
+                {/* the machine proposed as the calculation verifies it: the grid's or the catalogue's as it stands */}
+                {derived.noProposal ? null : <p className="proposal-line num">{X.machineShort(derived.analysis.ctx.N)}</p>}
               </>
             ) : null}
-            {/* without a proposal the machine to check is entered, as with the switch off */}
+            {/* without a proposal the machine to check is entered, as with the switch off; one whose values are a catalogue's
+                is that machine (derive.ts) */}
+            {(!auto.machine || derived.noProposal) && derived.catalog?.fit ? (
+              <p className="hint">{t('cat_known', { model: `${derived.catalog.fit.machine.brand} ${derived.catalog.fit.machine.model}` })}</p>
+            ) : null}
             {auto.machine && !derived.noProposal ? <><div className="subhead">{t('assumptions')}</div>{ASSUMED.map((id) => row(id))}</> : MACHINE('n_').map((f) => row(f.id))}
             {ropes}
           </div>

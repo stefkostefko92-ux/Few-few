@@ -14,10 +14,11 @@ import type { Edit } from '@/drawing';
 import { deriveLift, type AutoFlags, type BottomScheme, type Collaudo, type LiftDerived, type LiftInputs } from '@/lib/lift';
 import { enteredBy, existingMissing, filled, layoutTo, missingOf, type BlankKey, type LiftDraft } from '@/lib/lift/blank';
 import { drawnShaft, edited, enteredShaft, movedPanel, panelEntered } from '@/lib/lift/panel-form';
+import { enteredSeed } from '@/lib/lift/entered';
 import { withPitches, type BracketPitches } from '@/shaft/brackets';
 import { deflectorInputs, liftCandidate, liftWall, type AdviceModel, type MachineCandidate } from '@/lib/lift/advice';
 import type { CatalogChoice } from '@/lib/lift/catalog';
-import { mirrorRopes, proposalValues } from '@/lib/present/analysis';
+import { mirrorRopes } from '@/lib/present/analysis';
 import { textsFor } from '@/lib/present/texts';
 import { makePres } from '@/lib/present/tr';
 import { visibleBad } from '@/lib/calc-input';
@@ -214,18 +215,8 @@ export default function LiftWorkspace({ projectId, initial, blank: initialBlank 
   const setAuto = (patch: Partial<AutoFlags>): void => {
     // (the panel's switch works before anything is worked out: entered, its wall and place are to enter)
     if (!derived && !('panel' in patch)) return;
-    const pick = derived?.analysis.sizing.pick ?? null;
-    const ids: Readonly<Record<Exclude<keyof AutoFlags, 'panel'>, readonly string[]>> = {
-      P: ['P'], L0: ['L0'], dx: ['dx'], Hv: ['Hv'], machine: derived?.origin.machine === 'auto' && pick ? Object.keys(proposalValues(pick)) : [],
-    };
-    const seed: Record<string, string | number | boolean> = {};
-    for (const k of Object.keys(patch) as (keyof AutoFlags)[]) {
-      if (patch[k] !== false || k === 'panel' || !derived) continue;
-      for (const id of ids[k]) {
-        const v = derived.values[id];
-        if (v !== undefined) seed[id] = v;
-      }
-    }
+    // the machine: every value of the new machine, the catalogue's own too (its mass), so it stays that machine
+    const seed = derived ? enteredSeed(derived, patch) : {};
     const placed = patch.panel === false && derived?.origin.panel === 'auto' ? derived.shaft.room : null;
     setForm((f) => {
       const next = { ...f, inputs: { ...f.inputs, auto: { ...f.inputs.auto, ...patch }, calc: mirrorRopes({ ...f.inputs.calc, ...seed }) } };

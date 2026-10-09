@@ -5,6 +5,7 @@ import { ceilTo, G } from '@/calc/math';
 import { K } from '@/calc/norme';
 import { ropeFamily } from '@/calc/sizing';
 import { decimalsShown } from '@/shaft/checks';
+import type { SheaveHold } from '@/lib/lift/direct';
 import type {
   BrakeCase, BrakeWindow, Check, CheckId, CheckStatus, Groove, Machine, Plant, Results, SensitivityVariant, Sizing, SizingOption, TractionCase,
 } from '@/calc/types';
@@ -49,6 +50,10 @@ export function textsFor(P: Pres) {
   const proposalShort = (o: SizingOption): string =>
     `D ${fmt(o.D, 0)} · ${o.n} × Ø${o.d} · ${grooveShort(o.groove)} · 1:${o.i} · ${fmt(o.Pn, 1)} kW · ${t('p_brake')} 2 × ${fmt(o.brakeSet, 0)} N·m`;
   const dText = (d: number): string => fmt(d, Number.isInteger(d) ? 0 : 1);
+  // the machine the calculation verifies, in the proposal's words (the one form's machine proposed: the grid's or a
+  // catalogue's, as it stands)
+  const machineShort = (N: Machine): string => `D ${fmt(N.D, 0)} · ${N.n} × Ø${dText(N.d)} · ${grooveShort(N.groove)} · 1:${fmt(N.i, Number.isInteger(N.i) ? 0 : 1)} · `
+    + `${fmt(N.Pn, 1)} kW · ${t('p_brake')} ${N.brakeSets} × ${fmt(N.brakeNm, 0)} N·m`;
   const noneText = (s: Sizing | null): string => (s && s.keep ? t('p_none_keep', { n: s.keep.n, d: dText(s.keep.d) }) : t('p_none'));
   const critText = (s: Sizing | null): string => t(s && s.keep ? 'p_crit_keep' : 'p_crit');
   const altText = (s: Sizing | null): string => t(s && s.keep ? 'p_alt_keep' : 'p_alt');
@@ -61,10 +66,11 @@ export function textsFor(P: Pres) {
     return en20 ? (r.rescue.Fa > K.rescueForceMech ? t('p_mech', f) : t('p_manual20', f)) : t('p_manual', f);
   };
 
-  function proposalRows(o: SizingOption, N: Machine, fixedD: number, kept = false): Row2[] {
+  // `hold`: the sheave the sizing kept (the existing machine's, a direct pull's plan's drop: analysis.ts)
+  function proposalRows(o: SizingOption, N: Machine, hold: SheaveHold, kept = false): Row2[] {
     const r = o.res, worst = worstTraction(r), w = brakeWindow(r);
     return [
-      [t('p_sheave'), `${fmt(o.D, 0)} mm · D/d ${fmt(o.D / o.d, 1)}${fixedD ? ` · ${t('p_fixed')}` : ''}`],
+      [t('p_sheave'), `${fmt(o.D, 0)} mm · D/d ${fmt(o.D / o.d, 1)}${hold ? ` · ${t(hold === 'drop' ? 'p_drop' : 'p_fixed')}` : ''}`],
       [t('p_groove'), `${grooveText(o.groove)}${o.groove.type !== 'VH' && o.groove.beta > K.betaRecommended ? ` · ${t('p_beta_hi', { br: K.betaRecommended })}` : ''}${o.tight ? ` · ${t('p_tight')}` : ''}${o.real ? '' : ` · ${t('p_real_no')}`}`],
       [t('p_ropes'), `${o.n} × Ø${dText(o.d)} mm · F_min ≥ ${fmt(o.rope.Fmin, 1)} kN · ${fmt(o.rope.qf, 3)} kg/m${kept ? ` · ${t('p_kept')}` : ''}`],
       [t('p_ratio'), `1:${o.i} (${t('p_ideal', { x: fmt(o.iIdeal, 2) })}) · ${t('p_speed', { v: fmt(r.kin.vReal, 3), fn: fmt(N.fn, 0), f: fmt(r.kin.fRated, 2) })}`],
@@ -178,7 +184,7 @@ export function textsFor(P: Pres) {
     .map((s) => `${sensLabel(s)}: ${s.changed.map((c) => `${checkLabel(c.id)} → ${st(c.status)}`).join('; ')}`);
 
   return {
-    st, alphaText, grooveAngles, grooveText, grooveLimit, grooveShort, proposalShort, dText, noneText, critText, altText, proposalRows, proposalCells,
+    st, alphaText, grooveAngles, grooveText, grooveLimit, grooveShort, proposalShort, machineShort, dText, noneText, critText, altText, proposalRows, proposalCells,
     proposalHead, comparisonRows, verifyList, caseText, etaText, windowText, machineRows, checkLabel, checkText, checkValue, checkLimit, verdictText, sensLabel, sensRows,
     sensHead, sensTitle, sensLine, sensChanges,
   };
