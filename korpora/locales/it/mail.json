@@ -131,6 +131,10 @@
     "staffAccountDeleted": {
       "subject": "Account eliminato con un ordine in attesa di pagamento: {email}",
       "body": "l'account di {email} è stato eliminato. L'ordine n. {ids} era in attesa di pagamento ed è stato annullato.\n\nSe per l'ordine è arrivato un pagamento, rimborsatelo con lo stesso mezzo di pagamento. Nel pannello l'ordine resta solo con i dati del contratto.\n\nPannello: {admin}"
+    },
+    "planEnding": {
+      "subject": "Il vostro piano Korpora Premium scade il {date}",
+      "body": "il {date} il vostro piano Premium scade: non si rinnova da solo. Dopo, i progetti restano e si possono scaricare, ma nuovi progetti e modifiche richiedono un piano attivo.\n\nPer continuare, ordinate un nuovo periodo: {plan}"
     }
   }
 }

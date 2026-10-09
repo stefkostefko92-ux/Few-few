@@ -226,6 +226,16 @@ export function mailTrialEnding(
   return send(to, locale, 'trialEnding', { date, plan: link('/account/plan', locale) }, name);
 }
 
+/** Premium свършва след няколко дни и не се подновява сам — връзката води към плана. */
+export function mailPlanEnding(
+  to: string,
+  locale: Locale,
+  name: string | null,
+  date: string,
+): Promise<boolean> {
+  return send(to, locale, 'planEnding', { date, plan: link('/account/plan', locale) }, name);
+}
+
 export function mailPlanChanged(
   to: string,
   locale: Locale,

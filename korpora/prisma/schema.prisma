@@ -41,6 +41,8 @@ model User {
   planExpiresAt        DateTime?
   /// Кога е пратено напомнянето, че тестовият период свършва — праща се веднъж.
   trialReminderAt      DateTime?
+  /// За кой край на Premium е пратено напомнянето (стойността на planExpiresAt тогава): нов срок → ново писмо.
+  planReminderFor      DateTime?
   /// TOTP тайна, AES-256-GCM в покой. Без `totpEnabledAt` тайната е само започната настройка.
   totpSecretEnc        String?
   totpEnabledAt        DateTime?

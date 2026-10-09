@@ -131,6 +131,10 @@
     "staffAccountDeleted": {
       "subject": "Deleted account with an order awaiting payment: {email}",
       "body": "The account of {email} has been deleted. Order no. {ids} was awaiting payment and has been cancelled.\n\nIf a payment for it was received, refund it using the same means of payment. In the panel the order stays with the contract details only.\n\nPanel: {admin}"
+    },
+    "planEnding": {
+      "subject": "Your Korpora Premium plan ends on {date}",
+      "body": "Your Premium plan ends on {date} — it does not renew by itself. After that your projects stay and can be downloaded, but new projects and changes need an active plan.\n\nTo continue, order a new term: {plan}"
     }
   }
 }

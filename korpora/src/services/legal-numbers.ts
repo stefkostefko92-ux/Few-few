@@ -4,7 +4,7 @@ import { MAX_SESSION_MS, SESSION_LIMITS } from '../auth/sessions.js';
 import { FLASH_MAX_AGE_MS } from '../http/flash.js';
 import { LOCALE_COOKIE_MAX_AGE_MS } from '../http/locale.js';
 import { translatorFor, type Locale } from '../i18n.js';
-import { TRIAL_DAYS, TRIAL_REMINDER_DAYS } from '../plans/plan.js';
+import { PREMIUM_REMINDER_DAYS, TRIAL_DAYS, TRIAL_REMINDER_DAYS } from '../plans/plan.js';
 import {
   formatLifetimeTimes,
   LIFETIME_BASIS_MONTHS,
@@ -67,6 +67,7 @@ export function privacyNumbers(locale: Locale) {
     preDeployKept: PRE_DEPLOY_BACKUPS_KEPT,
     preDeployMax: retentionText(PRE_DEPLOY_MAX_DAYS, t),
     trialReminder: t('common.days', { n: TRIAL_REMINDER_DAYS }),
+    premiumReminder: t('common.days', { n: PREMIUM_REMINDER_DAYS }),
     failedLogins: MAX_FAILED_LOGINS,
     lockFor: t('common.minutes', { n: LOCK_MINUTES }),
   };

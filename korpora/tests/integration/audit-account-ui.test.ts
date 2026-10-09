@@ -215,3 +215,30 @@ test('a ban reason in Bulgarian is labelled so on an English screen', async () =
   assert.match(reply.body, /Reason \(as written by our team, in Bulgarian\)/);
   assert.match(reply.body, /<blockquote lang="bg">Нарушаване на условията<\/blockquote>/);
 });
+
+test('Premium that ends within a week gets one reminder per term', async () => {
+  const { runMaintenance } = await import('../../src/services/maintenance.js');
+  const { outbox } = await import('./harness.js');
+  const email = 'premium-end@example.test';
+  await customer(email);
+  const day = 86_400_000;
+  await prisma.user.update({
+    where: { email },
+    data: { plan: 'PREMIUM', planExpiresAt: new Date(Date.now() + 3 * day) },
+  });
+  forgetMailTo(email);
+  await runMaintenance();
+  const mail = await mailTo(email, /Premium планът ви в Korpora изтича/);
+  assert.match(mail.text, /не се подновява сам/);
+  assert.match(mail.text, /\/account\/plan\?lang=bg/);
+  const count = () => outbox.filter((m) => m.to === email).length;
+  await runMaintenance();
+  assert.equal(count(), 1, 'once per term');
+  // the team renews: a new end date is a new term with its own reminder
+  await prisma.user.update({
+    where: { email },
+    data: { planExpiresAt: new Date(Date.now() + 5 * day) },
+  });
+  await runMaintenance();
+  assert.equal(count(), 2);
+});
