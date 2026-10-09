@@ -8,7 +8,9 @@
 <% if (typeof noindex !== 'undefined' && noindex) { %><meta name="robots" content="noindex, nofollow"><% } %>
 <meta name="theme-color" content="#f6f7f1" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#2a2c2f" media="(prefers-color-scheme: dark)">
-<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48 192x192">
+<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
+<%# Google Search wants a favicon larger than 48 px: the manifest's 192 px icon, a PNG of its own instead of an entry in the ICO %>
+<link rel="icon" type="image/png" sizes="192x192" href="/static/img/icon-192.png?v=<%= v %>">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
 <%# Latin carries the spaces, digits and punctuation of every page, Bulgarian too; Cyrillic (`optional`) goes first %>
