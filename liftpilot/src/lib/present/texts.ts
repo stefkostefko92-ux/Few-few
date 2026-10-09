@@ -125,16 +125,17 @@ export function textsFor(P: Pres) {
   const etaText = (M: Machine): string => `${fmt(M.etaI, 2)}${M.etaIest ? ` (${t('est')})` : ''}`;
   const windowText = (w: BrakeWindow): string =>
     `${fmt(w.lo / w.sets, 1)} N·m · ${w.hi == null ? t('b_win_none') : w.hi === Infinity ? '—' : `${fmt(w.hi / w.sets, 1)} N·m`}`;
-  // `old`: the existing machine (its ropes are the existing ones); the inertias and the mass, which the brake, the
-  // decelerations and the uplift depend on, so that the calculation can be repeated
-  const machineRows = (N: Machine, res: Results, old = false): Row2[] => [
+  // `old`: the existing machine (its ropes are the existing ones); `keptRopes`: the new machine on the ropes the
+  // intervention leaves in place (collaudo.ts partKept: sheet 1, the bill and the order say so too); the inertias and the
+  // mass, which the brake, the decelerations and the uplift depend on, so that the calculation can be repeated
+  const machineRows = (N: Machine, res: Results, old = false, keptRopes = false): Row2[] => [
     [t('D'), `${fmt(N.D, 0)} mm`], [t('groove'), grooveText(N.groove)], [t('i'), fmt(N.i, 1)],
     [t('Pn'), `${fmt(N.Pn, 1)} kW · ${N.poles} ${t('poles_short')} · ${fmt(N.nm, 0)} 1/min · ${fmt(N.fn, 0)} Hz`],
     [`${t('etaD')} · ${t('etaI')}`, `${fmt(N.etaD, 2)} · ${etaText(N)}`],
     [`${t('Jm')} · ${t('Js')}`, `${fmt(N.Jm, 3)} · ${fmt(N.Js, 2)} kg·m²`], [t('mass'), `${fmt(N.mass, 0)} kg`],
     [`${t('brakeSets')} × ${t('brakeNm')}`, `${N.brakeSets} × ${fmt(N.brakeNm, 0)} N·m`],
     [t('b_win'), windowText(brakeWindow(res))],
-    [t(old ? 'oldRopes' : 'g_ropes'), `${N.n} × Ø${fmt(N.d, 1)} mm · ${fmt(N.Fmin, 1)} kN · ${fmt(N.qf, 3)} kg/m · ${t(ropesEstimated(N) ? 'rope_est' : 'rope_std')}`],
+    [t(old || keptRopes ? 'oldRopes' : 'g_ropes'), `${N.n} × Ø${fmt(N.d, 1)} mm · ${fmt(N.Fmin, 1)} kN · ${fmt(N.qf, 3)} kg/m · ${t(ropesEstimated(N) ? 'rope_est' : 'rope_std')}`],
     [t('shaftMax'), N.shaftMax > 0 ? `${fmt(N.shaftMax, 0)} kg` : '—'],
     [t('MpCat'), N.MpCat > 0 ? `${fmt(N.MpCat, 0)} N·m` : '—'],
   ];

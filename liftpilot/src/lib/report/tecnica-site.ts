@@ -141,6 +141,7 @@ export function designRoomBlocks(L: Layout, M: MachineSpec, load: SupportLoad, f
   }
   out.push({ t: 'p', text: `Gancio di sollevamento sopra il baricentro dell’argano, a x ${r0(hook.at[0])} mm e y ${r0(hook.at[1])} mm dai muri del locale: portata ${r0(hook.load)} kg `
     + `(il pezzo più pesante ${r0(hook.piece)} kg). Reazioni sugli appoggi del basamento ${rx.on === 'walls' ? 'nei muri' : 'sulla soletta'}, con il coefficiente dinamico: `
-    + `${rx.R.map((x, i) => `R${i + 1} ${r0(x)} daN`).join(', ')}. ${mountsText(G, M, { uplift: upliftOf(rx) })}.` });
+    + `${rx.R.map((x, i) => `R${i + 1} ${r0(x)} daN`).join(', ')}${rx.stand ? `; sotto i piedi del supporto del rinvio sulla soletta, il suo peso proprio: `
+      + `${rx.stand.R.map((x, i) => `R${rx.R.length + i + 1} ${r0(x)} daN`).join(', ')}` : ''}. ${mountsText(G, M, { uplift: upliftOf(rx) })}.` });
   return out;
 }

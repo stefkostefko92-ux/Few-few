@@ -106,16 +106,17 @@ export const BOTTOM_IT: Readonly<Record<BottomScheme, string>> = {
 export const cellText = (c: Cell | undefined): string => (c === undefined ? '' : typeof c === 'string' ? c : `${c.text}${c.flag ? ' ⚠' : ''}${c.sub ? `\n${c.sub}` : ''}`);
 export const rowStatus = (row: readonly Cell[]): BlockStatus => { const s = row.find((c) => typeof c === 'object' && c.status); return typeof s === 'object' && s.status ? s.status : ''; };
 
-/** A machine under the pit: the space under the shaft as sheet 1 has it (its note, its row and the check sg_cw;
- *  registry paracadute.contrappeso) — the pit floor for its load besides P5–P8, the counterweight's safety gear given in
- *  the data of the installation, in a modification (UNI 10411-1/-11) an existing pillar in its place as the designer
- *  chooses. */
+/** A machine under the pit: the space under the shaft as sheet 1 has it (its note, its row and the check sg_cw, which
+ *  the section «Guide e carichi sulle strutture» and the result take too: guide.ts; registry paracadute.contrappeso) —
+ *  the pit floor for its load besides P5–P8, the counterweight's safety gear given in the data of the installation, in a
+ *  modification (UNI 10411-1/-11) an existing pillar in its place as the designer chooses. */
 export function underPitText(norma: NormaCollaudo): string {
   const K = KV_VERT, v = K.cwGearInstantV;
   return `Spazio accessibile sotto il vano (UNI EN 81-20:2020, 5.2.5.4): fondo della fossa progettato per almeno ${K.pitFloorAccessible} N/m² oltre ai `
     + 'carichi P5–P8 del foglio 1 delle tavole (sotto ogni guida del contrappeso anche la presa del paracadute); paracadute del contrappeso, '
     + `progressivo oltre ${v} m/s e fino a ${v} m/s anche istantaneo, azionato dal limitatore o, fino a ${v} m/s, dalla rottura della sospensione o `
-    + 'da una fune di sicurezza: tipo e azionamento si indicano nei dati dell’impianto e la verifica del foglio 1 non passa finché mancano'
+    + 'da una fune di sicurezza: tipo e azionamento si indicano nei dati dell’impianto, e la verifica (in questa relazione e sul foglio 1 delle tavole) '
+    + 'non passa finché mancano'
     + (norma !== 'en81' ? '; in una modifica può stare al suo posto un pilastro esistente fino al terreno sotto gli ammortizzatori del contrappeso, '
       + `verificato per i nuovi carichi (${pilastroRif(norma)}): è una scelta del progettista` : '');
 }

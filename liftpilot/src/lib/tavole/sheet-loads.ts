@@ -16,12 +16,19 @@ import { RAILS } from '@/shaft/rails';
 import type { Layout } from '@/shaft/types';
 import { anchorPull, type AnchorPull } from '../lift/anchor';
 import { machineMass, type MachineMass } from '../lift/machine-mass';
-import { cablesMass, carSideStatic, carriedBy, headStatic, hebOf, supportMass, type SupportMass } from '../lift/support';
+import { besideMass, cablesMass, carSideStatic, carriedBy, headStatic, hebOf, supportMass, type SupportMass } from '../lift/support';
 import type { Plant } from '../plant';
 import type { Analysis } from '../present/analysis';
 import { railForces, type SafetyGear } from './forces';
 import { loads, type Loads, type LoadsInput } from './loads';
 import { railCheck, type RailCheck } from './rail-check';
+
+/** The fields of the data of the installation the rails' check, the loads and the counterweight's safety gear read —
+ *  sheetRails (the car's safety gear, the bracket pitch, the lift's use), sheetLoads (the governor's load P4) and
+ *  cw-gear.ts (the counterweight's safety gear and what trips it) —: the relazione's «Guide e carichi sulle strutture»
+ *  depends on these alone, so a set issued with other data in the other fields has the same forces and limits on its
+ *  sheet 1 (src/lib/report/elaborati.ts plantChanged). */
+export const GUIDE_PLANT_FIELDS = ['safetyGear', 'carBracketPitch', 'liftUse', 'governorLoad', 'cwSafetyGear', 'cwGearTrip'] as const satisfies readonly (keyof Plant)[];
 
 export interface SheetRails {
   /** the rails' length [m], the brackets' heights of the car rail anchored to a wall and of the one on a side
@@ -80,9 +87,9 @@ export function sheetLoads(a: Analysis, L: Layout, Pl: Plant, M: MachineSpec, ma
   const car = carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes: ropesKg, cables: cablesKg });
   const heb = below ? null : hebOf(L, M, { machine: carried, static: loads(inp).static, dyn, car })?.chosen ?? null;
   const hebKg = heb ? (2 * PROFILES[heb.profile].mass * heb.length) / 1000 : 0;
-  // on the slab with the machine also the beams under it (borne in the room's walls: counted with the slab's) and the
-  // HEB beams on the shaft's walls
-  const ld = loads({ ...inp, base: (support.kind === 'beams' ? support.base : 0) + hebKg });
+  // on the slab with the machine also the beams under it (borne in the room's walls: counted with the slab's), the
+  // pulley's own stand on the floor and the HEB beams on the shaft's walls
+  const ld = loads({ ...inp, base: besideMass(support) + hebKg });
   return { ropesKg, cablesKg, machine, support, heb, hebKg, carried, dyn, ld, anchor: anchorPull(res.shaft, N.mass, dyn) };
 }
 

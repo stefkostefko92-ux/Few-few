@@ -14,7 +14,7 @@ import { IRON } from '@/shaft/machine-shape';
 import { supportRunIn } from '@/shaft/machine-room';
 import { PROFILES } from '@/shaft/profiles';
 import { bedplateBeams, bedplateLegs, rinvioRun } from '@/shaft/rinvio';
-import { hasProfile, profileOf, supportOf, type MachineSupport } from '@/shaft/support';
+import { hasProfile, onHeb, profileOf, supportOf, type MachineSupport } from '@/shaft/support';
 import { beamSpans, supportTop } from '@/shaft/support-view';
 import { machineMass, sheaveKg } from './machine-mass';
 import { KM } from './norme-masse';
@@ -79,12 +79,15 @@ export interface SupportMass {
   maker: number;
   frame: number;
   base: number;
+  /** of `base`, the pulley's own stand on the room's floor beside the support: its legs bear it on the slab, not the
+   *  support (room-reactions.ts); 0 without one, or on the HEB beams, which carry it with the support */
+  stand: number;
   kind: MachineSupport['kind'];
 }
 
 export function supportMass(G: RoomGeo | null, M: MachineSpec): SupportMass {
   const s = supportOf(G?.room ?? null, M.Dp > 0), rf = M.rinvio ?? null, maker = bedplateMass(M);
-  if (!G) return { maker, frame: 0, base: 0, kind: s.kind };
+  if (!G) return { maker, frame: 0, base: 0, stand: 0, kind: s.kind };
   const F = G.frame, steel = KM.steelKgM3 / 1e9, run = (r: readonly [number, number] | null): number => (r ? r[1] - r[0] : 0);
   const channel = (h: number, len: number): number => (2 * IRON * KM.ironTf + Math.max(0, h - 2 * KM.ironTf) * KM.ironTw) * len * steel;
   const across = Math.max(...F.beams) - Math.min(...F.beams);
@@ -103,9 +106,11 @@ export function supportMass(G: RoomGeo | null, M: MachineSpec): SupportMass {
     base = (U.mass * ((2 + bp.inner.length) * run(rinvioRun(M, G)) + 2 * width)) / 1000 + sheaveKg(M.Dp, M.n, M.d)
       + (bedplateLegs(G, M, null).length * KM.legKgM * Math.max(0, rf.top - (rf.base ?? 0) - U.h)) / 1000;
   }
-  // the pulley on its own stand beside another support: the pulley and four legs up to its axis
-  if (rf?.on === 'stand') base += sheaveKg(M.Dp, M.n, M.d) + (4 * KM.legKgM * Math.max(0, rf.pulleyAxis - (rf.base ?? 0))) / 1000;
-  return { maker, frame: Math.round(frame), base: Math.round(base), kind: s.kind };
+  // the pulley on its own stand beside another support: the pulley and four legs up to its axis; on the floor its own
+  // (its legs on the slab), on the HEB beams theirs
+  const stand = rf?.on === 'stand' ? sheaveKg(M.Dp, M.n, M.d) + (4 * KM.legKgM * Math.max(0, rf.pulleyAxis - (rf.base ?? 0))) / 1000 : 0;
+  const floor = stand > 0 && !onHeb(G.room, M.Dp > 0);
+  return { maker, frame: Math.round(frame), base: Math.round(base + stand), stand: floor ? Math.round(stand) : 0, kind: s.kind };
 }
 
 /** A welded box under the feet [x0, z0, x1, z1] `h` tall: plates top and bottom, walls round it [mm³]. */
@@ -116,8 +121,13 @@ const box = (feet: readonly number[], h: number): number => {
 
 /** The mass the support's checks take as the machine's (the beams under it, the HEB beams on the shaft's walls): the
  *  `whole` machine (machine-mass.ts), the maker's bedplate, our bedframe and, on anything but the beams checked (whose
- *  own weight the check counts), the support. */
-export const carriedBy = (w: SupportMass, whole: number): number => whole + w.maker + w.frame + (w.kind === 'beams' ? 0 : w.base);
+ *  own weight the check counts), the support — without the pulley's own stand on the floor, which bears on its legs. */
+export const carriedBy = (w: SupportMass, whole: number): number => whole + w.maker + w.frame + (w.kind === 'beams' ? 0 : w.base - w.stand);
+
+/** What else stands on the slab or in the room's walls with what carriedBy takes [kg]: the beams from wall to wall
+ *  (their own weight, with all of their base) or the pulley's own stand on the floor. P9 counts it (loads.ts `base`);
+ *  with carriedBy it is the whole of what the support weighs. */
+export const besideMass = (w: SupportMass): number => (w.kind === 'beams' ? w.base : w.stand);
 
 /** carriedBy for the machine `M` in the room `G` (null: none over the shaft), the calculation's machine `N`, the maker's
  *  model `made`. */
@@ -127,11 +137,11 @@ export const carriedMass = (G: RoomGeo | null, M: MachineSpec, N: Machine, made:
 /** The load the support carries for these values: `over` takes the data of the installation (machine with bedframe,
  *  cables, dynamic coefficient) where given, and the rope's length on the design's rig (`rope`); the ropes at their cut
  *  length (ropeCut). */
-export function supportLoad({ I, N }: Pick<ParsedInputs, 'I' | 'N'>, Mcw: number, over: { machine?: number; cables?: number; dyn?: number; rope?: number | null } = {}): SupportLoad {
+export function supportLoad({ I, N }: Pick<ParsedInputs, 'I' | 'N'>, Mcw: number, over: { machine?: number; cables?: number; dyn?: number; rope?: number | null; stand?: number } = {}): SupportLoad {
   const ropes = N.n * N.qf * ropeCut(I, over.rope ?? null), cables = cablesMass(I.H, over.cables);
   return {
     machine: over.machine ?? N.mass, static: axisStatic({ P: I.P, Q: I.Q, Mcw, roping: I.r, ropes, cables }), dyn: over.dyn ?? KV_VERT.dynFactor,
-    car: carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes, cables }),
+    car: carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes, cables }), ...(over.stand ? { stand: over.stand } : {}),
   };
 }
 

@@ -28,6 +28,7 @@ import type { BlockStatus, ReportBlock, ReportDoc } from './model';
 import { TECNICA_DRAWING, roomRows, surveyBlocks } from './tecnica-room';
 import { existingNewBlocks, hookBlocks, massesBlock, openingsBlocks, p4Block, siteChecks } from './tecnica-site';
 import { shapeOf } from '../catalog/shapes';
+import { plantChanged, plantChangedBox } from './elaborati';
 
 export interface TecnicaInput {
   room: { id: string; label: string | null; createdAt: Date; sha256: string; engineVersion: string; author: string | null };
@@ -41,8 +42,11 @@ export interface TecnicaInput {
   derived: RoomDerived;
   collaudo: Collaudo;
   plant: Plant;
-  /** the drawing sets issued from this room: their number, revision and the SHA-256 of their drawing */
-  sets: readonly { number: string; revision: number; sha256?: string }[];
+  /** the drawing sets issued from this room: their number, revision, the SHA-256 of their drawing and the data of the
+   *  installation each was issued with (missing: not compared) */
+  sets: readonly { number: string; revision: number; sha256?: string; plant?: Plant }[];
+  /** the SHA-256 of the data of the installation as the document reads them (canon-hash.ts on plant.ts plantData) */
+  plantSha256?: string | null;
 }
 
 const LAYOUT: Readonly<Record<string, string>> = { topDefl: 'argano in alto con puleggia di rinvio nel locale', top: 'argano in alto a tiro diretto' };
@@ -66,7 +70,7 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
     ['Azienda', r.company], ['Impianto', pr.name], ['Indirizzo', place || '—'], ['Numero di matricola', pr.plantNumber ?? '—'], ['Proprietario o committente', pr.client ?? '—'],
     ['Rilievo del locale', `${r.room.id}${r.room.label ? ` · ${r.room.label}` : ''} · ${when(r.room.createdAt)}${r.room.author ? ` · ${r.room.author}` : ''}`],
     ['Calcolo dell’argano', `${r.calc.id}${r.calc.label ? ` · ${r.calc.label}` : ''} · ${when(r.calc.createdAt)}`],
-    ['Impronte SHA-256', `rilievo ${r.room.sha256}\ncalcolo ${r.calc.sha256}`],
+    ['Impronte SHA-256', `rilievo ${r.room.sha256}\ncalcolo ${r.calc.sha256}${r.plantSha256 ? `\ndati dell’impianto ${r.plantSha256}` : ''}`],
     // no date of the download: the document is the survey's, dated as it (every download gives the same bytes)
     ['Motori', `rilievo ${r.room.engineVersion} · calcolo ${r.calc.engineVersion} · profilo normativo ${r.calc.profileId}`],
   ] });
@@ -98,7 +102,7 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
   B.push({ t: 'grid', head: ['Grandezza', 'Esistente', 'Nuovo'], widths: [0.3, 0.35, 0.35], align: ['l', 'l', 'l'],
     rows: [['Costruttore e modello', '—', named || 'non di catalogo: dati inseriti nel calcolo'], ['Massa', ctx.compare && ctx.O.mass > 0 ? `${fmt(ctx.O.mass, 0)} kg` : '—', N.mass > 0 ? `${fmt(N.mass, 0)} kg` : 'non inserita'],
       // the ropes' row is named for the new machine: here for both
-      ...rowsN.map(([k, v], i) => [k === t('g_ropes') ? 'Funi' : k, rowsO?.[i]?.[1] ?? '—', v])] });
+      ...rowsN.map(([k, v], i) => [k === t('g_ropes') || k === t('oldRopes') ? 'Funi' : k, rowsO?.[i]?.[1] ?? '—', v])] });
   if (!ctx.compare) B.push({ t: 'p', style: 'note', text: 'L’argano esistente non è stato inserito nel calcolo: i suoi dati vanno rilevati sulla targa e sul libretto.' });
   const S = d.made ? shapeOf(d.made.brand, d.made.model) : null;
   if (S) B.push({ t: 'kv', rows: shapeRows(S, N.D, fmt, d.M.rinvio ?? null) });
@@ -169,6 +173,12 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
       : 'Tavole di progetto: da emettere dal rilievo del locale',
     'Scheda tecnica e dichiarazioni del costruttore del nuovo argano (da allegare)',
   ] });
+  // a set issued with other data of the installation than these (elaborati.ts)
+  const changed = plantChanged(r.sets, r.plant);
+  if (changed.length) {
+    B.push(plantChangedBox(changed, 'Questa relazione legge i dati dell’impianto attuali (il carico P4 del limitatore, il nome dell’argano, i dati del '
+      + 'foglio 1) e non coincide con il foglio 1 di quelle tavole.'));
+  }
 
   section(t('rep_legal_title'));
   B.push({ t: 'p', text: t('rep_legal') });

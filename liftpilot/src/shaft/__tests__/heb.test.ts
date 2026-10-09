@@ -62,7 +62,8 @@ test('putrelle HEB: tensione, freccia e reazione come a mano', () => {
   const Mmax = (F * L) / 4 + (q * L * L) / 8;
   assert.ok(near(r.sigma, Mmax / (P.Wy * 1e3)), `σ ${r.sigma}`);
   assert.ok(near(r.f, (F * L ** 3) / (48 * E * I) + (5 * q * L ** 4) / (384 * E * I)), `f ${r.f}`);
-  assert.ok(near(r.reaction, F / 2 + (q * L) / 2), `R ${r.reaction}`);
+  // the bearing carries half the beam's whole own weight, its 200 mm in each wall too (as sheet 1 counts its mass)
+  assert.ok(near(r.reaction, F / 2 + (q * lay.length) / 2), `R ${r.reaction}`);
   assert.ok(near(r.sigmaMax, 275 / 1.05) && near(r.fMax, 1600 / 1500));
   // the feet on the flanges (70 mm either side of the axis), the ropes 300 mm from each axis less the flange and the rope
   assert.equal(r.feet, P.b / 2);

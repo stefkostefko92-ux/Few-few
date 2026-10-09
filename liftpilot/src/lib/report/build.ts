@@ -9,15 +9,9 @@ import type { Plant } from '../plant';
 import { COND, PALETTE, concreteTile, type SheetImage } from '@/drawing';
 import { mergeChecks, vociOfDesign } from '@/shaft';
 import type { CheckId, CheckStatus, FormValues } from '@/calc/types';
-import { belowChecks } from '../lift/below-checks';
-import { bottomGeo, sheaveHalfBelow } from '../lift/bottom';
-import { headTopChecks } from '../lift/head';
-import { withRig } from '../lift/shaft-rig';
-import { cwGapOver } from '@/shaft/cw-gap';
 import { NO_MARKS, P_ESTIMATE_RULE, type ValueMarks } from '../lift/marks';
-import { ambitoOf, collaudoOf } from '../lift/collaudo';
+import { ambitoOf, collaudoOf, ropesKept, ropesOutsideTest } from '../lift/collaudo';
 import { carichiOf } from '../lift/modifica';
-import { slingCheck } from '../lift/arcata';
 import { analyse } from '../present/analysis';
 import { quickRows } from '../present/quick';
 import { techTables } from '../present/tables';
@@ -29,21 +23,16 @@ import { casesBlocks, limitiBlocks } from './cases';
 import { checkRefs } from './refs';
 import { BOTTOM_IT, STATO, cellText, drawnText, massNote, proposalBlocks, rowStatus, underPitText, vociBlocks } from './build-parts';
 import { guideSection } from './guide';
-import { cwGearOf } from '../tavole/cw-gear';
-import { elaboratiBlocks, type IssuedSet } from './elaborati';
+import { GUIDE_PLANT_FIELDS } from '../tavole/sheet-loads';
+import { elaboratiBlocks, plantChanged, type IssuedSet } from './elaborati';
 import { machineMass } from '../lift/machine-mass';
-import { roomGeo } from '@/shaft/machine-room';
 import { ESITI_CALCOLO, EXISTING_NOTE, adaptSection, adempimentiBlocks, collaudoRows, collaudoText, esitiBlocks, esitoOf, riferimentiRows, std81_1 } from './collaudo';
-import { machineSpec, sheaveAxisBelow } from '../lift/machine';
-import { shapeOf } from '../catalog/shapes';
 import { rinvioRow } from './machine-shape';
-import { carriedMass, supportChecks, supportLoad, supportMass } from '../lift/support';
-import { rigLength } from '../lift/rope';
 import { adviceBlocks } from './advice';
 import type { MachineAdvice } from '../lift/advice';
-import { catalogMachineOf, massModelOf, modelOf } from '../lift/known';
-import { existingRoomCheck } from '@/shaft/room-above';
+import { catalogMachineOf, modelOf } from '../lift/known';
 import { designRoomBlocks } from './tecnica-site';
+import { designMachine } from './build-design';
 
 export interface ReportInput {
   calc: { id: string; label: string | null; createdAt: Date; sha256: string; engineVersion: string; profileId: string; author: string | null };
@@ -62,8 +51,11 @@ export interface ReportInput {
   marks?: ValueMarks;
   /** the data of the installation (the project's), for the rails and the loads on the building of a lift design */
   plant?: Plant | null;
-  /** the drawing sets issued on this calculation */
+  /** the drawing sets issued on this calculation, with the data of the installation each was issued with */
   drawings?: readonly IssuedSet[];
+  /** the SHA-256 of the data of the installation as the document reads them (canon-hash.ts on plant.ts plantData): the
+   *  calculation's fingerprint does not cover them */
+  plantSha256?: string | null;
 }
 
 export function buildReport(r: ReportInput): ReportDoc {
@@ -95,6 +87,7 @@ export function buildReport(r: ReportInput): ReportDoc {
     ['Visti interni (non sono firme)', r.reviews.length ? r.reviews.map((v) => `${v.name ?? '—'}${v.role ? ` (${appIt.roles[v.role]})` : ''}, ${when(v.createdAt)}${v.note ? `: ${v.note}` : ''}`).join('\n') : 'nessuno'],
     // no date of the download: the document is the calculation's, dated as it (every download gives the same bytes)
     ['Motore di calcolo', `LiftPilot ${r.calc.engineVersion} · profilo normativo ${r.calc.profileId}`], ['Impronta SHA-256 del calcolo', r.calc.sha256],
+    ...(r.design && r.plantSha256 ? [['Impronta SHA-256 dei dati dell’impianto (guide e carichi)', r.plantSha256] as [string, string]] : []),
   ] });
 
   section('Oggetto');
@@ -124,29 +117,8 @@ export function buildReport(r: ReportInput): ReportDoc {
   section('Ipotesi e limiti del modello');
   B.push(...limitiBlocks());
 
-  const made = m.catalog ? { brand: m.catalog.brand, model: m.catalog.model } : null;
-  const machine = r.design ? machineSpec(ctx, N.mass, '', r.design.layout.inputs.room, made ? shapeOf(made.brand, made.model) : null, made) : null;
-  // the maker's model whose whole machine the loads count: the proposal's, else the catalogue's machine the values are
-  // (one entered by hand) — the one named below, as the design's derivation and sheet 1 take it (known.ts)
-  const weighed = massModelOf(I, N, r.values, made);
-  // the checks that need the machine, as the design's verdict takes them: the beams, the car's top under what hangs over
-  // it, a machine below in its rooms (below-checks.ts)
-  const scheme = I.layout === 'bottom' ? m.bottom ?? 'head' : null, L = r.design?.layout;
-  // the support's load as the design and sheet 1 count it: the whole machine with what carries it (support.ts), the
-  // ropes at their cut length on the design's rope rig
-  const rope = L && machine ? rigLength({ layout: L, analysis: a, machine, bottom: scheme }) : null;
-  const ld = supportLoad(ctx, res.Mcw, { machine: machine && L ? carriedMass(roomGeo(L, machine), machine, N, weighed) : N.mass, rope });
-  const bed = machine ? supportMass(null, machine).maker : 0;
-  const g = L && machine && scheme ? bottomGeo(L, scheme, machine.D, I.Dp, machine.n, machine.d, I.r, sheaveAxisBelow(machine.D, machine.shape ?? null),
-    sheaveHalfBelow(machine.D, machine.n, machine.d, machine.shape ?? null)) : null;
-  const beams = L && machine ? [...supportChecks(L, machine, ld, !scheme), ...headTopChecks(withRig(L, I.r, I.Dp, machine.n, machine.d, g), I.r, I.Dp, scheme), ...(g ? belowChecks(L, g, machine, I.Dp) : [])] : [];
-  // the clearance on the counterweight's sign with the car's top under what hangs over it (cw-gap.ts), as sheet 1 gives it
-  if (L) beams.push(...cwGapOver(L, beams));
-  // a modification: the existing room's height under 2,0 m (UNI 10411-1:2024, 9.2), as the design's verdict takes it
-  if (I.context === 'repl' && L?.inputs.room && !scheme) beams.push(existingRoomCheck(L.inputs.room));
-  // the existing sling under a new car or rated load (arcata.ts), as the design's verdict takes it
-  const sling = slingCheck(C, carichiOf(r.values));
-  if (L && sling) beams.push(sling);
+  // the machine on the lift design, its support's load and the checks that need it (build-design.ts)
+  const { machine, weighed, scheme, L, rope, ld, bed, beams } = designMachine(r, a, C, m);
   if (r.design) {
     section('Vano e cabina');
     B.push(...shaftBlocks(r.design, I.Q, { fmt, st, when, head: [t('col_item'), t('col_val'), t('col_lim'), t('col_res'), 'Riferimento'] }, beams, C));
@@ -159,16 +131,19 @@ export function buildReport(r: ReportInput): ReportDoc {
     // the machine room's openings, hook, bearings and mounts (round 36)
     if (machine && L && !scheme) B.push(...designRoomBlocks(L, machine, ld, fmt));
   }
-  // the rails and the loads on the building, with the data of the installation (guide.ts): as sheet 1 counts them
-  const guide = r.design && machine ? guideSection(a, r.design.layout, r.plant ?? {}, machine, weighed, fmt, st, (c) => esitoOf(C, c.id, st(c.status), c.status),
-    cwGearOf(scheme === 'under', r.plant ?? {}), rope) : null;
+  // the rails, the counterweight's safety gear and the loads on the building, with the data of the installation as they
+  // are now (guide.ts): as sheet 1 counts them, the issued sets drawn with other data in the fields these read named
+  // (elaborati.ts; sheet-loads.ts GUIDE_PLANT_FIELDS: another supply or control leaves forces and limits as issued)
+  const Pl = r.plant ?? {}, changed = plantChanged(r.drawings ?? [], Pl, GUIDE_PLANT_FIELDS);
+  const guide = r.design && machine ? guideSection(a, r.design.layout, Pl, machine, weighed, fmt, st, (c) => esitoOf(C, c.id, st(c.status), c.status),
+    { rope, scheme, modification: C.norma !== 'en81', changed }) : null;
   if (guide) {
     section('Guide e carichi sulle strutture');
     B.push(...guide.blocks);
   }
   if (r.design) {
     section('Elaborati grafici');
-    B.push(...elaboratiBlocks(r.drawings ?? [], when));
+    B.push(...elaboratiBlocks(r.drawings ?? [], when, changed));
   }
 
   section('Argano verificato');
@@ -180,7 +155,14 @@ export function buildReport(r: ReportInput): ReportDoc {
   const named: [string, string][] = chosen ? [['Costruttore e modello', `${chosen.brand} ${chosen.model} (dal catalogo, scelto nel progetto)`]]
     : known ? [['Costruttore e modello', `${known.brand} ${known.model} (${how}: `
       + `rapporto, carico statico, massa e puleggia coincidono; fonte: ${known.src})`]] : [];
-  B.push({ t: 'kv', rows: [...named, ...X.machineRows(N, res)] });
+  // the ropes the intervention leaves in place are the existing ones, as sheet 1, the bill and the draft order have them
+  // (collaudo.ts ropesKept); ropes of their own number and diameter are new, also when the test does not name them
+  B.push({ t: 'kv', rows: [...named, ...X.machineRows(N, res, false, ropesKept(C, r.values))] });
+  if (ropesOutsideTest(C, r.values)) {
+    B.push({ t: 'p', style: 'note', text: `⚠ Il calcolo non tiene numero e diametro delle funi esistenti («${t('keepRopes')}» non scelto): le funi `
+      + `${N.n} × Ø${fmt(N.d, 1)} mm sono nuove, da tagliare e ordinare, ma il collaudo non le comprende tra le parti sostituite. Aggiungere le funi alle `
+      + 'parti sostituite del collaudo, oppure scegliere nel calcolo lo stesso numero e diametro delle funi esistenti.' });
+  }
   // a catalogue's mass that is not the whole machine: what the loads on the building take instead (machine-mass.ts)
   const whole = machineMass(N, weighed);
   B.push(...massNote(whole, N.mass, fmt));

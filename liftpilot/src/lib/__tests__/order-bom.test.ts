@@ -72,7 +72,7 @@ function orderOf(inp: LiftInputs, extra: Partial<OrderInput> = {}): { text: stri
   const doc = buildOrder({
     company: 'Prova', companyCity: null, logo: null, author: null, project: { name: 'P', address: null, city: null, province: null, plantNumber: null },
     record: { kind: 'design', id: 'x', sha256: 'a'.repeat(64), createdAt: new Date('2026-10-08T08:00:00Z'), label: null },
-    order, room, site, collaudo: d.collaudo, ...extra,
+    order, room, site, collaudo: d.collaudo, values: d.values, ...extra,
   });
   const text = doc.blocks.map((b) => (b.t === 'kv' ? b.rows.flat().join(' ') : 'text' in b ? b.text : '')).join('\n');
   return { text, site };

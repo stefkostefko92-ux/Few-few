@@ -914,6 +914,7 @@
     "list": "Tavole emesse",
     "none": "Nessuna tavola emessa per questo impianto.",
     "mismatch": "Il calcolo e il progetto del vano non coincidono: {list}. Le tavole usano la geometria del progetto e la macchina del calcolo.",
+    "plantChanged": "I dati dell’impianto del progetto sono cambiati dopo l’emissione di queste tavole ({list}): il foglio 1 resta com’è stato emesso, mentre la relazione di calcolo e la relazione tecnica leggono i dati attuali e lo segnalano. Per allinearli, emetti una nuova revisione.",
     "mm_travel": "corsa {calc} m nel calcolo, {shaft} m nel vano",
     "mm_speed": "velocità {calc} m/s nel calcolo, {shaft} m/s nel vano",
     "mm_load": "portata {calc} kg nel calcolo, {shaft} kg nel vano",

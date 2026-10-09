@@ -4,6 +4,7 @@
 // machine's support's own weight. Registry: carichi.fossa, carichi.macchina (src/shaft/norme-vert.ts).
 import { KV_VERT } from '@/shaft/norme-vert';
 import { axisStatic } from '@/lib/lift/support';
+import type { BottomScheme } from '@/lib/lift/bottom';
 import { impactFactor, type SafetyGear } from './forces';
 
 const G = 9.81;
@@ -73,6 +74,21 @@ export const loadNames = (below = false): readonly string[] => [
   below ? 'PULEGGE IN TESTATA' : 'ARGANO', 'ATTACCO FUNI CABINA', 'ATTACCO FUNI CONTRAPPESO', 'LIMITATORE', 'GUIDE CABINA',
   'AMMORTIZZATORI CABINA', 'GUIDE CONTRAPPESO', 'AMMORTIZZATORE CONTRAPPESO', 'TOTALE SULLA SOLETTA',
 ];
+
+/** Where P1…P9 act, in the relazione's words (the column beside the values sheet 1 names with loadNames): the machine
+ *  over the shaft on the slab of its room — or, with no room over the shaft, at the shaft's head; a machine below
+ *  (`scheme`) with the pulleys at the shaft's head, or in the pulley room over it; the governor where its rope's length
+ *  takes it (support.ts governorRopeLength): in the room over the shaft, else on its bracket under the shaft's ceiling. */
+export function loadPlaces(scheme: BottomScheme | null, room: boolean): readonly string[] {
+  const top = scheme === 'room' ? 'del locale delle pulegge' : scheme || !room ? 'in testata del vano' : 'del locale macchina';
+  const governor = scheme === 'room' ? 'limitatore nel locale delle pulegge' : scheme ? 'limitatore su mensola sotto il soffitto del vano'
+    : room ? 'limitatore nel locale macchina' : 'limitatore in testata del vano';
+  return [
+    scheme ? 'appoggi delle pulegge in testata' : 'appoggi dell’argano sulla soletta', 'attacco delle funi di cabina', 'attacco delle funi del contrappeso',
+    governor, 'piede di ogni guida di cabina', 'fondo della fossa, ammortizzatori di cabina', 'piede di ogni guida del contrappeso',
+    'fondo della fossa, ammortizzatore del contrappeso', `totale sulla soletta ${top}`,
+  ];
+}
 
 /** P4 without the governor's load in the data of the installation: its maker gives it (the governor's mass and the pull
  *  of its rope when tripped). */

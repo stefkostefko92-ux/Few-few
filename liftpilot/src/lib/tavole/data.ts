@@ -43,7 +43,7 @@ import { governorRopes, shaftUnder } from '@/shaft/room-site';
 import { belowGeoOf, machineOf, machineText } from './views';
 import { clientNotes, estimateNote, railNote, safetyGearNote, spaceLegend } from './notes';
 import { shaftDetailText } from './notes-vano';
-import { NORMA_SIGLA, ambitoOf, collaudoOf } from '../lift/collaudo';
+import { NORMA_SIGLA, ambitoOf, collaudoOf, partKept, ropesKept } from '../lift/collaudo';
 import { collaudoNote } from '../report/collaudo';
 
 /** The buffers by type as the data sheet writes them: the car's (plural) and the counterweight's. */
@@ -92,7 +92,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   const parts = carParts(Pl);
   if (parts !== null && Math.abs(parts - I.P) > 0.5) warnings.push({ what: 'carMass', calc: I.P, shaft: parts });
   // the parts the intervention leaves in place (a lift tested as new, UNI EN 81-20/50: none)
-  const kept = (p: (typeof C.parti)[number]): boolean => C.norma !== 'en81' && !C.parti.includes(p);
+  const kept = (p: (typeof C.parti)[number]): boolean => partKept(C, p);
 
   // stops and landing doors actually served
   const served = (f: (typeof V.floors)[number]): number => [...f.door].filter((s) => L.doors.some((d) => d.side === s)).length;
@@ -124,7 +124,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   // rails from the pit floor to under the slab, new or existing as the acceptance test says; brackets one every pitch
   // (the declared one or the rule's) plus the first and the last of each rail (registry guide.staffe); each rope at its
   // cut length on the design's rope rig (registry impianto.funi.taglio: the bill and the draft order take the same; the
-  // ropes the acceptance test keeps are existing, their mass in the loads at that length) and the governor rope
+  // ropes the intervention keeps are existing — collaudo.ts ropesKept —, their mass in the loads at that length) and the governor rope
   // (estimates); the governor the design takes (the one chosen, else by the speed)
   const R = sheetRails(L, I.P, I.Q, Pl), railLen = R.railLen, oldRails = kept('rails');
   const rails = (t: RailType): string => `${oldRails ? 'ESISTENTI ' : ''}${railLabel(t)}`;
@@ -139,7 +139,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   // spacing: the car's is the l of the car rails' check below (UNI EN 81-50:2020, 5.10; sheet-loads.ts sheetRails)
   const spanCar = R.span, spanCw = maxSpanOf(Lp, 'cw');
   const gov = govSize(V.v, L.inputs.governor), oldGov = kept('governor');
-  const ropeLen = ropeCut(I, layoutRigLength(L, a, x.marks?.catalog ?? null, x.marks?.bottom ?? null)), oldRopes = kept('ropes');
+  const ropeLen = ropeCut(I, layoutRigLength(L, a, x.marks?.catalog ?? null, x.marks?.bottom ?? null)), oldRopes = ropesKept(C, x.values);
   // the governor's rope up to the governor: in the room over the shaft (with a machine below, the pulley room), else on
   // its bracket under the ceiling (registry limitatore.vano)
   const room = L.inputs.room, scheme = I.layout === 'bottom' ? x.marks?.bottom ?? 'head' : null;
@@ -209,7 +209,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   ];
   // the machine room over the shaft: the hook's rated load and the reactions R1…Rn on the support's bearings (round 36)
   const Gr = !below ? roomGeo(L, M) : null, car0 = carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes: ropesKg, cables: cablesKg });
-  const roomLoad = { machine, static: ld.static, dyn, car: car0 }, roomHeb = Gr ? hebFor(Gr, M, shaftUnder(L), governorRopes(L, Gr.room)) : null;
+  const roomLoad = { machine, static: ld.static, dyn, car: car0, stand: SL.support.stand }, roomHeb = Gr ? hebFor(Gr, M, shaftUnder(L), governorRopes(L, Gr.room)) : null;
   const roomRows = Gr ? [hookRow(Gr, M, fmt), ...reactionRows(Gr, M, roomLoad, roomHeb, fmt)] : [];
   const uplift = Gr ? upliftOf(supportReactions(Gr, M, roomLoad, roomHeb)) : [];
   const each = [false, false, false, false, true, V.carBuffers > 1, true, false, false];

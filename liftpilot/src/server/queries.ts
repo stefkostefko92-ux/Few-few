@@ -168,13 +168,14 @@ export function getDrawingSet(user: SessionUser, id: string) {
   });
 }
 
-/** The drawing sets issued on a calculation, every revision (the relazione lists the latest of each number). */
+/** The drawing sets issued on a calculation, every revision (the relazione lists the latest of each number), each with
+ *  the data of the installation it was issued with (the relazione compares them with the project's). */
 export function listCalcDrawingSets(user: SessionUser, calculationId: string) {
   return prisma.drawingSet.findMany({
     where: { calculationId, companyId: user.companyId },
     orderBy: [{ year: 'asc' }, { seq: 'asc' }, { revision: 'asc' }],
     take: 200,
-    select: { number: true, revision: true, pages: true, createdAt: true, sha256: true },
+    select: { number: true, revision: true, pages: true, createdAt: true, sha256: true, plant: true },
   });
 }
 
@@ -185,7 +186,7 @@ export function listRoomDrawingSets(user: SessionUser, roomDesignId: string) {
     where: { roomDesignId, companyId: user.companyId },
     orderBy: [{ year: 'asc' }, { seq: 'asc' }, { revision: 'asc' }],
     take: 200,
-    select: { number: true, revision: true, sha256: true },
+    select: { number: true, revision: true, sha256: true, plant: true },
   });
 }
 

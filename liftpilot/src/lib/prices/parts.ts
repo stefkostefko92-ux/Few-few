@@ -5,14 +5,16 @@
 // go with the landing doors; the supports and SG of the counterweight rails go with the rails. Pure, without the price
 // list: the screens' Panev table counts with the same rule as the bill.
 import type { BomRow, PanevBom } from '@/lib/catalog/panev';
-import type { Collaudo, Parte } from '@/lib/lift/collaudo';
+import type { FormValues } from '@/calc/types';
+import { partKept, ropesKept, type Collaudo, type Parte } from '@/lib/lift/collaudo';
 
 /** The part of the acceptance test a line belongs to; 'always': counted whatever the intervention replaces. */
 export type BomPart = Parte | 'always';
 
 /** A part the intervention leaves in place: a modification tested to UNI 10411 that does not replace it (a new lift,
- *  UNI EN 81-20/50: none) — the rule of sheet 1 (src/lib/tavole/data.ts). */
-export const keptPart = (C: Collaudo, p: BomPart): boolean => p !== 'always' && C.norma !== 'en81' && !C.parti.includes(p);
+ *  UNI EN 81-20/50: none); the ropes also by the calculation's `V` (collaudo.ts ropesKept: of their own number and
+ *  diameter they are new) — the rule of sheet 1 (src/lib/tavole/data.ts). */
+export const keptPart = (C: Collaudo, p: BomPart, V?: FormValues): boolean => p !== 'always' && (p === 'ropes' && V ? ropesKept(C, V) : partKept(C, p));
 
 /** The part a Panev row goes with: the landing doors' pairs with the landing doors, the counterweight rails' brackets
  *  with the rails. */

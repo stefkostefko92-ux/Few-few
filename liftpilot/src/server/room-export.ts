@@ -8,7 +8,8 @@ import type { SessionUser } from '@/lib/auth';
 import { toDwg, toDxf } from '@/lib/cad/export';
 import { draftCaption, surveyViews } from '@/lib/cad/project';
 import { prisma } from '@/lib/db';
-import { plantReadSchema } from '@/lib/plant';
+import { canonHash } from '@/lib/canon-hash';
+import { plantData } from '@/lib/plant';
 import { renderPdf, renderTavole } from '@/lib/report/render';
 import { buildTecnica } from '@/lib/report/tecnica';
 import { initialsOf } from '@/lib/tavole/compose';
@@ -35,15 +36,16 @@ export async function exportRoomDesign(user: SessionUser, id: string, format: Ro
     if (!c.ok) return { ok: false, error: c.error === 'engineChanged' ? 'engineChanged' : 'notFound' };
     return { ok: true, body: new Uint8Array(await renderTavole(c.doc, r.createdAt)), mime: MIME.pdf, name: pdf };
   }
-  const d = rep.derived, plant = plantReadSchema.safeParse(r.project.plant ?? {}), P = plant.success ? plant.data : {};
+  const d = rep.derived, P = plantData(r.project.plant);
   if (format === 'relazione') {
-    // (every revision by year and number: the relazione attaches the one in force of each — round 37)
-    const sets = await listRoomDrawingSets(user, r.id);
+    // (every revision by year and number: the relazione attaches the one in force of each — round 37), each with the data
+    // of the installation it was issued with
+    const sets = (await listRoomDrawingSets(user, r.id)).map((x) => ({ ...x, plant: plantData(x.plant) }));
     const doc = buildTecnica({
       room: { id: r.id, label: r.label, createdAt: r.createdAt, sha256: r.sha256, engineVersion: r.engineVersion, author: r.user?.name ?? null },
       calc: { id: r.calculation.id, label: r.calculation.label, createdAt: r.calculation.createdAt, sha256: r.calculation.sha256, engineVersion: r.calculation.engineVersion, profileId: r.calculation.profileId },
       project: r.project, ...await getLetterhead(user), values: rep.values, survey: rep.survey, derived: d,
-      collaudo: rep.collaudo, plant: P, sets,
+      collaudo: rep.collaudo, plant: P, plantSha256: canonHash(P), sets,
     });
     return { ok: true, body: new Uint8Array(await renderPdf(doc, r.createdAt)), mime: MIME.relazione, name: `relazione-tecnica-${base}.pdf` };
   }

@@ -28,7 +28,7 @@ import { bedplateKey, machineKey, ropeEndKey, ropeKey } from './articles';
 import { acopLines, belowLines, governorLines, hebLines, keptPart, panevLines, plantPart, ropeLines, ropingLines, safetyLines, sizeText, type TaggedLine } from './bom-parts';
 import type { BomLine } from './cost';
 import { plantLines } from './plant-bom';
-import type { Collaudo, Parte } from '@/lib/lift/collaudo';
+import { collaudoOf, ropesKept, type Collaudo, type Parte } from '@/lib/lift/collaudo';
 import { ropeCut } from '@/lib/lift/support';
 import type { RoomDerived } from '@/lib/room/derive';
 
@@ -110,7 +110,7 @@ export function designBom(dv: LiftDerived, plant: Plant = {}): BomLine[] {
   T.push(...safetyLines(dv, plant), ...acopLines(C));
   for (const l of plantLines(dv, rails)) T.push([plantPart(l.key), l]);
   // a modification: the parts it replaces, the installer as a lump sum
-  const repl = C.norma !== 'en81', kept = T.filter(([p, l]) => !keptPart(C, p) && !(repl && l.key === 'labour:installer')).map(([, l]) => l);
+  const repl = C.norma !== 'en81', kept = T.filter(([p, l]) => !keptPart(C, p, dv.values) && !(repl && l.key === 'labour:installer')).map(([, l]) => l);
   return merged(repl ? [...kept, { key: 'labour:replacement', label: { item: 'labour_replacement' }, qty: 1, unit: 'lot' }] : kept);
 }
 
@@ -131,12 +131,13 @@ export const calcUncounted = (C: Collaudo | null): Uncounted =>
 /** The replacement of the machine: the machine (the catalogue's whose values the calculator holds), what it stands on
  *  (the maker's bedplate with the pulley; with the machine room surveyed `room`, the support chosen there, the pulley's
  *  stand and the HEB beams on their plates; a machine below its base anchored against the uplift), the ropes at their
- *  cut length with their wedge sockets and the controller when the acceptance test `C` names them replaced, the
- *  adaptation of ACOP/UCM under UNI 10411-11, and the installer as a lump sum (the other parts `C` replaces:
- *  calcUncounted). The cut length on the rig of the shaft design laid out `shaft` the calculation was made from, as its
- *  sheet 1 measures it (rope.ts layoutRigLength); without one, the formula. */
+ *  cut length with their wedge sockets and the controller when the acceptance test `C` names them replaced (none: the
+ *  software's default for the calculation, collaudo.ts collaudoOf; the ropes by ropesKept), the adaptation of ACOP/UCM
+ *  under UNI 10411-11, and the installer as a lump sum (the other parts `C` replaces: calcUncounted). The cut length on
+ *  the rig of the shaft design laid out `shaft` the calculation was made from, as its sheet 1 measures it (rope.ts
+ *  layoutRigLength); without one, the formula. */
 export function calcBom(V: FormValues, C: Collaudo | null = null, room: RoomDerived | null = null, shaft: Layout | null = null): BomLine[] {
-  const c = calcMachine(V), a = room?.analysis ?? analyse(V), { I, N } = a.ctx, parts = C?.parti ?? ['machine'];
+  const c = calcMachine(V), a = room?.analysis ?? analyse(V), { I, N } = a.ctx, col = C ?? collaudoOf(V);
   const L: BomLine[] = [c ? { key: machineKey(c.brand, c.model), label: { item: 'machine', name: `${c.brand} ${c.model}` }, qty: 1, unit: 'pz' } : { key: null, label: { item: 'machine_other' }, qty: 1, unit: 'pz' }];
   // with the room surveyed, what stands there (the maker's frame, ours, or the support with the pulley's stand); else
   // the maker's bedplate the calculation's machine takes
@@ -149,12 +150,14 @@ export function calcBom(V: FormValues, C: Collaudo | null = null, room: RoomDeri
   if (rf?.on === 'stand') L.push({ key: 'support:stand', label: { item: 'support_stand' }, qty: 1, unit: 'pz' });
   L.push(...hebLines(room?.heb?.chosen));
   if (I.layout === 'bottom') L.push({ key: 'base:below', label: { item: 'base_below' }, qty: 1, unit: 'pz' });
-  if (parts.includes('ropes')) {
+  // the ropes when the intervention replaces them: as the test says, and new whenever the calculation gives them their
+  // own number and diameter (collaudo.ts ropesKept, as sheet 1 and the draft order)
+  if (!ropesKept(col, V)) {
     L.push({ key: ropeKey(N.d), label: { item: 'rope', name: sizeText(N.d) }, qty: N.n * ropeCut(I, shaft ? layoutRigLength(shaft, a) : null), unit: 'm' });
     L.push({ key: ropeEndKey(N.d), label: { item: 'rope_end', name: sizeText(N.d) }, qty: 2 * N.n, unit: 'pz' });
   }
-  if (parts.includes('controller')) L.push({ key: 'controller', label: { item: 'controller' }, qty: 1, unit: 'pz' });
-  if (C) L.push(...acopLines(C).map(([, l]) => l));
+  if (col.parti.includes('controller')) L.push({ key: 'controller', label: { item: 'controller' }, qty: 1, unit: 'pz' });
+  L.push(...acopLines(col).map(([, l]) => l));
   L.push({ key: 'labour:replacement', label: { item: 'labour_replacement' }, qty: 1, unit: 'lot' });
   return merged(L);
 }

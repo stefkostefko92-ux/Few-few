@@ -216,6 +216,21 @@ export function withAggiunta(isNew: boolean, chosen: Collaudo | undefined, value
 /** Whether a check applies to the acceptance test of this intervention: under any of its standards. */
 export const ambitoOf = (C: Collaudo, id: CheckId | ShaftCheckId): Ambito => (normeOf(C).some((n) => underNorma(C, n, id)) ? 'applies' : 'existing');
 
+/** A part the intervention leaves in place: one its acceptance test does not replace (a lift tested as new, UNI EN
+ *  81-20/50: none). Sheet 1 writes it as existing, the bill and the draft order leave it out, the relazione names it so
+ *  (the suspension ropes: ropesKept, which also reads the calculation). */
+export const partKept = (C: Collaudo, p: Parte): boolean => C.norma !== 'en81' && !C.parti.includes(p);
+
+/** The suspension ropes the intervention leaves in place: a part its test keeps (partKept) on a replacement whose
+ *  calculation keeps the number and diameter of the ropes in place (inputs.ts keepRopes). Ropes of their own number
+ *  and diameter are new whatever the parts of the test say: cut to length on sheet 1, in the bill and in the draft
+ *  order, named new by the relazione. The one rule for the ropes. */
+export const ropesKept = (C: Collaudo, V: FormValues): boolean => partKept(C, 'ropes') && V.context === 'repl' && !!V.keepRopes;
+
+/** The two inputs disagree: the test keeps the ropes, the calculation gives ropes of their own number and diameter
+ *  (new: ropesKept). The relazione asks to add the ropes to the parts of the test. */
+export const ropesOutsideTest = (C: Collaudo, V: FormValues): boolean => partKept(C, 'ropes') && V.context === 'repl' && !V.keepRopes;
+
 /** The adaptations a machine replaced under UNI 10411-1 brings (registry sostituzione.adeguamenti); none otherwise. */
 export const adeguamentiDovuti = (C: Collaudo): boolean => C.norma === '10411-1' && C.parti.includes('machine');
 

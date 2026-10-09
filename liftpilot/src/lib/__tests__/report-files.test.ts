@@ -41,7 +41,7 @@ const order = (): OrderInput => {
   return {
     company: 'Ditta di prova', companyCity: 'Milano', logo: null, author: 'Mario Bianchi', project,
     record: { kind: 'design', id: 'cmtestorder01', sha256: 'a'.repeat(64), createdAt: AT, label: null },
-    order: o, room: designRoom(L, d, o.machine, o.recorded), collaudo: collaudoOf(L.calc),
+    order: o, room: designRoom(L, d, o.machine, o.recorded), collaudo: collaudoOf(L.calc), values: d.values,
   };
 };
 

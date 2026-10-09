@@ -7,7 +7,7 @@ import { dateFormat } from '@/lib/dates';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { makeFmt } from '@/lib/present/tr';
 import { ambitoOf } from '@/lib/lift/collaudo';
-import { plantReadSchema } from '@/lib/plant';
+import { plantData, plantDiff, plantReadSchema } from '@/lib/plant';
 import { initialsOf, revisionsSchema } from '@/lib/tavole/compose';
 import { issueChecks } from '@/lib/tavole/issue-check';
 import { composeStored } from '@/server/drawing-compose';
@@ -54,6 +54,9 @@ export default async function DrawingSetPage({ params, searchParams }: { params:
   // number of an existing lift, the client — on what the set is drawn from (the machine's name is checked by the server
   // on the record chosen)
   const plant = plantReadSchema.safeParse(s.project.plant ?? {}), Pl = plant.success ? plant.data : {};
+  // the data of the installation changed since the set was issued: its sheet 1 keeps the issue's, the relazioni read
+  // the project's (elaborati.ts plantChanged says so in them)
+  const plantMoved = plantDiff(plantData(s.plant), Pl).map((k) => t(`f_${k}`).replace(/\s*\(.*\)\s*$/, ''));
   const fullIn = full && 'doc' in full ? full.input : null, C = fullIn ? fullIn.marks?.collaudo ?? storedCollaudo(fullIn.values, s.calculation.collaudo) : null;
   const checks = fullIn && C ? issueChecks(Pl, fullIn.marks?.catalog ?? null, s.project, C.norma !== 'en81', { whole: true,
     rails: ambitoOf(C, 'gr_stress') === 'applies', underPit: fullIn.values.layout === 'bottom' && fullIn.marks?.bottom === 'under' })
@@ -75,6 +78,7 @@ export default async function DrawingSetPage({ params, searchParams }: { params:
       </div>
       {doc ? null : <p className="alert alert-warn">{t(s.pdf ? 'engineChangedKept' : 'engineChanged')}</p>}
       {mismatch.length ? <p className="alert alert-warn" role="status">{t('mismatch', { list: mismatch.join('; ') })}</p> : null}
+      {plantMoved.length ? <p className="alert alert-warn" role="status">{t('plantChanged', { list: plantMoved.join(', ') })}</p> : null}
       {doc && sheet ? (
         <section className="flex flex-col gap-3">
           <nav className="seg-row" aria-label={t('sheets')}>

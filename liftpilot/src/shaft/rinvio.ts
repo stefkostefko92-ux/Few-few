@@ -146,3 +146,10 @@ export function standBox(M: MachineSpec, G: RoomGeo): readonly [number, number, 
   const r = M.Dp / 2, half = ropeWidths(M.n, M.d).pulley;
   return [G.pulleyAt - r - 110, -half - 40, G.pulleyAt + r + 110, half + 40];
 }
+
+/** Where the pulley's own stand bears on what is under it — the floor, or the HEB beams it stands on with the support
+ *  (heb.ts supportFeet) —: its four legs at the corners of its box (standBox), along the drop line (u) and across it (v). */
+export function standLegs(M: MachineSpec, G: RoomGeo): [number, number][] {
+  const [u0, v0, u1, v1] = standBox(M, G);
+  return [[u0, v0], [u0, v1], [u1, v0], [u1, v1]];
+}

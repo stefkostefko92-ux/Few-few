@@ -32,6 +32,9 @@ export interface SupportLoad {
   /** of the static load, what hangs on the car's fall (the car, the rated load, half the ropes, the cables); missing:
    *  half of it (heb.ts takes where the load acts from it) */
   car?: number;
+  /** the diverting pulley's own stand on the floor beside the support, its own weight [kg] (lib/lift/support.ts
+   *  SupportMass.stand): not in `machine` — its legs bear it on the slab (room-reactions.ts); missing: none */
+  stand?: number;
 }
 
 export interface BeamResult {
