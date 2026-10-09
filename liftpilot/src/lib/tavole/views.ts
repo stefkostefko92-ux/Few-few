@@ -2,7 +2,7 @@
 // a detail, the machine room in plan or in section B-B, each laid out at the largest standard scale that fits an area
 // with its dimensions. The sheets add titles, legends and marks; the screens show the views alone.
 import { shapeOf } from '@/lib/catalog/shapes';
-import { boxH, fitView, moveHits, moveShapes, renderView, type Box, type Entity, type Hit, type Place, type Shape, type SymbolName, type ViewResult } from '@/drawing';
+import { boxH, boxW, fitView, moveHits, moveShapes, renderView, type Box, type Entity, type Hit, type Place, type Shape, type SymbolName, type ViewResult } from '@/drawing';
 import { cwGapLabel } from '@/shaft/cw-gap';
 import { roomGeo, type MachineSpec, type RoomGeo } from '@/shaft/machine-room';
 import { planDims } from '@/shaft/plan-dims';
@@ -109,7 +109,9 @@ export function machineOf(a: Analysis, plant: Plant, L: Layout, catalog: { brand
  *  B-B as it is, else with the door's and the panel's heights in one row, else with its dimensions placed for the scale
  *  it takes (kept on paper). The entities drawn go with it (a CAD file of the view takes the same). */
 type Drawn = { entities: Entity[]; bounds: Box };
-function roomPlaced(draw: (o: RoomDrawOpts) => Drawn, kind: 'plan' | 'section', area: Box): View & { entities: Entity[] } {
+function roomPlaced(drawOn: (o: RoomDrawOpts) => Drawn, kind: 'plan' | 'section', area: Box): View & { entities: Entity[] } {
+  // (the paper the view has: what is set outside the drawing keeps to it — round 37 review)
+  const draw = (o: RoomDrawOpts): Drawn => drawOn({ ...o, paper: { w: boxW(area), h: boxH(area) } });
   let opts: RoomDrawOpts = {}, d = draw(opts), place = placeIn(d.bounds, d.entities, area, DETAIL_SCALES);
   const best = DETAIL_SCALES[0], next = (o: RoomDrawOpts, keep: boolean): void => {
     const e = draw(o), p = placeIn(e.bounds, e.entities, area, DETAIL_SCALES);

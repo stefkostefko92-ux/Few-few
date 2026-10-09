@@ -1,7 +1,7 @@
 // Section B-B of the machine room along the rope drops (room-view.ts draws its plan): the floor slab over the shaft with
 // its openings, walls and roof, the machine on its support (support-view.ts), the pulley, the ropes as they run halfway
 // through the travel; its dimensions. Model entities for the drawing kernel.
-import { chain, edit as E, line, path, rect, type Box, type Entity, type Pt } from '../drawing';
+import { chain, edit as E, line, path, rect, union, type Box, type Entity, type Pt } from '../drawing';
 import { ownAxis } from './support';
 import { rinvioHEdit } from './rinvio-view';
 import { bedplateLegs, rinvioRun } from './rinvio';
@@ -17,9 +17,10 @@ import { pulleySection } from './room-pulley';
 import { columns } from './section-columns';
 import { KV_VERT } from './norme-vert';
 import { hookOf } from './room-hook';
-import { aboveSection, hitchesSection, hookSection, kerbDim, kerbsSection, notesSection, seenFittings } from './room-section-extra';
+import { aboveSection, hitchesSection, hookSection, kerbDim, kerbsSection, notesSection, outsideSection, seenFittings } from './room-section-extra';
 import { hebNote } from './heb-view';
 import { mountsLines } from './room-mounts';
+import { AT, takenBy } from './room-label';
 
 /** Section B-B along the rope drops: X is u along the drop line, Z the height above the room floor. `o`: the door's and
  *  the panel's heights in one row, the dimensions placed for another scale than 1:25 (views.ts, to keep the section at
@@ -147,7 +148,10 @@ export function roomSectionOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDr
   // fixings named (round 36)
   const hook = hookOf(G, M, S.pieces ?? []);
   out.push(...aboveSection(G, M, hook.u, sk));
-  out.push(...hookSection(G, hook, out, r0, r1, sk));
+  // (outside the drawing, under its foot or right of the room, as much as the paper leaves at this scale — round 37)
+  const bounds0: Box = { x0: r0 - WALL, y0: foot, x1: r1 + WALL, y1: Math.max(top, ridge) + WALL }, outside = outsideSection(out, bounds0, AT * sk, o.paper);
+  const named = hookSection(G, hook, out, { r0, r1 }, outside, sk, [machineArea]);
+  out.push(...named);
   const under: Box = { x0: s0 - S.wall, y0: -R.slab - below, x1: s1 + S.wall, y1: -R.slab };
   // (to a mount: under the first leg of the bedplate with the pulley — where the drawing stands it, on the HEB beams where
   // its sides cross them (rinvio.ts bedplateLegs) —, else under the machine's bedplate)
@@ -157,8 +161,11 @@ export function roomSectionOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDr
   // and the hatched walls (round 37: placed as drawn, at TEXT.min)
   const walls = out.flatMap((e): Box[] => (e.e === 'path' && e.fill === 'concrete' ? [{ x0: Math.min(...e.pts.map((p) => p[0])), y0: Math.min(...e.pts.map((p) => p[1])), x1: Math.max(...e.pts.map((p) => p[0])), y1: Math.max(...e.pts.map((p) => p[1])) }] : []));
   const notes = [{ text: mountsLines(G, M).join(' '), to: mountAt }, ...(heb ? [hebNote(heb, G)] : [])];
-  out.push(...notesSection(G, notes, out, [machineArea, under, ...walls], { r0, r1, low: 140 * sk, foot }, sk));
-  return { entities: out, bounds: { x0: r0 - WALL, y0: foot, x1: r1 + WALL, y1: Math.max(top, ridge) + WALL } };
+  const noted = notesSection(G, notes, out, [machineArea, under, ...walls], { r0, r1, low: 140 * sk, foot }, outside, sk);
+  out.push(...noted);
+  // (a note or the hook's name set outside the drawing — under its foot, right of the room — widens what the sheet
+  // places, round 37 review)
+  return { entities: out, bounds: takenBy([...named, ...noted], AT * sk).reduce(union, bounds0) };
 }
 
 /** Where the panel's height stands in compact section B-B: the line in the room nearest the panel's outline `ps` (u)

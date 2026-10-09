@@ -10,7 +10,7 @@ import { machineCorners, type MachineSpec, type RoomGeo } from './machine-room';
 import { KV_VERT } from './norme-vert';
 import { kerbOf, onDrop, openingsOf, type SlabOpening } from './room-draw';
 import type { Hook } from './room-hook';
-import { AT, dimBands, firstClear, gridNear, leaderFrom, letteringBox, placeOf, tagBox, takenBy } from './room-label';
+import { AT, dimBands, firstClear, gridNear, leaderFrom, letteringBox, meets, placeOf, tagBox, takenBy, type Tries } from './room-label';
 import { hitchTags } from './room-loads';
 import type { RoomSite } from './room-site';
 
@@ -63,9 +63,15 @@ export function dropChains(S: RoomSite, G: RoomGeo, dimSide: 'top' | 'bottom' | 
   return out;
 }
 
+/** The groups a name or a reference placed round `to` tries after its usual places: the grid over the room `within`,
+ *  then the band beyond the wall no row takes (`beyond`), the nearest `to` first. */
+const gridAnd = <T extends { box: Box }>(at: (p: Pt) => T, to: Pt, within: Box, beyond: Box | null): Tries<T>[] => [
+  { places: () => gridNear(within, to).map(at), within }, ...(beyond ? [{ places: () => gridNear(beyond, to).map(at), within: beyond }] : []),
+];
+
 /** The slab openings' upstands in plan and their names with a leader, clear of what the plan has: `busy` the machine's
  *  parts, the places kept clear, the lettering and the dimension lines; `k` the plan's scale. */
-function openingMarks(S: RoomSite, M: MachineSpec, G: RoomGeo, busy: Box[], within: Box, k: number): Entity[] {
+function openingMarks(S: RoomSite, M: MachineSpec, G: RoomGeo, busy: Box[], within: Box, beyond: Box | null, k: number): Entity[] {
   const out: Entity[] = [], g = G.dir;
   for (const o of slabOpenings(S, M, G)) {
     // the upstand round it, as thick as KV_VERT.kerbW
@@ -74,7 +80,7 @@ function openingMarks(S: RoomSite, M: MachineSpec, G: RoomGeo, busy: Box[], with
     // beside the machine on the side away from its gearbox, then the other, stepping out; then farther over the room
     const vs = [-1, 1].flatMap((s) => [150, 300, 450, 600, 800].map((dv) => (s * -g > 0 ? G.across[1] + dv : G.across[0] - dv)));
     const places = vs.flatMap((v) => [0, 250, -250].map((du) => at(onDrop(G, uc + du, v))));
-    const spot = placeOf(places, () => gridNear(within, o.centre).map(at), busy, within, GAP * k);
+    const spot = placeOf([{ places: () => places, within }, ...gridAnd(at, o.centre, within, beyond)], busy, GAP * k);
     busy.push(spot.box);
     out.push({ e: 'text', at: spot.at, text, size: TEXT.min, align: 'c', halo: true }, line(leaderFrom(spot.box, o.centre), o.centre, 'dim'));
   }
@@ -86,10 +92,11 @@ const GAP = 0.8;
 
 /** The set-out's entities over the plan drawn so far (`drawn`: its lettering and references kept clear; `keep`: the
  *  machine's parts and the places kept clear; `rows`: the bands of the chains already beside the machine), the hook
- *  `hook` over the machine; `k` the plan's scale (model millimetres to one of paper: its lettering's size there). */
-export function setoutPlan(S: RoomSite, M: MachineSpec, G: RoomGeo, hook: Hook, drawn: readonly Entity[], keep: readonly Box[], rows: readonly Box[] = [], k = AT): Entity[] {
+ *  `hook` over the machine; `k` the plan's scale (model millimetres to one of paper: its lettering's size there);
+ *  `beyond`: the band beyond the wall no row takes, a name's or a reference's last resort (room-label.ts beyondWall). */
+export function setoutPlan(S: RoomSite, M: MachineSpec, G: RoomGeo, hook: Hook, drawn: readonly Entity[], keep: readonly Box[], rows: readonly Box[] = [], k = AT, beyond: Box | null = null): Entity[] {
   const R = G.room, out: Entity[] = [], within: Box = { x0: 60, y0: 60, x1: R.W - 60, y1: R.D - 60 }, busy = [...takenBy(drawn, k), ...dimBands(drawn, k), ...keep];
-  out.push(...openingMarks(S, M, G, busy, within, k));
+  out.push(...openingMarks(S, M, G, busy, within, beyond, k));
   // from the two walls with the most room beside the machine, a chain each: to the bedplate's edge (its corner toward
   // that wall), on an axis to the ropes' line across the drop line or to the sheave's axis along it, and to the hook —
   // each segment named by its far end; askew the drops' coordinates and the angle place the line
@@ -129,17 +136,22 @@ export function setoutPlan(S: RoomSite, M: MachineSpec, G: RoomGeo, hook: Hook, 
   // (the other off the first's line and lettering where it can)
   avoid.push(...dimBands([cx], k));
   const py = place(1, bx0, bx1, R.D, R.W, (w) => [[corner(1, w)[1], corner(1, w)[0], 'Telaio'], ...extraY, [hy, hx, 'Gancio']]);
-  const chains = [cx, setOut(1, py.w, py.ms, py.a)], angle = askew ? angleMark(G, M) : [];
+  const chains = [cx, setOut(1, py.w, py.ms, py.a)];
+  // (the angle's figure off what is there and off the set-out's chains)
+  busy.push(...dimBands(chains, k));
+  const angle = askew ? angleMark(G, M, busy, within, k) : [];
   out.push(...chains, ...angle);
   // the hook's name and the hitches' references off the set-out's chains and the angle too
-  busy.push(...dimBands(chains, k), ...takenBy(angle, k));
-  out.push(...hookMarks(hook, { x0: bx0, y0: by0, x1: bx1, y1: by1 }, busy, within, k), ...hitchMarks(G, busy, within, k));
+  busy.push(...takenBy(angle, k));
+  out.push(...hookMarks(hook, { x0: bx0, y0: by0, x1: bx1, y1: by1 }, busy, within, beyond, k), ...hitchMarks(G, busy, within, beyond, k));
   return out;
 }
 
 /** A drop line askew: its angle to the nearest wall, past the end of the machine and its bedplate on the drop line
- *  (prolonged there as an axis): an arc between the wall's direction and the line, the angle in degrees. */
-function angleMark(G: RoomGeo, M: MachineSpec): Entity[] {
+ *  (prolonged there as an axis): an arc between the wall's direction and the line, the angle in degrees on the arc's
+ *  middle — out past it, else inside it, else the nearest place in the room (`within`) with a leader to it —, where it
+ *  keeps off `busy` (at the plan's scale `k`). */
+function angleMark(G: RoomGeo, M: MachineSpec, busy: readonly Box[], within: Box, k: number): Entity[] {
   const a = dropAngle(G), t = (Math.atan2(G.uy, G.ux) * 180) / Math.PI, onX = Math.abs(G.ux) >= Math.abs(G.uy), R = G.room;
   // the line's end past the machine with room for the arc, on the side the room is longer
   const ends = machineCorners(G, M).map((p) => (p[0] - G.carDrop[0]) * G.ux + (p[1] - G.carDrop[1]) * G.uy), r = 380;
@@ -155,14 +167,20 @@ function angleMark(G: RoomGeo, M: MachineSpec): Entity[] {
   }
   const rq = (ref * Math.PI) / 180, dq = (dirDeg * Math.PI) / 180, mq = ((ref + d / 2) * Math.PI) / 180, txt = `${a.toFixed(1).replace('.', ',')}°`;
   const from = s > 0 ? G.cwDrop : G.carDrop;
+  const figure = (p: Pt): Entity => ({ e: 'text', at: p, text: txt, size: 1.8, align: 'c', halo: true }), on = (d: number): Pt => [c[0] + d * Math.cos(mq), c[1] + d * Math.sin(mq) - 30];
+  const clear = (p: Pt): boolean => takenBy([figure(p)], k).every((b) => busy.every((q) => !meets(b, q)));
+  const mid: Pt = [c[0] + r * Math.cos(mq), c[1] + r * Math.sin(mq)], usual = [r + 110, r + 230, r + 350, r + 470, r - 130, r - 250].filter((d) => d > 60).map(on);
+  const near = usual.find(clear), far = near ? undefined : gridNear(within, mid).find((p) => clear(p) && Math.hypot(p[0] - mid[0], p[1] - mid[1]) < 1500), at = near ?? far ?? on(r + 110);
+  const box = takenBy([figure(at)], k)[0];
   return [line(from, [c[0] + (r + 100) * Math.cos(dq), c[1] + (r + 100) * Math.sin(dq)], 'axis'), line(c, [c[0] + (r + 100) * Math.cos(rq), c[1] + (r + 100) * Math.sin(rq)], 'thin'),
-    path(arc, false, 'thin'), { e: 'text', at: [c[0] + (r + 110) * Math.cos(mq), c[1] + (r + 110) * Math.sin(mq) - 30], text: txt, size: 1.8, align: 'c', halo: true }];
+    path(arc, false, 'thin'), figure(at), ...(far && box ? [line(leaderFrom(box, mid), mid, 'dim')] : [])];
 }
 
 /** The lifting hook: its symbol, and its name with the rated load beside the machine's outline `box`, a leader to it
  *  (its place from the walls is in the set-out's chains); none of those clear, the nearest clear over the room, then
- *  the same in two lines (the name over the load), then in three. */
-function hookMarks(hook: Hook, box: Box, busy: Box[], within: Box, k: number): Entity[] {
+ *  the same in two lines (the name over the load), then in three; then beyond the wall (`beyond`), in one line, two or
+ *  three. */
+function hookMarks(hook: Hook, box: Box, busy: Box[], within: Box, beyond: Box | null, k: number): Entity[] {
   const [x, y] = hook.at, sym: Entity = { e: 'mark', at: hook.at, sym: 'hook', size: 3.2 }, out: Entity[] = [sym];
   const one = [`GANCIO DI SOLLEVAMENTO · PORTATA ${hook.load} kg`], two = ['GANCIO DI SOLLEVAMENTO', `PORTATA ${hook.load} kg`], three = ['GANCIO DI', 'SOLLEVAMENTO', `PORTATA ${hook.load} kg`];
   const lead = 1.3 * TEXT.min * k;
@@ -174,16 +192,18 @@ function hookMarks(hook: Hook, box: Box, busy: Box[], within: Box, k: number): E
     place([box.x1 + d, y + 40], 'l', lines), place([box.x0 - d, y + 40], 'r', lines), place([x, box.y1 + d], 'c', lines), place([x, box.y0 - d - 40], 'c', lines),
   ]);
   busy.push(...takenBy([sym], k));
-  const grid = (lines: readonly string[]) => () => gridNear(within, hook.at).map((p) => place(p, 'c', lines));
-  const spot = placeOf(usual(one), grid(one), busy, within, GAP * k, () => usual(two), grid(two), () => usual(three), grid(three));
+  const grid = (lines: readonly string[], b: Box): Tries<ReturnType<typeof place>> => ({ places: () => gridNear(b, hook.at).map((p) => place(p, 'c', lines)), within: b });
+  const room = [one, two, three].flatMap((ls) => [{ places: () => usual(ls), within }, grid(ls, within)]);
+  const spot = placeOf([...room, ...(beyond ? [one, two, three].map((ls) => grid(ls, beyond)) : [])], busy, GAP * k);
   busy.push(spot.box);
   out.push(...spot.lines.map((t, i): Entity => ({ e: 'text', at: [spot.at[0], spot.at[1] - i * lead], text: t, size: TEXT.min, align: spot.align, halo: true })), line(leaderFrom(spot.box, hook.at), hook.at, 'dim'));
   return out;
 }
 
 /** A 2:1 roping's hitches on the slab: the counter-plate on the floor over each, its load P2 (the car's) or P3 — once:
- *  where it goes as a rule (room-loads.ts hitchTags), else round the hitch, else the nearest clear over the room. */
-function hitchMarks(G: RoomGeo, busy: Box[], within: Box, k: number): Entity[] {
+ *  where it goes as a rule (room-loads.ts hitchTags), else round the hitch, else the nearest clear over the room, else
+ *  beyond the wall (`beyond`). */
+function hitchMarks(G: RoomGeo, busy: Box[], within: Box, beyond: Box | null, k: number): Entity[] {
   const out: Entity[] = [], h = KV_VERT.hitchPlate / 2, rule = hitchTags(G);
   G.deadEnds.forEach((d, i) => {
     const n: Pt = [-d.dir[1], d.dir[0]], c = d.at, corner = (p: number, q: number): Pt => [c[0] + p * d.dir[0] + q * n[0], c[1] + p * d.dir[1] + q * n[1]];
@@ -191,7 +211,7 @@ function hitchMarks(G: RoomGeo, busy: Box[], within: Box, k: number): Entity[] {
     const text = i === 0 ? 'P2' : 'P3', at = (p: Pt): { at: Pt; box: Box } => ({ at: p, box: tagBox(p, text, k) }), first = rule[i];
     const places = [...(first?.e === 'tag' ? [at(first.at)] : []), ...[0, 45, 90, 135, 180, 225, 270, 315].flatMap((deg) => [220, 340, 480].map((r) =>
       at([c[0] + r * Math.cos((deg * Math.PI) / 180), c[1] + r * Math.sin((deg * Math.PI) / 180)])))];
-    const spot = placeOf(places, () => gridNear(within, c).map(at), busy, within, GAP * k);
+    const spot = placeOf([{ places: () => places, within }, ...gridAnd(at, c, within, beyond)], busy, GAP * k);
     busy.push(spot.box);
     out.push({ e: 'tag', at: spot.at, text, to: c });
   });
@@ -200,13 +220,13 @@ function hitchMarks(G: RoomGeo, busy: Box[], within: Box, k: number): Entity[] {
 
 /** The support's bearings R1…Rn (room-reactions.ts) each with its reference beside it, clear of the rest (the
  *  lettering, the references and the dimension lines of `drawn`, `keep`); none round it clear, the nearest clear over
- *  the room; `k` the plan's scale. */
-export function reactionMarks(pts: readonly Pt[], drawn: readonly Entity[], keep: readonly Box[], within: Box, k = AT): Entity[] {
+ *  the room, then beyond the wall (`beyond`); `k` the plan's scale. */
+export function reactionMarks(pts: readonly Pt[], drawn: readonly Entity[], keep: readonly Box[], within: Box, k = AT, beyond: Box | null = null): Entity[] {
   const out: Entity[] = [], busy = [...takenBy(drawn, k), ...dimBands(drawn, k), ...keep], cx = pts.reduce((t, p) => t + p[0], 0) / (pts.length || 1), cy = pts.reduce((t, p) => t + p[1], 0) / (pts.length || 1);
   pts.forEach((p, i) => {
     const text = `R${i + 1}`, at = (q: Pt): { at: Pt; box: Box } => ({ at: q, box: tagBox(q, text, k) }), a0 = Math.atan2(p[1] - cy, p[0] - cx);
     const places = [0, 0.6, -0.6, 1.2, -1.2, 1.8, -1.8, Math.PI].flatMap((da) => [150, 260, 380, 520, 700].map((r) => at([p[0] + r * Math.cos(a0 + da), p[1] + r * Math.sin(a0 + da)])));
-    const spot = placeOf(places, () => gridNear(within, p).map(at), busy, within, (GAP / 2) * k);
+    const spot = placeOf([{ places: () => places, within }, ...gridAnd(at, p, within, beyond)], busy, (GAP / 2) * k);
     busy.push(spot.box);
     out.push({ e: 'tag', at: spot.at, text, to: p });
   });

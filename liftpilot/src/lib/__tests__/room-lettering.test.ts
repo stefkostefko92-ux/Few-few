@@ -6,24 +6,24 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { PRESETS } from '@/calc/presets';
 import type { FormValues } from '@/calc/types';
-import { FRAME, TEXT, drawingArea, tagRadius, textBox, textQuad, type Pt, type Shape } from '@/drawing';
-import { defaultLift, deriveLift, newLift, type LiftInputs } from '@/lib/lift';
-import { valueMarks } from '@/lib/lift/marks';
-import { buildTavole } from '@/lib/tavole/build';
-import { storedInput } from '@/lib/tavole/compose';
+import { FRAME, TEXT, drawingArea, tagRadius, textBox, type Entity } from '@/drawing';
+import { defaultLift, deriveLift, type LiftInputs } from '@/lib/lift';
 import { surveyView } from '@/lib/tavole/views';
 import { HEB_PAD } from '@/shaft/support';
 import { KV_VERT } from '@/shaft/norme-vert';
-import { AT, dimBands, gridNear, letteringBox, meets, placeOf, takenBy } from '@/shaft/room-label';
+import { AT, beyondWall, dimBands, gridNear, letteringBox, meets, placeOf, takenBy } from '@/shaft/room-label';
+import { WALL } from '@/shaft/room-draw';
+import { outsideSection } from '@/shaft/room-section-extra';
+import { hebDrawn } from '@/shaft/heb';
+import { hebUnder } from '@/shaft/heb-view';
+import { roomGeo } from '@/shaft/machine-room';
+import { PROFILES } from '@/shaft/profiles';
+import { layoutSite } from '@/shaft/room-site';
 import { deriveRoom } from '../room/derive';
 import { startSurvey } from '../room/survey';
+import { base, calc, cw, overlaps, sheets, withRoom } from './room-lettering-helpers';
 
 type Room = NonNullable<LiftInputs['shaft']['room']>;
-const base = (): LiftInputs => newLift(), room = (L: LiftInputs): Room => L.shaft.room as Room;
-const withRoom = (L: LiftInputs, r: Partial<Room>): LiftInputs => ({ ...L, shaft: { ...L.shaft, room: { ...room(L), ...r } } });
-const calc = (L: LiftInputs, c: Record<string, string>): LiftInputs => ({ ...L, calc: { ...L.calc, ...c } });
-const cw = (L: LiftInputs, side: 'rear' | 'left' | 'right', cwPos?: number): LiftInputs =>
-  ({ ...L, shaft: { ...L.shaft, cw: side, ...(cwPos !== undefined ? { plan: { ...(L.shaft.plan ?? {}), cwPos } } : {}) } });
 const sup = (L: LiftInputs, s: Room['support']): LiftInputs => withRoom(L, { support: s });
 const direct = (L: LiftInputs): LiftInputs => calc(L, { layout: 'top' });
 const maker = (L: LiftInputs, brand: NonNullable<LiftInputs['catalog']>['brand'], model: string): LiftInputs => ({ ...L, catalog: { brand, model } });
@@ -59,46 +59,6 @@ const ROOMS: [string, () => LiftInputs][] = [
   ['2:1', () => calc(base(), { r: '2' })], ['2:1 sinistra SH160', () => maker(calc(cw(base(), 'left'), { r: '2' }), 'SICOR', 'SH160')], ['sostituzione', defaultLift],
 ];
 
-const sheets = (inp: LiftInputs) => {
-  const d = deriveLift(inp), marks = valueMarks(inp.auto, d, d.bottom, d.collaudo), project = { name: 'R', address: 'Via Roma 1', city: 'Monza', province: 'MB', plantNumber: '', client: '' };
-  const x = storedInput(d.values, d.layout, { number: '26-001', createdAt: new Date('2026-10-08T10:00:00Z'), authorInitials: 'M.R.', companyName: 'S', projectData: project, plant: {}, revisions: [] }, null, marks);
-  assert.ok(x);
-  return buildTavole(x);
-};
-
-/** How deep two convex outlines overlap (separating axes) [mm]; 0 apart. */
-function depth(A: readonly Pt[], B: readonly Pt[]): number {
-  let best = Infinity;
-  for (const poly of [A, B]) for (let i = 0; i < poly.length; i++) {
-    const a = poly[i], b = poly[(i + 1) % poly.length], n: Pt = [a[1] - b[1], b[0] - a[0]], l = Math.hypot(n[0], n[1]) || 1;
-    const pa = A.map((p) => (p[0] * n[0] + p[1] * n[1]) / l), pb = B.map((p) => (p[0] * n[0] + p[1] * n[1]) / l);
-    const o = Math.min(Math.max(...pa), Math.max(...pb)) - Math.max(Math.min(...pa), Math.min(...pb));
-    if (o <= 0) return 0;
-    best = Math.min(best, o);
-  }
-  return best;
-}
-
-/** The letterings of a view or a sheet as drawn: each text turned as it is, a reference (a circle on paper with its
- *  letters in its middle: view.ts tag) as the square round its circle. */
-function letterings(shapes: readonly Shape[]): { text: string; q: readonly Pt[] }[] {
-  const mid = (s: Shape, c: Shape): boolean => s.t === 'text' && c.t === 'circle' && Math.hypot(s.at[0] - c.c[0], s.at[1] + s.size * 0.36 - c.c[1]) < 0.5;
-  const tags = shapes.flatMap((c) => {
-    if (c.t !== 'circle' || c.fill?.k !== 'solid' || c.fill.ink !== 'paper' || c.r < 2.4 - 1e-9) return [];
-    const t = shapes.find((s) => mid(s, c));
-    return t?.t === 'text' ? [{ c, t }] : [];
-  });
-  return [
-    ...shapes.flatMap((s) => (s.t === 'text' && !tags.some((g) => g.t === s) ? [{ text: s.text, q: textQuad(s) }] : [])),
-    ...tags.map(({ c, t }) => ({ text: `(${t.text})`, q: [[c.c[0] - c.r, c.c[1] - c.r], [c.c[0] + c.r, c.c[1] - c.r], [c.c[0] + c.r, c.c[1] + c.r], [c.c[0] - c.r, c.c[1] + c.r]] as const })),
-  ];
-}
-const overlaps = (shapes: readonly Shape[]): string[] => {
-  const ls = letterings(shapes), out: string[] = [];
-  for (const [i, a] of ls.entries()) for (const b of ls.slice(i + 1)) if (depth(a.q, b.q) > 0.4) out.push(`«${a.text}» × «${b.text}»`);
-  return out;
-};
-
 test('locale macchina, pianta e sezione B-B: nessuna scritta né riferimento sopra un altro, tutto nella cornice, P2 e P3 una volta', () => {
   for (const [name, make] of ROOMS) {
     const r = sheets(make());
@@ -111,9 +71,10 @@ test('locale macchina, pianta e sezione B-B: nessuna scritta né riferimento sop
         const b = textBox(s);
         assert.ok(b.x0 >= FRAME.x0 - 0.2 && b.x1 <= FRAME.x1 + 0.2 && b.y0 >= FRAME.y0 - 0.2 && b.y1 <= FRAME.y1 + 0.2, `${name}, foglio ${i + 1}: «${s.text}» fuori dalla cornice`);
       }
-      // each load named once (round 36 drew P2 and P3 twice on a 2:1 plan)
+      // each load named once (round 36 drew P2 and P3 twice on a 2:1 plan), a 2:1 roping's hitches named on the plan
       const refs = page.shapes.flatMap((s) => (s.t === 'text' && /^[PR]\d$/.test(s.text) ? [s.text] : []));
       assert.equal(new Set(refs).size, refs.length, `${name}, foglio ${i + 1}: ${refs.join(' ')}`);
+      if (i === 7 && name.startsWith('2:1')) assert.ok(refs.includes('P2') && refs.includes('P3'), `${name}: P2 e P3 nella pianta (${refs.join(' ')})`);
     }
   }
 });
@@ -182,11 +143,38 @@ test('le caselle dei nomi: alla misura con cui il nucleo li scrive, alla scala d
   // the usual places all taken: the grid's first clear one, never one turned down
   const busy = [{ x0: -100, y0: -100, x1: 100, y1: 100 }], within = { x0: -1000, y0: -1000, x1: 1000, y1: 1000 };
   const at = (p: readonly [number, number]) => ({ p, box: { x0: p[0] - 20, y0: p[1] - 20, x1: p[0] + 20, y1: p[1] + 20 } });
-  const pick = placeOf([at([0, 0]), at([50, 0])], () => gridNear(within, [0, 0]).map(at), busy, within);
+  const pick = placeOf([{ places: () => [at([0, 0]), at([50, 0])], within }, { places: () => gridNear(within, [0, 0]).map(at), within }], busy);
   assert.ok(busy.every((q) => !meets(pick.box, q)), JSON.stringify(pick.p));
   // a dimension whose lettering is longer than its segment: its band runs on past the end (dims.ts writes it there)
   const short = dimBands([{ e: 'chain', c: { dir: 'x', pts: [0, 100], at: 0, text: ['{v} Calata Funi molto lunga'] } }])[0];
   assert.ok(short && short.x1 > 100 + 20 * AT, JSON.stringify(short));
   const long = dimBands([{ e: 'chain', c: { dir: 'x', pts: [0, 3000], at: 0, text: ['{v} Locale'] } }])[0];
   assert.ok(long && long.x0 === 0 && long.x1 === 3000);
+});
+
+test('fuori dal disegno solo dove non ci sono file di quote, e quanto il foglio lascia: oltre il muro libero in pianta, sotto o a destra in B-B', () => {
+  // the plan's band: left of the room with the door at the front or the rear, under it with the door on a side; none
+  // without paper for it; a name the room has no place for goes there, never on what is drawn
+  const R = { W: 3000, D: 3000 }, left = beyondWall({ ...R, doorWall: 'front' }), under = beyondWall({ ...R, doorWall: 'right' }, 50, 20);
+  assert.ok(left && left.x1 < -WALL && left.y0 === -WALL && left.y1 === R.D + WALL, JSON.stringify(left));
+  assert.ok(under && under.y1 < -WALL && under.y0 === -WALL - 20 * 50, JSON.stringify(under));
+  assert.equal(beyondWall({ ...R, doorWall: 'rear' }, 25, 4), null);
+  const within = { x0: 60, y0: 60, x1: 2940, y1: 2940 }, busy = [{ x0: 0, y0: 0, x1: 3000, y1: 3000 }], at = (p: readonly [number, number]) => ({ p, box: { x0: p[0] - 30, y0: p[1] - 30, x1: p[0] + 30, y1: p[1] + 30 } });
+  const spot = placeOf([{ places: () => gridNear(within, [100, 1500]).map(at), within }, ...(left ? [{ places: () => gridNear(left, [100, 1500]).map(at), within: left }] : [])], busy);
+  assert.ok(left && spot.box.x1 <= left.x1 && busy.every((q) => !meets(spot.box, q)), JSON.stringify(spot.p));
+  // section B-B: under its foot always (no row there), right of the room only without a row on that side
+  const bounds = { x0: -250, y0: -1800, x1: 3250, y1: 2450 }, row: Entity = { e: 'chain', c: { dir: 'y', pts: [0, 2000], side: 'right', row: 0 } };
+  const free = outsideSection([], bounds, 50, { w: 174, h: 214 }), taken = outsideSection([row], bounds, 50, { w: 174, h: 214 });
+  assert.ok(free.below && free.below.y1 < bounds.y0 && free.right && free.right.x0 > bounds.x1, JSON.stringify(free));
+  assert.equal(taken.right, null);
+  // (at 1:25 on the same paper a room this wide leaves no paper right of it)
+  assert.equal(outsideSection([], bounds, 25, { w: 148, h: 214 }).right, null);
+});
+
+test('B-B: l’altezza delle HEB e quella del telaio sopra di esse in una catena, se il telaio poggia sulle putrelle', () => {
+  const d = deriveLift(withRoom(base(), { heb: {} })), G = roomGeo(d.layout, d.machine), lay = G ? hebDrawn(G, d.machine, layoutSite(d.layout), layoutSite(d.layout).govRopes) : null;
+  assert.ok(G && lay);
+  const top = HEB_PAD + PROFILES[lay.profile].h, one = hebUnder(lay, G, 0, top, top + 700, 100, '{v} Telaio', null);
+  assert.ok(one?.e === 'chain' && one.c.pts.length === 3 && one.c.pts[1] === top, JSON.stringify(one));
+  assert.equal(hebUnder(lay, G, 0, top + 50, top + 700, 100, '{v} Telaio', null), null);
 });

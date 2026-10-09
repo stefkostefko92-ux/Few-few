@@ -1,9 +1,12 @@
 // Where a name or a reference goes on the machine room's plan among what is drawn there (room-setout.ts): the boxes the
 // lettering, the references, the symbols and the dimension lines already placed take — measured as the drawing kernel
-// draws them (lettering at letterSize, never under TEXT.min; a reference's circle tagRadius: view.ts), at 1:25, the
-// plan's scale — and the first of the places offered whose box keeps off them and off what else is given; none of them,
-// the next nearest on a grid over the room (the name or the reference with its leader). Model millimetres; pure.
+// draws them (lettering at letterSize, never under TEXT.min; a reference's circle tagRadius: view.ts), at the plan's
+// scale — and the first of the places offered whose box keeps off them and off what else is given; none of them, the
+// next nearest on a grid over the room, last in the band beyond the wall no row of dimensions takes (the name or the
+// reference with its leader). Model millimetres; pure.
 import { TEXT, letterSize, tagRadius, textBox, textQuad, textWidth, type Align, type Box, type Entity, type Pt } from '../drawing';
+import { WALL } from './room-draw';
+import type { RoomInputs } from './room';
 
 /** The plan's scale the boxes are measured at (paper millimetres to model millimetres). */
 export const AT = 25;
@@ -104,24 +107,63 @@ export function gridNear(within: Box, to: Pt, step = 100): Pt[] {
   return out.sort((p, q) => d(p) - d(q));
 }
 
-/** The place of `places` (inside `within`) whose box lies least on `busy`: only when not one of them is clear. */
-export function leastOn<T extends { box: Box }>(places: readonly T[], busy: readonly Box[], within: Box): T {
+/** The place of `places` (inside `within`, when given) whose box lies least on `busy`: only when not one of them is
+ *  clear. */
+export function leastOn<T extends { box: Box }>(places: readonly T[], busy: readonly Box[], within?: Box): T {
   const over = (a: Box): number => busy.reduce((t, b) => t + Math.max(0, Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0)) * Math.max(0, Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0)), 0);
-  const kept = places.filter((p) => inside(p.box, within));
+  const kept = within ? places.filter((p) => inside(p.box, within)) : places;
   return (kept.length ? kept : places).reduce((p, q) => (over(q.box) < over(p.box) ? q : p));
 }
 
-/** The first clear of the usual places, else of the next ones (`more`: the grid's, the lettering in two lines…, each
- *  made only when the ones before are all taken), else the one least on what is there — never a place the check
- *  turned down while another is clear. */
-export function placeOf<T extends { box: Box }>(usual: readonly T[], more: () => readonly T[], busy: readonly Box[], within: Box, gap = 20, ...after: (() => readonly T[])[]): T {
+/** Places tried together and the box they keep inside: the room's, or the band beyond its wall no row of dimensions
+ *  takes (`beyond`: room-view.ts). */
+export interface Tries<T> {
+  places: () => readonly T[];
+  within: Box;
+}
+
+/** The first clear place of the groups in turn — the usual places, the grid over the room, the lettering in two lines…,
+ *  last the band beyond the room's wall; each group made only when the ones before are all taken —, else the one least
+ *  on what is there (a failure: the tests of the machine room's sheets find none). Never a place the check turned down
+ *  while another is clear. */
+export function placeOf<T extends { box: Box }>(groups: readonly Tries<T>[], busy: readonly Box[], gap = 20): T {
   const tried: T[] = [];
-  for (const group of [() => usual, more, ...after]) {
-    const places = group(), spot = firstClear(places, busy, within, gap);
+  for (const g of groups) {
+    const places = g.places(), spot = firstClear(places, busy, g.within, gap);
     if (spot) return spot;
-    tried.push(...places);
+    tried.push(...places.filter((p) => inside(p.box, g.within)));
   }
-  return leastOn(tried, busy, within);
+  return leastOn(tried.length ? tried : groups.flatMap((g) => g.places()), busy);
+}
+
+/** The band beyond the plan's wall that no row of dimensions takes — the door's wall and the shaft's two sides take
+ *  the other three (room-view.ts): left of the room with the door at the front or the rear, under it with the door on
+ *  a side —, from 1,5 mm of paper off the wall out to `depth` (the paper the sheet leaves there, BEYOND at most),
+ *  between the walls' outer faces (the rows' lettering run past their ends stops short of it: dims.ts); where a name
+ *  or a reference goes, with its leader, when none is clear in the room; null: no paper for it. `k` the plan's scale;
+ *  room axes. */
+export function beyondWall(R: Pick<RoomInputs, 'W' | 'D' | 'doorWall'>, k = AT, depth = BEYOND): Box | null {
+  if (depth < 6) return null;
+  const a = WALL + 1.5 * k, b = WALL + depth * k;
+  return R.doorWall === 'front' || R.doorWall === 'rear' ? { x0: -b, y0: -WALL, x1: -a, y1: R.D + WALL } : { x0: -WALL, y0: -b, x1: R.W + WALL, y1: -a };
+}
+
+/** How far the band beyond the wall reaches at most [mm of paper]. */
+export const BEYOND = 75;
+
+/** Whether the segment p–q crosses the box (Liang–Barsky). */
+export function segMeets(p: Pt, q: Pt, b: Box): boolean {
+  let t0 = 0, t1 = 1;
+  for (const [dd, lo, hi, c] of [[q[0] - p[0], b.x0, b.x1, p[0]], [q[1] - p[1], b.y0, b.y1, p[1]]]) {
+    if (Math.abs(dd) < 1e-12) {
+      if (c < lo || c > hi) return false;
+      continue;
+    }
+    const a = (lo - c) / dd, e = (hi - c) / dd;
+    t0 = Math.max(t0, Math.min(a, e));
+    t1 = Math.min(t1, Math.max(a, e));
+  }
+  return t0 <= t1;
 }
 
 /** Where a leader leaves a lettering's box toward `to`: the point of the box nearest it. */

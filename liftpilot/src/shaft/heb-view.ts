@@ -84,8 +84,9 @@ function hebSeen(lay: HebLayout, G: RoomGeo): HebSeen {
 
 /** Section B-B along the drop line (u) over the room's floor: the beams seen along them (the section runs with them) or
  *  cut where the drop line crosses them, on their bearing plates over the walls and HEB_PAD clear of the slab between
- *  them; their height at u = `chainAt`, changed by choosing another profile; seen along them, the bearing in the wall. */
-export function hebSection(lay: HebLayout, G: RoomGeo, chainAt: number): Entity[] {
+ *  them; their height at u = `chainAt`, changed by choosing another profile (`own` false: on the chain of the support
+ *  over them instead, hebUnder); seen along them, the bearing in the wall. */
+export function hebSection(lay: HebLayout, G: RoomGeo, chainAt: number, own = true): Entity[] {
   const P = PROFILES[lay.profile], out: Entity[] = [], z0 = HEB_PAD, seen = hebSeen(lay, G), us: number[] = [];
   if (seen.along) {
     // seen beside the cut: drawn, not hatched, its flanges; the plates under its ends over the walls
@@ -105,8 +106,21 @@ export function hebSection(lay: HebLayout, G: RoomGeo, chainAt: number): Entity[
     }
   }
   const near = us.reduce((p, u) => (Math.abs(u - chainAt) < Math.abs(p - chainAt) ? u : p), us[0] ?? chainAt);
-  out.push(chain({ dir: 'y', pts: [z0, z0 + P.h], at: chainAt, from: [near, near], text: [`${lay.profile} {v}`], edit: [profilePick(lay)] }));
+  if (own) out.push(chain({ dir: 'y', pts: [z0, z0 + P.h], at: chainAt, from: [near, near], text: [`${lay.profile} {v}`], edit: [profilePick(lay)] }));
   return out;
+}
+
+/** Whether a support with its foot at `base` stands on the beams' top. */
+export const onHebTop = (lay: HebLayout, base: number): boolean => Math.abs(base - HEB_PAD - PROFILES[lay.profile].h) <= 1;
+
+/** The beams' height and over it the height of the support standing on their top (its foot `base`, its top `top`, its
+ *  extension line from `end`, its lettering `text` and edit), one chain at u = `at`: the kernel sets the beams' short
+ *  value beside its segment or off it with a leader, clear of the support's (two chains on one line placed each its
+ *  value alone: at 1:50 one on the other — round 37 review); null when the support does not stand on their top. */
+export function hebUnder(lay: HebLayout, G: RoomGeo, at: number, base: number, top: number, end: number | null, text: string, edit: Edit | null): Entity | null {
+  if (!onHebTop(lay, base) || top - base <= 0.5) return null;
+  const seen = hebSeen(lay, G), us = seen.along ? [...seen.u] : seen.cuts.map((c) => c.u), near = us.reduce((p, u) => (Math.abs(u - at) < Math.abs(p - at) ? u : p), us[0] ?? at);
+  return chain({ dir: 'y', pts: [HEB_PAD, base, top], at, from: [near, near, end], text: [`${lay.profile} {v}`, text], edit: [profilePick(lay), edit] });
 }
 
 /** The note of the beams in section B-B: their plates and mortar over the shaft's walls with the gap left under them
