@@ -83,7 +83,7 @@
       "system32": "Mounting plates and shelf supports follow the 32 mm system: the first row is 37 mm from the front edge.",
       "handles": "Handles are drilled at the hole spacing of the chosen model, slides to the manufacturer's template.",
       "edges": "Horizontal holes in the edges (for confirmat screws) are in the drawing's table, separate from the G-code.",
-      "checks": "If a hinge, slide or hole falls outside the manufacturer's table, the program tells you what to change. Where the document says nothing, the program decides and marks the value “наш избор” (our choice).",
+      "checks": "If a hinge, slide or hole falls outside the manufacturer's table, the program tells you what to change. Where the document says nothing, the program decides and marks the value “{mark}” (our choice).",
       "imageAlt": "Drawing of a {h} × {w} mm door with sizes, edge banding and the drilling map for the hinge cups",
       "cupAlt": "Hinge cup detail at 1:1 scale: Ø35 at {c} mm from the edge",
       "caption": "The left door of the first base unit, {h} × {w} mm: sizes, edge banding and drilling map. Drawing labels are in Bulgarian.",

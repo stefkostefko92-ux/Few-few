@@ -83,7 +83,7 @@
       "system32": "Basette e reggipiani seguono il sistema 32 mm: la prima fila è a 37 mm dal bordo anteriore.",
       "handles": "Le maniglie si forano all'interasse del modello scelto, le guide secondo la dima del produttore.",
       "edges": "I fori orizzontali nelle teste (per le viti confirmat) sono nella tabella del disegno, separati dal G-code.",
-      "checks": "Se una cerniera, una guida o un foro esce dalla tabella del produttore, il programma dice cosa cambiare. Dove il documento non dice nulla, il programma sceglie da sé e indica il valore come «наш избор» (nostra scelta).",
+      "checks": "Se una cerniera, una guida o un foro esce dalla tabella del produttore, il programma dice cosa cambiare. Dove il documento non dice nulla, il programma sceglie da sé e indica il valore come «{mark}» (nostra scelta).",
       "imageAlt": "Disegno di un'anta {h} × {w} mm con misure, bordo e mappa di foratura delle tazze delle cerniere",
       "cupAlt": "Dettaglio della tazza della cerniera in scala 1:1: Ø35 a {c} mm dal bordo",
       "caption": "L'anta sinistra del primo mobile base, {h} × {w} mm: misure, bordo e mappa di foratura. Le etichette del disegno sono in bulgaro.",

@@ -110,7 +110,9 @@
         <li><%- include('../partials/icon', { name: 'drill' }) %><span><%= t('landing.drilling.system32') %></span></li>
         <li><%- include('../partials/icon', { name: 'drill' }) %><span><%= t('landing.drilling.handles') %></span></li>
         <li><%- include('../partials/icon', { name: 'drill' }) %><span><%= t('landing.drilling.edges') %></span></li>
-        <li><%- include('../partials/icon', { name: 'alert' }) %><span><%= t('landing.drilling.checks') %></span></li>
+        <%# „наш избор“ е етикетът от чертежите — на български на всеки език, затова е с lang="bg"; преводът се цепи около него, за да остане екраниран %>
+        <% const checks = t('landing.drilling.checks', { mark: '\u0000' }).split('\u0000'); %>
+        <li><%- include('../partials/icon', { name: 'alert' }) %><span><%= checks[0] %><span lang="bg">наш избор</span><%= checks[1] %></span></li>
       </ul>
     </div>
     <% if (door) { %>

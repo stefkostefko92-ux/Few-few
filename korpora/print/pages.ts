@@ -134,7 +134,7 @@ export function drilling(c: BrochureContext): string {
     ['drill', t('landing.drilling.system32')],
     ['drill', t('landing.drilling.handles')],
     ['drill', t('landing.drilling.edges')],
-    ['alert', t('landing.drilling.checks')],
+    ['alert', t('landing.drilling.checks', { mark: 'наш избор' })],
   ] as const;
   return `<section class="b-page">
   <h2>${esc(t('landing.drilling.title'))}</h2>

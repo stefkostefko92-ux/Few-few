@@ -68,6 +68,15 @@ test('llms.txt is English throughout, the notes on the language versions too', a
   assert.deepEqual([...new Set(notes)], ['product, prices, questions']);
 });
 
+test('the Bulgarian label „наш избор“ is marked as Bulgarian on the English and Italian landing', async () => {
+  for (const path of ['/en/', '/it/']) {
+    const page = await (await get(path)).text();
+    assert.equal(page.split('наш избор').length - 1, 1, `${path}: the label once`);
+    assert.match(page, /<span lang="bg">наш избор<\/span>/, path);
+  }
+  assert.match(await (await get('/')).text(), /„<span lang="bg">наш избор<\/span>“/);
+});
+
 test('one-time pages (QR, recovery codes, a used confirmation link) have no language switcher', async () => {
   const b = await customer('langs@example.test');
   assert.ok((await b.get('/account/security')).body.includes(LANGS), 'a normal page has one');

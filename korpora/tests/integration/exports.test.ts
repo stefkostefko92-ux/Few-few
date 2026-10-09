@@ -82,6 +82,8 @@ test('a saved hinge that left the catalogue blocks CNC instead of drilling for a
   const cnc = await b.get(`/app/p/${id}/export/cnc.zip`);
   assert.equal(cnc.status, 422);
   assert.match(cnc.body, /Вече не е в каталога: панта „no-such-hinge“/);
+  // the reasons come from the engine in Bulgarian whatever the language of the page (WCAG 3.1.2)
+  assert.match(cnc.body, /<ul class="error-details" lang="bg"><li>/);
   const project = await download(b, id, 'project.zip');
   assert.deepEqual(
     names(project).filter((name) => name.startsWith('cnc/')),
