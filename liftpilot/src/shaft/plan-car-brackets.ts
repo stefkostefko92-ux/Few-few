@@ -3,7 +3,9 @@
 // counterweight rails' codes, on whichever wall their brackets reach) and inside the wall's length: from beside a car
 // rail's bracket toward the longer stretch of its wall, toward the shorter, along the wall's middle, from either of its
 // ends, the rails whose wall has no counterweight first; where the wall has no such room, in the wall next to it from
-// the corner, on a leader to the bracket; where no wall has it, at the place of those that covers least. Pure.
+// the corner, on a leader to the bracket; where no wall has it (a code longer than the wall at 1:50), at the first of
+// those places clear of the lettering though it runs past the wall's end; else at the one that covers least of the
+// names, then of the rest. Pure.
 import type { Box, Entity } from '../drawing';
 import { onWall } from './plan-walls';
 import { bracketReach, carBracketCode } from './staffe-cabina';
@@ -47,14 +49,18 @@ export function carBracketLabel(L: Layout, taken: readonly Box[] = [], scale: nu
   const led = (c: (typeof leaders)[number]): Text => ({ ...c.s, at: c.to, out: c.s.at, fit: 1 });
   const lead = leaders.find((c) => free(c.s));
   if (lead) return [led(lead)];
-  // where no wall has the room (a long code at 1:50): of the places within their wall's length, else of all, the one
-  // that covers least of the plan's names, then of the rest of its lettering
+  // a code longer than its wall (at 1:50): the first of the places by the rails clear of the lettering, running past
+  // the wall's end — rather than over another code or a name inside it
+  const past = spots.find((s) => letteringBoxes([s], scale).every((b) => taken.every((q) => !meets(b, q))));
+  if (past) return [past];
+  // where no place is clear: the one that covers least of the plan's names (the counterweight's codes among them), then
+  // within its wall's length, then least of the rest of its lettering
   const all = [...spots.map((x) => ({ at: x, set: x })), ...leaders.map((c) => ({ at: c.s, set: led(c) }))];
   const area = (bs: readonly Box[], qs: readonly Box[]): number =>
     bs.reduce((t, b) => t + qs.reduce((u, q) => u + Math.max(0, Math.min(b.x1, q.x1) - Math.max(b.x0, q.x0)) * Math.max(0, Math.min(b.y1, q.y1) - Math.max(b.y0, q.y0)), 0), 0);
   const score = (x: Text): number[] => {
     const bs = letteringBoxes([x], scale);
-    return [Number(!bs.every((b) => inWall(b, !x.angle))), area(bs, names), area(bs, taken)];
+    return [area(bs, names), Number(!bs.every((b) => inWall(b, !x.angle))), area(bs, taken)];
   };
   const less = (a: readonly number[], b: readonly number[]): boolean => {
     const i = a.findIndex((v, j) => v !== b[j]);

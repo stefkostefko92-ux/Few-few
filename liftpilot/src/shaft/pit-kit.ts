@@ -186,9 +186,10 @@ export function ladderRungs(pit: number): number[] {
 /** The kit in the plan of the pit: the ladder with its rungs seen from above, the box, their names, and where each stands
  *  along its wall from the corner nearer the door (references: the software's places within the standard's reach) —
  *  each name with its dimension in the first row off its item, and the first place along it (over the item's middle,
- *  else from either of its ends, else beside it), clear of the plan's lettering so far and of the other item's (`taken`, at the plan's
- *  `scale`: lettering-place.ts; the rows as much paper apart at any scale) — where nothing is, off the other item's and
- *  the screen's (`keep`) above all, then off the plan's names (`names`). */
+ *  else from either of its ends, else beside it), clear of the plan's lettering so far and of the other item's (`taken`,
+ *  at the plan's `scale`: lettering-place.ts; the rows as much paper apart at any scale), the names inside the shaft or
+ *  in its walls' thickness — where nothing is, the name off the other item's and the screen's (`keep`: their names)
+ *  above all, then off the plan's names (`names`). */
 export function pitKitPlan(L: Layout, taken: Box[] = [], scale: number = TAG_SCALE, keep: readonly Box[] = [], names: readonly Box[] = []): Entity[] {
   const k = pitKit(L), out: Entity[] = [], f = Math.max(TAG_SCALE, scale) / TAG_SCALE, own: Box[] = [...keep];
   const item = (it: PitItem, name: string, dimText: string): void => {
@@ -210,10 +211,11 @@ export function pitKitPlan(L: Layout, taken: Box[] = [], scale: number = TAG_SCA
     // paper's x or y, the other way on some walls)
     const byEnds = (r: number): Entity[][] => [place(r, it.u - it.w / 2, 'l'), place(r, it.u + it.w / 2, 'r'), place(r, it.u + it.w / 2, 'l'), place(r, it.u - it.w / 2, 'r')];
     const options = [0, 1].flatMap((r) => [place(r, it.u, 'c'), ...byEnds(r)]);
-    // (the names inside the shaft; never over the other item's, nor over the screen's (`keep`), then never over the
-    // plan's other names)
-    const got = firstClear(options, taken, scale, { x0: 0, y0: 0, x1: L.inputs.W, y1: L.inputs.D }, [own, names]);
-    own.push(...letteringBoxes(got, scale));
+    // (the names inside the shaft or in its walls, as the brackets' codes are; never over the other item's name, nor over
+    // the screen's (`keep`), then never over the plan's other names — a dimension's band under a name its figure steps
+    // round)
+    const T = L.inputs.wall, got = firstClear(options, taken, scale, { x0: -T, y0: -T, x1: L.inputs.W + T, y1: L.inputs.D + T }, [own, names]);
+    own.push(...letteringBoxes(got.filter((e) => e.e === 'text'), scale));
     out.push(...got);
   };
   if (k.ladder) item(k.ladder, 'SCALA', 'Scala {v}');

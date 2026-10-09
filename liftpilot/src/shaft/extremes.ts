@@ -57,13 +57,13 @@ export function extremeDims(L: Layout, S: Section, kind: 'top' | 'pit', zf: numb
   if (kind === 'top') {
     // the car at its highest position: the refuge's height on its roof and, from there to the ceiling, the clearances
     // (where the slab is lower than the refuge needs — h_refuge fails —, once what there is up to the slab against what
-    // it needs, its type still chosen there: the refuge's own height would run through the slab and off the view;
-    // nothing where the roof reaches the slab)
+    // it needs, as the clearances beside it read, its type still chosen there: the refuge's own height would run through
+    // the slab and off the view, and its dashed box with the triangle names it; nothing where the roof reaches the slab)
     const zH = zf + S.moveUp, roof = zH + V.carOutH, r = roofSpaces(L).refuge, h = K.refugeH[V.topRefuge], pick = refugePick('v.topRefuge', V.topRefuge);
     if (roof + h <= S.ceiling) {
       inside(r.y0 + 70, [roof, roof + h], 'H. Rifugio {v}', pick);
       inside(r.y0 + 180, [roof, S.ceiling], `{v} ≥ ${h}`, E('v.headroom', V.carOutH + S.moveUp));
-    } else if (roof < S.ceiling) inside(r.y0 + 70, [roof, S.ceiling], `H. Rifugio {v} < ${h}`, pick);
+    } else if (roof < S.ceiling) inside(r.y0 + 70, [roof, S.ceiling], `{v} < ${h}`, pick);
     if (V.parapet > 0) inside(c.y + c.h - 60, [roof + V.parapet, S.ceiling], `{v} ≥ ${K.headBalustrade}`, E('v.headroom', V.carOutH + V.parapet + S.moveUp));
     inside(stileX(L) - K.crossheadHalf + 40, [zH + V.frameTop, S.ceiling], `{v} ≥ ${K.headShoe}`, E('v.headroom', V.frameTop + S.moveUp));
     const op = L.doors.find((d) => d.wall === 'front' || d.wall === 'rear');

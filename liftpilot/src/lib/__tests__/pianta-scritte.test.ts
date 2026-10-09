@@ -1,22 +1,30 @@
 // The lettering of the plans and of the pit's detail on the issued sheets (round 37): the references of the loads kept
 // apart and off the lettering at the scale the plan is drawn at (1:50 too: tag-place.ts), the landings' sides off the
-// section marks, the car rails' bracket code off the counterweight's in the walls, the pit's ladder and control box
-// named off each other and off the screen's name, the heights of the box's devices in the pit's detail off any other
-// lettering.
+// section marks, the car rails' bracket code off any other lettering of the plans (the counterweight's in the walls, a
+// rope's drop, the counterweight's name), the pit's ladder, control box and screen — names and dimensions, a bare figure
+// too — off any other lettering of the plan of the pit, the heights of the box's devices in the pit's detail off any
+// other lettering. The installations of the fuzz where an earlier placing ran them into each other among them.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { newLift, type LiftInputs } from '@/lib/lift';
 import { defaultInputs, layout, type ShaftInputs } from '@/shaft';
-import { FRAME, TEXT, shapeBox } from '@/drawing';
+import { FRAME, TEXT, shapeBox, type Entity } from '@/drawing';
 import { sectionMarks, servedBy, sideLabels } from '@/lib/tavole/extras';
+import type { TavoleInput } from '@/lib/tavole/input';
 import { pitKit } from '@/shaft/pit-kit';
 import { TAG_R, TAG_SCALE, letteringBoxes, placeTags, tagR } from '@/shaft/tag-place';
-import { liftSheets, overlapping, sheetsBy, shaftSheets, textsOf, type Text } from './sheets-helpers';
+import { s182, s197, s206, s221, s37, s80 } from './fuzz-fixtures';
+import { crossing, drawnBy, liftInput, liftSheets, overlapping, shaftInput, sheetsBy, shaftSheets, textsOf, type Text } from './sheets-helpers';
 
 const D = defaultInputs(1600, 1750);
 const isTag = (s: string): boolean => /^P\d$/.test(s);
-const KIT = /^(SCALA|STOP · PRESA · LUCE|Scala \d+|Pulsantiera \d+)$/;
-const SCREEN = /^(PROTEZIONE CONTRAPPESO H \d+|Protezione \d+)$/;
+/** The ladder's, the control box's and the screen's lettering in the plan of the pit, by what draws it (pit-kit.ts,
+ *  screen.ts): their names and their dimensions, however these are written. */
+const kitOrScreen = (e: Entity): boolean =>
+  e.e === 'text' ? /^(SCALA|STOP · PRESA · LUCE|PROTEZIONE CONTRAPPESO H \d+)$/.test(e.text) : e.e === 'chain' && /^(Scala|Pulsantiera|Protezione) \{v\}$/.test(e.c.text?.[0] ?? '');
+const PIT_PLAN = /E IN FOSSA$/;
+/** A wide, shallow shaft with 400 mm walls: its plans at 1:50. */
+const WIDE = 'vano largo, pareti da 400';
 
 test('riferimenti a 1:50: cerchi e distanze come sulla carta a 1:25', () => {
   assert.equal(TAG_R, tagR(TAG_SCALE));
@@ -32,14 +40,12 @@ test('riferimenti a 1:50: cerchi e distanze come sulla carta a 1:25', () => {
 });
 
 test('pianta della fossa a 1:50: P5–P8 lontani dalle scritte e fra loro, scala e pulsantiera leggibili', () => {
-  const I: ShaftInputs = { ...D, W: 2190, D: 1130, wall: 400 }, [pit] = sheetsBy(shaftSheets(I), /E IN FOSSA$/);
+  const I: ShaftInputs = { ...D, W: 2190, D: 1130, wall: 400 }, [pit] = sheetsBy(shaftSheets(I), PIT_PLAN);
   assert.ok(pit && pit.scale === 50, `scala ${pit?.scale}`);
   const T = textsOf(pit.shapes), tags = T.filter((t) => isTag(t.text));
   assert.ok(['P5', 'P6', 'P7', 'P8'].every((p) => tags.some((t) => t.text === p)), tags.map((t) => t.text).join(' '));
   assert.deepEqual(overlapping(T, (a, b) => isTag(a) || isTag(b)), []);
   for (const [i, a] of tags.entries()) for (const b of tags.slice(i + 1)) assert.ok(Math.hypot(a.at[0] - b.at[0], a.at[1] - b.at[1]) >= 2 * 2.4 + 0.5 - 1e-6, `${a.text}–${b.text}`);
-  // the kit's and the screen's names and dimensions off each other
-  assert.deepEqual(overlapping(T, (a, b) => (KIT.test(a) || SCREEN.test(a)) && (KIT.test(b) || SCREEN.test(b))), []);
 });
 
 const floors = (n: number, door: (i: number) => 'A' | 'B' | 'AB' = () => 'A'): ShaftInputs['vertical']['floors'] =>
@@ -92,6 +98,8 @@ const sideWall = (): LiftInputs => {
   } as LiftInputs;
 };
 
+const carCode = (e: Entity): boolean => e.e === 'text' && / SQUADRA /.test(e.text);
+
 test('staffe della cabina e del contrappeso: i due codici mai uno sull’altro nelle pareti', () => {
   for (const [name, L] of [['contrappeso dietro fuori asse', cwRear(newLift(), 150)], ['guide e contrappeso sulla stessa parete', sideWall()]] as const) {
     const r = liftSheets(L);
@@ -103,21 +111,40 @@ test('staffe della cabina e del contrappeso: i due codici mai uno sull’altro n
   }
 });
 
-test('fossa: scala, pulsantiera e le loro quote mai una sull’altra; le altezze di stop e luce libere nel particolare', () => {
+test('codice delle staffe della cabina più lungo della parete a 1:50: fuori dai codici, dai nomi e dalle quote', () => {
+  // (the fuzz's s197 and s206: the code longer than the side walls, kept off the counterweight's codes rather than
+  // within the wall's length; s37 and s182 off the rope's drop, s221 off the counterweight's name and the governor's rope)
+  for (const [name, L] of [['s197', s197()], ['s206', s206()], ['s37', s37()], ['s182', s182()], ['s221', s221()]] as const) {
+    const plans = drawnBy(liftInput(L), /^VISTA IN PIANTA DEL VANO/);
+    // (the head, the main floor where it is not the lowest, the lowest, the pit)
+    assert.ok(plans.length >= 3 && plans.some((p) => PIT_PLAN.test(p.title)), name);
+    for (const p of plans) {
+      assert.ok(p.drawn.entities.some(carCode), `${name}: ${p.title}`);
+      assert.deepEqual(crossing(p.drawn, carCode), [], `${name}: ${p.title} a 1:${p.drawn.scale}`);
+    }
+  }
+});
+
+test('fossa: scala, pulsantiera, protezione e le loro quote fuori da ogni scritta; le altezze di stop e luce libere nel particolare', () => {
   const sameWall = (I: ShaftInputs): boolean => { const k = pitKit(layout(I)); return !!k.ladder && !!k.box && k.ladder.wall === k.box.wall; };
   const cases: [string, ShaftInputs][] = [
     ['contrappeso dietro', D], ['contrappeso a destra, fossa 2190', { ...D, cw: 'right', vertical: { ...D.vertical, pit: 2190 } }],
-    ['vano largo, pareti da 400', { ...D, W: 2190, D: 1130, wall: 400 }], ['contrappeso a sinistra, accessi opposti', { ...defaultInputs(2140, 2420), cw: 'left', entrances: 'opposite' }],
+    [WIDE, { ...D, W: 2190, D: 1130, wall: 400 }], ['contrappeso a sinistra, accessi opposti', { ...defaultInputs(2140, 2420), cw: 'left', entrances: 'opposite' }],
   ];
   assert.ok(cases.some(([, I]) => sameWall(I)), 'scala e pulsantiera su una parete');
-  for (const [name, I] of cases) {
-    const r = shaftSheets(I), [plan] = sheetsBy(r, /E IN FOSSA$/), [pit] = sheetsBy(r, /IN FOSSA - ULTIMA FERMATA INFERIORE/);
+  // (the fuzz's s80 at 1:25: the box's name over the ladder's, where every place inside the shaft crossed the ladder's
+  // dimension)
+  const sets: [string, TavoleInput][] = [...cases.map(([name, I]): [string, TavoleInput] => [name, shaftInput(I)]), ['s80', liftInput(s80())]];
+  for (const [name, x] of sets) {
+    const [plan] = drawnBy(x, PIT_PLAN), [pit] = drawnBy(x, /IN FOSSA - ULTIMA FERMATA INFERIORE/);
     assert.ok(plan && pit, name);
-    const T = textsOf(plan.shapes);
-    assert.deepEqual(overlapping(T, (a, b) => KIT.test(a) && KIT.test(b)), [], `${name}: pianta`);
-    assert.deepEqual(overlapping(T, (a, b) => (KIT.test(a) && (SCREEN.test(b) || isTag(b))) || (KIT.test(b) && (SCREEN.test(a) || isTag(a)))), [], `${name}: pianta, protezione e riferimenti`);
-    const P: Text[] = textsOf(pit.shapes), kit = (s: string): boolean => /^(STOP|LUCE) [+-]\d+/.test(s);
+    assert.ok(plan.drawn.entities.filter(kitOrScreen).length >= 4, `${name}: scala, pulsantiera, protezione`);
+    // off any lettering; in the wide shaft's pit at 1:50 off each other's and the tags (no place in it is clear of every
+    // dimension: the screen and the ladder cross one, the governor's weight the screen's name — the residual of round 37
+    // left to the owner)
+    assert.deepEqual(crossing(plan.drawn, kitOrScreen, name === WIDE ? (e) => kitOrScreen(e) || e.e === 'tag' : undefined), [], `${name}: pianta a 1:${plan.drawn.scale}`);
+    const P: Text[] = textsOf([...pit.drawn.shapes, ...pit.drawn.notes]), kit = (s: string): boolean => /^(STOP|LUCE) [+-]\d+/.test(s);
     assert.ok(P.some((t) => kit(t.text)), `${name}: altezze della pulsantiera`);
-    assert.deepEqual(overlapping(P, (a, b) => kit(a) || kit(b)), [], `${name}: particolare della fossa a 1:${pit.scale}`);
+    assert.deepEqual(overlapping(P, (a, b) => kit(a) || kit(b)), [], `${name}: particolare della fossa a 1:${pit.drawn.scale}`);
   }
 });

@@ -1,8 +1,9 @@
 // Section A-A on the issued sheets (round 37): nothing of a view runs past its heights or off the A4 sheet — the
 // references P2 and P3 on the dead ends of a 2:1 roping only on the sheets that show the slab they hang from (the
-// section whole, the headroom's detail), the refuge's height on the car roof, where the slab is lower than it, ending at
-// the slab with what it needs, the band's guard for what is cut to a detail (clipBand: a reference whose leader leaves
-// the band dropped, a chain kept to its segments inside it).
+// section whole, the headroom's detail; the counterweight on a side wall with a maker's machine too), the refuge's
+// height on the car roof, where the slab is lower than it, ending at the slab with what it needs — written whole on the
+// sheet —, the band's guard for what is cut to a detail (clipBand: a reference whose leader leaves the band dropped, a
+// chain kept to its segments inside it).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { clipBand, type Entity } from '@/drawing';
@@ -16,8 +17,10 @@ const twoToOne = (L: LiftInputs = newLift()): LiftInputs => ({ ...L, calc: { ...
 const floors = (n: number): LiftInputs['shaft']['vertical']['floors'] =>
   Array.from({ length: n }, (_, i) => ({ label: String(i), rise: i === n - 1 ? 0 : 2700 + ((i * 450) % 1800), door: 'A' as const }));
 const tall = (L: LiftInputs, n: number): LiftInputs => ({ ...L, shaft: { ...L.shaft, vertical: { ...L.shaft.vertical, floors: floors(n), main: Math.floor(n / 2) } } });
+/** The counterweight on the left wall with a SICOR SH160 (round 36's v61_r2_left_sh160). */
+const leftSh160 = (L: LiftInputs): LiftInputs => ({ ...L, shaft: { ...L.shaft, cw: 'left' }, catalog: { brand: 'SICOR', model: 'SH160' } });
 
-for (const [name, L] of [['5 fermate', twoToOne()], ['12 fermate', tall(twoToOne(), 12)]] as const) {
+for (const [name, L] of [['5 fermate', twoToOne()], ['12 fermate', tall(twoToOne(), 12)], ['contrappeso a sinistra, SICOR SH160', leftSh160(twoToOne())]] as const) {
   test(`2:1 (${name}): P2 e P3 dove si vede la soletta, nessuna figura delle sezioni A-A fuori dal foglio`, () => {
     const r = liftSheets(L), aa = sheetsBy(r, /SEZ\. A-A$/), has = (title: RegExp, tag: string): boolean =>
       sheetsBy(r, title).some((s) => textsOf(s.shapes).some((t) => t.text === tag));
@@ -35,13 +38,17 @@ test('rifugio sul tetto più alto della soletta: la quota finisce alla soletta e
   const D = defaultInputs(1600, 1750), I: ShaftInputs = { ...D, vertical: { ...D.vertical, topRefuge: 1 } }, L = layout(I), S = section(L);
   const top = I.vertical.floors.length - 1, v = detailWindow(L, 'top', top);
   const chains = sectionDims(L, S, 'top', top, null).flatMap((e) => (e.e === 'chain' ? [e.c] : []));
-  const ref = chains.find((c) => c.text?.[0] === 'H. Rifugio {v} < 2000');
+  const ref = chains.find((c) => c.text?.[0] === '{v} < 2000');
   assert.ok(ref, 'quota del rifugio con quanto serve');
   assert.equal(Math.max(...ref.pts), S.ceiling, 'fino alla soletta');
   assert.ok(ref.edit?.[0]?.pick, 'il tipo di rifugio si sceglie lì');
   assert.ok(!chains.some((c) => c.text?.[0] === 'H. Rifugio {v}' || c.text?.[0] === '{v} ≥ 2000'), 'una quota sola');
   for (const c of chains) if (c.dir === 'y' && c.at !== undefined) for (const p of c.pts) assert.ok(p >= v.lo - 1 && p <= v.hi + 1, `${c.text?.[0] ?? ''} fuori dal particolare`);
-  for (const s of sheetsBy(shaftSheets(I), /SEZ\. A-A$/)) assert.deepEqual(offSheet(s.shapes).map((x) => x.t), [], s.title);
+  const r = shaftSheets(I);
+  for (const s of sheetsBy(r, /SEZ\. A-A$/)) assert.deepEqual(offSheet(s.shapes).map((x) => x.t), [], s.title);
+  // on the headroom's sheet with its words: the value against what it needs, not the bare figure
+  const [head] = sheetsBy(r, /^VISTA IN ELEVATO - ULTIMA FERMATA SUPERIORE/), T = textsOf(head?.shapes ?? []);
+  assert.ok(T.some((t) => /^\d+ < 2000$/.test(t.text)), T.map((t) => t.text).filter((t) => /\d/.test(t)).join(' | '));
   // where it fits, its own height and what there is up to the slab, as before
   const ok = sectionDims(layout(D), section(layout(D)), 'top', top, null).flatMap((e) => (e.e === 'chain' ? [e.c.text?.[0] ?? ''] : []));
   assert.ok(ok.includes('H. Rifugio {v}') && ok.some((t) => /^\{v\} ≥ \d+$/.test(t)), ok.join(' | '));

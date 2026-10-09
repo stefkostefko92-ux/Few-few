@@ -13,11 +13,11 @@ import type { Layout } from './types';
 const OFF = 230, ROOM = 95;
 
 /** `taken`: the boxes of the plan's lettering so far, at its `scale` (lettering-place.ts): the screen's and the kit's
- *  keep off them and off each other — the names among them (`names`, and the screen's for the kit) above all, a
+ *  keep off them and off each other — the names among them (`names`, and the screen's name for the kit) above all, a
  *  dimension's line where nothing else is free. */
 export const pitPlanExtras = (L: Layout, taken: Box[] = [], scale: number = TAG_SCALE, names: readonly Box[] = []): Entity[] => {
-  const screen = screenPlan(L, taken, scale);
-  return [...screen, ...pitKitPlan(L, taken, scale, letteringBoxes(screen.filter((e) => e.e !== 'path'), scale), names)];
+  const screen = screenPlan(L, taken, scale, names);
+  return [...screen, ...pitKitPlan(L, taken, scale, letteringBoxes(screen.filter((e) => e.e === 'text'), scale), names)];
 };
 
 /** The place of the tag of a car buffer at `c`: round it at 230 mm, the first of the directions square to the rails'
