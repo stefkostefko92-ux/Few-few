@@ -188,7 +188,7 @@
       "unban": "Ripristina l'accesso",
       "notBanned": "L'accesso è consentito.",
       "banReason": "Motivo del blocco",
-      "banHint": "La persona vede questo motivo quando prova ad accedere. Scrivete in modo chiaro e senza dati personali di altre persone.",
+      "banHint": "La persona vede questo motivo quando prova ad accedere e lo riceve via email. Scrivete in modo chiaro e senza dati personali di altre persone.",
       "ban": "Blocca",
       "banConfirm": "Bloccare l'account? Tutte le sue sessioni verranno chiuse.",
       "banHistory": "Storico dei blocchi",

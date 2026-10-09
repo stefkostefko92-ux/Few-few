@@ -4,6 +4,7 @@ import { LOCK_MINUTES } from '../auth/lock.js';
 import { linkHours } from '../auth/tokens.js';
 import { translate, type Locale } from '../i18n.js';
 import { UNVERIFIED_RETENTION_DAYS } from '../retention.js';
+import { legalPath } from '../seo/paths.js';
 import { sendMail, type MailAttachment } from './mailer.js';
 
 /**
@@ -232,6 +233,29 @@ export function mailPlanChanged(
   params: { plan: string; until: string },
 ): Promise<boolean> {
   return send(to, locale, 'planChanged', { ...params, account: link('/account', locale) }, name);
+}
+
+/**
+ * Блокиран достъп — мотивите по чл. 17, пар. 3 от Регламент (ЕС) 2022/2065: какво е ограничено, фактите
+ * (причината от екипа), правилото в общите условия, че решението е на човек и как се възразява.
+ */
+export function mailBanned(
+  to: string,
+  locale: Locale,
+  name: string | null,
+  reason: string,
+): Promise<boolean> {
+  return send(
+    to,
+    locale,
+    'banned',
+    {
+      reason,
+      terms: `${config().PUBLIC_BASE_URL}${legalPath(locale, 'terms')}`,
+      contact: config().CONTACT_EMAIL,
+    },
+    name,
+  );
 }
 
 export function mailAccountDeleted(

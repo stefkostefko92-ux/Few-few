@@ -68,6 +68,10 @@
       "subject": "Il vostro account Korpora è stato eliminato",
       "body": "il vostro account e tutti i suoi progetti sono stati eliminati definitivamente.\n\nSe non l'avete chiesto voi, scriveteci all'indirizzo qui sotto."
     },
+    "banned": {
+      "subject": "Il vostro accesso a Korpora è stato bloccato",
+      "body": "abbiamo bloccato l'accesso al vostro account Korpora: non potete accedere e tutte le sessioni sono state chiuse.\n\nMotivo: {reason}\n\nBase: le condizioni generali, sezioni «Che cosa non è consentito» e «Blocco»: {terms}\nLa decisione è stata presa da una persona del team, non automaticamente.\n\nSe ritenete che il blocco sia un errore, scriveteci a {contact}: esaminiamo ogni contestazione e, se è un errore, ripristiniamo l'accesso. Se siete consumatori, potete rivolgervi anche alla Commissione bulgara per la tutela dei consumatori e alle sue commissioni di conciliazione per la risoluzione extragiudiziale della controversia (www.kzp.bg), oppure al giudice. Potete chiedere i vostri dati allo stesso indirizzo anche mentre l'account è bloccato."
+    },
     "order": {
       "subject": "Conferma del vostro ordine Korpora",
       "body": "confermiamo il vostro ordine.\n\nContratto concluso: {when}\nOrdine n. {id}\nPiano: {plan}\nPrezzo: {price}\nAcquistate come: {buyer}\n{duration}{replaces}\n\n{payment}\n\n{withdrawal}\n\n{trader}\n{terms}\nI vostri ordini: {orders}",

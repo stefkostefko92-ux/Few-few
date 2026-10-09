@@ -268,6 +268,19 @@ model UpgradeRequest {
   @@index([supersededById])
 }
 
+/// Общите условия по версия и език, както са пратени с поръчките (самостоятелният HTML файл от
+/// services/terms-copy.ts). Потвърждение, пратено пак след смяна на условията, носи приетите с поръчката,
+/// не текущите — връзка към променяща се страница не е траен носител.
+model TermsSnapshot {
+  /// LEGAL_UPDATED.terms
+  version   String
+  locale    String
+  content   String
+  updatedAt DateTime @updatedAt
+
+  @@id([version, locale])
+}
+
 /// Проект = една мебел. Спецификацията е единственият източник на истината; изходите се смятат от нея.
 model Project {
   id        String   @id @default(cuid())

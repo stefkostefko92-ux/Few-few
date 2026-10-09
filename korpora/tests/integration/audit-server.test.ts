@@ -4,6 +4,7 @@
  */
 import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
+import ejs from 'ejs';
 import { totpCode } from '../../src/auth/totp.js';
 import {
   Browser,
@@ -11,6 +12,7 @@ import {
   STAFF_PASSWORD,
   forgetMailTo,
   mailTo,
+  outbox,
   prisma,
   startApp,
   stopApp,
@@ -21,8 +23,14 @@ before(startApp);
 after(stopApp);
 
 const { changePlan, rejectRequest } = await import('../../src/services/admin-plan.js');
+const { banAccount } = await import('../../src/services/admin-security.js');
 const { exportOwnData } = await import('../../src/services/account-self.js');
+const { runMaintenance } = await import('../../src/services/maintenance.js');
+const { resendOrderMail } = await import('../../src/services/plan-requests.js');
+const { LEGAL_UPDATED } = await import('../../src/company.js');
+const { LOGIN_RETENTION_DAYS } = await import('../../src/retention.js');
 
+const DAY = 86_400_000;
 /** The id of the audit chain's advisory lock (audit.ts): every audit entry waits for it. */
 const AUDIT_LOCK = 7241020;
 const now = () => Math.floor(Date.now() / 1000);
@@ -242,4 +250,107 @@ test('business:A5 — the data export says how each order was closed and when it
   assert.equal(withdrawn?.withdrawalOutcome, 'open');
   assert.ok(withdrawn?.withdrawalAckSentAt, 'when the receipt went out');
   assert.ok(!JSON.stringify(data.orders).includes('@superseded'), 'no internal labels');
+});
+
+/* ------------------------------------ правни ------------------------------------ */
+
+test('legal:A5 — a ban tells the person by email: the reason, the rules, who decided, how to object', async () => {
+  const admin = await staff('ADMIN', 'ban-mail.admin@example.test');
+  await customer('ban-mail@example.test');
+  const id = await idOf('ban-mail@example.test');
+  forgetMailTo('ban-mail@example.test');
+  const reason = 'Няколко акаунта за повече тестови периоди';
+  assert.deepEqual(await banAccount(admin.actor, id, { reason }), { ok: true });
+  const mail = await mailTo('ban-mail@example.test', /блокиран/);
+  assert.ok(mail.text.includes(reason), 'the reason');
+  assert.match(mail.text, /\/terms/, 'the rules');
+  assert.match(mail.text, /човек от екипа/, 'a person decided');
+  assert.ok(mail.text.includes(STAFF_INBOX), 'where to object');
+  assert.match(mail.text, /kzp\.bg/, 'out-of-court route');
+
+  // an address never confirmed may be someone else’s: it learns nothing
+  const stranger = new Browser();
+  await stranger.register('Непотвърден', 'ban-unconfirmed@example.test', 'Shelf-Hinge-Groove-42');
+  const unconfirmed = await idOf('ban-unconfirmed@example.test');
+  assert.deepEqual(await banAccount(admin.actor, unconfirmed, { reason }), { ok: true });
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  assert.ok(
+    !outbox.some((m) => m.to === 'ban-unconfirmed@example.test' && /блокиран/.test(m.subject)),
+  );
+});
+
+test('legal:A8 — the sign-up IP address goes with the sign-up fingerprint after the retention period', async () => {
+  await customer('signup-ip@example.test');
+  const id = await idOf('signup-ip@example.test');
+  await customer('signup-ip-new@example.test');
+  const before = await prisma.user.findUniqueOrThrow({ where: { id } });
+  assert.ok(before.signupIp, 'the IP is kept at sign-up');
+  await prisma.user.update({
+    where: { id },
+    data: { createdAt: new Date(Date.now() - (LOGIN_RETENTION_DAYS + 1) * DAY) },
+  });
+  await runMaintenance();
+  const old = await prisma.user.findUniqueOrThrow({ where: { id } });
+  assert.equal(old.signupIp, null);
+  assert.equal(old.signupCountry, before.signupCountry, 'the country stays');
+  const recent = await prisma.user.findUniqueOrThrow({
+    where: { email: 'signup-ip-new@example.test' },
+  });
+  assert.ok(recent.signupIp, 'a recent sign-up keeps its IP');
+  const policy = await new Browser().get('/privacy');
+  assert.match(
+    policy.body,
+    new RegExp(`IP адресът при регистрацията — ${LOGIN_RETENTION_DAYS} дни`),
+  );
+});
+
+test('legal:A10 — a confirmation sent after the terms changed carries the terms accepted then', async () => {
+  const email = 'old-terms@example.test';
+  const { row } = await placeOrder(email, { option: 'm1', buyer: 'consumer' });
+  assert.ok(
+    await prisma.termsSnapshot.findUnique({
+      where: { version_locale: { version: LEGAL_UPDATED.terms, locale: 'bg' } },
+    }),
+    'the terms in force are kept for later',
+  );
+  const content = '<!doctype html><p>условията от януари</p>';
+  await prisma.termsSnapshot.create({ data: { version: '2026-01-15', locale: 'bg', content } });
+  await prisma.upgradeRequest.update({
+    where: { id: row.id },
+    data: {
+      termsVersion: '2026-01-15',
+      confirmationSentAt: null,
+      createdAt: new Date(Date.now() - 60 * 60_000),
+    },
+  });
+  forgetMailTo(email);
+  await resendOrderMail();
+  const mail = await mailTo(email, /Потвърждение на поръчката/);
+  assert.equal(mail.attachments?.[0]?.filename, 'korpora-terms-2026-01-15-bg.html');
+  assert.equal(mail.attachments[0]?.content, content);
+  assert.match(mail.text, /\(в сила от 15 януари 2026 г\.\), са приложени към това писмо/);
+});
+
+test('legal:A10 — a terms copy that cannot be built holds the confirmation back for the next try', async (t) => {
+  const email = 'no-copy@example.test';
+  const { row } = await placeOrder(email, { option: 'm1', buyer: 'consumer' });
+  await prisma.termsSnapshot.deleteMany({});
+  await prisma.upgradeRequest.update({
+    where: { id: row.id },
+    data: { confirmationSentAt: null, createdAt: new Date(Date.now() - 60 * 60_000) },
+  });
+  forgetMailTo(email);
+  // the copy of the terms cannot be rendered this once (the next try works)
+  const broken = t.mock.method(ejs, 'renderFile', () => Promise.reject(new Error('no template')));
+  await resendOrderMail();
+  broken.mock.restore();
+  const held = await prisma.upgradeRequest.findUniqueOrThrow({ where: { id: row.id } });
+  assert.equal(held.confirmationSentAt, null, 'not marked as sent');
+  assert.ok(!outbox.some((m) => m.to === email), 'no confirmation with a link only');
+  await resendOrderMail();
+  const mail = await mailTo(email, /Потвърждение на поръчката/);
+  assert.equal(mail.attachments?.length, 1);
+  assert.ok(
+    (await prisma.upgradeRequest.findUniqueOrThrow({ where: { id: row.id } })).confirmationSentAt,
+  );
 });

@@ -9,6 +9,7 @@ import { TRIAL_REMINDER_DAYS } from '../plans/plan.js';
 import { LOGIN_RETENTION_DAYS, UNVERIFIED_RETENTION_DAYS } from '../retention.js';
 import { DAY, HOUR } from '../time.js';
 import { resendOrderMail } from './plan-requests.js';
+import { keepCurrentTermsCopies } from './terms-snapshots.js';
 
 /** Изтеклите връзки от писмата се пазят още толкова дни, после се трият. */
 const EXPIRED_TOKEN_DAYS = 7;
@@ -56,13 +57,18 @@ export async function runMaintenance(now: Date = new Date()): Promise<void> {
     const ipCutoff = new Date(now.getTime() - LOGIN_RETENTION_DAYS * DAY);
     const logins = await prisma.loginEvent.deleteMany({ where: { createdAt: { lt: ipCutoff } } });
     const devices = await prisma.device.deleteMany({ where: { lastSeenAt: { lt: ipCutoff } } });
-    // отпечатъкът и устройството от регистрацията — със същия срок, както казва политиката
+    // отпечатъкът, устройството и IP адресът от регистрацията — със същия срок, както казва политиката
+    // (държавата остава: без адреса тя не сочи човек)
     const signups = await prisma.user.updateMany({
       where: {
         createdAt: { lt: ipCutoff },
-        OR: [{ signupDeviceHash: { not: null } }, { signupFingerprint: { not: null } }],
+        OR: [
+          { signupDeviceHash: { not: null } },
+          { signupFingerprint: { not: null } },
+          { signupIp: { not: null } },
+        ],
       },
-      data: { signupDeviceHash: null, signupFingerprint: null },
+      data: { signupDeviceHash: null, signupFingerprint: null, signupIp: null },
     });
     const auditIps = await prisma.auditLog.updateMany({
       where: { at: { lt: ipCutoff }, ip: { not: null } },
@@ -72,6 +78,8 @@ export async function runMaintenance(now: Date = new Date()): Promise<void> {
       where: { expiresAt: { lt: new Date(now.getTime() - EXPIRED_TOKEN_DAYS * DAY) } },
     });
     const reminders = await sendTrialReminders(now);
+    // копието на условията в сила — преди повторните писма, които може да го поискат след смяна
+    await keepCurrentTermsCopies();
     const orderMail = await resendOrderMail(now);
     const chain = await verifyAuditChain({ full: true });
     if (!chain.ok) logger.error({ brokenAt: chain.brokenAt }, 'одитната верига е скъсана');

@@ -68,6 +68,10 @@
       "subject": "Your Korpora account was deleted",
       "body": "Your account and all its projects have been deleted permanently.\n\nIf you did not ask for this, write to us at the address below."
     },
+    "banned": {
+      "subject": "Your access to Korpora has been blocked",
+      "body": "We have blocked access to your Korpora account: you cannot sign in, and all sessions have been ended.\n\nReason: {reason}\n\nBasis: the terms and conditions, sections “What is not allowed” and “Blocking”: {terms}\nThe decision was taken by a person on our team, not automatically.\n\nIf you think the blocking is a mistake, write to us at {contact} — we consider every objection and, if it is a mistake, we restore access. If you are a consumer, you can also turn to the Bulgarian Commission for Consumer Protection and its conciliation commissions for out-of-court settlement of the dispute (www.kzp.bg), or to the courts. You can ask for your data at the same address while the account is blocked."
+    },
     "order": {
       "subject": "Confirmation of your Korpora order",
       "body": "We confirm your order. The contract was concluded on {when}.\n\nOrder no. {id}\nPlan: {plan}\nPrice: {price}\nBuying as: {buyer}\n{duration}{replaces}\n\n{payment}\n\n{withdrawal}\n\n{trader}\n{terms}\nYour orders: {orders}",
@@ -101,7 +105,7 @@
     },
     "orderRejected": {
       "subject": "Your Korpora order has been rejected",
-      "body": "order no. {id} ({plan}) of {date} has been rejected and will not be fulfilled — you do not need to pay it. If you have already paid or think this is a mistake, write to us at {contact}.\n\nYour orders: {orders}"
+      "body": "Order no. {id} ({plan}) of {date} has been rejected and will not be fulfilled — you do not need to pay it. If you have already paid or think this is a mistake, write to us at {contact}.\n\nYour orders: {orders}"
     },
     "staffOrder": {
       "subject": "New Korpora order: {plan}",
