@@ -99,6 +99,10 @@
       "refund": "If you have already paid, we will refund all payments received by {date}, using the same means of payment and at no cost to you.",
       "refundEarly": "If you have already paid, we will refund the payments received by {date}, using the same means of payment and at no cost to you. As you asked for an early start, we keep the part of the price for the time the plan was active."
     },
+    "orderRejected": {
+      "subject": "Your Korpora order has been rejected",
+      "body": "order no. {id} ({plan}) of {date} has been rejected and will not be fulfilled — you do not need to pay it. If you have already paid or think this is a mistake, write to us at {contact}.\n\nYour orders: {orders}"
+    },
     "staffOrder": {
       "subject": "New Korpora order: {plan}",
       "body": "New order no. {id} from {email} ({buyer}).\nPlan: {plan}\nPrice: {price}\nEarly start: {early}\n{activation}{replaces}\n\nSend an invoice with the payment details. Panel: {admin}",

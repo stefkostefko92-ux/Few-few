@@ -1,8 +1,9 @@
-import type { User } from '@prisma/client';
+import type { UpgradeRequest, User } from '@prisma/client';
 import { audit, SYSTEM_ACTOR } from '../audit.js';
 import { prisma } from '../db.js';
 import { describeUserAgent, hwidLabel } from '../auth/device.js';
 import { accountLocale, isLocale } from '../i18n.js';
+import { LABEL } from '../labels.js';
 import type { RequestMeta } from '../http/meta.js';
 import { greetingName, mailAccountDeleted } from '../mail/templates.js';
 import { customerActor, nameSchema } from './auth-common.js';
@@ -139,6 +140,13 @@ export async function deleteOwnAccount(
 const EXPORT_MAX_LOGINS = 5000;
 const EXPORT_MAX_AUDIT = 20_000;
 
+/** Кой е затворил поръчката — като в историята на плана: „екипът“, без името на служителя. */
+function closedBy(r: UpgradeRequest, userId: string): 'you' | 'team' | 'system' | null {
+  if (r.handledById) return r.handledById === userId ? 'you' : 'team';
+  if (r.handledByLabel === LABEL.cancelledByCustomer) return 'you';
+  return r.handledAt ? 'system' : null;
+}
+
 /** Редовете идват най-новите първи и с един в повече: връща най-новите `max` по реда на времето. */
 function newestInOrder<T>(rows: T[], max: number): { rows: T[]; truncated: boolean } {
   return { rows: rows.slice(0, max).reverse(), truncated: rows.length > max };
@@ -242,7 +250,12 @@ export async function exportOwnData(userId: string): Promise<Record<string, unkn
       message: r.message,
       status: r.status,
       closedAt: r.handledAt,
+      closedBy: closedBy(r, user.id),
+      supersededBy: r.supersededById,
+      confirmationSentAt: r.confirmationSentAt,
       withdrawnAt: r.withdrawnAt,
+      withdrawalAckSentAt: r.withdrawalAckSentAt,
+      withdrawalOutcome: r.withdrawalOutcome,
     })),
     devices: user.devices.map((d) => ({
       hwid: hwidLabel(d.fingerprintHash),

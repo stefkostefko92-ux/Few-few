@@ -99,6 +99,10 @@
       "refund": "Se avete già pagato, vi rimborseremo tutti i pagamenti ricevuti con lo stesso mezzo di pagamento e senza costi per voi (termine: {date}).",
       "refundEarly": "Se avete già pagato, vi rimborseremo i pagamenti ricevuti con lo stesso mezzo di pagamento e senza costi per voi (termine: {date}). Poiché avete chiesto l'inizio anticipato, tratteniamo la parte del prezzo per il periodo in cui il piano è stato attivo."
     },
+    "orderRejected": {
+      "subject": "Il vostro ordine Korpora è stato rifiutato",
+      "body": "l'ordine n. {id} ({plan}) del {date} è stato rifiutato e non verrà eseguito: non è necessario pagarlo. Se avete già pagato o ritenete che sia un errore, scriveteci a {contact}.\n\nI vostri ordini: {orders}"
+    },
     "staffOrder": {
       "subject": "Nuovo ordine Korpora: {plan}",
       "body": "nuovo ordine n. {id} da {email} ({buyer}).\nPiano: {plan}\nPrezzo: {price}\nInizio anticipato: {early}\n{activation}{replaces}\n\nInviate la fattura con i dati per il pagamento. Pannello: {admin}",

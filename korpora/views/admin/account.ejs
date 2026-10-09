@@ -23,6 +23,8 @@
       <dt><%= t('admin.col.plan') %></dt><dd><%= t('plan.name.' + account.plan) %></dd>
       <dt><%= t('admin.account.until') %></dt><dd><%= account.plan === 'LIFETIME' ? t('admin.account.forever') : account.planExpiresAt ? fmt.dateTime(account.planExpiresAt) : t('admin.account.notStarted') %><% if (plan.daysLeft) { %> <small>(<%= t('admin.account.daysLeft', { n: plan.daysLeft }) %>)</small><% } %></dd>
     </dl>
+    <% const openOrders = account.upgradeRequests.filter((r) => r.status === 'OPEN'); %>
+    <% if (!request && openOrders.length) { %><div class="flash flash-info" role="status"><%- include('../partials/icon', { name: 'receipt' }) %><span><%= t('admin.account.openOrders') %> <% openOrders.forEach((r, i) => { %><%= i ? ', ' : '' %><a href="/admin/accounts/<%= account.id %>?request=<%= r.id %>#plan"><%= t('admin.account.openOrder', { id: r.id, option: r.option === 'lifetime' ? t('plan.lifetime') : t('plan.months', { n: r.months }), date: fmt.date(r.createdAt) }) %></a><% }) %></span></div><% } %>
     <% if (request) { %><div class="flash flash-info" role="status"><%- include('../partials/icon', { name: 'receipt' }) %><span><%= t('admin.account.fromRequest', { option: request.option === 'lifetime' ? t('plan.lifetime') : t('plan.months', { n: request.months }), price: fmt.money(request.listPriceCents) }) %> <%= t('admin.account.orderTerms', { buyer: t(request.buyerType === 'CONSUMER' ? 'plan.buyer.consumerShort' : 'plan.buyer.businessShort'), early: t(request.earlyStartRequestedAt ? 'admin.account.yes' : 'admin.account.no'), date: fmt.dateTime(request.allowedFrom) }) %></span></div><% } %>
     <% if (manageable && can('accounts:plan')) { %>
     <form method="post" action="/admin/accounts/<%= account.id %>/plan#plan" class="form" data-plan-form>
@@ -50,7 +52,7 @@
         <p class="hint" data-for-plan="LIFETIME"><%= t('admin.account.lifetimeHint', { price: fmt.money(lifetimeCents) }) %></p>
         <p class="hint" data-for-plan="PREMIUM"><%= t('admin.account.premiumHint') %></p>
         <div class="field"><label for="p-note"><%= t('admin.account.note') %></label><input id="p-note" name="note" type="text" maxlength="<%= limits.noteMax %>" placeholder="<%= t('admin.account.notePlaceholder') %>"></div>
-        <label class="check"><input type="checkbox" name="notify" value="yes" checked><span><%= t('admin.account.notify') %></span></label>
+        <% if (request) { %><p class="hint"><%= t('admin.account.notifyOrder') %></p><% } else { %><label class="check"><input type="checkbox" name="notify" value="yes" checked><span><%= t('admin.account.notify') %></span></label><% } %>
       </fieldset>
       <div class="actions"><button class="btn btn-primary" type="submit"><%= t('admin.account.applyPlan') %></button></div>
     </form>
@@ -185,6 +187,20 @@
         <button class="btn" type="submit"><%= t('admin.account.changeRole') %></button>
       </div>
       <p class="hint"><%= t('admin.account.roleHint') %></p>
+    </form>
+    <% } %>
+    <% if (manageable && canGrantOwner) { %>
+    <form method="post" action="/admin/accounts/<%= account.id %>/owner#profile" class="form" data-confirm="<%= t('admin.account.ownerConfirm') %>">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <fieldset>
+        <legend><%= t('admin.account.ownerTitle') %></legend>
+        <p class="hint"><%= t('admin.account.ownerHint') %></p>
+        <div class="form-row">
+          <div class="field"><label for="o-pw"><%= t('account.currentPassword') %></label><input id="o-pw" name="password" type="password" required autocomplete="current-password"></div>
+          <div class="field"><label for="o-code"><%= t('security.currentCode') %></label><input id="o-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" required maxlength="20"></div>
+        </div>
+        <div class="actions"><button class="btn btn-danger" type="submit"><%= t('admin.account.ownerButton') %></button></div>
+      </fieldset>
     </form>
     <% } %>
   </section>

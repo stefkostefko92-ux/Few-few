@@ -7,11 +7,12 @@ import { BUSINESS_TZ } from '../time.js';
 import { errorMessage, logger } from '../logger.js';
 import type { MailAttachment } from '../mail/mailer.js';
 import {
-  greetingName,
   mailOrderConfirmed,
+  mailOrderRejected,
   mailStaffNotice,
   mailWithdrawalReceived,
-} from '../mail/templates.js';
+} from '../mail/order-templates.js';
+import { greetingName } from '../mail/templates.js';
 import { formatMoney, VAT_BG_PERCENT, withVatCents } from '../plans/pricing.js';
 import {
   paidStartAllowedFrom,
@@ -187,6 +188,20 @@ export function sendWithdrawalReceipt(
       order.earlyStartRequestedAt ? 'mail.withdrawn.refundEarly' : 'mail.withdrawn.refund',
       { date: refundBy },
     ),
+  });
+}
+
+/** Поръчката е отхвърлена от екипа (плащането не е пристигнало): няма да се изпълни и не се плаща. */
+export function sendOrderRejected(
+  order: Pick<OrderRecord, 'id' | 'option' | 'months' | 'createdAt'>,
+  user: Customer,
+): Promise<boolean> {
+  const locale = accountLocale(user);
+  return mailOrderRejected(user.email, locale, greetingName(user), {
+    id: order.id,
+    plan: orderPlanName(order, locale),
+    date: longDate(order.createdAt, locale),
+    contact: config().CONTACT_EMAIL,
   });
 }
 

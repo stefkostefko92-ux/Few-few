@@ -131,7 +131,8 @@
       "self": "You cannot do this to your own account.",
       "requestGone": "The order is no longer open: the customer cancelled it, withdrew from the contract, or it was closed.",
       "withdrawalPeriod": "The consumer did not ask for an early start: the paid period can only start after the withdrawal period ends.",
-      "orderMismatch": "An order is fulfilled only with the plan ordered: Lifetime with Lifetime, Premium with the same number of months."
+      "orderMismatch": "An order is fulfilled only with the plan ordered: Lifetime with Lifetime, Premium with the same number of months.",
+      "openOrder": "This person has an open order — the paid plan is activated through it (the link is under “Plan”), so that what was ordered and the withdrawal period apply."
     },
     "account": {
       "since": "signed up on {date}",
@@ -158,6 +159,7 @@
       "note": "Note",
       "notePlaceholder": "for example invoice or payment number",
       "notify": "Email the customer",
+      "notifyOrder": "The customer gets an email about the activation — the terms promise it.",
       "applyPlan": "Change plan",
       "planHistory": "Plan history",
       "change": "Change",
@@ -209,6 +211,10 @@
       "changeRole": "Change role",
       "roleConfirm": "Change the role? The account's sessions will end.",
       "roleHint": "The team opens the admin panel only with two-factor protection.",
+      "ownerTitle": "Owner of the product",
+      "ownerHint": "Only an owner gives this role, after confirming with their password and code. An owner has every right, and nobody in the panel can take it back or act on their account — give it only to someone you entrust Korpora to. The action is recorded in the audit log.",
+      "ownerButton": "Make owner",
+      "ownerConfirm": "Give this person the “Owner” role? It cannot be undone from the panel.",
       "auditTitle": "Audit",
       "deleteTitle": "Deletion",
       "deleteText": "The account, projects, sessions and devices are deleted permanently. Only a hash of the email stays in the audit log.",
@@ -216,6 +222,8 @@
       "deleteButton": "Delete the account for good",
       "deleteConfirm": "Last check: delete this account for good?",
       "orderTerms": "Buyer: {buyer}; early start: {early}; the paid period may start from {date} on.",
+      "openOrders": "Open orders — a paid plan is activated through the order:",
+      "openOrder": "No. {id}: {option} of {date}",
       "yes": "yes",
       "no": "no"
     }

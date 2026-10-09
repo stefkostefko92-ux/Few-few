@@ -147,7 +147,7 @@
     "changeEmailButton": "Invia link",
     "delete": {
       "confirmMissing": "Spuntate la casella per confermare di aver capito che l'eliminazione è definitiva.",
-      "lastOwner": "È l'ultimo proprietario. Prima di eliminare l'account, assegnate il ruolo a un'altra persona."
+      "lastOwner": "È l'ultimo proprietario. Prima di eliminare l'account, assegnate il ruolo a un'altra persona: nel pannello, nella pagina del suo account («Profilo»), con la vostra password e il vostro codice."
     }
   },
   "app": {

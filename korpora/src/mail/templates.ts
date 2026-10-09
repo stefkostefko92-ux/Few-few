@@ -11,7 +11,7 @@ import { sendMail, type MailAttachment } from './mailer.js';
  * абсолютни от PUBLIC_BASE_URL и носят езика (`lang=`), за да се отворят на същия език и на друго
  * устройство. Само обикновен текст — нищо не се зарежда от чужд сървър.
  */
-function link(path: string, locale: Locale): string {
+export function link(path: string, locale: Locale): string {
   return `${config().PUBLIC_BASE_URL}${path}${path.includes('?') ? '&' : '?'}lang=${locale}`;
 }
 
@@ -37,7 +37,8 @@ export function greetingName(user: { name: string; emailVerifiedAt: Date | null 
   return user.emailVerifiedAt ? user.name : null;
 }
 
-async function send(
+/** Писмо от речника `mail.<key>`: поздрав, текст и подпис на езика на акаунта. */
+export async function send(
   to: string,
   locale: Locale,
   key: string,
@@ -239,50 +240,4 @@ export function mailAccountDeleted(
   name: string | null,
 ): Promise<boolean> {
   return send(to, locale, 'accountDeleted', {}, name);
-}
-
-/**
- * Потвърждението на договора на траен носител (чл. 8, пар. 7 от Директива 2011/83): какво е поръчано,
- * цената, плащането, правото на отказ с образеца и общите условия към деня на поръчката (приложени
- * като файл). Текстовете на частите и копието на условията са сглобени в `services/order-mail.ts`.
- */
-export function mailOrderConfirmed(
-  to: string,
-  locale: Locale,
-  name: string | null,
-  params: Record<string, string>,
-  attachments: MailAttachment[] = [],
-): Promise<boolean> {
-  return send(
-    to,
-    locale,
-    'order',
-    { ...params, orders: link('/account/plan', locale) },
-    name,
-    attachments,
-  );
-}
-
-/** Потвърждението, че изявлението за отказ е получено — със съдържанието и часа му (чл. 11а, пар. 4). */
-export function mailWithdrawalReceived(
-  to: string,
-  locale: Locale,
-  name: string | null,
-  params: Record<string, string>,
-): Promise<boolean> {
-  return send(to, locale, 'withdrawn', { ...params, orders: link('/account/plan', locale) }, name);
-}
-
-/** Известие до екипа (CONTACT_EMAIL), на български: нова поръчка или отказ със срок за връщане. */
-export function mailStaffNotice(
-  kind: 'staffOrder' | 'staffWithdrawal',
-  params: Record<string, string>,
-): Promise<boolean> {
-  return send(
-    config().CONTACT_EMAIL,
-    'bg',
-    kind,
-    { ...params, admin: `${config().PUBLIC_BASE_URL}/admin/requests?status=all` },
-    null,
-  );
 }

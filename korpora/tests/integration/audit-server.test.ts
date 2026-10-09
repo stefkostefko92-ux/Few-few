@@ -4,16 +4,28 @@
  */
 import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { Browser, forgetMailTo, mailTo, prisma, startApp, stopApp } from './harness.js';
-import { customer, sessionCsrf } from './people.js';
+import { totpCode } from '../../src/auth/totp.js';
+import {
+  Browser,
+  STAFF_INBOX,
+  STAFF_PASSWORD,
+  forgetMailTo,
+  mailTo,
+  prisma,
+  startApp,
+  stopApp,
+} from './harness.js';
+import { customer, placeOrder, sessionCsrf, staff, withdraw } from './people.js';
 
 before(startApp);
 after(stopApp);
 
+const { changePlan, rejectRequest } = await import('../../src/services/admin-plan.js');
 const { exportOwnData } = await import('../../src/services/account-self.js');
 
 /** The id of the audit chain's advisory lock (audit.ts): every audit entry waits for it. */
 const AUDIT_LOCK = 7241020;
+const now = () => Math.floor(Date.now() / 1000);
 
 async function idOf(email: string): Promise<string> {
   return (await prisma.user.findUniqueOrThrow({ where: { email } })).id;
@@ -94,4 +106,140 @@ test('auth:A3 — a sign-out sent from another site of the same domain leaves th
   const own = await b.post('/logout', { _csrf: csrf });
   assert.equal(own.status, 302);
   assert.equal((await b.get('/account')).status, 302, 'signed out from our own page');
+});
+
+/* ------------------------------------- планове ------------------------------------- */
+
+test('business:A1 — no paid plan by hand while an order is open; the account page links the order', async () => {
+  const manager = await staff('MANAGER', 'open-order.manager@example.test');
+  const { row } = await placeOrder('open-order@example.test', { option: 'm1', buyer: 'consumer' });
+  assert.deepEqual(
+    await changePlan(manager.actor, row.userId, {
+      plan: 'PREMIUM',
+      mode: 'months',
+      months: 1,
+      notify: false,
+    }),
+    { ok: false, key: 'admin.errors.openOrder' },
+  );
+  assert.deepEqual(
+    await changePlan(manager.actor, row.userId, { plan: 'LIFETIME', notify: false }),
+    { ok: false, key: 'admin.errors.openOrder' },
+  );
+  const user = await prisma.user.findUniqueOrThrow({ where: { id: row.userId } });
+  assert.equal(user.plan, 'TRIAL');
+  assert.equal(
+    (await prisma.upgradeRequest.findUniqueOrThrow({ where: { id: row.id } })).status,
+    'OPEN',
+  );
+  // more trial days are no paid plan and stay possible
+  assert.deepEqual(
+    await changePlan(manager.actor, row.userId, { plan: 'TRIAL', days: 10, notify: false }),
+    { ok: true },
+  );
+  const page = await manager.browser.get(`/admin/accounts/${row.userId}`);
+  assert.ok(
+    page.body.includes(`href="/admin/accounts/${row.userId}?request=${row.id}#plan"`),
+    'the open order is linked from the account page',
+  );
+});
+
+test('business:A2 — an owner gives the owner role with their password and code; it is audited', async () => {
+  const owner = await staff('OWNER', 'owner.first@example.test');
+  const admin = await staff('ADMIN', 'owner.second@example.test');
+  const path = `/admin/accounts/${admin.id}/owner`;
+  const page = await owner.browser.get(`/admin/accounts/${admin.id}`);
+  assert.ok(page.body.includes(`action="${path}#profile"`), 'the owner sees the form');
+  const csrf = Browser.csrf(page.body);
+  const role = async (id: string) => (await prisma.user.findUniqueOrThrow({ where: { id } })).role;
+
+  await owner.browser.post(path, {
+    _csrf: csrf,
+    password: 'Not-The-Password-1',
+    code: totpCode(owner.secret, now() + 30),
+  });
+  assert.equal(owner.browser.flash(), 'flash.wrongPassword');
+  assert.equal(await role(admin.id), 'ADMIN');
+  await owner.browser.post(path, { _csrf: csrf, password: STAFF_PASSWORD, code: '000000' });
+  assert.equal(owner.browser.flash(), 'flash.wrongCode');
+  assert.equal(await role(admin.id), 'ADMIN');
+
+  await owner.browser.post(path, {
+    _csrf: csrf,
+    password: STAFF_PASSWORD,
+    code: totpCode(owner.secret, now() + 30),
+  });
+  assert.equal(owner.browser.flash(), 'flash.roleChanged');
+  assert.equal(await role(admin.id), 'OWNER');
+  assert.equal(await prisma.session.count({ where: { userId: admin.id } }), 0, 'signs in again');
+  const entry = await prisma.auditLog.findFirstOrThrow({
+    where: { action: 'admin.role.changed', targetId: admin.id },
+  });
+  assert.equal(entry.actorId, owner.id);
+  assert.deepEqual(entry.detail, { from: 'ADMIN', to: 'OWNER', reauth: true });
+
+  // nobody below the owner gives it, whatever they confirm with
+  const other = await staff('ADMIN', 'owner.third@example.test');
+  const target = await staff('MANAGER', 'owner.fourth@example.test');
+  const otherPage = await other.browser.get(`/admin/accounts/${target.id}`);
+  assert.ok(!otherPage.body.includes(`/admin/accounts/${target.id}/owner`));
+  await other.browser.post(`/admin/accounts/${target.id}/owner`, {
+    _csrf: Browser.csrf(otherPage.body),
+    password: STAFF_PASSWORD,
+    code: totpCode(other.secret, now() + 30),
+  });
+  assert.equal(await role(target.id), 'MANAGER');
+});
+
+test('business:A3 — an order activated without the „send a mail“ tick still tells the customer', async () => {
+  const manager = await staff('MANAGER', 'notify.manager@example.test');
+  const { row } = await placeOrder('notify@example.test', { option: 'm1', buyer: 'business' });
+  const page = await manager.browser.get(`/admin/accounts/${row.userId}?request=${row.id}`);
+  assert.ok(!page.body.includes('name="notify"'), 'no tick to take off when an order is fulfilled');
+  forgetMailTo('notify@example.test');
+  assert.deepEqual(
+    await changePlan(manager.actor, row.userId, {
+      plan: 'PREMIUM',
+      mode: 'months',
+      months: 1,
+      notify: false,
+      requestId: row.id,
+    }),
+    { ok: true },
+  );
+  await mailTo('notify@example.test', /Планът ви в Korpora е сменен/);
+});
+
+test('business:A4 — a rejected order is told to the customer by email, with its number', async () => {
+  const manager = await staff('MANAGER', 'reject.manager@example.test');
+  const { row } = await placeOrder('rejected@example.test', { option: 'm3', buyer: 'consumer' });
+  assert.deepEqual(await rejectRequest(manager.actor, row.id), { ok: true });
+  const mail = await mailTo('rejected@example.test', /отхвърлена/);
+  assert.ok(mail.text.includes(row.id), 'the order number');
+  assert.ok(mail.text.includes(STAFF_INBOX), 'where to write');
+});
+
+test('business:A5 — the data export says how each order was closed and when its emails went out', async () => {
+  const email = 'export-orders@example.test';
+  const { c, row: first } = await placeOrder(email, { option: 'm1', buyer: 'consumer' });
+  await c.post('/account/plan/request', {
+    _csrf: await sessionCsrf(c, '/account/plan'),
+    option: 'm3',
+    buyer: 'consumer',
+  });
+  const second = await prisma.upgradeRequest.findFirstOrThrow({
+    where: { userId: first.userId, id: { not: first.id } },
+  });
+  assert.equal((await withdraw(c, second.id)).status, 302);
+  const data = (await exportOwnData(first.userId)) as {
+    orders: Array<Record<string, unknown>>;
+  };
+  const replaced = data.orders.find((o) => o.id === first.id);
+  const withdrawn = data.orders.find((o) => o.id === second.id);
+  assert.equal(replaced?.supersededBy, second.id);
+  assert.equal(replaced?.closedBy, 'system');
+  assert.ok(replaced?.confirmationSentAt, 'when the confirmation went out');
+  assert.equal(withdrawn?.withdrawalOutcome, 'open');
+  assert.ok(withdrawn?.withdrawalAckSentAt, 'when the receipt went out');
+  assert.ok(!JSON.stringify(data.orders).includes('@superseded'), 'no internal labels');
 });
