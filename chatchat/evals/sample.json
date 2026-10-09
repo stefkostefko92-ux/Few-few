@@ -332,6 +332,28 @@
             "text": "Il parametro P12 imposta la velocità nominale; modificare P12 dal menu configurazione."
           }
         ]
+      },
+      {
+        "code": "MAN-FX100-EN",
+        "title": "FX-100 manual, firmware 4 (FITTIZIO, English)",
+        "type": "MANUAL",
+        "language": "en",
+        "revision": "A",
+        "audience": "PORTAL",
+        "safetyRelevant": false,
+        "applicability": [
+          {
+            "productModel": "FX-100",
+            "fwMin": "4.0",
+            "fwMax": "4.9"
+          }
+        ],
+        "pages": [
+          {
+            "page": 3,
+            "text": "Terminal X7 supplies the encoder: the voltage must not drop below 5 V."
+          }
+        ]
       }
     ],
     "errors": [
@@ -898,6 +920,40 @@
       "expect": {
         "sources": ["E73"],
         "level": "strong"
+      }
+    },
+    {
+      "id": "manuale-in-inglese-domanda-italiana",
+      "tags": ["adversarial", "§16.3:lingua"],
+      "locale": "it",
+      "question": "Tensione encoder bassa sul morsetto X7, cosa controllo?",
+      "context": {
+        "productModel": "FX-100",
+        "hardwareRevision": "B",
+        "firmware": "4.2",
+        "serial": null,
+        "errorCode": null
+      },
+      "expect": {
+        "sources": ["MAN-FX100-EN@A"]
+      }
+    },
+    {
+      "id": "ticket-senza-contesto",
+      "tags": ["adversarial", "§16.3:ticket-senza-contesto"],
+      "locale": "it",
+      "question": "Non funziona niente",
+      "context": {
+        "productModel": "FX-100",
+        "hardwareRevision": null,
+        "firmware": null,
+        "serial": null,
+        "errorCode": null
+      },
+      "expect": {
+        "sources": [],
+        "status": ["undetermined"],
+        "escalation": true
       }
     }
   ]

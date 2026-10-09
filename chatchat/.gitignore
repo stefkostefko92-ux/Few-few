@@ -6,3 +6,5 @@ dist/
 *.log
 # Отчетите от npm run eval (може да съдържат текстове на клиента) — не влизат в git
 evals/reports/
+test-results/
+playwright-report/
