@@ -20,8 +20,8 @@ const massText = (c: MachineCandidate, fmt: Fmt): string => (c.massWhole === nul
 export function adviceBlocks(A: MachineAdvice, fmt: Fmt, drop: number | null = null): ReportBlock[] {
   const T = appIt.advice;
   if (!A.candidates.length) {
-    return drop ? [{ t: 'p', text: 'Nessun argano SICOR o Montanari a catalogo prende questo impianto con questi dati: resta la proposta del software, con la '
-      + 'puleggia della calata del piano.' }, { t: 'p', style: 'note', text: dropNone(drop, fmt) }] : [{ t: 'p', text: T.none_all }];
+    return drop ? [{ t: 'p', text: 'Nessun argano SICOR o Montanari a catalogo prende questo impianto con questi dati: resta l’argano verificato nel '
+      + 'progetto, con la puleggia della calata del piano.' }, { t: 'p', style: 'note', text: dropNone(drop, fmt) }] : [{ t: 'p', text: T.none_all }];
   }
   const defl = A.candidates.some((c) => c.I.layout === 'topDefl'), d = (x: number): string => fmt(x, Number.isInteger(x) ? 0 : 1);
   const head = ['Argano', 'Rapporto · v', 'Puleggia · funi', 'Statico ammesso', 'Massa', ...(defl ? ['Basamento con rinvio'] : []), 'Fonte', 'Esito'];

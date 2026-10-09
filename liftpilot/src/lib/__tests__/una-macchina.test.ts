@@ -6,6 +6,7 @@
 // L6-01 — a catalogue's machine switched to entered by hand (or carried from the calculator) is still that machine: the
 // derivation draws and checks it as it stands, so its support's checks, its sheets, its relazione and its order are those
 // of the machine proposed — a failing check does not pass because the value was entered by hand.
+// The advice counts a model only where the proposal took it: the machine entered is not the result of every model tried.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
@@ -13,7 +14,7 @@ import calcIt from '../../../messages/calc/it.json';
 import { SHEAVE_GRID } from '@/calc/sizing';
 import { SHAFT_ENGINE_VERSION } from '@/shaft';
 import { VOCI_IMPIANTO, deriveLift, newLift, type LiftDerived, type LiftInputs } from '@/lib/lift';
-import { adviceOf } from '@/lib/lift/advice';
+import { adviceOf, liftAdvice, liftAlternative } from '@/lib/lift/advice';
 import { catalogValues } from '@/lib/lift/catalog';
 import { dropSheaves, planFalls } from '@/lib/lift/direct';
 import { NEW_MACHINE_FIELDS, enteredSeed } from '@/lib/lift/entered';
@@ -89,6 +90,7 @@ test('tiro diretto nella relazione: la proposta con la puleggia verificata, la n
   // none of the advice's makers: why, and what another sheave asks
   const adv = texts(sectionOf(doc, 'Confronto degli argani SICOR e Montanari'));
   assert.ok(adv.some((t) => t.includes(`Ø ${fmt(N.D, 0)} mm, quanto la calata del piano`) && t.includes('il progetto va ripetuto')), adv.join('\n'));
+  assert.ok(adv.some((t) => t.startsWith('Nessun argano SICOR o Montanari') && t.includes('resta l’argano verificato nel progetto')), adv.join('\n'));
   // the registry entry the notes cite is among those the relazione lists
   const calata = VOCI_IMPIANTO.find((v) => v.id === 'impianto.calata');
   assert.ok(calata && texts(sectionOf(doc, 'Voci normative usate')).includes(calata.titolo));
@@ -183,4 +185,27 @@ test('Montanari M93 sulle putrelle HEB inserito a mano: le verifiche che non pas
   assert.ok(shaft.length > 0);
   // a machine entered by hand: the grid's proposal stays informative, not the catalogue's taken by the proposal
   assert.ok(!all.some((t) => t.startsWith('Argano a catalogo:')));
+});
+
+test('argano a catalogo inserito a mano che nessun modello prende: il consiglio non lo ripete come esito di ogni modello provato', () => {
+  const inp: LiftInputs = { ...newLift(), catalog: { brand: 'Montanari', model: 'M93' } }, seed = enteredSeed(deriveLift(inp), { machine: false });
+  // a car too heavy for every model: no proposal, the values entered are still M93 (drawn, checked, ordered as it)
+  const heavy: LiftInputs = { ...inp, catalog: undefined, auto: { ...inp.auto, P: false }, calc: mirrorRopes({ ...inp.calc, ...seed, P: 4000 }) };
+  const d = deriveLift(heavy), A = liftAdvice(heavy);
+  assert.equal(d.noProposal, true);
+  assert.deepEqual(d.issues, [], 'un progetto che si salva');
+  assert.equal(d.catalog?.fit?.machine.model, 'M93');
+  assert.equal(designMachine(d)?.model, 'M93');
+  assert.deepEqual(A.candidates, []);
+  assert.ok(!texts(sectionOf(relazione(heavy, d, A), 'Confronto degli argani SICOR e Montanari')).some((t) => t.includes('M93')));
+  // a direct pull whose drop is beyond the grid, the machine proposed or entered: none, so the diverting pulley's advice
+  for (const machine of [true, false]) {
+    const deep: LiftInputs = { ...inp, catalog: undefined, auto: { ...inp.auto, machine }, shaft: { ...inp.shaft, W: 2000, D: 2300 },
+      calc: mirrorRopes({ ...inp.calc, ...seed, layout: 'top' }) };
+    const e = deriveLift(deep), B = liftAdvice(deep), alt = liftAlternative(deep, B);
+    assert.ok(e.calata !== null && e.calata > SHEAVE_GRID[SHEAVE_GRID.length - 1]);
+    assert.equal(e.catalog?.fit?.machine.model, 'M93');
+    assert.deepEqual(B.candidates, []);
+    assert.ok(alt && alt.candidates.length > 0 && alt.candidates.every((c) => c.I.layout === 'topDefl'));
+  }
 });
