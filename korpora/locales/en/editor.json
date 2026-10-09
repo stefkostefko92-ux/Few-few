@@ -6,6 +6,7 @@
     "unsaved": "Unsaved changes",
     "saved": "Saved",
     "saveFailed": "Not saved. Try again.",
+    "tooManyDownloads": "Too many downloads in a minute. Try again in {s} s.",
     "notSaved": "Not saved",
     "conflictTitle": "The project was changed elsewhere",
     "conflictText": "Since you opened it here, the project has been saved from another window or device. The changes on this screen are not saved, but they are not lost: save them as a separate project. “Reload” shows the other version, and the changes here are dropped.",

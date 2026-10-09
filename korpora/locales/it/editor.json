@@ -6,6 +6,7 @@
     "unsaved": "Modifiche non salvate",
     "saved": "Salvato",
     "saveFailed": "Non salvato. Riprovate.",
+    "tooManyDownloads": "Troppi download in un minuto. Riprovate tra {s} s.",
     "notSaved": "Non salvato",
     "conflictTitle": "Il progetto è stato modificato altrove",
     "conflictText": "Da quando l'avete aperto qui, il progetto è stato salvato da un'altra finestra o da un altro dispositivo. Le modifiche su questa schermata non sono salvate, ma non sono perse: salvatele come progetto separato. «Ricarica» mostra l'altra versione e le modifiche qui vengono scartate.",

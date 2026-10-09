@@ -259,7 +259,7 @@ function bindUi() {
     // a change still waiting for its recompute counts too
     guardLeaving(() => isDirty() || pending !== null || state.saving);
   }
-  bindDownloads({ save, onBlocked: () => selectTab('cnc', true) });
+  bindDownloads({ save, onBlocked: () => selectTab('cnc', true), text });
   bindMenus($$('.ed-actions details'));
 }
 
