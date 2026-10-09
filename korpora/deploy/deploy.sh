@@ -208,6 +208,12 @@ sync_nginx() {
     warn "няма $conf в release-а — nginx не е пипан"
     return 0
   fi
+  # error_page сочи файл: без него nginx при спряно приложение връща 404 вместо 502 — подвежда
+  # мониторинга и търсачките („няма я страницата“ вместо „временна грешка“)
+  if grep -q '/maintenance\.html' "$conf" && [ ! -s "$MAINT_DIR/maintenance.html" ]; then
+    warn "няма $MAINT_DIR/maintenance.html — vhost-ът с error_page не се слага (иначе 502 става 404); nginx не е пипан"
+    return 1
+  fi
   # vhost-ът в репото е за 127.0.0.1:4320; друг HTTP_PORT се вписва тук — иначе домейнът би сочил порт,
   # на който не е Korpora (чуждо приложение или 502)
   new="$(mktemp)" || return 1
@@ -306,7 +312,7 @@ main() {
   plan_backup
   check_catalog
   backup_db
-  install_maint || warn "страницата за поддръжка не е в $MAINT_DIR — докато приложението тръгва, nginx показва голата си 502"
+  install_maint || warn "страницата за поддръжка не е в $MAINT_DIR — ако vhost-ът с error_page вече е сложен, докато приложението тръгва, nginx връща 404 вместо 502"
   log "up (entrypoint-ът прилага миграциите)…"
   docker compose up -d --remove-orphans || fail 4 "docker compose up се провали."
   wait_healthy "$port" ||

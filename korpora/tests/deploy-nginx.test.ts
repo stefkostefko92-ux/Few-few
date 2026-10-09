@@ -1,7 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { existsSync, readdirSync, readFileSync, readlinkSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  readdirSync,
+  readFileSync,
+  readlinkSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { join } from 'node:path';
 import { ROOT } from '../src/paths.js';
 import {
@@ -130,6 +137,10 @@ test("while the app does not answer, nginx shows Korpora's own page instead of i
   assert.match(page, /<html lang="bg">/);
   for (const lang of ['en', 'it']) assert.match(page, new RegExp(`<section lang="${lang}">`));
   assert.match(page, /<meta name="robots" content="noindex, nofollow" \/>/);
+  // the product speaks to the user formally (Вие / voi), and a crash promises nothing it cannot keep
+  assert.match(page, />Опитайте пак</);
+  assert.match(page, />Riprovate</);
+  assert.doesNotMatch(page, /Опитай пак|>Riprova<|на сигурно място|are safe|al sicuro/);
   const keywords = /name="keywords"\s+content="([^"]+)"/.exec(page)?.[1]?.split(', ') ?? [];
   assert.ok(keywords.length >= 5 && keywords.includes('Carbon Stealth'), keywords.join(' | '));
 });
@@ -144,6 +155,22 @@ test('the deploy puts that page where nginx reads it, before the app is restarte
     assert.equal(readFileSync(page, 'utf8'), readFileSync(MAINT_PAGE, 'utf8'));
     // nginx (www-data) reads it; the deploy's umask 077 must not make it root-only
     assert.deepEqual([mode(L.maint), mode(page)], ['755', '644']);
+  });
+});
+
+test('without the page in place the vhost with error_page is not installed: 502 would turn into 404', () => {
+  withLayout((L) => {
+    sharedEnv(L);
+    certificate(L);
+    // the release lacks the page and none was installed before: nothing for error_page to serve
+    rmSync(join(L.app, 'deploy', 'nginx', 'maintenance.html'));
+    const r = deploy(L);
+    assert.equal(r.status, 0, 'the app is live; only nginx is left as it was');
+    assert.match(r.stderr, /404 вместо 502/);
+    assert.match(r.stderr, /vhost-ът с error_page не се слага/);
+    assert.equal(existsSync(L.site), false, 'sites-available stays as it was');
+    assert.equal(existsSync(L.link), false);
+    assert.doesNotMatch(r.log, /nginx -t|systemctl reload nginx/);
   });
 });
 
