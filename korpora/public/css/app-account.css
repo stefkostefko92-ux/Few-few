@@ -108,6 +108,12 @@
   background: #f2f2ee;
   box-shadow: var(--shadow);
 }
+/* the still is a light studio shot: on the dark paper it is dimmed a little, so it does not glare beside the card */
+@media (prefers-color-scheme: dark) {
+  .auth-aside img {
+    filter: brightness(0.82);
+  }
+}
 .auth-aside figcaption {
   display: grid;
   gap: 6px;
