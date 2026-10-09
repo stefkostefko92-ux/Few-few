@@ -38,7 +38,7 @@ export default function LiftView({ inputs, prices, checks = true, pitches }: {
       <LiftFacts derived={derived} X={X} fmt={P.fmt} />
       <LiftSimulator derived={derived} fmt={P.fmt} api={sim} />
       {checks ? <LiftChecks derived={derived} X={X} fmt={P.fmt} onSimulate={(req) => sim.current?.play(req)} /> : null}
-      <PanevBom L={derived.layout} prices={prices} />
+      <PanevBom L={derived.layout} prices={prices} C={derived.collaudo} />
     </div>
   );
 }

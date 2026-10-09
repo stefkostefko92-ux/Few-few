@@ -34,7 +34,7 @@ import type { TavoleInput } from './input';
 import { GOVERNOR_LOAD_UNSET, loadNames } from './loads';
 import { refsText, titleOf } from './title-data';
 import { sheetLoads, sheetRails, supportRows } from './sheet-loads';
-import { cwGearChecks, cwGearOf, cwGearRow } from './cw-gear';
+import { cwGearChecks, cwGearOf, cwGearRow, cwTripOf } from './cw-gear';
 import { hebFor, hebNote, hookRow, reactionRows } from './room-rows';
 import { roomGeo } from '@/shaft/machine-room';
 import { governorRopes, shaftUnder } from '@/shaft/room-site';
@@ -133,6 +133,8 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   // its bracket under the ceiling (registry limitatore.vano)
   const room = L.inputs.room, scheme = I.layout === 'bottom' ? x.marks?.bottom ?? 'head' : null;
   const g = N.groove, fRated = res.kin.fRated, underPit = scheme === 'under';
+  const govText = oldGov ? 'ESISTENTE' : `${gov.brand} ${gov.model}`;
+  const govRope = oldGov ? 'ESISTENTE' : `${fmt(governorRopeLength(V, S.top, room, scheme), 0)} - ${fmt(2 * gov.rope, 0)}`;
   const specs: Row[] = [
     ['ARGANO', 'tipo', txt(machineText(Pl, x.marks?.catalog ?? null))],
     ['RAPPORTO DI RIDUZIONE', '', `1 : ${num(N.i)}`],
@@ -157,12 +159,14 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     ['INTERASSE MASSIMO STAFFE CONTRAPPESO', 'mm', fmt(spanCw, 0)],
     ['FUNI DI SOSPENSIONE', 'N°-Ø', `${N.n} - ${num(N.d)}${oldRopes ? ' ESISTENTI' : ''}`],
     ['LUNGHEZZA DI TAGLIO FUNI (CIASCUNA)', 'm', oldRopes ? 'ESISTENTI' : fmt(ropeLen, 0)],
-    ['LIMITATORE DI VELOCITÀ', 'tipo', oldGov ? 'ESISTENTE' : `${gov.brand} ${gov.model}`],
-    ['FUNE DEL LIMITATORE', 'm-Ø', oldGov ? 'ESISTENTE' : `${fmt(governorRopeLength(V, S.top, room, scheme), 0)} - ${fmt(2 * gov.rope, 0)}`],
+    ['LIMITATORE DI VELOCITÀ', 'tipo', govText],
+    ['FUNE DEL LIMITATORE', 'm-Ø', govRope],
     ['AMMORTIZZATORI CABINA', 'N°-tipo', `${V.carBuffers} - ${BUFFER_TEXT[bufferType(V, 'car')][0]}${kept('buffers') ? ' ESISTENTI' : ''}`],
     ['AMMORTIZZATORE CONTRAPPESO', 'N°-tipo', `1 - ${BUFFER_TEXT[bufferType(V, 'cw')][1]}${kept('buffers') ? ' ESISTENTE' : ''}`],
     // a machine under the pit: the counterweight's safety gear over the space under the shaft (cw-gear.ts)
     ...(underPit ? [['PARACADUTE CONTRAPPESO', 'tipo', cwGearRow(Pl)] as Row] : []),
+    // tripped by a governor: its own, the same model with the same rope as the car's (the bill counts two)
+    ...(cwTripOf(underPit, Pl) === 'governor' ? [['LIMITATORE CONTRAPPESO', 'tipo', govText], ['FUNE DEL LIMITATORE CONTRAPPESO', 'm-Ø', govRope]] as Row[] : []),
   ];
 
   // loads on the machine and on the building, as the calculation and the report take them (sheet-loads.ts): the whole

@@ -1,9 +1,10 @@
 // The articles a company prices: every one the software can put in a project — the machines of the catalogues, SICOR's
-// bedplates with the diverting pulley, the supports of the machine, a machine below's head pulleys and base, the ropes
-// and their wedge sockets and the rails by size, the brackets, Panev's 48 articles, the doors, the governors with the
-// tension pulley and their rope, the buffers and their supports, the car, its sling (for 2:1 too) with the safety gear,
-// the guide shoes, the counterweight, the 2:1 roping's pulleys and dead ends, ACOP/UCM, the electrical system and the
-// signalling, the labour (bom.ts counts them).
+// bedplates with the diverting pulley, the supports of the machine, the HEB beams with their bearing plates, a machine
+// below's head pulleys and base, the ropes and their wedge sockets and the rails by size, the brackets with the N1 clips
+// on Panev's SG, Panev's 48 articles, the doors, the governors with the tension pulley and their rope, the buffers and
+// their supports, the car, its sling (for 2:1 too) with the safety gear, the counterweight's safety gear and what trips
+// it on the suspension's breakage or by a safety rope, the guide shoes, the counterweight, the 2:1 roping's pulleys and
+// dead ends, ACOP/UCM, the electrical system and the signalling, the labour (bom.ts counts them).
 // Each company keeps its own prices (PriceItem); Panev's start from the 2026 list price (p. 65, VAT excluded), the
 // others from none. The names are the makers' and the catalogues'; what an article is, the screens say in their
 // language (messages `prices.items`). Pure.
@@ -13,6 +14,7 @@ import { PANEV_ARTICLES, PANEV_LISTINO } from '@/lib/catalog/panev';
 import { PANEV_LIST_PRICE } from '@/lib/catalog/panev-prices';
 import { GOVERNORS } from '@/shaft/governor';
 import { RAIL_TYPES, railLabel } from '@/shaft/rails';
+import { KV_VERT } from '@/shaft/norme-vert';
 import { HEB_PROFILES, SUPPORT_KINDS } from '@/shaft/support';
 import type { BufferType } from '@/shaft/vertical';
 import type { DoorKind } from '@/shaft/types';
@@ -68,6 +70,14 @@ export const governorKey = (brand: string, model: string): string => `governor:$
 export const hebKey = (profile: string): string => `heb:${profile}`;
 export const ropeEndKey = (d: number): string => `rope-end:${d}`;
 export const governorRopeKey = (d: number): string => `governor-rope:${d}`;
+/** The counterweight's safety gear by type (plant.ts cwSafetyGear). */
+export const cwGearKey = (k: (typeof SAFETY_GEARS)[number]): string => `safety-gear-cw:${k}`;
+/** The plate under each end of an HEB beam on the shaft's walls: as long as the bearing, as wide and thick as the
+ *  registry has them (locale.putrelle.vano) [mm] — sheet 1, the plan and the 3D give the same. */
+export const HEB_PLATE_KEY = 'heb:plate';
+export const hebPlateSize = `${KV_VERT.hebBearing} × ${KV_VERT.hebPlateW} × ${KV_VERT.hebPlateT}`;
+/** The forged N1 clips that hold a counterweight rail on Panev's SG (not in Panev's price). */
+export const N1_KEY = 'clip:N1';
 
 const PANEV_SRC = `Panev ${PANEV_LISTINO.year}, p. ${PANEV_LISTINO.page}`;
 
@@ -77,11 +87,13 @@ export const PRICE_ARTICLES: readonly PriceArticle[] = [
   ...SUPPORT_KINDS.map((k): PriceArticle => ({ key: `support:${k}`, group: 'supports', label: { item: `support_${k}` }, unit: 'pz' })),
   { key: 'support:stand', group: 'supports', label: { item: 'support_stand' }, unit: 'pz' },
   ...HEB_PROFILES.map((p): PriceArticle => ({ key: hebKey(p), group: 'supports', label: { item: 'heb', name: p }, unit: 'm' })),
+  { key: HEB_PLATE_KEY, group: 'supports', label: { item: 'heb_plate', name: hebPlateSize }, unit: 'pz' },
   ...ROPE_SIZES.map((d): PriceArticle => ({ key: ropeKey(d), group: 'ropes', label: { item: 'rope', name: String(d).replace('.', ',') }, unit: 'm' })),
   ...RAIL_TYPES.map((t): PriceArticle => ({ key: `rail:${t}`, group: 'rails', label: { item: 'rail', name: railLabel(t) }, unit: 'm' })),
   ...RAIL_TYPES.map((t): PriceArticle => ({ key: `fishplate:${t}`, group: 'rails', label: { item: 'fishplate', name: railLabel(t) }, unit: 'pz' })),
   { key: 'bracket:car', group: 'brackets', label: { item: 'bracket_car' }, unit: 'pz' },
   { key: 'bracket:cw', group: 'brackets', label: { item: 'bracket_cw' }, unit: 'pz' },
+  { key: N1_KEY, group: 'brackets', label: { item: 'clip_n1' }, unit: 'pz' },
   ...PANEV_ARTICLES.map((a): PriceArticle => {
     const list = PANEV_LIST_PRICE[a.code];
     return {
@@ -112,6 +124,9 @@ export const PRICE_ARTICLES: readonly PriceArticle[] = [
   { key: 'base:below', group: 'supports', label: { item: 'base_below' }, unit: 'pz' },
   ...GOVERNOR_ROPES.map((d): PriceArticle => ({ key: governorRopeKey(d), group: 'safety', label: { item: 'governor_rope', name: String(d).replace('.', ',') }, unit: 'm' })),
   ...SAFETY_GEARS.map((k): PriceArticle => ({ key: `safety-gear:${k}`, group: 'safety', label: { item: `safety_gear_${k}` }, unit: 'pz' })),
+  ...SAFETY_GEARS.map((k): PriceArticle => ({ key: cwGearKey(k), group: 'safety', label: { item: `safety_gear_cw_${k}` }, unit: 'pz' })),
+  { key: 'cw-trip:rupture', group: 'safety', label: { item: 'cw_trip_rupture' }, unit: 'pz' },
+  { key: 'cw-trip:rope', group: 'safety', label: { item: 'cw_trip_rope' }, unit: 'lot' },
   { key: 'acop:ucm', group: 'safety', label: { item: 'acop_ucm' }, unit: 'pz' },
   { key: 'acop:adapt', group: 'safety', label: { item: 'acop_adapt' }, unit: 'lot' },
   ...ELECTRICAL.map(([key, item, unit]): PriceArticle => ({ key, group: 'electrical', label: { item }, unit })),

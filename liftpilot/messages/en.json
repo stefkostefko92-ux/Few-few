@@ -1452,7 +1452,8 @@
     "k_cornerSN": "Corner bracket SN",
     "k_squareSN": "Square bracket SN",
     "k_arm": "Adjustable rigid arm",
-    "noteQty": "Two N1 clips per bracket, anchors and bolts not included; the solutions to drawing are quoted to order."
+    "noteQty": "Two N1 clips per bracket, anchors and bolts not included; the solutions to drawing are quoted to order.",
+    "kept": "Modification (UNI 10411): only the brackets of the parts the acceptance test names replaced; those of the parts that stay are not listed."
   },
   "advice": {
     "title": "Machine the software advises",
@@ -1746,7 +1747,14 @@
       "labour_installer": "Installer, piecework (installation)",
       "labour_replacement": "Installer, lump sum (UNI 10411 modification)",
       "labour_rails": "Rail cleaning",
-      "custom": "{name}"
+      "custom": "{name}",
+      "heb_plate": "HEB beam bearing plate {name} mm on the shaft wall",
+      "clip_n1": "N1 clip of the counterweight rail on the Panev SG bracket",
+      "safety_gear_cw_progressive": "Counterweight safety gear, progressive",
+      "safety_gear_cw_roller": "Counterweight safety gear, instantaneous, roller type",
+      "safety_gear_cw_instantaneous": "Counterweight safety gear, instantaneous",
+      "cw_trip_rupture": "Device tripping the counterweight safety gear on breakage of the suspension",
+      "cw_trip_rope": "Safety rope tripping the counterweight safety gear, with pulleys and hitches"
     },
     "costTitle": "Cost of the articles (company price list)",
     "total": "Total, VAT excluded",
@@ -1754,8 +1762,8 @@
     "notListed": "not in the list",
     "missing": "{n, plural, one {# article} other {# articles}} without a price: the total leaves them out.",
     "toList": "Complete the price list",
-    "costNoteDesign": "Quantities from the design: ropes at their cut length (measured on the pulleys from hitch to hitch, plus 1 m for the terminations and the adjustment, rounded up to the metre: the same as on sheet 1) with two wedge sockets per rope; with 2:1 roping the car and counterweight pulleys and the dead-end hitches; with the machine below the head pulleys and the anchored base; rails in 5 m bars from the pit floor to the slab, with a joint between two bars; a bracket every 2 m plus the first and the last; governor rope as on sheet 1; safety gear of the type in the installation data (progressive when missing); the ACOP/UCM protection of a new lift; travelling cable half the travel + 3 m; wiring and trunking from the pit floor to the machine room floor (the trunking also from the controller to the machine, square to the walls); shaft lighting over the shaft’s height; a push-button panel at every landing door; two guide shoes on each car and counterweight rail; a support under each spring or polyurethane buffer; the installer by the stop; cleaning of every metre of rail. The lengths are estimates: replace them with the site’s measures. It leaves out the building works.",
-    "costNoteCalc": "Machine replacement: the catalogue machine the calculation verified; the maker’s bedplate with the diverting pulley, when there is one (with the machine room surveyed, the one chosen in the survey and the pulley’s stand; with the machine below the anchored base); the ropes and the controller when the acceptance test names them replaced (every rope at the formula’s cut length, with two wedge sockets per rope); the adaptation of the ACOP/UCM protections under UNI 10411-11; the installer as a lump sum; the free lines for modifications.",
+    "costNoteDesign": "Quantities from the design: ropes at their cut length (measured on the pulleys from hitch to hitch, plus 1 m for the terminations and the adjustment, rounded up to the metre: the same as on sheet 1) with two wedge sockets per rope; with 2:1 roping the car and counterweight pulleys and the dead-end hitches; with the machine below the head pulleys and the anchored base; with HEB beams over the shaft their four bearing plates (the mortar is building work); rails in 5 m bars from the pit floor to the slab, with a joint between two bars; a bracket every 2 m plus the first and the last; Panev’s brackets of the list, with two N1 clips on every SG bracket (the anchors and bolts of Panev’s brackets left out); governor rope as on sheet 1; safety gear of the type in the installation data (progressive when missing); with the machine under the pit the counterweight’s safety gear and what trips it as in the installation data (by a governor: a second governor with its rope and tension pulley); the ACOP/UCM protection of a new lift; travelling cable half the travel + 3 m; wiring and trunking from the pit floor to the machine room floor (the trunking also from the controller to the machine, square to the walls); shaft lighting over the shaft’s height; a push-button panel at every landing door; two guide shoes on each car and counterweight rail; a support under each spring or polyurethane buffer; the installer by the stop; cleaning of every metre of rail. The lengths are estimates: replace them with the site’s measures. It leaves out the building works.",
+    "costNoteCalc": "Machine replacement: the catalogue machine the calculation verified; the maker’s bedplate with the diverting pulley, when there is one (with the machine room surveyed, the one chosen in the survey, the pulley’s stand and the HEB beams with their four bearing plates; with the machine below the anchored base); the ropes and the controller when the acceptance test names them replaced (every rope at the formula’s cut length, with two wedge sockets per rope); the adaptation of the ACOP/UCM protections under UNI 10411-11; the installer as a lump sum; the free lines for modifications. The other parts the acceptance test names replaced are not counted and are listed apart.",
     "costNoteModification": "Modification of an existing lift (UNI 10411): only the parts the acceptance test names replaced, with the design’s quantities (the others stay, as on sheet 1); the adaptation of the ACOP/UCM protections to the new machine under UNI 10411-11; the installer as a lump sum; the free lines for modifications. The lengths are estimates: replace them with the site’s measures. It leaves out the building works.",
     "bases": {
       "LOT": "Lump sum (once per project)",
@@ -1782,6 +1790,7 @@
     "freeMax": "At most {n} lines.",
     "freeNone": "No free lines.",
     "skipped": "Free lines by the stop not counted (a machine replacement does not know the stops): {list}.",
+    "uncounted": "Parts the acceptance test names replaced that this cost does not count, since without the lift’s design their quantities are unknown: {list}. Add them as free lines, or make the lift’s design.",
     "freeLeadView": "The company’s own lines, with their price: the software adds them by itself to the cost of the projects shown, with the quantity counted — once, by the stop or by the metre of travel. The owner changes them."
   },
   "room": {

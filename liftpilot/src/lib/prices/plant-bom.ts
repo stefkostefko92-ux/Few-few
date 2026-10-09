@@ -12,11 +12,13 @@
 //   counterweight rail;
 // - installer (cottimista): by the stop; rail cleaning: every metre of rail.
 // The bill (bom.ts, bom-parts.ts) adds what the design gives one by one: the ropes at their cut length with two wedge
-// sockets each, the 2:1 roping's pulleys and dead ends, a machine below's head pulleys and base, the rails in whole
-// 5 m bars, the safety gear, the governor's rope, ACOP/UCM; a modification tested to UNI 10411 only the parts its
-// acceptance test replaces, the installer as a lump sum. A machine replacement counts the machine, its support and
-// diverting pulley, the ropes and the controller when the acceptance test names them replaced, and the installer as a
-// lump sum. Pure.
+// sockets each, the 2:1 roping's pulleys and dead ends, a machine below's head pulleys and base, the HEB beams with a
+// bearing plate under each end, the rails in whole 5 m bars, Panev's articles with two N1 clips on every SG, the
+// safety gear, the governors with their ropes (with the machine under the pit the counterweight's gear and what trips
+// it), ACOP/UCM; a modification tested to UNI 10411 only the parts its acceptance test replaces, the installer as a lump
+// sum. A machine replacement counts the machine, its support and diverting pulley (with the HEB beams and their
+// plates), the ropes and the controller when the acceptance test names them replaced, and the installer as a lump sum;
+// the other replaced parts it names, not counted (bom.ts calcUncounted). Pure.
 import type { LiftDerived } from '@/lib/lift/derive';
 import { cableLength } from '@/lib/lift/support';
 import { roomGeo, type RoomGeo } from '@/shaft/machine-room';

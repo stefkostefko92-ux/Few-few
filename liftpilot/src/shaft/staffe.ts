@@ -40,6 +40,9 @@ export function flangeRuns(L: number): V2[] {
 
 /** The forged N1 clip [mm]: its nose over the rail's foot and its heel on the bracket, width, shank. */
 export const N1 = { nose: 19.5, heel: 16.5, width: 20, tip: 14, top: 14, foot: 5, relief: 0.8, pad: -7, shank: 25 } as const;
+/** The N1 clips on each SG, one over each edge of the rail's foot (seatRail's two seats; the catalogue: two clips a
+ *  bracket, not in its price) — the bill counts them. */
+export const N1_PER_SG = 2;
 
 /** Adjustment range printed on each support's page (pp. 20-38), and the SG it is paired with. */
 export const SUPPORTS: readonly { kind: ArmKind; Lp: 160 | 180 | 200; range: readonly [number, number]; sg: SgLength }[] = [

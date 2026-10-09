@@ -15,7 +15,7 @@ import { projectCost } from '@/server/prices';
 import { calcRecord, recordMarks, storedCollaudo } from '@/server/records';
 import { designBasis } from '@/lib/prices/plant-bom';
 import { analyse } from '@/lib/present/analysis';
-import { calcBom, designBom } from '@/lib/prices/bom';
+import { calcBom, calcUncounted, designBom } from '@/lib/prices/bom';
 import { bomKind } from '@/lib/prices/bom-parts';
 import { initialsOf } from '@/lib/tavole/compose';
 import { issueChecks } from '@/lib/tavole/issue-check';
@@ -128,7 +128,8 @@ export default async function CalculationPage({ params, searchParams }: {
       </dl>
       <AdviceView advice={advice} alt={alt && lift ? { advice: alt, sheave: lift.dv.machine.D } : null} fmt={fmt} where={where}
         inUse={(x) => own !== null && own.brand === x.brand && own.model === x.model && (!lift || own.I.layout === x.I.layout)} />
-      {costed ? <ProjectCost cost={costed.cost} skipped={costed.skipped} locale={locale} scope={!lift ? 'calc' : costKind === 'full' ? 'design' : 'modification'} editable={can(user, 'prices:edit')} /> : null}
+      {costed ? <ProjectCost cost={costed.cost} skipped={costed.skipped} uncounted={lift ? [] : calcUncounted(C)} locale={locale} scope={!lift ? 'calc' : costKind === 'full' ? 'design' : 'modification'}
+        editable={can(user, 'prices:edit')} /> : null}
       {download ? (
         <section className="panel">
           <h2>{ta('order_title')}</h2>
