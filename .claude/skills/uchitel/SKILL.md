@@ -4,7 +4,8 @@ description: >-
   Готови промптове „Claude като учител" за учене/менторство по дадена тема или
   умение. Ползвай, когато потребителят иска да учи, да провери разбирането си,
   да получи учебен план, обяснение от първи принципи, spaced repetition, active
-  recall или техниката на Фейнман. Замести `[topic]`/`[skill]` с темата.
+  recall, техниката на Фейнман или обяснение в четири форми (текст, диаграма,
+  интерактивна страница, видео). Замести `[topic]`/`[skill]` с темата.
 ---
 
 # Учебни промптове — Claude като учител (reusable)
@@ -61,3 +62,32 @@ description: >-
    mistakes, clarify confusing concepts, and repeat the process until I can explain
    the topic accurately, clearly, and confidently without relying on memorized
    definitions.
+
+8. **Four Ways to Understand** — Teach me [topic] in up to four forms and stop as soon
+   as the idea is clear. First, explain it in writing about 80% of the way to ASD-STE100
+   Simplified Technical English: short sentences, one idea per sentence, active voice,
+   one term for one thing, and every term defined before you use it. Give a concrete
+   example before the terminology, and keep facts, assumptions and examples separate.
+   If the idea is still unclear, draw one diagram with a single reading direction, in
+   which every arrow has a defined meaning and the labels work without narration. If it
+   is still unclear, build a self-contained interactive HTML page where one control
+   changes one real input and shows why the result changes, with a text alternative and
+   reduced motion. Last, write a storyboard for a short explainer video made from the
+   validated text, diagram and page. Before each reveal, ask me to predict the result.
+   Make it a real effort, not entertainment. At the end, check that every form teaches
+   the same correct mental model and list each inconsistency you fixed.
+
+### Откъде е № 8 (сверено 2026-10-09)
+
+- **Стълбицата текст → диаграма → HTML → видео и „80% of the way to ASD-STE100“** —
+  Андрей Карпати, X, 2026-10-02: https://x.com/karpathy/status/2105819303471976479
+- **Ученето е усилие, не забавление** — Карпати, X, 2024-02-10:
+  https://x.com/karpathy/status/1756380066580455557
+- **Правилата на STE** (активен залог, една дума — едно значение, условието отпред) — официалният
+  FAQ: https://www.asd-ste100.org/STE_faq.html. Стандартът е за **английски** технически текст и
+  не е за общо писане; на български ползвай само принципите. Картинката, приложена към поста на
+  Карпати, греши за ABOUT/APPROXIMATELY и за страдателния залог — сверявай с FAQ, не с нея.
+- **„Предскажи, преди да покажа“** е наш избор от дидактиката, **не** е цитат на Карпати — не го
+  приписвай на него.
+- Ако видеото иска API ключ (напр. за глас), ключът се чете от променлива на средата и никога не
+  се печата и не влиза в репото.
