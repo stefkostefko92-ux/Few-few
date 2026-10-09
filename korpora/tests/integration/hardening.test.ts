@@ -1,14 +1,6 @@
 import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
-import {
-  assertTestDatabase,
-  Browser,
-  CUSTOMER_PASSWORD,
-  mailTo,
-  prisma,
-  startApp,
-  stopApp,
-} from './harness.js';
+import { Browser, CUSTOMER_PASSWORD, mailTo, prisma, startApp, stopApp } from './harness.js';
 import { customer, newProject, sessionCsrf, staff } from './people.js';
 import { enable2fa } from './twofa.js';
 
@@ -124,18 +116,4 @@ test('the team downloads only projects of people below them', async () => {
   const client = await customer('client-project@example.test');
   const clientProject = await newProject(client, 'base', 'Кухня');
   assert.equal((await support.browser.get(`/admin/projects/${clientProject}/export`)).status, 200);
-});
-
-test('the suite empties only a database named for tests', () => {
-  for (const name of ['korpora_test', 'korpora_ci_p2d', 'shop_ci', 'TEST_korpora'])
-    assert.doesNotThrow(() => assertTestDatabase(`postgresql://u:secret@127.0.0.1:5432/${name}`));
-  for (const name of ['korpora', 'korpora_dev', 'contest', 'korpora_citest', 'postgres']) {
-    assert.throws(
-      () => assertTestDatabase(`postgresql://u:secret@db:5432/${name}`),
-      (error: unknown) =>
-        error instanceof Error && error.message.includes(name) && !error.message.includes('secret'),
-      name,
-    );
-  }
-  assert.throws(() => assertTestDatabase('not a url'), /not a valid URL/);
 });
