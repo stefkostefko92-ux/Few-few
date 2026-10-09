@@ -106,13 +106,16 @@ export function normalizeParams(type, input) {
 const common = (s) => ({
   carcassDecor: s.carcassDecor, frontDecor: s.frontDecor, frontMaterial: s.frontMaterial, frontRal: s.frontRal,
   bands: { carcass: s.bandCarcass, front: s.bandFront }, gap: s.gap, hinge: s.hinge, handle: s.handle, slide: s.slide, kind: s.type,
+  // the form has a columns parameter: "add a column" is advice the user can follow
+  columnsParam: TYPES[s.type]?.params.some((p) => p.key === 'columns') ?? false,
 });
 
 function baseCabinet(ctx, s, at = {}) {
   const fronts = s.fronts;
   const col = { shelves: fronts === 'drawers' ? 0 : s.shelves, doors: fronts === 'drawers' ? 0 : s.doors };
   if (fronts === 'drawers') Object.assign(col, { drawers: s.drawers, drawerZone: s.height - s.legs });
-  if (fronts === 'mixed') Object.assign(col, { drawers: 1, drawerZone: 180 });
+  // a base cabinet with a drawer and a door: the drawer at the top, under the worktop
+  if (fronts === 'mixed') Object.assign(col, { drawers: 1, drawerZone: 180, drawersOnTop: true });
   return buildCarcass(ctx, { ...common(s), ...at, W: s.width, H: s.height, D: s.depth, plinth: { type: s.legs ? 'legs' : 'none', h: s.legs }, top: 'rails', columns: [col] });
 }
 
