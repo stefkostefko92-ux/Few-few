@@ -20,6 +20,7 @@ import {
 import { STEP_DOWN_RANGE, MAX_FEED_RANGE } from '../engine/cam.js';
 import { $, $$, esc, money, swatchStyle, setHtml } from './dom.js';
 import { typeIcon, handleIcon } from './icons.js';
+import { paramsHtml } from './params-html.js';
 
 export function renderTypes(host) {
   const groups = [...new Set(TYPE_ORDER.map((t) => TYPES[t].group))];
@@ -38,24 +39,30 @@ export function renderTypes(host) {
     .join('');
 }
 
-// Fields of the current type: ranges as number + slider, segments as radio buttons.
+// Fields of the current type: ranges as number + slider, segments as radio buttons. The server has drawn them for
+// the type the project opened with (data-type); they are drawn here again only for another type.
 export function renderParams(host, type) {
-  host.innerHTML = TYPES[type].params
-    .map((p) => {
-      if (p.type === 'range') {
-        const unit = p.unit ? `, ${p.unit}` : '';
-        return `<div class="field"><label for="p-${p.key}">${esc(p.label)}${unit}</label>
-<input type="number" id="p-${p.key}" data-field="${p.key}" min="${p.min}" max="${p.max}" step="${p.step}" inputmode="numeric">
-<input type="range" data-field="${p.key}" min="${p.min}" max="${p.max}" step="${p.step}" aria-label="${esc(p.label)}, плъзгач"></div>`;
-      }
-      return `<span class="lbl" id="l-${p.key}">${esc(p.label)}</span><div class="seg" role="radiogroup" aria-labelledby="l-${p.key}">${p.options
-        .map(
-          ([v, l]) =>
-            `<label><input type="radio" name="${p.key}" value="${v}" data-field="${p.key}"><span>${esc(l)}</span></label>`,
-        )
-        .join('')}</div>`;
-    })
-    .join('');
+  if (host.dataset.type === type && host.firstElementChild) return;
+  host.innerHTML = paramsHtml(TYPES[type].params);
+  host.dataset.type = type;
+}
+
+// The chosen type on the closed „Furniture“ panel: its icon and name (the server writes the name first).
+export function showType(type) {
+  $('#type-icon').innerHTML = typeIcon(type);
+  $('#type-name').textContent = TYPES[type].label;
+}
+
+// The types are chosen once per project, so they stay folded under the chosen one. A click on a card folds them
+// again; the arrow keys move through the cards and keep them open.
+export function bindTypebox(box) {
+  box.querySelector('#type-picker').addEventListener('click', (ev) => {
+    if (ev.detail === 0 || !ev.target.closest('.tcard')) return;
+    window.setTimeout(() => {
+      box.open = false;
+      box.querySelector(':scope > summary').focus();
+    });
+  });
 }
 
 export function renderHardwareOptions() {

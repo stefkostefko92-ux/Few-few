@@ -10,6 +10,8 @@ import { $, $$, sha256, localDate } from './dom.js';
 import {
   renderTypes,
   renderParams,
+  showType,
+  bindTypebox,
   renderHardwareOptions,
   writeForm,
   bindForm,
@@ -191,13 +193,16 @@ function selectTab(id, focus = false) {
 function bindUi() {
   renderTypes($('#type-picker'));
   renderParams($('#param-fields'), state.spec.type);
+  showType(state.spec.type);
   renderHardwareOptions();
   bindRailbox($('.railbox', form));
+  bindTypebox($('.typebox', form));
   bindForm(form, (key, value, commit) => {
     if (readOnly) return;
     if (key === 'type') {
       state.spec = withType(state.spec, value);
       renderParams($('#param-fields'), value);
+      showType(value);
       void recompute(true);
       return;
     }

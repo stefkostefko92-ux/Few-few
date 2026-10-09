@@ -8,7 +8,7 @@
     <div class="ed-title">
       <label class="sr-only" for="project-name"><%= te('editor.name') %></label>
       <input id="project-name" class="ed-name" type="text" maxlength="80" value="<%= project.name %>"<%= readOnly ? ' readonly' : '' %>>
-      <span class="ed-spec" id="title-spec"></span>
+      <span class="ed-spec" id="title-spec"><%= rail ? rail.title : '' %></span>
     </div>
     <div class="ed-actions">
       <span class="ed-state" id="save-state" role="status" aria-live="polite"><%= readOnly ? te('editor.readOnlyState') : te('editor.saved') %></span>
@@ -50,8 +50,14 @@
       <fieldset<%= readOnly ? ' disabled' : '' %>>
       <details class="railbox" open>
         <summary><%= te('editor.project') %></summary>
-        <div class="group"><h2><%= te('editor.furniture') %></h2><div id="type-picker" role="radiogroup" aria-label="<%= te('editor.furnitureType') %>"></div></div>
-        <div class="group"><h2><%= te('editor.sizes') %></h2><div id="param-fields" class="group group-flat"></div></div>
+        <div class="group">
+          <h2 id="h-type"><%= te('editor.furniture') %></h2>
+          <details class="typebox">
+            <summary class="pickbtn" aria-describedby="h-type"><span class="tslot" id="type-icon"></span><span class="pv"><span id="type-name"><%= rail ? rail.label : '' %></span><small><%= te('editor.changeType') %></small></span></summary>
+            <div id="type-picker" role="radiogroup" aria-label="<%= te('editor.furnitureType') %>"></div>
+          </details>
+        </div>
+        <div class="group"><h2><%= te('editor.sizes') %></h2><div id="param-fields" class="group group-flat"<% if (rail) { %> data-type="<%= rail.type %>"<% } %>><% if (rail) { %><%- include('editor-params', { fields: rail.fields }) %><% } %></div></div>
         <div class="group">
           <h2><%= te('editor.materials') %></h2>
           <span class="lbl" id="l-carcass"><%= te('editor.carcass') %></span>

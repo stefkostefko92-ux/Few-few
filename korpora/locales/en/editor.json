@@ -33,6 +33,7 @@
     "project": "Project",
     "furniture": "Furniture",
     "furnitureType": "Furniture type",
+    "changeType": "Change type",
     "sizes": "Sizes and layout",
     "materials": "Materials and colours",
     "carcass": "Carcass, 18 mm melamine board",

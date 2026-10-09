@@ -108,7 +108,11 @@
   border-color: var(--rule-strong);
   background: var(--panel);
 }
+/* the line is written by the server and again by the editor: its height is kept from the first frame (CLS) */
 .ed-spec {
+  display: block;
+  min-height: 1.4em;
+  line-height: 1.4;
   color: var(--ink-2);
   font-size: 0.9rem;
 }
@@ -197,6 +201,9 @@
 }
 .dfm summary {
   list-style: none;
+  /* „Проверки“ → „Проверките минават“ / „2 грешки“ keeps the width: the buttons beside it do not move (CLS) */
+  min-width: 15em;
+  text-align: center;
   cursor: pointer;
   padding: 6px 12px;
   border-radius: 999px;

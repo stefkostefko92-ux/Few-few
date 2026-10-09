@@ -6,8 +6,8 @@ import { apiLimiter, exportLimiter } from '../http/limits.js';
 import { idParam, requestMeta, stringField } from '../http/meta.js';
 import { translatorFor } from '../i18n.js';
 import { planView } from '../plans/plan.js';
-import { catalogInfo, isFurnitureType } from '../services/engine.js';
-import { furnitureKinds } from '../services/furniture.js';
+import { catalogInfo, isFurnitureType, specOf } from '../services/engine.js';
+import { editorRail, furnitureKinds } from '../services/furniture.js';
 import {
   buildExport,
   CncBlockedError,
@@ -93,6 +93,8 @@ appRouter.get('/app/p/:id', async (req, res) => {
     project,
     plan,
     readOnly: !plan.canCreate,
+    // видът, габаритът и полетата за размерите идват готови от сървъра: страницата не подскача (CLS)
+    rail: editorRail(specOf(project.spec)),
     // Работното поле на редактора засега е само на български (етикетите идват и от двигателя);
     // заглавната лента остава на езика на човека, а под нея има бележка.
     te: translatorFor('bg'),
