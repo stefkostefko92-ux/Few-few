@@ -11,6 +11,7 @@ import type { RoomDerived } from '../room/derive';
 import type { Survey } from '../room/survey';
 import { fallSlants, foundText, slantText, supportName } from '../tavole/survey-data';
 import { hebNote } from '../tavole/room-rows';
+import { lowerKeeping } from './label-case';
 import { rinvioRow } from './machine-shape';
 import type { ReportBlock, ReportDoc } from './model';
 
@@ -37,12 +38,14 @@ export function roomRows(s: Survey, d: RoomDerived, fmt: (x: number, dp?: number
       : 'lato cabina della puleggia di frizione sulla calata della cabina'}; ${G?.dir === -1
       ? `motore verso la calata della cabina${R.motor ? '' : ' (argano girato di 180° dal software: con il motore verso il contrappeso uscirebbe dal locale)'}`
       : 'motore verso il contrappeso'}`],
-    ['Basamento', `${supportName(d).toLowerCase()}; asse della puleggia di frizione a ${mm(M.axis)} sul pavimento del locale`],
+    // (as sheet 1 names it, its designations kept: UPN 200, SICOR XTE3022 — round 37)
+    ['Basamento', `${lowerKeeping(supportName(d, true))}; asse della puleggia di frizione a ${mm(M.axis)} sul pavimento del locale`],
     ...(M.rinvio ? [rinvioRow(M.rinvio, fmt)] : []),
-    // the mounts and the fixings; the HEB beams' bearings; what else the survey found (round 36)
-    ...(G ? [['Antivibranti e fissaggi', mountsText(G, M)] as [string, string]] : []),
+    // the mounts and the fixings (on the existing support kept, the anchors in tension of the bearings pulled up — round
+    // 37); the HEB beams' bearings; what else the survey found (round 36)
+    ...(G ? [['Antivibranti e fissaggi', mountsText(G, M, { kept: d.site.kept, uplift: d.site.uplift })] as [string, string]] : []),
     ...(d.heb ? [['Putrelle HEB sui muri del vano', hebNote('').text] as [string, string]] : []),
-    ['Limitatore, aperture e basamento esistenti (rilievo)', foundText(s).toLowerCase()],
+    ['Limitatore, aperture e basamento esistenti (rilievo)', lowerKeeping(foundText(s))],
   ];
 }
 

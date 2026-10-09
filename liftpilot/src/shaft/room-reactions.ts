@@ -102,5 +102,22 @@ function feetOf(G: RoomGeo, M: MachineSpec): Pt[] {
   return xs.flatMap((x) => F.beams.map((z) => onDrop(G, machineU(G, x), machineV(G, z))));
 }
 
+/** A reaction below this pulls its bearing up [daN] (the sheet writes it negative, "− = TRAZIONE"). */
+export const PULLED_UP = -0.5;
+
+/** A bearing pulled up — the load's centre off the bearings', a rigid body's share (round 37): its number (1 for R1)
+ *  and the pull its anchor in tension takes, whole as the sheet writes the reaction [daN]. */
+export interface Uplift {
+  i: number;
+  pull: number;
+}
+
+/** The bearings of `r` pulled up, R1 first; none: the fixings hold against sliding alone. */
+export const upliftOf = (r: Pick<Reactions, 'R'>): Uplift[] => r.R.flatMap((x, k) => (x < PULLED_UP ? [{ i: k + 1, pull: Math.round(-x) }] : []));
+
+/** The anchors in tension in words, as the sheets write numbers (grouped from five digits): «R4 ≥ 109 daN». */
+export const upliftText = (u: readonly Uplift[]): string =>
+  u.map((x) => `R${x.i} ≥ ${String(x.pull).length >= 5 ? String(x.pull).replace(/\B(?=(\d{3})+$)/g, '.') : x.pull} daN`).join(', ');
+
 /** Where the support's bearings are (R1…Rn in the order of supportReactions), whatever the load. */
 export const reactionPoints = (G: RoomGeo, M: MachineSpec, heb: HebLayout | null = null): Reactions['pts'] => supportReactions(G, M, { machine: 1, static: 0, dyn: 1 }, heb).pts;

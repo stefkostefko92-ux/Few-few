@@ -11,6 +11,7 @@ import { govYEdit } from './plan-governor';
 import type { RoomInputs } from './room';
 import type { Box } from './room-floor';
 import { letteringBox, tagBox } from './room-label';
+import type { Uplift } from './room-reactions';
 import type { Layout } from './types';
 
 export interface RoomSite {
@@ -43,6 +44,12 @@ export interface RoomSite {
   govFoot?: Box | null;
   /** the car rails' axis across the shaft (y, room axes) the governor's place is given from; missing: none */
   railY?: number | null;
+  /** the existing support the new machine stands on, kept — its kind in words (a replacement's survey, round 37): section
+   *  B-B names the support drawn as it, with its position to survey; missing: a new support */
+  kept?: string | null;
+  /** the bearings of the support pulled up at the load of sheet 1 (room-reactions.ts upliftOf): section B-B asks for
+   *  their anchors in tension; missing: none worked out (a whole design's) */
+  uplift?: readonly Uplift[];
 }
 
 /** The site of a whole design: its shaft, its travel, its governor, its plan's edits. */

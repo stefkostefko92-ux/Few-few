@@ -22,6 +22,8 @@ const MOUNTS = [-0.36, 0.95] as const;
 /** The steel packs under a frame set higher than its profile, along the drop line at each end [mm] (the 3D's). */
 const FRAME_PACK = 100;
 const NAME: Record<MachineSupport['kind'], string> = { shims: 'Spessori', frame: 'Telaio', beams: 'Putrelle', plates: 'Piastre', plinth: 'Plinto', rinvio: 'Telaio con rinvio' };
+/** The support's name when a replacement keeps the existing one under the new machine (its heights to survey). */
+const KEPT = 'Basamento esistente';
 
 /** The clear span of each beam from wall to wall, under each iron of the machine's frame, along the drop line [u0, u1]
  *  (askew, each meets the walls at its own u), and the beam itself borne in the walls at each end. */
@@ -43,8 +45,10 @@ const dimsRight = (G: RoomGeo, run: readonly [number, number] | null, sk: number
 /** Section B-B: the support under the machine, its dimensions. `r0`, `r1`: the room's walls along u; `after`: a chain
  *  right of the machine (the pulley's h, room-section-view.ts) the support's heights stand past; `heb`: the HEB beams it
  *  stands on (M.base their height), their height on the line of the support's own; `sk`: the section's scale on 1:25,
- *  the dimensions' offsets kept on paper (room-section-view.ts moves them out of the room where they do not fit). */
-export function supportSection(M: MachineSpec, G: RoomGeo, r0: number, r1: number, after: number | null = null, heb: HebLayout | null = null, sk = 1): Entity[] {
+ *  the dimensions' offsets kept on paper (room-section-view.ts moves them out of the room where they do not fit);
+ *  `kept`: a replacement's existing support kept (room-site.ts), which the support drawn is and its heights name. */
+export function supportSection(M: MachineSpec, G: RoomGeo, r0: number, r1: number, after: number | null = null, heb: HebLayout | null = null, sk = 1,
+  kept: string | null = null): Entity[] {
   const s = supportOf(G.room, M.Dp > 0), k = 1000 * G.s, top = supportTop(M, s), out: Entity[] = [], F = G.frame, base = M.base ?? 0;
   const span = supportRunIn(G, M), run = span ? machineRun(G, span[0], span[1]) : null;
   if (s.kind === 'rinvio' && M.rinvio?.on === 'frame') {
@@ -78,11 +82,11 @@ export function supportSection(M: MachineSpec, G: RoomGeo, r0: number, r1: numbe
   const right = Math.max(dimsRight(G, run, sk), after === null ? -Infinity : after + 260 * sk);
   // from the support's end nearest them: the last mount's shims or plate, a frame's or a plinth's end (beams from wall
   // to wall run under them)
-  const end = s.kind === 'beams' ? null : run ? run[1] : Math.max(...mounts) + (s.kind === 'plates' ? hp : hm);
+  const end = s.kind === 'beams' ? null : run ? run[1] : Math.max(...mounts) + (s.kind === 'plates' ? hp : hm), name = kept ? KEPT : NAME[s.kind];
   // (on the HEB beams, one chain with their height under it: heb-view.ts hebUnder)
-  const under = heb ? hebUnder(heb, G, right, base, top, end, `{v} ${NAME[s.kind]}`, E('sup.height')) : null;
+  const under = heb ? hebUnder(heb, G, right, base, top, end, `{v} ${name}`, E('sup.height')) : null;
   if (under) out.push(under);
-  else if (top - base > 0.5) out.push(chain({ dir: 'y', pts: [base, top], at: right, from: [end, end], text: [`{v} ${NAME[s.kind]}`], edit: [E('sup.height')] }));
+  else if (top - base > 0.5) out.push(chain({ dir: 'y', pts: [base, top], at: right, from: [end, end], text: [`{v} ${name}`], edit: [E('sup.height')] }));
   if (heb) out.push(...hebSection(heb, G, right, under === null));
   if (hasProfile(s)) {
     const h = PROFILES[profileOf(s)].h;
@@ -90,7 +94,7 @@ export function supportSection(M: MachineSpec, G: RoomGeo, r0: number, r1: numbe
   }
   // over the room past the machine's frame, and past dx with a diverting pulley (room-section-view.ts)
   const row = M.Dp > 0 ? 2 : 1;
-  if (run) out.push(chain({ dir: 'x', pts: run, side: 'top', row, from: [top, top], text: [`{v} ${NAME[s.kind]}`], edit: [E('sup.length')] }));
+  if (run) out.push(chain({ dir: 'x', pts: run, side: 'top', row, from: [top, top], text: [`{v} ${name}`], edit: [E('sup.length')] }));
   if (s.kind === 'beams') {
     // the clear span of the longest beam (on an axis, of each)
     const along = Math.abs(G.uy) > 0.999 ? 'room.D' : Math.abs(G.ux) > 0.999 ? 'room.W' : null;

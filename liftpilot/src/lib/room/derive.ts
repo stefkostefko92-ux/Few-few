@@ -20,13 +20,14 @@ import { orientedGeo, roomChecksOf, type MachineSpec, type RoomGeo } from '@/sha
 import { KV_VERT } from '@/shaft/norme-vert';
 import { existingRoomCheck } from '@/shaft/room-above';
 import { axisOverTop, rinvioAxisOf, rinvioClash, rinvioTopOf } from '@/shaft/rinvio';
+import { supportReactions, upliftOf } from '@/shaft/room-reactions';
 import type { RoomSite } from '@/shaft/room-site';
 import { switchBox } from '@/shaft/room-floor';
 import { beamChecks, fitChecks, governorRoomChecks, machineParts, panelFloorChecks, rinvioChecks, type SupportLoad } from '@/shaft/support-check';
 import { ownAxis } from '@/shaft/support';
 import type { ShaftCheck } from '@/shaft/types';
 import type { Survey } from './survey';
-import { holesCheck, surveyFound, surveyGovernor, surveyOpenings } from './survey-site';
+import { holesCheck, keptSupport, surveyFound, surveyGovernor, surveyOpenings } from './survey-site';
 
 export type RoomIssue = 'bottom' | 'drops' | 'rinvio';
 
@@ -55,10 +56,22 @@ export interface RoomDerived {
  *  existing sheave when the calculation has it (its hitches) else the new one; 2:1 adds the pulleys' Dp. A direct pull
  *  centres the sheave between the drops unless the calculation aligns it with the car's. */
 export function calcDrops(a: Analysis, M: MachineSpec): { calata: number; sheaveAt: number } {
-  const { I } = a.ctx, car = M.ropeIn + M.D / 2;
-  if (I.layout === 'topDefl') return { calata: 2 * M.ropeIn + M.D / 2 + I.dx * 1000 + (M.reverse ? -M.Dp / 2 : M.Dp / 2), sheaveAt: car };
-  const calata = (I.drops > 0 ? I.drops : M.D) + 2 * M.ropeIn;
+  const { I } = a.ctx, car = M.ropeIn + M.D / 2, basis = calataBasis(I);
+  if (basis === 'defl') return { calata: 2 * M.ropeIn + M.D / 2 + I.dx * 1000 + (M.reverse ? -M.Dp / 2 : M.Dp / 2), sheaveAt: car };
+  const calata = (basis === 'old' ? I.drops : M.D) + 2 * M.ropeIn;
   return { calata, sheaveAt: I.dropAlign === 'car' ? car : calata / 2 };
+}
+
+/** What the calculation's drops are taken from (calcDrops, registry locale.calate): the new sheave with the diverting
+ *  pulley at dx, the existing sheave of a direct pull the calculation compares with (its drops), or the new sheave. */
+export type CalataBasis = 'defl' | 'old' | 'new';
+export const calataBasis = (I: Pick<Analysis['ctx']['I'], 'layout' | 'drops'>): CalataBasis => (I.layout === 'topDefl' ? 'defl' : I.drops > 0 ? 'old' : 'new');
+
+/** The key of a room's check's label (messages shaft, round 37): m_calata's names what the calculation's drops are;
+ *  m_holes's, on the existing support kept, its bearings as that support's, their position to survey (no new support). */
+export function roomCheckKey(id: string, d: Pick<RoomDerived, 'analysis' | 'site'>): string {
+  if (id === 'm_calata') return { defl: 'c_m_calata_defl', old: 'c_m_calata', new: 'c_m_calata_new' }[calataBasis(d.analysis.ctx.I)];
+  return id === 'm_holes' && d.site.kept ? 'c_m_holes_kept' : `c_${id}`;
 }
 
 /** The machine of a calculation as the room's drawings take it: the catalogue's model its values are, drawn as it is. Its
@@ -118,7 +131,10 @@ function deriveOnce(V: FormValues, s: Survey, a: Analysis): RoomDerived {
   if (G && I.context === 'repl') checks.push(existingRoomCheck(R));
   const hMin = M.Dp > 0 ? Math.ceil((rf?.on === 'frame' ? axisOverTop(M.D, M.shape ?? null, rf.bed) : ownAxis(M.D, M.shape ?? null)) + r) : null;
   const heb = beams && chosenBy ? { ...beams, auto: { profile: !chosenBy.profile, dir: !chosenBy.dir } } : null;
-  return { analysis: a, made, M, G, site, calata: { calc: calata, measured }, hMin, load, heb, checks, issues };
+  // the drawings' notes: the existing support kept, which the support drawn is, and the bearings pulled up at this load
+  // — the reactions of sheet 1 —, whose anchors in tension section B-B asks for (round 37)
+  const uplift = G ? upliftOf(supportReactions(G, M, load, beams ? hebDrawn(G, M, site) : null)) : [];
+  return { analysis: a, made, M, G, site: { ...site, kept: keptSupport(s), uplift }, calata: { calc: calata, measured }, hMin, load, heb, checks, issues };
 }
 
 /** The machine room of the survey: with the HEB beams' profile or direction left to the software, derived on the beams

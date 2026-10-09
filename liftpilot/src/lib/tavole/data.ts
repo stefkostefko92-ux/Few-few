@@ -36,6 +36,7 @@ import { refsText, titleOf } from './title-data';
 import { sheetLoads, sheetRails, supportRows } from './sheet-loads';
 import { cwGearChecks, cwGearOf, cwGearRow } from './cw-gear';
 import { hebFor, hebNote, hookRow, reactionRows } from './room-rows';
+import { supportReactions, upliftOf, type Uplift } from '@/shaft/room-reactions';
 import { roomGeo } from '@/shaft/machine-room';
 import { governorRopes, shaftUnder } from '@/shaft/room-site';
 import { belowGeoOf, machineOf, machineText } from './views';
@@ -73,6 +74,9 @@ export interface DataSheetResult {
   cwGap: number | null;
   /** for the sheet of the rails: the thrusts on a car rail written [daN], whether the rails stay as they are */
   rails: { fx: string; fy: string; kept: boolean };
+  /** the bearings of the machine's support pulled up at this sheet's load: section B-B asks for their anchors in tension
+   *  (round 37); none without a room over the shaft */
+  uplift: Uplift[];
 }
 
 export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheetResult {
@@ -194,8 +198,9 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   ];
   // the machine room over the shaft: the hook's rated load and the reactions R1…Rn on the support's bearings (round 36)
   const Gr = !below ? roomGeo(L, M) : null, car0 = carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes: ropesKg, cables: cablesKg });
-  const roomRows = Gr ? [hookRow(Gr, M, fmt), ...reactionRows(Gr, M, { machine, static: ld.static, dyn, car: car0 },
-    hebFor(Gr, M, shaftUnder(L), governorRopes(L, Gr.room)), fmt)] : [];
+  const roomLoad = { machine, static: ld.static, dyn, car: car0 }, roomHeb = Gr ? hebFor(Gr, M, shaftUnder(L), governorRopes(L, Gr.room)) : null;
+  const roomRows = Gr ? [hookRow(Gr, M, fmt), ...reactionRows(Gr, M, roomLoad, roomHeb, fmt)] : [];
+  const uplift = Gr ? upliftOf(supportReactions(Gr, M, roomLoad, roomHeb)) : [];
   const each = [false, false, false, false, true, V.carBuffers > 1, true, false, false];
   const P = ld.P.map((p, i) => (p === null ? (i === 3 ? GOVERNOR_LOAD_UNSET : '—') : `${each[i] ? 'cad. ' : ''}${fmt(p, 0)}`));
   // the car rails between their brackets (the pitch declared or the rule's), at the loads of this sheet (sheet-loads.ts)
@@ -243,7 +248,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   if (test) notes.push(test);
 
   return {
-    warnings, cwGap: gap, rails: { fx: fmt(F.fx, 0), fy: fmt(F.fy, 0), kept: oldRails },
+    warnings, cwGap: gap, rails: { fx: fmt(F.fx, 0), fy: fmt(F.fy, 0), kept: oldRails }, uplift,
     sheet: {
       base, specs, loads: [...loadRows, ...roomRows], notes, legend: [sp.free, sp.pit, sp.top],
       forces: { fx: fmt(F.fx, 0), fy: fmt(F.fy, 0) }, checks,

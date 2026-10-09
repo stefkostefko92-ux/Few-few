@@ -14,7 +14,7 @@ import { buildTecnica } from '@/lib/report/tecnica';
 import { initialsOf } from '@/lib/tavole/compose';
 import { slug } from './download';
 import { composeFromRoom, reproduceRoomRecord } from './room-compose';
-import { getLetterhead, getRoomDesign } from './queries';
+import { getLetterhead, getRoomDesign, listRoomDrawingSets } from './queries';
 
 export const ROOM_FORMATS = ['relazione', 'pdf', 'dxf', 'dwg'] as const;
 export type RoomFormat = (typeof ROOM_FORMATS)[number];
@@ -36,7 +36,8 @@ export async function exportRoomDesign(user: SessionUser, id: string, format: Ro
   }
   const d = rep.derived, plant = plantReadSchema.safeParse(r.project.plant ?? {}), P = plant.success ? plant.data : {};
   if (format === 'relazione') {
-    const sets = await prisma.drawingSet.findMany({ where: { companyId: user.companyId, roomDesignId: r.id }, orderBy: [{ seq: 'asc' }, { revision: 'asc' }], select: { number: true, revision: true, sha256: true } });
+    // (every revision by year and number: the relazione attaches the one in force of each — round 37)
+    const sets = await listRoomDrawingSets(user, r.id);
     const doc = buildTecnica({
       room: { id: r.id, label: r.label, createdAt: r.createdAt, sha256: r.sha256, engineVersion: r.engineVersion, author: r.user?.name ?? null },
       calc: { id: r.calculation.id, label: r.calculation.label, createdAt: r.calculation.createdAt, sha256: r.calculation.sha256, engineVersion: r.calculation.engineVersion, profileId: r.calculation.profileId },

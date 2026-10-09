@@ -7,6 +7,7 @@ import { dateFormat } from '@/lib/dates';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { ambitoOf } from '@/lib/lift/collaudo';
 import { makeFmt } from '@/lib/present/tr';
+import { roomCheckKey } from '@/lib/room/derive';
 import { cropped, surveyView } from '@/lib/tavole/views';
 import { isUpperLimit, shownValue } from '@/shaft/checks';
 import { prisma } from '@/lib/db';
@@ -118,7 +119,7 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
               <tbody>
                 {d.checks.map((c) => (
                   <tr key={c.id}>
-                    <td className="row-title">{ts(`c_${c.id}`)}</td>
+                    <td className="row-title">{ts(roomCheckKey(c.id, d))}</td>
                     <td className="num" data-label={t('value')}>{c.value === null ? '—' : `${shownValue(c, fmt)} ${c.unit}`}</td>
                     <td className="num" data-label={t('limit')}>{c.limit === null ? '—' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${fmt(c.limit, c.dec)} ${c.unit}`}</td>
                     <td data-label={t('outcome')}>{ambitoOf(rep.collaudo, c.id) === 'existing' ? <span className="status-pill">{t('existing')}</span> : <span className={`status-pill ${c.status}`}>{ts(`st_${c.status}`)}</span>}</td>

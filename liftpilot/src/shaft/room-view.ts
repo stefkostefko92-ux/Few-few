@@ -21,7 +21,7 @@ import { supportOf } from './support';
 import { layoutSite, type RoomSite } from './room-site';
 import { roomSectionOn } from './room-section-view';
 import { hookOf } from './room-hook';
-import { reactionPoints } from './room-reactions';
+import { reactionPoints, type Uplift } from './room-reactions';
 import { besideMachine } from './room-beside';
 import { panelSeen } from './room-section-extra';
 import { dropChains, railAxis, reactionMarks, setoutPlan } from './room-setout';
@@ -44,7 +44,8 @@ const inBox = (p: Pt, b: readonly Pt[]): boolean => {
 
 /** The machine room of a whole design in plan and in section B-B (its shaft, travel and governor from its layout). */
 export const roomPlanEntities = (L: Layout, M: MachineSpec, G: RoomGeo, o: RoomDrawOpts = {}): { entities: Entity[]; bounds: Box } => roomPlanOn(layoutSite(L), M, G, o);
-export const roomSectionEntities = (L: Layout, M: MachineSpec, G: RoomGeo, o: RoomDrawOpts = {}): { entities: Entity[]; bounds: Box } => roomSectionOn(layoutSite(L), M, G, o);
+export const roomSectionEntities = (L: Layout, M: MachineSpec, G: RoomGeo, o: RoomDrawOpts = {}, uplift: readonly Uplift[] = []): { entities: Entity[]; bounds: Box } =>
+  roomSectionOn({ ...layoutSite(L), uplift }, M, G, o);
 
 export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDrawOpts = {}): { entities: Entity[]; bounds: Box } {
   const R = G.room, out: Entity[] = [], w = ropeWidths(M.n, M.d), holes = holesOf(S, M, G), k = 1000 * G.s;
