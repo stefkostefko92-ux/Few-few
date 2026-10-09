@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-09-26",
+    "updated": "2026-10-09",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -1173,7 +1173,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 517
+        "lessons": 519
       },
       "evolution": [
         {
@@ -1985,9 +1985,20 @@
           "date": "2026-09-25",
           "event": "v39.9 — възстановяване",
           "detail": "Версията беше свалена от 39.1 при сгъване на main в паметта (сливането взе по-стара история). Върната на 39.2 + 0.1 × 7 нови поуки."
+        },
+        {
+          "version": "40.1.0",
+          "date": "2026-10-09",
+          "event": "v40.1 — учене",
+          "detail": "Научи: Nexus client lib/stream.ts:42 слуша само SSE събития ['notification','chat'], а сървъръ… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-09",
+          "type": "learning",
+          "summary": "Научи: „Nexus client lib/stream.ts:42 слуша само SSE събития ['notification','chat'], а сървъръ…\" (+1 още)"
+        },
         {
           "date": "2026-09-26",
           "type": "learning",
