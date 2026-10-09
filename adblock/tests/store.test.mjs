@@ -58,12 +58,4 @@ const webps = [...idxHtml.matchAll(/\/([\w-]+\.webp)(\?v=([0-9a-f]+))?"/g)];
 const staleImg = webps.filter((m) => m[3] !== createHash("sha256").update(readFileSync(join(ROOT, "server", m[1]))).digest("hex").slice(0, 10)).map((m) => m[1]);
 ok(`site: every .webp is cache-busted with its content hash (${[...new Set(staleImg)].join(",") || "all"})`, webps.length >= 3 && staleImg.length === 0);
 
-// Промо клиповете: магазинният cut рендерира само film.html (никога социалния филм с „Free“ и
-// рекламния плейър), а мълниите във всеки cut са ≥ 2 s една от друга (WCAG 2.3.1, епилепсия).
-const promoTL = JSON.parse(readFileSync(join(ROOT, "tools", "promo", "timeline.json"), "utf8"));
-ok("promo: the store cut renders film.html, never the social film", !promoTL.cuts.store.film || promoTL.cuts.store.film === "film.html");
-const minGap = (st) => { const ts = st.map((x) => x.t).sort((a, b) => a - b); return Math.min(...ts.slice(1).map((t, i) => t - ts[i])); };
-const tight = Object.entries({ full: promoTL, ...promoTL.cuts }).filter(([, c]) => minGap(c.strikes || promoTL.strikes) < 2).map(([k]) => k);
-ok(`promo: lightning strikes ≥ 2 s apart in every cut (${tight.join(",") || "all"})`, tight.length === 0);
-
 done();

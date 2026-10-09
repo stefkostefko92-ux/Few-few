@@ -49,13 +49,9 @@ tools/                  build_filters.mjs (EasyList→DNR + каталога too
                         rule_resources в manifest-а) + build_scriptlets.mjs (+ uBO scriptlet-и на 64 парчета
                         по хост в scriptlets/ubo/) + генератори + package.sh (Chrome + Firefox zip)
                         + compare_blockers.mjs (публични тестове срещу конкурентите — числата за landing-а)
-                        + promo/ (промо клипове в стила на boy/: film.html 16:9 за YouTube/сайта/CWS (`--cut store`
-                        — без сравнение и без „free“) + film-social.html 9:16 за Reels/TikTok/Shorts (`--cut social`:
-                        hook „рекламата умира“ в първата секунда, loop, −14 LUFS, корица, 4:5 изрез; „Free“ и
-                        рекламният плейър — НИКОГА в медиите на CWS) + timeline.json; бурята идва от
-                        server/index.html, popup/панелите от store генератора, звукът е генериран;
-                        `PW_ROOT=$(npm root -g) PYTHONPATH=<numpy> FFMPEG=$(command -v ffmpeg) node tools/promo/render.mjs [--cut social]`;
-                        caption-и и правила за публикуване → docs/SOCIAL.md)
+                        + promo/ (промо клип 1080p за YouTube/CWS в стила на boy/: film.html + timeline.json —
+                        бурята идва от server/index.html, popup/панелите от store генератора, звукът е
+                        генериран; `PW_ROOT=$(npm root -g) PYTHONPATH=<numpy> node tools/promo/render.mjs`)
                         + popup_shield3d.mjs (three.js от CDN САМО в инструмента → popup/img/; `PW_ROOT=$(npm root -g) node tools/popup_shield3d.mjs`)
                         + e2e_redirect.mjs (истински Chromium през Playwright: DNR redirect → resources/*
                         smoke; `PW_ROOT=$(npm root -g) node tools/e2e_redirect.mjs "$PWD" <url> <global>`)
