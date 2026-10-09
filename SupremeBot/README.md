@@ -23,6 +23,26 @@ Plus a draggable panel inside the game, a toolbar popup, a full settings page, a
 stats page and Telegram/Discord alerts. See `FEATURES.md` for the full map of
 which game actions are covered and which are left out on purpose.
 
+## Alerts and pacing
+
+- **Two independent channels.** Chrome desktop pop-ups follow *Desktop
+  notifications*; Telegram/Discord webhooks follow their own settings. Turn the
+  desktop toggle off and everything still goes to Discord.
+- **Every alert says who and where:** character (+ level), server (e.g. `s1-us`),
+  what the bot is doing right now, and the guild. Discord alerts are embeds
+  coloured by level (success / warning / error / info).
+- **What is sent:** start, stop, level-up and licence problems by default.
+  Optional: *Webhook on every action* (one message per action, with the module's
+  own result line - Discord rate-limits a webhook to roughly 30 messages a
+  minute, so pair it with a fixed interval) and *Periodic status every N min*.
+  The per-action and periodic reports never raise a Chrome pop-up.
+- **Pacing.** By default the delay between actions is humanized (min/max). Set
+  *Fixed interval between actions* (seconds, `0` = auto) to program it; the
+  panel's "Next action in" counts down to the earliest moment the next action can
+  happen, never earlier than the game's own busy timer.
+- **Reconnect.** If the session drops and auto-login reloads the page, a bot that
+  was running starts again once you are back in.
+
 ## Install (unpacked)
 
 1. `chrome://extensions` -> enable Developer mode -> Load unpacked -> pick this
