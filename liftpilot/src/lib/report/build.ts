@@ -10,7 +10,7 @@ import { COND, PALETTE, concreteTile, type SheetImage } from '@/drawing';
 import { mergeChecks, vociOfDesign } from '@/shaft';
 import type { CheckId, CheckStatus, FormValues } from '@/calc/types';
 import { NO_MARKS, P_ESTIMATE_RULE, type ValueMarks } from '../lift/marks';
-import { ambitoOf, collaudoOf, partKept } from '../lift/collaudo';
+import { ambitoOf, collaudoOf, ropesKept, ropesOutsideTest } from '../lift/collaudo';
 import { carichiOf } from '../lift/modifica';
 import { analyse } from '../present/analysis';
 import { quickRows } from '../present/quick';
@@ -23,6 +23,7 @@ import { casesBlocks, limitiBlocks } from './cases';
 import { checkRefs } from './refs';
 import { BOTTOM_IT, STATO, cellText, drawnText, massNote, proposalBlocks, rowStatus, underPitText, vociBlocks } from './build-parts';
 import { guideSection } from './guide';
+import { GUIDE_PLANT_FIELDS } from '../tavole/sheet-loads';
 import { elaboratiBlocks, plantChanged, type IssuedSet } from './elaborati';
 import { machineMass } from '../lift/machine-mass';
 import { ESITI_CALCOLO, EXISTING_NOTE, adaptSection, adempimentiBlocks, collaudoRows, collaudoText, esitiBlocks, esitoOf, riferimentiRows, std81_1 } from './collaudo';
@@ -132,8 +133,9 @@ export function buildReport(r: ReportInput): ReportDoc {
     if (machine && L && !scheme) B.push(...designRoomBlocks(L, machine, ld, fmt));
   }
   // the rails, the counterweight's safety gear and the loads on the building, with the data of the installation as they
-  // are now (guide.ts): as sheet 1 counts them, the issued sets drawn with other data named (elaborati.ts)
-  const Pl = r.plant ?? {}, changed = plantChanged(r.drawings ?? [], Pl);
+  // are now (guide.ts): as sheet 1 counts them, the issued sets drawn with other data in the fields these read named
+  // (elaborati.ts; sheet-loads.ts GUIDE_PLANT_FIELDS: another supply or control leaves forces and limits as issued)
+  const Pl = r.plant ?? {}, changed = plantChanged(r.drawings ?? [], Pl, GUIDE_PLANT_FIELDS);
   const guide = r.design && machine ? guideSection(a, r.design.layout, Pl, machine, weighed, fmt, st, (c) => esitoOf(C, c.id, st(c.status), c.status),
     { rope, scheme, modification: C.norma !== 'en81', changed }) : null;
   if (guide) {
@@ -142,7 +144,7 @@ export function buildReport(r: ReportInput): ReportDoc {
   }
   if (r.design) {
     section('Elaborati grafici');
-    B.push(...elaboratiBlocks(r.drawings ?? [], when, Pl));
+    B.push(...elaboratiBlocks(r.drawings ?? [], when, changed));
   }
 
   section('Argano verificato');
@@ -155,7 +157,13 @@ export function buildReport(r: ReportInput): ReportDoc {
     : known ? [['Costruttore e modello', `${known.brand} ${known.model} (${how}: `
       + `rapporto, carico statico, massa e puleggia coincidono; fonte: ${known.src})`]] : [];
   // the ropes the intervention leaves in place are the existing ones, as sheet 1, the bill and the draft order have them
-  B.push({ t: 'kv', rows: [...named, ...X.machineRows(N, res, false, partKept(C, 'ropes'))] });
+  // (collaudo.ts ropesKept); ropes of their own number and diameter are new, also when the test does not name them
+  B.push({ t: 'kv', rows: [...named, ...X.machineRows(N, res, false, ropesKept(C, r.values))] });
+  if (ropesOutsideTest(C, r.values)) {
+    B.push({ t: 'p', style: 'note', text: `⚠ Il calcolo non tiene numero e diametro delle funi esistenti («${t('keepRopes')}» non scelto): le funi `
+      + `${N.n} × Ø${fmt(N.d, 1)} mm sono nuove, da tagliare e ordinare, ma il collaudo non le comprende tra le parti sostituite. Aggiungere le funi alle `
+      + 'parti sostituite del collaudo, oppure scegliere nel calcolo lo stesso numero e diametro delle funi esistenti.' });
+  }
   // a catalogue's mass that is not the whole machine: what the loads on the building take instead (machine-mass.ts)
   const whole = machineMass(N, weighed);
   B.push(...massNote(whole, N.mass, fmt));

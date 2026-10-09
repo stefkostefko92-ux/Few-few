@@ -22,6 +22,13 @@ import { railForces, type SafetyGear } from './forces';
 import { loads, type Loads, type LoadsInput } from './loads';
 import { railCheck, type RailCheck } from './rail-check';
 
+/** The fields of the data of the installation the rails' check, the loads and the counterweight's safety gear read —
+ *  sheetRails (the car's safety gear, the bracket pitch, the lift's use), sheetLoads (the governor's load P4) and
+ *  cw-gear.ts (the counterweight's safety gear and what trips it) —: the relazione's «Guide e carichi sulle strutture»
+ *  depends on these alone, so a set issued with other data in the other fields has the same forces and limits on its
+ *  sheet 1 (src/lib/report/elaborati.ts plantChanged). */
+export const GUIDE_PLANT_FIELDS = ['safetyGear', 'carBracketPitch', 'liftUse', 'governorLoad', 'cwSafetyGear', 'cwGearTrip'] as const satisfies readonly (keyof Plant)[];
+
 export interface SheetRails {
   /** the rails' length [m], the brackets' heights and the longest span between two [mm] */
   railLen: number;

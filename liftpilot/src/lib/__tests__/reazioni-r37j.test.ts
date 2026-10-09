@@ -1,9 +1,11 @@
 // Round 37 (J): the reactions on the building add up to the total sheet 1 and the relazione write (W2-L1a-01) — the
 // beams from wall to wall and the HEB beams bear their whole own weight, the part in the walls too, and the diverting
 // pulley's own stand on the floor bears its own weight on its four legs, numbered after the support's bearings; the HEB
-// beams' largest reaction is the largest R; the check of the existing openings counts the support's bearings alone.
+// beams' largest reaction is the largest R; the check of the existing openings counts the support's bearings alone; the
+// replacement's sheet 1 (survey-data.ts) carries the stand's legs too.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { PRESETS } from '@/calc/presets';
 import { roomGeo, type MachineSupport } from '@/shaft';
 import { hebDrawn } from '@/shaft/heb';
 import { PROFILES } from '@/shaft/profiles';
@@ -17,9 +19,13 @@ import { besideMass, carSideStatic, supportMass } from '../lift/support';
 import { analyse } from '../present/analysis';
 import { designRoomBlocks } from '../report/tecnica-site';
 import { makeFmt } from '../present/tr';
+import { deriveRoom } from '../room/derive';
+import { startSurvey, type Survey } from '../room/survey';
 import { storedInput } from '../tavole/compose';
 import { dataSheet } from '../tavole/data';
 import { sheetLoads, sheetRails } from '../tavole/sheet-loads';
+import { surveyLoad, surveySheetData } from '../tavole/survey-data';
+import type { SurveyTavoleInput } from '../tavole/survey-input';
 
 type Room = NonNullable<LiftInputs['shaft']['room']>;
 const withRoom = (L: LiftInputs, r: Partial<Room>): LiftInputs => {
@@ -117,4 +123,27 @@ test('relazione: le reazioni del locale con quelle dei piedi del supporto del ri
   const text = designRoomBlocks(d.layout, M, load, fmt).flatMap((b) => (b.t === 'p' ? [b.text] : [])).join(' ');
   assert.match(text, /nei muri, con il coefficiente dinamico: R1 \d+ daN, R2 \d+ daN, R3 \d+ daN, R4 \d+ daN, R5 \d+ daN, R6 \d+ daN; sotto i piedi del supporto del rinvio sulla soletta, il suo peso proprio: R7 \d+ daN, R8 \d+ daN, R9 \d+ daN, R10 \d+ daN\./);
   assert.ok(I.P > 0 && N.n > 0);
+});
+
+test('sostituzione: il foglio 1 del rilievo con i piedi del supporto del rinvio, ΣR + P2 + P3 = P9 entro gli arrotondamenti', () => {
+  // the example with the diverting pulley on its own stand beside the machine's support (support.ts SupportMass.stand)
+  const kinds: readonly MachineSupport[] = [{ kind: 'frame' }, { kind: 'plinth' }, { kind: 'beams', profile: 'IPE 240' }, { kind: 'plates' }, { kind: 'shims' }];
+  const n = (x: string): number => Number(x.replace('−', '-'));
+  for (const support of kinds) {
+    const s0 = startSurvey(600), s: Survey = { ...s0, room: { ...s0.room, support } }, d = deriveRoom(PRESETS.A, s);
+    const x: SurveyTavoleInput = { values: PRESETS.A, survey: s, collaudo: { norma: '10411-1', parti: ['machine'] }, plant: {},
+      project: { name: 'R', address: null, city: null, province: null, plantNumber: null, client: null }, company: { name: 'S', logo: null },
+      set: { number: '26-037', issuedAt: new Date('2026-10-09T08:00:00Z'), author: 'T', revisions: [] } };
+    const sh = surveySheetData(x, d, 3), rows = sh.loads.filter((r) => r[0].startsWith('REAZIONI'));
+    assert.equal(d.M.rinvio?.on, 'stand', support.kind);
+    // the stand's four legs, with its own weight (surveyLoad's: the same the slab's total counts beside the support)
+    const stand = surveyLoad(d, {}).support.stand, legs = rows.filter((r) => r[0].startsWith('REAZIONI PIEDI DEL RINVIO')).flatMap((r) => r[1].split(' / ').map(n));
+    assert.ok(stand > 30, `${support.kind}: ${stand} kg`);
+    assert.equal(legs.length, 4, support.kind);
+    assert.ok(legs.every((r) => r > 0) && Math.abs(legs.reduce((a, b) => a + b, 0) - daN(stand)) <= 2, `${support.kind}: ${legs.join(' + ')} ≠ ${daN(stand)}`);
+    // all the reactions with the 2:1 hitches are the total on the slab (each rounded to the daN)
+    const R = rows.flatMap((r) => r[1].split(' / ').map(n)), [P2, P3, P9] = [sh.P[1]?.[1], sh.P[2]?.[1], sh.P[4]?.[1]].map((p) => (p === undefined || p === '—' ? 0 : n(p)));
+    assert.ok(sh.P[4]?.[0].startsWith('P9') && P9 > 0, support.kind);
+    assert.ok(Math.abs(R.reduce((a, b) => a + b, 0) + P2 + P3 - P9) <= R.length / 2 + 1.5, `${support.kind}: ${R.join(' + ')} + ${P2 + P3} ≠ ${P9}`);
+  }
 });

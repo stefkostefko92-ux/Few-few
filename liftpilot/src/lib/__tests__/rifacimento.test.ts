@@ -157,7 +157,7 @@ test('bozza d’ordine e riepilogo: il rifacimento accanto alla norma', () => {
     company: 'Ascensori di prova S.r.l.', companyCity: 'Milano', logo: null, author: null,
     project: { name: 'Condominio di prova', address: null, city: 'Milano', province: 'MI', plantNumber: null },
     record: { kind: 'design' as const, id: 'cmtestorder27', sha256: 'a'.repeat(64), createdAt: new Date('2026-10-05T08:00:00Z'), label: null },
-    order, room: [], generatedAt: new Date('2026-10-05T10:00:00Z'),
+    order, room: [], values: d.values, generatedAt: new Date('2026-10-05T10:00:00Z'),
   };
   const norma = (C: Collaudo) => new Map(buildOrder({ ...input, collaudo: C }).blocks.flatMap((b) => (b.t === 'kv' ? b.rows : []))).get('Norma del collaudo');
   assert.equal(norma(RIF), 'UNI 10411-1:2024 (rifacimento con l’arcata esistente)');

@@ -59,7 +59,7 @@ export async function exportDesignOrder(user: SessionUser, id: string, format: O
   if (!found) return { ok: false, error: 'notFound' };
   const { plant, ...project } = found;
   return render({
-    ...await getLetterhead(user), ...await orderPrices(user, order), author: user.name, project, order, collaudo: dv.collaudo, pEstimate: dv.origin.P === 'estimate', generatedAt: new Date(),
+    ...await getLetterhead(user), ...await orderPrices(user, order), author: user.name, project, order, collaudo: dv.collaudo, values: dv.values, pEstimate: dv.origin.P === 'estimate', generatedAt: new Date(),
     ...designSite(inputs, dv, order.machine, order.recorded), plant: plantData(plant),
     record: { kind: 'design', id: d.id, sha256: d.sha256, createdAt: d.createdAt, label: d.label },
   }, format);
@@ -79,7 +79,7 @@ export async function exportCalcOrder(user: SessionUser, id: string, format: Ord
   const design = rec.design;
   return render({
     ...await getLetterhead(user), ...await orderPrices(user, order), author: user.name, project: { name, address, city, province, plantNumber }, order,
-    collaudo: storedCollaudo(rec.values, c.collaudo), generatedAt: new Date(),
+    collaudo: storedCollaudo(rec.values, c.collaudo), values: rec.values, generatedAt: new Date(),
     ...calcSite(design?.layout ?? null, order.machine, rec.values), plant: plantData(c.project.plant),
     record: { kind: 'calc', id: c.id, sha256: c.sha256, createdAt: c.createdAt, label: c.label },
   }, format);

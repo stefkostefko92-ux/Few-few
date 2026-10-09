@@ -84,8 +84,9 @@ export function plantData(raw: unknown): Plant {
   return p.success ? p.data : {};
 }
 
-/** The fields where two sets of data of an installation differ (a field missing in one and empty in the other: the same). */
-export function plantDiff(a: Plant, b: Plant): (keyof Plant)[] {
+/** The fields where two sets of data of an installation differ (a field missing in one and empty in the other: the same);
+ *  `fields`: only among these (what a document reads), in the form's order. */
+export function plantDiff(a: Plant, b: Plant, fields?: readonly (keyof Plant)[]): (keyof Plant)[] {
   const keys = Object.keys(plantSchema.shape) as (keyof Plant)[];
-  return keys.filter((k) => a[k] !== b[k]);
+  return keys.filter((k) => (!fields || fields.includes(k)) && a[k] !== b[k]);
 }

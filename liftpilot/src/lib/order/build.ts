@@ -9,10 +9,11 @@
 // list's). Every value comes from the calculation, the design and the catalogue, whose source the note names. Pure.
 import calcIt from '../../../messages/calc/it.json';
 import { ceilTo } from '@/calc/math';
+import type { FormValues } from '@/calc/types';
 import type { SheetImage } from '@/drawing';
 import { CATALOG_READ_ON, MAKER_SITE } from '@/lib/catalog/machines';
 import type { DataSource, MachineCandidate } from '@/lib/lift/advice';
-import { NORMA_SIGLA, partKept, type Collaudo } from '@/lib/lift/collaudo';
+import { NORMA_SIGLA, ropesKept, type Collaudo } from '@/lib/lift/collaudo';
 import { dvText, machineName } from '@/lib/present/advice';
 import { textsFor } from '@/lib/present/texts';
 import { makePres } from '@/lib/present/tr';
@@ -42,6 +43,9 @@ export interface OrderInput {
   /** the data of the installation: the supply and the duty (plant.ts); missing: the usual values, marked */
   plant?: Plant;
   collaudo: Collaudo;
+  /** the values of the calculation the order comes from: whether it keeps the number and diameter of the ropes in place
+   *  (with the test keeping them, the ropes stay and are not cut: collaudo.ts ropesKept) */
+  values: FormValues;
   /** the car's mass is the software's estimate (not entered): the maker is told */
   pEstimate?: boolean;
   /** the company's prices of the machine and of the maker's bedplate [cents, VAT excluded], for a downloader who sees
@@ -95,8 +99,8 @@ export function buildOrder(o: OrderInput): ReportDoc {
   const vMains = I.v * (1 + c.dv), hand = o.room.length ? ' — come nella pianta del locale (punto 4)' : '';
   // a machine below: the pulls on its anchors where one is upward (anchor.ts)
   const anchor = c.anchor && c.anchor.max > 0 ? c.anchor : null;
-  // the ropes at the cut length of sheet 1 and of the bill, when the intervention replaces them
-  const cut = partKept(o.collaudo, 'ropes') ? null : o.site?.ropeCut ?? null;
+  // the ropes at the cut length of sheet 1 and of the bill, when the intervention replaces them (collaudo.ts ropesKept)
+  const cut = ropesKept(o.collaudo, o.values) ? null : o.site?.ropeCut ?? null;
   B.push({ t: 'kv', rows: [
     ['Costruttore e modello', `${machineName(c)} · quantità 1`],
     ['Rapporto di riduzione', `${c.ratio} (i = ${fmt(c.i, 3)})`],

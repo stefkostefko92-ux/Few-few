@@ -1,8 +1,9 @@
 // The section «Elaborati grafici» of the relazione di calcolo (Italian): the drawing sets issued on this calculation,
 // each with its number, its latest revision, its sheets and the start of its fingerprint, so that the relazione and the
 // sheets point to each other. A set keeps the data of the installation it was issued with (DrawingSet.plant), while
-// the relazione and the relazione tecnica take them as they are now: where they differ, the documents say so and ask
-// for a revision of the set. Pure.
+// the relazione and the relazione tecnica take them as they are now: where they differ in what a document reads (the
+// relazione di calcolo: the fields of its rails' check and loads; the relazione tecnica: all), it says so and asks for a
+// revision of the set. Pure.
 import appIt from '../../../messages/it.json';
 import { plantDiff, type Plant } from '../plant';
 import type { ReportBlock } from './model';
@@ -34,10 +35,12 @@ function fieldName(k: keyof Plant): string {
 }
 
 /** The sets — the latest revision of each number — issued with other data of the installation than `now`: each named,
- *  with the fields that changed («DIS. N° 26-196 R1 (passo staffe cabina, paracadute)»); none when all agree. */
-export function plantChanged(sets: readonly { number: string; revision: number; plant?: Plant }[], now: Plant): string[] {
+ *  with the fields that changed («DIS. N° 26-196 R1 (passo staffe cabina, paracadute)»); none when all agree.
+ *  `fields`: only those the document reads (the relazione di calcolo: sheet-loads.ts GUIDE_PLANT_FIELDS); all of them
+ *  when missing (the relazione tecnica reads the data of sheet 1). */
+export function plantChanged(sets: readonly { number: string; revision: number; plant?: Plant }[], now: Plant, fields?: readonly (keyof Plant)[]): string[] {
   return latest(sets).flatMap((s) => {
-    const diff = s.plant ? plantDiff(s.plant, now) : [];
+    const diff = s.plant ? plantDiff(s.plant, now, fields) : [];
     return diff.length ? [`${setName(s)} (${diff.map(fieldName).join(', ')})`] : [];
   });
 }
@@ -49,13 +52,15 @@ export const plantChangedBox = (changed: readonly string[], said: string): Repor
     + 'emetterne una revisione con i dati attuali, o riportare i dati dell’impianto a quelli dell’emissione.',
 });
 
-export function elaboratiBlocks(sets: readonly IssuedSet[], when: (d: Date) => string, plant: Plant | null = null): ReportBlock[] {
+/** The section's blocks: the latest revision of each set; `changed`: the sets issued with other data of the
+ *  installation in the fields its rails' check and loads read (plantChanged with GUIDE_PLANT_FIELDS, as build.ts
+ *  computes them for «Guide e carichi»). */
+export function elaboratiBlocks(sets: readonly IssuedSet[], when: (d: Date) => string, changed: readonly string[] = []): ReportBlock[] {
   const last = latest(sets);
   if (!last.length) {
     return [{ t: 'p', text: 'Nessuna serie di tavole è ancora emessa su questo calcolo: le tavole emesse dopo questa relazione la richiamano con il numero '
       + 'del calcolo, e la relazione va riemessa con il loro numero.' }];
   }
-  const changed = plant ? plantChanged(last, plant) : [];
   return [{ t: 'grid', head: ['Tavole', 'Revisione', 'Fogli', 'Emesse il', 'Impronta SHA-256'], widths: [0.18, 0.12, 0.1, 0.3, 0.3], align: ['l', 'l', 'r', 'l', 'l'],
     rows: last.map((s) => [`DIS. N° ${s.number}`, s.revision ? `R${s.revision}` : 'prima emissione', String(s.pages), when(s.createdAt), `${s.sha256.slice(0, 16)}…`]) },
   ...(changed.length ? [plantChangedBox(changed, 'Le verifiche delle guide e i carichi sulle strutture di questa relazione sono calcolati con i dati attuali '
