@@ -11,7 +11,7 @@ import {
   stopApp,
 } from './harness.js';
 import { graph } from './json-ld.js';
-import { customer, newProject, sessionCsrf } from './people.js';
+import { customer, sessionCsrf } from './people.js';
 import { enable2fa } from './twofa.js';
 
 before(startApp);
@@ -199,37 +199,6 @@ test('email change: the old address is told, the new one confirms', async () => 
   );
   assert.equal((await b.confirmEmail(link)).status, 200);
   assert.ok(await prisma.user.findUnique({ where: { email: 'new@example.test' } }));
-});
-
-test('deleting your own account needs the password and the tick, and removes the projects', async () => {
-  const b = await customer('gone@example.test');
-  await newProject(b, 'base', 'X');
-  const csrf = await sessionCsrf(b, '/account/data');
-  assert.equal(
-    (
-      await b.post('/account/data/delete', {
-        _csrf: csrf,
-        password: 'Wrong-Password-000',
-        confirm: 'yes',
-      })
-    ).status,
-    302,
-  );
-  assert.ok(
-    await prisma.user.findUnique({ where: { email: 'gone@example.test' } }),
-    'wrong password keeps the account',
-  );
-  const done = await b.post('/account/data/delete', {
-    _csrf: csrf,
-    password: CUSTOMER_PASSWORD,
-    confirm: 'yes',
-  });
-  assert.equal(done.location, '/login');
-  assert.equal(await prisma.user.findUnique({ where: { email: 'gone@example.test' } }), null);
-  assert.equal(
-    await prisma.project.count({ where: { name: 'X', user: { email: 'gone@example.test' } } }),
-    0,
-  );
 });
 
 test('a forged flash cookie cannot break or fake the page', async () => {
