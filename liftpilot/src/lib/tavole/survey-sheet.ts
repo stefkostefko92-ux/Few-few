@@ -7,6 +7,7 @@
 // give up the room their wrapped labels take, down to NOTE_MIN (round 37: the labels shrank to 0,95 mm). Every value
 // arrives written (survey-data.ts); this module only lays them out.
 import { FRAME, fitted, paragraph, rowExtra, table, textWidth, wrap, type Cell, type Shape } from '@/drawing';
+import { TEXT_MIN } from './checks-sheet';
 import { FAILED, TITLE_H, titleBlock, type Row } from './datasheet';
 import type { SurveySheet } from './survey-data';
 import { REF_BAND_H, refBand } from './title-block';
@@ -17,10 +18,12 @@ const rows3 = (rows: readonly Row[]): Cell[][] => rows.map(([l, u, v]) => [{ tex
 
 /** The loads' band over the title block and the band of the records [mm]. */
 const GRID_H = 9.8;
-/** The sheet's lettering never smaller (the checks sheet's TEXT_MIN, round 37); the checks' rows' height; the notes'
- *  lettering at most and at least [mm]. */
-const TEXT_MIN = 2, CHECK_ROW = 3.3, NOTE_MAX = 2.3, NOTE_MIN = 1.8;
-const CHECKS_HEAD = 'VERIFICHE DEL LOCALE, DEL BASAMENTO E DELLE CALATE (TRA PARENTESI I PUNTI DELLA UNI EN 81-20:2020)';
+/** The checks' rows' height, at most and at least (the lettering TEXT_MIN — the checks sheet's — with room round it:
+ *  round 37 review, the rows went down to 2,3 mm under 2 mm lettering); the notes' lettering at most and at least [mm]. */
+const CHECK_ROW = 3.3, CHECK_ROW_MIN = TEXT_MIN * 1.3, NOTE_MAX = 2.3, NOTE_MIN = 1.8;
+/** The checks' title (their own sheet's, when they do not fit sheet 1) and their table's heading on sheet 1. */
+export const SURVEY_CHECKS_TITLE = 'VERIFICHE DEL LOCALE, DEL BASAMENTO E DELLE CALATE';
+const CHECKS_HEAD = `${SURVEY_CHECKS_TITLE} (TRA PARENTESI I PUNTI DELLA UNI EN 81-20:2020)`;
 
 /** The checks' table rows at the lettering `cs`: the heading of the columns, then a check a row (its outcome in bold
  *  when it does not pass). */
@@ -37,9 +40,29 @@ function checkWidths(rows: readonly (readonly Cell[])[], w: number): number[] {
   return [w - side[0] - side[1] - side[2], ...side];
 }
 
+/** The sheet's columns (paper millimetres): left, between, right; the top; the foot of the title block, of the band of
+ *  the records and of the loads; the foot of the columns. */
+const xL = FRAME.x0, xM = 98, xR = FRAME.x1, yTop = FRAME.y1, yb = FRAME.y0 + TITLE_H, yBand = yb + 1.6 + REF_BAND_H, yd = yBand + 1.6 + GRID_H, yCols = yd + 1.6;
+const noteW = xR - xM - 2.4, LEAD = 1.2;
+
+/** The right column's room for the notes and the checks: over the electrical supply (`yFoot`), the notes' height at the
+ *  lettering `s`, the checks' rows with their widths and the height their wrapped labels add. */
+function rightColumn(d: SurveySheet) {
+  const yFoot = yCols + (d.electric.length + 1) * 3.3 + 1.6, lines = checkRows(d.checks, TEXT_MIN), widths = checkWidths(lines, xR - xM);
+  const extra = lines.reduce((t, r) => t + rowExtra(r, widths, TEXT_MIN, TEXT_MIN), 0);
+  const notesH = (s: number): number => 5.2 + d.notes.reduce((h, x) => h + 4.2 + s * (1.3 + (wrap(x.text, noteW, { size: s, cond: true }).length - 1) * LEAD) + 0.8, 0);
+  return { yFoot, lines, widths, extra, notesH };
+}
+
+/** Whether the checks fit sheet 1 under the notes at their least lettering, their rows at least CHECK_ROW_MIN; else the
+ *  set gives them their own sheet at its end (survey-build.ts, checks-sheet.ts: as a whole design's). */
+export function checksFitSheet1(d: SurveySheet): boolean {
+  const n = d.checks.length, c = rightColumn(d);
+  return n === 0 || c.notesH(NOTE_MIN) <= yTop - c.yFoot - 1 - ((n + 2) * CHECK_ROW_MIN + c.extra + 1.6) + 1e-9;
+}
+
 export function surveySheetShapes(d: SurveySheet): Shape[] {
-  const out: Shape[] = [], xL = FRAME.x0, xM = 98, xR = FRAME.x1, yTop = FRAME.y1;
-  const yb = FRAME.y0 + TITLE_H, yBand = yb + 1.6 + REF_BAND_H, yd = yBand + 1.6 + GRID_H, yCols = yd + 1.6;
+  const out: Shape[] = [];
   // left column: three tables of label, unit and value, one of the machines side by side; the rows as tall as fill it, a
   // text that would shrink under TEXT_MIN wrapped at their lettering, its row as much taller (round 37)
   const head = (text: string): Cell[] => [{ text, size: 3 }];
@@ -70,11 +93,10 @@ export function surveySheetShapes(d: SurveySheet): Shape[] {
   const e = table(xM, yCols + (d.electric.length + 1) * 3.3, [56, xR - xM - 70, 14], 3.3,
     [[{ text: 'CARATTERISTICHE ELETTRICHE', size: 2.6 }], ...d.electric.map(([l, u, v]): Cell[] => [{ text: l }, { text: v }, { text: u, align: 'c' }])], 2.05, TEXT_MIN);
   out.push(...e.shapes);
-  const yFoot = yCols + (d.electric.length + 1) * 3.3 + 1.6, noteW = xR - xM - 2.4, LEAD = 1.2, n = d.checks.length;
-  // the checks' table as tall as its rows with their wrapped labels (the notes take what it leaves)
-  const lines = checkRows(d.checks, TEXT_MIN), widths = checkWidths(lines, xR - xM), extra = lines.reduce((t, r) => t + rowExtra(r, widths, TEXT_MIN, TEXT_MIN), 0);
+  // the checks' table as tall as its rows with their wrapped labels (the notes take what it leaves); on their own sheet
+  // (d.checksSheet), none here
+  const { yFoot, lines, widths, extra, notesH: height } = rightColumn(d), n = d.checksSheet == null ? d.checks.length : 0;
   const checksH = n ? (n + 2) * CHECK_ROW + extra + 1.6 : 0;
-  const height = (s: number): number => 5.2 + d.notes.reduce((h, x) => h + 4.2 + s * (1.3 + (wrap(x.text, noteW, { size: s, cond: true }).length - 1) * LEAD) + 0.8, 0);
   let ns = NOTE_MAX;
   while (ns - 0.05 >= NOTE_MIN - 1e-9 && height(ns) > yTop - yFoot - 1 - checksH) ns -= 0.05;
   let y = yTop;
@@ -87,8 +109,9 @@ export function surveySheetShapes(d: SurveySheet): Shape[] {
     y = p.bottom - 0.8;
   }
   if (n) {
-    // (the rows as high as the room left allows, never higher than CHECK_ROW: a label wraps, it is never shrunk)
-    const rh = Math.min(CHECK_ROW, (y - 1.6 - yFoot - extra) / (n + 2));
+    // (the rows as high as the room left allows, between CHECK_ROW_MIN and CHECK_ROW: a label wraps, it is never shrunk;
+    // the set has checked they fit: checksFitSheet1)
+    const rh = Math.max(CHECK_ROW_MIN, Math.min(CHECK_ROW, (y - 1.6 - yFoot - extra) / (n + 2)));
     out.push(...table(xM, y - 1.6, widths, rh, [[{ text: CHECKS_HEAD, size: 2.4 }], ...lines], TEXT_MIN, TEXT_MIN).shapes);
   }
 
@@ -103,6 +126,6 @@ export function surveySheetShapes(d: SurveySheet): Shape[] {
     const vw = Math.min(16, textWidth(v, { size: 2.4, cond: true }));
     out.push(fitted([x0 + 1.2, yBand + 3], name, 2.2, cw - vw - 3.6), fitted([x0 + cw - 1.2, yBand + 3], v, 2.4, 16, { align: 'r' }));
   });
-  out.push(...refBand(yBand, d.checks.filter((c) => c[3] === FAILED).length, d.refs ?? null), ...titleBlock(d, yb));
+  out.push(...refBand(yBand, d.checks.filter((c) => c[3] === FAILED).length, d.refs ?? null, d.checksSheet ?? null), ...titleBlock(d, yb));
   return out.filter((s) => s.t !== 'text' || s.text !== '');
 }

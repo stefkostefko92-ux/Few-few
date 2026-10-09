@@ -8,18 +8,20 @@ import { PRESETS } from '@/calc/presets';
 import type { FormValues } from '@/calc/types';
 import { drawingArea, type Entity } from '@/drawing';
 import { VOCI_VANO } from '@/shaft';
-import { foundSpans } from '@/shaft/room-draw';
+import { outlineBox } from '@/shaft/room-floor';
+import { dropSpan } from '@/shaft/machine-room';
+import { WALL, foundSpans } from '@/shaft/room-draw';
 import { letteringBox, meets } from '@/shaft/room-label';
 import { roomSectionOn } from '@/shaft/room-section-view';
 import { roomPlanOn } from '@/shaft/room-view';
-import { governorFree } from '@/shaft/support-check';
+import { governorFree, machineParts } from '@/shaft/support-check';
 import it from '../../../messages/it.json';
 import en from '../../../messages/en.json';
 import bg from '../../../messages/bg.json';
 import { ambitoOf } from '../lift/collaudo';
 import { deriveRoom } from '../room/derive';
 import { startSurvey, surveySaveSchema, type Survey } from '../room/survey';
-import { surveyGovernor } from '../room/survey-site';
+import { surveyFound, surveyGovernor } from '../room/survey-site';
 import { surveyView } from '../tavole/views';
 import { overlaps } from './room-lettering-helpers';
 
@@ -73,6 +75,49 @@ test('pianta e B-B del rilievo con limitatore e aperture: nessuna scritta sopra 
       assert.deepEqual(overlaps(v.r.shapes), [], `${name} ${kind}`);
     }
   }
+});
+
+test('pianta a 1:50 (locale 4000 × 4400): il nome del limitatore e P4 misurati alla scala della pianta, nessuna scritta sopra un’altra', () => {
+  // the round 37 review's room: drawn at 1:50, the governor's lettering measured at 1:25 went over P4 and pushed the
+  // frame's row onto the openings' lettering
+  const big = (g: NonNullable<Survey['governor']>): Change => (s) => ({ ...s, room: { ...s.room, W: 4000, D: 4400, H: 2300 }, governor: g, openings, existingSupport: { kind: 'beams', keep: false } });
+  for (const [name, V] of [['A', { ...PRESETS.A }], ['C', { ...PRESETS.C }], ['B in alto', { ...PRESETS.B, layout: 'top' }]] as [string, FormValues][]) {
+    for (const g of [{ x: 2400, y: 1700, W: 400, D: 300, ropes: true }, { x: 2500, y: 2800, W: 400, D: 300, ropes: true }]) {
+      const { d } = derive(V, big(g));
+      for (const kind of ['plan', 'section'] as const) {
+        const v = surveyView(d, kind, inner);
+        assert.ok(v, `${name} ${kind}`);
+        if (kind === 'plan') assert.equal(v.place.scale, 50, `${name}: la pianta a 1:50`);
+        assert.deepEqual(overlaps(v.r.shapes), [], `${name} ${JSON.stringify(g)} ${kind}`);
+      }
+    }
+  }
+});
+
+test('il nome e P4 del limitatore: le scritte misurate alla scala data, mai sopra l’argano', () => {
+  const { s, d } = derive({ ...PRESETS.C }, over), G = d.G;
+  assert.ok(G);
+  // twice the scale, twice the lettering in the room's millimetres (the name's and P4's tight boxes: marks 1 and 2)
+  const at25 = surveyFound(s, [], null, 25).marks, at50 = surveyFound(s, [], null, 50).marks;
+  for (const i of [1, 2]) {
+    const a = at25[i], b = at50[i];
+    assert.ok(a && b);
+    assert.ok(Math.abs((b.x1 - b.x0) - 2 * (a.x1 - a.x0)) < 1e-6 && Math.abs((b.y1 - b.y0) - 2 * (a.y1 - a.y0)) < 1e-6, `${i}`);
+  }
+  // a governor by the wall beside the machine at 1:50 (the review's A 3400 × 3800, {400, 1500}): its name nowhere on the
+  // machine — on a leader where no usual place is clear —, no lettering over another
+  const V = { ...PRESETS.A }, by: Change = (x) => ({ ...x, room: { ...x.room, W: 3400, D: 3800, H: 2300 }, governor: { x: 400, y: 1500, W: 400, D: 300, ropes: true }, openings,
+    existingSupport: { kind: 'beams', keep: false } });
+  const r = derive(V, by), Gb = r.d.G;
+  assert.ok(Gb);
+  const v = surveyView(r.d, 'plan', inner);
+  assert.ok(v);
+  assert.equal(v.place.scale, 50);
+  assert.deepEqual(overlaps(v.r.shapes), []);
+  const name = v.entities.find((e): e is Extract<Entity, { e: 'text' }> => e.e === 'text' && e.text === 'Limitatore esistente');
+  assert.ok(name);
+  const box = letteringBox(name.at, name.text, name.size, name.align, 0, false, 50);
+  for (const [x0, y0, x1, y1] of machineParts(Gb, r.d.M).map(outlineBox)) assert.ok(!meets(box, { x0, y0, x1, y1 }), JSON.stringify(name.at));
 });
 
 test('il nome del limitatore esistente fuori dalla sua superficie libera, sul lato opposto quando c’è posto', () => {
@@ -131,4 +176,24 @@ test('sezione B-B: la soletta aperta dove il taglio attraversa un’apertura esi
   const { d } = derive({ ...PRESETS.C }, room), G = d.G;
   assert.ok(G);
   assert.deepEqual(foundSpans(d.site, G), []);
+});
+
+test('sezione B-B: un’apertura rilevata oltre il muro non apre la soletta nel muro, una a cavallo solo dentro il locale', () => {
+  // the round 37 review's survey: the opening past the rear wall (y 3350…3550 in a room 3200 deep) — the save takes it
+  const V = { ...PRESETS.C }, past: Change = (s) => ({ ...room(s), openings: [{ x: 1300, y: 3450, W: 300, D: 200 }] });
+  const { s, d } = derive(V, past), G = d.G;
+  assert.ok(G && surveySaveSchema.safeParse(s).success);
+  assert.deepEqual(foundSpans(d.site, G), []);
+  const [, r1] = dropSpan(G, 0, 0, G.room.W, G.room.D), sec = roomSectionOn(d.site, d.M, G).entities, slab = G.room.slab;
+  const concrete = sec.flatMap((e) => (e.e === 'path' && e.fill === 'concrete' && Math.min(...e.pts.map((p) => p[1])) === -slab && Math.max(...e.pts.map((p) => p[1])) === 0
+    ? [Math.max(...e.pts.map((p) => p[0]))] : []));
+  assert.ok(concrete.some((u) => Math.abs(u - (r1 + WALL)) < 1e-6), `la soletta fino al filo esterno del muro: ${JSON.stringify(concrete)}`);
+  assert.ok(!sec.some((e) => e.e === 'text' && e.text.startsWith('FORO ESISTENTE')));
+  // across the wall: open only up to the room's inner face
+  const across: Change = (x) => ({ ...room(x), openings: [{ x: 1300, y: 3200, W: 300, D: 200 }] });
+  const r = derive(V, across), Ga = r.d.G;
+  assert.ok(Ga);
+  const spans = foundSpans(r.d.site, Ga), [, ra1] = dropSpan(Ga, 0, 0, Ga.room.W, Ga.room.D);
+  assert.equal(spans.length, 1);
+  assert.ok(spans.every((f) => f.u1 <= ra1 + 1e-6), JSON.stringify(spans.map((f) => [f.u0, f.u1])));
 });

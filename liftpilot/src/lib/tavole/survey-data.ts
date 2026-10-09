@@ -55,6 +55,9 @@ export interface SurveySheet extends TitleData {
   P: readonly (readonly [string, string])[];
   /** the records the set goes with (title-data.ts refsText) */
   refs?: string | null;
+  /** the sheet of the set that holds the checks when they do not fit sheet 1 (survey-sheet.ts checksFitSheet1); none:
+   *  on sheet 1 */
+  checksSheet?: number | null;
 }
 
 /** The support under the machine as the sheet names it, on the HEB beams over the shaft's walls when it stands there. */

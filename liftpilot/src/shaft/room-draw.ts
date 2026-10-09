@@ -18,16 +18,18 @@ export const quad = (G: RoomGeo, u0: number, v0: number, u1: number, v1: number)
 export const holesOf = (S: Pick<RoomSite, 'ends'>, M: MachineSpec, G: RoomGeo): ReturnType<typeof slabHoles> => slabHoles(M, G, G.room.slab, S.ends);
 
 /** Where section B-B's cut — the drop line through the car's drop — crosses the slab's existing openings a survey found
- *  (RoomSite.openings, room axes): their stretches [u0, u1] along it, in order, with the opening's outline (round 37:
+ *  (RoomSite.openings, room axes): their stretches [u0, u1] along it within the room (an opening surveyed past a wall
+ *  opens no slab in the wall's thickness: round 37 review), in order, with the opening's outline as surveyed (round 37:
  *  the slab was drawn solid across them). */
 export function foundSpans(S: Pick<RoomSite, 'openings'>, G: RoomGeo): { u0: number; u1: number; box: Box }[] {
-  const [cx, cy] = G.carDrop, span = (c: number, d: number, lo: number, hi: number): [number, number] | null => {
+  const [cx, cy] = G.carDrop, R = G.room, span = (c: number, d: number, lo: number, hi: number): [number, number] | null => {
+    if (lo >= hi) return null;
     if (Math.abs(d) < 1e-9) return c > lo && c < hi ? [-Infinity, Infinity] : null;
     const a = (lo - c) / d, b = (hi - c) / d;
     return [Math.min(a, b), Math.max(a, b)];
   };
   return (S.openings ?? []).flatMap((box) => {
-    const [x0, y0, x1, y1] = box, sx = span(cx, G.ux, x0, x1), sy = span(cy, G.uy, y0, y1);
+    const [x0, y0, x1, y1] = [Math.max(box[0], 0), Math.max(box[1], 0), Math.min(box[2], R.W), Math.min(box[3], R.D)], sx = span(cx, G.ux, x0, x1), sy = span(cy, G.uy, y0, y1);
     if (!sx || !sy) return [];
     const u0 = Math.max(sx[0], sy[0]), u1 = Math.min(sx[1], sy[1]);
     return u1 - u0 > 1 ? [{ u0, u1, box }] : [];

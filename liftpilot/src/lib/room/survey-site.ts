@@ -3,13 +3,13 @@
 // a whole design's (m_free, m_route, m_quadro, m_gov, m_govfree), the plan draws it with its load P4, its ropes through the
 // slab go down into the shaft (m_govdrop, round 37) —, the slab's existing openings, drawn dashed with their size, and
 // whether the new support bears on one of them (m_holes). Room axes [mm]; pure.
-import { letterSize, path, rect, type Box as DrawBox, type Entity, type Pt } from '@/drawing';
+import { letterSize, line, path, rect, type Box as DrawBox, type Entity, type Pt } from '@/drawing';
 import { check } from '@/shaft/checks';
 import type { HebLayout } from '@/shaft/heb';
 import type { MachineSpec, RoomGeo } from '@/shaft/machine-room';
 import { KV_VERT } from '@/shaft/norme-vert';
 import type { Box } from '@/shaft/room-floor';
-import { AT, letteringBox, tagBox } from '@/shaft/room-label';
+import { AT, gridNear, leaderFrom, letteringBox, tagBox } from '@/shaft/room-label';
 import { reactionPoints } from '@/shaft/room-reactions';
 import type { ShaftCheck } from '@/shaft/types';
 import type { Survey } from './survey';
@@ -50,6 +50,7 @@ export function governorDropCheck(s: Pick<Survey, 'governor' | 'shaft' | 'room'>
 /** The governor's name on the plan; the sides of its footprint (room axes: the rear wall at y = D). */
 const GOV_NAME = 'Limitatore esistente';
 type Side = 'rear' | 'front' | 'right' | 'left';
+type Spot = { at: Pt; align: 'l' | 'c' | 'r' };
 
 const boxOf = ([x0, y0, x1, y1]: Box): DrawBox => ({ x0, y0, x1, y1 });
 const meets = (a: DrawBox, b: DrawBox): boolean => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
@@ -60,42 +61,63 @@ const grown = (b: DrawBox, d: number): DrawBox => ({ x0: b.x0 - d, y0: b.y0 - d,
  *  its reference and the openings' lettering (as room-site.ts gives a whole design's). The name and P4 keep off the room's
  *  walls, the openings' lettering and `keep` (room axes: what stands on the floor round the governor), first on the side
  *  away from its free area `free` (room-ways.ts hatches it: round 37, the name lay on the area's size), then above, below,
- *  right or left of it; lettering measured as the plan draws it at 1:25. */
-export function surveyFound(s: Pick<Survey, 'openings' | 'governor' | 'room'>, keep: readonly Box[] = [], free: Box | null = null): { entities: Entity[]; box: DrawBox | null; marks: DrawBox[] } {
-  const out: Entity[] = [], marks: DrawBox[] = [], gov = surveyGovernor(s), R = s.room;
+ *  right or left of it — none clear, the nearest clear place over the room on a leader —, off `lettered` too and where
+ *  it can off `dims` (the plan's lettering and dimension lines that go where they go whatever else is drawn: the
+ *  panel's name and chains, the bedplate's chain); lettering measured as the plan draws it at its scale `k` (model
+ *  millimetres to one of paper: room-view.ts, through RoomSite.governorAt), its gaps as wide on paper as at 1:25 (round
+ *  37 review: measured at 1:25 on a plan drawn at 1:50, the name went over P4 and pushed the frame's row onto the
+ *  openings' lettering). */
+export function surveyFound(s: Pick<Survey, 'openings' | 'governor' | 'room'>, keep: readonly Box[] = [], free: Box | null = null, k = AT, lettered: readonly DrawBox[] = [], dims: readonly DrawBox[] = []): { entities: Entity[]; box: DrawBox | null; marks: DrawBox[] } {
+  const out: Entity[] = [], marks: DrawBox[] = [], gov = surveyGovernor(s), R = s.room, f = k / AT;
   for (const [x0, y0, x1, y1] of existingOpenings(s)) {
-    const text = `FORO ESISTENTE ${Math.round(x1 - x0)}×${Math.round(y1 - y0)}`, at: Pt = [(x0 + x1) / 2, y0 - 70];
+    const text = `FORO ESISTENTE ${Math.round(x1 - x0)}×${Math.round(y1 - y0)}`, at: Pt = [(x0 + x1) / 2, y0 - 70 * f];
     out.push(path([[x0, y0], [x1, y0], [x1, y1], [x0, y1]], true, 'hidden'), path([[x0, y0], [x1, y1]], false, 'hidden'));
     out.push({ e: 'text', at, text, size: 1.4, align: 'c', halo: true });
-    const l = letteringBox(at, text, 1.4, 'c');
+    const l = letteringBox(at, text, 1.4, 'c', 0, false, k);
     marks.push({ x0: Math.min(x0, l.x0), y0: l.y0, x1: Math.max(x1, l.x1), y1 });
   }
   if (!gov) return { entities: out, box: null, marks };
-  const [x0, y0, x1, y1] = gov, cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, h = letterSize(1.6) * AT, body = boxOf(gov);
+  const [x0, y0, x1, y1] = gov, cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, h = letterSize(1.6) * k, gap = 60 * f, body = boxOf(gov);
   // the side away from its free area (none: over it, where the name always went)
   const away: Side = !free ? 'rear' : free[2] <= x0 ? 'right' : free[0] >= x1 ? 'left' : free[3] <= y0 ? 'rear' : 'front';
-  const spots: Readonly<Record<Side, { at: Pt; align: 'l' | 'c' | 'r' }>> = {
-    rear: { at: [cx, y1 + 60], align: 'c' }, front: { at: [cx, y0 - 60 - h], align: 'c' },
-    right: { at: [x1 + 60, cy - 0.35 * h], align: 'l' }, left: { at: [x0 - 60, cy - 0.35 * h], align: 'r' },
-  };
-  const order: Side[] = [away, 'rear', 'front', 'right', 'left'];
-  const busy = [body, ...marks, ...keep.map(boxOf), ...(free ? [boxOf(free)] : [])], inRoom = (b: DrawBox): boolean => b.x0 >= 0 && b.y0 >= 0 && b.x1 <= R.W && b.y1 <= R.D;
-  // how much of a box (20 mm round it) lies on what is there; out of the room, all of it
+  // above or below it centred, from either end, past either corner (by a wall the centred name leaves the room at
+  // 1:50); beside it level with its middle, its top or its bottom
+  const level = (y: number): Spot[] => [{ at: [cx, y], align: 'c' }, { at: [x0, y], align: 'l' }, { at: [x1, y], align: 'r' }, { at: [x1 + gap, y], align: 'l' }, { at: [x0 - gap, y], align: 'r' }];
+  const upright = (x: number, align: 'l' | 'r'): Spot[] => [cy - 0.35 * h, y1 - 0.7 * h, y0].map((y): Spot => ({ at: [x, y], align }));
+  const spots: Readonly<Record<Side, Spot[]>> = { rear: level(y1 + gap), front: level(y0 - gap - h), right: upright(x1 + gap, 'l'), left: upright(x0 - gap, 'r') };
+  const order: Side[] = [away, ...(['rear', 'front', 'right', 'left'] as const).filter((sd) => sd !== away)];
+  const busy = [body, ...marks, ...keep.map(boxOf), ...(free ? [boxOf(free)] : []), ...lettered], inRoom = (b: DrawBox): boolean => b.x0 >= 0 && b.y0 >= 0 && b.x1 <= R.W && b.y1 <= R.D;
+  // how much of a box (20 mm round it at 1:25) lies on what is there; out of the room, all of it
   const on = (b: DrawBox, taken: readonly DrawBox[]): number => (inRoom(b) ? taken.reduce((t, q) => {
-    const g = grown(b, 20);
+    const g = grown(b, 20 * f);
     return t + (meets(g, q) ? (Math.min(g.x1, q.x1) - Math.max(g.x0, q.x0)) * (Math.min(g.y1, q.y1) - Math.max(g.y0, q.y0)) : 0);
   }, 0) : Infinity);
-  // the first place clear of it all, else the one least on it
-  const best = <T extends { box: DrawBox }>(ps: readonly T[], taken: readonly DrawBox[]): T => ps.find((p) => on(p.box, taken) === 0) ?? ps.reduce((p, q) => (on(q.box, taken) < on(p.box, taken) ? q : p));
-  const name = best(order.map((k) => ({ ...spots[k], box: letteringBox(spots[k].at, GOV_NAME, 1.6, spots[k].align) })), busy);
+  // the first of the usual places clear of it all and of the dimension lines `dims` (each side's first ones first: as
+  // before round 37's review), else clear of it all (a row's figures find room along it), else the nearest clear over
+  // the room on a leader, else the usual one least on it
+  const clear = <T extends { box: DrawBox }>(ps: readonly T[], taken: readonly DrawBox[]): T | undefined => ps.find((p) => on(p.box, taken) === 0);
+  const least = <T extends { box: DrawBox }>(ps: readonly T[], taken: readonly DrawBox[]): T => ps.reduce((p, q) => (on(q.box, taken) < on(p.box, taken) ? q : p));
+  const lettering = (p: Spot): Spot & { box: DrawBox } => ({ ...p, box: letteringBox(p.at, GOV_NAME, 1.6, p.align, 0, false, k) });
+  const usual = [...order.map((sd) => spots[sd][0]), ...order.flatMap((sd) => spots[sd].slice(1))].map(lettering), room: DrawBox = { x0: 0, y0: 0, x1: R.W, y1: R.D }, mid = letteringBox([0, 0], GOV_NAME, 1.6, 'c', 0, false, k);
+  const far = (): (Spot & { box: DrawBox })[] => gridNear(room, [cx, cy]).map(([x, y]) => {
+    const at: Pt = [x, y - 0.35 * h];
+    return { at, align: 'c', box: { x0: at[0] + mid.x0, y0: at[1] + mid.y0, x1: at[0] + mid.x1, y1: at[1] + mid.y1 } };
+  });
+  const all = [...busy, ...dims], near = clear(usual, all) ?? clear(usual, busy), name = near ?? clear(far(), all) ?? least(usual, all);
   // P4 out from a corner along its diagonal, else out from the middle of a side, farther each time, clear of the name
-  // too; its leader to that corner or side
-  const ends: Pt[] = [[x1, y1], [x0, y1], [x1, y0], [x0, y0], [x1, cy], [x0, cy], [cx, y1], [cx, y0]];
-  const tag = best([160, 280, 400].flatMap((d) => ends.map((c) => {
-    const at: Pt = [c[0] + Math.sign(c[0] - cx) * d, c[1] + Math.sign(c[1] - cy) * d];
-    return { c, at, box: tagBox(at, 'P4') };
-  })), [...busy, name.box]);
+  // too, else the nearest clear over the room; its leader to that corner or side, or to the nearest point of the body
+  const ends: Pt[] = [[x1, y1], [x0, y1], [x1, y0], [x0, y0], [x1, cy], [x0, cy], [cx, y1], [cx, y0]], onBody = (p: Pt): Pt => [Math.min(Math.max(p[0], x0), x1), Math.min(Math.max(p[1], y0), y1)];
+  const tags = [160, 280, 400].flatMap((d) => ends.map((c) => {
+    const at: Pt = [c[0] + Math.sign(c[0] - cx) * d * f, c[1] + Math.sign(c[1] - cy) * d * f];
+    return { c, at, box: tagBox(at, 'P4', k) };
+  }));
+  const tagBusy = [...busy, name.box], tagAll = [...tagBusy, ...dims];
+  const tag = clear(tags, tagAll) ?? clear(tags, tagBusy) ?? clear(gridNear(room, [cx, cy]).map((at) => ({ c: onBody(at), at, box: tagBox(at, 'P4', k) })), tagAll) ?? least(tags, tagAll);
   out.push(rect(x0, y0, x1, y1, 'outline', 'paper'), { e: 'text', at: name.at, text: GOV_NAME, size: 1.6, align: name.align, halo: true });
+  if (!near) {
+    const to = onBody([(name.box.x0 + name.box.x1) / 2, (name.box.y0 + name.box.y1) / 2]);
+    out.push(line(leaderFrom(name.box, to), to, 'dim'));
+  }
   out.push({ e: 'tag', at: tag.at, text: 'P4', to: tag.c });
   const p4 = tag.box;
   const box = [body, name.box, p4].reduce((a, b) => ({ x0: Math.min(a.x0, b.x0), y0: Math.min(a.y0, b.y0), x1: Math.max(a.x1, b.x1), y1: Math.max(a.y1, b.y1) }));

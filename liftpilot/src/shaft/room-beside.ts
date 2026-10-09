@@ -2,8 +2,9 @@
 // written along the line on the side away from the gearbox, and the rows of the frame's and the rope drop's chains,
 // each moved out until it clears the governor, the control panel's free area and the main switch (and the sheave's size
 // where that moved out). Model entities and rows, room axes [mm]; pure.
-import { TEXT, textWidth, type Box, type Entity, type Pt } from '../drawing';
+import { TEXT, chain, textWidth, type Box, type Entity, type Pt } from '../drawing';
 import { rinvioAcross, rinvioRun } from './rinvio';
+import { rinvioName } from './rinvio-view';
 import { ropeWidths, type MachineSpec, type RoomGeo } from './machine-room';
 import { onDrop, quad } from './room-draw';
 import { bbox } from './room-fittings-view';
@@ -19,6 +20,24 @@ export interface Bed {
   u1: number;
   v0: number;
   v1: number;
+}
+
+/** The bedplate with the diverting pulley of the machine `M`, when the pulley turns in it; else null. */
+export function bedOf(M: MachineSpec, G: RoomGeo): Bed | null {
+  const rfx = M.rinvio;
+  return rfx?.on === 'frame' && M.Dp > 0 && G.pulleyZ - M.Dp / 2 >= 0 ? (([u0, u1], [v0, v1]) => ({ u0, u1, v0, v1 }))(rinvioRun(M, G), rinvioAcross(G, rfx)) : null;
+}
+
+/** The bedplate's chain: its length and width beside the machine on the gearbox's side, away from the drops' chains,
+ *  along the drop line askew (on an axis its projection is its length); its lettering kept off the walls (`within`).
+ *  Where it goes does not hang on the rest of the plan: a replacement's governor keeps its name and P4 off it (round 37
+ *  review). */
+export function bedChain(G: RoomGeo, M: MachineSpec, bed: Bed, within: Box): Entity {
+  const g = G.dir, ax = Math.abs(G.ux) > Math.abs(G.uy) ? 0 : 1, askew = Math.max(Math.abs(G.ux), Math.abs(G.uy)) <= 0.999, rfx = M.rinvio;
+  const bv = g > 0 ? bed.v1 : bed.v0, [c, d] = [onDrop(G, bed.u0, bv + 220 * g), onDrop(G, bed.u1, bv + 220 * g)], side1 = onDrop(G, bed.u0, bv)[1 - ax];
+  const text = [`{v} × ${Math.round(bed.v1 - bed.v0)} ${rfx ? rinvioName(rfx) : 'Telaio con rinvio'}`];
+  return chain(askew ? { dir: ax ? 'y' : 'x', on: { o: G.carDrop, u: [G.ux, G.uy] }, pts: [bed.u0, bed.u1], at: bv + 220 * g, from: [bv, bv], text, within }
+    : { dir: ax ? 'y' : 'x', pts: [Math.min(c[ax], d[ax]), Math.max(c[ax], d[ax])], at: c[1 - ax], from: [side1, side1], text, within });
 }
 
 /** What goes beside the machine: the side of the drop line away from the gearbox (`side`, v) and the gearbox's
@@ -40,8 +59,7 @@ export function besideMachine(S: RoomSite, M: MachineSpec, G: RoomGeo, drawn: re
   const R = G.room, w = ropeWidths(M.n, M.d), g = G.dir, clearV = Math.max(w.ropes + 60, M.Dp > 0 ? w.pulley + 40 : 0);
   const side = g > 0 ? Math.min(G.across[0], -clearV) : Math.max(G.across[1], clearV), gear = g > 0 ? G.across[1] : G.across[0];
   // the bedplate with the diverting pulley, when the pulley turns in it: its chain goes on the machine's other side
-  const rfx = M.rinvio, bed = rfx?.on === 'frame' && M.Dp > 0 && G.pulleyZ - M.Dp / 2 >= 0
-    ? (([u0, u1], [v0, v1]) => ({ u0, u1, v0, v1 }))(rinvioRun(M, G), rinvioAcross(G, rfx)) : null;
+  const bed = bedOf(M, G);
   // the sheave's size along the drop line (read from the left or from below: on an axis level or upright), where it
   // keeps off the lettering drawn and the governor's lettering and dimensions: as always, else along the line, else
   // farther out (the rows below keep off it there)

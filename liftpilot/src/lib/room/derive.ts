@@ -10,6 +10,7 @@
 // stops a record: the machine below (no room over the shaft: not drawn, as in a whole design), drops that coincide or
 // lie outside the shaft, a diverting pulley under the room's floor. Pure: the browser and the server run it alike.
 import type { FormValues } from '@/calc/types';
+import type { Box as DrawBox } from '@/drawing';
 import { shapeOf } from '@/lib/catalog/shapes';
 import { machineSpec } from '@/lib/lift/machine';
 import { carriedMass, supportLoad } from '@/lib/lift/support';
@@ -23,6 +24,7 @@ import { existingRoomCheck } from '@/shaft/room-above';
 import { axisOverTop, rinvioAxisOf, rinvioClash, rinvioTopOf } from '@/shaft/rinvio';
 import type { RoomSite } from '@/shaft/room-site';
 import { outlineBox, switchBox } from '@/shaft/room-floor';
+import { AT } from '@/shaft/room-label';
 import { beamChecks, besideGovernor, fitChecks, governorFree, governorRoomChecks, machineParts, panelFloorChecks, rinvioChecks, type SupportLoad } from '@/shaft/support-check';
 import { ownAxis } from '@/shaft/support';
 import type { ShaftCheck } from '@/shaft/types';
@@ -95,11 +97,16 @@ function deriveOnce(V: FormValues, s: Survey, a: Analysis): RoomDerived {
   // the existing governor and openings the survey found (round 36): drawn — the governor's name and P4 off what stands
   // round it and off its free area (round 37) —, and on the floor for the checks; the openings in section B-B too; the
   // existing machine among the pieces the hook lifts
+  // (its lettering placed for the scale the plan takes: round 37 review)
   const gov = surveyGovernor(s), compare = a.ctx.compare && a.ctx.O.mass > 0;
-  const found = surveyFound(s, G ? besideGovernor(G, M).map(outlineBox) : [], G && gov ? governorFree(gov, G, M).area : null);
+  const keep = G ? besideGovernor(G, M).map(outlineBox) : [], free = G && gov ? governorFree(gov, G, M).area : null;
+  const found = (k: number, lettered: readonly DrawBox[] = [], dims: readonly DrawBox[] = []): RoomSite['governor'] => {
+    const f = surveyFound(s, keep, free, k, lettered, dims);
+    return { entities: f.entities, box: f.box, marks: f.marks };
+  };
   const site: RoomSite = {
     W: s.shaft.W, D: s.shaft.D, wall: s.shaft.wall, ends: [[top, top + H], [top + H, top]], mid: [top + H / 2, top + H / 2],
-    governor: { entities: found.entities, box: found.box, marks: found.marks }, govRopes: [], calata: () => null, calcEdits: false,
+    governor: found(AT), governorAt: found, govRopes: [], calata: () => null, calcEdits: false,
     drops: { car: [s.car.x, s.car.y], cw: [cw[0] - R.shaftX, cw[1] - R.shaftY] }, govFoot: gov, pieces: compare ? [a.ctx.O.mass] : [],
     openings: existingOpenings(s),
   };
