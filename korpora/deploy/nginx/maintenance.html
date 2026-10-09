@@ -48,6 +48,11 @@
         -webkit-text-size-adjust: 100%;
         text-size-adjust: 100%;
       }
+      /* Bulgarian cursive letter shapes (locl) off, as on the site: „код“ must not read as „kog“ */
+      :lang(bg),
+      :lang(bg) * {
+        font-feature-settings: 'locl' 0 !important;
+      }
       body {
         margin: 0;
         min-height: 100vh;

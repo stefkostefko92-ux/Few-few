@@ -84,6 +84,7 @@ export function cover(c: BrochureContext): string {
   </figure>
   <p class="b-trial">${icon('clock')}<span>${esc(t('landing.hero.trial', { days: c.trialDays }))}</span></p>
   <p class="b-proof">${esc(t('brochure.cover.proof', { modules: assets.example.modules, width: c.num(assets.example.moduleWidth) }))}</p>
+  ${titleBlock(c, 1)}
 </section>`;
 }
 

@@ -3,13 +3,15 @@
 //   public/img/brand/logo-<width>.webp  the logo in the widths of the page headers' and footers' srcset, and a large
 //                                       one for the link preview (og-image.ts) and the brochure
 //   public/img/brand/logo.png           the logo as PNG, for JSON-LD
-//   public/img/favicon.ico              the emblem at 16, 32, 48 and 192 px (Google Search wants one over 48 px)
+//   public/img/favicon.ico              the emblem at 16, 32 and 48 px (the 192 px one is icon-192.png, linked from the head)
 //   public/img/apple-touch-icon.png     180 px on an opaque tile (iOS rounds the corners and wants no transparency)
 //   public/img/icon-<size>.png          192 and 512 px for the web manifest, on the same tile
+// Every PNG is written with a palette (scripts/png-palette.mjs): a quarter of the bytes of the browser's own PNG.
 // Run after changing the logo: `node scripts/brand.mjs` (needs the Playwright dev dependency).
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
+import { encodePalettePng } from './png-palette.mjs';
 
 const here = (f) => fileURLToPath(new URL(f, import.meta.url));
 const SOURCE = `data:image/png;base64,${readFileSync(here('../brand/korpora-logo.png')).toString('base64')}`;
@@ -21,7 +23,7 @@ const WIDTHS = [160, 320, 480, 1200];
 const JSONLD_WIDTH = 640;
 
 // Runs in the page: the source trimmed to what it draws, scaled down in halves (one big step aliases the thin
-// lines of the drawing around the emblem), encoded as WebP or PNG.
+// lines of the drawing around the emblem), encoded as WebP; the PNGs come back as raw pixels for png-palette.mjs.
 const RENDER = async ({ source, emblem, tile, widths, jsonldWidth }) => {
   const img = new Image();
   img.src = source;
@@ -69,16 +71,21 @@ const RENDER = async ({ source, emblem, tile, widths, jsonldWidth }) => {
     return out;
   };
   const b64 = (c, type, quality) => c.toDataURL(type, quality).split(',')[1];
+  const raw = (c) => {
+    const { data } = c.getContext('2d').getImageData(0, 0, c.width, c.height);
+    let text = '';
+    for (let i = 0; i < data.length; i += 0x8000)
+      text += String.fromCharCode(...data.subarray(i, i + 0x8000));
+    return { width: c.width, height: c.height, rgba: btoa(text) };
+  };
 
   const logo = crop(x0, y0, x1 - x0 + 1, y1 - y0 + 1);
   const ratio = logo.width / logo.height;
   const files = {};
+  const rasters = {};
   for (const w of widths)
     files[`brand/logo-${w}.webp`] = b64(scaled(logo, w, Math.round(w / ratio)), 'image/webp', 0.9);
-  files['brand/logo.png'] = b64(
-    scaled(logo, jsonldWidth, Math.round(jsonldWidth / ratio)),
-    'image/png',
-  );
+  rasters['brand/logo.png'] = raw(scaled(logo, jsonldWidth, Math.round(jsonldWidth / ratio)));
 
   // the emblem, centred on a square
   const side = Math.max(emblem.w, emblem.h);
@@ -104,13 +111,13 @@ const RENDER = async ({ source, emblem, tile, widths, jsonldWidth }) => {
       ctx.fillRect(0, 0, size, size);
     }
     ctx.drawImage(scaled(square, size - inset * 2, size - inset * 2), inset, inset);
-    return b64(c, 'image/png');
+    return raw(c);
   };
-  const ico = [16, 32, 48, 192].map((size) => ({ size, png: icon(size) }));
-  files['apple-touch-icon.png'] = icon(180, 12, tile);
+  const ico = [16, 32, 48].map((size) => ({ size, ...icon(size) }));
+  rasters['apple-touch-icon.png'] = icon(180, 12, tile);
   for (const size of [192, 512])
-    files[`icon-${size}.png`] = icon(size, Math.round(size * 0.08), tile);
-  return { files, ico, size: [logo.width, logo.height] };
+    rasters[`icon-${size}.png`] = icon(size, Math.round(size * 0.08), tile);
+  return { files, rasters, ico, size: [logo.width, logo.height] };
 };
 
 /** ICO with PNG-compressed entries (supported since Windows Vista and by every browser and crawler). */
@@ -146,15 +153,21 @@ try {
     jsonldWidth: JSONLD_WIDTH,
   });
   mkdirSync(here('../public/img/brand'), { recursive: true });
+  const palette = ({ width, height, rgba }) =>
+    encodePalettePng(width, height, Buffer.from(rgba, 'base64'));
   for (const [name, data] of Object.entries(out.files)) {
     writeFileSync(here(`../public/img/${name}`), Buffer.from(data, 'base64'));
     console.log(`public/img/${name}`);
   }
+  for (const [name, raster] of Object.entries(out.rasters)) {
+    writeFileSync(here(`../public/img/${name}`), palette(raster));
+    console.log(`public/img/${name}`);
+  }
   writeFileSync(
     here('../public/img/favicon.ico'),
-    ico(out.ico.map(({ size, png }) => ({ size, png: Buffer.from(png, 'base64') }))),
+    ico(out.ico.map((entry) => ({ size: entry.size, png: palette(entry) }))),
   );
-  console.log('public/img/favicon.ico (16, 32, 48, 192)');
+  console.log('public/img/favicon.ico (16, 32, 48)');
   console.log(`logo trimmed to ${out.size.join(' × ')} px`);
 } finally {
   await browser.close();

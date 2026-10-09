@@ -40,8 +40,8 @@ npm run story:stills     # public/img/story/step-<n>-<ширина>.webp — ч�
                          # (живата сцена в Chromium със SwiftShader, ~7 мин., сървърът да работи) — ръчно, след промяна
                          # на двигателя, на 3D изгледа на редактора или на landing/
 node scripts/brand.mjs   # от brand/korpora-logo.png (логото на собственика): public/img/brand/logo-*.webp и logo.png,
-                         # favicon.ico (16/32/48/192), apple-touch-icon и иконите на манифеста — от емблемата (K в
-                         # кръга); после npm run og:image и npm run brochure
+                         # favicon.ico (16/32/48), apple-touch-icon и иконите на манифеста — от емблемата (K в
+                         # кръга), всички PNG с палитра (scripts/png-palette.mjs); после npm run og:image и npm run brochure
 npm run brochure         # print/korpora-brochure-<език>.pdf — брошурата A4 за клиенти (print/README.md)
 ```
 

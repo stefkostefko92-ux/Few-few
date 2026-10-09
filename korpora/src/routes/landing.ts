@@ -41,7 +41,8 @@ function publicPage(
   data: Record<string, unknown>,
 ): void {
   applyLocale(res, locale);
-  res.set('Cache-Control', 'public, max-age=600');
+  // the page carries this response's CSP nonce: only the visitor's own cache may keep it, never a shared one
+  res.set('Cache-Control', 'private, max-age=600');
   // `paths` и `legalPath` са в res.locals за всички страници (server.ts)
   res.render(view, {
     publicBase: config().PUBLIC_BASE_URL,
