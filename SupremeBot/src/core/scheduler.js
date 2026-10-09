@@ -222,7 +222,9 @@
         currentAction = mod.id;
         lastAction = mod.id;
         emitStatus();
-        const logMark = Logger.history ? Logger.history().length : 0;
+        // Time marker, not buffer length: the log is a 300-entry ring buffer, so
+        // once full its length is constant and a length-based slice() is empty.
+        const startedAt = Date.now();
         try {
           await action();
           consecutiveErrors = 0;
@@ -230,8 +232,8 @@
           // reusing the module's own success/info log line.
           const wh = Storage.section('webhooks') || {};
           if (wh.notifyEachAction && TB.notify) {
-            const news = (Logger.history ? Logger.history().slice(logMark) : [])
-              .filter((e) => e.level === 'success' || e.level === 'info');
+            const news = (Logger.history ? Logger.history() : [])
+              .filter((e) => e.t >= startedAt && (e.level === 'success' || e.level === 'info'));
             const last = news[news.length - 1];
             // desktop:false -> per-action goes to the webhooks only, never a
             // Chrome popup (that would be far too spammy).

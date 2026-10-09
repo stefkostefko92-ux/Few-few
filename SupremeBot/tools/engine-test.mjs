@@ -410,4 +410,24 @@ await test('fixed actionIntervalSec paces actions (programmable Next action)', a
   assert.ok(e.TB.Scheduler.status().nextAt > e.nowMs(), 'nextAt exposed for the panel countdown');
 });
 
+await test('per-action webhook carries the module\'s own log line even when the log ring buffer is full', async () => {
+  const e = freshEngine({
+    settings: { general: { enabled: true, humanize: false }, webhooks: { notifyEachAction: true } }
+  });
+  // Fill the 300-entry ring buffer: from now on history().length never changes.
+  for (let i = 0; i < 400; i++) e.TB.Logger.info('noise ' + i);
+  const sent = [];
+  e.TB.notify = (o) => sent.push(o);
+  e.TB.Scheduler.register({
+    id: 'probe', priority: 99,
+    tick: () => async () => { e.TB.Logger.success('Adventure started - 900s, +100 gold'); }
+  });
+  e.TB.Scheduler.start();
+  await e.advance(2000);
+  // desktop:false marks the per-action reports (the start notification is separate).
+  const perAction = sent.filter((o) => o.desktop === false);
+  assert.ok(perAction.length > 0, 'a per-action notification was sent (webhooks only, never a Chrome popup)');
+  assert.equal(perAction[0].message, 'Adventure started - 900s, +100 gold', 'detail comes from the module log line, not the generic module name');
+});
+
 console.log(`\n${pass} engine checks passed.`);
