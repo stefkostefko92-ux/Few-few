@@ -12,6 +12,7 @@ import {
 } from '../auth/guards.js';
 import { AUDIENCE_WITHHELD, can, caseAudiences, coversAudiences } from '../auth/rbac.js';
 import { DiagnosticContextSchema, redactContext } from '../domain/context.js';
+import { attachmentsByMessage } from '../services/attachments.js';
 import {
   addTimeline,
   caseWhereFor,
@@ -153,6 +154,12 @@ export function casesRouter(deps: AppDeps): Router {
         ).map((u) => [u.id, u.name]),
       );
       const ticket = await deps.db.ticket.findUnique({ where: { caseId: c.id } });
+      // Само CLEAN файлове, привързани към съобщение; самите байтове — през подписан адрес.
+      const files = await attachmentsByMessage(
+        deps.db,
+        p.user.tenantId,
+        messages.map((m) => m.id),
+      );
       const reader = caseAudiences(p.user.role, c.portal);
       res.json({
         case: caseView(c),
@@ -166,6 +173,7 @@ export function casesRouter(deps: AppDeps): Router {
             body: visible ? m.body : AUDIENCE_WITHHELD,
             payload: visible ? m.payload : null,
             createdAt: m.createdAt,
+            attachments: files.get(m.id) ?? [],
           };
         }),
       });

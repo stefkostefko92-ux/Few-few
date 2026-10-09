@@ -40,11 +40,16 @@ npm run dev                     # http://localhost:4330
 
 `VERTEX_PROJECT_ID` (+ ADC или `GOOGLE_APPLICATION_CREDENTIALS`) включва AI; без него случаите,
 каталогът и знанието работят, а `POST /api/v1/chat/messages` връща 503 `ai_unavailable`.
+Прикачените файлове искат `ATTACHMENTS_DIR` + `ATTACHMENT_URL_KEY`; качването — и clamd
+(`CLAMAV_HOST`), иначе 503 `av_unavailable` (без проверка файл не се приема).
 
 ## Знание: от документ до отговор
 
 1. `POST /api/v1/admin/products` — модел, семейство, HW ревизии с обхват на FW.
-2. `POST /api/v1/admin/documents` — метаданните от §7.2 + текст по страници → `DRAFT`.
+2. `POST /api/v1/admin/documents` — метаданните от §7.2 + текст по страници → `DRAFT`. Или PDF:
+   първо `POST /api/v1/admin/attachments?name=…` (сурово тяло, антивирус), после документа с
+   `sourceAttachmentId` — текстът се извлича по страници, checksum = sha256 на оригинала, а
+   страница без текстов слой (сканирана) дава предупреждение `ingest.pageWithoutText` (без OCR).
 3. `POST /api/v1/admin/documents/:id/submit` → `REVIEW` → `…/publish` → `PUBLISHED` (документ по
    безопасност — публикува друг човек; новата ревизия отписва предишната). `…/deprecate` го сваля.
 4. `POST /api/v1/admin/errors` (сочи публикуван документ-източник) → `…/publish`.
@@ -59,8 +64,11 @@ AI вижда само `PUBLISHED`. Публикуване и отписване
 | GET        | `/api/v1/products/search` · `/devices/:serial` · `/errors/:code` · `/documents/:id/pages/:page`                            | вписан (по аудитория/фирма)  |
 | POST       | `/api/v1/sessions` (нов случай) · GET `/cases` · `/cases/:id` · `/cases/:id/timeline`                                      | техник+                      |
 | PATCH/POST | `/api/v1/cases/:id/context` · `/cases/:id/outcome` · `/cases/:id/assign` (поддръжка)                                       | техник+                      |
-| POST       | `/api/v1/chat/messages` · `/tickets` · `/feedback`                                                                         | техник+                      |
+| POST       | `/api/v1/chat/messages` (+ `attachmentIds`) · `/tickets` · `/feedback`                                                     | техник+                      |
+| POST       | `/api/v1/cases/:id/attachments?kind=PHOTO\|LOG&name=…` (сурово тяло, антивирус)                                            | техник+ с достъп до случая   |
+| GET        | `/api/v1/attachments/:id/url` → подписан адрес (5 мин.) · `/api/v1/files/:id?exp=…&sig=…`                                  | с достъп до файла            |
 | POST       | `/api/v1/admin/products` · `/devices` · `/documents` (+ submit/reject/publish/deprecate) · `/errors` (+ publish/deprecate) | KNOWLEDGE_OWNER              |
+| POST       | `/api/v1/admin/attachments?name=…` (PDF до 50 MB, антивирус)                                                               | KNOWLEDGE_OWNER              |
 | GET        | `/api/v1/audit`                                                                                                            | TENANT_ADMIN, PLATFORM_ADMIN |
 | GET        | `/healthz` (жив) · `/readyz` (базата + дали AI е включен)                                                                  | —                            |
 

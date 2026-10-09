@@ -2,8 +2,11 @@ import { PrismaClient } from '@prisma/client';
 import { diagnose } from './ai/orchestrator.js';
 import { VertexDiagnosisModel } from './ai/model.js';
 import { createApp, type Diagnoser } from './app.js';
-import { aiEnabled, loadConfig } from './config.js';
+import { aiEnabled, attachmentsEnabled, loadConfig } from './config.js';
 import { createLogger } from './logger.js';
+import type { AttachmentDeps } from './services/attachments.js';
+import { ClamdScanner } from './storage/antivirus.js';
+import { FileAttachmentStore } from './storage/attachments.js';
 import { PrismaKnowledgeStore } from './store/knowledge.js';
 import { knowledgeSnapshotId } from './store/snapshot.js';
 
@@ -30,6 +33,26 @@ if (aiEnabled(config)) {
   logger.warn('VERTEX_PROJECT_ID липсва — AI е изключен, /chat/messages връща 503');
 }
 
+// Прикачени файлове: без хранилище — изключени; без антивирус — качването е изключено (503),
+// а вече проверените файлове остават достъпни.
+let attachments: AttachmentDeps | null = null;
+if (attachmentsEnabled(config)) {
+  attachments = {
+    store: new FileAttachmentStore(config.ATTACHMENTS_DIR),
+    scanner: config.CLAMAV_HOST
+      ? new ClamdScanner({
+          host: config.CLAMAV_HOST,
+          port: config.CLAMAV_PORT,
+          timeoutMs: config.CLAMAV_TIMEOUT_MS,
+        })
+      : null,
+    urlKey: config.ATTACHMENT_URL_KEY,
+  };
+  if (!attachments.scanner) logger.warn('CLAMAV_HOST липсва — качването на файлове е изключено');
+} else {
+  logger.warn('ATTACHMENTS_DIR липсва — прикачените файлове са изключени');
+}
+
 const app = createApp({
   db,
   logger,
@@ -43,10 +66,19 @@ const app = createApp({
     secureCookies: config.NODE_ENV === 'production',
   },
   diagnose: diagnoser,
+  attachments,
 });
 
 const server = app.listen(config.PORT, config.HOST, () => {
-  logger.info({ host: config.HOST, port: config.PORT, ai: diagnoser !== null }, 'chatchat слуша');
+  logger.info(
+    {
+      host: config.HOST,
+      port: config.PORT,
+      ai: diagnoser !== null,
+      uploads: attachments?.scanner != null,
+    },
+    'chatchat слуша',
+  );
 });
 
 function shutdown(signal: string): void {
