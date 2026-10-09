@@ -3,10 +3,13 @@ import express, { type NextFunction, type Request, type Response } from 'express
 import helmet from 'helmet';
 import { fileURLToPath } from 'node:url';
 import type { Logger } from 'pino';
+import type { BreakerState } from './ai/breaker.js';
 import type { DiagnoseInput, DiagnoseOutput } from './ai/orchestrator.js';
 import { apiError, requireCapability } from './auth/guards.js';
 import { TotpReplayGuard } from './auth/mfa.js';
 import { loadPrincipal, onSessionsRevoked, type SessionDeps } from './auth/sessions.js';
+import type { Metrics } from './observability/catalog.js';
+import { httpMetrics } from './observability/http.js';
 import { RealtimeHub } from './realtime/hub.js';
 import { eventsRouter } from './realtime/stream.js';
 import { adminListsRouter } from './routes/admin-lists.js';
@@ -60,6 +63,10 @@ export interface AppDeps {
   hub?: RealtimeHub;
   /** Отчетите на оценъчния набор за KPI (§16.1); празно/липсва → „изисква оценка“. */
   evalReportsDir?: string;
+  /** Метриките (NFR-09); без тях — без инструментиране. Изнасят се на отделен слушател (index.ts). */
+  metrics?: Metrics;
+  /** Състоянието на circuit breaker-а към Vertex — за /readyz (null → AI е изключен). */
+  aiCircuit?: () => BreakerState | null;
 }
 
 /** Зависимостите след сглобяване — с хъба, който рутерите на работното пространство ползват. */
@@ -95,6 +102,8 @@ export function createApp(appDeps: AppDeps): express.Express {
   const totpReplay = new TotpReplayGuard();
   app.disable('x-powered-by');
   app.set('trust proxy', deps.trustProxy);
+  // RED по шаблон на маршрута — първо, за да види и отказите на helmet/лимитите.
+  if (deps.metrics) app.use(httpMetrics(deps.metrics));
 
   app.use(
     helmet({
@@ -119,13 +128,20 @@ export function createApp(appDeps: AppDeps): express.Express {
   );
 
   // Жизненост (процесът е жив) и готовност (базата отговаря) — отделно, за Nginx/монитора.
+  // Отворен breaker към Vertex НЕ сваля готовността: случаите, разговорите и търсенето работят,
+  // само AI отговорът е 503 — затова е отделно поле (`aiCircuit`), а `ok` зависи само от базата.
   app.get('/healthz', (_req, res) => {
     res.json({ ok: true });
   });
   app.get('/readyz', async (_req, res) => {
     try {
       await deps.db.$queryRaw`SELECT 1`;
-      res.json({ ok: true, app: 'chatchat', ai: deps.diagnose !== null });
+      res.json({
+        ok: true,
+        app: 'chatchat',
+        ai: deps.diagnose !== null,
+        aiCircuit: deps.aiCircuit?.() ?? null,
+      });
     } catch {
       res.status(503).json({ ok: false });
     }

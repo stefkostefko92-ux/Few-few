@@ -323,7 +323,13 @@ describe('RBAC — способности по роля', () => {
   test('здравни проби са публични; готовността казва дали AI е включен', async () => {
     const anon = new Client(h.base);
     assert.deepEqual((await anon.get('/healthz')).body, { ok: true });
-    assert.deepEqual((await anon.get('/readyz')).body, { ok: true, app: 'chatchat', ai: true });
+    // Деплой сондата чете ok + app + ai; aiCircuit (F3) е допълнително поле — без breaker → null.
+    assert.deepEqual((await anon.get('/readyz')).body, {
+      ok: true,
+      app: 'chatchat',
+      ai: true,
+      aiCircuit: null,
+    });
   });
 });
 

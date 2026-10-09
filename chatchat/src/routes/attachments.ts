@@ -98,6 +98,16 @@ export function attachmentUploadRouter(deps: AppDeps): Router {
         bytes: req.body,
       },
     );
+    deps.metrics?.uploads.inc({
+      kind: locals.kind,
+      result: !outcome.ok
+        ? 'rejected'
+        : outcome.verdict.status === 'CLEAN'
+          ? 'clean'
+          : outcome.verdict.status === 'INFECTED'
+            ? 'infected'
+            : 'scan_failed',
+    });
     if (!outcome.ok) return apiError(res, outcome.status, outcome.code);
     if (locals.caseId) {
       await addTimeline(deps.db, locals.caseId, 'attachment.uploaded', p.user.id, {

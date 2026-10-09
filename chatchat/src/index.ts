@@ -1,10 +1,20 @@
 import { PrismaClient } from '@prisma/client';
+import type { Server } from 'node:http';
 import { diagnose } from './ai/orchestrator.js';
 import { VertexDiagnosisModel } from './ai/model.js';
 import { createApp, type Diagnoser } from './app.js';
+import {
+  BreakerDiagnosisModel,
+  BreakerEmbeddingModel,
+  CircuitBreaker,
+  CircuitOpenError,
+} from './ai/breaker.js';
 import { embeddingModelFrom } from './ai/embeddings.js';
 import { aiEnabled, attachmentsEnabled, loadConfig, mfaKey } from './config.js';
 import { createLogger } from './logger.js';
+import { instrumentDiagnoser, meteredScanner } from './observability/ai.js';
+import { BREAKER_STATE_VALUE, createMetrics, type BreakerName } from './observability/catalog.js';
+import { startMetricsServer } from './observability/server.js';
 import type { AttachmentDeps } from './services/attachments.js';
 import { EmbeddingIndexer } from './store/embeddings.js';
 import { ClamdScanner } from './storage/antivirus.js';
@@ -16,37 +26,67 @@ import { knowledgeSnapshotId } from './store/snapshot.js';
 const config = loadConfig();
 const logger = createLogger(config.LOG_LEVEL);
 const db = new PrismaClient();
+// Метриките се събират винаги (евтино, в паметта); изнасят се само с METRICS_PORT.
+const metrics = createMetrics();
+
+/** Breaker към Vertex (NFR-07) — преходите в лога и метриките, бързите откази само в метриките. */
+function breakerFor(name: BreakerName): CircuitBreaker {
+  metrics.breakerState.set({ breaker: name }, BREAKER_STATE_VALUE.closed);
+  return new CircuitBreaker({
+    name,
+    failureThreshold: config.AI_BREAKER_FAILURES,
+    cooldownMs: config.AI_BREAKER_COOLDOWN_SECONDS * 1000,
+    onTransition: (to, from) => {
+      metrics.breakerState.set({ breaker: name }, BREAKER_STATE_VALUE[to]);
+      metrics.breakerTransitions.inc({ breaker: name, to });
+      const level = to === 'open' ? 'warn' : 'info';
+      logger[level]({ breaker: name, from, to }, 'circuit breaker');
+    },
+    onReject: () => metrics.breakerRejections.inc({ breaker: name }),
+  });
+}
 
 let diagnoser: Diagnoser | null = null;
 let indexer: EmbeddingIndexer | null = null;
+let modelBreaker: CircuitBreaker | null = null;
 if (aiEnabled(config)) {
   // Семантичното търсене е по избор и fail-open; генерирането остава fail-closed.
-  const embedder = embeddingModelFrom(config);
+  const rawEmbedder = embeddingModelFrom(config);
+  const embedder = rawEmbedder
+    ? new BreakerEmbeddingModel(rawEmbedder, breakerFor('vertex_embeddings'))
+    : null;
   const store = new PrismaKnowledgeStore(db, {
     embedder,
     queryTimeoutMs: config.EMBEDDING_TIMEOUT_MS,
-    onError: (err) =>
+    onError: (err) => {
+      // Отвореният breaker е вече в лога (прехода) и в метриките — не пълним лога при всеки въпрос.
+      if (err instanceof CircuitOpenError) return;
       logger.warn(
         { err: (err as Error).name, status: (err as { status?: number }).status ?? null },
         'семантичното търсене е пропуснато — точно + пълнотекстово',
-      ),
+      );
+    },
   });
   if (embedder) {
     indexer = new EmbeddingIndexer(db, embedder, logger, config.EMBEDDING_SWEEP_SECONDS);
     indexer.start();
   }
-  const model = new VertexDiagnosisModel(config);
-  diagnoser = (input, signal) =>
-    diagnose(
-      {
-        store,
-        model,
-        snapshotId: () => knowledgeSnapshotId(db, input.scope.tenantId),
-        config,
-      },
-      input,
-      signal,
-    );
+  modelBreaker = breakerFor('vertex_messages');
+  const model = new BreakerDiagnosisModel(new VertexDiagnosisModel(config), modelBreaker);
+  diagnoser = instrumentDiagnoser(
+    (input, signal) =>
+      diagnose(
+        {
+          store,
+          model,
+          snapshotId: () => knowledgeSnapshotId(db, input.scope.tenantId),
+          config,
+        },
+        input,
+        signal,
+      ),
+    metrics,
+  );
 } else {
   logger.warn('VERTEX_PROJECT_ID липсва — AI е изключен, /chat/messages връща 503');
 }
@@ -58,11 +98,14 @@ if (attachmentsEnabled(config)) {
   attachments = {
     store: new FileAttachmentStore(config.ATTACHMENTS_DIR),
     scanner: config.CLAMAV_HOST
-      ? new ClamdScanner({
-          host: config.CLAMAV_HOST,
-          port: config.CLAMAV_PORT,
-          timeoutMs: config.CLAMAV_TIMEOUT_MS,
-        })
+      ? meteredScanner(
+          new ClamdScanner({
+            host: config.CLAMAV_HOST,
+            port: config.CLAMAV_PORT,
+            timeoutMs: config.CLAMAV_TIMEOUT_MS,
+          }),
+          metrics,
+        )
       : null,
     urlKey: config.ATTACHMENT_URL_KEY,
   };
@@ -74,7 +117,12 @@ if (attachmentsEnabled(config)) {
 const hub = new RealtimeHub({
   onError: (err) =>
     logger.warn({ errName: err instanceof Error ? err.name : 'unknown' }, 'поток в реално време'),
+  onPublished: (type, result, seconds) => {
+    metrics.realtimeEvents.inc({ type, result });
+    if (result === 'delivered') metrics.realtimeDelivery.observe(undefined, seconds);
+  },
 });
+metrics.sseStreams.collect = () => metrics.sseStreams.set(undefined, hub.size());
 
 const app = createApp({
   db,
@@ -94,6 +142,8 @@ const app = createApp({
   attachments,
   hub,
   evalReportsDir: config.EVAL_REPORTS_DIR,
+  metrics,
+  aiCircuit: () => modelBreaker?.current ?? null,
 });
 
 const server = app.listen(config.PORT, config.HOST, () => {
@@ -108,9 +158,31 @@ const server = app.listen(config.PORT, config.HOST, () => {
   );
 });
 
+// Метриките — отделен слушател (по подразбиране изключен), никога публичният порт.
+let metricsServer: Server | null = null;
+if (config.METRICS_PORT > 0) {
+  startMetricsServer(metrics.registry, {
+    host: config.METRICS_HOST,
+    port: config.METRICS_PORT,
+    onError: (err) => logger.warn({ errName: err.name }, 'слушателят на метриките'),
+  })
+    .then((s) => {
+      metricsServer = s;
+      logger.info({ host: config.METRICS_HOST, port: config.METRICS_PORT }, 'метрики');
+    })
+    // Без метрики приложението работи — наблюдаемостта не сваля услугата.
+    .catch((err: unknown) =>
+      logger.error(
+        { errName: (err as Error).name, code: (err as NodeJS.ErrnoException).code ?? null },
+        'метриките не тръгнаха',
+      ),
+    );
+}
+
 function shutdown(signal: string): void {
   logger.info({ signal }, 'спиране');
   indexer?.stop();
+  metricsServer?.close();
   // Отворените SSE потоци държат сървъра жив — затваряме ги, клиентите се връщат по REST.
   hub.closeAll();
   server.close(() => {
