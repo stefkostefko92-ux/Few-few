@@ -29,6 +29,7 @@ import { createViewer } from './bind-view.js';
 import { bindFullscreens } from './fullscreen.js';
 import { bindMenus } from './menus.js';
 import { createSaver } from './saver.js';
+import { explainProblems } from './problems.js';
 import {
   loadCatalog,
   driftOf,
@@ -63,6 +64,7 @@ const state = {
   savedAt: boot.updatedAt, // the version this editor opened: the server saves only over it
   saving: false,
   conflict: false,
+  problem: null, // why the server refused the last save, until a save goes through: 'session', 'plan'…
   blockers: [],
   drift: [], // hardware and decors of the saved project that have left the catalog, until it is saved
 };
@@ -95,7 +97,7 @@ function renderTab(id) {
 /* ---------- saving ---------- */
 
 // A change still waiting for its recompute is applied first, so Ctrl+S right after typing saves the new value.
-const { isDirty, showState, save } = createSaver({
+const saver = createSaver({
   state,
   boot,
   csrf,
@@ -106,7 +108,11 @@ const { isDirty, showState, save } = createSaver({
     showDrift([]);
     void recompute();
   },
+  onProblem: (kind) => explain(kind),
 });
+const { isDirty, showState, save } = saver;
+// a refused save says why and offers the way out (a copy, a sign-in in a new tab, the plans)
+const explain = explainProblems({ state, saver, text });
 
 /* ---------- model ---------- */
 

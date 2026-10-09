@@ -14,11 +14,13 @@ interface SaverState {
   drift: string[];
   saving?: boolean;
   conflict?: boolean;
+  problem?: string | null;
 }
 interface Saver {
   isDirty(): boolean;
   showState(): void;
   save(explicit?: boolean): Promise<boolean>;
+  token(): string;
 }
 interface SaverModule {
   createSaver(options: {
@@ -29,6 +31,7 @@ interface SaverModule {
     text: Record<string, string>;
     beforeSave?: () => Promise<void>;
     onSaved?: () => void;
+    onProblem?: (kind: string) => void;
   }): Saver;
 }
 
@@ -37,6 +40,7 @@ const TEXT = {
   unsaved: 'Незаписано',
   saved: 'Записано',
   saveFailed: 'Не успя',
+  notSaved: 'Не е записано',
 };
 const fields: Record<string, object> = {};
 // the tab title is written on the stand-in document, as the browser's would be
@@ -61,6 +65,7 @@ function setup(
   over: Partial<SaverState> = {},
   options: { readOnly?: boolean; beforeSave?: () => Promise<void>; onSaved?: () => void } = {},
 ) {
+  const problems: string[] = [];
   const name = { value: 'Кухня' };
   const label = { textContent: '', dataset: {} as Record<string, string> };
   const error = { hidden: true, textContent: '' };
@@ -88,8 +93,9 @@ function setup(
     text: TEXT,
     beforeSave: options.beforeSave,
     onSaved: options.onSaved,
+    onProblem: (kind) => problems.push(kind),
   });
-  return { state, saver, calls, name, label, error };
+  return { state, saver, calls, name, label, error, problems };
 }
 
 // the server answers with the hash of what was sent, which is what is on screen at that moment
@@ -205,19 +211,83 @@ test('a substitute for hardware that left the catalog is stored only by an expli
   assert.deepEqual([label.textContent, label.dataset.state], [TEXT.saved, 'saved']);
 });
 
-test('a 409 stops every later save: nothing is overwritten unseen', async (t) => {
+test('a 409 stops every later save: nothing is overwritten unseen, and the reason is shown again', async (t) => {
   const conflict = () =>
     Promise.resolve(
       Response.json({ error: 'Променен е другаде', code: 'app.errors.conflict' }, { status: 409 }),
     );
-  const { state, saver, calls, error } = setup(t, conflict, { hash: 'h2' });
+  const { state, saver, calls, problems, label } = setup(t, conflict, { hash: 'h2' });
   assert.equal(await saver.save(), false);
   assert.equal(state.conflict, true);
-  assert.deepEqual([error.hidden, error.textContent], [false, 'Променен е другаде']);
+  assert.deepEqual(problems, ['conflict'], 'the editor offers a copy, not a bare message');
+  assert.deepEqual([label.textContent, label.dataset.state], [TEXT.notSaved, 'error']);
   state.hash = 'h3';
   assert.equal(await saver.save(), false);
   assert.equal(calls.length, 1, 'no second write after the conflict');
+  assert.deepEqual(problems, ['conflict', 'conflict'], 'Save says why again instead of nothing');
   assert.equal(state.savedAt, 'v1');
+});
+
+// the stand-in window of browserGlobals: a reload would be scheduled on its setTimeout
+const browserWindow = (globalThis as unknown as { window: { setTimeout: typeof setTimeout } })
+  .window;
+
+// the editor page of the project as the server sends it to a signed-in person: its token is the session's
+const editorPage = (token: string) =>
+  new Response(`<main class="editor" id="main" data-csrf="${token}"></main>`, {
+    headers: { 'content-type': 'text/html' },
+  });
+const signInPage = () => {
+  const res = new Response('<form action="/login"></form>', {
+    headers: { 'content-type': 'text/html' },
+  });
+  Object.defineProperty(res, 'redirected', { value: true });
+  return res;
+};
+
+test('a lost sign-in keeps the work: no reload, and after a new sign-in Save writes with its token', async (t) => {
+  let signedIn = false;
+  const timers = t.mock.method(browserWindow, 'setTimeout');
+  const { state, saver, calls, problems, label } = setup(
+    t,
+    (call, n, now) => {
+      if (!call.init?.method)
+        return Promise.resolve(signedIn ? editorPage('token-2') : signInPage());
+      if (!signedIn) return Promise.resolve(Response.json({ code: 'login' }, { status: 401 }));
+      const sentToken = new Headers(call.init.headers).get('x-csrf-token');
+      return sentToken === 'token-2'
+        ? saved(call, n, now)
+        : Promise.resolve(Response.json({ code: 'error.csrf' }, { status: 403 }));
+    },
+    { hash: 'h2' },
+  );
+  assert.equal(await saver.save(), false);
+  assert.deepEqual([problems, state.problem], [['session'], 'session']);
+  assert.deepEqual([label.textContent, label.dataset.state], [TEXT.notSaved, 'error']);
+  assert.equal(timers.mock.callCount(), 0, 'the page is not reloaded: what is on screen stays');
+  assert.equal(state.hash, 'h2');
+  signedIn = true; // in another tab
+  assert.equal(await saver.save(), true);
+  const puts = calls.filter((c) => c.init?.method === 'PUT');
+  assert.equal(new Headers(puts.at(-1)?.init?.headers).get('x-csrf-token'), 'token-2');
+  assert.deepEqual(sent(puts.at(-1)), { spec: { type: 'base' }, name: 'Кухня', base: 'v1' });
+  assert.deepEqual([state.problem, state.savedHash, saver.token()], [null, 'h2', 'token-2']);
+  assert.deepEqual([label.textContent, label.dataset.state], [TEXT.saved, 'saved']);
+});
+
+test('an ended plan says so and does not reload the page', async (t) => {
+  const timers = t.mock.method(browserWindow, 'setTimeout');
+  const { saver, problems, state } = setup(
+    t,
+    () =>
+      Promise.resolve(
+        Response.json({ error: 'Plan ended', code: 'app.errors.planExpired' }, { status: 402 }),
+      ),
+    { hash: 'h2' },
+  );
+  assert.equal(await saver.save(), false);
+  assert.deepEqual([problems, state.problem], [['plan'], 'plan']);
+  assert.equal(timers.mock.callCount(), 0);
 });
 
 test('a failed request is not saved: the error is shown and the label says unsaved', async (t) => {

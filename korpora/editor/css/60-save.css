@@ -1,0 +1,18 @@
+/* A save the server refused: the label says so in red, and the notice under the header carries the way out
+   (editor/problems.js) — a copy, a sign-in in a new tab, the plans. */
+.ed-state[data-state='error'] {
+  color: var(--red);
+  font-weight: 600;
+}
+.ed-problem .acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ed-problem:focus {
+  outline: none;
+}
+.ed-problem:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}

@@ -60,8 +60,36 @@ export function showDrift(reasons, { title, text } = {}) {
 
 export function showError(message) {
   const box = $('#save-error');
+  box.className = 'ed-error';
   box.textContent = message;
   box.hidden = false;
+}
+
+// A save the server refused, with the way out: a title, what happened to the work on screen and the actions — a
+// button ({ label, run }) or a link that opens in a new tab ({ label, href }), so this tab keeps the work. Shown in
+// the alert under the header, brought into view and focused (a download that waited for the save ends here too).
+export function showProblem({ title, text, actions }) {
+  const box = $('#save-error');
+  box.className = 'notice notice-bad ed-notice ed-problem';
+  box.innerHTML = `<svg class="i" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg><div><h2>${esc(title)}</h2><p>${esc(text)}</p><div class="acts"></div></div>`;
+  const acts = $('.acts', box);
+  actions.forEach((action, i) => {
+    const el = document.createElement(action.href ? 'a' : 'button');
+    el.className = `btn btn-small${i === 0 ? ' btn-primary' : ''}`;
+    el.textContent = action.label;
+    if (action.href) {
+      el.href = action.href;
+      el.target = '_blank';
+      el.rel = 'noopener';
+    } else {
+      el.type = 'button';
+      el.addEventListener('click', action.run);
+    }
+    acts.append(el);
+  });
+  box.hidden = false;
+  box.scrollIntoView({ block: 'nearest' });
+  box.focus({ preventScroll: true });
 }
 
 // The state label says so too: from here on the saver no longer updates it, so „Saved“ would stay next to the
