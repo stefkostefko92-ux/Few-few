@@ -2,6 +2,7 @@ import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { prisma, startApp, stopApp } from './harness.js';
 import { placeOrder, sessionCsrf, staff } from './people.js';
+import { ORDER_RETENTION_YEARS } from '../../src/retention.js';
 
 before(startApp);
 after(stopApp);
@@ -34,6 +35,13 @@ test('the account sheet: title above the tabs, a way back, empty tables say so, 
   // the destructive forms name the account; deleting asks only for the typed e-mail
   assert.match(body, /\/sessions\/revoke#security" data-confirm="[^"]*sheet\.quiet@example\.test/);
   assert.doesNotMatch(body, /\/delete" class="form" data-confirm=/);
+  // what deletion keeps (owner's decision 6): orders with the contract data, for the term the code deletes by
+  const del = body.slice(body.indexOf('id="delete"'));
+  assert.match(del, /Поръчките остават само с данните на договора \(име, имейл, сума, дати/);
+  assert.match(
+    del,
+    new RegExp(`се изтриват ${ORDER_RETENTION_YEARS} години след изтриването на акаунта`),
+  );
   assert.match(body, /<template id="confirm-dialog"><dialog class="confirm"/);
 });
 

@@ -19,6 +19,29 @@ export const LOGIN_RETENTION_DAYS = 180;
 export const UNVERIFIED_RETENTION_DAYS = 7;
 
 /**
+ * Поръчките на изтрит акаунт: остават само с данните на договора (решение на собственика) и се трият
+ * толкова календарни години след изтриването на акаунта — 5, общата давност за вземанията по договора.
+ * Календарни, не 5 × 365 дни: така поръчката не се трие ден-два преди годишнината заради високосните години.
+ */
+export const ORDER_RETENTION_YEARS = 5;
+
+/**
+ * Същият миг `years` календарни години по-рано (UTC). 29 февруари в година без него става 28 февруари —
+ * по-ранна граница, значи изтриване преди годишнината няма.
+ */
+export function yearsBefore(now: Date, years: number): Date {
+  const at = new Date(now.getTime());
+  at.setUTCFullYear(now.getUTCFullYear() - years);
+  if (at.getUTCMonth() !== now.getUTCMonth()) at.setUTCDate(0);
+  return at;
+}
+
+/** Срокът за поръчките на изтрит акаунт, както го казват политиката, страницата „Данни“, износът и писмото. */
+export function ordersKeptText(t: Translator): string {
+  return t('legal.retention.years', { n: ORDER_RETENTION_YEARS });
+}
+
+/**
  * Шифрованият дневен бекъп на базата (`deploy/backup.sh`): пази най-новото копие от всеки от последните
  * толкова дни и от всяка от последните толкова седмици, по-старите трие. Скриптът е на bash и има свои
  * стойности по подразбиране — тестът ги сверява с тези тук, а политиката показва тези. Друга стойност в

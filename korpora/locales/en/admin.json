@@ -313,7 +313,7 @@
       "ownerConfirm": "Give {email} the “Owner” role? It cannot be undone from the panel.",
       "auditTitle": "Audit",
       "deleteTitle": "Deletion",
-      "deleteText": "The account, projects, sessions and devices are deleted permanently. Only a hash of the email stays in the audit log.",
+      "deleteText": "The account, projects, sessions and devices are deleted permanently. Orders stay with the contract details only (name, email, amount, dates, version of the accepted terms, early start and withdrawal) and are deleted {kept} after the account is deleted; an order awaiting payment is cancelled. Only a hash of the email stays in the audit log.",
       "typeEmail": "Type {email} to confirm",
       "deleteButton": "Delete the account for good",
       "orderTerms": "Buyer: {buyer}; early start: {early}; the paid period may start from {date} on.",

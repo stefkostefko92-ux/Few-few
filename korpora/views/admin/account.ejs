@@ -223,7 +223,7 @@
   <% if (manageable && can('accounts:delete')) { %>
   <section class="section danger" aria-labelledby="del-h" id="delete">
     <h2 id="del-h"><%- include('../partials/icon', { name: 'trash' }) %><%= t('admin.account.deleteTitle') %></h2>
-    <p><%= t('admin.account.deleteText') %></p>
+    <p><%= t('admin.account.deleteText', { kept: ordersKept }) %></p>
     <form method="post" action="/admin/accounts/<%= account.id %>/delete" class="form">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="field"><label for="d-email"><%= t('admin.account.typeEmail', { email: account.email }) %></label><input id="d-email" name="confirmEmail" type="email" required autocomplete="off"></div>

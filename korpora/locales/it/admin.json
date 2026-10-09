@@ -313,7 +313,7 @@
       "ownerConfirm": "Assegnare a {email} il ruolo «Proprietario»? Dal pannello non si può annullare.",
       "auditTitle": "Registro",
       "deleteTitle": "Eliminazione",
-      "deleteText": "L'account, i progetti, le sessioni e i dispositivi vengono eliminati definitivamente. Nel registro di controllo resta solo un hash dell'email.",
+      "deleteText": "L'account, i progetti, le sessioni e i dispositivi vengono eliminati definitivamente. Gli ordini restano solo con i dati del contratto (nome, email, importo, date, versione delle condizioni accettate, inizio anticipato e recesso) e vengono eliminati {kept} dopo l'eliminazione dell'account; l'ordine in attesa di pagamento viene annullato. Nel registro di controllo resta solo un hash dell'email.",
       "typeEmail": "Scrivete {email} per confermare",
       "deleteButton": "Elimina l'account per sempre",
       "orderTerms": "Acquirente: {buyer}; inizio anticipato: {early}; il periodo a pagamento può iniziare da: {date}.",
