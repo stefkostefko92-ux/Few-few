@@ -183,7 +183,7 @@ export default async function CalculationPage({ params, searchParams }: {
         {replacement ? null : !c.shaftDesign ? <p className="note">{tt('needDesign')}</p>
           : rec.ok && open ? <IssueForm calculationId={c.id} initials={initialsOf(user.name)} checks={checks} projectId={c.projectId} /> : null}
       </section>
-      <CalculationView values={V} brand={user.companyName} collaudo={C} />
+      <CalculationView values={V} brand={user.companyName} collaudo={C} design={!!c.shaftDesign} />
     </main>
   );
 }

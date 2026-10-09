@@ -1195,6 +1195,7 @@
     "cat_miss": "Nessun argano {brand} passa le verifiche con questi dati: la proposta viene dalla griglia di calcolo.",
     "cat_miss_wall": "Con l’argano in basso accanto al vano la puleggia passa il muro: serve una variante ad albero lungo o con supporto esterno, e {brand} non lo è. Varianti del catalogo: {variants}. La proposta viene dalla griglia di calcolo.",
     "cat_miss_wall_none": "Con l’argano in basso accanto al vano la puleggia passa il muro: serve una variante ad albero lungo o con supporto esterno, e {brand} non ne ha nel catalogo. La proposta viene dalla griglia di calcolo.",
+    "cat_known": "{model}: i valori inseriti sono quelli del catalogo (rapporto, carico statico, massa e puleggia), quindi disegni, 3D e verifiche dell’appoggio usano questo argano com’è. Se se ne cambia uno, l’argano diventa generico.",
     "full_on": "Schermo intero",
     "full_off": "Esci dallo schermo intero",
     "doc_export": "Esporta il progetto",

@@ -68,7 +68,7 @@ export interface ReportInput {
 
 export function buildReport(r: ReportInput): ReportDoc {
   const P = makePres(calcIt, 'it-IT'), X = textsFor(P), { t, fmt } = P;
-  const a = analyse(r.values), { ctx, res, old, sizing, sens } = a, { I, N } = ctx;
+  const a = analyse(r.values, !!r.design), { ctx, res, old, sizing, sens } = a, { I, N } = ctx;
   const when = (d: Date): string => new Intl.DateTimeFormat('it-IT', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Europe/Rome' }).format(d);
   const repl = I.context === 'repl', pr = r.project, m = r.marks ?? NO_MARKS, C = m.collaudo ?? collaudoOf(r.values), rif = repl && C.rifacimento === true && C.norma !== 'en81';
   const layoutText = I.layout === 'bottom' && m.bottom ? BOTTOM_IT[m.bottom] : t(`lay_${I.layout}`);
@@ -169,18 +169,19 @@ export function buildReport(r: ReportInput): ReportDoc {
   }
 
   section('Argano verificato');
-  // the maker and model: chosen from a catalogue in the one form, else recognised by the values (ratio, static load,
-  // mass, sheave)
-  const known = m.catalog ? null : catalogMachineOf(I, N, modelOf(r.values))?.machine ?? null;
+  // the maker and model: proposed from a catalogue in the one form, else recognised by the values (ratio, static load,
+  // mass, sheave), also the one form's machine entered by hand — drawn and checked as that machine (derive.ts)
+  const chosen = m.machineProposed ? m.catalog ?? null : null, known = chosen ? null : catalogMachineOf(I, N, modelOf(r.values))?.machine ?? null;
   const taken = !!known && `${known.brand} ${known.model}` === modelOf(r.values);
-  const named: [string, string][] = m.catalog ? [['Costruttore e modello', `${m.catalog.brand} ${m.catalog.model} (dal catalogo, scelto nel progetto)`]]
-    : known ? [['Costruttore e modello', `${known.brand} ${known.model} (${taken ? 'preso dal catalogo nel calcolatore' : 'riconosciuto dal catalogo'}: `
+  const how = !taken ? 'riconosciuto dal catalogo' : r.design ? 'inserito a mano con il modello del catalogo' : 'preso dal catalogo nel calcolatore';
+  const named: [string, string][] = chosen ? [['Costruttore e modello', `${chosen.brand} ${chosen.model} (dal catalogo, scelto nel progetto)`]]
+    : known ? [['Costruttore e modello', `${known.brand} ${known.model} (${how}: `
       + `rapporto, carico statico, massa e puleggia coincidono; fonte: ${known.src})`]] : [];
   B.push({ t: 'kv', rows: [...named, ...X.machineRows(N, res)] });
   // a catalogue's mass that is not the whole machine: what the loads on the building take instead (machine-mass.ts)
   const whole = machineMass(N, weighed);
   B.push(...massNote(whole, N.mass, fmt));
-  if (m.catalog || known) {
+  if (chosen || known) {
     // a catalogue's machine: what is the maker's and what the software's sizing (the sheave, the ropes, the groove, the
     // motor and the brake), to be confirmed on its data sheet
     B.push({ t: 'p', style: 'note', text: 'Dal catalogo del costruttore: rapporto di riduzione, carico statico ammesso sull’albero e massa. Dal dimensionamento '
@@ -248,11 +249,11 @@ export function buildReport(r: ReportInput): ReportDoc {
   }
 
   section(`${t('c_prop')} (informative)`);
-  B.push(...proposalBlocks({ X, fmt, N, sizing, m, machine, through: !!scheme && scheme !== 'under', design: !!r.design }));
+  B.push(...proposalBlocks({ X, fmt, N, sizing, hold: a.hold, catalog: chosen, machine, through: !!scheme && scheme !== 'under', design: !!r.design }));
 
   if (r.advice) {
     section('Confronto degli argani SICOR e Montanari (informativo)');
-    B.push(...adviceBlocks(r.advice, fmt));
+    B.push(...adviceBlocks(r.advice, fmt, a.hold === 'drop' ? N.D : null));
   }
 
   const adapt = adaptSection(C, repl, t);
@@ -270,8 +271,8 @@ export function buildReport(r: ReportInput): ReportDoc {
   section('Voci normative usate e loro stato');
   // and the registry entries of the values the software filled in, where the layout uses them
   const filled = new Set([...(repl ? ['impianto.collaudo'] : []), ...(rif ? ['impianto.rifacimento'] : []), ...(m.pEstimate ? ['impianto.massa.cabina'] : []), ...(m.machineProposed ? ['impianto.macchina'] : []),
-    ...(I.layout === 'bottom' && m.bottom ? ['impianto.basso.schema'] : []), ...(m.catalog ? ['impianto.catalogo'] : []), ...(whole.estimate ? ['impianto.massa.argano'] : []),
-    ...(guide ? ['impianto.massa.basamento'] : []),
+    ...(I.layout === 'bottom' && m.bottom ? ['impianto.basso.schema'] : []), ...(chosen ? ['impianto.catalogo'] : []), ...(whole.estimate ? ['impianto.massa.argano'] : []),
+    ...(guide ? ['impianto.massa.basamento'] : []), ...(a.hold === 'drop' ? ['impianto.calata'] : []),
     ...m.geometry.filter((k) => k === 'L0' || (k === 'dx' && I.layout === 'topDefl') || (k === 'Hv' && I.layout === 'bottom')).map((k) => `impianto.${k}`)]);
   B.push(...vociBlocks(new Set(res.checks.map((c) => c.id)), vano, filled));
 

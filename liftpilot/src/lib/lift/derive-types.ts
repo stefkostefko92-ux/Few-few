@@ -47,6 +47,7 @@ export interface LiftDerived {
   /** the calculator's values, complete: what the calculation record stores */
   values: FormValues;
   layout: Layout;
+  /** the analysis of the values as a lift design's: a direct pull's proposal only on the plan's drop (direct.ts) */
   analysis: Analysis;
   origin: Readonly<Record<DerivedKey, Origin>>;
   /** the sizing found no machine: the one entered is checked instead */
@@ -78,7 +79,8 @@ export interface LiftDerived {
   refugeHead: { now: number; need: number } | null;
   /** the proposal from a catalogue: the maker's machine taken, or none of the choice taken (the grid's proposal) — none
    *  passing the checks, or with the sheave through the wall none of the choice a long-shaft or outboard-support variant
-   *  (`wall`: a standard model named, or a maker without them) */
+   *  (`wall`: a standard model named, or a maker without them); with the machine entered by hand, the catalogue's
+   *  machine its values are (known.ts), drawn and checked as it stands */
   catalog: { fit: CatalogFit | null; miss: false | 'checks' | 'wall' } | null;
   /** the standard the lift is tested to and what the intervention replaces: which checks apply (collaudo.ts) */
   collaudo: Collaudo;

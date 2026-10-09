@@ -18,7 +18,7 @@ export function summaryText(P: Pres, X: Texts, a: Analysis, opts: { badVisible: 
   L.push(`Q ${fmt(I.Q, 0)} kg · P ${fmt(I.P, 0)} kg · k ${fmt(res.k, 3)} · M_cw ${fmt(res.Mcw, 0)} kg · v ${fmt(I.v, 2)} m/s · ${I.r}:1 · H ${fmt(I.H, 1)} m · α ${fmt(res.alphaDeg, 1)}°`);
   L.push(`D ${fmt(N.D, 0)} mm · ${X.grooveText(N.groove)} · ${N.n}×Ø${fmt(N.d, 1)} · i ${fmt(N.i, 1)} · ${fmt(N.Pn, 1)} kW · ${N.poles} ${t('poles_short')} · ${fmt(N.nm, 0)} 1/min`);
   L.push(`${t('v_prop')}: ${sizing.pick ? X.proposalShort(sizing.pick) : X.noneText(sizing)}`);
-  if (sizing.pick) for (const [k, v] of X.proposalRows(sizing.pick, N, sizing.fixedD, !!sizing.keep)) L.push(`  ${k}: ${v}`);
+  if (sizing.pick) for (const [k, v] of X.proposalRows(sizing.pick, N, a.hold, !!sizing.keep)) L.push(`  ${k}: ${v}`);
   L.push(`${t('g_new')}: ${X.verdictText(res)}${res.fails.length ? ': ' + res.fails.map((c) => X.checkLabel(c.id)).join('; ') : ''}`);
   for (const q of quickRows(P, X, N, res, sens)) L.push(`  ${t(q.key)} — ${X.st(q.status)}: ${q.text}`);
   for (const c of res.checks) {

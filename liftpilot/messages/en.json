@@ -1195,6 +1195,7 @@
     "cat_miss": "No {brand} machine passes the checks with these data: the proposal comes from the calculation grid.",
     "cat_miss_wall": "With the machine below beside the shaft the sheave goes through the wall: it takes a long-shaft or outboard-support variant, and {brand} is not one. Variants in the catalogue: {variants}. The proposal comes from the calculation grid.",
     "cat_miss_wall_none": "With the machine below beside the shaft the sheave goes through the wall: it takes a long-shaft or outboard-support variant, and {brand} has none in the catalogue. The proposal comes from the calculation grid.",
+    "cat_known": "{model}: the values entered are the catalogue’s (ratio, static load, mass and sheave), so the drawings, the 3D and the checks of its support take this machine as it is. Change one of them and the machine becomes a generic one.",
     "full_on": "Full screen",
     "full_off": "Exit full screen",
     "doc_export": "Export the project",

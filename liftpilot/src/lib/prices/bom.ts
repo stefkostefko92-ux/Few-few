@@ -53,7 +53,8 @@ const barsOf = (span: number): number => Math.max(0, Math.ceil(span / RAIL_LENGT
 export function designBom(dv: LiftDerived, plant: Plant = {}): BomLine[] {
   const T: TaggedLine[] = [], add = (p: TaggedLine[0], ...lines: BomLine[]): void => { for (const l of lines) T.push([p, l]); };
   const I = dv.shaft, V = I.vertical, M = dv.machine, C = dv.collaudo, r2 = dv.analysis.ctx.I.r === 2;
-  const fit = dv.origin.machine === 'auto' ? dv.catalog?.fit ?? null : null;
+  // the catalogue's machine of the design: the proposal's, or the one entered by hand (derive.ts), as the documents name it
+  const fit = dv.catalog?.fit ?? null;
   add('machine', fit ? { key: machineKey(fit.machine.brand, fit.machine.model), label: { item: 'machine', name: `${fit.machine.brand} ${fit.machine.model}` }, qty: 1, unit: 'pz' }
     : { key: null, label: { item: 'machine_other', name: M.label }, qty: 1, unit: 'pz' });
   if (!dv.bottom && I.room) {

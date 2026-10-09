@@ -18,7 +18,8 @@ export interface ValueMarks {
   machineProposed: boolean;
   /** the rope scheme of a machine below, as entered (bottom.ts) */
   bottom?: BottomScheme | null;
-  /** the maker's machine the proposal took (catalog.ts) */
+  /** the catalogue's machine of the design, drawn and weighed as it stands: the one the proposal took (catalog.ts;
+   *  `machineProposed`), else the one the machine entered by hand is (known.ts, derive.ts) */
   catalog?: { brand: string; model: string; ratio: string; staticKg: number; src: string } | null;
   /** the acceptance test's standard and the parts the intervention replaces, as the form says (collaudo.ts); null: the
    *  calculation has no lift design (the documents take the intervention's default) */
@@ -35,7 +36,7 @@ export const NO_MARKS: ValueMarks = { pEstimate: false, geometry: [], machinePro
  */
 export function valueMarks(auto: AutoFlags, derived: (Pick<LiftDerived, 'origin' | 'catalog'> & Partial<Pick<LiftDerived, 'drawn'>>) | null, bottom: BottomScheme | null = null,
   collaudo: Collaudo | null = null): ValueMarks {
-  const f = derived?.origin.machine === 'auto' ? derived.catalog?.fit ?? null : null;
+  const f = derived?.catalog?.fit ?? null;
   return {
     pEstimate: auto.P,
     geometry: (['L0', 'dx', 'Hv'] as const).filter((k) => auto[k]),

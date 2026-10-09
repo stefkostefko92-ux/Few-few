@@ -15,6 +15,7 @@ import { massModelOf } from '@/lib/lift/known';
 import { machineMass } from '@/lib/lift/machine-mass';
 import { valueMarks } from '@/lib/lift/marks';
 import { carriedMass, hebOf, supportLoad } from '@/lib/lift/support';
+import { rigLength } from '@/lib/lift/rope';
 import { analyse } from '@/lib/present/analysis';
 import { makeFmt } from '@/lib/present/tr';
 import { buildReport } from '../report/build';
@@ -51,9 +52,11 @@ test('argano di catalogo inserito a mano in un progetto completo: la derivazione
   assert.deepEqual(known && { brand: known.brand, model: known.model }, M93);
   const whole = machineMass(N, M93);
   assert.ok(whole.estimate && whole.kg > N.mass, `${whole.kg} > ${N.mass}`);
-  // the HEB beams on the shaft's walls are checked with the whole machine on them, not with the catalogue's mass
-  const G = roomGeo(d.layout, d.machine), at = (made: typeof M93 | null) =>
-    hebOf(d.layout, d.machine, supportLoad(d.analysis.ctx, d.analysis.res.Mcw, { machine: carriedMass(G, d.machine, N, made) }))?.chosen.result?.sigma;
+  // the HEB beams on the shaft's walls are checked with the whole machine on them, not with the catalogue's mass (the
+  // ropes at their cut length on the rig, as the derivation counts them; round 37: the M93 drawn as it stands)
+  const G = roomGeo(d.layout, d.machine), rope = rigLength({ layout: d.layout, analysis: d.analysis, machine: d.machine, bottom: d.bottom });
+  const at = (made: typeof M93 | null) =>
+    hebOf(d.layout, d.machine, supportLoad(d.analysis.ctx, d.analysis.res.Mcw, { machine: carriedMass(G, d.machine, N, made), rope }))?.chosen.result?.sigma;
   const sigma = d.heb?.chosen.result?.sigma;
   assert.ok(sigma !== undefined && at(M93) !== undefined);
   assert.equal(sigma, at(M93));
@@ -63,7 +66,9 @@ test('argano di catalogo inserito a mano in un progetto completo: la derivazione
 test('argano di catalogo inserito a mano: foglio 1, «Guide e carichi» e la nota della relazione con la stessa massa intera', () => {
   const { inp, d } = carried(), V = d.values, { N } = d.analysis.ctx, whole = machineMass(N, M93);
   const marks = valueMarks(inp.auto, d, d.bottom, d.collaudo);
-  assert.equal(marks.catalog, null, 'nessun argano proposto: il modello si riconosce dai valori');
+  // round 37: no machine proposed, the model recognised by its values — and drawn and weighed as it stands
+  assert.equal(marks.machineProposed, false);
+  assert.deepEqual(marks.catalog && { brand: marks.catalog.brand, model: marks.catalog.model }, M93);
   const project = { name: 'Condominio Roma', address: 'Via Roma 1', city: 'Monza', province: 'MB', plantNumber: 'MB-0001', client: 'Condominio Roma' };
   const x = storedInput(V, d.layout, { number: '26-036', createdAt: new Date('2026-10-08T10:00:00Z'), authorInitials: 'M.R.', companyName: 'Elevatori di prova', projectData: project, plant: {}, revisions: [] }, null, marks);
   assert.ok(x);
@@ -79,7 +84,7 @@ test('argano di catalogo inserito a mano: foglio 1, «Guide e carichi» e la not
   // P9 of the relazione is sheet 1's
   assert.equal(grid.find((r) => r[0] === 'P9')?.[1], sheet.P[8]);
   assert.ok(texts(doc).some((t) => t.includes(`argano completo, ${fmt(whole.kg, 0)} kg`)), 'la nota della massa');
-  assert.ok(texts(doc).some((t) => t.startsWith('Montanari M93 (preso dal catalogo nel calcolatore')), 'il modello riconosciuto');
+  assert.ok(texts(doc).some((t) => t.startsWith('Montanari M93 (inserito a mano con il modello del catalogo')), 'il modello riconosciuto');
 });
 
 test('relazione tecnica della sostituzione: la massa del nuovo argano sotto la tabella è quella della tabella', () => {
