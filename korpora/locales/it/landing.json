@@ -96,7 +96,7 @@
       "modules": "{min}–{max} moduli da {wmin}–{wmax} mm",
       "mattress": "materasso {min}–{max} cm",
       "rules": "La costruzione segue le regole del laboratorio: fondo e cielo stanno tra i fianchi, lo schienale in HDF entra in una scanalatura, i mobili base hanno i traversi per il piano di lavoro e le misure di taglio sono ridotte del bordo.",
-      "lineupNote": "Le viste frontali sono l’output del motore con le misure predefinite, tutte nella stessa scala."
+      "lineupNote": "Le viste frontali sono l'output del motore con le misure predefinite, tutte nella stessa scala."
     },
     "machine": {
       "title": "Che cosa riceve la macchina?",
@@ -199,7 +199,7 @@
     },
     "outputs": {
       "title": "Che cosa esce da un progetto?",
-      "lead": "I file veri della stessa cucina di esempio: il foglio di taglio con il percorso della fresa, i pezzi del primo modulo e l’inizio del G-code."
+      "lead": "I file veri della stessa cucina di esempio: lo schema di taglio del pannello con il percorso della fresa, i pezzi del primo modulo e l'inizio del G-code."
     },
     "story": {
       "model": "Modello",
@@ -208,12 +208,12 @@
       "sizeValue": "{w} × {h} × {d} mm",
       "parts": "Pezzi",
       "materials": "Materiali",
-      "sheets": "Fogli",
+      "sheets": "Pannelli",
       "sheetsValue": "{n} da {w} × {h} mm",
-      "yield": "Resa dei fogli",
-      "yieldValue": "{pct} %",
-      "sheet1": "Pezzi sul foglio 1",
-      "holes": "Fori sul foglio 1",
+      "yield": "Resa dei pannelli",
+      "yieldValue": "{pct}%",
+      "sheet1": "Pezzi sul pannello 1",
+      "holes": "Fori sul pannello 1",
       "program": "G-code"
     },
     "beta": {

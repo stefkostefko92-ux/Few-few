@@ -4,7 +4,7 @@
     "keywords": "Korpora, furniture design software, panel cutting list, drilling map, CNC, G-code, DXF, Carbon Stealth",
     "sheet": "Sheet {n} of {total}",
     "cover": {
-      "for": "For panel furniture workshops, with a CNC router or with a panel saw.",
+      "for": "For panel furniture workshops, with a CNC router or with a sliding table saw.",
       "proof": "Every drawing, table and file in this brochure is output of the program from one project: a kitchen of {modules} units, {width} mm each."
     },
     "model": {

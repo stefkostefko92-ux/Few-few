@@ -61,6 +61,13 @@ test('the privacy policy states the audit retention the maintenance deletes by',
   }
 });
 
+test('llms.txt is English throughout, the notes on the language versions too', async () => {
+  const llms = await (await get('/llms.txt')).text();
+  const notes = [...llms.matchAll(/^- \[Korpora \([^)]+\)\]\([^)]+\): (.+)$/gm)].map((m) => m[1]);
+  assert.equal(notes.length, 3, 'one line per language version');
+  assert.deepEqual([...new Set(notes)], ['product, prices, questions']);
+});
+
 test('one-time pages (QR, recovery codes, a used confirmation link) have no language switcher', async () => {
   const b = await customer('langs@example.test');
   assert.ok((await b.get('/account/security')).body.includes(LANGS), 'a normal page has one');

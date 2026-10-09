@@ -96,7 +96,7 @@
       "modules": "{min}–{max} units of {wmin}–{wmax} mm",
       "mattress": "mattress {min}–{max} cm",
       "rules": "The construction follows workshop practice: the bottom and top sit between the sides, the HDF back goes into a groove, base cabinets have rails for the worktop, and cut sizes are reduced by the edge banding.",
-      "lineupNote": "The front views are the engine’s output at the default sizes, all at one scale."
+      "lineupNote": "The front views are the engine's output at the default sizes, all at one scale."
     },
     "machine": {
       "title": "What does the machine get?",
@@ -199,7 +199,7 @@
     },
     "outputs": {
       "title": "What comes out of one project?",
-      "lead": "The real files of the same example kitchen: the cutting sheet with the router path, the parts of the first module and the start of the G-code."
+      "lead": "The real files of the same example kitchen: the cutting sheet with the router path, the parts of the first unit and the start of the G-code."
     },
     "story": {
       "model": "Model",

@@ -214,7 +214,7 @@
       "yieldValue": "{pct} %",
       "sheet1": "Детайли на лист 1",
       "holes": "Отвори на лист 1",
-      "program": "G-код"
+      "program": "G-code"
     },
     "beta": {
       "tag": "бета"
