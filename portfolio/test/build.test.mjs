@@ -12,7 +12,7 @@ import { PATHS, BROCHURE_PDF, demoPath, SITE } from "../src/lib/html.mjs";
 import { VERTICALS, verticalPath } from "../src/verticals/index.mjs";
 import { WIDGET_KINDS } from "../src/templates/widgets.mjs";
 import { DEMO_ICONS } from "../src/templates/icons.mjs";
-import { TIERS, ADDONS, MIN_DISCOUNT, discountPct, SOURCES, shown, shownMarket, money, tx, VAT_CONVENTION } from "../src/pricing.mjs";
+import { TIERS, ADDONS, MIN_DISCOUNT, discountPct, shownDiscount, SOURCES, shown, shownMarket, money, tx, VAT_CONVENTION } from "../src/pricing.mjs";
 import { LANGS } from "../src/lib/html.mjs";
 import { PROJECTS } from "../src/projects.mjs";
 import { ARTICLES } from "../src/blog/index.mjs";
@@ -101,7 +101,9 @@ test("страницата с цени: reverse charge + Директива 2006
     assert.ok(html.includes(vatText[l]), `${l}: ДДС текст „${vatText[l]}“`);
     for (const t of TIERS) { assert.ok(html.includes(`id="${t.id}"`), `${l}: пакет ${t.id}`); assert.ok(html.includes(`<strong>${money(shown(t.price, l), l)}</strong>`), `${l}: ${t.id} = ${money(shown(t.price, l), l)}`); assert.ok(html.includes(`<s>${money(shownMarket(t.market, l), l)}</s>`), `${l}: пазар ${t.id}`); }
     for (const a of ADDONS) assert.ok(html.includes(`<strong>${money(shown(a.price, l), l)}</strong>`), `${l}: добавка ${a.id}`);
-    assert.ok(!/\{(start|business|premium|ecommerce|hosting|hourly)\}/.test(html), `${l}: непопълнен плейсхолдър`);
+    // Процентът се смята от ПОКАЗАНИТЕ числа (същата ДДС база) — бруто срещу нето пишеше −16% до „790 € срещу 1 140 €“.
+    for (const t of [...TIERS, ...ADDONS]) { const pct = Math.floor((1 - shown(t.price, l) / shownMarket(t.market, l)) * 100); assert.equal(shownDiscount(t, l), pct); assert.ok(pct >= discountPct(t), `${l}: ${t.id}`); assert.ok(html.includes(`−${pct}%`), `${l}: ${t.id} −${pct}%`); }
+    assert.ok(!/\{(start|business|premium|ecommerce|hosting|maintenance|hourly)\}/.test(html), `${l}: непопълнен плейсхолдър`);
     assert.ok(html.includes(`"valueAddedTaxIncluded":${VAT_CONVENTION[l] === "gross"}`), `${l}: JSON-LD valueAddedTaxIncluded`);
     const hub = readFileSync(join(OUT, I18N[l].code, "index.html"), "utf8");
     assert.ok(hub.includes(`${money(shown(790, l), l)}`), `${l}: хъбът показва ${money(shown(790, l), l)}`);

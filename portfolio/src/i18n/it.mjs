@@ -27,7 +27,7 @@ export default {
       { n: "{n}", l: "siti demo finiti" },
       { n: "3", l: "lingue: BG · EN · IT" },
       { n: "95+", l: "punteggio Lighthouse" },
-      { n: "0", l: "template — tutto fatto a mano" },
+      { n: "0", l: "cookie e tracciamento" },
     ],
   },
   demos: {
@@ -86,7 +86,7 @@ export default {
   },
   hosting: {
     title: "Hosting e manutenzione in UE: cosa include e quanto costa",
-    desc: "Hosting su VPS in UE (Hetzner), SSL, backup giornalieri, monitoraggio, aggiornamenti e piccole modifiche. 12 mesi inclusi, poi 13 € o 58 € al mese IVA esclusa.",
+    desc: "Hosting su VPS in UE (Hetzner), SSL, backup giornalieri, monitoraggio, aggiornamenti e piccole modifiche. 12 mesi inclusi, poi {hosting} € o {maintenance} € al mese IVA esclusa.",
     keywords: ["hosting in UE", "costo manutenzione sito", "hosting con SSL e backup", "hosting GDPR", "manutenzione sito web"],
     eyebrow: "Hosting e manutenzione",
     h1: "Il sito funziona. <em>Noi lo teniamo in piedi.</em>",
@@ -292,7 +292,7 @@ export default {
   },
   a11y: {
     title: "Dichiarazione di accessibilità | Carbon Stealth Portfolio",
-    metaDesc: "Accessibilità di portfolio.carbonstealth.eu: WCAG 2.1 livello AA, cosa verifichiamo automaticamente a ogni build, limiti noti e come segnalare una barriera.",
+    metaDesc: "Accessibilità di portfolio.carbonstealth.eu: WCAG 2.1 livello AA, cosa verifichiamo automaticamente, limiti noti e come segnalare una barriera.",
     keywords: ["dichiarazione di accessibilità", "WCAG 2.1 AA", "EN 301 549", "sito accessibile", "European Accessibility Act"],
     eyebrow: "Accessibilità",
     h1: "Dichiarazione di accessibilità",
@@ -315,7 +315,7 @@ export default {
     limitsTitle: "Limiti noti",
     limits: [
       "La home usa animazioni decorative (particelle, schermata «boot», nastro scorrevole) per scelta di design; non si disattivano automaticamente con «riduci movimento», ma si fermano con il pulsante nella navigazione, il nastro si ferma al passaggio/focus e la schermata boot dura meno di 2 secondi e appare una volta per sessione.",
-      "Alcuni link testuali in linea (es. RSS, il credito nel piè di pagina) sono più piccoli di 24×24 px; sono distanziati dagli altri target, eccezione ammessa dal criterio 2.5.8.",
+      "Alcuni link testuali in linea (es. RSS, il credito nel piè di pagina) sono più piccoli di 24×24 px; sono distanziati dagli altri target, eccezione ammessa dal criterio 2.5.8 (WCAG 2.2, oltre quanto richiesto dalla 2.1).",
       "I siti demo mostrano contenuti di esempio; le gallerie usano foto con testo alternativo descrittivo ma senza una descrizione dettagliata di ogni scena.",
       "La brochure PDF è generata dalla versione HTML accessibile della stessa pagina; per gli screen reader consigliamo la versione HTML.",
     ],
@@ -398,7 +398,7 @@ export default {
       { q: "Lavorate con clienti in Italia?", a: "Sì, lavoriamo a distanza con clienti in Italia e Bulgaria e siamo un team bilingue; per i progetti più grandi ci incontriamo a Milano, Bologna, Sofia o Dupnitsa. Le aziende UE con partita IVA valida ricevono fattura senza IVA (reverse charge)." },
       { q: "Il sito comparirà su Google e negli assistenti AI?", a: "Ogni sito ha una base SEO tecnica: titoli e descrizioni, dati strutturati (LocalBusiness, servizi, FAQ), sitemap, hreflang per le lingue, codice veloce con Lighthouse 95+ e llms.txt per i crawler AI. Il posizionamento dipende anche da contenuti e concorrenza, per questo offriamo anche la SEO mensile." },
       { q: "Di chi è il sito dopo il pagamento?", a: "Tuo. Codice, dominio, contenuti e dati sono tuoi; nessun abbonamento a piattaforme, nessun vincolo. Puoi ospitarlo da noi o altrove." },
-      { q: "Cosa includono hosting e manutenzione?", a: "Hosting su VPS in UE (Germania), SSL, backup giornalieri, monitoraggio e aggiornamenti. I primi 12 mesi sono in ogni pacchetto; poi {hosting} € al mese per l'hosting, oppure 58 € con manutenzione e piccole modifiche." },
+      { q: "Cosa includono hosting e manutenzione?", a: "Hosting su VPS in UE (Germania), SSL, backup giornalieri, monitoraggio e aggiornamenti. I primi 12 mesi sono in ogni pacchetto; poi {hosting} € al mese per l'hosting, oppure {maintenance} € con manutenzione e piccole modifiche." },
     ],
   },
   legal: {
@@ -406,7 +406,7 @@ export default {
     sections: [
       { t: "Impressum", p: ["Carbon Stealth VCC · Codice fiscale BG208725180", "ul. Samuil 3, 2670 Bobov Dol, Bulgaria", "Email: info@carbonstealth.eu · Sito: carbonstealth.eu"] },
       { t: "Privacy", p: ["Questo sito è statico. Non usa cookie e non contiene tracciamento. Gli unici dati personali che trattiamo sono quelli che ci invii tu stesso tramite il modulo di contatto o via email. Per prevenire abusi, l'indirizzo IP del mittente resta solo nella memoria del server per la finestra di 15 minuti del limite (5 richieste) e non viene salvato. I moduli nelle pagine demo sono dimostrativi e non inviano nulla.", "Il modulo di contatto (nome, email, azienda, demo scelta, messaggio) è ricevuto dal nostro server in UE e inoltrato a noi come email tramite Brevo (Sendinblue SAS, Parigi — responsabile del trattamento ai sensi dell'art. 28 GDPR, server in UE); non viene salvato in un database. Se ci scrivi tramite il modulo o via email, trattiamo i tuoi dati solo per rispondere alla richiesta (art. 6, par. 1, lett. b GDPR). Conserviamo la corrispondenza fino a 24 mesi. Diritti: accesso, rettifica, cancellazione, portabilità, opposizione — a info@carbonstealth.eu. Autorità di controllo: Commissione per la protezione dei dati personali (CPDP), Sofia.", "Hosting: server in UE (Hetzner, Germania/Finlandia). I log del server (indirizzo IP, richiesta, ora) sono conservati 14 giorni per sicurezza."] },
-      { t: "Condizioni d'uso", p: ["I siti demo mostrano aziende, indirizzi, prezzi e recensioni di fantasia — non sono offerte reali. I prezzi nella pagina «Prezzi» sono indicativi e vengono confermati con preventivo scritto.", "Contenuti e codice sono di proprietà di Carbon Stealth VCC. Legge applicabile: bulgara; foro competente: Sofia."] },
+      { t: "Condizioni d'uso", p: ["I siti demo mostrano aziende, indirizzi, prezzi e recensioni di fantasia — non sono offerte reali. I prezzi nella pagina «Prezzi» sono il nostro listino pubblico; vincolante è il preventivo scritto con prezzo e tempi fissi.", "Contenuti e codice sono di proprietà di Carbon Stealth VCC. Legge applicabile: bulgara; foro competente: Sofia."] },
       { t: "Font e foto", p: ["Tutti i font sono serviti dal nostro server (licenza SIL OFL) — al caricamento non viene inviato nulla a terzi. Le foto nelle pagine demo sono immagini con licenza libera — Creative Commons BY 2.0 (Flickr, tramite il dataset Open Images); le abbiamo ritagliate e corrette nel colore. Autore, link all’originale e licenza sono indicati sotto ogni galleria."] },
     ],
   },

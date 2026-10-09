@@ -50,6 +50,10 @@ export const gross = (n) => Math.round(n * VAT_MULT);
 export const shown = (n, lang) => (VAT_CONVENTION[lang] === "gross" ? n : net(n));
 /** Пазарната референция е нетна; за BG я вдигаме с ДДС, за да е сравнима с нашата брутна цена. */
 export const shownMarket = (n, lang) => (VAT_CONVENTION[lang] === "gross" ? gross(n) : n);
+/** Отстъпката, която читателят вижда: от ПОКАЗАНИТЕ числа (нашата цена срещу задрасканата пазарна, на същата
+ *  ДДС база). `discountPct` сравнява бруто с нето (паритет с carbonstealth.eu и гейтът ≥15%) — до „790 € срещу
+ *  1 140 €“ той пише −16%, което читателят смята като −30%. Закръгляне надолу, както и там. */
+export const shownDiscount = (item, lang) => Math.floor((1 - shown(item.price, lang) / shownMarket(item.market, lang)) * 100);
 /** Часова ставка извън обхвата: 54 € бруто = 45 € нето. */
 export const HOURLY_GROSS = 54;
 
@@ -82,12 +86,12 @@ export const SOURCES = [
 const SEP = { bg: "\u202F", en: ",", it: "." };
 export const fmt = (n, lang = "bg") => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, SEP[lang] || SEP.bg);
 export const money = (n, lang = "bg") => `${fmt(n, lang)} €`;
-/** Плейсхолдърите в текстовете за дадения език: {start} {business} {premium} {ecommerce} {hosting} {hourly}. */
+/** Плейсхолдърите в текстовете за дадения език: {start} {business} {premium} {ecommerce} {hosting} {maintenance} {hourly}. */
 export function numbers(lang) {
   const d = Object.fromEntries(TIERS.map((t) => [t.id, fmt(shown(t.price, lang), lang)]));
-  d.hosting = fmt(shown(ADDONS.find((a) => a.id === "hosting").price, lang), lang);
+  for (const id of ["hosting", "maintenance"]) d[id] = fmt(shown(ADDONS.find((a) => a.id === id).price, lang), lang);
   d.hourly = fmt(shown(HOURLY_GROSS, lang), lang);
   return d;
 }
 /** Текст с попълнени числа по езика. */
-export const tx = (s, lang) => String(s).replace(/\{(start|business|premium|ecommerce|hosting|hourly)\}/g, (_, k) => numbers(lang)[k]);
+export const tx = (s, lang) => String(s).replace(/\{(start|business|premium|ecommerce|hosting|maintenance|hourly)\}/g, (_, k) => numbers(lang)[k]);

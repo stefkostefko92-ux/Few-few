@@ -3,7 +3,7 @@
 // carbonstealth.eu: BG бруто „с включен 20% ДДС“, EN/IT нето „excl. VAT / IVA esclusa“ (shown/shownMarket).
 import { esc, join, head, jsonLd, ICON, ORG, PATHS, SITE, BRAND_EMAIL } from "../lib/html.mjs";
 import { I18N } from "../i18n/index.mjs";
-import { TIERS, ADDONS, MARKET_RANGES, SOURCES, RESEARCH_DATE, discountPct, fmt, money, shown, shownMarket, tx, VAT_CONVENTION } from "../pricing.mjs";
+import { TIERS, ADDONS, MARKET_RANGES, SOURCES, RESEARCH_DATE, shownDiscount, fmt, money, shown, shownMarket, tx, VAT_CONVENTION } from "../pricing.mjs";
 import { siteNav, siteFooter, contact, boot, ghost, HUB_FONTS, BRAND_BG } from "./hub.mjs";
 
 const range = ([a, b], lang, suffix = "") => `${fmt(shownMarket(a, lang), lang)} – ${fmt(shownMarket(b, lang), lang)} €${suffix}`;
@@ -14,11 +14,11 @@ function market(p, lang) {
 }
 
 function tiers(p, lang) {
-  return `<section class="section" id="packages"><div class="wrap">${ghost(esc(p.packagesTitle))}<p class="lede">${esc(p.packagesLede)}</p><div class="tiers">${TIERS.map((t) => { const x = p.tiers[t.id]; return `<article class="tier${t.popular ? " pop" : ""} reveal" id="${t.id}" data-cursor>${t.popular ? `<span class="pop-badge">${esc(p.popular)}</span>` : ""}<p class="tier-tag">${esc(x.tag)}</p><h3>${esc(x.name)}</h3><p class="tier-desc">${esc(x.desc)}</p><p class="tier-price"><strong>${money(shown(t.price, lang), lang)}</strong><span class="tier-market"><s>${money(shownMarket(t.market, lang), lang)}</s> ${esc(p.market)} · <b>−${discountPct(t)}% ${esc(p.saving)}</b></span></p><ul>${x.features.map((f) => `<li>${ICON.check}<span>${esc(f)}</span></li>`).join("")}</ul><p class="tier-delivery">${ICON.clock} ${esc(p.delivery)}: ${t.days[0]}–${t.days[1]} ${esc(p.days)}</p><a class="btn ${t.popular ? "btn-solid" : ""}" data-magnetic href="mailto:${BRAND_EMAIL}?subject=${encodeURIComponent(x.name + " — Carbon Stealth")}">${esc(p.choose)} ${ICON.arrow}</a></article>`; }).join("")}</div></div></section>`;
+  return `<section class="section" id="packages"><div class="wrap">${ghost(esc(p.packagesTitle))}<p class="lede">${esc(p.packagesLede)}</p><div class="tiers">${TIERS.map((t) => { const x = p.tiers[t.id]; return `<article class="tier${t.popular ? " pop" : ""} reveal" id="${t.id}" data-cursor>${t.popular ? `<span class="pop-badge">${esc(p.popular)}</span>` : ""}<p class="tier-tag">${esc(x.tag)}</p><h3>${esc(x.name)}</h3><p class="tier-desc">${esc(x.desc)}</p><p class="tier-price"><strong>${money(shown(t.price, lang), lang)}</strong><span class="tier-market"><s>${money(shownMarket(t.market, lang), lang)}</s> ${esc(p.market)} · <b>−${shownDiscount(t, lang)}% ${esc(p.saving)}</b></span></p><ul>${x.features.map((f) => `<li>${ICON.check}<span>${esc(f)}</span></li>`).join("")}</ul><p class="tier-delivery">${ICON.clock} ${esc(p.delivery)}: ${t.days[0]}–${t.days[1]} ${esc(p.days)}</p><a class="btn ${t.popular ? "btn-solid" : ""}" data-magnetic href="mailto:${BRAND_EMAIL}?subject=${encodeURIComponent(x.name + " — Carbon Stealth")}">${esc(p.choose)} ${ICON.arrow}</a></article>`; }).join("")}</div></div></section>`;
 }
 
 function addons(p, lang) {
-  return `<section class="section alt" id="addons"><div class="wrap">${ghost(esc(p.addonsTitle))}<p class="lede">${esc(p.addonsLede)}</p><div class="addons">${ADDONS.map((a) => `<div class="addon reveal"><span>${esc(p.addons[a.id])}</span><span class="addon-price"><strong>${money(shown(a.price, lang), lang)}</strong> <small>${esc(a.kind === "monthly" ? p.monthly : p.once)}</small><em>−${discountPct(a)}%</em></span></div>`).join("")}</div></div></section>`;
+  return `<section class="section alt" id="addons"><div class="wrap">${ghost(esc(p.addonsTitle))}<p class="lede">${esc(p.addonsLede)}</p><div class="addons">${ADDONS.map((a) => `<div class="addon reveal"><span>${esc(p.addons[a.id])}</span><span class="addon-price"><strong>${money(shown(a.price, lang), lang)}</strong> <small>${esc(a.kind === "monthly" ? p.monthly : p.once)}</small><em>−${shownDiscount(a, lang)}%</em></span></div>`).join("")}</div></div></section>`;
 }
 
 function vat(p) {
