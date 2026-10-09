@@ -70,6 +70,10 @@ export function createSaver({
       state.savedName = body.name;
       state.savedAt = body.updatedAt;
       if (!nameInput.value.trim()) nameInput.value = body.name;
+      // the tab, the history and the page heading (screen readers) carry the saved name, as after a reload
+      document.title = `${body.name} — Korpora`;
+      const heading = $('#main > h1');
+      if (heading) heading.textContent = body.name;
       if (state.drift.length) {
         state.drift = [];
         onSaved();
