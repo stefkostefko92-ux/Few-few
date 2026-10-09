@@ -106,7 +106,7 @@ export function requireStaff(capability: Capability) {
  * Заявката е от нашия адрес: Origin, ако браузърът го е пратил; иначе (с `referer`) и Referer. Без
  * двата — да: тогава пазят токенът и SameSite.
  */
-function fromOurOrigin(req: Request, referer: boolean): boolean {
+export function fromOurOrigin(req: Request, referer: boolean): boolean {
   const expected = new URL(config().PUBLIC_BASE_URL).origin;
   const origin = req.get('origin');
   if (origin) return origin === expected;
