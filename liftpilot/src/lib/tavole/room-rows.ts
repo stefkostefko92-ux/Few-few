@@ -1,12 +1,12 @@
 // What sheet 1 and the replacement's sheet 1 write about the machine room besides the loads (registry locale.gancio,
 // carichi.reazioni, locale.putrelle.vano): the lifting hook's rated load, the reactions R1…Rn on the support's bearings
-// at the sheet's load (three to a row), the line on the governor’s load P4 when the data do not give it, and the note on the
-// HEB beams' bearings. Italian; pure.
+// at the sheet's load (three to a row) with the anchors in tension of those pulled up, the line on the governor’s load P4
+// when the data do not give it, and the note on the HEB beams' bearings. Italian; pure.
 import { hebDrawn, type HebLayout, type HebShaft } from '@/shaft/heb';
 import type { MachineSpec, RoomGeo } from '@/shaft/machine-room';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { hookOf } from '@/shaft/room-hook';
-import { supportReactions } from '@/shaft/room-reactions';
+import { PULLED_UP, supportReactions, upliftOf } from '@/shaft/room-reactions';
 import type { SupportLoad } from '@/shaft/support-check';
 import type { Note } from './notes';
 
@@ -19,14 +19,16 @@ export function hookRow(G: RoomGeo, M: MachineSpec, fmt: Fmt, pieces: readonly n
   return ['GANCIO DI SOLLEVAMENTO SOPRA L’ARGANO: PORTATA', fmt(hookOf(G, M, pieces).load, 0), 'kg'];
 }
 
-/** The reactions R1…Rn on the support's bearings at `load` (with the dynamic coefficient), three to a row. */
+/** The reactions R1…Rn on the support's bearings at `load` (with the dynamic coefficient), three to a row; the anchors
+ *  in tension of the bearings pulled up, with their pull (round 37). */
 export function reactionRows(G: RoomGeo, M: MachineSpec, load: SupportLoad, heb: HebLayout | null, fmt: Fmt): LoadRow[] {
-  const r = supportReactions(G, M, load, heb), where = r.on === 'walls' ? 'NEI MURI' : 'SULLA SOLETTA', out: LoadRow[] = [];
+  const r = supportReactions(G, M, load, heb), where = r.on === 'walls' ? 'NEI MURI' : 'SULLA SOLETTA', out: LoadRow[] = [], up = upliftOf(r);
   for (let i = 0; i < r.R.length; i += 3) {
     const part = r.R.slice(i, i + 3), names = part.map((_, k) => `R${i + k + 1}`).join(' / ');
     // (a bearing pulled up — the load's centre off the bearings' — is written negative: its anchor in tension)
-    out.push([`REAZIONI APPOGGI ${names} ${where}${part.some((x) => x < -0.5) ? ' (− = TRAZIONE)' : ''}`, part.map((x) => fmt(x, 0)).join(' / '), 'daN']);
+    out.push([`REAZIONI APPOGGI ${names} ${where}${part.some((x) => x < PULLED_UP) ? ' (− = TRAZIONE)' : ''}`, part.map((x) => fmt(x, 0)).join(' / '), 'daN']);
   }
+  if (up.length) out.push([`${up.length > 1 ? 'ANCORAGGI' : 'ANCORAGGIO'} A TRAZIONE (SOLLEVAMENTO) ${up.map((u) => `R${u.i}`).join(' / ')} ≥`, up.map((u) => fmt(u.pull, 0)).join(' / '), 'daN']);
   return out;
 }
 

@@ -23,6 +23,7 @@ import { currentRevision, type TitleData } from './title-block';
 import { OVER_DOWN, OVER_UP, clientNotes, spaceLegend, type LegendItem } from './notes';
 import { makeFmt } from '../present/tr';
 import { belowGeoOf, belowView, headLoadsOf, machineOf, planView, roomView, sectionView, sheetLayoutOf } from './views';
+import type { Uplift } from '@/shaft/room-reactions';
 import { railsNotes, railsSheet } from './rails-sheet';
 import { CHECKS_SUBTITLE, CHECKS_TITLE, checksSheet } from './checks-sheet';
 import { roomLegend, titleSpares } from './room-legend';
@@ -191,8 +192,8 @@ function belowSheet(L: Layout, M: MachineSpec, g: BottomGeo, kind: 'below-plan' 
   return { entities: v.entities, place: v.place, shapes: v.r.shapes, notes: kind === 'below-plan' ? belowMarks(g, v.place, v.r.extent) : [], scale: v.place.scale, hits: v.r.hits };
 }
 
-function roomSheet(L: Layout, M: MachineSpec, kind: 'room-plan' | 'room-section', area: Box, spare: readonly Box[]): Drawn {
-  const v = roomView(L, M, kind === 'room-plan' ? 'plan' : 'section', inset(area, 8, 8, 8, 8));
+function roomSheet(L: Layout, M: MachineSpec, kind: 'room-plan' | 'room-section', area: Box, spare: readonly Box[], uplift: readonly Uplift[]): Drawn {
+  const v = roomView(L, M, kind === 'room-plan' ? 'plan' : 'section', inset(area, 8, 8, 8, 8), uplift);
   if (!v) throw new Error('no machine room');
   const marks = kind === 'room-plan' ? roomMarks(v.G, v.place, v.r.extent) : [];
   // (the plan's symbols named in a free band, else beside the title: round 36)
@@ -231,7 +232,7 @@ export function setSheets(x: TavoleInput): SetSheets {
     const drawn: Drawn = s.k === 'plan' ? planSheet(L, s, area, s.level === 'top' ? head : []) : s.k === 'section' ? sectionSheet(L, s, area, ds.cwGap)
       : s.k === 'rails' ? { ...railsSheet(L, area, railsNotes(L, ds.rails, makeFmt('it-IT'))), hits: [] }
       : s.k === 'below-plan' || s.k === 'below-section' ? belowSheet(L, M, g ?? belowGeoOf(a, L, M, 'head'), s.k, area)
-      : roomSheet(L, M, s.k, area, titleSpares(s.title, s.subtitle));
+      : roomSheet(L, M, s.k, area, titleSpares(s.title, s.subtitle), ds.uplift);
     return { spec: s, drawn };
   });
   return { L, ds, sheets, pages };

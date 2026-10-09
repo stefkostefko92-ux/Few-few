@@ -14,7 +14,7 @@ import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { surveyDraftSchema } from '@/lib/draft-input';
 import { KL } from '@/lib/lift/norme';
 import { makeFmt } from '@/lib/present/tr';
-import { deriveRoom } from '@/lib/room/derive';
+import { deriveRoom, roomCheckKey } from '@/lib/room/derive';
 import type { SurveyDraft, SurveyField } from '@/lib/room/survey';
 import { isUpperLimit, shownValue } from '@/shaft/checks';
 import { saveRoomDesignAction } from '@/server/room-actions';
@@ -108,7 +108,7 @@ export default function RoomSurvey({ calculationId, values, initial, draft = nul
               <tbody>
                 {d.checks.map((c) => (
                   <tr key={c.id}>
-                    <td className="row-title">{ts(`c_${c.id}`)}{c.id === 'm_quadro' && !s.governor ? ` ${t('govNotSurveyed')}` : ''}</td>
+                    <td className="row-title">{ts(roomCheckKey(c.id, d))}{c.id === 'm_quadro' && !s.governor ? ` ${t('govNotSurveyed')}` : ''}</td>
                     <td className="num" data-label={t('value')}>{c.value === null ? '—' : `${shownValue(c, fmt)} ${c.unit}`}</td>
                     <td className="num" data-label={t('limit')}>{c.limit === null ? '—' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${fmt(c.limit, c.dec)} ${c.unit}`}</td>
                     <td data-label={t('outcome')}><span className={`status-pill ${c.status}`}>{ts(`st_${c.status}`)}</span></td>

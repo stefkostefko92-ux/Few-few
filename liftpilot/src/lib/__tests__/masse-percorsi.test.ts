@@ -21,6 +21,7 @@ import { makeFmt } from '@/lib/present/tr';
 import { buildReport } from '../report/build';
 import type { ReportDoc } from '../report/model';
 import { buildTecnica } from '../report/tecnica';
+import { slabChange } from '../report/tecnica-site';
 import { deriveRoom } from '../room/derive';
 import { startSurvey } from '../room/survey';
 import { storedInput } from '../tavole/compose';
@@ -88,6 +89,7 @@ test('argano di catalogo inserito a mano: foglio 1, «Guide e carichi» e la not
 });
 
 test('relazione tecnica della sostituzione: la massa del nuovo argano sotto la tabella è quella della tabella', () => {
+  // (round 37: the machine with what carries it, as the table «Carichi e appoggi» and P9 count it, and the change of P9)
   // a Montanari taken from the advice into the calculator, compared with the existing machine (600 kg entered)
   const V0 = { ...PRESETS.A, context: 'repl', alphaMode: 'geo', h: 0.95 };
   const c = valuesAdvice(V0).candidates.find((m) => m.brand === 'Montanari' && m.massEstimated);
@@ -106,6 +108,10 @@ test('relazione tecnica della sostituzione: la massa del nuovo argano sotto la t
   assert.deepEqual(table, ['Argano (stima)', `${fmt(whole.kg, 0)} kg`]);
   const line = all.find((t) => t.startsWith('Massa dell’argano'));
   assert.ok(line, 'la riga della massa');
-  assert.ok(line.includes(`nuovo ${fmt(whole.kg, 0)} kg (+${fmt(whole.kg - O.mass, 0)} kg sulla soletta)`) || line.includes(`nuovo ${fmt(whole.kg, 0)} kg (−${fmt(O.mass - whole.kg, 0)} kg sulla soletta)`), line);
+  const { machine, grow } = slabChange(d, {}), mass = doc.blocks.flatMap((b) => (b.t === 'grid' ? b.rows : [])).find((r) => r[0]?.startsWith('Massa dell’argano (con'));
+  assert.ok(grow !== null && machine > whole.kg);
+  assert.equal(mass?.[2], `${fmt(machine, 0)} kg`, 'la tabella «Carichi e appoggi»');
+  assert.ok(line.includes(`esistente ${fmt(O.mass, 0)} kg, nuovo ${fmt(machine, 0)} kg (argano completo ${fmt(whole.kg, 0)} kg`), line);
+  assert.ok(line.includes(`P9 ${grow > 0.5 ? '+' : '−'}${fmt(Math.round(Math.abs(grow)), 0)} daN`), line);
   assert.ok(line.includes(`stima ⚠: ${fmt(N.mass, 0)} kg dal catalogo`), line);
 });

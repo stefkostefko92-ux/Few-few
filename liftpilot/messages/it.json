@@ -816,6 +816,8 @@
     "c_m_hebkerb": "Putrelle HEB: fuori dai bordi dei fori nella soletta (le putrelle stanno sotto la loro sommità), distanza in pianta",
     "c_m_hebwall": "Putrelle HEB: sui muri del vano — muri spessi quanto l’appoggio, putrelle entro le loro facce esterne, margine",
     "c_m_calata": "Calate esistenti rilevate e calate del calcolo (puleggia esistente col tiro diretto): scarto",
+    "c_m_calata_new": "Calate esistenti rilevate e calate del calcolo (nuova puleggia col tiro diretto): scarto",
+    "c_m_calata_defl": "Calate esistenti rilevate e calate del calcolo (nuova puleggia e puleggia di rinvio a dx): scarto",
     "c_m_above": "Spazio libero sopra le parti rotanti non protette dell’argano (UNI EN 81-20, 5.2.6.3.2.3)",
     "c_m_wheel": "Superficie libera accanto all’argano presso il volantino (manovra manuale), margine",
     "c_m_hexist": "Locale esistente: altezza libera sotto 2,0 m (UNI 10411, 9.2)",

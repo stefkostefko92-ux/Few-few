@@ -1,8 +1,9 @@
 // What a replacement's survey finds in the machine room besides the room, the shaft and the drops (survey.ts, round 36;
 // registry locale.fori, limitatore.posto): the existing governor on the floor — the checks take its footprint as they take
 // a whole design's (m_free, m_route, m_quadro, m_gov, m_govfree), the plan draws it with its load P4 —, the slab's
-// existing openings, drawn dashed with their size, and whether the new support bears on one of them (m_holes). Room axes
-// [mm]; pure.
+// existing openings, drawn dashed with their size, and whether the new support bears on one of them (m_holes) — the
+// governor's ropes' opening apart, the software's assumption —; the existing support the new machine stands on when it
+// is kept (round 37). Room axes [mm]; pure.
 import { path, rect, type Box as DrawBox, type Entity, type Pt } from '@/drawing';
 import { check } from '@/shaft/checks';
 import type { HebLayout } from '@/shaft/heb';
@@ -19,12 +20,30 @@ export function surveyGovernor(s: Pick<Survey, 'governor'>): Box | null {
   return g ? [g.x - g.W / 2, g.y - g.D / 2, g.x + g.W / 2, g.y + g.D / 2] : null;
 }
 
-/** The slab's existing openings surveyed (with the governor's ropes' under its footprint when they go through the slab). */
-export function surveyOpenings(s: Pick<Survey, 'openings' | 'governor'>): Box[] {
-  const own = (s.openings ?? []).map((o): Box => [o.x - o.W / 2, o.y - o.D / 2, o.x + o.W / 2, o.y + o.D / 2]);
-  const g = s.governor, ropes: Box[] = g?.ropes ? [[g.x - 60, g.y - g.D / 2 + 20, g.x + 60, g.y + g.D / 2 - 20]] : [];
-  return [...own, ...ropes];
+/** The slab's existing openings as surveyed (none entered: none). */
+export const surveyedOpenings = (s: Pick<Survey, 'openings'>): Box[] => (s.openings ?? []).map((o): Box => [o.x - o.W / 2, o.y - o.D / 2, o.x + o.W / 2, o.y + o.D / 2]);
+
+/** The opening the governor's ropes go down through under its footprint when they go through the slab — the software's
+ *  assumption, not surveyed: it stays with the governor (round 37); null: none. */
+export function governorRopeHole(s: Pick<Survey, 'governor'>): Box | null {
+  const g = s.governor;
+  return g?.ropes ? [g.x - 60, g.y - g.D / 2 + 20, g.x + 60, g.y + g.D / 2 - 20] : null;
 }
+
+/** The openings the new support keeps off (m_holes): those surveyed and the governor's ropes' under it. */
+export function surveyOpenings(s: Pick<Survey, 'openings' | 'governor'>): Box[] {
+  const ropes = governorRopeHole(s);
+  return [...surveyedOpenings(s), ...(ropes ? [ropes] : [])];
+}
+
+/** The existing machine's support in words, as the relazione and the notes on the drawings name it. */
+export const EXISTING_SUPPORT_IT: Readonly<Record<NonNullable<Survey['existingSupport']>['kind'], string>> = {
+  shims: 'spessori o antivibranti sulla soletta', frame: 'telaio di profilati', beams: 'putrelle da muro a muro', plinth: 'plinto in calcestruzzo', unknown: 'appoggi non chiari',
+};
+
+/** The existing support the new machine stands on when the survey keeps it — its kind in words (round 37: the support
+ *  drawn is it, its position, height and bearings to survey); null: none kept. */
+export const keptSupport = (s: Pick<Survey, 'existingSupport'>): string | null => (s.existingSupport?.keep ? EXISTING_SUPPORT_IT[s.existingSupport.kind] : null);
 
 /** The plan's entities of what the survey found: the governor's footprint with its name and P4, each existing opening
  *  dashed with «FORO ESISTENTE L×P»; and the boxes their lettering takes. */
@@ -35,7 +54,7 @@ export function surveyFound(s: Pick<Survey, 'openings' | 'governor'>): { entitie
     out.push(rect(x0, y0, x1, y1, 'outline', 'paper'), { e: 'text', at: [c[0], y1 + 60], text: 'Limitatore esistente', size: 1.6, align: 'c', halo: true });
     out.push({ e: 'tag', at: [x1 + 160, y1 + 160], text: 'P4', to: [x1, y1] });
   }
-  for (const [x0, y0, x1, y1] of (s.openings ?? []).map((o): Box => [o.x - o.W / 2, o.y - o.D / 2, o.x + o.W / 2, o.y + o.D / 2])) {
+  for (const [x0, y0, x1, y1] of surveyedOpenings(s)) {
     out.push(path([[x0, y0], [x1, y0], [x1, y1], [x0, y1]], true, 'hidden'), path([[x0, y0], [x1, y1]], false, 'hidden'));
     out.push({ e: 'text', at: [(x0 + x1) / 2, y0 - 70], text: `FORO ESISTENTE ${Math.round(x1 - x0)}×${Math.round(y1 - y0)}`, size: 1.4, align: 'c', halo: true });
     marks.push({ x0, y0: y0 - 110, x1, y1 });

@@ -178,6 +178,17 @@ export function listCalcDrawingSets(user: SessionUser, calculationId: string) {
   });
 }
 
+/** The drawing sets issued from a replacement's machine room, every revision in the order of the year, the number and
+ *  the revision (the relazione tecnica attaches the latest of each number, as the relazione di calcolo lists them). */
+export function listRoomDrawingSets(user: SessionUser, roomDesignId: string) {
+  return prisma.drawingSet.findMany({
+    where: { roomDesignId, companyId: user.companyId },
+    orderBy: [{ year: 'asc' }, { seq: 'asc' }, { revision: 'asc' }],
+    take: 200,
+    select: { number: true, revision: true, sha256: true },
+  });
+}
+
 /** The other revisions of the same drawing number (for the history on a set's page). */
 export function listRevisions(user: SessionUser, year: number, seq: number) {
   return prisma.drawingSet.findMany({

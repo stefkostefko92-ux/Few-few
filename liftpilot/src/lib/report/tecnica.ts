@@ -16,15 +16,17 @@ import { carichiOf } from '../lift/modifica';
 import type { Plant } from '../plant';
 import { textsFor, verdictStatus } from '../present/texts';
 import { makePres } from '../present/tr';
-import type { RoomDerived } from '../room/derive';
+import { roomCheckKey, type RoomDerived } from '../room/derive';
 import type { Survey } from '../room/survey';
 import { machineText } from '../tavole/views';
 import { surveyLoad, surveySheetData, surveyedLabel } from '../tavole/survey-data';
 import { ESITI_TECNICA, EXISTING_NOTE, adaptSection, adempimentiBlocks, collaudoRows, collaudoText, esitiBlocks, esitoOf } from './collaudo';
+import { latestRevisions, revisionText } from './elaborati';
+import { labelCase, lowerKeeping } from './label-case';
 import { shapeRows } from './machine-shape';
 import type { BlockStatus, ReportBlock, ReportDoc } from './model';
 import { TECNICA_DRAWING, roomRows, surveyBlocks } from './tecnica-room';
-import { existingNewBlocks, hookBlocks, openingsBlocks, p4Block, siteChecks } from './tecnica-site';
+import { existingNewBlocks, hookBlocks, massesBlock, openingsBlocks, p4Block, siteChecks } from './tecnica-site';
 import { shapeOf } from '../catalog/shapes';
 
 export interface TecnicaInput {
@@ -119,22 +121,18 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
   // the room's door in its sizes, as sheet 1 writes it
   const row = (c: ShaftCheck): string[] => (c.id === 'm_door'
     ? [(labels.c_m_door ?? c.id).replace(', margine', ''), `${s.room.doorW} × ${s.room.doorH} mm`, `≥ ${KV_VERT.doorMinW} × ${KV_VERT.doorMinH} mm`, out(c).text]
-    : [surveyedLabel(c.id, labels[`c_${c.id}`] ?? c.id, s), c.value == null ? '—' : withUnit(shownValue(c, fmt), c), c.limit == null ? '—' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${withUnit(fmt(c.limit, c.dec), c)}`, out(c).text]);
+    : [surveyedLabel(c.id, labels[roomCheckKey(c.id, d)] ?? c.id, s), c.value == null ? '—' : withUnit(shownValue(c, fmt), c), c.limit == null ? '—' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${withUnit(fmt(c.limit, c.dec), c)}`, out(c).text]);
   B.push({ t: 'grid', head: [t('col_item'), t('col_val'), t('col_lim'), t('col_res')], widths: [0.52, 0.16, 0.16, 0.16], align: ['l', 'r', 'r', 'l'], statusCol: 3,
     rows: checks.map(row),
     status: checks.map((c) => out(c).status) });
   if (checks.some((c) => ambitoOf(C, c.id) === 'existing')) B.push({ t: 'p', style: 'note', text: EXISTING_NOTE });
 
   section('Carichi sul basamento e sulla soletta');
-  B.push({ t: 'kv', rows: [...sheet.loads.map(([k, v, u]): [string, string] => [k.charAt(0) + k.slice(1).toLowerCase(), `${v}${u ? ` ${u}` : ''}`]),
-    ...sheet.P.map(([k, v]): [string, string] => [`Carico ${k.slice(0, 2)}: ${k.slice(3).toLowerCase()}`, v === '—' ? '—' : `${v} daN`])] });
-  // the new machine as the table above counts it: the whole machine, what its catalogue's mass leaves out estimated
-  // (machine-mass.ts); the existing one's mass is entered, the whole machine
-  const whole = onSlab.whole;
-  if (ctx.compare && ctx.O.mass > 0 && N.mass > 0) {
-    B.push({ t: 'p', text: `Massa dell’argano: esistente ${fmt(ctx.O.mass, 0)} kg, nuovo ${fmt(whole.kg, 0)} kg (${whole.kg >= ctx.O.mass ? '+' : '−'}${fmt(Math.abs(whole.kg - ctx.O.mass), 0)} kg sulla soletta)`
-      + `${whole.estimate ? `; il nuovo è l’argano completo, stima ⚠: ${fmt(N.mass, 0)} kg dal catalogo più le parti che non comprende` : ''}.` });
-  }
+  // sheet 1's rows with its tags as the sheet writes them (R1…Rn, HEB 160, a maker's code: round 37)
+  B.push({ t: 'kv', rows: [...sheet.loads.map(([k, v, u]): [string, string] => [labelCase(k), `${v}${u ? ` ${u}` : ''}`]),
+    ...sheet.P.map(([k, v]): [string, string] => [`Carico ${k.slice(0, 2)}: ${lowerKeeping(k.slice(3))}`, v === '—' ? '—' : `${v} daN`])] });
+  // the new machine with what carries it, and the change of P9, as the table «Carichi e appoggi» counts them (round 37)
+  B.push(...massesBlock(d, r.plant, fmt));
   B.push({ t: 'p', style: 'note', text: 'Carichi non contemporanei. La verifica della soletta e degli appoggi del basamento spetta al tecnico strutturale incaricato dal '
     + 'committente (NTC 2018, §8.4.1: intervento locale; §3.1.4: carichi del macchinario).' });
   // P4 without the governor's load; the existing machine's loads and bearings beside the new one's (round 36)
@@ -163,9 +161,12 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
   ] });
 
   section('Allegati');
+  const sets = latestRevisions(r.sets);
   B.push({ t: 'list', items: [
     `Relazione di calcolo dell’argano, calcolo ${r.calc.id} (SHA-256 ${r.calc.sha256.slice(0, 16)}…)`,
-    r.sets.length ? `Tavole di progetto n. ${r.sets.map((x) => `${x.number} R${x.revision}${x.sha256 ? ` (SHA-256 ${x.sha256.slice(0, 16)}…)` : ''}`).join(', ')}` : 'Tavole di progetto: da emettere dal rilievo del locale',
+    // the revision in force of each drawing set, as «Elaborati grafici» of the relazione di calcolo (round 37)
+    sets.length ? `Tavole di progetto n. ${sets.map((x) => `${x.number} (${revisionText(x.revision)}${x.sha256 ? `, SHA-256 ${x.sha256.slice(0, 16)}…` : ''})`).join(', ')}`
+      : 'Tavole di progetto: da emettere dal rilievo del locale',
     'Scheda tecnica e dichiarazioni del costruttore del nuovo argano (da allegare)',
   ] });
 

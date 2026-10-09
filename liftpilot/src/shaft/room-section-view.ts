@@ -57,7 +57,7 @@ export function roomSectionOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDr
   const near = Math.max(G.pulleyAt + M.Dp / 2, G.frame1, bedRun ? bedRun[1] : -Infinity);
   const ue = Math.max(Math.min(near + (bedRun ? 300 : 160) * sk, r1 - 150 * sk), near + 60 * sk), hChain = M.Dp > 0 && Math.abs(M.h) > 1;
   const heb = hebDrawn(G, M, S, S.govRopes);
-  out.push(...supportSection(M, G, r0, r1, hChain ? ue : null, heb, sk));
+  out.push(...supportSection(M, G, r0, r1, hChain ? ue : null, heb, sk, S.kept ?? null));
   // (turned round, the machine seen from its other side: its elevation mirrored along the drop line)
   out.push(...(F.shape ? shapeElevation(F, D, (x, y) => [machineU(G, x), base + y]) : machineElevation((x, y) => [machineU(G, x * k), base + y * k])));
   const centre = (c: Pt, r: number): void => { out.push(line([c[0] - r - 40, c[1]], [c[0] + r + 40, c[1]], 'axis'), line([c[0], c[1] - r - 40], [c[0], c[1] + r + 40], 'axis')); };
@@ -157,10 +157,11 @@ export function roomSectionOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDr
   // its sides cross them (rinvio.ts bedplateLegs) —, else under the machine's bedplate)
   const legs = rf?.on === 'frame' && M.Dp > 0 ? bedplateLegs(G, M, heb) : [], firstLeg = legs.length ? Math.min(...legs.map(([u]) => u)) : null;
   const mountAt: Pt = rf?.on === 'frame' && M.Dp > 0 ? [firstLeg ?? rinvioRun(M, G)[0] + KV_VERT.rinvioLeg / 2, (rf.base ?? 0) + KV_VERT.rinvioPads / 2] : [G.frame0 + 60 * sk, base - 10];
-  // the notes in words: the mounts and fixings, then the HEB beams' bearings — off the machine, the shaft under the slab
+  // the notes in words: the mounts and fixings (on a replacement's existing support kept; the anchors in tension of the
+  // bearings pulled up, as sheet 1 has them), then the HEB beams' bearings — off the machine, the shaft under the slab
   // and the hatched walls (round 37: placed as drawn, at TEXT.min)
   const walls = out.flatMap((e): Box[] => (e.e === 'path' && e.fill === 'concrete' ? [{ x0: Math.min(...e.pts.map((p) => p[0])), y0: Math.min(...e.pts.map((p) => p[1])), x1: Math.max(...e.pts.map((p) => p[0])), y1: Math.max(...e.pts.map((p) => p[1])) }] : []));
-  const notes = [{ text: mountsLines(G, M).join(' '), to: mountAt }, ...(heb ? [hebNote(heb, G)] : [])];
+  const notes = [{ text: mountsLines(G, M, { kept: S.kept, uplift: S.uplift }).join(' '), to: mountAt }, ...(heb ? [hebNote(heb, G)] : [])];
   const noted = notesSection(G, notes, out, [machineArea, under, ...walls], { r0, r1, low: 140 * sk, foot }, outside, sk);
   out.push(...noted);
   // (a note or the hook's name set outside the drawing — under its foot, right of the room — widens what the sheet

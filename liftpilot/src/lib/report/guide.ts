@@ -15,6 +15,7 @@ import type { Analysis } from '../present/analysis';
 import { railChecks, railLimits } from '../tavole/rail-check';
 import type { SafetyGear } from '../tavole/forces';
 import { sheetLoads, sheetRails, supportRows } from '../tavole/sheet-loads';
+import { labelCase } from './label-case';
 import type { BlockStatus, ReportBlock } from './model';
 
 type Fmt = (x: number, dec?: number) => string;
@@ -50,7 +51,7 @@ export function guideSection(a: Analysis, L: Layout, Pl: Plant, M: MachineSpec, 
   const ld = SL.ld, P = ld.P, dyn = fmt(SL.dyn, 1), below = I.layout === 'bottom', daN = (x: number | null | undefined, each = false): string => (x == null ? '—' : `${each ? 'cad. ' : ''}${fmt(x, 0)}`);
   const mass: [string, string][] = [
     [`Argano${SL.machine.estimate ? ' (argano completo, stima ⚠)' : ''}`, `${fmt(SL.machine.kg, 0)} kg${below ? ' (in basso, non sulla soletta)' : ''}`],
-    ...supportRows(SL.support, M, fmt).map(([l, v]): [string, string] => [l.charAt(0) + l.slice(1).toLowerCase().replace('(stima)', '(stima ⚠)'), `${v} kg`]),
+    ...supportRows(SL.support, M, fmt).map(([l, v]): [string, string] => [labelCase(l).replace('(stima)', '(stima ⚠)'), `${v} kg`]),
     ...(SL.heb ? [[`Putrelle ${SL.heb.profile} sui muri del vano (due)`, `${fmt(SL.hebKg, 0)} kg`] as [string, string]] : []),
     [below ? 'Carico statico sulle pulegge in testata' : 'Carico statico sull’asse dell’argano', `${fmt(ld.static, 0)} kg; per il coefficiente dinamico × ${dyn}: ${fmt(ld.dynamic, 0)} kg`],
     ...(SL.anchor ? [['Ancoraggi dell’argano in basso: prova 1,25·Q · portata × coefficiente dinamico',

@@ -816,6 +816,8 @@
     "c_m_hebkerb": "HEB beams: off the upstands round the slab openings (the beams sit lower than their top), clearance in plan",
     "c_m_hebwall": "HEB beams: on the shaft walls — walls as thick as the bearing, beams within their outer faces, margin",
     "c_m_calata": "Existing rope drops as surveyed against the calculation’s (the existing sheave with direct drive): offset",
+    "c_m_calata_new": "Existing rope drops as surveyed against the calculation’s (the new sheave with direct drive): offset",
+    "c_m_calata_defl": "Existing rope drops as surveyed against the calculation’s (the new sheave and the diverting pulley at dx): offset",
     "c_m_above": "Free height over the machine's unguarded rotating parts (UNI EN 81-20, 5.2.6.3.2.3)",
     "c_m_wheel": "Free area beside the machine at the handwheel (manual operation), margin",
     "c_m_hexist": "Existing room: clear height under 2.0 m (UNI 10411, 9.2)",

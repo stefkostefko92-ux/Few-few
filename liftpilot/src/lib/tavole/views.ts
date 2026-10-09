@@ -8,6 +8,7 @@ import { roomGeo, type MachineSpec, type RoomGeo } from '@/shaft/machine-room';
 import { planDims } from '@/shaft/plan-dims';
 import { planEntities, wallsAt, type PlanLevel } from '@/shaft/plan-view';
 import type { RoomDrawOpts } from '@/shaft/room-draw';
+import type { Uplift } from '@/shaft/room-reactions';
 import { roomPlanEntities, roomPlanOn, roomSectionEntities, roomSectionOn } from '@/shaft/room-view';
 import { section } from '@/shaft/section';
 import { sectionDims, type SectionKind } from '@/shaft/section-dims';
@@ -139,11 +140,12 @@ function roomPlaced(drawOn: (o: RoomDrawOpts) => Drawn, kind: 'plan' | 'section'
   return { r: renderView(d.entities, place), place, entities: d.entities };
 }
 
-/** The machine room in plan or in section B-B; null when the design has no machine room. */
-export function roomView(L: Layout, M: MachineSpec, kind: 'plan' | 'section', area: Box): (Placed & { G: RoomGeo }) | null {
+/** The machine room in plan or in section B-B; null when the design has no machine room. `uplift`: the bearings pulled
+ *  up at sheet 1's load (data.ts), whose anchors in tension section B-B asks for. */
+export function roomView(L: Layout, M: MachineSpec, kind: 'plan' | 'section', area: Box, uplift: readonly Uplift[] = []): (Placed & { G: RoomGeo }) | null {
   const G = roomGeo(L, M);
   if (!G) return null;
-  return { ...roomPlaced((o) => (kind === 'plan' ? roomPlanEntities(L, M, G, o) : roomSectionEntities(L, M, G, o)), kind, area), G };
+  return { ...roomPlaced((o) => (kind === 'plan' ? roomPlanEntities(L, M, G, o) : roomSectionEntities(L, M, G, o, uplift)), kind, area), G };
 }
 
 /** The layout the shaft's sheets draw of the design `L` for the calculation `a` and its machine `M` (the machine below's
