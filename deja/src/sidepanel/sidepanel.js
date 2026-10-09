@@ -5,8 +5,10 @@
 import { applyI18n, t } from '../lib/i18n.js';
 import { send } from '../lib/msg.js';
 import { el, countLabel } from '../lib/dom.js';
+import { initAmbient } from '../lib/ambient.js';
 
 applyI18n();
+const ambient = initAmbient();
 
 const form = document.getElementById('form');
 const input = document.getElementById('query');
@@ -56,6 +58,7 @@ function card(r, i) {
 async function doSearch(query) {
   button.disabled = true;
   form.classList.add('searching');
+  ambient.focus(true);
   status.textContent = t('statusSearching');
   try {
     const results = await send('deja:search', { query });
@@ -65,12 +68,14 @@ async function doSearch(query) {
     } else {
       status.textContent = countLabel(results.length, 'statusResultsOne', 'statusResults');
       results.forEach((r, i) => resultsEl.append(card(r, i)));
+      ambient.surface(results.length);
     }
   } catch (err) {
     status.textContent = t('statusError', [String(err?.message || err)]);
   } finally {
     button.disabled = false;
     form.classList.remove('searching');
+    ambient.focus(false);
   }
 }
 
@@ -109,6 +114,9 @@ async function refreshContext() {
 async function refreshRecent() {
   try {
     const items = await send('deja:recent', { limit: 8 });
+    send('deja:stats')
+      .then(({ pages }) => ambient.setMemories(pages))
+      .catch(() => {});
     recentEl.replaceChildren();
     if (!items.length) {
       recentEl.append(el('p', 'empty', t('memoryEmpty')));

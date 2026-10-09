@@ -2,8 +2,10 @@
 // не правя и откъде ме командваш. Прозрачността е част от продукта.
 
 import { applyI18n } from '../lib/i18n.js';
+import { initAmbient } from '../lib/ambient.js';
 
 applyI18n();
+initAmbient();
 
 document.getElementById('open').addEventListener('click', () => {
   location.href = chrome.runtime.getURL('search.html');

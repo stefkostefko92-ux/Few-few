@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title data-i18n="optionsTitle">Déjà — настройки</title>
     <link rel="stylesheet" href="options.css" />
+    <link rel="stylesheet" href="glass.css" />
   </head>
   <body>
     <main class="wrap">
@@ -40,6 +41,18 @@
         <p class="help" data-i18n="optModelHostHelp">
           Празно = huggingface.co. Задай собствен сървър за офлайн/фирмени среди.
         </p>
+      </section>
+
+      <section class="card">
+        <label class="toggle" for="ambientMotion">
+          <span>
+            <span class="label" data-i18n="optAmbientLabel">Жив фон</span>
+            <span class="help" data-i18n="optAmbientHelp">
+              Мрежата от спомени зад стъклото се движи бавно. Изключи, ако движението те разсейва.
+            </span>
+          </span>
+          <input id="ambientMotion" type="checkbox" role="switch" />
+        </label>
       </section>
 
       <div class="actions">

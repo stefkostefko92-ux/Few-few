@@ -267,5 +267,11 @@
   },
   "welcomeUpdated": {
     "message": "Déjà si è aggiornato. Ecco cosa fa con i tuoi dati — nulla ha lasciato il tuo dispositivo."
+  },
+  "optAmbientLabel": {
+    "message": "Sfondo vivo"
+  },
+  "optAmbientHelp": {
+    "message": "La rete di ricordi dietro il vetro si muove lentamente. Disattivala se il movimento ti distrae."
   }
 }

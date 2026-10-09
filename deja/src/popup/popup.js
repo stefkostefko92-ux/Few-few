@@ -5,8 +5,10 @@ import { getSettings, patchSettings } from '../lib/settings.js';
 import { applyI18n, t } from '../lib/i18n.js';
 import { countLabel } from '../lib/dom.js';
 import { send } from '../lib/msg.js';
+import { initAmbient } from '../lib/ambient.js';
 
 applyI18n();
+const ambient = initAmbient();
 
 const stats = document.getElementById('stats');
 const openBtn = document.getElementById('open');
@@ -23,6 +25,7 @@ async function refresh() {
     stats.textContent = res?.ok
       ? countLabel(res.result.pages, 'popupPagesOne', 'popupPages')
       : t('popupSleeping');
+    if (res?.ok) ambient.setMemories(res.result.pages); // всяка точка е спомен
   } catch {
     stats.textContent = t('popupWaking');
   }

@@ -267,5 +267,11 @@
   },
   "welcomeUpdated": {
     "message": "Déjà has updated. Here's what it does with your data — nothing has left your device."
+  },
+  "optAmbientLabel": {
+    "message": "Living background"
+  },
+  "optAmbientHelp": {
+    "message": "The web of memories behind the glass drifts slowly. Turn it off if the motion distracts you."
   }
 }

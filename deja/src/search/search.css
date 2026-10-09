@@ -209,6 +209,21 @@ body {
   color: var(--accent);
 }
 
+/* „свързани спомени“ и свързаните заглавия не са заглавие на резултата */
+.result .related-toggle,
+.result .related-item {
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.result .related-toggle {
+  color: var(--accent);
+}
+
+.result .related-item {
+  color: var(--muted);
+}
+
 .result .url {
   color: var(--muted);
   font-size: 12px;

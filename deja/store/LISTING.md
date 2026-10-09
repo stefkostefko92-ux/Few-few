@@ -1,4 +1,4 @@
-# Déjà — Chrome Web Store листинг (v1.3)
+# Déjà — Chrome Web Store листинг (v1.4)
 
 **Английският е основният език на листинга** (default_locale: en); българският
 (и италианският) са допълнителни. Пакетът: `npm run zip` → `release/deja-<версия>.zip`.
@@ -8,11 +8,14 @@
 
 | # | EN (основен) | BG (езиков таб) | Какво показва |
 |---|---|---|---|
-| 1 | `search-en.png` | `search-bg.png` | семантично търсене, филтри, откроени думи, скала на спомена |
-| 2 | `sidepanel-en.png` | `sidepanel-bg.png` | страничният панел „по темата на тази страница“ до реална статия |
-| 3 | `memory-en.png` | `memory-bg.png` | „Моята памет“: списък, търсене, статистика, export/import |
-| 4 | `welcome-en.png` | `welcome-bg.png` | прозрачност при инсталация (какво прави / не прави) |
-| 5 | `options-en.png` | `options-bg.png` | retention, собствен denylist, огледало на модела |
+| 1 | `search-en.png` | `search-bg.png` | семантично търсене през liquid glass, жива мрежа на спомените, откроени думи |
+| 2 | `popup-en.png` | `popup-bg.png` | стъкленият popup над реална статия (пауза, „забрави тази страница“) |
+| 3 | `sidepanel-en.png` | `sidepanel-bg.png` | страничният панел „по темата на тази страница“ до реална статия |
+| 4 | `memory-en.png` | `memory-bg.png` | „Моята памет“: списък, търсене, статистика, export/import |
+| 5 | `welcome-en.png` | `welcome-bg.png` | прозрачност при инсталация (какво прави / не прави) |
+
+Резерва (ако някой от горните отпадне): `options-{en,bg}.png` — retention, собствен
+denylist, „Жив фон“ ключ. Всички се регенерират от реалния билд (Playwright, тъмна тема).
 
 **Промо графики** (`store/promo/`): `small-tile-440x280.png` (задължителен),
 `marquee-1400x560.png` (по избор). Store icon = `icons/icon128.png`.

@@ -55,7 +55,7 @@ npm run icons         # tools/generate_icons.py — САМО fallback; реал�
 npm run zip           # release/deja-<версия>.zip за Chrome Web Store
 ```
 
-**Качествена порта: `npm run format:check && npm run build`.**
+**Качествена порта: `npm run format:check && npm run build && npm test`** (тестовете искат `DEJA_CHROME`).
 
 ## Chrome Web Store — червени линии
 
@@ -158,6 +158,33 @@ npm run zip           # release/deja-<версия>.zip за Chrome Web Store
   проактивно → `onInstalled` с `reason === 'update'` отваря welcome с бележка.
   Правило: **всеки нов приемник на URL/съдържание** (напр. `deja:active`) минава
   същия гейт paused/isDenied като индексирането и чисти стария ключ.
+
+## v1.4 „liquid glass“ + „Мрежата на спомените“ (визия)
+
+- **Материал** `src/glass.css` — зарежда се ПОСЛЕДЕН на всяка страница (build.mjs го
+  копира): оцветено тяло + `backdrop-filter: blur() saturate()` + SVG пречупване
+  `url(#lg-refract)` (feTurbulence→feDisplacementMap; **само Chromium** — гейт през
+  `navigator.userAgentData`, иначе остава blur), ръб/каустика с inset сенки, блик по
+  курсора (`--mx/--my` от `ambient.js`), „гел“ бутони (spring easing). Класът `.lg`
+  прави стъкло от всичко; списъкът селектори в glass.css е **източникът** — `.card`
+  е в него (затова в промо страницата не ползвай `.card` за нестъклени неща).
+- **Жив фон** `lib/nebula.js` (+ `lib/ambient.js` го вдига на всяка страница): всеки
+  светещ възел = запомнена страница (`setMemories(n)`), линиите = семантични връзки;
+  `focus(true)` при търсене, `surface(n)` — изплуващи искри при резултати (≥350 мс
+  между тях — нула строб, WCAG 2.3.1). Canvas 2D, `aria-hidden`, `pointer-events:none`.
+- **Цена (измерена, CDP TaskDuration/сек):** 22.8% при 1280×800, 30.3% при 1920×1080,
+  12.8% popup; скрипт ≤3.6%. Трикове: аврора на 1/6 резолюция, линии в 6 alpha кофи
+  (6 stroke-а вместо стотици), 30 fps таван, вътрешна резолюция ×0.62 за големи
+  страници, **заспива след 15 с без вход**, пауза при скрит таб.
+- **Движението е по избор (WCAG 2.2.2):** `prefers-reduced-motion` → статичен кадър;
+  настройката „Жив фон“ (`settings.ambientMotion`, по подразбиране true) → също.
+  Пази го `test/ambient.mjs` (в `npm test`): движи се / reduced / изключен / aria /
+  стъклото реално има backdrop-filter.
+- **Ъпдейт бележката** (welcome?update=) се отваря само ако `previousVersion <
+  DATA_PRACTICES_VERSION` (background.js) — визуален ъпдейт не отваря таб. Вдигай
+  константата при всяка нова промяна в това какво Déjà вижда/пази.
+- Store графиките (скрийншоти + promo tile/marquee) са от реалния двигател + стъкло,
+  не мокъп; скриптовете живеят в scratchpad-а (Playwright + PIL композиция).
 
 ## Пътна карта (по ред)
 

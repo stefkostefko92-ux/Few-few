@@ -4,8 +4,10 @@
 import { applyI18n, t } from '../lib/i18n.js';
 import { send } from '../lib/msg.js';
 import { el, countLabel } from '../lib/dom.js';
+import { initAmbient } from '../lib/ambient.js';
 
 applyI18n();
+const ambient = initAmbient();
 
 const form = document.getElementById('form');
 const input = document.getElementById('query');
@@ -51,7 +53,12 @@ function highlightInto(container, text, query) {
     container.textContent = text;
     return;
   }
-  const re = new RegExp('(' + words.map(escapeRegExp).join('|') + ')', 'gi');
+  // само от началото на дума (иначе „pot“ светва в „spot“) и до края ѝ — „домат“
+  // откроява „доматите“ цяла; \b не познава кирилица, затова \p{L} с флаг u
+  const re = new RegExp(
+    '(?<![\\p{L}\\p{N}])(?:' + words.map(escapeRegExp).join('|') + ')[\\p{L}\\p{N}]*',
+    'giu',
+  );
   let last = 0;
   for (const m of text.matchAll(re)) {
     container.append(document.createTextNode(text.slice(last, m.index)));
@@ -132,6 +139,7 @@ async function refreshStats() {
   try {
     const { pages } = await send('deja:stats');
     status.textContent = countLabel(pages, 'pagesInMemoryOne', 'pagesInMemory');
+    ambient.setMemories(pages);
   } catch {
     /* service worker-ът се събужда — не е фатално */
   }
@@ -140,6 +148,7 @@ async function refreshStats() {
 async function doSearch(query) {
   button.disabled = true;
   form.classList.add('searching'); // паметта „диша“, докато рови
+  ambient.focus(true); // мрежата се свива — паметта търси
   status.textContent = t('statusSearching');
   try {
     const minTime = activeFilterDays ? Date.now() - activeFilterDays * DAY_MS : 0;
@@ -151,12 +160,14 @@ async function doSearch(query) {
       status.textContent =
         results.length === 1 ? t('statusResultsOne') : t('statusResults', [String(results.length)]);
       render(results, query);
+      ambient.surface(results.length); // спомените изплуват
     }
   } catch (err) {
     status.textContent = t('statusError', [String(err?.message || err)]);
   } finally {
     button.disabled = false;
     form.classList.remove('searching');
+    ambient.focus(false);
   }
 }
 

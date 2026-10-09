@@ -4,8 +4,10 @@
 import { applyI18n, t } from '../lib/i18n.js';
 import { send } from '../lib/msg.js';
 import { el, countLabel } from '../lib/dom.js';
+import { initAmbient } from '../lib/ambient.js';
 
 applyI18n();
+const ambient = initAmbient();
 
 const countEl = document.getElementById('count');
 const listEl = document.getElementById('list');
@@ -18,6 +20,7 @@ let allPages = [];
 
 async function refresh() {
   allPages = await send('deja:memory:list');
+  ambient.setMemories(allPages.length);
   renderStats();
   renderList();
 }

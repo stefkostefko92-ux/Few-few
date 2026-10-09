@@ -1,8 +1,16 @@
 .toolbar {
   align-items: center;
   display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
   justify-content: space-between;
   margin-bottom: 6px;
+}
+
+/* броят и бутоните не се чупят на два реда — при тясно окно редът се пренася цял */
+.toolbar .status,
+.tool {
+  white-space: nowrap;
 }
 
 .toolbar .actions {
@@ -15,9 +23,8 @@
   border: 1px solid var(--border);
   border-radius: 10px;
   color: var(--text);
-  flex: 1;
+  flex: 1 1 160px;
   font-size: 13.5px;
-  margin: 0 14px;
   max-width: 280px;
   padding: 8px 12px;
 }

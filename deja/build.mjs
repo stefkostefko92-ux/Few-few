@@ -86,6 +86,7 @@ for (const page of Object.keys(pageEntries).filter(
   copyFileSync(`src/${page}/${page}.html`, `${dist}/${page}.html`);
   copyFileSync(`src/${page}/${page}.css`, `${dist}/${page}.css`);
 }
+copyFileSync('src/glass.css', `${dist}/glass.css`);
 cpSync('icons', `${dist}/icons`, { recursive: true });
 cpSync('_locales', `${dist}/_locales`, { recursive: true });
 

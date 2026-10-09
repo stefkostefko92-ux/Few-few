@@ -515,6 +515,21 @@ async function closeIdleOffscreen() {
   }
 }
 
+// последната версия, променила какво Déjà вижда/пази (1.3.0: панелът вижда адреса
+// и заглавието на активния таб; изрезки). ВДИГНИ я при всяка нова такава промяна.
+const DATA_PRACTICES_VERSION = '1.3.0';
+
+// a < b по semver тройка (липсващите части = 0)
+function olderThan(a, b) {
+  const pa = a.split('.').map(Number);
+  const pb = b.split('.').map(Number);
+  for (let i = 0; i < 3; i++) {
+    const d = (pa[i] || 0) - (pb[i] || 0);
+    if (d) return d < 0;
+  }
+  return false;
+}
+
 chrome.runtime.onInstalled.addListener((details) => {
   armAlarms();
   installMenus();
@@ -524,10 +539,11 @@ chrome.runtime.onInstalled.addListener((details) => {
     chrome.tabs.create({ url: chrome.runtime.getURL('welcome.html') });
   } else if (details.reason === 'update') {
     // CWS (от 01.08.2026): промяна в практиките с данни се разкрива ПРОАКТИВНО
-    // и след инсталация — при ъпдейт отваряме welcome с „какво е ново“
-    const from = details.previousVersion || '';
+    // и след инсталация — welcome с бележката се отваря, само ако ъпдейтът прескача
+    // такава промяна (чисто визуален ъпдейт не заслужава нов таб)
+    const from = details.previousVersion || '0';
     const to = chrome.runtime.getManifest().version;
-    if (from !== to) {
+    if (olderThan(from, DATA_PRACTICES_VERSION)) {
       chrome.tabs.create({
         url: chrome.runtime.getURL(`welcome.html?update=${encodeURIComponent(to)}`),
       });

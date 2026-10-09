@@ -9,7 +9,7 @@
 |---|---|
 | Пакет за качване | `npm run zip` → `release/deja-<версия>.zip` (Chrome) · `npm run zip:firefox` → Firefox |
 | Store icon 128×128 | `icons/icon128.png` |
-| Скрийншоти 1280×800 (5 на език, EN + BG) | `store/screenshots/{search,sidepanel,memory,welcome,options}-{en,bg}.png` |
+| Скрийншоти 1280×800 (5 на език, EN + BG) | `store/screenshots/{search,popup,sidepanel,memory,welcome}-{en,bg}.png` (резерва: `options-*`) |
 | Промо tile 440×280 (задължителен) | `store/promo/small-tile-440x280.png` |
 | Marquee 1400×560 (по избор) | `store/promo/marquee-1400x560.png` |
 | Листинг текстове EN/BG, single purpose, обосновка на правата | `store/LISTING.md` |
@@ -40,8 +40,8 @@
 - Title / Summary / Description → от `LISTING.md` „EN listing“ (кратко ≤132).
 - Category: **Productivity → Tools**. Language: **English**.
 - Store icon: `icons/icon128.png`.
-- Screenshots: качи петте `*-en.png` **в този ред**: search → sidepanel →
-  memory → welcome → options (първият е „главният“ кадър).
+- Screenshots: качи петте `*-en.png` **в този ред**: search → popup →
+  sidepanel → memory → welcome (първият е „главният“ кадър).
 - Small promo tile: `store/promo/small-tile-440x280.png`. Marquee: по избор.
 - Official URL / Homepage: `https://deja.carbonstealth.eu`. Support URL: същият.
 - Add language → **Български** → BG текстовете от `LISTING.md` + `*-bg.png`.

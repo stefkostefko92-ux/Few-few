@@ -35,6 +35,8 @@ const DEFAULTS = {
   retentionMonths: 0,
   // Собствено огледало на модела (enterprise/офлайн). Празно = huggingface.co.
   modelHost: '',
+  // „Жив фон“ — анимираната мрежа зад стъклото; изключването я спира (WCAG 2.2.2)
+  ambientMotion: true,
 };
 
 export async function getSettings() {

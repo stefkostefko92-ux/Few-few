@@ -2,8 +2,10 @@
 
 import { getSettings, patchSettings, BUILTIN_DENYLIST } from '../lib/settings.js';
 import { applyI18n, t } from '../lib/i18n.js';
+import { initAmbient } from '../lib/ambient.js';
 
 applyI18n();
+initAmbient();
 
 const retentionEl = document.getElementById('retention');
 const denylistEl = document.getElementById('denylist');
@@ -11,6 +13,7 @@ const builtinEl = document.getElementById('builtin');
 const modelHostEl = document.getElementById('modelHost');
 const saveBtn = document.getElementById('save');
 const savedEl = document.getElementById('saved');
+const ambientEl = document.getElementById('ambientMotion');
 
 const RETENTION_CHOICES = [0, 3, 6, 12, 24];
 
@@ -31,6 +34,7 @@ async function load() {
   fillRetention(settings.retentionMonths);
   denylistEl.value = settings.userDenylist.join('\n');
   modelHostEl.value = settings.modelHost;
+  ambientEl.checked = settings.ambientMotion !== false;
   builtinEl.textContent = BUILTIN_DENYLIST.join(' · ');
 }
 
@@ -49,6 +53,7 @@ saveBtn.addEventListener('click', async () => {
       .map((line) => line.trim())
       .filter(Boolean),
     modelHost,
+    ambientMotion: ambientEl.checked,
   });
   savedEl.textContent = t('optSaved');
   setTimeout(() => (savedEl.textContent = ''), 2000);

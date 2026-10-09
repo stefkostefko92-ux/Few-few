@@ -44,7 +44,7 @@ export function startServer(pages) {
   return new Promise((resolve) => server.listen(PORT, () => resolve(server)));
 }
 
-export async function launchWithExtension() {
+export async function launchWithExtension({ reducedMotion = 'no-preference' } = {}) {
   const executablePath = process.env.DEJA_CHROME;
   if (!executablePath) {
     throw new Error('Задай DEJA_CHROME=/път/до/chrome (тестовете искат реален Chromium)');
@@ -52,6 +52,7 @@ export async function launchWithExtension() {
   const userDir = mkdtempSync(path.join(tmpdir(), 'deja-test-'));
   const options = {
     headless: true,
+    reducedMotion,
     executablePath,
     args: [
       `--disable-extensions-except=${EXT}`,
