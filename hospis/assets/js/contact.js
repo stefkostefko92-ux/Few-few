@@ -12,9 +12,10 @@
       f.title = "Карта: ул. „Димитър Благоев“ 16, Бобов дол";
       f.src = mapBtn.getAttribute("data-map-src");
       f.loading = "lazy";
-      f.referrerPolicy = "no-referrer-when-downgrade";
+      f.referrerPolicy = "strict-origin-when-cross-origin";
       f.setAttribute("allowfullscreen", "");
       mapBox.replaceChildren(f);
+      f.focus(); // бутонът изчезва — фокусът не бива да пада върху <body>
     });
   }
 
@@ -26,6 +27,7 @@
   if (fallback) fallback.hidden = true;
 
   var TO = form.getAttribute("data-to");
+  var MAX_MAILTO = 1800;
   var status = form.querySelector("[data-status]");
   var copyBtn = form.querySelector("[data-copy]");
 
@@ -69,7 +71,13 @@
     status.textContent = "";
     if (!validate()) { status.textContent = "Моля, попълнете отбелязаните полета."; return; }
     var m = compose();
-    window.location.href = "mailto:" + TO + "?subject=" + encodeURIComponent(m.subject) + "&body=" + encodeURIComponent(m.body);
+    var href = "mailto:" + TO + "?subject=" + encodeURIComponent(m.subject) + "&body=" + encodeURIComponent(m.body);
+    // Кирилицата в URL е ~6 знака на буква; пощенските програми режат/отказват адреси над ~2000 знака.
+    if (href.length > MAX_MAILTO) {
+      status.textContent = "Писмото е твърде дълго, за да се отвори директно. Натиснете „Копирай писмото“ и го поставете в имейл до " + TO + ".";
+      return;
+    }
+    window.location.href = href;
     status.textContent = "Отваряме Вашата пощенска програма. Ако не се отвори, натиснете „Копирай писмото“ и го изпратете на " + TO + ".";
   });
 

@@ -41,12 +41,13 @@
       if (e.key === "ArrowLeft") { e.preventDefault(); show(index - 1); }
       else if (e.key === "ArrowRight") { e.preventDefault(); show(index + 1); }
     });
-    var x0 = null;
-    dlg.addEventListener("touchstart", function (e) { x0 = e.changedTouches[0].clientX; }, { passive: true });
+    var x0 = null, y0 = null;
+    dlg.addEventListener("touchstart", function (e) { x0 = e.changedTouches[0].clientX; y0 = e.changedTouches[0].clientY; }, { passive: true });
     dlg.addEventListener("touchend", function (e) {
       if (x0 === null) return;
-      var dx = e.changedTouches[0].clientX - x0; x0 = null;
-      if (Math.abs(dx) > 50) show(index + (dx < 0 ? 1 : -1));
+      var dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; x0 = null;
+      // Само ясно хоризонтално плъзгане сменя снимката (не диагонал/щипване).
+      if (Math.abs(dx) > 50 && Math.abs(dx) > 1.5 * Math.abs(dy)) show(index + (dx < 0 ? 1 : -1));
     }, { passive: true });
   }
 

@@ -24,6 +24,7 @@
 
 ## Страници
 - https://hospis.carbonstealth.eu/ — начало и често задавани въпроси
+- https://hospis.carbonstealth.eu/za-nas.html — за хосписа
 - https://hospis.carbonstealth.eu/uslugi.html — услуги
 - https://hospis.carbonstealth.eu/ekip.html — екип
 - https://hospis.carbonstealth.eu/galeriya.html — снимки
