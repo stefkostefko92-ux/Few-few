@@ -271,8 +271,10 @@ export function createTray({ getCaseId, onChange }) {
     hasFailed: () => items.some((i) => i.status === 'error'),
     count: () => items.length,
     /** След изпращане: готовите са привързани към съобщението, грешните остават за преглед. */
-    clearSent: () => {
-      items = items.filter((i) => i.status !== 'ready');
+    /** Маха само изпратените (по id) — файлове, качени междувременно, остават. */
+    clearSent: (sentIds) => {
+      const sent = new Set(sentIds);
+      items = items.filter((i) => !(i.status === 'ready' && sent.has(i.id)));
       changed();
     },
     reset: () => {

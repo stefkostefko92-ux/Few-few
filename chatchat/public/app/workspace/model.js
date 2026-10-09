@@ -40,9 +40,10 @@ export const lastMessageId = (convId) => sortedMessages(convId).at(-1)?.id ?? nu
 
 /**
  * Слива съобщение. Връща 'added' | 'updated' | 'same'. Отговорите (replyToId) отиват в нишката
- * на корена и увеличават брояча му; основният списък съдържа само корени.
+ * на корена и увеличават брояча му; основният списък съдържа само корени. `counted` — страница
+ * на нишката от REST: коренът вече носи `replyCount` от сървъра, броячът не се пипа.
  */
-export function upsertMessage(convId, m) {
+export function upsertMessage(convId, m, { counted = false } = {}) {
   const s = slotOf(convId);
   if (m.replyToId) {
     const thread = s.threads.get(m.replyToId) ?? new Map();
@@ -50,7 +51,7 @@ export function upsertMessage(convId, m) {
     thread.set(m.id, m);
     s.threads.set(m.replyToId, thread);
     const root = s.messages.get(m.replyToId);
-    if (!known && root && !m.deleted) root.replyCount = (root.replyCount ?? 0) + 1;
+    if (!known && !counted && root && !m.deleted) root.replyCount = (root.replyCount ?? 0) + 1;
     emit(`thread:${convId}`, m.replyToId);
     return known ? 'updated' : 'added';
   }

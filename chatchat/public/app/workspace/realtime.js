@@ -20,12 +20,16 @@ const TYPES = [
 const BASE_DELAY = 1000;
 const MAX_DELAY = 30000;
 const POLL_EVERY = 20000;
+/** Закъснението се нулира едва след толкова стабилна връзка — иначе изгонен поток (над тавана
+ *  на сървъра от 5 на човек) се връща веднага и изгонва следващия таб в безкраен кръг. */
+const STABLE_AFTER = 30000;
 
 let source = null;
 let running = false;
 let delay = BASE_DELAY;
 let retryTimer = 0;
 let pollTimer = 0;
+let stableTimer = 0;
 let openIds = () => [];
 
 function stopPolling() {
@@ -41,6 +45,7 @@ function startPolling() {
 }
 
 function closeSource() {
+  clearTimeout(stableTimer);
   if (source) {
     source.onopen = null;
     source.onerror = null;
@@ -77,7 +82,10 @@ function connect() {
   const es = new EventSource('/api/v1/events', { withCredentials: true });
   source = es;
   es.onopen = () => {
-    delay = BASE_DELAY;
+    clearTimeout(stableTimer);
+    stableTimer = setTimeout(() => {
+      delay = BASE_DELAY;
+    }, STABLE_AFTER);
     stopPolling();
     setConn('live');
     // Потокът няма буфер: каквото е станало междувременно, идва от REST.

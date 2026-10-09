@@ -72,12 +72,20 @@ function stopCamera() {
 async function startCamera(onFound) {
   const video = $('#scan-video');
   const box = $('#scan-camera');
+  let media;
   try {
-    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    media = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
   } catch {
     box.hidden = true;
     return;
   }
+  // Диалогът е затворен, докато браузърът е питал за камерата: спираме я веднага — иначе свети
+  // без видим диалог и намерен код би отворил случай.
+  if (!$('#dlg-scan').open) {
+    for (const track of media.getTracks()) track.stop();
+    return;
+  }
+  stream = media;
   video.srcObject = stream;
   await video.play().catch(() => undefined);
   box.hidden = false;

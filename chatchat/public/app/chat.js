@@ -119,7 +119,7 @@ export function renderMessages({ scroll = 'keep' } = {}) {
 function setBusy(busy) {
   state.sending = busy;
   $('#composer-send').disabled = busy;
-  tray?.setDisabled(busy);
+  tray?.setDisabled(busy || state.current?.case?.status === 'RESOLVED');
   $('#composer-text').readOnly = busy;
   $('#composer').setAttribute('aria-busy', String(busy));
   $('#composer-status').textContent = busy ? t('chat.waiting') : '';
@@ -159,7 +159,7 @@ async function send() {
     );
     pendingText = null;
     attempt = null;
-    tray.clearSent();
+    tray.clearSent(attachmentIds);
     if (state.currentId === caseId && state.current) {
       // Повторът връща вече записаното — без дубликати по id и без празен отговор.
       const known = new Set(state.current.messages.map((m) => m?.id));
@@ -190,7 +190,10 @@ async function send() {
     } catch {
       /* без опресняване: текстът се връща по-долу така или иначе */
     }
-    // Текстът се връща винаги и със СЪЩИЯ clientMessageId (`attempt` остава): ако съобщението е
+    // Техникът е сменил случая, докато чака: въпросът на A не бива да попадне в полето на B
+    // (диагноза за грешното табло). Съобщението на A е записано или не — вижда се в A.
+    if (state.currentId !== caseId) return;
+    // Текстът се връща със СЪЩИЯ clientMessageId (`attempt` остава): ако съобщението е
     // записано, повторното „Изпрати“ пита AI за него, без да го дублира (AC-12).
     area.value = text;
     renderMessages({ scroll: 'end' });
@@ -231,7 +234,7 @@ export function initChat() {
   });
   on('case:loaded', () => {
     pendingText = null;
-    tray.setDisabled(state.current?.case?.status === 'RESOLVED');
+    tray.setDisabled(state.sending || state.current?.case?.status === 'RESOLVED');
     const last = state.current?.messages.at(-1);
     renderMessages({ scroll: last?.kind === 'AI' ? 'answer' : 'end' });
   });

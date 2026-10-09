@@ -82,7 +82,7 @@ export async function catchUp(convId) {
 
 export async function loadThread(convId, rootId) {
   const data = await wsApi.messages(convId, { threadId: rootId, limit: 100 });
-  for (const m of data.messages ?? []) upsertMessage(convId, m);
+  for (const m of data.messages ?? []) upsertMessage(convId, m, { counted: true });
   emit(`thread:${convId}`, rootId);
 }
 

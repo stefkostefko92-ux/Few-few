@@ -121,6 +121,7 @@ function renderInfo(conv) {
 }
 
 function joinBanner(conv) {
+  const error = h('p', { class: 'form-error', role: 'alert', hidden: true });
   return h(
     'div',
     { class: 'join-banner' },
@@ -130,13 +131,23 @@ function joinBanner(conv) {
       {
         class: 'btn btn-primary',
         type: 'button',
-        onclick: async () => {
-          await wsApi.addMembers(conv.id, [state.user.id]);
-          await openConversationView(conv.id);
+        onclick: async (e) => {
+          const btn = e.currentTarget;
+          btn.disabled = true;
+          error.hidden = true;
+          try {
+            await wsApi.addMembers(conv.id, [state.user.id]);
+            await openConversationView(conv.id);
+          } catch (err) {
+            error.textContent = errorText(err);
+            error.hidden = false;
+            btn.disabled = false;
+          }
         },
       },
       t('browse.join'),
     ),
+    error,
   );
 }
 

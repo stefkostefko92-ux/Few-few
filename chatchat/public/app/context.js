@@ -154,10 +154,12 @@ export function initContext() {
     };
     try {
       const data = await api('PATCH', `/cases/${encodeURIComponent(cur.id)}/context`, { context });
-      state.current.case = data.case;
       const idx = state.cases.findIndex((x) => x.id === data.case.id);
       if (idx >= 0) state.cases[idx] = data.case;
       renderCases();
+      // Сменен случай, докато заявката е вървяла: изгледът е на друг случай — не го пипаме.
+      if (state.currentId !== cur.id) return;
+      state.current.case = data.case;
       renderContext();
       flash(fb, t('ctx.saved'));
     } catch (err) {
@@ -171,6 +173,7 @@ export function initContext() {
     const fb = $('#actions-feedback');
     try {
       const data = await api('POST', `/cases/${encodeURIComponent(cur.id)}/outcome`, { outcome });
+      if (state.currentId !== cur.id) return refreshCases();
       state.current.case = {
         ...cur,
         ...(data?.case ?? {}),

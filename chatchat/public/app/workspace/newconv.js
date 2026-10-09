@@ -120,6 +120,10 @@ export function initNewConversation() {
     const ids = [...chosen.keys()];
     const type = typeValue();
     const name = $('#nc-name').value.trim();
+    const submit = $('#nc-submit');
+    // Двоен клик не създава две групи (сървърът обединява само DIRECT и канал с име).
+    if (submit.disabled) return;
+    submit.disabled = true;
     try {
       let conv;
       if (mode.kind === 'add') {
@@ -159,6 +163,8 @@ export function initNewConversation() {
             ? t('nc.err.name')
             : errorText(ex);
       err.hidden = false;
+    } finally {
+      submit.disabled = false;
     }
   });
 }
