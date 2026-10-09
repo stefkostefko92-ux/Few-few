@@ -28,22 +28,24 @@ const GOV_ROPE = 'nessuna distanza della fune del limitatore nella norma (UNI EN
 export const VOCI_LIMITATORE: readonly VoceVano[] = [
   {
     id: 'limitatore.posto', gruppo: 'ingombri', titolo: 'Posizione del limitatore di velocità e della sua fune',
-    valore: 'la fune scorre a piombo su una parete laterale senza porte né contrappeso, nello spazio tra la cabina e la parete accanto alla guida '
-      + 'di cabina: lontana almeno 50 mm dalla cabina, dalle pareti e dalla guida con la sua staffa e il montante dell’arcata (preso largo 60 mm '
-      + 'per parte dall’asse della guida); il ramo agganciato alla cabina entro 400 mm dall’asse della guida, dove arriva la leva del paracadute. '
-      + 'Il limitatore nel locale sta sopra la sua fune, fuori dall’ingombro dell’argano con il suo basamento, del quadro e dell’interruttore '
-      + 'generale, dentro il locale, con accanto una superficie libera di 500 × 600 mm per la manutenzione. Lato, distanza dalla parete e ramo '
-      + 'agganciato si scelgono a mano; altrimenti il software mette la fune a metà dello spazio accanto alla cabina, 145 mm dietro l’asse della '
-      + 'guida, sull’ultima parete libera — o sull’altra parete libera quando solo lì il limitatore resta fuori dall’ingombro dell’argano nel '
-      + 'locale (l’argano girato con il motore verso la cabina può arrivare sopra la fune)',
+    valore: 'la fune scorre a piombo su una parete laterale senza porte né contrappeso, nello spazio tra la cabina e la parete accanto alla guida di '
+      + 'cabina: lontana almeno 50 mm dalla cabina, dalle pareti e dalla guida con la sua staffa e il montante dell’arcata (preso largo 60 mm per '
+      + 'parte dall’asse della guida); il ramo agganciato alla cabina entro 400 mm dall’asse della guida, dove arriva la leva del paracadute. Il '
+      + 'limitatore nel locale sta sopra la sua fune, fuori dall’ingombro dell’argano con il suo basamento, del quadro e dell’interruttore '
+      + 'generale, dentro il locale, con accanto una superficie libera di 500 × 600 mm per la manutenzione (accanto a un lato più corto di 500 mm '
+      + 'la superficie va oltre i suoi spigoli, entro i muri); il limitatore esistente rilevato con le funi attraverso la soletta ha il loro foro '
+      + 'sopra l’interno del vano (a cavallo di un muro: attenzione; fuori dal vano: non passa, misura da ricontrollare). Lato, distanza dalla '
+      + 'parete e ramo agganciato si scelgono a mano; altrimenti il software mette la fune a metà dello spazio accanto alla cabina, 145 mm dietro '
+      + 'l’asse della guida, sull’ultima parete libera — o sull’altra parete libera quando solo lì il limitatore resta fuori dall’ingombro '
+      + 'dell’argano nel locale (l’argano girato con il motore verso la cabina può arrivare sopra la fune)',
     riferimento: `${GOV_ROPE}; superficie libera per la manutenzione delle parti in movimento: UNI EN 81-20:2020, 5.2.6.3.2.1 b)`,
     fonte: `scelta del software (50, 60 e 400 mm); ${letto('UNI EN 81-20:2020', 'pp. 43, 71–72, 82–83')}; ${letto('UNI EN 81-1:2008', 'p. 67')}`, stato: 'scelta',
-    verifiche: ['v_gov', 'v_govrail', 'm_gov', 'm_govfree'],
+    verifiche: ['v_gov', 'v_govrail', 'm_gov', 'm_govfree', 'm_govdrop'],
     // each check its own source: the rope's distance by analogy, the strand's reach and the governor's place in the room
     // the software's (the plan's geometry), the free area beside it the standard's
     rifVerifica: {
       v_gov: GOV_ROPE, v_govrail: 'scelta del software, dove arriva la leva del paracadute (nessuna distanza nella norma: UNI EN 81-20:2020, 5.6.2.2.1)',
-      m_gov: '—', m_govfree: 'UNI EN 81-20:2020, 5.2.6.3.2.1 b)',
+      m_gov: '—', m_govfree: 'UNI EN 81-20:2020, 5.2.6.3.2.1 b)', m_govdrop: '—',
     },
     nota: 'con l’arcata a zaino, o senza una parete laterale libera, il software non mette il limitatore: la verifica della fune resta '
       + '«Attenzione» senza valore e il limitatore va posizionato a mano',

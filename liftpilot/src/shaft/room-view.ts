@@ -22,7 +22,7 @@ import { layoutSite, type RoomSite } from './room-site';
 import { roomSectionOn } from './room-section-view';
 import { hookOf } from './room-hook';
 import { reactionPoints } from './room-reactions';
-import { besideMachine } from './room-beside';
+import { DROP_TEXT, FRAME_TEXT, besideMachine } from './room-beside';
 import { panelSeen } from './room-section-extra';
 import { dropChains, railAxis, reactionMarks, setoutPlan } from './room-setout';
 import { AT, BEYOND, beyondWall, dimBands, gridNear, meets, segMeets, tagBox, takenBy } from './room-label';
@@ -118,7 +118,8 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDrawO
   // dimension), the rows of the frame's and the drop's chains beside the machine (room-beside.ts); the load P1 where the
   // room is free, its leader to the gearbox (the gearbox's side of the drop line: g)
   const g = G.dir, um = (G.frame0 + G.frame1) / 2, ax = Math.abs(G.ux) > Math.abs(G.uy) ? 0 : 1, rfx = M.rinvio;
-  const { side, gear, bed, vFrame, vDrop, sheave } = besideMachine(S, M, G, out, free, sw, ks);
+  // (the rows of the chains off the switch's name and the free areas' sizes too: round 37)
+  const { side, gear, bed, vFrame, vDrop, sheave } = besideMachine(S, M, G, out, free, sw, ks, takenBy([...fittings, ...fa.entities].filter((e) => e.e === 'text'), ks));
   out.push(sheave);
   // clear of the main switch's lettering too (wide enough for it at 1:50)
   const inRoom = (p: Pt): boolean => p[0] > 250 && p[0] < R.W - 250 && p[1] > 250 && p[1] < R.D - 250;
@@ -183,15 +184,15 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDrawO
   // askew, the frames' lengths along the drop line itself, like the drop's (on an axis their projection is their length)
   const on = { o: G.carDrop, u: [G.ux, G.uy] as Pt };
   if (G.frame.on === 'frame') {
-    out.push(chain(askew ? { dir: ax ? 'y' : 'x', on, pts: [G.frame0, G.frame1], at: vFrame, from: [edgeV, edgeV], text: ['{v} Telaio argano'], within }
-      : { dir: ax ? 'y' : 'x', pts: sorted(a[ax], b[ax]), at: a[1 - ax], from: [edge, edge], text: ['{v} Telaio argano'], within }));
+    out.push(chain(askew ? { dir: ax ? 'y' : 'x', on, pts: [G.frame0, G.frame1], at: vFrame, from: [edgeV, edgeV], text: [FRAME_TEXT], within }
+      : { dir: ax ? 'y' : 'x', pts: sorted(a[ax], b[ax]), at: a[1 - ax], from: [edge, edge], text: [FRAME_TEXT], within }));
   }
   // the rope drop between the ropes, from each of them: along an axis on a chain there; askew, along the drop line
   // itself (the rows outside give where each drop stands)
   const [r0, r1] = G.carDrop[ax] <= G.cwDrop[ax] ? [G.carDrop, G.cwDrop] : [G.cwDrop, G.carDrop];
   out.push(chain(Math.max(Math.abs(G.ux), Math.abs(G.uy)) > 0.999
-    ? { dir: ax ? 'y' : 'x', pts: [r0[ax], r1[ax]], at: drop[1 - ax], from: [r0[1 - ax], r1[1 - ax]], text: ['Calata Funi {v}'], edit: [S.calata(0, false)], within }
-    : { dir: ax ? 'y' : 'x', on: { o: G.carDrop, u: [G.ux, G.uy] }, pts: [0, G.calata], at: vDrop, from: [0, 0], text: ['Calata Funi {v}'], edit: [S.calata(0, false, true)], within }));
+    ? { dir: ax ? 'y' : 'x', pts: [r0[ax], r1[ax]], at: drop[1 - ax], from: [r0[1 - ax], r1[1 - ax]], text: [DROP_TEXT], edit: [S.calata(0, false)], within }
+    : { dir: ax ? 'y' : 'x', on: { o: G.carDrop, u: [G.ux, G.uy] }, pts: [0, G.calata], at: vDrop, from: [0, 0], text: [DROP_TEXT], edit: [S.calata(0, false, true)], within }));
   // the bedplate with the diverting pulley: its length and width beside the machine, away from the drop's chains
   if (bed) {
     const bv = g > 0 ? bed.v1 : bed.v0, [c, d] = [onDrop(G, bed.u0, bv + 220 * g), onDrop(G, bed.u1, bv + 220 * g)], side1 = onDrop(G, bed.u0, bv)[1 - ax];

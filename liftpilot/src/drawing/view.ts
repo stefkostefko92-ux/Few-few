@@ -3,7 +3,7 @@
 // drawing with its dimension rows into an area is chosen here too.
 import { chainShapes, rowOffset } from './dims';
 import { boundsOf, boxH, boxW, grow, toPaper, union, type Place } from './geom';
-import { textBox, textWidth } from './metrics';
+import { textBox, textBoxes, textWidth } from './metrics';
 import type { Edit, Entity, Side } from './model';
 import { obliqueShapes } from './oblique';
 import { FILLS, STYLES, TEXT, letterSize } from './style';
@@ -74,7 +74,7 @@ export function renderView(entities: readonly Entity[], place: Place): ViewResul
     if (e.e === 'text') parts[i] = lettering(e, place);
     else if (e.e === 'mark') parts[i] = symbol(e.sym, toPaper(place, e.at), e.size);
     else if (e.e === 'tag') parts[i] = tag(toPaper(place, e.at), e.text, [...(e.to ? [e.to] : []), ...(e.also ?? [])].map((p) => toPaper(place, p)));
-    for (const s of parts[i]) if (s.t !== 'line') taken.push(shapeBox(s));
+    for (const s of parts[i]) if (s.t !== 'line') taken.push(...(s.t === 'text' ? textBoxes(s) : [shapeBox(s)]));
   });
   const room = rowsRoom(entities);
   entities.forEach((e, i) => {

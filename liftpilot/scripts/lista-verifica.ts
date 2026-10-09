@@ -61,6 +61,7 @@ const VERIFICA_VANO: Record<ShaftCheckId, string> = {
   m_above: 'spazio libero sopra le parti rotanti non protette dell’argano', m_wheel: 'superficie libera accanto all’argano presso il volantino',
   m_hexist: 'modifica (UNI 10411-1): altezza del locale esistente sotto 2,0 m',
   m_holes: 'sostituzione: appoggi del nuovo basamento lontani dalle aperture esistenti della soletta',
+  m_govdrop: 'sostituzione: funi del limitatore esistente attraverso la soletta sopra l’interno del vano',
   gr_stress: 'tensioni nelle guide di cabina', gr_flange: 'flessione della suola delle guide di cabina', gr_defl: 'frecce delle guide di cabina',
   sg_type: 'tipo di paracadute per la velocità',
   h_hung: 'parte più alta della cabina sotto le pulegge appese alla soletta', sg_cw: 'paracadute del contrappeso con spazi accessibili sotto il vano',

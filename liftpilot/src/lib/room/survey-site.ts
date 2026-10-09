@@ -1,14 +1,15 @@
 // What a replacement's survey finds in the machine room besides the room, the shaft and the drops (survey.ts, round 36;
 // registry locale.fori, limitatore.posto): the existing governor on the floor — the checks take its footprint as they take
-// a whole design's (m_free, m_route, m_quadro, m_gov, m_govfree), the plan draws it with its load P4 —, the slab's
-// existing openings, drawn dashed with their size, and whether the new support bears on one of them (m_holes). Room axes
-// [mm]; pure.
-import { path, rect, type Box as DrawBox, type Entity, type Pt } from '@/drawing';
+// a whole design's (m_free, m_route, m_quadro, m_gov, m_govfree), the plan draws it with its load P4, its ropes through the
+// slab go down into the shaft (m_govdrop, round 37) —, the slab's existing openings, drawn dashed with their size, and
+// whether the new support bears on one of them (m_holes). Room axes [mm]; pure.
+import { letterSize, path, rect, type Box as DrawBox, type Entity, type Pt } from '@/drawing';
 import { check } from '@/shaft/checks';
 import type { HebLayout } from '@/shaft/heb';
 import type { MachineSpec, RoomGeo } from '@/shaft/machine-room';
 import { KV_VERT } from '@/shaft/norme-vert';
 import type { Box } from '@/shaft/room-floor';
+import { AT, letteringBox, tagBox } from '@/shaft/room-label';
 import { reactionPoints } from '@/shaft/room-reactions';
 import type { ShaftCheck } from '@/shaft/types';
 import type { Survey } from './survey';
@@ -19,28 +20,86 @@ export function surveyGovernor(s: Pick<Survey, 'governor'>): Box | null {
   return g ? [g.x - g.W / 2, g.y - g.D / 2, g.x + g.W / 2, g.y + g.D / 2] : null;
 }
 
-/** The slab's existing openings surveyed (with the governor's ropes' under its footprint when they go through the slab). */
-export function surveyOpenings(s: Pick<Survey, 'openings' | 'governor'>): Box[] {
-  const own = (s.openings ?? []).map((o): Box => [o.x - o.W / 2, o.y - o.D / 2, o.x + o.W / 2, o.y + o.D / 2]);
-  const g = s.governor, ropes: Box[] = g?.ropes ? [[g.x - 60, g.y - g.D / 2 + 20, g.x + 60, g.y + g.D / 2 - 20]] : [];
-  return [...own, ...ropes];
+/** The opening the existing governor's ropes go down through under its footprint, across its depth (the software's:
+ *  its sheave's strands); null: none surveyed, or its ropes do not go through the slab. */
+export function governorRopeBox(g: Survey['governor']): Box | null {
+  return g?.ropes ? [g.x - 60, g.y - g.D / 2 + 20, g.x + 60, g.y + g.D / 2 - 20] : null;
 }
 
+/** The slab's existing openings as surveyed (their outlines, room axes). */
+export const existingOpenings = (s: Pick<Survey, 'openings'>): Box[] => (s.openings ?? []).map((o): Box => [o.x - o.W / 2, o.y - o.D / 2, o.x + o.W / 2, o.y + o.D / 2]);
+
+/** The slab's existing openings surveyed (with the governor's ropes' under its footprint when they go through the slab). */
+export function surveyOpenings(s: Pick<Survey, 'openings' | 'governor'>): Box[] {
+  const ropes = governorRopeBox(s.governor);
+  return [...existingOpenings(s), ...(ropes ? [ropes] : [])];
+}
+
+/** m_govdrop (registry limitatore.posto): the existing governor stands over its rope, so the opening its ropes go down
+ *  through lies over the shaft's inside (the shaft at R.shaftX, R.shaftY in the room): the least margin to the shaft's
+ *  inner faces, at least 0 [mm]. Across a wall a warning (the opening is the software's: the strands may still drop
+ *  inside), wholly outside the shaft a failure (a measure from the wrong wall); no ropes through the slab: no check. */
+export function governorDropCheck(s: Pick<Survey, 'governor' | 'shaft' | 'room'>): ShaftCheck[] {
+  const r = governorRopeBox(s.governor);
+  if (!r) return [];
+  const R = s.room, [x0, y0, x1, y1] = [R.shaftX, R.shaftY, R.shaftX + s.shaft.W, R.shaftY + s.shaft.D];
+  const margin = Math.min(r[0] - x0, x1 - r[2], r[1] - y0, y1 - r[3]), across = r[0] < x1 && x0 < r[2] && r[1] < y1 && y0 < r[3];
+  return [check('m_govdrop', margin >= 0, Math.round(margin), 0, 0, 'mm', across)];
+}
+
+/** The governor's name on the plan; the sides of its footprint (room axes: the rear wall at y = D). */
+const GOV_NAME = 'Limitatore esistente';
+type Side = 'rear' | 'front' | 'right' | 'left';
+
+const boxOf = ([x0, y0, x1, y1]: Box): DrawBox => ({ x0, y0, x1, y1 });
+const meets = (a: DrawBox, b: DrawBox): boolean => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+const grown = (b: DrawBox, d: number): DrawBox => ({ x0: b.x0 - d, y0: b.y0 - d, x1: b.x1 + d, y1: b.y1 + d });
+
 /** The plan's entities of what the survey found: the governor's footprint with its name and P4, each existing opening
- *  dashed with «FORO ESISTENTE L×P»; and the boxes their lettering takes. */
-export function surveyFound(s: Pick<Survey, 'openings' | 'governor'>): { entities: Entity[]; box: DrawBox | null; marks: DrawBox[] } {
-  const out: Entity[] = [], marks: DrawBox[] = [], gov = surveyGovernor(s);
-  if (gov) {
-    const [x0, y0, x1, y1] = gov, c: Pt = [(x0 + x1) / 2, (y0 + y1) / 2];
-    out.push(rect(x0, y0, x1, y1, 'outline', 'paper'), { e: 'text', at: [c[0], y1 + 60], text: 'Limitatore esistente', size: 1.6, align: 'c', halo: true });
-    out.push({ e: 'tag', at: [x1 + 160, y1 + 160], text: 'P4', to: [x1, y1] });
-  }
-  for (const [x0, y0, x1, y1] of (s.openings ?? []).map((o): Box => [o.x - o.W / 2, o.y - o.D / 2, o.x + o.W / 2, o.y + o.D / 2])) {
+ *  dashed with «FORO ESISTENTE L×P»; the box of the governor with its lettering, and the tight boxes of its body, its name,
+ *  its reference and the openings' lettering (as room-site.ts gives a whole design's). The name and P4 keep off the room's
+ *  walls, the openings' lettering and `keep` (room axes: what stands on the floor round the governor), first on the side
+ *  away from its free area `free` (room-ways.ts hatches it: round 37, the name lay on the area's size), then above, below,
+ *  right or left of it; lettering measured as the plan draws it at 1:25. */
+export function surveyFound(s: Pick<Survey, 'openings' | 'governor' | 'room'>, keep: readonly Box[] = [], free: Box | null = null): { entities: Entity[]; box: DrawBox | null; marks: DrawBox[] } {
+  const out: Entity[] = [], marks: DrawBox[] = [], gov = surveyGovernor(s), R = s.room;
+  for (const [x0, y0, x1, y1] of existingOpenings(s)) {
+    const text = `FORO ESISTENTE ${Math.round(x1 - x0)}×${Math.round(y1 - y0)}`, at: Pt = [(x0 + x1) / 2, y0 - 70];
     out.push(path([[x0, y0], [x1, y0], [x1, y1], [x0, y1]], true, 'hidden'), path([[x0, y0], [x1, y1]], false, 'hidden'));
-    out.push({ e: 'text', at: [(x0 + x1) / 2, y0 - 70], text: `FORO ESISTENTE ${Math.round(x1 - x0)}×${Math.round(y1 - y0)}`, size: 1.4, align: 'c', halo: true });
-    marks.push({ x0, y0: y0 - 110, x1, y1 });
+    out.push({ e: 'text', at, text, size: 1.4, align: 'c', halo: true });
+    const l = letteringBox(at, text, 1.4, 'c');
+    marks.push({ x0: Math.min(x0, l.x0), y0: l.y0, x1: Math.max(x1, l.x1), y1 });
   }
-  return { entities: out, box: gov ? { x0: gov[0], y0: gov[1], x1: gov[2], y1: gov[3] + 120 } : null, marks };
+  if (!gov) return { entities: out, box: null, marks };
+  const [x0, y0, x1, y1] = gov, cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, h = letterSize(1.6) * AT, body = boxOf(gov);
+  // the side away from its free area (none: over it, where the name always went)
+  const away: Side = !free ? 'rear' : free[2] <= x0 ? 'right' : free[0] >= x1 ? 'left' : free[3] <= y0 ? 'rear' : 'front';
+  const spots: Readonly<Record<Side, { at: Pt; align: 'l' | 'c' | 'r' }>> = {
+    rear: { at: [cx, y1 + 60], align: 'c' }, front: { at: [cx, y0 - 60 - h], align: 'c' },
+    right: { at: [x1 + 60, cy - 0.35 * h], align: 'l' }, left: { at: [x0 - 60, cy - 0.35 * h], align: 'r' },
+  };
+  const order: Side[] = [away, 'rear', 'front', 'right', 'left'];
+  const busy = [body, ...marks, ...keep.map(boxOf), ...(free ? [boxOf(free)] : [])], inRoom = (b: DrawBox): boolean => b.x0 >= 0 && b.y0 >= 0 && b.x1 <= R.W && b.y1 <= R.D;
+  // how much of a box (20 mm round it) lies on what is there; out of the room, all of it
+  const on = (b: DrawBox, taken: readonly DrawBox[]): number => (inRoom(b) ? taken.reduce((t, q) => {
+    const g = grown(b, 20);
+    return t + (meets(g, q) ? (Math.min(g.x1, q.x1) - Math.max(g.x0, q.x0)) * (Math.min(g.y1, q.y1) - Math.max(g.y0, q.y0)) : 0);
+  }, 0) : Infinity);
+  // the first place clear of it all, else the one least on it
+  const best = <T extends { box: DrawBox }>(ps: readonly T[], taken: readonly DrawBox[]): T => ps.find((p) => on(p.box, taken) === 0) ?? ps.reduce((p, q) => (on(q.box, taken) < on(p.box, taken) ? q : p));
+  const name = best(order.map((k) => ({ ...spots[k], box: letteringBox(spots[k].at, GOV_NAME, 1.6, spots[k].align) })), busy);
+  // P4 out from a corner along its diagonal, else out from the middle of a side, farther each time, clear of the name
+  // too; its leader to that corner or side
+  const ends: Pt[] = [[x1, y1], [x0, y1], [x1, y0], [x0, y0], [x1, cy], [x0, cy], [cx, y1], [cx, y0]];
+  const tag = best([160, 280, 400].flatMap((d) => ends.map((c) => {
+    const at: Pt = [c[0] + Math.sign(c[0] - cx) * d, c[1] + Math.sign(c[1] - cy) * d];
+    return { c, at, box: tagBox(at, 'P4') };
+  })), [...busy, name.box]);
+  out.push(rect(x0, y0, x1, y1, 'outline', 'paper'), { e: 'text', at: name.at, text: GOV_NAME, size: 1.6, align: name.align, halo: true });
+  out.push({ e: 'tag', at: tag.at, text: 'P4', to: tag.c });
+  const p4 = tag.box;
+  const box = [body, name.box, p4].reduce((a, b) => ({ x0: Math.min(a.x0, b.x0), y0: Math.min(a.y0, b.y0), x1: Math.max(a.x1, b.x1), y1: Math.max(a.y1, b.y1) }));
+  return { entities: out, box, marks: [body, name.box, p4, ...marks] };
 }
 
 /** How far a point is from the rectangle's edge, negative inside it [mm]. */

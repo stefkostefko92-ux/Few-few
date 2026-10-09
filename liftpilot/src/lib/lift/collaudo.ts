@@ -112,6 +112,8 @@ export const AMBITO_VERIFICHE: Readonly<Record<CheckId | ShaftCheckId, readonly 
   // over the new machine's unguarded rotating parts, the free area at its handwheel (UNI 10411-1/-11:2024, 9.2: EN 81-20
   // 5.2.6.3 round the machine replaced); an existing room's height under 2,0 m with a new machine (UNI 10411-1 only)
   m_above: ['machine'], m_wheel: ['machine'], m_hexist: ['machine'], m_holes: ['machine'],
+  // the existing governor's ropes down into the shaft: a check of the survey's data (VERIFICHE_DATI)
+  m_govdrop: ['governor'],
   // the car's rails under the safety gear and in use (sheet 1 of the drawing set); the safety gear is on the sling
   gr_stress: ['rails', 'car', 'sling', 'load'], gr_flange: ['rails', 'car', 'sling', 'load'], gr_defl: ['rails', 'car', 'sling', 'load'], sg_type: ['sling', 'speed'],
   // the car under a machine below's hung pulleys as h_top; the counterweight's safety gear over a space under the shaft
@@ -129,8 +131,9 @@ export const AMBITO_VERIFICHE: Readonly<Record<CheckId | ShaftCheckId, readonly 
 export const SOLO_10411_1: readonly ShaftCheckId[] = ['m_hexist'];
 
 /** Checks of the data, not of a part: the distances set by hand on the plan keep every part in its place
- *  (layout.ts). They apply to every test, whatever the intervention replaces. */
-export const VERIFICHE_DATI: readonly ShaftCheckId[] = ['v_place', 'v_doorcar'];
+ *  (layout.ts); the existing governor surveyed over the shaft it drops its ropes into (survey-site.ts, round 37). They
+ *  apply to every test, whatever the intervention replaces. */
+export const VERIFICHE_DATI: readonly ShaftCheckId[] = ['v_place', 'v_doorcar', 'm_govdrop'];
 
 /** The accessibility checks of DM 236/1989: the shaft's, present when its case is chosen in the shaft's data. */
 export const VERIFICHE_DM236: readonly ShaftCheckId[] = ['v_acc_car', 'v_acc_door', 'v_acc_side', 'v_acc_c', 'v_call'];

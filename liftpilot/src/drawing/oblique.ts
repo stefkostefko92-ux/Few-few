@@ -9,7 +9,7 @@
 // conventions as the level chains' (dims.ts).
 import { DIM } from './dims';
 import { toPaper, type Place } from './geom';
-import { textBox, textQuad, textWidth } from './metrics';
+import { textBoxes, textQuad, textWidth } from './metrics';
 import type { Chain } from './model';
 import { STYLES, TEXT } from './style';
 import { arrowhead } from './symbols';
@@ -102,7 +102,7 @@ export function obliqueShapes(c: Chain & { on: { o: Pt; u: Pt } }, place: Place,
     const spot = spots[cost.reduce((best, x, k) => (x < cost[best] ? k : best), 0)];
     if (spot.run) out.push({ t: 'line', a: spot.run[0], b: spot.run[1], s: STYLES.dim });
     out.push(spot.s);
-    taken?.push(textBox(spot.s));
+    taken?.push(...textBoxes(spot.s));
     onText?.(spot.s, i, value);
   }
   return out;

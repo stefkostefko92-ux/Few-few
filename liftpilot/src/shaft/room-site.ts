@@ -43,6 +43,9 @@ export interface RoomSite {
   govFoot?: Box | null;
   /** the car rails' axis across the shaft (y, room axes) the governor's place is given from; missing: none */
   railY?: number | null;
+  /** the slab's existing openings a replacement's survey found (room-floor.ts Box, room axes): section B-B opens the
+   *  slab where its cut crosses them (round 37); missing: none */
+  openings?: readonly Box[];
 }
 
 /** The site of a whole design: its shaft, its travel, its governor, its plan's edits. */

@@ -821,6 +821,7 @@
     "c_m_hexist": "Locale esistente: altezza libera sotto 2,0 m (UNI 10411, 9.2)",
     "c_sl_frame": "Arcata esistente con carichi oltre i limiti (T* o portata) o non documentati: da verificare per i nuovi carichi (UNI 10411, 6.9)",
     "c_m_holes": "Appoggi del nuovo basamento dal bordo delle aperture esistenti della soletta: distanza minima",
+    "c_m_govdrop": "Funi del limitatore esistente attraverso la soletta: il loro foro sopra l’interno del vano, margine",
     "c_gr_stress": "Guide di cabina: tensioni, paracadute e marcia (UNI EN 81-50, 5.10)",
     "c_gr_flange": "Guide di cabina: flessione della suola (UNI EN 81-50, 5.10.5)",
     "c_gr_defl": "Guide di cabina: frecce (UNI EN 81-50, 5.10.6)",
