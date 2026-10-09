@@ -1,0 +1,41 @@
+[Unit]
+# ChatChat — дневната ретенция (deploy/retention.sh → /usr/local/sbin/chatchat-retention): стари сесии,
+# затворени случаи само ако RETENTION_CASE_DAYS е зададен. Тече в контейнера на приложението (docker exec),
+# със сроковете от неговата среда. Слага го deploy/timers-install.sh. Лог: journalctl -u chatchat-retention
+Description=ChatChat — ретенция на данните
+Documentation=file:///opt/few-few/current/chatchat/DEPLOY.md
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/chatchat-retention
+TimeoutStartSec=30min
+Nice=10
+UMask=0077
+
+# --- Пясъчник ---
+# Само сокетът на docker: без capabilities, без писане по диска, без мрежа.
+CapabilityBoundingSet=
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=-/run/docker.sock
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+ProtectProc=invisible
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@mount @swap @reboot
+RestrictAddressFamilies=AF_UNIX
+IPAddressDeny=any
