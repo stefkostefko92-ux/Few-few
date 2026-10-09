@@ -11,9 +11,10 @@ import { RendererBusy, renderTavole } from '@/lib/report/render';
 
 const isUniqueViolation = (err: unknown): boolean => typeof err === 'object' && err !== null && 'code' in err && (err as { code: unknown }).code === 'P2002';
 
-/** The set's drawing rendered and kept; when a concurrent first download kept it first, that PDF. */
-export async function keepSetPdf(drawingSetId: string, doc: DrawingDoc): Promise<Uint8Array<ArrayBuffer>> {
-  const pdf = new Uint8Array(await renderTavole(doc));
+/** The set's drawing rendered (dated `issuedAt`, the set's issue) and kept; when a concurrent first download kept it
+ *  first, that PDF. */
+export async function keepSetPdf(drawingSetId: string, doc: DrawingDoc, issuedAt: Date): Promise<Uint8Array<ArrayBuffer>> {
+  const pdf = new Uint8Array(await renderTavole(doc, issuedAt));
   const sha256 = createHash('sha256').update(pdf).digest('hex');
   try {
     await prisma.drawingSetPdf.create({ data: { drawingSetId, sha256, data: pdf } });
@@ -27,8 +28,8 @@ export async function keepSetPdf(drawingSetId: string, doc: DrawingDoc): Promise
 
 /** After an issue or a revision, once the answer is sent: the PDF kept (with the renderers busy, the first download
  *  keeps it). */
-export function keepSetPdfLater(drawingSetId: string, doc: DrawingDoc): void {
-  after(() => keepSetPdf(drawingSetId, doc).then(() => undefined, (err: unknown) => {
+export function keepSetPdfLater(drawingSetId: string, doc: DrawingDoc, issuedAt: Date): void {
+  after(() => keepSetPdf(drawingSetId, doc, issuedAt).then(() => undefined, (err: unknown) => {
     if (!(err instanceof RendererBusy)) log.error({ err, drawingSetId }, 'drawing set pdf not kept');
   }));
 }

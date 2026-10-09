@@ -31,7 +31,8 @@ export async function exportDrawingSet(user: SessionUser, id: string, format: Se
   const views = 'derived' in r ? surveyViews(r.derived, r.input.plant) : inputViews(r.input);
   // the set as its title block names it: its number and revision, its sheets, the hash of its drawing
   const caption = `${r.input.project.name} · DIS. N° ${r.title.number} ${currentRevision(r.title)} · ${r.doc.pages.length} fogli · SHA-256 ${s.sha256.slice(0, 16)} · LiftPilot`;
-  const x = { views, sheet: r.doc.pages[0]?.shapes ?? [], paper: paperSheets(r), title: r.title, caption };
+  // dated as the set's issue (its revision's row), not the download: every download gives the same bytes
+  const x = { views, sheet: r.doc.pages[0]?.shapes ?? [], paper: paperSheets(r), title: r.title, caption, date: s.createdAt };
   const body = format === 'dxf' ? new TextEncoder().encode(setToDxf(x)) : new Uint8Array(setToDwg(x));
   return { ok: true, body, mime: MIME[format], name: `tavole-${s.number}${s.revision ? `-R${s.revision}` : ''}.${format}`, setId: s.id };
 }

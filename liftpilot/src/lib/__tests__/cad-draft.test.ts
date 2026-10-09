@@ -46,7 +46,7 @@ function dxfTexts(dxf: string): Placed[] {
 /** A draft's CAD file names its PDF under its first view, every sheet it names is a sheet of that PDF (a view's sheet
  *  that view's), it has no sheet of paper of its own, and the lines under its first view fit before the next one. */
 function draftNamesItsPdf(views: readonly CadView[], sheets: readonly { title: string }[], what: string): void {
-  const pdf = 'bozza-2026-10-08.pdf', caption = draftCaption(what, pdf), dxf = toDxf(views, caption), texts = dxfTexts(dxf);
+  const pdf = 'bozza-2026-10-08.pdf', caption = draftCaption(what, pdf), at = new Date('2026-10-08T10:00:00Z'), dxf = toDxf(views, caption, at), texts = dxfTexts(dxf);
   const first = views[0], second = views[1];
   assert.ok(first && second);
   assert.ok(caption.some((l) => l.includes(pdf) && l.startsWith('BOZZA')), 'la riga nomina il PDF della bozza');
@@ -70,7 +70,7 @@ function draftNamesItsPdf(views: readonly CadView[], sheets: readonly { title: s
     assert.equal(sheets[v.sheet - 1]?.title, v.title, `Foglio ${v.sheet}`);
   });
   // the DWG the same
-  const a = readCad(new TextEncoder().encode(dxf), 'bozza.dxf'), b = readCad(toDwg(views, caption), 'bozza.dwg');
+  const a = readCad(new TextEncoder().encode(dxf), 'bozza.dxf'), b = readCad(toDwg(views, caption, at), 'bozza.dwg');
   assert.equal(b.count, a.count);
   assert.deepEqual(b.bounds, a.bounds);
 }

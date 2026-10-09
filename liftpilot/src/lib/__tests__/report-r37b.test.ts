@@ -34,7 +34,7 @@ const RIF1: Collaudo = { norma: '10411-1', parti: PARTI_RIFACIMENTO, rifacimento
 function relazione(inp: LiftInputs): ReportDoc {
   const d = deriveLift(inp);
   return buildReport({
-    calc, project, company: 'Ditta di prova', values: d.values, generatedAt: DAY, reviews: [],
+    calc, project, company: 'Ditta di prova', values: d.values, reviews: [],
     design: { id: 'cmdesign37', label: null, createdAt: DAY, sha256: 'e'.repeat(64), engineVersion: SHAFT_ENGINE_VERSION, profileId: 'IT-2026.1', author: null, layout: d.layout, source: null },
     marks: valueMarks(inp.auto, d, d.bottom, d.collaudo), plant: null, drawings: [],
   });
@@ -85,7 +85,7 @@ test('freno di una macchina secondo la UNI EN 81-1: la sua clausola e la 14.1 b)
   assert.ok(checkRefs(VOCI, 'b_up', { norma: '10411-1', groove: 'U', std: 'en81-1' }).startsWith('UNI EN 81-20:2020, 5.9.2.2.2.1 (verifica più completa scelta dal software)'));
   // the relazione of a replacement with a machine to UNI EN 81-1 under -1: the brake's rows as its object says (14.1 b))
   const old = { ...PRESETS.B, context: 'repl', machineStd: 'en81-1' } as FormValues;
-  const doc = buildReport({ calc, project, company: 'Ditta di prova', values: old, generatedAt: DAY, reviews: [],
+  const doc = buildReport({ calc, project, company: 'Ditta di prova', values: old, reviews: [],
     marks: { pEstimate: false, geometry: [], machineProposed: false, collaudo: { norma: '10411-1', parti: ['machine'] } } });
   const rows = doc.blocks.flatMap((b) => (b.t === 'grid' && b.head.includes('Riferimento') ? b.rows : [])).filter((r) => r[0]?.startsWith('Freno · ') && !r[0].includes('Decelerazione'));
   assert.equal(rows.length, 4);

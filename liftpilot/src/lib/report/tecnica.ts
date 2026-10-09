@@ -41,7 +41,6 @@ export interface TecnicaInput {
   plant: Plant;
   /** the drawing sets issued from this room: their number, revision and the SHA-256 of their drawing */
   sets: readonly { number: string; revision: number; sha256?: string }[];
-  generatedAt: Date;
 }
 
 const LAYOUT: Readonly<Record<string, string>> = { topDefl: 'argano in alto con puleggia di rinvio nel locale', top: 'argano in alto a tiro diretto' };
@@ -66,7 +65,8 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
     ['Rilievo del locale', `${r.room.id}${r.room.label ? ` · ${r.room.label}` : ''} · ${when(r.room.createdAt)}${r.room.author ? ` · ${r.room.author}` : ''}`],
     ['Calcolo dell’argano', `${r.calc.id}${r.calc.label ? ` · ${r.calc.label}` : ''} · ${when(r.calc.createdAt)}`],
     ['Impronte SHA-256', `rilievo ${r.room.sha256}\ncalcolo ${r.calc.sha256}`],
-    ['Motori', `rilievo ${r.room.engineVersion} · calcolo ${r.calc.engineVersion} · profilo normativo ${r.calc.profileId}`], ['Documento generato il', when(r.generatedAt)],
+    // no date of the download: the document is the survey's, dated as it (every download gives the same bytes)
+    ['Motori', `rilievo ${r.room.engineVersion} · calcolo ${r.calc.engineVersion} · profilo normativo ${r.calc.profileId}`],
   ] });
 
   section('Oggetto');
@@ -110,7 +110,7 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
   B.push(...surveyBlocks(d, { ...d.M, label: named }));
 
   section('Verifiche del locale, del basamento e delle calate');
-  const sheet = surveySheetData({ ...r, set: { number: '', issuedAt: r.generatedAt, author: '', revisions: [] }, company: { name: r.company, logo: null } }, d, 1);
+  const sheet = surveySheetData({ ...r, set: { number: '', issuedAt: r.room.createdAt, author: '', revisions: [] }, company: { name: r.company, logo: null } }, d, 1);
   const labels: Readonly<Record<string, string>> = appIt.shaft;
   // the checks as sheet 1 prints them: the beams at the sheet's load (the data of the installation may change it)
   const onSlab = surveyLoad(d, r.plant), checks: readonly ShaftCheck[] = onSlab.checks;

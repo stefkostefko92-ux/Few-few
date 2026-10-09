@@ -4,6 +4,7 @@ import path from 'node:path';
 import { env } from '../env';
 import type { DrawingDoc } from '@/drawing';
 import type { ReportDoc } from './model';
+import { rendererInput } from './payload';
 
 const TIMEOUT_MS = 30_000;
 const MAX_BYTES = 25 * 1024 * 1024;
@@ -54,16 +55,17 @@ export const busyResponse = (): Response => new Response('Busy: try again in a f
   status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', 'Retry-After': '5' },
 });
 
-/** The relazione: report/relazione.py lays out the blocks. */
-export const renderPdf = (doc: ReportDoc): Promise<Buffer> => runRenderer('relazione.py', doc);
+/** The relazione (or the draft order): report/relazione.py lays out the blocks; the PDF dated `at`, its record's date. */
+export const renderPdf = (doc: ReportDoc, at: Date): Promise<Buffer> => runRenderer('relazione.py', rendererInput(doc, at));
 
-/** The drawing set: report/tavole.py paints the sheets laid out by the drawing kernel. */
-export const renderTavole = (doc: DrawingDoc): Promise<Buffer> => runRenderer('tavole.py', doc);
+/** The drawing set: report/tavole.py paints the sheets laid out by the drawing kernel; the PDF dated `at` (the set's
+ *  issue, a draft's record). */
+export const renderTavole = (doc: DrawingDoc, at: Date): Promise<Buffer> => runRenderer('tavole.py', rendererInput(doc, at));
 
 /** The views of a report as PNG pictures, one per plan block in their order (report/raster.py): the Word document's. */
 export async function renderPictures(doc: ReportDoc): Promise<Uint8Array[]> {
   if (!doc.blocks.some((b) => b.t === 'plan')) return [];
-  const out = await runRenderer('raster.py', doc, (b) => b.subarray(0, 1).toString('latin1') === '[');
+  const out = await runRenderer('raster.py', rendererInput(doc), (b) => b.subarray(0, 1).toString('latin1') === '[');
   const list: unknown = JSON.parse(out.toString('utf8'));
   if (!Array.isArray(list) || !list.every((x): x is string => typeof x === 'string')) throw new Error('raster renderer: unexpected output');
   return list.map((s) => new Uint8Array(Buffer.from(s, 'base64')));
@@ -71,18 +73,18 @@ export async function renderPictures(doc: ReportDoc): Promise<Uint8Array[]> {
 
 const isPdf = (b: Buffer): boolean => b.subarray(0, 5).toString('latin1') === '%PDF-';
 
-// A renderer of report/ draws the model (JSON on stdin, the document on stdout, which `ok` recognises); no shell,
-// fixed arguments, bounded time and size, a few at a time.
-async function runRenderer(name: 'relazione.py' | 'tavole.py' | 'raster.py', doc: ReportDoc | DrawingDoc, ok: (b: Buffer) => boolean = isPdf): Promise<Buffer> {
+// A renderer of report/ draws the model (JSON on stdin: payload.ts; the document on stdout, which `ok` recognises); no
+// shell, fixed arguments, bounded time and size, a few at a time.
+async function runRenderer(name: 'relazione.py' | 'tavole.py' | 'raster.py', input: string, ok: (b: Buffer) => boolean = isPdf): Promise<Buffer> {
   await slot();
   try {
-    return await spawnRenderer(name, doc, ok);
+    return await spawnRenderer(name, input, ok);
   } finally {
     release();
   }
 }
 
-function spawnRenderer(name: 'relazione.py' | 'tavole.py' | 'raster.py', doc: ReportDoc | DrawingDoc, ok: (b: Buffer) => boolean): Promise<Buffer> {
+function spawnRenderer(name: 'relazione.py' | 'tavole.py' | 'raster.py', input: string, ok: (b: Buffer) => boolean): Promise<Buffer> {
   const { PYTHON_BIN, REPORT_FONT_DIR } = env();
   const script = path.join(process.cwd(), 'report', name);
   return new Promise((resolve, reject) => {
@@ -113,6 +115,6 @@ function spawnRenderer(name: 'relazione.py' | 'tavole.py' | 'raster.py', doc: Re
       else finish(new Error(`report renderer failed (${code}): ${Buffer.concat(err).toString('utf8').slice(-500)}`));
     });
     child.stdin.on('error', (e) => finish(e));
-    child.stdin.end(JSON.stringify(doc));
+    child.stdin.end(input);
   });
 }

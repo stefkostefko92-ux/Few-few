@@ -76,7 +76,7 @@ test('argano di catalogo inserito a mano: foglio 1, «Guide e carichi» e la not
   assert.deepEqual(sheet.loads.find(([k]) => k.startsWith('ARGANO')), ['ARGANO (STIMA)', fmt(whole.kg, 0), 'kg']);
   const doc = buildReport({
     calc: { id: 'cmtest0036', label: null, createdAt: new Date('2026-10-08T08:00:00Z'), sha256: 'f'.repeat(64), engineVersion: '1.0.0', profileId: 'IT-2026.1', author: null },
-    project: { ...project }, company: 'Elevatori di prova', values: V, generatedAt: new Date('2026-10-08T09:00:00Z'), reviews: [], marks, plant: {},
+    project: { ...project }, company: 'Elevatori di prova', values: V, reviews: [], marks, plant: {},
     design: { id: 'cmdesign36', label: null, createdAt: new Date('2026-10-08T07:00:00Z'), sha256: 'e'.repeat(64), engineVersion: SHAFT_ENGINE_VERSION, profileId: 'IT-2026.1', author: null, source: null, layout: d.layout },
   });
   const kv = doc.blocks.flatMap((b) => (b.t === 'kv' ? b.rows : [])), grid = doc.blocks.flatMap((b) => (b.t === 'grid' ? b.rows : []));
@@ -100,7 +100,7 @@ test('relazione tecnica della sostituzione: la massa del nuovo argano sotto la t
     room: { id: 'cmroom36', label: null, createdAt: new Date('2026-10-08T08:00:00Z'), sha256: 'd'.repeat(64), engineVersion: '1.0.0', author: null },
     calc: { id: 'cmcalc36', label: null, createdAt: new Date('2026-10-08T07:00:00Z'), sha256: 'c'.repeat(64), engineVersion: '1.0.0', profileId: 'IT-2026.1' },
     project: { name: 'Condominio Roma', address: null, city: null, province: null, plantNumber: null, client: null }, company: 'Elevatori di prova',
-    values: V, survey, derived: d, collaudo: collaudoOf(V), plant: {}, sets: [], generatedAt: new Date('2026-10-08T09:00:00Z'),
+    values: V, survey, derived: d, collaudo: collaudoOf(V), plant: {}, sets: [],
   });
   const all = texts(doc), table = doc.blocks.flatMap((b) => (b.t === 'kv' ? b.rows : [])).find(([k]) => k?.startsWith('Argano (stima)'));
   assert.deepEqual(table, ['Argano (stima)', `${fmt(whole.kg, 0)} kg`]);

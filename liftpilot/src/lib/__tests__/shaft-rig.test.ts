@@ -190,7 +190,7 @@ test('relazione: lo spazio sotto il vano come il foglio 1 (fondo della fossa, P5
     const doc = buildReport({
       calc: { id: 'cmtest0036', label: null, createdAt: new Date('2026-10-08T08:00:00Z'), sha256: 'f'.repeat(64), engineVersion: '1.0.0', profileId: 'IT-2026.1', author: null },
       project: { name: 'Prova', address: 'Via Roma 12', city: 'Milano', province: 'MI', plantNumber: 'MI 1/98', client: null }, company: 'Ditta di prova',
-      values, reviews: [], generatedAt: new Date('2026-10-08T09:00:00Z'), marks: { ...NO_MARKS, bottom: 'under', collaudo: collaudoOf(values) },
+      values, reviews: [], marks: { ...NO_MARKS, bottom: 'under', collaudo: collaudoOf(values) },
     });
     return doc.blocks.flatMap((b) => (b.t === 'list' ? b.items : [])).find((x) => x.includes('Spazio accessibile sotto il vano')) ?? '';
   };

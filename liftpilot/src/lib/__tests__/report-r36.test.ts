@@ -17,7 +17,7 @@ import { PARTI } from '../lift/collaudo';
 const input = (k: 'A' | 'B' | 'C'): ReportInput => ({
   calc: { id: 'cmtest0001', label: 'offerta 1', createdAt: new Date('2026-09-30T08:00:00Z'), sha256: 'f'.repeat(64), engineVersion: '1.0.0', profileId: 'IT-2026.1', author: 'Mario Rossi' },
   project: { name: 'Impianto di prova', address: 'Via Roma 12', city: 'Milano', province: 'MI', plantNumber: 'MI 1/98', client: null },
-  company: 'Ditta di prova', values: PRESETS[k], generatedAt: new Date('2026-09-30T09:00:00Z'), reviews: [],
+  company: 'Ditta di prova', values: PRESETS[k], reviews: [],
 });
 const design = (inputs: ShaftInputs): ReportDesign => ({
   id: 'cmdesign01', label: 'rilievo', createdAt: new Date('2026-09-29T16:00:00Z'), sha256: 'e'.repeat(64), engineVersion: SHAFT_ENGINE_VERSION,

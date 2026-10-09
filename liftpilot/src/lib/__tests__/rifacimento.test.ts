@@ -108,7 +108,7 @@ test('dal modulo al server: lo schema accetta il segno, la derivazione lo porta,
 const report = (collaudo?: Collaudo): ReportDoc => buildReport({
   calc: { id: 'cmtest0027', label: null, createdAt: new Date('2026-10-05T08:00:00Z'), sha256: 'f'.repeat(64), engineVersion: '1.0.0', profileId: 'IT-2026.1', author: null },
   project: { name: 'Impianto di prova', address: null, city: 'Milano', province: 'MI', plantNumber: null, client: null },
-  company: 'Ditta di prova', values: PRESETS.B, generatedAt: new Date('2026-10-05T09:00:00Z'), reviews: [],
+  company: 'Ditta di prova', values: PRESETS.B, reviews: [],
   ...(collaudo ? { marks: marks(collaudo) } : {}),
 });
 const kv = (doc: ReportDoc): Map<string, string> => new Map(doc.blocks.flatMap((b) => (b.t === 'kv' ? b.rows : [])));
@@ -157,7 +157,7 @@ test('bozza d’ordine e riepilogo: il rifacimento accanto alla norma', () => {
     company: 'Ascensori di prova S.r.l.', companyCity: 'Milano', logo: null, author: null,
     project: { name: 'Condominio di prova', address: null, city: 'Milano', province: 'MI', plantNumber: null },
     record: { kind: 'design' as const, id: 'cmtestorder27', sha256: 'a'.repeat(64), createdAt: new Date('2026-10-05T08:00:00Z'), label: null },
-    order, room: [], generatedAt: new Date('2026-10-05T10:00:00Z'),
+    order, room: [],
   };
   const norma = (C: Collaudo) => new Map(buildOrder({ ...input, collaudo: C }).blocks.flatMap((b) => (b.t === 'kv' ? b.rows : []))).get('Norma del collaudo');
   assert.equal(norma(RIF), 'UNI 10411-1:2024 (rifacimento con l’arcata esistente)');

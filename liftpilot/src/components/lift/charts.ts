@@ -41,6 +41,16 @@ function sheaveSpeed(run: SimRun, R: number, r: number): Float64Array {
   });
 }
 
+/** Speed of the counterweight (upwards positive) from its positions [m/s]: on the buffers it differs from the car's when
+ *  the ropes go slack. */
+function cwSpeed(run: SimRun): Float64Array {
+  const c = run.series.data.cw, dt = run.series.dt, n = c.length;
+  return Float64Array.from({ length: n }, (_, i) => {
+    const a = Math.max(0, i - 1), b = Math.min(n - 1, i + 1);
+    return b > a ? (c[b] - c[a]) / ((b - a) * dt) : 0;
+  });
+}
+
 export function chartsFor(run: SimRun, t: ChartText, R: number, r: number, Mn: number, Q: number): ChartSpec[] {
   const d = run.series.data, sc = run.scenario.id;
   const speed: ChartSpec = { key: 'v', title: t('ch_v'), unit: 'm/s', dec: 2, zero: true, lines: [{ key: 'v', label: t('ch_car'), values: d.v, tone: 1 }] };
@@ -69,11 +79,12 @@ export function chartsFor(run: SimRun, t: ChartText, R: number, r: number, Mn: n
       traction('above')];
   }
   if (sc === 'stall') return [both, traction('below', from('cwBuffer')), torque];
-  // buffers: the deceleration of the mass on the buffer in g, the compression against the stroke
+  // buffers: the speeds of both sides (the one on the buffer, whose deceleration and compression follow, and the other,
+  // which carries on), the deceleration of the mass on the buffer in g, the compression against the stroke
   const car = run.scenario.id === 'buffer' && run.scenario.p.side === 'car';
   const comp = car ? d.bufCar : d.bufCw;
   return [
-    speed,
+    { ...speed, title: t('ch_vcw'), lines: [...speed.lines, { key: 'cw', label: t('ch_cw'), values: cwSpeed(run), tone: 2 }] },
     { key: 'g', title: t('ch_decel'), unit: 'g', dec: 2, zero: true, lines: [{ key: 'g', label: t('ch_decel'), values: map(d.a, (x) => x / 9.81), tone: 1 }] },
     { key: 'x', title: t('ch_comp'), unit: 'mm', dec: 0, zero: true, lines: [{ key: 'x', label: t('ch_comp'), values: map(comp, (x) => x * 1000), tone: 1 }],
       limit: { values: (run.summary.stroke ?? 0) * 1000, label: t('ch_stroke'), bad: 'above' } },

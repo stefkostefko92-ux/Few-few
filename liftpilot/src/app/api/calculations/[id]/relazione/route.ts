@@ -33,12 +33,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     const plant = plantReadSchema.safeParse(c.project.plant ?? {}), drawings = rec.design ? await listCalcDrawingSets(user, c.id) : [];
     const doc = buildReport({
       calc: { id: c.id, label: c.label, createdAt: c.createdAt, sha256: c.sha256, engineVersion: c.engineVersion, profileId: c.profileId, author: c.user?.name ?? null },
-      project: c.project, ...await getLetterhead(user), advice, values: rec.values, design: rec.design, generatedAt: new Date(),
+      project: c.project, ...await getLetterhead(user), advice, values: rec.values, design: rec.design,
       // the standards: those of the lift design it comes from, else those chosen with the calculation
       marks: recordMarks(rec, c.collaudo), plant: plant.success ? plant.data : null, drawings,
       reviews: c.reviews.map((r) => ({ name: r.user?.name ?? null, role: r.user && isRole(r.user.role) ? r.user.role : null, note: r.note, createdAt: r.createdAt })),
     });
-    const pdf = await renderPdf(doc);
+    // dated as the calculation (not the download): every download gives the same bytes
+    const pdf = await renderPdf(doc, c.createdAt);
     await audit({ companyId: user.companyId, userId: user.id, action: 'REPORT_DOWNLOADED', entity: 'Calculation', entityId: c.id });
     return attachment(new Uint8Array(pdf), 'application/pdf', `relazione-di-calcolo-${slug(c.project.name)}-${c.createdAt.toISOString().slice(0, 10)}.pdf`);
   } catch (err) {

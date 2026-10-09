@@ -1159,6 +1159,8 @@
     "ch_vs": "Speed: car and sheave",
     "ch_car": "car",
     "ch_sheave": "sheave",
+    "ch_vcw": "Speed: car and counterweight",
+    "ch_cw": "counterweight",
     "ch_a": "Car acceleration",
     "ch_ratio": "Traction: T1/T2",
     "ch_limit": "limit e^(f·α)",

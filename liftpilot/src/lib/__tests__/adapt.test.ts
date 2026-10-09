@@ -48,7 +48,7 @@ test('la relazione di calcolo porta le voci di ADAPT', () => {
   const doc: ReportDoc = buildReport({
     calc: { id: 'cmtest0001', label: null, createdAt: new Date('2026-10-05T08:00:00Z'), sha256: 'f'.repeat(64), engineVersion: '1.0.0', profileId: 'IT-2026.1', author: null },
     project: { name: 'Impianto di prova', address: null, city: null, province: null, plantNumber: null, client: null },
-    company: 'Ditta di prova', values: PRESETS.B, generatedAt: new Date('2026-10-05T09:00:00Z'), reviews: [],
+    company: 'Ditta di prova', values: PRESETS.B, reviews: [],
     marks: { pEstimate: false, geometry: [], machineProposed: false, collaudo: REPL },
   });
   const t = makeTr(calcIt as CalcDict);

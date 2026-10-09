@@ -23,7 +23,7 @@ const EN81_RIF = { norma: 'en81', parti: [...PARTI], rifacimento: true } as cons
 const report = (collaudo: Collaudo): ReportDoc => buildReport({
   calc: { id: 'cmtest0027', label: null, createdAt: new Date('2026-10-05T08:00:00Z'), sha256: 'f'.repeat(64), engineVersion: '1.0.0', profileId: 'IT-2026.1', author: null },
   project: { name: 'Impianto di prova', address: null, city: 'Milano', province: 'MI', plantNumber: null, client: null },
-  company: 'Ditta di prova', values: PRESETS.B, generatedAt: new Date('2026-10-05T09:00:00Z'), reviews: [],
+  company: 'Ditta di prova', values: PRESETS.B, reviews: [],
   marks: { pEstimate: false, geometry: [], machineProposed: false, collaudo },
 });
 const h1 = (doc: ReportDoc): string => doc.blocks.find((b) => b.t === 'h1')?.text ?? '';

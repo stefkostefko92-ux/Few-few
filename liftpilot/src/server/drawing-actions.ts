@@ -116,7 +116,7 @@ async function issueNew(user: SessionUser, author: string, compose: Compose): Pr
         });
         return { id: set.id, number, doc: c.doc };
       });
-      keepSetPdfLater(out.id, out.doc);
+      keepSetPdfLater(out.id, out.doc, issuedAt);
       await audit({ companyId: user.companyId, userId: user.id, action: 'DRAWING_SET_ISSUED', entity: 'DrawingSet', entityId: out.id, meta: { number: out.number } });
       log.info({ userId: user.id, drawingSetId: out.id }, 'drawing set issued');
       return { ok: true, id: out.id };
@@ -202,7 +202,7 @@ export async function reviseDrawingSetAction(input: { drawingSetId: unknown; cal
       return { ok: true as const, id: set.id, revision, doc: c.doc };
     });
     if (!out.ok) return out;
-    keepSetPdfLater(out.id, out.doc);
+    keepSetPdfLater(out.id, out.doc, issuedAt);
     await audit({ companyId: user.companyId, userId: user.id, action: 'DRAWING_SET_REVISED', entity: 'DrawingSet', entityId: out.id, meta: { number: base.number, revision: out.revision } });
     return { ok: true, id: out.id };
   } catch (err) {

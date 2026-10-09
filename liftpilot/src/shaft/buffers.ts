@@ -9,6 +9,14 @@ export const BUFFER_TYPES: readonly BufferType[] = ['spring', 'pu', 'oil'];
 
 export const bufferType = (V: VerticalInputs, side: 'car' | 'cw'): BufferType => (side === 'car' ? V.carBufferType : V.cwBufferType) ?? 'spring';
 
+/** The steel plate a polyurethane pad stands on, within its height H [mm] (section-buffer.ts, the 3D pit). */
+export const PU_PLATE = 8;
+
+/** The plate of a pad of height `h` drawn under its stroke [mm]: PU_PLATE, thinner when the pad is so low that its
+ *  stroke (90 % of h, counted to the plate's face: the plate is a fixing element, UNI EN 81-20:2020 5.8.2.1.2.2) would
+ *  reach into it — fully compressed, the pad and the plate fill what is left of h. */
+export const puPlate = (h: number, stroke: number): number => Math.max(0, Math.min(PU_PLATE, h - stroke));
+
 /** The stroke the section takes [mm]: a polyurethane pad's 90 % of its height, else the one entered. */
 export function bufferStroke(V: VerticalInputs, side: 'car' | 'cw'): number {
   const h = side === 'car' ? V.carBufferH : V.cwBufferH;

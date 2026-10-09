@@ -27,14 +27,15 @@ export type Exported = { ok: true; body: Uint8Array<ArrayBuffer>; mime: string; 
 export async function exportLiftDesign(user: SessionUser, id: string, format: ExportFormat): Promise<Exported> {
   const d = await getLiftDesign(user, id);
   if (!d) return { ok: false, error: 'notFound' };
-  const set = { number: DRAFT, issuedAt: new Date(), author: initialsOf(user.name) || '—', revisions: [] };
+  // the draft dated as the design (its saving), not the download: every download of the record gives the same bytes
+  const set = { number: DRAFT, issuedAt: d.createdAt, author: initialsOf(user.name) || '—', revisions: [] };
   const c = await composeFromCalculation(prisma, user, d.calculation.id, set, true);
   if (!c.ok) return { ok: false, error: c.error === 'engineChanged' ? 'engineChanged' : 'notFound' };
   const date = d.createdAt.toISOString().slice(0, 10), file = (f: ExportFormat): string => `progetto-${slug(d.project.name)}-${date}.${f}`, name = file(format);
-  if (format === 'pdf') return { ok: true, body: new Uint8Array(await renderTavole(c.doc)), mime: MIME.pdf, name, designId: d.id };
+  if (format === 'pdf') return { ok: true, body: new Uint8Array(await renderTavole(c.doc, d.createdAt)), mime: MIME.pdf, name, designId: d.id };
   // no sheet 1 in a draft's CAD file: the sheets and values its views name are the PDF draft's, named under them
   const views = inputViews(c.input);
   const title = draftCaption(`${d.project.name} · progetto ${d.id} · ${date}`, file('pdf'));
-  const body = format === 'dxf' ? new TextEncoder().encode(toDxf(views, title)) : new Uint8Array(toDwg(views, title));
+  const body = format === 'dxf' ? new TextEncoder().encode(toDxf(views, title, d.createdAt)) : new Uint8Array(toDwg(views, title, d.createdAt));
   return { ok: true, body, mime: MIME[format], name, designId: d.id };
 }

@@ -31,8 +31,6 @@ export interface SimModel {
   carType: BufferType;
   cwType: BufferType;
   carBuffers: number;
-  /** conventional jump of the car or counterweight when the other lands on its buffers [m] */
-  jump: number;
   /** linear buffers: full stroke at this many times the static load (registry sim.ammortizzatori) */
   bufferFactor: number;
 }
@@ -46,7 +44,7 @@ export function simModel(I: Plant, M: Machine, res: Results, S: Section, V: Vert
     carContact: mm(S.carBufferTop + V.frameBelow),
     cwContact: mm(S.top + V.cwRunby),
     carStroke: mm(S.carStroke), cwStroke: mm(S.cwStroke), carType: bufferType(V, 'car'), cwType: bufferType(V, 'cw'), carBuffers: V.carBuffers,
-    jump: mm(S.jump), bufferFactor: KV_VERT.bufferFactor,
+    bufferFactor: KV_VERT.bufferFactor,
   };
 }
 

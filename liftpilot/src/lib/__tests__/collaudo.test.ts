@@ -76,7 +76,7 @@ test('dal modulo al server: lo schema accetta solo norme e parti note; la deriva
 const report = (collaudo?: Collaudo): ReportDoc => buildReport({
   calc: { id: 'cmtest0001', label: null, createdAt: new Date('2026-10-02T08:00:00Z'), sha256: 'f'.repeat(64), engineVersion: '1.0.0', profileId: 'IT-2026.1', author: null },
   project: { name: 'Impianto di prova', address: null, city: 'Milano', province: 'MI', plantNumber: null, client: null },
-  company: 'Ditta di prova', values: PRESETS.B, generatedAt: new Date('2026-10-02T09:00:00Z'), reviews: [],
+  company: 'Ditta di prova', values: PRESETS.B, reviews: [],
   ...(collaudo ? { marks: marks(collaudo) } : {}),
 });
 const kv = (doc: ReportDoc): Map<string, string> => new Map(doc.blocks.flatMap((b) => (b.t === 'kv' ? b.rows : [])));

@@ -27,8 +27,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     const stored = verifyShaftStored(inputs.data, d.sha256);
     if (!stored.same) return text(409, 'The running engine does not reproduce this design');
     const title = `${d.project.name} · progetto del vano ${d.id} · ${d.createdAt.toISOString().slice(0, 10)} · SHA-256 ${d.sha256.slice(0, 16)}`;
-    // the brackets' codes at the pitches of the installation's data, as the design's page and sheet 1 count them
-    const dxf = planToDxf(withPitches(stored.layout, pitchesOf(d.project.plant)), title);
+    // the brackets' codes at the pitches of the installation's data, as the design's page and sheet 1 count them; dated
+    // as the design (its saving), so that every download gives the same bytes
+    const dxf = planToDxf(withPitches(stored.layout, pitchesOf(d.project.plant)), title, d.createdAt);
     await audit({ companyId: user.companyId, userId: user.id, action: 'DXF_DOWNLOADED', entity: 'ShaftDesign', entityId: d.id });
     const name = `vano-${slug(d.project.name)}-${d.createdAt.toISOString().slice(0, 10)}.dxf`;
     return attachment(dxf, 'image/vnd.dxf; charset=utf-8', name);

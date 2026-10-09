@@ -18,6 +18,7 @@ from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.pdfgen import canvas
 
 import fonts
+import stamp
 from glyphs import Outlines
 from images import decodable
 
@@ -240,8 +241,10 @@ def main():
     doc = json.load(sys.stdin)
     out = io.BytesIO()
     first = doc["pages"][0]
-    c = canvas.Canvas(out, pagesize=(first["w"] * K, first["h"] * K), pageCompression=1)
     meta = doc["meta"]
+    # dated as its set (or its draft's record), in Italian (stamp.py)
+    stamp.date_from(meta)
+    c = canvas.Canvas(out, pagesize=(first["w"] * K, first["h"] * K), pageCompression=1, lang=stamp.LANG)
     c.setTitle(meta["title"])
     c.setAuthor(meta["author"])
     c.setSubject(meta["subject"])

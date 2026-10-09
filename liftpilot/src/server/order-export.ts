@@ -35,9 +35,10 @@ export type OrderExport =
 const PROJECT = { name: true, address: true, city: true, province: true, plantNumber: true, plant: true } as const;
 
 async function render(input: OrderInput, format: OrderFormat): Promise<OrderExport> {
-  const doc = buildOrder(input), m = input.order.machine;
-  const body = format === 'pdf' ? new Uint8Array(await renderPdf(doc)) : new Uint8Array(toDocx(doc, input.generatedAt, await renderPictures(doc)));
-  const name = `bozza-ordine-${slug(`${m.brand} ${m.model}`)}-${slug(input.project.name)}-${input.generatedAt.toISOString().slice(0, 10)}.${format}`;
+  // dated as its record (its saving), not the download: every download of the record gives the same bytes
+  const doc = buildOrder(input), m = input.order.machine, at = input.record.createdAt;
+  const body = format === 'pdf' ? new Uint8Array(await renderPdf(doc, at)) : new Uint8Array(toDocx(doc, at, await renderPictures(doc)));
+  const name = `bozza-ordine-${slug(`${m.brand} ${m.model}`)}-${slug(input.project.name)}-${at.toISOString().slice(0, 10)}.${format}`;
   return { ok: true, body, mime: MIME[format], name, entity: input.record.kind === 'design' ? 'LiftDesign' : 'Calculation', entityId: input.record.id };
 }
 
@@ -59,7 +60,7 @@ export async function exportDesignOrder(user: SessionUser, id: string, format: O
   if (!found) return { ok: false, error: 'notFound' };
   const { plant, ...project } = found;
   return render({
-    ...await getLetterhead(user), ...await orderPrices(user, order), author: user.name, project, order, collaudo: dv.collaudo, pEstimate: dv.origin.P === 'estimate', generatedAt: new Date(),
+    ...await getLetterhead(user), ...await orderPrices(user, order), author: user.name, project, order, collaudo: dv.collaudo, pEstimate: dv.origin.P === 'estimate',
     ...designSite(inputs, dv, order.machine, order.recorded), plant: plantData(plant),
     record: { kind: 'design', id: d.id, sha256: d.sha256, createdAt: d.createdAt, label: d.label },
   }, format);
@@ -79,7 +80,7 @@ export async function exportCalcOrder(user: SessionUser, id: string, format: Ord
   const design = rec.design;
   return render({
     ...await getLetterhead(user), ...await orderPrices(user, order), author: user.name, project: { name, address, city, province, plantNumber }, order,
-    collaudo: storedCollaudo(rec.values, c.collaudo), generatedAt: new Date(),
+    collaudo: storedCollaudo(rec.values, c.collaudo),
     ...calcSite(design?.layout ?? null, order.machine, rec.values), plant: plantData(c.project.plant),
     record: { kind: 'calc', id: c.id, sha256: c.sha256, createdAt: c.createdAt, label: c.label },
   }, format);

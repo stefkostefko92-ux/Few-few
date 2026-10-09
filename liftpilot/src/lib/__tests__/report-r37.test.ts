@@ -34,7 +34,7 @@ function relazione(inp: LiftInputs): ReportDoc {
   const d = deriveLift(inp);
   return buildReport({
     calc: { id: 'cmtest0037', label: null, createdAt: DAY, sha256: 'f'.repeat(64), engineVersion: '1.0.0', profileId: 'IT-2026.1', author: null },
-    project, company: 'Ditta di prova', values: d.values, generatedAt: DAY, reviews: [],
+    project, company: 'Ditta di prova', values: d.values, reviews: [],
     design: { id: 'cmdesign37', label: null, createdAt: DAY, sha256: 'e'.repeat(64), engineVersion: SHAFT_ENGINE_VERSION, profileId: 'IT-2026.1', author: null, layout: d.layout, source: null },
     marks: valueMarks(inp.auto, d, d.bottom, d.collaudo), plant: null, drawings: [],
   });
@@ -42,7 +42,7 @@ function relazione(inp: LiftInputs): ReportDoc {
 /** The relazione of a calculation alone, with the test chosen. */
 const calcReport = (values: FormValues, collaudo: Collaudo): ReportDoc => buildReport({
   calc: { id: 'cmtest0037', label: null, createdAt: DAY, sha256: 'f'.repeat(64), engineVersion: '1.0.0', profileId: 'IT-2026.1', author: null },
-  project, company: 'Ditta di prova', values, generatedAt: DAY, reviews: [], marks: { pEstimate: false, geometry: [], machineProposed: false, collaudo },
+  project, company: 'Ditta di prova', values, reviews: [], marks: { pEstimate: false, geometry: [], machineProposed: false, collaudo },
 });
 const withCollaudo = (L: LiftInputs, collaudo: Collaudo, documentato?: Collaudo['documentato']): LiftInputs =>
   ({ ...L, calc: { ...L.calc, context: 'repl', keepRopes: false }, collaudo: { ...collaudo, ...(documentato ? { documentato } : {}) } });
