@@ -14,6 +14,7 @@ import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from './auth/password.js';
 import { isStaff } from './auth/rbac.js';
 import { sendError } from './auth/guards.js';
 import { assetVersion } from './http/asset-version.js';
+import { bodyEtag } from './http/etag.js';
 import { accountWriteLimiter } from './http/limits.js';
 import { readFlash } from './http/flash.js';
 import { attachLocale, localeSwitchUrl } from './http/locale.js';
@@ -76,10 +77,9 @@ export function createServer(): Express {
   const version = assetVersion(join(ROOT, 'public'));
   const preload = editorPreload();
   app.disable('x-powered-by');
-  // Всяка страница носи nonce на своя отговор (CSP), затова ETag от тялото е различен при всяка заявка и условната
-  // заявка никога не връща 304. 304 със стара страница пък би сблъскал стария nonce с новия CSP. Без ETag: страницата
-  // се пази по Cache-Control; статичните файлове имат свой ETag (express.static), каталогът — собствен.
-  app.set('etag', false);
+  // ETag от тялото — без страниците с nonce (bodyEtag): те се пазят по Cache-Control; статичните файлове имат свой
+  // ETag (express.static), каталогът — собствен.
+  app.set('etag', bodyEtag);
   app.set('trust proxy', cfg.TRUST_PROXY);
   app.set('view engine', 'ejs');
   app.set('views', join(ROOT, 'views'));

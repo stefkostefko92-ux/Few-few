@@ -169,3 +169,27 @@ test('every landing image has a src, the page is cached only privately (it carri
     assert.match(page, /<details class="site-menu">\s*<summary>[^<]+<\/summary>\s*<nav /, path);
   }
 });
+
+test('the generated files without a nonce keep their ETag and answer a conditional request with 304', async () => {
+  for (const path of [
+    '/sitemap.xml',
+    '/robots.txt',
+    '/llms.txt',
+    '/site.webmanifest',
+    '/media/door-elevation.svg',
+  ]) {
+    const first = await get(path);
+    assert.equal(first.status, 200, path);
+    const etag = first.headers.get('etag');
+    assert.match(etag ?? '', /^W\/"/, path);
+    // a browser revalidating an expired copy; without its own Cache-Control, fetch would add `no-cache` to a
+    // conditional request (the Fetch standard), and a server must not answer that with 304
+    const again = await get(path, { 'if-none-match': etag!, 'cache-control': 'max-age=0' });
+    assert.equal(again.status, 304, path);
+    assert.equal(await again.text(), '', path);
+  }
+  // a page with a nonce has none: a conditional request for it is a full page again
+  const page = await get('/', { 'if-none-match': 'W/"0-x"', 'cache-control': 'max-age=0' });
+  assert.equal(page.status, 200);
+  assert.equal(page.headers.get('etag'), null);
+});
