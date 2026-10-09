@@ -30,9 +30,12 @@ export function guideSection(a: Analysis, L: Layout, Pl: Plant, M: MachineSpec, 
   const { I, N } = a.ctx, R = sheetRails(L, I.P, I.Q, Pl), SL = sheetLoads(a, L, Pl, M, made, N.n * N.qf * ropeCut(I, rope), R, cwGear), rc = R.rc, lim = railLimits();
   const checks = railChecks(rc, R.gear, I.v), MPa = (x: number | null): string => (x === null ? '—' : `${fmt(x, 1)} N/mm²`);
   const labels: Readonly<Record<string, string>> = appIt.shaft, rows = checks.map((c) => esito(c));
+  // the brackets on each car rail, as sheet 1 counts them: on a side counterweight the rail on its bridge at the bridge's
+  const count = R.bridge.length ? `${R.hs.length} staffe sulla guida a parete, ${R.bridge.length} sulla staffa a ponte al passo più fitto tra cabina e contrappeso`
+    : `${R.hs.length} staffe per guida`;
   const B: ReportBlock[] = [
     { t: 'p', text: `Guide di cabina ${railLabel(L.inputs.carRail)} in acciaio Rm ${KV_GUIDE.railRm} N/mm² (ipotesi del software), paracadute ${Pl.safetyGear ? GEAR_IT[Pl.safetyGear] : `${GEAR_IT[R.gear]} (preso dal software: non indicato nei dati dell’impianto)`}, `
-      + `staffe al più ogni ${fmt(R.span, 0)} mm (${R.hs.length} staffe per guida${Pl.carBracketPitch ? `, passo dei dati dell’impianto ${fmt(Pl.carBracketPitch, 0)} mm` : `, passo della regola ${fmt(KV_VERT.bracketPitch, 0)} mm`}). `
+      + `staffe al più ogni ${fmt(R.span, 0)} mm (${count}${Pl.carBracketPitch ? `, passo dei dati dell’impianto ${fmt(Pl.carBracketPitch, 0)} mm` : `, passo della regola ${fmt(KV_VERT.bracketPitch, 0)} mm`}). `
       + 'Le stesse forze e gli stessi limiti del foglio 1 delle tavole (voce guide.verifica).' },
     { t: 'kv', rows: [
       ['Campata più lunga · snellezza λ · ω', `${fmt(rc.l, 0)} mm · ${fmt(rc.lambda, 0)} · ${rc.omega === null ? 'oltre la tabella' : fmt(rc.omega, 2)}`],

@@ -8,16 +8,17 @@ import { FRAME, drawingArea, shapeBox, type Shape, type TextShape } from '@/draw
 import { defaultInputs, layout, type ShaftInputs } from '@/shaft';
 import { headOf } from '@/shaft/head';
 import { cwPlanCode } from '@/shaft/plan-staffe';
-import { bridgeHeights, designPieces, onBridge, railHeights, wallCarRail } from '@/shaft/rail-brackets';
+import { bridgeHeights, designPieces, onBridge, railHeights, railSide, wallCarRail } from '@/shaft/rail-brackets';
 import { devRails } from '@/shaft/rails-cols';
 import type { Layout } from '@/shaft/types';
 import { panevBom } from '../catalog/panev';
 import { inputViews } from '../cad/project';
 import { deriveLift, newLift, type LiftInputs } from '../lift';
 import { valueMarks } from '../lift/marks';
+import { VOCI_ORDINE } from '../lift/norme-ordine';
 import { designBom } from '../prices/bom';
 import { makeFmt } from '../present/tr';
-import { setSheets } from '../tavole/build';
+import { buildTavole, setSheets } from '../tavole/build';
 import { storedInput } from '../tavole/compose';
 import type { TavoleInput } from '../tavole/input';
 import { RAILS_SCALES, railsNotes, railsSheets } from '../tavole/rails-sheet';
@@ -85,6 +86,11 @@ test('staffa a ponte: contata, descritta e disegnata; la guida di cabina sul pon
   assert.equal(row?.[2], `${railHeights(L, wall).length + bh.length} (${bh.length} SULLA STAFFA A PONTE)`);
   const rails = s.sheets.filter(({ spec }) => spec.k === 'rails'), texts = rails.flatMap(({ drawn }) => drawn.shapes.flatMap((t) => (t.t === 'text' ? [t.text] : [])));
   assert.ok(texts.some((t) => t.endsWith('CON STAFFA A PONTE')));
+  // NOTA 1 on sheet 1 says what the rails' sheet says: only the rail anchored to a wall brings its thrusts to the wall
+  const first = (buildTavole(x).doc.pages[0]?.shapes ?? []).flatMap((t) => (t.t === 'text' ? [t.text] : [])).join(' ').replace(/\s+/g, ' ');
+  assert.ok(!first.includes('Ogni staffa delle guide di cabina porta alla parete'), first);
+  assert.ok(first.includes(`Ogni staffa della guida di cabina ${railSide(L, wall)} porta alla parete`) && first.includes(`la guida ${railSide(L, car)} è sulla staffa a ponte`), first);
+  assert.ok(all.includes(`ogni staffa della guida ${railSide(L, wall)} porta alla parete`), all);
 });
 
 /** The lettering of a sheet that overlaps another by more than 0.4 mm both ways. */
@@ -98,11 +104,16 @@ function overlaps(shapes: readonly Shape[]): string[] {
 }
 
 test('sviluppo delle guide leggibile a ogni altezza: mai oltre 1:200, a colonne e su più fogli, nessun testo su un altro (W2-L5t-04, W2-L5o-01, -02)', () => {
-  for (const [n, rise] of [[2, 3000], [6, 3000], [12, 3700], [18, 3000], [25, 3000], [25, 4500], [40, 3000], [60, 3000]] as const) {
-    const x = tavole(lift(floors(n, rise))), s = setSheets(x), L = s.L, sheets = s.sheets.filter(({ spec }) => spec.k === 'rails');
+  // (a side counterweight's bridge named over its columns too: its names never reach the next column's)
+  const runs: readonly (readonly [number, number, ShaftInputs['cw']])[] = [[2, 3000, 'rear'], [6, 3000, 'rear'], [12, 3700, 'rear'], [18, 3000, 'rear'], [25, 3000, 'rear'],
+    [25, 4500, 'rear'], [40, 3000, 'rear'], [60, 3000, 'rear'], [20, 3000, 'left'], [20, 3000, 'right'], [40, 3000, 'left'], [40, 3000, 'right'], [60, 3000, 'left'],
+    [60, 3000, 'right']];
+  for (const [n, rise, cw] of runs) {
+    const x = tavole(lift({ ...floors(n, rise), cw })), s = setSheets(x), L = s.L, sheets = s.sheets.filter(({ spec }) => spec.k === 'rails');
     assert.ok(sheets.length >= 1, `${n}`);
+    assert.equal(L.bridge !== null, cw !== 'rear', `${n} ${cw}: ponte`);
     for (const [i, { spec, drawn }] of sheets.entries()) {
-      const name = `${n}×${rise} foglio ${i + 1}`;
+      const name = `${n}×${rise} ${cw} foglio ${i + 1}`;
       assert.ok((RAILS_SCALES as readonly number[]).includes(drawn.scale), `${name}: 1:${drawn.scale}`);
       const all = [...drawn.shapes, ...drawn.notes];
       assert.deepEqual(overlaps(all), [], name);
@@ -122,6 +133,18 @@ test('sviluppo delle guide leggibile a ogni altezza: mai oltre 1:200, a colonne 
     assert.equal(lengths.reduce((a, c) => a + segs(c), 0), 2 * designPieces(L).pieces.length, `${n}: spezzoni`);
     if (n >= 12) assert.ok(sheets.every(({ drawn }) => drawn.scale <= 200));
   }
+});
+
+test('spezzoni: la nota dice da 5 m solo quando il primo non è accorciato, come la distinta (impianto.distinta, guide.staffe)', () => {
+  for (const rise of [3980, 3000]) {
+    const L = deriveLift(lift(floors(4, rise))).layout, notes = railsNotes(L, X, fmt), first = designPieces(L).pieces[0] ?? 0, cut = first < 5000 - 1e-6;
+    const last = notes.at(-1) ?? '';
+    assert.equal(last.includes('guide in spezzoni da 5 m dal fondo della fossa'), !cut, `${rise}: ${last}`);
+    assert.equal(last.includes('guide in spezzoni dal fondo della fossa come sopra'), cut, `${rise}: ${last}`);
+    if (cut) assert.ok(notes.some((t) => t.includes('il primo accorciato')), `${rise}: il primo accorciato`);
+  }
+  const voce = VOCI_ORDINE.find((v) => v.id === 'impianto.distinta')?.valore ?? '';
+  assert.ok(voce.includes('l’ultima tagliata, o il primo accorciato') && voce.includes('guide.staffe'), voce);
 });
 
 test('DXF e DWG: una vista per foglio delle guide, con le entità e le note del foglio', () => {

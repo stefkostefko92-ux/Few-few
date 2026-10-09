@@ -6,7 +6,7 @@ import { DIM, TEXT, boxH, boxW, moveShapes, paragraph, renderView, textWidth, ty
 import { bracketSpans } from '@/shaft/brackets';
 import { designPieces, railHeights } from '@/shaft/rail-brackets';
 import { devColumns, devRails, type DevColumn } from '@/shaft/rails-cols';
-import { DEV_PAPER, devAcross, railsDev } from '@/shaft/rails-dev';
+import { DEV_PAPER, devAcross, devTitleRoom, railsDev } from '@/shaft/rails-dev';
 import type { Layout } from '@/shaft/types';
 
 export { railsNotes } from './rails-notes';
@@ -67,7 +67,7 @@ export function railsSheets(L: Layout, area: Box, notes: readonly string[]): Rai
     return { block, view: { ...area, y0: block.top + 1 } };
   };
   // the room of one column on paper: the rails' height it may take, and how many fit across
-  const capOf = (view: Box, s: number): number => (boxH(view) - (DEV_PAPER.title[1] + 3) - (DIM.overrun + 1) - 2) * s;
+  const capOf = (view: Box, s: number): number => (boxH(view) - devTitleRoom(L) - (DIM.overrun + 1) - 2) * s;
   const across = (s: number): number => {
     const A = devAcross(L, s), w = (A.right - A.left) / s, g = DEV_PAPER.gutter;
     return Math.max(1, Math.floor((boxW(area) + g) / (w + g)));

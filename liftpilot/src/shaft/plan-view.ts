@@ -87,7 +87,7 @@ function carBody(L: Layout, level: PlanLevel): Entity[] {
 
 /** T rail with its tip at (x, y) pointing along `dir`, and its bracket (Panev's support on a counterweight rail, with
  *  its code when `label`); `head`: in the headroom, the brackets reach the walls where they stand there. */
-function rail(L: Layout, r0: Rail, shoes: boolean, label = false, head = false): Entity[] {
+function rail(L: Layout, r0: Rail, shoes: boolean, label = false, head = false, inWalls: Entity[] = []): Entity[] {
   const r = head ? headRail(L.inputs, r0) : r0;
   const s = RAILS[r.kind === 'car' ? L.inputs.carRail : L.inputs.cwRail], tf = Math.max(6, s.k * 0.9);
   const local: Pt[] = [[0, -s.k / 2], [0, s.k / 2], [-(s.h - tf), s.k / 2], [-(s.h - tf), s.b / 2], [-s.h, s.b / 2], [-s.h, -s.b / 2], [-(s.h - tf), -s.b / 2], [-(s.h - tf), -s.k / 2]];
@@ -95,10 +95,12 @@ function rail(L: Layout, r0: Rail, shoes: boolean, label = false, head = false):
   const at = (u: number, v: number): Pt => [r.x + u * ux - v * uy, r.y + u * uy + v * ux];
   const out: Entity[] = [path(local.map(([u, v]) => at(u, v)), true, 'steel', 'steel')];
   // the bracket under the rail: Panev's support, or the generic one out to the wall or the bridge (on a counterweight
-  // rail of a Panev design with the code it stands for)
+  // rail of a Panev design with the code it stands for, clear of the lettering already in the walls `inWalls`)
   const hw = head ? headOf(L.inputs) : undefined, pv = panevSupportPlan(L, r0, label, hw), br = pv ?? genericBracketPlan(L, r);
+  const code = pv ? [] : specialPlanLabel(L, r, label ? cwPlanCode(L, r0, hw) : null, inWalls, head ? headBox(L.inputs) : mainBox(L.inputs));
+  inWalls.push(...code);
   out.unshift(...br.under);
-  out.push(...br.over, ...(pv ? [] : specialPlanLabel(L, r, label ? cwPlanCode(L, r0, hw) : null)));
+  out.push(...br.over, ...code);
   // guide shoe of the guided part, at the tip
   if (shoes) out.push(rect(...shoe(at), 'thin'));
   return out;
@@ -169,14 +171,18 @@ export function planEntities(L: Layout, level: PlanLevel, floor: number): Entity
     // a landing door set apart from its car door: the axes of both
     out.push(...carBody(L, level), ...counterweight(L), ...carFrame(L), ...shiftAxes(L, open));
   }
-  // the counterweight rails' bracket codes: on the first, and on another whose bracket differs
-  const cws = L.rails.filter((x) => x.kind === 'cw'), codes = cws.map((x) => cwPlanCode(L, x, level === 'top' ? headOf(L.inputs) : undefined));
-  L.rails.forEach((r) => {
+  // the counterweight rails' bracket codes: on the first, and on another whose bracket differs; the car brackets' code
+  // keeps off Panev's, a generic bracket's off both (wall-label.ts)
+  const hw = level === 'top' ? headOf(L.inputs) : undefined, cws = L.rails.filter((x) => x.kind === 'cw'), codes = cws.map((x) => cwPlanCode(L, x, hw));
+  const named = (r: Rail): boolean => {
     const k = cws.indexOf(r);
-    out.push(...rail(L, r, level !== 'pit', k === 0 || (k > 0 && codes[k] !== codes[0]), level === 'top'));
-  });
+    return k === 0 || (k > 0 && codes[k] !== codes[0]);
+  };
+  const panev = cws.flatMap((r) => (named(r) ? panevSupportPlan(L, r, true, hw)?.over ?? [] : [])), carCode = carBracketLabel(L, level === 'top', panev);
+  const inWalls = [...panev, ...carCode];
+  L.rails.forEach((r) => out.push(...rail(L, r, level !== 'pit', named(r), level === 'top', inWalls)));
   // the car rails' brackets named by their rail, counted at the walls of this plan (plan-car-brackets.ts)
-  out.push(...axes(L), ...governorPlan(L, level === 'pit'), ...carBracketLabel(L, level === 'top'));
+  out.push(...axes(L), ...governorPlan(L, level === 'pit'), ...carCode);
   if (level === 'top') {
     const { refuge: r, free: f } = roofSpaces(L);
     out.push(...space(r.x0, r.y0, r.x1, r.y1), { e: 'mark', at: [r.x1 - 110, r.y1 - 150], sym: 'tri' });

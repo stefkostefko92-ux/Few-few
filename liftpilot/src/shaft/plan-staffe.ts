@@ -11,6 +11,7 @@
 // behind the foot with its two clips, one angle out to the wall (two bolted together past 150 mm), the wall plate and
 // its anchors.
 import { TEXT, circle, line, path, type Entity, type Pt } from '../drawing';
+import { mainBox, type WallBox } from './head';
 import { cwNiche } from './niche';
 import { ANCHOR, HEAD, hex, slot, type BracketPlan } from './plan-parts';
 import { slidePlan } from './plan-staffe-sc';
@@ -20,6 +21,7 @@ import { GENERIC_BRACKET as GB, RAILS, railClip } from './rails';
 import { N1, PLATES, SG_T, STATIONS, cwBracketsOf, seatRail } from './staffe';
 import { bracketCode, cwBracket, cwSpecialOf, type CwBracket } from './staffe-scelta';
 import type { HeadWalls, Layout, Rail, Wall } from './types';
+import { wallLabel } from './wall-label';
 
 export type { BracketPlan } from './plan-parts';
 
@@ -109,13 +111,14 @@ export function panevSupportPlan(L: Layout, r: Rail, label: boolean, head?: Head
 }
 
 /** The code a counterweight rail's generic bracket stands for (a solution to the site's drawing, or NO_PANEV), in the
- *  thickness of the wall it reaches, from the rail toward the middle of the wall. */
-export function specialPlanLabel(L: Layout, r: Rail, code: string | null): Entity[] {
+ *  thickness of the wall it reaches (standing on `box`), from the rail toward the middle of the wall — clear of the
+ *  lettering already in the walls `inWalls` (Panev's code of the other rail, the car brackets'): wall-label.ts. */
+export function specialPlanLabel(L: Layout, r: Rail, code: string | null, inWalls: readonly Entity[] = [], box: WallBox = mainBox(L.inputs)): Entity[] {
   const I = L.inputs;
   if (!code) return [];
   const x = r.bracketAxis === 'x', wall: Wall = x ? (r.bracketTo > I.W / 2 ? 'right' : 'left') : r.bracketTo > I.D / 2 ? 'rear' : 'front';
-  const u = x ? r.y : r.x, first = 2 * u < (x ? I.D : I.W);
-  return [{ e: 'text', at: onWall(L, wall, u, -I.wall / 2), text: code, size: TEXT.min, align: first ? 'l' : 'r', halo: true, angle: x ? 90 : 0 }];
+  const u = x ? r.y : r.x, up = 2 * u < (x ? box.y0 + box.y1 : box.x0 + box.x1);
+  return [wallLabel(L, { wall, u, text: code, size: TEXT.min, up }, inWalls, box)];
 }
 
 /** A generic bracket of a rail seen from above, reaching the wall (or the bridge) at the rail's bracketTo. */

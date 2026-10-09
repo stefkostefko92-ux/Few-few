@@ -19,9 +19,13 @@ import type { Layout, Rail } from './types';
  *  counterweight's bridge as drawn [mm]. */
 export const DEV = { rail: 45, arm: 260, plate: 14, gap: 2600, bridge: 120 } as const;
 /** Paper room [mm]: between two columns; the floors' lines past the wall plates; round a floor's name between the rails;
- *  a column past its break; the break line's half width; the rails' names over a column (two lines). */
-export const DEV_PAPER = { gutter: 6, past: 2, name: 1.5, pad: 3, zig: 3, title: [10, 13.5] } as const;
+ *  a column past its break; the break line's half width; the lines of the rails' names over a column (the car's, the
+ *  counterweight's over it — with a side counterweight's bridge, its bridge there and the counterweight's over that). */
+export const DEV_PAPER = { gutter: 6, past: 2, name: 1.5, pad: 3, zig: 3, title: [10, 13.5, 17] } as const;
 const FLOOR_SIZE = 1.8, TITLE_SIZE = 2.2;
+
+/** The paper over a column's top its rails' names take [mm]. */
+export const devTitleRoom = (L: Layout): number => (L.bridge ? DEV_PAPER.title[2] : DEV_PAPER.title[1]) + 3;
 
 export interface RailsDev {
   entities: Entity[];
@@ -31,13 +35,25 @@ export interface RailsDev {
 /** A floor's name over its line and its height over the lowest under it, as written between the rails. */
 const floorName = (label: string, z: number): readonly [string, string] => [`PIANO ${label}`, `${z >= 0 ? '+' : ''}${Math.round(z)}`];
 
+/** The rails' names over a column, each line centred over its rail: the car's, the counterweight's over it and a side
+ *  counterweight's bridge on a line of its own under that (on the counterweight's line it made the column wider than
+ *  two of the others' at 1:200). */
+const devTitles = (L: Layout): { text: string; car: boolean; line: number }[] => [
+  { text: `GUIDA DI CABINA ${railLabel(L.inputs.carRail)}`, car: true, line: DEV_PAPER.title[0] },
+  { text: `GUIDA DEL CONTRAPPESO ${railLabel(L.inputs.cwRail)}`, car: false, line: L.bridge ? DEV_PAPER.title[2] : DEV_PAPER.title[1] },
+  ...(L.bridge ? [{ text: 'CON STAFFA A PONTE', car: false, line: DEV_PAPER.title[1] }] : []),
+];
+
 /** A column's geometry across, in mm of the model at `scale`: the rails' places, the wall plates' outer faces, its whole
- *  width with the dimensions' rows and the step from one column to the next. */
+ *  width with the dimensions' rows and the rails' names over it, and the step from one column to the next. */
 export function devAcross(L: Layout, scale: number): { car: number; cw: number; plates: readonly [number, number]; left: number; right: number; step: number } {
   const S = section(L), size = Math.max(FLOOR_SIZE, TEXT.min);
   const names = L.inputs.vertical.floors.flatMap((f, i) => floorName(f.label, S.levels[i] ?? 0).map((t) => textWidth(t, { size, cond: true })));
   const out = DEV.rail + DEV.arm + DEV.plate, cw = Math.max(DEV.gap, (Math.max(0, ...names) + 2 * DEV_PAPER.name) * scale + 2 * DEV.rail);
-  const left = -out - (rowOffset(1) + TEXT.dim + DIM.textGap + 1) * scale, right = cw + out + (rowOffset(1) + DIM.over + 0.5) * scale;
+  // (a rail's name wider than the dimensions beside it widens its column: the next one's names never reach it)
+  const titles = devTitles(L).map((t) => ({ at: t.car ? 0 : cw, half: (textWidth(t.text, { size: TITLE_SIZE, bold: true, cond: true }) / 2) * scale }));
+  const left = Math.min(-out - (rowOffset(1) + TEXT.dim + DIM.textGap + 1) * scale, ...titles.map((t) => t.at - t.half));
+  const right = Math.max(cw + out + (rowOffset(1) + DIM.over + 0.5) * scale, ...titles.map((t) => t.at + t.half));
   return { car: 0, cw, plates: [-out, cw + out], left, right, step: right - left + DEV_PAPER.gutter * scale };
 }
 
@@ -66,13 +82,11 @@ export function railsDev(L: Layout, scale = 100, cols: readonly DevColumn[] = de
     });
     for (const r of devRails(L)) out.push(...railColumn(L, r, c, r.kind === 'car' ? A.car : A.cw, r.kind === 'car' ? A.plates[0] : A.plates[1], scale, T));
     // the rails' names over the column; the letters of its breaks between the rails
-    const cwName = `GUIDA DEL CONTRAPPESO ${railLabel(I.cwRail)}${L.bridge ? ' CON STAFFA A PONTE' : ''}`;
-    out.push({ e: 'text', at: T(A.car, c.hi + p(DEV_PAPER.title[0])), text: `GUIDA DI CABINA ${railLabel(I.carRail)}`, size: TITLE_SIZE, align: 'c', bold: true },
-      { e: 'text', at: T(A.cw, c.hi + p(DEV_PAPER.title[1])), text: cwName, size: TITLE_SIZE, align: 'c', bold: true });
+    for (const t of devTitles(L)) out.push({ e: 'text', at: T(t.car ? A.car : A.cw, c.hi + p(t.line)), text: t.text, size: TITLE_SIZE, align: 'c', bold: true });
     const letter = (i: number): string => String.fromCharCode(65 + ((first + i) % 26));
     if (c.to !== null) out.push({ e: 'tag', at: T(A.cw / 2, c.hi + p(5.6)), text: letter(k) });
     if (c.from !== null) out.push({ e: 'tag', at: T(A.cw / 2, c.lo - p(4)), text: letter(k - 1) });
-    const [l, h] = [T(A.left, c.lo - p(DIM.overrun + 1)), T(A.right, c.hi + p(DEV_PAPER.title[1] + 3))];
+    const [l, h] = [T(A.left, c.lo - p(DIM.overrun + 1)), T(A.right, c.hi + p(devTitleRoom(L)))];
     bounds = { x0: Math.min(bounds.x0, l[0]), y0: Math.min(bounds.y0, l[1]), x1: Math.max(bounds.x1, h[0]), y1: Math.max(bounds.y1, h[1]) };
   });
   return { entities: out, bounds: Number.isFinite(bounds.x0) ? bounds : { x0: 0, y0: 0, x1: 0, y1: 0 } };

@@ -6,7 +6,7 @@
 // pull on its anchors. Pure.
 import { KV_VERT } from '@/shaft/norme-vert';
 import { railSpan, withPitches } from '@/shaft/brackets';
-import { maxSpanOf, railHeights } from '@/shaft/rail-brackets';
+import { maxSpanOf, onBridge, railHeights, wallCarRail } from '@/shaft/rail-brackets';
 import { PROFILES } from '@/shaft/profiles';
 import { section } from '@/shaft/section';
 import type { HebOption } from '@/shaft/heb';
@@ -24,9 +24,11 @@ import { loads, type Loads, type LoadsInput } from './loads';
 import { railCheck, type RailCheck } from './rail-check';
 
 export interface SheetRails {
-  /** the rails' length [m], the brackets' heights and the longest span between two [mm] */
+  /** the rails' length [m], the brackets' heights of the car rail anchored to a wall and of the one on a side
+   *  counterweight's bridge (none without) and the longest span between two on either [mm] */
   railLen: number;
   hs: number[];
+  bridge: number[];
   span: number;
   gear: SafetyGear;
   rc: RailCheck;
@@ -39,11 +41,11 @@ export interface SheetRails {
 export function sheetRails(L: Layout, P: number, Q: number, Pl: Plant): SheetRails {
   const V = L.inputs.vertical, S = section(L), railLen = (V.pit + S.top + V.headroom - KV_VERT.railTopGap) / 1000, gear = Pl.safetyGear ?? 'progressive';
   // the brackets where the design puts them at the pitches of the data (rail-brackets.ts): the l of the check is the
-  // longest interval on either car rail (one on a side counterweight's bridge takes the bridge's), the count the most
-  // spaced rail's
+  // longest interval on either car rail; the counts each rail's — the one on a side counterweight's bridge takes the
+  // bridge's heights (as sheet 1 counts them)
   const Lp = withPitches(L, { car: Pl.carBracketPitch, cw: Pl.cwBracketPitch }), [z0, z1] = railSpan(S), span = maxSpanOf(Lp, 'car');
-  const hs = Lp.rails.filter((r) => r.kind === 'car').map((r) => railHeights(Lp, r)).sort((a, b) => a.length - b.length)[0] ?? [];
-  return { railLen, hs, span, gear, rc: railCheck(L, L.inputs.carRail, P, Q, gear, span, z1 - z0, Pl.liftUse), F: railForces(L, P, Q, gear) };
+  const wall = wallCarRail(Lp), on = Lp.rails.find((r) => onBridge(Lp, r)), hs = wall ? railHeights(Lp, wall) : [], bridge = on ? railHeights(Lp, on) : [];
+  return { railLen, hs, bridge, span, gear, rc: railCheck(L, L.inputs.carRail, P, Q, gear, span, z1 - z0, Pl.liftUse), F: railForces(L, P, Q, gear) };
 }
 
 export interface SheetLoads {

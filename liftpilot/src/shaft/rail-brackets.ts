@@ -62,3 +62,11 @@ export const maxSpanOf = (L: Layout, kind: Rail['kind']): number =>
 /** The car rail anchored to a wall the sheets show (a side counterweight's bridge carries the other). */
 export const wallCarRail = (L: Layout): Rail | undefined =>
   L.rails.find((r) => r.kind === 'car' && !onBridge(L, r)) ?? L.rails.find((r) => r.kind === 'car');
+
+/** The side of its pair a rail stands on, as the sheets name it: SX/DX along the front or the rear wall, FRONTE/RETRO
+ *  along a side wall. */
+export function railSide(L: Layout, r: Rail): 'SX' | 'DX' | 'FRONTE' | 'RETRO' {
+  const pair = L.rails.filter((x) => x.kind === r.kind), along = pair.every((x) => Math.abs(x.y - r.y) < 1);
+  const lo = along ? r.x <= Math.min(...pair.map((x) => x.x)) : r.y <= Math.min(...pair.map((x) => x.y));
+  return along ? (lo ? 'SX' : 'DX') : lo ? 'FRONTE' : 'RETRO';
+}

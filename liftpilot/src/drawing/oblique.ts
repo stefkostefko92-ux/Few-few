@@ -7,7 +7,7 @@
 // keeps off, or out of the one it keeps in), moved along its segment, to the line's other side, past either end — the
 // first clear, by the turned lettering's own outline (not the box round it); none clear, the one least on them. Paper
 // conventions as the level chains' (dims.ts).
-import { DIM } from './dims';
+import { DIM, valueBox } from './dims';
 import { toPaper, type Place } from './geom';
 import { textBox, textQuad, textWidth } from './metrics';
 import type { Chain } from './model';
@@ -102,7 +102,7 @@ export function obliqueShapes(c: Chain & { on: { o: Pt; u: Pt } }, place: Place,
     const spot = spots[cost.reduce((best, x, k) => (x < cost[best] ? k : best), 0)];
     if (spot.run) out.push({ t: 'line', a: spot.run[0], b: spot.run[1], s: STYLES.dim });
     out.push(spot.s);
-    taken?.push(textBox(spot.s));
+    taken?.push(valueBox(textBox(spot.s)));
     onText?.(spot.s, i, value);
   }
   return out;
