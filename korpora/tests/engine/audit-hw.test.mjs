@@ -1,6 +1,7 @@
 // Geometry and hardware rules found in the audit of the engine: a base cabinet's drawer above its door, drawer columns
-// side by side that still reach the CNC and edge bands on the ends seen from below and on the top edges of drawer
-// boxes. Runs on the base catalog and the documented hinge and slide systems.
+// side by side that still reach the CNC, edge bands on the ends seen from below and on the top edges of drawer boxes,
+// and hinge cups that keep MIN_WEB to the cut edge of the door. Runs on the base catalog and the documented hinge and
+// slide systems.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { registerCatalog, baseCatalogData } from '../../engine/catalog.js';
@@ -175,4 +176,56 @@ test('drawer boxes: the top edges of the sides, the front and the back are edge-
       assert.deepEqual(fromBottom(p), fromBottom(plain[k]), `${slide} ${p.name}`);
     });
   }
+});
+
+// Distance from a cup's rim to the cut edge of its door (the board without the edge band), as checkHoles measures it.
+function cupRims(m) {
+  const out = [];
+  for (const door of byRole(m, 'door')) {
+    const cut = cutSize(door, m.spec.bandCompensation);
+    for (const h of door.features.filter((f) => f.kind === 'cup')) {
+      out.push({ door, rim: Math.min(h.u - cut.du0, cut.du0 + cut.L - h.u, h.v - cut.dv0, cut.dv0 + cut.W - h.v) - h.d / 2 });
+    }
+  }
+  return out;
+}
+
+test('hinge cups keep MIN_WEB to the cut edge of the door: the plate is chosen so that C clears the edge band', () => {
+  const cMin = new Map(HINGE_SYSTEMS.map((s) => [s.id, s.cup.c]));
+  for (const hinge of HINGES) {
+    for (const gap of [2, 2.5, 3, 3.5, 4]) {
+      for (const bandFront of [0.8, 1, 2]) {
+        // full overlay on the sides (base), half overlay on the partitions (wardrobe)
+        for (const type of ['base', 'wardrobe']) {
+          const m = buildModel({ type, hinge, gap, bandFront });
+          const label = `${hinge} ${type} gap ${gap} band ${bandFront}`;
+          const rims = cupRims(m);
+          assert.ok(rims.length > 0, `${label}: no cups`);
+          for (const { door, rim } of rims) {
+            assert.ok(rim >= MIN_WEB - 1e-9, `${label} ${door.name}: cup ${rim.toFixed(2)} mm from the cut edge (C ${door.hinge.c}, plate ${door.hinge.plate})`);
+            const [lo, hi] = cMin.get(door.hinge.system);
+            assert.ok(door.hinge.c >= lo && door.hinge.c <= hi, `${label} ${door.name}: C ${door.hinge.c} outside ${lo}–${hi}`);
+            assert.equal(door.hinge.overlay, door.hinge.wanted, `${label} ${door.name}: overlay`);
+          }
+          assert.ok(!m.warnings.some((w) => w.text.includes('Чашка на панта')), `${label}: ${m.warnings.map((w) => w.text).join(' | ')}`);
+        }
+      }
+    }
+  }
+});
+
+test('a hinge whose plates cannot keep the cup MIN_WEB from the cut edge gets a warning', async () => {
+  // registered last: the extra hinge system never becomes a default for the tests above
+  const { registerHingeSystems, registerHinges } = await import('../../engine/hardware.js');
+  const salice = HINGE_SYSTEMS.find((s) => s.id === 'salice_series200');
+  registerHingeSystems([{ ...salice, id: 'test_one_plate', plate: { ...salice.plate, plates: [2] } }]);
+  registerHinges([{ id: 'test:one-plate', system: 'test_one_plate', brand: 'Test', name: 'Панта (тест), една планка', fixing: 'screw', variants: {} }]);
+  // gap 3, band 2: C = 16,5 − 15 + 2 = 3,5 mm from the finished edge, 1,5 mm from the cut edge
+  const m = buildModel({ type: 'base', hinge: 'test:one-plate', gap: 3, bandFront: 2 });
+  const rims = cupRims(m);
+  assert.ok(rims.length > 0 && rims.every((r) => Math.abs(r.rim - 1.5) < 0.01), rims.map((r) => r.rim).join(', '));
+  const notes = m.warnings.filter((w) => w.text.includes('Чашка на панта'));
+  assert.ok(notes.length > 0 && notes.every((n) => n.level === 'warn' && n.text.includes('1,5 mm от ръба')), m.warnings.map((w) => w.text).join(' | '));
+  // inside the hinge maker's range: a warning, not a blocker
+  assert.deepEqual(errorsOf(m), []);
 });

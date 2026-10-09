@@ -193,7 +193,7 @@ function checkHoles(ctx, p, spec) {
     // the board itself: the edge band adds no material to drill into
     const rim = Math.min(h.u - cut.du0, cut.du0 + cut.L - h.u, h.v - cut.dv0, cut.dv0 + cut.W - h.v) - h.d / 2;
     if (rim < 0) ctx.warn('error', `${p.name}: отвор Ø${dimTxt(h.d)} „${purposeOf(h.kind)}“ излиза извън детайла — u ${dimTxt(h.u)}, v ${dimTxt(h.v)}.`);
-    else if (rim < MIN_WEB && h.kind !== 'cup') ctx.warn('warn', `${p.name}: отвор Ø${dimTxt(h.d)} „${purposeOf(h.kind)}“ е на ${dimTxt(rim)} mm от ръба.`);
+    else if (rim < MIN_WEB) ctx.warn('warn', `${p.name}: отвор Ø${dimTxt(h.d)} „${purposeOf(h.kind)}“ е на ${dimTxt(rim)} mm от ръба.`);
     for (const g of grooves) {
       const web = toSegment(h.u, h.v, g) - (g.w + h.d) / 2;
       if (web < MIN_WEB) ctx.warn('warn', `${p.name}: отвор Ø${dimTxt(h.d)} „${purposeOf(h.kind)}“ е на ${dimTxt(Math.max(0, web))} mm от канала — преместете отвора.`);
