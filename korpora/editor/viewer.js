@@ -9,7 +9,7 @@ import { Stage, TONE_MAPPING, studioEnvironment } from './viewer-studio.js';
 import { Pipeline } from './viewer-render.js';
 import { PhotoMode } from './viewer-photo-mode.js';
 import { addSlides } from './viewer-slides.js';
-import { frameCamera, explodeCamera } from './viewer-camera.js';
+import { frameCamera, explodeCamera, bindCameraKeys } from './viewer-camera.js';
 import { pixelRatio } from './viewer-device.js';
 import { reduceMotion } from './dom.js';
 import {
@@ -36,7 +36,7 @@ export class Viewer {
     this.renderer.domElement.setAttribute('role', 'img');
     this.renderer.domElement.setAttribute(
       'aria-label',
-      '3D изглед на мебелта: влачи за въртене, колелце за мащаб',
+      '3D изглед на мебелта: влачене или стрелки — въртене, колелце или + и − — мащаб, 0 — цялата мебел',
     );
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(32, 1, 0.01, 60);
@@ -47,6 +47,10 @@ export class Viewer {
     this.controls.addEventListener('change', () => this.invalidate());
     this.controls.addEventListener('start', () => {
       this.userMoved = true;
+    });
+    bindCameraKeys(this.renderer.domElement, this.camera, this.controls, {
+      reframe: () => this.frame(),
+      moved: () => (this.userMoved = true),
     });
     this.mats = new MaterialCache(this.renderer);
     this.stage = new Stage(this);

@@ -35,3 +35,35 @@ export function explodeCamera(camera, controls, from, to) {
   camera.position.copy(controls.target).addScaledVector(offset, k);
   controls.maxDistance = Math.max(controls.maxDistance, offset.length() * k * 1.2);
 }
+
+const TURN = THREE.MathUtils.degToRad(15);
+const TILT = THREE.MathUtils.degToRad(8);
+const STEP = 0.85;
+
+// The keyboard on the 3D view (it takes the focus): the arrows turn the camera around the furniture, + and − come
+// closer or step back, 0 shows the whole furniture again — what the mouse and two fingers do.
+export function bindCameraKeys(canvas, camera, controls, { reframe, moved }) {
+  canvas.tabIndex = 0;
+  canvas.addEventListener('keydown', (ev) => {
+    if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    const offset = camera.position.clone().sub(controls.target);
+    const at = new THREE.Spherical().setFromVector3(offset);
+    const turn = { ArrowLeft: -TURN, ArrowRight: TURN }[ev.key];
+    const tilt = { ArrowUp: -TILT, ArrowDown: TILT }[ev.key];
+    const zoom = { '+': STEP, '=': STEP, '-': 1 / STEP }[ev.key];
+    if (ev.key === '0') {
+      ev.preventDefault();
+      reframe();
+      return;
+    }
+    if (turn) at.theta += turn;
+    else if (tilt) at.phi = Math.min(controls.maxPolarAngle, Math.max(0.05, at.phi + tilt));
+    else if (zoom)
+      at.radius = Math.min(controls.maxDistance, Math.max(controls.minDistance, at.radius * zoom));
+    else return;
+    ev.preventDefault();
+    camera.position.copy(controls.target).add(offset.setFromSpherical(at));
+    moved();
+    controls.update();
+  });
+}
