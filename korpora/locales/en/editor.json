@@ -50,6 +50,8 @@
     "machine": "Machine and checks",
     "tool": "Contour cutter",
     "post": "Post-processor",
+    "grblStepDown": "Step down, mm",
+    "grblMaxFeed": "Maximum feed, mm/min",
     "onion": "Onion skin 0.3 mm — small parts do not move",
     "compensation": "Cut sizes compensate for the edge banding",
     "shelfLoad": "Shelf load (check: deflection up to 0.5% of the span between supports)",

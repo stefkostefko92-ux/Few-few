@@ -50,6 +50,8 @@
     "machine": "Macchina e controlli",
     "tool": "Fresa per il contorno",
     "post": "Post-processore",
+    "grblStepDown": "Profondità di passata, mm",
+    "grblMaxFeed": "Avanzamento massimo, mm/min",
     "onion": "Onion skin 0,3 mm: i pezzi piccoli non si spostano",
     "compensation": "Le misure di taglio compensano il bordo",
     "shelfLoad": "Carico sul ripiano (verifica: freccia fino allo 0,5% della luce tra gli appoggi)",

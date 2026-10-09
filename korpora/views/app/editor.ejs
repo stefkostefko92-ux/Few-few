@@ -83,6 +83,8 @@
             <label><input type="radio" name="post" value="iso" data-field="post"><span>ISO / Fanuc</span></label>
             <label><input type="radio" name="post" value="grbl" data-field="post"><span>GRBL</span></label>
           </div>
+          <div class="field" id="row-grblStepDown"><label for="f-grblStepDown"><%= te('editor.grblStepDown') %></label><input type="number" id="f-grblStepDown" data-field="grblStepDown" step="0.1" inputmode="decimal"></div>
+          <div class="field" id="row-grblMaxFeed"><label for="f-grblMaxFeed"><%= te('editor.grblMaxFeed') %></label><input type="number" id="f-grblMaxFeed" data-field="grblMaxFeed" step="10" inputmode="numeric"></div>
           <label class="check" for="f-onion"><input type="checkbox" id="f-onion" data-field="onion"><span><%= te('editor.onion') %></span></label>
           <label class="check" for="f-comp"><input type="checkbox" id="f-comp" data-field="bandCompensation"><span><%= te('editor.compensation') %></span></label>
           <span class="lbl" id="l-load"><%= te('editor.shelfLoad') %></span>

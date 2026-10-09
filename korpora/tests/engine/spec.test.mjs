@@ -12,6 +12,7 @@ import {
   catalogDrift,
   normalizeSpec,
 } from '../../engine/model.js';
+import { POSTS, STEP_DOWN_RANGE, MAX_FEED_RANGE } from '../../engine/cam.js';
 
 registerFixtures();
 
@@ -25,6 +26,21 @@ test('edge bands, front gap and router diameter keep exactly the listed values',
   assert.equal(normalizeSpec({ bandCarcass: 3 }).bandCarcass, dflt.bandCarcass);
   assert.equal(normalizeSpec({ gap: 99 }).gap, GAP_RANGE[1]);
   assert.equal(normalizeSpec({ gap: 0.5 }).gap, GAP_RANGE[0]);
+});
+
+test('GRBL step down and feed cap: the post defaults, kept within their ranges, kept when the post changes', () => {
+  const dflt = normalizeSpec({});
+  assert.deepEqual([dflt.grblStepDown, dflt.grblMaxFeed], [POSTS.grbl.stepDown, POSTS.grbl.maxFeed]);
+  assert.ok(POSTS.grbl.stepDown <= 6 && POSTS.grbl.maxFeed <= 3000, 'the defaults are not conservative for a hobby router');
+  const own = normalizeSpec({ post: 'grbl', grblStepDown: '2.5', grblMaxFeed: '1500' });
+  assert.deepEqual([own.grblStepDown, own.grblMaxFeed], [2.5, 1500], 'the editor sends strings');
+  const odd = normalizeSpec({ grblStepDown: 2.34, grblMaxFeed: 1234 });
+  assert.deepEqual([odd.grblStepDown, odd.grblMaxFeed], [2.3, 1230], 'the steps of the editor fields: 0.1 mm and 10 mm/min');
+  assert.deepEqual([normalizeSpec({ grblStepDown: 99, grblMaxFeed: 1e9 }).grblStepDown, normalizeSpec({ grblMaxFeed: 1e9 }).grblMaxFeed], [STEP_DOWN_RANGE[1], MAX_FEED_RANGE[1]]);
+  assert.deepEqual([normalizeSpec({ grblStepDown: 0.01 }).grblStepDown, normalizeSpec({ grblMaxFeed: 1 }).grblMaxFeed], [STEP_DOWN_RANGE[0], MAX_FEED_RANGE[0]]);
+  assert.deepEqual([normalizeSpec({ grblStepDown: 'x' }).grblStepDown, normalizeSpec({ grblMaxFeed: null }).grblMaxFeed], [POSTS.grbl.stepDown, POSTS.grbl.maxFeed]);
+  const iso = normalizeSpec({ ...own, post: 'iso' });
+  assert.deepEqual([iso.grblStepDown, iso.grblMaxFeed], [2.5, 1500], 'a switch to ISO and back loses the machine limits');
 });
 
 const drift = (input) => catalogDrift(input, buildModel(input));

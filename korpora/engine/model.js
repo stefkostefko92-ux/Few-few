@@ -4,9 +4,10 @@ import { createCtx, cutSize } from './panel.js';
 import { TYPES, BUILDERS, normalizeParams } from './types.js';
 import { STOCK, hasDecor, hasRal, decorName } from './materials.js';
 import { hingeList, handleList, slideList, bedFittingList } from './hardware.js';
-import { clamp, plural, dimTxt } from './util.js';
+import { clamp, plural, dimTxt, r1 } from './util.js';
 import { purposeOf, edgePurposeOf } from './drill.js';
 import { MIN_WEB, toSegment, edgeBores, boreWeb } from './joinery.js';
+import { POSTS, STEP_DOWN_RANGE, MAX_FEED_RANGE } from './cam.js';
 
 const SPEC_VERSION = 2;
 export const SHEET_TRIM = 10; // sheet edge trim for nesting, mm
@@ -70,6 +71,9 @@ export function normalizeSpec(raw = {}) {
   s.tool = pick(Number(input.tool ?? d.tool), TOOL_DIAMETERS, d.tool);
   s.post = input.post === 'grbl' ? 'grbl' : 'iso';
   s.onion = input.onion !== false;
+  // GRBL limits of the machine (POSTS.grbl has the defaults); kept with ISO too, so a switch back finds them
+  s.grblStepDown = r1(clamp(Number(input.grblStepDown) || POSTS.grbl.stepDown, ...STEP_DOWN_RANGE));
+  s.grblMaxFeed = Math.round(clamp(Number(input.grblMaxFeed) || POSTS.grbl.maxFeed, ...MAX_FEED_RANGE) / 10) * 10;
   s.shelfLoad = SHELF_LOADS.includes(Number(input.shelfLoad)) ? Number(input.shelfLoad) : KITCHEN_TYPES.has(type) ? 1.5 : 1;
   return s;
 }

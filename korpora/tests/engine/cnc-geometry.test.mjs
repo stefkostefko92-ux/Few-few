@@ -8,7 +8,7 @@ import { registerFixtures, OUTPUT_SPECS, outputMeta } from './fixtures.mjs';
 import { buildModel } from '../../engine/model.js';
 import { drillCsv } from '../../engine/drill.js';
 import { nest } from '../../engine/nest.js';
-import { toGcode, SPOIL } from '../../engine/cam.js';
+import { toGcode, SPOIL, GROOVE_MILL } from '../../engine/cam.js';
 import { toDxf } from '../../engine/dxf.js';
 import { cutSize, THROUGH_EXTRA } from '../../engine/panel.js';
 import { STOCK } from '../../engine/materials.js';
@@ -157,3 +157,54 @@ for (const [ci, input] of OUTPUT_SPECS.entries()) {
     }
   });
 }
+
+// The deepest step a milling tool takes below what it has already cut at the same spot. A cut starts where a rapid
+// left the tool; the onion skin's last pass starts where the first did, so it steps only through the skin.
+function deepestStep(text) {
+  let [tool, cut, worst] = [null, null, 0];
+  const cutTo = new Map();
+  for (const l of walkGcode(text)) {
+    const t = l.comment && /^(T\d+) /.exec(l.comment);
+    if (t) tool = t[1];
+    if (!l.moved) continue;
+    if (l.motion === 'G0') {
+      cut = `${l.X},${l.Y}`;
+      continue;
+    }
+    if (tool !== GROOVE_MILL.id && tool !== 'T5') continue;
+    const before = cutTo.get(cut) ?? 0;
+    if (l.Z < before) {
+      worst = Math.max(worst, before - l.Z);
+      cutTo.set(cut, l.Z);
+    }
+  }
+  return worst;
+}
+
+test('GRBL mills in steps of at most the step down and never feeds above the cap; the header says both', () => {
+  const runs = [
+    { type: 'wall', tool: 6, onion: false },
+    { type: 'kitchen', modules: 3 },
+    { type: 'wardrobe', grblStepDown: 1.5, grblMaxFeed: 1200 },
+    { type: 'chest', grblStepDown: 20, grblMaxFeed: 10000 },
+  ];
+  for (const input of runs) {
+    const model = buildModel({ ...input, post: 'grbl' });
+    const { grblStepDown: step, grblMaxFeed: cap } = model.spec;
+    const nesting = nest(model);
+    for (const sheet of nesting.sheets) {
+      const where = `${input.type} sheet ${sheet.index}`;
+      const g = toGcode(model, sheet, { ...outputMeta(model), sheetCount: nesting.sheets.length });
+      assert.ok(g.text.includes(`(STEP DOWN ${step} MM - MAX FEED ${cap} MM/MIN - SET IN THE PROJECT)`), `${where}: the limits are not in the header`);
+      const feeds = walkGcode(g.text).filter((l) => l.F !== undefined).map((l) => l.F);
+      assert.ok(feeds.length > 0 && Math.max(...feeds) <= cap, `${where}: feed ${Math.max(...feeds)} above ${cap}`);
+      assert.ok(g.moves.every((m) => !m.F || m.F <= cap), `${where}: the time estimate sees a feed above the cap`);
+      const worst = deepestStep(g.text);
+      assert.ok(worst > 0 && worst <= step + 1e-6, `${where}: a milling step of ${worst} mm, the limit is ${step}`);
+    }
+  }
+  // the same check on ISO finds the full-depth pass of an industrial machine: it would catch the old GRBL output
+  const iso = buildModel({ type: 'wall', tool: 6, onion: false });
+  const sheet = nest(iso).sheets[0];
+  assert.ok(deepestStep(toGcode(iso, sheet, { ...outputMeta(iso), sheetCount: 1 }).text) > 18, 'ISO no longer cuts at full depth');
+});
