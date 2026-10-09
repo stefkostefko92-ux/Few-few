@@ -39,6 +39,7 @@ test('an error-free project: cnc.zip has DXF and G-code for every sheet, project
   );
   assert.match(project.get('README.txt') ?? '', /cnc\/ +DXF със слоеве и G-code/);
   assert.ok(project.has('project.json') && project.has('cut-list.csv'));
+  assert.ok(svgs(project).length >= 2, 'project.zip carries the drawings');
   for (const svg of svgs(project)) assert.ok(!svg.includes(NOT_FOR_PRODUCTION));
 });
 
@@ -69,6 +70,7 @@ test('a project with a construction error: project.zip leaves cnc/ out and says 
     svgs(drawings).every((svg) => svg.includes(NOT_FOR_PRODUCTION)),
     'every sheet carries the red line',
   );
+  assert.ok(svgs(project).length >= 2, 'project.zip carries the drawings');
   assert.ok(svgs(project).every((svg) => svg.includes(NOT_FOR_PRODUCTION)));
 });
 

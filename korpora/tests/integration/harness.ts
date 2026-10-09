@@ -7,6 +7,7 @@ import { execFileSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import type { Server } from 'node:http';
 import { unzipSync } from 'fflate';
+import { assertTestDatabase } from './db-guard.js';
 
 export const PORT = 4399;
 export const BASE = `http://127.0.0.1:${PORT}`;
@@ -15,24 +16,6 @@ export const CUSTOMER_PASSWORD = 'Shelf-Hinge-Groove-42';
 export const STAFF_PASSWORD = 'Oak-Router-Plane-37';
 /** The team's inbox for order and withdrawal notices — pinned, whatever the shell exports. */
 export const STAFF_INBOX = 'info@carbonstealth.eu';
-
-/**
- * startApp() empties every table, so the database has to say by its name that it is for tests
- * (`korpora_test`, `korpora_ci_…`): a production or development URL in TEST_DATABASE_URL wipes nothing.
- * The message names the database only — the URL carries the password.
- */
-export function assertTestDatabase(url: string): void {
-  let name = '';
-  try {
-    name = decodeURIComponent(new URL(url).pathname.replace(/^\//, ''));
-  } catch {
-    throw new Error('refusing to run: TEST_DATABASE_URL is not a valid URL');
-  }
-  if (!/(^|_)(test|ci)(_|$)/i.test(name))
-    throw new Error(
-      `refusing to empty the database "${name}": the name of a test database contains _test or _ci`,
-    );
-}
 
 process.env.NODE_ENV = 'test';
 process.env.PUBLIC_BASE_URL = BASE;
