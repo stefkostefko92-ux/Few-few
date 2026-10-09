@@ -86,6 +86,7 @@ public/        интерфейсът (вход + работно простра�
 docs/runbook.md  SLO-тата, всяка аларма (deploy/monitoring/alerts.yml + alerts.test.yml за promtool) и политиката за бюджета
 evals/         оценъчният набор §16 (формат, фикстури, метрики, run.ts) — how-to в evals/README.md
 tests/e2e/     Playwright потоците (техник, мобилен, снимка, персонал с MFA, DM в реално време, админ, знание)
+               + a11y.spec.ts — axe WCAG 2.1 AA на ключовите екрани в светла/тъмна тема (нарушение = червен тест)
 ```
 
 ## Инварианти (не ги отслабвай)
