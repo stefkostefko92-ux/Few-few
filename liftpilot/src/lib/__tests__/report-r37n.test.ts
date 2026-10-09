@@ -41,7 +41,7 @@ const input = (V: FormValues, s: Survey): SurveyTavoleInput => ({
 const tecnica = (V: FormValues, s: Survey, sets: { number: string; revision: number; sha256?: string }[] = []): ReportDoc => buildTecnica({
   room: { id: 'r', label: null, createdAt: DAY, sha256: 'd'.repeat(64), engineVersion: 'x', author: null },
   calc: { id: 'c', label: null, createdAt: DAY, sha256: 'c'.repeat(64), engineVersion: 'x', profileId: 'it' },
-  project, company: 'S', values: V, survey: s, derived: deriveRoom(V, s), collaudo: collaudoOf(V), plant: {}, sets, generatedAt: DAY,
+  project, company: 'S', values: V, survey: s, derived: deriveRoom(V, s), collaudo: collaudoOf(V), plant: {}, sets,
 });
 const texts = (doc: ReportDoc): string[] => doc.blocks.flatMap((b) => (b.t === 'kv' ? b.rows.flat() : b.t === 'grid' ? [...b.head, ...b.rows.flat()] : b.t === 'list' ? b.items : 'text' in b ? [b.text] : []));
 const kv = (doc: ReportDoc): (readonly string[])[] => doc.blocks.flatMap((b) => (b.t === 'kv' ? b.rows : []));
