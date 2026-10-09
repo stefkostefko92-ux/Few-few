@@ -123,6 +123,21 @@ test('the title block cuts a long owner to its cell instead of running into the 
   assert.ok(frame('Врата', { ...meta, owner: 'Carbon Stealth VCC' }, 10, 2, 5, 'ПДЧ').includes('>Carbon Stealth VCC</text>'), 'a short owner is cut');
 });
 
+test('the title block keeps the whole decor name: two lines in the material cell instead of a cut', () => {
+  const material = 'ЛПДЧ 18 · Egger H1145 Дъб Бардолино натур'; // 41 characters, one line of the cell takes 30
+  const svg = frame('Врата', meta, 10, 2, 5, material);
+  const lines = [...svg.matchAll(/<text class="d-tvs"[^>]*>([^<]*)<\/text>/g)].map((m) => m[1]);
+  assert.deepEqual(lines, ['ЛПДЧ 18 · Egger H1145 Дъб Бардолино', 'натур']);
+  assert.ok(!svg.includes('Бар…') && !svg.includes('натур…'), 'the decor is cut');
+  // what holds one line stays one line of the title-block size
+  assert.ok(frame('Врата', meta, 10, 2, 5, 'ПДЧ 18 · Бяло').includes('<text class="d-tv" x="232" y="284.2">ПДЧ 18 · Бяло</text>'));
+});
+
+test('the Bulgarian letterforms of the fonts (OpenType locl) are off with every font of a drawing', () => {
+  for (const rule of STYLE.split('\n').filter((r) => /font(-family)?:/.test(r)))
+    assert.match(rule, /font-feature-settings:'locl' 0/, rule);
+});
+
 test('the drawings use the faces the site and the brochure load, not a font nobody serves', () => {
   const base = readFileSync(new URL('../../public/css/base.css', import.meta.url), 'utf8');
   const brochure = readFileSync(new URL('../../print/build-brochure.ts', import.meta.url), 'utf8');
