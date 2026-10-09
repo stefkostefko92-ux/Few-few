@@ -83,9 +83,10 @@
   --c: var(--t8);
 }
 
+/* the whole width, as the header above it (its edges line up): in the page's flex column an auto margin shrank the
+   editor to its content, so its width followed the open tab */
 .editor {
-  max-width: 1560px;
-  margin: 0 auto;
+  width: 100%;
   padding: 14px 16px 24px;
   display: grid;
   gap: 12px;
@@ -199,10 +200,25 @@
   grid-template-areas: 'work' 'rail';
   gap: 14px;
 }
-@media (min-width: 1040px) {
+/* from 900 px (a tablet held sideways) the parameters stay beside the result: the rail keeps to the screen and
+   scrolls on its own, so a change and what it does are both in view */
+@media (min-width: 900px) {
+  .app-grid {
+    grid-template-columns: 290px minmax(0, 1fr);
+    grid-template-areas: 'rail work';
+  }
+  .rail {
+    position: sticky;
+    top: 12px;
+    align-self: start;
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+    border-radius: var(--r);
+  }
+}
+@media (min-width: 1200px) {
   .app-grid {
     grid-template-columns: 330px minmax(0, 1fr);
-    grid-template-areas: 'rail work';
   }
 }
 .rail fieldset[disabled] {

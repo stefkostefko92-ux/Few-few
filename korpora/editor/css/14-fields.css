@@ -1,0 +1,20 @@
+/* The number fields read as fields that take typing (the panel's white with the control edge), not as the grey of a
+   read-only value; a slider is a 24 px target (WCAG 2.2, 2.5.8). A long button text wraps at 320 px. */
+.rail .field input[type='number'] {
+  background: var(--surface);
+}
+.rail .field input[type='number']:disabled {
+  background: var(--surface-2);
+}
+.rail .field input[type='range'],
+.viewbar input[type='range'],
+#sim-progress {
+  min-height: 24px;
+}
+.rail #reset {
+  white-space: normal;
+  height: auto;
+  min-height: 42px;
+  padding-block: 0.5em;
+  text-align: center;
+}
