@@ -166,7 +166,7 @@
       },
       "machines": {
         "q": "Con quali macchine CNC funziona?",
-        "a": "Il programma fornisce un DXF a layer che si apre in qualsiasi programma CAM e G-code in due versioni: ISO/Fanuc e GRBL. I post-processori sono generici, quindi il primo taglio passa da una simulazione e da una prova a vuoto."
+        "a": "Il programma fornisce un DXF R12 a layer, in millimetri, per il vostro programma CAM e G-code in due versioni: ISO/Fanuc e GRBL. I post-processori sono generici, quindi il primo taglio passa da una simulazione e da una prova a vuoto."
       },
       "hardware": {
         "q": "Quale ferramenta supporta?",

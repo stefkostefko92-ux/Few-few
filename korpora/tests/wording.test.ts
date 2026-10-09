@@ -39,3 +39,17 @@ test('the brochure names the sliding table saw, not an industrial beam saw', () 
   assert.doesNotMatch(translate('it', 'brochure.cover.for'), /sezionatrice/);
   assert.match(translate('en', 'brochure.cover.for'), /\bsliding table saw\b/);
 });
+
+test('the FAQ names the DXF the program writes and does not promise that every CAM program opens it', () => {
+  const overclaim = {
+    bg: /всяка CAM/,
+    en: /any CAM/i,
+    it: /qualsiasi programma CAM/i,
+  } as const;
+  for (const locale of LOCALES) {
+    const answer = translate(locale, 'landing.faq.machines.a');
+    assert.doesNotMatch(answer, overclaim[locale], locale);
+    // engine/dxf.js writes $ACADVER AC1009 — DXF R12
+    assert.match(answer, /DXF R12/, locale);
+  }
+});

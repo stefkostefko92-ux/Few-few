@@ -166,7 +166,7 @@
       },
       "machines": {
         "q": "Which CNC machines does it work with?",
-        "a": "The program gives a layered DXF that opens in any CAM program, and G-code in two flavours: ISO/Fanuc and GRBL. The post-processors are generic, so the first cut goes through a simulation and a dry run."
+        "a": "The program gives a layered DXF R12 in millimetres for your CAM program, and G-code in two flavours: ISO/Fanuc and GRBL. The post-processors are generic, so the first cut goes through a simulation and a dry run."
       },
       "hardware": {
         "q": "Whose hardware does it support?",
@@ -209,7 +209,7 @@
       "parts": "Parts",
       "materials": "Materials",
       "sheets": "Sheets",
-      "sheetsValue": "{n} of {w} × {h} mm",
+      "sheetsValue": "{n}, each {w} × {h} mm",
       "yield": "Sheet yield",
       "yieldValue": "{pct}%",
       "sheet1": "Parts on sheet 1",
