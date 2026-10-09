@@ -103,8 +103,19 @@ export function chatRouter(deps: WiredDeps): Router {
             where: { caseId_clientMessageId: { caseId: c.id, clientMessageId: id } },
           });
           if (!prior) return false;
+          // Отговорът на ТОВА съобщение: първият AI след него, но преди следващото човешко —
+          // иначе повтор на съобщение без AI (askAi=false) би взел чужд, по-късен отговор.
+          const next = await deps.db.caseMessage.findFirst({
+            where: { caseId: c.id, kind: 'HUMAN', createdAt: { gt: prior.createdAt } },
+            orderBy: { createdAt: 'asc' },
+            select: { createdAt: true },
+          });
           const answer = await deps.db.caseMessage.findFirst({
-            where: { caseId: c.id, kind: 'AI', createdAt: { gte: prior.createdAt } },
+            where: {
+              caseId: c.id,
+              kind: 'AI',
+              createdAt: { gte: prior.createdAt, ...(next ? { lt: next.createdAt } : {}) },
+            },
             orderBy: { createdAt: 'asc' },
           });
           const files = await attachmentsByMessage(deps.db, p.user.tenantId, [prior.id]);

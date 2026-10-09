@@ -1,3 +1,4 @@
+import { GATE_VERSION } from '../src/safety/version.js';
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import type {
@@ -283,7 +284,7 @@ describe('diagnose — без доказателства', () => {
     assert.equal(out.answer.status, 'undetermined');
     assert.equal(out.answer.escalation.recommended, true);
     assert.equal(out.answer.gate.evidenceLevel, 'none');
-    assert.equal(out.answer.promptVersion, PROMPT_VERSION);
+    assert.equal(out.answer.promptVersion, `${PROMPT_VERSION}+${GATE_VERSION}`);
     assert.equal(out.usage.inputTokens, 0);
   });
 });

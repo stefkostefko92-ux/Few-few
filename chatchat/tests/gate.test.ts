@@ -660,6 +660,8 @@ describe('noEvidenceAnswer (AC-04) — отговор без модел', () => 
     assert.ok(out.missingData.includes('ctx.firmware'));
     assert.equal(out.safety.level, 'standard');
     assert.equal(out.knowledgeSnapshotId, 'snap-9');
+    // AC-09: и отговорът без модел носи версията на правилата.
+    assert.equal(out.promptVersion, `prompt-test+${GATE_VERSION}`);
   });
 
   test('непознатите идентификатори се назовават; bypass остава blocked и без модел', () => {

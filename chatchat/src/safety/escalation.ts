@@ -2,6 +2,7 @@ import type { DiagnosticContext } from '../domain/context.js';
 import type { DiagnosticAnswer } from '../domain/response.js';
 import type { GateInput } from './gate.js';
 import { detectBypassIntent } from './lexicon.js';
+import { GATE_VERSION } from './version.js';
 
 /** Какво да събере техникът преди тикета, според липсващия контекст. */
 export function collectFor(context: DiagnosticContext): string[] {
@@ -45,6 +46,6 @@ export function noEvidenceAnswer(input: Omit<GateInput, 'draft' | 'level'>): Dia
     },
     gate: { evidenceLevel: 'none', removedSteps: [], droppedCitations: [], decisions },
     knowledgeSnapshotId: input.knowledgeSnapshotId,
-    promptVersion: input.promptVersion,
+    promptVersion: `${input.promptVersion}+${GATE_VERSION}`,
   };
 }
