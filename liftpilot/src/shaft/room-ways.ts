@@ -5,12 +5,12 @@
 // as bands KV_VERT.routeW wide along the walk the route's grid finds (room-route.ts). Model entities, room axes [mm];
 // pure.
 import { TEXT, line, path, type Box as DrawBox, type Entity, type Pt } from '../drawing';
-import { machineBox, machineParts } from './support-check';
+import { governorFree, machineBox } from './support-check';
 import type { MachineSpec, RoomGeo } from './machine-room';
 import { KV_VERT } from './norme-vert';
 import { wheelAt } from './room-above';
 import { freeBeside } from './room-free';
-import { outlineBox, panelArea, panelBox, switchBox, type Box, type Outline } from './room-floor';
+import { panelArea, panelBox, switchBox, type Box, type Outline } from './room-floor';
 import { AT, firstClear, letteringBox } from './room-label';
 import { grid, leastIn, walkOf, type Grid } from './room-route';
 import type { RoomInputs } from './room';
@@ -47,7 +47,7 @@ export function freeAreas(G: RoomGeo, M: MachineSpec, others: readonly Box[], go
   const f = freeBeside(R, machineBox(G, M), [panelBox(R), ...others], wheelAt(G, M)), ok = f.depth >= f.need;
   if (ok) out.push(...hatched(f.area, size, taken, dims, k));
   if (gov) {
-    const near = [...machineParts(G, M), panelBox(R), switchBox(R)].map(outlineBox), g = freeBeside(R, gov, near);
+    const g = governorFree(gov, G, M);
     if (g.depth >= g.need) out.push(...hatched(g.area, size, [...taken, ...out.flatMap((e) => (e.e === 'text' ? [letteringBox(e.at, e.text, e.size, 'c', 0, false, k)] : []))], dims, k));
   }
   return { entities: out, machine: ok ? f.area : null };

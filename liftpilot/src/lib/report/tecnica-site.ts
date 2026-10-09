@@ -19,7 +19,7 @@ import type { Layout } from '@/shaft/types';
 import type { Plant } from '../plant';
 import type { RoomDerived } from '../room/derive';
 import type { Survey } from '../room/survey';
-import { EXISTING_SUPPORT_IT, governorRopeHole, surveyedOpenings } from '../room/survey-site';
+import { EXISTING_SUPPORT_IT, existingOpenings, governorRopeBox } from '../room/survey-site';
 import { surveyLoad } from '../tavole/survey-data';
 import type { ReportBlock } from './model';
 
@@ -39,7 +39,7 @@ export function openingsBlocks(d: RoomDerived, s: Survey, fmt: Fmt): ReportBlock
       rows: ops.map((o, i) => [`${i + 1}${o.wheel ? ' (anche la puleggia di rinvio)' : ''}`, onY ? `${r(o.across)} × ${r(o.along)}` : `${r(o.along)} × ${r(o.across)}`, `${r(o.centre[0] - R.shaftX)} mm`, `${r(o.centre[1] - R.shaftY)} mm`]) });
   }
   // only the openings surveyed; the governor's ropes' under it is the software's assumption, and stays with it (round 37)
-  const old = surveyedOpenings(s), ropes = governorRopeHole(s), at = ([x0, y0, x1, y1]: Box): string => `${r(x1 - x0)} × ${r(y1 - y0)} mm a x ${r((x0 + x1) / 2)}, y ${r((y0 + y1) / 2)} mm dai muri del locale`;
+  const old = existingOpenings(s), ropes = governorRopeBox(s.governor), at = ([x0, y0, x1, y1]: Box): string => `${r(x1 - x0)} × ${r(y1 - y0)} mm a x ${r((x0 + x1) / 2)}, y ${r((y0 + y1) / 2)} mm dai muri del locale`;
   out.push({ t: 'p', style: 'note', text: (old.length
     ? `Aperture esistenti rilevate: ${old.map(at).join('; ')}. Quelle che non servono più si chiudono senza indebolire la soletta, con la verifica del tecnico.`
     : 'Aperture esistenti non rilevate: confrontarle in sito con quelle disegnate prima dei lavori.')

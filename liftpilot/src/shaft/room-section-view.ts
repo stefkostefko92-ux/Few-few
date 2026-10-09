@@ -21,6 +21,7 @@ import { aboveSection, hitchesSection, hookSection, kerbDim, kerbsSection, notes
 import { hebNote } from './heb-view';
 import { mountsLines } from './room-mounts';
 import { AT, takenBy } from './room-label';
+import { foundGaps, foundSection } from './room-section-found';
 
 /** Section B-B along the rope drops: X is u along the drop line, Z the height above the room floor. `o`: the door's and
  *  the panel's heights in one row, the dimensions placed for another scale than 1:25 (views.ts, to keep the section at
@@ -29,11 +30,12 @@ export function roomSectionOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDr
   const R = G.room, out: Entity[] = [], sk = (o.scale ?? 25) / 25;
   const [r0, r1] = span(G, 0, 0, R.W, R.D), [s0, s1] = span(G, R.shaftX, R.shaftY, R.shaftX + S.W, R.shaftY + S.D);
   const top = R.H, ridge = R.ridge > 0 ? R.ridge : R.H, midU = (r0 + r1) / 2, below = 1300 * sk, foot = -R.slab - below;
-  // floor slab over the shaft, open where the ropes and a pulley go through; the shaft's walls under it
+  // floor slab over the shaft, open where the ropes and a pulley go through and where the cut crosses an existing
+  // opening a survey found (round 37); the shaft's walls under it
   let u = r0 - WALL;
-  for (const h of holesOf(S, M, G)) {
-    if (h.u0 > u) out.push(rect(u, -R.slab, h.u0, 0, 'wall', 'concrete'));
-    u = Math.max(u, h.u1);
+  for (const [a, b] of [...holesOf(S, M, G).map((h): [number, number] => [h.u0, h.u1]), ...foundGaps(S, G)].sort((p, q) => p[0] - q[0])) {
+    if (a > u) out.push(rect(u, -R.slab, a, 0, 'wall', 'concrete'));
+    u = Math.max(u, b);
   }
   if (r1 + WALL > u) out.push(rect(u, -R.slab, r1 + WALL, 0, 'wall', 'concrete'));
   for (const x of [s0 - S.wall, s1]) out.push(rect(x, foot, x + S.wall, -R.slab, 'wall', 'concrete'));
@@ -148,6 +150,8 @@ export function roomSectionOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDr
   // fixings named (round 36)
   const hook = hookOf(G, M, S.pieces ?? []);
   out.push(...aboveSection(G, M, hook.u, sk));
+  // the existing openings the cut crosses, named under the slab (the hook's name and the notes keep off them)
+  out.push(...foundSection(S, G, out, sk));
   // (outside the drawing, under its foot or right of the room, as much as the paper leaves at this scale — round 37)
   const bounds0: Box = { x0: r0 - WALL, y0: foot, x1: r1 + WALL, y1: Math.max(top, ridge) + WALL }, outside = outsideSection(out, bounds0, AT * sk, o.paper);
   const named = hookSection(G, hook, out, { r0, r1 }, outside, sk, [machineArea]);

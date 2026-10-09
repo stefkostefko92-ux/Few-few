@@ -2,7 +2,7 @@
 // 5.2.6.3.2.1 a): as wide as the larger of 500 mm and the panel, crossed in front of the panel only, not through its
 // name) and the main switch by the door (room-floor.ts switchSpan) with its name clear of them. Model entities, room
 // axes [mm].
-import { TEXT, line, path, textWidth, type Box, type Entity, type Pt } from '../drawing';
+import { TEXT, chain, edit as E, line, path, textWidth, type Box, type Entity, type Pt } from '../drawing';
 import { KV_VERT } from './norme-vert';
 import { panelBand, switchSpan } from './room-floor';
 import type { RoomInputs } from './room';
@@ -13,23 +13,49 @@ const SWITCH_NAME = 'INTERRUTTORE GENERALE';
  *  the plan's scale `k` (model millimetres to one of paper); the outlines and the name's place the rest of the plan keeps
  *  clear of. */
 export function fittingsPlan(R: RoomInputs, gear: readonly Box[] = [], k = 25): { entities: Entity[]; free: Pt[]; sw: Pt[]; swAt: Pt } {
-  const side = R.panelWall === 'left' || R.panelWall === 'right', [b0, b1] = panelBand(R), pan = wallBox(R, R.panelWall, R.panelAt, R.panelW, R.panelD), free = wallBox(R, R.panelWall, b0, b1 - b0, R.panelD + KV_VERT.panelFreeDepth);
+  const [b0, b1] = panelBand(R), pan = wallBox(R, R.panelWall, R.panelAt, R.panelW, R.panelD), free = wallBox(R, R.panelWall, b0, b1 - b0, R.panelD + KV_VERT.panelFreeDepth);
   const front = wallBand(R, R.panelWall, b0, b1 - b0, R.panelD, R.panelD + KV_VERT.panelFreeDepth);
   const [w0, w1] = switchSpan(R), sw = wallBox(R, R.doorWall, w0, w1 - w0, 120);
   const inward: Pt = R.doorWall === 'front' ? [0, 1] : R.doorWall === 'rear' ? [0, -1] : R.doorWall === 'left' ? [1, 0] : [-1, 0];
   const [swAt] = switchName(R, mid(sw), inward, [bbox(pan), bbox(free), ...gear], k);
-  // the panel's name in it; too long for it at the smallest lettering, in the free area in front of it on a leader
-  const into: Pt = R.panelWall === 'front' ? [0, 1] : R.panelWall === 'rear' ? [0, -1] : R.panelWall === 'left' ? [1, 0] : [-1, 0], pm = mid(pan);
-  const panelOut: Pt = [pm[0] + into[0] * (R.panelD / 2 + 320), pm[1] + into[1] * (R.panelD / 2 + 320)];
   return {
     entities: [
       path(free, true, 'space'), line(front[0], front[2], 'space'), line(front[1], front[3], 'space'),
-      // (along a side wall the name runs along the panel, as on the room below's: below-view.ts)
-      path(pan, true, 'outline', 'paper'), { e: 'text', at: pm, text: 'QUADRO MANOVRA', size: TEXT.min, align: 'c', halo: true, fit: R.panelW - 60, out: panelOut, ...(side ? { angle: 90 } : {}) },
+      path(pan, true, 'outline', 'paper'), panelName(R),
       path(sw, true, 'outline', 'paper'), { e: 'text', at: swAt, text: SWITCH_NAME, size: TEXT.min, align: 'c', halo: true },
     ],
     free, sw, swAt,
   };
+}
+
+/** The panel's name in it; too long for it at the smallest lettering, in the free area in front of it on a leader
+ *  (along a side wall the name runs along the panel, as on the room below's: below-view.ts). Where it goes does not
+ *  hang on the rest of the plan: a replacement's governor keeps its name off it (round 37 review). */
+export function panelName(R: RoomInputs): Entity {
+  const side = R.panelWall === 'left' || R.panelWall === 'right', pm = mid(wallBox(R, R.panelWall, R.panelAt, R.panelW, R.panelD));
+  const into: Pt = R.panelWall === 'front' ? [0, 1] : R.panelWall === 'rear' ? [0, -1] : R.panelWall === 'left' ? [1, 0] : [-1, 0];
+  const panelOut: Pt = [pm[0] + into[0] * (R.panelD / 2 + 320), pm[1] + into[1] * (R.panelD / 2 + 320)];
+  return { e: 'text', at: pm, text: 'QUADRO MANOVRA', size: TEXT.min, align: 'c', halo: true, fit: R.panelW - 60, out: panelOut, ...(side ? { angle: 90 } : {}) };
+}
+
+/** The panel's chains on the plan: along its wall, in front of it (its name stays readable inside), from the nearer wall
+ *  only (a chain across the room would cross the machine), its height there when section B-B does not see it (`seen`:
+ *  round 36); its depth into the room past its end with room for it, else before it (a panel set 50 mm off a wall: the
+ *  line would be in it). The chains in the room keep their lettering past their ends off the walls (`within`). */
+export function panelChains(R: RoomInputs, seen: boolean, within: Box): Entity[] {
+  const pw = R.panelWall, alongP = pw === 'front' || pw === 'rear', panelLen = alongP ? R.W : R.D;
+  const face = pw === 'front' ? 0 : pw === 'rear' ? R.D : pw === 'left' ? 0 : R.W, into = pw === 'rear' || pw === 'right' ? -1 : 1, inner = face + into * R.panelD;
+  const nearStart = R.panelAt <= panelLen - R.panelAt - R.panelW, name = seen ? 'Quadro {v}' : `Quadro {v} · H. ${R.panelH}`;
+  const side1 = R.panelAt + R.panelW, after = panelLen - side1 >= 150 || panelLen - side1 >= R.panelAt, at1 = after ? side1 : R.panelAt;
+  return [
+    chain(nearStart
+      ? { dir: alongP ? 'x' : 'y', pts: [0, R.panelAt, R.panelAt + R.panelW], at: inner + into * 150, from: [null, inner, inner], text: [null, name],
+        edit: [E('room.panelAt'), E('room.panelW')], within }
+      : { dir: alongP ? 'x' : 'y', pts: [R.panelAt, R.panelAt + R.panelW, panelLen], at: inner + into * 150, from: [inner, inner, null], text: [name, null],
+        edit: [E('room.panelW'), E('room.panelAt', panelLen - R.panelW, -1)], within }),
+    chain({ dir: alongP ? 'y' : 'x', pts: [Math.min(face, inner), Math.max(face, inner)], at: after ? side1 + 120 : R.panelAt - 120, from: [at1, at1], text: ['Prof. {v}'],
+      edit: [E('room.panelD')], within }),
+  ];
 }
 
 /** Where the main switch's name goes: 260 mm into the room from the switch at `c` as always; where its lettering (the

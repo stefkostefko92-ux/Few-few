@@ -65,6 +65,19 @@ export function textQuad(s: TextShape): Pt[] {
   return [[lo, -0.3 * h], [lo + w, -0.3 * h], [lo + w, h], [lo, h]].map(([u, v]): Pt => [x + u * c - v * sn, y + u * sn + v * c]);
 }
 
+/** The boxes a lettering takes on paper, for what other lettering keeps off: its box when level or upright; turned
+ *  askew, a box for each stretch of it about as long as it is high (one box round the whole would take a square of paper
+ *  beside a slanted text: round 37, a drop's value askew was pushed past its chain's end over a name nearby). */
+export function textBoxes(s: TextShape): Box[] {
+  if (Math.abs(Math.sin(((s.angle ?? 0) * Math.PI) / 90)) < 1e-9) return [textBox(s)];
+  const [q0, q1, q2, q3] = textQuad(s), n = Math.max(1, Math.ceil(Math.hypot(q1[0] - q0[0], q1[1] - q0[1]) / (1.3 * s.size)));
+  const lerp = (a: Pt, b: Pt, t: number): Pt => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+  return Array.from({ length: n }, (_, i) => {
+    const ps = [lerp(q0, q1, i / n), lerp(q0, q1, (i + 1) / n), lerp(q3, q2, i / n), lerp(q3, q2, (i + 1) / n)], xs = ps.map((p) => p[0]), ys = ps.map((p) => p[1]);
+    return { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) };
+  });
+}
+
 /** The largest size, not above `size`, at which the text fits in `width`. */
 export function fitSize(text: string, width: number, f: Font): number {
   const w = textWidth(text, f);

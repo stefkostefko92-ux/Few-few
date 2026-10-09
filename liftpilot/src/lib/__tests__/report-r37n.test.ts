@@ -125,8 +125,9 @@ test('verifica delle calate: l’etichetta dice da che cosa vengono le calate de
     assert.equal(roomCheckKey('m_calata', d), key, name);
     assert.equal(roomCheckKey('m_door', d), 'c_m_door');
     for (const M of [appIt.shaft, appEn.shaft, appBg.shaft]) assert.ok(typeof M[key as keyof typeof M] === 'string', `${name}: ${key}`);
+    // (a label longer than its column at the least lettering wraps on two lines: survey-sheet.ts)
     const t = pageTexts(buildSurveyTavole(input(V, s)).doc.pages, 0);
-    assert.ok(t.includes(label), `${name}: ${label}`);
+    assert.ok(t.includes(label) || t.join(' ').includes(label), `${name}: ${label}`);
     if (key !== 'c_m_calata') assert.ok(!t.some((x) => x.includes('puleggia esistente col tiro diretto')), name);
   }
   assert.equal(calataBasis({ layout: 'topDefl', drops: 0 }), 'defl');

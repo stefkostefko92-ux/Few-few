@@ -7,8 +7,10 @@
 import { rowExtra, table, type Box, type Cell, type Shape } from '@/drawing';
 import type { DataSheet } from './datasheet';
 
-/** The rows' height: at most, at least in one column [mm]; the lettering at least [mm]. */
-const ROW_MAX = 5, ROW_MIN = 3.4, TEXT_MIN = 2;
+/** The rows' height: at most, at least in one column [mm]. */
+const ROW_MAX = 5, ROW_MIN = 3.4;
+/** The lettering of a table of checks never smaller [mm] (sheet 1 of a replacement's set too: survey-sheet.ts). */
+export const TEXT_MIN = 2;
 
 /** The sheet's title and subtitle (sheet.ts sheetTitle). */
 export const CHECKS_TITLE = 'VERIFICHE DEL PROGETTO';

@@ -1,20 +1,22 @@
 // The drawing set of a machine replacement, A4 sheets: 1 the data (the installation and the intervention, the existing
 // and the new machine, the machine room and the drops as surveyed, the loads, the notes, the checks); 2 the machine
-// room in plan with the section line; 3 the machine room in section B-B along the drops. Each view at the largest
-// standard scale that fits with its dimensions. A machine below has no room over the shaft: no set (as a whole design
-// leaves its room out).
+// room in plan with the section line; 3 the machine room in section B-B along the drops; 4 the checks, only when they
+// do not fit sheet 1 legibly (round 37 review: as a whole design's last sheet, checks-sheet.ts). Each view at the
+// largest standard scale that fits with its dimensions. A machine below has no room over the shaft: no set (as a whole
+// design leaves its room out).
 import { A4, COND, PALETTE, concreteTile, drawingArea, frame, sheetTitle, strip, type DrawingDoc, type Hit, type Page, type SheetMeta } from '@/drawing';
 import { deriveRoom, type RoomDerived } from '../room/derive';
 import type { MachineSpec } from '@/shaft/machine-room';
 import type { Plant } from '../plant';
 import { inset, roomMarks, type Drawn } from './build';
+import { CHECKS_SUBTITLE, checksSheet } from './checks-sheet';
 import { scaleLabel } from './extras';
 import { roomLegend, titleSpares } from './room-legend';
 import { placeLines } from './input';
 import { currentRevision, type TitleData } from './title-block';
 import { surveySheetData } from './survey-data';
 import type { SurveyTavoleInput } from './survey-input';
-import { surveySheetShapes } from './survey-sheet';
+import { SURVEY_CHECKS_TITLE, checksFitSheet1, surveySheetShapes } from './survey-sheet';
 import { machineName, surveyView } from './views';
 
 export interface SurveyTavoleResult {
@@ -60,8 +62,9 @@ export const surveyMachine = (d: RoomDerived, plant: Plant): MachineSpec => ({ .
 export function buildSurveyTavole(x: SurveyTavoleInput): SurveyTavoleResult {
   const d = deriveRoom(x.values, x.survey);
   if (!d.G) throw new Error('no machine room over the shaft');
-  const M = surveyMachine(d, x.plant), pages = SPECS.length + 1;
-  const [l1, l2] = placeLines(x.project), sheet = surveySheetData(x, d, pages);
+  // (the checks on their own sheet at the end when they do not fit sheet 1 legibly: round 37 review)
+  const M = surveyMachine(d, x.plant), base = SPECS.length + 1, first = surveySheetData(x, d, base), own = checksFitSheet1(first), pages = own ? base : base + 1;
+  const [l1, l2] = placeLines(x.project), sheet = own ? first : { ...surveySheetData(x, d, pages), checksSheet: pages };
   // the strip of every sheet: the revision and the plant number as the title block writes them
   const meta = (page: number): SheetMeta => ({
     number: x.set.number, page, pages, revision: currentRevision(sheet), location: `${l1} - ${l2}`, plant: sheet.plant,
@@ -73,6 +76,11 @@ export function buildSurveyTavole(x: SurveyTavoleInput): SurveyTavoleResult {
     sheets.push({ title, scale: v.scale });
     hits.push(v.hits);
   });
+  if (!own) {
+    out.push({ w: A4.w, h: A4.h, shapes: [...frame(), ...checksSheet(sheet.checks, drawingArea(true)), ...sheetTitle(SURVEY_CHECKS_TITLE, CHECKS_SUBTITLE), ...strip(meta(pages))] });
+    sheets.push({ title: SURVEY_CHECKS_TITLE, scale: null });
+    hits.push([]);
+  }
   const doc: DrawingDoc = {
     meta: { title: `Tavole ${x.set.number} - ${x.project.name}`, subject: 'Sostituzione dell’argano: dati, pianta e sezione B-B del locale macchina', author: x.company.name },
     palette: PALETTE, patterns: { concrete: concreteTile() }, cond: COND,

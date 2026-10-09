@@ -26,6 +26,11 @@ export interface RoomSite {
   /** the governor drawn in the plan, and its footprint with its lettering and dimensions (null: nothing drawn); `marks`:
    *  tight boxes of its body, its name and its reference P4 (a lettering placed beside it keeps off them) */
   governor: { entities: Entity[]; box: DrawBox | null; marks?: readonly DrawBox[] };
+  /** the same as the plan draws it at its scale `k` (model millimetres to one of paper), its lettering placed for the
+   *  size it has there, off `lettered` and where it can off `dims` (the boxes of the lettering and of the dimension
+   *  lines the plan draws where they go whatever else is drawn: a replacement's survey, round 37 review); missing:
+   *  `governor` at any scale */
+  governorAt?: (k: number, lettered: readonly DrawBox[], dims: readonly DrawBox[]) => RoomSite['governor'];
   /** the governor's rope where it goes through the room's floor, both strands (room axes): the HEB beams keep off it, as
    *  the checks and the 3D lay them; none in a replacement's survey */
   govRopes: readonly Rope[];
@@ -50,6 +55,9 @@ export interface RoomSite {
   /** the bearings of the support pulled up at the load of sheet 1 (room-reactions.ts upliftOf): section B-B asks for
    *  their anchors in tension; missing: none worked out (a whole design's) */
   uplift?: readonly Uplift[];
+  /** the slab's existing openings a replacement's survey found (room-floor.ts Box, room axes): section B-B opens the
+   *  slab where its cut crosses them (round 37); missing: none */
+  openings?: readonly Box[];
 }
 
 /** The site of a whole design: its shaft, its travel, its governor, its plan's edits. */

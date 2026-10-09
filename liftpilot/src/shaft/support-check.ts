@@ -257,12 +257,20 @@ export function panelPlace(Gm: RoomGeo, M: MachineSpec, others: readonly Box[]):
   return placePanel(Gm.room, [...machineParts(Gm, M), ...others], freeWith(Gm, M, others));
 }
 
+/** What stands on the room's floor round the governor: the machine's parts, the control panel, the main switch. */
+export const besideGovernor = (Gm: RoomGeo, M: MachineSpec): Outline[] => [...machineParts(Gm, M), panelBox(Gm.room), switchBox(Gm.room)];
+
+/** The free area beside the governor's outline `gov` for its maintenance (room-free.ts freeBeside among what stands
+ *  round it): the one m_govfree checks and the plan hatches (room-ways.ts) and the governor's name keeps off
+ *  (survey-site.ts). */
+export const governorFree = (gov: Box, Gm: RoomGeo, M: MachineSpec): ReturnType<typeof freeBeside> => freeBeside(Gm.room, gov, besideGovernor(Gm, M).map(outlineBox));
+
 /** The checks of the governor on the room's floor (registry limitatore.posto), its outline `gov` [x0, y0, x1, y1] (room
  *  axes; null: none drawn): m_gov, the least distance to the machine's parts, the control panel, the main switch and the
- *  walls, at least 0; m_govfree, the free area beside it for its maintenance as deep as it needs (500 × 600 mm). */
+ *  walls, at least 0; m_govfree, the free area beside it for its maintenance as deep as it needs (500 × 600 mm, over its
+ *  whole width: room-free.ts). */
 export function governorRoomChecks(gov: Box | null, Gm: RoomGeo, M: MachineSpec): ShaftCheck[] {
   if (!gov) return [];
-  const R = Gm.room, near = [...machineParts(Gm, M), panelBox(R), switchBox(R)];
-  const gap = Math.min(gov[0], gov[1], R.W - gov[2], R.D - gov[3], ...near.map((b) => outlineGap(gov, b))), free = freeBeside(R, gov, near.map(outlineBox));
+  const R = Gm.room, gap = Math.min(gov[0], gov[1], R.W - gov[2], R.D - gov[3], ...besideGovernor(Gm, M).map((b) => outlineGap(gov, b))), free = governorFree(gov, Gm, M);
   return [check('m_gov', gap >= 0, Math.round(gap), 0, 0, 'mm'), check('m_govfree', free.depth >= free.need, Math.round(free.depth), free.need, 0, 'mm')];
 }
