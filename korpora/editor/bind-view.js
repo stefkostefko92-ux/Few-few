@@ -9,7 +9,13 @@ export function createViewer(text) {
   try {
     const probe = document.createElement('canvas');
     if (!(probe.getContext('webgl2') || probe.getContext('webgl'))) throw new Error('no webgl');
-    viewer = new Viewer($('#stage'));
+    const view = new Viewer($('#stage'));
+    // on a phone the form is under the view: while the view is scrolled out of sight it draws nothing, so the GPU
+    // and the page are free for typing; it draws the changes once it is back
+    new IntersectionObserver(([entry]) => {
+      view.inSight = entry.isIntersecting;
+    }).observe($('#stage'));
+    viewer = view;
   } catch {
     // the stage keeps its size (nothing under it moves) and says what to do; the 3D controls, which would do
     // nothing, go

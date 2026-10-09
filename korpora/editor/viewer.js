@@ -62,6 +62,7 @@ export class Viewer {
     this.explode = 0;
     this.showOps = true;
     this.dirty = true;
+    this.inSight = true; // false while the page has the view scrolled out of sight (the editor watches it)
     // a lost and restored WebGL context loses all that was drawn on the GPU: the studio environment, the baked
     // decors, the path tracer's buffers. Rebuild them with the model on screen.
     this.renderer.domElement.addEventListener('webglcontextrestored', () => {
@@ -79,8 +80,9 @@ export class Viewer {
     this.light = (k) => this.stage.jitter(k);
     const loop = () => {
       this.raf = requestAnimationFrame(loop);
-      // a hidden panel (another tab of the editor) draws nothing; it goes on where it stopped when shown again
-      if (!this.visible) return;
+      // a hidden panel (another tab of the editor) or a view scrolled out of sight draws nothing; it goes on where it
+      // stopped when shown again
+      if (!this.visible || !this.inSight) return;
       const moved = this.controls.update();
       if (this.dirty || moved) {
         this.pipeline.reset();
