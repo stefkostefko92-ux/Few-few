@@ -16,18 +16,37 @@ export type Capability =
   | 'ticket:create'
   | 'feedback:create'
   | 'device:readAll' // всички табла на клиента; иначе — само на своята фирма
-  | 'kb:manage' // качване, преглед, публикуване, отписване (§4.1)
-  | 'audit:read';
+  | 'kb:manage' // качване, преглед, публикуване, отписване (§4.1); също бързите отговори (FR-20)
+  | 'audit:read'
+  // Работното пространство (§12.3). Операторът на платформата не е част от екипа на клиента —
+  // няма разговори, присъствие и известия в него.
+  | 'conversation:use' // участие в разговорите, в които е член; присъствие; известия
+  | 'conversation:create' // нов DIRECT/GROUP — само персоналът; порталът само бива поканван
+  | 'channel:create'; // нов CHANNEL (PUBLIC/PRIVATE) — водещите екипи и администраторът
 
-const TECH: readonly Capability[] = ['case:create', 'chat:ask', 'ticket:create', 'feedback:create'];
+const TECH: readonly Capability[] = [
+  'case:create',
+  'chat:ask',
+  'ticket:create',
+  'feedback:create',
+  'conversation:use',
+];
+const STAFF_CHAT: readonly Capability[] = ['conversation:create', 'channel:create'];
 
 const CAPABILITIES: Record<Role, readonly Capability[]> = {
   PORTAL_TECHNICIAN: TECH,
-  INTERNAL_TECHNICIAN: [...TECH, 'device:readAll'],
-  SUPPORT: [...TECH, 'case:readAll', 'case:assign', 'device:readAll'],
-  ENGINEERING: [...TECH, 'case:readAll', 'case:assign', 'device:readAll'],
-  KNOWLEDGE_OWNER: [...TECH, 'case:readAll', 'case:assign', 'device:readAll', 'kb:manage'],
-  TENANT_ADMIN: ['case:readAll', 'device:readAll', 'audit:read'],
+  INTERNAL_TECHNICIAN: [...TECH, 'device:readAll', 'conversation:create'],
+  SUPPORT: [...TECH, 'case:readAll', 'case:assign', 'device:readAll', ...STAFF_CHAT],
+  ENGINEERING: [...TECH, 'case:readAll', 'case:assign', 'device:readAll', ...STAFF_CHAT],
+  KNOWLEDGE_OWNER: [
+    ...TECH,
+    'case:readAll',
+    'case:assign',
+    'device:readAll',
+    'kb:manage',
+    ...STAFF_CHAT,
+  ],
+  TENANT_ADMIN: ['case:readAll', 'device:readAll', 'audit:read', 'conversation:use', ...STAFF_CHAT],
   PLATFORM_ADMIN: ['audit:read'],
 };
 

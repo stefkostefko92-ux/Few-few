@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { Router } from 'express';
 import { z } from 'zod';
-import type { AppDeps } from '../app.js';
+import type { WiredDeps } from '../app.js';
 import { appendAudit } from '../audit.js';
 import { redactPii } from '../domain/pii.js';
 import {
@@ -20,6 +20,7 @@ import {
   withUniqueRetry,
 } from '../services/cases.js';
 import { caseAudiences } from '../auth/rbac.js';
+import { notifyTicketChange } from '../services/collab/notify.js';
 
 /** Ескалация с тикет (FR-09, AC-08) и обратна връзка върху AI отговор (FR-10). */
 
@@ -31,7 +32,7 @@ const FeedbackInput = z.object({
   comment: z.string().trim().max(1000).optional(),
 });
 
-export function ticketsRouter(deps: AppDeps): Router {
+export function ticketsRouter(deps: WiredDeps): Router {
   const router = Router();
   router.use(requireUser, requireCsrf(deps.publicOrigin));
 
@@ -82,6 +83,7 @@ export function ticketsRouter(deps: AppDeps): Router {
         if (isUniqueOn(err, 'caseId')) return apiError(res, 409, 'ticket_exists');
         throw err;
       }
+      await notifyTicketChange(deps, c, ticket, p.user.id);
       res.status(201).json({
         ticket: { number: ticket.number, status: ticket.status, summary },
       });

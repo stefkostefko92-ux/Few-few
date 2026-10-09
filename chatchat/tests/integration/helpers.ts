@@ -12,6 +12,7 @@ import { hashPassword } from '../../src/auth/password.js';
 import { createSession, SESSION_COOKIE, type SessionDeps } from '../../src/auth/sessions.js';
 import type { ModelDiagnosis } from '../../src/domain/response.js';
 import { createLogger } from '../../src/logger.js';
+import { RealtimeHub } from '../../src/realtime/hub.js';
 import { PrismaKnowledgeStore } from '../../src/store/knowledge.js';
 import { knowledgeSnapshotId } from '../../src/store/snapshot.js';
 
@@ -174,12 +175,15 @@ export interface Harness {
   base: string;
   model: ScriptedModel;
   sessions: SessionDeps;
+  /** Хъбът за реално време (SSE) на приложението. */
+  hub: RealtimeHub;
   close(): Promise<void>;
 }
 
 export async function startApp(
-  opts: { diagnose?: 'real' | 'none' | Diagnoser } = {},
+  opts: { diagnose?: 'real' | 'none' | Diagnoser; hub?: RealtimeHub } = {},
 ): Promise<Harness> {
+  const hub = opts.hub ?? new RealtimeHub();
   const model = new ScriptedModel();
   const sessions: SessionDeps = { db, pepper: PEPPER, ttlHours: 12, secureCookies: false };
   const store = new PrismaKnowledgeStore(db);
@@ -209,6 +213,7 @@ export async function startApp(
     trustProxy: 0,
     sessions,
     diagnose: choice === 'real' ? real : choice === 'none' ? null : choice,
+    hub,
   });
   const server: Server = await new Promise((resolve) => {
     const s = app.listen(0, '127.0.0.1', () => resolve(s));
@@ -218,8 +223,10 @@ export async function startApp(
     base: `http://127.0.0.1:${port}`,
     model,
     sessions,
+    hub,
     close: () =>
       new Promise<void>((resolve, reject) => {
+        hub.closeAll();
         server.closeAllConnections();
         server.close((err) => (err ? reject(err) : resolve()));
       }),

@@ -4,6 +4,7 @@ import { VertexDiagnosisModel } from './ai/model.js';
 import { createApp, type Diagnoser } from './app.js';
 import { aiEnabled, loadConfig } from './config.js';
 import { createLogger } from './logger.js';
+import { RealtimeHub } from './realtime/hub.js';
 import { PrismaKnowledgeStore } from './store/knowledge.js';
 import { knowledgeSnapshotId } from './store/snapshot.js';
 
@@ -30,6 +31,12 @@ if (aiEnabled(config)) {
   logger.warn('VERTEX_PROJECT_ID липсва — AI е изключен, /chat/messages връща 503');
 }
 
+// Един процес = един хъб за SSE. Втори процес/машина иска pub/sub между хъбовете (CLAUDE.md).
+const hub = new RealtimeHub({
+  onError: (err) =>
+    logger.warn({ errName: err instanceof Error ? err.name : 'unknown' }, 'поток в реално време'),
+});
+
 const app = createApp({
   db,
   logger,
@@ -43,6 +50,7 @@ const app = createApp({
     secureCookies: config.NODE_ENV === 'production',
   },
   diagnose: diagnoser,
+  hub,
 });
 
 const server = app.listen(config.PORT, config.HOST, () => {
@@ -51,6 +59,8 @@ const server = app.listen(config.PORT, config.HOST, () => {
 
 function shutdown(signal: string): void {
   logger.info({ signal }, 'спиране');
+  // Отворените SSE потоци държат сървъра жив — затваряме ги, клиентите се връщат по REST.
+  hub.closeAll();
   server.close(() => {
     db.$disconnect()
       .catch((err: unknown) => logger.error({ err }, 'грешка при затваряне на базата'))

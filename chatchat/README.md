@@ -53,16 +53,22 @@ AI вижда само `PUBLISHED`. Публикуване и отписване
 
 ## API (v1)
 
-| Метод      | Път                                                                                                                        | Роля                         |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| POST       | `/api/v1/auth/login` · `/logout` · GET `/me`                                                                               | всички                       |
-| GET        | `/api/v1/products/search` · `/devices/:serial` · `/errors/:code` · `/documents/:id/pages/:page`                            | вписан (по аудитория/фирма)  |
-| POST       | `/api/v1/sessions` (нов случай) · GET `/cases` · `/cases/:id` · `/cases/:id/timeline`                                      | техник+                      |
-| PATCH/POST | `/api/v1/cases/:id/context` · `/cases/:id/outcome` · `/cases/:id/assign` (поддръжка)                                       | техник+                      |
-| POST       | `/api/v1/chat/messages` · `/tickets` · `/feedback`                                                                         | техник+                      |
-| POST       | `/api/v1/admin/products` · `/devices` · `/documents` (+ submit/reject/publish/deprecate) · `/errors` (+ publish/deprecate) | KNOWLEDGE_OWNER              |
-| GET        | `/api/v1/audit`                                                                                                            | TENANT_ADMIN, PLATFORM_ADMIN |
-| GET        | `/healthz` (жив) · `/readyz` (базата + дали AI е включен)                                                                  | —                            |
+| Метод      | Път                                                                                                                         | Роля                         |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| POST       | `/api/v1/auth/login` · `/logout` · GET `/me`                                                                                | всички                       |
+| GET        | `/api/v1/products/search` · `/devices/:serial` · `/errors/:code` · `/documents/:id/pages/:page`                             | вписан (по аудитория/фирма)  |
+| POST       | `/api/v1/sessions` (нов случай) · GET `/cases` · `/cases/:id` · `/cases/:id/timeline`                                       | техник+                      |
+| PATCH/POST | `/api/v1/cases/:id/context` · `/cases/:id/outcome` · `/cases/:id/assign` (поддръжка)                                        | техник+                      |
+| POST       | `/api/v1/chat/messages` · `/tickets` · `/feedback`                                                                          | техник+                      |
+| POST       | `/api/v1/admin/products` · `/devices` · `/documents` (+ submit/reject/publish/deprecate) · `/errors` (+ publish/deprecate)  | KNOWLEDGE_OWNER              |
+| GET        | `/api/v1/audit`                                                                                                             | TENANT_ADMIN, PLATFORM_ADMIN |
+| GET/POST   | `/api/v1/conversations` · GET `/conversations/:id` · POST/DELETE `…/members` · POST `…/star` · PATCH `…/preferences`        | вписан (по членство)         |
+| GET/POST   | `/api/v1/conversations/:id/messages` · POST `…/read` · PATCH/DELETE `/messages/:id` · POST/DELETE `/messages/:id/reactions` | вписан (по членство)         |
+| POST       | `/api/v1/cases/:id/conversation` (вътрешна дискусия по случай)                                                              | персонал с `case:readAll`    |
+| GET/POST   | `/api/v1/presence` · `/presence/heartbeat` · PATCH `/presence/me` · `/notifications` · `/notifications/read`                | вписан                       |
+| GET/POST   | `/api/v1/quick-responses` (PUBLISHED по роля) · `/all`, POST, PATCH, `…/publish`, `…/deprecate`                             | KNOWLEDGE_OWNER управлява    |
+| GET        | `/api/v1/events` — SSE поток (бисквитката на сесията)                                                                       | вписан                       |
+| GET        | `/healthz` (жив) · `/readyz` (базата + дали AI е включен)                                                                   | —                            |
 
 Всяка не-GET заявка иска хедър `x-csrf-token` (от `login`/`me`).
 
