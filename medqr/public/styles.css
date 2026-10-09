@@ -94,6 +94,12 @@
   box-sizing: border-box;
 }
 
+/* Атрибутът hidden винаги печели — иначе display от .btn/.security-row го заглушава
+   и скритите елементи (NFC запис, биометрия) се виждат там, където не работят. */
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   font-family:
@@ -322,9 +328,14 @@ h1 {
 
 .features {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
   margin-top: 1.5rem;
+}
+@media (max-width: 600px) {
+  .features {
+    grid-template-columns: 1fr;
+  }
 }
 .feature {
   background: var(--card);
@@ -846,9 +857,13 @@ table.log td.small {
 }
 .foot-links {
   display: flex;
-  gap: 1.2rem;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.2rem;
   justify-content: center;
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.8rem;
+}
+.foot-links a {
+  white-space: nowrap;
 }
 .foot-disclaimer {
   max-width: 640px;
@@ -857,6 +872,7 @@ table.log td.small {
 .foot-credit {
   font-weight: 600;
   color: var(--ink);
+  overflow-wrap: anywhere;
 }
 .foot-credit a {
   color: var(--brand-dark);
@@ -1642,4 +1658,73 @@ body.comm-open {
 .lang-switch a.is-active {
   color: var(--brand);
   background: rgba(26, 63, 102, 0.1);
+}
+
+/* Групирани чипове (алергии по категория) */
+.chip-group {
+  margin-top: 0.9rem;
+}
+.chip-group-title {
+  margin: 0 0 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Таблиците с журнали на мобилен: пренасяне вместо рязане/скрол настрани */
+@media (max-width: 640px) {
+  table.log {
+    min-width: 0;
+    font-size: 0.85rem;
+  }
+  table.log th,
+  table.log td {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    padding: 0.4rem 0.35rem;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Таблицата с бисквитки: при тесен екран се скролира вътре в себе си, а не разширява страницата */
+  .cookie-table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  .cookie-table th,
+  .cookie-table td {
+    padding: 0.45rem 0.4rem;
+    font-size: 0.88rem;
+  }
+}
+
+/* <picture> не добавя собствена кутия (WebP + JPG резерва) */
+picture {
+  display: contents;
+}
+
+/* Чипове: общите правила за форми (label/input на цяла ширина) не бива да ги разгъват —
+   отметката стои отляво на текста, а не над него. */
+.stack .chip,
+.form-wide .chip {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 0;
+  font-weight: 400;
+}
+.stack .chip input,
+.form-wide .chip input {
+  display: inline-block;
+  flex: none;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0;
+  padding: 0;
+}
+.stack .chip:has(input:checked),
+.form-wide .chip:has(input:checked) {
+  font-weight: 600;
 }

@@ -62,7 +62,7 @@ export function userFromSession(token) {
     .prepare(
       `SELECT u.id, u.email, s.long_lived, s.created_at FROM sessions s
        JOIN users u ON u.id = s.user_id
-       WHERE s.token = ? AND s.expires_at > datetime('now')`
+       WHERE s.token = ? AND s.expires_at > strftime('%Y-%m-%dT%H:%M:%fZ','now')`
     )
     .get(token);
   if (!row) return null;
@@ -93,7 +93,7 @@ export function listSessions(userId) {
   return db
     .prepare(
       `SELECT token, ip, user_agent, created_at, last_seen
-       FROM sessions WHERE user_id = ? AND expires_at > datetime('now')
+       FROM sessions WHERE user_id = ? AND expires_at > strftime('%Y-%m-%dT%H:%M:%fZ','now')
        ORDER BY last_seen DESC`
     )
     .all(userId);
@@ -157,7 +157,9 @@ export function createPendingLogin(userId) {
 export function userIdFromPending(token) {
   if (!token) return null;
   const row = db
-    .prepare("SELECT user_id FROM pending_logins WHERE token = ? AND expires_at > datetime('now')")
+    .prepare(
+      "SELECT user_id FROM pending_logins WHERE token = ? AND expires_at > strftime('%Y-%m-%dT%H:%M:%fZ','now')"
+    )
     .get(token);
   return row ? row.user_id : null;
 }
@@ -188,7 +190,7 @@ export function peekToken(raw, type) {
   if (!raw) return null;
   const row = db
     .prepare(
-      "SELECT user_id FROM tokens WHERE token_hash = ? AND type = ? AND expires_at > datetime('now')"
+      "SELECT user_id FROM tokens WHERE token_hash = ? AND type = ? AND expires_at > strftime('%Y-%m-%dT%H:%M:%fZ','now')"
     )
     .get(hashToken(raw), type);
   return row ? row.user_id : null;
@@ -200,7 +202,7 @@ export function consumeToken(raw, type) {
   const hash = hashToken(raw);
   const row = db
     .prepare(
-      "SELECT user_id FROM tokens WHERE token_hash = ? AND type = ? AND expires_at > datetime('now')"
+      "SELECT user_id FROM tokens WHERE token_hash = ? AND type = ? AND expires_at > strftime('%Y-%m-%dT%H:%M:%fZ','now')"
     )
     .get(hash, type);
   db.prepare('DELETE FROM tokens WHERE token_hash = ?').run(hash);

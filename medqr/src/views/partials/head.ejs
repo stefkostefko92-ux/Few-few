@@ -46,7 +46,7 @@
   <meta name="twitter:image:alt" content="<%= t('og.image_alt') %>">
 
   <meta name="theme-color" content="#eef1f5">
-  <link rel="icon" href="/icon-192.png" type="image/png">
+  <link rel="icon" href="/icon-48.png" type="image/png" sizes="48x48">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/manifest.webmanifest">
 
@@ -119,10 +119,12 @@
   <%- include('icons') %>
   <a class="skip-link" href="#main"><%= t('common.skip') %></a>
   <header class="site-header">
-    <a class="brand" href="/" aria-label="MedQR — начало">
-      <img class="brand-logo" src="/logo.jpg"
-           srcset="/logo-sm.jpg 320w, /logo.jpg 640w" sizes="60px"
-           width="520" height="559" alt="MedQR — Спешен медицински профил">
+    <a class="brand" href="/" aria-label="<%= lang === 'en' ? 'MedQR — home' : 'MedQR — начало' %>">
+      <picture>
+        <source type="image/webp" srcset="/logo-112.webp 112w, /logo-168.webp 168w" sizes="56px">
+        <img class="brand-logo" src="/logo-sm.jpg" width="520" height="559"
+             alt="<%= lang === 'en' ? 'MedQR — Emergency Medical Profile' : 'MedQR — Спешен медицински профил' %>">
+      </picture>
     </a>
     <nav>
       <span class="lang-switch" aria-label="<%= t('lang.switch') %>">

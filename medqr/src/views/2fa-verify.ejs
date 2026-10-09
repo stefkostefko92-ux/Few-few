@@ -7,7 +7,7 @@
   <form method="post" action="/2fa" class="stack">
     <%- include('partials/csrf') %>
     <label><%= t('tfa.code') %>
-      <input type="text" name="code" inputmode="numeric" pattern="\d{6}" autocomplete="one-time-code" required autofocus>
+      <input type="text" name="code" maxlength="12" autocomplete="one-time-code" autocapitalize="none" spellcheck="false" required autofocus>
     </label>
     <button type="submit" class="btn"><%= t('tfa.confirm') %></button>
   </form>

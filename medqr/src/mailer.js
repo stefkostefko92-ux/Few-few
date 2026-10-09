@@ -20,6 +20,11 @@ if (process.env.SMTP_HOST) {
   transport = nodemailer.createTransport({ jsonTransport: true });
 }
 
+// Дали писмата реално се доставят. В продукция — само с SMTP_HOST; извън нея JSON
+// транспортът се брои за „настроен“ (dev/тест). Така интерфейсът не твърди, че
+// близкият е уведомен, когато писма изобщо не тръгват.
+export const mailConfigured = !prod || !!process.env.SMTP_HOST;
+
 // Кутия за разработка/тест: позволява да се прочете последният линк без реален имейл.
 // НЕ се пълни в продукция (там разчитаме на реалния SMTP).
 export const outbox = [];
