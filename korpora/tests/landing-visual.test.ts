@@ -46,6 +46,23 @@ test('the labels on the sheet drawing are small and sit above the router path', 
     'labels are drawn after the path',
   );
   assert.ok(svg.lastIndexOf('class="pid"') < svg.indexOf('class="hole'), 'holes stay on top');
+  // and no number lies under a hole: drawn on top, the hole would cut through it
+  const holes = [...svg.matchAll(/<circle cx="([\d.]+)" cy="([\d.]+)" r="([\d.]+)"/g)].map((m) =>
+    m.slice(1, 4).map(Number),
+  );
+  assert.ok(holes.length > 0);
+  for (const m of svg.matchAll(
+    /<text x="([\d.]+)" y="([\d.]+)" font-size="([\d.]+)" class="pid">(\w+)</g,
+  )) {
+    const [x, y, size] = m.slice(1, 4).map(Number) as [number, number, number];
+    // JetBrains Mono: 0.6 em a letter, capitals 0.73 em tall; the halo is 4.5 wide
+    const box = [x - 4.5, y - 0.73 * size - 4.5, x + m[4]!.length * 0.6 * size + 4.5, y + 4.5];
+    for (const [cx, cy, r] of holes as [number, number, number][]) {
+      const dx = Math.max(box[0]! - cx, 0, cx - box[2]!);
+      const dy = Math.max(box[1]! - cy, 0, cy - box[3]!);
+      assert.ok(dx * dx + dy * dy >= r * r, `${m[4]} covers the hole at ${cx} ${cy}`);
+    }
+  }
 });
 
 test('the stills of the story are drawn without the top bar (it is a layer of its own above the stage)', () => {
