@@ -3,12 +3,14 @@
 // their length — changed by choosing another of the six (two directions, three profiles), the shortest first —, the
 // bearing in the wall and where their axes stand from the shaft's walls; in section B-B, seen along them or cut across
 // them, on the plates and mortar that keep them off the slab between the bearings, with their height — changed by
-// choosing another profile the same way (the direction kept) — and the bearing. Model entities.
+// choosing another profile the same way (the direction kept) — and the bearing; the note of the bearings and of the
+// support's fixing to the beams (hebNote) placed with the section's other notes (room-section-extra.ts). Model entities.
 import { chain, line, path, pickEdit, rect, type Edit, type Entity, type Pt } from '../drawing';
 import { hebLayouts, type HebLayout, type HebShaft } from './heb';
 import type { MachineSpec, RoomGeo } from './machine-room';
 import { KV_VERT } from './norme-vert';
 import { PROFILES } from './profiles';
+import type { Note } from './room-section-extra';
 import { HEB_PAD, HEB_PROFILES } from './support';
 
 const WAY = { x: 'larghezza', y: 'profondità' } as const;
@@ -57,45 +59,61 @@ function cutH(u: number, w: number, lay: HebLayout, z0: number): Entity {
 /** A bearing under an HEB beam from u0 to u1: the mortar bed on the slab, the steel plate on it. */
 const bearing = (u0: number, u1: number): Entity[] => [rect(u0, 0, u1, KV_VERT.hebMortar, 'thin'), rect(u0, KV_VERT.hebMortar, u1, HEB_PAD, 'outline', 'steel')];
 
-/** The lettering of the bearings: plate, mortar and the gap left under the beam. */
+/** The lettering of the bearings: plate, mortar and the gap left under the beam; the support's fixing to the beams. */
 const FIX_TEXT = 'Basamento fissato alle ali delle putrelle con piastre e bulloni (o morsetti): dettaglio da confermare';
 const PAD_TEXT = `HEB su piastre ${KV_VERT.hebBearing}×${KV_VERT.hebPlateW}×${KV_VERT.hebPlateT} e malta antiritiro ${KV_VERT.hebMortar} sopra i muri del vano · distacco ${HEB_PAD} dalla soletta fra gli appoggi`;
+
+/** How section B-B along the drop line (u) sees the beams: along them (the section runs with them: their ends u0, u1 and
+ *  the inner faces of the walls i0, i1 they bear on) or cut across where the drop line crosses each (at u, `w` the
+ *  flanges' width along the cut, `onWall` over a wall on its plate). */
+type HebSeen = { along: true; u: [number, number]; i: [number, number] } | { along: false; cuts: { u: number; w: number; onWall: boolean }[] };
+function hebSeen(lay: HebLayout, G: RoomGeo): HebSeen {
+  const along = lay.dir === 'x' ? 0 : 1, across = 1 - along, d: Pt = [G.ux, G.uy];
+  const uOf = (p: Pt): number => (p[0] - G.carDrop[0]) * G.ux + (p[1] - G.carDrop[1]) * G.uy;
+  const pt = (a: number, c: number): Pt => (along ? [c, a] : [a, c]);
+  if (Math.abs(d[along]) >= Math.abs(d[across])) {
+    const [u0, u1] = [uOf(pt(lay.ends[0], lay.at[0])), uOf(pt(lay.ends[1], lay.at[0]))].sort((a, b) => a - b);
+    const [i0, i1] = [uOf(pt(lay.span[0], lay.at[0])), uOf(pt(lay.span[1], lay.at[0]))].sort((a, b) => a - b);
+    return { along: true, u: [u0, u1], i: [i0, i1] };
+  }
+  return { along: false, cuts: lay.at.map((c) => {
+    const u = (c - G.carDrop[across]) / d[across], a = G.carDrop[along] + u * d[along];
+    return { u, w: PROFILES[lay.profile].b / Math.abs(d[across]), onWall: a < lay.span[0] || a > lay.span[1] };
+  }) };
+}
 
 /** Section B-B along the drop line (u) over the room's floor: the beams seen along them (the section runs with them) or
  *  cut where the drop line crosses them, on their bearing plates over the walls and HEB_PAD clear of the slab between
  *  them; their height at u = `chainAt`, changed by choosing another profile; seen along them, the bearing in the wall. */
 export function hebSection(lay: HebLayout, G: RoomGeo, chainAt: number): Entity[] {
-  const P = PROFILES[lay.profile], out: Entity[] = [], along = lay.dir === 'x' ? 0 : 1, across = 1 - along, d: Pt = [G.ux, G.uy], z0 = HEB_PAD;
-  const uOf = (p: Pt): number => (p[0] - G.carDrop[0]) * G.ux + (p[1] - G.carDrop[1]) * G.uy;
-  const pt = (a: number, c: number): Pt => (along ? [c, a] : [a, c]);
-  const us: number[] = [];
-  let note: Pt | null = null;
-  if (Math.abs(d[along]) >= Math.abs(d[across])) {
+  const P = PROFILES[lay.profile], out: Entity[] = [], z0 = HEB_PAD, seen = hebSeen(lay, G), us: number[] = [];
+  if (seen.along) {
     // seen beside the cut: drawn, not hatched, its flanges; the plates under its ends over the walls
-    const [u0, u1] = [uOf(pt(lay.ends[0], lay.at[0])), uOf(pt(lay.ends[1], lay.at[0]))].sort((a, b) => a - b);
-    const [i0, i1] = [uOf(pt(lay.span[0], lay.at[0])), uOf(pt(lay.span[1], lay.at[0]))].sort((a, b) => a - b);
+    const [u0, u1] = seen.u, [i0, i1] = seen.i;
     out.push(rect(u0, z0, u1, z0 + P.h, 'outline'), ...bearing(u0, i0), ...bearing(i1, u1));
     for (const z of [z0 + P.tf, z0 + P.h - P.tf]) out.push(line([u0, z], [u1, z], 'thin'));
     // the bearing at the end farther from the chain of its height, over the beam
     const left = Math.abs(u0 - chainAt) > Math.abs(u1 - chainAt);
     out.push(chain({ dir: 'x', pts: left ? [u0, i0] : [i1, u1], at: z0 + P.h + 90, from: [z0 + P.h, z0 + P.h], text: ['{v} Appoggio'] }));
-    note = left ? [(u0 + i0) / 2, HEB_PAD / 2] : [(i1 + u1) / 2, HEB_PAD / 2];
     us.push(u0, u1);
   } else {
-    for (const c of lay.at) {
+    for (const { u, w, onWall } of seen.cuts) {
       // where the drop line crosses the beam: over the shaft clear of the slab, over a wall on its plate
-      const u = (c - G.carDrop[across]) / d[across], a = (G.carDrop[along] + u * d[along]), w = P.b / Math.abs(d[across]);
       out.push(cutH(u, w, lay, z0));
-      if (a < lay.span[0] || a > lay.span[1]) out.push(...bearing(u - w / 2 - 20, u + w / 2 + 20));
-      note ??= [u + w / 2, HEB_PAD / 2];
+      if (onWall) out.push(...bearing(u - w / 2 - 20, u + w / 2 + 20));
       us.push(u);
     }
   }
   const near = us.reduce((p, u) => (Math.abs(u - chainAt) < Math.abs(p - chainAt) ? u : p), us[0] ?? chainAt);
   out.push(chain({ dir: 'y', pts: [z0, z0 + P.h], at: chainAt, from: [near, near], text: [`${lay.profile} {v}`], edit: [profilePick(lay)] }));
-  if (note) {
-    out.push({ e: 'text', at: [note[0], -G.room.slab - 140], text: PAD_TEXT, size: 1.6, align: 'c', halo: true }, line([note[0], -G.room.slab - 90], note, 'dim'));
-    out.push({ e: 'text', at: [note[0], -G.room.slab - 210], text: FIX_TEXT, size: 1.6, align: 'c', halo: true });
-  }
   return out;
+}
+
+/** The note of the beams in section B-B: their plates and mortar over the shaft's walls with the gap left under them
+ *  (registry locale.putrelle.vano), and the support's fixing to their flanges; its leader to the nearest bearing seen
+ *  along them, or to the gap under a beam cut across. */
+export function hebNote(lay: HebLayout, G: RoomGeo): Note {
+  const seen = hebSeen(lay, G), z = HEB_PAD / 2;
+  const to: Pt[] = seen.along ? [[(seen.u[0] + seen.i[0]) / 2, z], [(seen.i[1] + seen.u[1]) / 2, z]] : seen.cuts.map(({ u, w }): Pt => [u + w / 2, z]);
+  return { text: `${PAD_TEXT}\n${FIX_TEXT}`, to: to[0] ?? [0, z], also: to.slice(1) };
 }

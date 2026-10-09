@@ -3,7 +3,7 @@
 // rope drops is room-section-view.ts. The machine is the 3D's (machine-outline.ts) scaled to the sheave, or a maker's
 // as it is (machine-shape-view.ts); the sheave's axis and the pulley stand where the calculation puts them
 // (machine-room.ts). Model entities for the drawing kernel; dimensions included.
-import { chain, edit as E, line, path, rect, type Box, type Entity, type Pt } from '../drawing';
+import { chain, edit as E, line, path, rect, tagRadius, type Box, type Entity, type Pt } from '../drawing';
 import { rinvioAcross, rinvioRun } from './rinvio';
 import { rinvioName } from './rinvio-view';
 import { hebDrawn } from './heb';
@@ -13,7 +13,6 @@ import { machinePlan } from './machine-outline';
 import { shapePlan } from './machine-shape-view';
 import { dropSpan as span, machineU, machineV, ropeWidths, type MachineSpec, type RoomGeo } from './machine-room';
 import { WALL, doorSwing, holesOf, onDrop, quad, type RoomDrawOpts } from './room-draw';
-import { hitchTags } from './room-loads';
 import { bbox, fittingsPlan } from './room-fittings-view';
 import { outlineBox, switchBox } from './room-floor';
 import { machineBox, machineParts } from './support-check';
@@ -26,12 +25,11 @@ import { hookOf } from './room-hook';
 import { reactionPoints } from './room-reactions';
 import { panelSeen } from './room-section-extra';
 import { dropChains, railAxis, reactionMarks, setoutPlan } from './room-setout';
+import { AT, dimBands, meets, tagBox, takenBy } from './room-label';
 import type { Layout } from './types';
 
 export { roomSectionOn };
 
-/** A reference's circle at 1:25, the plan's scale [mm] (view.ts tag: the smallest lettering's). */
-const TAG_R = 2.4 * 25;
 /** A circle round p of radius r meets the box. */
 const nearBox = (p: Pt, b: Box, r: number): boolean => Math.hypot(Math.max(b.x0 - p[0], 0, p[0] - b.x1), Math.max(b.y0 - p[1], 0, p[1] - b.y1)) < r;
 /** The segment p–q crosses the box (Liang–Barsky). */
@@ -64,6 +62,9 @@ export const roomSectionEntities = (L: Layout, M: MachineSpec, G: RoomGeo, o: Ro
 
 export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDrawOpts = {}): { entities: Entity[]; bounds: Box } {
   const R = G.room, out: Entity[] = [], w = ropeWidths(M.n, M.d), holes = holesOf(S, M, G), k = 1000 * G.s;
+  // the scale the plan is drawn at (model millimetres to one of paper): its names and references measured there, P1's
+  // circle (view.ts tagRadius)
+  const ks = o.scale ?? AT, TAG_R = tagRadius('P1') * ks;
   // walls with the door
   const strip = (x0: number, y0: number, x1: number, y1: number): void => { if (x1 - x0 > 1 && y1 - y0 > 1) out.push(rect(x0, y0, x1, y1, 'wall', 'concrete')); };
   const door = R.doorWall, [d0, d1] = [R.doorAt, R.doorAt + R.doorW];
@@ -88,13 +89,12 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDrawO
     const a = (h.wheel ? Math.max(w.ropes, w.pulley) : w.ropes) + 30;
     out.push(path(quad(G, h.u0, -a, h.u1, a), true, 'thin'));
   }
-  // a 2:1 roping's dead ends, each opening along the plane its pulley turns in
+  // a 2:1 roping's dead ends, each opening along the plane its pulley turns in (the loads of their hitches, P2 and P3,
+  // with the set-out: room-setout.ts)
   for (const { at, dir } of G.deadEnds) {
     const a = 90, b = w.ropes + 50, n: Pt = [-dir[1], dir[0]];
     out.push(path([[-a, -b], [a, -b], [a, b], [-a, b]].map(([p, q]): Pt => [at[0] + p * dir[0] + q * n[0], at[1] + p * dir[1] + q * n[1]]), true, 'hidden'));
   }
-  // the loads of their hitches (P2, P3)
-  out.push(...hitchTags(G));
   // the diverting pulley under the machine: on a stand over the opening when its axle is above the slab's underside,
   // else hung under the slab; the machine over it, its sheave's rope plane on the drop line, the motor toward the
   // counterweight or, turned round, toward the car (G.dir); the pulley's outline again where the machine hides it
@@ -120,11 +120,11 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDrawO
     : machinePlan((x, z) => onDrop(G, machineU(G, x * k), machineV(G, z * k)), F.beams.map((z) => z / k))));
   if (pulley) out.push(path(pulley, true, 'hidden'));
   // control panel with its free area, main switch by the door (room-fittings-view.ts)
-  const parts = machineParts(G, M).map(outlineBox).map(([x0, y0, x1, y1]) => ({ x0, y0, x1, y1 })), { entities: fittings, free, sw, swAt } = fittingsPlan(R, parts);
+  const parts = machineParts(G, M).map(outlineBox).map(([x0, y0, x1, y1]) => ({ x0, y0, x1, y1 })), { entities: fittings, free, sw, swAt } = fittingsPlan(R, parts, ks);
   out.push(...fittings);
   // the free areas beside the machine and the governor, the ways from the door, the light, switches, sockets, grille
   // and trunking (room-ways.ts, room-electric.ts): what stands on the floor as the room's checks take it
-  const others = [...(S.govFoot ? [S.govFoot] : []), switchBox(R)], fa = freeAreas(G, M, others, S.govFoot ?? null);
+  const others = [...(S.govFoot ? [S.govFoot] : []), switchBox(R)], fa = freeAreas(G, M, others, S.govFoot ?? null, takenBy([...out, ...S.governor.entities], ks), ks);
   out.push(...fa.entities, ...wayBands(G, [...machineParts(G, M), ...others], fa.machine),
     ...electricPlan(R, fa.machine, machineBox(G, M), [R.shaftX, R.shaftY, R.shaftX + S.W, R.shaftY + S.D]));
   // the sheave's size on the side away from the gearbox, along the drop line (an upright one would cross the frame's
@@ -175,7 +175,10 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDrawO
   const p1To = onDrop(G, machineU(G, F.shape ? 0 : 0.1 * k), machineV(G, 0)), marks = S.governor.marks ?? [], askew = Math.max(Math.abs(G.ux), Math.abs(G.uy)) <= 0.999;
   const rows = askew ? [[0, G.calata, vDrop], ...(G.frame.on === 'frame' ? [[G.frame0, G.frame1, vFrame]] : [])].map(([u0, u1, v]) => [onDrop(G, u0, v), onDrop(G, u1, v)] as const) : [];
   const offGov = (p: Pt): boolean => marks.every((m) => !nearBox(p, m, TAG_R) && !crossesBox(p, p1To, m)) && rows.every(([q0, q1]) => segGap(p, q0, q1) > TAG_R + 40);
-  const usual = (p: Pt): boolean => inRoom(p) && !inBox(p, free) && offSwitch(p) && offPanelRow(p);
+  // off the lettering and the dimension lines drawn so far (the free areas' sizes, the machine's and the support's names)
+  // and the governor's (its name, P4 and its dimensions, drawn after it)
+  const lettered = [...takenBy([...out, ...S.governor.entities], ks), ...dimBands([...out, ...S.governor.entities], ks)], offText = (p: Pt): boolean => lettered.every((q) => !meets(tagBox(p, 'P1', ks), q));
+  const usual = (p: Pt): boolean => inRoom(p) && !inBox(p, free) && offSwitch(p) && offPanelRow(p) && offText(p);
   // none of those clear: the place nearest the gearbox on a grid over the room, well off the machine and the bedplate,
   // the governor's footprint with its dimensions and the rows of the chains beside the machine (their lettering)
   let tagAt = spots.find((p) => usual(p) && offGov(p));
@@ -257,9 +260,9 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDrawO
   const keep = [...gearBoxes(parts, bed ? bbox(quad(G, bed.u0, bed.v0, bed.u1, bed.v1)) : null), bbox(free), bbox(sw), ...(S.governor.box ? [S.governor.box] : [])];
   const band = (u0: number, u1: number, v: number): Box => bbox(quad(G, u0 - 80, v - 150, u1 + 80, v + 150));
   const rowBands = [band(G.frame0, G.frame1, vFrame), band(0, G.calata, vDrop), ...(bed ? [band(bed.u0, bed.u1, (g > 0 ? bed.v1 : bed.v0) + 220 * g)] : [])];
-  out.push(...setoutPlan(S, M, G, hookOf(G, M, S.pieces ?? []), out, keep, rowBands));
-  out.push(...reactionMarks(reactionPoints(G, M, heb), out, keep, within));
-  if (S.railY !== undefined && S.railY !== null) out.push(...railAxis(S, G, S.railY, out, keep));
+  out.push(...setoutPlan(S, M, G, hookOf(G, M, S.pieces ?? []), out, keep, rowBands, ks));
+  out.push(...reactionMarks(reactionPoints(G, M, heb), out, keep, within, ks));
+  if (S.railY !== undefined && S.railY !== null) out.push(...railAxis(S, G, S.railY, out, keep, ks));
   const reach = (wl: typeof door): number => (wl === door ? out0 : WALL);
   return { entities: out, bounds: { x0: -reach('left'), y0: -reach('front'), x1: R.W + reach('right'), y1: R.D + reach('rear') } };
 }

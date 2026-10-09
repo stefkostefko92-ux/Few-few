@@ -109,9 +109,16 @@ function lettering(e: Extract<Entity, { e: 'text' }>, place: Place): Shape[] {
   return [{ t: 'line', a: from, b: to, s: STYLES.dim }, { t: 'circle', c: to, r: 0.35, fill: { k: 'solid', ink: 'ink' } }, s];
 }
 
+/** The smallest circle of a reference on paper [mm]. */
+export const TAG_MIN_R = 2.4;
+
+/** A reference's circle on paper [mm]: round its letters (as large as the smallest lettering), never under TAG_MIN_R —
+ *  what the modules that place references keep clear takes it from here. */
+export const tagRadius = (text: string): number => Math.max(TAG_MIN_R, textWidth(text, { size: TEXT.min, cond: true }) / 2 + 0.7);
+
 /** A reference in a circle with its leaders, sized on paper: its letters as large as the smallest lettering. */
 function tag([x, y]: Pt, text: string, to: readonly Pt[]): Shape[] {
-  const size = TEXT.min, r = Math.max(2.4, textWidth(text, { size, cond: true }) / 2 + 0.7), out: Shape[] = [];
+  const size = TEXT.min, r = tagRadius(text), out: Shape[] = [];
   for (const t of to) {
     const d = Math.hypot(t[0] - x, t[1] - y);
     if (d > r) out.push({ t: 'line', a: [x + ((t[0] - x) * r) / d, y + ((t[1] - y) * r) / d], b: t, s: STYLES.dim });

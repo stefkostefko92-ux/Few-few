@@ -17,7 +17,9 @@ import { pulleySection } from './room-pulley';
 import { columns } from './section-columns';
 import { KV_VERT } from './norme-vert';
 import { hookOf } from './room-hook';
-import { aboveSection, hitchesSection, hookSection, kerbDim, kerbsSection, mountsSection, seenFittings } from './room-section-extra';
+import { aboveSection, hitchesSection, hookSection, kerbDim, kerbsSection, notesSection, seenFittings } from './room-section-extra';
+import { hebNote } from './heb-view';
+import { mountsLines } from './room-mounts';
 
 /** Section B-B along the rope drops: X is u along the drop line, Z the height above the room floor. `o`: the door's and
  *  the panel's heights in one row, the dimensions placed for another scale than 1:25 (views.ts, to keep the section at
@@ -145,13 +147,17 @@ export function roomSectionOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDr
   // fixings named (round 36)
   const hook = hookOf(G, M, S.pieces ?? []);
   out.push(...aboveSection(G, M, hook.u, sk));
-  out.push(...hookSection(G, hook, out, sk));
+  out.push(...hookSection(G, hook, out, r0, r1, sk));
   const under: Box = { x0: s0 - S.wall, y0: -R.slab - below, x1: s1 + S.wall, y1: -R.slab };
   // (to a mount: under the first leg of the bedplate with the pulley — where the drawing stands it, on the HEB beams where
   // its sides cross them (rinvio.ts bedplateLegs) —, else under the machine's bedplate)
   const legs = rf?.on === 'frame' && M.Dp > 0 ? bedplateLegs(G, M, heb) : [], firstLeg = legs.length ? Math.min(...legs.map(([u]) => u)) : null;
   const mountAt: Pt = rf?.on === 'frame' && M.Dp > 0 ? [firstLeg ?? rinvioRun(M, G)[0] + KV_VERT.rinvioLeg / 2, (rf.base ?? 0) + KV_VERT.rinvioPads / 2] : [G.frame0 + 60 * sk, base - 10];
-  out.push(...mountsSection(G, M, out, [machineArea, under], mountAt, { r0, r1, low: heb ? 330 * sk : 140 * sk }, sk));
+  // the notes in words: the mounts and fixings, then the HEB beams' bearings — off the machine, the shaft under the slab
+  // and the hatched walls (round 37: placed as drawn, at TEXT.min)
+  const walls = out.flatMap((e): Box[] => (e.e === 'path' && e.fill === 'concrete' ? [{ x0: Math.min(...e.pts.map((p) => p[0])), y0: Math.min(...e.pts.map((p) => p[1])), x1: Math.max(...e.pts.map((p) => p[0])), y1: Math.max(...e.pts.map((p) => p[1])) }] : []));
+  const notes = [{ text: mountsLines(G, M).join(' '), to: mountAt }, ...(heb ? [hebNote(heb, G)] : [])];
+  out.push(...notesSection(G, notes, out, [machineArea, under, ...walls], { r0, r1, low: 140 * sk, foot }, sk));
   return { entities: out, bounds: { x0: r0 - WALL, y0: foot, x1: r1 + WALL, y1: Math.max(top, ridge) + WALL } };
 }
 

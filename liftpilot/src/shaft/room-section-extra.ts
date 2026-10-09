@@ -2,17 +2,17 @@
 // door and control panel where the view sees them (beyond the cut; on a wall the cut runs into, its opening dashed in
 // the wall), so their heights stand on their side; the upstands round the slab's openings (registry locale.fori); a 2:1
 // roping's hitches with P2 and P3 (locale.attacchi); the lifting hook with the free height under it (locale.gancio); the
-// free height over the machine's rotating parts (m_above); the mounts and fixings of the support. Model entities: u
-// along the drop line, z over the room's floor [mm]; pure.
-import { chain, line, rect, textWidth, wrap, type Box, type Entity, type Pt } from '../drawing';
+// free height over the machine's rotating parts (m_above); the notes in words (the mounts and fixings of the support, the
+// HEB beams' bearings), each where it keeps off what is drawn. Lettering measured as the kernel draws it (TEXT.min at
+// least: room-label.ts). Model entities: u along the drop line, z over the room's floor [mm]; pure.
+import { TEXT, chain, line, rect, textWidth, wrap, type Box, type Entity, type Pt } from '../drawing';
 import type { MachineSpec, RoomGeo } from './machine-room';
 import { KV_VERT } from './norme-vert';
 import { rotatingTopAt } from './room-above';
 import { WALL, holesOf } from './room-draw';
 import { panelBox, wallBox } from './room-floor';
 import type { Hook } from './room-hook';
-import { firstClear, takenBy } from './room-label';
-import { mountsLines } from './room-mounts';
+import { AT, firstClear, leastOn, letteringBox, takenBy } from './room-label';
 import type { RoomSite } from './room-site';
 
 type Side = 'left' | 'right';
@@ -88,20 +88,22 @@ export function hitchesSection(G: RoomGeo, foot: number, sk: number): Entity[] {
   return out;
 }
 
-/** The lifting hook under the ceiling with its name and rated load, the name on the side of the shank clear of the
- *  lettering and the dimension lines of `out` (else right of it). */
-export function hookSection(G: RoomGeo, hook: Hook, out: readonly Entity[], sk: number): Entity[] {
-  const H = G.room.H, u = hook.u, text = `Gancio, portata ${hook.load} kg · H. sotto il gancio ${Math.round(hook.eye)}`, size = 1.6, k = 25 * sk, w = textWidth(text, { size, cond: true }) * k, z = H - 150 * sk;
-  const taken = [...lettered(out, sk), ...dimLines(out, sk)];
-  const sides = ([1, -1] as const).map((away) => {
-    const x0 = away > 0 ? u + 90 * sk : u - 90 * sk - w;
-    return { away, box: { x0, y0: z - 0.3 * size * k, x1: x0 + w, y1: z + 0.85 * size * k } };
-  });
-  const free = { x0: -Infinity, y0: -Infinity, x1: Infinity, y1: Infinity }, pick = firstClear(sides, taken, free, 10 * sk) ?? sides[0];
+/** The lifting hook under the ceiling with its name and rated load, the name beside the shank — on the side clear of
+ *  the lettering and the dimension lines of `out`, under the ceiling or lower down the shank, inside the room's walls
+ *  `r0`, `r1` —, else where it lies least on them. */
+export function hookSection(G: RoomGeo, hook: Hook, out: readonly Entity[], r0: number, r1: number, sk: number): Entity[] {
+  const H = G.room.H, u = hook.u, text = `Gancio, portata ${hook.load} kg · H. sotto il gancio ${Math.round(hook.eye)}`, k = AT * sk;
+  const taken = [...lettered(out, sk), ...dimLines(out, sk)], lines = extLines(out, sk), room: Box = { x0: r0 + 20 * sk, y0: 0, x1: r1 - 20 * sk, y1: H };
+  const lead = 1.3 * TEXT.min * k, zs = Array.from({ length: Math.max(1, Math.floor((H - 150 * sk - hook.eye - 40) / lead) + 1) }, (_, i) => H - 150 * sk - i * lead);
+  const sides = zs.flatMap((z) => ([1, -1] as const).map((away) => {
+    const at: Pt = [u + away * 90 * sk, z], align = away > 0 ? 'l' as const : 'r' as const;
+    return { at, align, box: letteringBox(at, text, TEXT.min, align, 0, false, k) };
+  }));
+  const pick = firstClear(sides, [...taken, ...lines], room, 10 * sk) ?? firstClear(sides, taken, room, 10 * sk) ?? leastOn(sides, taken, room);
   return [
     rect(u - 60, H - 12, u + 60, H, 'outline', 'steel'), line([u, H - 12], [u, hook.eye + 40], 'outline'),
     { e: 'mark', at: [u, hook.eye + 30], sym: 'hook', size: 3 },
-    { e: 'text', at: [u + pick.away * 90 * sk, z], text, size, align: pick.away > 0 ? 'l' : 'r', halo: true },
+    { e: 'text', at: pick.at, text, size: TEXT.min, align: pick.align, halo: true },
   ];
 }
 
@@ -112,32 +114,60 @@ export function aboveSection(G: RoomGeo, M: MachineSpec, hookU: number | null, s
   return [chain({ dir: 'y', pts: [t.z, G.room.H], at, from: [t.u, null], text: [`{v} (≥ ${KV_VERT.rotatingAbove})`] })];
 }
 
-/** The mounts and the fixings of the support named (room-mounts.ts) with a leader to `to` (a mount): the lines as wide
- *  as the room lets them, in the room or under its slab beside the shaft, where they stand clear of the lettering and
- *  the dimension lines of `out` and of `busy`, nearest the mount. */
-export function mountsSection(G: RoomGeo, M: MachineSpec, out: readonly Entity[], busy: readonly Box[], to: Pt, area: { r0: number; r1: number; low: number }, sk: number): Entity[] {
-  const R = G.room, size = 1.6, k = 25 * sk, step = 2.6 * k, f = { size, cond: true }, text = mountsLines(G, M).join(' ');
-  const taken = [...lettered(out, sk), ...dimLines(out, sk), ...busy];
+/** A note in words for section B-B and what it names: its leader ends at `to` or at the nearest of `also`. */
+export interface Note {
+  text: string;
+  to: Pt;
+  also?: readonly Pt[];
+}
+
+/** The notes (the mounts and fixings of the support, room-mounts.ts; the HEB beams' bearings, heb-view.ts) each with a
+ *  leader to what it names, placed the longest first: wrapped as wide as a free place lets it (70 mm of paper, down to
+ *  24), at the size it is drawn at (TEXT.min), in the room over its floor or under the slab beside the shaft, clear of
+ *  the lettering, the dimension lines and their extension lines of `out`, of `busy` (the machine, the shaft, the hatched
+ *  walls) and of the notes placed before it, nearest what it names; none such at any width, across extension lines only
+ *  (its halo stops them); else, at the narrowest, where it lies least on them. */
+export function notesSection(G: RoomGeo, notes: readonly Note[], out: readonly Entity[], busy: readonly Box[], area: { r0: number; r1: number; low: number; foot: number }, sk: number): Entity[] {
+  const R = G.room, size = TEXT.min, k = AT * sk, f = { size, cond: true }, step = 1.3 * size * k, res = new Map<Note, Entity[]>();
+  const taken = [...lettered(out, sk), ...dimLines(out, sk), ...busy], lines = extLines(out, sk);
+  // (under the slab beside the shaft down to the drawing's foot, the rows of dimensions there kept clear by dimLines)
   const room: Box = { x0: area.r0 + 60 * sk, y0: 120 * sk, x1: area.r1 - 60 * sk, y1: R.H - 80 * sk };
-  const slab: Box = { x0: area.r0 - WALL, y0: -R.slab - 1300 * sk + 700 * sk, x1: area.r1 + WALL, y1: -R.slab - area.low };
-  for (const width of [70, 55, 42, 32]) {
-    const lines = wrap(text, width, f), w = Math.max(...lines.map((l) => textWidth(l, f))) * k, h = lines.length * step;
-    const places: { x: number; z: number; box: Box }[] = [];
-    for (const b of [room, slab]) {
-      for (let z = b.y1 - 0.85 * size * k; z - h + step - 0.3 * size * k >= b.y0; z -= 50 * sk) {
-        for (let x = b.x0; x + w <= b.x1; x += 50 * sk) places.push({ x, z, box: { x0: x, y0: z - h + step - 0.3 * size * k, x1: x + w, y1: z + 0.85 * size * k } });
+  const slab: Box = { x0: area.r0 - WALL, y0: area.foot + 40 * sk, x1: area.r1 + WALL, y1: -R.slab - area.low };
+  // (the longest first: it needs the largest free place)
+  for (const note of [...notes].sort((a, b) => b.text.length - a.text.length)) {
+    const { text } = note, ends = [note.to, ...(note.also ?? [])];
+    const off = (b: Box, p: Pt): number => Math.hypot(Math.max(b.x0 - p[0], 0, p[0] - b.x1), Math.max(b.y0 - p[1], 0, p[1] - b.y1));
+    const gap = (b: Box): number => Math.min(...ends.map((p) => off(b, p)));
+    type Place = { x: number; z: number; box: Box; lines: string[] };
+    const anywhere: Box = { x0: -Infinity, y0: -Infinity, x1: Infinity, y1: Infinity }, byWidth = [70, 60, 50, 42, 36, 32, 28, 24].map((width): Place[] => {
+      const ls = wrap(text, width, f), w = Math.max(...ls.map((l) => textWidth(l, f))) * k, h = (ls.length - 1) * step + 1.3 * size * k;
+      // (a line's box: 0,3 of the size under its baseline to the size over it — metrics.ts textBox)
+      const places: Place[] = [];
+      for (const b of [room, slab]) {
+        for (let z = b.y1 - size * k; z - (ls.length - 1) * step - 0.3 * size * k >= b.y0; z -= 50 * sk) {
+          for (let x = b.x0; x + w <= b.x1; x += 50 * sk) places.push({ x, z, lines: ls, box: { x0: x, y0: z + size * k - h, x1: x + w, y1: z + size * k } });
+        }
       }
-    }
-    const gap = (b: Box): number => Math.hypot(Math.max(b.x0 - to[0], 0, to[0] - b.x1), Math.max(b.y0 - to[1], 0, to[1] - b.y1));
-    const clear = places.filter((p) => firstClear([p], taken, { x0: -Infinity, y0: -Infinity, x1: Infinity, y1: Infinity }, 25 * sk)).sort((a, b) => gap(a.box) - gap(b.box));
-    const at = clear[0];
+      return places;
+    });
+    const nearest = (busyNow: readonly Box[]): Place | null => {
+      for (const places of byWidth) {
+        const p = places.filter((q) => firstClear([q], busyNow, anywhere, 25 * sk)).sort((a, b) => gap(a.box) - gap(b.box))[0];
+        if (p) return p;
+      }
+      return null;
+    };
+    const last = byWidth[byWidth.length - 1] ?? [];
+    const at = nearest([...taken, ...lines]) ?? nearest(taken) ?? (last.length ? leastOn(last, taken, anywhere) : null);
     if (!at) continue;
-    // the leader from the lettering's corner nearest the mount, slanted (not along the lines drawn there)
-    const b = at.box, below = to[1] < b.y0, cx = to[0] < (b.x0 + b.x1) / 2 ? b.x0 : b.x1, cy = below ? b.y0 : b.y1;
+    // the leader from the lettering's corner nearest what it names, slanted (not along the lines drawn there)
+    const b = at.box, to = ends.reduce((p, q) => (off(b, q) < off(b, p) ? q : p)), below = to[1] < b.y0, cx = to[0] < (b.x0 + b.x1) / 2 ? b.x0 : b.x1, cy = below ? b.y0 : b.y1;
     const end: Pt = Math.abs(cx - to[0]) < 150 * sk ? [cx + (cx === b.x0 ? 1 : -1) * Math.min(300 * sk, (b.x1 - b.x0) / 2), cy + (below ? -10 : 10) * sk] : [cx, cy + (below ? -10 : 10) * sk];
-    return [...lines.map((l, i): Entity => ({ e: 'text', at: [at.x, at.z - i * step], text: l, size, align: 'l', halo: true })), line(end, to, 'dim'), { e: 'mark', at: to, sym: 'dot', size: 0.8 }];
+    res.set(note, [...at.lines.map((l, i): Entity => ({ e: 'text', at: [at.x, at.z - i * step], text: l, size, align: 'l', halo: true })), line(end, to, 'dim'), { e: 'mark', at: to, sym: 'dot', size: 0.8 }]);
+    taken.push(b);
   }
-  return [];
+  // (drawn in the order given)
+  return notes.flatMap((n) => res.get(n) ?? []);
 }
 
 /** The dimension lines (with their lettering beside them) of the chains across the drawing among `es`. */
@@ -149,11 +179,18 @@ function dimLines(es: readonly Entity[], sk: number): Box[] {
   });
 }
 
-/** What the lettering, the references and the symbols among `es` take at the section's scale (`sk` times 1:25). */
-function lettered(es: readonly Entity[], sk: number): Box[] {
+/** Their extension lines, from the element each point measures (dims.ts: where `from` gives it), as thin boxes. */
+function extLines(es: readonly Entity[], sk: number): Box[] {
   return es.flatMap((e): Box[] => {
-    if (e.e !== 'text' && e.e !== 'tag' && e.e !== 'mark') return [];
-    const [b] = takenBy([e]), [x, y] = e.at;
-    return b ? [{ x0: x + (b.x0 - x) * sk, y0: y + (b.y0 - y) * sk, x1: x + (b.x1 - x) * sk, y1: y + (b.y1 - y) * sk }] : [];
+    if (e.e !== 'chain' || e.c.at === undefined || e.c.on) return [];
+    const { dir, pts, at, from } = e.c, t = 10 * sk;
+    return pts.flatMap((p, i): Box[] => {
+      const f = Array.isArray(from) ? from[i] : from;
+      if (typeof f !== 'number') return [];
+      return [dir === 'y' ? { x0: Math.min(f, at), y0: p - t, x1: Math.max(f, at), y1: p + t } : { x0: p - t, y0: Math.min(f, at), x1: p + t, y1: Math.max(f, at) }];
+    });
   });
 }
+
+/** What the lettering, the references and the symbols among `es` take at the section's scale (`sk` times 1:25). */
+const lettered = (es: readonly Entity[], sk: number): Box[] => takenBy(es, AT * sk);

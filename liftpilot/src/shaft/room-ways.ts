@@ -4,34 +4,42 @@
 // governor, each hatched with its size; the ways from the door to them and to the area in front of the control panel
 // as bands KV_VERT.routeW wide along the walk the route's grid finds (room-route.ts). Model entities, room axes [mm];
 // pure.
-import { line, path, type Entity, type Pt } from '../drawing';
+import { TEXT, line, path, type Box as DrawBox, type Entity, type Pt } from '../drawing';
 import { machineBox, machineParts } from './support-check';
 import type { MachineSpec, RoomGeo } from './machine-room';
 import { KV_VERT } from './norme-vert';
 import { wheelAt } from './room-above';
 import { freeBeside } from './room-free';
 import { outlineBox, panelArea, panelBox, switchBox, type Box, type Outline } from './room-floor';
+import { AT, firstClear, letteringBox } from './room-label';
 import { grid, leastIn, walkOf, type Grid } from './room-route';
 
 const corners = ([x0, y0, x1, y1]: Box): Pt[] => [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
 
-/** A free area hatched (its outline and diagonals dashed) with its size written in it. */
-function hatched(b: Box, text: string): Entity[] {
-  const [x0, y0, x1, y1] = b;
+/** A free area hatched (its outline and diagonals dashed) with its size written in it: at its foot, else at its head, in
+ *  its middle or anywhere in it clear of the lettering `taken` (as the kernel draws it at the plan's scale `k`:
+ *  room-label.ts), else just under or over it, else at its foot. */
+function hatched(b: Box, text: string, taken: readonly DrawBox[], k: number): Entity[] {
+  const [x0, y0, x1, y1] = b, cx = (x0 + x1) / 2, place = (at: Pt) => ({ at, box: letteringBox(at, text, TEXT.min, 'c', 0, false, k) }), foot = place([cx, y0 + 40]);
+  const h = foot.box.y1 - foot.box.y0, under = foot.at[1] - foot.box.y0, ys = Array.from({ length: Math.max(0, Math.floor((y1 - y0 - h - 80) / 50)) + 1 }, (_, i) => y0 + 40 + i * 50);
+  const places = [foot, place([cx, y1 - 40 - h + under]), place([cx, (y0 + y1) / 2]), ...ys.flatMap((y) => [-1, 0, 1].map((s) => place([cx + (s * (x1 - x0)) / 4, y])))];
+  const beside = [place([cx, y0 - 30 - h + under]), place([cx, y1 + 30 + under])];
+  const spot = firstClear(places, taken, { x0, y0, x1, y1 }, 0.4 * k) ?? firstClear(beside, taken, { x0: -Infinity, y0: -Infinity, x1: Infinity, y1: Infinity }, 0.4 * k) ?? foot;
   return [path(corners(b), true, 'space'), line([x0, y0], [x1, y1], 'space'), line([x0, y1], [x1, y0], 'space'),
-    { e: 'text', at: [(x0 + x1) / 2, y0 + 40], text, size: 1.6, align: 'c', halo: true }];
+    { e: 'text', at: spot.at, text, size: TEXT.min, align: 'c', halo: true }];
 }
 
 /** The free area beside the machine (as m_free and m_wheel take it) and beside the governor (as m_govfree), the
  *  machine's handwheel marked; `others` what stands on the floor besides the machine (the governor's footprint, the
- *  main switch), `gov` the governor's footprint. */
-export function freeAreas(G: RoomGeo, M: MachineSpec, others: readonly Box[], gov: Box | null): { entities: Entity[]; machine: Box | null } {
+ *  main switch), `gov` the governor's footprint; `taken` the lettering drawn so far (their sizes keep off it, at the
+ *  plan's scale `k`). */
+export function freeAreas(G: RoomGeo, M: MachineSpec, others: readonly Box[], gov: Box | null, taken: readonly DrawBox[] = [], k = AT): { entities: Entity[]; machine: Box | null } {
   const R = G.room, out: Entity[] = [], K = KV_VERT, size = `${K.maintW}×${K.maintD}`;
   const f = freeBeside(R, machineBox(G, M), [panelBox(R), ...others], wheelAt(G, M)), ok = f.depth >= f.need;
-  if (ok) out.push(...hatched(f.area, size));
+  if (ok) out.push(...hatched(f.area, size, taken, k));
   if (gov) {
     const near = [...machineParts(G, M), panelBox(R), switchBox(R)].map(outlineBox), g = freeBeside(R, gov, near);
-    if (g.depth >= g.need) out.push(...hatched(g.area, size));
+    if (g.depth >= g.need) out.push(...hatched(g.area, size, [...taken, ...out.flatMap((e) => (e.e === 'text' ? [letteringBox(e.at, e.text, e.size, 'c', 0, false, k)] : []))], k));
   }
   return { entities: out, machine: ok ? f.area : null };
 }

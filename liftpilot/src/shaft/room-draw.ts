@@ -51,6 +51,8 @@ export const kerbOf = (G: RoomGeo, o: SlabOpening): Pt[] => {
 export interface RoomDrawOpts {
   closedDoor?: boolean;
   compact?: boolean;
+  /** the scale the view is drawn at when not 1:25: section B-B's dimensions placed for it, the plan's names and
+   *  references measured at it (round 37) */
   scale?: number;
   /** the plan's rope drops dimensioned inside the shaft, not in a row outside (the plan keeps its scale; round 36) */
   dropsInside?: boolean;
