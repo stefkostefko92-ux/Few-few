@@ -1,6 +1,6 @@
 import type { User } from '@prisma/client';
 import QRCode from 'qrcode';
-import { audit, audited } from '../audit.js';
+import { audit, audited, SYSTEM_ACTOR } from '../audit.js';
 import { config } from '../config.js';
 import { decryptSecret, encryptSecret } from '../crypto.js';
 import { prisma } from '../db.js';
@@ -72,11 +72,15 @@ export async function requestPasswordReset(rawEmail: string, meta: RequestMeta):
   if ((await recentTokenCount(user.id, 'RESET_PASSWORD', HOUR)) >= MAIL_CAP_PER_HOUR) return;
   const token = await issueEmailToken(user.id, 'RESET_PASSWORD');
   void mailResetPassword(user.email, accountLocale(user), greetingName(user), token);
-  await audit(customerActor(user, meta), {
-    action: 'auth.reset.requested',
-    targetType: 'user',
-    targetId: user.id,
-  });
+  // Заявката е на непознат, не непременно на собственика: системата записва, IP-то е на заявителя.
+  await audit(
+    { ...SYSTEM_ACTOR, ip: meta.ip },
+    {
+      action: 'auth.reset.requested',
+      targetType: 'user',
+      targetId: user.id,
+    },
+  );
 }
 
 export async function resetTokenValid(token: string): Promise<boolean> {

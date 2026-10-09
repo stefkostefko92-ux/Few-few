@@ -4,6 +4,7 @@ import { config, isProduction } from '../config.js';
 import { safeEqual } from '../crypto.js';
 import { deviceCookieHash, ensureDeviceCookie, parseFingerprint } from '../auth/device.js';
 import {
+  fromOurOrigin,
   isPreCsrfToken,
   newPreCsrfToken,
   PRE_CSRF_COOKIE,
@@ -15,6 +16,7 @@ import { isStaff } from '../auth/rbac.js';
 import { linkHours } from '../auth/tokens.js';
 import { readCookie } from '../http/cookies.js';
 import { setFlash } from '../http/flash.js';
+import { errorMessage, logger } from '../logger.js';
 import {
   forgotLimiter,
   loginLimiter,
@@ -164,8 +166,13 @@ authRouter.post('/login/2fa', mfaLimiter, async (req, res) => {
 
 authRouter.post('/logout', async (req, res) => {
   const principal = req.principal;
-  // Сесията пада винаги, и с остаряла форма (токенът е сменен в друг раздел): SameSite=Strict не пуска
-  // бисквитката от чужд сайт, така че изход от чужда ръка няма principal.
+  // Сесията пада и с остаряла форма (токенът е сменен в друг раздел), затова токенът не се иска. Пази
+  // Origin: SameSite=Strict пуска бисквитката и от съседен поддомейн (същият сайт), така че заявка от
+  // чужд адрес само връща към входа, без да трие сесията.
+  if (!fromOurOrigin(req, true)) {
+    res.redirect('/login');
+    return;
+  }
   if (principal) {
     await destroySessionById(principal.session.id);
     await audit(customerActor(principal.user, requestMeta(req)), {
@@ -262,8 +269,14 @@ function forgotPage(req: Request, res: Response, sent: boolean): void {
 
 authRouter.get('/forgot', (req, res) => forgotPage(req, res, false));
 
-authRouter.post('/forgot', forgotLimiter, requirePreAuthCsrf, async (req, res) => {
-  await requestPasswordReset(stringField(req.body, 'email', 254), requestMeta(req));
+/**
+ * Отговорът не чака работата: за познат имейл тя е по-дълга (връзка, писмо, одит), а времето на отговора
+ * не бива да казва дали има акаунт. Грешка в нея отива в лога, не в отговора.
+ */
+authRouter.post('/forgot', forgotLimiter, requirePreAuthCsrf, (req, res) => {
+  void requestPasswordReset(stringField(req.body, 'email', 254), requestMeta(req)).catch(
+    (error: unknown) => logger.error({ err: errorMessage(error) }, 'нова парола: заявката не мина'),
+  );
   forgotPage(req, res, true);
 });
 

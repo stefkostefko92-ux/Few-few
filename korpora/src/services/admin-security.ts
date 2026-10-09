@@ -4,7 +4,7 @@ import { sha256Hex } from '../crypto.js';
 import { destroyAllSessions } from '../auth/sessions.js';
 import { issueEmailToken } from '../auth/tokens.js';
 import { accountLocale } from '../i18n.js';
-import { greetingName, mailResetPassword, mailTwoFactor } from '../mail/templates.js';
+import { greetingName, mailBanned, mailResetPassword, mailTwoFactor } from '../mail/templates.js';
 import { fail, isResult, targetFor, type ActionResult, type StaffActor } from './admin-common.js';
 import { ADMIN_LIMITS } from './admin-limits.js';
 import { hasUnsafeChars, hasUnsafeTextChars } from './names.js';
@@ -20,7 +20,11 @@ const banSchema = z.object({
     .refine((value) => !hasUnsafeTextChars(value)),
 });
 
-/** Бан с причина: всички сесии падат веднага, причината се показва на човека при опит за вход. */
+/**
+ * Бан с причина: всички сесии падат веднага, причината се показва на човека при опит за вход и тръгва
+ * по имейл с правилото и пътя за възражение. Писмо — само до потвърден адрес: непотвърденият може да е
+ * чужд и не бива да научава причината.
+ */
 export async function banAccount(
   actor: StaffActor,
   id: string,
@@ -69,6 +73,9 @@ export async function banAccount(
         : null,
   );
   if (!banned) return fail('admin.errors.alreadyBanned');
+  if (target.emailVerifiedAt) {
+    void mailBanned(target.email, accountLocale(target), greetingName(target), parsed.data.reason);
+  }
   return { ok: true };
 }
 

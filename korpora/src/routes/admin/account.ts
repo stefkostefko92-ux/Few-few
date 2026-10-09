@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { renderError, requireStaff } from '../../auth/guards.js';
 import { assignableRoles, can, outranks } from '../../auth/rbac.js';
 import { remainingRecoveryCodes } from '../../auth/recovery.js';
-import { idParam, stringField } from '../../http/meta.js';
+import { idParam, rawField, requestMeta, stringField } from '../../http/meta.js';
 import { planView } from '../../plans/plan.js';
 import { optionPriceCents, priceTable } from '../../plans/pricing.js';
 import { paidStartAllowedFrom } from '../../plans/withdrawal.js';
@@ -13,7 +13,7 @@ import {
   accountLogins,
   linkedAccounts,
 } from '../../services/admin-insights.js';
-import { changeRole, editAccount } from '../../services/admin-actions.js';
+import { changeRole, editAccount, grantOwner } from '../../services/admin-actions.js';
 import { ADMIN_LIMITS } from '../../services/admin-limits.js';
 import { changePlan } from '../../services/admin-plan.js';
 import {
@@ -62,6 +62,8 @@ accountAdminRouter.get('/admin/accounts/:id', requireStaff('accounts:view'), asy
     lifetimeCents: optionPriceCents('lifetime'),
     manageable: account.id !== actor.id && outranks(actor.role, account.role),
     roles: assignableRoles(actor.role),
+    // ролята „Собственик“ дава само собственик — с паролата и кода си (grantOwner)
+    canGrantOwner: actor.role === 'OWNER',
     now: new Date(),
   });
 });
@@ -94,6 +96,21 @@ accountAdminRouter.post(
       'flash.roleChanged',
       path(id),
     );
+  },
+);
+
+accountAdminRouter.post(
+  '/admin/accounts/:id/owner',
+  requireStaff('staff:manage'),
+  async (req, res) => {
+    const id = idParam(req);
+    const result = await grantOwner(
+      staffActor(req),
+      id,
+      { password: rawField(req.body, 'password'), code: stringField(req.body, 'code', 20) },
+      requestMeta(req),
+    );
+    finish(res, result, 'flash.roleChanged', path(id));
   },
 );
 

@@ -147,7 +147,7 @@
     "changeEmailButton": "Send link",
     "delete": {
       "confirmMissing": "Tick the box to confirm you understand that deletion is permanent.",
-      "lastOwner": "This is the last owner. Before deleting this account, give the role to someone else."
+      "lastOwner": "This is the last owner. Before deleting this account, give the role to someone else: in the panel, on their account page (“Profile”), with your password and code."
     }
   },
   "app": {

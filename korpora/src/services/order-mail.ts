@@ -7,11 +7,12 @@ import { BUSINESS_TZ } from '../time.js';
 import { errorMessage, logger } from '../logger.js';
 import type { MailAttachment } from '../mail/mailer.js';
 import {
-  greetingName,
   mailOrderConfirmed,
+  mailOrderRejected,
   mailStaffNotice,
   mailWithdrawalReceived,
-} from '../mail/templates.js';
+} from '../mail/order-templates.js';
+import { greetingName } from '../mail/templates.js';
 import { formatMoney, VAT_BG_PERCENT, withVatCents } from '../plans/pricing.js';
 import {
   paidStartAllowedFrom,
@@ -23,6 +24,7 @@ import {
 } from '../plans/withdrawal.js';
 import { legalPath } from '../seo/paths.js';
 import { termsCopy } from './terms-copy.js';
+import { keepTermsCopy, keptTermsCopy } from './terms-snapshots.js';
 
 /**
  * Текстовете на писмата за поръчката и отказа. Всичко се смята от записа на поръчката — същите
@@ -97,25 +99,38 @@ function paymentText(order: OrderRecord, locale: Locale): string {
 }
 
 /**
- * Копието на приетите общи условия (траен носител) — само ако в сила са още същите, които клиентът е
- * приел с поръчката. Грешка при събирането не спира потвърждението: тогава в писмото остава връзката.
+ * Копието на приетите общи условия (траен носител): условията в сила се събират наново и се пазят; за
+ * поръчка по по-стари условия — пазеното копие на нейната версия. Без копие на условията в сила писмото
+ * чака (`retry`): поддръжката опитва пак, вместо да прати само връзка към страница, която се променя.
+ * null (само връзката) остава за поръчка без версия и за стара версия, от която копие няма.
  */
 async function acceptedTermsCopy(
   order: OrderRecord,
   locale: Locale,
-): Promise<MailAttachment | null> {
-  if (order.termsVersion !== LEGAL_UPDATED.terms) return null;
-  try {
-    return await termsCopy(locale, config().PUBLIC_BASE_URL, config().CONTACT_EMAIL);
-  } catch (error) {
-    logger.error({ err: errorMessage(error) }, 'копието на общите условия не се събра');
-    return null;
+): Promise<MailAttachment | null | 'retry'> {
+  const version = order.termsVersion;
+  if (!version) return null;
+  const current = version === LEGAL_UPDATED.terms;
+  if (current) {
+    try {
+      const copy = await termsCopy(locale, config().PUBLIC_BASE_URL, config().CONTACT_EMAIL);
+      await keepTermsCopy(version, locale, copy.content);
+      return copy;
+    } catch (error) {
+      logger.error({ err: errorMessage(error) }, 'копието на общите условия не се събра');
+    }
   }
+  const kept = await keptTermsCopy(version, locale);
+  if (kept) return kept;
+  if (current) return 'retry';
+  logger.error({ version }, 'няма пазено копие на приетите общи условия: писмото е с връзка');
+  return null;
 }
 
 /**
  * Потвърждението на сключения договор — веднага след поръчката (и пак от поддръжката, ако не тръгне),
- * с приетите общи условия като файл. `replaced` — неизпълнените поръчки, които тази е заменила.
+ * с приетите общи условия като файл. `replaced` — неизпълнените поръчки, които тази е заменила. false —
+ * не е тръгнало (SMTP или липсващо копие на условията): поддръжката опитва пак.
  */
 export async function sendOrderConfirmation(
   order: OrderRecord,
@@ -125,6 +140,7 @@ export async function sendOrderConfirmation(
   const locale = accountLocale(user);
   const consumer = order.buyerType === 'CONSUMER';
   const copy = await acceptedTermsCopy(order, locale);
+  if (copy === 'retry') return false;
   return mailOrderConfirmed(
     user.email,
     locale,
@@ -187,6 +203,20 @@ export function sendWithdrawalReceipt(
       order.earlyStartRequestedAt ? 'mail.withdrawn.refundEarly' : 'mail.withdrawn.refund',
       { date: refundBy },
     ),
+  });
+}
+
+/** Поръчката е отхвърлена от екипа (плащането не е пристигнало): няма да се изпълни и не се плаща. */
+export function sendOrderRejected(
+  order: Pick<OrderRecord, 'id' | 'option' | 'months' | 'createdAt'>,
+  user: Customer,
+): Promise<boolean> {
+  const locale = accountLocale(user);
+  return mailOrderRejected(user.email, locale, greetingName(user), {
+    id: order.id,
+    plan: orderPlanName(order, locale),
+    date: longDate(order.createdAt, locale),
+    contact: config().CONTACT_EMAIL,
   });
 }
 

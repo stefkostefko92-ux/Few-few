@@ -1,5 +1,5 @@
-import { createHash, randomBytes } from 'node:crypto';
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { randomBytes } from 'node:crypto';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import cookieParser from 'cookie-parser';
 import express, { type Express, type NextFunction, type Request, type Response } from 'express';
@@ -13,6 +13,7 @@ import { LOCK_MINUTES, MAX_FAILED_LOGINS } from './auth/lock.js';
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from './auth/password.js';
 import { isStaff } from './auth/rbac.js';
 import { sendError } from './auth/guards.js';
+import { assetVersion } from './http/asset-version.js';
 import { accountWriteLimiter } from './http/limits.js';
 import { readFlash } from './http/flash.js';
 import { attachLocale, localeSwitchUrl } from './http/locale.js';
@@ -28,20 +29,6 @@ import { devRouter } from './routes/dev.js';
 import { healthRouter } from './routes/health.js';
 import { landingRouter } from './routes/landing.js';
 import { seoRouter } from './routes/seo.js';
-
-/** Кратък отпечатък на статичните файлове — сменя адреса на CSS/JS при всяка промяна (кешът е дълъг). */
-function assetVersion(): string {
-  const hash = createHash('sha256');
-  const walk = (dir: string): void => {
-    for (const name of readdirSync(dir).sort()) {
-      const file = join(dir, name);
-      if (statSync(file).isDirectory()) walk(file);
-      else if (/\.(css|js|svg|woff2)$/.test(name)) hash.update(name).update(readFileSync(file));
-    }
-  };
-  walk(join(ROOT, 'public'));
-  return hash.digest('hex').slice(0, 10);
-}
 
 /** Парчетата, които editor.js внася веднага (three.js) — страницата ги зарежда успоредно с него. */
 function editorPreload(): string[] {
@@ -86,7 +73,7 @@ function failRequest(
 export function createServer(): Express {
   const cfg = config();
   const app = express();
-  const version = assetVersion();
+  const version = assetVersion(join(ROOT, 'public'));
   const preload = editorPreload();
   app.disable('x-powered-by');
   app.set('trust proxy', cfg.TRUST_PROXY);

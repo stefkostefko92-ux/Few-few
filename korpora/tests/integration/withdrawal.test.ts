@@ -155,13 +155,9 @@ test('a request from before the orders is no contract under these rules; a plan 
     buyer: 'consumer',
     early: 'yes',
   });
+  // a paid plan by hand waits for the open order (business:A1); trial days by hand do not
   assert.deepEqual(
-    await changePlan(actor, second.userId, {
-      plan: 'PREMIUM',
-      mode: 'months',
-      months: 1,
-      notify: false,
-    }),
+    await changePlan(actor, second.userId, { plan: 'TRIAL', days: 5, notify: false }),
     { ok: true },
   );
   await withdraw(c2, second.id);

@@ -163,6 +163,7 @@ seoRouter.get('/favicon.ico', (_req, res) => {
 seoRouter.get('/apple-touch-icon.png', (_req, res) => {
   res.type('image/png').set('Cache-Control', ICON_CACHE).sendFile('apple-touch-icon.png', IMG);
 });
+/** Иконите на манифеста са в `/static` (кеш 30 дни, immutable): нова икона трябва да смени адреса. */
 seoRouter.get('/site.webmanifest', (_req, res) => {
   res
     .type('application/manifest+json')
@@ -176,7 +177,7 @@ seoRouter.get('/site.webmanifest', (_req, res) => {
         background_color: '#f6f7f1',
         theme_color: '#f6f7f1',
         icons: [192, 512].map((size) => ({
-          src: `/static/img/icon-${size}.png`,
+          src: `/static/img/icon-${size}.png?v=${String(res.locals.v)}`,
           sizes: `${size}x${size}`,
           type: 'image/png',
         })),
