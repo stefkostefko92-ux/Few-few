@@ -82,7 +82,9 @@ sudo bash /opt/few-few/current/korpora/deploy/deploy.sh
    `prisma migrate deploy` (никога `db push`);
 6. чака `/health` да върне `{"status":"ok","app":"korpora"}` — маркерът доказва, че на порта
    отговаря Korpora, а не друго приложение (иначе код 4 и `autodeploy.sh` връща последния
-   работещ release); после записва папката на release-а в `/opt/few-few/shared/korpora/last-good`;
+   работещ release); после записва папката на release-а в `/opt/few-few/shared/korpora/last-good` и
+   маха висящите образи на проекта (`docker image prune -f --filter label=com.docker.compose.project=korpora`
+   — предишният `korpora-app` след новия build; чужди образи и build кешът остават);
 7. слага дневния шифрован бекъп (`deploy/backup-install.sh`: скриптът и таймерът; т. 9) и, ако няма
    бекъп от последните 26 ч, пуска един веднага;
 8. слага vhost-а от репото в nginx с порта от `HTTP_PORT` (`nginx -t`, после reload; при грешка

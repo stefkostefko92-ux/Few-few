@@ -174,6 +174,13 @@ remember_live() {
     printf '%s\n' "$real" >"$LAST_GOOD.tmp" && mv -f "$LAST_GOOD.tmp" "$LAST_GOOD"
 }
 
+# Всеки build тагва образа отново като korpora-app: при класическото хранилище на Docker предишният
+# остава висящ (<none>) и се трупа на диска. След успешната сонда се махат само висящите образи на
+# този compose проект — чужди образи и build кешът (от него откатът се билдва бързо) остават.
+prune_images() {
+  docker image prune -f --filter label=com.docker.compose.project=korpora >/dev/null
+}
+
 # Страницата, която nginx показва, докато приложението не отговаря (error_page във vhost-а). Слага се
 # преди `up`, за да я има още при рестарта на този деплой. Чете я nginx (www-data) — затова 755/644
 # въпреки umask 077 на скрипта; в нея няма нищо тайно.
@@ -308,6 +315,7 @@ main() {
   # Новият код вече работи: оттук нататък нищо не сменя изхода 0 (за autodeploy 1 значи „спрян преди
   # смяната“, а това вече не е вярно).
   remember_live || warn "не записах $LAST_GOOD — откатът и DEPLOY.md сочат предишния release"
+  prune_images || warn "старите образи на korpora не са изчистени — docker image ls --filter dangling=true"
   (source "$APP_DIR/deploy/backup-install.sh" && install_backup) || warn "дневният шифрован бекъп не е готов — DEPLOY.md, т. 9"
   sync_nginx "$port" || warn "nginx не е обновен — Korpora е жив на 127.0.0.1:$port"
   ping_indexnow "$port" || warn "IndexNow не мина — следващият деплой опитва пак"

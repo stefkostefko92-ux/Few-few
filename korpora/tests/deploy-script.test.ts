@@ -249,6 +249,24 @@ test('a live release is remembered as last-good by its real path; a failed one i
   });
 });
 
+test("after a live swap the project's untagged images are pruned (not other images, not the build cache); a failed one prunes nothing", () => {
+  withLayout((L) => {
+    sharedEnv(L);
+    const prune = 'docker image prune -f --filter label=com.docker.compose.project=korpora\n';
+    const failed = deploy(L, { HEALTH_BODY: '' });
+    assert.equal(failed.status, 4);
+    assert.ok(!failed.log.includes('prune'), failed.log);
+    const live = deploy(L);
+    assert.equal(live.status, 0, live.stderr);
+    assert.ok(live.log.includes(prune), live.log);
+    assert.ok(
+      live.log.indexOf(prune) > live.log.indexOf('/health'),
+      'only once Korpora answers on the port',
+    );
+    assert.doesNotMatch(live.log, /builder prune|image prune .*-a\b|system prune/);
+  });
+});
+
 test('a CATALOG_KEY is tried with the new image before the swap; one that does not open the catalog stops with code 1', () => {
   withLayout((L) => {
     sharedEnv(L, undefined, `CATALOG_KEY=${'c'.repeat(64)}\n`);
