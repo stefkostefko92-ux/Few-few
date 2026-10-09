@@ -829,6 +829,8 @@ export default {
   "game.trivia.weekly": "Settimanale",
   "game.quest.channel": "Canale missioni del server",
   "game.quest.enabled": "Missioni settimanali del server attive",
+  "game.battles.enabled": "Battaglie tra compagni attive",
+  "game.battles.hint": "I membri combattono con /companion attack e allenano le statistiche con /companion train. Chi perde non perde nulla; chiunque può uscire con /companion pvp off.",
   "game.save": "Salva",
   "game.saved": "Salvato.",
   "game.saveFailed": "Salvataggio non riuscito.",

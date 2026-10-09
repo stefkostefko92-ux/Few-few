@@ -63,6 +63,24 @@
   `/spawn companion:` показва само позволените (Free: common/uncommon); избраният се появява точно
   той. `/spawn channel:#друг` → появата е в другия канал. Член без Manage Server не вижда командата.
 
+### 3б. Статистики и битки (v53, 10 мин)
+
+- [ ] `/companion info 1` → полета „Stats“ (⚔️ 🛡️ 💨 ❤️ + 💪 Power), „Training“ (ниво/таван · цена)
+  и „Battles“ (🏆 0 · 💔 0). Свеж common lime = 20/20/20/100, Power 80.
+- [ ] `/companion train 1 stat:Attack` → „trained Attack to level 1“, искрите −20, ⚔️ +2. Пак
+  до ниво 4 (20+40+60+80) → пети опит → „reached the limit for stage 1 (level 4)“.
+  Без искри → „costs ✨ N — you have ✨ M“. `/profile` показва новите статистики.
+- [ ] A и B с активни спътници. A: `/companion attack @B` → публичен embed, 3 кадъра за ~3 s,
+  последният: „🏆 … wins!“ + награда (10 ✨ при равни; 15 ✨ ако B е по-силен; 0 при много по-
+  слаб) + „Attacks left today: 14“. Никой не е пингнат. Рекордът в `/companion info` се мени.
+- [ ] Веднага пак `/companion attack @B` → ефимерно „next attack in 5 minutes“ (публичното „мисли…“
+  изчезва). След 5 мин срещу B → „you fought @B recently“ (1 ч). Ако A е победил → C атакува B →
+  „just lost a battle and has a shield“ (30 мин). `/companion attack @себе си` / бот → отказ.
+- [ ] B: `/companion pvp off` → A атакува B → „doesn't take part in battles“. A: `/companion pvp off`
+  до 1 ч след своя атака → „you can leave battles in …“. `/companion pvp on` → пак в битките.
+- [ ] Таблото → Game → Overview → махни „Companion battles enabled“ → Save → `/companion attack`
+  → „Battles are turned off on this server“. Върни го.
+
 ## 4. Куестове, Counting, Trivia (15 мин)
 
 - [ ] Таблото → Quests → New quest: MESSAGES, target 5, 7 дни → в quest канала има embed с лента.
@@ -80,7 +98,7 @@
 
 ## 5. GDPR и почистване (5 мин)
 
-- [ ] A: `/privacy info` → броячите на играта присъстват (профил, спътници, покупки).
+- [ ] A: `/privacy info` → броячите на играта присъстват (профил, спътници, покупки, битки).
   `/privacy delete` → редовете на A изчезват; `/leaderboard` вече не го показва; уловените от A
   появи остават като събитие без ID; trivia победата остава без ID.
 - [ ] Изгони бота от тестовия сървър → след 30 дни `retention-weekly` чисти всичко за сървъра

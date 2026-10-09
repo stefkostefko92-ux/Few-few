@@ -8,7 +8,7 @@ export default function PrivacyPage() {
   const COUNTRY    = import.meta.env.VITE_COMPANY_COUNTRY || "Bulgaria";
 
   return (
-    <LegalPage title="Privacy Policy" updated="19 September 2026">
+    <LegalPage title="Privacy Policy" updated="9 October 2026">
       <Seo
         title="Privacy Policy — Supreme Bot"
         description="Privacy Policy for Supreme Bot: what data we process, EU data residency, GDPR rights, subprocessors, and retention periods."
@@ -110,10 +110,10 @@ export default function PrivacyPage() {
               </Tr>
               <Tr>
                 <Td>Server Season game data (optional, off by default)</Td>
-                <Td>Discord user ID with per-server counters (XP, level, season XP, sparks, daily streak, message-event count, voice minutes), one-off reward keys, shop purchases, caught companions and trades, quest contributions, trivia answers and wins, and the counting channel's current number and last counter. <strong>No message content is stored or read to award XP</strong> — only that a message event happened. In the counting channel the operator designates, a message is read only to check whether it is the next number; the text is not stored</Td>
-                <Td>Provide the in-server leveling and collecting game (levels, shop, companions, server quests, counting, trivia) when the server operator enables it</Td>
+                <Td>Discord user ID with per-server counters (XP, level, season XP, sparks, daily streak, message-event count, voice minutes), one-off reward keys, shop purchases, caught companions with their trained stats, trades and battles between members (who fought whom, the result and the reward), quest contributions, trivia answers and wins, and the counting channel's current number and last counter. <strong>No message content is stored or read to award XP</strong> — only that a message event happened. In the counting channel the operator designates, a message is read only to check whether it is the next number; the text is not stored</Td>
+                <Td>Provide the in-server leveling and collecting game (levels, shop, companions and their battles, server quests, counting, trivia) when the server operator enables it</Td>
                 <Td>Processed on behalf of the server operator (controller) under Art. 28 — the operator enables the game and determines the legal basis (typically Art. 6(1)(f))</Td>
-                <Td>While the game is enabled in that server; purged 30 days after the bot is removed from the server; deleted on your request (<code>/privacy delete</code>) — trivia wins and companion catches are anonymised so server statistics stay consistent</Td>
+                <Td>While the game is enabled in that server; battle records 30 days; purged 30 days after the bot is removed from the server; deleted on your request (<code>/privacy delete</code>) — trivia wins and companion catches are anonymised so server statistics stay consistent</Td>
               </Tr>
               <Tr>
                 <Td>Billing data</Td>

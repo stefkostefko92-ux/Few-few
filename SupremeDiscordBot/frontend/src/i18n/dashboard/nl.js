@@ -829,6 +829,8 @@ export default {
   "game.trivia.weekly": "Wekelijks",
   "game.quest.channel": "Kanaal voor serverquests",
   "game.quest.enabled": "Wekelijkse serverquests ingeschakeld",
+  "game.battles.enabled": "Metgezel-gevechten ingeschakeld",
+  "game.battles.hint": "Leden vechten met /companion attack en trainen statistieken met /companion train. Wie verliest, verliest niets; iedereen kan afhaken met /companion pvp off.",
   "game.save": "Opslaan",
   "game.saved": "Opgeslagen.",
   "game.saveFailed": "Opslaan mislukt.",

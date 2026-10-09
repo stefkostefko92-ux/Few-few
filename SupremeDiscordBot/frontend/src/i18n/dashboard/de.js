@@ -829,6 +829,8 @@ export default {
   "game.trivia.weekly": "Wöchentlich",
   "game.quest.channel": "Kanal für Server-Quests",
   "game.quest.enabled": "Wöchentliche Server-Quests aktiv",
+  "game.battles.enabled": "Begleiter-Kämpfe aktiv",
+  "game.battles.hint": "Mitglieder kämpfen mit /companion attack und trainieren Werte mit /companion train. Wer verliert, verliert nichts; jeder kann mit /companion pvp off aussteigen.",
   "game.save": "Speichern",
   "game.saved": "Gespeichert.",
   "game.saveFailed": "Speichern fehlgeschlagen.",

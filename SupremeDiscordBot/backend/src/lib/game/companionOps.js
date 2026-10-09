@@ -10,6 +10,7 @@ import {
 } from "./companions.js";
 import { getCurrentSeason } from "./seasons.js";
 import { ensureProgress } from "./xp.js";
+import { statSheet } from "./battles.js";
 
 export const TRADE_TTL_MS = 10 * 60 * 1000;
 
@@ -87,17 +88,19 @@ export async function catchSpawn(spawnId, userId, { now = new Date() } = {}) {
 export async function listOwned(serverId, userId) {
   const [rows, progress, season] = await Promise.all([
     prisma.memberCompanion.findMany({ where: { serverId, userId }, orderBy: { caughtAt: "asc" } }),
-    prisma.memberProgress.findUnique({ where: { serverId_userId: { serverId, userId } }, select: { activeCompanionId: true, sparks: true } }),
+    prisma.memberProgress.findUnique({ where: { serverId_userId: { serverId, userId } }, select: { activeCompanionId: true, sparks: true, pvpOptOut: true } }),
     getCurrentSeason(),
   ]);
   return {
     sparks: progress?.sparks || 0,
     activeId: progress?.activeCompanionId || null,
+    pvp: !progress?.pvpOptOut,
     // ВНИМАНИЕ (одит 24.09.2026): publicCompanion носи `id` = каталожния id
     // („lime-blip“). Разпънат СЛЕД реда, той презаписваше id-то на притежанието и
     // ботът пращаше каталожния id като ownedId → feed/activate/release/trade
     // винаги връщаха NOT_OWNED. Каталожният отива в `companionId`, `id` е редът.
-    companions: rows.map((r, i) => ({ ...publicCompanion(companionById(r.companionId), r.stage, season), ...r, index: i + 1, nextStageAt: r.stage < MAX_STAGE ? STAGE_THRESHOLDS[r.stage] : null })),
+    // v53 — `sheet`: статистиките, нивата, таванът и цената на следващото ниво (battles.js).
+    companions: rows.map((r, i) => ({ ...publicCompanion(companionById(r.companionId), r.stage, season), ...r, index: i + 1, nextStageAt: r.stage < MAX_STAGE ? STAGE_THRESHOLDS[r.stage] : null, sheet: statSheet(r) })),
   };
 }
 

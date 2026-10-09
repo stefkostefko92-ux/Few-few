@@ -9,7 +9,7 @@ import { Gamepad2, Trophy, ShoppingBag, Layers, Save, Plus, Trash2, Pencil, Spar
 import { useT } from "../contexts/I18nContext";
 import { useToast } from "../contexts/ToastContext";
 import { PremiumBadge } from "../components/PremiumBadge";
-import DiscordChannelSelect, { DiscordRoleSelect } from "../components/DiscordPicker";
+import DiscordChannelSelect, { DiscordRoleSelect, ChannelName } from "../components/DiscordPicker";
 import {
   getGame, updateGameSettings, getGameShop, createGameShopItem, updateGameShopItem, deleteGameShopItem,
   getGameLeaderboard, getGamePurchases, getGameCompanions, getGameQuests, createGameQuest, cancelGameQuest, getGameMinigames,
@@ -74,6 +74,7 @@ function useSettingsForm(data) {
     spawnEnabled: s.spawnEnabled, spawnChannelIds: [...(s.spawnChannelIds || [])],
     countingChannelId: s.countingChannelId || "", triviaChannelId: s.triviaChannelId || "", triviaSchedule: s.triviaSchedule || "",
     questChannelId: s.questChannelId || "", questEnabled: s.questEnabled,
+    battlesEnabled: s.battlesEnabled !== false,
   }));
   // Формата се попълва веднъж от заредените данни; refetch не бие незапазени промени.
   return [form, setForm];
@@ -95,6 +96,7 @@ function OverviewTab({ data }) {
       spawnChannelIds: form.spawnChannelIds.filter((x) => SNOWFLAKE.test(x)),
       countingChannelId: form.countingChannelId.trim() || null, triviaChannelId: form.triviaChannelId.trim() || null,
       triviaSchedule: form.triviaSchedule || null, questChannelId: form.questChannelId.trim() || null, questEnabled: !!form.questEnabled,
+      battlesEnabled: !!form.battlesEnabled,
     }),
     onSuccess: () => { toast.success(t("game.saved")); qc.invalidateQueries({ queryKey: ["game", serverId] }); },
     onError: (err) => toast.error(errMsg(err, t("game.saveFailed"))),
@@ -140,7 +142,7 @@ function OverviewTab({ data }) {
             {form.spawnChannelIds.length > 0 && (
               <ul className="flex flex-wrap gap-2 mt-2">
                 {form.spawnChannelIds.map((id) => (
-                  <li key={id} className="cs-badge flex items-center gap-1 font-mono">{id}
+                  <li key={id} className="cs-badge flex items-center gap-1"><ChannelName id={id} />
                     <button type="button" aria-label={t("game.levels.remove")} onClick={() => setForm((f) => ({ ...f, spawnChannelIds: f.spawnChannelIds.filter((x) => x !== id) }))}>×</button>
                   </li>
                 ))}
@@ -162,6 +164,14 @@ function OverviewTab({ data }) {
           <label className="flex items-center gap-3">
             <input type="checkbox" className="accent-cs-cyan w-5 h-5" checked={!!form.questEnabled} onChange={set("questEnabled")} />
             <span className="text-sm text-cs-text">{t("game.quest.enabled")}</span>
+          </label>
+          {/* v53 — битките между спътници (/companion attack); по подразбиране включени. */}
+          <label className="flex items-start gap-3 md:col-span-2">
+            <input type="checkbox" className="accent-cs-cyan w-5 h-5 mt-0.5 flex-none" checked={!!form.battlesEnabled} onChange={set("battlesEnabled")} />
+            <span>
+              <span className="text-sm text-cs-text">{t("game.battles.enabled")}</span>
+              <span className="block text-xs text-cs-dim mt-1">{t("game.battles.hint")}</span>
+            </span>
           </label>
         </div>
         <div className="flex justify-end">

@@ -829,6 +829,8 @@ export default {
   "game.trivia.weekly": "Co tydzień",
   "game.quest.channel": "Kanał misji serwera",
   "game.quest.enabled": "Cotygodniowe misje serwera włączone",
+  "game.battles.enabled": "Walki towarzyszy włączone",
+  "game.battles.hint": "Członkowie walczą przez /companion attack i trenują statystyki przez /companion train. Przegrany nic nie traci; każdy może się wypisać przez /companion pvp off.",
   "game.save": "Zapisz",
   "game.saved": "Zapisano.",
   "game.saveFailed": "Zapis nie powiódł się.",

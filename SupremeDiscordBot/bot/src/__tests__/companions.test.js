@@ -17,13 +17,17 @@ const { handleGameInteraction } = await import("../utils/gameInteractions.js");
 beforeEach(() => { vi.clearAllMocks(); apiPost.mockReset(); game.__test.spawnState.clear(); game.__test.autoSpawn.clear(); game.__test.settingsCache.clear(); game.__setRandom(null); });
 
 describe("/companion", () => {
-  it("шестте подкоманди и локализация; каталогът обявява петте публични", () => {
+  it("деветте подкоманди и локализация; каталогът обявява публичните", () => {
     const json = companion.data.toJSON();
-    expect(json.options.map((o) => o.name)).toEqual(["list", "info", "feed", "activate", "release", "trade"]);
+    expect(json.options.map((o) => o.name)).toEqual(["list", "info", "feed", "activate", "release", "trade", "train", "attack", "pvp"]);
     expect(json.dm_permission).toBe(false);
     expect(CMD_DESC_L10N.companion.bg).toBeTruthy();
+    for (const d of [json.description, ...Object.values(CMD_DESC_L10N.companion)]) expect(d.length).toBeLessThanOrEqual(100);
     const cat = COMMAND_CATALOG.find((c) => c.category === "Game");
-    expect(cat.commands.map((c) => c.name)).toEqual(expect.arrayContaining(["/companion list", "/companion feed", "/companion activate", "/companion trade", "/companion release"]));
+    expect(cat.commands.map((c) => c.name)).toEqual(expect.arrayContaining(["/companion list", "/companion feed", "/companion activate", "/companion trade", "/companion release", "/companion train", "/companion attack", "/companion pvp"]));
+    // train: четирите статистики като избор
+    const train = json.options.find((o) => o.name === "train");
+    expect(train.options.find((o) => o.name === "stat").choices.map((c) => c.value)).toEqual(["atk", "def", "spd", "hp"]);
   });
 });
 
@@ -177,5 +181,176 @@ describe("/companion feed без искри казва колко струва �
     expect(msg).toContain("✨ 5,");
     expect(msg).toContain("✨ 50");
     expect(i.deferReply).toHaveBeenCalled();
+  });
+});
+
+// ─── v53 — статистики, тренировка и битки ────────────────────────────────────
+const { battleFrames, battleEmbed, hpBar, statLine, replay } = await import("../commands/companion.js");
+const profile = (await import("../commands/profile.js")).default;
+const GID = "222222222222222222";
+const ME = "333333333333333333";
+const THEM = "444444444444444444";
+const sheet = (o = {}) => ({ stats: { atk: 20, def: 20, spd: 20, hp: 100, power: 80 }, levels: { atk: 0, def: 0, spd: 0, hp: 0 }, cap: 4, nextCost: { atk: 20, def: 20, spd: 20, hp: 20 }, wins: 3, losses: 1, ...o });
+const mineList = () => ({ data: { sparks: 100, activeId: "own_0", companions: [{ id: "own_0", index: 1, name: "Blip", nickname: null, rarityEmoji: "⚪", rarityLabel: "Common", family: "Lime", blurb: "Blip is a friendly lime jelly.", stage: 1, fed: 0, nextStageAt: 100, imageUrl: "https://x/blip-1.jpg", sheet: sheet() }] } });
+const ix = (sub, opts = {}) => ({
+  guildId: GID, user: { id: ME }, locale: "en",
+  deferReply: vi.fn(), editReply: vi.fn(), reply: vi.fn(), deleteReply: vi.fn(async () => {}), followUp: vi.fn(),
+  options: { getSubcommand: () => sub, getInteger: (k) => opts[k] ?? null, getString: (k) => opts[k] ?? null, getUser: () => opts.user ?? null },
+});
+
+const battle = () => ({
+  ok: true, winner: "attacker", turns: 6, seed: 1,
+  events: [
+    { by: "a", dmg: 20, crit: false, dodge: false, hpA: 100, hpB: 80 },
+    { by: "b", dmg: 0, crit: false, dodge: true, hpA: 100, hpB: 80 },
+    { by: "b", dmg: 22, crit: false, dodge: false, hpA: 78, hpB: 80 },
+    { by: "a", dmg: 33, crit: true, dodge: false, hpA: 78, hpB: 47 },
+    { by: "a", dmg: 25, crit: false, dodge: false, hpA: 78, hpB: 22 },
+    { by: "a", dmg: 23, crit: false, dodge: false, hpA: 78, hpB: 0 },
+  ],
+  reward: { tier: "fair", sparks: 10, capped: false }, rewardLimit: 5, sparksLeft: 110, attacksLeft: 14,
+  attacker: { userId: ME, stage: 1, stats: { atk: 20, def: 20, spd: 20, hp: 100, power: 80 }, companion: { name: "Blip", rarityEmoji: "⚪", imageUrl: "https://x/blip-1.jpg" } },
+  defender: { userId: THEM, stage: 2, stats: { atk: 22, def: 22, spd: 22, hp: 110, power: 88 }, companion: { name: "Wobble", rarityEmoji: "⚪", imageUrl: "https://x/wobble-2.jpg" } },
+});
+
+describe("v53 — помощниците за битката", () => {
+  it("кадрите: до 3, без дубли, последният е краят", () => {
+    expect(battleFrames(9)).toEqual([3, 6, 9]);
+    expect(battleFrames(2)).toEqual([1, 2]);
+    expect(battleFrames(1)).toEqual([1]);
+    expect(battleFrames(0)).toEqual([]);
+  });
+  it("лентата на живота и редът със статистиките", () => {
+    expect(hpBar(50, 100)).toBe("▰▰▰▰▰▱▱▱▱▱");
+    expect(hpBar(0, 100)).toBe("▱".repeat(10));
+    expect(hpBar(130, 100)).toBe("▰".repeat(10));
+    expect(statLine({ atk: 26, def: 18, spd: 19, hp: 90 })).toBe("⚔️ 26 · 🛡️ 18 · 💨 19 · ❤️ 90");
+  });
+  it("междинен кадър: заглавие „срещу“, последните удари, живот по кадъра; краен — победител, награда, оставащи атаки", () => {
+    const mid = battleEmbed(battle(), 2, "en").toJSON();
+    expect(mid.title).toBe("⚔️ Blip vs Wobble");
+    expect(mid.description).toContain("🗡️ Blip hits for **20**");
+    expect(mid.description).toContain("💨 Blip dodges");
+    expect(mid.fields[1].value).toContain("80/110");
+    expect(mid.fields[1].name).toContain("stage 2");
+    expect(mid.footer).toBeUndefined();
+    const end = battleEmbed(battle(), 6, "en").toJSON();
+    expect(end.title).toBe("🏆 Blip wins!");
+    expect(end.description).toContain("💥 Blip lands a critical hit for **33**!");
+    expect(end.fields[2].value).toBe(`✨ +10 for <@${ME}>`);
+    expect(end.footer.text).toContain("Attacks left today: 14");
+  });
+  it("наградите: по-силен, таван, много по-слаб, успешна защита", () => {
+    const b = battle();
+    b.reward = { tier: "underdog", sparks: 15, capped: false };
+    expect(battleEmbed(b, 6, "en").toJSON().fields[2].value).toContain("stronger opponent");
+    b.reward = { tier: "fair", sparks: 0, capped: true };
+    expect(battleEmbed(b, 6, "en").toJSON().fields[2].value).toContain("daily limit of 5");
+    b.reward = { tier: "easy", sparks: 0, capped: false };
+    expect(battleEmbed(b, 6, "en").toJSON().fields[2].value).toContain("much weaker");
+    b.winner = "defender";
+    const j = battleEmbed(b, 6, "bg").toJSON();
+    expect(j.title).toBe("🏆 Wobble печели!");
+    expect(j.fields[2].value).toBe(`🛡️ <@${THEM}> удържа. Нападателят не губи нищо.`);
+  });
+});
+
+describe("v53 — /companion train", () => {
+  it("успех: праща номера → ownedId и статистиката; показва новите статистики и платеното", async () => {
+    apiGet.mockResolvedValueOnce(mineList());
+    apiPost.mockResolvedValueOnce({ data: { ok: true, stat: "atk", level: 1, cost: 20, sparksLeft: 80, sheet: sheet({ stats: { atk: 22, def: 20, spd: 20, hp: 100, power: 82 } }), companion: { imageUrl: "https://x/blip-1.jpg" } } });
+    const i = ix("train", { number: 1, stat: "atk" });
+    await companion.execute(i);
+    expect(apiPost).toHaveBeenCalledWith(`/bot/game/companions/${GID}/${ME}/train`, { ownedId: "own_0", stat: "atk" });
+    const e = i.editReply.mock.calls[0][0].embeds[0].toJSON();
+    expect(e.title).toBe("⚔️ Blip trained **Attack** to level 1");
+    expect(e.description).toContain("⚔️ 22");
+    expect(e.footer.text).toBe("Paid ✨ 20 · balance ✨ 80");
+  });
+  it("таван на формата и недостиг казват точно какво и колко", async () => {
+    apiGet.mockResolvedValueOnce(mineList());
+    apiPost.mockRejectedValueOnce({ response: { status: 409, data: { error: "STAT_CAP", cap: 4, stage: 1 } } });
+    let i = ix("train", { number: 1, stat: "def" });
+    await companion.execute(i);
+    expect(i.editReply.mock.calls[0][0].content).toContain("Defense has reached the limit for stage 1 (level 4)");
+    apiGet.mockResolvedValueOnce(mineList());
+    apiPost.mockRejectedValueOnce({ response: { status: 402, data: { error: "NOT_ENOUGH_SPARKS", sparks: 7, cost: 60 } } });
+    i = ix("train", { number: 1, stat: "hp" });
+    await companion.execute(i);
+    expect(i.editReply.mock.calls[0][0].content).toBe("❌ The next Health level costs ✨ 60 — you have ✨ 7.");
+  });
+});
+
+describe("v53 — /companion attack", () => {
+  beforeEach(() => { replay.delayMs = 0; });
+  it("бот или себе си → ефимерен отказ веднага, без заявка", async () => {
+    let i = ix("attack", { user: { id: THEM, bot: true } });
+    await companion.execute(i);
+    expect(i.reply.mock.calls[0][0].flags).toBeTruthy();
+    i = ix("attack", { user: { id: ME, bot: false } });
+    await companion.execute(i);
+    expect(i.reply.mock.calls[0][0].content).toBe("❌ You can't attack yourself.");
+    expect(apiPost).not.toHaveBeenCalled();
+  });
+  it("успех: публичен отговор, 3 кадъра, без пингове", async () => {
+    apiPost.mockResolvedValueOnce({ data: battle() });
+    const i = ix("attack", { user: { id: THEM, bot: false } });
+    await companion.execute(i);
+    expect(apiPost).toHaveBeenCalledWith("/bot/game/battle", { serverId: GID, attackerId: ME, defenderId: THEM });
+    expect(i.deferReply).toHaveBeenCalledWith();
+    expect(i.editReply).toHaveBeenCalledTimes(3);
+    for (const [arg] of i.editReply.mock.calls) expect(arg.allowedMentions).toEqual({ parse: [] });
+    expect(i.editReply.mock.calls[2][0].embeds[0].toJSON().title).toBe("🏆 Blip wins!");
+  });
+  it("отказ (охлаждане) → публичното „мисли…“ се маха, ефимерен отговор с относително време", async () => {
+    apiPost.mockRejectedValueOnce({ response: { status: 429, data: { error: "COOLDOWN", retryInMs: 120000 } } });
+    const i = ix("attack", { user: { id: THEM, bot: false } });
+    await companion.execute(i);
+    expect(i.deleteReply).toHaveBeenCalled();
+    const f = i.followUp.mock.calls[0][0];
+    expect(f.content).toMatch(/next attack <t:\d+:R>/);
+    expect(f.flags).toBeTruthy();
+    expect(i.editReply).not.toHaveBeenCalled();
+  });
+  it("щит и pvp off на целта споменават целта, без да я пингват", async () => {
+    apiPost.mockRejectedValueOnce({ response: { status: 403, data: { error: "TARGET_PVP_OFF" } } });
+    const i = ix("attack", { user: { id: THEM, bot: false } });
+    await companion.execute(i);
+    const f = i.followUp.mock.calls[0][0];
+    expect(f.content).toBe(`🕊️ <@${THEM}> doesn't take part in battles.`);
+    expect(f.allowedMentions).toEqual({ parse: [] });
+  });
+});
+
+describe("v53 — /companion pvp и /profile", () => {
+  it("pvp off → enabled:false; заключено → кога", async () => {
+    apiPost.mockResolvedValueOnce({ data: { ok: true, enabled: false } });
+    let i = ix("pvp", { mode: "off" });
+    await companion.execute(i);
+    expect(apiPost).toHaveBeenCalledWith(`/bot/game/pvp/${GID}/${ME}`, { enabled: false });
+    expect(i.editReply.mock.calls[0][0].content).toContain("out of battles");
+    apiPost.mockRejectedValueOnce({ response: { status: 409, data: { error: "PVP_LOCKED", retryInMs: 600000 } } });
+    i = ix("pvp", { mode: "off" });
+    await companion.execute(i);
+    expect(i.editReply.mock.calls[0][0].content).toMatch(/leave battles <t:\d+:R>/);
+  });
+  it("/companion info показва статистики, тренировка с цени и рекорд", async () => {
+    apiGet.mockResolvedValueOnce(mineList());
+    const i = ix("info", { number: 1 });
+    await companion.execute(i);
+    const f = i.editReply.mock.calls[0][0].embeds[0].toJSON().fields;
+    expect(f.find((x) => x.name === "Stats").value).toBe("⚔️ 20 · 🛡️ 20 · 💨 20 · ❤️ 100\n💪 Power 80");
+    expect(f.find((x) => x.name.startsWith("Training")).value).toContain("⚔️ Attack 0/4 · ✨ 20");
+    expect(f.find((x) => x.name === "Battles").value).toBe("🏆 3 · 💔 1");
+  });
+  it("/profile показва статистиките на активния и „не участва“ при pvp off", async () => {
+    apiGet.mockResolvedValueOnce({ data: { enabled: true, progress: { level: 1, pct: 10, into: 10, need: 100 }, sparks: 5, streak: 1, messages: 3, voiceMinutes: 0, rank: 1, players: 2, companions: 1, pvp: false,
+      activeCompanion: { name: "Blip", rarityEmoji: "⚪", stage: 1, imageUrl: "https://x/blip-1.jpg", sheet: sheet() } } });
+    const i = { ...ix("x"), options: { getUser: () => null } };
+    i.user = { id: ME, username: "me", displayName: "me", displayAvatarURL: () => "https://x/a.png", bot: false };
+    await profile.execute(i);
+    const v = i.editReply.mock.calls[0][0].embeds[0].toJSON().fields.find((x) => x.name === "Companion").value;
+    expect(v).toContain("⚔️ 20 · 🛡️ 20 · 💨 20 · ❤️ 100 · 💪 Power 80");
+    expect(v).toContain("🏆 3 · 💔 1 · 🕊️ not in battles");
   });
 });

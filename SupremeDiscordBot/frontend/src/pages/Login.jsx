@@ -211,7 +211,7 @@ export default function Login() {
           bullets={[
             "Levels on the MEE6 curve members already know, with stacking level roles — only safe roles are ever assigned",
             "/daily sparks with a streak (×2 from day 7) and a shop with timed roles or your own custom rewards",
-            "60 original companions show up on their own at random moments while people chat — the first to press Catch keeps it",
+            "60 original companions show up on their own while people chat — catch them, train their stats with sparks and battle other members; the loser loses nothing",
             "Weekly server quests, a counting channel and trivia — the whole server plays as one team",
           ]}
           link="See how the game works"

@@ -840,6 +840,8 @@ export default {
   "game.trivia.weekly": "Weekly",
   "game.quest.channel": "Server quest channel",
   "game.quest.enabled": "Weekly server quests enabled",
+  "game.battles.enabled": "Companion battles enabled",
+  "game.battles.hint": "Members fight with /companion attack and train stats with /companion train. The loser loses nothing; anyone can opt out with /companion pvp off.",
   "game.save": "Save",
   "game.saved": "Saved.",
   "game.saveFailed": "Saving failed.",

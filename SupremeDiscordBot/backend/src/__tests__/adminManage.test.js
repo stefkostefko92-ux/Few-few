@@ -112,19 +112,19 @@ describe("играта по сървъри", () => {
     expect(prismaMock.memberCompanion.delete).not.toHaveBeenCalled();
   });
   it("нулиране „all“: трие магазина и настройките, но НЕ покупките; ботът научава", async () => {
-    for (const m of ["companionTrade", "companionSpawn", "memberCompanion", "gameXpGrant", "memberProgress", "triviaRound", "serverQuest", "shopItem", "gameSettings"]) {
+    for (const m of ["companionTrade", "companionSpawn", "memberCompanion", "gameXpGrant", "memberProgress", "companionBattle", "triviaRound", "serverQuest", "shopItem", "gameSettings"]) {
       prismaMock[m].deleteMany.mockResolvedValue({ count: 2 });
     }
     const r = await request(app).post(`/api/admin/game/servers/${SID}/reset`).send({ scope: "all", confirm: true, reason: "нов старт" });
     expect(r.status).toBe(200);
-    expect(r.body.counts).toMatchObject({ members: 2, shopItems: 2, settings: 2 });
+    expect(r.body.counts).toMatchObject({ members: 2, battles: 2, shopItems: 2, settings: 2 });
     expect(prismaMock.shopPurchase.deleteMany).not.toHaveBeenCalled();
     expect(notifyBot).toHaveBeenCalledWith("GAME_SETTINGS_CHANGED", { serverId: SID });
   });
   it("нулиране „progress“ не пипа магазина; без confirm → 400", async () => {
     let r = await request(app).post(`/api/admin/game/servers/${SID}/reset`).send({ scope: "progress", reason: "тест" });
     expect(r.status).toBe(400);
-    for (const m of ["companionTrade", "companionSpawn", "memberCompanion", "gameXpGrant", "memberProgress"]) prismaMock[m].deleteMany.mockResolvedValue({ count: 1 });
+    for (const m of ["companionTrade", "companionSpawn", "memberCompanion", "gameXpGrant", "memberProgress", "companionBattle"]) prismaMock[m].deleteMany.mockResolvedValue({ count: 1 });
     r = await request(app).post(`/api/admin/game/servers/${SID}/reset`).send({ scope: "progress", confirm: true, reason: "тест" });
     expect(r.status).toBe(200);
     expect(prismaMock.shopItem.deleteMany).not.toHaveBeenCalled();

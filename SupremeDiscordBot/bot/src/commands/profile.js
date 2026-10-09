@@ -8,6 +8,7 @@ import { t, resolveLang, resolveLangSync } from "../i18n/index.js";
 import { friendlyError } from "../utils/friendlyError.js";
 import { BRAND } from "../utils/colors.js";
 import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
+import { statLine } from "./companion.js";
 
 export function progressBar(pct, width = 12) {
   const filled = Math.round((Math.max(0, Math.min(100, pct)) / 100) * width);
@@ -48,7 +49,10 @@ export default {
       );
     if (p.activeCompanion) {
       const c = p.activeCompanion;
-      embed.addFields({ name: t("game.profile.companion", lang), value: `${c.rarityEmoji ? `${c.rarityEmoji} ` : ""}${c.nickname || c.name || c.companionId} · ${t("game.profile.stage", lang, { stage: c.stage })}`, inline: false });
+      // v53 — статистиките, силата и рекордът в битки (и ако членът е извън битките).
+      const sh = c.sheet;
+      const stats = sh?.stats ? `\n${statLine(sh.stats)} · 💪 ${t("game.stats.power", lang, { power: sh.stats.power })}\n🏆 ${sh.wins} · 💔 ${sh.losses}${p.pvp === false ? ` · ${t("game.profile.pvpOff", lang)}` : ""}` : "";
+      embed.addFields({ name: t("game.profile.companion", lang), value: `${c.rarityEmoji ? `${c.rarityEmoji} ` : ""}${c.nickname || c.name || c.companionId} · ${t("game.profile.stage", lang, { stage: c.stage })}${stats}`, inline: false });
       if (c.imageUrl) embed.setThumbnail(c.imageUrl);
     } else if (p.companions > 0) {
       embed.addFields({ name: t("game.profile.companion", lang), value: t("game.profile.companionsCount", lang, { n: p.companions }), inline: false });
