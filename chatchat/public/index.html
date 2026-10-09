@@ -23,7 +23,7 @@
     <script type="module" src="/app/main.js"></script>
   </head>
   <body>
-    <a class="skip-link" href="#conversation" data-i18n="a11y.skip">Vai alla conversazione</a>
+    <a class="skip-link" href="#chat-pane" data-i18n="a11y.skip">Vai alla conversazione</a>
     <div id="announcer" class="sr-only" role="status" aria-live="polite"></div>
 
     <noscript>
@@ -411,7 +411,7 @@
             </div>
           </section>
 
-          <div class="chat">
+          <div class="chat" id="chat-pane" tabindex="-1">
             <p class="disclaimer" role="note">
               <span class="disclaimer-mark" aria-hidden="true">i</span>
               <span data-i18n="disclaimer.text"></span>

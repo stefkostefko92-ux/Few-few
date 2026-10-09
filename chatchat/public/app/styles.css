@@ -575,6 +575,9 @@ textarea::placeholder {
   flex-direction: column;
   min-height: 0;
 }
+.chat:focus {
+  outline: none; /* програмно място за фокус (пропускане/вход), не контрол */
+}
 
 .disclaimer {
   display: flex;
