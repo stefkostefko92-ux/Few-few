@@ -13,7 +13,8 @@ import { detectMime, MAX_BYTES, sanitizeFileName } from './filetype.js';
  * Прикачени файлове (FR-06, §7.3 т. 1–3, §13.3): разпознаване по съдържание → таван по вид →
  * sha256 → ред PENDING → запис в частното хранилище → антивирус → CLEAN/INFECTED/FAILED.
  * Само CLEAN се показва, сваля и привързва към съобщение; INFECTED/FAILED файлът се трие веднага,
- * остава редът (с одит), докато ретенцията не го махне. Файловете НЕ се подават на AI.
+ * остава редът (с одит), докато ретенцията не го махне. Към AI отиват само PHOTO/LOG, изрично
+ * привързани към въпрос (`services/model-inputs.ts`), никога DOCUMENT като файл.
  */
 
 export interface AttachmentDeps {

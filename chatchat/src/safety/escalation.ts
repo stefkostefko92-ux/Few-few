@@ -1,5 +1,5 @@
 import type { DiagnosticContext } from '../domain/context.js';
-import type { DiagnosticAnswer } from '../domain/response.js';
+import { NO_MODEL_INPUTS, type DiagnosticAnswer } from '../domain/response.js';
 import type { GateInput } from './gate.js';
 import { detectBypassIntent } from './lexicon.js';
 
@@ -25,6 +25,18 @@ export function noEvidenceAnswer(input: Omit<GateInput, 'draft' | 'level'>): Dia
   for (const id of input.retrieval.unknownIdentifiers) missing.add(`ctx.unknownIdentifier:${id}`);
   const decisions = ['gate.noApplicableSource'];
   if (bypass.bypass) decisions.push('gate.bypassRequest');
+  // Моделът не се вика → нищо не е изпратено; снимка/лог сами не са основа за диагноза (§9.2).
+  const given = input.inputs ?? NO_MODEL_INPUTS;
+  const notSent = [
+    ...given.notSent,
+    ...given.attachments.map((a) => ({
+      id: a.id,
+      kind: a.kind,
+      reason: 'gate.attachment.notAnalyzed',
+    })),
+  ];
+  if (given.attachments.length > 0) decisions.push('gate.attachment.notAnalyzed');
+  for (const n of notSent) if (n.reason.startsWith('collect.')) missing.add(n.reason);
   return {
     generatedBy: 'ai',
     status: 'undetermined',
@@ -44,6 +56,8 @@ export function noEvidenceAnswer(input: Omit<GateInput, 'draft' | 'level'>): Dia
       collect: collectFor(input.context),
     },
     gate: { evidenceLevel: 'none', removedSteps: [], droppedCitations: [], decisions },
+    photos: [],
+    modelInputs: { attachments: [], notSent },
     knowledgeSnapshotId: input.knowledgeSnapshotId,
     promptVersion: input.promptVersion,
   };

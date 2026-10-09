@@ -118,3 +118,68 @@ export function sanitizeFileName(raw: string | undefined | null): string {
   }
   return name === '' ? 'file' : name;
 }
+
+export interface ImageSize {
+  width: number;
+  height: number;
+}
+
+/** JPEG: първият SOF маркер (без DHT C4, JPG C8, DAC CC) носи височина и ширина. */
+function jpegSize(b: Buffer): ImageSize | null {
+  let i = 2;
+  while (i + 3 < b.length) {
+    if (b[i] !== 0xff) return null;
+    const marker = b[i + 1] ?? 0;
+    if (marker === 0xff) {
+      i += 1; // пълнеж
+      continue;
+    }
+    if (marker === 0x01 || marker === 0xd8 || (marker >= 0xd0 && marker <= 0xd7)) {
+      i += 2; // маркери без дължина
+      continue;
+    }
+    if (marker === 0xd9 || marker === 0xda) return null; // край/данни преди SOF
+    const length = b.readUInt16BE(i + 2);
+    if (length < 2) return null;
+    const sof = marker >= 0xc0 && marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marker);
+    if (sof) {
+      if (i + 9 > b.length) return null;
+      return { height: b.readUInt16BE(i + 5), width: b.readUInt16BE(i + 7) };
+    }
+    i += 2 + length;
+  }
+  return null;
+}
+
+/** WebP: VP8 (със загуби), VP8L (без загуби) или VP8X (разширен) — размерът на платното. */
+function webpSize(b: Buffer): ImageSize | null {
+  if (b.length < 30) return null;
+  const chunk = b.toString('latin1', 12, 16);
+  if (chunk === 'VP8 ') {
+    if (b[23] !== 0x9d || b[24] !== 0x01 || b[25] !== 0x2a) return null;
+    return { width: b.readUInt16LE(26) & 0x3fff, height: b.readUInt16LE(28) & 0x3fff };
+  }
+  if (chunk === 'VP8L') {
+    if (b[20] !== 0x2f) return null;
+    const bits = b.readUInt32LE(21);
+    return { width: (bits & 0x3fff) + 1, height: ((bits >>> 14) & 0x3fff) + 1 };
+  }
+  if (chunk === 'VP8X') return { width: b.readUIntLE(24, 3) + 1, height: b.readUIntLE(27, 3) + 1 };
+  return null;
+}
+
+/**
+ * Размерът в пиксели от заглавката, без декодиране (нула зависимости, без чужд декодер върху
+ * недоверения файл). null → не се разчита (повреден/необичаен файл) — не се праща на AI.
+ */
+export function imageSize(mime: DetectedMime, bytes: Uint8Array): ImageSize | null {
+  const b = Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  let size: ImageSize | null = null;
+  if (mime === 'image/png') {
+    if (b.length >= 24 && b.toString('latin1', 12, 16) === 'IHDR') {
+      size = { width: b.readUInt32BE(16), height: b.readUInt32BE(20) };
+    }
+  } else if (mime === 'image/jpeg') size = jpegSize(b);
+  else if (mime === 'image/webp') size = webpSize(b);
+  return size && size.width > 0 && size.height > 0 ? size : null;
+}

@@ -16,7 +16,7 @@ import {
 import { ask, docBody, newCase, seedWorld, type World } from './world.js';
 
 /**
- * Прикачените файлове в потока: привързване към съобщение (в същата транзакция, не към AI),
+ * Прикачените файлове в потока: привързване към съобщение (в същата транзакция; PHOTO/LOG → AI),
  * PDF → документ в базата знания (§7.3 т. 2) и ретенцията (файлът преди реда).
  */
 
@@ -115,13 +115,13 @@ describe('файлове към съобщение', () => {
     );
   });
 
-  test('файловете НЕ стигат до AI: моделът вижда само текста', async () => {
+  test('логът стига до AI маскиран и между маркерите; id и име на файла — не', async () => {
     const caseId = await newCase(w.portalAlfa, { deviceSerial: 'SN-ALFA-1' });
     const id = await cleanUpload(
       w.portalAlfa,
       caseId,
       'LOG',
-      Buffer.from('SEGRETO-LOG-123'),
+      Buffer.from('SEGRETO-LOG-123 tecnico mario.rossi@example.com\n'),
       'z.log',
     );
     const res = await ask(w.portalAlfa, caseId, 'Errore E37 durante la corsa', {
@@ -130,9 +130,13 @@ describe('файлове към съобщение', () => {
     assert.equal(res.status, 201, JSON.stringify(res.body));
     assert.ok(res.body.answer);
     const seen = h.model.texts.join('\n');
+    assert.match(seen, /"kind":"log","ref":"L1"[^\n]*>>>\nSEGRETO-LOG-123 tecnico \[email\]/);
+    assert.equal(seen.includes('mario.rossi@example.com'), false);
     assert.equal(seen.includes(id), false);
-    assert.equal(seen.includes('SEGRETO-LOG-123'), false);
     assert.equal(seen.includes('z.log'), false);
+    assert.deepEqual(res.body.answer.payload.modelInputs.attachments, [
+      { id, kind: 'LOG', ref: 'L1' },
+    ]);
   });
 });
 

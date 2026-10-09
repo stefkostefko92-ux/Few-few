@@ -79,7 +79,7 @@ export const TOOLS: Tool[] = [
   {
     name: SUBMIT_TOOL,
     description:
-      'Submits the final structured diagnosis. Call it exactly once, alone in its message, as the last step. Reference only evidence items (E1, E2, ...). Every free-text field in the requested answer language. The input is validated; if invalid you get the errors back once to fix them.',
+      'Submits the final structured diagnosis. Call it exactly once, alone in its message, as the last step. Reference only evidence items (E1, E2, ...) in causes, checks and evidenceUsed; photos (P1, ...) appear only in photoObservations, one entry per photo. Every free-text field in the requested answer language. The input is validated; if invalid you get the errors back once to fix them.',
     input_schema: submitSchema(),
     cache_control: { type: 'ephemeral' },
   },

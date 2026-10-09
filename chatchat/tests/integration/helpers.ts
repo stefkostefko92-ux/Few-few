@@ -141,6 +141,8 @@ export class ScriptedModel implements DiagnosisModel {
   readonly questions: string[] = [];
   /** Суровото съобщение на случая, както го получава моделът. */
   readonly texts: string[] = [];
+  /** Изображенията (media_type + base64) във всяко извикване. */
+  readonly images: Array<Array<{ mediaType: string; data: string }>> = [];
 
   get calls(): number {
     return this.packs.length;
@@ -151,6 +153,7 @@ export class ScriptedModel implements DiagnosisModel {
     this.packs.length = 0;
     this.questions.length = 0;
     this.texts.length = 0;
+    this.images.length = 0;
   }
 
   async create(params: MessageCreateParamsNonStreaming): Promise<Message> {
@@ -162,6 +165,13 @@ export class ScriptedModel implements DiagnosisModel {
     this.packs.push(pack);
     this.questions.push(question);
     this.texts.push(text);
+    this.images.push(
+      blocks.flatMap((b) =>
+        b.type === 'image' && b.source.type === 'base64'
+          ? [{ mediaType: b.source.media_type, data: b.source.data }]
+          : [],
+      ),
+    );
     const input = baseDiagnosis(this.plan(pack, { question }));
     return {
       id: `msg_${this.packs.length}`,
