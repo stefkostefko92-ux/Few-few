@@ -36,6 +36,8 @@ export interface DocSpec {
   }>;
   pages: ReadonlyArray<{ page: number; text: string; section?: string }>;
   supersedesRevision?: string;
+  /** Език на документа (2 букви); по подразбиране „it“. */
+  language?: string;
 }
 
 export function docBody(spec: DocSpec) {
@@ -43,7 +45,7 @@ export function docBody(spec: DocSpec) {
     code: spec.code,
     title: `Documento ${spec.code}`,
     type: spec.type ?? 'MANUAL',
-    language: 'it',
+    language: spec.language ?? 'it',
     revision: spec.revision ?? 'A',
     audience: spec.audience ?? 'PORTAL',
     safetyRelevant: spec.safetyRelevant ?? false,
@@ -357,7 +359,10 @@ export const baseContext = {
 
 export async function newCase(
   c: Client,
-  body: { deviceSerial?: string; context?: Partial<typeof baseContext> } = {},
+  body: {
+    deviceSerial?: string;
+    context?: Partial<{ [K in keyof typeof baseContext]: string | null }>;
+  } = {},
 ): Promise<string> {
   const res = await c.post('/api/v1/sessions', {
     context: { ...baseContext, ...body.context },
