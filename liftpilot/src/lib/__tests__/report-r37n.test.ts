@@ -141,7 +141,18 @@ test('basamento esistente che resta: punto 5 applicabile, nessun basamento nuovo
     const tav = buildSurveyTavole(input(V, s)), sheet = surveySheetData(input(V, s), d, 3), base = sheet.room.find(([l]) => l === 'BASAMENTO')?.[2] ?? '';
     const bb = tav.doc.pages.flatMap((_, i) => pageTexts(tav.doc.pages, i)).join(' ');
     assert.ok(end.includes('punto 5 — applicabile') && !end.includes('non applicabile'), end);
+    // NOTA 2 and the label of m_holes on sheet 1 and in the relazione: the support kept, never a new one
+    const nota2 = sheet.notes.find((n) => n.tag === 'NOTA 2')?.text ?? '', holes = sheet.checks.find(([l]) => l.includes('aperture esistenti della soletta'))?.[0] ?? '';
+    const relHoles = texts(tecnica(V, s)).filter((x) => x.includes('dal bordo delle aperture esistenti della soletta'));
+    assert.ok(holes && relHoles.length === 1, 'm_holes');
+    assert.equal(roomCheckKey('m_holes', d), keep ? 'c_m_holes_kept' : 'c_m_holes');
+    assert.equal(holes, appIt.shaft[keep ? 'c_m_holes_kept' : 'c_m_holes']);
+    assert.equal(relHoles[0], holes);
+    assert.equal([holes, ...relHoles].some((x) => x.includes('Appoggi del nuovo basamento')), !keep);
+    assert.equal(nota2.includes('Il basamento disegnato è la proposta del software, da adattare a quello fornito dal costruttore.'), !keep, nota2);
     if (keep) {
+      assert.ok(nota2.endsWith('Il basamento disegnato è quello esistente riusato (telaio di profilati): posizione, altezza e appoggi da rilevare in sito; '
+        + 'il disegno ne usa la geometria proposta dal software.'), nota2);
       assert.equal(d.site.kept, 'telaio di profilati');
       assert.ok(end.includes('da verificare (basamento esistente riusato, posizione non rilevata'), end);
       // the drops unchanged only when m_calata passes (here 20 mm off)
@@ -168,6 +179,12 @@ test('basamento esistente che resta: punto 5 applicabile, nessun basamento nuovo
   assert.ok(texts(tecnica(V, on)).some((t) => t.includes('posizione non rilevata; calate invariate)')));
   // no existing support surveyed: its points not known
   assert.ok(texts(tecnica(V, startSurvey(600))).some((t) => t.includes('punti di applicazione non noti (basamento esistente non rilevato): UNI 10411-1:2024, punto 5 — applicabile')));
+  // our bedplate with the pulley on the support kept: the software's proposal, standing on the existing support to survey
+  const A = { ...PRESETS.A, context: 'repl', alphaMode: 'geo', h: 0.95 } as FormValues, sA: Survey = { ...startSurvey(780), existingSupport: { kind: 'plinth', keep: true } };
+  const dA = deriveRoom(A, sA), nA = surveySheetData(input(A, sA), dA, 3).notes.find((n) => n.tag === 'NOTA 2')?.text ?? '';
+  assert.ok(dA.site.kept && dA.M.rinvio?.on === 'frame', 'telaio con rinvio');
+  assert.ok(nA.endsWith('Il telaio con rinvio disegnato è la proposta del software, da adattare a quello fornito dal costruttore; poggia sul basamento esistente riusato, da rilevare.'), nA);
+  for (const M of [appIt.shaft, appEn.shaft, appBg.shaft]) assert.equal(typeof M.c_m_holes_kept, 'string');
 });
 
 test('appoggio in trazione: ancoraggio a trazione con il suo valore sul foglio 1, nella sezione B-B e nella relazione (W2-G4-09)', () => {

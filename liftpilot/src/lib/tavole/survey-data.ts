@@ -62,11 +62,30 @@ export interface SurveySheet extends TitleData {
  *  kind: the survey's row above). `full`: as the relazione writes it, the kind and what to survey named. Capitals; the
  *  relazione writes them with report/label-case.ts. */
 export function supportName(d: RoomDerived, full = false): string {
-  const own = ownSupportName(d), heb = d.heb ? ` SU DUE ${d.heb.chosen.profile} SUI MURI DEL VANO` : '', kept = d.site.kept, s = roomSupportOf(d), bed = Boolean(s.maker || s.own);
+  const own = ownSupportName(d), heb = d.heb ? ` SU DUE ${d.heb.chosen.profile} SUI MURI DEL VANO` : '', kept = d.site.kept, bed = onBedplate(d);
   if (!kept) return `${own}${heb}`;
   if (!full) return bed ? `${own}${heb} SU ESISTENTE` : `ESISTENTE${heb}, DA RILEVARE`;
   const old = `BASAMENTO ESISTENTE (${kept.toUpperCase()}) RIUSATO${heb}: POSIZIONE, ALTEZZA E APPOGGI DA RILEVARE`;
   return bed ? `${own} SUL ${old}` : old;
+}
+
+/** Whether the support drawn is a bedplate with the diverting pulley, the maker's or ours made to measure: on the
+ *  existing support kept it stays the software's proposal (supportName, NOTA 2). */
+function onBedplate(d: RoomDerived): boolean {
+  const s = roomSupportOf(d);
+  return Boolean(s.maker || s.own);
+}
+
+/** NOTA 2's last sentence on sheet 1: what the support drawn is — the software's proposal, to adapt to the maker's;
+ *  the existing support a replacement keeps (round 37), its position, height and bearings to survey, drawn with the
+ *  geometry the software proposes; the bedplate with the pulley the software's proposal on it — as supportName names
+ *  them. */
+export function supportNote(d: RoomDerived): string {
+  const kept = d.site.kept;
+  if (!kept) return 'Il basamento disegnato è la proposta del software, da adattare a quello fornito dal costruttore.';
+  return onBedplate(d)
+    ? 'Il telaio con rinvio disegnato è la proposta del software, da adattare a quello fornito dal costruttore; poggia sul basamento esistente riusato, da rilevare.'
+    : `Il basamento disegnato è quello esistente riusato (${kept}): posizione, altezza e appoggi da rilevare in sito; il disegno ne usa la geometria proposta dal software.`;
 }
 
 // (the parts are those the summary of the saved room names it by: room/summary.ts)
@@ -229,7 +248,7 @@ export function surveySheetData(x: SurveyTavoleInput, d: RoomDerived, pages: num
       title: 'SOLETTA, APPOGGI E BASAMENTO', tag: 'NOTA 2',
       text: 'La soletta del locale e gli appoggi del basamento devono sopportare i carichi di questo foglio, che non agiscono insieme: la verifica '
         + 'strutturale spetta al committente tramite il suo tecnico (NTC 2018, §8.4.1 per l’intervento locale su un edificio esistente; §3.1.4 per i '
-        + 'carichi del macchinario). Il basamento disegnato è la proposta del software, da adattare a quello fornito dal costruttore.',
+        + 'carichi del macchinario). ' + supportNote(d),
     },
     {
       title: 'CALATE E APERTURE NELLA SOLETTA', tag: 'NOTA 3',

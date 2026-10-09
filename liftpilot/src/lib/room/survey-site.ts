@@ -41,9 +41,15 @@ export const EXISTING_SUPPORT_IT: Readonly<Record<NonNullable<Survey['existingSu
   shims: 'spessori o antivibranti sulla soletta', frame: 'telaio di profilati', beams: 'putrelle da muro a muro', plinth: 'plinto in calcestruzzo', unknown: 'appoggi non chiari',
 };
 
+/** The kind of the existing support the new machine stands on when the survey keeps it; null: none kept. */
+export const keptKind = (s: Pick<Survey, 'existingSupport'>): NonNullable<Survey['existingSupport']>['kind'] | null => (s.existingSupport?.keep ? s.existingSupport.kind : null);
+
 /** The existing support the new machine stands on when the survey keeps it — its kind in words (round 37: the support
  *  drawn is it, its position, height and bearings to survey); null: none kept. */
-export const keptSupport = (s: Pick<Survey, 'existingSupport'>): string | null => (s.existingSupport?.keep ? EXISTING_SUPPORT_IT[s.existingSupport.kind] : null);
+export const keptSupport = (s: Pick<Survey, 'existingSupport'>): string | null => {
+  const k = keptKind(s);
+  return k ? EXISTING_SUPPORT_IT[k] : null;
+};
 
 /** The plan's entities of what the survey found: the governor's footprint with its name and P4, each existing opening
  *  dashed with «FORO ESISTENTE L×P»; and the boxes their lettering takes. */

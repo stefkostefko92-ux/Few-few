@@ -120,7 +120,7 @@ export async function createRoomDesign(
   const C = storedCollaudo(calc.values, c.collaudo);
   const snap = roomSnapshot(survey, c.sha256, d), sha256 = roomHash(snap), v = roomVerdict(d.checks, C);
   // the line that names it in the lists: data, written in the reader's language where it is shown (room/summary.ts)
-  const summary = encodeRoomSummary(roomSummaryOf(d, survey.room));
+  const summary = encodeRoomSummary(roomSummaryOf(d, survey));
   const created = await prisma.roomDesign.create({
     data: {
       companyId: user.companyId, projectId: c.projectId, calculationId: c.id, userId: user.id, label, inputs: snap.inputs ?? {}, results: snap.results ?? {},

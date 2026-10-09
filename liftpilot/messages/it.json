@@ -823,6 +823,7 @@
     "c_m_hexist": "Locale esistente: altezza libera sotto 2,0 m (UNI 10411, 9.2)",
     "c_sl_frame": "Arcata esistente con carichi oltre i limiti (T* o portata) o non documentati: da verificare per i nuovi carichi (UNI 10411, 6.9)",
     "c_m_holes": "Appoggi del nuovo basamento dal bordo delle aperture esistenti della soletta: distanza minima",
+    "c_m_holes_kept": "Appoggi del basamento esistente (da rilevare) dal bordo delle aperture esistenti della soletta: distanza minima",
     "c_gr_stress": "Guide di cabina: tensioni, paracadute e marcia (UNI EN 81-50, 5.10)",
     "c_gr_flange": "Guide di cabina: flessione della suola (UNI EN 81-50, 5.10.5)",
     "c_gr_defl": "Guide di cabina: frecce (UNI EN 81-50, 5.10.6)",
@@ -1865,7 +1866,9 @@
     "summary": "Locale {W} × {D} mm · {machine} su {support} · calate {calata} mm",
     "sum_machine": "argano",
     "sum_own": "(su misura)",
-    "sum_heb": "{support} su due {profile} sui muri del vano"
+    "sum_heb": "{support} su due {profile} sui muri del vano",
+    "sum_existing": "basamento esistente riusato ({kind}, da rilevare)",
+    "sum_on_existing": "{support} sul basamento esistente riusato ({kind}, da rilevare)"
   },
   "drawing": {
     "full": "Schermo intero",

@@ -67,9 +67,12 @@ export function calcDrops(a: Analysis, M: MachineSpec): { calata: number; sheave
 export type CalataBasis = 'defl' | 'old' | 'new';
 export const calataBasis = (I: Pick<Analysis['ctx']['I'], 'layout' | 'drops'>): CalataBasis => (I.layout === 'topDefl' ? 'defl' : I.drops > 0 ? 'old' : 'new');
 
-/** The key of a room's check's label (messages shaft): m_calata's names what the calculation's drops are (round 37). */
-export const roomCheckKey = (id: string, d: Pick<RoomDerived, 'analysis'>): string =>
-  (id === 'm_calata' ? { defl: 'c_m_calata_defl', old: 'c_m_calata', new: 'c_m_calata_new' }[calataBasis(d.analysis.ctx.I)] : `c_${id}`);
+/** The key of a room's check's label (messages shaft, round 37): m_calata's names what the calculation's drops are;
+ *  m_holes's, on the existing support kept, its bearings as that support's, their position to survey (no new support). */
+export function roomCheckKey(id: string, d: Pick<RoomDerived, 'analysis' | 'site'>): string {
+  if (id === 'm_calata') return { defl: 'c_m_calata_defl', old: 'c_m_calata', new: 'c_m_calata_new' }[calataBasis(d.analysis.ctx.I)];
+  return id === 'm_holes' && d.site.kept ? 'c_m_holes_kept' : `c_${id}`;
+}
 
 /** The machine of a calculation as the room's drawings take it: the catalogue's model its values are, drawn as it is. Its
  *  diverting pulley turns in the bedplate (the maker's when its heights give the calculation's h); ours, unless its
