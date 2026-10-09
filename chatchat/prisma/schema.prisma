@@ -45,6 +45,13 @@ model Tenant {
   devices   Device[]
   documents Document[]
   cases     Case[]
+
+  // Записите на F2 сочат клиента си с външен ключ (Restrict): ред без съществуващ клиент няма.
+  attachments    Attachment[]
+  savedFilters   SavedFilter[]
+  conversations  Conversation[]
+  quickResponses QuickResponse[]
+  notifications  Notification[]
 }
 
 /// Фирма в рамките на клиента (монтажник, дистрибутор, сервиз) — разделя портала.
@@ -604,6 +611,7 @@ model Attachment {
   analysis              Json?
   createdAt             DateTime       @default(now())
 
+  tenant              Tenant               @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   case                Case?                @relation(fields: [caseId], references: [id], onDelete: Cascade)
   caseMessage         CaseMessage?         @relation(fields: [caseMessageId], references: [id], onDelete: SetNull)
   conversationMessage ConversationMessage? @relation(fields: [conversationMessageId], references: [id], onDelete: Cascade)
@@ -650,7 +658,8 @@ model SavedFilter {
   shared    Boolean          @default(false)
   createdAt DateTime         @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, scope])
   @@index([userId])
@@ -683,6 +692,7 @@ model Conversation {
   createdAt   DateTime               @default(now())
   archivedAt  DateTime?
 
+  tenant   Tenant                @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   case     Case?                 @relation(fields: [caseId], references: [id], onDelete: Cascade)
   members  ConversationMember[]
   messages ConversationMessage[]
@@ -794,6 +804,8 @@ model QuickResponse {
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
   @@unique([tenantId, shortcut, locale, version])
   @@index([tenantId, status])
 }
@@ -817,7 +829,8 @@ model Notification {
   deliveredAt DateTime?
   readAt      DateTime?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, readAt])
   @@index([tenantId, createdAt])
