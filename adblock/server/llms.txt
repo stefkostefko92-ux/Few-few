@@ -11,6 +11,7 @@
 - Current version: 5.1.6 (8 October 2026)
 - Homepage: https://adblock.carbonstealth.eu
 - Chrome Web Store: https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk
+- Trust: Established Publisher badge on the Chrome Web Store — the publisher's identity is verified by Google, the listing is published by the owner of carbonstealth.eu, and the publisher has a good record with no history of policy violations
 - Privacy policy: https://adblock.carbonstealth.eu/privacy
 - Licence: MIT; the shipped code is not minified or obfuscated
 
@@ -27,7 +28,7 @@
 - Smart Detection: a list-free heuristic that hides cross-origin frames sized like ad slots.
 - Broken site? A repair page offers one-click fixes (turn off element hiding for the site, allow the site, pause) and prepares a report e-mail the user reviews and sends themselves — the extension never sends it.
 - Controls: per-site allowlist, per-site switch for element hiding, element picker, procedural selectors, filter-list subscriptions by URL, a per-page breakdown of what each list blocked, an engine health card, a count of cookie banners rejected.
-- Interface: 70 languages, including right-to-left Arabic, Hebrew, Persian and Urdu; translations other than English, Bulgarian, Italian and German are machine-assisted.
+- Interface: 73 languages, including right-to-left Arabic, Hebrew, Persian and Urdu; translations other than English, Bulgarian, Italian and German are machine-assisted.
 
 ## Privacy
 
