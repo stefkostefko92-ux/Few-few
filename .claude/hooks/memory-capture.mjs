@@ -101,8 +101,10 @@ export function parseLearn(block) {
     else if ((m = line.match(/^\s*date:\s*(.+)$/))) res.date = m[1].trim();
     // Приема и `text:`, и `lesson:` като начало на поука (агентите естествено варират ключа —
     // nabludatelya/analizatora ползваха `lesson:` и поуките им бяха тихо изхвърлени).
-    else if ((m = line.match(/^\s*-\s*(?:text|lesson|insight|claim):\s*(.+)$/))) { cur = { text: m[1].trim().replace(/^["']|["']$/g, ""), confidence: "unverified", source: "", scope: "", reverify: "" }; res.lessons.push(cur); }
-    else if (cur && (m = line.match(/^\s*confidence:\s*(.+)$/))) cur.confidence = normalizeConfidence(m[1]);
+    else if ((m = line.match(/^\s*-\s*(?:text|lesson|insight|claim):\s*(.+)$/))) { cur = { text: m[1].trim().replace(/^["']|["']$/g, ""), confidence: "unverified", source: "", scope: "", reverify: "", explicit: false }; res.lessons.push(cur); }
+    // `status:` е двойката на `claim:` — AI-джията ги ползва заедно (2026-10-09) и пет поуки с реален
+    // източник паднаха в Карантина, защото `status: verified` не се четеше като увереност.
+    else if (cur && (m = line.match(/^\s*(?:confidence|status):\s*(.+)$/))) { cur.confidence = normalizeConfidence(m[1]); cur.explicit = true; }
     // Кавичките около стойността са YAML украса, не част от източника. Без махането им 19 от 23 проверени
     // поуки на 3D Maniac (реални команди → изход) паднаха в Карантина като „без източник“ (2026-09-24).
     else if (cur && (m = line.match(/^\s*source:\s*(.+)$/))) cur.source = unquote(m[1]);
@@ -129,13 +131,13 @@ export function inlineLessons(block) {
     // Форматът на самия файл памет: „**дата:** текст _(scope; confidence; source)_“. Конвейера и
     // Принтаджията предадоха по 25 поуки точно така (2026-09-24) — пак НУЛА, пак тихо.
     const e = body.match(/^\*\*\d{4}-\d{2}-\d{2}:\*\*\s*(.+?)\s*_\(([^;]+);\s*([^;]+);\s*(.+?)\)_\s*$/);
-    if (e) { out.push({ text: e[1].trim(), confidence: normalizeConfidence(e[3].trim()), source: e[4].trim().replace(/^["']|["']$/g, ""), scope: e[2].trim(), reverify: "" }); continue; }
+    if (e) { out.push({ text: e[1].trim(), confidence: normalizeConfidence(e[3].trim()), source: e[4].trim().replace(/^["']|["']$/g, ""), scope: e[2].trim(), reverify: "", explicit: true }); continue; }
     if (!/\bconfidence:/i.test(body)) continue;
     const text = body.split(/\s*\bconfidence:/i)[0].replace(/^\*{0,2}\d{4}-\d{2}-\d{2}\*{0,2}:\s*/, "").replace(/[\s.;,]+$/, "").trim();
     const conf = (body.match(/\bconfidence:\s*([^;|]+)/i) || [])[1] || "";
     const source = ((body.match(/\bsource:\s*(.+?)(?:;\s*scope:|$)/i) || [])[1] || "").trim();
     const scope = ((body.match(/\bscope:\s*(.+)$/i) || [])[1] || "").trim();
-    if (text) out.push({ text, confidence: normalizeConfidence(conf.trim()), source, scope, reverify: "" });
+    if (text) out.push({ text, confidence: normalizeConfidence(conf.trim()), source, scope, reverify: "", explicit: true });
   }
   return out;
 }
@@ -210,9 +212,67 @@ export { sourceIsReal };
 
 export { looksSecret, looksInjection };
 
+// Схемата на блока така, както я разчита parseLearn — ЕДИН източник: агентът я вижда при старт
+// (memory-preload) и в отказа на dod-check, когато блокът му не се разчита.
+export const LEARN_SCHEMA = [
+  "```learn",
+  "agent: <id>",
+  "date: YYYY-MM-DD",
+  "lessons:",
+  "  - text: <една проверена поука, на един ред>",
+  "    confidence: verified|probable|unverified",
+  "    source: <URL | файл:ред | команда — на един ред>",
+  "    scope: <кога важи>",
+  "```",
+].join("\n");
+
+// Елементите на списъка на НАЙ-ГОРНОТО ниво в блока (вложени списъци, напр. източник като YAML списък,
+// не се броят — те са полета на една поука, не отделни поуки).
+function listItems(block) {
+  const ind = [];
+  for (const raw of String(block).split("\n")) { const m = raw.match(/^(\s*)-\s+\S/); if (m) ind.push(m[1].length); }
+  if (!ind.length) return 0;
+  const min = Math.min(...ind);
+  return ind.filter((i) => i === min).length;
+}
+
+/**
+ * Какво от последния learn блок НЯМА да стигне до паметта така, както е написано. Празно = наред или
+ * няма блок. Тихият отпад е системен (lesson: · свободни булети · файловият формат · „Сигурно“), а
+ * 2026-10-09 още два вида в една задача: `status:` вместо `confidence:` (5 проверени поуки в Карантина)
+ * и `- id:` + `rule: >` (6 поуки — нула записани). Всеки път парсерът се разширяваше след щетата;
+ * тук неразчетеното се хваща ПРЕДИ агентът да приключи (dod-check го връща да го препише).
+ */
+export function learnProblems(text) {
+  const block = lastLearnBlock(String(text || ""));
+  if (block == null) return [];
+  const items = listItems(block);
+  const lessons = parseLearn(block).lessons;
+  const out = [];
+  if (items && lessons.length < items) out.push(`разчетени са ${lessons.length} от ${items} поуки (началото на всяка е „- text:“)`);
+  const folded = lessons.filter((l) => /^[>|][+-]?$/.test(String(l.text).trim()) || !String(l.text).trim()).length;
+  if (folded) out.push(`${folded} поуки с многоредов или празен текст (\`>\`/\`|\`) — текстът е на един ред`);
+  const noConf = lessons.filter((l) => !l.explicit).length;
+  if (noConf) out.push(`${noConf} поуки без „confidence:“ — ще паднат в Карантина`);
+  const noSrc = lessons.filter((l) => l.source && l.confidence === "verified" && !sourceIsReal(l.source)).length;
+  if (noSrc) out.push(`${noSrc} „verified“ поуки без реален източник на същия ред — ще паднат в Карантина`);
+  // Таваните (анти-раздуване) изхвърлят поуката ЦЯЛА и мълчаливо — 2026-10-09 така изчезна проверена
+  // поука с обхват от 260 знака. Казваме го, докато агентът още може да я съкрати.
+  const missing = lessons.filter((l) => !String(l.source || "").trim()).length;
+  if (missing) out.push(`${missing} поуки без „source:“ — ще бъдат изхвърлени (източник или нищо)`);
+  const over = [];
+  for (const l of lessons) {
+    if (String(l.text).length > MAX_TEXT) over.push(`текст ${String(l.text).length}>${MAX_TEXT}`);
+    if (String(l.source).length > MAX_SOURCE) over.push(`source ${String(l.source).length}>${MAX_SOURCE}`);
+    if (String(l.scope).length > MAX_SCOPE) over.push(`scope ${String(l.scope).length}>${MAX_SCOPE}`);
+  }
+  if (over.length) out.push(`над тавана (поуката ще бъде изхвърлена цяла): ${over.join(", ")} знака — съкрати`);
+  return out;
+}
+
 // Таван за поука (Разбивача: 20 000-знаков булет минаваше и раздуваше паметта). Най-дългата реална
 // поука към 2026-09-24 е ~3200 знака с метаданните — таванът е с резерв.
-export const MAX_TEXT = 2000, MAX_SOURCE = 600, MAX_LESSONS = 30;
+export const MAX_TEXT = 2000, MAX_SOURCE = 600, MAX_SCOPE = 200, MAX_LESSONS = 30;
 
 // Бъдеща дата (`date: 2099-…`) изплуваше отровната поука най-отгоре при извличане (сортът е по дата).
 // Датата на поуката е най-много днешната; невалидна → днешната.
@@ -328,7 +388,7 @@ function main() {
   // Таван на броя: един блок не може да наводни паметта (200 поуки = раздута памет + бум на версията).
   for (const les of parsed.lessons.slice(0, MAX_LESSONS)) {
     if (!les.text || !les.source) continue; // източник или нищо
-    if (les.text.length > MAX_TEXT || les.source.length > MAX_SOURCE || String(les.scope).length > 200) continue; // таван: паметта не се раздува
+    if (les.text.length > MAX_TEXT || les.source.length > MAX_SOURCE || String(les.scope).length > MAX_SCOPE) continue; // таван: паметта не се раздува
     if (looksSecret(les.text) || looksSecret(les.source) || looksSecret(les.scope)) continue; // тайна → НЕ записвай (твърд дроп)
     if (looksInjection(les.text) || looksInjection(les.scope) || looksInjection(les.source)) continue; // анти persistent injection
     // „Verified" иска реален източник; иначе пада в карантина (не вярвай на самооценката).

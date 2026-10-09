@@ -20,6 +20,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { finish } from "../lib/emit.mjs";
+import { assistantTexts } from "../../.claude/hooks/memory-capture.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const HOOK = join(ROOT, ".claude", "hooks", "memory-capture.mjs");
@@ -27,6 +28,11 @@ const HOOK = join(ROOT, ".claude", "hooks", "memory-capture.mjs");
 /** Има ли изобщо learn блок вътре? (евтин пред-филтър, за да не спамим hook-а) */
 export function hasLearnBlock(text) {
   return /```learn\s*\n[\s\S]*?```/.test(String(text || ""));
+}
+
+/** Има ли learn блок в ТЕКСТА на агента (транскриптът е JSONL с екранирани нови редове). */
+export function transcriptHasLearn(jsonl) {
+  return hasLearnBlock(assistantTexts(String(jsonl || "").split("\n")).join("\n"));
 }
 
 async function main() {
@@ -39,7 +45,10 @@ async function main() {
   for (const p of paths) {
     const abs = resolve(p);
     if (!existsSync(abs)) { console.error(`✘ няма такъв файл: ${p}`); return finish(2); }
-    if (!hasLearnBlock(readFileSync(abs, "utf8"))) { console.log(`· ${p}: няма learn блок — пропускам`); skipped++; continue; }
+    // Пред-филтърът гледа ТЕКСТА на агента, не суровия JSONL: в него новите редове са екранирани
+    // („\\n“), регексът за ограда на собствен ред не намираше нищо и всеки реален транскрипт се
+    // пропускаше като „без learn блок“ (2026-10-09) — резервният път беше мъртъв.
+    if (!transcriptHasLearn(readFileSync(abs, "utf8"))) { console.log(`· ${p}: няма learn блок — пропускам`); skipped++; continue; }
     const r = spawnSync(process.execPath, [HOOK], {
       input: JSON.stringify({ transcript_path: abs }), encoding: "utf8", timeout: 30000,
       env: { ...process.env, CLAUDE_PROJECT_DIR: ROOT },
