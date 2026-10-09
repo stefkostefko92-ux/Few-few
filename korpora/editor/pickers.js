@@ -223,6 +223,12 @@ export function bindPicker() {
     current.shown = PAGE;
     draw();
   });
+  // Enter (or Down) in the search goes to the results — the chosen one, else the first; it never closes the dialog
+  $('#pk-q').addEventListener('keydown', (ev) => {
+    if (ev.key !== 'Enter' && ev.key !== 'ArrowDown') return;
+    ev.preventDefault();
+    rove($('#pk-list'))?.focus();
+  });
   $('#pk-list').addEventListener('keydown', onListKey);
   dlg().addEventListener('click', (ev) => {
     if (!current) return;

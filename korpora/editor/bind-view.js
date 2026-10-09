@@ -9,9 +9,22 @@ export function createViewer(text) {
   try {
     const probe = document.createElement('canvas');
     if (!(probe.getContext('webgl2') || probe.getContext('webgl'))) throw new Error('no webgl');
-    viewer = new Viewer($('#stage'));
+    const view = new Viewer($('#stage'));
+    // on a phone the form is under the view: while the view is scrolled out of sight it draws nothing, so the GPU
+    // and the page are free for typing; it draws the changes once it is back
+    new IntersectionObserver(([entry]) => {
+      view.inSight = entry.isIntersecting;
+    }).observe($('#stage'));
+    viewer = view;
   } catch {
-    $('#stage').innerHTML = `<p class="nogl">${esc(text.noWebgl)}</p>`;
+    // the stage keeps its size (nothing under it moves) and says what to do; the 3D controls, which would do
+    // nothing, go
+    $('#stage').innerHTML =
+      `<div class="nogl"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg>` +
+      `<p><strong>${esc(text.noWebgl)}</strong> ${esc(text.noWebglHint)}</p>` +
+      `<button type="button" class="btn btn-small" data-tab-go="bom">${esc(text.toBom)}</button></div>`;
+    $('.viewbar').hidden = true;
+    $('#panel-view > .hint').hidden = true;
   }
   $('#open').addEventListener('input', (ev) => {
     viewer?.setOpen(Number(ev.target.value) / 100);

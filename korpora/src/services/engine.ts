@@ -68,9 +68,13 @@ export interface DrawingMeta {
 /** Един параметър от формата на типа мебел — само полетата, които сървърът чете. */
 export interface TypeParam {
   key: string;
+  label: string;
   type: string;
   min?: number;
   max?: number;
+  step?: number;
+  /** Мерната единица до етикета на полето (`mm`); празна при брой. */
+  unit?: string;
   options?: ReadonlyArray<readonly [unknown, string]>;
 }
 
@@ -81,6 +85,8 @@ interface EngineApi {
   catalogDrift(saved: Spec, model: EngineModel): string[];
   typeLabel(type: string): string;
   typeDims(type: string, spec: Spec): { W: number; H: number; D: number };
+  /** Габаритът така, както го пише заглавната лента на редактора. */
+  dimsText(type: string, spec: Spec): string;
   typeOrder: readonly string[];
   typeGroups: Record<string, string>;
   typeParams: Record<string, readonly TypeParam[]>;
@@ -232,6 +238,7 @@ export async function loadEngine(catalogPath?: string): Promise<void> {
     catalogDrift: fn(model, 'catalogDrift'),
     typeLabel: fn(model, 'typeLabel'),
     typeDims: fn(types, 'typeDims'),
+    dimsText: fn(types, 'dimsText'),
     typeOrder: ORDER,
     typeGroups: Object.fromEntries(ORDER.map((id) => [id, TYPES[id]?.group ?? ''])),
     typeParams: Object.fromEntries(ORDER.map((id) => [id, TYPES[id]?.params ?? []])),
