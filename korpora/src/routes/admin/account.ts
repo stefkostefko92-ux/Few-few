@@ -6,7 +6,9 @@ import { idParam, rawField, requestMeta, stringField } from '../../http/meta.js'
 import { planView } from '../../plans/plan.js';
 import { optionPriceCents, priceTable } from '../../plans/pricing.js';
 import { paidStartAllowedFrom } from '../../plans/withdrawal.js';
+import { ordersKeptText } from '../../retention.js';
 import { accountDetail } from '../../services/admin-accounts.js';
+import { auditLines } from '../../services/admin-audit-view.js';
 import {
   accountAudit,
   accountIpSummary,
@@ -54,7 +56,7 @@ accountAdminRouter.get('/admin/accounts/:id', requireStaff('accounts:view'), asy
     logins,
     ips,
     linked,
-    audit,
+    audit: await auditLines(audit, res.locals.t, res.locals.fmt),
     recoveryLeft,
     showLogins,
     request,
@@ -64,6 +66,8 @@ accountAdminRouter.get('/admin/accounts/:id', requireStaff('accounts:view'), asy
     roles: assignableRoles(actor.role),
     // ролята „Собственик“ дава само собственик — с паролата и кода си (grantOwner)
     canGrantOwner: actor.role === 'OWNER',
+    // срокът за поръчките на изтрития акаунт — от кода, както в политиката (решение 6 на собственика)
+    ordersKept: ordersKeptText(res.locals.t),
     now: new Date(),
   });
 });

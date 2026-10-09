@@ -52,6 +52,17 @@
 .bar-end .chip {
   text-decoration: none;
 }
+/* the language switch in the bar: as tall as the bar's buttons (a steadier target for a finger) and three cells of
+   one width, so BG, EN and IT no longer differ by 7px. The three together are no wider than before, so the bar
+   wraps at the same widths as it did */
+.bar .langs a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.2em;
+  min-height: 34px;
+  padding-inline: 4px;
+}
 form.inline {
   display: inline;
   margin: 0;

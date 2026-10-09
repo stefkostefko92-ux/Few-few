@@ -1,11 +1,11 @@
-<%- include('../partials/page-top', { title: t('admin.requests.title') }) %>
+<%- include('../partials/page-top', { title: t('admin.requests.title'), styles: ['app', 'app-admin-panel', 'app-admin-tables'] }) %>
 <div class="page-head"><h1><%= t('admin.requests.title') %></h1>
-  <p><a href="/admin/requests<%= status === 'all' ? '' : '?status=all' %>"><%= t(status === 'all' ? 'admin.requests.onlyOpen' : 'admin.requests.showAll') %></a></p></div>
+  <p><a class="tap" href="/admin/requests<%= status === 'all' ? '' : '?status=all' %>"><%= t(status === 'all' ? 'admin.requests.onlyOpen' : 'admin.requests.showAll') %></a></p></div>
 <%- include('../partials/admin-nav') %>
 <%- include('../partials/flash') %>
 <p class="muted"><%= t('admin.requests.how') %></p>
 <% if (!requests.length) { %><p class="empty"><%= t('admin.requests.none') %></p><% } else { %>
-<div class="table-wrap"><table class="stack">
+<div class="table-wrap"><table class="stack stack-kv orders-table">
   <thead><tr><th><%= t('plan.col.date') %></th><th><%= t('admin.col.account') %></th><th><%= t('plan.col.option') %></th><th class="num"><%= t('plan.col.price') %></th><th><%= t('plan.message') %></th><th><%= t('plan.col.status') %></th><th><%= t('plan.col.actions') %></th></tr></thead>
   <tbody>
   <% for (const r of requests) { %>
@@ -14,7 +14,7 @@
       <td data-label="<%= t('admin.col.account') %>" class="who"><% if (r.user) { %><a href="/admin/accounts/<%= r.user.id %>"><%= r.user.email %></a><small><%= r.user.name %>, <%= t('plan.name.' + r.user.plan) %></small><% } else { %><%= r.customerEmail || '—' %><small><%= r.customerName || '' %>, <%= t('admin.requests.deletedAccount', { date: fmt.date(r.accountDeletedAt) }) %></small><% } %></td>
       <td data-label="<%= t('plan.col.option') %>"><%- include('../partials/order-option', { order: r }) %></td>
       <td data-label="<%= t('plan.col.price') %>" class="num"><%= fmt.money(r.listPriceCents) %><br><small class="muted"><%= t('plan.netShort') %><% if (r.buyerType === 'CONSUMER') { %>; <%= fmt.money(r.withVatCents) %> <%= t('plan.withVatShort') %><% } %></small></td>
-      <td data-label="<%= t('plan.message') %>" class="mini"><%= r.message || '—' %></td>
+      <td data-label="<%= t('plan.message') %>" class="mini<%= r.message ? '' : ' is-blank' %>"><%= r.message || '—' %></td>
       <td data-label="<%= t('plan.col.status') %>"><%- include('../partials/order-status', { order: r, warnWithdrawn: true }) %>
         <% if (r.handledByLabel) { %><br><small><%= fmt.label(r.handledByLabel) %></small><% } %>
         <% if (r.status === 'OPEN' && r.activationFrom > now) { %><br><small><%= t('plan.activationAfter', { date: fmt.dateTime(r.activationFrom) }) %></small><% } %>
@@ -22,7 +22,7 @@
         <% if (r.termsVersion && !r.confirmationSentAt && (r.status === 'OPEN' || r.status === 'DONE')) { %><br><small class="bad-text"><%= t('admin.requests.notConfirmed') %></small><% } %></td>
       <td data-label="<%= t('plan.col.actions') %>"><% if (r.status === 'OPEN' && r.user) { %><div class="actions">
         <% if (can('accounts:plan')) { %><a class="btn btn-small btn-primary" href="/admin/accounts/<%= r.user.id %>?request=<%= r.id %>#plan"><%= t('admin.requests.activate') %></a><% } %>
-        <% if (can('requests:handle')) { %><form method="post" action="/admin/requests/<%= r.id %>/reject" data-confirm="<%= t('admin.requests.rejectConfirm') %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-small btn-quiet" type="submit"><%= t('admin.requests.reject') %></button></form><% } %>
+        <% if (can('requests:handle')) { %><form method="post" action="/admin/requests/<%= r.id %>/reject" data-confirm="<%= t('admin.requests.rejectConfirm', { email: r.user.email, option: r.option === 'lifetime' ? t('plan.lifetime') : t('plan.months', { n: r.months }) }) %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-small btn-quiet" type="submit"><%= t('admin.requests.reject') %></button></form><% } %>
       </div><% } else { %>—<% } %></td>
     </tr>
   <% } %>

@@ -5,6 +5,7 @@
     "save": "Save",
     "copied": "Copied",
     "unknown": "Unknown",
+    "back": "Go back",
     "hours": {
       "one": "1 hour",
       "other": "{n} hours"
