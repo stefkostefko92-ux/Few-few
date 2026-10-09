@@ -1,5 +1,5 @@
-// Geometry and hardware rules found in the audit of the engine: a base cabinet's drawer above its door. Runs on the base
-// catalog and the documented hinge and slide systems.
+// Geometry and hardware rules found in the audit of the engine: a base cabinet's drawer above its door and drawer
+// columns side by side that still reach the CNC. Runs on the base catalog and the documented hinge and slide systems.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { registerCatalog, baseCatalogData } from '../../engine/catalog.js';
@@ -62,6 +62,55 @@ test('base cabinet „Чекмедже + врати“: the drawer sits at the t
     for (const f of fronts) {
       const above = byRole(m, 'door').filter((d) => d.box.min[0] < f.box.max[0] && d.box.max[0] > f.box.min[0]);
       assert.ok(above.length > 0 && above.every((d) => d.box.min[1] > f.box.max[1]), `${spec.type}: ${f.name} not under its doors`);
+    }
+  }
+});
+
+test('two drawer columns side by side: the slides on the two faces of a partition get their own holes and the CNC files are made', () => {
+  const specs = [
+    { type: 'chest', columns: 2 },
+    { type: 'chest', columns: 2, width: 1600, drawers: 3 },
+    { type: 'chest', columns: 2, width: 1000, height: 1300, drawers: 6 },
+    { type: 'tv', columns: 2 },
+    { type: 'wallunit', width: 2200 },
+    { type: 'wallunit', width: 2800, sideWidth: 700 },
+  ];
+  for (const slide of SLIDES) {
+    for (const extra of specs) {
+      const spec = { ...extra, slide };
+      const label = JSON.stringify(spec);
+      const m = buildModel(spec);
+      assert.deepEqual(errorsOf(m), [], label);
+      assert.deepEqual(blockers(m), [], label);
+      const partitions = byRole(m, 'partition').filter((p) => p.features.some((f) => f.kind === 'slide'));
+      assert.ok(partitions.length > 0, `${label}: no partition between drawer columns`);
+      for (const part of partitions) {
+        const holes = part.features.filter((f) => f.kind === 'slide');
+        for (let a = 0; a < holes.length; a++) {
+          for (let b = a + 1; b < holes.length; b++) {
+            const web = Math.hypot(holes[a].u - holes[b].u, holes[a].v - holes[b].v) - (holes[a].d + holes[b].d) / 2;
+            assert.ok(web >= MIN_WEB - 1e-9, `${label} ${part.name}: slide holes ${web.toFixed(2)} mm apart`);
+          }
+        }
+      }
+      // the fronts of neighbouring columns stay level, every box keeps the room above it (TOP_GAP 28 mm)
+      const fronts = byRole(m, 'drawer-front');
+      for (const f of fronts) assert.ok(fronts.some((g) => g !== f && g.module === f.module && g.box.min[1] === f.box.min[1] && g.box.max[1] === f.box.max[1]), `${label}: ${f.name} has no level neighbour`);
+      for (const g of m.groups.filter((x) => x.type === 'drawer')) {
+        const [front, sideA] = g.partIds.map((id) => m.parts.find((p) => p.id === id));
+        assert.ok(front.box.max[1] - sideA.box.max[1] >= 28 - 0.01, `${label}: ${sideA.name} top ${sideA.box.max[1]} under the front top ${front.box.max[1]}`);
+      }
+    }
+  }
+  // a sweep over the chest: the slides never meet in a partition again
+  for (const slide of SLIDES) {
+    for (const width of [800, 1200, 1600]) {
+      for (const height of [700, 1000, 1300]) {
+        for (const drawers of [2, 3, 4, 5, 6]) {
+          const m = buildModel({ type: 'chest', columns: 2, width, height, drawers, slide });
+          assert.ok(!m.warnings.some((w) => w.text.includes('от двете му страни')), `${slide} ${width} ${height} ${drawers}: ${errorsOf(m).join(' | ')}`);
+        }
+      }
     }
   }
 });

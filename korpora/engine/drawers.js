@@ -4,7 +4,7 @@
 import { panel, groove, edgeHoles } from './panel.js';
 import { r1, dimTxt } from './util.js';
 import { slideModel, slideSystemOf, slideLength } from './hardware.js';
-import { GROOVE, HDF_T, CONFIRMAT, FRONT_GAP_Z, confirmat, addHoleOnce, hasHole } from './joinery.js';
+import { GROOVE, HDF_T, CONFIRMAT, FRONT_GAP_Z, MIN_WEB, confirmat, addHoleOnce, hasHole } from './joinery.js';
 import { mountHandle } from './fronts.js';
 import { STOCK } from './materials.js';
 
@@ -46,6 +46,13 @@ export function buildDrawers(ctx, o, a) {
   const box = { stock: boxStock.id, decor: 'demo:white', grain: false, module: mod };
   const product = family.products?.[NL] ?? null;
   const label = product ? `${product.brand ?? family.brand} ${product.sku ?? ''}`.trim() : `${family.brand} ${NL} mm`;
+  // height of the slide's screw axis for a box starting at yb
+  const slideY = (yb) => r1(sys.mount === 'under' ? yb + sys.bottomUp + sys.axisAboveBottom : yb + sys.axisAboveBox);
+  // The slides on the two faces of a partition share its through holes. Where this drawer's pilots would come closer
+  // than MIN_WEB to the pilots the column on the other face has drilled there, its box starts sys.hole.d + MIN_WEB
+  // higher: the box gets that much lower, the front and the room above the box (TOP_GAP) stay.
+  const otherSlides = a.left?.role === 'partition' ? a.left.features.filter((f) => f.kind === 'slide') : [];
+  const meets = (ys) => sys.holes[NL].some((zf2) => otherSlides.some((f) => Math.hypot(f.world[1] - ys, f.world[2] - (zEnd - zf2)) < (f.d + sys.hole.d) / 2 + MIN_WEB - 0.01));
   for (let k = 0; k < drawers; k++) {
     const y0 = dz0 + gap / 2 + k * (fh + gap);
     const y1 = y0 + fh;
@@ -57,7 +64,8 @@ export function buildDrawers(ctx, o, a) {
       bands: bf ? { '+x': bf, '-x': bf, '+y': bf, '-y': bf } : {}, explode: [0, 0, 2.2],
     });
     mountHandle(ctx, o, front, { orientation: 'horizontal', kind: o.kind });
-    const yb = Math.max(y0 + 12, dz0 + T + 6);
+    const yb0 = Math.max(y0 + 12, dz0 + T + 6);
+    const yb = meets(slideY(yb0)) ? yb0 + sys.hole.d + MIN_WEB : yb0;
     const yt = y1 - TOP_GAP;
     const hb = r1(yt - yb);
     if (hb < MIN_BOX) {
@@ -95,7 +103,7 @@ export function buildDrawers(ctx, o, a) {
     }
     // carcass holes on the panels' inner faces; partitions get through holes so both faces work. A slide hole already
     // drilled there belongs to the slide on the other face: the screws from both faces would meet in it (fail closed)
-    const ys = r1(sys.mount === 'under' ? bottomY + sys.axisAboveBottom : yb + sys.axisAboveBox);
+    const ys = slideY(yb);
     for (const [cp, fx] of [[a.left, xa], [a.right, xb]]) {
       const through = cp.role === 'partition';
       for (const zf2 of sys.holes[NL]) {
