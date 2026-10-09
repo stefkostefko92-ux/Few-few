@@ -16,8 +16,6 @@ export function errorText(err) {
       return t('err.forbidden');
     case 404:
       return t('err.notFound');
-    case 409:
-      return t('ticket.exists');
     case 429:
       return t('err.rateLimited');
     default:

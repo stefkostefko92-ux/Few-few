@@ -80,7 +80,7 @@ export function tCode(code) {
 
 /** Стойност „като е“, ако е код; иначе свободният текст на модела. */
 export function tMaybeCode(text) {
-  if (typeof text === 'string' && /^(gate|ctx|collect)\.[\w.]+(:.*)?$/.test(text))
+  if (typeof text === 'string' && /^(gate|ctx|collect|ai)\.[\w.]+(:.*)?$/.test(text))
     return tCode(text);
   return text;
 }
