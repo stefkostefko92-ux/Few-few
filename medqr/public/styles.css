@@ -1728,3 +1728,24 @@ picture {
 .form-wide .chip:has(input:checked) {
   font-weight: 600;
 }
+
+/* Тесен екран: етикет над стойността — иначе дългите етикети („Хронични заболявания“)
+   свиват стойностите в тясна колона и всяка дума е на отделен ред. */
+@media (max-width: 480px) {
+  .profile-view {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .profile-view dt {
+    margin-top: 0.6rem;
+    font-size: 0.85rem;
+  }
+  .profile-view dt:first-child {
+    margin-top: 0;
+  }
+}
+/* Дългият адрес на профила се пренася, а не се реже/разширява картата. */
+#emergency-url {
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}

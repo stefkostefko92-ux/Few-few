@@ -125,7 +125,10 @@ export function isLocked(user) {
 }
 
 export function registerFailedAttempt(user) {
-  const attempts = (user.failed_attempts || 0) + 1;
+  // Броячът се чете наново от базата: обектът `user` е прочетен ПРЕДИ бавната (async)
+  // проверка, а паралелни опити иначе биха записали един и същ брояч и не биха заключили.
+  const row = db.prepare('SELECT failed_attempts FROM users WHERE id = ?').get(user.id);
+  const attempts = ((row && row.failed_attempts) || 0) + 1;
   if (attempts >= MAX_FAILED) {
     const until = new Date(Date.now() + LOCK_MINUTES * 60000).toISOString();
     db.prepare('UPDATE users SET failed_attempts = 0, locked_until = ? WHERE id = ?').run(
@@ -237,17 +240,24 @@ export function countRecoveryCodes(userId) {
 
 // Проверява и консумира резервен код. Връща true при успех.
 export async function consumeRecoveryCode(userId, code) {
-  const norm = String(code || '')
-    .trim()
+  let norm = String(code || '')
+    .replace(/\s+/g, '')
     .toLowerCase();
+  // Приемаме и без тире: „a1b2c3d4e5“ → „a1b2c-3d4e5“ (както е отпечатан).
+  if (/^[0-9a-f]{10}$/.test(norm)) norm = `${norm.slice(0, 5)}-${norm.slice(5)}`;
   if (!norm) return false;
   const rows = db
     .prepare('SELECT id, code_hash FROM recovery_codes WHERE user_id = ? AND used_at IS NULL')
     .all(userId);
   for (const row of rows) {
     if (await verifySecret(norm, row.code_hash)) {
-      db.prepare("UPDATE recovery_codes SET used_at = datetime('now') WHERE id = ?").run(row.id);
-      return true;
+      // Атомарно: само първата от паралелни заявки със същия код го „изразходва“.
+      const res = db
+        .prepare(
+          "UPDATE recovery_codes SET used_at = datetime('now') WHERE id = ? AND used_at IS NULL"
+        )
+        .run(row.id);
+      return res.changes === 1;
     }
   }
   return false;

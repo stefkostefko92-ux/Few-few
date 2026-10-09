@@ -401,7 +401,9 @@ document.addEventListener('DOMContentLoaded', () => {
               headers: { 'content-type': 'application/json', 'x-csrf-token': csrf() },
               body: JSON.stringify({ lat, lng }),
               signal:
-                typeof AbortSignal.timeout === 'function' ? AbortSignal.timeout(8000) : undefined,
+                typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function'
+                  ? AbortSignal.timeout(8000)
+                  : undefined,
             });
             if (res.ok) notified = !!(await res.json().catch(() => ({}))).notified;
           } catch {

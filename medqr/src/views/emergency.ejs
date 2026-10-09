@@ -175,7 +175,7 @@
     </div>
   <% } %>
 
-  <p class="muted small"><%= t('emerg.updated') %>: <%= profile.updated_at %>. <%= t('emerg.logged') %></p>
+  <p class="muted small"><%= t('emerg.updated') %>: <%= String(profile.updated_at || '').slice(0, 16) %> UTC. <%= t('emerg.logged') %></p>
 </div>
 
 <%- include('partials/foot') %>
