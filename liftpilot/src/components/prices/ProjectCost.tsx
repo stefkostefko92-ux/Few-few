@@ -2,15 +2,20 @@ import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { money } from '@/lib/money';
+import type { Uncounted } from '@/lib/prices/bom';
 import type { Cost } from '@/lib/prices/cost';
 import { makeFmt } from '@/lib/present/tr';
 
 // What a project's articles cost with the company's prices (VAT excluded): every line with its quantity, price and
 // amount, the company's free lines counted by their basis, the total of the priced ones and how many have none; the
-// free lines a replacement cannot count (by the stop); which scope it counts (a new lift, a modification tested to
-// UNI 10411 with its replaced parts only, a machine replacement). Only on the pages of those who see prices.
-export default async function ProjectCost({ cost, skipped = [], locale, scope, editable }: { cost: Cost; skipped?: readonly string[]; locale: string; scope: 'design' | 'modification' | 'calc'; editable: boolean }) {
-  const t = await getTranslations('prices'), fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
+// free lines a replacement cannot count (by the stop); the parts a calculation's bill cannot count without the lift's
+// design (`uncounted`: bom.ts calcUncounted) — those the acceptance test names replaced, or a new lift's — in words of
+// their own; which scope it counts (a new lift, a modification tested to UNI 10411 with its replaced parts only, a machine
+// replacement). Only on the pages of those who see prices.
+export default async function ProjectCost({ cost, skipped = [], uncounted = null, locale, scope, editable }: {
+  cost: Cost; skipped?: readonly string[]; uncounted?: Uncounted | null; locale: string; scope: 'design' | 'modification' | 'calc'; editable: boolean;
+}) {
+  const t = await getTranslations('prices'), tl = await getTranslations('lift'), fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
   const eur = (c: number | null): string => (c === null ? '—' : money(c, 'eur', locale));
   return (
     <section className="panel" aria-labelledby="project-cost-h">
@@ -35,6 +40,9 @@ export default async function ProjectCost({ cost, skipped = [], locale, scope, e
       <p className="bom-total"><span>{cost.missing ? t('totalPartial') : t('total')}</span><strong className="num">{eur(cost.total)}</strong></p>
       {cost.missing ? (
         <p className="alert alert-warn" role="status">{t('missing', { n: cost.missing })}{editable ? <>{' '}<Link href="/app/prices">{t('toList')}</Link></> : null}</p>
+      ) : null}
+      {uncounted?.parts.length ? (
+        <p className="alert alert-warn" role="status">{t(uncounted.newLift ? 'uncountedNew' : 'uncounted', { list: uncounted.parts.map((p) => tl(`parte_${p}`)).join(', ') })}</p>
       ) : null}
       {skipped.length ? <p className="note">{t('skipped', { list: skipped.join('; ') })}</p> : null}
       <p className="note">{t(scope === 'design' ? 'costNoteDesign' : scope === 'modification' ? 'costNoteModification' : 'costNoteCalc')}</p>

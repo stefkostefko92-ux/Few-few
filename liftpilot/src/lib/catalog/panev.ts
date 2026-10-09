@@ -67,12 +67,13 @@ export interface PanevBom {
  *  its SG or the solution to drawing chosen. */
 export function panevBom(L: Layout): PanevBom {
   const I = L.inputs, S = section(L), pair = doorPairOf(I), rows = new Map<string, BomRow>();
+  // one row per article and use: a door's and a rail's never merge, whatever part of the acceptance test counts them
   const add = (code: string, qty: number, use: BomRow['use'], extra: Partial<BomRow> = {}): void => {
     const article = panevArticle(code);
     if (!article || qty <= 0) return;
-    const row = rows.get(code);
+    const row = rows.get(`${use} ${code}`);
     if (row) row.qty += qty;
-    else rows.set(code, { article, qty, use, ...extra });
+    else rows.set(`${use} ${code}`, { article, qty, use, ...extra });
   };
   const tops = topPairStops(L, S.levels);
   for (const d of L.doors) {

@@ -1,14 +1,16 @@
 // The bill of materials of a project as the software designs it, for its cost with the company's prices: the machine
 // (the catalogue's model the proposal took, else one of no list), what it stands on (SICOR's bedplate with the pulley,
-// ours, or the support chosen, the pulley on its stand; a machine below its head pulleys and its base: bom-parts.ts),
-// the ropes at their cut length with their wedge sockets, the 2:1 roping's pulleys and dead ends, the rails in 5 m bars
-// from the pit floor to under the slab with a joint between two bars, a bracket every 2 m plus the first and the last,
-// Panev's articles (panevBom), the doors of every stop and of the car, the governor with its tension pulley and its
-// rope, the buffers, the car, its sling with the safety gear, the counterweight's mass and its shoes, the protection
+// ours, or the support chosen, the pulley on its stand, the HEB beams with their bearing plates; a machine below its
+// head pulleys and its base: bom-parts.ts), the ropes at their cut length with their wedge sockets, the 2:1 roping's
+// pulleys and dead ends, the rails in 5 m bars from the pit floor to under the slab with a joint between two bars, a
+// bracket every 2 m plus the first and the last, Panev's articles (panevBom: the landing doors' pairs with the landing
+// doors, the counterweight rails' with the rails and their N1 clips), the doors of every stop and of the car, the
+// governors with their tension pulleys and ropes, the buffers, the car, its sling with the safety gear, the
+// counterweight's mass and its shoes (over a space under the shaft its safety gear and what trips it), the protection
 // ACOP/UCM; then what it counts from the design without drawing it (the electrical system, the signalling, the buffers'
 // supports, the car's shoes, the labour: plant-bom.ts). A modification tested to UNI 10411 counts only the parts the
-// acceptance test replaces, and the installer as a lump sum (bom-parts.ts keptPart). Not counted: the building works.
-// Pure.
+// acceptance test replaces, and the installer as a lump sum (parts.ts keptPart). Not counted: the building works, the
+// anchors and bolts of Panev's brackets (the cost's note says so). Pure.
 import type { FormValues } from '@/calc/types';
 import { panevBom } from '@/lib/catalog/panev';
 import type { LiftDerived } from '@/lib/lift/derive';
@@ -18,14 +20,13 @@ import type { Plant } from '@/lib/plant';
 import { analyse } from '@/lib/present/analysis';
 import { RAIL_LENGTH, bracketHeights, cwBracketsOf, railSpan, section, type Layout } from '@/shaft';
 import { bufferType } from '@/shaft/buffers';
-import { govSize } from '@/shaft/governor';
 import { railLabel, type RailType } from '@/shaft/rails';
 import { supportOf } from '@/shaft/support';
-import { bedplateKey, governorKey, hebKey, machineKey, ropeEndKey, ropeKey } from './articles';
-import { acopLines, belowLines, keptPart, plantPart, ropeLines, ropingLines, safetyLines, sizeText, type TaggedLine } from './bom-parts';
+import { bedplateKey, machineKey, ropeEndKey, ropeKey } from './articles';
+import { acopLines, belowLines, governorLines, hebLines, keptPart, panevLines, plantPart, ropeLines, ropingLines, safetyLines, sizeText, type TaggedLine } from './bom-parts';
 import type { BomLine } from './cost';
 import { plantLines } from './plant-bom';
-import type { Collaudo } from '@/lib/lift/collaudo';
+import type { Collaudo, Parte } from '@/lib/lift/collaudo';
 import { ropeCut } from '@/lib/lift/support';
 import type { RoomDerived } from '@/lib/room/derive';
 
@@ -62,8 +63,8 @@ export function designBom(dv: LiftDerived, plant: Plant = {}): BomLine[] {
     if (rf?.on === 'frame' && rf.maker) add('machine', { key: bedplateKey(rf.maker.code), label: { item: 'bedplate', name: `${rf.maker.brand} ${rf.maker.code}` }, qty: 1, unit: 'pz' });
     else add('machine', { key: `support:${sup.kind}`, label: { item: `support_${sup.kind}` }, qty: 1, unit: 'pz' });
     if (rf?.on === 'stand') add('machine', { key: 'support:stand', label: { item: 'support_stand' }, qty: 1, unit: 'pz' });
-    // the two HEB beams on the shaft's walls, by the metre
-    if (dv.heb) add('machine', { key: hebKey(dv.heb.chosen.profile), label: { item: 'heb', name: dv.heb.chosen.profile }, qty: (2 * dv.heb.chosen.length) / 1000, unit: 'm' });
+    // the two HEB beams on the shaft's walls by the metre, on their bearing plates
+    add('machine', ...hebLines(dv.heb?.chosen));
   }
   T.push(...belowLines(dv), ...ropeLines(dv), ...ropingLines(dv));
   // the rails in whole bars, the same type of the car and of the counterweight together; a joint between two bars
@@ -82,16 +83,14 @@ export function designBom(dv: LiftDerived, plant: Plant = {}): BomLine[] {
     add('rails', { key: `rail:${type}`, label: { item: 'rail_bars', name: railLabel(type), args: { bars: String(n * bars), len: sizeText(RAIL_LENGTH / 1000) } }, qty: (n * bars * RAIL_LENGTH) / 1000, unit: 'm' });
     add('rails', { key: `fishplate:${type}`, label: { item: 'fishplate', name: railLabel(type) }, qty: n * Math.max(0, bars - 1), unit: 'pz' });
   }
-  for (const r of pb.rows) add('rails', { key: `panev:${r.article.code}`, label: { item: `panev_${r.article.kind}`, name: `${r.article.code} (${r.article.size})` }, qty: r.qty, unit: 'pz' });
+  T.push(...panevLines(pb.rows));
   for (const d of dv.layout.doors) {
     add('landingDoors', { key: `door:landing:${d.kind}`, label: { item: `door_landing_${d.kind}` }, qty: V.floors.filter((f) => f.door.includes(d.side)).length, unit: 'pz' });
     add('carDoors', { key: `door:car:${d.kind}`, label: { item: `door_car_${d.kind}` }, qty: 1, unit: 'pz' });
   }
   // the plate under each landing sill (UNI EN 81-20:2020, 5.2.5.3.2; src/shaft/toe.ts): one per landing door
   add('landingDoors', { key: 'door:toe', label: { item: 'door_toe' }, qty: dv.layout.doors.reduce((n, d) => n + V.floors.filter((f) => f.door.includes(d.side)).length, 0), unit: 'pz' });
-  const g = govSize(V.v, I.governor);
-  add('governor', { key: governorKey(g.brand, g.model), label: { item: 'governor', name: `${g.brand} ${g.model}` }, qty: 1, unit: 'pz' });
-  add('governor', { key: 'tension', label: { item: 'tension' }, qty: 1, unit: 'pz' });
+  T.push(...governorLines(dv, plant));
   const ct = bufferType(V, 'car'), wt = bufferType(V, 'cw');
   add('buffers', { key: `buffer:${ct}`, label: { item: `buffer_${ct}` }, qty: Math.max(1, V.carBuffers), unit: 'pz' });
   add('buffers', { key: `buffer:${wt}`, label: { item: `buffer_${wt}` }, qty: 1, unit: 'pz' });
@@ -106,12 +105,27 @@ export function designBom(dv: LiftDerived, plant: Plant = {}): BomLine[] {
   return merged(repl ? [...kept, { key: 'labour:replacement', label: { item: 'labour_replacement' }, qty: 1, unit: 'lot' }] : kept);
 }
 
+/** What a machine replacement counts of the parts its acceptance test replaces: the machine with what it stands on, the
+ *  ropes, the controller; the speed, the load and the travel change without a part of their own. */
+const CALC_COUNTED: readonly Parte[] = ['machine', 'ropes', 'controller', 'speed', 'load', 'travel'];
+
+/** The parts a calculation's bill (calcBom) does not count; `newLift`: a new lift calculated without its design (EN
+ *  81-20/50), whose parts are new, not replaced, so the cost says it in words of its own (prices.uncountedNew). */
+export type Uncounted = { parts: Parte[]; newLift: boolean };
+
+/** The parts the acceptance test `C` puts in the lift that a machine replacement's bill does not count (calcBom): under
+ *  UNI 10411 those it names replaced, under EN 81-20/50 every part of the new lift. They need the design of the lift
+ *  (its shaft, doors, rails, car), so the cost says so, never silently leaves them out. */
+export const calcUncounted = (C: Collaudo | null): Uncounted =>
+  ({ parts: (C?.parti ?? []).filter((p) => !CALC_COUNTED.includes(p)), newLift: C?.norma === 'en81' });
+
 /** The replacement of the machine: the machine (the catalogue's whose values the calculator holds), what it stands on
- *  (the maker's bedplate with the pulley; with the machine room surveyed `room`, the support chosen there and the pulley's
- *  stand; a machine below its base anchored against the uplift), the ropes at their cut length with their wedge
- *  sockets and the controller when the acceptance test `C` names them replaced, the adaptation of ACOP/UCM under
- *  UNI 10411-11, and the installer as a lump sum. The cut length on the rig of the shaft design laid out `shaft` the
- *  calculation was made from, as its sheet 1 measures it (rope.ts layoutRigLength); without one, the formula. */
+ *  (the maker's bedplate with the pulley; with the machine room surveyed `room`, the support chosen there, the pulley's
+ *  stand and the HEB beams on their plates; a machine below its base anchored against the uplift), the ropes at their
+ *  cut length with their wedge sockets and the controller when the acceptance test `C` names them replaced, the
+ *  adaptation of ACOP/UCM under UNI 10411-11, and the installer as a lump sum (the other parts `C` replaces:
+ *  calcUncounted). The cut length on the rig of the shaft design laid out `shaft` the calculation was made from, as its
+ *  sheet 1 measures it (rope.ts layoutRigLength); without one, the formula. */
 export function calcBom(V: FormValues, C: Collaudo | null = null, room: RoomDerived | null = null, shaft: Layout | null = null): BomLine[] {
   const c = calcMachine(V), a = room?.analysis ?? analyse(V), { I, N } = a.ctx, parts = C?.parti ?? ['machine'];
   const L: BomLine[] = [c ? { key: machineKey(c.brand, c.model), label: { item: 'machine', name: `${c.brand} ${c.model}` }, qty: 1, unit: 'pz' } : { key: null, label: { item: 'machine_other' }, qty: 1, unit: 'pz' }];
@@ -124,7 +138,7 @@ export function calcBom(V: FormValues, C: Collaudo | null = null, room: RoomDeri
     L.push({ key: `support:${sup.kind}`, label: { item: `support_${sup.kind}` }, qty: 1, unit: 'pz' });
   }
   if (rf?.on === 'stand') L.push({ key: 'support:stand', label: { item: 'support_stand' }, qty: 1, unit: 'pz' });
-  if (room?.heb) L.push({ key: hebKey(room.heb.chosen.profile), label: { item: 'heb', name: room.heb.chosen.profile }, qty: (2 * room.heb.chosen.length) / 1000, unit: 'm' });
+  L.push(...hebLines(room?.heb?.chosen));
   if (I.layout === 'bottom') L.push({ key: 'base:below', label: { item: 'base_below' }, qty: 1, unit: 'pz' });
   if (parts.includes('ropes')) {
     L.push({ key: ropeKey(N.d), label: { item: 'rope', name: sizeText(N.d) }, qty: N.n * ropeCut(I, shaft ? layoutRigLength(shaft, a) : null), unit: 'm' });

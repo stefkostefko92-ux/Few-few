@@ -15,7 +15,7 @@ import { reproduceRoomRecord } from '@/server/room-compose';
 import { roomSummaryLine } from '@/server/room-summary';
 import { getRoomDesign, refreshedFrom } from '@/server/queries';
 import { projectCost } from '@/server/prices';
-import { calcBom } from '@/lib/prices/bom';
+import { calcBom, calcUncounted } from '@/lib/prices/bom';
 import { initialsOf } from '@/lib/tavole/compose';
 import { issueChecks } from '@/lib/tavole/issue-check';
 import { plantReadSchema } from '@/lib/plant';
@@ -131,7 +131,7 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
           <p className="note">{t('existingNote')}</p>
         </section>
       ) : null}
-      {costed ? <ProjectCost cost={costed.cost} skipped={costed.skipped} locale={locale} scope="calc" editable={can(user, 'prices:edit')} /> : null}
+      {costed && rep.ok ? <ProjectCost cost={costed.cost} skipped={costed.skipped} uncounted={calcUncounted(rep.collaudo)} locale={locale} scope="calc" editable={can(user, 'prices:edit')} /> : null}
       <section className="panel" aria-labelledby="room-sets">
         <h2 id="room-sets">{tt('title')}</h2>
         <p className="note">{t('setsLead')}</p>

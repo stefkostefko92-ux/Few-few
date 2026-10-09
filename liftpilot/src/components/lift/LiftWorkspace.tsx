@@ -241,7 +241,7 @@ export default function LiftWorkspace({ projectId, initial, blank: initialBlank 
                 <section className="panel"><PlanEditor I={drawn} onChange={setDrawn} machine={above ? derived.machine : null} onCalc={setCalcFromDrawing} id="lift-plan"
                   below={derived.bottom ? { machine: derived.machine, analysis: derived.analysis, scheme: derived.bottom } : null} /></section>
                 <LiftChecks derived={derived} X={X} fmt={P.fmt} onSimulate={(req) => sim.current?.play(req)} />
-                <PanevBom L={derived.layout} prices={prices} />
+                <PanevBom L={derived.layout} prices={prices} C={derived.collaudo} />
               </>
             ) : null}
           </>
