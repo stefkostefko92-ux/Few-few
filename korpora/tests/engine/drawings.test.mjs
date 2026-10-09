@@ -122,3 +122,16 @@ test('the title block cuts a long owner to its cell instead of running into the 
   assert.ok(svg.includes(`>${owner.slice(0, 29)}…</text>`), 'the owner is not cut to 30 characters');
   assert.ok(frame('Врата', { ...meta, owner: 'Carbon Stealth VCC' }, 10, 2, 5, 'ПДЧ').includes('>Carbon Stealth VCC</text>'), 'a short owner is cut');
 });
+
+test('the drawings use the faces the site and the brochure load, not a font nobody serves', () => {
+  const base = readFileSync(new URL('../../public/css/base.css', import.meta.url), 'utf8');
+  const brochure = readFileSync(new URL('../../print/build-brochure.ts', import.meta.url), 'utf8');
+  const served = new Set([...base.matchAll(/@font-face\s*\{[^}]*font-family:\s*'([^']+)'/g)].map((m) => m[1]));
+  assert.ok(served.has('Geologica') && served.has('JetBrains Mono'), `faces in base.css: ${[...served]}`);
+  const firsts = [...STYLE.matchAll(/font(?:-family)?:[^;}']*'([^']+)'/g)].map((m) => m[1]);
+  assert.ok(firsts.length > 5, 'no font in STYLE');
+  for (const face of new Set(firsts)) {
+    assert.ok(served.has(face), `STYLE asks for '${face}', which public/css/base.css does not serve`);
+    assert.ok(brochure.includes(`face('${face}'`), `STYLE asks for '${face}', which the brochure does not embed`);
+  }
+});
