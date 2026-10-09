@@ -16,6 +16,7 @@ const SECTIONS = [
   { id: 'documents', cap: 'kb:manage', load: () => import('./documents.js') },
   { id: 'codes', cap: 'kb:manage', load: () => import('./codes.js') },
   { id: 'quick', cap: 'kb:manage', load: () => import('./quick.js') },
+  { id: 'kpi', cap: 'kpi:read', load: () => import('./kpi.js') },
   { id: 'audit', cap: 'audit:read', load: () => import('./audit.js') },
 ];
 

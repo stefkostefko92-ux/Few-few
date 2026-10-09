@@ -93,6 +93,7 @@ const app = createApp({
   onDocumentPublished: indexer ? () => void indexer?.kick() : undefined,
   attachments,
   hub,
+  evalReportsDir: config.EVAL_REPORTS_DIR,
 });
 
 const server = app.listen(config.PORT, config.HOST, () => {

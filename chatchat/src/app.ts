@@ -13,6 +13,7 @@ import { adminListsRouter } from './routes/admin-lists.js';
 import { adminCatalogRouter } from './routes/admin-catalog.js';
 import { adminDocumentsRouter } from './routes/admin-documents.js';
 import { adminErrorsRouter } from './routes/admin-errors.js';
+import { adminKpiRouter } from './routes/admin-kpi.js';
 import { adminSubjectRouter } from './routes/admin-subject.js';
 import { adminUserActionsRouter } from './routes/admin-user-actions.js';
 import { adminUsersRouter } from './routes/admin-users.js';
@@ -55,6 +56,8 @@ export interface AppDeps {
   attachments: AttachmentDeps | null;
   /** Хъбът за реално време (SSE) — един на процес; без него createApp прави свой. */
   hub?: RealtimeHub;
+  /** Отчетите на оценъчния набор за KPI (§16.1); празно/липсва → „изисква оценка“. */
+  evalReportsDir?: string;
 }
 
 /** Зависимостите след сглобяване — с хъба, който рутерите на работното пространство ползват. */
@@ -160,6 +163,8 @@ export function createApp(appDeps: AppDeps): express.Express {
   // Списъците (GET) — преди рутерите на знанието: фирмите са и за users:manage, а тяхното
   // `router.use` иска kb:manage за всичко под /admin.
   app.use('/api/v1/admin', adminListsRouter(deps));
+  // KPI (kpi:read) — също преди рутерите на знанието (същата причина).
+  app.use('/api/v1/admin', adminKpiRouter(deps));
   app.use('/api/v1/admin', adminCatalogRouter(deps));
   app.use('/api/v1/admin', adminDocumentsRouter(deps));
   app.use('/api/v1/admin', adminErrorsRouter(deps));
