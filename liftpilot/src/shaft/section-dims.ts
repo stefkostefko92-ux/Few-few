@@ -31,7 +31,8 @@ const bufferHalf = (t: BufferType): { base: number; top: number } => ({ base: 90
 
 type From = readonly (number | null | undefined)[];
 
-export function sectionDims(L: Layout, S: Section, kind: SectionKind, carFloor: number, zmap: ZMap | null): Entity[] {
+/** `omit`: floors section A-A whole leaves out of its shortened travel (SectionView.omit). */
+export function sectionDims(L: Layout, S: Section, kind: SectionKind, carFloor: number, zmap: ZMap | null, omit: readonly number[] = []): Entity[] {
   const I = L.inputs, V = I.vertical, out: Entity[] = [], Z = (z: number): number => mapZ(zmap, z), T = I.wall;
   const P = (x: number, z: number): Pt => [x, Z(z)];
   const row = { left: 0, right: 0 };
@@ -67,9 +68,16 @@ export function sectionDims(L: Layout, S: Section, kind: SectionKind, carFloor: 
   const front = -T, rear = I.D + T;
 
   if (kind === 'full') {
-    // by the landings: each floor's rise; the pit, the travel (its last rise takes a new travel) and the headroom (a new
-    // total height); the total
-    side('left', S.levels, S.levels.slice(1).map(() => 'Interpiano {v}'), S.levels.slice(1).map((_, i) => E(`f.${i}.rise`)));
+    // by the landings: each floor's rise (over floors left out, from the floor drawn under them to the one over them,
+    // their sum: the sheet's table gives each); the pit, the travel (its last rise takes a new travel) and the headroom
+    // (a new total height); the total
+    // (none when only the lowest and the top floor are drawn: that is the travel)
+    const shown = S.levels.flatMap((_, i) => (omit.includes(i) ? [] : [i])), label = (i: number): string => V.floors[i]?.label ?? String(i);
+    const run = (k: number): boolean => shown[k + 1] === shown[k] + 1;
+    if (shown.length > 2 || !omit.length) {
+      side('left', shown.map((i) => S.levels[i]), shown.slice(1).map((j, k) => (run(k) ? 'Interpiano {v}' : `Piani "${label(shown[k])}"–"${label(j)}" {v}`)),
+        shown.slice(1).map((_, k) => (run(k) ? E(`f.${shown[k]}.rise`) : null)));
+    }
     const last = n - 2, before = S.top - (V.floors[last]?.rise ?? 0);
     side('left', [S.pitFloor, 0, S.top, S.ceiling], [`Fossa ${V.pit}`, `Corsa ${S.top}`, `Testata ${V.headroom}`], [E('v.pit'), E(`f.${last}.rise`, -before), E('v.headroom')],
       [front, undefined, undefined, front]);

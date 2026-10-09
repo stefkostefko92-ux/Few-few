@@ -22,7 +22,7 @@ import { pitPlanExtras } from './plan-pit';
 import { carBracketLabel } from './plan-car-brackets';
 import { RAILS } from './rails';
 import { rigPlan } from './rig-view';
-import { RAIL_KEEP, TAG_R, letteringBoxes, placeTags, type TagAsk, type TagKeep } from './tag-place';
+import { RAIL_KEEP, TAG_SCALE, letteringBoxes, placeTags, tagR, type TagAsk, type TagKeep } from './tag-place';
 import type { DoorLayout, Layout, Rail } from './types';
 
 export type PlanLevel = 'top' | 'main' | 'bottom' | 'pit';
@@ -87,7 +87,7 @@ function carBody(L: Layout, level: PlanLevel): Entity[] {
 
 /** T rail with its tip at (x, y) pointing along `dir`, and its bracket (Panev's support on a counterweight rail, with
  *  its code when `label`); `head`: in the headroom, the brackets reach the walls where they stand there. */
-function rail(L: Layout, r0: Rail, shoes: boolean, label = false, head = false, inWalls: Entity[] = []): Entity[] {
+function rail(L: Layout, r0: Rail, shoes: boolean, label = false, head = false, inWalls: Entity[] = [], scale?: number): Entity[] {
   const r = head ? headRail(L.inputs, r0) : r0;
   const s = RAILS[r.kind === 'car' ? L.inputs.carRail : L.inputs.cwRail], tf = Math.max(6, s.k * 0.9);
   const local: Pt[] = [[0, -s.k / 2], [0, s.k / 2], [-(s.h - tf), s.k / 2], [-(s.h - tf), s.b / 2], [-s.h, s.b / 2], [-s.h, -s.b / 2], [-(s.h - tf), -s.b / 2], [-(s.h - tf), -s.k / 2]];
@@ -97,7 +97,7 @@ function rail(L: Layout, r0: Rail, shoes: boolean, label = false, head = false, 
   // the bracket under the rail: Panev's support, or the generic one out to the wall or the bridge (on a counterweight
   // rail of a Panev design with the code it stands for, clear of the lettering already in the walls `inWalls`)
   const hw = head ? headOf(L.inputs) : undefined, pv = panevSupportPlan(L, r0, label, hw), br = pv ?? genericBracketPlan(L, r);
-  const code = pv ? [] : specialPlanLabel(L, r, label ? cwPlanCode(L, r0, hw) : null, inWalls, head ? headBox(L.inputs) : mainBox(L.inputs));
+  const code = pv ? [] : specialPlanLabel(L, r, label ? cwPlanCode(L, r0, hw) : null, inWalls, head ? headBox(L.inputs) : mainBox(L.inputs), scale);
   inWalls.push(...code);
   out.unshift(...br.under);
   out.push(...br.over, ...code);
@@ -159,7 +159,9 @@ function space(x0: number, y0: number, x1: number, y1: number): Entity[] {
   return [rect(x0, y0, x1, y1, 'space'), line([x0, y0], [x1, y1], 'space'), line([x0, y1], [x1, y0], 'space')];
 }
 
-export function planEntities(L: Layout, level: PlanLevel, floor: number): Entity[] {
+/** `scale`: the plan's, the references of the loads placed for it (tag-place.ts; views.ts planView), off `avoid` too
+ *  (the boxes of the plan's dimensions: letteringBoxes). */
+export function planEntities(L: Layout, level: PlanLevel, floor: number, scale: number = TAG_SCALE, avoid: readonly Box[] = []): Entity[] {
   const open = doorsAt(L, floor), box = wallsAt(L, level), out: Entity[] = [...walls(L, open, box)];
   for (const d of open) out.push(...landingDoor(L, d), ...callPanel(L, d, box));
   if (level === 'pit') {
@@ -171,18 +173,21 @@ export function planEntities(L: Layout, level: PlanLevel, floor: number): Entity
     // a landing door set apart from its car door: the axes of both
     out.push(...carBody(L, level), ...counterweight(L), ...carFrame(L), ...shiftAxes(L, open));
   }
-  // the counterweight rails' bracket codes: on the first, and on another whose bracket differs; the car brackets' code
-  // keeps off Panev's, a generic bracket's off both (wall-label.ts)
+  // the counterweight rails' bracket codes: on the first, and on another whose bracket differs; a generic bracket's code
+  // keeps off Panev's (wall-label.ts), the car brackets' off all of them
   const hw = level === 'top' ? headOf(L.inputs) : undefined, cws = L.rails.filter((x) => x.kind === 'cw'), codes = cws.map((x) => cwPlanCode(L, x, hw));
   const named = (r: Rail): boolean => {
     const k = cws.indexOf(r);
     return k === 0 || (k > 0 && codes[k] !== codes[0]);
   };
-  const panev = cws.flatMap((r) => (named(r) ? panevSupportPlan(L, r, true, hw)?.over ?? [] : [])), carCode = carBracketLabel(L, level === 'top', panev);
-  const inWalls = [...panev, ...carCode];
-  L.rails.forEach((r) => out.push(...rail(L, r, level !== 'pit', named(r), level === 'top', inWalls)));
+  const inWalls = cws.flatMap((r) => (named(r) ? panevSupportPlan(L, r, true, hw)?.over ?? [] : []));
+  L.rails.forEach((r) => out.push(...rail(L, r, level !== 'pit', named(r), level === 'top', inWalls, scale)));
   // the car rails' brackets named by their rail, counted at the walls of this plan (plan-car-brackets.ts)
-  out.push(...axes(L), ...governorPlan(L, level === 'pit'), ...carCode);
+  // (each lettering after the walls, the rails and their codes off what the plan letters before it and its dimensions)
+  // (the names already set — not a dimension's line — are what a later name covers last: lettering-place.ts)
+  const taken = (): Box[] => [...letteringBoxes(out, scale), ...avoid], names = (): Box[] => letteringBoxes(out.filter((e) => e.e === 'text'), scale);
+  out.push(...axes(L));
+  out.push(...carBracketLabel(L, taken(), scale, names(), level === 'top'));
   if (level === 'top') {
     const { refuge: r, free: f } = roofSpaces(L);
     out.push(...space(r.x0, r.y0, r.x1, r.y1), { e: 'mark', at: [r.x1 - 110, r.y1 - 150], sym: 'tri' });
@@ -192,12 +197,14 @@ export function planEntities(L: Layout, level: PlanLevel, floor: number): Entity
     const p = pitSpace(L);
     out.push(...space(p.x0, p.y0, p.x1, p.y1), { e: 'mark', at: [(p.x0 + p.x1) / 2 + 60, (p.y0 + p.y1) / 2 - 60], sym: 'square' });
     for (const b of bufferPlan(L).spots) out.push(circle(b.c, b.r, 'outline', 'paper'), circle(b.c, b.r * 0.55, 'thin'));
-    // the counterweight's screen, the ladder and the pit's control box (plan-pit.ts), then the loads' tags clear of them
-    out.push(...pitPlanExtras(L));
-    out.push(...pitTags(L, letteringBoxes(out)));
+    // the counterweight's screen, the ladder and the pit's control box (plan-pit.ts), the governor's tension weight (its
+    // short name the freer to go round theirs), then the loads' tags clear of them
+    out.push(...pitPlanExtras(L, taken(), scale, names()));
   }
+  out.push(...governorPlan(L, level === 'pit', taken(), scale, names()));
+  if (level === 'pit') out.push(...pitTags(L, taken(), scale));
   // the lift's rope rig where the lift design has one (rig-view.ts)
-  out.push(...rigPlan(L, level));
+  out.push(...rigPlan(L, level, scale, avoid));
   return out;
 }
 
@@ -214,7 +221,7 @@ export function roofSpaces(L: Layout): { refuge: Box; free: Box } {
  *  toward the doors, a little outward — off the rails and their brackets, its leader off the car's axes (two buffers
  *  stand on one, a single one on both); each moved round what it names where the others or the shaft's walls are in its
  *  way (tag-place.ts: the counterweight to a side, a buffer off the axis, the arch of two adjacent entrances). */
-function pitTags(L: Layout, avoid: readonly Box[]): Entity[] {
+function pitTags(L: Layout, avoid: readonly Box[], scale: number): Entity[] {
   const cx = L.car.x + L.car.w / 2, spots = bufferPlan(L).spots, asks: TagAsk[] = [];
   for (const r of L.rails) {
     const to: Pt = [r.x, r.y], car = r.kind === 'car';
@@ -228,6 +235,6 @@ function pitTags(L: Layout, avoid: readonly Box[]): Entity[] {
   }
   const keep: TagKeep[] = [...L.rails.map((r): TagKeep => ({ c: [r.x, r.y], r: RAIL_KEEP })), ...spots.map((b): TagKeep => ({ c: b.c, r: b.r }))];
   // (the circles on the shaft's walls at most, as the counterweight's buffer's has always stood by the wall behind it)
-  const T = L.inputs.wall - TAG_R;
-  return placeTags(asks, { x0: -T, y0: -T, x1: L.inputs.W + T, y1: L.inputs.D + T }, keep, avoid);
+  const T = L.inputs.wall - tagR(scale);
+  return placeTags(asks, { x0: -T, y0: -T, x1: L.inputs.W + T, y1: L.inputs.D + T }, keep, avoid, scale);
 }

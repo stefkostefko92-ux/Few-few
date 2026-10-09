@@ -2,8 +2,9 @@
 // space on the roof where the car stands at its highest position — the counterweight on its compressed buffer and the
 // jump —, as h_refuge measures it; in the pit's detail the car on its compressed buffers, dashed: the platform, the
 // safety plank and the apron under the car sill with its bevel. The details dimension, from there, what the checks
-// measure with the least each needs: in the headroom the refuge to the ceiling (h_refuge), the balustrade's, the
-// crosshead's and the operator's clearances (h_clear); in the pit the lowest parts of the car and the apron over the pit
+// measure with the least each needs: in the headroom the refuge to the ceiling (h_refuge; where the slab is lower than
+// the refuge, what there is up to it against what it needs), the balustrade's, the crosshead's and the operator's
+// clearances (h_clear); in the pit the lowest parts of the car and the apron over the pit
 // floor (p_refuge, p_apron). Pure.
 import { chain, edit as E, line, path, type Edit, type Entity, type Pt } from '../drawing';
 import { KV_VERT } from './norme-vert';
@@ -55,9 +56,14 @@ export function extremeDims(L: Layout, S: Section, kind: 'top' | 'pit', zf: numb
   };
   if (kind === 'top') {
     // the car at its highest position: the refuge's height on its roof and, from there to the ceiling, the clearances
-    const zH = zf + S.moveUp, roof = zH + V.carOutH, r = roofSpaces(L).refuge, h = K.refugeH[V.topRefuge];
-    inside(r.y0 + 70, [roof, roof + h], 'H. Rifugio {v}', refugePick('v.topRefuge', V.topRefuge));
-    inside(r.y0 + 180, [roof, S.ceiling], `{v} ≥ ${h}`, E('v.headroom', V.carOutH + S.moveUp));
+    // (where the slab is lower than the refuge needs — h_refuge fails —, once what there is up to the slab against what
+    // it needs, as the clearances beside it read, its type still chosen there: the refuge's own height would run through
+    // the slab and off the view, and its dashed box with the triangle names it; nothing where the roof reaches the slab)
+    const zH = zf + S.moveUp, roof = zH + V.carOutH, r = roofSpaces(L).refuge, h = K.refugeH[V.topRefuge], pick = refugePick('v.topRefuge', V.topRefuge);
+    if (roof + h <= S.ceiling) {
+      inside(r.y0 + 70, [roof, roof + h], 'H. Rifugio {v}', pick);
+      inside(r.y0 + 180, [roof, S.ceiling], `{v} ≥ ${h}`, E('v.headroom', V.carOutH + S.moveUp));
+    } else if (roof < S.ceiling) inside(r.y0 + 70, [roof, S.ceiling], `{v} < ${h}`, pick);
     if (V.parapet > 0) inside(c.y + c.h - 60, [roof + V.parapet, S.ceiling], `{v} ≥ ${K.headBalustrade}`, E('v.headroom', V.carOutH + V.parapet + S.moveUp));
     inside(stileX(L) - K.crossheadHalf + 40, [zH + V.frameTop, S.ceiling], `{v} ≥ ${K.headShoe}`, E('v.headroom', V.frameTop + S.moveUp));
     const op = L.doors.find((d) => d.wall === 'front' || d.wall === 'rear');

@@ -2,16 +2,23 @@
 // the access ladder and the pit's control box (pit-kit.ts), and where the tag of the car buffers' load (P6) stands — off
 // the rails' line and their brackets, off the axes, clear of the other tags, so that its leader plainly ends at the
 // buffer and never reads as a load on a rail's foot. Pure.
-import type { Entity, Pt } from '../drawing';
+import type { Box, Entity, Pt } from '../drawing';
 import { pitKitPlan } from './pit-kit';
 import { RAILS } from './rails';
 import { screenPlan } from './screen';
+import { TAG_SCALE, letteringBoxes } from './tag-place';
 import type { Layout } from './types';
 
 /** How far a tag stands from what it points at, and the room its circle takes [mm, at the plan's usual 1:20]. */
 const OFF = 230, ROOM = 95;
 
-export const pitPlanExtras = (L: Layout): Entity[] => [...screenPlan(L), ...pitKitPlan(L)];
+/** `taken`: the boxes of the plan's lettering so far, at its `scale` (lettering-place.ts): the screen's and the kit's
+ *  keep off them and off each other — the names among them (`names`, and the screen's name for the kit) above all, a
+ *  dimension's line where nothing else is free. */
+export const pitPlanExtras = (L: Layout, taken: Box[] = [], scale: number = TAG_SCALE, names: readonly Box[] = []): Entity[] => {
+  const screen = screenPlan(L, taken, scale, names);
+  return [...screen, ...pitKitPlan(L, taken, scale, letteringBoxes(screen.filter((e) => e.e === 'text'), scale), names)];
+};
 
 /** The place of the tag of a car buffer at `c`: round it at 230 mm, the first of the directions square to the rails'
  *  line (toward the front, then the rear; across the shaft on a cantilever sling), then the diagonals, whose circle keeps

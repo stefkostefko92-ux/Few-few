@@ -112,13 +112,13 @@ export function panevSupportPlan(L: Layout, r: Rail, label: boolean, head?: Head
 
 /** The code a counterweight rail's generic bracket stands for (a solution to the site's drawing, or NO_PANEV), in the
  *  thickness of the wall it reaches (standing on `box`), from the rail toward the middle of the wall — clear of the
- *  lettering already in the walls `inWalls` (Panev's code of the other rail, the car brackets'): wall-label.ts. */
-export function specialPlanLabel(L: Layout, r: Rail, code: string | null, inWalls: readonly Entity[] = [], box: WallBox = mainBox(L.inputs)): Entity[] {
+ *  lettering already in the walls `inWalls` (Panev's code of the other rail) on a plan drawn at `scale`: wall-label.ts. */
+export function specialPlanLabel(L: Layout, r: Rail, code: string | null, inWalls: readonly Entity[] = [], box: WallBox = mainBox(L.inputs), scale?: number): Entity[] {
   const I = L.inputs;
   if (!code) return [];
   const x = r.bracketAxis === 'x', wall: Wall = x ? (r.bracketTo > I.W / 2 ? 'right' : 'left') : r.bracketTo > I.D / 2 ? 'rear' : 'front';
   const u = x ? r.y : r.x, up = 2 * u < (x ? box.y0 + box.y1 : box.x0 + box.x1);
-  return [wallLabel(L, { wall, u, text: code, size: TEXT.min, up }, inWalls, box)];
+  return [wallLabel(L, { wall, u, text: code, size: TEXT.min, up }, inWalls, box, scale)];
 }
 
 /** A generic bracket of a rail seen from above, reaching the wall (or the bridge) at the rail's bracketTo. */

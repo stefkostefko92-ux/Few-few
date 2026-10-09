@@ -4,17 +4,21 @@
 // (rails, buffers, pulleys, the plan's lettering and dimensions), its own leaders clear of the other circles, crossing
 // no other leader and, where asked, off the plan's axes; failing that the first off the lettering, then of those that
 // keep the circles apart the one farthest from it; else where it goes as a rule. The circle's radius on paper is the
-// tag's (view.ts: 2,4 mm) taken at 1:25 — the plans are drawn at 1:20 or 1:25 (views.ts PLAN_SCALES), at 1:20 with more
-// paper between them. Model millimetres. Pure.
-import { TEXT, letterSize, textWidth, type Box, type Entity, type Pt } from '../drawing';
+// tag's (view.ts TAG_MIN_R: 2,4 mm) taken at the scale the plan is drawn at (views.ts planView places them again when
+// that is past 1:25: 1:50 doubles what they keep in the model), never under 1:25 (at 1:20 with more paper between
+// them). Model millimetres. Pure.
+import { DIM, TAG_MIN_R, TEXT, letterSize, textWidth, type Box, type Entity, type Pt } from '../drawing';
 
-/** The scale the references are spaced for, and the plans' lettering kept apart at: the larger of the plans' own
- *  (views.ts PLAN_SCALES). */
-export const PLAN_K = 25;
-const K = PLAN_K;
-/** A reference's circle and the paper between two of them, at 1:25 [mm of the model]. */
-export const TAG_R = 2.4 * K;
-const APART = 2 * TAG_R + 0.5 * K;
+/** The scale the references are spaced for when the plan's is not known yet, and at least (views.ts PLAN_SCALES). */
+export const TAG_SCALE = 25;
+/** The model millimetres a paper millimetre takes when the plan's lettering is measured for `scale` (never under 1:25). */
+export const kOf = (scale: number): number => Math.max(TAG_SCALE, scale);
+/** A reference's circle in the model, spaced for `scale` [mm]. */
+export const tagR = (scale: number = TAG_SCALE): number => TAG_MIN_R * kOf(scale);
+/** A reference's circle at 1:25 [mm of the model]. */
+export const TAG_R = tagR();
+/** The paper two references' circles keep between them [mm]. */
+const APART_PAPER = 0.5;
 /** What a reference keeps off a rail: its foot with the clamp of its bracket [mm]. */
 export const RAIL_KEEP = 80;
 /** tan 10°: a leader nearer an axis than that runs along it */
@@ -39,14 +43,20 @@ export interface TagKeep {
   r: number;
 }
 
-/** The boxes the plan's lettering, symbols and dimensions across the drawing (their line with its figures either side)
- *  take at 1:25, 0,8 mm of paper round them (`m` round a lettering) [mm of the model]: the references keep off them. */
-export function letteringBoxes(entities: readonly Entity[], m = 0.8): Box[] {
+/** The boxes the plan's lettering, symbols and dimensions across the drawing (their line with its figures either side,
+ *  and past its ends as far as a value too long for its segment is set there: dims.ts) take at `scale` (never under
+ *  1:25), `m` mm of paper round a lettering (0,8 as a rule) [mm of the model]: the references keep off them. */
+export function letteringBoxes(entities: readonly Entity[], scale: number = TAG_SCALE, m = 0.8): Box[] {
+  const K = kOf(scale);
   return entities.flatMap((e): Box[] => {
     if (e.e === 'chain') {
       const c = e.c, band = (TEXT.dim + 1.2) * K;
       if (c.at === undefined || c.on || c.pts.length < 2) return [];
-      const a = Math.min(...c.pts), b = Math.max(...c.pts);
+      const past = Math.max(0, ...c.pts.slice(1).map((p, i) => {
+        const len = Math.abs(p - c.pts[i]), w = (textWidth((c.text?.[i] ?? '{v}').replace('{v}', String(Math.round(len))), { size: TEXT.dim, cond: true }) + 0.6) * K;
+        return w > len ? w + (DIM.arrow + 0.5) * K : 0;
+      }));
+      const a = Math.min(...c.pts) - past, b = Math.max(...c.pts) + past;
       return [c.dir === 'x' ? { x0: a, y0: c.at - band, x1: b, y1: c.at + band } : { x0: c.at - band, y0: a, x1: c.at + band, y1: b }];
     }
     if (e.e === 'mark') {
@@ -56,10 +66,13 @@ export function letteringBoxes(entities: readonly Entity[], m = 0.8): Box[] {
     if (e.e !== 'text') return [];
     const size = letterSize(e.size), w = textWidth(e.text, { size, bold: e.bold, cond: true });
     const x0 = e.align === 'c' ? -w / 2 : e.align === 'r' ? -w : 0, a = ((e.angle ?? 0) * Math.PI) / 180, c = Math.cos(a), sn = Math.sin(a);
-    const pts = [[x0 - m, -0.3 * size - m], [x0 + w + m, -0.3 * size - m], [x0 + w + m, 0.9 * size + m], [x0 - m, 0.9 * size + m]]
-      .map(([u, v]) => [e.at[0] + K * (u * c - v * sn), e.at[1] + K * (u * sn + v * c)]);
-    const xs = pts.map((q) => q[0]), ys = pts.map((q) => q[1]);
-    return [{ x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) }];
+    // (a lettering that may be set off on a leader: where it would stand either way)
+    return (e.out ? [e.at, e.out] : [e.at]).map((at): Box => {
+      const pts = [[x0 - m, -0.3 * size - m], [x0 + w + m, -0.3 * size - m], [x0 + w + m, 0.9 * size + m], [x0 - m, 0.9 * size + m]]
+        .map(([u, v]) => [at[0] + K * (u * c - v * sn), at[1] + K * (u * sn + v * c)]);
+      const xs = pts.map((q) => q[0]), ys = pts.map((q) => q[1]);
+      return { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) };
+    });
   });
 }
 
@@ -92,8 +105,9 @@ export function spotsRound(to: Pt, at: Pt): Pt[] {
 }
 
 /** The tags of `asks`, in their order, placed in the order of their ranks inside `room`, off `keep` and off the boxes
- *  of `avoid` (the plan's lettering: letteringBoxes). */
-export function placeTags(asks: readonly TagAsk[], room: Box, keep: readonly TagKeep[], avoid: readonly Box[] = []): Entity[] {
+ *  of `avoid` (the plan's lettering: letteringBoxes), their circles as large as at `scale`. */
+export function placeTags(asks: readonly TagAsk[], room: Box, keep: readonly TagKeep[], avoid: readonly Box[] = [], scale: number = TAG_SCALE): Entity[] {
+  const TAG_R = tagR(scale), APART = 2 * TAG_R + APART_PAPER * kOf(scale);
   const order = asks.map((_, i) => i).sort((a, b) => (asks[a].rank ?? 0) - (asks[b].rank ?? 0) || a - b);
   const at: Pt[] = asks.map((a) => a.at), placed: { at: Pt; to: readonly Pt[] }[] = [];
   for (const i of order) {
@@ -112,8 +126,9 @@ export function placeTags(asks: readonly TagAsk[], room: Box, keep: readonly Tag
       }));
     // (none off the lettering: of those that keep apart the one farthest from it)
     const gap = (p: Pt): number => Math.min(Infinity, ...avoid.map((b) => boxGap(p, b)));
-    const spots = spotsRound(a.to, a.at), held = spots.filter(apart);
-    const p = spots.find(clear) ?? spots.find(unlettered) ?? held.reduce<Pt | undefined>((b, q) => (b && gap(b) >= gap(q) ? b : q), undefined) ?? a.at;
+    // (its usual offset as much paper as at 1:25)
+    const f = kOf(scale) / TAG_SCALE, spots = spotsRound(a.to, [a.to[0] + f * (a.at[0] - a.to[0]), a.to[1] + f * (a.at[1] - a.to[1])]), held = spots.filter(apart);
+    const p = spots.find(clear) ?? spots.find(unlettered) ?? held.reduce<Pt | undefined>((b, q) => (b && gap(b) >= gap(q) ? b : q), undefined) ?? spots[0];
     at[i] = p;
     placed.push({ at: p, to });
   }

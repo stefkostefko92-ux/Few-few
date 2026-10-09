@@ -17,7 +17,7 @@ import type { BottomGeo, BottomScheme } from '../lift/bottom';
 import { analyse, type Analysis } from '../present/analysis';
 import { dataSheet, type DataSheetResult, type Mismatch } from './data';
 import { dataSheetShapes } from './datasheet';
-import { legendColumn, legendHeight, legendRow, scaleLabel, sectionMarks, sideLabels } from './extras';
+import { floorTable, legendColumn, legendHeight, legendRow, scaleLabel, sectionMarks, sideLabels } from './extras';
 import { placeLines, type TavoleInput } from './input';
 import { currentRevision, type TitleData } from './title-block';
 import { OVER_DOWN, OVER_UP, clientNotes, spaceLegend, type LegendItem } from './notes';
@@ -112,15 +112,16 @@ const clear = (shapes: readonly Shape[], b: Box): boolean => shapes.every((s) =>
   return o.x1 < b.x0 || o.x0 > b.x1 || o.y1 < b.y0 || o.y0 > b.y1;
 });
 
-/** `extra`: what the set draws on the plan besides (the head's loads of a machine below on the plan at the top). */
-function planSheet(L: Layout, s: Extract<Spec, { k: 'plan' }>, area: Box, extra: readonly Entity[] = []): Drawn {
+/** `extra`: what the set draws on the plan besides, for the scale it takes (the head's loads of a machine below on the
+ *  plan at the top). */
+function planSheet(L: Layout, s: Extract<Spec, { k: 'plan' }>, area: Box, extra: (scale: number) => readonly Entity[] = () => []): Drawn {
   // room around the view for the "LATO FERMATE" labels (rotated on a side wall) and the section marks
   const side = (w: 'left' | 'right'): number => (L.doors.some((d) => d.wall === w) ? 11 : 4);
   const drawn = (a: Box): Drawn => {
     const { r, place, entities } = planView(L, s.level, s.floor, s.total, inset(a, side('left'), side('right'), 9, 8), extra);
     const px = toPaper(place, [L.car.x + L.car.w / 2, 0])[0];
     const marks = sectionMarks([px, r.extent.y1 + 3.5], [px, r.extent.y0 - 3.5], 'left', 'A');
-    return { entities, place, shapes: r.shapes, notes: [...sideLabels(L, r.extent), ...marks], scale: place.scale, hits: r.hits };
+    return { entities, place, shapes: r.shapes, notes: [...sideLabels(L, r.extent, marks), ...marks], scale: place.scale, hits: r.hits };
   };
   // the legend's boxes as the trade's sheets have them: in a free corner on the right of the drawing, the first ones
   // at the top and the rest at the foot when one corner cannot take them all; else in a row under a smaller drawing
@@ -142,15 +143,17 @@ function sectionSheet(L: Layout, s: Extract<Spec, { k: 'section' }>, area: Box, 
   const draw = (legend: readonly LegendItem[]) => {
     const full = s.kind === 'full', lg = full ? { shapes: legendColumn(legend, area, LEGEND_W), height: 0 } : legendRow(legend, area);
     const view = full ? inset(area, LEGEND_W + 4, 0, 0, 0) : inset(area, 0, 0, lg.height + (lg.height ? 4 : 0), 0);
-    return { lg, v: sectionView(L, s.kind, s.floor, view, cwGap) };
+    return { lg, v: sectionView(L, s.kind, s.floor, view, cwGap), legend };
   };
-  let { lg, v } = draw(s.legend);
+  let { lg, v, legend } = draw(s.legend);
   const used = s.legend.filter((it) => v.marks.includes(it.sym));
-  if (used.length < s.legend.length) ({ lg, v } = draw(used));
+  if (used.length < s.legend.length) ({ lg, v, legend } = draw(used));
+  // the floors the whole section leaves out of its shortened travel: their heights in a table under the legend
+  const table = floorTable(L, v.omit, { x0: area.x0, y0: area.y0, x1: area.x0 + LEGEND_W, y1: area.y1 - legendHeight(legend, LEGEND_W) - 2 });
   // the travel drawn shorter between the break marks: said by the scale
   const note: Shape[] = v.compressed ? [{ t: 'text', at: [FRAME.x1 - 3, FRAME.y0 + STRIP_H + (s.subtitle !== undefined ? 11 : 8) - 3.4], text: 'TRATTO TRA LE INTERRUZIONI FUORI SCALA',
     size: 2, align: 'r', cond: true }] : [];
-  return { entities: v.entities, place: v.place, shapes: v.r.shapes, notes: [...lg.shapes, ...note], scale: v.place.scale, hits: v.r.hits };
+  return { entities: v.entities, place: v.place, shapes: v.r.shapes, notes: [...lg.shapes, ...table, ...note], scale: v.place.scale, hits: v.r.hits };
 }
 
 /** Section line B-B on the room plan: along the rope drops, beyond the drawing and its dimensions at both ends, looking
@@ -223,7 +226,7 @@ export function setSheets(x: TavoleInput): SetSheets {
   const scheme = a.ctx.I.layout === 'bottom' ? x.marks?.bottom ?? 'head' : null, g = scheme ? belowGeoOf(a, L0, M, scheme) : null;
   // the shaft's sheets with the lift's rope rig and the room over the shaft the lift has (views.ts sheetLayoutOf), and
   // the loads on the head of the shaft on its plan at the top floor
-  const L = sheetLayoutOf(a, L0, M, g), head = g ? headLoadsOf(a, L, M, g) : [];
+  const L = sheetLayoutOf(a, L0, M, g), head = (scale: number): Entity[] => (g ? headLoadsOf(a, L, M, g, scale) : []);
   // the data on sheet 1, the drawings, the checks of the design on the last sheet (checks-sheet.ts)
   // (the rails' development takes as many sheets as its columns need: rails-sheet.ts)
   const list = specs(L, L.inputs.room !== null && a.ctx.I.layout !== 'bottom', scheme), at = list.findIndex((s) => s.k === 'rails');
@@ -235,7 +238,7 @@ export function setSheets(x: TavoleInput): SetSheets {
     const area = drawingArea(s.subtitle !== undefined);
     // a sheet of the rails after the first says which it goes on from
     if (s.k === 'rails') return rails.map((r, i) => ({ spec: i ? { ...s, subtitle: `SEGUITO DEL FOGLIO ${at + i + 1}: ${s.subtitle}` } : s, drawn: { ...r, hits: [] } }));
-    const drawn: Drawn = s.k === 'plan' ? planSheet(L, s, area, s.level === 'top' ? head : []) : s.k === 'section' ? sectionSheet(L, s, area, ds.cwGap)
+    const drawn: Drawn = s.k === 'plan' ? planSheet(L, s, area, s.level === 'top' ? head : undefined) : s.k === 'section' ? sectionSheet(L, s, area, ds.cwGap)
       : s.k === 'below-plan' || s.k === 'below-section' ? belowSheet(L, M, g ?? belowGeoOf(a, L, M, 'head'), s.k, area)
       : roomSheet(L, M, s.k, area, titleSpares(s.title, s.subtitle), ds.uplift);
     return [{ spec: s, drawn }];

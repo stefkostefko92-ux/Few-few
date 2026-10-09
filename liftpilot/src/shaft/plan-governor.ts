@@ -2,12 +2,16 @@
 // every level — the one clamped to the car and the free one — and in the pit the tension weight under them
 // (components/lift3d/tension.ts): the pulley seen from above, the lever's bars from the hinge by the car rail with the
 // weight at their end, or the vertical kind's channel on the rail with the weight hung under the pulley. Pure.
-import { TEXT, chain, edit as E, line, rect, type Edit, type Entity } from '../drawing';
+import { TEXT, chain, edit as E, line, rect, type Box, type Edit, type Entity } from '../drawing';
 import { TENSION, governorSpot, type GovernorSpot } from './governor';
+import { firstClear } from './lettering-place';
 import { RAILS } from './rails';
+import { TAG_SCALE } from './tag-place';
 import type { Layout } from './types';
 
-export function governorPlan(L: Layout, pit: boolean): Entity[] {
+/** `taken`: the boxes of the plan's lettering so far, at its `scale`: the tension weight's name keeps off them
+ *  (lettering-place.ts), off the names among them (`hard`) above all. */
+export function governorPlan(L: Layout, pit: boolean, taken: Box[] = [], scale: number = TAG_SCALE, hard: readonly Box[] = []): Entity[] {
   const g = governorSpot(L);
   if (!g) return [];
   // the tension weight's frame runs from the rail through the pulley: toward +y, or −y with the rope in front of the rail
@@ -24,9 +28,14 @@ export function governorPlan(L: Layout, pit: boolean): Entity[] {
     out.push(box(-30, 30, hinge - 20, hinge + 20, 'outline', 'steel'), box(-wa / 2, wa / 2, -ww / 2, ww / 2, 'hidden'));
   }
   out.push(box(-G.half, G.half, -G.R, G.R, 'outline', 'paper'), line([x - G.half - 40, yc], [x + G.half + 40, yc], 'axis'));
-  // the label below the pulley, toward the car: the car rail's load P5 is tagged beside the pulley
-  const inward = g.side === 'left' ? 1 : -1;
-  out.push({ e: 'text', at: [x + inward * (G.half + 70), yc - G.R - 70], text: `Tenditore ${g.lever ? T.leverKg : T.hangKg} kg`, size: TEXT.min, align: inward > 0 ? 'l' : 'r', halo: true });
+  // the label below the pulley, toward the car (the car rail's load P5 is tagged beside the pulley); where that is taken
+  // over it, then on its other side, then a row further (as much paper at any scale) — inside the shaft, where the
+  // dimensions round the plan never come
+  const inward = g.side === 'left' ? 1 : -1, k = Math.max(TAG_SCALE, scale) / TAG_SCALE, text = `Tenditore ${g.lever ? T.leverKg : T.hangKg} kg`;
+  const at = (side: number, y: number): Entity[] => [{ e: 'text', at: [x + side * (G.half + 70 * k), y], text, size: TEXT.min, align: side > 0 ? 'l' : 'r', halo: true }];
+  const below = yc - G.R - 70 * k, over = yc + G.R + 70 * k, row = (TEXT.min + 1) * Math.max(TAG_SCALE, scale);
+  const options = [at(inward, below), at(inward, over), at(-inward, below), at(-inward, over), at(inward, below - row), at(inward, over + row), at(-inward, below - row), at(-inward, over + row)];
+  out.push(...firstClear(options, taken, scale, { x0: 0, y0: 0, x1: L.inputs.W, y1: L.inputs.D }, [hard]));
   return out;
 }
 

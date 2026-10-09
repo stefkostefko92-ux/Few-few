@@ -11,6 +11,7 @@ import { GOV_BRACKET, governorSpot } from './governor';
 import { roofRefuge } from './roof';
 import { cwPlateAt, type Section } from './section';
 import { pack, pitSlabHoles, pulleyBox, type RigPulley } from './shaft-rig';
+import { TAG_SCALE } from './tag-place';
 import type { Layout } from './types';
 
 /** The wheel of a pulley inside its cheeks, the cheeks' plates along its plane, its frame's top plate under the slab and
@@ -20,7 +21,8 @@ const WHEEL_IN = 18, CHEEK_L = 80, PLATE_L = 140, PLATE_OVER = 40, PLATE_T = 14,
 const STAND_OVER = 110, STAND_H = 140;
 /** The pit's slab as section A-A draws it [mm] (section-view.ts). */
 const PIT_SLAB = 220;
-/** A reference's circle at 1:25 [mm] (view.ts tag), and how far from what it names it is put. */
+/** A reference's circle at 1:25 [mm] (view.ts tag), and how far from what it names it is put: at a plan's larger scale
+ *  as much paper (tag-place.ts TAG_SCALE). */
 const TAG_R = 50, TAG_AT = [240, 340, 460, 620] as const;
 
 /** A point `u` along a pulley's plane and `a` across it, from its centre. */
@@ -30,13 +32,13 @@ const meets = (a: Box, b: Box): boolean => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < 
 const around = (c: Pt, r: number): Box => ({ x0: c[0] - r, y0: c[1] - r, x1: c[0] + r, y1: c[1] + r });
 
 /** A free place for a reference near `at`: round it at growing distances, clear of `taken` and inside `within`; the
- *  first place tried when none is. */
-function tagNear(at: Pt, taken: Box[], within: Box): Pt {
-  const spots: Pt[] = [];
-  for (const d of TAG_AT) for (let k = 0; k < 8; k++) spots.push([at[0] + d * Math.cos((k * Math.PI) / 4 + Math.PI / 8), at[1] + d * Math.sin((k * Math.PI) / 4 + Math.PI / 8)]);
-  const ok = (p: Pt): boolean => p[0] - TAG_R >= within.x0 && p[0] + TAG_R <= within.x1 && p[1] - TAG_R >= within.y0 && p[1] + TAG_R <= within.y1 && !taken.some((b) => meets(around(p, TAG_R), b));
+ *  first place tried when none is. `scale`: the plan's (as much paper past 1:25). */
+function tagNear(at: Pt, taken: Box[], within: Box, scale: number): Pt {
+  const k = Math.max(TAG_SCALE, scale) / TAG_SCALE, R = TAG_R * k, spots: Pt[] = [];
+  for (const d of TAG_AT) for (let j = 0; j < 8; j++) spots.push([at[0] + k * d * Math.cos((j * Math.PI) / 4 + Math.PI / 8), at[1] + k * d * Math.sin((j * Math.PI) / 4 + Math.PI / 8)]);
+  const ok = (p: Pt): boolean => p[0] - R >= within.x0 && p[0] + R <= within.x1 && p[1] - R >= within.y0 && p[1] + R <= within.y1 && !taken.some((b) => meets(around(p, R), b));
   const got = spots.find(ok) ?? spots[0];
-  taken.push(around(got, TAG_R));
+  taken.push(around(got, R));
   return got;
 }
 
@@ -51,8 +53,9 @@ function pulleyPlan(p: RigPulley, hung: boolean, seen: boolean, stand = false): 
   return out;
 }
 
-/** The rig in the plan at `level`. */
-export function rigPlan(L: Layout, level: 'top' | 'main' | 'bottom' | 'pit'): Entity[] {
+/** The rig in the plan at `level`, its references placed for the plan's `scale`, off `avoid` too (the plan's lettering
+ *  and dimensions across it: tag-place.ts letteringBoxes). */
+export function rigPlan(L: Layout, level: 'top' | 'main' | 'bottom' | 'pit', scale: number = TAG_SCALE, avoid: readonly Box[] = []): Entity[] {
   const rig = L.rig;
   if (!rig) return [];
   const { W, D } = L.inputs, out: Entity[] = [], within: Box = { x0: 0, y0: 0, x1: W, y1: D };
@@ -69,7 +72,7 @@ export function rigPlan(L: Layout, level: 'top' | 'main' | 'bottom' | 'pit'): En
   const taken: Box[] = [...rig.head, ...(rig.car ? [rig.car] : []), ...(rig.cw ? [rig.cw] : [])].map(pulleyBox), { refuge: r, free } = roofRefuge(L);
   taken.push({ x0: L.cw.x, y0: L.cw.y, x1: L.cw.x + L.cw.w, y1: L.cw.y + L.cw.h }, grow(free, 80), ...L.rails.map((q) => grow({ x0: q.x, y0: q.y, x1: q.x, y1: q.y }, 200)));
   const ry = r.y0 + 0.28 * (r.y1 - r.y0), rx = r.x0 + 0.28 * (r.x1 - r.x0);
-  taken.push({ x0: r.x0, y0: ry - 90, x1: r.x1, y1: ry + 90 }, { x0: rx - 90, y0: r.y0, x1: rx + 90, y1: r.y1 });
+  taken.push({ x0: r.x0, y0: ry - 90, x1: r.x1, y1: ry + 90 }, { x0: rx - 90, y0: r.y0, x1: rx + 90, y1: r.y1 }, ...avoid);
   // the pulleys over the shaft: hung under the slab, or over it in the pulley room; the level runs (their loads P1, P2,
   // P3 and P4 the head's references place: lib/tavole/head-loads.ts)
   for (const p of rig.head) out.push(...pulleyPlan(p, rig.hung, rig.hung, !rig.hung));
@@ -82,7 +85,7 @@ export function rigPlan(L: Layout, level: 'top' | 'main' | 'bottom' | 'pit'): En
   for (const e of rig.dead) {
     const q: RigPulley = { c: e.at, dir: e.dir, z: 0, r: 90, half: rig.ropes + 50 }, part = e.tag === 'P2' ? rig.car : rig.cw;
     out.push(path(quadOn(q, -90, -q.half, 90, q.half), true, 'hidden'), circle(e.at as Pt, Math.max(8, rig.d), 'outline', 'steel'));
-    if (rig.scheme === null) out.push({ e: 'tag', at: tagNear(e.at as Pt, taken, within), text: e.tag, to: e.at as Pt });
+    if (rig.scheme === null) out.push({ e: 'tag', at: tagNear(e.at as Pt, taken, within, scale), text: e.tag, to: e.at as Pt });
     // where the slab is drilled for it: from the axes of the part it holds (its pulley's centre), a reference
     if (part) {
       for (const k of [0, 1] as const) {
@@ -173,12 +176,15 @@ export function pitHoles(L: Layout): [number, number][] {
  *  below, else the slab (`ceiling`). */
 export const ropeTop = (L: Layout, ceiling: number): number => (L.rig?.head.length ? L.rig.head[0].z : ceiling);
 
+/** The scale the section's references are set off for [1:n]: past it (section A-A whole at 1:100) as much paper. */
+const SECTION_TAG_SCALE = 50;
+
 /** The rig in section A-A with the car at the floor `zf` (`atTop`: the top floor, the car's pulley also where the
- *  counterweight on its buffer lets it go); `zTop`: the top of the view. */
-export function rigSection(L: Layout, S: Section, P: (x: number, z: number) => Pt, zf: number, atTop: boolean, zTop: number): Entity[] {
+ *  counterweight on its buffer lets it go); `zTop`: the top of the view; `scale`: the view's, when known. */
+export function rigSection(L: Layout, S: Section, P: (x: number, z: number) => Pt, zf: number, atTop: boolean, zTop: number, scale = SECTION_TAG_SCALE): Entity[] {
   const rig = L.rig;
   if (!rig) return [];
-  const out: Entity[] = [], ceil = S.ceiling, slab = L.inputs.room?.slab ?? 0;
+  const out: Entity[] = [], ceil = S.ceiling, slab = L.inputs.room?.slab ?? 0, k = Math.max(1, scale / SECTION_TAG_SCALE);
   const bx = (y0: number, z0: number, y1: number, z1: number, st: Parameters<typeof rect>[4], fill?: Parameters<typeof rect>[5]): Entity => path([P(y0, z0), P(y1, z0), P(y1, z1), P(y0, z1)], true, st, fill);
   // the pit's slab over a room under it: what it carries
   if (rig.scheme === 'under') out.push({ e: 'text', at: P(L.inputs.D / 2, S.pitFloor - PIT_SLAB / 2 - 40), text: 'SOLETTA PORTANTE SU LOCALE ACCESSIBILE: ≥ 5000 N/m² E P5-P8', size: 1.5, align: 'c', halo: true });
@@ -201,7 +207,7 @@ export function rigSection(L: Layout, S: Section, P: (x: number, z: number) => P
   for (const r of rig.runs) out.push(line(P(r.a[1], r.z), P(r.b[1], r.z), 'thin'));
   if (rig.head.length) {
     const p = rig.head[0], to: Pt = rig.hung ? P(p.c[1], ceil - PLATE_T / 2) : P(p.c[1], ceil + slab);
-    out.push({ e: 'tag', at: P(p.c[1] - 330, rig.hung ? ceil - 150 : ceil + slab + 150), text: 'P1', to });
+    out.push({ e: 'tag', at: P(p.c[1] - 330 * k, rig.hung ? ceil - 150 * k : ceil + slab + 150 * k), text: 'P1', to });
   }
   // a 2:1 roping: the car's pulley on its crosshead (where the counterweight lets it go: dashed), the counterweight's on
   // its frame, the dead ends on their plates under the slab with their sockets, P2 and P3
@@ -210,19 +216,22 @@ export function rigSection(L: Layout, S: Section, P: (x: number, z: number) => P
     if (atTop) out.push(path(pulleySide(rig.car, zf + S.moveUp + rig.car.z, P), true, 'space'));
   }
   if (rig.cw) out.push(path(pulleySide(rig.cw, cwPlateAt(S, zf) + rig.cw.z, P), true, 'outline', 'zinc'));
+  // (P2 and P3 only where the view shows the slab they hang from: a detail lower down has neither the plates nor the
+  // tags, whose leaders would otherwise run past the view's top; each set off away from the other)
   rig.dead.forEach((e, i) => {
-    const h = Math.abs(e.dir[1]) * 90 + Math.abs(e.dir[0]) * (rig.ropes + 50);
+    const h = Math.abs(e.dir[1]) * 90 + Math.abs(e.dir[0]) * (rig.ropes + 50), other = rig.dead[1 - i];
+    const away = other && other.at[1] !== e.at[1] ? Math.sign(e.at[1] - other.at[1]) : i ? 1 : -1;
     out.push(bx(e.at[1] - h, ceil - 16, e.at[1] + h, ceil, 'outline', 'steel'), line(P(e.at[1], ceil - 16), P(e.at[1], e.z), 'outline'));
-    out.push({ e: 'tag', at: P(e.at[1] + (i ? 1 : -1) * 260, Math.min(zTop, ceil) - 420), text: e.tag, to: P(e.at[1], ceil - 8) });
+    if (ceil <= zTop) out.push({ e: 'tag', at: P(e.at[1] + away * 260 * k, ceil - 420 * k), text: e.tag, to: P(e.at[1], ceil - 8) });
   });
-  out.push(...governorSection(L, S, P));
+  out.push(...governorSection(L, S, P, k));
   return out;
 }
 
 /** The governor of a machine below on its bracket in section A-A — dashed when it stands in front of the cut, between it
  *  and the one looking —: the bracket's plate and the braces under it, the base, the sheave face on, its two strands down
  *  the shaft, P4 on the bracket (its axle's height under the slab: registry limitatore.vano, the note on sheet 1). */
-function governorSection(L: Layout, S: Section, P: (x: number, z: number) => Pt): Entity[] {
+function governorSection(L: Layout, S: Section, P: (x: number, z: number) => Pt, k: number): Entity[] {
   const g = governorSpot(L), zg = L.rig?.governor?.z;
   if (zg === undefined || !g) return [];
   const G = g.G, yc = (g.y1 + g.y2) / 2, zb = zg - G.axle, out: Entity[] = [], front = g.x > L.car.x + L.car.w / 2;
@@ -234,6 +243,6 @@ function governorSection(L: Layout, S: Section, P: (x: number, z: number) => Pt)
   for (const w of [-80, 80]) out.push(line(P(yc + w, zb - GOV_BRACKET.brace), P(yc + w, zb - GOV_BRACKET.plate), st('thin')));
   out.push(bx(yc - G.baseW, zb - GOV_BRACKET.plate, yc + G.baseW, zb, 'outline', 'steel'), bx(yc - G.baseW + 20, zb, yc + G.baseW - 20, zg + G.top, 'thin', 'paper'));
   out.push(circle(P(yc, zg), G.R, st('outline'), front ? undefined : 'paper'), circle(P(yc, zg), 0.25 * G.R, st('thin')));
-  out.push({ e: 'tag', at: P(yc - G.baseW - 330, zb - 220), text: 'P4', to: P(yc - G.baseW, zb - GOV_BRACKET.plate / 2) });
+  out.push({ e: 'tag', at: P(yc - G.baseW - 330 * k, zb - 220 * k), text: 'P4', to: P(yc - G.baseW, zb - GOV_BRACKET.plate / 2) });
   return out;
 }

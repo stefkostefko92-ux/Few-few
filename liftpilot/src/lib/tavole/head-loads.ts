@@ -14,7 +14,7 @@ import { planDims } from '@/shaft/plan-dims';
 import { planEntities } from '@/shaft/plan-view';
 import { ropeWidths } from '@/shaft/ropes';
 import { hitchTags } from '@/shaft/room-loads';
-import { RAIL_KEEP, TAG_R, letteringBoxes, placeTags, type TagAsk, type TagKeep } from '@/shaft/tag-place';
+import { RAIL_KEEP, TAG_SCALE, letteringBoxes, placeTags, tagR, type TagAsk, type TagKeep } from '@/shaft/tag-place';
 import type { Layout } from '@/shaft/types';
 import type { BottomGeo } from '../lift/bottom';
 
@@ -29,8 +29,9 @@ const along = (p: P2, u: P2, k: number): Pt => [p[0] + k * u[0], p[1] + k * u[1]
 /** How far the references stand as a rule [mm]: P1 past the side of the car's first pulley, P4 past the governor. */
 const OUT = 260, GOV = 230;
 
-/** The head's loads of a machine below `g` at roping `r`, its pulleys of diameter `Dp` carrying n ropes of d [mm]. */
-export function headLoads(L: Layout, g: BottomGeo, r: number, Dp: number, n: number, d: number): Entity[] {
+/** The head's loads of a machine below `g` at roping `r`, its pulleys of diameter `Dp` carrying n ropes of d [mm], on the
+ *  plan drawn at `scale`. */
+export function headLoads(L: Layout, g: BottomGeo, r: number, Dp: number, n: number, d: number, scale: number = TAG_SCALE): Entity[] {
   const F = fallsOf(L, r, Dp), Rp = Dp / 2, half = ropeWidths(n, d).pulley, out: Entity[] = [], keep: TagKeep[] = [];
   // each side's pulleys from its rise toward its run, in the plane they turn in
   const side = (rise: P2, run: P2, count: 1 | 2): Pt[] => {
@@ -59,7 +60,7 @@ export function headLoads(L: Layout, g: BottomGeo, r: number, Dp: number, n: num
   keep.push(...L.rails.map((rl): TagKeep => ({ c: [rl.x, rl.y], r: RAIL_KEEP })));
   // off the plan's lettering, marks and dimensions across it (the brackets' codes, the counterweight's name, the marks on
   // the car roof, the refuge's and the drops' dimensions)
-  const top = L.inputs.vertical.floors.length - 1, T = L.inputs.wall - TAG_R;
-  const avoid = letteringBoxes([...planEntities(L, 'top', top), ...planDims(L, 'top', top, { level: 'in Testata' })]);
-  return [...out, ...placeTags(asks, { x0: -T, y0: -T, x1: L.inputs.W + T, y1: L.inputs.D + T }, keep, avoid)];
+  const top = L.inputs.vertical.floors.length - 1, T = L.inputs.wall - tagR(scale);
+  const avoid = letteringBoxes([...planEntities(L, 'top', top, scale), ...planDims(L, 'top', top, { level: 'in Testata' })], scale);
+  return [...out, ...placeTags(asks, { x0: -T, y0: -T, x1: L.inputs.W + T, y1: L.inputs.D + T }, keep, avoid, scale)];
 }

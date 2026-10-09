@@ -49,13 +49,24 @@ export interface SectionView {
   zmap: ZMap | null;
   /** the details of the extreme positions: the car on its compressed buffers dashed in the pit (extremes.ts) */
   extremes?: boolean;
+  /** floors left out of the shortened travel, too close on paper to read: neither their landings nor their numbers
+   *  (section A-A whole: views.ts fullSection, the sheet's table gives their heights) */
+  omit?: readonly number[];
+  /** the scale it is drawn at, when known before (section A-A whole; a detail placed again at its own): the rig's
+   *  references set off for it (rig-view.ts), the lettering kept apart for it */
+  scale?: number;
+  /** the boxes the view's dimensions letter inside the drawing (views.ts sectionParts): the pit kit's heights keep off
+   *  them (pit-kit.ts) */
+  avoid?: readonly Box[];
 }
 
 const LANDING_EXT = 400;
 const SLAB = 220;
 
-export function sectionEntities(L: Layout, v: SectionView): { entities: Entity[]; bounds: Box; S: Section } {
-  const S = section(L), I = L.inputs, V = I.vertical, T = I.wall, D = I.D, out: Entity[] = [];
+/** The view's entities, its bounds, the section, and the pit kit's lettering (`kit`: what the sign of the counterweight's
+ *  gap, set after, never covers — cw-gap.ts). */
+export function sectionEntities(L: Layout, v: SectionView): { entities: Entity[]; bounds: Box; S: Section; kit: readonly Entity[] } {
+  const S = section(L), I = L.inputs, V = I.vertical, T = I.wall, D = I.D, out: Entity[] = [], kit: Entity[] = [];
   const Z = (z: number): number => mapZ(v.zmap, z);
   const P = (x: number, z: number): Pt => [x, Z(z)];
   const inWin = (z: number): boolean => z >= v.lo - 1 && z <= v.hi + 1;
@@ -68,7 +79,7 @@ export function sectionEntities(L: Layout, v: SectionView): { entities: Entity[]
   // walls with the landing openings of the floors each side serves
   const served = (side: 'front' | 'rear'): number[] => V.floors.flatMap((f, i) => {
     const onFront = f.door.includes('A'), onRear = I.entrances === 'opposite' && f.door.includes('B');
-    return (side === 'front' ? onFront : onRear) ? [i] : [];
+    return (side === 'front' ? onFront : onRear) && !v.omit?.includes(i) ? [i] : [];
   });
   // a niche the cut passes through: the wall is thinner there, all the way up (counterweight, trunking) or at each lamp
   const cutX = L.car.x + L.car.w / 2, hd = headOf(I), topFloor = V.floors.length - 1, zHead = S.levels[topFloor] ?? Infinity;
@@ -210,7 +221,10 @@ export function sectionEntities(L: Layout, v: SectionView): { entities: Entity[]
     const ps = pitSpace(L), h = KV_VERT.refugeH[V.pitRefuge];
     out.push(...cross(P, ps.y0, S.pitFloor, ps.y1, S.pitFloor + h), { e: 'mark', at: P((ps.y0 + ps.y1) / 2 - 80, S.pitFloor + h / 2), sym: 'square' });
     // the access ladder and the pit's control box, the screen's lower edge in the pit's detail (pit-kit.ts, screen.ts)
-    if (v.extremes && v.carFloor === 0) out.push(...pitKitSection(L, P, S.pitFloor), ...screenLowDim(L, P, S.pitFloor));
+    if (v.extremes && v.carFloor === 0) {
+      kit.push(...pitKitSection(L, P, S.pitFloor, v.avoid, v.scale));
+      out.push(...kit, ...screenLowDim(L, P, S.pitFloor));
+    }
   }
 
   // the car at its floor; at the top floor also dashed where the counterweight on its buffer lets it go
@@ -218,13 +232,13 @@ export function sectionEntities(L: Layout, v: SectionView): { entities: Entity[]
   if (zf + S.highest >= v.lo && zf - V.frameBelow <= v.hi) out.push(...car(L, P, zf, Math.min(ropeTop(L, S.ceiling), zTop)));
   if (v.carFloor === V.floors.length - 1 && zf + S.moveUp + S.highest >= v.lo) out.push(...carTopAt(L, P, zf + S.moveUp));
   // the lift's rope rig where the lift design has one (rig-view.ts)
-  out.push(...rigSection(L, S, P, zf, v.carFloor === V.floors.length - 1, zTop));
+  out.push(...rigSection(L, S, P, zf, v.carFloor === V.floors.length - 1, zTop, v.scale));
   // the refuge space on the roof where the car stands at its highest position (clear of what the rig hangs there:
   // roof.ts); the car on its compressed buffers in the pit's detail (extremes.ts)
   if (v.carFloor === V.floors.length - 1 && zf + S.moveUp + V.carOutH <= v.hi) out.push(...refugeHigh(L, P, zf + S.moveUp));
   if (v.extremes && v.carFloor === 0 && inWin(S.pitFloor)) out.push(...carLowest(L, P, S));
   const bounds: Box = { x0: -T - LANDING_EXT + Math.min(0, hd.front), y0: Z(zBot), x1: D + T + LANDING_EXT + Math.max(0, -hd.rear), y1: Z(zTop) };
-  return { entities: clipBand(out, bounds.y0, bounds.y1), bounds, S };
+  return { entities: clipBand(out, bounds.y0, bounds.y1), bounds, S, kit };
 }
 
 function zigzag(a: Pt, b: Pt): Entity[] {
