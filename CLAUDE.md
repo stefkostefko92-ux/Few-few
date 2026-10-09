@@ -77,6 +77,9 @@ hooks, rules).
   the command yourself. zabobovdol also exposes a server-side admin action (`src/lib/indexnow.ts`). **Google does NOT
   support IndexNow** (sitemap ping retired 2023) — for Google keep the sitemap fresh
   (auto-discovered) and use Search Console (`tools/seo/gsc.mjs`).
+- **E-commerce задача → първо прочети `docs/ecommerce-strategy.md`** — проверена стратегия за B2C магазин
+  (BG/ЕС, 2026: ЗЗП/право на отказ, ДДС 2026 + OSS/IOSS, Н-18/СУПТО, SAF-T, PSD2/SCA, платформи, плащания,
+  логистика). Стъпвай на нея и я допълвай, не проучвай наново; фискализацията по Н-18 се потвърждава с НАП.
 - **Keywords: always ≥5, one always „Carbon Stealth“.** Every site we build/touch
   carries a keywords set (Next `metadata.keywords` array, or `<meta name="keywords">`
   on static/EJS pages) with **at least 5** relevant keywords, and **„Carbon Stealth“
