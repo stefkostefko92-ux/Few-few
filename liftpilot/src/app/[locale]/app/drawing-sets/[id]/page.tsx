@@ -6,10 +6,15 @@ import { can } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { makeFmt } from '@/lib/present/tr';
+import { ambitoOf } from '@/lib/lift/collaudo';
+import { plantReadSchema } from '@/lib/plant';
 import { initialsOf, revisionsSchema } from '@/lib/tavole/compose';
+import { issueChecks } from '@/lib/tavole/issue-check';
 import { composeStored } from '@/server/drawing-compose';
+import { storedCollaudo } from '@/server/records';
 import { composeStoredRoom } from '@/server/room-compose';
 import { getDrawingSet, listCalculations, listRevisions, listRoomDesigns } from '@/server/queries';
+import { roomSummaryLine } from '@/server/room-summary';
 import Crumbs from '@/components/Crumbs';
 import IssueForm from '@/components/tavole/IssueForm';
 import DrawingFigure from '@/components/drawing/DrawingFigure';
@@ -44,7 +49,16 @@ export default async function DrawingSetPage({ params, searchParams }: { params:
   const editable = can(user, 'calc:create') && !s.project.archivedAt;
   // a whole project's set comes from a calculation made from a shaft design, a replacement's from a saved machine room
   const calcs = editable && !s.roomDesign ? (await listCalculations(user, s.projectId)).filter((c) => c.shaftDesignId).map((c) => ({ id: c.id, label: `${fd.dateTime(c.createdAt)}${c.label ? ` · ${c.label}` : ''} · ${c.summary}` })) : [];
-  const rooms = editable && s.roomDesign ? (await listRoomDesigns(user, s.projectId)).map((x) => ({ id: x.id, label: `${fd.dateTime(x.createdAt)}${x.label ? ` · ${x.label}` : ''} · ${x.summary}` })) : [];
+  const roomLine = await roomSummaryLine();
+  // before a revision, as before an issue: the data of the installation its sheet 1 reads and nobody entered, the plant
+  // number of an existing lift, the client — on what the set is drawn from (the machine's name is checked by the server
+  // on the record chosen)
+  const plant = plantReadSchema.safeParse(s.project.plant ?? {}), Pl = plant.success ? plant.data : {};
+  const fullIn = full && 'doc' in full ? full.input : null, C = fullIn ? fullIn.marks?.collaudo ?? storedCollaudo(fullIn.values, s.calculation.collaudo) : null;
+  const checks = fullIn && C ? issueChecks(Pl, fullIn.marks?.catalog ?? null, s.project, C.norma !== 'en81', { whole: true,
+    rails: ambitoOf(C, 'gr_stress') === 'applies', underPit: fullIn.values.layout === 'bottom' && fullIn.marks?.bottom === 'under' })
+    : room && 'doc' in room ? issueChecks(Pl, room.derived.made ?? null, s.project, true, { whole: false }) : null;
+  const rooms = editable && s.roomDesign ? (await listRoomDesigns(user, s.projectId)).map((x) => ({ id: x.id, label: `${fd.dateTime(x.createdAt)}${x.label ? ` · ${x.label}` : ''} · ${roomLine(x)}` })) : [];
   return (
     <main className="page">
       <Crumbs items={[{ href: '/app', label: tp('title') }, { href: `/app/projects/${s.projectId}`, label: s.project.name }, { label: `${t('number')} ${s.number}` }]} />
@@ -97,7 +111,8 @@ export default async function DrawingSetPage({ params, searchParams }: { params:
         {editable && (calcs.length || rooms.length) ? (
           <>
             <h3>{t('revise')}</h3>
-            <IssueForm revise={rooms.length ? { drawingSetId: s.id, rooms } : { drawingSetId: s.id, calculations: calcs }} initials={initialsOf(user.name)} />
+            <IssueForm revise={rooms.length ? { drawingSetId: s.id, rooms } : { drawingSetId: s.id, calculations: calcs }} initials={initialsOf(user.name)}
+              checks={checks ? { ...checks, machine: null } : undefined} projectId={s.projectId} />
           </>
         ) : null}
       </section>

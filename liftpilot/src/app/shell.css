@@ -7,15 +7,24 @@ body > main { flex: 1 0 auto; }
 .topbar .inner { max-width: 1320px; margin: 0 auto; padding: 10px 16px; min-height: 60px; display: flex; align-items: center; gap: 12px 22px; }
 .brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); min-width: 0; }
 .brand img { height: 36px; width: auto; flex: none; display: block; }
+/* in the application's header the company's name gives way first, down to the logo; only then do the sections wrap */
+.topbar[data-nav] .brand { min-width: 112px; overflow: hidden; }
 .brand span { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 10px; border-left: 1px solid var(--rule); }
-.bar-wide { display: flex; align-items: center; gap: 18px; flex: 1 1 auto; min-width: 0; }
-.bar-wide .nav { flex: 1 1 auto; }
+.bar-wide { display: flex; align-items: center; gap: 18px; flex: 1 0 auto; max-width: calc(100% - 134px); min-width: 0; }
+/* never past the screen's edge: sections that do not stand in one row wrap (the breakpoints below keep them in one) */
+.bar-wide .nav { flex: 1 1 auto; flex-wrap: wrap; min-width: 0; }
 .bar-end { margin-left: auto; display: flex; align-items: center; gap: 8px; }
 .nav { display: flex; gap: 2px; }
 .nav a { text-decoration: none; color: var(--ink-2); font-size: 14px; padding: 8px 11px; border-radius: 8px; white-space: nowrap; }
 .nav a:hover { background: var(--surface2); color: var(--ink); }
 .nav a[aria-current="page"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
-.userbox { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.userbox { display: flex; flex: none; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+/* the account's button: a long name ends in an ellipsis (whole in its title and in the menu) */
+.userbox .acct { display: inline-block; max-width: 9rem; overflow: hidden; text-overflow: ellipsis; }
+/* many sections (an owner's, the platform's): closer together, so that they stand in one row with the account */
+.topbar[data-nav="long"] .inner { column-gap: 14px; }
+.topbar[data-nav="long"] .bar-wide { gap: 12px; }
+.topbar[data-nav="long"] .bar-wide .nav a { padding-inline: 6px; font-size: 13.5px; }
 .langs { display: inline-flex; border: 1px solid var(--rule); border-radius: 9px; overflow: hidden; flex: none; }
 .langs a { text-decoration: none; color: var(--ink-2); font: 500 12.5px/1 var(--font-body); padding: 8px 9px; }
 .langs a[aria-current="true"] { background: var(--accent); color: var(--accent-ink); }
@@ -38,6 +47,12 @@ body > main { flex: 1 0 auto; }
   .bar-wide { display: none; }
   .menu { display: block; }
   .topbar .brand span { display: none; }
+}
+/* many sections stand in one row with the account from 1280 px in every language (the labels of messages/*.json, the
+   name at its widest): below, the menu (a header test measures it, scripts/smoke-topbar.mjs) */
+@media (max-width: 1279px) {
+  .topbar[data-nav="long"] .bar-wide { display: none; }
+  .topbar[data-nav="long"] .menu { display: block; }
 }
 @media (max-width: 479px) {
   .topbar .inner { gap: 10px; }

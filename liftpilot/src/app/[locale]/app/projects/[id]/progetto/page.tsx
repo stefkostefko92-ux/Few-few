@@ -9,6 +9,7 @@ import { liftStart } from '@/server/lift-start';
 import LiftWorkspace from '@/components/lift/LiftWorkspace';
 import Crumbs from '@/components/Crumbs';
 import { pitchesOf } from '@/lib/plant';
+import { openedByRefresh } from '@/lib/refresh-form';
 
 export async function generateMetadata() {
   const t = await getTranslations('lift');
@@ -17,8 +18,9 @@ export async function generateMetadata() {
 
 // The one form of an installation with its live 3D simulation: from a saved design (?from=), else from the form's draft,
 // else from the latest design, else from the installation's shaft design and calculation with the rest of the project
-// to enter, else empty (src/server/lift-start.ts).
-export default async function LiftWorkPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ from?: string }> }) {
+// to enter, else empty (src/server/lift-start.ts). Opened by «Aggiorna con il software attuale» on a design that no longer
+// saves as it was (&aggiorna=1), it says so at its top with what to correct.
+export default async function LiftWorkPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ from?: string; aggiorna?: string }> }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
   const user = await requireCapability(locale, 'calc:create');
@@ -26,7 +28,7 @@ export default async function LiftWorkPage({ params, searchParams }: { params: P
   if (!p || p.archivedAt) notFound();
   // the one form is the full project's; a replacement becomes one from its page (upgradeProjectAction)
   if (p.kind !== 'FULL') redirect(`/${locale}/app/projects/${p.id}`);
-  const from = idSchema.safeParse((await searchParams).from);
+  const sp = await searchParams, from = idSchema.safeParse(sp.from);
   const start = await liftStart(user, p.id, from.success ? from.data : null);
   const [t, tp] = await Promise.all([getTranslations('lift'), getTranslations('projects')]);
   return (
@@ -39,7 +41,8 @@ export default async function LiftWorkPage({ params, searchParams }: { params: P
         </div>
       </div>
       <LiftWorkspace key={from.success ? from.data : 'start'} projectId={p.id} initial={start.inputs} blank={start.blank} prices={await visiblePrices(user)}
-        pitches={pitchesOf(p.plant)} draft={{ projectId: p.id, scope: 'lift', resumed: start.draftAt ? dateFormat(locale).dateTime(new Date(start.draftAt)) : null }} />
+        pitches={pitchesOf(p.plant)} draft={{ projectId: p.id, scope: 'lift', resumed: start.draftAt ? dateFormat(locale).dateTime(new Date(start.draftAt)) : null }}
+        refresh={from.success && openedByRefresh(sp)} />
     </main>
   );
 }

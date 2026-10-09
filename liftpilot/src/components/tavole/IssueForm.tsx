@@ -4,7 +4,8 @@
 // drafter's initials go into the title block (prefilled from the user's name), the number comes from the server (YY-NNN
 // of the company and year). A revision instead keeps the number and adds a note. Before it, what the title block would
 // get wrong or leave empty: a machine name against the calculation's (the server refuses the issue), the plant number of
-// an existing lift, the client.
+// an existing lift, the client (each with the page it is corrected on); and the data of the installation sheet 1 reads
+// that nobody entered, with the way to them always at hand (the issue stays allowed).
 import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link, useRouter } from '@/i18n/routing';
@@ -25,7 +26,7 @@ interface Props {
 }
 
 export default function IssueForm({ calculationId, roomDesignId, revise, initials: mine, checks, projectId }: Props) {
-  const t = useTranslations('tavole'), te = useTranslations('errors'), router = useRouter();
+  const t = useTranslations('tavole'), tp = useTranslations('projects'), te = useTranslations('errors'), router = useRouter();
   const [initials, setInitials] = useState(mine);
   const [note, setNote] = useState('');
   const options = revise?.rooms ?? revise?.calculations ?? [];
@@ -42,6 +43,8 @@ export default function IssueForm({ calculationId, roomDesignId, revise, initial
       else if (!r.ok) setError(te(r.error));
     });
   };
+  // the project's details, where its plant number and client are entered
+  const edit = projectId ? <> <Link href={`/app/projects/${projectId}/edit`}>{tp('edit')}</Link></> : null;
   return (
     <form className="flex flex-col gap-3" onSubmit={(e) => { e.preventDefault(); submit(); }}>
       <div className="form-grid">
@@ -71,8 +74,14 @@ export default function IssueForm({ calculationId, roomDesignId, revise, initial
           {projectId ? <> <Link href={`/app/projects/${projectId}/impianto`}>{t('plantLink')}</Link></> : null}
         </p>
       ) : null}
-      {checks?.plantNumber ? <p className="alert alert-warn" role="status">{t('issuePlantNumber')}</p> : null}
-      {checks?.client ? <p className="note">{t('issueClient')}</p> : null}
+      {checks?.plantNumber ? <p className="alert alert-warn" role="status">{t('issuePlantNumber')}{edit}</p> : null}
+      {checks?.client ? <p className="note">{t('issueClient')}{edit}</p> : null}
+      {checks && projectId ? (
+        <p className={checks.empty.length ? 'alert alert-warn' : 'note'} role="status">
+          {checks.empty.length ? t('issueEmpty', { n: String(checks.empty.length), list: checks.empty.map((k) => t(`f_${k}`)).join(', ') }) : t('issuePlantFull')}
+          {' '}<Link href={`/app/projects/${projectId}/impianto`}>{t('plantLink')}</Link>
+        </p>
+      ) : null}
       <div className="flex flex-wrap items-center gap-3">
         <button type="submit" className="btn btn-primary" disabled={pending || !calc || !!checks?.machine}>{pending ? t('issuing') : revise ? t('revise') : t('issue')}</button>
         {error ? <span className="note bad" role="alert">{error}</span> : null}

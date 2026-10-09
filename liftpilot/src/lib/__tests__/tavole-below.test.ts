@@ -122,3 +122,12 @@ test('macchina in basso: i carichi della testata sulla pianta in testata — P1 
     }
   }
 });
+
+test('schema room senza locale nel progetto: sul foglio 1 le verifiche del locale delle pulegge disegnato (altezza, porta, spazio sopra)', () => {
+  const x = input(shaft(1600, 1750, 'rear', false), 'room'), checks = dataSheet(x, analyse(x.values), 8).sheet.checks;
+  const row = (start: string) => checks.find((c) => c[0].startsWith(start));
+  // the standard room the sheets draw, as the checks measure it: 1500 mm high, its door 600 × 1400 mm
+  assert.deepEqual(row('Altezza libera del locale delle pulegge')?.slice(1), ['1500 mm', '≥ 1500 mm', 'OK']);
+  assert.deepEqual(row('Porta del locale delle pulegge')?.slice(1), ['600 × 1400 mm', '≥ 600 × 1400 mm', 'OK']);
+  assert.ok(row('Spazio libero sopra le pulegge'), 'the space over the pulleys');
+});

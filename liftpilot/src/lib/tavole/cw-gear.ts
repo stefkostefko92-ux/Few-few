@@ -20,6 +20,11 @@ const TRIP: Readonly<Record<NonNullable<Plant['cwGearTrip']>, string>> = {
  *  space under the shaft or with a pillar in its place. */
 export const cwGearOf = (under: boolean, Pl: Plant): SafetyGear | null => (!under || Pl.cwSafetyGear === 'pillar' ? null : Pl.cwSafetyGear ?? 'progressive');
 
+/** The data with the counterweight's gear `g` chosen in their form: a pillar in its place takes away what tripped a gear
+ *  (nothing trips a pillar: no stale choice kept behind the disabled field); a gear keeps it. */
+export const cwGearPicked = (Pl: Plant, g: Plant['cwSafetyGear']): Plant =>
+  g === 'pillar' ? { ...Pl, cwSafetyGear: g, cwGearTrip: undefined } : { ...Pl, cwSafetyGear: g };
+
 /** Sheet 1's row of the counterweight's safety gear: the gear and what trips it, or that they are to be given. */
 export function cwGearRow(Pl: Plant): string {
   const g = Pl.cwSafetyGear, t = Pl.cwGearTrip;

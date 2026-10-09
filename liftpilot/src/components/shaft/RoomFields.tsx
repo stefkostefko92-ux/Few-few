@@ -8,9 +8,11 @@
 // no ridge); the support's fields come with the machine, once the rest is entered. In a whole design the software may
 // place the control panel: its wall and place are then shown as it put them, marked as such. With the support, the HEB
 // beams on the shaft's walls it may stand on (HebFields), and which way the machine lies along the rope drops (its motor
-// toward the counterweight, or turned round toward the car: the software's when not chosen).
+// toward the counterweight, or turned round toward the car: the software's when not chosen). The pulley room of a
+// machine below (scheme room) holds neither machine nor panel: its size, height, slab and door only.
 import { useTranslations } from 'next-intl';
 import type { HebTaken, RoomInputs } from '@/shaft';
+import { KV_VERT } from '@/shaft/norme-vert';
 import { PROFILE_NAMES } from '@/shaft/profiles';
 import { SUPPORT_KINDS, hasProfile, profileOf, supportHeight, supportLength, supportOf, type MachineSupport } from '@/shaft/support';
 import type { MachineShape } from '@/shaft/machine-shape';
@@ -52,12 +54,14 @@ interface Props {
   choose?: string;
   /** the panel's place by the software; missing: always entered */
   panel?: RoomPanel;
+  /** the pulley room of a machine below: no panel in it */
+  pulley?: boolean;
 }
 
 type NumKey = Exclude<keyof RoomInputs, 'doorWall' | 'panelWall' | 'support' | 'heb' | 'motor'>;
 const WALLS = ['front', 'rear', 'left', 'right'] as const;
 
-export default function RoomFields({ R, put, machine, blank = () => false, choose = '—', panel }: Props) {
+export default function RoomFields({ R, put, machine, blank = () => false, choose = '—', panel, pulley = false }: Props) {
   const t = useTranslations('shaft'), tl = useTranslations('lift');
   const field = (key: NumKey, min: number, max: number) => (
     <label className={`field${blank(key) ? ' need' : ''}`} key={key}>
@@ -157,23 +161,25 @@ export default function RoomFields({ R, put, machine, blank = () => false, choos
         {wall('doorWall')}
         {field('doorAt', 0, 20000)}
         {field('doorW', 500, 3000)}
-        {field('doorH', 1500, 3000)}
+        {field('doorH', KV_VERT.pulleyDoorH, 3000)}
       </div>
-      {panel ? (
+      {panel && !pulley ? (
         <label className="check">
           <input type="checkbox" id="auto-panel" checked={auto} onChange={(e) => panel.set(e.target.checked)} />
           <span>{t('rm_panelAuto')}</span>
         </label>
       ) : null}
-      <div className="form-grid">
-        {auto ? placed('panelWall', (P) => t(`wall_${P.panelWall}`)) : wall('panelWall')}
-        {auto ? placed('panelAt', (P) => String(Math.round(P.panelAt))) : field('panelAt', 0, 20000)}
-        {field('panelW', 200, 3000)}
-        {field('panelD', 100, 1000)}
-        {field('panelH', 500, 3000)}
-      </div>
-      {auto ? <p className="note">{t('rm_panelAutoHint')}</p> : null}
-      {supportFields}
+      {pulley ? null : (
+        <div className="form-grid">
+          {auto ? placed('panelWall', (P) => t(`wall_${P.panelWall}`)) : wall('panelWall')}
+          {auto ? placed('panelAt', (P) => String(Math.round(P.panelAt))) : field('panelAt', 0, 20000)}
+          {field('panelW', 200, 3000)}
+          {field('panelD', 100, 1000)}
+          {field('panelH', 500, 3000)}
+        </div>
+      )}
+      {auto && !pulley ? <p className="note">{t('rm_panelAutoHint')}</p> : null}
+      {pulley ? null : supportFields}
     </>
   );
 }

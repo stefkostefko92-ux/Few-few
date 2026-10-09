@@ -6,8 +6,8 @@
 // on the one that calculation was made again into). The new record's page says whether the result changed (?da=<old
 // id>). A record still reproduced is not copied, nor one already made again (the audit keeps `updates`: a second tab or
 // the back button finds the new one); when what was entered no longer passes (the software asks for something else
-// now), the form opens on it instead. A whole project is made again from its form: the calculations and rooms of its
-// archive are not copied into it.
+// now), the form opens on it instead, marked (src/lib/refresh-form.ts) so that it says why at its top. A whole project
+// is made again from its form: the calculations and rooms of its archive are not copied into it.
 import { redirect } from 'next/navigation';
 import { DEFAULT_LOCALE, isLocale } from '@/i18n/locales';
 import { getSessionUser, type SessionUser } from '@/lib/auth';
@@ -16,6 +16,7 @@ import { prisma } from '@/lib/db';
 import { collaudoReadSchema, collaudoSchema, liftInputsReadSchema, liftInputsSchema } from '@/lib/lift-input';
 import { liftRecord } from '@/lib/lift-record';
 import { rateLimit } from '@/lib/ratelimit';
+import { REFRESH_QUERY } from '@/lib/refresh-form';
 import { can } from '@/lib/rbac';
 import { surveySchema } from '@/lib/room/survey';
 import { idSchema } from '@/lib/schemas';
@@ -76,7 +77,7 @@ async function refreshLift(user: SessionUser, id: string, app: string): Promise<
   const source = d.source ? shaftSourceSchema.safeParse(d.source) : null;
   const r = inputs?.success ? await once(d.id, () => createLiftDesign(user, d.projectId, inputs.data, d.label, source?.success ? source.data : null, d.id)) : null;
   if (r === 'busy') redirect(`${app}/lift-designs/${d.id}`);
-  if (!r?.ok) redirect(formOr(user, `${app}/projects/${d.projectId}/progetto?from=${d.id}`, `${app}/lift-designs/${d.id}`));
+  if (!r?.ok) redirect(formOr(user, `${app}/projects/${d.projectId}/progetto?from=${d.id}&${REFRESH_QUERY}`, `${app}/lift-designs/${d.id}`));
   redirect(`${app}/lift-designs/${r.id}?da=${d.id}`);
 }
 
@@ -130,7 +131,7 @@ export async function refreshCalculationAction(fd: FormData): Promise<void> {
   if (done) redirect(`${app}/calculations/${done}?da=${c.id}`);
   const r = await once(c.id, () => remakeCalc(user, c, c.roomDesigns[0] ?? null));
   if (r === 'busy') redirect(`${app}/calculations/${c.id}`);
-  if (!r) redirect(formOr(user, `${app}/projects/${c.projectId}/calc?from=${c.id}`, `${app}/calculations/${c.id}`));
+  if (!r) redirect(formOr(user, `${app}/projects/${c.projectId}/calc?from=${c.id}&${REFRESH_QUERY}`, `${app}/calculations/${c.id}`));
   redirect(`${app}/calculations/${r.calc}?da=${c.id}`);
 }
 
@@ -153,7 +154,7 @@ export async function refreshRoomDesignAction(fd: FormData): Promise<void> {
   const on = readCalc(c)?.same ? c : fresh && readCalc(fresh)?.same ? fresh : null;
   const m = await once(r.id, async () => (on ? { calc: on.id, room: await placeRoom(user, on, r) } : remakeCalc(user, c, r)));
   if (m === 'busy') redirect(`${app}/room-designs/${r.id}`);
-  if (!m) redirect(formOr(user, `${app}/projects/${c.projectId}/calc?from=${c.id}`, `${app}/room-designs/${r.id}`));
+  if (!m) redirect(formOr(user, `${app}/projects/${c.projectId}/calc?from=${c.id}&${REFRESH_QUERY}`, `${app}/room-designs/${r.id}`));
   // a survey the calculation no longer takes: its form, on that calculation, from this survey
-  redirect(m.room ? `${app}/room-designs/${m.room}?da=${r.id}` : formOr(user, `${app}/calculations/${m.calc}/locale?from=${r.id}`, `${app}/calculations/${m.calc}`));
+  redirect(m.room ? `${app}/room-designs/${m.room}?da=${r.id}` : formOr(user, `${app}/calculations/${m.calc}/locale?from=${r.id}&${REFRESH_QUERY}`, `${app}/calculations/${m.calc}`));
 }

@@ -4,13 +4,14 @@
 // existing machine and the ropes in place too. Nothing is worked out until every one that applies is entered; the
 // software's own values (allowances, rails, heights, buffers, the machine, the car mass…) come after, marked as such. A
 // value that a choice brings into the form starts empty too (the second entrance's side, the doors of the floors, the
-// scheme of a machine below, a machine room). The inputs underneath hold placeholders no field, drawing or record
-// shows. Pure: the form, its draft and the server read it alike.
+// scheme of a machine below, a machine room, the pulley room of scheme room). The inputs underneath hold placeholders no
+// field, drawing or record shows. Pure: the form, its draft and the server read it alike.
 import { readInputs } from '@/calc/index';
 import type { FormValues } from '@/calc/types';
 import { MACHINE, ROPES } from '@/components/calc/fields';
 import { visibleBad } from '@/lib/calc-input';
-import { DEFAULT_ROOM, type Floor, type ShaftInputs, type VerticalInputs } from '@/shaft';
+import { DEFAULT_ROOM, type Floor, type RoomInputs, type ShaftInputs, type VerticalInputs } from '@/shaft';
+import type { BottomScheme } from './bottom';
 import { LIFT_STANDARD, newLift } from './defaults';
 import type { LiftInputs } from './derive';
 
@@ -71,9 +72,14 @@ export function relevant(k: BlankKey, d: LiftDraft): boolean {
   if (k.startsWith('fdoor.')) return has('floors') && !one && indexOf(k, 'fdoor.') < n;
   if (k === 'main') return has('floors');
   if (k === 'bottom') return has('layout') && d.inputs.calc.layout === 'bottom';
+  // the room over the shaft: the machine room of a machine above; with a machine below, the pulley room of scheme room
+  // (no machine, no panel in it)
+  const above = has('layout') && d.inputs.calc.layout !== 'bottom';
+  const pulleys = has('layout') && d.inputs.calc.layout === 'bottom' && has('bottom') && d.inputs.bottom === 'room';
   // the panel's wall and place: none to enter while the software places it
-  if (k === 'room.panelWall' || k === 'room.panelAt') return has('layout') && d.inputs.calc.layout !== 'bottom' && S.room !== null && !d.inputs.auto.panel;
-  if (k.startsWith('room.')) return has('layout') && d.inputs.calc.layout !== 'bottom' && S.room !== null;
+  if (k === 'room.panelWall' || k === 'room.panelAt') return above && S.room !== null && !d.inputs.auto.panel;
+  if (k.startsWith('room.panel')) return above && S.room !== null;
+  if (k.startsWith('room.')) return (above || pulleys) && S.room !== null;
   return true;
 }
 
@@ -173,8 +179,25 @@ export function layoutTo(prev: string | undefined, blank: readonly BlankKey[], n
 /** A machine room added to the design: every measure of it to enter. */
 export const roomAdded = (blank: readonly BlankKey[]): BlankKey[] => emptied(blank, roomKeys());
 
+/** The scheme of a machine below chosen. Scheme room brings the pulley room over the shaft: added with every measure to
+ *  enter when the design has no room over the shaft (one it has — entered for a machine above — stays as entered). */
+export function bottomTo(d: LiftDraft, scheme: BottomScheme): LiftDraft {
+  const S = d.inputs.shaft, blank = filled(d.blank, ['bottom']);
+  if (scheme !== 'room' || S.room !== null) return { inputs: { ...d.inputs, bottom: scheme }, blank };
+  return { inputs: { ...d.inputs, bottom: scheme, shaft: { ...S, room: ROOM_PLACEHOLDER } }, blank: roomAdded(blank) };
+}
+
 /** The given load a choice of it starts from until its figure is entered [kg] (never shown). */
 export const Q_PLACEHOLDER = 630;
 
 /** The placeholder room a machine room added starts from (never shown). */
 export const ROOM_PLACEHOLDER = DEFAULT_ROOM;
+
+/** The pulley room of a design saved without one (scheme room), once a measure of it is entered in the form
+ *  (RoomOptions): the software's standard room it was drawn and checked as (shaft-rig.ts pulleyRoomOf), now the
+ *  design's own, with the placeholder's control panel. A pulley room has no panel — none drawn, checked or asked for
+ *  (relevant) — but the save takes no room without one (shaft-input.ts roomSchema), and the standard room's is none. */
+export const ownPulleyRoom = (standard: RoomInputs): RoomInputs => ({
+  ...standard, panelWall: ROOM_PLACEHOLDER.panelWall, panelAt: ROOM_PLACEHOLDER.panelAt, panelW: ROOM_PLACEHOLDER.panelW,
+  panelD: ROOM_PLACEHOLDER.panelD, panelH: ROOM_PLACEHOLDER.panelH,
+});

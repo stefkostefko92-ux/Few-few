@@ -3,7 +3,7 @@
 // ranges wide enough for any lift and narrow enough to refuse nonsense. A design saved before the vertical data
 // existed (engine 1) reads with the typical values of what it lacks.
 import { z } from 'zod';
-import { DEFAULTS, DEFAULT_VERTICAL, GOVERNORS, HEB_PROFILES, KV, PROFILES, PROFILE_NAMES, RAIL_TYPES, SUPPORT_KINDS, hasProfile, profileOf, reasonText } from '@/shaft';
+import { DEFAULTS, DEFAULT_VERTICAL, GOVERNORS, HEB_PROFILES, KV, KV_VERT, PROFILES, PROFILE_NAMES, RAIL_TYPES, SUPPORT_KINDS, hasProfile, profileOf, reasonText } from '@/shaft';
 import { CW_CHOICES, DOOR_PAIRS } from '@/shaft/staffe-ids';
 
 const mm = (min: number, max: number) => z.number().int().min(min).max(max);
@@ -70,7 +70,8 @@ export const roomSchema = z.object({
   doorWall: wall,
   doorAt: mm(0, 20000),
   doorW: mm(500, 3000),
-  doorH: mm(1500, 3000),
+  // a pulley room's door may be as low as its registry minimum (locale.pulegge; a machine room's lower one fails m_door)
+  doorH: mm(KV_VERT.pulleyDoorH, 3000),
   panelWall: wall,
   panelAt: mm(0, 20000),
   panelW: mm(200, 3000),

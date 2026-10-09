@@ -694,6 +694,9 @@
     "vt_reset": "Valori tipici",
     "rm_title": "Locale macchina sopra il vano",
     "rm_on": "Il progetto ha il locale macchina",
+    "rm_pulley_title": "Locale delle pulegge sopra il vano",
+    "rm_pulley_hint": "Con la macchina accanto al vano le pulegge di rinvio stanno in questo locale, sopra la soletta: niente argano, niente quadro. Si verificano l’altezza libera (almeno {H} mm), la porta (almeno {W} × {D} mm) e lo spazio sopra le pulegge senza protezione (almeno {above} mm).",
+    "rm_pulley_std": "Il progetto è stato salvato senza il locale delle pulegge: è disegnato e verificato come quello standard del software, grande quanto il vano, alto {H} mm, con la porta di {W} × {D} mm. Inserisci le misure del locale reale.",
     "rm_W": "Larghezza interna (mm)",
     "rm_D": "Profondità interna (mm)",
     "rm_shaftX": "Vano dalla parete sinistra del locale (mm)",
@@ -885,6 +888,8 @@
     "issueMachine": "I dati dell’impianto chiamano l’argano «{named}», ma il calcolo verifica il {catalog}: correggi il nome nei dati dell’impianto prima di emettere le tavole.",
     "issuePlantNumber": "L’impianto esiste ma non ha il numero di matricola: le tavole scriveranno «DA COMUNICARE». Inseriscilo nell’impianto prima di emettere, se lo conosci.",
     "issueClient": "Manca il committente: nel cartiglio resterà un trattino.",
+    "issueEmpty": "Dati dell’impianto non inseriti ({n}): sul foglio 1 restano con un trattino o con l’ipotesi del software — {list}.",
+    "issuePlantFull": "I dati dell’impianto che il foglio 1 legge sono tutti inseriti.",
     "plantLink": "Apri i dati dell’impianto",
     "cadTitle": "File CAD della serie emessa",
     "cadLead": "Tutti i fogli del PDF: le viste in scala reale con le loro legende e note, il foglio 1 con il cartiglio del numero e della revisione, le verifiche del progetto, i muri campiti: da inviare al posto della bozza.",
@@ -1854,7 +1859,11 @@
     "setsFromRoom": "Nella sostituzione le tavole si emettono dal rilievo del locale macchina.",
     "projectTitle": "Progetto della sostituzione",
     "projectEmpty": "Nessun rilievo del locale macchina. Aprilo da un calcolo salvato: «Rileva il locale macchina».",
-    "col_room": "Locale e argano"
+    "col_room": "Locale e argano",
+    "summary": "Locale {W} × {D} mm · {machine} su {support} · calate {calata} mm",
+    "sum_machine": "argano",
+    "sum_own": "(su misura)",
+    "sum_heb": "{support} su due {profile} sui muri del vano"
   },
   "drawing": {
     "full": "Schermo intero",
@@ -1878,7 +1887,13 @@
     "roomRedo": "Il rilievo del locale macchina salvato con il calcolo precedente non passa con il software attuale: rifallo partendo da quel rilievo.",
     "roomOpen": "Apri il rilievo",
     "outdated": "da aggiornare",
-    "archive": "Il software è cambiato da quando questo è stato salvato: i documenti non si rigenerano. È nell’archivio dell’impianto, ora un progetto completo: il progetto si aggiorna dal suo modulo."
+    "archive": "Il software è cambiato da quando questo è stato salvato: i documenti non si rigenerano. È nell’archivio dell’impianto, ora un progetto completo: il progetto si aggiorna dal suo modulo.",
+    "formTitle": "Aggiornamento con il software attuale: dati da correggere",
+    "form_lift": "Con il software attuale alcuni dati di questo progetto non passano più, quindi non si è potuto salvarlo di nuovo da solo. Correggi i dati segnati e salva: il salvataggio crea una nuova versione del progetto; quella salvata prima resta com’era.",
+    "form_calc": "Con il software attuale alcuni dati di questo calcolo non passano più, quindi non si è potuto rifarlo da solo. Correggi i dati segnati e salva: il salvataggio crea un nuovo calcolo; quello salvato prima resta com’era.",
+    "form_room": "Con il software attuale alcune misure di questo rilievo non passano più sul calcolo, quindi non si è potuto salvarlo di nuovo da solo. Correggi le misure segnate e salva: il salvataggio crea un nuovo rilievo; quello salvato prima resta com’era.",
+    "formFix": "Da correggere:",
+    "formDone": "Ora i dati passano: salva per creare la nuova versione."
   },
   "draft": {
     "resumed": "Bozza ripresa, salvata il {at}.",

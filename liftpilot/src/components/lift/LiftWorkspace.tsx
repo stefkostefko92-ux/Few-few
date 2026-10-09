@@ -12,7 +12,7 @@ import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import type { FormValues } from '@/calc/types';
 import type { Edit } from '@/drawing';
 import { deriveLift, type AutoFlags, type BottomScheme, type Collaudo, type LiftDerived, type LiftInputs } from '@/lib/lift';
-import { enteredBy, existingMissing, filled, layoutTo, missingOf, type BlankKey, type LiftDraft } from '@/lib/lift/blank';
+import { bottomTo, enteredBy, existingMissing, filled, layoutTo, missingOf, type BlankKey, type LiftDraft } from '@/lib/lift/blank';
 import { drawnShaft, edited, enteredShaft, movedPanel, panelEntered } from '@/lib/lift/panel-form';
 import { enteredSeed } from '@/lib/lift/entered';
 import { withPitches, type BracketPitches } from '@/shaft/brackets';
@@ -23,13 +23,13 @@ import { textsFor } from '@/lib/present/texts';
 import { makePres } from '@/lib/present/tr';
 import { visibleBad } from '@/lib/calc-input';
 import { liftDraftSchema } from '@/lib/draft-input';
-import type { CalcKey } from '@/lib/present/tr';
-import { shaftInputsSchema, type ShaftSource } from '@/lib/shaft-input';
+import type { ShaftSource } from '@/lib/shaft-input';
 import { editShaft } from '@/lib/shaft-edit';
 import { saveLiftDesignAction } from '@/server/lift-actions';
-import { DEFAULTS, editValue, keptPlan, type ShaftInputs } from '@/shaft';
+import { editValue, keptPlan, type ShaftInputs } from '@/shaft';
 import { asCalcDict } from '../calc/dict';
 import MissingPanel from '../MissingPanel';
+import RefreshNotice from '../RefreshNotice';
 import type { ShaftSet } from '../blank';
 import DraftBar from '../draft/DraftBar';
 import { useDraft, type DraftTarget } from '../draft/useDraft';
@@ -43,6 +43,7 @@ import LiftForm from './LiftForm';
 import LiftSimulator, { type SimApi } from './LiftSimulator';
 import MachineAdvice from './MachineAdvice';
 import { missingItems } from './missing-items';
+import { useSaveBlockers } from './save-blockers';
 
 interface Props {
   projectId: string;
@@ -59,23 +60,12 @@ interface Props {
   pitches?: BracketPitches;
   /** where the form's draft is kept; absent: none (the standalone page) */
   draft?: DraftTarget | null;
+  /** opened by «Aggiorna con il software attuale» on a record that no longer saves as it was: what to correct, on top */
+  refresh?: boolean;
 }
 
 /** The largest height of the diverting pulley under the sheave a drawing may set [mm]. */
 const CALC_H_MAX = 3000;
-
-/** The key of the shaft's form label for a value at `path` of the shaft's inputs (the path itself when none). */
-function shaftLabelKey(path: readonly PropertyKey[]): string {
-  const [a, b] = path.map(String);
-  if (b && a === 'vertical') return `vt_${b}`;
-  if (b && a === 'room') return `rm_${b}`;
-  if (b && a === 'imbotti') return `im_${b}`;
-  if (b && a === 'frame') return `fr_${b}`;
-  return a && a in DEFAULTS ? `a_${a}` : a ?? '';
-}
-
-/** An issue of the geometry as the field it is fixed in. */
-const ISSUE_FIELD: Readonly<Record<string, string>> = { calata: 'n_D', rinvio: 'h' };
 
 export interface WorkspaceApi {
   /** a dimension of the drawings given a new length: null when applied, else why not */
@@ -84,7 +74,7 @@ export interface WorkspaceApi {
 
 const isEmpty = (x: unknown): boolean => String(x ?? '').trim() === '';
 
-export default function LiftWorkspace({ projectId, initial, blank: initialBlank = [], onDerived, api, prices, pitches, draft = null }: Props) {
+export default function LiftWorkspace({ projectId, initial, blank: initialBlank = [], onDerived, api, prices, pitches, draft = null, refresh = false }: Props) {
   const locale = useLocale(), messages = useMessages(), t = useTranslations('lift'), ts = useTranslations('shaft'), te = useTranslations('errors'), tb = useTranslations('blank');
   const router = useRouter();
   const P = useMemo(() => makePres(asCalcDict(messages.calc), INTL_LOCALE[isLocale(locale) ? locale : 'it']), [messages.calc, locale]);
@@ -118,22 +108,8 @@ export default function LiftWorkspace({ projectId, initial, blank: initialBlank 
     return d && derived ? { evaluate: (m: AdviceModel) => liftCandidate(d, m), sheave: Math.round(derived.calata ?? derived.machine.D) } : null;
   }, [dInp, derived]);
   const bad = useMemo(() => new Set(derived ? visibleBad([...derived.analysis.ctx.bad, ...derived.issues], derived.values).filter((id) => !need.has(id)) : []), [derived, need]);
-  // what the save would refuse, as the server refuses it, named as the form names it: every value of the calculation out
-  // of range (shown or not), each issue of the geometry, every value of the shaft out of the ranges the server accepts
-  const nameOf = useCallback((field: string): string => {
-    if (field.startsWith('shaft.')) {
-      const path = field.slice(6).split('.'), key = shaftLabelKey(path);
-      return ts.has(key) ? ts(key) : path.join('.');
-    }
-    const id = ISSUE_FIELD[field] ?? field.replace(/^calc\./, '');
-    return P.t(id.replace(/^[no]_/, '') as CalcKey) + (id.startsWith('o_') ? ` (${P.t('g_old')})` : '');
-  }, [P, ts]);
-  const refused = useMemo(() => {
-    if (!derived) return [];
-    const r = shaftInputsSchema.safeParse(dInp.shaft);
-    const shaft = r.success ? [] : r.error.issues.map((i) => `shaft.${i.path.map(String).join('.')}`);
-    return [...new Set([...derived.analysis.ctx.bad, ...derived.issues, ...shaft].map(nameOf))];
-  }, [dInp.shaft, derived, nameOf]);
+  // what the save would refuse, as the server refuses it, named as the form names it (save-blockers.ts)
+  const { nameOf, blockers, refused } = useSaveBlockers(P, derived, dInp.shaft);
   useEffect(() => { if (derived) onDerived?.(dInp, derived); }, [dInp, derived, onDerived]);
   const sim = useRef<SimApi>(null);
   const draftValid = useMemo(() => liftDraftSchema.safeParse(form).success, [form]);
@@ -186,8 +162,9 @@ export default function LiftWorkspace({ projectId, initial, blank: initialBlank 
       return null;
     },
   }));
+  // (scheme room brings its pulley room: blank.ts bottomTo)
   const setBottom = (bottom: BottomScheme): void => {
-    setForm((f) => ({ inputs: { ...f.inputs, bottom }, blank: filled(f.blank, ['bottom']) }));
+    setForm((f) => bottomTo(f, bottom));
     setSaveError(null);
   };
   const setCollaudo = (collaudo: Collaudo): void => setInputs((p) => ({ ...p, collaudo }));
@@ -249,6 +226,7 @@ export default function LiftWorkspace({ projectId, initial, blank: initialBlank 
   const above = derived?.values.layout !== 'bottom', toEnter = derived ? machineMissing : missing;
   return (
     <div className="lift-work">
+      {refresh ? <RefreshNotice kind="lift" items={[...items(derived ? machineMissing : missing), ...blockers]} /> : null}
       <LiftForm P={P} X={X} inp={inp} derived={derived} complete={complete} blank={blank} bad={bad} need={need} texts={texts} source={source} setShaft={setShaft} setSize={setSize}
         onSurvey={onSurvey} setCalc={setCalc} setAuto={setAuto} setBottom={setBottom} setCollaudo={setCollaudo} setCatalog={setCatalog} />
       <div className="lift-main">

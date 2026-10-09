@@ -16,15 +16,18 @@ import { readCad } from '../cad/read';
 import { TITLE_BLOCK, inTitleBlock, mendAttributes, paperSheets, setToDwg, setToDxf, type IssuedSet } from '../cad/set-export';
 import { VOCI_IMPIANTO } from '../lift/norme';
 import { buildTavole } from '../tavole/build';
+import { dataSheet } from '../tavole/data';
 import { FAILED, TITLE_H } from '../tavole/datasheet';
 import type { TavoleInput } from '../tavole/input';
-import { issueChecks } from '../tavole/issue-check';
+import { emptyPlant, issueChecks } from '../tavole/issue-check';
+import type { Plant } from '../plant';
 import { GOVERNOR_LOAD_UNSET, loadNames } from '../tavole/loads';
 import { machineConflict, machineName, machineText, modelCore } from '../tavole/machine-name';
 import { MACHINES } from '../catalog/machines';
 import { VOCI_TAVOLE } from '../tavole/norme-tavole';
 import { FIRST_ISSUE, currentRevision, refBand, revisionRows, titleBlock, titleFields, titleFrame } from '../tavole/title-block';
 import { DRAFT_NUMBER, plantMark, refsText, titleOf } from '../tavole/title-data';
+import { analyse } from '../present/analysis';
 
 const SHA_C = 'a3f1c2d4e5b6978812345678abcdef0011223344556677889900aabbccddeeff', SHA_D = '0f9e8d7c6b5a49382716abcdefabcdefabcdefabcdefabcdefabcdefabcdef01';
 const day = (d: number): Date => new Date(Date.UTC(2026, 9, d, 10));
@@ -49,8 +52,37 @@ test('argano: il nome del catalogo, il testo dell’impianto per riferimento, la
   assert.equal(machineConflict({ machine: 'Sicor SH 140 Dx' }, cat), false);
   assert.equal(machineConflict({}, cat), false);
   assert.equal(machineConflict({ machine: 'M 73' }, null), false);
-  assert.deepEqual(issueChecks({ machine: 'M 73' }, cat, { plantNumber: null, client: ' ' }, true), { machine: { named: 'M 73', catalog: 'SICOR SH140' }, plantNumber: true, client: true });
-  assert.deepEqual(issueChecks({}, cat, { plantNumber: null, client: 'Condominio' }, false), { machine: null, plantNumber: false, client: false });
+  const full: Plant = { control: 'APB', voltage: 400, lightVoltage: 230, frequency: 50, duty: 40, safetyGear: 'progressive', governorLoad: 300 };
+  assert.deepEqual(issueChecks({ ...full, machine: 'M 73' }, cat, { plantNumber: null, client: ' ' }, true, { whole: false }),
+    { machine: { named: 'M 73', catalog: 'SICOR SH140' }, plantNumber: true, client: true, empty: [] });
+  assert.deepEqual(issueChecks(full, cat, { plantNumber: null, client: 'Condominio' }, false, { whole: false }), { machine: null, plantNumber: false, client: false, empty: [] });
+});
+
+test('emissione: i dati dell’impianto che il foglio 1 legge e nessuno ha inserito, nell’ordine del loro modulo', () => {
+  const cat = { brand: 'SICOR', model: 'SH140' };
+  // a whole design with nothing entered: everything its sheet 1 reads, the parts of the car mass of its loads too (a
+  // dash each); the machine named by the catalogue
+  const MASSES = ['massShell', 'massFloor', 'massDoors', 'massFrame'];
+  const sheetLoads = (plant: Plant) => { const x = input({}, plant); return dataSheet(x, analyse(x.values), 12).sheet.loads; };
+  assert.deepEqual(emptyPlant({}, cat, { whole: true, rails: true }), ['control', 'shaft', 'carFinish', 'safetyGear', 'liftUse', 'governorLoad', 'currentIn',
+    'currentStart', 'voltage', 'lightVoltage', 'frequency', 'duty', ...MASSES]);
+  // the lift's use only with the check of the rails; a machine off the catalogue: its name, in the optional ones before
+  // the masses; under the pit: the counterweight's gear and what trips it (nothing trips a pillar)
+  assert.equal(emptyPlant({}, cat, { whole: true, rails: false }).includes('liftUse'), false);
+  assert.deepEqual(emptyPlant({}, null, { whole: true }).slice(-5), ['machine', ...MASSES]);
+  // the loads of sheet 1 print a dash for each part not given: the very ones listed
+  const loads = sheetLoads({ control: 'APB' }), dashed = loads.filter((r) => r[1] === '—').map((r) => r[0]);
+  assert.deepEqual(dashed, ['CABINA', 'PAVIMENTO DEL CLIENTE (MAX)', 'OPERATORE E ANTINE', 'ARCATA']);
+  const parts = { massShell: 250, massFloor: 60, massDoors: 90, massFrame: 200 };
+  assert.equal(sheetLoads(parts).some((r) => r[1] === '—'), false);
+  assert.equal(emptyPlant({ massShell: 0, massFloor: 60, massDoors: 90, massFrame: 200 }, cat, { whole: true }).some((k) => k.startsWith('mass')), false);
+  assert.deepEqual(emptyPlant({}, cat, { whole: true, underPit: true }).filter((k) => k.startsWith('cw')), ['cwSafetyGear', 'cwGearTrip']);
+  assert.deepEqual(emptyPlant({ cwSafetyGear: 'pillar' }, cat, { whole: true, underPit: true }).filter((k) => k.startsWith('cw')), []);
+  // a replacement's sheet 1: no shaft, car finish, lift's use, currents or parts of the car mass
+  assert.deepEqual(emptyPlant({}, cat, { whole: false, rails: true, underPit: true }), ['control', 'safetyGear', 'governorLoad', 'voltage', 'lightVoltage', 'frequency', 'duty']);
+  // a blank text counts as not entered, every value entered leaves nothing
+  assert.deepEqual(emptyPlant({ control: '  ', shaft: 'muratura', carFinish: 'inox', liftUse: 'passengers', currentIn: 12, currentStart: 40, voltage: 400,
+    lightVoltage: 230, frequency: 50, duty: 40, safetyGear: 'progressive', governorLoad: 300, ...parts }, cat, { whole: true, rails: true }), ['control']);
 });
 
 test('argano: il modello del catalogo a parole intere — un modello che ne comincia un altro, un altro costruttore contraddicono', () => {

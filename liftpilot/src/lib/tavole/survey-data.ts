@@ -21,6 +21,7 @@ import type { Plant } from '../plant';
 import { makeFmt } from '../present/tr';
 import { collaudoNote, partiText } from '../report/collaudo';
 import type { RoomDerived } from '../room/derive';
+import { roomSupportOf } from '../room/summary';
 import type { Row, TitleData } from './datasheet';
 import { GOVERNOR_LOAD_UNSET, loadNames, loads, type LoadsInput } from './loads';
 import { roomNote, type Note } from './notes';
@@ -62,12 +63,14 @@ export function supportName(d: RoomDerived): string {
   return d.heb ? `${own} SU DUE ${d.heb.chosen.profile} SUI MURI DEL VANO` : own;
 }
 
+// (the parts are those the summary of the saved room names it by: room/summary.ts)
 function ownSupportName(d: RoomDerived): string {
-  const s = supportOf(d.G?.room ?? null, d.M.Dp > 0), rf = d.M.rinvio;
-  if (s.kind === 'rinvio' && rf?.on === 'frame') return rf.maker ? `TELAIO CON RINVIO ${rf.maker.brand} ${rf.maker.code}` : 'TELAIO CON RINVIO (SU MISURA)';
-  if (s.kind === 'frame') return `TELAIO ${profileOf(s)}`;
-  if (s.kind === 'beams') return `PUTRELLE ${profileOf(s)}`;
-  return { shims: 'SPESSORI DI LIVELLAMENTO', plates: 'PIASTRE D’ACCIAIO', plinth: 'PLINTO IN CALCESTRUZZO', rinvio: 'TELAIO CON RINVIO' }[s.kind] ?? s.kind;
+  const s = roomSupportOf(d);
+  if (s.maker) return `TELAIO CON RINVIO ${s.maker}`;
+  if (s.own) return 'TELAIO CON RINVIO (SU MISURA)';
+  if (s.kind === 'frame') return `TELAIO ${s.profile ?? ''}`;
+  if (s.kind === 'beams') return `PUTRELLE ${s.profile ?? ''}`;
+  return { shims: 'SPESSORI DI LIVELLAMENTO', plates: 'PIASTRE D’ACCIAIO', plinth: 'PLINTO IN CALCESTRUZZO', rinvio: 'TELAIO CON RINVIO' }[s.kind];
 }
 
 const machineRows = (O: Machine | null, N: Machine, oldName: string, newName: string): (readonly [string, string, string, string])[] => {

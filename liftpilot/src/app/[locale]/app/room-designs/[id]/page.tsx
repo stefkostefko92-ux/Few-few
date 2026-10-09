@@ -11,6 +11,7 @@ import { cropped, surveyView } from '@/lib/tavole/views';
 import { isUpperLimit, shownValue } from '@/shaft/checks';
 import { prisma } from '@/lib/db';
 import { reproduceRoomRecord } from '@/server/room-compose';
+import { roomSummaryLine } from '@/server/room-summary';
 import { getRoomDesign, refreshedFrom } from '@/server/queries';
 import { projectCost } from '@/server/prices';
 import { calcBom } from '@/lib/prices/bom';
@@ -46,7 +47,7 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
   const [t, tp, tc, tt, ts, tf, before] = await Promise.all([getTranslations('room'), getTranslations('projects'), getTranslations('calculations'), getTranslations('tavole'),
     getTranslations('shaft'), getTranslations('refresh'), refreshedFrom(user, 'roomDesign', (await searchParams).da, r.projectId)]);
   const rep = reproduceRoomRecord(r, r.calculation), d = rep.ok ? rep.derived : null;
-  const fd = dateFormat(locale), fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
+  const fd = dateFormat(locale), fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']), lead = (await roomSummaryLine())(r);
   // a machine room is a replacement's: one in the archive of a whole project is read only (its project is made again
   // from the form)
   const download = !!d && can(user, 'report:download'), editable = can(user, 'calc:create') && !r.project.archivedAt;
@@ -62,14 +63,14 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
   // what the replacement costs with the company's prices: the machine, its support, the parts the test names replaced
   const costed = d && rep.ok ? await projectCost(user, calcBom(rep.values, rep.collaudo, d), 'replacement', { stops: null, travel: d.analysis.ctx.I.H }) : null;
   // before an issue: the machine the data of the installation name against the calculation's, the plant number, the client
-  const plant = plantReadSchema.safeParse(r.project.plant ?? {}), checks = issueChecks(plant.success ? plant.data : {}, d?.made ?? null, r.project, true);
+  const plant = plantReadSchema.safeParse(r.project.plant ?? {}), checks = issueChecks(plant.success ? plant.data : {}, d?.made ?? null, r.project, true, { whole: false });
   const sets = await prisma.drawingSet.findMany({ where: { companyId: user.companyId, roomDesignId: r.id }, orderBy: [{ seq: 'desc' }, { revision: 'desc' }],
     select: { id: true, number: true, revision: true, createdAt: true, authorInitials: true, user: { select: { name: true } } } });
   return (
     <main className="page">
       <Crumbs items={[{ href: '/app', label: tp('title') }, { href: `/app/projects/${r.projectId}`, label: r.project.name }, { label: t('viewTitle') }]} />
       <div className="page-head">
-        <div className="titles"><h1>{t('viewTitle')}{r.label ? `\u00a0· ${r.label}` : ''}</h1><p className="lead">{r.summary}</p></div>
+        <div className="titles"><h1>{t('viewTitle')}{r.label ? `\u00a0· ${r.label}` : ''}</h1><p className="lead">{lead}</p></div>
         <div className="actions">
           {download ? <a className="btn btn-primary" href={`/api/room-designs/${r.id}/relazione`}>{t('docTecnica')}</a> : null}
           {editable && replacement ? <Link className="btn" href={`/app/calculations/${r.calculationId}/locale?from=${r.id}`}>{t('newFrom')}</Link> : null}
