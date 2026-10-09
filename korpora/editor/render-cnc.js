@@ -38,8 +38,8 @@ function estimate(g) {
       seconds += (len / RAPID_MM_MIN) * 60;
     } else if (m.type === 'drill') {
       drills += 1;
-      // in from the R plane and back out, at the drill's feed
-      seconds += (((m.depth + CLEAR) * 2) / drillFeed.get(m.tool)) * 60 + HOLE_EXTRA_S;
+      // in from the R plane and back out, at the drill's feed (GRBL: under the project's feed cap)
+      seconds += (((m.depth + CLEAR) * 2) / (m.F || drillFeed.get(m.tool))) * 60 + HOLE_EXTRA_S;
     } else {
       cut += len;
       seconds += (len / (m.F || 3000)) * 60;

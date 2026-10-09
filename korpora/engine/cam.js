@@ -213,7 +213,7 @@ export function toGcode(model, sheet, meta) {
     if (iso) {
       // canned cycle; the depth differs per hole, so Z and R are on every line
       holes.forEach((h, i) => {
-        moves.push({ type: 'rapid', from: pos, to: { X: h.X, Y: h.Y, Z: safe } }, { type: 'drill', at: [h.X, h.Y], depth: h.depth, tool: tool.id });
+        moves.push({ type: 'rapid', from: pos, to: { X: h.X, Y: h.Y, Z: safe } }, { type: 'drill', at: [h.X, h.Y], depth: h.depth, tool: tool.id, F: Math.min(tool.feed, maxFeed) });
         pos = { X: h.X, Y: h.Y, Z: safe };
         L.push(`${i === 0 ? 'G98 G81 ' : ''}X${num(h.X)} Y${num(h.Y)} Z${num(-h.depth)} R${num(CLEAR)}${i === 0 ? ` F${tool.feed}` : ''}`);
       });
@@ -223,7 +223,7 @@ export function toGcode(model, sheet, meta) {
         rapid(h.X, h.Y);
         rapid(undefined, undefined, CLEAR);
         feed(undefined, undefined, -h.depth, tool.feed, tool.id);
-        moves.push({ type: 'drill', at: [h.X, h.Y], depth: h.depth, tool: tool.id });
+        moves.push({ type: 'drill', at: [h.X, h.Y], depth: h.depth, tool: tool.id, F: Math.min(tool.feed, maxFeed) });
         rapid(undefined, undefined, CLEAR);
       }
     }

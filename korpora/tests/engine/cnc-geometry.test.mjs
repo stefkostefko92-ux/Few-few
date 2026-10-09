@@ -114,6 +114,8 @@ for (const [ci, input] of OUTPUT_SPECS.entries()) {
       // every hole drilled on the sheet is a row of drilling.csv: the same place, Ø and depth, one to one
       const dia = new Map(g.tools.map((t) => [t.id, t.d]));
       const drilled = g.moves.filter((m) => m.type === 'drill').map((m) => ({ X: m.at[0], Y: m.at[1], d: dia.get(m.tool), depth: m.depth }));
+      // a Ø without a drill is not in the G-code: it is a manual hole, in drilling.csv and in the DXF all the same
+      const holesAll = [...drilled, ...g.ops.manual.map((h) => ({ X: h.X, Y: h.Y, d: h.d, depth: h.depth }))];
       const expected = [];
       for (const pl of sheet.placements) {
         const cut = cutSize(byId.get(pl.partId), model.spec.bandCompensation);
@@ -123,8 +125,8 @@ for (const [ci, input] of OUTPUT_SPECS.entries()) {
           expected.push({ X, Y, d: csvNum(row[6]), depth: r1(Math.min(csvNum(row[7]), T + THROUGH_EXTRA)), what: `${pl.name} hole ${row[3]}` });
         }
       }
-      assert.equal(drilled.length, expected.length, `${where}: holes in the G-code vs drilling.csv`);
-      const left = [...drilled];
+      assert.equal(holesAll.length, expected.length, `${where}: holes in the G-code and manual vs drilling.csv`);
+      const left = [...holesAll];
       for (const e of expected) {
         const i = left.findIndex((h) => near(h.X, e.X, 0.1) && near(h.Y, e.Y, 0.1) && h.d === e.d && near(h.depth, e.depth, 0.001));
         assert.ok(i >= 0, `${where}: ${e.what} (${e.X}, ${e.Y}, Ø${e.d} × ${e.depth}) is not drilled`);
@@ -134,15 +136,15 @@ for (const [ci, input] of OUTPUT_SPECS.entries()) {
       // the DXF: the same holes (centre, radius, a layer named after Ø and depth), the nested rectangles, the grooves
       const ents = dxfEntities(toDxf(model, sheet).text);
       const circles = ents.filter((e) => e.type === 'CIRCLE');
-      assert.equal(circles.length, drilled.length + g.ops.manual.length, `${where}: DXF circles vs holes`);
-      const holes = [...drilled];
+      assert.equal(circles.length, holesAll.length, `${where}: DXF circles vs holes`);
+      const holes = [...holesAll];
       for (const c of circles) {
         const m = /^DRILL_D(\d+(?:_\d+)?)_Z-(\d+(?:_\d+)?)$/.exec(c.layer);
         assert.ok(m, `${where}: circle on layer ${c.layer}`);
         const [d, depth] = [layerNum(m[1]), layerNum(m[2])];
         assert.ok(near(c[40], d / 2, 0.001), `${where}: circle radius ${c[40]} on ${c.layer}`);
         const i = holes.findIndex((h) => near(h.X, c[10], 0.001) && near(h.Y, c[20], 0.001) && h.d === d && near(h.depth, depth, 0.001));
-        assert.ok(i >= 0, `${where}: DXF circle ${c[10]}, ${c[20]} on ${c.layer} is not a hole of the G-code`);
+        assert.ok(i >= 0, `${where}: DXF circle ${c[10]}, ${c[20]} on ${c.layer} is not a hole of the G-code or a manual one`);
         holes.splice(i, 1);
       }
       const contourLayer = `CONTOUR_D${model.spec.tool}_Z-${String(r1(T + SPOIL)).replace('.', '_')}`;
@@ -199,6 +201,9 @@ test('GRBL mills in steps of at most the step down and never feeds above the cap
       const feeds = walkGcode(g.text).filter((l) => l.F !== undefined).map((l) => l.F);
       assert.ok(feeds.length > 0 && Math.max(...feeds) <= cap, `${where}: feed ${Math.max(...feeds)} above ${cap}`);
       assert.ok(g.moves.every((m) => !m.F || m.F <= cap), `${where}: the time estimate sees a feed above the cap`);
+      // the drill moves carry the capped feed too, so the time estimate drills no faster than the machine
+      const drills = g.moves.filter((m) => m.type === 'drill');
+      assert.ok(drills.every((m) => m.F > 0 && m.F <= cap), `${where}: a drill move without the capped feed`);
       const worst = deepestStep(g.text);
       assert.ok(worst > 0 && worst <= step + 1e-6, `${where}: a milling step of ${worst} mm, the limit is ${step}`);
     }
