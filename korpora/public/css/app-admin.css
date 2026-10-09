@@ -20,28 +20,6 @@
 a.stat:hover {
   border-color: var(--ink-3);
 }
-.stat-v {
-  font: 650 1.6rem/1.1 var(--f-text);
-  font-variant-numeric: tabular-nums;
-}
-.stat-k {
-  font-size: 0.86rem;
-  color: var(--ink-2);
-}
-.filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: flex-end;
-  margin: 0 0 16px;
-}
-.filters .field {
-  margin: 0;
-  flex: 1 1 160px;
-}
-.filters .field-q {
-  flex: 3 1 260px;
-}
 /* the account cell (td.who) stays a table cell: a grid td drops out of the row and cuts its lines short (only the
    phone card in stack.css makes it a grid); the name goes under the e-mail as a block */
 .who a {
@@ -71,30 +49,6 @@ a.stat:hover {
   gap: 8px 18px;
   align-items: center;
   margin-bottom: 6px;
-}
-/* the account sheet: the way back to the list above the title, the e-mail under it, then the sub-navigation — the
-   same order as every other page of the panel */
-.back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin: 0 0 6px -2px;
-  padding: 4px 2px;
-  color: var(--ink-2);
-  font-size: 0.9rem;
-  font-weight: 550;
-  text-decoration: none;
-}
-.back-link:hover {
-  color: var(--ink);
-  text-decoration: underline;
-}
-.acc-meta {
-  margin: 0 0 18px;
-}
-.acc-head h1 {
-  margin: 0;
-  overflow-wrap: anywhere;
 }
 .acc-grid {
   display: grid;
@@ -141,69 +95,6 @@ a.stat:hover {
 .bad-text {
   color: var(--red);
   font-weight: 600;
-}
-
-/* the dashboard: the system card keeps the panel's 18px rhythm under the two cards above it */
-.dash-grid {
-  margin-bottom: 18px;
-}
-
-/* phone: the five admin tabs stay on one row. "New account" keeps only its plus sign (the name stays for screen
-   readers); where the row is still wider than the phone it scrolls sideways, ui.js brings the current tab into view
-   and marks the side where more tabs wait (data-more), which fades out */
-@media (max-width: 480px) {
-  .subnav-admin {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    overflow-y: hidden;
-    overscroll-behavior-x: contain;
-    scrollbar-width: none;
-  }
-  .subnav-admin::-webkit-scrollbar {
-    display: none;
-  }
-  .subnav-admin a {
-    flex: none;
-    padding-inline: 5px;
-    white-space: nowrap;
-    margin-bottom: 0;
-  }
-  /* inside a scroller the underline cannot hang over the rule below: it is drawn inside the tab */
-  .subnav-admin a[aria-current='page'] {
-    border-bottom-color: transparent;
-    box-shadow: inset 0 -2px 0 var(--green);
-  }
-  .subnav-admin[data-more='end'] {
-    mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent);
-  }
-  .subnav-admin[data-more='start'] {
-    mask-image: linear-gradient(to left, #000 calc(100% - 40px), transparent);
-  }
-  .subnav-admin[data-more='start end'] {
-    mask-image: linear-gradient(
-      to right,
-      transparent,
-      #000 40px,
-      #000 calc(100% - 40px),
-      transparent
-    );
-  }
-  .subnav-admin .subnav-new {
-    position: relative;
-    margin-left: auto;
-    padding-inline: 8px;
-  }
-  .subnav-admin .subnav-new .i {
-    display: block;
-  }
-  .subnav-admin .subnav-new .subnav-label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
 }
 
 /* the question before a destructive action (public/js/ui.js builds it from data-confirm and the template in

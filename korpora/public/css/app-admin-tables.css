@@ -1,5 +1,5 @@
-/* Korpora — the tables of the admin panel, loaded by its pages only (views/admin/*.ejs: styles ['app',
-   'app-admin-tables']): orders, the account sheet, the audit log and the phone cards. */
+/* Korpora — the tables of the admin panel (loaded with app-admin-panel.css by views/admin/*.ejs): orders, the
+   account sheet, the audit log, the accounts list and the phone cards. */
 
 /* orders: the e-mail and the price never break mid-word; the customer's free text gets what is left */
 @media (min-width: 641px) {

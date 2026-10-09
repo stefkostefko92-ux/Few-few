@@ -1,19 +1,36 @@
-<%- include('../partials/page-top', { title: t('admin.dashboard.title'), styles: ['app', 'app-admin-tables'] }) %>
+<%- include('../partials/page-top', { title: t('admin.dashboard.title'), styles: ['app', 'app-admin-panel', 'app-admin-tables'] }) %>
 <div class="page-head"><h1><%= t('admin.dashboard.title') %></h1></div>
 <%- include('../partials/admin-nav') %>
 <%- include('../partials/flash') %>
 
-<div class="stats">
-  <a class="stat" href="/admin/accounts?plan=TRIAL&status=active"><span class="stat-v"><%= fmt.num(counts.trialActive) %></span><span class="stat-k"><%= t('admin.dashboard.trialActive') %></span></a>
-  <a class="stat" href="/admin/accounts?plan=TRIAL&status=expired"><span class="stat-v"><%= fmt.num(counts.trialExpired) %></span><span class="stat-k"><%= t('admin.dashboard.trialExpired') %></span></a>
-  <a class="stat" href="/admin/accounts?plan=PREMIUM&status=active"><span class="stat-v"><%= fmt.num(counts.premiumActive) %></span><span class="stat-k"><%= t('admin.dashboard.premiumActive') %></span></a>
-  <a class="stat" href="/admin/accounts?plan=PREMIUM&status=expired"><span class="stat-v"><%= fmt.num(counts.premiumExpired) %></span><span class="stat-k"><%= t('admin.dashboard.premiumExpired') %></span></a>
-  <a class="stat" href="/admin/accounts?plan=LIFETIME"><span class="stat-v"><%= fmt.num(counts.lifetime) %></span><span class="stat-k"><%= t('admin.dashboard.lifetime') %></span></a>
-  <a class="stat" href="/admin/accounts?status=unverified"><span class="stat-v"><%= fmt.num(counts.unverified) %></span><span class="stat-k"><%= t('admin.dashboard.unverified') %></span></a>
-  <a class="stat" href="/admin/accounts?status=banned"><span class="stat-v"><%= fmt.num(counts.banned) %></span><span class="stat-k"><%= t('admin.dashboard.banned') %></span></a>
-  <a class="stat" href="/admin/requests"><span class="stat-v"><%= fmt.num(counts.openRequests) %></span><span class="stat-k"><%= t('admin.dashboard.openRequests') %></span></a>
-  <div class="stat"><span class="stat-v"><%= fmt.num(counts.newWeek) %> / <%= fmt.num(counts.newMonth) %></span><span class="stat-k"><%= t('admin.dashboard.newAccounts') %></span></div>
-  <div class="stat"><span class="stat-v"><%= fmt.num(counts.logins24h) %></span><span class="stat-k"><%= t('admin.dashboard.logins24h') %></span></div>
+<%# три групи по смисъл: плановете, това, което чака екипа, и движението; всяка карта-връзка води към списъка, който брои %>
+<div class="stat-groups">
+  <section class="stat-group stat-group-wide" aria-labelledby="g-plans">
+    <h2 class="stat-h" id="g-plans"><%= t('admin.dashboard.groupPlans') %></h2>
+    <div class="stats">
+      <a class="stat" href="/admin/accounts?plan=TRIAL&status=active"><span class="stat-v"><%= fmt.num(counts.trialActive) %></span><span class="stat-k"><%= t('admin.dashboard.trialActive') %></span></a>
+      <a class="stat" href="/admin/accounts?plan=TRIAL&status=expired"><span class="stat-v"><%= fmt.num(counts.trialExpired) %></span><span class="stat-k"><%= t('admin.dashboard.trialExpired') %></span></a>
+      <a class="stat" href="/admin/accounts?plan=PREMIUM&status=active"><span class="stat-v"><%= fmt.num(counts.premiumActive) %></span><span class="stat-k"><%= t('admin.dashboard.premiumActive') %></span></a>
+      <a class="stat" href="/admin/accounts?plan=PREMIUM&status=expired"><span class="stat-v"><%= fmt.num(counts.premiumExpired) %></span><span class="stat-k"><%= t('admin.dashboard.premiumExpired') %></span></a>
+      <a class="stat" href="/admin/accounts?plan=LIFETIME"><span class="stat-v"><%= fmt.num(counts.lifetime) %></span><span class="stat-k"><%= t('admin.dashboard.lifetime') %></span></a>
+    </div>
+  </section>
+  <section class="stat-group" aria-labelledby="g-attention">
+    <h2 class="stat-h" id="g-attention"><%= t('admin.dashboard.groupAttention') %></h2>
+    <div class="stats">
+      <a class="stat" href="/admin/requests"><span class="stat-v"><%= fmt.num(counts.openRequests) %></span><span class="stat-k"><%= t('admin.dashboard.openRequests') %></span><% if (counts.openRequests) { %><span class="stat-note"><%= fmt.money(counts.openValueCents) %> <%= t('plan.netShort') %></span><% } %></a>
+      <a class="stat" href="/admin/accounts?status=unverified"><span class="stat-v"><%= fmt.num(counts.unverified) %></span><span class="stat-k"><%= t('admin.dashboard.unverified') %></span></a>
+      <a class="stat" href="/admin/accounts?status=banned"><span class="stat-v"><%= fmt.num(counts.banned) %></span><span class="stat-k"><%= t('admin.dashboard.banned') %></span></a>
+    </div>
+  </section>
+  <section class="stat-group" aria-labelledby="g-activity">
+    <h2 class="stat-h" id="g-activity"><%= t('admin.dashboard.groupActivity') %></h2>
+    <div class="stats">
+      <div class="stat"><span class="stat-v"><%= fmt.num(counts.newWeek) %></span><span class="stat-k"><%= t('admin.dashboard.newIn', { n: newDays.week }) %></span></div>
+      <div class="stat"><span class="stat-v"><%= fmt.num(counts.newMonth) %></span><span class="stat-k"><%= t('admin.dashboard.newIn', { n: newDays.month }) %></span></div>
+      <div class="stat"><span class="stat-v"><%= fmt.num(counts.logins24h) %></span><span class="stat-k"><%= t('admin.dashboard.logins24h') %></span></div>
+    </div>
+  </section>
 </div>
 
 <div class="section-grid dash-grid">

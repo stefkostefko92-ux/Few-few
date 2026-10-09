@@ -1,4 +1,4 @@
-<%- include('../partials/page-top', { title: t('admin.audit.title'), styles: ['app', 'app-admin-tables'] }) %>
+<%- include('../partials/page-top', { title: t('admin.audit.title'), styles: ['app', 'app-admin-panel', 'app-admin-tables'] }) %>
 <div class="page-head"><h1><%= t('admin.audit.title') %></h1>
   <% if (chain.ok) { %><span class="chip chip-ok"><%- include('../partials/icon', { name: 'check' }) %><%= t('admin.audit.chainOk', { n: chain.count }) %></span><% } else { %><span class="chip chip-bad"><%- include('../partials/icon', { name: 'alert' }) %><%= t('admin.audit.chainBroken', { id: chain.brokenAt }) %></span><% } %>
 </div>

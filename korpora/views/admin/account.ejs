@@ -1,4 +1,4 @@
-<%- include('../partials/page-top', { title: account.email, styles: ['app', 'app-admin-tables'] }) %>
+<%- include('../partials/page-top', { title: account.email, styles: ['app', 'app-admin-panel', 'app-admin-tables'] }) %>
 <% const locked = account.lockedUntil && account.lockedUntil > now; %>
 <%# заглавието е над подменюто, както на останалите страници на панела; връщането към списъка е над него %>
 <a class="back-link" href="/admin/accounts"><%- include('../partials/icon', { name: 'back' }) %><%= t('admin.account.back') %></a>

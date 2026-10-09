@@ -9,6 +9,9 @@
     },
     "dashboard": {
       "title": "Panoramica",
+      "groupPlans": "Piani",
+      "groupAttention": "In attesa del team",
+      "groupActivity": "Attività",
       "trialActive": "Prove attive",
       "trialExpired": "Prove scadute",
       "premiumActive": "Premium attivi",
@@ -17,7 +20,6 @@
       "unverified": "Non confermati",
       "banned": "Bloccati",
       "openRequests": "Ordini aperti",
-      "newAccounts": "Nuovi in 7 / 30 giorni",
       "logins24h": "Accessi in 24 ore",
       "recent": "Ultime registrazioni",
       "security": "Accessi falliti",
@@ -30,7 +32,11 @@
       "catalog": "Catalogo",
       "catalogShop": "Catalogo dei negozi",
       "catalogBase": "Catalogo di base (nessun file)",
-      "dbip": "Il paese di un indirizzo IP proviene da DB-IP Lite (CC BY 4.0):"
+      "dbip": "Il paese di un indirizzo IP proviene da DB-IP Lite (CC BY 4.0):",
+      "newIn": {
+        "one": "Nuovi in 1 giorno",
+        "other": "Nuovi in {n} giorni"
+      }
     },
     "accounts": {
       "title": "Account",

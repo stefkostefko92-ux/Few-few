@@ -9,6 +9,9 @@
     },
     "dashboard": {
       "title": "Dashboard",
+      "groupPlans": "Plans",
+      "groupAttention": "Waiting for the team",
+      "groupActivity": "Activity",
       "trialActive": "Active trials",
       "trialExpired": "Ended trials",
       "premiumActive": "Active Premium",
@@ -17,7 +20,6 @@
       "unverified": "Unconfirmed",
       "banned": "Blocked",
       "openRequests": "Open orders",
-      "newAccounts": "New in 7 / 30 days",
       "logins24h": "Sign-ins in 24 hours",
       "recent": "Recent sign-ups",
       "security": "Failed sign-ins",
@@ -30,7 +32,11 @@
       "catalog": "Catalogue",
       "catalogShop": "Shop catalogue",
       "catalogBase": "Base catalogue (no file)",
-      "dbip": "The country of an IP address comes from DB-IP Lite (CC BY 4.0):"
+      "dbip": "The country of an IP address comes from DB-IP Lite (CC BY 4.0):",
+      "newIn": {
+        "one": "New in 1 day",
+        "other": "New in {n} days"
+      }
     },
     "accounts": {
       "title": "Accounts",

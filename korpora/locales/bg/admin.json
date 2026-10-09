@@ -9,6 +9,9 @@
     },
     "dashboard": {
       "title": "Табло",
+      "groupPlans": "Планове",
+      "groupAttention": "Чака екипа",
+      "groupActivity": "Движение",
       "trialActive": "Активни тестови",
       "trialExpired": "Изтекли тестови",
       "premiumActive": "Активни Premium",
@@ -17,7 +20,6 @@
       "unverified": "Непотвърдени",
       "banned": "Блокирани",
       "openRequests": "Чакащи поръчки",
-      "newAccounts": "Нови за 7 / 30 дни",
       "logins24h": "Входове за 24 часа",
       "recent": "Последни регистрации",
       "security": "Неуспешни входове",
@@ -30,7 +32,11 @@
       "catalog": "Каталог",
       "catalogShop": "Каталог от магазините",
       "catalogBase": "Основен каталог (няма файл)",
-      "dbip": "Държавата по IP се определя от DB-IP Lite (CC BY 4.0):"
+      "dbip": "Държавата по IP се определя от DB-IP Lite (CC BY 4.0):",
+      "newIn": {
+        "one": "Нови за 1 ден",
+        "other": "Нови за {n} дни"
+      }
     },
     "accounts": {
       "title": "Акаунти",

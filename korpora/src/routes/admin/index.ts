@@ -8,6 +8,7 @@ import { planView } from '../../plans/plan.js';
 import {
   dashboardCounts,
   listAccounts,
+  NEW_ACCOUNT_DAYS,
   PLAN_FILTERS,
   recentSecurityEvents,
   SORTS,
@@ -67,6 +68,7 @@ adminRouter.get('/admin', async (req, res) => {
     recent,
     catalogMode: catalogInfo().mode,
     geoip: geoIpReady(),
+    newDays: NEW_ACCOUNT_DAYS,
   });
 });
 
