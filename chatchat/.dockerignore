@@ -18,5 +18,6 @@ playwright.config.ts
 .git
 Dockerfile
 docker-compose.yml
+docker-compose.pgdata.yml
 DEPLOY.md
 deploy
