@@ -56,6 +56,10 @@ deploy.sh                 ръчен деплой на VPS-а (по модела
 - **JSON-LD** (`@graph` с `LocalBusiness`+`MedicalBusiness`, `WebSite`, `BreadcrumbList`,
   страничен тип, `FAQPage` на началната, `ImageGallery`, `Service`) — поддържай в синхрон с
   видимия текст. Валидирай, че е парсваем JSON (CI го прави).
+- **Марката** (`assets/img/mark.svg` = `favicon.svg`): две ръце — на възрастен човек и на грижещия се —
+  държат светещо сърце под арката на дома; реалистично осветена, но четима и на 32 px. Иконите
+  (`apple-touch-icon.png`, `icon-*.png`, maskable в безопасната зона) и `og.jpg` са рендер от нея —
+  при смяна ги генерирай наново и вдигни `?v=` на `mark.svg`/`favicon.svg` във всички страници.
 - CSS/JS се викат с `?v=<хеш>` — при редакция на файла обнови хеша във всички страници
   (иначе nginx ги кешира до 30 дни).
 - SEO промяна → `node tools/seo/indexnow.mjs https://hospis.carbonstealth.eu`
