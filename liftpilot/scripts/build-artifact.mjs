@@ -17,7 +17,11 @@ mkdirSync(path.join(out, 'img'), { recursive: true });
 const css = path.join(out, 'app.css');
 execFileSync(path.join(root, 'node_modules/.bin/tailwindcss'), ['-i', 'src/app/globals.css', '-o', css, '--minify',
   '--content', './src/**/*.{ts,tsx},./artifact/**/*.tsx'], { cwd: root, stdio: 'inherit' });
-const styles = readFileSync(css, 'utf8').replaceAll('url(/fonts/', 'url(fonts/').replaceAll('url("/fonts/', 'url("fonts/');
+const styles = readFileSync(css, 'utf8').replaceAll('url(/fonts/', 'url(fonts/').replaceAll('url("/fonts/', 'url("fonts/')
+  .replaceAll('url(/icons/', 'url(icons/').replaceAll('url("/icons/', 'url("icons/');
+// the painted icons the styles use (the select's arrow) beside them
+mkdirSync(path.join(out, 'icons'), { recursive: true });
+for (const [, f] of styles.matchAll(/url\("?icons\/([a-z0-9-]+\.webp)/g)) copyFileSync(path.join(root, 'public/icons', f), path.join(out, 'icons', f));
 // declared UTF-8: a static host that sends no charset would read the "−" of the open sections as Windows-1252
 writeFileSync(css, `@charset "UTF-8";\n${styles.replace(/^@charset "UTF-8";\s*/i, '')}\n${readFileSync(path.join(root, 'artifact/artifact.css'), 'utf8')}`);
 for (const f of readdirSync(path.join(root, 'public/fonts'))) if (f.endsWith('.woff2') || /^OFL.*\.txt$/.test(f)) copyFileSync(path.join(root, 'public/fonts', f), path.join(out, 'fonts', f));
