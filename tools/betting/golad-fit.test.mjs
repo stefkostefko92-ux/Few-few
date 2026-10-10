@@ -40,7 +40,48 @@ test("fitDixonColes: възстановява защитата (A най-сил�
   const byDef = [...teams].sort((x, y) => fit.defense[x] - fit.defense[y]);
   assert.equal(byDef[0], "A", "най-силната защита (нисък def) е A: " + JSON.stringify(fit.defense));
   assert.ok(fit.homeAdv > 1.05 && fit.homeAdv < 1.7, "домакинско предимство в разумен диапазон: " + fit.homeAdv);
-  assert.ok(fit.rho >= -0.2 && fit.rho <= 0, "ρ в [−0.2,0]");
+  assert.ok(fit.rho >= -0.2 && fit.rho <= 0.2, "ρ в [−0.2,+0.2]");
+});
+
+// Регресия: гост-базата ≠ 1. Старият код центрираше и att, и def, а излишъка пращаше само в g → λ_гост
+// беше заковано към exp(0)=1 (−10…−15% при реална лига), а homeAdv поемаше базата. Старите ATT/DEF по-горе
+// имат геом. средни ≈1 и затова бъгът беше невидим — тук базата е 1.25, домакинското предимство 1.3.
+function biasedLeague() {
+  const rand = makeRng(7);
+  const T = ["A", "B", "C", "D", "E", "F", "G", "H"];
+  const att = Object.fromEntries(T.map((t, i) => [t, 0.7 + 0.6 * (i / (T.length - 1))]));
+  const def = Object.fromEntries(T.map((t, i) => [t, 1.3 - 0.6 * (i / (T.length - 1))]));
+  const M = []; const base = Date.UTC(2026, 0, 1); let day = 0;
+  for (let round = 0; round < 14; round++) for (const h of T) for (const a of T) {
+    if (h === a) continue;
+    M.push({ home: h, away: a, hg: poissonSample(1.25 * 1.3 * att[h] * def[a], rand), ag: poissonSample(1.25 * att[a] * def[h], rand), date: new Date(base + (day++ % 300) * 86400000).toISOString().slice(0, 10) });
+  }
+  return M;
+}
+
+test("fitDixonColes: средната предсказана λ съвпада с наблюдаваните голове (гост-база ≠ 1)", () => {
+  const M = biasedLeague();
+  const fit = fitDixonColes(M, { halfLifeDays: 1e9, iters: 800 });
+  const obsH = M.reduce((s, m) => s + m.hg, 0) / M.length, obsA = M.reduce((s, m) => s + m.ag, 0) / M.length;
+  let pH = 0, pA = 0;
+  for (const m of M) { const l = predictLambdas(fit, m.home, m.away); pH += l.lambdaHome; pA += l.lambdaAway; }
+  assert.ok(Math.abs(pH / M.length / obsH - 1) < 0.01, `λ_дом ${(pH / M.length).toFixed(3)} срещу наблюдавано ${obsH.toFixed(3)}`);
+  assert.ok(Math.abs(pA / M.length / obsA - 1) < 0.01, `λ_гост ${(pA / M.length).toFixed(3)} срещу наблюдавано ${obsA.toFixed(3)}`);
+  assert.ok(fit.homeAdv > 1.2 && fit.homeAdv < 1.4, `homeAdv е чист множител (~1.3), не интерсепт: ${fit.homeAdv}`);
+});
+
+test("fitDixonColes: ρ може да е положително (мрежата не отрязва над 0)", () => {
+  // Положително ρ = ПО-МАЛКО 0:0/1:1 и повече 1:0/0:1 от независим Поасон (при ρ<0 е обратното).
+  const M = []; const base = Date.UTC(2026, 0, 1);
+  const T = ["A", "B", "C", "D"]; let day = 0;
+  for (let round = 0; round < 60; round++) for (const h of T) for (const a of T) {
+    if (h === a) continue;
+    const k = (day + round) % 8; // фиксирана смес: само 1:0, 0:1, 2:1, 1:2 — нито 0:0, нито 1:1
+    const [hg, ag] = k < 3 ? [1, 0] : k < 6 ? [0, 1] : k === 6 ? [2, 1] : [1, 2];
+    M.push({ home: h, away: a, hg, ag, date: new Date(base + (day++ % 300) * 86400000).toISOString().slice(0, 10) });
+  }
+  const fit = fitDixonColes(M, { halfLifeDays: 1e9, iters: 300 });
+  assert.ok(fit.rho > 0.05, `липса на 0:0/1:1 → ρ>0 (мрежата вече стига до +0.2), получено ${fit.rho}`);
 });
 
 test("predictLambdas: силен домакин vs слаб гост → λ_дом > λ_гост; непознат отбор → null", () => {
