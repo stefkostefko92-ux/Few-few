@@ -15,7 +15,7 @@ import { priceTable } from '../src/plans/pricing.js';
  */
 const RECORDED = {
   updated: '2026-10-10',
-  sha256: '08400cf4a61a8fa62c64ba0d5dd8af111ebb63e17ab32bc9a6e223ce6909cfe3',
+  sha256: '3cebe218496ed7470e047164f6e21f04a39a6c5f5a683586c19ca025b8762aec',
 };
 
 function fingerprint(): string {
