@@ -6,5 +6,5 @@ Supreme AdBlock blocks ads everywhere — YouTube video ads, banners, pop-ups an
 • Focus mode: hide chat bubbles, newsletter pop-ups, notification prompts, social widgets, AI pop-ups and YouTube Shorts.
 • Anti-adblock walls and pop-unders are neutralised.
 • Site broken? One click fixes it, or tell us — nothing is sent without you seeing it first.
-• Signed filter updates twice a day: new ad networks are handled within hours, with no remote code.
+• Signed filter updates twice a day: new ad networks can be added within hours, with no remote code.
 • No account, no telemetry, no data collection.

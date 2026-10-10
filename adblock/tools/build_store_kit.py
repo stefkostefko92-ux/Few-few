@@ -50,7 +50,8 @@ md = f"""# Supreme AdBlock {ver} — Chrome Web Store: всичко за copy/pa
 ## 0. Преди да качиш
 
 - Записът е жив: отвори го → **Package → Upload new package** → `supreme-adblock-{ver}.zip`. НЕ „New item“.
-- Деплойни `adblock/server/` на сървъра ПРЕДИ Submit — ревюърът отваря privacy URL-а и текстът трябва да е новият (политика по чл. 13 GDPR).
+- Деплойни `adblock/server/` на сървъра ПРЕДИ Submit (`sudo REF=main PROJECTS="adblock" bash /opt/few-few/current/deploy/fetch-deploy.sh`) — ревюърът отваря privacy URL-а: там трябва да е изречението на Google за **Limited Use** (Program Policies го изискват на сайта), а `filters.json` да е новият (само данни, без ключ `scriptlets`) с пресен подпис.
+- **Статус на търговец (DSA):** листингът показва „Non-trader“ и личен имейл, а публикуваме като Carbon Stealth VCC и приемаме дарения — декларирай се като търговец (данните на фирмата, `info@carbonstealth.eu`). Решение на собственика.
 - Account → **Publisher display name: `Carbon Stealth`**; верифицирай `carbonstealth.eu`. В момента записът показва личното име на акаунта, а продуктът, manifest-ът и политиката казват Carbon Stealth — изравни ги.
 
 ## 1. Store listing → Product details
@@ -77,17 +78,18 @@ md = f"""# Supreme AdBlock {ver} — Chrome Web Store: всичко за copy/pa
 ## 2. Store listing → Graphic assets (файловете са в store-kit/)
 
 - Store icon 128×128: `store_icon_128.png`
-- Screenshots 1280×800: `screenshot-1.png` … `screenshot-5.png` (в този ред; 4 е нов за {ver} — регионални листи и режим „Фокус“; 1 и 5 — обновени)
+- Screenshots 1280×800: `screenshot-1.png` … `screenshot-5.png` (в този ред; изтрий старите във ВСЕКИ език)
 - Small promo tile 440×280: `promo_small_440x280.png`
-- Marquee 1400×560: `marquee_1400x560.png` (по избор)
+- Marquee 1400×560: `marquee_1400x560.png` (без него не можем да сме в голямата витрина на магазина)
+- Плочката и marquee-то са без текст — така иска Google за промо графиките (не са по езици).
 
 ## 2b. Store listing → Promo video (YouTube)
 
-Ако в листинга вече е клипът за магазина (без сравнение и без „free“), остави го — не се сменя с всяка версия. Нов клип: `node tools/promo/render.mjs --cut store` → качи в YouTube `supreme-adblock-promo-<версия>-store-web.mp4` (идва отделно от кита; версията БЕЗ сравнение с други блокери и без „free“ — правилото на CWS за текст в медиите) като Public или Unlisted, заглавие „Supreme AdBlock — ad blocker for Chrome · Carbon Stealth“, миниатюра `supreme-adblock-promo-{ver}-store-thumb.png`. После постави адреса на видеото в полето **YouTube video** на листинга. Клипът е 35 s, 1080p, със звук. Пълната версия (43 s, със сравнението) е за сайта и YouTube канала — НЕ я слагай в листинга.
+По избор. Листингът в момента е без клип. Само версията за магазина (без сравнение и без „free“) — никога пълната или вертикалната за социалните мрежи (там има „Free“ и сравнение → отново „Red Nickel“). По-добре без клип, отколкото с грешния. Ако в листинга вече е клипът за магазина, остави го — не се сменя с всяка версия. Нов клип: `node tools/promo/render.mjs --cut store` → качи в YouTube `supreme-adblock-promo-<версия>-store-web.mp4` (идва отделно от кита; версията БЕЗ сравнение с други блокери и без „free“ — правилото на CWS за текст в медиите) като Public или Unlisted, заглавие „Supreme AdBlock — ad blocker for Chrome · Carbon Stealth“, миниатюра `supreme-adblock-promo-{ver}-store-thumb.png`. После постави адреса на видеото в полето **YouTube video** на листинга. Клипът е 35 s, 1080p, със звук. Пълната версия (43 s, със сравнението) е за сайта и YouTube канала — НЕ я слагай в листинга.
 
 ## 3. Store listing → Additional languages
 
-Готово описание за ВСЕКИ от 70-те езика е в `listing/<код>.txt` (кодът = папката в `_locales`). В dashboard-а: **Add language** → избери езика → постави съдържанието на файла в Description. Title остава „Supreme AdBlock“; Summary идва от manifest-а (`extDescription` е преведен). Преводите извън en/bg/it/de са машинно подпомогнати — ако имаш носител на езика, дай му ги да ги прегледа преди да ги поставиш.
+Готово описание за ВСЕКИ от {len(list((A / "_locales").iterdir()))}-те езика е в `listing/<код>.txt` (кодът = папката в `_locales`). В dashboard-а: **Add language** → избери езика → постави съдържанието на файла в Description. Title остава „Supreme AdBlock“; Summary идва от manifest-а (`extDescription` е преведен). Преводите извън en/bg/it/de са машинно подпомогнати — ако имаш носител на езика, дай му ги да ги прегледа преди да ги поставиш.
 
 Пълните bg/it/de описания (от `docs/STORE_LISTING.md`):
 
@@ -146,6 +148,13 @@ Title и Summary за другите езици: същите като англ�
 - [ ] https://adblock.carbonstealth.eu/filters.json и `/filters.json.sig` отговарят с 200 (подписаната двойка)
 - [ ] Publisher = Carbon Stealth, сайтът верифициран
 - [ ] Правото `tabs` го няма в списъка с обосновки (изтрий старото поле, ако е останало)
+- [ ] /privacy съдържа раздела „Chrome Web Store User Data Policy (Limited Use)“
+- [ ] Категория: Privacy & Security
+- [ ] При Submit: отметни **deferred publishing**, ако искаш сам да избереш кога одобрената версия излиза
+
+## 9b. След като {ver} е публикувана — номинация за Featured
+
+Chrome Web Store **One Stop Support** → опцията за номинация за Featured badge. Условията на Google (всички изпълнени): разширение, публикувано и публично, наше, с английски, без активни нарушения, основните функции без акаунт и плащане. Badge-ът не се купува; прегледът отнема време.
 
 ## 10. Microsoft Edge Add-ons (същият zip)
 
