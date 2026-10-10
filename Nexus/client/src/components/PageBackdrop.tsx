@@ -1,23 +1,21 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { KEY_ART, regionArt } from '../lib/regions';
 
 /**
- * Per-page HD backdrop, fixed-position behind the app shell.
+ * Фон на всяка страница, фиксиран зад обвивката на приложението.
  *
- * Each route picks a public-domain painting that visually matches the
- * tab's purpose — Velázquez's Forge of Vulcan for the smithy, Bruegel's
- * Tower of Babel for the Tower, the Hereford Mappa Mundi for the world
- * map, etc. Source files live in /public/assets/bg/<scene>.jpg.
+ * Дизайн-системата „Dominion“: всяка сцена ползва фотореалистичен рендер —
+ * ключовата илюстрация на играта или изпечения пейзаж на регион, който
+ * отговаря на смисъла на раздела (Ковачницата на зората за ковачницата,
+ * Черният шпил за кулата и т.н.). Рендерите на регионите живеят в
+ * /public/assets/regions/<slug>.webp; ако някой липсва, слоят пада обратно
+ * към ключовата илюстрация, без празен кадър.
  *
- * Behaviours:
- *   - Two stacked <img> layers cross-fade when the scene changes, so the
- *     route transition gets a 700ms dissolve instead of a hard cut.
- *   - A slow Ken Burns pan/zoom keeps every backdrop feeling alive
- *     without a single moving pixel of code. Pure CSS animation.
- *   - A scene-tinted radial + linear overlay sits above the image so the
- *     UI chrome on top of it remains legible regardless of how bright the
- *     underlying painting is.
- *   - Image attribution / source lineage lives in assets/bg/CREDITS.md.
+ * Поведение:
+ *   - Два постоянни <img> слоя се преливат при смяна на сцената (800ms),
+ *     така Ken Burns анимацията не се рестартира при навигация.
+ *   - Тъмносин тониран слой отгоре държи панелите четими върху всеки рендер.
  */
 
 type Scene =
@@ -43,50 +41,48 @@ function sceneFor(pathname: string): Scene {
 }
 
 const IMG_FOR: Record<Scene, string> = {
-  forge:       '/assets/bg/forge.jpg',
-  tower:       '/assets/bg/tower.jpg',
-  camp:        '/assets/bg/camp.jpg',
-  auction:     '/assets/bg/auction.jpg',
-  bounty:      '/assets/bg/bounty.jpg',
-  market:      '/assets/bg/market.jpg',
-  stables:     '/assets/bg/stables.jpg',
-  recipe:      '/assets/bg/recipe.jpg',
-  trialcache:  '/assets/bg/trialcache.jpg',
-  battlepass:  '/assets/bg/battlepass.jpg',
-  guild:       '/assets/bg/auction.jpg', /* uses Veronese banquet — same source family */
-  world:       '/assets/bg/world.jpg',
-  default:     '/assets/bg/default.jpg',
+  forge:       regionArt('forge_of_dawn'),
+  tower:       regionArt('black_spire'),
+  camp:        regionArt('whispering_woods'),
+  auction:     regionArt('conclave_aedric'),
+  bounty:      regionArt('ashen_wastes'),
+  market:      regionArt('saltmarsh'),
+  stables:     regionArt('mistmoor_hills'),
+  recipe:      regionArt('crystal_caverns'),
+  trialcache:  regionArt('voidshade_hollow'),
+  battlepass:  regionArt('stormpeaks'),
+  guild:       regionArt('hammerhand_pass'),
+  world:       regionArt('frostvale'),
+  default:     KEY_ART,
 };
 
-/** Scene-specific tint overlay sitting on top of the HD photo so the
- *  app chrome (gold accents, dark cards) reads cleanly regardless of how
- *  bright the underlying painting is. */
-const TINT: Record<Scene, string> = {
-  forge:       'radial-gradient(ellipse at 50% 80%, rgba(255,120,40,.28), transparent 65%), linear-gradient(180deg, rgba(8,4,2,.55) 0%, rgba(20,8,4,.80) 100%)',
-  tower:       'radial-gradient(circle at 50% 35%, rgba(194,148,255,.22), transparent 55%), linear-gradient(180deg, rgba(8,6,16,.60) 0%, rgba(6,4,12,.82) 100%)',
-  camp:        'radial-gradient(ellipse at 50% 85%, rgba(255,170,90,.18), transparent 55%), linear-gradient(180deg, rgba(6,8,14,.58) 0%, rgba(4,6,10,.82) 100%)',
-  auction:     'radial-gradient(ellipse at 50% 40%, rgba(255,232,138,.20), transparent 55%), linear-gradient(180deg, rgba(10,8,4,.55) 0%, rgba(6,4,8,.82) 100%)',
-  bounty:      'radial-gradient(ellipse at 50% 100%, rgba(232,90,79,.20), transparent 60%), linear-gradient(180deg, rgba(12,6,4,.62) 0%, rgba(8,4,6,.84) 100%)',
-  market:      'radial-gradient(ellipse at 50% 80%, rgba(214,161,61,.14), transparent 50%), linear-gradient(180deg, rgba(10,8,10,.60) 0%, rgba(6,6,10,.82) 100%)',
-  stables:     'radial-gradient(ellipse at 50% 55%, rgba(106,167,255,.16), transparent 50%), linear-gradient(180deg, rgba(8,10,16,.58) 0%, rgba(6,6,12,.82) 100%)',
-  recipe:      'radial-gradient(ellipse at 50% 70%, rgba(106,216,164,.18), transparent 55%), linear-gradient(180deg, rgba(6,12,10,.58) 0%, rgba(4,8,6,.82) 100%)',
-  trialcache:  'radial-gradient(ellipse at 30% 30%, rgba(194,148,255,.24), transparent 55%), linear-gradient(180deg, rgba(8,4,18,.60) 0%, rgba(6,4,12,.82) 100%)',
-  battlepass:  'radial-gradient(circle at 80% 25%, rgba(106,167,255,.20), transparent 55%), linear-gradient(180deg, rgba(6,10,18,.58) 0%, rgba(4,6,10,.82) 100%)',
-  guild:       'radial-gradient(ellipse at 50% 50%, rgba(214,161,61,.16), transparent 50%), linear-gradient(180deg, rgba(10,8,4,.60) 0%, rgba(6,4,4,.82) 100%)',
-  world:       'radial-gradient(ellipse at 50% 60%, rgba(255,232,138,.12), transparent 50%), linear-gradient(180deg, rgba(8,8,10,.55) 0%, rgba(4,6,10,.78) 100%)',
-  default:     'radial-gradient(ellipse at 50% 50%, rgba(214,161,61,.12), transparent 55%), linear-gradient(180deg, rgba(6,8,12,.60) 0%, rgba(4,6,10,.82) 100%)',
+/** Акцент на сцената — едва доловим отблясък върху общия тъмносин тон. */
+const ACCENT: Record<Scene, string> = {
+  forge:       'rgba(255,150,70,.16)',
+  tower:       'rgba(231,120,111,.14)',
+  camp:        'rgba(106,216,164,.12)',
+  auction:     'rgba(185,165,255,.14)',
+  bounty:      'rgba(231,120,111,.14)',
+  market:      'rgba(103,230,239,.12)',
+  stables:     'rgba(163,246,248,.12)',
+  recipe:      'rgba(103,230,239,.14)',
+  trialcache:  'rgba(185,165,255,.16)',
+  battlepass:  'rgba(163,246,248,.14)',
+  guild:       'rgba(199,167,123,.14)',
+  world:       'rgba(163,246,248,.12)',
+  default:     'rgba(103,230,239,.12)',
 };
+
+const tintFor = (scene: Scene): string =>
+  `radial-gradient(ellipse at 70% 0%, ${ACCENT[scene]}, transparent 60%),`
+  + ' linear-gradient(90deg, rgba(7,11,17,.9) 0%, rgba(7,11,17,.74) 45%, rgba(7,11,17,.82) 100%),'
+  + ' linear-gradient(180deg, rgba(7,11,17,.35) 0%, rgba(7,11,17,.92) 100%)';
 
 export default function PageBackdrop(): React.ReactElement {
   const { pathname } = useLocation();
   const scene = sceneFor(pathname);
-  // Audit (animation MEDIUM #14): the old implementation re-keyed the
-  // <img> on every scene change, which forced React to unmount and
-  // remount the node — the CSS kenburns animation restarted from
-  // scale 1.00 on every navigation, producing a visible jump. Now we
-  // keep two persistent <img> layers (A and B), continuously animate
-  // both, and on route change we update src on the off-screen layer
-  // and crossfade. The kenburns is never interrupted.
+  // Два постоянни слоя (A/B): при смяна на сцената обновяваме скрития и
+  // преливаме — re-key на <img> би рестартирал Ken Burns от scale 1.00.
   const [srcA, setSrcA] = useState<string>(IMG_FOR[scene]);
   const [srcB, setSrcB] = useState<string>(IMG_FOR[scene]);
   const [frontIsA, setFrontIsA] = useState(true);
@@ -96,33 +92,40 @@ export default function PageBackdrop(): React.ReactElement {
     const front = frontIsA ? srcA : srcB;
     if (next === front) return;
     if (frontIsA) setSrcB(next); else setSrcA(next);
-    // Defer the swap one frame so the new image has time to decode
-    // and paint into its layer before the opacity transition kicks
-    // off — eliminates the brief flash of empty layer on first load.
+    // Един кадър отлагане — новото изображение се декодира в слоя си,
+    // преди да тръгне преливането (без проблясък на празен слой).
     const id = requestAnimationFrame(() => setFrontIsA((v) => !v));
     return () => cancelAnimationFrame(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene]);
 
-  const tint = TINT[scene] || TINT.default;
+  // Липсващ рендер на регион → ключовата илюстрация (никога празен фон).
+  const fallback = (e: React.SyntheticEvent<HTMLImageElement>): void => {
+    const img = e.currentTarget;
+    if (!img.src.endsWith(KEY_ART)) img.src = KEY_ART;
+  };
 
   return (
     <div className="page-backdrop" aria-hidden style={WRAP_STYLE}>
       <img
         src={srcA}
         alt=""
+        decoding="async"
+        onError={fallback}
         style={{ ...IMG_STYLE, opacity: frontIsA ? 1 : 0, transition: 'opacity 800ms ease-out' }}
       />
       <img
         src={srcB}
         alt=""
+        decoding="async"
+        onError={fallback}
         style={{ ...IMG_STYLE, opacity: frontIsA ? 0 : 1, transition: 'opacity 800ms ease-out' }}
       />
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          background: tint,
+          background: tintFor(scene),
           transition: 'background 800ms ease-in-out',
           pointerEvents: 'none',
         }}
@@ -136,17 +139,17 @@ const WRAP_STYLE: React.CSSProperties = {
   inset: 0,
   zIndex: -1,
   overflow: 'hidden',
-  background: '#04060a',
+  background: '#070b11',
 };
 
 const IMG_STYLE: React.CSSProperties = {
   position: 'absolute',
-  inset: '-4%',                 // bleed for the Ken-Burns zoom
+  inset: '-4%',                 // запас за Ken Burns увеличението
   width: '108%',
   height: '108%',
   objectFit: 'cover',
   objectPosition: 'center',
-  filter: 'saturate(0.9) contrast(1.05)',
+  filter: 'saturate(0.85) contrast(1.05)',
   animation: 'page-backdrop-kenburns 38s ease-in-out infinite alternate',
   willChange: 'transform, opacity',
 };

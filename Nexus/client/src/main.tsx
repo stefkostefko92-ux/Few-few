@@ -15,21 +15,18 @@ import '@fontsource/cinzel/700.css';
 import '@fontsource/cormorant-sc/cyrillic-500.css';
 import '@fontsource/cormorant-sc/cyrillic-600.css';
 import '@fontsource/cormorant-sc/cyrillic-700.css';
-import '@fontsource/manrope/300.css';
-import '@fontsource/manrope/400.css';
-import '@fontsource/manrope/500.css';
-import '@fontsource/manrope/600.css';
-import '@fontsource/manrope/700.css';
-import '@fontsource/manrope/800.css';
+// Inter — основният шрифт на дизайн-системата „Dominion“ (с кирилица).
+import '@fontsource/inter/400.css';
+import '@fontsource/inter/500.css';
+import '@fontsource/inter/600.css';
+import '@fontsource/inter/700.css';
+import '@fontsource/inter/800.css';
 import '@fontsource/jetbrains-mono/500.css';
 import '@fontsource/jetbrains-mono/700.css';
-// Само за четивен текст на лендинга (--font-read) — виж globals.css.
-import '@fontsource/spectral/400.css';
-import '@fontsource/spectral/400-italic.css';
-import '@fontsource/spectral/500.css';
 import './styles/globals.css';
 import './styles/animations.css';
-import './styles/landing.css';
+import './styles/game-widgets.css';
+import './styles/shell.css';
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

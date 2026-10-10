@@ -19,6 +19,7 @@ import {
   IconFlame,
 } from '../lib/icons';
 import Avatar from './Avatar';
+import Logo from './Logo';
 import { useStore } from '../lib/store';
 
 interface SectionDef {
@@ -28,7 +29,7 @@ interface SectionDef {
   items: { to: string; labelKey: string; icon: any; end?: boolean; badgeKey?: 'mail' }[];
 }
 
-const SECTIONS: SectionDef[] = [
+export const SECTIONS: SectionDef[] = [
   {
     id: 'main',
     headingKey: 'sidebar.main',
@@ -134,6 +135,9 @@ export default function Sidebar(): React.ReactElement {
     <>
       <div className="sidebar-backdrop" onClick={closeMobile} aria-hidden />
     <aside className="sidebar">
+      <NavLink to="/app" end className="sidebar-brand" onClick={closeMobile} aria-label="Nexus Dominion">
+        <Logo size={34} withWordmark />
+      </NavLink>
       {char && (
         <div className="sidebar-hero">
           <div className="sidebar-hero-frame">
@@ -157,6 +161,7 @@ export default function Sidebar(): React.ReactElement {
         >
           <div className="sidebar-heading" onClick={() => toggle(sec.id)}>
             <span>{t(sec.headingKey)}</span>
+            <span className="sidebar-heading-num" aria-hidden>{String(si + 1).padStart(2, '0')}</span>
             <IconChevron className="chev" size={10} />
           </div>
           <div className="items">

@@ -1,611 +1,177 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Logo from '../components/Logo';
+import LanguageSelector from '../components/LanguageSelector';
 import LandingDuel from '../components/LandingDuel';
 import LandingSetShowcase from '../components/LandingSetShowcase';
-import LandingEffects from '../components/LandingEffects';
-import LanguageSelector from '../components/LanguageSelector';
+import { WorldSection, ClassSection, SystemsSection, RegionsSection, EnterSection, FaqSection } from '../components/landing/LandingSections';
+import { KeyArt } from '../components/landing/KeyArt';
 import '../styles/landing.css';
 
-// Per-locale page titles + descriptions. Picked up at mount based on
-// ?lang= or the user's browser language, and written into the actual
-// document <title> / <meta name="description"> so search engines and AI
-// crawlers serving Italian / Bulgarian queries see locale-targeted copy
-// rather than the English default.
+// Заглавие/описание по език — пишат се в <title>/<meta>, за да виждат търсачките
+// и AI ботовете текст на езика на заявката (IT/BG), не английския по подразбиране.
 const LOCALES: Record<string, { html: string; title: string; description: string }> = {
   en: {
     html: 'en',
     title: 'Nexus Dominion — Free Browser MMORPG',
-    description: 'Server-authoritative turn-based MMORPG. Four classes, 500 levels of roster, ELO arena, real-time auction, five-tier guilds. Free, browser-based, no installer.',
+    description: 'Server-authoritative turn-based MMORPG. Four classes, 21 regions, 500 levels, ELO arena, real-time auction, five-tier guilds. Free, browser-based, no installer.',
   },
   it: {
     html: 'it-IT',
     title: 'Nexus Dominion — MMORPG da browser, gratuito',
-    description: "MMORPG con combattimenti a turni validati dal server. Quattro classi, 500 livelli di mostri, arena ELO, casa d'aste in tempo reale, gilde a cinque livelli. Gratuito, senza installazione.",
+    description: "MMORPG a turni validato dal server. Quattro classi, 21 regioni, 500 livelli, arena ELO, asta in tempo reale, gilde a cinque livelli. Gratuito, senza installazione.",
   },
   bg: {
     html: 'bg-BG',
-    title: 'Nexus Dominion — Безплатна браузърна ММОРПГ',
-    description: 'Пошагова ММОРПГ, валидирана на сървъра. Четири класа, 500 нива монстри, ELO арена, аукцион в реално време, гилдии на пет нива. Безплатна, без инсталация.',
+    title: 'Nexus Dominion — Безплатна браузърна MMORPG',
+    description: 'Пошагова MMORPG, валидирана на сървъра. Четири класа, 21 региона, 500 нива, ELO арена, аукцион в реално време, гилдии на пет нива. Безплатна, без инсталация.',
   },
 };
 
-function pickLocale(): string {
-  if (typeof window === 'undefined') return 'en';
+function pickLocale(lng: string): string {
   const q = new URLSearchParams(window.location.search).get('lang');
   if (q && LOCALES[q]) return q;
-  const nav = navigator.language?.slice(0, 2).toLowerCase();
-  if (nav && LOCALES[nav]) return nav;
-  return 'en';
+  const base = lng.slice(0, 2).toLowerCase();
+  return LOCALES[base] ? base : 'en';
 }
 
-function SplitText({ text }: { text: string }) {
-  const words = text.split(' ');
-  let idx = 0;
-  return (
-    <>
-      {words.map((w, wi) => (
-        // Интервалът е margin, не текстов възел — в flex контейнер голият
-        // ' ' между inline-block думите се колабира (виж БГ „Кралство с…").
-        <span key={wi} className="word" style={wi < words.length - 1 ? { marginRight: '0.28em' } : undefined}>
-          {Array.from(w).map((ch) => {
-            const i = idx++;
-            return (
-              <span key={i} className="letter" style={{ animationDelay: `${0.25 + i * 0.04}s` }}>
-                {ch}
-              </span>
-            );
-          })}
-          {wi < words.length - 1 && ' '}
-        </span>
-      ))}
-    </>
-  );
+/** Плавно появяване при скрол (шаблонът: .reveal → .is-visible). Без IntersectionObserver
+    или при reduced-motion всичко е видимо веднага — съдържанието никога не се крие. */
+function useReveal(root: React.RefObject<HTMLElement>): void {
+  useEffect(() => {
+    const el = root.current;
+    if (!el) return;
+    const items = Array.from(el.querySelectorAll<HTMLElement>('.reveal'));
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || !('IntersectionObserver' in window)) { items.forEach((i) => i.classList.add('is-visible')); return; }
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); }
+    }, { threshold: 0.08 });
+    items.forEach((i) => io.observe(i));
+    return () => io.disconnect();
+  }, [root]);
 }
+
+const NAV = [['world', 'world'], ['classes', 'classes'], ['systems', 'systems'], ['sets', 'sets'], ['regions', 'regions'], ['faq', 'faq']] as const;
 
 export default function Landing(): React.ReactElement {
-  const { t } = useTranslation();
-  // Locale: pick from ?lang= → browser default → English, then rewrite
-  // <html lang>, <title> and <meta name="description"> so search engines and
-  // share previews pick up the right language for IT / BG visitors.
+  const { t, i18n } = useTranslation();
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [active, setActive] = useState<string>('');
+  useReveal(rootRef);
+
   useEffect(() => {
-    const loc = LOCALES[pickLocale()];
+    const loc = LOCALES[pickLocale(i18n.language || 'en')];
     document.documentElement.lang = loc.html;
     document.title = loc.title;
-    const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute('content', loc.description);
+    document.querySelector('meta[name="description"]')?.setAttribute('content', loc.description);
+  }, [i18n.language]);
+
+  // Активната точка в навигацията следва секцията, която се чете.
+  useEffect(() => {
+    if (!('IntersectionObserver' in window)) return;
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) if (e.isIntersecting) setActive(e.target.id);
+    }, { rootMargin: '-20% 0px -65% 0px' });
+    NAV.forEach(([id]) => { const s = document.getElementById(id); if (s) io.observe(s); });
+    return () => io.disconnect();
   }, []);
 
-  return (
-    <div className="landing">
-      <LandingEffects />
+  const year = new Date().getFullYear();
 
-      {/* Top nav */}
-      <header className="landing-nav">
-        <Logo size={36} withWordmark />
-        <nav className="landing-nav-links">
-          <a href="#features">{t('landing.navFeatures')}</a>
-          <a href="#classes">{t('landing.navClasses')}</a>
-          <a href="#sets">{t('landing.navSets')}</a>
-          <a href="#endgame">{t('landing.navEndgame')}</a>
-          <a href="#guilds">{t('landing.navGuilds')}</a>
-          <a href="#world">{t('landing.navWorld')}</a>
-          <a href="#roadmap">{t('landing.navRoadmap')}</a>
+  return (
+    <div className="nd-landing" ref={rootRef}>
+      <a className="nd-skip" href="#main">{t('a11y.skipToContent', { defaultValue: 'Skip to content' })}</a>
+      <header className="nd-header">
+        <a className="nd-brand" href="#top" aria-label={t('nd.nav.home')}><Logo size={36} withWordmark /></a>
+        <nav id="nd-main-nav" className={`nd-main-nav${menuOpen ? ' is-open' : ''}`} aria-label="Main">
+          {NAV.map(([id, key]) => (
+            <a key={id} href={`#${id}`} className={active === id ? 'active' : undefined} onClick={() => setMenuOpen(false)}>{t(`nd.nav.${key}`)}</a>
+          ))}
         </nav>
-        <div className="landing-nav-cta">
+        <div className="nd-header-actions">
           <LanguageSelector />
-          <Link to="/login" className="btn btn-ghost">{t('nav.login')}</Link>
-          <Link to="/register" className="btn btn-primary">{t('landing.playFree')}</Link>
+          <Link className="nd-login" to="/login">{t('nd.nav.login')} <span aria-hidden>↗</span></Link>
+          <Link className="nd-btn nd-btn-primary nd-btn-small" to="/register">{t('nd.nav.start')}</Link>
         </div>
+        <button
+          type="button"
+          className="nd-menu-btn"
+          aria-expanded={menuOpen}
+          aria-controls="nd-main-nav"
+          aria-label={menuOpen ? t('nd.nav.menuClose') : t('nd.nav.menuOpen')}
+          onClick={() => setMenuOpen((o) => !o)}
+        ><span /><span /></button>
       </header>
 
-      {/* HERO — „The Bard“, John Martin (1817), обществено достояние
-          (/assets/bg/CREDITS.md). Заменя дрон видеото на Rhuddlan: в кадъра
-          имаше модерен град и коли, които не се изрязваха. Статично <img> =
-          по-бърз LCP от видео; бавното приближаване е CSS (спира при
-          prefers-reduced-motion). */}
-      <section className="hero hero-video">
-        <img
-          className="hero-video-bg hero-painting"
-          src="/assets/bg/default.jpg"
-          alt=""
-          aria-hidden
-          fetchPriority="high"
-          decoding="async"
-        />
-        <div className="hero-video-shade" aria-hidden />
-        <div className="hero-video-vignette" aria-hidden />
-        {/* boy-език: лека мъгла по хоризонта + филмово зърно + "film slate"
-            HUD етикет (моно, hairline рамка) — кинематографичен слой без
-            тежко WebGL (CSS/SVG само, нулево влияние върху LCP). */}
-        <div className="hero-mist" aria-hidden />
-        <div className="hero-grain" aria-hidden />
-        {/* Скъсено — „Scene I · The Call" беше измислен филмов реквизит
-            (среднa точка + произволен номер на сцена, нищо реално). Единственият
-            останал ред е буквално вярно твърдение (сървърът наистина работи),
-            не декорация. */}
-        <div className="hero-slate" aria-hidden>
-          <span className="rec">{t('landing.slateLive')}</span>
-        </div>
-
-        <div className="hero-content">
-          <div className="hero-logo" data-parallax="20">
-            <Logo size={120} />
+      <main id="main">
+        <section className="nd-hero" id="top" aria-labelledby="nd-hero-title">
+          <KeyArt className="nd-hero-art" alt={t('nd.hero.artAlt')} priority />
+          <div className="nd-hero-shade" aria-hidden />
+          <div className="nd-hero-grid" aria-hidden />
+          <div className="nd-hero-content reveal">
+            <div className="nd-eyebrow"><span className="nd-dot" />{t('nd.hero.eyebrowA')}<span className="nd-eyebrow-divider" />{t('nd.hero.eyebrowB')}</div>
+            <h1 id="nd-hero-title">{t('nd.hero.line1')}<br /><span>{t('nd.hero.line2')}</span><span className="nd-period">.</span></h1>
+            <p className="nd-hero-copy">{t('nd.hero.copy')}</p>
+            <div className="nd-hero-buttons">
+              <Link to="/register" className="nd-btn nd-btn-primary nd-btn-large"><span>{t('nd.hero.ctaEnter')}</span><span className="nd-btn-arrow" aria-hidden>↗</span></Link>
+              <a href="#world" className="nd-btn nd-btn-ghost nd-btn-large"><span className="nd-play" aria-hidden>▶</span>{t('nd.hero.ctaExplore')}</a>
+            </div>
+            <div className="nd-hero-note"><span className="nd-note-line" />{t('nd.hero.note')}</div>
           </div>
-          <h1 className="hero-title">
-            <SplitText text="Nexus Dominion" />
-            <em><SplitText text={t('landing.heroTagline')} /></em>
-          </h1>
-          <p className="hero-subtitle" data-reveal>
-            {t('landing.heroSubtitle')}
-          </p>
-          <div className="hero-cta" data-reveal>
-            <Link to="/register" className="btn btn-primary btn-hero">{t('landing.heroCtaPlay')}</Link>
-            <a href="#features" className="btn btn-hero">{t('landing.heroCtaHow')}</a>
+          <div className="nd-hero-index" aria-hidden><span>{t('nd.hero.indexA')}</span><span className="nd-index-line" /><span>{t('nd.hero.indexB')}</span></div>
+          <div className="nd-hero-bar">
+            <div className="nd-hero-bar-label"><span className="nd-dot" />{t('nd.hero.bottomLabel')}</div>
+            <div className="nd-hero-stats">
+              <div><strong>4</strong><span>{t('nd.hero.statClasses')}</span></div>
+              <div><strong>21</strong><span>{t('nd.hero.statRegions')}</span></div>
+              <div><strong>500</strong><span>{t('nd.hero.statLevels')}</span></div>
+            </div>
+            <a className="nd-scroll-cue" href="#world"><span>{t('nd.hero.scroll')}</span><i aria-hidden>↓</i></a>
           </div>
-          {/* Трите факта от старото eyebrow чипче (браузър/безплатно/без
-              инсталация) — вече без pill+среднa точка, просто тиха реплика
-              под CTA-то, в тона на диегетичния slate. */}
-          <p className="hero-facts" data-reveal>{t('landing.heroEyebrow')}</p>
-          <div className="hero-credit">
-            {t('landing.artBy', { author: 'John Martin · Yale Center for British Art' })} · <a href="/assets/bg/CREDITS.md" target="_blank" rel="noreferrer">{t('landing.publicDomain', { defaultValue: 'Public domain' })}</a>
+        </section>
+
+        <section className="nd-ticker" aria-label={t('nd.nav.systems')}>
+          <div className="nd-ticker-track" aria-hidden>
+            {[0, 1].map((k) => (t('nd.ticker', { returnObjects: true }) as string[]).map((s, i) => (
+              <React.Fragment key={`${k}-${i}`}><span>{s}</span><i>✦</i></React.Fragment>
+            )))}
           </div>
-        </div>
-      </section>
+          <ul className="nd-sr-only">{(t('nd.ticker', { returnObjects: true }) as string[]).map((s) => <li key={s}>{s}</li>)}</ul>
+        </section>
 
-      {/* Stats strip */}
-      <section className="stats-strip" data-reveal data-reveal-stagger>
-        <Stat num="4" label={t('landing.statClasses')} />
-        <Stat num="58" label={t('landing.statSets')} />
-        <Stat num="12+12" label={t('landing.statCosmetics')} />
-        <Stat num="∞" label={t('landing.statGuildWars')} />
-        <Stat num="3" label={t('landing.statRaidBosses')} />
-        <Stat num="27" label={t('landing.statAchievements')} />
-      </section>
+        <WorldSection />
+        <div className="nd-duel-wrap"><LandingDuel /></div>
+        <ClassSection />
+        <SystemsSection />
+        <section className="nd-section nd-sets" id="sets">
+          <div className="nd-kicker reveal">{t('nd.sets.kicker')}</div>
+          <LandingSetShowcase />
+        </section>
+        <RegionsSection />
+        <EnterSection />
+        <FaqSection />
+      </main>
 
-      {/* Features — прегрупирани по ритъм на деня (не 12 еднакви карти 3×4,
-          виж PLAN.md „Twelve loops"): всяка група има ЕДНА водеща карта
-          (по-тежка) + 3 компактни реда, вместо еднаква тежест навсякъде.
-          Заглавният блок е ляво подравнен (асиметрия), не поредният
-          центриран stack. */}
-      <section id="features" className="section section-asym">
-        <div className="section-head-split" data-reveal>
-          <h2 className="section-title">{t('landing.featuresTitle')}</h2>
-          <p className="section-lead">{t('landing.featuresLead')}</p>
-        </div>
-        <div className="loop-groups" data-reveal-stagger>
-          <LoopGroup when={t('landing.loopQuick')}>
-            <FeatureCard lead iconSrc="/assets/icons/sword-t6.jpg" title={t('landing.featCombatTitle')}>
-              {t('landing.featCombatBody')}
-            </FeatureCard>
-            <CompactFeature iconSrc="/assets/icons/bow-t6.jpg" title={t('landing.featHuntingTitle')}>
-              {t('landing.featHuntingBody')}
-            </CompactFeature>
-            <CompactFeature iconSrc="/assets/icons/potion-green.jpg" title={t('landing.featDailyTitle')}>
-              {t('landing.featDailyBody')}
-            </CompactFeature>
-            <CompactFeature iconSrc="/assets/icons/potion-purple.jpg" title={t('landing.featWheelTitle')}>
-              {t('landing.featWheelBody')}
-            </CompactFeature>
-          </LoopGroup>
-
-          <LoopGroup when={t('landing.loopSession')}>
-            <FeatureCard lead iconSrc="/assets/icons/mace-t6.jpg" title={t('landing.featDungeonsTitle')}>
-              {t('landing.featDungeonsBody')}
-            </FeatureCard>
-            <CompactFeature iconSrc="/assets/icons/dagger-t4.jpg" title={t('landing.featQuestsTitle')}>
-              {t('landing.featQuestsBody')}
-            </CompactFeature>
-            <CompactFeature iconSrc="/assets/icons/sword-t10.jpg" title={t('landing.featArenaTitle')}>
-              {t('landing.featArenaBody')}
-            </CompactFeature>
-            <CompactFeature iconSrc="/assets/icons/helm-t6.jpg" title={t('landing.featProfilesTitle')}>
-              {t('landing.featProfilesBody')}
-            </CompactFeature>
-          </LoopGroup>
-
-          <LoopGroup when={t('landing.loopLong')}>
-            <FeatureCard lead iconSrc="/assets/icons/shield-t6.jpg" title={t('landing.featGuildsTitle')}>
-              {t('landing.featGuildsBody')}
-            </FeatureCard>
-            <CompactFeature iconSrc="/assets/icons/cloak-t8.jpg" title={t('landing.featCosmeticsTitle')}>
-              {t('landing.featCosmeticsBody')}
-            </CompactFeature>
-            <CompactFeature iconSrc="/assets/icons/gem-t8.jpg" title={t('landing.featAchievementsTitle')}>
-              {t('landing.featAchievementsBody')}
-            </CompactFeature>
-            <CompactFeature iconSrc="/assets/icons/ring-t8.jpg" title={t('landing.featSetsTitle')}>
-              {t('landing.featSetsBody')}
-            </CompactFeature>
-          </LoopGroup>
-        </div>
-      </section>
-
-      {/* Живият двубой — най-запомнящото се нещо в играта (новият боен
-          двигател, boy-езикът). Мързеливо: нищо тежко се качва преди клик,
-          виж LandingDuel.tsx (IntersectionObserver + постер + бутон). */}
-      <LandingDuel />
-
-      {/* Classes */}
-      <section id="classes" className="section">
-        <h2 className="section-title" data-reveal>{t('landing.classesTitle')}</h2>
-        <p className="section-lead" data-reveal>
-          {t('landing.classesLead')}
-        </p>
-        <div className="class-grid" data-reveal-stagger>
-          <ClassCard portrait="/assets/icons/class-warrior.jpg" name={t('charCreate.classes.warrior.name')} tagline={t('landing.classWarriorTagline')} stats={[['STR', 9], ['CON', 8], ['DEX', 5]]} />
-          <ClassCard portrait="/assets/icons/class-ranger.jpg"  name={t('charCreate.classes.ranger.name')}  tagline={t('landing.classRangerTagline')} stats={[['DEX', 9], ['CON', 6], ['WIS', 5]]} />
-          <ClassCard portrait="/assets/icons/class-mage.jpg"    name={t('charCreate.classes.mage.name')}    tagline={t('landing.classMageTagline')} stats={[['INT', 9], ['WIS', 8], ['CON', 5]]} />
-          <ClassCard portrait="/assets/icons/class-rogue.jpg"   name={t('charCreate.classes.rogue.name')}   tagline={t('landing.classRogueTagline')} stats={[['DEX', 8], ['CON', 6], ['CHA', 6]]} />
-        </div>
-      </section>
-
-      {/* Item Sets — имената на комплектите са игрови данни и не се превеждат. */}
-      <section id="sets" className="section">
-        <h2 className="section-title" data-reveal>{t('landing.setsTitle')}</h2>
-        <p className="section-lead" data-reveal>
-          {t('landing.setsLead')}
-        </p>
-        {/* Втора 3D точка — „завърти рицаря" (виж LandingSetShowcase.tsx),
-            бутонът, не картата, е тежкото тук. Old set-grid по-долу става
-            тих вторичен списък (radius-md вместо -lg), а не повторение на
-            същото внимание. */}
-        <LandingSetShowcase />
-        <div className="set-grid set-grid-secondary" data-reveal-stagger>
-          <SetCard rarity="common"    name="Wayfarer's Garb"     tier={t('landing.setWayfarerTier')}  iconSrc="/assets/icons/boots-t1.jpg"  lore={t('landing.setWayfarerLore')} bonuses={[['2', '+8 HP, +1 DEX'], ['4', '+18 HP, +2 DEX, +2 DEF']]} />
-          <SetCard rarity="uncommon"  name="Ironguard Plate"     tier={t('landing.setIronguardTier')} iconSrc="/assets/icons/armor-t2.jpg"  lore={t('landing.setIronguardLore')} bonuses={[['2', '+36 HP, +4 DEF, +2 STR'], ['4', '+63 HP, +6 DEF, +3 STR, +4 ATK'], ['6', '+81 HP, +8 DEF, +4 STR, +5 ATK']]} />
-          <SetCard rarity="uncommon"  name="Sylvan Marshal"      tier={t('landing.setSylvanTier')}    iconSrc="/assets/icons/bow-t2.jpg"    lore={t('landing.setSylvanLore')} bonuses={[['2', '+36 HP, +4 DEF, +2 DEX, +2% Crit'], ['4', '+63 HP, +6 DEF, +3 DEX, +4 ATK'], ['6', '+81 HP, +8 DEF, +4 DEX, +5 ATK, +2% Crit']]} />
-          <SetCard rarity="uncommon"  name="Arcane Conclave"     tier={t('landing.setArcaneTier')}    iconSrc="/assets/icons/staff-t2.jpg"  lore={t('landing.setArcaneLore')} bonuses={[['2', '+36 HP, +4 DEF, +2 INT, +18 MP'], ['4', '+63 HP, +6 DEF, +3 INT, +4 ATK, +31 MP'], ['6', '+81 HP, +8 DEF, +4 INT, +5 ATK, +41 MP, +1 WIS']]} />
-          <SetCard rarity="uncommon"  name="Nightveil"           tier={t('landing.setNightveilTier')} iconSrc="/assets/icons/dagger-t2.jpg" lore={t('landing.setNightveilLore')} bonuses={[['2', '+36 HP, +4 DEF, +2 DEX, +2% Dodge'], ['4', '+63 HP, +6 DEF, +3 DEX, +4 ATK'], ['6', '+81 HP, +8 DEF, +4 DEX, +5 ATK, +2% Crit']]} />
-          <SetCard rarity="rare"      name="Sunforged Champion"  tier={t('landing.setSunforgedTier')} iconSrc="/assets/icons/sword-t6.jpg"  lore={t('landing.setSunforgedLore')} bonuses={[['2', '+94 HP, +7 DEF, +3 STR'], ['4', '+165 HP, +12 DEF, +5 STR, +8 ATK'], ['6', '+212 HP, +15 DEF, +6 STR, +11 ATK']]} />
-          <SetCard rarity="epic"      name="Voidshard Adept"     tier={t('landing.setVoidshardTier')} iconSrc="/assets/icons/staff-t8.jpg"  lore={t('landing.setVoidshardLore')} bonuses={[['2', '+112 HP, +10 DEF, +4 INT, +56 MP'], ['4', '+196 HP, +17 DEF, +6 INT, +9 ATK, +98 MP'], ['6', '+252 HP, +22 DEF, +8 INT, +12 ATK, +126 MP, +2 WIS']]} />
-          <SetCard rarity="legendary" name="Solar Mythwoven"     tier={t('landing.setSolarTier')}     iconSrc="/assets/icons/sword-t10.jpg" lore={t('landing.setSolarLore')} bonuses={[['2', '+150 HP, +6 STR'], ['4', '+320 HP, +24 DEF, +10 STR, +14 ATK'], ['6', '+600 HP, +50 DEF, +18 STR, +30 ATK, +10% Crit, +5% Dodge']]} />
-        </div>
-      </section>
-
-      {/* Endgame loops */}
-      <section id="endgame" className="section">
-        <h2 className="section-title" data-reveal>{t('landing.endgameTitle')}</h2>
-        <p className="section-lead" data-reveal>
-          {t('landing.endgameLead')}
-        </p>
-        <div className="feature-grid" data-reveal-stagger>
-          <FeatureCard iconSrc="/assets/icons/axe-t10.jpg" title={t('landing.egRealmBossTitle')}>
-            {t('landing.egRealmBossBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/boots-t6.jpg" title={t('landing.egFactionTitle')}>
-            {t('landing.egFactionBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/sword-t10.jpg" title={t('landing.egApexTitle')}>
-            {t('landing.egApexBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/staff-t8.jpg" title={t('landing.egTowerTitle')}>
-            {t('landing.egTowerBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/gem-t8.jpg" title={t('landing.egCacheTitle')}>
-            {t('landing.egCacheBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/ring-t9.jpg" title={t('landing.egAuctionTitle')}>
-            {t('landing.egAuctionBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/axe-t9.jpg" title={t('landing.egMythicTitle')}>
-            {t('landing.egMythicBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/potion-red.jpg" title={t('landing.egEventsTitle')}>
-            {t('landing.egEventsBody')}
-          </FeatureCard>
-        </div>
-      </section>
-
-      {/* Mid-page rhythm break — second cinematic plate.
-          БЪГ (докладван визуално): предишният клип показваше модерен мъж с
-          тениска в тухлена работилница — чупи потапянето в средновековния
-          сетинг. Заменено с "The Forge of Vulcan" (Диего Веласкес, 1630,
-          Museo del Prado) — платно с обществено достояние, вече в репото
-          (/assets/icons/icon-anvil.jpg, виж CREDITS.md), тематично точно за
-          раздел "The Forge". 21:9 лента, статично изображение — по-леко от
-          видео и без риск от нов „модерен“ кадър при loop. */}
-      <section className="forge-band" aria-label={t('landing.forgeName')}>
-        <img
-          className="forge-band-bg"
-          src="/assets/icons/icon-anvil.jpg"
-          alt=""
-          loading="lazy"
-          aria-hidden
-        />
-        <div className="forge-band-shade" aria-hidden />
-        <div className="forge-band-copy">
-          <div className="section-eyebrow">{t('landing.forgeName')}</div>
-          <h2 className="section-title">{t('landing.forgeTitle')}</h2>
-          <p className="forge-band-lead">
-            {t('landing.forgeLead')}
-          </p>
-          <div className="forge-band-credit">
-            {t('landing.artBy', { author: 'Diego Velázquez · Museo del Prado' })} · <a href="https://commons.wikimedia.org/wiki/Category:La_Fragua_de_Vulcano" target="_blank" rel="noreferrer">{t('landing.publicDomain', { defaultValue: 'Public domain' })}</a>
-          </div>
-        </div>
-      </section>
-
-      {/* Guilds */}
-      <section id="guilds" className="section" data-tone="steel">
-        <h2 className="section-title" data-reveal>{t('landing.guildsTitle')}</h2>
-        <p className="section-lead" data-reveal>
-          {t('landing.guildsLead')}
-        </p>
-        <div className="feature-grid" data-reveal-stagger>
-          <FeatureCard iconSrc="/assets/icons/shield-t8.jpg" title={t('landing.gTiersTitle')}>
-            {t('landing.gTiersBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/amulet-t5.jpg" title={t('landing.gChatTitle')}>
-            {t('landing.gChatBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/axe-t7.jpg" title={t('landing.gWarsTitle')}>
-            {t('landing.gWarsBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/mace-t8.jpg" title={t('landing.gRaidsTitle')}>
-            {t('landing.gRaidsBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/shield-t10.jpg" title={t('landing.gCrestTitle')}>
-            {t('landing.gCrestBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/gem-t9.jpg" title={t('landing.gTreasuryTitle')}>
-            {t('landing.gTreasuryBody')}
-          </FeatureCard>
-        </div>
-      </section>
-
-      {/* World — имената на регионите са игрови данни и не се превеждат. */}
-      <section id="world" className="section" data-tone="steel">
-        <h2 className="section-title" data-reveal>{t('landing.worldTitle')}</h2>
-        <p className="section-lead" data-reveal>
-          {t('landing.worldLead')}
-        </p>
-        <div className="region-row" data-reveal-stagger>
-          <RegionCard color="#3f6a2c" art="/assets/regions/whispering_woods.jpg" name="Whispering Woods" range="Lv 1 – 5">{t('landing.regionWhisperingBody')}</RegionCard>
-          <RegionCard color="#6e7a5c" art="/assets/regions/mistmoor_hills.jpg"   name="Mistmoor Hills"   range="Lv 6 – 10">{t('landing.regionMistmoorBody')}</RegionCard>
-          <RegionCard color="#6aa7ff" art="/assets/regions/crystal_caverns.jpg"  name="Crystal Caverns"  range="Lv 10 – 15">{t('landing.regionCrystalBody')}</RegionCard>
-          <RegionCard color="#c7641a" art="/assets/regions/ashen_wastes.jpg"     name="Ashen Wastes"     range="Lv 15 – 22">{t('landing.regionAshenBody')}</RegionCard>
-          <RegionCard color="#6f3fb6" art="/assets/regions/shadowfell.jpg"       name="The Shadowfell"   range="Lv 24 – 25">{t('landing.regionShadowfellBody')}</RegionCard>
-          <RegionCard color="#c7411a" art="/assets/regions/ashen_wastes.jpg"     name="Emberreach"       range="Lv 26 – 50">{t('landing.regionEmberreachBody')}</RegionCard>
-          <RegionCard color="#7a5a3a" art="/assets/regions/crystal_caverns.jpg"  name="Hammerhand Pass"  range="Lv 50 – 75">{t('landing.regionHammerhandBody')}</RegionCard>
-          <RegionCard color="#9a5ad0" art="/assets/regions/shadowfell.jpg"       name="Conclave of Aedric" range="Lv 75 – 105">{t('landing.regionConclaveBody')}</RegionCard>
-          <RegionCard color="#3f8a6a" art="/assets/regions/mistmoor_hills.jpg"   name="Saltmarsh"         range="Lv 105 – 140">{t('landing.regionSaltmarshBody')}</RegionCard>
-          <RegionCard color="#9ac7ff" art="/assets/regions/crystal_caverns.jpg"  name="Frostvale"         range="Lv 140 – 175">{t('landing.regionFrostvaleBody')}</RegionCard>
-          <RegionCard color="#3a1a1a" art="/assets/regions/ashen_wastes.jpg"     name="Black Spire"       range="Lv 175 – 200">{t('landing.regionBlackSpireBody')}</RegionCard>
-          <RegionCard color="#6aa7ff" art="/assets/regions/mistmoor_hills.jpg"   name="The Stormpeaks"    range="Lv 201 – 230">{t('landing.regionStormpeaksBody')}</RegionCard>
-          <RegionCard color="#5a2c8a" art="/assets/regions/shadowfell.jpg"       name="Voidshade Hollow"  range="Lv 231 – 260">{t('landing.regionVoidshadeBody')}</RegionCard>
-          <RegionCard color="#a0b8d0" art="/assets/regions/crystal_caverns.jpg"  name="Mooncradle"        range="Lv 261 – 290">{t('landing.regionMooncradleBody')}</RegionCard>
-          <RegionCard color="#8a6a3a" art="/assets/regions/ashen_wastes.jpg"     name="The Worldspine"    range="Lv 291 – 320">{t('landing.regionWorldspineBody')}</RegionCard>
-          <RegionCard color="#1a1a1a" art="/assets/regions/shadowfell.jpg"       name="The Eternal Throne" range="Lv 321 – 350">{t('landing.regionEternalBody')}</RegionCard>
-          {/* Последните 5 от 21-те реални региона (server/src/seed/monsters.ts
-              REGION_BANDS) — заместват старата измислена сборна карта „Beyond
-              the End“ (Lv 351–500), която не отговаряше на нито едно истинско
-              владение. Виж PLAN.md „Факти" (втори проход). */}
-          <RegionCard color="#5a4a5a" art="/assets/regions/shadowfell.jpg"       name="The Ashen Veil"    range="Lv 351 – 380">{t('landing.regionAshenVeilBody')}</RegionCard>
-          <RegionCard color="#4a2a7a" art="/assets/regions/crystal_caverns.jpg"  name="The Starfall Abyss" range="Lv 381 – 410">{t('landing.regionStarfallBody')}</RegionCard>
-          <RegionCard color="#c78a2a" art="/assets/regions/ashen_wastes.jpg"     name="The Forge of Dawn" range="Lv 411 – 440">{t('landing.regionForgeOfDawnBody')}</RegionCard>
-          <RegionCard color="#3a0a14" art="/assets/regions/shadowfell.jpg"       name="The Crown of Night" range="Lv 441 – 470">{t('landing.regionCrownOfNightBody')}</RegionCard>
-          <RegionCard color="#f0e2b6" art="/assets/regions/crystal_caverns.jpg"  name="The First Light"   range="Lv 471 – 500">{t('landing.regionFirstLightBody')}</RegionCard>
-        </div>
-      </section>
-
-      {/* Roadmap */}
-      <section id="roadmap" className="section">
-        <h2 className="section-title" data-reveal>{t('landing.roadmapTitle')}</h2>
-        <div className="roadmap-track" data-reveal>
-          <RoadmapStop state="shipped" when={t('landing.whenShipped')} what={t('landing.rmCoreTitle')}>
-            {t('landing.rmCoreBody')}
-          </RoadmapStop>
-          <RoadmapStop state="shipped" when={t('landing.whenShipped')} what={t('landing.rmProfileTitle')}>
-            {t('landing.rmProfileBody')}
-          </RoadmapStop>
-          <RoadmapStop state="shipped" when={t('landing.whenShipped')} what={t('landing.rmGuildsTitle')}>
-            {t('landing.rmGuildsBody')}
-          </RoadmapStop>
-          <RoadmapStop state="now" when={t('landing.whenNow')} what={t('landing.rmCombatTitle')}>
-            {t('landing.rmCombatBody')}
-          </RoadmapStop>
-          <RoadmapStop state="soon" when={t('landing.whenNext')} what={t('landing.rmCraftTitle')}>
-            {t('landing.rmCraftBody')}
-          </RoadmapStop>
-          <RoadmapStop state="later" when={t('landing.whenLater')} what={t('landing.rmEventsTitle')}>
-            {t('landing.rmEventsBody')}
-          </RoadmapStop>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <div className="final-cta" data-reveal="scale">
-        <h2>{t('landing.finalTitle')}</h2>
-        <p>{t('landing.finalBody')}</p>
-        <div className="hero-cta">
-          <Link to="/register" className="btn btn-primary btn-hero">{t('landing.finalCreate')}</Link>
-          <Link to="/login" className="btn btn-hero">{t('landing.finalAlready')}</Link>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <footer className="landing-footer">
-        <div className="footer-grid">
-          <div>
-            <Logo size={40} withWordmark />
-            <p style={{ marginTop: 12, fontSize: 13, color: 'var(--text-3)', lineHeight: 1.6, maxWidth: 320 }}>
-              {t('landing.footerTagline')}
-            </p>
-          </div>
-          <div>
-            <h4>{t('landing.footerGame')}</h4>
-            <a href="#features">{t('landing.navFeatures')}</a>
-            <a href="#classes">{t('landing.navClasses')}</a>
-            <a href="#sets">{t('landing.navSets')}</a>
-            <a href="#guilds">{t('landing.navGuilds')}</a>
-            <a href="#world">{t('landing.navWorld')}</a>
-            <a href="#roadmap">{t('landing.navRoadmap')}</a>
-          </div>
-          <div>
-            <h4>{t('landing.footerAccount')}</h4>
-            <Link to="/register">{t('nav.register')}</Link>
-            <Link to="/login">{t('nav.login')}</Link>
-          </div>
-          <div>
-            <h4>{t('landing.footerStudio')}</h4>
-            <Link to="/terms">{t('footer.terms')}</Link>
-            <Link to="/privacy">{t('footer.privacy')}</Link>
-            <a href="mailto:info@carbonstealth.eu">{t('footer.contactSupport')}</a>
-            {/* GDPR Art. 7(3) + ePrivacy Art. 7 — withdrawal must be as easy
-                as granting consent. Re-opens the cookie banner with the
-                current state so the user can flip categories or reject all. */}
-            <button
-              type="button"
-              onClick={() => { try { window.dispatchEvent(new CustomEvent('nd:open-cookie-banner')); } catch {} }}
-              style={{ background: 'none', border: 0, padding: 0, color: 'inherit', font: 'inherit', textDecoration: 'underline', cursor: 'pointer', textAlign: 'left' }}
-            >
-              {t('footer.cookieSettings')}
-            </button>
-          </div>
-        </div>
-        <div className="footer-bottom">
-          <span>{t('landing.footerCopyright')}</span>
-          <span>{t('landing.footerMade')}</span>
-        </div>
+      <footer className="nd-footer">
+        <a className="nd-brand" href="#top" aria-label={t('nd.nav.home')}><Logo size={30} withWordmark /></a>
+        <span className="nd-footer-legal">{t('nd.footer.legal')}</span>
+        <nav className="nd-footer-links" aria-label="Footer">
+          <a href="#world">{t('nd.nav.world')}</a>
+          <a href="#systems">{t('nd.nav.systems')}</a>
+          <a href="#faq">{t('nd.nav.faq')}</a>
+          <Link to="/terms">{t('footer.terms')}</Link>
+          <Link to="/privacy">{t('footer.privacy')}</Link>
+          <a href="mailto:info@carbonstealth.eu">{t('footer.contactSupport')}</a>
+          {/* GDPR чл. 7(3): оттеглянето е толкова лесно, колкото даването — отваря банера наново. */}
+          <button type="button" className="nd-linklike" onClick={() => { try { window.dispatchEvent(new CustomEvent('nd:open-cookie-banner')); } catch { /* стар браузър */ } }}>
+            {t('footer.cookieSettings')}
+          </button>
+        </nav>
+        <span className="nd-copyright">{t('nd.footer.rights', { year })}</span>
       </footer>
-    </div>
-  );
-}
-
-function Stat({ num, label }: { num: string; label: string }) {
-  return (
-    <div className="stat-pill">
-      <div className="num">{num}</div>
-      <div className="label">{label}</div>
-    </div>
-  );
-}
-
-function FeatureCard({ iconSrc, title, children, lead }: { iconSrc: string; title: string; children: React.ReactNode; lead?: boolean }) {
-  const { t } = useTranslation();
-  return (
-    <div className={`feature-card${lead ? ' feature-card-lead' : ''}`} data-tilt>
-      <div className="feature-icon feature-icon-img">
-        <img src={iconSrc} alt={t('landing.iconAlt', { title })} loading="lazy" />
-      </div>
-      <h3 className="feature-title">{title}</h3>
-      <p className="feature-desc">{children}</p>
-    </div>
-  );
-}
-
-/** Компактен ред за вторичните 3 в група (виж LoopGroup) — една снимка+ред
-    текст, не пълна карта; носи тежестта надолу от водещата FeatureCard. */
-function CompactFeature({ iconSrc, title, children }: { iconSrc: string; title: string; children: React.ReactNode }) {
-  const { t } = useTranslation();
-  return (
-    <div className="loop-compact">
-      <img className="loop-compact-icon" src={iconSrc} alt={t('landing.iconAlt', { title })} loading="lazy" />
-      <div className="loop-compact-body">
-        <h4>{title}</h4>
-        <p>{children}</p>
-      </div>
-    </div>
-  );
-}
-
-/** Група по ритъм на деня — първото дете е водещата (по-тежка) карта,
-    останалите се редят като компактен списък до нея. Виж PLAN.md
-    „Twelve loops" (втори проход) — не 12 еднакви карти 3×4. */
-function LoopGroup({ when, children }: { when: string; children: React.ReactNode }) {
-  const items = React.Children.toArray(children);
-  return (
-    <div className="loop-group">
-      <div className="loop-group-when">{when}</div>
-      <div className="loop-group-grid">
-        {items[0]}
-        <div className="loop-compact-list">{items.slice(1)}</div>
-      </div>
-    </div>
-  );
-}
-
-function ClassCard({ portrait, name, tagline, stats }: { portrait: string; name: string; tagline: string; stats: [string, number][] }) {
-  const { t } = useTranslation();
-  return (
-    <div className="class-card class-card-portrait" data-tilt>
-      <div className="class-portrait-frame">
-        {/* HD public-domain painting matched to the class (Vasnetsov
-            Knight at the Crossroads / Waterhouse Magic Circle / Pyle
-            Robin Hood plate / Frith Highwayman). Same images that
-            drive the in-game Hero card, so the marketing surface and
-            the gameplay surface share their visual identity. */}
-        <img src={portrait} alt={t('landing.portraitAlt', { name })} loading="lazy" />
-        <div className="class-portrait-shade" aria-hidden />
-      </div>
-      <h3>{name}</h3>
-      <div className="tagline">{tagline}</div>
-      <div className="stat-row">
-        {stats.map(([k, v]) => (
-          <div className="item" key={k}>
-            <div className="label">{k}</div>
-            <div className="val">{v}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function SetCard({ rarity, name, tier, iconSrc, lore, bonuses }: { rarity: string; name: string; tier: string; iconSrc: string; lore: string; bonuses: [string, string][] }) {
-  const { t } = useTranslation();
-  return (
-    <div className="set-card" data-rarity={rarity} data-tilt>
-      <div className="set-header">
-        <div className="set-icon set-icon-img">
-          <img src={iconSrc} alt={t('landing.iconAlt', { title: name })} loading="lazy" />
-        </div>
-        <div>
-          <div className="set-name">{name}</div>
-          <div className="set-tier">{tier}</div>
-        </div>
-      </div>
-      <div className="set-lore">{lore}</div>
-      <div className="set-bonuses">
-        {bonuses.map(([n, b]) => (
-          <div key={n} className="bonus-row">
-            <div className="badge">{n}</div>
-            <div className="text">{b}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function RegionCard({ color, art, name, range, children }: { color: string; art: string; name: string; range: string; children: React.ReactNode }) {
-  const { t } = useTranslation();
-  return (
-    <div className="region-card" data-tilt style={{ borderColor: color }}>
-      {/* Painted region plate (Corot / Friedrich / Wright of Derby /
-          John Martin), centre-cropped 1440×900 — see
-          /assets/regions/CREDITS.md for full attribution. */}
-      <div className="region-art">
-        <img src={art} alt={t('landing.landscapeAlt', { name })} loading="lazy" />
-        <div className="region-art-shade" style={{ background: `linear-gradient(180deg, transparent 35%, ${color}22 70%, rgba(11,13,18,.95) 100%)` }} aria-hidden />
-      </div>
-      <div className="region-body">
-        <h3 className="feature-title">{name}</h3>
-        <div className="tag" style={{ marginBottom: 10 }}>{range}</div>
-        <p className="feature-desc">{children}</p>
-      </div>
-    </div>
-  );
-}
-
-function RoadmapStop({ state, when, what, children }: { state: 'shipped' | 'now' | 'soon' | 'later'; when: string; what: string; children: React.ReactNode }) {
-  return (
-    <div className="roadmap-stop" data-state={state}>
-      <div className="when">{when}</div>
-      <div className="what">{what}</div>
-      <div className="detail">{children}</div>
     </div>
   );
 }

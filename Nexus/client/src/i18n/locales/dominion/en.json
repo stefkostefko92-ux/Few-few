@@ -1,0 +1,203 @@
+{
+  "nd": {
+    "nav": {
+      "world": "The World",
+      "classes": "Classes",
+      "systems": "Systems",
+      "sets": "Arsenal",
+      "regions": "Regions",
+      "faq": "FAQ",
+      "login": "Log in",
+      "start": "Play now",
+      "menuOpen": "Open menu",
+      "menuClose": "Close menu",
+      "home": "Nexus Dominion — home"
+    },
+    "hero": {
+      "eyebrowA": "BROWSER MMORPG",
+      "eyebrowB": "NO DOWNLOAD REQUIRED",
+      "line1": "THE DOMINION",
+      "line2": "AWAKENS",
+      "copy": "Build your legend. Master the battlefield. Leave your name in a world that does not forget.",
+      "ctaEnter": "ENTER THE DOMINION",
+      "ctaExplore": "DISCOVER THE WORLD",
+      "note": "YOUR STORY. YOUR STRATEGY. YOUR LEGEND.",
+      "indexA": "ND / 001",
+      "indexB": "THE AGE BEGINS",
+      "bottomLabel": "THE REALM AWAITS",
+      "statClasses": "PLAYABLE CLASSES",
+      "statRegions": "HAND-BUILT REGIONS",
+      "statLevels": "LEVELS OF PROGRESSION",
+      "scroll": "SCROLL TO EXPLORE",
+      "artAlt": "A cloaked knight looks toward a gothic fortress lit by cyan magic and moonlight above a misty valley"
+    },
+    "ticker": [
+      "TURN-BASED COMBAT",
+      "REAL-TIME AUCTION",
+      "ELO ARENA",
+      "GUILD WARFARE",
+      "RAID BOSSES",
+      "58 ITEM SETS",
+      "TOWER OF TRIALS",
+      "MYTHIC+ DUNGEONS"
+    ],
+    "world": {
+      "kicker": "01 / THE WORLD",
+      "h2a": "ONE WORLD.",
+      "h2b": "COUNTLESS PATHS.",
+      "lead": "Nexus Dominion blends tactical combat, long-term progression and player competition in one persistent world, played straight from the browser.",
+      "report": "FIELD REPORT / 001",
+      "status": "WORLD DATA",
+      "h3a": "YOUR ROAD",
+      "h3b": "STARTS HERE.",
+      "body": "Every choice shapes your hero. Gather gear, sharpen your skills and find a new challenge with every step.",
+      "f1t": "Persistent progression",
+      "f1d": "Five hundred levels, twelve tiers of gear.",
+      "f2t": "A living world",
+      "f2d": "Twenty-one regions of named monsters.",
+      "f3t": "Competition and community",
+      "f3d": "Guilds, an ELO arena and shared raids.",
+      "link": "EXPLORE THE SYSTEMS",
+      "coord": "COORD. 43° / THE FORGOTTEN REACH"
+    },
+    "duel": {
+      "kicker": "02 / LIVE COMBAT"
+    },
+    "classes": {
+      "kicker": "03 / CHOOSE YOUR PATH",
+      "h2a": "DON'T FOLLOW THE LEGEND.",
+      "h2b": "FORGE IT.",
+      "lead": "Four playable classes. Different roads to power. Find your style and turn it into an edge.",
+      "archetype": "ARCHETYPE / {{n}}",
+      "pick": "Choose {{name}}",
+      "warriorMeta": "THE FRONTLINE",
+      "rangerMeta": "THE HUNTER",
+      "mageMeta": "THE ARCANE",
+      "rogueMeta": "THE SHADOW",
+      "warriorTags": [
+        "RESILIENCE",
+        "CONTROL"
+      ],
+      "rangerTags": [
+        "PRECISION",
+        "RANGE"
+      ],
+      "mageTags": [
+        "MAGIC",
+        "BURST"
+      ],
+      "rogueTags": [
+        "CRIT",
+        "EVASION"
+      ]
+    },
+    "systems": {
+      "kicker": "04 / SYSTEMS OF POWER",
+      "h2a": "POWER IS NOT",
+      "h2b": "GIVEN.",
+      "lead": "Build your hero through decisions, tactics and persistence. Every system is one more tool for the next victory.",
+      "label": "SYSTEM / {{n}}",
+      "explore": "EXPLORE"
+    },
+    "sets": {
+      "kicker": "05 / THE ARSENAL"
+    },
+    "regions": {
+      "kicker": "06 / BEYOND THE GATES",
+      "h2a": "UNKNOWN LANDS.",
+      "h2b": "NEW THREATS.",
+      "lead": "The road ahead runs through dangerous territory, hidden stories and enemies that demand more than brute force.",
+      "archive": "REGION ARCHIVE / {{n}}",
+      "dossier": "EXPEDITION DOSSIER",
+      "dangerLow": "STARTING ZONE",
+      "dangerMid": "DANGEROUS",
+      "dangerHigh": "DEADLY",
+      "dangerEnd": "BEYOND THE END",
+      "statLevels": "LEVELS",
+      "statOrder": "REGION",
+      "statAccess": "ACCESS",
+      "ofTotal": "OF {{total}}",
+      "browser": "BROWSER",
+      "browserSub": "NO INSTALL",
+      "prepare": "PREPARE FOR THE EXPEDITION",
+      "pickRegion": "Choose a region",
+      "artAlt": "Landscape of {{name}}"
+    },
+    "enter": {
+      "kicker": "07 / YOUR LEGEND STARTS NOW",
+      "h2a": "THE WORLD WILL NOT",
+      "h2b": "CONQUER ITSELF.",
+      "body": "Create your hero. Find your allies. Begin your road in Nexus Dominion.",
+      "cta": "CREATE A HERO",
+      "faq": "QUESTIONS?",
+      "foot": "NO INSTALL · RIGHT IN THE BROWSER · FREE"
+    },
+    "faq": {
+      "kicker": "08 / KNOW BEFORE YOU ENTER",
+      "h2a": "BEFORE YOU",
+      "h2b": "BEGIN.",
+      "lead": "The essentials to know before you enter the realm.",
+      "q1": "Is Nexus Dominion free to play?",
+      "a1": "Yes. The full game is playable without paying anything. Optional gems — earned in play and also sold in the Premium Mint — pay for mounts, auction bids, renames and timer skips. Gear, dungeons, guild features and leaderboards are all reachable through play.",
+      "q2": "Do I need to download anything?",
+      "a2": "No installer. The whole client is a single web page; it loads in Chrome, Firefox, Safari and Edge on desktop, and works on iOS Safari and Android Chrome with a touch-optimised layout.",
+      "q3": "How long is one play session?",
+      "a3": "Ten to twenty minutes for a focused session: one daily, two or three hunting runs, a dungeon stage. Combat is turn-based and resolves in under thirty seconds per fight.",
+      "q4": "Who decides the outcome of a fight?",
+      "a4": "The server. Combat, loot, economy and progression are resolved and validated on the server — the client only renders and sends intents.",
+      "q5": "Which languages are supported?",
+      "a5": "English, Bulgarian and Italian — the whole interface in all three."
+    },
+    "footer": {
+      "legal": "A WORLD FORGED BY CHOICE.",
+      "rights": "© {{year}} NEXUS DOMINION · CARBON STEALTH VCC"
+    },
+    "hub": {
+      "realm": "REALM 01",
+      "welcome": "WELCOME BACK,",
+      "sub": "The realm awaits your next move.",
+      "next": "YOUR NEXT EXPEDITION",
+      "hunt": "TO THE HUNTING GROUNDS",
+      "map": "WORLD MAP",
+      "expedition": "EXPEDITION / {{n}}",
+      "levels": "LEVELS {{min}}–{{max}}",
+      "report": "DOMINION FIELD REPORT",
+      "regions": "{{n}} — 21 REGIONS",
+      "level": "CHARACTER LEVEL",
+      "xp": "{{pct}}% TO LEVEL {{next}}",
+      "arena": "ARENA RATING",
+      "record": "{{w}} WINS · {{l}} LOSSES",
+      "gold": "GOLD",
+      "slain": "{{n}} MONSTERS SLAIN",
+      "energy": "ENERGY",
+      "hero": "YOUR HERO",
+      "chronicle": "LATEST EVENTS",
+      "dispatch": "ROYAL MAIL",
+      "artAlt": "Landscape of {{name}}"
+    }
+  },
+  "world": {
+    "regions": {
+      "ashen_veil": {
+        "name": "The Ashen Veil",
+        "lore": "What remains when an ending ends. Ash, echo, and the patient dead."
+      },
+      "starfall_abyss": {
+        "name": "The Starfall Abyss",
+        "lore": "The grave of fallen stars. Light goes in; something else comes out."
+      },
+      "forge_of_dawn": {
+        "name": "The Forge of Dawn",
+        "lore": "Where the next world is being hammered. The smiths do not stop for visitors."
+      },
+      "crown_of_night": {
+        "name": "The Crown of Night",
+        "lore": "The court of the Unlit Crown, where the dark keeps its own throne."
+      },
+      "first_light": {
+        "name": "The First Light",
+        "lore": "The beginning before everything. The last road ends where the first one starts."
+      }
+    }
+  }
+}

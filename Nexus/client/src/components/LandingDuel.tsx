@@ -75,12 +75,12 @@ export default function LandingDuel(): React.ReactElement {
   }, []);
 
   return (
-    <section id="duel" className="section duel-section" ref={rootRef}>
-      <div className="section-head-split" data-reveal>
-        <h2 className="section-title">{t('landing.duelTitle')}</h2>
-        <p className="section-lead">{t('landing.duelLead')}</p>
+    <section id="duel" className="nd-section duel-section" ref={rootRef}>
+      <div className="nd-heading reveal">
+        <div><div className="nd-kicker">{t('nd.duel.kicker')}</div><h2>{t('landing.duelTitle')}</h2></div>
+        <p>{t('landing.duelLead')}</p>
       </div>
-      <div className="duel-embed" data-reveal>
+      <div className="duel-embed reveal">
         {playing ? (
           <Suspense fallback={<div className="duel-loading">{t('landing.setsShowcaseLoading')}</div>}>
             <CombatScene hero={HERO} foe={FOE} rounds={ROUNDS} victory reward={{ xp: 120, gold: 40 }} />
@@ -88,7 +88,7 @@ export default function LandingDuel(): React.ReactElement {
         ) : (
           <div className="duel-poster">
             <div className="duel-poster-glow" aria-hidden />
-            <button type="button" className="btn btn-primary btn-hero duel-play" onClick={() => setPlaying(true)} disabled={!inView}>
+            <button type="button" className="nd-btn nd-btn-primary nd-btn-large duel-play" onClick={() => setPlaying(true)} disabled={!inView}>
               {t('landing.duelCta')}
             </button>
             <div className="duel-caption">{t('landing.duelCaption')}</div>

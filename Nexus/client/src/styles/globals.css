@@ -3,42 +3,65 @@
    --------------------------------------------------------------------- */
 
 :root {
-  /* Brand palette */
-  --bg-0: #07080c;
-  --bg-1: #0b0d12;
-  --bg-2: #11141b;
-  --bg-3: #161a23;
-  --bg-4: #1c2230;
+  /* ── Дизайн-система „Dominion“ (шаблонът на собственика, 2026-10) ──────────────
+     Каноничните токени. Всичко ново (лендинг, обвивка, карта) пише с тях. */
+  --bg: #070b11;
+  --bg-2: #0a1119;
+  --panel: #0c141e;
+  --panel-2: #101b27;
+  --panel-3: #152331;
+  --line: rgba(156,190,213,.14);
+  --line-strong: rgba(156,190,213,.25);
+  --text: #edf5f7;
+  --muted: #8c9eac;
+  --muted-2: #586b7a;
+  --cyan: #67e6ef;
+  --cyan-soft: #a3f6f8;
+  --gold: #c7a77b;
+  --red: #e7786f;
+  --violet: #b9a5ff;
+  --display: 'Cinzel', 'Cormorant SC', Georgia, serif;
+  --sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --content: 1280px;
 
-  --border-1: #232a39;
-  --border-2: #2d3548;
-  --border-3: #3a4460;
+  /* ── Наследени имена → пренасочени към „Dominion“ ─────────────────────────────
+     Стотици правила из приложението пишат с тях; пренасочването прекроява целия
+     сайт наведнъж. „gold-*“ вече е основният АКЦЕНТ (циан) — исторически име;
+     истинското злато (награди/валута) е --brass-*. */
+  --bg-0: #05080d;
+  --bg-1: #070b11;
+  --bg-3: #0c141e;
+  --bg-4: #101b27;
 
-  --text-1: #e8e7e1;
-  --text-2: #b9b8b1;
-  --text-3: #7c7d83;
-  --text-4: #4d525d;
+  --border-1: #15212d;
+  --border-2: #1d2b38;
+  --border-3: #2a3d4c;
+
+  --text-1: #edf5f7;
+  --text-2: #b3c0c9;
+  --text-3: #8c9eac;
+  --text-4: #586b7a;
 
   /* Accents */
-  --gold-1: #f5d28a;
-  --gold-2: #d6a13d;
-  --gold-3: #8a6620;
-  --crimson-1: #e85a4f;
-  --crimson-2: #b6261b;
-  --emerald-1: #6ad8a4;
-  --emerald-2: #1f8b54;
-  --sapphire-1: #6aa7ff;
-  --sapphire-2: #2b58c4;
-  --amethyst-1: #c294ff;
-  --amethyst-2: #6f3fb6;
-  --ember-1: #ffb159;
+  --gold-1: #a3f6f8;
+  --gold-2: #67e6ef;
+  --gold-3: #2f8f99;
+  --brass-1: #e3cba4;
+  --brass-2: #c7a77b;
+  --brass-3: #7d6440;
+  --crimson-1: #e7786f;
+  --crimson-2: #b8463e;
+  --emerald-1: #86d7b3;
+  --emerald-2: #2f8f68;
+  --sapphire-1: #8cc2ff;
+  --sapphire-2: #2f6fb8;
+  --amethyst-1: #b9a5ff;
+  --amethyst-2: #6f56c9;
+  --ember-1: #f0a36b;
   --ember-2: #c7641a;
-  /* Хладен металик — територия/гилдия/изследване. Трети усет наред със
-     злато (богатство/рядкост) и жар (действие); не всичко в кралството
-     е позлатено. Виж scratchpad/design/PLAN.md за разпределението. */
-  --steel-1: #c3cee0;
-  --steel-2: #5c6f8a;
-  --steel-3: #34445c;
+  --steel-1: #c3d3dd;
+  --steel-2: #5f7686;
+  --steel-3: #34485a;
 
   /* Rarities */
   --rare-common: #b9b8b1;
@@ -51,26 +74,24 @@
   --shadow-1: 0 2px 6px rgba(0,0,0,.35);
   --shadow-2: 0 8px 24px rgba(0,0,0,.45);
   --shadow-3: 0 24px 64px rgba(0,0,0,.55);
-  --glow-gold: 0 0 32px rgba(214,161,61,.25);
+  --glow-gold: 0 0 32px rgba(103,230,239,.22);
 
   /* Typography */
-  --font-display: 'Cinzel', 'Cormorant SC', 'Times New Roman', serif;
-  --font-body: 'Manrope', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  --font-display: 'Cinzel', 'Cormorant SC', Georgia, serif;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-  /* Четивен сериф само за прозаичен текст на лендинга (hero subtitle,
-     section-lead, set-lore, testimonial, forge-band) — хрониката на
-     кралството; UI-то (навигация/бутони/HUD/игрови екрани) си остава
-     Manrope. Виж PLAN.md „Типография". */
-  --font-read: 'Spectral', 'Iowan Old Style', Georgia, serif;
+  /* Дизайн-системата „Dominion“: Cinzel за заглавия, Inter за всичко
+     останало — и прозата, и UI-то (навигация/бутони/HUD/игрови екрани). */
+  --font-read: 'Inter', system-ui, sans-serif;
 
   /* Layout — радиус по йерархия, не един за всичко (виж PLAN.md).
      xs: чипове с реално значение · sm: контроли (без промяна) ·
      md: вторични карти · lg: витринни карти · hero: едно място/страница. */
-  --radius-xs: 4px;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --radius-hero: 22px;
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 5px;
+  --radius-hero: 6px;
   --nav-h: 68px;
   --sidebar-w: 264px;
   /* iOS Safari safe-area (index.html има viewport-fit=cover). Fallback 0px за
@@ -152,22 +173,23 @@ input, textarea, select {
 
 input:focus, textarea:focus, select:focus {
   border-color: var(--gold-2);
-  box-shadow: 0 0 0 3px rgba(214,161,61,.18);
+  box-shadow: 0 0 0 3px rgba(103, 230, 239,.18);
 }
 
 /* Клавиатурен фокус — видим пръстен навсякъде в приложението (WCAG 2.4.7).
-   Взето от дизайн-езика на „boy" (ember outline, 2px, отстъп 2px); тук в
-   бранд ember-а на Nexus вместо оранжева жарава. :focus-visible пада само
-   при клавиатурна навигация — мишка/тъч не показват пръстена. */
+   Циан пръстен по дизайн-системата „Dominion“ (2px, отстъп 2px).
+   :focus-visible пада само при клавиатурна навигация — мишка/тъч не
+   показват пръстена (полетата обаче го показват и при клик — така е по
+   спецификация, затова е в цвета на марката). */
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible,
 [tabindex]:focus-visible {
-  outline: 2px solid var(--ember-1);
+  outline: 2px solid var(--cyan-soft);
   outline-offset: 2px;
-  border-radius: 3px;
+  border-radius: 2px;
 }
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -290,7 +312,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
      Открито чрез бисекция на mystery ~10-73px "хоризонтален скрол" на ~18
      /app страници на 768px — не беше видим бъг (body{overflow-x:hidden} го
      крие), но е излишен и лесно се маха. */
-  background: linear-gradient(90deg, transparent, rgba(214,161,61,.55), transparent);
+  background: linear-gradient(90deg, transparent, rgba(103, 230, 239,.55), transparent);
   background-size: 200% 100%;
   animation: nav-edge-pan 12s linear infinite;
 }
@@ -320,7 +342,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   background: linear-gradient(135deg, var(--gold-1), var(--gold-3));
   -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M16 4 L20 12 L28 13 L22 19 L24 28 L16 23 L8 28 L10 19 L4 13 L12 12 Z' fill='black'/></svg>") center / contain no-repeat;
           mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M16 4 L20 12 L28 13 L22 19 L24 28 L16 23 L8 28 L10 19 L4 13 L12 12 Z' fill='black'/></svg>") center / contain no-repeat;
-  filter: drop-shadow(0 0 8px rgba(214,161,61,.5));
+  filter: drop-shadow(0 0 8px rgba(103, 230, 239,.5));
 }
 
 .nav-links {
@@ -348,17 +370,17 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(214,161,61,.18), rgba(214,161,61,.03));
+  background: linear-gradient(180deg, rgba(103, 230, 239,.18), rgba(103, 230, 239,.03));
   opacity: 0;
   transition: opacity .25s var(--ease-smooth);
   z-index: -1;
 }
 .nav-link:hover { color: var(--gold-1); }
 .nav-link:hover::before { opacity: 1; }
-.nav-link:hover svg { transform: translateY(-1px) scale(1.08); filter: drop-shadow(0 0 8px rgba(214,161,61,.5)); }
+.nav-link:hover svg { transform: translateY(-1px) scale(1.08); filter: drop-shadow(0 0 8px rgba(103, 230, 239,.5)); }
 .nav-link.active {
   color: var(--gold-1);
-  background: rgba(214,161,61,.10);
+  background: rgba(103, 230, 239,.10);
 }
 .nav-link.active::after {
   content: '';
@@ -368,7 +390,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   bottom: -10px;
   height: 2px;
   background: linear-gradient(90deg, transparent 0%, var(--gold-1) 50%, transparent 100%);
-  filter: drop-shadow(0 0 6px rgba(214,161,61,.7));
+  filter: drop-shadow(0 0 6px rgba(103, 230, 239,.7));
   animation: nav-underline-pop .35s var(--ease-back), nav-underline-breathe 3.2s ease-in-out 0.5s infinite;
 }
 @keyframes nav-underline-pop {
@@ -376,8 +398,8 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   100% { transform: scaleX(1); opacity: 1; }
 }
 @keyframes nav-underline-breathe {
-  0%, 100% { filter: drop-shadow(0 0 4px rgba(214,161,61,.45)); }
-  50%      { filter: drop-shadow(0 0 12px rgba(214,161,61,.95)); }
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(103, 230, 239,.45)); }
+  50%      { filter: drop-shadow(0 0 12px rgba(103, 230, 239,.95)); }
 }
 
 /* Premium shimmer pass over the whole navbar every ~7s — the highlight
@@ -457,7 +479,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   position: absolute;
   top: 4px; bottom: 4px;
   width: 1px;
-  background: linear-gradient(180deg, transparent, rgba(214,161,61,.4), transparent);
+  background: linear-gradient(180deg, transparent, rgba(103, 230, 239,.4), transparent);
   pointer-events: none;
 }
 .nav-meta::before { left: 25%; }
@@ -490,7 +512,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   gap: 8px;
   padding: 7px 14px 7px 12px;
   background: linear-gradient(180deg, rgba(20,24,32,.85), rgba(10,12,18,.85));
-  border: 1px solid rgba(214,161,61,.18);
+  border: 1px solid rgba(103, 230, 239,.18);
   border-radius: 10px;
   font-size: 12px;
   font-weight: 700;
@@ -504,7 +526,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   inset: 0;
   border-radius: 10px;
   padding: 1px;
-  background: linear-gradient(135deg, rgba(214,161,61,.45), transparent 40%, transparent 60%, rgba(214,161,61,.35));
+  background: linear-gradient(135deg, rgba(103, 230, 239,.45), transparent 40%, transparent 60%, rgba(103, 230, 239,.35));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
           mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
@@ -512,7 +534,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   pointer-events: none;
   opacity: .6;
 }
-.nav-stat:hover { transform: translateY(-1px); border-color: rgba(214,161,61,.45); box-shadow: 0 6px 22px rgba(214,161,61,.18); }
+.nav-stat:hover { transform: translateY(-1px); border-color: rgba(103, 230, 239,.45); box-shadow: 0 6px 22px rgba(103, 230, 239,.18); }
 .nav-stat .label {
   color: var(--text-4);
   font-weight: 800;
@@ -639,8 +661,8 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   gap: 14px;
   padding: 16px 14px;
   margin: -8px -4px 18px;
-  background: linear-gradient(180deg, rgba(214,161,61,.10), rgba(214,161,61,.02));
-  border: 1px solid rgba(214,161,61,.25);
+  background: linear-gradient(180deg, rgba(103, 230, 239,.10), rgba(103, 230, 239,.02));
+  border: 1px solid rgba(103, 230, 239,.25);
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.04);
   overflow: hidden;
@@ -650,7 +672,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 80% 0%, rgba(214,161,61,.18), transparent 50%),
+    radial-gradient(circle at 80% 0%, rgba(103, 230, 239,.18), transparent 50%),
     radial-gradient(circle at 0% 100%, rgba(194,148,255,.10), transparent 50%);
   pointer-events: none;
 }
@@ -705,7 +727,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   position: absolute;
   top: 0; bottom: 0; right: 0;
   width: 1px;
-  background: linear-gradient(180deg, transparent, rgba(214,161,61,.18) 30%, rgba(214,161,61,.18) 70%, transparent);
+  background: linear-gradient(180deg, transparent, rgba(103, 230, 239,.18) 30%, rgba(103, 230, 239,.18) 70%, transparent);
   pointer-events: none;
 }
 
@@ -778,7 +800,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, rgba(214,161,61,.14), rgba(214,161,61,.02));
+  background: linear-gradient(90deg, rgba(103, 230, 239,.14), rgba(103, 230, 239,.02));
   opacity: 0;
   transform: translateX(-100%);
   transition: opacity .25s, transform .35s var(--ease-out-expo);
@@ -805,7 +827,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
 .sidebar-item.active::before {
   opacity: 1;
   transform: translateX(0);
-  background: linear-gradient(90deg, rgba(214,161,61,.22), rgba(214,161,61,.05));
+  background: linear-gradient(90deg, rgba(103, 230, 239,.22), rgba(103, 230, 239,.05));
 }
 .sidebar-item.active::after {
   content: '';
@@ -815,7 +837,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   width: 3px;
   background: linear-gradient(180deg, var(--gold-1), var(--gold-3));
   border-radius: 3px;
-  box-shadow: 0 0 10px rgba(214,161,61,.45);
+  box-shadow: 0 0 10px rgba(103, 230, 239,.45);
   animation: sidebar-pill-in .3s var(--ease-back);
 }
 @keyframes sidebar-pill-in {
@@ -837,7 +859,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.sidebar-item.active svg { color: var(--gold-1); filter: drop-shadow(0 0 6px rgba(214,161,61,.4)); }
+.sidebar-item.active svg { color: var(--gold-1); filter: drop-shadow(0 0 6px rgba(103, 230, 239,.4)); }
 
 .sidebar-item svg {
   width: 18px;
@@ -874,7 +896,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   inset: -1px;
   border-radius: var(--radius-md);
   padding: 1px;
-  background: linear-gradient(135deg, rgba(214,161,61,.45), transparent 40%, transparent 60%, rgba(214,161,61,.3));
+  background: linear-gradient(135deg, rgba(103, 230, 239,.45), transparent 40%, transparent 60%, rgba(103, 230, 239,.3));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
           mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
@@ -990,7 +1012,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
 .btn-primary:hover {
   background: linear-gradient(180deg, var(--gold-1), var(--gold-2));
   border-color: var(--gold-2);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 0 14px rgba(214,161,61,.35);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 0 14px rgba(103, 230, 239,.35);
 }
 
 .btn-danger {
@@ -1029,7 +1051,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   gap: 12px;
   padding: 10px 14px;
   margin-bottom: 18px;
-  background: linear-gradient(180deg, rgba(232,90,79,.06), rgba(214,161,61,.04));
+  background: linear-gradient(180deg, rgba(232,90,79,.06), rgba(103, 230, 239,.04));
   border: 1px solid var(--border-1);
   border-left: 3px solid var(--gold-1);
   border-radius: var(--radius-md, 12px);
@@ -1137,7 +1159,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   box-shadow: inset 0 1px 0 rgba(255,255,255,.2);
 }
 .bar-fill.xp {
-  background: linear-gradient(90deg, #f5d28a, #d6a13d);
+  background: linear-gradient(90deg, #a3f6f8, #67e6ef);
 }
 .bar-fill.energy {
   background: linear-gradient(90deg, #84ecb4, #1f8b54);
@@ -1165,7 +1187,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   place-items: center;
   padding: 24px;
   background:
-    radial-gradient(circle at 20% 20%, rgba(214,161,61,.08), transparent 50%),
+    radial-gradient(circle at 20% 20%, rgba(103, 230, 239,.08), transparent 50%),
     radial-gradient(circle at 80% 80%, rgba(111,63,182,.08), transparent 50%),
     var(--bg-1);
 }
@@ -1187,7 +1209,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   inset: -1px;
   border-radius: var(--radius-lg);
   padding: 1px;
-  background: linear-gradient(135deg, rgba(214,161,61,.5), transparent 30%, transparent 70%, rgba(214,161,61,.3));
+  background: linear-gradient(135deg, rgba(103, 230, 239,.5), transparent 30%, transparent 70%, rgba(103, 230, 239,.3));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
           mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
@@ -1415,7 +1437,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   color: var(--text-2);
   border: 1px solid var(--border-2);
 }
-.tag.gold { background: rgba(214,161,61,.1); color: var(--gold-1); border-color: rgba(214,161,61,.3); }
+.tag.gold { background: rgba(103, 230, 239,.1); color: var(--gold-1); border-color: rgba(103, 230, 239,.3); }
 .tag.crimson { background: rgba(184,30,30,.1); color: var(--crimson-1); border-color: rgba(184,30,30,.3); }
 .tag.emerald { background: rgba(31,139,84,.1); color: var(--emerald-1); border-color: rgba(31,139,84,.3); }
 .tag.sapphire { background: rgba(43,88,196,.12); color: var(--sapphire-1); border-color: rgba(43,88,196,.3); }
@@ -1572,7 +1594,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   background: #1a1208;
   box-shadow:
     0 24px 60px rgba(0, 0, 0, .65),
-    inset 0 0 0 1px rgba(214, 161, 61, .25),
+    inset 0 0 0 1px rgba(103, 230, 239, .25),
     inset 0 0 80px rgba(0, 0, 0, .55);
   isolation: isolate;
 }
@@ -1608,8 +1630,8 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
 /* Ornate corner flourishes — pure CSS, no asset. */
 .realm-corner {
   position: absolute; width: 60px; height: 60px; z-index: 4; pointer-events: none;
-  border: 2px solid rgba(214, 161, 61, .60);
-  filter: drop-shadow(0 0 8px rgba(214, 161, 61, .35));
+  border: 2px solid rgba(103, 230, 239, .60);
+  filter: drop-shadow(0 0 8px rgba(103, 230, 239, .35));
 }
 .realm-corner.tl { top: 10px; left: 10px;  border-right: none; border-bottom: none; border-top-left-radius: 8px; }
 .realm-corner.tr { top: 10px; right: 10px; border-left: none;  border-bottom: none; border-top-right-radius: 8px; }
@@ -1617,7 +1639,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
 .realm-corner.br { bottom: 10px; right: 10px; border-left: none;  border-top: none; border-bottom-right-radius: 8px; }
 .realm-corner::before {
   content: ''; position: absolute; width: 10px; height: 10px;
-  border: 2px solid rgba(214, 161, 61, .85);
+  border: 2px solid rgba(103, 230, 239, .85);
   background: radial-gradient(circle at center, #ffd34d, #b87a18);
   border-radius: 50%;
   box-shadow: 0 0 12px rgba(255, 211, 77, .8);
@@ -1637,7 +1659,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   pointer-events: none;
   filter:
     sepia(.2) brightness(1.05) contrast(1.1)
-    drop-shadow(0 0 14px rgba(214, 161, 61, .55))
+    drop-shadow(0 0 14px rgba(103, 230, 239, .55))
     drop-shadow(0 4px 8px rgba(0, 0, 0, .6));
   user-select: none;
   -webkit-user-drag: none;
@@ -1671,7 +1693,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   position: relative;
   width: 38px; height: 38px; border-radius: 50%;
   background:
-    radial-gradient(circle at 30% 30%, #ffefa8, #d6a13d 60%, #7a4f12 100%);
+    radial-gradient(circle at 30% 30%, #ffefa8, #67e6ef 60%, #7a4f12 100%);
   border: 2px solid rgba(40, 22, 8, .85);
   box-shadow:
     0 0 0 3px rgba(0, 0, 0, .35),
@@ -1782,7 +1804,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   letter-spacing: .06em;
   text-transform: uppercase;
   color: #2a1a08;
-  background: linear-gradient(180deg, #ffe08a, #d6a13d);
+  background: linear-gradient(180deg, #ffe08a, #67e6ef);
   border: 1px solid rgba(40, 22, 8, .5);
   box-shadow: 0 2px 8px rgba(0, 0, 0, .4), inset 0 1px 0 rgba(255, 255, 255, .35);
   transition: filter .18s;
@@ -1790,8 +1812,8 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
 .realm-pin:hover .realm-pin-cta:not(.locked),
 .realm-pin:focus-visible .realm-pin-cta:not(.locked) { filter: brightness(1.08); }
 .realm-pin-cta.locked {
-  color: rgba(214, 161, 61, .55);
-  border: 1px solid rgba(214, 161, 61, .3);
+  color: rgba(103, 230, 239, .55);
+  border: 1px solid rgba(103, 230, 239, .3);
   padding: 6px 10px;
   border-radius: 6px;
   font-size: 11px;
@@ -1886,7 +1908,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   position: fixed; bottom: 14px; left: 14px; right: 14px;
   max-width: 760px; margin: 0 auto;
   background: rgba(11,13,18,.96);
-  border: 1px solid rgba(214,161,61,.4);
+  border: 1px solid rgba(103, 230, 239,.4);
   border-radius: 12px;
   padding: 14px 18px;
   display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between;
@@ -1909,7 +1931,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
 .legal-page p { margin-bottom: 12px; color: var(--text-2); }
 .legal-page ul { margin: 12px 0; padding-left: 24px; color: var(--text-2); }
 .legal-page ul li { margin-bottom: 6px; }
-.legal-page code { background: rgba(214,161,61,.1); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+.legal-page code { background: rgba(103, 230, 239,.1); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
 
 /* Realm Boss page */
 .boss-card { padding: 24px; }
@@ -1917,10 +1939,10 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
 .boss-card-name { font-family: var(--font-display); font-size: 28px; color: var(--gold-1); }
 .boss-card-week { color: var(--text-3); margin-top: 4px; }
 .boss-hp { margin: 16px 0; }
-.boss-hp-bar { width: 100%; height: 32px; background: rgba(40,30,30,.7); border-radius: 8px; overflow: hidden; border: 1px solid rgba(214,161,61,.3); }
+.boss-hp-bar { width: 100%; height: 32px; background: rgba(40,30,30,.7); border-radius: 8px; overflow: hidden; border: 1px solid rgba(103, 230, 239,.3); }
 .boss-hp-fill { height: 100%; background: linear-gradient(90deg, #b6261b, #ff7468); transition: width .4s; }
 .boss-hp-text { margin-top: 6px; font-size: 13px; color: var(--text-3); }
-.boss-killshot { padding: 12px; background: rgba(214,161,61,.1); border: 1px solid rgba(214,161,61,.3); border-radius: 8px; margin-top: 12px; }
+.boss-killshot { padding: 12px; background: rgba(103, 230, 239,.1); border: 1px solid rgba(103, 230, 239,.3); border-radius: 8px; margin-top: 12px; }
 .contribution-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 18px; margin-bottom: 16px; }
 .contrib-num { font-family: var(--font-display); font-size: 24px; color: var(--gold-1); margin-top: 4px; }
 
@@ -1955,7 +1977,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
 .mythic-stats { display: flex; gap: 16px; }
 .mythic-stats .num { font-family: var(--font-display); font-size: 22px; color: var(--gold-1); }
 .mythic-tier-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
-.mythic-progress { padding: 10px; background: rgba(214,161,61,.08); border-radius: 8px; }
+.mythic-progress { padding: 10px; background: rgba(103, 230, 239,.08); border-radius: 8px; }
 
 @media (max-width: 800px) {
   .cookie-banner { bottom: 8px; left: 8px; right: 8px; padding: 12px; }

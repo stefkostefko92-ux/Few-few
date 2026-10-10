@@ -26,7 +26,7 @@
   background: rgba(0, 0, 0, 0.5); color: #fff; border: 1px solid rgba(255, 255, 255, 0.2);
   font-size: 18px; line-height: 1; cursor: pointer;
 }
-.item3d-close:focus-visible { outline: 2px solid #ffd34d; outline-offset: 2px; }
+.item3d-close:focus-visible { outline: 2px solid var(--cyan, #67e6ef); outline-offset: 2px; }
 
 .item3d-canvas-wrap {
   position: relative;
@@ -54,7 +54,7 @@
 }
 
 .item3d-info { padding: 12px 16px 16px; }
-.item3d-name { font-family: var(--font-display, serif); font-size: 16px; color: var(--gold-1, #ffd34d); }
+.item3d-name { font-family: var(--font-display, serif); font-size: 16px; color: var(--text, #edf5f7); }
 .item3d-meta { display: flex; gap: 10px; font-size: 12px; color: #b8a888; margin-top: 4px; }
 .item3d-hint { font-size: 11px; color: #786a52; margin-top: 8px; }
 
@@ -71,5 +71,5 @@
   background: rgba(255, 255, 255, 0.06); border: 1px solid var(--border-1, #5a4322);
   color: #cbb98a; cursor: pointer;
 }
-.set3d-piece-btn.active { background: rgba(255, 211, 77, 0.18); color: #ffd34d; border-color: #ffd34d; }
-.set3d-piece-btn:focus-visible { outline: 2px solid #ffd34d; outline-offset: 1px; }
+.set3d-piece-btn.active { background: rgba(103, 230, 239, 0.14); color: var(--cyan, #67e6ef); border-color: var(--cyan, #67e6ef); }
+.set3d-piece-btn:focus-visible { outline: 2px solid var(--cyan, #67e6ef); outline-offset: 1px; }

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useStore } from '../lib/store';
 import { api } from '../lib/api';
@@ -8,6 +8,7 @@ import Avatar from './Avatar';
 import AnimatedNumber from './AnimatedNumber';
 import LanguageSelector from './LanguageSelector';
 import NotificationBell from './NotificationBell';
+import { SECTIONS } from './Sidebar';
 import {
   IconHome,
   IconScroll,
@@ -39,6 +40,14 @@ export default function Navbar(): React.ReactElement {
   const toast = useStore((s) => s.toast);
   const refreshCharacter = useStore((s) => s.refreshCharacter);
   const navigate = useNavigate();
+  const location = useLocation();
+  // Трохата „DOMINION / <страница>“ от шаблона — името идва от същия списък като менюто.
+  const crumb = (() => {
+    const path = location.pathname.replace(/\/$/, '') || '/app';
+    for (const sec of SECTIONS) for (const it of sec.items) if (it.to === path) return t(it.labelKey);
+    const seg = path.split('/')[2];
+    return seg ? seg.replace(/-/g, ' ') : t('sidebar.hero');
+  })();
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -67,6 +76,10 @@ export default function Navbar(): React.ReactElement {
       <div className="nav-brand" onClick={() => navigate('/app')} style={{ cursor: 'pointer' }}>
         <Logo size={34} />
         <span>Nexus Dominion</span>
+      </div>
+
+      <div className="nav-crumb" aria-label="breadcrumb">
+        <span>DOMINION</span><i aria-hidden>/</i><strong>{crumb}</strong>
       </div>
 
       <nav className="nav-links" aria-label={t('navbar.primaryNav')}>

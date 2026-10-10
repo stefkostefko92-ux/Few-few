@@ -81,8 +81,8 @@
 .guild-bonus-row {
   display: flex; align-items: center; gap: 12px;
   padding: 10px 14px;
-  background: rgba(214,161,61,.06);
-  border: 1px solid rgba(214,161,61,.2);
+  background: rgba(103, 230, 239,.06);
+  border: 1px solid rgba(103, 230, 239,.2);
   border-radius: var(--radius-sm);
 }
 .guild-bonus-row .icon { font-size: 22px; }
@@ -107,7 +107,7 @@
   border-radius: var(--radius-sm);
   animation: chat-in .25s ease-out;
 }
-.chat-line.me { background: rgba(214,161,61,.08); border-color: rgba(214,161,61,.3); }
+.chat-line.me { background: rgba(103, 230, 239,.08); border-color: rgba(103, 230, 239,.3); }
 .chat-line .who { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
 .chat-line .who .name { font-weight: 600; color: var(--gold-1); font-size: 13px; }
 .chat-line .who .meta { font-size: 10px; color: var(--text-4); text-transform: uppercase; letter-spacing: .08em; }
@@ -234,6 +234,6 @@
   letter-spacing: .08em;
   font-weight: 700;
 }
-.role-pill.leader { background: rgba(214,161,61,.18); color: var(--gold-1); border: 1px solid var(--gold-3); }
+.role-pill.leader { background: rgba(103, 230, 239,.18); color: var(--gold-1); border: 1px solid var(--gold-3); }
 .role-pill.officer { background: rgba(106,167,255,.16); color: var(--sapphire-1); border: 1px solid rgba(106,167,255,.4); }
 .role-pill.member { background: var(--bg-3); color: var(--text-3); border: 1px solid var(--border-2); }
