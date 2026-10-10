@@ -1,6 +1,7 @@
-# Builds the LiftPilot brand files the site serves from the Premium pack's branding (brand/premium/): the header logo
-# (the wordmark with its emblem and "ELEVATOR DESIGN SOFTWARE") at 1x/2x/3x, the e-mail logo (PNG: every mail client
-# shows it), the emblem alone for the application's sidebar, the favicon (16/32/48), the Apple touch icon and the
+# Builds the LiftPilot brand files the site serves from the Premium pack's branding (brand/premium/): the full logo
+# (the wordmark with its emblem and "ELEVATOR DESIGN SOFTWARE") at 1x/2x/3x, the compact lockup for the headers (emblem
+# and name without that line, which under 40 px of height is a smudge), the e-mail logo (PNG: every mail client shows
+# it), the emblem alone for the application's sidebar, the favicon (16/32/48), the Apple touch icon and the
 # 192/512 icons. With --og it also draws the social preview of each language (1200x630) with the landing page's
 # headline in Manrope; the previews belong to the landing page, run it when the headline or the look changes.
 # Run from liftpilot/: python3 -I scripts/brand-assets.py [--og]
@@ -17,8 +18,8 @@ SRC = os.path.join(ROOT, "brand", "premium")
 PUB = os.path.join(ROOT, "public")
 IMG = os.path.join(PUB, "img")
 BG = (3, 10, 17)  # --bg of globals.css
-# the header logo's size on the page (src/lib/brand.ts: LOGO) and the emblem's (EMBLEM)
-LOGO_W, EMBLEM_W = 160, 32
+# the sizes on the page (src/lib/brand.ts): the full logo's width (LOGO), the lockup's height (LOGO_COMPACT), the emblem's
+LOGO_W, LOCKUP_H, EMBLEM_W = 160, 36, 32
 MAIL_W = 480
 STANDARDS = "DPR 162/1999 · UNI EN 81-20/50:2020 · UNI 10411-1/-11:2024"
 
@@ -37,6 +38,11 @@ def square(im, size):
 
 # the wordmark's drawing (emblem, LiftPilot, the line under it) within its 1480x300 canvas, with its glow and a margin
 wordmark = load("liftpilot-wordmark.png").crop((48, 53, 841, 242))
+# the lockup: the wordmark's emblem (with its glow) and its name, the name centred on the emblem's height and as close
+# to it as in the template's workspace brand (32 px emblem, 9 px gap), the line under it left out; 608x188
+lockup = Image.new("RGBA", (608, 188), (0, 0, 0, 0))
+lockup.alpha_composite(load("liftpilot-wordmark.png").crop((48, 54, 236, 242)), (0, 0))
+lockup.alpha_composite(load("liftpilot-wordmark.png").crop((300, 84, 688, 174)), (220, 49))
 # the emblem's drawing and glow, square, within its 768 canvas
 emblem = load("liftpilot-emblem.png").crop((104, 97, 664, 657))
 app_icon = load("liftpilot-app-icon.png")
@@ -53,10 +59,13 @@ def on_bg(im, size):
 def write_site_files():
     os.makedirs(IMG, exist_ok=True)
     for old in os.listdir(IMG):  # the sizes of an earlier logo go with it
-        if old.startswith(("liftpilot-logo-", "liftpilot-emblem-")) and old.endswith(".webp"):
+        if old.startswith(("liftpilot-logo-", "liftpilot-lockup-", "liftpilot-emblem-")) and old.endswith(".webp"):
             os.remove(os.path.join(IMG, old))
     for k in (1, 2, 3):
         width(wordmark, LOGO_W * k).save(os.path.join(IMG, f"liftpilot-logo-{LOGO_W * k}.webp"), "WEBP", quality=90, method=6, exact=True)
+        h = LOCKUP_H * k
+        lockup.resize((round(lockup.width * h / lockup.height), h), Image.LANCZOS).save(
+            os.path.join(IMG, f"liftpilot-lockup-{h}.webp"), "WEBP", quality=90, method=6, exact=True)
         square(emblem, EMBLEM_W * k).save(os.path.join(IMG, f"liftpilot-emblem-{EMBLEM_W * k}.webp"), "WEBP", quality=90, method=6, exact=True)
     width(wordmark, MAIL_W).save(os.path.join(IMG, f"liftpilot-logo-{MAIL_W}.png"), optimize=True)
     fav = [square(favicon, s) for s in (16, 32, 48)]
@@ -65,7 +74,8 @@ def write_site_files():
     for n in (192, 512):
         square(app_icon, n).save(os.path.join(IMG, f"icon-{n}.png"), optimize=True)
     h = round(wordmark.height * LOGO_W / wordmark.width)
-    print(f"brand files written to public/ and public/img/ (header logo {LOGO_W}x{h}, emblem {EMBLEM_W}x{EMBLEM_W})")
+    lw = round(lockup.width * LOCKUP_H / lockup.height)
+    print(f"brand files written to public/ and public/img/ (logo {LOGO_W}x{h}, lockup {lw}x{LOCKUP_H}, emblem {EMBLEM_W}x{EMBLEM_W})")
 
 
 # ---- social previews (--og) ----------------------------------------------------------------------------------------

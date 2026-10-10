@@ -26,7 +26,7 @@ for (const [, f] of styles.matchAll(/url\("?icons\/([a-z0-9-]+\.webp)/g)) copyFi
 writeFileSync(css, `@charset "UTF-8";\n${styles.replace(/^@charset "UTF-8";\s*/i, '')}\n${readFileSync(path.join(root, 'artifact/artifact.css'), 'utf8')}`);
 for (const f of readdirSync(path.join(root, 'public/fonts'))) if (f.endsWith('.woff2') || /^OFL.*\.txt$/.test(f)) copyFileSync(path.join(root, 'public/fonts', f), path.join(out, 'fonts', f));
 // the logo's sizes (src/lib/brand.ts) beside the page
-for (const f of readdirSync(path.join(root, 'public/img'))) if (/^liftpilot-(logo|emblem)-\d+\.webp$/.test(f)) copyFileSync(path.join(root, 'public/img', f), path.join(out, 'img', f));
+for (const f of readdirSync(path.join(root, 'public/img'))) if (/^liftpilot-(logo|lockup|emblem)-\d+\.webp$/.test(f)) copyFileSync(path.join(root, 'public/img', f), path.join(out, 'img', f));
 
 // script: the app's components and engines; next-intl, the routing and the server actions replaced by page shims
 const shim = (f) => path.join(root, 'artifact/shims', f);

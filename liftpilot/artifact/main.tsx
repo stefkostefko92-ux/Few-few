@@ -14,7 +14,7 @@ import { PRESETS } from '@/calc/presets';
 import { defaultLift, type LiftDerived, type LiftInputs } from '@/lib/lift';
 import Calculator from '@/components/calc/Calculator';
 import LiftWorkspace, { type WorkspaceApi } from '@/components/lift/LiftWorkspace';
-import { LOGO } from '@/lib/brand';
+import { LOGO_COMPACT as LOGO } from '@/lib/brand';
 import { PANEV_LIST_PRICE } from '@/lib/catalog/panev-prices';
 import Sheets from './Sheets';
 

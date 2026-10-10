@@ -344,7 +344,8 @@ deploy/              deploy.sh (сървърът: тайни, поща, бекъ
                      docker-compose.yml, docker-entrypoint.sh.
 brand/premium/       Изходниците на облика LiftPilot Premium: wordmark, емблема, иконата на приложението, favicon,
                      icons/ (188 рисувани PNG + icon-manifest.json), images/ (илюстрациите). scripts/brand-assets.py прави
-                     public/favicon.ico, apple-touch-icon.png, public/img/liftpilot-logo-*.webp|png, liftpilot-emblem-*,
+                     public/favicon.ico, apple-touch-icon.png, public/img/liftpilot-logo-*.webp|png (пълното лого),
+                     liftpilot-lockup-* (емблема + име за горните ленти, <Brand> по подразбиране), liftpilot-emblem-*,
                      icon-192/512 (с --og и og-<език>.png); scripts/icons-build.py — public/icons/ и icon-names.ts;
                      scripts/premium-images.py — public/img/premium/. Обликът: токените в src/app/globals.css (една тъмна
                      тема), градивните класове в src/app/ui.css и ui-forms.css, шрифтовете Manrope + DM Mono (fonts.css).

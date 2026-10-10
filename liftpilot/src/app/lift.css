@@ -45,8 +45,7 @@
   border: 1px dashed var(--rule-strong); border-radius: 7px; padding: 6px 8px; }
 .calc .row.auto-toggle label { font-weight: 500; }
 .proposal-line { margin: 4px 0 2px; padding: 8px 10px; border-radius: 8px; background: var(--accent-soft); color: var(--ink); font: 500 13px/1.45 var(--font-mono); overflow-wrap: anywhere; }
-.badge { display: inline-flex; align-items: center; width: fit-content; font: 600 10.5px/1.25 var(--font-body); letter-spacing: .05em; text-transform: uppercase; white-space: nowrap;
-  padding: 2px 6px; border-radius: 5px; color: var(--info); background: var(--info-bg); vertical-align: 1px; }
+/* .badge itself is ui.css's (DM Mono 11px, its line in its own colour); an estimate reads amber */
 .badge.est { color: var(--warn); background: var(--warn-bg); }
 
 /* what the software worked out */

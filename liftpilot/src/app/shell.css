@@ -74,8 +74,8 @@ body > main { flex: 1 0 auto; }
 .chip { display: inline-flex; align-items: center; width: fit-content; font: 600 12px/1.2 var(--font-body); padding: 4px 9px; border-radius: 6px; color: var(--muted); background: var(--surface2); border: 1px solid var(--rule); }
 .chip.old { color: var(--warn); background: var(--warn-bg); border-color: var(--warn); }
 
-.cartiglio { margin: 0; display: flex; flex-wrap: wrap; background: var(--surface);
-  border: 1.5px solid color-mix(in srgb, var(--ink) 55%, var(--rule)); border-radius: 10px; overflow: hidden; }
+.cartiglio { margin: 0; display: flex; flex-wrap: wrap; background: var(--panel-grad);
+  border: 1px solid var(--rule-strong); border-radius: var(--radius-lg); box-shadow: var(--panel-hi); overflow: hidden; }
 .cartiglio > div { flex: 1 1 170px; margin: 0 -1px -1px 0; padding: 11px 16px 13px; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .cartiglio dt { font-size: 12.5px; line-height: 1.2; color: var(--muted); }
 .cartiglio dd { margin: 0; overflow-wrap: anywhere; }

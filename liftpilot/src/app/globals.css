@@ -46,7 +46,20 @@
   --shadow-lg: 0 24px 60px -24px rgb(0 0 0 / .8), 0 0 28px rgb(0 215 237 / .05);
   --glow: 0 0 22px rgb(9 222 239 / .14);
   --glow-strong: 0 0 32px rgb(9 222 239 / .3);
-  --grid: rgb(0 210 235 / .085);
+  --grid: rgb(0 210 235 / .085); --grid-diag: rgb(0 185 212 / .1);
+  /* the building blocks' own shades (ui.css, ui-forms.css), here so that paper can turn them black on white: the quiet
+     button, the primary's lighter edges, the eyebrow, the feature card, the icon tile and the icons' glow, the field's
+     hover line, the focus halo, the hovered table row, the save bar */
+  --btn-ink: #effcff; --btn-bg: #06131b; --btn-bg-hover: #09202b;
+  --accent-hover: #52e9f6; --accent-edge: #70f5ff; --accent-edge-hover: #a3faff; --fail-hover: #ffb3ac;
+  --eyebrow-ink: #8cbac7; --dash-glow: 0 0 9px rgb(0 221 246 / .6);
+  --card-grad: linear-gradient(140deg, #0b1b26 0%, #07131d 100%); --card-line: #173747;
+  --card-wash: linear-gradient(130deg, rgb(26 223 242 / .04), transparent 55%); --card-hover-ring: 0 0 0 1px rgb(39 223 240 / .12);
+  --card-on-line: #21cce0; --card-on-glow: 0 0 0 1px rgb(13 210 232 / .15), 0 0 28px rgb(0 206 232 / .06);
+  --tile-line: #126174; --tile-grad: linear-gradient(145deg, #09202b, #06141d); --tile-glow: inset 0 0 13px rgb(0 207 232 / .045);
+  --icon-glow: drop-shadow(0 0 4px rgb(70 231 255 / .2));
+  --rule-input-hover: #4a8399; --focus-halo: 0 0 0 3px rgb(39 223 240 / .14); --row-hover: rgb(14 37 51 / .55);
+  --savebar-bg: rgb(4 14 22 / .94); --savebar-shadow: 0 -12px 30px -18px rgb(0 0 0 / .8);
   --radius-sm: 5px; --radius: 9px; --radius-lg: 10px;
   /* type: Manrope throughout (its tight tracking stands in for the old condensed headings), DM Mono for figures */
   --font-body: "Manrope", "Manrope Fallback", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -63,11 +76,24 @@
     --ink: #000; --ink-2: #222; --muted: #444; --dim: #555;
     --rule: #c8ced8; --rule-soft: #dde2ea; --rule-strong: #8a94a6; --rule-input: #8a94a6;
     --accent: #1d3271; --accent-2: #1d3271; --accent-ink: #fff; --accent-soft: #e3e8f5; --accent-line: #1d3271; --brand: #1d3271;
-    --ok: #1f7a4a; --ok-bg: #fff; --warn: #8f5500; --warn-bg: #fff; --fail: #b3261e; --fail-bg: #fff; --info: #3b4a73; --info-bg: #fff;
+    --ok: #1f7a4a; --ok-bg: #fff; --ok-line: #1f7a4a; --warn: #8f5500; --warn-bg: #fff; --warn-line: #8f5500;
+    --fail: #b3261e; --fail-bg: #fff; --fail-line: #b3261e; --info: #3b4a73; --info-bg: #fff; --info-line: #3b4a73;
     --rope: #1d3271; --steel: #8a93ab; --car: #dfe5f1; --series-1: #2a78d6; --series-2: #eb6834;
+    /* the 3D stage and its readout: a white box with black text (the canvas prints the frame it shows) */
+    --stage-bg: #fff; --lift-bg: #fff; --hud-bg: #fff; --hud-ink: #000; --hud-muted: #444;
     --panel-grad: none; --panel-hi: none; --shadow: none; --shadow-lg: none; --glow: none; --glow-strong: none;
+    --grid: transparent; --grid-diag: transparent;
+    --btn-ink: #000; --btn-bg: transparent; --btn-bg-hover: transparent;
+    --accent-hover: #1d3271; --accent-edge: #1d3271; --accent-edge-hover: #1d3271; --fail-hover: #b3261e;
+    --eyebrow-ink: #444; --dash-glow: none;
+    --card-grad: none; --card-line: #c8ced8; --card-wash: none; --card-hover-ring: none; --card-on-line: #1d3271; --card-on-glow: none;
+    --tile-line: #c8ced8; --tile-grad: none; --tile-glow: none; --icon-glow: none;
+    --rule-input-hover: #8a94a6; --focus-halo: none; --row-hover: transparent; --savebar-bg: #fff; --savebar-shadow: none;
   }
   html, body { background: #fff !important; color: #000; }
+  /* a button on paper is its label in a thin frame: no fill (printers drop backgrounds, the primary's white label
+     would vanish with it), no glow */
+  .btn, .btn-primary { color: #000; background: none; border-color: var(--rule-strong); box-shadow: none; }
 }
 
 @layer base {
