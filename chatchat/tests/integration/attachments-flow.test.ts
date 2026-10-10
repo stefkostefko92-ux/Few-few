@@ -145,12 +145,16 @@ describe('PDF → документ в базата знания', () => {
   const pdf = makePdf([[ZAFFIRO, 'Secondo paragrafo della pagina uno.'], [], ['Pagina tre.']]);
   const { pages: _pages, sourceFilename: _name, ...meta } = docBody({ code: 'MAN-PDF', pages: [] });
 
-  test('само kb:manage качва PDF; не-PDF → 415', async () => {
+  test('само kb:manage качва документ; формат извън §4.1 (HEIC, двоичен) → 415', async () => {
     assert.equal((await uploadPdf(w.portalAlfa, pdf)).status, 403);
     assert.equal((await uploadPdf(w.support, pdf)).status, 403);
-    const png = await uploadPdf(w.ownerA1, MAGIC.png);
-    assert.equal(png.status, 415);
-    assert.equal(png.body.code, 'unsupported_type');
+    // §4.1: и изображенията (схеми/снимки) се приемат за базата знания — разборът е в опашката.
+    assert.equal((await uploadPdf(w.ownerA1, MAGIC.png)).status, 201);
+    for (const bytes of [MAGIC.heic, Buffer.from([0x00, 0x01, 0x02, 0x03])]) {
+      const res = await uploadPdf(w.ownerA1, bytes);
+      assert.equal(res.status, 415);
+      assert.equal(res.body.code, 'unsupported_type');
+    }
   });
 
   test('sourceAttachmentId → текст по страници; checksum = sha256 на PDF; името е от файла', async () => {
@@ -263,7 +267,11 @@ describe('ретенция', () => {
     store.deletions.length = 0;
 
     const report = await runRetention(db, store, { sessionDays: 30, caseDays: 30 });
-    assert.deepEqual(report, { sessions: 0, cases: 1, caseFiles: 1, orphans: 2, quarantined: 1 });
+    const { sessions, cases, caseFiles, orphans, quarantined } = report;
+    assert.deepEqual(
+      { sessions, cases, caseFiles, orphans, quarantined },
+      { sessions: 0, cases: 1, caseFiles: 1, orphans: 2, quarantined: 1 },
+    );
     assert.equal(await db.case.count({ where: { id: closed } }), 0);
     const left = (await db.attachment.findMany({ select: { id: true } })).map((a) => a.id).sort();
     assert.deepEqual(left, [fresh, usedPdf].sort());

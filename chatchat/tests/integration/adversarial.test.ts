@@ -191,8 +191,12 @@ describe('Подобен код (E37 ≠ E38 ≠ E73)', () => {
 describe('Отписан документ в корпуса', () => {
   test('документът-източник на кодовете е отписан → записите му не се цитират (наследена видимост)', async () => {
     assert.equal(
-      (await w.ownerA1.post(`/api/v1/admin/documents/${w.docs.errList}/deprecate`)).status,
-      204,
+      (
+        await w.ownerA1.post(`/api/v1/admin/documents/${w.docs.errList}/deprecate`, {
+          reason: 'Elenco ritirato',
+        })
+      ).status,
+      200,
     );
     const caseId = await newCase(w.portalAlfa, { deviceSerial: 'SN-ALFA-1' });
     await ask(w.portalAlfa, caseId, 'E37');
@@ -210,7 +214,9 @@ describe('Отписан документ в корпуса', () => {
         evidenceUsed: [cite(first), { ref: 'E99', quote: TEXT.manualFw4 }],
       };
     };
-    await w.ownerA1.post(`/api/v1/admin/documents/${w.docs.manFw4}/deprecate`);
+    await w.ownerA1.post(`/api/v1/admin/documents/${w.docs.manFw4}/deprecate`, {
+      reason: 'Manuale ritirato',
+    });
     const caseId = await newCase(w.portalAlfa, { deviceSerial: 'SN-ALFA-1' });
     const answer = answerOf(await ask(w.portalAlfa, caseId, 'E37 cavo encoder morsetto X3'));
     assert.equal(find(h.model.packs[0] ?? [], 'MAN-500', 'A'), undefined);

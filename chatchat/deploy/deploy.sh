@@ -5,11 +5,15 @@
 #   sudo bash /opt/few-few/current/chatchat/deploy/deploy.sh   # ръчно (DEPLOY.md)
 #   deploy/autodeploy.sh го вика за всеки release с chatchat/  # автоматично — същият път
 #
-# Ред: тайните от стабилния път → папката с прикачените файлове → образите (build на app; db и clamav
-# се теглят само ако ги няма) → бекъп на базата преди миграция (след build-а: дъмпът е отпреди самата
-# смяна) → еднократно: базата на pgvector + REINDEX (DEPLOY.md, т. 11) → up (entrypoint-ът
-# прилага `prisma migrate deploy`) → чака /readyz → дневният шифрован бекъп и ретенцията (таймери) →
-# vhost-ът от репото, щом има сертификат.
+# Ред: тайните от стабилния път → шифрованият том на базата, ако е включен (отключен и монтиран, т. 12)
+# → папката с прикачените файлове → образите (build на app — същият образ е и worker-ът; db, clamav и
+# redis се теглят само ако ги няма) →
+# бекъп на базата преди миграция (след build-а: дъмпът е отпреди самата смяна) → еднократно: базата на
+# pgvector + REINDEX (DEPLOY.md, т. 11) → ролите на базата chatchat_app/chatchat_system и правата им (RLS,
+# DEPLOY.md, „Роли на базата“) → up (entrypoint-ът прилага `prisma migrate deploy` като собственика) → чака
+# /readyz → worker-ът (опашките, OCR) е здрав — иначе предупреждение → старите нешифровани прикачени
+# файлове се шифроват (`files:encrypt`) → дневният шифрован
+# бекъп и ретенцията (таймери) → vhost-ът от репото, щом има сертификат.
 #
 # Изход: 0 — жив; 3 — няма .env (машината не е настроена); 4 — контейнерите са сменени, но ChatChat не
 # отговаря (autodeploy връща предишния код); 1 — спрян преди смяната (работещите не са пипани). След
@@ -33,7 +37,22 @@ SKIP_BACKUP="${CHATCHAT_SKIP_BACKUP:-0}"
 LAST_GOOD="${CHATCHAT_LAST_GOOD:-$SHARED/last-good}"
 # Маркер: томът на базата вече е минал на pgvector (glibc) и индексите са построени наново.
 PGVECTOR_MARK="${CHATCHAT_PGVECTOR_MARK:-$SHARED/.db-pgvector}"
+# Шифрованият том на базата (deploy/pgdata-encrypt.sh, DEPLOY.md т. 12): конфигът е на root, извън release-а.
+PGDATA_CONF="${CHATCHAT_PGDATA_CONF_DIR:-/etc/chatchat}/pgdata.conf"
+PGDATA_MOUNT="$SHARED/pgdata"
+COMPOSE_PGDATA='COMPOSE_FILE=docker-compose.yml:docker-compose.pgdata.yml'
 TS="$(date +%Y%m%d-%H%M%S)"
+# Средата. Продукцията е винаги compose проектът `chatchat` (`name:` в docker-compose.yml) — наследен
+# COMPOSE_PROJECT_NAME не я отклонява. Staging идва САМО през deploy/staging.sh: CHATCHAT_STAGING=1 +
+# COMPOSE_PROJECT_NAME=chatchat-staging + отделните пътища (DEPLOY.md, „Staging“); без таймерите на
+# продукцията (unit-ите им са с фиксирани имена) и без шифрования том.
+STAGING="${CHATCHAT_STAGING:-0}"
+if [ "$STAGING" = 1 ]; then
+  PROJECT="${COMPOSE_PROJECT_NAME:-}"
+else
+  PROJECT=chatchat
+  unset COMPOSE_PROJECT_NAME
+fi
 
 log()  { printf '\033[1;36m▸ chatchat: %s\033[0m\n' "$*"; }
 ok()   { printf '\033[32m✔ chatchat: %s\033[0m\n' "$*"; }
@@ -68,23 +87,81 @@ sync_env() {
   fi
 }
 
-# Ключовете от F2 (подписът на адресите за сваляне и шифроването на MFA) са чисто случайни: щом ги няма,
-# приложението не е тръгвало с тях (compose ги иска с `:?`), тоест няма нищо, подписано или шифровано с
-# тях. Затова тук — и само тук — липсващ ключ се ражда на сървъра: дописва се в $SHARED/.env (600),
-# никога не се презаписва, никога не се печата. Съществуващ ключ не се пипа.
+# Ключовете (подписът на адресите за сваляне, шифроването на MFA, главният ключ на файловете FILES_KEK и
+# тайните на helpdesk конекторите INTEGRATION_KEK, SSO_KEK за client secret на доставчиците на единния
+# вход и паролата на Redis) са чисто случайни: щом ги няма, приложението не е тръгвало с тях (compose иска
+# част от тях с `:?`; без INTEGRATION_KEK/SSO_KEK съответната функция е изключена), тоест няма нищо,
+# подписано или шифровано с тях. Затова тук — и само тук — липсващ ключ се ражда на сървъра: дописва се в
+# $SHARED/.env (600), никога не се презаписва, никога не се печата. Съществуващ не се пипа.
+# REDIS_PASSWORD и паролите на ролите на базата (APP_DB_PASSWORD, SYSTEM_DB_PASSWORD) са hex: влизат
+# некодирани в адресите (base64 би имал „/“ и „+“). Ролите ги подравнява ensure_db_roles при всеки пробег.
+# Изгубен SSO_KEK не губи данни: администраторът въвежда секрета на доставчика наново (sso:off при нужда).
 ensure_keys() {
-  local name added=""
-  for name in ATTACHMENT_URL_KEY MFA_ENC_KEY; do
+  local name added="" value
+  for name in ATTACHMENT_URL_KEY MFA_ENC_KEY FILES_KEK INTEGRATION_KEK SSO_KEK REDIS_PASSWORD \
+    APP_DB_PASSWORD SYSTEM_DB_PASSWORD; do
     [ -z "$(env_value "$name")" ] || continue
+    if [ "$name" = FILES_KEK ] && sealed_files_exist; then
+      fail 1 "FILES_KEK липсва в $SHARED/.env, а в attachments/ има шифровани файлове — нов ключ НЕ ги отваря. Върни ключа от password manager-а (docs/runbook.md, „Изгубен FILES_KEK“)."
+    fi
     command -v openssl >/dev/null 2>&1 || fail 1 "липсва $name в $SHARED/.env, а openssl го няма — сложи го ръчно (DEPLOY.md, т. 1)."
+    case "$name" in
+      *PASSWORD) value="$(openssl rand -hex 32)" ;;
+      *) value="$(openssl rand -base64 32)" ;;
+    esac
     # пренасочването е на същия ред: стойността отива само във файла
-    printf '%s=%s\n' "$name" "$(openssl rand -base64 32)" >>"$SHARED/.env"
+    printf '%s=%s\n' "$name" "$value" >>"$SHARED/.env"
     added="$added $name"
   done
   [ -n "$added" ] || return 0
   chmod 600 "$SHARED/.env"
   install -m 600 "$SHARED/.env" "$APP_DIR/.env"
-  warn "генерирах$added в $SHARED/.env — копирай .env и извън сървъра (без MFA_ENC_KEY MFA устройствата се записват наново)."
+  warn "генерирах$added в $SHARED/.env — копирай .env и извън сървъра СЕГА (без MFA_ENC_KEY MFA устройствата се записват наново; без FILES_KEK прикачените файлове — и в бекъпите — са загубени; без INTEGRATION_KEK токените на helpdesk конектора се въвеждат наново)."
+}
+
+# Има ли вече шифровани файлове (магията на src/storage/envelope.ts) — тогава FILES_KEK не се ражда наново.
+sealed_files_exist() {
+  local f
+  while IFS= read -r -d '' f; do
+    [ "$(head -c 8 "$f" | od -An -tx1 | tr -d ' \n')" = 894343454e430d0a ] && return 0
+  done < <(find "$SHARED/attachments" -type f -size +96c -print0 2>/dev/null | head -z -n 200)
+  return 1
+}
+
+# Кой compose проект пипа този пробег — проверено ПРЕДИ първата docker команда. Staging: само
+# `chatchat-staging`, със собствена папка, и .env, който казва същото (ръчните `docker compose` от
+# папката му отиват там). Продукцията: .env без чуждо COMPOSE_PROJECT_NAME — то би бутнало compose
+# към друг проект (напр. копиран .env на staging) въпреки `name: chatchat`.
+check_project() {
+  local named
+  named="$(env_value COMPOSE_PROJECT_NAME)"
+  if [ "$STAGING" != 1 ]; then
+    [ -z "$named" ] || [ "$named" = chatchat ] ||
+      fail 1 "COMPOSE_PROJECT_NAME=$named в $SHARED/.env — това не е .env на продукцията (staging ли е?). Не пипам нищо."
+    return 0
+  fi
+  [ "$PROJECT" = chatchat-staging ] || fail 1 "staging иска COMPOSE_PROJECT_NAME=chatchat-staging (дадено: ${PROJECT:-празно})."
+  [ "$named" = "$PROJECT" ] || fail 1 "staging: .env трябва да носи COMPOSE_PROJECT_NAME=$PROJECT (там: ${named:-няма})."
+  [ "$SHARED" != /opt/few-few/shared/chatchat ] || fail 1 "staging не ползва папката на продукцията ($SHARED)."
+  export COMPOSE_PROJECT_NAME="$PROJECT"
+}
+
+pgdata_encrypted() { [ -f "$PGDATA_CONF" ] && grep -qx 'STATE=encrypted' "$PGDATA_CONF"; }
+
+# Базата е в шифрования том: той трябва да е отключен и монтиран, а .env — да сочи compose към него.
+# Иначе compose би вдигнал базата върху стария некриптиран том (db-data) — разминаване на данните.
+check_pgdata() {
+  if ! pgdata_encrypted; then
+    if grep -q '^COMPOSE_FILE=.*docker-compose\.pgdata\.yml' "$APP_DIR/.env"; then
+      fail 1 "COMPOSE_FILE в .env сочи шифрования том, а той не е настроен ($PGDATA_CONF) — DEPLOY.md, т. 12."
+    fi
+    return 0
+  fi
+  { mountpoint -q "$PGDATA_MOUNT" && [ -d "$PGDATA_MOUNT/data" ]; } ||
+    fail 1 "шифрованият том на базата не е отключен/монтиран — sudo chatchat-pgdata open (DEPLOY.md, т. 12)."
+  # COMPOSE_FILE е списък (и мониторингът, deploy/monitoring.sh) — важно е томът да е в него.
+  grep -qE '^COMPOSE_FILE=(.*:)?docker-compose\.pgdata\.yml(:.*)?$' "$APP_DIR/.env" ||
+    fail 1 "базата е в шифрования том, а в $SHARED/.env няма $COMPOSE_PGDATA — не я вдигам върху стария том."
 }
 
 # Прикачените файлове са извън release-а (иначе изчезват със следващия деплой) и само на едно място —
@@ -130,7 +207,51 @@ check_db_password() {
   esac
 }
 
-# Образите на базата и антивируса са заковани по digest. Теглят се само ако ги няма: изтеглен вече образ
+# Паролата на Redis влиза некодирана в REDIS_URL (docker-compose.yml): само букви, цифри, „-“ и „_“.
+check_redis_password() {
+  case "$(env_value REDIS_PASSWORD)" in
+    '') fail 1 "REDIS_PASSWORD в .env е празна — openssl rand -hex 32 (DEPLOY.md, т. 1)." ;;
+    *[!A-Za-z0-9_-]*) fail 1 "REDIS_PASSWORD съдържа знаци извън A-Z, a-z, 0-9, „-“ и „_“ — те чупят REDIS_URL. Нова: openssl rand -hex 32." ;;
+  esac
+}
+
+# Паролите на ролите на базата влизат некодирани в DATABASE_URL/SYSTEM_DATABASE_URL (docker-compose.yml) и
+# в SQL литерала на ALTER ROLE: само букви, цифри, „-“ и „_“ (ensure_keys ги ражда като hex).
+check_role_passwords() {
+  local name
+  for name in APP_DB_PASSWORD SYSTEM_DB_PASSWORD; do
+    case "$(env_value "$name")" in
+      '') fail 1 "$name в .env е празна — openssl rand -hex 32 (DEPLOY.md, „Роли на базата“)." ;;
+      *[!A-Za-z0-9_-]*) fail 1 "$name съдържа знаци извън A-Z, a-z, 0-9, „-“ и „_“ — нова: openssl rand -hex 32." ;;
+    esac
+  done
+}
+
+# Ролите на базата (NFR-03, §15.1 — RLS; DEPLOY.md, „Роли на базата“): chatchat_app (приложението и
+# worker-ът — NOBYPASSRLS, под политиките с клиента на заявката) и chatchat_system (BYPASSRLS — само
+# задачите през клиенти: outbox-ите, ретенцията, CLI-тата). Собственикът `chatchat` остава само за
+# миграциите. Всеки пробег ги създава/подравнява (паролите от .env — през stdin, не в аргументите на
+# процес; след възстановяване на тома ролите ги няма) и прилага правата през chatchat_apply_grants(),
+# щом миграцията вече я е създала (при пръв деплой я вика самата миграция). Преди `up`: приложението
+# тръгва като chatchat_app и без ролята не стига до базата.
+ensure_db_roles() {
+  local app_pw sys_pw sql
+  app_pw="$(env_value APP_DB_PASSWORD)"
+  sys_pw="$(env_value SYSTEM_DB_PASSWORD)"
+  docker compose up -d --no-recreate --wait db >/dev/null ||
+    fail 1 "базата не тръгна — ролите не са подравнени, работещите контейнери не са сменени."
+  sql="$(printf '%s\n' \
+    "SELECT 'CREATE ROLE chatchat_app' WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'chatchat_app') \\gexec" \
+    "ALTER ROLE chatchat_app WITH LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS PASSWORD '$app_pw';" \
+    "SELECT 'CREATE ROLE chatchat_system' WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'chatchat_system') \\gexec" \
+    "ALTER ROLE chatchat_system WITH LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION BYPASSRLS PASSWORD '$sys_pw';" \
+    "DO \$\$ BEGIN IF to_regprocedure('public.chatchat_apply_grants()') IS NOT NULL THEN PERFORM public.chatchat_apply_grants(); END IF; END \$\$;")"
+  # here-string, не тръба: паролите не са в аргументите на процес, а psql чете stdin докрай.
+  docker compose exec -T db psql -X -q -v ON_ERROR_STOP=1 -U chatchat -d chatchat >/dev/null <<<"$sql" ||
+    fail 1 "ролите на базата (chatchat_app/chatchat_system) не се подравниха — docker compose logs db."
+}
+
+# Образите на базата, антивируса и Redis са заковани по digest. Теглят се само ако ги няма: изтеглен вече образ
 # не зависи от Docker Hub (лимит на заявките, мрежа), а липсващ се тегли ПРЕДИ смяната, не по средата ѝ.
 ensure_images() {
   local img
@@ -148,7 +269,7 @@ ensure_images() {
 # (DEPLOY.md, „Връщане назад“).
 BACKUP_PLAN=""
 plan_backup() {
-  if docker volume inspect chatchat_db-data >/dev/null 2>&1; then
+  if docker volume inspect "${PROJECT}_db-data" >/dev/null 2>&1 || [ -f "$PGDATA_MOUNT/data/PG_VERSION" ]; then
     if [ "$SKIP_BACKUP" = "1" ]; then BACKUP_PLAN=skip; else BACKUP_PLAN=dump; fi
   else
     BACKUP_PLAN=first
@@ -169,6 +290,8 @@ backup_db() {
     *) fail 1 "бекъпът няма план (plan_backup не е минал) — не мигрирам без бекъп." ;;
   esac
   local dir="$SHARED/backups" file
+  # В шифрования том, щом базата е там: некриптиран дъмп на некриптирания диск би обезсмислил тома.
+  if pgdata_encrypted; then dir="$PGDATA_MOUNT/pre-deploy"; fi
   file="$dir/pre-deploy-$TS.sql.gz"
   install -d -m 700 "$dir"
   # базата може да е спряна (рестарт на машината, срив) — вдига се само тя, за да се дъмпне. Без
@@ -224,6 +347,20 @@ wait_ready() {
   done
 }
 
+# Worker-ът (опашките: приемане, OCR, вектори) няма HTTP — здравето му е HEALTHCHECK-ът в compose (файлът
+# „жив съм“, обновяван само ако Redis отговаря). Нездрав worker не сваля приложението — новите документи
+# чакат в опашката (Redis ги пази), затова е предупреждение, не откат.
+worker_healthy() {
+  local cid state deadline=$((SECONDS + HEALTH_WAIT))
+  while :; do
+    cid="$(docker compose ps -q worker 2>/dev/null | head -n 1)" || cid=""
+    state="$( [ -n "$cid" ] && docker inspect -f '{{.State.Health.Status}}' "$cid" 2>/dev/null)" || state=""
+    [ "$state" = healthy ] && return 0
+    [ "$SECONDS" -lt "$deadline" ] || return 1
+    sleep 3
+  done
+}
+
 # Последният release, който е отговорил — целта на отката и папката за командите от DEPLOY.md. Пише
 # се и при ръчен деплой; истинският път (без symlink-а current), за да не се мести сам.
 remember_live() {
@@ -250,13 +387,13 @@ sync_nginx() {
     warn "няма $conf в release-а — nginx не е пипан"
     return 0
   fi
-  # vhost-ът в репото е за 127.0.0.1:4330; друг HTTP_PORT се вписва тук — иначе домейнът би сочил порт,
-  # на който не е ChatChat (чуждо приложение или 502)
+  # vhost-ът в репото сочи порта по подразбиране на средата си (продукцията 4330, staging 4331); друг
+  # HTTP_PORT се вписва тук — иначе домейнът би сочил порт, на който не е ChatChat (чуждо приложение или 502)
   new="$(mktemp)" || return 1
-  sed "s/127\.0\.0\.1:4330;/127.0.0.1:$port;/g" "$conf" >"$new"
+  sed -E "s/127\.0\.0\.1:[0-9]+;/127.0.0.1:$port;/g" "$conf" >"$new"
   if ! grep -q "127.0.0.1:$port;" "$new"; then
     rm -f "$new"
-    warn "vhost-ът в репото не сочи 127.0.0.1:4330 — nginx не е пипан"
+    warn "vhost-ът в репото не сочи 127.0.0.1:<порт> — nginx не е пипан"
     return 1
   fi
   # подновеният сертификат стига до nginx само след reload: кука на сертификата, nginx като installer
@@ -291,6 +428,14 @@ sync_nginx() {
   return 1
 }
 
+# Преходът към шифровани файлове (NFR-03): новите се пишат шифровани; старите нешифровани се шифроват
+# тук, идемпотентно (нов обект → проверка → смяна). Отчетът е само броеве. Провал — предупреждение.
+encrypt_files() {
+  docker compose exec -T app node dist/cli/files.js encrypt && return 0
+  warn "шифроването на старите прикачени файлове не завърши — повтори: cd $APP_DIR && docker compose exec -T app node dist/cli/files.js encrypt"
+  return 1
+}
+
 # Еднократните стъпки, които скриптът не прави сам, и антивирусът, който още зарежда сигнатурите.
 hints() {
   local tenants cid state
@@ -303,6 +448,22 @@ hints() {
   if [ "$state" != healthy ]; then
     warn "антивирусът още не е готов (${state:-няма контейнер}) — новите прикачени файлове чакат проверка. Виж: docker compose logs --tail=40 clamav"
   fi
+  if [ "$STAGING" != 1 ] && ! pgdata_encrypted; then
+    warn "данните на базата не са в шифрован том — веднъж: sudo bash $APP_DIR/deploy/pgdata-encrypt.sh enable (DEPLOY.md, т. 12)"
+  fi
+  monitoring_hint
+}
+
+# Мониторингът е по избор (deploy/monitoring.sh): изключен → само напомняне; включен → стекът вече е
+# вдигнат от `up` (COMPOSE_FILE), тук се подравняват скриптът и таймерът за одитната верига от release-а.
+monitoring_hint() {
+  if ! grep -qE '^COMPOSE_FILE=(.*:)?docker-compose\.monitoring\.yml(:.*)?$' "$APP_DIR/.env"; then
+    warn "мониторингът (аларми по имейл) не е включен — веднъж: sudo bash $APP_DIR/deploy/monitoring.sh (docs/runbook.md, „Включване“)"
+    return 0
+  fi
+  [ -f "$APP_DIR/deploy/monitoring.sh" ] || return 0
+  (source "$APP_DIR/deploy/monitoring.sh" && install_audit_timer >/dev/null) ||
+    warn "таймерът за одитната верига не е обновен — sudo bash $APP_DIR/deploy/monitoring.sh"
 }
 
 main() {
@@ -313,11 +474,15 @@ main() {
   fi
   cd "$APP_DIR"
   sync_env
+  check_project
   ensure_keys
+  check_pgdata
   ensure_attachments
   ensure_eval_reports
   sync_clamd_conf
   check_db_password
+  check_redis_password
+  check_role_passwords
   port="$(env_value HTTP_PORT | tr -dc '0-9')"
   port="${port:-4330}"
   log "build…"
@@ -326,6 +491,7 @@ main() {
   plan_backup
   backup_db
   switch_db_image
+  ensure_db_roles
   log "up (entrypoint-ът прилага миграциите)…"
   docker compose up -d --remove-orphans || fail 4 "docker compose up се провали."
   wait_ready "$port" ||
@@ -336,7 +502,13 @@ main() {
   mark_pgvector || warn "не записах $PGVECTOR_MARK — следващият деплой ще пусне REINDEX пак (безвредно)"
   remember_live || warn "не записах $LAST_GOOD — откатът и DEPLOY.md сочат предишния release"
   restart_clamav_if_changed || true
-  (source "$APP_DIR/deploy/timers-install.sh" && install_timers) || warn "дневният шифрован бекъп/ретенцията не са готови — DEPLOY.md, т. 9"
+  worker_healthy || warn "worker-ът не е здрав — новите документи чакат в опашката. Виж: cd $APP_DIR && docker compose logs --tail=80 worker"
+  encrypt_files || true
+  if [ "$STAGING" = 1 ]; then
+    log "staging: без дневния бекъп и ретенцията (таймерите са на продукцията) — данните са тестови"
+  else
+    (source "$APP_DIR/deploy/timers-install.sh" && install_timers) || warn "дневният шифрован бекъп/ретенцията не са готови — DEPLOY.md, т. 9"
+  fi
   sync_nginx "$port" || warn "nginx не е обновен — ChatChat е жив на 127.0.0.1:$port"
   hints || true
 }

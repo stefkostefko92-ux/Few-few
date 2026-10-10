@@ -1,15 +1,18 @@
 // Полето за съобщение в разговор: текст, Ctrl/Cmd+Enter или бутон „Изпрати“, бързи отговори
-// (`:shortcut`, редактируеми преди изпращане). Изпращането е на родителя (оптимистично и
-// идемпотентно); тук е само вводът. Етикетът е видим в основния изглед и скрит в плаващите прозорци.
+// (`:shortcut`, редактируеми преди изпращане) и прикачени файлове (§12.1, `conv-files.js`).
+// Изпращането е на родителя (оптимистично и идемпотентно); тук е само вводът. Етикетът е видим
+// в основния изглед и скрит в плаващите прозорци. Само файл, без текст, също е съобщение.
 
 import { h } from '../dom.js';
 import { t } from '../i18n.js';
+import { createFileTray } from './conv-files.js';
 import { attachQuickResponses } from './quick.js';
 
 /**
- * @param {{ scope: string, onSend: (text: string) => void, label?: string, hideLabel?: boolean }} opts
+ * @param {{ scope: string, convId?: string, onSend: (text: string, files: object[]) => void,
+ *   label?: string, hideLabel?: boolean }} opts
  */
-export function createComposer({ scope, onSend, label, hideLabel = false }) {
+export function createComposer({ scope, convId, onSend, label, hideLabel = false }) {
   const id = `cmp-${scope}`;
   const area = h('textarea', {
     id,
@@ -27,6 +30,8 @@ export function createComposer({ scope, onSend, label, hideLabel = false }) {
   const wrap = h('div', { class: 'qr-wrap' }, area);
   const send = h('button', { class: 'btn btn-primary btn-send', type: 'submit' }, t('chat.send'));
   const hint = h('p', { class: 'hint composer-keys', id: `${id}-hint` }, t('conv.sendHint'));
+  const tray = convId ? createFileTray({ convId }) : null;
+  const problem = h('p', { class: 'form-error', role: 'alert', hidden: true });
   const form = h(
     'form',
     {
@@ -39,15 +44,24 @@ export function createComposer({ scope, onSend, label, hideLabel = false }) {
     },
     labelEl,
     wrap,
+    tray?.el ?? null,
+    problem,
     h('div', { class: 'composer-row' }, hint, send),
   );
 
   function submit() {
     const text = area.value.trim();
-    if (!text) return area.focus();
+    const blocked = tray?.problem() ?? null;
+    problem.textContent = blocked ?? '';
+    problem.hidden = !blocked;
+    if (blocked) return undefined;
+    const files = tray?.ready() ?? [];
+    if (!text && files.length === 0) return area.focus();
     area.value = '';
-    onSend(text);
+    tray?.reset();
+    onSend(text, files);
     area.focus();
+    return undefined;
   }
 
   area.addEventListener('keydown', (e) => {
@@ -71,7 +85,11 @@ export function createComposer({ scope, onSend, label, hideLabel = false }) {
       area.placeholder = t('conv.placeholder');
       send.textContent = t('chat.send');
       hint.textContent = t('conv.sendHint');
+      tray?.relabel();
     },
-    destroy: detach,
+    destroy: () => {
+      detach?.();
+      tray?.destroy();
+    },
   };
 }

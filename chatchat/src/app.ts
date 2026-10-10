@@ -5,40 +5,23 @@ import { fileURLToPath } from 'node:url';
 import type { Logger } from 'pino';
 import type { BreakerState } from './ai/breaker.js';
 import type { DiagnoseInput, DiagnoseOutput } from './ai/orchestrator.js';
+import { mountApiRouters } from './app-routes.js';
 import { apiError, requireCapability } from './auth/guards.js';
-import { TotpReplayGuard } from './auth/mfa.js';
+import { TotpReplayGuard, type TotpReplayStore } from './auth/mfa.js';
+import { useRateLimitStores, type RateLimitStoreFactory } from './auth/rate-limit.js';
 import { loadPrincipal, onSessionsRevoked, type SessionDeps } from './auth/sessions.js';
 import type { Metrics } from './observability/catalog.js';
 import { httpMetrics } from './observability/http.js';
 import { RealtimeHub } from './realtime/hub.js';
-import { eventsRouter } from './realtime/stream.js';
-import { adminListsRouter } from './routes/admin-lists.js';
-import { adminCatalogRouter } from './routes/admin-catalog.js';
-import { adminDocumentsRouter } from './routes/admin-documents.js';
-import { adminErrorsRouter } from './routes/admin-errors.js';
-import { adminKpiRouter } from './routes/admin-kpi.js';
-import { adminSubjectRouter } from './routes/admin-subject.js';
-import { adminUserActionsRouter } from './routes/admin-user-actions.js';
-import { adminUsersRouter } from './routes/admin-users.js';
 import { attachmentUploadRouter } from './routes/attachments.js';
-import { auditRouter } from './routes/audit.js';
-import { authMfaRouter } from './routes/auth-mfa.js';
-import { authRouter } from './routes/auth.js';
-import { casesRouter } from './routes/cases.js';
-import { catalogRouter } from './routes/catalog.js';
-import { documentViewRouter } from './routes/document-view.js';
 import { mountPdfjs } from './vendor.js';
-import { chatRouter } from './routes/chat.js';
-import { conversationsRouter } from './routes/conversations.js';
-import { filesRouter } from './routes/files.js';
-import { messagesRouter } from './routes/messages.js';
-import { notificationsRouter } from './routes/notifications.js';
-import { presenceRouter } from './routes/presence.js';
-import { quickResponsesRouter } from './routes/quick-responses.js';
-import { savedFiltersRouter } from './routes/saved-filters.js';
-import { ticketsRouter } from './routes/tickets.js';
+import { integrationsInboundRouter } from './routes/integrations-inbound.js';
+import type { JobBus } from './queue/inline.js';
 import type { AttachmentDeps } from './services/attachments.js';
 import { QR_TOKEN } from './services/devices.js';
+import type { MailPolicy } from './services/email/enqueue.js';
+import type { IntegrationDeps } from './services/integrations/deps.js';
+import type { SsoDeps } from './services/sso/types.js';
 
 export type Diagnoser = (input: DiagnoseInput, signal: AbortSignal) => Promise<DiagnoseOutput>;
 
@@ -67,6 +50,18 @@ export interface AppDeps {
   metrics?: Metrics;
   /** Състоянието на circuit breaker-а към Vertex — за /readyz (null → AI е изключен). */
   aiCircuit?: () => BreakerState | null;
+  /** Имейл известията (Brevo): null/липсва → изключени, без outbox (fail-open, известията остават). */
+  mail?: MailPolicy | null;
+  /** Интеграцията с helpdesk (FR-09): null/липсва → изключена (няма INTEGRATION_KEK), админ API 503. */
+  integrations?: IntegrationDeps | null;
+  /** Единният вход (OIDC / Entra ID): null/липсва (няма SSO_KEK) → 503 `sso_unavailable`. */
+  sso?: SsoDeps | null;
+  /** Опашката за приемане на документи (в процеса или Redis); null → пакетното качване е 503. */
+  ingest?: { bus: JobBus } | null;
+  /** Пазачът срещу повторен TOTP код — в Redis при няколко инстанции; без него — в паметта. */
+  totpReplay?: TotpReplayStore;
+  /** Общите броячи на лимитите (Redis) — без тях всеки лимит е в паметта на инстанцията. */
+  rateLimitStore?: RateLimitStoreFactory | null;
 }
 
 /** Зависимостите след сглобяване — с хъба, който рутерите на работното пространство ползват. */
@@ -80,6 +75,7 @@ const KB_ADMIN = [
   '/api/v1/admin/products',
   '/api/v1/admin/devices',
   '/api/v1/admin/errors',
+  '/api/v1/admin/ingest',
 ];
 
 export function createApp(appDeps: AppDeps): express.Express {
@@ -93,13 +89,13 @@ export function createApp(appDeps: AppDeps): express.Express {
         ),
     });
   const deps: WiredDeps = { ...appDeps, hub };
-  // Изход, деактивиране, смяна на роля/парола… → отворените потоци се затварят веднага (§13.3).
-  onSessionsRevoked((event) => {
-    if (event.sessionId) hub.disconnectSession(event.sessionId);
-    else for (const userId of event.userIds) hub.disconnectUser(userId);
-  });
+  // Изход, деактивиране, смяна на роля/парола… → отворените потоци се затварят веднага (§13.3) —
+  // и в другите инстанции (hub.revoke → pub/sub).
+  onSessionsRevoked((event) => hub.revoke(event));
+  // Лимитите се създават с рутерите — общото хранилище (Redis) трябва да е зададено преди тях.
+  useRateLimitStores(deps.rateLimitStore ?? null);
   const app = express();
-  const totpReplay = new TotpReplayGuard();
+  const totpReplay = deps.totpReplay ?? new TotpReplayGuard();
   app.disable('x-powered-by');
   app.set('trust proxy', deps.trustProxy);
   // RED по шаблон на маршрута — първо, за да види и отказите на helmet/лимитите.
@@ -154,6 +150,8 @@ export function createApp(appDeps: AppDeps): express.Express {
   // Качването на файлове е сурово тяло със собствен таван — само по своите пътища, СЛЕД сесия,
   // CSRF, роля и достъп до случая, и ПРЕДИ JSON парсерите (JSON лог е файл, не заявка).
   app.use('/api/v1', attachmentUploadRouter(deps));
+  // Входящото от helpdesk-а: подпис върху СУРОВОТО тяло, без сесия — преди JSON парсера.
+  app.use('/api/v1', integrationsInboundRouter(deps));
   // Документите с хиляди страници са по-големи — по-високият таван е само за админ пътищата на
   // знанието и СЛЕД проверката за роля (и втори фактор): анонимен или портален потребител не кара
   // сървъра да парсва 8 MB. Директорията (/admin/users) е с обичайния таван и своя способност.
@@ -170,36 +168,8 @@ export function createApp(appDeps: AppDeps): express.Express {
   app.get('/api/v1/meta', (_req, res) => {
     res.json({ privacyUrl: deps.privacyPolicyUrl || null });
   });
-  app.use('/api/v1/auth/mfa', authMfaRouter(deps, totpReplay));
-  app.use('/api/v1/auth', authRouter(deps));
-  // Директорията и запазените филтри — преди админ рутерите на знанието: техният `router.use`
-  // иска kb:manage за всичко под /admin, а администраторът на клиента го няма.
-  app.use('/api/v1', adminUsersRouter(deps));
-  app.use('/api/v1', adminUserActionsRouter(deps, totpReplay));
-  app.use('/api/v1', adminSubjectRouter(deps, totpReplay));
-  app.use('/api/v1', savedFiltersRouter(deps));
-  // Списъците (GET) — преди рутерите на знанието: фирмите са и за users:manage, а тяхното
-  // `router.use` иска kb:manage за всичко под /admin.
-  app.use('/api/v1/admin', adminListsRouter(deps));
-  // KPI (kpi:read) — също преди рутерите на знанието (същата причина).
-  app.use('/api/v1/admin', adminKpiRouter(deps));
-  app.use('/api/v1/admin', adminCatalogRouter(deps));
-  app.use('/api/v1/admin', adminDocumentsRouter(deps));
-  app.use('/api/v1/admin', adminErrorsRouter(deps));
-  app.use('/api/v1', auditRouter(deps));
-  app.use('/api/v1', catalogRouter(deps));
-  app.use('/api/v1', documentViewRouter(deps));
-  app.use('/api/v1', casesRouter(deps));
-  app.use('/api/v1', chatRouter(deps));
-  app.use('/api/v1', ticketsRouter(deps));
-  app.use('/api/v1', filesRouter(deps));
-  // Работното пространство (§12.3): разговори, съобщения, присъствие, известия, бързи отговори, SSE.
-  app.use('/api/v1', conversationsRouter(deps));
-  app.use('/api/v1', messagesRouter(deps));
-  app.use('/api/v1', presenceRouter(deps));
-  app.use('/api/v1', notificationsRouter(deps));
-  app.use('/api/v1', quickResponsesRouter(deps));
-  app.use('/api/v1', eventsRouter(deps));
+  // Рутерите на API — редът им е част от поведението (`app-routes.ts`).
+  mountApiRouters(app, deps, totpReplay);
   app.use('/api', (_req, res) => apiError(res, 404, 'not_found'));
 
   // FR-13: адресът от QR етикета → приложението с токена (вход, после справката по токена).

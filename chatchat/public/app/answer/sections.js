@@ -118,11 +118,12 @@ export function appendConflicts(root, { p, refs }) {
   }
 }
 
-export function appendEscalation(root, { p, onOpenTicket }) {
+export function appendEscalation(root, { p, onOpenTicket, collectShown = false }) {
   const esc = p.escalation;
   if (esc && esc.recommended) {
     const reason = str(tMaybeCode(esc.reason));
-    const collect = arr(esc.collect);
+    // Вече са интерактивни полета в „Липсващи данни“ (FR-07) — не се повтарят тук.
+    const collect = collectShown ? [] : arr(esc.collect);
     root.append(
       h(
         'section',

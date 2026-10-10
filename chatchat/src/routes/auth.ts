@@ -1,8 +1,11 @@
-import { Router } from 'express';
+import { Router, type Response } from 'express';
 import { rateLimit } from 'express-rate-limit';
+import { sharedStore } from '../auth/rate-limit.js';
 import { z } from 'zod';
 import type { AppDeps } from '../app.js';
 import { appendAudit } from '../audit.js';
+import { tenantByEmail } from '../db/discovery.js';
+import { withTenantIfKnown } from '../db/tenant-context.js';
 import { capabilitiesFor } from '../auth/rbac.js';
 import { apiError, requireCsrf, requireSameOrigin, requireSession } from '../auth/guards.js';
 import {
@@ -19,6 +22,7 @@ import {
   setSessionCookie,
   type Principal,
 } from '../auth/sessions.js';
+import { passwordPolicy } from '../services/sso/policy.js';
 import { resetPasswordWithToken } from '../services/users.js';
 
 const LoginSchema = z.object({
@@ -42,6 +46,7 @@ export function authRouter(deps: AppDeps): Router {
 
   // Опитите за вход: по IP — срещу пробване на пароли от един адрес (§15.1 rate limiting).
   const loginLimiter = rateLimit({
+    store: sharedStore('auth-login'),
     windowMs: 15 * 60 * 1000,
     limit: 10,
     standardHeaders: 'draft-8',
@@ -50,6 +55,7 @@ export function authRouter(deps: AppDeps): Router {
   });
   // Нулирането е публично: токенът е 256 бита, лимитът пази Argon2 (64 MiB на опит) от претоварване.
   const resetLimiter = rateLimit({
+    store: sharedStore('auth-reset'),
     windowMs: 15 * 60 * 1000,
     limit: 10,
     standardHeaders: 'draft-8',
@@ -66,48 +72,74 @@ export function authRouter(deps: AppDeps): Router {
         const parsed = LoginSchema.safeParse(req.body);
         if (!parsed.success) return apiError(res, 400, 'invalid_input');
         const { email, password } = parsed.data;
-        const user = await deps.db.user.findUnique({ where: { email } });
-        // Същото време с или без акаунт — отговорът не издава кой имейл съществува.
-        const ok = await verifyPassword(password, user?.passwordHash ?? (await dummyHash()));
-        const now = new Date();
-        const usable =
-          user !== null && ok && user.active && (user.expiresAt === null || user.expiresAt > now);
-        if (!usable) {
-          if (user) {
-            await appendAudit(deps.db, {
-              tenantId: user.tenantId,
-              actorId: user.id,
-              action: 'auth.login_failed',
-            });
-          }
-          return apiError(res, 401, 'invalid_credentials');
-        }
-        // Сесията започва без втори фактор: включен TOTP → /auth/mfa/verify; персонал без TOTP →
-        // /auth/mfa/setup. Дотогава сесията стига само до /auth/me, /auth/logout и /auth/mfa/*.
-        const session = await createSession(sessionDeps, user.id);
-        await deps.db.user.update({ where: { id: user.id }, data: { lastLoginAt: now } });
-        await appendAudit(deps.db, {
-          tenantId: user.tenantId,
-          actorId: user.id,
-          action: 'auth.login',
-        });
-        setSessionCookie(res, sessionDeps, session.token, session.expiresAt);
-        res.json({
-          user: {
-            id: user.id,
-            name: user.name,
-            role: user.role,
-            kind: user.kind,
-            locale: user.locale,
-          },
-          csrfToken: session.csrfToken,
-          mfa: mfaStateOf(user, false),
-        });
+        // Клиентът по имейла — тесният път преди вход; непознат имейл → без контекст (нула редове).
+        const tenantId = await tenantByEmail(deps.db, email);
+        await withTenantIfKnown(tenantId, () => passwordLogin(email, password, res));
       } catch (err) {
         next(err);
       }
     },
   );
+
+  async function passwordLogin(email: string, password: string, res: Response): Promise<void> {
+    const user = await deps.db.user.findUnique({ where: { email } });
+    // Същото време с или без акаунт — отговорът не издава кой имейл съществува.
+    const ok = await verifyPassword(password, user?.passwordHash ?? (await dummyHash()));
+    const now = new Date();
+    const usable =
+      user !== null && ok && user.active && (user.expiresAt === null || user.expiresAt > now);
+    if (!usable) {
+      if (user) {
+        await appendAudit(deps.db, {
+          tenantId: user.tenantId,
+          actorId: user.id,
+          action: 'auth.login_failed',
+        });
+      }
+      return apiError(res, 401, 'invalid_credentials');
+    }
+    // Единният вход е задължителен за човека (REQUIRED) — паролата е вярна, но не стига. Казва
+    // се само на знаещия паролата (иначе отговорът е invalid_credentials като по-горе). Ако
+    // човекът още не може да влезе през доставчика (свързва се само сам) — сесия само за това.
+    const policy = await passwordPolicy(deps.db, user);
+    if (policy === 'refused') {
+      await appendAudit(deps.db, {
+        tenantId: user.tenantId,
+        actorId: user.id,
+        action: 'auth.login_failed',
+        detail: { method: 'password', reason: 'sso_required' },
+      });
+      return apiError(res, 403, 'sso_required');
+    }
+    // Сесията започва без втори фактор: включен TOTP → /auth/mfa/verify; персонал без TOTP →
+    // /auth/mfa/setup. Дотогава сесията стига само до /auth/me, /auth/logout и /auth/mfa/*.
+    const linkOnly = policy === 'link_only';
+    const session = await createSession(
+      sessionDeps,
+      user.id,
+      linkOnly ? { ssoLinkOnly: true } : undefined,
+    );
+    await deps.db.user.update({ where: { id: user.id }, data: { lastLoginAt: now } });
+    await appendAudit(deps.db, {
+      tenantId: user.tenantId,
+      actorId: user.id,
+      action: 'auth.login',
+      ...(linkOnly ? { detail: { method: 'password', linkOnly: true } } : {}),
+    });
+    setSessionCookie(res, sessionDeps, session.token, session.expiresAt);
+    res.json({
+      user: {
+        id: user.id,
+        name: user.name,
+        role: user.role,
+        kind: user.kind,
+        locale: user.locale,
+      },
+      csrfToken: session.csrfToken,
+      mfa: mfaStateOf(user, false),
+      ...(linkOnly ? { ssoLinkRequired: true } : {}),
+    });
+  }
 
   router.get('/me', requireSession, (req, res) => {
     const p = req.principal as Principal;
@@ -116,6 +148,8 @@ export function authRouter(deps: AppDeps): Router {
       csrfToken: p.session.csrfToken,
       mfa: p.mfa,
       capabilities: capabilitiesFor(p.user.role),
+      authMethod: p.session.authMethod === 'SSO' ? 'sso' : 'password',
+      ...(p.session.ssoLinkOnly ? { ssoLinkRequired: true } : {}),
     });
   });
 

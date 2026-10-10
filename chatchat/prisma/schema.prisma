@@ -2,8 +2,7 @@
 // §11 (Safety Gate), §13.3 (версия на знанието). Всеки ред на клиентски данни носи tenantId —
 // изолацията между клиенти е и в заявките, не само в UI (NFR-03, §15.1).
 //
-// Извън тази първа стъпка (по пътната карта §18): прикачени файлове и снимки (F2, иска антивирус),
-// семантично търсене с pgvector, канали/директни съобщения/присъствие/обаждания (§12.3).
+// Извън обхвата засега (по пътната карта §18): обаждания (§12.3, FR-21 — след MVP).
 
 generator client {
   provider = "prisma-client-js"
@@ -47,11 +46,36 @@ model Tenant {
   cases     Case[]
 
   // Записите на F2 сочат клиента си с външен ключ (Restrict): ред без съществуващ клиент няма.
-  attachments    Attachment[]
-  savedFilters   SavedFilter[]
-  conversations  Conversation[]
-  quickResponses QuickResponse[]
-  notifications  Notification[]
+  attachments          Attachment[]
+  savedFilters         SavedFilter[]
+  conversations        Conversation[]
+  quickResponses       QuickResponse[]
+  notifications        Notification[]
+  // Работното пространство (FR-16/18, NFR-08/13): лични маркери, предпочитания, имейл outbox.
+  messageMarks         MessageMark[]
+  notificationSettings NotificationSettings[]
+  emailOutbox          EmailOutbox[]
+
+  // Работният поток на тикета и човешкото потвърждение (§11.2, FR-09, FR-19).
+  stepPolicy     StepApprovalPolicy?
+  stepApprovals  StepApproval[]
+  stepExecutions CaseStepExecution[]
+  ticketEvents   TicketEvent[]
+  handoffs       CaseHandoff[]
+
+  // Интеграцията с helpdesk (FR-09, §14.4): конекторът и outbox-ът на доставките.
+  helpdeskIntegration HelpdeskIntegration?
+  helpdeskDeliveries  HelpdeskDelivery[]
+  // Единният вход (OIDC, §14.4, §15.1): доставчиците, домейните, връзките и започнатите входове.
+  ssoConfigs          SsoConfig[]
+  ssoDomains          SsoDomain[]
+  externalIdentities  ExternalIdentity[]
+  ssoLoginStates      SsoLoginState[]
+  // Обратната връзка към знанието (FR-10, §11.3): опашката на отговорника за знанието.
+  knowledgeProposals  KnowledgeProposal[]
+  // Пакетното приемане на документи през опашката (§4.1, §7.3, NFR-06).
+  ingestBatches       IngestBatch[]
+  ingestItems         IngestItem[]
 }
 
 /// Фирма в рамките на клиента (монтажник, дистрибутор, сервиз) — разделя портала.
@@ -61,10 +85,12 @@ model Company {
   name      String
   createdAt DateTime @default(now())
 
-  tenant  Tenant   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  users   User[]
-  devices Device[]
-  cases   Case[]
+  tenant     Tenant      @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  users      User[]
+  devices    Device[]
+  cases      Case[]
+  /// Доставчикът на фирмата (по избор) — за порталните ѝ потребители.
+  ssoConfigs SsoConfig[]
 
   @@unique([tenantId, name])
   @@index([tenantId])
@@ -93,14 +119,19 @@ model User {
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
 
-  tenant         Tenant               @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  company        Company?             @relation(fields: [companyId], references: [id], onDelete: Restrict)
-  sessions       Session[]
-  passwordResets PasswordReset[]
-  memberships    ConversationMember[]
-  presence       UserPresence?
-  notifications  Notification[]
-  savedFilters   SavedFilter[]
+  tenant               Tenant                @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  company              Company?              @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  sessions             Session[]
+  passwordResets       PasswordReset[]
+  memberships          ConversationMember[]
+  presence             UserPresence?
+  notifications        Notification[]
+  savedFilters         SavedFilter[]
+  messageMarks         MessageMark[]
+  notificationSettings NotificationSettings?
+  emailOutbox          EmailOutbox[]
+  /// Връзката с идентичността при доставчика (OIDC) — създава се при първия единен вход.
+  externalIdentity     ExternalIdentity?
 
   @@index([tenantId])
   @@index([companyId])
@@ -108,22 +139,39 @@ model User {
 
 /// Сесия в базата (не JWT): отнема се веднага при изход, деактивиране или смяна на роля (AC-16).
 model Session {
-  id         String    @id @default(cuid())
-  userId     String
+  id          String     @id @default(cuid())
+  userId      String
   /// SHA-256 на токена от бисквитката — самият токен не се пази.
-  tokenHash  String    @unique
-  csrfToken  String
-  createdAt  DateTime  @default(now())
-  expiresAt  DateTime
-  lastSeenAt DateTime  @default(now())
-  revokedAt  DateTime?
+  tokenHash   String     @unique
+  csrfToken   String
+  createdAt   DateTime   @default(now())
+  expiresAt   DateTime
+  lastSeenAt  DateTime   @default(now())
+  revokedAt   DateTime?
   /// Вторият фактор е минат (TOTP) — без него персоналът с включен TOTP не минава requireUser.
-  mfaPassed  Boolean   @default(false)
+  mfaPassed   Boolean    @default(false)
+  /// Как е започнала сесията: парола или единен вход (OIDC).
+  authMethod  AuthMethod @default(PASSWORD)
+  /// Вторият фактор е доказан от доставчика (`amr` съдържа `mfa`) и клиентът му се доверява.
+  mfaViaIdp   Boolean    @default(false)
+  /// Доставчикът на единния вход (само при authMethod = SSO) — за отнемане при смяна на политиката.
+  ssoConfigId String?
+  /// Сесия с парола в режим REQUIRED за акаунт, който още няма собствена връзка с доставчика:
+  /// стига само до /auth/me, /auth/mfa/*, свързването и изхода (403 `sso_link_required`).
+  ssoLinkOnly Boolean    @default(false)
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ssoConfig SsoConfig?      @relation(fields: [ssoConfigId], references: [id], onDelete: SetNull)
+  ssoStates SsoLoginState[]
 
   @@index([userId])
   @@index([expiresAt])
+  @@index([ssoConfigId])
+}
+
+enum AuthMethod {
+  PASSWORD
+  SSO
 }
 
 // ─── Продукт ────────────────────────────────────────────────────────────────────────────────
@@ -176,10 +224,12 @@ model Device {
   qrTokenHash       String?  @unique
   createdAt         DateTime @default(now())
 
-  tenant   Tenant          @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  company  Company?        @relation(fields: [companyId], references: [id], onDelete: Restrict)
-  revision ProductRevision @relation(fields: [productRevisionId], references: [id], onDelete: Restrict)
-  cases    Case[]
+  tenant        Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  company       Company?                @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  revision      ProductRevision         @relation(fields: [productRevisionId], references: [id], onDelete: Restrict)
+  cases         Case[]
+  /// Документите, вързани САМО за това табло (уникалните му схеми — решение на собственика).
+  documentRules DocumentApplicability[]
 
   @@unique([tenantId, serial])
   @@index([companyId])
@@ -213,6 +263,9 @@ enum Audience {
   ENGINEERING
 }
 
+/// Документите са НЕИЗМЕНИМИ и се пазят завинаги (решение на собственика): публикуван документ не
+/// се редактира — само преходи на статуса. Нова ревизия не отписва старата; отписването е изрично
+/// действие с причина и е обратимо (DEPRECATED → REVIEW → PUBLISHED). Ретенцията не ги трие.
 model Document {
   id             String          @id @default(cuid())
   tenantId       String
@@ -229,9 +282,13 @@ model Document {
   sourceFilename String
   /// SHA-256 на оригиналния файл (§7.2, §17.3) — неизменим.
   checksum       String
-  effectiveFrom  DateTime?
+  /// Валидност (§7.2 effective_from/to): извън [effectiveFrom, effectiveTo] документът е
+  /// неприложим за отговорите, колкото и да е PUBLISHED. effectiveFrom е задължителен.
+  effectiveFrom  DateTime
   effectiveTo    DateTime?
   uploadedById   String
+  /// Кой го е пратил за преглед (submit/възстановяване) — и той не публикува документ по безопасност.
+  submittedById  String?
   reviewedById   String?
   approvedById   String?
   approvedAt     DateTime?
@@ -241,39 +298,61 @@ model Document {
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 
-  tenant        Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  supersedes    Document?               @relation("Supersedes", fields: [supersedesId], references: [id], onDelete: Restrict)
-  supersededBy  Document[]              @relation("Supersedes")
-  applicability DocumentApplicability[]
-  chunks        DocumentChunk[]
-  errors        ErrorCode[]
+  tenant          Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  supersedes      Document?               @relation("Supersedes", fields: [supersedesId], references: [id], onDelete: Restrict)
+  supersededBy    Document[]              @relation("Supersedes")
+  applicability   DocumentApplicability[]
+  chunks          DocumentChunk[]
+  errors          ErrorCode[]
+  /// Предложенията (FR-10): черновата SOLVED_CASE и документът, с който е прието предложение.
+  proposalDrafts  KnowledgeProposal[]     @relation("ProposalDraft")
+  proposalResults KnowledgeProposal[]     @relation("ProposalResultDocument")
+  ingestItems     IngestItem[]
 
   @@unique([tenantId, code, revision])
+  /// За съставния външен ключ на парчетата (клиентът на парчето = клиентът на документа, RLS).
+  @@unique([id, tenantId])
   @@index([tenantId, status])
   @@index([supersedesId])
 }
 
-/// Правило за съвместимост (§13.1 document_applicability): модел + по избор HW ревизия и обхват на FW.
+/// Правило за съвместимост (§13.1 document_applicability): модел + по избор HW ревизия, обхват на
+/// FW и КОНКРЕТНО табло. Фърмуерът е изричен: обхват ИЛИ `allFirmware` (не мълчалив null —
+/// CHECK в миграцията 20261010110000). С `deviceId` правилото важи САМО за случай с това табло.
 model DocumentApplicability {
-  id         String  @id @default(cuid())
-  documentId String
-  productId  String
+  id          String  @id @default(cuid())
+  documentId  String
+  productId   String
   /// null = всички хардуерни ревизии на модела.
-  hwRevision String?
-  fwMin      String?
-  fwMax      String?
+  hwRevision  String?
+  fwMin       String?
+  fwMax       String?
+  /// Изрично „всички версии на фърмуера“ (тогава fwMin/fwMax са null).
+  allFirmware Boolean @default(false)
+  /// Само за това табло (уникална схема); null = за всички табла на модела.
+  deviceId    String?
+  /// Ограничение по опциите на таблото (FR-01): {"inverter": "VF-3"} — всяка двойка ключ/стойност
+  /// трябва да е РАВНА на опцията в контекста на случая; {} = всички конфигурации. Съвпадението
+  /// е само в `retrieval/applicability.ts` + `store/scope.ts` (несъвпадение → неприложим, не скрит).
+  options     Json    @default("{}")
 
   document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
   product  Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  device   Device?  @relation(fields: [deviceId], references: [id], onDelete: Restrict)
 
   @@index([documentId])
   @@index([productId])
+  @@index([deviceId])
 }
 
 /// Индексът за търсене (§7.3): парче текст със страница и раздел — основата на всеки цитат.
 model DocumentChunk {
   id             String                      @id @default(cuid())
   documentId     String
+  /// Клиентът на документа — денормализиран за RLS (политиката е равенство, без подзаявка на ред —
+  /// пълнотекстовото търсене минава през всички парчета на клиента; миграцията 20261011100100).
+  /// Съставният външен ключ (documentId, tenantId) → Document(id, tenantId) пази съвпадението.
+  tenantId       String
   ordinal        Int
   page           Int
   section        String?
@@ -290,7 +369,7 @@ model DocumentChunk {
   /// С кой модел е смятан векторът („gemini-embedding-001@768“) — друг модел → преизчисляване.
   embeddingModel String?
 
-  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  document Document @relation(fields: [documentId, tenantId], references: [id, tenantId], onDelete: Cascade)
 
   @@unique([documentId, ordinal])
   @@index([documentId, page])
@@ -319,7 +398,8 @@ enum ActionClass {
 }
 
 /// Код за грешка (§13.1 errors) — версиониран като документите: един код може да значи
-/// различно нещо в различен фърмуер (§16.3 „грешна версия, същото име“).
+/// различно нещо в различен фърмуер (§16.3 „грешна версия, същото име“). Жизнен цикъл (FR-04):
+/// DRAFT (редактируема) → REVIEW → PUBLISHED → DEPRECATED (с причина, обратимо); версиите се пазят.
 model ErrorCode {
   id               String          @id @default(cuid())
   tenantId         String
@@ -337,14 +417,21 @@ model ErrorCode {
   version          Int             @default(1)
   sourceDocumentId String?
   sourcePage       Int?
+  /// Кой е подготвил ТАЗИ версия (създал, редактирал, пратил за преглед, възстановил) — никой от
+  /// тях не публикува версия, свързана с безопасността (четири очи, FR-04 / §11.3).
+  authorIds        String[]        @default([])
+  approvedById     String?
+  approvedAt       DateTime?
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
 
-  product        Product         @relation(fields: [productId], references: [id], onDelete: Restrict)
-  sourceDocument Document?       @relation(fields: [sourceDocumentId], references: [id], onDelete: Restrict)
+  product        Product             @relation(fields: [productId], references: [id], onDelete: Restrict)
+  sourceDocument Document?           @relation(fields: [sourceDocumentId], references: [id], onDelete: Restrict)
   relations      ErrorRelation[]
+  proposals      KnowledgeProposal[]
 
   @@index([tenantId, code])
+  @@index([tenantId, status])
   @@index([productId, code])
   @@index([sourceDocumentId])
 }
@@ -422,19 +509,26 @@ model Case {
   outcome      CaseOutcome?
   createdById  String
   assignedToId String?
+  /// FR-19: техникът е предал случая на оператор — AI не отговаря на техника, докато операторът
+  /// не го „върне към AI“ (персоналът с `case:assign` може да пита AI и тогава).
+  aiPaused     Boolean      @default(false)
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
   closedAt     DateTime?
 
-  tenant       Tenant              @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  company      Company?            @relation(fields: [companyId], references: [id], onDelete: Restrict)
-  device       Device?             @relation(fields: [deviceId], references: [id], onDelete: Restrict)
-  messages     CaseMessage[]
-  evidence     CaseEvidence[]
-  timeline     CaseTimelineEvent[]
-  ticket       Ticket?
-  attachments  Attachment[]
-  conversation Conversation?
+  tenant         Tenant              @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  company        Company?            @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  device         Device?             @relation(fields: [deviceId], references: [id], onDelete: Restrict)
+  messages       CaseMessage[]
+  evidence       CaseEvidence[]
+  timeline       CaseTimelineEvent[]
+  ticket         Ticket?
+  attachments    Attachment[]
+  conversation   Conversation?
+  stepApprovals  StepApproval[]
+  stepExecutions CaseStepExecution[]
+  handoffs       CaseHandoff[]
+  proposals      KnowledgeProposal[]
 
   @@index([tenantId, status])
   @@index([companyId])
@@ -449,7 +543,7 @@ enum MessageKind {
 }
 
 model CaseMessage {
-  id                  String      @id @default(cuid())
+  id                  String                   @id @default(cuid())
   caseId              String
   kind                MessageKind
   authorId            String?
@@ -463,18 +557,25 @@ model CaseMessage {
   clientMessageId     String?
   /// Аудиториите, с които е търсено за този AI отговор. Читател без всички тях не вижда
   /// съдържанието (цитати от вътрешни/инженерни документи не изтичат към по-тесни роли).
-  audiences           Audience[]  @default([])
-  createdAt           DateTime    @default(now())
+  audiences           Audience[]               @default([])
+  createdAt           DateTime                 @default(now())
+  /// Търсене в историята (FR-16): to_tsvector('chatchat_search', body) — ГЕНЕРИРАНА колона
+  /// (GENERATED ALWAYS … STORED в миграцията 20261010120000; Prisma го вижда като dbgenerated). Не се пише.
+  tsv                 Unsupported("tsvector")? @default(dbgenerated("to_tsvector('chatchat_search'::regconfig, body)"))
 
-  case              Case               @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  knowledgeSnapshot KnowledgeSnapshot? @relation(fields: [knowledgeSnapshotId], references: [id], onDelete: Restrict)
+  case              Case                @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  knowledgeSnapshot KnowledgeSnapshot?  @relation(fields: [knowledgeSnapshotId], references: [id], onDelete: Restrict)
   evidence          CaseEvidence[]
   feedback          Feedback[]
   attachments       Attachment[]
+  stepApprovals     StepApproval[]
+  stepExecutions    CaseStepExecution[]
+  proposals         KnowledgeProposal[]
 
   @@unique([caseId, clientMessageId])
   @@index([caseId, createdAt])
   @@index([knowledgeSnapshotId])
+  @@index([tsv], type: Gin)
 }
 
 /// Проследимост (§13.1 case_evidence): кое парче/код е подкрепило кой отговор.
@@ -518,23 +619,227 @@ enum TicketStatus {
   CLOSED
 }
 
+/// Опашката на тикета: поддръжка по подразбиране; „прехвърли към Engineering“ (FR-19) го мести.
+enum TicketQueue {
+  SUPPORT
+  ENGINEERING
+}
+
 /// Ескалация (§13.1 tickets): CASE 0..1 TICKET. Обобщението се сглобява от сървъра (AC-08).
+/// Машината на преходите е в src/services/tickets/flow.ts; всяка промяна минава през
+/// `recordTicketEvent` (src/services/tickets/events.ts) в транзакцията на промяната.
 model Ticket {
   id          String       @id @default(cuid())
   caseId      String       @unique
   number      String       @unique
   status      TicketStatus @default(OPEN)
+  queue       TicketQueue  @default(SUPPORT)
   ownerId     String?
   reason      String
   summary     Json
+  /// При затваряне (FR-09): първопричина, решение, свързани източници (текстът — с redactPii).
+  resolution  Json?
+  closedAt    DateTime?
+  closedById  String?
   createdById String
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
   /// Cascade: ретенцията изтрива затворения случай заедно с тикета (GDPR чл. 5(1)(e)).
-  case Case @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  case               Case                @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  events             TicketEvent[]
+  infoRequests       TicketInfoRequest[]
+  handoffs           CaseHandoff[]
+  /// Външният запис в helpdesk-а (id/ключ) — services/integrations.
+  helpdeskLink       HelpdeskLink?
+  helpdeskDeliveries HelpdeskDelivery[]
 
   @@index([ownerId])
+  @@index([status, queue, createdAt])
+}
+
+/// Откъде идва промяната по тикета: от ChatChat или от helpdesk-а (обратната синхронизация).
+/// Промяна от helpdesk-а НЕ се връща към него (без ехо) — outbox-ът я пропуска.
+enum TicketEventSource {
+  APP
+  EXTERNAL
+}
+
+/// Дневникът на промените по тикета — по един ред на промяна, в транзакцията ѝ. При включена
+/// интеграция всеки ред от ChatChat ражда доставка в outbox-а към helpdesk (`HelpdeskDelivery`).
+/// В payload — само идентификатори и кодове.
+model TicketEvent {
+  id         String            @id @default(cuid())
+  tenantId   String
+  ticketId   String
+  caseId     String
+  type       String
+  actorId    String?
+  fromStatus TicketStatus?
+  toStatus   TicketStatus?
+  payload    Json              @default("{}")
+  source     TicketEventSource @default(APP)
+  at         DateTime          @default(now())
+
+  tenant           Tenant            @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  ticket           Ticket            @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  helpdeskDelivery HelpdeskDelivery?
+
+  @@index([ticketId, at])
+  @@index([tenantId, at])
+}
+
+/// „Поискай още данни“ (FR-19): какво иска операторът; отговорът на техника го затваря.
+model TicketInfoRequest {
+  id                String    @id @default(cuid())
+  ticketId          String
+  /// Списък от низове (маскирани с redactPii) — техникът го вижда в случая.
+  items             Json
+  note              String?
+  requestedById     String
+  createdAt         DateTime  @default(now())
+  answeredAt        DateTime?
+  answeredMessageId String?
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId, createdAt])
+}
+
+/// Посоката на предаване по FR-19: техник → оператор, оператор → Engineering, оператор → AI.
+enum HandoffDirection {
+  TO_OPERATOR
+  TO_ENGINEERING
+  TO_AI
+}
+
+/// Предаване (FR-19, AC-14): носи резюмето в момента на предаването (контекст, източници, файлове,
+/// изпълнени стъпки, разрешения) и причината — операторът не пита техника за нищо повторно.
+model CaseHandoff {
+  id         String           @id @default(cuid())
+  tenantId   String
+  caseId     String
+  ticketId   String?
+  direction  HandoffDirection
+  /// Причината/съобщението — маскирано с redactPii.
+  reason     String
+  summary    Json?
+  fromUserId String
+  createdAt  DateTime         @default(now())
+
+  tenant Tenant  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  case   Case    @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  ticket Ticket? @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([caseId, createdAt])
+  @@index([ticketId])
+  @@index([tenantId, createdAt])
+}
+
+// ─── Изпълнени стъпки и човешко потвърждение (§11.2 Human-in-the-loop) ────────────────────────
+
+enum StepResult {
+  OK
+  KO
+  NOT_POSSIBLE
+}
+
+/// Кой разрешава стъпка (§11.2): NONE — без разрешение; SELF — самият техник с изрично
+/// потвърждение, че е прочел процедурата; SUPPORT / ENGINEERING — ДРУГ човек с тази роля.
+enum ApprovalLevel {
+  NONE
+  SELF
+  SUPPORT
+  ENGINEERING
+}
+
+enum ApprovalStatus {
+  PENDING
+  GRANTED
+  DENIED
+  CANCELLED
+}
+
+/// Политиката на клиента. Без ред → разумният default от src/services/steps/policy.ts.
+/// SAFETY_RELEVANT никога не е NONE; DIRECT_COMMAND не се изпълнява никога.
+model StepApprovalPolicy {
+  tenantId       String        @id
+  safetyRelevant ApprovalLevel @default(SUPPORT)
+  configurative  ApprovalLevel @default(NONE)
+  /// Колко минути важи разрешението (смяната на обекта, не завинаги).
+  ttlMinutes     Int           @default(480)
+  updatedById    String?
+  updatedAt      DateTime      @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+}
+
+/// Заявка/разрешение за стъпка (§11.2): КОЙ е разрешил, кога, за коя стъпка (хеш + източници).
+model StepApproval {
+  id             String         @id @default(cuid())
+  tenantId       String
+  caseId         String
+  messageId      String
+  step           Int
+  /// SHA-256 на текста на стъпката (действие + очакван резултат) — разрешението е за ТОЗИ текст.
+  stepHash       String
+  actionClass    ActionClass
+  gateVersion    String
+  level          ApprovalLevel
+  /// Източниците, които документират стъпката: [{ ref, documentId, documentCode, revision, page, chunkId, errorId }].
+  sources        Json           @default("[]")
+  status         ApprovalStatus @default(PENDING)
+  requestedById  String
+  requestNote    String?
+  /// SELF: техникът е потвърдил изрично, че е прочел документираната процедура.
+  selfAttested   Boolean        @default(false)
+  decidedById    String?
+  /// Ролята на разрешилия в момента на решението — порталът вижда нея, не името.
+  decidedRole    Role?
+  decisionReason String?
+  decidedAt      DateTime?
+  expiresAt      DateTime?
+  createdAt      DateTime       @default(now())
+
+  tenant     Tenant              @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  case       Case                @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  message    CaseMessage         @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  executions CaseStepExecution[]
+
+  @@index([tenantId, status, createdAt])
+  @@index([caseId])
+  @@index([messageId, step])
+  @@index([requestedById])
+  @@index([decidedById])
+}
+
+/// Изпълнена стъпка от AI отговора (FR-09 „passi eseguiti“): резултат, бележка, кой и кога.
+model CaseStepExecution {
+  id          String      @id @default(cuid())
+  tenantId    String
+  caseId      String
+  messageId   String
+  step        Int
+  stepHash    String
+  actionClass ActionClass
+  gateVersion String
+  result      StepResult
+  /// Бележката на техника — маскирана с redactPii; НЕ влиза в хронологията и одита.
+  note        String?
+  approvalId  String?
+  authorId    String
+  createdAt   DateTime    @default(now())
+
+  tenant   Tenant        @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  case     Case          @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  message  CaseMessage   @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  approval StepApproval? @relation(fields: [approvalId], references: [id], onDelete: Cascade)
+
+  @@index([caseId, createdAt])
+  @@index([messageId, step])
+  @@index([approvalId])
+  @@index([authorId])
+  @@index([tenantId])
 }
 
 enum FeedbackRating {
@@ -551,9 +856,88 @@ model Feedback {
   comment   String?
   createdAt DateTime       @default(now())
 
-  message CaseMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  message   CaseMessage         @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  proposals KnowledgeProposal[]
 
   @@unique([messageId, userId])
+}
+
+// ─── Обратна връзка към знанието (FR-10, §11.3) ───────────────────────────────────────────────
+
+/**
+ * Откъде идва предложението за подобрение на знанието.
+ */
+enum ProposalSource {
+  FEEDBACK // „Non utile“ / „Errore tecnico“ с коментар върху AI отговор
+  SOLVED_CASE // персоналът предлага решен случай → ЧЕРНОВА документ SOLVED_CASE (§11.3 „richiede review“)
+  CONFLICT // търсенето/Safety Gate е отчело конфликт между източници (§11.3 „flag per owner“)
+}
+
+/**
+ * Опашката на KNOWLEDGE_OWNER: NEW → IN_REVIEW → ACCEPTED (с връзка) | REJECTED (с причина).
+ */
+enum ProposalStatus {
+  NEW
+  IN_REVIEW
+  ACCEPTED
+  REJECTED
+}
+
+/**
+ * Предложение за подобрение на знанието — ВЪТРЕШНО: вижда го само kb:manage, порталът никога.
+ * Свободният текст (коментар, причина) е маскиран с `redactPii`; имена на хора в него няма.
+ * Конфликтите са дедупликирани по `dedupeKey` (SHA-256 на вида, кода и източниците) —
+ * повторението само увеличава `occurrences` (services/proposals/conflicts.ts).
+ */
+model KnowledgeProposal {
+  id               String          @id @default(cuid())
+  tenantId         String
+  source           ProposalSource
+  status           ProposalStatus  @default(NEW)
+  /// Случаят/отговорът, от който идва (вътрешна връзка; ретенцията на случая я нулира).
+  caseId           String?
+  messageId        String?
+  feedbackId       String?
+  rating           FeedbackRating?
+  /// Коментарът на техника или бележката на предложилия — маскирани (redactPii), до 1000 знака.
+  comment          String?
+  /// CONFLICT: подписът за дедупликация + какво противоречи на какво (само кодове/ревизии/id).
+  dedupeKey        String?
+  conflict         Json?
+  occurrences      Int             @default(1)
+  lastSeenAt       DateTime        @default(now())
+  /// SOLVED_CASE: черновата, създадена през нормалния жизнен цикъл (DRAFT → REVIEW → PUBLISHED).
+  draftDocumentId  String?
+  /// ACCEPTED: с какво е прието — новият/поправеният документ или код за грешка.
+  resultDocumentId String?
+  resultErrorId    String?
+  /// null = автоматично (конфликт, открит от системата).
+  createdById      String?
+  reviewerId       String?
+  decidedById      String?
+  decidedAt        DateTime?
+  /// REJECTED: причината — маскирана (redactPii).
+  rejectReason     String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  tenant         Tenant       @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  case           Case?        @relation(fields: [caseId], references: [id], onDelete: SetNull)
+  message        CaseMessage? @relation(fields: [messageId], references: [id], onDelete: SetNull)
+  feedback       Feedback?    @relation(fields: [feedbackId], references: [id], onDelete: SetNull)
+  draftDocument  Document?    @relation("ProposalDraft", fields: [draftDocumentId], references: [id], onDelete: Restrict)
+  resultDocument Document?    @relation("ProposalResultDocument", fields: [resultDocumentId], references: [id], onDelete: Restrict)
+  resultError    ErrorCode?   @relation(fields: [resultErrorId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, status, createdAt])
+  @@index([tenantId, source])
+  @@index([tenantId, dedupeKey])
+  @@index([caseId])
+  @@index([messageId])
+  @@index([feedbackId])
+  @@index([draftDocumentId])
+  @@index([resultDocumentId])
+  @@index([resultErrorId])
 }
 
 /// Неизменим одит (§15.1, FR-12): верига hash = SHA-256(prevHash | at | action | tenant | actor | object | detail).
@@ -594,6 +978,9 @@ model Attachment {
   tenantId              String
   caseId                String?
   caseMessageId         String?
+  /// Разговорът, за който е качен файлът (§12.1 „Allegati chat“) — достъпът е достъпът до разговора;
+  /// докато не е привързан към съобщение, го вижда само качилият.
+  conversationId        String?
   conversationMessageId String?
   uploadedById          String
   kind                  AttachmentKind
@@ -614,11 +1001,14 @@ model Attachment {
   tenant              Tenant               @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   case                Case?                @relation(fields: [caseId], references: [id], onDelete: Cascade)
   caseMessage         CaseMessage?         @relation(fields: [caseMessageId], references: [id], onDelete: SetNull)
+  conversation        Conversation?        @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   conversationMessage ConversationMessage? @relation(fields: [conversationMessageId], references: [id], onDelete: Cascade)
+  ingestItems         IngestItem[]
 
   @@index([tenantId])
   @@index([caseId])
   @@index([caseMessageId])
+  @@index([conversationId])
   @@index([conversationMessageId])
   @@index([uploadedById])
 }
@@ -639,6 +1029,143 @@ model PasswordReset {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// ─── Единен вход: OIDC / Microsoft Entra ID (§14.4, §15.1, §12.4) ────────────────────────────
+
+enum SsoProvider {
+  ENTRA // Microsoft Entra ID: издателят се извежда от tenant id (tid), проверява се и tid
+  OIDC // общ OpenID Connect доставчик (Keycloak, Okta, Google Workspace…)
+}
+
+enum SsoMode {
+  OPTIONAL // единният вход е по избор, паролата остава
+  REQUIRED // паролата е отказана за обхвата (вътрешните на клиента / потребителите на фирмата)
+}
+
+/// Доставчикът на клиента (companyId = null → вътрешните) или на фирма (порталните ѝ потребители).
+model SsoConfig {
+  id              String      @id @default(cuid())
+  tenantId        String
+  companyId       String?
+  /// „internal“ или id на фирмата — един доставчик на обхват (NULL в уникален индекс не пази).
+  scopeKey        String
+  provider        SsoProvider
+  /// Името на бутона за общ OIDC („Accedi con …“); за Entra е „Microsoft“.
+  displayName     String      @default("")
+  /// Издателят (iss) точно както го връща discovery; за Entra — извеждан от entraTenantId.
+  issuer          String
+  /// Entra: GUID на директорията — iss и tid в токена трябва да са точно тях.
+  entraTenantId   String?
+  clientId        String
+  /// AES-256-GCM със SSO_KEK, вързано към клиента и записа (services/sso/secret.ts) — никога в
+  /// API, лог или одит.
+  clientSecretEnc String
+  secretUpdatedAt DateTime    @default(now())
+  mode            SsoMode     @default(OPTIONAL)
+  /// Доверява ли се клиентът на MFA при доставчика (`amr` съдържа `mfa`) вместо локалния TOTP.
+  trustIdpMfa     Boolean     @default(false)
+  /// Изход и при доставчика (RP-initiated logout) — по избор.
+  idpLogout       Boolean     @default(false)
+  enabled         Boolean     @default(false)
+  /// Последният интерактивен „Тест на конфигурацията“ — нулира се при смяна на доставчика/клиента.
+  lastTestAt      DateTime?
+  lastTestOk      Boolean?
+  /// Само флагове и кодове (без лични данни и без токени).
+  lastTestReport  Json?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  tenant     Tenant             @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  company    Company?           @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  domains    SsoDomain[]
+  identities ExternalIdentity[]
+  states     SsoLoginState[]
+  sessions   Session[]
+
+  @@unique([tenantId, scopeKey])
+  @@index([companyId])
+}
+
+/// Позволен имейл домейн на доставчика — уникален в платформата (по него входът намира доставчика).
+model SsoDomain {
+  id             String    @id @default(cuid())
+  tenantId       String
+  configId       String
+  /// Малки букви, без „@“. Заявка — няколко доставчика могат да го заявят; доказва го само един.
+  domain         String
+  /// Случаен — от него (с SESSION_PEPPER) се извежда токенът на DNS TXT записа; самият токен не се пази.
+  tokenNonce     String    @default(dbgenerated("gen_random_uuid()::text"))
+  /// Доказана собственост (DNS TXT или операторът през CLI). Без нея домейнът не участва във входа.
+  verifiedAt     DateTime?
+  /// = domain, когато е доказан (иначе NULL) — уникален: доказаният домейн е само на един доставчик.
+  verifiedDomain String?   @unique
+  createdAt      DateTime  @default(now())
+
+  tenant Tenant    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  config SsoConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+
+  @@unique([configId, domain])
+  @@index([tenantId])
+  @@index([configId])
+  @@index([domain])
+}
+
+enum SsoLinkMethod {
+  EMAIL // първи вход по проверен имейл в доказан домейн (само акаунти без собствен фактор и под ранга на администратора)
+  SELF // самият собственик от сесия с парола + TOTP („Свържи“)
+}
+
+/// Връзката на локален акаунт с идентичност при доставчика. Първият вход е по проверен имейл;
+/// след него — само по (issuer, externalSubject). Акаунти не се създават от входа.
+model ExternalIdentity {
+  id              String        @id @default(cuid())
+  tenantId        String
+  userId          String        @unique
+  configId        String
+  issuer          String
+  /// Стабилният идентификатор: Entra — `oid`; общ OIDC — `sub`.
+  externalSubject String
+  /// Как е направена връзката — от нея зависи дали доставчикът замества локалния TOTP.
+  linkMethod      SsoLinkMethod @default(EMAIL)
+  createdAt       DateTime      @default(now())
+  lastLoginAt     DateTime?
+
+  tenant Tenant    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  user   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  config SsoConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+
+  @@unique([issuer, externalSubject])
+  @@index([tenantId])
+  @@index([configId])
+}
+
+/// Започнат вход (Authorization Code + PKCE): еднократен, 10 минути, вързан към браузъра. В базата
+/// са само HMAC-ите на state и на бисквитката; nonce и code_verifier се извеждат от бисквитката.
+model SsoLoginState {
+  id          String    @id @default(cuid())
+  tenantId    String
+  configId    String
+  stateHash   String    @unique
+  bindingHash String
+  /// login | test | link
+  purpose     String
+  /// Тестът: администраторът, който го е пуснал (за одита); свързването — собственикът на акаунта.
+  actorId     String?
+  /// Свързването: сесията (парола + TOTP), от която е започнато — връщането важи само докато е жива.
+  sessionId   String?
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime
+  usedAt      DateTime?
+
+  tenant  Tenant    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  config  SsoConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+  session Session?  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([configId])
+  @@index([sessionId])
+  @@index([expiresAt])
 }
 
 enum SavedFilterScope {
@@ -692,10 +1219,11 @@ model Conversation {
   createdAt   DateTime               @default(now())
   archivedAt  DateTime?
 
-  tenant   Tenant                @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  case     Case?                 @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  members  ConversationMember[]
-  messages ConversationMessage[]
+  tenant      Tenant                @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  case        Case?                 @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  members     ConversationMember[]
+  messages    ConversationMessage[]
+  attachments Attachment[]
 
   @@index([tenantId, type])
 }
@@ -737,27 +1265,32 @@ enum ConversationMessageKind {
 }
 
 model ConversationMessage {
-  id              String                  @id @default(cuid())
+  id              String                   @id @default(cuid())
   conversationId  String
   senderId        String?
-  kind            ConversationMessageKind @default(HUMAN)
+  kind            ConversationMessageKind  @default(HUMAN)
   body            String
   replyToId       String?
   /// Идемпотентно изпращане (NFR-12).
   clientMessageId String?
   editedAt        DateTime?
   deletedAt       DateTime?
-  createdAt       DateTime                @default(now())
+  createdAt       DateTime                 @default(now())
+  /// Търсене в историята (FR-16): to_tsvector('chatchat_search', body) — ГЕНЕРИРАНА колона
+  /// (GENERATED ALWAYS … STORED в миграцията 20261010120000); изтритото (body '') не се намира.
+  tsv             Unsupported("tsvector")? @default(dbgenerated("to_tsvector('chatchat_search'::regconfig, body)"))
 
   conversation Conversation          @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   replyTo      ConversationMessage?  @relation("Thread", fields: [replyToId], references: [id], onDelete: SetNull)
   replies      ConversationMessage[] @relation("Thread")
   reactions    MessageReaction[]
   attachments  Attachment[]
+  marks        MessageMark[]
 
   @@unique([conversationId, clientMessageId])
   @@index([conversationId, createdAt])
   @@index([replyToId])
+  @@index([tsv], type: Gin)
 }
 
 /// Реакции (§13.1): незадължителни, никога доказателство.
@@ -829,9 +1362,314 @@ model Notification {
   deliveredAt DateTime?
   readAt      DateTime?
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant        @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emails EmailOutbox[]
 
   @@index([userId, readAt])
   @@index([tenantId, createdAt])
+  @@index([createdAt])
+}
+
+// ─── Лични маркери, предпочитания, имейл известия, ретенция (FR-16/18, NFR-08/12/13) ───────────
+
+enum MessageMarkKind {
+  TODO // „da fare“ (§12.1)
+  STARRED // „aggiungi ai preferiti“ — любимо съобщение
+}
+
+/// Лични маркери на съобщение — вижда ги само човекът; достъпът до съобщението се проверява
+/// при всяко четене (изгубен достъп до разговора = маркерът не се показва).
+model MessageMark {
+  messageId String
+  userId    String
+  kind      MessageMarkKind
+  tenantId  String
+  createdAt DateTime        @default(now())
+
+  message ConversationMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant  Tenant              @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([messageId, userId, kind])
+  @@index([userId, kind, createdAt])
+  @@index([tenantId])
+}
+
+enum EmailDigest {
+  OFF
+  DAILY
+}
+
+/// Личните предпочитания за известията (FR-18, §12.3 „digest email configurabili“). Няма ред →
+/// подразбиранията. Предпочитанията по разговор са в ConversationMember.notificationPref.
+model NotificationSettings {
+  userId       String      @id
+  tenantId     String
+  emailEnabled Boolean     @default(true)
+  digest       EmailDigest @default(OFF)
+  /// Тихи часове в минути от полунощ (0…1439) по `timeZone`; null → без тихи часове.
+  quietStart   Int?
+  quietEnd     Int?
+  /// IANA часова зона (Europe/Rome) — за тихите часове и часа на дайджеста.
+  timeZone     String      @default("Europe/Rome")
+  updatedAt    DateTime    @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId])
+  @@index([digest])
+}
+
+enum EmailKind {
+  MENTION
+  MESSAGE
+  CASE_ASSIGNED
+  CASE_URGENT
+  DIGEST
+}
+
+enum EmailStatus {
+  PENDING
+  SENDING
+  SENT
+  FAILED
+  SKIPPED
+}
+
+/// Изходящите имейл известия (transactional outbox): редът се пише в транзакцията на известието,
+/// фоновият процес го праща с повторни опити; `dedupeKey` пази от двойно писмо. В реда няма адрес,
+/// текст или име — адресът се чете от User в момента на изпращане.
+model EmailOutbox {
+  id             String      @id @default(cuid())
+  tenantId       String
+  userId         String
+  kind           EmailKind
+  /// Известието, от което е писмото (дайджестът — без). Прочетено/изтрито известие → писмото отпада.
+  notificationId String?
+  dedupeKey      String      @unique
+  status         EmailStatus @default(PENDING)
+  attempts       Int         @default(0)
+  notBefore      DateTime    @default(now())
+  /// Наемът на изпращача — изтекъл (срив по средата) → редът се взима отново.
+  lockedUntil    DateTime?
+  /// Само код (http_503, timeout…) — никога текст от доставчика (може да цитира адреса).
+  lastError      String?
+  sentAt         DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notification Notification? @relation(fields: [notificationId], references: [id], onDelete: SetNull)
+
+  @@index([status, notBefore])
+  @@index([userId])
+  @@index([tenantId, createdAt])
+  @@index([notificationId])
+}
+
+// ─── Интеграция с helpdesk (FR-09, §14.4) ─────────────────────────────────────────────────────
+
+enum HelpdeskKind {
+  WEBHOOK // общ подписан webhook (HMAC-SHA256 с времеви печат)
+  ZENDESK // Zendesk Tickets API
+  JSM // Jira Service Management — Service Desk REST API (request + comment)
+}
+
+enum HelpdeskDeliveryStatus {
+  PENDING
+  SENDING
+  DELIVERED
+  SKIPPED
+  /// Dead-letter: изчерпани опити или окончателна грешка. Спира следващите събития на тикета,
+  /// докато администраторът не я пусне отново (подредбата по тикет не се нарушава).
+  DEAD
+}
+
+/// Конекторът към helpdesk на клиента — най-много един на клиент. Тайните (токени, HMAC ключове)
+/// са в `secrets`: AES-256-GCM с INTEGRATION_KEK, вързани към клиента; никога в API, одит или лог.
+model HelpdeskIntegration {
+  id        String       @id @default(cuid())
+  tenantId  String       @unique
+  kind      HelpdeskKind
+  enabled   Boolean      @default(false)
+  /// Неповерителната настройка по вида (адрес, поддомейн, service desk…) — zod при запис и четене.
+  settings  Json         @default("{}")
+  /// Шифрованите тайни (`v1.<id на ключа>.<base64>`) или null — services/integrations/secrets.ts.
+  secrets   String?
+  /// Идентификаторът във входящия адрес (128 случайни бита): не е тайна — входът се удостоверява с подписа.
+  inboundId String       @unique
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  tenant     Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  deliveries HelpdeskDelivery[]
+  links      HelpdeskLink[]
+  receipts   HelpdeskInboundReceipt[]
+}
+
+/// Outbox към helpdesk-а: по един ред на `TicketEvent` от ChatChat, в транзакцията на промяната и
+/// само при включена интеграция. `seq` подрежда по тикет — събитие N+1 не тръгва преди N.
+model HelpdeskDelivery {
+  id            String                 @id @default(cuid())
+  tenantId      String
+  integrationId String
+  ticketId      String
+  /// Събитието в дневника на тикета — едно събитие = една доставка (идемпотентност при запис).
+  eventId       String                 @unique
+  eventType     String
+  seq           Int
+  status        HelpdeskDeliveryStatus @default(PENDING)
+  attempts      Int                    @default(0)
+  notBefore     DateTime               @default(now())
+  /// Наемът на изпращача — изтекъл (срив по средата) → редът се взима отново.
+  lockedUntil   DateTime?
+  /// Само код (http_503, timeout, ssrf_blocked…) — никога текст от отсрещната страна или тайна.
+  lastError     String?
+  deliveredAt   DateTime?
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+
+  tenant      Tenant              @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  integration HelpdeskIntegration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  ticket      Ticket              @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  event       TicketEvent         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([ticketId, seq])
+  @@index([status, notBefore])
+  @@index([tenantId, createdAt])
+  @@index([integrationId])
+}
+
+/// Връзката тикет ↔ записът в helpdesk-а (Zendesk id, JSM issueId/ключ, id от webhook получателя).
+/// Смяна на вида/целта на конектора трие връзките — новият helpdesk получава тикета наново.
+model HelpdeskLink {
+  id            String   @id @default(cuid())
+  ticketId      String   @unique
+  integrationId String
+  externalId    String
+  /// Човешкият ключ (JSM „HELPDESK-1“), ако го има.
+  externalKey   String?
+  createdAt     DateTime @default(now())
+
+  ticket      Ticket              @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  integration HelpdeskIntegration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+
+  @@unique([integrationId, externalId])
+  @@index([integrationId, externalKey])
+}
+
+/// Защита от повторение на входящите известия: отпечатък (SHA-256) на всяко прието известие.
+/// Пази се малко над прозореца за времевия печат — по-старото и без това се отказва.
+model HelpdeskInboundReceipt {
+  id            String   @id @default(cuid())
+  integrationId String
+  nonce         String
+  receivedAt    DateTime @default(now())
+
+  integration HelpdeskIntegration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+
+  @@unique([integrationId, nonce])
+  @@index([receivedAt])
+}
+
+/// Контролна точка на одитната верига (ретенция NFR-08): преди да се изтрият най-старите събития,
+/// се пази хешът на последното изтрито — проверката на веригата продължава от него, без да се чупи.
+model AuditCheckpoint {
+  id            Int      @id @default(autoincrement())
+  /// Последното изтрито събитие и неговият хеш — `prevHash` на първото оставащо.
+  throughId     Int
+  throughHash   String
+  /// Котвата преди изтритото парче (GENESIS или предишната точка) — парчето е веригата между тях.
+  fromHash      String
+  count         Int
+  firstAt       DateTime
+  lastAt        DateTime
+  /// SHA-256 на архива (JSONL), ако е записан (RETENTION_AUDIT_ARCHIVE_DIR).
+  archiveSha256 String?
+  createdAt     DateTime @default(now())
+
+  @@index([throughId])
+}
+
+// ─── Приемане на документи през опашката (§4.1, §7.3, NFR-06) ────────────────────────────────
+
+/// Състоянието на един файл в пакета: QUEUED → RUNNING (етап extract/ocr/index) → DONE | FAILED.
+enum IngestStatus {
+  QUEUED
+  RUNNING
+  DONE
+  FAILED
+}
+
+/// Пакетно качване (§4.1 „importazione batch“): общите метаданни + по избор манифест по файл.
+/// Документите влизат като DRAFT — пакетът е само проследяване; жизненият цикъл е на Document.
+model IngestBatch {
+  id               String   @id @default(cuid())
+  tenantId         String
+  /// Кой е качил (документите се записват с него като uploadedById) — без FK, като Document.
+  createdById      String
+  /// Общите метаданни (§7.2), валидирани при създаване; файлът може да ги допълни/замени.
+  defaults         Json
+  /// Редовете на манифеста (CSV/JSON) по изчистено име на файл — валидирани, без съдържание.
+  manifest         Json?
+  /// Импорт на кодове за грешка от XLSX шаблон → ЧЕРНОВИ кодове (минават през нормалния преглед).
+  importErrorCodes Boolean  @default(false)
+  createdAt        DateTime @default(now())
+
+  tenant Tenant       @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  items  IngestItem[]
+
+  @@index([tenantId, createdAt])
+  @@index([createdById])
+}
+
+/// Един файл от пакета. Задачата в опашката носи САМО id-то му (никога съдържание); повторен опит
+/// е идемпотентен — DONE/FAILED не се обработва наново, а документът и статусът DONE се записват в
+/// една транзакция.
+model IngestItem {
+  id           String       @id @default(cuid())
+  tenantId     String
+  batchId      String
+  /// CLEAN файлът от POST /admin/attachments (антивирусът е минал ПРЕДИ разбора). Ретенцията на
+  /// файловете-сираци го трие → null, а задачата завършва с `ingest.err.sourceMissing`.
+  attachmentId String?
+  /// Името за показване (изчистеното от качването) — за списъка; документът го взима от файла.
+  fileName     String
+  /// Окончателните метаданни на файла (общи + манифест + изрични), валидирани при добавяне.
+  meta         Json
+  status       IngestStatus @default(QUEUED)
+  /// Етапът при RUNNING: extract | ocr | index.
+  stage        String?
+  /// 0…100 — напредъкът на етапа (OCR по страници).
+  progress     Int          @default(0)
+  /// Разпознатият формат: pdf | docx | xlsx | image | log.
+  format       String?
+  /// Кодът на грешката (`ingest.err.*`, i18n) при FAILED — никога суровият текст на изключението.
+  errorCode    String?
+  /// Предупрежденията ([{ code, page? }]) — напр. страница без текст, таван на OCR.
+  warnings     Json?
+  documentId   String?
+  chunks       Int?
+  pages        Int?
+  ocrPages     Int?
+  /// Колко ЧЕРНОВИ кода за грешка са внесени от XLSX шаблона.
+  errorCodes   Int?
+  /// Колко пъти администраторът е пуснал повторно провален файл (новият id на задачата).
+  retries      Int          @default(0)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  finishedAt   DateTime?
+
+  tenant     Tenant      @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  batch      IngestBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  attachment Attachment? @relation(fields: [attachmentId], references: [id], onDelete: SetNull)
+  document   Document?   @relation(fields: [documentId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, status])
+  @@index([batchId])
+  @@index([attachmentId])
+  @@index([documentId])
 }

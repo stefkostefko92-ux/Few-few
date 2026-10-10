@@ -10,6 +10,8 @@ export const ws = {
   slots: new Map(), // id -> { messages: Map, threads: Map(rootId -> Map), hasMore, loaded }
   notifications: [],
   unreadNotifications: 0,
+  notifCursor: null, // следващата страница на Inbox
+  notifPrefs: null, // предпочитанията от GET /notifications (§14.1)
   presence: new Map(), // userId -> { status, lastSeenAt }
   publicChannels: [],
   nextCursor: null,
@@ -48,7 +50,8 @@ export function upsertMessage(convId, m, { counted = false } = {}) {
   if (m.replyToId) {
     const thread = s.threads.get(m.replyToId) ?? new Map();
     const known = thread.has(m.id);
-    thread.set(m.id, m);
+    const before = thread.get(m.id);
+    thread.set(m.id, m.marks === undefined && before?.marks ? { ...m, marks: before.marks } : m);
     s.threads.set(m.replyToId, thread);
     const root = s.messages.get(m.replyToId);
     if (!known && !counted && root && !m.deleted) root.replyCount = (root.replyCount ?? 0) + 1;
@@ -56,8 +59,14 @@ export function upsertMessage(convId, m, { counted = false } = {}) {
     return known ? 'updated' : 'added';
   }
   const prev = s.messages.get(m.id);
-  // Потокът не носи replyCount — локалният брояч се пази.
-  const merged = prev && m.replyCount === undefined ? { ...m, replyCount: prev.replyCount } : m;
+  // Потокът не носи replyCount и личните маркери — локалните се пазят.
+  const merged = prev
+    ? {
+        ...m,
+        ...(m.replyCount === undefined ? { replyCount: prev.replyCount } : {}),
+        ...(m.marks === undefined && prev.marks ? { marks: prev.marks } : {}),
+      }
+    : m;
   if (prev && JSON.stringify(prev) === JSON.stringify(merged)) return 'same';
   s.messages.set(m.id, merged);
   return prev ? 'updated' : 'added';
@@ -128,6 +137,8 @@ export function resetWorkspace() {
   ws.slots.clear();
   ws.notifications = [];
   ws.unreadNotifications = 0;
+  ws.notifCursor = null;
+  ws.notifPrefs = null;
   ws.presence.clear();
   ws.publicChannels = [];
   ws.nextCursor = null;

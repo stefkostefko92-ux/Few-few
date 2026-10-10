@@ -4,6 +4,7 @@ import { errorText } from './errors.js';
 import { t } from './i18n.js';
 import { fillPhaseSelect, refreshCases, renderCases, wireProductSearch } from './cases.js';
 import { emit, on, state } from './store.js';
+import { reloadCase } from './flow/state.js';
 
 const tx = (key, fallback) => (t(key) === key ? fallback : t(key));
 const emptyToNull = (v) => {
@@ -41,8 +42,27 @@ export function renderContext() {
   $('#ctx-serial').value = c.serial ?? '';
   $('#ctx-error').value = c.errorCode ?? '';
   fillPhaseSelect($('#ctx-phase'), c.phase);
+  renderOptions(c);
   renderSummary(c);
   renderOutcome(cur);
+}
+
+/** FR-01: опциите на таблото (от регистъра или въведени) — видими, само за четене тук. */
+function renderOptions(c) {
+  const el = $('#ctx-options');
+  const list = Object.entries(c.options ?? {}).map(([k, v]) => `${k}=${v}`);
+  el.textContent = list.length ? t('options.list', { list: list.join(', ') }) : '';
+  show(el, list.length > 0);
+}
+
+/** Нов контекст от сървъра (PATCH) — списъкът, панелът и формата се обновяват. */
+export function setCaseContext(updated) {
+  const idx = state.cases.findIndex((x) => x.id === updated.id);
+  if (idx >= 0) state.cases[idx] = { ...state.cases[idx], ...updated };
+  renderCases();
+  if (state.currentId !== updated.id || !state.current) return;
+  state.current.case = { ...state.current.case, ...updated };
+  renderContext();
 }
 
 function renderSummary(c) {
@@ -73,7 +93,7 @@ function renderSummary(c) {
   );
 }
 
-function renderOutcome(cur) {
+export function renderOutcome(cur) {
   $('#case-outcome').textContent = cur.outcome
     ? tx(`outcome.${cur.outcome}`, String(cur.outcome))
     : t('outcome.none');
@@ -129,6 +149,7 @@ export function initContext() {
     if (!cur) return;
     fillPhaseSelect($('#ctx-phase'), $('#ctx-phase').value);
     renderSummary(cur.context ?? {});
+    renderOptions(cur.context ?? {});
     renderOutcome(cur);
   });
 
@@ -180,8 +201,12 @@ export function initContext() {
         outcome: data?.case?.outcome ?? outcome,
       };
       renderOutcome(state.current.case);
+      // Решен случай → персоналът може да го предложи за знанието (proposals-case.js, §11.3).
+      emit('case:outcome', outcome);
       flash(fb, t('actions.outcomeSaved'));
       refreshCases();
+      // „Решен“ затваря и отворения тикет (сървърът) — панелът на тикета се опреснява.
+      if (state.flow?.ticket) void reloadCase().catch(() => undefined);
     } catch (err) {
       flash(fb, errorText(err), true);
     }
@@ -214,6 +239,7 @@ export function initContext() {
       flash($('#actions-feedback'), t('ticket.created', { number: data.ticket.number }));
       announce(t('ticket.created', { number: data.ticket.number }));
       refreshCases();
+      void reloadCase().catch(() => undefined);
     } catch (ex) {
       flash(err, errorText(ex), true);
     } finally {

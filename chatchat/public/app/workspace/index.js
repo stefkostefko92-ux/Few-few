@@ -1,9 +1,9 @@
 // Оркестраторът на работното пространство (§12.3): навигация между изгледите (случай · разговор ·
-// списък), страничната лента, броячите, индикаторът за връзка и жизненият цикъл (старт след вход,
-// спиране при изход). Изглед „случай“ е в cases.js/chat.js; тук е всичко около разговорите.
+// списък: Inbox, Cronologia, търсене, „Da fare“, „Preferiti“, канали), страничната лента,
+// броячите, индикаторът за връзка и жизненият цикъл (старт след вход, спиране при изход).
+// Изглед „случай“ е в cases.js/chat.js; тук е всичко около разговорите.
 
-import { $, clear, h, show } from '../dom.js';
-import { t } from '../i18n.js';
+import { $, show } from '../dom.js';
 import { listen, state } from '../store.js';
 import { wsApi } from './api.js';
 import { can } from './caps.js';
@@ -15,11 +15,14 @@ import {
   openConversationView,
   setConvHooks,
 } from './conv-view.js';
-import { ws, resetWorkspace, conversationsByActivity } from './model.js';
+import { ws, resetWorkspace } from './model.js';
 import { initNewConversation, openNewConversation } from './newconv.js';
+import { initNotifSettings } from './notif-settings.js';
+import { renderMarked, renderSearch, resetSearch } from './search-view.js';
 import { startPresence, stopPresence } from './presence.js';
 import { startRealtime, stopRealtime } from './realtime.js';
-import { conversationItem, renderSidebar } from './sidebar.js';
+import { renderSidebar } from './sidebar.js';
+import { openSwitcher } from './switcher.js';
 import { loadConversations, loadNotifications, loadPresence } from './sync.js';
 import {
   closeAllWindows,
@@ -32,9 +35,10 @@ import {
 } from './windows.js';
 import { renderBadges, renderConn } from './status.js';
 import { renderBrowse, renderHistory, renderInbox } from './views.js';
+import { refreshQueue, renderQueue } from '../flow/queue.js';
 
 const app = () => $('#app-view');
-let listKind = null; // 'inbox' | 'history' | 'browse'
+let listKind = null; // 'inbox' | 'history' | 'browse' | 'search' | 'todo' | 'saved'
 let nav = { selectCase: async () => {}, refreshCases: async () => {} };
 
 function setMain(kind) {
@@ -73,14 +77,34 @@ function showList(kind) {
   $('#list-title').focus();
 }
 
-function renderList() {
+function renderList(opts = {}) {
   if (listKind === 'inbox') renderInbox({ onOpenNotification });
   else if (listKind === 'history') renderHistory({ onOpen: openFromHistory });
   else if (listKind === 'browse') void renderBrowse({ onJoin: joinChannel });
+  else if (listKind === 'queue') void renderQueue({ onOpenCase: openFromHistory });
+  else if (listKind === 'search') renderSearch({ onOpen: openHit, focus: opts.focus === true });
+  else if (listKind === 'todo') void renderMarked({ kind: 'TODO', onOpen: openHit });
+  else if (listKind === 'saved') void renderMarked({ kind: 'STARRED', onOpen: openHit });
+}
+
+const openCase = (caseId) => nav.selectCase(caseId).then(() => setMain('case'));
+
+/** Резултат от търсенето/маркиран: съобщението в контекста му (основният изглед, не прозорец). */
+async function openHit(r) {
+  if (r.source === 'case') return openCase(r.caseId);
+  const convId = r.conversation?.id;
+  if (!convId) return undefined;
+  listKind = null;
+  setMain('conv');
+  await openConversationView(convId, { messageId: r.id, replyToId: r.replyToId ?? null });
+  renderSide();
+  return undefined;
 }
 
 function openFromHistory(id) {
   if (id.startsWith('case:')) return void nav.selectCase(id.slice(5)).then(() => setMain('case'));
+  // Опашката подава id на случай без префикс — разговорите имат свои id, случаите — `case:`.
+  if (listKind === 'queue') return void nav.selectCase(id).then(() => setMain('case'));
   return openConversation(id);
 }
 
@@ -105,11 +129,13 @@ async function onOpenNotification(n) {
   }
   const p = n.payload ?? {};
   if (n.objectType === 'conversation') return openConversation(n.objectId);
-  const caseId = p.caseId ?? (n.objectType === 'case' ? n.objectId : null);
-  if (caseId) {
-    await nav.selectCase(caseId);
-    setMain('case');
+  // Предложение за знание се разглежда в конзолата (там са правата и четирите очи).
+  if (n.objectType === 'proposal') {
+    location.assign('/admin.html#proposals');
+    return undefined;
   }
+  const caseId = p.caseId ?? (n.objectType === 'case' ? n.objectId : null);
+  if (caseId) await openCase(caseId);
   return undefined;
 }
 
@@ -120,51 +146,6 @@ function renderSide() {
     activeId: mainKind() === 'conv' ? currentConversationId() : null,
     onOpen: openConversation,
   });
-}
-
-/* ---------- Превключвател (мобилно) ---------- */
-
-function openSwitcher() {
-  const ul = clear($('#switch-list'));
-  const close = () => $('#dlg-switch').close();
-  const convs = conversationsByActivity((c) => c.member !== false && c.type !== 'CASE').sort(
-    (a, b) => (b.unread > 0) - (a.unread > 0),
-  );
-  for (const c of convs.slice(0, 20)) {
-    ul.append(
-      h(
-        'li',
-        null,
-        conversationItem(c, {
-          active: false,
-          onOpen: (id) => (close(), void openConversation(id)),
-        }),
-      ),
-    );
-  }
-  for (const c of state.cases.slice(0, 8)) {
-    ul.append(
-      h(
-        'li',
-        null,
-        h(
-          'button',
-          {
-            class: 'conv-item',
-            type: 'button',
-            onclick: () => (close(), void nav.selectCase(c.id).then(() => setMain('case'))),
-          },
-          h(
-            'span',
-            { class: 'conv-title-text mono' },
-            `${c.number} · ${c.context?.productModel ?? ''}`,
-          ),
-        ),
-      ),
-    );
-  }
-  if (!ul.children.length) ul.append(h('li', { class: 'muted' }, t('history.empty')));
-  $('#dlg-switch').showModal();
 }
 
 /* ---------- Жизнен цикъл ---------- */
@@ -189,8 +170,19 @@ export function initWorkspace(navigation) {
   $('#nav-inbox').addEventListener('click', () => showList('inbox'));
   $('#btn-inbox').addEventListener('click', () => showList('inbox'));
   $('#nav-history').addEventListener('click', () => showList('history'));
+  $('#nav-queue').addEventListener('click', () => showList('queue'));
+  listen('rt:queue.updated', () => listKind === 'queue' && mainKind() === 'list' && refreshQueue());
   $('#btn-browse').addEventListener('click', () => showList('browse'));
-  $('#btn-switch').addEventListener('click', openSwitcher);
+  $('#btn-switch').addEventListener('click', () => openSwitcher({ openConversation, openCase }));
+  $('#nav-search').addEventListener('click', () => {
+    listKind = 'search';
+    closeConversationView();
+    setMain('list');
+    renderList({ focus: true });
+  });
+  $('#nav-todo').addEventListener('click', () => showList('todo'));
+  $('#nav-saved').addEventListener('click', () => showList('saved'));
+  initNotifSettings();
   $('#btn-new-dm').addEventListener('click', () =>
     openNewConversation({ type: 'DIRECT', onCreated: openConversation }),
   );
@@ -219,6 +211,9 @@ export function initWorkspace(navigation) {
     renderConn();
     if (mainKind() === 'list') renderList();
   });
+  listen('ws:marks', () => {
+    if ((listKind === 'todo' || listKind === 'saved') && mainKind() === 'list') renderList();
+  });
   listen('case:loading', () => {
     closeConversationView();
     listKind = null;
@@ -229,11 +224,20 @@ export function initWorkspace(navigation) {
   addEventListener('hashchange', () => void followHash());
 }
 
-/** `#c=<разговор>&m=<съобщение>` (копирана връзка). Фрагментът се чисти след прочитане. */
+/**
+ * `#c=<разговор>&m=<съобщение>` (копирана връзка, имейл) или `#case=<случай>` (имейл за поет
+ * случай). Фрагментът се чисти след прочитане; достъпът го проверява сървърът.
+ */
 async function followHash() {
   const p = new URLSearchParams(location.hash.replace(/^#/, ''));
   const c = p.get('c');
-  if (!c || !can('conversation:use')) return;
+  const caseId = p.get('case');
+  if (caseId) {
+    history.replaceState(null, '', location.pathname + location.search);
+    await openCase(caseId).catch(() => undefined);
+    return true;
+  }
+  if (!c || !can('conversation:use')) return false;
   history.replaceState(null, '', location.pathname + location.search);
   try {
     await loadConversations();
@@ -243,19 +247,32 @@ async function followHash() {
   setMain('conv');
   await openConversationView(c, { messageId: p.get('m') ?? undefined });
   renderSide();
+  return true;
 }
 
+/** → true, ако връзка във фрагмента е отворила разговор/случай (тогава не отваряме последния). */
 export async function startWorkspace() {
   const usable = can('conversation:use');
   for (const g of ['grp-starred', 'grp-channels', 'grp-dms']) show($(`#${g}`), usable);
-  for (const id of ['#nav-inbox', '#nav-history', '#btn-inbox', '#btn-switch']) show($(id), usable);
+  for (const id of [
+    '#nav-inbox',
+    '#nav-history',
+    '#nav-search',
+    '#nav-todo',
+    '#nav-saved',
+    '#btn-inbox',
+    '#btn-switch',
+  ]) {
+    show($(id), usable);
+  }
   show($('#btn-new-case'), can('case:create'));
   show($('#btn-scan'), can('case:create'));
   show($('#btn-new-channel'), can('channel:create'));
   show($('#btn-new-dm'), can('conversation:create'));
   show($('#btn-browse'), state.user?.kind === 'INTERNAL');
   show($('#grp-assigned'), can('case:assign') || can('case:create'));
-  if (!usable) return;
+  show($('#nav-queue'), can('case:readAll') && state.user?.kind === 'INTERNAL');
+  if (!usable) return false;
   renderConn();
   renderBadges();
   try {
@@ -274,7 +291,7 @@ export async function startWorkspace() {
     ...new Set([...(currentConversationId() ? [currentConversationId()] : []), ...openWindowIds()]),
   ]);
   if (wide()) restoreWindows();
-  await followHash();
+  return followHash();
 }
 
 export function stopWorkspace() {
@@ -283,5 +300,6 @@ export function stopWorkspace() {
   closeConversationView();
   closeAllWindows();
   resetWorkspace();
+  resetSearch();
   listKind = null;
 }

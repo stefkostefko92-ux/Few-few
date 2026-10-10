@@ -4,7 +4,7 @@ import { signDocumentSourceUrl } from '../../src/services/signed-url.js';
 import { makePdf } from '../file-fixtures.js';
 import { db, resetDb, startApp, type Client, type Harness } from './helpers.js';
 import { FakeScanner, SpyStore, uploadPdf, URL_KEY } from './files.js';
-import { MODEL, seedWorld, type World } from './world.js';
+import { EFFECTIVE_FROM, MODEL, seedWorld, type World } from './world.js';
 
 /**
  * Визуализаторът на схеми (§9.2): оригиналният PDF на документа и метаданните за навигацията.
@@ -50,7 +50,8 @@ async function pdfDoc(
     revision: 'A',
     audience,
     safetyRelevant: false,
-    applicability: [{ productModel: MODEL }],
+    effectiveFrom: EFFECTIVE_FROM,
+    applicability: [{ productModel: MODEL, allFirmware: true }],
     sourceAttachmentId: up.body.attachment.id,
   });
   assert.equal(res.status, 201, JSON.stringify(res.body));

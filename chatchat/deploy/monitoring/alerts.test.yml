@@ -1,6 +1,7 @@
 # Unit тестове на алармите: promtool test rules alerts.test.yml (от тази папка).
 # Сценарии: бързо изгаряне на наличността; малко трафик не буди човек; бавни AI отговори;
-# процесът не отговаря; здрава система — тишина.
+# процесът не отговаря; здрава система — тишина. Фоновите потоци: worker-ът спрял/липсва, dead-letter
+# в опашка, опашка без движение, helpdesk dead-letter и закъсняла доставка — и тишината на всяко.
 rule_files:
   - alerts.yml
 
@@ -24,6 +25,7 @@ tests:
           - exp_labels:
               severity: page
               slo: nfr-01-availability
+              component: availability
             exp_annotations:
               summary: 'ChatChat: 5xx изгарят бюджета на наличността 14.4× (2 % от месечния за 1 ч)'
               description: 'Дял на 5xx за 1 ч: 20% (праг 7.2 %). Техниците виждат грешки.'
@@ -34,6 +36,7 @@ tests:
           - exp_labels:
               severity: ticket
               slo: nfr-01-availability
+              component: availability
             exp_annotations:
               summary: 'ChatChat: бюджетът на наличността (99.5 %) изтича с темп ≥ 1× за 3 дни'
               description: 'Дял на 5xx за 3 дни: 20% (праг 0.5 %).'
@@ -72,6 +75,7 @@ tests:
           - exp_labels:
               severity: page
               slo: nfr-02-ai-latency
+              component: ai-latency
             exp_annotations:
               summary: 'ChatChat: AI отговорите са над 8 s — бюджетът на латентността гори 14.4×'
               description: 'Дял над 8 s (или таймаут) за 1 ч: 80% (праг 72 %).'
@@ -80,7 +84,7 @@ tests:
   # Процесът спира на 6-ата минута → страница след 3 мин.
   - interval: 1m
     input_series:
-      - series: 'up{job="chatchat",instance="127.0.0.1:9464"}'
+      - series: 'up{job="chatchat",instance="app:9464"}'
         values: '1x5 0x10'
     alert_rule_test:
       - eval_time: 5m
@@ -92,16 +96,17 @@ tests:
           - exp_labels:
               severity: page
               job: chatchat
-              instance: '127.0.0.1:9464'
+              component: app
+              instance: 'app:9464'
             exp_annotations:
               summary: 'ChatChat не отговаря на /metrics от 3 мин — вероятно процесът е спрял'
-              description: 'Prometheus не може да прочете 127.0.0.1:METRICS_PORT/metrics.'
+              description: 'Prometheus не може да прочете /metrics на приложението (app:9464).'
               runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatdown'
 
   # Здрава система: 0.1 % 5xx, бързи отговори, затворен breaker — тишина.
   - interval: 1m
     input_series:
-      - series: 'up{job="chatchat",instance="127.0.0.1:9464"}'
+      - series: 'up{job="chatchat",instance="app:9464"}'
         values: '1x120'
       - series: 'chatchat_http_requests_total{route="/api/v1/cases/:id",method="GET",status="200"}'
         values: '0+999x120'
@@ -128,4 +133,187 @@ tests:
         exp_alerts: []
       - eval_time: 100m
         alertname: ChatchatDown
+        exp_alerts: []
+
+  # ── Фоновите потоци ─────────────────────────────────────────────────────────────────────────────
+  # Worker-ът спира на 6-ата минута → тикет след 10 мин (не преди).
+  - interval: 1m
+    input_series:
+      - series: 'up{job="chatchat-worker",instance="worker:9464"}'
+        values: '1x5 0x20'
+    alert_rule_test:
+      - eval_time: 14m
+        alertname: ChatchatWorkerDown
+        exp_alerts: []
+      - eval_time: 17m
+        alertname: ChatchatWorkerDown
+        exp_alerts:
+          - exp_labels:
+              severity: ticket
+              component: worker
+              job: chatchat-worker
+              instance: 'worker:9464'
+            exp_annotations:
+              summary: 'ChatChat: worker-ът не отговаря от 10 мин — новите файлове за знанието не се обработват'
+              description: 'Prometheus не чете /metrics на worker-а (job chatchat-worker). Чатът работи; приемането, OCR и векторите стоят.'
+              runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatworkerdown'
+
+  # Целта на worker-а липсва изцяло (job-ът не е в конфига / услугата я няма) → absent() гори.
+  - interval: 1m
+    input_series:
+      - series: 'up{job="chatchat",instance="app:9464"}'
+        values: '1x20'
+    alert_rule_test:
+      - eval_time: 15m
+        alertname: ChatchatWorkerDown
+        exp_alerts:
+          - exp_labels:
+              severity: ticket
+              component: worker
+              job: chatchat-worker
+            exp_annotations:
+              summary: 'ChatChat: worker-ът не отговаря от 10 мин — новите файлове за знанието не се обработват'
+              description: 'Prometheus не чете /metrics на worker-а (job chatchat-worker). Чатът работи; приемането, OCR и векторите стоят.'
+              runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatworkerdown'
+
+  # Задача в ingest изчерпва опитите на 31-вата минута → тикет след 5 мин; трае час, после стихва.
+  # Опашката ocr има само завършени — тишина за нея.
+  - interval: 1m
+    input_series:
+      - series: 'chatchat_queue_jobs_total{job="chatchat-worker",instance="worker:9464",queue="ingest",result="dead"}'
+        values: '0x30 1x120'
+      - series: 'chatchat_queue_jobs_total{job="chatchat-worker",instance="worker:9464",queue="ocr",result="dead"}'
+        values: '0x150'
+      - series: 'chatchat_queue_jobs_total{job="chatchat-worker",instance="worker:9464",queue="ocr",result="completed"}'
+        values: '0+1x150'
+    alert_rule_test:
+      - eval_time: 33m
+        alertname: ChatchatQueueDeadLetters
+        exp_alerts: []
+      - eval_time: 40m
+        alertname: ChatchatQueueDeadLetters
+        exp_alerts:
+          - exp_labels:
+              severity: ticket
+              component: queue
+              queue: ingest
+            exp_annotations:
+              summary: 'ChatChat: задачи в опашката ingest отидоха в dead-letter през последния час'
+              description: 'Опашка ingest: файлът е „Неуспех“ (или векторите не са обновени) — „Повтори“ в конзолата след поправката.'
+              runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatqueuedeadletters'
+      - eval_time: 140m
+        alertname: ChatchatQueueDeadLetters
+        exp_alerts: []
+
+  # Опашката ocr: 3 чакащи и нито една завършена → тикет след 30 мин (не по-рано).
+  - interval: 1m
+    input_series:
+      - series: 'chatchat_queue_depth{job="chatchat-worker",instance="worker:9464",queue="ocr",state="waiting"}'
+        values: '3x60'
+      - series: 'chatchat_queue_jobs_total{job="chatchat-worker",instance="worker:9464",queue="ocr",result="completed"}'
+        values: '0x60'
+    alert_rule_test:
+      - eval_time: 25m
+        alertname: ChatchatQueueBacklog
+        exp_alerts: []
+      - eval_time: 35m
+        alertname: ChatchatQueueBacklog
+        exp_alerts:
+          - exp_labels:
+              severity: ticket
+              component: queue
+              queue: ocr
+            exp_annotations:
+              summary: 'ChatChat: опашката ocr стои — чакащи задачи без нито една завършена за 30 мин'
+              description: 'Чакащи сега: 3 (опашка ocr). Файловете остават „В опашката“.'
+              runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatqueuebacklog'
+
+  # Тишина: ingest има чакащи, но задачите завършват; embed е празна; dead-letter опашката не е
+  # работна; ocr се изпразва за минута на всеки 20 мин (броячът на `for` се нулира).
+  - interval: 1m
+    input_series:
+      - series: 'chatchat_queue_depth{job="chatchat-worker",instance="worker:9464",queue="ingest",state="waiting"}'
+        values: '2x90'
+      - series: 'chatchat_queue_jobs_total{job="chatchat-worker",instance="worker:9464",queue="ingest",result="completed"}'
+        values: '0+1x90'
+      - series: 'chatchat_queue_depth{job="chatchat-worker",instance="worker:9464",queue="embed",state="waiting"}'
+        values: '0x90'
+      - series: 'chatchat_queue_depth{job="chatchat-worker",instance="worker:9464",queue="dead",state="waiting"}'
+        values: '7x90'
+      - series: 'chatchat_queue_depth{job="chatchat-worker",instance="worker:9464",queue="ocr",state="waiting"}'
+        values: '1x19 0 1x19 0 1x19 0 1x29'
+      - series: 'up{job="chatchat-worker",instance="worker:9464"}'
+        values: '1x90'
+    alert_rule_test:
+      - eval_time: 85m
+        alertname: ChatchatQueueBacklog
+        exp_alerts: []
+      - eval_time: 85m
+        alertname: ChatchatQueueDeadLetters
+        exp_alerts: []
+      - eval_time: 85m
+        alertname: ChatchatWorkerDown
+        exp_alerts: []
+
+  # Helpdesk: 2 доставки в dead-letter от 6-ата минута → тикет след 15 мин; „Пусни отново“ → стихва.
+  - interval: 1m
+    input_series:
+      - series: 'chatchat_helpdesk_outbox{job="chatchat",instance="app:9464",state="dead"}'
+        values: '0x5 2x25 0x20'
+    alert_rule_test:
+      - eval_time: 15m
+        alertname: ChatchatHelpdeskDeadLetters
+        exp_alerts: []
+      - eval_time: 25m
+        alertname: ChatchatHelpdeskDeadLetters
+        exp_alerts:
+          - exp_labels:
+              severity: ticket
+              component: helpdesk
+            exp_annotations:
+              summary: 'ChatChat: доставки към helpdesk са в dead-letter от 15 мин — тикетите им са спрели'
+              description: 'Доставки в dead-letter: 2. Нужно е „Пусни отново“ от администратора на клиента след поправката.'
+              runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchathelpdeskdeadletters'
+      - eval_time: 45m
+        alertname: ChatchatHelpdeskDeadLetters
+        exp_alerts: []
+
+  # Helpdesk не приема: най-старата чакаща расте с минута на минута → над 30 мин от 31-вата, тикет
+  # след още 5. Две инстанции на API-то дават един и същ агрегат — едно писмо (max).
+  - interval: 1m
+    input_series:
+      - series: 'chatchat_helpdesk_oldest_pending_seconds{job="chatchat",instance="app:9464"}'
+        values: '0+60x60'
+      - series: 'chatchat_helpdesk_oldest_pending_seconds{job="chatchat",instance="app2:9464"}'
+        values: '0+60x60'
+    alert_rule_test:
+      - eval_time: 34m
+        alertname: ChatchatHelpdeskBacklog
+        exp_alerts: []
+      - eval_time: 40m
+        alertname: ChatchatHelpdeskBacklog
+        exp_alerts:
+          - exp_labels:
+              severity: ticket
+              component: helpdesk
+            exp_annotations:
+              summary: 'ChatChat: доставка към helpdesk чака над 30 мин — промените по тикетите закъсняват'
+              description: 'Най-старата чакаща доставка: 40m 0s.'
+              runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchathelpdeskbacklog'
+
+  # Тишина: здрав изпращач — доставките стават за секунди, dead-letter няма.
+  - interval: 1m
+    input_series:
+      - series: 'chatchat_helpdesk_outbox{job="chatchat",instance="app:9464",state="dead"}'
+        values: '0x90'
+      - series: 'chatchat_helpdesk_outbox{job="chatchat",instance="app:9464",state="pending"}'
+        values: '0 2 0 1 0 0 3 0x83'
+      - series: 'chatchat_helpdesk_oldest_pending_seconds{job="chatchat",instance="app:9464"}'
+        values: '0 15 0 20 0 0 45 0x83'
+    alert_rule_test:
+      - eval_time: 85m
+        alertname: ChatchatHelpdeskDeadLetters
+        exp_alerts: []
+      - eval_time: 85m
+        alertname: ChatchatHelpdeskBacklog
         exp_alerts: []

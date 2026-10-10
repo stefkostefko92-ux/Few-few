@@ -1,6 +1,8 @@
-import type { AccountKind, Prisma, PrismaClient, Role } from '@prisma/client';
+import type { AccountKind, AuthMethod, Prisma, PrismaClient, Role } from '@prisma/client';
 import type { NextFunction, Request, Response } from 'express';
 import { hashToken, randomToken } from '../crypto.js';
+import { tenantBySession } from '../db/discovery.js';
+import { withTenant } from '../db/tenant-context.js';
 import { mfaRequired } from './rbac.js';
 
 /**
@@ -19,6 +21,11 @@ export interface MfaState {
   passed: boolean;
   /** Ролята е задължена да има TOTP (персоналът). */
   required: boolean;
+  /**
+   * Вторият фактор е доказан от доставчика на единния вход в ТАЗИ сесия (`amr` съдържа `mfa`) и
+   * клиентът му се доверява (services/sso) — тогава локалният TOTP не се иска. Само когато е вярно.
+   */
+  idp?: true;
 }
 
 export interface Principal {
@@ -31,7 +38,11 @@ export interface Principal {
     kind: AccountKind;
     locale: string;
   };
-  session: { id: string; csrfToken: string };
+  /**
+   * authMethod липсва → парола (сесии, създадени без него). `ssoLinkOnly` — сесия с парола в режим
+   * REQUIRED само за свързване с доставчика (requireUser → 403 `sso_link_required`).
+   */
+  session: { id: string; csrfToken: string; authMethod?: AuthMethod; ssoLinkOnly?: true };
   mfa: MfaState;
 }
 
@@ -51,20 +62,44 @@ export interface SessionDeps {
 export function mfaStateOf(
   user: { role: Role; totpEnabledAt: Date | null },
   sessionPassed: boolean,
+  viaIdp = false,
 ): MfaState {
   const enabled = user.totpEnabledAt !== null;
-  return { enabled, passed: enabled && sessionPassed, required: mfaRequired(user.role) };
+  const required = mfaRequired(user.role);
+  // Платформеният администратор никога не минава втория фактор при доставчик (fail-closed).
+  if (viaIdp && user.role !== 'PLATFORM_ADMIN')
+    return { enabled, passed: true, required, idp: true };
+  return { enabled, passed: enabled && sessionPassed, required };
+}
+
+/** Сесия от единен вход: методът, доставчикът и дали вторият фактор е доказан при него. */
+export interface SsoSessionOrigin {
+  authMethod: 'SSO';
+  ssoConfigId: string;
+  mfaViaIdp: boolean;
+}
+
+/** Сесия с парола само за свързване с доставчика (режим REQUIRED, акаунт без собствена връзка). */
+export interface LinkOnlyOrigin {
+  ssoLinkOnly: true;
 }
 
 export async function createSession(
   deps: SessionDeps,
   userId: string,
+  sso?: SsoSessionOrigin | LinkOnlyOrigin,
 ): Promise<{ id: string; token: string; csrfToken: string; expiresAt: Date }> {
   const token = randomToken();
   const csrfToken = randomToken(24);
   const expiresAt = new Date(Date.now() + deps.ttlHours * 3600 * 1000);
   const session = await deps.db.session.create({
-    data: { userId, tokenHash: hashToken(token, deps.pepper), csrfToken, expiresAt },
+    data: {
+      userId,
+      tokenHash: hashToken(token, deps.pepper),
+      csrfToken,
+      expiresAt,
+      ...(sso ?? {}),
+    },
   });
   return { id: session.id, token, csrfToken, expiresAt };
 }
@@ -107,48 +142,68 @@ export function readCookie(req: Request, name: string): string | null {
   return null;
 }
 
-/** Зарежда вписания човек, ако сесията е жива и акаунтът — активен и в срок. */
+/**
+ * Зарежда вписания човек, ако сесията е жива и акаунтът — активен и в срок. Клиентът на сесията
+ * идва през тесния път (`tenantBySession` — само id на клиента по HMAC на токена); сесията и
+ * човекът се четат вече под RLS, а останалата част от заявката тече в контекста на клиента му.
+ */
 export function loadPrincipal(deps: SessionDeps) {
   return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
     try {
       if (req.principal) return next();
       const token = readCookie(req, SESSION_COOKIE);
       if (!token) return next();
-      const session = await deps.db.session.findUnique({
-        where: { tokenHash: hashToken(token, deps.pepper) },
-        include: { user: true },
-      });
-      const now = new Date();
-      if (
-        !session ||
-        session.revokedAt !== null ||
-        session.expiresAt <= now ||
-        !session.user.active ||
-        (session.user.expiresAt !== null && session.user.expiresAt <= now)
-      ) {
-        return next();
-      }
-      const u = session.user;
-      req.principal = {
-        user: {
-          id: u.id,
-          tenantId: u.tenantId,
-          companyId: u.companyId,
-          name: u.name,
-          role: u.role,
-          kind: u.kind,
-          locale: u.locale,
-        },
-        session: { id: session.id, csrfToken: session.csrfToken },
-        mfa: mfaStateOf(u, session.mfaPassed),
-      };
-      if (now.getTime() - session.lastSeenAt.getTime() > TOUCH_EVERY_MS) {
-        await deps.db.session.update({ where: { id: session.id }, data: { lastSeenAt: now } });
-      }
-      next();
+      const tokenHash = hashToken(token, deps.pepper);
+      const tenantId = await tenantBySession(deps.db, tokenHash);
+      if (!tenantId) return next();
+      const principal = await withTenant(tenantId, () => principalFor(deps, tokenHash));
+      if (!principal) return next();
+      req.principal = principal;
+      withTenant(principal.user.tenantId, next);
     } catch (err) {
       next(err);
     }
+  };
+}
+
+async function principalFor(deps: SessionDeps, tokenHash: string): Promise<Principal | null> {
+  const session = await deps.db.session.findUnique({
+    where: { tokenHash },
+    include: { user: true },
+  });
+  const now = new Date();
+  if (
+    !session ||
+    session.revokedAt !== null ||
+    session.expiresAt <= now ||
+    !session.user.active ||
+    (session.user.expiresAt !== null && session.user.expiresAt <= now) ||
+    // Платформеният администратор не влиза през доставчик — такава сесия не важи (fail-closed).
+    (session.authMethod === 'SSO' && session.user.role === 'PLATFORM_ADMIN')
+  ) {
+    return null;
+  }
+  const u = session.user;
+  if (now.getTime() - session.lastSeenAt.getTime() > TOUCH_EVERY_MS) {
+    await deps.db.session.update({ where: { id: session.id }, data: { lastSeenAt: now } });
+  }
+  return {
+    user: {
+      id: u.id,
+      tenantId: u.tenantId,
+      companyId: u.companyId,
+      name: u.name,
+      role: u.role,
+      kind: u.kind,
+      locale: u.locale,
+    },
+    session: {
+      id: session.id,
+      csrfToken: session.csrfToken,
+      authMethod: session.authMethod,
+      ...(session.ssoLinkOnly ? { ssoLinkOnly: true as const } : {}),
+    },
+    mfa: mfaStateOf(u, session.mfaPassed, session.mfaViaIdp),
   };
 }
 
@@ -163,7 +218,9 @@ export type RevocationReason =
   | 'password_reset'
   | 'mfa_reset'
   | 'admin_revoke'
-  | 'erased';
+  | 'erased'
+  // Единният вход: сменен/изключен доставчик, отказана парола (REQUIRED), развързана идентичност.
+  | 'sso_changed';
 
 export interface SessionRevocation {
   userIds: string[];

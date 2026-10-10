@@ -1,6 +1,6 @@
-// Едно съобщение от разговор: автор и час, текст (само textContent), реакции, нишка и действия.
-// Изтритото оставя следа („Съобщението е изтрито“), не дупка. Действията са видими бутони с
-// етикети (не само при hover) — работят с тъч и клавиатура.
+// Едно съобщение от разговор: автор и час, текст (само textContent), файлове, лични маркери,
+// реакции, нишка и действия. Изтритото оставя следа („Съобщението е изтрито“), не дупка.
+// Действията са видими бутони с етикети (не само при hover) — работят с тъч и клавиатура.
 
 import { h } from '../dom.js';
 import { fmtStamp } from '../format.js';
@@ -16,6 +16,8 @@ import {
   saveEdit,
   toggleReaction,
 } from './message-actions.js';
+import { renderConvFiles } from './conv-files.js';
+import { markButtons, markTags } from './message-marks.js';
 import { reactionChips, reactionPalette } from './reactions.js';
 
 /** Низ, който се променя само когато визията на съобщението трябва да се обнови. */
@@ -25,6 +27,8 @@ export function messageVersion(m, ctx) {
     m.deleted,
     m.editedAt,
     m.reactions,
+    m.marks,
+    (m.attachments ?? []).map((a) => a.id),
     m.replyCount,
     m.pending,
     m.error,
@@ -55,6 +59,8 @@ function header(m) {
     head.append(h('time', { class: 'when', datetime: String(m.createdAt) }, fmtStamp(m.createdAt)));
   }
   if (m.editedAt && !m.deleted) head.append(h('span', { class: 'edited' }, t('msg.editedTag')));
+  const tags = m.deleted ? null : markTags(m);
+  if (tags) head.append(tags);
   return head;
 }
 
@@ -150,6 +156,7 @@ function tools(m, ctx) {
     const panel = h('div', { class: 'msg-panel' });
     panel.append(reactionPalette(m, toggle));
     const extra = h('div', { class: 'btn-row' });
+    if (!m.deleted) extra.append(...markButtons(m, { convId: ctx.convId, conv }, fail));
     if (canEdit(m)) {
       extra.append(
         h(
@@ -236,7 +243,9 @@ export function renderConvMessage(m, ctx) {
     li.append(editor(m, ctx));
     return li;
   }
-  li.append(h('p', { class: 'msg-text' }, String(m.body ?? '')));
+  if (m.body) li.append(h('p', { class: 'msg-text' }, String(m.body)));
+  const files = renderConvFiles(m.attachments);
+  if (files) li.append(files);
   if (m.pending) {
     li.append(pendingBar(m));
     return li;

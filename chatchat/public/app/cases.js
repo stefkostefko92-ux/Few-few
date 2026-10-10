@@ -4,6 +4,7 @@ import { errorText } from './errors.js';
 import { roleLabel } from './format.js';
 import { getLang, t } from './i18n.js';
 import { emit, on, state } from './store.js';
+import { setFlow } from './flow/state.js';
 
 export const PHASES = [
   'startup',
@@ -149,8 +150,9 @@ export async function selectCase(id) {
       case: data.case,
       messages: Array.isArray(data.messages) ? data.messages : [],
     };
-    // Тикетът идва от сървъра — не се губи при презареждане на страницата.
+    // Тикетът, стъпките и правата идват от сървъра — не се губят при презареждане на страницата.
     if (data.ticket) state.tickets.set(id, data.ticket);
+    setFlow(id, data);
     emit('case:loaded', id);
   } catch (err) {
     if (state.currentId !== id) return;
@@ -198,7 +200,16 @@ export function openNewCaseWithDevice(device) {
   const msg = $('#new-lookup-msg');
   msg.textContent = t('new.lookupFound');
   show(msg, true);
+  showDeviceOptions(device);
   $('#new-error').focus();
+}
+
+/** FR-01: опциите на намереното табло — влизат в контекста на случая (сървърът ги добавя). */
+function showDeviceOptions(device) {
+  const el = $('#new-options');
+  const list = Object.entries(device?.options ?? {}).map(([k, v]) => `${k}=${v}`);
+  el.textContent = list.length ? t('options.list', { list: list.join(', ') }) : '';
+  show(el, list.length > 0);
 }
 
 export function initNewCase() {
@@ -212,6 +223,7 @@ export function initNewCase() {
     fillPhaseSelect($('#new-phase'), 'unknown');
     show(msg, false);
     show(err, false);
+    showDeviceOptions(null);
     dlg.showModal();
     $('#new-serial').focus();
   };
@@ -231,8 +243,10 @@ export function initNewCase() {
       $('#new-hw').value = device.hardwareRevision ?? '';
       $('#new-fw').value = device.firmware ?? '';
       msg.textContent = t('new.lookupFound');
+      showDeviceOptions(device);
     } catch (e) {
       msg.textContent = e.status === 404 ? t('new.lookupNotFound') : t('new.lookupError');
+      showDeviceOptions(null);
     }
     show(msg, true);
   });

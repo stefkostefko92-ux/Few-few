@@ -1,5 +1,6 @@
 import { Prisma, type PrismaClient } from '@prisma/client';
 import { sha256 } from './crypto.js';
+import { auditPrevHash } from './db/discovery.js';
 
 /**
  * Неизменим одит (§15.1, FR-12): всяко събитие носи хеша на предишното — подправка или изтрит
@@ -16,7 +17,7 @@ export interface AuditInput {
   detail?: Record<string, unknown>;
 }
 
-const GENESIS = '0'.repeat(64);
+export const GENESIS = '0'.repeat(64);
 
 /** JSON с подредени ключове: jsonb в Postgres пренарежда ключовете, хешът не бива да зависи от това. */
 export function canonicalJson(value: unknown): string {
@@ -29,29 +30,55 @@ export function canonicalJson(value: unknown): string {
   }
   return JSON.stringify(value ?? null);
 }
-const AUDIT_LOCK = 4330_01;
+export const AUDIT_LOCK = 4330_01;
+
+/** Хешът на събитие — едно място за запис, проверка и ретенцията (контролните точки). */
+export function eventHash(
+  prevHash: string,
+  e: {
+    at: Date;
+    action: string;
+    tenantId: string | null;
+    actorId: string | null;
+    objectType: string | null;
+    objectId: string | null;
+    detail: unknown;
+  },
+): string {
+  return sha256(
+    [
+      prevHash,
+      e.at.toISOString(),
+      e.action,
+      e.tenantId ?? '',
+      e.actorId ?? '',
+      e.objectType ?? '',
+      e.objectId ?? '',
+      canonicalJson(e.detail ?? null),
+    ].join('|'),
+  );
+}
 
 type Tx = Prisma.TransactionClient;
 
 export async function appendAudit(db: PrismaClient | Tx, input: AuditInput): Promise<void> {
   const write = async (tx: Tx) => {
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(${AUDIT_LOCK})`;
-    const last = await tx.auditEvent.findFirst({ orderBy: { id: 'desc' }, select: { hash: true } });
-    const prevHash = last?.hash ?? GENESIS;
+    // Веригата е ОБЩА за всички клиенти, а под RLS приложението вижда само своите събития —
+    // предишният хеш идва от тясната функция (последното събитие или, след ретенция, котвата от
+    // последната контролна точка; нищо → GENESIS). Само хеш, без съдържание.
+    const prevHash = (await auditPrevHash(tx)) ?? GENESIS;
     const at = new Date();
     const detail = input.detail ?? null;
-    const hash = sha256(
-      [
-        prevHash,
-        at.toISOString(),
-        input.action,
-        input.tenantId ?? '',
-        input.actorId ?? '',
-        input.objectType ?? '',
-        input.objectId ?? '',
-        canonicalJson(detail),
-      ].join('|'),
-    );
+    const hash = eventHash(prevHash, {
+      at,
+      action: input.action,
+      tenantId: input.tenantId,
+      actorId: input.actorId,
+      objectType: input.objectType ?? null,
+      objectId: input.objectId ?? null,
+      detail,
+    });
     await tx.auditEvent.create({
       data: {
         tenantId: input.tenantId,
@@ -70,25 +97,43 @@ export async function appendAudit(db: PrismaClient | Tx, input: AuditInput): Pro
   else await write(db);
 }
 
-/** Проверка на веригата — за одитора и за теста. Връща id на първото счупено звено или null. */
-export async function verifyAuditChain(db: PrismaClient): Promise<number | null> {
-  const rows = await db.auditEvent.findMany({ orderBy: { id: 'asc' } });
-  let prev = GENESIS;
-  for (const row of rows) {
-    const expected = sha256(
-      [
-        prev,
-        row.at.toISOString(),
-        row.action,
-        row.tenantId ?? '',
-        row.actorId ?? '',
-        row.objectType ?? '',
-        row.objectId ?? '',
-        canonicalJson(row.detail ?? null),
-      ].join('|'),
-    );
-    if (row.prevHash !== prev || row.hash !== expected) return row.id;
-    prev = row.hash;
-  }
-  return null;
+/**
+ * Проверка на веригата — за одитора и за теста. Връща id на първото счупено звено или null.
+ * След ретенция (services/audit-retention.ts) най-старите събития ги няма: котвата е хешът на
+ * последното изтрито, пазен в последната контролна точка (AuditCheckpoint) — веригата не е счупена.
+ */
+/** Порция при проверката — паметта не расте с одита (милиони събития за години). */
+const VERIFY_PAGE = 5000;
+/** Таван на проверката: една снимка (REPEATABLE READ) за цялата верига, не пречи на записите. */
+const VERIFY_TIMEOUT_MS = 30 * 60 * 1000;
+
+export async function verifyAuditChain(
+  db: PrismaClient,
+  pageSize = VERIFY_PAGE,
+): Promise<number | null> {
+  // Една снимка: ретенцията (трие най-старото + пише точка в една транзакция) не може да се
+  // промъкне между порциите или между точката и редовете и да даде лъжливо „счупено“.
+  return db.$transaction(
+    async (tx) => {
+      const anchor = await tx.auditCheckpoint.findFirst({ orderBy: { throughId: 'desc' } });
+      let prev: string | null = null;
+      let after = 0;
+      for (;;) {
+        const rows = await tx.auditEvent.findMany({
+          where: { id: { gt: after } },
+          orderBy: { id: 'asc' },
+          take: pageSize,
+        });
+        for (const row of rows) {
+          // Веригата започва от контролната точка, ако първото оставащо събитие е след нея.
+          prev ??= anchor && row.id > anchor.throughId ? anchor.throughHash : GENESIS;
+          if (row.prevHash !== prev || row.hash !== eventHash(prev, row)) return row.id;
+          prev = row.hash;
+          after = row.id;
+        }
+        if (rows.length < pageSize) return null;
+      }
+    },
+    { isolationLevel: 'RepeatableRead', timeout: VERIFY_TIMEOUT_MS, maxWait: 10_000 },
+  );
 }

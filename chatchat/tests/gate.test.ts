@@ -617,16 +617,21 @@ describe('Gate — опаковка на отговора', () => {
     assert.match(GATE_VERSION, /^gate-\d{4}-\d{2}-\d{2}\.\d+$/);
   });
 
-  test('ескалацията събира липсващото: ревизия, фърмуер, сериен номер (в този ред)', () => {
-    const none = collectFor(ctx({ serial: 'SN1' }));
-    assert.deepEqual(none, ['collect.checksDone', 'collect.displayPhoto', 'collect.eventLog']);
-    const all = collectFor(ctx({ hardwareRevision: null, firmware: null, serial: null }));
-    assert.deepEqual(all.slice(0, 3), [
-      'collect.hardwareRevision',
-      'collect.firmware',
+  test('ескалацията събира липсващото по диагностична стойност (FR-07): QR → FW → HW → код → снимка → лог → проверки', () => {
+    const none = collectFor(ctx({ serial: 'SN1', errorCode: 'E37' }));
+    assert.deepEqual(none, ['collect.displayPhoto', 'collect.eventLog', 'collect.checksDone']);
+    const all = collectFor(
+      ctx({ hardwareRevision: null, firmware: null, serial: null, errorCode: null }),
+    );
+    assert.deepEqual(all, [
       'collect.serial',
+      'collect.firmware',
+      'collect.hardwareRevision',
+      'collect.errorCode',
+      'collect.displayPhoto',
+      'collect.eventLog',
+      'collect.checksDone',
     ]);
-    assert.equal(all.length, 6);
   });
 
   test('без ескалация няма и списък за събиране', () => {

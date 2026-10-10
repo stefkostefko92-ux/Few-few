@@ -1,7 +1,7 @@
 // Общото за секциите на знанието (kb:manage): жизнен цикъл, статуси, повтаряеми редове, продукти.
 
 import { t } from '../i18n.js';
-import { call } from './core.js';
+import { call, fmtDate, fmtDateTime, fwRange } from './core.js';
 import { badge, button, h } from './ui.js';
 
 /** Версия на фърмуер „4.2.1“ (до 4 числа) — същото правило като на сървъра. */
@@ -75,4 +75,64 @@ export function repeater({ addLabel, removeLabel, makeRow, min = 1, max = 50, in
 /** Продуктите на клиента с ревизиите им (за падащи списъци). */
 export async function loadProducts() {
   return (await call('GET', '/admin/products')).products;
+}
+
+/**
+ * Валидността на документа към сега (§7.2): в сила / изтекъл / още невалиден — с текст, не
+ * само цвят. Сървърът я смята (`validity`), UI само я показва.
+ */
+export function validityBadge(doc) {
+  if (doc.validity === 'expired') return badge('stop', t('admin.kb.validity.expired'));
+  if (doc.validity === 'notYetEffective') return badge('warn', t('admin.kb.validity.future'));
+  return badge('ok', t('admin.kb.validity.effective'));
+}
+
+/** „от 01.01.2026 до 31.12.2026“ / „от 01.01.2026 (без краен срок)“. */
+export function validityText(doc) {
+  return doc.effectiveTo
+    ? t('admin.kb.validity.range', {
+        from: fmtDate(doc.effectiveFrom),
+        to: fmtDate(doc.effectiveTo),
+      })
+    : t('admin.kb.validity.open', { from: fmtDate(doc.effectiveFrom) });
+}
+
+/** Значката „табло“: документът важи само за конкретни табла (уникални схеми). */
+export const boardBadge = (doc) =>
+  doc.boardSpecific ? badge('info', t('admin.kb.board.badge')) : null;
+
+/** Едно правило за приложимост като текст: модел · HW · FW (изрично „всички“) · табло. */
+export function ruleText(a) {
+  const parts = [a.productModel];
+  parts.push(`HW ${a.hwRevision ?? t('admin.docs.hwAny')}`);
+  parts.push(
+    `${t('admin.products.fw')} ${a.allFirmware ? t('admin.kb.fwAll') : fwRange(a.fwMin, a.fwMax)}`,
+  );
+  if (a.deviceSerial) parts.push(t('admin.kb.board.only', { serial: a.deviceSerial }));
+  // FR-01: само за конфигурация с тези опции.
+  const opts = Object.entries(a.options ?? {});
+  if (opts.length) {
+    parts.push(t('options.rule.only', { list: opts.map(([k, v]) => `${k}=${v}`).join(', ') }));
+  }
+  return parts.join(' · ');
+}
+
+/** Историята от одита: кога, кой, какво, с каква причина (вече маскирана на сървъра). */
+export function historyList(entries) {
+  if (!entries?.length) return h('p', { class: 'muted' }, t('admin.kb.history.empty'));
+  return h(
+    'ol',
+    { class: 'plain kb-history' },
+    ...entries.map((e) =>
+      h(
+        'li',
+        {},
+        h('span', { class: 'mono small' }, fmtDateTime(e.at)),
+        ' · ',
+        h('strong', {}, t(`admin.kb.action.${e.action}`)),
+        e.actor?.name ? ` · ${e.actor.name}` : '',
+        e.reason ? h('span', { class: 'muted' }, ` — ${e.reason}`) : null,
+      ),
+    ),
+  );
 }

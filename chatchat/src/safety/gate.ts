@@ -15,7 +15,10 @@ import { applyThresholds, lowerOutcome } from './caps.js';
 import { citationOf, verifyCitations } from './citations.js';
 import { collectFor } from './escalation.js';
 import { GATE_VERSION } from './version.js';
+import { screenCauses, screenDecisionPoints } from './gate-text.js';
+import { withKnowledgeNotices } from './knowledge.js';
 import { detectBypassIntent } from './lexicon.js';
+import { withOrderedMissing } from './missing-order.js';
 import { applyPhotoRules, PHOTO_ONLY_BASIS } from './photos.js';
 import {
   approvesSafetyStep,
@@ -163,41 +166,14 @@ export function applyGate(input: GateInput): DiagnosticAnswer {
   }
 
   // 4. Причините — само подкрепените и безопасните; несъвместимото не е основен източник.
-  const causes: DiagnosticAnswer['causes'] = [];
-  for (const cause of draft.causes) {
-    const refs = supporting(cause.evidenceRefs);
-    const verdict = screenText(cause.text);
-    if (verdict.bypass || verdict.actionClass === 'DIRECT_COMMAND') {
-      blockForText('gate.causes.withheld');
-      continue;
-    }
-    const safetyOk =
-      verdict.actionClass !== 'SAFETY_RELEVANT' ||
-      refs.some((r) => {
-        const item = byRef.get(r);
-        return item !== undefined && approvesSafetyStep(item, cause.text);
-      });
-    if (refs.length === 0 || !safetyOk) {
-      decisions.add('gate.causes.unsupportedDropped');
-      continue;
-    }
-    causes.push({ text: cause.text, evidenceRefs: refs });
-  }
-
   // 5. Решенията „ако X → A“: само ако има запазена стъпка, и без нищо, което Gate би махнал
-  // като стъпка (нямат референции, затова и действие по безопасност не минава).
-  const decisionPoints = (kept.length > 0 ? draft.decisionPoints : []).filter((dp) => {
-    const verdict = screenText(`${dp.condition} ${dp.then}`);
-    if (verdict.bypass || verdict.actionClass === 'DIRECT_COMMAND') {
-      blockForText('gate.decisionPoint.withheld');
-      return false;
-    }
-    if (verdict.actionClass === 'SAFETY_RELEVANT' || verdict.actionClass === 'CONFIGURATIVE') {
-      decisions.add('gate.decisionPoint.withheld');
-      return false;
-    }
-    return true;
-  });
+  // като стъпка (нямат референции, затова и действие по безопасност не минава). (`gate-text.ts`)
+  const freeText = { byRef, supporting, decisions, blockForText };
+  const causes = screenCauses(draft.causes, freeText);
+  const decisionPoints = screenDecisionPoints(
+    kept.length > 0 ? draft.decisionPoints : [],
+    freeText,
+  );
 
   // 6. Увереност и изход по прага (§8.3) — моделът не може да ги вдигне (`caps.ts`).
   const t = applyThresholds({
@@ -261,7 +237,9 @@ export function applyGate(input: GateInput): DiagnosticAnswer {
     .sort((a, b) => Number(a.ref.slice(1)) - Number(b.ref.slice(1)))
     .map((i) => citationOf(i, verifiedQuotes.get(i.ref) ?? null));
 
-  return {
+  // 10. Табло/валидност на знанието: искане на сериен номер, изтекли източници (`knowledge.ts`).
+  const cited = new Set([...draft.evidenceUsed.map((e) => e.ref), ...used]);
+  const answer: DiagnosticAnswer = {
     generatedBy: 'ai',
     status,
     confidence,
@@ -292,4 +270,6 @@ export function applyGate(input: GateInput): DiagnosticAnswer {
     // AC-09: версията на промпта И на правилата на Gate, дали отговора.
     promptVersion: `${input.promptVersion}+${GATE_VERSION}`,
   };
+  // 11. Липсващите данни — в реда на диагностичната стойност (FR-07, `missing-order.ts`).
+  return withOrderedMissing(withKnowledgeNotices(answer, retrieval, cited));
 }

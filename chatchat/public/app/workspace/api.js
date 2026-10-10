@@ -11,10 +11,11 @@ export const wsApi = {
   publicChannels: () => api('GET', '/conversations?scope=public'),
   conversation: (cid) => api('GET', `/conversations/${id(cid)}`),
   create: (body) => api('POST', '/conversations', body),
-  messages: (cid, { before, after, threadId, limit = 50 } = {}) => {
+  messages: (cid, { before, after, around, threadId, limit = 50 } = {}) => {
     const q = new URLSearchParams({ limit: String(limit) });
     if (before) q.set('before', before);
     if (after) q.set('after', after);
+    if (around) q.set('around', around);
     if (threadId) q.set('threadId', threadId);
     return api('GET', `/conversations/${id(cid)}/messages?${q}`);
   },
@@ -34,8 +35,17 @@ export const wsApi = {
   caseConversation: (caseId) => api('POST', `/cases/${id(caseId)}/conversation`, {}),
   presence: (userIds) => api('GET', `/presence?userIds=${userIds.map(id).join(',')}`),
   heartbeat: (status) => api('POST', '/presence/heartbeat', { status }),
-  notifications: () => api('GET', '/notifications?limit=50'),
+  notifications: (cursor) =>
+    api('GET', `/notifications?limit=50${cursor ? `&cursor=${id(cursor)}` : ''}`),
   readNotifications: (body) => api('POST', '/notifications/read', body),
+  notificationPrefs: (body) => api('PATCH', '/notifications/preferences', body),
+  // Търсене (FR-16) и действията по съобщение (§12.1).
+  search: (q, cursor) =>
+    api('GET', `/search/messages?q=${id(q)}&limit=20${cursor ? `&cursor=${id(cursor)}` : ''}`),
+  markUnread: (mid) => api('POST', `/messages/${id(mid)}/unread`, {}),
+  mark: (mid, kind, on) => api(on ? 'PUT' : 'DELETE', `/messages/${id(mid)}/marks/${kind}`),
+  marked: (kind, cursor) =>
+    api('GET', `/messages/marked?kind=${kind}&limit=30${cursor ? `&cursor=${id(cursor)}` : ''}`),
   quickResponses: () => api('GET', '/quick-responses'),
   people: (q) => api('GET', `/people?limit=30${q ? `&q=${id(q)}` : ''}`),
   timeline: (caseId) => api('GET', `/cases/${id(caseId)}/timeline`),

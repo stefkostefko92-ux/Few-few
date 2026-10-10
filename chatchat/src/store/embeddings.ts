@@ -2,12 +2,13 @@ import type { PrismaClient } from '@prisma/client';
 import { toVectorLiteral, type EmbeddingModel } from '../ai/embeddings.js';
 import { SEMANTIC_MIN_SIMILARITY } from '../retrieval/retrieve.js';
 import type { RawEvidence, SearchScope } from '../retrieval/types.js';
-import { chunkEvidence, documentInclude } from './knowledge.js';
+import { applicableSql, chunkEvidence, documentInclude } from './scope.js';
 
 /**
  * pgvector: търсене и индексиране (§6.2, §8.1).
  *  - Търсенето има СЪЩИТЕ филтри в SQL като пълнотекстовото: tenant, PUBLISHED, аудитория,
- *    приложимост към модела. Плюс: само вектори от текущия модел на embeddings.
+ *    приложимост към модела (общите правила + само таблото на случая — `store/scope.ts`).
+ *    Плюс: само вектори от текущия модел на embeddings.
  *  - Векторите се смятат САМО за парчета на PUBLISHED документи — никога DRAFT/REVIEW/DEPRECATED;
  *    записът повтаря условието (документ, отписан между четенето и записа, не получава вектор).
  */
@@ -32,9 +33,10 @@ export async function semanticSearch(
   const audiences = [...scope.audiences];
   const take = Math.min(Math.max(limit, 1), MAX_SEMANTIC_LIMIT);
   // <=> е косинусовото РАЗСТОЯНИЕ (0..2); сходство = 1 − разстояние.
-  const [, rows] = await db.$transaction([
-    db.$executeRawUnsafe(`SET LOCAL hnsw.ef_search = ${HNSW_EF_SEARCH}`),
-    db.$queryRaw<Array<{ id: string; similarity: number }>>`
+  // SET LOCAL и търсенето — в една транзакция (под RLS в нея първо е и клиентът — db/rls.ts).
+  const rows = await db.$transaction(async (tx) => {
+    await tx.$executeRawUnsafe(`SET LOCAL hnsw.ef_search = ${HNSW_EF_SEARCH}`);
+    return tx.$queryRaw<Array<{ id: string; similarity: number }>>`
       SELECT c.id, (1 - (c.embedding <=> ${literal}::vector))::float8 AS similarity
       FROM "DocumentChunk" c
       JOIN "Document" d ON d.id = c."documentId"
@@ -43,20 +45,16 @@ export async function semanticSearch(
         AND d."tenantId" = ${scope.tenantId}
         AND d.status = 'PUBLISHED'
         AND d.audience::text = ANY(${audiences})
-        AND EXISTS (
-          SELECT 1 FROM "DocumentApplicability" a
-          JOIN "Product" p ON p.id = a."productId"
-          WHERE a."documentId" = d.id AND p.model = ${productModel} AND p."tenantId" = ${scope.tenantId}
-        )
+        AND ${applicableSql(scope, productModel)}
       ORDER BY c.embedding <=> ${literal}::vector
-      LIMIT ${take}`,
-  ]);
+      LIMIT ${take}`;
+  });
   const kept = rows.filter((r) => r.similarity >= SEMANTIC_MIN_SIMILARITY);
   if (kept.length === 0) return [];
   const similarity = new Map(kept.map((r) => [r.id, r.similarity]));
   const chunks = await db.documentChunk.findMany({
     where: { id: { in: [...similarity.keys()] } },
-    include: { document: { include: documentInclude(productModel, scope.tenantId) } },
+    include: { document: { include: documentInclude(productModel, scope) } },
   });
   return chunks.map((c) => ({
     ...chunkEvidence(c, ['semantic'], 0),

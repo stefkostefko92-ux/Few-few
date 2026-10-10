@@ -157,7 +157,7 @@ export function closeConversationView() {
   current = null;
 }
 
-export async function openConversationView(id, { messageId } = {}) {
+export async function openConversationView(id, { messageId, replyToId } = {}) {
   closeConversationView();
   const token = { id, thread: null, unsub: null };
   current = token;
@@ -202,7 +202,11 @@ export async function openConversationView(id, { messageId } = {}) {
     },
     () => {},
   );
-  if (messageId) setTimeout(() => token.thread?.focusMessage(messageId), 400);
+  if (messageId) {
+    // След първото зареждане: съобщение извън страницата се зарежда „около“ него.
+    await token.thread.ready;
+    if (current === token) await token.thread.focusMessage(messageId, replyToId ?? null);
+  }
   return true;
 }
 

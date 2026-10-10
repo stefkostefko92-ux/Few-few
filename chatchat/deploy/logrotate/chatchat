@@ -1,0 +1,14 @@
+# ChatChat — дневниците на хоста в /var/log/chatchat/ (засега: прогоните на оценъчния набор на staging,
+# staging-eval.log). Слага го deploy/provision/chatchat-host.sh в /etc/logrotate.d/chatchat.
+# Дневниците на контейнерите ги върти Docker (json-file, max-size/max-file в docker-compose.yml), а
+# тези на nginx — пакетът му (/etc/logrotate.d/nginx); тук не се дублират.
+/var/log/chatchat/*.log {
+    weekly
+    rotate 8
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0600 root root
+    su root root
+}

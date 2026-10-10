@@ -25,7 +25,19 @@ export type Capability =
   // няма разговори, присъствие и известия в него.
   | 'conversation:use' // участие в разговорите, в които е член; присъствие; известия
   | 'conversation:create' // нов DIRECT/GROUP — само персоналът; порталът само бива поканван
-  | 'channel:create'; // нов CHANNEL (PUBLIC/PRIVATE) — водещите екипи и администраторът
+  | 'channel:create' // нов CHANNEL (PUBLIC/PRIVATE) — водещите екипи и администраторът
+  // Изпълнени стъпки и човешко потвърждение (§11.2): техникът отбелязва и иска разрешение;
+  // разрешава ДРУГ човек с роля по политиката на клиента (services/steps/policy.ts).
+  | 'step:record'
+  | 'step:approve'
+  | 'policy:manage' // политиката за разрешенията (кой разрешава кой клас) — администраторът
+  // Интеграцията с helpdesk (FR-09, §14.4): конекторът, тестът, дневникът на доставките.
+  | 'integrations:manage'
+  // Единният вход (OIDC / Entra ID, §12.4 „MFA federata e policy“): доставчик, домейни, режим.
+  | 'sso:manage'
+  // Обратната връзка към знанието (FR-10, §11.3): персоналът предлага решен случай за знание;
+  // опашката с предложенията е на отговорника за знанието (`kb:manage`), порталът не я вижда.
+  | 'proposal:create';
 
 /** Всички роли (за zod на входа: API, CLI, филтри). */
 export const ROLES = [
@@ -49,20 +61,34 @@ const TECH: readonly Capability[] = [
   'ticket:create',
   'feedback:create',
   'conversation:use',
+  'step:record',
 ];
 const STAFF_CHAT: readonly Capability[] = ['conversation:create', 'channel:create'];
+/** Предложение „решен случай → знание“ — персоналът, който работи по случаите (§11.3). */
+const STAFF_KB: readonly Capability[] = ['proposal:create'];
 
 const CAPABILITIES: Record<Role, readonly Capability[]> = {
   PORTAL_TECHNICIAN: TECH,
   INTERNAL_TECHNICIAN: [...TECH, 'device:readAll', 'conversation:create'],
-  SUPPORT: [...TECH, 'case:readAll', 'case:assign', 'device:readAll', 'kpi:read', ...STAFF_CHAT],
+  SUPPORT: [
+    ...TECH,
+    'case:readAll',
+    'case:assign',
+    'device:readAll',
+    'kpi:read',
+    'step:approve',
+    ...STAFF_CHAT,
+    ...STAFF_KB,
+  ],
   ENGINEERING: [
     ...TECH,
     'case:readAll',
     'case:assign',
     'device:readAll',
     'kpi:read',
+    'step:approve',
     ...STAFF_CHAT,
+    ...STAFF_KB,
   ],
   KNOWLEDGE_OWNER: [
     ...TECH,
@@ -72,6 +98,7 @@ const CAPABILITIES: Record<Role, readonly Capability[]> = {
     'kb:manage',
     'kpi:read',
     ...STAFF_CHAT,
+    ...STAFF_KB,
   ],
   TENANT_ADMIN: [
     'case:readAll',
@@ -80,11 +107,14 @@ const CAPABILITIES: Record<Role, readonly Capability[]> = {
     'audit:read',
     'kpi:read',
     'conversation:use',
+    'policy:manage',
+    'integrations:manage',
+    'sso:manage',
     ...STAFF_CHAT,
   ],
   // Платформеният администратор управлява потребители САМО в своя клиент (по tenantId като всички):
   // клиентите на платформата се създават и спасяват от сървъра (cli/tenant.ts), не през уеб.
-  PLATFORM_ADMIN: ['users:manage', 'audit:read'],
+  PLATFORM_ADMIN: ['users:manage', 'audit:read', 'sso:manage'],
 };
 
 const AUDIENCES: Record<Role, readonly Audience[]> = {

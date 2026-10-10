@@ -66,6 +66,7 @@ describe('Директория: GET /admin/users', () => {
       'id',
       'kind',
       'lastLoginAt',
+      'locale',
       'mfaEnabled',
       'name',
       'role',

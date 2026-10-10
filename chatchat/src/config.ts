@@ -1,4 +1,12 @@
 import { z } from 'zod';
+import { describeIssues, isKey32, withoutEmpty } from './config-env.js';
+import { DB_ENV } from './config-db.js';
+import { checkFilesCrypto, FILES_ENV } from './config-files.js';
+import { QUEUE_ENV } from './config-queue.js';
+
+export { withoutEmpty } from './config-env.js';
+export { filesKeks, loadFilesConfig, type FilesConfig } from './config-files.js';
+export { redisEnabled } from './config-queue.js';
 
 /**
  * Средата — валидирана веднъж при старт; с полуготов конфиг процесът не тръгва (fail-closed).
@@ -9,7 +17,9 @@ import { z } from 'zod';
 export const EU_REGION = /^(eu|europe-[a-z]+\d+)$/;
 
 const EnvSchema = z.object({
-  NODE_ENV: z.enum(['development', 'test', 'production']).default('production'),
+  ...FILES_ENV,
+  ...QUEUE_ENV,
+  ...DB_ENV,
   HOST: z.string().default('127.0.0.1'),
   PORT: z.coerce.number().int().min(1).max(65535).default(4330),
   /** Колко обратни проксита стоят отпред (Nginx = 1) — за коректен req.ip в лимитите. */
@@ -27,10 +37,7 @@ const EnvSchema = z.object({
   MFA_ENC_KEY: z
     .string()
     .trim()
-    .refine(
-      (v) => /^[A-Za-z0-9+/]+={0,2}$/.test(v) && Buffer.from(v, 'base64').length === 32,
-      'MFA_ENC_KEY трябва да е 32 байта в base64 (openssl rand -base64 32)',
-    ),
+    .refine(isKey32, 'MFA_ENC_KEY трябва да е 32 байта в base64 (openssl rand -base64 32)'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'silent']).default('info'),
   /** Информацията по чл. 13/14 GDPR на администратора (клиента) — връзка във входа и футъра. */
   PRIVACY_POLICY_URL: z.union([z.url(), z.literal('')]).default(''),
@@ -61,8 +68,6 @@ const EnvSchema = z.object({
   EMBEDDING_TIMEOUT_MS: z.coerce.number().int().min(500).max(30000).default(4000),
   /** През колко секунди фоновото индексиране търси непокрити публикувани парчета (0 = никога). */
   EMBEDDING_SWEEP_SECONDS: z.coerce.number().int().min(0).max(86400).default(600),
-  /** Частното хранилище на прикачените файлове (F2). Празно → прикачването е изключено. */
-  ATTACHMENTS_DIR: z.string().default(''),
   /** HMAC ключ за краткотрайните подписани адреси за сваляне — различен от SESSION_PEPPER. */
   ATTACHMENT_URL_KEY: z.string().default(''),
   /** clamd (INSTREAM през TCP). Празно → без антивирус качването е изключено (fail-closed). */
@@ -78,6 +83,25 @@ const EnvSchema = z.object({
    */
   METRICS_PORT: z.coerce.number().int().min(0).max(65535).default(0),
   METRICS_HOST: z.string().default('127.0.0.1'),
+
+  /**
+   * Имейл известия през Brevo (HTTPS API, порт 443 — Hetzner блокира 25/465/587). Ключът е тайна —
+   * само в .env на сървъра (mode 600), никога в лог. Празно → имейлите са изключени (fail-open:
+   * известията в приложението работят), без натрупване в outbox.
+   */
+  BREVO_API_KEY: z.string().default(''),
+  BREVO_API_URL: z.url().default('https://api.brevo.com/v3/smtp/email'),
+  /** Подателят (проверен домейн в Brevo), напр. no-reply@carbonstealth.eu. */
+  MAIL_FROM_EMAIL: z.string().default(''),
+  MAIL_FROM_NAME: z.string().trim().min(1).max(70).default('ChatChat'),
+  /** През колко секунди изпращачът минава през outbox-а (0 = никога). */
+  EMAIL_SWEEP_SECONDS: z.coerce.number().int().min(0).max(3600).default(60),
+  /** Колко чака писмото за ново съобщение/споменаване — прочетено междувременно → не тръгва. */
+  EMAIL_DELAY_SECONDS: z.coerce.number().int().min(0).max(86400).default(300),
+  /** В колко часа (местно време на човека) тръгва дневният дайджест на непрочетеното. */
+  EMAIL_DIGEST_HOUR: z.coerce.number().int().min(0).max(23).default(7),
+  EMAIL_TIMEOUT_MS: z.coerce.number().int().min(1000).max(60000).default(10000),
+  EMAIL_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(20).default(6),
 });
 
 /** Прикачването иска и ключ за подписите: хранилище без ключ е полуготов конфиг. */
@@ -89,7 +113,27 @@ const ConfigSchema = EnvSchema.superRefine((c, ctx) => {
       message: 'METRICS_PORT трябва да е различен от PORT (метриките не са на публичния порт)',
     });
   }
+  // Ключ без подател е полуготов конфиг: писмата биха се отхвърляли едно по едно.
+  if (c.BREVO_API_KEY !== '' && !z.email().safeParse(c.MAIL_FROM_EMAIL).success) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['MAIL_FROM_EMAIL'],
+      message: 'MAIL_FROM_EMAIL трябва да е валиден имейл, щом BREVO_API_KEY е зададен',
+    });
+  }
   if (c.ATTACHMENTS_DIR === '') return;
+  checkFilesCrypto(c, ctx);
+  if (
+    c.FILES_ENCRYPTION === 'on' &&
+    isKey32(c.FILES_KEK) &&
+    Buffer.from(c.FILES_KEK, 'base64').equals(Buffer.from(c.MFA_ENC_KEY, 'base64'))
+  ) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['FILES_KEK'],
+      message: 'FILES_KEK трябва да е различен от MFA_ENC_KEY (отделен ключ за всяка цел)',
+    });
+  }
   if (c.ATTACHMENT_URL_KEY.length < 32) {
     ctx.addIssue({
       code: 'custom',
@@ -107,20 +151,10 @@ const ConfigSchema = EnvSchema.superRefine((c, ctx) => {
 
 export type Config = z.infer<typeof EnvSchema>;
 
-/**
- * Празен низ = „не е зададено“: docker-compose.yml подава `${X:-}` като празна стойност, а изборите
- * (EMBEDDING_MODEL) и числата (METRICS_PORT) иначе биха спрели процеса при старт. Всички текстови
- * настройки имат подразбиране '' — за тях смисълът не се мени.
- */
-function withoutEmpty(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
-  return Object.fromEntries(Object.entries(env).filter(([, v]) => v !== ''));
-}
-
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const parsed = ConfigSchema.safeParse(withoutEmpty(env));
   if (!parsed.success) {
-    const issues = parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ');
-    throw new Error(`Невалидна конфигурация: ${issues}`);
+    throw new Error(`Невалидна конфигурация: ${describeIssues(parsed.error.issues)}`);
   }
   return parsed.data;
 }
@@ -145,4 +179,58 @@ export function aiEnabled(cfg: Pick<Config, 'VERTEX_PROJECT_ID'>): boolean {
 /** Прикачването е включено само с хранилище (ключът е проверен в схемата). */
 export function attachmentsEnabled(cfg: Pick<Config, 'ATTACHMENTS_DIR'>): boolean {
   return cfg.ATTACHMENTS_DIR.length > 0;
+}
+
+/** Имейл известията — само с ключ за Brevo (подателят е проверен в схемата). */
+export function emailEnabled(cfg: Pick<Config, 'BREVO_API_KEY'>): boolean {
+  return cfg.BREVO_API_KEY.length > 0;
+}
+
+/**
+ * Средата на worker-а (`node dist/worker.js`) — най-малкото нужно (NFR-03, least privilege): базата,
+ * Redis, хранилището на файловете (чете оригиналите), Vertex за векторите и метриките. БЕЗ
+ * SESSION_PEPPER, MFA_ENC_KEY, ATTACHMENT_URL_KEY, Brevo — worker-ът не обслужва потребители.
+ */
+const WorkerSchema = EnvSchema.pick({
+  NODE_ENV: true,
+  LOG_LEVEL: true,
+  DATABASE_URL: true,
+  VERTEX_PROJECT_ID: true,
+  VERTEX_REGION: true,
+  GOOGLE_APPLICATION_CREDENTIALS: true,
+  EMBEDDING_MODEL: true,
+  EMBEDDING_TIMEOUT_MS: true,
+  EMBEDDING_SWEEP_SECONDS: true,
+  AI_BREAKER_FAILURES: true,
+  AI_BREAKER_COOLDOWN_SECONDS: true,
+  METRICS_PORT: true,
+  METRICS_HOST: true,
+})
+  .extend({ ...FILES_ENV, ...QUEUE_ENV, ...DB_ENV })
+  .superRefine((c, ctx) => {
+    if (c.REDIS_URL === '') {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['REDIS_URL'],
+        message: 'worker-ът иска REDIS_URL (без Redis опашките вървят в процеса на API-то)',
+      });
+    }
+    if (c.ATTACHMENTS_DIR === '') {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['ATTACHMENTS_DIR'],
+        message: 'worker-ът иска ATTACHMENTS_DIR (чете оригиналите на документите)',
+      });
+    }
+    checkFilesCrypto(c, ctx);
+  });
+
+export type WorkerConfig = z.infer<typeof WorkerSchema>;
+
+export function loadWorkerConfig(env: NodeJS.ProcessEnv = process.env): WorkerConfig {
+  const parsed = WorkerSchema.safeParse(withoutEmpty(env));
+  if (!parsed.success) {
+    throw new Error(`Невалидна конфигурация: ${describeIssues(parsed.error.issues)}`);
+  }
+  return parsed.data;
 }

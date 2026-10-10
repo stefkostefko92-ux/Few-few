@@ -12,6 +12,7 @@ import {
   MemoryAttachmentStore,
   newObjectKey,
 } from '../src/storage/attachments.js';
+import { PLAINTEXT_ONLY } from '../src/storage/file-store.js';
 import { EICAR, MAGIC, makePdf } from './file-fixtures.js';
 
 const text = (s: string) => Buffer.from(s, 'utf8');
@@ -138,7 +139,7 @@ describe('хранилище', () => {
   test('файлово: папки 700, файл 600, атомарен запис, четене и идемпотентно триене', async () => {
     const root = await mkdtemp(join(tmpdir(), 'chatchat-att-'));
     try {
-      const store = new FileAttachmentStore(join(root, 'files'));
+      const store = new FileAttachmentStore(join(root, 'files'), PLAINTEXT_ONLY);
       const key = newObjectKey('ckt1');
       await store.put(key, Buffer.from('ciao'));
       assert.equal((await store.get(key))?.toString(), 'ciao');
@@ -160,7 +161,7 @@ describe('хранилище', () => {
   });
 
   test('ключ извън формата (път навън) → отказ и във файловото, и в паметта', async () => {
-    const file = new FileAttachmentStore(tmpdir());
+    const file = new FileAttachmentStore(tmpdir(), PLAINTEXT_ONLY);
     const memory = new MemoryAttachmentStore();
     for (const bad of ['../../etc/passwd', 'ckt1/2026/01/../../x', '/abs/path']) {
       await assert.rejects(file.get(bad));
@@ -191,7 +192,11 @@ describe('конфигурация (fail-closed)', () => {
       () => loadConfig({ ...dir, ATTACHMENT_URL_KEY: base.SESSION_PEPPER }),
       /различен от SESSION_PEPPER/,
     );
-    const ok = loadConfig({ ...dir, ATTACHMENT_URL_KEY: 'k'.repeat(32) });
+    const ok = loadConfig({
+      ...dir,
+      ATTACHMENT_URL_KEY: 'k'.repeat(32),
+      FILES_KEK: Buffer.alloc(32, 9).toString('base64'),
+    });
     assert.equal(attachmentsEnabled(ok), true);
   });
 });

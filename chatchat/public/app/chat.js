@@ -10,6 +10,9 @@ import { renderAttachments } from './attachments/view.js';
 import { roleLabel } from './format.js';
 import { getLang, t } from './i18n.js';
 import { attachQuickResponses } from './workspace/quick.js';
+import { stepControls } from './flow/steps.js';
+import { missingUiFor } from './answer/missing-chat.js';
+import { reloadCase } from './flow/state.js';
 import { on, state } from './store.js';
 
 const rated = new Map(); // messageId -> rating (за сесията на страницата)
@@ -30,8 +33,9 @@ function fmtTime(iso) {
   }
 }
 
-const onFeedback = async (messageId, rating) => {
-  await api('POST', '/feedback', { messageId, rating });
+// FR-10: коментарът (по желание) към „Non utile/Errore tecnico“ стига до отговорника за знанието.
+const onFeedback = async (messageId, rating, comment) => {
+  await api('POST', '/feedback', { messageId, rating, ...(comment ? { comment } : {}) });
   rated.set(messageId, rating);
 };
 
@@ -42,6 +46,9 @@ function renderMessage(m) {
       onOpenTicket: openTicketDialog,
       onFeedback,
       rated: (id) => rated.get(id) ?? null,
+      stepUi: stepControls,
+      // FR-07: липсващите данни като полета + „попитай отново“ (answer/missing*.js).
+      missingUi: (msg) => missingUiFor(msg, { pick: (kind) => tray?.pick(kind), askAgain }),
     });
   }
   if (m.kind === 'SYSTEM') {
@@ -169,11 +176,16 @@ async function send() {
       renderMessages({ scroll: 'answer' });
       const ans = data.answer;
       const blocked = ans?.payload?.safety?.level === 'blocked';
+      // FR-19: предаден на оператор — AI мълчи, съобщението е при човека.
       announce(
-        t('chat.newAnswer', {
-          summary: `${blocked ? t('ans.safety.blocked') + '. ' : ''}${answerSummaryText(ans?.payload) || String(ans?.body ?? '')}`,
-        }),
+        data.aiPaused
+          ? t('handoff.sentToOperator')
+          : t('chat.newAnswer', {
+              summary: `${blocked ? t('ans.safety.blocked') + '. ' : ''}${answerSummaryText(ans?.payload) || String(ans?.body ?? '')}`,
+            }),
       );
+      // С тикет: отговорът на техника може да е върнал случая в работа (заявка за данни).
+      if (state.flow?.ticket) void reloadCase().catch(() => undefined);
     }
     refreshCases();
   } catch (err) {
@@ -207,6 +219,13 @@ async function send() {
     setBusy(false);
     refreshCases();
   }
+}
+
+/** „Попитай отново“ (FR-07): същият въпрос с обновения контекст и файловете в тавата. */
+export function askAgain(text) {
+  if (state.sending || !state.current) return;
+  $('#composer-text').value = text;
+  void send();
 }
 
 export function initChat() {

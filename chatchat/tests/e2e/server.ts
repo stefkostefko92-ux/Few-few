@@ -5,24 +5,75 @@
  *   DATABASE_URL=…chatchat_test_ac npx tsx tests/e2e/server.ts
  */
 import { createServer } from 'node:http';
-import { cite, resetDb, startApp, type Plan } from '../integration/helpers.js';
-import { FakeScanner, SpyStore, URL_KEY } from '../integration/files.js';
+import { IntegrationWorker } from '../../src/services/integrations/worker.js';
+import { appDb, cite, resetDb, startApp, systemDb, type Plan } from '../integration/helpers.js';
+import { FakeScanner, URL_KEY } from '../integration/files.js';
+import { FakeHelpdesk } from '../integration/helpdesk-fake.js';
+import { localDeps } from '../integration/helpdesk-world.js';
+import { FlakyStore, ingestRig } from '../integration/ingest-world.js';
 import { seedWorld } from '../integration/world.js';
-import { E2E_ORIGIN, E2E_PORT, E2E_READY_PORT, PHOTO_CODE } from './support/constants.js';
+import { twoSteps } from '../integration/flow-world.js';
+import { startSsoApp } from '../integration/sso-world.js';
+import { FakeIdp } from '../sso-fake-idp.js';
+import {
+  E2E_HELPDESK_PORT,
+  E2E_IDP_PORT,
+  E2E_ORIGIN,
+  E2E_PORT,
+  E2E_READY_PORT,
+  E2E_SSO_ORIGIN,
+  E2E_SSO_PORT,
+  PHOTO_CODE,
+} from './support/constants.js';
 
 await resetDb();
+// Интеграцията с helpdesk (FR-09): фалшив helpdesk на фиксиран порт и изпращач на всяка секунда.
+const helpdesk = new FakeHelpdesk();
+await helpdesk.start(E2E_HELPDESK_PORT);
+const integrations = localDeps(helpdesk);
+// Приемането на документи през опашката в процеса (фалшив OCR — истинският е в Docker smoke теста).
+const store = new FlakyStore();
+const rig = ingestRig(store);
 const h = await startApp({
   diagnose: 'real',
-  attachments: { store: new SpyStore(), scanner: new FakeScanner(), urlKey: URL_KEY },
+  attachments: { store, scanner: new FakeScanner(), urlKey: URL_KEY },
+  ingest: { bus: rig.bus },
   port: E2E_PORT,
   origin: E2E_ORIGIN,
+  integrations,
 });
+const quiet = { info: () => undefined, warn: () => undefined };
+const helpdeskWorker = new IntegrationWorker(
+  { db: appDb, system: systemDb, integrations, logger: quiet },
+  1,
+);
+helpdeskWorker.start();
 
-/** Цитира първия съвместим източник; ако въпросът има снимка — добавя ясно наблюдение за нея. */
-const plan: Plan = (pack) => {
+/** Обобщението на езика, поискан в съобщението на случая (FR-14: езикът на човека). */
+const SUMMARY: Record<string, string> = {
+  Italian: 'Diagnosi di prova.',
+  English: 'Test diagnosis.',
+  Bulgarian: 'Тестова диагноза.',
+};
+
+/**
+ * Цитира първия съвместим източник; ако въпросът има снимка — добавя ясно наблюдение за нея;
+ * обобщението е на езика от „Answer language: …“ (като истинския модел).
+ * Въпрос за „contatto porta“ → отговор с две стъпки (диагностична + по безопасност по
+ * процедурата PROC-DOOR-001) — за потока на тикета (ticket-flow.spec.ts).
+ */
+const plan: Plan = (pack, call) => {
+  if (
+    /contatto porta/i.test(call.question) &&
+    pack.some((p) => p.documentCode === 'PROC-DOOR-001')
+  ) {
+    return twoSteps(pack, call);
+  }
   const first = pack.find((p) => p.applicable);
   const photoSent = (h.model.images.at(-1)?.length ?? 0) > 0;
+  const language = /Answer language: (\w+)/.exec(h.model.texts.at(-1) ?? '')?.[1] ?? 'Italian';
   return {
+    summary: SUMMARY[language] ?? SUMMARY.Italian,
     ...(first
       ? {
           causes: [{ text: 'Causa documentata', evidenceRefs: [first.ref] }],
@@ -52,12 +103,22 @@ h.model.plan = plan;
 
 await seedWorld(h);
 
+// Единният вход (sso.spec.ts): фалшив OIDC доставчик на localhost + екземпляр с включен SSO.
+const idp = await FakeIdp.create();
+await idp.listen('localhost', E2E_IDP_PORT);
+const sso = await startSsoApp(idp, { port: E2E_SSO_PORT, origin: E2E_SSO_ORIGIN });
+
 const ready = createServer((_req, res) => res.writeHead(200).end('ready'));
 ready.listen(E2E_READY_PORT, '127.0.0.1');
 console.log('E2E READY', E2E_ORIGIN);
 
 const stop = async () => {
   ready.close();
+  helpdeskWorker.stop();
+  await helpdesk.close();
+  await sso.close();
+  await idp.close();
+  await rig.bus.close();
   await h.close();
   process.exit(0);
 };

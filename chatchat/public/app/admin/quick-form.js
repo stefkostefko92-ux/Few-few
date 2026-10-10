@@ -6,8 +6,8 @@ import { ApiError, call, ROLES } from './core.js';
 import { checkbox, dialog, field, h, input, select, textarea, toast } from './ui.js';
 import { roleLabel } from './users-common.js';
 
-export const LOCALES = ['it', 'en', 'bg'];
-export const localeLabel = (l) => ({ it: 'Italiano', en: 'English', bg: 'Български' })[l] ?? l;
+export const LOCALES = ['it', 'en'];
+export const localeLabel = (l) => ({ it: 'Italiano', en: 'English' })[l] ?? l;
 
 export function quickForm(existing, reload) {
   const shortcut = input({

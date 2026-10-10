@@ -18,6 +18,7 @@ import { appendSources } from './answer/sources.js';
 import { appendPhotos } from './answer/photos.js';
 import { appendGateDetails } from './answer/details.js';
 import { feedbackRow } from './answer/feedback.js';
+import { missingBlock } from './answer/missing.js';
 import { arr, str } from './answer/util.js';
 
 export function answerSummaryText(payload) {
@@ -38,7 +39,10 @@ function header() {
   );
 }
 
-export function renderAnswer(message, { onOpenSource, onOpenTicket, onFeedback, rated }) {
+export function renderAnswer(
+  message,
+  { onOpenSource, onOpenTicket, onFeedback, rated, stepUi, missingUi },
+) {
   const p = message.payload;
   const root = h('article', { class: 'msg msg-ai', 'data-message-id': message.id });
   root.append(header());
@@ -73,7 +77,17 @@ export function renderAnswer(message, { onOpenSource, onOpenTicket, onFeedback, 
   };
   const safety = p.safety ?? { level: 'standard', notes: [] };
   const notes = arr(safety.notes).map((n) => str(tMaybeCode(n)));
-  const c = { p, refs, evidence, safety, notes, onOpenSource, onOpenTicket };
+  // stepUi: изпълнение/разрешение на стъпката (§11.2) — под всяка проверка, ако чатът го дава.
+  const c = {
+    p,
+    refs,
+    evidence,
+    safety,
+    notes,
+    onOpenSource,
+    onOpenTicket,
+    stepUi: stepUi ? (check) => stepUi(message, check) : null,
+  };
 
   // Редът е договор: Safety „блокирано“ най-горе, после резултат, причини, внимание, проверки…
   appendBlocked(root, c);
@@ -84,9 +98,14 @@ export function renderAnswer(message, { onOpenSource, onOpenTicket, onFeedback, 
   appendDecisions(root, c);
   appendSources(root, c);
   appendPhotos(root, c);
-  appendMissing(root, c);
+  // FR-07: интерактивни полета (последният отговор в отворен случай); иначе — списък.
+  const missing = missingUi ? missingUi(message) : null;
+  if (missing) {
+    const node = missingBlock(p, missing);
+    if (node) root.append(node);
+  } else appendMissing(root, c);
   appendConflicts(root, c);
-  appendEscalation(root, c);
+  appendEscalation(root, { ...c, collectShown: Boolean(missing?.interactive) });
   appendGateDetails(root, c);
   root.append(feedbackRow(message, onFeedback, rated));
   return root;

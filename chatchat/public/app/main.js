@@ -1,6 +1,6 @@
 import { api } from './api.js';
-import { $, $$, show } from './dom.js';
-import { guessLang, setLang, t } from './i18n.js';
+import { $, $$, announce, show } from './dom.js';
+import { getLang, guessLang, LANGS, setLang, t } from './i18n.js';
 import { initChat, resetChat } from './chat.js';
 import { initContext, renderContext } from './context.js';
 import {
@@ -17,8 +17,21 @@ import { initMfaVerify, showMfaVerify } from './auth/mfa-verify.js';
 import { mountMfaSetup } from './auth/mfa-setup.js';
 import { initReset, showReset, takeResetToken } from './auth/reset.js';
 import { openSecurityDialog } from './auth/security.js';
+import { initSso, logoutRequest, ssoLoginError, ssoResultText, takeSsoError } from './auth/sso.js';
+import {
+  initSsoLink,
+  linkResultText,
+  loginNote,
+  needsLink,
+  showSsoLink,
+  takeSsoLink,
+} from './auth/sso-link.js';
+import { loadMeta, showAdminLink } from './meta.js';
 import { hasPendingQr, initScan, resolvePendingQr, takeQrFromUrl } from './qr/scan.js';
 import { initWorkspace, startWorkspace, stopWorkspace } from './workspace/index.js';
+import { initFlow } from './flow/index.js';
+import { initDocSearch } from './docsearch.js';
+import { initProposeCase } from './proposals-case.js';
 import { resetQuickResponses } from './workspace/quick.js';
 import { wide } from './workspace/windows.js';
 
@@ -28,15 +41,18 @@ function showLogin(message) {
   state.user = null;
   state.csrf = null;
   state.mfa = { enabled: false, passed: false, required: false };
+  state.ssoLinkRequired = false;
   state.cases = [];
   state.currentId = null;
   state.current = null;
+  state.flow = null;
   state.tickets.clear();
   stopWorkspace();
   resetQuickResponses();
   resetChat();
   show($('#btn-admin'), false);
   showScreen('login');
+  loginNote('');
   const err = $('#login-error');
   err.textContent = message ?? '';
   show(err, Boolean(message));
@@ -44,12 +60,14 @@ function showLogin(message) {
 }
 
 async function logout() {
+  let next = null;
   try {
-    await api('POST', '/auth/logout');
+    next = await logoutRequest(); // при SSO — и адресът за изход при доставчика (по избор)
   } catch {
     /* излизаме от интерфейса така или иначе */
   }
   showLogin();
+  if (next) location.assign(next);
 }
 
 /** След парола: втори фактор (код / настройка) или самото приложение. */
@@ -57,35 +75,32 @@ async function enter(session) {
   state.user = session.user;
   state.csrf = session.csrfToken ?? state.csrf;
   state.mfa = session.mfa ?? state.mfa;
+  state.authMethod = session.authMethod ?? 'password';
+  state.ssoLinkRequired = session.ssoLinkRequired === true; // REQUIRED: сесия само за свързване
+  // FR-14: езикът на профила (същият за писмата и AI) печели след вход — и на друго устройство;
+  // освен ако човекът току-що е избрал друг на екрана за вход (тогава той отива в профила).
+  const own = session.user?.locale;
+  if (!chosenLang && LANGS.includes(own) && own !== getLang()) {
+    await setLang(own);
+    emit('lang');
+  }
   if (state.mfa.enabled && !state.mfa.passed) return showMfaVerify();
-  if (state.mfa.required && !state.mfa.enabled) return showSetup();
-  return showApp();
+  // Вторият фактор, доказан от доставчика на единния вход (mfa.idp), не иска локален TOTP.
+  if (state.mfa.required && !state.mfa.enabled && !state.mfa.idp) return showSetup();
+  return proceed();
 }
+
+/** След втория фактор: приложението — или само свързването с доставчика (REQUIRED). */
+const proceed = () => (needsLink() ? showSsoLink() : showApp());
 
 function showSetup() {
   showScreen('setup');
   mountMfaSetup($('#setup-host'), {
     onDone: () => {
       interactiveEntry = true;
-      return showApp();
+      return proceed();
     },
   });
-}
-
-/** Връзка към конзолата само за ролите с административна способност (сървърът пак проверява). */
-const ADMIN_CAPS = ['users:manage', 'kb:manage', 'audit:read'];
-
-async function showAdminLink() {
-  try {
-    const me = await api('GET', '/auth/me');
-    const caps = Array.isArray(me?.capabilities) ? me.capabilities : [];
-    show(
-      $('#btn-admin'),
-      caps.some((c) => ADMIN_CAPS.includes(c)),
-    );
-  } catch {
-    show($('#btn-admin'), false);
-  }
 }
 
 /** Влязъл е през форма (парола/код): екранът за вход изчезва, а фокусът не бива да остане в нищото. */
@@ -93,6 +108,8 @@ let interactiveEntry = false;
 
 async function showApp() {
   $('#user-name').textContent = state.user?.name ?? '';
+  if (chosenLang && chosenLang !== state.user?.locale) void saveLang(true);
+  chosenLang = null;
   showScreen('app');
   if (interactiveEntry) {
     interactiveEntry = false;
@@ -103,7 +120,7 @@ async function showApp() {
   app().dataset.main = 'case';
   renderContext();
   await loadCases();
-  await startWorkspace();
+  const navigated = await startWorkspace();
   // QR етикет от адреса: таблото → нов случай с неговия контекст.
   if (hasPendingQr()) {
     try {
@@ -116,29 +133,35 @@ async function showApp() {
       /* непознат/чужд етикет: продължаваме нормално; ръчното сканиране остава */
     }
   }
-  // На десктоп работното пространство е пълно: отваряме последния случай.
-  if (wide() && state.cases.length) await selectCase(state.cases[0].id);
+  // На десктоп работното пространство е пълно: отваряме последния случай — само ако човекът
+  // междувременно не е избрал друго (опашка, списък, разговор, случай), докато се е зареждало.
+  const untouched = app().dataset.main === 'case' && state.currentId === null;
+  if (!navigated && untouched && wide() && state.cases.length) await selectCase(state.cases[0].id);
+}
+
+/** Избран преди вход (екранът за вход) — записва се в профила след втория фактор. */
+let chosenLang = null;
+
+async function saveLang(quiet) {
+  try {
+    const res = await api('PATCH', '/me', { locale: getLang() });
+    state.user = { ...state.user, locale: res?.user?.locale ?? getLang() };
+    if (!quiet) announce(t('settings.langSaved'));
+  } catch {
+    if (!quiet) announce(t('settings.langLocalOnly'));
+  }
 }
 
 async function changeLang(l) {
   await setLang(l);
   emit('lang');
   renderCases();
-}
-
-/** Връзката към информацията за поверителност (по чл. 13/14 GDPR), ако администраторът я е дал. */
-async function loadMeta() {
-  try {
-    const meta = await api('GET', '/meta');
-    const url = typeof meta?.privacyUrl === 'string' ? meta.privacyUrl : '';
-    if (/^https:\/\//.test(url)) {
-      const link = $('#privacy-link');
-      link.href = url;
-      show(link, true);
-    }
-  } catch {
-    // Без мета данни приложението работи; връзката просто не се показва.
+  if (!state.user) {
+    chosenLang = getLang();
+    return;
   }
+  // Синхронно със сървъра (PATCH /me): на него са и отговорите на AI, и писмата.
+  await saveLang(false);
 }
 
 function wireLogin() {
@@ -163,11 +186,12 @@ function wireLogin() {
       await enter(data);
     } catch (ex) {
       err.textContent =
-        ex.status === 401
+        ssoLoginError(ex) ??
+        (ex.status === 401
           ? t('login.error.invalid')
           : ex.status === 429
             ? t('login.error.rate')
-            : t('login.error.generic');
+            : t('login.error.generic'));
       show(err, true);
     } finally {
       btn.disabled = false;
@@ -179,6 +203,8 @@ async function init() {
   // Първо чувствителните неща от адреса: токенът за парола и QR токенът се махат веднага.
   const isReset = takeResetToken();
   takeQrFromUrl();
+  const ssoError = takeSsoError(); // `?sso_error=` от връщането на единния вход
+  const linkResult = takeSsoLink(); // `?sso_link=` от свързването от собственика
   void loadMeta();
   let session = null;
   if (!isReset) {
@@ -194,14 +220,16 @@ async function init() {
   }
 
   wireLogin();
+  initSso();
   initReset();
   initMfaVerify({
     onPassed: () => {
       interactiveEntry = true;
-      return showApp();
+      return proceed();
     },
     onCancel: logout,
   });
+  initSsoLink({ onCancel: logout });
   $('#setup-cancel').addEventListener('click', logout);
   $('#btn-logout').addEventListener('click', logout);
   $('#btn-security').addEventListener('click', openSecurityDialog);
@@ -227,6 +255,10 @@ async function init() {
   initChat();
   initScan(openNewCaseWithDevice);
   initWorkspace({ selectCase, refreshCases });
+  initFlow();
+  // FR-03 (търсене на документи, бърз код) и §11.3 (решен случай → знание).
+  initDocSearch();
+  initProposeCase();
 
   // Изтекла сесия по средата на работа / втори фактор, поискан от API-то
   on('auth:expired', () => {
@@ -238,13 +270,24 @@ async function init() {
     if (kind === 'setup') showSetup();
     else showMfaVerify();
   });
+  on('auth:link', () => {
+    if (!state.user) return;
+    stopWorkspace();
+    state.ssoLinkRequired = true;
+    void showSsoLink();
+  });
 
   if (isReset) {
     showReset();
   } else if (session?.user) {
     await enter(session);
+    const failed = linkResult && linkResult !== 'ok' ? linkResultText(linkResult) : undefined;
+    if (needsLink() && failed) void showSsoLink(failed);
+    else if (linkResult && !needsLink()) openSecurityDialog(failed);
   } else {
-    showLogin();
+    const failed = linkResult && linkResult !== 'ok' ? linkResultText(linkResult) : null;
+    showLogin(failed ?? (ssoError ? ssoResultText(ssoError) : undefined));
+    if (linkResult === 'ok') loginNote(linkResultText('ok', { signedIn: false }));
   }
   document.documentElement.dataset.ready = 'true';
 }
