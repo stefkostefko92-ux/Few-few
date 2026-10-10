@@ -176,3 +176,5 @@
 {"t":"handoff","ts":"2026-10-09T06:58:10.380Z","id":"r3f08f98e","from":"kodadjiyata","to":"izpitatelya","status":"има бележки","run":"d0e273f2"}
 {"t":"start","ts":"2026-10-10T08:00:18.555Z","id":"r5a5315d6","flow":"авто","lead":"dizayner","auto":true}
 {"t":"handoff","ts":"2026-10-10T08:00:18.555Z","id":"r5a5315d6","from":"dizayner","to":"човек","status":"има бележки","run":"78640751"}
+{"t":"start","ts":"2026-10-10T08:29:07.108Z","id":"r302534ef","flow":"авто","lead":"dizayner","auto":true}
+{"t":"handoff","ts":"2026-10-10T08:29:07.109Z","id":"r302534ef","from":"dizayner","to":"човек","status":"има бележки","run":"78640751"}
