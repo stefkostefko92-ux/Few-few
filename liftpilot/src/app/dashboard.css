@@ -26,7 +26,12 @@
 .dash-kpis .kpi { min-height: 136px; padding: 16px 18px; gap: 4px; }
 .dash-kpis .kpi-head { align-items: flex-start; min-height: 40px; font-size: 13.5px; font-weight: 600; color: var(--ink-2); }
 .dash-kpis .kpi-value { margin-top: 6px; font-size: 34px; }
-.dash-kpis .kpi-label { margin-top: auto; }
+.dash-kpis .kpi-label { margin-top: auto; display: flex; align-items: baseline; gap: 8px; }
+/* the template's dot before what a figure counts, in the tile's tone (cyan when it has none) */
+.dash-kpis .kpi-label::before { content: ""; flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--kpi-dot, var(--accent)); transform: translateY(-1px); }
+.dash-kpis .tone-ok { --kpi-dot: var(--ok); }
+.dash-kpis .tone-warn { --kpi-dot: var(--warn); }
+.dash-kpis .tone-fail { --kpi-dot: var(--fail); }
 @media (max-width: 559px) {
   .dash-kpis { gap: 10px; }
   .dash-kpis .kpi { min-height: 128px; padding: 13px; }
@@ -36,7 +41,11 @@
 
 /* the list and the preview side by side on wide screens */
 .dash-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-items: start; }
-@media (min-width: 1280px) { .dash-grid:not(.dash-grid-one) { grid-template-columns: minmax(0, 1.65fr) minmax(300px, .9fr); } }
+@media (min-width: 1280px) {
+  .dash-grid:not(.dash-grid-one) { grid-template-columns: minmax(0, 1.65fr) minmax(300px, .9fr); }
+  /* beside a long list («show all») the preview stays in view */
+  .dash-preview { position: sticky; top: 16px; }
+}
 .dash-panel-titles { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .dash-panel-titles h2 { font-size: 18px; overflow-wrap: anywhere; }
 
@@ -52,7 +61,7 @@
 .dash-empty { display: flex; flex-direction: column; gap: 14px; padding: 6px 0 2px; color: var(--ink-2); }
 
 .dash-rows { list-style: none; margin: 0; padding: 0; display: grid; column-gap: 14px; border-top: 1px solid var(--rule);
-  grid-template-columns: 34px minmax(0, 1.5fr) minmax(0, 1.15fr) max-content 16px; }
+  grid-template-columns: 34px minmax(0, 1.5fr) minmax(0, 1.15fr) max-content 18px; }
 .dash-row { position: relative; grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: center; min-height: 78px; padding: 12px 6px;
   border-bottom: 1px solid var(--rule-soft); border-radius: 6px; }
 .dash-row:last-child { border-bottom: 0; }
@@ -70,11 +79,14 @@
 .dash-pills { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; }
 .dash-row-sum { max-width: 100%; font: 12px/1.4 var(--font-mono); color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dash-row-when { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; font: 12px/1.3 var(--font-mono); color: var(--muted); text-align: right; white-space: nowrap; }
-.dash-row-go { opacity: .7; }
-.dash-row:hover .dash-row-go { opacity: 1; }
+.dash-row-go { display: block; color: var(--muted); }
+.dash-row:hover .dash-row-go { color: var(--accent); }
+/* «show all (N)» under the latest changed; with all of them, the way back */
+.dash-more { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 0; font-size: 14px; }
+.dash-more .note { font-size: 13.5px; }
 @container dashlist (max-width: 620px) {
   .dash-rows { display: block; }
-  .dash-row { grid-template-columns: 34px minmax(0, 1fr) 16px; column-gap: 12px; row-gap: 8px; align-items: start; min-height: 0; padding: 14px 4px; }
+  .dash-row { grid-template-columns: 34px minmax(0, 1fr) 18px; column-gap: 12px; row-gap: 8px; align-items: start; min-height: 0; padding: 14px 4px; }
   .dash-row > .icon-tile { grid-row: 1; }
   .dash-row-main { grid-column: 2; grid-row: 1; }
   .dash-row-go { grid-column: 3; grid-row: 1; margin-top: 4px; }

@@ -2,7 +2,7 @@
 // latest result, the avatar's initials.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { SEARCH_MAX_CHARS, SEARCH_MAX_WORDS, initials, projectStats, searchWords, shellSection } from '../dashboard';
+import { SEARCH_MAX_CHARS, SEARCH_MAX_WORDS, initials, likeEscape, navCurrent, projectStats, searchWords, shellSection } from '../dashboard';
 
 test('ricerca: parole ripulite, tagliate, mai rifiutate', () => {
   assert.deepEqual(searchWords(undefined), []);
@@ -46,4 +46,22 @@ test('barra laterale: la voce della pagina', () => {
   assert.equal(at('/app/team/invite'), '/app/team');
   assert.equal(at('/app/teams'), null);
   assert.equal(at('/app/prices'), null);
+});
+
+test('ricerca: % e _ sono testo, non caratteri jolly del LIKE', () => {
+  assert.equal(likeEscape('MI_2291'), 'MI\\_2291');
+  assert.equal(likeEscape('50%'), '50\\%');
+  assert.equal(likeEscape('a\\b'), 'a\\\\b');
+  assert.equal(likeEscape('%_'), '\\%\\_');
+  assert.equal(likeEscape('Via Roma 12'), 'Via Roma 12');
+});
+
+test('barra laterale: «pagina» solo sulla pagina della voce, altrimenti «true»', () => {
+  assert.equal(navCurrent('dashboard', '/app'), 'page');
+  assert.equal(navCurrent('dashboard', '/app/projects/abc'), 'true');
+  assert.equal(navCurrent('dashboard', '/app/calculations/abc'), 'true');
+  assert.equal(navCurrent('archived', '/app'), 'page');
+  assert.equal(navCurrent('/app/norme', '/app/norme'), 'page');
+  assert.equal(navCurrent('/app/norme', '/app/norme/en-81-20'), 'true');
+  assert.equal(navCurrent('new-full', '/app/projects/new'), 'page');
 });

@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Link, usePathname } from '@/i18n/routing';
-import { shellSection } from '@/lib/dashboard';
+import { navCurrent, shellSection } from '@/lib/dashboard';
 import Icon from './Icon';
 import type { IconName } from './icon-names';
 
@@ -31,9 +31,10 @@ export function useSection(groups: readonly NavGroup[], extra: readonly string[]
 }
 
 // The sidebar's sections in their groups (Workspace, Library, Management), each with its painted icon; the current one
-// marked (aria-current) with the template's cyan edge. A link followed in the phone drawer closes it (shell/Drawer).
+// marked (aria-current: `page` on its own page, `true` on a page that belongs to it) with the template's cyan edge.
+// A link followed in the phone drawer closes it (shell/Drawer).
 export default function NavLinks({ groups, label }: { groups: NavGroup[]; label: string }) {
-  const current = useSection(groups);
+  const current = useSection(groups), pathname = usePathname();
   return (
     <nav className="ws-navs" aria-label={label}>
       {groups.map((g, gi) => (
@@ -42,7 +43,7 @@ export default function NavLinks({ groups, label }: { groups: NavGroup[]; label:
           <ul className="ws-nav" aria-labelledby={`ws-group-${gi}`}>
             {g.items.map((it) => (
               <li key={it.key}>
-                <Link href={it.href} aria-current={current === it.key ? 'page' : undefined}>
+                <Link href={it.href} aria-current={current === it.key ? navCurrent(it.key, pathname) : undefined}>
                   <Icon name={it.icon} size={20} />
                   <span>{it.label}</span>
                 </Link>

@@ -107,6 +107,11 @@ try {
   assert.equal(await page.locator('.dash-row').count(), 1, 'every word, whatever its case');
   await page.goto(`${BASE}/it/app?q=${encodeURIComponent(`Torino ${stamp}`)}`);
   assert.equal(await page.locator('.dash-row').count(), 0, 'every word must be found');
+  // % and _ are text, not LIKE's wildcards: with this run's word they find none of its two installations
+  for (const w of ['%', '_', '%%']) {
+    await page.goto(`${BASE}/it/app?q=${encodeURIComponent(`${w} ${stamp}`)}`);
+    assert.equal(await page.locator('.dash-row').count(), 0, `«${w}» is not a wildcard`);
+  }
 
   step('the replacement becomes a whole project');
   await page.goto(projectUrl);

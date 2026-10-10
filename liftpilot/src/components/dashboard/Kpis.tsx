@@ -15,7 +15,8 @@ interface Tile {
 
 /** The dashboard's four figures, all from the company's records: the active installations by module; those to review
  *  (latest result not passing, no result yet, or made by engines since changed); the drawing sets issued and their
- *  revisions; the calculations saved and the installations created in the last 30 days. */
+ *  revisions; the calculations saved and the installations created in the last 30 days — of the active installations,
+ *  every one of them (server/dashboard.ts). */
 export default async function Kpis({ stats, counts }: { stats: ProjectStats; counts: RecordCounts }) {
   const t = await getTranslations('projects');
   const tiles: Tile[] = [
@@ -30,7 +31,7 @@ export default async function Kpis({ stats, counts }: { stats: ProjectStats; cou
   return (
     <section className="kpi-grid dash-kpis" aria-label={t('kpiLabel')}>
       {tiles.map((k) => (
-        <div key={k.key} className={`kpi dash-kpi-${k.key}`}>
+        <div key={k.key} className={`kpi dash-kpi-${k.key}${k.tone ? ` tone-${k.tone}` : ''}`}>
           <div className="kpi-head">
             <span>{k.label}</span>
             <span className={k.tone ? `icon-tile sm ${k.tone}` : 'icon-tile sm'}><Icon name={k.icon} size={18} /></span>

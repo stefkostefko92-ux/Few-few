@@ -13,9 +13,11 @@ export default async function Crumbs({ items }: { items: Crumb[] }) {
   return (
     <nav className="crumbs-nav" aria-label={t('breadcrumb')}>
       <ol className="crumbs">
-        {items.map((it) => (
-          <li key={`${it.href ?? ''}${it.label}`}>{it.href ? <Link href={it.href}>{it.label}</Link> : <span aria-current="page">{it.label}</span>}</li>
-        ))}
+        {items.map((it) => {
+          // the dashboard has one name, the sidebar's, wherever the path starts from it
+          const label = it.href === '/app' ? t('dashboard') : it.label;
+          return <li key={`${it.href ?? ''}${label}`}>{it.href ? <Link href={it.href}>{label}</Link> : <span aria-current="page">{label}</span>}</li>;
+        })}
       </ol>
     </nav>
   );

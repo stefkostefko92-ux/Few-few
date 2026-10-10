@@ -13,6 +13,18 @@ export function searchWords(q: unknown): string[] {
   return q.slice(0, SEARCH_MAX_CHARS).trim().split(/\s+/u).filter(Boolean).slice(0, SEARCH_MAX_WORDS);
 }
 
+/** A searched word as the text it is inside a LIKE pattern (Prisma's `contains` does not escape): `%` and `_` are
+ *  themselves, not wildcards, and the escape character `\` (PostgreSQL's default) is itself too — «MI_2291» or «50%»
+ *  find those plants only. */
+export function likeEscape(word: string): string {
+  return word.replace(/[\\%_]/gu, '\\$&');
+}
+
+/** The rows of the dashboard's list (the latest changed): the rest behind «show all». */
+export const DASH_ROWS = 10;
+/** The rows of «show all»: beyond them the search finds the rest (the list says so). */
+export const ALL_ROWS = 500;
+
 /** The latest record of an installation as the list reads it: its verdict and whether the engines moved on since. */
 export interface LatestResult {
   verdict: 'OK' | 'WARN' | 'FAIL';
@@ -71,4 +83,12 @@ export function shellSection(pathname: string, search: { archived: boolean; kind
   if (pathname === '/app/projects/new') return search.kind === 'replacement' ? 'new-replacement' : search.kind === 'full' ? 'new-full' : null;
   if (RECORD_PAGES.some((p) => pathname.startsWith(p))) return 'dashboard';
   return sections.find((s) => pathname === s || pathname.startsWith(`${s}/`)) ?? null;
+}
+
+/** The sidebar entry's aria-current: `page` when the address is the entry's own page, `true` when the page only belongs
+ *  to it (an installation's record under «Dashboard», a sub-page of a section) — a reader is not told it is on «Dashboard». */
+export function navCurrent(key: string, pathname: string): 'page' | 'true' {
+  if (key === 'dashboard' || key === 'archived') return pathname === '/app' ? 'page' : 'true';
+  if (key.startsWith('/')) return pathname === key ? 'page' : 'true';
+  return 'page';
 }

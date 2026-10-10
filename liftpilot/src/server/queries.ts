@@ -5,6 +5,7 @@ import { BILLING_SELECT } from '@/lib/billing-access';
 import { billingConfigured } from '@/lib/billing-config';
 import type { SessionUser } from '@/lib/auth';
 import { usableLogo, type LogoMime } from '@/lib/logo';
+import { ALL_ROWS, likeEscape } from '@/lib/dashboard';
 import { idSchema, type ProjectKind } from '@/lib/schemas';
 import { DESIGN_SELECT } from './drawing-compose';
 
@@ -13,25 +14,38 @@ import { DESIGN_SELECT } from './drawing-compose';
 /** The engine versions a lift design's records were saved with (records.ts, `outdated`). */
 const LIFT_VERSIONS = { engineVersion: true, calculation: { select: { engineVersion: true } }, shaftDesign: { select: { engineVersion: true } } } as const;
 
-/** `q`: the words searched (dashboard.ts searchWords), each in the name, the address, the municipality or the plant number. */
-export function listProjects(user: SessionUser, archived: boolean, kind: ProjectKind | null = null, q: readonly string[] = []) {
-  const has = (w: string) => ({ contains: w, mode: 'insensitive' as const });
+/** The list's filters: archived or active, a module, the words searched (dashboard.ts searchWords) — each found in the
+ *  name, the address, the municipality or the plant number, as text (likeEscape: `%` and `_` are not wildcards). */
+function projectsWhere(user: SessionUser, archived: boolean, kind: ProjectKind | null, q: readonly string[]) {
+  const has = (w: string) => ({ contains: likeEscape(w), mode: 'insensitive' as const });
   const words = q.map((w) => ({ OR: [{ name: has(w) }, { address: has(w) }, { city: has(w) }, { plantNumber: has(w) }] }));
-  return prisma.project.findMany({
-    where: { companyId: user.companyId, archivedAt: archived ? { not: null } : null, ...(kind ? { kind } : {}), ...(words.length ? { AND: words } : {}) },
-    orderBy: { updatedAt: 'desc' },
-    take: 500,
-    select: {
-      id: true, kind: true, name: true, address: true, city: true, province: true, plantNumber: true, updatedAt: true, archivedAt: true,
-      _count: { select: { calculations: true } },
-      calculations: {
-        orderBy: { createdAt: 'desc' }, take: 1,
-        select: { id: true, verdict: true, failCount: true, warnCount: true, createdAt: true, summary: true, engineVersion: true, shaftDesign: { select: { engineVersion: true } } },
-      },
-      // a whole project's result is its latest lift design's (the test's verdict, its parts only)
-      liftDesigns: { orderBy: { createdAt: 'desc' }, take: 1, select: { id: true, verdict: true, failCount: true, warnCount: true, createdAt: true, summary: true, ...LIFT_VERSIONS } },
-    },
-  });
+  return { companyId: user.companyId, archivedAt: archived ? { not: null } : null, ...(kind ? { kind } : {}), ...(words.length ? { AND: words } : {}) };
+}
+
+const PROJECT_ROW_SELECT = {
+  id: true, kind: true, name: true, address: true, city: true, province: true, plantNumber: true, updatedAt: true, archivedAt: true,
+  _count: { select: { calculations: true } },
+  calculations: {
+    orderBy: { createdAt: 'desc' }, take: 1,
+    select: { id: true, verdict: true, failCount: true, warnCount: true, createdAt: true, summary: true, engineVersion: true, shaftDesign: { select: { engineVersion: true } } },
+  },
+  // a whole project's result is its latest lift design's (the test's verdict, its parts only)
+  liftDesigns: { orderBy: { createdAt: 'desc' }, take: 1, select: { id: true, verdict: true, failCount: true, warnCount: true, createdAt: true, summary: true, ...LIFT_VERSIONS } },
+} as const;
+
+/** The company's installations, latest change first: the first `take` of the view (dashboard: its recent ones). */
+export function listProjects(user: SessionUser, archived: boolean, kind: ProjectKind | null = null, q: readonly string[] = [], take = ALL_ROWS) {
+  return prisma.project.findMany({ where: projectsWhere(user, archived, kind, q), orderBy: { updatedAt: 'desc' }, take, select: PROJECT_ROW_SELECT });
+}
+
+/** How many installations the view has (the list shows the first of them). */
+export function countProjects(user: SessionUser, archived: boolean, kind: ProjectKind | null = null, q: readonly string[] = []) {
+  return prisma.project.count({ where: projectsWhere(user, archived, kind, q) });
+}
+
+/** One installation of the company as a row of the list (the dashboard's preview); null when it is not the company's. */
+export function getProjectRow(user: SessionUser, id: string) {
+  return prisma.project.findFirst({ where: { id, companyId: user.companyId }, select: PROJECT_ROW_SELECT });
 }
 
 export function getProject(user: SessionUser, id: string) {

@@ -2,6 +2,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import Icon from '@/components/Icon';
 import VerdictPill from '@/components/VerdictPill';
+import { DASH_ROWS } from '@/lib/dashboard';
 import { dateFormat } from '@/lib/dates';
 import type { ProjectKind } from '@/lib/schemas';
 import type { listProjects } from '@/server/queries';
@@ -18,7 +19,11 @@ export function latestOf(p: ListedProject) {
 }
 
 interface Props {
+  /** the view's latest changed: its first DASH_ROWS, or with `all` its first ALL_ROWS */
   projects: ListedProject[];
+  /** how many installations the view has */
+  total: number;
+  all: boolean;
   archived: boolean;
   kind: ProjectKind | null;
   /** the words searched as typed, '' for none */
@@ -28,17 +33,20 @@ interface Props {
   canEdit: boolean;
 }
 
-// The company's installations, latest change first (the dashboard's «Progetti recenti»): every one of the view, with
-// the module filters, the archive, the search's words, and per row its module, address, plant number, latest result
-// («da aggiornare» when the engines changed), its date and machine line, and the number of calculations.
-export default async function ProjectList({ projects, archived, kind, q, counts, canEdit }: Props) {
+// The company's installations, latest change first (the dashboard's «Progetti recenti»): the view's latest changed
+// and «show all (N)» for the rest, with the module filters, the archive, the search's words, and per row its module,
+// address, plant number, latest result («da aggiornare» when the engines changed), its date and machine line, and the
+// number of calculations.
+export default async function ProjectList({ projects, total, all, archived, kind, q, counts, canEdit }: Props) {
   const [t, tf, locale] = await Promise.all([getTranslations('projects'), getTranslations('refresh'), getLocale()]);
   const fd = dateFormat(locale);
   const slugOf = (k: ProjectKind | null): string | null => MODULES.find((m) => m.kind === k)?.slug ?? null;
-  const href = (k: ProjectKind | null, arch = archived, words = q): string => {
-    const s = [arch ? 'archived=1' : '', k ? `kind=${slugOf(k)}` : '', words ? `q=${encodeURIComponent(words)}` : ''].filter(Boolean).join('&');
+  const href = (k: ProjectKind | null, arch = archived, words = q, every = all): string => {
+    const s = [arch ? 'archived=1' : '', k ? `kind=${slugOf(k)}` : '', words ? `q=${encodeURIComponent(words)}` : '', every ? 'all=1' : '']
+      .filter(Boolean).join('&');
     return s ? `/app?${s}` : '/app';
   };
+  const more = total > projects.length;
   const empty = projects.length === 0, fresh = empty && !archived && !q && kind === null;
   return (
     <section className="panel dash-list" aria-labelledby="dash-list-title">
@@ -63,7 +71,7 @@ export default async function ProjectList({ projects, archived, kind, q, counts,
       </nav>
       {q ? (
         <p className="dash-q" role="status">
-          {empty ? t('searchNone', { q }) : t('searchResults', { n: projects.length, q })}{' '}
+          {empty ? t('searchNone', { q }) : t('searchResults', { n: total, q })}{' '}
           <Link href={href(kind, archived, '')}>{t('searchClear')}</Link>
         </p>
       ) : null}
@@ -105,12 +113,22 @@ export default async function ProjectList({ projects, archived, kind, q, counts,
                   <time dateTime={p.updatedAt.toISOString()}><span className="sr-only">{t('updated')} </span>{fd.dateTime(p.updatedAt)}</time>
                   {p._count.calculations ? <span>{t('calcCount', { n: p._count.calculations })}</span> : null}
                 </div>
-                <Icon name="arrow-up-right" size={16} className="dash-row-go" />
+                <svg className="dash-row-go" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" focusable="false">
+                  <path d="M5.5 12.5 12.5 5.5M7 5.5h5.5V11" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </li>
             );
           })}
         </ul>
       )}
+      {more && !all ? (
+        <p className="dash-more"><Link className="btn btn-sm" href={href(kind, archived, q, true)}>{t('showAll', { n: total })}</Link></p>
+      ) : all && !empty ? (
+        <p className="dash-more">
+          {more ? <span className="note">{t('listCapped', { n: projects.length, total })}</span> : null}
+          {total > DASH_ROWS ? <Link href={href(kind, archived, q, false)}>{t('showRecent')}</Link> : null}
+        </p>
+      ) : null}
     </section>
   );
 }
