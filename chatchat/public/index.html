@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="/app/workspace.css" />
     <link rel="stylesheet" href="/app/viewer.css" />
     <link rel="stylesheet" href="/app/composer.css" />
+    <link rel="stylesheet" href="/app/ws-search.css" />
     <script type="module" src="/app/main.js"></script>
   </head>
   <body>
@@ -235,6 +236,21 @@
             <li>
               <button id="nav-history" class="nav-item" type="button">
                 <span data-i18n="history.title">Cronologia</span>
+              </button>
+            </li>
+            <li>
+              <button id="nav-search" class="nav-item" type="button">
+                <span data-i18n="ws.nav.search">Cerca</span>
+              </button>
+            </li>
+            <li>
+              <button id="nav-todo" class="nav-item" type="button">
+                <span data-i18n="ws.nav.todo">Da fare</span>
+              </button>
+            </li>
+            <li>
+              <button id="nav-saved" class="nav-item" type="button">
+                <span data-i18n="ws.nav.saved">Messaggi preferiti</span>
               </button>
             </li>
           </ul>
@@ -753,6 +769,51 @@
           </button>
           <button id="nc-submit" class="btn btn-primary" type="submit">
             <span data-i18n="nc.create">Crea</span>
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Dialog: preferenze delle notifiche (FR-18, §14.1) -->
+    <dialog id="dlg-notif" class="dlg" aria-labelledby="np-title">
+      <form id="np-form" method="dialog" novalidate>
+        <h2 id="np-title" data-i18n="notif.prefs.title">Preferenze delle notifiche</h2>
+        <p id="np-unavailable" class="hint" hidden data-i18n="notif.prefs.emailUnavailable"></p>
+        <label class="check-row"
+          ><input id="np-email" type="checkbox" />
+          <span data-i18n="notif.prefs.email"
+            >Email per menzioni, nuovi messaggi e casi presi in carico</span
+          ></label
+        >
+        <label class="check-row"
+          ><input id="np-digest" type="checkbox" />
+          <span data-i18n="notif.prefs.digest"
+            >Riepilogo giornaliero dei non letti via email</span
+          ></label
+        >
+        <fieldset class="np-quiet">
+          <legend data-i18n="notif.prefs.quiet">Ore di silenzio (nessuna email)</legend>
+          <div class="field-row">
+            <div class="field">
+              <label for="np-from" data-i18n="notif.prefs.quietFrom">Dalle</label>
+              <input id="np-from" type="time" step="300" />
+            </div>
+            <div class="field">
+              <label for="np-to" data-i18n="notif.prefs.quietTo">Alle</label>
+              <input id="np-to" type="time" step="300" />
+            </div>
+          </div>
+          <p id="np-zone" class="hint"></p>
+        </fieldset>
+        <p class="hint" data-i18n="notif.prefs.noContent"></p>
+        <p class="hint" data-i18n="notif.prefs.perConversation"></p>
+        <p id="np-error" class="form-error" role="alert" hidden></p>
+        <div class="dlg-actions">
+          <button class="btn btn-quiet" type="button" data-close>
+            <span data-i18n="common.cancel">Annulla</span>
+          </button>
+          <button id="np-submit" class="btn btn-primary" type="submit">
+            <span data-i18n="notif.prefs.save">Salva</span>
           </button>
         </div>
       </form>

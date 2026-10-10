@@ -18,11 +18,23 @@ const h = await startApp({
   origin: E2E_ORIGIN,
 });
 
-/** Цитира първия съвместим източник; ако въпросът има снимка — добавя ясно наблюдение за нея. */
+/** Обобщението на езика, поискан в съобщението на случая (FR-14: езикът на човека). */
+const SUMMARY: Record<string, string> = {
+  Italian: 'Diagnosi di prova.',
+  English: 'Test diagnosis.',
+  Bulgarian: 'Тестова диагноза.',
+};
+
+/**
+ * Цитира първия съвместим източник; ако въпросът има снимка — добавя ясно наблюдение за нея;
+ * обобщението е на езика от „Answer language: …“ (като истинския модел).
+ */
 const plan: Plan = (pack) => {
   const first = pack.find((p) => p.applicable);
   const photoSent = (h.model.images.at(-1)?.length ?? 0) > 0;
+  const language = /Answer language: (\w+)/.exec(h.model.texts.at(-1) ?? '')?.[1] ?? 'Italian';
   return {
+    summary: SUMMARY[language] ?? SUMMARY.Italian,
     ...(first
       ? {
           causes: [{ text: 'Causa documentata', evidenceRefs: [first.ref] }],

@@ -1,0 +1,129 @@
+/* Търсене в историята, „Da fare“/„Preferiti“, лични маркери, файлове в разговор, спешни
+   известия, предпочитания (FR-16, FR-18, §12.1). Само токените от styles.css — светла и тъмна
+   тема, контраст ≥ 4.5:1; съвпадението и спешното се казват и с форма/дума, не само с цвят. */
+
+.search-form {
+  display: grid;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+.search-form > label {
+  font-weight: 600;
+}
+.search-row {
+  display: flex;
+  gap: 0.5rem;
+}
+.search-row input {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--tap);
+}
+.search-hits {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+.search-hit {
+  display: grid;
+  gap: 0.2rem;
+  width: 100%;
+  min-height: var(--tap);
+  padding: 0.5rem 0.75rem;
+  font: inherit;
+  color: var(--ink);
+  text-align: left;
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.search-hit:hover {
+  border-color: var(--line-strong);
+}
+.hit-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: baseline;
+}
+.hit-where {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.hit-top .when {
+  margin-left: auto;
+}
+.hit-who {
+  color: var(--ink-2);
+  font-size: 0.9rem;
+}
+.hit-snippet {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.hit-snippet mark {
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  border-radius: 0.15rem;
+}
+.marked-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.mark-tags {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+.mark-tag,
+.urgent-tag {
+  display: inline-block;
+  padding: 0 0.4rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.mark-todo {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.urgent-tag {
+  border-color: var(--stop-line);
+  background: var(--stop-bg);
+  color: var(--stop-ink);
+}
+
+.conv-files {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0.35rem 0;
+}
+.conv-files .hint {
+  margin: 0;
+}
+
+.np-quiet {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.75rem 0;
+  margin: 0.75rem 0;
+}
+.np-quiet legend {
+  font-weight: 600;
+  padding: 0 0.25rem;
+}
+
+@media (max-width: 40rem) {
+  .search-row {
+    flex-direction: column;
+  }
+}

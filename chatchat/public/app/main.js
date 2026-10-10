@@ -1,6 +1,6 @@
 import { api } from './api.js';
-import { $, $$, show } from './dom.js';
-import { guessLang, setLang, t } from './i18n.js';
+import { $, $$, announce, show } from './dom.js';
+import { getLang, guessLang, LANGS, setLang, t } from './i18n.js';
 import { initChat, resetChat } from './chat.js';
 import { initContext, renderContext } from './context.js';
 import {
@@ -57,6 +57,13 @@ async function enter(session) {
   state.user = session.user;
   state.csrf = session.csrfToken ?? state.csrf;
   state.mfa = session.mfa ?? state.mfa;
+  // FR-14: езикът на профила (същият за писмата и AI) печели след вход — и на друго устройство;
+  // освен ако човекът току-що е избрал друг на екрана за вход (тогава той отива в профила).
+  const own = session.user?.locale;
+  if (!chosenLang && LANGS.includes(own) && own !== getLang()) {
+    await setLang(own);
+    emit('lang');
+  }
   if (state.mfa.enabled && !state.mfa.passed) return showMfaVerify();
   if (state.mfa.required && !state.mfa.enabled) return showSetup();
   return showApp();
@@ -93,6 +100,8 @@ let interactiveEntry = false;
 
 async function showApp() {
   $('#user-name').textContent = state.user?.name ?? '';
+  if (chosenLang && chosenLang !== state.user?.locale) void saveLang(true);
+  chosenLang = null;
   showScreen('app');
   if (interactiveEntry) {
     interactiveEntry = false;
@@ -103,7 +112,7 @@ async function showApp() {
   app().dataset.main = 'case';
   renderContext();
   await loadCases();
-  await startWorkspace();
+  const navigated = await startWorkspace();
   // QR етикет от адреса: таблото → нов случай с неговия контекст.
   if (hasPendingQr()) {
     try {
@@ -117,13 +126,32 @@ async function showApp() {
     }
   }
   // На десктоп работното пространство е пълно: отваряме последния случай.
-  if (wide() && state.cases.length) await selectCase(state.cases[0].id);
+  if (!navigated && wide() && state.cases.length) await selectCase(state.cases[0].id);
+}
+
+/** Избран преди вход (екранът за вход) — записва се в профила след втория фактор. */
+let chosenLang = null;
+
+async function saveLang(quiet) {
+  try {
+    const res = await api('PATCH', '/me', { locale: getLang() });
+    state.user = { ...state.user, locale: res?.user?.locale ?? getLang() };
+    if (!quiet) announce(t('settings.langSaved'));
+  } catch {
+    if (!quiet) announce(t('settings.langLocalOnly'));
+  }
 }
 
 async function changeLang(l) {
   await setLang(l);
   emit('lang');
   renderCases();
+  if (!state.user) {
+    chosenLang = getLang();
+    return;
+  }
+  // Синхронно със сървъра (PATCH /me): на него са и отговорите на AI, и писмата.
+  await saveLang(false);
 }
 
 /** Връзката към информацията за поверителност (по чл. 13/14 GDPR), ако администраторът я е дал. */
