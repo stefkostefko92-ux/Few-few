@@ -243,7 +243,7 @@ function LanguageSwitcher({ current, inMenu = false }) {
     ["fr", "FR"], ["it", "IT"], ["nl", "NL"], ["pl", "PL"],
   ];
   return (
-    <nav aria-label="Language" className={`${inMenu ? "flex flex-wrap px-2 py-2 border-t border-cs-border/60 mt-1" : "hidden md:flex"} items-center gap-1 font-mono text-xs text-cs-dim`}>
+    <nav aria-label="Language" className={`${inMenu ? "flex flex-wrap px-2 py-2 border-t border-cs-border/60 mt-1" : "hidden xl:flex"} items-center gap-1 font-mono text-xs text-cs-dim`}>
       {locales.map(([loc, label]) => (
         <a
           key={loc}
