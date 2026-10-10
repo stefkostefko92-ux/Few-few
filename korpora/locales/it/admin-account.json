@@ -56,7 +56,7 @@
       "unban": "Ripristina l'accesso",
       "notBanned": "L'accesso è consentito.",
       "banReason": "Motivo del blocco",
-      "banHint": "Indicate i fatti — che cosa, quando e con quali account o progetti — e la regola delle condizioni che è stata violata (sezione «Account», «Periodo di prova» o «Che cosa non è consentito»). La persona vede questo motivo quando prova ad accedere e lo riceve via email, se il suo indirizzo è confermato. Scrivete in modo chiaro e senza dati personali di altre persone.",
+      "banHint": "Indicate i fatti — che cosa, quando e con quali account o progetti — e la regola delle condizioni che è stata violata (sezione «Account», «Periodo di prova» o «Che cosa non è consentito»). Se la violazione si può rimediare e non mette a rischio la sicurezza (ad esempio un account condiviso o un nome di progetto offensivo), bloccate solo dopo un avviso per email e almeno {days} per rimediare: indicate nel motivo la data dell'avviso. La persona vede questo motivo quando prova ad accedere e lo riceve via email, se il suo indirizzo è confermato. Scrivete in modo chiaro e senza dati personali di altre persone.",
       "ban": "Blocca",
       "banConfirm": "Bloccare {email}? Tutte le sessioni dell'account verranno chiuse.",
       "banHistory": "Storico dei blocchi",

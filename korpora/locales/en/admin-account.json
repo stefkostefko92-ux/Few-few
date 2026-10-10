@@ -56,7 +56,7 @@
       "unban": "Restore access",
       "notBanned": "Access is allowed.",
       "banReason": "Reason for blocking",
-      "banHint": "State the facts — what, when, and which accounts or projects — and the rule of the terms that was broken (section “Account”, “Trial” or “What is not allowed”). The person sees this reason when trying to sign in and gets it by email if their address is confirmed. Write clearly and without other people's personal data.",
+      "banHint": "State the facts — what, when, and which accounts or projects — and the rule of the terms that was broken (section “Account”, “Trial” or “What is not allowed”). Where the breach can be put right and does not threaten security (a shared account or an offensive project name, for example), block only after a warning by email and at least {days} to put it right — give the date of the warning in the reason. The person sees this reason when trying to sign in and gets it by email if their address is confirmed. Write clearly and without other people's personal data.",
       "ban": "Block",
       "banConfirm": "Block {email}? All the account's sessions will end.",
       "banHistory": "Blocking history",

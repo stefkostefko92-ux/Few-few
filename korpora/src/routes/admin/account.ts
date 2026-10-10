@@ -3,6 +3,7 @@ import { renderError, requireStaff } from '../../auth/guards.js';
 import { assignableRoles, can, outranks } from '../../auth/rbac.js';
 import { remainingRecoveryCodes } from '../../auth/recovery.js';
 import { idParam, rawField, requestMeta, stringField } from '../../http/meta.js';
+import { BAN_WARNING_DAYS } from '../../plans/ban.js';
 import { planView } from '../../plans/plan.js';
 import { optionPriceCents, priceTable } from '../../plans/pricing.js';
 import { paidStartAllowedFrom } from '../../plans/withdrawal.js';
@@ -68,6 +69,8 @@ accountAdminRouter.get('/admin/accounts/:id', requireStaff('accounts:view'), asy
     canGrantOwner: actor.role === 'OWNER',
     // срокът за поръчките на изтрития акаунт — от кода, както в политиката (решение 6 на собственика)
     ordersKept: ordersKeptText(res.locals.t),
+    // предупреждението преди блокиране за поправимо нарушение — срокът от общите условия (plans/ban.ts)
+    banWarning: res.locals.t('common.days', { n: BAN_WARNING_DAYS }),
     now: new Date(),
   });
 });
