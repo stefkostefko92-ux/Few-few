@@ -24,8 +24,9 @@ html[data-theme="light"] {
   --line: #dde2e7;
   --text: #14181c;
   --muted: #66707a;
-  --accent: #0097a7;
-  --accent-2: #00b8d4;
+  /* text-grade cyan: #00b8d4 on white was 2.4:1 (axe); these are 6.4:1 and 6.0:1 */
+  --accent: #00687a;
+  --accent-2: #006d7d;
   --good: #12a05c;
   --weave: rgba(0, 0, 0, 0.016);
   --weave2: rgba(0, 0, 0, 0.04);
@@ -252,6 +253,9 @@ main {
   font-weight: 700;
   white-space: nowrap;
 }
+.list .status.ok { color: var(--accent-2); }
+.list .status.bad { color: #ff5a5a; }
+html[data-theme="light"] .list .status.bad { color: #b42318; } /* 6:1 on the light panel */
 .list .remove {
   background: none;
   border: none;
@@ -384,6 +388,11 @@ footer {
 .badge-lang {
   background: var(--accent);
   color: #001a1f;
+}
+/* light theme: the accent is dark enough for text, so whatever sits ON it is white */
+html[data-theme="light"] .btn:not(.ghost),
+html[data-theme="light"] .badge-lang {
+  color: #ffffff;
 }
 .badge-remote {
   border: 1px solid var(--line);

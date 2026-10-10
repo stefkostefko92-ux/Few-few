@@ -7,7 +7,7 @@ Supreme AdBlock
 Blocks ads everywhere: YouTube video ads, banners, pop-ups, trackers, cookie prompts and anti-adblock walls.
 
 ## Category
-Productivity
+Privacy & Security
 
 ## Detailed description
 

@@ -62,7 +62,9 @@ md = f"""# Supreme AdBlock {ver} — Chrome Web Store: всичко за copy/pa
 **Description**
 {block(en)}
 **Category**
-{block("Productivity")}
+{block("Privacy & Security")}
+
+(Днес листингът е в *Tools* — смени го: блокерите на реклами и тракери са в *Privacy & Security*.)
 **Language**
 {block("English")}
 **Official URL** — избери от падащото меню верифицирания домейн:

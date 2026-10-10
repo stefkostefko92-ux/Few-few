@@ -75,4 +75,44 @@ const llms = readFileSync(join(ROOT, "server", "llms.txt"), "utf8");
 const langClaims = [...(idxHtml + llms).matchAll(/(\d+) languages/g)].map((m) => +m[1]).filter((n) => n !== 31);
 ok(`site: “N languages” = ${locs.length} locales everywhere (${[...new Set(langClaims)].join(",")})`, langClaims.length >= 3 && langClaims.every((n) => n === locs.length));
 
+// Графиките за магазина по правилата на Google („Supplying Images“): точните размери, а иконата 128
+// е 96×96 рисунка с ~16 px прозрачен отстъп (install диалогът и магазинът я ползват от пакета).
+import { inflateSync } from "node:zlib";
+function png(file) {
+  const b = readFileSync(join(ROOT, file));
+  let i = 8, idat = [], w = 0, h = 0, ct = 0;
+  while (i < b.length) {
+    const len = b.readUInt32BE(i), type = b.toString("ascii", i + 4, i + 8), body = b.subarray(i + 8, i + 8 + len);
+    if (type === "IHDR") { w = body.readUInt32BE(0); h = body.readUInt32BE(4); ct = body[9]; }
+    if (type === "IDAT") idat.push(body);
+    i += 12 + len;
+  }
+  return { w, h, ct, data: idat.length ? inflateSync(Buffer.concat(idat)) : null };
+}
+function alphaBox(file) { // the opaque bounding box of an RGBA PNG
+  const { w, h, ct, data } = png(file);
+  if (ct !== 6) return null;
+  const bpp = 4, stride = w * bpp, rows = []; let prev = Buffer.alloc(stride), p = 0;
+  for (let y = 0; y < h; y++) {
+    const f = data[p++], cur = Buffer.from(data.subarray(p, p + stride)); p += stride;
+    for (let x = 0; x < stride; x++) {
+      const a = x >= bpp ? cur[x - bpp] : 0, up = prev[x], c = x >= bpp ? prev[x - bpp] : 0;
+      if (f === 1) cur[x] = (cur[x] + a) & 255; else if (f === 2) cur[x] = (cur[x] + up) & 255;
+      else if (f === 3) cur[x] = (cur[x] + ((a + up) >> 1)) & 255;
+      else if (f === 4) { const pa = Math.abs(up - c), pb = Math.abs(a - c), pc = Math.abs(a + up - 2 * c); cur[x] = (cur[x] + (pa <= pb && pa <= pc ? a : pb <= pc ? up : c)) & 255; }
+    }
+    rows.push(cur); prev = cur;
+  }
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  rows.forEach((r, y) => { for (let x = 0; x < w; x++) if (r[x * 4 + 3] > 40) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); } });
+  return { x0, y0, x1, y1 };
+}
+const dims = [["store/store_icon_128.png", 128, 128], ["icons/icon128.png", 128, 128], ["store/promo_small_440x280.png", 440, 280], ["store/marquee_1400x560.png", 1400, 560],
+  ...[1, 2, 3, 4, 5].map((n) => [`store/screenshots/screenshot-${n}.png`, 1280, 800])];
+const wrong = dims.filter(([f, w, h]) => { const p = png(f); return p.w !== w || p.h !== h; }).map(([f]) => f);
+ok(`store art: exact sizes (${wrong.join(", ") || "icon 128, tile 440×280, marquee 1400×560, 5 screenshots 1280×800"})`, wrong.length === 0);
+const box = alphaBox("icons/icon128.png");
+ok(`icon 128: artwork inside a ~16 px transparent margin (opaque box ${box ? `${box.x0},${box.y0}–${box.x1},${box.y1}` : "no alpha"})`,
+  !!box && box.x0 >= 12 && box.y0 >= 12 && box.x1 <= 115 && box.y1 <= 115);
+
 done();
