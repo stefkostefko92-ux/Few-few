@@ -1,19 +1,29 @@
 // The landing's hero, after the Premium template: the promise in three lines (the last in cyan), the answer, the two
-// ways on (register, see the product), the beta and the honesty note, four tiles with the software's own numbers; beside
-// it the cutaway illustration on the blueprint grid with four labels naming what the software does, and a mono line
-// along the bottom edge (the standards profile, the five steps, the engine). The illustration is the page's LCP: it is
-// preloaded (page.tsx) and never lazy. Server component.
+// ways on (register, see the product); under them the four tiles with the software's own numbers, the beta and the
+// honesty note; beside them the cutaway illustration on the blueprint grid with four labels naming what the software
+// does, and a mono line along the bottom edge (the standards profile, the five steps, the engine). On a phone the
+// illustration comes right after the two ways on (the first screen, as in the template) and the tiles, in one row, under
+// it. The illustration is the page's LCP: it is preloaded (page.tsx) and never lazy. Server component.
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import Icon, { type IconName } from '@/components/Icon';
 
-/** The hero's illustration (public/img/premium, scripts/premium-images.py): 3:4, three widths in AVIF and WebP. */
+const cutaway = (ext: string, widths: readonly number[], d: (w: number) => string): string =>
+  widths.map((w) => `/img/premium/elevator-cutaway-${w}.${ext} ${d(w)}`).join(', ');
+/** The hero's illustration (public/img/premium, scripts/premium-images.py): 3:4, four widths in AVIF and WebP. From
+ *  721 px it fills the hero's right half (a little less under 980 px). On a phone it stands in a box 480 px high
+ *  (home.css), never wider than 360 px, and comes into the first screen, where it is the LCP: its files go by the
+ *  screen's density and stop at 640 px (49 KB; a 3x phone does not load 112 KB for a picture 360 px wide). The page preloads the same set
+ *  for each (page.tsx), so the browser never fetches two files. */
 export const HERO_IMG = {
-  avif: '/img/premium/elevator-cutaway-480.avif 480w, /img/premium/elevator-cutaway-800.avif 800w, /img/premium/elevator-cutaway-1086.avif 1086w',
-  webp: '/img/premium/elevator-cutaway-480.webp 480w, /img/premium/elevator-cutaway-800.webp 800w, /img/premium/elevator-cutaway-1086.webp 1086w',
+  avif: cutaway('avif', [480, 640, 800, 1086], (w) => `${w}w`),
+  webp: cutaway('webp', [480, 640, 800, 1086], (w) => `${w}w`),
+  phoneAvif: cutaway('avif', [480, 640], (w) => `${(w / 360).toFixed(2)}x`),
+  phoneWebp: cutaway('webp', [480, 640], (w) => `${(w / 360).toFixed(2)}x`),
+  phone: '(max-width: 720px)',
+  wide: '(min-width: 721px)',
   src: '/img/premium/elevator-cutaway-800.webp',
-  // the picture fills the hero's right half from 1024 px, its full width (less the gutters) below
-  sizes: '(min-width: 1024px) 50vw, 100vw',
+  sizes: '50vw',
   width: 1086,
   height: 1448,
 } as const;
@@ -54,20 +64,12 @@ export default async function Hero({ counts, scenarios, beta, profile, engine }:
           </Link>
           <a className="btn btn-lg" href="#prodotto">{t('ctaProduct')}</a>
         </div>
-        {beta ? <p className="hero-beta"><span className="badge accent">{t('betaTag')}</span> {t('betaFree')}</p> : null}
-        <p className="hero-note">{t('status')}</p>
-        <ul className="hero-benefits" aria-label={t('factsLabel')}>
-          {tiles.map(([icon, v, l]) => (
-            <li key={icon}>
-              <span className="icon-tile"><Icon name={icon} size={20} /></span>
-              <span><strong>{v}</strong> {l}</span>
-            </li>
-          ))}
-        </ul>
       </div>
       <figure className="hero-art">
         <div className="art-grid" aria-hidden="true" />
         <picture>
+          <source media={HERO_IMG.phone} type="image/avif" srcSet={HERO_IMG.phoneAvif} />
+          <source media={HERO_IMG.phone} type="image/webp" srcSet={HERO_IMG.phoneWebp} />
           <source type="image/avif" srcSet={HERO_IMG.avif} sizes={HERO_IMG.sizes} />
           <img className="hero-render" src={HERO_IMG.src} srcSet={HERO_IMG.webp} sizes={HERO_IMG.sizes} width={HERO_IMG.width} height={HERO_IMG.height}
             alt={t('heroImgAlt')} fetchPriority="high" decoding="async" />
@@ -82,6 +84,18 @@ export default async function Hero({ counts, scenarios, beta, profile, engine }:
         </ul>
         <figcaption className="art-caption">{t('heroArtLabel')}</figcaption>
       </figure>
+      <div className="hero-facts">
+        {beta ? <p className="hero-beta"><span className="badge accent">{t('betaTag')}</span> {t('betaFree')}</p> : null}
+        <p className="hero-note">{t('status')}</p>
+        <ul className="hero-benefits" aria-label={t('factsLabel')}>
+          {tiles.map(([icon, v, l]) => (
+            <li key={icon}>
+              <span className="icon-tile"><Icon name={icon} size={20} priority /></span>
+              <span><strong>{v}</strong> {l}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
       <p className="hero-bottom-line" aria-hidden="true">
         <span>{t('heroProfile', { profile })}</span>
         <span className="hero-steps">{steps.join(' · ')}</span>

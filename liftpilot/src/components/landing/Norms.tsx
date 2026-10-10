@@ -1,8 +1,17 @@
 // The standards the software is built on, after the template's standards block: the documents of the Italian profile
 // (src/calc/norme.ts PROFILO) with what each one covers, the note on the register and the ⚠ values, beside the
-// template's blueprint of a lift in its frame with a mono stamp (an illustration, not to scale). Server component.
+// template's blueprint of a lift in its frame with a mono stamp (an illustration, not to scale), level with the title
+// and kept in view beside the list on wide screens. Server component.
 import { getTranslations } from 'next-intl/server';
 import { PROFILO } from '@/calc/norme';
+
+/** The blueprint (public/img/premium, scripts/premium-images.py): line work on transparency, square, in AVIF and WebP. */
+const BLUEPRINT = {
+  avif: '/img/premium/elevator-blueprint-450.avif 450w, /img/premium/elevator-blueprint-900.avif 900w',
+  webp: '/img/premium/elevator-blueprint-450.webp 450w, /img/premium/elevator-blueprint-900.webp 900w',
+  // the frame is at most 500 px wide (home.css), the column's width under it
+  sizes: '(min-width: 560px) 500px, calc(100vw - 40px)',
+} as const;
 
 export default async function Norms() {
   const t = await getTranslations('landing');
@@ -26,8 +35,9 @@ export default async function Norms() {
         <figure className="standard-drawing">
           <figcaption className="drawing-meta"><span>{t('normsArt')}</span><span>{PROFILO.id}</span></figcaption>
           <picture>
-            <source media="(min-width: 720px)" srcSet="/img/premium/elevator-blueprint-900.webp" />
-            <img src="/img/premium/elevator-blueprint-450.webp" width={450} height={450} alt="" loading="lazy" decoding="async" />
+            <source type="image/avif" srcSet={BLUEPRINT.avif} sizes={BLUEPRINT.sizes} />
+            <img src="/img/premium/elevator-blueprint-450.webp" srcSet={BLUEPRINT.webp} sizes={BLUEPRINT.sizes} width={450} height={450} alt=""
+              loading="lazy" decoding="async" />
           </picture>
           <p className="drawing-stamp" aria-hidden="true">LIFTPILOT <b>{t('heroProfile', { profile: PROFILO.id })}</b> <small>{t('normsStamp')}</small></p>
         </figure>

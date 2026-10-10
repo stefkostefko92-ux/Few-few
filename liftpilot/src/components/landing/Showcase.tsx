@@ -17,7 +17,8 @@ import type { Sample, SampleStop } from './example';
 const STEPS: ReadonlyArray<readonly [string, IconName]> = [
   ['rilievo', 'floor-plan'], ['progetto', 'blueprint'], ['argano', 'calculator-check'], ['simulazione', 'rotate-3d'], ['documenti', 'file-stack'],
 ];
-/** The pages of the sample's documents, with the key of each caption. */
+/** The pages of the sample's documents, with the key of each caption: the first sheet of the drawings and the report's
+ *  first page large, the machine room's sheet and a page of the checks small beside them. */
 const DOCS = [['lp-doc-tavola', 'docTavola'], ['lp-doc-relazione', 'docRelazione'], ['lp-doc-locale', 'docLocale'], ['lp-doc-verifiche', 'docVerifiche']] as const;
 
 type Fact = readonly [string, string];
@@ -34,7 +35,8 @@ export default async function Showcase({ sample, stop, intlLocale }: Props) {
   const names = STEPS.map((_, n) => t(`step${n + 1}Title`));
   const plan = LANDING_DRAWINGS['lp-plan'], section = LANDING_DRAWINGS['lp-section'];
 
-  const frame = (k: number, body: ReactNode, facts: readonly Fact[], check?: string): ReactNode => (
+  // a frame without facts gives the canvas the column of the properties too (the documents); `note` goes under the frame
+  const frame = (k: number, body: ReactNode, facts: readonly Fact[], check?: string, note?: string): ReactNode => (
     <>
       <div className="product-ui">
         <div className="ui-top">
@@ -45,22 +47,25 @@ export default async function Showcase({ sample, stop, intlLocale }: Props) {
           </span>
           <span className="ui-status">{t('heroEngine', { engine: sample.engine })}</span>
         </div>
-        <div className="ui-inner">
+        <div className={facts.length ? 'ui-inner' : 'ui-inner wide'}>
           <ol className="ui-side" aria-hidden="true">
             {names.map((name, i) => <li key={name} className={i === k ? 'on' : undefined}><span>{String(i + 1).padStart(2, '0')}</span>{name}</li>)}
           </ol>
           <div className="ui-canvas">{body}</div>
-          <div className="ui-props">
-            <p className="ui-props-title">{t('prodSample')}</p>
-            <dl>{facts.map(([l, v]) => <div key={l}><dt>{l}</dt><dd>{v}</dd></div>)}</dl>
-            {check ? <p className="ui-check"><Icon name="check-circle" size={16} />{check}</p> : null}
-          </div>
+          {facts.length ? (
+            <div className="ui-props">
+              <p className="ui-props-title">{t('prodSample')}</p>
+              <dl>{facts.map(([l, v]) => <div key={l}><dt>{l}</dt><dd>{v}</dd></div>)}</dl>
+              {check ? <p className="ui-check"><Icon name="check-circle" size={16} />{check}</p> : null}
+            </div>
+          ) : null}
         </div>
         <div className="ui-bottom"><span>{t('prodSample')}</span><span>DXF · DWG · PDF</span></div>
       </div>
       <div className="ui-caption">
         <h3>{t(`fl${k}H`)}</h3>
         <p>{t(`fl${k}T`)}</p>
+        {note ? <p className="ui-note"><Icon name="check-circle" size={16} />{note}</p> : null}
       </div>
     </>
   );
@@ -120,17 +125,17 @@ export default async function Showcase({ sample, stop, intlLocale }: Props) {
     tl('sum_brake_ok', { a: fmt(stop.accel, 2), util: fmt(stop.util, 2), d0: fmt(stop.stop * 100, 0) })),
     frame(4, (
       <ol className="ui-desk">
-        {DOCS.map(([name, key]) => {
+        {DOCS.map(([name, key], i) => {
           const d = LANDING_DOCS[name];
           return (
-            <li key={name}>
+            <li key={name} className={i < 2 ? 'lead' : undefined}>
               {/* eslint-disable-next-line @next/next/no-img-element -- pages of the sample's documents made by scripts/landing-docs.ts */}
               <img src={`/img/${name}.webp`} width={d.w} height={d.h} alt={t(key, d.args)} loading="lazy" decoding="async" />
             </li>
           );
         })}
       </ol>
-    ), [[t('pFormats'), 'PDF · DXF · DWG'], [t('pRecord'), t('pRecordV')]], t('docsNote')),
+    ), [], undefined, t('docsNote')),
   ];
 
   const tabs: ShowcaseTab[] = STEPS.map(([id, icon], n) => ({ id, icon, label: names[n] ?? id }));

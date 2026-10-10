@@ -16,7 +16,8 @@
 .text-cta:hover { text-decoration: underline; text-underline-offset: 4px; }
 
 /* ── hero ─────────────────────────────────────────────────────────────────────────────────────────────────────────── */
-.hero { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); min-height: clamp(660px, calc(100svh - 82px), 860px);
+.hero { --hero-left: max(var(--gutter), calc((100vw - var(--page)) / 2)); position: relative; display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); min-height: clamp(660px, calc(100svh - 82px), 860px);
   overflow: hidden; border-bottom: 1px solid var(--rule-soft); }
 .hero-blueprint { position: absolute; inset: 0 0 0 28%; opacity: .32; pointer-events: none;
   background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px),
@@ -25,23 +26,26 @@
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 30%); mask-image: linear-gradient(90deg, transparent, #000 30%); }
 .hero-vignette { position: absolute; inset: 0; z-index: 1; pointer-events: none;
   background: radial-gradient(ellipse at 73% 45%, transparent 10%, color-mix(in srgb, var(--bg) 82%, transparent) 71%); }
-.hero-copy { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: flex-start; min-width: 0;
-  padding: clamp(56px, 7vh, 88px) 24px 72px max(var(--gutter), calc((100vw - var(--page)) / 2)); }
+/* the copy (title, answer, the two ways on) and under it the facts (beta, note, tiles at the foot) share the left half */
+.hero-copy { grid-column: 1; grid-row: 1; position: relative; z-index: 3; display: flex; flex-direction: column; align-items: flex-start; min-width: 0;
+  padding: clamp(56px, 7vh, 88px) 24px 0 var(--hero-left); }
+.hero-facts { grid-column: 1; grid-row: 2; position: relative; z-index: 3; display: flex; flex-direction: column; align-items: flex-start; min-width: 0;
+  padding: 0 24px 72px var(--hero-left); }
 .hero h1 { margin: 26px 0 20px; font-size: clamp(40px, 3.9vw, 64px); line-height: .99; letter-spacing: -0.052em; font-weight: 800; max-width: 12.5em; }
 .hero h1 em { text-shadow: 0 0 28px rgb(0 216 237 / .15); }
 /* Cyrillic sets wider: the third line («и проверка на машината») keeps to one line from 1024 px */
 .hero h1:lang(bg) { font-size: clamp(36px, 3.5vw, 58px); letter-spacing: -0.04em; }
 .hero-lead { max-width: 36em; font-size: 16px; line-height: 1.7; color: var(--ink-2); }
 .hero-buttons { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
-.hero-beta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-top: 20px; font-size: 14px; line-height: 1.5; color: var(--ink-2); }
-.hero-note { max-width: 40em; margin-top: 10px; font-size: 14px; line-height: 1.6; color: var(--muted); }
+.hero-beta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-top: 20px; font-size: 15px; line-height: 1.5; color: var(--ink-2); }
+.hero-note { max-width: 40em; margin-top: 10px; font-size: 15px; line-height: 1.6; color: var(--muted); }
 .hero-benefits { list-style: none; margin: auto 0 0; padding: 40px 0 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; width: 100%; max-width: 560px; }
 .hero-benefits li { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.45; color: var(--ink-2); }
 .hero-benefits .icon-tile { width: 38px; height: 38px; }
 .hero-benefits strong { display: block; font: 800 20px/1.1 var(--font-body); letter-spacing: -0.03em; color: var(--ink); font-variant-numeric: tabular-nums; }
 
 /* the illustration: the grid in perspective behind it, the picture fading at the foot, the four labels on its right */
-.hero-art { position: relative; z-index: 2; margin: 0; min-height: 100%; overflow: hidden; }
+.hero-art { grid-column: 2; grid-row: 1 / span 2; position: relative; z-index: 2; margin: 0; min-height: 100%; overflow: hidden; }
 .art-grid { position: absolute; inset: 4% 0 0; pointer-events: none;
   background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
   background-size: 32px 32px; opacity: .6; transform: perspective(550px) rotateY(-13deg) scale(1.13);
@@ -57,7 +61,7 @@
 .art-label-3 { right: 5%; top: 60%; }
 .art-label-4 { right: 8%; top: 77%; }
 .art-caption { position: absolute; right: 8%; bottom: 52px; font: 400 11px/1 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--dim); }
-.hero-bottom-line { position: absolute; z-index: 4; bottom: 0; left: max(var(--gutter), calc((100vw - var(--page)) / 2)); right: max(var(--gutter), calc((100vw - var(--page)) / 2));
+.hero-bottom-line { position: absolute; z-index: 4; bottom: 0; left: var(--hero-left); right: var(--hero-left);
   height: 38px; margin: 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; border-top: 1px solid var(--rule);
   font: 400 11px/1 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--dim); white-space: nowrap; }
 
@@ -65,7 +69,8 @@
 .section-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; column-gap: 28px; margin-bottom: 32px; }
 .section-head > div { grid-column: 1; }
 .section-head > p { grid-column: 1; max-width: 560px; margin-top: 14px; font-size: 15px; line-height: 1.7; color: var(--muted); }
-.section-head .text-cta { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
+/* the link stands top right, level with the title (the eyebrow's height over it), as in the template */
+.section-head .text-cta { grid-column: 2; grid-row: 1 / span 2; align-self: start; margin-top: 44px; }
 
 /* ── features ─────────────────────────────────────────────────────────────────────────────────────────────────────── */
 .features { padding-block: 75px; background: var(--bg-2); border-bottom: 1px solid var(--rule-soft); }
@@ -73,7 +78,7 @@
 .feature-card { min-height: 244px; padding: 22px 20px 44px; gap: 0; }
 .feature-card .icon-tile { margin-bottom: 17px; }
 .feature-card h3 { font-size: 16px; line-height: 1.3; margin-bottom: 9px; }
-.feature-card p { font-size: 14px; line-height: 1.65; }
+.feature-card p { font-size: 15px; line-height: 1.65; }
 .card-index { position: absolute; right: 16px; bottom: 15px; font: 400 11px/1 var(--font-mono); letter-spacing: .08em; color: var(--dim); }
 
 /* ── product showcase: the tabs beside the template's workspace frame ─────────────────────────────────────────────── */
@@ -87,7 +92,14 @@
   background: transparent; color: var(--muted); font: 600 14px/1.3 var(--font-body); text-align: left; cursor: pointer; }
 .showcase-tab:hover { color: var(--ink); background: color-mix(in srgb, var(--accent-soft) 50%, transparent); }
 .showcase-tab[aria-selected="true"] { background: var(--accent-soft); color: var(--ink); border-left-color: var(--accent); }
+/* every panel in the same cell: the stage keeps the height of the tallest, so the page under it never moves when a tab
+   is chosen; on wide screens the frame itself has one height for every tab (its canvas centres what it shows), on a
+   phone the frame of a shorter panel grows to the tallest */
+.showcase-stage { display: grid; min-width: 0; }
+.showcase-stage > [role="tabpanel"] { grid-area: 1 / 1; display: flex; flex-direction: column; min-width: 0; }
+.showcase-stage > .is-off { visibility: hidden; }
 .showcase-stage > [role="tabpanel"]:focus-visible { outline-offset: 6px; border-radius: 10px; }
+.showcase-stage .product-ui { display: flex; flex-direction: column; }
 
 .product-ui { border: 1px solid var(--rule-strong); background: var(--surface); border-radius: var(--radius-lg); overflow: hidden;
   box-shadow: 0 24px 60px rgb(0 0 0 / .4), 0 0 28px rgb(0 215 237 / .05); }
@@ -96,7 +108,8 @@
 .ui-brand small { overflow: hidden; text-overflow: ellipsis; font: 400 11px/1 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--dim); }
 .ui-status { margin-left: auto; display: inline-flex; align-items: center; gap: 7px; font: 400 11px/1 var(--font-mono); color: var(--ok); white-space: nowrap; }
 .ui-status::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-.ui-inner { display: grid; grid-template-columns: 128px minmax(0, 1fr) 196px; min-height: 400px; }
+.ui-inner { display: grid; grid-template-columns: 128px minmax(0, 1fr) 196px; height: 440px; }
+.ui-inner.wide { grid-template-columns: 128px minmax(0, 1fr); }
 .ui-side { list-style: none; margin: 0; padding: 17px 10px; display: flex; flex-direction: column; gap: 6px; border-right: 1px solid var(--rule-soft); }
 .ui-side li { display: flex; gap: 8px; padding: 8px 7px; border-radius: 4px; font-size: 12.5px; line-height: 1.3; color: var(--dim); }
 .ui-side li span { font: 400 11px/1.4 var(--font-mono); }
@@ -116,9 +129,16 @@
 .ui-shot img { display: block; width: 100%; height: auto; border-radius: 6px; border: 1px solid var(--rule); }
 .ui-shot.tall img { width: auto; max-height: 360px; }
 .ui-shot figcaption { margin-top: 8px; font-size: 12.5px; line-height: 1.4; color: var(--muted); }
-.ui-desk { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; width: 100%; }
+/* the documents: the drawing set's first sheet and the report's first page large, two more pages small beside them */
+.ui-desk { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, .5fr);
+  grid-template-rows: auto auto; gap: 12px; width: 100%; max-width: 640px; align-items: start; }
+.ui-desk li.lead { grid-row: 1 / span 2; }
 .ui-desk img { display: block; width: 100%; height: auto; border-radius: 2px; background: #fff; box-shadow: 0 14px 30px rgb(0 0 0 / .45); }
-.ui-ledger { width: 100%; max-height: 380px; overflow: auto; align-self: stretch; }
+/* twenty checks scroll in the frame: the foot fades so the cut row reads as "more below"; the table's bottom margin
+   lets the last row scroll clear of the fade */
+.ui-ledger { width: 100%; max-height: 380px; overflow: auto; align-self: stretch;
+  -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 64px), transparent); mask-image: linear-gradient(180deg, #000 calc(100% - 64px), transparent); }
+.ui-ledger table { margin-bottom: 48px; }
 .ui-ledger table { width: 100%; border-collapse: collapse; font-size: 12.5px; line-height: 1.35; font-variant-numeric: tabular-nums; }
 .ui-ledger caption { text-align: left; padding: 0 0 10px; font: 400 11px/1.3 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--eyebrow-ink); }
 .ui-ledger th, .ui-ledger td { padding: 7px 6px; text-align: left; border-bottom: 1px solid var(--rule-soft); vertical-align: middle; }
@@ -142,6 +162,8 @@
 .ui-caption { margin-top: 18px; display: flex; flex-direction: column; gap: 6px; }
 .ui-caption h3 { font-size: 17px; letter-spacing: -0.015em; }
 .ui-caption p { max-width: 70ch; font-size: 15px; line-height: 1.65; color: var(--muted); }
+.ui-caption .ui-note { display: flex; gap: 8px; align-items: flex-start; color: var(--ink-2); }
+.ui-note .icon { flex: none; margin-top: 4px; }
 
 /* ── pricing ──────────────────────────────────────────────────────────────────────────────────────────────────────── */
 .pricing-section { padding-block: 70px 75px; background: linear-gradient(180deg, var(--bg-2), var(--bg)); }
@@ -162,11 +184,11 @@
 .price-card li { display: flex; gap: 9px; font-size: 14px; line-height: 1.45; color: var(--ink-2); }
 .price-card li::before { content: "✓"; flex: none; font-weight: 800; color: var(--accent); }
 .price-card .btn { margin-top: auto; }
-.pricing-note { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px 10px; margin-top: 22px; text-align: center; font-size: 14px; line-height: 1.5; color: var(--muted); }
+.pricing-note { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px 10px; margin-top: 22px; text-align: center; font-size: 15px; line-height: 1.5; color: var(--muted); }
 
 /* ── standards ────────────────────────────────────────────────────────────────────────────────────────────────────── */
 .standards-section { padding-block: 70px; border-block: 1px solid var(--rule-soft); }
-.standards-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .9fr); gap: 7%; align-items: center; }
+.standards-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .9fr); gap: 7%; align-items: start; }
 .standards-lead { max-width: 30em; margin-top: 16px; font-size: 15px; line-height: 1.7; color: var(--muted); }
 .standard-list { list-style: none; margin: 22px 0 0; padding: 0; display: grid; gap: 13px; }
 .standard-list li { display: flex; align-items: flex-start; gap: 12px; font-size: 14px; line-height: 1.5; }
@@ -174,8 +196,9 @@
 .std-scope { display: block; font-size: 13.5px; color: var(--muted); }
 .std-mark { flex: none; display: grid; place-items: center; width: 20px; height: 20px; margin-top: 1px; border-radius: 50%; border: 1px solid var(--accent-line);
   background: var(--accent-soft); color: var(--accent); font-size: 11px; font-weight: 800; }
-.standards-note { max-width: 46em; margin-top: 22px; font-size: 13.5px; line-height: 1.6; color: var(--muted); }
-.standard-drawing { position: relative; justify-self: center; width: 100%; max-width: 440px; aspect-ratio: 440 / 400; margin: 0; overflow: hidden;
+.standards-note { max-width: 46em; margin-top: 22px; font-size: 15px; line-height: 1.6; color: var(--muted); }
+/* level with the title (under the eyebrow), then kept in view beside the list while it scrolls */
+.standard-drawing { position: sticky; top: 110px; justify-self: center; width: 100%; max-width: 500px; aspect-ratio: 500 / 460; margin: 34px 0 0; overflow: hidden;
   border: 1px solid var(--rule); border-radius: 7px; background: radial-gradient(ellipse at center, var(--accent-soft), var(--bg-2) 72%); }
 .standard-drawing img { display: block; width: 100%; height: 100%; object-fit: contain; opacity: .62; mix-blend-mode: screen; }
 .drawing-meta { position: absolute; z-index: 2; top: 15px; left: 16px; right: 16px; display: flex; justify-content: space-between; gap: 12px;
@@ -224,22 +247,28 @@
   .hero { grid-template-columns: minmax(0, 1fr) minmax(0, .85fr); }
   .art-label { transform: scale(.9); transform-origin: right center; }
   .section-head { grid-template-columns: minmax(0, 1fr); }
-  .section-head .text-cta { grid-column: 1; grid-row: auto; margin-top: 16px; }
+  .section-head .text-cta { grid-column: 1; grid-row: auto; align-self: auto; margin-top: 16px; }
   .pricing-head { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .pricing-head h2 { text-align: left; }
   .pricing-head .text-cta { justify-self: start; }
   .pricing-lead { margin-inline: 0; text-align: left; }
   .pricing-note { justify-content: flex-start; text-align: left; }
   .standards-grid, .faq-grid { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+  .standard-drawing { position: relative; top: auto; margin-top: 0; }
 }
 @media (max-width: 720px) {
   .lp-section { scroll-margin-top: 66px; }
   .hero { display: flex; flex-direction: column; min-height: 0; }
-  .hero-copy { padding: 52px var(--gutter) 28px; }
+  .hero-copy { padding: 40px var(--gutter) 26px; }
+  .hero-facts { padding: 4px var(--gutter) 62px; }
   .hero h1 { font-size: clamp(34px, 9.6vw, 56px); letter-spacing: -0.05em; margin: 22px 0 16px; }
   .hero-lead { font-size: 15.5px; }
-  .hero-benefits { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 14px; max-width: none; padding-top: 34px; }
-  .hero-art { min-height: 480px; width: 100%; margin-bottom: 38px; }
+  /* the tiles in one row, as in the template, then the beta and the note */
+  .hero-benefits { order: -1; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; max-width: none; margin: 0; padding: 0 0 6px; }
+  .hero-benefits li { gap: 8px; font-size: 12px; line-height: 1.4; }
+  .hero-benefits .icon-tile { width: 34px; height: 34px; }
+  .hero-benefits strong { font-size: 18px; }
+  .hero-art { min-height: 480px; width: 100%; }
   .art-label { font-size: 12px; padding: 7px 10px 7px 7px; gap: 7px; transform: none; }
   .art-label .icon-tile { width: 28px; height: 28px; }
   .art-label-1 { right: 3%; top: 8%; }
@@ -256,13 +285,16 @@
   .feature-card { min-height: 0; padding: 18px 16px 40px; }
   .showcase-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .showcase-tab { padding: 10px 8px; gap: 8px; font-size: 13.5px; }
-  .ui-inner { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+  .ui-inner { grid-template-columns: minmax(0, 1fr); height: auto; }
+  .showcase-stage .product-ui, .showcase-stage .ui-inner { flex: 1 1 auto; }
   .ui-side { display: none; }
   .ui-canvas { min-height: 300px; padding: 16px 12px; }
   .ui-props { border-left: 0; border-top: 1px solid var(--rule-soft); }
   .ui-props dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; }
   .ui-paper img, .ui-paper.section img, .ui-shot.tall img { max-height: 300px; }
+  .ui-inner.wide { grid-template-columns: minmax(0, 1fr); }
   .ui-desk { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ui-desk li.lead { grid-row: auto; }
   .ui-pair.wide { grid-template-columns: minmax(0, 1fr); }
   .ui-bottom span:last-child { display: none; }
   .pricing-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }

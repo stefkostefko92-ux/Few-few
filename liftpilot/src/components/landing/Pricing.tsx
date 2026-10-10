@@ -9,30 +9,13 @@ import type { SeatPack } from '@prisma/client';
 import { Link } from '@/i18n/routing';
 import { PACK, SEAT_PACKS, packAmount } from '@/lib/billing';
 import { billingConfig } from '@/lib/billing-config';
-import { monthlyPrice, stripeErrorOf, type MonthlyPrice } from '@/lib/stripe';
+import { publicMonthlyPrice } from '@/lib/billing-price';
 import { money } from '@/lib/money';
-import { log } from '@/lib/log';
 import Icon from '@/components/Icon';
-
-// after Stripe failed to answer, the landing says "on request" for a minute before asking again (a public page: not a
-// call to Stripe and a warning in the log on every visit); the price itself is cached by monthlyPrice()
-const RETRY_MS = 60 * 1000;
-let failedAt = 0;
-
-async function currentPrice(): Promise<MonthlyPrice | null> {
-  if (Date.now() - failedAt < RETRY_MS) return null;
-  try {
-    return await monthlyPrice();
-  } catch (err) {
-    failedAt = Date.now();
-    log.warn({ err: stripeErrorOf(err) }, 'monthly price not read for the landing page');
-    return null;
-  }
-}
 
 export default async function Pricing({ locale }: { locale: string }) {
   const [t, tp, tb] = await Promise.all([getTranslations('landing'), getTranslations('pricing'), getTranslations('billing')]);
-  const cfg = billingConfig(), price = cfg ? await currentPrice() : null;
+  const cfg = billingConfig(), price = cfg ? await publicMonthlyPrice() : null;
   const per = price ? (price.intervalCount === 1 ? tb(`per1.${price.interval}`) : tb('perPeriod', { n: price.intervalCount, unit: tb(`unit.${price.interval}`) })) : '';
   const seatsOf = (p: SeatPack): string => (p === 'NONE' ? tb('ownerOnly') : p === 'UNLIMITED' ? tb('seatsUnlimited') : tb('seatsN', { n: PACK[p].seats }));
   return (
@@ -55,7 +38,7 @@ export default async function Pricing({ locale }: { locale: string }) {
               </p>
               <ul>
                 <li>{seatsOf(p)}</li>
-                <li>{PACK[p].pct ? tp('share', { pct: PACK[p].pct }) : tp('shareNone')}</li>
+                <li>{PACK[p].pct ? tp('share', { pct: PACK[p].pct }) : t('planOwnerIncluded')}</li>
                 <li>{t('planAll')}</li>
               </ul>
               <Link className={`btn btn-block${k === 0 ? ' btn-primary' : ''}`} href="/register">

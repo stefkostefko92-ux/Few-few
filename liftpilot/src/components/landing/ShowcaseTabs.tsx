@@ -3,6 +3,8 @@
 // The product showcase's tabs (WAI-ARIA tabs, automatic activation): one tab per step of the way from the survey to the
 // documents, its panel the template's product frame with what the software made for the sample installation. The
 // panels are rendered on the server; without JavaScript the first one shows. Arrow keys, Home and End move between tabs.
+// The panels share one cell of the stage (home.css): the stage is as tall as the tallest, so a click on a tab never
+// moves the page under it; the others are invisible and inert (out of the tab order and of the accessibility tree).
 import { useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import Icon, { type IconName } from '@/components/Icon';
 
@@ -55,7 +57,8 @@ export default function ShowcaseTabs({ tabs, label, intro, panels }: Props) {
       </div>
       <div className="showcase-stage">
         {panels.map((p, k) => (
-          <div key={tabs[k]?.id ?? k} role="tabpanel" id={`panel-${tabs[k]?.id}`} aria-labelledby={`tab-${tabs[k]?.id}`} tabIndex={0} hidden={k !== at}>
+          <div key={tabs[k]?.id ?? k} role="tabpanel" id={`panel-${tabs[k]?.id}`} aria-labelledby={`tab-${tabs[k]?.id}`} tabIndex={0}
+            className={k === at ? undefined : 'is-off'} inert={k !== at}>
             {p}
           </div>
         ))}

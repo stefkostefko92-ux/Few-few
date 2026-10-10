@@ -63,8 +63,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     <>
       {/* React hoists these into the head: the title's faces and the hero's illustration (the LCP) */}
       {FIRST_SCREEN_FONTS[loc(locale)].map((f) => <link key={f} rel="preload" as="font" type="font/woff2" crossOrigin="anonymous" href={`/fonts/${f}.woff2`} />)}
-      <link rel="preload" as="image" type="image/avif" imageSrcSet={HERO_IMG.avif} imageSizes={HERO_IMG.sizes} fetchPriority="high" />
-      <SiteHeader />
+      <link rel="preload" as="image" type="image/avif" media={HERO_IMG.wide} imageSrcSet={HERO_IMG.avif} imageSizes={HERO_IMG.sizes} fetchPriority="high" />
+      <link rel="preload" as="image" type="image/avif" media={HERO_IMG.phone} imageSrcSet={HERO_IMG.phoneAvif} fetchPriority="high" />
+      <SiteHeader at="home" />
       <main id="main" className="lp">
         <Hero counts={registryCounts()} scenarios={SCENARIOS.length} beta={!billingConfigured()} profile={PROFILO.id} engine={sample.engine} />
         <Features />

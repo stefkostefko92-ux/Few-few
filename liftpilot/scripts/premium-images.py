@@ -13,9 +13,9 @@ OUT = os.path.join(ROOT, "public", "img", "premium")
 
 # name: (widths, formats, WebP quality, AVIF quality); the hero is the landing's LCP: its 800 px AVIF stays small
 IMAGES = {
-    "elevator-cutaway": ((480, 800, 1086), ("avif", "webp"), 78, 58),
+    "elevator-cutaway": ((480, 640, 800, 1086), ("avif", "webp"), 78, 58),
     "elevator-lobby": ((800, 1400, 1983), ("avif", "webp"), 74, 48),
-    "elevator-blueprint": ((450, 900), ("webp",), 86, None),
+    "elevator-blueprint": ((450, 900), ("avif", "webp"), 86, 60),
 }
 
 os.makedirs(OUT, exist_ok=True)
