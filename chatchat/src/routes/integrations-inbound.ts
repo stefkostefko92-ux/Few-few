@@ -1,6 +1,7 @@
 import express, { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import type { WiredDeps } from '../app.js';
+import { sharedStore } from '../auth/rate-limit.js';
 import { apiError } from '../auth/guards.js';
 import { applyInbound } from '../services/integrations/inbound-apply.js';
 import { verifyInbound } from '../services/integrations/inbound.js';
@@ -19,6 +20,7 @@ const INBOUND_ID = /^[A-Za-z0-9_-]{16,64}$/;
 export function integrationsInboundRouter(deps: WiredDeps): Router {
   const router = Router();
   const perIp = rateLimit({
+    store: sharedStore('integrations-inbound-ip'),
     windowMs: 60 * 1000,
     limit: 300,
     standardHeaders: 'draft-8',
@@ -26,6 +28,7 @@ export function integrationsInboundRouter(deps: WiredDeps): Router {
     handler: (_req, res) => apiError(res, 429, 'too_many_requests'),
   });
   const perEndpoint = rateLimit({
+    store: sharedStore('integrations-inbound-endpoint'),
     windowMs: 60 * 1000,
     limit: 120,
     standardHeaders: 'draft-8',

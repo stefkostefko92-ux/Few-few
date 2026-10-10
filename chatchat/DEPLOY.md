@@ -41,8 +41,9 @@ sudoedit /opt/few-few/shared/chatchat/.env    # по образеца .env.examp
 | `MFA_ENC_KEY`        | `openssl rand -base64 32`                                             | **всички MFA устройства** (тайните им в базата не се разшифроват) |
 | `FILES_KEK`          | `openssl rand -base64 32`                                             | **всички прикачени файлове** — смяна само с ротация (т. 12)       |
 | `INTEGRATION_KEK`    | `openssl rand -base64 32`                                             | токените на helpdesk конектора (въвеждат се наново в конзолата)   |
+| `REDIS_PASSWORD`     | `openssl rand -hex 32` (само hex — влиза некодирана в `REDIS_URL`)    | само чакащите задачи (т. 17)                                      |
 
-Шестте са различни. Ако `ATTACHMENT_URL_KEY`, `MFA_ENC_KEY`, `FILES_KEK` или `INTEGRATION_KEK` липсват, `deploy.sh` ги
+Ключовете са различни. Ако `ATTACHMENT_URL_KEY`, `MFA_ENC_KEY`, `FILES_KEK`, `INTEGRATION_KEK`, `SSO_KEK` или `REDIS_PASSWORD` липсват, `deploy.sh` ги
 генерира сам (само тях, само ако ги няма, никога не ги презаписва и не ги печата) и казва това —
 **копирай `.env` и извън сървъра** (password manager), **никога заедно с бекъпите**: без `MFA_ENC_KEY`
 бекъпът на базата не връща MFA, а без `FILES_KEK` прикачените файлове (и тези в бекъпите) са загубени.
@@ -112,7 +113,8 @@ sudo bash /opt/few-few/releases/<час>/<корен>/chatchat/deploy/deploy.sh
    `COMPOSE_FILE=…pgdata.yml` (иначе изход 1 — никога база върху стария некриптиран том);
    папката `attachments/` (uid 1000, mode 700); папката `eval-reports/` (755, монтирана само за четене);
    `clamd.conf` от репото на стабилния път.
-2. `docker compose build app`; образите на db и clamav се теглят **само ако ги няма** (по digest).
+2. `docker compose build app` (същият образ `chatchat-app` е и `worker`); образите на db, clamav и redis
+   се теглят **само ако ги няма** (по digest).
 3. **Бекъп на базата преди миграцията** (`shared/chatchat/backups/pre-deploy-<час>.sql.gz`, последните 5;
    с шифрования том — в него: `shared/chatchat/pgdata/pre-deploy/`) — без валиден дъмп няма миграция (изход 1).
 4. Еднократно: базата на pgvector + `REINDEX` (т. 11).
@@ -120,7 +122,8 @@ sudo bash /opt/few-few/releases/<час>/<корен>/chatchat/deploy/deploy.sh
    `db push`), после `node dist/index.js`.
 6. Чака `http://127.0.0.1:4330/readyz` да върне `{"ok":true,"ai":…}` (до `CHATCHAT_HEALTH_WAIT`, 120 s).
    Не → изход 4 и autodeploy вдига предишния release.
-7. Записва `shared/chatchat/last-good`; шифрова старите нешифровани прикачени файлове
+7. Worker-ът (т. 17) трябва да е здрав — иначе само предупреждение (API-то работи, задачите чакат в Redis).
+8. Записва `shared/chatchat/last-good`; шифрова старите нешифровани прикачени файлове
    (`files.js encrypt`, идемпотентно, т. 12); слага таймерите за бекъпа и ретенцията (т. 9); vhost-а (т. 2);
    мониторингът (т. 16) — ако не е включен, само напомня; ако е — подравнява таймера за одитната верига.
 
@@ -595,3 +598,37 @@ sudo bash "$R/deploy/monitoring.sh" status       # /-/ready, целите, пр�
 - Памет: +~1.2 GB таван (Prometheus 768 MB, останалите ≤ 128 MB); диск: до `PROMETHEUS_RETENTION_SIZE`
   (4 GB) за 45 дни.
 - Истината отвън (смърт на целия сървър) остава външният монитор на VPS-аджията.
+
+## 17. Опашките и worker-ът (Redis + BullMQ, NFR-06)
+
+Тежката работа е извън API-то: услугата `worker` (същият образ, `node dist/worker.js`, само за четене, без
+root, без HTTP) изпълнява опашките от Redis 7 — `ingest` (разбор на PDF/DOCX/XLSX/лог в отделна нишка с
+таван на паметта и срок), `ocr` (pdftoppm + tesseract `ita+eng+bul`, само страниците без текстов слой и
+изображенията), `embed` (векторите след публикуване + периодичен преглед). Изчерпаните опити отиват в
+опашката `dead` (само id-та и причина), а файлът става „Неуспех“ — в конзолата „Повтори“ го пуска наново
+(и файл, заседнал над 30 мин. в опашката). Redis пази и pub/sub между инстанциите на API-то (SSE), общите
+лимити на заявките и пазача срещу повторен TOTP код. Без `REDIS_URL` (dev) всичко е в процеса — тогава
+работи **само една** инстанция на API-то.
+
+```bash
+$CC ps worker redis                     # и двете „healthy“
+$CC logs --tail=80 worker               # „chatchat worker тръгна“, после само id-та и кодове
+$CC exec -T redis redis-cli info memory | grep used_memory_human   # таван 256 MB, noeviction
+```
+
+- **Здраве:** worker-ът обновява `/tmp/chatchat-worker.alive` на 10 s, само ако Redis отговаря; HEALTHCHECK
+  — файлът е по-нов от 60 s. Спиране: текущите задачи довършват до 90 s (`stop_grace_period: 120s`), после
+  задачата се поема наново (идемпотентно по id на файла — документ не се записва два пъти).
+- **Метрики** (по избор, `WORKER_METRICS_PORT` → `127.0.0.1:<порт>`): `chatchat_queue_jobs_total{queue,result}`,
+  `chatchat_queue_job_duration_seconds`, `chatchat_queue_depth{queue,state}` (и `dead`),
+  `chatchat_ingest_items_total{format,result}`, `chatchat_ocr_pages_total{result}`; в API-то —
+  `chatchat_realtime_bus_messages_total{direction,kind}`.
+- **Данните на Redis** (`chatchat_redis-data`, AOF) не са в бекъпа: там са само задачи и броячи. Загубата им
+  оставя файловете „В опашката“ — след 30 мин. „Повтори“ ги пуска наново (оригиналите са във файловете).
+- **OCR пакетите** в `Dockerfile` са заковани по версия (Debian 12): ако Debian публикува поправка и махне
+  закованата версия, билдът спира ПРЕДИ смяната (`deploy.sh` → изход 1, работещото не се пипа) — тогава
+  новата версия от `apt-cache policy tesseract-ocr poppler-utils` се вписва в `ARG …_VERSION`.
+- **Smoke тест на истинския OCR** (не е в gate): `docker build -t chatchat-app . && npm run test:ocr-smoke`
+  — пуска образа като в продукция (node, read-only, tmpfs, без мрежа) и разпознава сканиран PDF и PNG.
+- **Втора инстанция на API-то:** същият `REDIS_URL`; nginx балансира към двете (SSE работи и през двете —
+  събитията се разпращат през Redis, правата се проверяват при изпращане).

@@ -32,7 +32,7 @@ export function notificationsRouter(deps: WiredDeps): Router {
   const router = Router();
   router.use(requireUser, requireCsrf(deps.publicOrigin));
   const use = requireCapability('conversation:use');
-  const prefsLimit = perUserLimit(60 * 1000, 30);
+  const prefsLimit = perUserLimit(60 * 1000, 30, 'notification-prefs');
   const emailAvailable = () => Boolean(deps.mail);
 
   router.get('/notifications', use, async (req, res, next) => {

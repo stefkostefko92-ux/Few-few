@@ -67,6 +67,12 @@ base64, 200–8000 px, общо 20 MB base64 на заявка), логовет�
    Или PDF: първо `POST /api/v1/admin/attachments?name=…` (сурово тяло, антивирус), после
    документа с `sourceAttachmentId` — текстът се извлича по страници, checksum = sha256 на
    оригинала, а страница без текстов слой (сканирана) дава предупреждение `ingest.pageWithoutText`.
+   **През опашката** (конзолата: „Качи документ“ / „Пакетно качване“): `POST /api/v1/admin/ingest/batches`
+   (общите метаданни + по избор манифест CSV/JSON и импорт на кодове от XLSX шаблон) → за всеки файл
+   `POST /admin/attachments` (антивирус) и `POST …/batches/:id/items` → worker-ът: PDF (и сканиран — OCR
+   само на празните страници), DOCX (раздели по заглавия), XLSX (листове като таблици + ЧЕРНОВИ кодове),
+   PNG/JPEG/WebP (OCR → една страница), логове (`redactPii` по ред) → `DRAFT`; напредъкът по файл —
+   `GET …/batches/:id`.
 3. Преглед преди публикуване: `GET /api/v1/admin/documents/:id` (страници с компоненти, ревизии,
    история), `…/pages/:page` (парчетата с `componentRefs` — и за чернова), оригиналът през
    `GET /documents/:id/source`; сравнение `GET /admin/documents/compare?a=&b=`.
@@ -96,7 +102,8 @@ AI вижда само `PUBLISHED` и само в срока на валидно
 | GET        | `/api/v1/attachments/:id/url` → подписан адрес (5 мин.) · `/api/v1/files/:id?exp=…&sig=…`                                                                                   | с достъп до файла                                   |
 | POST       | `/api/v1/admin/products` · `/devices` · `/documents` (+ submit/reject/publish/deprecate/restore) · `/errors` (+ PATCH, submit/reject/publish/deprecate/restore/new-version) | KNOWLEDGE_OWNER                                     |
 | GET        | `/api/v1/admin/documents/:id` · `…/:id/pages/:page` · `/admin/documents/compare?a=&b=` · `/admin/devices/:serial/documents`                                                 | KNOWLEDGE_OWNER                                     |
-| POST       | `/api/v1/admin/attachments?name=…` (PDF до 50 MB, антивирус)                                                                                                                | KNOWLEDGE_OWNER                                     |
+| POST       | `/api/v1/admin/attachments?name=…` (PDF, DOCX, XLSX, PNG/JPEG/WebP, лог — до 50 MB, антивирус)                                                                              | KNOWLEDGE_OWNER                                     |
+| GET/POST   | `/api/v1/admin/ingest/batches` · `…/batches/:id` · POST `…/batches/:id/items` · `/admin/ingest/items/:id/retry` (опашката, §4.1)                                            | KNOWLEDGE_OWNER                                     |
 | POST       | `/api/v1/auth/mfa/setup` · `/enable` · `/verify` · `/disable` (TOTP; персоналът — задължително)                                                                             | вписан                                              |
 | POST       | `/api/v1/auth/reset-password` (еднократният линк `/reset#…`)                                                                                                                | публично                                            |
 | GET/POST   | `/api/v1/admin/users` · PATCH `/users/:id/admin` · POST `/admin/users/:id/{reset-password,revoke-sessions,reset-mfa,erase}`                                                 | TENANT_ADMIN, PLATFORM_ADMIN                        |

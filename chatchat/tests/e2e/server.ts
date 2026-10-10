@@ -7,9 +7,10 @@
 import { createServer } from 'node:http';
 import { IntegrationWorker } from '../../src/services/integrations/worker.js';
 import { cite, db, resetDb, startApp, type Plan } from '../integration/helpers.js';
-import { FakeScanner, SpyStore, URL_KEY } from '../integration/files.js';
+import { FakeScanner, URL_KEY } from '../integration/files.js';
 import { FakeHelpdesk } from '../integration/helpdesk-fake.js';
 import { localDeps } from '../integration/helpdesk-world.js';
+import { FlakyStore, ingestRig } from '../integration/ingest-world.js';
 import { seedWorld } from '../integration/world.js';
 import { twoSteps } from '../integration/flow-world.js';
 import { startSsoApp } from '../integration/sso-world.js';
@@ -30,9 +31,13 @@ await resetDb();
 const helpdesk = new FakeHelpdesk();
 await helpdesk.start(E2E_HELPDESK_PORT);
 const integrations = localDeps(helpdesk);
+// Приемането на документи през опашката в процеса (фалшив OCR — истинският е в Docker smoke теста).
+const store = new FlakyStore();
+const rig = ingestRig(store);
 const h = await startApp({
   diagnose: 'real',
-  attachments: { store: new SpyStore(), scanner: new FakeScanner(), urlKey: URL_KEY },
+  attachments: { store, scanner: new FakeScanner(), urlKey: URL_KEY },
+  ingest: { bus: rig.bus },
   port: E2E_PORT,
   origin: E2E_ORIGIN,
   integrations,
@@ -110,6 +115,7 @@ const stop = async () => {
   await helpdesk.close();
   await sso.close();
   await idp.close();
+  await rig.bus.close();
   await h.close();
   process.exit(0);
 };

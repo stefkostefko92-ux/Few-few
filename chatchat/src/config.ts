@@ -1,4 +1,11 @@
 import { z } from 'zod';
+import { describeIssues, isKey32, withoutEmpty } from './config-env.js';
+import { checkFilesCrypto, FILES_ENV } from './config-files.js';
+import { QUEUE_ENV } from './config-queue.js';
+
+export { withoutEmpty } from './config-env.js';
+export { filesKeks, loadFilesConfig, type FilesConfig } from './config-files.js';
+export { redisEnabled } from './config-queue.js';
 
 /**
  * Средата — валидирана веднъж при старт; с полуготов конфиг процесът не тръгва (fail-closed).
@@ -8,21 +15,9 @@ import { z } from 'zod';
 /** Vertex AI само в ЕС: `eu` (мулти-регион) или `europe-*` — като agentgw. */
 export const EU_REGION = /^(eu|europe-[a-z]+\d+)$/;
 
-/** 32 байта в base64 (`openssl rand -base64 32`) — MFA_ENC_KEY и FILES_KEK. */
-function isKey32(v: string): boolean {
-  return /^[A-Za-z0-9+/]+={0,2}$/.test(v) && Buffer.from(v, 'base64').length === 32;
-}
-
-/** FILES_KEK_PREVIOUS: стари KEK, разделени със запетая (само за четене до `files:rekey`). */
-function previousKeks(v: string): string[] {
-  return v
-    .split(',')
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0);
-}
-
 const EnvSchema = z.object({
-  NODE_ENV: z.enum(['development', 'test', 'production']).default('production'),
+  ...FILES_ENV,
+  ...QUEUE_ENV,
   HOST: z.string().default('127.0.0.1'),
   PORT: z.coerce.number().int().min(1).max(65535).default(4330),
   /** Колко обратни проксита стоят отпред (Nginx = 1) — за коректен req.ip в лимитите. */
@@ -71,21 +66,8 @@ const EnvSchema = z.object({
   EMBEDDING_TIMEOUT_MS: z.coerce.number().int().min(500).max(30000).default(4000),
   /** През колко секунди фоновото индексиране търси непокрити публикувани парчета (0 = никога). */
   EMBEDDING_SWEEP_SECONDS: z.coerce.number().int().min(0).max(86400).default(600),
-  /** Частното хранилище на прикачените файлове (F2). Празно → прикачването е изключено. */
-  ATTACHMENTS_DIR: z.string().default(''),
   /** HMAC ключ за краткотрайните подписани адреси за сваляне — различен от SESSION_PEPPER. */
   ATTACHMENT_URL_KEY: z.string().default(''),
-  /**
-   * Шифроване на файловете в покой (NFR-03, src/storage/envelope.ts). `off` — само за тестове/dev:
-   * в продукция процесът не тръгва с него. С `on` (по подразбиране) без FILES_KEK — също не тръгва.
-   */
-  FILES_ENCRYPTION: z.enum(['on', 'off']).default('on'),
-  /** Главният ключ (KEK, 32 байта в base64), който опакова ключа на всеки файл. Загуба = файловете. */
-  FILES_KEK: z.string().trim().default(''),
-  /** Стари KEK след ротация (запетаи) — само за четене, докато `npm run files:rekey` не мине. */
-  FILES_KEK_PREVIOUS: z.string().trim().default(''),
-  /** Стари нешифровани файлове: allow — четат се (преходът); deny — отказ (след files:encrypt). */
-  FILES_PLAINTEXT: z.enum(['allow', 'deny']).default('allow'),
   /** clamd (INSTREAM през TCP). Празно → без антивирус качването е изключено (fail-closed). */
   CLAMAV_HOST: z.string().default(''),
   CLAMAV_PORT: z.coerce.number().int().min(1).max(65535).default(3310),
@@ -119,49 +101,6 @@ const EnvSchema = z.object({
   EMAIL_TIMEOUT_MS: z.coerce.number().int().min(1000).max(60000).default(10000),
   EMAIL_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(20).default(6),
 });
-
-type FilesFields = Pick<
-  z.infer<typeof EnvSchema>,
-  | 'NODE_ENV'
-  | 'ATTACHMENTS_DIR'
-  | 'FILES_ENCRYPTION'
-  | 'FILES_KEK'
-  | 'FILES_KEK_PREVIOUS'
-  | 'FILES_PLAINTEXT'
->;
-
-/**
- * Шифроването на файловете — fail-closed: с хранилище и `on` без валиден KEK процесът не тръгва;
- * `off` в продукция — също не. Без хранилище (ATTACHMENTS_DIR празно) ключ не трябва.
- */
-function checkFilesCrypto(c: FilesFields, ctx: z.RefinementCtx): void {
-  if (c.ATTACHMENTS_DIR === '') return;
-  if (c.FILES_ENCRYPTION === 'off') {
-    if (c.NODE_ENV === 'production') {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['FILES_ENCRYPTION'],
-        message: 'FILES_ENCRYPTION=off е само за тестове/dev — в продукция файловете са шифровани',
-      });
-    }
-    return;
-  }
-  if (!isKey32(c.FILES_KEK)) {
-    ctx.addIssue({
-      code: 'custom',
-      path: ['FILES_KEK'],
-      message:
-        'FILES_KEK трябва да е 32 байта в base64 (openssl rand -base64 32), щом ATTACHMENTS_DIR е зададен',
-    });
-  }
-  if (!previousKeks(c.FILES_KEK_PREVIOUS).every(isKey32)) {
-    ctx.addIssue({
-      code: 'custom',
-      path: ['FILES_KEK_PREVIOUS'],
-      message: 'FILES_KEK_PREVIOUS: ключове по 32 байта в base64, разделени със запетая',
-    });
-  }
-}
 
 /** Прикачването иска и ключ за подписите: хранилище без ключ е полуготов конфиг. */
 const ConfigSchema = EnvSchema.superRefine((c, ctx) => {
@@ -210,20 +149,10 @@ const ConfigSchema = EnvSchema.superRefine((c, ctx) => {
 
 export type Config = z.infer<typeof EnvSchema>;
 
-/**
- * Празен низ = „не е зададено“: docker-compose.yml подава `${X:-}` като празна стойност, а изборите
- * (EMBEDDING_MODEL) и числата (METRICS_PORT) иначе биха спрели процеса при старт. Всички текстови
- * настройки имат подразбиране '' — за тях смисълът не се мени.
- */
-export function withoutEmpty(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
-  return Object.fromEntries(Object.entries(env).filter(([, v]) => v !== ''));
-}
-
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const parsed = ConfigSchema.safeParse(withoutEmpty(env));
   if (!parsed.success) {
-    const issues = parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ');
-    throw new Error(`Невалидна конфигурация: ${issues}`);
+    throw new Error(`Невалидна конфигурация: ${describeIssues(parsed.error.issues)}`);
   }
   return parsed.data;
 }
@@ -256,37 +185,50 @@ export function emailEnabled(cfg: Pick<Config, 'BREVO_API_KEY'>): boolean {
 }
 
 /**
- * Само настройките на файловото хранилище — за CLI-тата (ретенция, `files:*`, пробата за
- * възстановяване), които не искат цялата среда на приложението. Същите правила (fail-closed).
+ * Средата на worker-а (`node dist/worker.js`) — най-малкото нужно (NFR-03, least privilege): базата,
+ * Redis, хранилището на файловете (чете оригиналите), Vertex за векторите и метриките. БЕЗ
+ * SESSION_PEPPER, MFA_ENC_KEY, ATTACHMENT_URL_KEY, Brevo — worker-ът не обслужва потребители.
  */
-const FilesSchema = EnvSchema.pick({
+const WorkerSchema = EnvSchema.pick({
   NODE_ENV: true,
-  ATTACHMENTS_DIR: true,
-  FILES_ENCRYPTION: true,
-  FILES_KEK: true,
-  FILES_KEK_PREVIOUS: true,
-  FILES_PLAINTEXT: true,
-}).superRefine(checkFilesCrypto);
+  LOG_LEVEL: true,
+  DATABASE_URL: true,
+  VERTEX_PROJECT_ID: true,
+  VERTEX_REGION: true,
+  GOOGLE_APPLICATION_CREDENTIALS: true,
+  EMBEDDING_MODEL: true,
+  EMBEDDING_TIMEOUT_MS: true,
+  EMBEDDING_SWEEP_SECONDS: true,
+  AI_BREAKER_FAILURES: true,
+  AI_BREAKER_COOLDOWN_SECONDS: true,
+  METRICS_PORT: true,
+  METRICS_HOST: true,
+})
+  .extend({ ...FILES_ENV, ...QUEUE_ENV })
+  .superRefine((c, ctx) => {
+    if (c.REDIS_URL === '') {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['REDIS_URL'],
+        message: 'worker-ът иска REDIS_URL (без Redis опашките вървят в процеса на API-то)',
+      });
+    }
+    if (c.ATTACHMENTS_DIR === '') {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['ATTACHMENTS_DIR'],
+        message: 'worker-ът иска ATTACHMENTS_DIR (чете оригиналите на документите)',
+      });
+    }
+    checkFilesCrypto(c, ctx);
+  });
 
-export type FilesConfig = z.infer<typeof FilesSchema>;
+export type WorkerConfig = z.infer<typeof WorkerSchema>;
 
-export function loadFilesConfig(env: NodeJS.ProcessEnv = process.env): FilesConfig {
-  const parsed = FilesSchema.safeParse(withoutEmpty(env));
+export function loadWorkerConfig(env: NodeJS.ProcessEnv = process.env): WorkerConfig {
+  const parsed = WorkerSchema.safeParse(withoutEmpty(env));
   if (!parsed.success) {
-    const issues = parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ');
-    throw new Error(`Невалидна конфигурация: ${issues}`);
+    throw new Error(`Невалидна конфигурация: ${describeIssues(parsed.error.issues)}`);
   }
   return parsed.data;
-}
-
-/** KEK-овете като байтове (валидирани от схемата); null → шифроването е изключено. */
-export function filesKeks(
-  cfg: Pick<Config, 'FILES_ENCRYPTION' | 'FILES_KEK' | 'FILES_KEK_PREVIOUS'>,
-): { current: Buffer; previous: Buffer[] } | null {
-  if (cfg.FILES_ENCRYPTION === 'off') return null;
-  if (!isKey32(cfg.FILES_KEK)) throw new Error('FILES_KEK липсва или е невалиден.');
-  return {
-    current: Buffer.from(cfg.FILES_KEK, 'base64'),
-    previous: previousKeks(cfg.FILES_KEK_PREVIOUS).map((k) => Buffer.from(k, 'base64')),
-  };
 }

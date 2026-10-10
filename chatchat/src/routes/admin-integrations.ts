@@ -2,6 +2,7 @@ import { Router, type Response } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { z } from 'zod';
 import type { WiredDeps } from '../app.js';
+import { sharedStore } from '../auth/rate-limit.js';
 import {
   apiError,
   principalOf,
@@ -52,6 +53,7 @@ export function adminIntegrationsRouter(deps: WiredDeps): Router {
 
   // Тестът ходи навън — по човек, не по IP (администраторите са зад един NAT).
   const testLimiter = rateLimit({
+    store: sharedStore('integrations-test'),
     windowMs: 60 * 1000,
     limit: 6,
     standardHeaders: 'draft-8',

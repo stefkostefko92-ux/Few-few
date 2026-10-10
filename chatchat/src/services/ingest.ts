@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@prisma/client';
+import type { Prisma, PrismaClient } from '@prisma/client';
 import { canonicalJson } from '../audit.js';
 import { sha256 } from '../crypto.js';
 import { extractIdentifiers } from '../domain/normalize.js';
@@ -10,9 +10,11 @@ export * from './document-meta.js';
 /**
  * Приемане на документ (§7.3): администраторът на знанието подава задължителните метаданни (§7.2)
  * и или вече извлечения текст по страници, или чист PDF, качен като прикачен файл (антивирус →
- * текст по страници в routes/admin-documents). С PDF checksum е sha256 на оригиналния файл (§7.2);
+ * текст по страници в routes/admin-documents). С файл checksum е sha256 на оригиналния файл (§7.2);
  * с подаден текст — на подаденото съдържание. Документът влиза като DRAFT и AI не го вижда до
- * публикуване. Метаданните и проверките им — `document-meta.ts`.
+ * публикуване. Метаданните и проверките им — `document-meta.ts`. Пакетното приемане през опашката
+ * (PDF/OCR, DOCX, XLSX, изображения, логове — `src/ingest/`) ползва СЪЩАТА функция: `inTransaction`
+ * записва в същата транзакция внесените кодове и статуса на файла (идемпотентен повторен опит).
  */
 
 /** Страница без текст (сканиран PDF — OCR не правим): предупреждение към качилия, не грешка. */
@@ -112,8 +114,12 @@ export async function ingestDocument(
   tenantId: string,
   uploadedById: string,
   input: DocumentInput,
-  /** sha256 на оригиналния файл (PDF); без него — на подаденото съдържание. */
-  opts: { checksum?: string } = {},
+  opts: {
+    /** sha256 на оригиналния файл; без него — на подаденото съдържание. */
+    checksum?: string;
+    /** Още записи в СЪЩАТА транзакция след документа (кодове от шаблон, статус на файла). */
+    inTransaction?: (tx: Prisma.TransactionClient, documentId: string) => Promise<void>;
+  } = {},
 ): Promise<{ ok: true; documentId: string; chunks: number } | { ok: false; error: IngestError }> {
   const models = [...new Set(input.applicability.map((a) => a.productModel))];
   const products = await db.product.findMany({ where: { tenantId, model: { in: models } } });
@@ -160,50 +166,55 @@ export async function ingestDocument(
     ).map((e) => e.code),
   );
 
-  const document = await db.$transaction(async (tx) => {
-    const doc = await tx.document.create({
-      data: {
-        tenantId,
-        code: input.code,
-        title: input.title,
-        type: input.type,
-        language: input.language,
-        revision: input.revision,
-        audience: input.audience,
-        safetyRelevant: input.safetyRelevant,
-        subsystem: input.subsystem ?? null,
-        sourceFilename: input.sourceFilename,
-        checksum: opts.checksum ?? sha256(canonicalJson(input.pages)),
-        effectiveFrom: input.effectiveFrom,
-        effectiveTo: input.effectiveTo ?? null,
-        uploadedById,
-        supersedesId,
-        applicability: {
-          create: input.applicability.map((a) => ({
-            productId: byModel.get(a.productModel) as string,
-            hwRevision: a.hwRevision ?? null,
-            fwMin: a.fwMin ?? null,
-            fwMax: a.fwMax ?? null,
-            allFirmware: a.allFirmware === true,
-            deviceId: a.deviceSerial ? (devices.ids.get(a.deviceSerial) ?? null) : null,
-            options: a.options ?? {},
-          })),
+  const document = await db.$transaction(
+    async (tx) => {
+      const doc = await tx.document.create({
+        data: {
+          tenantId,
+          code: input.code,
+          title: input.title,
+          type: input.type,
+          language: input.language,
+          revision: input.revision,
+          audience: input.audience,
+          safetyRelevant: input.safetyRelevant,
+          subsystem: input.subsystem ?? null,
+          sourceFilename: input.sourceFilename,
+          checksum: opts.checksum ?? sha256(canonicalJson(input.pages)),
+          effectiveFrom: input.effectiveFrom,
+          effectiveTo: input.effectiveTo ?? null,
+          uploadedById,
+          supersedesId,
+          applicability: {
+            create: input.applicability.map((a) => ({
+              productId: byModel.get(a.productModel) as string,
+              hwRevision: a.hwRevision ?? null,
+              fwMin: a.fwMin ?? null,
+              fwMax: a.fwMax ?? null,
+              allFirmware: a.allFirmware === true,
+              deviceId: a.deviceSerial ? (devices.ids.get(a.deviceSerial) ?? null) : null,
+              options: a.options ?? {},
+            })),
+          },
         },
-      },
-    });
-    await tx.documentChunk.createMany({
-      data: chunks.map((c, i) => ({
-        documentId: doc.id,
-        ordinal: c.ordinal,
-        page: c.page,
-        section: c.section,
-        text: c.text,
-        componentRefs: identifiers[i] ?? [],
-        errorCodes: (identifiers[i] ?? []).filter((id) => known.has(id)),
-      })),
-    });
-    return doc;
-  });
+      });
+      await tx.documentChunk.createMany({
+        data: chunks.map((c, i) => ({
+          documentId: doc.id,
+          ordinal: c.ordinal,
+          page: c.page,
+          section: c.section,
+          text: c.text,
+          componentRefs: identifiers[i] ?? [],
+          errorCodes: (identifiers[i] ?? []).filter((id) => known.has(id)),
+        })),
+      });
+      await opts.inTransaction?.(tx, doc.id);
+      return doc;
+    },
+    // Хиляди страници + внесени кодове не се побират в 5-те секунди по подразбиране.
+    { timeout: 120_000, maxWait: 10_000 },
+  );
   await refreshChunkIndex(db, document.id);
   return { ok: true, documentId: document.id, chunks: chunks.length };
 }

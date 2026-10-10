@@ -23,7 +23,7 @@ const Id = z.string().min(1).max(40);
 
 export function proposalsRouter(deps: WiredDeps): Router {
   const router = Router();
-  const limiter = perUserLimit(60 * 1000, 20);
+  const limiter = perUserLimit(60 * 1000, 20, 'proposals');
   router.use('/proposals', requireUser, requireCsrf(deps.publicOrigin));
 
   router.post(

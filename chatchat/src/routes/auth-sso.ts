@@ -3,6 +3,7 @@ import { rateLimit } from 'express-rate-limit';
 import * as oidc from 'openid-client';
 import { z } from 'zod';
 import type { AppDeps } from '../app.js';
+import { sharedStore } from '../auth/rate-limit.js';
 import { appendAudit } from '../audit.js';
 import {
   apiError,
@@ -58,8 +59,9 @@ function clearFlowCookie(res: Response, sessions: SessionDeps): void {
  * Лимит по IP (§15.1): офис зад един NAT влиза наведнъж — по-широк от този на паролата.
  * Откриването е само индексирано търсене по домейн (без потребители) — най-широкото.
  */
-function limiter(limit: number) {
+function limiter(limit: number, name: string) {
   return rateLimit({
+    store: sharedStore(name),
     windowMs: 15 * 60 * 1000,
     limit,
     standardHeaders: 'draft-8',
@@ -78,7 +80,7 @@ export function authSsoRouter(deps: AppDeps, runtime: SsoRuntime | null): Router
   // Кой бутон да покаже входът — само по домейна (еднакво за съществуващ и несъществуващ акаунт).
   router.post(
     '/discover',
-    limiter(300),
+    limiter(300, 'sso-discover'),
     requireSameOrigin(deps.publicOrigin),
     async (req, res, next) => {
       try {
@@ -96,7 +98,7 @@ export function authSsoRouter(deps: AppDeps, runtime: SsoRuntime | null): Router
 
   router.post(
     '/start',
-    limiter(40),
+    limiter(40, 'sso-start'),
     requireSameOrigin(deps.publicOrigin),
     async (req, res, next) => {
       try {
@@ -124,7 +126,7 @@ export function authSsoRouter(deps: AppDeps, runtime: SsoRuntime | null): Router
     },
   );
 
-  router.get('/callback', limiter(40), async (req, res, next) => {
+  router.get('/callback', limiter(40, 'sso-callback'), async (req, res, next) => {
     try {
       const binding = readCookie(req, SSO_COOKIE);
       clearFlowCookie(res, deps.sessions);

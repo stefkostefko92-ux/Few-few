@@ -6,10 +6,12 @@
 #   deploy/autodeploy.sh го вика за всеки release с chatchat/  # автоматично — същият път
 #
 # Ред: тайните от стабилния път → шифрованият том на базата, ако е включен (отключен и монтиран, т. 12)
-# → папката с прикачените файлове → образите (build на app; db и clamav се теглят само ако ги няма) →
+# → папката с прикачените файлове → образите (build на app — същият образ е и worker-ът; db, clamav и
+# redis се теглят само ако ги няма) →
 # бекъп на базата преди миграция (след build-а: дъмпът е отпреди самата смяна) → еднократно: базата на
 # pgvector + REINDEX (DEPLOY.md, т. 11) → up (entrypoint-ът прилага `prisma migrate deploy`) → чака
-# /readyz → старите нешифровани прикачени файлове се шифроват (`files:encrypt`) → дневният шифрован
+# /readyz → worker-ът (опашките, OCR) е здрав — иначе предупреждение → старите нешифровани прикачени
+# файлове се шифроват (`files:encrypt`) → дневният шифрован
 # бекъп и ретенцията (таймери) → vhost-ът от репото, щом има сертификат.
 #
 # Изход: 0 — жив; 3 — няма .env (машината не е настроена); 4 — контейнерите са сменени, но ChatChat не
@@ -85,22 +87,24 @@ sync_env() {
 }
 
 # Ключовете (подписът на адресите за сваляне, шифроването на MFA, главният ключ на файловете FILES_KEK и
-# тайните на helpdesk конекторите INTEGRATION_KEK и SSO_KEK за client secret на доставчиците на единния
-# вход) са чисто случайни: щом ги няма, приложението не е тръгвало с тях (compose иска първите три с
-# `:?`; без INTEGRATION_KEK/SSO_KEK съответната функция е изключена), тоест няма нищо, подписано или
-# шифровано с тях. Затова тук — и само тук — липсващ ключ се ражда на сървъра:
-# дописва се в $SHARED/.env (600), никога не се презаписва, никога не се печата. Съществуващ не се пипа.
+# тайните на helpdesk конекторите INTEGRATION_KEK, SSO_KEK за client secret на доставчиците на единния
+# вход и паролата на Redis) са чисто случайни: щом ги няма, приложението не е тръгвало с тях (compose иска
+# част от тях с `:?`; без INTEGRATION_KEK/SSO_KEK съответната функция е изключена), тоест няма нищо,
+# подписано или шифровано с тях. Затова тук — и само тук — липсващ ключ се ражда на сървъра: дописва се в
+# $SHARED/.env (600), никога не се презаписва, никога не се печата. Съществуващ не се пипа.
+# REDIS_PASSWORD е hex (влиза некодирана в REDIS_URL — base64 би имал „/“ и „+“).
 # Изгубен SSO_KEK не губи данни: администраторът въвежда секрета на доставчика наново (sso:off при нужда).
 ensure_keys() {
-  local name added=""
-  for name in ATTACHMENT_URL_KEY MFA_ENC_KEY FILES_KEK INTEGRATION_KEK SSO_KEK; do
+  local name added="" value
+  for name in ATTACHMENT_URL_KEY MFA_ENC_KEY FILES_KEK INTEGRATION_KEK SSO_KEK REDIS_PASSWORD; do
     [ -z "$(env_value "$name")" ] || continue
     if [ "$name" = FILES_KEK ] && sealed_files_exist; then
       fail 1 "FILES_KEK липсва в $SHARED/.env, а в attachments/ има шифровани файлове — нов ключ НЕ ги отваря. Върни ключа от password manager-а (docs/runbook.md, „Изгубен FILES_KEK“)."
     fi
     command -v openssl >/dev/null 2>&1 || fail 1 "липсва $name в $SHARED/.env, а openssl го няма — сложи го ръчно (DEPLOY.md, т. 1)."
+    if [ "$name" = REDIS_PASSWORD ]; then value="$(openssl rand -hex 32)"; else value="$(openssl rand -base64 32)"; fi
     # пренасочването е на същия ред: стойността отива само във файла
-    printf '%s=%s\n' "$name" "$(openssl rand -base64 32)" >>"$SHARED/.env"
+    printf '%s=%s\n' "$name" "$value" >>"$SHARED/.env"
     added="$added $name"
   done
   [ -n "$added" ] || return 0
@@ -197,7 +201,15 @@ check_db_password() {
   esac
 }
 
-# Образите на базата и антивируса са заковани по digest. Теглят се само ако ги няма: изтеглен вече образ
+# Паролата на Redis влиза некодирана в REDIS_URL (docker-compose.yml): само букви, цифри, „-“ и „_“.
+check_redis_password() {
+  case "$(env_value REDIS_PASSWORD)" in
+    '') fail 1 "REDIS_PASSWORD в .env е празна — openssl rand -hex 32 (DEPLOY.md, т. 1)." ;;
+    *[!A-Za-z0-9_-]*) fail 1 "REDIS_PASSWORD съдържа знаци извън A-Z, a-z, 0-9, „-“ и „_“ — те чупят REDIS_URL. Нова: openssl rand -hex 32." ;;
+  esac
+}
+
+# Образите на базата, антивируса и Redis са заковани по digest. Теглят се само ако ги няма: изтеглен вече образ
 # не зависи от Docker Hub (лимит на заявките, мрежа), а липсващ се тегли ПРЕДИ смяната, не по средата ѝ.
 ensure_images() {
   local img
@@ -288,6 +300,20 @@ wait_ready() {
       case "$body" in *'"ai":'*) return 0 ;; esac
       ;;
     esac
+    [ "$SECONDS" -lt "$deadline" ] || return 1
+    sleep 3
+  done
+}
+
+# Worker-ът (опашките: приемане, OCR, вектори) няма HTTP — здравето му е HEALTHCHECK-ът в compose (файлът
+# „жив съм“, обновяван само ако Redis отговаря). Нездрав worker не сваля приложението — новите документи
+# чакат в опашката (Redis ги пази), затова е предупреждение, не откат.
+worker_healthy() {
+  local cid state deadline=$((SECONDS + HEALTH_WAIT))
+  while :; do
+    cid="$(docker compose ps -q worker 2>/dev/null | head -n 1)" || cid=""
+    state="$( [ -n "$cid" ] && docker inspect -f '{{.State.Health.Status}}' "$cid" 2>/dev/null)" || state=""
+    [ "$state" = healthy ] && return 0
     [ "$SECONDS" -lt "$deadline" ] || return 1
     sleep 3
   done
@@ -413,6 +439,7 @@ main() {
   ensure_eval_reports
   sync_clamd_conf
   check_db_password
+  check_redis_password
   port="$(env_value HTTP_PORT | tr -dc '0-9')"
   port="${port:-4330}"
   log "build…"
@@ -431,6 +458,7 @@ main() {
   mark_pgvector || warn "не записах $PGVECTOR_MARK — следващият деплой ще пусне REINDEX пак (безвредно)"
   remember_live || warn "не записах $LAST_GOOD — откатът и DEPLOY.md сочат предишния release"
   restart_clamav_if_changed || true
+  worker_healthy || warn "worker-ът не е здрав — новите документи чакат в опашката. Виж: cd $APP_DIR && docker compose logs --tail=80 worker"
   encrypt_files || true
   if [ "$STAGING" = 1 ]; then
     log "staging: без дневния бекъп и ретенцията (таймерите са на продукцията) — данните са тестови"

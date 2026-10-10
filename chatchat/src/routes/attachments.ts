@@ -1,6 +1,7 @@
 import type { AttachmentKind } from '@prisma/client';
 import express, { Router, type NextFunction, type Request, type Response } from 'express';
 import { rateLimit } from 'express-rate-limit';
+import { sharedStore } from '../auth/rate-limit.js';
 import { z } from 'zod';
 import type { AppDeps } from '../app.js';
 import {
@@ -49,6 +50,8 @@ interface UploadLocals {
   name: string | undefined;
   caseId: string | null;
   conversationId?: string | null;
+  /** Документ за базата знания — по-широкият списък от формати (§4.1). */
+  knowledge?: boolean;
 }
 
 function sendOutcome(res: Response, outcome: Extract<UploadOutcome, { ok: true }>): void {
@@ -68,6 +71,7 @@ export function attachmentUploadRouter(deps: AppDeps): Router {
 
   // Злоупотреба и пълнене на диска (§15.1): по потребител, не по IP — техниците са зад един NAT.
   const uploadLimiter = rateLimit({
+    store: sharedStore('uploads'),
     windowMs: 10 * 60 * 1000,
     limit: 30,
     standardHeaders: 'draft-8',
@@ -105,6 +109,7 @@ export function attachmentUploadRouter(deps: AppDeps): Router {
         conversationId: locals.conversationId ?? null,
         name: locals.name,
         bytes: req.body,
+        knowledge: locals.knowledge === true,
       },
     );
     deps.metrics?.uploads.inc({
@@ -179,7 +184,8 @@ export function attachmentUploadRouter(deps: AppDeps): Router {
     upload,
   );
 
-  // POST /admin/attachments?name=… — PDF за базата знания (само kb:manage).
+  // POST /admin/attachments?name=… — документ за базата знания (само kb:manage): PDF, DOCX, XLSX,
+  // PNG/JPEG/WebP, лог (§4.1); разборът е в опашката (src/ingest/), антивирусът — тук, ПРЕДИ него.
   router.post(
     '/admin/attachments',
     ...before,
@@ -189,7 +195,12 @@ export function attachmentUploadRouter(deps: AppDeps): Router {
     (req, res, next) => {
       const q = AdminQuery.safeParse(req.query);
       if (!q.success) return apiError(res, 400, 'invalid_input');
-      Object.assign(res.locals, { kind: 'DOCUMENT', name: q.data.name, caseId: null });
+      Object.assign(res.locals, {
+        kind: 'DOCUMENT',
+        name: q.data.name,
+        caseId: null,
+        knowledge: true,
+      });
       next();
     },
     rawBody,

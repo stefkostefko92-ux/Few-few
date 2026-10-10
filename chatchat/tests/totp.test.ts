@@ -118,29 +118,39 @@ describe('checkTotp и пазачът срещу повторение', () => {
   const user = { id: 'u1', totpSecretEnc: encryptSecret(RFC_SECRET, key) };
   const now = () => Math.floor(Date.now() / 1000);
 
-  test('верен код минава веднъж; същият код втори път — не; следващата стъпка — да', () => {
+  test('верен код минава веднъж; същият код втори път — не; следващата стъпка — да', async () => {
     const replay = new TotpReplayGuard();
     const code = totpCode(RFC_SECRET, now());
-    assert.equal(checkTotp(key, replay, user, code), true);
-    assert.equal(checkTotp(key, replay, user, code), false);
-    assert.equal(checkTotp(key, replay, user, totpCode(RFC_SECRET, now() + 30)), true);
+    assert.equal(await checkTotp(key, replay, user, code), true);
+    assert.equal(await checkTotp(key, replay, user, code), false);
+    assert.equal(await checkTotp(key, replay, user, totpCode(RFC_SECRET, now() + 30)), true);
     replay.forget(user.id);
-    assert.equal(replay.lastStep(user.id), null);
+    assert.equal(await replay.lastStep(user.id), null);
   });
 
-  test('пазачът е по човек: кодът на един не блокира друг със същата тайна', () => {
+  test('два паралелни опита със същия код минават най-много веднъж (атомарно accept)', async () => {
     const replay = new TotpReplayGuard();
     const code = totpCode(RFC_SECRET, now());
-    assert.equal(checkTotp(key, replay, user, code), true);
-    assert.equal(checkTotp(key, replay, { ...user, id: 'u2' }, code), true);
+    const results = await Promise.all([
+      checkTotp(key, replay, user, code),
+      checkTotp(key, replay, user, code),
+    ]);
+    assert.deepEqual(results.sort(), [false, true]);
   });
 
-  test('без тайна, повреден запис или грешен ключ → false (fail-closed, не изключение)', () => {
+  test('пазачът е по човек: кодът на един не блокира друг със същата тайна', async () => {
     const replay = new TotpReplayGuard();
     const code = totpCode(RFC_SECRET, now());
-    assert.equal(checkTotp(key, replay, { id: 'u3', totpSecretEnc: null }, code), false);
-    assert.equal(checkTotp(key, replay, { id: 'u3', totpSecretEnc: 'боклук' }, code), false);
-    assert.equal(checkTotp(Buffer.alloc(32, 9), replay, { ...user, id: 'u3' }, code), false);
+    assert.equal(await checkTotp(key, replay, user, code), true);
+    assert.equal(await checkTotp(key, replay, { ...user, id: 'u2' }, code), true);
+  });
+
+  test('без тайна, повреден запис или грешен ключ → false (fail-closed, не изключение)', async () => {
+    const replay = new TotpReplayGuard();
+    const code = totpCode(RFC_SECRET, now());
+    assert.equal(await checkTotp(key, replay, { id: 'u3', totpSecretEnc: null }, code), false);
+    assert.equal(await checkTotp(key, replay, { id: 'u3', totpSecretEnc: 'боклук' }, code), false);
+    assert.equal(await checkTotp(Buffer.alloc(32, 9), replay, { ...user, id: 'u3' }, code), false);
   });
 });
 

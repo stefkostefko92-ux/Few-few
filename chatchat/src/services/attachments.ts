@@ -8,7 +8,7 @@ import type { Scanner, ScanVerdict } from '../storage/antivirus.js';
 import { newObjectKey, type AttachmentStore } from '../storage/attachments.js';
 import { findCaseFor } from './cases.js';
 import { canReadConversationFile } from './collab/files.js';
-import { detectMime, MAX_BYTES, sanitizeFileName } from './filetype.js';
+import { detectKnowledgeMime, detectMime, MAX_BYTES, sanitizeFileName } from './filetype.js';
 
 /**
  * Прикачени файлове (FR-06, §7.3 т. 1–3, §13.3): разпознаване по съдържание → таван по вид →
@@ -47,6 +47,8 @@ export interface UploadInput {
   conversationId?: string | null;
   name: string | undefined;
   bytes: Buffer;
+  /** Документ за базата знания (POST /admin/attachments): и DOCX, XLSX, снимки, логове (§4.1). */
+  knowledge?: boolean;
 }
 
 export type UploadOutcome =
@@ -61,7 +63,8 @@ export async function acceptUpload(
   const { bytes, kind } = input;
   if (bytes.length === 0) return { ok: false, status: 400, code: 'invalid_input' };
   if (bytes.length > MAX_BYTES[kind]) return { ok: false, status: 413, code: 'payload_too_large' };
-  const mime = detectMime(kind, bytes);
+  const mime =
+    input.knowledge && kind === 'DOCUMENT' ? detectKnowledgeMime(bytes) : detectMime(kind, bytes);
   if (!mime) return { ok: false, status: 415, code: 'unsupported_type' };
 
   const objectKey = newObjectKey(input.tenantId);

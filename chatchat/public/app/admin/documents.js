@@ -5,6 +5,7 @@ import { t } from '../i18n.js';
 import { call, fmtDate, query } from './core.js';
 import { openDocument } from './documents-detail.js';
 import { uploadDocument } from './documents-upload.js';
+import { uploadBatch } from './documents-upload-batch.js';
 import { boardBadge, statusBadge, validityBadge } from './kb-common.js';
 import {
   badge,
@@ -101,6 +102,7 @@ export function mount(root, params) {
   root.append(
     sectionHead(
       t('admin.nav.documents'),
+      button(t('admin.ingest.batch'), () => void uploadBatch(() => void load())),
       button(t('admin.docs.upload'), () => void uploadDocument(() => void load()), {
         kind: 'primary',
       }),

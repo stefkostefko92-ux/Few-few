@@ -44,8 +44,8 @@ export function messagesRouter(deps: WiredDeps): Router {
   router.use(requireUser, requireCsrf(deps.publicOrigin));
   const use = requireCapability('conversation:use');
   // Лимит на изпращанията на човек (§15.1) — разговорът не е канал за наводняване.
-  const sendLimit = perUserLimit(60 * 1000, 30);
-  const reactLimit = perUserLimit(60 * 1000, 60);
+  const sendLimit = perUserLimit(60 * 1000, 30, 'messages-send');
+  const reactLimit = perUserLimit(60 * 1000, 60, 'messages-react');
 
   const load = (req: Parameters<typeof viewerOf>[0]) => (conversationId: string) =>
     loadConversationFor(deps.db, viewerOf(req), conversationId);

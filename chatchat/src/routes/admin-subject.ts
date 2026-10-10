@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { AppDeps } from '../app.js';
 import { appendAudit } from '../audit.js';
 import { apiError, principalOf } from '../auth/guards.js';
-import type { TotpReplayGuard } from '../auth/mfa.js';
+import type { TotpReplayStore } from '../auth/mfa.js';
 import { announceRevocation } from '../auth/sessions.js';
 import { eraseSubject, exportSubject } from '../services/subject.js';
 import { directoryView, isErased, PROBLEM_STATUS, targetProblem } from '../services/users.js';
@@ -14,7 +14,7 @@ import { Reason, usersGuard } from './admin-users.js';
 const Id = z.string().min(1).max(40);
 const Erase = z.object({ reason: Reason }).strict();
 
-export function adminSubjectRouter(deps: AppDeps, replay: TotpReplayGuard): Router {
+export function adminSubjectRouter(deps: AppDeps, replay: TotpReplayStore): Router {
   const router = Router();
   const guard = usersGuard(deps);
 

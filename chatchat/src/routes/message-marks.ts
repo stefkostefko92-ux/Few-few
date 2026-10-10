@@ -34,9 +34,9 @@ export function messageMarksRouter(deps: WiredDeps): Router {
   const router = Router();
   router.use(requireUser, requireCsrf(deps.publicOrigin));
   const use = requireCapability('conversation:use');
-  const markLimit = perUserLimit(60 * 1000, 120);
+  const markLimit = perUserLimit(60 * 1000, 120, 'message-marks');
   // Търсенето е скъпо (GIN + сортиране) — таван по човек (§15.1), не по IP.
-  const searchLimit = perUserLimit(60 * 1000, 60);
+  const searchLimit = perUserLimit(60 * 1000, 60, 'message-search');
 
   const target = (req: Parameters<typeof viewerOf>[0], id: string) => {
     const viewer = viewerOf(req);

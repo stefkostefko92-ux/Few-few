@@ -12,7 +12,7 @@ import { perUserLimit, sendFailure } from './collab-common.js';
  */
 export function docSearchRouter(deps: AppDeps): Router {
   const router = Router();
-  const limiter = perUserLimit(60 * 1000, 60);
+  const limiter = perUserLimit(60 * 1000, 60, 'doc-search');
 
   router.get('/documents/search', requireUser, limiter, async (req, res, next) => {
     try {

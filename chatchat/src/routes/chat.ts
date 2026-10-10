@@ -1,6 +1,7 @@
 import { Prisma, type CaseMessage } from '@prisma/client';
 import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
+import { sharedStore } from '../auth/rate-limit.js';
 import { z } from 'zod';
 import type { WiredDeps } from '../app.js';
 import { appendAudit } from '../audit.js';
@@ -79,6 +80,7 @@ export function chatRouter(deps: WiredDeps): Router {
 
   // Разход и злоупотреба (§15.1): по потребител, не по IP — техниците са зад един NAT.
   const askLimiter = rateLimit({
+    store: sharedStore('chat-ask'),
     windowMs: 60 * 1000,
     limit: 12,
     standardHeaders: 'draft-8',

@@ -21,6 +21,9 @@ import type { AttachmentDeps } from '../../src/services/attachments.js';
 import type { MailPolicy } from '../../src/services/email/enqueue.js';
 import type { IntegrationDeps } from '../../src/services/integrations/deps.js';
 import { RealtimeHub } from '../../src/realtime/hub.js';
+import type { TotpReplayStore } from '../../src/auth/mfa.js';
+import type { RateLimitStoreFactory } from '../../src/auth/rate-limit.js';
+import type { JobBus } from '../../src/queue/inline.js';
 import type { BreakerState } from '../../src/ai/breaker.js';
 import { instrumentDiagnoser } from '../../src/observability/ai.js';
 import type { Metrics } from '../../src/observability/catalog.js';
@@ -230,6 +233,11 @@ export async function startApp(
     mail?: MailPolicy | null;
     /** Интеграцията с helpdesk (FR-09); без нея — изключена, като без INTEGRATION_KEK. */
     integrations?: IntegrationDeps | null;
+    /** Опашката за приемане на документи (в процеса или BullMQ); без нея — 503. */
+    ingest?: { bus: JobBus } | null;
+    /** Няколко инстанции: общ пазач срещу повторен TOTP код и общи лимити (Redis). */
+    totpReplay?: TotpReplayStore;
+    rateLimitStore?: RateLimitStoreFactory | null;
   } = {},
 ): Promise<Harness> {
   const hub = opts.hub ?? new RealtimeHub();
@@ -275,6 +283,9 @@ export async function startApp(
     ...(opts.aiCircuit ? { aiCircuit: opts.aiCircuit } : {}),
     mail: opts.mail ?? null,
     integrations: opts.integrations ?? null,
+    ingest: opts.ingest ?? null,
+    ...(opts.totpReplay ? { totpReplay: opts.totpReplay } : {}),
+    rateLimitStore: opts.rateLimitStore ?? null,
   });
   const server: Server = await new Promise((resolve) => {
     const s = app.listen(opts.port ?? 0, '127.0.0.1', () => resolve(s));

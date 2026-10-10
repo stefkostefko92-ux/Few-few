@@ -1,10 +1,22 @@
-// Качване на документ (§7.2/§7.3): PDF (текстът се извлича на сървъра, антивирус преди всичко)
-// или JSON с вече извлечен текст по страници. Документът влиза като ЧЕРНОВА — AI не го вижда.
-// Задължителните метаданни (валидност, изричен фърмуер, табло) — documents-meta.js.
+// Качване на документ (§7.2/§7.3, §4.1): файл (PDF — и сканиран с OCR, DOCX, XLSX, изображение,
+// лог) през опашката — антивирус при качването, после разбор/OCR във фона; или JSON с вече
+// извлечен текст по страници. Документът влиза като ЧЕРНОВА — AI не го вижда. Много файлове
+// наведнъж — documents-upload-batch.js. Задължителните метаданни — documents-meta.js.
 
 import { getLang, t } from '../i18n.js';
-import { ApiError, callDetailed, uploadRaw } from './core.js';
+import { ApiError, callDetailed } from './core.js';
 import { applicabilityRow, explain, validityFields } from './documents-meta.js';
+import {
+  ACCEPT_FILES,
+  createBatch,
+  failureText,
+  ingestErrText,
+  isFinal,
+  sendFile,
+  statusText,
+  warningTexts,
+  watchBatch,
+} from './documents-upload-queue.js';
 import { loadProducts, repeater } from './kb-common.js';
 import { checkbox, dialog, errText, field, h, input, select, toast } from './ui.js';
 
@@ -31,8 +43,8 @@ export async function uploadDocument(reload) {
     toast(t('admin.devices.needProduct'), 'warn');
     return;
   }
-  const src = { pdf: null, pages: null, sourceFilename: '' };
-  const file = input({ type: 'file', accept: '.pdf,application/pdf,.json,application/json' });
+  const src = { file: null, pages: null, sourceFilename: '' };
+  const file = input({ type: 'file', accept: `${ACCEPT_FILES},.json,application/json` });
   const fileInfo = h('p', { class: 'hint', role: 'status' });
   const code = input({
     required: true,
@@ -67,14 +79,15 @@ export async function uploadDocument(reload) {
   });
 
   file.addEventListener('change', async () => {
-    src.pdf = null;
+    src.file = null;
     src.pages = null;
     fileInfo.textContent = '';
     const f = file.files[0];
     if (!f) return;
-    if (/\.pdf$/i.test(f.name) || f.type === 'application/pdf') {
-      src.pdf = f;
-      fileInfo.textContent = t('admin.docs.file.pdf', {
+    // JSON със страници (вече извлечен текст) — по стария път; всичко друго — през опашката.
+    if (!/\.json$/i.test(f.name) && f.type !== 'application/json') {
+      src.file = f;
+      fileInfo.textContent = t('admin.ingest.file.selected', {
         name: f.name,
         mb: (f.size / 1048576).toFixed(1),
       });
@@ -112,8 +125,8 @@ export async function uploadDocument(reload) {
     title: t('admin.docs.upload'),
     wide: true,
     body: [
-      h('p', {}, t('admin.docs.upload.intro')),
-      field(t('admin.docs.file'), file, { hint: t('admin.docs.file.hint') }),
+      h('p', {}, t('admin.ingest.single.intro')),
+      field(t('admin.docs.file'), file, { hint: t('admin.ingest.single.hint') }),
       fileInfo,
       h(
         'div',
@@ -146,8 +159,8 @@ export async function uploadDocument(reload) {
       {
         label: t('admin.docs.upload.go'),
         primary: true,
-        onClick: async () => {
-          if (!src.pdf && !src.pages) throw new ApiError(400, 'file_required');
+        onClick: async (dlg) => {
+          if (!src.file && !src.pages) throw new ApiError(400, 'file_required');
           const meta = {
             code: code.value.trim(),
             title: title.value.trim(),
@@ -161,20 +174,8 @@ export async function uploadDocument(reload) {
             ...(subsystem.value.trim() ? { subsystem: subsystem.value.trim() } : {}),
             ...(supersedes.value.trim() ? { supersedesRevision: supersedes.value.trim() } : {}),
           };
-          let body;
-          if (src.pdf) {
-            fileInfo.textContent = t('admin.docs.uploading');
-            const up = await uploadRaw(
-              `/admin/attachments?name=${encodeURIComponent(src.pdf.name)}`,
-              src.pdf,
-            ).catch((err) => {
-              err.extra = explain(err);
-              throw err;
-            });
-            body = { ...meta, sourceAttachmentId: up.attachment.id };
-          } else {
-            body = { ...meta, pages: src.pages, sourceFilename: src.sourceFilename };
-          }
+          if (src.file) return viaQueue(dlg, meta, src.file, fileInfo, reload);
+          const body = { ...meta, pages: src.pages, sourceFilename: src.sourceFilename };
           let res;
           try {
             res = await callDetailed('POST', '/admin/documents', body);
@@ -197,4 +198,51 @@ export async function uploadDocument(reload) {
       },
     ],
   });
+}
+
+/**
+ * Файлът през опашката: пакет от един файл с метаданните от диалога → качване (антивирус) →
+ * следене до ЧЕРНОВА или неуспех (кодът на провала — в диалога). Диалогът остава отворен.
+ */
+async function viaQueue(dlg, meta, f, info, reload) {
+  info.textContent = t('admin.docs.uploading');
+  let batch;
+  let item;
+  try {
+    batch = await createBatch({ defaults: meta });
+    item = await sendFile(batch.id, f);
+  } catch (err) {
+    err.extra = explain(err);
+    dlg.setError(err.extra ? `${ingestErrText(err)} ${err.extra}` : ingestErrText(err));
+    return false;
+  }
+  info.textContent = statusText(item);
+  const final = await new Promise((resolve) => {
+    const stop = watchBatch(batch.id, (b) => {
+      const current = b.items[0];
+      if (!current) return;
+      info.textContent = statusText(current);
+      if (isFinal(current)) {
+        stop();
+        resolve(current);
+      }
+    });
+  });
+  if (final.status === 'FAILED') {
+    info.textContent = '';
+    dlg.setError(failureText(final.errorCode));
+    return false;
+  }
+  toast(t('admin.docs.upload.done', { chunks: final.chunks ?? 0 }));
+  reload();
+  const notes = warningTexts(final.warnings);
+  if (notes.length) {
+    dialog({
+      title: t('admin.ingest.warnings'),
+      cancel: false,
+      body: [h('ul', {}, ...notes.map((n) => h('li', {}, n)))],
+      actions: [{ label: t('common.close'), primary: true }],
+    });
+  }
+  return true;
 }
