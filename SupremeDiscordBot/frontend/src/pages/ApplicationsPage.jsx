@@ -1,5 +1,6 @@
 // frontend/src/pages/ApplicationsPage.jsx
 import { useState } from "react";
+import { ChannelName } from "../components/DiscordPicker";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle, XCircle, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Trash2, MessageSquare, Users, History } from "lucide-react";
@@ -273,7 +274,7 @@ export default function ApplicationsPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {questions.map((q) => (
                           <div key={q.id} className="bg-cs-bg rounded-lg p-3">
-                            <p className="text-xs font-semibold text-cs-muted uppercase tracking-wide mb-1">
+                            <p className="text-xs font-semibold text-cs-muted mb-1">
                               {q.label}
                             </p>
                             <p className="text-sm text-cs-text whitespace-pre-wrap">
@@ -320,7 +321,7 @@ export default function ApplicationsPage() {
                                   </p>
                                 )}
                               </div>
-                              <time className="text-xs text-cs-dim font-mono whitespace-nowrap"
+                              <time className="text-xs text-cs-dim tabular-nums whitespace-nowrap"
                                     dateTime={h.createdAt}>
                                 {new Date(h.createdAt).toLocaleDateString()}
                               </time>
@@ -337,7 +338,7 @@ export default function ApplicationsPage() {
                     {fullApp?.ticket && (
                       <div className="mt-3 flex items-center gap-2 text-sm">
                         <span className="text-cs-muted">{t("apps.linkedTicket")}</span>
-                        <span className="text-cs-muted">#{fullApp.ticket.channelId}</span>
+                        <ChannelName id={fullApp.ticket.channelId} className="text-cs-muted" />
                       </div>
                     )}
                   </div>

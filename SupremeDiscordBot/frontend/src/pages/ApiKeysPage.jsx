@@ -64,7 +64,7 @@ export default function ApiKeysPage() {
       <div className="flex flex-wrap justify-between items-start gap-3 mb-8">
         <div>
           <h1 className="cs-heading font-display font-bold text-cs-text text-3xl flex items-center gap-2">
-            <Key className="w-7 h-7 text-cs-cyan" /> API Keys
+            <Key className="w-7 h-7 text-cs-cyan" /> API keys
           </h1>
           <p className="text-cs-muted mt-2 max-w-2xl">
             Create bearer tokens for the public REST API at <code className="text-cs-cyan">{window.location.origin}/public/v1</code>.
@@ -72,7 +72,7 @@ export default function ApiKeysPage() {
           </p>
         </div>
         <button onClick={() => { setCreating(true); setNewlyCreated(null); }} className="cs-btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" aria-hidden="true" /> New Key
+          <Plus className="w-4 h-4" aria-hidden="true" /> New key
         </button>
       </div>
 
@@ -118,13 +118,13 @@ export default function ApiKeysPage() {
           className="cs-card mb-6 space-y-4"
         >
           <label className="block">
-            <span className="text-xs text-cs-muted uppercase tracking-wider font-mono block mb-1">Name</span>
+            <span className="text-xs text-cs-muted block mb-1">Name</span>
             <input required className="cs-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
               placeholder={t("apikeys.ph.name")} />
           </label>
 
           <fieldset>
-            <legend className="text-xs text-cs-muted uppercase tracking-wider font-mono block mb-2">Scopes</legend>
+            <legend className="text-xs text-cs-muted block mb-2">Scopes</legend>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
               {(scopes?.scopes || []).map((s) => (
                 <label key={s} className="flex items-center gap-2 text-sm text-cs-text">
@@ -136,7 +136,7 @@ export default function ApiKeysPage() {
           </fieldset>
 
           <label className="block">
-            <span className="text-xs text-cs-muted uppercase tracking-wider font-mono block mb-1">Expires in (days, optional)</span>
+            <span className="text-xs text-cs-muted block mb-1">Expires in (days, optional)</span>
             <input type="number" min={1} max={3650} className="cs-input" value={form.expiresInDays}
               onChange={(e) => setForm({ ...form, expiresInDays: e.target.value })}
               placeholder={t("apikeys.ph.expiry")} />
@@ -145,7 +145,7 @@ export default function ApiKeysPage() {
           <div className="flex justify-end gap-2">
             <button type="button" onClick={() => setCreating(false)} className="cs-btn-secondary">Cancel</button>
             <button type="submit" className="cs-btn-primary" disabled={createM.isPending || !form.name || !form.scopes.length}>
-              {createM.isPending ? "Creating…" : "Create Key"}
+              {createM.isPending ? "Creating…" : "Create key"}
             </button>
           </div>
         </form>
@@ -208,7 +208,7 @@ export default function ApiKeysPage() {
         open={!!confirmRevoke}
         title={t("apikeys.revokeTitle")}
         message={confirmRevoke ? `Revoke "${confirmRevoke.name}"? This cannot be undone.` : ""}
-        confirmLabel="Revoke Key"
+        confirmLabel="Revoke key"
         destructive
         loading={revokeM.isPending}
         onConfirm={() => confirmRevoke && revokeM.mutate(confirmRevoke.id)}

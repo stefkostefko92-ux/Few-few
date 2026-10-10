@@ -12,21 +12,26 @@ const safe = (fn) => Promise.resolve().then(fn).catch(() => []);
 /** Чл. 15/20: всичко от играта за този Discord ID, с изрични полета. */
 export async function gameDataFor(userId) {
   const uid = String(userId);
-  const [progress, xpGrants, companions, purchases, questContributions, triviaAnswers, trades] = await Promise.all([
+  const [progress, xpGrants, companions, purchases, questContributions, triviaAnswers, trades, battles] = await Promise.all([
     safe(() => prisma.memberProgress.findMany({ where: { userId: uid }, select: {
       serverId: true, xp: true, level: true, seasonXp: true, sparks: true, streak: true, lastDailyAt: true,
-      lastMessageXpAt: true, messages: true, voiceMinutes: true, activeCompanionId: true, createdAt: true, updatedAt: true } })),
+      lastMessageXpAt: true, messages: true, voiceMinutes: true, activeCompanionId: true, pvpOptOut: true, createdAt: true, updatedAt: true } })),
     safe(() => prisma.gameXpGrant.findMany({ where: { userId: uid }, select: { serverId: true, key: true, amount: true, createdAt: true } })),
     safe(() => prisma.memberCompanion.findMany({ where: { userId: uid }, select: {
-      id: true, serverId: true, companionId: true, stage: true, fed: true, nickname: true, seasonId: true, caughtAt: true } })),
+      id: true, serverId: true, companionId: true, stage: true, fed: true, nickname: true, seasonId: true, caughtAt: true,
+      atkLevel: true, defLevel: true, spdLevel: true, hpLevel: true, wins: true, losses: true } })),
     safe(() => prisma.shopPurchase.findMany({ where: { userId: uid }, select: {
       serverId: true, itemName: true, itemType: true, roleId: true, priceSparks: true, expiresAt: true, revokedAt: true, createdAt: true } })),
     safe(() => prisma.questContribution.findMany({ where: { userId: uid }, select: { questId: true, amount: true } })),
     safe(() => prisma.triviaAnswer.findMany({ where: { userId: uid }, select: { roundId: true, option: true, correct: true, createdAt: true } })),
     safe(() => prisma.companionTrade.findMany({ where: { OR: [{ fromUserId: uid }, { toUserId: uid }] }, select: {
       serverId: true, fromUserId: true, toUserId: true, fromCompanionId: true, toCompanionId: true, status: true, createdAt: true, resolvedAt: true } })),
+    // v53 — битките, в които членът е нападател или защитник (пазят се 30 дни).
+    safe(() => prisma.companionBattle.findMany({ where: { OR: [{ attackerId: uid }, { defenderId: uid }] }, select: {
+      serverId: true, attackerId: true, defenderId: true, attackerCompanionId: true, defenderCompanionId: true,
+      attackerStats: true, defenderStats: true, attackerWon: true, turns: true, rewardSparks: true, lostSparks: true, createdAt: true } })),
   ]);
-  return { progress, xp_grants: xpGrants, companions, shop_purchases: purchases, quest_contributions: questContributions, trivia_answers: triviaAnswers, companion_trades: trades };
+  return { progress, xp_grants: xpGrants, companions, shop_purchases: purchases, quest_contributions: questContributions, trivia_answers: triviaAnswers, companion_trades: trades, companion_battles: battles };
 }
 
 /**
@@ -47,6 +52,7 @@ export function gameEraseSteps(tx, userId) {
     ["triviaWinsAnonymized", () => tx.triviaRound.updateMany({ where: { winnerId: uid }, data: { winnerId: null } })],
     ["countingLastAnonymized", () => tx.gameSettings.updateMany({ where: { countingLastUserId: uid }, data: { countingLastUserId: null } })],
     ["trades", () => tx.companionTrade.deleteMany({ where: { OR: [{ fromUserId: uid }, { toUserId: uid }] } })],
+    ["battles", () => tx.companionBattle.deleteMany({ where: { OR: [{ attackerId: uid }, { defenderId: uid }] } })],
     ["spawnsAnonymized", () => tx.companionSpawn.updateMany({ where: { caughtById: uid }, data: { caughtById: null } })],
   ];
 }

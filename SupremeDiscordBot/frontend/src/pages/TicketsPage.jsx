@@ -1,35 +1,38 @@
 // frontend/src/pages/TicketsPage.jsx
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ExternalLink, Shield, X, XCircle, ChevronLeft, ChevronRight, FileText, Star, Ticket, RefreshCw, MessageSquare } from "lucide-react";
+import { ExternalLink, Shield, X, XCircle, ChevronLeft, ChevronRight, FileText, Star, Ticket, RefreshCw, MessageSquare, Search, Plus } from "lucide-react";
+import { timeAgo } from "../utils/timeAgo";
 import { getTickets, closeTicket, claimTicket, exportTicketPDF, replyToTicket } from "../api";
 import Modal from "../components/Modal";
 import EmptyState from "../components/EmptyState";
 import { useToast } from "../contexts/ToastContext";
 import { useT } from "../contexts/I18nContext";
 
-const STATUS_COLORS = {
-  OPEN: "text-success bg-green-500/10",
-  CLAIMED: "text-blue-400 bg-blue-500/10",
-  CLOSED: "text-cs-muted bg-gray-500/10",
-  ARCHIVED: "text-cs-muted bg-gray-500/10",
+// Статусът — точка + ДУМА в хапче (концепцията, 10.10.2026), никога само цвят.
+const STATUS_STYLE = {
+  OPEN: { dot: "bg-success", cls: "text-success border-success/35 bg-success/10" },
+  CLAIMED: { dot: "bg-cs-cyan", cls: "text-cs-cyan border-cs-cyan/35 bg-cs-cyan/10" },
+  CLOSED: { dot: "bg-cs-dim", cls: "text-cs-muted border-cs-line bg-cs-panel" },
+  ARCHIVED: { dot: "bg-cs-dim", cls: "text-cs-muted border-cs-line bg-cs-panel" },
 };
+const STATUS_TABS = ["", "OPEN", "CLAIMED", "CLOSED", "ARCHIVED"];
 
 // Договор с backend (миграция v30): LOW | NORMAL | HIGH | URGENT.
 // NORMAL се показва приглушено — приоритетът шуми само когато е различен.
 const PRIORITY_COLORS = {
-  URGENT: "text-danger bg-red-500/10",
-  HIGH:   "text-cs-gold bg-yellow-500/10",
-  NORMAL: "text-cs-muted bg-gray-500/10",
-  LOW:    "text-cs-dim bg-gray-500/5",
+  URGENT: "text-danger border-danger/35 bg-danger/10",
+  HIGH:   "text-warning border-warning/35 bg-warning/10",
+  NORMAL: "text-cs-muted border-cs-line bg-cs-panel",
+  LOW:    "text-cs-dim border-cs-line bg-transparent",
 };
 
 const LIMIT = 20;
 
 export default function TicketsPage() {
   const { serverId } = useParams();
-  const { t } = useT();
+  const { t, lang } = useT();
   const qc = useQueryClient();
   const [statusFilter, setStatusFilter] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("");
@@ -127,27 +130,61 @@ export default function TicketsPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      {/* Header */}
-      {/* Заглавието не се свива: пет филтъра го притискаха до „0 total / tickets“
-          на два реда (визуален одит 25.09.2026) — филтрите се пренасят под него. */}
-      <div className="flex flex-wrap items-start justify-between gap-4 mb-8">
+      {/* Header (концепцията): заглавие и брой вляво; търсене и „нов панел“
+          вдясно. Тикет не се създава от таблото — идва от панел в Discord,
+          затова бутонът води към панелите, не обещава „нов тикет“. */}
+      <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
         <div className="shrink-0">
-          <h1 className="text-2xl font-bold text-cs-text">{t("tickets.title")}</h1>
+          <h1 className="!text-[1.75rem] sm:!text-3xl !font-bold !tracking-tight text-cs-text leading-tight">{t("tickets.title")}</h1>
           <p className="text-cs-muted text-sm mt-1">
             {t("tickets.totalCount", { n: data?.total ?? 0 })}
           </p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
-          <input
-            className="cs-input w-52"
-            placeholder={t("tickets.searchPlaceholder")}
-            aria-label={t("tickets.search")}
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          />
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cs-dim pointer-events-none" aria-hidden="true" />
+            <input
+              className="cs-input w-56 !pl-9"
+              placeholder={t("tickets.searchPlaceholder")}
+              aria-label={t("tickets.search")}
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            />
+          </div>
+          <Link to={`/dashboard/${serverId}/panels`} className="cs-btn-primary cs-btn-sm no-underline">
+            <Plus className="w-4 h-4" aria-hidden="true" /> {t("common.createPanel")}
+          </Link>
+        </div>
+      </div>
+
+      {/* Статус като превключватели с истински броячи (statusCounts от API-то)
+          + вторичните филтри вдясно. */}
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t("tickets.filterByStatus")}>
+          {STATUS_TABS.map((st) => {
+            const counts = data?.statusCounts || {};
+            const n = st ? (counts[st] ?? 0) : Object.values(counts).reduce((a, b) => a + b, 0);
+            const on = statusFilter === st;
+            return (
+              <button
+                key={st || "all"}
+                type="button"
+                aria-pressed={on}
+                onClick={() => { setStatusFilter(st); setPage(1); }}
+                className={`inline-flex items-center gap-1.5 min-h-[34px] px-3 rounded-lg text-[13px] font-medium border transition-colors ${
+                  on ? "bg-cs-cyan/10 text-cs-cyan border-cs-cyan/45" : "text-cs-muted border-cs-line hover:text-cs-text hover:border-cs-borderHi"
+                }`}
+              >
+                {st ? t(`status.${st.toLowerCase()}`) : t("tickets.tab.all")}
+                {data?.statusCounts && <span className="tabular-nums text-cs-dim">({n})</span>}
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
           <input
             type="date"
-            className="cs-input w-40"
+            className="cs-input w-40 !py-1.5"
             value={dateFrom}
             onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
             title={t("tickets.fromDate")}
@@ -155,26 +192,14 @@ export default function TicketsPage() {
           />
           <input
             type="date"
-            className="cs-input w-40"
+            className="cs-input w-40 !py-1.5"
             value={dateTo}
             onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
             title={t("tickets.toDate")}
             aria-label={t("tickets.toDate")}
           />
           <select
-            className="cs-input w-40"
-            value={statusFilter}
-            onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-            aria-label={t("tickets.filterByStatus")}
-          >
-            <option value="">{t("common.allStatuses")}</option>
-            <option value="OPEN">{t("status.open")}</option>
-            <option value="CLAIMED">{t("status.claimed")}</option>
-            <option value="CLOSED">{t("status.closed")}</option>
-            <option value="ARCHIVED">{t("status.archived")}</option>
-          </select>
-          <select
-            className="cs-input w-40"
+            className="cs-input w-40 !py-1.5"
             value={priorityFilter}
             onChange={(e) => { setPriorityFilter(e.target.value); setPage(1); }}
             aria-label={t("tickets.filterByPriority")}
@@ -234,58 +259,64 @@ export default function TicketsPage() {
         )
       ) : (
         <>
-          <div className="cs-card p-0 overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="cs-card !p-0 overflow-x-auto">
+            <table className="cs-table w-full">
               <thead>
-                <tr className="border-b border-white/5 text-cs-muted text-xs uppercase tracking-wider">
-                  <th className="text-left px-4 py-3">{t("common.status")}</th>
-                  <th className="text-left px-4 py-3">{t("common.priority")}</th>
-                  <th className="text-left px-4 py-3">#</th>
-                  <th className="text-left px-4 py-3">{t("tickets.col.creator")}</th>
-                  <th className="text-left px-4 py-3">{t("tickets.col.assignedTo")}</th>
-                  <th className="text-left px-4 py-3">{t("common.panel")}</th>
-                  <th className="text-left px-4 py-3">{t("tickets.col.rating")}</th>
-                  <th className="text-left px-4 py-3">{t("tickets.col.opened")}</th>
-                  <th className="text-left px-4 py-3">{t("tickets.col.actions")}</th>
+                <tr>
+                  <th>#</th>
+                  <th>{t("tickets.col.creator")}</th>
+                  <th>{t("common.panel")}</th>
+                  <th>{t("common.status")}</th>
+                  <th>{t("common.priority")}</th>
+                  <th>{t("tickets.col.assignedTo")}</th>
+                  <th>{t("tickets.col.rating")}</th>
+                  <th>{t("tickets.col.opened")}</th>
+                  <th className="!text-right">{t("tickets.col.actions")}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
-                {tickets.map((ticket) => (
-                  <tr key={ticket.id} className="hover:bg-white/[0.02] transition-colors">
-                    <td className="px-4 py-3">
-                      <span className={`text-xs font-semibold px-2 py-1 rounded-xl ${STATUS_COLORS[ticket.status]}`}>
-                        {t(`status.${ticket.status.toLowerCase()}`)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`text-xs font-semibold px-2 py-1 rounded-xl ${PRIORITY_COLORS[ticket.priority] || PRIORITY_COLORS.NORMAL}`}>
-                        {(ticket.priority || "NORMAL").charAt(0) + (ticket.priority || "NORMAL").slice(1).toLowerCase()}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="font-mono text-xs text-cs-cyan font-semibold">
+              <tbody>
+                {tickets.map((ticket) => {
+                  const st = STATUS_STYLE[ticket.status] || STATUS_STYLE.CLOSED;
+                  const pr = ticket.priority || "NORMAL";
+                  return (
+                  <tr key={ticket.id}>
+                    <td>
+                      <span className="text-[13px] tabular-nums font-semibold text-cs-text">
                         {ticket.number != null ? `#${String(ticket.number).padStart(4, "0")}` : ticket.id.slice(0, 6)}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        {ticket.creator?.avatar && (
+                    <td>
+                      <div className="flex items-center gap-2.5">
+                        {ticket.creator?.avatar ? (
                           <img
                             src={`https://cdn.discordapp.com/avatars/${ticket.creator.id}/${ticket.creator.avatar}.png?size=32`}
-                            className="w-5 h-5 rounded-full"
+                            className="w-7 h-7 rounded-full bg-cs-panel flex-none"
                             alt=""
                           />
+                        ) : (
+                          <span aria-hidden="true" className="w-7 h-7 rounded-full bg-cs-cyan/15 text-cs-cyan text-xs font-bold flex items-center justify-center flex-none">
+                            {String(ticket.creator?.username || "?").charAt(0).toUpperCase()}
+                          </span>
                         )}
                         <span className="text-cs-text">{ticket.creator?.username ?? "Unknown"}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-cs-muted">
-                      {ticket.assignee?.username ?? <span className="text-cs-muted italic">{t("tickets.unassigned")}</span>}
+                    <td className="text-cs-muted">{ticket.panel?.name ?? "—"}</td>
+                    <td>
+                      <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${st.cls}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} aria-hidden="true" />
+                        {t(`status.${ticket.status.toLowerCase()}`)}
+                      </span>
                     </td>
-                    <td className="px-4 py-3 text-cs-muted">
-                      {ticket.panel?.name ?? "—"}
+                    <td>
+                      <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-medium ${PRIORITY_COLORS[pr] || PRIORITY_COLORS.NORMAL}`}>
+                        {t(`priority.${pr.toLowerCase()}`)}
+                      </span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="text-cs-muted">
+                      {ticket.assignee?.username ?? <span className="text-cs-dim">{t("tickets.unassigned")}</span>}
+                    </td>
+                    <td>
                       {ticket.feedbackRating
                         ? <span
                             className="inline-flex items-center gap-0.5"
@@ -296,19 +327,21 @@ export default function TicketsPage() {
                               <Star key={i} className="w-3.5 h-3.5 text-cs-cyan fill-cs-cyan" aria-hidden="true" />
                             ))}
                           </span>
-                        : <span className="text-cs-muted text-xs">—</span>}
+                        : <span className="text-cs-dim text-xs">—</span>}
                     </td>
-                    <td className="px-4 py-3 text-cs-muted text-xs">
-                      {new Date(ticket.createdAt).toLocaleDateString()}
+                    <td className="text-cs-muted text-[13px] whitespace-nowrap">
+                      <time dateTime={new Date(ticket.createdAt).toISOString()} title={new Date(ticket.createdAt).toLocaleString()}>
+                        {timeAgo(ticket.createdAt, lang)}
+                      </time>
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1">
+                    <td>
+                      <div className="flex items-center justify-end gap-0.5">
                         {(ticket.status === "OPEN" || ticket.status === "CLAIMED") && (
                           <button
                             onClick={() => { setReplyingId(ticket.id); setReplyText(""); }}
                             title={t("tickets.replyFromDashboard")}
                             aria-label={t("tickets.replyFromDashboard")}
-                            className="text-cs-cyan hover:text-white transition-colors p-1"
+                            className="rounded-md text-cs-cyan hover:bg-cs-cyan/10 transition-colors p-1.5"
                           >
                             <MessageSquare className="w-4 h-4" />
                           </button>
@@ -319,7 +352,7 @@ export default function TicketsPage() {
                             disabled={claimMut.isPending}
                             title={t("tickets.claim")}
                             aria-label={t("tickets.claim")}
-                            className="text-blue-400 hover:text-blue-300 transition-colors p-1"
+                            className="rounded-md text-cs-muted hover:text-cs-cyan hover:bg-cs-panel transition-colors p-1.5"
                           >
                             <Shield className="w-4 h-4" />
                           </button>
@@ -332,7 +365,7 @@ export default function TicketsPage() {
                               rel="noopener noreferrer"
                               title={t("tickets.viewTranscript")}
                               aria-label={t("tickets.viewTranscript")}
-                              className="text-cs-cyan hover:text-white transition-colors p-1"
+                              className="rounded-md text-cs-muted hover:text-cs-cyan hover:bg-cs-panel transition-colors p-1.5"
                             >
                               <ExternalLink className="w-4 h-4" />
                             </a>
@@ -341,7 +374,7 @@ export default function TicketsPage() {
                               disabled={pdfExporting === ticket.id}
                               title={t("tickets.downloadPdf")}
                               aria-label={t("tickets.downloadPdf")}
-                              className="text-purple-400 hover:text-purple-300 transition-colors p-1 disabled:opacity-40"
+                              className="rounded-md text-cs-muted hover:text-cs-cyan hover:bg-cs-panel transition-colors p-1.5 disabled:opacity-40"
                             >
                               <FileText className="w-4 h-4" />
                             </button>
@@ -352,7 +385,7 @@ export default function TicketsPage() {
                             onClick={() => { setClosingId(ticket.id); setCloseReason(""); }}
                             title={t("tickets.close")}
                             aria-label={t("tickets.close")}
-                            className="text-danger hover:text-red-300 transition-colors p-1"
+                            className="rounded-md text-cs-muted hover:text-danger hover:bg-danger/10 transition-colors p-1.5"
                           >
                             <X className="w-4 h-4" />
                           </button>
@@ -360,7 +393,8 @@ export default function TicketsPage() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -433,7 +467,7 @@ export default function TicketsPage() {
       </Modal>
 
       {/* Close Ticket Modal */}
-      <Modal open={!!closingId} onClose={() => setClosingId(null)} title="Close Ticket" maxWidth="max-w-md">
+      <Modal open={!!closingId} onClose={() => setClosingId(null)} title="Close ticket" maxWidth="max-w-md">
         <label className="block mb-4">
           <span className="cs-label">{t("ui.closeReasonOpt")}</span>
           <input
@@ -451,7 +485,7 @@ export default function TicketsPage() {
             disabled={closeMut.isPending}
             onClick={() => closeMut.mutate({ ticketId: closingId, reason: closeReason })}
           >
-            {closeMut.isPending ? "Closing…" : "Close Ticket"}
+            {closeMut.isPending ? "Closing…" : "Close ticket"}
           </button>
         </div>
       </Modal>

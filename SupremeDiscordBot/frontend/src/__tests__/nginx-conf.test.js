@@ -118,4 +118,26 @@ describe("заглавия за сигурност", () => {
   it("версията на nginx не изтича в Server заглавието", () => {
     expect(live.split("\n").some((l) => /server_tokens\s+off;/.test(l))).toBe(true);
   });
+
+  // Втвърдяване 10.10.2026 — стойностите, не само имената. Старият „XSS
+  // auditor“ („1; mode=block“) е махнат от браузърите и в старите сам беше
+  // XS-Leak; правилната стойност е 0 (OWASP Secure Headers). Хардуерните API-та
+  // и Topics са изключени изрично — таблото не ползва нито едно.
+  it("X-XSS-Protection е 0, а Permissions-Policy забранява хардуер и Topics", async () => {
+    const { readFile } = await import("node:fs/promises");
+    const snippet = await readFile(snippetPath, "utf8");
+    expect(snippet).toMatch(/add_header X-XSS-Protection "0" always;/);
+    const pp = snippet.match(/add_header Permissions-Policy "([^"]+)"/)?.[1] || "";
+    for (const f of ["camera=()", "microphone=()", "geolocation=()", "usb=()", "serial=()", "bluetooth=()", "browsing-topics=()"]) {
+      expect(pp, `Permissions-Policy без ${f}`).toContain(f);
+    }
+    expect(snippet).toMatch(/Strict-Transport-Security "max-age=\d{8,}; includeSubDomains; preload"/);
+  });
+
+  it("транскриптите по споделен линк не влизат в access лога (токенът `?t=` е в адреса)", () => {
+    const archive = live.slice(live.indexOf("location /archive"));
+    const block = archive.slice(0, archive.indexOf("}"));
+    expect(block, "блокът /archive не е намерен").toContain("location /archive");
+    expect(block).toMatch(/access_log\s+off;/);
+  });
 });

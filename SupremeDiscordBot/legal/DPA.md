@@ -1,5 +1,6 @@
 # Data Processing Agreement (DPA) — Supreme Bot
 
+**Version:** 1.2 (2026-10-09 — game data categories: companion stats and battles between members. No new sub-processor was added.)  
 **Version:** 1.1 (2026-09-13 — sub-processor table: Discord Inc. also acts as seller of record for subscriptions purchased in its Premium Apps store; Stripe limited to legacy subscriptions. No new sub-processor was added.)  
 **Effective Date:** 2026-04-22  
 **Controller:** [Customer Name] ("Customer")  
@@ -26,7 +27,7 @@
 - IP addresses (for rate limiting and security)
 - Session identifiers (for authentication)
 - Payment metadata (transaction IDs, customer IDs — payment data itself is processed by Stripe)
-- Game progress data, only where the Customer enables the Server Season game (per-member counters such as XP, level, sparks and streak; shop purchases; caught companions and trades; quest contributions; trivia answers; the counting channel's current number and last counter). Message content is never stored for the game; in the Customer-designated counting channel a message is read only to check whether it is the next number
+- Game progress data, only where the Customer enables the Server Season game (per-member counters such as XP, level, sparks and streak; shop purchases; caught companions with their trained stats, trades and battles between members; quest contributions; trivia answers; the counting channel's current number and last counter). Message content is never stored for the game; in the Customer-designated counting channel a message is read only to check whether it is the next number
 
 2.4 **Categories of data subjects:**
 - Customer's Discord server members

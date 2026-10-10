@@ -65,22 +65,37 @@ function rotateSession(req, patch = {}) {
 /**
  * Проверява TOTP (с replay защита) ИЛИ резервен код. Пише в базата само при
  * успех. Връща { ok, via } или { ok: false }.
+ *
+ * И двата записа са УСЛОВНИ (сравни-и-смени): досега се четеше стъпката/списъкът
+ * и после се пишеше безусловно, така две едновременни заявки с ЕДИН И СЪЩ код
+ * минаваха и двете — видян TOTP код ставаше два входа, един резервен код — два
+ * (червен екип, 10.10.2026). Сега печели точно едната.
+ *
+ * Изнесена (export) само заради интеграционния тест срещу жив Postgres
+ * (`integration/mfaRace.integration.test.js`) — маршрутите не я ползват отвън.
  */
-async function verifyFactor(user, code) {
+export async function verifyFactor(user, code) {
   const secret = decryptSafe(user.mfaSecret);
   if (!secret) return { ok: false };
 
   const step = verifyTotp(secret, code, { minStep: user.mfaLastUsedStep ?? -1 });
   if (step !== null) {
-    await prisma.user.update({ where: { id: user.id }, data: { mfaLastUsedStep: step } });
-    return { ok: true, via: "totp" };
+    const won = await prisma.user.updateMany({
+      where: { id: user.id, OR: [{ mfaLastUsedStep: null }, { mfaLastUsedStep: { lt: step } }] },
+      data: { mfaLastUsedStep: step },
+    });
+    return won.count === 1 ? { ok: true, via: "totp" } : { ok: false };
   }
 
   let hashes = [];
   try { hashes = JSON.parse(user.mfaBackupCodes || "[]"); } catch { hashes = []; }
   const remaining = consumeBackupCode(code, hashes);
   if (remaining) {
-    await prisma.user.update({ where: { id: user.id }, data: { mfaBackupCodes: JSON.stringify(remaining) } });
+    const won = await prisma.user.updateMany({
+      where: { id: user.id, mfaBackupCodes: user.mfaBackupCodes },
+      data: { mfaBackupCodes: JSON.stringify(remaining) },
+    });
+    if (won.count !== 1) return { ok: false };
     await writeAudit({ actorId: user.id, action: "MFA_BACKUP_CODE_USED", targetId: user.id, metadata: { remaining: remaining.length } });
     return { ok: true, via: "backup", remaining: remaining.length };
   }

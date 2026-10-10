@@ -35,11 +35,11 @@ export default function StatusPage() {
             <SupremeLogo size={36} />
             <div className="flex flex-col leading-tight">
               <SupremeWordmark className="text-base" />
-              <span className="text-cs-dim text-[10px] font-mono uppercase tracking-[0.2em]">/ status</span>
+              <span className="text-cs-dim text-xs">/ status</span>
             </div>
           </a>
-          <button onClick={() => refetch()} className="text-cs-muted hover:text-white text-xs font-mono">
-            REFRESH
+          <button type="button" onClick={() => refetch()} className="cs-btn-secondary cs-btn-sm">
+            Refresh
           </button>
         </div>
 
@@ -50,7 +50,7 @@ export default function StatusPage() {
             <div>
               <h1 className={`text-2xl font-bold ${overallConfig.color}`}>{overallConfig.label}</h1>
               {data?.timestamp && (
-                <p className="text-xs text-cs-dim font-mono mt-1">
+                <p className="text-xs text-cs-dim tabular-nums mt-1">
                   Last checked: {new Date(data.timestamp).toLocaleString()}
                 </p>
               )}
@@ -59,7 +59,7 @@ export default function StatusPage() {
         </div>
 
         {/* ═══ Services list ═══ */}
-        <h2 className="text-xs text-cs-muted uppercase tracking-wider font-mono mb-3">Services</h2>
+        <h2 className="text-xs text-cs-muted mb-3">Services</h2>
         {isLoading && <div className="cs-card h-20 animate-pulse" />}
 
         <div className="space-y-2 mb-8">
@@ -85,25 +85,8 @@ export default function StatusPage() {
           />
         </div>
 
-        {/* ═══ Stats ═══ */}
-        {data?.stats && (
-          <>
-            <h2 className="text-xs text-cs-muted uppercase tracking-wider font-mono mb-3">Platform Stats</h2>
-            <div className="grid grid-cols-2 gap-4 mb-8">
-              <div className="cs-card !p-4">
-                <div className="text-xs text-cs-muted uppercase tracking-wider font-mono">Total Servers</div>
-                <div className="text-2xl font-black text-cs-text mt-1">{data.stats.totalServers}</div>
-              </div>
-              <div className="cs-card !p-4">
-                <div className="text-xs text-cs-muted uppercase tracking-wider font-mono">Active (24h)</div>
-                <div className="text-2xl font-black text-cs-cyan mt-1">{data.stats.activeServers24h}</div>
-              </div>
-            </div>
-          </>
-        )}
-
         {/* ═══ SLA info ═══ */}
-        <div className="border-t border-cs-border pt-6 text-xs text-cs-dim font-mono space-y-1">
+        <div className="border-t border-cs-border pt-6 text-xs leading-relaxed text-cs-dim space-y-1">
           {/* Обявявахме „99.9% Premium | 99.95% Enterprise — backed by service
               credits“. Три неверни неща наведнъж: „Enterprise“ план НЕ съществува
               в ценоразписа, service credits ги НЯМА в Общите условия/EULA, а
@@ -128,7 +111,7 @@ export default function StatusPage() {
             <SupremeLogo size={28} />
             <div className="flex flex-col leading-tight">
               <SupremeWordmark className="text-sm" />
-              <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-cs-dim">
+              <span className="text-xs text-cs-dim">
                 Created and Designed by{" "}
                 <a
                   href="https://carbonstealth.eu"
@@ -141,7 +124,7 @@ export default function StatusPage() {
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-4 text-[10px] font-mono uppercase tracking-widest text-cs-dim">
+          <div className="flex items-center gap-4 text-xs text-cs-dim">
             <a href="/"        className="hover:text-cs-cyan transition-colors">Home</a>
             <a href="/commands" className="hover:text-cs-cyan transition-colors">Commands</a>
             <a href="/terms"   className="hover:text-cs-cyan transition-colors">Terms</a>
@@ -173,7 +156,7 @@ function ServiceRow({ icon: Icon, name, description, status, latency }) {
       </div>
       <div className="flex items-center gap-3">
         {latency != null && (
-          <span className="text-xs font-mono text-cs-dim">{latency}ms</span>
+          <span className="text-xs tabular-nums text-cs-dim">{latency} ms</span>
         )}
         <div className={`flex items-center gap-2 ${config.color}`}>
           <StatusIcon className="w-4 h-4" />

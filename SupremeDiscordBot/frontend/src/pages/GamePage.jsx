@@ -9,7 +9,8 @@ import { Gamepad2, Trophy, ShoppingBag, Layers, Save, Plus, Trash2, Pencil, Spar
 import { useT } from "../contexts/I18nContext";
 import { useToast } from "../contexts/ToastContext";
 import { PremiumBadge } from "../components/PremiumBadge";
-import DiscordChannelSelect, { DiscordRoleSelect } from "../components/DiscordPicker";
+import DiscordChannelSelect, { DiscordRoleSelect, ChannelName } from "../components/DiscordPicker";
+import MemberName, { useMemberNames } from "../components/MemberName";
 import {
   getGame, updateGameSettings, getGameShop, createGameShopItem, updateGameShopItem, deleteGameShopItem,
   getGameLeaderboard, getGamePurchases, getGameCompanions, getGameQuests, createGameQuest, cancelGameQuest, getGameMinigames,
@@ -74,6 +75,7 @@ function useSettingsForm(data) {
     spawnEnabled: s.spawnEnabled, spawnChannelIds: [...(s.spawnChannelIds || [])],
     countingChannelId: s.countingChannelId || "", triviaChannelId: s.triviaChannelId || "", triviaSchedule: s.triviaSchedule || "",
     questChannelId: s.questChannelId || "", questEnabled: s.questEnabled,
+    battlesEnabled: s.battlesEnabled !== false,
   }));
   // Формата се попълва веднъж от заредените данни; refetch не бие незапазени промени.
   return [form, setForm];
@@ -95,11 +97,13 @@ function OverviewTab({ data }) {
       spawnChannelIds: form.spawnChannelIds.filter((x) => SNOWFLAKE.test(x)),
       countingChannelId: form.countingChannelId.trim() || null, triviaChannelId: form.triviaChannelId.trim() || null,
       triviaSchedule: form.triviaSchedule || null, questChannelId: form.questChannelId.trim() || null, questEnabled: !!form.questEnabled,
+      battlesEnabled: !!form.battlesEnabled,
     }),
     onSuccess: () => { toast.success(t("game.saved")); qc.invalidateQueries({ queryKey: ["game", serverId] }); },
     onError: (err) => toast.error(errMsg(err, t("game.saveFailed"))),
   });
   const st = data.stats;
+  const topNames = useMemberNames(st.top?.map((r) => r.userId));
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -140,7 +144,7 @@ function OverviewTab({ data }) {
             {form.spawnChannelIds.length > 0 && (
               <ul className="flex flex-wrap gap-2 mt-2">
                 {form.spawnChannelIds.map((id) => (
-                  <li key={id} className="cs-badge flex items-center gap-1 font-mono">{id}
+                  <li key={id} className="cs-badge flex items-center gap-1"><ChannelName id={id} />
                     <button type="button" aria-label={t("game.levels.remove")} onClick={() => setForm((f) => ({ ...f, spawnChannelIds: f.spawnChannelIds.filter((x) => x !== id) }))}>×</button>
                   </li>
                 ))}
@@ -163,6 +167,14 @@ function OverviewTab({ data }) {
             <input type="checkbox" className="accent-cs-cyan w-5 h-5" checked={!!form.questEnabled} onChange={set("questEnabled")} />
             <span className="text-sm text-cs-text">{t("game.quest.enabled")}</span>
           </label>
+          {/* v53 — битките между спътници (/companion attack); по подразбиране включени. */}
+          <label className="flex items-start gap-3 md:col-span-2">
+            <input type="checkbox" className="accent-cs-cyan w-5 h-5 mt-0.5 flex-none" checked={!!form.battlesEnabled} onChange={set("battlesEnabled")} />
+            <span>
+              <span className="text-sm text-cs-text">{t("game.battles.enabled")}</span>
+              <span className="block text-xs text-cs-dim mt-1">{t("game.battles.hint")}</span>
+            </span>
+          </label>
         </div>
         <div className="flex justify-end">
           <button type="submit" className="cs-btn-primary" disabled={save.isPending}><Save className="w-4 h-4" aria-hidden="true" /> {t("game.save")}</button>
@@ -175,8 +187,8 @@ function OverviewTab({ data }) {
           <ol className="space-y-1 text-sm">
             {st.top.map((r, i) => (
               <li key={r.userId} className="flex items-center gap-3">
-                <span className="font-mono text-cs-dim w-6">{i + 1}.</span>
-                <span className="font-mono text-cs-text">{r.userId}</span>
+                <span className="tabular-nums text-cs-dim w-6">{i + 1}.</span>
+                <MemberName id={r.userId} names={topNames} className="text-cs-text" />
                 <span className="text-cs-muted">{t("game.lb.level")} {r.level} · {r.xp} XP · ✨ {r.sparks} · 🔥 {r.streak}</span>
               </li>
             ))}
@@ -190,7 +202,7 @@ function OverviewTab({ data }) {
 function Stat({ label, value }) {
   return (
     <div className="cs-card !p-3">
-      <div className="text-[10px] font-mono uppercase tracking-wider text-cs-dim">{label}</div>
+      <div className="text-xs text-cs-dim">{label}</div>
       <div className="text-xl font-bold text-cs-text">{Number(value || 0).toLocaleString()}</div>
     </div>
   );
@@ -253,7 +265,7 @@ function LevelsTab({ data }) {
         <h3 className="font-semibold text-cs-text mb-2">{t("game.levels.table")}</h3>
         <table className="cs-table w-full text-sm">
           <thead><tr><th>{t("game.levels.level")}</th><th>{t("game.levels.xpNeeded")}</th></tr></thead>
-          <tbody>{data.levelTable.map((l) => <tr key={l.level}><td>{l.level}</td><td className="font-mono">{l.xp.toLocaleString()}</td></tr>)}</tbody>
+          <tbody>{data.levelTable.map((l) => <tr key={l.level}><td>{l.level}</td><td className="tabular-nums">{l.xp.toLocaleString()}</td></tr>)}</tbody>
         </table>
       </div>
     </div>
@@ -274,6 +286,7 @@ function ShopTab({ data }) {
   // или при грешка — и бутонът „Нов“ пускаше над лимита (одит 26.09.2026).
   const { data: items = [], isLoading: shopLoading, isError: shopError } = useQuery({ queryKey: ["game-shop", serverId], queryFn: () => getGameShop(serverId) });
   const { data: purchases = [] } = useQuery({ queryKey: ["game-purchases", serverId], queryFn: () => getGamePurchases(serverId) });
+  const buyerNames = useMemberNames(purchases.map((p) => p.userId));
   const limit = data.limits.shopItems;
   const invalidate = () => { qc.invalidateQueries({ queryKey: ["game-shop", serverId] }); qc.invalidateQueries({ queryKey: ["game", serverId] }); };
   const payload = () => ({
@@ -360,7 +373,7 @@ function ShopTab({ data }) {
           <div className="overflow-x-auto"><table className="cs-table w-full text-sm min-w-[36rem]">
             <thead><tr><th>{t("game.lb.user")}</th><th>{t("game.shop.name")}</th><th>✨</th><th>{t("game.purchases.expires")}</th></tr></thead>
             <tbody>{purchases.map((p) => (
-              <tr key={p.id}><td className="font-mono">{p.userId}</td><td>{p.item?.name}</td><td>{p.priceSparks}</td><td className="font-mono text-xs">{p.revokedAt ? t("game.purchases.revoked") : (p.expiresAt ? String(p.expiresAt).slice(0, 10) : "—")}</td></tr>
+              <tr key={p.id}><td><MemberName id={p.userId} names={buyerNames} /></td><td>{p.item?.name}</td><td>{p.priceSparks}</td><td className="text-xs tabular-nums">{p.revokedAt ? t("game.purchases.revoked") : (p.expiresAt ? String(p.expiresAt).slice(0, 10) : "—")}</td></tr>
             ))}</tbody>
           </table></div>
         )}
@@ -376,6 +389,7 @@ function LeaderboardTab() {
   const [by, setBy] = useState("xp");
   const { data, isLoading, isError } = useQuery({ queryKey: ["game-lb", serverId, by], queryFn: () => getGameLeaderboard(serverId, by) });
   const rows = data?.rows || [];
+  const lbNames = useMemberNames(rows.map((r) => r.userId));
   return (
     <div className="cs-card">
       <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
@@ -395,7 +409,7 @@ function LeaderboardTab() {
         <div className="overflow-x-auto"><table className="cs-table w-full text-sm min-w-[40rem]">
           <thead><tr><th>#</th><th>{t("game.lb.user")}</th><th>{t("game.lb.level")}</th><th>XP</th><th>{t("game.lb.seasonXp")}</th><th>✨</th><th>🔥</th><th>{t("game.lb.messages")}</th><th>{t("game.lb.voice")}</th></tr></thead>
           <tbody>{rows.map((r, i) => (
-            <tr key={r.userId}><td>{i + 1}</td><td className="font-mono">{r.userId}</td><td>{r.level}</td><td>{r.xp}</td><td>{r.seasonXp}</td><td>{r.sparks}</td><td>{r.streak}</td><td>{r.messages}</td><td>{r.voiceMinutes}</td></tr>
+            <tr key={r.userId}><td>{i + 1}</td><td><MemberName id={r.userId} names={lbNames} /></td><td>{r.level}</td><td>{r.xp}</td><td>{r.seasonXp}</td><td>{r.sparks}</td><td>{r.streak}</td><td>{r.messages}</td><td>{r.voiceMinutes}</td></tr>
           ))}</tbody>
         </table></div>
       )}
@@ -409,6 +423,7 @@ function CompanionsTab({ data }) {
   const { t } = useT();
   const { serverId } = useParams();
   const { data: c, isLoading } = useQuery({ queryKey: ["game-companions", serverId], queryFn: () => getGameCompanions(serverId) });
+  const collectorNames = useMemberNames(c?.collectors?.map((x) => x.userId));
   if (isLoading || !c) return <p className="text-cs-muted">{t("game.loading")}</p>;
   const groups = RARITY_ORDER.map((r) => ({ r, items: c.catalog.filter((x) => x.rarity === r) })).filter((g) => g.items.length);
   return (
@@ -418,7 +433,7 @@ function CompanionsTab({ data }) {
         <Stat label={t("game.companions.spawns")} value={c.spawns} />
         <Stat label={t("game.companions.caught")} value={c.caught} />
         <div className="cs-card !p-3">
-          <div className="text-[10px] font-mono uppercase tracking-wider text-cs-dim">{t("game.companions.season")}</div>
+          <div className="text-xs text-cs-dim">{t("game.companions.season")}</div>
           <div className="text-sm font-bold text-cs-text">{c.season.name}</div>
           <div className="text-xs text-cs-dim">{String(c.season.startsAt).slice(0, 10)} → {String(c.season.endsAt).slice(0, 10)}</div>
         </div>
@@ -432,7 +447,7 @@ function CompanionsTab({ data }) {
               <li key={x.id} className="text-center">
                 <img src={x.imageUrl.replace(/^https?:\/\/[^/]+/, "")} alt={x.name} width={96} height={96} loading="lazy" className="w-24 h-24 mx-auto rounded" />
                 <div className="text-sm text-cs-text mt-1">{x.name}{x.seasonId ? " ✦" : ""}</div>
-                <div className="text-[10px] font-mono text-cs-dim">{t("game.companions.caughtN", { n: x.caught })}</div>
+                <div className="text-xs tabular-nums text-cs-dim">{t("game.companions.caughtN", { n: x.caught })}</div>
               </li>
             ))}
           </ul>
@@ -441,7 +456,7 @@ function CompanionsTab({ data }) {
       {c.collectors.length > 0 && (
         <section className="cs-card">
           <h2 className="text-lg font-semibold text-cs-text mb-2">{t("game.companions.collectors")}</h2>
-          <ol className="text-sm space-y-1">{c.collectors.map((x, i) => <li key={x.userId}><span className="font-mono text-cs-dim w-6 inline-block">{i + 1}.</span> <span className="font-mono">{x.userId}</span> <span className="text-cs-muted">· {x.count}</span></li>)}</ol>
+          <ol className="text-sm space-y-1">{c.collectors.map((x, i) => <li key={x.userId}><span className="tabular-nums text-cs-dim w-6 inline-block">{i + 1}.</span> <MemberName id={x.userId} names={collectorNames} /> <span className="text-cs-muted">· {x.count}</span></li>)}</ol>
         </section>
       )}
     </div>
@@ -456,6 +471,11 @@ function QuestsTab({ data }) {
   const { serverId } = useParams();
   const { data: q, isLoading } = useQuery({ queryKey: ["game-quests", serverId], queryFn: () => getGameQuests(serverId) });
   const { data: mg } = useQuery({ queryKey: ["game-minigames", serverId], queryFn: () => getGameMinigames(serverId) });
+  const questNames = useMemberNames([
+    ...(q?.active || []).flatMap((x) => (Array.isArray(x.contributors) ? x.contributors.map((c) => c.userId) : [])),
+    ...(mg?.trivia?.winners || []).map((w) => w.userId),
+    ...(mg?.trivia?.recent || []).map((r) => r.winnerId),
+  ]);
   const [form, setForm] = useState({ type: "MESSAGES", target: 1000, rewardSparks: 100, days: 7 });
   const [open, setOpen] = useState(false);
   const refresh = () => qc.invalidateQueries({ queryKey: ["game-quests", serverId] });
@@ -506,7 +526,7 @@ function QuestsTab({ data }) {
                   <button type="button" className="cs-btn-danger text-xs" onClick={() => { if (window.confirm(t("game.quests.confirmCancel"))) cancel.mutate(x.id); }} disabled={cancel.isPending}><Trash2 className="w-3 h-3" aria-hidden="true" /> {t("game.quests.cancel")}</button>
                 </div>
                 <div className="font-mono text-xs text-cs-muted break-all">{x.bar} · {x.progress.toLocaleString()} / {x.target.toLocaleString()}</div>
-                <div className="text-xs text-cs-dim">{t("game.quests.ends")}: {date(x.endsAt)} · ✨ {x.rewardSparks} · {t("game.quests.contributors")}: {x.contributors.map((c) => `${c.userId} (${c.amount})`).join(", ") || "—"}</div>
+                <div className="text-xs text-cs-dim">{t("game.quests.ends")}: {date(x.endsAt)} · ✨ {x.rewardSparks} · {t("game.quests.contributors")}: {x.contributors.length ? x.contributors.map((c, ci) => <span key={c.userId}>{ci > 0 && ", "}<MemberName id={c.userId} names={questNames} /> ({c.amount})</span>) : "—"}</div>
               </li>
             ))}
           </ul>
@@ -549,21 +569,21 @@ function QuestsTab({ data }) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <Stat label={t("game.triviaStats.rounds")} value={mg.trivia.rounds} />
               <div className="cs-card !p-3">
-                <div className="text-[10px] font-mono uppercase tracking-wider text-cs-dim">{t("game.trivia.schedule")}</div>
+                <div className="text-xs text-cs-dim">{t("game.trivia.schedule")}</div>
                 <div className="text-sm font-bold text-cs-text">{mg.trivia.schedule ? t(`game.trivia.${mg.trivia.schedule}`) : t("game.trivia.off")}</div>
               </div>
             </div>
             {mg.trivia.winners.length > 0 && (
               <div>
                 <h3 className="text-sm font-semibold text-cs-text mb-1">{t("game.triviaStats.winners")}</h3>
-                <ol className="text-sm space-y-1">{mg.trivia.winners.map((w, i) => <li key={w.userId}><span className="font-mono text-cs-dim w-6 inline-block">{i + 1}.</span> <span className="font-mono">{w.userId}</span> <span className="text-cs-muted">· 🏆 {w.wins}</span></li>)}</ol>
+                <ol className="text-sm space-y-1">{mg.trivia.winners.map((w, i) => <li key={w.userId}><span className="tabular-nums text-cs-dim w-6 inline-block">{i + 1}.</span> <MemberName id={w.userId} names={questNames} /> <span className="text-cs-muted">· 🏆 {w.wins}</span></li>)}</ol>
               </div>
             )}
             {mg.trivia.recent.length > 0 && (
               <div>
                 <h3 className="text-sm font-semibold text-cs-text mb-1">{t("game.triviaStats.recent")}</h3>
                 <ul className="text-sm space-y-1">{mg.trivia.recent.map((r) => (
-                  <li key={r.id} className="flex flex-wrap gap-2 items-baseline"><span className="cs-badge">{t(`game.triviaStats.source.${r.source}`)}</span> <span className="text-cs-text">{r.question}</span> <span className="text-xs text-cs-dim">· {r.winnerId ? <span className="font-mono">{r.winnerId}</span> : t("game.triviaStats.noWinner")} · {r.answers} {t("game.triviaStats.answers")}</span></li>
+                  <li key={r.id} className="flex flex-wrap gap-2 items-baseline"><span className="cs-badge">{t(`game.triviaStats.source.${r.source}`)}</span> <span className="text-cs-text">{r.question}</span> <span className="text-xs text-cs-dim">· {r.winnerId ? <MemberName id={r.winnerId} names={questNames} /> : t("game.triviaStats.noWinner")} · {r.answers} {t("game.triviaStats.answers")}</span></li>
                 ))}</ul>
               </div>
             )}

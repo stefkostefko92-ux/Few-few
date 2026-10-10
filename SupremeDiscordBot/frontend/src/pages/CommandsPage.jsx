@@ -133,7 +133,7 @@ export default function CommandsPage() {
                     <div className="flex items-baseline gap-3 flex-wrap">
                       <code className="font-mono text-sm text-cs-cyan font-bold">{cmd.name}</code>
                       {cmd.permission && (
-                        <span className="text-[10px] uppercase tracking-wider text-cs-dim">
+                        <span className="text-xs text-cs-dim">
                           {cmd.permission}
                         </span>
                       )}
@@ -159,7 +159,7 @@ export default function CommandsPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-baseline gap-3 flex-wrap">
                       <span className="text-sm text-cs-text font-bold">{feat.feature}</span>
-                      <span className="text-[10px] uppercase tracking-wider text-cs-cyan">Dashboard-only</span>
+                      <span className="text-xs text-cs-cyan">Dashboard-only</span>
                     </div>
                     <p className="text-sm text-cs-text mt-2">{feat.description}</p>
                     <p className="text-xs text-cs-muted mt-2">{feat.dashboard}</p>

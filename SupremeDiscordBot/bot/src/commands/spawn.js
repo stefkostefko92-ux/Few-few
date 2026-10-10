@@ -10,16 +10,15 @@
 // /trivia — операторът може да е разширил командата на всички.
 import { MessageFlags, SlashCommandBuilder, PermissionFlagsBits, ChannelType } from "discord.js";
 import api from "../utils/api.js";
-import { t, resolveLang } from "../i18n/index.js";
+import { t, resolveLang, resolveLangSync } from "../i18n/index.js";
 import { friendlyError } from "../utils/friendlyError.js";
 import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
-import { postSpawn } from "../utils/game.js";
+import { postSpawn, SPAWN_PERMS } from "../utils/game.js";
+import { rarityName } from "../utils/companionText.js";
 
-// Без тях съобщението не излиза, а появата вече е създадена и блокира следващата
-// за 5 минути — затова се проверява ПРЕДИ заявката към backend-а.
-// ReadMessageHistory: след 5 минути появата се маркира „избягала“ през
-// channel.messages.fetch — без него бутонът „Улови“ оставаше видим.
-const NEEDED = [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks, PermissionFlagsBits.ReadMessageHistory];
+// Правата на бота в канала (SPAWN_PERMS, utils/game.js) се проверяват ПРЕДИ
+// заявката — иначе появата се създава, а съобщението не излиза.
+const NEEDED = SPAWN_PERMS;
 
 export default {
   data: new SlashCommandBuilder()
@@ -41,7 +40,8 @@ export default {
       const list = (data?.companions || [])
         .filter((c) => !focused || c.name.toLowerCase().includes(focused) || c.id.includes(focused))
         .slice(0, 25);
-      await interaction.respond(list.map((c) => ({ name: `${c.rarityEmoji} ${c.name} · ${c.rarityLabel}`.slice(0, 100), value: c.id })));
+      const lang = resolveLangSync(interaction);
+      await interaction.respond(list.map((c) => ({ name: `${c.rarityEmoji} ${c.name} · ${rarityName(c, lang)}`.slice(0, 100), value: c.id })));
     } catch {
       await interaction.respond([]);
     }

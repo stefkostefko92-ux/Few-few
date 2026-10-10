@@ -61,9 +61,9 @@ export default function AdminPage() {
     <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px]">
       {/* Header */}
       <div className="mb-8">
-        <div className="cs-eyebrow">→ Super Admin Panel</div>
+        <div className="cs-eyebrow">Super admin</div>
         <h1 className="font-display font-black text-4xl tracking-tight-4 text-cs-text mb-2">
-          Platform <span className="text-cs-cyan">Control</span>
+          Platform control
         </h1>
         <p className="text-cs-muted text-sm">
           Global management — analytics, users, servers, payments, audit logs, system health, security, billing, fleet, data-subject requests, the game on every server and support across all servers. Every write requires a fresh second factor.
@@ -83,12 +83,12 @@ export default function AdminPage() {
           <button
             key={id}
             onClick={() => setTab(id)}
-            className={`flex items-center gap-2 px-5 py-3 text-sm font-mono uppercase tracking-wider whitespace-nowrap flex-shrink-0
-                        transition-colors border-b-2 -mb-px
-                        ${tab === id
-                          ? "border-cs-cyan text-cs-cyan"
-                          : "border-transparent text-cs-muted hover:text-cs-text"
-                        }`}
+            className={`flex items-center gap-2 px-5 py-3 text-sm whitespace-nowrap flex-shrink-0
+ transition-colors border-b-2 -mb-px
+ ${tab === id
+ ? "border-cs-cyan text-cs-cyan"
+ : "border-transparent text-cs-muted hover:text-cs-text"
+ }`}
           >
             <Icon className="w-4 h-4" />
             {label}
@@ -135,25 +135,25 @@ function AnalyticsTab() {
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Stat label="Total Servers"   value={data?.totalServers ?? 0} />
-        <Stat label="Premium Servers" value={data?.premiumServers ?? 0} accent />
-        <Stat label="Total Users"     value={data?.totalUsers ?? 0} />
-        <Stat label="Open Tickets"    value={data?.openTickets ?? 0} />
-        <Stat label="Total Tickets"   value={data?.totalTickets ?? 0} />
-        <Stat label="Total Forms"     value={data?.totalForms ?? 0} />
+        <Stat label="Total servers"   value={data?.totalServers ?? 0} />
+        <Stat label="Premium servers" value={data?.premiumServers ?? 0} accent />
+        <Stat label="Total users"     value={data?.totalUsers ?? 0} />
+        <Stat label="Open tickets"    value={data?.openTickets ?? 0} />
+        <Stat label="Total tickets"   value={data?.totalTickets ?? 0} />
+        <Stat label="Total forms"     value={data?.totalForms ?? 0} />
         <Stat label="Applications"    value={data?.totalApplications ?? 0} />
         <Stat label="Panels"          value={data?.totalPanels ?? 0} />
         <Stat label="Premium %"       value={`${data?.premiumPercentage ?? 0}%`} />
-        <Stat label="Base Servers"    value={data?.baseServers ?? 0} />
+        <Stat label="Base servers"    value={data?.baseServers ?? 0} />
       </div>
 
-      <p className="font-mono text-[10px] uppercase tracking-wider text-cs-dim">
-        → Revenue (MRR, ARPU, churn, trial funnel) lives in the Revenue tab — one number, one definition.
+      <p className="text-xs text-cs-dim">
+        Revenue (MRR, ARPU, churn, trial funnel) lives in the Revenue tab: one number, one definition.
       </p>
 
       {data?.recentTickets?.length > 0 && (
         <div className="cs-card">
-          <h2 className="cs-heading font-display font-bold text-cs-text text-xl">Tickets Over Last 30 Days</h2>
+          <h2 className="cs-heading font-display font-bold text-cs-text text-xl">Tickets over the last 30 days</h2>
           <SparklineChart data={data.recentTickets} />
         </div>
       )}
@@ -186,7 +186,7 @@ function SparklineChart({ data }) {
             aria-label={`${new Date(d.date).toLocaleDateString()}: ${d.count} tickets`}
             title={`${new Date(d.date).toLocaleDateString()}: ${d.count} tickets`}
           >
-            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-cs-panel border border-cs-border text-[10px] font-mono px-2 py-0.5 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-cs-panel border border-cs-border text-[11px] tabular-nums px-2 py-0.5 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
               {d.count}
             </div>
           </div>
@@ -282,14 +282,14 @@ function RevenueTab() {
               <tr key={t.plan}>
                 <td>
                   <span className="text-cs-text font-medium">{t.label}</span>
-                  <span className="font-mono text-[10px] text-cs-dim ml-2">{t.plan}</span>
+                  <span className="font-mono text-[11px] text-cs-dim ml-2">{t.plan}</span>
                 </td>
-                <td className="text-right font-mono text-xs text-cs-muted">{t.count}</td>
-                <td className="text-right font-mono text-xs text-cs-muted">{t.monthlyCount} · {eur(t.monthlyMrr)}</td>
-                <td className="text-right font-mono text-xs text-cs-muted">{t.yearlyCount} · {eur(t.yearlyMrr)}</td>
+                <td className="text-right text-xs tabular-nums text-cs-muted">{t.count}</td>
+                <td className="text-right text-xs tabular-nums text-cs-muted">{t.monthlyCount} · {eur(t.monthlyMrr)}</td>
+                <td className="text-right text-xs tabular-nums text-cs-muted">{t.yearlyCount} · {eur(t.yearlyMrr)}</td>
                 <td className="text-right font-display font-bold text-cs-cyan">{eur(t.mrr)}</td>
-                <td className="text-right font-mono text-xs text-cs-muted">{eur(t.mrr / (1 + (d.vatRate ?? 0.2)))}</td>
-                <td className="text-right font-mono text-xs text-cs-dim">
+                <td className="text-right text-xs tabular-nums text-cs-muted">{eur(t.mrr / (1 + (d.vatRate ?? 0.2)))}</td>
+                <td className="text-right text-xs tabular-nums text-cs-dim">
                   {d.mrrGross > 0 ? pct((t.mrr / d.mrrGross) * 100) : "—"}
                 </td>
               </tr>
@@ -299,12 +299,12 @@ function RevenueTab() {
             <tfoot>
               <tr>
                 <td className="text-cs-text font-semibold">Total</td>
-                <td className="text-right font-mono text-xs text-cs-muted">{d.paidSubscriptions}</td>
-                <td className="text-right font-mono text-xs text-cs-muted">{d.interval?.monthlyCount} · {eur(d.interval?.monthlyMrr)}</td>
-                <td className="text-right font-mono text-xs text-cs-muted">{d.interval?.yearlyCount} · {eur(d.interval?.yearlyMrr)}</td>
+                <td className="text-right text-xs tabular-nums text-cs-muted">{d.paidSubscriptions}</td>
+                <td className="text-right text-xs tabular-nums text-cs-muted">{d.interval?.monthlyCount} · {eur(d.interval?.monthlyMrr)}</td>
+                <td className="text-right text-xs tabular-nums text-cs-muted">{d.interval?.yearlyCount} · {eur(d.interval?.yearlyMrr)}</td>
                 <td className="text-right font-display font-bold text-cs-cyan">{eur(d.mrrGross)}</td>
-                <td className="text-right font-mono text-xs text-cs-muted">{eur(d.mrrNet)}</td>
-                <td className="text-right font-mono text-xs text-cs-dim">100%</td>
+                <td className="text-right text-xs tabular-nums text-cs-muted">{eur(d.mrrNet)}</td>
+                <td className="text-right text-xs tabular-nums text-cs-dim">100%</td>
               </tr>
             </tfoot>
           )}
@@ -314,7 +314,7 @@ function RevenueTab() {
       {/* Data gaps — мълчаливо изкривяване на числата е по-лошо от липсващо число */}
       {dataGaps > 0 && (
         <div className="border border-warning/40 bg-warning/5 px-4 py-3 text-xs text-warning space-y-1" role="status">
-          <div className="font-mono uppercase tracking-wider">⚠ Data gaps affecting the numbers</div>
+          <div className="">⚠ Data gaps affecting the numbers</div>
           {diag.unknownInterval > 0 && <div>{diag.unknownInterval} active subscription(s) without a billing interval — counted as monthly.</div>}
           {diag.unknownPlan > 0 && <div>{diag.unknownPlan} subscription(s) on an unpriced plan — excluded entirely.</div>}
           {ex.other?.count > 0 && <div>{ex.other.count} row(s) in another Stripe status (unpaid / disputed / refunded / unknown) — excluded.</div>}
@@ -359,7 +359,7 @@ function RevStat({ label, value, sub, accent }) {
     <div className="cs-stat">
       <div className="cs-stat-label">{label}</div>
       <div className={`cs-stat-value ${accent ? "text-cs-cyan" : ""}`}>{value}</div>
-      {sub && <div className="font-mono text-[10px] text-cs-dim mt-1">{sub}</div>}
+      {sub && <div className="text-xs text-cs-dim tabular-nums mt-1">{sub}</div>}
     </div>
   );
 }
@@ -422,8 +422,8 @@ function UsersTab() {
         <select className="cs-select max-w-[200px]" aria-label="Filter users by role" value={roleFilter} onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}>
           <option value="">All roles</option>
           <option value="MAIN_OWNER">Main Owner</option>
-          <option value="SUPER_USER">Super User</option>
-          <option value="SUPPORT_STAFF">Support Staff</option>
+          <option value="SUPER_USER">Super user</option>
+          <option value="SUPPORT_STAFF">Support staff</option>
           <option value="USER">User</option>
         </select>
         <label className="flex items-center gap-2 text-sm text-cs-muted">
@@ -464,7 +464,7 @@ function UsersTab() {
                     />
                     <div>
                       <div className="text-cs-text font-medium">{u.username}</div>
-                      <div className="font-mono text-[10px] text-cs-dim">{u.id}</div>
+                      <div className="font-mono text-[11px] text-cs-dim">{u.id}</div>
                     </div>
                   </div>
                 </td>
@@ -476,8 +476,8 @@ function UsersTab() {
                       ? <span className="cs-badge-muted" title="The blacklist period has ended — the user can sign in again.">Expired ban</span>
                       : <span className="cs-badge-success">Active</span>}
                 </td>
-                <td className="text-cs-muted font-mono text-xs">{u._count?.serverMembers ?? 0}</td>
-                <td className="text-cs-muted font-mono text-xs">{u._count?.tickets ?? 0}</td>
+                <td className="text-cs-muted text-xs tabular-nums">{u._count?.serverMembers ?? 0}</td>
+                <td className="text-cs-muted text-xs tabular-nums">{u._count?.tickets ?? 0}</td>
                 <td className="text-cs-dim text-xs">{new Date(u.createdAt).toLocaleDateString()}</td>
                 <td className="text-right">
                   <div className="flex gap-1 justify-end">
@@ -508,9 +508,9 @@ function UsersTab() {
 
       {confirmDelete && (
         <ConfirmModal
-          title="Delete User Account"
+          title="Delete user account"
           message={`Permanently delete "${confirmDelete.username}"? This cannot be undone. If the user has tickets or applications, deletion will be refused — use Blacklist instead.`}
-          confirmLabel="Delete Permanently"
+          confirmLabel="Delete permanently"
           onConfirm={() => deleteUser.mutate(confirmDelete.id)}
           onCancel={() => setConfirmDelete(null)}
           loading={deleteUser.isPending}
@@ -570,7 +570,7 @@ function UserDetailModal({ userId, onClose }) {
   const banActive = !!user?.isBlacklisted && (!user.blacklistedUntil || new Date(user.blacklistedUntil) > new Date());
 
   return (
-    <Modal open onClose={onClose} title="Edit User" maxWidth="max-w-2xl">
+    <Modal open onClose={onClose} title="Edit user" maxWidth="max-w-2xl">
       {isLoading ? (
           <div className="h-40 animate-pulse bg-cs-panel" role="status">
             <span className="sr-only">Loading user…</span>
@@ -583,7 +583,7 @@ function UserDetailModal({ userId, onClose }) {
               <div>
                 <div className="font-bold text-cs-text text-lg">{user.username}</div>
                 <div className="font-mono text-xs text-cs-dim">{user.id}</div>
-                <div className="font-mono text-[10px] text-cs-dim mt-1">
+                <div className="font-mono text-[11px] text-cs-dim mt-1">
                   Joined: {new Date(user.createdAt).toLocaleString()}
                 </div>
               </div>
@@ -592,7 +592,7 @@ function UserDetailModal({ userId, onClose }) {
             {user.globalRole !== "MAIN_OWNER" && (
               <>
                 <div>
-                  <label className="cs-label">Global Role</label>
+                  <label className="cs-label">Global role</label>
                   <div className="flex gap-2 flex-wrap">
                     {["USER", "SUPPORT_STAFF", "SUPER_USER"].map((r) => (
                       <button
@@ -743,7 +743,7 @@ function ServersTab() {
             onChange={(e) => { setQuery(e.target.value); setPage(1); }}
           />
         </div>
-        <div className="text-cs-muted text-sm font-mono">
+        <div className="text-cs-muted text-sm tabular-nums">
           {data?.total ?? 0} servers
         </div>
       </div>
@@ -775,7 +775,7 @@ function ServersTab() {
                       : <div className="w-8 h-8 border border-cs-border bg-cs-panel flex items-center justify-center text-xs font-bold text-cs-cyan">{s.name[0]}</div>}
                     <div>
                       <div className="text-cs-text font-medium">{s.name}</div>
-                      <div className="font-mono text-[10px] text-cs-dim">{s.id}</div>
+                      <div className="font-mono text-[11px] text-cs-dim">{s.id}</div>
                     </div>
                   </div>
                 </td>
@@ -790,9 +790,9 @@ function ServersTab() {
                         ? <span className="cs-badge-premium"><Star className="w-3 h-3" aria-hidden="true" /> Premium</span>
                         : <span className="cs-badge-muted">Base</span>}
                 </td>
-                <td className="text-cs-muted font-mono text-xs">{s._count.tickets}</td>
-                <td className="text-cs-muted font-mono text-xs">{s._count.panels}</td>
-                <td className="text-cs-muted font-mono text-xs">{s._count.forms ?? 0}</td>
+                <td className="text-cs-muted text-xs tabular-nums">{s._count.tickets}</td>
+                <td className="text-cs-muted text-xs tabular-nums">{s._count.panels}</td>
+                <td className="text-cs-muted text-xs tabular-nums">{s._count.forms ?? 0}</td>
                 <td className="text-cs-dim text-xs">{new Date(s.createdAt).toLocaleDateString()}</td>
                 <td className="text-right">
                   <div className="flex gap-1 justify-end items-center">
@@ -802,7 +802,7 @@ function ServersTab() {
                         setSelectedPlan(s.agencyId ? (s.agency?.plan || "agency5") : (s.plan && s.plan !== "free" ? s.plan : "premium"));
                         setConfirmPlan({ server: s });
                       }}
-                      className="cs-btn-sm text-premium hover:bg-premium/10 border border-premium/30 px-2 py-1 font-mono text-[10px] uppercase tracking-wider"
+                      className="cs-btn-sm text-premium hover:bg-premium/10 border border-premium/30 px-2 py-1 text-xs"
                       title="Change plan"
                       aria-label={`Change plan for ${s.name}`}
                     >✦ Plan</button>
@@ -830,9 +830,9 @@ function ServersTab() {
           error={setPlanMut.error?.response?.data?.error}
         >
           <div className="mb-4">
-            <div className="font-mono text-[10px] uppercase tracking-wider text-cs-dim">Server</div>
+            <div className="text-xs text-cs-dim">Server</div>
             <div className="font-semibold text-cs-text">{confirmPlan.server.name}</div>
-            <div className="font-mono text-[10px] text-cs-dim">{confirmPlan.server.id}</div>
+            <div className="font-mono text-[11px] text-cs-dim">{confirmPlan.server.id}</div>
           </div>
 
           <label className="cs-label">Plan (manual, no Stripe charge — excluded from MRR)</label>
@@ -851,9 +851,9 @@ function ServersTab() {
 
       {confirmDelete && (
         <ConfirmModal
-          title="Delete Server"
+          title="Delete server"
           danger
-          confirmLabel="Permanently Delete"
+          confirmLabel="Permanently delete"
           onConfirm={() => delServer.mutate(confirmDelete.id)}
           onCancel={() => { setConfirmDelete(null); delServer.reset(); }}
           loading={delServer.isPending}
@@ -864,9 +864,9 @@ function ServersTab() {
 
       {confirmReset && (
         <ConfirmModal
-          title="Reset Server Data"
+          title="Reset server data"
           danger
-          confirmLabel="Reset Everything"
+          confirmLabel="Reset everything"
           onConfirm={() => resetServer.mutate(confirmReset.id)}
           onCancel={() => { setConfirmReset(null); resetServer.reset(); }}
           loading={resetServer.isPending}
@@ -914,30 +914,30 @@ function EditServerModal({ server, onClose }) {
 
   return (
     <Modal open onClose={onClose} title={`Edit Server — ${server.name}`} maxWidth="max-w-2xl">
-      <div className="font-mono text-[10px] text-cs-dim mb-4">{server.id}</div>
+      <div className="font-mono text-[11px] text-cs-dim mb-4">{server.id}</div>
 
         <div className="space-y-4">
           <div>
-            <label className="cs-label">Log Channel ID</label>
+            <label className="cs-label">Log channel ID</label>
             <input className="cs-input font-mono text-xs" placeholder="Discord channel ID" {...field("logChannelId")} />
           </div>
           <div>
-            <label className="cs-label">Archive Channel ID</label>
+            <label className="cs-label">Archive channel ID</label>
             <input className="cs-input font-mono text-xs" placeholder="Where closed ticket archives post" {...field("archiveChannelId")} />
           </div>
           <div>
-            <label className="cs-label">Archive Retention (days)</label>
+            <label className="cs-label">Archive retention (days)</label>
             <input className="cs-input" type="number" min="1" max="3650" placeholder="Forever" aria-invalid={retentionInvalid || undefined} {...field("archiveRetentionDays")} />
             <p className={`text-xs mt-1 ${retentionInvalid ? "text-danger" : "text-cs-dim"}`}>
               {retentionInvalid ? "Use a whole number from 1 to 3650, or leave empty." : "Empty = keep forever (Premium default). Closed-ticket transcripts older than this are deleted nightly."}
             </p>
           </div>
           <div>
-            <label className="cs-label">Custom Bot Name (Premium white-label)</label>
+            <label className="cs-label">Custom bot name (Premium white-label)</label>
             <input className="cs-input" placeholder="MySupport Bot" {...field("customBotName")} />
           </div>
           <div>
-            <label className="cs-label">Custom Bot Avatar URL</label>
+            <label className="cs-label">Custom bot avatar URL</label>
             <input className="cs-input font-mono text-xs" placeholder="https://..." {...field("customBotAvatar")} />
           </div>
         </div>
@@ -956,7 +956,7 @@ function EditServerModal({ server, onClose }) {
               if (!Object.keys(data).length) return onClose();
               update.mutate(data);
             }}
-          >{update.isPending ? "Saving..." : "Save Changes"}</button>
+          >{update.isPending ? "Saving…" : "Save changes"}</button>
         </div>
     </Modal>
   );
@@ -976,7 +976,7 @@ function BroadcastModal({ server, onClose }) {
     <Modal open onClose={onClose} title={`Send Notice to ${server.name}`} maxWidth="max-w-2xl">
         <div className="space-y-4">
           <div>
-            <label className="cs-label">Discord Channel ID</label>
+            <label className="cs-label">Discord channel ID</label>
             <input className="cs-input font-mono text-xs" placeholder="Channel where embed should post" value={channelId} onChange={(e) => setChannelId(e.target.value)} />
             <p className="text-xs text-cs-dim mt-1">Bot must have Send Messages permission there.</p>
           </div>
@@ -997,7 +997,7 @@ function BroadcastModal({ server, onClose }) {
         <div className="flex gap-3 justify-end mt-6 pt-4 border-t border-cs-border">
           <button className="cs-btn-ghost" onClick={onClose}>Cancel</button>
           <button className="cs-btn-primary" disabled={send.isPending || !channelId || !message} onClick={() => send.mutate()}>
-            {send.isPending ? "Sending..." : "Send Broadcast"}
+            {send.isPending ? "Sending..." : "Send broadcast"}
           </button>
         </div>
     </Modal>
@@ -1033,11 +1033,11 @@ function PaymentsTab() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <div className="font-mono text-sm text-cs-muted">→ {data?.total ?? 0} transactions</div>
+        <div className="text-sm text-cs-muted tabular-nums">{data?.total ?? 0} transactions</div>
         <div className="cs-card py-2 px-4 text-sm">
-          <span className="font-mono text-[10px] uppercase tracking-wider text-cs-dim mr-2">Cash collected (this month)</span>
+          <span className="text-xs text-cs-dim mr-2">Cash collected (this month)</span>
           <span className="font-display font-bold text-cs-cyan text-lg">{eur(collected)}</span>
-          <span className="font-mono text-[10px] text-cs-dim ml-2">not MRR → Revenue tab</span>
+          <span className="text-xs text-cs-dim ml-2">Not MRR: see the Revenue tab</span>
         </div>
       </div>
 
@@ -1060,8 +1060,8 @@ function PaymentsTab() {
             ) : payments.map((p) => (
               <tr key={p.id}>
                 <td className="text-xs text-cs-muted">{new Date(p.createdAt).toLocaleString()}</td>
-                <td className="font-mono text-[10px] text-cs-dim">{p.serverId}</td>
-                <td className="font-display font-bold">{(p.amount / 100).toFixed(2)} <span className="text-xs text-cs-dim uppercase">{p.currency}</span></td>
+                <td className="font-mono text-[11px] text-cs-dim">{p.serverId}</td>
+                <td className="font-display font-bold">{(p.amount / 100).toFixed(2)} <span className="text-xs text-cs-dim">{p.currency}</span></td>
                 <td>
                   {p.status === "paid"         ? <span className="cs-badge-success">Paid</span>
                   : p.status === "failed"      ? <span className="cs-badge-danger">Failed</span>
@@ -1069,7 +1069,7 @@ function PaymentsTab() {
                                                 : <span className="cs-badge-muted">{p.status}</span>}
                 </td>
                 <td className="text-cs-muted text-xs">{p.description || "—"}</td>
-                <td className="font-mono text-[10px] text-cs-dim">{p.stripeInvoiceId || "—"}</td>
+                <td className="font-mono text-[11px] text-cs-dim">{p.stripeInvoiceId || "—"}</td>
                 <td className="text-right">
                   {!p.stripeInvoiceId && (
                     <button onClick={() => setConfirmDelete(p)}
@@ -1089,7 +1089,7 @@ function PaymentsTab() {
 
       <ConfirmDialog
         open={!!confirmDelete}
-        title="Delete Payment Log"
+        title="Delete payment log"
         message="Delete this manual payment log? This cannot be undone."
         confirmLabel="Delete"
         destructive
@@ -1131,7 +1131,7 @@ function AuditTab() {
   return (
     <>
       <div className="flex items-center gap-3 mb-6">
-        <div className="font-mono text-sm text-cs-muted flex-1">→ {data?.total ?? 0} log entries</div>
+        <div className="text-sm text-cs-muted tabular-nums flex-1">{data?.total ?? 0} log entries</div>
         <input
           className="cs-input max-w-[200px]"
           placeholder="Filter by action..."
@@ -1140,7 +1140,7 @@ function AuditTab() {
           onChange={(e) => { setActionFilter(e.target.value); setPage(1); }}
         />
         <button className="cs-btn-danger cs-btn-sm" onClick={() => setConfirmPurge(true)}>
-          <Trash2 className="w-3.5 h-3.5" aria-hidden="true" /> Purge Old
+          <Trash2 className="w-3.5 h-3.5" aria-hidden="true" /> Purge old
         </button>
       </div>
 
@@ -1160,10 +1160,10 @@ function AuditTab() {
               Array.from({ length: 12 }).map((_, i) => <tr key={i}><td colSpan={5}><div className="h-6 bg-cs-panel/50 animate-pulse"/></td></tr>)
             ) : logs.map((log) => (
               <tr key={log.id}>
-                <td className="text-xs font-mono text-cs-dim whitespace-nowrap">{new Date(log.createdAt).toLocaleString()}</td>
+                <td className="text-xs tabular-nums text-cs-dim whitespace-nowrap">{new Date(log.createdAt).toLocaleString()}</td>
                 <td className="text-xs">{log.actor?.username || log.actorTag || <span className="text-cs-dim italic">—</span>}</td>
-                <td><span className="font-mono text-[10px] uppercase tracking-wider text-cs-cyan">{log.action}</span></td>
-                <td className="font-mono text-[10px] text-cs-dim">{log.targetId || "—"}</td>
+                <td><span className="text-xs text-cs-cyan">{log.action}</span></td>
+                <td className="font-mono text-[11px] text-cs-dim">{log.targetId || "—"}</td>
                 <td className="text-xs text-cs-muted max-w-md truncate" title={JSON.stringify(log.metadata)}>
                   {log.metadata ? JSON.stringify(log.metadata).slice(0, 80) : "—"}
                 </td>
@@ -1176,7 +1176,7 @@ function AuditTab() {
 
       {confirmPurge && (
         <ConfirmModal
-          title="Purge Audit Logs"
+          title="Purge audit logs"
           danger
           confirmLabel={`Purge logs older than ${purgeDays} days`}
           onCancel={() => setConfirmPurge(false)}

@@ -84,7 +84,7 @@ export default function TagsPage() {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <code className="text-cs-cyan text-sm font-mono">/tag {tag.name}</code>
-                  <span className="text-[10px] text-cs-dim font-mono uppercase tracking-wider">
+                  <span className="text-xs text-cs-dim">
                     {t("tags.used", { n: tag.usageCount })}
                   </span>
                 </div>

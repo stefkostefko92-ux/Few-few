@@ -1,7 +1,7 @@
 // frontend/src/pages/PanelsPage.jsx
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import DiscordChannelSelect, { DiscordRoleSelect } from "../components/DiscordPicker";
+import DiscordChannelSelect, { DiscordRoleSelect, ChannelName } from "../components/DiscordPicker";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, Send, Pencil, Copy, Layout as LayoutIcon } from "lucide-react";
 import { getPanels, createPanel, updatePanel, deletePanel, spawnPanel, spawnPanelGroup, duplicatePanel, getForms } from "../api";
@@ -459,7 +459,7 @@ export default function PanelsPage() {
               </div>
 
               {panel.channelId && (
-                <p className="text-xs text-success mt-2">✅ Active in channel <code className="text-xs">{panel.channelId}</code></p>
+                <p className="text-xs text-success mt-2">✅ Active in <ChannelName id={panel.channelId} /></p>
               )}
             </div>
           ))}
@@ -539,7 +539,7 @@ export default function PanelsPage() {
               {/* ═══════ v1.5 — TicketTool Parity ═══════ */}
 
               <details className="cs-card !p-4 !bg-cs-panel">
-                <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-[0.2em] text-cs-cyan">→ Categories & Channels</summary>
+                <summary className="cursor-pointer text-xs text-cs-cyan">→ Categories & Channels</summary>
                 <div className="pt-4 space-y-3">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <label className="block">
@@ -585,7 +585,7 @@ export default function PanelsPage() {
               </details>
 
               <details className="cs-card !p-4 !bg-cs-panel">
-                <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-[0.2em] text-cs-cyan">→ Welcome Message & Roles</summary>
+                <summary className="cursor-pointer text-xs text-cs-cyan">→ Welcome Message & Roles</summary>
                 <div className="pt-4 space-y-3">
                   <label className="block">
                     <span className="cs-label">{t("ui.welcomeMsgMd")}</span>
@@ -622,7 +622,7 @@ export default function PanelsPage() {
               </details>
 
               <details className="cs-card !p-4 !bg-cs-panel">
-                <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-[0.2em] text-cs-cyan">→ Close Behavior {!isPremium && <PremiumBadge small />}</summary>
+                <summary className="cursor-pointer text-xs text-cs-cyan">→ Close Behavior {!isPremium && <PremiumBadge small />}</summary>
                 <div className="pt-4 space-y-3">
                   <label className="flex items-center gap-2">
                     <input type="checkbox" checked={form.closeAskEnabled}
@@ -642,7 +642,7 @@ export default function PanelsPage() {
               </details>
 
               <details className="cs-card !p-4 !bg-cs-panel">
-                <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-[0.2em] text-cs-cyan">→ DM Notifications {!isPremium && <PremiumBadge small />}</summary>
+                <summary className="cursor-pointer text-xs text-cs-cyan">→ DM Notifications {!isPremium && <PremiumBadge small />}</summary>
                 <div className="pt-4 space-y-3">
                   <label className="flex items-center gap-2">
                     <input type="checkbox" checked={form.dmOnOpen}
@@ -676,7 +676,7 @@ export default function PanelsPage() {
               </details>
 
               <details className="cs-card !p-4 !bg-cs-panel">
-                <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-[0.2em] text-cs-cyan">→ Automation {!isPremium && <PremiumBadge small />}</summary>
+                <summary className="cursor-pointer text-xs text-cs-cyan">→ Automation {!isPremium && <PremiumBadge small />}</summary>
                 <div className="pt-4 space-y-3">
                   <label className="block">
                     <span className="cs-label">{t("ui.inactivityAutoClose")}</span>
@@ -714,7 +714,7 @@ export default function PanelsPage() {
               </details>
 
               <details className="cs-card !p-4 !bg-cs-panel">
-                <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-[0.2em] text-cs-cyan">→ Verification Gate (v1.7)</summary>
+                <summary className="cursor-pointer text-xs text-cs-cyan">→ Verification Gate (v1.7)</summary>
                 <div className="pt-4 space-y-3">
                   <p className="text-xs text-cs-dim">{t("ui.hint.requireRoles")}</p>
                   <label className="block">

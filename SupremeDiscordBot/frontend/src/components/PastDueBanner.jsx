@@ -68,7 +68,7 @@ export default function PastDueBanner() {
           type="button"
           onClick={() => portalMut.mutate()}
           disabled={portalMut.isPending}
-          className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-danger hover:bg-danger/80 text-white text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-danger hover:bg-danger/80 text-white text-xs font-bold transition-colors disabled:opacity-50"
         >
           <CreditCard className="w-3.5 h-3.5" aria-hidden="true" />
           {portalMut.isPending ? t("pastDue.opening") : t("pastDue.fixPayment")}

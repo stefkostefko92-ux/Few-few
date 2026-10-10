@@ -20,11 +20,11 @@ export const SHOWCASE_COMPANIONS = [
 
 export default function GameShowcase({ eyebrow = "→ Server Season", heading, sub, bullets, link, href = "/features/discord-leveling-game" }) {
   return (
-    <section id="game" className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
+    <section id="game" className="px-6 sm:px-8 py-20 bg-cs-surface/40 border-y border-cs-line">
       <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
         <div data-reveal>
-          <div className="cs-eyebrow mb-4 inline-flex items-center gap-2"><Gamepad2 className="w-4 h-4" aria-hidden="true" /> {eyebrow}</div>
-          <h2 className="font-display font-black text-3xl sm:text-4xl lg:text-5xl text-cs-text mb-4 text-balance">{heading}</h2>
+          <p className="cs-eyebrow inline-flex items-center gap-2"><Gamepad2 className="w-4 h-4" aria-hidden="true" /> {eyebrow.replace(/^→\s*/, "")}</p>
+          <h2 className="cs-section-title mb-4">{heading}</h2>
           <p className="text-cs-muted mb-6 text-pretty">{sub}</p>
           <ul className="space-y-3 mb-8">
             {bullets.map((b) => (
@@ -50,7 +50,7 @@ export default function GameShowcase({ eyebrow = "→ Server Season", heading, s
                 decoding="async"
                 className="w-full max-w-[128px] aspect-square mx-auto rounded transition-transform duration-300 group-hover:scale-105"
               />
-              <div className="font-mono text-[10px] uppercase tracking-wider text-cs-dim mt-2">{c.name}</div>
+              <div className="text-xs text-cs-muted mt-2">{c.name}</div>
             </li>
           ))}
         </ul>

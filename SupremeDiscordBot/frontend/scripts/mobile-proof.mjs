@@ -88,7 +88,7 @@ const FIX = {
   "GET /api/admin/fleet": { withToken: [{ id: SID, name: "T19C", plan: "agency10", planSource: "stripe", customBotName: "T19 Bot", agencyId: "ag1", accessUntil: null }], bot: { gateway: "connected", brandBots: { total: 1, ready: 1, down: 0 }, uptime: 100 } },
   "GET /api/admin/game/season": { current: { id: "S1", code: "S1", name: "Season 1 — First Light", startsAt: "2026-09-21T00:00:00Z", endsAt: "2026-12-14T00:00:00Z", companionIds: ["gold-midas", "cobalt-stellaris"], active: true, ended: false }, seasons: [{ id: "S1", code: "S1", name: "Season 1 — First Light", startsAt: "2026-09-21T00:00:00Z", endsAt: "2026-12-14T00:00:00Z", companionIds: ["gold-midas", "cobalt-stellaris"], active: true, ended: false }], catalog: [{ id: "lime-blip", name: "Blip", rarity: "common", rarityEmoji: "⚪", family: "Lime", imageUrl: "/game/companions/lime-blip-1.jpg", seasonal: false }, { id: "gold-midas", name: "Midas", rarity: "legendary", rarityEmoji: "🟡", family: "Gold", imageUrl: "/game/companions/gold-midas-1.jpg", seasonal: true }, { id: "cobalt-stellaris", name: "Stellaris", rarity: "legendary", rarityEmoji: "🟡", family: "Cobalt", imageUrl: "/game/companions/cobalt-stellaris-1.jpg", seasonal: true }] },
   "GET /api/admin/dsr/requests": { requests: [{ id: "r1", createdAt: new Date().toISOString(), action: "DSR_ERASED", targetId: "123", actor: { id: "u1", username: "stefan" }, metadata: { scope: "identity", via: "bot" } }] },
-  [`GET /api/game/${SID}`]: { settings: { serverId: SID, enabled: true, xpPerMessage: 15, messageCooldownSec: 60, xpPerVoiceMinute: 5, announceChannelId: null, levelUpMessage: true, levelRoles: [{ level: 5, roleId: "700000000000000001" }], dailySparks: 50, spawnEnabled: true, spawnChannelIds: [], countingChannelId: null, triviaChannelId: null, triviaSchedule: null, questChannelId: null, questEnabled: true }, limits: { shopItems: 5, levelRoles: 5, activeQuests: 1, companionSlots: 1 }, isPremium: false, stats: { players: 12, totalXp: 48210, totalMessages: 3200, totalVoiceMinutes: 640, sparksInCirculation: 2100, shopItems: 1, top: [{ userId: "333333333333333333", xp: 9000, level: 12, sparks: 300, streak: 9 }] }, levelTable: [{ level: 1, xp: 100 }, { level: 5, xp: 1000 }, { level: 10, xp: 4675 }] },
+  [`GET /api/game/${SID}`]: { settings: { serverId: SID, enabled: true, xpPerMessage: 15, messageCooldownSec: 60, xpPerVoiceMinute: 5, announceChannelId: null, levelUpMessage: true, levelRoles: [{ level: 5, roleId: "700000000000000001" }], dailySparks: 50, spawnEnabled: true, spawnChannelIds: [], countingChannelId: null, triviaChannelId: null, triviaSchedule: null, questChannelId: null, questEnabled: true, battlesEnabled: true }, limits: { shopItems: 5, levelRoles: 5, activeQuests: 1, companionSlots: 1 }, isPremium: false, stats: { players: 12, totalXp: 48210, totalMessages: 3200, totalVoiceMinutes: 640, sparksInCirculation: 2100, shopItems: 1, top: [{ userId: "333333333333333333", xp: 9000, level: 12, sparks: 300, streak: 9 }] }, levelTable: [{ level: 1, xp: 100 }, { level: 5, xp: 1000 }, { level: 10, xp: 4675 }] },
   [`GET /api/game/${SID}/shop`]: [{ id: "it1", serverId: SID, name: "VIP colour", description: "30 days of the VIP colour role", priceSparks: 300, type: "ROLE", roleId: "700000000000000002", durationDays: 30, stock: null, enabled: true, sortOrder: 0, sold: 4 }],
   [`GET /api/game/${SID}/purchases`]: [{ id: "p1", userId: "333333333333333333", priceSparks: 300, expiresAt: new Date(Date.now() + 86400000 * 20).toISOString(), revokedAt: null, item: { name: "VIP colour", type: "ROLE" } }],
   [`GET /api/game/${SID}/companions`]: { season: { id: "S1", name: "Season 1 — First Light", startsAt: "2026-09-21T00:00:00Z", endsAt: "2026-12-14T00:00:00Z" }, spawns: 40, caught: 31, catalog: [{ id: "lime-blip", name: "Blip", rarity: "common", rarityLabel: "Common", rarityEmoji: "⚪", imageUrl: "/game/companions/lime-blip-1.jpg", seasonId: null, caught: 12 }, { id: "gold-midas", name: "Midas", rarity: "legendary", rarityLabel: "Legendary", rarityEmoji: "🟡", imageUrl: "/game/companions/gold-midas-1.jpg", seasonId: "S1", caught: 1 }], collectors: [{ userId: "333333333333333333", count: 4 }] },
@@ -107,6 +107,8 @@ const FIX = {
   },
   "GET /api/servers": [{ id: SID, name: "T19C", icon: null, botAdded: true, isPremium: true }],
   [`GET /api/servers/${SID}/stats`]: { ticketCount: 42, openTickets: 3, applications: 7, closedThisWeek: 5 },
+  // v53 — имената на членовете (страницата „Игра“): дълги имена нарочно — проверка за прелив.
+  [`GET /api/servers/${SID}/member-names`]: { members: { "333333333333333333": "Стефан „Бобовдолчанина“ Костадинов", "444444444444444444": "ivan_the_collector_2026" } },
   [`GET /api/servers/${SID}/directory`]: {
     ok: true,
     categories: [
@@ -125,7 +127,7 @@ const FIX = {
     status: "operational", timestamp: new Date(0).toISOString(),
     services: { api: { status: "operational", uptime: 3600 }, database: { status: "operational", latencyMs: 2 },
       bot: { status: "operational", latencyMs: 8 }, cache: { status: "operational", latencyMs: 2 } },
-    uptime: 3600, stats: { totalServers: 5, activeServers24h: 2 },
+    uptime: 3600,
   },
   [`GET /api/analytics/${SID}/dashboard`]: {
     kpis: { ticketsOpened: { value: 12, deltaPct: 8 }, ticketsClosed: { value: 10, deltaPct: -3 },
@@ -149,6 +151,8 @@ const FIX = {
       removeRoleIds: [], managerRoleIds: [], pingRoleIds: [], published: true },
   ],
   [`GET /api/tickets/${SID}`]: { tickets: [], total: 0 },
+  // v52 — канал-стръв (секцията на страница Verification); вътрешният път е /honeypot.
+  [`GET /api/honeypot/${SID}`]: { enabled: true, channelId: "223", action: "softban", logChannelId: "224", dmUser: true, warningMessageId: "1", caughtCount: 17, lastCaughtAt: new Date().toISOString() },
   [`GET /api/reactionroles/${SID}`]: [],
   // Истинският каталог на бекенда (същият, който /help ползва) — без него
   // страницата „Commands“ в таблото се снимаше празна (визуален одит 25.09.2026).
@@ -468,13 +472,17 @@ for (const view of [
   await page.goto(`${base}/dashboard`, { waitUntil: "load" }).catch(() => {});
   await page.waitForTimeout(900);
   if (view.tag === "mobile") { await page.click('button[aria-controls="dashboard-sidebar"]').catch(() => {}); await page.waitForTimeout(300); }
-  const nameBox = await page.evaluate(() => {
-    const p = [...document.querySelectorAll("#dashboard-sidebar p")].find((x) => x.textContent.trim() === "stefan");
-    return p ? { clientWidth: p.clientWidth, scrollWidth: p.scrollWidth } : null;
-  });
-  if (!nameBox) note(false, `${view.tag}: името на потребителя липсва в лентата`);
+  // По концепцията (10.10.2026) профилът и езикът са в ГОРНАТА лента на
+  // десктоп, а на телефон — в долния блок на чекмеджето. Мерим видимото копие.
+  const holder = view.tag === "mobile" ? "#dashboard-sidebar" : "#main-content > header";
+  const nameBox = await page.evaluate((sel) => {
+    const root = document.querySelector(sel);
+    const el = root && [...root.querySelectorAll("p, span")].find((x) => x.textContent.trim() === "stefan" && x.offsetParent !== null);
+    return el ? { clientWidth: el.clientWidth, scrollWidth: el.scrollWidth } : null;
+  }, holder);
+  if (!nameBox) note(false, `${view.tag}: името на потребителя липсва (${holder})`);
   else note(nameBox.scrollWidth <= nameBox.clientWidth, `${view.tag}: името не се реже (${nameBox.scrollWidth}/${nameBox.clientWidth}px)`);
-  const langBtn = page.locator("#dashboard-sidebar button[aria-haspopup=listbox]").first();
+  const langBtn = page.locator(`${holder} button[aria-haspopup=listbox]`).first();
   if (await langBtn.count()) {
     await langBtn.click();
     const menu = await page.locator("ul[role=listbox]").first().boundingBox().catch(() => null);
@@ -486,7 +494,7 @@ for (const view of [
       await shot(page, join(SHOTS, `${view.tag}-language-menu-open.png`));
     }
     await page.keyboard.press("Escape");
-  } else note(false, `${view.tag}: бутонът за език липсва в лентата`);
+  } else note(false, `${view.tag}: бутонът за език липсва (${holder})`);
 
   if (consoleErrors.length) note(false, `${view.tag}: JS грешки: ${[...new Set(consoleErrors)].slice(0, 3).join(" · ")}`);
   await ctx.close();

@@ -1,6 +1,6 @@
 // bot/src/commands/panel.js
 import { MessageFlags, SlashCommandBuilder, PermissionFlagsBits } from "discord.js";
-import api, { markPanelSpawned } from "../utils/api.js";
+import api, { getPanel, markPanelSpawned } from "../utils/api.js";
 import { buildPanelMessage } from "../utils/embed.js";
 import { friendlyError } from "../utils/friendlyError.js";
 import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
@@ -38,13 +38,13 @@ export default {
       const panelId = interaction.options.getString("name");
 
       try {
-        const { data: panel } = await api.get(`/bot/panel/${panelId}`);
+        const panel = await getPanel(panelId, { serverId: interaction.guildId });
         if (!panel) return interaction.editReply("❌ Panel not found.");
 
         const { embeds, components } = buildPanelMessage(panel);
         const msg = await interaction.channel.send({ embeds, components });
 
-        await markPanelSpawned(panel.id, interaction.channelId, msg.id);
+        await markPanelSpawned(panel.id, interaction.channelId, msg.id, interaction.guildId);
         await interaction.editReply(`✅ Panel **${panel.name}** spawned successfully!`);
       } catch (err) {
         await interaction.editReply(friendlyError(err, interaction));

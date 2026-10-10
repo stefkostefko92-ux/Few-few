@@ -1,14 +1,14 @@
 // frontend/src/components/Layout.jsx
-import { useEffect, useRef, useState } from "react";
+// Рамката на таблото — по одобрената концепция (10.10.2026): групирана
+// странична лента (dashboardNav.js) и горна лента с превключвател на сървъра,
+// търсене и профил (DashboardTopbar.jsx). На телефон горната лента е
+// хамбургер + лого, а превключвателят и профилът са в чекмеджето.
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Outlet, NavLink, useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
-  LayoutDashboard, Ticket, FileText, Layout as LayoutIcon,
-  Star, Shield, ShieldCheck, LogOut, ChevronLeft, Settings, Users, ExternalLink, Webhook,
-  Zap, BookOpen, Lightbulb,
-  LineChart, Key,
-  Menu, X as CloseIcon, MessageSquareText,
- KeyRound, Gamepad2 } from "lucide-react";
+  LayoutDashboard, Shield, LogOut, ExternalLink, Menu, X as CloseIcon, KeyRound,
+} from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useT } from "../contexts/I18nContext";
 import { getServers, getServer, logout } from "../api";
@@ -18,6 +18,8 @@ import ToastHost from "./ToastHost";
 import PastDueBanner from "./PastDueBanner";
 import GraceBanner from "./GraceBanner";
 import SupremeLogo, { SupremeWordmark } from "./SupremeLogo";
+import DashboardTopbar, { ServerSwitcher } from "./DashboardTopbar";
+import { buildServerNav } from "./dashboardNav";
 import { APP_VERSION_LABEL, RELEASE_NAME } from "../version";
 import { openCookiePreferences } from "./CookieConsent";
 
@@ -61,6 +63,21 @@ export default function Layout() {
   };
 
   const isSuperUser = ["MAIN_OWNER", "SUPER_USER"].includes(user?.globalRole);
+  const serverIcon = currentServer?.icon || foreignInfo?.icon || null;
+  const navGroups = useMemo(() => (serverId ? buildServerNav(serverId, t) : [
+    {
+      key: "root",
+      items: [
+        { to: "/dashboard", icon: LayoutDashboard, label: t("nav.allServers"), end: true },
+        ...(isSuperUser ? [{ to: "/dashboard/admin", icon: Shield, label: "Super Admin" }] : []),
+      ],
+    },
+  ]), [serverId, t, isSuperUser]);
+  const searchItems = useMemo(() => [
+    ...navGroups.flatMap((g) => g.items),
+    { to: "/dashboard/privacy-settings", icon: Shield, label: t("nav.privacy") },
+    { to: "/dashboard/security", icon: KeyRound, label: t("nav.security") },
+  ], [navGroups, t]);
   const [mobileOpen, setMobileOpen] = useState(false);
   const drawerRef = useRef(null);
   const toggleBtnRef = useRef(null);
@@ -102,7 +119,7 @@ export default function Layout() {
   }, [mobileOpen]);
 
   return (
-    <div className="flex h-screen bg-cs-black overflow-hidden">
+    <div className="flex h-screen bg-cs-bg overflow-hidden">
       {/* Skip link — first focusable element, visible on keyboard focus (WCAG 2.4.1) */}
       <a
         href="#main-content"
@@ -111,7 +128,7 @@ export default function Layout() {
         Skip to main content
       </a>
       {/* Mobile top bar — brand + hamburger, visible only on small screens */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-cs-bg border-b border-cs-border h-14 flex items-center justify-between px-4">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-cs-bg border-b border-cs-line h-14 flex items-center justify-between px-4">
         <button
           ref={toggleBtnRef}
           onClick={() => setMobileOpen((v) => !v)}
@@ -148,7 +165,7 @@ export default function Layout() {
           }
         }}
         className={`
-          w-64 bg-cs-bg flex flex-col border-r border-cs-border flex-shrink-0
+          w-64 bg-cs-deep flex flex-col border-r border-cs-line flex-shrink-0
           fixed md:static inset-y-0 left-0 z-50
           transform transition-transform duration-200
           ${mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
@@ -163,160 +180,117 @@ export default function Layout() {
           <CloseIcon className="w-5 h-5" />
         </button>
         {/* Logo */}
-        <div className="px-5 pt-5 pb-5 border-b border-cs-border">
-          <a href="/dashboard" className="flex items-center gap-3 group">
+        <div className="px-5 pt-5 pb-4">
+          <a href="/dashboard" className="flex items-center gap-3 group no-underline">
             <SupremeLogo size={36} />
-            <div>
+            <div className="min-w-0 leading-tight">
               <SupremeWordmark className="text-base leading-none" />
               {/* Версията идва от package.json през Vite define — закованият низ
                   тук беше разминат с цял мажор (v2.3 при реални 3.1.0). */}
-              <div className="font-mono text-[8px] tracking-[0.25em] uppercase text-cs-dim mt-0.5">
-                {APP_VERSION_LABEL} {RELEASE_NAME}
-              </div>
+              <div className="text-[13px] font-semibold text-cs-text">{RELEASE_NAME}</div>
+              <div className="text-xs text-cs-dim tabular-nums mt-0.5">{APP_VERSION_LABEL}</div>
             </div>
           </a>
         </div>
 
-        {/* Nav */}
-        <nav className="flex-1 overflow-y-auto py-4 space-y-0.5" aria-label="Dashboard navigation">
-          {serverId && (
-            <NavLink to="/dashboard" className="flex items-center gap-2 mx-3 px-3 py-2 text-cs-dim hover:text-cs-cyan text-xs font-mono uppercase tracking-wider transition-colors border-l-2 border-transparent">
-              <ChevronLeft className="w-3.5 h-3.5" />
-              All Servers
-            </NavLink>
-          )}
-
-          {!serverId ? (
-            <>
-              <SectionLabel>Navigation</SectionLabel>
-              <NavItem to="/dashboard" icon={LayoutDashboard} end>Dashboard</NavItem>
-              {isSuperUser && (
-                <NavItem to="/dashboard/admin" icon={Shield} accent>Super Admin</NavItem>
-              )}
-            </>
-          ) : (
-            <>
-              <SectionLabel truncate>{serverName}</SectionLabel>
-              <NavItem to={`/dashboard/${serverId}`}              icon={LayoutDashboard} end>{t("nav.overview")}</NavItem>
-              <NavItem to={`/dashboard/${serverId}/panels`}       icon={LayoutIcon}>{t("nav.panels")}</NavItem>
-              <NavItem to={`/dashboard/${serverId}/forms`}        icon={FileText}>{t("nav.forms")}</NavItem>
-              <NavItem to={`/dashboard/${serverId}/tickets`}      icon={Ticket}>{t("nav.tickets")}</NavItem>
-              <NavItem to={`/dashboard/${serverId}/applications`} icon={Users}>{t("nav.applications")}</NavItem>
-              <NavItem to={`/dashboard/${serverId}/verification`} icon={ShieldCheck}>{t("nav.verification")}</NavItem>
-              <NavItem to={`/dashboard/${serverId}/automation`} icon={Zap}>{t("nav.automation")}</NavItem>
-              <NavItem to={`/dashboard/${serverId}/game`} icon={Gamepad2}>{t("nav.game")}</NavItem>
-              <NavItem to={`/dashboard/${serverId}/analytics`} icon={LineChart}>{t("nav.analytics")}</NavItem>
-              <NavItem to={`/dashboard/${serverId}/apikeys`} icon={Key}>{t("nav.apikeys")}</NavItem>
-              <NavItem to={`/dashboard/${serverId}/commands`} icon={BookOpen}>{t("nav.commands")}</NavItem>
-              <NavItem to={`/dashboard/${serverId}/kb`} icon={Lightbulb}>{t("nav.knowledgeBase")}</NavItem>
-              <NavItem to={`/dashboard/${serverId}/tags`}         icon={MessageSquareText}>{t("nav.tags")}</NavItem>
-              <NavItem to={`/dashboard/${serverId}/webhooks`} icon={Webhook}>{t("nav.webhooks")}</NavItem>
-              <NavItem to={`/dashboard/${serverId}/premium`}      icon={Star}>
-                {t("nav.premium")}
-                {currentServer?.isPremium && (
-                  <span className="ml-auto cs-badge-premium !text-[8px] !px-1.5 !py-0">
-                    Active
-                  </span>
-                )}
-              </NavItem>
-              <NavItem to={`/dashboard/${serverId}/settings`}     icon={Settings}>{t("nav.settings")}</NavItem>
-            </>
-          )}
-        </nav>
-
-        {/* Support link */}
-        <div className="px-3 py-2 border-t border-cs-border">
-          <a
-            href={import.meta.env.VITE_SUPPORT_URL || "https://discord.gg/wpCRpy8B"}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 px-3 py-2 text-xs font-mono uppercase tracking-wider text-cs-dim hover:text-cs-cyan transition-colors"
-          >
-            <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.08.08 0 0 0 .038.058 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/>
-            </svg>
-            <span>{t("nav.support")}</span>
-            <ExternalLink className="w-3 h-3 ml-auto opacity-60" />
-          </a>
-          <div className="flex gap-3 px-3 pt-1 pb-2">
-            {/* Съкратени до буква заради тясната лента — но НАЗВАНИЕТО остава.
-                Без него екранният четец обявява „Т“, „П“, „С“, „Е“: връзка без
-                разпознаваема цел (WCAG 2.4.4), и то точно към документите,
-                които по закон трябва да са намираеми. (Одит на екраните,
-                07.08.2026) */}
-            <LegalLink href="/terms"   label={t("privacy.terms")}>T</LegalLink>
-            <LegalLink href="/privacy" label={t("privacy.privacyPolicy")}>P</LegalLink>
-            <LegalLink href="/cookies" label={t("privacy.cookies")}>C</LegalLink>
-            <LegalLink href="/eula"    label={t("privacy.eula")}>E</LegalLink>
-            <a href="https://carbonstealth.eu" target="_blank" rel="noopener"
-               className="ml-auto font-mono text-[9px] uppercase tracking-wider text-cs-dim hover:text-cs-cyan transition-colors">
-              CS.EU
-            </a>
-          </div>
+        {/* На телефон няма горна лента — превключвателят на сървъра е тук. */}
+        <div className="md:hidden px-3 pb-3">
+          <ServerSwitcher servers={servers} serverId={serverId} serverName={serverName} serverIcon={serverIcon} />
         </div>
 
-        {/* User footer */}
-        <div className="p-3 border-t border-cs-border bg-cs-surface">
+        {/* Nav — групите на концепцията (dashboardNav.js) */}
+        <nav className="flex-1 overflow-y-auto pb-4" aria-label="Dashboard navigation">
+          {navGroups.map((g) => (
+            <div key={g.key} className="mt-1">
+              {g.label && <SectionLabel>{g.label}</SectionLabel>}
+              <ul className="space-y-0.5">
+                {g.items.map((it) => (
+                  <li key={it.to || it.href}>
+                    {it.external ? (
+                      <a href={it.href} target="_blank" rel="noopener noreferrer" className={`${NAV_BASE} ${NAV_IDLE}`}>
+                        <it.icon className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
+                        <span className="flex-1 min-w-0 truncate">{it.label}</span>
+                        <ExternalLink className="w-3.5 h-3.5 opacity-60 flex-none" aria-hidden="true" />
+                      </a>
+                    ) : (
+                      <NavItem to={it.to} icon={it.icon} end={it.end}>
+                        {it.label}
+                        {it.premium && currentServer?.isPremium && (
+                          <span className="ml-auto cs-badge-premium !text-[11px] !px-2 !py-0">Active</span>
+                        )}
+                      </NavItem>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </nav>
+
+        {/* Профилът — на телефон (на десктоп е в горната лента). */}
+        <div className="md:hidden p-3 border-t border-cs-line bg-cs-surface">
           {/* ДВА реда, не един. Лентата е 256px; аватар (36) + четири икони по
               32 + пет междини по 12 = 224 → за името оставаха 7px и то се
-              режеше до една буква („Z“), а ролята — до „0“. Дефектът се появи с
-              четвъртата икона (Сигурност, 3.4.0) и се вижда само на екран —
-              статичният гейт не мери ширини. Мерено с Chromium на 1280 и 390:
-              clientWidth 7 / scrollWidth 54. (17.09.2026) */}
+              режеше до една буква („Z“), а ролята — до „0“. (17.09.2026) */}
           <div className="flex items-center gap-3">
             {/* `src` НИКОГА не бива да е undefined: тогава браузърът рисува
-                счупено изображение с alt текста, което разпъва реда и реже
-                ролята — а `onError` не се задейства без src, значи резервата
-                по-долу не пази. Backend-ът винаги връща avatarUrl (пада на
-                аватара по подразбиране на Discord), но тук не разчитаме на това. */}
+                счупено изображение с alt текста, което разпъва реда. */}
             <img
               src={user?.avatarUrl || DEFAULT_AVATAR}
               alt=""
-              className="w-9 h-9 flex-shrink-0 border border-cs-cyan/30"
+              className="w-9 h-9 flex-shrink-0 rounded-full border border-cs-cyan/30 bg-cs-panel"
               onError={(e) => { e.target.onerror = null; e.target.src = DEFAULT_AVATAR; }}
             />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-cs-text truncate leading-tight">{user?.username}</p>
-              {/* Ролята беше суров enum („MAIN OWNER“) — непреведен и твърде
-                  дълъг за лентата, затова се режеше на „MAIN O…“. Сега е къс
-                  преведен етикет, който се събира без отрязване. */}
-              <p className="text-[9px] font-mono uppercase tracking-wider text-cs-cyan truncate">
+              <p className="text-xs text-cs-cyan truncate">
                 {t(`role.${user?.globalRole || "USER"}`)}
               </p>
             </div>
           </div>
           <div className="mt-2 flex items-center justify-between">
             {/* Менюто за език се отваря НАЛЯВО спрямо иконата (align="left"):
-                с right-0 при икона в левия край 160px списък излизаше на
-                −49px извън екрана и се режеше („ски“, „ch“, „ol“). */}
+                иначе 160px списък излиза извън екрана (17.09.2026). */}
             <LanguageSwitcher compact align="left" />
             <a
               href="/dashboard/privacy-settings"
               className="text-cs-dim hover:text-cs-cyan p-2 transition-colors"
               title={t("nav.privacy")}
+              aria-label={t("nav.privacy")}
             >
-              <Shield className="w-4 h-4" />
+              <Shield className="w-4 h-4" aria-hidden="true" />
             </a>
             <a
               href="/dashboard/security"
               className="text-cs-dim hover:text-cs-cyan p-2 transition-colors"
               title={t("nav.security")}
+              aria-label={t("nav.security")}
             >
-              <KeyRound className="w-4 h-4" />
+              <KeyRound className="w-4 h-4" aria-hidden="true" />
             </a>
             <button
               onClick={handleLogout}
               className="text-cs-dim hover:text-danger p-2 transition-colors"
               title={t("nav.logout")}
+              aria-label={t("nav.logout")}
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
         </div>
       </aside>
 
       {/* Main content */}
-      <main id="main-content" className="flex-1 overflow-y-auto bg-cs-black flex flex-col">
+      <main id="main-content" className="flex-1 overflow-y-auto bg-cs-bg flex flex-col">
+        <DashboardTopbar
+          servers={servers}
+          serverId={serverId}
+          serverName={serverName}
+          serverIcon={serverIcon}
+          searchItems={searchItems}
+          user={user}
+          onLogout={handleLogout}
+        />
         {/* Провалено плащане стои най-отгоре — то е по-спешното. */}
         <PastDueBanner />
         {/* v40 — отменен, но платен до края: показваме докога работи. */}
@@ -331,48 +305,54 @@ export default function Layout() {
           <Outlet />
         </div>
 
-        {/* Global Supreme footer — on every dashboard page */}
-        <footer className="border-t border-cs-border bg-cs-bg mt-auto">
-          <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
+        {/* Global Supreme footer — on every dashboard page.
+            Тук живеят и правните документи (махнати от лентата като букви).
+            Връзките са ПРЕВЕДЕНИ — дотук бяха зашити на английски, само
+            „Настройки за бисквитки“ беше на езика на човека. Реквизитите на
+            фирмата са на редове, не в моно низ с точки по средата. */}
+        <footer className="border-t border-cs-line bg-cs-deep mt-auto">
+          <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+            <div className="flex items-start gap-3 min-w-0">
               <SupremeLogo size={28} />
-              <div className="flex flex-col leading-tight">
+              <div className="min-w-0 text-xs leading-relaxed text-cs-dim">
                 <SupremeWordmark className="text-sm" />
-                <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-cs-dim">
-                  Created and Designed by{" "}
+                <p>
+                  {t("footer.made")}{" "}
                   <a
                     href="https://carbonstealth.eu"
                     target="_blank"
                     rel="noopener"
-                    className="text-cs-cyan underline"
+                    className="font-medium text-cs-text underline underline-offset-2 decoration-cs-dim/60 hover:text-cs-cyan"
                   >
-                    Carbon Stealth VCC
+                    {COMPANY_NAME}
                   </a>
-                </span>
-                <span className="font-mono text-[9px] tracking-[0.12em] text-cs-dim mt-1">
-                  Carbon Stealth VCC · ul. Samuil 3, 2670 Bobov dol, Bulgaria · EIK 208725180 · VAT BG208725180 ·{" "}
-                  <a href="mailto:legal@carbonstealth.eu" className="text-cs-cyan underline">legal@carbonstealth.eu</a>
-                </span>
+                </p>
+                <address className="not-italic mt-1">
+                  Carbon Stealth VCC, ul. Samuil 3, 2670 Bobov dol, Bulgaria
+                  <br />
+                  EIK 208725180, VAT BG208725180,{" "}
+                  <a href="mailto:legal@carbonstealth.eu" className="text-cs-muted underline underline-offset-2 decoration-cs-dim/60 hover:text-cs-cyan">legal@carbonstealth.eu</a>
+                </address>
               </div>
             </div>
-            <div className="flex items-center gap-5 text-[10px] font-mono uppercase tracking-widest text-cs-dim">
-              <a href="/status"  className="hover:text-cs-cyan transition-colors">Status</a>
-              <a href="/terms"   className="hover:text-cs-cyan transition-colors">Terms</a>
-              <a href="/privacy" className="hover:text-cs-cyan transition-colors">Privacy</a>
-              <a href="/cookies" className="hover:text-cs-cyan transition-colors">Cookies</a>
+            <nav aria-label={t("footer.legalNav")} className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-cs-dim">
+              <a href="/status"  className="no-underline hover:underline hover:text-cs-text">{t("footer.status")}</a>
+              <a href="/terms"   className="no-underline hover:underline hover:text-cs-text">{t("footer.terms")}</a>
+              <a href="/privacy" className="no-underline hover:underline hover:text-cs-text">{t("footer.privacy")}</a>
+              <a href="/cookies" className="no-underline hover:underline hover:text-cs-text">{t("footer.cookies")}</a>
               {/* Чл. 7(3) ОРЗД: оттеглянето трябва да е толкова лесно, колкото
                   даването. Дотук банерът се показваше само веднъж и решението
                   беше необратимо. (Одит 07.08.2026) */}
               <button
                 type="button"
                 onClick={openCookiePreferences}
-                className="hover:text-cs-cyan transition-colors uppercase tracking-widest"
+                className="hover:underline hover:text-cs-text"
               >
                 {t("privacy.cookiePrefs")}
               </button>
-              <a href="/eula"    className="hover:text-cs-cyan transition-colors">EULA</a>
-              <a href="/accessibility" className="hover:text-cs-cyan transition-colors">Accessibility</a>
-            </div>
+              <a href="/eula"    className="no-underline hover:underline hover:text-cs-text">{t("footer.eula")}</a>
+              <a href="/accessibility" className="no-underline hover:underline hover:text-cs-text">{t("footer.accessibility")}</a>
+            </nav>
           </div>
         </footer>
       </main>
@@ -385,45 +365,32 @@ export default function Layout() {
   );
 }
 
-function SectionLabel({ children, truncate }) {
+function SectionLabel({ children }) {
   return (
-    <p className={`font-mono text-[9px] font-bold uppercase tracking-[0.25em] text-cs-dim px-6 pt-4 pb-2 ${truncate ? "truncate" : ""}`}>
-      → {children}
+    <p className="px-6 pt-5 pb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-cs-dim">
+      {children}
     </p>
   );
 }
 
-function NavItem({ to, icon: Icon, end, accent, children }) {
+const NAV_BASE = "flex items-center gap-3 mx-3 px-3 py-2 rounded-lg text-sm transition-colors no-underline";
+const NAV_IDLE = "text-cs-muted hover:text-cs-text hover:bg-cs-surface font-medium";
+
+// Активната страница — лайм хапче с фина лайм рамка, както в концепцията;
+// иконата светва заедно с текста.
+function NavItem({ to, icon: Icon, end, children }) {
   return (
     <NavLink
       to={to}
       end={end}
       className={({ isActive }) =>
-        `flex items-center gap-3 mx-3 px-3 py-2.5 text-sm transition-colors border-l-2
-         ${isActive
-            ? "text-cs-cyan bg-cs-surface border-cs-cyan font-semibold"
-            : "text-cs-muted hover:text-cs-text hover:bg-cs-surface border-transparent font-medium"
-         }`
+        `${NAV_BASE} ${isActive
+          ? "bg-cs-cyan/10 text-cs-cyan font-semibold ring-1 ring-inset ring-cs-cyan/35"
+          : NAV_IDLE}`
       }
     >
-      <Icon className={`w-4 h-4 ${accent ? "text-cs-cyan" : ""}`} />
-      <span className="flex-1 flex items-center gap-2">{children}</span>
+      <Icon className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
+      <span className="flex-1 flex items-center gap-2 min-w-0 truncate">{children}</span>
     </NavLink>
-  );
-}
-
-function LegalLink({ href, children, label }) {
-  return (
-    <a
-      href={href}
-      // `title` за мишката, `aria-label` за четеца. Буквата остава видима.
-      title={label}
-      aria-label={label}
-      className="w-5 h-5 flex items-center justify-center font-mono text-[10px] font-bold
-                 text-cs-dim hover:text-cs-cyan border border-cs-border hover:border-cs-cyan
-                 transition-colors"
-    >
-      <span aria-hidden="true">{children}</span>
-    </a>
   );
 }

@@ -127,8 +127,13 @@ import gameRouter from "./routes/game.js";           // v50 Server Season (та�
 import botGameRouter from "./routes/bot_game.js";    // v50 Server Season (бот)
 import botCompanionsRouter from "./routes/bot_companions.js"; // v50 Server Season — спътници (бот)
 import botMinigamesRouter from "./routes/bot_minigames.js";   // v50 Server Season — Counting, куестове, trivia (бот)
+import honeypotRouter from "./routes/honeypot.js";            // v52 — капан за спам ботове (табло)
+import botHoneypotRouter from "./routes/bot_honeypot.js";     // v52 — капан за спам ботове (бот)
 import "./services/scheduler.js"; // Start background jobs
 import { prisma } from "./lib/prisma.js";
+import { csrfOriginGuard } from "./middleware/csrfOrigin.js";
+import { ipKeyGenerator } from "./lib/ipKey.js";
+import { safeLogUrl } from "./lib/safeLogUrl.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -166,7 +171,13 @@ app.use(
     } : false,
   })
 );
-app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
+// Адресът в лога БЕЗ query за архивите: `?t=` е токенът, който сам по себе си
+// отваря транскрипта — в access лога той беше достъп за всеки с лога
+// (Кодаджията, 10.10.2026). Форматът е „combined“, само :url е заменен.
+morgan.token("safe-url", (req) => safeLogUrl(req.originalUrl || req.url));
+app.use(morgan(process.env.NODE_ENV === "production"
+  ? ':remote-addr - :remote-user [:date[clf]] ":method :safe-url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"'
+  : "dev"));
 
 // Stripe webhooks need raw body — mount BEFORE express.json()
 app.use(
@@ -179,7 +190,9 @@ app.use(
 );
 
 app.use(express.json({ limit: "1mb" }));
-app.use(express.urlencoded({ extended: true, limit: "1mb" }));
+// express.urlencoded е МАХНАТ (10.10.2026): API-то приема само JSON, а
+// парсерът за HTML форми беше единственото, което правеше класическа CSRF
+// форма от съседен поддомейн валидна заявка. Нищо входящо не ползва форми.
 
 app.use(
   cors({
@@ -215,6 +228,7 @@ app.use(
 // ─── Rate Limiting ─────────────────────────────────────────────────────────────
 // Global limiter: 200 req/min per IP for all API routes
 const globalLimiter = rateLimit({
+  keyGenerator: ipKeyGenerator, // IPv6 по /56 (lib/ipKey.js)
   windowMs: 60 * 1000,
   max: 200,
   store: redisStore("rl:global"),
@@ -244,8 +258,12 @@ const globalLimiter = rateLimit({
   },
 });
 
-// Stricter limiter for auth endpoints to prevent brute force / OAuth abuse
+// Stricter limiter for auth endpoints to prevent brute force / OAuth abuse.
+// САМО за входа (login + callback), не за целия /api/auth: таблото вика
+// GET /api/auth/me при всяко зареждане и 20 зареждания от един адрес (офис,
+// NAT) заключваха входа за 15 минути (Кодаджията, 10.10.2026).
 const authLimiter = rateLimit({
+  keyGenerator: ipKeyGenerator, // IPv6 по /56 (lib/ipKey.js)
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 20,
   store: redisStore("rl:auth"),
@@ -256,6 +274,7 @@ const authLimiter = rateLimit({
 
 // Strict limiter for bot-internal endpoints (should only be called by 1 bot process)
 const botLimiter = rateLimit({
+  keyGenerator: ipKeyGenerator, // IPv6 по /56 (lib/ipKey.js)
   windowMs: 60 * 1000,
   max: 600, // 10/s — generous for message logging
   store: redisStore("rl:bot"),
@@ -270,6 +289,7 @@ const botLimiter = rateLimit({
 // съобщения на тикета + сглобяване на HTML). Токенът пази съдържанието, но не
 // пази ресурса: познат линк, пуснат в цикъл, е безплатен товар върху базата.
 const archiveLimiter = rateLimit({
+  keyGenerator: ipKeyGenerator, // IPv6 по /56 (lib/ipKey.js)
   windowMs: 60 * 1000,
   max: 60,
   store: redisStore("rl:archive"),
@@ -278,9 +298,24 @@ const archiveLimiter = rateLimit({
   message: "Too many requests — please slow down",
 });
 
+// Вторият фактор: отделен, по-широк лимит само за опитите (не-GET) — над
+// гарда срещу налучкване по потребител в routes/mfa.js.
+const mfaLimiter = rateLimit({
+  keyGenerator: ipKeyGenerator, // IPv6 по /56 (lib/ipKey.js)
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  store: redisStore("rl:mfa"),
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many second-factor attempts — please try again in 15 minutes" },
+});
+
 app.use("/api", globalLimiter);
-app.use("/api/auth", authLimiter);
+app.use(["/api/auth/login", "/api/auth/callback"], authLimiter);
+app.use("/api/auth/mfa", (req, res, next) => (req.method === "GET" ? next() : mfaLimiter(req, res, next)));
 app.use("/api/bot", botLimiter);
+// CSRF: промените под /api — само от нашия Origin (middleware/csrfOrigin.js).
+app.use("/api", csrfOriginGuard);
 app.use("/archive", archiveLimiter);
 
 // ─── Health check MUST come before any auth-protected routers ──────────────
@@ -335,6 +370,8 @@ app.use("/api/game", gameRouter);                   // v50 Server Season — н�
 app.use("/api/bot", botGameRouter);                 // v50 Server Season — XP партиди, /daily, профил, магазин (bot secret)
 app.use("/api/bot", botCompanionsRouter);           // v50 Server Season — спътници: поява/улавяне/хранене/размяна (bot secret)
 app.use("/api/bot", botMinigamesRouter);            // v50 Server Season — Counting, куестове, trivia (bot secret)
+app.use("/api/honeypot", honeypotRouter);           // v52 — капан за спам ботове (dashboard-authed)
+app.use("/api/bot", botHoneypotRouter);             // v52 — капан за спам ботове (bot secret)
 app.use("/public/v1", publicApiRouter);       // v2.1 Public REST API (bearer token)
 app.use("/archive", archiveRouter);           // v2.1 Public ticket transcript viewer
 // apikeys.js (файлът-примамка) е ИЗТРИТ на 09.08.2026: немонтиран, но с втори

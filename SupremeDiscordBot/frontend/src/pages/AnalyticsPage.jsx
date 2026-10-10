@@ -8,6 +8,7 @@ import {
   getAnalyticsLeaderboard, getAnalyticsFunnel,
 } from "../api";
 import { useT } from "../contexts/I18nContext";
+import MemberName, { useMemberNames } from "../components/MemberName";
 
 export default function AnalyticsPage() {
   const { t } = useT();
@@ -21,6 +22,8 @@ export default function AnalyticsPage() {
   const { data: overview } = overviewQ;
   const { data: heatmap } = heatmapQ;
   const { data: leaderboard } = leaderboardQ;
+  // Екип без вход в таблото няма ред в users → името идва живо от бота.
+  const staffNames = useMemberNames(leaderboard?.leaderboard?.filter((s) => !s.username).map((s) => s.userId));
   const { data: funnel } = funnelQ;
 
   return (
@@ -91,7 +94,9 @@ export default function AnalyticsPage() {
                     }`}>
                       {i + 1}
                     </div>
-                    <span className="font-mono text-xs text-cs-text">&lt;@{s.userId}&gt;</span>
+                    {s.username
+                      ? <span className="text-sm text-cs-text">{s.username}</span>
+                      : <MemberName id={s.userId} names={staffNames} className="text-sm text-cs-text" />}
                   </div>
                   <div className="flex items-center gap-4 text-xs">
                     <span className="text-cs-cyan">{t("analytics.claimed", { count: s.claimed })}</span>
@@ -144,7 +149,7 @@ function Kpi({ icon: Icon, label, value, accent }) {
     <div className={`cs-card !p-4 ${accent ? "border-cs-cyan/40" : ""}`}>
       <div className="flex items-center gap-2 mb-2">
         <Icon className={`w-4 h-4 ${accent ? "text-cs-cyan" : "text-cs-muted"}`} />
-        <span className="text-xs text-cs-muted uppercase tracking-wider font-mono">{label}</span>
+        <span className="text-xs text-cs-muted">{label}</span>
       </div>
       <div className={`text-2xl font-black ${accent ? "text-cs-cyan" : "text-cs-text"}`}>{value}</div>
     </div>
@@ -177,13 +182,13 @@ function Heatmap({ grid, t }) {
       <div className="inline-grid" style={{ gridTemplateColumns: "auto repeat(24, 16px)", gap: "2px" }}>
         <div />
         {Array.from({ length: 24 }).map((_, h) => (
-          <div key={h} className="text-[8px] text-cs-dim text-center font-mono">
+          <div key={h} className="text-[11px] text-cs-dim text-center tabular-nums">
             {h % 3 === 0 ? h : ""}
           </div>
         ))}
         {grid.map((row, d) => (
           <Fragment key={d}>
-            <div className="text-[10px] text-cs-dim font-mono pr-2 flex items-center">{days[d]}</div>
+            <div className="text-[11px] text-cs-dim pr-2 flex items-center">{days[d]}</div>
             {row.map((val, h) => {
               const intensity = val / maxVal;
               // Марковият акцент, не суров синьо. Тази клетка беше

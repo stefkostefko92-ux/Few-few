@@ -126,10 +126,11 @@ describe("страниците са свързани навсякъде, къд�
     expect((pre.match(/\$\{featureLinks\(/g) || []).length, "featureLinks в локализираната И в английската снимка").toBeGreaterThanOrEqual(2);
   });
 
-  it("двете начални страници рендерират FeatureLinks (иначе страниците са сираци)", () => {
-    expect(read("pages", "Login.jsx")).toContain("<FeatureLinks");
-    expect(read("pages", "LandingLocalized.jsx")).toContain("<FeatureLinks");
-    expect(read("components", "FeatureLinks.jsx")).toContain("FEATURE_PAGES.map(");
+  it("двете начални страници рендерират общия футър с връзките към функциите (иначе страниците са сираци)", () => {
+    expect(read("pages", "Login.jsx")).toContain("<LandingFooter");
+    expect(read("pages", "LandingLocalized.jsx")).toContain("<LandingFooter");
+    expect(read("components", "LandingParts.jsx")).toMatch(/FEATURE_PAGES[\s\S]{0,40}\.map\(/);
+    expect(read("components", "LandingParts.jsx")).toContain("FEATURES_HUB.path");
     expect(read("components", "PublicPageLayout.jsx")).toContain('href="/features"');
   });
 

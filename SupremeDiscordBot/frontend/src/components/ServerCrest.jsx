@@ -1,5 +1,5 @@
 // frontend/src/components/ServerCrest.jsx
-// Гербът на командния екран — първото, което човек вижда при отваряне на сървър.
+// Тарифата и състоянието на сървъра под заглавието „Преглед“ (по-рано — голям герб).
 //
 // ЗАЩО: заглавието беше име + иконка + значка „Premium“. Вярно, но не казваше на
 // платещия клиент какво точно е купил, нито го караше да се почувства, че държи
@@ -9,8 +9,6 @@
 // Дисциплина:
 //   • Числата идват от `getServerTier` през /api/servers/:id — НЕ се измислят и
 //     НЕ се дублира логика за резолюция на плана в клиента.
-//   • Движението живее само в `prefers-reduced-motion: no-preference` (виж
-//     `.crest-*` в index.css); всичко ≥3s, нула ефекти >3×/s (WCAG 2.3.1).
 //   • Тарифата НЕ се предава само с цвят — винаги с текст и иконка (WCAG 1.4.1).
 //   • Всеки видим низ минава през `t()` (гейтван паритет на 8 локала).
 import { Crown, Star, Bot, Server as ServerIcon, CircleDot } from "lucide-react";
@@ -27,7 +25,10 @@ const TIER_ACCENT = {
   agency10:   { rail: "rgba(240, 194, 76, 1)",     icon: Crown,     glow: "rgba(240,194,76,0.22)" },
 };
 
-export default function ServerCrest({ server, botOnline }) {
+// Чиповете под заглавието „Преглед“ (концепцията, 10.10.2026): името на
+// сървъра вече е в горната лента, затова големият герб отстъпи на един ред:
+// тарифа, бот, места при agency и „платено до“.
+export default function ServerMeta({ server, botOnline }) {
   const { t } = useT();
   if (!server) return null;
 
@@ -40,66 +41,40 @@ export default function ServerCrest({ server, botOnline }) {
   const graceActive = !!(graceUntil && graceUntil > new Date());
 
   return (
-    <section
-      className="crest px-6 py-5 mb-6"
-      style={{ "--crest-line": accent.rail }}
-      aria-labelledby="crest-name"
-    >
-      <div className="crest-aura" aria-hidden="true" style={{ background: `radial-gradient(38% 48% at 18% 30%, ${accent.glow}, transparent 70%)` }} />
-      <div className="crest-grid" aria-hidden="true" />
-      <div className="crest-rail" aria-hidden="true" style={{ background: accent.rail, boxShadow: `0 0 18px ${accent.rail}` }} />
+    <div className="flex items-center gap-3 flex-wrap">
+      {/* Тарифата — иконка + ТЕКСТ, никога само цвят. */}
+      <span
+        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium text-cs-text"
+        style={{ borderColor: accent.rail, background: accent.glow }}
+      >
+        <TierIcon className="w-3.5 h-3.5" aria-hidden="true" />
+        {t(`crest.plan.${plan}`)}
+      </span>
 
-      <div className="relative flex flex-wrap items-center gap-5">
-        {server.icon ? (
-          <img src={server.icon} alt="" className="w-16 h-16 rounded-2xl border border-cs-border flex-shrink-0" />
-        ) : (
-          <div className="w-16 h-16 rounded-2xl bg-cs-cyanGlow border border-cs-cyan/30 flex items-center justify-center flex-shrink-0">
-            <span className="text-2xl font-bold text-cs-cyan">{server.name?.[0]}</span>
-          </div>
-        )}
+      {/* Състояние на бота — точка + дума, не само точка. */}
+      <span className="inline-flex items-center gap-1.5 text-xs text-cs-muted">
+        <span
+          className="w-1.5 h-1.5 rounded-full"
+          style={{ background: botOnline ? "rgba(74,222,128,1)" : "rgba(170,170,170,0.7)" }}
+          aria-hidden="true"
+        />
+        {botOnline ? t("crest.botOnline") : t("crest.botOffline")}
+      </span>
 
-        <div className="min-w-0 flex-1">
-          <h1 id="crest-name" className="cs-heading font-display font-bold text-cs-text text-2xl md:text-3xl truncate">
-            {server.name}
-          </h1>
+      {/* Agency: заети места от общо — истинското число, не украса. */}
+      {server.agencyCovered && server.agencySeatsUsed != null && server.agencySeatLimit != null && (
+        <span className="inline-flex items-center gap-1.5 text-xs text-cs-muted">
+          <ServerIcon className="w-3.5 h-3.5" aria-hidden="true" />
+          {t("crest.seats", { used: server.agencySeatsUsed, limit: server.agencySeatLimit })}
+        </span>
+      )}
 
-          <div className="flex items-center gap-3 flex-wrap mt-2">
-            {/* Тарифата — иконка + ТЕКСТ, никога само цвят. */}
-            <span
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-mono uppercase tracking-[0.14em] text-cs-text"
-              style={{ borderColor: accent.rail }}
-            >
-              <TierIcon className="w-3.5 h-3.5" aria-hidden="true" />
-              {t(`crest.plan.${plan}`)}
-            </span>
-
-            {/* Състояние на бота — точка + дума, не само точка. */}
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.14em] text-cs-muted">
-              <span
-                className="w-1.5 h-1.5 rounded-full"
-                style={{ background: botOnline ? "rgba(74,222,128,1)" : "rgba(170,170,170,0.7)" }}
-                aria-hidden="true"
-              />
-              {botOnline ? t("crest.botOnline") : t("crest.botOffline")}
-            </span>
-
-            {/* Agency: заети места от общо — истинското число, не украса. */}
-            {server.agencyCovered && server.agencySeatsUsed != null && server.agencySeatLimit != null && (
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.14em] text-cs-muted">
-                <ServerIcon className="w-3.5 h-3.5" aria-hidden="true" />
-                {t("crest.seats", { used: server.agencySeatsUsed, limit: server.agencySeatLimit })}
-              </span>
-            )}
-
-            {/* Отменен, но платен до края — казваме докога, вместо да мълчим. */}
-            {graceActive && (
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.14em] text-warning">
-                {t("crest.paidUntil", { date: graceUntil.toLocaleDateString() })}
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-    </section>
+      {/* Отменен, но платен до края — казваме докога, вместо да мълчим. */}
+      {graceActive && (
+        <span className="inline-flex items-center gap-1.5 text-xs text-warning">
+          {t("crest.paidUntil", { date: graceUntil.toLocaleDateString() })}
+        </span>
+      )}
+    </div>
   );
 }

@@ -24,7 +24,7 @@ EXPOSE 3001
 
 # Bot exposes /health on its internal HTTP server (port 3001)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-  CMD wget -q -O /dev/null http://localhost:3001/health || exit 1
+  CMD wget -q -O /dev/null http://127.0.0.1:3001/health || exit 1
 
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "--import", "./src/instrument.js", "src/index.js"]
