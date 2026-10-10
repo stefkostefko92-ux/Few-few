@@ -110,8 +110,8 @@ export default async function AdminPage({
   return (
     <>
       <SiteHeader locale={locale as Locale} />
-      <main className="mx-auto max-w-5xl space-y-6 px-6 py-10">
-        <h1 className="text-2xl font-bold">{t('title')}</h1>
+      <main className="dash mx-auto max-w-5xl space-y-6 px-6 py-10">
+        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">{t('title')}</h1>
         {ok && (
           <p role="status" className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
             {t('saved')}
@@ -165,7 +165,7 @@ export default async function AdminPage({
             {t('reportsTitle', { count: openReports.length })}
           </h2>
           {openReports.length === 0 ? (
-            <p className="mt-2 text-sm text-slate-400">{t('reportsEmpty')}</p>
+            <p className="mt-2 text-sm text-slate-500">{t('reportsEmpty')}</p>
           ) : (
             <ul className="mt-4 space-y-3">
               {openReports.map((report) => (
@@ -182,7 +182,7 @@ export default async function AdminPage({
                         /u/{report.profile.slug}
                       </a>{' '}
                       · <span className="font-medium">{report.category}</span>{' '}
-                      <span className="text-xs text-slate-400">
+                      <span className="text-xs text-slate-500">
                         {report.createdAt.toISOString().slice(0, 16).replace('T', ' ')}
                       </span>
                     </p>
@@ -211,7 +211,7 @@ export default async function AdminPage({
         <section className="rounded-2xl border border-slate-200 bg-white p-6">
           <h2 className="font-semibold">{t('purchasesTitle')}</h2>
           {recentPurchases.length === 0 ? (
-            <p className="mt-2 text-sm text-slate-400">{t('purchasesEmpty')}</p>
+            <p className="mt-2 text-sm text-slate-500">{t('purchasesEmpty')}</p>
           ) : (
             <ul className="mt-4 space-y-2 text-sm">
               {recentPurchases.map((purchase) => (
@@ -230,11 +230,11 @@ export default async function AdminPage({
                     <span className="font-semibold">
                       €{(purchase.amountCents / 100).toFixed(2)}
                     </span>{' '}
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-slate-500">
                       ({t('feeShort')} €{(purchase.feeCents / 100).toFixed(2)})
                     </span>
                     {purchase.buyerEmail ? (
-                      <span className="text-xs text-slate-400">
+                      <span className="text-xs text-slate-500">
                         {' '}
                         · {purchase.buyerEmail}
                       </span>
@@ -305,7 +305,7 @@ export default async function AdminPage({
             {t('payoutsTitle', { count: pendingPayouts.length })}
           </h2>
           {pendingPayouts.length === 0 ? (
-            <p className="mt-2 text-sm text-slate-400">{t('payoutsEmpty')}</p>
+            <p className="mt-2 text-sm text-slate-500">{t('payoutsEmpty')}</p>
           ) : (
             <ul className="mt-4 space-y-3">
               {pendingPayouts.map((p) => (
@@ -319,7 +319,7 @@ export default async function AdminPage({
                     </span>{' '}
                     · {p.user.email} ·{' '}
                     <span className="font-mono text-xs">{p.method}</span>{' '}
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-slate-500">
                       {p.requestedAt.toISOString().slice(0, 10)}
                     </span>
                   </span>
@@ -405,13 +405,13 @@ export default async function AdminPage({
                   {t('loginIps', { count: user._count.loginEvents })}
                 </h3>
                 {user.loginEvents.length === 0 ? (
-                  <p className="mt-1 text-sm text-slate-400">—</p>
+                  <p className="mt-1 text-sm text-slate-500">—</p>
                 ) : (
                   <ul className="mt-1 flex flex-wrap gap-x-6 gap-y-1 font-mono text-sm text-slate-700">
                     {user.loginEvents.map((event) => (
                       <li key={event.id}>
                         {event.ip}
-                        <span className="ml-2 font-sans text-xs text-slate-400">
+                        <span className="ml-2 font-sans text-xs text-slate-500">
                           {event.createdAt.toISOString().slice(0, 16).replace('T', ' ')}
                         </span>
                       </li>
@@ -485,7 +485,7 @@ export default async function AdminPage({
                       autoComplete="new-password"
                       className={inputClass}
                     />
-                    <p className="text-xs text-slate-400">{t('passwordHint')}</p>
+                    <p className="text-xs text-slate-500">{t('passwordHint')}</p>
                     <button
                       type="submit"
                       className="rounded-full border border-amber-600 px-4 py-1.5 font-semibold text-amber-700 hover:bg-amber-50"

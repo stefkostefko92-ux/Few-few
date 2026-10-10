@@ -185,6 +185,20 @@ stripeTransferId). fee е capped на нето-1 (Stripe инвариант).
 (payment_status === 'paid') преди redirect към deliveryUrl. Purchase се
 записва идемпотентно само през подписания webhook.
 
+Жизнен цикъл на данните (одит 2026-10-09): покупките и платеният достъп НЕ
+се трият — `Purchase`/`Entitlement` са `onDelete: Restrict`; `deleteProductAction`
+архивира (active=false), а `lib/account-erasure.ts` анонимизира акаунт с
+покупки/достъп вместо да го изтрие (иначе — каскадно изтриване). Сроковете от
+политиката са в `lib/retention-days.ts` (единен източник; cron SQL в DEPLOY §9).
+Сваляне на план (`customer.subscription.deleted`, админ смяна) → `lib/plan-limits.ts`
+спира платените функции (домейн/бадж/излишни профили; чиста логика в
+`plan-limits-core.ts`; флаговете са в `PlanDef`). Публичните форми (контакт/
+резервация/бюлетин/анкета) и входът минават през `lib/rate-limit.ts` (в паметта на
+процеса, чиста логика в `limiter.ts`; доверен IP = `X-Real-IP`/последен XFF).
+Действията в дашборда връщат към активния профил през `dash()` (`lib/dashboard-url.ts`,
+чете `?p` от Referer). Магазинът продава само ако `shopSalesAllowed()` (Stripe Tax
+или test mode — `lib/stripe-tax.ts`).
+
 ## Правила на продукта
 
 - **Нов език** = ред в `LOCALES` + `messages/<loc>.json` (може частичен —

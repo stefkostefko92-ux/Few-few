@@ -102,7 +102,7 @@ test('videoEmbedSrc: YouTube през nocookie + Vimeo', () => {
   );
   assert.equal(
     videoEmbedSrc('https://vimeo.com/12345'),
-    'https://player.vimeo.com/video/12345',
+    'https://player.vimeo.com/video/12345?dnt=1',
   );
   assert.equal(videoEmbedSrc('https://example.com/watch?v=abc'), null);
 });

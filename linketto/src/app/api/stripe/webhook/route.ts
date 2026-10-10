@@ -4,6 +4,7 @@ import { getStripe } from '@/lib/stripe';
 import { prisma } from '@/lib/db';
 import { PLANS, totalFeeCents, type PlanId } from '@/lib/plans';
 import { payoutSeller } from '@/lib/payout';
+import { applyPlanLimits } from '@/lib/plan-limits';
 import { deliveryEmailHtml, deliverySubject, sendEmail } from '@/lib/email';
 import { referralRewardCents } from '@/lib/referral';
 
@@ -389,10 +390,25 @@ export async function POST(request: Request): Promise<NextResponse> {
           ? subscription.customer
           : subscription.customer.id;
       // Founder е еднократен и не се губи при спрян абонамент.
+      const downgradable = {
+        stripeCustomerId: customerId,
+        plan: { not: 'FOUNDER' },
+      } as const;
+      const downgraded = await prisma.user.findMany({
+        where: downgradable,
+        select: { id: true },
+      });
       await prisma.user.updateMany({
-        where: { stripeCustomerId: customerId, plan: { not: 'FOUNDER' } },
+        where: { id: { in: downgraded.map((u) => u.id) } },
         data: { plan: 'FREE' },
       });
+      // Платените функции спират със сваления план (домейн, бадж, профили).
+      // Провалът се логва (иначе „Pro завинаги“ се връща без следа).
+      for (const u of downgraded) {
+        await applyPlanLimits(u.id).catch((error: unknown) => {
+          console.error('[webhook] applyPlanLimits failed', u.id, error);
+        });
+      }
       // Членство към създател (магазина): отнемаме достъпа по абонамента.
       await prisma.entitlement
         .updateMany({

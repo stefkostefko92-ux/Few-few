@@ -3,7 +3,13 @@
 // Free 8% (срещу 12% при Linktree), Pro 4% (срещу 9% при Linktree
 // Starter/Pro), а 0% имат само горните два плана — Business и Founder.
 
+import { RETENTION_DAYS } from '@/lib/retention-days';
+
 export type PlanId = 'FREE' | 'PRO' | 'BUSINESS' | 'FOUNDER';
+
+// Срок за съхранение на аналитичните събития = 13 месеца (политиката за
+// поверителност). Платените планове показват цялата тази история.
+export const CLICK_RETENTION_DAYS = RETENTION_DAYS.clickEvent;
 
 // Членствата (recurring абонаменти) са изградени, но изчакват правния пакет
 // (авто-подновяване/отказ по Дир. 2011/83 + Billing Portal + waiver по тип +
@@ -21,8 +27,13 @@ export interface PlanDef {
   maxLocales: number | null;
   /** Максимален брой профили на акаунт (екипи/марки — Business). */
   maxProfiles: number;
-  /** Дни история на аналитиката (null = без лимит). */
+  /** Дни история на аналитиката (null = без лимит). Платените: 396 дни = 13
+   *  месеца — срокът в политиката за поверителност (src/lib/retention.ts). */
   analyticsDays: number | null;
+  /** Собствен домейн за профила. */
+  customDomain: boolean;
+  /** Скриване на Linketto баджа. */
+  hideBadge: boolean;
   /** env променлива със Stripe Price ID. */
   stripePriceEnv: string | null;
 }
@@ -36,6 +47,8 @@ export const PLANS: Record<PlanId, PlanDef> = {
     maxLocales: 2,
     maxProfiles: 1,
     analyticsDays: 90,
+    customDomain: false,
+    hideBadge: false,
     stripePriceEnv: null,
   },
   PRO: {
@@ -45,7 +58,9 @@ export const PLANS: Record<PlanId, PlanDef> = {
     oneTime: false,
     maxLocales: null,
     maxProfiles: 1,
-    analyticsDays: null,
+    analyticsDays: CLICK_RETENTION_DAYS,
+    customDomain: true,
+    hideBadge: true,
     stripePriceEnv: 'STRIPE_PRICE_PRO',
   },
   BUSINESS: {
@@ -55,7 +70,9 @@ export const PLANS: Record<PlanId, PlanDef> = {
     oneTime: false,
     maxLocales: null,
     maxProfiles: 5,
-    analyticsDays: null,
+    analyticsDays: CLICK_RETENTION_DAYS,
+    customDomain: true,
+    hideBadge: true,
     stripePriceEnv: 'STRIPE_PRICE_BUSINESS',
   },
   FOUNDER: {
@@ -65,7 +82,9 @@ export const PLANS: Record<PlanId, PlanDef> = {
     oneTime: true,
     maxLocales: null,
     maxProfiles: 5,
-    analyticsDays: null,
+    analyticsDays: CLICK_RETENTION_DAYS,
+    customDomain: true,
+    hideBadge: true,
     stripePriceEnv: 'STRIPE_PRICE_FOUNDER',
   },
 };

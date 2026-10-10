@@ -1,8 +1,10 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { dash } from '@/lib/dashboard-url';
 import { z } from 'zod';
 import { prisma } from '@/lib/db';
+import { isSensitiveUrl } from '@/lib/brands';
 import { getSessionUser } from '@/lib/auth';
 import { isLocale } from '@/i18n/locales';
 import {
@@ -29,19 +31,21 @@ export async function addShortLinkAction(formData: FormData): Promise<void> {
   if (!user) redirect(`/${uiLocale}/login`);
   const profileId = String(formData.get('profileId') ?? '');
   const target = targetSchema.safeParse(formData.get('targetUrl'));
-  if (!target.success) redirect(`/${uiLocale}/dashboard?error=shortlink`);
+  if (!target.success || isSensitiveUrl(target.data)) {
+    redirect(await dash(uiLocale, '?error=shortlink'));
+  }
 
   const profile = await prisma.profile.findFirst({
     where: { id: profileId, userId: user.id },
     select: { id: true },
   });
-  if (!profile) redirect(`/${uiLocale}/dashboard?error=generic`);
+  if (!profile) redirect(await dash(uiLocale, '?error=generic'));
 
   // Код: желан от потребителя или автоматично генериран (уникален).
   const wanted = normalizeShortCode(String(formData.get('code') ?? ''));
   let code = wanted;
   if (code && !isValidShortCode(code)) {
-    redirect(`/${uiLocale}/dashboard?error=shortlink`);
+    redirect(await dash(uiLocale, '?error=shortlink'));
   }
   if (!code) {
     for (let i = 0; i < 5; i++) {
@@ -55,7 +59,7 @@ export async function addShortLinkAction(formData: FormData): Promise<void> {
         break;
       }
     }
-    if (!code) redirect(`/${uiLocale}/dashboard?error=shortlink`);
+    if (!code) redirect(await dash(uiLocale, '?error=shortlink'));
   }
   try {
     await prisma.shortLink.create({
@@ -63,9 +67,9 @@ export async function addShortLinkAction(formData: FormData): Promise<void> {
     });
   } catch {
     // Уникалност на кода — вече зает.
-    redirect(`/${uiLocale}/dashboard?error=shortlink`);
+    redirect(await dash(uiLocale, '?error=shortlink'));
   }
-  redirect(`/${uiLocale}/dashboard`);
+  redirect(await dash(uiLocale));
 }
 
 export async function deleteShortLinkAction(
@@ -78,5 +82,5 @@ export async function deleteShortLinkAction(
   await prisma.shortLink.deleteMany({
     where: { id, profile: { userId: user.id } },
   });
-  redirect(`/${uiLocale}/dashboard`);
+  redirect(await dash(uiLocale));
 }

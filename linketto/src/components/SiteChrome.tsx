@@ -42,7 +42,7 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
           <>
             <Link
               href={`/${locale}/login`}
-              className="text-slate-600 hover:underline"
+              className="rounded px-1 py-1 text-slate-600 transition hover:text-slate-900"
             >
               {t('login')}
             </Link>
@@ -70,8 +70,8 @@ export async function SiteFooter({
   const t = await getTranslations({ locale, namespace: 'footer' });
   const tCommon = await getTranslations({ locale, namespace: 'common' });
   return (
-    <footer className="bg-slate-950 px-6 py-14 text-sm text-slate-400">
-      <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-[1.2fr_1fr_1fr]">
+    <footer className="bg-slate-950 py-14 text-sm text-slate-400">
+      <div className="mx-auto grid max-w-6xl gap-10 px-6 md:grid-cols-[1fr_1.7fr_0.8fr]">
         <div>
           <Image
             src="/logo.png"
@@ -83,7 +83,7 @@ export async function SiteFooter({
           <p className="mt-4 max-w-xs leading-relaxed">{tCommon('tagline')}</p>
         </div>
         <nav
-          className="flex flex-col items-start gap-2.5"
+          className="grid grid-cols-2 content-start gap-x-6 gap-y-2.5 sm:grid-cols-3"
           aria-label="Language"
         >
           {LOCALES.map((loc) => (
@@ -93,7 +93,7 @@ export async function SiteFooter({
               className={
                 loc === locale
                   ? 'font-semibold text-white'
-                  : 'transition hover:text-white'
+                  : 'rounded transition hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300'
               }
               hrefLang={loc}
             >
@@ -128,8 +128,10 @@ export async function SiteFooter({
           </a>
         </div>
       </div>
-      <div className="mx-auto mt-12 max-w-6xl border-t border-white/10 pt-6 text-xs text-slate-500">
-        {t('company')} · {t('legalLine')}
+      <div className="mx-auto mt-12 max-w-6xl px-6">
+        <p className="border-t border-white/10 pt-6 text-xs text-slate-400">
+          {t('company')} · {t('legalLine')}
+        </p>
       </div>
     </footer>
   );
