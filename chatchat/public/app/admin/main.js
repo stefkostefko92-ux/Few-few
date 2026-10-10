@@ -32,6 +32,8 @@ const SECTIONS = [
     label: 'admin.integrations.nav',
     load: () => import('./integrations.js'),
   },
+  // Единният вход (OIDC / Entra ID) — доставчик, домейни, режим, MFA на доставчика.
+  { id: 'sso', cap: 'sso:manage', label: 'admin.sso.nav', load: () => import('./sso.js') },
 ];
 
 const labelOf = (s) => t(s.label ?? `admin.nav.${s.id}`);
@@ -95,7 +97,10 @@ async function init() {
     return goToLogin();
   }
   const mfa = session.mfa ?? {};
-  if ((mfa.enabled && !mfa.passed) || (mfa.required && !mfa.enabled)) return goToLogin();
+  // mfa.idp: вторият фактор е доказан от доставчика на единния вход — локален TOTP не се иска.
+  if ((mfa.enabled && !mfa.passed) || (mfa.required && !mfa.enabled && !mfa.idp)) {
+    return goToLogin();
+  }
   setSession(session);
   await setLang(guessLang(session.user?.locale), { persist: false });
 

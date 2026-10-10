@@ -183,6 +183,10 @@ services:
       INTEGRATION_TIMEOUT_MS: ${INTEGRATION_TIMEOUT_MS:-}
       INTEGRATION_INBOUND_TOLERANCE_SECONDS: ${INTEGRATION_INBOUND_TOLERANCE_SECONDS:-}
       INTEGRATION_LOG_DAYS: ${INTEGRATION_LOG_DAYS:-}
+      # Единният вход (OIDC / Entra ID): ключът за client secret на доставчиците в базата (deploy.sh го
+      # ражда). Празно → единният вход е изключен. Ротация: старият в SSO_KEK_PREVIOUS.
+      SSO_KEK: ${SSO_KEK:-}
+      SSO_KEK_PREVIOUS: ${SSO_KEK_PREVIOUS:-}
       # Семантично търсене (pgvector) — по избор; празно → само точното и пълнотекстовото търсене.
       # Имената се сверяват със src/config.ts (празен низ трябва да значи „не е зададено“).
       EMBEDDING_MODEL: ${EMBEDDING_MODEL:-}

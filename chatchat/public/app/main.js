@@ -17,6 +17,7 @@ import { initMfaVerify, showMfaVerify } from './auth/mfa-verify.js';
 import { mountMfaSetup } from './auth/mfa-setup.js';
 import { initReset, showReset, takeResetToken } from './auth/reset.js';
 import { openSecurityDialog } from './auth/security.js';
+import { initSso, logoutRequest, ssoLoginError, ssoResultText, takeSsoError } from './auth/sso.js';
 import { hasPendingQr, initScan, resolvePendingQr, takeQrFromUrl } from './qr/scan.js';
 import { initWorkspace, startWorkspace, stopWorkspace } from './workspace/index.js';
 import { initFlow } from './flow/index.js';
@@ -46,12 +47,14 @@ function showLogin(message) {
 }
 
 async function logout() {
+  let next = null;
   try {
-    await api('POST', '/auth/logout');
+    next = await logoutRequest(); // при SSO — и адресът за изход при доставчика (по избор)
   } catch {
     /* излизаме от интерфейса така или иначе */
   }
   showLogin();
+  if (next) location.assign(next);
 }
 
 /** След парола: втори фактор (код / настройка) или самото приложение. */
@@ -59,6 +62,7 @@ async function enter(session) {
   state.user = session.user;
   state.csrf = session.csrfToken ?? state.csrf;
   state.mfa = session.mfa ?? state.mfa;
+  state.authMethod = session.authMethod ?? 'password';
   // FR-14: езикът на профила (същият за писмата и AI) печели след вход — и на друго устройство;
   // освен ако човекът току-що е избрал друг на екрана за вход (тогава той отива в профила).
   const own = session.user?.locale;
@@ -67,7 +71,8 @@ async function enter(session) {
     emit('lang');
   }
   if (state.mfa.enabled && !state.mfa.passed) return showMfaVerify();
-  if (state.mfa.required && !state.mfa.enabled) return showSetup();
+  // Вторият фактор, доказан от доставчика на единния вход (mfa.idp), не иска локален TOTP.
+  if (state.mfa.required && !state.mfa.enabled && !state.mfa.idp) return showSetup();
   return showApp();
 }
 
@@ -193,11 +198,12 @@ function wireLogin() {
       await enter(data);
     } catch (ex) {
       err.textContent =
-        ex.status === 401
+        ssoLoginError(ex) ??
+        (ex.status === 401
           ? t('login.error.invalid')
           : ex.status === 429
             ? t('login.error.rate')
-            : t('login.error.generic');
+            : t('login.error.generic'));
       show(err, true);
     } finally {
       btn.disabled = false;
@@ -209,6 +215,7 @@ async function init() {
   // Първо чувствителните неща от адреса: токенът за парола и QR токенът се махат веднага.
   const isReset = takeResetToken();
   takeQrFromUrl();
+  const ssoError = takeSsoError(); // `?sso_error=` от връщането на единния вход
   void loadMeta();
   let session = null;
   if (!isReset) {
@@ -224,6 +231,7 @@ async function init() {
   }
 
   wireLogin();
+  initSso();
   initReset();
   initMfaVerify({
     onPassed: () => {
@@ -275,7 +283,7 @@ async function init() {
   } else if (session?.user) {
     await enter(session);
   } else {
-    showLogin();
+    showLogin(ssoError ? ssoResultText(ssoError) : undefined);
   }
   document.documentElement.dataset.ready = 'true';
 }

@@ -66,6 +66,11 @@ model Tenant {
   // Интеграцията с helpdesk (FR-09, §14.4): конекторът и outbox-ът на доставките.
   helpdeskIntegration HelpdeskIntegration?
   helpdeskDeliveries  HelpdeskDelivery[]
+  // Единният вход (OIDC, §14.4, §15.1): доставчиците, домейните, връзките и започнатите входове.
+  ssoConfigs         SsoConfig[]
+  ssoDomains         SsoDomain[]
+  externalIdentities ExternalIdentity[]
+  ssoLoginStates     SsoLoginState[]
 }
 
 /// Фирма в рамките на клиента (монтажник, дистрибутор, сервиз) — разделя портала.
@@ -75,10 +80,12 @@ model Company {
   name      String
   createdAt DateTime @default(now())
 
-  tenant  Tenant   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  users   User[]
-  devices Device[]
-  cases   Case[]
+  tenant     Tenant      @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  users      User[]
+  devices    Device[]
+  cases      Case[]
+  /// Доставчикът на фирмата (по избор) — за порталните ѝ потребители.
+  ssoConfigs SsoConfig[]
 
   @@unique([tenantId, name])
   @@index([tenantId])
@@ -118,6 +125,8 @@ model User {
   messageMarks         MessageMark[]
   notificationSettings NotificationSettings?
   emailOutbox          EmailOutbox[]
+  /// Връзката с идентичността при доставчика (OIDC) — създава се при първия единен вход.
+  externalIdentity     ExternalIdentity?
 
   @@index([tenantId])
   @@index([companyId])
@@ -125,22 +134,35 @@ model User {
 
 /// Сесия в базата (не JWT): отнема се веднага при изход, деактивиране или смяна на роля (AC-16).
 model Session {
-  id         String    @id @default(cuid())
-  userId     String
+  id          String     @id @default(cuid())
+  userId      String
   /// SHA-256 на токена от бисквитката — самият токен не се пази.
-  tokenHash  String    @unique
-  csrfToken  String
-  createdAt  DateTime  @default(now())
-  expiresAt  DateTime
-  lastSeenAt DateTime  @default(now())
-  revokedAt  DateTime?
+  tokenHash   String     @unique
+  csrfToken   String
+  createdAt   DateTime   @default(now())
+  expiresAt   DateTime
+  lastSeenAt  DateTime   @default(now())
+  revokedAt   DateTime?
   /// Вторият фактор е минат (TOTP) — без него персоналът с включен TOTP не минава requireUser.
-  mfaPassed  Boolean   @default(false)
+  mfaPassed   Boolean    @default(false)
+  /// Как е започнала сесията: парола или единен вход (OIDC).
+  authMethod  AuthMethod @default(PASSWORD)
+  /// Вторият фактор е доказан от доставчика (`amr` съдържа `mfa`) и клиентът му се доверява.
+  mfaViaIdp   Boolean    @default(false)
+  /// Доставчикът на единния вход (само при authMethod = SSO) — за отнемане при смяна на политиката.
+  ssoConfigId String?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ssoConfig SsoConfig? @relation(fields: [ssoConfigId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([expiresAt])
+  @@index([ssoConfigId])
+}
+
+enum AuthMethod {
+  PASSWORD
+  SSO
 }
 
 // ─── Продукт ────────────────────────────────────────────────────────────────────────────────
@@ -901,6 +923,124 @@ model PasswordReset {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// ─── Единен вход: OIDC / Microsoft Entra ID (§14.4, §15.1, §12.4) ────────────────────────────
+
+enum SsoProvider {
+  ENTRA // Microsoft Entra ID: издателят се извежда от tenant id (tid), проверява се и tid
+  OIDC // общ OpenID Connect доставчик (Keycloak, Okta, Google Workspace…)
+}
+
+enum SsoMode {
+  OPTIONAL // единният вход е по избор, паролата остава
+  REQUIRED // паролата е отказана за обхвата (вътрешните на клиента / потребителите на фирмата)
+}
+
+/// Доставчикът на клиента (companyId = null → вътрешните) или на фирма (порталните ѝ потребители).
+model SsoConfig {
+  id              String      @id @default(cuid())
+  tenantId        String
+  companyId       String?
+  /// „internal“ или id на фирмата — един доставчик на обхват (NULL в уникален индекс не пази).
+  scopeKey        String
+  provider        SsoProvider
+  /// Името на бутона за общ OIDC („Accedi con …“); за Entra е „Microsoft“.
+  displayName     String      @default("")
+  /// Издателят (iss) точно както го връща discovery; за Entra — извеждан от entraTenantId.
+  issuer          String
+  /// Entra: GUID на директорията — iss и tid в токена трябва да са точно тях.
+  entraTenantId   String?
+  clientId        String
+  /// AES-256-GCM със SSO_KEK, вързано към клиента и записа (services/sso/secret.ts) — никога в
+  /// API, лог или одит.
+  clientSecretEnc String
+  secretUpdatedAt DateTime    @default(now())
+  mode            SsoMode     @default(OPTIONAL)
+  /// Доверява ли се клиентът на MFA при доставчика (`amr` съдържа `mfa`) вместо локалния TOTP.
+  trustIdpMfa     Boolean     @default(false)
+  /// Изход и при доставчика (RP-initiated logout) — по избор.
+  idpLogout       Boolean     @default(false)
+  enabled         Boolean     @default(false)
+  /// Последният интерактивен „Тест на конфигурацията“ — нулира се при смяна на доставчика/клиента.
+  lastTestAt      DateTime?
+  lastTestOk      Boolean?
+  /// Само флагове и кодове (без лични данни и без токени).
+  lastTestReport  Json?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  tenant     Tenant             @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  company    Company?           @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  domains    SsoDomain[]
+  identities ExternalIdentity[]
+  states     SsoLoginState[]
+  sessions   Session[]
+
+  @@unique([tenantId, scopeKey])
+  @@index([companyId])
+}
+
+/// Позволен имейл домейн на доставчика — уникален в платформата (по него входът намира доставчика).
+model SsoDomain {
+  id        String   @id @default(cuid())
+  tenantId  String
+  configId  String
+  /// Малки букви, без „@“.
+  domain    String   @unique
+  createdAt DateTime @default(now())
+
+  tenant Tenant    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  config SsoConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([configId])
+}
+
+/// Връзката на локален акаунт с идентичност при доставчика. Първият вход е по проверен имейл;
+/// след него — само по (issuer, externalSubject). Акаунти не се създават от входа.
+model ExternalIdentity {
+  id              String    @id @default(cuid())
+  tenantId        String
+  userId          String    @unique
+  configId        String
+  issuer          String
+  /// Стабилният идентификатор: Entra — `oid`; общ OIDC — `sub`.
+  externalSubject String
+  createdAt       DateTime  @default(now())
+  lastLoginAt     DateTime?
+
+  tenant Tenant    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  user   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  config SsoConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+
+  @@unique([issuer, externalSubject])
+  @@index([tenantId])
+  @@index([configId])
+}
+
+/// Започнат вход (Authorization Code + PKCE): еднократен, 10 минути, вързан към браузъра. В базата
+/// са само HMAC-ите на state и на бисквитката; nonce и code_verifier се извеждат от бисквитката.
+model SsoLoginState {
+  id          String    @id @default(cuid())
+  tenantId    String
+  configId    String
+  stateHash   String    @unique
+  bindingHash String
+  /// login | test
+  purpose     String
+  /// Тестът: администраторът, който го е пуснал (за одита).
+  actorId     String?
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime
+  usedAt      DateTime?
+
+  tenant Tenant    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  config SsoConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([configId])
+  @@index([expiresAt])
 }
 
 enum SavedFilterScope {

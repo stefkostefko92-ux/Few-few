@@ -32,7 +32,9 @@ export type Capability =
   | 'step:approve'
   | 'policy:manage' // политиката за разрешенията (кой разрешава кой клас) — администраторът
   // Интеграцията с helpdesk (FR-09, §14.4): конекторът, тестът, дневникът на доставките.
-  | 'integrations:manage';
+  | 'integrations:manage'
+  // Единният вход (OIDC / Entra ID, §12.4 „MFA federata e policy“): доставчик, домейни, режим.
+  | 'sso:manage';
 
 /** Всички роли (за zod на входа: API, CLI, филтри). */
 export const ROLES = [
@@ -99,11 +101,12 @@ const CAPABILITIES: Record<Role, readonly Capability[]> = {
     'conversation:use',
     'policy:manage',
     'integrations:manage',
+    'sso:manage',
     ...STAFF_CHAT,
   ],
   // Платформеният администратор управлява потребители САМО в своя клиент (по tenantId като всички):
   // клиентите на платформата се създават и спасяват от сървъра (cli/tenant.ts), не през уеб.
-  PLATFORM_ADMIN: ['users:manage', 'audit:read'],
+  PLATFORM_ADMIN: ['users:manage', 'audit:read', 'sso:manage'],
 };
 
 const AUDIENCES: Record<Role, readonly Audience[]> = {

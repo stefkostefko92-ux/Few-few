@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="/app/composer.css" />
     <link rel="stylesheet" href="/app/flow.css" />
     <link rel="stylesheet" href="/app/ws-search.css" />
+    <link rel="stylesheet" href="/app/auth/sso.css" />
     <script type="module" src="/app/main.js"></script>
   </head>
   <body>
@@ -69,6 +70,14 @@
             <span data-i18n="login.submit">Accedi</span>
           </button>
         </form>
+        <!-- Единен вход (OIDC / Entra ID): видим само ако домейнът на имейла има доставчик -->
+        <div id="login-sso" class="login-sso" hidden>
+          <p class="login-or" data-i18n="sso.login.or">oppure</p>
+          <button id="login-sso-btn" class="btn btn-secondary btn-block btn-sso" type="button">
+            <img id="login-sso-logo" src="/app/auth/microsoft.svg" alt="" hidden />
+            <span id="login-sso-label"></span>
+          </button>
+        </div>
         <div class="login-lang">
           <label for="login-lang" data-i18n="lang.label">Lingua</label>
           <select id="login-lang" class="lang-select" data-lang-select>

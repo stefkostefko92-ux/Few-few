@@ -1,4 +1,4 @@
-import type { AccountKind, Prisma, PrismaClient, Role } from '@prisma/client';
+import type { AccountKind, AuthMethod, Prisma, PrismaClient, Role } from '@prisma/client';
 import type { NextFunction, Request, Response } from 'express';
 import { hashToken, randomToken } from '../crypto.js';
 import { mfaRequired } from './rbac.js';
@@ -19,6 +19,11 @@ export interface MfaState {
   passed: boolean;
   /** Ролята е задължена да има TOTP (персоналът). */
   required: boolean;
+  /**
+   * Вторият фактор е доказан от доставчика на единния вход в ТАЗИ сесия (`amr` съдържа `mfa`) и
+   * клиентът му се доверява (services/sso) — тогава локалният TOTP не се иска. Само когато е вярно.
+   */
+  idp?: true;
 }
 
 export interface Principal {
@@ -31,7 +36,8 @@ export interface Principal {
     kind: AccountKind;
     locale: string;
   };
-  session: { id: string; csrfToken: string };
+  /** authMethod липсва → парола (сесии, създадени без него). */
+  session: { id: string; csrfToken: string; authMethod?: AuthMethod };
   mfa: MfaState;
 }
 
@@ -51,20 +57,37 @@ export interface SessionDeps {
 export function mfaStateOf(
   user: { role: Role; totpEnabledAt: Date | null },
   sessionPassed: boolean,
+  viaIdp = false,
 ): MfaState {
   const enabled = user.totpEnabledAt !== null;
-  return { enabled, passed: enabled && sessionPassed, required: mfaRequired(user.role) };
+  const required = mfaRequired(user.role);
+  if (viaIdp) return { enabled, passed: true, required, idp: true };
+  return { enabled, passed: enabled && sessionPassed, required };
+}
+
+/** Сесия от единен вход: методът, доставчикът и дали вторият фактор е доказан при него. */
+export interface SsoSessionOrigin {
+  authMethod: 'SSO';
+  ssoConfigId: string;
+  mfaViaIdp: boolean;
 }
 
 export async function createSession(
   deps: SessionDeps,
   userId: string,
+  sso?: SsoSessionOrigin,
 ): Promise<{ id: string; token: string; csrfToken: string; expiresAt: Date }> {
   const token = randomToken();
   const csrfToken = randomToken(24);
   const expiresAt = new Date(Date.now() + deps.ttlHours * 3600 * 1000);
   const session = await deps.db.session.create({
-    data: { userId, tokenHash: hashToken(token, deps.pepper), csrfToken, expiresAt },
+    data: {
+      userId,
+      tokenHash: hashToken(token, deps.pepper),
+      csrfToken,
+      expiresAt,
+      ...(sso ?? {}),
+    },
   });
   return { id: session.id, token, csrfToken, expiresAt };
 }
@@ -139,8 +162,8 @@ export function loadPrincipal(deps: SessionDeps) {
           kind: u.kind,
           locale: u.locale,
         },
-        session: { id: session.id, csrfToken: session.csrfToken },
-        mfa: mfaStateOf(u, session.mfaPassed),
+        session: { id: session.id, csrfToken: session.csrfToken, authMethod: session.authMethod },
+        mfa: mfaStateOf(u, session.mfaPassed, session.mfaViaIdp),
       };
       if (now.getTime() - session.lastSeenAt.getTime() > TOUCH_EVERY_MS) {
         await deps.db.session.update({ where: { id: session.id }, data: { lastSeenAt: now } });
@@ -163,7 +186,9 @@ export type RevocationReason =
   | 'password_reset'
   | 'mfa_reset'
   | 'admin_revoke'
-  | 'erased';
+  | 'erased'
+  // Единният вход: сменен/изключен доставчик, отказана парола (REQUIRED), развързана идентичност.
+  | 'sso_changed';
 
 export interface SessionRevocation {
   userIds: string[];

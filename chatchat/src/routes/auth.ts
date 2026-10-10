@@ -19,6 +19,7 @@ import {
   setSessionCookie,
   type Principal,
 } from '../auth/sessions.js';
+import { passwordRefused } from '../services/sso/policy.js';
 import { resetPasswordWithToken } from '../services/users.js';
 
 const LoginSchema = z.object({
@@ -82,6 +83,17 @@ export function authRouter(deps: AppDeps): Router {
           }
           return apiError(res, 401, 'invalid_credentials');
         }
+        // Единният вход е задължителен за човека (REQUIRED) — паролата е вярна, но не стига. Казва
+        // се само на знаещия паролата (иначе отговорът е invalid_credentials като по-горе).
+        if (await passwordRefused(deps.db, user)) {
+          await appendAudit(deps.db, {
+            tenantId: user.tenantId,
+            actorId: user.id,
+            action: 'auth.login_failed',
+            detail: { method: 'password', reason: 'sso_required' },
+          });
+          return apiError(res, 403, 'sso_required');
+        }
         // Сесията започва без втори фактор: включен TOTP → /auth/mfa/verify; персонал без TOTP →
         // /auth/mfa/setup. Дотогава сесията стига само до /auth/me, /auth/logout и /auth/mfa/*.
         const session = await createSession(sessionDeps, user.id);
@@ -116,6 +128,7 @@ export function authRouter(deps: AppDeps): Router {
       csrfToken: p.session.csrfToken,
       mfa: p.mfa,
       capabilities: capabilitiesFor(p.user.role),
+      authMethod: p.session.authMethod === 'SSO' ? 'sso' : 'password',
     });
   });
 
