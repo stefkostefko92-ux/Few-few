@@ -145,6 +145,8 @@ const citeFirst: Plan = (pack) => {
 
 export class ScriptedModel implements DiagnosisModel {
   plan: Plan = citeFirst;
+  /** Изкуствено бавен модел — за състезания между заявки (NFR-12). */
+  delayMs = 0;
   readonly packs: PackItem[][] = [];
   readonly questions: string[] = [];
   /** Суровото съобщение на случая, както го получава моделът. */
@@ -158,6 +160,7 @@ export class ScriptedModel implements DiagnosisModel {
 
   reset(): void {
     this.plan = citeFirst;
+    this.delayMs = 0;
     this.packs.length = 0;
     this.questions.length = 0;
     this.texts.length = 0;
@@ -180,6 +183,7 @@ export class ScriptedModel implements DiagnosisModel {
           : [],
       ),
     );
+    if (this.delayMs > 0) await new Promise((r) => setTimeout(r, this.delayMs));
     const input = baseDiagnosis(this.plan(pack, { question }));
     return {
       id: `msg_${this.packs.length}`,
