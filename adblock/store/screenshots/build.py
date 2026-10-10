@@ -129,7 +129,7 @@ def shoot(html_path, out_png, width, height, scale=2):
             f"--screenshot={out_png}", "file://" + html_path])
 
 
-def popup(blocked="1,204", data="68 MB", time="14 min", host="news.example.com", log=None, theme="carbon"):
+def popup(blocked="1,204", data="68 MB", time="14 min", host="news.example.com", log=None, theme="carbon", scale=2):
     """Screenshot of the REAL popup (popup/popup.html + popup.css) seeded with demo
     numbers — the store art can never drift from the shipped UI again."""
     import base64, subprocess, tempfile, shutil
@@ -179,7 +179,7 @@ def popup(blocked="1,204", data="68 MB", time="14 min", host="news.example.com",
         # the lowest element, not the body box (a long log overflows it)
         height = (int(m.group(1)) if m else 640) + 8
         png = os.path.join(tmp, "popup.png")
-        shoot(html, png, 320, height)
+        shoot(html, png, 320, height, scale)  # scale 3 = 960 px wide, for the vertical promo
         b64 = base64.b64encode(open(png, "rb").read()).decode()
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
