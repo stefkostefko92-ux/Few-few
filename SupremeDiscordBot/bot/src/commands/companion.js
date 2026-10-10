@@ -13,6 +13,7 @@ import { t, resolveLang, resolveLangSync } from "../i18n/index.js";
 import { friendlyError } from "../utils/friendlyError.js";
 import { BRAND, SUCCESS, WARNING } from "../utils/colors.js";
 import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
+import { rarityName, familyName, companionBlurb } from "../utils/companionText.js";
 
 const STAGE_EMOJI = { 1: "🥚", 2: "✨", 3: "🌟" };
 export const STAT_KEYS = ["atk", "def", "spd", "hp"];
@@ -23,11 +24,17 @@ const wait = (ms) => (ms > 0 ? new Promise((r) => setTimeout(r, ms)) : Promise.r
 /** Discord сам превежда относителното време („след 5 минути“) на езика на клиента. */
 const relTime = (ms) => `<t:${Math.floor((Date.now() + Math.max(0, Number(ms) || 0)) / 1000)}:R>`;
 
+// Неразделим интервал (U+00A0) между емоджито и числото: в тясно поле Discord
+// пренася реда, а „❤️“ оставаше на един ред, „110“ — на следващия (снимка от
+// прегледа, 10.10.2026). Сега редът се чупи само при „·“.
+const NBSP = "\u00a0";
+const keep = (s) => String(s).replace(/ /g, NBSP);
+
 export function statLine(s) {
-  return STAT_KEYS.map((k) => `${STAT_EMOJI[k]} ${s?.[k] ?? 0}`).join(" · ");
+  return STAT_KEYS.map((k) => `${STAT_EMOJI[k]}${NBSP}${s?.[k] ?? 0}`).join(" · ");
 }
 function powerText(s, lang) {
-  return `💪 ${t("game.stats.power", lang, { power: s?.power ?? 0 })}`;
+  return keep(`💪 ${t("game.stats.power", lang, { power: s?.power ?? 0 })}`);
 }
 export function hpBar(hp, max, width = 10) {
   const filled = max > 0 ? Math.round((Math.max(0, Math.min(hp, max)) / max) * width) : 0;
@@ -127,18 +134,18 @@ export function companionCard(c, ownedRow, lang) {
   const e = new EmbedBuilder()
     .setColor(BRAND)
     .setTitle(`${c.rarityEmoji} ${ownedRow?.nickname || c.name} · ${STAGE_EMOJI[ownedRow?.stage || 1]} ${t("game.profile.stage", lang, { stage: ownedRow?.stage || 1 })}`)
-    .setDescription(c.blurb)
+    .setDescription(companionBlurb(c, lang))
     .setThumbnail(c.imageUrl)
     .addFields(
-      { name: t("game.companion.rarity", lang), value: `${c.rarityLabel}${c.seasonId ? ` · ${t("game.companion.seasonal", lang)}` : ""}`, inline: true },
-      { name: t("game.companion.family", lang), value: c.family, inline: true },
+      { name: t("game.companion.rarity", lang), value: `${rarityName(c, lang)}${c.seasonId ? ` · ${t("game.companion.seasonal", lang)}` : ""}`, inline: true },
+      { name: t("game.companion.family", lang), value: familyName(c, lang), inline: true },
     );
   if (ownedRow) {
     e.addFields({ name: t("game.companion.fed", lang), value: ownedRow.nextStageAt ? `✨ ${ownedRow.fed} / ${ownedRow.nextStageAt}` : `✨ ${ownedRow.fed} · ${t("game.companion.finalForm", lang)}`, inline: true });
   }
   const sheet = ownedRow?.sheet;
   if (sheet?.stats) {
-    const training = STAT_KEYS.map((k) => `${STAT_EMOJI[k]} ${t(`game.stats.${k}`, lang)} ${sheet.levels[k]}/${sheet.cap} · ${sheet.nextCost[k] == null ? t("game.stats.max", lang) : `✨ ${sheet.nextCost[k]}`}`).join("\n");
+    const training = STAT_KEYS.map((k) => `${keep(`${STAT_EMOJI[k]} ${t(`game.stats.${k}`, lang)} ${sheet.levels[k]}/${sheet.cap}`)} · ${sheet.nextCost[k] == null ? t("game.stats.max", lang) : `✨${NBSP}${sheet.nextCost[k]}`}`).join("\n");
     e.addFields(
       { name: t("game.stats.title", lang), value: `${statLine(sheet.stats)}\n${powerText(sheet.stats, lang)}`, inline: false },
       { name: t("game.stats.training", lang), value: training, inline: true },

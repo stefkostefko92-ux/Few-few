@@ -535,6 +535,38 @@ app.post("/internal/ticket-reply", async (req, res) => {
 });
 
 // v2.2 — Open a private discussion channel with applicant (pre-decision)
+// ─── Имена на членове за таблото (v53) ────────────────────────────────────────
+// Страницата „Игра“ показваше сурови Discord ID в класацията, покупките,
+// колекционерите, куестовете и trivia (преглед 10.10.2026). Играчите рядко са
+// влизали в таблото, затова имената не са в `users` — взимат се живо от
+// Discord, само за ID-тата, които таблото вече показва, и НЕ се пазят никъде.
+// Връща само членове на ТОЗИ guild (fetch е в рамките на guild-а): чужд ID
+// просто липсва в отговора. Таван 100 ID на заявка; извън кеша — по ЕДИН ID през
+// REST (Get Guild Member), до 25 на заявка: целият списък никога не се иска и
+// привилегированият intent не е нужен (docs/DISCORD_VERIFICATION.md §3.2).
+app.get("/internal/guild/:guildId/members", async (req, res) => {
+  const ids = [...new Set(String(req.query.ids || "").split(",").map((x) => x.trim()).filter((x) => /^\d{17,20}$/.test(x)))].slice(0, 100);
+  try {
+    const guild = client.guilds.cache.get(req.params.guildId)
+      || await client.guilds.fetch(req.params.guildId).catch(() => null);
+    if (!guild) return res.status(404).json({ ok: false, error: "Guild not found" });
+    const members = {};
+    const missing = [];
+    for (const id of ids) {
+      const m = guild.members.cache.get(id);
+      if (m) members[id] = m.displayName; else missing.push(id);
+    }
+    await Promise.all(missing.slice(0, 25).map(async (id) => {
+      const m = await guild.members.fetch(id).catch(() => null);
+      if (m) members[id] = m.displayName;
+    }));
+    res.json({ ok: true, members });
+  } catch (err) {
+    console.error("[guild-members]", err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // ─── Каталог на guild-а: канали + роли (за избор от таблото) ────────────────
 //
 // ЗАЩО (сигнал от собственика, 08.08.2026: „нямам опция да избера в коя

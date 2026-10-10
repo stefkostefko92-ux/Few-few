@@ -882,7 +882,7 @@ export default {
   "game.lb.sparks": "Chispas",
   "game.lb.streak": "Racha diaria",
   "game.lb.empty": "Nadie tiene XP todavía.",
-  "game.lb.user": "ID de usuario",
+  "game.lb.user": "Miembro",
   "game.lb.level": "Nivel",
   "game.lb.messages": "Mensajes",
   "game.lb.voice": "Min. de voz",

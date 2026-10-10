@@ -8,6 +8,7 @@ import {
   getAnalyticsLeaderboard, getAnalyticsFunnel,
 } from "../api";
 import { useT } from "../contexts/I18nContext";
+import MemberName, { useMemberNames } from "../components/MemberName";
 
 export default function AnalyticsPage() {
   const { t } = useT();
@@ -21,6 +22,8 @@ export default function AnalyticsPage() {
   const { data: overview } = overviewQ;
   const { data: heatmap } = heatmapQ;
   const { data: leaderboard } = leaderboardQ;
+  // Екип без вход в таблото няма ред в users → името идва живо от бота.
+  const staffNames = useMemberNames(leaderboard?.leaderboard?.filter((s) => !s.username).map((s) => s.userId));
   const { data: funnel } = funnelQ;
 
   return (
@@ -93,7 +96,7 @@ export default function AnalyticsPage() {
                     </div>
                     {s.username
                       ? <span className="text-sm text-cs-text">{s.username}</span>
-                      : <span className="font-mono text-xs text-cs-muted" title={s.userId}>ID …{String(s.userId).slice(-6)}</span>}
+                      : <MemberName id={s.userId} names={staffNames} className="text-sm text-cs-text" />}
                   </div>
                   <div className="flex items-center gap-4 text-xs">
                     <span className="text-cs-cyan">{t("analytics.claimed", { count: s.claimed })}</span>

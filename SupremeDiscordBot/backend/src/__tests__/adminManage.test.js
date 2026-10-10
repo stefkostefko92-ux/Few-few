@@ -51,6 +51,33 @@ beforeEach(() => {
   prismaMock.server.findUnique.mockResolvedValue({ id: SID, name: "Test server" });
 });
 
+describe("играчите: имената на хората без вход в таблото идват от бота", () => {
+  it("users първо; липсващите — живо от бота (само те); непознат остава null", async () => {
+    const U2 = "444444444444444444", U3 = "555555555555555555";
+    prismaMock.memberProgress.findMany.mockResolvedValueOnce([UID, U2, U3].map((userId, i) => ({ userId, xp: 100 - i, level: 1, seasonXp: 0, sparks: 0, streak: 0, messages: 0, voiceMinutes: 0, activeCompanionId: null, updatedAt: new Date() })));
+    prismaMock.memberProgress.count.mockResolvedValueOnce(3);
+    prismaMock.user.findMany.mockResolvedValueOnce([{ id: UID, username: "stefan", avatar: null }]);
+    prismaMock.memberCompanion.groupBy.mockResolvedValueOnce([]);
+    axiosGet.mockResolvedValueOnce({ data: { ok: true, members: { [U2]: "Иван", [UID]: "НЕ бива да замени users" } } });
+    const r = await request(app).get(`/api/admin/game/servers/${SID}/members`);
+    expect(r.status).toBe(200);
+    expect(r.body.members.map((m) => m.username)).toEqual(["stefan", "Иван", null]);
+    const [url, opts] = axiosGet.mock.calls.at(-1);
+    expect(url).toMatch(new RegExp(`/internal/guild/${SID}/members$`));
+    expect(opts.params.ids.split(",").sort()).toEqual([U2, U3]);
+  });
+  it("ботът е недостъпен → списъкът пак излиза, само без имената", async () => {
+    prismaMock.memberProgress.findMany.mockResolvedValueOnce([{ userId: UID, xp: 1, level: 0, seasonXp: 0, sparks: 0, streak: 0, messages: 0, voiceMinutes: 0, activeCompanionId: null, updatedAt: new Date() }]);
+    prismaMock.memberProgress.count.mockResolvedValueOnce(1);
+    prismaMock.user.findMany.mockResolvedValueOnce([]);
+    prismaMock.memberCompanion.groupBy.mockResolvedValueOnce([]);
+    axiosGet.mockRejectedValueOnce(new Error("ECONNREFUSED"));
+    const r = await request(app).get(`/api/admin/game/servers/${SID}/members`);
+    expect(r.status).toBe(200);
+    expect(r.body.members[0]).toMatchObject({ userId: UID, username: null });
+  });
+});
+
 describe("гардове", () => {
   it("без потвърден втори фактор → 403 MFA_REQUIRED дори на четене", async () => {
     SESSION = {};

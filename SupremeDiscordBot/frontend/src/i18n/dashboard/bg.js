@@ -882,7 +882,7 @@ export default {
   "game.lb.sparks": "Искри",
   "game.lb.streak": "Дневна серия",
   "game.lb.empty": "Още никой няма XP.",
-  "game.lb.user": "ID на потребител",
+  "game.lb.user": "Член",
   "game.lb.level": "Ниво",
   "game.lb.messages": "Съобщения",
   "game.lb.voice": "Мин. глас",

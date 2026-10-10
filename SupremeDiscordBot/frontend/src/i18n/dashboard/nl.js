@@ -882,7 +882,7 @@ export default {
   "game.lb.sparks": "Vonken",
   "game.lb.streak": "Dagelijkse reeks",
   "game.lb.empty": "Nog niemand heeft XP.",
-  "game.lb.user": "Gebruikers-ID",
+  "game.lb.user": "Lid",
   "game.lb.level": "Level",
   "game.lb.messages": "Berichten",
   "game.lb.voice": "Spraakmin.",

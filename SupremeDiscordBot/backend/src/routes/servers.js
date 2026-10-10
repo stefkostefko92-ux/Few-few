@@ -9,6 +9,7 @@ import { notifyBot } from "../services/botNotifier.js";
 import { isSupportedLanguage } from "../lib/languages.js";
 import { getServerTier } from "../lib/premium.js";
 import { guildIconUrl } from "../lib/discordCdn.js";
+import { fetchMemberNames } from "../lib/memberNames.js";
 
 // Категориите на Server Activity Logging — един източник за валидация.
 const EVENT_LOG_CATEGORIES = ["voice", "members", "moderation", "messages", "server"];
@@ -321,6 +322,17 @@ router.get("/:serverId/stats", requireServerAdmin, async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+// ─── GET /api/servers/:serverId/member-names?ids=… ───────────────────────────
+// Имената на членовете за страницата „Игра“ (класация, покупки, колекционери,
+// куестове, trivia) вместо сурови Discord ID (преглед 10.10.2026). Живо от
+// бота, нищо не се пази. Скоупът е `requireServerAdmin` + guildId от ПЪТЯ;
+// ботът връща само членове на същия guild. Само снежинки, без дубли, до 100.
+// Без бота таблото пак работи — празен отговор, UI-ят показва кратко ID.
+router.get("/:serverId/member-names", requireServerAdmin, async (req, res) => {
+  const out = await fetchMemberNames(req.params.serverId, String(req.query.ids || "").split(","));
+  res.json(out.unavailable ? { members: {}, unavailable: true } : { members: out.members });
 });
 
 // ─── GET /api/servers/:serverId/directory ─────────────────────────────────────

@@ -224,7 +224,9 @@ describe("v53 — помощниците за битката", () => {
     expect(hpBar(50, 100)).toBe("▰▰▰▰▰▱▱▱▱▱");
     expect(hpBar(0, 100)).toBe("▱".repeat(10));
     expect(hpBar(130, 100)).toBe("▰".repeat(10));
-    expect(statLine({ atk: 26, def: 18, spd: 19, hp: 90 })).toBe("⚔️ 26 · 🛡️ 18 · 💨 19 · ❤️ 90");
+    expect(statLine({ atk: 26, def: 18, spd: 19, hp: 90 })).toBe("⚔️\u00a026 · 🛡️\u00a018 · 💨\u00a019 · ❤️\u00a090");
+    // редът се чупи само при „·“ — емоджито никога не остава без числото си
+    expect(statLine({ atk: 26, def: 18, spd: 19, hp: 90 }).split(" ").every((w) => w === "·" || /\u00a0\d+$/.test(w))).toBe(true);
   });
   it("междинен кадър: заглавие „срещу“, последните удари, живот по кадъра; краен — победител, награда, оставащи атаки", () => {
     const mid = battleEmbed(battle(), 2, "en").toJSON();
@@ -278,7 +280,7 @@ describe("v53 — /companion train", () => {
     expect(apiPost).toHaveBeenCalledWith(`/bot/game/companions/${GID}/${ME}/train`, { ownedId: "own_0", stat: "atk" });
     const e = i.editReply.mock.calls[0][0].embeds[0].toJSON();
     expect(e.title).toBe("⚔️ Blip trained **Attack** to level 1");
-    expect(e.description).toContain("⚔️ 22");
+    expect(e.description).toContain("⚔️\u00a022");
     expect(e.footer.text).toBe("Paid ✨ 20 · balance ✨ 80");
   });
   it("таван на формата и недостиг казват точно какво и колко", async () => {
@@ -353,8 +355,8 @@ describe("v53 — /companion pvp и /profile", () => {
     const i = ix("info", { number: 1 });
     await companion.execute(i);
     const f = i.editReply.mock.calls[0][0].embeds[0].toJSON().fields;
-    expect(f.find((x) => x.name === "Stats").value).toBe("⚔️ 20 · 🛡️ 20 · 💨 20 · ❤️ 100\n💪 Power 80");
-    expect(f.find((x) => x.name.startsWith("Training")).value).toContain("⚔️ Attack 0/4 · ✨ 20");
+    expect(f.find((x) => x.name === "Stats").value).toBe("⚔️\u00a020 · 🛡️\u00a020 · 💨\u00a020 · ❤️\u00a0100\n💪\u00a0Power\u00a080");
+    expect(f.find((x) => x.name.startsWith("Training")).value).toContain("⚔️\u00a0Attack\u00a00/4 · ✨\u00a020");
     expect(f.find((x) => x.name === "Battles").value).toBe("🏆 3 · 💔 1");
   });
   it("/profile показва статистиките на активния и „не участва“ при pvp off", async () => {
@@ -364,7 +366,49 @@ describe("v53 — /companion pvp и /profile", () => {
     i.user = { id: ME, username: "me", displayName: "me", displayAvatarURL: () => "https://x/a.png", bot: false };
     await profile.execute(i);
     const v = i.editReply.mock.calls[0][0].embeds[0].toJSON().fields.find((x) => x.name === "Companion").value;
-    expect(v).toContain("⚔️ 20 · 🛡️ 20 · 💨 20 · ❤️ 100 · 💪 Power 80");
+    expect(v).toContain("⚔️\u00a020 · 🛡️\u00a020 · 💨\u00a020 · ❤️\u00a0100 · 💪\u00a0Power\u00a080");
     expect(v).toContain("🏆 3 · 💔 1 · 🕊️ not in battles");
+  });
+});
+
+// ─── Картата на спътника на езика на сървъра (преглед 10.10.2026) ────────────
+const text = await import("../utils/companionText.js");
+const { t: tr } = await import("../i18n/index.js");
+
+describe("картата на спътника е преведена", () => {
+  const blip = { name: "Blip", rarity: "common", familyKey: "lime", rarityLabel: "Common", family: "Lime", blurb: "Blip is a friendly lime jelly." };
+  it("редкост, семейство и описание на български; без familyKey — от каталожния id", () => {
+    expect(text.rarityName(blip, "bg")).toBe("Обикновен");
+    expect(text.familyName(blip, "bg")).toBe("Лайм");
+    expect(text.companionBlurb(blip, "bg")).toBe("Blip е дружелюбно желе от семейство „Лайм“, с кръгли очила и мъничка академична шапка.");
+    const fromRow = { name: "Spark", rarity: "rare", companionId: "ember-spark" };
+    expect(text.familyName(fromRow, "de")).toBe("Glut");
+    expect(text.companionBlurb(fromRow, "en")).toBe("Spark is a rare jelly from the Ember family, with round glasses and a tiny graduation cap.");
+  });
+  it("непознати ключове → английският текст от каталога, никога празно или „game.rarity.x“", () => {
+    const odd = { name: "X", rarity: "mythic", familyKey: "plasma", rarityLabel: "Mythic", family: "Plasma", blurb: "X." };
+    expect(text.rarityName(odd, "bg")).toBe("Mythic");
+    expect(text.familyName(odd, "bg")).toBe("Plasma");
+    expect(text.companionBlurb(odd, "bg")).toBe("X.");
+  });
+  it("всяка редкост и всяко семейство има превод на 8-те езика", () => {
+    for (const lang of ["en", "bg", "it", "de", "es", "fr", "nl", "pl"]) {
+      for (const r of text.RARITY_KEYS) expect(tr(`game.rarity.${r}`, lang)).not.toMatch(/^game\./);
+      for (const f of text.FAMILY_KEYS) expect(tr(`game.family.${f}`, lang)).not.toMatch(/^game\./);
+    }
+  });
+  it("/companion info на български: описание, редкост и семейство", async () => {
+    apiGet.mockResolvedValueOnce({ data: { sparks: 1, activeId: "own_0", companions: [{ id: "own_0", companionId: "ember-spark", index: 1, name: "Spark", nickname: null, rarity: "common", familyKey: "ember", rarityEmoji: "⚪", rarityLabel: "Common", family: "Ember", blurb: "Spark is a friendly ember jelly.", stage: 1, fed: 0, nextStageAt: 100, imageUrl: "https://x/s.jpg" }] } });
+    const i = { ...ix("info", { number: 1 }), locale: "bg" };
+    await companion.execute(i);
+    const e = i.editReply.mock.calls[0][0].embeds[0].toJSON();
+    expect(e.description).toBe("Spark е дружелюбно желе от семейство „Жар“, с кръгли очила и мъничка академична шапка.");
+    expect(e.fields.find((f) => f.name === "Редкост").value).toBe("Обикновен");
+    expect(e.fields.find((f) => f.name === "Семейство").value).toBe("Жар");
+  });
+  it("появата: „⚪ Обикновен спътник“ на български, етикет „Rarità:“ на италиански", () => {
+    const data = { spawn: { id: "sp1" }, companion: { name: "Blip", rarity: "common", rarityEmoji: "⚪", rarityLabel: "Common", imageUrl: "https://x/b.jpg" } };
+    expect(game.spawnMessage(data, "bg", tr).embeds[0].toJSON().description).toMatch(/^⚪ Обикновен спътник ·/);
+    expect(game.spawnMessage(data, "it", tr).embeds[0].toJSON().description).toMatch(/^Rarità: ⚪ Comune ·/);
   });
 });

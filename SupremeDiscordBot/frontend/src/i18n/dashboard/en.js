@@ -893,7 +893,7 @@ export default {
   "game.lb.sparks": "Sparks",
   "game.lb.streak": "Daily streak",
   "game.lb.empty": "Nobody has earned XP yet.",
-  "game.lb.user": "User ID",
+  "game.lb.user": "Member",
   "game.lb.level": "Level",
   "game.lb.messages": "Messages",
   "game.lb.voice": "Voice min",

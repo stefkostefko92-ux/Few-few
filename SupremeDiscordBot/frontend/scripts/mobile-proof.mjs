@@ -107,6 +107,8 @@ const FIX = {
   },
   "GET /api/servers": [{ id: SID, name: "T19C", icon: null, botAdded: true, isPremium: true }],
   [`GET /api/servers/${SID}/stats`]: { ticketCount: 42, openTickets: 3, applications: 7, closedThisWeek: 5 },
+  // v53 — имената на членовете (страницата „Игра“): дълги имена нарочно — проверка за прелив.
+  [`GET /api/servers/${SID}/member-names`]: { members: { "333333333333333333": "Стефан „Бобовдолчанина“ Костадинов", "444444444444444444": "ivan_the_collector_2026" } },
   [`GET /api/servers/${SID}/directory`]: {
     ok: true,
     categories: [

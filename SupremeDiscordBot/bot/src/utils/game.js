@@ -9,6 +9,7 @@ import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionF
 import { BRAND, MUTED } from "./colors.js";
 import api from "./api.js";
 import { roleAssignabilityReason } from "./reactionRoles.js";
+import { rarityName } from "./companionText.js";
 
 const SETTINGS_TTL_MS = 60 * 1000;
 const FLUSH_MS = 30 * 1000;
@@ -187,7 +188,7 @@ export function spawnMessage(data, lang = "en", tFn = (k) => k) {
   const embed = new EmbedBuilder()
     .setColor(BRAND)
     .setTitle(tFn("game.spawn.title", lang, { name: c.name }))
-    .setDescription(tFn("game.spawn.body", lang, { rarity: `${c.rarityEmoji} ${c.rarityLabel}` }))
+    .setDescription(tFn("game.spawn.body", lang, { rarity: `${c.rarityEmoji} ${rarityName(c, lang, tFn)}` }))
     .setThumbnail(c.imageUrl);
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder().setCustomId(`game:catch:${data.spawn.id}`).setStyle(ButtonStyle.Success).setLabel(tFn("game.spawn.catch", lang)),

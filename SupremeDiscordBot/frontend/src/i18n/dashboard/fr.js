@@ -882,7 +882,7 @@ export default {
   "game.lb.sparks": "Étincelles",
   "game.lb.streak": "Série quotidienne",
   "game.lb.empty": "Personne n'a encore d'XP.",
-  "game.lb.user": "ID utilisateur",
+  "game.lb.user": "Membre",
   "game.lb.level": "Niveau",
   "game.lb.messages": "Messages",
   "game.lb.voice": "Min. vocal",
