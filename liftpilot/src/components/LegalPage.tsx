@@ -25,7 +25,7 @@ export default function LegalPage({ eyebrow, title, head, toc, tocLabel, childre
 }) {
   const withToc = toc !== undefined && toc.length > 0;
   return (
-    <main id="main" className="pub-page legal-page">
+    <main id="main" tabIndex={-1} className="pub-page legal-page">
       <header className="pub-head blueprint">
         <p className="eyebrow">{eyebrow}</p>
         <h1>{title}</h1>

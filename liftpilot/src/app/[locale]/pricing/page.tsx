@@ -64,7 +64,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
   return (
     <>
       <SiteHeader at="pricing" />
-      <main id="main" className="pub-page pricing">
+      <main id="main" tabIndex={-1} className="pub-page pricing">
         <header className="pub-head blueprint">
           <p className="eyebrow">{t('eyebrow')}</p>
           <h1>{t('title')}</h1>
@@ -111,7 +111,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
           <section aria-labelledby="q-terms" className="panel">
             <div className="panel-head"><span className="icon-tile sm"><Icon name="file-text" size={18} /></span><h2 id="q-terms">{t('termsTitle')}</h2></div>
             <ul className="check-list">{(['t1', 't2', 't3', 't4', 't7'] as const).map((k) => <li key={k}>{tb(`terms.${k}`)}</li>)}</ul>
-            <p className="note">{t.rich('termsNote', { terms: (c) => <Link href="/privacy#terms">{c}</Link>, data: (c) => <Link href="/data">{c}</Link> })}</p>
+            <p className="note long">{t.rich('termsNote', { terms: (c) => <Link href="/privacy#terms">{c}</Link>, data: (c) => <Link href="/data">{c}</Link> })}</p>
           </section>
         </div>
         <section aria-labelledby="q-faq" className="pub-faq">

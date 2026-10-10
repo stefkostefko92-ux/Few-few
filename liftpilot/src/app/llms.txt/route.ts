@@ -24,7 +24,7 @@ export function GET(): Response {
     'Results are indicative until a qualified technician checks and signs the report; the normative values are being verified by an engineer. Installer companies register themselves; the owner confirms the e-mail address and invites colleagues by e-mail.',
     '',
     '## Pages',
-    `- [LiftPilot (Italiano)](${base}/it): modules, drawings made by the software, workflow, deliverables, security, standards, FAQ`,
+    `- [LiftPilot (Italiano)](${base}/it): features, the product (survey, project, machine, 3D simulation, documents), prices, standards, FAQ`,
     `- [LiftPilot (English)](${base}/en)`,
     `- [LiftPilot (Български)](${base}/bg)`,
     `- [Register a company](${base}/it/register): self-registration of an installer company and its owner (also [English](${base}/en/register), [Български](${base}/bg/register))`,

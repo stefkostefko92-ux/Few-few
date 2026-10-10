@@ -20,6 +20,10 @@ const STEPS: ReadonlyArray<readonly [string, IconName]> = [
 /** The pages of the sample's documents, with the key of each caption: the first sheet of the drawings and the report's
  *  first page large, the machine room's sheet and a page of the checks small beside them. */
 const DOCS = [['lp-doc-tavola', 'docTavola'], ['lp-doc-relazione', 'docRelazione'], ['lp-doc-locale', 'docLocale'], ['lp-doc-verifiche', 'docVerifiche']] as const;
+/** Each page at 320, 600 and 820 px (scripts/landing-docs.ts), drawn at most 246 px wide (the two large) or 123 px (the
+ *  two small) in the frame of a computer, two in a row (~40 % of the screen) on a phone (home.css .ui-desk). */
+const docSet = (name: string): string => `/img/${name}-320.webp 320w, /img/${name}-600.webp 600w, /img/${name}.webp 820w`;
+const DOC_SIZES = { lead: '(max-width: 720px) 45vw, 246px', small: '(max-width: 720px) 45vw, 123px' } as const;
 
 type Fact = readonly [string, string];
 
@@ -130,7 +134,8 @@ export default async function Showcase({ sample, stop, intlLocale }: Props) {
           return (
             <li key={name} className={i < 2 ? 'lead' : undefined}>
               {/* eslint-disable-next-line @next/next/no-img-element -- pages of the sample's documents made by scripts/landing-docs.ts */}
-              <img src={`/img/${name}.webp`} width={d.w} height={d.h} alt={t(key, d.args)} loading="lazy" decoding="async" />
+              <img src={`/img/${name}.webp`} srcSet={docSet(name)} sizes={i < 2 ? DOC_SIZES.lead : DOC_SIZES.small} width={d.w} height={d.h}
+                alt={t(key, d.args)} loading="lazy" decoding="async" />
             </li>
           );
         })}

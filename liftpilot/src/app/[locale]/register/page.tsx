@@ -33,7 +33,7 @@ export default async function RegisterPage({ params }: { params: Promise<{ local
     breadcrumbLd([{ name: SITE_NAME, url: `${base}/${locale}` }, { name: t('title'), url: `${base}/${locale}/register` }])]);
   return (
     <>
-      <AuthPage title={t('title')} lead={t('lead')}>
+      <AuthPage title={t('title')} lead={t('lead')} at="register">
         {mailConfigured()
           ? <RegisterForm date={termsDateText(locale)} trialDays={billingConfig()?.trialDays ?? null} />
           : <p className="alert alert-warn" role="status">{t('closed')}</p>}

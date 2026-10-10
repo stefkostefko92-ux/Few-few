@@ -9,6 +9,13 @@
 /* the sections under the first screen are laid out when they come near the viewport: the first layout and every font
    that arrives after it touch only the hero (the landing's main-thread time); the sizes are estimates, then remembered */
 .lp-section:not(.hero) { content-visibility: auto; contain-intrinsic-size: auto 760px; }
+/* the footer under the landing too: its small print names the provider in Cyrillic as well, and on the Italian and
+   English pages that face would be fetched with the first screen and lay the laid-out text out again after the first
+   paint (main-thread time inside the window of the blocking time) */
+.lp + .site-footer { content-visibility: auto; contain-intrinsic-size: auto 300px; }
+/* the landing's beta mark in the mono face the first screen already has (DM Mono 400; the template's mono labels are
+   all 400): at 500 it fetched one more face (and IBM Plex Mono 500 for «Бета») after the first paint, for one word */
+.lp .badge { font-weight: 400; }
 .lp h2 { font-size: clamp(32px, 3.4vw, 46px); line-height: 1.07; letter-spacing: -0.045em; font-weight: 800; margin-top: 15px; }
 .lp h2 > span, .lp h2 > em, .lp h1 > span, .lp h1 > em { display: block; }
 .lp :is(h1, h2) em { font-style: normal; color: var(--accent); }
@@ -141,13 +148,17 @@
 .ui-ledger table { margin-bottom: 48px; }
 .ui-ledger table { width: 100%; border-collapse: collapse; font-size: 12.5px; line-height: 1.35; font-variant-numeric: tabular-nums; }
 .ui-ledger caption { text-align: left; padding: 0 0 10px; font: 400 11px/1.3 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--eyebrow-ink); }
-.ui-ledger th, .ui-ledger td { padding: 7px 6px; text-align: left; border-bottom: 1px solid var(--rule-soft); vertical-align: middle; }
+/* the checks fit their frame at every width (the canvas is narrowest beside the facts at 721–850 and 1181–1366 px, and
+   on a phone): the cells wrap where they must — the values over their limits already stand on two lines — and only a
+   badge never breaks; around the table the canvas keeps a side padding of 10 px (18 px around a drawing, 12 on a phone) */
+.ui-canvas:has(> .ui-ledger) { padding-inline: 10px; }
+.ui-ledger th, .ui-ledger td { padding: 7px 4px; text-align: left; border-bottom: 1px solid var(--rule-soft); vertical-align: middle; }
 .ui-ledger thead th { position: sticky; top: 0; background: var(--surface2); font: 400 11px/1.3 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--dim); }
 .ui-ledger tbody th { font-weight: 600; color: var(--ink); }
-.ui-ledger td { color: var(--ink-2); font-family: var(--font-mono); font-size: 12px; white-space: nowrap; }
+.ui-ledger td { color: var(--ink-2); font-family: var(--font-mono); font-size: 12px; }
 .ui-ledger td .v, .ui-ledger td .lim { display: block; }
 .ui-ledger td .lim { color: var(--dim); }
-.ui-ledger td .status-pill { font-family: var(--font-body); }
+.ui-ledger td .status-pill { font-family: var(--font-body); white-space: nowrap; }
 .ui-props { display: flex; flex-direction: column; gap: 14px; padding: 17px 14px; border-left: 1px solid var(--rule-soft); }
 .ui-props-title { font: 400 11px/1.3 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--dim); }
 .ui-props dl { margin: 0; display: flex; flex-direction: column; gap: 13px; }
@@ -172,18 +183,20 @@
 .pricing-head .text-cta { justify-self: end; margin-bottom: 6px; }
 .pricing-lead { max-width: 64ch; margin: 16px auto 30px; text-align: center; font-size: 15px; line-height: 1.7; color: var(--muted); }
 .pricing-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
-.price-card { position: relative; display: flex; flex-direction: column; min-height: 310px; padding: 24px 22px 20px; border: 1px solid var(--card-line); border-radius: var(--radius);
+/* every rule under its grid: /pricing has cards of the same names (public.css), and the two sheets stay in the document
+   together after a navigation between the pages */
+.pricing-grid .price-card { position: relative; display: flex; flex-direction: column; min-height: 310px; padding: 24px 22px 20px; border: 1px solid var(--card-line); border-radius: var(--radius);
   background: var(--card-grad); }
-.price-card.first { border-color: var(--card-on-line); box-shadow: var(--card-on-glow); }
-.plan-name { font-size: 16px; font-weight: 800; }
-.price { margin: 13px 0 14px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 7px; }
-.price strong { font: 800 36px/1.05 var(--font-body); letter-spacing: -0.047em; font-variant-numeric: tabular-nums; }
-.price strong.word { font-size: 30px; letter-spacing: -0.035em; }
-.price small { font-size: 13px; color: var(--muted); }
-.price-card ul { list-style: none; margin: 0 0 22px; padding: 14px 0 0; border-top: 1px solid var(--rule-soft); display: grid; gap: 10px; }
-.price-card li { display: flex; gap: 9px; font-size: 14px; line-height: 1.45; color: var(--ink-2); }
-.price-card li::before { content: "✓"; flex: none; font-weight: 800; color: var(--accent); }
-.price-card .btn { margin-top: auto; }
+.pricing-grid .price-card.first { border-color: var(--card-on-line); box-shadow: var(--card-on-glow); }
+.pricing-grid .plan-name { font-size: 16px; font-weight: 800; }
+.pricing-grid .price { margin: 13px 0 14px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 7px; }
+.pricing-grid .price strong { font: 800 36px/1.05 var(--font-body); letter-spacing: -0.047em; font-variant-numeric: tabular-nums; }
+.pricing-grid .price strong.word { font-size: 30px; letter-spacing: -0.035em; }
+.pricing-grid .price small { font-size: 13px; color: var(--muted); }
+.pricing-grid .price-card ul { list-style: none; margin: 0 0 22px; padding: 14px 0 0; border-top: 1px solid var(--rule-soft); display: grid; gap: 10px; }
+.pricing-grid .price-card li { display: flex; gap: 9px; font-size: 14px; line-height: 1.45; color: var(--ink-2); }
+.pricing-grid .price-card li::before { content: "✓"; flex: none; font-weight: 800; color: var(--accent); }
+.pricing-grid .price-card .btn { margin-top: auto; }
 .pricing-note { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px 10px; margin-top: 22px; text-align: center; font-size: 15px; line-height: 1.5; color: var(--muted); }
 
 /* ── standards ────────────────────────────────────────────────────────────────────────────────────────────────────── */
@@ -213,15 +226,15 @@
 .faq-grid { display: grid; grid-template-columns: minmax(0, .65fr) minmax(0, 1.35fr); gap: 9%; }
 .faq-heading > p:not(.eyebrow) { max-width: 22em; margin-top: 17px; font-size: 15px; line-height: 1.7; color: var(--muted); }
 .faq-heading .text-cta { margin-top: 20px; }
-.faq-list { border-top: 1px solid var(--rule); }
-.faq-list details { border-bottom: 1px solid var(--rule); }
-.faq-list summary { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 20px 3px; cursor: pointer; list-style: none; }
-.faq-list summary::-webkit-details-marker { display: none; }
-.faq-list summary h3 { font-size: 16px; line-height: 1.4; color: var(--ink); }
-.faq-list summary:hover h3 { color: var(--accent-2); }
-.faq-list summary .icon { transition: transform .2s; }
-.faq-list details[open] summary .icon { transform: rotate(180deg); }
-.faq-list .faq-a { max-width: 70ch; padding: 0 25px 20px 3px; font-size: 15px; line-height: 1.75; color: var(--muted); }
+.faq-section .faq-list { border-top: 1px solid var(--rule); }
+.faq-section .faq-list details { border-bottom: 1px solid var(--rule); }
+.faq-section .faq-list summary { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 20px 3px; cursor: pointer; list-style: none; }
+.faq-section .faq-list summary::-webkit-details-marker { display: none; }
+.faq-section .faq-list summary h3 { font-size: 16px; line-height: 1.4; color: var(--ink); }
+.faq-section .faq-list summary:hover h3 { color: var(--accent-2); }
+.faq-section .faq-list summary .icon { transition: transform .2s; }
+.faq-section .faq-list details[open] summary .icon { transform: rotate(180deg); }
+.faq-section .faq-list .faq-a { max-width: 70ch; padding: 0 25px 20px 3px; font-size: 15px; line-height: 1.75; color: var(--muted); }
 
 /* ── the closing band ─────────────────────────────────────────────────────────────────────────────────────────────── */
 .closing { padding-block: 0 64px; }
@@ -242,6 +255,18 @@
   .showcase-tabs { max-width: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
   .showcase-tab { border-left: 0; border-bottom: 2px solid transparent; }
   .showcase-tab[aria-selected="true"] { border-bottom-color: var(--accent); }
+}
+/* a tablet's tabs: three over two (else four in a row and «Documents» alone under them); from 946 px five fit a row
+   (5 × 170 px + gaps in the 91.2 % the gutters leave) */
+@media (min-width: 721px) and (max-width: 945px) {
+  .showcase-tabs { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .showcase-tab { grid-column: span 2; }
+  .showcase-tab:nth-child(n+4) { grid-column: span 3; }
+}
+/* the closing band on a tablet: the photo starts at 43 %, so the text keeps to the dark part on its left (else part of
+   the title and of the line runs over the light doors under AA contrast) */
+@media (min-width: 721px) and (max-width: 1100px) {
+  .closing-content { max-width: 58%; }
 }
 @media (max-width: 980px) {
   .hero { grid-template-columns: minmax(0, 1fr) minmax(0, .85fr); }
@@ -272,7 +297,7 @@
   .art-label { font-size: 12px; padding: 7px 10px 7px 7px; gap: 7px; transform: none; }
   .art-label .icon-tile { width: 28px; height: 28px; }
   .art-label-1 { right: 3%; top: 8%; }
-  .art-label-2 { right: 1%; top: 36%; }
+  .art-label-2 { right: 3%; top: 36%; }
   .art-label-3 { right: 2%; top: 58%; }
   .art-label-4 { right: 3%; top: 78%; }
   .art-caption { bottom: 12px; right: var(--gutter); }
@@ -298,19 +323,32 @@
   .ui-pair.wide { grid-template-columns: minmax(0, 1fr); }
   .ui-bottom span:last-child { display: none; }
   .pricing-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
-  .price-card { min-height: 0; padding: 20px; }
+  .pricing-grid .price-card { min-height: 0; padding: 20px; }
   .closing { padding-bottom: 40px; }
-  .closing-cta { align-items: flex-end; min-height: 460px; }
-  .closing-photo { inset: 0; }
-  .closing-photo::after { background: linear-gradient(0deg, var(--surface) 0%, var(--surface) 38%, color-mix(in srgb, var(--surface) 88%, transparent) 62%, color-mix(in srgb, var(--surface) 20%, transparent) 100%); }
-  .closing-content { padding: 30px 20px; }
+  /* on a phone the lobby is a strip across the top of the band, fading into it, and the text stands under it on the
+     band's own colour: laid over the whole photo (as above 720 px) the eyebrow and the title crossed its lit lamps
+     under AA contrast, since the text fills almost all the band */
+  .closing-cta { flex-direction: column; align-items: stretch; min-height: 0; }
+  .closing-photo { position: relative; inset: auto; z-index: 0; display: block; height: 190px; }
+  .closing-photo::after { background: linear-gradient(0deg, var(--surface) 0%, color-mix(in srgb, var(--surface) 40%, transparent) 45%, transparent 100%); }
+  .closing-content { padding: 4px 20px 30px; }
 }
 @media (max-width: 420px) {
   .feature-grid { grid-template-columns: minmax(0, 1fr); }
   .hero-art { min-height: 440px; }
 }
-@media (prefers-reduced-motion: reduce) {
-  .faq-list summary .icon { transition: none; }
+/* Cyrillic sets wider: the tiles' longest words («автоматични», «симулацията») do not fit a quarter of the row on a
+   small phone, nor beside the narrower picture of a tablet; there the Bulgarian tiles stand two by two */
+@media (max-width: 460px), (min-width: 721px) and (max-width: 980px) {
+  .hero-benefits:lang(bg) { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 16px; }
 }
-/* the template's arrow in the cyan buttons: a dark glyph (a painted icon would blur into the cyan) */
-.btn-arrow { font-size: 18px; line-height: 1; font-family: var(--font-mono); }
+@media (prefers-reduced-motion: reduce) {
+  .faq-section .faq-list summary .icon { transition: none; }
+}
+/* no paragraph ends on a lonely word (Chromium; elsewhere no effect) */
+.lp :is(.hero-lead, .hero-note, .hero-benefits li, .section-head > p, .showcase-lead, .ui-caption p, .pricing-lead, .standards-lead,
+  .faq-heading > p, .closing-content > p) { text-wrap: pretty; }
+/* the template's arrow in the cyan buttons: a dark glyph (a painted icon would blur into the cyan). Neither DM Mono nor
+   Plex Mono has «→», so the system monospace draws it anyway: named directly, the button's bold no longer makes the
+   browser fetch DM Mono 500 (the line's first face) after the first paint just to measure the line */
+.btn-arrow { font-size: 18px; line-height: 1; font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; }

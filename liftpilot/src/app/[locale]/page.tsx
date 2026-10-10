@@ -20,8 +20,8 @@ import Faq from '@/components/landing/Faq';
 import Closing from '@/components/landing/Closing';
 import { registryCounts, sampleChecks, sampleStop } from '@/components/landing/example';
 
-/** The software's parts, for the application's structured data. */
-const FEATURES = [1, 2, 3, 4, 5, 6] as const;
+/** The software's parts for the application's structured data: the four feature cards the page shows (Features.tsx). */
+const FEATURES = [1, 2, 3, 4] as const;
 const FAQ = [1, 2, 3, 4, 5, 6, 7, 8] as const;
 /** The faces of the first screen (the title at 800, the text at 400, the header, buttons and labels at 700, the mono
  *  eyebrow and bottom line), fetched with the page so the first layout already has them: every face that arrives later
@@ -30,7 +30,10 @@ const FAQ = [1, 2, 3, 4, 5, 6, 7, 8] as const;
 const FIRST_SCREEN_FONTS: Record<Locale, readonly string[]> = {
   it: ['manrope-800-latin', 'manrope-400-latin', 'manrope-700-latin', 'dm-mono-400-latin'],
   en: ['manrope-800-latin', 'manrope-400-latin', 'manrope-700-latin', 'dm-mono-400-latin'],
-  bg: ['manrope-800-cyrillic', 'manrope-400-cyrillic', 'manrope-400-latin', 'manrope-700-cyrillic', 'manrope-700-latin', 'plex-mono-400-cyrillic'],
+  // the Bulgarian first screen sets its languages (IT EN BG) in DM Mono's Latin and the tiles' figures in Manrope 800's
+  // Latin: fetched with the page too, or each arrives after the first paint and lays the hero out again (main-thread time)
+  bg: ['manrope-800-cyrillic', 'manrope-400-cyrillic', 'manrope-400-latin', 'manrope-700-cyrillic', 'manrope-700-latin', 'plex-mono-400-cyrillic',
+    'dm-mono-400-latin', 'manrope-800-latin'],
 };
 const loc = (l: string): Locale => (isLocale(l) ? l : 'it');
 
@@ -57,7 +60,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const steps = [0, 1, 2, 3, 4].map((n) => ({ name: t(`fl${n}H`), text: t(`fl${n}T`) }));
   const sample = sampleChecks(P);
   const nonce = (await headers()).get('x-nonce') ?? undefined;
-  const ld = ldJson([organizationLd(), websiteLd(loc(locale)), softwareLd(loc(locale), t('metaDescription'), FEATURES.map((n) => t(`m${n}Title`))),
+  const ld = ldJson([organizationLd(), websiteLd(loc(locale)), softwareLd(loc(locale), t('metaDescription'), FEATURES.map((n) => t(`feat${n}T`))),
     breadcrumbLd([{ name: SITE_NAME, url }]), howToLd(t('floorsLabel'), steps), faqLd(faq), speakableLd(url, ['#answer', '.faq-a'])]);
   return (
     <>
@@ -66,7 +69,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <link rel="preload" as="image" type="image/avif" media={HERO_IMG.wide} imageSrcSet={HERO_IMG.avif} imageSizes={HERO_IMG.sizes} fetchPriority="high" />
       <link rel="preload" as="image" type="image/avif" media={HERO_IMG.phone} imageSrcSet={HERO_IMG.phoneAvif} fetchPriority="high" />
       <SiteHeader at="home" />
-      <main id="main" className="lp">
+      <main id="main" tabIndex={-1} className="lp">
         <Hero counts={registryCounts()} scenarios={SCENARIOS.length} beta={!billingConfigured()} profile={PROFILO.id} engine={sample.engine} />
         <Features />
         <Showcase sample={sample} stop={sampleStop()} intlLocale={intl} />

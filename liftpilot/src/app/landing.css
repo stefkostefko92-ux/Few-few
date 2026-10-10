@@ -1,6 +1,6 @@
-/* Shared by the public pages: the header and the footer (after the Premium template), the machine stage beside the
-   sign-in forms, a question with its answer (pricing), the sign-in and registration forms, the legal pages (the small
-   label over a heading, .eyebrow, is in ui.css). The landing's own sheet is in home.css. */
+/* Shared by the public pages: the header and the footer (after the Premium template), the sign-in and registration
+   forms, the type of the legal texts (the small label over a heading, .eyebrow, is in ui.css). The landing's own sheet
+   is in home.css; the secondary pages' frames are in public.css. */
 .lp, .site-header, .site-footer { --gutter: clamp(20px, 4.4vw, 64px); --page: 1312px; --hdr: 82px; }
 
 /* ── header: logo, the landing's sections, language, the way in; a drawer under 1080 px ─────────────────────────── */
@@ -47,6 +47,13 @@
   .drawer-langs { display: flex; margin-top: 12px; }
   .drawer-langs .langs a { padding: 10px 8px; font-size: 13px; }
 }
+/* without the sign-in button (the sign-in family, the 404) sign-up stays beside the menu: the languages go into the
+   drawer earlier, or the Bulgarian label would push the menu off a 375–420 px screen */
+@media (max-width: 420px) {
+  .site-header.lean .header-langs { display: none; }
+  .site-header.lean .drawer-langs { display: flex; margin-top: 12px; }
+  .site-header.lean .drawer-langs .langs a { padding: 10px 8px; font-size: 13px; }
+}
 
 /* ── footer: logo, year and note, links, the credit, the provider in small print ─────────────────────────────────── */
 .site-footer { border-top: 1px solid var(--rule-soft); }
@@ -58,31 +65,18 @@
 .footer-link:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
 .footer-credit { grid-column: 1 / -1; color: var(--muted); }
 .footer-provider { grid-column: 1 / -1; font-size: 12px; overflow-wrap: anywhere; }
+/* on a tablet the links take a row of their own, so the note keeps the width beside the logo (else it is squeezed
+   between the logo and the links into a narrow column of many lines) */
+@media (min-width: 721px) and (max-width: 1080px) {
+  .site-footer .inner { grid-template-columns: auto minmax(0, 1fr); }
+  .footer-links { grid-column: 1 / -1; }
+}
 @media (max-width: 720px) {
   .site-footer .inner { grid-template-columns: minmax(0, 1fr); }
 }
-
-.stage { margin: 0; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
-.stage-frame { position: relative; aspect-ratio: 4 / 3; max-width: 100%; border-radius: 16px; overflow: hidden; background: var(--stage-bg); isolation: isolate;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06), var(--shadow-lg); }
-.stage-poster, .stage-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.stage-poster { object-fit: cover; color: #9aa4bf; font-size: 13px; }
-.stage-canvas { opacity: 0; transition: opacity .8s ease; }
-.stage.is-live .stage-canvas { opacity: 1; }
-.stage figcaption { font-size: 13px; line-height: 1.5; color: var(--muted); max-width: 72ch; }
-
-/* a question beside its answer */
-.faq-item { display: grid; gap: 8px 48px; padding: 22px 0; border-top: 1px solid var(--rule); }
-@media (min-width: 900px) { .faq-item { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); } }
-.faq-item h3 { font-size: 18px; line-height: 1.35; }
-.faq-item p { color: var(--ink-2); max-width: 68ch; }
-
-/* Sign-in: the form beside a still of the machine on wide screens. */
-.signin { max-width: 1320px; width: 100%; margin: 0 auto; padding: 32px 16px 56px; display: grid; gap: 40px; align-items: start; }
-@media (min-width: 1024px) { .signin { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 56px; padding-top: 56px; } }
-.signin-form { display: flex; flex-direction: column; gap: 16px; max-width: 480px; }
-.signin .stage { display: none; }
-@media (min-width: 1024px) { .signin .stage { display: flex; } }
+/* the skip link lands on <main> (tabindex -1, so every browser moves the focus there, Safari and VoiceOver too). It is
+   not a control: no ring around the whole page — the next Tab rings the first link inside it */
+main#main:focus { outline: none; }
 
 /* the forms around the sign-in: registration in two groups, the consents with their long text, a link beside a button */
 .register-form fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
@@ -90,21 +84,18 @@
 label.check.consent { align-items: flex-start; font-size: 14px; }
 label.check.consent input { flex: none; margin-top: 2px; }
 .form-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
-.input[aria-invalid="true"] { border-color: var(--fail); }
 .field-error { display: block; color: var(--fail); font-size: 13px; font-weight: 600; }
 label.check.consent input[aria-invalid="true"] { outline: 2px solid var(--fail); outline-offset: 2px; }
 
-/* privacy and terms: one readable column, each answer under its question */
-.legal { max-width: 760px; width: 100%; margin: 0 auto; padding: 32px 16px 56px; display: flex; flex-direction: column; gap: 10px; }
-.legal h1 { margin: 0; text-wrap: balance; }
+/* privacy and terms, data and formats: each answer under its question (the column and its frame: LegalPage, public.css) */
+.legal { display: flex; flex-direction: column; gap: 10px; }
 .legal h2 { margin: 26px 0 0; padding-top: 14px; border-top: 1px solid var(--rule); }
 .legal h3 { margin: 12px 0 0; font-size: 16px; }
 .legal p { margin: 0; max-width: 70ch; }
 .legal section { display: flex; flex-direction: column; gap: 8px; }
 .legal-meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
 @media print {
-  .topbar, .site-header, .skip-link, .site-footer, .print-hide { display: none !important; }
-  .legal { max-width: none; padding: 0; }
+  .site-header, .skip-link, .site-footer, .print-hide { display: none !important; }
   .legal p { max-width: none; }
 }
 label.check.consent a { text-decoration: underline; text-underline-offset: 2px; }

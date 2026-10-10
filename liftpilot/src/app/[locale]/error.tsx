@@ -7,7 +7,7 @@ import '@/app/public.css';
 export default function ErrorPage({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   const t = useTranslations('errors');
   return (
-    <main id="main" className="pub-page err-page blueprint">
+    <main id="main" tabIndex={-1} className="pub-page err-page blueprint">
       <p className="err-code" aria-hidden="true">500</p>
       <h1>{t('errorTitle')}</h1>
       <p className="lead">{t('errorText')}</p>

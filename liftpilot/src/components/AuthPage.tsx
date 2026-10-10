@@ -15,23 +15,28 @@ const FEATURES: ReadonlyArray<{ icon: IconName; key: 'panelCalc' | 'panelDrawing
 ];
 const CUTAWAY = [480, 800, 1086] as const;
 const set = (ext: string): string => CUTAWAY.map((w) => `/img/premium/elevator-cutaway-${w}.${ext} ${w}w`).join(', ');
-// the picture shows only from 1280 px, in a column of at most 300 px (public.css)
+// the picture shows only from 1280 px, in a column of at most 300 px (public.css); below that a source of one
+// transparent pixel stands in for it, so a phone or a tablet never fetches the picture
 const SIZES = '300px';
+const NARROW = '(max-width: 1279.98px)';
+const NO_PICTURE = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 // the emblem at 40 px: the 64 px file for 1x and the 96 px one for 2x, so it is never stretched
 const EMBLEM_40 = { src: '/img/liftpilot-emblem-64.webp', srcSet: '/img/liftpilot-emblem-64.webp 1x, /img/liftpilot-emblem-96.webp 2x' } as const;
 
 // The frame of the sign-in and of the pages around it (registration, confirmation, forgotten and new password,
 // invitation): the form on the left over the blueprint grid; from 1024 px the brand's panel on the right — the
 // emblem, what LiftPilot makes, the standards and the rule that every result is a draft until a qualified technician
-// signs it — and from 1280 px the template's elevator cutaway beside them (an illustration, labelled as such). On
-// phones the panel keeps only its text, under the form; below 1280 px the picture is lazy and not displayed, so it is
-// never fetched.
-export default async function AuthPage({ title, lead, children }: { title: string; lead: string; children: ReactNode }) {
+// signs it — and from 1280 px the template's elevator cutaway beside them (an illustration, labelled as such), the
+// largest thing on the first screen there (its LCP: fetched at once, high priority). On phones the panel keeps only its
+// text, under the form; below 1280 px the picture is not displayed and its source is a pixel, so it is never fetched.
+export default async function AuthPage({ title, lead, at, children }: {
+  title: string; lead: string; /** the page the header's sign-up button leads to is this one */ at?: 'register'; children: ReactNode;
+}) {
   const t = await getTranslations('auth');
   return (
     <>
-      <SiteHeader showLogin={false} />
-      <main id="main" className="auth blueprint">
+      <SiteHeader showLogin={false} at={at} />
+      <main id="main" tabIndex={-1} className="auth blueprint">
         <div className="auth-form">
           <h1>{title}</h1>
           <p className="lead">{lead}</p>
@@ -52,16 +57,17 @@ export default async function AuthPage({ title, lead, children }: { title: strin
           <figure className="auth-art-figure">
             {/* a prebuilt AVIF/WebP set (scripts/premium-images.py), not next/image */}
             <picture>
+              <source media={NARROW} srcSet={NO_PICTURE} />
               <source type="image/avif" srcSet={set('avif')} sizes={SIZES} />
               <img src="/img/premium/elevator-cutaway-480.webp" srcSet={set('webp')} sizes={SIZES}
-                width={1086} height={1448} alt={t('panelImgAlt')} loading="lazy" decoding="async" />
+                width={1086} height={1448} alt={t('panelImgAlt')} fetchPriority="high" decoding="async" />
             </picture>
             <figcaption className="art-tag">{t('panelImgLabel')}</figcaption>
           </figure>
           <div className="auth-art-foot">
             <p className="eyebrow plain">{t('panelNorms')}</p>
             <ul className="norm-list">{NORMS.map((n) => <li key={n} className="badge">{n}</li>)}</ul>
-            <p className="note">{t('panelHonesty')}</p>
+            <p className="note long">{t('panelHonesty')}</p>
           </div>
         </aside>
       </main>

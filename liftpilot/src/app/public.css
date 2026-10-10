@@ -9,6 +9,8 @@
 .pub-head { display: flex; flex-direction: column; gap: 14px; padding: 8px 0 4px; }
 .pub-head h1 { font-size: clamp(32px, 2.6vw + 18px, 52px); line-height: 1.04; letter-spacing: -.04em; max-width: 18ch; }
 .pub-head .lead { font-size: 16px; max-width: 72ch; }
+/* no paragraph ends on a lonely word (Chromium; elsewhere no effect) */
+.pub-page p.lead, .auth p.lead, .pub-section-head p { text-wrap: pretty; }
 .pub-head.blueprint::after { inset: -40px -16px -24px; }
 @media (min-width: 768px) { .pub-head.blueprint::after { inset: -40px -24px -24px; } }
 .pub-section { display: flex; flex-direction: column; gap: 20px; }
@@ -17,6 +19,10 @@
 .pub-page h2 { font-size: clamp(22px, .8vw + 17px, 28px); letter-spacing: -.03em; }
 /* the template's signature: the heading's second part on its own line, in cyan with a faint glow */
 .pub-page :is(h1, h2) em, .auth-art-title em { display: block; font-style: normal; color: var(--accent); text-shadow: var(--glow); }
+
+/* a note of several lines that must be read (the beta's terms, the data files, the honesty rule) is body text: 14 px;
+   the one-line helper notes stay at the .note size (ui.css) */
+.note.long { font-size: 14px; line-height: 1.55; }
 
 /* ---- sign-in family: the form over the grid, the brand's panel beside it ------------------------------------- */
 .auth { max-width: 1320px; width: 100%; margin: 0 auto; padding: 32px 16px 56px; display: grid; gap: 32px; align-items: start; }
@@ -75,17 +81,19 @@
 .auth-form [role="status"].panel { border-color: var(--ok-line); }
 
 /* ---- pricing: the plans in the template's price cards ---------------------------------------------------------- */
+/* every rule under .price-grid: the landing has cards of the same names (home.css, in every page's CSS), and this
+   sheet stays in the document after a navigation back to the landing */
 .price-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
-.price-card { position: relative; isolation: isolate; display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 22px 22px 20px;
+.price-grid .price-card { position: relative; isolation: isolate; display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 22px 22px 20px;
   background: var(--card-grad); border: 1px solid var(--card-line); border-radius: var(--radius); box-shadow: var(--shadow); }
-.price-card::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: var(--card-wash); pointer-events: none; }
-.price-card-head { display: flex; align-items: center; gap: 12px; min-height: 42px; }
-.price-card h3 { font-size: 15.5px; font-weight: 800; letter-spacing: -.01em; }
-.price { margin: 14px 0 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
-.price strong { font-size: 34px; line-height: 1.05; font-weight: 800; letter-spacing: -.045em; color: var(--ink); }
-.price small { font-size: 13px; color: var(--muted); }
-.price-line { margin: 0 0 18px; font-size: 14px; line-height: 1.5; color: var(--ink-2); }
-.price-card .btn { margin-top: auto; }
+.price-grid .price-card::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: var(--card-wash); pointer-events: none; }
+.price-grid .price-card-head { display: flex; align-items: center; gap: 12px; min-height: 42px; }
+.price-grid .price-card h3 { font-size: 15.5px; font-weight: 800; letter-spacing: -.01em; }
+.price-grid .price { margin: 14px 0 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+.price-grid .price strong { font-size: 34px; line-height: 1.05; font-weight: 800; letter-spacing: -.045em; color: var(--ink); }
+.price-grid .price small { font-size: 13px; color: var(--muted); }
+.price-grid .price-line { margin: 0 0 18px; font-size: 14px; line-height: 1.5; color: var(--ink-2); }
+.price-grid .price-card .btn { margin-top: auto; }
 
 .pub-split { display: grid; gap: 16px; }
 @media (min-width: 900px) { .pub-split { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; } }
@@ -101,7 +109,7 @@
    the page's content for the search engines too) */
 .pub-faq { display: grid; gap: 20px 56px; }
 @media (min-width: 900px) { .pub-faq { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); } }
-.faq-list { border-top: 1px solid var(--rule); }
+.pub-faq .faq-list { border-top: 1px solid var(--rule); }
 .faq-row { display: flex; flex-direction: column; gap: 8px; padding: 20px 0; border-bottom: 1px solid var(--rule); }
 .faq-row h3 { font-size: 16.5px; line-height: 1.35; }
 .faq-row p { margin: 0; color: var(--ink-2); max-width: 68ch; }
