@@ -14,7 +14,7 @@ import {
   uploadPdf,
   URL_KEY,
 } from './files.js';
-import { ask, MODEL, newCase, seedWorld, type World } from './world.js';
+import { EFFECTIVE_FROM, MODEL, ask, newCase, seedWorld, type World } from './world.js';
 
 /**
  * Файловете в покой (NFR-03, §15.1) през целия HTTP поток: в хранилището стои само шифротекст;
@@ -94,7 +94,8 @@ describe('шифровано в покой през API', () => {
       revision: 'A',
       audience: 'PORTAL',
       safetyRelevant: false,
-      applicability: [{ productModel: MODEL }],
+      effectiveFrom: EFFECTIVE_FROM,
+      applicability: [{ productModel: MODEL, allFirmware: true }],
       sourceAttachmentId: row.id,
     });
     assert.equal(created.status, 201, JSON.stringify(created.body));
