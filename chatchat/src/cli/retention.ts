@@ -1,8 +1,9 @@
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { appendAudit } from '../audit.js';
+import { loadFilesConfig } from '../config.js';
 import { runRetention } from '../services/retention.js';
-import { FileAttachmentStore } from '../storage/attachments.js';
+import { attachmentStoreFrom } from '../storage/factory.js';
 
 /**
  * Ретенция (GDPR чл. 5(1)(e), правният одит т. 1) — пуска се дневно (systemd timer / cron):
@@ -22,15 +23,16 @@ const Env = z.object({
     .union([z.literal(''), z.coerce.number().int().min(30).max(3650)])
     .optional()
     .transform((v) => (v === '' || v === undefined ? null : v)),
-  /** Без него файловете не могат да се изтрият — тогава редовете им също остават (fail-closed). */
-  ATTACHMENTS_DIR: z.string().default(''),
 });
 
 async function main(): Promise<void> {
   const env = Env.parse(process.env);
+  // ATTACHMENTS_DIR: без него файловете не могат да се изтрият — тогава редовете им също остават
+  // (fail-closed). Хранилището е същото като на приложението (шифроване по FILES_*), макар тук само да трие.
+  const files = loadFilesConfig(process.env);
   const db = new PrismaClient();
   try {
-    const store = env.ATTACHMENTS_DIR ? new FileAttachmentStore(env.ATTACHMENTS_DIR) : null;
+    const store = files.ATTACHMENTS_DIR ? attachmentStoreFrom(files) : null;
     const report = await runRetention(db, store, {
       sessionDays: env.RETENTION_SESSION_DAYS,
       caseDays: env.RETENTION_CASE_DAYS,
