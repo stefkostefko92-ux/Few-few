@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Блокує рекламу скрізь: відеорекламу на YouTube, банери, спливаючі вікна, трекери, cookie-банери та антиадблок-стіни. Безкоштовно."
+    "message": "Блокує рекламу скрізь: відеорекламу на YouTube, банери, спливаючі вікна, трекери, cookie-банери та антиадблок-стіни."
   },
   "byCarbon": {
     "message": "від Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Ліцензії списків фільтрів"
+  },
+  "welPageTitle": {
+    "message": "Вітаємо в Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Захист увімкнено",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock уже блокує рекламу й трекери на всіх сайтах, які ви відвідуєте. Нічого налаштовувати не потрібно.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Закріпіть розширення на панелі інструментів",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Натисніть значок пазла поруч з адресним рядком і закріпіть Supreme AdBlock. Тоді одним натисканням ви побачите, що було заблоковано на сторінці.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Якщо сайт відображається неправильно",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Відкрийте розширення й вимкніть блокування для цього сайту або виберіть «Сайт зламався?» для швидкого виправлення.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Ваші дії в браузері залишаються на вашому пристрої",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Фільтрування відбувається локально. Розширення не збирає персональних даних і нічого не надсилає про сторінки, які ви відвідуєте.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Відкрити налаштування",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Зрозуміло",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

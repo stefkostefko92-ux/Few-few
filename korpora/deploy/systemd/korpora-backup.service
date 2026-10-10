@@ -1,0 +1,47 @@
+[Unit]
+# Korpora — дневният шифрован бекъп на базата (deploy/backup.sh → /usr/local/sbin/korpora-backup).
+# Слага го deploy/backup-install.sh при всеки деплой; пътят /opt/few-few/shared/korpora се сменя там с
+# KORPORA_SHARED. Пуска го korpora-backup.timer. Лог: journalctl -u korpora-backup -n 50
+Description=Korpora — шифрован бекъп на базата
+Documentation=file:///opt/few-few/current/korpora/DEPLOY.md
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/korpora-backup
+Environment=KORPORA_SHARED=/opt/few-few/shared/korpora
+TimeoutStartSec=1h
+Nice=10
+IOSchedulingClass=idle
+UMask=0077
+
+# --- Пясъчник ---
+# Върви като root заради сокета на docker, но без нито една Linux capability: root стига до своите
+# файлове (получателите, папката с бекъпите, сокета) по правата на собственика, без CAP_DAC_OVERRIDE.
+# Пише само в папката с дневните бекъпи (създава я deploy-ът — без нея systemd не пуска unit-а); мрежа
+# не му трябва — docker е през unix сокет.
+CapabilityBoundingSet=
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/opt/few-few/shared/korpora/backups/daily
+ReadWritePaths=-/run/docker.sock
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+ProtectProc=invisible
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@mount @swap @reboot
+RestrictAddressFamilies=AF_UNIX
+IPAddressDeny=any

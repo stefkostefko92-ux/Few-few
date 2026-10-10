@@ -27,14 +27,18 @@ export default function CookieBanner({ locale }: { locale: Locale }) {
   const decide = (choice: "accepted" | "rejected") => {
     try {
       localStorage.setItem(KEY, choice);
-      // On reject, also clear any prior Facebook-embed consent.
-      if (choice === "rejected") localStorage.removeItem("qb-fb-consent");
+      // On reject, also withdraw any earlier consent to the Facebook and map embeds.
+      if (choice === "rejected") {
+        localStorage.removeItem("qb-fb-consent");
+        localStorage.removeItem("qb-map-consent");
+      }
     } catch {}
+    if (choice === "rejected") window.dispatchEvent(new Event("qb:consent-withdrawn"));
     setShow(false);
   };
 
   return (
-    <div className="cookiebar" role="region" aria-label="Cookie">
+    <div className="cookiebar" role="region" aria-label={t(locale, "legal.cookie", ui)}>
       <p>
         {t(locale, "cookie.text", ui)}{" "}
         <a href={`/${locale}/cookie`}>{t(locale, "cookie.more", ui)}</a>

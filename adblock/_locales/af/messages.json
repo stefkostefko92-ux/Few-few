@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Blokkeer oral advertensies, ook op YouTube, plus baniere, opspringers, spoorsnyers, koekiemeldings en anti-adblokmure. Gratis."
+    "message": "Blokkeer oral advertensies, ook op YouTube, plus baniere, opspringers, spoorsnyers, koekiemeldings en anti-adblokmure."
   },
   "byCarbon": {
     "message": "deur Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Lisensies van die filterlyste"
+  },
+  "welPageTitle": {
+    "message": "Welkom by Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "U is beskerm",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock blokkeer nou advertensies en spoorsnyers op elke werf wat u besoek. Daar is niks om op te stel nie.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Speld dit aan die nutsbalk vas",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Klik op die legkaartstuk-ikoon langs die adresbalk en speld Supreme AdBlock vas. Een klik wys dan wat op die bladsy geblokkeer is.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "As ’n werf stukkend lyk",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Maak die uitbreiding oop en skakel blokkering vir daardie werf af, of kies “Werf stukkend?” vir vinnige oplossings.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "U blaaiery bly op u toestel",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Filtrering gebeur plaaslik. Die uitbreiding samel geen persoonlike data in nie en stuur niks oor die bladsye wat u besoek nie.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Maak instellings oop",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Ek verstaan",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

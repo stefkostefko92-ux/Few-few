@@ -41,8 +41,8 @@ export default async function ContentEditPage({ params }: { params: Promise<{ ke
       subtitle="Редактирайте съдържанието на трите езика. Промените влизат в сила веднага след запазване."
       actions={
         <div style={{ display: "flex", gap: ".5rem" }}>
-          <a className="ad-btn ad-btn--ghost" href={previewUrl(row.key)} target="_blank" rel="noopener">Преглед ↗</a>
-          <Link className="ad-btn ad-btn--ghost" href="/admin/content">← Всички секции</Link>
+          <a className="qba-btn qba-btn--ghost" href={previewUrl(row.key)} target="_blank" rel="noopener">Преглед ↗</a>
+          <Link className="qba-btn qba-btn--ghost" href="/admin/content">← Всички секции</Link>
         </div>
       }
     >

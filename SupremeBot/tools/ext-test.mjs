@@ -113,6 +113,47 @@ try {
     check('content script: no uncaught JS errors', pageErrors.length === 0, pageErrors.join('\n     '));
     await page.close();
   }
+
+  // Per-hero settings, through the real service worker: every hero keeps his
+  // own settings; a new hero starts from the defaults; forgetting drops him.
+  {
+    const { page } = await openPage('options/options.html');
+    const r = await page.evaluate(async () => {
+      const send = (m) => chrome.runtime.sendMessage(m);
+      const A = 's1-us:Ragnar', B = 's2-bg:Lagertha';
+      const defaults = await send({ type: 'GET_SETTINGS' });
+      const a1 = await send({ type: 'BIND_HERO', heroKey: A, name: 'Ragnar', server: 's1-us' });
+      const b1 = await send({ type: 'BIND_HERO', heroKey: B, name: 'Lagertha', server: 's2-bg' });
+      const aS = await send({ type: 'GET_SETTINGS', heroKey: A });
+      aS.general.actionIntervalSec = 45; aS.dungeon.enabled = true;
+      await send({ type: 'SAVE_SETTINGS', settings: aS, heroKey: A });
+      const aAfter = await send({ type: 'GET_SETTINGS', heroKey: A });
+      const bAfter = await send({ type: 'GET_SETTINGS', heroKey: B });
+      const defAfter = await send({ type: 'GET_SETTINGS' });
+      const list = await send({ type: 'LIST_HEROES' });
+      const bad = await send({ type: 'BIND_HERO', heroKey: '__proto__', name: 'x' });
+      await send({ type: 'FORGET_HERO', heroKey: B });
+      const list2 = await send({ type: 'LIST_HEROES' });
+      return {
+        newHero: a1.isNew && b1.isNew,
+        aSaved: aAfter.general.actionIntervalSec === 45 && aAfter.dungeon.enabled === true,
+        bUntouched: bAfter.general.actionIntervalSec === defaults.general.actionIntervalSec,
+        defaultsUntouched: defAfter.general.actionIntervalSec === defaults.general.actionIntervalSec,
+        listed: list.map((h) => h.key).sort().join('|'),
+        badRejected: bad && bad.ok === false,
+        forgotten: list2.map((h) => h.key).join('|')
+      };
+    });
+    check('heroes: first visit creates settings from the defaults', r.newHero, JSON.stringify(r));
+    check('heroes: a hero keeps his own saved settings', r.aSaved, JSON.stringify(r));
+    check('heroes: another hero and the defaults are untouched', r.bUntouched && r.defaultsUntouched, JSON.stringify(r));
+    check('heroes: listed, junk key rejected, forget removes', r.listed === 's1-us:Ragnar|s2-bg:Lagertha' && r.badRejected && r.forgotten === 's1-us:Ragnar', JSON.stringify(r));
+    // The picker shows the heroes and switches the edited settings.
+    await page.reload(); await page.waitForTimeout(600);
+    const pick = await page.evaluate(() => [...document.querySelectorAll('#hero-sel option')].map((o) => o.textContent));
+    check('heroes: options page offers a hero picker', pick.length === 2 && /Ragnar/.test(pick[1]), JSON.stringify(pick));
+    await page.close();
+  }
 } finally {
   await context.close();
   try { fs.rmSync(userDataDir, { recursive: true, force: true }); } catch {}

@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "YouTube വീഡിയോ പരസ്യങ്ങൾ, ബാനറുകൾ, പോപ്പ്-അപ്പുകൾ, ട്രാക്കറുകൾ, കുക്കി അറിയിപ്പുകൾ എന്നിവ തടയുന്നു. സൗജന്യം, സ്വകാര്യം."
+    "message": "YouTube വീഡിയോ പരസ്യങ്ങൾ, ബാനറുകൾ, പോപ്പ്-അപ്പുകൾ, ട്രാക്കറുകൾ, കുക്കി അറിയിപ്പുകൾ എന്നിവ തടയുന്നു."
   },
   "byCarbon": {
     "message": "Carbon Stealth-ൽ നിന്ന്"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "ഫിൽട്ടർ ലിസ്റ്റുകളുടെ ലൈസൻസുകൾ"
+  },
+  "welPageTitle": {
+    "message": "Supreme AdBlock-ലേക്ക് സ്വാഗതം",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "നിങ്ങൾ സുരക്ഷിതരാണ്",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "നിങ്ങൾ സന്ദർശിക്കുന്ന ഓരോ സൈറ്റിലും Supreme AdBlock ഇപ്പോൾ പരസ്യങ്ങളും ട്രാക്കറുകളും തടയുന്നു. ഒന്നും സജ്ജീകരിക്കേണ്ടതില്ല.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "വിപുലീകരണം ടൂൾബാറിൽ പിൻ ചെയ്യുക",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "വിലാസ ബാറിന് അടുത്തുള്ള പസിൽ കഷണത്തിന്റെ ഐക്കണിൽ ക്ലിക്ക് ചെയ്ത് Supreme AdBlock പിൻ ചെയ്യുക. പിന്നീട് ഒരു ക്ലിക്കിൽ പേജിൽ എന്താണ് തടഞ്ഞതെന്ന് കാണാം.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "ഒരു സൈറ്റ് ശരിയായി കാണുന്നില്ലെങ്കിൽ",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "വിപുലീകരണം തുറന്ന് ആ സൈറ്റിനുള്ള തടയൽ ഓഫാക്കുക, അല്ലെങ്കിൽ പെട്ടെന്നുള്ള പരിഹാരങ്ങൾക്കായി “സൈറ്റ് തകരാറിലാണോ?” തിരഞ്ഞെടുക്കുക.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "നിങ്ങളുടെ ബ്രൗസിംഗ് നിങ്ങളുടെ ഉപകരണത്തിൽ തന്നെ നിൽക്കുന്നു",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "ഫിൽട്ടറിംഗ് പ്രാദേശികമായി നടക്കുന്നു. വിപുലീകരണം വ്യക്തിഗത ഡാറ്റയൊന്നും ശേഖരിക്കുന്നില്ല, നിങ്ങൾ സന്ദർശിക്കുന്ന പേജുകളെക്കുറിച്ച് ഒന്നും അയയ്ക്കുന്നുമില്ല.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "ക്രമീകരണം തുറക്കുക",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "മനസ്സിലായി",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

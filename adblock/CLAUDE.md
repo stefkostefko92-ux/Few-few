@@ -33,7 +33,15 @@ rules/                  DNR статични правила: ad_rules + youtube_
                         tools/build_filters.mjs) + козметичен bundle + counts
 lib/abp2dnr.js          ЕДИНСТВЕН ABP/uBO → DNR конвертор (класически скрипт, root.ABP2DNR):
                         билдът го ползва през vm, SW през importScripts (листите от автора)
-popup/ · options/       UI (popup + настройки; карти „Филтър-листи" и „Фокус")
+popup/ · options/       UI (popup + настройки; карти „Филтър-листи" и „Фокус"). Popup-ът има 3D щит:
+                        popup/img/*.webp = ПРЕРЕНДЕРИРАН three.js (tools/popup_shield3d.mjs, комитва се;
+                        статичен кадър в CSS, показва се веднага), popup/shield3d.js = ~8 KB собствен
+                        WebGL2 (без библиотека) САМО за преосветяване по курсора — след първото
+                        рисуване, не при reduced-motion/-data/автоматизация/софтуерен GL. Състоянието
+                        идва от `#hero[data-state]` (protected|paused|off|allowed), пише го popup.js.
+                        Liquid Glass: стъклото е само CSS (backdrop-filter + маскиран ръб ::after + --mx/--my
+                        от popup.js), сиянието е body::before; prefers-reduced-transparency → плътни панели.
+                        НЕ ползвай localStorage в popup-а (първият достъп ~40 ms) и не връщай three.js в пакета.
 report/                 „Сайтът е счупен?" — бързи поправки + mailto доклад (нищо не се праща само)
 icons/ · _locales/      икони · локализация
 tools/                  build_filters.mjs (EasyList→DNR + каталога tools/lists.json → rules/list_<id>.json,
@@ -41,12 +49,17 @@ tools/                  build_filters.mjs (EasyList→DNR + каталога too
                         rule_resources в manifest-а) + build_scriptlets.mjs (+ uBO scriptlet-и на 64 парчета
                         по хост в scriptlets/ubo/) + генератори + package.sh (Chrome + Firefox zip)
                         + compare_blockers.mjs (публични тестове срещу конкурентите — числата за landing-а)
-                        + promo/ (промо клип 1080p за YouTube/CWS в стила на boy/: film.html + timeline.json —
-                        бурята идва от server/index.html, popup/панелите от store генератора, звукът е
-                        генериран; `PW_ROOT=$(npm root -g) PYTHONPATH=<numpy> node tools/promo/render.mjs`)
+                        + promo/ (промо клипове в стила на boy/: film.html 16:9 за YouTube/сайта/CWS (`--cut store`
+                        — без сравнение и без „free“) + film-social.html 9:16 за Reels/TikTok/Shorts (`--cut social`:
+                        hook „рекламата умира“ в първата секунда, loop, −14 LUFS, корица, 4:5 изрез; „Free“ и
+                        рекламният плейър — НИКОГА в медиите на CWS) + timeline.json; бурята идва от
+                        server/index.html, popup/панелите от store генератора, звукът е генериран;
+                        `PW_ROOT=$(npm root -g) PYTHONPATH=<numpy> FFMPEG=$(command -v ffmpeg) node tools/promo/render.mjs [--cut social]`;
+                        caption-и и правила за публикуване → docs/SOCIAL.md)
+                        + popup_shield3d.mjs (three.js от CDN САМО в инструмента → popup/img/; `PW_ROOT=$(npm root -g) node tools/popup_shield3d.mjs`)
                         + e2e_redirect.mjs (истински Chromium през Playwright: DNR redirect → resources/*
                         smoke; `PW_ROOT=$(npm root -g) node tools/e2e_redirect.mjs "$PWD" <url> <global>`)
-tests/                  npm test — engine/live канал/билд/DNR/паритет на политиката (нула зависимости)
+tests/                  npm test — engine/билд/DNR/паритет на политиката (нула зависимости)
 store/ · docs/          store графики + листинг/submission текстове
 ```
 
@@ -55,7 +68,7 @@ store/ · docs/          store графики + листинг/submission тек
 ```
 node -c *.js popup/*.js options/*.js tools/*.mjs   # syntax на всички скриптове
 python3 -c "import json; json.load(...)"     # валиден manifest/rules/locale
-npm test                                      # tests/: engine + live канал + билд + DNR правила + YouTube + cookies
+npm test                                      # tests/: engine + билд + DNR правила + YouTube + cookies
 PW_ROOT=$(npm root -g) npm run test:browser   # реален Chromium: cookies.js фикстури + истинското разширение (не е в CI — иска Playwright)
 PW_ROOT=$(npm root -g) npm run landing:assets # server/*.webp: бранд щитът + РЕАЛНИЯТ popup (след промяна на popup/версия)
 PW_ROOT=$(npm root -g) node tools/perf_speedtest.mjs [--old <разархивиран zip>]  # цена на главната нишка (Speedtest-подобно); след промяна в content scripts/CSS
@@ -72,9 +85,10 @@ bash tools/package.sh                         # билд + самопровер�
   които се валидират строго и не се изпълняват. Данни са разрешени в MV3; код не е.
 - **Scriptlets (`##+js`):** точно uBOL моделът — КОДЪТ (`scriptlets/engine.js`) е
   фиксиран в пакета; per-site директивите се **пекат при билда** от `list.txt` в
-  `scriptlets/main.js`. Scriptlet КОД никога не идва от мрежата; live директиви (само
-  ДАННИ: host + име + аргументи) идват единствено от Ed25519-подписания `filters.json`
-  и се **ре-валидират в engine-а** срещу същия allowlist. Нула eval.
+  `scriptlets/main.js` (+ `scriptlets/ubo/`). **От 5.1.4 няма канал на живо:** нито код,
+  нито директиви идват от мрежата; engine-ът не слуша никакво DOM събитие, а ключ
+  `scriptlets` във `filters.json` се игнорира (CWS: нищо изтеглено не управлява MAIN
+  world). Нула eval.
   Билд-валидаторът е allowlist на имена + строга проверка на аргументите;
   `set-constant` стойностите — само от фиксиран речник. **След промяна на
   engine.js или list.txt пусни `node tools/build_scriptlets.mjs`** и препакетирай.
@@ -92,6 +106,9 @@ bash tools/package.sh                         # билд + самопровер�
   filters.json `requestFlags` може да ги пусне, с plain-retry резервата. `youtube_skip` само mute +
   родния Skip — **никога** 16× (YouTube го брои). Ако YouTube все пак откаже, bypass-ът (6 ч) маха
   и `sa-youtube`, и scriptlet-ите от YouTube страниците.
+- `rules/ad_rules.json` и `rules/youtube_rules.json` идват **само** от `tools/generate_rules.py` — правило се
+  добавя там, не в JSON-а. Id-тата са фиксирани (изваден id не се ползва повторно: YouTube 1001/1003);
+  `tests/generate_rules.test.mjs` ребилдва във временна папка и сравнява байт по байт.
 - Всички `chrome.*.on*.addListener` се регистрират **синхронно на top level** в
   service worker-а.
 - Smart Detection крие само cross-origin iframe с точен IAB рекламен размер —

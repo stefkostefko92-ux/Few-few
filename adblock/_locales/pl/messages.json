@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Blokuje reklamy, w tym wideo na YouTube, banery, wyskakujące okna, trackery, komunikaty cookies i blokady adblocka. Za darmo."
+    "message": "Blokuje reklamy, w tym wideo na YouTube, banery, wyskakujące okna, trackery, komunikaty cookies i blokady adblocka."
   },
   "byCarbon": {
     "message": "od Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Licencje list filtrów"
+  },
+  "welPageTitle": {
+    "message": "Witamy w Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Ochrona jest włączona",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock blokuje teraz reklamy i trackery na każdej odwiedzanej stronie. Nie musisz niczego konfigurować.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Przypnij rozszerzenie do paska narzędzi",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Kliknij ikonę puzzla obok paska adresu i przypnij Supreme AdBlock. Wtedy jednym kliknięciem zobaczysz, co zostało zablokowane na stronie.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Jeśli strona wygląda na uszkodzoną",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Otwórz rozszerzenie i wyłącz blokowanie dla tej strony albo wybierz „Strona nie działa?”, aby skorzystać z szybkich poprawek.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Przeglądanie zostaje na Twoim urządzeniu",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Filtrowanie odbywa się lokalnie. Rozszerzenie nie zbiera danych osobowych i nie wysyła niczego o odwiedzanych stronach.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Otwórz ustawienia",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Rozumiem",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

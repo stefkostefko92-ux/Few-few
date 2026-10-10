@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Blokir semua iklan: iklan video YouTube, banner, pop-up, pelacak, notifikasi cookie, dinding anti-adblock. Gratis, cepat, privat."
+    "message": "Blokir semua iklan: iklan video YouTube, banner, pop-up, pelacak, notifikasi cookie, dinding anti-adblock."
   },
   "byCarbon": {
     "message": "oleh Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Lisensi daftar filter"
+  },
+  "welPageTitle": {
+    "message": "Selamat datang di Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Anda terlindungi",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock kini memblokir iklan dan pelacak di setiap situs yang Anda kunjungi. Tidak ada yang perlu disiapkan.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Sematkan ekstensi ke toolbar",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Klik ikon kepingan puzzle di samping kolom alamat, lalu sematkan Supreme AdBlock. Setelah itu, satu klik menampilkan apa saja yang diblokir di halaman.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Jika situs tampak rusak",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Buka ekstensi dan nonaktifkan pemblokiran untuk situs tersebut, atau pilih “Situs rusak?” untuk perbaikan cepat.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Aktivitas penjelajahan Anda tetap di perangkat Anda",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Pemfilteran dilakukan secara lokal. Ekstensi tidak mengumpulkan data pribadi dan tidak mengirim apa pun tentang halaman yang Anda kunjungi.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Buka setelan",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Mengerti",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

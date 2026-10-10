@@ -25,6 +25,8 @@ const listDot = $("listDot");
 
 let currentHost = null;
 let currentTabId = null;
+// What the 3D shield shows: protected / paused (timed) / off / allowed (this site is on the allowlist).
+const S = { enabled: true, paused: false, allowed: false };
 
 // Numbers and units in the browser's language: "55 мин.", "4,6 GB", "43 709+".
 const UI_LANG = (() => { try { return chrome.i18n.getUILanguage(); } catch { return "en"; } })();
@@ -59,12 +61,14 @@ function load() {
       }
       savedData.textContent = fmtData(res.saved.mb);
       savedTime.textContent = fmtTime(res.saved.seconds);
+      currentHost = res.host;
+      S.allowed = !!res.allowed;
+      S.paused = (res.pausedUntil || 0) > Date.now();
       setStatus(res.enabled);
 
       listDot.textContent = t("filtersCount", [(res.filterCount || 0).toLocaleString(UI_LANG)]);
       renderPause(res.pausedUntil || 0);
 
-      currentHost = res.host;
       $("reportBtn").hidden = !currentHost;
       if (currentHost) {
         siteHost.textContent = currentHost;
@@ -126,9 +130,13 @@ function loadLog() {
 }
 
 function setStatus(enabled) {
-  heroTitle.textContent = enabled ? t("protected") : t("paused");
-  statusText.textContent = enabled ? t("blockingHere") : t("protectionOff");
+  S.enabled = enabled;
+  const allowedHere = enabled && S.allowed && !!currentHost;
+  heroTitle.textContent = allowedHere ? t("allowed") : enabled ? t("protected") : t("paused");
+  statusText.textContent = allowedHere ? currentHost : enabled ? t("blockingHere") : t("protectionOff");
   hero.classList.toggle("off", !enabled);
+  // read by popup.css and shield3d.js (colour + light of the shield)
+  hero.dataset.state = !enabled ? (S.paused ? "paused" : "off") : allowedHere ? "allowed" : "protected";
 }
 
 function setAllowLabel(blocking) {
@@ -154,6 +162,8 @@ allowToggle.addEventListener("change", () => {
   if (!currentHost) return;
   const blocking = allowToggle.checked;
   setAllowLabel(blocking);
+  S.allowed = !blocking;
+  setStatus(toggle.checked);
   chrome.runtime.sendMessage({ type: "setAllow", host: currentHost, allow: !blocking }, reloadActiveTab);
 });
 
@@ -170,6 +180,7 @@ let paused = false;
 
 function renderPause(until) {
   paused = until > Date.now();
+  S.paused = paused;
   pauseBtn.classList.toggle("paused", paused);
   if (paused) {
     const mins = Math.max(1, Math.round((until - Date.now()) / 60000));
@@ -196,3 +207,30 @@ $("reportBtn").addEventListener("click", () => {
   chrome.tabs.create({ url: chrome.runtime.getURL("report/report.html?tab=" + currentTabId) });
   window.close();
 });
+
+// 3D щитът (popup/shield3d.js) се зарежда чак СЛЕД първото рисуване: още една заявка към
+// разширението на критичния път струва ~40 ms до първия кадър (измерено), а статичният кадър
+// е в CSS. Без reduced-motion/-data и без автоматизация файлът изобщо не се иска.
+if (!navigator.webdriver && !matchMedia("(prefers-reduced-motion: reduce), (prefers-reduced-data: reduce)").matches) {
+  addEventListener("load", () => requestAnimationFrame(() => setTimeout(() => {
+    const s = document.createElement("script");
+    s.src = "shield3d.js";
+    document.head.appendChild(s);
+  }, 0)));
+}
+
+// Liquid Glass: отблясъкът по стъклото следва курсора (CSS --mx/--my), веднъж на кадър.
+// Без движение при reduced-motion — тогава остава на мястото си горе вляво.
+if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  let raf = 0, px = 0, py = 0;
+  addEventListener("pointermove", (e) => {
+    px = e.clientX; py = e.clientY;
+    if (raf) return;
+    raf = requestAnimationFrame(() => {
+      raf = 0;
+      const root = document.documentElement.style;
+      root.setProperty("--mx", Math.round((px / innerWidth) * 100) + "%");
+      root.setProperty("--my", Math.round((py / innerHeight) * 60 - 40) + "%");
+    });
+  }, { passive: true });
+}

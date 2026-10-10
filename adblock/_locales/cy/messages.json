@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Rhwystro hysbysebion ym mhobman: fideo YouTube, baneri, llamlenni, tracwyr, negeseuon cwcis a waliau anti-adblock. Am ddim."
+    "message": "Rhwystro hysbysebion ym mhobman: fideo YouTube, baneri, llamlenni, tracwyr, negeseuon cwcis a waliau anti-adblock."
   },
   "byCarbon": {
     "message": "gan Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Trwyddedau'r rhestrau hidlo"
+  },
+  "welPageTitle": {
+    "message": "Croeso i Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Rydych wedi’ch diogelu",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Mae Supreme AdBlock bellach yn rhwystro hysbysebion a thracwyr ar bob gwefan rydych yn ymweld â hi. Does dim byd i’w osod.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Piniwch yr estyniad i’r bar offer",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Cliciwch yr eicon darn jig-so wrth ymyl y bar cyfeiriad a phiniwch Supreme AdBlock. Yna bydd un clic yn dangos beth gafodd ei rwystro ar y dudalen.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Os yw gwefan yn edrych wedi torri",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Agorwch yr estyniad a diffoddwch y rhwystro ar gyfer y wefan honno, neu dewiswch “Gwefan wedi torri?” i gael atebion cyflym.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Mae eich pori’n aros ar eich dyfais",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Mae’r hidlo’n digwydd yn lleol. Nid yw’r estyniad yn casglu unrhyw ddata personol nac yn anfon dim am y tudalennau rydych yn ymweld â nhw.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Agor y gosodiadau",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Iawn",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Bloqueja anuncis (també a YouTube), bàners, finestres emergents, rastrejadors, avisos de galetes i murs anti-adblock. Gratuït."
+    "message": "Bloqueja anuncis (també a YouTube), bàners, finestres emergents, rastrejadors, avisos de galetes i murs anti-adblock."
   },
   "byCarbon": {
     "message": "per Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Llicències de les llistes de filtres"
+  },
+  "welPageTitle": {
+    "message": "Us donem la benvinguda a Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Protecció activada",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock ja bloqueja anuncis i rastrejadors a tots els llocs que visiteu. No cal configurar res.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Fixeu l’extensió a la barra d’eines",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Feu clic a la icona en forma de peça de trencaclosques al costat de la barra d’adreces i fixeu Supreme AdBlock. Després, amb un clic veureu què s’ha bloquejat a la pàgina.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Si un lloc no es veu bé",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Obriu l’extensió i desactiveu el bloqueig per a aquest lloc, o trieu «El lloc no funciona?» per a solucions ràpides.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "La vostra navegació es queda al vostre dispositiu",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "El filtratge es fa localment. L’extensió no recull dades personals ni envia res sobre les pàgines que visiteu.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Obre la configuració",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Entesos",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

@@ -164,7 +164,11 @@ const HOST_RE = /^(?=.{1,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)*[a-z0-9]
 const isHost = (d) => typeof d === "string" && HOST_RE.test(d);
 const isIPv4 = (d) => /^\d{1,3}(\.\d{1,3}){3}$/.test(d);
 
-chrome.runtime.onInstalled.addListener(async () => {
+chrome.runtime.onInstalled.addListener(async (details) => {
+  // Само при първа инсталация (не при ъпдейт): кратка локална страница — нищо не пита, нищо не праща.
+  if (details && details.reason === "install") {
+    try { chrome.tabs.create({ url: chrome.runtime.getURL("welcome/welcome.html") }); } catch {}
+  }
   const stored = await chrome.storage.local.get(Object.keys(DEFAULTS));
   const patch = {};
   for (const [k, v] of Object.entries(DEFAULTS)) {
@@ -551,7 +555,7 @@ const strArr = (x, cap) =>
 
 // Selector policy (form controls / credential fields / whole-page selectors are
 // refused) lives in scriptlets/policy.js — one rule set for live cosmetic
-// filters, imported settings and live scriptlets.
+// filters, imported settings and the baked scriptlets.
 const safeSelector = (s) => SA_POLICY.safeSelector(s);
 const selArr = (x, cap) => strArr(x, cap).filter(safeSelector);
 
@@ -562,37 +566,10 @@ const PROTECTED_YT_FIELDS = new Set([
   "captions", "storyboards", "microformat", "trackingParams", "responseContext",
 ]);
 
-// ---- Live scriptlets (Level 2, DATA only) ----
-// filters.json may carry `scriptlets: [{ h: "host.tld" | "", n: "name", a: [args] }]`.
-// We canonicalise uBO aliases and validate with rules that are a STRICT
-// SUPERSET of tools/build_scriptlets.mjs (the baked list is trusted dev input;
-// this channel is not): selector/attribute/tag policy, the cookie-name denylist
-// and the remove-cookie refusal apply only here and in the engine. Invariant:
-// live accepts ⇒ build accepts, never the reverse. The profile is ONE function in
-// scriptlets/policy.js (validateDirective(name, args, live)) shared by the build,
-// this worker and the engine. content.js hands the result to the MAIN-world
-// engine, which re-validates on arrival. Only names the engine
-// ships are accepted; NO trusted-* variants; never on core video/CDN hosts.
-function validateScriptlet(rawName, args) {
-  const name = SA_POLICY.canonical(rawName);
-  if (!name || !Array.isArray(args)) return null;
-  return SA_POLICY.validateDirective(name, args, true) ? [name, ...args] : null;
-}
-
-function sanitizeScriptlets(x) {
-  if (!Array.isArray(x)) return [];
-  const out = [];
-  for (const it of x.slice(0, SA_POLICY.LIVE_SCRIPTLET_MAX)) {
-    if (!it || typeof it !== "object") continue;
-    const h = typeof it.h === "string" ? it.h.trim().toLowerCase() : "";
-    if (h !== "" && !/^[a-z0-9.-]+\.[a-z]{2,}$/.test(h)) continue;
-    if (!h) continue;             // live = explicit host only (global anti-adblock is baked in MAP)
-    if (isProtected(h)) continue; // YouTube & co. are handled by dedicated code
-    const d = validateScriptlet(it.n, Array.isArray(it.a) ? it.a : []);
-    if (d) out.push({ h, d });
-  }
-  return out;
-}
+// Scriptlet directives are NEVER taken from the network (5.1.4): they are baked
+// into scriptlets/main.js at build time and ship with the package. filters.json
+// carries only inert data — domains, CSS selectors, YouTube field names — and any
+// `scriptlets` key in it is ignored.
 
 // Reduce the fetched JSON to a strict, known shape. Everything is treated as
 // inert data (domain strings, CSS selectors); nothing is ever executed.
@@ -606,7 +583,6 @@ function sanitizeConfig(cfg) {
       .map((d) => d.toLowerCase().replace(/^\|\|/, "").replace(/[\^/].*$/, ""))
       .filter((d) => /^[a-z0-9.-]+\.[a-z]{2,}$/.test(d) && !isProtected(d)),
     cosmetic: selArr(cfg?.cosmetic, 2000),
-    scriptlets: sanitizeScriptlets(cfg?.scriptlets),      // Level 2 live directives (data)
     youtube: {
       hide: selArr(yt.hide, 300),
       skip: selArr(yt.skip, 100),
@@ -687,10 +663,6 @@ async function fetchLiveConfigInner(force) {
   }
   const cfg = sanitizeConfig(raw);
   cfg.verified = verified;
-  // Scriptlet directives run in the page: only from a file whose Ed25519
-  // signature we checked. A browser without Ed25519 (Chrome < 137) still gets
-  // the signed-or-not DATA (domains, selectors), never live scriptlets.
-  if (!verified) cfg.scriptlets = [];
   // Anti-rollback: подписът доказва автентичност, не свежест. Отхвърляме стар
   // (валидно подписан) config — компрометиран сървър да не може да replay-не
   // остаряла версия. version-ът трябва да е монотонен.

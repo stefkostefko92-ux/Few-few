@@ -72,10 +72,6 @@ export function loadEngine(file = join(ROOT, "scriptlets", "main.js")) {
   runInThisContext(readFileSync(file, "utf8"), { filename: file });
 }
 
-// Доставя live директиви точно както content.js (JSON низ на DOM събитие).
-export const sendLive = (list) =>
-  globalThis.document.dispatchEvent(new globalThis.CustomEvent("sa-scriptlets", { detail: JSON.stringify(list) }));
-
 // Зарежда background.js с Proxy chrome stub и връща вътрешните функции.
 export function loadBackground(opts = {}) {
   const mk = () => new Proxy(function () {}, { get: (_, p) => (p === "then" ? undefined : mk()), apply: () => mk() });

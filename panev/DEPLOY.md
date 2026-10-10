@@ -191,6 +191,32 @@ sudo systemctl restart panev
 Снимките на базата отпреди рестарт са `/opt/panev/data/panev.db.pre-<час>`
 (пазят се последните 5).
 
+## 7а. Нова админ парола на сървъра (без вход в /admin)
+
+Когато паролата е изтекла или забравена. Всяка смяна прекратява всички стари сесии на този админ.
+
+```bash
+sudo -u panev node /opt/panev/scripts/admin-password.js --list                    # кои админи има
+sudo -u panev node /opt/panev/scripts/admin-password.js info@panevascensori.it    # случайна парола, показва се веднъж
+sudo -u panev node /opt/panev/scripts/admin-password.js --revoke info@panevascensori.it   # само край на сесиите
+```
+
+Препоръчителна е случайната парола (24 знака): не я пишеш никъде, само я копираш веднъж в мениджъра
+на пароли. Ако искаш своя, подай я **само по тръба** — `read -s` не я показва на екрана, а в историята
+на shell-а остава `"$PW"`, не паролата:
+
+```bash
+read -rsp 'Нова парола: ' PW; echo
+printf '%s\n' "$PW" | sudo -u panev node /opt/panev/scripts/admin-password.js --stdin info@panevascensori.it
+unset PW
+```
+
+Избраната парола минава същите правила като в `/admin`: поне 12 знака, без името на сайта, „admin“,
+„password“, имейла или „дума + година“. `ADMIN_PASSWORD` в средата скриптът отказва — тя остава в
+историята, а стара стойност от първия сийд иначе би станала новата парола, без да разбереш.
+`--list` показва и последния вход на всеки админ — непознат админ или вход, който не е твой, значи
+изтекъл достъп.
+
 ## 8. Диагностика
 
 | Симптом | Къде да гледаш |

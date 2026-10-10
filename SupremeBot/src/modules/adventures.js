@@ -92,7 +92,7 @@
         }
         const choice = chooseAdventure(data.adventures, c);
         if (!choice) {
-          Logger.warn(I18n.t('logNoEligibleAdventure', [c.difficulty]));
+          Logger.warn(I18n.t('logNoEligibleAdventure', [I18n.t('optv_' + c.difficulty)]));
           retryAt = Date.now() + 10 * 60000;
           return;
         }

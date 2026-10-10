@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "সব জায়গায় বিজ্ঞাপন ব্লক: YouTube ভিডিও বিজ্ঞাপন, ব্যানার, পপ-আপ, ট্র্যাকার ও অ্যান্টি-অ্যাডব্লক দেয়াল। বিনামূল্যে ও দ্রুত।"
+    "message": "সব জায়গায় বিজ্ঞাপন ব্লক: YouTube ভিডিও বিজ্ঞাপন, ব্যানার, পপ-আপ, ট্র্যাকার ও অ্যান্টি-অ্যাডব্লক দেয়াল।"
   },
   "byCarbon": {
     "message": "Carbon Stealth দ্বারা"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "ফিল্টার তালিকার লাইসেন্স"
+  },
+  "welPageTitle": {
+    "message": "Supreme AdBlock-এ স্বাগতম",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "আপনি সুরক্ষিত",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock এখন আপনার দেখা প্রতিটি সাইটে বিজ্ঞাপন ও ট্র্যাকার ব্লক করছে। কিছুই সেট আপ করতে হবে না।",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "এক্সটেনশনটি টুলবারে পিন করুন",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "ঠিকানা বারের পাশের ধাঁধার টুকরোর আইকনে ক্লিক করুন এবং Supreme AdBlock পিন করুন। তারপর এক ক্লিকেই দেখবেন পেজে কী ব্লক হয়েছে।",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "কোনো সাইট ঠিকমতো না দেখালে",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "এক্সটেনশন খুলুন এবং সেই সাইটের জন্য ব্লকিং বন্ধ করুন, অথবা দ্রুত সমাধানের জন্য “সাইট ঠিকমতো চলছে না?” বেছে নিন।",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "আপনার ব্রাউজিং আপনার ডিভাইসেই থাকে",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "ফিল্টারিং স্থানীয়ভাবে হয়। এক্সটেনশন কোনো ব্যক্তিগত ডেটা সংগ্রহ করে না এবং আপনার দেখা পেজগুলো সম্পর্কে কিছুই পাঠায় না।",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "সেটিংস খুলুন",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "বুঝেছি",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

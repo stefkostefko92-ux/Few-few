@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Supreme AdBlock — Free Ad Blocker for Chrome by Carbon Stealth</title>
-<meta name="description" content="Free Chrome ad blocker by Carbon Stealth: stops YouTube ads at the source, blocks trackers, pop-unders and cookie walls. 70 languages, no telemetry." />
+<meta name="description" content="Free Chrome ad blocker by Carbon Stealth: stops YouTube ads at the source, blocks trackers, pop-unders and cookie walls. 73 languages, no telemetry." />
 <meta name="keywords" content="Supreme AdBlock, Carbon Stealth, ad blocker for Chrome, free ad blocker, YouTube ad blocker, Manifest V3 ad blocker, block trackers, cookie banner blocker, pop-up blocker, privacy extension, EasyList, uBlock Origin Lite alternative" />
 <meta name="author" content="Carbon Stealth" />
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
@@ -119,6 +119,25 @@
   .btn .bi{width:18px;height:18px;flex:none;fill:currentColor}
   .btn .bi.heart{width:16px;height:16px;fill:#ff3366}
   .btn.small{padding:9px 14px;font-size:13px;border-radius:10px}
+  /* Established Publisher (Chrome Web Store) — the trust mark next to the install button. Our own seal,
+     not Google's artwork; the wording follows the store's own badge (verified identity, no violations). */
+  .verified{display:inline-flex;align-items:center;gap:12px;margin-top:18px;padding:10px 16px 10px 11px;border-radius:14px;position:relative;overflow:hidden;
+    border:1px solid rgba(0,229,255,.38);background:linear-gradient(135deg,rgba(0,229,255,.11),rgba(0,229,255,.025));color:var(--cream);text-decoration:none;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 10px 34px rgba(0,229,255,.13);transition:border-color .2s,box-shadow .2s,transform .2s}
+  .verified:hover{border-color:var(--cyan);transform:translateY(-2px);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 14px 44px rgba(0,229,255,.24)}
+  .verified:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+  .verified .seal{width:32px;height:32px;flex:none;filter:drop-shadow(0 0 10px rgba(0,229,255,.55))}
+  .verified .seal polygon{fill:var(--cyan);stroke:var(--cyan);stroke-width:1.2;stroke-linejoin:round}
+  .verified .seal path{fill:none;stroke:#001014;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
+  .verified .vt{display:flex;flex-direction:column;line-height:1.25;text-align:left}
+  .verified .vt b{font-size:14.5px;font-weight:750;letter-spacing:.2px}
+  .verified .vt small{font-size:12px;color:var(--muted);margin-top:2px}
+  .verified .ext{width:14px;height:14px;flex:none;fill:none;stroke:var(--muted2);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .verified::after{content:"";position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.16) 50%,transparent 65%);transform:translateX(-130%);animation:vshine 1.4s .95s cubic-bezier(.2,.7,.2,1) both}
+  @keyframes vshine{to{transform:translateX(130%)}}
+  html.still .verified::after{animation:none;display:none}
+  .final .verified{display:flex;width:max-content;max-width:100%;margin:22px auto 0}  /* its own line, under the buttons */
   .storenote{margin-top:16px;font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted2);font-family:var(--mono)}
   .updated{font-family:var(--mono);font-size:12px;letter-spacing:1px;color:var(--muted2);margin-top:8px;text-transform:uppercase}
 
@@ -266,13 +285,13 @@
       "applicationCategory": "BrowserApplication",
       "description": "Free ad blocker for Chrome by Carbon Stealth. Stops YouTube video ads at the source, blocks banners, pop-unders, trackers and cookie walls, with EasyList and EasyPrivacy built in and signed filter updates twice a day. No account, no telemetry.",
       "url": "https://adblock.carbonstealth.eu/",
-      "image": "https://adblock.carbonstealth.eu/popup-shot.webp",
-      "screenshot": "https://adblock.carbonstealth.eu/popup-shot.webp",
+      "image": "https://adblock.carbonstealth.eu/popup-shot.webp?v=faccd7bc6c",
+      "screenshot": "https://adblock.carbonstealth.eu/popup-shot.webp?v=faccd7bc6c",
       "downloadUrl": "https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk",
       "installUrl": "https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk",
-      "softwareVersion": "5.1.3",
+      "softwareVersion": "5.1.6",
       "datePublished": "2026-06-15",
-      "dateModified": "2026-10-05",
+      "dateModified": "2026-10-09",
       "inLanguage": ["af", "am", "ar", "az", "be", "bg", "bn", "bs", "ca", "cs", "cy", "da", "de", "el", "en", "es", "es-419", "et", "eu", "fa", "fi", "fil", "fr", "gl", "gu", "he", "hi", "hr", "hu", "hy", "id", "is", "it", "ja", "ka", "kk", "km", "kn", "ko", "lt", "lv", "mk", "ml", "mn", "mr", "ms", "ne", "nl", "no", "pa", "pl", "pt-BR", "pt-PT", "ro", "ru", "si", "sk", "sl", "sq", "sr", "sv", "sw", "ta", "te", "th", "tr", "uk", "ur", "uz", "vi", "zh-CN", "zh-TW", "zu"],
       "isAccessibleForFree": true,
       "license": "https://opensource.org/license/mit",
@@ -290,7 +309,7 @@
         "Smart Detection: list-free detection of ad-sized frames",
         "Procedural cosmetic filters and filter-list subscriptions",
         "Per-site controls and a per-page breakdown of what each list blocked",
-        "Interface in 70 languages",
+        "Interface in 73 languages",
         "No account, no analytics, no telemetry"
       ],
       "publisher": { "@id": "https://carbonstealth.eu/#org" }
@@ -331,7 +350,7 @@
       "primaryImageOfPage": "https://adblock.carbonstealth.eu/og.png",
       "inLanguage": "en",
       "datePublished": "2026-06-15",
-      "dateModified": "2026-10-05",
+      "dateModified": "2026-10-09",
       "speakable": { "@type": "SpeakableSpecification", "cssSelector": [".sub", ".lead"] }
     },
     {
@@ -339,10 +358,11 @@
       "@id": "https://adblock.carbonstealth.eu/#faq",
       "mainEntity": [
         { "@type": "Question", "name": "Is Supreme AdBlock free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Supreme AdBlock is free, with no account and no paid tier. Donations are optional and never required." } },
+        { "@type": "Question", "name": "Is it safe to install?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. On the Chrome Web Store, Supreme AdBlock carries the Established Publisher badge: Google has verified the publisher's identity, the listing is published by the owner of carbonstealth.eu, and the publisher has a good record with no history of policy violations. All of the extension's code ships in the package — nothing is downloaded and run — and your browsing data never leaves your device." } },
         { "@type": "Question", "name": "Does it block YouTube ads?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Ad entries are taken out of the player data before the player reads it, so video ads never start, and ads in the feed and search are removed too. If YouTube still refuses to play on an account it has flagged, the extension steps aside for that session so videos still play." } },
         { "@type": "Question", "name": "Does it collect my data?", "acceptedAnswer": { "@type": "Answer", "text": "Your browsing data never leaves your device: no account, no analytics, no telemetry. The only automatic request to us is the filter update, about twice a day (lists you add yourself refresh from their own address); like any download it reaches our EU server with your IP address, and that request is not logged." } },
         { "@type": "Question", "name": "Will it break websites?", "acceptedAnswer": { "@type": "Answer", "text": "Rarely. If a site misbehaves, choose Site broken? in the popup: one click allows the site, or keeps network blocking and switches off only element hiding for that site, and a ready-made report lets you tell us about it." } },
-        { "@type": "Question", "name": "Which languages does it speak?", "acceptedAnswer": { "@type": "Answer", "text": "The interface is in 70 languages and follows your browser's language, right-to-left scripts included. Regional filter lists for 31 languages and regions are built in, and the one for your language turns on by itself; 4 more (Bulgarian, Polish, Nordic, Croatian) download from their authors when you switch them on." } },
+        { "@type": "Question", "name": "Which languages does it speak?", "acceptedAnswer": { "@type": "Answer", "text": "The interface is in 73 languages and follows your browser's language, right-to-left scripts included. Regional filter lists for 31 languages and regions are built in, and the one for your language turns on by itself; 4 more (Bulgarian, Polish, Nordic, Croatian) download from their authors when you switch them on." } },
         { "@type": "Question", "name": "How does it handle cookie banners?", "acceptedAnswer": { "@type": "Answer", "text": "It presses the banner's own Reject button when there is one, and Accept only when there is no other way to close it, then clears any leftover dimmed background or scroll lock. It only presses a cookie banner's own buttons — never a sign-in, OAuth or payment button, never one that submits a form. You can switch it off in Settings." } },
         { "@type": "Question", "name": "Is it an alternative to uBlock Origin or AdGuard?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, as a Chrome extension. Like uBlock Origin Lite it is built on Manifest V3 with EasyList and EasyPrivacy; it adds signed filter-data updates twice a day, a dedicated YouTube pipeline, cookie-banner handling and list-free Smart Detection. AdGuard's desktop apps filter the whole system, which no browser extension can do." } },
         { "@type": "Question", "name": "Which browsers are supported?", "acceptedAnswer": { "@type": "Answer", "text": "Google Chrome and other Chromium browsers such as Microsoft Edge and Brave, version 121 or newer, installed from the Chrome Web Store." } },
@@ -362,7 +382,7 @@
 
   <nav aria-label="Main">
     <a class="brand" href="/" aria-label="Supreme AdBlock home">
-      <img class="mark" src="/shield-96.webp" alt="" width="34" height="34" />
+      <img class="mark" src="/shield-96.webp?v=4c70aee9f0" alt="" width="34" height="34" />
       <span><b>Supreme AdBlock</b><span class="tag">Carbon Stealth</span></span>
     </a>
     <span class="sp"></span>
@@ -392,12 +412,17 @@
           <a class="btn primary" href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk" target="_blank" rel="noopener"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2 4 13.2h6.1L9 22l10.5-11.6h-6.4z"/></svg>Add to Chrome — free</a>
           <a class="btn ghost" href="#why">Why it's different</a>
         </div>
+        <a class="verified" href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk" target="_blank" rel="noopener">
+          <svg class="seal" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12.00,0.80 14.43,2.92 17.60,2.30 18.65,5.35 21.70,6.40 21.08,9.57 23.20,12.00 21.08,14.43 21.70,17.60 18.65,18.65 17.60,21.70 14.43,21.08 12.00,23.20 9.57,21.08 6.40,21.70 5.35,18.65 2.30,17.60 2.92,14.43 0.80,12.00 2.92,9.57 2.30,6.40 5.35,5.35 6.40,2.30 9.57,2.92"/><path d="M7.7 12.3l2.8 2.8 5.8-6"/></svg>
+          <span class="vt"><b>Established Publisher</b> <small>Verified on the Chrome Web Store · no history of violations</small></span>
+          <svg class="ext" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3h7v7M13 3 4 12"/></svg>
+        </a>
         <p class="storenote">Free on the Chrome Web Store · Chrome, Edge &amp; Brave</p>
-        <p class="updated">Version 5.1.3 · updated 5 October 2026 · by Carbon Stealth</p>
+        <p class="updated">Version 5.1.6 · updated 8 October 2026 · by Carbon Stealth</p>
       </div>
       <figure class="shot">
-        <img class="ghost-shield" src="/shield-380.webp" alt="" width="300" height="300" aria-hidden="true" />
-        <img class="ui" src="/popup-shot.webp" width="320" height="724" fetchpriority="high" decoding="async"
+        <img class="ghost-shield" src="/shield-380.webp?v=090e2383f4" alt="" width="300" height="300" aria-hidden="true" />
+        <img class="ui" src="/popup-shot.webp?v=faccd7bc6c" width="320" height="677" fetchpriority="high" decoding="async"
              alt="The Supreme AdBlock popup: protection on, 1,204 requests blocked, 68 MB of data saved, and a per-page breakdown of what each filter list blocked." />
         <figcaption>The real popup, with demo numbers</figcaption>
       </figure>
@@ -511,7 +536,7 @@
         <li class="reveal"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/><circle cx="19" cy="18" r="2"/></svg></div><div><b>See what was blocked</b><span>A per-page breakdown of what each list stopped, plus an engine health card in Settings.</span></div></li>
         <li class="reveal"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div><div><b>Private by design</b><span>No account, no analytics; optional sync goes to your own browser account, never to us.</span></div></li>
         <li class="reveal"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg></div><div><b>Focus mode</b><span>Hide chat bubbles, newsletter pop-ups, notification prompts, social widgets, AI pop-ups, “Sign in with Google” prompts and YouTube Shorts.</span></div></li>
-        <li class="reveal"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h12M9 3v2c0 4-3 7-6 8M5 9c1 2 3 3.5 6 4.5M13 21l4-10 4 10M14.5 17.5h5"/></svg></div><div><b>70 languages</b><span>The interface follows your browser's language.</span></div></li>
+        <li class="reveal"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h12M9 3v2c0 4-3 7-6 8M5 9c1 2 3 3.5 6 4.5M13 21l4-10 4 10M14.5 17.5h5"/></svg></div><div><b>73 languages</b><span>The interface follows your browser's language.</span></div></li>
       </ul>
     </div>
   </section>
@@ -535,7 +560,7 @@
         </div>
         <div class="item reveal">
           <h3>What "signed updates, no remote code" means</h3>
-          <p>Chrome forbids extensions from downloading code — and rightly so. Supreme AdBlock downloads only <b>data</b>: domain names, CSS selectors and scriptlet directives whose names must come from a fixed list of 19 routines already in the package. The file is signed with an Ed25519 key that never leaves our server, and a newer signed version can never be replaced by an older one.</p>
+          <p>Chrome forbids extensions from downloading code — and rightly so. Supreme AdBlock downloads only <b>data</b>: domain names and CSS selectors. The 19 anti-adblock routines and the sites they run on are fixed in the package and can't be changed from the network. The file is signed with an Ed25519 key that never leaves our server, and a newer signed version can never be replaced by an older one.</p>
         </div>
         <div class="item reveal">
           <h3>Filter lists for your language</h3>
@@ -583,10 +608,11 @@
       </div>
       <div class="faq">
         <div class="card reveal"><h3>Is Supreme AdBlock free?</h3><p>Yes. Supreme AdBlock is free, with no account and no paid tier. Donations are optional and never required.</p></div>
+        <div class="card reveal"><h3>Is it safe to install?</h3><p>Yes. On the Chrome Web Store, Supreme AdBlock carries the <a href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk" target="_blank" rel="noopener">Established Publisher</a> badge: Google has verified the publisher's identity, the listing is published by the owner of carbonstealth.eu, and the publisher has a good record with no history of policy violations. All of the extension's code ships in the package — nothing is downloaded and run — and your browsing data never leaves your device.</p></div>
         <div class="card reveal"><h3>Does it block YouTube ads?</h3><p>Yes. Ad entries are taken out of the player data before the player reads it, so video ads never start, and ads in the feed and search are removed too. If YouTube still refuses to play on an account it has flagged, the extension steps aside for that session so videos still play.</p></div>
         <div class="card reveal"><h3>Does it collect my data?</h3><p>Your browsing data never leaves your device: no account, no analytics, no telemetry. The only automatic request to us is the filter update, about twice a day (lists you add yourself refresh from their own address); like any download it reaches our EU server with your IP address, and that request is not logged. Details in the <a href="/privacy">privacy policy</a>.</p></div>
         <div class="card reveal"><h3>Will it break websites?</h3><p>Rarely. If a site misbehaves, choose <b>Site broken?</b> in the popup: one click allows the site, or keeps network blocking and switches off only element hiding for that site, and a ready-made report lets you tell us about it.</p></div>
-        <div class="card reveal"><h3>Which languages does it speak?</h3><p>The interface is in 70 languages and follows your browser's language, right-to-left scripts included. Regional filter lists for 31 languages and regions are built in, and the one for your language turns on by itself; 4 more (Bulgarian, Polish, Nordic, Croatian) download from their authors when you switch them on.</p></div>
+        <div class="card reveal"><h3>Which languages does it speak?</h3><p>The interface is in 73 languages and follows your browser's language, right-to-left scripts included. Regional filter lists for 31 languages and regions are built in, and the one for your language turns on by itself; 4 more (Bulgarian, Polish, Nordic, Croatian) download from their authors when you switch them on.</p></div>
         <div class="card reveal"><h3>How does it handle cookie banners?</h3><p>It presses the banner's own Reject button when there is one, and Accept only when there is no other way to close it, then clears any leftover dimmed background or scroll lock. It only presses a cookie banner's own buttons — never a sign-in, OAuth or payment button, never one that submits a form. You can switch it off in Settings.</p></div>
         <div class="card reveal"><h3>Is it an alternative to uBlock Origin or AdGuard?</h3><p>Yes, as a Chrome extension. Like uBlock Origin Lite it is built on Manifest V3 with EasyList and EasyPrivacy; it adds signed filter-data updates twice a day, a dedicated YouTube pipeline, cookie-banner handling and list-free Smart Detection. AdGuard's desktop apps filter the whole system, which no browser extension can do.</p></div>
         <div class="card reveal"><h3>Which browsers are supported?</h3><p>Google Chrome and other Chromium browsers such as Microsoft Edge and Brave, version 121 or newer, installed from the Chrome Web Store.</p></div>
@@ -604,6 +630,11 @@
       <a class="btn primary" href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk" target="_blank" rel="noopener"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2 4 13.2h6.1L9 22l10.5-11.6h-6.4z"/></svg>Add to Chrome — free</a>
       <a class="btn ghost" href="https://revolut.me/vycanismajoris" target="_blank" rel="noopener"><svg class="bi heart" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"/></svg>Donate via Revolut</a>
     </div>
+    <a class="verified" href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk" target="_blank" rel="noopener">
+        <svg class="seal" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12.00,0.80 14.43,2.92 17.60,2.30 18.65,5.35 21.70,6.40 21.08,9.57 23.20,12.00 21.08,14.43 21.70,17.60 18.65,18.65 17.60,21.70 14.43,21.08 12.00,23.20 9.57,21.08 6.40,21.70 5.35,18.65 2.30,17.60 2.92,14.43 0.80,12.00 2.92,9.57 2.30,6.40 5.35,5.35 6.40,2.30 9.57,2.92"/><path d="M7.7 12.3l2.8 2.8 5.8-6"/></svg>
+        <span class="vt"><b>Established Publisher</b> <small>Verified on the Chrome Web Store · no history of violations</small></span>
+        <svg class="ext" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3h7v7M13 3 4 12"/></svg>
+      </a>
     <p class="mini">Donations are handled by Revolut; see the <a href="/privacy#donations">privacy policy</a>.</p>
   </div>
 
@@ -612,7 +643,7 @@
   <footer>
     <div class="row">
       <div class="who">
-        <img src="/shield-96.webp" alt="" width="26" height="26" />
+        <img src="/shield-96.webp?v=4c70aee9f0" alt="" width="26" height="26" />
         <div>
           <p><b style="color:var(--cream)">Supreme AdBlock</b> is made by Carbon Stealth VCC · UIC (ЕИК) 208725180</p>
           <p>3 Samuil St., 2670 Bobov Dol, Bulgaria · <a href="mailto:info@carbonstealth.eu">info@carbonstealth.eu</a></p>

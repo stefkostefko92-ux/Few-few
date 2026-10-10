@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "ہر جگہ اشتہارات بلاک کرتا ہے: YouTube ویڈیو اشتہارات، بینرز، پاپ اپس، ٹریکرز اور اینٹی ایڈبلاک دیواریں۔ مفت اور تیز۔"
+    "message": "ہر جگہ اشتہارات بلاک کرتا ہے: YouTube ویڈیو اشتہارات، بینرز، پاپ اپس، ٹریکرز اور اینٹی ایڈبلاک دیواریں۔"
   },
   "byCarbon": {
     "message": "منجانب Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "فلٹر فہرستوں کے لائسنس"
+  },
+  "welPageTitle": {
+    "message": "Supreme AdBlock میں خوش آمدید",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "آپ محفوظ ہیں",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock اب آپ کی ہر دیکھی جانے والی سائٹ پر اشتہارات اور ٹریکرز بلاک کر رہا ہے۔ کچھ بھی سیٹ اپ کرنے کی ضرورت نہیں۔",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "ایکسٹینشن کو ٹول بار پر پن کریں",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "ایڈریس بار کے ساتھ والے پزل کے ٹکڑے کے آئیکن پر کلک کریں اور Supreme AdBlock کو پن کریں۔ پھر ایک کلک سے پتا چلتا ہے کہ صفحے پر کیا بلاک ہوا۔",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "اگر کوئی سائٹ خراب لگے",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "ایکسٹینشن کھولیں اور اس سائٹ کے لیے بلاکنگ بند کریں، یا فوری حل کے لیے “سائٹ خراب ہے؟” منتخب کریں۔",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "آپ کی براؤزنگ آپ کے آلے پر ہی رہتی ہے",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "فلٹرنگ مقامی طور پر ہوتی ہے۔ ایکسٹینشن کوئی ذاتی ڈیٹا جمع نہیں کرتی اور آپ کے دیکھے گئے صفحات کے بارے میں کچھ نہیں بھیجتی۔",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "ترتیبات کھولیں",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "ٹھیک ہے",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

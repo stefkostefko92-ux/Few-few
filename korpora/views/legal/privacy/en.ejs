@@ -1,0 +1,73 @@
+<p>This policy explains which personal data Korpora processes, why, how long we keep it and what rights you have under the General Data Protection Regulation (GDPR).</p>
+
+<h2>Who processes the data</h2>
+<p><%= t('company.legalName') %>, a <%= t('company.legalForm') %>, company number (EIK)&nbsp;<%= company.eik %>, ul. Samuil 3, <%= company.postalCode %> Bobov Dol, Kyustendil Province, Bulgaria, phone&nbsp;<a class="nowrap" href="<%= company.phoneHref %>"><%= company.phone %></a>. For questions about personal data, write to <a href="mailto:<%= privacyEmail %>"><%= privacyEmail %></a>.</p>
+
+<h2>Which data, why and for how long</h2>
+<div class="table-wrap">
+  <table class="stack">
+    <thead><tr><th scope="col">Data</th><th scope="col">Why</th><th scope="col">Legal basis</th><th scope="col">Kept for</th></tr></thead>
+    <tbody>
+      <tr><td data-label="Data">Email, name, language, password hash (Argon2id)</td><td data-label="Why">Your account and signing in to it</td><td data-label="Legal basis">Contract, Art. 6(1)(b) GDPR</td><td data-label="Kept for">As long as the account exists; a sign-up whose email is never confirmed is deleted after <%= unverifiedKept %></td></tr>
+      <tr><td data-label="Data">Your projects: furniture type, sizes, materials, project name</td><td data-label="Why">The service itself: model, cut list, drawings, machine files</td><td data-label="Legal basis">Contract</td><td data-label="Kept for">Until you delete them or the account</td></tr>
+      <tr><td data-label="Data">IP address, country derived from the IP address, browser and operating system, result of each sign-in attempt — also for attempts with an email that has no account</td><td data-label="Why">Protecting accounts: spotting someone else's sign-in, locking after password guessing, warning about a new sign-in</td><td data-label="Legal basis">Legitimate interest, Art. 6(1)(f) GDPR</td><td data-label="Kept for">Sign-in history: <%= loginRetentionDays %> days. IP address and country at sign-up and at the last sign-in: as long as the account exists. Active sessions (IP address, country, browser): until you sign out or the session expires, at most <%= sessionMax %></td></tr>
+      <tr><td data-label="Data">Device identifier (HWID): a hash of the device cookie, a hash of the device fingerprint and a short description</td><td data-label="Why">Recognising a known device, an email on sign-in from a new one, spotting repeated trials and shared accounts</td><td data-label="Legal basis">Legitimate interest</td><td data-label="Kept for">A device not used for <%= loginRetentionDays %> days is deleted; the device and fingerprint from sign-up for <%= loginRetentionDays %> days after it; the fingerprint of a sign-in attempt with the sign-in history, <%= loginRetentionDays %> days</td></tr>
+      <tr><td data-label="Data">Two-factor protection: secret key (encrypted with AES-256-GCM) and recovery codes (we keep only their HMAC)</td><td data-label="Why">A second factor at sign-in, if you turned it on</td><td data-label="Legal basis">Contract</td><td data-label="Kept for">Until you turn the protection off or delete the account</td></tr>
+      <tr><td data-label="Data">Plan, end date, orders (option, price, whether you buy as a consumer or a business, early-start request, version of the terms, message, withdrawal from the contract), plan changes and their amounts</td><td data-label="Why">The trial, the contract for the paid plan, payment, activation and the right of withdrawal</td><td data-label="Legal basis">Contract; legal obligation for accounting records, Art. 6(1)(c) GDPR</td><td data-label="Kept for">As long as the account exists; invoices for as long as accounting law requires</td></tr>
+      <tr><td data-label="Data">Account blocking: the reason, who blocked or unblocked the account and when, the note on unblocking</td><td data-label="Why">Enforcing the <a href="<%= legalPath(locale, 'terms') %>">terms of use</a> (section “Blocking”) and protection in a dispute</td><td data-label="Legal basis">Legitimate interest</td><td data-label="Kept for">As long as the account exists</td></tr>
+      <tr><td data-label="Data">Audit log: who did what and when to an account, order or project, and from which IP address</td><td data-label="Why">Accountability and protection in a dispute</td><td data-label="Legal basis">Legitimate interest</td><td data-label="Kept for">Entries are kept for <%= auditKept %> and then deleted; the IP addresses in them for <%= loginRetentionDays %> days, after which only a keyed hash (HMAC) of the address remains, needed to verify the integrity of the log, until the entry itself is deleted. For customers the log keeps the account number, not the email. When the team deletes an account, a SHA-256 hash of the email stays — it proves which account was deleted without keeping the address itself</td></tr>
+    </tbody>
+  </table>
+</div>
+<p>The email, name and password are needed for an account: without them we cannot create one. The IP address, browser and device are recorded at every sign-in, because without them we cannot protect the account from someone else getting in. Ordering a plan also needs the choices in the order — without them we cannot conclude the contract.</p>
+
+<h2>What “HWID” means here</h2>
+<p>Browsers do not give websites the hardware ID of your computer. So by “HWID” we mean a device fingerprint: a hash of details the browser shows to every website — platform, number of cores, memory, colour depth, touch screen and graphics card (vendor and model). Besides the hash we keep a short description: system, browser, screen size, cores, memory, graphics card and time zone (for example “Windows, Chrome 128, 1920 × 1080, 8 CPU”). The fingerprint is computed at sign-in and sign-up — also for a sign-in attempt with an email that has no account; if JavaScript is off, signing in works without it.</p>
+
+<h2>Cookies</h2>
+<p>We use only cookies the service cannot work without or cannot be secured without. We have no advertising, analytics or third-party cookies, so we show no consent banner.</p>
+<div class="table-wrap">
+  <table class="stack">
+    <thead><tr><th scope="col">Name</th><th scope="col">Purpose</th><th scope="col">Duration</th></tr></thead>
+    <tbody>
+      <tr><td data-label="Name"><code>__Host-rd_sid</code></td><td data-label="Purpose">Your session after signing in</td><td data-label="Duration">Until you sign out; at most <%= customerSession %> (<%= customerIdle %> without activity), <%= staffSession %> for staff</td></tr>
+      <tr><td data-label="Name"><code>__Host-rd_dev</code></td><td data-label="Purpose">Recognising the device for sign-in security and spotting repeated trials and shared accounts</td><td data-label="Duration"><%= loginRetentionDays %> days from the last time the sign-in or sign-up page was opened</td></tr>
+      <tr><td data-label="Name"><code>rd_pre</code></td><td data-label="Purpose">Protecting the sign-in and sign-up forms against forged requests (CSRF)</td><td data-label="Duration"><%= preCsrfKept %></td></tr>
+      <tr><td data-label="Name"><code>rd_lang</code></td><td data-label="Purpose">The language you chose</td><td data-label="Duration"><%= langKept %></td></tr>
+      <tr><td data-label="Name"><code>rd_flash</code></td><td data-label="Purpose">A one-time message after an action (for example “Saved”)</td><td data-label="Duration"><%= flashKept %></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2>Who else sees the data</h2>
+<ul>
+  <li>Hetzner Online GmbH, Germany — the server Korpora runs on, in a data centre in the European Union.</li>
+  <li>Sendinblue SAS (Brevo), France — sending the emails listed under “Emails” below.</li>
+  <li>Have I Been Pwned — when you choose a new password, we send only the first 5 characters of its SHA-1 hash to check whether the password has leaked in a breach. The password and the full hash never leave the server.</li>
+</ul>
+<p>The country of an IP address comes from a DB-IP database (<a href="https://db-ip.com" target="_blank" rel="noopener">IP Geolocation by DB-IP</a>, licence <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>) stored on our server — the IP address is not sent anywhere. We do not sell data or share it for advertising. We do not transfer personal data outside the European Union; if a Brevo sub-processor processes data outside the EU, the transfer is protected by standard contractual clauses (Art. 46 GDPR).</p>
+
+<h2>Emails</h2>
+<p>We send only emails about your account and contract: confirming your email and an email change (with a notice to the old address), password reset and password change, sign-in from a new device, wrong sign-in codes, wrong passwords or codes when confirming an action in your account, turning two-factor protection on and off, a reminder <%= trialReminder %> before the trial ends, confirmation of an order and of a withdrawal from the contract, plan changes, a notice when someone tries to sign up with your email, an email to set your password when the team creates an account for you, and confirmation that the account was deleted. We do not send marketing emails.</p>
+
+<h2>Automated decisions</h2>
+<p>We make no decisions with legal effects by automated means alone. After <%= failedLogins %> wrong passwords or codes, signing in is locked for <%= lockFor %> — a security measure that lifts by itself. If the wrong attempts happen while confirming an action in an open session, all sessions are also ended and we email you. Only a member of our team can block an account, and the reason is shown when you try to sign in.</p>
+
+<h2>Security</h2>
+<p>Connections are HTTPS only. Passwords are stored as Argon2id hashes, two-factor secret keys are encrypted, sessions live on the server and end at once when the password changes or the account is blocked. The admin panel opens only with two-factor protection. Application logs contain no emails, IP addresses or passwords, and the web server keeps no request log — it records an IP address only in its error log, when a request cannot be served.</p>
+
+<h2>Your rights</h2>
+<p>You have the right of access, rectification, erasure, restriction of processing and portability. Much of it works directly from your account:</p>
+<ul>
+  <li>“Profile” — correct your name and email;</li>
+  <li>“Data” — download all your data as a JSON file (profile, projects, plan and orders, devices, sign-ins, sessions and the audit log entries about you) and delete the account together with your projects;</li>
+  <li>“Security” — active sessions and the devices used to sign in.</li>
+</ul>
+<p><strong>Right to object.</strong> You may at any time object, on grounds relating to your particular situation, to the processing of your data based on legitimate interest — the sign-in history, the device, blocking and the audit log. We then stop, unless we have compelling legitimate grounds that override your interests or the data is needed for legal claims.</p>
+<p>For anything else, write to <a href="mailto:<%= privacyEmail %>"><%= privacyEmail %></a> — we answer within one month. You have the right to lodge a complaint with the Bulgarian Commission for Personal Data Protection: 2 Prof. Tsvetan Lazarov Blvd., Sofia 1592, <a href="https://www.cpdp.bg" target="_blank" rel="noopener">www.cpdp.bg</a>, or with the supervisory authority of the EU country where you live (in Italy, the Garante per la protezione dei dati personali).</p>
+
+<h2>Minors</h2>
+<p>Korpora is a professional tool and is not meant for people under 16.</p>
+
+<h2>Changes</h2>
+<p>If we change this policy materially, we will tell you by email before the change takes effect. The date of the last change is at the top of the page.</p>
