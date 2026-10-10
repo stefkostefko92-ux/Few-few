@@ -29,18 +29,18 @@ export function sideStabiliser(ctx, sys, a) {
   const byKB = KB >= STABILISER_RULE.kb;
   if (!byKB && SKW < STABILISER_RULE.ratio * NL) return null;
   const why = byKB
-    ? `шкафът е ${dimTxt(KB)} mm — програмата я слага от ${STABILISER_RULE.kb} mm, наш избор`
-    : `вътрешната ширина на чекмеджето е ${dimTxt(SKW)} mm при водач NL ${NL} mm — програмата я слага от ${comma(STABILISER_RULE.ratio)} × NL, наш избор`;
+    ? `шкафът е ${dimTxt(KB)} mm — слага се от ${STABILISER_RULE.kb} mm, наш избор`
+    : `вътрешната ширина на чекмеджето е ${dimTxt(SKW)} mm при водач NL ${NL} mm — слага се от ${comma(STABILISER_RULE.ratio)} × NL, наш избор`;
   const sku = st.kits.find(([upTo]) => NL <= upTo)?.[1];
   if (!sku) return null;
   // without a handle the front opens with TIP-ON or a grip profile (the editor says so): TIP-ON rules the kit out
   if (st.noTipOn && handle === 'none') {
-    ctx.warn('warn', `${where}: странична стабилизация не е добавена — фронтът е без дръжка (TIP-ON или профил), а комплектът за ${sys.name.split(' — ')[0]} не е съвместим с TIP-ON (${st.noTipOn}). ${sys.brand} я препоръчва тук (${why}): при профил поръчайте ${sku} отделно, при TIP-ON — ${narrower.toLowerCase()}.`);
+    ctx.warn('warn', `${where}: странична стабилизация не е добавена — фронтът е без дръжка (TIP-ON или профил), а комплектът за ${sys.name.split(' — ')[0]} не е съвместим с TIP-ON (${st.noTipOn}). Програмата би я сложила тук (${why}; ${sys.brand} я препоръчва за широки чекмеджета с къс водач): при профил поръчайте ${sku} отделно, при TIP-ON — ${narrower.toLowerCase()}.`);
     return null;
   }
   const need = sys.depthNeeded(NL) + st.depthPlus;
   if (need > depth) {
-    ctx.warn('warn', `${where}: ${sys.brand} препоръчва странична стабилизация (${why}), но с нея водачът иска ${dimTxt(need)} mm вътрешна дълбочина (NL + 15), а има ${dimTxt(depth)} mm. Оставен е водачът NL ${NL} mm без нея — задълбочете шкафа с ${dimTxt(need - depth)} mm, за да се добави.`);
+    ctx.warn('warn', `${where}: програмата слага странична стабилизация (${why}; ${sys.brand} я препоръчва за широки чекмеджета с къс водач), но с нея водачът иска ${dimTxt(need)} mm вътрешна дълбочина (NL + 15), а има ${dimTxt(depth)} mm. Оставен е водачът NL ${NL} mm без нея — задълбочете шкафа с ${dimTxt(need - depth)} mm, за да се добави.`);
     return null;
   }
   const shaft = Math.round(LW - st.shaftMinus);

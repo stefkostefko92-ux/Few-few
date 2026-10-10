@@ -146,6 +146,8 @@ test('Blum stabiliser: when NL + 15 does not fit, the longer slide stays without
   assert.deepEqual(kitLines(short), []);
   const w = short.warnings.find((x) => x.text.includes('задълбочете шкафа с 1 mm'));
   assert.ok(w?.level === 'warn' && w.text.includes('415 mm') && w.text.includes('414 mm') && w.text.includes('NL 400 mm'), texts(short));
+  // the threshold is ours, not Blum's: the program fits the kit, Blum only recommends it for wide drawers on short slides
+  assert.ok(w.text.includes('програмата слага странична стабилизация') && w.text.includes('наш избор') && !w.text.includes('Blum препоръчва странична'), w.text);
   assert.ok(short.hardware.some((h) => h.key === `slide:${TANDEM}:400`), 'the slide stays NL 400');
   const fits = buildModel({ type: 'base', fronts: 'drawers', depth: 434, width: 800, slide: TANDEM });
   assert.equal(kitLines(fits).length, 1, texts(fits));
@@ -158,6 +160,7 @@ test('Blum stabiliser: TANDEM’s kit is not fitted to a front without a handle 
   assert.deepEqual(kitLines(tandem), []);
   const w = tandem.warnings.find((x) => x.text.includes('не е съвместим с TIP-ON'));
   assert.ok(w?.level === 'warn' && w.text.includes('ZST.600TV') && w.text.includes('TD-127/3, стр. 21'), texts(tandem));
+  assert.ok(w.text.includes('Програмата би я сложила тук') && w.text.includes('наш избор') && !w.text.includes('Blum я препоръчва тук'), w.text);
   const movento = buildModel({ type: 'base', fronts: 'drawers', depth: 650, width: 1000, handle: 'none', slide: MOVENTO });
   assert.equal(kitLines(movento).length, 1, texts(movento));
   assert.ok(!movento.warnings.some((x) => x.text.includes('TIP-ON')), texts(movento));
@@ -195,4 +198,26 @@ test('room under the runner: Blum’s 37 / 27,5 mm on TANDEM, 3 mm more with its
   // a side-mount slide keeps its box 6 mm over the bottom, the slide's lower edge with it (наш избор)
   const gtv = buildModel({ type: 'base', fronts: 'drawers', slide: GTV });
   assert.equal(Math.min(...byRole(gtv, 'drawer-side').map((p) => p.box.min[1])) - byRole(gtv, 'bottom')[0].box.max[1], 6);
+});
+
+test('the room under a TANDEM runner can cost a low drawer: a clear error that blocks the CNC files, never a silent box', () => {
+  // TV unit with legs 100: at 360 mm the lowest box would be 59 mm, under TANDEM's 60 (the runner's 37 / 27,5 mm under
+  // it, TD-127/3 p. 5); 365 mm fits. The 1800/3 unit of the old defaults, with the stabiliser's 3 mm, needs 370 mm.
+  for (const [spec, box] of [
+    [{ type: 'tv', height: 360 }, '59 mm'],
+    [{ type: 'tv', width: 1800, columns: 3, height: 350 }, '51 mm'],
+    [{ type: 'tv', width: 1800, columns: 3, height: 365 }, '58,5 mm'],
+  ]) {
+    const m = buildModel({ ...spec, slide: TANDEM });
+    const label = JSON.stringify(spec);
+    const errors = errorsOf(m);
+    assert.ok(errors.length > 0 && errors.every((e) => e.includes(`кутията на чекмеджето би била ${box} (нужни са поне 60)`)), `${label}: ${texts(m)}`);
+    assert.ok(blockers(m).length > 0, `${label}: the CNC files are not blocked`);
+  }
+  for (const spec of [{ type: 'tv', height: 365 }, { type: 'tv', width: 1800, columns: 3, height: 370 }]) {
+    const m = buildModel({ ...spec, slide: TANDEM });
+    assert.deepEqual(errorsOf(m), [], JSON.stringify(spec));
+    assert.deepEqual(blockers(m), [], JSON.stringify(spec));
+    assert.equal(byRole(m, 'drawer-front').length, 4, JSON.stringify(spec));
+  }
 });
