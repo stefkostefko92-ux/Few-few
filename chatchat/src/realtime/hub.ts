@@ -1,73 +1,41 @@
+import type { RealtimeCluster, RemoteEvent } from './cluster.js';
+import {
+  SCHEMA_VERSION,
+  sseFrame,
+  type Authorizer,
+  type HubOptions,
+  type PublishResult,
+  type RealtimeEvent,
+  type RealtimeEventType,
+  type Recipients,
+  type StreamSink,
+} from './types.js';
+
+export {
+  SCHEMA_VERSION,
+  sseFrame,
+  type Authorizer,
+  type HubOptions,
+  type PublishResult,
+  type RealtimeEvent,
+  type RealtimeEventType,
+  type Recipients,
+  type StreamSink,
+};
+
 /**
  * Хъбът за реално време (§13.3 „договор за сигурност realtime“, NFR-11): отворените SSE потоци
- * на ЕДИН процес, подредени по потребител. Хоризонтално мащабиране (втори процес/машина) иска
- * pub/sub (Redis, Postgres LISTEN/NOTIFY) между хъбовете — описано в CLAUDE.md; дотогава събитие,
- * родено в друг процес, не стига до тукашните потоци и клиентът го вижда при презареждане по REST.
+ * на процеса, подредени по потребител. С няколко инстанции (NFR-06) хъбовете си говорят през
+ * Redis pub/sub (`cluster.ts`): кой е свързан къде, събития и отнети сесии. Без кластер (без
+ * REDIS_URL) хъбът е само в процеса — тогава работи САМО една инстанция.
  *
  * Сигурността: хъбът НЕ знае правилата за достъп. Всяко събитие идва с `authorize`, който се вика
- * В МОМЕНТА на изпращане за свързаните получатели и връща какво точно вижда всеки (по текущите
- * му права — членството се проверява наново). Получател извън резултата не получава нищо.
+ * В МОМЕНТА на изпращане за свързаните получатели (в КОЯТО И ДА Е инстанция) и връща какво точно
+ * вижда всеки (по текущите му права — членството се проверява наново). Получател извън резултата не
+ * получава нищо; към другите инстанции отиват САМО authorize-натите данни, по получател, и там се
+ * пишат само в потоците на същия човек от същия клиент. Никога payload без authorize.
  * Събитията се обработват едно след друго — редът на изпращане е редът на публикуване.
  */
-
-export const SCHEMA_VERSION = 1;
-
-export type RealtimeEventType =
-  | 'message.created'
-  | 'message.updated'
-  | 'conversation.updated'
-  | 'presence.changed'
-  | 'notification.created'
-  | 'case.assigned'
-  // Работният поток на тикета и стъпките (FR-09, FR-19, §11.2) — само идентификатори и статуси.
-  | 'case.updated'
-  | 'step.updated'
-  | 'queue.updated';
-
-export interface RealtimeEvent {
-  type: RealtimeEventType;
-  tenantId: string;
-  conversationId?: string | null;
-  actorId: string | null;
-}
-
-/** Кандидатите за получатели — списък или изчисление (напр. текущите членове от базата). */
-export type Recipients = readonly string[] | (() => Promise<readonly string[]>);
-
-/** Получателите, които още имат право, и данните, които всеки от тях вижда. */
-export type Authorizer = (
-  userIds: readonly string[],
-) => Promise<ReadonlyMap<string, Record<string, unknown>>>;
-
-/** Един отворен поток (един таб/устройство) — сесията и клиентът са от момента на отваряне. */
-export interface StreamSink {
-  userId: string;
-  sessionId: string;
-  tenantId: string;
-  write(chunk: string): void;
-  end(): void;
-}
-
-export interface HubOptions {
-  /** Таван на потоците на човек — най-старият се затваря (защита от изчерпване на ресурси). */
-  maxStreamsPerUser?: number;
-  /** Heartbeat коментар + повторна проверка на сесията (25 s — под 60 s таймаута на проксито). */
-  heartbeatMs?: number;
-  now?: () => Date;
-  onError?: (err: unknown) => void;
-  /**
-   * Наблюдаемост (NFR-11): след всяко събитие — типът, изходът и секундите от публикуването до
-   * записа в потоците (опашка + получатели + права). Без получатели и без съдържание.
-   */
-  onPublished?: (type: RealtimeEventType, result: PublishResult, seconds: number) => void;
-}
-
-export type PublishResult = 'delivered' | 'no_recipients' | 'error';
-
-/** Форматът на рамката (text/event-stream): монотонен `id`, тип и JSON на един ред. */
-export function sseFrame(id: number, type: string, payload: unknown): string {
-  return `id: ${id}\nevent: ${type}\ndata: ${JSON.stringify(payload)}\n\n`;
-}
 
 export class RealtimeHub {
   private seq = 0;
@@ -77,6 +45,8 @@ export class RealtimeHub {
   private readonly now: () => Date;
   private readonly onError: (err: unknown) => void;
   private readonly onPublished: HubOptions['onPublished'];
+  private readonly onRemoteDelivered: HubOptions['onRemoteDelivered'];
+  private cluster: RealtimeCluster | null = null;
   readonly heartbeatMs: number;
 
   constructor(opts: HubOptions = {}) {
@@ -85,11 +55,26 @@ export class RealtimeHub {
     this.now = opts.now ?? (() => new Date());
     this.onError = opts.onError ?? (() => undefined);
     this.onPublished = opts.onPublished;
+    this.onRemoteDelivered = opts.onRemoteDelivered;
+  }
+
+  /**
+   * Свързва хъба с другите инстанции (Redis pub/sub). След това `size()` и получателите на
+   * събитията включват и хората, свързани другаде; `revoke` затваря потоците навсякъде.
+   */
+  async joinCluster(cluster: RealtimeCluster): Promise<void> {
+    this.cluster = cluster;
+    await cluster.start({
+      localUsers: () => [...this.streams.keys()],
+      deliverRemote: (event) => this.deliverRemote(event),
+      revokeLocal: (event) => this.revokeLocal(event),
+    });
   }
 
   /** Записва потока; връща функцията за отписване (при затваряне на връзката). */
   attach(sink: StreamSink): () => void {
     const set = this.streams.get(sink.userId) ?? new Set<StreamSink>();
+    if (set.size === 0) this.cluster?.up(sink.userId);
     this.streams.set(sink.userId, set);
     set.add(sink);
     while (set.size > this.maxStreams) {
@@ -103,7 +88,10 @@ export class RealtimeHub {
     const set = this.streams.get(sink.userId);
     if (!set) return;
     set.delete(sink);
-    if (set.size === 0) this.streams.delete(sink.userId);
+    if (set.size === 0) {
+      this.streams.delete(sink.userId);
+      this.cluster?.down(sink.userId);
+    }
   }
 
   private drop(sink: StreamSink): void {
@@ -115,8 +103,19 @@ export class RealtimeHub {
     }
   }
 
-  /** Колко потока са отворени (за човека или общо). */
+  /**
+   * Има ли слушатели (за човека или изобщо) — заедно с другите инстанции: публикуващите го питат,
+   * преди да изчислят получателите. Броят на ПОТОЦИТЕ в процеса (метриката) е `localSize`.
+   */
   size(userId?: string): number {
+    const cluster = this.cluster;
+    let remote = 0;
+    if (cluster) remote = userId ? Number(cluster.hasRemote(userId)) : cluster.remoteUsers();
+    return this.localSize(userId) + remote;
+  }
+
+  /** Отворените потоци в ТОЗИ процес (за човека или общо). */
+  localSize(userId?: string): number {
     if (userId) return this.streams.get(userId)?.size ?? 0;
     let total = 0;
     for (const set of this.streams.values()) total += set.size;
@@ -131,9 +130,12 @@ export class RealtimeHub {
   publish(event: RealtimeEvent, recipients: Recipients, authorize: Authorizer): Promise<number> {
     const queuedAt = performance.now();
     const run = async (): Promise<number> => {
-      if (this.streams.size === 0) return 0;
+      const cluster = this.cluster;
+      if (this.streams.size === 0 && (!cluster || cluster.remoteUsers() === 0)) return 0;
       const list = typeof recipients === 'function' ? await recipients() : recipients;
-      const connected = [...new Set(list)].filter((id) => this.streams.has(id));
+      const connected = [...new Set(list)].filter(
+        (id) => this.streams.has(id) || cluster?.hasRemote(id) === true,
+      );
       if (connected.length === 0) return 0;
       const allowed = await authorize(connected);
       const id = ++this.seq;
@@ -141,30 +143,25 @@ export class RealtimeHub {
       let written = 0;
       for (const userId of connected) {
         const data = allowed.get(userId);
-        if (!data) continue;
-        const envelope = {
-          type: event.type,
-          schema_version: SCHEMA_VERSION,
-          tenant_id: event.tenantId,
-          ...(event.conversationId ? { conversation_id: event.conversationId } : {}),
-          actor_id: event.actorId,
-          timestamp,
-          data,
-        };
-        const frame = sseFrame(id, event.type, envelope);
-        for (const sink of [...(this.streams.get(userId) ?? [])]) {
-          // Втора линия: поток на друг клиент никога не получава събитието, каквото и да върне authorize.
-          if (sink.tenantId !== event.tenantId) continue;
-          try {
-            sink.write(frame);
-            written += 1;
-          } catch (err) {
-            this.onError(err);
-            this.drop(sink);
-          }
-        }
+        if (data) written += this.write(id, event, userId, data, timestamp);
       }
-      return written;
+      // Другите инстанции: само authorize-натите данни, по получател (никога суровото събитие).
+      const remote: Array<[string, Record<string, unknown>]> = [];
+      for (const userId of connected) {
+        const data = allowed.get(userId);
+        if (data && cluster?.hasRemote(userId)) remote.push([userId, data]);
+      }
+      if (cluster && remote.length > 0) {
+        cluster.forward({
+          type: event.type,
+          tenantId: event.tenantId,
+          conversationId: event.conversationId ?? null,
+          actorId: event.actorId,
+          timestamp,
+          recipients: remote,
+        });
+      }
+      return written + remote.length;
     };
     const result = this.queue.then(run);
     // Грешка в едно събитие не спира опашката; викащият я получава в своя Promise.
@@ -178,6 +175,68 @@ export class RealtimeHub {
       );
     }
     return result;
+  }
+
+  /** Рамка до потоците на един човек от клиента на събитието; връща колко потока я получиха. */
+  private write(
+    id: number,
+    event: Pick<RealtimeEvent, 'type' | 'tenantId' | 'conversationId' | 'actorId'>,
+    userId: string,
+    data: Record<string, unknown>,
+    timestamp: string,
+  ): number {
+    const sinks = this.streams.get(userId);
+    if (!sinks || sinks.size === 0) return 0;
+    const envelope = {
+      type: event.type,
+      schema_version: SCHEMA_VERSION,
+      tenant_id: event.tenantId,
+      ...(event.conversationId ? { conversation_id: event.conversationId } : {}),
+      actor_id: event.actorId,
+      timestamp,
+      data,
+    };
+    const frame = sseFrame(id, event.type, envelope);
+    let written = 0;
+    for (const sink of [...sinks]) {
+      // Втора линия: поток на друг клиент никога не получава събитието, каквото и да върне authorize.
+      if (sink.tenantId !== event.tenantId) continue;
+      try {
+        sink.write(frame);
+        written += 1;
+      } catch (err) {
+        this.onError(err);
+        this.drop(sink);
+      }
+    }
+    return written;
+  }
+
+  /** Събитие от друга инстанция: вече authorize-нато там — всяко парче само до своя човек. */
+  private deliverRemote(event: RemoteEvent): void {
+    const id = ++this.seq;
+    let written = 0;
+    for (const [userId, data] of event.recipients) {
+      const local = { ...event, type: event.type as RealtimeEventType };
+      written += this.write(id, local, userId, data, event.timestamp);
+    }
+    if (written > 0) {
+      const at = Date.parse(event.timestamp);
+      const seconds = Number.isFinite(at) ? Math.max(0, (this.now().getTime() - at) / 1000) : 0;
+      this.onRemoteDelivered?.(event.type, seconds);
+    }
+  }
+
+  /** Отнети сесии тук (от кука или от друга инстанция). */
+  private revokeLocal(event: { sessionId?: string; userIds: readonly string[] }): void {
+    if (event.sessionId) this.disconnectSession(event.sessionId);
+    else for (const userId of event.userIds) this.disconnectUser(userId);
+  }
+
+  /** Отнети сесии (`onSessionsRevoked`, AC-16): потоците се затварят тук И във всички инстанции. */
+  revoke(event: { sessionId?: string; userIds: readonly string[] }): void {
+    this.revokeLocal(event);
+    this.cluster?.revoke(event);
   }
 
   /** Изход, деактивиране, отнети сесии (AC-16): всички потоци на човека се затварят веднага. */

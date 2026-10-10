@@ -10,7 +10,14 @@ import {
   CircuitOpenError,
 } from './ai/breaker.js';
 import { embeddingModelFrom } from './ai/embeddings.js';
-import { aiEnabled, attachmentsEnabled, emailEnabled, loadConfig, mfaKey } from './config.js';
+import {
+  aiEnabled,
+  attachmentsEnabled,
+  emailEnabled,
+  loadConfig,
+  mfaKey,
+  redisEnabled,
+} from './config.js';
 import { createLogger } from './logger.js';
 import { instrumentDiagnoser, meteredScanner } from './observability/ai.js';
 import { BREAKER_STATE_VALUE, createMetrics, type BreakerName } from './observability/catalog.js';
@@ -25,6 +32,7 @@ import { attachmentStoreFrom } from './storage/factory.js';
 import { RealtimeHub } from './realtime/hub.js';
 import { PrismaKnowledgeStore } from './store/knowledge.js';
 import { knowledgeSnapshotId } from './store/snapshot.js';
+import { wireScaling } from './scale.js';
 
 const config = loadConfig();
 const logger = createLogger(config.LOG_LEVEL);
@@ -70,7 +78,8 @@ if (aiEnabled(config)) {
       );
     },
   });
-  if (embedder) {
+  // С Redis векторите са в worker-а (опашка `embed` + периодичен преглед) — не в процеса на API-то.
+  if (embedder && !redisEnabled(config)) {
     indexer = new EmbeddingIndexer(db, embedder, logger, config.EMBEDDING_SWEEP_SECONDS);
     indexer.start();
   }
@@ -144,7 +153,7 @@ if (emailEnabled(config)) {
   logger.warn('BREVO_API_KEY липсва — имейл известията са изключени');
 }
 
-// Един процес = един хъб за SSE. Втори процес/машина иска pub/sub между хъбовете (CLAUDE.md).
+// Един хъб за SSE на процес; с REDIS_URL хъбовете на инстанциите си говорят през pub/sub (scale.ts).
 const hub = new RealtimeHub({
   onError: (err) =>
     logger.warn({ errName: err instanceof Error ? err.name : 'unknown' }, 'поток в реално време'),
@@ -152,8 +161,19 @@ const hub = new RealtimeHub({
     metrics.realtimeEvents.inc({ type, result });
     if (result === 'delivered') metrics.realtimeDelivery.observe(undefined, seconds);
   },
+  onRemoteDelivered: (_type, seconds) => metrics.realtimeDelivery.observe(undefined, seconds),
 });
-metrics.sseStreams.collect = () => metrics.sseStreams.set(undefined, hub.size());
+metrics.sseStreams.collect = () => metrics.sseStreams.set(undefined, hub.localSize());
+
+// Опашките, хъбът между инстанциите, общите лимити и TOTP (NFR-06) — Redis или в процеса.
+const scale = wireScaling(config, {
+  db,
+  logger,
+  metrics,
+  hub,
+  store: attachments?.store ?? null,
+  indexer,
+});
 
 const app = createApp({
   db,
@@ -169,13 +189,16 @@ const app = createApp({
   },
   mfaKey: mfaKey(config),
   diagnose: diagnoser,
-  onDocumentPublished: indexer ? () => void indexer?.kick() : undefined,
+  onDocumentPublished: scale.onDocumentPublished,
   attachments,
   hub,
   evalReportsDir: config.EVAL_REPORTS_DIR,
   metrics,
   aiCircuit: () => modelBreaker?.current ?? null,
   mail,
+  ingest: scale.ingest,
+  ...(scale.totpReplay ? { totpReplay: scale.totpReplay } : {}),
+  rateLimitStore: scale.rateLimitStore,
 });
 
 const server = app.listen(config.PORT, config.HOST, () => {
@@ -187,10 +210,17 @@ const server = app.listen(config.PORT, config.HOST, () => {
       uploads: attachments?.scanner != null,
       email: mail !== null,
       filesEncrypted: attachments ? config.FILES_ENCRYPTION === 'on' : null,
+      queue: scale.mode,
     },
     'chatchat слуша',
   );
 });
+// Хъбът се свързва с другите инстанции (Redis pub/sub); без Redis — нищо.
+scale
+  .start()
+  .catch((err: unknown) =>
+    logger.error({ errName: (err as Error).name }, 'реалното време между инстанциите не тръгна'),
+  );
 
 // Метриките — отделен слушател (по подразбиране изключен), никога публичният порт.
 let metricsServer: Server | null = null;
@@ -221,7 +251,10 @@ function shutdown(signal: string): void {
   // Отворените SSE потоци държат сървъра жив — затваряме ги, клиентите се връщат по REST.
   hub.closeAll();
   server.close(() => {
-    db.$disconnect()
+    scale
+      .close()
+      .catch(() => undefined)
+      .then(() => db.$disconnect())
       .catch((err: unknown) => logger.error({ err }, 'грешка при затваряне на базата'))
       .finally(() => process.exit(0));
   });

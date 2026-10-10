@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
+import { sharedStore } from '../auth/rate-limit.js';
 import { z } from 'zod';
 import type { AppDeps } from '../app.js';
 import { appendAudit } from '../audit.js';
@@ -42,6 +43,7 @@ export function authRouter(deps: AppDeps): Router {
 
   // Опитите за вход: по IP — срещу пробване на пароли от един адрес (§15.1 rate limiting).
   const loginLimiter = rateLimit({
+    store: sharedStore('auth-login'),
     windowMs: 15 * 60 * 1000,
     limit: 10,
     standardHeaders: 'draft-8',
@@ -50,6 +52,7 @@ export function authRouter(deps: AppDeps): Router {
   });
   // Нулирането е публично: токенът е 256 бита, лимитът пази Argon2 (64 MiB на опит) от претоварване.
   const resetLimiter = rateLimit({
+    store: sharedStore('auth-reset'),
     windowMs: 15 * 60 * 1000,
     limit: 10,
     standardHeaders: 'draft-8',

@@ -63,6 +63,10 @@ model Tenant {
   stepExecutions CaseStepExecution[]
   ticketEvents   TicketEvent[]
   handoffs       CaseHandoff[]
+
+  // Пакетното приемане на документи през опашката (§4.1, §7.3, NFR-06).
+  ingestBatches IngestBatch[]
+  ingestItems   IngestItem[]
 }
 
 /// Фирма в рамките на клиента (монтажник, дистрибутор, сервиз) — разделя портала.
@@ -270,6 +274,7 @@ model Document {
   applicability DocumentApplicability[]
   chunks        DocumentChunk[]
   errors        ErrorCode[]
+  ingestItems   IngestItem[]
 
   @@unique([tenantId, code, revision])
   @@index([tenantId, status])
@@ -860,6 +865,7 @@ model Attachment {
   caseMessage         CaseMessage?         @relation(fields: [caseMessageId], references: [id], onDelete: SetNull)
   conversation        Conversation?        @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   conversationMessage ConversationMessage? @relation(fields: [conversationMessageId], references: [id], onDelete: Cascade)
+  ingestItems         IngestItem[]
 
   @@index([tenantId])
   @@index([caseId])
@@ -1206,4 +1212,84 @@ model AuditCheckpoint {
   createdAt     DateTime @default(now())
 
   @@index([throughId])
+}
+
+// ─── Приемане на документи през опашката (§4.1, §7.3, NFR-06) ────────────────────────────────
+
+/// Състоянието на един файл в пакета: QUEUED → RUNNING (етап extract/ocr/index) → DONE | FAILED.
+enum IngestStatus {
+  QUEUED
+  RUNNING
+  DONE
+  FAILED
+}
+
+/// Пакетно качване (§4.1 „importazione batch“): общите метаданни + по избор манифест по файл.
+/// Документите влизат като DRAFT — пакетът е само проследяване; жизненият цикъл е на Document.
+model IngestBatch {
+  id               String   @id @default(cuid())
+  tenantId         String
+  /// Кой е качил (документите се записват с него като uploadedById) — без FK, като Document.
+  createdById      String
+  /// Общите метаданни (§7.2), валидирани при създаване; файлът може да ги допълни/замени.
+  defaults         Json
+  /// Редовете на манифеста (CSV/JSON) по изчистено име на файл — валидирани, без съдържание.
+  manifest         Json?
+  /// Импорт на кодове за грешка от XLSX шаблон → ЧЕРНОВИ кодове (минават през нормалния преглед).
+  importErrorCodes Boolean  @default(false)
+  createdAt        DateTime @default(now())
+
+  tenant Tenant       @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  items  IngestItem[]
+
+  @@index([tenantId, createdAt])
+  @@index([createdById])
+}
+
+/// Един файл от пакета. Задачата в опашката носи САМО id-то му (никога съдържание); повторен опит
+/// е идемпотентен — DONE/FAILED не се обработва наново, а документът и статусът DONE се записват в
+/// една транзакция.
+model IngestItem {
+  id           String       @id @default(cuid())
+  tenantId     String
+  batchId      String
+  /// CLEAN файлът от POST /admin/attachments (антивирусът е минал ПРЕДИ разбора). Ретенцията на
+  /// файловете-сираци го трие → null, а задачата завършва с `ingest.err.sourceMissing`.
+  attachmentId String?
+  /// Името за показване (изчистеното от качването) — за списъка; документът го взима от файла.
+  fileName     String
+  /// Окончателните метаданни на файла (общи + манифест + изрични), валидирани при добавяне.
+  meta         Json
+  status       IngestStatus @default(QUEUED)
+  /// Етапът при RUNNING: extract | ocr | index.
+  stage        String?
+  /// 0…100 — напредъкът на етапа (OCR по страници).
+  progress     Int          @default(0)
+  /// Разпознатият формат: pdf | docx | xlsx | image | log.
+  format       String?
+  /// Кодът на грешката (`ingest.err.*`, i18n) при FAILED — никога суровият текст на изключението.
+  errorCode    String?
+  /// Предупрежденията ([{ code, page? }]) — напр. страница без текст, таван на OCR.
+  warnings     Json?
+  documentId   String?
+  chunks       Int?
+  pages        Int?
+  ocrPages     Int?
+  /// Колко ЧЕРНОВИ кода за грешка са внесени от XLSX шаблона.
+  errorCodes   Int?
+  /// Колко пъти администраторът е пуснал повторно провален файл (новият id на задачата).
+  retries      Int          @default(0)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  finishedAt   DateTime?
+
+  tenant     Tenant      @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  batch      IngestBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  attachment Attachment? @relation(fields: [attachmentId], references: [id], onDelete: SetNull)
+  document   Document?   @relation(fields: [documentId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, status])
+  @@index([batchId])
+  @@index([attachmentId])
+  @@index([documentId])
 }

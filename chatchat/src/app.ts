@@ -6,7 +6,8 @@ import type { Logger } from 'pino';
 import type { BreakerState } from './ai/breaker.js';
 import type { DiagnoseInput, DiagnoseOutput } from './ai/orchestrator.js';
 import { apiError, requireCapability } from './auth/guards.js';
-import { TotpReplayGuard } from './auth/mfa.js';
+import { TotpReplayGuard, type TotpReplayStore } from './auth/mfa.js';
+import { useRateLimitStores, type RateLimitStoreFactory } from './auth/rate-limit.js';
 import { loadPrincipal, onSessionsRevoked, type SessionDeps } from './auth/sessions.js';
 import type { Metrics } from './observability/catalog.js';
 import { httpMetrics } from './observability/http.js';
@@ -15,6 +16,7 @@ import { eventsRouter } from './realtime/stream.js';
 import { adminListsRouter } from './routes/admin-lists.js';
 import { adminCatalogRouter } from './routes/admin-catalog.js';
 import { adminDocumentsRouter } from './routes/admin-documents.js';
+import { adminDocumentsIngestRouter } from './routes/admin-documents-ingest.js';
 import { adminDocumentsLifecycleRouter } from './routes/admin-documents-lifecycle.js';
 import { adminDocumentsViewRouter } from './routes/admin-documents-view.js';
 import { adminErrorsRouter } from './routes/admin-errors.js';
@@ -48,6 +50,7 @@ import { presenceRouter } from './routes/presence.js';
 import { quickResponsesRouter } from './routes/quick-responses.js';
 import { savedFiltersRouter } from './routes/saved-filters.js';
 import { ticketsRouter } from './routes/tickets.js';
+import type { JobBus } from './queue/inline.js';
 import type { AttachmentDeps } from './services/attachments.js';
 import { QR_TOKEN } from './services/devices.js';
 import type { MailPolicy } from './services/email/enqueue.js';
@@ -81,6 +84,12 @@ export interface AppDeps {
   aiCircuit?: () => BreakerState | null;
   /** Имейл известията (Brevo): null/липсва → изключени, без outbox (fail-open, известията остават). */
   mail?: MailPolicy | null;
+  /** Опашката за приемане на документи (в процеса или Redis); null → пакетното качване е 503. */
+  ingest?: { bus: JobBus } | null;
+  /** Пазачът срещу повторен TOTP код — в Redis при няколко инстанции; без него — в паметта. */
+  totpReplay?: TotpReplayStore;
+  /** Общите броячи на лимитите (Redis) — без тях всеки лимит е в паметта на инстанцията. */
+  rateLimitStore?: RateLimitStoreFactory | null;
 }
 
 /** Зависимостите след сглобяване — с хъба, който рутерите на работното пространство ползват. */
@@ -94,6 +103,7 @@ const KB_ADMIN = [
   '/api/v1/admin/products',
   '/api/v1/admin/devices',
   '/api/v1/admin/errors',
+  '/api/v1/admin/ingest',
 ];
 
 export function createApp(appDeps: AppDeps): express.Express {
@@ -107,13 +117,13 @@ export function createApp(appDeps: AppDeps): express.Express {
         ),
     });
   const deps: WiredDeps = { ...appDeps, hub };
-  // Изход, деактивиране, смяна на роля/парола… → отворените потоци се затварят веднага (§13.3).
-  onSessionsRevoked((event) => {
-    if (event.sessionId) hub.disconnectSession(event.sessionId);
-    else for (const userId of event.userIds) hub.disconnectUser(userId);
-  });
+  // Изход, деактивиране, смяна на роля/парола… → отворените потоци се затварят веднага (§13.3) —
+  // и в другите инстанции (hub.revoke → pub/sub).
+  onSessionsRevoked((event) => hub.revoke(event));
+  // Лимитите се създават с рутерите — общото хранилище (Redis) трябва да е зададено преди тях.
+  useRateLimitStores(deps.rateLimitStore ?? null);
   const app = express();
-  const totpReplay = new TotpReplayGuard();
+  const totpReplay = deps.totpReplay ?? new TotpReplayGuard();
   app.disable('x-powered-by');
   app.set('trust proxy', deps.trustProxy);
   // RED по шаблон на маршрута — първо, за да види и отказите на helmet/лимитите.
@@ -202,6 +212,7 @@ export function createApp(appDeps: AppDeps): express.Express {
   app.use('/api/v1/admin', stepPolicyRouter(deps));
   app.use('/api/v1/admin', adminCatalogRouter(deps));
   app.use('/api/v1/admin', adminDocumentsRouter(deps));
+  app.use('/api/v1/admin', adminDocumentsIngestRouter(deps));
   app.use('/api/v1/admin', adminDocumentsViewRouter(deps));
   app.use('/api/v1/admin', adminDocumentsLifecycleRouter(deps));
   app.use('/api/v1/admin', adminErrorsRouter(deps));

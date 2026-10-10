@@ -1,5 +1,6 @@
 import type { AttachmentKind } from '@prisma/client';
 import { redactPii } from '../domain/pii.js';
+import { detectOoxml, DOCX_MIME, XLSX_MIME } from '../ingest/formats.js';
 
 /**
  * Типът на прикачения файл се познава по СЪДЪРЖАНИЕТО (магически байтове), не по името или
@@ -20,6 +21,8 @@ export type DetectedMime =
   | 'image/heic'
   | 'image/heif'
   | 'application/pdf'
+  | typeof DOCX_MIME
+  | typeof XLSX_MIME
   | 'application/json'
   | 'text/csv'
   | 'text/plain';
@@ -87,6 +90,22 @@ function detectText(b: Uint8Array): DetectedMime | null {
     }
   }
   return looksCsv(text) ? 'text/csv' : 'text/plain';
+}
+
+/**
+ * Документ за базата знания (§4.1 „PDF, DOCX, XLSX, immagini e file di log“, само kb:manage):
+ * PDF, DOCX/XLSX (пакет с макроси — отказ), PNG/JPEG/WebP, лог като текст (UTF-8 без NUL).
+ * Разговорите и случаите остават със своите тесни списъци (`detectMime`).
+ */
+export function detectKnowledgeMime(bytes: Uint8Array): DetectedMime | null {
+  const binary = detectBinary(bytes);
+  if (binary === 'image/heic' || binary === 'image/heif') return null;
+  if (binary) return binary;
+  const ooxml = detectOoxml(bytes);
+  if (ooxml === 'docx') return DOCX_MIME;
+  if (ooxml === 'xlsx') return XLSX_MIME;
+  if (ooxml === 'macro' || (bytes[0] === 0x50 && bytes[1] === 0x4b)) return null;
+  return detectText(bytes);
 }
 
 /** Видът по съдържанието или null, ако форматът не е разрешен за този вид. */

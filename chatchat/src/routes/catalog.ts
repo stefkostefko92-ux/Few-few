@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
+import { sharedStore } from '../auth/rate-limit.js';
 import { z } from 'zod';
 import type { AppDeps } from '../app.js';
 import { apiError, principalOf, requireUser } from '../auth/guards.js';
@@ -23,6 +24,7 @@ export function catalogRouter(deps: AppDeps): Router {
   const router = Router();
   // Справките са евтини, но изброяването на сериини номера/кодове не бива да е безплатно.
   const lookupLimiter = rateLimit({
+    store: sharedStore('catalog-lookup'),
     windowMs: 60 * 1000,
     limit: 120,
     standardHeaders: 'draft-8',

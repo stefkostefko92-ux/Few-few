@@ -62,7 +62,7 @@ export function conversationsRouter(deps: WiredDeps): Router {
   const router = Router();
   router.use(requireUser, requireCsrf(deps.publicOrigin));
   const use = requireCapability('conversation:use');
-  const writeLimit = perUserLimit(60 * 1000, 30);
+  const writeLimit = perUserLimit(60 * 1000, 30, 'conversations-write');
 
   router.get('/conversations', use, async (req, res, next) => {
     try {

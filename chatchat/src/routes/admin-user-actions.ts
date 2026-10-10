@@ -4,7 +4,7 @@ import { z } from 'zod';
 import type { AppDeps } from '../app.js';
 import { appendAudit } from '../audit.js';
 import { apiError, principalOf } from '../auth/guards.js';
-import type { TotpReplayGuard } from '../auth/mfa.js';
+import type { TotpReplayStore } from '../auth/mfa.js';
 import { announceRevocation, revokeUserSessions } from '../auth/sessions.js';
 import {
   auditReason,
@@ -40,7 +40,7 @@ const Bulk = z
   .strict()
   .refine((b) => (b.action === 'set_expiry') === (b.expiresAt !== undefined));
 
-export function adminUserActionsRouter(deps: AppDeps, replay: TotpReplayGuard): Router {
+export function adminUserActionsRouter(deps: AppDeps, replay: TotpReplayStore): Router {
   const router = Router();
   const guard = usersGuard(deps);
 
