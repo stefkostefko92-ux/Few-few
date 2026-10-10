@@ -39,6 +39,17 @@ PGDATA_CONF="${CHATCHAT_PGDATA_CONF_DIR:-/etc/chatchat}/pgdata.conf"
 PGDATA_MOUNT="$SHARED/pgdata"
 COMPOSE_PGDATA='COMPOSE_FILE=docker-compose.yml:docker-compose.pgdata.yml'
 TS="$(date +%Y%m%d-%H%M%S)"
+# Средата. Продукцията е винаги compose проектът `chatchat` (`name:` в docker-compose.yml) — наследен
+# COMPOSE_PROJECT_NAME не я отклонява. Staging идва САМО през deploy/staging.sh: CHATCHAT_STAGING=1 +
+# COMPOSE_PROJECT_NAME=chatchat-staging + отделните пътища (DEPLOY.md, „Staging“); без таймерите на
+# продукцията (unit-ите им са с фиксирани имена) и без шифрования том.
+STAGING="${CHATCHAT_STAGING:-0}"
+if [ "$STAGING" = 1 ]; then
+  PROJECT="${COMPOSE_PROJECT_NAME:-}"
+else
+  PROJECT=chatchat
+  unset COMPOSE_PROJECT_NAME
+fi
 
 log()  { printf '\033[1;36m▸ chatchat: %s\033[0m\n' "$*"; }
 ok()   { printf '\033[32m✔ chatchat: %s\033[0m\n' "$*"; }
@@ -102,6 +113,24 @@ sealed_files_exist() {
     [ "$(head -c 8 "$f" | od -An -tx1 | tr -d ' \n')" = 894343454e430d0a ] && return 0
   done < <(find "$SHARED/attachments" -type f -size +96c -print0 2>/dev/null | head -z -n 200)
   return 1
+}
+
+# Кой compose проект пипа този пробег — проверено ПРЕДИ първата docker команда. Staging: само
+# `chatchat-staging`, със собствена папка, и .env, който казва същото (ръчните `docker compose` от
+# папката му отиват там). Продукцията: .env без чуждо COMPOSE_PROJECT_NAME — то би бутнало compose
+# към друг проект (напр. копиран .env на staging) въпреки `name: chatchat`.
+check_project() {
+  local named
+  named="$(env_value COMPOSE_PROJECT_NAME)"
+  if [ "$STAGING" != 1 ]; then
+    [ -z "$named" ] || [ "$named" = chatchat ] ||
+      fail 1 "COMPOSE_PROJECT_NAME=$named в $SHARED/.env — това не е .env на продукцията (staging ли е?). Не пипам нищо."
+    return 0
+  fi
+  [ "$PROJECT" = chatchat-staging ] || fail 1 "staging иска COMPOSE_PROJECT_NAME=chatchat-staging (дадено: ${PROJECT:-празно})."
+  [ "$named" = "$PROJECT" ] || fail 1 "staging: .env трябва да носи COMPOSE_PROJECT_NAME=$PROJECT (там: ${named:-няма})."
+  [ "$SHARED" != /opt/few-few/shared/chatchat ] || fail 1 "staging не ползва папката на продукцията ($SHARED)."
+  export COMPOSE_PROJECT_NAME="$PROJECT"
 }
 
 pgdata_encrypted() { [ -f "$PGDATA_CONF" ] && grep -qx 'STATE=encrypted' "$PGDATA_CONF"; }
@@ -182,7 +211,7 @@ ensure_images() {
 # (DEPLOY.md, „Връщане назад“).
 BACKUP_PLAN=""
 plan_backup() {
-  if docker volume inspect chatchat_db-data >/dev/null 2>&1 || [ -f "$PGDATA_MOUNT/data/PG_VERSION" ]; then
+  if docker volume inspect "${PROJECT}_db-data" >/dev/null 2>&1 || [ -f "$PGDATA_MOUNT/data/PG_VERSION" ]; then
     if [ "$SKIP_BACKUP" = "1" ]; then BACKUP_PLAN=skip; else BACKUP_PLAN=dump; fi
   else
     BACKUP_PLAN=first
@@ -286,13 +315,13 @@ sync_nginx() {
     warn "няма $conf в release-а — nginx не е пипан"
     return 0
   fi
-  # vhost-ът в репото е за 127.0.0.1:4330; друг HTTP_PORT се вписва тук — иначе домейнът би сочил порт,
-  # на който не е ChatChat (чуждо приложение или 502)
+  # vhost-ът в репото сочи порта по подразбиране на средата си (продукцията 4330, staging 4331); друг
+  # HTTP_PORT се вписва тук — иначе домейнът би сочил порт, на който не е ChatChat (чуждо приложение или 502)
   new="$(mktemp)" || return 1
-  sed "s/127\.0\.0\.1:4330;/127.0.0.1:$port;/g" "$conf" >"$new"
+  sed -E "s/127\.0\.0\.1:[0-9]+;/127.0.0.1:$port;/g" "$conf" >"$new"
   if ! grep -q "127.0.0.1:$port;" "$new"; then
     rm -f "$new"
-    warn "vhost-ът в репото не сочи 127.0.0.1:4330 — nginx не е пипан"
+    warn "vhost-ът в репото не сочи 127.0.0.1:<порт> — nginx не е пипан"
     return 1
   fi
   # подновеният сертификат стига до nginx само след reload: кука на сертификата, nginx като installer
@@ -347,7 +376,7 @@ hints() {
   if [ "$state" != healthy ]; then
     warn "антивирусът още не е готов (${state:-няма контейнер}) — новите прикачени файлове чакат проверка. Виж: docker compose logs --tail=40 clamav"
   fi
-  if ! pgdata_encrypted; then
+  if [ "$STAGING" != 1 ] && ! pgdata_encrypted; then
     warn "данните на базата не са в шифрован том — веднъж: sudo bash $APP_DIR/deploy/pgdata-encrypt.sh enable (DEPLOY.md, т. 12)"
   fi
 }
@@ -360,6 +389,7 @@ main() {
   fi
   cd "$APP_DIR"
   sync_env
+  check_project
   ensure_keys
   check_pgdata
   ensure_attachments
@@ -385,7 +415,11 @@ main() {
   remember_live || warn "не записах $LAST_GOOD — откатът и DEPLOY.md сочат предишния release"
   restart_clamav_if_changed || true
   encrypt_files || true
-  (source "$APP_DIR/deploy/timers-install.sh" && install_timers) || warn "дневният шифрован бекъп/ретенцията не са готови — DEPLOY.md, т. 9"
+  if [ "$STAGING" = 1 ]; then
+    log "staging: без дневния бекъп и ретенцията (таймерите са на продукцията) — данните са тестови"
+  else
+    (source "$APP_DIR/deploy/timers-install.sh" && install_timers) || warn "дневният шифрован бекъп/ретенцията не са готови — DEPLOY.md, т. 9"
+  fi
   sync_nginx "$port" || warn "nginx не е обновен — ChatChat е жив на 127.0.0.1:$port"
   hints || true
 }
