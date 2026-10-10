@@ -11,6 +11,7 @@ import { roleLabel } from './format.js';
 import { getLang, t } from './i18n.js';
 import { attachQuickResponses } from './workspace/quick.js';
 import { stepControls } from './flow/steps.js';
+import { missingUiFor } from './answer/missing-chat.js';
 import { reloadCase } from './flow/state.js';
 import { on, state } from './store.js';
 
@@ -32,8 +33,9 @@ function fmtTime(iso) {
   }
 }
 
-const onFeedback = async (messageId, rating) => {
-  await api('POST', '/feedback', { messageId, rating });
+// FR-10: коментарът (по желание) към „Non utile/Errore tecnico“ стига до отговорника за знанието.
+const onFeedback = async (messageId, rating, comment) => {
+  await api('POST', '/feedback', { messageId, rating, ...(comment ? { comment } : {}) });
   rated.set(messageId, rating);
 };
 
@@ -45,6 +47,8 @@ function renderMessage(m) {
       onFeedback,
       rated: (id) => rated.get(id) ?? null,
       stepUi: stepControls,
+      // FR-07: липсващите данни като полета + „попитай отново“ (answer/missing*.js).
+      missingUi: (msg) => missingUiFor(msg, { pick: (kind) => tray?.pick(kind), askAgain }),
     });
   }
   if (m.kind === 'SYSTEM') {
@@ -215,6 +219,13 @@ async function send() {
     setBusy(false);
     refreshCases();
   }
+}
+
+/** „Попитай отново“ (FR-07): същият въпрос с обновения контекст и файловете в тавата. */
+export function askAgain(text) {
+  if (state.sending || !state.current) return;
+  $('#composer-text').value = text;
+  void send();
 }
 
 export function initChat() {

@@ -109,6 +109,11 @@ export function ruleText(a) {
     `${t('admin.products.fw')} ${a.allFirmware ? t('admin.kb.fwAll') : fwRange(a.fwMin, a.fwMax)}`,
   );
   if (a.deviceSerial) parts.push(t('admin.kb.board.only', { serial: a.deviceSerial }));
+  // FR-01: само за конфигурация с тези опции.
+  const opts = Object.entries(a.options ?? {});
+  if (opts.length) {
+    parts.push(t('options.rule.only', { list: opts.map(([k, v]) => `${k}=${v}`).join(', ') }));
+  }
   return parts.join(' · ');
 }
 

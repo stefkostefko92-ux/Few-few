@@ -5,7 +5,8 @@
 import { roleLabel } from '../format.js';
 import { has, t } from '../i18n.js';
 
-const FLOW = /^(step|ticket|handoff)\.(.+)$/;
+// `proposal.*` — предложенията за знанието (FR-10): „proposal.created“ → „proposal.notif.created“.
+const FLOW = /^(step|ticket|handoff|proposal)\.(.+)$/;
 
 /** Ключът под префикса на потока, ако има превод; иначе null (викащият ползва своя). */
 export function flowKey(type, kind) {
