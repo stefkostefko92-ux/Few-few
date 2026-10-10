@@ -3,7 +3,7 @@
 // emergency handwheel on the shaft end and the traction sheave with its ropes. The machine is the calculator's
 // example A: sheave D 560, 4 ropes of 10 mm, ratio 1:43, 7.5 kW, handwheel radius 0.2 m (src/calc/presets.ts);
 // nothing here is a real product.
-// Loaded only through boot.ts, after the prefers-reduced-motion and save-data gate of MachineStage.tsx.
+// Loaded only through the installation's 3D stage (src/components/lift3d/boot.ts), lazily.
 import * as THREE from 'three/webgpu';
 import type { MachineMaterials } from '../materials';
 import { DIM } from './common';

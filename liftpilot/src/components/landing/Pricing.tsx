@@ -33,7 +33,7 @@ export default async function Pricing({ locale }: { locale: string }) {
               <h3 className="plan-name">{tb(`pack.${p}`)}</h3>
               <p className="price">
                 {price ? <><strong>{money(price.cents + packAmount(price.cents, p), price.currency, locale)}</strong> <small>{per}</small></>
-                  : cfg ? <strong className="word">{tp('onRequest')}</strong>
+                  : cfg ? <strong className="word">{tp('priceOnRequest')}</strong>
                     : <><strong className="word">{t('planFree')}</strong> <small>{t('planFreeNote')}</small></>}
               </p>
               <ul>

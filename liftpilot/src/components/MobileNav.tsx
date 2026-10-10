@@ -31,8 +31,8 @@ export default function MobileNav({ label, children }: { label: string; children
   return (
     <details ref={ref} className="nav-drawer">
       <summary className="btn btn-sm btn-icon" aria-label={label}>
-        <Icon name="menu" size={20} className="when-closed" priority />
-        <Icon name="x" size={18} className="when-open" priority />
+        <Icon name="menu" size={20} className="when-closed" />
+        <Icon name="x" size={18} className="when-open" />
       </summary>
       <div className="drawer-backdrop" aria-hidden="true" />
       <div className="drawer-panel">{children}</div>

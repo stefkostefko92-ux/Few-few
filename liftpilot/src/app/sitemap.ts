@@ -10,9 +10,9 @@ export const dynamic = 'force-dynamic';
 // and x-default (as in the pages' head); empty while indexing is off. The privacy page changes with the terms, the data
 // page with the register of the export's format.
 const PAGES: readonly { path: string; modified: string; priority: number }[] = [
-  { path: '', modified: '2026-10-01', priority: 1 },
-  { path: '/register', modified: '2026-10-01', priority: 0.6 },
-  { path: '/pricing', modified: '2026-10-06', priority: 0.7 },
+  { path: '', modified: '2026-10-10', priority: 1 },
+  { path: '/register', modified: '2026-10-10', priority: 0.6 },
+  { path: '/pricing', modified: '2026-10-10', priority: 0.7 },
   { path: '/privacy', modified: TERMS_DATE, priority: 0.3 },
   { path: '/data', modified: EXPORT_REGISTER_DATE, priority: 0.3 },
 ];

@@ -1,5 +1,5 @@
 // Shared dimensions and small builders of the machine parts. Metres; X along the worm, Y up, Z toward the viewer.
-// Loaded only through boot.ts, after the prefers-reduced-motion and save-data gate of MachineStage.tsx.
+// Loaded only through the installation's 3D stage (src/components/lift3d/boot.ts), lazily.
 import * as THREE from 'three/webgpu';
 import { mergeGeometries, toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
 

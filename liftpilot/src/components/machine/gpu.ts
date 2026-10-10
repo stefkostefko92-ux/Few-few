@@ -1,7 +1,6 @@
-// Helpers shared by the two 3D stages (the machine on the landing page, the installation in the app): the WebGPU
-// adapter check, a fix for older Chromium builds and the resolved TRAA frame. Loaded only through the stages' boot.
+// Helpers of the installation's 3D stage (src/components/lift3d): the WebGPU adapter check, a fix for older Chromium
+// builds and the resolved TRAA frame. Loaded only through the stage's boot.
 import * as THREE from 'three/webgpu';
-import type { Pointer } from './scene';
 
 // Older Chromium builds reject the identity swizzle 'rgba' that three.js always passes (boy: gpu-compat.js).
 // Dropping an identity swizzle changes nothing.
@@ -19,8 +18,6 @@ export function acceptIdentitySwizzle(): void {
     return Reflect.apply(createView, this, [rest]) as unknown;
   });
 }
-
-export const REST: Pointer = { x: 0, y: 0 };
 
 // WebGPU only on a hardware adapter: a software fallback adapter is slower than WebGL 2 and, in some browsers,
 // unstable (errors from its error scopes every frame). Then three's WebGL 2 backend draws the same pipeline.

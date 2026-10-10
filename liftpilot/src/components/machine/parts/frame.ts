@@ -1,5 +1,5 @@
 // The bedplate the machine stands on and the floor openings of the ropes.
-// Loaded only through boot.ts, after the prefers-reduced-motion and save-data gate of MachineStage.tsx.
+// Loaded only through the installation's 3D stage (src/components/lift3d/boot.ts), lazily.
 import * as THREE from 'three/webgpu';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import type { MachineMaterials } from '../materials';

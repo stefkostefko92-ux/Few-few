@@ -13,7 +13,7 @@ export default async function NotFound() {
   return (
     <>
       <SiteHeader showLogin={false} />
-      <main id="main" className="pub-page err-page blueprint">
+      <main id="main" tabIndex={-1} className="pub-page err-page blueprint">
         <p className="err-code" aria-hidden="true">404</p>
         <h1>{t('notFoundTitle')}</h1>
         <p className="lead">{t('notFoundText')}</p>

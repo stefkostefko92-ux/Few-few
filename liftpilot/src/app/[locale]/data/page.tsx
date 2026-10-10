@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const t = await getTranslations({ locale, namespace: 'dataPage' });
   const m = await getTranslations({ locale, namespace: 'meta' });
   return pageMetadata({ locale: loc(locale), path: '/data', title: t('title'), description: t('metaDescription'),
-    keywords: [...t('keywords').split(',').map((k) => k.trim()), ...m('keywords').split(',').slice(0, 2).map((k) => k.trim())], indexable: true });
+    keywords: [...new Set([...t('keywords').split(','), ...m('keywords').split(',').slice(0, 2)].map((k) => k.trim()))], indexable: true });
 }
 
 export default async function DataPage({ params }: { params: Promise<{ locale: string }> }) {
@@ -60,7 +60,7 @@ export default async function DataPage({ params }: { params: Promise<{ locale: s
               </tbody>
             </table>
           </div>
-          <p className="note">{t('filesNote')}</p>
+          <p className="note long">{t('filesNote')}</p>
         </section>
 
         <section aria-labelledby="q-json">

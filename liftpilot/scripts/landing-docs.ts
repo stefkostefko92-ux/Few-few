@@ -1,7 +1,7 @@
 // The documents of the landing page, as the software makes them: the drawing set and the relazione di calcolo of the
 // sample installation of the landing's floors (a new lift in the shaft of 1600 × 1750 mm of the landing's drawings,
 // with the machine the software proposes; src/components/landing/example.ts), drawn by the renderers of report/ and
-// turned into WebP pictures of a few pages for public/img/lp-doc-*.webp, with their sizes in
+// turned into WebP pictures of a few pages for public/img/lp-doc-*.webp (820 px, and 320/600 px for the srcset), with their sizes in
 // src/components/landing/docs.ts. The data are the software's sample, not a customer's. Needs python3 with ReportLab,
 // PyMuPDF and Pillow, and the DejaVu fonts (REPORT_FONT_DIR).
 // Run after a change of the documents: npx tsx --conditions=react-server scripts/landing-docs.ts [<folder for the PDFs>]
@@ -58,17 +58,20 @@ const PAGES: readonly (readonly [string, string, number])[] = [
   ['lp-doc-verifiche', relazione, 3],
 ];
 if (PAGES.some(([, , i]) => i < 0)) throw new Error('a sheet of the landing is missing from the set');
-const WIDTH = 820;
+// each page at 820 px (<name>.webp) and, for the srcset of the showcase (Showcase.tsx), at 320 and 600 px
+// (<name>-320.webp, <name>-600.webp): a page is drawn 122–246 px wide on a computer, ~160 px on a phone
+const WIDTH = 820, SMALLER = [320, 600] as const;
 const py = `
 import json, sys, pymupdf
 from PIL import Image
 for name, pdf, index in json.loads(sys.argv[1]):
     doc = pymupdf.open(pdf)
     page = doc[index]
-    z = ${WIDTH} / page.rect.width
-    pix = page.get_pixmap(matrix=pymupdf.Matrix(z, z), alpha=False)
-    img = Image.frombytes('RGB', (pix.width, pix.height), pix.samples)
-    img.save(sys.argv[2] + '/' + name + '.webp', 'WEBP', quality=80, method=6)
+    for w in (${SMALLER.join(', ')}, ${WIDTH}):
+        z = w / page.rect.width
+        pix = page.get_pixmap(matrix=pymupdf.Matrix(z, z), alpha=False)
+        img = Image.frombytes('RGB', (pix.width, pix.height), pix.samples)
+        img.save(sys.argv[2] + '/' + name + ('' if w == ${WIDTH} else '-' + str(w)) + '.webp', 'WEBP', quality=80, method=6)
     print(name, img.width, img.height, len(doc))
 `;
 const r = spawnSync('python3', ['-I', '-c', py, JSON.stringify(PAGES), path.join(root, 'public', 'img')], { encoding: 'utf8' });

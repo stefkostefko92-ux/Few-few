@@ -90,7 +90,7 @@ export default async function Hero({ counts, scenarios, beta, profile, engine }:
         <ul className="hero-benefits" aria-label={t('factsLabel')}>
           {tiles.map(([icon, v, l]) => (
             <li key={icon}>
-              <span className="icon-tile"><Icon name={icon} size={20} priority /></span>
+              <span className="icon-tile"><Icon name={icon} size={20} /></span>
               <span><strong>{v}</strong> {l}</span>
             </li>
           ))}

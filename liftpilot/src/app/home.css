@@ -172,18 +172,20 @@
 .pricing-head .text-cta { justify-self: end; margin-bottom: 6px; }
 .pricing-lead { max-width: 64ch; margin: 16px auto 30px; text-align: center; font-size: 15px; line-height: 1.7; color: var(--muted); }
 .pricing-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
-.price-card { position: relative; display: flex; flex-direction: column; min-height: 310px; padding: 24px 22px 20px; border: 1px solid var(--card-line); border-radius: var(--radius);
+/* every rule under its grid: /pricing has cards of the same names (public.css), and the two sheets stay in the document
+   together after a navigation between the pages */
+.pricing-grid .price-card { position: relative; display: flex; flex-direction: column; min-height: 310px; padding: 24px 22px 20px; border: 1px solid var(--card-line); border-radius: var(--radius);
   background: var(--card-grad); }
-.price-card.first { border-color: var(--card-on-line); box-shadow: var(--card-on-glow); }
-.plan-name { font-size: 16px; font-weight: 800; }
-.price { margin: 13px 0 14px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 7px; }
-.price strong { font: 800 36px/1.05 var(--font-body); letter-spacing: -0.047em; font-variant-numeric: tabular-nums; }
-.price strong.word { font-size: 30px; letter-spacing: -0.035em; }
-.price small { font-size: 13px; color: var(--muted); }
-.price-card ul { list-style: none; margin: 0 0 22px; padding: 14px 0 0; border-top: 1px solid var(--rule-soft); display: grid; gap: 10px; }
-.price-card li { display: flex; gap: 9px; font-size: 14px; line-height: 1.45; color: var(--ink-2); }
-.price-card li::before { content: "✓"; flex: none; font-weight: 800; color: var(--accent); }
-.price-card .btn { margin-top: auto; }
+.pricing-grid .price-card.first { border-color: var(--card-on-line); box-shadow: var(--card-on-glow); }
+.pricing-grid .plan-name { font-size: 16px; font-weight: 800; }
+.pricing-grid .price { margin: 13px 0 14px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 7px; }
+.pricing-grid .price strong { font: 800 36px/1.05 var(--font-body); letter-spacing: -0.047em; font-variant-numeric: tabular-nums; }
+.pricing-grid .price strong.word { font-size: 30px; letter-spacing: -0.035em; }
+.pricing-grid .price small { font-size: 13px; color: var(--muted); }
+.pricing-grid .price-card ul { list-style: none; margin: 0 0 22px; padding: 14px 0 0; border-top: 1px solid var(--rule-soft); display: grid; gap: 10px; }
+.pricing-grid .price-card li { display: flex; gap: 9px; font-size: 14px; line-height: 1.45; color: var(--ink-2); }
+.pricing-grid .price-card li::before { content: "✓"; flex: none; font-weight: 800; color: var(--accent); }
+.pricing-grid .price-card .btn { margin-top: auto; }
 .pricing-note { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px 10px; margin-top: 22px; text-align: center; font-size: 15px; line-height: 1.5; color: var(--muted); }
 
 /* ── standards ────────────────────────────────────────────────────────────────────────────────────────────────────── */
@@ -213,15 +215,15 @@
 .faq-grid { display: grid; grid-template-columns: minmax(0, .65fr) minmax(0, 1.35fr); gap: 9%; }
 .faq-heading > p:not(.eyebrow) { max-width: 22em; margin-top: 17px; font-size: 15px; line-height: 1.7; color: var(--muted); }
 .faq-heading .text-cta { margin-top: 20px; }
-.faq-list { border-top: 1px solid var(--rule); }
-.faq-list details { border-bottom: 1px solid var(--rule); }
-.faq-list summary { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 20px 3px; cursor: pointer; list-style: none; }
-.faq-list summary::-webkit-details-marker { display: none; }
-.faq-list summary h3 { font-size: 16px; line-height: 1.4; color: var(--ink); }
-.faq-list summary:hover h3 { color: var(--accent-2); }
-.faq-list summary .icon { transition: transform .2s; }
-.faq-list details[open] summary .icon { transform: rotate(180deg); }
-.faq-list .faq-a { max-width: 70ch; padding: 0 25px 20px 3px; font-size: 15px; line-height: 1.75; color: var(--muted); }
+.faq-section .faq-list { border-top: 1px solid var(--rule); }
+.faq-section .faq-list details { border-bottom: 1px solid var(--rule); }
+.faq-section .faq-list summary { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 20px 3px; cursor: pointer; list-style: none; }
+.faq-section .faq-list summary::-webkit-details-marker { display: none; }
+.faq-section .faq-list summary h3 { font-size: 16px; line-height: 1.4; color: var(--ink); }
+.faq-section .faq-list summary:hover h3 { color: var(--accent-2); }
+.faq-section .faq-list summary .icon { transition: transform .2s; }
+.faq-section .faq-list details[open] summary .icon { transform: rotate(180deg); }
+.faq-section .faq-list .faq-a { max-width: 70ch; padding: 0 25px 20px 3px; font-size: 15px; line-height: 1.75; color: var(--muted); }
 
 /* ── the closing band ─────────────────────────────────────────────────────────────────────────────────────────────── */
 .closing { padding-block: 0 64px; }
@@ -242,6 +244,18 @@
   .showcase-tabs { max-width: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
   .showcase-tab { border-left: 0; border-bottom: 2px solid transparent; }
   .showcase-tab[aria-selected="true"] { border-bottom-color: var(--accent); }
+}
+/* a tablet's tabs: three over two (else four in a row and «Documents» alone under them); from 946 px five fit a row
+   (5 × 170 px + gaps in the 91.2 % the gutters leave) */
+@media (min-width: 721px) and (max-width: 945px) {
+  .showcase-tabs { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .showcase-tab { grid-column: span 2; }
+  .showcase-tab:nth-child(n+4) { grid-column: span 3; }
+}
+/* the closing band on a tablet: the photo starts at 43 %, so the text keeps to the dark part on its left (else part of
+   the title and of the line runs over the light doors under AA contrast) */
+@media (min-width: 721px) and (max-width: 1100px) {
+  .closing-content { max-width: 58%; }
 }
 @media (max-width: 980px) {
   .hero { grid-template-columns: minmax(0, 1fr) minmax(0, .85fr); }
@@ -272,7 +286,7 @@
   .art-label { font-size: 12px; padding: 7px 10px 7px 7px; gap: 7px; transform: none; }
   .art-label .icon-tile { width: 28px; height: 28px; }
   .art-label-1 { right: 3%; top: 8%; }
-  .art-label-2 { right: 1%; top: 36%; }
+  .art-label-2 { right: 3%; top: 36%; }
   .art-label-3 { right: 2%; top: 58%; }
   .art-label-4 { right: 3%; top: 78%; }
   .art-caption { bottom: 12px; right: var(--gutter); }
@@ -296,9 +310,12 @@
   .ui-desk { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ui-desk li.lead { grid-row: auto; }
   .ui-pair.wide { grid-template-columns: minmax(0, 1fr); }
+  /* the checks fit the frame of a phone: the cells wrap (the values over their limits already stand on two lines) */
+  .ui-ledger td, .ui-ledger thead th { white-space: normal; }
+  .ui-ledger th, .ui-ledger td { padding: 7px 4px; }
   .ui-bottom span:last-child { display: none; }
   .pricing-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
-  .price-card { min-height: 0; padding: 20px; }
+  .pricing-grid .price-card { min-height: 0; padding: 20px; }
   .closing { padding-bottom: 40px; }
   .closing-cta { align-items: flex-end; min-height: 460px; }
   .closing-photo { inset: 0; }
@@ -309,8 +326,16 @@
   .feature-grid { grid-template-columns: minmax(0, 1fr); }
   .hero-art { min-height: 440px; }
 }
-@media (prefers-reduced-motion: reduce) {
-  .faq-list summary .icon { transition: none; }
+/* Cyrillic sets wider: the tiles' longest words («автоматични», «симулацията») do not fit a quarter of the row on a
+   small phone, nor beside the narrower picture of a tablet; there the Bulgarian tiles stand two by two */
+@media (max-width: 460px), (min-width: 721px) and (max-width: 980px) {
+  .hero-benefits:lang(bg) { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 16px; }
 }
+@media (prefers-reduced-motion: reduce) {
+  .faq-section .faq-list summary .icon { transition: none; }
+}
+/* no paragraph ends on a lonely word (Chromium; elsewhere no effect) */
+.lp :is(.hero-lead, .hero-note, .hero-benefits li, .section-head > p, .showcase-lead, .ui-caption p, .pricing-lead, .standards-lead,
+  .faq-heading > p, .closing-content > p) { text-wrap: pretty; }
 /* the template's arrow in the cyan buttons: a dark glyph (a painted icon would blur into the cyan) */
 .btn-arrow { font-size: 18px; line-height: 1; font-family: var(--font-mono); }

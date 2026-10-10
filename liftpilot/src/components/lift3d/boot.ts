@@ -1,4 +1,4 @@
-// Boots the 3D installation, on the landing page's pipeline (src/components/machine/boot.ts, here pipeline.ts): WebGPU
+// Boots the 3D installation on its pipeline (pipeline.ts): WebGPU
 // on a hardware adapter (the top quality tier on a large screen), else WebGL 2, never on a software rasteriser. An orbit
 // camera with four views (car, whole shaft, machine, pit), free to orbit, pan and zoom (camera.ts); the car view follows
 // the car. The simulation's clock gives

@@ -50,6 +50,18 @@ try {
   assert.equal(res.status(), 200);
   assert.ok((res.headers()['content-security-policy'] ?? '').includes("'nonce-"), 'CSP with nonce');
   assert.equal(await page.locator('h1').count(), 1);
+  // the sign-in family's header keeps its sign-up button on a phone: the Bulgarian one must not push the menu off it
+  {
+    const size = page.viewportSize();
+    await page.setViewportSize({ width: 390, height: 844 });
+    for (const path of ['/bg/login', '/bg/register']) {
+      await page.goto(`${BASE}${path}`);
+      const over = await page.evaluate(() => globalThis.document.documentElement.scrollWidth - globalThis.innerWidth);
+      assert.ok(over <= 0, `${path} at 390 px scrolls sideways by ${over} px`);
+      assert.ok(await page.locator('.nav-drawer > summary').isVisible(), `${path} at 390 px: the menu button`);
+    }
+    if (size) await page.setViewportSize(size);
+  }
 
   step('sign-in and installation');
   await login(page, ADMIN.email, ADMIN.password);

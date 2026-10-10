@@ -1,4 +1,4 @@
-// The lift's render pipeline, on the landing page's (src/components/machine/boot.ts): scene (HDR + velocity MRT) →
+// The lift's render pipeline (after the techniques of the boy engine): scene (HDR + velocity MRT) →
 // GTAO on the tiers that have it → TRAA → grade. A world and the pipeline that renders it make a stage; a new design
 // builds a new stage and frees the old one with every node it owned. Loaded only through boot.ts (lazy).
 import * as THREE from 'three/webgpu';
