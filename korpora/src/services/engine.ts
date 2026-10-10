@@ -85,6 +85,8 @@ interface EngineApi {
   catalogDrift(saved: Spec, model: EngineModel): string[];
   typeLabel(type: string): string;
   typeDims(type: string, spec: Spec): { W: number; H: number; D: number };
+  /** Модулите на кухнята отляво надясно: ширината и дали са с чекмеджета. */
+  kitchenModules(spec: Spec): Array<{ drawers: boolean; width: number }>;
   /** Габаритът така, както го пише заглавната лента на редактора. */
   dimsText(type: string, spec: Spec): string;
   typeOrder: readonly string[];
@@ -238,6 +240,7 @@ export async function loadEngine(catalogPath?: string): Promise<void> {
     catalogDrift: fn(model, 'catalogDrift'),
     typeLabel: fn(model, 'typeLabel'),
     typeDims: fn(types, 'typeDims'),
+    kitchenModules: fn(types, 'kitchenModules'),
     dimsText: fn(types, 'dimsText'),
     typeOrder: ORDER,
     typeGroups: Object.fromEntries(ORDER.map((id) => [id, TYPES[id]?.group ?? ''])),

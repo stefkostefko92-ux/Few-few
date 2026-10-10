@@ -14,8 +14,8 @@ import { priceTable } from '../src/plans/pricing.js';
  * date, and it is set by hand; this keeps it from going stale when the content changes.
  */
 const RECORDED = {
-  updated: '2026-10-09',
-  sha256: 'd9b535f0b820692ecd0f2d125de3543f7e612ccbe7e1168bd8b0b630ab1e9772',
+  updated: '2026-10-10',
+  sha256: '08400cf4a61a8fa62c64ba0d5dd8af111ebb63e17ab32bc9a6e223ce6909cfe3',
 };
 
 function fingerprint(): string {

@@ -3,7 +3,7 @@ import { engine, type DrawingMeta, type EngineModel } from './engine.js';
 import { sheetArt, type SheetLike } from './landing-sheet.js';
 
 /**
- * Истинските изходи на двигателя за витрината. Всичко идва от един проект — кухня от четири модула:
+ * Истинските изходи на двигателя за витрината. Всичко идва от един проект — кухнята по подразбиране:
  * първият лист от разкроя с пътя на фрезата, откъс от списъка с детайлите, началото на G-кода и чертежът
  * на една врата с картата за пробиване. Нищо не е рисувано на ръка: ако двигателят се промени, се
  * променя и витрината. Смята се веднъж, при първа нужда.
@@ -64,8 +64,18 @@ export interface StoryNumbers {
   firstMove: string;
 }
 
+/** Примерната кухня в числа за текстовете: модулите с врати и с чекмеджета и ширините им. */
+export interface ExampleKitchen {
+  modules: number;
+  doorModules: number;
+  moduleWidth: number;
+  drawerModules: number;
+  drawerModuleWidth: number;
+  parts: number;
+}
+
 export interface LandingAssets {
-  example: { modules: number; moduleWidth: number; parts: number };
+  example: ExampleKitchen;
   story: StoryNumbers;
   sheet: {
     svg: string;
@@ -90,8 +100,16 @@ export interface LandingAssets {
   dxfLayers: string[];
 }
 
-/** Примерният проект на витрината — и за живата 3D сцена (landing/story.js го строи в браузъра). */
-export const EXAMPLE = { type: 'kitchen', modules: 4, moduleWidth: 600 } as const;
+/**
+ * Примерният проект на витрината — и за живата 3D сцена (landing/story.js го строи в браузъра). Това е кухнята по
+ * подразбиране на двигателя (тестът го пази): три модула с врати по 600 мм и един с чекмеджета, 500 мм.
+ */
+export const EXAMPLE = {
+  type: 'kitchen',
+  modules: 4,
+  moduleWidth: 600,
+  drawerModuleWidth: 500,
+} as const;
 const EXAMPLE_DATE = '2026-10-02';
 
 let cached: LandingAssets | null = null;
@@ -175,10 +193,14 @@ export function landingAssets(): LandingAssets {
     EngineModel['parts'][number] & { stock: string; decor: string }
   >;
   const sheets = nesting.sheets as Array<SheetLike & { yield: number }>;
+  const modules = api.kitchenModules(model.spec);
   cached = {
     example: {
-      modules: EXAMPLE.modules,
+      modules: modules.length,
+      doorModules: modules.filter((m) => !m.drawers).length,
       moduleWidth: EXAMPLE.moduleWidth,
+      drawerModules: modules.filter((m) => m.drawers).length,
+      drawerModuleWidth: EXAMPLE.drawerModuleWidth,
       parts: model.parts.length,
     },
     story: {

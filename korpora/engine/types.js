@@ -136,9 +136,9 @@ export const BUILDERS = {
   kitchen: (ctx, s) => {
     // each base module with the wall cabinet of the same width above it
     let x0 = 0;
-    kitchenWidths(s).forEach((w, i) => {
+    kitchenModules(s).forEach(({ width: w, drawers }, i) => {
       const doors = w > 500 ? 2 : 1;
-      baseCabinet(ctx, { ...s, width: w, legs: 100, fronts: drawerModule(i) ? 'drawers' : 'doors', doors, drawers: 3, shelves: 1 }, { module: `М${i + 1}`, x0 });
+      baseCabinet(ctx, { ...s, width: w, legs: 100, fronts: drawers ? 'drawers' : 'doors', doors, drawers: 3, shelves: 1 }, { module: `М${i + 1}`, x0 });
       wallCabinet(ctx, { ...s, width: w, height: s.wallHeight, depth: 320, doors, shelves: 2 }, { module: `Г${i + 1}`, x0, y0: s.mount });
       x0 += w;
     });
@@ -241,8 +241,7 @@ function joinStacked(ctx, lower, upper) {
 }
 
 // Kitchen modules from the left: every third one from the second has the drawers and its own width, the others doors.
-const drawerModule = (i) => i % 3 === 1;
-export const kitchenWidths = (s) => Array.from({ length: s.modules }, (_, i) => (drawerModule(i) ? s.drawerModuleWidth : s.moduleWidth));
+export const kitchenModules = (s) => Array.from({ length: s.modules }, (_, i) => (i % 3 === 1 ? { drawers: true, width: s.drawerModuleWidth } : { drawers: false, width: s.moduleWidth }));
 
 // The kitchen worktop reaches 20–29 mm past the closed fronts (carcass, 1 mm gap, front), in whole centimetres.
 const WORKTOP_OVERHANG = 20;
@@ -260,7 +259,7 @@ export function typeDims(type, s) {
       return { W, H: s.headHeight, D };
     }
     case 'kitchen':
-      return { W: kitchenWidths(s).reduce((a, w) => a + w, 0), H: s.mount + s.wallHeight, D: worktopDepth(s) };
+      return { W: kitchenModules(s).reduce((a, m) => a + m.width, 0), H: s.mount + s.wallHeight, D: worktopDepth(s) };
     default:
       return { W: s.width, H: s.height, D: s.depth };
   }

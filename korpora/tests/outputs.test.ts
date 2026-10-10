@@ -8,7 +8,7 @@ import { unzipSync } from 'fflate';
 import { engine, loadEngine } from '../src/services/engine.js';
 import { buildExport, CncBlockedError } from '../src/services/exports.js';
 import { dimensionsText } from '../src/services/furniture.js';
-import { landingAssets } from '../src/services/landing-assets.js';
+import { EXAMPLE, landingAssets } from '../src/services/landing-assets.js';
 
 before(() => loadEngine(fileURLToPath(new URL('./no-such-catalog.json', import.meta.url))));
 
@@ -54,13 +54,28 @@ test('a hinge that has left the catalog blocks CNC instead of drilling for anoth
   assert.equal(sheetOf(utf8(zip['drawings/01-assembly.svg']))?.split('/')[0], '1');
 });
 
+test('the landing example is the default kitchen: three door modules of 600 mm and a drawer module of 500 mm', () => {
+  const api = engine();
+  assert.deepEqual(api.normalizeSpec(EXAMPLE), api.normalizeSpec({ type: 'kitchen' }));
+  const { example } = landingAssets();
+  assert.deepEqual(
+    [example.modules, example.doorModules, example.moduleWidth, example.drawerModules],
+    [4, 3, 600, 1],
+  );
+  assert.equal(example.drawerModuleWidth, 500);
+  // the drilling caption shows the left door of the first base module: a 600 mm module keeps two doors
+  const model = api.buildModel(EXAMPLE);
+  const door = model.parts.find((p) => p.role === 'door') as unknown as { key: string };
+  assert.equal(door.key, 'М1c1door1');
+});
+
 test('the landing-page door carries the sheet number of the downloaded drawing', () => {
   const door = landingAssets().door;
   assert.ok(door);
-  const example = project({ type: 'kitchen', modules: 4, moduleWidth: 600 });
+  const example = project({ ...EXAMPLE });
   const zip = files(buildExport(example, 'Тест', 'drawings.zip').body);
   const doorId = engine()
-    .buildModel({ type: 'kitchen', modules: 4, moduleWidth: 600 })
+    .buildModel({ ...EXAMPLE })
     .parts.find((p) => p.role === 'door')?.id;
   const name = Object.keys(zip).find((n) => n.endsWith(`-${doorId}.svg`));
   assert.ok(name);

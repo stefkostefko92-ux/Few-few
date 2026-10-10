@@ -36,7 +36,7 @@ export const PRODUCT_URL = 'https://korpora.carbonstealth.eu';
  * сменя се ръчно, когато се промени съдържанието ѝ. tests/content-updated.test.ts пази отпечатък на текстовете
  * на витрината и на ценоразписа: смени ли се някое от тях без тази дата, тестът пада.
  */
-export const CONTENT_UPDATED = '2026-10-09';
+export const CONTENT_UPDATED = '2026-10-10';
 
 /** Последна промяна на всеки правен текст — показва се на страницата и отива в sitemap. */
 export const LEGAL_UPDATED = { privacy: '2026-10-09', terms: '2026-10-09' } as const;

@@ -5,7 +5,7 @@
     "sheet": "Sheet {n} of {total}",
     "cover": {
       "for": "For panel furniture workshops, with a CNC router or with a sliding table saw.",
-      "proof": "Every drawing, table and file in this brochure is output of the program from one project: a kitchen of {modules} units, {width} mm each."
+      "proof": "Every drawing, table and file in this brochure is output of the program from one project: a kitchen of {modules} units — {doors} × {width} mm with doors and {drawers} × {drawerWidth} mm with drawers."
     },
     "model": {
       "caption": "The same kitchen in 3D, as you see it in the editor."

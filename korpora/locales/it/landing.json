@@ -27,7 +27,7 @@
       "line2": "alla fresa.",
       "lead": "Korpora progetta mobili in pannelli nel browser e dallo stesso progetto ricava tutto ciò che serve al laboratorio: distinta di taglio con i bordi, elenco della ferramenta, disegni con la mappa di foratura di ogni pezzo e file per la macchina CNC.",
       "trial": "Ogni nuovo account riceve {days} giorni di prova dalla conferma dell'email per valutare il software. Senza carta e senza pagamenti automatici.",
-      "caption": "Pannello {no} di {count} di una cucina di {modules} moduli da {width} mm: {parts} pezzi e {holes} fori. Risultato del programma, non un'illustrazione.",
+      "caption": "Pannello {no} di {count} di una cucina di {modules} moduli — {doors} × {width} mm con ante e {drawers} × {drawerWidth} mm con cassetti: {parts} pezzi e {holes} fori. Risultato del programma, non un'illustrazione.",
       "keyContour": "contorno, fresa Ø{d}",
       "keyGroove": "scanalatura dello schienale, fresa Ø{d}",
       "keyDrill": "fori {list}"
@@ -204,7 +204,7 @@
     },
     "story": {
       "model": "Modello",
-      "modelValue": "Cucina, {modules} moduli da {width} mm",
+      "modelValue": "Cucina, {doors} × {width} + {drawers} × {drawerWidth} mm",
       "size": "Ingombro",
       "sizeValue": "{w} × {h} × {d} mm",
       "parts": "Pezzi",

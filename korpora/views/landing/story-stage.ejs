@@ -10,10 +10,10 @@
     <img class="still" data-still="<%= n %>" src="<%= first ? still(1120) : blank %>" <%- first ? 'srcset="' + set + '"' : 'data-src="' + still(1120) + '" data-srcset="' + set + '"' %> sizes="(min-width: 900px) 58vw, 100vw" width="1120" height="1400" alt="" decoding="async"<%- first ? ' fetchpriority="high"' : '' %>>
     <% } %>
     <div class="stage-gl" data-story-gl></div>
-    <% const story = assets.story; %>
+    <% const story = assets.story; const kitchen = assets.example; %>
     <div class="stage-hud" data-story-hud>
       <dl data-hud="1">
-        <div><dt><%= t('landing.story.model') %></dt><dd><%= t('landing.story.modelValue', { modules: storyExample.modules, width: fmt.num(storyExample.moduleWidth) }) %></dd></div>
+        <div><dt><%= t('landing.story.model') %></dt><dd><%= t('landing.story.modelValue', { doors: fmt.num(kitchen.doorModules), width: fmt.num(kitchen.moduleWidth), drawers: fmt.num(kitchen.drawerModules), drawerWidth: fmt.num(kitchen.drawerModuleWidth) }) %></dd></div>
         <div><dt><%= t('landing.story.size') %></dt><dd><%= t('landing.story.sizeValue', { w: fmt.num(story.size.W), h: fmt.num(story.size.H), d: fmt.num(story.size.D) }) %></dd></div>
       </dl>
       <dl data-hud="2">

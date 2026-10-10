@@ -129,8 +129,14 @@ test('the read-out beside the story carries the example’s numbers from the eng
   const yieldPct = Math.round(
     (nesting.sheets.reduce((sum, sh) => sum + sh.yield, 0) / nesting.sheets.length) * 100,
   );
+  const modules = api.kitchenModules(model.spec);
   const expected = [
-    [EXAMPLE.modules, EXAMPLE.moduleWidth],
+    [
+      modules.filter((m) => !m.drawers).length,
+      EXAMPLE.moduleWidth,
+      modules.filter((m) => m.drawers).length,
+      EXAMPLE.drawerModuleWidth,
+    ],
     [size.W, size.H, size.D],
     [model.parts.length],
     [new Set(boards.map((b) => `${b.stock}|${b.decor}`)).size],
