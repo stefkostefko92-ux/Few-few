@@ -1,10 +1,11 @@
-# ChatChat в продукция: база (PostgreSQL 16 + pgvector) + антивирус (ClamAV) + приложение.
+# ChatChat в продукция: база (PostgreSQL 16 + pgvector) + антивирус (ClamAV) + Redis 7 (опашките, pub/sub
+# между инстанциите, общите лимити) + приложение (API) + worker (същият образ: приемане/OCR/вектори).
 #
 # TLS и публичният вход са на nginx-а на ХОСТА (Let's Encrypt) — конфигът е
 # `deploy/nginx/chatchat.carbonstealth.eu.conf` в това репо, не се пише на ръка на сървъра.
 #
 # Тайните НЕ са тук — идват от `.env` до този файл (mode 600 на сървъра, никога в репото).
-# Задължителни: POSTGRES_PASSWORD (openssl rand -hex 32 — влиза некодирана в DATABASE_URL) ·
+# Задължителни: POSTGRES_PASSWORD и REDIS_PASSWORD (openssl rand -hex 32 — влизат некодирани в адресите) ·
 # SESSION_PEPPER (openssl rand -hex 32) · ATTACHMENT_URL_KEY, MFA_ENC_KEY и FILES_KEK (openssl rand
 # -base64 32) · PUBLIC_BASE_URL. За AI: VERTEX_PROJECT_ID + GCP_SA_FILE. Образецът — `.env.example`.
 # В контейнера влиза само изброеното в `environment:` — нова настройка от `.env` се добавя и там.
@@ -30,7 +31,7 @@ x-hardening: &hardening
   pids_limit: 256
 
 # Мрежите: `backend` е вътрешна (internal: true — без изход навън и без публикувани портове); в нея са
-# и трите услуги. Базата е САМО там. `default` има изход навън: приложението (Vertex AI, публикуваният
+# всички услуги. Базата и Redis са САМО там. `default` има изход навън: приложението (Vertex AI, публикуваният
 # порт на 127.0.0.1) и антивирусът (freshclam тегли сигнатурите от database.clamav.net).
 networks:
   backend:
@@ -115,8 +116,56 @@ services:
       start_period: 10m
     logging: *logging
 
+  redis:
+    # Redis 7 (NFR-06): опашките на BullMQ (приемане, OCR, вектори, dead-letter), pub/sub между
+    # инстанциите на API-то (SSE), общите лимити на заявките и пазачът срещу повторен TOTP код.
+    # Debian (glibc), закован по digest на индекса (amd64 + arm64); тагът 7.4-bookworm сочи същия (7.4.11).
+    # Обновяване: `docker buildx imagetools inspect redis:7.4-bookworm` → новият Digest тук.
+    image: redis:7.4-bookworm@sha256:4fa24486b8bcca8eec45ee0eb166edc674795e53a2b53d1a9ef263eecebaac85
+    <<: *hardening
+    # Тече направо като потребителя redis на образа (999) — без chown/setpriv, значи без capabilities.
+    user: '999:999'
+    cap_drop: [ALL]
+    tmpfs:
+      - /tmp:size=16m,noexec,nosuid
+    # Паролата е и в командата (видима само за root на хоста, като останалите тайни в compose);
+    # noeviction — BullMQ иска задачите да не изчезват при пълна памет (по-добре грешка, отколкото загуба).
+    command:
+      - redis-server
+      - --requirepass
+      - ${REDIS_PASSWORD:?липсва REDIS_PASSWORD}
+      - --appendonly
+      - 'yes'
+      - --appendfsync
+      - everysec
+      - --save
+      - ''
+      - --maxmemory
+      - 256mb
+      - --maxmemory-policy
+      - noeviction
+    environment:
+      # За redis-cli в healthcheck-а (не за сървъра).
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?липсва REDIS_PASSWORD}
+    mem_limit: 384m
+    cpus: 0.5
+    restart: unless-stopped
+    volumes:
+      # AOF — опашките преживяват рестарт (задача, приета от API-то, не се губи).
+      - redis-data:/data
+    # Без `ports:` и само във вътрешната мрежа — Redis не се вижда нито от хоста, нито отвън.
+    networks: [backend]
+    healthcheck:
+      test: ['CMD-SHELL', 'redis-cli ping | grep -q PONG']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging: *logging
+
   app:
     build: .
+    # Именуваният образ ползва и worker-ът (същият код, друга команда) — билдът е само тук.
+    image: chatchat-app
     <<: *hardening
     cap_drop: [ALL]
     tmpfs:
@@ -192,6 +241,9 @@ services:
       # Circuit breaker към Vertex (NFR-07): последователни провала до отваряне · секунди отворен.
       AI_BREAKER_FAILURES: ${AI_BREAKER_FAILURES:-5}
       AI_BREAKER_COOLDOWN_SECONDS: ${AI_BREAKER_COOLDOWN_SECONDS:-30}
+      # Опашките, pub/sub между инстанциите, общите лимити и TOTP (NFR-06): тежката работа (разбор, OCR,
+      # вектори) е в услугата worker; API-то само слага задачи. Паролата — от .env (REDIS_PASSWORD).
+      REDIS_URL: redis://:${REDIS_PASSWORD:?липсва REDIS_PASSWORD}@redis:6379
       # Метрики за Prometheus (NFR-09) — отделен слушател, НЕ публичният порт (nginx не го проксира).
       # Включват се с METRICS_PORT в .env (порт на ХОСТА); вътре в контейнера слушателят е винаги 9464.
       # 0.0.0.0 е само в мрежовото пространство на контейнера — Docker не стига до loopback-а му; на
@@ -218,11 +270,85 @@ services:
     networks: [backend, default]
     depends_on:
       db: { condition: service_healthy }
+      redis: { condition: service_healthy }
       # Само „пуснат“, не „здрав“: зареждането на сигнатурите е минути, а без антивирус
       # приложението пак работи — нов файл остава непоказан (PENDING/FAILED), докато clamd не го провери.
       clamav: { condition: service_started }
     logging: *logging
 
+  worker:
+    # Същият образ като app (`node dist/worker.js`, NFR-06): опашките от Redis — приемане/извличане на
+    # документи (разбор в отделна нишка), OCR (pdftoppm + tesseract, execFile без shell), вектори (Vertex
+    # в ЕС). Без HTTP и без публикувани портове. Без миграции (entrypoint-ът е node): тръгва СЛЕД като
+    # app е здрав, т.е. миграциите са приложени.
+    image: chatchat-app
+    pull_policy: never
+    <<: *hardening
+    cap_drop: [ALL]
+    entrypoint: ['node']
+    command: ['dist/worker.js']
+    tmpfs:
+      # Временните файлове на OCR (оригинал + растер на страница, трият се след всяка задача).
+      - /tmp:size=512m,noexec,nosuid
+    # Разборът е в нишка с таван 768 MB (INGEST_THREAD_HEAP_MB) × INGEST_CONCURRENCY (2) + tesseract.
+    mem_limit: 2560m
+    cpus: 2
+    restart: unless-stopped
+    # Плавно спиране: текущите задачи довършват до 90 s (src/worker.ts), после — принудително.
+    stop_grace_period: 120s
+    environment:
+      # САМО каквото worker-ът ползва (least privilege): без SESSION_PEPPER, MFA_ENC_KEY, ключа за адресите.
+      NODE_ENV: production
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      DATABASE_URL: postgresql://chatchat:${POSTGRES_PASSWORD:?липсва POSTGRES_PASSWORD}@db:5432/chatchat
+      REDIS_URL: redis://:${REDIS_PASSWORD:?липсва REDIS_PASSWORD}@redis:6379
+      ATTACHMENTS_DIR: /data/attachments
+      FILES_KEK: ${FILES_KEK:?липсва FILES_KEK}
+      FILES_KEK_PREVIOUS: ${FILES_KEK_PREVIOUS:-}
+      FILES_PLAINTEXT: ${FILES_PLAINTEXT:-}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-}
+      EMBEDDING_SWEEP_SECONDS: ${EMBEDDING_SWEEP_SECONDS:-}
+      VERTEX_PROJECT_ID: ${VERTEX_PROJECT_ID:-}
+      VERTEX_REGION: ${VERTEX_REGION:-eu}
+      GOOGLE_APPLICATION_CREDENTIALS: ${GCP_SA_FILE:+/run/secrets/gcp-sa.json}
+      AI_BREAKER_FAILURES: ${AI_BREAKER_FAILURES:-5}
+      AI_BREAKER_COOLDOWN_SECONDS: ${AI_BREAKER_COOLDOWN_SECONDS:-30}
+      # Приемането и OCR (src/config-queue.ts); празно → подразбирането там.
+      INGEST_CONCURRENCY: ${INGEST_CONCURRENCY:-}
+      OCR_CONCURRENCY: ${OCR_CONCURRENCY:-}
+      OCR_ENGINE: ${OCR_ENGINE:-}
+      OCR_MAX_PAGES: ${OCR_MAX_PAGES:-}
+      QUEUE_ATTEMPTS: ${QUEUE_ATTEMPTS:-}
+      INGEST_TMP_DIR: /tmp
+      WORKER_HEARTBEAT_FILE: /tmp/chatchat-worker.alive
+      # Метриките на worker-а (опашки, OCR, приемане) — като на app: само 127.0.0.1 на хоста.
+      METRICS_PORT: ${WORKER_METRICS_PORT:+9464}
+      METRICS_HOST: 0.0.0.0
+    volumes:
+      - ${GCP_SA_FILE:-/dev/null}:/run/secrets/gcp-sa.json:ro
+      # Оригиналите — само за четене: worker-ът никога не пише във файловото хранилище.
+      - ${CHATCHAT_SHARED:-/opt/few-few/shared/chatchat}/attachments:/data/attachments:ro
+    ports:
+      - '127.0.0.1:${WORKER_METRICS_PORT:-}:9464'
+    # backend — базата и Redis; default — Vertex AI (векторите).
+    networks: [backend, default]
+    # „Жив съм“ = файлът е по-нов от 60 s (обновява се на 10 s, само ако Redis отговаря).
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "const s=require('fs').statSync('/tmp/chatchat-worker.alive');process.exit(Date.now()-s.mtimeMs<60000?0:1)"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    depends_on:
+      app: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    logging: *logging
+
 volumes:
   db-data:
   clamav-db:
+  redis-data:

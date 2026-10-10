@@ -55,6 +55,8 @@ docker() {
     "compose build app") return "$BUILD_RC" ;;
     "compose up -d --remove-orphans") return "$UP_RC" ;;
     "compose exec -T app node dist/cli/files.js encrypt") return "$FILES_RC" ;;
+    "compose ps -q worker") echo wcid ;;
+    "inspect -f {{.State.Health.Status}} wcid") echo "$WORKER_HEALTH" ;;
   esac
   return 0
 }
@@ -72,7 +74,7 @@ function deploy(L, env = {}) {
       CHATCHAT_SYSTEMD_DIR: L.systemd, CHATCHAT_SBIN: L.sbin, CHATCHAT_AGE: "true",
       VOLUME_RC: "1", IMAGE_RC: "0", DUMP_RC: "0", REINDEX_RC: "0", BUILD_RC: "0", UP_RC: "0", FILES_RC: "0",
       CHATCHAT_PGDATA_CONF_DIR: L.etc, PGDATA_MOUNTED: "0",
-      HEALTH_BODY: '{"ok":true,"ai":false}', ...env },
+      HEALTH_BODY: '{"ok":true,"ai":false}', WORKER_HEALTH: "healthy", ...env },
   });
   const log = existsSync(L.log) ? readFileSync(L.log, "utf8") : "";
   writeFileSync(L.log, "");
@@ -102,8 +104,10 @@ test("пръв деплой: ключовете се раждат в shared/.env
   assert.match(env, /^MFA_ENC_KEY=\S{40,}$/m);
   assert.match(env, /^FILES_KEK=\S{40,}$/m);
   assert.equal(Buffer.from(env.match(/^FILES_KEK=(\S+)$/m)[1], "base64").length, 32, "KEK — 32 байта");
+  assert.match(env, /^REDIS_PASSWORD=[0-9a-f]{64}$/m, "паролата на Redis — hex (влиза в REDIS_URL)");
   assert.equal(mode(join(L.shared, ".env")), "600");
-  assert.doesNotMatch(r.stderr + r.log, /ATTACHMENT_URL_KEY=|MFA_ENC_KEY=|FILES_KEK=/, "стойностите не се печатат");
+  assert.doesNotMatch(r.stderr + r.log, /ATTACHMENT_URL_KEY=|MFA_ENC_KEY=|FILES_KEK=|REDIS_PASSWORD=/, "стойностите не се печатат");
+  assert.doesNotMatch(r.stderr, /worker-ът не е здрав/, "здрав worker — без предупреждение");
   order(r.log, "/readyz", "compose exec -T app node dist/cli/files.js encrypt");
   assert.match(r.stderr, /pgdata-encrypt\.sh enable/, "подсказва шифрования том на базата");
   assert.equal(readFileSync(join(L.app, ".env"), "utf8"), env, "release-ът носи същия .env");
@@ -195,6 +199,24 @@ test("паролата на базата с / ? # % @: изход 1 преди b
   const r = deploy(L);
   assert.equal(r.status, 1);
   assert.doesNotMatch(r.log, /compose build/);
+}));
+
+test("паролата на Redis с /, :, @ или +: изход 1 преди build (чупи REDIS_URL)", () => withLayout((L) => {
+  for (const bad of ["a/b", "a:b", "a@b", "a+b="]) {
+    sharedEnv(L, `REDIS_PASSWORD=${bad}\n`);
+    const r = deploy(L);
+    assert.equal(r.status, 1, bad);
+    assert.match(r.stderr, /REDIS_PASSWORD/);
+    assert.doesNotMatch(r.log, /compose build/);
+  }
+}));
+
+test("нездрав worker след up: само предупреждение, изход 0 (API-то работи, опашката чака)", () => withLayout((L) => {
+  sharedEnv(L);
+  const r = deploy(L, { WORKER_HEALTH: "starting" });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stderr, /worker-ът не е здрав/);
+  order(r.log, "compose up -d --remove-orphans", "/readyz", "compose ps -q worker");
 }));
 
 test("сменен clamd.conf: clamav се рестартира след up; същият — не", () => withLayout((L) => {
