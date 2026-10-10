@@ -1,6 +1,7 @@
 import React from 'react';
 import { openItemViewer3D } from './items3d/viewerStore';
 import { resolveIconSlug } from './items3d/iconSlug';
+import { bakedSrc, useBakedManifest } from './items3d/bakedIcons';
 
 /**
  * Renders a CC-BY-3.0 SVG sprite from /public/sprites/ as a CSS mask.
@@ -90,6 +91,9 @@ interface Props {
   /** Суровият предмет (slug + метаданни) — включва изпечена 3D икона, ако има такава, и прави
    *  плочката кликаема за жив 3D преглед (виж items3d/ItemViewer3DHost.tsx). */
   raw?: Sprite3DRaw;
+  /** Slug на предмета без пълните метаданни (напр. липсваща част от сет, за която API-то връща
+   *  само slug) — стига, за да се избере изпеченият рендер, без да прави плочката кликаема. */
+  itemSlug?: string;
 }
 
 /** Rarity → frame border colour. Photos are shown un-tinted; the badge
@@ -103,9 +107,15 @@ const RARITY_FRAME: Record<Rarity, { border: string; glow: string }> = {
 };
 
 export default function Sprite({
-  name, category, subType, tier, rarity, enchant = 0, tone, size = 32, title, className, raw,
+  name, category, subType, tier, rarity, enchant = 0, tone, size = 32, title, className, raw, itemSlug,
 }: Props): React.ReactElement {
   const slug = resolveIconSlug(name, category, subType, tier);
+  const manifest = useBakedManifest();
+  const baked = bakedSrc(manifest, raw?.slug ?? itemSlug, slug);
+  // Рендерът е само за предмети/отвари/камъни; клас/звяр/лагер/икони си остават на старите снимки.
+  const isItemIcon = !/^(class-|monster|camp-|icon-)/.test(slug);
+  const waiting = manifest === undefined && isItemIcon;
+  const useBaked = baked !== null && isItemIcon;
   const e = enchant > 0 ? ENCHANT_STYLE[Math.min(5, enchant)] : null;
   const frame = rarity ? RARITY_FRAME[rarity] : RARITY_FRAME.common;
   // SVG tint gradient kept as a fallback for slugs where we don't yet
@@ -116,11 +126,9 @@ export default function Sprite({
     category && TONE_GRADIENT[category] ? TONE_GRADIENT[category] :
     TONE_GRADIENT.weapon;
 
-  // Решетката (инвентар/пазар/сетове) остава ИЗЦЯЛО на старата рисувана икона за всеки слот —
-  // смесване на рисуван стил с реалистичен 3D метал в една решетка изглежда разнородно (решение
-  // след преглед на contact sheet-овете, виж CLAUDE.md/handoff бележката). 3D-то живее само във
-  // въртящия се преглед (ItemViewer3DHost), който играчът отваря с клик — вижте buildItem.ts за
-  // кой слот реално получава 3D там (останалите показват голяма стара икона, честно).
+  // Иконата е изпечен фотореалистичен рендер на предмета (scripts/bake-items.mjs →
+  // public/assets/items), избран по slug; без slug — по псевдоним „категория-тир"; при липса —
+  // старата рисувана снимка. Кликът отваря живия 3D преглед (ItemViewer3DHost).
   const clickable = Boolean(raw?.slug && raw.category !== 'potion');
   const openViewer = () => {
     if (!raw) return;
@@ -139,7 +147,7 @@ export default function Sprite({
           `inset 0 0 0 1px rgba(0,0,0,.35), ` +
           `0 0 ${Math.max(6, size * 0.25)}px ${frame.glow}, ` +
           (e ? e.shadow : '0 2px 4px rgba(0,0,0,.45)'),
-        background: 'linear-gradient(180deg, rgba(20,12,4,.55), rgba(8,4,2,.85))',
+        background: useBaked || waiting ? 'linear-gradient(180deg, #101b27, #0a1119)' : 'linear-gradient(180deg, rgba(20,12,4,.55), rgba(8,4,2,.85))',
         cursor: clickable ? 'zoom-in' : undefined,
       }}
       title={title}
@@ -162,6 +170,18 @@ export default function Sprite({
       {/* HD photo of the actual item / class / monster. If the photo is
           not present we fall through to the SVG silhouette so the icon
           system degrades gracefully. */}
+      {useBaked ? (
+        <img
+          src={baked!}
+          alt=""
+          width={size}
+          height={size}
+          decoding="async"
+          loading="lazy"
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', zIndex: 1 }}
+          onError={(ev) => { (ev.currentTarget as HTMLImageElement).style.display = 'none'; }}
+        />
+      ) : waiting ? null : (
       <img
         src={`/assets/icons/${slug}.jpg`}
         alt=""
@@ -178,7 +198,11 @@ export default function Sprite({
           if (fb) fb.style.display = 'block';
         }}
         loading="lazy"
+        decoding="async"
+        width={size}
+        height={size}
       />
+      )}
       <span
         className="sprite-shape"
         style={{
@@ -199,8 +223,9 @@ export default function Sprite({
  *  is what unlocks the baked 3D icon + the click-to-open live 3D preview (see Sprite props). */
 export function spriteForItem(
   item: { slug?: string; name?: string; icon?: string; category?: string; sub_type?: string; tier?: number; rarity?: string }
-): { name?: string; category?: string; subType?: string; tier?: number; rarity?: Rarity; raw?: Sprite3DRaw } {
+): { name?: string; category?: string; subType?: string; tier?: number; rarity?: Rarity; raw?: Sprite3DRaw; itemSlug?: string } {
   return {
+    itemSlug: item.slug,
     name: item.icon && item.icon.startsWith('potion_') ? `potion-${item.icon.slice(7)}` : undefined,
     category: item.category,
     subType: item.sub_type,

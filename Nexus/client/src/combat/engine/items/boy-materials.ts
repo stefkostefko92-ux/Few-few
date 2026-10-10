@@ -14,6 +14,7 @@ import { capeTextureAzure, capeTextureCrimson, shieldTextures, bannerTexture } f
 import { tintedMaterials } from '../boy/src/loadout.js';
 import { noiseTexture } from '../boy/src/fields.js';
 import { setNoise } from '../boy/src/tsl.js';
+import { proceduralSets } from './photoreal/pbrSets';
 
 export type BoyMaterials = ReturnType<typeof createMaterials>;
 
@@ -42,7 +43,9 @@ async function build(): Promise<BoyMaterials> {
   // applyGrime() or rainOnSteel() samples a null texture and renders near-black. Icons never boot
   // world.js, so we call it ourselves — same texture, same call, just here instead.
   setNoise(noiseTexture());
-  const S = await loadBakedSets('tex/', TEX_SIZES, ANISO);
+  // Браузър: собствените процедурни PBR карти (ковна стомана, пори на кожа, влакна, тъкан,
+  // ризница) вместо плоските 1×1 резерви; без DOM (node --test) — плоският резерв на baked.js.
+  const S = typeof document !== 'undefined' ? proceduralSets() : await loadBakedSets('tex/', TEX_SIZES, ANISO);
   const T = heraldryTextures();
   return createMaterials(S, T);
 }

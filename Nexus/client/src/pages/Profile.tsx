@@ -174,7 +174,7 @@ export default function Profile(): React.ReactElement {
                 cursor: a.unlocked ? 'pointer' : 'default',
                 opacity: a.unlocked ? 1 : 0.45,
                 borderColor: profile.avatar === a.slug ? 'var(--gold-2)' : undefined,
-                boxShadow: profile.avatar === a.slug ? '0 0 22px rgba(214,161,61,.32)' : undefined,
+                boxShadow: profile.avatar === a.slug ? '0 0 22px rgba(103,230,239,.32)' : undefined,
               }}
               onClick={() => a.unlocked && setAvatar(a.slug)}
             >
@@ -205,7 +205,7 @@ export default function Profile(): React.ReactElement {
                 cursor: f.unlocked ? 'pointer' : 'default',
                 opacity: f.unlocked ? 1 : 0.45,
                 borderColor: profile.frame_slug === f.slug ? 'var(--gold-2)' : undefined,
-                boxShadow: profile.frame_slug === f.slug ? '0 0 22px rgba(214,161,61,.32)' : undefined,
+                boxShadow: profile.frame_slug === f.slug ? '0 0 22px rgba(103,230,239,.32)' : undefined,
               }}
               onClick={() => f.unlocked && setFrame(f.slug)}
             >

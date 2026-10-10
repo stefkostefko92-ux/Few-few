@@ -16,6 +16,24 @@ import { initReactI18next } from 'react-i18next';
 import en from './locales/en.json';
 import bg from './locales/bg.json';
 import it from './locales/it.json';
+// Текстовете на дизайн-системата „Dominion“ (нов лендинг/обвивка) живеят отделно, за да не
+// се сблъскват с паралелни правки по основните каталози; сливат се тук под ключа `nd`.
+import ndEn from './locales/dominion/en.json';
+import ndBg from './locales/dominion/bg.json';
+import ndIt from './locales/dominion/it.json';
+
+/** Дълбоко сливане (обектите се сливат, листата от `extra` печелят) — за да може
+ *  бъндълът `nd` да добавя ключове и под съществуващи клонове (напр. world.regions). */
+type Tree = { [k: string]: unknown };
+function deepMerge(base: Tree, extra: Tree): Tree {
+  const out: Tree = { ...base };
+  for (const [k, v] of Object.entries(extra)) {
+    const b = out[k];
+    out[k] = v && typeof v === 'object' && !Array.isArray(v) && b && typeof b === 'object' && !Array.isArray(b)
+      ? deepMerge(b as Tree, v as Tree) : v;
+  }
+  return out;
+}
 
 export const SUPPORTED = ['en', 'bg', 'it'] as const;
 export type Locale = (typeof SUPPORTED)[number];
@@ -25,9 +43,9 @@ i18n
   .use(initReactI18next)
   .init({
     resources: {
-      en: { translation: en },
-      bg: { translation: bg },
-      it: { translation: it },
+      en: { translation: deepMerge(en, ndEn) },
+      bg: { translation: deepMerge(bg, ndBg) },
+      it: { translation: deepMerge(it, ndIt) },
     },
     fallbackLng: 'en',
     supportedLngs: SUPPORTED as unknown as string[],

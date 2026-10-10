@@ -1,0 +1,203 @@
+{
+  "nd": {
+    "nav": {
+      "world": "Il mondo",
+      "classes": "Classi",
+      "systems": "Sistemi",
+      "sets": "Arsenale",
+      "regions": "Regioni",
+      "faq": "Domande",
+      "login": "Accedi",
+      "start": "Gioca ora",
+      "menuOpen": "Apri il menu",
+      "menuClose": "Chiudi il menu",
+      "home": "Nexus Dominion — inizio"
+    },
+    "hero": {
+      "eyebrowA": "MMORPG NEL BROWSER",
+      "eyebrowB": "NESSUNA INSTALLAZIONE",
+      "line1": "IL DOMINIO",
+      "line2": "SI RISVEGLIA",
+      "copy": "Costruisci la tua leggenda. Domina il campo di battaglia. Lascia il tuo nome in un mondo che non dimentica.",
+      "ctaEnter": "ENTRA NEL DOMINIO",
+      "ctaExplore": "SCOPRI IL MONDO",
+      "note": "LA TUA STORIA. LA TUA STRATEGIA. LA TUA LEGGENDA.",
+      "indexA": "ND / 001",
+      "indexB": "L'ERA HA INIZIO",
+      "bottomLabel": "IL REGNO TI ATTENDE",
+      "statClasses": "CLASSI GIOCABILI",
+      "statRegions": "REGIONI COSTRUITE A MANO",
+      "statLevels": "LIVELLI DI PROGRESSIONE",
+      "scroll": "SCORRI PER ESPLORARE",
+      "artAlt": "Un cavaliere ammantato guarda una fortezza gotica illuminata da magia ciano e dalla luna sopra una valle nebbiosa"
+    },
+    "ticker": [
+      "COMBATTIMENTI A TURNI",
+      "ASTA IN TEMPO REALE",
+      "ARENA ELO",
+      "GUERRE DI GILDA",
+      "BOSS DA INCURSIONE",
+      "58 SET",
+      "TORRE DELLE PROVE",
+      "DUNGEON MYTHIC+"
+    ],
+    "world": {
+      "kicker": "01 / IL MONDO",
+      "h2a": "UN SOLO MONDO.",
+      "h2b": "INFINITE STRADE.",
+      "lead": "Nexus Dominion unisce combattimenti tattici, progressione a lungo termine e competizione tra giocatori in un mondo persistente, giocabile direttamente dal browser.",
+      "report": "RAPPORTO DAL CAMPO / 001",
+      "status": "DATI DEL MONDO",
+      "h3a": "LA TUA STRADA",
+      "h3b": "INIZIA QUI.",
+      "body": "Ogni scelta plasma il tuo eroe. Raccogli equipaggiamento, affina le abilità e trova una nuova sfida a ogni passo.",
+      "f1t": "Progressione persistente",
+      "f1d": "Cinquecento livelli, dodici fasce di equipaggiamento.",
+      "f2t": "Un mondo vivo",
+      "f2d": "Ventuno regioni di mostri con un nome.",
+      "f3t": "Competizione e comunità",
+      "f3d": "Gilde, arena ELO e incursioni condivise.",
+      "link": "ESPLORA I SISTEMI",
+      "coord": "COORD. 43° / IL CONFINE DIMENTICATO"
+    },
+    "duel": {
+      "kicker": "02 / COMBATTIMENTO DAL VIVO"
+    },
+    "classes": {
+      "kicker": "03 / SCEGLI LA TUA VIA",
+      "h2a": "NON SEGUIRE LA LEGGENDA.",
+      "h2b": "FORGIALA.",
+      "lead": "Quattro classi giocabili. Strade diverse verso il potere. Trova il tuo stile e trasformalo in un vantaggio.",
+      "archetype": "ARCHETIPO / {{n}}",
+      "pick": "Scegli {{name}}",
+      "warriorMeta": "PRIMA LINEA",
+      "rangerMeta": "IL CACCIATORE",
+      "mageMeta": "L'ARCANO",
+      "rogueMeta": "L'OMBRA",
+      "warriorTags": [
+        "RESISTENZA",
+        "CONTROLLO"
+      ],
+      "rangerTags": [
+        "PRECISIONE",
+        "DISTANZA"
+      ],
+      "mageTags": [
+        "MAGIA",
+        "BURST"
+      ],
+      "rogueTags": [
+        "CRITICO",
+        "SCHIVATA"
+      ]
+    },
+    "systems": {
+      "kicker": "04 / SISTEMI DEL POTERE",
+      "h2a": "IL POTERE NON",
+      "h2b": "SI REGALA.",
+      "lead": "Costruisci il tuo eroe con decisioni, tattica e costanza. Ogni sistema è uno strumento in più per la prossima vittoria.",
+      "label": "SISTEMA / {{n}}",
+      "explore": "ESPLORA"
+    },
+    "sets": {
+      "kicker": "05 / L'ARSENALE"
+    },
+    "regions": {
+      "kicker": "06 / OLTRE I CANCELLI",
+      "h2a": "TERRE IGNOTE.",
+      "h2b": "NUOVE MINACCE.",
+      "lead": "La strada attraversa territori pericolosi, storie nascoste e nemici che chiedono più della forza bruta.",
+      "archive": "ARCHIVIO REGIONALE / {{n}}",
+      "dossier": "DOSSIER DELLA SPEDIZIONE",
+      "dangerLow": "ZONA INIZIALE",
+      "dangerMid": "PERICOLOSO",
+      "dangerHigh": "LETALE",
+      "dangerEnd": "OLTRE LA FINE",
+      "statLevels": "LIVELLI",
+      "statOrder": "REGIONE",
+      "statAccess": "ACCESSO",
+      "ofTotal": "DI {{total}}",
+      "browser": "BROWSER",
+      "browserSub": "NESSUNA INSTALLAZIONE",
+      "prepare": "PREPARATI ALLA SPEDIZIONE",
+      "pickRegion": "Scegli una regione",
+      "artAlt": "Paesaggio di {{name}}"
+    },
+    "enter": {
+      "kicker": "07 / LA TUA LEGGENDA INIZIA ORA",
+      "h2a": "IL MONDO NON",
+      "h2b": "SI CONQUISTA DA SOLO.",
+      "body": "Crea il tuo eroe. Trova i tuoi alleati. Inizia il tuo cammino in Nexus Dominion.",
+      "cta": "CREA UN EROE",
+      "faq": "HAI DOMANDE?",
+      "foot": "NESSUNA INSTALLAZIONE · DIRETTAMENTE NEL BROWSER · GRATIS"
+    },
+    "faq": {
+      "kicker": "08 / PRIMA DI ENTRARE",
+      "h2a": "PRIMA DI",
+      "h2b": "INIZIARE.",
+      "lead": "L'essenziale da sapere prima di entrare nel regno.",
+      "q1": "Nexus Dominion è gratuito?",
+      "a1": "Sì. L'intero gioco si gioca senza pagare nulla. Le gemme facoltative — guadagnate giocando e vendute anche nella Zecca Premium — servono per cavalcature, offerte all'asta, cambi di nome e per saltare i timer. Equipaggiamento, dungeon, gilde e classifiche si raggiungono giocando.",
+      "q2": "Devo scaricare qualcosa?",
+      "a2": "Nessuna installazione. L'intero client è una pagina web: funziona in Chrome, Firefox, Safari ed Edge su computer, e su iOS Safari e Android Chrome con un'interfaccia pensata per il tocco.",
+      "q3": "Quanto dura una sessione di gioco?",
+      "a3": "Da dieci a venti minuti per una sessione mirata: un'attività giornaliera, due o tre cacce, un piano di dungeon. Il combattimento è a turni e si risolve in meno di trenta secondi.",
+      "q4": "Chi decide l'esito di un combattimento?",
+      "a4": "Il server. Combattimento, bottino, economia e progressione sono calcolati e verificati sul server: il client mostra e invia solo le intenzioni.",
+      "q5": "È disponibile in italiano?",
+      "a5": "Sì. L'interfaccia è completamente in italiano, oltre che in inglese e bulgaro."
+    },
+    "footer": {
+      "legal": "UN MONDO FORGIATO DALLE SCELTE.",
+      "rights": "© {{year}} NEXUS DOMINION · CARBON STEALTH VCC"
+    },
+    "hub": {
+      "realm": "REGNO 01",
+      "welcome": "BENTORNATO,",
+      "sub": "Il regno attende la tua prossima mossa.",
+      "next": "LA TUA PROSSIMA SPEDIZIONE",
+      "hunt": "AI TERRENI DI CACCIA",
+      "map": "MAPPA DEL MONDO",
+      "expedition": "SPEDIZIONE / {{n}}",
+      "levels": "LIVELLI {{min}}–{{max}}",
+      "report": "RAPPORTO DAL CAMPO DEL DOMINIO",
+      "regions": "{{n}} — 21 REGIONI",
+      "level": "LIVELLO DELL'EROE",
+      "xp": "{{pct}}% AL LIVELLO {{next}}",
+      "arena": "PUNTEGGIO ARENA",
+      "record": "{{w}} VITTORIE · {{l}} SCONFITTE",
+      "gold": "ORO",
+      "slain": "{{n}} MOSTRI ABBATTUTI",
+      "energy": "ENERGIA",
+      "hero": "IL TUO EROE",
+      "chronicle": "ULTIMI EVENTI",
+      "dispatch": "POSTA REALE",
+      "artAlt": "Paesaggio di {{name}}"
+    }
+  },
+  "world": {
+    "regions": {
+      "ashen_veil": {
+        "name": "Il Velo di Cenere",
+        "lore": "Ciò che resta quando una fine finisce. Cenere, eco e i morti pazienti."
+      },
+      "starfall_abyss": {
+        "name": "L'Abisso delle Stelle Cadute",
+        "lore": "La tomba delle stelle cadute. La luce entra; ne esce qualcos'altro."
+      },
+      "forge_of_dawn": {
+        "name": "La Forgia dell'Alba",
+        "lore": "Dove si forgia il prossimo mondo. I fabbri non si fermano per i visitatori."
+      },
+      "crown_of_night": {
+        "name": "La Corona della Notte",
+        "lore": "La corte della Corona Spenta, dove l'oscurità custodisce il proprio trono."
+      },
+      "first_light": {
+        "name": "La Prima Luce",
+        "lore": "L'inizio prima di tutto. L'ultima strada finisce dove comincia la prima."
+      }
+    }
+  }
+}

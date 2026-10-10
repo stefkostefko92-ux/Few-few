@@ -1,0 +1,126 @@
+/* =====================================================================
+   ТАБЛОТО НА ИГРАЧА („player hub“ от шаблона „Dominion“): приветствие,
+   карта на следващата експедиция върху рендера на региона, четири
+   статистики с реални данни. Тънки 1px линии, циан акцент, Cinzel.
+   ===================================================================== */
+
+.hub-welcome { display: grid; gap: 10px; padding-top: 4px; }
+.hub-kicker,
+.hub-section-kicker,
+.hub-panel-kicker {
+  display: flex; align-items: center; gap: 12px;
+  font-family: var(--sans); font-size: 11px; font-weight: 700;
+  letter-spacing: .2em; text-transform: uppercase; color: #7f95a2;
+}
+.hub-kicker-line { width: 42px; height: 1px; background: rgba(103,230,239,.45); }
+.hub-welcome h1 {
+  margin: 0; font-family: var(--display); font-weight: 600;
+  font-size: clamp(28px, 3.4vw, 46px); line-height: 1.02; letter-spacing: .02em;
+  color: var(--text); text-transform: uppercase;
+}
+.hub-welcome h1 em { font-style: normal; color: var(--cyan); text-shadow: 0 0 34px rgba(103,230,239,.28); }
+.hub-welcome p { margin: 0; color: var(--muted); font-size: 15px; }
+
+/* ---------- следващата експедиция ---------- */
+.hub-hero {
+  position: relative; isolation: isolate; overflow: hidden;
+  min-height: clamp(300px, 34vw, 430px);
+  border: 1px solid rgba(156,190,213,.18);
+  background: #0a1119;
+  display: grid; align-items: end;
+}
+.hub-hero > img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; object-position: center 40%;
+  z-index: -2; transform: scale(1.02);
+  transition: transform 1.2s cubic-bezier(.2,.7,.2,1);
+}
+.hub-hero:hover > img { transform: scale(1.05); }
+.hub-hero-shade {
+  position: absolute; inset: 0; z-index: -1;
+  background:
+    linear-gradient(90deg, rgba(7,11,17,.94) 0%, rgba(7,11,17,.72) 38%, rgba(7,11,17,.12) 72%, rgba(7,11,17,.35) 100%),
+    linear-gradient(0deg, rgba(7,11,17,.9) 0%, transparent 46%);
+}
+.hub-hero-content { max-width: 560px; padding: 40px 40px 64px; display: grid; gap: 14px; }
+.hub-hero-kicker { display: inline-flex; align-items: center; gap: 10px; font-size: 11px; font-weight: 800; letter-spacing: .22em; color: var(--cyan); text-transform: uppercase; }
+.hub-hero-kicker i { width: 7px; height: 7px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 12px var(--cyan); }
+.hub-hero h2 {
+  margin: 0; font-family: var(--display); font-weight: 600; text-transform: uppercase;
+  font-size: clamp(30px, 3.6vw, 52px); line-height: .98; letter-spacing: .02em; color: var(--text);
+}
+.hub-hero p { margin: 0; color: #b3c3cd; font-size: 15px; line-height: 1.6; max-width: 46ch; }
+.hub-hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+
+.nd-app-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 46px; padding: 0 20px;
+  border: 1px solid rgba(156,190,213,.3); border-radius: 2px;
+  background: rgba(7,11,17,.45); color: var(--text);
+  font-family: var(--sans); font-size: 12px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase;
+  text-decoration: none; transition: border-color .2s, background .2s, transform .2s;
+}
+.nd-app-btn:hover { border-color: var(--cyan); background: rgba(103,230,239,.08); color: var(--text); }
+.nd-app-btn-primary { background: var(--cyan); border-color: var(--cyan); color: #041015; box-shadow: 0 10px 30px rgba(103,230,239,.18); }
+.nd-app-btn-primary:hover { background: var(--cyan-soft); color: #041015; transform: translateY(-1px); }
+.nd-app-btn:focus-visible { outline: 2px solid var(--cyan-soft); outline-offset: 3px; }
+
+.hub-hero-side {
+  position: absolute; top: 34px; right: 34px;
+  display: grid; justify-items: end; gap: 6px; text-align: right;
+}
+.hub-hero-side span { font-size: 10px; letter-spacing: .24em; color: #8ea3b0; }
+.hub-hero-side strong { font-family: var(--display); font-size: 15px; letter-spacing: .1em; color: var(--text); }
+.hub-hero-side i { width: 54px; height: 1px; background: var(--cyan); }
+.hub-hero-bottom {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  display: flex; justify-content: space-between; gap: 12px;
+  padding: 12px 40px; border-top: 1px solid rgba(156,190,213,.14);
+  background: rgba(7,11,17,.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  font-size: 10px; font-weight: 700; letter-spacing: .22em; color: #7f95a2; text-transform: uppercase;
+}
+
+/* ---------- статистики ---------- */
+.hub-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.hub-stat {
+  position: relative; display: grid; gap: 8px; padding: 20px 20px 18px;
+  border: 1px solid rgba(156,190,213,.14);
+  background: linear-gradient(180deg, rgba(16,27,39,.92), rgba(12,20,30,.92));
+}
+.hub-stat::before { content: ''; position: absolute; left: 0; top: 0; width: 34px; height: 1px; background: var(--cyan); }
+.hub-stat-gold::before { background: var(--gold); }
+.hub-stat-top { display: flex; justify-content: space-between; align-items: center; font-size: 10px; font-weight: 800; letter-spacing: .2em; color: #7f95a2; text-transform: uppercase; }
+.hub-stat-glyph { color: var(--cyan); font-size: 15px; letter-spacing: 0; }
+.hub-stat-gold .hub-stat-glyph { color: var(--gold); }
+.hub-stat-value { font-family: var(--display); font-weight: 600; font-size: clamp(26px, 2.4vw, 36px); line-height: 1; color: var(--text); font-variant-numeric: tabular-nums; }
+.hub-stat-gold .hub-stat-value { color: #e3cba4; }
+.hub-stat-note { font-size: 11px; letter-spacing: .1em; color: #8c9eac; text-transform: uppercase; }
+.hub-stat-bar { height: 3px; background: rgba(156,190,213,.12); overflow: hidden; }
+.hub-stat-bar i { display: block; height: 100%; background: linear-gradient(90deg, #2f8f99, var(--cyan)); box-shadow: 0 0 10px rgba(103,230,239,.5); }
+
+.hub-section-kicker { margin-bottom: -10px; }
+.hub-panel-kicker { font-size: 10px; margin-bottom: 4px; color: var(--cyan); }
+
+/* ---------- картата на героя под таблото ---------- */
+.character-card { border-radius: 0; border: 1px solid rgba(156,190,213,.14); background: linear-gradient(180deg, rgba(16,27,39,.9), rgba(12,20,30,.9)); box-shadow: none; }
+.character-card h1 { font-family: var(--display); letter-spacing: .04em; color: var(--text) !important; }
+.character-card .portrait { border-radius: 0; border-color: rgba(103,230,239,.25); }
+.stat-cell { border-radius: 0; border-color: rgba(156,190,213,.14); background: rgba(7,11,17,.45); }
+.stat-cell .value { font-family: var(--display); color: var(--cyan); }
+
+@media (max-width: 1180px) {
+  .hub-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .hub-hero-content { padding: 26px 20px 62px; }
+  .hub-hero-side { display: none; }
+  .hub-hero-bottom { padding: 10px 20px; font-size: 9px; }
+  .hub-hero-shade { background: linear-gradient(0deg, rgba(7,11,17,.96) 0%, rgba(7,11,17,.7) 55%, rgba(7,11,17,.3) 100%); }
+  .hub-stats { gap: 10px; }
+  .hub-stat { padding: 16px 14px 14px; }
+  .nd-app-btn { flex: 1 1 auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hub-hero > img, .nd-app-btn { transition: none; }
+  .hub-hero:hover > img { transform: scale(1.02); }
+}

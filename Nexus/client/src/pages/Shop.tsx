@@ -64,7 +64,7 @@ export default function Shop(): React.ReactElement {
           <div className="tag gold" style={{ fontSize: 14 }}>{t('shop.goldAmount', { n: char?.gold.toLocaleString() || 0 })}</div>
         </div>
         {dealItems.length > 0 && (
-          <div className="card" style={{ marginBottom: 18, borderColor: 'var(--gold-3)', background: 'rgba(214,161,61,.06)' }}>
+          <div className="card" style={{ marginBottom: 18, borderColor: 'var(--gold-3)', background: 'rgba(103,230,239,.06)' }}>
             <div className="flex between" style={{ marginBottom: 10 }}>
               <strong style={{ color: 'var(--gold-1)' }}>⚡ {t('shop.dailyDeals', { defaultValue: 'Daily deals — 30% off' })}</strong>
               <span className="muted text-sm">{t('shop.dealsExpire', { hours: hoursLeft, defaultValue: 'Rotates in {{hours}}h' })}</span>

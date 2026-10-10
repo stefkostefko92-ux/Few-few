@@ -228,7 +228,7 @@ function navStyle(active: boolean): React.CSSProperties {
   return {
     display: 'flex', alignItems: 'center', width: '100%', textAlign: 'left',
     padding: '7px 8px', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13,
-    background: active ? 'rgba(214,161,61,.12)' : 'transparent',
+    background: active ? 'rgba(103,230,239,.12)' : 'transparent',
     color: active ? 'var(--gold-1,#d6a13d)' : 'var(--text-2,#b8bcc8)',
   };
 }

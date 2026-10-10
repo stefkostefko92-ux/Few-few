@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import Logo from '../components/Logo';
 import { useStore } from '../lib/store';
 
 export default function Login(): React.ReactElement {
@@ -30,7 +31,7 @@ export default function Login(): React.ReactElement {
       <div className="auth-card">
         <div className="auth-brand">
           <div className="auth-brand-mark">
-            <svg viewBox="0 0 32 32"><path d="M16 4 L20 12 L28 13 L22 19 L24 28 L16 23 L8 28 L10 19 L4 13 L12 12 Z" fill="#d6a13d" stroke="#3a2812" strokeWidth=".5"/></svg>
+            <Logo size={46} />
           </div>
           <div>
             <h1>Nexus Dominion</h1>

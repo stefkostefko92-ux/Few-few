@@ -4,9 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { useStore } from '../lib/store';
 import { spriteFor } from '../combat/sprites';
 import { api } from '../lib/api';
+import { KEY_ART, REGIONS, regionArt, regionForLevel } from '../lib/regions';
+import '../styles/hub.css';
 
 export default function Dashboard(): React.ReactElement {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const char = useStore((s) => s.character);
   const derived = useStore((s) => s.derived);
   const [questLog, setQuestLog] = useState<any[]>([]);
@@ -33,8 +35,56 @@ export default function Dashboard(): React.ReactElement {
   const xpIntoLevel = Math.max(0, char.xp - xpCurrent);
   const xpSpan = Math.max(1, xpForNext - xpCurrent);
 
+  const region = regionForLevel(char.level);
+  const regionNo = REGIONS.indexOf(region) + 1;
+  const regionName = t(`world.regions.${region.slug}.name`, { defaultValue: region.name });
+  const regionLore = t(`world.regions.${region.slug}.lore`, { defaultValue: region.lore });
+  const today = new Intl.DateTimeFormat(i18n.language, { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
+  const pad = (n: number) => String(n).padStart(2, '0');
+
   return (
     <div className="col" style={{ gap: 24 }}>
+      <header className="hub-welcome">
+        <div className="hub-kicker">{today}<span aria-hidden className="hub-kicker-line" />{t('nd.hub.realm')}</div>
+        <h1>{t('nd.hub.welcome')} <em>{char.name}</em></h1>
+        <p>{t('nd.hub.sub')}</p>
+      </header>
+
+      <section className="hub-hero" aria-label={t('nd.hub.next')}>
+        <img
+          src={regionArt(region.slug)}
+          alt={t('nd.hub.artAlt', { name: regionName })}
+          onError={(e) => { const img = e.currentTarget; if (!img.src.endsWith(KEY_ART)) img.src = KEY_ART; }}
+        />
+        <div className="hub-hero-shade" aria-hidden />
+        <div className="hub-hero-content">
+          <span className="hub-hero-kicker"><i aria-hidden />{t('nd.hub.next')}</span>
+          <h2>{regionName}</h2>
+          <p>{regionLore}</p>
+          <div className="hub-hero-actions">
+            <Link to="/app/hunting" className="nd-app-btn nd-app-btn-primary">{t('nd.hub.hunt')} <span aria-hidden>↗</span></Link>
+            <Link to="/app/world" className="nd-app-btn">{t('nd.hub.map')}</Link>
+          </div>
+        </div>
+        <div className="hub-hero-side" aria-hidden>
+          <span>{t('nd.hub.expedition', { n: pad(regionNo) })}</span>
+          <strong>{t('nd.hub.levels', { min: region.minLevel, max: region.maxLevel })}</strong>
+          <i />
+        </div>
+        <div className="hub-hero-bottom" aria-hidden>
+          <span>{t('nd.hub.report')}</span>
+          <span>{t('nd.hub.regions', { n: pad(regionNo) })}</span>
+        </div>
+      </section>
+
+      <section className="hub-stats" aria-label={t('nd.hub.hero')}>
+        <HubStat label={t('nd.hub.level')} glyph="♙" value={String(char.level)} note={t('nd.hub.xp', { pct: Math.floor(pct), next: char.level + 1 })} bar={pct} />
+        <HubStat label={t('nd.hub.arena')} glyph="✧" value={char.arena_rating.toLocaleString(i18n.language)} note={t('nd.hub.record', { w: char.wins, l: char.losses })} />
+        <HubStat label={t('nd.hub.gold')} glyph="◈" value={char.gold.toLocaleString(i18n.language)} note={t('nd.hub.slain', { n: (char.monsters_slain ?? 0).toLocaleString(i18n.language) })} tone="gold" />
+        <HubStat label={t('nd.hub.energy')} glyph="⌁" value={`${char.energy}`} note={`${char.energy} / ${char.energy_max}`} bar={(char.energy / Math.max(1, char.energy_max)) * 100} />
+      </section>
+
+      <div className="hub-section-kicker">{t('nd.hub.hero')}</div>
       <div className="character-card">
         <div className="portrait portrait-photo">
           {/* HD class portrait — public-domain painting matched to the
@@ -67,7 +117,7 @@ export default function Dashboard(): React.ReactElement {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 8 }}>
             <div className="tag" style={{ background: 'rgba(232,90,79,.12)', color: 'var(--crimson-1)', textAlign: 'center' }} title={t('dashboard.physDmgTip')}>{t('dashboard.pDmg')} +{derived.phys_dmg || 0}</div>
-            <div className="tag" style={{ background: 'rgba(214,161,61,.12)', color: 'var(--gold-1)', textAlign: 'center' }} title={t('dashboard.physDefTip')}>{t('dashboard.pDef')} +{derived.phys_def || 0}</div>
+            <div className="tag" style={{ background: 'rgba(103,230,239,.12)', color: 'var(--gold-1)', textAlign: 'center' }} title={t('dashboard.physDefTip')}>{t('dashboard.pDef')} +{derived.phys_def || 0}</div>
             <div className="tag" style={{ background: 'rgba(194,148,255,.12)', color: '#c294ff', textAlign: 'center' }} title={t('dashboard.magDmgTip')}>{t('dashboard.mDmg')} +{derived.mag_dmg || 0}</div>
             <div className="tag" style={{ background: 'rgba(106,167,255,.12)', color: 'var(--azure-1)', textAlign: 'center' }} title={t('dashboard.magDefTip')}>{t('dashboard.mDef')} +{derived.mag_def || 0}</div>
           </div>
@@ -93,7 +143,10 @@ export default function Dashboard(): React.ReactElement {
       <div className="dashboard-grid">
         <div className="panel">
           <div className="panel-header">
-            <h2 className="panel-title">{t('dashboard.recentAdventures')}</h2>
+            <div>
+              <span className="hub-panel-kicker">{t('nd.hub.chronicle')}</span>
+              <h2 className="panel-title">{t('dashboard.recentAdventures')}</h2>
+            </div>
             <Link to="/app/quests" className="btn btn-sm">{t('dashboard.findQuests')}</Link>
           </div>
           {questLog.length === 0 ? (
@@ -117,7 +170,10 @@ export default function Dashboard(): React.ReactElement {
 
         <div className="panel">
           <div className="panel-header">
-            <h2 className="panel-title">{t('dashboard.royalDispatches')}</h2>
+            <div>
+              <span className="hub-panel-kicker">{t('nd.hub.dispatch')}</span>
+              <h2 className="panel-title">{t('dashboard.royalDispatches')}</h2>
+            </div>
             <Link to="/app/mail" className="btn btn-sm">{t('dashboard.allMail')}</Link>
           </div>
           {mail.length === 0 ? (
@@ -143,6 +199,17 @@ export default function Dashboard(): React.ReactElement {
         </div>
       </div>
     </div>
+  );
+}
+
+function HubStat({ label, glyph, value, note, bar, tone }: { label: string; glyph: string; value: string; note: string; bar?: number; tone?: 'gold' }) {
+  return (
+    <article className={`hub-stat${tone ? ` hub-stat-${tone}` : ''}`}>
+      <div className="hub-stat-top"><span>{label}</span><span className="hub-stat-glyph" aria-hidden>{glyph}</span></div>
+      <strong className="hub-stat-value">{value}</strong>
+      <small className="hub-stat-note">{note}</small>
+      {bar !== undefined && <div className="hub-stat-bar" aria-hidden><i style={{ width: `${Math.max(0, Math.min(100, bar))}%` }} /></div>}
+    </article>
   );
 }
 

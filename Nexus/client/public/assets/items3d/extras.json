@@ -1,0 +1,311 @@
+[
+ {
+  "slug": "potion-red",
+  "name": "Potion Red",
+  "category": "potion",
+  "sub_type": "",
+  "tier": 1,
+  "rarity": "uncommon",
+  "set_slug": null,
+  "icon": "potion",
+  "shape": 0,
+  "theme": {
+   "family": "arcane",
+   "primary": "#d7263d",
+   "secondary": "#d7263d",
+   "trim": "#c7a77b",
+   "emissive": "#d7263d",
+   "motif": "plain",
+   "finish": "polished"
+  }
+ },
+ {
+  "slug": "potion-blue",
+  "name": "Potion Blue",
+  "category": "potion",
+  "sub_type": "",
+  "tier": 1,
+  "rarity": "uncommon",
+  "set_slug": null,
+  "icon": "potion",
+  "shape": 1,
+  "theme": {
+   "family": "arcane",
+   "primary": "#2f6bff",
+   "secondary": "#2f6bff",
+   "trim": "#c7a77b",
+   "emissive": "#2f6bff",
+   "motif": "plain",
+   "finish": "polished"
+  }
+ },
+ {
+  "slug": "potion-green",
+  "name": "Potion Green",
+  "category": "potion",
+  "sub_type": "",
+  "tier": 1,
+  "rarity": "uncommon",
+  "set_slug": null,
+  "icon": "potion",
+  "shape": 0,
+  "theme": {
+   "family": "arcane",
+   "primary": "#33d17a",
+   "secondary": "#33d17a",
+   "trim": "#c7a77b",
+   "emissive": "#33d17a",
+   "motif": "plain",
+   "finish": "polished"
+  }
+ },
+ {
+  "slug": "potion-purple",
+  "name": "Potion Purple",
+  "category": "potion",
+  "sub_type": "",
+  "tier": 1,
+  "rarity": "uncommon",
+  "set_slug": null,
+  "icon": "potion",
+  "shape": 1,
+  "theme": {
+   "family": "arcane",
+   "primary": "#9b4dff",
+   "secondary": "#9b4dff",
+   "trim": "#c7a77b",
+   "emissive": "#9b4dff",
+   "motif": "plain",
+   "finish": "polished"
+  }
+ },
+ {
+  "slug": "potion",
+  "name": "Potion",
+  "category": "potion",
+  "sub_type": "",
+  "tier": 1,
+  "rarity": "uncommon",
+  "set_slug": null,
+  "icon": "potion",
+  "shape": 0,
+  "theme": {
+   "family": "arcane",
+   "primary": "#e8a33d",
+   "secondary": "#e8a33d",
+   "trim": "#c7a77b",
+   "emissive": "#e8a33d",
+   "motif": "plain",
+   "finish": "polished"
+  }
+ },
+ {
+  "slug": "gem-t1",
+  "name": "Gem T1",
+  "category": "gem",
+  "sub_type": "",
+  "tier": 1,
+  "rarity": "common",
+  "set_slug": null,
+  "icon": "gem",
+  "theme": {
+   "family": "crystal",
+   "primary": "#e8eef2",
+   "secondary": "#e8eef2",
+   "trim": "#e8eef2",
+   "emissive": "#e8eef2",
+   "motif": "plain",
+   "finish": "polished"
+  }
+ },
+ {
+  "slug": "gem-t2",
+  "name": "Gem T2",
+  "category": "gem",
+  "sub_type": "",
+  "tier": 2,
+  "rarity": "common",
+  "set_slug": null,
+  "icon": "gem",
+  "theme": {
+   "family": "crystal",
+   "primary": "#f0b429",
+   "secondary": "#f0b429",
+   "trim": "#f0b429",
+   "emissive": "#f0b429",
+   "motif": "plain",
+   "finish": "polished"
+  }
+ },
+ {
+  "slug": "gem-t3",
+  "name": "Gem T3",
+  "category": "gem",
+  "sub_type": "",
+  "tier": 3,
+  "rarity": "uncommon",
+  "set_slug": null,
+  "icon": "gem",
+  "theme": {
+   "family": "crystal",
+   "primary": "#2ecc71",
+   "secondary": "#2ecc71",
+   "trim": "#2ecc71",
+   "emissive": "#2ecc71",
+   "motif": "plain",
+   "finish": "polished"
+  }
+ },
+ {
+  "slug": "gem-t4",
+  "name": "Gem T4",
+  "category": "gem",
+  "sub_type": "",
+  "tier": 4,
+  "rarity": "uncommon",
+  "set_slug": null,
+  "icon": "gem",
+  "theme": {
+   "family": "crystal",
+   "primary": "#3b82f6",
+   "secondary": "#3b82f6",
+   "trim": "#3b82f6",
+   "emissive": "#3b82f6",
+   "motif": "plain",
+   "finish": "polished"
+  }
+ },
+ {
+  "slug": "gem-t5",
+  "name": "Gem T5",
+  "category": "gem",
+  "sub_type": "",
+  "tier": 5,
+  "rarity": "rare",
+  "set_slug": null,
+  "icon": "gem",
+  "theme": {
+   "family": "crystal",
+   "primary": "#9b59b6",
+   "secondary": "#9b59b6",
+   "trim": "#9b59b6",
+   "emissive": "#9b59b6",
+   "motif": "plain",
+   "finish": "polished"
+  }
+ },
+ {
+  "slug": "gem-t6",
+  "name": "Gem T6",
+  "category": "gem",
+  "sub_type": "",
+  "tier": 6,
+  "rarity": "rare",
+  "set_slug": null,
+  "icon": "gem",
+  "theme": {
+   "family": "crystal",
+   "primary": "#e11d48",
+   "secondary": "#e11d48",
+   "trim": "#e11d48",
+   "emissive": "#e11d48",
+   "motif": "plain",
+   "finish": "polished"
+  }
+ },
+ {
+  "slug": "gem-t7",
+  "name": "Gem T7",
+  "category": "gem",
+  "sub_type": "",
+  "tier": 7,
+  "rarity": "epic",
+  "set_slug": null,
+  "icon": "gem",
+  "theme": {
+   "family": "crystal",
+   "primary": "#22d3ee",
+   "secondary": "#22d3ee",
+   "trim": "#22d3ee",
+   "emissive": "#22d3ee",
+   "motif": "plain",
+   "finish": "polished"
+  }
+ },
+ {
+  "slug": "gem-t8",
+  "name": "Gem T8",
+  "category": "gem",
+  "sub_type": "",
+  "tier": 8,
+  "rarity": "epic",
+  "set_slug": null,
+  "icon": "gem",
+  "theme": {
+   "family": "crystal",
+   "primary": "#f472b6",
+   "secondary": "#f472b6",
+   "trim": "#f472b6",
+   "emissive": "#f472b6",
+   "motif": "plain",
+   "finish": "polished"
+  }
+ },
+ {
+  "slug": "gem-t9",
+  "name": "Gem T9",
+  "category": "gem",
+  "sub_type": "",
+  "tier": 9,
+  "rarity": "legendary",
+  "set_slug": null,
+  "icon": "gem",
+  "theme": {
+   "family": "crystal",
+   "primary": "#6d28d9",
+   "secondary": "#6d28d9",
+   "trim": "#6d28d9",
+   "emissive": "#6d28d9",
+   "motif": "plain",
+   "finish": "polished"
+  }
+ },
+ {
+  "slug": "gem-t10",
+  "name": "Gem T10",
+  "category": "gem",
+  "sub_type": "",
+  "tier": 10,
+  "rarity": "legendary",
+  "set_slug": null,
+  "icon": "gem",
+  "theme": {
+   "family": "crystal",
+   "primary": "#fff3c0",
+   "secondary": "#fff3c0",
+   "trim": "#fff3c0",
+   "emissive": "#fff3c0",
+   "motif": "plain",
+   "finish": "polished"
+  }
+ },
+ {
+  "slug": "gem",
+  "name": "Gem",
+  "category": "gem",
+  "sub_type": "",
+  "tier": 5,
+  "rarity": "rare",
+  "set_slug": null,
+  "icon": "gem",
+  "theme": {
+   "family": "crystal",
+   "primary": "#e11d48",
+   "secondary": "#e11d48",
+   "trim": "#e11d48",
+   "emissive": "#e11d48",
+   "motif": "plain",
+   "finish": "polished"
+  }
+ }
+]

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 
 interface Props {
   size?: number;
@@ -7,112 +7,41 @@ interface Props {
 }
 
 /**
- * Nexus Dominion brand mark — an original heraldic hex-seal with a
- * stylised N glyph and crown-notch above. Pure SVG, no external assets.
+ * Знакът на Nexus Dominion по дизайн-системата „Dominion“ (шаблонът на собственика):
+ * шестоъгълен печат със студен циан кант и две наклонени ленти, които четат „N“.
+ * Чист SVG (без растер, остър на всеки DPR). id-тата на градиентите са уникални
+ * за инстанцията (useId) — няколко лога на една страница не си крадат дефинициите.
  */
 export default function Logo({ size = 64, withWordmark = false, className }: Props): React.ReactElement {
+  const uid = useId().replace(/:/g, '');
+  const rim = `nd-rim-${uid}`;
+  const glow = `nd-glow-${uid}`;
   return (
-    <div className={`nd-logo ${className || ''}`} style={{ display: 'inline-flex', alignItems: 'center', gap: withWordmark ? 14 : 0 }}>
-      <svg
-        width={size}
-        height={size}
-        viewBox="0 0 64 64"
-        xmlns="http://www.w3.org/2000/svg"
-        aria-label="Nexus Dominion"
-      >
+    <div className={`nd-logo ${className || ''}`} style={{ display: 'inline-flex', alignItems: 'center', gap: withWordmark ? Math.max(9, size * 0.3) : 0 }}>
+      <svg width={size * 0.92} height={size} viewBox="0 0 58 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Nexus Dominion">
         <defs>
-          <linearGradient id="nd-gold" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="#fff1c2" />
-            <stop offset="35%" stopColor="#f7d77e" />
-            <stop offset="65%" stopColor="#d6a13d" />
-            <stop offset="100%" stopColor="#7a4f12" />
+          <linearGradient id={rim} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#d6fdff" />
+            <stop offset="45%" stopColor="#7fe9f1" />
+            <stop offset="100%" stopColor="#2f8f99" />
           </linearGradient>
-          <linearGradient id="nd-shade" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="#1d141d" />
-            <stop offset="100%" stopColor="#0a0610" />
-          </linearGradient>
-          <radialGradient id="nd-glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#f7d77e" stopOpacity="0.45" />
-            <stop offset="100%" stopColor="#f7d77e" stopOpacity="0" />
+          <radialGradient id={glow} cx="50%" cy="45%" r="60%">
+            <stop offset="0%" stopColor="#67e6ef" stopOpacity="0.28" />
+            <stop offset="100%" stopColor="#67e6ef" stopOpacity="0" />
           </radialGradient>
-          <filter id="nd-emboss">
-            <feGaussianBlur stdDeviation="0.4" />
-          </filter>
         </defs>
-
-        {/* Glow halo */}
-        <circle cx="32" cy="32" r="28" fill="url(#nd-glow)" />
-
-        {/* Shaded backplate */}
-        <path d="M32 6 L54 18 L54 46 L32 58 L10 46 L10 18 Z" fill="url(#nd-shade)" />
-
-        {/* Hex outline */}
-        <path
-          d="M32 6 L54 18 L54 46 L32 58 L10 46 L10 18 Z"
-          fill="none"
-          stroke="url(#nd-gold)"
-          strokeWidth="2.2"
-          strokeLinejoin="round"
-        />
-
-        {/* Inner ring */}
-        <path
-          d="M32 11 L50 21 L50 43 L32 53 L14 43 L14 21 Z"
-          fill="none"
-          stroke="url(#nd-gold)"
-          strokeOpacity="0.45"
-          strokeWidth="0.8"
-        />
-
-        {/* Stylised N sigil */}
-        <path
-          d="M21 19 L21 45 L25.5 45 L25.5 28 L38.5 45 L43 45 L43 19 L38.5 19 L38.5 36 L25.5 19 Z"
-          fill="url(#nd-gold)"
-          filter="url(#nd-emboss)"
-        />
-
-        {/* Central diamond accent */}
-        <path d="M32 30.5 L36 32 L32 33.5 L28 32 Z" fill="#0a0610" />
-
-        {/* Crown notch */}
-        <path d="M27 6 L29 3 L32 6 L35 3 L37 6" fill="none" stroke="url(#nd-gold)" strokeWidth="1.6" strokeLinejoin="round" />
-        <circle cx="32" cy="2.5" r="1.2" fill="url(#nd-gold)" />
-
-        {/* Side flourishes */}
-        <path d="M10 32 L14 32 M50 32 L54 32" stroke="url(#nd-gold)" strokeWidth="1.4" />
+        <path d="M29 1 L55 14 L55 46 L29 63 L3 46 L3 14 Z" fill={`url(#${glow})`} />
+        <path d="M29 3 L53 15 L53 45 L29 61 L5 45 L5 15 Z" fill="#0b151f" stroke={`url(#${rim})`} strokeWidth="2.4" strokeLinejoin="miter" />
+        <path d="M29 9 L48 18.5 L48 42 L29 54.5 L10 42 L10 18.5 Z" fill="none" stroke="#67e6ef" strokeOpacity="0.16" strokeWidth="1" />
+        {/* Двете ленти на „N“ — лявата плътна циан, дясната светла; наклонът е от шаблона. */}
+        <path d="M18 22 L24.5 19 L24.5 44 L18 47 Z" fill="#67e6ef" />
+        <path d="M33.5 17 L40 20 L40 33 L33.5 30 Z" fill="#e4fcff" />
+        <path d="M24.5 19 L40 33 L40 37 L24.5 24 Z" fill="#67e6ef" fillOpacity="0.55" />
       </svg>
-
       {withWordmark && (
-        <div className="nd-logo-wordmark" style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.05 }}>
-          <span
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontWeight: 700,
-              fontSize: size * 0.34,
-              letterSpacing: '.14em',
-              textTransform: 'uppercase',
-              background: 'linear-gradient(180deg, #fff5d6 0%, #f5d28a 40%, #b07d22 100%)',
-              WebkitBackgroundClip: 'text',
-              backgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              color: '#d6a13d',
-            }}
-          >
-            Nexus
-          </span>
-          <span
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontWeight: 600,
-              fontSize: size * 0.22,
-              letterSpacing: '.32em',
-              textTransform: 'uppercase',
-              color: 'var(--text-3)',
-              marginTop: 2,
-            }}
-          >
-            Dominion
-          </span>
+        <div className="nd-logo-wordmark">
+          <strong style={{ fontSize: Math.max(13, size * 0.48) }}>NEXUS</strong>
+          <small style={{ fontSize: Math.max(8, size * 0.21) }}>DOMINION</small>
         </div>
       )}
     </div>

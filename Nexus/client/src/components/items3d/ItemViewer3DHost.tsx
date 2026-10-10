@@ -19,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 import * as THREE from 'three/webgpu';
 import { closeItemViewer3D, useItemViewer3DTarget } from './viewerStore';
 import { resolveIconSlug } from './iconSlug';
+import { bakedSrc, loadBakedManifest } from './bakedIcons';
 import { previewMode, DIAGONAL_WEAPON_ICONS } from '../../combat/engine/items/support';
 import { rngFor } from '../../combat/engine/items/rng';
 import type { ViewerHandle, RendererHandle, StudioScene } from '../../combat/engine/items/renderScene';
@@ -81,7 +82,9 @@ export default function ItemViewer3DHost(): React.ReactElement {
           handleRef.current?.dispose({ keepRenderer: true });
           handleRef.current = null;
           if (canvasRef.current) canvasRef.current.style.display = 'none';
-          setIconSrc(`/assets/icons/${resolveIconSlug(undefined, entry.category, entry.sub_type, entry.tier)}.jpg`);
+          const iconSlug = resolveIconSlug(undefined, entry.category, entry.sub_type, entry.tier);
+          const baked = bakedSrc(await loadBakedManifest(), entry.slug, iconSlug);
+          setIconSrc(baked ?? `/assets/icons/${iconSlug}.jpg`);
           setStatus('ready');
           return;
         }

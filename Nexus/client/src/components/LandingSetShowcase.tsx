@@ -48,9 +48,9 @@ export default function LandingSetShowcase(): React.ReactElement {
   const current = sets && sets.length ? sets[active % sets.length] : null;
 
   return (
-    <div className="sets-showcase" ref={rootRef} data-reveal>
+    <div className="sets-showcase reveal" ref={rootRef}>
       <div className="sets-showcase-head">
-        <h3 className="sets-showcase-title">{t('landing.setsShowcaseTitle')}</h3>
+        <h2 className="sets-showcase-title">{t('landing.setsShowcaseTitle')}</h2>
         <p className="sets-showcase-lead">{t('landing.setsShowcaseLead')}</p>
       </div>
       {!sets && <div className="sets-showcase-loading">{t('landing.setsShowcaseLoading')}</div>}
@@ -76,7 +76,7 @@ export default function LandingSetShowcase(): React.ReactElement {
               <div className="sets-showcase-panel-tier">{t('items3d.tier', { tier: current.tier })}</div>
               <button
                 type="button"
-                className="btn btn-primary sets-showcase-cta"
+                className="nd-btn nd-btn-primary sets-showcase-cta"
                 onClick={() => openSetViewer3D({ kind: 'set', slug: current.slug, name: current.name, tier: current.tier, pieces: current.pieces })}
               >
                 {t('landing.setsShowcaseCta')}

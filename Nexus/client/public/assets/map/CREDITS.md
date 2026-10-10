@@ -1,25 +1,11 @@
-# Realm Map — Sources & Attribution
+# Карта на света — произход
 
-All images in this folder are works in the public domain (pre-1928
-originals; no copyright in EU/US/BG/IT).
+`world.webp` (3840×2160), `world-1920.webp`, `world-960.webp` са **собствено генерирано
+съдържание**: офлайн рендер на процедурен 3D свят (three.js / WebGL2, raymarch на
+терен, SDF структури, постобработка) от `client/scripts/bake-map` — `npm run bake:map`.
+Фиксиран seed (`world.js`), без външни снимки, текстури или модели; няма лицензни
+ограничения от трети страни.
 
-| File              | Used as                            | Source artwork                                       | Author                     | Year   | Hosting institution                      |
-|-------------------|------------------------------------|------------------------------------------------------|----------------------------|--------|------------------------------------------|
-| `parchment.jpg`   | World-map background               | Carta Marina (Sea Map of the Northern Regions)       | Olaus Magnus               | 1539   | Originally Venice; many institutional copies |
-| `compass.jpg`     | Embedded compass rose              | Cantino windrose (detail of the Cantino planisphere) | Unknown Portuguese cartographer | 1502 | Biblioteca Estense, Modena               |
-| `mappa-mundi.jpg` | Quest icon / world tab background  | Hereford Mappa Mundi                                 | Richard of Haldingham      | c.1300 | Hereford Cathedral                       |
-
-## Why these images
-
-- **Carta Marina** has dragons, sea serpents, sailing ships and continent
-  silhouettes already painted into the artwork — it reads as a fantasy
-  map at first glance, which is exactly the in-fiction tone we want for
-  the Realm of Nexus.
-- **Cantino windrose** is the canonical decorative compass of the era,
-  with eight cardinal arms and a fleur-de-lis north — perfect as the
-  ornamental compass-corner.
-
-## Licence
-
-Public domain — no attribution legally required. Listed above for
-courtesy and verifiability of provenance.
+Старите публично-достояние активи (Carta Marina, Cantino windrose, Mappa Mundi,
+картини по региони) са **премахнати** — вече не се ползват.
+`../../src/data/worldPins.ts` се генерира от същия рендер (проекция на камерата).
