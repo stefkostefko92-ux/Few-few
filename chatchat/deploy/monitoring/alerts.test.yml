@@ -24,6 +24,7 @@ tests:
           - exp_labels:
               severity: page
               slo: nfr-01-availability
+              component: availability
             exp_annotations:
               summary: 'ChatChat: 5xx изгарят бюджета на наличността 14.4× (2 % от месечния за 1 ч)'
               description: 'Дял на 5xx за 1 ч: 20% (праг 7.2 %). Техниците виждат грешки.'
@@ -34,6 +35,7 @@ tests:
           - exp_labels:
               severity: ticket
               slo: nfr-01-availability
+              component: availability
             exp_annotations:
               summary: 'ChatChat: бюджетът на наличността (99.5 %) изтича с темп ≥ 1× за 3 дни'
               description: 'Дял на 5xx за 3 дни: 20% (праг 0.5 %).'
@@ -72,6 +74,7 @@ tests:
           - exp_labels:
               severity: page
               slo: nfr-02-ai-latency
+              component: ai-latency
             exp_annotations:
               summary: 'ChatChat: AI отговорите са над 8 s — бюджетът на латентността гори 14.4×'
               description: 'Дял над 8 s (или таймаут) за 1 ч: 80% (праг 72 %).'
@@ -80,7 +83,7 @@ tests:
   # Процесът спира на 6-ата минута → страница след 3 мин.
   - interval: 1m
     input_series:
-      - series: 'up{job="chatchat",instance="127.0.0.1:9464"}'
+      - series: 'up{job="chatchat",instance="app:9464"}'
         values: '1x5 0x10'
     alert_rule_test:
       - eval_time: 5m
@@ -92,16 +95,17 @@ tests:
           - exp_labels:
               severity: page
               job: chatchat
-              instance: '127.0.0.1:9464'
+              component: app
+              instance: 'app:9464'
             exp_annotations:
               summary: 'ChatChat не отговаря на /metrics от 3 мин — вероятно процесът е спрял'
-              description: 'Prometheus не може да прочете 127.0.0.1:METRICS_PORT/metrics.'
+              description: 'Prometheus не може да прочете /metrics на приложението (app:9464).'
               runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatdown'
 
   # Здрава система: 0.1 % 5xx, бързи отговори, затворен breaker — тишина.
   - interval: 1m
     input_series:
-      - series: 'up{job="chatchat",instance="127.0.0.1:9464"}'
+      - series: 'up{job="chatchat",instance="app:9464"}'
         values: '1x120'
       - series: 'chatchat_http_requests_total{route="/api/v1/cases/:id",method="GET",status="200"}'
         values: '0+999x120'

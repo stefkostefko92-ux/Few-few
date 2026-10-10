@@ -146,7 +146,8 @@ check_pgdata() {
   fi
   { mountpoint -q "$PGDATA_MOUNT" && [ -d "$PGDATA_MOUNT/data" ]; } ||
     fail 1 "шифрованият том на базата не е отключен/монтиран — sudo chatchat-pgdata open (DEPLOY.md, т. 12)."
-  grep -qxF "$COMPOSE_PGDATA" "$APP_DIR/.env" ||
+  # COMPOSE_FILE е списък (и мониторингът, deploy/monitoring.sh) — важно е томът да е в него.
+  grep -qE '^COMPOSE_FILE=(.*:)?docker-compose\.pgdata\.yml(:.*)?$' "$APP_DIR/.env" ||
     fail 1 "базата е в шифрования том, а в $SHARED/.env няма $COMPOSE_PGDATA — не я вдигам върху стария том."
 }
 
@@ -379,6 +380,19 @@ hints() {
   if [ "$STAGING" != 1 ] && ! pgdata_encrypted; then
     warn "данните на базата не са в шифрован том — веднъж: sudo bash $APP_DIR/deploy/pgdata-encrypt.sh enable (DEPLOY.md, т. 12)"
   fi
+  monitoring_hint
+}
+
+# Мониторингът е по избор (deploy/monitoring.sh): изключен → само напомняне; включен → стекът вече е
+# вдигнат от `up` (COMPOSE_FILE), тук се подравняват скриптът и таймерът за одитната верига от release-а.
+monitoring_hint() {
+  if ! grep -qE '^COMPOSE_FILE=(.*:)?docker-compose\.monitoring\.yml(:.*)?$' "$APP_DIR/.env"; then
+    warn "мониторингът (аларми по имейл) не е включен — веднъж: sudo bash $APP_DIR/deploy/monitoring.sh (docs/runbook.md, „Включване“)"
+    return 0
+  fi
+  [ -f "$APP_DIR/deploy/monitoring.sh" ] || return 0
+  (source "$APP_DIR/deploy/monitoring.sh" && install_audit_timer >/dev/null) ||
+    warn "таймерът за одитната верига не е обновен — sudo bash $APP_DIR/deploy/monitoring.sh"
 }
 
 main() {

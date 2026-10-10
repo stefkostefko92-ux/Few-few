@@ -71,7 +71,7 @@ systemctl() { echo "systemctl $*" >> "$LOG"; }
 docker() {
   echo "docker $*" >> "$LOG"
   local db="$ST/db-old"
-  if grep -qxF '${LINE}' "$APP/.env" 2>/dev/null; then db="$ST/db-new"; fi
+  if grep -qE '^COMPOSE_FILE=(.*:)?docker-compose[.]pgdata[.]yml(:.*)?$' "$APP/.env" 2>/dev/null; then db="$ST/db-new"; fi
   case "$*" in
     "compose version"|info) return 0 ;;
     "volume inspect chatchat_db-data") return "\${VOLUME_RC:-1}" ;;
@@ -155,6 +155,30 @@ test("повторно пускане: идемпотентно — без но�
   assert.match(again.log, /cryptsetup open --type luks2 --key-file/);
   assert.match(again.out, /вече са в шифрования том/);
   assert.equal(lines(join(L.shared, ".env")), 1);
+}));
+
+test("COMPOSE_FILE е списък: включеният мониторинг остава при enable и при връщане назад", () => withLayout((L) => {
+  const MON = "COMPOSE_FILE=docker-compose.yml:docker-compose.monitoring.yml";
+  for (const f of [join(L.shared, ".env"), join(L.app, ".env")]) writeFileSync(f, `POSTGRES_PASSWORD=abc\n${MON}\n`, { mode: 0o600 });
+  const r = pg(L, "enable");
+  assert.equal(r.status, 0, r.out);
+  for (const f of [join(L.shared, ".env"), join(L.app, ".env")]) {
+    const lines = readFileSync(f, "utf8").split("\n").filter((l) => l.startsWith("COMPOSE_FILE="));
+    assert.deepEqual(lines, ["COMPOSE_FILE=docker-compose.yml:docker-compose.monitoring.yml:docker-compose.pgdata.yml"], f);
+  }
+  // Връщане назад (миграцията пада) маха само тома — мониторингът остава.
+  const L2 = layout();
+  try {
+    for (const f of [join(L2.shared, ".env"), join(L2.app, ".env")]) writeFileSync(f, `POSTGRES_PASSWORD=abc\n${MON}\n`, { mode: 0o600 });
+    writeFileSync(join(L2.st, "db-old"), "Tenant=2\naudit=12:abc\n");
+    const bad = pg(L2, "enable", { VOLUME_RC: "0", RESTORE_BAD: "1" });
+    assert.notEqual(bad.status, 0);
+    for (const f of [join(L2.shared, ".env"), join(L2.app, ".env")]) {
+      assert.match(readFileSync(f, "utf8"), new RegExp(`^${MON}$`, "m"), f);
+    }
+  } finally {
+    rmSync(L2.base, { recursive: true, force: true });
+  }
 }));
 
 test("миграция от db-data: app спира → броеве → дъмп в тома → проверка → нов клъстер → restore → същите броеве → app", () => withLayout((L) => {

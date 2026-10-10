@@ -1,0 +1,337 @@
+# Unit тестове на infra-alerts.yml: promtool test rules infra-alerts.test.yml (от тази папка).
+# Сценарии: публичната проба пада; сертификат < 14 и < 3 дни; /readyz пада; дискът ще се напълни;
+# одитната верига е счупена / непроверена; експортер не се чете; здрава система — тишина.
+rule_files:
+  - infra-alerts.yml
+
+evaluation_interval: 1m
+
+tests:
+  # Публичната проба пада от 2-рата минута → страница след 3 мин.
+  - interval: 1m
+    input_series:
+      - series: 'probe_success{job="blackbox-https",instance="https://chatchat.example/healthz"}'
+        values: '1 1 0x10'
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: ChatchatPublicProbeFailed
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: ChatchatPublicProbeFailed
+        exp_alerts:
+          - exp_labels:
+              severity: page
+              component: public-endpoint
+              job: blackbox-https
+              instance: 'https://chatchat.example/healthz'
+            exp_annotations:
+              summary: 'ChatChat: публичният адрес не отговаря от 3 мин (https …/healthz)'
+              description: 'Пробата https://chatchat.example/healthz пада — техниците не отварят сайта (nginx, TLS, DNS или приложението).'
+              runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatpublicprobefailed'
+
+  # Сертификатът изтича на 10-ия ден (time() в теста започва от 0) → тикет, без страница.
+  - interval: 1m
+    input_series:
+      - series: 'probe_ssl_earliest_cert_expiry{job="blackbox-https",instance="https://chatchat.example/healthz"}'
+        values: '864000x200'
+    alert_rule_test:
+      - eval_time: 2h
+        alertname: ChatchatTlsCertExpiringSoon
+        exp_alerts:
+          - exp_labels:
+              severity: ticket
+              component: tls
+              job: blackbox-https
+              instance: 'https://chatchat.example/healthz'
+            exp_annotations:
+              summary: 'ChatChat: TLS сертификатът изтича до 14 дни (подновяването на 30 дни не е минало)'
+              description: 'Остават 9d 22h 0m 0s.'
+              runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchattlscertexpiringsoon'
+      - eval_time: 2h
+        alertname: ChatchatTlsCertExpiryCritical
+        exp_alerts: []
+
+  # Остават 2 дни → страница (и тикетът — Alertmanager го потиска по `component`).
+  - interval: 1m
+    input_series:
+      - series: 'probe_ssl_earliest_cert_expiry{job="blackbox-https",instance="https://chatchat.example/healthz"}'
+        values: '172800x60'
+    alert_rule_test:
+      - eval_time: 30m
+        alertname: ChatchatTlsCertExpiryCritical
+        exp_alerts:
+          - exp_labels:
+              severity: page
+              component: tls
+              job: blackbox-https
+              instance: 'https://chatchat.example/healthz'
+            exp_annotations:
+              summary: 'ChatChat: TLS сертификатът изтича до 3 дни'
+              description: 'Остават 1d 23h 30m 0s — подновяването не е минало.'
+              runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchattlscertexpirycritical'
+
+  # /readyz пада отвътре → страница след 5 мин.
+  - interval: 1m
+    input_series:
+      - series: 'probe_success{job="blackbox-ready",instance="http://app:4330/readyz"}'
+        values: '0x10'
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: ChatchatNotReady
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: ChatchatNotReady
+        exp_alerts:
+          - exp_labels:
+              severity: page
+              component: readiness
+              job: blackbox-ready
+              instance: 'http://app:4330/readyz'
+            exp_annotations:
+              summary: 'ChatChat не е готов от 5 мин (/readyz) — базата не отговаря'
+              description: 'Процесът е жив, но не стига до PostgreSQL; случаите и чатът не работят.'
+              runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatnotready'
+
+  # Дискът: 14 % свободно и пада с 0.1 GB/мин → страница (ще се напълни до 4 ч); под 10 % — и тикет.
+  - interval: 1m
+    input_series:
+      - series: 'node_filesystem_avail_bytes{job="node",instance="node-exporter:9100",device="/dev/sda1",fstype="ext4",mountpoint="/"}'
+        values: '14000000000-100000000x90'
+      - series: 'node_filesystem_size_bytes{job="node",instance="node-exporter:9100",device="/dev/sda1",fstype="ext4",mountpoint="/"}'
+        values: '100000000000x90'
+      - series: 'node_filesystem_readonly{job="node",instance="node-exporter:9100",device="/dev/sda1",fstype="ext4",mountpoint="/"}'
+        values: '0x90'
+      # tmpfs не се гледа, колкото и да е пълен.
+      - series: 'node_filesystem_avail_bytes{job="node",instance="node-exporter:9100",device="tmpfs",fstype="tmpfs",mountpoint="/run"}'
+        values: '0x90'
+      - series: 'node_filesystem_size_bytes{job="node",instance="node-exporter:9100",device="tmpfs",fstype="tmpfs",mountpoint="/run"}'
+        values: '1000000x90'
+      - series: 'node_filesystem_readonly{job="node",instance="node-exporter:9100",device="tmpfs",fstype="tmpfs",mountpoint="/run"}'
+        values: '0x90'
+    alert_rule_test:
+      - eval_time: 60m
+        alertname: ChatchatHostDiskWillFill
+        exp_alerts:
+          - exp_labels:
+              severity: page
+              component: disk
+              job: node
+              instance: 'node-exporter:9100'
+              device: /dev/sda1
+              fstype: ext4
+              mountpoint: /
+            exp_annotations:
+              summary: 'Сървърът на ChatChat: дискът / ще се напълни до 4 ч'
+              description: 'Свободни: 8%. Пълен диск = базата и бекъпите спират.'
+              runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchathostdiskwillfill'
+      - eval_time: 60m
+        alertname: ChatchatHostDiskSpaceLow
+        exp_alerts:
+          - exp_labels:
+              severity: ticket
+              component: disk
+              job: node
+              instance: 'node-exporter:9100'
+              device: /dev/sda1
+              fstype: ext4
+              mountpoint: /
+            exp_annotations:
+              summary: 'Сървърът на ChatChat: под 10 % свободно на /'
+              description: 'Свободни: 8%.'
+              runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchathostdiskspacelow'
+
+  # Одитната верига: счупена → страница веднага.
+  - interval: 1m
+    input_series:
+      - series: 'chatchat_audit_chain_intact{job="node",instance="node-exporter:9100"}'
+        values: '1 1 0x5'
+    alert_rule_test:
+      - eval_time: 1m
+        alertname: ChatchatAuditChainBroken
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: ChatchatAuditChainBroken
+        exp_alerts:
+          - exp_labels:
+              severity: page
+              component: audit
+              job: node
+              instance: 'node-exporter:9100'
+            exp_annotations:
+              summary: 'ChatChat: одитната верига е СЧУПЕНА — възможна подправка на одита'
+              description: 'Последната проверка намери звено, чийто хеш не съвпада. Запази доказателствата преди всичко друго.'
+              runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatauditchainbroken'
+
+  # Проверена в момент 0 и после нищо 52 ч → тикет; резултат изобщо няма → също тикет.
+  - interval: 1m
+    input_series:
+      - series: 'chatchat_audit_chain_verified_timestamp_seconds{job="node",instance="node-exporter:9100"}'
+        values: '0x3200'
+      - series: 'up{job="node",instance="node-exporter:9100"}'
+        values: '1x3200'
+    alert_rule_test:
+      - eval_time: 24h
+        alertname: ChatchatAuditVerifyStale
+        exp_alerts: []
+      - eval_time: 52h
+        alertname: ChatchatAuditVerifyStale
+        exp_alerts:
+          - exp_labels:
+              severity: ticket
+              component: audit
+            exp_annotations:
+              summary: 'ChatChat: одитната верига не е проверена над 50 ч'
+              description: 'chatchat-audit-verify.timer не минава (или node-exporter не вижда резултата му).'
+              runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatauditverifystale'
+  - interval: 1m
+    input_series:
+      - series: 'up{job="node",instance="node-exporter:9100"}'
+        values: '1x120'
+    alert_rule_test:
+      - eval_time: 90m
+        alertname: ChatchatAuditVerifyStale
+        exp_alerts:
+          - exp_labels:
+              severity: ticket
+              component: audit
+            exp_annotations:
+              summary: 'ChatChat: одитната верига не е проверена над 50 ч'
+              description: 'chatchat-audit-verify.timer не минава (или node-exporter не вижда резултата му).'
+              runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatauditverifystale'
+
+  # postgres-exporter не се чете 10 мин → тикет; приложението (job chatchat) не е тук.
+  - interval: 1m
+    input_series:
+      - series: 'up{job="postgres",instance="postgres-exporter:9187"}'
+        values: '0x20'
+      - series: 'up{job="chatchat",instance="app:9464"}'
+        values: '0x20'
+    alert_rule_test:
+      - eval_time: 15m
+        alertname: ChatchatMonitoringTargetDown
+        exp_alerts:
+          - exp_labels:
+              severity: ticket
+              component: monitoring
+              job: postgres
+              instance: 'postgres-exporter:9187'
+            exp_annotations:
+              summary: 'Мониторингът на ChatChat: postgres не се чете от 10 мин'
+              description: 'Алармите, които зависят от postgres (postgres-exporter:9187), са слепи.'
+              runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatmonitoringtargetdown'
+
+  # SMTP опит към Brevo пада → тикет (и докато в последния час има провал).
+  - interval: 1m
+    input_series:
+      - series: 'alertmanager_notification_requests_failed_total{job="alertmanager",instance="alertmanager:9093",integration="email"}'
+        values: '0x10 1x20'
+    alert_rule_test:
+      - eval_time: 9m
+        alertname: ChatchatAlertDeliveryFailing
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: ChatchatAlertDeliveryFailing
+        exp_alerts:
+          - exp_labels:
+              severity: ticket
+              component: alert-delivery
+              job: alertmanager
+              instance: 'alertmanager:9093'
+              integration: email
+            exp_annotations:
+              summary: 'Мониторингът на ChatChat: имейлите за алармите не тръгват (SMTP към Brevo отказва)'
+              description: 'Неуспешни опити за 1 ч: 1. Страниците може да не стигат до човек.'
+              runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatalertdeliveryfailing'
+
+  # Връзките към базата: 85 от 100 за 20 мин → тикет.
+  - interval: 1m
+    input_series:
+      - series: 'pg_stat_activity_count{job="postgres",datname="chatchat",state="active"}'
+        values: '85x30'
+      - series: 'pg_settings_max_connections{job="postgres",server="db:5432"}'
+        values: '100x30'
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: ChatchatPostgresConnectionsSaturated
+        exp_alerts:
+          - exp_labels:
+              severity: ticket
+              component: database
+            exp_annotations:
+              summary: 'ChatChat: връзките към PostgreSQL са над 80 % от max_connections'
+              description: 'Заети: 85%.'
+              runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatpostgresconnectionssaturated'
+
+  # Здрава система: пробите минават, сертификат за 60 дни, диск 50 %, памет 50 %, процесор 20 %,
+  # веригата е цяла и проверена преди 1 ч, всички цели се четат — тишина.
+  - interval: 1m
+    input_series:
+      - series: 'probe_success{job="blackbox-https",instance="https://chatchat.example/healthz"}'
+        values: '1x120'
+      - series: 'probe_success{job="blackbox-ready",instance="http://app:4330/readyz"}'
+        values: '1x120'
+      - series: 'probe_ssl_earliest_cert_expiry{job="blackbox-https",instance="https://chatchat.example/healthz"}'
+        values: '5184000x120'
+      - series: 'node_filesystem_avail_bytes{job="node",instance="node-exporter:9100",device="/dev/sda1",fstype="ext4",mountpoint="/"}'
+        values: '50000000000x120'
+      - series: 'node_filesystem_size_bytes{job="node",instance="node-exporter:9100",device="/dev/sda1",fstype="ext4",mountpoint="/"}'
+        values: '100000000000x120'
+      - series: 'node_filesystem_readonly{job="node",instance="node-exporter:9100",device="/dev/sda1",fstype="ext4",mountpoint="/"}'
+        values: '0x120'
+      - series: 'node_memory_MemAvailable_bytes{job="node",instance="node-exporter:9100"}'
+        values: '2000000000x120'
+      - series: 'node_memory_MemTotal_bytes{job="node",instance="node-exporter:9100"}'
+        values: '4000000000x120'
+      - series: 'node_vmstat_oom_kill{job="node",instance="node-exporter:9100"}'
+        values: '3x120'
+      - series: 'node_cpu_seconds_total{job="node",instance="node-exporter:9100",cpu="0",mode="idle"}'
+        values: '0+48x120'
+      - series: 'chatchat_audit_chain_intact{job="node",instance="node-exporter:9100"}'
+        values: '1x120'
+      - series: 'chatchat_audit_chain_verified_timestamp_seconds{job="node",instance="node-exporter:9100"}'
+        values: '3600x120'
+      - series: 'up{job="node",instance="node-exporter:9100"}'
+        values: '1x120'
+      - series: 'up{job="postgres",instance="postgres-exporter:9187"}'
+        values: '1x120'
+      - series: 'pg_stat_activity_count{job="postgres",datname="chatchat",state="active"}'
+        values: '5x120'
+      - series: 'pg_settings_max_connections{job="postgres",server="db:5432"}'
+        values: '100x120'
+    alert_rule_test:
+      - eval_time: 100m
+        alertname: ChatchatPublicProbeFailed
+        exp_alerts: []
+      - eval_time: 100m
+        alertname: ChatchatNotReady
+        exp_alerts: []
+      - eval_time: 100m
+        alertname: ChatchatTlsCertExpiringSoon
+        exp_alerts: []
+      - eval_time: 100m
+        alertname: ChatchatHostDiskWillFill
+        exp_alerts: []
+      - eval_time: 100m
+        alertname: ChatchatHostDiskSpaceLow
+        exp_alerts: []
+      - eval_time: 100m
+        alertname: ChatchatHostMemoryLow
+        exp_alerts: []
+      - eval_time: 100m
+        alertname: ChatchatHostOomKills
+        exp_alerts: []
+      - eval_time: 100m
+        alertname: ChatchatHostCpuSaturated
+        exp_alerts: []
+      - eval_time: 100m
+        alertname: ChatchatAuditChainBroken
+        exp_alerts: []
+      - eval_time: 100m
+        alertname: ChatchatAuditVerifyStale
+        exp_alerts: []
+      - eval_time: 100m
+        alertname: ChatchatMonitoringTargetDown
+        exp_alerts: []
+      - eval_time: 100m
+        alertname: ChatchatPostgresConnectionsSaturated
+        exp_alerts: []

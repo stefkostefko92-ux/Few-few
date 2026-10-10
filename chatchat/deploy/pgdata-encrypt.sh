@@ -225,22 +225,45 @@ install_unit() {
 # ── compose: редът COMPOSE_FILE в .env (стабилният и този на release-а) ───────────────────────────
 env_files() { printf '%s\n' "$SHARED/.env" "$APP_DIR/.env"; }
 
+# COMPOSE_FILE е СПИСЪК (и мониторингът го ползва — deploy/monitoring.sh): добавя/маха само
+# docker-compose.pgdata.yml и пази другите файлове. Само docker-compose.yml → редът изчезва.
+compose_file_edit() {
+  local f="$1" op="$2" item="${COMPOSE_LINE##*:}" cur x has=0
+  local -a list out=()
+  cur="$(sed -n 's/^COMPOSE_FILE=//p' "$f" | tail -n 1 | tr -d '\r')"
+  IFS=: read -r -a list <<<"${cur:-docker-compose.yml}"
+  for x in "${list[@]}"; do
+    [ -n "$x" ] || continue
+    if [ "$x" = "$item" ]; then has=1; else out+=("$x"); fi
+  done
+  if [ "$op" = add ]; then
+    [ "$has" = 0 ] || return 0
+    out+=("$item")
+  else
+    [ "$has" = 1 ] || return 0
+  fi
+  {
+    grep -v '^COMPOSE_FILE=' "$f" || true
+    if [ "${#out[@]}" -gt 1 ] || [ "${out[0]:-docker-compose.yml}" != docker-compose.yml ]; then
+      (IFS=: && printf 'COMPOSE_FILE=%s\n' "${out[*]}")
+    fi
+  } >"$f.tmp"
+  chmod 600 "$f.tmp" && mv -f "$f.tmp" "$f"
+}
+
 set_compose_line() {
   local f
   while IFS= read -r f; do
     [ -f "$f" ] || continue
-    grep -qxF "$COMPOSE_LINE" "$f" && continue
-    { grep -v '^COMPOSE_FILE=' "$f" || true; printf '%s\n' "$COMPOSE_LINE"; } >"$f.tmp"
-    chmod 600 "$f.tmp" && mv -f "$f.tmp" "$f"
+    compose_file_edit "$f" add
   done < <(env_files)
 }
 
 unset_compose_line() {
   local f
   while IFS= read -r f; do
-    if [ ! -f "$f" ] || ! grep -q '^COMPOSE_FILE=' "$f"; then continue; fi
-    { grep -v '^COMPOSE_FILE=' "$f" || true; } >"$f.tmp"
-    chmod 600 "$f.tmp" && mv -f "$f.tmp" "$f"
+    [ -f "$f" ] || continue
+    compose_file_edit "$f" remove
   done < <(env_files)
 }
 

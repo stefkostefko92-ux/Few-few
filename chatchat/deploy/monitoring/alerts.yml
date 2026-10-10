@@ -17,8 +17,10 @@
 # една грешна заявка от две би будила човек. Праговете на обема са в коментарите до всяка аларма.
 #
 # Проверка: promtool check rules alerts.yml && promtool test rules alerts.test.yml
-# Инсталирането на Prometheus/Alertmanager е решение на собственика (docs/runbook.md, „Включване“).
-# Всяка аларма сочи своя раздел в runbook-а (annotations.runbook_url).
+# Стекът (Prometheus + Alertmanager) — docker-compose.monitoring.yml, включва се с deploy/monitoring.sh
+# (docs/runbook.md, „Включване“); машината, базата, пробите и одитът — infra-alerts.yml.
+# Всяка аларма сочи своя раздел в runbook-а (annotations.runbook_url) и носи `component` — по него
+# Alertmanager потиска тикета, щом за същото гори страница (alertmanager.yml, inhibit_rules).
 
 groups:
   - name: chatchat-sli
@@ -97,6 +99,7 @@ groups:
           and chatchat:http_requests:increase1h >= 20
         labels:
           severity: page
+          component: availability
           slo: nfr-01-availability
         annotations:
           summary: 'ChatChat: 5xx изгарят бюджета на наличността 14.4× (2 % от месечния за 1 ч)'
@@ -110,6 +113,7 @@ groups:
           and chatchat:http_requests:increase6h >= 50
         labels:
           severity: page
+          component: availability
           slo: nfr-01-availability
         annotations:
           summary: 'ChatChat: 5xx изгарят бюджета на наличността 6× (5 % от месечния за 6 ч)'
@@ -122,6 +126,7 @@ groups:
           and chatchat:availability_errors:ratio_rate6h > 0.005
         labels:
           severity: ticket
+          component: availability
           slo: nfr-01-availability
         annotations:
           summary: 'ChatChat: бюджетът на наличността (99.5 %) изтича с темп ≥ 1× за 3 дни'
@@ -137,6 +142,7 @@ groups:
           and chatchat:ai_text_answers:increase1h >= 5
         labels:
           severity: page
+          component: ai-latency
           slo: nfr-02-ai-latency
         annotations:
           summary: 'ChatChat: AI отговорите са над 8 s — бюджетът на латентността гори 14.4×'
@@ -150,6 +156,7 @@ groups:
           and chatchat:ai_text_answers:increase6h >= 10
         labels:
           severity: page
+          component: ai-latency
           slo: nfr-02-ai-latency
         annotations:
           summary: 'ChatChat: AI отговорите са над 8 s — бюджетът на латентността гори 6×'
@@ -161,6 +168,7 @@ groups:
           and chatchat:ai_text_slow:ratio_rate6h > 0.05
         labels:
           severity: ticket
+          component: ai-latency
           slo: nfr-02-ai-latency
         annotations:
           summary: 'ChatChat: P95 на текстовия AI отговор е над 8 s за последните 3 дни'
@@ -171,14 +179,15 @@ groups:
     rules:
       - alert: ChatchatDown
         # Процесът не отговаря на скрейпа: 5xx по-горе не се виждат, защото метриките са в него.
-        # Външната истина (https://…/healthz отвън) е синтетичната проба на монитора — runbook.
+        # Външната истина (https://…/healthz) е синтетичната проба — ChatchatPublicProbeFailed.
         expr: up{job="chatchat"} == 0 or absent(up{job="chatchat"})
         for: 3m
         labels:
           severity: page
+          component: app
         annotations:
           summary: 'ChatChat не отговаря на /metrics от 3 мин — вероятно процесът е спрял'
-          description: 'Prometheus не може да прочете 127.0.0.1:METRICS_PORT/metrics.'
+          description: 'Prometheus не може да прочете /metrics на приложението ({{ $labels.instance }}).'
           runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatdown'
       - alert: ChatchatAiProviderUnavailable
         # Отворен breaker = AI отговорите са бърз 503 (страницата идва от SLO-1, ако има трафик).
@@ -186,6 +195,7 @@ groups:
         for: 15m
         labels:
           severity: ticket
+          component: ai-provider
         annotations:
           summary: 'ChatChat: circuit breaker-ът към Vertex е отворен над 15 мин — AI отговори няма'
           description: 'Техниците получават ai_unavailable; случаите и разговорите работят.'
@@ -195,6 +205,7 @@ groups:
         for: 30m
         labels:
           severity: ticket
+          component: semantic-search
         annotations:
           summary: 'ChatChat: семантичното търсене е изключено от breaker-а над 30 мин (само лексикално)'
           description: 'Отговорите работят, но без семантично подкрепени източници.'
@@ -207,6 +218,7 @@ groups:
             / sum(increase(chatchat_attachment_uploads_total{result!="rejected"}[30m])) > 0.5
         labels:
           severity: ticket
+          component: antivirus
         annotations:
           summary: 'ChatChat: качванията падат на антивируса (av_scan_failed) — над 50 % за 30 мин'
           description: 'Файловете не се приемат (fail-closed). Чатът работи без прикачени файлове.'
@@ -225,6 +237,7 @@ groups:
           and sum(increase(chatchat_realtime_delivery_seconds_count[1h])) >= 20
         labels:
           severity: ticket
+          component: realtime
           slo: nfr-11-realtime
         annotations:
           summary: 'ChatChat: събитията в реално време закъсняват над 2 s (P95, NFR-11)'
@@ -235,6 +248,7 @@ groups:
         expr: sum(increase(chatchat_metrics_series_dropped_total[1h])) > 0
         labels:
           severity: ticket
+          component: metrics
         annotations:
           summary: 'ChatChat: метрика удари тавана на сериите — проверка за висока кардиналност'
           description: 'Метрика: виж chatchat_metrics_series_dropped_total по етикета metric.'

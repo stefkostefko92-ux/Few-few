@@ -120,7 +120,8 @@ sudo bash /opt/few-few/releases/<час>/<корен>/chatchat/deploy/deploy.sh
 6. Чака `http://127.0.0.1:4330/readyz` да върне `{"ok":true,"ai":…}` (до `CHATCHAT_HEALTH_WAIT`, 120 s).
    Не → изход 4 и autodeploy вдига предишния release.
 7. Записва `shared/chatchat/last-good`; шифрова старите нешифровани прикачени файлове
-   (`files.js encrypt`, идемпотентно, т. 12); слага таймерите за бекъпа и ретенцията (т. 9); vhost-а (т. 2).
+   (`files.js encrypt`, идемпотентно, т. 12); слага таймерите за бекъпа и ретенцията (т. 9); vhost-а (т. 2);
+   мониторингът (т. 16) — ако не е включен, само напомня; ако е — подравнява таймера за одитната верига.
 
 Миграциите са само адитивни; триене на колони/таблици — в отделен, по-късен release. Така старият код
 работи и с новата схема и връщането назад е само на кода.
@@ -562,3 +563,34 @@ cd "$(head -n 1 /opt/few-few/shared/chatchat-staging/last-good)" && sudo docker 
 поне **8 GB RAM**. Когато не се ползва: `sudo docker compose stop` от папката по-горе (данните остават;
 следващият деплой го вдига). Пълно изтриване (РАЗРУШИТЕЛНО, само staging, след потвърждение):
 `sudo docker compose -p chatchat-staging down -v`.
+
+## 16. Мониторинг и аларми по имейл (по избор, веднъж)
+
+Стекът е `docker-compose.monitoring.yml` — Prometheus, Alertmanager (имейл през Brevo SMTP relay на
+порт 2525 — Hetzner блокира 25/465/587), node-exporter, blackbox-exporter (синтетична проба на
+`https://<PUBLIC_BASE_URL>/healthz` + `/readyz` отвътре) и postgres-exporter; плюс дневната проверка на
+одитната верига (`chatchat-audit-verify.timer`, 04:07 UTC → `node dist/cli/audit-verify.js` → метрика).
+Всичко публикувано е само на `127.0.0.1` (Prometheus `:4390`, Alertmanager `:4393`); графиките — през
+SSH тунел. Включване, Brevo, тайни, маршрути и всяка аларма — `docs/runbook.md`, „Включване“.
+
+```bash
+R="$(cat /opt/few-few/shared/chatchat/last-good)"
+sudo bash "$R/deploy/monitoring.sh"              # изход 3 → попълни .env (ALERT_EMAIL_TO) и тайните, пак
+sudo bash "$R/deploy/monitoring.sh" test-email   # пробно писмо край до край
+sudo bash "$R/deploy/monitoring.sh" status       # /-/ready, целите, правилата
+```
+
+- `monitoring.sh` дописва `docker-compose.monitoring.yml` в реда `COMPOSE_FILE` на `.env` — **списък**,
+  заедно с `docker-compose.pgdata.yml`, ако томът е шифрован (т. 12); и двата скрипта пипат само своя
+  елемент. Не редактирай реда на ръка.
+- Тайните — `/opt/few-few/shared/chatchat/monitoring/secrets/` (700; файловете 400, собственик 65534):
+  `smtp-user` (SMTP login), `smtp-password` (SMTP ключ — не API ключът), `pg-monitor-password`
+  (ражда се сам; ролята `chatchat_monitor` е само с `pg_monitor`). `smtp-*` се пазят и в password
+  manager-а; паролата на ролята се ражда наново, ако я няма.
+- След възстановяване на базата (т. 10) или миграция към шифрования том ролята я няма → `monitoring.sh`
+  отново (идемпотентен).
+- node-exporter чете файловата система на хоста (`/:/host:ro,rslave`, `pid: host`) — `rslave` иска `/`
+  да е shared mount (подразбирането при systemd).
+- Памет: +~1.2 GB таван (Prometheus 768 MB, останалите ≤ 128 MB); диск: до `PROMETHEUS_RETENTION_SIZE`
+  (4 GB) за 45 дни.
+- Истината отвън (смърт на целия сървър) остава външният монитор на VPS-аджията.
