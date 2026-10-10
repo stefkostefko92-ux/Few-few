@@ -27,6 +27,8 @@ import { adminUsersRouter } from './routes/admin-users.js';
 import { attachmentUploadRouter } from './routes/attachments.js';
 import { auditRouter } from './routes/audit.js';
 import { authMfaRouter } from './routes/auth-mfa.js';
+import { authSsoAdminRouter } from './routes/auth-sso-admin.js';
+import { authSsoRouter } from './routes/auth-sso.js';
 import { authRouter } from './routes/auth.js';
 import { caseFlowRouter } from './routes/case-flow.js';
 import { caseStepsRouter } from './routes/case-steps.js';
@@ -51,6 +53,8 @@ import { ticketsRouter } from './routes/tickets.js';
 import type { AttachmentDeps } from './services/attachments.js';
 import { QR_TOKEN } from './services/devices.js';
 import type { MailPolicy } from './services/email/enqueue.js';
+import { ssoRuntime } from './services/sso/provider.js';
+import type { SsoDeps } from './services/sso/types.js';
 
 export type Diagnoser = (input: DiagnoseInput, signal: AbortSignal) => Promise<DiagnoseOutput>;
 
@@ -81,6 +85,8 @@ export interface AppDeps {
   aiCircuit?: () => BreakerState | null;
   /** Имейл известията (Brevo): null/липсва → изключени, без outbox (fail-open, известията остават). */
   mail?: MailPolicy | null;
+  /** Единният вход (OIDC / Entra ID): null/липсва (няма SSO_KEK) → 503 `sso_unavailable`. */
+  sso?: SsoDeps | null;
 }
 
 /** Зависимостите след сглобяване — с хъба, който рутерите на работното пространство ползват. */
@@ -184,7 +190,9 @@ export function createApp(appDeps: AppDeps): express.Express {
   app.get('/api/v1/meta', (_req, res) => {
     res.json({ privacyUrl: deps.privacyPolicyUrl || null });
   });
+  const sso = ssoRuntime(deps.sso);
   app.use('/api/v1/auth/mfa', authMfaRouter(deps, totpReplay));
+  app.use('/api/v1/auth/sso', authSsoRouter(deps, sso));
   app.use('/api/v1/auth', authRouter(deps));
   app.use('/api/v1', meRouter(deps));
   // Директорията и запазените филтри — преди админ рутерите на знанието: техният `router.use`
@@ -193,6 +201,7 @@ export function createApp(appDeps: AppDeps): express.Express {
   app.use('/api/v1', adminUserActionsRouter(deps, totpReplay));
   app.use('/api/v1', adminSubjectRouter(deps, totpReplay));
   app.use('/api/v1', savedFiltersRouter(deps));
+  app.use('/api/v1/admin', authSsoAdminRouter(deps, sso));
   // Списъците (GET) — преди рутерите на знанието: фирмите са и за users:manage, а тяхното
   // `router.use` иска kb:manage за всичко под /admin.
   app.use('/api/v1/admin', adminListsRouter(deps));

@@ -11,6 +11,7 @@ import {
 } from './ai/breaker.js';
 import { embeddingModelFrom } from './ai/embeddings.js';
 import { aiEnabled, attachmentsEnabled, emailEnabled, loadConfig, mfaKey } from './config.js';
+import { loadSsoConfig } from './config-sso.js';
 import { createLogger } from './logger.js';
 import { instrumentDiagnoser, meteredScanner } from './observability/ai.js';
 import { BREAKER_STATE_VALUE, createMetrics, type BreakerName } from './observability/catalog.js';
@@ -19,6 +20,8 @@ import type { AttachmentDeps } from './services/attachments.js';
 import type { MailPolicy } from './services/email/enqueue.js';
 import { BrevoMailer } from './services/email/mailer.js';
 import { EmailWorker } from './services/email/worker.js';
+import { SecretBox } from './services/sso/secret.js';
+import type { SsoDeps } from './services/sso/types.js';
 import { EmbeddingIndexer } from './store/embeddings.js';
 import { ClamdScanner } from './storage/antivirus.js';
 import { attachmentStoreFrom } from './storage/factory.js';
@@ -27,6 +30,7 @@ import { PrismaKnowledgeStore } from './store/knowledge.js';
 import { knowledgeSnapshotId } from './store/snapshot.js';
 
 const config = loadConfig();
+const ssoEnv = loadSsoConfig();
 const logger = createLogger(config.LOG_LEVEL);
 const db = new PrismaClient();
 // Метриките се събират винаги (евтино, в паметта); изнасят се само с METRICS_PORT.
@@ -144,6 +148,17 @@ if (emailEnabled(config)) {
   logger.warn('BREVO_API_KEY липсва — имейл известията са изключени');
 }
 
+// Единният вход (OIDC / Entra ID): без SSO_KEK — изключен (503 sso_unavailable), паролата работи.
+const sso: SsoDeps | null = ssoEnv.keys
+  ? {
+      box: new SecretBox(ssoEnv.keys.current, ssoEnv.keys.previous),
+      timeoutSeconds: ssoEnv.timeoutSeconds,
+      entraAuthority: 'https://login.microsoftonline.com',
+      allowInsecureHttp: false,
+    }
+  : null;
+if (!sso) logger.warn('SSO_KEK липсва — единният вход (OIDC) е изключен');
+
 // Един процес = един хъб за SSE. Втори процес/машина иска pub/sub между хъбовете (CLAUDE.md).
 const hub = new RealtimeHub({
   onError: (err) =>
@@ -176,6 +191,7 @@ const app = createApp({
   metrics,
   aiCircuit: () => modelBreaker?.current ?? null,
   mail,
+  sso,
 });
 
 const server = app.listen(config.PORT, config.HOST, () => {
@@ -186,6 +202,7 @@ const server = app.listen(config.PORT, config.HOST, () => {
       ai: diagnoser !== null,
       uploads: attachments?.scanner != null,
       email: mail !== null,
+      sso: sso !== null,
       filesEncrypted: attachments ? config.FILES_ENCRYPTION === 'on' : null,
     },
     'chatchat слуша',

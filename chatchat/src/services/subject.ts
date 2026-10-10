@@ -296,6 +296,8 @@ export async function eraseSubject(
     const revocation = await revokeUserSessions(tx, [target.id], 'erased');
     await tx.session.deleteMany({ where: { userId: target.id } });
     await tx.passwordReset.deleteMany({ where: { userId: target.id } });
+    // Връзката с доставчика на единния вход (issuer + oid/sub) е идентификатор на човека.
+    await tx.externalIdentity.deleteMany({ where: { userId: target.id } });
     const notifications = await tx.notification.deleteMany({ where: { userId: target.id } });
     await tx.userPresence.deleteMany({ where: { userId: target.id } });
     const filters = await tx.savedFilter.deleteMany({ where: { userId: target.id } });

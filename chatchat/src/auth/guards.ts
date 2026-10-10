@@ -30,6 +30,8 @@ export function requireSession(req: Request, res: Response, next: NextFunction):
  * персонал без TOTP → 403 `mfa_setup_required` (до способностите си не стига, докато не го включи).
  */
 export function mfaBlock(p: Principal): { status: number; code: string } | null {
+  // Доказан от доставчика на единния вход (amr ∋ mfa) и клиентът му се доверява — за ТАЗИ сесия.
+  if (p.mfa.idp === true) return null;
   if (p.mfa.enabled && !p.mfa.passed) return { status: 401, code: 'mfa_required' };
   if (p.mfa.required && !p.mfa.enabled) return { status: 403, code: 'mfa_setup_required' };
   return null;
