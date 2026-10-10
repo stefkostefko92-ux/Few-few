@@ -259,7 +259,7 @@ src/components/project/ RecordTable — записите на асансьора
 src/components/RefreshForm + Refreshed — бутонът «Aggiorna con il software attuale» и лентата „резултатът (не) се промени“.
 src/components/RefreshNotice (кръг 37: върхът на формуляра след «Aggiorna» — какво е останало за поправяне, с линк към полето),
                      lift/save-blockers (какво би отказал записът на формуляра, назовано като във формуляра); scripts/smoke-topbar.mjs —
-                     горната лента при 900–1440 px на три езика.
+                     обвивката (странична лента и чекмедже) при 390–1440 px на три езика.
 src/components/tavole/ Данните на съоръжението, логото на фирмата и на възложителя, издаване и ревизия на комплект
                      (от изчисление или от записано машинно).
 src/components/room/ Заснемането на машинното на подмяната: RoomSurvey (полетата — RoomFields, общи с проекта на шахтата —,
@@ -267,10 +267,19 @@ src/components/room/ Заснемането на машинното на под�
 src/components/prices/ PriceList (листата по групи, търсене) + CustomRows (свободните редове) и ProjectCost (цената на проекта).
 src/components/shaft/PanevBom.tsx Спецификацията на конзолите Panev (кодове, бройки, страници, листови цени, общо) — в
                      единния формуляр, в записания проект и в проектанта на шахтата.
-src/components/landing/ Началната страница: Hero (машината на пример A и три нейни проверки, веригата с числата), Floors
-                     (етажите: план, разрез и 3D, проверките, симулацията, документите), FloorNav (кабинното табло —
-                     клиентско), SimPreview (графиките на аварийното спиране — клиентски), example.ts (числата от
-                     двигателите, само на сървъра), drawings.ts и docs.ts (размерите на статичните чертежи и страници).
+src/components/landing/ Началната страница по темплейта Premium: Hero (заглавието в три реда, двата призива, четирите
+                     плочки с числата на двигателите, разрезът на асансьора — LCP, предзареден), Features, Showcase +
+                     ShowcaseTabs (клиентско; табове по WAI-ARIA с истинските план, разрез, 3D и листове, проверките на
+                     машината и спирането от двигателите), Pricing (цената от `publicMonthlyPrice`, `src/lib/billing-price.ts`
+                     — същата като /pricing), Norms, Faq (`<details>`), Closing; example.ts (числата от двигателите, само на
+                     сървъра), drawings.ts и docs.ts (размерите на статичните чертежи и страници).
+src/components/AppShell + shell/ Работното пространство: странична лента (Workspace / Libreria / Gestione по правата,
+                     `navCurrent`), горна лента с пътя и търсенето (ShellSearch, GET `?q=`), чекмедже под 1024 px (Drawer:
+                     Esc, фон, фокусът остава вътре и се връща), картата на потребителя.
+src/components/dashboard/ Таблото (/app): Kpis (броевете от `src/server/dashboard.ts`), NewMenu + ModuleCards (двата
+                     модула), ProjectList (последните `DASH_ROWS`, филтри, „Mostra tutti“ до `ALL_ROWS`), ProjectPreview
+                     (последният изчислен асансьор: планът от двигателя върху бяла хартия; при подмяна — само данните).
+                     Чистите функции — `src/lib/dashboard.ts` (searchWords, likeEscape, projectStats, shellSection).
 src/components/machine/ 3D сцената на началната страница: машината от пример A (parts/ — рама, редуктор, шайба,
                      спирачка, мотор; materials — емайл, струговано с анизотропия); shape/ — машината на производителя по
                      данните на shapes.ts и детайлите на machine-detail.ts (чугун с ребра отзад — черен или в цвета на
