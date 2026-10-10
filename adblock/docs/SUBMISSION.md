@@ -184,23 +184,37 @@ Chromium; see that script's header).
 The listing is **already live** (`chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk`),
 so this is an **update of the existing item**, not a new one:
 
+0. **Deploy the site first** (`sudo REF=main PROJECTS="adblock" bash /opt/few-few/current/deploy/fetch-deploy.sh`):
+   the privacy policy with Google's Limited Use statement goes live, and `filters.json`
+   (data only — no `scriptlets` key) is published with a fresh Ed25519 signature. Check
+   `https://adblock.carbonstealth.eu/privacy` shows the Limited Use section before you submit.
 1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-5.1.7.zip`.
 2. Refresh the listing (§3: description + the new feature bullets) **in every
    language that has its own description** — a package update does NOT replace the
    live text, and an old localised description still saying "100% free" fails the
    review again. **Delete every old screenshot and tile, in every language**, then
-   upload the 5 screenshots + promo tiles (§2) and the 5.1.4 store-cut video. The
-   summary needs no edit: it is `extDescription` from the package.
-3. Re-check the **Privacy practices** tab (§4) and paste the permission
+   upload the 5 screenshots + promo tiles (§2). The summary needs no edit: it is
+   `extDescription` from the package.
+3. **Video (optional).** Only the store cut (`node tools/promo/render.mjs --cut store`
+   → `dist/supreme-adblock-promo-<version>-store-web.mp4`, uploaded to YouTube) — **never**
+   the full or the social cut (they carry "Free" and a comparison with other blockers:
+   the "Red Nickel" rejection again). No video is better than the wrong one.
+4. **Store listing → URLs:** official URL `carbonstealth.eu` (the verified site), homepage
+   `https://adblock.carbonstealth.eu`, support `https://adblock.carbonstealth.eu/#faq`.
+5. Re-check the **Privacy practices** tab (§4) and paste the permission
    justifications (§5) — `tabs` was removed in 5.0.0, so delete its entry.
-4. **Publisher identity:** the product, manifest and privacy policy say
+6. **Publisher identity:** the product, manifest and privacy policy say
    *Carbon Stealth*; the listing must show the same publisher name (Account →
    publisher display name) and the verified `carbonstealth.eu` site, otherwise
    it reads as impersonation. Account-level action, one time. (Done: the
-   listing carries the **Established Publisher** badge.)
-5. **Category → Privacy & Security** (Store listing → Category; it is *Tools* today).
-6. **Submit for review**.
-7. **After the update is live — nominate for the Featured badge** (Chrome Web Store
+   listing carries the **Established Publisher** badge.) **Trader status (EU DSA):**
+   the listing shows "Non-trader" with a personal e-mail, while we publish as Carbon
+   Stealth VCC and take donations — declaring as a trader (company details,
+   `info@carbonstealth.eu`) is the consistent choice and an owner decision.
+7. **Category → Privacy & Security** (Store listing → Category; it is *Tools* today).
+8. **Submit for review** — tick **deferred publishing** if you want to choose the moment
+   the approved version goes live.
+9. **After the update is live — nominate for the Featured badge** (Chrome Web Store
    **One Stop Support** → the Featured badge nomination option). Google's own
    criteria for a nomination, all met: an extension, published and public, owned by
    us, English supported, no active policy violations, core features without an
