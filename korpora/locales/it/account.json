@@ -81,9 +81,11 @@
       "short": "inizio anticipato"
     },
     "accept": "Con l'ordine accettate le {terms} e le informazioni sul {withdrawal}.",
+    "banRule": "In caso di blocco per violazione delle condizioni, quanto pagato per il piano, Premium o Lifetime, non viene rimborsato ({blocking}).",
     "replacesOpen": "Avete un ordine in attesa di pagamento. Un nuovo ordine lo sostituirà e quello vecchio verrà annullato. Se lo avete già pagato, scriveteci a {contact} prima di ordinare di nuovo.",
     "termsLink": "condizioni generali",
     "withdrawalLink": "diritto di recesso",
+    "blockingLink": "sezione «Blocco»",
     "orderName": "Premium per {term}",
     "withVatShort": "IVA inclusa",
     "netShort": "IVA esclusa",

@@ -217,3 +217,18 @@ test('the mark is checked like every other field, and only the ban capability ma
     0,
   );
 });
+
+test('the order form says, next to the button, that a block for a breach keeps the payment', async () => {
+  const b = await customer('mistake-order-form@example.test');
+  const page = await b.get('/account/plan');
+  assert.equal(page.status, 200);
+  const accept = /<p class="order-accept">([\s\S]*?)<\/p>/.exec(page.body)?.[1] ?? '';
+  assert.match(accept, /платеното за плана — Premium или Lifetime — не се връща/);
+  assert.match(
+    accept,
+    /<a href="\/terms#blocking" target="_blank" rel="noopener">раздел „Блокиране“<\/a>/,
+  );
+  const terms = await b.get('/terms');
+  assert.equal(terms.status, 200);
+  assert.ok(terms.body.includes('<h2 id="blocking">Блокиране</h2>'), 'the anchor exists');
+});
