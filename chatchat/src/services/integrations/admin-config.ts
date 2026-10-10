@@ -176,6 +176,8 @@ export async function updateIntegration(
         ...(existing ? { from: { kind: existing.kind, enabled: existing.enabled } } : {}),
         fieldsChanged,
         secretsChanged,
+        // Смяна на вида изтрива тайните на стария вид (не се пренасят към друг helpdesk).
+        secretsReset: kindChanged,
         targetChanged,
         linksCleared,
         skipped,

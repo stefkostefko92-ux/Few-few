@@ -115,6 +115,8 @@ AI вижда само `PUBLISHED` и само в срока на валидно
 | PATCH      | `/api/v1/notifications/preferences` (имейл, дайджест, тихи часове, зона); GET `/notifications` ги връща + курсор                                                            | вписан                                              |
 | GET/POST   | `/api/v1/quick-responses` (PUBLISHED по роля) · `/all`, POST, PATCH, `…/publish`, `…/deprecate`                                                                             | KNOWLEDGE_OWNER управлява                           |
 | GET        | `/api/v1/events` — SSE поток (бисквитката на сесията)                                                                                                                       | вписан                                              |
+| GET/PUT    | `/api/v1/admin/integrations` · POST `…/test` · GET `…/deliveries?status=&after=` · POST `…/deliveries/:id/replay` — конекторът към helpdesk (тайните само за запис)         | TENANT_ADMIN (`integrations:manage`)                |
+| POST       | `/api/v1/integrations/inbound/:inboundId` — обратна синхронизация (затвори/отвори наново), само с подпис върху суровото тяло                                                | helpdesk-ът (подпис)                                |
 | GET        | `/healthz` (жив) · `/readyz` (базата + дали AI е включен)                                                                                                                   | —                                                   |
 
 Всяка не-GET заявка иска хедър `x-csrf-token` (от `login`/`me`).
@@ -142,5 +144,37 @@ AI вижда само `PUBLISHED` и само в срока на валидно
 accuracy, Escalation precision — само от последния отчет на оценъчния набор (`EVAL_REPORTS_DIR` →
 `evals/reports/*.json`), иначе „изисква оценка“. Answer accuracy — винаги „изисква експертна
 оценка“. Ретенцията (`RETENTION_CASE_DAYS`) изтрива затворени случаи → те излизат и от KPI.
+
+### Интеграция с helpdesk (FR-09, §14.4) — какво излиза навън
+
+Конзолата → „Integrazione helpdesk“ (`integrations:manage`): общ подписан webhook, Zendesk (Tickets API)
+или Jira Service Management (request + comment). Всяка промяна по тикет при включен конектор ражда
+доставка в outbox-а в СЪЩАТА транзакция (`recordTicketEvent`); изпращачът (`INTEGRATION_SWEEP_SECONDS`)
+пази реда по тикет, повтаря с отстъп 1, 2, 4… мин. (най-много 1 ч., Retry-After се уважава) и след
+`INTEGRATION_MAX_ATTEMPTS` (или окончателна 4xx/SSRF грешка) оставя доставката в dead-letter — тя спира
+следващите събития на тикета, докато администраторът не я пусне отново. Тайните — AES-256-GCM с
+`INTEGRATION_KEK`; изходящите адреси — само https към публични адреси (DNS се проверява, без
+пренасочвания, таймаут, таван на отговора).
+
+| Поле към helpdesk-а | Съдържание                                                                                         |
+| ------------------- | -------------------------------------------------------------------------------------------------- |
+| `ticket`            | номер, статус, опашка, създаден/затворен                                                           |
+| `case`              | номер на случая + връзка `/#case=<id>` (отваря се с вход и права в ChatChat)                       |
+| `board`             | модел, ревизия HW, фърмуер, сериен номер, код за грешка, фаза                                      |
+| `diagnosis`         | последният AI отговор след Safety Gate (статус, увереност, резюме, ниво, проверки, липсващи данни) |
+| `executedSteps`     | стъпка, действие, резултат, клас — без бележки и автор                                             |
+| `sources`           | код на документа, ревизия, страници                                                                |
+| `attachments`       | само брой + връзката към случая                                                                    |
+| `resolution`        | при затваряне: първопричина, решение, източници                                                    |
+
+Никога: имена, имейли, телефони или id на хора (отговорникът е само „роля“), съобщения, бележки,
+причината на ескалацията, файлове. Свободният текст минава отново през `redactPii`; резюмето е с
+аудиториите на поддръжката. Общият webhook: `POST` JSON `{version:1, id, type, occurredAt, change,
+externalId, ticket}` с `X-ChatChat-Timestamp` и `X-ChatChat-Signature: v1=<hex HMAC-SHA256(тайна,
+"<timestamp>.<тяло>")>`, `Idempotency-Key` = `X-ChatChat-Delivery`; получателят може да върне
+`{"externalId": "…"}`. Обратно: `{version:1, ticket:{number|externalId}, action:"close"|"reopen"}` с
+същия подпис (входящата тайна); Zendesk — `X-Zendesk-Webhook-Signature`; Jira — `X-Hub-Signature`.
+Прозорец за печата ±`INTEGRATION_INBOUND_TOLERANCE_SECONDS`, повторът е „duplicate“, промяната минава
+през машината на преходите с източник `EXTERNAL` (не се връща обратно към helpdesk-а).
 
 Деплой → [DEPLOY.md](DEPLOY.md) · сигурност → [SECURITY.md](SECURITY.md) · за агентите → [CLAUDE.md](CLAUDE.md).
