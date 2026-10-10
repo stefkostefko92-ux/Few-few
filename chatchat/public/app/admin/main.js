@@ -25,6 +25,13 @@ const SECTIONS = [
     label: 'step.policy.nav',
     load: () => import('./step-policy.js'),
   },
+  // Интеграцията с helpdesk (FR-09, §14.4) — етикетът е под своя префикс.
+  {
+    id: 'integrations',
+    cap: 'integrations:manage',
+    label: 'admin.integrations.nav',
+    load: () => import('./integrations.js'),
+  },
 ];
 
 const labelOf = (s) => t(s.label ?? `admin.nav.${s.id}`);

@@ -51,7 +51,8 @@ export class FakeHelpdesk {
   private server: Server | null = null;
   base = '';
 
-  async start(): Promise<void> {
+  /** `port` 0 = свободен; e2e сървърът ползва фиксиран (спецификацията го знае). */
+  async start(port = 0): Promise<void> {
     this.server = createServer((req, res) => {
       const chunks: Buffer[] = [];
       req.on('data', (c: Buffer) => chunks.push(c));
@@ -62,6 +63,12 @@ export class FakeHelpdesk {
           headers: req.headers,
           body: Buffer.concat(chunks).toString('utf8'),
         };
+        // Управлението от e2e спецификацията (друг процес): следващите грешки. Не се записва.
+        if (rec.path === '/__control' && rec.method === 'POST') {
+          this.failNext = (JSON.parse(rec.body || '{}') as { failNext?: Failure[] }).failNext ?? [];
+          res.writeHead(204).end();
+          return;
+        }
         this.requests.push(rec);
         const failure = this.failNext.shift();
         let reply: Reply = failure && !failure.afterHandle ? { status: 0 } : this.handle(rec);
@@ -70,7 +77,7 @@ export class FakeHelpdesk {
         res.end(reply.body === undefined ? '' : JSON.stringify(reply.body));
       });
     });
-    await new Promise<void>((r) => this.server?.listen(0, '127.0.0.1', () => r()));
+    await new Promise<void>((r) => this.server?.listen(port, '127.0.0.1', () => r()));
     this.base = `http://127.0.0.1:${(this.server.address() as AddressInfo).port}`;
   }
 
