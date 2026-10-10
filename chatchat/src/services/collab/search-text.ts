@@ -113,6 +113,7 @@ export function snippetOf(text: string, terms: readonly string[], radius = 70): 
   while (start > 0 && isWordChar(flat[start - 1])) start -= 1;
   while (end < flat.length && isWordChar(flat[end])) end += 1;
   if (start > 0 && /[\uDC00-\uDFFF]/.test(flat[start] ?? '')) start -= 1;
+  if (end < flat.length && /[\uDC00-\uDFFF]/.test(flat[end] ?? '')) end += 1;
   const parts: SnippetPart[] = [];
   const push = (s: string, match: boolean) => {
     if (s) parts.push({ text: s, match });
