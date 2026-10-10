@@ -10,7 +10,7 @@ import { inboundTransition, type InboundAction } from './status-map.js';
 /**
  * Обратната синхронизация (helpdesk → ChatChat): само „затвори“ и „отвори наново“, през машината
  * на преходите (`inboundTransition` → `nextTicketStatus`), с тикета заключен като при всяко друго
- * действие. Отпечатъкът на известието се записва в СЪЩАТА транзакция: повтор = „duplicate“, без
+ * действие. Отпечатъците на известието се записват в СЪЩАТА транзакция: повтор = „duplicate“, без
  * втора промяна; грешка по средата не оставя отпечатък (helpdesk-ът може да опита пак). Промяната
  * минава през `recordTicketEvent` с източник EXTERNAL (хронология, одит, без ехо към helpdesk-а).
  */
@@ -55,13 +55,14 @@ async function findTicket(
 async function applyTx(
   tx: Prisma.TransactionClient,
   integration: { id: string; tenantId: string; kind: HelpdeskKind },
-  input: { nonce: string; ref: InboundRef; action: InboundAction | null },
+  input: { nonces: string[]; ref: InboundRef; action: InboundAction | null },
 ): Promise<{ out: InboundResult; applied?: Applied }> {
+  // Повторение = поне един отпечатък (подпис или id на доставката) вече е виждан.
   const receipt = await tx.helpdeskInboundReceipt.createMany({
-    data: [{ integrationId: integration.id, nonce: input.nonce }],
+    data: input.nonces.map((nonce) => ({ integrationId: integration.id, nonce })),
     skipDuplicates: true,
   });
-  if (receipt.count === 0) return { out: { result: 'duplicate' } };
+  if (receipt.count < input.nonces.length) return { out: { result: 'duplicate' } };
   if (!input.action) return { out: { result: 'ignored', reason: 'unmapped_status' } };
   const found = await findTicket(tx, integration, input.ref);
   if (!found) return { out: { result: 'ignored', reason: 'unknown_ticket' } };
@@ -117,7 +118,7 @@ async function applyTx(
 export async function applyInbound(
   deps: CollabDeps,
   integration: { id: string; tenantId: string; kind: HelpdeskKind },
-  input: { nonce: string; ref: InboundRef; action: InboundAction | null },
+  input: { nonces: string[]; ref: InboundRef; action: InboundAction | null },
 ): Promise<InboundResult> {
   const { out, applied } = await deps.db.$transaction((tx) => applyTx(tx, integration, input));
   // Известия и реално време — след commit, като при всяко друго действие по тикета.

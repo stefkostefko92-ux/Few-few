@@ -13,7 +13,7 @@ import { actionFromJira, actionFromZendesk, type InboundAction } from './status-
  */
 
 export type InboundVerdict =
-  | { ok: true; nonce: string; ref: InboundRef; action: InboundAction | null }
+  | { ok: true; nonces: string[]; ref: InboundRef; action: InboundAction | null }
   | {
       ok: false;
       status: 400 | 401;
@@ -85,7 +85,7 @@ export function verifyInbound(
       const t = body.data.ticket;
       return {
         ok: true,
-        nonce: v.nonce,
+        nonces: v.nonces,
         ref: {
           ...(t.number ? { number: t.number } : {}),
           ...(t.externalId ? { externalId: t.externalId } : {}),
@@ -100,7 +100,7 @@ export function verifyInbound(
       if (!body.success) return BAD_PAYLOAD;
       return {
         ok: true,
-        nonce: v.nonce,
+        nonces: v.nonces,
         ref: {
           externalId: body.data.ticket_id,
           ...(body.data.external_id ? { number: body.data.external_id } : {}),
@@ -121,7 +121,7 @@ export function verifyInbound(
       const category = issue.fields?.status?.statusCategory?.key;
       return {
         ok: true,
-        nonce: v.nonce,
+        nonces: v.nonces,
         ref: { externalId: issue.id, ...(issue.key ? { externalKey: issue.key } : {}) },
         action: category ? actionFromJira(category) : null,
       };

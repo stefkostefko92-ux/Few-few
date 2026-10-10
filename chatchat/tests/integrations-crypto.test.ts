@@ -37,7 +37,7 @@ describe('подписът на ChatChat (общият webhook)', () => {
     assert.equal(signChatChat(SECRET, TS, BODY), `v1=${expected}`);
   });
 
-  test('верен подпис в прозореца → ok; nonce по id на доставката', () => {
+  test('верен подпис в прозореца → ok; отпечатък на подписа + на id-то на доставката', () => {
     const sig = signChatChat(SECRET, TS, BODY);
     const a = verifyChatChat(
       SECRET,
@@ -54,7 +54,14 @@ describe('подписът на ChatChat (общият webhook)', () => {
       300,
     );
     assert.ok(a.ok && b.ok);
-    assert.notEqual(a.nonce, b.nonce);
+    // Подписът е същият (id-то не е подписано) → първият отпечатък е общ: повторение с друг id
+    // се хваща; id-тата са различни → вторите отпечатъци се различават.
+    assert.equal(a.nonces.length, 2);
+    assert.equal(a.nonces[0], b.nonces[0]);
+    assert.notEqual(a.nonces[1], b.nonces[1]);
+    const bare = verifyChatChat(SECRET, headers(sig, String(TS)), BODY, NOW, 300);
+    assert.ok(bare.ok);
+    assert.deepEqual(bare.nonces, [a.nonces[0]]);
     // Няколко подписа (смяна на тайната при получателя) — един верен стига.
     assert.equal(verifyChatChat(SECRET, headers(`v1=00, ${sig}`), BODY, NOW, 300).ok, true);
   });
@@ -120,7 +127,7 @@ describe('подписът на Zendesk (официалният: base64(HMAC(т�
 });
 
 describe('подписът на Jira (X-Hub-Signature: sha256=<hex>)', () => {
-  test('верен → ok, nonce по X-Atlassian-Webhook-Identifier; грешен → invalid', () => {
+  test('верен → ok, отпечатъци на подписа и на X-Atlassian-Webhook-Identifier; грешен → invalid', () => {
     const body = '{"timestamp":1,"issue":{"id":"1"}}';
     const sig = `sha256=${createHmac('sha256', SECRET).update(body).digest('hex')}`;
     const ok = verifyJira(
@@ -128,7 +135,8 @@ describe('подписът на Jira (X-Hub-Signature: sha256=<hex>)', () => {
       { 'x-hub-signature': sig, 'x-atlassian-webhook-identifier': 'w-1' },
       body,
     );
-    assert.equal(ok.ok, true);
+    assert.ok(ok.ok);
+    assert.equal(ok.nonces.length, 2);
     const bad = verifyJira(SECRET, { 'x-hub-signature': sig }, `${body} `);
     assert.equal(bad.ok ? 'ok' : bad.code, 'invalid_signature');
   });
