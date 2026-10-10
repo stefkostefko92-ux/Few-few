@@ -9,6 +9,13 @@
 /* the sections under the first screen are laid out when they come near the viewport: the first layout and every font
    that arrives after it touch only the hero (the landing's main-thread time); the sizes are estimates, then remembered */
 .lp-section:not(.hero) { content-visibility: auto; contain-intrinsic-size: auto 760px; }
+/* the footer under the landing too: its small print names the provider in Cyrillic as well, and on the Italian and
+   English pages that face would be fetched with the first screen and lay the laid-out text out again after the first
+   paint (main-thread time inside the window of the blocking time) */
+.lp + .site-footer { content-visibility: auto; contain-intrinsic-size: auto 300px; }
+/* the landing's beta mark in the mono face the first screen already has (DM Mono 400; the template's mono labels are
+   all 400): at 500 it fetched one more face (and IBM Plex Mono 500 for «Бета») after the first paint, for one word */
+.lp .badge { font-weight: 400; }
 .lp h2 { font-size: clamp(32px, 3.4vw, 46px); line-height: 1.07; letter-spacing: -0.045em; font-weight: 800; margin-top: 15px; }
 .lp h2 > span, .lp h2 > em, .lp h1 > span, .lp h1 > em { display: block; }
 .lp :is(h1, h2) em { font-style: normal; color: var(--accent); }
@@ -141,13 +148,17 @@
 .ui-ledger table { margin-bottom: 48px; }
 .ui-ledger table { width: 100%; border-collapse: collapse; font-size: 12.5px; line-height: 1.35; font-variant-numeric: tabular-nums; }
 .ui-ledger caption { text-align: left; padding: 0 0 10px; font: 400 11px/1.3 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--eyebrow-ink); }
-.ui-ledger th, .ui-ledger td { padding: 7px 6px; text-align: left; border-bottom: 1px solid var(--rule-soft); vertical-align: middle; }
+/* the checks fit their frame at every width (the canvas is narrowest beside the facts at 721–850 and 1181–1366 px, and
+   on a phone): the cells wrap where they must — the values over their limits already stand on two lines — and only a
+   badge never breaks; around the table the canvas keeps a side padding of 10 px (18 px around a drawing, 12 on a phone) */
+.ui-canvas:has(> .ui-ledger) { padding-inline: 10px; }
+.ui-ledger th, .ui-ledger td { padding: 7px 4px; text-align: left; border-bottom: 1px solid var(--rule-soft); vertical-align: middle; }
 .ui-ledger thead th { position: sticky; top: 0; background: var(--surface2); font: 400 11px/1.3 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--dim); }
 .ui-ledger tbody th { font-weight: 600; color: var(--ink); }
-.ui-ledger td { color: var(--ink-2); font-family: var(--font-mono); font-size: 12px; white-space: nowrap; }
+.ui-ledger td { color: var(--ink-2); font-family: var(--font-mono); font-size: 12px; }
 .ui-ledger td .v, .ui-ledger td .lim { display: block; }
 .ui-ledger td .lim { color: var(--dim); }
-.ui-ledger td .status-pill { font-family: var(--font-body); }
+.ui-ledger td .status-pill { font-family: var(--font-body); white-space: nowrap; }
 .ui-props { display: flex; flex-direction: column; gap: 14px; padding: 17px 14px; border-left: 1px solid var(--rule-soft); }
 .ui-props-title { font: 400 11px/1.3 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--dim); }
 .ui-props dl { margin: 0; display: flex; flex-direction: column; gap: 13px; }
@@ -310,17 +321,17 @@
   .ui-desk { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ui-desk li.lead { grid-row: auto; }
   .ui-pair.wide { grid-template-columns: minmax(0, 1fr); }
-  /* the checks fit the frame of a phone: the cells wrap (the values over their limits already stand on two lines) */
-  .ui-ledger td, .ui-ledger thead th { white-space: normal; }
-  .ui-ledger th, .ui-ledger td { padding: 7px 4px; }
   .ui-bottom span:last-child { display: none; }
   .pricing-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .pricing-grid .price-card { min-height: 0; padding: 20px; }
   .closing { padding-bottom: 40px; }
-  .closing-cta { align-items: flex-end; min-height: 460px; }
-  .closing-photo { inset: 0; }
-  .closing-photo::after { background: linear-gradient(0deg, var(--surface) 0%, var(--surface) 38%, color-mix(in srgb, var(--surface) 88%, transparent) 62%, color-mix(in srgb, var(--surface) 20%, transparent) 100%); }
-  .closing-content { padding: 30px 20px; }
+  /* on a phone the lobby is a strip across the top of the band, fading into it, and the text stands under it on the
+     band's own colour: laid over the whole photo (as above 720 px) the eyebrow and the title crossed its lit lamps
+     under AA contrast, since the text fills almost all the band */
+  .closing-cta { flex-direction: column; align-items: stretch; min-height: 0; }
+  .closing-photo { position: relative; inset: auto; z-index: 0; display: block; height: 190px; }
+  .closing-photo::after { background: linear-gradient(0deg, var(--surface) 0%, color-mix(in srgb, var(--surface) 40%, transparent) 45%, transparent 100%); }
+  .closing-content { padding: 4px 20px 30px; }
 }
 @media (max-width: 420px) {
   .feature-grid { grid-template-columns: minmax(0, 1fr); }
@@ -337,5 +348,7 @@
 /* no paragraph ends on a lonely word (Chromium; elsewhere no effect) */
 .lp :is(.hero-lead, .hero-note, .hero-benefits li, .section-head > p, .showcase-lead, .ui-caption p, .pricing-lead, .standards-lead,
   .faq-heading > p, .closing-content > p) { text-wrap: pretty; }
-/* the template's arrow in the cyan buttons: a dark glyph (a painted icon would blur into the cyan) */
-.btn-arrow { font-size: 18px; line-height: 1; font-family: var(--font-mono); }
+/* the template's arrow in the cyan buttons: a dark glyph (a painted icon would blur into the cyan). Neither DM Mono nor
+   Plex Mono has «→», so the system monospace draws it anyway: named directly, the button's bold no longer makes the
+   browser fetch DM Mono 500 (the line's first face) after the first paint just to measure the line */
+.btn-arrow { font-size: 18px; line-height: 1; font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; }
