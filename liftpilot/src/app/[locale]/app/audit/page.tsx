@@ -26,7 +26,7 @@ export default async function AuditPage({ params }: { params: Promise<{ locale: 
             {rows.map((r) => (
               <tr key={r.id}>
                 <td className="row-title"><b>{label('actions', r.action)}</b></td>
-                <td data-label={t('when')} className="num whitespace-nowrap">{fd.stamp(r.createdAt)}</td>
+                <td data-label={t('when')} className="whitespace-nowrap mono">{fd.stamp(r.createdAt)}</td>
                 <td data-label={t('who')}>{r.userId ? names.get(r.userId) ?? '—' : '—'}</td>
                 <td data-label={t('object')}>
                   <span>{label('entities', r.entity)}{r.entityId ? <span className="note"> · {names.get(r.entityId) ?? r.entityId}</span> : null}</span>

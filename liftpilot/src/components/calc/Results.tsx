@@ -47,7 +47,7 @@ function ProposalCard({ P, X, a, onUse, propMsg }: Pick<Props, 'P' | 'X' | 'a' |
       <h3 className="sub">{X.altText(sizing)}</h3>
       <div className="tbl">
         <table>
-          <thead><tr>{X.proposalHead().map((h, j) => <th key={h} className={j ? 'num' : undefined}>{h}</th>)}{onUse ? <th className="num" /> : null}</tr></thead>
+          <thead><tr>{X.proposalHead().map((h, j) => <th key={h} className={j ? 'num' : undefined}>{h}</th>)}{onUse ? <th className="num"><span className="sr-only">{t('p_use_row')}</span></th> : null}</tr></thead>
           <tbody>
             {sizing.options.map((o, j) => (
               <tr key={`${o.D}-${o.n}-${o.d}`} className={o === p ? 'picked' : undefined}>

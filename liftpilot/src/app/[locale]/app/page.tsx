@@ -12,9 +12,10 @@ import ProjectList, { latestOf } from '@/components/dashboard/ProjectList';
 import ProjectPreview from '@/components/dashboard/ProjectPreview';
 import '../../dashboard.css';
 
-export async function generateMetadata() {
-  const t = await getTranslations('nav');
-  return { title: t('dashboard') };
+// the archive's own title, as its heading says
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ archived?: string }> }) {
+  if ((await searchParams).archived === '1') return { title: (await getTranslations('projects'))('archivedTitle') };
+  return { title: (await getTranslations('nav'))('dashboard') };
 }
 
 const kindOf = (slug: string | undefined): ProjectKind | null => MODULES.find((m) => m.slug === slug)?.kind ?? null;
@@ -40,9 +41,12 @@ export default async function DashboardPage({ params, searchParams }: {
   ]);
   const stats = active?.stats ?? null;
   // the installation changed last among those with a saved result, with the plan of its saved shaft when it is a whole
-  // project; none yet: no preview
+  // project; none yet: no preview. A search or a module's filter shows the first of what it found with a result (never
+  // one the list does not show); none there: no preview
   const latestId = active?.latestId ?? null;
-  const latest = latestId ? (projects.find((p) => p.id === latestId) ?? await getProjectRow(user, latestId)) : null;
+  const filtered = words.length > 0 || kind !== null;
+  const latest = filtered ? (projects.find((p) => latestOf(p).last) ?? null)
+    : latestId ? (projects.find((p) => p.id === latestId) ?? await getProjectRow(user, latestId)) : null;
   const design = latest ? latestOf(latest).design : null;
   const plan = design ? await latestPlan(user, design.id) : null;
   const canEdit = can(user, 'projects:edit');

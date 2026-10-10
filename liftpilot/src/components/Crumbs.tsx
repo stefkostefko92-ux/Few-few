@@ -16,7 +16,8 @@ export default async function Crumbs({ items }: { items: Crumb[] }) {
         {items.map((it) => {
           // the dashboard has one name, the sidebar's, wherever the path starts from it
           const label = it.href === '/app' ? t('dashboard') : it.label;
-          return <li key={`${it.href ?? ''}${label}`}>{it.href ? <Link href={it.href}>{label}</Link> : <span aria-current="page">{label}</span>}</li>;
+          // in the top bar a long name is cut: the whole of it on hover
+          return <li key={`${it.href ?? ''}${label}`}>{it.href ? <Link href={it.href} title={label}>{label}</Link> : <span aria-current="page" title={label}>{label}</span>}</li>;
         })}
       </ol>
     </nav>

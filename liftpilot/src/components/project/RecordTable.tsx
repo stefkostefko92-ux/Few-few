@@ -36,7 +36,7 @@ export default async function RecordTable({ rows, href, what, locale, extra, und
           {rows.map((r) => (
             <tr key={r.id}>
               <td className="row-title">
-                <Link href={href(r.id)} className="font-semibold">{fd.dateTime(r.createdAt)}</Link>
+                <Link href={href(r.id)} className="font-semibold whitespace-nowrap">{fd.dateTime(r.createdAt)}</Link>
                 {r.label ? <div className="note">{r.label}</div> : null}
               </td>
               <td data-label={tc('col_result')}>

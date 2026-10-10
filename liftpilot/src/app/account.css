@@ -10,7 +10,6 @@
 @media (max-width: 640px) { .acct-head .actions { margin-left: 0; } }
 
 .acct-panel-head { justify-content: flex-start; flex-wrap: nowrap; gap: 12px; }
-.acct-panel-head h2 { font-size: 17px; }
 
 .seats-line { font-weight: 600; }
 .seats-line .icon { vertical-align: -4px; margin-right: 10px; }

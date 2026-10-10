@@ -84,7 +84,7 @@ export async function accountFlows({ BASE, stamp, step, newPage, sink, ADMIN_EMA
   assert.equal(answerTaken, answerNew, 'the same answer for an address with an account elsewhere');
   assert.equal(await page.locator('.secret').count(), 0, 'no password goes through the owner');
   await page.reload();
-  assert.match(await page.textContent('#invites-title + table'), new RegExp(member.replace(/\./g, '\\.')), 'the invitation waits');
+  assert.match(await page.textContent('section[aria-labelledby="invites-title"] > table'), new RegExp(member.replace(/\./g, '\\.')), 'the invitation waits');
   const notice = await sink.next(ADMIN_EMAIL, since);
   assert.ok(notice && /già un account/.test(notice.text) && !/\/it\/invite#/.test(notice.text), 'a notice, with nothing to take');
   const mail = await sink.next(member, since);
@@ -134,7 +134,7 @@ export async function accountFlows({ BASE, stamp, step, newPage, sink, ADMIN_EMA
   await page.fill('input[name="password"]', password);
   await Promise.all([page.waitForURL(/\/it\/app$/), page.click('main form button[type="submit"]')]);
   await page.goto(`${BASE}/it/app/team`);
-  assert.match(await page.textContent('#invites-title + table'), new RegExp(held.replace(/\./g, '\\.')), 'the invitation before the confirmation');
+  assert.match(await page.textContent('section[aria-labelledby="invites-title"] > table'), new RegExp(held.replace(/\./g, '\\.')), 'the invitation before the confirmation');
   await Promise.all([page.waitForURL(/\/it\/login$/), page.click('.ws-logout button[type="submit"]')]);
   await page.goto('about:blank');
   await page.goto(link(offer.text, 'verify-email').url);
@@ -146,7 +146,7 @@ export async function accountFlows({ BASE, stamp, step, newPage, sink, ADMIN_EMA
   await page.fill('input[name="password"]', password);
   await Promise.all([page.waitForURL(/\/it\/app$/), page.click('main form button[type="submit"]')]);
   await page.goto(`${BASE}/it/app/team`);
-  assert.match(await page.textContent('#invites-title + table'), new RegExp(held.replace(/\./g, '\\.')), 'the invitation after the confirmation, alike');
+  assert.match(await page.textContent('section[aria-labelledby="invites-title"] > table'), new RegExp(held.replace(/\./g, '\\.')), 'the invitation after the confirmation, alike');
   await Promise.all([page.waitForURL(/\/it\/login$/), page.click('.ws-logout button[type="submit"]')]);
 
   step('forgotten password: the e-mail link, a new password, the old one refused');

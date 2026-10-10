@@ -1,7 +1,7 @@
 // The traction sheave (D 560, four U grooves) with its ropes. Cast in one piece and painted, then turned: the rim,
 // the grooves and the hub faces are bright machined metal, the web between them keeps the paint. The six
 // lightening holes make the slow turn of the sheave visible.
-// Loaded only through boot.ts, after the prefers-reduced-motion and save-data gate of MachineStage.tsx.
+// Loaded only through the installation's 3D stage (lift3d/boot.ts, lift3d/room.ts).
 import * as THREE from 'three/webgpu';
 import type { MachineMaterials } from '../materials';
 import { DIM, V, P3, bolts, circle, latheZ, mesh, slab } from './common';

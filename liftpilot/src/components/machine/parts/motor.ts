@@ -1,7 +1,7 @@
 // The motor on the worm axis: a finned cast frame between two end shields, the fan cover with its grille, the
 // terminal box with its lid and gland, the nameplate on a pad between the fins, two cast feet bolted to the
 // bedplate; past the fan cover the emergency handwheel on the shaft end, and the supply conduit behind.
-// Loaded only through boot.ts, after the prefers-reduced-motion and save-data gate of MachineStage.tsx.
+// Loaded only through the installation's 3D stage (lift3d/boot.ts, lift3d/room.ts).
 import * as THREE from 'three/webgpu';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import type { MachineMaterials } from '../materials';

@@ -95,10 +95,10 @@ export default function AdviceView({ advice, alt = null, running = null, fmt, in
                     <span className="rank">{k + 1}</span> <b>{machineName(c)}</b>{inUse(c) ? <> <span className="badge">{held()}</span></> : null}
                     <span className={`res res-line ${status(c)}`}>{result(c)}</span>
                   </td>
-                  <td className="spec" data-label={t('f_ratio')}>{c.ratio} · {dvText(c.dv, fmt)} %</td>
-                  <td className="spec" data-label={t('f_sheave')}>Ø {fmt(c.N.D, 0)} · {c.N.n} × Ø{dText(c.N.d)}</td>
-                  <td className="spec num" data-label={t('f_static')}>{fmt(c.staticKg, 0)} kg</td>
-                  <td className="spec num" data-label={t('f_mass')}>{massText(c)}</td>
+                  <td className="spec short" data-label={t('f_ratio')}>{c.ratio} · {dvText(c.dv, fmt)} %</td>
+                  <td className="spec short" data-label={t('f_sheave')}>Ø {fmt(c.N.D, 0)} · {c.N.n} × Ø{dText(c.N.d)}</td>
+                  <td className="spec short num" data-label={t('f_static')}>{fmt(c.staticKg, 0)} kg</td>
+                  <td className="spec short num" data-label={t('f_mass')}>{massText(c)}</td>
                   {defl ? <td data-label={t('f_bedplate')}>{c.I.layout === 'topDefl' ? (c.bedplate ? c.bedplate.code : t('bed_ours')) : '—'}</td> : null}
                   <td data-label={t('f_source')}><abbr title={`${sources(c)} — ${c.src}`}>{c.sources.join(' + ')}</abbr></td>
                   <td data-label={t('f_result')} className={`res res-cell ${status(c)}`}>{result(c)}</td>

@@ -66,6 +66,9 @@
   --font-cond: var(--font-body);
   --font-mono: "DM Mono", "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   --track-tight: -0.022em;
+  /* one title for a panel or a section of a working page (ui.css .panel-head, tables.css .sec-title, the calculator's
+     cards, the installation's form), whatever sheet draws it */
+  --panel-title: 700 18px/1.3 var(--font-body); --panel-title-track: -0.015em;
 }
 
 /* paper: black on white whatever the screen shows */
@@ -94,6 +97,8 @@
   /* a button on paper is its label in a thin frame: no fill (printers drop backgrounds, the primary's white label
      would vanish with it), no glow */
   .btn, .btn-primary { color: #000; background: none; border-color: var(--rule-strong); box-shadow: none; }
+  /* the painted icons are cyan glows drawn for the dark desk: on paper they are smudges, the text says it all */
+  img.icon, .icon-tile { display: none !important; }
 }
 
 @layer base {

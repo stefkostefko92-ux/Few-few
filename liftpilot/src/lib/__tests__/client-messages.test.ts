@@ -12,7 +12,7 @@ const root = path.resolve(new URL('../../..', import.meta.url).pathname);
 const PUBLIC_CLIENT = [
   'src/components/LangSwitch.tsx', 'src/components/LoginForm.tsx', 'src/components/RegisterForm.tsx', 'src/components/ForgotPasswordForm.tsx',
   'src/components/ResetPasswordForm.tsx', 'src/components/VerifyEmailForm.tsx', 'src/components/InviteAcceptForm.tsx', 'src/app/[locale]/error.tsx',
-  'src/components/MobileNav.tsx', 'src/components/landing/ShowcaseTabs.tsx', 'src/components/machine/MachineStage.tsx',
+  'src/components/MobileNav.tsx', 'src/components/landing/ShowcaseTabs.tsx',
 ];
 
 test('client messages: the public client components read only the namespaces the public pages send', () => {

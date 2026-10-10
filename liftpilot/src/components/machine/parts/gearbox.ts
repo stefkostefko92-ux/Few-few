@@ -1,7 +1,7 @@
 // The worm gearbox: a cast housing with the worm below the wheel, the round wheel covers bolted on both faces,
 // the worm bearing caps at the ends, stiffening ribs, a cast foot bolted to the bedplate, the lifting eye, the
 // breather and the oil sight glass.
-// Loaded only through boot.ts, after the prefers-reduced-motion and save-data gate of MachineStage.tsx.
+// Loaded only through the installation's 3D stage (lift3d/boot.ts, lift3d/room.ts).
 import * as THREE from 'three/webgpu';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import type { MachineMaterials } from '../materials';

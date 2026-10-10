@@ -11,7 +11,10 @@ fieldset.field > legend { font-size: 13.5px; font-weight: 600; color: var(--ink-
 /* segmented choice: the template's filter buttons joined in one frame; the chosen one on the cyan-tinted slab with the
    cyan underline (not a cyan fill: several stand in one form) */
 .seg-row { display: inline-flex; flex-wrap: wrap; gap: 1px; width: fit-content; max-width: 100%; border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); overflow: hidden; background: var(--rule); }
-.seg-row > label, .seg-row > button, .seg-row > a { position: relative; flex: 1 0 auto; text-align: center; font: 600 13.5px/1.2 var(--font-body); color: var(--ink-2); background: var(--surface); border: 0; padding: 10px 14px; cursor: pointer; }
+/* a choice longer than the row (a phone, the calculator beside the sidebar) wraps inside its own button: the frame's
+   overflow:hidden would cut it otherwise */
+.seg-row > label, .seg-row > button, .seg-row > a { position: relative; flex: 1 1 auto; min-width: 0; white-space: normal; overflow-wrap: anywhere; text-align: center;
+  font: 600 13.5px/1.2 var(--font-body); color: var(--ink-2); background: var(--surface); border: 0; padding: 10px 14px; cursor: pointer; }
 .seg-row > :is(label, button, a):hover { color: var(--ink); background: var(--surface3); }
 .seg-row > label input { position: absolute; opacity: 0; pointer-events: none; }
 .seg-row > .on, .seg-row > .on:hover { background: var(--accent-soft); color: var(--accent); box-shadow: inset 0 -2px 0 var(--accent); }
