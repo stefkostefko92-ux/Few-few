@@ -16,20 +16,29 @@ function dayIndex(now: number = Date.now()): number {
 }
 
 // Wheel segments — weighted draws scaled by player level.
+// id → i18n ключ wheel.seg.<id> в клиента; label остава за лога/стари клиенти.
 const SEGMENTS = [
-  { kind: 'gold',    label: 'Gold Stash',         weight: 28, multiplier: 25 },
-  { kind: 'gold',    label: 'A Heavy Purse',      weight: 18, multiplier: 60 },
-  { kind: 'xp',      label: 'Hard-Won Insight',   weight: 22, multiplier: 18 },
-  { kind: 'xp',      label: 'A Vision of Power',  weight: 10, multiplier: 45 },
-  { kind: 'potion',  label: 'Potion of Healing',  weight: 10, item: 'health_potion' },
-  { kind: 'energy',  label: 'Boon of Vigor',      weight: 8,  amount: 30 },
-  { kind: 'item',    label: 'A Glittering Ring',  weight: 3,  item: 'silver_ring' },
-  { kind: 'jackpot', label: 'Royal Jackpot!',     weight: 1,  multiplier: 500 },
+  { id: 'gold_stash',  kind: 'gold',    label: 'Gold Stash',         weight: 28, multiplier: 25 },
+  { id: 'heavy_purse', kind: 'gold',    label: 'A Heavy Purse',      weight: 18, multiplier: 60 },
+  { id: 'insight',     kind: 'xp',      label: 'Hard-Won Insight',   weight: 22, multiplier: 18 },
+  { id: 'vision',      kind: 'xp',      label: 'A Vision of Power',  weight: 10, multiplier: 45 },
+  { id: 'potion',      kind: 'potion',  label: 'Potion of Healing',  weight: 10, item: 'health_potion' },
+  { id: 'vigor',       kind: 'energy',  label: 'Boon of Vigor',      weight: 8,  amount: 30 },
+  { id: 'ring',        kind: 'item',    label: 'A Glittering Ring',  weight: 3,  item: 'silver_ring' },
+  { id: 'jackpot',     kind: 'jackpot', label: 'Royal Jackpot!',     weight: 1,  multiplier: 500 },
 ];
+const TOTAL_WEIGHT = SEGMENTS.reduce((s, x) => s + x.weight, 0);
+
+/** Базова награда за нивото (без гилдийните множители) — същата формула като /spin. */
+function previewAmount(seg: (typeof SEGMENTS)[number], level: number): number {
+  if (seg.kind === 'gold' || seg.kind === 'jackpot') return Math.floor((seg as any).multiplier * (1 + level * 0.2));
+  if (seg.kind === 'xp') return Math.floor((seg as any).multiplier * (1 + level * 0.3));
+  if (seg.kind === 'energy') return (seg as any).amount;
+  return 1;
+}
 
 function pickSegment() {
-  const total = SEGMENTS.reduce((s, x) => s + x.weight, 0);
-  let r = Math.random() * total;
+  let r = Math.random() * TOTAL_WEIGHT;
   for (const seg of SEGMENTS) {
     if ((r -= seg.weight) <= 0) return seg;
   }
@@ -38,7 +47,7 @@ function pickSegment() {
 
 router.get('/', (req, res) => {
   const db = getDb();
-  const ch = db.prepare('SELECT id FROM characters WHERE user_id = ?').get(req.auth!.uid) as { id: number } | undefined;
+  const ch = db.prepare('SELECT id, level FROM characters WHERE user_id = ?').get(req.auth!.uid) as { id: number; level: number } | undefined;
   if (!ch) {
     res.status(404).json({ error: 'No character' });
     return;
@@ -47,7 +56,8 @@ router.get('/', (req, res) => {
   const today = dayIndex();
   res.json({
     canSpin: !row || row.last_spin_day < today,
-    segments: SEGMENTS.map(({ kind, label }) => ({ kind, label })),
+    // Реалните шансове и наградите за нивото — колелото ги рисува пропорционално и честно.
+    segments: SEGMENTS.map((seg) => ({ id: seg.id, kind: seg.kind, label: seg.label, chance: seg.weight / TOTAL_WEIGHT, amount: previewAmount(seg, ch.level) })),
   });
 });
 
@@ -126,6 +136,7 @@ router.post('/spin', (req, res) => {
     });
     const unlocked = evaluateAchievements(db, ch.id);
     res.json({
+      id: result.seg.id,
       label: result.label,
       kind: result.seg.kind,
       goldDelta: result.goldDelta,

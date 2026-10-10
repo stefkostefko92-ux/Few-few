@@ -35,16 +35,23 @@ export default function Daily(): React.ReactElement {
   const [wheelInfo, setWheelInfo] = useState<{ canSpin: boolean } | null>(null);
   const [busy, setBusy] = useState(false);
 
+  const [loadError, setLoadError] = useState(false);
+
   async function load() {
-    const [d, q, w] = await Promise.all([
-      api.get('/daily'),
-      api.get('/daily/quests'),
-      api.get('/wheel'),
-    ]);
-    setData(d);
-    setQuests(q.quests);
-    setResetAt(q.resetAt);
-    setWheelInfo(w);
+    // Колелото е само за бутона „Завърти“ — отделно и с catch, за да не
+    // блокира цялата страница, ако /wheel падне.
+    api.get('/wheel').then(setWheelInfo).catch(() => setWheelInfo(null));
+    try {
+      const [d, q] = await Promise.all([api.get('/daily'), api.get('/daily/quests')]);
+      setData(d);
+      setQuests(q.quests);
+      setResetAt(q.resetAt);
+      setLoadError(false);
+    } catch (e: any) {
+      // Без това необработен reject и вечно „зареждане…“.
+      toast(e.message, 'error');
+      setLoadError(true);
+    }
   }
 
   useEffect(() => { load(); }, []);
@@ -75,7 +82,23 @@ export default function Daily(): React.ReactElement {
     }
   }
 
-  if (!data) return <div className="muted">{t('daily.loading')}</div>;
+  if (!data) {
+    if (loadError) {
+      return (
+        <div className="panel" role="alert">
+          <div className="muted" style={{ marginBottom: 12 }}>{t('common.loadFailed')}</div>
+          <button className="btn btn-primary" onClick={() => { setLoadError(false); load(); }}>{t('common.retry')}</button>
+        </div>
+      );
+    }
+    return <div className="muted">{t('daily.loading')}</div>;
+  }
+
+  // Позицията в 7-дневния цикъл идва от сървъра: streakOnClaim е 1 след
+  // пропуснат ден (серията се нулира), а не streak+1 — иначе се маркираше
+  // грешен ден. Сумата за този ден е nextReward (вкл. бонус дни 14/30).
+  const cyclePos = (n: number) => ((Math.max(1, n) - 1) % 7) + 1;
+  const currentPos = cyclePos(data.canClaim ? data.streakOnClaim : data.streak);
 
   const hours = Math.max(0, Math.floor((resetAt - Date.now()) / 3_600_000));
   const minutes = Math.max(0, Math.floor(((resetAt - Date.now()) % 3_600_000) / 60_000));
@@ -95,15 +118,15 @@ export default function Daily(): React.ReactElement {
         </div>
         <div className="streak-row">
           {[1,2,3,4,5,6,7].map((d) => {
-            const dayInCycle = ((data.streak) % 7) + (data.canClaim ? 0 : 1);
-            const isCurrent = data.canClaim && (((data.streak) % 7) + 1) === d;
-            const isClaimed = !data.canClaim && (((data.streak - 1) % 7) + 1) >= d;
+            const isCurrent = data.canClaim && currentPos === d;
+            const isClaimed = data.canClaim ? d < currentPos : d <= currentPos;
+            const reward = d === currentPos ? data.nextReward : rewardForDay(d);
             return (
               <div key={d} className={`streak-cell ${isCurrent ? 'current' : ''} ${isClaimed ? 'claimed' : ''}`}>
                 <div className="streak-day">{t('daily.day', { n: d })}</div>
                 <div style={{ fontSize: 22 }}>{d === 7 ? '🎁' : '💰'}</div>
-                <div className="text-sm gold">{t('daily.goldShort', { n: rewardForDay(d).gold })}</div>
-                <div className="text-sm muted">{t('daily.xpShort', { n: rewardForDay(d).xp })}</div>
+                <div className="text-sm gold">{t('daily.goldShort', { n: reward.gold })}</div>
+                <div className="text-sm muted">{t('daily.xpShort', { n: reward.xp })}</div>
               </div>
             );
           })}

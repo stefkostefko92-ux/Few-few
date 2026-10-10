@@ -12,12 +12,12 @@ const EASE = {
 };
 export const TARGETS = { head: [0, 1.62, 0.03], headL: [-0.08, 1.6, 0.0], lshoulder: [-0.2, 1.42, 0.0], chest: [0, 1.25, 0.1] };
 const MAX_ALONG = { A: 1.0, B: 0.84 };
-// Right shoulder and chest in the fighter frame for a key's crouch and lean, and how far from
-// the shoulder the grip may sit (arm plus hand offset).
+// Right shoulder/chest in the fighter frame (crouch/lean); `k.aim.anchorY` (a beast's bite anchor,
+// choreo-gen-attack.js) overrides human 1.35 — else REACH would yank a rat's snout up to y≈1.3.
 const shoulderOf = (k, r = 0.19) => {
   const handF = k.aim ? k.aim.hand[2] : 0.3;
   const lean = (k.lean ?? 0) + THREE.MathUtils.clamp((handF - 0.3) * 0.45, -0.08, 0.2);
-  return [r, 1.35 - (k.crouch ?? 0.08), 0.02 + lean * 0.33];
+  return [r, (k.aim?.anchorY ?? 1.35) - (k.crouch ?? 0.08), 0.02 + lean * 0.33];
 };
 const REACH = 0.54;
 // Two-handed grip: the right hand sits this far up the grip from the centre between both hands.

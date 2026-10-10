@@ -185,11 +185,15 @@ router.post('/buy', (req, res) => {
       }
       if (offering.effect.elixir_minutes && offering.effect.elixir_stat) {
         const row = db.prepare('SELECT active_buffs FROM characters WHERE id = ?').get(char.id) as any;
-        const buffs = JSON.parse(row?.active_buffs || '[]');
+        // Един бъф на стат (както inventory.ts при отварите): повторна покупка подновява
+        // времето, не натрупва +30% върху +30% (5 покупки бяха +150% STR).
+        const now = Date.now();
+        const buffs = (JSON.parse(row?.active_buffs || '[]') as { stat: string; percent: number; expires_at: number }[])
+          .filter((b) => b.expires_at > now && b.stat !== offering.effect.elixir_stat);
         buffs.push({
           stat: offering.effect.elixir_stat,
           percent: offering.effect.elixir_percent || 30,
-          expires_at: Date.now() + (offering.effect.elixir_minutes || 60) * 60_000,
+          expires_at: now + (offering.effect.elixir_minutes || 60) * 60_000,
         });
         db.prepare('UPDATE characters SET active_buffs = ? WHERE id = ?').run(JSON.stringify(buffs), char.id);
       }

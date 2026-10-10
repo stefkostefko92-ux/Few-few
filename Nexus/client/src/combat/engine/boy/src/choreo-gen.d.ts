@@ -34,6 +34,8 @@ export interface BuildChoreographyOpts {
   heroClass?: 'warrior' | 'ranger' | 'mage' | 'rogue' | null;
   /** 4a.4 (кръг 2): свободния текст на foe.name — виж loadout.js weaponKit(). */
   foeName?: string;
+  /** 4b: foe.sprite от сървъра — виж loadout.js weaponKit()/beast-config.js bodyKind(). */
+  foeSprite?: string;
 }
 
 export function buildChoreography(

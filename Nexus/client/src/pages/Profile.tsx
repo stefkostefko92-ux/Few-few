@@ -95,7 +95,7 @@ export default function Profile(): React.ReactElement {
         <div className="panel-header">
           <h2 className="panel-title">{t('profile.title')}</h2>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: 24, alignItems: 'flex-start' }}>
+        <div className="hero-header-grid" style={{ display: 'grid', gridTemplateColumns: '140px minmax(0, 1fr)', gap: 24, alignItems: 'flex-start' }}>
           <Avatar avatar={profile.avatar} frame={profile.frame_slug} size={132} />
           <div>
             <div className="flex" style={{ alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>

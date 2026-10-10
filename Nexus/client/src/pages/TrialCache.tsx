@@ -32,6 +32,7 @@ export default function TrialCache(): React.ReactElement {
   const [tokens, setTokens] = useState(0);
   const [guarantees, setGuarantees] = useState(0);
   const [offerings, setOfferings] = useState<Offering[]>([]);
+  const [busy, setBusy] = useState(false);
 
   async function load() {
     try {
@@ -44,11 +45,15 @@ export default function TrialCache(): React.ReactElement {
   useEffect(() => { load(); }, []);
 
   async function buy(o: Offering) {
+    // busy: двоен клик = два пъти похарчени жетони.
+    if (busy) return;
+    setBusy(true);
     try {
       const r = await api.post('/trial-cache/buy', { slug: o.slug });
       toast(t('trialCache.acquired', { name: r.name }), 'success');
       await Promise.all([load(), refresh()]);
     } catch (e: any) { toast(e.message, 'error'); }
+    finally { setBusy(false); }
   }
 
   const groups: Record<string, Offering[]> = {};
@@ -103,7 +108,7 @@ export default function TrialCache(): React.ReactElement {
                     <span className="tag" style={{ background: 'rgba(255,232,138,.15)', color: 'var(--gold-1)', fontFamily: 'var(--font-mono)' }}>
                       ⬢ {o.cost}
                     </span>
-                    <button className="btn btn-primary" disabled={!affordable || sold} onClick={() => buy(o)}>
+                    <button className="btn btn-primary" disabled={busy || !affordable || sold} onClick={() => buy(o)}>
                       {sold ? t('trialCache.owned') : affordable ? t('trialCache.redeem') : t('trialCache.needMore', { n: o.cost - tokens })}
                     </button>
                   </div>

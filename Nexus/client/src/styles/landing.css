@@ -91,27 +91,33 @@
 }
 
 /* ===== Animated gradient mesh ===== */
+/* ПРОИЗВОДИТЕЛНОСТ (лаг/забиване на лендинга): мрежата беше absolute върху
+   ЦЯЛАТА страница (~14 700 px) с filter:blur(120px) + mix-blend-mode:screen
+   на 4 анимирани петна → blur-ът се преизчисляваше всеки кадър, а смесването
+   изискваше изолирана група с размера на страницата (~80 MB GPU памет само
+   за нея). Измерено в Chromium: 12.5 → 42 fps при скрол само от тази смяна.
+   Сега: fixed слой с размера на екрана, мекотата идва от самия градиент
+   (без filter), без blend режим — на почти черен фон screen ≈ нормално. */
 .gradient-mesh {
-  position: absolute;
+  position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
   overflow: hidden;
+  contain: strict;
 }
 .mesh-blob {
   position: absolute;
   width: 800px;
   height: 800px;
   border-radius: 50%;
-  filter: blur(120px);
-  mix-blend-mode: screen;
-  opacity: .55;
+  opacity: .4;
   will-change: transform;
 }
-.mesh-blob.mesh-1 { background: radial-gradient(circle, #d6a13d, transparent 70%); top: -200px; left: -200px; animation: mesh-drift-1 22s ease-in-out infinite; }
-.mesh-blob.mesh-2 { background: radial-gradient(circle, #b6261b, transparent 70%); top: 25%; right: -300px; animation: mesh-drift-2 26s ease-in-out infinite; }
-.mesh-blob.mesh-3 { background: radial-gradient(circle, #6f3fb6, transparent 70%); bottom: -300px; left: 35%; animation: mesh-drift-3 30s ease-in-out infinite; }
-.mesh-blob.mesh-4 { background: radial-gradient(circle, #1f8b54, transparent 70%); top: 60%; left: -250px; animation: mesh-drift-4 28s ease-in-out infinite; opacity: .35; }
+.mesh-blob.mesh-1 { background: radial-gradient(circle closest-side, rgba(214,161,61,.75), rgba(214,161,61,.28) 45%, transparent); top: -200px; left: -200px; animation: mesh-drift-1 22s ease-in-out infinite; }
+.mesh-blob.mesh-2 { background: radial-gradient(circle closest-side, rgba(182,38,27,.75), rgba(182,38,27,.28) 45%, transparent); top: 25%; right: -300px; animation: mesh-drift-2 26s ease-in-out infinite; }
+.mesh-blob.mesh-3 { background: radial-gradient(circle closest-side, rgba(111,63,182,.75), rgba(111,63,182,.28) 45%, transparent); bottom: -300px; left: 35%; animation: mesh-drift-3 30s ease-in-out infinite; }
+.mesh-blob.mesh-4 { background: radial-gradient(circle closest-side, rgba(31,139,84,.75), rgba(31,139,84,.28) 45%, transparent); top: 60%; left: -250px; animation: mesh-drift-4 28s ease-in-out infinite; opacity: .25; }
 @keyframes mesh-drift-1 {
   0%, 100% { transform: translate(0, 0) scale(1); }
   33% { transform: translate(120px, 100px) scale(1.15); }
@@ -132,8 +138,10 @@
 }
 
 /* Background grid */
+/* fixed с размера на екрана — absolute върху цялата страница правеше слой
+   ~80 MB (Overlap промоция над анимираната мрежа). */
 .landing-grid {
-  position: absolute;
+  position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
@@ -189,10 +197,12 @@
 [data-reveal-stagger].revealed > *:nth-child(n+13) { opacity: 1; transform: translateY(0); transition-delay: .55s; }
 
 /* ===== 3D tilt + glare ===== */
+/* will-change се слага от LandingEffects само докато курсорът е над картата —
+   постоянното беше ~23 отделни GPU слоя, и то на телефон, където наклонът
+   изобщо не работи. */
 [data-tilt] {
   position: relative;
   transform-style: preserve-3d;
-  will-change: transform;
 }
 .tilt-glare {
   position: absolute;
@@ -245,9 +255,12 @@
 /* Section reveal helper */
 .section [data-reveal] { transition-delay: .05s; }
 
+/* Жарава: fixed с размера на екрана, не absolute върху цялата страница —
+   анимиран transform на слой 1440×14 700 px (~80 MB) принуждаваше и десетки
+   карти над него в собствени слоеве (overlap промоция). */
 .landing::before {
   content: '';
-  position: absolute;
+  position: fixed;
   inset: 0;
   background-image:
     radial-gradient(2px 2px at 25% 20%, rgba(255,210,140,.85), transparent 60%),
@@ -934,7 +947,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .landing::before, .hero-fighter, .hero-eyebrow, .hero-title, .hero-subtitle, .hero-cta, .hero-logo {
+  .landing::before, .mesh-blob, .hero-fighter, .hero-eyebrow, .hero-title, .hero-subtitle, .hero-cta, .hero-logo {
     animation: none !important;
   }
 }
@@ -993,196 +1006,76 @@
 .streak-cell.current { border-color: var(--gold-2); box-shadow: 0 0 24px rgba(214,161,61,.25); background: linear-gradient(180deg, rgba(214,161,61,.1), rgba(214,161,61,.02)); }
 .streak-cell .streak-day { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-3); }
 
-.wheel-stage {
-  position: relative;
-  padding: 24px;
-  min-height: 360px;
-  display: flex;
-  flex-direction: column;
+/* ===== Колело на късмета (pages/Wheel.tsx) — SVG; резените следват реалните шансове ===== */
+.wheel-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 28px;
   align-items: center;
+  padding: 8px 4px 4px;
 }
-.wheel-pointer {
-  position: absolute;
-  top: 24px;
-  left: 50%;
-  width: 0; height: 0;
-  border-left: 14px solid transparent;
-  border-right: 14px solid transparent;
-  border-top: 24px solid var(--gold-1);
-  transform: translateX(-50%);
-  filter: drop-shadow(0 4px 6px rgba(0,0,0,.6));
-  z-index: 4;
+.wheel-stage { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+.wheel-svg {
+  width: min(380px, 100%);
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 18px 40px rgba(0,0,0,.55)) drop-shadow(0 0 32px rgba(214,161,61,.18));
 }
-.wheel {
-  position: relative;
-  width: 280px;
-  height: 280px;
-  border-radius: 50%;
-  border: 6px solid var(--gold-2);
-  background: var(--bg-3);
-  box-shadow: 0 0 48px rgba(214,161,61,.3), inset 0 0 32px rgba(0,0,0,.5);
-  overflow: hidden;
-  transition: transform 4s cubic-bezier(.18,.85,.18,1);
-  margin-top: 60px;
-}
-.wheel-segment { position: absolute; inset: 0; border-radius: 50%; transform-origin: center; }
-.wheel-label {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform-origin: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  font-weight: 700;
-  font-size: 18px;
-  color: #fff;
-  text-shadow: 0 1px 2px rgba(0,0,0,.6);
-}
-.wheel-hub {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 64px; height: 64px;
-  border-radius: 50%;
-  background: linear-gradient(180deg, var(--gold-1), var(--gold-3));
-  border: 3px solid var(--bg-1);
-  display: grid; place-items: center;
-  font-family: var(--font-display);
-  font-weight: 700;
-  color: #181307;
-  z-index: 3;
-  box-shadow: inset 0 2px 0 rgba(255,255,255,.3);
-}
-
-/* =====================================================================
-   Cinematic Intro — first-impression overlay with narrated speech.
-   ===================================================================== */
-.cinematic-intro {
-  position: fixed; inset: 0; z-index: 9999;
-  background: radial-gradient(ellipse at center, #1a0e05 0%, #08050a 60%, #000 100%);
-  display: grid; grid-template-rows: 1fr auto 1fr;
-  place-items: center;
-  overflow: hidden;
-  cursor: pointer;
-  animation: ciFadeIn 1.4s ease-out;
-}
-.cinematic-intro.is-closing { animation: ciFadeOut .7s ease-in forwards; pointer-events: none; }
-
-@keyframes ciFadeIn  { from { opacity: 0 } to { opacity: 1 } }
-@keyframes ciFadeOut { from { opacity: 1; filter: brightness(1) } to { opacity: 0; filter: brightness(1.4) } }
-
-.ci-sky {
-  position: absolute; inset: 0;
-  background:
-    radial-gradient(ellipse at 50% 35%, rgba(214,161,61,.18), transparent 55%),
-    radial-gradient(ellipse at 30% 80%, rgba(232,90,79,.10), transparent 60%),
-    radial-gradient(ellipse at 80% 90%, rgba(106,167,255,.08), transparent 55%);
-  animation: ciSkyDrift 14s ease-in-out infinite alternate;
-}
-@keyframes ciSkyDrift { from { transform: scale(1) translateY(0) } to { transform: scale(1.08) translateY(-2%) } }
-
-.ci-embers { position: absolute; inset: 0; pointer-events: none; }
-.ci-ember {
-  position: absolute; bottom: -10px;
-  width: 3px; height: 3px;
-  border-radius: 50%;
-  background: radial-gradient(circle, #ffe88a, #d6a13d 60%, transparent);
-  box-shadow: 0 0 6px #ffd34d;
-  animation: ciEmberRise 10s linear infinite;
-}
-@keyframes ciEmberRise {
-  0%   { transform: translateY(0) translateX(0) scale(.6); opacity: 0 }
-  10%  { opacity: 1 }
-  90%  { opacity: 1 }
-  100% { transform: translateY(-110vh) translateX(40px) scale(1.2); opacity: 0 }
-}
-
-.ci-sigil-wrap {
-  position: relative;
-  width: 240px; height: 280px;
-  grid-row: 1;
-  align-self: end;
-  margin-bottom: 20px;
-  animation: ciSigilRise 2.4s cubic-bezier(.18,.9,.25,1) both;
-}
-@keyframes ciSigilRise {
-  from { transform: translateY(40px) scale(.7); opacity: 0; filter: blur(8px) }
-  to   { transform: translateY(0)    scale(1);  opacity: 1; filter: blur(0) }
-}
-
-.ci-sigil {
-  width: 100%; height: 100%;
-  filter: drop-shadow(0 0 22px rgba(255,211,77,.55)) drop-shadow(0 0 60px rgba(255,177,89,.35));
-  animation: ciSigilGlow 4s ease-in-out infinite alternate;
-}
-@keyframes ciSigilGlow {
-  from { filter: drop-shadow(0 0 22px rgba(255,211,77,.45)) drop-shadow(0 0 60px rgba(255,177,89,.25)) }
-  to   { filter: drop-shadow(0 0 36px rgba(255,232,138,.7)) drop-shadow(0 0 90px rgba(255,177,89,.5)) }
-}
-
-.ci-rings { position: absolute; inset: 0; pointer-events: none; }
-.ci-ring {
-  position: absolute; inset: 50%;
-  width: 80px; height: 80px;
-  margin-left: -40px; margin-top: -40px;
-  border: 1px solid rgba(255,232,138,.4);
-  border-radius: 50%;
-  animation: ciRingExpand 3.4s ease-out infinite;
-}
-.ci-ring.r2 { animation-delay: 1.2s }
-.ci-ring.r3 { animation-delay: 2.4s }
-@keyframes ciRingExpand {
-  from { transform: scale(.4); opacity: 1 }
-  to   { transform: scale(3.8); opacity: 0 }
-}
-
-.ci-narration {
-  grid-row: 2;
-  max-width: 760px;
-  padding: 0 24px;
-  text-align: center;
-  min-height: 110px;
-  display: grid; place-items: center;
-}
-.ci-line {
-  font-family: var(--font-display);
-  font-size: clamp(20px, 2.6vw, 32px);
-  line-height: 1.45;
-  color: #ffe9b5;
-  letter-spacing: .015em;
-  text-shadow: 0 0 18px rgba(255,211,77,.35), 0 2px 0 rgba(0,0,0,.5);
-  animation: ciLineIn .8s ease-out;
-}
-@keyframes ciLineIn {
-  from { opacity: 0; transform: translateY(20px); filter: blur(6px) }
-  to   { opacity: 1; transform: translateY(0);    filter: blur(0) }
-}
-
-.ci-skip {
-  position: absolute;
-  bottom: 28px; right: 28px;
-  background: rgba(20,15,10,.6);
-  border: 1px solid rgba(255,211,77,.25);
-  color: #ffe9b5;
-  padding: 8px 14px;
-  border-radius: 999px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: .12em;
+.wheel-rotor { transform-box: view-box; transform-origin: 0 0; /* въртене около центъра (0,0) на viewBox-а */ transition-property: transform; transition-timing-function: cubic-bezier(.12,.82,.16,1); }
+.wheel-seg-label {
+  fill: #fff7df;
+  font: 600 7px/1 var(--font-body);
   text-transform: uppercase;
-  cursor: pointer;
-  transition: all .2s;
-  z-index: 2;
+  letter-spacing: .02em;
+  paint-order: stroke;
+  stroke: rgba(0,0,0,.55);
+  stroke-width: 1.6px;
 }
-.ci-skip:hover { background: rgba(40,30,18,.9); border-color: rgba(255,232,138,.6); }
-.ci-skip kbd { padding: 2px 6px; border: 1px solid rgba(255,232,138,.3); border-radius: 4px; font-size: 10px; margin-left: 4px; }
-
-@media (max-width: 640px) {
-  .ci-sigil-wrap { width: 160px; height: 200px; }
-  .ci-line { font-size: 18px; }
+.wheel-pointer { fill: #f6dc93; stroke: #5a3d0c; stroke-width: 1.4; filter: drop-shadow(0 3px 3px rgba(0,0,0,.6)); }
+.wheel-hub { cursor: default; }
+.wheel-hub.ready { cursor: pointer; }
+.wheel-hub.ready circle:first-child { animation: wheel-hub-glow 2.4s ease-in-out infinite; }
+.wheel-hub-text { fill: #241807; font: 700 6.6px/1 var(--font-display); letter-spacing: .06em; text-transform: uppercase; pointer-events: none; }
+@keyframes wheel-hub-glow { 0%, 100% { filter: none; } 50% { filter: drop-shadow(0 0 5px rgba(255,220,140,.9)); } }
+.wheel-spin { min-width: 220px; }
+.wheel-result {
+  display: grid; gap: 4px; justify-items: center; text-align: center;
+  padding: 12px 18px; border-radius: var(--radius-md);
+  border: 1px solid rgba(214,161,61,.45);
+  background: linear-gradient(180deg, rgba(214,161,61,.12), rgba(214,161,61,.03));
 }
-
+.wheel-result strong { color: var(--gold-1); font-family: var(--font-display); font-size: 18px; }
+.wheel-result span { color: var(--text-2); font-variant-numeric: tabular-nums; }
+.wheel-odds {
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-md);
+  background: rgba(8,9,13,.55);
+  padding: 18px 18px 14px;
+}
+.wheel-odds-title { font-family: var(--font-display); color: var(--gold-1); letter-spacing: .06em; text-transform: uppercase; font-size: 13px; margin-bottom: 10px; }
+.wheel-odds ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.wheel-odds li {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr) auto 52px;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 6px;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  font-size: 13.5px;
+}
+.wheel-odds li:last-child { border-bottom: 0; }
+.wheel-odds li.hit { background: rgba(214,161,61,.1); border-radius: var(--radius-sm); }
+.wheel-swatch { width: 14px; height: 14px; border-radius: 4px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.18); }
+.wheel-odds-name { color: var(--text-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wheel-odds-reward { color: var(--text-3); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.wheel-odds-chance { color: var(--gold-1); text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.wheel-odds-note { margin: 12px 2px 0; font-size: 12px; line-height: 1.5; color: var(--text-3); }
+.wheel-error { display: flex; justify-content: center; padding: 24px; }
+@media (max-width: 860px) {
+  .wheel-layout { grid-template-columns: minmax(0, 1fr); }
+  .wheel-odds li { grid-template-columns: 14px minmax(0, 1fr) auto 46px; gap: 8px; font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) { .wheel-hub.ready circle:first-child { animation: none; } }
 
 /* =========================================================================
    HERO REWORK — video background replaces the SVG fighters trio.

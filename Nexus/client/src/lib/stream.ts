@@ -16,6 +16,9 @@ let es: EventSource | null = null;
 let started = false;
 let reconnectAt = 1000;
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+// Брояч на сесиите start/stop: connect() чака ticket асинхронно и при бърз
+// stop→start старото извикване би отворило втори (осиротял) EventSource.
+let generation = 0;
 
 /** Абонирай се за SSE събитие (напр. „notification", „chat"). */
 export function onStream(event: string, fn: Handler): () => void {
@@ -32,14 +35,19 @@ function emit(event: string, data: any): void {
 
 async function connect(): Promise<void> {
   if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+  const gen = generation;
   try {
     const { ticket } = await api.post<{ ticket: string }>('/stream/ticket', {});
+    // След await: ако междувременно е спрян/рестартиран, тази връзка е излишна.
+    if (!started || gen !== generation) return;
+    if (es) es.close(); // никога две живи връзки
     const src = new EventSource(`/api/stream?ticket=${encodeURIComponent(ticket)}`);
     es = src;
 
     src.addEventListener('ready', () => { reconnectAt = 1000; });
-    // Известните типове събития от сървъра.
-    for (const ev of ['notification', 'chat']) {
+    // Известните типове събития от сървъра (server/src/routes/chat.ts праща
+    // chat_global и dm, guild.ts — chat). Неабонирано събитие = мълчи.
+    for (const ev of ['notification', 'chat', 'chat_global', 'dm']) {
       src.addEventListener(ev, (e: MessageEvent) => {
         let data: any = {};
         try { data = e.data ? JSON.parse(e.data) : {}; } catch { /* keep {} */ }
@@ -50,11 +58,12 @@ async function connect(): Promise<void> {
       // EventSource прави собствен reconnect, но при 401 (изтекъл ticket)
       // трябва да вземем нов — затваряме и планираме ръчно свързване.
       src.close();
-      if (es === src) es = null;
+      if (es !== src) return; // стара (заменена) връзка — не планирай reconnect
+      es = null;
       scheduleReconnect();
     };
   } catch {
-    scheduleReconnect();
+    if (gen === generation) scheduleReconnect();
   }
 }
 
@@ -71,6 +80,7 @@ function scheduleReconnect(): void {
 export function startStream(): void {
   if (started) return;
   started = true;
+  generation++;
   reconnectAt = 1000;
   connect();
 }
@@ -78,6 +88,7 @@ export function startStream(): void {
 /** Спира потока (logout). Чисти връзката и таймерите. */
 export function stopStream(): void {
   started = false;
+  generation++;
   if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
   if (es) { es.close(); es = null; }
 }

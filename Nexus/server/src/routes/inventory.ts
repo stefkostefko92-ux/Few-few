@@ -36,6 +36,12 @@ const equipSchema = z.object({ inventoryId: z.number().int() });
 
 const slotForCategory = SLOT_FOR_CATEGORY;
 
+// Промяна на количество в стак, вкаран в чакаща размяна, сваля „готов“ и на двамата —
+// иначе A можеше да изпие стака СЛЕД като B е потвърдил и B получаваше 1 отвара вместо 50.
+function unreadyTradesWith(db: ReturnType<typeof getDb>, characterId: number): void {
+  db.prepare("UPDATE trade_offers SET from_ready = 0, to_ready = 0 WHERE status = 'pending' AND (from_id = ? OR to_id = ?)").run(characterId, characterId);
+}
+
 router.post('/equip', (req, res) => {
   const parse = equipSchema.safeParse(req.body);
   if (!parse.success) {
@@ -148,6 +154,7 @@ router.post('/use', (req, res) => {
       if (dec.changes !== 1) { const e: any = new Error('No charges left'); e.clientSafe = true; e.status = 400; throw e; }
       // Trim the now-empty stack.
       db.prepare('DELETE FROM inventory WHERE id = ? AND quantity <= 0').run(row.inv_id);
+      unreadyTradesWith(db, ch.id);
       const char = db.prepare('SELECT * FROM characters WHERE id = ?').get(ch.id) as Character;
       let buffApplied: any = null;
       if (typeof row.sub_type === 'string' && row.sub_type.startsWith('buff:')) {
@@ -235,6 +242,7 @@ router.post('/sell', (req, res) => {
       ).run(row.inv_id, ch.id);
       if (dec.changes !== 1) { const e: any = new Error('Item not found'); e.clientSafe = true; e.status = 404; throw e; }
       db.prepare('DELETE FROM inventory WHERE id = ? AND quantity <= 0').run(row.inv_id);
+      unreadyTradesWith(db, ch.id);
       const price = row.sell_price;
       db.prepare('UPDATE characters SET gold = gold + ? WHERE id = ?').run(price, ch.id);
       return { row, price };

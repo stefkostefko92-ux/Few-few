@@ -24,6 +24,7 @@ export default function Forge(): React.ReactElement {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [status, setStatus] = useState<ForgeStatus | null>(null);
   const [outcome, setOutcome] = useState<{ kind: string; text: string } | null>(null);
+  const [busy, setBusy] = useState(false);
 
   async function loadBag() {
     try {
@@ -44,7 +45,9 @@ export default function Forge(): React.ReactElement {
   useEffect(() => { if (selectedId) loadStatus(selectedId); else setStatus(null); }, [selectedId]);
 
   async function enchant() {
-    if (!selectedId) return;
+    // busy: двоен клик = две омагьосвания (и двоен риск от счупване).
+    if (!selectedId || busy) return;
+    setBusy(true);
     setOutcome(null);
     try {
       const r = await api.post('/forge/enchant', { inventoryId: selectedId });
@@ -56,6 +59,7 @@ export default function Forge(): React.ReactElement {
       if (r.outcome === 'shatter') setSelectedId(null);
       else await loadStatus(selectedId);
     } catch (e: any) { toast(e.message, 'error'); }
+    finally { setBusy(false); }
   }
 
   return (
@@ -72,7 +76,7 @@ export default function Forge(): React.ReactElement {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: 22 }}>
+      <div className="forge-layout" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.2fr)', gap: 22 }}>
         {/* Left: pick item */}
         <div className="panel">
           <div className="panel-title" style={{ fontSize: 16 }}>{t('forge.bag')}</div>
@@ -146,7 +150,7 @@ export default function Forge(): React.ReactElement {
 
               <button
                 className="btn btn-primary"
-                disabled={!status.can_afford || status.enchants >= status.max_enchants}
+                disabled={busy || !status.can_afford || status.enchants >= status.max_enchants}
                 onClick={enchant}
                 style={{ width: '100%', fontSize: 16 }}
               >

@@ -16,11 +16,16 @@ export default function Trade(): React.ReactElement {
   const [toName, setToName] = useState('');
   const [gold, setGold] = useState(0);
   const [sel, setSel] = useState<Set<number>>(new Set());
+  // dirty = полето за злато е на фокус (играчът пише); pushing = заявката
+  // /set още тече. И в двата случая polling-ът (3s) НЕ презаписва локалните
+  // стойности — преди dirty беше вдигнат само по време на заявката и
+  // polling-ът затриваше въведеното злато, докато играчът пише.
   const dirty = useRef(false);
+  const pushing = useRef(false);
 
   const loadOffer = () => api.get<{ offer: Offer | null }>('/trade/active').then((r) => {
     setOffer(r.offer);
-    if (r.offer && !dirty.current) {
+    if (r.offer && !dirty.current && !pushing.current) {
       setGold(r.offer.me.gold);
       setSel(new Set(r.offer.me.items.map((i) => i.inv_id)));
     }
@@ -36,10 +41,10 @@ export default function Trade(): React.ReactElement {
   };
   const pushSet = async (items: number[], g: number) => {
     if (!offer) return;
-    dirty.current = true;
+    pushing.current = true;
     try { await api.post(`/trade/${offer.id}/set`, { items, gold: g }); }
     catch (e: any) { toast(e.message, 'error'); }
-    finally { dirty.current = false; loadOffer(); }
+    finally { pushing.current = false; loadOffer(); }
   };
   const toggleItem = (invId: number) => {
     const next = new Set(sel);
@@ -105,7 +110,9 @@ export default function Trade(): React.ReactElement {
       <div style={{ marginTop: 16 }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
           <span>{t('trade.gold', { defaultValue: 'Your gold' })}</span>
-          <input type="number" min={0} value={gold} onChange={(e) => setGold(Math.max(0, Number(e.target.value)))} onBlur={() => pushSet([...sel], gold)}
+          <input type="number" min={0} value={gold} onChange={(e) => setGold(Math.max(0, Number(e.target.value) || 0))}
+            onFocus={() => { dirty.current = true; }}
+            onBlur={() => { void pushSet([...sel], gold); dirty.current = false; /* pushing вече пази до отговора */ }}
             style={{ width: 120, padding: '6px 8px', background: 'var(--surface-2,#14171f)', border: '1px solid var(--border,#2a2f3a)', borderRadius: 6, color: 'var(--text-1)' }} />
         </label>
         <div className="muted" style={{ fontSize: 13, marginBottom: 6 }}>{t('trade.yourItems', { defaultValue: 'Your tradable items' })}</div>

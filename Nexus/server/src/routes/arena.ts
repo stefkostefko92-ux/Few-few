@@ -127,7 +127,7 @@ router.post('/challenge', (req, res) => {
     // scale as hunting so the drop matches the difficulty band).
     if (Math.random() < DROP_RATES.arena) {
       const drop = grantDrop(char.id, char.level, char.class || '', opp.level);
-      if (drop.slug) itemDropSlug = drop.slug;
+      if (drop.slug && !drop.duplicate) itemDropSlug = drop.slug; // дубликатът е авто-продаден (refundGold), не е нов предмет
       if (drop.refundGold > 0) { goldGain += drop.refundGold; char.gold += drop.refundGold; }
     }
   }

@@ -29,7 +29,11 @@ export default function Inventory(): React.ReactElement {
   const [hover, setHover] = useState<{ item: InventoryItem | null; x: number; y: number }>({ item: null, x: 0, y: 0 });
   const [actions, setActions] = useState<{ item: InventoryItem; x: number; y: number } | null>(null);
   const [sellPriceFor, setSellPriceFor] = useState<InventoryItem | null>(null);
-  const [listPrice, setListPrice] = useState(50);
+  // Суровият низ от полето — clamp-ът е при submit, иначе изтриването на
+  // числото веднага го връщаше на 1 и не можеше да се въведе нова цена.
+  const [listPriceRaw, setListPriceRaw] = useState('50');
+  const listPrice = clampPrice(listPriceRaw);
+  const [busy, setBusy] = useState(false);
 
   async function load() {
     try {
@@ -61,7 +65,11 @@ export default function Inventory(): React.ReactElement {
     setHover({ item: it, x: e.clientX + 16, y: e.clientY + 16 });
   }
 
+  // busy: менюто остава отворено по време на заявката → двоен клик пиеше
+  // две отвари / продаваше два пъти.
   async function act(path: string, body: any, successMsg: string) {
+    if (busy) return;
+    setBusy(true);
     try {
       await api.post(path, body);
       toast(successMsg, 'success');
@@ -69,17 +77,23 @@ export default function Inventory(): React.ReactElement {
       await Promise.all([load(), refresh()]);
     } catch (e: any) {
       toast(e.message, 'error');
+    } finally {
+      setBusy(false);
     }
   }
 
   async function listOnMarket() {
-    if (!sellPriceFor) return;
+    if (!sellPriceFor || busy) return;
+    const price = clampPrice(listPriceRaw);
+    setListPriceRaw(String(price));
+    setBusy(true);
     try {
-      await api.post('/market/sell', { inventoryId: sellPriceFor.inv_id, priceGold: listPrice });
-      toast(t('inventory.toasts.listedFor', { price: listPrice }), 'success');
+      await api.post('/market/sell', { inventoryId: sellPriceFor.inv_id, priceGold: price });
+      toast(t('inventory.toasts.listedFor', { price }), 'success');
       setSellPriceFor(null);
       await load();
     } catch (e: any) { toast(e.message, 'error'); }
+    finally { setBusy(false); }
   }
 
   return (
@@ -278,16 +292,16 @@ export default function Inventory(): React.ReactElement {
               </button>
             )}
             {actions.item.equipped ? (
-              <button onClick={() => act('/inventory/unequip', { inventoryId: actions.item.inv_id }, t('inventory.toasts.unequipped'))}>{t('inventory.actions.unequip')}</button>
+              <button disabled={busy} onClick={() => act('/inventory/unequip', { inventoryId: actions.item.inv_id }, t('inventory.toasts.unequipped'))}>{t('inventory.actions.unequip')}</button>
             ) : actions.item.category === 'potion' ? (
-              <button onClick={() => act('/inventory/use', { inventoryId: actions.item.inv_id }, t('inventory.toasts.used'))}>{t('inventory.actions.use')}</button>
+              <button disabled={busy} onClick={() => act('/inventory/use', { inventoryId: actions.item.inv_id }, t('inventory.toasts.used'))}>{t('inventory.actions.use')}</button>
             ) : (
-              <button onClick={() => act('/inventory/equip', { inventoryId: actions.item.inv_id }, t('inventory.toasts.equipped'))}>{t('inventory.actions.equip')}</button>
+              <button disabled={busy} onClick={() => act('/inventory/equip', { inventoryId: actions.item.inv_id }, t('inventory.toasts.equipped'))}>{t('inventory.actions.equip')}</button>
             )}
             {!actions.item.equipped && !actions.item.soul_bound && actions.item.category !== 'potion' && (
               <button
                 onClick={() => {
-                  setListPrice(Math.max(1, actions.item.sell_price * 5));
+                  setListPriceRaw(String(Math.max(1, actions.item.sell_price * 5)));
                   setSellPriceFor(actions.item);
                   setActions(null);
                 }}
@@ -297,7 +311,7 @@ export default function Inventory(): React.ReactElement {
             )}
             {/* Купеното с гемове не се продава на търговеца (сървърът го отказва) — без мъртъв бутон. */}
             {!actions.item.equipped && !actions.item.gem_bought && (
-              <button className="danger" onClick={() => act('/inventory/sell', { inventoryId: actions.item.inv_id }, t('inventory.toasts.soldFor', { price: actions.item.sell_price }))}>
+              <button className="danger" disabled={busy} onClick={() => act('/inventory/sell', { inventoryId: actions.item.inv_id }, t('inventory.toasts.soldFor', { price: actions.item.sell_price }))}>
                 {t('inventory.actions.sell', { price: actions.item.sell_price })}
               </button>
             )}
@@ -323,8 +337,9 @@ export default function Inventory(): React.ReactElement {
                 type="number"
                 min={1}
                 max={1_000_000}
-                value={listPrice}
-                onChange={(e) => setListPrice(Math.max(1, Number(e.target.value) || 0))}
+                value={listPriceRaw}
+                onChange={(e) => setListPriceRaw(e.target.value)}
+                onBlur={() => setListPriceRaw(String(clampPrice(listPriceRaw)))}
                 style={{ width: '100%', fontFamily: 'var(--font-mono)' }}
               />
               <div className="muted text-sm" style={{ marginTop: 6 }}>
@@ -333,7 +348,7 @@ export default function Inventory(): React.ReactElement {
             </div>
             <div className="actions">
               <button className="btn" onClick={() => setSellPriceFor(null)}>{t('inventory.actions.cancel')}</button>
-              <button className="btn btn-primary" onClick={listOnMarket}>{t('inventory.listDialog.confirm', { price: listPrice })}</button>
+              <button className="btn btn-primary" disabled={busy} onClick={listOnMarket}>{t('inventory.listDialog.confirm', { price: listPrice })}</button>
             </div>
           </div>
         </>
@@ -352,6 +367,13 @@ function Stat({ k, v }: { k: string; v: string }) {
 }
 
 function cap(s: string) { return s[0].toUpperCase() + s.slice(1); }
+
+/** Цена за пазара: цяло число в [1, 1 000 000] (същите граници като полето). */
+function clampPrice(raw: string): number {
+  const n = Math.floor(Number(raw));
+  if (!Number.isFinite(n)) return 1;
+  return Math.min(1_000_000, Math.max(1, n));
+}
 
 export function itemSummary(it: any, t: (key: string, opts?: Record<string, unknown>) => string): string {
   const parts: string[] = [];

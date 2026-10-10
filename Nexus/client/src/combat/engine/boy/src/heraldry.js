@@ -26,13 +26,25 @@ function weather(ctx, w, h, seed, hem = 0.3) {
   const img = ctx.getImageData(0, 0, w, h);
   const d = img.data;
   const nz = new Noise2(seed);
+  // Петната са вълни от ~64 px: fbm на решетка през G px + билинейно дава същата картина с G² пъти
+  // по-малко извиквания (иначе ~1.5 млн. fbm блокираха main thread-а при зареждане на дуела).
+  const G = 4;
+  const gw = Math.ceil(w / G) + 1;
+  const grid = new Float32Array(gw * (Math.ceil(h / G) + 1));
+  for (let i = 0; i < grid.length; i++) grid[i] = 0.78 + 0.34 * nz.fbm(((i % gw) * G) / 64, (Math.floor(i / gw) * G) / 64, 64, 4);
   for (let y = 0; y < h; y++) {
     const fy = y / h;
     const damp = 1 - Math.max(0, (fy - (1 - hem)) / hem) * 0.55;
+    const y0 = Math.floor(y / G);
+    const ty = y / G - y0;
     for (let x = 0; x < w; x++) {
       const i = (y * w + x) * 4;
       const weave = 0.9 + 0.1 * (((x >> 1) + (y >> 1)) % 2);
-      const stain = 0.78 + 0.34 * nz.fbm(x / 64, y / 64, 64, 4);
+      const x0 = Math.floor(x / G);
+      const tx = x / G - x0;
+      const r = y0 * gw + x0;
+      const top = grid[r] + (grid[r + 1] - grid[r]) * tx;
+      const stain = top + (grid[r + gw] + (grid[r + gw + 1] - grid[r + gw]) * tx - top) * ty;
       const k = weave * stain * damp;
       d[i] *= k;
       d[i + 1] *= k;
@@ -64,7 +76,7 @@ export function capeTextureAzure() {
   const w = 512;
   const h = 768;
   const c = makeCanvas(w, h);
-  const ctx = c.getContext('2d');
+  const ctx = c.getContext('2d', { willReadFrequently: true }); // CPU canvas: weather() чете пикселите
   ctx.fillStyle = AZURE;
   ctx.fillRect(0, 0, w, h);
   ctx.fillStyle = OR;
@@ -85,7 +97,7 @@ export function capeTextureCrimson() {
   const w = 512;
   const h = 768;
   const c = makeCanvas(w, h);
-  const ctx = c.getContext('2d');
+  const ctx = c.getContext('2d', { willReadFrequently: true }); // CPU canvas: weather() чете пикселите
   ctx.fillStyle = GULES;
   ctx.fillRect(0, 0, w, h);
   ctx.fillStyle = '#2a0508';
@@ -152,9 +164,9 @@ export function shieldTextures() {
   const B = SHIELD_BOUNDS;
   const map = (x, y) => [((x - B.x0) / (B.x1 - B.x0)) * w, ((B.y1 - y) / (B.y1 - B.y0)) * h];
   const c = makeCanvas(w, h);
-  const ctx = c.getContext('2d');
+  const ctx = c.getContext('2d', { willReadFrequently: true }); // CPU canvas: weather() чете пикселите
   const r = makeCanvas(w, h);
-  const rtx = r.getContext('2d');
+  const rtx = r.getContext('2d', { willReadFrequently: true }); // CPU canvas: weather() чете пикселите
   ctx.fillStyle = '#5a4128';
   ctx.fillRect(0, 0, w, h);
   heaterPath(ctx, map);
@@ -228,7 +240,7 @@ export function bannerTexture() {
   const w = 512;
   const h = 1024;
   const c = makeCanvas(w, h);
-  const ctx = c.getContext('2d');
+  const ctx = c.getContext('2d', { willReadFrequently: true }); // CPU canvas: weather() чете пикселите
   ctx.fillStyle = GULES;
   ctx.fillRect(0, 0, w, h);
   ctx.fillStyle = OR;

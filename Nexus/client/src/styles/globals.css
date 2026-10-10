@@ -54,7 +54,7 @@
   --glow-gold: 0 0 32px rgba(214,161,61,.25);
 
   /* Typography */
-  --font-display: 'Cinzel', 'Times New Roman', serif;
+  --font-display: 'Cinzel', 'Cormorant SC', 'Times New Roman', serif;
   --font-body: 'Manrope', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   /* Четивен сериф само за прозаичен текст на лендинга (hero subtitle,
@@ -473,6 +473,14 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
 @media (max-width: 1600px) {
   .nav-link { padding: 10px 10px; }
   .nav-links { gap: 2px; }
+}
+/* Под 1600px и това не стигаше: БГ/IT етикетите са по-дълги и лентата преливаше с ~26px
+   (1440) до ~190px (1280), профилът се режеше вдясно. Горните връзки дублират страничната
+   лента — тук остават само иконите (title/aria-label в Navbar.tsx носят името). */
+@media (max-width: 1600px) and (min-width: 901px) {
+  .nav-links { margin-left: 18px; }
+  .nav-link { padding: 10px 11px; }
+  .nav-link > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 }
 
 .nav-stat {
@@ -2161,6 +2169,28 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
     border: none;
   }
   .admin-table td code { word-break: break-all; }
+  /* Карта на ред: клетка с data-label показва етикета вляво и стойността вдясно —
+     иначе на телефон пазарът показваше голи „320“ и „10“ без да е ясно какво са. */
+  .admin-table td[data-label] {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 14px;
+    text-align: right;
+    border-top: 1px solid rgba(255,255,255,.04);
+  }
+  .admin-table td[data-label]::before {
+    content: attr(data-label);
+    flex: none;
+    color: var(--text-4);
+    font-family: var(--font-body);
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    text-align: left;
+  }
+  .admin-table td:last-child:not([data-label]) { padding-top: 10px; }
+  .admin-table td:last-child:not([data-label]) .btn { width: 100%; }
 }
 
 /* Forge / inventory / hero grids — keep 2 columns down to ~420px,
@@ -2210,10 +2240,11 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
 }
 .lang-btn:hover { color: var(--text, #e8ecf3); }
 .lang-btn.active {
-  background: var(--accent, #7c5cff);
-  color: #fff;
+  /* Злато като всеки друг активен елемент — лилавият акцент беше единственият извън палитрата. */
+  background: linear-gradient(180deg, var(--gold-1), var(--gold-2));
+  color: #181307;
 }
-.lang-selector--compact .lang-btn { padding: 2px 5px; font-size: 0.68rem; }
+.lang-selector--compact .lang-btn { padding: 2px 5px; font-size: 0.75rem; }
 
 /* Per-action skip бутонче в cooldown ticker-а */
 .cooldown-skip-one {
@@ -2329,6 +2360,12 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
    inline gridTemplateColumns бие клас-селектор по специфичност. */
 @media (max-width: 480px) {
   .hero-header-grid { grid-template-columns: 1fr !important; justify-items: center; text-align: center; }
+  /* Текстовата колона (име, био в Profile) остава на пълна ширина, не се свива до съдържанието. */
+  .hero-header-grid > :last-child { justify-self: stretch; }
+}
+/* Ковачницата: раница + детайл един под друг под 760px (бяха две колони по ~150px). */
+@media (max-width: 760px) {
+  .forge-layout { grid-template-columns: minmax(0, 1fr) !important; }
 }
 
 /* .nav-profile на много тесен телефон (≤360px) — потвърден overflow (виж
@@ -2344,4 +2381,85 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   .lang-selector--compact { gap: 0; }
   .lang-selector--compact .lang-btn { padding: 5px 5px; }
   .navbar { padding: 0 8px; }
+}
+
+/* ===== Класация и боен пропуск на телефон =====
+   Класация: класът/нивото/W-L се свиват в подред под името (.lb-sub), рейтингът остава.
+   Боен пропуск: всяка задача става карта — номер+вид+текст горе, после етикетирани
+   прогрес/безплатна/премиум награда (преди наградите бяха отрязани вдясно). */
+.lb-sub { display: none; }
+@media (max-width: 640px) {
+  /* .table-scroll иначе държи min-width: max-content и рейтингът/наградите се режеха вдясно. */
+  .table-scroll > table.lb-table, .table-scroll > table.bp-table { min-width: 0; }
+  .lb-table th, .lb-table td { padding: 10px 8px !important; }
+  .lb-wide { display: none; }
+  .lb-sub { display: block; margin-top: 3px; font-size: 12px; color: var(--text-3); }
+  .bp-table, .bp-table tbody { display: block; }
+  .bp-table thead { display: none; }
+  .bp-table tbody tr {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr);
+    align-items: center;
+    gap: 6px 10px;
+    padding: 14px 4px;
+    border-bottom: 1px solid var(--border-1);
+  }
+  .bp-table tbody td { display: block; padding: 0; border: 0; }
+  .bp-table tbody td.bp-task { font-weight: 600; color: var(--text-1); }
+  .bp-table tbody td[data-label] {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 112px minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+  }
+  .bp-table tbody td[data-label]::before {
+    content: attr(data-label);
+    color: var(--text-4);
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+}
+
+/* Аукцион на телефон: таймерът слиза под предмета на един ред, залогът е на цяла ширина
+   (преди всичко се притискаше в три колони и бутонът „Нужни 11 още“ се пречупваше на 4 реда). */
+@media (max-width: 640px) {
+  .auction-head { flex-wrap: wrap; }
+  .auction-closes { flex: 1 1 100%; display: flex; justify-content: space-between; align-items: baseline; text-align: left !important; padding-top: 10px; border-top: 1px solid var(--border-1); }
+  .auction-bid-row { flex-direction: column; align-items: stretch !important; }
+  .auction-bid-controls input { flex: 1; width: auto !important; min-width: 0; }
+  .auction-bid-controls .btn { flex: none; }
+}
+
+/* Кулата на телефон: бутонът „Изкачи“ слиза под текста — иначе „Етаж 1“ се чупеше на два реда. */
+@media (max-width: 520px) {
+  .tower-gate { flex-wrap: wrap; }
+  .tower-gate > .btn { flex: 1 1 100%; }
+}
+
+/* Празно състояние на страница — заглавие, обяснение и следваща стъпка. */
+.empty-state { display: grid; justify-items: center; gap: 10px; text-align: center; padding: 42px 24px; }
+.empty-state-title { font-family: var(--font-display); font-size: 20px; color: var(--gold-1); letter-spacing: .04em; }
+.empty-state p { max-width: 520px; margin: 0 0 6px; line-height: 1.6; }
+
+/* Таблет/малък лаптоп (901–1180px): лентата преливаше с до ~160px. Марката остава само
+   като знак, стат-пилата губят етикета (точката с цвят остава), под 1020px HP се маха —
+   стои в страничната лента и на героя. */
+@media (max-width: 1180px) and (min-width: 901px) {
+  .nav-brand > span { display: none; }
+  .nav-stat .label { display: none; }
+  .nav-links { margin-left: 10px; }
+}
+@media (max-width: 1020px) and (min-width: 901px) {
+  .nav-stat.hp-stat { display: none; }
+}
+
+/* Колелото на телефон: името горе, наградата под него — без „Отва…“ с многоточие. */
+@media (max-width: 520px) {
+  .wheel-odds li { grid-template-columns: 14px minmax(0, 1fr) 44px; grid-template-areas: 'sw name pct' 'sw reward pct'; row-gap: 2px; }
+  .wheel-swatch { grid-area: sw; align-self: start; margin-top: 3px; }
+  .wheel-odds-name { grid-area: name; white-space: normal; }
+  .wheel-odds-reward { grid-area: reward; font-size: 12px; }
+  .wheel-odds-chance { grid-area: pct; }
 }

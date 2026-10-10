@@ -15,7 +15,13 @@ export default function Social(): React.ReactElement {
   const [addName, setAddName] = useState('');
   const [busy, setBusy] = useState(false);
 
-  const load = () => api.get<Overview>('/social/overview').then(setData).catch(() => setData(null));
+  const [loadError, setLoadError] = useState(false);
+
+  // Грешка: toast + флаг, но старите данни остават — преди setData(null)
+  // след действие изтриваше списъка и страницата висеше в „зареждане…“.
+  const load = () => api.get<Overview>('/social/overview')
+    .then((d) => { setData(d); setLoadError(false); })
+    .catch((e: any) => { toast(e.message, 'error'); setLoadError(true); });
   useEffect(() => { load(); }, []);
 
   const act = async (fn: () => Promise<any>, okMsg?: string) => {
@@ -41,7 +47,17 @@ export default function Social(): React.ReactElement {
     </div>
   );
 
-  if (!data) return <div className="panel"><p className="muted">{t('common.loading', { defaultValue: 'Loading…' })}</p></div>;
+  if (!data) {
+    if (loadError) {
+      return (
+        <div className="panel" role="alert">
+          <p className="muted">{t('common.loadFailed')}</p>
+          <button className="btn btn-primary" onClick={() => { setLoadError(false); load(); }}>{t('common.retry')}</button>
+        </div>
+      );
+    }
+    return <div className="panel"><p className="muted">{t('common.loading', { defaultValue: 'Loading…' })}</p></div>;
+  }
 
   return (
     <div className="col" style={{ gap: 24 }}>

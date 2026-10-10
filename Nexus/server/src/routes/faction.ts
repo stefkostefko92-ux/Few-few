@@ -168,7 +168,7 @@ export const VENDOR_STOCK: Record<string, VendorOffer[]> = {
 
 router.get('/:slug/vendor', (req, res) => {
   const slug = String(req.params.slug);
-  if (!VENDOR_STOCK[slug]) { res.status(404).json({ error: 'Unknown faction' }); return; }
+  if (!Object.hasOwn(VENDOR_STOCK, slug)) { res.status(404).json({ error: 'Unknown faction' }); return; }
   const db = getDb();
   const ch = db.prepare('SELECT id FROM characters WHERE user_id = ?').get(req.auth!.uid) as { id: number } | undefined;
   if (!ch) { res.status(404).json({ error: 'No character' }); return; }
@@ -183,7 +183,7 @@ const buySchema = (() => { try { return require('zod').z.object({ slug: require(
 router.post('/:slug/vendor/buy', (req, res) => {
   const slug = String(req.params.slug);
   const itemSlug = String((req.body || {}).slug || '');
-  if (!VENDOR_STOCK[slug]) { res.status(404).json({ error: 'Unknown faction' }); return; }
+  if (!Object.hasOwn(VENDOR_STOCK, slug)) { res.status(404).json({ error: 'Unknown faction' }); return; }
   const offer = VENDOR_STOCK[slug].find((s) => s.slug === itemSlug);
   if (!offer) { res.status(404).json({ error: 'Item not on this vendor' }); return; }
   const db = getDb();

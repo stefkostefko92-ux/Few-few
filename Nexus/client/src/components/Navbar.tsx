@@ -76,6 +76,7 @@ export default function Navbar(): React.ReactElement {
             to={l.to}
             end={l.end as any}
             style={{ ['--ni' as any]: ni }}
+            title={t(l.labelKey)}
             className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
           >
             <l.icon />
@@ -129,7 +130,7 @@ export default function Navbar(): React.ReactElement {
               {char?.current_title && <span style={{ color: 'var(--amethyst-1)', marginLeft: 4 }}>, {char.current_title}</span>}
             </div>
             <div className="sub">
-              {char ? `Lv ${char.level} ${char.class[0].toUpperCase() + char.class.slice(1)}` : t('navbar.unbound')}
+              {char ? `${t('common.lv', { defaultValue: 'Lv' })} ${char.level} · ${t(`common.class.${char.class}`, { defaultValue: char.class })}` : t('navbar.unbound')}
             </div>
           </div>
           <IconChevron size={14} />

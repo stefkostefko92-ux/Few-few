@@ -153,7 +153,7 @@ function storedLang() {
   return STR[nav] ? nav : 'en';
 }
 
-export function createHud(h) {
+export function createHud(h, { embedded = false } = {}) {
   const $ = (id) => document.getElementById(id);
   let lang = storedLang();
   let scrubbing = false;
@@ -162,14 +162,14 @@ export function createHud(h) {
   const s = (k) => STR[lang][k] ?? STR.en[k] ?? k;
 
   function applyLang() {
-    document.documentElement.lang = lang;
+    if (!embedded) document.documentElement.lang = lang; // вграден: страницата-домакин държи lang/title
     document.querySelectorAll('[data-i18n]').forEach((el) => {
       el.textContent = s(el.dataset.i18n);
     });
     document.querySelectorAll('[data-i18n-aria]').forEach((el) => el.setAttribute('aria-label', s(el.dataset.i18nAria)));
     document.querySelectorAll('[data-lang]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
     $('view').setAttribute('aria-label', s('canvas'));
-    document.title = s('title');
+    if (!embedded) document.title = s('title');
     captionKey = '';
     chapterKey = '';
     h.onLang?.();
@@ -177,7 +177,8 @@ export function createHud(h) {
 
   $('play').addEventListener('click', () => h.togglePlay());
   $('scrub').addEventListener('pointerdown', () => (scrubbing = true));
-  window.addEventListener('pointerup', () => (scrubbing = false));
+  const onPointerUp = () => (scrubbing = false);
+  window.addEventListener('pointerup', onPointerUp);
   $('scrub').addEventListener('input', (e) => h.seek(Number(e.target.value) / 1000));
   document.querySelectorAll('[data-speed]').forEach((b) => b.addEventListener('click', () => h.setSpeed(Number(b.dataset.speed))));
   $('cam').addEventListener('click', () => h.toggleCamera());
@@ -195,16 +196,18 @@ export function createHud(h) {
       applyLang();
     }),
   );
-  window.addEventListener('keydown', (e) => {
+  // Вграден дуел: без глобални клавиши — Space крадеше скрола на страницата (и след края).
+  const onKey = (e) => {
     const tag = document.activeElement?.tagName;
-    if (tag === 'INPUT' || tag === 'SELECT') return;
+    if (embedded || tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
     if (e.code === 'Space') {
       e.preventDefault();
       h.togglePlay();
     } else if (e.key === 'c' || e.key === 'C') h.toggleCamera();
     else if (e.key === 'm' || e.key === 'M') h.toggleSound();
     else if (e.key === 's' || e.key === 'S') h.toggleStats();
-  });
+  };
+  window.addEventListener('keydown', onKey);
   applyLang();
 
   const fmt = (sec) => {
@@ -215,6 +218,7 @@ export function createHud(h) {
 
   return {
     t: s,
+    dispose: () => { window.removeEventListener('keydown', onKey); window.removeEventListener('pointerup', onPointerUp); },
     loading(stepKey, frac) {
       $('load-step').textContent = s(stepKey);
       $('load-fill').style.width = `${Math.round(frac * 100)}%`;

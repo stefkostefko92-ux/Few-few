@@ -205,7 +205,10 @@ router.post('/quests/claim', (req, res) => {
   try {
     const result = db.transaction(() => {
       ensureDaily(db, ch.id);
-      const state = db.prepare('SELECT quests_json, completed_json FROM daily_state WHERE character_id = ?').get(ch.id) as { quests_json: string; completed_json: string };
+      const state = db.prepare('SELECT quests_json, completed_json, quests_day FROM daily_state WHERE character_id = ?').get(ch.id) as { quests_json: string; completed_json: string; quests_day: number };
+      // БЪГ: списъкът се ротира само при GET — claim по вчерашния списък, после GET (нулира
+      // completed), после втори claim даваше двоен бонус в един ден. Стар списък → отказ.
+      if (state.quests_day !== dayIndex()) { const e: any = new Error('Daily quests have rotated. Reload the page.'); e.clientSafe = true; e.status = 409; throw e; }
       const slugs: string[] = JSON.parse(state.quests_json || '[]');
       const completed: string[] = JSON.parse(state.completed_json || '[]');
       if (!slugs.includes(questSlug)) { const e: any = new Error("Not one of today's daily quests."); e.clientSafe = true; e.status = 400; throw e; }

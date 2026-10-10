@@ -17,7 +17,8 @@ RUN npm run build --workspace client \
 
 # ---- Stage 2: production runtime ----
 FROM node:20-alpine AS runner
-RUN apk add --no-cache tini
+# sqlite — за консистентния hot backup (deploy/backup.sh, .backup при WAL писачи).
+RUN apk add --no-cache tini sqlite
 WORKDIR /app
 ENV NODE_ENV=production
 
@@ -31,6 +32,9 @@ RUN npm ci --omit=dev --no-audit --no-fund --workspace server --include-workspac
 COPY --from=builder /app/server/dist server/dist
 COPY --from=builder /app/client/dist client/dist
 COPY deploy/entrypoint.sh /usr/local/bin/entrypoint.sh
+# nexus-backup.service пуска /app/deploy/backup.sh вътре в контейнера — без него
+# дневният бекъп пада на всяко пускане.
+COPY deploy/backup.sh /app/deploy/backup.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 RUN mkdir -p /app/data && addgroup -S app && adduser -S app -G app \

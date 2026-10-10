@@ -10,6 +10,11 @@ import './i18n';
 import '@fontsource/cinzel/500.css';
 import '@fontsource/cinzel/600.css';
 import '@fontsource/cinzel/700.css';
+// Cinzel няма кирилица — БГ заглавията падаха на Times New Roman. Cormorant SC (капители с
+// кирилица) поема САМО кирилските знаци (unicode-range на подмножеството), Cinzel — латиницата.
+import '@fontsource/cormorant-sc/cyrillic-500.css';
+import '@fontsource/cormorant-sc/cyrillic-600.css';
+import '@fontsource/cormorant-sc/cyrillic-700.css';
 import '@fontsource/manrope/300.css';
 import '@fontsource/manrope/400.css';
 import '@fontsource/manrope/500.css';

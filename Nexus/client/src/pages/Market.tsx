@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
+// .guild-tabs живее там; без импорта табовете бяха гол текст при директно отваряне на пазара.
+import '../styles/guild.css';
 
 interface Listing {
   listing_id: number;
@@ -51,15 +53,28 @@ export default function Market(): React.ReactElement {
   const [mine, setMine] = useState<Listing[]>([]);
   const [cat, setCat] = useState('all');
   const [q, setQ] = useState('');
+  // Търсенето тръгва ~250 ms след последния клавиш (не заявка на всеки),
+  // а browseSeq изхвърля остарял отговор — иначе по-бавен отговор за „dr“
+  // можеше да презапише резултатите за „dragon“.
+  const [debouncedQ, setDebouncedQ] = useState('');
+  const browseSeq = useRef(0);
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedQ(q), 250);
+    return () => clearTimeout(id);
+  }, [q]);
 
   async function loadBrowse() {
+    const seq = ++browseSeq.current;
     try {
       const params = new URLSearchParams();
       if (cat !== 'all') params.set('category', cat);
-      if (q) params.set('q', q);
+      if (debouncedQ) params.set('q', debouncedQ);
       const r = await api.get(`/market?${params.toString()}`);
+      if (seq !== browseSeq.current) return;
       setListings(r.listings);
-    } catch (e: any) { toast(e.message, 'error'); }
+    } catch (e: any) {
+      if (seq === browseSeq.current) toast(e.message, 'error');
+    }
   }
   async function loadMine() {
     try {
@@ -68,8 +83,9 @@ export default function Market(): React.ReactElement {
     } catch (e: any) { toast(e.message, 'error'); }
   }
 
-  useEffect(() => { loadBrowse(); loadMine(); }, []);
-  useEffect(() => { loadBrowse(); }, [cat, q]);
+  useEffect(() => { loadMine(); }, []);
+  // Покрива и първоначалното зареждане (преди browse тръгваше два пъти).
+  useEffect(() => { loadBrowse(); }, [cat, debouncedQ]);
 
   async function buy(l: Listing) {
     if (!confirm(t('market.confirmBuy', { name: l.name, price: l.price_gold }))) return;
@@ -134,12 +150,16 @@ export default function Market(): React.ReactElement {
                       <strong className={`rarity-${l.rarity}`}>{l.name}</strong>
                       <div className="muted text-sm" style={{ textTransform: 'capitalize' }}>{l.category}{l.sub_type ? ` · ${l.sub_type}` : ''}</div>
                     </td>
-                    <td className="muted">{l.seller_name} <span style={{ color: 'var(--text-4)' }}>· {t('market.lv', { n: l.seller_level })}</span></td>
-                    <td>{l.level_req}</td>
-                    <td>{l.tier}</td>
-                    <td className="muted text-sm">{statSummary(l)}</td>
-                    <td className="muted text-sm" style={{ fontFamily: 'var(--font-mono)' }}>{relative(l.listed_at, t)}</td>
-                    <td style={{ fontFamily: 'var(--font-mono)' }}>
+                    {/* NPC продавачът е системният търговец на високите тирове — нивото му (2) до
+                        предмет за ниво 320 изглеждаше абсурдно; показваме знак NPC вместо ниво. */}
+                    <td className="muted" data-label={t('market.table.seller')}>{l.seller_name} {(l as any).seller_is_npc
+                      ? <span className="tag" style={{ marginLeft: 4 }}>{t('leaderboard.npc')}</span>
+                      : <span style={{ color: 'var(--text-4)' }}>· {t('market.lv', { n: l.seller_level })}</span>}</td>
+                    <td data-label={t('market.table.lv')}>{l.level_req}</td>
+                    <td data-label={t('market.table.tier')}>{l.tier}</td>
+                    <td className="muted text-sm" data-label={t('market.table.stats')}>{statSummary(l)}</td>
+                    <td className="muted text-sm" data-label={t('market.table.listed')} style={{ fontFamily: 'var(--font-mono)' }}>{relative(l.listed_at, t)}</td>
+                    <td data-label={t('market.table.price')} style={{ fontFamily: 'var(--font-mono)' }}>
                       <span className="gold">{l.price_gold.toLocaleString()}g</span>
                       {/* Ценова интелигентност: „най-добра цена" badge, ако това е
                           най-евтиният активен листинг; иначе показва колко е
@@ -186,15 +206,15 @@ export default function Market(): React.ReactElement {
               {mine.map((m) => (
                 <tr key={m.listing_id}>
                   <td><strong className={`rarity-${m.rarity}`}>{m.name}</strong></td>
-                  <td>{m.tier}</td>
-                  <td>
+                  <td data-label={t('market.table.tier')}>{m.tier}</td>
+                  <td data-label={t('market.table.status')}>
                     <span className={`tag ${m.status === 'sold' ? 'emerald' : m.status === 'cancelled' ? 'crimson' : 'gold'}`}>
                       {t(`market.status.${m.status}`, { defaultValue: m.status })}
                     </span>
                   </td>
-                  <td className="gold" style={{ fontFamily: 'var(--font-mono)' }}>{m.price_gold.toLocaleString()}g</td>
-                  <td className="muted text-sm">{relative(m.listed_at, t)}</td>
-                  <td className="muted text-sm">{m.buyer_name || '—'}</td>
+                  <td className="gold" data-label={t('market.table.price')} style={{ fontFamily: 'var(--font-mono)' }}>{m.price_gold.toLocaleString()}g</td>
+                  <td className="muted text-sm" data-label={t('market.table.listed')}>{relative(m.listed_at, t)}</td>
+                  <td className="muted text-sm" data-label={t('market.table.buyer')}>{m.buyer_name || '—'}</td>
                   <td>
                     {m.status === 'active' && (
                       <button className="btn btn-sm btn-danger" onClick={() => cancel(m)}>{t('market.cancel')}</button>

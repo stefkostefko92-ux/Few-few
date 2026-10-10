@@ -54,20 +54,21 @@ export default function Auction(): React.ReactElement {
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
-  // Auto-reload on the hour boundary so the new listing replaces the old.
+  // Презареждане на границата на часа. Таймаутът се смята ВЕДНЪЖ от ends_at
+  // (deps само [data]) — с `now` в deps ефектът чистеше таймера всяка секунда
+  // и той никога не стреляше → броячът застиваше на 0:00.
   useEffect(() => {
     if (!data?.listing) return;
-    const ms = Math.max(0, data.listing.ends_at - now);
-    if (ms < 800) {
-      const id = setTimeout(load, 1200);
-      return () => clearTimeout(id);
-    }
-  }, [data, now]);
+    const ms = Math.max(0, data.listing.ends_at - Date.now()) + 1200;
+    const id = setTimeout(load, ms);
+    return () => clearTimeout(id);
+  }, [data]);
 
   async function placeBid() {
     if (!data?.listing || bid <= 0) return;
     try {
-      await api.post('/auction/bid', { amount: bid });
+      // listingId: сървърът отказва (409), ако обявата междувременно е сменена.
+      await api.post('/auction/bid', { amount: bid, listingId: data.listing.id });
       toast(t('auction.bidPlaced', { n: bid }), 'success');
       await Promise.all([load(), refresh()]);
     } catch (e: any) { toast(e.message, 'error'); }
@@ -101,18 +102,18 @@ export default function Auction(): React.ReactElement {
       </div>
 
       <div className="panel">
-        <div className="flex" style={{ gap: 20, alignItems: 'center' }}>
+        <div className="flex auction-head" style={{ gap: 20, alignItems: 'center' }}>
           <div style={{ width: 90, height: 90, display: 'grid', placeItems: 'center', background: 'radial-gradient(circle, rgba(255,232,138,.18), transparent 65%)', borderRadius: 14, flexShrink: 0 }}>
             <Sprite {...spriteForItem(l.item)} size={68} />
           </div>
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <div className={`rarity-${l.item.rarity}`} style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700 }}>{l.item.name}</div>
             <div className="muted text-sm" style={{ textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 6 }}>
-              {l.item.category}{l.item.sub_type ? ` · ${l.item.sub_type}` : ''} · {t('auction.tier', { n: l.item.tier })} · {l.item.rarity}
+              {t(`inventory.categories.${l.item.category}`, { defaultValue: l.item.category })}{l.item.sub_type ? ` · ${l.item.sub_type}` : ''} · {t('auction.tier', { n: l.item.tier })} · {t(`common.rarity.${l.item.rarity}`, { defaultValue: l.item.rarity })}
             </div>
             <div className="muted text-sm">{l.item.description}</div>
           </div>
-          <div style={{ textAlign: 'right' }}>
+          <div className="auction-closes" style={{ textAlign: 'right' }}>
             <div className="muted text-sm" style={{ textTransform: 'uppercase', letterSpacing: '.12em' }}>{t('auction.closesIn')}</div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 28, color: remaining < 60_000 ? 'var(--crimson-1)' : 'var(--gold-1)' }}>
               {formatTime(remaining)}
@@ -121,7 +122,7 @@ export default function Auction(): React.ReactElement {
         </div>
 
         <div className="card" style={{ marginTop: 18, padding: 18, background: 'rgba(106,167,255,.05)' }}>
-          <div className="flex between" style={{ marginBottom: 12 }}>
+          <div className="flex between auction-bid-row" style={{ marginBottom: 12, gap: 16 }}>
             <div>
               <div className="muted text-sm" style={{ textTransform: 'uppercase', letterSpacing: '.12em' }}>{t('auction.currentTopBid')}</div>
               <div style={{ fontFamily: 'var(--font-display)', fontSize: 26, color: 'var(--gold-1)' }}>
@@ -136,7 +137,7 @@ export default function Auction(): React.ReactElement {
                 {isYou && ` ${t('auction.you')}`}
               </div>
             </div>
-            <div className="flex gap-sm" style={{ alignItems: 'center' }}>
+            <div className="flex gap-sm auction-bid-controls" style={{ alignItems: 'center' }}>
               <input
                 type="number"
                 value={bid}
@@ -146,7 +147,7 @@ export default function Auction(): React.ReactElement {
               />
               <button
                 className="btn btn-primary"
-                disabled={isYou || bid <= l.current_bid || bid > gems}
+                disabled={remaining === 0 || isYou || bid <= l.current_bid || bid > gems}
                 onClick={placeBid}
               >
                 {isYou ? t('auction.winning') : bid > gems ? t('auction.needMore', { n: bid - gems }) : t('auction.bidButton', { n: bid })}
@@ -159,15 +160,16 @@ export default function Auction(): React.ReactElement {
       <div className="panel">
         <div className="panel-title" style={{ fontSize: 14, textTransform: 'uppercase', letterSpacing: '.14em', color: 'var(--text-3)', marginBottom: 12 }}>{t('auction.recentWinners')}</div>
         {data.recent.length === 0 ? <div className="muted">{t('auction.noCompleted')}</div> : (
-          <table className="data-table">
+          <table className="data-table data-table-cards">
             <thead><tr><th>{t('auction.table.hour')}</th><th>{t('auction.table.item')}</th><th style={{ textAlign: 'right' }}>{t('auction.table.winningBid')}</th><th>{t('auction.table.winner')}</th></tr></thead>
             <tbody>
               {data.recent.map((r) => (
                 <tr key={r.hour_bucket}>
-                  <td className="muted" style={{ fontFamily: 'var(--font-mono)' }}>{new Date(r.hour_bucket * 3_600_000).toISOString().slice(0, 13).replace('T', ' ')}:00</td>
-                  <td>{r.item_name}</td>
-                  <td style={{ textAlign: 'right', color: 'var(--gold-1)', fontFamily: 'var(--font-mono)' }}>💎 {r.current_bid}</td>
-                  <td>{r.bidder_name || <span className="muted">{t('auction.noBidders')}</span>}</td>
+                  {/* Местно време на играча (преди: UTC без пояснение — в БГ часът изглеждаше с 3 ч назад). */}
+                  <td className="muted" data-label={t('auction.table.hour')} style={{ fontFamily: 'var(--font-mono)' }}>{new Date(r.hour_bucket * 3_600_000).toLocaleString(undefined, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
+                  <td data-label={t('auction.table.item')}>{r.item_name}</td>
+                  <td data-label={t('auction.table.winningBid')} style={{ textAlign: 'right', color: 'var(--gold-1)', fontFamily: 'var(--font-mono)' }}>💎 {r.current_bid}</td>
+                  <td data-label={t('auction.table.winner')}>{r.bidder_name || <span className="muted">{t('auction.noBidders')}</span>}</td>
                 </tr>
               ))}
             </tbody>

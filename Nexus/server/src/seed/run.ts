@@ -180,7 +180,11 @@ function seed(): void {
   txDummies(DUMMY_SEED);
   console.log(`Inserted/refreshed ${npcCount} training dummies.`);
 
-  /* ===== Extended player pool — populates leaderboards & marketplace ===== */
+  /* ===== Extended player pool — populates leaderboards & marketplace =====
+     Това са ботове, не хора: is_npc = 1, за да носят знак NPC в класацията/арената и да не
+     се броят за играчи в админа (преди бяха записани като is_npc = 0 и се представяха за
+     истински играчи). UPDATE-ът поправя вече сийднати бази (герой без акаунт = бот). */
+  db.prepare('UPDATE characters SET is_npc = 1 WHERE user_id IS NULL AND is_npc = 0').run();
   console.log('Seeding extended player pool...');
   const extended = generateExtendedDummies();
   const insertExt = db.prepare(`
@@ -191,7 +195,7 @@ function seed(): void {
       skill_sword, skill_axe, skill_bow, skill_staff, skill_magic, skill_stealth,
       energy, energy_max, energy_updated_at, arena_rating, wins, losses, created_at, bio
     ) VALUES (
-      NULL, 0, @name, @class, 'male', 'default', @level, 0, @gold, 0, 0,
+      NULL, 1, @name, @class, 'male', 'default', @level, 0, @gold, 0, 0,
       @hp_max, @hp_max, @mp_max, @mp_max,
       @strength, @dexterity, @constitution, @intelligence, @charisma, @wisdom,
       @skill_sword, @skill_axe, @skill_bow, @skill_staff, @skill_magic, @skill_stealth,

@@ -7,6 +7,8 @@ export interface BootOpts {
   reducedMotion?: boolean;
   /** false спира на последния кадър вместо да зацикля (реални битки не зацикляй). */
   loop?: boolean;
+  /** Вграден в React страница: без глобални клавиши и без смяна на document.title/lang. */
+  embedded?: boolean;
   onEnd?: () => void;
   /** Извиква се ТОЧНО в кадъра на всеки контактен/roundmark EVENTS запис (choreo-gen.js). */
   onImpact?: (ev: { type: string; roundIndex?: number; by?: 'A' | 'B'; against?: 'A' | 'B' }) => void;
@@ -18,6 +20,8 @@ export interface BootOpts {
   region?: string;
   /** 4a.4 (кръг 2): свободния текст на foe.name — оръжие на противника (loadout.js weaponKit()). */
   foeName?: string;
+  /** 4b: foe.sprite от сървъра — истински звяр/голям хуманоид/призрак/рицар (beast-config.js). */
+  foeSprite?: string;
 }
 
 export interface BootHandle {

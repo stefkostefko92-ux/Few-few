@@ -7,6 +7,7 @@ import { rootOf, toWorld, dirToWorld, weaponAt, shieldAt, track1, DYNAMIC_AIMS, 
 import { SHIELD_WRIST } from './weapons.js';
 import { captureFor, layerBody } from './mocap-body.js';
 import { DISARM_T, launchFlight, flightPose } from './flight.js';
+import { applyGiantScale, applyPartScale } from './fighter-scale.js';
 import * as C from './choreo.js';
 
 const UP = new THREE.Vector3(0, 1, 0);
@@ -36,13 +37,21 @@ const perp = (v, axis, out) => out.copy(v).addScaledVector(axis, -v.dot(axis)).n
 export { DISARM_T };
 
 export class Fighter {
-  constructor(who, knight, weapon, cape, shield) {
+  // 4b: opts.scale/partScale (голем/титан/трол — fighter-scale.js) и opts.hover (призрак — крак-
+  // лес рееща височина); нищо от това не пипа rig.js/feet.js/timeline.js/DIM (споделена анатомия).
+  constructor(who, knight, weapon, cape, shield, opts = {}) {
     this.who = who;
     this.knight = knight;
     this.rig = new Rig(knight);
     this.weapon = weapon;
     this.cape = cape;
     this.shield = shield;
+    this.scale = opts.scale || 1;
+    this.partScale = opts.partScale || null;
+    // Камерата (director.js/shot-builder.js) чете standHeight, за да рамкира плъх и титан еднакво.
+    this.standHeight = 1.75 * this.scale + (opts.hover || 0);
+    this.hover = opts.hover || 0;
+    this._scaleMat = new THREE.Matrix4();
     this.feet = new FootPlanner();
     this.root = { pos: new THREE.Vector3(), yaw: 0 };
     this.rootAhead = { pos: new THREE.Vector3(), yaw: 0 };
@@ -121,6 +130,11 @@ export class Fighter {
 
     rootOf(who, T, this.root);
     rootOf(who, T + 0.06, this.rootAhead);
+    if (this.hover) {
+      const h = this.hover + Math.sin(T * 1.3 + (who === 'A' ? 0 : 1.7)) * 0.045;
+      this.root.pos.y += h;
+      this.rootAhead.pos.y += h;
+    }
     this.vel.subVectors(this.rootAhead.pos, this.root.pos).divideScalar(0.06);
     this.root.pos.addScaledVector(this.pushDir, this.spr.push.x * 0.25);
     const root = this.root;
@@ -202,9 +216,7 @@ export class Fighter {
 
     const w = this.rig.w;
     this.handBasis(this.handR, this.grip, this.dir, this.edge, w.shoulderR);
-    // 4a.4 (кръг 2): двуръчен огледален грип за ВСЕКИ боец БЕЗ щит (първоначално само слот A —
-    // сега и слот B може да е двуръчен: къс меч/жезъл/лък/боздуган без щит, виж loadout.js
-    // hasShieldKit). Клонът е по наличие на щит, не по слот.
+    // 4a.4 (кръг 2): двуръчен огледален грип за ВСЕКИ боец БЕЗ щит (виж loadout.js hasShieldKit).
     if (!this.shield) {
       const gl = this._w.copy(this.grip).addScaledVector(this.dir, -0.125);
       this.handBasis(this.handL, gl.clone(), this.dir, this.edge, w.shoulderL);
@@ -235,8 +247,10 @@ export class Fighter {
     }
     if (this.shield) this.placeShield(root);
     this.placeWeapon(T);
-    this.bladeBase.copy(this.grip).addScaledVector(this.dir, this.weapon.bladeBase);
-    this.bladeTip.copy(this.grip).addScaledVector(this.dir, this.weapon.bladeBase + this.weapon.bladeLen);
+    const bladeScale = this.scale !== 1 ? applyGiantScale(this, root) : 1;
+    applyPartScale(this, this.partScale);
+    this.bladeBase.copy(this.grip).addScaledVector(this.dir, this.weapon.bladeBase * bladeScale);
+    this.bladeTip.copy(this.grip).addScaledVector(this.dir, (this.weapon.bladeBase + this.weapon.bladeLen) * bladeScale);
   }
 
   // How far the IK wrists fall short of their targets (the larger of the two hands).

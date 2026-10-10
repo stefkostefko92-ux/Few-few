@@ -33,6 +33,7 @@ export default function Chat(): React.ReactElement {
   const [messages, setMessages] = useState<Array<PublicMsg | DmMsg>>([]);
   const [text, setText] = useState('');
   const [err, setErr] = useState('');
+  const [sending, setSending] = useState(false);
   const [report, setReport] = useState<ReportTarget | null>(null);
   const lastId = useRef(0);
   const streamRef = useRef<HTMLDivElement>(null);
@@ -52,25 +53,49 @@ export default function Chat(): React.ReactElement {
     }
   }, [dmParam, threads, setParams]);
 
+  // Ключ на текущия изглед — отговор, пристигнал след смяна на канала, се
+  // игнорира (иначе съобщенията на стария канал се смесваха с новия).
+  const viewKey = sel.kind === 'channel' ? `c:${sel.channel}` : `d:${sel.charId}`;
+  const viewKeyRef = useRef(viewKey);
+  viewKeyRef.current = viewKey;
+  // inFlight: polling + SSE + send пускаха паралелни load() с едно и също
+  // `after` → едни и същи съобщения се добавяха двойно. Докато една заявка
+  // тече, следващата само се отбелязва (again) и се пуска след нея.
+  const inFlight = useRef<symbol | null>(null);
+  const again = useRef(false);
+  const loadRef = useRef<(reset?: boolean) => void>(() => {});
+
   const load = useCallback((reset = false) => {
-    if (reset) lastId.current = 0;
-    if (sel.kind === 'channel') {
-      api.get<{ messages: PublicMsg[] }>(`/chat/global?channel=${sel.channel}&after=${reset ? 0 : lastId.current}`)
-        .then((r) => {
-          if (!r.messages.length) return;
-          setMessages((prev) => (reset ? r.messages : [...prev, ...r.messages]));
-          lastId.current = r.messages[r.messages.length - 1].id;
-        }).catch(() => {});
-    } else {
-      api.get<{ messages: DmMsg[] }>(`/chat/dm/${sel.charId}?after=${reset ? 0 : lastId.current}`)
-        .then((r) => {
-          if (!r.messages.length) return;
-          setMessages((prev) => (reset ? r.messages : [...prev, ...r.messages]));
-          lastId.current = r.messages[r.messages.length - 1].id;
-          loadThreads(); // прочетеното нулира брояча
-        }).catch(() => {});
-    }
+    if (inFlight.current && !reset) { again.current = true; return; }
+    const token = Symbol('chat-load');
+    inFlight.current = token;
+    if (reset) { lastId.current = 0; again.current = false; }
+    const key = sel.kind === 'channel' ? `c:${sel.channel}` : `d:${sel.charId}`;
+    const url = sel.kind === 'channel'
+      ? `/chat/global?channel=${sel.channel}&after=${reset ? 0 : lastId.current}`
+      : `/chat/dm/${sel.charId}?after=${reset ? 0 : lastId.current}`;
+    api.get<{ messages: Array<PublicMsg | DmMsg> }>(url)
+      .then((r) => {
+        if (viewKeyRef.current !== key) return; // стар канал — изхвърли
+        if (!r.messages.length) return;
+        if (sel.kind === 'dm') loadThreads(); // прочетеното нулира брояча
+        // Сливане с филтър по id — дубликат не влиза дори при застъпване.
+        setMessages((prev) => {
+          const base = reset ? [] : prev;
+          const seen = new Set(base.map((m) => m.id));
+          const fresh = r.messages.filter((m) => !seen.has(m.id));
+          return fresh.length ? [...base, ...fresh] : base;
+        });
+        lastId.current = Math.max(reset ? 0 : lastId.current, r.messages[r.messages.length - 1].id);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (inFlight.current !== token) return;
+        inFlight.current = null;
+        if (again.current) { again.current = false; loadRef.current(false); }
+      });
   }, [sel, loadThreads]);
+  loadRef.current = load;
 
   // Смяна на селекцията → чист презареждане.
   useEffect(() => { setMessages([]); load(true); /* eslint-disable-next-line */ }, [sel]);
@@ -96,7 +121,9 @@ export default function Chat(): React.ReactElement {
 
   async function send() {
     const body = text.trim();
-    if (!body) return;
+    // sending: Enter + клик (или задържан Enter) пращаха едно съобщение многократно.
+    if (!body || sending) return;
+    setSending(true);
     setErr('');
     try {
       if (sel.kind === 'channel') await api.post('/chat/global', { channel: sel.channel, message: body });
@@ -105,6 +132,8 @@ export default function Chat(): React.ReactElement {
       load(false);
     } catch (e: any) {
       setErr(e.message || t('chat.sendFailed', { defaultValue: 'Failed to send.' }));
+    } finally {
+      setSending(false);
     }
   }
 
@@ -185,7 +214,7 @@ export default function Chat(): React.ReactElement {
               maxLength={280}
               style={{ flex: 1 }}
             />
-            <button className="btn btn-primary" disabled={!text.trim()} onClick={send}>{t('chat.send', { defaultValue: 'Send' })}</button>
+            <button className="btn btn-primary" disabled={sending || !text.trim()} onClick={send}>{t('chat.send', { defaultValue: 'Send' })}</button>
           </div>
           {err && <div className="error" style={{ padding: '0 10px 10px' }}>{err}</div>}
         </div>

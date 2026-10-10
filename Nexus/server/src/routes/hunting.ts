@@ -104,6 +104,11 @@ router.post('/hunt', (req, res) => {
     res.status(400).json({ error: 'Too wounded to hunt. Rest first.' });
     return;
   }
+  // Непознат регион → 404 ПРЕДИ cooldown-а (иначе грешната заявка изгаряше лова).
+  if (!Object.hasOwn(REGION_GATES, parse.data.region)) {
+    res.status(404).json({ error: 'No prey in this region' });
+    return;
+  }
   const gate = REGION_GATES[parse.data.region] ?? 1;
   if (char.level < gate) {
     res.status(400).json({ error: `Region requires level ${gate}` });
@@ -186,7 +191,7 @@ router.post('/hunt', (req, res) => {
     // vendor rate are identical to Tower / Arena / Quest drops.
     if (!itemRewardSlug && Math.random() < DROP_RATES.hunt) {
       const drop = grantDrop(char.id, char.level, char.class || '', monster.level);
-      if (drop.slug) itemRewardSlug = drop.slug;
+      if (drop.slug && !drop.duplicate) itemRewardSlug = drop.slug; // дубликатът е авто-продаден (refundGold), не е нов предмет
       if (drop.refundGold > 0) { goldGain += drop.refundGold; char.gold += drop.refundGold; }
     }
   }

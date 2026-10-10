@@ -53,7 +53,8 @@ export default function NotificationBell(): React.ReactElement | null {
     const m = n.ref.match(/^char:(.+)$/);
     if (m) { nav(`/app/player/${encodeURIComponent(m[1])}`); return; }
     if (n.ref.startsWith('dm:')) { nav(`/app/chat?dm=${encodeURIComponent(n.ref.slice(3))}`); return; }
-    if (n.ref.startsWith('trade:')) nav('/app/social');
+    // Покана за размяна → страницата за размяна (не социалната).
+    if (n.ref.startsWith('trade:')) nav('/app/trade');
   };
 
   return (

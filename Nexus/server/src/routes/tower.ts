@@ -115,9 +115,6 @@ router.post('/climb', (req, res) => {
 
   let itemDropSlug: string | null = null;
   if (result.winner === 'hero') {
-    // Гилдийна мисия + сезонни точки за изкачен етаж.
-    trackGuildMission(db, char.id, 'tower_floors');
-    addSeasonPoints(db, char.id, 5);
     const vault = targetFloor % 5 === 0;
     const baseGold = towerGold(targetFloor) * (vault ? 2 : 1);
     const baseXp   = towerXp(targetFloor)   * (vault ? 2 : 1);
@@ -137,7 +134,7 @@ router.post('/climb', (req, res) => {
     if (Math.random() < dropChance) {
       const eff = Math.min(350, Math.round(targetFloor * 1.2));
       const drop = grantDrop(char.id, char.level, char.class || '', eff);
-      if (drop.slug) itemDropSlug = drop.slug;
+      if (drop.slug && !drop.duplicate) itemDropSlug = drop.slug; // дубликатът е авто-продаден (refundGold), не е нов предмет
       if (drop.refundGold > 0) { goldGain += drop.refundGold; char.gold += drop.refundGold; }
     }
   } else {
@@ -161,6 +158,12 @@ router.post('/climb', (req, res) => {
     char.hp_max, char.mp_max, char.hp, char.mp, char.gold,
     newFloor, newBest, runSeed, tokensGained, char.id,
   );
+  // Гилдийна мисия + сезонни точки СЛЕД записа: мисията добавя злато с `gold = gold + ?`, а
+  // абсолютният UPDATE горе пишеше старата снимка char.gold и изтриваше наградата (БЪГ).
+  if (result.winner === 'hero') {
+    trackGuildMission(db, char.id, 'tower_floors');
+    addSeasonPoints(db, char.id, 5);
+  }
 
   logFromRequest(req, {
     category: 'combat',

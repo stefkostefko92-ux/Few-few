@@ -234,7 +234,9 @@ router.post('/claim', (req, res) => {
       }
       if (run.stage < dungeon.stages.length) { const e: any = new Error('Dungeon not yet cleared.'); e.clientSafe = true; e.status = 400; throw e; }
       // Atomic delete-and-check — exactly one parallel claim wins.
-      const del = db.prepare('DELETE FROM dungeon_run WHERE character_id = ? AND id = ?').run(ch.id, run.id);
+      // БЪГ: таблицата няма колона id (PK е character_id) → claim винаги беше 500 и наградата
+      // никога не се изплащаше. started_at различава този run от евентуален нов.
+      const del = db.prepare('DELETE FROM dungeon_run WHERE character_id = ? AND started_at = ?').run(ch.id, run.started_at);
       if (del.changes !== 1) { const e: any = new Error('Already claimed.'); e.clientSafe = true; e.status = 400; throw e; }
       const items: string[] = JSON.parse(run.items_json || '[]');
       if (dungeon.loot_pool.length) {

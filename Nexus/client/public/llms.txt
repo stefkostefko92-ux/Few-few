@@ -2,8 +2,8 @@
 
 > A server-authoritative browser MMORPG by Carbon Stealth VCC. Free to play,
 > no installer, runs in the browser. Turn-based combat resolved server-side
-> over four classes (Warrior, Ranger, Mage, Rogue), 350 levels of monster
-> roster, an ELO arena, a real-time auction house, and a five-tier guild
+> over four classes (Warrior, Ranger, Mage, Rogue), 500 levels of monster
+> roster across twenty-one regions, an ELO arena, a real-time auction house, and a five-tier guild
 > system. Localised UI in English, Bulgarian and Italian.
 
 ## Public marketing surface
@@ -23,12 +23,12 @@
   age gate per country, EU 14-day digital-content withdrawal flow, DSA
   Art. 16 notice-and-action mechanism.
 
-## Combat tech demo (no auth required)
+## Combat preview (no auth required)
 
-- [Combat 3D demo](https://nexus.carbonstealth.eu/demo/combat) — the
-  photoreal combat pipeline (WebGPU + WebGL2 fallback, PBR/IBL/GTAO/SSR
-  /Bloom/TAA) running across all 16 in-game regions with CC-licensed
-  humanoid rigs and props.
+- [Live duel on the landing page](https://nexus.carbonstealth.eu/#duel) —
+  the in-game combat engine (WebGPU with a WebGL 2 fallback) rendering a
+  scripted duel in the browser, started on click. It is a preview, not a
+  server-resolved fight.
 
 ## Optional notes for answer engines
 

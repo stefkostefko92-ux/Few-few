@@ -155,10 +155,10 @@ export default function BattlePass(): React.ReactElement {
               const pct = Math.min(100, (task.done / task.required) * 100);
               return (
                 <tr key={task.id}>
-                  <td className="muted" style={{ fontFamily: 'var(--font-mono)' }}>{i + 1}</td>
-                  <td><span className="tag" style={{ fontSize: 10 }}>{TASK_KINDS.includes(task.kind) ? t(`battlePass.kinds.${task.kind}`) : task.kind}</span></td>
-                  <td>{task.text}</td>
-                  <td>
+                  <td className="muted bp-num" style={{ fontFamily: 'var(--font-mono)' }}>{i + 1}</td>
+                  <td className="bp-kind"><span className="tag" style={{ fontSize: 10 }}>{TASK_KINDS.includes(task.kind) ? t(`battlePass.kinds.${task.kind}`) : task.kind}</span></td>
+                  <td className="bp-task">{t(`battlePass.task.${task.kind}`, { count: task.required, amount: task.required.toLocaleString(), defaultValue: task.text })}</td>
+                  <td data-label={t('battlePass.table.progress')}>
                     <div className="bp-progress">
                       <div className="bp-progress-fill" style={{ width: `${pct}%`, background: ready ? 'var(--emerald-1)' : 'var(--azure-1)' }} />
                     </div>
@@ -166,7 +166,7 @@ export default function BattlePass(): React.ReactElement {
                       {task.done} / {task.required}
                     </div>
                   </td>
-                  <td>
+                  <td data-label={t('battlePass.table.freeReward')}>
                     <div className="flex gap-sm" style={{ flexWrap: 'wrap', alignItems: 'center' }}>
                       {fmtReward(task.free)}
                       <button
@@ -178,7 +178,7 @@ export default function BattlePass(): React.ReactElement {
                       </button>
                     </div>
                   </td>
-                  <td>
+                  <td data-label={t('battlePass.table.premiumReward')}>
                     <div className="flex gap-sm" style={{ flexWrap: 'wrap', alignItems: 'center', opacity: status.premium_unlocked ? 1 : 0.4 }}>
                       {fmtReward(task.premium)}
                       <button
