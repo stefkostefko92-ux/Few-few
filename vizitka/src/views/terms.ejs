@@ -1,7 +1,7 @@
 <%- include('partials/head') %>
 <section class="legal">
   <h1>Общи условия</h1>
-  <p class="muted">Последна актуализация: 11 юли 2026 г.</p>
+  <p class="muted">Последна актуализация: 3 октомври 2026 г.</p>
 
   <h2>Услугата</h2>
   <p>
@@ -12,7 +12,8 @@
 
   <h2 id="impresum">Данни на доставчика (импресум)</h2>
   <ul>
-    <li><strong><%= company.name %></strong> — <%= company.legalForm %></li>
+    <li><strong><%= company.nameBg %> (<%= company.name %>)</strong> — <%= company.legalForm %></li>
+    <li>Представляващ: <%= company.manager %></li>
     <li>ЕИК <%= company.uic %> (Търговски регистър и регистър на ЮЛНЦ) · ДДС № <%= company.vat %></li>
     <li>Адрес: <%= company.address %></li>
     <li>Имейл: <a href="mailto:<%= company.email %>"><%= company.email %></a> · Телефон: <a href="tel:<%= company.phone.replace(/\s+/g, '') %>"><%= company.phone %></a></li>
