@@ -34,7 +34,7 @@ const UserEnv = z.object({
   USER_NAME: z.string().trim().min(2).max(120),
   USER_PASSWORD: optional(z.string().min(PASSWORD_MIN_LENGTH).max(256)),
   USER_ROLE: z.enum(ROLES),
-  USER_LOCALE: z.enum(['it', 'en', 'bg']).default('it'),
+  USER_LOCALE: z.enum(['it', 'en']).default('it'),
   USER_COMPANY: optional(z.string().trim().min(1).max(120)),
 });
 

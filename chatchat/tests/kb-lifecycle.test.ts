@@ -217,9 +217,9 @@ describe('сравнение на ревизии (§4.1)', () => {
   });
 });
 
-describe('кодовете на жизнения цикъл в отговора имат превод (bg/it/en)', () => {
+describe('кодовете на жизнения цикъл в отговора имат превод (it/en)', () => {
   test('code.kb.* — табло и валидност', () => {
-    for (const lang of ['bg', 'it', 'en']) {
+    for (const lang of ['it', 'en']) {
       const dict = JSON.parse(
         readFileSync(join(import.meta.dirname, '..', 'public', 'i18n', `${lang}.json`), 'utf8'),
       ) as Record<string, string>;

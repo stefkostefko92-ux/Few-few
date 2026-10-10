@@ -3,12 +3,15 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, test } from 'node:test';
 
-/** Паритет на преводите: един и същ набор ключове и параметри в bg/it/en; всеки статичен ключ в UI е преведен. */
+/**
+ * Паритет на преводите: един и същ набор ключове и параметри в it/en (интерфейсът е само на тези
+ * два езика — решение на собственика); всеки статичен ключ в UI е преведен.
+ */
 
 const PUBLIC = join(import.meta.dirname, '..', 'public');
 const load = (l: string) =>
   JSON.parse(readFileSync(join(PUBLIC, 'i18n', `${l}.json`), 'utf8')) as Record<string, string>;
-const dict = { bg: load('bg'), it: load('it'), en: load('en') };
+const dict = { it: load('it'), en: load('en') };
 
 const params = (s: string) =>
   [...s.matchAll(/\{(\w+)\}/g)]
@@ -26,19 +29,17 @@ function sources(dir: string, out: string[] = []): string[] {
 }
 
 describe('i18n паритет', () => {
-  test('същите ключове във всички три езика', () => {
-    const base = Object.keys(dict.bg).sort();
-    assert.deepEqual(Object.keys(dict.it).sort(), base);
-    assert.deepEqual(Object.keys(dict.en).sort(), base);
+  test('същите ключове в двата езика; няма речник за друг език', () => {
+    assert.deepEqual(Object.keys(dict.en).sort(), Object.keys(dict.it).sort());
+    const files = readdirSync(join(PUBLIC, 'i18n')).sort();
+    assert.deepEqual(files, ['en.json', 'it.json']);
   });
 
   test('същите {параметри} във всеки превод и няма празни низове', () => {
-    for (const [key, bg] of Object.entries(dict.bg)) {
-      assert.notEqual(bg.trim(), '', `bg ${key} е празен`);
-      assert.notEqual(dict.it[key]?.trim(), '', `it ${key} е празен`);
+    for (const [key, it] of Object.entries(dict.it)) {
+      assert.notEqual(it.trim(), '', `it ${key} е празен`);
       assert.notEqual(dict.en[key]?.trim(), '', `en ${key} е празен`);
-      assert.equal(params(dict.it[key] ?? ''), params(bg), `параметри it ${key}`);
-      assert.equal(params(dict.en[key] ?? ''), params(bg), `параметри en ${key}`);
+      assert.equal(params(dict.en[key] ?? ''), params(it), `параметри en ${key}`);
     }
   });
 
@@ -53,7 +54,7 @@ describe('i18n паритет', () => {
       }
     }
     used.delete('');
-    const missing = [...used].filter((k) => !(k in dict.bg));
+    const missing = [...used].filter((k) => !(k in dict.it));
     assert.deepEqual(missing, []);
   });
 
@@ -117,7 +118,7 @@ describe('i18n паритет', () => {
         'feedback',
       ].map((e) => `tl.${e}`),
     ];
-    const missing = [...codes.map((c) => `err.${c}`), ...extra].filter((k) => !(k in dict.bg));
+    const missing = [...codes.map((c) => `err.${c}`), ...extra].filter((k) => !(k in dict.it));
     assert.deepEqual(missing, []);
   });
 });

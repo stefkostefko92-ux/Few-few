@@ -4,7 +4,7 @@
 import { has, t } from '../i18n.js';
 
 export const KINDS = ['WEBHOOK', 'ZENDESK', 'JSM'];
-export const LANGS = ['it', 'en', 'bg'];
+export const LANGS = ['it', 'en'];
 export const STATUSES = ['PENDING', 'SENDING', 'DELIVERED', 'SKIPPED', 'DEAD'];
 
 /** Неповерителните полета по вид (влизат в `settings`). */

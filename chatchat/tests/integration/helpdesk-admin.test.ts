@@ -107,7 +107,7 @@ describe('тайните', () => {
     const res = await configure(w.adminA, {
       kind: 'WEBHOOK',
       enabled: true,
-      settings: { url: `${fake.base}/hook`, language: 'bg' },
+      settings: { url: `${fake.base}/hook`, language: 'en' },
       secrets: { signingSecret: SIGNING, inboundSecret: INBOUND },
     });
     assert.equal(res.status, 200, JSON.stringify(res.body));
@@ -175,7 +175,7 @@ describe('тайните', () => {
     const kept = await configure(w.adminA, {
       kind: 'WEBHOOK',
       enabled: true,
-      settings: { url: `${fake.base}/other`, language: 'bg' },
+      settings: { url: `${fake.base}/other`, language: 'en' },
     });
     assert.equal(kept.status, 200, JSON.stringify(kept.body));
     assert.equal(kept.body.integration.secrets.signingSecret, true);

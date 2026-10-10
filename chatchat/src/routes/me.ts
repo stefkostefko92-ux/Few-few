@@ -5,11 +5,11 @@ import { apiError, principalOf, requireCsrf, requireUser } from '../auth/guards.
 
 /**
  * Собственият профил (FR-14): човекът сам сменя езика си — на него са интерфейсът, писмата и
- * отговорите на AI (чатът чете `locale` от базата при всеки въпрос). Само it/en/bg; нищо друго от
+ * отговорите на AI (чатът чете `locale` от базата при всеки въпрос). Само it/en (интерфейсът е само на италиански и английски — решение на собственика); нищо друго от
  * профила не се пипа оттук (роля, срок, фирма — само администраторът, с одит).
  */
 
-export const LOCALES = ['it', 'en', 'bg'] as const;
+export const LOCALES = ['it', 'en'] as const;
 
 const MePatch = z.object({ locale: z.enum(LOCALES) }).strict();
 

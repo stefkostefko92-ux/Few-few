@@ -4,7 +4,7 @@ import { Client, db, makeUser, resetDb, signIn, startApp, type Harness } from '.
 import { ask, newCase, seedWorld, type World } from './world.js';
 
 /**
- * Езикът на човека (FR-14): сам го сменя (PATCH /me, само it/en/bg), администраторът също
+ * Езикът на човека (FR-14): сам го сменя (PATCH /me, само it/en), администраторът също
  * (PATCH /users/:id/admin, с одит); следващият AI отговор е на новия език (моделът получава
  * „Answer language: …“). Чужд клиент — 404; нищо друго от профила не се сменя от /me.
  */
@@ -40,13 +40,20 @@ describe('PATCH /me', () => {
     assert.equal((await ask(w.portalAlfa, caseId, 'Still E37 after reset')).status, 201);
     assert.equal(lastLanguage(), 'English');
 
-    await w.portalAlfa.patch('/api/v1/me', { locale: 'bg' });
+    // Българският не е език на интерфейса: отказ, профилът остава на английски.
+    assert.equal((await w.portalAlfa.patch('/api/v1/me', { locale: 'bg' })).status, 400);
     await ask(w.portalAlfa, caseId, 'Пак E37');
-    assert.equal(lastLanguage(), 'Bulgarian');
+    assert.equal(lastLanguage(), 'English');
   });
 
-  test('само it/en/bg; нищо друго; без CSRF — 403; без вход — 401', async () => {
-    for (const bad of [{ locale: 'fr' }, { locale: 'en', role: 'SUPPORT' }, {}, { name: 'X' }]) {
+  test('само it/en; нищо друго; без CSRF — 403; без вход — 401', async () => {
+    for (const bad of [
+      { locale: 'fr' },
+      { locale: 'bg' },
+      { locale: 'en', role: 'SUPPORT' },
+      {},
+      { name: 'X' },
+    ]) {
       assert.equal((await w.support.patch('/api/v1/me', bad)).status, 400, JSON.stringify(bad));
     }
     assert.equal(
@@ -63,15 +70,15 @@ describe('администраторът сменя езика', () => {
   test('с причина и одит; директорията го показва; чужд клиент — 404', async () => {
     const target = w.users.portalAlfa.id;
     const res = await w.tenantAdmin.patch(`/api/v1/users/${target}/admin`, {
-      locale: 'bg',
+      locale: 'en',
       reason: 'richiesta del tecnico',
     });
     assert.equal(res.status, 200, JSON.stringify(res.body));
-    assert.equal(res.body.user.locale, 'bg');
+    assert.equal(res.body.user.locale, 'en');
     assert.equal(res.body.revokedSessions, 0);
     const audit = await db.auditEvent.findFirstOrThrow({ where: { action: 'user.admin_update' } });
     assert.deepEqual((audit.detail as { changes: unknown }).changes, {
-      locale: { from: 'it', to: 'bg' },
+      locale: { from: 'it', to: 'en' },
     });
     assert.equal(
       (
@@ -92,9 +99,19 @@ describe('администраторът сменя езика', () => {
       reason: 'altro cliente',
     });
     assert.equal(foreign.status, 404);
-    // Сесията остава (езикът не е промяна на достъпа) — следващият въпрос е на български.
+    assert.equal(
+      (
+        await w.tenantAdmin.patch(`/api/v1/users/${target}/admin`, {
+          locale: 'bg',
+          reason: 'x y z',
+        })
+      ).status,
+      400,
+      'българският не е език на интерфейса',
+    );
+    // Сесията остава (езикът не е промяна на достъпа) — следващият въпрос е на английски.
     const caseId = await newCase(w.portalAlfa);
     await ask(w.portalAlfa, caseId, 'E37');
-    assert.equal(lastLanguage(), 'Bulgarian');
+    assert.equal(lastLanguage(), 'English');
   });
 });

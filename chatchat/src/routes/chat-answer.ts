@@ -20,7 +20,7 @@ import type { Audience } from '../retrieval/types.js';
  */
 
 const HISTORY_MESSAGES = 12;
-const LOCALES = new Set(['it', 'en', 'bg']);
+const LOCALES = new Set(['it', 'en']);
 
 export type ChatCase = NonNullable<Awaited<ReturnType<typeof findCaseFor>>>;
 
@@ -96,7 +96,7 @@ export async function answerMessage(deps: WiredDeps, a: AnswerArgs) {
           role: h.kind === 'AI' ? ('assistant' as const) : ('user' as const),
           content: h.body,
         })),
-        locale: (LOCALES.has(p.user.locale) ? p.user.locale : 'it') as 'it' | 'en' | 'bg',
+        locale: (LOCALES.has(p.user.locale) ? p.user.locale : 'it') as 'it' | 'en',
         ...(modelFiles ? { attachments: modelFiles } : {}),
       },
       controller.signal,

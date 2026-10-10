@@ -20,12 +20,11 @@ import type { EvidenceItem, RetrievalResult } from '../retrieval/types.js';
  */
 export const PROMPT_VERSION = 'prompt-2026-10-10.5';
 
-export type Locale = 'it' | 'en' | 'bg';
+export type Locale = 'it' | 'en';
 
 const LANGUAGE: Record<Locale, string> = {
   it: 'Italian',
   en: 'English',
-  bg: 'Bulgarian',
 };
 
 export const SYSTEM_PROMPT = `You are ChatChat, a diagnostic decision-support assistant for qualified lift (elevator) technicians working on lift controller boards. You help the technician diagnose a fault. The technician remains fully responsible for every decision and every action on the installation; you do not replace the manufacturer's procedures, the site safety rules or the technician's judgement.

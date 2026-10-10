@@ -47,7 +47,7 @@ const AUDIENCE_RANK: Record<Audience, number> = { PORTAL: 0, INTERNAL: 1, ENGINE
 const widest = (list: readonly Audience[]): Audience =>
   list.reduce<Audience>((a, b) => (AUDIENCE_RANK[b] > AUDIENCE_RANK[a] ? b : a), 'PORTAL');
 
-const LANGS: ReadonlySet<string> = new Set(['it', 'en', 'bg']);
+const LANGS: ReadonlySet<string> = new Set(['it', 'en']);
 const UNSAFE_CLASSES: ReadonlySet<string> = new Set(['SAFETY_RELEVANT', 'DIRECT_COMMAND']);
 
 interface AnswerPayload {

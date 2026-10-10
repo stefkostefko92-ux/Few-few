@@ -121,50 +121,7 @@ const EN: Dict = {
   byHelpdesk: 'Closed by the helpdesk.',
 };
 
-const BG: Dict = {
-  status: {
-    OPEN: 'Отворен',
-    ASSIGNED: 'Възложен',
-    IN_PROGRESS: 'В работа',
-    WAITING: 'Чака техника',
-    CLOSED: 'Затворен',
-  },
-  event: {
-    'ticket.created': 'Тикетът е отворен в ChatChat.',
-    'ticket.claimed': 'Поет.',
-    'ticket.assigned': 'Възложен.',
-    'ticket.info_requested': 'Поискани са още данни от техника.',
-    'ticket.info_provided': 'Техникът даде поисканите данни.',
-    'ticket.closed': 'Затворен в ChatChat.',
-    'ticket.reopened': 'Отворен отново в ChatChat.',
-    'handoff.to_operator': 'Техникът поиска оператор.',
-    'handoff.to_engineering': 'Прехвърлен към Engineering.',
-    'handoff.to_ai': 'Операторът върна помощта от AI.',
-  },
-  role: 'Роля',
-  heading: 'Тикет в ChatChat',
-  caseLabel: 'случай',
-  queue: 'Опашка',
-  board: 'Табло',
-  hw: 'HW',
-  fw: 'FW',
-  serial: 'S/N',
-  error: 'Код за грешка',
-  phase: 'Фаза',
-  diagnosis: 'Диагноза (от AI, след Safety Gate)',
-  checks: 'Предложени проверки',
-  executed: 'Изпълнени стъпки',
-  sources: 'Източници',
-  missing: 'Липсващи данни',
-  attachments: 'Прикачени файлове в ChatChat',
-  open: 'Отвори в ChatChat',
-  rootCause: 'Първопричина',
-  solution: 'Решение',
-  byOutcome: 'Техникът потвърди случая като решен.',
-  byHelpdesk: 'Затворен от helpdesk-а.',
-};
-
-const DICTS: Record<ExternalLang, Dict> = { it: IT, en: EN, bg: BG };
+const DICTS: Record<ExternalLang, Dict> = { it: IT, en: EN };
 const dict = (lang: ExternalLang): Dict => DICTS[lang];
 
 export function statusLabel(lang: ExternalLang, status: TicketStatus): string {

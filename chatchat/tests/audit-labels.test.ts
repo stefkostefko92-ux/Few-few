@@ -56,7 +56,7 @@ function auditActions(): { actions: Set<string>; unknown: string[] } {
   return { actions, unknown };
 }
 
-const bg = JSON.parse(readFileSync(join(ROOT, 'public', 'i18n', 'bg.json'), 'utf8')) as Record<
+const it = JSON.parse(readFileSync(join(ROOT, 'public', 'i18n', 'it.json'), 'utf8')) as Record<
   string,
   string
 >;
@@ -75,10 +75,10 @@ describe('одитните действия в конзолата', () => {
   });
 
   test('всяко действие има етикет и група във филтъра', () => {
-    const noLabel = [...actions].filter((a) => !(`admin.audit.action.${a}` in bg)).sort();
+    const noLabel = [...actions].filter((a) => !(`admin.audit.action.${a}` in it)).sort();
     assert.deepEqual(noLabel, [], 'липсва admin.audit.action.<действие>');
     const noGroup = [...actions].filter((a) => !groups.some((g) => a.startsWith(g))).sort();
     assert.deepEqual(noGroup, [], 'липсва група в GROUPS');
-    for (const g of groups) assert.ok(`admin.audit.group.${g}` in bg, `admin.audit.group.${g}`);
+    for (const g of groups) assert.ok(`admin.audit.group.${g}` in it, `admin.audit.group.${g}`);
   });
 });

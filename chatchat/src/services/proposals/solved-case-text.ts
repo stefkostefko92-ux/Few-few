@@ -9,7 +9,7 @@ import { redactPii } from '../../domain/pii.js';
  * всичко минава през `redactPii`. Заглавията на разделите са на езика на документа.
  */
 
-export type DocLanguage = 'it' | 'en' | 'bg';
+export type DocLanguage = 'it' | 'en';
 
 const LABELS: Record<DocLanguage, Record<string, string>> = {
   it: {
@@ -53,27 +53,6 @@ const LABELS: Record<DocLanguage, Record<string, string>> = {
     OK: 'OK',
     KO: 'KO',
     NOT_POSSIBLE: 'not possible',
-  },
-  bg: {
-    context: 'Контекст на таблото',
-    symptoms: 'Симптоми и наблюдения',
-    steps: 'Изпълнени стъпки и резултати',
-    solution: 'Причина и решение',
-    model: 'Модел',
-    hw: 'HW ревизия',
-    fw: 'Фърмуер',
-    code: 'Код за грешка',
-    phase: 'Фаза',
-    options: 'Опции',
-    expected: 'очаквано',
-    result: 'резултат',
-    rootCause: 'Причина',
-    fix: 'Решение',
-    none: 'не е посочено',
-    noSteps: 'В случая няма записани стъпки.',
-    OK: 'OK',
-    KO: 'KO',
-    NOT_POSSIBLE: 'неизпълнима',
   },
 };
 

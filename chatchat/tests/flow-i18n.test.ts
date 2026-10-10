@@ -16,7 +16,7 @@ const load = (l: string) =>
     string,
     string
   >;
-const dicts = ['bg', 'it', 'en'].map(load);
+const dicts = ['it', 'en'].map(load);
 const translated = (key: string) => dicts.every((d) => typeof d[key] === 'string' && d[key] !== '');
 
 function sources(): string[] {

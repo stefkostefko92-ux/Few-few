@@ -102,7 +102,7 @@ export const EvalCase = z.object({
   id: z.string().min(1).max(80),
   /** Свободни етикети: „adversarial“, „§16.3:wrong-version“, „semantic“… — разбивка в отчета. */
   tags: z.array(z.string().max(60)).default([]),
-  locale: z.enum(['it', 'en', 'bg']).default('it'),
+  locale: z.enum(['it', 'en']).default('it'),
   /** Аудиторията на ролята, която пита (PORTAL техник, вътрешен, инженеринг). */
   audience: z.enum(['PORTAL', 'INTERNAL', 'ENGINEERING']).default('PORTAL'),
   question: z.string().min(1).max(4000),
