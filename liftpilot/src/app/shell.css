@@ -191,8 +191,9 @@ html.ws-drawer-open { overflow: hidden; }
   :is(.ws-crumbs, .crumbs-nav) .crumbs li { flex: 0 1 auto; }
   :is(.ws-crumbs, .crumbs-nav) .crumbs li > :is(a, span) { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   :is(.ws-crumbs, .crumbs-nav) .crumbs li:first-child { flex: none; }
-  /* the page's own name gives way last: the path between is cut first */
-  :is(.ws-crumbs, .crumbs-nav) .crumbs li:last-child:not(:first-child) { flex: none; max-width: 60%; }
+  /* the page's own name gives way last: the path between shrinks first (its weight is a thousand times the name's)
+     down to a few letters, then the name; with room enough nothing is cut */
+  :is(.ws-crumbs, .crumbs-nav) .crumbs li:not(:first-child):not(:last-child) { flex: 0 1000 auto; min-width: 6ch; }
 }
 
 /* ---- page header, chips, title block --------------------------------------------------------------------------- */
