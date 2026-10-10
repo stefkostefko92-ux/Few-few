@@ -398,7 +398,7 @@ export default function Login() {
               />
               <FaqItem
                 q="Can I use my own Discord bot?"
-                a="Yes — on the White-label tier (€9.99 per server per month, bought in the Discord store) you upload your own bot token and it runs under your brand: your bot's name, avatar and server presence. The token is encrypted at rest with AES-256-GCM."
+                a="Yes — on the White-label tier (€9.99 per server per month, bought in the Discord store) you connect your own Discord bot application (its bot token from the Discord Developer Portal) and it runs under your brand: your bot's name, avatar and server presence. The token is encrypted at rest with AES-256-GCM."
               />
               <FaqItem
                 q="What happens if I cancel — can I take my data?"
@@ -488,7 +488,7 @@ export default function Login() {
                 cta="Get White-label"
                 bullets={[
                   "Everything in Premium",
-                  "White-label custom bot (your token)",
+                  "White-label custom bot (your own bot application)",
                   "Runs under your name & avatar",
                 ]}
               />

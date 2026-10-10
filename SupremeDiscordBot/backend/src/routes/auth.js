@@ -59,6 +59,9 @@ function discordErrorOf(err) {
 
 const toFrontend = (res, path) => res.redirect(`${process.env.FRONTEND_URL}${path}`);
 
+const persistSession = (req) =>
+  new Promise((resolve, reject) => req.session.save((err) => (err ? reject(err) : resolve())));
+
 router.get("/callback", async (req, res) => {
   const parsed = callbackQuerySchema.safeParse(req.query);
   if (!parsed.success) {
@@ -72,7 +75,13 @@ router.get("/callback", async (req, res) => {
   delete req.session.oauthState;
 
   // Потребителят е натиснал „Cancel“ в Discord → `?error=access_denied`, без код.
-  if (error) return toFrontend(res, "/?error=oauth_denied");
+  // Всяка друга грешка от Discord (server_error, temporarily_unavailable,
+  // invalid_scope…) НЕ е отказ на човека — пише се в дневника като наш провал.
+  if (error === "access_denied") return toFrontend(res, "/?error=oauth_denied");
+  if (error) {
+    console.warn(`OAuth callback: discord error=${/^[a-z_]{1,64}$/.test(error) ? error : "other"}`);
+    return toFrontend(res, "/?error=oauth_failed");
+  }
   if (!code) return toFrontend(res, "/?error=no_code");
 
   if (!state || !expectedState || state !== expectedState) {
@@ -86,8 +95,17 @@ router.get("/callback", async (req, res) => {
     return toFrontend(res, "/?error=oauth_expired");
   }
 
+  // Коя стъпка е паднала — за дневника, без съдържание от заявката.
+  let step = "state";
   try {
+    // Изразходваният state се записва в хранилището ПРЕДИ кодът да тръгне към
+    // Discord. Иначе изтриването живее само в паметта до края на отговора и
+    // повторна заявка със същата бисквитка (напр. при „Продължи“ след
+    // предупреждение на браузъра) минава проверката и праща кода втори път.
+    await persistSession(req);
+
     // 1. Exchange code for tokens
+    step = "token";
     const tokenRes = await axios.post(
       `${DISCORD_API}/oauth2/token`,
       new URLSearchParams({
@@ -103,6 +121,7 @@ router.get("/callback", async (req, res) => {
     const { access_token, refresh_token, expires_in } = tokenRes.data;
 
     // 2. Fetch Discord user info
+    step = "me";
     const userRes = await axios.get(`${DISCORD_API}/users/@me`, {
       headers: { Authorization: `Bearer ${access_token}` },
     });
@@ -123,6 +142,7 @@ router.get("/callback", async (req, res) => {
     const isMainOwner = discordUser.id === process.env.MAIN_OWNER_ID;
 
     // 4. Upsert user in database
+    step = "db";
     const user = await prisma.user.upsert({
       where: { id: discordUser.id },
       create: {
@@ -177,11 +197,13 @@ router.get("/callback", async (req, res) => {
     });
   } catch (err) {
     const { status, error: discordError } = discordErrorOf(err);
-    console.error(`OAuth callback error: status=${status} error=${discordError}`);
-    // `invalid_grant` = кодът е изтекъл или вече използван — потребителят
-    // просто влиза наново. Всичко друго (напр. `invalid_client` при сгрешен
-    // DISCORD_CLIENT_SECRET) е проблем на нашата настройка.
-    toFrontend(res, discordError === "invalid_grant" ? "/?error=oauth_expired" : "/?error=oauth_failed");
+    // Само имена и кодове — никога err.message (може да носи данни от заявката).
+    console.error(`OAuth callback error: step=${step} status=${status} error=${discordError} type=${err?.name ?? "Error"}`);
+    // `invalid_grant` при обмяната = кодът е изтекъл или вече използван —
+    // потребителят просто влиза наново. Всичко друго (напр. `invalid_client`
+    // при сгрешен DISCORD_CLIENT_SECRET) е проблем на нашата настройка.
+    const expired = step === "token" && discordError === "invalid_grant";
+    toFrontend(res, expired ? "/?error=oauth_expired" : "/?error=oauth_failed");
   }
 });
 

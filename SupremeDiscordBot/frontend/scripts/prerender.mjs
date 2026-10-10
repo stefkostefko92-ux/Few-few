@@ -251,12 +251,12 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
     ["Automation", "Sticky messages and one-off or recurring (daily/weekly/monthly) scheduled messages."],
     ["AI auto-replies", "Optional automatic AI first reply to a new ticket, labelled as AI (EU AI Act Art. 50)."],
     ["Webhooks & API", "HMAC-signed webhook events and a public REST API with scoped bearer keys."],
-    ["White-label bot", "White-label & Agency servers run their own branded bot with a custom token, encrypted with AES-256-GCM."],
+    ["White-label bot", "White-label & Agency servers run their own branded bot from their own Discord bot application; its token is encrypted with AES-256-GCM."],
   ];
   const featuresHtml = EN_FEATURES.map(([t, d]) => `<li><h3>${esc(t)}</h3><p>${esc(d)}</p></li>`).join("");
   const pricingHtml = `<div><h3>Free — €0</h3><ul><li>1 ticket panel</li><li>2 application forms (up to 5 questions each)</li><li>1 verification panel</li><li>Persistent transcripts (30-day retention)</li></ul></div>`
     + `<div><h3>Premium — €4.99 / server / month</h3><ul><li>Up to 50 panels, 50 forms, 50 questions each</li><li>AI auto-replies and round-robin assignment</li><li>Webhooks (HMAC), public REST API, advanced analytics, unlimited retention</li></ul></div>`
-    + `<div><h3>White-label — €9.99 / server / month</h3><ul><li>Everything in Premium</li><li>White-label custom bot — upload your own Discord token</li><li>Runs under your own brand (name & avatar)</li></ul></div>`
+    + `<div><h3>White-label — €9.99 / server / month</h3><ul><li>Everything in Premium</li><li>White-label custom bot — connect your own Discord bot application (bot token from the Discord Developer Portal)</li><li>Runs under your own brand (name & avatar)</li></ul></div>`
     + `<p>All prices in EUR, VAT included · per server, monthly · sold and billed through the Discord store (Discord is the seller of record) · subscriptions renew automatically until cancelled.</p>`;
   // Free-vs-Premium comparison — the most AI-citable, answer-first content.
   // Rendered as a real <table> so non-JS AEO crawlers (ClaudeBot/GPTBot/Perplexity)

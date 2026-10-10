@@ -5,13 +5,16 @@
 // "authentication failed" for everything hid whether the visitor should simply
 // sign in again (expired or reused link) or whether our setup is broken.
 
+// Plain statements of what happened. No "verify", "expired account" or
+// "log in again to continue" pressure — that is the vocabulary of phishing
+// lures, and this box sits right next to a sign-in button.
 export const AUTH_ERROR_MESSAGES = Object.freeze({
   blacklisted: "You have been blacklisted from this platform.",
-  oauth_denied: "Sign-in was cancelled on Discord, so nothing was shared. Sign in again whenever you are ready.",
-  oauth_expired: "This sign-in link has expired or was already used. Sign in again to get a fresh one.",
+  oauth_denied: "Sign-in was cancelled on Discord, so nothing was shared with Supreme Bot.",
+  oauth_expired: "This Discord sign-in link was already used or is too old. You can start sign-in again from this page.",
   oauth_failed: "Discord sign-in did not complete on our side. Please try again in a few minutes.",
-  no_code: "Discord did not send a sign-in code. Please sign in again.",
-  session_failed: "Your session could not be started. Please sign in again.",
+  no_code: "Discord returned without a sign-in code, so nothing changed.",
+  session_failed: "Your session could not be started. Please try again.",
 });
 
 const FALLBACK_MESSAGE = "Sign-in did not complete. Please try again.";
