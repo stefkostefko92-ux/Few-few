@@ -26,7 +26,9 @@ npm run dev           # нужни: PostgreSQL и .env (AUTH_SECRET, PUBLIC_BASE
 ADMIN_PASSWORD=… npm run admin:create                 # администратор на платформата (SUPERADMIN), идемпотентно
 BASE_URL=… ADMIN_PASSWORD=… npm run smoke             # e2e в браузъра срещу пуснат сървър (Playwright не е в package.json — трябва локален или глобален)
 MAILBOX_PORT=2526 … npm run smoke                     # + регистрация, потвърждение, нова парола: сървърът с SMTP_HOST=127.0.0.1 SMTP_PORT=2526 MAIL_FROM=…
-python3 scripts/brand-assets.py                       # логото, иконите и OG изображенията от brand/liftpilot-logo.webp
+python3 -I scripts/brand-assets.py [--og]             # логото, емблемата, favicon/иконите (и с --og OG изображенията) от brand/premium/
+python3 -I scripts/icons-build.py                     # рисуваните икони → public/icons/*-48|96.webp + src/components/icon-names.ts
+python3 -I scripts/premium-images.py                  # илюстрациите на шаблона → public/img/premium/ (AVIF + WebP)
 npm run lista         # docs/lista-verifica-normativa.md + .json от регистъра
 python3 scripts/lista-verifica-xlsx.py   # docs/lista-verifica-normativa.xlsx от .json (нужен openpyxl; след npm run lista)
 BASE_URL=… node scripts/render-poster.mjs            # постерът на 3D сцената (public/img/argano-machine-*.webp)

@@ -44,7 +44,9 @@ npm run dev                                   # sviluppo (serve un PostgreSQL e 
 ADMIN_PASSWORD=… npm run admin:create         # amministratore della piattaforma
 BASE_URL=… ADMIN_PASSWORD=… npm run smoke     # prova completa nel browser contro un'istanza avviata
                                               # (MAILBOX_PORT=…: anche registrazione e nuova password, vedi scripts/mail-sink.mjs)
-python3 scripts/brand-assets.py              # logo, icone e anteprime social da brand/liftpilot-logo.webp
+python3 -I scripts/brand-assets.py [--og]    # logo, emblema, favicon (e con --og le anteprime social) da brand/premium/
+python3 -I scripts/icons-build.py            # icone dipinte → public/icons/ e src/components/icon-names.ts
+python3 -I scripts/premium-images.py         # illustrazioni del template → public/img/premium/ (AVIF + WebP)
 npm run lista                                 # lista di verifica (.md/.json) dal registro
 python3 scripts/lista-verifica-xlsx.py        # l'.xlsx dalla .json (serve openpyxl; dopo npm run lista)
 ```
