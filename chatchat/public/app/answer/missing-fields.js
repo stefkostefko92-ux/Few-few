@@ -1,12 +1,14 @@
 // Липсващите данни (FR-07) като видове полета: кодът от сървъра (`ctx.*`, `collect.*`, свободен
 // текст на модела) → какво попълва техникът. Редът на видовете е редът на диагностичната стойност,
-// който сървърът вече е приложил (src/safety/missing-order.ts): QR/сериен номер → FW → HW → код →
+// който сървърът вече е приложил (src/safety/missing-order.ts): QR/сериен номер → FW → HW/опция → код →
 // снимка → лог → извършени проверки → кратки отговори. Обясненията (`gate.*`, `kb.*`) не са поле.
 
 const KINDS = [
   ['serial', /^(ctx|collect)\.serial$/],
   ['firmware', /^(ctx|collect)\.firmware$/],
   ['hardwareRevision', /^(ctx|collect)\.hardwareRevision$/],
+  // FR-01: опция на таблото, която иска приложим документ (напр. „ctx.option:inverter“).
+  ['option', /^ctx\.option:.+$/],
   ['errorCode', /^(ctx\.(unknownIdentifier|photoCodeMismatch|photoCode):.+|collect\.errorCode)$/],
   ['photo', /^collect\.(displayPhoto|betterPhoto|photoFormat|photoSize)$/],
   ['log', /^collect\.(eventLog|logExcerpt)$/],
@@ -25,6 +27,7 @@ const ORDER = [
   'serial',
   'firmware',
   'hardwareRevision',
+  'option',
   'errorCode',
   'photo',
   'log',
@@ -42,7 +45,7 @@ export function fieldsFor(items) {
   const list = [];
   for (const item of [...new Set(items.filter((x) => typeof x === 'string' && x))]) {
     const kind = kindOf(item);
-    if (kind === 'answer' || kind === 'note') {
+    if (kind === 'answer' || kind === 'note' || kind === 'option') {
       list.push({ kind, codes: [item] });
       continue;
     }
@@ -68,3 +71,6 @@ export function suggestedCode(field, context) {
   }
   return context?.errorCode ?? '';
 }
+
+/** Ключът на опцията от кода „ctx.option:<ключ>“. */
+export const optionKey = (code) => String(code).slice('ctx.option:'.length);

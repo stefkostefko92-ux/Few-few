@@ -10,7 +10,8 @@ import type { DiagnosticAnswer } from '../domain/response.js';
  *                          отговори за едно действие;
  *   1 фърмуер            — един код значи различно в различен FW (§16.3 „същото име, друга
  *                          версия“), приложимостта на документите е главно по обхват на FW (§8.2);
- *   2 HW ревизия         — стеснява правилата по ревизия; по-рядко решаваща от FW;
+ *   2 HW ревизия         — стеснява правилата по ревизия; по-рядко решаваща от FW; тук е и
+ *                          опция на таблото, поискана от документ (FR-01) — конфигурация като HW;
  *   3 код за грешка      — точният път (§8.3 „exact code + correct version“ → водена диагноза), но
  *                          смислен чак когато версията е известна; тук са и непознат/различен код
  *                          от въпроса или от снимката (потвърждение);
@@ -26,7 +27,7 @@ import type { DiagnosticAnswer } from '../domain/response.js';
 const RANK: ReadonlyArray<readonly [number, RegExp]> = [
   [0, /^(ctx|collect)\.serial$/],
   [1, /^(ctx|collect)\.firmware$/],
-  [2, /^(ctx|collect)\.hardwareRevision$/],
+  [2, /^((ctx|collect)\.hardwareRevision|ctx\.option:.+)$/],
   [3, /^(ctx\.(unknownIdentifier|photoCodeMismatch|photoCode):.+|collect\.errorCode)$/],
   [4, /^collect\.(displayPhoto|betterPhoto|photoFormat|photoSize)$/],
   [5, /^collect\.(eventLog|logExcerpt)$/],

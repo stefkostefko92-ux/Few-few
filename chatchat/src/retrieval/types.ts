@@ -92,6 +92,8 @@ export interface EvidenceItem {
   validity?: Exclude<Validity, 'effective'>;
   /** Обща ревизия, заменена за таблото на случая от собствената му (`applyBoardOverride`). */
   replacedByBoard?: boolean;
+  /** Би бил приложим, ако случаят знаеше тези опции на таблото (FR-01) — искат се (FR-07). */
+  missingOptions?: string[];
 }
 
 export interface RetrievalRequest {
@@ -123,7 +125,13 @@ export interface RetrievalResult {
  */
 export type RawEvidence = Omit<
   EvidenceItem,
-  'ref' | 'score' | 'applicable' | 'validity' | 'boardSpecific' | 'replacedByBoard'
+  | 'ref'
+  | 'score'
+  | 'applicable'
+  | 'validity'
+  | 'boardSpecific'
+  | 'replacedByBoard'
+  | 'missingOptions'
 > & {
   rawScore: number;
   rules: EvidenceRule[];

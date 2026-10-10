@@ -43,7 +43,7 @@ export function conflictPayload(
 ): { payload: ConflictPayload; dedupeKey: string } | null {
   const m = SYSTEM_CONFLICT.exec(conflict.description);
   if (!m) return null;
-  const byRef = new Map(evidence.map((e) => [e.ref, e]));
+  const byRef = new Map((Array.isArray(evidence) ? evidence : []).map((e) => [e.ref, e]));
   const seen = new Set<string>();
   const items: ConflictItem[] = [];
   for (const ref of conflict.refs) {
@@ -88,7 +88,8 @@ export async function proposeConflicts(
   input: ConflictProposalInput,
 ): Promise<string[]> {
   const created: string[] = [];
-  for (const conflict of input.conflicts) {
+  // Диагностика без системни конфликти (напр. заместител в тестовете) — нищо за предлагане.
+  for (const conflict of Array.isArray(input.conflicts) ? input.conflicts : []) {
     const found = conflictPayload(conflict, input.evidence);
     if (!found) continue;
     try {

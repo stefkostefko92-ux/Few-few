@@ -1623,5 +1623,7 @@
   "kbq.err.link_required": "Choose a document or an error code.",
   "kbq.err.unknown_document": "Document not found for this customer.",
   "kbq.err.unknown_error": "Code not found for this customer.",
-  "kbq.err.invalid_transition": "Someone else already changed the status: refresh."
+  "kbq.err.invalid_transition": "Someone else already changed the status: refresh.",
+  "missing.field.option": "Board option \"{key}\"",
+  "code.ctx.option": "Board option \"{param}\": a relevant document applies only to a specific value"
 }

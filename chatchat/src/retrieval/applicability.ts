@@ -20,6 +20,11 @@ export interface Applicability {
   validity: Validity;
   /** Приложим през правило за КОНКРЕТНОТО табло на случая (уникалната му схема). */
   boardSpecific: boolean;
+  /**
+   * Неприложим САМО защото случаят не знае тези опции (HW/FW/табло съвпадат, никоя известна опция
+   * не противоречи) — отговорът ги иска като липсващи данни (`ctx.option:<ключ>`, FR-07).
+   */
+  missingOptions: string[];
 }
 
 /** Ключ/стойност се сравняват без значение на главни/малки букви и крайни интервали. */
@@ -49,6 +54,24 @@ export function ruleApplies(rule: EvidenceRule, version: CaseVersion): boolean {
   return isApplicable(rule, version) && optionsMatch(rule.options, version.options);
 }
 
+/**
+ * Опциите, които липсват на случая, за да важи правилото: само ако HW/FW/табло съвпадат и нито една
+ * ИЗВЕСТНА опция не е различна (иначе питането не помага — таблото е друга конфигурация).
+ */
+export function absentOptions(rule: EvidenceRule, version: CaseVersion): string[] {
+  if (!rule.options || !isApplicable(rule, version)) return [];
+  const have = new Map(
+    Object.entries(version.options ?? {}).map(([k, v]) => [normKey(k), normValue(v)]),
+  );
+  const absent: string[] = [];
+  for (const [k, v] of Object.entries(rule.options)) {
+    const value = have.get(normKey(k));
+    if (value === undefined) absent.push(k.trim());
+    else if (value !== normValue(v)) return [];
+  }
+  return absent;
+}
+
 export function applicabilityOf(
   raw: Pick<RawEvidence, 'rules' | 'effectiveFrom' | 'effectiveTo'>,
   version: CaseVersion,
@@ -56,20 +79,26 @@ export function applicabilityOf(
 ): Applicability {
   const validity = validityAt(raw, now);
   const matching = raw.rules.filter((rule) => ruleApplies(rule, version));
+  const missingOptions =
+    matching.length > 0
+      ? []
+      : [...new Set(raw.rules.flatMap((rule) => absentOptions(rule, version)))].sort();
   return {
     applicable: validity === 'effective' && matching.length > 0,
     validity,
     boardSpecific: matching.some((rule) => Boolean(rule.deviceId)),
+    missingOptions,
   };
 }
 
 /** Полетата на EvidenceItem от приложимостта (незадължителните — само когато важат). */
 export function applicabilityFields(
   a: Applicability,
-): Pick<EvidenceItem, 'applicable' | 'boardSpecific' | 'validity'> {
+): Pick<EvidenceItem, 'applicable' | 'boardSpecific' | 'validity' | 'missingOptions'> {
   return {
     applicable: a.applicable,
     ...(a.boardSpecific ? { boardSpecific: true } : {}),
     ...(a.validity !== 'effective' ? { validity: a.validity } : {}),
+    ...(!a.applicable && a.missingOptions.length > 0 ? { missingOptions: a.missingOptions } : {}),
   };
 }

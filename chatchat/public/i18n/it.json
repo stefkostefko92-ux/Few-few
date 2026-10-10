@@ -1623,5 +1623,7 @@
   "kbq.err.link_required": "Scelga un documento o un codice errore.",
   "kbq.err.unknown_document": "Documento non trovato per questo cliente.",
   "kbq.err.unknown_error": "Codice non trovato per questo cliente.",
-  "kbq.err.invalid_transition": "Qualcun altro ha già cambiato lo stato: aggiorni."
+  "kbq.err.invalid_transition": "Qualcun altro ha già cambiato lo stato: aggiorni.",
+  "missing.field.option": "Opzione del quadro «{key}»",
+  "code.ctx.option": "Opzione del quadro «{param}»: un documento pertinente vale solo per un valore preciso"
 }

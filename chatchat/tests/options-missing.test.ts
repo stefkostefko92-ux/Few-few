@@ -194,6 +194,44 @@ describe('опции на таблото (FR-01)', () => {
   });
 });
 
+describe('липсваща опция → искане (FR-01 + FR-07)', () => {
+  test('непозната опция: записът носи missingOptions; друга стойност — не (питането не помага)', () => {
+    const v = { hwRevision: 'B', firmware: '4.2' };
+    const unknown = applicabilityOf({ rules: [VF3] }, { ...v, options: {} }, NOW);
+    assert.deepEqual([unknown.applicable, unknown.missingOptions], [false, ['inverter']]);
+    const other = applicabilityOf({ rules: [VF3] }, { ...v, options: { inverter: 'X100' } }, NOW);
+    assert.deepEqual(other.missingOptions, []);
+    const fwOff = applicabilityOf(
+      { rules: [{ ...VF3, fwMin: '5.0' }] },
+      { ...v, options: {} },
+      NOW,
+    );
+    assert.deepEqual(fwOff.missingOptions, [], 'FW не съвпада — опцията не би помогнала');
+  });
+
+  test('отговорът без модел иска опцията, след HW и преди кода', async () => {
+    const r = await retrieve(store([row('Parametro P41 per inverter VF-3', [VF3])]), {
+      scope: { tenantId: 't', audiences: ['PORTAL'] },
+      context: ctx({}, { hardwareRevision: null }),
+      query: 'Parametro P41',
+      now: NOW,
+    });
+    assert.deepEqual(r.items[0]?.missingOptions, ['inverter']);
+    const out = noEvidenceAnswer({
+      retrieval: r,
+      context: ctx({}, { hardwareRevision: null }),
+      question: 'Parametro P41',
+      knowledgeSnapshotId: 's',
+      promptVersion: 'p',
+    });
+    assert.deepEqual(out.missingData, [
+      'ctx.hardwareRevision',
+      'ctx.option:inverter',
+      'gate.noApplicableSource',
+    ]);
+  });
+});
+
 describe('ред на липсващите данни (FR-07)', () => {
   test('по диагностична стойност: QR → FW → HW → код → снимка → лог → проверки → останалото', () => {
     const ordered = orderMissing([

@@ -179,7 +179,11 @@ export function casesRouter(deps: WiredDeps): Router {
       let board: DeviceWithProduct | null = null;
       if (body.data.deviceSerial) {
         board = await visibleBoard(p, body.data.deviceSerial);
-        if (!board) return apiError(res, 404, 'device_not_found');
+        // Портален случай — само табло на фирмата на случая: поелият оператор (персонал вижда
+        // всички табла) не може да отвори към портала схемите на чуждо табло (AC-18).
+        if (!board || (c.portal && board.companyId !== c.companyId)) {
+          return apiError(res, 404, 'device_not_found');
+        }
         context = boardContext(context, board);
       }
       const product = await deps.db.product.findUnique({

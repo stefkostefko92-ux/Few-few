@@ -205,6 +205,34 @@ describe('опции на таблото (FR-01)', () => {
     );
   });
 
+  test('случай без опцията: моделът не се вика, отговорът иска „ctx.option:inverter“ (FR-07)', async () => {
+    await optionDocs();
+    const caseId = await newCase(w.portalAlfa, { context: { errorCode: null } });
+    const answer = answerOf(await ask(w.portalAlfa, caseId, 'Parametro P41?'));
+    assert.equal(h.model.calls, 0);
+    assert.equal(answer.status, 'undetermined');
+    assert.ok(answer.missingData.includes('ctx.option:inverter'), JSON.stringify(answer));
+    // С опцията в контекста — документът за VF-3 е източник.
+    await w.portalAlfa.patch(`/api/v1/cases/${caseId}/context`, {
+      context: {
+        productModel: MODEL,
+        hardwareRevision: 'B',
+        firmware: '4.2',
+        serial: null,
+        errorCode: null,
+        phase: 'unknown',
+        symptoms: [],
+        observations: [],
+        options: { inverter: 'VF-3' },
+      },
+    });
+    const again = answerOf(await ask(w.portalAlfa, caseId, 'Parametro P41?'));
+    assert.deepEqual(
+      again.evidence.map((e: { documentCode: string }) => e.documentCode),
+      ['PAR-VF3'],
+    );
+  });
+
   test('опциите се виждат в справката по сериен номер; редакция на правило — само обект', async () => {
     await deviceWithOptions('SN-VF3', { inverter: 'VF-3' });
     const dev = await w.portalAlfa.get('/api/v1/devices/SN-VF3');
@@ -259,6 +287,27 @@ describe('опции на таблото (FR-01)', () => {
     assert.equal(stored.deviceId, device.id);
     const audit = await db.auditEvent.findFirstOrThrow({ where: { action: 'case.board' } });
     assert.deepEqual(audit.detail, { deviceId: device.id, previousDeviceId: null });
+  });
+
+  test('портален случай: поелият оператор не го връзва за табло на друга фирма (AC-18)', async () => {
+    const caseId = await newCase(w.portalAlfa);
+    assert.equal((await w.support.post(`/api/v1/cases/${caseId}/assign`)).status, 200);
+    const context = {
+      productModel: MODEL,
+      hardwareRevision: 'B',
+      firmware: '4.2',
+      serial: null,
+      errorCode: 'E37',
+      phase: 'unknown',
+      symptoms: [],
+      observations: [],
+      options: {},
+    };
+    const patch = (deviceSerial: string) =>
+      w.support.patch(`/api/v1/cases/${caseId}/context`, { context, deviceSerial });
+    const beta = await patch('SN-BETA-1');
+    assert.deepEqual([beta.status, beta.body.code], [404, 'device_not_found']);
+    assert.equal((await patch('SN-ALFA-1')).status, 200);
   });
 });
 

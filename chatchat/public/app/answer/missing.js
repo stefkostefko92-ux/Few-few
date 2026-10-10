@@ -8,7 +8,7 @@ import { api } from '../api.js';
 import { h } from '../dom.js';
 import { errorText } from '../errors.js';
 import { has, t, tCode } from '../i18n.js';
-import { fieldsFor, suggestedCode } from './missing-fields.js';
+import { fieldsFor, optionKey, suggestedCode } from './missing-fields.js';
 import { arr, block, str } from './util.js';
 
 let seq = 0;
@@ -39,9 +39,14 @@ function staticList(items) {
  *   pick: (kind: 'PHOTO'|'LOG') => void, scanQr: (cb: (device: object) => void) => void }} opts
  */
 export function missingBlock(p, opts) {
+  if (!opts?.interactive) {
+    // Статично (стар отговор, затворен случай, четящ персонал): както преди — само missingData;
+    // какво да се събере преди тикета остава в блока „Ескалация“.
+    const md = arr(p?.missingData);
+    return md.length ? block(t('ans.missing'), 'blk-missing', staticList(md)) : null;
+  }
   const items = missingItems(p);
   if (!items.length) return null;
-  if (!opts?.interactive) return block(t('ans.missing'), 'blk-missing', staticList(items));
 
   const ctx = opts.context ?? {};
   const id = `mf-${(seq += 1)}`;
@@ -161,6 +166,27 @@ export function missingBlock(p, opts) {
           { class: 'missing-item' },
           h('label', { for: input.id }, t(`missing.field.${f.kind}`)),
           hintOf(f.codes),
+          input,
+        );
+      }
+      case 'option': {
+        // FR-01: опцията на таблото, която иска приложим документ → в контекста (options).
+        const key = optionKey(f.codes[0]);
+        const current = ctx.options?.[key] ?? '';
+        const input = h('input', { id: fid, autocomplete: 'off', maxlength: '80', value: current });
+        input.addEventListener('input', refresh);
+        reads.push({
+          changed: () => input.value.trim() !== current,
+          apply: (next) => {
+            const v = input.value.trim();
+            if (v && v !== current) next.options = { ...next.options, [key]: v };
+            return null;
+          },
+        });
+        return h(
+          'li',
+          { class: 'missing-item' },
+          h('label', { for: fid }, t('missing.field.option', { key })),
           input,
         );
       }
