@@ -23,6 +23,8 @@ import { saveAiAnswer } from '../services/ai-answer.js';
 import { claimAi, findPrior, type PriorMessage } from '../services/chat-replay.js';
 import { addTimeline, contextOf, findCaseFor, isUniqueOn } from '../services/cases.js';
 import { caseAudience, notify } from '../services/collab/notify.js';
+import { afterCaseMessage, aiPausedFor, onCaseMessageTx } from '../services/tickets/messages.js';
+import type { MessageFlow } from '../services/tickets/messages.js';
 
 /**
  * §14.1 POST /chat/messages — съобщение в случая и (по подразбиране) диагностика от AI.
@@ -108,7 +110,9 @@ export function chatRouter(deps: WiredDeps): Router {
 
         const audiences = caseAudiences(p.user.role, c.portal);
         // Заключване, останало от сринал се процес, не е статус за връщане.
-        const restoreStatus = c.status === 'AI_IN_PROGRESS' ? 'OPEN' : c.status;
+        const restoreStatus = () => (c.status === 'AI_IN_PROGRESS' ? 'OPEN' : c.status);
+        // FR-19: предаден на оператор — техникът пише на човека, AI мълчи до „върни към AI“.
+        const paused = aiPausedFor(c, p);
         /**
          * AI стъпката за вече записано човешко съобщение (ново или повтор след провал). Случаят е
          * вече заключен с claimAi; при провал се връща предишният статус.
@@ -121,7 +125,7 @@ export function chatRouter(deps: WiredDeps): Router {
         ) => {
           const diagnose = deps.diagnose;
           if (!diagnose) {
-            await deps.db.case.update({ where: { id: c.id }, data: { status: restoreStatus } });
+            await deps.db.case.update({ where: { id: c.id }, data: { status: restoreStatus() } });
             return apiError(res, 503, 'ai_unavailable');
           }
           // Историята към модела — без AI отговори, търсени с аудитории, които питащият няма.
@@ -167,7 +171,7 @@ export function chatRouter(deps: WiredDeps): Router {
               controller.signal,
             );
           } catch (err) {
-            await deps.db.case.update({ where: { id: c.id }, data: { status: restoreStatus } });
+            await deps.db.case.update({ where: { id: c.id }, data: { status: restoreStatus() } });
             await appendAudit(deps.db, {
               tenantId: p.user.tenantId,
               actorId: p.user.id,
@@ -221,6 +225,7 @@ export function chatRouter(deps: WiredDeps): Router {
             // съобщение, без второ човешко. Само авторът и само за последното му съобщение.
             const retry =
               askAi &&
+              !paused &&
               !found.answer &&
               found.latest &&
               found.prior.kind === 'HUMAN' &&
@@ -232,9 +237,10 @@ export function chatRouter(deps: WiredDeps): Router {
           }
         }
 
-        let message;
+        let message: CaseMessage;
+        let flow: MessageFlow;
         try {
-          message = await deps.db.$transaction(async (tx) => {
+          ({ message, flow } = await deps.db.$transaction(async (tx) => {
             const created = await tx.caseMessage.create({
               data: {
                 caseId: c.id,
@@ -255,8 +261,9 @@ export function chatRouter(deps: WiredDeps): Router {
               messageId: created.id,
               ...(attachmentIds.length > 0 ? { attachmentIds } : {}),
             });
-            return created;
-          });
+            // Отговор на „поискай още данни“ → случаят се връща в работа (същата транзакция).
+            return { message: created, flow: await onCaseMessageTx(tx, c, p.user.id, created.id) };
+          }));
         } catch (err) {
           if (err instanceof InvalidAttachments) return apiError(res, 422, 'invalid_attachment');
           // Паралелен повтор със същия clientMessageId — първият печели, останалите го виждат.
@@ -271,8 +278,12 @@ export function chatRouter(deps: WiredDeps): Router {
           ? ((await attachmentsByMessage(deps.db, p.user.tenantId, [message.id])).get(message.id) ??
             [])
           : [];
-        if (!askAi) {
-          return res.status(201).json({ message: messageView(message, files), answer: null });
+        if (flow.applied) c.status = flow.applied.c.status;
+        await afterCaseMessage(deps, flow, c, p.user.id);
+        if (!askAi || paused) {
+          return res
+            .status(201)
+            .json({ message: messageView(message, files), answer: null, aiPaused: paused });
         }
         if (!deps.diagnose) return apiError(res, 503, 'ai_unavailable');
         if (!(await claimAi(deps.db, c.id))) return apiError(res, 409, 'ai_in_progress');

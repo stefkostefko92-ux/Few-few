@@ -19,6 +19,7 @@ import { initReset, showReset, takeResetToken } from './auth/reset.js';
 import { openSecurityDialog } from './auth/security.js';
 import { hasPendingQr, initScan, resolvePendingQr, takeQrFromUrl } from './qr/scan.js';
 import { initWorkspace, startWorkspace, stopWorkspace } from './workspace/index.js';
+import { initFlow } from './flow/index.js';
 import { resetQuickResponses } from './workspace/quick.js';
 import { wide } from './workspace/windows.js';
 
@@ -31,6 +32,7 @@ function showLogin(message) {
   state.cases = [];
   state.currentId = null;
   state.current = null;
+  state.flow = null;
   state.tickets.clear();
   stopWorkspace();
   resetQuickResponses();
@@ -227,6 +229,7 @@ async function init() {
   initChat();
   initScan(openNewCaseWithDevice);
   initWorkspace({ selectCase, refreshCases });
+  initFlow();
 
   // Изтекла сесия по средата на работа / втори фактор, поискан от API-то
   on('auth:expired', () => {

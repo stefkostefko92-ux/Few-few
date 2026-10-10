@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="/app/workspace.css" />
     <link rel="stylesheet" href="/app/viewer.css" />
     <link rel="stylesheet" href="/app/composer.css" />
+    <link rel="stylesheet" href="/app/flow.css" />
     <script type="module" src="/app/main.js"></script>
   </head>
   <body>
@@ -237,6 +238,11 @@
                 <span data-i18n="history.title">Cronologia</span>
               </button>
             </li>
+            <li>
+              <button id="nav-queue" class="nav-item" type="button" hidden>
+                <span data-i18n="queue.title">Coda ticket</span>
+              </button>
+            </li>
           </ul>
 
           <details class="side-group" id="grp-starred" open>
@@ -381,6 +387,8 @@
                 </dl>
                 <p id="case-outcome" class="outcome-line"></p>
                 <p id="case-ticket" class="outcome-line" hidden></p>
+                <!-- Тикетът, предаването и действията на оператора (FR-09, FR-19) — flow/panel.js -->
+                <div id="ticket-panel" class="ticket-panel"></div>
                 <button id="btn-ticket" class="btn btn-secondary btn-block" type="button">
                   <span data-i18n="actions.ticket">Apri ticket</span>
                 </button>

@@ -52,6 +52,13 @@ model Tenant {
   conversations  Conversation[]
   quickResponses QuickResponse[]
   notifications  Notification[]
+
+  // Работният поток на тикета и човешкото потвърждение (§11.2, FR-09, FR-19).
+  stepPolicy     StepApprovalPolicy?
+  stepApprovals  StepApproval[]
+  stepExecutions CaseStepExecution[]
+  ticketEvents   TicketEvent[]
+  handoffs       CaseHandoff[]
 }
 
 /// Фирма в рамките на клиента (монтажник, дистрибутор, сервиз) — разделя портала.
@@ -422,19 +429,25 @@ model Case {
   outcome      CaseOutcome?
   createdById  String
   assignedToId String?
+  /// FR-19: техникът е предал случая на оператор — AI не отговаря на техника, докато операторът
+  /// не го „върне към AI“ (персоналът с `case:assign` може да пита AI и тогава).
+  aiPaused     Boolean      @default(false)
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
   closedAt     DateTime?
 
-  tenant       Tenant              @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  company      Company?            @relation(fields: [companyId], references: [id], onDelete: Restrict)
-  device       Device?             @relation(fields: [deviceId], references: [id], onDelete: Restrict)
-  messages     CaseMessage[]
-  evidence     CaseEvidence[]
-  timeline     CaseTimelineEvent[]
-  ticket       Ticket?
-  attachments  Attachment[]
-  conversation Conversation?
+  tenant         Tenant              @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  company        Company?            @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  device         Device?             @relation(fields: [deviceId], references: [id], onDelete: Restrict)
+  messages       CaseMessage[]
+  evidence       CaseEvidence[]
+  timeline       CaseTimelineEvent[]
+  ticket         Ticket?
+  attachments    Attachment[]
+  conversation   Conversation?
+  stepApprovals  StepApproval[]
+  stepExecutions CaseStepExecution[]
+  handoffs       CaseHandoff[]
 
   @@index([tenantId, status])
   @@index([companyId])
@@ -466,11 +479,13 @@ model CaseMessage {
   audiences           Audience[]  @default([])
   createdAt           DateTime    @default(now())
 
-  case              Case               @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  knowledgeSnapshot KnowledgeSnapshot? @relation(fields: [knowledgeSnapshotId], references: [id], onDelete: Restrict)
+  case              Case                @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  knowledgeSnapshot KnowledgeSnapshot?  @relation(fields: [knowledgeSnapshotId], references: [id], onDelete: Restrict)
   evidence          CaseEvidence[]
   feedback          Feedback[]
   attachments       Attachment[]
+  stepApprovals     StepApproval[]
+  stepExecutions    CaseStepExecution[]
 
   @@unique([caseId, clientMessageId])
   @@index([caseId, createdAt])
@@ -518,23 +533,214 @@ enum TicketStatus {
   CLOSED
 }
 
+/// Опашката на тикета: поддръжка по подразбиране; „прехвърли към Engineering“ (FR-19) го мести.
+enum TicketQueue {
+  SUPPORT
+  ENGINEERING
+}
+
 /// Ескалация (§13.1 tickets): CASE 0..1 TICKET. Обобщението се сглобява от сървъра (AC-08).
+/// Машината на преходите е в src/services/tickets/flow.ts; всяка промяна минава през
+/// `recordTicketEvent` (src/services/tickets/events.ts) в транзакцията на промяната.
 model Ticket {
   id          String       @id @default(cuid())
   caseId      String       @unique
   number      String       @unique
   status      TicketStatus @default(OPEN)
+  queue       TicketQueue  @default(SUPPORT)
   ownerId     String?
   reason      String
   summary     Json
+  /// При затваряне (FR-09): първопричина, решение, свързани източници (текстът — с redactPii).
+  resolution  Json?
+  closedAt    DateTime?
+  closedById  String?
   createdById String
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
   /// Cascade: ретенцията изтрива затворения случай заедно с тикета (GDPR чл. 5(1)(e)).
-  case Case @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  case         Case                @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  events       TicketEvent[]
+  infoRequests TicketInfoRequest[]
+  handoffs     CaseHandoff[]
 
   @@index([ownerId])
+  @@index([status, queue, createdAt])
+}
+
+/// Дневникът на промените по тикета — по един ред на промяна, в транзакцията ѝ. Подготовка за
+/// outbox към helpdesk (Zendesk/JSM — следващ поток). В payload — само идентификатори и кодове.
+model TicketEvent {
+  id         String        @id @default(cuid())
+  tenantId   String
+  ticketId   String
+  caseId     String
+  type       String
+  actorId    String?
+  fromStatus TicketStatus?
+  toStatus   TicketStatus?
+  payload    Json          @default("{}")
+  at         DateTime      @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId, at])
+  @@index([tenantId, at])
+}
+
+/// „Поискай още данни“ (FR-19): какво иска операторът; отговорът на техника го затваря.
+model TicketInfoRequest {
+  id                String    @id @default(cuid())
+  ticketId          String
+  /// Списък от низове (маскирани с redactPii) — техникът го вижда в случая.
+  items             Json
+  note              String?
+  requestedById     String
+  createdAt         DateTime  @default(now())
+  answeredAt        DateTime?
+  answeredMessageId String?
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId, createdAt])
+}
+
+/// Посоката на предаване по FR-19: техник → оператор, оператор → Engineering, оператор → AI.
+enum HandoffDirection {
+  TO_OPERATOR
+  TO_ENGINEERING
+  TO_AI
+}
+
+/// Предаване (FR-19, AC-14): носи резюмето в момента на предаването (контекст, източници, файлове,
+/// изпълнени стъпки, разрешения) и причината — операторът не пита техника за нищо повторно.
+model CaseHandoff {
+  id         String           @id @default(cuid())
+  tenantId   String
+  caseId     String
+  ticketId   String?
+  direction  HandoffDirection
+  /// Причината/съобщението — маскирано с redactPii.
+  reason     String
+  summary    Json?
+  fromUserId String
+  createdAt  DateTime         @default(now())
+
+  tenant Tenant  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  case   Case    @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  ticket Ticket? @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([caseId, createdAt])
+  @@index([ticketId])
+  @@index([tenantId, createdAt])
+}
+
+// ─── Изпълнени стъпки и човешко потвърждение (§11.2 Human-in-the-loop) ────────────────────────
+
+enum StepResult {
+  OK
+  KO
+  NOT_POSSIBLE
+}
+
+/// Кой разрешава стъпка (§11.2): NONE — без разрешение; SELF — самият техник с изрично
+/// потвърждение, че е прочел процедурата; SUPPORT / ENGINEERING — ДРУГ човек с тази роля.
+enum ApprovalLevel {
+  NONE
+  SELF
+  SUPPORT
+  ENGINEERING
+}
+
+enum ApprovalStatus {
+  PENDING
+  GRANTED
+  DENIED
+  CANCELLED
+}
+
+/// Политиката на клиента. Без ред → разумният default от src/services/steps/policy.ts.
+/// SAFETY_RELEVANT никога не е NONE; DIRECT_COMMAND не се изпълнява никога.
+model StepApprovalPolicy {
+  tenantId       String        @id
+  safetyRelevant ApprovalLevel @default(SUPPORT)
+  configurative  ApprovalLevel @default(NONE)
+  /// Колко минути важи разрешението (смяната на обекта, не завинаги).
+  ttlMinutes     Int           @default(480)
+  updatedById    String?
+  updatedAt      DateTime      @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+}
+
+/// Заявка/разрешение за стъпка (§11.2): КОЙ е разрешил, кога, за коя стъпка (хеш + източници).
+model StepApproval {
+  id             String         @id @default(cuid())
+  tenantId       String
+  caseId         String
+  messageId      String
+  step           Int
+  /// SHA-256 на текста на стъпката (действие + очакван резултат) — разрешението е за ТОЗИ текст.
+  stepHash       String
+  actionClass    ActionClass
+  gateVersion    String
+  level          ApprovalLevel
+  /// Източниците, които документират стъпката: [{ ref, documentId, documentCode, revision, page, chunkId, errorId }].
+  sources        Json           @default("[]")
+  status         ApprovalStatus @default(PENDING)
+  requestedById  String
+  requestNote    String?
+  /// SELF: техникът е потвърдил изрично, че е прочел документираната процедура.
+  selfAttested   Boolean        @default(false)
+  decidedById    String?
+  /// Ролята на разрешилия в момента на решението — порталът вижда нея, не името.
+  decidedRole    Role?
+  decisionReason String?
+  decidedAt      DateTime?
+  expiresAt      DateTime?
+  createdAt      DateTime       @default(now())
+
+  tenant     Tenant              @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  case       Case                @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  message    CaseMessage         @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  executions CaseStepExecution[]
+
+  @@index([tenantId, status, createdAt])
+  @@index([caseId])
+  @@index([messageId, step])
+  @@index([requestedById])
+  @@index([decidedById])
+}
+
+/// Изпълнена стъпка от AI отговора (FR-09 „passi eseguiti“): резултат, бележка, кой и кога.
+model CaseStepExecution {
+  id          String      @id @default(cuid())
+  tenantId    String
+  caseId      String
+  messageId   String
+  step        Int
+  stepHash    String
+  actionClass ActionClass
+  gateVersion String
+  result      StepResult
+  /// Бележката на техника — маскирана с redactPii; НЕ влиза в хронологията и одита.
+  note        String?
+  approvalId  String?
+  authorId    String
+  createdAt   DateTime    @default(now())
+
+  tenant   Tenant        @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  case     Case          @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  message  CaseMessage   @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  approval StepApproval? @relation(fields: [approvalId], references: [id], onDelete: Cascade)
+
+  @@index([caseId, createdAt])
+  @@index([messageId, step])
+  @@index([approvalId])
+  @@index([authorId])
+  @@index([tenantId])
 }
 
 enum FeedbackRating {

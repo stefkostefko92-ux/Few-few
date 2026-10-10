@@ -8,6 +8,7 @@ import { createServer } from 'node:http';
 import { cite, resetDb, startApp, type Plan } from '../integration/helpers.js';
 import { FakeScanner, SpyStore, URL_KEY } from '../integration/files.js';
 import { seedWorld } from '../integration/world.js';
+import { twoSteps } from '../integration/flow-world.js';
 import { E2E_ORIGIN, E2E_PORT, E2E_READY_PORT, PHOTO_CODE } from './support/constants.js';
 
 await resetDb();
@@ -18,8 +19,18 @@ const h = await startApp({
   origin: E2E_ORIGIN,
 });
 
-/** Цитира първия съвместим източник; ако въпросът има снимка — добавя ясно наблюдение за нея. */
-const plan: Plan = (pack) => {
+/**
+ * Цитира първия съвместим източник; ако въпросът има снимка — добавя ясно наблюдение за нея.
+ * Въпрос за „contatto porta“ → отговор с две стъпки (диагностична + по безопасност по
+ * процедурата PROC-DOOR-001) — за потока на тикета (ticket-flow.spec.ts).
+ */
+const plan: Plan = (pack, call) => {
+  if (
+    /contatto porta/i.test(call.question) &&
+    pack.some((p) => p.documentCode === 'PROC-DOOR-001')
+  ) {
+    return twoSteps(pack, call);
+  }
   const first = pack.find((p) => p.applicable);
   const photoSent = (h.model.images.at(-1)?.length ?? 0) > 0;
   return {

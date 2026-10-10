@@ -16,6 +16,10 @@ const TYPES = [
   'presence.changed',
   'notification.created',
   'case.assigned',
+  // Работният поток (FR-09, FR-19, §11.2): само идентификатори → ново четене през REST.
+  'case.updated',
+  'step.updated',
+  'queue.updated',
 ];
 const BASE_DELAY = 1000;
 const MAX_DELAY = 30000;

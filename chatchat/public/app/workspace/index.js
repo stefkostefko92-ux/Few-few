@@ -32,6 +32,7 @@ import {
 } from './windows.js';
 import { renderBadges, renderConn } from './status.js';
 import { renderBrowse, renderHistory, renderInbox } from './views.js';
+import { refreshQueue, renderQueue } from '../flow/queue.js';
 
 const app = () => $('#app-view');
 let listKind = null; // 'inbox' | 'history' | 'browse'
@@ -77,10 +78,13 @@ function renderList() {
   if (listKind === 'inbox') renderInbox({ onOpenNotification });
   else if (listKind === 'history') renderHistory({ onOpen: openFromHistory });
   else if (listKind === 'browse') void renderBrowse({ onJoin: joinChannel });
+  else if (listKind === 'queue') void renderQueue({ onOpenCase: openFromHistory });
 }
 
 function openFromHistory(id) {
   if (id.startsWith('case:')) return void nav.selectCase(id.slice(5)).then(() => setMain('case'));
+  // Опашката подава id на случай без префикс — разговорите имат свои id, случаите — `case:`.
+  if (listKind === 'queue') return void nav.selectCase(id).then(() => setMain('case'));
   return openConversation(id);
 }
 
@@ -189,6 +193,8 @@ export function initWorkspace(navigation) {
   $('#nav-inbox').addEventListener('click', () => showList('inbox'));
   $('#btn-inbox').addEventListener('click', () => showList('inbox'));
   $('#nav-history').addEventListener('click', () => showList('history'));
+  $('#nav-queue').addEventListener('click', () => showList('queue'));
+  listen('rt:queue.updated', () => listKind === 'queue' && mainKind() === 'list' && refreshQueue());
   $('#btn-browse').addEventListener('click', () => showList('browse'));
   $('#btn-switch').addEventListener('click', openSwitcher);
   $('#btn-new-dm').addEventListener('click', () =>
@@ -255,6 +261,7 @@ export async function startWorkspace() {
   show($('#btn-new-dm'), can('conversation:create'));
   show($('#btn-browse'), state.user?.kind === 'INTERNAL');
   show($('#grp-assigned'), can('case:assign') || can('case:create'));
+  show($('#nav-queue'), can('case:readAll') && state.user?.kind === 'INTERNAL');
   if (!usable) return;
   renderConn();
   renderBadges();

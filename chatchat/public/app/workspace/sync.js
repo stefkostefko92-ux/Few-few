@@ -228,6 +228,11 @@ export function handleEvent(type, envelope) {
       emit('case:assigned', data);
       refreshNotifications();
       break;
+    case 'case.updated':
+    case 'step.updated':
+    case 'queue.updated':
+      emit(`rt:${type}`, data);
+      break;
     default:
       break;
   }

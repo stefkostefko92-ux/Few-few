@@ -4,6 +4,7 @@ import { errorText } from './errors.js';
 import { roleLabel } from './format.js';
 import { getLang, t } from './i18n.js';
 import { emit, on, state } from './store.js';
+import { setFlow } from './flow/state.js';
 
 export const PHASES = [
   'startup',
@@ -149,8 +150,9 @@ export async function selectCase(id) {
       case: data.case,
       messages: Array.isArray(data.messages) ? data.messages : [],
     };
-    // Тикетът идва от сървъра — не се губи при презареждане на страницата.
+    // Тикетът, стъпките и правата идват от сървъра — не се губят при презареждане на страницата.
     if (data.ticket) state.tickets.set(id, data.ticket);
+    setFlow(id, data);
     emit('case:loaded', id);
   } catch (err) {
     if (state.currentId !== id) return;

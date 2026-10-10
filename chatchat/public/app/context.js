@@ -4,6 +4,7 @@ import { errorText } from './errors.js';
 import { t } from './i18n.js';
 import { fillPhaseSelect, refreshCases, renderCases, wireProductSearch } from './cases.js';
 import { emit, on, state } from './store.js';
+import { reloadCase } from './flow/state.js';
 
 const tx = (key, fallback) => (t(key) === key ? fallback : t(key));
 const emptyToNull = (v) => {
@@ -73,7 +74,7 @@ function renderSummary(c) {
   );
 }
 
-function renderOutcome(cur) {
+export function renderOutcome(cur) {
   $('#case-outcome').textContent = cur.outcome
     ? tx(`outcome.${cur.outcome}`, String(cur.outcome))
     : t('outcome.none');
@@ -182,6 +183,8 @@ export function initContext() {
       renderOutcome(state.current.case);
       flash(fb, t('actions.outcomeSaved'));
       refreshCases();
+      // „Решен“ затваря и отворения тикет (сървърът) — панелът на тикета се опреснява.
+      if (state.flow?.ticket) void reloadCase().catch(() => undefined);
     } catch (err) {
       flash(fb, errorText(err), true);
     }
@@ -214,6 +217,7 @@ export function initContext() {
       flash($('#actions-feedback'), t('ticket.created', { number: data.ticket.number }));
       announce(t('ticket.created', { number: data.ticket.number }));
       refreshCases();
+      void reloadCase().catch(() => undefined);
     } catch (ex) {
       flash(err, errorText(ex), true);
     } finally {

@@ -38,7 +38,7 @@ function header() {
   );
 }
 
-export function renderAnswer(message, { onOpenSource, onOpenTicket, onFeedback, rated }) {
+export function renderAnswer(message, { onOpenSource, onOpenTicket, onFeedback, rated, stepUi }) {
   const p = message.payload;
   const root = h('article', { class: 'msg msg-ai', 'data-message-id': message.id });
   root.append(header());
@@ -73,7 +73,17 @@ export function renderAnswer(message, { onOpenSource, onOpenTicket, onFeedback, 
   };
   const safety = p.safety ?? { level: 'standard', notes: [] };
   const notes = arr(safety.notes).map((n) => str(tMaybeCode(n)));
-  const c = { p, refs, evidence, safety, notes, onOpenSource, onOpenTicket };
+  // stepUi: изпълнение/разрешение на стъпката (§11.2) — под всяка проверка, ако чатът го дава.
+  const c = {
+    p,
+    refs,
+    evidence,
+    safety,
+    notes,
+    onOpenSource,
+    onOpenTicket,
+    stepUi: stepUi ? (check) => stepUi(message, check) : null,
+  };
 
   // Редът е договор: Safety „блокирано“ най-горе, после резултат, причини, внимание, проверки…
   appendBlocked(root, c);

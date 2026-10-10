@@ -25,7 +25,12 @@ export type Capability =
   // няма разговори, присъствие и известия в него.
   | 'conversation:use' // участие в разговорите, в които е член; присъствие; известия
   | 'conversation:create' // нов DIRECT/GROUP — само персоналът; порталът само бива поканван
-  | 'channel:create'; // нов CHANNEL (PUBLIC/PRIVATE) — водещите екипи и администраторът
+  | 'channel:create' // нов CHANNEL (PUBLIC/PRIVATE) — водещите екипи и администраторът
+  // Изпълнени стъпки и човешко потвърждение (§11.2): техникът отбелязва и иска разрешение;
+  // разрешава ДРУГ човек с роля по политиката на клиента (services/steps/policy.ts).
+  | 'step:record'
+  | 'step:approve'
+  | 'policy:manage'; // политиката за разрешенията (кой разрешава кой клас) — администраторът
 
 /** Всички роли (за zod на входа: API, CLI, филтри). */
 export const ROLES = [
@@ -49,19 +54,29 @@ const TECH: readonly Capability[] = [
   'ticket:create',
   'feedback:create',
   'conversation:use',
+  'step:record',
 ];
 const STAFF_CHAT: readonly Capability[] = ['conversation:create', 'channel:create'];
 
 const CAPABILITIES: Record<Role, readonly Capability[]> = {
   PORTAL_TECHNICIAN: TECH,
   INTERNAL_TECHNICIAN: [...TECH, 'device:readAll', 'conversation:create'],
-  SUPPORT: [...TECH, 'case:readAll', 'case:assign', 'device:readAll', 'kpi:read', ...STAFF_CHAT],
+  SUPPORT: [
+    ...TECH,
+    'case:readAll',
+    'case:assign',
+    'device:readAll',
+    'kpi:read',
+    'step:approve',
+    ...STAFF_CHAT,
+  ],
   ENGINEERING: [
     ...TECH,
     'case:readAll',
     'case:assign',
     'device:readAll',
     'kpi:read',
+    'step:approve',
     ...STAFF_CHAT,
   ],
   KNOWLEDGE_OWNER: [
@@ -80,6 +95,7 @@ const CAPABILITIES: Record<Role, readonly Capability[]> = {
     'audit:read',
     'kpi:read',
     'conversation:use',
+    'policy:manage',
     ...STAFF_CHAT,
   ],
   // Платформеният администратор управлява потребители САМО в своя клиент (по tenantId като всички):
