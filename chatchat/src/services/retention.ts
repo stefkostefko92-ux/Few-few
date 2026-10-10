@@ -1,16 +1,42 @@
 import type { PrismaClient } from '@prisma/client';
 import type { AttachmentStore } from '../storage/attachments.js';
+import { pruneAudit, type AuditPruneReport } from './audit-retention.js';
+import {
+  deleteFiles,
+  purgeMessages,
+  purgeMetadata,
+  purgeNotifications,
+  purgePresence,
+  type MessageClass,
+  type MessagePurge,
+  type MetadataPurge,
+} from './retention-classes.js';
 
 /**
- * Ретенцията (GDPR чл. 5(1)(e)) като функция — CLI-то (`npm run retention`) я вика дневно,
- * тестовете — директно. Файловете се трият ПРЕДИ реда в базата: ред без файл е безвреден
- * (свалянето дава 404), файл без ред е забравен завинаги.
+ * Ретенцията (GDPR чл. 5(1)(e), NFR-08, NFR-13) като функция — CLI-то (`npm run retention`) я вика
+ * дневно, тестовете — директно. Всеки клас данни има свой срок (src/config.ts → RETENTION_*);
+ * незададен срок (null/липсва) → класът не се пипа. Файловете се трият ПРЕДИ реда в базата: ред
+ * без файл е безвреден (свалянето дава 404), файл без ред е забравен завинаги.
  */
 
 export interface RetentionOptions {
   sessionDays: number;
   /** null → затворените случаи не се трият (решение на администратора на данните). */
   caseDays: number | null;
+  /** Съобщенията по вид разговор; null/липсва → не се трият. */
+  directDays?: number | null;
+  groupDays?: number | null;
+  channelDays?: number | null;
+  notificationDays?: number | null;
+  presenceDays?: number | null;
+  metadataDays?: number | null;
+  /** Одитът (по подразбиране в CLI-то 10 г.) — с контролна точка, веригата не се чупи. */
+  auditDays?: number | null;
+  auditArchiveDir?: string | null;
+  /** Непривързан файл живее толкова часа (по подразбиране 24). */
+  orphanHours?: number;
+  /** INFECTED/FAILED редовете — толкова дни (по подразбиране 7). */
+  quarantineDays?: number;
   now?: Date;
 }
 
@@ -20,35 +46,26 @@ export interface RetentionReport {
   caseFiles: number;
   orphans: number;
   quarantined: number;
+  messages: Record<'direct' | 'group' | 'channel', MessagePurge | null>;
+  notifications: number | null;
+  presence: number | null;
+  metadata: MetadataPurge | null;
+  audit: AuditPruneReport | null;
 }
 
 const DAY = 24 * 3600 * 1000;
-/** Качен, но непривързан файл (или PDF, който не е станал документ) живее до 24 ч. */
-const ORPHAN_MS = DAY;
-/** INFECTED/FAILED редовете остават 7 дни за проверка (файлът вече е изтрит). */
-const QUARANTINE_MS = 7 * DAY;
+const HOUR = 3600 * 1000;
 const BATCH = 100;
 
-async function deleteFiles(
-  store: AttachmentStore | null,
-  keys: readonly string[],
-  required: boolean,
-): Promise<void> {
-  if (keys.length === 0) return;
-  if (!store) {
-    if (!required) return;
-    // Fail-closed: без хранилище не трием редовете — иначе файловете остават без следа.
-    throw new Error('ATTACHMENTS_DIR липсва — файловете не могат да се изтрият, редовете остават.');
-  }
-  for (const key of keys) await store.delete(key);
-}
+const given = (v: number | null | undefined): v is number => typeof v === 'number';
 
 export async function runRetention(
   db: PrismaClient,
   store: AttachmentStore | null,
   opts: RetentionOptions,
 ): Promise<RetentionReport> {
-  const now = (opts.now ?? new Date()).getTime();
+  const nowDate = opts.now ?? new Date();
+  const now = nowDate.getTime();
   const sessionCutoff = new Date(now - opts.sessionDays * DAY);
   const sessions = await db.session.deleteMany({
     where: { OR: [{ expiresAt: { lt: sessionCutoff } }, { revokedAt: { lt: sessionCutoff } }] },
@@ -68,6 +85,7 @@ export async function runRetention(
         where: {
           OR: [
             { caseId: { in: ids } },
+            { conversation: { caseId: { in: ids } } },
             { conversationMessage: { conversation: { caseId: { in: ids } } } },
           ],
         },
@@ -85,9 +103,22 @@ export async function runRetention(
     }
   }
 
-  // Сираци: снимка/лог, които не са стигнали до съобщение; PDF, от който не е станал документ
-  // (документът пази sha256 на оригинала като checksum — по него се познава).
-  const orphanBefore = new Date(now - ORPHAN_MS);
+  // Съобщенията по вид разговор (NFR-13) — всеки със свой срок.
+  const classes: Array<
+    [keyof RetentionReport['messages'], MessageClass, number | null | undefined]
+  > = [
+    ['direct', 'DIRECT', opts.directDays],
+    ['group', 'GROUP', opts.groupDays],
+    ['channel', 'CHANNEL', opts.channelDays],
+  ];
+  const messages: RetentionReport['messages'] = { direct: null, group: null, channel: null };
+  for (const [key, type, days] of classes) {
+    if (given(days)) messages[key] = await purgeMessages(db, store, type, days, nowDate);
+  }
+
+  // Сираци: снимка/лог/файл от разговор, които не са стигнали до съобщение; PDF за базата
+  // знания, от който не е станал документ (документът пази sha256 на оригинала като checksum).
+  const orphanBefore = new Date(now - (opts.orphanHours ?? 24) * HOUR);
   const loose = await db.attachment.findMany({
     where: {
       createdAt: { lt: orphanBefore },
@@ -95,9 +126,16 @@ export async function runRetention(
       caseMessageId: null,
       conversationMessageId: null,
     },
-    select: { id: true, tenantId: true, kind: true, sha256: true, objectKey: true },
+    select: {
+      id: true,
+      tenantId: true,
+      kind: true,
+      sha256: true,
+      objectKey: true,
+      conversationId: true,
+    },
   });
-  const pdfs = loose.filter((a) => a.kind === 'DOCUMENT');
+  const pdfs = loose.filter((a) => a.kind === 'DOCUMENT' && a.conversationId === null);
   const used = new Set(
     (
       await db.document.findMany({
@@ -107,7 +145,8 @@ export async function runRetention(
     ).map((d) => `${d.tenantId}|${d.checksum}`),
   );
   const orphans = loose.filter(
-    (a) => a.kind !== 'DOCUMENT' || !used.has(`${a.tenantId}|${a.sha256}`),
+    (a) =>
+      a.kind !== 'DOCUMENT' || a.conversationId !== null || !used.has(`${a.tenantId}|${a.sha256}`),
   );
   await deleteFiles(
     store,
@@ -116,10 +155,10 @@ export async function runRetention(
   );
   await db.attachment.deleteMany({ where: { id: { in: orphans.map((a) => a.id) } } });
 
-  // Карантина: INFECTED/FAILED след 7 дни — файлът е изтрит при сканирането, тук само за всеки случай.
+  // Карантина: INFECTED/FAILED — файлът е изтрит при сканирането, тук само за всеки случай.
   const quarantine = await db.attachment.findMany({
     where: {
-      createdAt: { lt: new Date(now - QUARANTINE_MS) },
+      createdAt: { lt: new Date(now - (opts.quarantineDays ?? 7) * DAY) },
       scanStatus: { in: ['INFECTED', 'FAILED'] },
     },
     select: { id: true, objectKey: true },
@@ -137,5 +176,19 @@ export async function runRetention(
     caseFiles,
     orphans: orphans.length,
     quarantined: quarantine.length,
+    messages,
+    notifications: given(opts.notificationDays)
+      ? await purgeNotifications(db, opts.notificationDays, nowDate)
+      : null,
+    presence: given(opts.presenceDays) ? await purgePresence(db, opts.presenceDays, nowDate) : null,
+    metadata: given(opts.metadataDays)
+      ? await purgeMetadata(db, store, opts.metadataDays, nowDate)
+      : null,
+    audit: given(opts.auditDays)
+      ? await pruneAudit(db, {
+          cutoff: new Date(now - opts.auditDays * DAY),
+          archiveDir: opts.auditArchiveDir || null,
+        })
+      : null,
   };
 }

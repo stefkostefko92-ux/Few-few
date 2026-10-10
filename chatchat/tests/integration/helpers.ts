@@ -59,7 +59,7 @@ export const db = new PrismaClient({ datasources: { db: { url } } });
 /** Празна база между тестовете. Само таблици от схемата; идентификаторите се нулират. */
 export async function resetDb(): Promise<void> {
   await db.$executeRawUnsafe(
-    'TRUNCATE TABLE "Tenant", "AuditEvent", "KnowledgeSnapshot" RESTART IDENTITY CASCADE',
+    'TRUNCATE TABLE "Tenant", "AuditEvent", "AuditCheckpoint", "KnowledgeSnapshot" RESTART IDENTITY CASCADE',
   );
 }
 

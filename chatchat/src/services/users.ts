@@ -42,6 +42,7 @@ export function directoryView(u: DirectoryUser) {
     lastLoginAt: u.lastLoginAt,
     mfaEnabled: u.totpEnabledAt !== null,
     expiresAt: u.expiresAt,
+    locale: u.locale,
     erased: isErased(u),
   };
 }

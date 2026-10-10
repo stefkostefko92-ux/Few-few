@@ -62,7 +62,13 @@ export function adminSubjectRouter(deps: AppDeps, replay: TotpReplayGuard): Rout
       if (!target) return apiError(res, 404, 'not_found');
       const problem = targetProblem(p.user, target) ?? (isErased(target) ? 'user_erased' : null);
       if (problem) return apiError(res, PROBLEM_STATUS[problem] ?? 403, problem);
-      const revocation = await eraseSubject(deps.db, p.user, target, body.data.reason);
+      const revocation = await eraseSubject(
+        deps.db,
+        p.user,
+        target,
+        body.data.reason,
+        deps.attachments?.store ?? null,
+      );
       replay.forget(target.id);
       await announceRevocation(revocation);
       const erased = await deps.db.user.findUniqueOrThrow({

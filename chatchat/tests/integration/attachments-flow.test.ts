@@ -263,7 +263,11 @@ describe('ретенция', () => {
     store.deletions.length = 0;
 
     const report = await runRetention(db, store, { sessionDays: 30, caseDays: 30 });
-    assert.deepEqual(report, { sessions: 0, cases: 1, caseFiles: 1, orphans: 2, quarantined: 1 });
+    const { sessions, cases, caseFiles, orphans, quarantined } = report;
+    assert.deepEqual(
+      { sessions, cases, caseFiles, orphans, quarantined },
+      { sessions: 0, cases: 1, caseFiles: 1, orphans: 2, quarantined: 1 },
+    );
     assert.equal(await db.case.count({ where: { id: closed } }), 0);
     const left = (await db.attachment.findMany({ select: { id: true } })).map((a) => a.id).sort();
     assert.deepEqual(left, [fresh, usedPdf].sort());

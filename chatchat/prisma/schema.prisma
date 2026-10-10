@@ -47,11 +47,15 @@ model Tenant {
   cases     Case[]
 
   // Записите на F2 сочат клиента си с външен ключ (Restrict): ред без съществуващ клиент няма.
-  attachments    Attachment[]
-  savedFilters   SavedFilter[]
-  conversations  Conversation[]
-  quickResponses QuickResponse[]
-  notifications  Notification[]
+  attachments          Attachment[]
+  savedFilters         SavedFilter[]
+  conversations        Conversation[]
+  quickResponses       QuickResponse[]
+  notifications        Notification[]
+  // Работното пространство (FR-16/18, NFR-08/13): лични маркери, предпочитания, имейл outbox.
+  messageMarks         MessageMark[]
+  notificationSettings NotificationSettings[]
+  emailOutbox          EmailOutbox[]
 }
 
 /// Фирма в рамките на клиента (монтажник, дистрибутор, сервиз) — разделя портала.
@@ -93,14 +97,17 @@ model User {
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
 
-  tenant         Tenant               @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  company        Company?             @relation(fields: [companyId], references: [id], onDelete: Restrict)
-  sessions       Session[]
-  passwordResets PasswordReset[]
-  memberships    ConversationMember[]
-  presence       UserPresence?
-  notifications  Notification[]
-  savedFilters   SavedFilter[]
+  tenant               Tenant                @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  company              Company?              @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  sessions             Session[]
+  passwordResets       PasswordReset[]
+  memberships          ConversationMember[]
+  presence             UserPresence?
+  notifications        Notification[]
+  savedFilters         SavedFilter[]
+  messageMarks         MessageMark[]
+  notificationSettings NotificationSettings?
+  emailOutbox          EmailOutbox[]
 
   @@index([tenantId])
   @@index([companyId])
@@ -449,7 +456,7 @@ enum MessageKind {
 }
 
 model CaseMessage {
-  id                  String      @id @default(cuid())
+  id                  String                   @id @default(cuid())
   caseId              String
   kind                MessageKind
   authorId            String?
@@ -463,8 +470,11 @@ model CaseMessage {
   clientMessageId     String?
   /// Аудиториите, с които е търсено за този AI отговор. Читател без всички тях не вижда
   /// съдържанието (цитати от вътрешни/инженерни документи не изтичат към по-тесни роли).
-  audiences           Audience[]  @default([])
-  createdAt           DateTime    @default(now())
+  audiences           Audience[]               @default([])
+  createdAt           DateTime                 @default(now())
+  /// Търсене в историята (FR-16): to_tsvector('chatchat_search', body) — ГЕНЕРИРАНА колона
+  /// (GENERATED ALWAYS … STORED в миграцията 20261010120000; Prisma го вижда като dbgenerated). Не се пише.
+  tsv                 Unsupported("tsvector")? @default(dbgenerated("to_tsvector('chatchat_search'::regconfig, body)"))
 
   case              Case               @relation(fields: [caseId], references: [id], onDelete: Cascade)
   knowledgeSnapshot KnowledgeSnapshot? @relation(fields: [knowledgeSnapshotId], references: [id], onDelete: Restrict)
@@ -475,6 +485,7 @@ model CaseMessage {
   @@unique([caseId, clientMessageId])
   @@index([caseId, createdAt])
   @@index([knowledgeSnapshotId])
+  @@index([tsv], type: Gin)
 }
 
 /// Проследимост (§13.1 case_evidence): кое парче/код е подкрепило кой отговор.
@@ -594,6 +605,9 @@ model Attachment {
   tenantId              String
   caseId                String?
   caseMessageId         String?
+  /// Разговорът, за който е качен файлът (§12.1 „Allegati chat“) — достъпът е достъпът до разговора;
+  /// докато не е привързан към съобщение, го вижда само качилият.
+  conversationId        String?
   conversationMessageId String?
   uploadedById          String
   kind                  AttachmentKind
@@ -614,11 +628,13 @@ model Attachment {
   tenant              Tenant               @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   case                Case?                @relation(fields: [caseId], references: [id], onDelete: Cascade)
   caseMessage         CaseMessage?         @relation(fields: [caseMessageId], references: [id], onDelete: SetNull)
+  conversation        Conversation?        @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   conversationMessage ConversationMessage? @relation(fields: [conversationMessageId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([caseId])
   @@index([caseMessageId])
+  @@index([conversationId])
   @@index([conversationMessageId])
   @@index([uploadedById])
 }
@@ -692,10 +708,11 @@ model Conversation {
   createdAt   DateTime               @default(now())
   archivedAt  DateTime?
 
-  tenant   Tenant                @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  case     Case?                 @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  members  ConversationMember[]
-  messages ConversationMessage[]
+  tenant      Tenant                @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  case        Case?                 @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  members     ConversationMember[]
+  messages    ConversationMessage[]
+  attachments Attachment[]
 
   @@index([tenantId, type])
 }
@@ -737,27 +754,32 @@ enum ConversationMessageKind {
 }
 
 model ConversationMessage {
-  id              String                  @id @default(cuid())
+  id              String                   @id @default(cuid())
   conversationId  String
   senderId        String?
-  kind            ConversationMessageKind @default(HUMAN)
+  kind            ConversationMessageKind  @default(HUMAN)
   body            String
   replyToId       String?
   /// Идемпотентно изпращане (NFR-12).
   clientMessageId String?
   editedAt        DateTime?
   deletedAt       DateTime?
-  createdAt       DateTime                @default(now())
+  createdAt       DateTime                 @default(now())
+  /// Търсене в историята (FR-16): to_tsvector('chatchat_search', body) — ГЕНЕРИРАНА колона
+  /// (GENERATED ALWAYS … STORED в миграцията 20261010120000); изтритото (body '') не се намира.
+  tsv             Unsupported("tsvector")? @default(dbgenerated("to_tsvector('chatchat_search'::regconfig, body)"))
 
   conversation Conversation          @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   replyTo      ConversationMessage?  @relation("Thread", fields: [replyToId], references: [id], onDelete: SetNull)
   replies      ConversationMessage[] @relation("Thread")
   reactions    MessageReaction[]
   attachments  Attachment[]
+  marks        MessageMark[]
 
   @@unique([conversationId, clientMessageId])
   @@index([conversationId, createdAt])
   @@index([replyToId])
+  @@index([tsv], type: Gin)
 }
 
 /// Реакции (§13.1): незадължителни, никога доказателство.
@@ -829,9 +851,129 @@ model Notification {
   deliveredAt DateTime?
   readAt      DateTime?
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant        @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emails EmailOutbox[]
 
   @@index([userId, readAt])
   @@index([tenantId, createdAt])
+  @@index([createdAt])
+}
+
+// ─── Лични маркери, предпочитания, имейл известия, ретенция (FR-16/18, NFR-08/12/13) ───────────
+
+enum MessageMarkKind {
+  TODO // „da fare“ (§12.1)
+  STARRED // „aggiungi ai preferiti“ — любимо съобщение
+}
+
+/// Лични маркери на съобщение — вижда ги само човекът; достъпът до съобщението се проверява
+/// при всяко четене (изгубен достъп до разговора = маркерът не се показва).
+model MessageMark {
+  messageId String
+  userId    String
+  kind      MessageMarkKind
+  tenantId  String
+  createdAt DateTime        @default(now())
+
+  message ConversationMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant  Tenant              @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([messageId, userId, kind])
+  @@index([userId, kind, createdAt])
+  @@index([tenantId])
+}
+
+enum EmailDigest {
+  OFF
+  DAILY
+}
+
+/// Личните предпочитания за известията (FR-18, §12.3 „digest email configurabili“). Няма ред →
+/// подразбиранията. Предпочитанията по разговор са в ConversationMember.notificationPref.
+model NotificationSettings {
+  userId       String      @id
+  tenantId     String
+  emailEnabled Boolean     @default(true)
+  digest       EmailDigest @default(OFF)
+  /// Тихи часове в минути от полунощ (0…1439) по `timeZone`; null → без тихи часове.
+  quietStart   Int?
+  quietEnd     Int?
+  /// IANA часова зона (Europe/Rome) — за тихите часове и часа на дайджеста.
+  timeZone     String      @default("Europe/Rome")
+  updatedAt    DateTime    @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId])
+  @@index([digest])
+}
+
+enum EmailKind {
+  MENTION
+  MESSAGE
+  CASE_ASSIGNED
+  CASE_URGENT
+  DIGEST
+}
+
+enum EmailStatus {
+  PENDING
+  SENDING
+  SENT
+  FAILED
+  SKIPPED
+}
+
+/// Изходящите имейл известия (transactional outbox): редът се пише в транзакцията на известието,
+/// фоновият процес го праща с повторни опити; `dedupeKey` пази от двойно писмо. В реда няма адрес,
+/// текст или име — адресът се чете от User в момента на изпращане.
+model EmailOutbox {
+  id             String      @id @default(cuid())
+  tenantId       String
+  userId         String
+  kind           EmailKind
+  /// Известието, от което е писмото (дайджестът — без). Прочетено/изтрито известие → писмото отпада.
+  notificationId String?
+  dedupeKey      String      @unique
+  status         EmailStatus @default(PENDING)
+  attempts       Int         @default(0)
+  notBefore      DateTime    @default(now())
+  /// Наемът на изпращача — изтекъл (срив по средата) → редът се взима отново.
+  lockedUntil    DateTime?
+  /// Само код (http_503, timeout…) — никога текст от доставчика (може да цитира адреса).
+  lastError      String?
+  sentAt         DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notification Notification? @relation(fields: [notificationId], references: [id], onDelete: SetNull)
+
+  @@index([status, notBefore])
+  @@index([userId])
+  @@index([tenantId, createdAt])
+  @@index([notificationId])
+}
+
+/// Контролна точка на одитната верига (ретенция NFR-08): преди да се изтрият най-старите събития,
+/// се пази хешът на последното изтрито — проверката на веригата продължава от него, без да се чупи.
+model AuditCheckpoint {
+  id            Int      @id @default(autoincrement())
+  /// Последното изтрито събитие и неговият хеш — `prevHash` на първото оставащо.
+  throughId     Int
+  throughHash   String
+  /// Котвата преди изтритото парче (GENESIS или предишната точка) — парчето е веригата между тях.
+  fromHash      String
+  count         Int
+  firstAt       DateTime
+  lastAt        DateTime
+  /// SHA-256 на архива (JSONL), ако е записан (RETENTION_AUDIT_ARCHIVE_DIR).
+  archiveSha256 String?
+  createdAt     DateTime @default(now())
+
+  @@index([throughId])
 }

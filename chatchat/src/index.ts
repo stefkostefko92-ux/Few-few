@@ -10,12 +10,15 @@ import {
   CircuitOpenError,
 } from './ai/breaker.js';
 import { embeddingModelFrom } from './ai/embeddings.js';
-import { aiEnabled, attachmentsEnabled, loadConfig, mfaKey } from './config.js';
+import { aiEnabled, attachmentsEnabled, emailEnabled, loadConfig, mfaKey } from './config.js';
 import { createLogger } from './logger.js';
 import { instrumentDiagnoser, meteredScanner } from './observability/ai.js';
 import { BREAKER_STATE_VALUE, createMetrics, type BreakerName } from './observability/catalog.js';
 import { startMetricsServer } from './observability/server.js';
 import type { AttachmentDeps } from './services/attachments.js';
+import type { MailPolicy } from './services/email/enqueue.js';
+import { BrevoMailer } from './services/email/mailer.js';
+import { EmailWorker } from './services/email/worker.js';
 import { EmbeddingIndexer } from './store/embeddings.js';
 import { ClamdScanner } from './storage/antivirus.js';
 import { FileAttachmentStore } from './storage/attachments.js';
@@ -113,6 +116,33 @@ if (attachmentsEnabled(config)) {
 } else {
   logger.warn('ATTACHMENTS_DIR липсва — прикачените файлове са изключени');
 }
+// Имейл известия (Brevo, HTTPS): без ключ — изключени, известията в приложението работят (fail-open).
+let mail: MailPolicy | null = null;
+let emailWorker: EmailWorker | null = null;
+if (emailEnabled(config)) {
+  mail = { delayMs: config.EMAIL_DELAY_SECONDS * 1000 };
+  emailWorker = new EmailWorker(
+    {
+      db,
+      mailer: new BrevoMailer({
+        apiKey: config.BREVO_API_KEY,
+        apiUrl: config.BREVO_API_URL,
+        fromEmail: config.MAIL_FROM_EMAIL,
+        fromName: config.MAIL_FROM_NAME,
+        timeoutMs: config.EMAIL_TIMEOUT_MS,
+      }),
+      logger,
+      baseUrl: config.PUBLIC_BASE_URL,
+      maxAttempts: config.EMAIL_MAX_ATTEMPTS,
+      digestHour: config.EMAIL_DIGEST_HOUR,
+    },
+    config.EMAIL_SWEEP_SECONDS,
+  );
+  emailWorker.start();
+} else {
+  logger.warn('BREVO_API_KEY липсва — имейл известията са изключени');
+}
+
 // Един процес = един хъб за SSE. Втори процес/машина иска pub/sub между хъбовете (CLAUDE.md).
 const hub = new RealtimeHub({
   onError: (err) =>
@@ -144,6 +174,7 @@ const app = createApp({
   evalReportsDir: config.EVAL_REPORTS_DIR,
   metrics,
   aiCircuit: () => modelBreaker?.current ?? null,
+  mail,
 });
 
 const server = app.listen(config.PORT, config.HOST, () => {
@@ -153,6 +184,7 @@ const server = app.listen(config.PORT, config.HOST, () => {
       port: config.PORT,
       ai: diagnoser !== null,
       uploads: attachments?.scanner != null,
+      email: mail !== null,
     },
     'chatchat слуша',
   );
@@ -182,6 +214,7 @@ if (config.METRICS_PORT > 0) {
 function shutdown(signal: string): void {
   logger.info({ signal }, 'спиране');
   indexer?.stop();
+  emailWorker?.stop();
   metricsServer?.close();
   // Отворените SSE потоци държат сървъра жив — затваряме ги, клиентите се връщат по REST.
   hub.closeAll();

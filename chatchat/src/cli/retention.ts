@@ -1,52 +1,58 @@
 import { PrismaClient } from '@prisma/client';
-import { z } from 'zod';
 import { appendAudit } from '../audit.js';
+import { loadRetentionConfig } from '../config.js';
 import { runRetention } from '../services/retention.js';
 import { FileAttachmentStore } from '../storage/attachments.js';
 
 /**
- * Ретенция (GDPR чл. 5(1)(e), правният одит т. 1) — пуска се дневно (systemd timer / cron):
+ * Ретенция по класове (GDPR чл. 5(1)(e), NFR-08, NFR-13) — пуска се дневно (systemd timer):
  *   npm run retention
- * - сесии: изтекли или отнети преди RETENTION_SESSION_DAYS дни (по подразбиране 30) се трият;
- * - случаи: RESOLVED, затворени преди RETENTION_CASE_DAYS дни, се трият със съобщенията,
- *   доказателствата, хронологията, обратната връзка, тикета и прикачените файлове (файловете —
- *   ПРЕДИ реда) — САМО ако срокът е зададен (решение на администратора на данните, не на кода);
- * - прикачени файлове: непривързани (или PDF, който не е станал документ) след 24 ч.;
- *   INFECTED/FAILED редове след 7 дни.
- * Одитната верига не се пипа: срокът и псевдонимизацията ѝ са отделно решение (SECURITY.md).
+ * Сроковете са в средата (src/config.ts → RETENTION_*), всеки клас отделно:
+ * - сесии (RETENTION_SESSION_DAYS, 30); затворени случаи (RETENTION_CASE_DAYS — САМО ако е зададен);
+ * - съобщения в директни/групи/канали (RETENTION_DIRECT/GROUP/CHANNEL_DAYS — само ако са зададени;
+ *   дискусиите по случай следват случая); файловете им — ПРЕДИ реда;
+ * - известия (90), присъствие (7), метаданни: приключени имейли, линкове за парола, следи на
+ *   изтрити съобщения (90);
+ * - одит (RETENTION_AUDIT_DAYS, 10 г.) — с контролна точка: веригата остава проверима;
+ * - непривързани файлове (RETENTION_ORPHAN_HOURS, 24) и INFECTED/FAILED (RETENTION_QUARANTINE_DAYS, 7).
+ * В одита и в изхода — само броеве и срокове.
  */
 
-const Env = z.object({
-  RETENTION_SESSION_DAYS: z.coerce.number().int().min(1).max(3650).default(30),
-  RETENTION_CASE_DAYS: z
-    .union([z.literal(''), z.coerce.number().int().min(30).max(3650)])
-    .optional()
-    .transform((v) => (v === '' || v === undefined ? null : v)),
-  /** Без него файловете не могат да се изтрият — тогава редовете им също остават (fail-closed). */
-  ATTACHMENTS_DIR: z.string().default(''),
-});
-
 async function main(): Promise<void> {
-  const env = Env.parse(process.env);
+  const env = loadRetentionConfig();
   const db = new PrismaClient();
   try {
     const store = env.ATTACHMENTS_DIR ? new FileAttachmentStore(env.ATTACHMENTS_DIR) : null;
-    const report = await runRetention(db, store, {
+    const days = {
       sessionDays: env.RETENTION_SESSION_DAYS,
       caseDays: env.RETENTION_CASE_DAYS,
+      directDays: env.RETENTION_DIRECT_DAYS,
+      groupDays: env.RETENTION_GROUP_DAYS,
+      channelDays: env.RETENTION_CHANNEL_DAYS,
+      notificationDays: env.RETENTION_NOTIFICATION_DAYS,
+      presenceDays: env.RETENTION_PRESENCE_DAYS,
+      metadataDays: env.RETENTION_METADATA_DAYS,
+      auditDays: env.RETENTION_AUDIT_DAYS,
+      orphanHours: env.RETENTION_ORPHAN_HOURS,
+      quarantineDays: env.RETENTION_QUARANTINE_DAYS,
+    };
+    const report = await runRetention(db, store, {
+      ...days,
+      auditArchiveDir: env.RETENTION_AUDIT_ARCHIVE_DIR || null,
     });
     await appendAudit(db, {
       tenantId: null,
       actorId: null,
       action: 'retention.run',
-      detail: {
-        ...report,
-        sessionDays: env.RETENTION_SESSION_DAYS,
-        caseDays: env.RETENTION_CASE_DAYS,
-      },
+      detail: { ...(JSON.parse(JSON.stringify(report)) as Record<string, unknown>), ...days },
     });
+    const m = report.messages;
+    const msg = (x: typeof m.direct) => (x ? `${x.deleted}+${x.tombstoned} следи` : '—');
     process.stdout.write(
       `Ретенция: ${report.sessions} сесии, ${report.cases} случая (${report.caseFiles} файла), ` +
+        `съобщения: директни ${msg(m.direct)}, групи ${msg(m.group)}, канали ${msg(m.channel)}; ` +
+        `${report.notifications ?? 0} известия, ${report.presence ?? 0} присъствия, ` +
+        `метаданни ${JSON.stringify(report.metadata)}, одит ${report.audit?.deleted ?? 0}; ` +
         `${report.orphans} несвързани и ${report.quarantined} заразени/непроверени файла изтрити.\n`,
     );
   } finally {
@@ -55,7 +61,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((err: unknown) => {
-  const message = err instanceof z.ZodError ? z.prettifyError(err) : String(err);
-  process.stderr.write(`${message}\n`);
+  process.stderr.write(`${err instanceof Error ? err.message : String(err)}\n`);
   process.exit(1);
 });

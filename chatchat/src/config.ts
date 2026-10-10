@@ -78,6 +78,25 @@ const EnvSchema = z.object({
    */
   METRICS_PORT: z.coerce.number().int().min(0).max(65535).default(0),
   METRICS_HOST: z.string().default('127.0.0.1'),
+
+  /**
+   * Имейл известия през Brevo (HTTPS API, порт 443 — Hetzner блокира 25/465/587). Ключът е тайна —
+   * само в .env на сървъра (mode 600), никога в лог. Празно → имейлите са изключени (fail-open:
+   * известията в приложението работят), без натрупване в outbox.
+   */
+  BREVO_API_KEY: z.string().default(''),
+  BREVO_API_URL: z.url().default('https://api.brevo.com/v3/smtp/email'),
+  /** Подателят (проверен домейн в Brevo), напр. no-reply@carbonstealth.eu. */
+  MAIL_FROM_EMAIL: z.string().default(''),
+  MAIL_FROM_NAME: z.string().trim().min(1).max(70).default('ChatChat'),
+  /** През колко секунди изпращачът минава през outbox-а (0 = никога). */
+  EMAIL_SWEEP_SECONDS: z.coerce.number().int().min(0).max(3600).default(60),
+  /** Колко чака писмото за ново съобщение/споменаване — прочетено междувременно → не тръгва. */
+  EMAIL_DELAY_SECONDS: z.coerce.number().int().min(0).max(86400).default(300),
+  /** В колко часа (местно време на човека) тръгва дневният дайджест на непрочетеното. */
+  EMAIL_DIGEST_HOUR: z.coerce.number().int().min(0).max(23).default(7),
+  EMAIL_TIMEOUT_MS: z.coerce.number().int().min(1000).max(60000).default(10000),
+  EMAIL_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(20).default(6),
 });
 
 /** Прикачването иска и ключ за подписите: хранилище без ключ е полуготов конфиг. */
@@ -87,6 +106,14 @@ const ConfigSchema = EnvSchema.superRefine((c, ctx) => {
       code: 'custom',
       path: ['METRICS_PORT'],
       message: 'METRICS_PORT трябва да е различен от PORT (метриките не са на публичния порт)',
+    });
+  }
+  // Ключ без подател е полуготов конфиг: писмата биха се отхвърляли едно по едно.
+  if (c.BREVO_API_KEY !== '' && !z.email().safeParse(c.MAIL_FROM_EMAIL).success) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['MAIL_FROM_EMAIL'],
+      message: 'MAIL_FROM_EMAIL трябва да е валиден имейл, щом BREVO_API_KEY е зададен',
     });
   }
   if (c.ATTACHMENTS_DIR === '') return;
@@ -145,4 +172,66 @@ export function aiEnabled(cfg: Pick<Config, 'VERTEX_PROJECT_ID'>): boolean {
 /** Прикачването е включено само с хранилище (ключът е проверен в схемата). */
 export function attachmentsEnabled(cfg: Pick<Config, 'ATTACHMENTS_DIR'>): boolean {
   return cfg.ATTACHMENTS_DIR.length > 0;
+}
+
+/** Имейл известията — само с ключ за Brevo (подателят е проверен в схемата). */
+export function emailEnabled(cfg: Pick<Config, 'BREVO_API_KEY'>): boolean {
+  return cfg.BREVO_API_KEY.length > 0;
+}
+
+// ─── Ретенция по класове (NFR-08, NFR-13) — CLI-то `npm run retention` ───────────────────────
+
+/** Срок в дни, който може да е „не е зададен“ (null → класът не се трие — решение на администратора). */
+const optionalDays = (min: number) =>
+  z.coerce
+    .number()
+    .int()
+    .min(min)
+    .max(3650)
+    .optional()
+    .transform((v) => v ?? null);
+
+const RetentionEnvSchema = z.object({
+  /** Изтекли/отнети сесии. */
+  RETENTION_SESSION_DAYS: z.coerce.number().int().min(1).max(3650).default(30),
+  /** Затворени случаи (със съобщенията, тикета, хронологията, файловете). Празно → не се трият. */
+  RETENTION_CASE_DAYS: optionalDays(30),
+  /** Съобщения в директни разговори / групи / канали (с файловете им). Празно → не се трият. */
+  RETENTION_DIRECT_DAYS: optionalDays(7),
+  RETENTION_GROUP_DAYS: optionalDays(7),
+  RETENTION_CHANNEL_DAYS: optionalDays(7),
+  /** Известията (прочетени и непрочетени) — метаданни за координация. */
+  RETENTION_NOTIFICATION_DAYS: z.coerce.number().int().min(1).max(3650).default(90),
+  /** Присъствието („последно видян“) — кратко (§15: „retention breve“). */
+  RETENTION_PRESENCE_DAYS: z.coerce.number().int().min(1).max(90).default(7),
+  /**
+   * Метаданни: изпратени/отпаднали имейли от outbox-а, използвани/изтекли линкове за парола,
+   * следите на изтрити съобщения (без текст) — и метаданните на обажданията, когато ги има.
+   */
+  RETENTION_METADATA_DAYS: z.coerce.number().int().min(7).max(3650).default(90),
+  /**
+   * Одитът — по подразбиране 10 години. Изтриването НЕ чупи веригата: контролна точка с хеша на
+   * последното изтрито събитие (AuditCheckpoint + събитие `audit.checkpoint` във веригата).
+   */
+  RETENTION_AUDIT_DAYS: z.coerce.number().int().min(365).max(36500).default(3650),
+  /** Архив (JSONL) на изтритите одитни събития преди триенето; празно → без архив. */
+  RETENTION_AUDIT_ARCHIVE_DIR: z.string().default(''),
+  /** Качен, но непривързан файл (или PDF, който не е станал документ). */
+  RETENTION_ORPHAN_HOURS: z.coerce.number().int().min(1).max(720).default(24),
+  /** INFECTED/FAILED редовете (файлът е изтрит при сканирането). */
+  RETENTION_QUARANTINE_DAYS: z.coerce.number().int().min(1).max(365).default(7),
+  /** Без него файловете не могат да се изтрият — тогава редовете им също остават (fail-closed). */
+  ATTACHMENTS_DIR: z.string().default(''),
+});
+
+export type RetentionConfig = z.infer<typeof RetentionEnvSchema>;
+
+/** Само средата на ретенцията (CLI-то не иска ключовете на приложението). Празно = „не е зададено“. */
+export function loadRetentionConfig(env: NodeJS.ProcessEnv = process.env): RetentionConfig {
+  const parsed = RetentionEnvSchema.safeParse(withoutEmpty(env));
+  if (!parsed.success) {
+    const issues = parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ');
+    throw new Error(`Невалидна конфигурация на ретенцията: ${issues}`);
+  }
+  return parsed.data;
 }

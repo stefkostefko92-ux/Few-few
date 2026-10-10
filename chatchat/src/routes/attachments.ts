@@ -13,6 +13,7 @@ import {
 import { loadPrincipal } from '../auth/sessions.js';
 import { acceptUpload, attachmentView, type UploadOutcome } from '../services/attachments.js';
 import { addTimeline, findCaseFor } from '../services/cases.js';
+import { canSelfJoin, loadConversationFor } from '../services/collab/access.js';
 import { MAX_BYTES } from '../services/filetype.js';
 
 /**
@@ -20,6 +21,8 @@ import { MAX_BYTES } from '../services/filetype.js';
  * (без multipart/multer), а парсерът е монтиран САМО тук и СЛЕД сесия, CSRF, роля, лимит и
  * достъп до случая — анонимен или чужд потребител не кара сървъра да чете 10/50 MB.
  * Типът се познава по съдържанието; името от `?name=` е само за показване (изчистено).
+ * Разговорите (§12.1 „Allegati chat“): снимка, лог или PDF — същият поток; достъпът е този до
+ * разговора (член или може да влезе сам), привързването е при изпращане на съобщението.
  * Монтира се ПРЕДИ JSON парсерите в app.ts: лог с Content-Type application/json е файл, не заявка.
  */
 
@@ -29,6 +32,10 @@ const CaseQuery = z.object({
   name: z.string().max(1000).optional(),
 });
 const AdminQuery = z.object({ name: z.string().max(1000).optional() });
+const ConversationQuery = z.object({
+  kind: z.enum(['PHOTO', 'LOG', 'DOCUMENT']),
+  name: z.string().max(1000).optional(),
+});
 
 /** Суровото тяло с таван по вида; компресирано тяло (Content-Encoding) — отказ, без „бомби“. */
 const rawParsers: Record<AttachmentKind, express.RequestHandler> = {
@@ -41,6 +48,7 @@ interface UploadLocals {
   kind: AttachmentKind;
   name: string | undefined;
   caseId: string | null;
+  conversationId?: string | null;
 }
 
 function sendOutcome(res: Response, outcome: Extract<UploadOutcome, { ok: true }>): void {
@@ -94,6 +102,7 @@ export function attachmentUploadRouter(deps: AppDeps): Router {
         userId: p.user.id,
         kind: locals.kind,
         caseId: locals.caseId,
+        conversationId: locals.conversationId ?? null,
         name: locals.name,
         bytes: req.body,
       },
@@ -134,6 +143,36 @@ export function attachmentUploadRouter(deps: AppDeps): Router {
       if (!c) return apiError(res, 404, 'not_found');
       if (c.status === 'RESOLVED') return apiError(res, 409, 'case_closed');
       Object.assign(res.locals, { kind: q.data.kind, name: q.data.name, caseId: c.id });
+      next();
+    },
+    rawBody,
+    upload,
+  );
+
+  // POST /conversations/:id/attachments?kind=PHOTO|LOG|DOCUMENT&name=… — файл за разговор.
+  router.post(
+    '/conversations/:id/attachments',
+    ...before,
+    requireCapability('conversation:use'),
+    uploadLimiter,
+    available,
+    async (req, res, next) => {
+      const id = Id.safeParse(req.params.id);
+      const q = ConversationQuery.safeParse(req.query);
+      if (!id.success || !q.success) return apiError(res, 400, 'invalid_input');
+      const u = principalOf(req).user;
+      const loaded = await loadConversationFor(deps.db, u, id.data);
+      if (!loaded) return apiError(res, 404, 'not_found');
+      // Качва само който може да пише: член, или (PUBLIC канал / дискусия по случай) може да влезе.
+      if (!loaded.membership && !canSelfJoin(u, loaded.conversation)) {
+        return apiError(res, 403, 'forbidden');
+      }
+      Object.assign(res.locals, {
+        kind: q.data.kind,
+        name: q.data.name,
+        caseId: null,
+        conversationId: loaded.conversation.id,
+      });
       next();
     },
     rawBody,

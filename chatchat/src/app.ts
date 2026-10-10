@@ -31,6 +31,8 @@ import { mountPdfjs } from './vendor.js';
 import { chatRouter } from './routes/chat.js';
 import { conversationsRouter } from './routes/conversations.js';
 import { filesRouter } from './routes/files.js';
+import { meRouter } from './routes/me.js';
+import { messageMarksRouter } from './routes/message-marks.js';
 import { messagesRouter } from './routes/messages.js';
 import { notificationsRouter } from './routes/notifications.js';
 import { presenceRouter } from './routes/presence.js';
@@ -39,6 +41,7 @@ import { savedFiltersRouter } from './routes/saved-filters.js';
 import { ticketsRouter } from './routes/tickets.js';
 import type { AttachmentDeps } from './services/attachments.js';
 import { QR_TOKEN } from './services/devices.js';
+import type { MailPolicy } from './services/email/enqueue.js';
 
 export type Diagnoser = (input: DiagnoseInput, signal: AbortSignal) => Promise<DiagnoseOutput>;
 
@@ -67,6 +70,8 @@ export interface AppDeps {
   metrics?: Metrics;
   /** Състоянието на circuit breaker-а към Vertex — за /readyz (null → AI е изключен). */
   aiCircuit?: () => BreakerState | null;
+  /** Имейл известията (Brevo): null/липсва → изключени, без outbox (fail-open, известията остават). */
+  mail?: MailPolicy | null;
 }
 
 /** Зависимостите след сглобяване — с хъба, който рутерите на работното пространство ползват. */
@@ -172,6 +177,7 @@ export function createApp(appDeps: AppDeps): express.Express {
   });
   app.use('/api/v1/auth/mfa', authMfaRouter(deps, totpReplay));
   app.use('/api/v1/auth', authRouter(deps));
+  app.use('/api/v1', meRouter(deps));
   // Директорията и запазените филтри — преди админ рутерите на знанието: техният `router.use`
   // иска kb:manage за всичко под /admin, а администраторът на клиента го няма.
   app.use('/api/v1', adminUsersRouter(deps));
@@ -193,9 +199,11 @@ export function createApp(appDeps: AppDeps): express.Express {
   app.use('/api/v1', chatRouter(deps));
   app.use('/api/v1', ticketsRouter(deps));
   app.use('/api/v1', filesRouter(deps));
-  // Работното пространство (§12.3): разговори, съобщения, присъствие, известия, бързи отговори, SSE.
+  // Работното пространство (§12.3): разговори, съобщения (+ маркери, търсене), присъствие,
+  // известия, бързи отговори, SSE.
   app.use('/api/v1', conversationsRouter(deps));
   app.use('/api/v1', messagesRouter(deps));
+  app.use('/api/v1', messageMarksRouter(deps));
   app.use('/api/v1', presenceRouter(deps));
   app.use('/api/v1', notificationsRouter(deps));
   app.use('/api/v1', quickResponsesRouter(deps));
