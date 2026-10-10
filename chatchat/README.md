@@ -73,32 +73,37 @@ AI вижда само `PUBLISHED`. Публикуване и отписване
 
 ## API (v1)
 
-| Метод      | Път                                                                                                                         | Роля                                                |
-| ---------- | --------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| POST       | `/api/v1/auth/login` · `/logout` · GET `/me`                                                                                | всички                                              |
-| GET        | `/api/v1/products/search` · `/devices/:serial` · `/errors/:code` · `/documents/:id/pages/:page`                             | вписан (по аудитория/фирма)                         |
-| POST       | `/api/v1/sessions` (нов случай) · GET `/cases` · `/cases/:id` · `/cases/:id/timeline`                                       | техник+                                             |
-| PATCH/POST | `/api/v1/cases/:id/context` · `/cases/:id/outcome` · `/cases/:id/assign` (поддръжка)                                        | техник+                                             |
-| POST       | `/api/v1/chat/messages` (+ `attachmentIds`) · `/tickets` · `/feedback`                                                      | техник+                                             |
-| POST       | `/api/v1/cases/:id/attachments?kind=PHOTO\|LOG&name=…` (сурово тяло, антивирус)                                             | техник+ с достъп до случая                          |
-| GET        | `/api/v1/attachments/:id/url` → подписан адрес (5 мин.) · `/api/v1/files/:id?exp=…&sig=…`                                   | с достъп до файла                                   |
-| POST       | `/api/v1/admin/products` · `/devices` · `/documents` (+ submit/reject/publish/deprecate) · `/errors` (+ publish/deprecate)  | KNOWLEDGE_OWNER                                     |
-| POST       | `/api/v1/admin/attachments?name=…` (PDF до 50 MB, антивирус)                                                                | KNOWLEDGE_OWNER                                     |
-| POST       | `/api/v1/auth/mfa/setup` · `/enable` · `/verify` · `/disable` (TOTP; персоналът — задължително)                             | вписан                                              |
-| POST       | `/api/v1/auth/reset-password` (еднократният линк `/reset#…`)                                                                | публично                                            |
-| GET/POST   | `/api/v1/admin/users` · PATCH `/users/:id/admin` · POST `/admin/users/:id/{reset-password,revoke-sessions,reset-mfa,erase}` | TENANT_ADMIN, PLATFORM_ADMIN                        |
-| GET/POST   | `/api/v1/admin/users/:id/export` · POST `/admin/users/bulk` (dryRun)                                                        | TENANT_ADMIN, PLATFORM_ADMIN                        |
-| GET/POST   | `/api/v1/saved-filters?scope=USERS\|CASES\|CONVERSATIONS` · DELETE `/saved-filters/:id`                                     | вписан                                              |
-| POST       | `/api/v1/admin/devices/:serial/qr` · `/admin/errors/:id/relink` · GET `/devices/by-qr/:token`                               | KNOWLEDGE_OWNER / вписан                            |
-| GET        | `/api/v1/audit`                                                                                                             | TENANT_ADMIN, PLATFORM_ADMIN                        |
-| GET        | `/api/v1/admin/kpi?from=&to=&model=` — KPI §16.1: само агрегати по клиента, групи под 5 → „<5“, период ≤ 366 дни            | SUPPORT, ENGINEERING, KNOWLEDGE_OWNER, TENANT_ADMIN |
-| GET/POST   | `/api/v1/conversations` · GET `/conversations/:id` · POST/DELETE `…/members` · POST `…/star` · PATCH `…/preferences`        | вписан (по членство)                                |
-| GET/POST   | `/api/v1/conversations/:id/messages` · POST `…/read` · PATCH/DELETE `/messages/:id` · POST/DELETE `/messages/:id/reactions` | вписан (по членство)                                |
-| POST       | `/api/v1/cases/:id/conversation` (вътрешна дискусия по случай)                                                              | персонал с `case:readAll`                           |
-| GET/POST   | `/api/v1/presence` · `/presence/heartbeat` · PATCH `/presence/me` · `/notifications` · `/notifications/read`                | вписан                                              |
-| GET/POST   | `/api/v1/quick-responses` (PUBLISHED по роля) · `/all`, POST, PATCH, `…/publish`, `…/deprecate`                             | KNOWLEDGE_OWNER управлява                           |
-| GET        | `/api/v1/events` — SSE поток (бисквитката на сесията)                                                                       | вписан                                              |
-| GET        | `/healthz` (жив) · `/readyz` (базата + дали AI е включен)                                                                   | —                                                   |
+| Метод      | Път                                                                                                                               | Роля                                                |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| POST       | `/api/v1/auth/login` · `/logout` · GET `/me`                                                                                      | всички                                              |
+| PATCH      | `/api/v1/me` `{ locale: it\|en\|bg }` — езикът на интерфейса, писмата и AI отговорите (FR-14)                                     | вписан                                              |
+| GET        | `/api/v1/products/search` · `/devices/:serial` · `/errors/:code` · `/documents/:id/pages/:page`                                   | вписан (по аудитория/фирма)                         |
+| POST       | `/api/v1/sessions` (нов случай) · GET `/cases` · `/cases/:id` · `/cases/:id/timeline`                                             | техник+                                             |
+| PATCH/POST | `/api/v1/cases/:id/context` · `/cases/:id/outcome` · `/cases/:id/assign` (поддръжка)                                              | техник+                                             |
+| POST       | `/api/v1/chat/messages` (+ `attachmentIds`) · `/tickets` · `/feedback`                                                            | техник+                                             |
+| POST       | `/api/v1/cases/:id/attachments?kind=PHOTO\|LOG&name=…` (сурово тяло, антивирус)                                                   | техник+ с достъп до случая                          |
+| GET        | `/api/v1/attachments/:id/url` → подписан адрес (5 мин.) · `/api/v1/files/:id?exp=…&sig=…`                                         | с достъп до файла                                   |
+| POST       | `/api/v1/admin/products` · `/devices` · `/documents` (+ submit/reject/publish/deprecate) · `/errors` (+ publish/deprecate)        | KNOWLEDGE_OWNER                                     |
+| POST       | `/api/v1/admin/attachments?name=…` (PDF до 50 MB, антивирус)                                                                      | KNOWLEDGE_OWNER                                     |
+| POST       | `/api/v1/auth/mfa/setup` · `/enable` · `/verify` · `/disable` (TOTP; персоналът — задължително)                                   | вписан                                              |
+| POST       | `/api/v1/auth/reset-password` (еднократният линк `/reset#…`)                                                                      | публично                                            |
+| GET/POST   | `/api/v1/admin/users` · PATCH `/users/:id/admin` · POST `/admin/users/:id/{reset-password,revoke-sessions,reset-mfa,erase}`       | TENANT_ADMIN, PLATFORM_ADMIN                        |
+| GET/POST   | `/api/v1/admin/users/:id/export` · POST `/admin/users/bulk` (dryRun)                                                              | TENANT_ADMIN, PLATFORM_ADMIN                        |
+| GET/POST   | `/api/v1/saved-filters?scope=USERS\|CASES\|CONVERSATIONS` · DELETE `/saved-filters/:id`                                           | вписан                                              |
+| POST       | `/api/v1/admin/devices/:serial/qr` · `/admin/errors/:id/relink` · GET `/devices/by-qr/:token`                                     | KNOWLEDGE_OWNER / вписан                            |
+| GET        | `/api/v1/audit`                                                                                                                   | TENANT_ADMIN, PLATFORM_ADMIN                        |
+| GET        | `/api/v1/admin/kpi?from=&to=&model=` — KPI §16.1: само агрегати по клиента, групи под 5 → „<5“, период ≤ 366 дни                  | SUPPORT, ENGINEERING, KNOWLEDGE_OWNER, TENANT_ADMIN |
+| GET/POST   | `/api/v1/conversations` · GET `/conversations/:id` · POST/DELETE `…/members` · POST `…/star` · PATCH `…/preferences`              | вписан (по членство)                                |
+| GET/POST   | `/api/v1/conversations/:id/messages` · POST `…/read` · PATCH/DELETE `/messages/:id` · POST/DELETE `/messages/:id/reactions`       | вписан (по членство)                                |
+| GET/POST   | `…/messages?around=<id>` · POST `/messages/:id/unread` · PUT/DELETE `/messages/:id/marks/{todo,starred}` · GET `/messages/marked` | вписан (по достъпа до разговора)                    |
+| POST       | `/api/v1/conversations/:id/attachments?kind=PHOTO\|LOG\|DOCUMENT&name=…` → `attachmentIds` в POST `…/messages`                    | член / може да влезе сам                            |
+| GET        | `/api/v1/search/messages?q=&cursor=` — разговори + случаи, само достъпното, откъс като части                                      | вписан (`conversation:use`)                         |
+| POST       | `/api/v1/cases/:id/conversation` (вътрешна дискусия по случай)                                                                    | персонал с `case:readAll`                           |
+| GET/POST   | `/api/v1/presence` · `/presence/heartbeat` · PATCH `/presence/me` · `/notifications` · `/notifications/read`                      | вписан                                              |
+| PATCH      | `/api/v1/notifications/preferences` (имейл, дайджест, тихи часове, зона); GET `/notifications` ги връща + курсор                  | вписан                                              |
+| GET/POST   | `/api/v1/quick-responses` (PUBLISHED по роля) · `/all`, POST, PATCH, `…/publish`, `…/deprecate`                                   | KNOWLEDGE_OWNER управлява                           |
+| GET        | `/api/v1/events` — SSE поток (бисквитката на сесията)                                                                             | вписан                                              |
+| GET        | `/healthz` (жив) · `/readyz` (базата + дали AI е включен)                                                                         | —                                                   |
 
 Всяка не-GET заявка иска хедър `x-csrf-token` (от `login`/`me`).
 
