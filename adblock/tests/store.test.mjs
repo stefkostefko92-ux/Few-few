@@ -115,4 +115,16 @@ const box = alphaBox("icons/icon128.png");
 ok(`icon 128: artwork inside a ~16 px transparent margin (opaque box ${box ? `${box.x0},${box.y0}–${box.x1},${box.y1}` : "no alpha"})`,
   !!box && box.x0 >= 12 && box.y0 >= 12 && box.x1 <= 115 && box.y1 <= 115);
 
+// Публикуваният filters.json (подписва се при деплоя) носи само ДАННИ — точно каквото пише в
+// бележката към ревюъра: домейни, CSS селектори, имена на YouTube полета. Никакъв ключ „scriptlets“.
+const liveCfg = JSON.parse(readFileSync(join(ROOT, "server", "filters.json"), "utf8"));
+const extra = Object.keys(liveCfg).filter((k) => !["version", "updated", "blockDomains", "cosmetic", "youtube"].includes(k));
+ok(`server/filters.json: data keys only (${extra.join(",") || "version, updated, blockDomains, cosmetic, youtube"})`, extra.length === 0 && Number.isSafeInteger(liveCfg.version));
+
+// Program Policies (Limited Use): „an affirmative statement … must be disclosed on a website belonging
+// to your extension“ — дословното изречение на Google, в двете копия на политиката за поверителност.
+const LIMITED_USE = "The use of information received from Google APIs will adhere to the Chrome Web Store User Data Policy, including the Limited Use requirements.";
+const noLU = ["PRIVACY.md", "server/privacy.html"].filter((f) => !readFileSync(join(ROOT, f), "utf8").includes(LIMITED_USE));
+ok(`privacy policy: Google's Limited Use statement on the site and in PRIVACY.md (${noLU.join(", ") || "both"})`, noLU.length === 0);
+
 done();
