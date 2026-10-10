@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     authors: [{ name: 'Carbon Stealth VCC', url: 'https://carbonstealth.eu' }],
     creator: 'Carbon Stealth VCC',
     robots: indexingAllowed() ? undefined : { index: false, follow: false },
-    // scripts/brand-assets.py makes them from brand/liftpilot-logo.webp
+    // scripts/brand-assets.py makes them from the Premium pack's branding (brand/premium/)
     icons: { icon: [{ url: '/favicon.ico', sizes: '16x16 32x32 48x48' }, { url: '/img/icon-192.png', type: 'image/png', sizes: '192x192' }], apple: '/apple-touch-icon.png' },
   };
 }
@@ -33,10 +33,9 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#eef1f6' },
-    { media: '(prefers-color-scheme: dark)', color: '#0c111d' },
-  ],
+  // the one dark theme (globals.css: --bg), whatever the device prefers
+  themeColor: '#030a11',
+  colorScheme: 'dark',
 };
 
 export default async function LocaleLayout({ children, params }: { children: ReactNode; params: Promise<{ locale: string }> }) {

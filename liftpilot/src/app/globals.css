@@ -1,4 +1,7 @@
 @import './fonts.css';
+/* the building blocks first (buttons, panels, fields, pills, tables…), then each area's own sheet over them */
+@import './ui.css';
+@import './ui-forms.css';
 @import './calc.css';
 @import './shell.css';
 @import './tables.css';
@@ -15,113 +18,82 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Tokens of the calculator prototype (light, then dark), plus the page-level ones: secondary ink, the brand navy
-   (the same in both themes), the backgrounds of the 3D stages and the readout over them (a dark machine room in both
-   themes) and the two series of the simulation charts (validated for colour vision deficiency on both surfaces). */
+/* LiftPilot Premium: one dark theme, the template's (landing.css / workspace-ref.css of the pack). A deep blue-black
+   desk, panels a step lighter with thin cool lines, one cyan for action and focus, amber for what needs attention, mint
+   for what passes, a red that reads on the panels. The token names are the app's since its first theme, so every page
+   follows; the drawing sheets stay white paper on purpose (shaft.css, home.css). Text contrast is WCAG AA on every
+   surface (ink 15.9:1, muted 7.7:1, dim 5.5:1 on --surface2; the status colours >= 6.8:1 on their tints); the input
+   borders reach 3:1 against the panel (1.4.11). The chart series pass the dataviz check on --surface (lightness band,
+   colour-vision separation, 3:1). */
 :root {
-  --bg: #eef1f6; --surface: #ffffff; --surface2: #f6f8fb; --ink: #121829; --ink-2: #2f3852; --muted: #5a6480; --rule: #d6dce6; --rule-strong: #aeb7c7;
-  --accent: #1d3271; --accent-ink: #ffffff; --accent-soft: #e3e8f5; --brand: #1d3271;
-  --ok: #1f7a4a; --ok-bg: #e2f2e9; --warn: #8f5500; --warn-bg: #fbefd9; --fail: #b3261e; --fail-bg: #fbe3e1;
-  --info: #3b4a73; --info-bg: #e8ecf5; --rope: #1d3271; --steel: #8a93ab; --car: #dfe5f1;
-  --stage-bg: linear-gradient(180deg, #03070f 0%, #1c2130 45%, #262b3b 70%, #1f2432 100%); --shadow-lg: 0 24px 48px -28px rgba(12, 20, 40, .45);
-  --series-1: #2a78d6; --series-2: #eb6834;
-  --lift-bg: #10161f; --hud-bg: rgb(10 14 22 / .74); --hud-ink: #e7ebf4; --hud-muted: #9aa4bf;
-  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-cond: "IBM Plex Sans Condensed", "Arial Narrow", "IBM Plex Sans", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-  color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    color-scheme: dark;
-    --bg: #0c111d; --surface: #141b2b; --surface2: #1a2236; --ink: #e7ebf4; --ink-2: #c6cde0; --muted: #9aa4bf; --rule: #2a3450; --rule-strong: #445173;
-    --accent: #9db1ff; --accent-ink: #0c111d; --accent-soft: #1f2a48;
-    --ok: #5ccf8e; --ok-bg: #133323; --warn: #f2b454; --warn-bg: #3a2a10; --fail: #ff8a80; --fail-bg: #3d1716;
-    --info: #b8c4e6; --info-bg: #1f2740; --rope: #9db1ff; --steel: #6f7893; --car: #222c45;
-    --series-1: #3987e5; --series-2: #d95926;
-    --shadow-lg: 0 24px 48px -28px rgba(0, 0, 0, .7);
-  }
-}
-:root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #0c111d; --surface: #141b2b; --surface2: #1a2236; --ink: #e7ebf4; --ink-2: #c6cde0; --muted: #9aa4bf; --rule: #2a3450; --rule-strong: #445173;
-  --accent: #9db1ff; --accent-ink: #0c111d; --accent-soft: #1f2a48;
-  --ok: #5ccf8e; --ok-bg: #133323; --warn: #f2b454; --warn-bg: #3a2a10; --fail: #ff8a80; --fail-bg: #3d1716;
-  --info: #b8c4e6; --info-bg: #1f2740; --rope: #9db1ff; --steel: #6f7893; --car: #222c45;
-  --series-1: #3987e5; --series-2: #d95926;
-  --shadow-lg: 0 24px 48px -28px rgba(0, 0, 0, .7);
+  --bg: #030a11; --bg-2: #04111a; --surface: #07131d; --surface2: #0b1e2a; --surface3: #0e2533;
+  --ink: #f4f8fa; --ink-2: #c4d6de; --muted: #9eb2bd; --dim: #7f97a3;
+  --rule: #193745; --rule-soft: #142d39; --rule-strong: #2a5466; --rule-input: #3a6d82;
+  --accent: #27dff0; --accent-2: #62f0ef; --accent-ink: #031016; --accent-soft: #0a2632; --accent-line: #1a6b7c; --brand: #27dff0;
+  --ok: #66e3b4; --ok-bg: #0b2824; --ok-line: #24574a;
+  --warn: #e7bd75; --warn-bg: #271e11; --warn-line: #5d4724;
+  --fail: #ff8a80; --fail-bg: #2b1316; --fail-line: #6b2f31;
+  --info: #8ec9e6; --info-bg: #0a2230; --info-line: #1f4a5e;
+  --rope: #62f0ef; --steel: #7f97a3; --car: #12303e;
+  --stage-bg: radial-gradient(ellipse at 50% 38%, #0b2633 0%, #061520 46%, #02070c 100%);
+  --lift-bg: #030d15; --hud-bg: rgb(3 13 21 / .8); --hud-ink: #e8f6fa; --hud-muted: #9eb2bd;
+  --series-1: #14a3bd; --series-2: #db7430;
+  /* surfaces of the template: the panel's diagonal gradient, the faint inner highlight, the lift of a floating panel */
+  --panel-grad: linear-gradient(145deg, #0b1c27 0%, #07131d 100%);
+  --panel-hi: inset 0 1px 0 rgb(255 255 255 / .025);
+  --shadow: 0 10px 24px rgb(0 0 0 / .18);
+  --shadow-lg: 0 24px 60px -24px rgb(0 0 0 / .8), 0 0 28px rgb(0 215 237 / .05);
+  --glow: 0 0 22px rgb(9 222 239 / .14);
+  --glow-strong: 0 0 32px rgb(9 222 239 / .3);
+  --grid: rgb(0 210 235 / .085);
+  --radius-sm: 5px; --radius: 9px; --radius-lg: 10px;
+  /* type: Manrope throughout (its tight tracking stands in for the old condensed headings), DM Mono for figures */
+  --font-body: "Manrope", "Manrope Fallback", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-cond: var(--font-body);
+  --font-mono: "DM Mono", "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --track-tight: -0.022em;
 }
 
-/* IBM Plex Sans Condensed has no Cyrillic: Bulgarian headings use IBM Plex Sans (which has it) */
-:root:lang(bg) { --font-cond: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+/* paper: black on white whatever the screen shows */
+@media print {
+  :root {
+    color-scheme: light;
+    --bg: #fff; --bg-2: #fff; --surface: #fff; --surface2: #f4f6f9; --surface3: #eef1f5;
+    --ink: #000; --ink-2: #222; --muted: #444; --dim: #555;
+    --rule: #c8ced8; --rule-soft: #dde2ea; --rule-strong: #8a94a6; --rule-input: #8a94a6;
+    --accent: #1d3271; --accent-2: #1d3271; --accent-ink: #fff; --accent-soft: #e3e8f5; --accent-line: #1d3271; --brand: #1d3271;
+    --ok: #1f7a4a; --ok-bg: #fff; --warn: #8f5500; --warn-bg: #fff; --fail: #b3261e; --fail-bg: #fff; --info: #3b4a73; --info-bg: #fff;
+    --rope: #1d3271; --steel: #8a93ab; --car: #dfe5f1; --series-1: #2a78d6; --series-2: #eb6834;
+    --panel-grad: none; --panel-hi: none; --shadow: none; --shadow-lg: none; --glow: none; --glow-strong: none;
+  }
+  html, body { background: #fff !important; color: #000; }
+}
 
 @layer base {
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
-  html { -webkit-text-size-adjust: 100%; }
-  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.55 var(--font-body); }
-  h1, h2, h3 { font-family: var(--font-cond); text-wrap: balance; margin: 0; }
-  h1 { font-size: clamp(26px, 1.4vw + 18px, 38px); line-height: 1.08; letter-spacing: -0.012em; font-weight: 700; }
-  h2 { font-size: 20px; line-height: 1.2; letter-spacing: 0.005em; font-weight: 700; }
-  h3 { font-size: 16px; line-height: 1.3; font-weight: 600; }
+  html { -webkit-text-size-adjust: 100%; background: var(--bg); scrollbar-color: var(--rule-strong) var(--bg); }
+  /* the template's deep desk: a cool glow from the top right over a near-black blue, painted once (not fixed: no
+     repaint while scrolling) */
+  body { margin: 0; color: var(--ink); font: 15px/1.6 var(--font-body);
+    background: radial-gradient(1100px 620px at 82% -160px, rgb(6 32 43 / .95), transparent 70%),
+      linear-gradient(100deg, #030a11 0%, #04111a 48%, #041019 100%) no-repeat, var(--bg);
+    -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  h1, h2, h3 { font-family: var(--font-body); text-wrap: balance; margin: 0; }
+  h1 { font-size: clamp(28px, 1.5vw + 19px, 40px); line-height: 1.06; letter-spacing: -0.035em; font-weight: 800; }
+  h2 { font-size: 20px; line-height: 1.2; letter-spacing: var(--track-tight); font-weight: 700; }
+  h3 { font-size: 16px; line-height: 1.3; letter-spacing: -0.01em; font-weight: 700; }
   p { margin: 0; }
   a { color: var(--accent); }
   /* a link inside running text is told by more than its colour (WCAG 1.4.1) */
   :where(p, dd, label, .note, .site-footer) a:not([class]) { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  ::selection { background: rgb(39 223 240 / .32); color: #fff; }
+  /* the focus ring: cyan, 2 px, off the edge (buttons and fields add their own glow in ui.css) */
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
-}
-
-@layer components {
-  .page { max-width: 1320px; width: 100%; margin: 0 auto; padding: 22px 16px 48px; display: flex; flex-direction: column; gap: 20px; }
-  .page-narrow { max-width: 880px; }
-  /* small uppercase label inside the calculator (prototype look) */
-  .eyebrow { font: 600 11.5px/1.2 var(--font-cond); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
-  .lead { color: var(--muted); max-width: 70ch; }
-  .note { font-size: 13px; color: var(--muted); }
-  .note.bad { color: var(--fail); }
-  .panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; }
-  /* a panel that folds: flex does not reach the content of a <details>, the gap is a margin */
-  details.panel { display: block; }
-  details.panel > summary { cursor: pointer; width: fit-content; font-weight: 600; }
-  details.panel > * + * { margin-top: 12px; }
-  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; font: 500 14px/1 var(--font-body); color: var(--ink); background: var(--surface);
-    border: 1px solid var(--rule); border-radius: 9px; padding: 10px 15px; cursor: pointer; text-decoration: none; white-space: nowrap; transition: border-color .15s, background-color .15s; }
-  .btn:hover { border-color: var(--accent); }
-  .btn:disabled { opacity: .55; cursor: not-allowed; }
-  .btn-primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
-  .btn-primary:hover { background: color-mix(in srgb, var(--accent) 88%, var(--ink)); }
-  .btn-danger { color: var(--fail); }
-  /* a step before an action that cannot be undone: the button opens its confirmation */
-  details.confirm-delete > summary { list-style: none; width: fit-content; }
-  details.confirm-delete > summary::-webkit-details-marker { display: none; }
-  .btn-sm { padding: 7px 11px; font-size: 13px; }
-  .btn-lg { padding: 13px 20px; font-size: 15.5px; border-radius: 10px; }
-  .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-  .field > span { font-size: 13.5px; font-weight: 500; }
-  .input { width: 100%; font: 15px/1.3 var(--font-body); color: var(--ink); background: var(--surface2); border: 1px solid var(--rule); border-radius: 9px; padding: 10px 12px; }
-  .input:focus { border-color: var(--accent); }
-  .input[aria-invalid="true"] { border-color: var(--fail); background: var(--fail-bg); }
-  textarea.input { min-height: 88px; resize: vertical; }
-  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px; }
-  @media (max-width: 640px) { .form-grid { grid-template-columns: minmax(0, 1fr); } }
-  .form-grid .span-2 { grid-column: 1 / -1; }
-  .alert { border-radius: 10px; padding: 11px 14px; font-size: 14px; border: 1px solid var(--rule); background: var(--surface); }
-  .alert-bad { border-color: var(--fail); background: var(--fail-bg); color: var(--fail); }
-  .alert-ok { border-color: var(--ok); background: var(--ok-bg); color: var(--ok); }
-  .alert-warn { border-color: var(--warn); background: var(--warn-bg); color: var(--warn); }
-  .secret { font: 500 15px/1.3 var(--font-mono); background: var(--surface2); border: 1px dashed var(--rule); border-radius: 8px; padding: 8px 12px; user-select: all; overflow-wrap: anywhere; }
-  .mono { font-family: var(--font-mono); font-size: .93em; }
-  .num { font-variant-numeric: tabular-nums; }
-}
-
-.status-pill { display: inline-flex; align-items: center; gap: 5px; width: fit-content; font: 600 12px/1.25 var(--font-body); padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
-.status-pill.ok { color: var(--ok); background: var(--ok-bg); } .status-pill.fail { color: var(--fail); background: var(--fail-bg); }
-.status-pill.warn { color: var(--warn); background: var(--warn-bg); } .status-pill.info { color: var(--info); background: var(--info-bg); }
-.savebar { position: sticky; bottom: 0; z-index: 15; background: var(--surface); border-top: 1px solid var(--rule); padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)); }
-.savebar .inner { max-width: 1320px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
-.savebar .input { max-width: 26rem; flex: 1 1 12rem; }
-@media (max-width: 640px) {
-  .savebar { padding-block: 8px calc(8px + env(safe-area-inset-bottom, 0px)); }
-  .savebar .note:not(.bad) { display: none; }
+  ::-webkit-scrollbar { width: 11px; height: 11px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--rule); border: 3px solid var(--bg); border-radius: 8px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--rule-strong); }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
 }

@@ -1,6 +1,6 @@
 import type { Config } from 'tailwindcss';
 
-// Colours come from the CSS tokens in src/app/globals.css (light and dark theme).
+// Colours come from the CSS tokens in src/app/globals.css (the one dark theme of LiftPilot Premium).
 const config: Config = {
   content: ['./src/**/*.{ts,tsx}'],
   theme: {
@@ -9,9 +9,13 @@ const config: Config = {
         bg: 'var(--bg)',
         surface: 'var(--surface)',
         surface2: 'var(--surface2)',
+        surface3: 'var(--surface3)',
         ink: 'var(--ink)',
+        'ink-2': 'var(--ink-2)',
         muted: 'var(--muted)',
+        dim: 'var(--dim)',
         rule: 'var(--rule)',
+        'rule-strong': 'var(--rule-strong)',
         accent: 'var(--accent)',
         'accent-ink': 'var(--accent-ink)',
         'accent-soft': 'var(--accent-soft)',
@@ -25,9 +29,10 @@ const config: Config = {
         'info-bg': 'var(--info-bg)',
       },
       fontFamily: {
-        body: ['"IBM Plex Sans"', 'system-ui', '-apple-system', '"Segoe UI"', 'Roboto', 'sans-serif'],
-        cond: ['"IBM Plex Sans Condensed"', '"Arial Narrow"', '"IBM Plex Sans"', 'system-ui', 'sans-serif'],
-        mono: ['"IBM Plex Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
+        // the same stacks as the --font-* tokens (src/app/fonts.css loads the faces)
+        body: ['Manrope', '"Manrope Fallback"', 'system-ui', '-apple-system', '"Segoe UI"', 'Roboto', 'sans-serif'],
+        cond: ['Manrope', '"Manrope Fallback"', 'system-ui', 'sans-serif'],
+        mono: ['"DM Mono"', '"IBM Plex Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
       },
     },
   },

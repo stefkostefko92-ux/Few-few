@@ -1,5 +1,6 @@
 // Builds the standalone page of the two tools (artifact/main.tsx) into one folder that a static host or a claude.ai
-// Artifact serves as is: index.html, app.css with the IBM Plex fonts, app.js and its lazy chunks (3D, CAD reader).
+// Artifact serves as is: index.html, app.css with the site's fonts (Manrope, DM Mono, IBM Plex Mono for Cyrillic),
+// app.js and its lazy chunks (3D, CAD reader).
 // Usage, from liftpilot/: npm run artifact [-- outdir]   (default artifact/dist)
 import { execFileSync } from 'node:child_process';
 import { copyFileSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
@@ -19,8 +20,9 @@ execFileSync(path.join(root, 'node_modules/.bin/tailwindcss'), ['-i', 'src/app/g
 const styles = readFileSync(css, 'utf8').replaceAll('url(/fonts/', 'url(fonts/').replaceAll('url("/fonts/', 'url("fonts/');
 // declared UTF-8: a static host that sends no charset would read the "−" of the open sections as Windows-1252
 writeFileSync(css, `@charset "UTF-8";\n${styles.replace(/^@charset "UTF-8";\s*/i, '')}\n${readFileSync(path.join(root, 'artifact/artifact.css'), 'utf8')}`);
-for (const f of readdirSync(path.join(root, 'public/fonts'))) if (f.endsWith('.woff2') || f === 'OFL.txt') copyFileSync(path.join(root, 'public/fonts', f), path.join(out, 'fonts', f));
-for (const w of [120, 240, 360]) copyFileSync(path.join(root, `public/img/liftpilot-logo-${w}.webp`), path.join(out, `img/liftpilot-logo-${w}.webp`));
+for (const f of readdirSync(path.join(root, 'public/fonts'))) if (f.endsWith('.woff2') || /^OFL.*\.txt$/.test(f)) copyFileSync(path.join(root, 'public/fonts', f), path.join(out, 'fonts', f));
+// the logo's sizes (src/lib/brand.ts) beside the page
+for (const f of readdirSync(path.join(root, 'public/img'))) if (/^liftpilot-(logo|emblem)-\d+\.webp$/.test(f)) copyFileSync(path.join(root, 'public/img', f), path.join(out, 'img', f));
 
 // script: the app's components and engines; next-intl, the routing and the server actions replaced by page shims
 const shim = (f) => path.join(root, 'artifact/shims', f);

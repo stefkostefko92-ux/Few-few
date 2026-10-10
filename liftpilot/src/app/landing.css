@@ -1,6 +1,6 @@
-/* Shared by the public pages: the machine stage (the landing's hero, beside the sign-in forms), the small label over a
-   heading, a question with its answer (pricing), the sign-in and registration forms, the legal pages. The landing's
-   own sheet is in home.css. */
+/* Shared by the public pages: the machine stage (the landing's hero, beside the sign-in forms), a question with its
+   answer (pricing), the sign-in and registration forms, the legal pages (the small label over a heading, .eyebrow, is
+   in ui.css). The landing's own sheet is in home.css. */
 .stage { margin: 0; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 .stage-frame { position: relative; aspect-ratio: 4 / 3; max-width: 100%; border-radius: 16px; overflow: hidden; background: var(--stage-bg); isolation: isolate;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06), var(--shadow-lg); }
@@ -9,7 +9,6 @@
 .stage-canvas { opacity: 0; transition: opacity .8s ease; }
 .stage.is-live .stage-canvas { opacity: 1; }
 .stage figcaption { font-size: 13px; line-height: 1.5; color: var(--muted); max-width: 72ch; }
-.eyebrow { margin: 0; font: 600 12.5px/1.2 var(--font-body); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
 
 /* a question beside its answer */
 .faq-item { display: grid; gap: 8px 48px; padding: 22px 0; border-top: 1px solid var(--rule); }

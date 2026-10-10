@@ -23,11 +23,11 @@ const AUDIENCES: ReadonlyArray<readonly [number, FeatureDrawing]> = [[1, 'room']
 const TRUST: ReadonlyArray<readonly [number, FeatureDrawing]> = [[1, 'shield'], [2, 'local'], [3, 'trace'], [4, 'roles']];
 const FAQ = [1, 2, 3, 4, 5, 6, 7, 8] as const;
 /** The faces of the first screen (the title, the text), fetched with the page so the title does not reflow when they
- *  arrive: Plex Sans Condensed has no Cyrillic, the Bulgarian title is in Plex Sans 600 (fonts.css, globals.css). */
+ *  arrive (Manrope, fonts.css; the Bulgarian page needs the Cyrillic subsets too). */
 const FIRST_SCREEN_FONTS: Record<Locale, readonly string[]> = {
-  it: ['plex-sans-condensed-700-latin', 'plex-sans-400-latin'],
-  en: ['plex-sans-condensed-700-latin', 'plex-sans-400-latin'],
-  bg: ['plex-sans-600-cyrillic', 'plex-sans-400-cyrillic', 'plex-sans-400-latin'],
+  it: ['manrope-700-latin', 'manrope-400-latin'],
+  en: ['manrope-700-latin', 'manrope-400-latin'],
+  bg: ['manrope-700-cyrillic', 'manrope-400-cyrillic', 'manrope-400-latin'],
 };
 const loc = (l: string): Locale => (isLocale(l) ? l : 'it');
 
