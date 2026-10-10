@@ -768,6 +768,26 @@ describe('AC-11 + §15 „accessi incrociati“ — изолация между 
     assert.equal((await w.ownerA1.get(`/api/v1/documents/${w.docs.draft}/pages/1`)).status, 404);
   });
 
+  test('чернова: публичната страница остава 404 за всички; админският преглед (kb:manage) я показва', async () => {
+    const page = `/api/v1/documents/${w.docs.draft}/pages/1`;
+    for (const c of [w.ownerA1, w.ownerA2, w.support, w.internal, w.portalAlfa]) {
+      assert.equal((await c.get(page)).status, 404);
+    }
+    const admin = await w.ownerA1.get(`/api/v1/admin/documents/${w.docs.draft}/pages/1`);
+    assert.equal(admin.status, 200);
+    assert.equal(admin.body.document.status, 'DRAFT');
+    assert.ok(admin.body.chunks[0].text.includes('FENICE'));
+    assert.ok(Array.isArray(admin.body.chunks[0].componentRefs));
+    assert.equal(
+      (await w.support.get(`/api/v1/admin/documents/${w.docs.draft}/pages/1`)).status,
+      403,
+    );
+    assert.equal(
+      (await w.ownerB.get(`/api/v1/admin/documents/${w.docs.draft}/pages/1`)).status,
+      404,
+    );
+  });
+
   test('поддръжка вижда случаите на цялата организация на клиента (но не на другия клиент)', async () => {
     const caseId = await newCase(w.portalAlfa, { deviceSerial: 'SN-ALFA-1' });
     assert.equal((await w.support.get(`/api/v1/cases/${caseId}`)).status, 200);
