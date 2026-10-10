@@ -27,7 +27,11 @@ export function cameraKeys(camera, ext, sheets) {
   const exploded = key(furniture.clone().setY(ext.H * 0.55), [0.66, 0.5, 1], dist * 1.4);
   // over the sheets the camera has no sideways offset: their edges stay level on the screen
   const all = key(sheets.all.centre, [0, 1.15, 0.62], fitDistance(camera, sheets.all.radius, 0.96));
-  const one = key(sheets.one.centre, [0, 1, 0.42], fitDistance(camera, sheets.one.radius, 1.02));
+  // sheet 1 fills about 70% of the width: the 4:5 still is cropped on the sides in a narrower frame (down to 0.66), and
+  // the read-out sits over the empty sheet above, never over sheet 1
+  // and sits a little low: the sheet above shows over it, the empty frame below is not left to the sheet's own height
+  const oneAt = sheets.one.centre.clone().add(new THREE.Vector3(0, 0, -sheets.one.radius * 0.2));
+  const one = key(oneAt, [0, 1, 0.42], fitDistance(camera, sheets.one.radius, 1.28));
   return { hero, exploded, all, one };
 }
 

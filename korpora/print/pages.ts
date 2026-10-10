@@ -1,7 +1,7 @@
 import type { Locale, Translator } from '../src/i18n.js';
 import type { PriceRow } from '../src/plans/pricing.js';
 import { HOW_STEPS } from '../src/seo/structured-data.js';
-import type { LandingAssets } from '../src/services/landing-assets.js';
+import type { ExampleKitchen, LandingAssets } from '../src/services/landing-assets.js';
 import type { LineupGroup } from '../src/services/furniture-lineup.js';
 
 /** Всичко, от което се сглобява брошурата на един език. Текстът е от речниците, картините — от двигателя. */
@@ -33,6 +33,17 @@ export function esc(value: string): string {
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;');
+}
+
+/** Примерната кухня в текстовете: колко модула с врати и с чекмеджета и по колко мм (като на витрината). */
+function kitchenParams(k: ExampleKitchen, num: (value: number) => string) {
+  return {
+    modules: k.modules,
+    doors: k.doorModules,
+    width: num(k.moduleWidth),
+    drawers: k.drawerModules,
+    drawerWidth: num(k.drawerModuleWidth),
+  };
 }
 
 const ICON = {
@@ -80,10 +91,11 @@ export function cover(c: BrochureContext): string {
   <p class="b-lead">${esc(t('landing.hero.lead'))}</p>
   <p class="b-for">${esc(t('brochure.cover.for'))}</p>
   <figure class="b-bed">${sheet.svg.replace(' aria-hidden="true" focusable="false"', '')}
-    <figcaption>${esc(t('landing.hero.caption', { no: sheet.no, count: sheet.count, modules: assets.example.modules, width: c.num(assets.example.moduleWidth), parts: sheet.parts, holes: sheet.holes }))}<span class="b-keys">${legend}</span></figcaption>
+    <figcaption>${esc(t('landing.hero.caption', { no: sheet.no, count: sheet.count, ...kitchenParams(assets.example, c.num), parts: sheet.parts, holes: sheet.holes }))}<span class="b-keys">${legend}</span></figcaption>
   </figure>
   <p class="b-trial">${icon('clock')}<span>${esc(t('landing.hero.trial', { days: c.trialDays }))}</span></p>
-  <p class="b-proof">${esc(t('brochure.cover.proof', { modules: assets.example.modules, width: c.num(assets.example.moduleWidth) }))}</p>
+  <p class="b-proof">${esc(t('brochure.cover.proof', kitchenParams(assets.example, c.num)))}</p>
+  ${titleBlock(c, 1)}
 </section>`;
 }
 
@@ -122,19 +134,28 @@ export function drilling(c: BrochureContext): string {
   const door = c.assets.door;
   if (!door) return '';
   const cupMm = viewBoxOf(door.cup.svg)[2];
+  // „наш избор“ is the drawings' label — Bulgarian in every language, so it carries lang="bg"; the
+  // translation is split around it so that both halves stay escaped (as on the landing). role="term":
+  // Chromium's tagged PDF keeps the language only of an element with a role — a bare span is dropped.
+  const [before = '', after = ''] = t('landing.drilling.checks', { mark: '\u0000' }).split(
+    '\u0000',
+  );
+  // each fact is ready HTML: escaped text, the mark as the only markup
   const facts = [
     [
       'drill',
-      t('landing.drilling.cup', {
-        c: c.num(door.c),
-        overlay: c.num(door.overlay),
-        plate: c.num(door.plate),
-      }),
+      esc(
+        t('landing.drilling.cup', {
+          c: c.num(door.c),
+          overlay: c.num(door.overlay),
+          plate: c.num(door.plate),
+        }),
+      ),
     ],
-    ['drill', t('landing.drilling.system32')],
-    ['drill', t('landing.drilling.handles')],
-    ['drill', t('landing.drilling.edges')],
-    ['alert', t('landing.drilling.checks')],
+    ['drill', esc(t('landing.drilling.system32'))],
+    ['drill', esc(t('landing.drilling.handles'))],
+    ['drill', esc(t('landing.drilling.edges'))],
+    ['alert', `${esc(before)}<span lang="bg" role="term">наш избор</span>${esc(after)}`],
   ] as const;
   return `<section class="b-page">
   <h2>${esc(t('landing.drilling.title'))}</h2>
@@ -142,7 +163,7 @@ export function drilling(c: BrochureContext): string {
   <figure class="b-sheet b-door">${drawing(door.elevation.svg, 172)}<figcaption>${esc(t('landing.drilling.caption', { h: c.num(door.height), w: c.num(door.width) }))}</figcaption></figure>
   <div class="b-drill">
     <figure class="b-sheet b-cup">${drawing(door.cup.svg, cupMm)}<figcaption>${esc(t('brochure.drilling.scale'))}</figcaption></figure>
-    <ul class="b-facts">${facts.map(([i, text]) => `<li>${icon(i)}<span>${esc(text)}</span></li>`).join('')}</ul>
+    <ul class="b-facts">${facts.map(([i, html]) => `<li>${icon(i)}<span>${html}</span></li>`).join('')}</ul>
   </div>
   ${titleBlock(c, 3)}
 </section>`;

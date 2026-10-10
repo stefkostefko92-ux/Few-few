@@ -1,5 +1,5 @@
 // Nesting tab and the sheet SVG shared with the CNC simulation.
-import { $, esc, fmt, mm, stat } from './dom.js';
+import { $, esc, fmt, mm, pct, stat } from './dom.js';
 import { STOCK, decor, decorName, hasGrain } from '../engine/materials.js';
 
 // Readable ink on a decor colour (relative luminance).
@@ -48,11 +48,11 @@ export function sheetSvg(sh, opts = {}) {
 }
 
 export const sheetTitle = (sh) =>
-  `${STOCK[sh.stock].name} ${STOCK[sh.stock].thickness} mm · ${sh.stock === 'hdf3' ? 'бял' : decorName(sh.decor)}`;
+  `${STOCK[sh.stock].name} ${STOCK[sh.stock].thickness} mm\u00a0· ${sh.stock === 'hdf3' ? 'бял' : decorName(sh.decor)}`;
 
 // one sheet on full screen (fullscreen.js binds the click); the label is the page's own (editor.fullscreen)
 const fsButton = (label) =>
-  `<button type="button" class="btn btn-small fs-btn" data-fs-sheet aria-pressed="false"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-expand"/></svg><span>${esc(label)}</span></button>`;
+  `<button type="button" class="btn btn-small fs-btn" data-fs-sheet><svg class="i" aria-hidden="true" focusable="false"><use href="#i-expand"/></svg><span>${esc(label)}</span></button>`;
 
 export function renderNesting(state, fullscreenLabel) {
   const button = fsButton(fullscreenLabel);
@@ -61,7 +61,7 @@ export function renderNesting(state, fullscreenLabel) {
   const used = sheets.reduce((a, s) => a + s.yield * s.w * s.h, 0);
   $('#nest-summary').innerHTML = [
     stat('Листове', fmt(sheets.length)),
-    stat('Оползотворяване', `${fmt(total ? (used / total) * 100 : 0, 1)}%`),
+    stat('Оползотворяване', pct(total ? (used / total) * 100 : 0, 1)),
     stat('Отстояние', `${spacing} mm`),
     stat('Кант компенсиран', state.spec.bandCompensation ? 'да' : 'не'),
   ].join('');
@@ -69,7 +69,7 @@ export function renderNesting(state, fullscreenLabel) {
   $('#nest-sheets').innerHTML = sheets
     .map(
       (sh) =>
-        `<figure class="sheetcard"><figcaption><strong>Лист ${sh.index}</strong> · ${esc(sheetTitle(sh))}<span class="num">${sh.placements.length} дет. · ${fmt(sh.yield * 100, 1)}%</span>${button}</figcaption>${sheetSvg(sh)}</figure>`,
+        `<figure class="sheetcard"><figcaption><span class="ttl"><strong>Лист ${sh.index}</strong><span class="meta">${esc(sheetTitle(sh))}</span></span><span class="side"><span class="num">${sh.placements.length} дет.\u00a0· ${pct(sh.yield * 100, 1)}</span>${button}</span></figcaption>${sheetSvg(sh)}</figure>`,
     )
     .join('');
 }

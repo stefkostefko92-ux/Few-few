@@ -14,6 +14,7 @@ import { paidStartAllowedFrom } from '../plans/withdrawal.js';
 import { fail, isResult, targetFor, type ActionResult, type StaffActor } from './admin-common.js';
 import { ADMIN_LIMITS } from './admin-limits.js';
 import { hasUnsafeChars } from './names.js';
+import { sendOrderRejected } from './order-mail.js';
 
 /** Бележката на служителя е свободен текст: не може да започва с „@“ — така се пишат знаците на системата. */
 const note = z
@@ -111,7 +112,8 @@ function matchesOrder(input: PlanInput, option: string, months: number | null): 
 /**
  * Ръчна смяна на плана: trial (дни от днес), premium (месеци към по-късния от „сега“ и текущия край,
  * или точна дата), lifetime. Записва се в историята; човекът получава писмо, ако е избрано. С
- * `requestId` изпълнява поръчка: само поръчания план и не преди срока за отказ, ако няма ранно начало.
+ * `requestId` изпълнява поръчка: само поръчания план и не преди срока за отказ, ако няма ранно начало;
+ * тогава писмото тръгва винаги. Платен план без поръчка — само ако човекът няма отворена поръчка.
  */
 export async function changePlan(
   actor: StaffActor,
@@ -138,6 +140,12 @@ export async function changePlan(
         if (open.length !== 1) return { error: 'admin.errors.requestGone' };
       }
       await tx.$executeRaw`SELECT 1 FROM "User" WHERE "id" = ${id} FOR UPDATE`;
+      // Платен план на ръка, докато поръчка чака, би заобиколил поръчаното и срока за отказ, а
+      // поръчката би останала отворена и после би се изпълнила втори път: платеното минава през нея.
+      if (!input.requestId && input.plan !== 'TRIAL') {
+        const waiting = await tx.upgradeRequest.count({ where: { userId: id, status: 'OPEN' } });
+        if (waiting > 0) return { error: 'admin.errors.openOrder' };
+      }
       const user = await tx.user.findUniqueOrThrow({ where: { id } });
       const next = nextState(input, user, now);
       if ('error' in next) return next;
@@ -199,7 +207,8 @@ export async function changePlan(
           },
   );
   if ('error' in outcome) return fail(outcome.error);
-  if (input.notify) {
+  // Изпълнена поръчка се съобщава винаги — така обещават общите условия; отметката е за ръчните промени.
+  if (input.notify || input.requestId) {
     const locale = accountLocale(target);
     void mailPlanChanged(target.email, locale, greetingName(target), {
       plan: translate(locale, `plan.name.${input.plan}`),
@@ -213,17 +222,22 @@ export async function changePlan(
 
 /**
  * Отхвърляне на поръчка. Като всяко действие върху акаунт: способност И по-висок ранг от човека, който
- * е поръчал, и никога своята поръчка. Поръчка се затваря като изпълнена само от `changePlan`.
+ * е поръчал, и никога своята поръчка. Поръчка се затваря като изпълнена само от `changePlan`. Поръчката
+ * е договор, потвърден по имейл: отхвърлянето му тръгва по същия път, за да не се плати по нея.
  */
 export async function rejectRequest(actor: StaffActor, requestId: string): Promise<ActionResult> {
   if (!can(actor.role, 'requests:handle')) return fail('error.noCapability');
   const order = requestId
     ? await prisma.upgradeRequest.findUnique({
         where: { id: requestId },
-        select: { userId: true },
+        include: {
+          user: { select: { email: true, name: true, locale: true, emailVerifiedAt: true } },
+        },
       })
     : null;
-  if (!order) return fail('admin.errors.notFound');
+  // поръчката на изтрит акаунт е само запис на договора: тя вече е затворена и не се отхвърля
+  if (!order?.userId || !order.user) return fail('admin.errors.notFound');
+  const customer = order.user;
   const target = await targetFor(actor, order.userId, 'requests:handle');
   if (isResult(target)) return target;
   const result = await audited(
@@ -244,5 +258,6 @@ export async function rejectRequest(actor: StaffActor, requestId: string): Promi
         : null,
   );
   if (result.count !== 1) return fail('admin.errors.notFound');
+  if (order.termsVersion !== null) void sendOrderRejected(order, customer);
   return { ok: true };
 }

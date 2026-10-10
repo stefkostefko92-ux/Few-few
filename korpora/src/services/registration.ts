@@ -19,6 +19,7 @@ import { HOUR } from '../time.js';
 import { trialStart } from '../plans/plan.js';
 import { isUniqueViolation } from './admin-common.js';
 import { customerActor, emailSchema, nameSchema, newPasswordProblem } from './auth-common.js';
+import { consentGiven, DEVICE_CONSENT_VERSION } from './device-consent.js';
 import type { DeviceContext } from './devices.js';
 
 /* ---------------------------------- регистрация ---------------------------------- */
@@ -28,14 +29,19 @@ export interface RegisterInput {
   name: string;
   password: string;
   acceptTerms: boolean;
+  /** Отделната отметка за отпечатъка на устройството — по желание, не е условие за акаунта. */
+  deviceConsent: boolean;
 }
 
-export type RegisterResult =
-  { ok: true } | { ok: false; field: 'email' | 'name' | 'password' | 'terms'; key: string };
+export type RegisterField = 'name' | 'email' | 'password' | 'terms';
+/** Всички грешки наведнъж, по поле — по реда на формата (име, имейл, парола, условия). */
+export type RegisterErrors = Partial<Record<RegisterField, string>>;
+export type RegisterResult = { ok: true } | { ok: false; errors: RegisterErrors };
 
 /**
  * Регистрация. Отговорът е ЕДНАКЪВ за нов и за вече регистриран имейл („провери пощата си“) —
- * формата не издава кой има акаунт. Тестовият период тръгва при потвърждаване на имейла.
+ * формата не издава кой има акаунт. Тестовият период тръгва при потвърждаване на имейла и не зависи
+ * от съгласието за отпечатъка: без него отпечатъкът не се пази, дори браузърът да го е изпратил.
  */
 export async function registerAccount(
   input: RegisterInput,
@@ -43,14 +49,20 @@ export async function registerAccount(
   device: DeviceContext,
   locale: Locale,
 ): Promise<RegisterResult> {
-  const email = emailSchema.safeParse(input.email);
-  if (!email.success) return { ok: false, field: 'email', key: 'auth.errors.email' };
+  // Всички полета се проверяват наведнъж — човекът поправя всичко с един опит, не по едно.
+  const errors: RegisterErrors = {};
   const name = nameSchema.safeParse(input.name);
-  if (!name.success) return { ok: false, field: 'name', key: 'auth.errors.name' };
-  if (!input.acceptTerms) return { ok: false, field: 'terms', key: 'auth.errors.terms' };
+  if (!name.success) errors.name = 'auth.errors.name';
+  const email = emailSchema.safeParse(input.email);
+  if (!email.success) errors.email = 'auth.errors.email';
   // Паролата се проверява преди имейла: слаба парола дава същия отговор за свободен и за зает адрес.
-  const problem = await newPasswordProblem(input.password, [email.data, name.data]);
-  if (problem) return { ok: false, field: 'password', key: problem };
+  const problem = await newPasswordProblem(input.password, [
+    email.success ? email.data : input.email,
+    name.success ? name.data : input.name,
+  ]);
+  if (problem) errors.password = problem;
+  if (!input.acceptTerms) errors.terms = 'auth.errors.terms';
+  if (!email.success || !name.success || Object.keys(errors).length) return { ok: false, errors };
 
   const existing = await prisma.user.findUnique({ where: { email: email.data } });
   if (existing) {
@@ -98,7 +110,9 @@ export async function registerAccount(
         signupIp: meta.ip,
         signupCountry: meta.country,
         signupDeviceHash: deviceCookieHash(device.cookieId),
-        signupFingerprint: device.fingerprint ? fingerprintHash(device.fingerprint) : null,
+        signupFingerprint:
+          input.deviceConsent && device.fingerprint ? fingerprintHash(device.fingerprint) : null,
+        ...(input.deviceConsent ? consentGiven() : {}),
         planChanges: {
           create: { actorLabel: LABEL.system, toPlan: 'TRIAL', note: LABEL.signup },
         },
@@ -115,6 +129,8 @@ export async function registerAccount(
     action: 'account.registered',
     targetType: 'user',
     targetId: user.id,
+    // съгласието в одитната верига: на коя версия на текста (кога — часът на записа)
+    ...(input.deviceConsent ? { detail: { deviceConsent: DEVICE_CONSENT_VERSION } } : {}),
   });
   return { ok: true };
 }

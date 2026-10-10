@@ -89,8 +89,10 @@ export function hingeLimits(sys) {
 }
 
 // Solve the cup distance C and the mounting plate for a wanted overlay; when no plate brings C inside the
-// manufacturer's range, the closest is used and the real overlay is reported.
-export function solveOverlay(sys, variant, wanted) {
+// manufacturer's range, the closest is used and the real overlay is reported. C is measured from the finished edge, but
+// the door is cut before it is banded: among the plates that give the overlay exactly, the first whose C is at least
+// minC (the edge band plus the board the cup must keep to the cut edge) wins.
+export function solveOverlay(sys, variant, wanted, minC = 0) {
   const base = sys.overlay.base[variant];
   if (base === undefined) return null;
   const [cMin, cMax] = sys.cup.c;
@@ -98,8 +100,9 @@ export function solveOverlay(sys, variant, wanted) {
   for (const plate of sys.plate.plates) {
     const c = wanted - base + plate;
     const off = c < cMin ? cMin - c : c > cMax ? c - cMax : 0;
-    if (!best || off < best.off) best = { plate, c, off };
-    if (off === 0) break;
+    const short = c < minC - 1e-6;
+    if (!best || off < best.off || (off === 0 && best.short && !short)) best = { plate, c, off, short };
+    if (off === 0 && !short) break;
   }
   const c = clamp(best.c, cMin, cMax);
   return { c: r1(c), plate: best.plate, overlay: r1(c + base - best.plate), exact: best.off === 0 };

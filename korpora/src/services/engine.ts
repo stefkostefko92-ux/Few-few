@@ -68,9 +68,13 @@ export interface DrawingMeta {
 /** Един параметър от формата на типа мебел — само полетата, които сървърът чете. */
 export interface TypeParam {
   key: string;
+  label: string;
   type: string;
   min?: number;
   max?: number;
+  step?: number;
+  /** Мерната единица до етикета на полето (`mm`); празна при брой. */
+  unit?: string;
   options?: ReadonlyArray<readonly [unknown, string]>;
 }
 
@@ -81,6 +85,10 @@ interface EngineApi {
   catalogDrift(saved: Spec, model: EngineModel): string[];
   typeLabel(type: string): string;
   typeDims(type: string, spec: Spec): { W: number; H: number; D: number };
+  /** Модулите на кухнята отляво надясно: ширината и дали са с чекмеджета. */
+  kitchenModules(spec: Spec): Array<{ drawers: boolean; width: number }>;
+  /** Габаритът така, както го пише заглавната лента на редактора. */
+  dimsText(type: string, spec: Spec): string;
   typeOrder: readonly string[];
   typeGroups: Record<string, string>;
   typeParams: Record<string, readonly TypeParam[]>;
@@ -92,6 +100,8 @@ interface EngineApi {
   cncBlockers(model: EngineModel, nesting: EngineNesting): string[];
   toGcode(model: EngineModel, sheet: EngineSheet, meta: DrawingMeta): { text: string };
   toDxf(model: EngineModel, sheet: EngineSheet): { text: string; layers: string[] };
+  /** Името на файла за CNC на един лист (`sheet-01.nc`) — същото в архивите и в раздела CNC. */
+  cncFileName(index: number, ext: 'nc' | 'dxf'): string;
   /** Номерът на фрезата за каналите в G-кода (`GROOVE_MILL`); другите фрези са за контура. */
   grooveToolId: string;
   /** Листът и броят листове в рамката идват от двигателя (`drawingSheets`). */
@@ -230,6 +240,8 @@ export async function loadEngine(catalogPath?: string): Promise<void> {
     catalogDrift: fn(model, 'catalogDrift'),
     typeLabel: fn(model, 'typeLabel'),
     typeDims: fn(types, 'typeDims'),
+    kitchenModules: fn(types, 'kitchenModules'),
+    dimsText: fn(types, 'dimsText'),
     typeOrder: ORDER,
     typeGroups: Object.fromEntries(ORDER.map((id) => [id, TYPES[id]?.group ?? ''])),
     typeParams: Object.fromEntries(ORDER.map((id) => [id, TYPES[id]?.params ?? []])),
@@ -241,6 +253,7 @@ export async function loadEngine(catalogPath?: string): Promise<void> {
     cncBlockers: fn(cam, 'cncBlockers'),
     toGcode: fn(cam, 'toGcode'),
     toDxf: fn(dxf, 'toDxf'),
+    cncFileName: fn(cam, 'cncFileName'),
     grooveToolId: grooveMill.id,
     drawingAssembly: fn(assembly, 'drawingAssembly'),
     drawingSheets: fn(part, 'drawingSheets'),

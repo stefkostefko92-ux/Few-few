@@ -128,8 +128,14 @@
 }
 .foot-legal {
   display: grid;
-  gap: 6px;
+  gap: 0;
   align-content: start;
+}
+/* a target of at least 24 px (WCAG 2.5.8) without changing the rhythm of the list */
+.foot-legal a,
+.crumbs a {
+  display: inline-block;
+  padding-block: 4px;
 }
 .site-foot p {
   margin: 0 0 6px;
@@ -187,6 +193,11 @@
 }
 .legal .table-wrap {
   margin: 12px 0;
+}
+/* a long Italian or Bulgarian word in a header may break instead of running under the next cell */
+.legal th {
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 .disclaimer {
   margin-top: 36px;

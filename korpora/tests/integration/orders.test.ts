@@ -9,7 +9,7 @@ after(stopApp);
 const { changePlan } = await import('../../src/services/admin-plan.js');
 const { LEGAL_UPDATED } = await import('../../src/company.js');
 const { resendOrderMail } = await import('../../src/services/plan-requests.js');
-const { exportOwnData } = await import('../../src/services/account-self.js');
+const { exportOwnData } = await import('../../src/services/account-export.js');
 const DAY = 86_400_000;
 
 test('the order form says it is an order with an obligation to pay; the early-start box is not ticked', async () => {

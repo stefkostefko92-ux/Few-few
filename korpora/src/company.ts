@@ -24,13 +24,34 @@ export const COMPANY = {
   url: 'https://carbonstealth.eu',
   email: 'info@carbonstealth.eu',
   geo: { region: 'BG-10', latitude: 42.3539, longitude: 23.0008 },
+  /** Официалните профили на фирмата (`sameAs` в JSON-LD) — посочени от собственика; не се добавят други. */
+  profiles: ['https://www.youtube.com/@CarbonStealth', 'https://www.tiktok.com/@zerofucksgiiven'],
 } as const;
 
 /** Публичният адрес на Korpora — за печатните материали (сайтът взима своя от PUBLIC_BASE_URL). */
 export const PRODUCT_URL = 'https://korpora.carbonstealth.eu';
 
-/** Датата на последна промяна на витрината — сменя се ръчно, когато се промени съдържанието ѝ. */
-export const CONTENT_UPDATED = '2026-10-06';
+/**
+ * Датата на последна промяна на витрината (lastmod в sitemap, dateModified, датата на цените в брошурата) —
+ * сменя се ръчно, когато се промени съдържанието ѝ. tests/content-updated.test.ts пази отпечатък на текстовете
+ * на витрината и на ценоразписа: смени ли се някое от тях без тази дата, тестът пада.
+ */
+export const CONTENT_UPDATED = '2026-10-10';
 
 /** Последна промяна на всеки правен текст — показва се на страницата и отива в sitemap. */
-export const LEGAL_UPDATED = { privacy: '2026-10-04', terms: '2026-10-03' } as const;
+export const LEGAL_UPDATED = { privacy: '2026-10-09', terms: '2026-10-10' } as const;
+
+/**
+ * Наш избор — „поне 30 дни“ от раздел „Промени в условията“ на общите условия: толкова дни преди съществена
+ * промяна пишем на клиентите (tests/ban-terms.test.ts сверява числото с текста на трите езика).
+ */
+export const TERMS_NOTICE_DAYS = 30;
+
+/**
+ * Версията на общите условия, с която влезе правилото „при блокиране заради нарушение платеното не се връща“
+ * (раздел „Блокиране“). За поръчките отпреди нея то важи TERMS_NOTICE_DAYS дни по-късно — двете дати в
+ * преходното изречение се смятат оттук (services/legal-numbers.ts). Днес това е текущата версия; при следваща
+ * промяна на условията тук остава датата, с която правилото е публикувано (tests/ban-terms.test.ts пада, докато
+ * не се запише).
+ */
+export const BAN_RULE_TERMS: string = LEGAL_UPDATED.terms;

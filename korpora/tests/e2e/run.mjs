@@ -1,7 +1,8 @@
 // Accessibility smoke over a running Korpora: every public page in BG/EN/IT, light and dark, desktop and phone,
 // checked with axe-core against WCAG 2.1 A and AA. With E2E_EMAIL/E2E_PASSWORD (a test account with an active
 // plan or trial and no 2FA, never a person's) also the projects, the account pages and the editor, on a project
-// made for the run and deleted after it. Fails on any violation, console error or blocked script (CSP).
+// made for the run and deleted after it. Fails on any violation, console error or blocked script (CSP); in the
+// editor also on a layout shift over 0.05 (CLS) and on a broken keyboard path (picker, full screen, menu).
 //
 //   KORPORA_URL=http://127.0.0.1:4320 E2E_EMAIL=… E2E_PASSWORD=… npm run test:e2e
 import { readFileSync } from 'node:fs';
@@ -21,8 +22,20 @@ const VIEWPORTS = {
 };
 const PUBLIC = ['/', '/privacy', '/terms', '/login', '/register', '/forgot', '/no-such-page'];
 const CUSTOMER = ['/app', '/account', '/account/plan', '/account/security', '/account/data'];
+// sent empty, these forms answer in the page's language under the field (public/js/forms.js), not in the
+// browser's bubble — the browser here speaks English, the page does not
+const CHECKED_FORMS = ['/login', '/forgot'];
+const REQUIRED = Object.fromEntries(
+  LOCALES.map((l) => [
+    l,
+    JSON.parse(readFileSync(new URL(`../../locales/${l}/forms.json`, import.meta.url), 'utf8')).form
+      .required,
+  ]),
+);
 // a page that is not ready in this time is a finding for that screen, not a five-minute stall of the run
 const READY_MS = 30000;
+// the editor may not jump when it starts (Core Web Vitals: CLS; ours is under 0.01)
+const CLS_BUDGET = 0.05;
 // unique per run: cleanup finds the project by name even if the editor never opened
 const PROJECT_NAME = `e2e — достъпност ${Date.now().toString(36)}`;
 
@@ -35,6 +48,8 @@ function localized(path, locale) {
 
 async function check(browser, storageState, path, locale, scheme, viewport) {
   const ctx = await browser.newContext({ storageState, viewport, colorScheme: scheme });
+  const editor = path.startsWith('/app/p/');
+  if (editor) await ctx.addInitScript(countLayoutShifts);
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
@@ -59,30 +74,142 @@ async function check(browser, storageState, path, locale, scheme, viewport) {
       scrollTo(0, 0);
       await frame();
     });
+    const shifted = editor ? await page.evaluate(() => window.__cls) : 0;
     await page.evaluate(AXE);
-    const violations = await page.evaluate(
-      async (tags) =>
-        (await window.axe.run(document, { runOnly: { type: 'tag', values: tags } })).violations.map(
-          (v) => `${v.impact} ${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`,
-        ),
-      TAGS,
-    );
+    const violations = await axe(page, null);
+    if (shifted > CLS_BUDGET) violations.push(`CLS ${shifted.toFixed(3)} > ${CLS_BUDGET}`);
+    if (CHECKED_FORMS.includes(path)) {
+      violations.push(...(await sentEmpty(page, locale)));
+      for (const v of await axe(page, null)) violations.push(`after an empty submit: ${v}`);
+    }
+    // the editor's picker (a listbox of hundreds of decors) is a dialog: checked open, on its own
+    if (editor) {
+      await page.click('#pick-carcass');
+      await page.locator('#picker[open]').waitFor({ timeout: READY_MS });
+      for (const v of await axe(page, '#picker')) violations.push(`picker: ${v}`);
+      // the keyboard paths once per run (they do not change with the language or the theme)
+      if (locale === 'bg' && scheme === 'light' && viewport === VIEWPORTS.desktop)
+        violations.push(...(await editorKeys(page)));
+    }
     return [...violations, ...errors.map((e) => `error: ${e.slice(0, 300)}`)];
   } finally {
     await ctx.close();
   }
 }
 
+// axe over the page, or over one part of it (a selector)
+const axe = (page, selector) =>
+  page.evaluate(
+    async ([sel, tags]) =>
+      (
+        await window.axe.run(sel ?? document, { runOnly: { type: 'tag', values: tags } })
+      ).violations.map(
+        (v) => `${v.impact} ${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`,
+      ),
+    [selector, TAGS],
+  );
+
+// Sums the layout shifts not caused by input, from the first paint (runs before the page's own scripts).
+function countLayoutShifts() {
+  window.__cls = 0;
+  new PerformanceObserver((list) => {
+    for (const e of list.getEntries()) if (!e.hadRecentInput) window.__cls += e.value;
+  }).observe({ type: 'layout-shift', buffered: true });
+}
+
+// The editor's keyboard paths (WCAG 2.1.1, 2.1.2, 2.4.3): Enter in the picker's search keeps the dialog; full screen
+// (the overlay a phone gets) keeps Tab in it, Escape leaves it and the focus is back on its button; Escape closes
+// the download menu.
+async function editorKeys(page) {
+  const found = [];
+  // a query that finds something in any catalog (the base one or the shop catalog): the start of the first result
+  const name = await page.evaluate(
+    () => document.querySelector('#pk-list [role="option"] b')?.textContent?.trim() ?? '',
+  );
+  await page.fill('#pk-q', name.slice(0, 3));
+  await page.keyboard.press('Enter');
+  const picked = await page.evaluate(() => ({
+    open: document.getElementById('picker').open,
+    inList: !!document.activeElement?.closest('#pk-list'),
+  }));
+  if (!picked.open) found.push('keys: Enter in the picker search closed the dialog');
+  else if (!picked.inList) found.push('keys: Enter in the picker search did not go to the results');
+  await page.keyboard.press('Escape');
+  if (await page.evaluate(() => document.getElementById('picker').open)) {
+    found.push('keys: Escape in the picker results did not close the dialog');
+    await page.click('#picker [data-close]');
+  }
+  await page.click('#tab-draw');
+  await page.evaluate(() => {
+    Element.prototype.requestFullscreen = undefined;
+    Element.prototype.webkitRequestFullscreen = undefined;
+  });
+  await page.focus('#draw-fs .fs-btn');
+  await page.keyboard.press('Enter');
+  for (let i = 0; i < 8; i++) {
+    await page.keyboard.press('Tab');
+    const inside = await page.evaluate(
+      () =>
+        document.activeElement === document.body || !!document.activeElement?.closest('.is-full'),
+    );
+    if (!inside) {
+      found.push('keys: Tab left the full screen for the page under it');
+      break;
+    }
+  }
+  await page.keyboard.press('Escape');
+  const after = await page.evaluate(() => ({
+    full: !!document.querySelector('.is-full'),
+    inert: document.querySelectorAll('[inert]').length,
+    back: !!document.activeElement?.matches('#draw-fs .fs-btn'),
+  }));
+  if (after.full || after.inert || !after.back)
+    found.push(`keys: Escape did not leave the full screen cleanly ${JSON.stringify(after)}`);
+  await page.click('.menu > summary');
+  await page.keyboard.press('Escape');
+  if (await page.evaluate(() => document.querySelector('.menu').open))
+    found.push('keys: Escape did not close the download menu');
+  return found;
+}
+
+// the first field takes the focus, is marked invalid and is described by the message under it, in the page's language
+async function sentEmpty(page, locale) {
+  await page.click('main form.form button[type=submit]');
+  try {
+    await page.waitForFunction(
+      () => document.activeElement?.getAttribute('aria-invalid') === 'true',
+      undefined,
+      { timeout: READY_MS },
+    );
+  } catch (err) {
+    return [`empty submit: no field took the focus as invalid — ${firstLine(err)}`];
+  }
+  const seen = await page.evaluate(() => {
+    const field = document.activeElement;
+    const note = (field?.getAttribute('aria-describedby') ?? '')
+      .split(/\s+/)
+      .map((id) => id && document.getElementById(id))
+      .find((el) => el && el.classList.contains('field-error'));
+    return { invalid: field?.getAttribute('aria-invalid'), text: note?.textContent.trim() ?? '' };
+  });
+  const found = [];
+  if (seen.invalid !== 'true') found.push('empty submit: the focused field is not marked invalid');
+  if (seen.text !== REQUIRED[locale])
+    found.push(`empty submit: „${seen.text}“ instead of „${REQUIRED[locale]}“`);
+  return found;
+}
+
 const firstLine = (err) => (err instanceof Error ? err.message : String(err)).split('\n')[0];
 
 // 'networkidle' never settles on a page that keeps a connection open; wait for the document and its
-// <main> instead, and in the editor for the first computed model (the title line is filled from it)
+// <main> instead, and in the editor for the first computed model (the list of the checks is filled from it; the
+// title line comes from the server)
 async function ready(page, path, locale) {
   await page.goto(base + localized(path, locale), { waitUntil: 'load', timeout: READY_MS });
   await page.locator('main#main').waitFor({ state: 'visible', timeout: READY_MS });
   if (path.startsWith('/app/p/'))
     await page.waitForFunction(
-      () => document.getElementById('title-spec')?.textContent?.trim(),
+      () => document.getElementById('dfm-list')?.children.length,
       undefined,
       { timeout: READY_MS },
     );
@@ -116,10 +243,11 @@ async function cleanUp({ ctx, page }) {
     for (let i = 0; i < 5; i++) {
       const row = page.locator('li.proj', { hasText: PROJECT_NAME }).first();
       if (!(await row.count())) return;
-      await Promise.all([
-        page.waitForURL(/\/app$/),
-        row.locator('form[action$="/delete"] button').click(),
-      ]);
+      // the question is the page's own dialog (public/js/ui.js), answered with the form's own button; the
+      // address is /app before and after, so the sign of the deletion is the row leaving the list
+      await row.locator('form[action$="/delete"] button').click();
+      await page.locator('dialog.confirm[open] [data-ok]').click();
+      await row.waitFor({ state: 'detached' });
     }
     throw new Error('the project is still listed after five deletions');
   } catch (err) {

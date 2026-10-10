@@ -40,6 +40,8 @@ export function landingTextParams(locale: Locale, prices: PriceRow[]) {
   };
   const money = (cents: number) => formatMoney(cents, locale);
   const or = new Intl.ListFormat(LOCALE_TAG[locale], { type: 'disjunction' });
+  // „3, 6 или 12 месеца … съответно 5 %, 10 % и 20 %“ — сроковете са избор, отстъпките са двойките им
+  const and = new Intl.ListFormat(LOCALE_TAG[locale], { type: 'conjunction' });
   const terms = prices.filter((p) => p.discountPercent > 0);
   const percent = (n: number) => (locale === 'bg' ? `${n}\u00a0%` : `${n}%`);
   const faq: Partial<Record<FaqId, Record<string, string>>> = {
@@ -48,7 +50,7 @@ export function landingTextParams(locale: Locale, prices: PriceRow[]) {
       month: money(row('m1').totalWithVatCents),
       monthNet: money(row('m1').totalCents),
       terms: or.format(terms.map((p) => String(p.months))),
-      discounts: or.format(terms.map((p) => percent(p.discountPercent))),
+      discounts: and.format(terms.map((p) => percent(p.discountPercent))),
       life: money(row('lifetime').totalWithVatCents),
       lifeNet: money(row('lifetime').totalCents),
     },
@@ -64,9 +66,12 @@ function decimal(cents: number): string {
 /**
  * Фирмата — един възел и за Organization, и за LocalBusiness (едно `@id`, без раздвояване на субекта).
  * Работно време няма, защото фирмата не е обявила такова; `geo` е същото като в geo мета таговете, а
- * ценовият диапазон идва от ценоразписа (от месечния план до Lifetime, с ДДС).
+ * ценовият диапазон идва от ценоразписа (от месечния план до Lifetime, с ДДС). `knowsAbout` е на езика на
+ * страницата; марката е Korpora с логото на продукта (фирмено лого няма). `sameAs` са само профилите,
+ * които собственикът е посочил (COMPANY.profiles) — други не се измислят.
  */
 function organization(t: Translator, locale: Locale) {
+  const base = config().PUBLIC_BASE_URL;
   const gross = priceTable().map((row) => row.totalWithVatCents);
   return {
     '@type': ['Organization', 'LocalBusiness'],
@@ -75,6 +80,7 @@ function organization(t: Translator, locale: Locale) {
     legalName: COMPANY.name,
     alternateName: COMPANY.nameBg,
     url: COMPANY.url,
+    sameAs: [...COMPANY.profiles],
     email: config().CONTACT_EMAIL,
     telephone: COMPANY.phone,
     contactPoint: {
@@ -100,6 +106,10 @@ function organization(t: Translator, locale: Locale) {
       longitude: COMPANY.geo.longitude,
     },
     areaServed: { '@type': 'Place', name: t('company.areaServed') },
+    knowsAbout: t('company.knowsAbout')
+      .split(',')
+      .map((topic) => topic.trim()),
+    brand: { '@type': 'Brand', name: 'Korpora', logo: `${base}/static/img/brand/logo.png` },
     priceRange: `${formatMoney(Math.min(...gross), locale)} – ${formatMoney(Math.max(...gross), locale)}`,
   };
 }

@@ -96,6 +96,28 @@ test(
 );
 
 test(
+  'the monthly drill with the dump streamed on stdin (the key stays with the owner)',
+  { skip },
+  async () => {
+    await customer('backup-stdin@example.test');
+    await withBoxAsync(async (box) => {
+      assert.equal(backup(box, ENV).status, 0);
+      const plain = decrypt(box, newest(box));
+      const target = `korpora_restore_ci_${randomBytes(4).toString('hex')}`;
+      // DEPLOY.md, т. 10: age -d at home | ssh … backup-restore.sh --into … -
+      const r = restore(box, ['--into', target, '--keep', '-'], ENV, plain);
+      try {
+        assert.equal(r.status, 0, r.stderr);
+        assert.equal(emails(target), emails(DB));
+        assert.equal(migrations(target), migrations(DB));
+      } finally {
+        psql('postgres', `DROP DATABASE IF EXISTS "${target}"`);
+      }
+    });
+  },
+);
+
+test(
   'a live restore brings back a deleted account, after an encrypted snapshot, and restarts the app',
   { skip },
   async () => {

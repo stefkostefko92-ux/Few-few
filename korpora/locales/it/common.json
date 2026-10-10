@@ -5,6 +5,7 @@
     "save": "Salva",
     "copied": "Copiato",
     "unknown": "Sconosciuto",
+    "back": "Indietro",
     "hours": {
       "one": "1 ora",
       "other": "{n} ore"
@@ -16,6 +17,10 @@
     "days": {
       "one": "1 giorno",
       "other": "{n} giorni"
+    },
+    "weeks": {
+      "one": "1 settimana",
+      "other": "{n} settimane"
     }
   },
   "company": {
@@ -24,6 +29,7 @@
     "region": "provincia di Kyustendil",
     "country": "Bulgaria",
     "areaServed": "Unione europea",
+    "knowsAbout": "progettazione di mobili in pannelli, distinte di taglio, bordatura, mappe di foratura, ferramenta per mobili, CNC, DXF, G-code",
     "legalName": "Carbon Stealth VCC",
     "legalForm": "società a capitale variabile (VCC) di diritto bulgaro",
     "eikLabel": "Codice EIK",
@@ -99,14 +105,17 @@
     "cncBlockedTitle": "I file CNC non vengono generati",
     "cncBlockedText": "I controlli della costruzione hanno trovato errori, e G-code e DXF non devono mai essere sbagliati. Correggeteli nell'editor: il download si sblocca appena gli errori spariscono. L'editor e l'elenco degli errori sono in bulgaro.",
     "toProject": "Torna al progetto",
-    "tooLarge": "Quanto inviato è troppo grande."
+    "tooLarge": "Quanto inviato è troppo grande.",
+    "tooManyIn": "Da questa rete sono arrivate troppe richieste. Riprovate tra {minutes}."
   },
   "flash": {
     "accountCreated": "L'account è stato creato.",
     "accountDeleted": "L'account è stato eliminato.",
     "accountSaved": "Modifiche salvate.",
     "banned": "L'account è bloccato e tutte le sue sessioni sono state chiuse.",
+    "bannedRefund": "L'account è bloccato e tutte le sue sessioni sono state chiuse. Il suo piano a pagamento è stato ordinato secondo le condizioni precedenti alla regola del mancato rimborso e la transizione è ancora in corso (sezione «Blocco»): dobbiamo alla persona la parte di prezzo non utilizzata. L'email che le abbiamo inviato lo dice.",
     "codeMismatch": "Il codice non corrisponde. Riprovate.",
+    "deviceConsentWithdrawn": "Consenso revocato; l'impronta conservata è stata eliminata.",
     "emailChangeSent": "Abbiamo inviato un link al nuovo indirizzo. L'email cambia quando lo aprite.",
     "passwordChanged": "Password cambiata. Le altre sessioni sono state chiuse.",
     "passwordReset": "Password cambiata. Accedete con quella nuova.",
@@ -115,7 +124,7 @@
     "projectDeleted": "Il progetto è stato eliminato.",
     "projectDuplicated": "Il progetto è stato copiato.",
     "recoveryUsed": "Avete effettuato l'accesso con un codice di recupero. Se i codici stanno finendo, createne di nuovi in «Sicurezza».",
-    "requestCancelled": "L'ordine è stato ritirato.",
+    "requestCancelled": "L'ordine è stato annullato.",
     "requestRejected": "L'ordine è stato respinto.",
     "requestSent": "L'ordine è stato accettato. Vi abbiamo inviato una conferma per email; seguirà la fattura con i dati per il pagamento.",
     "resetSent": "Abbiamo inviato un link per una nuova password.",
@@ -134,7 +143,8 @@
     "verificationResent": "Abbiamo inviato un nuovo link di conferma.",
     "wrongCode": "Codice sbagliato.",
     "wrongPassword": "Password sbagliata.",
-    "withdrawn": "Il vostro recesso è stato ricevuto. Vi abbiamo inviato una conferma per email."
+    "withdrawn": "Il vostro recesso è stato ricevuto. Vi abbiamo inviato una conferma per email.",
+    "requestSentReplaces": "L'ordine è stato accettato e sostituisce l'ordine n. {ids}, che è annullato. Vi abbiamo inviato una conferma per email; seguirà la fattura con i dati per il pagamento."
   },
   "furniture": {
     "base": "Mobile base",

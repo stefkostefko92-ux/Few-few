@@ -19,15 +19,16 @@ UMask=0077
 # --- Пясъчник ---
 # Върви като root заради сокета на docker, но без нито една Linux capability: root стига до своите
 # файлове (получателите, папката с бекъпите, сокета) по правата на собственика, без CAP_DAC_OVERRIDE.
-# Пише само в папката с дневните бекъпи (създава я deploy-ът — без нея systemd не пуска unit-а); мрежа
-# не му трябва — docker е през unix сокет.
+# Пише само в папката с бекъпите (създава я deploy-ът — без нея systemd не пуска unit-а): дневните са в
+# daily/, а до тях са дъмповете отпреди деплой (трие ги след 30 дни) и снимките отпреди възстановяване (след 8
+# седмици). Мрежа не му трябва — docker е през unix сокет.
 CapabilityBoundingSet=
 NoNewPrivileges=true
 PrivateTmp=true
 PrivateDevices=true
 ProtectSystem=strict
 ProtectHome=read-only
-ReadWritePaths=/opt/few-few/shared/korpora/backups/daily
+ReadWritePaths=/opt/few-few/shared/korpora/backups
 ReadWritePaths=-/run/docker.sock
 ProtectKernelTunables=true
 ProtectKernelModules=true

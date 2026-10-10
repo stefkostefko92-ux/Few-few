@@ -19,6 +19,47 @@ export const LOGIN_RETENTION_DAYS = 180;
 export const UNVERIFIED_RETENTION_DAYS = 7;
 
 /**
+ * Поръчките на изтрит акаунт: остават само с данните на договора (решение на собственика) и се трият
+ * толкова календарни години след изтриването на акаунта — 5, общата давност за вземанията по договора.
+ * Календарни, не 5 × 365 дни: така поръчката не се трие ден-два преди годишнината заради високосните години.
+ */
+export const ORDER_RETENTION_YEARS = 5;
+
+/**
+ * Същият миг `years` календарни години по-рано (UTC). 29 февруари в година без него става 28 февруари —
+ * по-ранна граница, значи изтриване преди годишнината няма.
+ */
+export function yearsBefore(now: Date, years: number): Date {
+  const at = new Date(now.getTime());
+  at.setUTCFullYear(now.getUTCFullYear() - years);
+  if (at.getUTCMonth() !== now.getUTCMonth()) at.setUTCDate(0);
+  return at;
+}
+
+/** Срокът за поръчките на изтрит акаунт, както го казват политиката, страницата „Данни“, износът и писмото. */
+export function ordersKeptText(t: Translator): string {
+  return t('legal.retention.years', { n: ORDER_RETENTION_YEARS });
+}
+
+/**
+ * Шифрованият дневен бекъп на базата (`deploy/backup.sh`): пази най-новото копие от всеки от последните
+ * толкова дни и от всяка от последните толкова седмици, по-старите трие. Скриптът е на bash и има свои
+ * стойности по подразбиране — тестът ги сверява с тези тук, а политиката показва тези. Друга стойност в
+ * средата на сървъра (KORPORA_BACKUP_DAILY/WEEKLY) иска и промяна тук, иначе политиката не е вярна.
+ */
+export const BACKUP_KEEP_DAILY = 14;
+export const BACKUP_KEEP_WEEKLY = 8;
+
+/**
+ * Дъмповете на базата преди миграция при деплой (`deploy/deploy.sh`, KORPORA_KEEP_BACKUPS): последните
+ * толкова, но не по-стари от PRE_DEPLOY_MAX_DAYS дни (KORPORA_PREDEPLOY_DAYS) — некриптирани са, затова
+ * живеят по-кратко от дневните. Трият ги deploy.sh и дневният бекъп; снимките отпреди живо възстановяване —
+ * след BACKUP_KEEP_WEEKLY седмици.
+ */
+export const PRE_DEPLOY_BACKUPS_KEPT = 5;
+export const PRE_DEPLOY_MAX_DAYS = 30;
+
+/**
  * Срок за пазене в дни, както го казва правният текст: в години, ако се дели точно на 365
  * (1825 → „5 години“), иначе в дни. Така политиката показва срока, по който трие кодът, а не число,
  * писано на ръка.

@@ -46,6 +46,15 @@
     --t8: #b5a6e8;
   }
 }
+/* Owner's decision: Geologica's Bulgarian localized letterforms (OpenType locl) are off everywhere. The font
+   shorthand used across the editor resets font-feature-settings, so every element of the editor and its picker
+   carries it — the id outranks those rules. A font-feature-settings added in the editor keeps 'locl' 0 too. */
+:is(#main, #picker),
+:is(#main, #picker) *,
+:is(#main, #picker) *::before,
+:is(#main, #picker) *::after {
+  font-feature-settings: 'locl' 0;
+}
 .tc0 {
   --c: var(--ink-2);
 }
@@ -74,9 +83,10 @@
   --c: var(--t8);
 }
 
+/* the whole width, as the header above it (its edges line up): in the page's flex column an auto margin shrank the
+   editor to its content, so its width followed the open tab */
 .editor {
-  max-width: 1560px;
-  margin: 0 auto;
+  width: 100%;
   padding: 14px 16px 24px;
   display: grid;
   gap: 12px;
@@ -108,7 +118,11 @@
   border-color: var(--rule-strong);
   background: var(--panel);
 }
+/* the line is written by the server and again by the editor: its height is kept from the first frame (CLS) */
 .ed-spec {
+  display: block;
+  min-height: 1.4em;
+  line-height: 1.4;
   color: var(--ink-2);
   font-size: 0.9rem;
 }
@@ -186,10 +200,25 @@
   grid-template-areas: 'work' 'rail';
   gap: 14px;
 }
-@media (min-width: 1040px) {
+/* from 900 px (a tablet held sideways) the parameters stay beside the result: the rail keeps to the screen and
+   scrolls on its own, so a change and what it does are both in view */
+@media (min-width: 900px) {
+  .app-grid {
+    grid-template-columns: 290px minmax(0, 1fr);
+    grid-template-areas: 'rail work';
+  }
+  .rail {
+    position: sticky;
+    top: 12px;
+    align-self: start;
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+    border-radius: var(--r);
+  }
+}
+@media (min-width: 1200px) {
   .app-grid {
     grid-template-columns: 330px minmax(0, 1fr);
-    grid-template-areas: 'rail work';
   }
 }
 .rail fieldset[disabled] {
@@ -197,6 +226,9 @@
 }
 .dfm summary {
   list-style: none;
+  /* „Проверки“ → „Проверките минават“ / „2 грешки“ keeps the width: the buttons beside it do not move (CLS) */
+  min-width: 15em;
+  text-align: center;
   cursor: pointer;
   padding: 6px 12px;
   border-radius: 999px;

@@ -4,6 +4,7 @@
   const life = row('lifetime');
   const terms = prices.filter((p) => p.discountPercent);
   const list = (items) => items.slice(0, -1).join(', ') + ' or ' + items[items.length - 1];
+  const listAnd = (items) => items.slice(0, -1).join(', ') + ' and ' + items[items.length - 1];
 %>
 <p>These terms govern the use of Korpora. By registering an account you accept them, and when you order a paid plan they become part of the contract for it.</p>
 
@@ -12,6 +13,9 @@
 
 <h2>What Korpora is</h2>
 <p>Korpora is browser software for designing panel furniture. From one project it calculates a 3D model, a cut list with edge banding, a hardware list, drawings with a drilling map and files for a CNC machine (DXF and G-code). Everything is calculated from the data you enter and from the hardware manufacturers' documentation. The editor, drawings and tables are in Bulgarian for now; the website, account and emails are in Bulgarian, English and Italian.</p>
+
+<h2>Beta version</h2>
+<p>Korpora is in open beta: the software works and its outputs are real, but we are still refining it with our customers' feedback. So check the outputs before production (section “Outputs and liability”). The beta does not reduce your rights: paid plans carry the full legal guarantee of conformity.</p>
 
 <h2>Account</h2>
 <ul>
@@ -26,9 +30,10 @@
 
 <h2>Plans and prices</h2>
 <ul>
-  <li>Premium: <%= fmt.money(m1.totalWithVatCents) %> per month including VAT (<%= fmt.money(m1.totalCents) %> excluding VAT). Paying for <%= list(terms.map((p) => String(p.months))) %> months at once gives a <%= list(terms.map((p) => p.discountPercent + '%')) %> discount. Premium does not renew by itself — it ends at the end of the paid term.</li>
-  <li>Lifetime: <%= fmt.money(life.totalWithVatCents) %> including VAT (<%= fmt.money(life.totalCents) %> excluding VAT), one payment — <%= lifetimeTimes %> times the yearly price without the 12-month discount. Lifetime is valid for as long as Korpora is offered.</li>
-  <li>For consumers, prices are final and include <%= vatPercent %>% VAT. For businesses, VAT is charged under the rules of the buyer's country.</li>
+  <li>Premium: <%= fmt.money(m1.totalWithVatCents) %> per month including VAT (<%= fmt.money(m1.totalCents) %> excluding VAT). Paying for <%= list(terms.map((p) => String(p.months))) %> months at once gives a discount of <%= listAnd(terms.map((p) => p.discountPercent + '%')) %> respectively. Premium does not renew by itself — it ends at the end of the paid term.</li>
+  <li>Lifetime: <%= fmt.money(life.totalWithVatCents) %> including VAT (<%= fmt.money(life.totalCents) %> excluding VAT), one payment — <%= lifetimeTimes %> times the yearly price without the 12-month discount. Lifetime is valid for as long as Korpora is offered (section “If Korpora is discontinued”). Where part of its price has to be worked out — on withdrawal after an early start, if Korpora is discontinued or if the service or the terms change to your detriment — the price is spread evenly over the first <%= lifetimeBasis %> after payment: <%= fmt.money(lifetimeShare.gross) %> including VAT (<%= fmt.money(lifetimeShare.net) %> excluding VAT) per month. After those months Lifetime is fully used.</li>
+  <li>If an account is blocked for a breach, what was paid for the plan, Lifetime included, is not refunded (section “Blocking”).</li>
+  <li>For consumers, prices are final and include <%= vatPercent %>% VAT. This is Bulgarian VAT, and it applies to consumers from every EU country: the place of supply is Bulgaria (Article 59c of Directive 2006/112/EC). For businesses, VAT is charged under the rules of the buyer's country.</li>
   <li>We may change prices for future orders. A plan already ordered does not change.</li>
 </ul>
 
@@ -46,7 +51,7 @@
 <p>If you are a consumer, you have the right to withdraw from the contract within <%= withdrawalDays %> days without giving any reason. The period ends <%= withdrawalDays %> days after the day the contract was concluded; if the last day is a Saturday, a Sunday or a public holiday, it ends at the end of the next working day.</p>
 <p>To exercise this right, use the “Withdraw from contract here” button next to the order under “Plan” in your account — it is there for the whole period, and the confirmation that we have received your withdrawal arrives by email straight away. You may also inform us by an unequivocal statement sent to <a href="mailto:<%= contact %>"><%= contact %></a> or by letter to the address above — for example using the model form below, but you do not have to. To meet the deadline, it is enough to send your statement before the period has expired.</p>
 <p>If you withdraw, we will reimburse all payments received from you without undue delay and in any event not later than <%= refundDays %> days from the day on which we are informed of your withdrawal, using the same means of payment, unless we expressly agree otherwise; in any event you will not incur any fees as a result of the reimbursement. If the plan has already been activated, we return it to what it was before the order.</p>
-<p>If you asked for the plan to start during the withdrawal period, you shall pay an amount in proportion to what has been provided until you inform us of your withdrawal, in comparison with the full coverage of the contract. Without such a request the paid period starts after the withdrawal period ends, and if you withdraw you owe nothing.</p>
+<p>If you asked for the plan to start during the withdrawal period, you shall pay an amount in proportion to what has been provided until you inform us of your withdrawal, in comparison with the full coverage of the contract; for Lifetime, using the monthly share in section “Plans and prices”. Without such a request the paid period starts after the withdrawal period ends, and if you withdraw you owe nothing.</p>
 <p>The right of withdrawal does not apply to purchases by businesses or by self-employed persons for professional purposes.</p>
 <div class="model-form">
   <h3>Model withdrawal form</h3>
@@ -72,21 +77,38 @@
   <li>unlawful or offensive content in project names.</li>
 </ul>
 
-<h2>Blocking</h2>
-<p>If these terms are breached, we may block an account. The reason is shown when you try to sign in. If you think the block is a mistake, write to us — we consider every objection and, if it is a mistake, we restore access.</p>
+<h2 id="blocking">Blocking</h2>
+<p>We block an account only for a breach described in these terms, and the decision is always made by a person on our team, not by software. The grounds for blocking are:</p>
+<ul>
+  <li>more than one trial for the same person or company, for example through several accounts (section “Trial”);</li>
+  <li>sharing the account with another person (section “Account”);</li>
+  <li>any of the breaches listed in section “What is not allowed”.</li>
+</ul>
+<p>Where a breach can be put right and does not threaten the security of Korpora or of other customers — a shared account or an offensive project name, for example — we first email you what to change and give you at least <%= banWarning %>. We block without a warning only for getting around the security, the plan limits or the trial, for attempts to access other people's accounts or data, for overloading the service, for unlawful content and for a repeated breach after a warning.</p>
+<p>When we block an account, we email you — if your email address is confirmed — what is restricted, the reason and the facts it rests on, which rule in these terms was breached and how to object. The reason is also shown when you try to sign in.</p>
+<p>Blocking for a breach ends the contract for your paid plan. What you paid for the plan, whether Premium or Lifetime, is not refunded, including for the remaining term: this is the consequence of a breach that we warn you about here and in section “Plans and prices”. This applies to consumers and businesses alike. Blocking does not affect your right of withdrawal within the withdrawal period (section “Right of withdrawal”) or your rights when the service does not conform (section “Legal guarantee”).</p>
+<p>If you think the block is a mistake, write to us at <a href="mailto:<%= contact %>"><%= contact %></a>: we reply with a reasoned decision within <%= banReply %>. If the block turns out to be a mistake, we restore access straight away and extend your paid period or trial by the time the account was blocked; for Lifetime, the first <%= lifetimeBasis %> in section “Plans and prices” are extended by the same time. If you are a consumer, you can also turn to the Bulgarian Commission for Consumer Protection, its conciliation commissions or the courts (section “Governing law and disputes”).</p>
+<p>Even while the account is blocked, you can ask us at the same address for your projects as files and for a copy of your personal data. We send them free of charge, within a reasonable time and in a commonly used, machine-readable format. We keep the projects of a blocked account for as long as the account exists; you can also ask us to delete it.</p>
+<p>For orders placed before <%= banRuleSince %>, the rule that payments are not refunded on blocking applies from <%= banRuleOldOrders %>. Until then you may terminate the contract free of charge and get back the unused part of the price (section “Changes to these terms”).</p>
 
 <h2>Outputs and liability</h2>
-<p class="disclaimer">Korpora calculates from the data you enter. Where the manufacturer's documentation says nothing, the value is our choice and is marked “наш избор” (our choice). Before production, check the sizes, the construction and the drawings, and run the G-code first in a simulation and as a dry run: the post-processors are generic and do not know your particular machine. To the extent the law allows, we are not liable for material, tools or machines damaged by using outputs that were not checked. Nothing in these terms limits liability that the law does not allow to be limited, for example for damage caused intentionally or by gross negligence. If you are a consumer, you also keep your legal rights when the service does not conform to the contract.</p>
+<p class="disclaimer">Korpora calculates from the data you enter. Where the manufacturer's documentation says nothing, the value is our choice and is marked “<span lang="bg">наш избор</span>” (our choice). Before production, check the sizes, the construction and the drawings, and run the G-code first in a simulation and as a dry run: the post-processors are generic and do not know your particular machine. To the extent the law allows, we are not liable for material, tools or machines damaged by using outputs that were not checked. Nothing in these terms limits liability that the law does not allow to be limited, for example for damage caused intentionally or by gross negligence. If you are a consumer, you also keep your legal rights when the service does not conform to the contract.</p>
 
 <h2>Availability</h2>
 <p>We aim to keep Korpora running without interruption but do not guarantee it: there is occasional maintenance. Keep important projects as downloaded files too.</p>
+
+<h2>Changes to the service</h2>
+<p>We may change Korpora beyond fixing errors when there is a valid reason: security, new documentation from hardware manufacturers or new standards, improvements to the software. A change costs you nothing extra. If it materially worsens your access to or use of Korpora and you have a paid plan, we will email you in advance, as for a change to these terms (section “Changes to these terms”), and you have the same right to terminate the contract free of charge and get back the unused part of the price — for Lifetime, using the monthly share in section “Plans and prices”. The period for terminating runs from the notice or from the change itself, whichever is later. For every change to Korpora we tell you clearly what changes — in the software or by email.</p>
+
+<h2>If Korpora is discontinued</h2>
+<p>If we decide to discontinue Korpora, we will email you at least <%= lifetimeNotice %> beforehand. Until then your account works as before, and you can download all your projects and their outputs. If you have Lifetime and Korpora is discontinued within the first <%= lifetimeBasis %> after your payment, we refund the unused part of the price using the monthly share in section “Plans and prices” — for the time from the discontinuation until <%= lifetimeBasis %> after your payment. If you have Premium, we refund what you paid for the time after the discontinuation.</p>
 
 <h2>Rights in the software and the projects</h2>
 <p>The software and its design belong to <%= company.name %>, except for the open-source libraries we use under their own licences (<a href="/static/editor/THIRD-PARTY-LICENSES.txt">list and full texts</a>). The selection and arrangement of the catalogues are ours. Blum, Hettich, GTV, Salice, Egger and other manufacturer and product names are trademarks of their respective owners; we use them only to indicate compatibility. Korpora is not affiliated with or endorsed by these manufacturers.</p>
 <p>Your projects and their outputs are yours. We store and process projects only to provide the service — details in the <a href="<%= legalPath(locale, 'privacy') %>">privacy policy</a>.</p>
 
 <h2>Changes to these terms</h2>
-<p>For a material change we will write to you at least 30 days before it takes effect. If the change is to your detriment and you have a paid plan, you may terminate the contract free of charge within 30 days of the notice and get back the unused part of the price. If you do not agree, you can also stop using Korpora and delete your account.</p>
+<p>For a material change we will write to you at least 30 days before it takes effect. If the change is to your detriment and you have a paid plan, you may terminate the contract free of charge within 30 days of the notice and get back the unused part of the price — for Lifetime, using the monthly share in section “Plans and prices”. If you do not agree, you can also stop using Korpora and delete your account.</p>
 
 <h2>Governing law and disputes</h2>
 <p>Bulgarian law applies. If you are a consumer, this does not deprive you of the protection of the mandatory rules of the country where you live. Disputes are settled by the competent Bulgarian court; if you are a consumer living in the EU, you may also sue in the courts where you live, and we may sue you only there.</p>

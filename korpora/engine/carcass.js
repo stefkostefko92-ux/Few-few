@@ -8,11 +8,12 @@ import { hasGrain, frontStock, STOCK } from './materials.js';
 import { GROOVE, HDF_T, SYSTEM, confirmat, confirmatZs, addHoleOnce, hasHole, clashes, boreClear, systemRows } from './joinery.js';
 import { buildDoors } from './fronts.js';
 import { buildDrawers } from './drawers.js';
+import { hangRail, RAIL } from './rail.js';
 
 const WORKTOP_SCREW = { d: 5, label: 'винт за плота 4×30', bom: 'Винт за ПДЧ 4×30 (плот през траверсите)' };
 const RAIL_W = 100; // top rails of base cabinets
 const HINGE_CLEAR = 45; // shelves keep this distance (centre to centre) from hinges and their plates
-const RAIL_DROP = 90; // no shelves in the top 90 mm of a column with a hanging rail
+const RAIL_DROP = RAIL.topEdge + RAIL.h; // 90: no system holes or shelves above the lower edge of a hanging rail
 const MIN_PLINTH = 40; // lowest plinth board or legs the generator makes
 const PIN_RISE = 4; // a shelf rests on its pins, this far above the axis of the pin holes
 const CARCASS = STOCK.pb18; // every carcass board; the back is HDF in grooves
@@ -43,6 +44,7 @@ export function buildCarcass(ctx, o) {
   const carc = { stock: CARCASS.id, decor: o.carcassDecor, grain: hasGrain(o.carcassDecor), module: mod };
   const out = { panels: {}, columns: [], dims: { x0, y0, z0, W, H, D, T, c, Hc, plinthH, backFront } };
   const sideBands = { '+z': bc, ...(top === 'over' ? {} : { '+y': o.visibleTop ? bc : 0 }) };
+  if (o.mount === 'wall') sideBands['-y'] = bc; // a wall cabinet is seen from below: the lower ends of its sides show
 
   const sideL = panel(ctx, { ...carc, key: key('sideL'), name: nm('Страница лява'), role: 'side', box: { min: [x0, c, z0], max: [x0 + T, sideTop, zEnd] }, n: '+x', L: 'y', bands: sideBands, explode: [-1, 0, 0] });
   const sideR = panel(ctx, { ...carc, key: key('sideR'), name: nm('Страница дясна'), role: 'side', box: { min: [x0 + W - T, c, z0], max: [x0 + W, sideTop, zEnd] }, n: '-x', L: 'y', bands: sideBands, explode: [1, 0, 0] });
@@ -125,15 +127,18 @@ export function buildCarcass(ctx, o) {
     col.drawers = Math.max(0, col.drawers ?? 0);
     col.dzH = col.drawers ? clamp(col.drawerZone ?? col.drawers * 180, 100, Hc) : 0;
     col.doors = col.drawers && col.dzH >= Hc - 1 ? 0 : col.doors ?? 0;
+    // the drawer zone at the bottom of the column (doors above it), or at the top (drawersOnTop: doors below it)
+    col.dz0 = col.drawersOnTop ? c + Hc - col.dzH : c;
     const a = { i, n, col, xa: col.xa, xb: col.xb, fl: col.fl, fr: col.fr, c, zEnd, backFront, T, nm, key, mod, left: col.left, right: col.right, ...front };
-    if (col.drawers) buildDrawers(ctx, o, { ...a, dzH: col.dzH, drawers: col.drawers });
-    col.hingeYs = col.doors ? buildDoors(ctx, o, { ...a, dy0: c + col.dzH + gap / 2, dy1: c + Hc - gap / 2, hingeSides }) : [];
+    if (col.drawers) buildDrawers(ctx, o, { ...a, dz0: col.dz0, dzH: col.dzH, drawers: col.drawers });
+    const doorZone = col.drawersOnTop ? [c, col.dz0] : [c + col.dzH, c + Hc];
+    col.hingeYs = col.doors ? buildDoors(ctx, o, { ...a, dy0: doorZone[0] + gap / 2, dy1: doorZone[1] - gap / 2, hingeSides }) : [];
   }
   // pass 2: system holes where they do not clash, shelves on holes present on both sides, hanging rails
   const rows = systemRows(zEnd, backFront);
   for (const [i, col] of out.columns.entries()) {
-    const zoneBottom = c + col.dzH + (col.drawers ? 0 : T);
-    const zoneTop = yInnerTop - (col.rail ? RAIL_DROP : 0);
+    const zoneBottom = col.drawersOnTop ? c + T : c + col.dzH + (col.drawers ? 0 : T);
+    const zoneTop = col.drawersOnTop ? col.dz0 : yInnerTop - (col.rail ? RAIL_DROP : 0);
     const holeYs = [];
     for (let y = c + SYSTEM.start; y <= yInnerTop - SYSTEM.start + 0.01; y += SYSTEM.pitch) if (y >= zoneBottom + 30 && y <= zoneTop) holeYs.push(r1(y));
     const shelves = Math.max(0, col.shelves ?? 0);
@@ -147,11 +152,7 @@ export function buildCarcass(ctx, o) {
       }
     }
     placeShelves(ctx, { col, i, n, shelves, holeYs, rows, zoneBottom, zoneTop, T, backFront, zEnd, bc, carc, key, nm });
-    if (col.rail) {
-      ctx.symbols.push({ type: 'rail', x0: col.xa + 1, x1: col.xb - 1, y: yInnerTop - 60, z: (backFront + zEnd) / 2, module: mod });
-      ctx.hw(`rail${Math.round(col.xb - col.xa)}`, { name: `Лост за закачалки, овален, L=${Math.round(col.xb - col.xa - 2)} mm`, qty: 1, unit: 'бр.', group: 'Обков' });
-      ctx.hw('railHolders', { name: 'Държач за лост', qty: 2, unit: 'бр.', group: 'Обков' });
-    }
+    if (col.rail) hangRail(ctx, { col, i, yInnerTop, backFront, zEnd, mod, nm });
   }
   joinEdges(ctx, { x0, W, T, c, Hc, z0, zEnd, backFront, top, topPart, rails, sideL, sideR, bottom, partitions });
   return out;

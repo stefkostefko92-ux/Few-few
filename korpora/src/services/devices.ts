@@ -13,15 +13,21 @@ export interface DeviceContext {
   fingerprint: Fingerprint | null;
 }
 
-/** Записва (или обновява) устройството на акаунта при вход с вярна парола. */
+/**
+ * Записва (или обновява) устройството на акаунта при вход с вярна парола. Отпечатъкът и описанието
+ * от него (екран, видеокарта, часова зона) се пазят само със съгласие (`consented`); без него
+ * остават бисквитката и описанието от User-Agent — те са за сигурността на входа.
+ */
 export async function touchDevice(
   userId: string,
   ctx: DeviceContext,
   meta: RequestMeta,
+  consented: boolean,
 ): Promise<Device> {
   const cookieHash = deviceCookieHash(ctx.cookieId);
-  const fpHash = ctx.fingerprint ? fingerprintHash(ctx.fingerprint) : null;
-  const summary = deviceSummary(ctx.fingerprint, meta.userAgent);
+  const fingerprint = consented ? ctx.fingerprint : null;
+  const fpHash = fingerprint ? fingerprintHash(fingerprint) : null;
+  const summary = deviceSummary(fingerprint, meta.userAgent);
   return prisma.device.upsert({
     where: { userId_cookieHash: { userId, cookieHash } },
     create: {
@@ -34,8 +40,9 @@ export async function touchDevice(
       lastCountry: meta.country,
     },
     update: {
-      // Отпечатък без данни (изключен JavaScript) не трие стария.
-      ...(fpHash ? { fingerprintHash: fpHash } : {}),
+      // Без съгласие старият отпечатък се трие; със съгласие отпечатък без данни (изключен
+      // JavaScript) не трие стария.
+      ...(fpHash || !consented ? { fingerprintHash: fpHash } : {}),
       summary,
       userAgent: meta.userAgent,
       lastSeenAt: new Date(),
