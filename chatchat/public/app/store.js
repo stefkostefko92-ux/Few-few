@@ -10,6 +10,7 @@ export const state = {
   currentId: null,
   current: null, // { case, messages }
   tickets: new Map(), // caseId -> { number, status } (от GET /cases/:id и при създаване)
+  flow: null, // { caseId, ticket, steps, policy, can } — работният поток на отворения случай (flow/state.js)
   sending: false,
 };
 

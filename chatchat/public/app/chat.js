@@ -10,6 +10,8 @@ import { renderAttachments } from './attachments/view.js';
 import { roleLabel } from './format.js';
 import { getLang, t } from './i18n.js';
 import { attachQuickResponses } from './workspace/quick.js';
+import { stepControls } from './flow/steps.js';
+import { reloadCase } from './flow/state.js';
 import { on, state } from './store.js';
 
 const rated = new Map(); // messageId -> rating (за сесията на страницата)
@@ -42,6 +44,7 @@ function renderMessage(m) {
       onOpenTicket: openTicketDialog,
       onFeedback,
       rated: (id) => rated.get(id) ?? null,
+      stepUi: stepControls,
     });
   }
   if (m.kind === 'SYSTEM') {
@@ -169,11 +172,16 @@ async function send() {
       renderMessages({ scroll: 'answer' });
       const ans = data.answer;
       const blocked = ans?.payload?.safety?.level === 'blocked';
+      // FR-19: предаден на оператор — AI мълчи, съобщението е при човека.
       announce(
-        t('chat.newAnswer', {
-          summary: `${blocked ? t('ans.safety.blocked') + '. ' : ''}${answerSummaryText(ans?.payload) || String(ans?.body ?? '')}`,
-        }),
+        data.aiPaused
+          ? t('handoff.sentToOperator')
+          : t('chat.newAnswer', {
+              summary: `${blocked ? t('ans.safety.blocked') + '. ' : ''}${answerSummaryText(ans?.payload) || String(ans?.body ?? '')}`,
+            }),
       );
+      // С тикет: отговорът на техника може да е върнал случая в работа (заявка за данни).
+      if (state.flow?.ticket) void reloadCase().catch(() => undefined);
     }
     refreshCases();
   } catch (err) {

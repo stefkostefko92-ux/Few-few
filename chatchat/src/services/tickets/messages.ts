@@ -7,6 +7,7 @@ import { lockKey } from '../steps/locate.js';
 import { afterTicketChange } from './effects.js';
 import { recordTicketEvent } from './events.js';
 import { caseStatusFor, isOpenTicket, nextTicketStatus } from './flow.js';
+import { publishCaseEvent } from './realtime.js';
 import { changeOf, type Applied } from './tx.js';
 
 /**
@@ -80,6 +81,11 @@ export async function afterCaseMessage(
     return;
   }
   if (!flow.notifyOwner) return;
+  // Отвореният случай при оператора се опреснява през REST (в събитието — само id).
+  publishCaseEvent(deps, 'case.updated', { caseId: c.id, tenantId: c.tenantId }, actorId, () => ({
+    caseId: c.id,
+    change: 'message',
+  }));
   // Без текста на съобщението — само номерът; съдържанието се чете през REST с проверка.
   await notify(
     deps,

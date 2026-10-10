@@ -65,6 +65,16 @@ export function approverRoles(level: ApprovalLevel): readonly Role[] {
   return [];
 }
 
+const RANK: Record<ApprovalLevel, number> = { NONE: 0, SELF: 1, SUPPORT: 2, ENGINEERING: 3 };
+
+/**
+ * Разрешенията, които покриват изискваното ниво (fail-closed): след затягане на политиката
+ * (напр. SUPPORT → ENGINEERING) по-слабото старо разрешение вече не стига.
+ */
+export function levelsAtLeast(level: ApprovalLevel): ApprovalLevel[] {
+  return APPROVAL_LEVELS.filter((l) => RANK[l] >= RANK[level] && l !== 'NONE');
+}
+
 /** Нивата, на които ролята може да разрешава (за списъка „чакащи разрешение“). */
 export function levelsApprovableBy(role: Role): ApprovalLevel[] {
   return (['SUPPORT', 'ENGINEERING'] as const).filter((l) => approverRoles(l).includes(role));

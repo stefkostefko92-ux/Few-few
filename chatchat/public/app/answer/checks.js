@@ -4,7 +4,7 @@ import { h } from '../dom.js';
 import { t } from '../i18n.js';
 import { arr, block, icon, str } from './util.js';
 
-export function appendChecks(root, { p, refs }) {
+export function appendChecks(root, { p, refs, stepUi }) {
   const checks = arr(p.checks);
   if (checks.length) {
     root.append(
@@ -45,6 +45,8 @@ export function appendChecks(root, { p, refs }) {
                 h('strong', null, t('ans.expected'), ': '),
                 str(c.expected),
               ),
+              // Изпълнено / резултат / разрешение (FR-09, §11.2) — flow/steps.js.
+              stepUi ? stepUi(c) : null,
             );
           }),
         ),

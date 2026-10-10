@@ -9,7 +9,7 @@ import { fail, ok, type Result } from '../collab/result.js';
 import { auditReason } from '../users.js';
 import { notifyApprovalDecided, notifyApprovalRequested, publishStepChange } from './effects.js';
 import { locateStep, lockKey, sourcesOf } from './locate.js';
-import { approverRoles, loadStepPolicy, stepRequirement } from './policy.js';
+import { approverRoles, levelsAtLeast, loadStepPolicy, stepRequirement } from './policy.js';
 
 /**
  * Човешкото потвърждение (§11.2 Human-in-the-loop): заявка за разрешение на стъпка, решение
@@ -51,7 +51,12 @@ export async function requestApproval(
         step: input.step,
         OR: [
           { status: 'PENDING' },
-          { status: 'GRANTED', requestedById: p.user.id, expiresAt: { gt: now } },
+          {
+            status: 'GRANTED',
+            requestedById: p.user.id,
+            expiresAt: { gt: now },
+            level: { in: levelsAtLeast(req.level) },
+          },
         ],
       },
       orderBy: { createdAt: 'desc' },

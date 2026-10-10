@@ -6,6 +6,7 @@ import {
   approverRoles,
   DEFAULT_STEP_POLICY,
   levelsApprovableBy,
+  levelsAtLeast,
   stepRequirement,
 } from '../src/services/steps/policy.js';
 import {
@@ -135,6 +136,13 @@ describe('политиката за човешко потвърждение (§1
     assert.deepEqual(levelsApprovableBy('SUPPORT'), ['SUPPORT']);
     assert.deepEqual(levelsApprovableBy('PORTAL_TECHNICIAN'), []);
     assert.deepEqual(levelsApprovableBy('KNOWLEDGE_OWNER'), []);
+  });
+
+  test('разрешение покрива изискваното ниво само ако е поне толкова силно (fail-closed)', () => {
+    assert.deepEqual(levelsAtLeast('ENGINEERING'), ['ENGINEERING']);
+    assert.deepEqual(levelsAtLeast('SUPPORT'), ['SUPPORT', 'ENGINEERING']);
+    assert.deepEqual(levelsAtLeast('SELF'), ['SELF', 'SUPPORT', 'ENGINEERING']);
+    assert.deepEqual(levelsAtLeast('NONE'), ['SELF', 'SUPPORT', 'ENGINEERING']);
   });
 
   test('матрицата: само поддръжка и инженеринг разрешават; администраторът управлява политиката', () => {

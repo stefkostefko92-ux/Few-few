@@ -18,7 +18,16 @@ const SECTIONS = [
   { id: 'quick', cap: 'kb:manage', load: () => import('./quick.js') },
   { id: 'kpi', cap: 'kpi:read', load: () => import('./kpi.js') },
   { id: 'audit', cap: 'audit:read', load: () => import('./audit.js') },
+  // Политиката за разрешенията на стъпки (§11.2) — етикетът е под своя префикс.
+  {
+    id: 'steppolicy',
+    cap: 'policy:manage',
+    label: 'step.policy.nav',
+    load: () => import('./step-policy.js'),
+  },
 ];
+
+const labelOf = (s) => t(s.label ?? `admin.nav.${s.id}`);
 
 let available = [];
 let current = null; // { id, destroy }
@@ -35,7 +44,7 @@ function renderNav(activeId) {
   nav.setAttribute('aria-label', t('admin.nav'));
   const list = h('ul', { class: 'nav-list' });
   for (const s of available) {
-    const link = h('a', { href: `#${s.id}`, class: 'nav-link' }, t(`admin.nav.${s.id}`));
+    const link = h('a', { href: `#${s.id}`, class: 'nav-link' }, labelOf(s));
     if (s.id === activeId) link.setAttribute('aria-current', 'page');
     list.append(h('li', {}, link));
   }
@@ -55,7 +64,7 @@ async function route() {
   renderNav(section.id);
   const view = $('#view');
   clear(view).append(loading());
-  document.title = `${t(`admin.nav.${section.id}`)} — ${t('admin.title')} | ChatChat`;
+  document.title = `${labelOf(section)} — ${t('admin.title')} | ChatChat`;
   try {
     const mod = await section.load();
     if (mine !== ticket) return;

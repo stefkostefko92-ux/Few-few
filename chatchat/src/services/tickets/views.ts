@@ -1,8 +1,8 @@
 import type { Case, CaseHandoff, PrismaClient, Ticket } from '@prisma/client';
-import { caseAudiences } from '../../auth/rbac.js';
+import { can, caseAudiences } from '../../auth/rbac.js';
 import type { Principal } from '../../auth/sessions.js';
 import { assigneeFor, type MessageAuthor } from '../case-views.js';
-import { buildTicketSummary } from '../cases.js';
+import { buildTicketSummary, isParticipant } from '../cases.js';
 import { loadStepPolicy } from '../steps/policy.js';
 import { stepStateFor } from '../steps/views.js';
 
@@ -98,10 +98,26 @@ export async function caseFlowView(db: PrismaClient, p: Principal, c: Case) {
     stepStateFor(db, p, c),
     loadStepPolicy(db, c.tenantId),
   ]);
+  const open = c.status !== 'RESOLVED';
+  const staff = p.user.kind === 'INTERNAL';
   return {
     ticket,
     steps,
     stepPolicy: { safetyRelevant: policy.safetyRelevant, configurative: policy.configurative },
+    // Какво човекът може тук — само за да не показва UI бутони, които сървърът би отказал.
+    can: {
+      recordSteps: open && isParticipant(p, c) && can(p.user.role, 'step:record'),
+      approve: staff && can(p.user.role, 'step:approve'),
+      handoff:
+        open &&
+        c.createdById === p.user.id &&
+        can(p.user.role, 'ticket:create') &&
+        !(c.aiPaused && ticket !== null && ticket.status !== 'CLOSED'),
+      operate: staff && can(p.user.role, 'case:assign'),
+      reopen:
+        ticket?.status === 'CLOSED' &&
+        (c.createdById === p.user.id || (staff && can(p.user.role, 'case:assign'))),
+    },
   };
 }
 

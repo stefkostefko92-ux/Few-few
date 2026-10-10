@@ -3,8 +3,9 @@
 
 import { clear, h, $ } from '../dom.js';
 import { errorText } from '../errors.js';
-import { fmtStamp } from '../format.js';
-import { t } from '../i18n.js';
+import { fmtStamp, roleLabel } from '../format.js';
+import { has, t } from '../i18n.js';
+import { flowKey } from '../flow/labels.js';
 import { state } from '../store.js';
 import { wsApi } from './api.js';
 import { conversationsByActivity, titleOf, ws } from './model.js';
@@ -14,13 +15,18 @@ import { loadConversations, loadNotifications, loadPublicChannels } from './sync
 export function notificationText(n) {
   const p = n.payload ?? {};
   const count = p.count > 1 ? ` (×${p.count})` : '';
-  const key = `notif.${n.eventType}`;
+  // Събитията на потока (ticket.*, step.*, handoff.*) — с ключове под своя префикс (flow/labels.js).
+  const key = has(`notif.${n.eventType}`)
+    ? `notif.${n.eventType}`
+    : (flowKey(n.eventType, 'notif') ?? `notif.${n.eventType}`);
   const text = t(key, {
     actor: p.actor?.name ?? '',
     name: p.conversationName ?? t('conv.direct'),
     number: p.number ?? p.caseNumber ?? '',
-    assignee: p.assignedTo?.name ?? '',
+    // Порталът получава ролята на служителя, не името — тогава се показва ролята.
+    assignee: p.assignedTo ? (p.assignedTo.name ?? roleLabel(p.assignedTo.role)) : '',
     status: p.status ? t(`ticketstatus.${p.status}`) : '',
+    step: p.step ?? '',
   });
   return (text === key ? n.eventType : text) + count;
 }

@@ -8,6 +8,7 @@ import { fmtFull, roleLabel } from '../format.js';
 import { t, has } from '../i18n.js';
 import { state } from '../store.js';
 import { wsApi } from './api.js';
+import { flowDetail, flowKey } from '../flow/labels.js';
 
 const SOURCE_MARK = { human: '●', ai: '◆', system: '○' };
 
@@ -42,7 +43,8 @@ function detailOf(e) {
     case 'context.firmwareOutsideRevision':
       return t('code.ctx.firmwareOutsideRevision');
     default:
-      return '';
+      // Стъпки, разрешения, тикет, предаване (FR-09, FR-19, §11.2) — flow/labels.js.
+      return flowDetail(e);
   }
 }
 
@@ -53,7 +55,8 @@ export function renderTimeline(events) {
     'ol',
     { class: 'tl' },
     list.map((e) => {
-      const label = has(`tl.${e.type}`) ? t(`tl.${e.type}`) : e.type;
+      const flow = flowKey(e.type, 'tl');
+      const label = has(`tl.${e.type}`) ? t(`tl.${e.type}`) : flow ? t(flow) : e.type;
       const detail = detailOf(e);
       return h(
         'li',

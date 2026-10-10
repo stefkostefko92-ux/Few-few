@@ -7,7 +7,7 @@ import type { CollabDeps } from '../collab/publish.js';
 import { fail, ok, type Result } from '../collab/result.js';
 import { publishStepChange } from './effects.js';
 import { locateStep, lockKey } from './locate.js';
-import { loadStepPolicy, stepRequirement } from './policy.js';
+import { levelsAtLeast, loadStepPolicy, stepRequirement } from './policy.js';
 
 /**
  * Изпълнена стъпка (FR-09 „passi eseguiti“): техникът отбелязва резултата на предложена проверка —
@@ -51,6 +51,8 @@ export async function recordExecution(
           status: 'GRANTED',
           requestedById: p.user.id,
           expiresAt: { gt: new Date() },
+          // Покрива ли СЕГАШНОТО ниво (затегната политика → старото по-слабо не стига).
+          level: { in: levelsAtLeast(req.level) },
         },
         orderBy: { decidedAt: 'desc' },
         select: { id: true },

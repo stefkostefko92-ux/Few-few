@@ -323,6 +323,29 @@ describe('човешко потвърждение (§11.2)', () => {
     assert.deepEqual([notNeeded.status, notNeeded.body.code], [422, 'approval_not_required']);
   });
 
+  test('затегната политика след разрешението: старото (по-слабо) не стига; новото — от Engineering', async () => {
+    const { caseId, messageId } = await caseWithSteps(h, w.portalAlfa);
+    const id = (await requestApproval(w.portalAlfa, caseId, { messageId, step: 2 })).body.approval
+      .id as string;
+    await decide(w.support, id, 'GRANT', 'Ok dal supporto');
+    await w.tenantAdmin.req('PUT', '/api/v1/admin/step-policy', {
+      safetyRelevant: 'ENGINEERING',
+      configurative: 'NONE',
+      ttlMinutes: 480,
+      reason: 'Stretta dopo un incidente',
+    });
+    const weak = await execute(w.portalAlfa, caseId, { messageId, step: 2, result: 'OK' });
+    assert.deepEqual([weak.status, weak.body.code], [409, 'step_approval_required']);
+    const again = await requestApproval(w.portalAlfa, caseId, { messageId, step: 2 });
+    assert.equal(again.status, 202);
+    assert.equal(again.body.approval.level, 'ENGINEERING');
+    await decide(x.eng, again.body.approval.id, 'GRANT', 'Engineering conferma');
+    assert.equal(
+      (await execute(w.portalAlfa, caseId, { messageId, step: 2, result: 'OK' })).status,
+      201,
+    );
+  });
+
   test('политика SELF: изрично потвърждение на техника; без него → 422', async () => {
     const put = await w.tenantAdmin.req('PUT', '/api/v1/admin/step-policy', {
       safetyRelevant: 'SELF',
