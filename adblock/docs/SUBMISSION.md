@@ -14,7 +14,7 @@ file. Follow it top to bottom; nothing else to figure out.
 ## 1. The upload package
 
 ```bash
-bash tools/package.sh      # → dist/supreme-adblock-5.1.6.zip
+bash tools/package.sh      # → dist/supreme-adblock-5.1.7.zip
 ```
 
 Runtime files only (manifest, scripts, styles, rules, icons, locales). Docs,
@@ -33,21 +33,32 @@ manifest-referenced file is present.
 | Asset | Size | File | Required |
 |-------|------|------|----------|
 | Store icon | 128×128 | `store/store_icon_128.png` | ✅ |
-| Screenshots (5) | 1280×800 | `store/screenshots/screenshot-1..5.png` | ✅ (min 1) |
-| Small promo tile | 440×280 | `store/promo_small_440x280.png` | optional |
-| Marquee | 1400×560 | `store/marquee_1400x560.png` | optional (featuring) |
+| Screenshots (5) | 1280×800 | `store/screenshots/screenshot-1..5.png` | ✅ (min 1; 5 preferred) |
+| Small promo tile | 440×280 | `store/promo_small_440x280.png` | ✅ (items without it are listed after the ones that have it) |
+| Marquee | 1400×560 | `store/marquee_1400x560.png` | needed to be featured in the store's marquee |
 
-Regenerate: `python3 tools/generate_icons.py` (icon + tiles; the artwork is the
-brand shield from `store/brand/` — never a drawing made in-repo),
-`python3 store/screenshots/build.py` (renders the real popup with demo numbers
-via headless Chromium; see that script's header).
+Google's image rules ("Supplying Images"), and how we meet them:
+- **Icon** — 96×96 artwork with 16 px of transparent padding on 128×128, works on light and dark
+  (a subtle light outer glow for dark backgrounds), front-facing, no edge. The same image is the
+  package's `icons/icon128.png` (install dialog, chrome://extensions) and the store icon.
+- **Promo tile and marquee** — no text (they are not per-language), saturated colours, no large
+  white or light-grey areas (the store puts them on light grey), the whole area filled, clear edges,
+  readable at half size, the brand rather than a screenshot: the 3D shield struck by lightning.
+- **Screenshots** — 1280×800, square corners, full bleed, the real UI.
+
+Regenerate: `python3 tools/generate_icons.py` (icons; the artwork is the brand shield from
+`store/brand/` — never a drawing made in-repo), `PW_ROOT=$(npm root -g) node tools/store_promo.mjs`
+(promo tile + marquee: the 3D shield from `tools/popup_shield3d.mjs --hero` and the landing page's
+storm), `python3 store/screenshots/build.py` (renders the real popup with demo numbers via headless
+Chromium; see that script's header).
 
 ## 3. Listing fields (paste as-is)
 
 - **Name:** `Supreme AdBlock`
 - **Summary (132 max):**
   `Blocks ads everywhere: YouTube video ads, banners, pop-ups, trackers, cookie prompts and anti-adblock walls.` (= `extDescription` in `_locales/en`; the store takes it from the package)
-- **Category:** Productivity
+- **Category:** Privacy & Security (the store's category for ad and tracker blockers; the live
+  listing still says *Tools* — change it in the dashboard, see §6)
 - **Language:** English
 - **Detailed description:** use the block in `docs/STORE_LISTING.md`.
 
@@ -173,7 +184,7 @@ via headless Chromium; see that script's header).
 The listing is **already live** (`chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk`),
 so this is an **update of the existing item**, not a new one:
 
-1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-5.1.6.zip`.
+1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-5.1.7.zip`.
 2. Refresh the listing (§3: description + the new feature bullets) **in every
    language that has its own description** — a package update does NOT replace the
    live text, and an old localised description still saying "100% free" fails the
@@ -185,13 +196,24 @@ so this is an **update of the existing item**, not a new one:
 4. **Publisher identity:** the product, manifest and privacy policy say
    *Carbon Stealth*; the listing must show the same publisher name (Account →
    publisher display name) and the verified `carbonstealth.eu` site, otherwise
-   it reads as impersonation. Account-level action, one time.
-5. **Submit for review**.
+   it reads as impersonation. Account-level action, one time. (Done: the
+   listing carries the **Established Publisher** badge.)
+5. **Category → Privacy & Security** (Store listing → Category; it is *Tools* today).
+6. **Submit for review**.
+7. **After the update is live — nominate for the Featured badge** (Chrome Web Store
+   **One Stop Support** → the Featured badge nomination option). Google's own
+   criteria for a nomination, all met: an extension, published and public, owned by
+   us, English supported, no active policy violations, core features without an
+   account or payment. What the reviewers check — best practices, an intuitive UX,
+   the latest platform APIs — is in §7. Badges can't be bought; a review takes time.
 
 ## 7. Pre-flight checklist
 
-- [ ] `manifest.json` and `package.json` versions match (5.1.6)
+- [ ] `manifest.json` and `package.json` versions match (5.1.7)
 - [ ] `npm test` (tests/) and `node tools/build_scriptlets.mjs --check` are green
+- [ ] `PW_ROOT=$(npm root -g) npm run test:browser` is green — real Chromium, including the
+      back/forward-cache check (the page is restored on Back, with the extension on)
+- [ ] The extension pages pass axe (WCAG 2.2 AA) in both themes: popup, settings, welcome, report
 - [ ] Zip loads via `chrome://extensions → Load unpacked` with **no** console errors
 - [ ] Popup, settings, allowlist, picker, theme, pause, sync all work
 - [ ] A normal site loads correctly; ads are blocked

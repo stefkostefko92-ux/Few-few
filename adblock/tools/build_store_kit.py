@@ -62,7 +62,9 @@ md = f"""# Supreme AdBlock {ver} — Chrome Web Store: всичко за copy/pa
 **Description**
 {block(en)}
 **Category**
-{block("Productivity")}
+{block("Privacy & Security")}
+
+(Днес листингът е в *Tools* — смени го: блокерите на реклами и тракери са в *Privacy & Security*.)
 **Language**
 {block("English")}
 **Official URL** — избери от падащото меню верифицирания домейн:
@@ -81,7 +83,7 @@ md = f"""# Supreme AdBlock {ver} — Chrome Web Store: всичко за copy/pa
 
 ## 2b. Store listing → Promo video (YouTube)
 
-За магазина качи в YouTube `supreme-adblock-promo-{ver}-store-web.mp4` (идва отделно от кита; версията БЕЗ сравнение с други блокери и без „free“ — правилото на CWS за текст в медиите) като Public или Unlisted, заглавие „Supreme AdBlock — ad blocker for Chrome · Carbon Stealth“, миниатюра `supreme-adblock-promo-{ver}-store-thumb.png`. После постави адреса на видеото в полето **YouTube video** на листинга. Клипът е 35 s, 1080p, със звук. Пълната версия (43 s, със сравнението) е за сайта и YouTube канала — НЕ я слагай в листинга.
+Ако в листинга вече е клипът за магазина (без сравнение и без „free“), остави го — не се сменя с всяка версия. Нов клип: `node tools/promo/render.mjs --cut store` → качи в YouTube `supreme-adblock-promo-<версия>-store-web.mp4` (идва отделно от кита; версията БЕЗ сравнение с други блокери и без „free“ — правилото на CWS за текст в медиите) като Public или Unlisted, заглавие „Supreme AdBlock — ad blocker for Chrome · Carbon Stealth“, миниатюра `supreme-adblock-promo-{ver}-store-thumb.png`. После постави адреса на видеото в полето **YouTube video** на листинга. Клипът е 35 s, 1080p, със звук. Пълната версия (43 s, със сравнението) е за сайта и YouTube канала — НЕ я слагай в листинга.
 
 ## 3. Store listing → Additional languages
 
