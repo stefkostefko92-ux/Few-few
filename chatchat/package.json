@@ -43,7 +43,7 @@
     "files:encrypt": "node dist/cli/files.js encrypt",
     "files:rekey": "node dist/cli/files.js rekey",
     "files:verify": "node dist/cli/files.js verify",
-    "gate": "npm run lint && npm run typecheck && npm test && npm run build",
+    "gate": "prisma generate && npm run lint && npm run typecheck && npm test && npm run build",
     "embed": "node dist/cli/embed.js",
     "eval": "tsx evals/run.ts"
   },
