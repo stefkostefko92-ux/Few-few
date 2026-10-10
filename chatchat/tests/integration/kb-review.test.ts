@@ -57,6 +57,7 @@ describe('детайл на документ (kb:manage)', () => {
         fwMax: null,
         allFirmware: false,
         deviceSerial: 'SN-ALFA-2',
+        options: {},
       },
     ]);
     assert.deepEqual(d.pages, [

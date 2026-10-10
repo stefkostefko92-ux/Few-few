@@ -1,14 +1,19 @@
 import { canonicalIdentifier } from '../domain/normalize.js';
-import type { ProductVersion } from '../domain/versions.js';
 import { applicabilityFields, applicabilityOf } from '../retrieval/applicability.js';
 import { applyBoardOverride } from '../retrieval/levels.js';
 import { baseScore, findConflicts, keyOf, NOT_APPLICABLE_FACTOR } from '../retrieval/retrieve.js';
-import type { EvidenceItem, MatchKind, RawEvidence, RetrievalResult } from '../retrieval/types.js';
+import type {
+  CaseVersion,
+  EvidenceItem,
+  MatchKind,
+  RawEvidence,
+  RetrievalResult,
+} from '../retrieval/types.js';
 
 /**
  * Доказателственият пакет на един отговор: E1…En от търсенето + каквото добавят инструментите
  * (E13, E14…). Референциите са последователни и стабилни — моделът цитира само тях, а Safety Gate
- * проверява цитатите срещу ФИНАЛНИЯ пакет. Съвместимостта на добавеното (HW/FW/табло и
+ * проверява цитатите срещу ФИНАЛНИЯ пакет. Съвместимостта на добавеното (HW/FW/табло/опции и
  * валидност към момента на отговора) се смята със същото правило като в retrieve
  * (`applicabilityOf` + `versionOf` на въпроса), не от модела.
  */
@@ -35,7 +40,7 @@ export class EvidencePack {
 
   constructor(
     initial: RetrievalResult,
-    private readonly version: ProductVersion,
+    private readonly version: CaseVersion,
     private readonly now: Date = new Date(),
   ) {
     this.items = [...initial.items];

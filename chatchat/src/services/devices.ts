@@ -1,7 +1,9 @@
 import type { Case, Device, PrismaClient, Product, ProductRevision } from '@prisma/client';
 import { can } from '../auth/rbac.js';
 import type { Principal } from '../auth/sessions.js';
-import { DiagnosticContextSchema } from '../domain/context.js';
+import { DiagnosticContextSchema, type DiagnosticContext } from '../domain/context.js';
+import type { BoardOptions } from '../retrieval/types.js';
+import { BoardOptionsSchema } from '../store/scope.js';
 
 /**
  * Таблата (§13.1 devices) и QR етикетът (FR-13): справката по сериен номер и по QR токен следват
@@ -25,6 +27,16 @@ export function deviceVisible(
   );
 }
 
+/**
+ * Опциите на таблото от регистъра (FR-01) — само технически данни (инвертор, брой спирки…).
+ * Запис, който не е обект ключ → стойност с таваните на контекста, се пропуска цял (никога
+ * частично): по-добре без опции, отколкото с неверни.
+ */
+export function deviceOptions(device: Pick<Device, 'options'>): BoardOptions {
+  const parsed = BoardOptionsSchema.safeParse(device.options);
+  return parsed.success ? parsed.data : {};
+}
+
 export function deviceView(device: DeviceWithProduct) {
   return {
     serial: device.serial,
@@ -32,7 +44,26 @@ export function deviceView(device: DeviceWithProduct) {
     family: device.revision.product.family,
     hardwareRevision: device.revision.hwRevision,
     firmware: device.firmware,
-    options: device.options,
+    options: deviceOptions(device),
+  };
+}
+
+/**
+ * Контекстът на случай от табло/QR: таблото е по-достоверно от ръчно въведеното — модел, HW, FW,
+ * сериен номер и опциите идват от регистъра (FR-01, FR-13). Опциите на таблото печелят при
+ * еднакъв ключ; допълнителните, въведени от техника, остават (той вижда и двете в контекста).
+ */
+export function boardContext(
+  context: DiagnosticContext,
+  device: DeviceWithProduct,
+): DiagnosticContext {
+  return {
+    ...context,
+    productModel: device.revision.product.model,
+    hardwareRevision: device.revision.hwRevision,
+    firmware: device.firmware,
+    serial: device.serial,
+    options: { ...context.options, ...deviceOptions(device) },
   };
 }
 

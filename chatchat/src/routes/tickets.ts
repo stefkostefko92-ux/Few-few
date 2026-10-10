@@ -10,6 +10,7 @@ import {
   requireUser,
 } from '../auth/guards.js';
 import { addTimeline, findCaseFor } from '../services/cases.js';
+import { recordFeedbackProposal } from '../services/proposals/feedback.js';
 import { createTicket } from '../services/tickets/lifecycle.js';
 import { sendFailure } from './collab-common.js';
 
@@ -67,22 +68,26 @@ export function ticketsRouter(deps: WiredDeps): Router {
       if (!message || message.kind !== 'AI') return apiError(res, 404, 'not_found');
       const c = await findCaseFor(deps.db, p, message.caseId);
       if (!c) return apiError(res, 404, 'not_found');
-      await deps.db.feedback.upsert({
+      const comment = parsed.data.comment ? redactPii(parsed.data.comment) : null;
+      const feedback = await deps.db.feedback.upsert({
         where: { messageId_userId: { messageId: message.id, userId: p.user.id } },
-        create: {
-          messageId: message.id,
-          userId: p.user.id,
-          rating: parsed.data.rating,
-          comment: parsed.data.comment ? redactPii(parsed.data.comment) : null,
-        },
-        update: {
-          rating: parsed.data.rating,
-          comment: parsed.data.comment ? redactPii(parsed.data.comment) : null,
-        },
+        create: { messageId: message.id, userId: p.user.id, rating: parsed.data.rating, comment },
+        update: { rating: parsed.data.rating, comment },
       });
       await addTimeline(deps.db, c.id, 'feedback', p.user.id, {
         messageId: message.id,
         rating: parsed.data.rating,
+      });
+      // FR-10: „Non utile“/„Errore tecnico“ с коментар → предложение в опашката на отговорника за
+      // знанието (вътрешна; техникът не я вижда). Вторично — не проваля оценката.
+      await recordFeedbackProposal(deps, {
+        tenantId: p.user.tenantId,
+        actorId: p.user.id,
+        caseId: c.id,
+        messageId: message.id,
+        feedbackId: feedback.id,
+        rating: parsed.data.rating,
+        comment,
       });
       res.status(204).end();
     } catch (err) {

@@ -1,8 +1,8 @@
 {
   "name": "sample-fittizio",
-  "version": "2026-10-10.2",
+  "version": "2026-10-10.3",
   "fixture": true,
-  "description": "FIKTIVNI fikstury (FITTIZIO) — izmisleni modeli FX-100/FX-900, dokumenti i kodove. NE sa danni na klienta. Pokrivat §16.3 (adversarial) + osnovni sluchai IT/EN/BG. Plus zhiznen cikal na znanieto: unikalni shemi po tabla (SN-FX-*), stara reviziya za staro tablo, iztekal i oshte nevaliden dokument.",
+  "description": "FIKTIVNI fikstury (FITTIZIO) — izmisleni modeli FX-100/FX-900, dokumenti i kodove. NE sa danni na klienta. Pokrivat §16.3 (adversarial) + osnovni sluchai IT/EN/BG. Plus zhiznen cikal na znanieto: unikalni shemi po tabla (SN-FX-*), stara reviziya za staro tablo, iztekal i oshte nevaliden dokument. Plyus opcii na tabloto v prilozhimostta (FR-01): dokument samo za inverter VF-3 / X100.",
   "knowledge": {
     "products": [
       {
@@ -72,6 +72,15 @@
         "productModel": "FX-100",
         "hwRevision": "C",
         "firmware": "5.1"
+      },
+      {
+        "serial": "SN-FX-INV",
+        "productModel": "FX-100",
+        "hwRevision": "B",
+        "firmware": "4.2",
+        "options": {
+          "inverter": "VF-3"
+        }
       }
     ],
     "documents": [
@@ -548,6 +557,56 @@
           {
             "page": 1,
             "text": "Per il codice E56 aggiornare la configurazione LINCE del quadro."
+          }
+        ]
+      },
+      {
+        "code": "PAR-VF3",
+        "title": "Parametri inverter VF-3 FX-100 (FITTIZIO)",
+        "type": "MANUAL",
+        "language": "it",
+        "revision": "1",
+        "audience": "PORTAL",
+        "safetyRelevant": false,
+        "effectiveFrom": "2026-01-01T00:00:00.000Z",
+        "applicability": [
+          {
+            "productModel": "FX-100",
+            "allFirmware": true,
+            "options": {
+              "inverter": "VF-3"
+            }
+          }
+        ],
+        "pages": [
+          {
+            "page": 7,
+            "text": "Con inverter VF-3 il parametro P41 imposta la rampa di accelerazione a 1,2 secondi."
+          }
+        ]
+      },
+      {
+        "code": "PAR-X100",
+        "title": "Parametri inverter X100 FX-100 (FITTIZIO)",
+        "type": "MANUAL",
+        "language": "it",
+        "revision": "1",
+        "audience": "PORTAL",
+        "safetyRelevant": false,
+        "effectiveFrom": "2026-01-01T00:00:00.000Z",
+        "applicability": [
+          {
+            "productModel": "FX-100",
+            "allFirmware": true,
+            "options": {
+              "inverter": "X100"
+            }
+          }
+        ],
+        "pages": [
+          {
+            "page": 7,
+            "text": "Con inverter X100 il parametro P41 imposta la corrente di frenatura al 60 per cento."
           }
         ]
       }
@@ -1294,6 +1353,46 @@
         "level": "none",
         "escalation": true,
         "forbidden": ["configurazione LINCE"]
+      }
+    },
+    {
+      "id": "opzione-inverter-del-quadro",
+      "tags": ["base", "opzioni", "FR-01"],
+      "question": "Cosa imposta il parametro P41 su questo quadro?",
+      "context": {
+        "productModel": "FX-100",
+        "hardwareRevision": "B",
+        "firmware": "4.2",
+        "serial": "SN-FX-INV",
+        "errorCode": null,
+        "options": {
+          "inverter": "VF-3"
+        }
+      },
+      "expect": {
+        "sources": ["PAR-VF3@1"],
+        "status": ["identified", "probable"],
+        "forbidden": ["corrente di frenatura"]
+      }
+    },
+    {
+      "id": "opzione-sconosciuta-niente-certezza",
+      "tags": ["opzioni", "FR-01", "§16.3:wrong-version"],
+      "question": "A cosa serve P41?",
+      "context": {
+        "productModel": "FX-100",
+        "hardwareRevision": "B",
+        "firmware": "4.2",
+        "serial": null,
+        "errorCode": null,
+        "options": {}
+      },
+      "expect": {
+        "sources": [],
+        "status": ["undetermined"],
+        "level": "none",
+        "escalation": true,
+        "forbidden": ["rampa di accelerazione", "corrente di frenatura"]
       }
     }
   ]

@@ -23,6 +23,7 @@ import { saveAiAnswer } from '../services/ai-answer.js';
 import { claimAi, findPrior, type PriorMessage } from '../services/chat-replay.js';
 import { addTimeline, contextOf, findCaseFor, isUniqueOn } from '../services/cases.js';
 import { caseAudience, notify } from '../services/collab/notify.js';
+import { proposeConflicts } from '../services/proposals/conflicts.js';
 import { caseBoardId } from '../services/devices.js';
 import { afterCaseMessage, aiPausedFor, onCaseMessageTx } from '../services/tickets/messages.js';
 import type { MessageFlow } from '../services/tickets/messages.js';
@@ -202,6 +203,15 @@ export function chatRouter(deps: WiredDeps): Router {
             actorId: p.user.id,
             audiences,
             result,
+          });
+          // §11.3: конфликт между източници, отчетен от системата → предложение към отговорника
+          // за знанието (дедупликирано; вторично — не проваля отговора).
+          await proposeConflicts(deps, {
+            tenantId: p.user.tenantId,
+            caseId: c.id,
+            messageId: aiMessage.id,
+            conflicts: result.conflicts,
+            evidence: result.evidence,
           });
           // FR-18: нов AI отговор в собствен случай — за създателя/поелия, ако не е питал сам.
           await notify(

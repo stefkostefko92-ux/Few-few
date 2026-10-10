@@ -37,6 +37,8 @@ export const DeviceFixture = z.object({
   productModel: z.string().min(1).max(80),
   hwRevision: z.string().min(1).max(20),
   firmware: z.string().min(1).max(20),
+  /** Опциите на конфигурацията (FR-01) — като в регистъра; случаят ги носи в `context.options`. */
+  options: z.record(z.string().min(1).max(40), z.string().min(1).max(80)).default({}),
 });
 
 /** Метаданните — както при качване (§7.2): effectiveFrom задължителен, фърмуерът — изричен. */

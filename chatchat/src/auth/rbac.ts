@@ -30,7 +30,10 @@ export type Capability =
   // разрешава ДРУГ човек с роля по политиката на клиента (services/steps/policy.ts).
   | 'step:record'
   | 'step:approve'
-  | 'policy:manage'; // политиката за разрешенията (кой разрешава кой клас) — администраторът
+  | 'policy:manage' // политиката за разрешенията (кой разрешава кой клас) — администраторът
+  // Обратната връзка към знанието (FR-10, §11.3): персоналът предлага решен случай за знание;
+  // опашката с предложенията е на отговорника за знанието (`kb:manage`), порталът не я вижда.
+  | 'proposal:create';
 
 /** Всички роли (за zod на входа: API, CLI, филтри). */
 export const ROLES = [
@@ -57,6 +60,8 @@ const TECH: readonly Capability[] = [
   'step:record',
 ];
 const STAFF_CHAT: readonly Capability[] = ['conversation:create', 'channel:create'];
+/** Предложение „решен случай → знание“ — персоналът, който работи по случаите (§11.3). */
+const STAFF_KB: readonly Capability[] = ['proposal:create'];
 
 const CAPABILITIES: Record<Role, readonly Capability[]> = {
   PORTAL_TECHNICIAN: TECH,
@@ -69,6 +74,7 @@ const CAPABILITIES: Record<Role, readonly Capability[]> = {
     'kpi:read',
     'step:approve',
     ...STAFF_CHAT,
+    ...STAFF_KB,
   ],
   ENGINEERING: [
     ...TECH,
@@ -78,6 +84,7 @@ const CAPABILITIES: Record<Role, readonly Capability[]> = {
     'kpi:read',
     'step:approve',
     ...STAFF_CHAT,
+    ...STAFF_KB,
   ],
   KNOWLEDGE_OWNER: [
     ...TECH,
@@ -87,6 +94,7 @@ const CAPABILITIES: Record<Role, readonly Capability[]> = {
     'kb:manage',
     'kpi:read',
     ...STAFF_CHAT,
+    ...STAFF_KB,
   ],
   TENANT_ADMIN: [
     'case:readAll',

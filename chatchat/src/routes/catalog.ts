@@ -8,16 +8,24 @@ import { hashToken } from '../crypto.js';
 import { canonicalIdentifier } from '../domain/normalize.js';
 import { isApplicable, validityAt } from '../domain/versions.js';
 import { deviceView, deviceVisible, QR_TOKEN } from '../services/devices.js';
+import { visibleDocument } from '../store/scope.js';
 
 /** Справочни крайни точки (§14.1): продукти, табла, кодове за грешка, страница на документ. */
 
 const SearchQuery = z.object({ q: z.string().trim().max(80).default('') });
 const Serial = z.string().trim().min(1).max(80);
-const ErrorQuery = z.object({
-  model: z.string().trim().min(1).max(80),
-  hw: z.string().trim().max(20).optional(),
-  fw: z.string().trim().max(20).optional(),
-});
+/**
+ * Бърз преглед на код (§12.1 „Error code shortcut“): по модел (+ HW/FW по избор) или по табло
+ * (сериен номер — тогава модел/HW/FW са от регистъра и важат и схемите САМО за това табло).
+ */
+const ErrorQuery = z
+  .object({
+    model: z.string().trim().min(1).max(80).optional(),
+    serial: z.string().trim().min(1).max(80).optional(),
+    hw: z.string().trim().max(20).optional(),
+    fw: z.string().trim().max(20).optional(),
+  })
+  .refine((q) => q.model !== undefined || q.serial !== undefined, { path: ['model'] });
 
 export function catalogRouter(deps: AppDeps): Router {
   const router = Router();
@@ -113,21 +121,40 @@ export function catalogRouter(deps: AppDeps): Router {
       const query = ErrorQuery.safeParse(req.query);
       if (!code.success || !query.success) return apiError(res, 400, 'invalid_input');
       const { user } = principalOf(req);
-      const audiences = [...audiencesFor(user.role)];
+      const board = query.data.serial
+        ? await deps.db.device.findUnique({
+            where: { tenantId_serial: { tenantId: user.tenantId, serial: query.data.serial } },
+            include: { revision: { include: { product: true } } },
+          })
+        : null;
+      if (query.data.serial && (!board || !deviceVisible(user, board))) {
+        return apiError(res, 404, 'device_not_found');
+      }
+      const model = board ? board.revision.product.model : (query.data.model ?? '');
+      // Същият обхват като AI (`store/scope.ts`): клиент, аудитория, PUBLISHED и източник с правило
+      // за модела — общо или САМО за провереното табло (схема на чуждо табло не стига дотук).
+      const scope = {
+        tenantId: user.tenantId,
+        audiences: [...audiencesFor(user.role)],
+        deviceId: board?.id ?? null,
+      };
       const errors = await deps.db.errorCode.findMany({
         where: {
           tenantId: user.tenantId,
           code: canonicalIdentifier(code.data),
           status: 'PUBLISHED',
-          product: { model: query.data.model, tenantId: user.tenantId },
-          sourceDocument: { status: 'PUBLISHED', audience: { in: audiences } },
+          product: { model, tenantId: user.tenantId },
+          sourceDocument: visibleDocument(scope, model),
         },
         include: { relations: { orderBy: { ordinal: 'asc' } }, sourceDocument: true },
         take: 10,
       });
-      const version = { hwRevision: query.data.hw ?? null, firmware: query.data.fw ?? null };
+      const version = board
+        ? { hwRevision: board.revision.hwRevision, firmware: board.firmware, deviceId: board.id }
+        : { hwRevision: query.data.hw ?? null, firmware: query.data.fw ?? null };
       const now = new Date();
       res.json({
+        board: board ? deviceView(board) : null,
         errors: errors.map((e) => ({
           code: e.code,
           title: e.title,
@@ -138,6 +165,8 @@ export function catalogRouter(deps: AppDeps): Router {
           applicable:
             isApplicable({ hwRevision: e.hwRevision, fwMin: e.fwMin, fwMax: e.fwMax }, version) &&
             (e.sourceDocument === null || validityAt(e.sourceDocument, now) === 'effective'),
+          // Валидността на документа-източник (§7.2) — изтекъл/още невалиден личи изрично.
+          sourceValidity: e.sourceDocument ? validityAt(e.sourceDocument, now) : null,
           validity: { hwRevision: e.hwRevision, fwMin: e.fwMin, fwMax: e.fwMax },
           relations: e.relations.map((r) => ({
             kind: r.kind,

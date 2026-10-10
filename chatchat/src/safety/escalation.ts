@@ -3,15 +3,20 @@ import { NO_MODEL_INPUTS, type DiagnosticAnswer } from '../domain/response.js';
 import type { GateInput } from './gate.js';
 import { withKnowledgeNotices } from './knowledge.js';
 import { detectBypassIntent } from './lexicon.js';
+import { orderMissing, withOrderedMissing } from './missing-order.js';
 import { GATE_VERSION } from './version.js';
 
-/** Какво да събере техникът преди тикета, според липсващия контекст. */
+/**
+ * Какво да събере техникът преди тикета, според липсващия контекст — в реда на диагностичната
+ * стойност (FR-07, `missing-order.ts`): сериен номер/QR → FW → HW → код → снимка → лог → проверки.
+ */
 export function collectFor(context: DiagnosticContext): string[] {
-  const collect = ['collect.checksDone', 'collect.displayPhoto', 'collect.eventLog'];
-  if (context.serial === null) collect.unshift('collect.serial');
-  if (context.firmware === null) collect.unshift('collect.firmware');
-  if (context.hardwareRevision === null) collect.unshift('collect.hardwareRevision');
-  return collect;
+  const collect = ['collect.displayPhoto', 'collect.eventLog', 'collect.checksDone'];
+  if (context.serial === null) collect.push('collect.serial');
+  if (context.firmware === null) collect.push('collect.firmware');
+  if (context.hardwareRevision === null) collect.push('collect.hardwareRevision');
+  if (context.errorCode === null) collect.push('collect.errorCode');
+  return orderMissing(collect);
 }
 
 /**
@@ -64,5 +69,5 @@ export function noEvidenceAnswer(input: Omit<GateInput, 'draft' | 'level'>): Dia
     knowledgeSnapshotId: input.knowledgeSnapshotId,
     promptVersion: `${input.promptVersion}+${GATE_VERSION}`,
   };
-  return withKnowledgeNotices(answer, input.retrieval);
+  return withOrderedMissing(withKnowledgeNotices(answer, input.retrieval));
 }

@@ -9,5 +9,8 @@
  *     табло и замества общата ревизия със същия код (без фалшив конфликт); без табло → `ctx.serial`
  *     (`kb.boardSerialRequired`); документ извън effectiveFrom/To е неприложим и личи в отговора
  *     (`kb.sourceExpired`/`kb.sourceNotYetEffective`, `safety/knowledge.ts`).
+ * 2026-10-10.7: опциите на таблото в приложимостта (FR-01 — `optionsMatch`: несъвпадение или
+ *     непозната опция → неприложим); `missingData`/`collect` в реда на диагностичната стойност
+ *     (FR-07 — `missing-order.ts`) + `collect.errorCode`, когато кодът липсва в контекста.
  */
-export const GATE_VERSION = 'gate-2026-10-10.6';
+export const GATE_VERSION = 'gate-2026-10-10.7';

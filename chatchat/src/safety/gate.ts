@@ -17,6 +17,7 @@ import { collectFor } from './escalation.js';
 import { GATE_VERSION } from './version.js';
 import { withKnowledgeNotices } from './knowledge.js';
 import { detectBypassIntent } from './lexicon.js';
+import { withOrderedMissing } from './missing-order.js';
 import { applyPhotoRules, PHOTO_ONLY_BASIS } from './photos.js';
 import {
   approvesSafetyStep,
@@ -295,5 +296,6 @@ export function applyGate(input: GateInput): DiagnosticAnswer {
     // AC-09: версията на промпта И на правилата на Gate, дали отговора.
     promptVersion: `${input.promptVersion}+${GATE_VERSION}`,
   };
-  return withKnowledgeNotices(answer, retrieval, cited);
+  // 11. Липсващите данни — в реда на диагностичната стойност (FR-07, `missing-order.ts`).
+  return withOrderedMissing(withKnowledgeNotices(answer, retrieval, cited));
 }

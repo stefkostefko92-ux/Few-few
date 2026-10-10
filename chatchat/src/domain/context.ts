@@ -39,6 +39,8 @@ export function redactContext(ctx: DiagnosticContext): DiagnosticContext {
     ...ctx,
     symptoms: ctx.symptoms.map(redactPii),
     observations: ctx.observations.map(redactPii),
+    // FR-01: опциите са технически данни, но се пишат и на ръка — същото маскиране.
+    options: Object.fromEntries(Object.entries(ctx.options).map(([k, v]) => [k, redactPii(v)])),
   };
 }
 

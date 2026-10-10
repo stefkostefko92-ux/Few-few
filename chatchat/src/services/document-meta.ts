@@ -1,11 +1,13 @@
 import { z } from 'zod';
 import { compareVersions, isVersion } from '../domain/versions.js';
+import { BoardOptionsSchema } from '../store/scope.js';
 
 /**
  * Задължителните метаданни на документ (§7.2, §4.1): продукт (правило за приложимост), ревизия,
  * фърмуер — ИЗРИЧЕН обхват или изрично „всички версии“ (никога мълчалив null), език, тип, статус
  * (DRAFT при приемане), дата на валидност (effectiveFrom задължителна, effectiveTo по избор). По
- * избор правилото е за КОНКРЕТНО табло (сериен номер) — уникалната схема на таблото.
+ * избор правилото е за КОНКРЕТНО табло (сериен номер) — уникалната схема на таблото — и/или за
+ * конфигурация с дадени опции (FR-01, напр. само с инвертор VF-3).
  */
 
 const version = z.string().trim().max(20).refine(isVersion, 'версия като 4.2.1');
@@ -20,6 +22,11 @@ export const ApplicabilityInputSchema = z
     allFirmware: z.boolean().optional(),
     /** Само за това табло (сериен номер в клиента; моделът трябва да е неговият). */
     deviceSerial: z.string().trim().min(1).max(80).optional(),
+    /**
+     * Само за конфигурация с тези опции (FR-01): { inverter: "VF-3" } — равенство ключ/стойност
+     * с опциите в контекста на случая; липсва/празно = всички конфигурации.
+     */
+    options: BoardOptionsSchema.optional(),
   })
   .refine((a) => (a.allFirmware === true) !== (a.fwMin !== undefined || a.fwMax !== undefined), {
     path: ['allFirmware'],

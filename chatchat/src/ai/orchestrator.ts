@@ -17,7 +17,12 @@ import {
   retrieve,
   versionOf,
 } from '../retrieval/retrieve.js';
-import type { EvidenceItem, KnowledgeStore, SearchScope } from '../retrieval/types.js';
+import type {
+  EvidenceItem,
+  KnowledgeStore,
+  RetrievalResult,
+  SearchScope,
+} from '../retrieval/types.js';
 import { noEvidenceAnswer } from '../safety/escalation.js';
 import { applyGate } from '../safety/gate.js';
 import { NO_ATTACHMENTS, sentInputs, type ModelAttachments } from './attachments.js';
@@ -31,6 +36,7 @@ import {
 } from './messages.js';
 import type { DiagnosisModel } from './model.js';
 import { PROMPT_VERSION, SYSTEM_PROMPT, renderCaseMessage, type Locale } from './prompt.js';
+import { auditToolCall, type ToolCallAudit } from './tool-audit.js';
 import { SUBMIT_TOOL, TOOLS, runReadTool, validateSubmission } from './tools.js';
 
 /**
@@ -71,6 +77,13 @@ export interface DiagnoseOutput {
   evidence: EvidenceItem[];
   usage: { inputTokens: number; outputTokens: number; cacheReadTokens: number; toolRounds: number };
   modelCalled: boolean;
+  /** FR-12: всяко извикване на инструмент — име, ключове, брой резултати; без текста на заявките. */
+  toolCalls: ToolCallAudit[];
+  /**
+   * Конфликтите, отчетени от СИСТЕМАТА (търсенето/финалният пакет — `findConflicts`), не от модела:
+   * от тях става предложение към отговорника за знанието (§11.3, services/proposals/conflicts.ts).
+   */
+  conflicts: RetrievalResult['conflicts'];
 }
 
 /** Колко инструмента в един ход най-много се изпълняват; останалите получават грешка. */
@@ -100,6 +113,10 @@ export async function diagnose(
   const inputs = { attachments: sentInputs(files), notSent: files.notSent };
   const initialLevel = evidenceLevel(initial, caseIds);
   const usage = { inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, toolRounds: 0 };
+  const toolCalls: ToolCallAudit[] = [];
+  /** Отказан инструмент (таван) — в одита като неизпълнен. */
+  const notExecuted = (u: ToolUseBlock) =>
+    toolCalls.push(auditToolCall(u.name, u.input, { results: 0, isError: true }, false));
 
   // 1. Нищо съвместимо → без модела: нищо не може да бъде измислено (AC-04, NFR-05).
   if (initialLevel === 'none') {
@@ -115,6 +132,8 @@ export async function diagnose(
       evidence: initial.items,
       usage,
       modelCalled: false,
+      toolCalls,
+      conflicts: initial.conflicts,
     };
   }
 
@@ -230,6 +249,7 @@ export async function diagnose(
       failure = 'ai.noSubmission';
       if (nudgeUsed) break;
       nudgeUsed = true;
+      for (const u of uses) notExecuted(u);
       messages.push({
         role: 'user',
         content: uses.map((u) =>
@@ -246,10 +266,12 @@ export async function diagnose(
     const results: ToolResultBlockParam[] = [];
     for (const [i, u] of uses.entries()) {
       if (i >= MAX_TOOLS_PER_ROUND) {
+        notExecuted(u);
         results.push(toolResult(u.id, 'Not executed: too many tool calls in one round.', true));
         continue;
       }
       const outcome = await runReadTool(u.name, u.input, toolCtx);
+      toolCalls.push(auditToolCall(u.name, u.input, outcome));
       results.push(toolResult(u.id, outcome.content, outcome.isError));
     }
     messages.push({ role: 'user', content: results });
@@ -274,7 +296,14 @@ export async function diagnose(
     answer.escalation.recommended = true;
     answer.gate.decisions.push(failure);
   }
-  return { answer, evidence: retrieval.items, usage, modelCalled: true };
+  return {
+    answer,
+    evidence: retrieval.items,
+    usage,
+    modelCalled: true,
+    toolCalls,
+    conflicts: retrieval.conflicts,
+  };
 }
 
 /** Всички E… референции, на които моделът се позовава (преди Gate да е изпуснал невалидните). */

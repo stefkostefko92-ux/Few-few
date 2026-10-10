@@ -33,6 +33,8 @@ export interface RuleSpec {
   allFirmware?: boolean;
   /** Само за това табло (уникалната му схема). */
   deviceSerial?: string;
+  /** Само за конфигурация с тези опции (FR-01). */
+  options?: Record<string, string>;
 }
 
 export interface DocSpec {

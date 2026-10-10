@@ -101,6 +101,9 @@ export async function saveAiAnswer(
       attachmentsSent: sent,
       attachmentsNotSent: notSent,
       usage: result.usage,
+      // FR-12: име, ключове на аргументите и брой резултати на всеки инструмент — без текста на
+      // заявките (само дължина + съкратен SHA-256, `ai/tool-audit.ts`).
+      toolCalls: result.toolCalls,
     },
   });
   return aiMessage;

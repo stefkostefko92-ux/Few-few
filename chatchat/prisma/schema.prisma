@@ -63,6 +63,9 @@ model Tenant {
   stepExecutions CaseStepExecution[]
   ticketEvents   TicketEvent[]
   handoffs       CaseHandoff[]
+
+  // Обратната връзка към знанието (FR-10, §11.3): опашката на отговорника за знанието.
+  knowledgeProposals KnowledgeProposal[]
 }
 
 /// Фирма в рамките на клиента (монтажник, дистрибутор, сервиз) — разделя портала.
@@ -264,12 +267,15 @@ model Document {
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 
-  tenant        Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  supersedes    Document?               @relation("Supersedes", fields: [supersedesId], references: [id], onDelete: Restrict)
-  supersededBy  Document[]              @relation("Supersedes")
-  applicability DocumentApplicability[]
-  chunks        DocumentChunk[]
-  errors        ErrorCode[]
+  tenant          Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  supersedes      Document?               @relation("Supersedes", fields: [supersedesId], references: [id], onDelete: Restrict)
+  supersededBy    Document[]              @relation("Supersedes")
+  applicability   DocumentApplicability[]
+  chunks          DocumentChunk[]
+  errors          ErrorCode[]
+  /// Предложенията (FR-10): черновата SOLVED_CASE и документът, с който е прието предложение.
+  proposalDrafts  KnowledgeProposal[]     @relation("ProposalDraft")
+  proposalResults KnowledgeProposal[]     @relation("ProposalResultDocument")
 
   @@unique([tenantId, code, revision])
   @@index([tenantId, status])
@@ -291,6 +297,10 @@ model DocumentApplicability {
   allFirmware Boolean @default(false)
   /// Само за това табло (уникална схема); null = за всички табла на модела.
   deviceId    String?
+  /// Ограничение по опциите на таблото (FR-01): {"inverter": "VF-3"} — всяка двойка ключ/стойност
+  /// трябва да е РАВНА на опцията в контекста на случая; {} = всички конфигурации. Съвпадението
+  /// е само в `retrieval/applicability.ts` + `store/scope.ts` (несъвпадение → неприложим, не скрит).
+  options     Json    @default("{}")
 
   document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
   product  Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
@@ -377,9 +387,10 @@ model ErrorCode {
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
 
-  product        Product         @relation(fields: [productId], references: [id], onDelete: Restrict)
-  sourceDocument Document?       @relation(fields: [sourceDocumentId], references: [id], onDelete: Restrict)
+  product        Product             @relation(fields: [productId], references: [id], onDelete: Restrict)
+  sourceDocument Document?           @relation(fields: [sourceDocumentId], references: [id], onDelete: Restrict)
   relations      ErrorRelation[]
+  proposals      KnowledgeProposal[]
 
   @@index([tenantId, code])
   @@index([tenantId, status])
@@ -479,6 +490,7 @@ model Case {
   stepApprovals  StepApproval[]
   stepExecutions CaseStepExecution[]
   handoffs       CaseHandoff[]
+  proposals      KnowledgeProposal[]
 
   @@index([tenantId, status])
   @@index([companyId])
@@ -520,6 +532,7 @@ model CaseMessage {
   attachments       Attachment[]
   stepApprovals     StepApproval[]
   stepExecutions    CaseStepExecution[]
+  proposals         KnowledgeProposal[]
 
   @@unique([caseId, clientMessageId])
   @@index([caseId, createdAt])
@@ -792,9 +805,88 @@ model Feedback {
   comment   String?
   createdAt DateTime       @default(now())
 
-  message CaseMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  message   CaseMessage         @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  proposals KnowledgeProposal[]
 
   @@unique([messageId, userId])
+}
+
+// ─── Обратна връзка към знанието (FR-10, §11.3) ───────────────────────────────────────────────
+
+/**
+ * Откъде идва предложението за подобрение на знанието.
+ */
+enum ProposalSource {
+  FEEDBACK // „Non utile“ / „Errore tecnico“ с коментар върху AI отговор
+  SOLVED_CASE // персоналът предлага решен случай → ЧЕРНОВА документ SOLVED_CASE (§11.3 „richiede review“)
+  CONFLICT // търсенето/Safety Gate е отчело конфликт между източници (§11.3 „flag per owner“)
+}
+
+/**
+ * Опашката на KNOWLEDGE_OWNER: NEW → IN_REVIEW → ACCEPTED (с връзка) | REJECTED (с причина).
+ */
+enum ProposalStatus {
+  NEW
+  IN_REVIEW
+  ACCEPTED
+  REJECTED
+}
+
+/**
+ * Предложение за подобрение на знанието — ВЪТРЕШНО: вижда го само kb:manage, порталът никога.
+ * Свободният текст (коментар, причина) е маскиран с `redactPii`; имена на хора в него няма.
+ * Конфликтите са дедупликирани по `dedupeKey` (SHA-256 на вида, кода и източниците) —
+ * повторението само увеличава `occurrences` (services/proposals/conflicts.ts).
+ */
+model KnowledgeProposal {
+  id               String          @id @default(cuid())
+  tenantId         String
+  source           ProposalSource
+  status           ProposalStatus  @default(NEW)
+  /// Случаят/отговорът, от който идва (вътрешна връзка; ретенцията на случая я нулира).
+  caseId           String?
+  messageId        String?
+  feedbackId       String?
+  rating           FeedbackRating?
+  /// Коментарът на техника или бележката на предложилия — маскирани (redactPii), до 1000 знака.
+  comment          String?
+  /// CONFLICT: подписът за дедупликация + какво противоречи на какво (само кодове/ревизии/id).
+  dedupeKey        String?
+  conflict         Json?
+  occurrences      Int             @default(1)
+  lastSeenAt       DateTime        @default(now())
+  /// SOLVED_CASE: черновата, създадена през нормалния жизнен цикъл (DRAFT → REVIEW → PUBLISHED).
+  draftDocumentId  String?
+  /// ACCEPTED: с какво е прието — новият/поправеният документ или код за грешка.
+  resultDocumentId String?
+  resultErrorId    String?
+  /// null = автоматично (конфликт, открит от системата).
+  createdById      String?
+  reviewerId       String?
+  decidedById      String?
+  decidedAt        DateTime?
+  /// REJECTED: причината — маскирана (redactPii).
+  rejectReason     String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  tenant         Tenant       @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  case           Case?        @relation(fields: [caseId], references: [id], onDelete: SetNull)
+  message        CaseMessage? @relation(fields: [messageId], references: [id], onDelete: SetNull)
+  feedback       Feedback?    @relation(fields: [feedbackId], references: [id], onDelete: SetNull)
+  draftDocument  Document?    @relation("ProposalDraft", fields: [draftDocumentId], references: [id], onDelete: Restrict)
+  resultDocument Document?    @relation("ProposalResultDocument", fields: [resultDocumentId], references: [id], onDelete: Restrict)
+  resultError    ErrorCode?   @relation(fields: [resultErrorId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, status, createdAt])
+  @@index([tenantId, source])
+  @@index([tenantId, dedupeKey])
+  @@index([caseId])
+  @@index([messageId])
+  @@index([feedbackId])
+  @@index([draftDocumentId])
+  @@index([resultDocumentId])
+  @@index([resultErrorId])
 }
 
 /// Неизменим одит (§15.1, FR-12): верига hash = SHA-256(prevHash | at | action | tenant | actor | object | detail).

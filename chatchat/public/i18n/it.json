@@ -1474,5 +1474,6 @@
   "settings.lang.bg": "Български",
   "settings.langHint": "Lingua dell’interfaccia, delle email e delle risposte dell’assistente AI.",
   "settings.langSaved": "Lingua aggiornata: anche le risposte AI saranno in questa lingua.",
-  "settings.langLocalOnly": "Lingua cambiata solo su questo dispositivo: non è stato possibile salvarla."
+  "settings.langLocalOnly": "Lingua cambiata solo su questo dispositivo: non è stato possibile salvarla.",
+  "code.collect.errorCode": "Il codice errore così come appare sul display del quadro"
 }

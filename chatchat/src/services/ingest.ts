@@ -186,6 +186,7 @@ export async function ingestDocument(
             fwMax: a.fwMax ?? null,
             allFirmware: a.allFirmware === true,
             deviceId: a.deviceSerial ? (devices.ids.get(a.deviceSerial) ?? null) : null,
+            options: a.options ?? {},
           })),
         },
       },
