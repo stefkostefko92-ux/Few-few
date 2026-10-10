@@ -43,7 +43,7 @@ export default async function ArchivedTermsPage({ params }: { params: Promise<{ 
   return (
     <>
       <SiteHeader />
-      <main className="legal">
+      <main id="main" className="legal">
         <h1>{t('archiveItem', { label: h.label, date })}</h1>
         <p className="lead">{t('archiveLead', { label: h.label, date, changes: article('changes') })}</p>
         <p><Link href="/privacy">{t('archiveCurrent')}</Link></p>

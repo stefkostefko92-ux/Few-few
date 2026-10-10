@@ -7,9 +7,8 @@ import { isLocale, type Locale } from '@/i18n/locales';
 import { publicBaseUrl } from '@/lib/env';
 import { PACK, SEAT_PACKS, packAmount } from '@/lib/billing';
 import { billingConfig } from '@/lib/billing-config';
-import { monthlyPrice, stripeErrorOf, type MonthlyPrice } from '@/lib/stripe';
+import { publicMonthlyPrice } from '@/lib/billing-price';
 import { money } from '@/lib/money';
-import { log } from '@/lib/log';
 import { PROVIDER } from '@/lib/provider';
 import { MIN_TRIAL_DAYS, NOTICE_DAYS } from '@/lib/legal';
 import { SITE_NAME, breadcrumbLd, faqLd, ldJson, organizationLd, pageMetadata, softwareLd, websiteLd } from '@/lib/seo';
@@ -30,27 +29,11 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     keywords: t('keywords').split(',').map((k) => k.trim()), indexable: true });
 }
 
-// after Stripe failed to answer, the page says "on request" for a minute before asking again (a public page: not a
-// call to Stripe and a warning in the log on every visit)
-const RETRY_MS = 60 * 1000;
-let failedAt = 0;
-
-async function currentPrice(): Promise<MonthlyPrice | null> {
-  if (Date.now() - failedAt < RETRY_MS) return null;
-  try {
-    return await monthlyPrice();
-  } catch (err) {
-    failedAt = Date.now();
-    log.warn({ err: stripeErrorOf(err) }, 'monthly price not read for the pricing page');
-    return null;
-  }
-}
-
 export default async function PricingPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const [t, tb] = await Promise.all([getTranslations('pricing'), getTranslations('billing')]);
-  const cfg = billingConfig(), price = cfg ? await currentPrice() : null;
+  const cfg = billingConfig(), price = cfg ? await publicMonthlyPrice() : null;
   const base = publicBaseUrl(), url = `${base}/${locale}/pricing`;
   const nonce = (await headers()).get('x-nonce') ?? undefined;
   const eur = (cents: number): string => (price ? money(cents, price.currency, locale) : '');
@@ -70,8 +53,8 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
     breadcrumbLd([{ name: SITE_NAME, url: `${base}/${locale}` }, { name: t('title'), url }]), faqLd(faq)]);
   return (
     <>
-      <SiteHeader />
-      <main className="legal pricing">
+      <SiteHeader at="pricing" />
+      <main id="main" className="legal pricing">
         <h1>{t('title')}</h1>
         <p id="answer" className="lead">{answer}</p>
         <section aria-labelledby="q-packs">

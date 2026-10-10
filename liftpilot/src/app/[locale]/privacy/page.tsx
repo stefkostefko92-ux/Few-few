@@ -34,7 +34,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
   return (
     <>
       <SiteHeader />
-      <main className="legal">
+      <main id="main" className="legal">
         <h1>{t('title')}</h1>
         <div className="legal-meta">
           <p className="note"><time dateTime={TERMS_DATE}>{t('updated', { version: TERMS_VERSION, date: termsDateText(locale) })}</time></p>
