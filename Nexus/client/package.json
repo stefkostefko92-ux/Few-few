@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "bake:map": "node scripts/bake-map/bake.mjs"
   },
   "dependencies": {
     "@fontsource/cinzel": "^5.1.0",

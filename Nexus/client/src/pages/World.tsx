@@ -2,29 +2,21 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useStore } from '../lib/store';
+import { WORLD_PINS } from '../data/worldPins';
+import '../styles/world.css';
 
 /**
- * Realm of Nexus — premium world map.
- *
- * The map is composited from authored public-domain art:
- *   - Background: Olaus Magnus' Carta Marina (1539). A famous monsters-
- *     and-ships sea map; we treat it in-fiction as the master cartograph
- *     of the realm. Public domain.
- *   - Compass rose corner: the Cantino windrose (c.1502). Public domain.
- *
- * Region pins are floated over the texture as positioned divs — each one
- * a wax-sealed brass medallion with calligraphic name plate, hand-tied
- * cord, and a glow tinted to the region's biome.
- *
- * Sources catalogued in /public/assets/map/CREDITS.md.
+ * Карта на света — фотореалистичен рендер (собствено генерирано съдържание,
+ * client/scripts/bake-map). Пиновете се позиционират от проекцията на
+ * камерата на рендера (src/data/worldPins.ts). Zoom/pan: колелце, влачене,
+ * pinch; клавиши +/-/стрелки. Уважава prefers-reduced-motion.
  */
 
 interface Region {
   slug: string;
   level: string;
   minLevel: number;
-  /** Fractional position on the map image (0..1). Hand-tuned to land on
-   *  visually interesting spots of the Carta Marina. */
+  /** Резервна позиция (0..1) — реалната идва от WORLD_PINS. */
   x: number;
   y: number;
   /** Biome glow colour. */
@@ -73,70 +65,151 @@ const REGIONS: Region[] = [
 export default function World(): React.ReactElement {
   const { t } = useTranslation();
   const char = useStore((s) => s.character);
+  const frame = React.useRef<HTMLDivElement>(null);
+  const [view, setView] = React.useState({ k: 1, x: 0, y: 0 });
+  const drag = React.useRef<{ x: number; y: number; vx: number; vy: number; moved: boolean } | null>(null);
+  const pts = React.useRef(new Map<number, { x: number; y: number }>());
+  const pinch = React.useRef(0);
+
+  const clamp = React.useCallback((v: { k: number; x: number; y: number }) => {
+    const el = frame.current;
+    const k = Math.min(4, Math.max(1, v.k));
+    if (!el) return { ...v, k };
+    const w = el.clientWidth, h = el.clientHeight;
+    return { k, x: Math.min(0, Math.max(w - w * k, v.x)), y: Math.min(0, Math.max(h - h * k, v.y)) };
+  }, []);
+  const zoomAt = React.useCallback((f: number, cx: number, cy: number) => {
+    setView((v) => {
+      const k = Math.min(4, Math.max(1, v.k * f));
+      const r = k / v.k;
+      return clamp({ k, x: cx - (cx - v.x) * r, y: cy - (cy - v.y) * r });
+    });
+  }, [clamp]);
+
+  React.useEffect(() => {
+    const el = frame.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const b = el.getBoundingClientRect();
+      zoomAt(Math.exp(-e.deltaY * 0.0015), e.clientX - b.left, e.clientY - b.top);
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, [zoomAt]);
+
+  const onDown = (e: React.PointerEvent) => {
+    pts.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pts.current.size === 2) {
+      const [a, b] = [...pts.current.values()];
+      pinch.current = Math.hypot(a.x - b.x, a.y - b.y);
+    }
+    drag.current = { x: e.clientX, y: e.clientY, vx: view.x, vy: view.y, moved: false };
+  };
+  const onMove = (e: React.PointerEvent) => {
+    if (!pts.current.has(e.pointerId)) return;
+    pts.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pts.current.size === 2) {
+      const [a, b] = [...pts.current.values()];
+      const d = Math.hypot(a.x - b.x, a.y - b.y);
+      const bb = frame.current!.getBoundingClientRect();
+      if (pinch.current) zoomAt(d / pinch.current, (a.x + b.x) / 2 - bb.left, (a.y + b.y) / 2 - bb.top);
+      pinch.current = d;
+      if (drag.current) drag.current.moved = true;
+      return;
+    }
+    const d = drag.current;
+    if (!d) return;
+    const dx = e.clientX - d.x, dy = e.clientY - d.y;
+    if (Math.abs(dx) + Math.abs(dy) > 4) d.moved = true;
+    if (d.moved) setView((v) => clamp({ k: v.k, x: d.vx + dx, y: d.vy + dy }));
+  };
+  const onUp = (e: React.PointerEvent) => {
+    pts.current.delete(e.pointerId);
+    pinch.current = 0;
+    if (pts.current.size === 0) setTimeout(() => { drag.current = null; }, 0);
+  };
+  const onKey = (e: React.KeyboardEvent) => {
+    const el = frame.current;
+    if (!el || e.target !== el) return;
+    const w = el.clientWidth, h = el.clientHeight;
+    if (e.key === '+' || e.key === '=') zoomAt(1.3, w / 2, h / 2);
+    else if (e.key === '-') zoomAt(1 / 1.3, w / 2, h / 2);
+    else if (e.key === '0') setView({ k: 1, x: 0, y: 0 });
+    else if (e.key === 'ArrowLeft') setView((v) => clamp({ ...v, x: v.x + 60 }));
+    else if (e.key === 'ArrowRight') setView((v) => clamp({ ...v, x: v.x - 60 }));
+    else if (e.key === 'ArrowUp') setView((v) => clamp({ ...v, y: v.y + 60 }));
+    else if (e.key === 'ArrowDown') setView((v) => clamp({ ...v, y: v.y - 60 }));
+    else return;
+    e.preventDefault();
+  };
 
   return (
-    <div className="panel realm-map">
-      <div className="panel-header">
+    <section className="panel wm" aria-label={t('world.title')}>
+      <header className="wm-head">
         <div>
-          <h2 className="panel-title">{t('world.title')}</h2>
-          <div className="panel-subtitle">{t('world.subtitle')}</div>
+          <h2 className="wm-title">{t('world.title')}</h2>
+          <div className="wm-sub">{t('world.subtitle')}</div>
+        </div>
+        <div className="wm-ctl" role="group" aria-label="Zoom">
+          <button type="button" onClick={() => zoomAt(1 / 1.3, (frame.current?.clientWidth ?? 0) / 2, (frame.current?.clientHeight ?? 0) / 2)} aria-label="−">−</button>
+          <button type="button" onClick={() => setView({ k: 1, x: 0, y: 0 })} aria-label="1:1">1×</button>
+          <button type="button" onClick={() => zoomAt(1.3, (frame.current?.clientWidth ?? 0) / 2, (frame.current?.clientHeight ?? 0) / 2)} aria-label="+">+</button>
+        </div>
+      </header>
+
+      <div
+        ref={frame}
+        className="wm-frame"
+        tabIndex={0}
+        role="group"
+        aria-label={t('world.title')}
+        onPointerDown={onDown}
+        onPointerMove={onMove}
+        onPointerUp={onUp}
+        onPointerCancel={onUp}
+        onKeyDown={onKey}
+      >
+        <div className="wm-stage" style={{ transform: `translate(${view.x}px, ${view.y}px) scale(${view.k})`, ['--inv' as any]: 1 / view.k }}>
+          <img
+            className="wm-img"
+            src="/assets/map/world-1920.webp"
+            srcSet="/assets/map/world-960.webp 960w, /assets/map/world-1920.webp 1920w, /assets/map/world.webp 3840w"
+            sizes="(min-width: 1100px) 1100px, 100vw"
+            alt="Фотореалистична нощна карта на Нексус: лунно осветен континент с планини, реки, лава и замъци, заобиколен от острови."
+            draggable={false}
+          />
+          {REGIONS.map((r) => {
+            const locked = char ? char.level < r.minLevel : false;
+            const name = t(`world.regions.${r.slug}.name`, { defaultValue: r.name });
+            const lore = t(`world.regions.${r.slug}.lore`, { defaultValue: r.lore });
+            const [px, py] = WORLD_PINS[r.slug] ?? [r.x, r.y];
+            return (
+              <Link
+                key={r.slug}
+                to={`/app/hunting?region=${r.slug}`}
+                className={`wm-pin ${locked ? 'locked' : ''} ${py < 0.34 ? 'down' : ''} ${px > 0.72 ? 'left' : ''}`}
+                style={{ left: `${px * 100}%`, top: `${py * 100}%`, ['--pin' as any]: r.color }}
+                onClick={(e) => { if (drag.current?.moved) e.preventDefault(); }}
+                aria-label={locked
+                  ? `${name} (${t('common.lv')} ${r.level}) — ${t('world.requiresLv', { level: r.minLevel })}`
+                  : `${name} (${t('common.lv')} ${r.level})`}
+              >
+                <span className="wm-seal" aria-hidden>{locked ? '' : r.stamp}</span>
+                <span className="wm-card">
+                  <img src={`/assets/regions/${r.slug}.webp`} alt="" loading="lazy" draggable={false} />
+                  <strong>{name}</strong>
+                  <em>{t('common.lv')} {r.level}</em>
+                  <span className="wm-lore">{lore}</span>
+                  <span className={`wm-cta ${locked ? 'locked' : ''}`}>
+                    {locked ? t('world.requiresLv', { level: r.minLevel }) : t('world.enter')}
+                  </span>
+                </span>
+              </Link>
+            );
+          })}
         </div>
       </div>
-
-      <div className="realm-map-frame">
-        {/* HD parchment — Carta Marina (1539). */}
-        <img className="realm-map-bg" src="/assets/map/parchment.jpg" alt="" aria-hidden />
-        {/* Aged-paper colour grade + dark vignette so the gold pins read. */}
-        <div className="realm-map-tint" aria-hidden />
-        <div className="realm-map-vignette" aria-hidden />
-
-        {/* Ornamental corner flourishes. */}
-        <div className="realm-corner tl" aria-hidden />
-        <div className="realm-corner tr" aria-hidden />
-        <div className="realm-corner bl" aria-hidden />
-        <div className="realm-corner br" aria-hidden />
-
-        {/* Compass rose — Cantino windrose (c.1502). */}
-        <img className="realm-compass" src="/assets/map/compass.jpg" alt="" aria-hidden />
-
-        {/* Region pins. The whole medallion is a real anchor so every pin
-            is tappable on touch and reachable by keyboard; the card is a
-            hover/focus tooltip. A pin always deep-links to its own region. */}
-        {REGIONS.map((r) => {
-          // Match the hunting unlock gate exactly (gate === minLevel) so a
-          // pin never invites you into a region the hunt won't yet open.
-          const locked = char ? char.level < r.minLevel : false;
-          const name = t(`world.regions.${r.slug}.name`, { defaultValue: r.name });
-          const lore = t(`world.regions.${r.slug}.lore`, { defaultValue: r.lore });
-          return (
-            <Link
-              key={r.slug}
-              to={`/app/hunting?region=${r.slug}`}
-              className={`realm-pin ${locked ? 'locked' : ''}`}
-              style={{
-                left: `${r.x * 100}%`,
-                top: `${r.y * 100}%`,
-                ['--pin-color' as any]: r.color,
-              }}
-              aria-label={locked
-                ? `${name} (${t('common.lv')} ${r.level}) — ${t('world.requiresLv', { level: r.minLevel })}`
-                : `${name} (${t('common.lv')} ${r.level})`}
-            >
-              <div className="realm-pin-seal" aria-hidden>
-                <span className="realm-pin-stamp">{r.stamp}</span>
-              </div>
-              <div className="realm-pin-card" role="presentation">
-                <strong className="realm-pin-name">{name}</strong>
-                <div className="realm-pin-meta">{t('common.lv')} {r.level}</div>
-                <div className="realm-pin-lore">{lore}</div>
-                <div className={`realm-pin-cta ${locked ? 'locked' : ''}`}>
-                  {locked ? t('world.requiresLv', { level: r.minLevel }) : `${t('world.enter')} ▸`}
-                </div>
-              </div>
-            </Link>
-          );
-        })}
-      </div>
-    </div>
+    </section>
   );
 }
