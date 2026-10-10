@@ -32,9 +32,9 @@ export default function LandingNav({ links, ui, onSignIn, inviteUrl, extra = nul
       <div className="flex items-center gap-3">
         {extra}
         {inviteUrl && (
-          <a href={inviteUrl} target="_blank" rel="noopener noreferrer" className="hidden lg:inline-flex cs-btn-secondary text-xs">{ui.invite}</a>
+          <a href={inviteUrl} target="_blank" rel="noopener noreferrer" className="hidden lg:inline-flex cs-btn-secondary cs-btn-sm">{ui.invite}</a>
         )}
-        <button onClick={onSignIn} className="cs-btn-primary text-xs whitespace-nowrap">{ui.signIn}</button>
+        <button onClick={onSignIn} className="cs-btn-primary cs-btn-sm">{ui.signIn}</button>
         <button
           ref={btnRef}
           type="button"

@@ -21,7 +21,7 @@ const ProductTour = lazy(() => import("../components/ProductTour"));
 const ReplaceBots = lazy(() => import("../components/ReplaceBots"));
 // Под сгъвката и със собствен текст на 8 езика → собствен чънк (бюджет 30 KB).
 const BaitShowcase = lazy(() => import("../components/BaitShowcase"));
-import FeatureLinks from "../components/FeatureLinks";
+import { TrustLine, LandingFooter } from "../components/LandingParts";
 import { LANDING_TRANSLATIONS } from "../i18n/landing";
 import { useScrollReveal } from "../hooks/useScrollReveal";
 import { useMagnetic, useTiltCard } from "../hooks/useMicroInteractions";
@@ -139,15 +139,15 @@ export default function LandingLocalized({ locale }) {
               {t.sub}
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <button ref={heroCtaRef} onClick={handleLogin} className="cs-btn-primary text-base px-8 py-4">
+              <button ref={heroCtaRef} onClick={handleLogin} className="cs-btn-primary cs-btn-lg">
                 <span>{t.cta}</span>
                 <ArrowRight className="w-4 h-4 ml-1" />
               </button>
-              <a href="#pricing" className="cs-btn-secondary text-base px-8 py-4">
-                {t.seePricing}
+              <a href="#pricing" className="cs-btn-secondary cs-btn-lg">
+                {t.seePricing.replace(/\s*→\s*$/, "")}
               </a>
             </div>
-            <p className="text-sm text-cs-dim mt-6">{t.ctaNote}</p>
+            <TrustLine className="mt-6 lg:justify-center" text={t.ctaNote} />
           </div>
         </section>
 
@@ -264,7 +264,7 @@ export default function LandingLocalized({ locale }) {
             {t.finalH}
           </h2>
           <p className="text-cs-muted mb-8 max-w-lg mx-auto">{t.finalSub}</p>
-          <button ref={finalCtaRef} onClick={handleLogin} className="cs-btn-primary text-base px-8 py-4">
+          <button ref={finalCtaRef} onClick={handleLogin} className="cs-btn-primary cs-btn-lg">
             <span>{t.finalCta}</span>
             <ArrowRight className="w-4 h-4 ml-1" />
           </button>
@@ -272,61 +272,8 @@ export default function LandingLocalized({ locale }) {
 
         </DeferredSections>
 
-        {/* FOOTER */}
-        <footer className="px-6 sm:px-8 py-10 border-t border-cs-border/50">
-          <div className="max-w-6xl mx-auto flex flex-col gap-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-              <div className="flex items-center gap-3">
-                <SupremeLogo size={36} />
-                <div className="flex flex-col leading-tight">
-                  <SupremeWordmark className="text-base" />
-                  <span className="text-xs text-cs-dim mt-1">
-                    © 2026 {COMPANY_NAME} · EIK 208725180 · VAT BG208725180 · EU-hosted
-                  </span>
-                  <span className="text-xs text-cs-dim mt-1">
-                    Carbon Stealth VCC · ul. Samuil 3, 2670 Bobov dol, Bulgaria ·{" "}
-                    <a href="mailto:legal@carbonstealth.eu" className="text-cs-cyan underline">legal@carbonstealth.eu</a>
-                  </span>
-                </div>
-              </div>
-              <div className="flex flex-wrap items-center gap-4 font-mono text-xs text-cs-dim">
-                <a href="/terms" className="hover:text-cs-cyan transition-colors uppercase">{t.footer.terms}</a>
-                <a href="/privacy" className="hover:text-cs-cyan transition-colors uppercase">{t.footer.privacy}</a>
-                <a href="/cookies" className="hover:text-cs-cyan transition-colors uppercase">{t.footer.cookies}</a>
-                <a href="/accessibility" className="hover:text-cs-cyan transition-colors uppercase">{t.footer.accessibility || "Accessibility"}</a>
-                <a href="/status" className="hover:text-cs-cyan transition-colors uppercase">{t.footer.status}</a>
-                <a href={SUPPORT_URL} target="_blank" rel="noopener" className="hover:text-cs-cyan transition-colors">DISCORD</a>
-              </div>
-            </div>
-            {/* Ръководства и сравнения. Дотук тези пет страници се стигаха САМО
-                отвътре в таблото (тоест иска вход), една от друга и от
-                sitemap.xml — посетител на началната страница нямаше НИКАКЪВ път
-                до тях. Документацията беше невидима точно за хората, за които е
-                писана, а страница без вътрешни връзки не получава и тежест при
-                обхождането. Съдържанието на самите страници е на английски;
-                етикетите тук са на езика на посетителя, за да се разбира какво
-                отваря. (Собственикът, 12.08.2026) */}
-            {t.guides && (
-              <nav aria-label={t.guides.heading}
-                   className="flex flex-wrap items-center justify-center gap-4 text-xs text-cs-dim border-t border-cs-border/30 pt-4">
-                <span className="text-cs-muted font-semibold">{t.guides.heading}</span>
-                <a href="/guides/ticket-panel-setup" className="hover:text-cs-cyan transition-colors">{t.guides.panel}</a>
-                <a href="/guides/best-discord-ticket-bot" className="hover:text-cs-cyan transition-colors">{t.guides.best}</a>
-                <a href="/guides/gdpr-discord-bot" className="hover:text-cs-cyan transition-colors">{t.guides.gdpr}</a>
-                <a href="/compare/ticket-tool-alternative" className="hover:text-cs-cyan transition-colors">{t.guides.vsTicketTool}</a>
-                <a href="/compare/appy-alternative" className="hover:text-cs-cyan transition-colors">{t.guides.vsAppy}</a>
-              </nav>
-            )}
-            <FeatureLinks heading={t.guides?.features || "Features"} />
-
-            <div className="text-center text-xs font-mono text-cs-dim border-t border-cs-border/30 pt-4">
-              Created and Designed by{" "}
-              <a href="https://carbonstealth.eu" target="_blank" rel="noopener" className="text-cs-cyan underline">
-                Carbon Stealth VCC
-              </a>
-            </div>
-          </div>
-        </footer>
+        {/* FOOTER — общ с английския (components/LandingParts.jsx) */}
+        <LandingFooter lang={locale} ui={ui.footer} nav={ui.nav} guides={t.guides} supportUrl={SUPPORT_URL} company={COMPANY_NAME} />
       </div>
     </div>
   );
@@ -347,7 +294,7 @@ function TierCard({ icon: Icon, tier, onCta, ctaHref, highlighted = false, compa
   return (
     <div ref={tiltRef} className={cardCls}>
       {highlighted && tier.badge && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-cs-gold text-black text-[10px] font-bold uppercase tracking-wider">
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-cs-gold text-black text-xs font-bold">
           {tier.badge}
         </div>
       )}
@@ -357,13 +304,13 @@ function TierCard({ icon: Icon, tier, onCta, ctaHref, highlighted = false, compa
           <h3 className="text-xl font-bold text-cs-text">{tier.name}</h3>
         </div>
         {tier.seats && (
-          <div className="font-mono text-[10px] uppercase tracking-wider text-cs-cyan mb-1">{tier.seats}</div>
+          <div className="text-xs text-cs-cyan mb-1">{tier.seats}</div>
         )}
         <p className="text-sm text-cs-muted">{tier.tagline}</p>
       </div>
       <div className="mb-6" aria-live="polite">
         <div className="font-display text-4xl font-black text-cs-text">{price}</div>
-        <div className="text-xs text-cs-dim font-mono">{per}</div>
+        <div className="text-sm text-cs-dim mt-1">{per}</div>
       </div>
       <ul className={`space-y-2 text-sm text-cs-text flex-1 ${compact ? "mb-6" : "mb-8"}`}>
         {tier.bullets.map((b) => (

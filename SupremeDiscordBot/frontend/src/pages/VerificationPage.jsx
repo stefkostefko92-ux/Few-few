@@ -158,7 +158,7 @@ export default function VerificationPage() {
           </p>
         </div>
         <button onClick={openNew} className="cs-btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" /> New Panel
+          <Plus className="w-4 h-4" /> New panel
         </button>
       </div>
 
@@ -331,7 +331,7 @@ export default function VerificationPage() {
             </label>
 
             <details className="cs-card !p-3 !bg-cs-panel">
-              <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-[0.2em] text-cs-cyan">→ Anti-Bot & Limits</summary>
+              <summary className="cursor-pointer text-xs text-cs-cyan">→ Anti-Bot & Limits</summary>
               <div className="pt-3 space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <label className="block">

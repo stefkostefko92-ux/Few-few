@@ -295,7 +295,7 @@ export function DiscordRoleSelect({ multi = false, value, onChange, id, requireA
                           className={`w-full text-left px-3 py-2.5 flex items-center gap-2 hover:bg-cs-panel ${on ? "bg-cs-cyanGlow" : ""}`}>
                     <RoleDot color={r.color} />
                     <span className="text-sm text-cs-text truncate flex-1">{r.name}</span>
-                    {warn && <span className="text-[10px] text-warning font-mono uppercase tracking-wider flex-shrink-0">{warn}</span>}
+                    {warn && <span className="text-xs text-warning flex-shrink-0">{warn}</span>}
                     {on && <span className="text-cs-cyan text-xs flex-shrink-0" aria-hidden="true">✓</span>}
                   </button>
                 </li>

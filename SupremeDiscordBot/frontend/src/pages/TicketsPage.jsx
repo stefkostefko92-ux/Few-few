@@ -237,7 +237,7 @@ export default function TicketsPage() {
           <div className="cs-card p-0 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-white/5 text-cs-muted text-xs uppercase tracking-wider">
+                <tr className="border-b border-white/5 text-cs-muted text-xs">
                   <th className="text-left px-4 py-3">{t("common.status")}</th>
                   <th className="text-left px-4 py-3">{t("common.priority")}</th>
                   <th className="text-left px-4 py-3">#</th>
@@ -263,7 +263,7 @@ export default function TicketsPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="font-mono text-xs text-cs-cyan font-semibold">
+                      <span className="text-xs tabular-nums text-cs-cyan font-semibold">
                         {ticket.number != null ? `#${String(ticket.number).padStart(4, "0")}` : ticket.id.slice(0, 6)}
                       </span>
                     </td>
@@ -433,7 +433,7 @@ export default function TicketsPage() {
       </Modal>
 
       {/* Close Ticket Modal */}
-      <Modal open={!!closingId} onClose={() => setClosingId(null)} title="Close Ticket" maxWidth="max-w-md">
+      <Modal open={!!closingId} onClose={() => setClosingId(null)} title="Close ticket" maxWidth="max-w-md">
         <label className="block mb-4">
           <span className="cs-label">{t("ui.closeReasonOpt")}</span>
           <input
@@ -451,7 +451,7 @@ export default function TicketsPage() {
             disabled={closeMut.isPending}
             onClick={() => closeMut.mutate({ ticketId: closingId, reason: closeReason })}
           >
-            {closeMut.isPending ? "Closing…" : "Close Ticket"}
+            {closeMut.isPending ? "Closing…" : "Close ticket"}
           </button>
         </div>
       </Modal>

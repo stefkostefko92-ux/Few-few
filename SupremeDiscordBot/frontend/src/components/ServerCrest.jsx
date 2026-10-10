@@ -66,7 +66,7 @@ export default function ServerCrest({ server, botOnline }) {
           <div className="flex items-center gap-3 flex-wrap mt-2">
             {/* Тарифата — иконка + ТЕКСТ, никога само цвят. */}
             <span
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-mono uppercase tracking-[0.14em] text-cs-text"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs text-cs-text"
               style={{ borderColor: accent.rail }}
             >
               <TierIcon className="w-3.5 h-3.5" aria-hidden="true" />
@@ -74,7 +74,7 @@ export default function ServerCrest({ server, botOnline }) {
             </span>
 
             {/* Състояние на бота — точка + дума, не само точка. */}
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.14em] text-cs-muted">
+            <span className="inline-flex items-center gap-1.5 text-xs text-cs-muted">
               <span
                 className="w-1.5 h-1.5 rounded-full"
                 style={{ background: botOnline ? "rgba(74,222,128,1)" : "rgba(170,170,170,0.7)" }}
@@ -85,7 +85,7 @@ export default function ServerCrest({ server, botOnline }) {
 
             {/* Agency: заети места от общо — истинското число, не украса. */}
             {server.agencyCovered && server.agencySeatsUsed != null && server.agencySeatLimit != null && (
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.14em] text-cs-muted">
+              <span className="inline-flex items-center gap-1.5 text-xs text-cs-muted">
                 <ServerIcon className="w-3.5 h-3.5" aria-hidden="true" />
                 {t("crest.seats", { used: server.agencySeatsUsed, limit: server.agencySeatLimit })}
               </span>
@@ -93,7 +93,7 @@ export default function ServerCrest({ server, botOnline }) {
 
             {/* Отменен, но платен до края — казваме докога, вместо да мълчим. */}
             {graceActive && (
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.14em] text-warning">
+              <span className="inline-flex items-center gap-1.5 text-xs text-warning">
                 {t("crest.paidUntil", { date: graceUntil.toLocaleDateString() })}
               </span>
             )}

@@ -16,7 +16,7 @@ export default function StatTile({ icon: Icon, label, value, unit, deltaPct, hin
   return (
     <div className="cs-card !p-4">
       <div className="flex items-start justify-between gap-2">
-        <p className="text-xs font-mono uppercase tracking-wider text-cs-dim">{label}</p>
+        <p className="text-xs text-cs-dim">{label}</p>
         {Icon && <Icon className="w-4 h-4 text-cs-cyan flex-shrink-0" aria-hidden="true" />}
       </div>
 

@@ -62,7 +62,7 @@ export default function AreaChart({ data = [], height = 220, className = "" }) {
             <tbody>
               {data.map((d) => (
                 <tr key={d.day}>
-                  <td className="font-mono">{d.day}</td>
+                  <td className="tabular-nums">{d.day}</td>
                   <td className="text-right tabular-nums">{d.opened}</td>
                   <td className="text-right tabular-nums">{d.closed}</td>
                 </tr>
@@ -149,7 +149,7 @@ export default function AreaChart({ data = [], height = 220, className = "" }) {
       </svg>
 
       {/* Tooltip извън SVG — по-лесно се стилизира и не се реже от viewBox */}
-      <div className="h-5 mt-1 text-xs text-cs-muted font-mono" aria-live="polite">
+      <div className="h-5 mt-1 text-xs text-cs-muted tabular-nums" aria-live="polite">
         {hover != null && (
           <span>
             {pts[hover].day} · <span style={{ color: SERIES.opened.stroke }}>{pts[hover].opened} {t("overview.chart.opened").toLowerCase()}</span>

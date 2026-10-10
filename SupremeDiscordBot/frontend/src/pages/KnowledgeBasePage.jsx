@@ -109,7 +109,7 @@ export default function KnowledgeBasePage() {
       <div className="flex justify-between items-start mb-8">
         <div>
           <h1 className="cs-heading font-display font-bold text-cs-text text-3xl flex items-center gap-2">
-            <Lightbulb className="w-7 h-7 text-cs-cyan" /> Knowledge Base
+            <Lightbulb className="w-7 h-7 text-cs-cyan" /> Knowledge base
           </h1>
           <p className="text-cs-muted mt-2 max-w-2xl">
             Write short articles with keywords. When a member opens a ticket, Supreme Bot
@@ -118,7 +118,7 @@ export default function KnowledgeBasePage() {
           </p>
         </div>
         <button onClick={openNew} className="cs-btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" /> New Article
+          <Plus className="w-4 h-4" /> New article
         </button>
       </div>
 
@@ -246,7 +246,7 @@ export default function KnowledgeBasePage() {
           <div className="flex justify-end gap-2 pt-2">
             <button type="button" onClick={() => setEditing(null)} className="cs-btn-secondary">Cancel</button>
             <button type="submit" className="cs-btn-primary" disabled={createMut.isPending || updateMut.isPending}>
-              {editing === "new" ? "Create Article" : "Save Changes"}
+              {editing === "new" ? "Create article" : "Save changes"}
             </button>
           </div>
         </form>

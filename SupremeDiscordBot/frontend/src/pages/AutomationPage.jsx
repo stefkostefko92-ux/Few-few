@@ -173,7 +173,7 @@ function PollsTab() {
     <div className="space-y-3">
       <div className="flex justify-end">
         <button onClick={() => { setForm(defaultPollForm()); setCreating(true); }} className="cs-btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" /> New Poll
+          <Plus className="w-4 h-4" /> New poll
         </button>
       </div>
       {!polls.length && <Empty icon={BarChart3} msg={t("auto.polls.empty")} />}
@@ -318,7 +318,7 @@ function GiveawaysTab() {
     <div className="space-y-3">
       <div className="flex justify-end">
         <button onClick={() => { setForm(defaultGiveawayForm()); setCreating(true); }} className="cs-btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" /> New Giveaway
+          <Plus className="w-4 h-4" /> New giveaway
         </button>
       </div>
       {!giveaways.length && <Empty icon={Gift} msg={t("auto.give.empty")} />}
@@ -348,7 +348,7 @@ function GiveawaysTab() {
                   onClick={() => setConfirmState({ title: t("auto.give.end"), message: t("auto.give.endConfirm"), confirmLabel: "End Now", destructive: false, onConfirm: () => endM.mutate(g.id) })}
                   className="cs-btn-secondary text-xs"
                 >
-                  End Now
+                  End now
                 </button>
               )}
               {g.endedAt && (
@@ -404,7 +404,7 @@ function StickyTab() {
   return (
     <div className="space-y-6">
       <form onSubmit={(e) => { e.preventDefault(); saveM.mutate(form); }} className="cs-card space-y-3">
-        <h3 className="text-cs-text font-bold">Set Sticky Message</h3>
+        <h3 className="text-cs-text font-bold">Set sticky message</h3>
         <label className="block">
           <span className="cs-label">{t("ui.channel")}</span>
           <DiscordChannelSelect kind="text" value={form.channelId} onChange={(v) => setForm({ ...form, channelId: v })} />
@@ -424,7 +424,7 @@ function StickyTab() {
           <textarea required rows={3} className="cs-textarea" value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} />
         </label>
         <button type="submit" className="cs-btn-primary flex items-center gap-2" disabled={saveM.isPending}>
-          <Plus className="w-4 h-4" /> Save Sticky
+          <Plus className="w-4 h-4" /> Save sticky
         </button>
       </form>
 
@@ -490,7 +490,7 @@ function ScheduledTab() {
         e.preventDefault();
         createM.mutate({ ...form, recurrence: form.recurrence || null, sendAt: new Date(form.sendAt).toISOString() });
       }} className="cs-card space-y-3">
-        <h3 className="text-cs-text font-bold">Schedule New Message</h3>
+        <h3 className="text-cs-text font-bold">Schedule new message</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <label className="block">
             <span className="cs-label">{t("ui.channel")}</span>
@@ -616,7 +616,7 @@ function WebhooksTab() {
           Payloads are HMAC-signed with <code className="text-cs-cyan">X-Supreme Bot-Signature: sha256=...</code> if a secret is set.
         </p>
         <button onClick={openNew} className="cs-btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" /> New Webhook
+          <Plus className="w-4 h-4" /> New webhook
         </button>
       </div>
 
@@ -659,7 +659,7 @@ function WebhooksTab() {
       <Modal
         open={!!editing}
         onClose={() => setEditing(null)}
-        title={editing === "new" ? "New Webhook" : "Edit Webhook"}
+        title={editing === "new" ? "New webhook" : "Edit webhook"}
         maxWidth="max-w-2xl"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -821,7 +821,7 @@ function ReactionRolesTab() {
           onClick={() => { setForm(defaultRrmForm()); setEditing("new"); setActionError(null); }}
           className="cs-btn-primary flex items-center gap-2 flex-shrink-0"
         >
-          <Plus className="w-4 h-4" /> New Message
+          <Plus className="w-4 h-4" /> New message
         </button>
       </div>
 

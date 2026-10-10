@@ -85,19 +85,23 @@ export default function ServerHome() {
       <ServerCrest server={server} botOnline={status?.services?.bot?.status === "operational"} />
 
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-        <p className="text-cs-dim text-xs font-mono">{t("overview.subtitle")}</p>
+        <p className="text-sm text-cs-muted">{t("overview.subtitle")}</p>
 
         {/* Един филтър-ред над всичко, което скоупва */}
-        <div className="flex items-center gap-2" role="group" aria-label="Time range">
+        {/* Сегментиран превключвател: една рамка, вътре само активният
+            сегмент е осветен — три отделни квадратни бутона четяха като три
+            различни действия. */}
+        <div className="inline-flex items-center gap-1 rounded-xl border border-cs-border bg-cs-surface/60 p-1" role="group" aria-label="Time range">
           {PERIODS.map((p) => (
             <button
               key={p}
+              type="button"
               onClick={() => setDays(p)}
               aria-pressed={days === p}
-              className={`px-3 py-1.5 text-xs font-mono uppercase tracking-wider border transition-colors ${
+              className={`min-h-[32px] px-3 rounded-lg text-[13px] font-medium tabular-nums transition-colors ${
                 days === p
-                  ? "border-cs-cyan text-cs-cyan bg-cs-cyanGlow"
-                  : "border-cs-border text-cs-muted hover:text-cs-text"
+                  ? "bg-cs-cyan/15 text-cs-cyan"
+                  : "text-cs-muted hover:text-cs-text hover:bg-cs-panel"
               }`}
             >
               {t(`overview.range.${p}`)}
@@ -133,7 +137,7 @@ export default function ServerHome() {
               <h2 id="activity-h" className="font-semibold text-cs-text flex items-center gap-2">
                 <Activity className="w-4 h-4 text-cs-cyan" aria-hidden="true" /> {t("overview.activity")}
               </h2>
-              <span className="text-xs font-mono text-cs-dim">{t("overview.kpi.lastDays", { days })}</span>
+              <span className="text-[13px] text-cs-dim">{t("overview.kpi.lastDays", { days })}</span>
             </div>
             {dashLoading
               ? <div className="h-[300px] animate-pulse bg-cs-panel rounded" />
@@ -177,7 +181,7 @@ export default function ServerHome() {
 
       <GettingStarted serverId={serverId} panels={panels} forms={forms} />
 
-      <h2 className="text-sm font-mono uppercase tracking-wider text-cs-dim mb-3">{t("nav.manageServer")}</h2>
+      <h2 className="text-sm text-cs-dim mb-3">{t("nav.manageServer")}</h2>
       <NavGrid serverId={serverId} />
     </div>
   );
@@ -289,11 +293,11 @@ function RecentTickets({ tickets, serverId }) {
             to={`/dashboard/${serverId}/tickets`}
             className="flex items-center gap-2.5 py-1 hover:opacity-80 transition-opacity no-underline"
           >
-            <span className="font-mono text-[11px] text-cs-dim tabular-nums flex-shrink-0">
+            <span className="text-xs text-cs-dim tabular-nums flex-shrink-0">
               #{t.number != null ? String(t.number).padStart(4, "0") : t.id.slice(-4)}
             </span>
             <span className="text-sm text-cs-text truncate flex-1">{t.panel?.name || "Direct ticket"}</span>
-            <span className={`text-[10px] font-mono uppercase flex-shrink-0 ${PRIORITY_CLS[t.priority] || ""}`}>
+            <span className={`text-xs flex-shrink-0 ${PRIORITY_CLS[t.priority] || ""}`}>
               {t.priority !== "NORMAL" ? t.priority : ""}
             </span>
             <span className={`${STATUS_CLS[t.status] || "cs-badge-muted"} flex-shrink-0`}>{t.status}</span>
@@ -380,7 +384,7 @@ function GettingStarted({ serverId, panels, forms }) {
     <div className="cs-card mb-8">
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-semibold text-cs-text">First steps</h2>
-        <span className="text-xs text-cs-muted font-mono">{steps.length - remaining}/{steps.length} done</span>
+        <span className="text-[13px] text-cs-muted tabular-nums">{steps.length - remaining}/{steps.length} done</span>
       </div>
       <ol className="space-y-2">{steps.map((s) => <ChecklistRow key={s.label} step={s} />)}</ol>
     </div>
@@ -395,7 +399,7 @@ function ChecklistRow({ step }) {
         : <Circle className="w-4 h-4 text-cs-dim flex-shrink-0" aria-hidden="true" />}
       <span className={`text-sm flex-1 ${step.done ? "text-cs-muted line-through" : "text-cs-text"}`}>{step.label}</span>
       {!step.done && step.to && (
-        <span className="text-xs text-cs-cyan font-mono flex items-center gap-1 flex-shrink-0">
+        <span className="text-[13px] font-medium text-cs-cyan flex items-center gap-1 flex-shrink-0">
           {step.cta} <ArrowRight className="w-3 h-3" aria-hidden="true" />
         </span>
       )}

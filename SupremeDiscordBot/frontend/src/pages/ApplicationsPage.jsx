@@ -274,7 +274,7 @@ export default function ApplicationsPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {questions.map((q) => (
                           <div key={q.id} className="bg-cs-bg rounded-lg p-3">
-                            <p className="text-xs font-semibold text-cs-muted uppercase tracking-wide mb-1">
+                            <p className="text-xs font-semibold text-cs-muted mb-1">
                               {q.label}
                             </p>
                             <p className="text-sm text-cs-text whitespace-pre-wrap">
@@ -321,7 +321,7 @@ export default function ApplicationsPage() {
                                   </p>
                                 )}
                               </div>
-                              <time className="text-xs text-cs-dim font-mono whitespace-nowrap"
+                              <time className="text-xs text-cs-dim tabular-nums whitespace-nowrap"
                                     dateTime={h.createdAt}>
                                 {new Date(h.createdAt).toLocaleDateString()}
                               </time>

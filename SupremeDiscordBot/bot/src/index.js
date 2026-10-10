@@ -953,7 +953,13 @@ app.post("/internal/application-apply-outcome", async (req, res) => {
       const member = await guild.members.fetch(userId).catch(() => null);
       result.memberFound = !!member;
       if (member) {
+        const me = guild.members.me;
         for (const roleId of rolesToAdd) {
+          // Гардът за роли (виж verification в interactionCreate.js): одобрена
+          // кандидатура не дава опасна, управлявана или над бота роля.
+          const role = guild.roles.cache.get(roleId) || await guild.roles.fetch(roleId).catch(() => null);
+          const unsafe = roleAssignabilityReason(role, me);
+          if (unsafe) { result.rolesFailed.push({ roleId, reason: unsafe }); continue; }
           try {
             await member.roles.add(roleId, "Application approved");
             result.rolesAdded.push(roleId);
@@ -1079,7 +1085,7 @@ app.post("/internal/giveaway-ended", async (req, res) => {
     // Update the giveaway message
     if (messageId) {
       try {
-        const { data: g } = await api.get(`/bot/giveaway/${giveawayId}`);
+        const { data: g } = await api.get(`/bot/giveaway/${giveawayId}`, { params: { serverId } });
         const { buildGiveawayMessage } = await import("./commands/giveaway.js");
         const { embeds, components } = buildGiveawayMessage(g, g.entryCount || 0);
         const msg = await channel.messages.fetch(messageId).catch(() => null);

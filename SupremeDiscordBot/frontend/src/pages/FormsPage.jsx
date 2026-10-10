@@ -251,7 +251,7 @@ export default function FormsPage() {
           <p className="text-cs-muted text-sm mt-1">Build logic-branching questionnaires for tickets and applications</p>
         </div>
         <button onClick={() => { setForm(defaultForm()); setEditing(true); }} className="cs-btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" /> New Form
+          <Plus className="w-4 h-4" /> New form
         </button>
       </div>
 
@@ -274,7 +274,7 @@ export default function FormsPage() {
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold text-cs-text">{f.name}</h3>
                     <span className={f.isApplication ? "cs-badge-premium" : "cs-badge-muted"}>
-                      {f.isApplication ? "Application" : "Ticket Form"}
+                      {f.isApplication ? "Application" : "Ticket form"}
                     </span>
                   </div>
                   <p className="text-sm text-cs-muted mt-0.5">{f.questions.length} questions</p>
@@ -403,7 +403,7 @@ export default function FormsPage() {
                 {/* ─── Appy.bot-style fields (application forms only) ─── */}
                 {form.isApplication && (
                   <details className="cs-card !p-4 !bg-cs-panel">
-                    <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-[0.2em] text-cs-cyan select-none flex items-center gap-2">
+                    <summary className="cursor-pointer text-xs text-cs-cyan select-none flex items-center gap-2">
                       → Advanced: Roles, Messages, Cooldowns
                       {!isPremium && <PremiumBadge small />}
                     </summary>
@@ -467,7 +467,7 @@ export default function FormsPage() {
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-semibold text-cs-text">Questions ({form.questions.length})</h3>
                   <button type="button" onClick={addQuestion} className="text-cs-cyan hover:text-cs-cyan text-sm transition-colors flex items-center gap-1">
-                    <Plus className="w-3 h-3" /> Add Question
+                    <Plus className="w-3 h-3" /> Add question
                   </button>
                 </div>
 
@@ -553,7 +553,7 @@ export default function FormsPage() {
               <div className="flex justify-end gap-3">
                 <button type="button" onClick={() => { setEditing(false); setEditingId(null); }} className="cs-btn-ghost">Cancel</button>
                 <button type="submit" className="cs-btn-primary" disabled={createMut.isPending || updateMut.isPending}>
-                  {(createMut.isPending || updateMut.isPending) ? "Saving…" : editingId ? "Save Changes" : "Create Form"}
+                  {(createMut.isPending || updateMut.isPending) ? "Saving…" : editingId ? "Save changes" : "Create form"}
                 </button>
               </div>
 

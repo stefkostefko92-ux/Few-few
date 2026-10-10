@@ -187,7 +187,7 @@ function OverviewTab({ data }) {
           <ol className="space-y-1 text-sm">
             {st.top.map((r, i) => (
               <li key={r.userId} className="flex items-center gap-3">
-                <span className="font-mono text-cs-dim w-6">{i + 1}.</span>
+                <span className="tabular-nums text-cs-dim w-6">{i + 1}.</span>
                 <MemberName id={r.userId} names={topNames} className="text-cs-text" />
                 <span className="text-cs-muted">{t("game.lb.level")} {r.level} · {r.xp} XP · ✨ {r.sparks} · 🔥 {r.streak}</span>
               </li>
@@ -202,7 +202,7 @@ function OverviewTab({ data }) {
 function Stat({ label, value }) {
   return (
     <div className="cs-card !p-3">
-      <div className="text-[10px] font-mono uppercase tracking-wider text-cs-dim">{label}</div>
+      <div className="text-xs text-cs-dim">{label}</div>
       <div className="text-xl font-bold text-cs-text">{Number(value || 0).toLocaleString()}</div>
     </div>
   );
@@ -265,7 +265,7 @@ function LevelsTab({ data }) {
         <h3 className="font-semibold text-cs-text mb-2">{t("game.levels.table")}</h3>
         <table className="cs-table w-full text-sm">
           <thead><tr><th>{t("game.levels.level")}</th><th>{t("game.levels.xpNeeded")}</th></tr></thead>
-          <tbody>{data.levelTable.map((l) => <tr key={l.level}><td>{l.level}</td><td className="font-mono">{l.xp.toLocaleString()}</td></tr>)}</tbody>
+          <tbody>{data.levelTable.map((l) => <tr key={l.level}><td>{l.level}</td><td className="tabular-nums">{l.xp.toLocaleString()}</td></tr>)}</tbody>
         </table>
       </div>
     </div>
@@ -373,7 +373,7 @@ function ShopTab({ data }) {
           <div className="overflow-x-auto"><table className="cs-table w-full text-sm min-w-[36rem]">
             <thead><tr><th>{t("game.lb.user")}</th><th>{t("game.shop.name")}</th><th>✨</th><th>{t("game.purchases.expires")}</th></tr></thead>
             <tbody>{purchases.map((p) => (
-              <tr key={p.id}><td><MemberName id={p.userId} names={buyerNames} /></td><td>{p.item?.name}</td><td>{p.priceSparks}</td><td className="font-mono text-xs">{p.revokedAt ? t("game.purchases.revoked") : (p.expiresAt ? String(p.expiresAt).slice(0, 10) : "—")}</td></tr>
+              <tr key={p.id}><td><MemberName id={p.userId} names={buyerNames} /></td><td>{p.item?.name}</td><td>{p.priceSparks}</td><td className="text-xs tabular-nums">{p.revokedAt ? t("game.purchases.revoked") : (p.expiresAt ? String(p.expiresAt).slice(0, 10) : "—")}</td></tr>
             ))}</tbody>
           </table></div>
         )}
@@ -433,7 +433,7 @@ function CompanionsTab({ data }) {
         <Stat label={t("game.companions.spawns")} value={c.spawns} />
         <Stat label={t("game.companions.caught")} value={c.caught} />
         <div className="cs-card !p-3">
-          <div className="text-[10px] font-mono uppercase tracking-wider text-cs-dim">{t("game.companions.season")}</div>
+          <div className="text-xs text-cs-dim">{t("game.companions.season")}</div>
           <div className="text-sm font-bold text-cs-text">{c.season.name}</div>
           <div className="text-xs text-cs-dim">{String(c.season.startsAt).slice(0, 10)} → {String(c.season.endsAt).slice(0, 10)}</div>
         </div>
@@ -447,7 +447,7 @@ function CompanionsTab({ data }) {
               <li key={x.id} className="text-center">
                 <img src={x.imageUrl.replace(/^https?:\/\/[^/]+/, "")} alt={x.name} width={96} height={96} loading="lazy" className="w-24 h-24 mx-auto rounded" />
                 <div className="text-sm text-cs-text mt-1">{x.name}{x.seasonId ? " ✦" : ""}</div>
-                <div className="text-[10px] font-mono text-cs-dim">{t("game.companions.caughtN", { n: x.caught })}</div>
+                <div className="text-xs tabular-nums text-cs-dim">{t("game.companions.caughtN", { n: x.caught })}</div>
               </li>
             ))}
           </ul>
@@ -456,7 +456,7 @@ function CompanionsTab({ data }) {
       {c.collectors.length > 0 && (
         <section className="cs-card">
           <h2 className="text-lg font-semibold text-cs-text mb-2">{t("game.companions.collectors")}</h2>
-          <ol className="text-sm space-y-1">{c.collectors.map((x, i) => <li key={x.userId}><span className="font-mono text-cs-dim w-6 inline-block">{i + 1}.</span> <MemberName id={x.userId} names={collectorNames} /> <span className="text-cs-muted">· {x.count}</span></li>)}</ol>
+          <ol className="text-sm space-y-1">{c.collectors.map((x, i) => <li key={x.userId}><span className="tabular-nums text-cs-dim w-6 inline-block">{i + 1}.</span> <MemberName id={x.userId} names={collectorNames} /> <span className="text-cs-muted">· {x.count}</span></li>)}</ol>
         </section>
       )}
     </div>
@@ -569,14 +569,14 @@ function QuestsTab({ data }) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <Stat label={t("game.triviaStats.rounds")} value={mg.trivia.rounds} />
               <div className="cs-card !p-3">
-                <div className="text-[10px] font-mono uppercase tracking-wider text-cs-dim">{t("game.trivia.schedule")}</div>
+                <div className="text-xs text-cs-dim">{t("game.trivia.schedule")}</div>
                 <div className="text-sm font-bold text-cs-text">{mg.trivia.schedule ? t(`game.trivia.${mg.trivia.schedule}`) : t("game.trivia.off")}</div>
               </div>
             </div>
             {mg.trivia.winners.length > 0 && (
               <div>
                 <h3 className="text-sm font-semibold text-cs-text mb-1">{t("game.triviaStats.winners")}</h3>
-                <ol className="text-sm space-y-1">{mg.trivia.winners.map((w, i) => <li key={w.userId}><span className="font-mono text-cs-dim w-6 inline-block">{i + 1}.</span> <MemberName id={w.userId} names={questNames} /> <span className="text-cs-muted">· 🏆 {w.wins}</span></li>)}</ol>
+                <ol className="text-sm space-y-1">{mg.trivia.winners.map((w, i) => <li key={w.userId}><span className="tabular-nums text-cs-dim w-6 inline-block">{i + 1}.</span> <MemberName id={w.userId} names={questNames} /> <span className="text-cs-muted">· 🏆 {w.wins}</span></li>)}</ol>
               </div>
             )}
             {mg.trivia.recent.length > 0 && (

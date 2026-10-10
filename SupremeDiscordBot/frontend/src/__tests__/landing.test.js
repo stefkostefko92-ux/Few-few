@@ -98,7 +98,7 @@ describe("landing · маркетингови твърдения", () => {
     const login = read("pages", "Login.jsx");
     expect(login).toContain("Eight bots. Eight bills.");
     expect(login).toContain("One bot replaces eight.");
-    expect(login).toContain("Before · eight bots");
+    expect(login).toContain("Before: eight bots");
     expect(login).not.toMatch(/\bsix bots\b/i);
   });
 

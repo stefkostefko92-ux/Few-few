@@ -69,10 +69,10 @@ export default function PremiumToast() {
               <Link
                 to={upgradeHref}
                 onClick={() => setToast(null)}
-                className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-full bg-cs-gold hover:bg-cs-goldDim text-black text-xs font-bold uppercase tracking-wider transition-colors"
+                className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-full bg-cs-gold hover:bg-cs-goldDim text-black text-xs font-bold transition-colors"
               >
                 <Star className="w-3 h-3 fill-current" />
-                Upgrade Now
+                Upgrade now
               </Link>
             )}
           </div>

@@ -92,7 +92,9 @@ services:
     healthcheck:
       # Health check-ът също се автентикира — иначе рапортува „здрав“ през
       # NOAUTH грешка (redis-cli печата грешката, но кодът за изход е 0).
-      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping | grep -q PONG"]
+      # Паролата е в REDISCLI_AUTH, не в `-a` — иначе на всеки 5 s се виждаше в
+      # списъка с процеси на хоста (Кодаджията, 10.10.2026).
+      test: ["CMD-SHELL", "REDISCLI_AUTH=\"$$REDIS_PASSWORD\" redis-cli ping | grep -q PONG"]
       interval: 5s
       timeout: 3s
       retries: 5

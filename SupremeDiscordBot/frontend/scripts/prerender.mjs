@@ -129,7 +129,7 @@ const GUIDE_LINKS = [
   ["/compare/appy-alternative", "vsAppy"],
 ];
 
-// Връзки към /features/* — същият масив, който храни components/FeatureLinks.jsx.
+// Връзки към /features/* — същият масив, който храни общия футър (components/LandingParts.jsx).
 // Заглавието е на езика на посетителя (t.guides.features), етикетите са
 // английските имена на страниците (съдържанието им е на английски).
 function featureLinks(heading) {

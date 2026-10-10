@@ -158,7 +158,7 @@ export default function SettingsPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-2xl">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-cs-text">Server Settings</h1>
+        <h1 className="text-2xl font-bold text-cs-text">Server settings</h1>
         <p className="text-cs-muted text-sm mt-1">{t("settings.subtitle")}</p>
       </div>
 
@@ -204,7 +204,7 @@ export default function SettingsPage() {
         <div className="cs-card space-y-4">
           <div className="flex items-center gap-2">
             <Activity className="w-5 h-5 text-cs-cyan" />
-            <h2 className="font-semibold text-cs-text">Server Activity Logging</h2>
+            <h2 className="font-semibold text-cs-text">Server activity logging</h2>
           </div>
           <p className="text-sm text-cs-muted">
             Log member actions in this server (voice mute/deaf/join, role &amp; nickname changes,
@@ -276,7 +276,7 @@ export default function SettingsPage() {
           )}
         </div>
 
-        {/* ── AI Auto-Replies (Premium) ─────────────────────────────── */}
+        {/* ── AI auto-replies (Premium) ─────────────────────────────── */}
         <div
           aria-disabled={!isPremium}
           className={`cs-card space-y-4 ${!isPremium ? "opacity-50 pointer-events-none" : ""}`}
@@ -284,9 +284,9 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Zap className="w-5 h-5 text-cs-gold" />
-              <h2 className="font-semibold text-cs-text">AI Auto-Replies</h2>
+              <h2 className="font-semibold text-cs-text">AI auto-replies</h2>
             </div>
-            {!isPremium && <span className="cs-badge-muted text-xs"><Star className="w-3 h-3 text-premium" aria-hidden="true" /> Premium Only</span>}
+            {!isPremium && <span className="cs-badge-muted text-xs"><Star className="w-3 h-3 text-premium" aria-hidden="true" /> Premium only</span>}
           </div>
 
           <label className="flex items-center gap-3 cursor-pointer">
@@ -323,7 +323,7 @@ export default function SettingsPage() {
           )}
         </div>
 
-        {/* ── Round-Robin Assignment (Premium) ─────────────────────── */}
+        {/* ── Round-robin assignment (Premium) ─────────────────────── */}
         <div
           aria-disabled={!isPremium}
           className={`cs-card space-y-4 ${!isPremium ? "opacity-50 pointer-events-none" : ""}`}
@@ -331,9 +331,9 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <RefreshCw className="w-5 h-5 text-blue-400" />
-              <h2 className="font-semibold text-cs-text">Round-Robin Assignment</h2>
+              <h2 className="font-semibold text-cs-text">Round-robin assignment</h2>
             </div>
-            {!isPremium && <span className="cs-badge-muted text-xs"><Star className="w-3 h-3 text-premium" aria-hidden="true" /> Premium Only</span>}
+            {!isPremium && <span className="cs-badge-muted text-xs"><Star className="w-3 h-3 text-premium" aria-hidden="true" /> Premium only</span>}
           </div>
 
           <label className="flex items-center gap-3 cursor-pointer">

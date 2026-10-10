@@ -118,7 +118,7 @@ export default function EmojiPicker({ onSelect, buttonLabel }) {
               .filter((c) => !filter || c.name.toLowerCase().includes(filter.toLowerCase()))
               .map((cat) => (
                 <div key={cat.name} className="mb-3">
-                  <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-cs-dim mb-1.5">{cat.name}</div>
+                  <div className="text-xs text-cs-dim mb-1.5">{cat.name}</div>
                   <div className="grid grid-cols-10 gap-0.5">
                     {cat.emojis.map((e) => (
                       <button

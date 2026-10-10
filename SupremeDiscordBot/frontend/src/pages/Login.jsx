@@ -8,7 +8,7 @@ import { useAuth } from "../contexts/AuthContext";
 import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
 import SignalFunnel from "../components/SignalFunnel";
 import Seo from "../components/Seo";
-import FeatureLinks from "../components/FeatureLinks";
+import { TrustLine, LandingFooter } from "../components/LandingParts";
 import GameShowcase from "../components/GameShowcase";
 import LandingNav from "../components/LandingNav";
 import DeferredSections from "../components/DeferredSections";
@@ -34,6 +34,8 @@ const SUPPORT_URL = import.meta.env.VITE_SUPPORT_URL || "https://discord.gg/wpCR
 const BOT_INVITE_URL = `https://discord.com/oauth2/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&permissions=361045814416&scope=bot+applications.commands`;
 
 const UI = LANDING_UI.en;
+// Етикетите на ръководствата за общия футър (преводите идват от i18n/landing.js → guides).
+const EN_GUIDES = { heading: "Guides & comparisons", features: "Features", panel: "Panel & button setup", best: "Choosing a ticket bot", gdpr: "GDPR for Discord bots", vsTicketTool: "vs Ticket Tool", vsAppy: "vs Appy" };
 
 // Функциите на английския лендинг — същите ключове като в i18n/landing.js,
 // за да ги групира FeatureGroups по един и същ начин на всички езици.
@@ -148,7 +150,7 @@ export default function Login() {
 
               {error && (
                 <div className="mb-6 max-w-md mx-auto lg:mx-0 border border-danger/40 bg-danger/5 px-4 py-3 text-left">
-                  <div className="font-mono text-[10px] uppercase tracking-wider text-danger mb-1">✕ Auth Error</div>
+                  <div className="text-xs text-danger mb-1">✕ Auth Error</div>
                   <div className="text-sm text-cs-text">
                     {error === "blacklisted"   ? "You have been blacklisted from this platform."
                     : error === "oauth_failed" ? "Discord authentication failed. Please try again."
@@ -159,18 +161,16 @@ export default function Login() {
               )}
 
               <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-3">
-                <button ref={heroCtaRef} onClick={handleLogin} className="cs-btn-primary text-base px-8 py-4">
+                <button ref={heroCtaRef} onClick={handleLogin} className="cs-btn-primary cs-btn-lg">
                   <DiscordIcon />
                   <span>Start free with Discord</span>
                   <ArrowRight className="w-4 h-4 ml-1" />
                 </button>
-                <a href="#pricing" className="cs-btn-secondary text-base px-8 py-4">
-                  See what Premium unlocks →
+                <a href="#pricing" className="cs-btn-secondary cs-btn-lg">
+                  See what Premium unlocks
                 </a>
               </div>
-              <p className="text-sm text-cs-dim mt-6 leading-relaxed">
-                Free forever on the base tier · Premium billed through Discord · Cancel anytime · EU-hosted, GDPR-native
-              </p>
+              <TrustLine className="mt-6" text="Free forever on the base tier · Premium billed through Discord · Cancel anytime · EU-hosted, GDPR-native" />
               <a
                 href={BOT_INVITE_URL}
                 target="_blank"
@@ -275,7 +275,7 @@ export default function Login() {
             </div>
 
             <div className="text-center">
-              <button onClick={handleLogin} className="cs-btn-primary text-base px-8 py-4">
+              <button onClick={handleLogin} className="cs-btn-primary cs-btn-lg">
                 <span>Start free with Discord</span>
                 <ArrowRight className="w-4 h-4 ml-1" />
               </button>
@@ -294,7 +294,7 @@ export default function Login() {
           <div className="max-w-5xl mx-auto">
             <SectionHead size="md" title="Why teams trust Supreme Bot" sub="A registered EU company, encrypted secrets and a public status page — not promises." />
 
-            <div data-reveal className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            <div data-reveal className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 mb-12">
               <TrustCard
                 icon={Lock}
                 title="EU-only data residency"
@@ -465,100 +465,31 @@ export default function Login() {
           <p className="text-cs-muted mb-8 max-w-lg mx-auto">
             Takes 60 seconds. Sign in with Discord, pick a server, go live on Free.
           </p>
-          <button ref={finalCtaRef} onClick={handleLogin} className="cs-btn-primary text-base px-8 py-4">
+          <button ref={finalCtaRef} onClick={handleLogin} className="cs-btn-primary cs-btn-lg">
             <DiscordIcon />
-            <span>Get Started Free</span>
+            <span>Get started free</span>
             <ArrowRight className="w-4 h-4 ml-1" />
           </button>
         </section>
 
         </DeferredSections>
 
-        {/* FOOTER */}
-        <footer className="px-6 sm:px-8 py-10 border-t border-cs-border/50">
-          <div className="max-w-6xl mx-auto flex flex-col gap-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-              <div className="flex items-center gap-3">
-                <SupremeLogo size={36} />
-                <div className="flex flex-col leading-tight">
-                  <SupremeWordmark className="text-base" />
-                  <span className="text-xs text-cs-dim mt-1">
-                    © 2026 {COMPANY_NAME} · EIK 208725180 · VAT BG208725180 · EU-hosted
-                  </span>
-                  <span className="text-xs text-cs-dim mt-1">
-                    Carbon Stealth VCC · ul. Samuil 3, 2670 Bobov dol, Bulgaria ·{" "}
-                    <a href="mailto:legal@carbonstealth.eu" className="text-cs-cyan underline">legal@carbonstealth.eu</a>
-                  </span>
-                </div>
-              </div>
-              <div className="flex flex-wrap items-center gap-4 font-mono text-xs text-cs-dim">
-                <a href="/terms"   className="hover:text-cs-cyan transition-colors">TERMS</a>
-                <a href="/privacy" className="hover:text-cs-cyan transition-colors">PRIVACY</a>
-                <a href="/cookies" className="hover:text-cs-cyan transition-colors">COOKIES</a>
-                <a href="/eula"    className="hover:text-cs-cyan transition-colors">EULA</a>
-                <a href="/accessibility" className="hover:text-cs-cyan transition-colors">ACCESSIBILITY</a>
-                <a href="/status"  className="hover:text-cs-cyan transition-colors">STATUS</a>
-                <a href={SUPPORT_URL} target="_blank" rel="noopener" className="hover:text-cs-cyan transition-colors">DISCORD</a>
-              </div>
-            </div>
-            {/* Guides & comparisons — until now these five pages were reachable
-                only from INSIDE the dashboard (login required), from each other,
-                and from sitemap.xml. A visitor on the landing page had no path
-                to them at all, so the docs we wrote were effectively invisible
-                to the people they were written for — and orphan pages get no
-                internal link equity either. (Owner, 12.08.2026: "why isn't it
-                on the landing page anywhere?") */}
-            <nav aria-label="Guides and comparisons"
-                 className="flex flex-wrap items-center justify-center gap-4 text-xs text-cs-dim border-t border-cs-border/30 pt-4">
-              <a href="/guides/ticket-panel-setup" className="hover:text-cs-cyan transition-colors">PANEL &amp; BUTTON SETUP</a>
-              <a href="/guides/best-discord-ticket-bot" className="hover:text-cs-cyan transition-colors">CHOOSING A TICKET BOT</a>
-              <a href="/guides/gdpr-discord-bot" className="hover:text-cs-cyan transition-colors">GDPR FOR DISCORD BOTS</a>
-              <a href="/compare/ticket-tool-alternative" className="hover:text-cs-cyan transition-colors">VS TICKET TOOL</a>
-              <a href="/compare/appy-alternative" className="hover:text-cs-cyan transition-colors">VS APPY</a>
-            </nav>
-            {/* Страници по функция (/features/*) — това, което хората търсят като
-                отделни ботове („verification bot", „giveaway bot", „logging
-                bot"…). Едно определение за всички начални страници и за
-                pre-render снимката: components/FeatureLinks.jsx. */}
-            <FeatureLinks heading="Features" uppercase />
-
-            {/* Language versions — visible crawlable links matching the
-                hreflang alternates (Seo.jsx + sitemap.xml). */}
-            <nav aria-label="Language" className="flex flex-wrap items-center justify-center gap-3 text-xs text-cs-dim border-t border-cs-border/30 pt-4">
-              <span className="text-cs-cyan">EN</span>
-              <a href="/bg" className="hover:text-cs-cyan transition-colors">БЪЛГАРСКИ</a>
-              <a href="/de" className="hover:text-cs-cyan transition-colors">DEUTSCH</a>
-              <a href="/es" className="hover:text-cs-cyan transition-colors">ESPAÑOL</a>
-              <a href="/fr" className="hover:text-cs-cyan transition-colors">FRANÇAIS</a>
-              <a href="/it" className="hover:text-cs-cyan transition-colors">ITALIANO</a>
-              <a href="/nl" className="hover:text-cs-cyan transition-colors">NEDERLANDS</a>
-              <a href="/pl" className="hover:text-cs-cyan transition-colors">POLSKI</a>
-            </nav>
-            <div className="text-center text-xs text-cs-dim border-t border-cs-border/30 pt-4">
-              Created and Designed by{" "}
-              <a
-                href="https://carbonstealth.eu"
-                target="_blank"
-                rel="noopener"
-                className="text-cs-cyan underline"
-              >
-                Carbon Stealth VCC
-              </a>
-            </div>
-          </div>
-        </footer>
+        {/* FOOTER — общ с преводите (components/LandingParts.jsx) */}
+        <LandingFooter lang="en" ui={UI.footer} nav={UI.nav} guides={EN_GUIDES} supportUrl={SUPPORT_URL} company={COMPANY_NAME} />
       </div>
     </div>
   );
 }
 
+// Без кутия и без накланяне: това е списък с факти, не бутони (10.10.2026).
 function TrustCard({ icon: Icon, title, body }) {
-  const tiltRef = useTiltCard();
   return (
-    <div ref={tiltRef} className="cs-card hover:border-cs-cyan/50 hover:shadow-cs-cyan-sm transition-colors">
-      <div className="mb-3"><Icon className="w-6 h-6 text-cs-cyan" aria-hidden="true" /></div>
-      <h3 className="text-cs-text font-bold mb-2 text-sm">{title}</h3>
-      <p className="text-xs text-cs-muted leading-relaxed">{body}</p>
+    <div className="flex gap-4 py-7 border-t border-cs-border/60">
+      <Icon className="w-5 h-5 text-cs-cyan flex-none mt-0.5" aria-hidden="true" />
+      <div>
+        <h3 className="text-cs-text font-semibold text-base mb-1.5">{title}</h3>
+        <p className="text-sm text-cs-muted leading-relaxed">{body}</p>
+      </div>
     </div>
   );
 }
@@ -598,7 +529,7 @@ function PricingCard({ icon: Icon, name, tagline, seats, price, per, badge, bull
   return (
     <div ref={tiltRef} className={cardCls}>
       {highlighted && badge && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-cs-gold text-black text-[10px] font-bold uppercase tracking-wider">
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-cs-gold text-black text-xs font-bold">
           {badge}
         </div>
       )}
@@ -608,13 +539,13 @@ function PricingCard({ icon: Icon, name, tagline, seats, price, per, badge, bull
           <h3 className="text-xl font-bold text-cs-text">{name}</h3>
         </div>
         {seats && (
-          <div className="font-mono text-[10px] uppercase tracking-wider text-cs-cyan mb-1">{seats}</div>
+          <div className="text-xs text-cs-cyan mb-1">{seats}</div>
         )}
         <p className="text-sm text-cs-muted">{tagline}</p>
       </div>
       <div className="mb-6" aria-live="polite">
         <div className="font-display text-4xl font-black text-cs-text">{price}</div>
-        <div className="text-xs text-cs-dim font-mono">{per}</div>
+        <div className="text-sm text-cs-dim mt-1">{per}</div>
       </div>
       <ul className={`space-y-2 text-sm text-cs-text flex-1 ${compact ? "mb-6" : "mb-8"}`}>
         {bullets.map((b) => (
@@ -696,8 +627,8 @@ function HeroConverge() {
     <div aria-hidden className="hero-converge relative mx-auto w-full max-w-md lg:max-w-none">
       <div className="cs-card !p-6 sm:!p-7 bg-cs-surface/70 backdrop-blur-sm">
         <div className="flex items-center justify-between mb-4">
-          <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-cs-dim">Before · eight bots</span>
-          <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-cs-cyan">After · one</span>
+          <span className="text-xs text-cs-dim">Before: eight bots</span>
+          <span className="text-xs text-cs-cyan">After: one</span>
         </div>
 
         <div className="grid grid-cols-2 gap-2.5">
@@ -725,8 +656,8 @@ function HeroConverge() {
           <SupremeLogo size={40} />
           <div className="min-w-0">
             <div className="font-display font-black text-cs-text text-lg leading-none">Supreme Bot</div>
-            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-cs-cyan mt-1.5">
-              One dashboard · one bill
+            <div className="text-xs text-cs-cyan mt-1.5">
+              One dashboard, one bill
             </div>
           </div>
         </div>
