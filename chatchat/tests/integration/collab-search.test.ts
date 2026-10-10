@@ -32,11 +32,19 @@ beforeEach(async () => {
   w = await seedCollab(h);
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Hit = any;
+/** Резултат от търсенето / ред от списък — само полетата, които тестът проверява. */
+interface Hit {
+  id: string;
+  source?: 'conversation' | 'case';
+  kind?: string;
+  caseId?: string;
+  conversation?: { id: string };
+  snippet: Array<{ text: string; match: boolean }>;
+  messageId?: string;
+  unread?: number;
+}
 const search = (c: CollabWorld['c'][keyof CollabWorld['c']], q: string, extra = '') =>
   c.get(`/api/v1/search/messages?q=${encodeURIComponent(q)}${extra}`);
-const ids = (hits: Hit[]) => hits.map((r) => r.id).sort();
 const text = (r: Hit) => r.snippet.map((p: { text: string }) => p.text).join('');
 
 describe('търсене', () => {
@@ -62,7 +70,9 @@ describe('търсене', () => {
     assert.equal(hit.conversation.id, dm);
     assert.equal(hit.sender.name, 'Sara Supporto');
     // Подчертано: „Città“ (без ударение в заявката) и цялото „E370“ (префикс); HTML е текст.
-    const marked = hit.snippet.filter((p: { match: boolean }) => p.match).map((p: Hit) => p.text);
+    const marked = hit.snippet
+      .filter((p: { match: boolean }) => p.match)
+      .map((p: { text: string }) => p.text);
     assert.deepEqual(marked, ['Città', 'E370']);
     assert.ok(text(hit).includes('<b>bloccata</b>'));
 
@@ -75,7 +85,7 @@ describe('търсене', () => {
     const caseHit = both.body.results[0];
     assert.equal(caseHit.caseId, caseId);
     assert.match(caseHit.caseNumber, /^CASE-/);
-    // Порталният автор се вижда с името си от персонала; заявка без думи — 400.
+    // Заявка без думи или под 2 знака — 400.
     assert.equal((await search(c.support, '!!')).status, 400);
     assert.equal((await search(c.support, 'x')).status, 400);
   });

@@ -132,6 +132,24 @@ services:
       PRIVACY_POLICY_URL: ${PRIVACY_POLICY_URL:-}
       RETENTION_SESSION_DAYS: ${RETENTION_SESSION_DAYS:-30}
       RETENTION_CASE_DAYS: ${RETENTION_CASE_DAYS:-}
+      # Ретенция по класове (NFR-08/13): празно → подразбирането в src/config.ts (съобщенията по вид
+      # разговор — не се трият, докато администраторът на данните не зададе срок; одит — 10 г.).
+      RETENTION_DIRECT_DAYS: ${RETENTION_DIRECT_DAYS:-}
+      RETENTION_GROUP_DAYS: ${RETENTION_GROUP_DAYS:-}
+      RETENTION_CHANNEL_DAYS: ${RETENTION_CHANNEL_DAYS:-}
+      RETENTION_NOTIFICATION_DAYS: ${RETENTION_NOTIFICATION_DAYS:-}
+      RETENTION_PRESENCE_DAYS: ${RETENTION_PRESENCE_DAYS:-}
+      RETENTION_METADATA_DAYS: ${RETENTION_METADATA_DAYS:-}
+      RETENTION_AUDIT_DAYS: ${RETENTION_AUDIT_DAYS:-}
+      RETENTION_ORPHAN_HOURS: ${RETENTION_ORPHAN_HOURS:-}
+      RETENTION_QUARANTINE_DAYS: ${RETENTION_QUARANTINE_DAYS:-}
+      # Имейл известия през Brevo (HTTPS API, порт 443 — Hetzner блокира 25/465/587). Ключът — само в
+      # .env на сървъра (mode 600). Празен ключ → имейлите са изключени, известията в приложението остават.
+      BREVO_API_KEY: ${BREVO_API_KEY:-}
+      MAIL_FROM_EMAIL: ${MAIL_FROM_EMAIL:-}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME:-}
+      EMAIL_DELAY_SECONDS: ${EMAIL_DELAY_SECONDS:-}
+      EMAIL_DIGEST_HOUR: ${EMAIL_DIGEST_HOUR:-}
       # Един прокси отпред (nginx на хоста). Портът е публикуван през Docker: приложението вижда шлюза
       # на мрежата като пряк събеседник, а nginx презаписва X-Forwarded-For с истинския адрес.
       TRUST_PROXY: ${TRUST_PROXY:-1}
