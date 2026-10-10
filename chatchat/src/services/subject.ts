@@ -1,6 +1,7 @@
 import type { PrismaClient, User } from '@prisma/client';
 import { appendAudit } from '../audit.js';
 import { revokeUserSessions, type SessionRevocation } from '../auth/sessions.js';
+import type { AttachmentStore } from '../storage/attachments.js';
 import { auditReason, ERASED_NAME, erasedEmail, unusablePasswordHash } from './users.js';
 
 /**
@@ -10,6 +11,8 @@ import { auditReason, ERASED_NAME, erasedEmail, unusablePasswordHash } from './u
  * Изтриване: анонимизация на акаунта, не изтриване на реда — техническото съдържание на случаите
  * (диагнози, проверки, тикети) е данни на клиента и остава, а авторът му е псевдонимен id без
  * име и имейл. Одитната верига не се пипа: изтрит или променен ред я чупи (SECURITY.md).
+ * Файловете, качени от човека в лични разговори (директни, групи, канали — не в дискусия по
+ * случай, която е техническо доказателство на клиента), се изтриват: файлът първо, после редът.
  */
 
 const MAX_ROWS = 10_000;
@@ -32,6 +35,8 @@ export async function exportSubject(db: PrismaClient, tenantId: string, userId: 
     notifications,
     presence,
     savedFilters,
+    notificationSettings,
+    messageMarks,
   ] = await Promise.all([
     db.session.findMany({
       where: { userId },
@@ -116,6 +121,8 @@ export async function exportSubject(db: PrismaClient, tenantId: string, userId: 
         mime: true,
         sizeBytes: true,
         originalName: true,
+        caseId: true,
+        conversationId: true,
         createdAt: true,
       },
       take: MAX_ROWS,
@@ -139,6 +146,22 @@ export async function exportSubject(db: PrismaClient, tenantId: string, userId: 
     db.savedFilter.findMany({
       where: { userId },
       select: { id: true, scope: true, name: true, filter: true, shared: true, createdAt: true },
+    }),
+    db.notificationSettings.findUnique({
+      where: { userId },
+      select: {
+        emailEnabled: true,
+        digest: true,
+        quietStart: true,
+        quietEnd: true,
+        timeZone: true,
+        updatedAt: true,
+      },
+    }),
+    db.messageMark.findMany({
+      where: { userId, tenantId },
+      select: { messageId: true, kind: true, createdAt: true },
+      take: MAX_ROWS,
     }),
   ]);
   const flow = await exportFlow(db, tenantId, userId);
@@ -174,6 +197,18 @@ export async function exportSubject(db: PrismaClient, tenantId: string, userId: 
     presence,
     savedFilters,
     ...flow,
+    notificationSettings,
+    messageMarks,
+  };
+}
+
+/** Личните файлове на човека в разговори (не в дискусия по случай) — за изтриване по чл. 17. */
+function personalFilesWhere(tenantId: string, userId: string) {
+  return {
+    tenantId,
+    uploadedById: userId,
+    conversationId: { not: null },
+    conversation: { type: { not: 'CASE' as const } },
   };
 }
 
@@ -233,9 +268,17 @@ export async function eraseSubject(
   actor: { id: string; tenantId: string },
   target: User,
   reason: string,
+  store: AttachmentStore | null = null,
 ): Promise<SessionRevocation> {
   const passwordHash = await unusablePasswordHash();
   const now = new Date();
+  // Файловете — ПРЕДИ редовете и извън транзакцията (хранилището не е транзакционно). Без
+  // хранилище редовете остават (fail-closed: ред без файл не се губи), броят им е в одита.
+  const files = await db.attachment.findMany({
+    where: personalFilesWhere(target.tenantId, target.id),
+    select: { id: true, objectKey: true },
+  });
+  if (store) for (const f of files) await store.delete(f.objectKey);
   return db.$transaction(async (tx) => {
     await tx.user.update({
       where: { id: target.id },
@@ -256,6 +299,12 @@ export async function eraseSubject(
     const notifications = await tx.notification.deleteMany({ where: { userId: target.id } });
     await tx.userPresence.deleteMany({ where: { userId: target.id } });
     const filters = await tx.savedFilter.deleteMany({ where: { userId: target.id } });
+    await tx.notificationSettings.deleteMany({ where: { userId: target.id } });
+    await tx.messageMark.deleteMany({ where: { userId: target.id } });
+    await tx.emailOutbox.deleteMany({ where: { userId: target.id } });
+    const erasedFiles = store
+      ? (await tx.attachment.deleteMany({ where: { id: { in: files.map((f) => f.id) } } })).count
+      : 0;
     await appendAudit(tx, {
       tenantId: actor.tenantId,
       actorId: actor.id,
@@ -267,6 +316,8 @@ export async function eraseSubject(
         revokedSessions: revocation.count,
         notifications: notifications.count,
         savedFilters: filters.count,
+        files: erasedFiles,
+        filesKept: files.length - erasedFiles,
       },
     });
     return revocation;

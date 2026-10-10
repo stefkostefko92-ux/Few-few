@@ -1,12 +1,12 @@
-import type {
-  AccountKind,
-  Conversation,
-  ConversationMember,
-  ConversationType,
-  ConversationVisibility,
+import {
   Prisma,
-  PrismaClient,
-  Role,
+  type AccountKind,
+  type Conversation,
+  type ConversationMember,
+  type ConversationType,
+  type ConversationVisibility,
+  type PrismaClient,
+  type Role,
 } from '@prisma/client';
 import { can } from '../../auth/rbac.js';
 
@@ -105,6 +105,28 @@ export function memberConversationWhere(v: Viewer): Prisma.ConversationWhereInpu
   if (!isStaff(v)) return { ...base, portal: true, type: { in: ['DIRECT', 'GROUP'] } };
   if (!can(v.role, 'case:readAll')) return { ...base, type: { not: 'CASE' } };
   return base;
+}
+
+/**
+ * SQL огледалото на `canAccessConversation` за разговор с псевдоним `c` (търсене в историята,
+ * лични маркери) — същите правила, но в заявката, за да са верни и пагинацията, и броят:
+ * клиентът; порталът — член + портален DIRECT/GROUP; персоналът — CASE само с `case:readAll`,
+ * иначе член или PUBLIC непортален канал. Без `conversation:use` — нищо.
+ * Паритетът с `canAccessConversation` се проверява в tests/integration/collab-search.test.ts.
+ */
+export function conversationAccessSql(v: Viewer): Prisma.Sql {
+  if (!can(v.role, 'conversation:use')) return Prisma.sql`FALSE`;
+  const member = Prisma.sql`EXISTS (SELECT 1 FROM "ConversationMember" am
+     WHERE am."conversationId" = c."id" AND am."userId" = ${v.id})`;
+  const tenant = Prisma.sql`c."tenantId" = ${v.tenantId}`;
+  if (!isStaff(v)) {
+    return Prisma.sql`(${tenant} AND c."portal" = TRUE AND c."type" IN ('DIRECT', 'GROUP') AND ${member})`;
+  }
+  const caseRule = can(v.role, 'case:readAll') ? Prisma.sql`TRUE` : Prisma.sql`FALSE`;
+  return Prisma.sql`(${tenant} AND (
+      (c."type" = 'CASE' AND ${caseRule})
+      OR (c."type" <> 'CASE' AND (${member}
+          OR (c."type" = 'CHANNEL' AND c."visibility" = 'PUBLIC' AND c."portal" = FALSE)))))`;
 }
 
 export interface Loaded {

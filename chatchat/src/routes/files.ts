@@ -58,7 +58,8 @@ export function filesRouter(deps: AppDeps): Router {
     if (!a || !(await canReadAttachment(deps.db, p, a))) return apiError(res, 404, 'not_found');
     const bytes = await deps.attachments.store.get(a.objectKey);
     if (!bytes) return apiError(res, 404, 'not_found');
-    if (a.kind === 'DOCUMENT') {
+    // Документ за базата знания — с одит; PDF от разговор е лична кореспонденция (без следа на четене).
+    if (a.kind === 'DOCUMENT' && a.conversationId === null) {
       await appendAudit(deps.db, {
         tenantId: p.user.tenantId,
         actorId: p.user.id,

@@ -1,25 +1,18 @@
 // Нишката на разговора: списък със съобщения + поле. Един компонент за основния изглед и за
-// плаващите прозорци. Изпращането е оптимистично и идемпотентно (clientMessageId): при грешка или
-// прекъсване повторният опит ползва СЪЩИЯ ключ — сървърът връща записаното, дубликат няма (AC-12).
+// плаващите прозорци. Изпращането (оптимистично, идемпотентно, с файлове) е в thread-send.js.
+// `focusMessage` отваря съобщение в контекста му — и когато е извън заредената страница
+// (резултат от търсенето, връзка): зарежда страница около него (`around`).
 
 import { announce, clear, h } from '../dom.js';
 import { errorText } from '../errors.js';
 import { t } from '../i18n.js';
-import { emit, listen, state } from '../store.js';
-import { wsApi } from './api.js';
+import { listen, state } from '../store.js';
 import { createComposer } from './composer.js';
 import { messageVersion, renderConvMessage } from './message-view.js';
-import {
-  byPosition,
-  slotOf,
-  sortedMessages,
-  titleOf,
-  upsertConversation,
-  upsertMessage,
-  ws,
-} from './model.js';
+import { byPosition, findMessage, slotOf, sortedMessages, titleOf, ws } from './model.js';
 import { reconcile } from './reconcile.js';
-import { catchUp, loadLatest, loadOlder, loadThread, scheduleRead } from './sync.js';
+import { catchUp, loadAround, loadLatest, loadOlder, loadThread, scheduleRead } from './sync.js';
+import { createSender } from './thread-send.js';
 
 const NEAR_BOTTOM = 96;
 
@@ -40,8 +33,6 @@ export function mountThread(host, convId, { scope, compact = false }) {
     refresh: () => render(),
     openThread: (rootId) => void openThread(rootId),
   };
-  /** Локално изпратените, още непотвърдени съобщения. */
-  let pending = [];
   let threadRoot = null;
   let known = new Set(slot.messages.keys());
   let loadError = '';
@@ -75,10 +66,12 @@ export function mountThread(host, convId, { scope, compact = false }) {
     back,
     h('strong', null, t('thread.title')),
   );
+  const sender = createSender({ convId, render: (opts) => render(opts) });
   const composer = createComposer({
     scope,
+    convId,
     hideLabel: compact,
-    onSend: (text) => void send(text),
+    onSend: (text, files) => void sender.send(text, files, threadRoot),
   });
   const root = h(
     'div',
@@ -105,10 +98,7 @@ export function mountThread(host, convId, { scope, compact = false }) {
         .map((m) => m.clientMessageId)
         .filter(Boolean),
     );
-    const mine = pending.filter(
-      (p) => !have.has(p.clientMessageId) && (p.replyToId ?? null) === threadRoot,
-    );
-    return [...all.sort(byPosition), ...mine];
+    return [...all.sort(byPosition), ...sender.visible(have, threadRoot)];
   };
 
   function render({ stick } = {}) {
@@ -207,80 +197,41 @@ export function mountThread(host, convId, { scope, compact = false }) {
     render({ stick: true });
   }
 
-  /* ---- изпращане ---- */
+  const ready = load();
 
-  async function deliver(local) {
-    local.pending = 'sending';
-    render({ stick: true });
-    try {
-      const { message } = await wsApi.post(convId, {
-        text: local.body,
-        clientMessageId: local.clientMessageId,
-        ...(local.replyToId ? { replyToId: local.replyToId } : {}),
-      });
-      upsertMessage(convId, message);
-      pending = pending.filter((p) => p !== local);
-      if (!message.replyToId) {
-        upsertConversation({
-          id: convId,
-          lastMessage: {
-            id: message.id,
-            sender: message.sender,
-            preview: String(message.body ?? '').slice(0, 140),
-            deleted: false,
-            createdAt: message.createdAt,
-          },
-          lastActivityAt: message.createdAt,
-        });
-        emit('ws:convs');
-      }
-      render({ stick: true });
-    } catch (err) {
-      local.pending = 'failed';
-      // 4xx (напр. член вече не е, отказ) не се оправя с повтор; мрежа/5xx — да.
-      local.error = errorText(err);
-      render({ stick: true });
-      announce(`${t('msg.failed')} ${local.error}`);
+  const highlight = (id) => {
+    const el = list.querySelector(`[data-message-id="${CSS.escape(id)}"]`);
+    if (!el) return false;
+    el.scrollIntoView({ block: 'center' });
+    el.classList.add('is-target');
+    setTimeout(() => el.classList.remove('is-target'), 2500);
+    return true;
+  };
+
+  /** Съобщение от търсенето/връзка: в нишка → отваря нишката; извън страницата → `around`. */
+  async function focusMessage(id, replyToId = null) {
+    if (replyToId) {
+      await openThread(replyToId);
+      if (!findMessage(convId, id)) await loadThread(convId, replyToId).catch(() => undefined);
+      render({ stick: false });
+      return highlight(id);
     }
+    if (highlight(id)) return true;
+    try {
+      await loadAround(convId, id);
+    } catch (err) {
+      loadError = errorText(err);
+    }
+    render({ stick: false });
+    return highlight(id);
   }
-
-  async function send(text) {
-    const cmid = crypto.randomUUID();
-    const local = {
-      id: `local-${cmid}`,
-      clientMessageId: cmid,
-      conversationId: convId,
-      kind: 'HUMAN',
-      sender: { id: state.user.id, name: state.user.name },
-      body: text,
-      createdAt: new Date().toISOString(),
-      replyToId: threadRoot,
-      reactions: [],
-      deleted: false,
-      pending: 'sending',
-      retry: () => void deliver(local),
-      discard: () => {
-        pending = pending.filter((p) => p !== local);
-        render();
-      },
-    };
-    pending.push(local);
-    await deliver(local);
-  }
-
-  void load();
 
   return {
     el: root,
-    /** Превърта към съобщение (връзка, известие) и го маркира за миг. */
-    focusMessage: (id) => {
-      const el = list.querySelector(`[data-message-id="${CSS.escape(id)}"]`);
-      if (!el) return false;
-      el.scrollIntoView({ block: 'center' });
-      el.classList.add('is-target');
-      setTimeout(() => el.classList.remove('is-target'), 2500);
-      return true;
-    },
+    /** Първото зареждане (за отваряне „в контекст“ — без състезание с последната страница). */
+    ready,
+    /** Превърта към съобщение (връзка, търсене, известие) и го маркира за миг. */
+    focusMessage,
     focusComposer: () => composer.focus(),
     title: () => titleOf(ws.convs.get(convId) ?? { type: 'GROUP' }),
     reload: () => void load(),

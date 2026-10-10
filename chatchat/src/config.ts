@@ -99,6 +99,25 @@ const EnvSchema = z.object({
    */
   METRICS_PORT: z.coerce.number().int().min(0).max(65535).default(0),
   METRICS_HOST: z.string().default('127.0.0.1'),
+
+  /**
+   * Имейл известия през Brevo (HTTPS API, порт 443 — Hetzner блокира 25/465/587). Ключът е тайна —
+   * само в .env на сървъра (mode 600), никога в лог. Празно → имейлите са изключени (fail-open:
+   * известията в приложението работят), без натрупване в outbox.
+   */
+  BREVO_API_KEY: z.string().default(''),
+  BREVO_API_URL: z.url().default('https://api.brevo.com/v3/smtp/email'),
+  /** Подателят (проверен домейн в Brevo), напр. no-reply@carbonstealth.eu. */
+  MAIL_FROM_EMAIL: z.string().default(''),
+  MAIL_FROM_NAME: z.string().trim().min(1).max(70).default('ChatChat'),
+  /** През колко секунди изпращачът минава през outbox-а (0 = никога). */
+  EMAIL_SWEEP_SECONDS: z.coerce.number().int().min(0).max(3600).default(60),
+  /** Колко чака писмото за ново съобщение/споменаване — прочетено междувременно → не тръгва. */
+  EMAIL_DELAY_SECONDS: z.coerce.number().int().min(0).max(86400).default(300),
+  /** В колко часа (местно време на човека) тръгва дневният дайджест на непрочетеното. */
+  EMAIL_DIGEST_HOUR: z.coerce.number().int().min(0).max(23).default(7),
+  EMAIL_TIMEOUT_MS: z.coerce.number().int().min(1000).max(60000).default(10000),
+  EMAIL_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(20).default(6),
 });
 
 type FilesFields = Pick<
@@ -153,6 +172,14 @@ const ConfigSchema = EnvSchema.superRefine((c, ctx) => {
       message: 'METRICS_PORT трябва да е различен от PORT (метриките не са на публичния порт)',
     });
   }
+  // Ключ без подател е полуготов конфиг: писмата биха се отхвърляли едно по едно.
+  if (c.BREVO_API_KEY !== '' && !z.email().safeParse(c.MAIL_FROM_EMAIL).success) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['MAIL_FROM_EMAIL'],
+      message: 'MAIL_FROM_EMAIL трябва да е валиден имейл, щом BREVO_API_KEY е зададен',
+    });
+  }
   if (c.ATTACHMENTS_DIR === '') return;
   checkFilesCrypto(c, ctx);
   if (
@@ -188,7 +215,7 @@ export type Config = z.infer<typeof EnvSchema>;
  * (EMBEDDING_MODEL) и числата (METRICS_PORT) иначе биха спрели процеса при старт. Всички текстови
  * настройки имат подразбиране '' — за тях смисълът не се мени.
  */
-function withoutEmpty(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+export function withoutEmpty(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   return Object.fromEntries(Object.entries(env).filter(([, v]) => v !== ''));
 }
 
@@ -221,6 +248,11 @@ export function aiEnabled(cfg: Pick<Config, 'VERTEX_PROJECT_ID'>): boolean {
 /** Прикачването е включено само с хранилище (ключът е проверен в схемата). */
 export function attachmentsEnabled(cfg: Pick<Config, 'ATTACHMENTS_DIR'>): boolean {
   return cfg.ATTACHMENTS_DIR.length > 0;
+}
+
+/** Имейл известията — само с ключ за Brevo (подателят е проверен в схемата). */
+export function emailEnabled(cfg: Pick<Config, 'BREVO_API_KEY'>): boolean {
+  return cfg.BREVO_API_KEY.length > 0;
 }
 
 /**

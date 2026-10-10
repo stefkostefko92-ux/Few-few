@@ -19,8 +19,16 @@ const h = await startApp({
   origin: E2E_ORIGIN,
 });
 
+/** Обобщението на езика, поискан в съобщението на случая (FR-14: езикът на човека). */
+const SUMMARY: Record<string, string> = {
+  Italian: 'Diagnosi di prova.',
+  English: 'Test diagnosis.',
+  Bulgarian: 'Тестова диагноза.',
+};
+
 /**
- * Цитира първия съвместим източник; ако въпросът има снимка — добавя ясно наблюдение за нея.
+ * Цитира първия съвместим източник; ако въпросът има снимка — добавя ясно наблюдение за нея;
+ * обобщението е на езика от „Answer language: …“ (като истинския модел).
  * Въпрос за „contatto porta“ → отговор с две стъпки (диагностична + по безопасност по
  * процедурата PROC-DOOR-001) — за потока на тикета (ticket-flow.spec.ts).
  */
@@ -33,7 +41,9 @@ const plan: Plan = (pack, call) => {
   }
   const first = pack.find((p) => p.applicable);
   const photoSent = (h.model.images.at(-1)?.length ?? 0) > 0;
+  const language = /Answer language: (\w+)/.exec(h.model.texts.at(-1) ?? '')?.[1] ?? 'Italian';
   return {
+    summary: SUMMARY[language] ?? SUMMARY.Italian,
     ...(first
       ? {
           causes: [{ text: 'Causa documentata', evidenceRefs: [first.ref] }],
