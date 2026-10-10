@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, beforeEach, describe, test } from 'node:test';
 import { appendAudit, verifyAuditChain } from '../../src/audit.js';
-import { loadRetentionConfig } from '../../src/config.js';
+import { loadRetentionConfig } from '../../src/config-retention.js';
 import { AuditChainBroken, pruneAudit } from '../../src/services/audit-retention.js';
 import { runRetention } from '../../src/services/retention.js';
 import { MAGIC } from '../file-fixtures.js';

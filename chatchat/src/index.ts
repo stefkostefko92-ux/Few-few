@@ -21,7 +21,7 @@ import { BrevoMailer } from './services/email/mailer.js';
 import { EmailWorker } from './services/email/worker.js';
 import { EmbeddingIndexer } from './store/embeddings.js';
 import { ClamdScanner } from './storage/antivirus.js';
-import { FileAttachmentStore } from './storage/attachments.js';
+import { attachmentStoreFrom } from './storage/factory.js';
 import { RealtimeHub } from './realtime/hub.js';
 import { PrismaKnowledgeStore } from './store/knowledge.js';
 import { knowledgeSnapshotId } from './store/snapshot.js';
@@ -99,7 +99,8 @@ if (aiEnabled(config)) {
 let attachments: AttachmentDeps | null = null;
 if (attachmentsEnabled(config)) {
   attachments = {
-    store: new FileAttachmentStore(config.ATTACHMENTS_DIR),
+    // Шифровано в покой (NFR-03): FILES_KEK е проверен от config.ts — без него процесът не стига дотук.
+    store: attachmentStoreFrom(config),
     scanner: config.CLAMAV_HOST
       ? meteredScanner(
           new ClamdScanner({
@@ -185,6 +186,7 @@ const server = app.listen(config.PORT, config.HOST, () => {
       ai: diagnoser !== null,
       uploads: attachments?.scanner != null,
       email: mail !== null,
+      filesEncrypted: attachments ? config.FILES_ENCRYPTION === 'on' : null,
     },
     'chatchat слуша',
   );

@@ -5,11 +5,12 @@
 #   sudo bash /opt/few-few/current/chatchat/deploy/deploy.sh   # ръчно (DEPLOY.md)
 #   deploy/autodeploy.sh го вика за всеки release с chatchat/  # автоматично — същият път
 #
-# Ред: тайните от стабилния път → папката с прикачените файлове → образите (build на app; db и clamav
-# се теглят само ако ги няма) → бекъп на базата преди миграция (след build-а: дъмпът е отпреди самата
-# смяна) → еднократно: базата на pgvector + REINDEX (DEPLOY.md, т. 11) → up (entrypoint-ът
-# прилага `prisma migrate deploy`) → чака /readyz → дневният шифрован бекъп и ретенцията (таймери) →
-# vhost-ът от репото, щом има сертификат.
+# Ред: тайните от стабилния път → шифрованият том на базата, ако е включен (отключен и монтиран, т. 12)
+# → папката с прикачените файлове → образите (build на app; db и clamav се теглят само ако ги няма) →
+# бекъп на базата преди миграция (след build-а: дъмпът е отпреди самата смяна) → еднократно: базата на
+# pgvector + REINDEX (DEPLOY.md, т. 11) → up (entrypoint-ът прилага `prisma migrate deploy`) → чака
+# /readyz → старите нешифровани прикачени файлове се шифроват (`files:encrypt`) → дневният шифрован
+# бекъп и ретенцията (таймери) → vhost-ът от репото, щом има сертификат.
 #
 # Изход: 0 — жив; 3 — няма .env (машината не е настроена); 4 — контейнерите са сменени, но ChatChat не
 # отговаря (autodeploy връща предишния код); 1 — спрян преди смяната (работещите не са пипани). След
@@ -33,6 +34,10 @@ SKIP_BACKUP="${CHATCHAT_SKIP_BACKUP:-0}"
 LAST_GOOD="${CHATCHAT_LAST_GOOD:-$SHARED/last-good}"
 # Маркер: томът на базата вече е минал на pgvector (glibc) и индексите са построени наново.
 PGVECTOR_MARK="${CHATCHAT_PGVECTOR_MARK:-$SHARED/.db-pgvector}"
+# Шифрованият том на базата (deploy/pgdata-encrypt.sh, DEPLOY.md т. 12): конфигът е на root, извън release-а.
+PGDATA_CONF="${CHATCHAT_PGDATA_CONF_DIR:-/etc/chatchat}/pgdata.conf"
+PGDATA_MOUNT="$SHARED/pgdata"
+COMPOSE_PGDATA='COMPOSE_FILE=docker-compose.yml:docker-compose.pgdata.yml'
 TS="$(date +%Y%m%d-%H%M%S)"
 
 log()  { printf '\033[1;36m▸ chatchat: %s\033[0m\n' "$*"; }
@@ -68,14 +73,17 @@ sync_env() {
   fi
 }
 
-# Ключовете от F2 (подписът на адресите за сваляне и шифроването на MFA) са чисто случайни: щом ги няма,
-# приложението не е тръгвало с тях (compose ги иска с `:?`), тоест няма нищо, подписано или шифровано с
-# тях. Затова тук — и само тук — липсващ ключ се ражда на сървъра: дописва се в $SHARED/.env (600),
-# никога не се презаписва, никога не се печата. Съществуващ ключ не се пипа.
+# Ключовете (подписът на адресите за сваляне, шифроването на MFA и главният ключ на файловете FILES_KEK)
+# са чисто случайни: щом ги няма, приложението не е тръгвало с тях (compose ги иска с `:?`), тоест няма
+# нищо, подписано или шифровано с тях. Затова тук — и само тук — липсващ ключ се ражда на сървъра:
+# дописва се в $SHARED/.env (600), никога не се презаписва, никога не се печата. Съществуващ не се пипа.
 ensure_keys() {
   local name added=""
-  for name in ATTACHMENT_URL_KEY MFA_ENC_KEY; do
+  for name in ATTACHMENT_URL_KEY MFA_ENC_KEY FILES_KEK; do
     [ -z "$(env_value "$name")" ] || continue
+    if [ "$name" = FILES_KEK ] && sealed_files_exist; then
+      fail 1 "FILES_KEK липсва в $SHARED/.env, а в attachments/ има шифровани файлове — нов ключ НЕ ги отваря. Върни ключа от password manager-а (docs/runbook.md, „Изгубен FILES_KEK“)."
+    fi
     command -v openssl >/dev/null 2>&1 || fail 1 "липсва $name в $SHARED/.env, а openssl го няма — сложи го ръчно (DEPLOY.md, т. 1)."
     # пренасочването е на същия ред: стойността отива само във файла
     printf '%s=%s\n' "$name" "$(openssl rand -base64 32)" >>"$SHARED/.env"
@@ -84,7 +92,33 @@ ensure_keys() {
   [ -n "$added" ] || return 0
   chmod 600 "$SHARED/.env"
   install -m 600 "$SHARED/.env" "$APP_DIR/.env"
-  warn "генерирах$added в $SHARED/.env — копирай .env и извън сървъра (без MFA_ENC_KEY MFA устройствата се записват наново)."
+  warn "генерирах$added в $SHARED/.env — копирай .env и извън сървъра СЕГА (без MFA_ENC_KEY MFA устройствата се записват наново; без FILES_KEK прикачените файлове — и в бекъпите — са загубени)."
+}
+
+# Има ли вече шифровани файлове (магията на src/storage/envelope.ts) — тогава FILES_KEK не се ражда наново.
+sealed_files_exist() {
+  local f
+  while IFS= read -r -d '' f; do
+    [ "$(head -c 8 "$f" | od -An -tx1 | tr -d ' \n')" = 894343454e430d0a ] && return 0
+  done < <(find "$SHARED/attachments" -type f -size +96c -print0 2>/dev/null | head -z -n 200)
+  return 1
+}
+
+pgdata_encrypted() { [ -f "$PGDATA_CONF" ] && grep -qx 'STATE=encrypted' "$PGDATA_CONF"; }
+
+# Базата е в шифрования том: той трябва да е отключен и монтиран, а .env — да сочи compose към него.
+# Иначе compose би вдигнал базата върху стария некриптиран том (db-data) — разминаване на данните.
+check_pgdata() {
+  if ! pgdata_encrypted; then
+    if grep -q '^COMPOSE_FILE=.*docker-compose\.pgdata\.yml' "$APP_DIR/.env"; then
+      fail 1 "COMPOSE_FILE в .env сочи шифрования том, а той не е настроен ($PGDATA_CONF) — DEPLOY.md, т. 12."
+    fi
+    return 0
+  fi
+  { mountpoint -q "$PGDATA_MOUNT" && [ -d "$PGDATA_MOUNT/data" ]; } ||
+    fail 1 "шифрованият том на базата не е отключен/монтиран — sudo chatchat-pgdata open (DEPLOY.md, т. 12)."
+  grep -qxF "$COMPOSE_PGDATA" "$APP_DIR/.env" ||
+    fail 1 "базата е в шифрования том, а в $SHARED/.env няма $COMPOSE_PGDATA — не я вдигам върху стария том."
 }
 
 # Прикачените файлове са извън release-а (иначе изчезват със следващия деплой) и само на едно място —
@@ -148,7 +182,7 @@ ensure_images() {
 # (DEPLOY.md, „Връщане назад“).
 BACKUP_PLAN=""
 plan_backup() {
-  if docker volume inspect chatchat_db-data >/dev/null 2>&1; then
+  if docker volume inspect chatchat_db-data >/dev/null 2>&1 || [ -f "$PGDATA_MOUNT/data/PG_VERSION" ]; then
     if [ "$SKIP_BACKUP" = "1" ]; then BACKUP_PLAN=skip; else BACKUP_PLAN=dump; fi
   else
     BACKUP_PLAN=first
@@ -169,6 +203,8 @@ backup_db() {
     *) fail 1 "бекъпът няма план (plan_backup не е минал) — не мигрирам без бекъп." ;;
   esac
   local dir="$SHARED/backups" file
+  # В шифрования том, щом базата е там: некриптиран дъмп на некриптирания диск би обезсмислил тома.
+  if pgdata_encrypted; then dir="$PGDATA_MOUNT/pre-deploy"; fi
   file="$dir/pre-deploy-$TS.sql.gz"
   install -d -m 700 "$dir"
   # базата може да е спряна (рестарт на машината, срив) — вдига се само тя, за да се дъмпне. Без
@@ -291,6 +327,14 @@ sync_nginx() {
   return 1
 }
 
+# Преходът към шифровани файлове (NFR-03): новите се пишат шифровани; старите нешифровани се шифроват
+# тук, идемпотентно (нов обект → проверка → смяна). Отчетът е само броеве. Провал — предупреждение.
+encrypt_files() {
+  docker compose exec -T app node dist/cli/files.js encrypt && return 0
+  warn "шифроването на старите прикачени файлове не завърши — повтори: cd $APP_DIR && docker compose exec -T app node dist/cli/files.js encrypt"
+  return 1
+}
+
 # Еднократните стъпки, които скриптът не прави сам, и антивирусът, който още зарежда сигнатурите.
 hints() {
   local tenants cid state
@@ -303,6 +347,9 @@ hints() {
   if [ "$state" != healthy ]; then
     warn "антивирусът още не е готов (${state:-няма контейнер}) — новите прикачени файлове чакат проверка. Виж: docker compose logs --tail=40 clamav"
   fi
+  if ! pgdata_encrypted; then
+    warn "данните на базата не са в шифрован том — веднъж: sudo bash $APP_DIR/deploy/pgdata-encrypt.sh enable (DEPLOY.md, т. 12)"
+  fi
 }
 
 main() {
@@ -314,6 +361,7 @@ main() {
   cd "$APP_DIR"
   sync_env
   ensure_keys
+  check_pgdata
   ensure_attachments
   ensure_eval_reports
   sync_clamd_conf
@@ -336,6 +384,7 @@ main() {
   mark_pgvector || warn "не записах $PGVECTOR_MARK — следващият деплой ще пусне REINDEX пак (безвредно)"
   remember_live || warn "не записах $LAST_GOOD — откатът и DEPLOY.md сочат предишния release"
   restart_clamav_if_changed || true
+  encrypt_files || true
   (source "$APP_DIR/deploy/timers-install.sh" && install_timers) || warn "дневният шифрован бекъп/ретенцията не са готови — DEPLOY.md, т. 9"
   sync_nginx "$port" || warn "nginx не е обновен — ChatChat е жив на 127.0.0.1:$port"
   hints || true
