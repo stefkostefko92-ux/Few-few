@@ -39,11 +39,11 @@ export function artifactDue(tip, published) {
   if (!tip || tip === published) return null;
   const s = tip.slice(0, 8);
   return `Artifact-sync: агентите научиха нови поуки (agents/memory → ${s}), а артефактът на флота е от ` +
-    `${published ? published.slice(0, 8) : "по-стара версия"}. Обнови го: ` +
-    `(1) node tools/docs/build-artifact.mjs <scratchpad>/galaxy-artifact.html ` +
-    `(2) Artifact publish на СЪЩИЯ адрес ${ARTIFACT_URL} ` +
-    `(3) node tools/docs/build-artifact.mjs --mark-published ${tip}. ` +
-    `Ако публикуването е невъзможно в тази среда, кажи го изрично на потребителя.`;
+    `${published ? published.slice(0, 8) : "по-стара версия"}. Обнови го (папка — качват се само ` +
+    `променените файлове): (1) node tools/docs/artifact-dir.mjs <scratchpad>/galaxy — печата кои файлове ` +
+    `да се качат (2) прочети ги и Artifact publish на СЪЩИЯ адрес ${ARTIFACT_URL} с file_path ` +
+    `<папка>/index.html и files = само изброените (махнатите → null) (3) node tools/docs/artifact-dir.mjs ` +
+    `--mark-published ${tip} <папка>. Ако публикуването е невъзможно в тази среда, кажи го изрично на потребителя.`;
 }
 
 function main() {
