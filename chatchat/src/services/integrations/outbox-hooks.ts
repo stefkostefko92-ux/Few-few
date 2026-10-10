@@ -40,7 +40,7 @@ export function outboxResult(o: Outcome): OutboxResult {
 export interface OutboxSnapshot {
   pending: number;
   sending: number;
-  /** DEAD на ВКЛЮЧЕН конектор — само те могат да се пуснат наново („Пусни наново“). */
+  /** DEAD на ВКЛЮЧЕН конектор — само те могат да се пуснат отново („Пусни отново“). */
   dead: number;
   /**
    * Създаването на най-старата недоставена доставка, която изпращачът МОЖЕ да вземе — без редовете

@@ -34,7 +34,7 @@ OVERLAY=docker-compose.monitoring.yml
 NOBODY=65534
 EMAIL_RE='[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}'
 # Имената на job-овете в deploy/monitoring/prometheus.yml — всички трябва да се появят в `up`.
-JOBS="chatchat node postgres alertmanager prometheus blackbox-https blackbox-ready blackbox"
+JOBS="chatchat chatchat-worker node postgres alertmanager prometheus blackbox-https blackbox-ready blackbox"
 
 log() { printf '\033[1;36m▸ chatchat-monitoring: %s\033[0m\n' "$*"; }
 ok() { printf '\033[32m✔ chatchat-monitoring: %s\033[0m\n' "$*"; }

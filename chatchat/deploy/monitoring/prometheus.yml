@@ -30,6 +30,12 @@ scrape_configs:
     static_configs:
       - targets: ['app:9464']
 
+  # Worker-ът (опашките ingest/ocr/embed, OCR, приемането) — ChatchatWorkerDown и алармите на опашките
+  # го търсят по това име. Слушателят — пак от docker-compose.monitoring.yml; мрежата — backend.
+  - job_name: chatchat-worker
+    static_configs:
+      - targets: ['worker:9464']
+
   - job_name: node
     static_configs:
       - targets: ['node-exporter:9100']

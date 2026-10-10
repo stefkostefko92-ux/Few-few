@@ -179,9 +179,9 @@ groups:
   - name: chatchat-monitoring
     rules:
       - alert: ChatchatMonitoringTargetDown
-        # Експортер, проба или Alertmanager не се четат 10 мин → алармите им са слепи (не самото приложение:
-        # то е ChatchatDown).
-        expr: up{job!~"chatchat|prometheus"} == 0
+        # Експортер, проба или Alertmanager не се четат 10 мин → алармите им са слепи (не самото приложение
+        # и worker-ът: те са ChatchatDown и ChatchatWorkerDown — без двойно писмо за едно и също).
+        expr: up{job!~"chatchat|chatchat-worker|prometheus"} == 0
         for: 10m
         labels:
           severity: ticket
