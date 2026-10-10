@@ -81,6 +81,9 @@ ensure_keys() {
   local name added=""
   for name in ATTACHMENT_URL_KEY MFA_ENC_KEY FILES_KEK; do
     [ -z "$(env_value "$name")" ] || continue
+    if [ "$name" = FILES_KEK ] && sealed_files_exist; then
+      fail 1 "FILES_KEK липсва в $SHARED/.env, а в attachments/ има шифровани файлове — нов ключ НЕ ги отваря. Върни ключа от password manager-а (docs/runbook.md, „Изгубен FILES_KEK“)."
+    fi
     command -v openssl >/dev/null 2>&1 || fail 1 "липсва $name в $SHARED/.env, а openssl го няма — сложи го ръчно (DEPLOY.md, т. 1)."
     # пренасочването е на същия ред: стойността отива само във файла
     printf '%s=%s\n' "$name" "$(openssl rand -base64 32)" >>"$SHARED/.env"
@@ -90,6 +93,15 @@ ensure_keys() {
   chmod 600 "$SHARED/.env"
   install -m 600 "$SHARED/.env" "$APP_DIR/.env"
   warn "генерирах$added в $SHARED/.env — копирай .env и извън сървъра СЕГА (без MFA_ENC_KEY MFA устройствата се записват наново; без FILES_KEK прикачените файлове — и в бекъпите — са загубени)."
+}
+
+# Има ли вече шифровани файлове (магията на src/storage/envelope.ts) — тогава FILES_KEK не се ражда наново.
+sealed_files_exist() {
+  local f
+  while IFS= read -r -d '' f; do
+    [ "$(head -c 8 "$f" | od -An -tx1 | tr -d ' \n')" = 894343454e430d0a ] && return 0
+  done < <(find "$SHARED/attachments" -type f -size +96c -print0 2>/dev/null | head -z -n 200)
+  return 1
 }
 
 pgdata_encrypted() { [ -f "$PGDATA_CONF" ] && grep -qx 'STATE=encrypted' "$PGDATA_CONF"; }

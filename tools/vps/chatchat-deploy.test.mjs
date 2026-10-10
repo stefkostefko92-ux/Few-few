@@ -303,3 +303,20 @@ test("отключен шифрован том: дъмпът преди мигр
   assert.ok(!existsSync(join(L.shared, "backups")) || !readdirSync(join(L.shared, "backups")).some((f) => f.startsWith("pre-deploy-")));
   assert.doesNotMatch(r.stderr, /pgdata-encrypt\.sh enable/);
 }));
+
+test("FILES_KEK липсва, а има шифровани файлове: изход 1, нов ключ НЕ се ражда (не би ги отворил)", () => withLayout((L) => {
+  sharedEnv(L, "ATTACHMENT_URL_KEY=a\nMFA_ENC_KEY=m\n");
+  const dir = join(L.shared, "attachments", "t1", "2026", "10");
+  mkdirSync(dir, { recursive: true });
+  const magic = Buffer.from([0x89, 0x43, 0x43, 0x45, 0x4e, 0x43, 0x0d, 0x0a]);
+  writeFileSync(join(dir, "0123456789abcdef0123456789abcdef"), Buffer.concat([magic, Buffer.alloc(200, 1)]));
+  const r = deploy(L);
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /нов ключ НЕ ги отваря/);
+  assert.doesNotMatch(readFileSync(join(L.shared, ".env"), "utf8"), /^FILES_KEK=/m);
+  assert.doesNotMatch(r.log, /compose build/);
+  // Само нешифровани (отпреди шифроването) → ключът се ражда.
+  writeFileSync(join(dir, "0123456789abcdef0123456789abcdef"), Buffer.alloc(200, 0x41));
+  assert.equal(deploy(L).status, 0);
+  assert.match(readFileSync(join(L.shared, ".env"), "utf8"), /^FILES_KEK=\S{40,}$/m);
+}));

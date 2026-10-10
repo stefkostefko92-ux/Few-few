@@ -41,8 +41,11 @@ npm run dev                     # http://localhost:4330
 
 `VERTEX_PROJECT_ID` (+ ADC или `GOOGLE_APPLICATION_CREDENTIALS`) включва AI; без него случаите,
 каталогът и знанието работят, а `POST /api/v1/chat/messages` връща 503 `ai_unavailable`.
-Прикачените файлове искат `ATTACHMENTS_DIR` + `ATTACHMENT_URL_KEY`; качването — и clamd
-(`CLAMAV_HOST`), иначе 503 `av_unavailable` (без проверка файл не се приема).
+Прикачените файлове искат `ATTACHMENTS_DIR` + `ATTACHMENT_URL_KEY` + `FILES_KEK` (шифроване в
+покой, `openssl rand -base64 32`; локално може и `FILES_ENCRYPTION=off` — в продукция не); качването
+— и clamd (`CLAMAV_HOST`), иначе 503 `av_unavailable` (без проверка файл не се приема).
+Поддръжката на шифрованите файлове: `npm run files:status|files:encrypt|files:rekey|files:verify`
+(DEPLOY.md, т. 12).
 
 ## Снимки и логове към AI (§9.2, FR-06)
 
