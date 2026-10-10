@@ -7,6 +7,7 @@ import { slideModel, slideSystemOf, slideLength } from './hardware.js';
 import { GROOVE, HDF_T, CONFIRMAT, FRONT_GAP_Z, MIN_WEB, confirmat, addHoleOnce, hasHole } from './joinery.js';
 import { mountHandle } from './fronts.js';
 import { STOCK } from './materials.js';
+import { sideStabiliser } from './stabiliser.js';
 
 const TOP_GAP = 28; // box top below the front top, room for the slide and the drawer above
 const MIN_BOX = 60; // lowest drawer box the generator makes
@@ -22,9 +23,10 @@ export function buildDrawers(ctx, o, a) {
     ctx.warn('error', 'Няма избран водач с данни за пробиване.');
     return;
   }
-  const NL = slideLength(sys, zEnd - backFront);
+  const depth = zEnd - backFront;
+  const NL = slideLength(sys, depth);
   if (!NL) {
-    ctx.warn('error', `${nm(`Колона ${i + 1}`)}: ${sys.name} няма дължина за вътрешна дълбочина ${Math.round(zEnd - backFront)} mm.`);
+    ctx.warn('error', `${nm(`Колона ${i + 1}`)}: ${sys.name} няма дължина за вътрешна дълбочина ${Math.round(depth)} mm.`);
     return;
   }
   const boxStock = BOX_STOCKS.find((st) => st.thickness === sys.boxSide);
@@ -42,18 +44,18 @@ export function buildDrawers(ctx, o, a) {
     return;
   }
   // the slide makers' limits on the width (engine/data/slide-systems.js): a GTV H45 drawer no wider than its NL; a Blum
-  // stabilisation set, recommended for wide drawers on short slides, only up to the cabinet width KB (the column's
-  // inner width and the two panels it stands between). Recommendations for the drawer to run well, not blockers.
+  // side stabilisation set for wide drawers on short slides (engine/stabiliser.js), made only up to the cabinet width KB
+  // (the column's inner width and the two panels it stands between). Recommendations for the drawer to run well.
   const boxW = r1(xr - xl);
   // a narrower drawer: another column only where the furniture type has a columns parameter
   const narrower = o.columnsParam ? 'Добавете колона или стеснете мебела' : 'Стеснете мебела';
   if (sys.maxWidth && boxW > sys.maxWidth(NL)) {
     ctx.warn('warn', `${nm(`Колона ${i + 1}`)}: чекмеджето (${dimTxt(boxW)} mm) не бива да е по-широко от водача (NL ${NL} mm) — изискване на ${sys.brand} за правилната му работа. ${narrower}, задълбочете шкафа за по-дълъг водач или изберете скрит водач.`);
   }
-  const KB = r1(xb - xa + 2 * T);
-  if (sys.stabiliserKB && KB > sys.stabiliserKB) {
-    ctx.warn('warn', `${nm(`Колона ${i + 1}`)}: шкаф ${dimTxt(KB)} mm — ${sys.brand} препоръчва странична стабилизация за широки чекмеджета с къс водач, а комплектът е за шкафове до ${sys.stabiliserKB} mm. ${narrower}.`);
-  }
+  const stab = sideStabiliser(ctx, sys, { where: nm(`Колона ${i + 1}`), KB: r1(xb - xa + 2 * T), LW: xb - xa, NL, depth: r1(depth), handle: o.handle, narrower });
+  // room under the lowest box, over the carcass bottom: a side-mount slide's lower edge is the box's, 6 mm over it (наш
+  // избор); a concealed runner reaches clearBelow under the drawer bottom (Blum: „min 27.5“), more with a stabiliser
+  const floor = sys.mount === 'under' ? sys.clearBelow + (stab?.below ?? 0) - sys.bottomUp : 6;
   const L = sys.drawerLength(NL);
   const fh = r1((dzH - drawers * gap) / drawers);
   // the top edges of the box sides, front and back show whenever the drawer is open: banded like the carcass
@@ -78,7 +80,7 @@ export function buildDrawers(ctx, o, a) {
       bands: bf ? { '+x': bf, '-x': bf, '+y': bf, '-y': bf } : {}, explode: [0, 0, 2.2],
     });
     mountHandle(ctx, o, front, { orientation: 'horizontal', kind: o.kind });
-    const yb0 = Math.max(y0 + 12, dz0 + T + 6);
+    const yb0 = Math.max(y0 + 12, dz0 + T + floor);
     const yb = meets(slideY(yb0)) ? yb0 + sys.hole.d + MIN_WEB : yb0;
     const yt = y1 - TOP_GAP;
     const hb = r1(yt - yb);
@@ -133,6 +135,7 @@ export function buildDrawers(ctx, o, a) {
       name: product ? product.name : `${family.name}, NL ${NL} mm (няма в каталога, поръчайте отделно)`,
       qty: 1, unit: 'компл.', group: 'Обков', sku: product?.sku, brand: product?.brand ?? family.brand, price: product?.price, currency: product?.currency, url: product?.url, shop: product?.shop,
     });
+    if (stab) ctx.hw(stab.line.key, stab.line);
     ctx.groups.push({ type: 'drawer', id: front.id, partIds: [front.id, sideA.id, sideB.id, bfront.id, bback.id, bottom.id], travel: L * (sys.extension === 'full' ? 0.95 : 0.75) });
   }
 }

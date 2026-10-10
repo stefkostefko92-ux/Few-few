@@ -51,7 +51,7 @@
     <figure class="bed">
       <%- sheet.svg %>
       <figcaption>
-        <span><%= t('landing.hero.caption', { no: sheet.no, count: sheet.count, modules: assets.example.modules, width: mm(assets.example.moduleWidth), parts: sheet.parts, holes: mm(sheet.holes) }) %></span>
+        <span><%= t('landing.hero.caption', { no: sheet.no, count: sheet.count, modules: assets.example.modules, doors: assets.example.doorModules, width: mm(assets.example.moduleWidth), drawers: assets.example.drawerModules, drawerWidth: mm(assets.example.drawerModuleWidth), parts: sheet.parts, holes: mm(sheet.holes) }) %></span>
         <span class="legend">
           <% if (assets.tools.contour) { %><span><i class="key key-contour" aria-hidden="true"></i><%= t('landing.hero.keyContour', { d: mm(assets.tools.contour) }) %></span><% } %>
           <% if (assets.tools.groove) { %><span><i class="key key-groove" aria-hidden="true"></i><%= t('landing.hero.keyGroove', { d: mm(assets.tools.groove) }) %></span><% } %>

@@ -1,6 +1,6 @@
 // Geometry and hardware rules found in the audit of the engine: a base cabinet's drawer above its door, drawer columns
 // side by side that still reach the CNC, edge bands on the ends seen from below and on the top edges of drawer boxes,
-// hinge cups that keep MIN_WEB to the cut edge of the door and the slide makers' limits on the drawer width. Runs on the
+// hinge cups that keep MIN_WEB to the cut edge of the door (the slide makers' limits: slides.test.mjs). Runs on the
 // base catalog and the documented hinge and slide systems.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -15,8 +15,6 @@ import { HINGE_SYSTEMS } from '../../engine/data/hinge-systems.js';
 const catalog = registerCatalog(baseCatalogData());
 const SLIDES = catalog.slideFamilies.map((s) => s.id);
 const HINGES = catalog.hingeFamilies.map((h) => h.id);
-const GTV = SLIDES.find((s) => s.includes('gtv_h45'));
-const TANDEM = SLIDES.find((s) => s.includes('blum_tandem_560h'));
 const errorsOf = (m) => m.warnings.filter((w) => w.level === 'error').map((w) => w.text);
 const byRole = (m, role) => m.parts.filter((p) => p.role === role);
 const lowest = (parts) => Math.min(...parts.map((p) => p.box.min[1]));
@@ -230,67 +228,4 @@ test('a hinge whose plates cannot keep the cup MIN_WEB from the cut edge gets a 
   assert.ok(notes.length > 0 && notes.every((n) => n.level === 'warn' && n.text.includes('1,5 mm от ръба')), m.warnings.map((w) => w.text).join(' | '));
   // inside the hinge maker's range: a warning, not a blocker
   assert.deepEqual(errorsOf(m), []);
-});
-
-// Outer width of each drawer box (sideA outer face to sideB outer face) and its slide's nominal length NL.
-function drawerBoxes(m) {
-  return m.groups
-    .filter((g) => g.type === 'drawer')
-    .map((g) => {
-      const [, sideA, sideB] = g.partIds.map((id) => m.parts.find((p) => p.id === id));
-      return { width: Math.round((sideB.box.max[0] - sideA.box.min[0]) * 10) / 10, length: sideA.box.max[2] - sideA.box.min[2] };
-    });
-}
-
-test('GTV H45: a drawer wider than the nominal slide length gets the maker’s warning, a narrower one does not', () => {
-  const tooWide = (m) => m.warnings.filter((w) => w.text.includes('не бива да е по-широко от водача'));
-  // GTV: the box is as long as NL (drawerLength = NL)
-  const wide = [{ type: 'kitchen' }, { type: 'chest' }, { type: 'nightstand' }, { type: 'wallunit' }, { type: 'base', fronts: 'drawers', width: 1200 }];
-  const narrow = [{ type: 'chest', columns: 2 }, { type: 'nightstand', width: 350 }, { type: 'base', fronts: 'drawers', width: 400 }];
-  for (const extra of [...wide, ...narrow]) {
-    const spec = { ...extra, slide: GTV };
-    const label = JSON.stringify(spec);
-    const m = buildModel(spec);
-    const boxes = drawerBoxes(m);
-    assert.ok(boxes.length > 0, `${label}: no drawers`);
-    const over = boxes.filter((b) => b.width > b.length);
-    assert.equal(over.length > 0, wide.includes(extra), `${label}: ${JSON.stringify(boxes)}`);
-    const notes = tooWide(m);
-    if (over.length) {
-      assert.ok(notes.length > 0, `${label}: no warning — ${m.warnings.map((w) => w.text).join(' | ')}`);
-      for (const n of notes) assert.equal(n.level, 'warn', n.text);
-      const { width, length } = over[0];
-      assert.ok(notes.some((n) => n.text.includes(`${String(width).replace('.', ',')} mm`) && n.text.includes(`${length} mm`)), notes.map((n) => n.text).join(' | '));
-      // "add a column" only for a type whose form has columns (the chest), not for the base cabinet, nightstand, kitchen
-      for (const n of notes) assert.equal(n.text.includes('Добавете колона'), spec.type === 'chest', n.text);
-    } else assert.deepEqual(notes, [], label);
-    // a recommendation from the slide maker, not a blocker
-    assert.deepEqual(errorsOf(m), [], label);
-    assert.deepEqual(blockers(m), [], label);
-  }
-  // concealed slides have no such rule
-  assert.deepEqual(tooWide(buildModel({ type: 'chest', slide: TANDEM })), []);
-});
-
-test('Blum TANDEM: a cabinet wider than KB 1400 gets a warning — Blum’s side stabilisation set stops there', () => {
-  const stab = (m) => m.warnings.filter((w) => w.text.includes('странична стабилизация'));
-  for (const [extra, expected] of [
-    [{ type: 'chest', width: 1600, columns: 1 }, true],
-    [{ type: 'chest', width: 1410, columns: 1 }, true],
-    [{ type: 'chest', width: 1400, columns: 1 }, false],
-    [{ type: 'chest', width: 1600, columns: 2 }, false],
-    [{ type: 'base', fronts: 'drawers', width: 1200 }, false],
-  ]) {
-    const spec = { ...extra, slide: TANDEM };
-    const label = JSON.stringify(spec);
-    const m = buildModel(spec);
-    assert.ok(byRole(m, 'drawer-side').length > 0, `${label}: no drawers`);
-    const notes = stab(m);
-    assert.equal(notes.length > 0, expected, `${label}: ${m.warnings.map((w) => w.text).join(' | ')}`);
-    for (const n of notes) assert.ok(n.level === 'warn' && n.text.includes('1400 mm') && n.text.includes('Добавете колона'), n.text);
-    assert.deepEqual(errorsOf(m), [], label);
-    assert.deepEqual(blockers(m), [], label);
-  }
-  // side-mount slides carry no stabiliser
-  assert.deepEqual(stab(buildModel({ type: 'chest', width: 1600, columns: 1, slide: GTV })), []);
 });

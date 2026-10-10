@@ -15,6 +15,10 @@ const S = (key, label, options) => ({ key, label, type: 'seg', options });
 const FRONTS = S('fronts', 'Фронт', [['doors', 'Врати'], ['drawers', 'Чекмеджета'], ['mixed', 'Чекмедже + врати']]);
 const DOORS = S('doors', 'Врати', [[1, '1'], [2, '2']]);
 
+// The defaults are our choice (наш избор) within GTV's rule for the default slide, GTV H45: no drawer box wider than
+// the slide's nominal length (engine/data/slide-systems.js, maxWidth) — hence the 500 mm drawer module of the kitchen,
+// 4 wardrobe columns, 2 chest columns, a 400 mm nightstand and a 1500 mm TV unit with 4 columns
+// (tests/engine/defaults.test.mjs: no warning on any type's defaults).
 export const TYPES = {
   base: {
     label: 'Долен шкаф', group: 'Кухня и шкафове',
@@ -33,23 +37,25 @@ export const TYPES = {
   },
   kitchen: {
     label: 'Кухня (ред)', group: 'Кухня и шкафове',
-    params: [R('modules', 'Модули', 2, 6, 1, ''), R('moduleWidth', 'Ширина на модул', 400, 900, 10), R('height', 'Долни шкафове с крачетата', 820, 900, 1), R('depth', 'Дълбочина долни', 500, 600, 1), R('wallHeight', 'Горни шкафове', 500, 900, 10), R('mount', 'Горни от пода', 1350, 1700, 10)],
-    defaults: { modules: 4, moduleWidth: 600, height: 860, depth: 560, wallHeight: 720, mount: 1450 },
+    params: [R('modules', 'Модули', 2, 6, 1, ''), R('moduleWidth', 'Ширина на модул с врати', 400, 900, 10), R('drawerModuleWidth', 'Ширина на модул с чекмеджета', 400, 900, 10), R('height', 'Долни шкафове с крачетата', 820, 900, 1), R('depth', 'Дълбочина долни', 500, 600, 1), R('wallHeight', 'Горни шкафове', 500, 900, 10), R('mount', 'Горни от пода', 1350, 1700, 10)],
+    // the drawer module narrower than the door modules: with GTV H45 in a 560 mm carcass (NL 500) a drawer of a 600 mm
+    // module would be wider than its slide (drawers.js); 500 keeps the box at 438,6 mm
+    defaults: { modules: 4, moduleWidth: 600, drawerModuleWidth: 500, height: 860, depth: 560, wallHeight: 720, mount: 1450 },
   },
   wardrobe: {
     label: 'Гардероб', group: 'Спалня',
     params: [R('width', 'Ширина', 800, 3000, 10), R('height', 'Височина с крачетата', 1800, 2600, 10), R('depth', 'Дълбочина', 450, 650, 10), R('legs', 'Цокъл', 0, 150, 5), R('columns', 'Колони', 2, 5, 1, ''), S('layout', 'Разпределение', [['mixed', 'Смесено'], ['hanging', 'Закачалки'], ['shelves', 'Рафтове']]), S('doorsPerColumn', 'Врати на колона', [[0, 'Авто'], [1, '1'], [2, '2']])],
-    defaults: { width: 2000, height: 2400, depth: 600, legs: 100, columns: 3, layout: 'mixed', doorsPerColumn: 0 },
+    defaults: { width: 2000, height: 2400, depth: 600, legs: 100, columns: 4, layout: 'mixed', doorsPerColumn: 0 },
   },
   chest: {
     label: 'Скрин', group: 'Спалня',
     params: [R('width', 'Ширина', 400, 1600, 10), R('height', 'Височина с крачетата', 500, 1300, 10), R('depth', 'Дълбочина', 350, 600, 10), R('legs', 'Крачета', 0, 150, 5), R('columns', 'Колони', 1, 2, 1, ''), R('drawers', 'Чекмеджета в колона', 2, 8, 1, '')],
-    defaults: { width: 800, height: 850, depth: 450, legs: 60, columns: 1, drawers: 4 },
+    defaults: { width: 800, height: 850, depth: 450, legs: 60, columns: 2, drawers: 4 },
   },
   nightstand: {
     label: 'Нощно шкафче', group: 'Спалня',
     params: [R('width', 'Ширина', 350, 650, 5), R('height', 'Височина с крачетата', 400, 750, 5), R('depth', 'Дълбочина', 300, 500, 5), R('legs', 'Крачета', 0, 150, 5), R('drawers', 'Чекмеджета', 1, 3, 1, '')],
-    defaults: { width: 450, height: 550, depth: 400, legs: 60, drawers: 2 },
+    defaults: { width: 400, height: 550, depth: 400, legs: 60, drawers: 2 },
   },
   bed: {
     label: 'Легло', group: 'Спалня',
@@ -68,7 +74,7 @@ export const TYPES = {
   tv: {
     label: 'ТВ шкаф', group: 'Хол и кабинет',
     params: [R('width', 'Ширина', 1000, 2600, 10), R('height', 'Височина с крачетата', 350, 700, 5), R('depth', 'Дълбочина', 350, 500, 5), R('legs', 'Крачета', 0, 150, 5), R('columns', 'Колони', 2, 4, 1, ''), S('tvFronts', 'Фронт на крайните колони', [['drawers', 'Чекмеджета'], ['doors', 'Врати']])],
-    defaults: { width: 1800, height: 480, depth: 420, legs: 100, columns: 3, tvFronts: 'drawers' },
+    defaults: { width: 1500, height: 480, depth: 420, legs: 100, columns: 4, tvFronts: 'drawers' },
   },
   desk: {
     label: 'Бюро', group: 'Хол и кабинет',
@@ -128,16 +134,17 @@ export const BUILDERS = {
   wall: (ctx, s) => wallCabinet(ctx, s),
   tall: (ctx, s) => buildCarcass(ctx, { ...common(s), W: s.width, H: s.height, D: s.depth, plinth: { type: s.legs ? 'legs' : 'none', h: s.legs }, top: 'between', visibleTop: true, columns: [{ shelves: s.shelves, doors: s.doors, drawers: s.drawers }] }),
   kitchen: (ctx, s) => {
-    const n = s.modules;
-    for (let i = 0; i < n; i++) {
-      const fronts = i % 3 === 1 ? 'drawers' : 'doors';
-      const doors = s.moduleWidth > 500 ? 2 : 1;
-      baseCabinet(ctx, { ...s, width: s.moduleWidth, legs: 100, fronts, doors, drawers: 3, shelves: 1 }, { module: `М${i + 1}`, x0: i * s.moduleWidth });
-      wallCabinet(ctx, { ...s, width: s.moduleWidth, height: s.wallHeight, depth: 320, doors, shelves: 2 }, { module: `Г${i + 1}`, x0: i * s.moduleWidth, y0: s.mount });
-    }
+    // each base module with the wall cabinet of the same width above it
+    let x0 = 0;
+    kitchenModules(s).forEach(({ width: w, drawers }, i) => {
+      const doors = w > 500 ? 2 : 1;
+      baseCabinet(ctx, { ...s, width: w, legs: 100, fronts: drawers ? 'drawers' : 'doors', doors, drawers: 3, shelves: 1 }, { module: `М${i + 1}`, x0 });
+      wallCabinet(ctx, { ...s, width: w, height: s.wallHeight, depth: 320, doors, shelves: 2 }, { module: `Г${i + 1}`, x0, y0: s.mount });
+      x0 += w;
+    });
     const wd = worktopDepth(s);
-    ctx.hw('worktop', { name: `Работен плот 38 mm, ${n * s.moduleWidth} × ${wd} mm (поръчка)`, qty: 1, unit: 'бр.', group: 'Покупни' });
-    ctx.symbols.push({ type: 'worktop', x0: 0, x1: n * s.moduleWidth, y: s.height, z0: 0, z1: wd, t: 38 });
+    ctx.hw('worktop', { name: `Работен плот 38 mm, ${x0} × ${wd} mm (поръчка)`, qty: 1, unit: 'бр.', group: 'Покупни' });
+    ctx.symbols.push({ type: 'worktop', x0: 0, x1: x0, y: s.height, z0: 0, z1: wd, t: 38 });
   },
   wardrobe: (ctx, s) => {
     // wide wardrobes become several carcasses side by side (transportable, tops and bottoms fit the sheet); the columns
@@ -182,8 +189,12 @@ export const BUILDERS = {
     const mid = s.width - 2 * sw;
     buildCarcass(ctx, { ...common(s), module: 'Л', x0: 0, W: sw, H: s.height, D: s.depth, plinth: { type: 'legs', h: 100 }, top: 'between', visibleTop: true, columns: [{ shelves: SIDE_SHELVES, doors: 1, hingeSide: 'left' }] });
     buildCarcass(ctx, { ...common(s), module: 'Д', x0: s.width - sw, W: sw, H: s.height, D: s.depth, plinth: { type: 'legs', h: 100 }, top: 'between', visibleTop: true, columns: [{ shelves: SIDE_SHELVES, doors: 1, hingeSide: 'right' }] });
-    const tvCols = mid > 1600 ? 3 : 2;
-    const tv = buildCarcass(ctx, { ...common(s), module: 'ТВ', x0: sw, W: mid, H: s.tvHeight, D: s.depth + 20, plinth: { type: 'legs', h: 100 }, top: 'over', columns: Array.from({ length: tvCols }, (_, i) => (i === 1 && tvCols === 3 ? { shelves: 1 } : { drawers: 2, drawerZone: s.tvHeight - 100 - 18 })) });
+    // a wide TV part: two open columns in the middle and the drawers in the two narrower end columns (weight 0,75), so a
+    // GTV H45 drawer stays no wider than its slide (NL 350 at the default depth); a narrow one: two drawer columns
+    const wide = mid > 1600;
+    const drawerCol = { drawers: 2, drawerZone: s.tvHeight - 100 - 18 };
+    const tvColumns = wide ? [{ ...drawerCol, weight: 0.75 }, { shelves: 1 }, { shelves: 1 }, { ...drawerCol, weight: 0.75 }] : [drawerCol, drawerCol];
+    const tv = buildCarcass(ctx, { ...common(s), module: 'ТВ', x0: sw, W: mid, H: s.tvHeight, D: s.depth + 20, plinth: { type: 'legs', h: 100 }, top: 'over', columns: tvColumns });
     // the TV top spans the whole gap between the columns: if it outgrows the sheet, the sheet-fit error says why
     tv.panels.top.fitHint = 'увеличете ширината на колоните или намалете общата ширина';
     const shelfH = 350;
@@ -229,6 +240,9 @@ function joinStacked(ctx, lower, upper) {
   ctx.hw('stackScrews', { name: 'Винт за ПДЧ 4×30 (горен към долен корпус)', qty: pts.length, unit: 'бр.', group: 'Крепежи' });
 }
 
+// Kitchen modules from the left: every third one from the second has the drawers and its own width, the others doors.
+export const kitchenModules = (s) => Array.from({ length: s.modules }, (_, i) => (i % 3 === 1 ? { drawers: true, width: s.drawerModuleWidth } : { drawers: false, width: s.moduleWidth }));
+
 // The kitchen worktop reaches 20–29 mm past the closed fronts (carcass, 1 mm gap, front), in whole centimetres.
 const WORKTOP_OVERHANG = 20;
 function worktopDepth(s) {
@@ -245,7 +259,7 @@ export function typeDims(type, s) {
       return { W, H: s.headHeight, D };
     }
     case 'kitchen':
-      return { W: s.modules * s.moduleWidth, H: s.mount + s.wallHeight, D: worktopDepth(s) };
+      return { W: kitchenModules(s).reduce((a, m) => a + m.width, 0), H: s.mount + s.wallHeight, D: worktopDepth(s) };
     default:
       return { W: s.width, H: s.height, D: s.depth };
   }

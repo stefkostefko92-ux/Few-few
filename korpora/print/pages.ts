@@ -1,7 +1,7 @@
 import type { Locale, Translator } from '../src/i18n.js';
 import type { PriceRow } from '../src/plans/pricing.js';
 import { HOW_STEPS } from '../src/seo/structured-data.js';
-import type { LandingAssets } from '../src/services/landing-assets.js';
+import type { ExampleKitchen, LandingAssets } from '../src/services/landing-assets.js';
 import type { LineupGroup } from '../src/services/furniture-lineup.js';
 
 /** Всичко, от което се сглобява брошурата на един език. Текстът е от речниците, картините — от двигателя. */
@@ -33,6 +33,17 @@ export function esc(value: string): string {
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;');
+}
+
+/** Примерната кухня в текстовете: колко модула с врати и с чекмеджета и по колко мм (като на витрината). */
+function kitchenParams(k: ExampleKitchen, num: (value: number) => string) {
+  return {
+    modules: k.modules,
+    doors: k.doorModules,
+    width: num(k.moduleWidth),
+    drawers: k.drawerModules,
+    drawerWidth: num(k.drawerModuleWidth),
+  };
 }
 
 const ICON = {
@@ -80,10 +91,10 @@ export function cover(c: BrochureContext): string {
   <p class="b-lead">${esc(t('landing.hero.lead'))}</p>
   <p class="b-for">${esc(t('brochure.cover.for'))}</p>
   <figure class="b-bed">${sheet.svg.replace(' aria-hidden="true" focusable="false"', '')}
-    <figcaption>${esc(t('landing.hero.caption', { no: sheet.no, count: sheet.count, modules: assets.example.modules, width: c.num(assets.example.moduleWidth), parts: sheet.parts, holes: sheet.holes }))}<span class="b-keys">${legend}</span></figcaption>
+    <figcaption>${esc(t('landing.hero.caption', { no: sheet.no, count: sheet.count, ...kitchenParams(assets.example, c.num), parts: sheet.parts, holes: sheet.holes }))}<span class="b-keys">${legend}</span></figcaption>
   </figure>
   <p class="b-trial">${icon('clock')}<span>${esc(t('landing.hero.trial', { days: c.trialDays }))}</span></p>
-  <p class="b-proof">${esc(t('brochure.cover.proof', { modules: assets.example.modules, width: c.num(assets.example.moduleWidth) }))}</p>
+  <p class="b-proof">${esc(t('brochure.cover.proof', kitchenParams(assets.example, c.num)))}</p>
   ${titleBlock(c, 1)}
 </section>`;
 }

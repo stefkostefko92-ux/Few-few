@@ -27,7 +27,7 @@
       "line2": "to router.",
       "lead": "Korpora designs panel furniture in the browser and turns the same project into everything the workshop needs: a cut list with edge banding, a hardware list, drawings with a drilling map for every part, and files for the CNC machine.",
       "trial": "Every new account gets a {days}-day trial, starting when the email is confirmed, to try the software. No card and no automatic payment.",
-      "caption": "Sheet {no} of {count} for a kitchen of {modules} units, {width} mm each: {parts} parts and {holes} holes. Program output, not an illustration.",
+      "caption": "Sheet {no} of {count} for a kitchen of {doors} × {width} + {drawers} × {drawerWidth} mm: {parts} parts and {holes} holes. Program output, not an illustration.",
       "keyContour": "contour, Ø{d} cutter",
       "keyGroove": "back panel groove, Ø{d} cutter",
       "keyDrill": "holes {list}"
@@ -204,7 +204,7 @@
     },
     "story": {
       "model": "Model",
-      "modelValue": "Kitchen, {modules} units of {width} mm",
+      "modelValue": "Kitchen, {doors} × {width} + {drawers} × {drawerWidth} mm",
       "size": "Overall size",
       "sizeValue": "{w} × {h} × {d} mm",
       "parts": "Parts",
