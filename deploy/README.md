@@ -151,6 +151,15 @@ ZIP отпреди месец.
   репото щом има сертификат. Ако новият код не отговори — `deploy.sh` на `CHATCHAT_LAST_GOOD` с
   `CHATCHAT_SKIP_BACKUP=1`; без откат при провалена миграция (`P3018`/`P3009`) и към release отпреди
   pgvector, щом базата вече е минала — вика човек → `chatchat/DEPLOY.md`.
+- **chatchat-staging** (staging на ChatChat, §17.1) — **само изрично**, не е в `PROJECTS` по подразбиране:
+  `sudo REF=<клон> PROJECTS="chatchat-staging" bash /opt/few-few/current/deploy/fetch-deploy.sh`. Стъпките са в
+  `chatchat/deploy/staging.sh`: същият `docker-compose.yml` като compose проект `chatchat-staging` (свои
+  контейнери, томове, база), тайни в `/opt/few-few/shared/chatchat-staging/.env` (600, собствени — пазачът
+  отказва при тайна, порт, адрес или папка на продукцията), работно копие на кода извън `releases/`,
+  `127.0.0.1:4331`, vhost `staging-chatchat.carbonstealth.eu` (noindex, парола/allowlist). След сондата —
+  оценъчният набор (`evals/`) срещу отделна тестова база `chatchat_eval_test`; червена оценка (изход 5) =
+  неуспешен деплой без откат (остава за преглед). Не отговаря (изход 4) → откат към `last-good` на staging
+  без нов дъмп и без нова оценка. Пробег **само** със staging не мести `current` → `chatchat/DEPLOY.md`, т. 15.
 - **vpsdash** (VPS таблото): systemd модел. `rsync` към `/opt/vps-dashboard` (конфигът
   `/etc/vps-dashboard/config.json` и state `/var/lib/vps-dashboard` са извън release-а и оцеляват;
   `deploy/desktop/desktop.env` се пази), бекъп на кода, рестарт, health на `/api/ping` (401 = жив,
@@ -176,6 +185,7 @@ ZIP отпреди месец.
 | `KORPORA_LAST_GOOD` | `/opt/few-few/shared/korpora/last-good` | пътят на последния release на korpora, който е отговорил — към него е откатът |
 | `KORPORA_SHARED` · `KORPORA_HEALTH_WAIT` · `KORPORA_INDEXNOW` | `/opt/few-few/shared/korpora` · `90` · `1` | тайни/бекъпи/данни (и за `autodeploy.sh`: къде са дъмповете), секунди за сондата, IndexNow |
 | `CHATCHAT_SHARED` · `CHATCHAT_LAST_GOOD` | `/opt/few-few/shared/chatchat` · `…/last-good` | тайни/бекъпи/прикачени файлове на ChatChat; последният release, който е отговорил — към него е откатът |
+| `CHATCHAT_STAGING_SHARED` · `CHATCHAT_STAGING_LAST_GOOD` | `/opt/few-few/shared/chatchat-staging` · `…/last-good` | тайни/данни/работни копия на staging; последното копие с зелена оценка — към него е откатът |
 | `VPSDASH_DIR` / `VPSDASH_SERVICE` / `VPSDASH_HEALTH_URL` | `/opt/vps-dashboard` · `vps-dashboard` · `http://127.0.0.1:7700/api/ping` | път, systemd услуга и health на VPS таблото |
 | `ARCHIVE` | (най-новият в `/root`) | конкретен архив |
 | `FORCE_SEED` | `0` | принудителен сийд на zabobovdol |
@@ -184,6 +194,31 @@ ZIP отпреди месец.
 | `ZBD_INDEXNOW` | `1` | IndexNow след успешен деплой на zabobovdol |
 | `MEDQR_DIR` | `/opt/medqr` | път на medqr |
 | `*_HEALTH_URL` | localhost | адрес за проверка на здравето |
+
+## Портове на машината (регистър — нов продукт взема свободен оттук и го вписва)
+
+Всички са само на `127.0.0.1` зад nginx/Caddy, освен 80/443 (прокси) и 22 (SSH). Източник: подразбиранията в
+`autodeploy.sh` и в `docker-compose.yml` на продуктите (живият порт може да е друг — `HTTP_PORT` в `.env`;
+провери с `ss -ltnp` преди нов). Към 10.10.2026:
+
+| Порт | Продукт | Порт | Продукт |
+| --- | --- | --- | --- |
+| 80 | zabobovdol (nginx в compose) | 4310 | piuma |
+| 3000 | medqr | 4320 | korpora |
+| 3100 | зает от ERP (docker-proxy) | 4330 | chatchat |
+| 3105 | vizitka | **4331** | **chatchat-staging** |
+| 3200 | mastilko | 5435 / 6381 | SupremeDiscordBot (Postgres / Redis) |
+| 4000 | nexus | 5437 | eternaltouch (Postgres) |
+| 4102 | panev | 7700 | vpsdash |
+| 4300 | eternaltouch | 8080 · 8788 | SupremeDiscordBot (frontend) · ospedali |
+
+`METRICS_PORT` на chatchat/chatchat-staging — празно = случаен порт на `127.0.0.1` (без сблъсък).
+
+## Нов сървър (IaC)
+
+`sudo bash deploy/provision/chatchat-host.sh --check` (само докладва; изход 2 = има разлики), после без
+`--check`; `--dns` проверява A/AAAA преди certbot. Идемпотентен, не пипа чужди конфигурации (vhost-ове,
+`daemon.json`, чужди правила на ufw), не обновява съществуващ Docker → `chatchat/DEPLOY.md`, т. 13–14.
 
 ## Важно
 

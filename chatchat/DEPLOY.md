@@ -18,7 +18,8 @@
 
 ## 0. Преди това
 
-- DNS: `chatchat.carbonstealth.eu` → IP на сървъра.
+- Нова машина: `sudo bash deploy/provision/chatchat-host.sh --check`, после без `--check` (т. 13).
+- DNS: `chatchat.carbonstealth.eu` → IP на сървъра — точните записи и проверката са в т. 14.
 - Портът е свободен: `ss -tlnp | grep ':4330 '` не връща нищо.
 - Docker Engine ≥ 29.5.1 с compose plugin, nginx, certbot, `age` (`apt-get install -y age`).
 - **Памет:** clamav ~1 GB (таван 2 GB), базата до 1 GB, приложението до 1 GB → поне **4 GB RAM** на
@@ -429,3 +430,135 @@ sudo chatchat-pgdata auto-unlock   # обратно към ключов файл
 | `/etc/chatchat/pgdata.key` (`base64 …`)  | томът на базата (остава дневният бекъп от т. 9)   | бекъпите на базата, копие на заглавката |
 | паролата на тома (ръчен режим)           | същото                                            | —                                       |
 | частният age ключ (т. 9)                 | бекъпите                                          | сървъра                                 |
+
+## 13. Подготвяне на нов сървър (IaC): `deploy/provision/chatchat-host.sh`
+
+Идемпотентен (`set -euo pipefail`): всяка стъпка гледа състоянието и пипа само разликата. Пуска се от
+цялото репо/архив (чете `chatchat/deploy/systemd/` и `chatchat/deploy/logrotate/`):
+
+```bash
+sudo bash deploy/provision/chatchat-host.sh --check   # само докладва; изход 2 = има разлики, 0 = всичко е на място
+sudo bash deploy/provision/chatchat-host.sh           # прилага; вторият пробег казва „0 промени“
+sudo bash deploy/provision/chatchat-host.sh --dns     # т. 14
+```
+
+| Стъпка    | Какво прави                                                                                                                  | Какво НЕ пипа                                                        |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| пакети    | nginx, certbot (+ nginx plugin), cryptsetup, ufw, fail2ban, unattended-upgrades, age, curl, gnupg, logrotate                 | nginx, ако 80/443 вече държи друг (Caddy) — само предупреждава       |
+| Docker    | липсва → Engine + compose plugin от `download.docker.com` (ключът — по отпечатък `9DC8…CD88`, иначе отказ)                   | съществуващ Docker: стар (< 29.5.1) → само предупреждение            |
+| firewall  | `ufw`: allow 22/80/443 tcp, default deny incoming, enable                                                                    | чужди правила (само докладва); sshd не на 22 → нищо (без заключване) |
+| кръпки    | `fail2ban` и `apt-daily-upgrade.timer` включени; `20auto-upgrades`, ако липсва                                               | съществуващ `20auto-upgrades` (изключени кръпки = решение на човек)  |
+| часовник  | chrony синхронизиран → ок; синхронизиран `systemd-timesyncd` → ок; иначе слага chrony (TOTP иска точно време)                | работещ timesyncd не се сменя                                        |
+| папки     | `shared/chatchat{,-staging}` 700, `attachments` 700 uid 1000, `eval-reports` 755, бекъпи 700, staging `releases`/`eval-runs` | `/opt/few-few`, `…/shared` — само се създават, ако липсват           |
+| staging   | `/etc/nginx/chatchat-staging/` 750 (група www-data) + `allow.conf` (само коментар)                                           | съществуващ `allow.conf`, `htpasswd`                                 |
+| таймери   | `chatchat-{backup,retention}.{service,timer}` + `/usr/local/sbin/chatchat-*` — същите файлове като `timers-install.sh`       | `chatchat-pgdata.service` — слага го `pgdata-encrypt.sh` (т. 12)     |
+| logrotate | `/etc/logrotate.d/chatchat` (`/var/log/chatchat/*.log`, седмично, 8, 600)                                                    | дневниците на nginx (пакетът му) и на контейнерите (Docker)          |
+
+Не измисля тайни на продукцията (т. 1), не включва шифрования том (т. 12) и не взема сертификати (т. 14).
+
+## 14. DNS (преди certbot)
+
+Към 10.10.2026 `chatchat.carbonstealth.eu` няма DNS запис. В зоната на `carbonstealth.eu` (при
+DNS доставчика) — по два записа на име. `<IPv4_НА_СЪРВЪРА>` и `<IPv6_НА_СЪРВЪРА>` са публичните адреси
+на машината от конзолата на Hetzner (Server → Networking) — попълва ги собственикът, не се гадаят:
+
+| Име                                 | Тип  | Стойност            | TTL  |
+| ----------------------------------- | ---- | ------------------- | ---- |
+| `chatchat.carbonstealth.eu`         | A    | `<IPv4_НА_СЪРВЪРА>` | 3600 |
+| `chatchat.carbonstealth.eu`         | AAAA | `<IPv6_НА_СЪРВЪРА>` | 3600 |
+| `staging-chatchat.carbonstealth.eu` | A    | `<IPv4_НА_СЪРВЪРА>` | 3600 |
+| `staging-chatchat.carbonstealth.eu` | AAAA | `<IPv6_НА_СЪРВЪРА>` | 3600 |
+
+AAAA — само ако машината има IPv6 и nginx слуша на него (vhost-овете имат `listen [::]:…`); AAAA към
+адрес, на който нищо не отговаря, чупи клиентите с IPv6. Ако зоната има CAA запис, той трябва да
+позволява `letsencrypt.org` (`dig +short CAA carbonstealth.eu`; празно = всички CA са позволени).
+
+Проверка преди certbot (иначе HTTP-01 пада и брои към лимитите на Let's Encrypt):
+
+```bash
+sudo SERVER_IPV4='<IPv4_НА_СЪРВЪРА>' SERVER_IPV6='<IPv6_НА_СЪРВЪРА>' \
+  bash deploy/provision/chatchat-host.sh --dns            # изход 0 = и двете имена сочат машината
+dig +short A staging-chatchat.carbonstealth.eu @1.1.1.1   # същото през публичен резолвер
+```
+
+Без `SERVER_IPV4/IPV6` `--dns` сравнява с глобалните адреси на интерфейсите (на Hetzner публичният IPv4 е
+на `eth0`). После, веднъж на име:
+
+```bash
+sudo certbot certonly --nginx -d chatchat.carbonstealth.eu --deploy-hook 'systemctl reload nginx'
+sudo certbot certonly --nginx -d staging-chatchat.carbonstealth.eu --deploy-hook 'systemctl reload nginx'
+```
+
+## 15. Staging (§17.1: тестове с интеграции + оценъчният набор)
+
+Същата машина, **напълно отделно** от продукцията — същият `docker-compose.yml`, друг compose проект:
+
+|                | Продукция                           | Staging                                                                       |
+| -------------- | ----------------------------------- | ----------------------------------------------------------------------------- |
+| compose проект | `chatchat`                          | `chatchat-staging` (свои контейнери, мрежи, томове, база, антивирус)          |
+| тайни/данни    | `/opt/few-few/shared/chatchat/.env` | `/opt/few-few/shared/chatchat-staging/.env` (600, собствени ключове)          |
+| порт           | `127.0.0.1:4330`                    | `127.0.0.1:4331` (регистърът — `deploy/README.md`, „Портове“)                 |
+| домейн         | `chatchat.carbonstealth.eu`         | `staging-chatchat.carbonstealth.eu` — само парола/allowlist, noindex          |
+| таймери        | бекъп + ретенция                    | няма (данните са тестови)                                                     |
+| работна папка  | папката на release-а                | копие в `shared/chatchat-staging/releases/<час>` (последните 3 + `last-good`) |
+
+```bash
+sudo REF=<клон> PROJECTS="chatchat-staging" bash /opt/few-few/current/deploy/fetch-deploy.sh
+```
+
+`chatchat-staging` **не** е в `PROJECTS` по подразбиране, а пробег само със staging **не мести**
+`/opt/few-few/current` (той сочи кода на продукцията). Стъпките са в `deploy/staging.sh`:
+
+1. Копира `chatchat/` от release-а в работна папка (без `.env` на продукцията).
+2. Пръв пуск: ражда `.env` на staging със **собствени** `POSTGRES_PASSWORD`/`SESSION_PEPPER`
+   (`openssl rand -hex 32`), `COMPOSE_PROJECT_NAME=chatchat-staging`, `CHATCHAT_SHARED`, `HTTP_PORT=4331`,
+   `PUBLIC_BASE_URL=https://staging-chatchat.carbonstealth.eu`; останалите ключове ги ражда `deploy.sh`.
+   Ако `.env` липсва, а томът `chatchat-staging_db-data` го има — отказ (паролата не се измисля).
+3. Пазачи (изход 1, преди build): проектът е точно `chatchat-staging`; `CHATCHAT_SHARED` е папката на
+   staging; няма `COMPOSE_FILE`; `HTTP_PORT`/`METRICS_PORT` ≠ тези на продукцията; портът не е зает от
+   друго приложение (`ss`); `PUBLIC_BASE_URL` ≠ този на продукцията; **нито една тайна** (имена с
+   `PASSWORD`, `PEPPER`, `SECRET`, `TOKEN`, `_KEY`, `KEK`) не съвпада с `.env` на продукцията
+   (стойностите не се печатат). Предупреждения: същият `GCP_SA_FILE`; зададен `BREVO_API_KEY`.
+4. `deploy.sh` от копието с `CHATCHAT_STAGING=1` — същата защита като продукцията: бекъп преди миграция
+   (`shared/chatchat-staging/backups/`), build, up, сонда на `127.0.0.1:4331/readyz`, vhost-ът
+   `deploy/nginx/staging-chatchat.carbonstealth.eu.conf`, щом има сертификат.
+5. **Оценъчният набор** (`evals/`) в еднократен контейнер от стадия `build` на Dockerfile-а: база
+   `chatchat_eval_test` в Postgres на staging (създава се; **оценката я изчиства**), само вътрешната
+   мрежа, `--read-only`, без capabilities, uid 1000. Отчетът → `shared/chatchat-staging/eval-runs/<час>/`
+   (JSON + MD), JSON-ът → `shared/chatchat-staging/eval-reports/` (KPI таблото на staging), изходът на
+   прогона → `/var/log/chatchat/staging-eval.log`.
+6. Зелена оценка → `last-good`. Изходи: `0` · `1` спрян преди смяната · `4` не отговаря → autodeploy
+   вдига `last-good` на staging (`CHATCHAT_SKIP_BACKUP=1 STAGING_SKIP_EVAL=1`; при `P3018`/`P3009` — без
+   откат) · `5` **червена оценка** (нарушение на безопасността или грешка в прогона): деплоят е
+   неуспешен, staging остава вдигнат за преглед, `last-good` не се мести. Продукцията не се пипа.
+
+Оценката се настройва в `.env` на staging (тези ключове не влизат в контейнера на приложението):
+
+- `STAGING_EVAL_MODEL=fake` (по подразбиране — детерминистичен модел: мери Safety Gate, без разход) или
+  `real` (Vertex в ЕС; иска `VERTEX_PROJECT_ID`, по избор `GCP_SA_FILE`; контейнерът получава и мрежата
+  с изход навън).
+- `STAGING_EVAL_SET=/opt/few-few/shared/chatchat-staging/eval-sets/real.json` — реалният набор на клиента
+  (никога в git; `install -o 1000 -g 1000 -m 400 …`, контейнерът е uid 1000). Празно → `evals/sample.json`.
+
+**Достъп** (веднъж; дотогава staging е затворен за всички — 401/403, никога отворен):
+
+```bash
+P="$(openssl rand -base64 24)"; echo "$P"    # → в password manager-а
+printf 'qa:%s\n' "$(openssl passwd -6 "$P")" | sudo tee /etc/nginx/chatchat-staging/htpasswd >/dev/null
+sudo chown root:www-data /etc/nginx/chatchat-staging/htpasswd
+sudo chmod 640 /etc/nginx/chatchat-staging/htpasswd
+# и/или без парола от определен адрес: ред `allow 203.0.113.7;` в /etc/nginx/chatchat-staging/allow.conf
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+Командите за staging са от работната му папка — `.env` там носи `COMPOSE_PROJECT_NAME=chatchat-staging`,
+затова голото `docker compose` отива в staging, не в продукцията:
+
+```bash
+cd "$(head -n 1 /opt/few-few/shared/chatchat-staging/last-good)" && sudo docker compose ps
+```
+
+**Памет:** staging е втори пълен стек (clamav ~1 GB, база и приложение до 1 GB) — машината с двата иска
+поне **8 GB RAM**. Когато не се ползва: `sudo docker compose stop` от папката по-горе (данните остават;
+следващият деплой го вдига). Пълно изтриване (РАЗРУШИТЕЛНО, само staging, след потвърждение):
+`sudo docker compose -p chatchat-staging down -v`.
