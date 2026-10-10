@@ -129,7 +129,13 @@ export async function exportOwnData(userId: string): Promise<Record<string, unkn
       by: c.actorId === user.id ? 'you' : c.actorId ? 'team' : 'system',
       note: c.note,
     })),
-    bans: user.bans.map((b) => ({ at: b.createdAt, reason: b.reason, liftedAt: b.liftedAt })),
+    // `mistake` — вдигнато като грешка: основата за удължаването на плана (общите условия, „Блокиране“)
+    bans: user.bans.map((b) => ({
+      at: b.createdAt,
+      reason: b.reason,
+      liftedAt: b.liftedAt,
+      mistake: b.mistake,
+    })),
     orders: user.upgradeRequests.map((r) => ({
       id: r.id,
       number: orderNo(r),

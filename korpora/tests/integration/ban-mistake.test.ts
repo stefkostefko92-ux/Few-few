@@ -110,6 +110,14 @@ test('a ban lifted as a mistake extends Premium by exactly the time it lasted, o
 
   const page = await support.browser.get(`/admin/accounts/${id}`);
   assert.match(page.body, /блокирането е било грешка/, 'the history shows the mark');
+
+  // the person's own data carry the mark too: it is what their plan was extended on
+  const { exportOwnData } = await import('../../src/services/account-export.js');
+  const own = (await exportOwnData(id)) as { bans: Array<{ mistake: boolean }> };
+  assert.deepEqual(
+    own.bans.map((b) => b.mistake),
+    [true],
+  );
 });
 
 test('a trial is extended too; without the mark nothing moves', async () => {
