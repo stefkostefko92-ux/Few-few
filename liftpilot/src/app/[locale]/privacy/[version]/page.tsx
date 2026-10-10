@@ -9,6 +9,7 @@ import { TERMS_HISTORY, TERMS_VERSION, article, dateText } from '@/lib/legal';
 import { pageMetadata } from '@/lib/seo';
 import SiteHeader from '@/components/SiteHeader';
 import Footer from '@/components/Footer';
+import LegalPage from '@/components/LegalPage';
 
 // An earlier version of the privacy notice and the terms of use, word for word as kept in legal/terms/<version>/: a
 // company whose owner has not accepted the version in force yet is still bound by one of these (src/lib/legal.ts).
@@ -43,10 +44,12 @@ export default async function ArchivedTermsPage({ params }: { params: Promise<{ 
   return (
     <>
       <SiteHeader />
-      <main className="legal">
-        <h1>{t('archiveItem', { label: h.label, date })}</h1>
-        <p className="lead">{t('archiveLead', { label: h.label, date, changes: article('changes') })}</p>
-        <p><Link href="/privacy">{t('archiveCurrent')}</Link></p>
+      <LegalPage eyebrow={t('eyebrow')} title={t('archiveItem', { label: h.label, date })} head={(
+        <>
+          <p className="lead">{t('archiveLead', { label: h.label, date, changes: article('changes') })}</p>
+          <p><Link href="/privacy">{t('archiveCurrent')}</Link></p>
+        </>
+      )}>
         {blocks(text).map((b, i) =>
           b.length === 1 ? <h2 key={i}>{b[0]}</h2> : (
             <section key={i}>
@@ -55,7 +58,7 @@ export default async function ArchivedTermsPage({ params }: { params: Promise<{ 
             </section>
           ),
         )}
-      </main>
+      </LegalPage>
       <Footer />
     </>
   );

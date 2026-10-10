@@ -11,6 +11,7 @@ import { money } from '@/lib/money';
 import { companySubscription } from '@/server/billing';
 import { changePackAction, portalAction, startCheckoutAction } from '@/server/billing-actions';
 import { Link } from '@/i18n/routing';
+import AccountHead, { PanelHead } from '@/components/AccountHead';
 
 export async function generateMetadata() {
   const t = await getTranslations('billing');
@@ -71,24 +72,19 @@ export default async function BillingPage({ params, searchParams }: {
   );
   return (
     <main className="page">
-      <div className="page-head">
-        <div className="titles">
-          <h1>{t('title')}</h1>
-          <p className="lead">{t('lead')}</p>
-        </div>
-      </div>
+      <AccountHead icon="hand-coins" title={t('title')} lead={t('lead')} />
       {q.done === '1' ? <p className="alert alert-ok" role="status">{t('done')}</p> : null}
       {q.changed === '1' ? <p className="alert alert-ok" role="status">{t('changed')}</p> : null}
       {err ? <p className="alert alert-bad" role="alert">{t(`e.${err}`)}</p> : null}
-      <section className="panel">
-        <h2>{t('statusTitle')}</h2>
+      <section className="panel" aria-labelledby="status-h">
+        <PanelHead icon="badge-check" id="status-h">{t('statusTitle')}</PanelHead>
         <p><span className={`status-pill ${status.pill}`}>{t(`access.${sub.access}`)}</span></p>
         <p>{status.text}</p>
         <p className="note">{t('seatsUsed', { used: sub.used, limit: Number.isFinite(sub.limit) ? String(sub.limit) : '∞' })}</p>
       </section>
       {on ? (
-        <section className="panel">
-          <h2>{live ? t('changeTitle') : t('subscribeTitle')}</h2>
+        <section className="panel" aria-labelledby="sub-h">
+          <PanelHead icon="layers" id="sub-h">{live ? t('changeTitle') : t('subscribeTitle')}</PanelHead>
           {me.terms !== 'ok' ? (
             <p className="alert alert-warn">{t('e.termsDue')} <Link href="/app/terms">{t('termsAction')}</Link></p>
           ) : price ? (
@@ -123,9 +119,9 @@ export default async function BillingPage({ params, searchParams }: {
           ) : null}
         </section>
       ) : null}
-      <section className="panel">
-        <h2>{t('termsTitle')}</h2>
-        <ul className="list-disc pl-5 flex flex-col gap-1">
+      <section className="panel" aria-labelledby="bterms-h">
+        <PanelHead icon="file-text" id="bterms-h">{t('termsTitle')}</PanelHead>
+        <ul className="check-list">
           {(['t1', 't2', 't3', 't7', 't4', 't5', 't6'] as const).map((k) => <li key={k}>{t(`terms.${k}`)}</li>)}
         </ul>
       </section>

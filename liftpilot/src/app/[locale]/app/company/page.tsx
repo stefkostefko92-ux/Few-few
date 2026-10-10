@@ -4,6 +4,8 @@ import { requireCapability } from '@/lib/auth';
 import { can } from '@/lib/rbac';
 import { getCompanyLogo } from '@/server/queries';
 import LogoForm from '@/components/tavole/LogoForm';
+import AccountHead, { PanelHead } from '@/components/AccountHead';
+import Icon from '@/components/Icon';
 
 export async function generateMetadata() {
   const t = await getTranslations('tavole');
@@ -20,13 +22,9 @@ export default async function CompanyPage({ params }: { params: Promise<{ locale
   const logo = c?.logo ?? null;
   return (
     <main className="page">
-      <div className="page-head">
-        <div className="titles">
-          <h1>{t('companyTitle')} · {c?.name ?? user.companyName}</h1>
-        </div>
-      </div>
-      <section className="panel">
-        <h2>{t('logoTitle')}</h2>
+      <AccountHead icon="building" title={`${t('companyTitle')} · ${c?.name ?? user.companyName}`} />
+      <section className="panel" aria-labelledby="logo-h">
+        <PanelHead icon="file-image" id="logo-h">{t('logoTitle')}</PanelHead>
         <p className="note">{t('logoHint')}</p>
         {logo ? (
           <figure className="logo-preview">
@@ -38,9 +36,9 @@ export default async function CompanyPage({ params }: { params: Promise<{ locale
         {can(user, 'company:edit') ? <LogoForm hasLogo={logo !== null} /> : <p className="note">{t('logoReadOnly')}</p>}
       </section>
       <section className="panel" aria-labelledby="export-h">
-        <h2 id="export-h">{t('exportTitle')}</h2>
+        <PanelHead icon="database" id="export-h">{t('exportTitle')}</PanelHead>
         <p className="note">{t('exportText')}</p>
-        <p><a className="btn" href="/api/company/export" download>{t('exportButton')}</a></p>
+        <p><a className="btn" href="/api/company/export" download><Icon name="download" size={18} />{t('exportButton')}</a></p>
         <p className="note"><Link href="/data" target="_blank">{t('exportFormat')}</Link></p>
       </section>
     </main>

@@ -4,6 +4,8 @@ import { PROFILO, VOCI, type Stato } from '@/calc/norme';
 import { VOCI_VANO } from '@/shaft';
 import { VOCI_IMPIANTO } from '@/lib/lift/norme';
 import { VOCI_SIM } from '@/sim/norme';
+import AccountHead, { PanelHead } from '@/components/AccountHead';
+import Icon from '@/components/Icon';
 
 export async function generateMetadata() {
   const t = await getTranslations('norme');
@@ -41,25 +43,19 @@ export default async function NormePage({ params }: { params: Promise<{ locale: 
   const counts = PARTS.flatMap((p) => p.voci).reduce<Partial<Record<Stato, number>>>((acc, v) => ({ ...acc, [v.stato]: (acc[v.stato] ?? 0) + 1 }), {});
   return (
     <main className="page">
-      <div className="page-head">
-        <div className="titles">
-          <span className="chip">{t('profile', { id: PROFILO.id })}</span>
-          <h1>{t('title')}</h1>
-          <p className="lead">{t('lead')}</p>
-        </div>
-      </div>
-      <section className="panel">
-        <h2>{PROFILO.titolo}</h2>
+      <AccountHead icon="book-open" title={t('title')} lead={t('lead')} chip={<span className="chip">{t('profile', { id: PROFILO.id })}</span>}
+        actions={<a className="btn btn-sm" href="/api/lista-verifica"><Icon name="file-spreadsheet" size={18} />{t('download')}</a>} />
+      <section className="panel" aria-labelledby="profile-h">
+        <PanelHead icon="shield-check" id="profile-h">{PROFILO.titolo}</PanelHead>
         <ul className="m-0 flex list-none flex-col gap-2 p-0">
           {PROFILO.documenti.map((d) => <li key={d.sigla}><b>{d.sigla}</b> — <span className="note">{d.ambito}</span></li>)}
         </ul>
       </section>
-      <div className="flex flex-wrap items-center gap-2">
+      <ul className="kpi-grid norme-kpis">
         {(Object.keys(STATUS_CLASS) as Stato[]).filter((s) => counts[s]).map((s) => (
-          <span key={s} className={`status-pill ${STATUS_CLASS[s]}`}>{t(`stato_${s}`)} · {counts[s]}</span>
+          <li key={s} className={`kpi ${STATUS_CLASS[s]}`}><span className="kpi-value num">{counts[s]}</span><span className="kpi-label">{t(`stato_${s}`)}</span></li>
         ))}
-        <a className="btn btn-sm" href="/api/lista-verifica">{t('download')}</a>
-      </div>
+      </ul>
       {PARTS.map((p) => (
         <section key={p.key} className="flex flex-col gap-3" aria-labelledby={`part-${p.key}`}>
           <h2 id={`part-${p.key}`}>{t(`part_${p.key}`)} <span className="note">· {p.voci.length}</span></h2>

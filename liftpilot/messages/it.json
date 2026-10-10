@@ -67,7 +67,18 @@
     "noAccount": "Non hai un account?",
     "registerLink": "Registra la tua azienda",
     "forgotLink": "Password dimenticata?",
-    "resetDone": "Password aggiornata: accedi con quella nuova."
+    "resetDone": "Password aggiornata: accedi con quella nuova.",
+    "panelLabel": "LiftPilot in breve",
+    "panelEyebrow": "Software di progettazione ascensori",
+    "panelTitle": "Dal rilievo del vano alla relazione di calcolo, in un solo progetto.",
+    "panelCalc": "Verifica dell’argano",
+    "panelDrawings": "Tavole e DXF/DWG",
+    "panelSim": "Simulazione 3D",
+    "panelReport": "Relazione di calcolo",
+    "panelNorms": "Norme di riferimento",
+    "panelHonesty": "Calcoli, tavole e relazioni sono bozze: diventano documenti quando un tecnico abilitato li verifica e li firma.",
+    "panelImgLabel": "Modello dimostrativo",
+    "panelImgAlt": "Illustrazione: spaccato di un vano ascensore con la cabina, le guide e la macchina in alto."
   },
   "nav": {
     "label": "Sezioni",
@@ -1392,7 +1403,9 @@
     "archiveTitle": "Versioni precedenti",
     "archiveItem": "Versione {label} del {date}",
     "archiveLead": "Testo archiviato della versione {label} del {date}, parola per parola. Per un’azienda già registrata vale fino al giorno in cui entra in vigore la versione successiva che il titolare ha accettato o che lo vincola (art. {changes}).",
-    "archiveCurrent": "Versione in vigore"
+    "archiveCurrent": "Versione in vigore",
+    "eyebrow": "Privacy e condizioni",
+    "toc": "In questa pagina"
   },
   "mail": {
     "greeting": "Buongiorno,",
@@ -2018,7 +2031,9 @@
       "v2": "2 — dal {date}: si aggiunge invites (gli inviti in attesa)."
     },
     "apiTitle": "C’è un’interfaccia per l’esportazione?",
-    "apiText": "Sì, gratuita e uguale per tutte le aziende: una richiesta GET a {base}/api/company/export restituisce il file JSON descritto sopra al titolare che ha effettuato l’accesso. È la stessa richiesta del pulsante della pagina Azienda, al massimo 6 volte all’ora per azienda. Il nuovo fornitore riceve il file dal titolare; questa pagina descrive il formato per scrivere il programma che lo legge (art. 30, par. 2, del Data Act)."
+    "apiText": "Sì, gratuita e uguale per tutte le aziende: una richiesta GET a {base}/api/company/export restituisce il file JSON descritto sopra al titolare che ha effettuato l’accesso. È la stessa richiesta del pulsante della pagina Azienda, al massimo 6 volte all’ora per azienda. Il nuovo fornitore riceve il file dal titolare; questa pagina descrive il formato per scrivere il programma che lo legge (art. 30, par. 2, del Data Act).",
+    "eyebrow": "Dati e formati",
+    "toc": "In questa pagina"
   },
   "pricing": {
     "title": "Prezzi di LiftPilot",
@@ -2053,6 +2068,18 @@
     "faq4q": "Il prezzo può cambiare?",
     "faq4a": "Sì, con un’e-mail al titolare almeno 30 giorni prima del rinnovo da cui si applica: chi non lo accetta può disdire prima.",
     "faq5q": "Servono molti utenti o più aziende?",
-    "faq5a": "Scrivi a {email} con il numero di aziende e di utenti: ti rispondiamo con una proposta."
+    "faq5a": "Scrivi a {email} con il numero di aziende e di utenti: ti rispondiamo con una proposta.",
+    "eyebrow": "Piani e prezzi",
+    "plansLabel": "I piani",
+    "priceFree": "Gratuito",
+    "priceBeta": "durante la beta",
+    "priceOnRequest": "Su richiesta",
+    "planBase": "Il prezzo mensile del titolare",
+    "planAfterBeta": "Dopo la beta: {share}",
+    "includedTitle": "In ogni piano",
+    "inc1": "Tutte le funzioni: sostituzione dell’argano e progetto completo dell’ascensore, con calcolo, relazione, tavole, DXF/DWG e simulazione 3D",
+    "inc2": "Il registro delle norme, con fonte e stato di ogni valore",
+    "inc3": "I dati dell’azienda sempre scaricabili in un file JSON",
+    "inc4": "Bozze da verificare e firmare da un tecnico abilitato"
   }
 }

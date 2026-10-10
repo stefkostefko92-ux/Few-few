@@ -87,22 +87,30 @@ export function accountMail(m: AccountMailKind, locale: Locale, base: string): A
   const t = translatorFor(locale);
   const p = parts(m, locale, base, t), privacy = t('privacy', { link: `${base}/${locale}/privacy` });
   const text = [t('greeting'), '', p.intro, '', `${p.button}: ${p.link}`, '', ...p.notes.flatMap((n) => [n, '']), '—', t('footer'), privacy].join('\n');
-  const note = (s: string): string => `<p style="margin:0 0 12px;color:#5a6480;font-size:13px">${escapeHtml(s)}</p>`;
+  // The identity of the site, built for mail clients: the header is the site's dark desk with the light logo and the
+  // cyan rule (bgcolor as well as style: clients that drop CSS backgrounds keep the attribute, so the light logo never
+  // lands on white); the text sits on white with dark ink, so a client that strips or inverts colours still reads it;
+  // the button is cyan with the dark ink of the site (11.8:1), the links a darker cyan that reads on white (5.8:1).
+  const C = { desk: '#030a11', page: '#e9eff2', card: '#ffffff', line: '#cfdbe1', ink: '#0b1e2a', muted: '#4a5f6b', foot: '#f3f7f9',
+    cyan: '#27dff0', cyanEdge: '#1bb7c8', cyanInk: '#031016', link: '#0b6f7e' } as const;
+  const note = (s: string): string => `<p style="margin:0 0 12px;color:${C.muted};font-size:13px;line-height:1.55">${escapeHtml(s)}</p>`;
+  const font = 'Manrope,Arial,Helvetica,sans-serif';
   const html = `<!doctype html>
-<html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(p.subject)}</title></head>
-<body style="margin:0;padding:0;background:#eef1f6">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eef1f6;padding:24px 12px"><tr><td align="center">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border:1px solid #d6dce6;border-radius:12px">
-<tr><td style="background:#0b1426;border-radius:12px 12px 0 0;padding:20px 28px"><img src="${escapeHtml(base + MAIL_LOGO.src)}" width="${MAIL_LOGO.width}" height="${MAIL_LOGO.height}" alt="LiftPilot" style="display:block;border:0"></td></tr>
-<tr><td style="padding:28px;font:15px/1.55 Arial,Helvetica,sans-serif;color:#121829">
+<html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light"><title>${escapeHtml(p.subject)}</title></head>
+<body style="margin:0;padding:0;background:${C.page}" bgcolor="${C.page}">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${C.page}" style="background:${C.page};padding:24px 12px"><tr><td align="center">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${C.card}" style="max-width:560px;background:${C.card};border:1px solid ${C.line};border-radius:10px">
+<tr><td bgcolor="${C.desk}" style="background:${C.desk};border-radius:10px 10px 0 0;border-bottom:3px solid ${C.cyan};padding:22px 28px"><img src="${escapeHtml(base + MAIL_LOGO.src)}" width="${MAIL_LOGO.width}" height="${MAIL_LOGO.height}" alt="LiftPilot" style="display:block;border:0;color:${C.cyan};font:bold 20px ${font}"></td></tr>
+<tr><td bgcolor="${C.card}" style="padding:28px;font:15px/1.6 ${font};color:${C.ink}">
 <p style="margin:0 0 12px">${escapeHtml(t('greeting'))}</p>
-<p style="margin:0 0 20px">${escapeHtml(p.intro)}</p>
-<p style="margin:0 0 20px"><a href="${escapeHtml(p.link)}" style="display:inline-block;background:#1d3271;color:#ffffff;text-decoration:none;font-weight:bold;padding:12px 20px;border-radius:8px">${escapeHtml(p.button)}</a></p>
+<p style="margin:0 0 22px">${escapeHtml(p.intro)}</p>
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 22px"><tr><td bgcolor="${C.cyan}" style="background:${C.cyan};border:1px solid ${C.cyanEdge};border-radius:6px"><a href="${escapeHtml(p.link)}" style="display:inline-block;padding:12px 22px;color:${C.cyanInk};text-decoration:none;font:bold 15px/1.2 ${font};border-radius:6px">${escapeHtml(p.button)}</a></td></tr></table>
 ${p.notes.map(note).join('\n')}
 ${note(t('linkHint'))}
-<p style="margin:0;font-size:13px;word-break:break-all"><a href="${escapeHtml(p.link)}" style="color:#1d3271">${escapeHtml(p.link)}</a></p>
+<p style="margin:0;font-size:13px;word-break:break-all"><a href="${escapeHtml(p.link)}" style="color:${C.link}">${escapeHtml(p.link)}</a></p>
 </td></tr>
-<tr><td style="padding:16px 28px;border-top:1px solid #d6dce6;font:12px/1.5 Arial,Helvetica,sans-serif;color:#5a6480">${escapeHtml(t('footer'))}<br>${escapeHtml(privacy)}</td></tr>
+<tr><td bgcolor="${C.foot}" style="background:${C.foot};border-radius:0 0 10px 10px;padding:16px 28px;border-top:1px solid ${C.line};font:12px/1.5 ${font};color:${C.muted}">${escapeHtml(t('footer'))}<br>${escapeHtml(privacy)}</td></tr>
 </table></td></tr></table>
 </body></html>`;
   return { subject: p.subject, text, html };

@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { can } from '@/lib/rbac';
 import type { SessionUser } from '@/lib/auth';
+import Icon from './Icon';
 
 // Under the top bar on every page of the application: the trial's days, a payment being retried, the projects read-only.
 // The owner gets the way to the subscription; the colleagues are told whom to ask.
@@ -13,6 +14,7 @@ export default async function BillingBanner({ user }: { user: SessionUser }) {
   return (
     <div className={`billing-banner ${tone}`} role="status">
       <div className="inner">
+        <Icon name={tone === 'info' ? 'info' : tone === 'warn' ? 'alert-triangle' : 'lock'} size={20} className="banner-icon" />
         <span>{text}</span>
         {can(user, 'billing:manage') ? <Link href="/app/billing" className="btn btn-sm">{t('bannerAction')}</Link> : <span className="note">{t('bannerAskOwner')}</span>}
       </div>

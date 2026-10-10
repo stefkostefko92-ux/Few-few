@@ -1,0 +1,46 @@
+/* The account and company pages of the application in the Premium identity (package P): the page's head with its
+   painted icon (AccountHead), the panels' title rows, the norms' counts as tiles, the terms' page of the owner.
+   Imported by those components, after globals.css and shell.css; only tokens, so @media print maps the colours. */
+
+.acct-head { justify-content: flex-start; align-items: center; flex-wrap: nowrap; gap: 16px; }
+.acct-head .titles { flex: 1 1 auto; }
+.acct-head .titles .lead { margin: 0; }
+.acct-head .actions { margin-left: auto; align-self: flex-end; }
+@media (max-width: 640px) {
+  .acct-head { flex-wrap: wrap; align-items: flex-start; gap: 12px; }
+  .acct-head > .icon-tile { width: 44px; height: 44px; }
+  .acct-head .titles { flex-basis: calc(100% - 60px); }
+  .acct-head .actions { margin-left: 0; flex-basis: 100%; }
+}
+
+.acct-panel-head { justify-content: flex-start; flex-wrap: nowrap; gap: 12px; }
+.acct-panel-head h2 { font-size: 17px; }
+
+.check-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.check-list li { position: relative; padding-left: 26px; color: var(--ink-2); font-size: 14.5px; line-height: 1.55; }
+.check-list li::before { content: ""; position: absolute; left: 2px; top: .42em; width: 11px; height: 6px; border-left: 2px solid var(--accent);
+  border-bottom: 2px solid var(--accent); transform: rotate(-45deg); }
+
+.seats-line { font-weight: 600; }
+.seats-line .icon { vertical-align: -4px; margin-right: 10px; }
+
+/* the norms' register: how many values in each state, as the template's KPI tiles coloured by state */
+.norme-kpis { list-style: none; margin: 0; padding: 0; }
+.norme-kpis .kpi { border-top: 2px solid var(--info-line); }
+.norme-kpis .kpi.ok { border-top-color: var(--ok); }
+.norme-kpis .kpi.ok .kpi-value { color: var(--ok); }
+.norme-kpis .kpi.warn { border-top-color: var(--warn); }
+.norme-kpis .kpi.warn .kpi-value { color: var(--warn); }
+.norme-kpis .kpi.info .kpi-value { color: var(--info); }
+
+/* the owner's terms' page */
+.terms-gate > .panel { gap: 14px; padding: 26px; }
+@media (max-width: 560px) { .terms-gate > .panel { padding: 18px 16px; } }
+.gate-head { display: flex; align-items: center; gap: 16px; }
+.gate-head h1 { font-size: clamp(26px, 1.2vw + 18px, 34px); }
+.terms-gate label.check.consent { gap: 10px; padding: 12px 14px; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--bg-2); color: var(--ink-2); line-height: 1.5; }
+.terms-gate label.check.consent:has(input:checked) { border-color: var(--accent-line); background: var(--accent-soft); color: var(--ink); }
+.terms-gate label.check.consent input { width: 18px; height: 18px; }
+.terms-gate .note a, .terms-gate .lead a { color: var(--accent); }
+.gate-actions { padding-top: 4px; }
+

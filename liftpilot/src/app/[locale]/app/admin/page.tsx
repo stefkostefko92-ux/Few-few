@@ -4,6 +4,7 @@ import { dateFormat } from '@/lib/dates';
 import { listCompanies } from '@/server/queries';
 import { setCompanyActiveAction, setCompanyExemptAction } from '@/server/user-actions';
 import CreateCompanyForm from '@/components/CreateCompanyForm';
+import AccountHead from '@/components/AccountHead';
 
 export async function generateMetadata() {
   const t = await getTranslations('admin');
@@ -18,12 +19,7 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
   const fd = dateFormat(locale);
   return (
     <main className="page">
-      <div className="page-head">
-        <div className="titles">
-          <h1>{t('title')}</h1>
-          <p className="lead">{t('lead')}</p>
-        </div>
-      </div>
+      <AccountHead icon="shield-check" title={t('title')} lead={t('lead')} />
       <div className="table-panel">
         <table className="data-table stack">
           <thead><tr><th>{t('company')}</th><th>{t('created')}</th><th className="text-right">{t('users')}</th><th className="text-right">{t('projects')}</th><th className="text-right">{t('calculations')}</th><th>{t('billing')}</th><th>{t('status')}</th></tr></thead>

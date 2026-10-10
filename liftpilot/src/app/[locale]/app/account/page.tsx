@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { requireUser } from '@/lib/auth';
 import ChangePasswordForm from '@/components/ChangePasswordForm';
+import AccountHead from '@/components/AccountHead';
 
 export async function generateMetadata() {
   const t = await getTranslations('account');
@@ -15,7 +16,7 @@ export default async function AccountPage({ params, searchParams }: { params: Pr
   const first = (await searchParams).first === '1' && user.mustChangePassword;
   return (
     <main className="page page-narrow">
-      <h1>{t('title')}</h1>
+      <AccountHead icon="user-cog" title={t('title')} />
       {first || user.mustChangePassword ? <p className="alert alert-warn">{t('mustChange')}</p> : null}
       <dl className="cartiglio">
         <div><dt>{t('name')}</dt><dd>{user.name}</dd></div>

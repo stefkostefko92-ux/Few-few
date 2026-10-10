@@ -2,6 +2,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { NOTICE_DAYS, dateText, termsDateText } from '@/lib/legal';
 import type { SessionUser } from '@/lib/auth';
+import Icon from './Icon';
 
 // Under the top bar while the company's owner has not accepted the terms in force. Before the new version binds the
 // company (src/lib/legal.ts) the owner is told when it will and works as before; once it binds, everything is
@@ -18,6 +19,7 @@ export default async function TermsBanner({ user }: { user: SessionUser }) {
   return (
     <div className={`billing-banner ${pending ? 'warn' : 'bad'}`} role="status">
       <div className="inner">
+        <Icon name={pending ? 'file-clock' : 'file-lock'} size={20} className="banner-icon" />
         <span>{text}</span>
         {owner ? <Link href="/app/terms" className="btn btn-sm">{t('bannerAction')}</Link> : null}
       </div>
