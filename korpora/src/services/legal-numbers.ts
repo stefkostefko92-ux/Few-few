@@ -1,10 +1,13 @@
+import { BAN_RULE_TERMS, TERMS_NOTICE_DAYS } from '../company.js';
 import { LOCK_MINUTES, MAX_FAILED_LOGINS } from '../auth/lock.js';
 import { PRE_CSRF_MAX_AGE_MS } from '../auth/guards.js';
 import { MAX_SESSION_MS, SESSION_LIMITS } from '../auth/sessions.js';
 import { FLASH_MAX_AGE_MS } from '../http/flash.js';
 import { LOCALE_COOKIE_MAX_AGE_MS } from '../http/locale.js';
+import { viewHelpers } from '../http/view.js';
 import { translatorFor, type Locale } from '../i18n.js';
-import { PREMIUM_REMINDER_DAYS, TRIAL_DAYS, TRIAL_REMINDER_DAYS } from '../plans/plan.js';
+import { BAN_REPLY_DAYS, BAN_WARNING_DAYS } from '../plans/ban.js';
+import { addDays, PREMIUM_REMINDER_DAYS, TRIAL_DAYS, TRIAL_REMINDER_DAYS } from '../plans/plan.js';
 import {
   formatLifetimeTimes,
   LIFETIME_BASIS_MONTHS,
@@ -26,10 +29,28 @@ import {
   UNVERIFIED_RETENTION_DAYS,
 } from '../retention.js';
 
+/**
+ * Датите в преходното изречение на раздел „Блокиране“: версията на условията с правилото за невръщане на
+ * платеното и денят, от който то важи и за поръчките отпреди нея (TERMS_NOTICE_DAYS по-късно). Форматът е
+ * като на „Последна промяна“ над условията.
+ */
+function banRuleDates(locale: Locale) {
+  const fmt = viewHelpers(locale);
+  const since = new Date(`${BAN_RULE_TERMS}T12:00:00Z`);
+  return {
+    banRuleSince: fmt.date(since),
+    banRuleOldOrders: fmt.date(addDays(since, TERMS_NOTICE_DAYS)),
+  };
+}
+
 /** Числата в правните текстове — едни и същи за страницата на сайта и за копието към писмото. */
 export function legalNumbers(locale: Locale) {
   const t = translatorFor(locale);
   return {
+    // блокиране: предупреждението и отговорът на възражение (наш избор — plans/ban.ts) и преходът
+    banWarning: t('common.days', { n: BAN_WARNING_DAYS }),
+    banReply: t('common.days', { n: BAN_REPLY_DAYS }),
+    ...banRuleDates(locale),
     lifetimeTimes: formatLifetimeTimes(locale),
     // Lifetime: предизвестието преди спиране и базата за част от цената му („30 месеца“, 30 € / 25 €)
     lifetimeNotice: t('plan.months', { n: LIFETIME_NOTICE_MONTHS }),

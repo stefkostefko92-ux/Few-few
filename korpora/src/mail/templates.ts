@@ -1,6 +1,7 @@
 import { config } from '../config.js';
 import { LOCK_MINUTES } from '../auth/lock.js';
 import { translate, translatorFor, type Locale } from '../i18n.js';
+import { BAN_REPLY_DAYS } from '../plans/ban.js';
 import { ordersKeptText, UNVERIFIED_RETENTION_DAYS } from '../retention.js';
 import { legalPath } from '../seo/paths.js';
 import { link, period, send, validFor } from './compose.js';
@@ -213,7 +214,8 @@ export function mailPlanChanged(
 
 /**
  * Блокиран достъп — мотивите по чл. 17, пар. 3 от Регламент (ЕС) 2022/2065: какво е ограничено, фактите
- * (причината от екипа), правилото в общите условия, че решението е на човек и как се възразява.
+ * (причината от екипа), правилото в общите условия, че решението е на човек и как се възразява. По общите
+ * условия („Блокиране“) — и че платеното не се връща, срокът за мотивиран отговор и удължаването при грешка.
  */
 export function mailBanned(
   to: string,
@@ -229,6 +231,7 @@ export function mailBanned(
       reason,
       terms: `${config().PUBLIC_BASE_URL}${legalPath(locale, 'terms')}`,
       contact: config().CONTACT_EMAIL,
+      reply: period(locale, 'days', BAN_REPLY_DAYS),
     },
     name,
   );

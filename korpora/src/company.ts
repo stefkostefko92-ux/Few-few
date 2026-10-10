@@ -39,4 +39,19 @@ export const PRODUCT_URL = 'https://korpora.carbonstealth.eu';
 export const CONTENT_UPDATED = '2026-10-09';
 
 /** Последна промяна на всеки правен текст — показва се на страницата и отива в sitemap. */
-export const LEGAL_UPDATED = { privacy: '2026-10-09', terms: '2026-10-09' } as const;
+export const LEGAL_UPDATED = { privacy: '2026-10-09', terms: '2026-10-10' } as const;
+
+/**
+ * Наш избор — „поне 30 дни“ от раздел „Промени в условията“ на общите условия: толкова дни преди съществена
+ * промяна пишем на клиентите (tests/ban-terms.test.ts сверява числото с текста на трите езика).
+ */
+export const TERMS_NOTICE_DAYS = 30;
+
+/**
+ * Версията на общите условия, с която влезе правилото „при блокиране заради нарушение платеното не се връща“
+ * (раздел „Блокиране“). За поръчките отпреди нея то важи TERMS_NOTICE_DAYS дни по-късно — двете дати в
+ * преходното изречение се смятат оттук (services/legal-numbers.ts). Днес това е текущата версия; при следваща
+ * промяна на условията тук остава датата, с която правилото е публикувано (tests/ban-terms.test.ts пада, докато
+ * не се запише).
+ */
+export const BAN_RULE_TERMS: string = LEGAL_UPDATED.terms;

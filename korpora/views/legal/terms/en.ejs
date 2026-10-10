@@ -32,6 +32,7 @@
 <ul>
   <li>Premium: <%= fmt.money(m1.totalWithVatCents) %> per month including VAT (<%= fmt.money(m1.totalCents) %> excluding VAT). Paying for <%= list(terms.map((p) => String(p.months))) %> months at once gives a discount of <%= listAnd(terms.map((p) => p.discountPercent + '%')) %> respectively. Premium does not renew by itself — it ends at the end of the paid term.</li>
   <li>Lifetime: <%= fmt.money(life.totalWithVatCents) %> including VAT (<%= fmt.money(life.totalCents) %> excluding VAT), one payment — <%= lifetimeTimes %> times the yearly price without the 12-month discount. Lifetime is valid for as long as Korpora is offered (section “If Korpora is discontinued”). Where part of its price has to be worked out — on withdrawal after an early start, if Korpora is discontinued or if the service or the terms change to your detriment — the price is spread evenly over the first <%= lifetimeBasis %> after payment: <%= fmt.money(lifetimeShare.gross) %> including VAT (<%= fmt.money(lifetimeShare.net) %> excluding VAT) per month. After those months Lifetime is fully used.</li>
+  <li>If an account is blocked for a breach, what was paid for the plan, Lifetime included, is not refunded (section “Blocking”).</li>
   <li>For consumers, prices are final and include <%= vatPercent %>% VAT. This is Bulgarian VAT, and it applies to consumers from every EU country: the place of supply is Bulgaria (Article 59c of Directive 2006/112/EC). For businesses, VAT is charged under the rules of the buyer's country.</li>
   <li>We may change prices for future orders. A plan already ordered does not change.</li>
 </ul>
@@ -76,8 +77,19 @@
   <li>unlawful or offensive content in project names.</li>
 </ul>
 
-<h2>Blocking</h2>
-<p>If these terms are breached, we may block an account. The reason is shown when you try to sign in. If you think the block is a mistake, write to us — we consider every objection and, if it is a mistake, we restore access.</p>
+<h2 id="blocking">Blocking</h2>
+<p>We block an account only for a breach described in these terms, and the decision is always made by a person on our team, not by software. The grounds for blocking are:</p>
+<ul>
+  <li>more than one trial for the same person or company, for example through several accounts (section “Trial”);</li>
+  <li>sharing the account with another person (section “Account”);</li>
+  <li>any of the breaches listed in section “What is not allowed”.</li>
+</ul>
+<p>Where a breach can be put right and does not threaten the security of Korpora or of other customers — a shared account or an offensive project name, for example — we first email you what to change and give you at least <%= banWarning %>. We block without a warning only for getting around the security, the plan limits or the trial, for attempts to access other people's accounts or data, for overloading the service, for unlawful content and for a repeated breach after a warning.</p>
+<p>When we block an account, we email you — if your email address is confirmed — what is restricted, the reason and the facts it rests on, which rule in these terms was breached and how to object. The reason is also shown when you try to sign in.</p>
+<p>Blocking for a breach ends the contract for your paid plan. What you paid for the plan, whether Premium or Lifetime, is not refunded, including for the remaining term: this is the consequence of a breach that we warn you about here and in section “Plans and prices”. This applies to consumers and businesses alike. Blocking does not affect your right of withdrawal within the withdrawal period (section “Right of withdrawal”) or your rights when the service does not conform (section “Legal guarantee”).</p>
+<p>If you think the block is a mistake, write to us at <a href="mailto:<%= contact %>"><%= contact %></a>: we reply with a reasoned decision within <%= banReply %>. If the block turns out to be a mistake, we restore access straight away and extend your paid period or trial by the time the account was blocked; for Lifetime, the first <%= lifetimeBasis %> in section “Plans and prices” are extended by the same time. If you are a consumer, you can also turn to the Bulgarian Commission for Consumer Protection, its conciliation commissions or the courts (section “Governing law and disputes”).</p>
+<p>Even while the account is blocked, you can ask us at the same address for your projects as files and for a copy of your personal data. We send them free of charge, within a reasonable time and in a commonly used, machine-readable format. We keep the projects of a blocked account for as long as the account exists; you can also ask us to delete it.</p>
+<p>For orders placed before <%= banRuleSince %>, the rule that payments are not refunded on blocking applies from <%= banRuleOldOrders %>. Until then you may terminate the contract free of charge and get back the unused part of the price (section “Changes to these terms”).</p>
 
 <h2>Outputs and liability</h2>
 <p class="disclaimer">Korpora calculates from the data you enter. Where the manufacturer's documentation says nothing, the value is our choice and is marked “<span lang="bg">наш избор</span>” (our choice). Before production, check the sizes, the construction and the drawings, and run the G-code first in a simulation and as a dry run: the post-processors are generic and do not know your particular machine. To the extent the law allows, we are not liable for material, tools or machines damaged by using outputs that were not checked. Nothing in these terms limits liability that the law does not allow to be limited, for example for damage caused intentionally or by gross negligence. If you are a consumer, you also keep your legal rights when the service does not conform to the contract.</p>
