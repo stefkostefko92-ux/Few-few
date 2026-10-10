@@ -70,7 +70,7 @@
     "resetDone": "Password updated: sign in with the new one.",
     "panelLabel": "LiftPilot in short",
     "panelEyebrow": "Lift design software",
-    "panelTitle": "From the shaft survey to the calculation report, in one project.",
+    "panelTitle": "From the shaft survey to the calculation report, <em>in one project.</em>",
     "panelCalc": "Machine check",
     "panelDrawings": "Drawing sets and DXF/DWG",
     "panelSim": "3D simulation",
@@ -307,7 +307,13 @@
     "next": "New password",
     "confirm": "Repeat the new password",
     "rule": "At least {min} characters, with letters and digits.",
-    "change": "Change password"
+    "change": "Change password",
+    "area": {
+      "profile": "Your profile",
+      "company": "Your company",
+      "platform": "Platform administration",
+      "norms": "Reference standards"
+    }
   },
   "team": {
     "title": "Users",
@@ -1330,6 +1336,7 @@
   },
   "legal": {
     "title": "Privacy and terms of use",
+    "headline": "Privacy <em>and terms of use</em>",
     "metaDescription": "How LiftPilot processes the personal data of installers and technicians, and the terms of use of the service.",
     "updated": "Version {version} of {date}",
     "privacyTitle": "Privacy notice",
@@ -1959,6 +1966,7 @@
   },
   "dataPage": {
     "title": "Data, formats and jurisdiction",
+    "headline": "Data, formats <em>and jurisdiction</em>",
     "metaDescription": "Which data a company can download from LiftPilot, in which formats, how the JSON file is built, how to switch provider and where the servers are (Data Act).",
     "keywords": "LiftPilot Data Act, JSON data export, SaaS data portability, cloud provider switching, server jurisdiction Germany, Carbon Stealth",
     "updated": "Updated on {date}",
@@ -2045,20 +2053,14 @@
     "answerBeta": "During the beta LiftPilot is free, with every function and no limit on colleagues. After the beta it will be paid with a monthly subscription for the company’s owner and, for colleagues, a pack of slots priced on the monthly price: the price and the day the beta ends will be e-mailed to the owner at least {noticeDays} days in advance, and nothing is charged without a subscription taken out by the owner.",
     "packsTitle": "What do colleagues cost?",
     "packsText": "The monthly price includes the owner. Every active colleague, and every waiting invitation, takes a slot of a pack, which costs a share of the monthly price:",
-    "colPack": "Who works",
-    "colShare": "Pack",
-    "colTotal": "Total",
     "share": "+{pct} % of the monthly price",
-    "shareNone": "included",
-    "onRequest": "on request",
-    "betaFree": "free in beta",
     "trialTitle": "Is there a free trial?",
     "trialText": "Yes: a new company gets a {days}-day free trial from its first sign-in, with every function for the owner and no credit card. The trial ends by itself and never turns into a paid subscription; afterwards, without a subscription, the projects stay viewable and downloadable read-only.",
     "trialBeta": "Not during the beta: use is free. When the service becomes paid, every company already registered gets a free trial of at least {minTrialDays} days before it has to choose a subscription.",
     "cta": "Register the company",
     "termsTitle": "The subscription in short",
     "termsNote": "The <terms>terms of use</terms> apply; the company’s data can always be downloaded (<data>data and formats</data>).",
-    "faqTitle": "Questions about pricing",
+    "faqTitle": "Questions <em>about pricing</em>",
     "faq1q": "Does the price include every function?",
     "faq1a": "Yes: shaft and lift design, machine calculation and selection, 3D simulation, drawing sets, reports, DXF and DWG, order drafts and price list. The pack of slots only changes how many colleagues work with the owner.",
     "faq2q": "How do I pay?",

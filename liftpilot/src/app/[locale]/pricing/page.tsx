@@ -17,6 +17,7 @@ import SiteHeader from '@/components/SiteHeader';
 import Icon, { type IconName } from '@/components/Icon';
 import Footer from '@/components/Footer';
 import '@/app/public.css';
+import '@/app/check-list.css';
 
 // What LiftPilot costs, answer first: the owner's monthly price and the packs of slots as Stripe has them now (the same
 // Price the subscription uses, src/lib/stripe.ts), the trial, and the terms of the subscription in short. Without Stripe
@@ -102,23 +103,28 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
                   </div>
                   <p className="price"><strong className="num">{x.value}</strong>{x.unit ? <small>{x.unit}</small> : null}</p>
                   <p className="price-line">{x.line}</p>
-                  <Link className="btn btn-block" href="/register">{t('cta')}</Link>
+                  {cfg ? <Link className="btn btn-block" href="/register">{t('cta')}</Link> : null}
                 </li>
               );
             })}
           </ul>
           {price ? <p className="note">{tb(`tax.${price.taxBehavior ?? 'unspecified'}`)}</p> : null}
-          <div className="panel included">
-            <h3>{t('includedTitle')}</h3>
-            <ul className="check-list">{(['inc1', 'inc2', 'inc3', 'inc4'] as const).map((k) => <li key={k}>{t(k)}</li>)}</ul>
-          </div>
+          {/* in the beta every plan is free: one call under the cards instead of the same button on each */}
+          {!cfg ? <p className="price-cta"><Link className="btn btn-primary" href="/register">{t('cta')}</Link></p> : null}
         </section>
         <div className="pub-split">
-          <section aria-labelledby="q-trial" className="panel">
-            <div className="panel-head"><span className="icon-tile sm"><Icon name="badge-check" size={18} /></span><h2 id="q-trial">{t('trialTitle')}</h2></div>
-            <p>{cfg ? t('trialText', { days: cfg.trialDays }) : t('trialBeta', { minTrialDays: MIN_TRIAL_DAYS })}</p>
-            <p><Link className="btn btn-primary" href="/register">{t('cta')}</Link></p>
-          </section>
+          {/* the trial and what every plan holds stacked beside the terms, so the two columns end together */}
+          <div className="pub-stack">
+            <section aria-labelledby="q-trial" className="panel">
+              <div className="panel-head"><span className="icon-tile sm"><Icon name="badge-check" size={18} /></span><h2 id="q-trial">{t('trialTitle')}</h2></div>
+              <p>{cfg ? t('trialText', { days: cfg.trialDays }) : t('trialBeta', { minTrialDays: MIN_TRIAL_DAYS })}</p>
+              <p className="panel-cta"><Link className={cfg ? 'btn btn-primary' : 'btn'} href="/register">{t('cta')}</Link></p>
+            </section>
+            <section aria-labelledby="q-included" className="panel included">
+              <div className="panel-head"><span className="icon-tile sm"><Icon name="list-checks" size={18} /></span><h2 id="q-included">{t('includedTitle')}</h2></div>
+              <ul className="check-list">{(['inc1', 'inc2', 'inc3', 'inc4'] as const).map((k) => <li key={k}>{t(k)}</li>)}</ul>
+            </section>
+          </div>
           <section aria-labelledby="q-terms" className="panel">
             <div className="panel-head"><span className="icon-tile sm"><Icon name="file-text" size={18} /></span><h2 id="q-terms">{t('termsTitle')}</h2></div>
             <ul className="check-list">{(['t1', 't2', 't3', 't4', 't7'] as const).map((k) => <li key={k}>{tb(`terms.${k}`)}</li>)}</ul>
@@ -126,7 +132,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
           </section>
         </div>
         <section aria-labelledby="q-faq" className="pub-faq">
-          <h2 id="q-faq">{t('faqTitle')}</h2>
+          <h2 id="q-faq">{t.rich('faqTitle', { em: (c) => <em>{c}</em> })}</h2>
           <div className="faq-list">
             {faq.map((x, i) => (
               <div key={i} className="faq-row">

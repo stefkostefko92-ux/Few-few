@@ -1,16 +1,22 @@
 import type { ReactNode } from 'react';
+import { getTranslations } from 'next-intl/server';
 import Icon, { type IconName } from './Icon';
 import '@/app/account.css';
 
+/** The area a page belongs to, named in the eyebrow over its title. */
+export type AccountArea = 'profile' | 'company' | 'platform' | 'norms';
+
 // The head of the account and company pages (account, team, company, subscription, audit, platform, norms, price
-// list): the section's painted icon in its tile beside the title and the lead, as the workspace of the template.
-export default function AccountHead({ icon, title, lead, chip, actions }: {
-  icon: IconName; title: ReactNode; lead?: ReactNode; chip?: ReactNode; actions?: ReactNode;
+// list), as the workspace of the template: the area's eyebrow with the cyan dash over the title and the lead, the
+// page's main action on the right.
+export default async function AccountHead({ area, title, lead, chip, actions }: {
+  area: AccountArea; title: ReactNode; lead?: ReactNode; chip?: ReactNode; actions?: ReactNode;
 }) {
+  const t = await getTranslations('account');
   return (
     <div className="page-head acct-head">
-      <span className="icon-tile lg"><Icon name={icon} size={26} priority /></span>
       <div className="titles">
+        <p className="eyebrow">{t(`area.${area}`)}</p>
         {chip}
         <h1>{title}</h1>
         {lead ? <p className="lead">{lead}</p> : null}

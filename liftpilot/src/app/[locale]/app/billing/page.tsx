@@ -12,6 +12,7 @@ import { companySubscription } from '@/server/billing';
 import { changePackAction, portalAction, startCheckoutAction } from '@/server/billing-actions';
 import { Link } from '@/i18n/routing';
 import AccountHead, { PanelHead } from '@/components/AccountHead';
+import '@/app/check-list.css';
 
 export async function generateMetadata() {
   const t = await getTranslations('billing');
@@ -72,7 +73,7 @@ export default async function BillingPage({ params, searchParams }: {
   );
   return (
     <main className="page">
-      <AccountHead icon="hand-coins" title={t('title')} lead={t('lead')} />
+      <AccountHead area="company" title={t('title')} lead={t('lead')} />
       {q.done === '1' ? <p className="alert alert-ok" role="status">{t('done')}</p> : null}
       {q.changed === '1' ? <p className="alert alert-ok" role="status">{t('changed')}</p> : null}
       {err ? <p className="alert alert-bad" role="alert">{t(`e.${err}`)}</p> : null}

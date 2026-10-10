@@ -31,7 +31,7 @@ export default async function TeamPage({ params, searchParams }: {
   const free = sub?.free ?? false, limit = sub && Number.isFinite(sub.limit) ? String(sub.limit) : '∞';
   return (
     <main className="page">
-      <AccountHead icon="users" title={t('title')} lead={t('lead')} />
+      <AccountHead area="company" title={t('title')} lead={t('lead')} />
       {q.e === 'noSeats' ? <p className="alert alert-bad" role="alert">{t('noSeats')}</p> : null}
       <section className="panel">
         <p className="seats-line"><Icon name="user-check" size={20} />{t('seats', { used: sub?.used ?? 0, limit })}{' '}

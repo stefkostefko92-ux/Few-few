@@ -32,7 +32,7 @@ export default function TermsGate({ date, state: terms, binding }: { date: strin
           <h1>{changed ? t('gateTitle') : t('gateTitleNew')}</h1>
         </div>
         <p className="lead">{lead}</p>
-        <p><Link href="/privacy" target="_blank" className="btn btn-sm"><Icon name="file-text" size={18} />{t('gateRead')}</Link></p>
+        <p><Link href="/privacy" target="_blank" className="btn btn-sm gate-read"><Icon name="file-text" size={18} />{t('gateRead')}</Link></p>
         {state.error ? <p className="alert alert-bad" role="alert">{te(state.error)}</p> : null}
         <p className="note">{tr.rich('privacyNote', { link: (chunks) => <Link href="/privacy" target="_blank">{chunks}</Link> })}</p>
         {CONSENTS.map((k) => (

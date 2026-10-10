@@ -22,7 +22,7 @@ export default async function CompanyPage({ params }: { params: Promise<{ locale
   const logo = c?.logo ?? null;
   return (
     <main className="page">
-      <AccountHead icon="building" title={`${t('companyTitle')} · ${c?.name ?? user.companyName}`} />
+      <AccountHead area="company" title={`${t('companyTitle')} · ${c?.name ?? user.companyName}`} />
       <section className="panel" aria-labelledby="logo-h">
         <PanelHead icon="file-image" id="logo-h">{t('logoTitle')}</PanelHead>
         <p className="note">{t('logoHint')}</p>

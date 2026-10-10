@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import { getTranslations } from 'next-intl/server';
-import { EMBLEM } from '@/lib/brand';
 import SiteHeader from './SiteHeader';
 import Footer from './Footer';
 import Icon, { type IconName } from './Icon';
@@ -16,13 +15,17 @@ const FEATURES: ReadonlyArray<{ icon: IconName; key: 'panelCalc' | 'panelDrawing
 ];
 const CUTAWAY = [480, 800, 1086] as const;
 const set = (ext: string): string => CUTAWAY.map((w) => `/img/premium/elevator-cutaway-${w}.${ext} ${w}w`).join(', ');
-const SIZES = '(min-width: 1320px) 300px, 23vw';
+// the picture shows only from 1280 px, in a column of at most 300 px (public.css)
+const SIZES = '300px';
+// the emblem at 40 px: the 64 px file for 1x and the 96 px one for 2x, so it is never stretched
+const EMBLEM_40 = { src: '/img/liftpilot-emblem-64.webp', srcSet: '/img/liftpilot-emblem-64.webp 1x, /img/liftpilot-emblem-96.webp 2x' } as const;
 
 // The frame of the sign-in and of the pages around it (registration, confirmation, forgotten and new password,
-// invitation): the form on the left over the blueprint grid; on wide screens the brand's panel on the right — the
-// emblem, what LiftPilot makes, the template's elevator cutaway (an illustration, labelled as such), the standards and
-// the rule that every result is a draft until a qualified technician signs it. On phones the panel keeps only its text,
-// under the form: the picture is lazy and not displayed there, so it is never fetched.
+// invitation): the form on the left over the blueprint grid; from 1024 px the brand's panel on the right — the
+// emblem, what LiftPilot makes, the standards and the rule that every result is a draft until a qualified technician
+// signs it — and from 1280 px the template's elevator cutaway beside them (an illustration, labelled as such). On
+// phones the panel keeps only its text, under the form; below 1280 px the picture is lazy and not displayed, so it is
+// never fetched.
 export default async function AuthPage({ title, lead, children }: { title: string; lead: string; children: ReactNode }) {
   const t = await getTranslations('auth');
   return (
@@ -37,9 +40,9 @@ export default async function AuthPage({ title, lead, children }: { title: strin
         <aside className="auth-art blueprint diag" aria-label={t('panelLabel')}>
           <div className="auth-art-head">
             {/* eslint-disable-next-line @next/next/no-img-element -- prebuilt WebP set (scripts/brand-assets.py) */}
-            <img className="auth-emblem" src={EMBLEM.src} srcSet={EMBLEM.srcSet} width={EMBLEM.width} height={EMBLEM.height} alt="" decoding="async" />
+            <img className="auth-emblem" src={EMBLEM_40.src} srcSet={EMBLEM_40.srcSet} width={40} height={40} alt="" decoding="async" />
             <p className="eyebrow">{t('panelEyebrow')}</p>
-            <p className="auth-art-title">{t('panelTitle')}</p>
+            <p className="auth-art-title">{t.rich('panelTitle', { em: (c) => <em>{c}</em> })}</p>
           </div>
           <ul className="auth-art-features">
             {FEATURES.map((f) => (

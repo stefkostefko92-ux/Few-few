@@ -1,0 +1,6 @@
+/* A list of plain facts, each with the template's cyan tick (the pricing page and the subscription page). Only
+   tokens of globals.css, so @media print maps the colours. */
+.check-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.check-list li { position: relative; padding-left: 26px; color: var(--ink-2); font-size: 14.5px; line-height: 1.55; }
+.check-list li::before { content: ""; position: absolute; left: 2px; top: .42em; width: 11px; height: 6px; border-left: 2px solid var(--accent);
+  border-bottom: 2px solid var(--accent); transform: rotate(-45deg); }

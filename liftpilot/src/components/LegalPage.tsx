@@ -21,7 +21,7 @@ function TocList({ items }: { items: readonly TocItem[] }) {
 // wide screens and a folded one above it on phones (the two are never shown together). The text keeps the class
 // `legal` (its headings and its print rules).
 export default function LegalPage({ eyebrow, title, head, toc, tocLabel, children }: {
-  eyebrow: string; title: string; head?: ReactNode; toc?: readonly TocItem[]; tocLabel?: string; children: ReactNode;
+  eyebrow: string; title: ReactNode; head?: ReactNode; toc?: readonly TocItem[]; tocLabel?: string; children: ReactNode;
 }) {
   const withToc = toc !== undefined && toc.length > 0;
   return (

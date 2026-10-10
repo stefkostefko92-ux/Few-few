@@ -19,7 +19,7 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
   const fd = dateFormat(locale);
   return (
     <main className="page">
-      <AccountHead icon="shield-check" title={t('title')} lead={t('lead')} />
+      <AccountHead area="platform" title={t('title')} lead={t('lead')} />
       <div className="table-panel">
         <table className="data-table stack">
           <thead><tr><th>{t('company')}</th><th>{t('created')}</th><th className="text-right">{t('users')}</th><th className="text-right">{t('projects')}</th><th className="text-right">{t('calculations')}</th><th>{t('billing')}</th><th>{t('status')}</th></tr></thead>

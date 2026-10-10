@@ -18,7 +18,7 @@ export default async function AuditPage({ params }: { params: Promise<{ locale: 
   const label = (group: 'actions' | 'entities', key: string): string => (t.has(`${group}.${key}`) ? t(`${group}.${key}`) : key);
   return (
     <main className="page">
-      <AccountHead icon="history" title={t('title')} lead={t('lead')} />
+      <AccountHead area="company" title={t('title')} lead={t('lead')} />
       <div className="table-panel">
         <table className="data-table stack">
           <thead><tr><th>{t('what')}</th><th>{t('when')}</th><th>{t('who')}</th><th>{t('object')}</th></tr></thead>

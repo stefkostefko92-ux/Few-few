@@ -1,37 +1,26 @@
-/* The account and company pages of the application in the Premium identity (package P): the page's head with its
-   painted icon (AccountHead), the panels' title rows, the norms' counts as tiles, the terms' page of the owner.
+/* The account and company pages of the application in the Premium identity (package P): the page's head as the
+   template's workspace (the area's eyebrow with its cyan dash over the title and the lead, the main action on the
+   right: AccountHead), the panels' title rows, the norms' counts as KPI tiles, the terms' page of the owner.
    Imported by those components, after globals.css and shell.css; only tokens, so @media print maps the colours. */
 
-.acct-head { justify-content: flex-start; align-items: center; flex-wrap: nowrap; gap: 16px; }
-.acct-head .titles { flex: 1 1 auto; }
+.acct-head { align-items: flex-end; gap: 12px 24px; }
+.acct-head .titles { display: flex; flex-direction: column; gap: 10px; flex: 1 1 28rem; min-width: 0; }
 .acct-head .titles .lead { margin: 0; }
-.acct-head .actions { margin-left: auto; align-self: flex-end; }
-@media (max-width: 640px) {
-  .acct-head { flex-wrap: wrap; align-items: flex-start; gap: 12px; }
-  .acct-head > .icon-tile { width: 44px; height: 44px; }
-  .acct-head .titles { flex-basis: calc(100% - 60px); }
-  .acct-head .actions { margin-left: 0; flex-basis: 100%; }
-}
+.acct-head .actions { margin-left: auto; }
+@media (max-width: 640px) { .acct-head .actions { margin-left: 0; } }
 
 .acct-panel-head { justify-content: flex-start; flex-wrap: nowrap; gap: 12px; }
 .acct-panel-head h2 { font-size: 17px; }
 
-.check-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-.check-list li { position: relative; padding-left: 26px; color: var(--ink-2); font-size: 14.5px; line-height: 1.55; }
-.check-list li::before { content: ""; position: absolute; left: 2px; top: .42em; width: 11px; height: 6px; border-left: 2px solid var(--accent);
-  border-bottom: 2px solid var(--accent); transform: rotate(-45deg); }
-
 .seats-line { font-weight: 600; }
 .seats-line .icon { vertical-align: -4px; margin-right: 10px; }
 
-/* the norms' register: how many values in each state, as the template's KPI tiles coloured by state */
+/* the norms' register: how many values in each state, as the template's KPI tiles (the name and the state's icon on
+   top, the figure under them; the figure takes the state's colour) */
 .norme-kpis { list-style: none; margin: 0; padding: 0; }
-.norme-kpis .kpi { border-top: 2px solid var(--info-line); }
-.norme-kpis .kpi.ok { border-top-color: var(--ok); }
+.norme-kpis .kpi { gap: 10px; }
 .norme-kpis .kpi.ok .kpi-value { color: var(--ok); }
-.norme-kpis .kpi.warn { border-top-color: var(--warn); }
 .norme-kpis .kpi.warn .kpi-value { color: var(--warn); }
-.norme-kpis .kpi.info .kpi-value { color: var(--info); }
 
 /* the owner's terms' page */
 .terms-gate > .panel { gap: 14px; padding: 26px; }
@@ -43,4 +32,7 @@
 .terms-gate label.check.consent input { width: 18px; height: 18px; }
 .terms-gate .note a, .terms-gate .lead a { color: var(--accent); }
 .gate-actions { padding-top: 4px; }
+/* the link to the text in force: a long label (IT/EN) wraps inside the panel instead of widening the page */
+.terms-gate .gate-read { white-space: normal; text-align: left; justify-content: flex-start; align-items: flex-start; max-width: 100%; }
+.terms-gate .gate-read > .icon { margin-top: -1px; }
 

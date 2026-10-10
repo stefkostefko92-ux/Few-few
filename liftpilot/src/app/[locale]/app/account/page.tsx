@@ -16,7 +16,7 @@ export default async function AccountPage({ params, searchParams }: { params: Pr
   const first = (await searchParams).first === '1' && user.mustChangePassword;
   return (
     <main className="page page-narrow">
-      <AccountHead icon="user-cog" title={t('title')} />
+      <AccountHead area="profile" title={t('title')} />
       {first || user.mustChangePassword ? <p className="alert alert-warn">{t('mustChange')}</p> : null}
       <dl className="cartiglio">
         <div><dt>{t('name')}</dt><dd>{user.name}</dd></div>

@@ -3,22 +3,20 @@
    comes after globals.css and its area sheets; only tokens of globals.css, so @media print maps every colour. */
 
 /* ---- a public page: a head on the blueprint grid, then its sections ------------------------------------------- */
-.pub-page { max-width: 1180px; width: 100%; margin: 0 auto; padding: 40px 16px 72px; display: flex; flex-direction: column; gap: 48px; }
+.pub-page { max-width: 1180px; width: 100%; margin: 0 auto; padding: 40px 16px 72px; display: flex; flex-direction: column; gap: 48px;
+  overflow-x: clip; }
 @media (min-width: 768px) { .pub-page { padding: 56px 24px 88px; gap: 64px; } }
 .pub-head { display: flex; flex-direction: column; gap: 14px; padding: 8px 0 4px; }
 .pub-head h1 { font-size: clamp(32px, 2.6vw + 18px, 52px); line-height: 1.04; letter-spacing: -.04em; max-width: 18ch; }
 .pub-head .lead { font-size: 16px; max-width: 72ch; }
-.pub-head.blueprint::after { inset: -40px -24px -24px; }
+.pub-head.blueprint::after { inset: -40px -16px -24px; }
+@media (min-width: 768px) { .pub-head.blueprint::after { inset: -40px -24px -24px; } }
 .pub-section { display: flex; flex-direction: column; gap: 20px; }
 .pub-section-head { display: flex; flex-direction: column; gap: 8px; max-width: 72ch; }
 .pub-section-head p { color: var(--ink-2); }
 .pub-page h2 { font-size: clamp(22px, .8vw + 17px, 28px); letter-spacing: -.03em; }
-
-/* a list of plain facts, each with the template's cyan tick */
-.check-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-.check-list li { position: relative; padding-left: 26px; color: var(--ink-2); font-size: 14.5px; line-height: 1.55; }
-.check-list li::before { content: ""; position: absolute; left: 2px; top: .42em; width: 11px; height: 6px; border-left: 2px solid var(--accent);
-  border-bottom: 2px solid var(--accent); transform: rotate(-45deg); }
+/* the template's signature: the heading's second part on its own line, in cyan with a faint glow */
+.pub-page :is(h1, h2) em, .auth-art-title em { display: block; font-style: normal; color: var(--accent); text-shadow: var(--glow); }
 
 /* ---- sign-in family: the form over the grid, the brand's panel beside it ------------------------------------- */
 .auth { max-width: 1320px; width: 100%; margin: 0 auto; padding: 32px 16px 56px; display: grid; gap: 32px; align-items: start; }
@@ -35,7 +33,7 @@
 .auth-art { display: flex; flex-direction: column; gap: 14px; padding: 20px; border: 1px solid var(--rule); border-radius: var(--radius-lg);
   background: var(--panel-grad); box-shadow: var(--panel-hi), var(--shadow); min-width: 0; }
 .auth-art-head { display: flex; flex-direction: column; gap: 10px; }
-.auth-emblem { width: 40px; height: 40px; }
+.auth-emblem { display: block; width: 40px; height: 40px; }
 .auth-art-title { margin: 0; font-size: 17px; line-height: 1.35; font-weight: 700; letter-spacing: -.015em; color: var(--ink); max-width: 30ch; }
 .auth-art-features, .auth-art-figure { display: none; }
 .auth-art-foot { display: flex; flex-direction: column; gap: 10px; padding-top: 14px; border-top: 1px solid var(--rule); }
@@ -43,20 +41,27 @@
 .norm-list .badge { color: var(--ink-2); background: var(--bg-2); border-color: var(--rule-strong); letter-spacing: .04em; }
 .auth-art-foot .note { color: var(--muted); max-width: 62ch; }
 
+/* from 1024 px the panel stands beside the form and shows the features; the picture takes its own column only from
+   1280 px, where the text beside it keeps at least 16rem (below that the title and the tiles would break word by word) */
 @media (min-width: 1024px) {
-  .auth-art { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 300px); grid-template-rows: auto 1fr auto;
-    column-gap: 24px; row-gap: 22px; padding: 30px 30px 26px; min-height: 620px; position: sticky; top: 84px; }
-  .auth-art-head { grid-column: 1; grid-row: 1; }
+  .auth-art { row-gap: 22px; padding: 30px 30px 26px; position: sticky; top: 84px; }
   .auth-art-title { font-size: 22px; line-height: 1.25; letter-spacing: -.025em; }
-  .auth-art-features { grid-column: 1; grid-row: 2; align-self: center; display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; }
-  .auth-art-features li { display: flex; align-items: center; gap: 12px; width: fit-content; padding: 6px 14px 6px 6px; font-size: 14px; font-weight: 600;
-    color: var(--ink); background: var(--savebar-bg); border: 1px solid var(--accent-line); border-radius: var(--radius-sm); box-shadow: var(--glow); }
+  .auth-art-features { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; }
+  .auth-art-features li { display: flex; align-items: center; gap: 12px; width: fit-content; max-width: 100%; padding: 6px 14px 6px 6px; font-size: 14px;
+    font-weight: 600; color: var(--ink); background: var(--savebar-bg); border: 1px solid var(--accent-line); border-radius: var(--radius-sm); box-shadow: var(--glow); }
+  .auth-art-foot { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+  .auth-art-foot .note { flex-basis: 100%; }
+}
+@media (min-width: 1280px) {
+  .auth-art { display: grid; grid-template-columns: minmax(16rem, 1fr) clamp(200px, 42%, 300px); grid-template-rows: auto 1fr auto;
+    column-gap: 24px; min-height: 620px; }
+  .auth-art-head { grid-column: 1; grid-row: 1; }
+  .auth-art-features { grid-column: 1; grid-row: 2; align-self: center; }
   .auth-art-figure { grid-column: 2; grid-row: 1 / span 2; display: block; position: relative; margin: -8px -8px 0 0; }
   /* the picture's own dark ground fades into the panel instead of ending in a hard rectangle */
   .auth-art-figure img { display: block; width: 100%; height: auto; max-height: 520px; object-fit: contain; object-position: center bottom;
     -webkit-mask-image: radial-gradient(ellipse 70% 62% at 50% 48%, #000 62%, transparent 100%); mask-image: radial-gradient(ellipse 70% 62% at 50% 48%, #000 62%, transparent 100%); }
-  .auth-art-foot { grid-column: 1 / -1; grid-row: 3; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
-  .auth-art-foot .note { flex-basis: 100%; }
+  .auth-art-foot { grid-column: 1 / -1; grid-row: 3; }
 }
 /* the template's label on an illustration (MODELLO DIMOSTRATIVO) */
 .art-tag { position: absolute; right: 8px; bottom: 8px; padding: 5px 9px; font: 400 11px/1.3 var(--font-mono); letter-spacing: .1em; text-transform: uppercase;
@@ -81,16 +86,16 @@
 .price small { font-size: 13px; color: var(--muted); }
 .price-line { margin: 0 0 18px; font-size: 14px; line-height: 1.5; color: var(--ink-2); }
 .price-card .btn { margin-top: auto; }
-.included { gap: 14px; }
-.included h3 { font-size: 16px; }
-@media (min-width: 900px) { .included .check-list { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 32px; } }
 
 .pub-split { display: grid; gap: 16px; }
-@media (min-width: 900px) { .pub-split { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; } }
+@media (min-width: 900px) { .pub-split { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; } }
 .pub-split .panel-head { justify-content: flex-start; flex-wrap: nowrap; }
 .pub-split .panel-head h2 { font-size: 18px; letter-spacing: -.02em; }
 .pub-split p { color: var(--ink-2); }
-.pub-split .btn-primary { align-self: flex-start; }
+.pub-stack { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.pub-stack > .panel:last-child { flex: 1 1 auto; }
+.pub-split .panel-cta { margin: 0; padding-top: 4px; }
+.price-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin: 0; }
 
 /* the questions: the heading on the left, each question over its answer on the right (always open: the answers are
    the page's content for the search engines too) */
@@ -131,7 +136,8 @@
 
 /* ---- 404 and 500: the code drawn as an outlined figure on the grid -------------------------------------------- */
 .err-page { max-width: 880px; min-height: 56vh; justify-content: center; gap: 16px; }
-.err-page.blueprint::after { inset: 0 -24px; }
+.err-page.blueprint::after { inset: 0 -16px; }
+@media (min-width: 768px) { .err-page.blueprint::after { inset: 0 -24px; } }
 .err-code { margin: 0; font: 800 clamp(88px, 12vw, 148px)/.9 var(--font-body); letter-spacing: -.06em; color: transparent;
   -webkit-text-stroke: 1.5px var(--accent); text-shadow: 0 0 28px rgb(39 223 240 / .18); }
 .err-actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 8px 0 0; }
@@ -143,4 +149,5 @@
   .legal-body .legal { max-width: none; }
   .pub-head h1 { font-size: 26px; }
   .err-code { color: #000; -webkit-text-stroke: 0; text-shadow: none; }
+  .pub-page :is(h1, h2) em { display: inline; }
 }

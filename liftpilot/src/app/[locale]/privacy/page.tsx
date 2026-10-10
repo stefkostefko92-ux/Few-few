@@ -39,7 +39,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
   return (
     <>
       <SiteHeader />
-      <LegalPage eyebrow={t('eyebrow')} title={t('title')} tocLabel={t('toc')} toc={toc} head={(
+      <LegalPage eyebrow={t('eyebrow')} title={t.rich('headline', { em: (c) => <em>{c}</em> })} tocLabel={t('toc')} toc={toc} head={(
         <>
           <div className="legal-meta">
             <p className="note"><time dateTime={TERMS_DATE}>{t('updated', { version: TERMS_VERSION, date: termsDateText(locale) })}</time></p>

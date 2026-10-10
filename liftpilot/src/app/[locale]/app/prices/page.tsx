@@ -34,7 +34,7 @@ export default async function PricesPage({ params }: { params: Promise<{ locale:
   const editable = can(me, 'prices:edit');
   return (
     <main className="page">
-      <AccountHead icon="tag" title={t('title')} lead={editable ? t('lead') : t('leadView')} />
+      <AccountHead area="company" title={t('title')} lead={editable ? t('lead') : t('leadView')} />
       <p className="note">{t('scope')}</p>
       <PriceList rows={rows} values={values} custom={custom} editable={editable} />
     </main>

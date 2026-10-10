@@ -70,7 +70,7 @@
     "resetDone": "Password aggiornata: accedi con quella nuova.",
     "panelLabel": "LiftPilot in breve",
     "panelEyebrow": "Software di progettazione ascensori",
-    "panelTitle": "Dal rilievo del vano alla relazione di calcolo, in un solo progetto.",
+    "panelTitle": "Dal rilievo del vano alla relazione di calcolo, <em>in un solo progetto.</em>",
     "panelCalc": "Verifica dell’argano",
     "panelDrawings": "Tavole e DXF/DWG",
     "panelSim": "Simulazione 3D",
@@ -307,7 +307,13 @@
     "next": "Nuova password",
     "confirm": "Ripeti la nuova password",
     "rule": "Almeno {min} caratteri, con lettere e cifre.",
-    "change": "Cambia password"
+    "change": "Cambia password",
+    "area": {
+      "profile": "Il tuo profilo",
+      "company": "La tua azienda",
+      "platform": "Amministrazione della piattaforma",
+      "norms": "Riferimenti normativi"
+    }
   },
   "team": {
     "title": "Utenti",
@@ -1330,6 +1336,7 @@
   },
   "legal": {
     "title": "Privacy e condizioni d’uso",
+    "headline": "Privacy <em>e condizioni d’uso</em>",
     "metaDescription": "Come LiftPilot tratta i dati personali di installatori e tecnici, e le condizioni d’uso del servizio.",
     "updated": "Versione {version} del {date}",
     "privacyTitle": "Informativa sulla privacy",
@@ -1959,6 +1966,7 @@
   },
   "dataPage": {
     "title": "Dati, formati e giurisdizione",
+    "headline": "Dati, formati <em>e giurisdizione</em>",
     "metaDescription": "Quali dati un’azienda può scaricare da LiftPilot, in quali formati, com’è fatto il file JSON, come si cambia fornitore e dove sono i server (Data Act).",
     "keywords": "Data Act LiftPilot, esportazione dati JSON, portabilità dei dati SaaS, cambio fornitore cloud, giurisdizione server Germania, Carbon Stealth",
     "updated": "Aggiornata il {date}",
@@ -2045,20 +2053,14 @@
     "answerBeta": "Durante la beta LiftPilot è gratuito, con tutte le funzioni e senza limite di colleghi. Dopo la beta si pagherà un abbonamento mensile per il titolare dell’azienda e, per i colleghi, un pacchetto di posti calcolato sul prezzo mensile: il prezzo e il giorno in cui finisce la beta saranno comunicati al titolare per e-mail almeno {noticeDays} giorni prima, e nulla è addebitato senza un abbonamento sottoscritto dal titolare.",
     "packsTitle": "Quanto costano i colleghi?",
     "packsText": "Il prezzo mensile comprende il titolare. Ogni collega attivo, e ogni invito in attesa, occupa un posto di un pacchetto, che costa una parte del prezzo mensile:",
-    "colPack": "Chi lavora",
-    "colShare": "Pacchetto",
-    "colTotal": "Totale",
     "share": "+{pct} % del prezzo mensile",
-    "shareNone": "compreso",
-    "onRequest": "su richiesta",
-    "betaFree": "gratuito in beta",
     "trialTitle": "C’è una prova gratuita?",
     "trialText": "Sì: una nuova azienda ha {days} giorni di prova gratuita dal primo accesso, con tutte le funzioni per il titolare e senza carta di credito. La prova finisce da sola e non diventa a pagamento; dopo, senza abbonamento, i progetti restano consultabili e scaricabili in sola lettura.",
     "trialBeta": "Durante la beta non serve: l’uso è gratuito. Quando il servizio diventerà a pagamento, ogni azienda già registrata avrà un periodo di prova gratuito di almeno {minTrialDays} giorni prima di dover scegliere un abbonamento.",
     "cta": "Registra l’azienda",
     "termsTitle": "L’abbonamento in breve",
     "termsNote": "Valgono le <terms>condizioni d’uso</terms>; i dati dell’azienda si scaricano sempre (<data>dati e formati</data>).",
-    "faqTitle": "Domande sui prezzi",
+    "faqTitle": "Domande <em>sui prezzi</em>",
     "faq1q": "Il prezzo comprende tutte le funzioni?",
     "faq1a": "Sì: progetto del vano e dell’impianto, calcolo e scelta dell’argano, simulazione 3D, tavole, relazioni, DXF e DWG, bozze d’ordine e listino. Il pacchetto di posti cambia solo quanti colleghi lavorano insieme al titolare.",
     "faq2q": "Come si paga?",

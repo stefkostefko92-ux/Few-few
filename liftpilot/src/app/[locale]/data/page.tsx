@@ -43,7 +43,7 @@ export default async function DataPage({ params }: { params: Promise<{ locale: s
   return (
     <>
       <SiteHeader />
-      <LegalPage eyebrow={t('eyebrow')} title={t('title')} tocLabel={t('toc')} toc={toc} head={(
+      <LegalPage eyebrow={t('eyebrow')} title={t.rich('headline', { em: (c) => <em>{c}</em> })} tocLabel={t('toc')} toc={toc} head={(
         <>
           <p className="note"><time dateTime={EXPORT_REGISTER_DATE}>{t('updated', { date: dateText(locale, EXPORT_REGISTER_DATE) })}</time></p>
           <p className="lead">{t('lead', v)}</p>
