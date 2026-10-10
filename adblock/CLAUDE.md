@@ -49,10 +49,18 @@ tools/                  build_filters.mjs (EasyList→DNR + каталога too
                         rule_resources в manifest-а) + build_scriptlets.mjs (+ uBO scriptlet-и на 64 парчета
                         по хост в scriptlets/ubo/) + генератори + package.sh (Chrome + Firefox zip)
                         + compare_blockers.mjs (публични тестове срещу конкурентите — числата за landing-а)
-                        + promo/ (промо клип 1080p за YouTube/CWS в стила на boy/: film.html + timeline.json —
-                        бурята идва от server/index.html, popup/панелите от store генератора, звукът е
-                        генериран; `PW_ROOT=$(npm root -g) PYTHONPATH=<numpy> node tools/promo/render.mjs`)
-                        + popup_shield3d.mjs (three.js от CDN САМО в инструмента → popup/img/; `PW_ROOT=$(npm root -g) node tools/popup_shield3d.mjs`)
+                        + promo/ (промо клипове в стила на boy/: film.html 16:9 за YouTube/сайта/CWS (`--cut store`
+                        — без сравнение и без „free“) + film-social.html 9:16 за Reels/TikTok/Shorts (`--cut social`:
+                        hook „рекламата умира“ в първата секунда, loop, −14 LUFS, корица, 4:5 изрез; „Free“ и
+                        рекламният плейър — НИКОГА в медиите на CWS) + timeline.json; бурята идва от
+                        server/index.html, popup/панелите от store генератора, звукът е генериран;
+                        `PW_ROOT=$(npm root -g) PYTHONPATH=<numpy> FFMPEG=$(command -v ffmpeg) node tools/promo/render.mjs [--cut social]`;
+                        caption-и и правила за публикуване → docs/SOCIAL.md)
+                        + popup_shield3d.mjs (three.js от CDN САМО в инструмента → popup/img/; `PW_ROOT=$(npm root -g) node tools/popup_shield3d.mjs`;
+                        `--hero <png>` = голям щит за промото)
+                        + store_promo.mjs (промо плочка 440×280 + marquee 1400×560: 3D щитът, ударен от мълния — БЕЗ текст,
+                        наситени, запълнени; правилата на Google „Supplying Images“) + generate_icons.py (иконите; 128 = 96×96
+                        рисунка + 16 px отстъп + светъл ореол само по външния силует — install диалогът и магазинът)
                         + e2e_redirect.mjs (истински Chromium през Playwright: DNR redirect → resources/*
                         smoke; `PW_ROOT=$(npm root -g) node tools/e2e_redirect.mjs "$PWD" <url> <global>`)
 tests/                  npm test — engine/билд/DNR/паритет на политиката (нула зависимости)
@@ -65,7 +73,9 @@ store/ · docs/          store графики + листинг/submission тек
 node -c *.js popup/*.js options/*.js tools/*.mjs   # syntax на всички скриптове
 python3 -c "import json; json.load(...)"     # валиден manifest/rules/locale
 npm test                                      # tests/: engine + билд + DNR правила + YouTube + cookies
-PW_ROOT=$(npm root -g) npm run test:browser   # реален Chromium: cookies.js фикстури + истинското разширение (не е в CI — иска Playwright)
+PW_ROOT=$(npm root -g) npm run test:browser   # реален Chromium: cookies.js фикстури + истинското разширение + YouTube + back/forward
+                                              # cache + axe (WCAG 2.2 AA, popup/настройки/welcome/report, двете теми; axe-core през
+                                              # AXE_PATH или до Playwright) — не е в CI
 PW_ROOT=$(npm root -g) npm run landing:assets # server/*.webp: бранд щитът + РЕАЛНИЯТ popup (след промяна на popup/версия)
 PW_ROOT=$(npm root -g) node tools/perf_speedtest.mjs [--old <разархивиран zip>]  # цена на главната нишка (Speedtest-подобно); след промяна в content scripts/CSS
 node tools/build_scriptlets.mjs --check       # scriptlets/main.js свеж спрямо list.txt

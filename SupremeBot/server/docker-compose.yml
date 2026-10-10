@@ -3,8 +3,10 @@
 #   1) Point a DNS A-record (e.g. license.example.com) at this host.
 #   2) Edit Caddyfile with that domain.
 #   3) Create a .env file next to this with:
-#        LICENSE_SECRET=<the SAME secret as src/shared/payment.js>
+#        LICENSE_ADMIN_TOKEN=<long random string; enables /unbind>
 #        LICENSE_ALLOW_ORIGIN=        # optional; usually leave empty
+#        LICENSE_PUBLIC_KEY=          # only after rotating the key pair
+#      (no signing secret: the server only verifies with the public key)
 #   4) docker compose up -d --build
 #
 # The extension then sets LICENSE_SERVER_URL = "https://license.example.com".
@@ -13,7 +15,7 @@ services:
   license:
     build: .
     environment:
-      - LICENSE_SECRET=${LICENSE_SECRET:?set LICENSE_SECRET in .env}
+      - LICENSE_PUBLIC_KEY=${LICENSE_PUBLIC_KEY:-}
       - PORT=8787
       - HOST=0.0.0.0                  # inside the container; Caddy fronts it
       - LICENSE_DB=/data/bindings.json
@@ -22,6 +24,14 @@ services:
     volumes:
       - license-data:/data
     restart: unless-stopped
+    # Least privilege: no Linux capabilities, read-only root fs (only /data and
+    # a tmpfs are writable), no privilege escalation, bounded resources.
+    cap_drop: [ALL]
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 64
+    mem_limit: 128m
     expose:
       - "8787"
 

@@ -4,8 +4,10 @@ Optional service that enforces the one-machine lifetime lock across computers
 (offline device binding alone can't do that). It records which device id first
 claimed each key and rejects the same key on a second machine.
 
-`LICENSE_SECRET` must match the value in `src/shared/payment.js` (the extension
-signs and verifies keys with it). Keep it secret and don't commit your real one.
+The server holds **no secret**: keys are ECDSA P-256 signatures and it only
+verifies them with the public key (the same `LICENSE_PUBLIC_KEY` as in
+`src/shared/payment.js`, built in by default). It cannot mint keys, and a
+leaked server cannot either. Only `LICENSE_ADMIN_TOKEN` is sensitive.
 
 One dependency-free file, `license-server.mjs`. Endpoints:
 `POST /activate {key,device}`, `GET /status?key=&device=`, `GET /health`,
@@ -18,10 +20,11 @@ cd server
 # 1) DNS: point license.example.com -> this server's IP
 # 2) edit Caddyfile -> your domain
 # 3) create .env:
-cat > .env <<EOF
-LICENSE_SECRET=PUT-THE-SAME-SECRET-AS-THE-EXTENSION
+( umask 077; cat > .env <<EOF
+LICENSE_ADMIN_TOKEN=$(openssl rand -hex 32)
 LICENSE_ALLOW_ORIGIN=
-EOF
+# LICENSE_PUBLIC_KEY=   only after rotating the key pair
+EOF )
 # 4) launch (Caddy fetches TLS certs automatically)
 docker compose up -d --build
 curl https://license.example.com/health      # -> {"ok":true}
@@ -34,7 +37,8 @@ sudo useradd -r -s /usr/sbin/nologin tanoth
 sudo mkdir -p /opt/tanoth-license /var/lib/tanoth-license
 sudo cp license-server.mjs /opt/tanoth-license/
 sudo chown -R tanoth:tanoth /var/lib/tanoth-license
-echo 'LICENSE_SECRET=PUT-THE-SAME-SECRET' | sudo tee /etc/tanoth-license.env
+echo "LICENSE_ADMIN_TOKEN=$(openssl rand -hex 32)" | sudo tee /etc/tanoth-license.env >/dev/null
+sudo chmod 600 /etc/tanoth-license.env
 sudo cp tanoth-license.service /etc/systemd/system/
 sudo systemctl daemon-reload && sudo systemctl enable --now tanoth-license
 ```
@@ -70,7 +74,7 @@ access.
 ## Env vars
 | var | default | meaning |
 | --- | --- | --- |
-| `LICENSE_SECRET` | (placeholder) | HMAC secret - must match the extension |
+| `LICENSE_PUBLIC_KEY` | the extension's key | ECDSA P-256 public key (SPKI b64url); set only after rotating |
 | `PORT` | `8787` | listen port |
 | `HOST` | `127.0.0.1` | bind address; Docker sets `0.0.0.0` (Caddy fronts it) |
 | `LICENSE_DB` | `./bindings.json` | path to the bindings store (use a volume) |
@@ -85,7 +89,7 @@ rejected with `BOUND_ELSEWHERE`. To let a customer re-activate:
 ```bash
 curl -X POST https://license.example.com/unbind \
   -H 'Content-Type: application/json' \
-  -d '{"key":"TZ1.xxx.yyy","admin":"YOUR-LICENSE_ADMIN_TOKEN"}'
+  -d '{"key":"TZ2.xxx.yyy","admin":"YOUR-LICENSE_ADMIN_TOKEN"}'
 ```
 
 The next activation from any device re-binds the key.

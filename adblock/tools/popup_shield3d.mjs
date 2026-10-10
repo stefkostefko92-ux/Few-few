@@ -13,6 +13,9 @@
 //
 //   node tools/popup_shield3d.mjs                 # регенерира всичко
 //   node tools/popup_shield3d.mjs --preview <dir> # + PNG на 4× за преглед
+//   node tools/popup_shield3d.mjs --hero <out.png> [--hero-size 1100]
+//                                                 # само голям щит (щит + острие, ореол) за промо
+//                                                 # графиките (tools/store_promo.mjs); popup/img не се пипа
 //
 // Иска Playwright + Chromium (PW_ROOT=$(npm root -g)) и мрежа до cdn.jsdelivr.net (three, пиннат).
 // Не е в CI и не влиза в пакета (tools/ се изключва от package.sh).
@@ -25,8 +28,9 @@ import { execFileSync } from "node:child_process";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = join(ROOT, "popup", "img");
 const THREE_VER = "0.186.0"; // същата като mascot/cinematic/package.json
-const SIZE = 300;            // 150 CSS px @2x
-const SS = 4;                // суперсемплинг
+const HERO = process.argv.includes("--hero") ? process.argv[process.argv.indexOf("--hero") + 1] : null;
+const SIZE = HERO ? Number(process.argv.includes("--hero-size") ? process.argv[process.argv.indexOf("--hero-size") + 1] : 1100) : 300; // popup: 150 CSS px @2x
+const SS = HERO ? 2 : 4;     // суперсемплинг (голямото платно е вече 2200 px)
 const preview = process.argv.includes("--preview") ? process.argv[process.argv.indexOf("--preview") + 1] : null;
 const CHROME = process.env.CHROME_PATH || "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
 
@@ -39,7 +43,7 @@ const page0 = `<!doctype html><html><head><meta charset="utf-8">
 import * as THREE from "three";
 window.THREE = THREE; window.ready = true;
 
-const S = ${SIZE} * ${SS};
+const S = ${SIZE} * ${SS}, K = ${SIZE} / 300; // K: ореолът и сянката растат с размера
 const PALETTE = {
   ok:    { frameL: 0x2a7fc4, frameR: 0x4fe6e0, field: 0x0b2b38, fieldE: 0x0a7d96, fieldEI: 0.5, chan: 0x00e5ff, blade: 0x5fdcf0, bladeE: 0x00c4e0, bladeEI: 0.5, rim: 0x00e5ff, halo: [0, 229, 255], haloA: 0.55, metal: 1.0 },
   pause: { frameL: 0xa8651a, frameR: 0xf5bd4a, field: 0x2e200a, fieldE: 0x8a5a0e, fieldEI: 0.5, chan: 0xffb830, blade: 0xffc65a, bladeE: 0xff9d1a, bladeEI: 0.45, rim: 0xffb02e, halo: [255, 176, 46], haloA: 0.5, metal: 1.0 },
@@ -173,27 +177,34 @@ function tinted(c, rgb, blurPx, alpha) { // силует → цветен раз
   g.globalCompositeOperation = "source-in"; g.fillStyle = "rgb(" + rgb.join(",") + ")"; g.fillRect(0, 0, o.width, o.height);
   const r = document.createElement("canvas"); r.width = r.height = c.width; const h = r.getContext("2d"); h.globalAlpha = alpha; h.drawImage(o, 0, 0); return r;
 }
-window.makeSprite = (st, layer, q) => {
+window.makeSprite = (st, layer, q) => window.spriteCanvas(st, layer).toDataURL("image/webp", q);
+window.spriteCanvas = (st, layer) => {
   const P = PALETTE[st];
   let beauty = down(window.renderLayer(st, layer, "beauty"), ${SIZE});
   const out = document.createElement("canvas"); out.width = out.height = ${SIZE}; const g = out.getContext("2d");
   if (layer === "bg") {
     // ореол: размит силует в цвета на състоянието, под щита
-    g.drawImage(tinted(beauty, P.halo, 14, P.haloA), 0, 0);
-    g.drawImage(tinted(beauty, P.halo, 5, P.haloA * 0.5), 0, 0);
+    g.drawImage(tinted(beauty, P.halo, 14 * K, P.haloA), 0, 0);
+    g.drawImage(tinted(beauty, P.halo, 5 * K, P.haloA * 0.5), 0, 0);
     // сянка на острието върху щита (само там, където има щит)
     const bladeA = down(window.renderLayer(st, "fg", "beauty"), ${SIZE});
     const sh = document.createElement("canvas"); sh.width = sh.height = ${SIZE}; const sg = sh.getContext("2d");
-    sg.filter = "blur(5px)"; sg.drawImage(bladeA, 7, 9); sg.filter = "none";
+    sg.filter = "blur(" + 5 * K + "px)"; sg.drawImage(bladeA, 7 * K, 9 * K); sg.filter = "none";
     sg.globalCompositeOperation = "source-in"; sg.fillStyle = "rgba(0,0,0,0.62)"; sg.fillRect(0, 0, ${SIZE}, ${SIZE});
     sg.globalCompositeOperation = "destination-in"; sg.drawImage(beauty, 0, 0);
     g.drawImage(beauty, 0, 0); g.drawImage(sh, 0, 0);
   } else {
-    g.drawImage(tinted(beauty, P.halo, 10, P.haloA * 0.9), 0, 0);
+    g.drawImage(tinted(beauty, P.halo, 10 * K, P.haloA * 0.9), 0, 0);
     g.drawImage(beauty, 0, 0);
-    g.globalCompositeOperation = "lighter"; g.globalAlpha = st === "off" ? 0.0 : 0.35; g.filter = "blur(6px)"; g.drawImage(beauty, 0, 0);
+    g.globalCompositeOperation = "lighter"; g.globalAlpha = st === "off" ? 0.0 : 0.35; g.filter = "blur(" + 6 * K + "px)"; g.drawImage(beauty, 0, 0);
   }
-  return out.toDataURL("image/webp", q);
+  return out;
+};
+// the promo hero: shield + blade in one transparent PNG, the same layering as the popup's static frame
+window.makeHero = () => {
+  const out = document.createElement("canvas"); out.width = out.height = ${SIZE}; const g = out.getContext("2d");
+  g.drawImage(window.spriteCanvas("ok", "bg"), 0, 0); g.drawImage(window.spriteCanvas("ok", "fg"), 0, 0);
+  return out.toDataURL("image/png");
 };
 window.makeNormal = (layer, q) => down(window.renderLayer("ok", layer, "normal"), ${SIZE}).toDataURL("image/webp", q);
 window.makePng = (st, layer) => down(window.renderLayer(st, layer, "beauty"), ${SIZE}).toDataURL("image/png");
@@ -216,6 +227,12 @@ for (let i = 1; ; i++) {
   catch (e) { if (i >= 3) throw e; console.error(`… three.js не се зареди (опит ${i}/3)`); }
 }
 
+if (HERO) {
+  mkdirSync(dirname(HERO), { recursive: true });
+  const b = Buffer.from((await page.evaluate(() => window.makeHero())).split(",")[1], "base64");
+  writeFileSync(HERO, b); console.log(`✓ ${HERO} ${SIZE}×${SIZE} ${(b.length / 1024).toFixed(0)} KB`);
+  await browser.close(); process.exit(0);
+}
 mkdirSync(OUT, { recursive: true });
 let total = 0;
 const save = (name, dataUrl) => { const b = Buffer.from(dataUrl.split(",")[1], "base64"); writeFileSync(join(OUT, name), b); total += b.length; console.log(`✓ ${name.padEnd(24)} ${(b.length / 1024).toFixed(1)} KB`); };

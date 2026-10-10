@@ -94,7 +94,7 @@ function renderHealth() {
       const d = document.createElement("div"); d.className = "domain"; d.textContent = k;
       const s = document.createElement("div"); s.className = "sel"; s.textContent = v;
       left.append(d, s);
-      const dot = document.createElement("span"); dot.className = "status"; dot.textContent = good ? "OK" : "!"; dot.style.color = good ? "#00e5ff" : "#ff5a5a";
+      const dot = document.createElement("span"); dot.className = "status " + (good ? "ok" : "bad"); dot.textContent = good ? "OK" : "!"; // colours follow the theme (options.css)
       li.append(left, dot);
       ul.appendChild(li);
     }
@@ -474,4 +474,19 @@ $("importFile").addEventListener("change", (e) => {
   reader.readAsText(file);
 });
 
-document.addEventListener("DOMContentLoaded", load);
+// The settings rows nest the switch's <label> inside the row's <label>, which leaves the control with
+// no accessible name (axe, WCAG 4.1.2). Name each control by its row title, describe it by the row
+// text. Rows built later (filter lists) set their own aria-label.
+function labelRows() {
+  document.querySelectorAll(".row").forEach((row, i) => {
+    const ctl = row.querySelector("input, select, textarea");
+    if (!ctl || ctl.hasAttribute("aria-label") || ctl.hasAttribute("aria-labelledby")) return;
+    const title = row.querySelector(".row-title"), sub = row.querySelector(".row-sub");
+    if (!title) return;
+    title.id ||= "row-title-" + i;
+    ctl.setAttribute("aria-labelledby", title.id);
+    if (sub) { sub.id ||= "row-sub-" + i; ctl.setAttribute("aria-describedby", sub.id); }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => { labelRows(); load(); });
