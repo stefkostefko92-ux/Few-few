@@ -1,0 +1,91 @@
+/* Формуляр за въпрос на телефон: компактен, без да губи нищо от съществените неща.
+   Преди: ~55 % от екрана (390×844). Сега: бутоните за снимка/галерия/лог са в ЕДИН ред
+   („Снимай“ е най-широкият, ≥ 44 px), текстът и „Изпрати“ — в един ред, а двата текста за
+   поверителност остават видими (по-малък шрифт), за да се прочетат ПРЕДИ качване.
+   Зарежда се след styles.css/workspace.css — бие ги по ред при еднаква специфичност. */
+
+.lbl-short {
+  display: none;
+}
+
+@media (max-width: 699px) {
+  .composer {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'hint hint'
+      'tray tray'
+      'text send'
+      'err err'
+      'status status';
+    gap: 0.3rem 0.5rem;
+    padding: 0.4rem 0.6rem 0.5rem;
+  }
+  .composer-hint {
+    grid-area: hint;
+    margin: 0;
+    font-size: 0.8rem;
+    line-height: 1.3;
+  }
+  #tray-host {
+    grid-area: tray;
+  }
+  .composer .qr-wrap {
+    grid-area: text;
+  }
+  .composer-error {
+    grid-area: err;
+  }
+  .composer-row {
+    display: contents;
+  }
+  .composer-status {
+    grid-area: status;
+    min-height: 0;
+  }
+  .composer-status:empty {
+    display: none;
+  }
+  .composer .btn-send {
+    grid-area: send;
+    align-self: stretch;
+    min-width: 4.75rem;
+    min-height: 2.75rem;
+    padding: 0.35rem 0.8rem;
+  }
+  .composer textarea {
+    min-height: 3.25rem;
+  }
+
+  /* Тавата: „Снимай“ най-широк, галерия и лог до него, всичко ≥ 44 px */
+  .tray {
+    margin: 0;
+  }
+  .tray-actions {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0.4rem;
+  }
+  .tray-actions .btn {
+    min-height: 2.75rem;
+    padding: 0.3rem 0.4rem;
+    font-size: 0.95rem;
+  }
+  .tray-actions .btn-photo {
+    grid-column: auto;
+    min-height: 3rem;
+    font-size: 1.05rem;
+  }
+  .tray-actions .lbl-long {
+    display: none;
+  }
+  .tray-actions .lbl-short {
+    display: inline;
+  }
+  .tray-notice {
+    margin: 0.25rem 0 0;
+    font-size: 0.8rem;
+    line-height: 1.3;
+  }
+  .tray-list {
+    margin: 0.3rem 0 0;
+  }
+}

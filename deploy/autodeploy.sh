@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora chatchat}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -156,6 +156,13 @@ PIUMA_ENV="${PIUMA_ENV:-/opt/few-few/shared/piuma/.env}"
 # отговорил, стои на стабилно място извън releases/ (чистенето в т. 4 не трие този release).
 KORPORA_SHARED="${KORPORA_SHARED:-/opt/few-few/shared/korpora}"
 KORPORA_LAST_GOOD="${KORPORA_LAST_GOOD:-$KORPORA_SHARED/last-good}"
+
+# chatchat (ChatChat — Docker Compose: db (pgvector) + clamav + app на 127.0.0.1:4330 зад nginx на хоста).
+# Моделът на korpora: стъпките са в chatchat/deploy/deploy.sh (и за ръчния деплой) — тайните от
+# /opt/few-few/shared/chatchat/.env, бекъп преди миграция, сонда на /readyz, vhost-ът от репото, дневният
+# шифрован бекъп и ретенцията (таймери). Тук: откатът към последния release, който е отговорил.
+CHATCHAT_SHARED="${CHATCHAT_SHARED:-/opt/few-few/shared/chatchat}"
+CHATCHAT_LAST_GOOD="${CHATCHAT_LAST_GOOD:-$CHATCHAT_SHARED/last-good}"
 
 # vps-dashboard (Carbon Stealth VPS Dashboard — systemd, Node ≥20, нула runtime
 # зависимости). Панелът управлява СЪРВЪРА → върви като root (виж service unit-а),
@@ -1404,6 +1411,87 @@ korpora_rollback() {
   fi
 }
 
+# ── 3к) chatchat — Docker Compose (db + clamav + app); стъпките са в chatchat/deploy/deploy.sh ──
+# Същите кодове като korpora: 0 — жив; 3 — няма .env (пропуск, не провал); 4 — контейнерите са сменени,
+# но ChatChat не отговаря → откат; друго — спрян преди смяната на контейнерите (работещите не са пипани).
+deploy_chatchat() {
+  local d="$SRC/chatchat" rc=0
+  [ -d "$d" ] || { warn "Няма chatchat/ в архива — пропускам."; return; }
+  [ -f "$d/deploy/deploy.sh" ] || { warn "chatchat: няма deploy/deploy.sh в архива — пропускам."; return; }
+  log "Разгръщам chatchat (Docker Compose)…"
+  # `|| rc=$?`, не голо извикване: под `set -e` ненулев изход тук би убил ЦЕЛИЯ autodeploy.
+  CHATCHAT_SHARED="$CHATCHAT_SHARED" CHATCHAT_LAST_GOOD="$CHATCHAT_LAST_GOOD" bash "$d/deploy/deploy.sh" || rc=$?
+  case "$rc" in
+    0)
+      # Истинският път (без symlink-ове): с него чистенето в т. 4 разпознава release-а и не го трие.
+      install -d -m 700 "$(dirname "$CHATCHAT_LAST_GOOD")"
+      printf '%s\n' "$(readlink -f "$d")" > "$CHATCHAT_LAST_GOOD.tmp" && mv -f "$CHATCHAT_LAST_GOOD.tmp" "$CHATCHAT_LAST_GOOD"
+      ;;
+    3) warn "chatchat: тази машина още не е настроена (няма .env) — пропускам, не е провал." ;;
+    4)
+      deploy_failed=1
+      if chatchat_migration_failed "$d"; then
+        chatchat_migration_help
+      else
+        chatchat_rollback "$d" || true
+      fi
+      ;;
+    *) deploy_failed=1; warn "chatchat: деплоят спря преди смяната на контейнерите (код $rc) — работи предишният код." ;;
+  esac
+}
+
+# Провалена миграция личи по кода на Prisma в лога на app (P3018 при опита, P3009 при всеки следващ старт)
+# — тогава откатът само на кода не помага: entrypoint-ът на стария release спира на същото.
+chatchat_migration_failed() {
+  docker compose -f "$1/docker-compose.yml" logs --no-color --tail 300 app 2>/dev/null | grep -qE 'P3009|P3018'
+}
+
+chatchat_migration_help() {
+  local dump good
+  dump="$(ls -1t "$CHATCHAT_SHARED/backups"/pre-deploy-*.sql.gz 2>/dev/null | head -n 1 || true)"
+  good="$(head -n 1 "$CHATCHAT_LAST_GOOD" 2>/dev/null || true)"
+  warn "chatchat: миграцията на базата се провали — откат само на кода не помага (старият код спира на P3009)."
+  warn "chatchat: бекъпът отпреди миграцията: ${dump:-(няма — виж $CHATCHAT_SHARED/backups)}"
+  warn "chatchat: нужен е човек — chatchat/DEPLOY.md, т. 7, от ${good:-папката на последния работещ release}:"
+  warn "chatchat:   а) данните са цели (обичайното): migrate resolve --rolled-back <миграцията>;"
+  warn "chatchat:   б) данните трябва да се върнат: възстановяване от бекъпа по-горе;"
+  warn "chatchat:   после deploy.sh оттам с CHATCHAT_SKIP_BACKUP=1."
+}
+
+# Откат САМО на кода — като korpora_rollback: deploy.sh на последния release, който е отговорил, без нов
+# дъмп (CHATCHAT_SKIP_BACKUP=1). Кандидат: CHATCHAT_LAST_GOOD; `current` само ако памет още няма. Никога
+# провалилият се release. Допълнително: щом базата вече е на pgvector (маркерът от deploy.sh), release
+# със стария образ (postgres:16-alpine, musl) НЕ се вдига автоматично — индексите по текст, построени
+# наново под glibc, там пак биха били невалидни (DEPLOY.md, т. 11).
+chatchat_rollback() {
+  local failed prev="" cand
+  failed="$(readlink -f "$1" || true)"
+  if [ -f "$CHATCHAT_LAST_GOOD" ]; then
+    cand="$(cat "$CHATCHAT_LAST_GOOD" 2>/dev/null || true)"
+  else
+    cand="$CURRENT_LINK/chatchat"
+  fi
+  if [ -n "$cand" ] && [ -f "$cand/deploy/deploy.sh" ] && [ "$(readlink -f "$cand" || true)" != "$failed" ]; then
+    prev="$cand"
+  fi
+  if [ -z "$prev" ]; then
+    warn "chatchat: няма предишен работещ release за откат — нужен е човек (cd $1 && docker compose logs app)."
+    return 1
+  fi
+  if [ -f "$CHATCHAT_SHARED/.db-pgvector" ] && ! grep -q 'pgvector/pgvector' "$prev/docker-compose.yml" 2>/dev/null; then
+    warn "chatchat: предишният release ($prev) е отпреди pgvector, а базата вече е минала — НЕ го вдигам автоматично."
+    warn "chatchat: нужен е човек (chatchat/DEPLOY.md, т. 11; cd $1 && docker compose logs app)."
+    return 1
+  fi
+  warn "chatchat: връщам предишния код ($prev)…"
+  if CHATCHAT_SHARED="$CHATCHAT_SHARED" CHATCHAT_LAST_GOOD="$CHATCHAT_LAST_GOOD" CHATCHAT_SKIP_BACKUP=1 bash "$prev/deploy/deploy.sh"; then
+    ok "chatchat: предишният код отговаря."
+  else
+    warn "chatchat: откатът не тръгна — нужен е човек (cd $prev && docker compose logs app)."
+    return 1
+  fi
+}
+
 # ── 3и) vps-dashboard — systemd (Node, нула runtime зависимости) ──────────────
 # Панелът обслужва себе си (public/ статика + src/ API). Деплоят е rsync на кода +
 # рестарт. Конфигът (/etc/vps-dashboard/config.json) и state (/var/lib/vps-dashboard)
@@ -1708,6 +1796,7 @@ for p in $PROJECTS; do
     eternaltouch)         deploy_eternaltouch ;;
     piuma)      deploy_piuma ;;
     korpora)   deploy_korpora ;;
+    chatchat)  deploy_chatchat ;;
     adblock)    deploy_adblock ;;
     vpsdash|vps-dashboard|vpsdashboard) deploy_vpsdashboard ;;
     *)          warn "Непознат проект: $p" ;;
@@ -1737,18 +1826,19 @@ fi
 # (VPS-аджията, одит 07.08.2026)
 # Третото: release-ът, към който сочи паметта на Korpora за последния работещ (KORPORA_LAST_GOOD).
 # Без него няколко деплоя без korpora (PROJECTS="piuma") изтриваха целта на отката и той падаше към
-# код, който никога не е разгръщан за Korpora.
+# код, който никога не е разгръщан за Korpora. Четвъртото — същото за ChatChat (CHATCHAT_LAST_GOOD).
 prune_releases() {
-  local keep_rel live_rel lg_rel old old_real keep protected
+  local keep_rel live_rel lg_rel cc_rel old old_real keep protected
   keep_rel="$(cd "$SRC" && pwd -P)"
   live_rel="$(readlink -f "$CURRENT_LINK" 2>/dev/null || true)"
   lg_rel="$(readlink -f "$(cat "$KORPORA_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
+  cc_rel="$(readlink -f "$(cat "$CHATCHAT_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
   while read -r old; do
     [ -n "$old" ] || continue
     old_real="$(cd "$old" 2>/dev/null && pwd -P || true)"
     [ -n "$old_real" ] || continue
     keep=0
-    for protected in "$keep_rel" "$live_rel" "$lg_rel"; do
+    for protected in "$keep_rel" "$live_rel" "$lg_rel" "$cc_rel"; do
       [ -n "$protected" ] || continue
       case "$protected" in
         "$old_real"|"$old_real"/*) keep=1 ;;

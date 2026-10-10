@@ -1,7 +1,9 @@
 import { Prisma, type PrismaClient } from '@prisma/client';
+import type { EmbeddingModel } from '../ai/embeddings.js';
 import type { ActionClass } from '../domain/response.js';
 import type { ApplicabilityRule } from '../domain/versions.js';
 import type { ErrorCheck, KnowledgeStore, RawEvidence, SearchScope } from '../retrieval/types.js';
+import { semanticSearch } from './embeddings.js';
 
 /**
  * KnowledgeStore върху PostgreSQL. Във ВСЯКА заявка: tenantId, status = PUBLISHED, аудитория
@@ -28,7 +30,7 @@ export function toOrTsQuery(text: string): string | null {
   return terms.size > 0 ? [...terms].join(' | ') : null;
 }
 
-const documentInclude = (productModel: string, tenantId: string) =>
+export const documentInclude = (productModel: string, tenantId: string) =>
   ({
     applicability: { where: { product: { model: productModel, tenantId } } },
   }) satisfies Prisma.DocumentInclude;
@@ -54,11 +56,11 @@ function visibleDocument(scope: SearchScope, productModel: string): Prisma.Docum
   };
 }
 
-type ChunkWithDoc = Prisma.DocumentChunkGetPayload<{
+export type ChunkWithDoc = Prisma.DocumentChunkGetPayload<{
   include: { document: { include: ReturnType<typeof documentInclude> } };
 }>;
 
-function chunkEvidence(
+export function chunkEvidence(
   chunk: ChunkWithDoc,
   matchedBy: RawEvidence['matchedBy'],
   rawScore: number,
@@ -88,8 +90,32 @@ function chunkEvidence(
 
 const RELATION_LABEL = { SYMPTOM: 'SYMPTOM', CAUSE: 'CAUSE', CHECK: 'CHECK', FIX: 'FIX' } as const;
 
+export interface SemanticOptions {
+  /** null/липсва → семантичното търсене връща [] (само точно + пълнотекстово). */
+  embedder?: EmbeddingModel | null;
+  /** Таван на целия semantic път за един въпрос (embedding на въпроса + повторни опити). */
+  queryTimeoutMs?: number;
+  /** Fail-open: грешката се докладва (без съдържание) и търсенето продължава без семантичното. */
+  onError?: (err: unknown) => void;
+}
+
 export class PrismaKnowledgeStore implements KnowledgeStore {
-  constructor(private readonly db: PrismaClient) {}
+  constructor(
+    private readonly db: PrismaClient,
+    private readonly semantic: SemanticOptions = {},
+  ) {}
+
+  async searchSemantic(scope: SearchScope, productModel: string, text: string, limit: number) {
+    const embedder = this.semantic.embedder;
+    if (!embedder) return [];
+    try {
+      const signal = AbortSignal.timeout(this.semantic.queryTimeoutMs ?? 4000);
+      return await semanticSearch(this.db, embedder, scope, productModel, text, limit, signal);
+    } catch (err) {
+      this.semantic.onError?.(err);
+      return [];
+    }
+  }
 
   async findErrors(scope: SearchScope, productModel: string, codes: string[]) {
     if (scope.audiences.length === 0 || codes.length === 0) return [];

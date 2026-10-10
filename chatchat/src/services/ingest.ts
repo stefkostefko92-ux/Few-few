@@ -7,15 +7,16 @@ import { isVersion } from '../domain/versions.js';
 import { refreshChunkIndex } from '../store/knowledge.js';
 
 /**
- * Приемане на документ (§7.3) в тази стъпка: администраторът на знанието подава вече извлечения
- * текст по страници + задължителните метаданни (§7.2). Извличането от PDF/DOCX и антивирусът
- * (стъпки 1–3 на §7.3) са следващата фаза — затова checksum е на подаденото съдържание.
- * Документът влиза като DRAFT и AI не го вижда до публикуване.
+ * Приемане на документ (§7.3): администраторът на знанието подава задължителните метаданни (§7.2)
+ * и или вече извлечения текст по страници, или чист PDF, качен като прикачен файл (антивирус →
+ * текст по страници в routes/admin-documents). С PDF checksum е sha256 на оригиналния файл (§7.2);
+ * с подаден текст — на подаденото съдържание. Документът влиза като DRAFT и AI не го вижда до
+ * публикуване.
  */
 
 const version = z.string().trim().max(20).refine(isVersion, 'версия като 4.2.1');
 
-export const DocumentInputSchema = z.object({
+const DocumentMetaSchema = z.object({
   code: z
     .string()
     .trim()
@@ -53,18 +54,49 @@ export const DocumentInputSchema = z.object({
     )
     .min(1)
     .max(50),
-  pages: z
-    .array(
-      z.object({
-        page: z.number().int().min(1).max(100000),
-        section: z.string().trim().max(200).optional(),
-        text: z.string().max(40000),
-      }),
-    )
-    .min(1)
-    .max(3000),
 });
+
+const PagesSchema = z
+  .array(
+    z.object({
+      page: z.number().int().min(1).max(100000),
+      section: z.string().trim().max(200).optional(),
+      text: z.string().max(40000),
+    }),
+  )
+  .min(1)
+  .max(3000);
+
+export const DocumentInputSchema = DocumentMetaSchema.extend({ pages: PagesSchema });
 export type DocumentInput = z.infer<typeof DocumentInputSchema>;
+
+/**
+ * Заявката на POST /admin/documents: точно едно от двете — `pages` (както досега, тогава и
+ * `sourceFilename`) или `sourceAttachmentId` (CLEAN PDF на същия клиент; името идва от файла).
+ */
+export const DocumentRequestSchema = DocumentMetaSchema.extend({
+  sourceFilename: z.string().trim().min(1).max(255).optional(),
+  pages: PagesSchema.optional(),
+  sourceAttachmentId: z.string().min(1).max(40).optional(),
+})
+  .refine((d) => (d.pages === undefined) !== (d.sourceAttachmentId === undefined), {
+    path: ['pages'],
+    message: 'или pages, или sourceAttachmentId',
+  })
+  .refine((d) => d.pages === undefined || d.sourceFilename !== undefined, {
+    path: ['sourceFilename'],
+    message: 'sourceFilename е задължително с pages',
+  });
+export type DocumentRequest = z.infer<typeof DocumentRequestSchema>;
+
+/** Страница без текст (сканиран PDF — OCR не правим): предупреждение към качилия, не грешка. */
+export function pageWarnings(
+  pages: ReadonlyArray<{ page: number; text: string }>,
+): Array<{ code: 'ingest.pageWithoutText'; page: number }> {
+  return pages
+    .filter((p) => p.text.trim() === '')
+    .map((p) => ({ code: 'ingest.pageWithoutText' as const, page: p.page }));
+}
 
 const CHUNK_CHARS = 1200;
 
@@ -124,6 +156,8 @@ export async function ingestDocument(
   tenantId: string,
   uploadedById: string,
   input: DocumentInput,
+  /** sha256 на оригиналния файл (PDF); без него — на подаденото съдържание. */
+  opts: { checksum?: string } = {},
 ): Promise<{ ok: true; documentId: string; chunks: number } | { ok: false; error: IngestError }> {
   const models = [...new Set(input.applicability.map((a) => a.productModel))];
   const products = await db.product.findMany({ where: { tenantId, model: { in: models } } });
@@ -176,7 +210,7 @@ export async function ingestDocument(
         safetyRelevant: input.safetyRelevant,
         subsystem: input.subsystem ?? null,
         sourceFilename: input.sourceFilename,
-        checksum: sha256(canonicalJson(input.pages)),
+        checksum: opts.checksum ?? sha256(canonicalJson(input.pages)),
         effectiveFrom: input.effectiveFrom ?? null,
         effectiveTo: input.effectiveTo ?? null,
         uploadedById,

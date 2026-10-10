@@ -1,6 +1,7 @@
 import { api } from './api.js';
 import { $, clear, h, show } from './dom.js';
 import { errorText } from './errors.js';
+import { roleLabel } from './format.js';
 import { getLang, t } from './i18n.js';
 import { emit, on, state } from './store.js';
 
@@ -36,60 +37,79 @@ export function fillPhaseSelect(select, value) {
   select.value = PHASES.includes(value) ? value : 'unknown';
 }
 
+function caseItem(c) {
+  const ctx = c.context ?? {};
+  const active = c.id === state.currentId;
+  const assignee = c.assignedTo
+    ? c.assignedTo.id === state.user?.id
+      ? t('case.assignedToYou')
+      : (c.assignedTo.name ?? roleLabel(c.assignedTo.role))
+    : null;
+  return h(
+    'li',
+    null,
+    h(
+      'button',
+      {
+        class: `case-item${active ? ' is-active' : ''}`,
+        type: 'button',
+        'aria-current': active ? 'true' : null,
+        onclick: () => selectCase(c.id),
+      },
+      h(
+        'span',
+        { class: 'case-top' },
+        h('span', { class: 'case-number mono' }, String(c.number)),
+        h('span', { class: 'case-status' }, tx(`status.${c.status}`, String(c.status ?? ''))),
+      ),
+      h(
+        'span',
+        { class: 'case-model' },
+        ctx.productModel ? String(ctx.productModel) : t('cases.noModel'),
+      ),
+      ctx.errorCode
+        ? h(
+            'span',
+            { class: 'case-error mono' },
+            t('cases.errorCode', { code: String(ctx.errorCode) }),
+          )
+        : null,
+      h(
+        'span',
+        { class: 'case-meta' },
+        c.outcome ? `${tx(`outcome.${c.outcome}`, String(c.outcome))} · ` : '',
+        assignee ? `${assignee} · ` : '',
+        fmtDate(c.updatedAt ?? c.createdAt),
+      ),
+    ),
+  );
+}
+
 export function renderCases() {
   const list = $('#cases-list');
   const note = $('#cases-state');
+  const assigned = $('#assigned-list');
   clear(list);
+  clear(assigned);
+  const mine = state.cases.filter(
+    (c) => c.assignedTo?.id === state.user?.id && c.status !== 'RESOLVED',
+  );
+  for (const c of mine) assigned.append(caseItem(c));
+  const empty = assigned.parentElement.querySelector('.side-empty');
+  if (empty) empty.hidden = mine.length > 0;
+  const set = (key, n) => {
+    const el = document.querySelector(`[data-count="${key}"]`);
+    if (el) el.textContent = n > 0 ? `(${n})` : '';
+  };
+  set('assigned', mine.length);
+  set('cases', state.cases.length);
   if (!state.cases.length) {
     note.textContent = t('cases.empty');
     show(note, true);
     return;
   }
   show(note, false);
-  for (const c of state.cases) {
-    const ctx = c.context ?? {};
-    const active = c.id === state.currentId;
-    list.append(
-      h(
-        'li',
-        null,
-        h(
-          'button',
-          {
-            class: `case-item${active ? ' is-active' : ''}`,
-            type: 'button',
-            'aria-current': active ? 'true' : null,
-            onclick: () => selectCase(c.id),
-          },
-          h(
-            'span',
-            { class: 'case-top' },
-            h('span', { class: 'case-number mono' }, String(c.number)),
-            h('span', { class: 'case-status' }, tx(`status.${c.status}`, String(c.status ?? ''))),
-          ),
-          h(
-            'span',
-            { class: 'case-model' },
-            ctx.productModel ? String(ctx.productModel) : t('cases.noModel'),
-          ),
-          ctx.errorCode
-            ? h(
-                'span',
-                { class: 'case-error mono' },
-                t('cases.errorCode', { code: String(ctx.errorCode) }),
-              )
-            : null,
-          h(
-            'span',
-            { class: 'case-meta' },
-            c.outcome ? tx(`outcome.${c.outcome}`, String(c.outcome)) : null,
-            c.outcome ? ' · ' : null,
-            fmtDate(c.updatedAt ?? c.createdAt),
-          ),
-        ),
-      ),
-    );
-  }
+  for (const c of state.cases) list.append(caseItem(c));
 }
 
 export async function loadCases() {
@@ -166,6 +186,19 @@ export function wireProductSearch(input) {
       }
     }, 250);
   });
+}
+
+/** Нов случай с контекста на таблото (от QR или от сериен номер): диалогът се попълва, човекът потвърждава. */
+export function openNewCaseWithDevice(device) {
+  $('#btn-new-case').click();
+  $('#new-serial').value = device.serial ?? '';
+  $('#new-model').value = device.productModel ?? '';
+  $('#new-hw').value = device.hardwareRevision ?? '';
+  $('#new-fw').value = device.firmware ?? '';
+  const msg = $('#new-lookup-msg');
+  msg.textContent = t('new.lookupFound');
+  show(msg, true);
+  $('#new-error').focus();
 }
 
 export function initNewCase() {

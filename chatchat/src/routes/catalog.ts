@@ -3,9 +3,11 @@ import { rateLimit } from 'express-rate-limit';
 import { z } from 'zod';
 import type { AppDeps } from '../app.js';
 import { apiError, principalOf, requireUser } from '../auth/guards.js';
-import { audiencesFor, can } from '../auth/rbac.js';
+import { audiencesFor } from '../auth/rbac.js';
+import { hashToken } from '../crypto.js';
 import { canonicalIdentifier } from '../domain/normalize.js';
 import { isApplicable } from '../domain/versions.js';
+import { deviceView, deviceVisible, QR_TOKEN } from '../services/devices.js';
 
 /** Справочни крайни точки (§14.1): продукти, табла, кодове за грешка, страница на документ. */
 
@@ -15,10 +17,6 @@ const ErrorQuery = z.object({
   model: z.string().trim().min(1).max(80),
   hw: z.string().trim().max(20).optional(),
   fw: z.string().trim().max(20).optional(),
-});
-const PageParams = z.object({
-  id: z.string().min(1).max(40),
-  page: z.coerce.number().int().min(1).max(100000),
 });
 
 export function catalogRouter(deps: AppDeps): Router {
@@ -74,6 +72,24 @@ export function catalogRouter(deps: AppDeps): Router {
     }
   });
 
+  // FR-13: таблото по токена от QR етикета — същите правила за видимост като по сериен номер.
+  // В базата е само HMAC на токена; непознат, стар (подменен) или чужд токен е един и същ 404.
+  router.get('/devices/by-qr/:token', async (req, res, next) => {
+    try {
+      const token = z.string().regex(QR_TOKEN).safeParse(req.params.token);
+      if (!token.success) return apiError(res, 404, 'not_found');
+      const { user } = principalOf(req);
+      const device = await deps.db.device.findUnique({
+        where: { qrTokenHash: hashToken(token.data, deps.sessions.pepper) },
+        include: { revision: { include: { product: true } } },
+      });
+      if (!device || !deviceVisible(user, device)) return apiError(res, 404, 'not_found');
+      res.json({ device: deviceView(device) });
+    } catch (err) {
+      next(err);
+    }
+  });
+
   router.get('/devices/:serial', async (req, res, next) => {
     try {
       const parsed = Serial.safeParse(req.params.serial);
@@ -84,21 +100,8 @@ export function catalogRouter(deps: AppDeps): Router {
         include: { revision: { include: { product: true } } },
       });
       // Порталът вижда само таблата на своята фирма; чуждото е „няма такова“, не „забранено“.
-      const visible =
-        device !== null &&
-        (can(user.role, 'device:readAll') ||
-          (user.companyId !== null && device.companyId === user.companyId));
-      if (!device || !visible) return apiError(res, 404, 'not_found');
-      res.json({
-        device: {
-          serial: device.serial,
-          productModel: device.revision.product.model,
-          family: device.revision.product.family,
-          hardwareRevision: device.revision.hwRevision,
-          firmware: device.firmware,
-          options: device.options,
-        },
-      });
+      if (!device || !deviceVisible(user, device)) return apiError(res, 404, 'not_found');
+      res.json({ device: deviceView(device) });
     } catch (err) {
       next(err);
     }
@@ -152,33 +155,6 @@ export function catalogRouter(deps: AppDeps): Router {
             : null,
         })),
       });
-    } catch (err) {
-      next(err);
-    }
-  });
-
-  router.get('/documents/:id/pages/:page', async (req, res, next) => {
-    try {
-      const parsed = PageParams.safeParse(req.params);
-      if (!parsed.success) return apiError(res, 400, 'invalid_input');
-      const { user } = principalOf(req);
-      const document = await deps.db.document.findFirst({
-        where: {
-          id: parsed.data.id,
-          tenantId: user.tenantId,
-          status: 'PUBLISHED',
-          audience: { in: [...audiencesFor(user.role)] },
-        },
-        select: { id: true, code: true, title: true, revision: true, type: true },
-      });
-      if (!document) return apiError(res, 404, 'not_found');
-      const chunks = await deps.db.documentChunk.findMany({
-        where: { documentId: document.id, page: parsed.data.page },
-        orderBy: { ordinal: 'asc' },
-        select: { section: true, text: true },
-      });
-      if (chunks.length === 0) return apiError(res, 404, 'not_found');
-      res.json({ document, page: parsed.data.page, chunks });
     } catch (err) {
       next(err);
     }

@@ -1,0 +1,15 @@
+[Unit]
+# Всеки ден в 02:45 UTC (изрично UTC — без местното лятно часово време), между 02:30 на korpora и 03:00
+# на другите бекъпи на машината. Persistent=true наваксва пропуснато пускане, ако сървърът е бил спрян.
+Description=ChatChat — дневен шифрован бекъп (02:45 UTC)
+Documentation=file:///opt/few-few/current/chatchat/DEPLOY.md
+
+[Timer]
+OnCalendar=*-*-* 02:45:00 UTC
+Persistent=true
+RandomizedDelaySec=10min
+AccuracySec=1min
+Unit=chatchat-backup.service
+
+[Install]
+WantedBy=timers.target

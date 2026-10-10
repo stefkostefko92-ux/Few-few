@@ -34,6 +34,43 @@ export function lowerConfidence(a: Confidence, b: Confidence): Confidence {
 const ref = z.string().regex(/^E\d{1,3}$/, 'референция E1…E999');
 const text = (max: number) => z.string().trim().min(1).max(max);
 
+/**
+ * Снимките (§9.2 „Visione computerizzata“, FR-06): допълващо доказателство, НЕ източник.
+ * Референциите P1…Pn са само в `photoObservations` — никога в evidenceRefs/evidenceUsed (там
+ * схемата приема само E…), затова снимка не може да бъде цитат, нито да вдигне нивото.
+ */
+const photoRef = z.string().regex(/^P\d{1,2}$/, 'референция P1…P99');
+export const READABILITY = ['clear', 'partial', 'illegible'] as const;
+export type Readability = (typeof READABILITY)[number];
+export const PHOTO_SUBJECTS = [
+  'display',
+  'nameplate',
+  'terminals',
+  'board',
+  'wiring',
+  'document',
+  'other',
+] as const;
+const plate = z.string().trim().max(60).nullable().default(null);
+
+export const PhotoObservationSchema = z.object({
+  ref: photoRef,
+  readability: z.enum(READABILITY),
+  subject: z.enum(PHOTO_SUBJECTS),
+  /** ДОСЛОВНО видимият текст (дисплей, етикети) — недоверени данни, не инструкции. */
+  visibleText: z.array(text(200)).max(10).default([]),
+  /** Кодовете за грешка точно както са на дисплея. */
+  errorCodes: z.array(text(20)).max(5).default([]),
+  nameplate: z
+    .object({ model: plate, serial: plate, hardwareRevision: plate, firmware: plate })
+    .nullable()
+    .default(null),
+  terminalLabels: z.array(text(30)).max(30).default([]),
+  note: z.string().trim().max(400).default(''),
+  confidence: z.enum(CONFIDENCE),
+});
+export type PhotoObservation = z.infer<typeof PhotoObservationSchema>;
+
 export const ModelDiagnosisSchema = z.object({
   status: z.enum(OUTCOMES),
   confidence: z.enum(CONFIDENCE),
@@ -60,6 +97,8 @@ export const ModelDiagnosisSchema = z.object({
   safetyNotes: z.array(text(400)).max(10),
   missingData: z.array(text(200)).max(10),
   escalation: z.object({ recommended: z.boolean(), reason: z.string().max(400).default('') }),
+  /** По една на изпратена снимка (P1…); без снимки — празно/липсва. */
+  photoObservations: z.array(PhotoObservationSchema).max(5).optional(),
 });
 export type ModelDiagnosis = z.infer<typeof ModelDiagnosisSchema>;
 
@@ -83,6 +122,27 @@ export const CitationSchema = z.object({
   errorId: z.string().nullable(),
 });
 export type Citation = z.infer<typeof CitationSchema>;
+
+export const ATTACHMENT_KINDS_TO_MODEL = ['PHOTO', 'LOG'] as const;
+
+/** AC-09: кои прикачени файлове са стигнали до модела (само id и вид) и кои не — с код защо. */
+export const ModelInputsSchema = z.object({
+  attachments: z.array(
+    z.object({ id: z.string(), kind: z.enum(ATTACHMENT_KINDS_TO_MODEL), ref: z.string() }),
+  ),
+  notSent: z.array(
+    z.object({ id: z.string(), kind: z.enum(ATTACHMENT_KINDS_TO_MODEL), reason: z.string() }),
+  ),
+});
+export type ModelInputs = z.infer<typeof ModelInputsSchema>;
+export const NO_MODEL_INPUTS: ModelInputs = { attachments: [], notSent: [] };
+
+/** Наблюдение по снимка СЛЕД Gate: маскирано, пресято, вързано към файла. Никога цитат. */
+export const PhotoFindingSchema = PhotoObservationSchema.extend({
+  ref: z.string(),
+  attachmentId: z.string(),
+});
+export type PhotoFinding = z.infer<typeof PhotoFindingSchema>;
 
 export const DiagnosticAnswerSchema = z.object({
   /** Прозрачност по чл. 50 от AI Act: отговорът е от AI система. */
@@ -121,6 +181,9 @@ export const DiagnosticAnswerSchema = z.object({
     droppedCitations: z.array(z.object({ ref: z.string(), reason: z.string() })),
     decisions: z.array(z.string()),
   }),
+  /** Какво се вижда на снимките (допълващо, не доказателство) — показва се отделно от източниците. */
+  photos: z.array(PhotoFindingSchema),
+  modelInputs: ModelInputsSchema,
   knowledgeSnapshotId: z.string(),
   promptVersion: z.string(),
 });

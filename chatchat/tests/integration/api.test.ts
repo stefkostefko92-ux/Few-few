@@ -488,7 +488,10 @@ describe('AC-10 — публикуване и отписване без прео
       'преглед не се вижда',
     );
 
-    assert.equal((await w.ownerA1.post(`/api/v1/admin/documents/${id}/publish`)).status, 204);
+    // Нова ревизия: 200 със списъка на кодовете за преглед (тук източникът им е друг документ).
+    const published = await w.ownerA1.post(`/api/v1/admin/documents/${id}/publish`);
+    assert.equal(published.status, 200);
+    assert.deepEqual(published.body, { errorsToReview: [] });
     const after = answerOf(await ask(w.portalAlfa, caseId, 'E37 cavo encoder'));
     const pack = h.model.packs.at(-1) ?? [];
     assert.equal(find(pack, 'MAN-500', 'C')?.applicable, true);

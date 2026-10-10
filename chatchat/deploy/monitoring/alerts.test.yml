@@ -1,0 +1,131 @@
+# Unit тестове на алармите: promtool test rules alerts.test.yml (от тази папка).
+# Сценарии: бързо изгаряне на наличността; малко трафик не буди човек; бавни AI отговори;
+# процесът не отговаря; здрава система — тишина.
+rule_files:
+  - alerts.yml
+
+evaluation_interval: 1m
+
+tests:
+  # 20 % 5xx при 10 заявки/мин → и двете страници + тикетът по бюджета.
+  - interval: 1m
+    input_series:
+      - series: 'chatchat_http_requests_total{route="/api/v1/chat/messages",method="POST",status="201"}'
+        values: '0+8x120'
+      - series: 'chatchat_http_requests_total{route="/api/v1/chat/messages",method="POST",status="503"}'
+        values: '0+2x120'
+      # Сондите не влизат в SLI-то, колкото и да са.
+      - series: 'chatchat_http_requests_total{route="/readyz",method="GET",status="200"}'
+        values: '0+100x120'
+    alert_rule_test:
+      - eval_time: 65m
+        alertname: ChatchatAvailabilityBurnFast
+        exp_alerts:
+          - exp_labels:
+              severity: page
+              slo: nfr-01-availability
+            exp_annotations:
+              summary: 'ChatChat: 5xx изгарят бюджета на наличността 14.4× (2 % от месечния за 1 ч)'
+              description: 'Дял на 5xx за 1 ч: 20% (праг 7.2 %). Техниците виждат грешки.'
+              runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatavailabilityburnfast'
+      - eval_time: 65m
+        alertname: ChatchatAvailabilityBudgetTicket
+        exp_alerts:
+          - exp_labels:
+              severity: ticket
+              slo: nfr-01-availability
+            exp_annotations:
+              summary: 'ChatChat: бюджетът на наличността (99.5 %) изтича с темп ≥ 1× за 3 дни'
+              description: 'Дял на 5xx за 3 дни: 20% (праг 0.5 %).'
+              runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatavailabilitybudgetticket'
+    promql_expr_test:
+      - expr: chatchat:availability_errors:ratio_rate1h
+        eval_time: 65m
+        exp_samples:
+          - labels: 'chatchat:availability_errors:ratio_rate1h'
+            value: 0.2
+
+  # Една грешка на 10 минути (100 % 5xx, но 6 заявки/ч) — не е страница: под минималния обем.
+  - interval: 1m
+    input_series:
+      - series: 'chatchat_http_requests_total{route="/api/v1/chat/messages",method="POST",status="500"}'
+        values: '0x9 1x9 2x9 3x9 4x9 5x9 6x9 7x9'
+    alert_rule_test:
+      - eval_time: 75m
+        alertname: ChatchatAvailabilityBurnFast
+        exp_alerts: []
+
+  # 80 % от текстовите AI отговори над 8 s (le="8.0" — както го записва Prometheus 3).
+  - interval: 1m
+    input_series:
+      - series: 'chatchat_ai_answer_duration_seconds_bucket{outcome="answered",input="text",le="8.0"}'
+        values: '0+0.2x120'
+      - series: 'chatchat_ai_answer_duration_seconds_count{outcome="answered",input="text"}'
+        values: '0+1x120'
+      # Отговорите със снимки са извън SLO-2 (по-бавни по природа).
+      - series: 'chatchat_ai_answer_duration_seconds_count{outcome="answered",input="files"}'
+        values: '0+5x120'
+    alert_rule_test:
+      - eval_time: 65m
+        alertname: ChatchatAiLatencyBurnFast
+        exp_alerts:
+          - exp_labels:
+              severity: page
+              slo: nfr-02-ai-latency
+            exp_annotations:
+              summary: 'ChatChat: AI отговорите са над 8 s — бюджетът на латентността гори 14.4×'
+              description: 'Дял над 8 s (или таймаут) за 1 ч: 80% (праг 72 %).'
+              runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatailatencyburnfast'
+
+  # Процесът спира на 6-ата минута → страница след 3 мин.
+  - interval: 1m
+    input_series:
+      - series: 'up{job="chatchat",instance="127.0.0.1:9464"}'
+        values: '1x5 0x10'
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: ChatchatDown
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: ChatchatDown
+        exp_alerts:
+          - exp_labels:
+              severity: page
+              job: chatchat
+              instance: '127.0.0.1:9464'
+            exp_annotations:
+              summary: 'ChatChat не отговаря на /metrics от 3 мин — вероятно процесът е спрял'
+              description: 'Prometheus не може да прочете 127.0.0.1:METRICS_PORT/metrics.'
+              runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatdown'
+
+  # Здрава система: 0.1 % 5xx, бързи отговори, затворен breaker — тишина.
+  - interval: 1m
+    input_series:
+      - series: 'up{job="chatchat",instance="127.0.0.1:9464"}'
+        values: '1x120'
+      - series: 'chatchat_http_requests_total{route="/api/v1/cases/:id",method="GET",status="200"}'
+        values: '0+999x120'
+      - series: 'chatchat_http_requests_total{route="/api/v1/cases/:id",method="GET",status="500"}'
+        values: '0+1x120'
+      - series: 'chatchat_ai_answer_duration_seconds_bucket{outcome="answered",input="text",le="8.0"}'
+        values: '0+0.98x120'
+      - series: 'chatchat_ai_answer_duration_seconds_count{outcome="answered",input="text"}'
+        values: '0+1x120'
+      - series: 'chatchat_circuit_breaker_state{breaker="vertex_messages"}'
+        values: '0x120'
+    alert_rule_test:
+      - eval_time: 100m
+        alertname: ChatchatAvailabilityBurnFast
+        exp_alerts: []
+      - eval_time: 100m
+        alertname: ChatchatAvailabilityBudgetTicket
+        exp_alerts: []
+      - eval_time: 100m
+        alertname: ChatchatAiLatencyBurnFast
+        exp_alerts: []
+      - eval_time: 100m
+        alertname: ChatchatAiProviderUnavailable
+        exp_alerts: []
+      - eval_time: 100m
+        alertname: ChatchatDown
+        exp_alerts: []

@@ -9,9 +9,19 @@ import type { DiagnosisModel } from '../../src/ai/model.js';
 import { diagnose } from '../../src/ai/orchestrator.js';
 import { createApp, type Diagnoser } from '../../src/app.js';
 import { hashPassword } from '../../src/auth/password.js';
+import { mfaRequired } from '../../src/auth/rbac.js';
 import { createSession, SESSION_COOKIE, type SessionDeps } from '../../src/auth/sessions.js';
+import { totpCode } from '../../src/auth/totp.js';
+import { encryptSecret } from '../../src/crypto.js';
 import type { ModelDiagnosis } from '../../src/domain/response.js';
 import { createLogger } from '../../src/logger.js';
+import type { EmbeddingModel } from '../../src/ai/embeddings.js';
+import { EmbeddingIndexer } from '../../src/store/embeddings.js';
+import type { AttachmentDeps } from '../../src/services/attachments.js';
+import { RealtimeHub } from '../../src/realtime/hub.js';
+import type { BreakerState } from '../../src/ai/breaker.js';
+import { instrumentDiagnoser } from '../../src/observability/ai.js';
+import type { Metrics } from '../../src/observability/catalog.js';
 import { PrismaKnowledgeStore } from '../../src/store/knowledge.js';
 import { knowledgeSnapshotId } from '../../src/store/snapshot.js';
 
@@ -24,6 +34,14 @@ import { knowledgeSnapshotId } from '../../src/store/snapshot.js';
 export const ORIGIN = 'https://chatchat.test';
 export const PEPPER = 'test-pepper-test-pepper-test-pepper-0123456789';
 export const PASSWORD = 'correct horse battery staple';
+/** Ключът за TOTP тайните в тестовете (32 байта) и общата тайна на фикстурите на персонала. */
+export const MFA_KEY = Buffer.alloc(32, 7);
+export const TOTP_SECRET = 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP';
+
+/** Текущият TOTP код (или този след `steps` стъпки по 30 s — за втори код в същия прозорец). */
+export function totpNow(secret = TOTP_SECRET, steps = 0): string {
+  return totpCode(secret, Math.floor(Date.now() / 1000) + steps * 30);
+}
 
 const url = process.env.DATABASE_URL;
 if (!url) {
@@ -126,6 +144,8 @@ export class ScriptedModel implements DiagnosisModel {
   readonly questions: string[] = [];
   /** Суровото съобщение на случая, както го получава моделът. */
   readonly texts: string[] = [];
+  /** Изображенията (media_type + base64) във всяко извикване. */
+  readonly images: Array<Array<{ mediaType: string; data: string }>> = [];
 
   get calls(): number {
     return this.packs.length;
@@ -136,6 +156,7 @@ export class ScriptedModel implements DiagnosisModel {
     this.packs.length = 0;
     this.questions.length = 0;
     this.texts.length = 0;
+    this.images.length = 0;
   }
 
   async create(params: MessageCreateParamsNonStreaming): Promise<Message> {
@@ -147,6 +168,13 @@ export class ScriptedModel implements DiagnosisModel {
     this.packs.push(pack);
     this.questions.push(question);
     this.texts.push(text);
+    this.images.push(
+      blocks.flatMap((b) =>
+        b.type === 'image' && b.source.type === 'base64'
+          ? [{ mediaType: b.source.media_type, data: b.source.data }]
+          : [],
+      ),
+    );
     const input = baseDiagnosis(this.plan(pack, { question }));
     return {
       id: `msg_${this.packs.length}`,
@@ -174,20 +202,42 @@ export interface Harness {
   base: string;
   model: ScriptedModel;
   sessions: SessionDeps;
+  /** Само с opts.embedder: фоновото индексиране (тестовете чакат `indexer.kick()`). */
+  indexer: EmbeddingIndexer | null;
+  /** Хъбът за реално време (SSE) на приложението. */
+  hub: RealtimeHub;
   close(): Promise<void>;
 }
 
 export async function startApp(
-  opts: { diagnose?: 'real' | 'none' | Diagnoser } = {},
+  opts: {
+    diagnose?: 'real' | 'none' | Diagnoser;
+    embedder?: EmbeddingModel;
+    attachments?: AttachmentDeps | null;
+    hub?: RealtimeHub;
+    /** Само за ръчна проверка в браузър: фиксиран порт и Origin на страницата. */
+    port?: number;
+    origin?: string;
+    /** Папката с отчетите на оценъчния набор за KPI (§16.1). */
+    evalReportsDir?: string;
+    /** Наблюдаемост (NFR-09): метрики + декоратор върху фалшивия модел (напр. circuit breaker). */
+    metrics?: Metrics;
+    wrapModel?: (model: DiagnosisModel) => DiagnosisModel;
+    aiCircuit?: () => BreakerState | null;
+  } = {},
 ): Promise<Harness> {
+  const hub = opts.hub ?? new RealtimeHub();
   const model = new ScriptedModel();
   const sessions: SessionDeps = { db, pepper: PEPPER, ttlHours: 12, secureCookies: false };
-  const store = new PrismaKnowledgeStore(db);
-  const real: Diagnoser = (input, signal) =>
+  const store = new PrismaKnowledgeStore(db, { embedder: opts.embedder ?? null });
+  const silent = { info: () => undefined, warn: () => undefined };
+  const indexer = opts.embedder ? new EmbeddingIndexer(db, opts.embedder, silent, 0) : null;
+  const aiModel = opts.wrapModel ? opts.wrapModel(model) : model;
+  const scripted: Diagnoser = (input, signal) =>
     diagnose(
       {
         store,
-        model,
+        model: aiModel,
         snapshotId: () => knowledgeSnapshotId(db, input.scope.tenantId),
         config: {
           AI_MODEL: 'claude-test',
@@ -200,26 +250,37 @@ export async function startApp(
       input,
       signal,
     );
+  const real = opts.metrics ? instrumentDiagnoser(scripted, opts.metrics) : scripted;
   const choice = opts.diagnose ?? 'real';
   const app = createApp({
     db,
     logger: createLogger(process.env.TEST_LOG_LEVEL ?? 'silent'),
-    publicOrigin: ORIGIN,
+    publicOrigin: opts.origin ?? ORIGIN,
     privacyPolicyUrl: 'https://chatchat.test/privacy',
     trustProxy: 0,
     sessions,
+    mfaKey: MFA_KEY,
     diagnose: choice === 'real' ? real : choice === 'none' ? null : choice,
+    onDocumentPublished: indexer ? () => void indexer.kick() : undefined,
+    attachments: opts.attachments ?? null,
+    hub,
+    evalReportsDir: opts.evalReportsDir ?? '',
+    ...(opts.metrics ? { metrics: opts.metrics } : {}),
+    ...(opts.aiCircuit ? { aiCircuit: opts.aiCircuit } : {}),
   });
   const server: Server = await new Promise((resolve) => {
-    const s = app.listen(0, '127.0.0.1', () => resolve(s));
+    const s = app.listen(opts.port ?? 0, '127.0.0.1', () => resolve(s));
   });
   const { port } = server.address() as AddressInfo;
   return {
     base: `http://127.0.0.1:${port}`,
     model,
     sessions,
+    indexer,
+    hub,
     close: () =>
       new Promise<void>((resolve, reject) => {
+        hub.closeAll();
         server.closeAllConnections();
         server.close((err) => (err ? reject(err) : resolve()));
       }),
@@ -276,6 +337,44 @@ export class Client {
     return { status: res.status, body: json as T, headers: res.headers };
   }
 
+  /** Същата сесия срещу друг екземпляр на приложението (друга конфигурация). */
+  withBase(base: string): Client {
+    return new Client(base, this.cookie, this.csrfToken);
+  }
+
+  /** Сурово тяло (качване на файл) — като браузъра: бисквитка + CSRF, без JSON. */
+  async upload<T = any>(
+    path: string,
+    bytes: Uint8Array,
+    contentType = 'application/octet-stream',
+    opts: ReqOpts = {},
+  ): Promise<Res<T>> {
+    const headers: Record<string, string> = { 'content-type': contentType };
+    if (this.cookie && opts.cookie !== false) headers.cookie = SESSION_COOKIE + '=' + this.cookie;
+    const csrf = opts.csrf === undefined ? this.csrfToken : opts.csrf;
+    if (csrf) headers['x-csrf-token'] = csrf;
+    if (opts.origin) headers.origin = opts.origin;
+    const res = await fetch(this.base + path, { method: 'POST', headers, body: bytes });
+    const raw = await res.text();
+    const json = raw && res.headers.get('content-type')?.includes('json') ? JSON.parse(raw) : raw;
+    return { status: res.status, body: json as T, headers: res.headers };
+  }
+
+  /** GET с байтовете на отговора (сваляне на файл). */
+  async download(
+    path: string,
+    opts: ReqOpts = {},
+  ): Promise<{ status: number; bytes: Buffer; headers: Headers }> {
+    const headers: Record<string, string> = {};
+    if (this.cookie && opts.cookie !== false) headers.cookie = SESSION_COOKIE + '=' + this.cookie;
+    const res = await fetch(this.base + path, { headers });
+    return {
+      status: res.status,
+      bytes: Buffer.from(await res.arrayBuffer()),
+      headers: res.headers,
+    };
+  }
+
   get<T = any>(path: string, opts?: ReqOpts) {
     return this.req<T>('GET', path, undefined, opts);
   }
@@ -284,6 +383,9 @@ export class Client {
   }
   patch<T = any>(path: string, body?: unknown, opts?: ReqOpts) {
     return this.req<T>('PATCH', path, body ?? {}, opts);
+  }
+  del<T = any>(path: string, opts?: ReqOpts) {
+    return this.req<T>('DELETE', path, undefined, opts);
   }
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
@@ -303,6 +405,8 @@ export interface UserSpec {
   active?: boolean;
   expiresAt?: Date | null;
   locale?: string;
+  /** Включен TOTP (с TOTP_SECRET). По подразбиране — за ролите, които са задължени (персонала). */
+  mfa?: boolean;
 }
 
 export async function makeUser(spec: UserSpec): Promise<User> {
@@ -320,12 +424,26 @@ export async function makeUser(spec: UserSpec): Promise<User> {
       active: spec.active ?? true,
       expiresAt: spec.expiresAt ?? null,
       locale: spec.locale ?? 'it',
+      ...((spec.mfa ?? mfaRequired(spec.role))
+        ? { totpSecretEnc: encryptSecret(TOTP_SECRET, MFA_KEY), totpEnabledAt: new Date() }
+        : {}),
     },
   });
 }
 
-/** Вписан клиент без да минава през /login (лимитът на входа е по IP — не го хабим). */
-export async function signIn(h: Harness, user: User): Promise<Client> {
+/**
+ * Вписан клиент без да минава през /login (лимитът на входа е по IP — не го хабим). С включен
+ * TOTP сесията е минала втория фактор (както след /auth/mfa/verify), освен ако `mfaPassed: false`.
+ * Самият поток на MFA се проверява в admin-mfa.test.ts.
+ */
+export async function signIn(
+  h: Harness,
+  user: User,
+  opts: { mfaPassed?: boolean } = {},
+): Promise<Client> {
   const s = await createSession(h.sessions, user.id);
+  if (user.totpEnabledAt && opts.mfaPassed !== false) {
+    await db.session.update({ where: { id: s.id }, data: { mfaPassed: true } });
+  }
   return new Client(h.base, s.token, s.csrfToken);
 }

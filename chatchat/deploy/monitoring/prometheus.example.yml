@@ -1,0 +1,20 @@
+# Образец за Prometheus на СЪЩИЯ хост (решение на собственика — не се инсталира от deploy.sh).
+# Целта е само 127.0.0.1: метриките никога не са публични (docker-compose.yml, METRICS_PORT).
+# Проверка: promtool check config prometheus.example.yml
+global:
+  scrape_interval: 30s
+  evaluation_interval: 1m
+
+rule_files:
+  - alerts.yml
+
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets: ['127.0.0.1:9093']
+
+scrape_configs:
+  # Името на job-а е „chatchat“ — алармата ChatchatDown го търси по него.
+  - job_name: chatchat
+    static_configs:
+      - targets: ['127.0.0.1:9464']

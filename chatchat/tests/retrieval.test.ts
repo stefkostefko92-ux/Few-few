@@ -132,6 +132,12 @@ class MemoryStore implements KnowledgeStore {
       .map((x) => ({ ...x.r, rawScore: x.hits }));
   }
 
+  /** Без embeddings: семантичното е в tests/semantic.test.ts. */
+  async searchSemantic(scope: SearchScope, productModel: string): Promise<RawEvidence[]> {
+    this.calls.push({ fn: 'searchSemantic', scope, productModel });
+    return [];
+  }
+
   async getPage(): Promise<RawEvidence[]> {
     return [];
   }
@@ -281,6 +287,52 @@ describe('findConflicts', () => {
     assert.deepEqual(findConflicts([a, b]), [
       { description: 'revision:MAN-X', refs: ['E1', 'E2'] },
     ]);
+  });
+
+  test('две ревизии на несвързан документ, хванат под прага за подкрепа — шум, не конфликт', () => {
+    // Реалният случай от evals/ (sicurezza-documentata): бюлетин в две ревизии, намерен само по „piano“.
+    const a = item({ ref: 'E1', documentCode: 'BULL-X', revision: '1', score: 0.233 });
+    const b = item({ ref: 'E2', documentCode: 'BULL-X', revision: '2', score: 0.233 });
+    assert.deepEqual(findConflicts([a, b]), []);
+    // Една релевантна ревизия стига — документът е източник за въпроса.
+    const c = item({ ref: 'E3', documentCode: 'BULL-Y', revision: '1', score: 0.7 });
+    const d = item({ ref: 'E4', documentCode: 'BULL-Y', revision: '2', score: 0.2 });
+    assert.deepEqual(findConflicts([c, d]), [
+      { description: 'revision:BULL-Y', refs: ['E3', 'E4'] },
+    ]);
+    // Семантично ≥ 0.8 също е релевантно.
+    const e = item({ ref: 'E5', documentCode: 'BULL-Z', revision: '1', score: 0.1 });
+    const f = item({
+      ref: 'E6',
+      documentCode: 'BULL-Z',
+      revision: '2',
+      score: 0.1,
+      matchedBy: ['semantic'],
+      similarity: 0.85,
+    });
+    assert.equal(findConflicts([e, f]).length, 1);
+  });
+
+  test('цитирана от модела ревизия е конфликт, колкото и слабо да е намерена', () => {
+    const a = item({ ref: 'E1', documentCode: 'BULL-X', revision: '1', score: 0.2 });
+    const b = item({ ref: 'E2', documentCode: 'BULL-X', revision: '2', score: 0.2 });
+    assert.deepEqual(findConflicts([a, b], new Set(['E2'])), [
+      { description: 'revision:BULL-X', refs: ['E1', 'E2'] },
+    ]);
+  });
+
+  test('шумът не сваля точния код на случая до „conflict“', () => {
+    const code = item({
+      ref: 'E1',
+      kind: 'error',
+      errorCode: 'E21',
+      matchedBy: ['exact_code'],
+      score: 1,
+    });
+    const a = item({ ref: 'E2', documentCode: 'BULL-X', revision: '1', score: 0.233 });
+    const b = item({ ref: 'E3', documentCode: 'BULL-X', revision: '2', score: 0.233 });
+    const items = [code, a, b];
+    assert.equal(evidenceLevel(result(items, findConflicts(items)), new Set(['E21'])), 'strong');
   });
 
   test('две парчета от една ревизия, или ревизия която не е приложима — без конфликт', () => {

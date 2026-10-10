@@ -9,18 +9,52 @@ import {
   requireCsrf,
   requireUser,
 } from '../auth/guards.js';
-import { DocumentInputSchema, ingestDocument } from '../services/ingest.js';
+import {
+  DocumentRequestSchema,
+  ingestDocument,
+  pageWarnings,
+  type DocumentInput,
+} from '../services/ingest.js';
+import { extractPdfText, type PdfFailure } from '../services/pdf.js';
 
 /**
  * Управление на знанието (§4.1, §11.3, AC-10): Draft → Review → Published → Deprecated.
  * Публикуване и отписване на ревизия НЕ иска преобучение — AI вижда само PUBLISHED.
  * Документ по безопасност: публикува го човек, различен от качилия (принцип на четирите очи).
+ * Нова ревизия (supersedes): кодовете за грешка на старата стават REVIEW и се връщат в отговора.
  */
 
 const Id = z.string().min(1).max(40);
 const ListQuery = z.object({
   status: z.enum(['DRAFT', 'REVIEW', 'PUBLISHED', 'DEPRECATED']).optional(),
 });
+
+type PdfSource =
+  | { ok: true; name: string; sha256: string; pages: DocumentInput['pages'] }
+  | { ok: false; status: number; code: string; reason?: PdfFailure };
+
+/**
+ * §7.3 т. 2: текстът на CLEAN PDF от същия клиент, по страници. Файлът е минал антивируса при
+ * качването (POST /admin/attachments); тук само се чете от частното хранилище.
+ */
+async function pdfSource(
+  deps: AppDeps,
+  tenantId: string,
+  attachmentId: string,
+): Promise<PdfSource> {
+  if (!deps.attachments) return { ok: false, status: 503, code: 'attachments_unavailable' };
+  const a = await deps.db.attachment.findFirst({ where: { id: attachmentId, tenantId } });
+  if (!a || a.kind !== 'DOCUMENT' || a.mime !== 'application/pdf' || a.scanStatus !== 'CLEAN') {
+    return { ok: false, status: 422, code: 'invalid_attachment' };
+  }
+  const bytes = await deps.attachments.store.get(a.objectKey);
+  if (!bytes) return { ok: false, status: 422, code: 'invalid_attachment' };
+  const extracted = await extractPdfText(bytes);
+  if (!extracted.ok) {
+    return { ok: false, status: 422, code: 'pdf_unreadable', reason: extracted.reason };
+  }
+  return { ok: true, name: a.originalName, sha256: a.sha256, pages: extracted.pages };
+}
 
 type Transition = 'submit' | 'reject' | 'publish' | 'deprecate';
 const FROM: Record<Transition, string> = {
@@ -38,7 +72,7 @@ export function adminDocumentsRouter(deps: AppDeps): Router {
     try {
       const q = ListQuery.safeParse(req.query);
       if (!q.success) return apiError(res, 400, 'invalid_input');
-      const { tenantId } = principalOf(req).user;
+      const { tenantId, id: me } = principalOf(req).user;
       const docs = await deps.db.document.findMany({
         where: { tenantId, ...(q.data.status ? { status: q.data.status } : {}) },
         include: {
@@ -62,6 +96,8 @@ export function adminDocumentsRouter(deps: AppDeps): Router {
           checksum: d.checksum,
           chunks: d._count.chunks,
           supersedesId: d.supersedesId,
+          // Четирите очи: качилият не публикува документ по безопасност — UI го казва предварително.
+          uploadedByMe: d.uploadedById === me,
           applicability: d.applicability.map((a) => ({
             productModel: a.product.model,
             hwRevision: a.hwRevision,
@@ -79,7 +115,7 @@ export function adminDocumentsRouter(deps: AppDeps): Router {
 
   router.post('/documents', async (req, res, next) => {
     try {
-      const parsed = DocumentInputSchema.safeParse(req.body);
+      const parsed = DocumentRequestSchema.safeParse(req.body);
       if (!parsed.success) {
         return res.status(400).json({
           error: 'invalid_input',
@@ -88,7 +124,26 @@ export function adminDocumentsRouter(deps: AppDeps): Router {
         });
       }
       const p = principalOf(req);
-      const result = await ingestDocument(deps.db, p.user.tenantId, p.user.id, parsed.data);
+      const { pages, sourceAttachmentId, sourceFilename, ...meta } = parsed.data;
+      let input: DocumentInput;
+      let checksum: string | undefined;
+      if (sourceAttachmentId) {
+        // С PDF: checksum = sha256 на оригинала (§7.2), името — от файла.
+        const source = await pdfSource(deps, p.user.tenantId, sourceAttachmentId);
+        if (!source.ok) {
+          const { status, code, reason } = source;
+          return res.status(status).json({ error: code, code, ...(reason ? { reason } : {}) });
+        }
+        input = { ...meta, sourceFilename: source.name, pages: source.pages };
+        checksum = source.sha256;
+      } else if (pages && sourceFilename) {
+        input = { ...meta, sourceFilename, pages };
+      } else {
+        return apiError(res, 400, 'invalid_input');
+      }
+      const result = await ingestDocument(deps.db, p.user.tenantId, p.user.id, input, {
+        checksum,
+      });
       if (!result.ok) {
         const status = result.error.code === 'duplicate_revision' ? 409 : 422;
         return res.status(status).json({ error: result.error.code, ...result.error });
@@ -99,9 +154,19 @@ export function adminDocumentsRouter(deps: AppDeps): Router {
         action: 'kb.document.upload',
         objectType: 'document',
         objectId: result.documentId,
-        detail: { code: parsed.data.code, revision: parsed.data.revision, chunks: result.chunks },
+        detail: {
+          code: input.code,
+          revision: input.revision,
+          chunks: result.chunks,
+          sourceAttachmentId: sourceAttachmentId ?? null,
+        },
       });
-      res.status(201).json({ documentId: result.documentId, chunks: result.chunks });
+      res.status(201).json({
+        documentId: result.documentId,
+        chunks: result.chunks,
+        // Сканирана страница без текстов слой — OCR не правим; качилият решава.
+        warnings: pageWarnings(input.pages),
+      });
     } catch (err) {
       next(err);
     }
@@ -120,6 +185,7 @@ export function adminDocumentsRouter(deps: AppDeps): Router {
         if (!doc) return apiError(res, 404, 'not_found');
         if (doc.status !== FROM[action]) return apiError(res, 409, 'invalid_transition');
         const now = new Date();
+        let errorsToReview: Array<{ id: string; code: string; version: number }> | null = null;
 
         if (action === 'publish') {
           // §7.3: търсим само с достатъчно метаданни за приложимостта.
@@ -129,7 +195,7 @@ export function adminDocumentsRouter(deps: AppDeps): Router {
           if (doc.safetyRelevant && doc.uploadedById === p.user.id) {
             return apiError(res, 409, 'four_eyes_required');
           }
-          await deps.db.$transaction(async (tx) => {
+          errorsToReview = await deps.db.$transaction(async (tx) => {
             await tx.document.update({
               where: { id: doc.id },
               data: {
@@ -139,13 +205,41 @@ export function adminDocumentsRouter(deps: AppDeps): Router {
                 publishedAt: now,
               },
             });
-            if (doc.supersedesId) {
-              await tx.document.updateMany({
-                where: { id: doc.supersedesId, tenantId: p.user.tenantId, status: 'PUBLISHED' },
-                data: { status: 'DEPRECATED', deprecatedAt: now },
+            if (!doc.supersedesId) return null;
+            await tx.document.updateMany({
+              where: { id: doc.supersedesId, tenantId: p.user.tenantId, status: 'PUBLISHED' },
+              data: { status: 'DEPRECATED', deprecatedAt: now },
+            });
+            // Решение на собственика: кодовете на отписаната ревизия не изчезват тихо — стават
+            // REVIEW (AI не ги вижда) и отговорникът ги свързва с новия документ (`relink`).
+            const affected = await tx.errorCode.findMany({
+              where: {
+                tenantId: p.user.tenantId,
+                sourceDocumentId: doc.supersedesId,
+                status: 'PUBLISHED',
+              },
+              select: { id: true, code: true, version: true },
+              orderBy: [{ code: 'asc' }, { version: 'asc' }],
+            });
+            if (affected.length > 0) {
+              await tx.errorCode.updateMany({
+                where: { id: { in: affected.map((e) => e.id) }, status: 'PUBLISHED' },
+                data: { status: 'REVIEW' },
               });
             }
+            for (const e of affected) {
+              await appendAudit(tx, {
+                tenantId: p.user.tenantId,
+                actorId: p.user.id,
+                action: 'kb.error.review_required',
+                objectType: 'error',
+                objectId: e.id,
+                detail: { code: e.code, version: e.version, supersededDocument: doc.supersedesId },
+              });
+            }
+            return affected;
           });
+          deps.onDocumentPublished?.(doc.id);
         } else {
           const data =
             action === 'submit'
@@ -162,8 +256,15 @@ export function adminDocumentsRouter(deps: AppDeps): Router {
           action: `kb.document.${action}`,
           objectType: 'document',
           objectId: doc.id,
-          detail: { code: doc.code, revision: doc.revision, supersedes: doc.supersedesId },
+          detail: {
+            code: doc.code,
+            revision: doc.revision,
+            supersedes: doc.supersedesId,
+            ...(errorsToReview ? { errorsToReview: errorsToReview.map((e) => e.id) } : {}),
+          },
         });
+        // Публикуване на нова ревизия връща кодовете за преглед; останалите преходи — 204.
+        if (errorsToReview) return res.json({ errorsToReview });
         res.status(204).end();
       } catch (err) {
         next(err);

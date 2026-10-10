@@ -1,0 +1,281 @@
+/* ChatChat — KPI (§16.1). Usa i token di admin.css; nessuno stile inline (CSP rigoroso):
+   le dimensioni dei grafici sono attributi SVG, i colori sono classi qui. */
+
+.kpi-h2 {
+  margin: 1.75rem 0 0.5rem;
+  font-size: 1.2rem;
+}
+.kpi-period {
+  margin-bottom: 0.25rem;
+}
+.kpi-custom {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 0 0.9rem;
+  max-width: 28rem;
+}
+.kpi-custom[hidden] {
+  display: none;
+}
+
+/* ---------- Tessere ---------- */
+
+.kpi-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14.5rem, 1fr));
+  gap: 0.75rem;
+  margin: 0.5rem 0 1rem;
+}
+.kpi-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.85rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--accent);
+  border-radius: var(--radius);
+  min-width: 0;
+}
+.kpi-tile-stop {
+  border-top-color: var(--stop-line);
+}
+.kpi-label {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.kpi-value {
+  margin: 0.1rem 0 0;
+  font-size: 1.9rem;
+  font-weight: 700;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.kpi-na {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--warn-ink);
+}
+.kpi-sub {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+.kpi-sup {
+  font-variant-numeric: tabular-nums;
+  text-decoration: underline dotted;
+  text-underline-offset: 0.2em;
+  cursor: help;
+}
+.kpi-def {
+  margin-top: 0.35rem;
+}
+.kpi-def summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 600;
+  min-height: 1.75rem;
+}
+.kpi-def p {
+  margin: 0.35rem 0 0;
+  max-width: 60ch;
+}
+
+/* ---------- Grafici ---------- */
+
+.kpi-charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.kpi-charts .kpi-figure-wide {
+  grid-column: 1 / -1;
+}
+.kpi-figure {
+  margin: 0 0 1rem;
+  min-width: 0;
+}
+.kpi-figcap {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+.kpi .tbl td.num,
+.kpi .tbl th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.kpi-bar-cell {
+  width: 35%;
+  min-width: 5rem;
+  vertical-align: middle !important;
+}
+.kpi-hbar {
+  display: block;
+  width: 100%;
+  height: 0.85rem;
+}
+.kpi-track {
+  fill: var(--surface-2);
+}
+.kpi-fill {
+  fill: var(--accent);
+}
+.kpi-fill-sup {
+  fill: none;
+  stroke: var(--line-strong);
+  stroke-width: 1;
+  stroke-dasharray: 2 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.kpi-series-wrap {
+  position: relative;
+  padding: 0.75rem 0.5rem 0.25rem 2.5rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.kpi-ymax {
+  position: absolute;
+  top: 0.4rem;
+  left: 0.5rem;
+  font-variant-numeric: tabular-nums;
+}
+.kpi-series {
+  display: block;
+  width: 100%;
+  height: 11rem;
+}
+.kpi-axis {
+  stroke: var(--line-strong);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.kpi-col {
+  fill: var(--accent);
+  opacity: 0.45;
+}
+.kpi-col-2 {
+  fill: var(--accent);
+}
+.kpi-col-sup {
+  fill: none;
+  stroke: var(--line-strong);
+  stroke-width: 1;
+  stroke-dasharray: 3 2;
+  vector-effect: non-scaling-stroke;
+}
+.kpi-xaxis {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.25rem 0.5rem 0.25rem 2.5rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-top: 0;
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+.kpi-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.25rem;
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0;
+}
+.kpi-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.kpi-key {
+  display: inline-block;
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 2px;
+}
+.kpi-key-1 {
+  background: var(--accent);
+  opacity: 0.45;
+}
+.kpi-key-2 {
+  background: var(--accent);
+}
+.kpi-key-sup {
+  border: 1px dashed var(--line-strong);
+}
+.kpi-table-alt summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 600;
+  min-height: var(--tap);
+  display: flex;
+  align-items: center;
+}
+
+/* Sul telefono le tabelle KPI restano tabelle (sono piccole): niente schede. */
+@media (max-width: 56rem) {
+  .kpi .tbl-wrap {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    overflow-x: auto;
+  }
+  .kpi .tbl thead {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+  }
+  .kpi .tbl {
+    display: table;
+  }
+  .kpi .tbl thead {
+    display: table-header-group;
+  }
+  .kpi .tbl tbody {
+    display: table-row-group;
+  }
+  .kpi .tbl tr {
+    display: table-row;
+    margin: 0;
+    border: 0;
+    padding: 0;
+  }
+  .kpi .tbl td {
+    display: table-cell;
+    padding: 0.45rem 0.5rem;
+  }
+  .kpi .tbl td::before {
+    content: none;
+  }
+  .kpi-value {
+    font-size: 1.6rem;
+  }
+  .kpi-tiles {
+    grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
+  }
+}
+
+@media (forced-colors: active) {
+  .kpi-fill,
+  .kpi-col,
+  .kpi-col-2 {
+    fill: CanvasText;
+  }
+  .kpi-key-1,
+  .kpi-key-2 {
+    background: CanvasText;
+  }
+}
+
+/* Telefono stretto: la barra è solo decorazione (aria-hidden) — spazio all'etichetta. */
+@media (max-width: 30rem) {
+  .kpi .tbl .kpi-bar-cell {
+    display: none;
+  }
+}

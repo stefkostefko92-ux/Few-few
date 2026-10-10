@@ -377,7 +377,7 @@ textarea::placeholder {
 .pane {
   min-width: 0;
 }
-.pane-cases {
+.pane-side {
   padding: 0.75rem;
 }
 .pane-head {
@@ -403,11 +403,29 @@ textarea::placeholder {
   display: inline-flex;
 }
 
-/* Stretto: una colonna, due viste (elenco / conversazione) */
-.app[data-view='cases'] .pane-chat {
+/* Stretto: una colonna, due viste (barra / contenuto); il contenuto è caso, conversazione o elenco */
+.pane-conv,
+.pane-list {
   display: none;
 }
-.app[data-view='chat'] .pane-cases {
+.app[data-main='conv'] .pane-conv,
+.app[data-main='list'] .pane-list {
+  display: block;
+}
+.app[data-main='conv'] .pane-chat,
+.app[data-main='list'] .pane-chat {
+  display: none;
+}
+.app[data-view='cases'] .pane-chat,
+.app[data-view='cases'] .pane-conv,
+.app[data-view='cases'] .pane-list {
+  display: none;
+}
+.app[data-view='chat'] .pane-side {
+  display: none;
+}
+.only-wide,
+.dock {
   display: none;
 }
 
@@ -556,6 +574,9 @@ textarea::placeholder {
   display: flex;
   flex-direction: column;
   min-height: 0;
+}
+.chat:focus {
+  outline: none; /* програмно място за фокус (пропускане/вход), не контрол */
 }
 
 .disclaimer {
@@ -1128,24 +1149,50 @@ textarea::placeholder {
   }
   .workspace {
     display: grid;
-    grid-template-columns: 17.5rem minmax(0, 1fr) 21rem;
-    grid-template-areas: 'cases chat ctx';
+    grid-template-columns: 19rem minmax(0, 1fr) 21rem;
+    grid-template-areas: 'side main info';
     overflow: hidden;
   }
-  .app[data-view] .pane-cases {
+  .app[data-view] .pane-side {
     display: block;
+  }
+  .only-wide {
+    display: inline-flex;
+  }
+  .dock {
+    display: flex;
+  }
+  .app[data-main='conv'] .pane-chat,
+  .app[data-main='list'] .pane-chat {
+    display: none !important;
+  }
+  .app[data-main='conv'] .pane-conv {
+    display: contents;
+  }
+  .app[data-main='list'] .pane-list {
+    grid-column: 2 / -1;
+    grid-row: 1;
+    overflow: auto;
+    padding: 1rem 1.25rem;
+  }
+  .conv-main {
+    grid-area: main;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
   .app[data-view] .pane-chat {
     display: contents;
   }
-  .pane-cases {
-    grid-area: cases;
+  .pane-side {
+    grid-area: side;
     overflow: auto;
     background: var(--surface-2);
     border-right: 2px solid var(--line);
   }
   .chat {
-    grid-area: chat;
+    grid-area: main;
     overflow: hidden;
   }
   .messages {
@@ -1153,7 +1200,7 @@ textarea::placeholder {
     padding: 1rem 1.25rem;
   }
   .ctx {
-    grid-area: ctx;
+    grid-area: info;
     position: static;
     overflow: auto;
     border-bottom: 0;

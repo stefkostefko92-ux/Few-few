@@ -121,6 +121,18 @@ export async function buildTicketSummary(
     }
   }
   const last = answers.at(-1)?.answer ?? null;
+  // AC-14: прикачените файлове (само CLEAN, привързани към съобщение на случая) — само описание;
+  // байтовете се свалят през подписан адрес с повторна проверка на достъпа.
+  const attachments = await db.attachment.findMany({
+    where: {
+      tenantId: c.tenantId,
+      caseId: c.id,
+      caseMessageId: { not: null },
+      scanStatus: 'CLEAN',
+    },
+    orderBy: { createdAt: 'asc' },
+    select: { id: true, kind: true, mime: true, originalName: true },
+  });
   return {
     caseNumber: c.number,
     context: contextOf(c),
@@ -145,6 +157,7 @@ export async function buildTicketSummary(
         }
       : null,
     sources: [...sources.values()],
+    attachments,
     knowledgeSnapshots: [...new Set(aiMessages.map((m) => m.knowledgeSnapshotId).filter(Boolean))],
   };
 }

@@ -140,6 +140,17 @@ ZIP отпреди месец.
   същото, затова откат няма; скриптът сочи последния дъмп и вика човек → `korpora/DEPLOY.md`:
   обикновено `migrate resolve --rolled-back` (PostgreSQL е върнал миграцията цялата), а
   възстановяване от дъмпа — само ако данните трябва да се върнат.
+- **chatchat** (AI поддръжка за табла на асансьори): Docker Compose (db с pgvector + clamav + app на
+  `127.0.0.1:4330`). Моделът на korpora — стъпките са в `chatchat/deploy/deploy.sh` (и за ръчния деплой):
+  тайните от `/opt/few-few/shared/chatchat/.env` (не се генерират; без тях chatchat се пропуска като „още
+  ненастроен“ — само `ATTACHMENT_URL_KEY`/`MFA_ENC_KEY` се раждат на сървъра, ако липсват), папката за
+  прикачените файлове (`shared/chatchat/attachments`, uid 1000, 700), `build`, образите на db/clamav —
+  само ако ги няма, `pg_dump` точно преди смяната (последните 5; провален дъмп спира деплоя), еднократно
+  преминаване на базата към pgvector с `REINDEX`, `up -d` (миграциите — от entrypoint-а), сонда на
+  `/readyz`, дневният шифрован бекъп (база + файлове, age) и ретенцията като systemd таймери, vhost-ът от
+  репото щом има сертификат. Ако новият код не отговори — `deploy.sh` на `CHATCHAT_LAST_GOOD` с
+  `CHATCHAT_SKIP_BACKUP=1`; без откат при провалена миграция (`P3018`/`P3009`) и към release отпреди
+  pgvector, щом базата вече е минала — вика човек → `chatchat/DEPLOY.md`.
 - **vpsdash** (VPS таблото): systemd модел. `rsync` към `/opt/vps-dashboard` (конфигът
   `/etc/vps-dashboard/config.json` и state `/var/lib/vps-dashboard` са извън release-а и оцеляват;
   `deploy/desktop/desktop.env` се пази), бекъп на кода, рестарт, health на `/api/ping` (401 = жив,
@@ -153,7 +164,7 @@ ZIP отпреди месец.
 
 | Променлива | По подразбиране | Смисъл |
 | --- | --- | --- |
-| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora` | кои проекти да се разгръщат тук |
+| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora chatchat` | кои проекти да се разгръщат тук |
 | `PANEV_DIR` | `/opt/panev` | път на panev (systemd) |
 | `PANEV_ENV` | `/etc/panev/panev.env` | тайните на panev (600, `EnvironmentFile`) |
 | `PANEV_HEALTH_URL` | `http://127.0.0.1:4102/api/health` | health на panev |
@@ -164,6 +175,7 @@ ZIP отпреди месец.
 | `PIUMA_ENV` / `PIUMA_HEALTH_URL` | `/opt/few-few/shared/piuma/.env` · `http://127.0.0.1:4310/health` (портът се чете от `HTTP_PORT` в `.env`) | тайните и health на piuma |
 | `KORPORA_LAST_GOOD` | `/opt/few-few/shared/korpora/last-good` | пътят на последния release на korpora, който е отговорил — към него е откатът |
 | `KORPORA_SHARED` · `KORPORA_HEALTH_WAIT` · `KORPORA_INDEXNOW` | `/opt/few-few/shared/korpora` · `90` · `1` | тайни/бекъпи/данни (и за `autodeploy.sh`: къде са дъмповете), секунди за сондата, IndexNow |
+| `CHATCHAT_SHARED` · `CHATCHAT_LAST_GOOD` | `/opt/few-few/shared/chatchat` · `…/last-good` | тайни/бекъпи/прикачени файлове на ChatChat; последният release, който е отговорил — към него е откатът |
 | `VPSDASH_DIR` / `VPSDASH_SERVICE` / `VPSDASH_HEALTH_URL` | `/opt/vps-dashboard` · `vps-dashboard` · `http://127.0.0.1:7700/api/ping` | път, systemd услуга и health на VPS таблото |
 | `ARCHIVE` | (най-новият в `/root`) | конкретен архив |
 | `FORCE_SEED` | `0` | принудителен сийд на zabobovdol |

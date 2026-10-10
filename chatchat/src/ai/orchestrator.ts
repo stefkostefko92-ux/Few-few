@@ -20,7 +20,15 @@ import {
 import type { EvidenceItem, KnowledgeStore, SearchScope } from '../retrieval/types.js';
 import { noEvidenceAnswer } from '../safety/escalation.js';
 import { applyGate } from '../safety/gate.js';
+import { NO_ATTACHMENTS, sentInputs, type ModelAttachments } from './attachments.js';
 import { EvidencePack } from './evidence.js';
+import {
+  caseContent,
+  historyMessages,
+  safeDraft,
+  toolResult,
+  type FailureCode,
+} from './messages.js';
 import type { DiagnosisModel } from './model.js';
 import { PROMPT_VERSION, SYSTEM_PROMPT, renderCaseMessage, type Locale } from './prompt.js';
 import { SUBMIT_TOOL, TOOLS, runReadTool, validateSubmission } from './tools.js';
@@ -44,6 +52,8 @@ export interface DiagnoseInput {
   question: string;
   history: Array<{ role: 'user' | 'assistant'; content: string }>;
   locale: Locale;
+  /** Снимки/логове, привързани от техника към ТОЗИ въпрос (`ai/attachments.ts`). */
+  attachments?: ModelAttachments;
 }
 
 export interface DiagnoseDeps {
@@ -63,53 +73,10 @@ export interface DiagnoseOutput {
   modelCalled: boolean;
 }
 
-/** Историята на случая — последните ходове, всеки отрязан (цена и контекст). */
-const MAX_HISTORY = 12;
-const MAX_HISTORY_CHARS = 4000;
 /** Колко инструмента в един ход най-много се изпълняват; останалите получават грешка. */
 const MAX_TOOLS_PER_ROUND = 4;
 
-/** Кодове за UI (като `gate.*`) — защо отговорът е безопасен отказ. */
-export type FailureCode = 'ai.invalidOutput' | 'ai.noSubmission' | 'ai.refusal';
-
-function historyMessages(history: DiagnoseInput['history']): MessageParam[] {
-  const out: MessageParam[] = [];
-  for (const h of history.slice(-MAX_HISTORY)) {
-    const text = h.content.trim().slice(0, MAX_HISTORY_CHARS);
-    if (text.length === 0) continue;
-    if (out.length === 0 && h.role === 'assistant') continue; // разговорът започва с потребител
-    const last = out[out.length - 1];
-    if (last && last.role === h.role && Array.isArray(last.content)) {
-      last.content.push({ type: 'text', text });
-    } else {
-      out.push({ role: h.role, content: [{ type: 'text', text }] });
-    }
-  }
-  return out;
-}
-
-function safeDraft(code: FailureCode): ModelDiagnosis {
-  return {
-    status: 'undetermined',
-    confidence: 'low',
-    confidenceReason: code,
-    summary: code,
-    causes: [],
-    checks: [],
-    decisionPoints: [],
-    evidenceUsed: [],
-    conflicts: [],
-    safetyNotes: [],
-    missingData: [],
-    escalation: { recommended: true, reason: code },
-  };
-}
-
-function toolResult(id: string, content: string, isError: boolean): ToolResultBlockParam {
-  return isError
-    ? { type: 'tool_result', tool_use_id: id, content, is_error: true }
-    : { type: 'tool_result', tool_use_id: id, content };
-}
+export type { FailureCode };
 
 export async function diagnose(
   deps: DiagnoseDeps,
@@ -126,6 +93,9 @@ export async function diagnose(
     deps.snapshotId(),
   ]);
   const caseIds = caseIdentifiers(input.context, input.question);
+  const files = input.attachments ?? NO_ATTACHMENTS;
+  // AC-09: в отговора — само id, вид и референция на изпратеното (и защо не е изпратено).
+  const inputs = { attachments: sentInputs(files), notSent: files.notSent };
   const initialLevel = evidenceLevel(initial, caseIds);
   const usage = { inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, toolRounds: 0 };
 
@@ -138,6 +108,7 @@ export async function diagnose(
         question: input.question,
         knowledgeSnapshotId,
         promptVersion: PROMPT_VERSION,
+        inputs,
       }),
       evidence: initial.items,
       usage,
@@ -155,15 +126,14 @@ export async function diagnose(
     level: initialLevel,
     retrieval: initial,
     token,
+    photoRefs: files.photos.map((p) => p.ref),
+    logs: files.logs,
   });
 
   const messages: MessageParam[] = [
     ...historyMessages(input.history),
-    // Breakpoint на случая: кръговете с инструменти четат префикса (вкл. пакета) от кеша.
-    {
-      role: 'user',
-      content: [{ type: 'text', text: caseText, cache_control: { type: 'ephemeral' } }],
-    },
+    // Breakpoint на случая: кръговете с инструменти четат префикса (вкл. пакета и снимките) от кеша.
+    { role: 'user', content: caseContent(files.photos, caseText) },
   ];
   // Ако историята завършва с потребител, двата user хода се сливат в един.
   if (messages.length >= 2) {
@@ -283,8 +253,8 @@ export async function diagnose(
     messages.push({ role: 'user', content: results });
   }
 
-  // 4–5. Финалният пакет (нивото и конфликтите — наново) → Safety Gate.
-  const retrieval = pack.result();
+  // 4–5. Финалният пакет (нивото и конфликтите — наново; цитираното от модела винаги се брои) → Safety Gate.
+  const retrieval = pack.result(citedRefs(draft));
   const level = cappedLevel(initialLevel, evidenceLevel(retrieval, caseIds));
   const answer = applyGate({
     draft: draft ?? safeDraft(failure),
@@ -294,6 +264,7 @@ export async function diagnose(
     question: input.question,
     knowledgeSnapshotId,
     promptVersion: PROMPT_VERSION,
+    inputs,
   });
   if (draft === null) {
     // Безопасен отказ: никакво съдържание от модела без валидация. Gate вече ескалира
@@ -302,4 +273,14 @@ export async function diagnose(
     answer.gate.decisions.push(failure);
   }
   return { answer, evidence: retrieval.items, usage, modelCalled: true };
+}
+
+/** Всички E… референции, на които моделът се позовава (преди Gate да е изпуснал невалидните). */
+export function citedRefs(draft: ModelDiagnosis | null): Set<string> {
+  if (draft === null) return new Set();
+  return new Set([
+    ...draft.causes.flatMap((c) => c.evidenceRefs),
+    ...draft.checks.flatMap((c) => c.evidenceRefs),
+    ...draft.evidenceUsed.map((e) => e.ref),
+  ]);
 }

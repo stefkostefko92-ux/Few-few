@@ -3,17 +3,42 @@ import express, { type NextFunction, type Request, type Response } from 'express
 import helmet from 'helmet';
 import { fileURLToPath } from 'node:url';
 import type { Logger } from 'pino';
+import type { BreakerState } from './ai/breaker.js';
 import type { DiagnoseInput, DiagnoseOutput } from './ai/orchestrator.js';
 import { apiError, requireCapability } from './auth/guards.js';
-import { loadPrincipal, type SessionDeps } from './auth/sessions.js';
+import { TotpReplayGuard } from './auth/mfa.js';
+import { loadPrincipal, onSessionsRevoked, type SessionDeps } from './auth/sessions.js';
+import type { Metrics } from './observability/catalog.js';
+import { httpMetrics } from './observability/http.js';
+import { RealtimeHub } from './realtime/hub.js';
+import { eventsRouter } from './realtime/stream.js';
+import { adminListsRouter } from './routes/admin-lists.js';
 import { adminCatalogRouter } from './routes/admin-catalog.js';
 import { adminDocumentsRouter } from './routes/admin-documents.js';
-import { adminErrorsRouter, auditRouter } from './routes/admin-errors.js';
+import { adminErrorsRouter } from './routes/admin-errors.js';
+import { adminKpiRouter } from './routes/admin-kpi.js';
+import { adminSubjectRouter } from './routes/admin-subject.js';
+import { adminUserActionsRouter } from './routes/admin-user-actions.js';
+import { adminUsersRouter } from './routes/admin-users.js';
+import { attachmentUploadRouter } from './routes/attachments.js';
+import { auditRouter } from './routes/audit.js';
+import { authMfaRouter } from './routes/auth-mfa.js';
 import { authRouter } from './routes/auth.js';
 import { casesRouter } from './routes/cases.js';
 import { catalogRouter } from './routes/catalog.js';
+import { documentViewRouter } from './routes/document-view.js';
+import { mountPdfjs } from './vendor.js';
 import { chatRouter } from './routes/chat.js';
+import { conversationsRouter } from './routes/conversations.js';
+import { filesRouter } from './routes/files.js';
+import { messagesRouter } from './routes/messages.js';
+import { notificationsRouter } from './routes/notifications.js';
+import { presenceRouter } from './routes/presence.js';
+import { quickResponsesRouter } from './routes/quick-responses.js';
+import { savedFiltersRouter } from './routes/saved-filters.js';
 import { ticketsRouter } from './routes/tickets.js';
+import type { AttachmentDeps } from './services/attachments.js';
+import { QR_TOKEN } from './services/devices.js';
 
 export type Diagnoser = (input: DiagnoseInput, signal: AbortSignal) => Promise<DiagnoseOutput>;
 
@@ -26,16 +51,59 @@ export interface AppDeps {
   /** Информацията за поверителност на администратора (празно → не се показва връзка). */
   privacyPolicyUrl: string;
   sessions: SessionDeps;
+  /** AES-256-GCM ключът за TOTP тайните (MFA_ENC_KEY, 32 байта). */
+  mfaKey: Buffer;
   /** null → AI е изключен (няма GCP проект): /chat/messages връща 503, без резервен доставчик. */
   diagnose: Diagnoser | null;
+  /** Сигнал след публикуване на документ (семантичният индекс); не блокира отговора. */
+  onDocumentPublished?: (documentId: string) => void;
+  /** null → прикачването е изключено (няма ATTACHMENTS_DIR): маршрутите връщат 503. */
+  attachments: AttachmentDeps | null;
+  /** Хъбът за реално време (SSE) — един на процес; без него createApp прави свой. */
+  hub?: RealtimeHub;
+  /** Отчетите на оценъчния набор за KPI (§16.1); празно/липсва → „изисква оценка“. */
+  evalReportsDir?: string;
+  /** Метриките (NFR-09); без тях — без инструментиране. Изнасят се на отделен слушател (index.ts). */
+  metrics?: Metrics;
+  /** Състоянието на circuit breaker-а към Vertex — за /readyz (null → AI е изключен). */
+  aiCircuit?: () => BreakerState | null;
 }
+
+/** Зависимостите след сглобяване — с хъба, който рутерите на работното пространство ползват. */
+export type WiredDeps = AppDeps & { hub: RealtimeHub };
 
 const PUBLIC_DIR = fileURLToPath(new URL('../public', import.meta.url));
 
-export function createApp(deps: AppDeps): express.Express {
+/** Админ пътищата на знанието: големите документи искат по-висок таван на тялото. */
+const KB_ADMIN = [
+  '/api/v1/admin/documents',
+  '/api/v1/admin/products',
+  '/api/v1/admin/devices',
+  '/api/v1/admin/errors',
+];
+
+export function createApp(appDeps: AppDeps): express.Express {
+  const hub =
+    appDeps.hub ??
+    new RealtimeHub({
+      onError: (err) =>
+        appDeps.logger.warn(
+          { errName: err instanceof Error ? err.name : 'unknown' },
+          'поток в реално време',
+        ),
+    });
+  const deps: WiredDeps = { ...appDeps, hub };
+  // Изход, деактивиране, смяна на роля/парола… → отворените потоци се затварят веднага (§13.3).
+  onSessionsRevoked((event) => {
+    if (event.sessionId) hub.disconnectSession(event.sessionId);
+    else for (const userId of event.userIds) hub.disconnectUser(userId);
+  });
   const app = express();
+  const totpReplay = new TotpReplayGuard();
   app.disable('x-powered-by');
   app.set('trust proxy', deps.trustProxy);
+  // RED по шаблон на маршрута — първо, за да види и отказите на helmet/лимитите.
+  if (deps.metrics) app.use(httpMetrics(deps.metrics));
 
   app.use(
     helmet({
@@ -60,48 +128,95 @@ export function createApp(deps: AppDeps): express.Express {
   );
 
   // Жизненост (процесът е жив) и готовност (базата отговаря) — отделно, за Nginx/монитора.
+  // Отворен breaker към Vertex НЕ сваля готовността: случаите, разговорите и търсенето работят,
+  // само AI отговорът е 503 — затова е отделно поле (`aiCircuit`), а `ok` зависи само от базата.
   app.get('/healthz', (_req, res) => {
     res.json({ ok: true });
   });
   app.get('/readyz', async (_req, res) => {
     try {
       await deps.db.$queryRaw`SELECT 1`;
-      res.json({ ok: true, ai: deps.diagnose !== null });
+      res.json({
+        ok: true,
+        app: 'chatchat',
+        ai: deps.diagnose !== null,
+        aiCircuit: deps.aiCircuit?.() ?? null,
+      });
     } catch {
       res.status(503).json({ ok: false });
     }
   });
 
-  // Документите с хиляди страници са по-големи — по-високият таван е само за админ пътя и
-  // СЛЕД проверката за роля: анонимен или портален потребител не кара сървъра да парсва 8 MB.
+  app.use('/api', (_req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store');
+    next();
+  });
+  // Качването на файлове е сурово тяло със собствен таван — само по своите пътища, СЛЕД сесия,
+  // CSRF, роля и достъп до случая, и ПРЕДИ JSON парсерите (JSON лог е файл, не заявка).
+  app.use('/api/v1', attachmentUploadRouter(deps));
+  // Документите с хиляди страници са по-големи — по-високият таван е само за админ пътищата на
+  // знанието и СЛЕД проверката за роля (и втори фактор): анонимен или портален потребител не кара
+  // сървъра да парсва 8 MB. Директорията (/admin/users) е с обичайния таван и своя способност.
   app.use(
-    '/api/v1/admin',
+    KB_ADMIN,
     loadPrincipal(deps.sessions),
     requireCapability('kb:manage'),
     express.json({ limit: '8mb' }),
   );
   app.use('/api', express.json({ limit: '64kb' }));
-  app.use('/api', (_req, res, next) => {
-    res.setHeader('Cache-Control', 'no-store');
-    next();
-  });
   app.use('/api', loadPrincipal(deps.sessions));
 
   // Публично: каквото UI трябва да покаже ПРЕДИ вход (информация за поверителност).
   app.get('/api/v1/meta', (_req, res) => {
     res.json({ privacyUrl: deps.privacyPolicyUrl || null });
   });
+  app.use('/api/v1/auth/mfa', authMfaRouter(deps, totpReplay));
   app.use('/api/v1/auth', authRouter(deps));
+  // Директорията и запазените филтри — преди админ рутерите на знанието: техният `router.use`
+  // иска kb:manage за всичко под /admin, а администраторът на клиента го няма.
+  app.use('/api/v1', adminUsersRouter(deps));
+  app.use('/api/v1', adminUserActionsRouter(deps, totpReplay));
+  app.use('/api/v1', adminSubjectRouter(deps, totpReplay));
+  app.use('/api/v1', savedFiltersRouter(deps));
+  // Списъците (GET) — преди рутерите на знанието: фирмите са и за users:manage, а тяхното
+  // `router.use` иска kb:manage за всичко под /admin.
+  app.use('/api/v1/admin', adminListsRouter(deps));
+  // KPI (kpi:read) — също преди рутерите на знанието (същата причина).
+  app.use('/api/v1/admin', adminKpiRouter(deps));
   app.use('/api/v1/admin', adminCatalogRouter(deps));
   app.use('/api/v1/admin', adminDocumentsRouter(deps));
   app.use('/api/v1/admin', adminErrorsRouter(deps));
   app.use('/api/v1', auditRouter(deps));
   app.use('/api/v1', catalogRouter(deps));
+  app.use('/api/v1', documentViewRouter(deps));
   app.use('/api/v1', casesRouter(deps));
   app.use('/api/v1', chatRouter(deps));
   app.use('/api/v1', ticketsRouter(deps));
+  app.use('/api/v1', filesRouter(deps));
+  // Работното пространство (§12.3): разговори, съобщения, присъствие, известия, бързи отговори, SSE.
+  app.use('/api/v1', conversationsRouter(deps));
+  app.use('/api/v1', messagesRouter(deps));
+  app.use('/api/v1', presenceRouter(deps));
+  app.use('/api/v1', notificationsRouter(deps));
+  app.use('/api/v1', quickResponsesRouter(deps));
+  app.use('/api/v1', eventsRouter(deps));
   app.use('/api', (_req, res) => apiError(res, 404, 'not_found'));
 
+  // FR-13: адресът от QR етикета → приложението с токена (вход, после справката по токена).
+  // Пренасочването е еднакво за всеки токен с валиден формат — не издава дали съществува.
+  app.get('/q/:token', (req, res) => {
+    res.setHeader('Cache-Control', 'no-store');
+    const token = req.params.token;
+    res.redirect(302, QR_TOKEN.test(token) ? `/?qr=${encodeURIComponent(token)}` : '/');
+  });
+  // Линкът за задаване/нулиране на парола (`/reset#<токен>`): токенът е във фрагмента и не стига
+  // до сървъра; страницата е самото приложение.
+  app.get('/reset', (_req, res) => {
+    res.setHeader('Cache-Control', 'no-store');
+    res.sendFile('index.html', { root: PUBLIC_DIR });
+  });
+
+  mountPdfjs(app);
   app.use(
     express.static(PUBLIC_DIR, {
       index: 'index.html',

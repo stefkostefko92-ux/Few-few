@@ -15,11 +15,15 @@
     />
     <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#0b5a8c" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="/app/styles.css" />
+    <link rel="stylesheet" href="/app/workspace.css" />
+    <link rel="stylesheet" href="/app/viewer.css" />
+    <link rel="stylesheet" href="/app/composer.css" />
     <script type="module" src="/app/main.js"></script>
   </head>
   <body>
-    <a class="skip-link" href="#conversation" data-i18n="a11y.skip">Vai alla conversazione</a>
+    <a class="skip-link" href="#chat-pane" data-i18n="a11y.skip">Vai alla conversazione</a>
     <div id="announcer" class="sr-only" role="status" aria-live="polite"></div>
 
     <noscript>
@@ -74,17 +78,122 @@
       </div>
     </main>
 
+    <!-- Втори фактор: код след парола -->
+    <main id="mfa-view" class="login" hidden>
+      <div class="login-card">
+        <h1 class="brand brand-lg">ChatChat</h1>
+        <h2 class="login-h" data-i18n="mfa.title">Verifica in due passaggi</h2>
+        <p class="login-sub" data-i18n="mfa.intro"></p>
+        <form id="mfa-form" novalidate>
+          <div class="field">
+            <label for="mfa-code" data-i18n="mfa.code">Codice a 6 cifre</label>
+            <input
+              id="mfa-code"
+              name="code"
+              class="mono code-input"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              maxlength="10"
+              spellcheck="false"
+              required
+            />
+            <p class="hint" data-i18n="mfa.codeHint"></p>
+          </div>
+          <p id="mfa-error" class="form-error" role="alert" hidden></p>
+          <button id="mfa-submit" class="btn btn-primary btn-block" type="submit">
+            <span data-i18n="mfa.submit">Conferma</span>
+          </button>
+        </form>
+        <p class="login-alt">
+          <button id="mfa-cancel" class="btn btn-quiet" type="button">
+            <span data-i18n="mfa.cancel">Esci</span>
+          </button>
+        </p>
+      </div>
+    </main>
+
+    <!-- Втори фактор: задължителна настройка за персонала -->
+    <main id="setup-view" class="login" hidden>
+      <div class="login-card login-card-wide">
+        <h1 class="brand brand-lg">ChatChat</h1>
+        <h2 class="login-h" data-i18n="mfa.setup.title">Attiva la verifica in due passaggi</h2>
+        <p class="login-sub" data-i18n="mfa.setup.required"></p>
+        <div id="setup-host"></div>
+        <p class="login-alt">
+          <button id="setup-cancel" class="btn btn-quiet" type="button">
+            <span data-i18n="mfa.cancel">Esci</span>
+          </button>
+        </p>
+      </div>
+    </main>
+
+    <!-- Нова парола по еднократния линк /reset#… -->
+    <main id="reset-view" class="login" hidden>
+      <div class="login-card">
+        <h1 class="brand brand-lg">ChatChat</h1>
+        <h2 class="login-h" data-i18n="reset.title">Imposta una nuova password</h2>
+        <form id="reset-form" novalidate>
+          <p class="login-sub" data-i18n="reset.intro"></p>
+          <div class="field">
+            <label for="reset-password" data-i18n="reset.password">Nuova password</label>
+            <input
+              id="reset-password"
+              type="password"
+              autocomplete="new-password"
+              minlength="12"
+              maxlength="256"
+              required
+              aria-describedby="reset-rules"
+            />
+            <p id="reset-rules" class="hint" data-i18n="reset.rules"></p>
+          </div>
+          <div class="field">
+            <label for="reset-password2" data-i18n="reset.password2">Ripeti la password</label>
+            <input
+              id="reset-password2"
+              type="password"
+              autocomplete="new-password"
+              maxlength="256"
+              required
+            />
+          </div>
+          <button id="reset-submit" class="btn btn-primary btn-block" type="submit">
+            <span data-i18n="reset.submit">Salva la password</span>
+          </button>
+        </form>
+        <p id="reset-error" class="form-error" role="alert" hidden></p>
+        <div id="reset-done" hidden>
+          <p class="form-note" role="status" data-i18n="reset.done"></p>
+          <button id="reset-login" class="btn btn-primary btn-block" type="button">
+            <span data-i18n="reset.toLogin">Vai all'accesso</span>
+          </button>
+        </div>
+        <button id="reset-home" class="btn btn-secondary btn-block" type="button" hidden>
+          <span data-i18n="reset.toLogin">Vai all'accesso</span>
+        </button>
+      </div>
+    </main>
+
     <!-- Workspace -->
-    <div id="app-view" class="app" data-view="cases" hidden>
+    <div id="app-view" class="app" data-view="cases" data-main="case" hidden>
       <header class="topbar">
         <div class="topbar-id">
           <span class="brand">ChatChat</span>
           <span class="topbar-sub" data-i18n="app.subtitle">Workspace tecnico</span>
         </div>
         <button id="btn-show-cases" class="btn btn-quiet only-narrow" type="button">
-          <span data-i18n="cases.title">Casi</span>
+          <span data-i18n="side.back">Elenco</span>
+        </button>
+        <button id="btn-switch" class="btn btn-secondary only-narrow" type="button">
+          <span data-i18n="switch.open">Passa a…</span>
+          <span id="switch-badge" class="badge" hidden></span>
         </button>
         <div class="topbar-tools">
+          <span id="conn-status" class="conn" role="status"></span>
+          <button id="btn-inbox" class="btn btn-quiet" type="button">
+            <span data-i18n="inbox.title">Inbox</span>
+            <span id="bell-badge" class="badge" hidden></span>
+          </button>
           <span id="user-name" class="user-name"></span>
           <label class="sr-only" for="app-lang" data-i18n="lang.label">Lingua</label>
           <select id="app-lang" class="lang-select" data-lang-select>
@@ -92,6 +201,12 @@
             <option value="en">EN</option>
             <option value="bg">BG</option>
           </select>
+          <a id="btn-admin" class="btn btn-quiet" href="/admin.html" hidden>
+            <span data-i18n="admin.title">Amministrazione</span>
+          </a>
+          <button id="btn-security" class="btn btn-quiet" type="button">
+            <span data-i18n="sec.open">Account</span>
+          </button>
           <button id="btn-logout" class="btn btn-quiet" type="button">
             <span data-i18n="auth.logout">Esci</span>
           </button>
@@ -99,19 +214,91 @@
       </header>
 
       <div class="workspace">
-        <!-- Casi -->
-        <nav id="cases-pane" class="pane pane-cases" aria-labelledby="cases-title">
-          <div class="pane-head">
-            <h2 id="cases-title" data-i18n="cases.title">Casi</h2>
+        <!-- Барата: действия, Inbox, Cronologia, предпочитани, случаи, канали, лични -->
+        <nav id="side" class="pane pane-side" aria-labelledby="side-title">
+          <h2 id="side-title" class="sr-only" data-i18n="side.title">Navigazione</h2>
+          <div class="side-actions">
             <button id="btn-new-case" class="btn btn-primary" type="button">
               <span data-i18n="cases.new">Nuovo caso</span>
             </button>
+            <button id="btn-scan" class="btn btn-secondary" type="button">
+              <span data-i18n="qr.scan">Scansiona QR</span>
+            </button>
           </div>
-          <p id="cases-state" class="muted" hidden></p>
-          <ul id="cases-list" class="cases-list"></ul>
+          <ul class="side-nav">
+            <li>
+              <button id="nav-inbox" class="nav-item" type="button">
+                <span data-i18n="inbox.title">Inbox</span>
+                <span id="inbox-badge" class="badge" hidden></span>
+              </button>
+            </li>
+            <li>
+              <button id="nav-history" class="nav-item" type="button">
+                <span data-i18n="history.title">Cronologia</span>
+              </button>
+            </li>
+          </ul>
+
+          <details class="side-group" id="grp-starred" open>
+            <summary>
+              <span data-i18n="side.starred">Preferiti</span>
+              <span class="count" data-count="starred"></span>
+            </summary>
+            <ul id="starred-list" class="side-list"></ul>
+            <p class="muted side-empty" data-i18n="side.starredEmpty"></p>
+          </details>
+
+          <details class="side-group" id="grp-assigned" open>
+            <summary>
+              <span data-i18n="side.assigned">Casi assegnati</span>
+              <span class="count" data-count="assigned"></span>
+            </summary>
+            <ul id="assigned-list" class="cases-list"></ul>
+            <p class="muted side-empty" data-i18n="side.assignedEmpty"></p>
+          </details>
+
+          <details class="side-group" id="grp-cases" open>
+            <summary>
+              <span id="cases-title" data-i18n="cases.title">Casi</span>
+              <span class="count" data-count="cases"></span>
+            </summary>
+            <p id="cases-state" class="muted" hidden></p>
+            <ul id="cases-list" class="cases-list"></ul>
+          </details>
+
+          <details class="side-group" id="grp-channels" open>
+            <summary>
+              <span data-i18n="side.channels">Canali</span>
+              <span class="count" data-count="channels"></span>
+            </summary>
+            <div class="side-tools">
+              <button id="btn-browse" class="btn btn-secondary btn-sm" type="button">
+                <span data-i18n="side.browse">Sfoglia canali</span>
+              </button>
+              <button id="btn-new-channel" class="btn btn-secondary btn-sm" type="button">
+                <span data-i18n="side.newChannel">Nuovo canale</span>
+              </button>
+            </div>
+            <ul id="channels-list" class="side-list"></ul>
+            <p class="muted side-empty" data-i18n="side.channelsEmpty"></p>
+          </details>
+
+          <details class="side-group" id="grp-dms" open>
+            <summary>
+              <span data-i18n="side.dms">Messaggi diretti</span>
+              <span class="count" data-count="dms"></span>
+            </summary>
+            <div class="side-tools">
+              <button id="btn-new-dm" class="btn btn-secondary btn-sm" type="button">
+                <span data-i18n="side.newDm">Nuovo messaggio</span>
+              </button>
+            </div>
+            <ul id="dms-list" class="side-list"></ul>
+            <p class="muted side-empty" data-i18n="side.dmsEmpty"></p>
+          </details>
         </nav>
 
-        <!-- Conversazione -->
+        <!-- Случаят: разговор с AI + технически контекст -->
         <main id="conversation" class="pane pane-chat" tabindex="-1">
           <section class="ctx" id="ctx" data-open="false" aria-labelledby="ctx-title">
             <button
@@ -182,6 +369,16 @@
 
               <div id="actions" class="actions" hidden>
                 <h3 data-i18n="actions.title">Azioni sul caso</h3>
+                <dl class="case-facts">
+                  <div>
+                    <dt data-i18n="case.assignee">Assegnato a</dt>
+                    <dd id="case-assignee"></dd>
+                  </div>
+                  <div>
+                    <dt data-i18n="case.ticket">Ticket</dt>
+                    <dd id="case-ticket-fact"></dd>
+                  </div>
+                </dl>
                 <p id="case-outcome" class="outcome-line"></p>
                 <p id="case-ticket" class="outcome-line" hidden></p>
                 <button id="btn-ticket" class="btn btn-secondary btn-block" type="button">
@@ -195,12 +392,26 @@
                     <span data-i18n="actions.unresolved">Segna come non risolto</span>
                   </button>
                 </div>
+                <button id="btn-timeline" class="btn btn-secondary btn-block" type="button">
+                  <span data-i18n="timeline.open">Cronologia del caso</span>
+                </button>
+                <button id="btn-assign" class="btn btn-secondary btn-block" type="button" hidden>
+                  <span data-i18n="case.take">Prendi in carico</span>
+                </button>
+                <button
+                  id="btn-case-discussion"
+                  class="btn btn-secondary btn-block"
+                  type="button"
+                  hidden
+                >
+                  <span data-i18n="case.discussion">Discussione interna</span>
+                </button>
                 <p id="actions-feedback" class="form-note" role="status" hidden></p>
               </div>
             </div>
           </section>
 
-          <div class="chat">
+          <div class="chat" id="chat-pane" tabindex="-1">
             <p class="disclaimer" role="note">
               <span class="disclaimer-mark" aria-hidden="true">i</span>
               <span data-i18n="disclaimer.text"></span>
@@ -230,14 +441,17 @@
                   >Descrivi cosa vedi sul quadro</label
                 >
                 <p class="composer-hint" data-i18n="chat.privacyHint"></p>
-                <textarea
-                  id="composer-text"
-                  name="text"
-                  rows="2"
-                  maxlength="4000"
-                  required
-                  data-i18n-attr="placeholder:chat.placeholder"
-                ></textarea>
+                <div id="tray-host"></div>
+                <div id="composer-wrap" class="qr-wrap">
+                  <textarea
+                    id="composer-text"
+                    name="text"
+                    rows="2"
+                    maxlength="4000"
+                    required
+                    data-i18n-attr="placeholder:chat.placeholder"
+                  ></textarea>
+                </div>
                 <p id="composer-error" class="form-error" role="alert" hidden></p>
                 <div class="composer-row">
                   <p id="composer-status" class="composer-status" role="status"></p>
@@ -249,7 +463,70 @@
             </div>
           </div>
         </main>
+
+        <!-- Разговор от работното пространство: канал, директно съобщение, група, дискусия по случай -->
+        <section id="conv-pane" class="pane pane-conv" aria-labelledby="conv-title">
+          <section
+            class="ctx conv-info"
+            id="conv-info"
+            data-open="false"
+            aria-labelledby="info-title"
+          >
+            <button
+              id="info-toggle"
+              class="ctx-toggle"
+              type="button"
+              aria-expanded="false"
+              aria-controls="info-body"
+            >
+              <span id="info-title" class="ctx-title" data-i18n="conv.details">Dettagli</span>
+              <span id="info-summary" class="ctx-summary"></span>
+              <span class="ctx-chevron" aria-hidden="true"></span>
+            </button>
+            <div id="info-body" class="ctx-body"></div>
+          </section>
+          <div class="conv-main">
+            <header class="conv-head">
+              <div class="conv-head-id">
+                <h2 id="conv-title" class="conv-title" tabindex="-1"></h2>
+                <p id="conv-sub" class="muted conv-sub"></p>
+              </div>
+              <div class="conv-head-tools">
+                <button
+                  id="conv-star"
+                  class="btn btn-secondary btn-sm"
+                  type="button"
+                  aria-pressed="false"
+                >
+                  <span data-i18n="conv.star">Preferito</span>
+                </button>
+                <button id="conv-popout" class="btn btn-secondary btn-sm only-wide" type="button">
+                  <span data-i18n="win.popout">Apri in finestra</span>
+                </button>
+              </div>
+            </header>
+            <div id="conv-host" class="conv-host"></div>
+          </div>
+        </section>
+
+        <!-- Списъци в основната част: Inbox, Cronologia, Преглед на канали -->
+        <section id="list-pane" class="pane pane-list" aria-labelledby="list-title">
+          <header class="list-head">
+            <h2 id="list-title" tabindex="-1"></h2>
+            <div id="list-tools" class="list-tools"></div>
+          </header>
+          <div id="list-body" class="list-body"></div>
+        </section>
       </div>
+
+      <!-- Плаващи прозорци (само на широк екран) -->
+      <div
+        id="dock"
+        class="dock"
+        role="region"
+        aria-label="Finestre di chat"
+        data-i18n-attr="aria-label:win.dock"
+      ></div>
 
       <footer class="foot">
         <small>
@@ -352,7 +629,7 @@
     </dialog>
 
     <!-- Dialog: pagina del documento -->
-    <dialog id="dlg-doc" class="dlg dlg-doc" aria-labelledby="dlg-doc-title">
+    <dialog id="dlg-doc" class="dlg dlg-doc dlg-viewer" aria-labelledby="dlg-doc-title">
       <div class="dlg-head">
         <h2 id="dlg-doc-title" data-i18n="doc.title">Fonte</h2>
         <button class="btn btn-quiet" type="button" data-close>
@@ -360,6 +637,147 @@
         </button>
       </div>
       <div id="doc-body" class="doc-body" aria-live="polite"></div>
+    </dialog>
+    <!-- Dialog: conferma azione irreversibile -->
+    <dialog id="dlg-confirm" class="dlg" aria-labelledby="confirm-title">
+      <form method="dialog">
+        <h2 id="confirm-title"></h2>
+        <p id="confirm-text"></p>
+        <div class="dlg-actions">
+          <button id="confirm-no" class="btn btn-secondary" value="no"></button>
+          <button id="confirm-yes" class="btn btn-primary" value="yes"></button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Dialog: account e sicurezza -->
+    <dialog id="dlg-security" class="dlg dlg-wide" aria-labelledby="sec-title">
+      <div class="dlg-head">
+        <h2 id="sec-title" data-i18n="sec.title">Account e sicurezza</h2>
+        <button class="btn btn-quiet" type="button" data-close>
+          <span data-i18n="common.close">Chiudi</span>
+        </button>
+      </div>
+      <div id="sec-body"></div>
+    </dialog>
+
+    <!-- Dialog: allegato -->
+    <dialog id="dlg-file" class="dlg dlg-doc" aria-labelledby="file-title">
+      <div class="dlg-head">
+        <h2 id="file-title" class="file-title"></h2>
+        <button class="btn btn-quiet" type="button" data-close>
+          <span data-i18n="common.close">Chiudi</span>
+        </button>
+      </div>
+      <div id="file-body" class="file-body" aria-live="polite"></div>
+    </dialog>
+
+    <!-- Dialog: scansione QR del quadro -->
+    <dialog id="dlg-scan" class="dlg" aria-labelledby="scan-title">
+      <div class="dlg-head">
+        <h2 id="scan-title" data-i18n="qr.scanTitle">Scansiona il QR del quadro</h2>
+        <button class="btn btn-quiet" type="button" data-close>
+          <span data-i18n="common.close">Chiudi</span>
+        </button>
+      </div>
+      <div id="scan-camera" class="scan-camera" hidden>
+        <video id="scan-video" class="scan-video" playsinline muted></video>
+        <p class="hint" data-i18n="qr.cameraHint"></p>
+      </div>
+      <p id="scan-msg" class="form-note" role="status" hidden></p>
+      <form id="scan-form" novalidate>
+        <div class="field">
+          <label for="scan-serial" data-i18n="qr.manual">Oppure inserisci il numero di serie</label>
+          <div class="inline">
+            <input id="scan-serial" class="mono" autocomplete="off" autocapitalize="characters" />
+            <button class="btn btn-primary" type="submit">
+              <span data-i18n="qr.find">Cerca</span>
+            </button>
+          </div>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Dialog: nuova conversazione / canale -->
+    <dialog id="dlg-newconv" class="dlg dlg-wide" aria-labelledby="nc-title">
+      <form id="nc-form" method="dialog" novalidate>
+        <h2 id="nc-title"></h2>
+        <fieldset id="nc-types" class="nc-types">
+          <legend class="sr-only" data-i18n="nc.type">Tipo</legend>
+          <label class="check-row"
+            ><input type="radio" name="nc-type" value="DIRECT" />
+            <span data-i18n="nc.direct">Messaggio diretto</span></label
+          >
+          <label class="check-row"
+            ><input type="radio" name="nc-type" value="GROUP" />
+            <span data-i18n="nc.group">Gruppo</span></label
+          >
+          <label class="check-row"
+            ><input type="radio" name="nc-type" value="CHANNEL" />
+            <span data-i18n="nc.channel">Canale</span></label
+          >
+        </fieldset>
+        <div id="nc-name-field" class="field" hidden>
+          <label for="nc-name" data-i18n="nc.name">Nome</label>
+          <input id="nc-name" maxlength="80" autocomplete="off" />
+        </div>
+        <div id="nc-vis-field" class="field" hidden>
+          <label for="nc-vis" data-i18n="nc.visibility">Visibilità</label>
+          <select id="nc-vis">
+            <option value="" data-i18n="nc.vis.auto">Automatica in base al nome</option>
+            <option value="PUBLIC" data-i18n="nc.vis.PUBLIC">Pubblico (tutto il personale)</option>
+            <option value="PRIVATE" data-i18n="nc.vis.PRIVATE">Privato (solo i membri)</option>
+          </select>
+          <p class="hint" data-i18n="nc.vis.hint"></p>
+        </div>
+        <div class="field">
+          <label for="nc-search" data-i18n="nc.people">Persone</label>
+          <input id="nc-search" type="search" autocomplete="off" />
+        </div>
+        <ul
+          id="nc-chosen"
+          class="chip-list"
+          aria-label="Selezionati"
+          data-i18n-attr="aria-label:nc.chosen"
+        ></ul>
+        <ul
+          id="nc-results"
+          class="pick-list"
+          aria-label="Risultati"
+          data-i18n-attr="aria-label:nc.results"
+        ></ul>
+        <p id="nc-error" class="form-error" role="alert" hidden></p>
+        <div class="dlg-actions">
+          <button class="btn btn-quiet" type="button" data-close>
+            <span data-i18n="common.cancel">Annulla</span>
+          </button>
+          <button id="nc-submit" class="btn btn-primary" type="submit">
+            <span data-i18n="nc.create">Crea</span>
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Dialog: cambio rapido (mobile) -->
+    <dialog id="dlg-switch" class="dlg" aria-labelledby="switch-title">
+      <div class="dlg-head">
+        <h2 id="switch-title" data-i18n="switch.title">Passa a un altro thread</h2>
+        <button class="btn btn-quiet" type="button" data-close>
+          <span data-i18n="common.close">Chiudi</span>
+        </button>
+      </div>
+      <ul id="switch-list" class="side-list"></ul>
+    </dialog>
+
+    <!-- Dialog: cronologia del caso -->
+    <dialog id="dlg-timeline" class="dlg dlg-doc" aria-labelledby="tl-title">
+      <div class="dlg-head">
+        <h2 id="tl-title" data-i18n="timeline.title">Cronologia del caso</h2>
+        <button class="btn btn-quiet" type="button" data-close>
+          <span data-i18n="common.close">Chiudi</span>
+        </button>
+      </div>
+      <div id="tl-body" class="tl-body" aria-live="polite"></div>
     </dialog>
   </body>
 </html>

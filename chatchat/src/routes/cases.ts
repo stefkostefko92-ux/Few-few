@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { Router } from 'express';
 import { z } from 'zod';
-import type { AppDeps } from '../app.js';
+import type { WiredDeps } from '../app.js';
 import { appendAudit } from '../audit.js';
 import {
   apiError,
@@ -10,8 +10,11 @@ import {
   requireCsrf,
   requireUser,
 } from '../auth/guards.js';
-import { AUDIENCE_WITHHELD, can, caseAudiences, coversAudiences } from '../auth/rbac.js';
+import { can } from '../auth/rbac.js';
 import { DiagnosticContextSchema, redactContext } from '../domain/context.js';
+import { attachmentsByMessage } from '../services/attachments.js';
+import { notify } from '../services/collab/notify.js';
+import { publishCaseAssigned } from '../services/collab/publish.js';
 import {
   addTimeline,
   caseWhereFor,
@@ -20,6 +23,14 @@ import {
   isParticipant,
   withUniqueRetry,
 } from '../services/cases.js';
+import {
+  assigneeFor,
+  assigneeViews,
+  authorFor,
+  caseView,
+  contextWarnings,
+  messageViews,
+} from '../services/case-views.js';
 
 /** Случаите (§12.4, §14.1): създаване, контекст, изход, поемане от оператор, хронология. */
 
@@ -30,29 +41,7 @@ const CreateCase = z.object({
 });
 const Outcome = z.object({ outcome: z.enum(['RESOLVED', 'NOT_RESOLVED']) });
 
-function caseView(c: {
-  id: string;
-  number: string;
-  status: string;
-  outcome: string | null;
-  context: Prisma.JsonValue;
-  portal: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}) {
-  return {
-    id: c.id,
-    number: c.number,
-    status: c.status,
-    outcome: c.outcome,
-    context: c.context,
-    portal: c.portal,
-    createdAt: c.createdAt,
-    updatedAt: c.updatedAt,
-  };
-}
-
-export function casesRouter(deps: AppDeps): Router {
+export function casesRouter(deps: WiredDeps): Router {
   const router = Router();
   router.use(requireUser, requireCsrf(deps.publicOrigin));
 
@@ -64,7 +53,13 @@ export function casesRouter(deps: AppDeps): Router {
         orderBy: { updatedAt: 'desc' },
         take: 100,
       });
-      res.json({ cases: cases.map(caseView) });
+      const assignees = await assigneeViews(deps.db, p.user, cases);
+      res.json({
+        cases: cases.map((c) => ({
+          ...caseView(c),
+          assignedTo: c.assignedToId ? (assignees.get(c.assignedToId) ?? null) : null,
+        })),
+      });
     } catch (err) {
       next(err);
     }
@@ -118,6 +113,7 @@ export function casesRouter(deps: AppDeps): Router {
         }),
       );
       await addTimeline(deps.db, created.id, 'case.created', p.user.id, { context });
+      const warnings = await contextWarnings(deps.db, created.id, product.id, context);
       await appendAudit(deps.db, {
         tenantId: p.user.tenantId,
         actorId: p.user.id,
@@ -125,7 +121,7 @@ export function casesRouter(deps: AppDeps): Router {
         objectType: 'case',
         objectId: created.id,
       });
-      res.status(201).json({ case: caseView(created) });
+      res.status(201).json({ case: caseView(created), warnings });
     } catch (err) {
       next(err);
     }
@@ -143,31 +139,22 @@ export function casesRouter(deps: AppDeps): Router {
         orderBy: { createdAt: 'asc' },
         take: 500,
       });
-      const authorIds = [...new Set(messages.map((m) => m.authorId).filter(Boolean))] as string[];
-      const authors = new Map(
-        (
-          await deps.db.user.findMany({
-            where: { id: { in: authorIds }, tenantId: p.user.tenantId },
-            select: { id: true, name: true },
-          })
-        ).map((u) => [u.id, u.name]),
-      );
       const ticket = await deps.db.ticket.findUnique({ where: { caseId: c.id } });
-      const reader = caseAudiences(p.user.role, c.portal);
+      // Само CLEAN файлове, привързани към съобщение; самите байтове — през подписан адрес.
+      const files = await attachmentsByMessage(
+        deps.db,
+        p.user.tenantId,
+        messages.map((m) => m.id),
+      );
+      const views = await messageViews(deps.db, p, c, messages);
+      const assignees = await assigneeViews(deps.db, p.user, [c]);
       res.json({
-        case: caseView(c),
+        case: {
+          ...caseView(c),
+          assignedTo: c.assignedToId ? (assignees.get(c.assignedToId) ?? null) : null,
+        },
         ticket: ticket ? { number: ticket.number, status: ticket.status } : null,
-        messages: messages.map((m) => {
-          const visible = m.kind !== 'AI' || coversAudiences(reader, m.audiences);
-          return {
-            id: m.id,
-            kind: m.kind,
-            authorName: m.authorId ? (authors.get(m.authorId) ?? null) : null,
-            body: visible ? m.body : AUDIENCE_WITHHELD,
-            payload: visible ? m.payload : null,
-            createdAt: m.createdAt,
-          };
-        }),
+        messages: views.map((m) => ({ ...m, attachments: files.get(m.id) ?? [] })),
       });
     } catch (err) {
       next(err);
@@ -199,7 +186,8 @@ export function casesRouter(deps: AppDeps): Router {
         from: c.context,
         to: body.data.context,
       });
-      res.json({ case: caseView(updated) });
+      const warnings = await contextWarnings(deps.db, c.id, product.id, body.data.context);
+      res.json({ case: caseView(updated), warnings });
     } catch (err) {
       next(err);
     }
@@ -254,6 +242,36 @@ export function casesRouter(deps: AppDeps): Router {
         data: { assignedToId: p.user.id, status: 'IN_PROGRESS' },
       });
       await addTimeline(deps.db, c.id, 'case.assigned', p.user.id, { to: p.user.id });
+      // FR-18: създателят научава кой е поел случая (известие + събитие в реално време).
+      // Порталният създател получава РОЛЯТА на служителя, не името (правният одит, т. 12).
+      const operator = {
+        id: p.user.id,
+        name: p.user.name,
+        role: p.user.role,
+        kind: p.user.kind,
+      };
+      const creator = await deps.db.user.findFirst({
+        where: { id: c.createdById, tenantId: c.tenantId },
+        select: { id: true, kind: true },
+      });
+      if (creator && c.createdById !== p.user.id) {
+        const assignedTo = assigneeFor(creator, operator);
+        await notify(
+          deps,
+          [
+            {
+              tenantId: c.tenantId,
+              userId: c.createdById,
+              eventType: 'case.assigned',
+              objectType: 'case',
+              objectId: c.id,
+              payload: { caseId: c.id, number: c.number, assignedTo },
+            },
+          ],
+          p.user.id,
+        );
+      }
+      publishCaseAssigned(deps, { ...c, assignedToId: p.user.id }, operator);
       res.json({ case: caseView(updated) });
     } catch (err) {
       next(err);
@@ -267,15 +285,32 @@ export function casesRouter(deps: AppDeps): Router {
       const p = principalOf(req);
       const c = await findCaseFor(deps.db, p, id.data);
       if (!c) return apiError(res, 404, 'not_found');
+      // Вътрешната дискусия на персонала (internal.*) не се вижда от портала и от техниците
+      // без `case:readAll` — дори като идентификатори (AC-18).
+      const staff = p.user.kind === 'INTERNAL' && can(p.user.role, 'case:readAll');
       const events = await deps.db.caseTimelineEvent.findMany({
-        where: { caseId: c.id },
+        where: {
+          caseId: c.id,
+          ...(staff ? {} : { NOT: { type: { startsWith: 'internal.' } } }),
+        },
         orderBy: { at: 'asc' },
         take: 1000,
       });
+      // Авторът на събитието по правилото на читателя: порталът вижда ролята, не името (AC-19).
+      const actorIds = [...new Set(events.map((e) => e.actorId).filter((x): x is string => !!x))];
+      const actors = new Map(
+        (
+          await deps.db.user.findMany({
+            where: { id: { in: actorIds }, tenantId: p.user.tenantId },
+            select: { id: true, name: true, role: true, kind: true },
+          })
+        ).map((u) => [u.id, u]),
+      );
       res.json({
         events: events.map((e) => ({
           type: e.type,
           actorId: e.actorId,
+          actor: e.actorId ? authorFor(p.user, actors.get(e.actorId)) : null,
           // Източникът на събитието (AC-19): човек, AI или системата.
           source: e.type.startsWith('ai.') ? 'ai' : e.actorId ? 'human' : 'system',
           payload: e.payload,
