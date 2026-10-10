@@ -5,6 +5,7 @@ import { lathe, merge, xf, mesh, flatten } from '../../boy/src/geo.js';
 import type { BoyMaterials } from '../boy-materials';
 import type { Rand } from '../rng';
 import { brilliant, elongated } from './gems';
+import { buildMask } from './mask';
 
 type Pieces = [THREE.BufferGeometry, THREE.Material][];
 type GemMat = { gem: THREE.Material };
@@ -33,7 +34,7 @@ function sph(r: number, sx: number, sy: number, sz: number, phi: number, theta: 
 function drapedHood(M: BoyMaterials, g: THREE.Group, rand: Rand, cloth: THREE.Material, mailHood: boolean): void {
   const seed = rand() * 10;
   const R = 0.128; const sx = 0.92; const sy = 1.1; const sz = 1.12; const dy = -0.025; const dz = -0.02;
-  const open = Math.PI * 0.2; // половин ъгъл на отвора около +Z (phi = π/2)
+  const open = Math.PI * 0.27; // половин ъгъл на отвора около +Z (phi = π/2)
   const phi0 = Math.PI / 2 + open; const span = Math.PI * 2 - open * 2;
   const dome = new THREE.SphereGeometry(R, 64, 44, phi0, span, 0, Math.PI * 0.8);
   dome.scale(sx, sy, sz);
@@ -43,7 +44,7 @@ function drapedHood(M: BoyMaterials, g: THREE.Group, rand: Rand, cloth: THREE.Ma
   const inner = new THREE.SphereGeometry(R * 0.93, 40, 28, 0, Math.PI * 2, 0, Math.PI * 0.82);
   inner.scale(sx, sy * 0.98, sz);
   inner.translate(0, dy, dz + 0.004);
-  g.add(mesh(inner, M.slit));
+  g.add(mesh(inner, (M as unknown as { hoodInner: THREE.Material }).hoodInner));
   // навит ръб по двата меридиана на отвора + горна дъга
   const rim: THREE.Vector3[][] = [[], []];
   for (let i = 0; i <= 24; i++) {
@@ -51,7 +52,7 @@ function drapedHood(M: BoyMaterials, g: THREE.Group, rand: Rand, cloth: THREE.Ma
     rim[0].push(sph(R, sx, sy, sz, phi0, th, dy, dz));
     rim[1].push(sph(R, sx, sy, sz, phi0 + span, th, dy, dz));
   }
-  for (const pts of rim) g.add(mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 48, 0.0105, 10, false), cloth));
+  for (const pts of rim) g.add(mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 48, 0.0065, 10, false), cloth));
   // яка/качулък върху раменете с дълбоки гънки + навит подгъв
   const cowl = lathe([[0.075, -0.12], [0.135, -0.16], [0.205, -0.23], [0.285, -0.33], [0.305, -0.385]], 96, 0, Math.PI * 2);
   cowl.scale(1, 1, 0.8);
@@ -64,23 +65,12 @@ function drapedHood(M: BoyMaterials, g: THREE.Group, rand: Rand, cloth: THREE.Ma
 }
 
 function hood(M: BoyMaterials, g: THREE.Group, rand: Rand): void {
-  g.rotation.y = 0.6; // отворът гледа към камерата
+  g.rotation.y = 0.3; // отворът гледа към камерата
   drapedHood(M, g, rand, M.capeA, false);
 }
 
-function mask(M: BoyMaterials, g: THREE.Group, rand: Rand): void {
-  g.rotation.y = 0.45;
-  const face = new THREE.SphereGeometry(0.108, 48, 32, Math.PI * 0.12, Math.PI * 0.76, Math.PI * 0.22, Math.PI * 0.6);
-  face.scale(0.86, 1.12, 0.98);
-  face.translate(0, -0.04, -0.005);
-  g.add(mesh(face, M.steelA));
-  for (const s of [-1, 1]) {
-    g.add(mesh(xf(new THREE.SphereGeometry(0.017, 18, 12), [s * 0.034, -0.012, 0.094], [0, s * 0.3, 0], [1.5, 0.55, 0.4]), M.slit));
-    g.add(mesh(xf(new THREE.TorusGeometry(0.0205, 0.003, 6, 20), [s * 0.034, -0.012, 0.0955], [0, s * 0.3, s * 0.35], [1.5, 0.6, 1]), M.goldB));
-  }
-  g.add(mesh(xf(new THREE.CylinderGeometry(0.004, 0.012, 0.06, 6), [0, -0.05, 0.1], [0.12, 0, 0]), M.steelB));
-  for (const s of [-1, 1]) g.add(mesh(xf(new THREE.TorusGeometry(0.1, 0.006, 6, 24, Math.PI * 0.55), [0, -0.03, -0.01], [Math.PI / 2, 0, s > 0 ? -0.3 : Math.PI + 0.3 - Math.PI * 0.55]), M.leather));
-  void rand;
+function mask(M: BoyMaterials, g: THREE.Group, name: string): void {
+  g.add(buildMask(M, /half|tunnelrat|cutpurse|duskfang/i.test(name)));
 }
 
 /** Един връх на корона: плосък извит силует (вдлъбнати страни) с лек скос — Extrude. */
@@ -151,14 +141,14 @@ function cap(M: BoyMaterials, g: THREE.Group, rand: Rand): void {
 }
 
 function coif(M: BoyMaterials, g: THREE.Group, rand: Rand): void {
-  g.rotation.y = 0.6;
+  g.rotation.y = 0.3;
   drapedHood(M, g, rand, M.mail, true);
 }
 
 export function buildHeadgear(M: BoyMaterials, name: string, rand: Rand): THREE.Object3D {
   const g = new THREE.Group();
   if (/hood|cowl|veil/i.test(name)) hood(M, g, rand);
-  else if (/mask/i.test(name)) mask(M, g, rand);
+  else if (/mask/i.test(name)) mask(M, g, name);
   else if (/circlet|diadem/i.test(name)) circlet(M, g, rand, /diadem/i.test(name));
   else if (/coif/i.test(name)) coif(M, g, rand);
   else if (/\bcap\b/i.test(name)) cap(M, g, rand);
