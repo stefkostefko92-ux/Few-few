@@ -197,3 +197,5 @@
 {"t":"handoff","ts":"2026-10-09T11:43:13.532Z","id":"r2815b6c1","from":"dizayner","to":"човек","status":"има бележки","run":"834a50c6"}
 {"t":"start","ts":"2026-10-09T17:50:30.355Z","id":"r5123a716","flow":"авто","lead":"dizayner","auto":true}
 {"t":"handoff","ts":"2026-10-09T17:50:30.355Z","id":"r5123a716","from":"dizayner","to":"човек","status":"има бележки","run":"34d3e3fc"}
+{"t":"start","ts":"2026-10-10T08:45:51.986Z","id":"r2a5871c0","flow":"авто","lead":"tayniyat-agent","auto":true}
+{"t":"handoff","ts":"2026-10-10T08:45:51.986Z","id":"r2a5871c0","from":"tayniyat-agent","to":"човек","status":"има бележки","run":"140439f1"}
