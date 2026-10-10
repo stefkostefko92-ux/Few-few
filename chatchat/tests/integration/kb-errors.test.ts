@@ -83,6 +83,22 @@ describe('редакция на чернова (PATCH)', () => {
       sourceDocumentId: w.docs.tenantB,
     });
     assert.deepEqual([bad.status, bad.body.code], [422, 'unknown_source_document']);
+    // Източник само за друг модел не е източник за този код — нито при редакция, нито при създаване.
+    const other = await w.ownerA1.patch(`/api/v1/admin/errors/${id}`, {
+      sourceDocumentId: w.docs.otherProduct,
+    });
+    assert.deepEqual([other.status, other.body.code], [422, 'source_not_applicable']);
+    const created = await w.ownerA1.post('/api/v1/admin/errors', {
+      productModel: MODEL,
+      code: 'E92',
+      title: 'Altro',
+      description: 'Altro modello',
+      severity: 'INFO',
+      safetyRelevant: false,
+      sourceDocumentId: w.docs.otherProduct,
+      relations: [],
+    });
+    assert.deepEqual([created.status, created.body.code], [422, 'source_not_applicable']);
     assert.equal(
       (await w.ownerA1.patch(`/api/v1/admin/errors/${id}`, { status: 'PUBLISHED' })).status,
       400,

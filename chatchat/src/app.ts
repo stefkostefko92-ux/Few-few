@@ -19,6 +19,7 @@ import { adminDocumentsLifecycleRouter } from './routes/admin-documents-lifecycl
 import { adminDocumentsViewRouter } from './routes/admin-documents-view.js';
 import { adminErrorsRouter } from './routes/admin-errors.js';
 import { adminErrorsLifecycleRouter } from './routes/admin-errors-lifecycle.js';
+import { adminErrorsVersionsRouter } from './routes/admin-errors-versions.js';
 import { adminKpiRouter } from './routes/admin-kpi.js';
 import { adminSubjectRouter } from './routes/admin-subject.js';
 import { adminUserActionsRouter } from './routes/admin-user-actions.js';
@@ -192,6 +193,7 @@ export function createApp(appDeps: AppDeps): express.Express {
   app.use('/api/v1/admin', adminDocumentsLifecycleRouter(deps));
   app.use('/api/v1/admin', adminErrorsRouter(deps));
   app.use('/api/v1/admin', adminErrorsLifecycleRouter(deps));
+  app.use('/api/v1/admin', adminErrorsVersionsRouter(deps));
   app.use('/api/v1', auditRouter(deps));
   app.use('/api/v1', catalogRouter(deps));
   app.use('/api/v1', documentViewRouter(deps));

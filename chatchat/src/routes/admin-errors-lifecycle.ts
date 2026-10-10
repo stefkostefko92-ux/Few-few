@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client';
 import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
 import type { AppDeps } from '../app.js';
@@ -42,6 +43,9 @@ const FROM: Record<Action, 'DRAFT' | 'REVIEW' | 'PUBLISHED' | 'DEPRECATED'> = {
   restore: 'DEPRECATED',
 };
 
+/** Паралелен преход е изпреварил този → 409, нищо не се пише. */
+class TransitionLost extends Error {}
+
 export function adminErrorsLifecycleRouter(deps: AppDeps): Router {
   const router = Router();
   router.use(requireUser, requireCsrf(deps.publicOrigin), requireCapability('kb:manage'));
@@ -57,6 +61,17 @@ export function adminErrorsLifecycleRouter(deps: AppDeps): Router {
     if (!entry) return void apiError(res, 404, 'not_found');
     if (entry.status !== FROM[action]) return void apiError(res, 409, 'invalid_transition');
     return { p, entry };
+  }
+
+  /** Смяна на статуса САМО от очаквания — иначе TransitionLost (отменя транзакцията). */
+  async function move(
+    db: Pick<typeof deps.db, 'errorCode'>,
+    id: string,
+    action: Action,
+    data: Prisma.ErrorCodeUpdateManyMutationInput,
+  ): Promise<void> {
+    const moved = await db.errorCode.updateMany({ where: { id, status: FROM[action] }, data });
+    if (moved.count === 0) throw new TransitionLost();
   }
 
   const audit = (
@@ -81,13 +96,14 @@ export function adminErrorsLifecycleRouter(deps: AppDeps): Router {
       const got = await load(req, res, 'submit');
       if (!got) return;
       const { p, entry } = got;
-      await deps.db.errorCode.update({
-        where: { id: entry.id },
-        data: { status: 'REVIEW', authorIds: withAuthor(entry.authorIds, p.user.id) },
+      await move(deps.db, entry.id, 'submit', {
+        status: 'REVIEW',
+        authorIds: withAuthor(entry.authorIds, p.user.id),
       });
       await audit(req, 'submit', entry);
       res.status(204).end();
     } catch (err) {
+      if (err instanceof TransitionLost) return apiError(res, 409, 'invalid_transition');
       next(err);
     }
   });
@@ -100,10 +116,11 @@ export function adminErrorsLifecycleRouter(deps: AppDeps): Router {
       if (!body.success) return apiError(res, 400, 'invalid_input');
       const { entry } = got;
       const to = rejectTarget(entry.approvedAt !== null);
-      await deps.db.errorCode.update({ where: { id: entry.id }, data: { status: to } });
+      await move(deps.db, entry.id, 'reject', { status: to });
       await audit(req, 'reject', entry, { to, reason: reasonForAudit(body.data.reason) });
       res.status(204).end();
     } catch (err) {
+      if (err instanceof TransitionLost) return apiError(res, 409, 'invalid_transition');
       next(err);
     }
   });
@@ -132,15 +149,17 @@ export function adminErrorsLifecycleRouter(deps: AppDeps): Router {
         };
         const previous = await tx.errorCode.findMany({ where: same, select: { id: true } });
         await tx.errorCode.updateMany({ where: same, data: { status: 'DEPRECATED' } });
-        await tx.errorCode.update({
-          where: { id: entry.id },
-          data: { status: 'PUBLISHED', approvedById: p.user.id, approvedAt: now },
+        await move(tx, entry.id, 'publish', {
+          status: 'PUBLISHED',
+          approvedById: p.user.id,
+          approvedAt: now,
         });
         return previous.map((x) => x.id);
       });
       await audit(req, 'publish', entry, replaced.length > 0 ? { replaced } : {});
       res.status(204).end();
     } catch (err) {
+      if (err instanceof TransitionLost) return apiError(res, 409, 'invalid_transition');
       next(err);
     }
   });
@@ -151,13 +170,11 @@ export function adminErrorsLifecycleRouter(deps: AppDeps): Router {
       if (!got) return;
       const body = ReasonBody.safeParse(req.body ?? {});
       if (!body.success) return apiError(res, 400, 'invalid_input');
-      await deps.db.errorCode.update({
-        where: { id: got.entry.id },
-        data: { status: 'DEPRECATED' },
-      });
+      await move(deps.db, got.entry.id, 'deprecate', { status: 'DEPRECATED' });
       await audit(req, 'deprecate', got.entry, { reason: reasonForAudit(body.data.reason) });
       res.status(204).end();
     } catch (err) {
+      if (err instanceof TransitionLost) return apiError(res, 409, 'invalid_transition');
       next(err);
     }
   });
@@ -169,13 +186,14 @@ export function adminErrorsLifecycleRouter(deps: AppDeps): Router {
       const body = ReasonBody.safeParse(req.body ?? {});
       if (!body.success) return apiError(res, 400, 'invalid_input');
       const { p, entry } = got;
-      await deps.db.errorCode.update({
-        where: { id: entry.id },
-        data: { status: 'REVIEW', authorIds: withAuthor(entry.authorIds, p.user.id) },
+      await move(deps.db, entry.id, 'restore', {
+        status: 'REVIEW',
+        authorIds: withAuthor(entry.authorIds, p.user.id),
       });
       await audit(req, 'restore', entry, { reason: reasonForAudit(body.data.reason) });
       res.status(204).end();
     } catch (err) {
+      if (err instanceof TransitionLost) return apiError(res, 409, 'invalid_transition');
       next(err);
     }
   });

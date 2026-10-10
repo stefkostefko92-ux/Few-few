@@ -15,10 +15,11 @@ import { isVersion } from '../domain/versions.js';
 import { withAuthor } from '../services/kb-lifecycle.js';
 
 /**
- * Базата с кодове за грешка (FR-04): създаване (DRAFT), редакция на чернова, нова версия и
- * пресвързване. Всеки код сочи документ-източник (без публикуван източник AI не може да го
- * цитира). Преходите (submit → REVIEW → publish с четири очи, отписване, възстановяване) са в
- * `admin-errors-lifecycle.ts`. Публикувана версия е неизменима: промяна = нова версия (DRAFT).
+ * Базата с кодове за грешка (FR-04): създаване (DRAFT) и редакция на чернова. Всеки код сочи
+ * документ-източник, който важи за модела му (без публикуван източник AI не може да го цитира).
+ * Нова версия и пресвързване — `admin-errors-versions.ts`; преходите (submit → REVIEW → publish с
+ * четири очи, отписване, възстановяване) — `admin-errors-lifecycle.ts`. Публикувана версия е
+ * неизменима: промяна = нова версия (DRAFT).
  */
 
 const Id = z.string().min(1).max(40);
@@ -62,10 +63,6 @@ const ErrorPatch = EditableFields.extend({
   .partial()
   .strict();
 
-const RelinkInput = z
-  .object({ sourceDocumentId: Id, sourcePage: z.number().int().min(1).max(100000).optional() })
-  .strict();
-
 type Relation = z.infer<typeof RelationInput>;
 const relationRows = (relations: Relation[], sourceId: string, page: number | null) =>
   relations.map((r, i) => ({
@@ -82,8 +79,18 @@ export function adminErrorsRouter(deps: AppDeps): Router {
   const router = Router();
   router.use(requireUser, requireCsrf(deps.publicOrigin), requireCapability('kb:manage'));
 
-  const sourceIn = (tenantId: string, id: string) =>
-    deps.db.document.findFirst({ where: { id, tenantId }, select: { id: true } });
+  // Източникът е от клиента и важи за модела на кода (§7.3: без приложимост — не е източник).
+  const sourceFor = async (tenantId: string, id: string, productId: string) => {
+    const doc = await deps.db.document.findFirst({
+      where: { id, tenantId },
+      select: { id: true, applicability: { select: { productId: true } } },
+    });
+    if (!doc) return { ok: false as const, code: 'unknown_source_document' };
+    if (!doc.applicability.some((a) => a.productId === productId)) {
+      return { ok: false as const, code: 'source_not_applicable' };
+    }
+    return { ok: true as const, id: doc.id };
+  };
 
   router.post('/errors', async (req, res, next) => {
     try {
@@ -95,8 +102,8 @@ export function adminErrorsRouter(deps: AppDeps): Router {
         where: { tenantId_model: { tenantId: p.user.tenantId, model: input.productModel } },
       });
       if (!product) return apiError(res, 422, 'unknown_product');
-      const source = await sourceIn(p.user.tenantId, input.sourceDocumentId);
-      if (!source) return apiError(res, 422, 'unknown_source_document');
+      const source = await sourceFor(p.user.tenantId, input.sourceDocumentId, product.id);
+      if (!source.ok) return apiError(res, 422, source.code);
       const code = canonicalIdentifier(input.code);
       const latest = await deps.db.errorCode.findFirst({
         where: { productId: product.id, code },
@@ -154,8 +161,8 @@ export function adminErrorsRouter(deps: AppDeps): Router {
       const { relations, ...fields } = body.data;
       let sourceId = entry.sourceDocumentId;
       if (fields.sourceDocumentId) {
-        const source = await sourceIn(p.user.tenantId, fields.sourceDocumentId);
-        if (!source) return apiError(res, 422, 'unknown_source_document');
+        const source = await sourceFor(p.user.tenantId, fields.sourceDocumentId, entry.productId);
+        if (!source.ok) return apiError(res, 422, source.code);
         sourceId = source.id;
       }
       const page = fields.sourcePage === undefined ? entry.sourcePage : fields.sourcePage;
@@ -191,135 +198,6 @@ export function adminErrorsRouter(deps: AppDeps): Router {
         });
       });
       res.status(204).end();
-    } catch (err) {
-      next(err);
-    }
-  });
-
-  // Нова версия от съществуваща (публикувана/отписана е неизменима): копие като DRAFT.
-  router.post('/errors/:id/new-version', async (req, res, next) => {
-    try {
-      const id = Id.safeParse(req.params.id);
-      if (!id.success) return apiError(res, 400, 'invalid_input');
-      const p = principalOf(req);
-      const entry = await deps.db.errorCode.findFirst({
-        where: { id: id.data, tenantId: p.user.tenantId },
-        include: { relations: { orderBy: { ordinal: 'asc' } } },
-      });
-      if (!entry) return apiError(res, 404, 'not_found');
-      const created = await deps.db.$transaction(async (tx) => {
-        const latest = await tx.errorCode.findFirst({
-          where: { productId: entry.productId, code: entry.code },
-          orderBy: { version: 'desc' },
-          select: { version: true },
-        });
-        const row = await tx.errorCode.create({
-          data: {
-            tenantId: entry.tenantId,
-            productId: entry.productId,
-            code: entry.code,
-            title: entry.title,
-            description: entry.description,
-            subsystem: entry.subsystem,
-            severity: entry.severity,
-            safetyRelevant: entry.safetyRelevant,
-            hwRevision: entry.hwRevision,
-            fwMin: entry.fwMin,
-            fwMax: entry.fwMax,
-            version: (latest?.version ?? entry.version) + 1,
-            sourceDocumentId: entry.sourceDocumentId,
-            sourcePage: entry.sourcePage,
-            authorIds: [p.user.id],
-            relations: {
-              create: entry.relations.map((r) => ({
-                kind: r.kind,
-                ordinal: r.ordinal,
-                text: r.text,
-                expected: r.expected,
-                actionClass: r.actionClass,
-                sourceDocumentId: r.sourceDocumentId,
-                sourcePage: r.sourcePage,
-              })),
-            },
-          },
-        });
-        await appendAudit(tx, {
-          tenantId: p.user.tenantId,
-          actorId: p.user.id,
-          action: 'kb.error.new_version',
-          objectType: 'error',
-          objectId: row.id,
-          detail: { code: row.code, version: row.version, from: entry.id },
-        });
-        return row;
-      });
-      res.status(201).json({ errorId: created.id, version: created.version });
-    } catch (err) {
-      next(err);
-    }
-  });
-
-  // Пресвързване на непубликувана версия с друг публикуван документ-източник (напр. нова
-  // ревизия). Страниците на стария източник не важат за новия — проверките получават новата.
-  router.post('/errors/:id/relink', async (req, res, next) => {
-    try {
-      const id = Id.safeParse(req.params.id);
-      const body = RelinkInput.safeParse(req.body);
-      if (!id.success || !body.success) return apiError(res, 400, 'invalid_input');
-      const p = principalOf(req);
-      const entry = await deps.db.errorCode.findFirst({
-        where: { id: id.data, tenantId: p.user.tenantId },
-      });
-      if (!entry) return apiError(res, 404, 'not_found');
-      if (entry.status !== 'DRAFT' && entry.status !== 'REVIEW') {
-        return apiError(res, 409, 'invalid_transition');
-      }
-      const source = await deps.db.document.findFirst({
-        where: { id: body.data.sourceDocumentId, tenantId: p.user.tenantId },
-        include: { applicability: { select: { productId: true } } },
-      });
-      if (!source) return apiError(res, 422, 'unknown_source_document');
-      if (source.status !== 'PUBLISHED') return apiError(res, 422, 'source_not_published');
-      if (!source.applicability.some((a) => a.productId === entry.productId)) {
-        return apiError(res, 422, 'source_not_applicable');
-      }
-      const page = body.data.sourcePage ?? null;
-      await deps.db.$transaction(async (tx) => {
-        await tx.errorCode.update({
-          where: { id: entry.id },
-          data: {
-            sourceDocumentId: source.id,
-            sourcePage: page,
-            authorIds: withAuthor(entry.authorIds, p.user.id),
-          },
-        });
-        if (entry.sourceDocumentId) {
-          await tx.errorRelation.updateMany({
-            where: { errorId: entry.id, sourceDocumentId: entry.sourceDocumentId },
-            data: { sourceDocumentId: source.id, sourcePage: page },
-          });
-        }
-        await appendAudit(tx, {
-          tenantId: p.user.tenantId,
-          actorId: p.user.id,
-          action: 'kb.error.relink',
-          objectType: 'error',
-          objectId: entry.id,
-          detail: {
-            code: entry.code,
-            version: entry.version,
-            from: entry.sourceDocumentId,
-            to: source.id,
-            page,
-          },
-        });
-      });
-      res.json({
-        errorId: entry.id,
-        status: entry.status,
-        sourceDocumentId: source.id,
-        sourcePage: page,
-      });
     } catch (err) {
       next(err);
     }

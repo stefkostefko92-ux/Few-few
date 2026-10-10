@@ -82,10 +82,21 @@ function codeDialog({ products, docs, entry, title, submitLabel, save }) {
   const hw = input({ maxlength: 20, value: entry?.hwRevision ?? '' });
   const fwMin = input({ pattern: VERSION_PATTERN, maxlength: 20, value: entry?.fwMin ?? '' });
   const fwMax = input({ pattern: VERSION_PATTERN, maxlength: 20, value: entry?.fwMax ?? '' });
-  const source = select(
-    docs.map((d) => ({ value: d.id, label: docLabel(d) })),
-    entry?.sourceDocument?.id ?? docs[0].id,
-  );
+  // Само документи, които важат за модела на кода (сървърът го проверява: source_not_applicable).
+  const source = select([], '');
+  const syncSources = () => {
+    const usable = docs.filter(
+      (d) => !d.applicability || d.applicability.some((a) => a.productModel === model.value),
+    );
+    const keep = source.value || entry?.sourceDocument?.id;
+    source.replaceChildren(
+      ...usable.map((d) =>
+        h('option', { value: d.id, selected: d.id === keep || undefined }, docLabel(d)),
+      ),
+    );
+  };
+  model.addEventListener('change', syncSources);
+  syncSources();
   const page = input({ type: 'number', min: 1, max: 100000, value: entry?.sourcePage ?? '' });
   const initial = entry?.relations ?? [];
   const rows = initial.slice();

@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client';
 import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
 import type { AppDeps } from '../app.js';
@@ -47,6 +48,9 @@ const FROM: Record<Action, 'DRAFT' | 'REVIEW' | 'PUBLISHED' | 'DEPRECATED'> = {
   restore: 'DEPRECATED',
 };
 
+/** Паралелен преход е изпреварил този (статусът вече не е очакваният) → 409, нищо не се пише. */
+class TransitionLost extends Error {}
+
 export function adminDocumentsLifecycleRouter(deps: AppDeps): Router {
   const router = Router();
   router.use(requireUser, requireCsrf(deps.publicOrigin), requireCapability('kb:manage'));
@@ -63,6 +67,17 @@ export function adminDocumentsLifecycleRouter(deps: AppDeps): Router {
     if (!doc) return void apiError(res, 404, 'not_found');
     if (doc.status !== FROM[action]) return void apiError(res, 409, 'invalid_transition');
     return { p, doc };
+  }
+
+  /** Смяна на статуса САМО от очаквания — иначе TransitionLost (отменя транзакцията). */
+  async function move(
+    db: Pick<typeof deps.db, 'document'>,
+    id: string,
+    action: Action,
+    data: Prisma.DocumentUpdateManyMutationInput,
+  ): Promise<void> {
+    const moved = await db.document.updateMany({ where: { id, status: FROM[action] }, data });
+    if (moved.count === 0) throw new TransitionLost();
   }
 
   const audit = (
@@ -87,13 +102,11 @@ export function adminDocumentsLifecycleRouter(deps: AppDeps): Router {
       const got = await load(req, res, 'submit');
       if (!got) return;
       const { p, doc } = got;
-      await deps.db.document.update({
-        where: { id: doc.id },
-        data: { status: 'REVIEW', submittedById: p.user.id },
-      });
+      await move(deps.db, doc.id, 'submit', { status: 'REVIEW', submittedById: p.user.id });
       await audit(req, 'submit', doc);
       res.status(204).end();
     } catch (err) {
+      if (err instanceof TransitionLost) return apiError(res, 409, 'invalid_transition');
       next(err);
     }
   });
@@ -106,17 +119,15 @@ export function adminDocumentsLifecycleRouter(deps: AppDeps): Router {
       if (!body.success) return apiError(res, 400, 'invalid_input');
       const { p, doc } = got;
       const to = rejectTarget(doc.publishedAt !== null);
-      await deps.db.document.update({
-        where: { id: doc.id },
-        data: {
-          status: to,
-          reviewedById: p.user.id,
-          ...(to === 'DEPRECATED' ? { deprecatedAt: new Date() } : {}),
-        },
+      await move(deps.db, doc.id, 'reject', {
+        status: to,
+        reviewedById: p.user.id,
+        ...(to === 'DEPRECATED' ? { deprecatedAt: new Date() } : {}),
       });
       await audit(req, 'reject', doc, { to, reason: reasonForAudit(body.data.reason) });
       res.status(204).end();
     } catch (err) {
+      if (err instanceof TransitionLost) return apiError(res, 409, 'invalid_transition');
       next(err);
     }
   });
@@ -140,15 +151,12 @@ export function adminDocumentsLifecycleRouter(deps: AppDeps): Router {
       const now = new Date();
       const reason = reasonForAudit(body.data.reason);
       const replaced = await deps.db.$transaction(async (tx) => {
-        await tx.document.update({
-          where: { id: doc.id },
-          data: {
-            status: 'PUBLISHED',
-            approvedById: p.user.id,
-            approvedAt: now,
-            publishedAt: now,
-            deprecatedAt: null,
-          },
+        await move(tx, doc.id, 'publish', {
+          status: 'PUBLISHED',
+          approvedById: p.user.id,
+          approvedAt: now,
+          publishedAt: now,
+          deprecatedAt: null,
         });
         if (!replaces || !doc.supersedesId) return null;
         // Изрично решение на отговорника: новата ревизия заменя старата за ВСИЧКИ табла.
@@ -175,6 +183,7 @@ export function adminDocumentsLifecycleRouter(deps: AppDeps): Router {
       if (replaced) return res.json(replaced);
       res.status(204).end();
     } catch (err) {
+      if (err instanceof TransitionLost) return apiError(res, 409, 'invalid_transition');
       next(err);
     }
   });
@@ -187,10 +196,7 @@ export function adminDocumentsLifecycleRouter(deps: AppDeps): Router {
       if (!body.success) return apiError(res, 400, 'invalid_input');
       const { p, doc } = got;
       const errorsAffected = await deps.db.$transaction(async (tx) => {
-        await tx.document.update({
-          where: { id: doc.id },
-          data: { status: 'DEPRECATED', deprecatedAt: new Date() },
-        });
+        await move(tx, doc.id, 'deprecate', { status: 'DEPRECATED', deprecatedAt: new Date() });
         return errorsSourcedBy(tx, p.user.tenantId, doc.id);
       });
       await audit(req, 'deprecate', doc, {
@@ -200,6 +206,7 @@ export function adminDocumentsLifecycleRouter(deps: AppDeps): Router {
       // Кодовете на отписания документ не изчезват тихо: връщат се на отговорника.
       res.json({ errorsAffected });
     } catch (err) {
+      if (err instanceof TransitionLost) return apiError(res, 409, 'invalid_transition');
       next(err);
     }
   });
@@ -212,13 +219,15 @@ export function adminDocumentsLifecycleRouter(deps: AppDeps): Router {
       if (!body.success) return apiError(res, 400, 'invalid_input');
       const { p, doc } = got;
       // Възстановяващият е „подготвил“ повторното публикуване → четирите очи важат и за него.
-      await deps.db.document.update({
-        where: { id: doc.id },
-        data: { status: 'REVIEW', submittedById: p.user.id, deprecatedAt: null },
+      await move(deps.db, doc.id, 'restore', {
+        status: 'REVIEW',
+        submittedById: p.user.id,
+        deprecatedAt: null,
       });
       await audit(req, 'restore', doc, { reason: reasonForAudit(body.data.reason) });
       res.status(204).end();
     } catch (err) {
+      if (err instanceof TransitionLost) return apiError(res, 409, 'invalid_transition');
       next(err);
     }
   });

@@ -139,6 +139,14 @@ describe('отписване и възстановяване (обратимо, 
       const r = await w.ownerA1.post(`/api/v1/admin/documents/${id}/${action}`, reason);
       assert.deepEqual([r.status, r.body.code], [409, 'invalid_transition'], action);
     }
+    // Два едновременни прехода: само единият минава (условно обновяване по статуса).
+    const both = await Promise.all(
+      [w.ownerA1, w.ownerA2].map((c) =>
+        c.post(`/api/v1/admin/documents/${id}/deprecate`, { reason: 'Doppio' }),
+      ),
+    );
+    assert.deepEqual(both.map((r) => r.status).sort(), [200, 409]);
+    assert.equal((await audits('kb.document.deprecate', id)).length, 1);
   });
 });
 

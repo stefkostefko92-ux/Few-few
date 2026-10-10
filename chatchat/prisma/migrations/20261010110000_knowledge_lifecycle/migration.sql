@@ -24,8 +24,10 @@ SET "effectiveFrom" = LEAST(
 WHERE "effectiveFrom" IS NULL;
 
 ALTER TABLE "Document" ALTER COLUMN "effectiveFrom" SET NOT NULL;
+-- NOT VALID: важи за всеки нов/променен ред; стар ред с въведени по-рано обратни дати не спира
+-- миграцията (данните не се пипат — документите са неизменими).
 ALTER TABLE "Document" ADD CONSTRAINT "Document_effective_range_check"
-  CHECK ("effectiveTo" IS NULL OR "effectiveTo" >= "effectiveFrom");
+  CHECK ("effectiveTo" IS NULL OR "effectiveTo" >= "effectiveFrom") NOT VALID;
 
 -- 3. Приложимост: изричен фърмуер („всички версии“ вместо мълчалив null) и конкретно табло.
 ALTER TABLE "DocumentApplicability" ADD COLUMN "allFirmware" BOOLEAN NOT NULL DEFAULT false,
