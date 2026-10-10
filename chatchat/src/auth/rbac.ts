@@ -30,7 +30,9 @@ export type Capability =
   // разрешава ДРУГ човек с роля по политиката на клиента (services/steps/policy.ts).
   | 'step:record'
   | 'step:approve'
-  | 'policy:manage'; // политиката за разрешенията (кой разрешава кой клас) — администраторът
+  | 'policy:manage' // политиката за разрешенията (кой разрешава кой клас) — администраторът
+  // Интеграцията с helpdesk (FR-09, §14.4): конекторът, тестът, дневникът на доставките.
+  | 'integrations:manage';
 
 /** Всички роли (за zod на входа: API, CLI, филтри). */
 export const ROLES = [
@@ -96,6 +98,7 @@ const CAPABILITIES: Record<Role, readonly Capability[]> = {
     'kpi:read',
     'conversation:use',
     'policy:manage',
+    'integrations:manage',
     ...STAFF_CHAT,
   ],
   // Платформеният администратор управлява потребители САМО в своя клиент (по tenantId като всички):

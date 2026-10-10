@@ -63,6 +63,10 @@ model Tenant {
   stepExecutions CaseStepExecution[]
   ticketEvents   TicketEvent[]
   handoffs       CaseHandoff[]
+
+  // Интеграцията с helpdesk (FR-09, §14.4): конекторът и outbox-ът на доставките.
+  helpdeskIntegration HelpdeskIntegration?
+  helpdeskDeliveries  HelpdeskDelivery[]
 }
 
 /// Фирма в рамките на клиента (монтажник, дистрибутор, сервиз) — разделя портала.
@@ -595,19 +599,30 @@ model Ticket {
   updatedAt   DateTime     @updatedAt
 
   /// Cascade: ретенцията изтрива затворения случай заедно с тикета (GDPR чл. 5(1)(e)).
-  case         Case                @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  events       TicketEvent[]
-  infoRequests TicketInfoRequest[]
-  handoffs     CaseHandoff[]
+  case               Case                @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  events             TicketEvent[]
+  infoRequests       TicketInfoRequest[]
+  handoffs           CaseHandoff[]
+  /// Външният запис в helpdesk-а (id/ключ) — services/integrations.
+  helpdeskLink       HelpdeskLink?
+  helpdeskDeliveries HelpdeskDelivery[]
 
   @@index([ownerId])
   @@index([status, queue, createdAt])
 }
 
-/// Дневникът на промените по тикета — по един ред на промяна, в транзакцията ѝ. Подготовка за
-/// outbox към helpdesk (Zendesk/JSM — следващ поток). В payload — само идентификатори и кодове.
+/// Откъде идва промяната по тикета: от ChatChat или от helpdesk-а (обратната синхронизация).
+/// Промяна от helpdesk-а НЕ се връща към него (без ехо) — outbox-ът я пропуска.
+enum TicketEventSource {
+  APP
+  EXTERNAL
+}
+
+/// Дневникът на промените по тикета — по един ред на промяна, в транзакцията ѝ. При включена
+/// интеграция всеки ред от ChatChat ражда доставка в outbox-а към helpdesk (`HelpdeskDelivery`).
+/// В payload — само идентификатори и кодове.
 model TicketEvent {
-  id         String        @id @default(cuid())
+  id         String            @id @default(cuid())
   tenantId   String
   ticketId   String
   caseId     String
@@ -615,11 +630,13 @@ model TicketEvent {
   actorId    String?
   fromStatus TicketStatus?
   toStatus   TicketStatus?
-  payload    Json          @default("{}")
-  at         DateTime      @default(now())
+  payload    Json              @default("{}")
+  source     TicketEventSource @default(APP)
+  at         DateTime          @default(now())
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  tenant           Tenant            @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  ticket           Ticket            @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  helpdeskDelivery HelpdeskDelivery?
 
   @@index([ticketId, at])
   @@index([tenantId, at])
@@ -1187,6 +1204,111 @@ model EmailOutbox {
   @@index([userId])
   @@index([tenantId, createdAt])
   @@index([notificationId])
+}
+
+// ─── Интеграция с helpdesk (FR-09, §14.4) ─────────────────────────────────────────────────────
+
+enum HelpdeskKind {
+  WEBHOOK // общ подписан webhook (HMAC-SHA256 с времеви печат)
+  ZENDESK // Zendesk Tickets API
+  JSM // Jira Service Management — Service Desk REST API (request + comment)
+}
+
+enum HelpdeskDeliveryStatus {
+  PENDING
+  SENDING
+  DELIVERED
+  SKIPPED
+  /// Dead-letter: изчерпани опити или окончателна грешка. Спира следващите събития на тикета,
+  /// докато администраторът не я пусне отново (подредбата по тикет не се нарушава).
+  DEAD
+}
+
+/// Конекторът към helpdesk на клиента — най-много един на клиент. Тайните (токени, HMAC ключове)
+/// са в `secrets`: AES-256-GCM с INTEGRATION_KEK, вързани към клиента; никога в API, одит или лог.
+model HelpdeskIntegration {
+  id        String       @id @default(cuid())
+  tenantId  String       @unique
+  kind      HelpdeskKind
+  enabled   Boolean      @default(false)
+  /// Неповерителната настройка по вида (адрес, поддомейн, service desk…) — zod при запис и четене.
+  settings  Json         @default("{}")
+  /// Шифрованите тайни (`v1.<id на ключа>.<base64>`) или null — services/integrations/secrets.ts.
+  secrets   String?
+  /// Идентификаторът във входящия адрес (128 случайни бита): не е тайна — входът се удостоверява с подписа.
+  inboundId String       @unique
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  tenant     Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  deliveries HelpdeskDelivery[]
+  links      HelpdeskLink[]
+  receipts   HelpdeskInboundReceipt[]
+}
+
+/// Outbox към helpdesk-а: по един ред на `TicketEvent` от ChatChat, в транзакцията на промяната и
+/// само при включена интеграция. `seq` подрежда по тикет — събитие N+1 не тръгва преди N.
+model HelpdeskDelivery {
+  id            String                 @id @default(cuid())
+  tenantId      String
+  integrationId String
+  ticketId      String
+  /// Събитието в дневника на тикета — едно събитие = една доставка (идемпотентност при запис).
+  eventId       String                 @unique
+  eventType     String
+  seq           Int
+  status        HelpdeskDeliveryStatus @default(PENDING)
+  attempts      Int                    @default(0)
+  notBefore     DateTime               @default(now())
+  /// Наемът на изпращача — изтекъл (срив по средата) → редът се взима отново.
+  lockedUntil   DateTime?
+  /// Само код (http_503, timeout, ssrf_blocked…) — никога текст от отсрещната страна или тайна.
+  lastError     String?
+  deliveredAt   DateTime?
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+
+  tenant      Tenant              @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  integration HelpdeskIntegration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  ticket      Ticket              @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  event       TicketEvent         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([ticketId, seq])
+  @@index([status, notBefore])
+  @@index([tenantId, createdAt])
+  @@index([integrationId])
+}
+
+/// Връзката тикет ↔ записът в helpdesk-а (Zendesk id, JSM issueId/ключ, id от webhook получателя).
+/// Смяна на вида/целта на конектора трие връзките — новият helpdesk получава тикета наново.
+model HelpdeskLink {
+  id            String   @id @default(cuid())
+  ticketId      String   @unique
+  integrationId String
+  externalId    String
+  /// Човешкият ключ (JSM „HELPDESK-1“), ако го има.
+  externalKey   String?
+  createdAt     DateTime @default(now())
+
+  ticket      Ticket              @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  integration HelpdeskIntegration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+
+  @@unique([integrationId, externalId])
+  @@index([integrationId, externalKey])
+}
+
+/// Защита от повторение на входящите известия: отпечатък (SHA-256) на всяко прието известие.
+/// Пази се малко над прозореца за времевия печат — по-старото и без това се отказва.
+model HelpdeskInboundReceipt {
+  id            String   @id @default(cuid())
+  integrationId String
+  nonce         String
+  receivedAt    DateTime @default(now())
+
+  integration HelpdeskIntegration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+
+  @@unique([integrationId, nonce])
+  @@index([receivedAt])
 }
 
 /// Контролна точка на одитната верига (ретенция NFR-08): преди да се изтрият най-старите събития,

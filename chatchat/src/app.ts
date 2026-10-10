@@ -20,6 +20,7 @@ import { adminDocumentsViewRouter } from './routes/admin-documents-view.js';
 import { adminErrorsRouter } from './routes/admin-errors.js';
 import { adminErrorsLifecycleRouter } from './routes/admin-errors-lifecycle.js';
 import { adminErrorsVersionsRouter } from './routes/admin-errors-versions.js';
+import { adminIntegrationsRouter } from './routes/admin-integrations.js';
 import { adminKpiRouter } from './routes/admin-kpi.js';
 import { adminSubjectRouter } from './routes/admin-subject.js';
 import { adminUserActionsRouter } from './routes/admin-user-actions.js';
@@ -40,6 +41,7 @@ import { mountPdfjs } from './vendor.js';
 import { chatRouter } from './routes/chat.js';
 import { conversationsRouter } from './routes/conversations.js';
 import { filesRouter } from './routes/files.js';
+import { integrationsInboundRouter } from './routes/integrations-inbound.js';
 import { meRouter } from './routes/me.js';
 import { messageMarksRouter } from './routes/message-marks.js';
 import { messagesRouter } from './routes/messages.js';
@@ -51,6 +53,7 @@ import { ticketsRouter } from './routes/tickets.js';
 import type { AttachmentDeps } from './services/attachments.js';
 import { QR_TOKEN } from './services/devices.js';
 import type { MailPolicy } from './services/email/enqueue.js';
+import type { IntegrationDeps } from './services/integrations/deps.js';
 
 export type Diagnoser = (input: DiagnoseInput, signal: AbortSignal) => Promise<DiagnoseOutput>;
 
@@ -81,6 +84,8 @@ export interface AppDeps {
   aiCircuit?: () => BreakerState | null;
   /** Имейл известията (Brevo): null/липсва → изключени, без outbox (fail-open, известията остават). */
   mail?: MailPolicy | null;
+  /** Интеграцията с helpdesk (FR-09): null/липсва → изключена (няма INTEGRATION_KEK), админ API 503. */
+  integrations?: IntegrationDeps | null;
 }
 
 /** Зависимостите след сглобяване — с хъба, който рутерите на работното пространство ползват. */
@@ -168,6 +173,8 @@ export function createApp(appDeps: AppDeps): express.Express {
   // Качването на файлове е сурово тяло със собствен таван — само по своите пътища, СЛЕД сесия,
   // CSRF, роля и достъп до случая, и ПРЕДИ JSON парсерите (JSON лог е файл, не заявка).
   app.use('/api/v1', attachmentUploadRouter(deps));
+  // Входящото от helpdesk-а: подпис върху СУРОВОТО тяло, без сесия — преди JSON парсера.
+  app.use('/api/v1', integrationsInboundRouter(deps));
   // Документите с хиляди страници са по-големи — по-високият таван е само за админ пътищата на
   // знанието и СЛЕД проверката за роля (и втори фактор): анонимен или портален потребител не кара
   // сървъра да парсва 8 MB. Директорията (/admin/users) е с обичайния таван и своя способност.
@@ -200,6 +207,8 @@ export function createApp(appDeps: AppDeps): express.Express {
   app.use('/api/v1/admin', adminKpiRouter(deps));
   // Политиката за разрешенията на стъпки (policy:manage) — и тя преди рутерите на знанието.
   app.use('/api/v1/admin', stepPolicyRouter(deps));
+  // Интеграцията с helpdesk (integrations:manage) — също преди рутерите на знанието.
+  app.use('/api/v1/admin', adminIntegrationsRouter(deps));
   app.use('/api/v1/admin', adminCatalogRouter(deps));
   app.use('/api/v1/admin', adminDocumentsRouter(deps));
   app.use('/api/v1/admin', adminDocumentsViewRouter(deps));

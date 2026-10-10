@@ -1,12 +1,14 @@
-import type { Prisma, TicketStatus } from '@prisma/client';
+import type { Prisma, TicketEventSource, TicketStatus } from '@prisma/client';
 import { appendAudit } from '../../audit.js';
 import { addTimeline } from '../cases.js';
+import { enqueueHelpdeskDelivery } from '../integrations/enqueue.js';
 
 /**
  * ЕДИНСТВЕНАТА точка за промяна по тикет (FR-09, FR-19): всяка промяна вика `recordTicketEvent`
  * В СВОЯТА транзакция — ред в дневника на тикета (`TicketEvent`), събитие в хронологията на
- * случая (AC-19) и звено в одитната верига. Дневникът е подготовката за outbox към helpdesk
- * (Zendesk/JSM — следващ поток): синхронизацията ще чете оттук, без да пипа маршрутите.
+ * случая (AC-19), звено в одитната верига и — при включен конектор на клиента — доставка в
+ * outbox-а към helpdesk (`services/integrations/enqueue.ts`, §14.4). Промяна, дошла от
+ * helpdesk-а, е с източник `EXTERNAL` и не се връща обратно към него.
  *
  * В `detail` — САМО идентификатори, кодове и броячи: влиза в хронологията, която вижда и
  * порталът. Свободен текст (причини) — само в `auditOnly`, маскиран, и само в одита.
@@ -52,6 +54,8 @@ export interface TicketEventInput {
   detail?: EventDetail;
   /** Само за одита: маскирана причина и други метаданни за персонала. */
   auditOnly?: Record<string, unknown>;
+  /** Откъде е промяната; по подразбиране ChatChat (`APP`), обратната синхронизация — `EXTERNAL`. */
+  source?: TicketEventSource;
 }
 
 export async function recordTicketEvent(
@@ -63,7 +67,8 @@ export async function recordTicketEvent(
     ...(e.to !== undefined ? { to: e.to } : {}),
   };
   const payload = { ticketId: e.ticket.id, ...statuses, ...(e.detail ?? {}) };
-  await tx.ticketEvent.create({
+  const source = e.source ?? 'APP';
+  const event = await tx.ticketEvent.create({
     data: {
       tenantId: e.tenantId,
       ticketId: e.ticket.id,
@@ -73,7 +78,9 @@ export async function recordTicketEvent(
       fromStatus: e.from ?? null,
       toStatus: e.to ?? null,
       payload: payload as Prisma.InputJsonValue,
+      source,
     },
+    select: { id: true },
   });
   await addTimeline(tx, e.ticket.caseId, e.type, e.actorId, payload);
   await appendAudit(tx, {
@@ -83,5 +90,13 @@ export async function recordTicketEvent(
     objectType: 'ticket',
     objectId: e.ticket.id,
     detail: { caseId: e.ticket.caseId, ...statuses, ...(e.detail ?? {}), ...(e.auditOnly ?? {}) },
+  });
+  // Последно — след ключа на одита (виж enqueue.ts за реда на заключванията).
+  await enqueueHelpdeskDelivery(tx, {
+    tenantId: e.tenantId,
+    ticketId: e.ticket.id,
+    eventId: event.id,
+    type: e.type,
+    source,
   });
 }
