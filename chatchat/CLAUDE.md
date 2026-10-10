@@ -23,7 +23,8 @@ mammoth (DOCX) · pdftoppm + tesseract (OCR, само в образа, `execFile
 npm ci
 npm run gate              # prettier + typecheck (src + tests) + unit тестове + build — „готово“ = зелено
 npm test                  # unit: AI оркестратор (фалшив модел), речник за безопасност, gate, retrieval
-npm run test:integration  # иска жива PostgreSQL: DATABASE_URL=postgresql://…/chatchat_test
+npm run test:integration  # иска жива PostgreSQL: DATABASE_URL=postgresql://…/chatchat_test + ролите
+                          # chatchat_app/chatchat_system (TEST_APP_DATABASE_URL/TEST_SYSTEM_DATABASE_URL по избор)
 npm run dev               # :4330, чете .env (PUBLIC_BASE_URL, DATABASE_URL, SESSION_PEPPER, MFA_ENC_KEY; VERTEX_* по избор)
 npm run tenant:create     # след build: клиент + първи потребител от средата (TENANT_*, USER_*);
                           # без USER_PASSWORD печата еднократен линк /reset#… (72 ч)
@@ -103,6 +104,9 @@ src/
   storage/     частното хранилище: envelope.ts (AES-256-GCM на 64 KiB сегменти, DEK на файл, опакован с KEK) ·
                keyring.ts/keys.ts · file-store.ts · maintenance.ts/sweep.ts (encrypt/rekey/verify) · factory.ts
                (ЕДИНСТВЕНИЯТ начин да се направи хранилище) · clamd клиент (INSTREAM, node:net)
+  db/          изолацията в базата (RLS): tenant-context.ts (AsyncLocalStorage + `withTenant`), rls.ts
+               (`set_config` в същата транзакция при всяка заявка), discovery.ts (тесните пътища преди
+               клиента), guard.ts (в продукция — никога superuser/BYPASSRLS/собственик), clients.ts (ролите)
   store/scope.ts  ЕДИНСТВЕНОТО място за филтрите на знанието (клиент, аудитория, PUBLISHED, валидност, табло)
   services/tickets/  машината на тикета (flow.ts), действия/жизнен цикъл, recordTicketEvent (events.ts), realtime
   services/integrations/  helpdesk (FR-09, §14.4): outbox.ts (наем, по ред на тикета, отстъп, dead-letter), connectors/
@@ -217,6 +221,16 @@ tests/e2e/     Playwright потоците (техник, мобилен, сни
 - **Circuit breaker (NFR-07):** отворен → `CircuitOpenError` → чатът 503 `ai_unavailable` (fail-closed,
   човешкото съобщение остава, повторът с `clientMessageId` работи); embeddings → лексикално (fail-open).
   `/readyz` пази `{ ok, app, ai }` за деплой сондата (+ `aiCircuit`); `ok` зависи само от базата.
+- **Изолацията е и в базата (PostgreSQL RLS, §15.1):** приложението и worker-ът вървят като
+  `chatchat_app` (NOBYPASSRLS) през `db/rls.ts` с контекст от `loadPrincipal`/`withTenant`, само локално
+  за транзакцията; без контекст — нула редове и отказан запис. Преди клиента (вход, SSO, линк за
+  парола, входящ helpdesk) — само `db/discovery.ts` (тесни SECURITY DEFINER функции, връщат само id).
+  `chatchat_system` (BYPASSRLS) — само за взимане от outbox-ите, дайджести, клиента на файла,
+  векторите, агрегатите на метриките и CLI-тата; обработката на ред — пак под RLS. Всяка таблица с
+  данни на клиент има политика (`tests/integration/rls-isolation.test.ts` е по каталога: нова таблица =
+  политика в миграция + ред в `rls-world.ts`). Забранено: `$transaction([...])`. Права — само през
+  `chatchat_apply_grants()`. P2002 под RLS идва без `target` → `isUniqueOn` + потвърждение с четене;
+  `@@` под RLS → кандидати през `chatchat_search_*`. Ролите ги създава `deploy.sh` (`ensure_db_roles`).
 - **Helpdesk (FR-09, §14.4):** доставката се записва в outbox-а В транзакцията на `recordTicketEvent`
   (няма промяна без доставка); по ред на тикета (`seq`), dead-letter спира тикета до „Пусни наново“;
   промяна от helpdesk-а (`EXTERNAL`) не се връща обратно. Навън — само `payload.ts` (без имена,
