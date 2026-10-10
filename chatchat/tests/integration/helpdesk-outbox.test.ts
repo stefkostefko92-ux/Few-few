@@ -222,6 +222,31 @@ describe('общият webhook: доставка, подпис, минимиза
     assert.equal(audit.tenantId, w.tenantA.id);
   });
 
+  test('наем: в полет при друг процес — не се взима; изтекъл (срив) — взима се отново', async () => {
+    await configureWebhook(w.adminA, fake);
+    const t = await openTicket(w.tech);
+    await claim(w.support, t.id);
+    const [head] = await rows(t.id);
+    const lease = (ms: number) =>
+      db.helpdeskDelivery.update({
+        where: { id: head?.id ?? '' },
+        data: { status: 'SENDING', attempts: 1, lockedUntil: new Date(Date.now() + ms) },
+      });
+    await lease(60_000);
+    await drain(deps);
+    assert.equal(fake.to('/hook').length, 0, 'чужд наем и подредбата спират и двете');
+    await lease(-1_000);
+    await drain(deps);
+    const list = await rows(t.id);
+    assert.deepEqual(
+      list.map((r) => [r.status, r.attempts]),
+      [
+        ['DELIVERED', 2],
+        ['DELIVERED', 1],
+      ],
+    );
+  });
+
   test('изчерпани опити (5xx) → DEAD след maxAttempts', async () => {
     await configureWebhook(w.adminA, fake);
     const t = await openTicket(w.tech);
