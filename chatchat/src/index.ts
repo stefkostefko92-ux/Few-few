@@ -22,6 +22,7 @@ import { loadIntegrationsConfig } from './config-integrations.js';
 import { loadSsoConfig } from './config-sso.js';
 import { createLogger } from './logger.js';
 import { instrumentDiagnoser, meteredScanner } from './observability/ai.js';
+import { helpdeskHooks } from './observability/helpdesk.js';
 import { BREAKER_STATE_VALUE, createMetrics, type BreakerName } from './observability/catalog.js';
 import { startMetricsServer } from './observability/server.js';
 import type { AttachmentDeps } from './services/attachments.js';
@@ -160,7 +161,13 @@ if (emailEnabled(config)) {
 }
 
 // Интеграцията с helpdesk (FR-09, §14.4): само с INTEGRATION_KEK — тайните на конекторите са шифровани.
-const integrations = integrationsFrom(loadIntegrationsConfig(), config.PUBLIC_BASE_URL, db, logger);
+const integrations = integrationsFrom(
+  loadIntegrationsConfig(),
+  config.PUBLIC_BASE_URL,
+  db,
+  logger,
+  () => helpdeskHooks(metrics),
+);
 if (integrations) integrations.worker.start();
 else logger.warn('INTEGRATION_KEK липсва — интеграцията с helpdesk е изключена');
 // Единният вход (OIDC / Entra ID): без SSO_KEK — изключен (503 sso_unavailable), паролата работи.

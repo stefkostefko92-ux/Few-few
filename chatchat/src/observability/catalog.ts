@@ -194,6 +194,27 @@ export function createMetrics() {
         labelNames: ['direction', 'kind'],
       }),
     ),
+    // ── Изпращачът към helpdesk (FR-09, §14.4): агрегати по всички клиенти — без tenant, без id.
+    helpdeskDeliveries: r(
+      new Counter<'result'>({
+        name: 'chatchat_helpdesk_deliveries_total',
+        help: 'Опити за доставка към helpdesk по изход (delivered/skipped/retry/dead/ssrf_blocked/unrecorded).',
+        labelNames: ['result'],
+      }),
+    ),
+    helpdeskOutbox: r(
+      new Gauge<'state'>({
+        name: 'chatchat_helpdesk_outbox',
+        help: 'Редове в outbox-а към helpdesk по състояние (pending/sending; dead — само на включен конектор).',
+        labelNames: ['state'],
+      }),
+    ),
+    helpdeskOldestPending: r(
+      new Gauge({
+        name: 'chatchat_helpdesk_oldest_pending_seconds',
+        help: 'Възраст на най-старата недоставена доставка, която не чака зад dead-letter (0 — няма).',
+      }),
+    ),
   };
   processMetrics(registry);
   return metrics;

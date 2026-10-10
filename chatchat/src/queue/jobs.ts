@@ -101,7 +101,8 @@ export interface DeadLetter {
   reason: string;
 }
 
-export type JobResult = 'completed' | 'retried' | 'dead';
+export const JOB_RESULTS = ['completed', 'retried', 'dead'] as const;
+export type JobResult = (typeof JOB_RESULTS)[number];
 
 export interface QueueHooks {
   /** Изчерпани опити (или невалидни данни): отбелязва обекта (напр. файла като FAILED). */

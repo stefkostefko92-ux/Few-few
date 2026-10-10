@@ -1,6 +1,7 @@
 import { Prisma, type PrismaClient } from '@prisma/client';
 import type { IntegrationDeps } from './deps.js';
 import { deliverOne, type ClaimedDelivery, type Outcome } from './deliver.js';
+import { outboxResult, type OutboxHooks } from './outbox-hooks.js';
 
 /**
  * Изпращачът на outbox-а към helpdesk (асинхронно, без Redis — като имейлите): взима зрелите
@@ -16,6 +17,8 @@ export interface OutboxDeps {
   db: PrismaClient;
   integrations: IntegrationDeps;
   logger: { info: (o: object, m: string) => void; warn: (o: object, m: string) => void };
+  /** Наблюдаемостта (observability/helpdesk.ts) — по избор; без нея нищо не се брои. */
+  hooks?: OutboxHooks;
 }
 
 const LEASE_MS = 2 * 60 * 1000;
@@ -135,8 +138,10 @@ export async function processDeliveries(
         { deliveryId: row.id, errName: err instanceof Error ? err.name : 'unknown' },
         'изходът на доставката не е записан',
       );
+      deps.hooks?.onResult?.('unrecorded');
       continue;
     }
+    deps.hooks?.onResult?.(outboxResult(outcome));
     if (outcome.status === 'DELIVERED') report.delivered += 1;
     else if (outcome.status === 'SKIPPED') report.skipped += 1;
     else if (outcome.status === 'RETRY') report.retried += 1;
