@@ -1448,7 +1448,8 @@ chatchat_migration_failed() {
 
 chatchat_migration_help() {
   local dump good
-  dump="$(ls -1t "$CHATCHAT_SHARED/backups"/pre-deploy-*.sql.gz 2>/dev/null | head -n 1 || true)"
+  # дъмпът е в шифрования том на базата, щом тя е там (chatchat/deploy/pgdata-encrypt.sh), иначе — в backups/
+  dump="$(ls -1t "$CHATCHAT_SHARED/backups"/pre-deploy-*.sql.gz "$CHATCHAT_SHARED/pgdata/pre-deploy"/pre-deploy-*.sql.gz 2>/dev/null | head -n 1 || true)"
   good="$(head -n 1 "$CHATCHAT_LAST_GOOD" 2>/dev/null || true)"
   warn "chatchat: миграцията на базата се провали — откат само на кода не помага (старият код спира на P3009)."
   warn "chatchat: бекъпът отпреди миграцията: ${dump:-(няма — виж $CHATCHAT_SHARED/backups)}"

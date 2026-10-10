@@ -25,7 +25,7 @@ function layout() {
   }
   for (const d of ["systemd", "sbin"]) mkdirSync(join(base, d));
   return { base, app, shared: join(base, "shared"), log: join(base, "log.txt"),
-    systemd: join(base, "systemd"), sbin: join(base, "sbin") };
+    systemd: join(base, "systemd"), sbin: join(base, "sbin"), etc: join(base, "etc") };
 }
 const withLayout = (run) => { const L = layout(); try { run(L); } finally { rmSync(L.base, { recursive: true, force: true }); } };
 
@@ -54,10 +54,12 @@ docker() {
     "compose exec -T db psql"*) echo 1 ;;
     "compose build app") return "$BUILD_RC" ;;
     "compose up -d --remove-orphans") return "$UP_RC" ;;
+    "compose exec -T app node dist/cli/files.js encrypt") return "$FILES_RC" ;;
   esac
   return 0
 }
 curl() { echo "curl \${*: -1}" >> "$LOG"; printf '%s' "$HEALTH_BODY"; }
+mountpoint() { echo "mountpoint $*" >> "$LOG"; [ "$PGDATA_MOUNTED" = 1 ]; }
 nginx() { echo "nginx $*" >> "$LOG"; }
 systemctl() { echo "systemctl $*" >> "$LOG"; return 0; }
 `;
@@ -68,7 +70,8 @@ function deploy(L, env = {}) {
     env: { ...process.env, SCRIPT: join(L.app, "deploy", "deploy.sh"), LOG: L.log,
       CHATCHAT_SHARED: L.shared, CHATCHAT_LE_DIR: join(L.base, "le"), CHATCHAT_HEALTH_WAIT: "0",
       CHATCHAT_SYSTEMD_DIR: L.systemd, CHATCHAT_SBIN: L.sbin, CHATCHAT_AGE: "true",
-      VOLUME_RC: "1", IMAGE_RC: "0", DUMP_RC: "0", REINDEX_RC: "0", BUILD_RC: "0", UP_RC: "0",
+      VOLUME_RC: "1", IMAGE_RC: "0", DUMP_RC: "0", REINDEX_RC: "0", BUILD_RC: "0", UP_RC: "0", FILES_RC: "0",
+      CHATCHAT_PGDATA_CONF_DIR: L.etc, PGDATA_MOUNTED: "0",
       HEALTH_BODY: '{"ok":true,"ai":false}', ...env },
   });
   const log = existsSync(L.log) ? readFileSync(L.log, "utf8") : "";
@@ -97,8 +100,12 @@ test("пръв деплой: ключовете се раждат в shared/.env
   const env = readFileSync(join(L.shared, ".env"), "utf8");
   assert.match(env, /^ATTACHMENT_URL_KEY=\S{40,}$/m);
   assert.match(env, /^MFA_ENC_KEY=\S{40,}$/m);
+  assert.match(env, /^FILES_KEK=\S{40,}$/m);
+  assert.equal(Buffer.from(env.match(/^FILES_KEK=(\S+)$/m)[1], "base64").length, 32, "KEK — 32 байта");
   assert.equal(mode(join(L.shared, ".env")), "600");
-  assert.doesNotMatch(r.stderr + r.log, /ATTACHMENT_URL_KEY=|MFA_ENC_KEY=/, "стойностите не се печатат");
+  assert.doesNotMatch(r.stderr + r.log, /ATTACHMENT_URL_KEY=|MFA_ENC_KEY=|FILES_KEK=/, "стойностите не се печатат");
+  order(r.log, "/readyz", "compose exec -T app node dist/cli/files.js encrypt");
+  assert.match(r.stderr, /pgdata-encrypt\.sh enable/, "подсказва шифрования том на базата");
   assert.equal(readFileSync(join(L.app, ".env"), "utf8"), env, "release-ът носи същия .env");
   assert.equal(mode(join(L.shared, "attachments")), "700");
   assert.equal(mode(join(L.shared, "eval-reports")), "755", "отчетите на оценката — само за четене от приложението");
@@ -242,4 +249,57 @@ test("бекъп без получател: отказ, нищо не е зап�
   assert.notEqual(res.status, 0);
   assert.match(res.stderr, /няма получател/);
   assert.ok(!existsSync(join(L.shared, "backups", "daily")) || readdirSync(join(L.shared, "backups", "daily")).every((f) => f.startsWith(".")));
+}));
+
+// ── шифроване в покой (NFR-03): FILES_KEK, преходът на файловете, шифрованият том на базата ─────────
+test("files:encrypt пада след сондата: само предупреждение, изход 0", () => withLayout((L) => {
+  sharedEnv(L);
+  const r = deploy(L, { FILES_RC: "1" });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stderr, /шифроването на старите прикачени файлове не завърши/);
+}));
+
+function encrypted(L) {
+  mkdirSync(L.etc, { recursive: true });
+  writeFileSync(join(L.etc, "pgdata.conf"), "MODE=keyfile\nSTATE=encrypted\n");
+  mkdirSync(join(L.shared, "pgdata", "data"), { recursive: true });
+}
+const LINE = "COMPOSE_FILE=docker-compose.yml:docker-compose.pgdata.yml";
+
+test("базата в шифрования том, но томът не е отключен: изход 1 преди build — никога върху стария том", () => withLayout((L) => {
+  sharedEnv(L, `${LINE}\n`);
+  encrypted(L);
+  const r = deploy(L, { VOLUME_RC: "0" });
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /chatchat-pgdata open/);
+  assert.doesNotMatch(r.log, /compose build|compose up/);
+}));
+
+test("базата в шифрования том без COMPOSE_FILE в .env: изход 1 (compose би вдигнал стария том)", () => withLayout((L) => {
+  sharedEnv(L);
+  encrypted(L);
+  const r = deploy(L, { VOLUME_RC: "0", PGDATA_MOUNTED: "1" });
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /не я вдигам върху стария том/);
+  assert.doesNotMatch(r.log, /compose build/);
+}));
+
+test("COMPOSE_FILE сочи шифрования том, а той не е настроен: изход 1", () => withLayout((L) => {
+  sharedEnv(L, `${LINE}\n`);
+  const r = deploy(L);
+  assert.equal(r.status, 1);
+  assert.doesNotMatch(r.log, /compose build/);
+}));
+
+test("отключен шифрован том: дъмпът преди миграция е в тома (не на некриптирания диск), без подсказка", () => withLayout((L) => {
+  sharedEnv(L, `${LINE}\n`);
+  encrypted(L);
+  writeFileSync(join(L.shared, ".db-pgvector"), "x\n");
+  writeFileSync(join(L.shared, "pgdata", "data", "PG_VERSION"), "16\n");
+  const r = deploy(L, { PGDATA_MOUNTED: "1" });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.log, /pg_dump/, "старият том го няма, но базата е в шифрования — бекъпът е задължителен");
+  assert.equal(readdirSync(join(L.shared, "pgdata", "pre-deploy")).filter((f) => f.startsWith("pre-deploy-")).length, 1);
+  assert.ok(!existsSync(join(L.shared, "backups")) || !readdirSync(join(L.shared, "backups")).some((f) => f.startsWith("pre-deploy-")));
+  assert.doesNotMatch(r.stderr, /pgdata-encrypt\.sh enable/);
 }));

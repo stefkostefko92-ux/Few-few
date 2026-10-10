@@ -5,9 +5,13 @@
 #
 # Тайните НЕ са тук — идват от `.env` до този файл (mode 600 на сървъра, никога в репото).
 # Задължителни: POSTGRES_PASSWORD (openssl rand -hex 32 — влиза некодирана в DATABASE_URL) ·
-# SESSION_PEPPER (openssl rand -hex 32) · ATTACHMENT_URL_KEY и MFA_ENC_KEY (openssl rand -base64 32) ·
-# PUBLIC_BASE_URL. За AI: VERTEX_PROJECT_ID + GCP_SA_FILE. Образецът и описанието — `.env.example`.
+# SESSION_PEPPER (openssl rand -hex 32) · ATTACHMENT_URL_KEY, MFA_ENC_KEY и FILES_KEK (openssl rand
+# -base64 32) · PUBLIC_BASE_URL. За AI: VERTEX_PROJECT_ID + GCP_SA_FILE. Образецът — `.env.example`.
 # В контейнера влиза само изброеното в `environment:` — нова настройка от `.env` се добавя и там.
+#
+# Шифроване в покой (NFR-03): прикачените файлове — в приложението (FILES_KEK); данните на базата — в
+# LUKS2 том, щом deploy/pgdata-encrypt.sh е пуснат: тогава .env носи
+# COMPOSE_FILE=docker-compose.yml:docker-compose.pgdata.yml и тома db-data го заменя bind към тома.
 name: chatchat
 
 x-logging: &logging
@@ -55,6 +59,8 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?липсва POSTGRES_PASSWORD}
       POSTGRES_DB: chatchat
     volumes:
+      # Без шифрования том. С него (DEPLOY.md, т. 12) docker-compose.pgdata.yml заменя този ред с bind към
+      # $CHATCHAT_SHARED/pgdata/data (LUKS2); старият том остава до ръчното му изтриване.
       - db-data:/var/lib/postgresql/data
     # Без `ports:` и само във вътрешната мрежа — базата не се вижда нито от хоста, нито отвън.
     networks: [backend]
@@ -144,6 +150,12 @@ services:
       ATTACHMENT_URL_KEY: ${ATTACHMENT_URL_KEY:?липсва ATTACHMENT_URL_KEY}
       # Шифроването на MFA (TOTP) тайните в базата. Смяната = всички MFA устройства се записват наново.
       MFA_ENC_KEY: ${MFA_ENC_KEY:?липсва MFA_ENC_KEY}
+      # Шифроването на файловете в покой (NFR-03): главният ключ (KEK), който опакова ключа на всеки файл.
+      # Загубата = файловете (и в бекъпите) не се отварят. Ротация: старият в FILES_KEK_PREVIOUS, после
+      # files:rekey (DEPLOY.md, т. 12). FILES_PLAINTEXT=deny — след files:encrypt (стари нешифровани → отказ).
+      FILES_KEK: ${FILES_KEK:?липсва FILES_KEK}
+      FILES_KEK_PREVIOUS: ${FILES_KEK_PREVIOUS:-}
+      FILES_PLAINTEXT: ${FILES_PLAINTEXT:-}
       # Семантично търсене (pgvector) — по избор; празно → само точното и пълнотекстовото търсене.
       # Имената се сверяват със src/config.ts (празен низ трябва да значи „не е зададено“).
       EMBEDDING_MODEL: ${EMBEDDING_MODEL:-}
