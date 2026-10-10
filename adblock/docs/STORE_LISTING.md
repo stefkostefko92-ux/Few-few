@@ -7,7 +7,7 @@ Supreme AdBlock
 Blocks ads everywhere: YouTube video ads, banners, pop-ups, trackers, cookie prompts and anti-adblock walls.
 
 ## Category
-Productivity
+Privacy & Security
 
 ## Detailed description
 
@@ -41,16 +41,16 @@ Supreme AdBlock removes ads and trackers from the pages you visit, without watch
 - Pop-under blocker: thousands of known pop-up domains can no longer open
   windows behind your back
 - Strips third-party tracking cookies and blocks crypto-miners
-- Daily signed (Ed25519), data-only filter updates, so blocking never goes stale
+- Signed (Ed25519), data-only filter updates twice a day, so blocking never goes stale
 - Live stats: ads blocked, data saved, time saved
 - Sleek Carbon Stealth theme (dark) with a light option
 - Available in 73 languages
 
 HOW IT WORKS
 
-Built for Chrome's current extension platform, not retrofitted to it. Manifest
-V3 took away the old way of blocking requests; this extension was written on the
-new API from the first line, so nothing in it is a workaround on borrowed time.
+Built on Manifest V3, Chrome's current extension platform. Requests are blocked
+with declarativeNetRequest, the API Chrome provides for it, so the browser does
+the filtering without the extension seeing your traffic.
 
 YouTube ads are stopped at the source, so videos simply play. YouTube's video
 servers are never blocked; the ad entries are taken out of the player's data
@@ -58,7 +58,7 @@ before the player reads it.
 
 Protection that does not go stale. Ad networks rotate domains daily, while a
 store review takes days. Our filter data refreshes twice a day, Ed25519-signed
-and version-locked, so a new ad network is handled within hours — and no new
+and version-locked, so a new ad network can be added within hours — and no new
 code is shipped to do it.
 
 No remote code. All logic ships inside the package, including the 19
@@ -72,8 +72,8 @@ scriptlet data) are readable and rebuilt by public scripts. Code MIT licensed;
 the bundled filter lists keep their own licences (listed in the package).
 
 Your browsing data never leaves your device. No account, no analytics, no telemetry, no
-"anonymous usage statistics". We take no money from advertisers and run no
-"acceptable ads" scheme, so nothing is quietly unblocked behind your back.
+"anonymous usage statistics". We take no money from advertisers and no ad is
+let through for a fee, so nothing is quietly unblocked behind your back.
 
 It reaches the ads that rules alone cannot. Pop-unders are refused at the moment
 a page calls window.open, for 2,700+ known hosts; anti-adblock walls are
@@ -123,17 +123,17 @@ Supreme AdBlock маха рекламите и тракерите от стра�
 
 КАК РАБОТИ
 
-Създаден за днешната платформа за разширения на Chrome, не преправен набързо за нея. Manifest V3 отне стария начин за блокиране на заявки; това разширение е писано върху новия API от първия ред, така че в него няма заобиколно решение, което утре ще спре да работи.
+Създаден върху Manifest V3, текущата платформа за разширения на Chrome. Заявките се блокират с declarativeNetRequest — API-то, което Chrome дава за това — така че филтрира самият браузър, без разширението да вижда трафика ви.
 
 Рекламите в YouTube се спират при източника, затова видеата просто тръгват. Видео сървърите на YouTube никога не се блокират; рекламните записи се махат от данните на плейъра, преди той да ги прочете.
 
-Защита, която не остарява. Рекламните мрежи сменят домейни всеки ден, а ревюто в магазина отнема дни. Филтърните ни данни се обновяват два пъти дневно, подписани с Ed25519 и заключени по версия — нова рекламна мрежа се покрива за часове, без да се качва нов код.
+Защита, която не остарява. Рекламните мрежи сменят домейни всеки ден, а ревюто в магазина отнема дни. Филтърните ни данни се обновяват два пъти дневно, подписани с Ed25519 и заключени по версия — нова рекламна мрежа може да се добави за часове, без да се качва нов код.
 
 Нула отдалечен код. Цялата логика е в пакета, включително 19-те анти-адблок рутини и сайтовете, за които важат. От мрежата идват само данни: хостове и CSS селектори. Без eval, без Function(), без скрипт, издърпан от сървър.
 
 Можете да прочетете всеки ред. Няма билд стъпка и нищо не е минифицирано: разархивирайте разширението и кодът, който одитирате, е точно кодът, който се изпълнява. Лиценз MIT.
 
-Данните ви от сърфирането не напускат устройството ви. Без акаунт, без аналитика, без телеметрия, без „анонимна статистика на употребата“. Не вземаме пари от рекламодатели и нямаме схема „приемливи реклами“, значи нищо не се отпушва тихомълком зад гърба ви.
+Данните ви от сърфирането не напускат устройството ви. Без акаунт, без аналитика, без телеметрия, без „анонимна статистика на употребата“. Не вземаме пари от рекламодатели и не пропускаме реклами срещу заплащане, значи нищо не се отпушва тихомълком зад гърба ви.
 
 Стига до рекламите, до които само правилата не достигат. Pop-under прозорците се отказват в момента, в който страницата извика window.open — за над 2700 известни хоста; анти-адблок стените се неутрализират; а съвсем нови рекламни полета, които никой лист още не познава, се хващат по формата им, не по правило.
 
@@ -170,17 +170,17 @@ Supreme AdBlock toglie annunci e tracker dalle pagine che visiti, senza osservar
 
 COME FUNZIONA
 
-Costruito per l'attuale piattaforma delle estensioni di Chrome, non adattato a posteriori. Manifest V3 ha eliminato il vecchio modo di bloccare le richieste; questa estensione è stata scritta sulla nuova API dalla prima riga, quindi non contiene ripieghi destinati a smettere di funzionare.
+Costruito su Manifest V3, l'attuale piattaforma delle estensioni di Chrome. Le richieste sono bloccate con declarativeNetRequest, l'API che Chrome mette a disposizione per questo: filtra il browser stesso, senza che l'estensione veda il tuo traffico.
 
 Gli annunci di YouTube vengono fermati alla fonte, così i video partono e basta. I server video di YouTube non vengono mai bloccati; le voci pubblicitarie vengono tolte dai dati del player prima che li legga.
 
-Una protezione che non invecchia. Le reti pubblicitarie cambiano dominio ogni giorno, mentre una revisione dello store richiede giorni. I nostri dati dei filtri si aggiornano due volte al giorno, firmati con Ed25519 e vincolati alla versione: una nuova rete pubblicitaria è coperta in poche ore, senza distribuire nuovo codice.
+Una protezione che non invecchia. Le reti pubblicitarie cambiano dominio ogni giorno, mentre una revisione dello store richiede giorni. I nostri dati dei filtri si aggiornano due volte al giorno, firmati con Ed25519 e vincolati alla versione: una nuova rete pubblicitaria può essere aggiunta in poche ore, senza distribuire nuovo codice.
 
 Nessun codice remoto. Tutta la logica è nel pacchetto, comprese le 19 routine anti-adblock e i siti a cui si applicano. Dalla rete arrivano solo dati: nomi host e selettori CSS. Nessun eval, nessuna Function(), nessuno script scaricato da un server.
 
 Puoi leggere ogni riga. Non c'è alcuna fase di build e nulla è minificato: decomprimi l'estensione e il codice che verifichi è esattamente quello che viene eseguito. Licenza MIT.
 
-I tuoi dati di navigazione non lasciano mai il dispositivo. Nessun account, nessuna analitica, nessuna telemetria, nessuna «statistica d'uso anonima». Non prendiamo denaro dagli inserzionisti e non gestiamo alcun programma di «annunci accettabili», quindi nulla viene sbloccato di nascosto.
+I tuoi dati di navigazione non lasciano mai il dispositivo. Nessun account, nessuna analitica, nessuna telemetria, nessuna «statistica d'uso anonima». Non prendiamo denaro dagli inserzionisti e nessun annuncio passa a pagamento, quindi nulla viene sbloccato di nascosto.
 
 Raggiunge gli annunci che le sole regole non toccano. I pop-under vengono rifiutati nel momento in cui la pagina chiama window.open, per oltre 2.700 host noti; i muri anti-adblock vengono neutralizzati; e gli spazi pubblicitari nuovissimi, che nessuna lista conosce ancora, vengono individuati dalla loro forma, non da una regola.
 
@@ -217,17 +217,17 @@ Supreme AdBlock entfernt Werbung und Tracker von den Seiten, die Sie besuchen, o
 
 SO FUNKTIONIERT ES
 
-Für die aktuelle Erweiterungsplattform von Chrome gebaut, nicht nachträglich angepasst. Manifest V3 hat den alten Weg zum Blockieren von Anfragen abgeschafft; diese Erweiterung wurde von der ersten Zeile an auf der neuen API geschrieben — hier gibt es keine Behelfslösung auf Zeit.
+Gebaut auf Manifest V3, der aktuellen Erweiterungsplattform von Chrome. Anfragen werden mit declarativeNetRequest blockiert, der dafür vorgesehenen Chrome-API: Der Browser filtert selbst, ohne dass die Erweiterung Ihren Datenverkehr sieht.
 
 YouTube-Anzeigen werden an der Quelle gestoppt, deshalb laufen Videos einfach. Die Videoserver von YouTube werden nie blockiert; die Werbeeinträge werden aus den Daten des Players entfernt, bevor er sie liest.
 
-Schutz, der nicht veraltet. Werbenetzwerke wechseln täglich die Domain, eine Store-Prüfung dauert Tage. Unsere Filterdaten aktualisieren sich zweimal täglich, Ed25519-signiert und versionsgebunden: Ein neues Werbenetzwerk ist in Stunden abgedeckt — ohne neuen Code auszuliefern.
+Schutz, der nicht veraltet. Werbenetzwerke wechseln täglich die Domain, eine Store-Prüfung dauert Tage. Unsere Filterdaten aktualisieren sich zweimal täglich, Ed25519-signiert und versionsgebunden: Ein neues Werbenetzwerk kann in Stunden ergänzt werden — ohne neuen Code auszuliefern.
 
 Kein Code aus dem Netz. Die gesamte Logik steckt im Paket, einschließlich der 19 Anti-Adblock-Routinen und der Seiten, für die sie gelten. Aus dem Netz kommen nur Daten: Hostnamen und CSS-Selektoren. Kein eval, kein Function(), kein vom Server geladenes Skript.
 
 Sie können jede Zeile lesen. Es gibt keinen Build-Schritt und nichts ist minifiziert: Entpacken Sie die Erweiterung, und der Code, den Sie prüfen, ist genau der Code, der läuft. MIT-Lizenz.
 
-Ihre Browsing-Daten verlassen nie Ihr Gerät. Kein Konto, keine Analyse, keine Telemetrie, keine „anonyme Nutzungsstatistik“. Wir nehmen kein Geld von Werbetreibenden und betreiben kein Programm für „akzeptable Werbung“ — es wird also nichts heimlich freigeschaltet.
+Ihre Browsing-Daten verlassen nie Ihr Gerät. Kein Konto, keine Analyse, keine Telemetrie, keine „anonyme Nutzungsstatistik“. Wir nehmen kein Geld von Werbetreibenden und lassen keine Werbung gegen Bezahlung durch — es wird also nichts heimlich freigeschaltet.
 
 Es erreicht die Werbung, an die Regeln allein nicht herankommen. Pop-under werden in dem Moment abgewiesen, in dem die Seite window.open aufruft — für über 2.700 bekannte Hosts; Anti-Adblock-Sperren werden neutralisiert; und brandneue Werbeflächen, die noch keine Liste kennt, werden an ihrer Form erkannt, nicht an einer Regel.
 
