@@ -120,6 +120,8 @@
         "emailChanged": "nuova email",
         "verifiedNow": "email segnata come confermata",
         "reason": "motivo: «{reason}»",
+        "banMistake": "il blocco era un errore",
+        "extended": "piano prolungato: {change}",
         "emailHash": "hash dell'email {hash}",
         "ordersKept": "ordini conservati: {n}",
         "ordersCancelled": "ordini annullati: {n}",
@@ -240,6 +242,7 @@
     "trialStarted": "periodo di prova iniziato (email confermata)",
     "withdrawal": "recesso dal contratto",
     "createdByStaff": "creato dal team",
-    "accountDeleted": "account eliminato"
+    "accountDeleted": "account eliminato",
+    "banMistake": "prolungato dopo un blocco errato"
   }
 }

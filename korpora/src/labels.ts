@@ -15,6 +15,8 @@ export const LABEL = {
   createdByStaff: '@created-by-staff',
   /** Поръчката чакаше плащане, когато акаунтът беше изтрит — вече не може да се изпълни. */
   accountDeleted: '@account-deleted',
+  /** Планът е удължен с времето на блокиране, вдигнато като грешка (services/admin-security.ts). */
+  banMistake: '@ban-mistake',
 } as const;
 
 export function customerLabel(userId: string): string {

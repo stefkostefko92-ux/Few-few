@@ -170,6 +170,7 @@ accountAdminRouter.post(
       res,
       await unbanAccount(staffActor(req), id, {
         note: stringField(req.body, 'note', ADMIN_LIMITS.noteMax),
+        mistake: bool(req.body, 'mistake'),
       }),
       'flash.unbanned',
       path(id),

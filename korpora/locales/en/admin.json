@@ -120,6 +120,8 @@
         "emailChanged": "new e-mail",
         "verifiedNow": "e-mail marked as confirmed",
         "reason": "reason: “{reason}”",
+        "banMistake": "the block was a mistake",
+        "extended": "plan extended: {change}",
         "emailHash": "e-mail hash {hash}",
         "ordersKept": "orders kept: {n}",
         "ordersCancelled": "orders cancelled: {n}",
@@ -240,6 +242,7 @@
     "trialStarted": "trial started (email confirmed)",
     "withdrawal": "withdrawal from the contract",
     "createdByStaff": "created by the team",
-    "accountDeleted": "the account was deleted"
+    "accountDeleted": "the account was deleted",
+    "banMistake": "extended after a mistaken block"
   }
 }

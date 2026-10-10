@@ -120,6 +120,8 @@
         "emailChanged": "нов имейл",
         "verifiedNow": "имейлът е отбелязан като потвърден",
         "reason": "причина: „{reason}“",
+        "banMistake": "блокирането е било грешка",
+        "extended": "планът е удължен: {change}",
         "emailHash": "хеш на имейла {hash}",
         "ordersKept": "запазени поръчки: {n}",
         "ordersCancelled": "отменени поръчки: {n}",
@@ -240,6 +242,7 @@
     "trialStarted": "тестовият период започна (потвърден имейл)",
     "withdrawal": "отказ от договора",
     "createdByStaff": "създаден от екипа",
-    "accountDeleted": "акаунтът е изтрит"
+    "accountDeleted": "акаунтът е изтрит",
+    "banMistake": "удължен след грешно блокиране"
   }
 }

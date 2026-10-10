@@ -111,6 +111,17 @@ const READERS: Record<string, { keys: readonly string[]; read: Reader }> = {
       str(d.reason) ? t('admin.audit.d.reason', { reason: str(d.reason) ?? '' }) : null,
     ],
   },
+  admin_account_unbanned: {
+    keys: ['mistake', 'from', 'until'],
+    read: (d, f) => [
+      d.mistake === true ? f.t('admin.audit.d.banMistake') : null,
+      str(d.until)
+        ? f.t('admin.audit.d.extended', {
+            change: change(isoDate(d.from, f), isoDate(d.until, f)) ?? '',
+          })
+        : null,
+    ],
+  },
   admin_sessions_revoked: {
     keys: ['count'],
     read: (d, { t }) => [

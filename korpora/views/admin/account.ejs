@@ -134,6 +134,7 @@
       <form method="post" action="/admin/accounts/<%= account.id %>/unban#access" class="form">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <div class="field"><label for="unban-note"><%= t('admin.account.unbanNote') %></label><input id="unban-note" name="note" type="text" maxlength="<%= limits.noteMax %>"></div>
+        <div class="field"><label class="check"><input type="checkbox" name="mistake" value="yes" aria-describedby="unban-mistake-hint"><span><%= t('admin.account.unbanMistake') %></span></label><p class="hint" id="unban-mistake-hint"><%= t('admin.account.unbanMistakeHint') %></p></div>
         <div class="actions"><button class="btn btn-primary" type="submit"><%- include('../partials/icon', { name: 'unlock' }) %><%= t('admin.account.unban') %></button></div>
       </form>
       <% } %>
@@ -150,7 +151,7 @@
     <% if (account.bans.length) { %>
     <h3><%= t('admin.account.banHistory') %></h3>
     <ul class="mini">
-      <% for (const b of account.bans) { %><li><%= fmt.dateTime(b.createdAt) %>, <%= fmt.label(b.bannedByLabel) %>: <%= b.reason %><% if (b.liftedAt) { %><br><small><%= t('admin.account.liftedBy', { date: fmt.dateTime(b.liftedAt), who: fmt.label(b.liftedByLabel) }) %><% if (b.liftNote) { %>: <%= b.liftNote %><% } %></small><% } %></li><% } %>
+      <% for (const b of account.bans) { %><li><%= fmt.dateTime(b.createdAt) %>, <%= fmt.label(b.bannedByLabel) %>: <%= b.reason %><% if (b.liftedAt) { %><br><small><%= t('admin.account.liftedBy', { date: fmt.dateTime(b.liftedAt), who: fmt.label(b.liftedByLabel) }) %><% if (b.liftNote) { %>: <%= b.liftNote %><% } %><% if (b.mistake) { %> — <b><%= t('admin.account.liftedMistake') %></b><% } %></small><% } %></li><% } %>
     </ul>
     <% } %>
   </section>

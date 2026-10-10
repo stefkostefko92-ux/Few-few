@@ -3,6 +3,8 @@ import { audited } from '../audit.js';
 import { sha256Hex } from '../crypto.js';
 import { destroyAllSessions } from '../auth/sessions.js';
 import { issueEmailToken } from '../auth/tokens.js';
+import { LABEL } from '../labels.js';
+import { extendedAfterMistake } from '../plans/ban.js';
 import { accountLocale } from '../i18n.js';
 import { greetingName, mailBanned, mailResetPassword, mailTwoFactor } from '../mail/templates.js';
 import { fail, isResult, targetFor, type ActionResult, type StaffActor } from './admin-common.js';
@@ -56,6 +58,8 @@ export async function banAccount(
         data: {
           userId: id,
           reason: parsed.data.reason,
+          // същият момент като bannedAt: времето на блокирането се смята и от двете (plans/ban.ts)
+          createdAt: now,
           bannedById: actor.id,
           bannedByLabel: actor.label,
         },
@@ -80,6 +84,22 @@ export async function banAccount(
   return { ok: true };
 }
 
+const unbanSchema = z.object({
+  note: z
+    .string()
+    .trim()
+    .max(ADMIN_LIMITS.noteMax)
+    .refine((value) => !hasUnsafeChars(value))
+    .default(''),
+  /** „Блокирането беше грешка“: планът се удължава с времето на блокирането (plans/ban.ts). */
+  mistake: z.boolean().default(false),
+});
+
+/**
+ * Вдигане на бана. С отметката „Блокирането беше грешка“ тестовият или платеният период се удължава точно с
+ * времето на блокирането — така обещават общите условия („Блокиране“); за Lifetime отметката в историята на
+ * блокиранията е основата за удължаването на първите му месеци. Удължаването влиза и в историята на плана.
+ */
 export async function unbanAccount(
   actor: StaffActor,
   id: string,
@@ -88,34 +108,67 @@ export async function unbanAccount(
   const target = await targetFor(actor, id, 'accounts:ban');
   if (isResult(target)) return target;
   if (!target.bannedAt) return fail('admin.errors.notBanned');
-  const note = z
-    .object({
-      note: z
-        .string()
-        .trim()
-        .max(ADMIN_LIMITS.noteMax)
-        .refine((value) => !hasUnsafeChars(value))
-        .default(''),
-    })
-    .safeParse(raw);
-  if (!note.success) return fail('admin.errors.input');
+  const parsed = unbanSchema.safeParse(raw);
+  if (!parsed.success) return fail('admin.errors.input');
+  const { note, mistake } = parsed.data;
   const now = new Date();
-  await audited(
+  const lifted = await audited(
     actor,
     async (tx) => {
-      await tx.user.update({ where: { id }, data: { bannedAt: null, banReason: null } });
+      // Банът се чете наново под ключа, не от прочетеното преди транзакцията: две паралелни вдигания
+      // (двоен клик, стар раздел) не удължават плана два пъти и не пишат два реда в одита.
+      await tx.$executeRaw`SELECT 1 FROM "User" WHERE "id" = ${id} FOR UPDATE`;
+      const user = await tx.user.findUniqueOrThrow({ where: { id } });
+      if (!user.bannedAt) return null;
+      const until = mistake ? extendedAfterMistake(user, user.bannedAt, now) : null;
+      await tx.user.update({
+        where: { id },
+        data: { bannedAt: null, banReason: null, ...(until ? { planExpiresAt: until } : {}) },
+      });
       await tx.accountBan.updateMany({
         where: { userId: id, liftedAt: null },
         data: {
           liftedAt: now,
           liftedById: actor.id,
           liftedByLabel: actor.label,
-          liftNote: note.data.note || null,
+          liftNote: note || null,
+          mistake,
         },
       });
+      if (until) {
+        await tx.planChange.create({
+          data: {
+            userId: id,
+            actorId: actor.id,
+            actorLabel: actor.label,
+            fromPlan: user.plan,
+            toPlan: user.plan,
+            fromExpiresAt: user.planExpiresAt,
+            toExpiresAt: until,
+            note: LABEL.banMistake,
+          },
+        });
+      }
+      return { mistake, from: until ? user.planExpiresAt : null, until };
     },
-    { action: 'admin.account.unbanned', targetType: 'user', targetId: id },
+    (done) =>
+      done
+        ? {
+            action: 'admin.account.unbanned',
+            targetType: 'user',
+            targetId: id,
+            detail:
+              done.until && done.from
+                ? {
+                    mistake: true,
+                    from: done.from.toISOString(),
+                    until: done.until.toISOString(),
+                  }
+                : { mistake: done.mistake },
+          }
+        : null,
   );
+  if (!lifted) return fail('admin.errors.notBanned');
   return { ok: true };
 }
 
