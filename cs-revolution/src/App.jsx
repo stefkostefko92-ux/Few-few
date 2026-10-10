@@ -3158,10 +3158,12 @@ export default function App(){
               <img src="/brand/cs-logo-480.webp" alt="Carbon Stealth VCC" width={168} height={168} loading="lazy" decoding="async" style={{height:168,width:168,display:"block"}}/>
             </div>
             <p style={{fontSize:10,lineHeight:1.9,color:"#ddd",maxWidth:280,marginBottom:16}}>{t("ft_desc")}</p>
-            <div style={{display:"flex",gap:10}}>
+            <div style={{display:"flex",flexWrap:"wrap",gap:10}}>
               <a href="https://wa.me/393792969699" style={{width:32,height:32,border:"1px solid rgba(245,245,240,.06)",color:"#C9D1D6",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,cursor:"none"}} title="WhatsApp">WA</a>
               <a href="mailto:info@carbonstealth.eu" style={{width:32,height:32,border:"1px solid rgba(245,245,240,.06)",color:"#C9D1D6",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,cursor:"none"}} title="Email">EM</a>
               <a href="https://www.linkedin.com/company/carbonstealth.vcc" style={{width:32,height:32,border:"1px solid rgba(245,245,240,.06)",color:"#C9D1D6",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,letterSpacing:".1em",cursor:"none"}} title="LinkedIn">LI</a>
+              <a href="https://www.youtube.com/@CarbonStealth" target="_blank" rel="noopener" aria-label="YouTube — Carbon Stealth VCC" style={{width:32,height:32,border:"1px solid rgba(245,245,240,.06)",color:"#C9D1D6",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,letterSpacing:".1em",cursor:"none"}} title="YouTube">YT</a>
+              <a href="https://www.tiktok.com/@zerofucksgiiven" target="_blank" rel="noopener" aria-label="TikTok" style={{width:32,height:32,border:"1px solid rgba(245,245,240,.06)",color:"#C9D1D6",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,letterSpacing:".1em",cursor:"none"}} title="TikTok">TT</a>
               <a href="https://share.google/0XLOlO0r1ETbGpUkZ" target="_blank" rel="noopener" style={{width:32,height:32,border:"1px solid rgba(245,245,240,.06)",color:"#C9D1D6",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,cursor:"none"}} title={lang==="it"?"Profilo Google — lascia una recensione":lang==="bg"?"Google профил — остави отзив":"Google Business Profile — leave a review"}>G</a>
             </div>
           </div>
