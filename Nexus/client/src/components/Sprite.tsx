@@ -91,6 +91,9 @@ interface Props {
   /** Суровият предмет (slug + метаданни) — включва изпечена 3D икона, ако има такава, и прави
    *  плочката кликаема за жив 3D преглед (виж items3d/ItemViewer3DHost.tsx). */
   raw?: Sprite3DRaw;
+  /** Slug на предмета без пълните метаданни (напр. липсваща част от сет, за която API-то връща
+   *  само slug) — стига, за да се избере изпеченият рендер, без да прави плочката кликаема. */
+  itemSlug?: string;
 }
 
 /** Rarity → frame border colour. Photos are shown un-tinted; the badge
@@ -104,11 +107,11 @@ const RARITY_FRAME: Record<Rarity, { border: string; glow: string }> = {
 };
 
 export default function Sprite({
-  name, category, subType, tier, rarity, enchant = 0, tone, size = 32, title, className, raw,
+  name, category, subType, tier, rarity, enchant = 0, tone, size = 32, title, className, raw, itemSlug,
 }: Props): React.ReactElement {
   const slug = resolveIconSlug(name, category, subType, tier);
   const manifest = useBakedManifest();
-  const baked = bakedSrc(manifest, raw?.slug, slug);
+  const baked = bakedSrc(manifest, raw?.slug ?? itemSlug, slug);
   // Рендерът е само за предмети/отвари/камъни; клас/звяр/лагер/икони си остават на старите снимки.
   const isItemIcon = !/^(class-|monster|camp-|icon-)/.test(slug);
   const waiting = manifest === undefined && isItemIcon;
@@ -220,8 +223,9 @@ export default function Sprite({
  *  is what unlocks the baked 3D icon + the click-to-open live 3D preview (see Sprite props). */
 export function spriteForItem(
   item: { slug?: string; name?: string; icon?: string; category?: string; sub_type?: string; tier?: number; rarity?: string }
-): { name?: string; category?: string; subType?: string; tier?: number; rarity?: Rarity; raw?: Sprite3DRaw } {
+): { name?: string; category?: string; subType?: string; tier?: number; rarity?: Rarity; raw?: Sprite3DRaw; itemSlug?: string } {
   return {
+    itemSlug: item.slug,
     name: item.icon && item.icon.startsWith('potion_') ? `potion-${item.icon.slice(7)}` : undefined,
     category: item.category,
     subType: item.sub_type,

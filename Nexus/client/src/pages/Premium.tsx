@@ -140,7 +140,7 @@ export default function Premium(): React.ReactElement {
           </div>
         </div>
         {mode === 'dev' && (
-          <div className="card" style={{ background: 'rgba(214,161,61,.06)', borderColor: 'var(--gold-3)', position: 'relative' }}>
+          <div className="card" style={{ background: 'rgba(103,230,239,.06)', borderColor: 'var(--gold-3)', position: 'relative' }}>
             <strong style={{ color: 'var(--gold-1)' }}>{t('premium.devModeActive')}</strong>
             <p className="muted" style={{ marginTop: 6, marginBottom: 0 }}>
               <Trans i18nKey="premium.devModeNote" components={{ code: <code /> }}>
@@ -161,7 +161,7 @@ export default function Premium(): React.ReactElement {
               position: 'relative',
               borderColor: p.best_value ? 'var(--gold-2)' : p.popular ? 'var(--sapphire-1)' : undefined,
               boxShadow: p.best_value
-                ? '0 0 32px rgba(214,161,61,.25)'
+                ? '0 0 32px rgba(103,230,239,.25)'
                 : p.popular
                 ? '0 0 24px rgba(106,167,255,.18)'
                 : undefined,

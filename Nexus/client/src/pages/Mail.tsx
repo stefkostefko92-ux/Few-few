@@ -61,7 +61,7 @@ export default function Mail(): React.ReactElement {
                 padding: 10,
                 cursor: 'pointer',
                 borderColor: selected?.id === m.id ? 'var(--gold-2)' : undefined,
-                background: m.read_at ? undefined : 'rgba(214,161,61,.06)',
+                background: m.read_at ? undefined : 'rgba(103,230,239,.06)',
               }}
               onClick={() => open(m)}
             >

@@ -6,7 +6,7 @@ export default function NotFound(): React.ReactElement {
   const { t } = useTranslation();
   return (
     <div className="panel" style={{ textAlign: 'center', paddingTop: 60, paddingBottom: 60 }}>
-      <div style={{ fontFamily: 'var(--font-display)', fontSize: 96, color: 'var(--gold-1)', textShadow: '0 0 24px rgba(214,161,61,.3)' }}>404</div>
+      <div style={{ fontFamily: 'var(--font-display)', fontSize: 96, color: 'var(--gold-1)', textShadow: '0 0 24px rgba(103,230,239,.3)' }}>404</div>
       <h2 style={{ marginTop: 8 }}>{t('notFound.title')}</h2>
       <p className="muted" style={{ marginTop: 12 }}>{t('notFound.body')}</p>
       <div style={{ marginTop: 24, display: 'flex', justifyContent: 'center', gap: 12 }}>

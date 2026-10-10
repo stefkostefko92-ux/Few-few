@@ -61,7 +61,7 @@ export default function Bestiary(): React.ReactElement {
         {regionProgress.length > 0 && (
           <div className="grid-cards" style={{ marginBottom: 16 }}>
             {regionProgress.map((rp) => (
-              <div key={rp.region} className="card" style={rp.complete && !rp.claimed ? { borderColor: 'var(--gold-3)', background: 'rgba(214,161,61,.06)' } : undefined}>
+              <div key={rp.region} className="card" style={rp.complete && !rp.claimed ? { borderColor: 'var(--gold-3)', background: 'rgba(103,230,239,.06)' } : undefined}>
                 <div className="flex between" style={{ alignItems: 'center' }}>
                   <strong>{prettyRegion(rp.region)}</strong>
                   <span className="muted text-sm">{rp.killed}/{rp.total}</span>

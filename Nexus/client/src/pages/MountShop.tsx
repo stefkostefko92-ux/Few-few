@@ -48,7 +48,7 @@ const MOUNT_SPRITE: Record<string, string> = {
 function StatPill({ label, value, kind }: { label: string; value: number; kind: 'physd' | 'physf' | 'magd' | 'magf' | 'cd' }) {
   const palette: Record<string, { bg: string; fg: string }> = {
     physd: { bg: 'rgba(232,90,79,.15)',  fg: 'var(--crimson-1)' },
-    physf: { bg: 'rgba(214,161,61,.15)', fg: 'var(--gold-1)' },
+    physf: { bg: 'rgba(103,230,239,.15)', fg: 'var(--gold-1)' },
     magd:  { bg: 'rgba(194,148,255,.15)', fg: '#c294ff' },
     magf:  { bg: 'rgba(106,167,255,.15)', fg: 'var(--azure-1)' },
     cd:    { bg: 'rgba(106,216,164,.15)', fg: 'var(--emerald-1)' },

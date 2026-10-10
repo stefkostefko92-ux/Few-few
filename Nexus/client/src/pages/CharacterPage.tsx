@@ -109,7 +109,7 @@ export default function CharacterPage(): React.ReactElement {
               {char.current_title && <span style={{ color: 'var(--amethyst-1)', fontSize: 18, marginLeft: 8 }}>, {char.current_title}</span>}
             </h1>
             <div className="muted">{t(`common.class.${char.class}`, { defaultValue: char.class })} · {t('characterPage.record', { wins: char.wins, losses: char.losses, rating: char.arena_rating })}</div>
-            <div className="card" style={{ marginTop: 14, background: 'rgba(214,161,61,.06)' }}>
+            <div className="card" style={{ marginTop: 14, background: 'rgba(103,230,239,.06)' }}>
               <strong style={{ color: 'var(--gold-1)' }}>{t('characterPage.howTitle')}</strong>
               <div className="muted text-sm" style={{ marginTop: 4 }}>
                 {t('characterPage.howDesc')}

@@ -82,7 +82,7 @@ export default function NotificationBell(): React.ReactElement | null {
               <div
                 key={n.id}
                 onClick={() => go(n)}
-                style={{ padding: '10px 12px', borderBottom: '1px solid var(--border, #2a2f3a)', cursor: n.ref ? 'pointer' : 'default', background: n.read_at ? 'transparent' : 'rgba(214,161,61,.06)' }}
+                style={{ padding: '10px 12px', borderBottom: '1px solid var(--border, #2a2f3a)', cursor: n.ref ? 'pointer' : 'default', background: n.read_at ? 'transparent' : 'rgba(103,230,239,.06)' }}
               >
                 <div style={{ fontSize: 13 }}>{n.message}</div>
                 <div className="muted" style={{ fontSize: 11, marginTop: 2 }}>{new Date(n.created_at).toLocaleString(i18n.language)}</div>

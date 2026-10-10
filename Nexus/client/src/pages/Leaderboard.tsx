@@ -86,7 +86,7 @@ export default function Leaderboard(): React.ReactElement {
       {tab === 'season' && season && (
         <div>
           {/* Сезонна лента: моят ранг + оставащо време + наградите на върха. */}
-          <div className="card" style={{ marginBottom: 14, borderColor: 'var(--gold-3)', background: 'rgba(214,161,61,.05)' }}>
+          <div className="card" style={{ marginBottom: 14, borderColor: 'var(--gold-3)', background: 'rgba(103,230,239,.05)' }}>
             <div className="flex between" style={{ flexWrap: 'wrap', gap: 8 }}>
               <div>
                 <strong style={{ color: 'var(--gold-1)' }}>🏆 {t('leaderboard.seasonTitle', { key: season.season_key, defaultValue: 'Season {{key}}' })}</strong>

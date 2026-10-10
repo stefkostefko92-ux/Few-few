@@ -79,7 +79,7 @@ export default function OnboardingTour(): React.ReactElement | null {
           borderRadius: 16,
           padding: 28,
           color: '#f4e4ba',
-          boxShadow: '0 0 32px rgba(214, 161, 61, .25), 0 24px 60px rgba(0, 0, 0, .8)',
+          boxShadow: '0 0 32px rgba(103,230,239,.25), 0 24px 60px rgba(0, 0, 0, .8)',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
@@ -110,7 +110,7 @@ export default function OnboardingTour(): React.ReactElement | null {
                 key={i}
                 style={{
                   width: 8, height: 8, borderRadius: '50%',
-                  background: i === step ? 'var(--gold-1)' : 'rgba(214, 161, 61, .25)',
+                  background: i === step ? 'var(--gold-1)' : 'rgba(103,230,239,.25)',
                   transition: 'background .2s',
                 }}
               />

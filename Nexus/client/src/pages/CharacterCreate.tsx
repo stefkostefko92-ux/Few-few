@@ -76,7 +76,7 @@ export default function CharacterCreate(): React.ReactElement {
               style={{
                 cursor: 'pointer',
                 borderColor: c.key === chosen ? 'var(--gold-2)' : undefined,
-                boxShadow: c.key === chosen ? '0 0 28px rgba(214,161,61,.3)' : undefined,
+                boxShadow: c.key === chosen ? '0 0 28px rgba(103,230,239,.3)' : undefined,
                 background: c.key === chosen ? 'linear-gradient(180deg, #221a0a, #0c0a05)' : undefined,
               }}
               onClick={() => setChosen(c.key)}

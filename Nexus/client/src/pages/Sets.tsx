@@ -44,7 +44,7 @@ export default function Sets(): React.ReactElement {
             </div>
             <div className="set-card-pieces">
               {s.pieces.map((p) => (
-                <Sprite key={p.slug} {...spriteForItem({ ...p, slug: p.slug })} size={40} title={p.name} />
+                <Sprite key={p.slug} {...spriteForItem({ ...p, slug: p.slug })} size={44} title={p.name} className={p.missing ? 'set-piece-missing' : undefined} />
               ))}
             </div>
             <div className="set-card-bonuses">
