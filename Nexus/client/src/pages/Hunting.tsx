@@ -125,7 +125,7 @@ export default function Hunting(): React.ReactElement {
           {regions.map((r) => (
             <div key={r.region} className="card" style={{ opacity: r.unlocked ? 1 : 0.5 }}>
               <img src={`/assets/regions/${r.region}.webp`} alt="" loading="lazy" style={{ width: '100%', aspectRatio: '16 / 9', objectFit: 'cover', borderRadius: 3, marginBottom: 10, filter: r.unlocked ? 'none' : 'grayscale(.7)' }} />
-              <strong style={{ color: 'var(--gold-1)', fontFamily: 'var(--font-display)' }}>{prettyRegion(r.region)}</strong>
+              <strong style={{ color: 'var(--gold-1)', fontFamily: 'var(--font-display)' }}>{t(`world.regions.${r.region}.name`, { defaultValue: prettyRegion(r.region) })}</strong>
               <div className="muted text-sm">{t('hunting.regionInfo', { min: r.min_level, max: r.max_level, count: r.monster_count })}</div>
               <button className="btn btn-primary" style={{ marginTop: 12, width: '100%' }} disabled={!r.unlocked || !char || busy} onClick={() => hunt(r.region)}>
                 {!r.unlocked ? t('hunting.requiresLv', { n: r.gate }) : t('hunting.huntHere')}
