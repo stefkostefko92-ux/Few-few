@@ -97,7 +97,8 @@ src/
                redis-transport.ts (няколко инстанции: pub/sub, събитията — вече authorize-нати по получател)
   observability/  метрики (F3, NFR-09): metrics.ts (регистър, текстов формат, без зависимости) · catalog.ts
                (всички метрики + кофи на 8 s/2 s) · http.ts (RED по шаблон на маршрута) · ai.ts (изход на AI,
-               Safety Gate, антивирус — декоратори) · server.ts (отделният слушател METRICS_PORT)
+               Safety Gate, антивирус — декоратори) · helpdesk.ts (куката на изпращача към helpdesk —
+               `services/integrations/outbox-hooks.ts`) · server.ts (отделният слушател METRICS_PORT)
   vendor.ts    pdf.js от собствения домейн (`/vendor/pdfjs/*`, legacy билд, без .wasm и .map)
   storage/     частното хранилище: envelope.ts (AES-256-GCM на 64 KiB сегменти, DEK на файл, опакован с KEK) ·
                keyring.ts/keys.ts · file-store.ts · maintenance.ts/sweep.ts (encrypt/rekey/verify) · factory.ts
@@ -210,7 +211,9 @@ tests/e2e/     Playwright потоците (техник, мобилен, сни
   случай/текст; таванът на сериите ги брои в `chatchat_metrics_series_dropped_total`. `/metrics` е
   само на отделния слушател (`METRICS_PORT`, по подразбиране изключен), в compose публикуван като
   `127.0.0.1:…`; nginx не го проксира. Точките на монтиране в app.ts и app-routes.ts са статични
-  (параметър в `app.use` би сложил id в етикета). Алармите — по симптом/burn-rate, всяка с раздел в `docs/runbook.md`.
+  (параметър в `app.use` би сложил id в етикета). Метриките на helpdesk са агрегат по всички клиенти
+  (без tenant); броячите, по които има аларма с `increase()`, стартират с нулеви серии; worker-ът се
+  скрейпва като `chatchat-worker` — нов job в `prometheus.yml` влиза и в `JOBS` на `monitoring.sh`. Алармите — по симптом/burn-rate, всяка с раздел в `docs/runbook.md`.
 - **Circuit breaker (NFR-07):** отворен → `CircuitOpenError` → чатът 503 `ai_unavailable` (fail-closed,
   човешкото съобщение остава, повторът с `clientMessageId` работи); embeddings → лексикално (fail-open).
   `/readyz` пази `{ ok, app, ai }` за деплой сондата (+ `aiCircuit`); `ok` зависи само от базата.
