@@ -4,12 +4,13 @@ import { sha256Hex } from '../crypto.js';
 import { destroyAllSessions } from '../auth/sessions.js';
 import { issueEmailToken } from '../auth/tokens.js';
 import { LABEL } from '../labels.js';
-import { extendedAfterMistake } from '../plans/ban.js';
+import { extendedAfterMistake, refundsUnderOldTerms } from '../plans/ban.js';
 import { accountLocale } from '../i18n.js';
 import { greetingName, mailBanned, mailResetPassword, mailTwoFactor } from '../mail/templates.js';
 import { fail, isResult, targetFor, type ActionResult, type StaffActor } from './admin-common.js';
 import { ADMIN_LIMITS } from './admin-limits.js';
 import { hasUnsafeChars, hasUnsafeTextChars } from './names.js';
+import { banRuleDates } from './legal-numbers.js';
 import { keepOrdersAsContracts, notifyStaffOfDeletedOrders } from './order-retention.js';
 
 /* -------------------------------------- бан -------------------------------------- */
@@ -26,12 +27,15 @@ const banSchema = z.object({
 /**
  * Бан с причина: всички сесии падат веднага, причината се показва на човека при опит за вход и тръгва
  * по имейл с правилото и пътя за възражение. Писмо — само до потвърден адрес: непотвърденият може да е
- * чужд и не бива да научава причината.
+ * чужд и не бива да научава причината. Платен план по поръчка отпреди правилото за невръщане, блокиран в
+ * преходния период (plans/ban.ts): писмото казва, че неизползваната част се връща, а одитът и съобщението
+ * за екипа — че тя се дължи.
  */
 export async function banAccount(
   actor: StaffActor,
   id: string,
   raw: unknown,
+  now: Date = new Date(),
 ): Promise<ActionResult> {
   const target = await targetFor(actor, id, 'accounts:ban');
   if (isResult(target)) return target;
@@ -43,7 +47,6 @@ export async function banAccount(
       ? fail('admin.errors.input')
       : fail('admin.errors.banReason', ADMIN_LIMITS.banReason);
   }
-  const now = new Date();
   const banned = await audited(
     actor,
     async (tx) => {
@@ -53,7 +56,7 @@ export async function banAccount(
         where: { id, bannedAt: null },
         data: { bannedAt: now, banReason: parsed.data.reason },
       });
-      if (claimed.count !== 1) return false;
+      if (claimed.count !== 1) return null;
       await tx.accountBan.create({
         data: {
           userId: id,
@@ -65,23 +68,39 @@ export async function banAccount(
         },
       });
       await tx.session.deleteMany({ where: { userId: id } });
-      return true;
+      const user = await tx.user.findUniqueOrThrow({ where: { id } });
+      const periods = await tx.planChange.findMany({
+        where: { userId: id, request: { status: 'DONE' }, toPlan: { in: ['PREMIUM', 'LIFETIME'] } },
+        select: {
+          toPlan: true,
+          toExpiresAt: true,
+          createdAt: true,
+          request: { select: { termsVersion: true } },
+        },
+      });
+      const ordered = periods.map(({ request, ...period }) => ({
+        ...period,
+        termsVersion: request?.termsVersion ?? null,
+      }));
+      return { refundOld: refundsUnderOldTerms(user, ordered, now) };
     },
-    (ok) =>
-      ok
+    (done) =>
+      done
         ? {
             action: 'admin.account.banned',
             targetType: 'user',
             targetId: id,
-            detail: { reason: parsed.data.reason },
+            detail: { reason: parsed.data.reason, ...(done.refundOld ? { refundOld: true } : {}) },
           }
         : null,
   );
   if (!banned) return fail('admin.errors.alreadyBanned');
   if (target.emailVerifiedAt) {
-    void mailBanned(target.email, accountLocale(target), greetingName(target), parsed.data.reason);
+    const locale = accountLocale(target);
+    const oldTerms = banned.refundOld ? banRuleDates(locale) : null;
+    void mailBanned(target.email, locale, greetingName(target), parsed.data.reason, oldTerms);
   }
-  return { ok: true };
+  return banned.refundOld ? { ok: true, flash: 'flash.bannedRefund' } : { ok: true };
 }
 
 const unbanSchema = z.object({

@@ -121,6 +121,7 @@
         "verifiedNow": "email segnata come confermata",
         "reason": "motivo: «{reason}»",
         "banMistake": "il blocco era un errore",
+        "refundOld": "ordine anteriore alla regola del mancato rimborso — è dovuta la parte di prezzo non utilizzata",
         "extended": "piano prolungato: {change}",
         "emailHash": "hash dell'email {hash}",
         "ordersKept": "ordini conservati: {n}",

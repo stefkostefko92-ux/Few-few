@@ -121,6 +121,7 @@
         "verifiedNow": "e-mail marked as confirmed",
         "reason": "reason: “{reason}”",
         "banMistake": "the block was a mistake",
+        "refundOld": "order from before the no-refund rule — the unused part of the price is owed",
         "extended": "plan extended: {change}",
         "emailHash": "e-mail hash {hash}",
         "ordersKept": "orders kept: {n}",

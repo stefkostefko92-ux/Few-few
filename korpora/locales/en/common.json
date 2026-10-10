@@ -113,6 +113,7 @@
     "accountDeleted": "The account has been deleted.",
     "accountSaved": "Changes saved.",
     "banned": "The account is blocked and all its sessions have ended.",
+    "bannedRefund": "The account is blocked and all its sessions have ended. Its paid plan was ordered under the terms in force before the no-refund rule, and the transition is still running (section “Blocking”): we owe the person the unused part of the price. The email to them says so.",
     "codeMismatch": "The code does not match. Try again.",
     "deviceConsentWithdrawn": "Consent withdrawn; the fingerprint we kept is deleted.",
     "emailChangeSent": "We sent a link to the new address. The email changes when you open it.",

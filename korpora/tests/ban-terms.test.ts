@@ -17,6 +17,7 @@ type Locale = (typeof LOCALES)[number];
 const { BAN_REPLY_DAYS, BAN_WARNING_DAYS } = await import('../src/plans/ban.js');
 const { LIFETIME_BASIS_MONTHS } = await import('../src/plans/pricing.js');
 const { termsCopy } = await import('../src/services/terms-copy.js');
+const { banRuleDates } = await import('../src/services/legal-numbers.js');
 
 const CONTACT = 'contact@korpora.example';
 const visible = (html: string) =>
@@ -136,6 +137,8 @@ test('every section the terms and the blocking mail point to is a heading of the
         translate(locale, 'mail.banned.body', { reason: '', terms: '', contact: '' }),
         locale,
       ),
+      ...sectionsIn(translate(locale, 'mail.banned.paid'), locale),
+      ...sectionsIn(translate(locale, 'mail.banned.paidOld', { since: '', from: '' }), locale),
     ];
     assert.ok(named.length > 15, `${locale}: only ${named.length} references found`);
     const missing = named.filter((name) => !headings.has(name));
@@ -160,9 +163,39 @@ test('the blocking mail names the four sections, the end of the contract and the
       terms: 'T',
       contact: 'C',
       reply: translate(locale, 'common.days', { n: BAN_REPLY_DAYS }),
+      paid: translate(locale, 'mail.banned.paid'),
     });
     const named = sectionsIn(body, locale);
     for (const name of sections[locale]) assert.ok(named.includes(name), `${locale}: ${name}`);
     for (const pattern of said[locale]) assert.match(body, pattern, locale);
+  }
+});
+
+test('the blocking mail to an order under the old terms: the dates of the terms and the refund', () => {
+  const said = {
+    bg: [
+      'отпреди 10 октомври 2026 г., а за такива поръчки',
+      'важи от 9 ноември 2026 г. (раздел „Блокиране“)',
+      'връщаме неизползваната част от цената',
+    ],
+    en: [
+      'in force before 10 October 2026, and for such orders',
+      'applies from 9 November 2026 (section “Blocking”)',
+      'we refund the unused part of the price',
+    ],
+    it: [
+      'in vigore prima del giorno 10 ottobre 2026 e per questi ordini',
+      'a decorrere dal giorno 9 novembre 2026 (sezione «Blocco»)',
+      'vi rimborsiamo la parte di prezzo non utilizzata',
+    ],
+  } as const;
+  for (const locale of LOCALES) {
+    const dates = banRuleDates(locale);
+    const text = translate(locale, 'mail.banned.paidOld', {
+      since: dates.banRuleSince,
+      from: dates.banRuleOldOrders,
+    });
+    for (const part of said[locale]) assert.ok(text.includes(part), `${locale}: ${part}`);
+    assert.notEqual(text, translate(locale, 'mail.banned.paid'), locale);
   }
 });
