@@ -43,8 +43,9 @@ inhibit_rules:
     target_matchers: ['severity="ticket"']
     equal: ['component']
   # Процесът е спрял: пробите отвън и отвътре падат като следствие — будим за причината веднъж.
+  # Worker-ът тръгва само след здраво приложение (depends_on) — при спряно приложение е следствие.
   - source_matchers: ['alertname="ChatchatDown"']
-    target_matchers: ['alertname=~"ChatchatNotReady|ChatchatPublicProbeFailed"']
+    target_matchers: ['alertname=~"ChatchatNotReady|ChatchatPublicProbeFailed|ChatchatWorkerDown"']
 
 receivers:
   - name: email-page

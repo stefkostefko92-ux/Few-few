@@ -120,6 +120,25 @@ test("entrypoint: невалидна настройка или опит за и�
   }
 });
 
+// ── целите: monitoring.sh чака точно job-овете от prometheus.yml; всяка аларма в alerts.yml има тест ─
+test("JOBS в monitoring.sh = job_name в prometheus.yml (нов job → и проверката при включване го чака)", () => {
+  const sh = readFileSync(join(cc, "deploy", "monitoring.sh"), "utf8").match(/^JOBS="([^"]+)"$/m);
+  assert.ok(sh, "JOBS в monitoring.sh");
+  const prom = [...readFileSync(join(mon, "prometheus.yml"), "utf8").matchAll(/^\s+- job_name: ([\w-]+)$/gm)].map((m) => m[1]);
+  assert.deepEqual(sh[1].split(" ").sort(), prom.sort());
+  assert.ok(prom.includes("chatchat-worker"), "worker-ът се скрейпва");
+});
+
+test("всяка аларма от alerts.yml има поне един promtool сценарий в alerts.test.yml", () => {
+  const alerts = [...readFileSync(join(mon, "alerts.yml"), "utf8").matchAll(/- alert: (\w+)/g)].map((m) => m[1]);
+  const tested = new Set([...readFileSync(join(mon, "alerts.test.yml"), "utf8").matchAll(/alertname: (\w+)/g)].map((m) => m[1]));
+  const untested = alerts.filter((a) => !tested.has(a));
+  // Старите SLO/симптомни аларми без собствен сценарий (известен дълг; новите — винаги с тест).
+  const legacy = new Set(["ChatchatAvailabilityBurnSlow", "ChatchatAiLatencyBurnSlow", "ChatchatAiLatencyBudgetTicket",
+    "ChatchatSemanticSearchDegraded", "ChatchatUploadsFailing", "ChatchatRealtimeSlow", "ChatchatMetricsCardinalityCap"]);
+  assert.deepEqual(untested.filter((a) => !legacy.has(a)), [], "аларми без сценарий");
+});
+
 test("promtool: правилата и unit тестовете им минават", { skip: !PROMTOOL && "няма promtool" }, () => {
   for (const args of [["check", "rules", "alerts.yml", "infra-alerts.yml"], ["test", "rules", "alerts.test.yml", "infra-alerts.test.yml"]]) {
     const r = spawnSync(PROMTOOL, args, { cwd: mon, encoding: "utf8" });
@@ -180,7 +199,7 @@ curl() {
     */-/ready*) return "$READY_RC" ;;
     */api/v1/rules*) printf '{"data":{"groups":[{"rules":[{"type":"alerting"},{"type":"alerting"},{"type":"recording"}]}]}}' ;;
     *"query=up == 0"*) printf '{"data":{"result":[%s]}}' "$DOWN" ;;
-    *"query=count(count by (job) (up))"*) printf '{"data":{"result":[{"metric":{},"value":[1,"8"]}]}}' ;;
+    *"query=count(count by (job) (up))"*) printf '{"data":{"result":[{"metric":{},"value":[1,"9"]}]}}' ;;
     *query=count*) printf '{"data":{"result":[{"metric":{},"value":[1,"1"]}]}}' ;;
   esac
 }
@@ -242,7 +261,7 @@ test("enable: тайни 400, COMPOSE_FILE пази тома, роля през 
   assert.match(r.log, /curl .*127\.0\.0\.1:4390\/-\/ready/);
   assert.match(r.log, /curl .*127\.0\.0\.1:4393\/-\/ready/);
   assert.match(r.out, /заредени правила за аларми: 2/);
-  assert.match(r.out, /чете всички 8 цели/);
+  assert.match(r.out, /чете всички 9 цели/);
   assert.ok(existsSync(join(L.systemd, "chatchat-audit-verify.timer")));
   assert.equal(mode(join(L.sbin, "chatchat-audit-verify")), "700");
   assert.match(readFileSync(join(L.systemd, "chatchat-audit-verify.service"), "utf8"), new RegExp(`ReadWritePaths=.*${L.shared}/monitoring/textfile`));
@@ -353,6 +372,12 @@ test("docker compose config: валиден с и без docker-compose.monitori
     for (const p of svc.ports ?? []) assert.equal(p.host_ip, "127.0.0.1", `${s}: публикуван само на loopback`);
   }
   assert.equal(cfg.services.app.environment.METRICS_PORT, "9464");
+  assert.equal(cfg.services.worker.environment.METRICS_PORT, "9464", "worker-ът се скрейпва (job chatchat-worker)");
+  for (const s of ["app", "worker"]) {
+    assert.ok(cfg.services[s].networks.backend !== undefined && cfg.services.prometheus.networks.backend !== undefined,
+      `${s}: в обща мрежа с Prometheus (backend)`);
+    for (const p of cfg.services[s].ports ?? []) assert.equal(p.host_ip, "127.0.0.1", `${s}: метриките само на loopback`);
+  }
   assert.equal(cfg.services.alertmanager.environment.ALERT_EMAIL_FROM, "no-reply@example.eu", "подателят пада към MAIL_FROM_EMAIL");
   assert.deepEqual(Object.keys(cfg.services["node-exporter"].networks), ["monitoring"], "node-exporter — без път навън");
   assert.equal(cfg.networks.monitoring.internal, true);
