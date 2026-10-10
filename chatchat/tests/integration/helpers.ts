@@ -19,6 +19,7 @@ import type { EmbeddingModel } from '../../src/ai/embeddings.js';
 import { EmbeddingIndexer } from '../../src/store/embeddings.js';
 import type { AttachmentDeps } from '../../src/services/attachments.js';
 import type { MailPolicy } from '../../src/services/email/enqueue.js';
+import type { IntegrationDeps } from '../../src/services/integrations/deps.js';
 import { RealtimeHub } from '../../src/realtime/hub.js';
 import type { BreakerState } from '../../src/ai/breaker.js';
 import { instrumentDiagnoser } from '../../src/observability/ai.js';
@@ -227,6 +228,8 @@ export async function startApp(
     aiCircuit?: () => BreakerState | null;
     /** Имейл известията (outbox); без него — изключени, като без BREVO_API_KEY. */
     mail?: MailPolicy | null;
+    /** Интеграцията с helpdesk (FR-09); без нея — изключена, като без INTEGRATION_KEK. */
+    integrations?: IntegrationDeps | null;
   } = {},
 ): Promise<Harness> {
   const hub = opts.hub ?? new RealtimeHub();
@@ -271,6 +274,7 @@ export async function startApp(
     ...(opts.metrics ? { metrics: opts.metrics } : {}),
     ...(opts.aiCircuit ? { aiCircuit: opts.aiCircuit } : {}),
     mail: opts.mail ?? null,
+    integrations: opts.integrations ?? null,
   });
   const server: Server = await new Promise((resolve) => {
     const s = app.listen(opts.port ?? 0, '127.0.0.1', () => resolve(s));
