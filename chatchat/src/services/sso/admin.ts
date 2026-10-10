@@ -147,7 +147,9 @@ export async function updateConfig(
   if (identityChanged && !secretChanged) return fail(400, 'sso_secret_required');
   // Нов доставчик се включва само след нов успешен тест (не в същата заявка).
   if (identityChanged && input.enabled === true) return fail(409, 'sso_test_required');
-  const data: Prisma.SsoConfigUpdateManyMutationInput = { ...c };
+  // `updatedAt` изрично: и промяна само на домейните мести версията (празно `data` не би обновило
+  // реда → оптимистичната проверка би отказала с `sso_conflict`).
+  const data: Prisma.SsoConfigUpdateManyMutationInput = { ...c, updatedAt: new Date() };
   if (input.clientSecret !== undefined) {
     data.clientSecretEnc = ctx.sso.box.seal(input.clientSecret, tenantId, id);
     data.secretUpdatedAt = new Date();
