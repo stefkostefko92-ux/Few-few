@@ -1,0 +1,172 @@
+# Мониторингът на ChatChat (NFR-09): Prometheus + Alertmanager (имейл през Brevo) + node-exporter +
+# blackbox-exporter (синтетична проба отвън) + postgres-exporter. Правила, аларми и runbook —
+# deploy/monitoring/, docs/runbook.md.
+#
+# Включва се САМО от deploy/monitoring.sh (root, идемпотентно): той прави тайните и папките, после
+# дописва този файл в реда COMPOSE_FILE на /opt/few-few/shared/chatchat/.env, напр.
+#   COMPOSE_FILE=docker-compose.yml:docker-compose.monitoring.yml
+#   COMPOSE_FILE=docker-compose.yml:docker-compose.pgdata.yml:docker-compose.monitoring.yml
+# и оттам всяко `docker compose` от папката на release-а (deploy.sh, командите в DEPLOY.md) носи и
+# стека — с конфига от СЪЩИЯ release (правилата винаги съвпадат с метриките на кода).
+#
+# Нищо не е публично: Prometheus и Alertmanager са публикувани само на 127.0.0.1 на хоста (графиките —
+# през SSH тунел, runbook), експортерите — само във вътрешните мрежи. Всички контейнери: файлова система
+# само за четене, без Linux capabilities, no-new-privileges, като потребител nobody (65534), с таван на
+# памет, процесор и процеси. Образите — официалните от quay.io (без лимита на Docker Hub), заковани по
+# digest на индекса (amd64 + arm64). Обновяване: `docker buildx imagetools inspect <образ>:<версия>` →
+# новият Digest тук; после promtool/amtool проверките (tools/vps/chatchat-monitoring.test.mjs).
+
+x-monitoring-hardening: &hardening
+  read_only: true
+  security_opt:
+    - no-new-privileges:true
+  cap_drop: [ALL]
+  user: '65534:65534'
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options:
+      max-size: '10m'
+      max-file: '3'
+
+# `monitoring` е вътрешна (без изход навън): там говорят Prometheus, експортерите и Alertmanager.
+# `monitoring-egress` има изход: Alertmanager → Brevo (SMTP 2525), blackbox → публичния адрес; през нея
+# Docker публикува и портовете на 127.0.0.1 (във вътрешна мрежа не публикува). node-exporter (чете
+# файловата система на хоста) и postgres-exporter са САМО във вътрешните мрежи — нямат път навън.
+networks:
+  monitoring:
+    internal: true
+  monitoring-egress: {}
+
+services:
+  app:
+    environment:
+      # Слушателят на метриките е включен винаги, щом има мониторинг: Prometheus го чете като app:9464
+      # през вътрешната мрежа backend. На хоста портът остава само 127.0.0.1 (docker-compose.yml).
+      METRICS_PORT: '9464'
+
+  prometheus:
+    image: quay.io/prometheus/prometheus:v3.13.4@sha256:87861b8cf91579109319ebc300f3f1060e6da9c05d6ae8ad15a20c879e84e32e
+    <<: *hardening
+    pids_limit: 128
+    mem_limit: 768m
+    cpus: 0.5
+    stop_grace_period: 30s
+    entrypoint: ['/bin/sh', '/etc/chatchat-monitoring/entrypoint.sh', 'prometheus']
+    command:
+      - --storage.tsdb.path=/prometheus
+      # 45 дни: целият 30-дневен прозорец на SLO-тата + резерв; таванът по размер пази диска.
+      - --storage.tsdb.retention.time=${PROMETHEUS_RETENTION_TIME:-45d}
+      - --storage.tsdb.retention.size=${PROMETHEUS_RETENTION_SIZE:-4GB}
+      - --web.listen-address=0.0.0.0:9090
+      - --web.external-url=http://127.0.0.1:${PROMETHEUS_PORT:-4390}/
+    environment:
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:?липсва PUBLIC_BASE_URL}
+    tmpfs:
+      - /tmp:size=4m,mode=1777
+    volumes:
+      - ./deploy/monitoring/entrypoint.sh:/etc/chatchat-monitoring/entrypoint.sh:ro
+      - ./deploy/monitoring/prometheus.yml:/etc/chatchat-monitoring/prometheus.yml:ro
+      - ./deploy/monitoring/alerts.yml:/etc/prometheus/rules/alerts.yml:ro
+      - ./deploy/monitoring/infra-alerts.yml:/etc/prometheus/rules/infra-alerts.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - '127.0.0.1:${PROMETHEUS_PORT:-4390}:9090'
+    networks: [backend, monitoring, monitoring-egress]
+    healthcheck:
+      test: ['CMD', 'wget', '-qO', '/dev/null', 'http://127.0.0.1:9090/-/ready']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 1m
+
+  alertmanager:
+    image: quay.io/prometheus/alertmanager:v0.34.1@sha256:e9733bafb1bdef9b00e25a21f8f99dc26a22224bf16641ad754d1649f4c3357a
+    <<: *hardening
+    pids_limit: 64
+    mem_limit: 128m
+    cpus: 0.25
+    entrypoint: ['/bin/sh', '/etc/chatchat-monitoring/entrypoint.sh', 'alertmanager']
+    command:
+      - --storage.path=/alertmanager
+      - --web.listen-address=0.0.0.0:9093
+      - --web.external-url=http://127.0.0.1:${ALERTMANAGER_PORT:-4393}/
+      # Един екземпляр — без клъстерния порт (иначе слуша на 9094 за други Alertmanager-и).
+      - --cluster.listen-address=
+    environment:
+      ALERT_EMAIL_TO: ${ALERT_EMAIL_TO:-}
+      ALERT_EMAIL_FROM: ${ALERT_EMAIL_FROM:-${MAIL_FROM_EMAIL:-}}
+      ALERT_SMTP_SMARTHOST: ${ALERT_SMTP_SMARTHOST:-smtp-relay.brevo.com:2525}
+    tmpfs:
+      - /tmp:size=1m,mode=1777
+    volumes:
+      - ./deploy/monitoring/entrypoint.sh:/etc/chatchat-monitoring/entrypoint.sh:ro
+      - ./deploy/monitoring/alertmanager.yml:/etc/chatchat-monitoring/alertmanager.yml:ro
+      # Тайните — файлове на хоста извън release-а (400, собственик 65534), само за четене.
+      - ${CHATCHAT_SHARED:-/opt/few-few/shared/chatchat}/monitoring/secrets/smtp-user:/run/secrets/smtp-user:ro
+      - ${CHATCHAT_SHARED:-/opt/few-few/shared/chatchat}/monitoring/secrets/smtp-password:/run/secrets/smtp-password:ro
+      # Заглушените аларми (silence) и дневникът на изпратеното оцеляват рестарт.
+      - alertmanager-data:/alertmanager
+    ports:
+      - '127.0.0.1:${ALERTMANAGER_PORT:-4393}:9093'
+    networks: [monitoring, monitoring-egress]
+    healthcheck:
+      test: ['CMD', 'wget', '-qO', '/dev/null', 'http://127.0.0.1:9093/-/ready']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  node-exporter:
+    image: quay.io/prometheus/node-exporter:v1.12.1@sha256:1b4e4438faca4dd7e001dd445d161a4a2091b0fededa84093b3a8dfeae1f1be0
+    <<: *hardening
+    pids_limit: 64
+    mem_limit: 128m
+    cpus: 0.25
+    command:
+      # Файловата система на хоста — само за четене (официалният начин в контейнер); процесът е nobody и
+      # вижда само четимото за всички. Мрежовите броячи са на контейнера (без network_mode: host —
+      # нарочно: така няма и път навън).
+      - --path.rootfs=/host
+      - --web.listen-address=:9100
+      # Резултатът от проверката на одитната верига (chatchat-audit-verify.timer) — textfile collector.
+      - --collector.textfile.directory=/textfile
+    volumes:
+      - /:/host:ro,rslave
+      - ${CHATCHAT_SHARED:-/opt/few-few/shared/chatchat}/monitoring/textfile:/textfile:ro
+    networks: [monitoring]
+
+  blackbox:
+    image: quay.io/prometheus/blackbox-exporter:v0.29.0@sha256:9613f2884689b6fad9f1939f6a3b0388c93a022cfaededb19545b329b5c83dea
+    <<: *hardening
+    pids_limit: 64
+    mem_limit: 64m
+    cpus: 0.25
+    command:
+      - --config.file=/etc/blackbox_exporter/config.yml
+      - --web.listen-address=:9115
+    volumes:
+      - ./deploy/monitoring/blackbox.yml:/etc/blackbox_exporter/config.yml:ro
+    # backend — за /readyz на приложението отвътре; egress — за публичния адрес.
+    networks: [backend, monitoring, monitoring-egress]
+
+  postgres-exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.20.1@sha256:ac5ec343104fae0e2d84a27bb8d69b38430a11910c5382cad85d478d2bab713e
+    <<: *hardening
+    pids_limit: 64
+    mem_limit: 64m
+    cpus: 0.25
+    environment:
+      # Отделна роля само с pg_monitor (deploy/monitoring.sh) — не суперпотребителят на приложението.
+      DATA_SOURCE_URI: db:5432/chatchat?sslmode=disable
+      DATA_SOURCE_USER: chatchat_monitor
+      DATA_SOURCE_PASS_FILE: /run/secrets/pg-monitor-password
+    volumes:
+      - ${CHATCHAT_SHARED:-/opt/few-few/shared/chatchat}/monitoring/secrets/pg-monitor-password:/run/secrets/pg-monitor-password:ro
+    networks: [backend, monitoring]
+    depends_on:
+      db: { condition: service_healthy }
+
+volumes:
+  prometheus-data:
+  alertmanager-data:

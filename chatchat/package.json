@@ -39,6 +39,7 @@
     "user:create": "node dist/cli/tenant.js user",
     "user:reset": "node dist/cli/tenant.js reset",
     "retention": "node dist/cli/retention.js",
+    "audit:verify": "node dist/cli/audit-verify.js",
     "files:status": "node dist/cli/files.js status",
     "files:encrypt": "node dist/cli/files.js encrypt",
     "files:rekey": "node dist/cli/files.js rekey",

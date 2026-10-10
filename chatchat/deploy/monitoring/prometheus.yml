@@ -1,0 +1,78 @@
+# ChatChat — Prometheus в стека за мониторинг (docker-compose.monitoring.yml, docs/runbook.md „Включване“).
+#
+# ШАБЛОН: entrypoint.sh го копира в /tmp на контейнера и сменя двата маркера — __PUBLIC_BASE_URL__ (от
+# .env; адресът на синтетичната проба отвън) и __RULES_DIR__ (папката с правилата). Prometheus не чете
+# променливи на средата в конфига си — затова шаблон, а не втори ръчно поддържан файл.
+#
+# Всичко е във вътрешните мрежи на compose проекта: целите са имена на услуги, нищо не минава през хоста.
+# Метриките на приложението са само кодове и агрегати (CLAUDE.md, инвариантите) — тук нищо не ги разширява.
+#
+# Проверка (тест: tools/vps/chatchat-monitoring.test.mjs): promtool check config <изобразения файл>.
+
+global:
+  scrape_interval: 30s
+  scrape_timeout: 10s
+  evaluation_interval: 1m
+
+rule_files:
+  - __RULES_DIR__/alerts.yml
+  - __RULES_DIR__/infra-alerts.yml
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
+scrape_configs:
+  # Името на job-а е „chatchat“ — ChatchatDown и SLO правилата (alerts.yml) го търсят по него.
+  # docker-compose.monitoring.yml включва слушателя на метриките (METRICS_PORT) вътре в контейнера.
+  - job_name: chatchat
+    static_configs:
+      - targets: ['app:9464']
+
+  - job_name: node
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  - job_name: postgres
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+
+  - job_name: alertmanager
+    static_configs:
+      - targets: ['alertmanager:9093']
+
+  - job_name: prometheus
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Синтетичната проба „отвън“: DNS → TLS → nginx на хоста → приложението, както я вижда браузърът.
+  # Хваща срив на nginx/TLS (които метриките на приложението не виждат) и изтичащ сертификат. Тече от
+  # същата машина — смъртта на целия сървър я вижда само външният монитор (runbook, „Включване“).
+  - job_name: blackbox-https
+    metrics_path: /probe
+    params:
+      module: [https_healthz]
+    static_configs:
+      - targets: ['__PUBLIC_BASE_URL__/healthz']
+    relabel_configs: &probe-relabel
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox:9115
+
+  # Готовността отвътре (базата отговаря): /readyz не е достъпен отвън (nginx го отказва).
+  - job_name: blackbox-ready
+    metrics_path: /probe
+    params:
+      module: [http_ready]
+    static_configs:
+      - targets: ['http://app:4330/readyz']
+    relabel_configs: *probe-relabel
+
+  # Самата проба: самият blackbox exporter (иначе probe_* липсват, без да е ясно защо).
+  - job_name: blackbox
+    static_configs:
+      - targets: ['blackbox:9115']
