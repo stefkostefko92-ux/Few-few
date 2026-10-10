@@ -90,7 +90,7 @@ export async function seedEveryTable(slug: string): Promise<SeededTenant> {
     data: { documentId: document.id, productId: product.id, allFirmware: true },
   });
   const chunk = await db.documentChunk.create({
-    data: { documentId: document.id, ordinal: 0, page: 1, text: 'Testo di prova E01' },
+    data: { documentId: document.id, tenantId, ordinal: 0, page: 1, text: 'Testo di prova E01' },
   });
   const error = await db.errorCode.create({
     data: {

@@ -15,6 +15,9 @@ import { searchTerms, snippetOf, toTsQuery, type SnippetPart } from './search-te
  *   не се намира изобщо (дори попадението би издало съдържание).
  * Подредба: най-новите първо, курсор по (createdAt, id) — стабилна, без OFFSET. Откъсът е части
  * текст (без HTML); авторът в случай — по правилото на читателя (порталът вижда роля, не име).
+ * Под RLS PostgreSQL не ползва GIN индекса за `@@` — кандидатите по индекса дават тесните функции
+ * `chatchat_search_*_messages` (само id-та на клиента от контекста, миграцията 20261011100100);
+ * правилата за достъп и самото съвпадение се проверяват тук, под RLS.
  */
 
 export interface SearchQuery {
@@ -63,7 +66,8 @@ export async function searchMessages(db: PrismaClient, viewer: Viewer, query: Se
   if (query.cursor && !cursor)
     return { ok: false as const, code: 'invalid_cursor' as SearchFailure };
 
-  const match = Prisma.sql`m."tsv" @@ to_tsquery('chatchat_search', ${tsq})`;
+  const tsQuery = Prisma.sql`to_tsquery('chatchat_search', ${tsq})`;
+  const match = Prisma.sql`m."tsv" @@ ${tsQuery}`;
   const after = cursor
     ? Prisma.sql`WHERE (x.created_at, x.id) < (${utc(cursor.at)}, ${cursor.id})`
     : Prisma.empty;
@@ -74,13 +78,15 @@ export async function searchMessages(db: PrismaClient, viewer: Viewer, query: Se
              m."replyToId" AS reply_to_id, m."kind"::text AS kind
         FROM "ConversationMessage" m
         JOIN "Conversation" c ON c."id" = m."conversationId"
-       WHERE ${conversationAccessSql(viewer)} AND m."deletedAt" IS NULL AND ${match}
+       WHERE m."id" IN (SELECT chatchat_search_conversation_messages(${tsQuery}))
+         AND ${conversationAccessSql(viewer)} AND m."deletedAt" IS NULL AND ${match}
       UNION ALL
       SELECT 'case' AS source, m."id", m."caseId" AS parent_id, m."createdAt" AS created_at,
              m."authorId" AS author_id, m."body", NULL AS reply_to_id, m."kind"::text AS kind
         FROM "CaseMessage" m
         JOIN "Case" k ON k."id" = m."caseId"
-       WHERE ${caseScopeSql(viewer)} AND ${audienceSql(viewer)} AND ${match}
+       WHERE m."id" IN (SELECT chatchat_search_case_messages(${tsQuery}))
+         AND ${caseScopeSql(viewer)} AND ${audienceSql(viewer)} AND ${match}
     ) x
     ${after}
     ORDER BY x.created_at DESC, x.id DESC

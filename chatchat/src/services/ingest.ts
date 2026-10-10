@@ -201,6 +201,7 @@ export async function ingestDocument(
       await tx.documentChunk.createMany({
         data: chunks.map((c, i) => ({
           documentId: doc.id,
+          tenantId,
           ordinal: c.ordinal,
           page: c.page,
           section: c.section,

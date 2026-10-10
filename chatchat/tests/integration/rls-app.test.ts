@@ -179,6 +179,46 @@ describe('RLS: клиентът на приложението', () => {
     assert.deepEqual(grants, { pub: false, sys: false, app: true });
   });
 
+  test('всяка SECURITY DEFINER функция: без EXECUTE за PUBLIC (тесните пътища са изрични)', async () => {
+    const rows = await db.$queryRaw<Array<{ fn: string; pub: boolean; app: boolean }>>`
+      SELECT p.oid::regprocedure::text AS fn,
+             has_function_privilege('public', p.oid, 'EXECUTE') AS pub,
+             has_function_privilege('chatchat_app', p.oid, 'EXECUTE') AS app
+        FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+       WHERE n.nspname = 'public' AND p.prosecdef
+       ORDER BY 1`;
+    assert.ok(rows.length >= 9, rows.map((r) => r.fn).join(', '));
+    assert.deepEqual(
+      rows.filter((r) => r.pub).map((r) => r.fn),
+      [],
+    );
+    assert.ok(rows.every((r) => r.app));
+  });
+
+  test('кандидатите за търсенето в историята: само id-та на клиента от контекста', async () => {
+    const ids = (fn: string, word: string) =>
+      appDb
+        .$queryRawUnsafe<Array<{ id: string }>>(
+          `SELECT ${fn}(to_tsquery('chatchat_search', $1)) AS id`,
+          word,
+        )
+        .then((rows) => rows.map((r) => r.id));
+    const own = async (t: string) => ({
+      conv: await withTenant(t, () => ids('chatchat_search_conversation_messages', 'ciao')),
+      kase: await withTenant(t, () => ids('chatchat_search_case_messages', 'risposta')),
+    });
+    const [ra, rb] = [await own(a.tenantId), await own(b.tenantId)];
+    const ofA = await db.conversationMessage.findFirstOrThrow({
+      where: { conversation: { tenantId: a.tenantId } },
+    });
+    const caseOfB = await db.caseMessage.findFirstOrThrow({ where: { caseId: b.caseId } });
+    assert.deepEqual(ra.conv, [ofA.id]);
+    assert.deepEqual(rb.kase, [caseOfB.id]);
+    assert.ok(!rb.conv.includes(ofA.id) && !ra.kase.includes(caseOfB.id), 'нищо от другия клиент');
+    // Без контекст — нищо (функцията не приема клиент като параметър).
+    assert.deepEqual(await ids('chatchat_search_conversation_messages', 'ciao'), []);
+  });
+
   test('одитната верига остава обща и проверима при записи от различни клиенти', async () => {
     await db.auditEvent.deleteMany();
     for (const t of [a.tenantId, b.tenantId, a.tenantId, b.tenantId]) {

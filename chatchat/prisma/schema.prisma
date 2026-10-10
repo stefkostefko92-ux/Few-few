@@ -306,6 +306,8 @@ model Document {
   ingestItems     IngestItem[]
 
   @@unique([tenantId, code, revision])
+  /// За съставния външен ключ на парчетата (клиентът на парчето = клиентът на документа, RLS).
+  @@unique([id, tenantId])
   @@index([tenantId, status])
   @@index([supersedesId])
 }
@@ -343,6 +345,10 @@ model DocumentApplicability {
 model DocumentChunk {
   id             String                      @id @default(cuid())
   documentId     String
+  /// Клиентът на документа — денормализиран за RLS (политиката е равенство, без подзаявка на ред —
+  /// пълнотекстовото търсене минава през всички парчета на клиента; миграцията 20261011100100).
+  /// Съставният външен ключ (documentId, tenantId) → Document(id, tenantId) пази съвпадението.
+  tenantId       String
   ordinal        Int
   page           Int
   section        String?
@@ -359,7 +365,7 @@ model DocumentChunk {
   /// С кой модел е смятан векторът („gemini-embedding-001@768“) — друг модел → преизчисляване.
   embeddingModel String?
 
-  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  document Document @relation(fields: [documentId, tenantId], references: [id, tenantId], onDelete: Cascade)
 
   @@unique([documentId, ordinal])
   @@index([documentId, page])
