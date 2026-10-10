@@ -68,7 +68,8 @@ const FIX = {
   [`GET /api/analytics/${SID}/heatmap`]: { grid: Array.from({ length: 7 }, (_, d) => Array.from({ length: 24 }, (_, h) => Math.max(0, Math.round(9 * Math.sin(((h - 6) / 24) * Math.PI) + (d === 5 || d === 6 ? 3 : 0) + ((d * h) % 3))))), total: 980, days: 90 },
   [`GET /api/analytics/${SID}/leaderboard`]: { period: "30d", leaderboard: [{ userId: "u2", username: "kai.dev", claimed: 64, closed: 61 }, { userId: "u3", username: "luna_mod", claimed: 51, closed: 49 }, { userId: "u4", username: "orbit", claimed: 33, closed: 30 }] },
   [`GET /api/analytics/${SID}/funnel`]: { period: "90d", stages: [{ label: "Submitted", count: 212, pct: 100 }, { label: "Reviewed", count: 193, pct: 91 }, { label: "Approved", count: 141, pct: 67 }, { label: "Denied", count: 52, pct: 25 }], pending: 19 },
-  [`GET /api/tickets/${SID}`]: { tickets, total: 1042 },
+  // statusCounts — броячите на табовете; съвпадат с „Сега“ на прегледа (6 отворени, 4 поети).
+  [`GET /api/tickets/${SID}`]: { tickets, total: 1042, statusCounts: { OPEN: 6, CLAIMED: 4, CLOSED: 1032 } },
   [`GET /api/panels/${SID}`]: [
     { id: "p1", name: "Support", title: "🎫 Need help? Open a ticket", description: "Our team usually answers within minutes.", color: "#8fe600", buttons: [{ label: "Support", emoji: "🎫", style: "SUCCESS" }, { label: "Bug report", emoji: "🐞", style: "SECONDARY" }], supportRoleIds: [roles[1].id], published: true, channelId: "500000000000000002", _count: { tickets: 812 } },
     { id: "p2", name: "Billing", title: "💳 Billing questions", description: "Payments, refunds and invoices.", color: "#fbbf24", buttons: [{ label: "Billing", emoji: "💳", style: "PRIMARY" }], supportRoleIds: [roles[1].id], published: true, channelId: "500000000000000002", _count: { tickets: 141 } },

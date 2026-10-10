@@ -303,7 +303,7 @@ function RecentTickets({ tickets, serverId }) {
               </span>
               <span className="text-sm text-cs-text truncate flex-1">{tk.panel?.name || "Direct ticket"}</span>
               {tk.priority !== "NORMAL" && (
-                <span className={`text-xs font-medium flex-shrink-0 ${PRIORITY_CLS[tk.priority] || ""}`}>{tk.priority}</span>
+                <span className={`text-xs font-medium flex-shrink-0 ${PRIORITY_CLS[tk.priority] || ""}`}>{t(`priority.${String(tk.priority).toLowerCase()}`)}</span>
               )}
               <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium flex-shrink-0 ${st.cls}`}>
                 <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} aria-hidden="true" />
