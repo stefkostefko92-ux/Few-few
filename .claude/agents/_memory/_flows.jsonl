@@ -180,3 +180,5 @@
 {"t":"handoff","ts":"2026-10-10T08:29:07.109Z","id":"r302534ef","from":"dizayner","to":"човек","status":"има бележки","run":"78640751"}
 {"t":"start","ts":"2026-10-10T09:11:05.299Z","id":"re3f11fd9","flow":"авто","lead":"dizayner","auto":true}
 {"t":"handoff","ts":"2026-10-10T09:11:05.300Z","id":"re3f11fd9","from":"dizayner","to":"човек","status":"има бележки","run":"78640751"}
+{"t":"start","ts":"2026-10-10T10:45:58.038Z","id":"r5bb01577","flow":"авто","lead":"dizayner","auto":true}
+{"t":"handoff","ts":"2026-10-10T10:45:58.038Z","id":"r5bb01577","from":"dizayner","to":"ai-djiyata","status":"има бележки","run":"3dddce02"}
