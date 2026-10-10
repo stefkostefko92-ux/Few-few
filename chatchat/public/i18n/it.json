@@ -1595,5 +1595,6 @@
   "admin.sso.err.sso_unavailable": "L’accesso aziendale non è attivo su questo server.",
   "admin.sso.err.sso_provider_unreachable": "Il provider non risponde: verifichi l’emittente o l’ID directory.",
   "admin.sso.err.unknown_company": "Azienda sconosciuta.",
-  "admin.sso.err.cannot_modify_self": "Non può scollegare il proprio account."
+  "admin.sso.err.cannot_modify_self": "Non può scollegare il proprio account.",
+  "admin.sso.err.sso_conflict": "Il provider è stato modificato nel frattempo da un altro amministratore. Ricarichi la pagina e riprovi."
 }

@@ -25,6 +25,14 @@ function aad(tenantId: string, configId: string): Buffer {
   return Buffer.from(`chatchat/sso/client-secret/v1|${tenantId}|${configId}`, 'utf8');
 }
 
+/** Грешка с код за лога (`oidcErrorCode`) — без съдържание. */
+export class SecretError extends Error {
+  constructor(readonly code: 'sso_secret_corrupt' | 'sso_secret_unknown_key') {
+    super(code);
+    this.name = 'SecretError';
+  }
+}
+
 export class SecretBox {
   private readonly currentId: string;
   private readonly byId = new Map<string, Buffer>();
@@ -53,11 +61,11 @@ export class SecretBox {
    */
   open(sealed: string, tenantId: string, configId: string): { secret: string; stale: boolean } {
     const [version, id, body] = sealed.split('.');
-    if (version !== VERSION || !id || !body) throw new Error('sso_secret_corrupt');
+    if (version !== VERSION || !id || !body) throw new SecretError('sso_secret_corrupt');
     const key = this.byId.get(id);
-    if (!key) throw new Error('sso_secret_unknown_key');
+    if (!key) throw new SecretError('sso_secret_unknown_key');
     const raw = Buffer.from(body, 'base64');
-    if (raw.length <= IV_BYTES + TAG_BYTES) throw new Error('sso_secret_corrupt');
+    if (raw.length <= IV_BYTES + TAG_BYTES) throw new SecretError('sso_secret_corrupt');
     try {
       const d = createDecipheriv('aes-256-gcm', key, raw.subarray(0, IV_BYTES));
       d.setAAD(aad(tenantId, configId));
@@ -68,7 +76,7 @@ export class SecretBox {
       ]).toString('utf8');
       return { secret, stale: id !== this.currentId };
     } catch {
-      throw new Error('sso_secret_corrupt');
+      throw new SecretError('sso_secret_corrupt');
     }
   }
 }

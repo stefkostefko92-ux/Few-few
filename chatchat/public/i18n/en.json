@@ -1595,5 +1595,6 @@
   "admin.sso.err.sso_unavailable": "Company sign-in is not enabled on this server.",
   "admin.sso.err.sso_provider_unreachable": "The provider is not responding: check the issuer or the directory ID.",
   "admin.sso.err.unknown_company": "Unknown company.",
-  "admin.sso.err.cannot_modify_self": "You cannot unlink your own account."
+  "admin.sso.err.cannot_modify_self": "You cannot unlink your own account.",
+  "admin.sso.err.sso_conflict": "The provider was changed in the meantime by another administrator. Reload the page and try again."
 }

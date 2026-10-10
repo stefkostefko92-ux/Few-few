@@ -34,6 +34,8 @@ const fail = <T>(status: number, code: string): AdminResult<T> => ({ ok: false, 
 
 /** Домейн на друг доставчик — прекъсва транзакцията (нищо не се записва). */
 class DomainConflict extends Error {}
+/** Доставчикът е сменен междувременно (от друг администратор) — прекъсва транзакцията. */
+class ConcurrentChange extends Error {}
 
 /** Издателят според доставчика; невалиден вход → null. */
 function issuerFor(
@@ -184,13 +186,23 @@ export async function updateConfig(
   const diff = changesOf(ctx.sso, before, input);
   if (!diff.ok) return fail(400, diff.code);
   const c = diff.changes;
-  const domains = input.domains ? normalizeDomains(input.domains) : null;
+  let domains = input.domains ? normalizeDomains(input.domains) : null;
   if (input.domains && (!domains || domains.length === 0)) return fail(400, 'sso_invalid_domain');
+  if (domains) {
+    // Същият набор (UI праща всичко) не е промяна — нито в одита, нито в базата.
+    const current = await ctx.db.ssoDomain.findMany({
+      where: { configId: id },
+      select: { domain: true },
+    });
+    const same =
+      current.length === domains.length && current.every((d) => domains?.includes(d.domain));
+    if (same) domains = null;
+  }
 
   const identityChanged =
     c.issuer !== undefined || c.entraTenantId !== undefined || c.clientId !== undefined;
   const secretChanged = input.clientSecret !== undefined;
-  const data: Prisma.SsoConfigUpdateInput = { ...c };
+  const data: Prisma.SsoConfigUpdateManyMutationInput = { ...c };
   if (input.clientSecret !== undefined) {
     data.clientSecretEnc = ctx.sso.box.seal(input.clientSecret, tenantId, id);
     data.secretUpdatedAt = new Date();
@@ -219,7 +231,13 @@ export async function updateConfig(
 
   const out = await ctx.db
     .$transaction(async (tx) => {
-      const cfg = await tx.ssoConfig.update({ where: { id }, data });
+      // Оптимистично: решенията (тест, REQUIRED) са взети върху `before` — паралелна промяна → 409.
+      const saved = await tx.ssoConfig.updateMany({
+        where: { id, updatedAt: before.updatedAt },
+        data,
+      });
+      if (saved.count !== 1) throw new ConcurrentChange();
+      const cfg = await tx.ssoConfig.findUniqueOrThrow({ where: { id } });
       if (domains && (await replaceDomains(tx, cfg, domains))) throw new DomainConflict();
       const users = new Set<string>();
       if (weakened) for (const u of await ssoSessionUsers(tx, id)) users.add(u);
@@ -244,11 +262,12 @@ export async function updateConfig(
       return { cfg, revocation };
     })
     .catch((err: unknown) => {
-      if (err instanceof DomainConflict) return null;
+      if (err instanceof DomainConflict) return 'sso_domain_taken' as const;
+      if (err instanceof ConcurrentChange) return 'sso_conflict' as const;
       throw err;
     });
   ctx.cache.forget(id);
-  if (!out) return fail(409, 'sso_domain_taken');
+  if (typeof out === 'string') return fail(409, out);
   if (out.revocation) await announceRevocation(out.revocation);
   return { ok: true, value: out.cfg };
 }

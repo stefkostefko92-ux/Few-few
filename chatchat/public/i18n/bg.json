@@ -1595,5 +1595,6 @@
   "admin.sso.err.sso_unavailable": "Фирменият вход не е включен на този сървър.",
   "admin.sso.err.sso_provider_unreachable": "Доставчикът не отговаря — проверете издателя или ID на директорията.",
   "admin.sso.err.unknown_company": "Непозната фирма.",
-  "admin.sso.err.cannot_modify_self": "Не можете да развържете собствения си акаунт."
+  "admin.sso.err.cannot_modify_self": "Не можете да развържете собствения си акаунт.",
+  "admin.sso.err.sso_conflict": "Междувременно доставчикът е променен от друг администратор. Презаредете страницата и опитайте отново."
 }

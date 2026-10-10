@@ -141,7 +141,10 @@ export function authSsoRouter(deps: AppDeps, runtime: SsoRuntime | null): Router
       }
       res.redirect(303, outcome.redirect);
     } catch (err) {
-      next(err);
+      // Това е навигация на браузъра, не заявка на UI: вместо JSON 500 — екранът за вход.
+      deps.logger.error(oidcErrorCode(err), 'единният вход: неочаквана грешка при връщането');
+      if (res.headersSent) return next(err);
+      res.redirect(303, '/?sso_error=sso_failed');
     }
   });
 
