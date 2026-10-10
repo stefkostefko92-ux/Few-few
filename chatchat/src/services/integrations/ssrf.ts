@@ -47,12 +47,13 @@ for (const [net, prefix] of [
 ] as const) {
   BLOCKED.addSubnet(net, prefix, 'ipv4');
 }
-// IPv6: неопределен, loopback, IPv4-mapped/NAT64/6to4/Teredo (носят IPv4 вътре — изцяло забранени),
-// discard, IETF/документация, ULA (вкл. fd00:ec2::254), link-local, site-local, multicast.
+// IPv6: неопределен, loopback, NAT64/6to4/Teredo (носят IPv4 вътре — изцяло забранени), discard,
+// IETF/документация, ULA (вкл. fd00:ec2::254), link-local, site-local, multicast. IPv4-mapped
+// (::ffff:a.b.c.d) BlockList сам проверява по IPv4 правилата — затова ::ffff:0:0/96 НЕ е тук (би
+// забранил всеки IPv4 адрес).
 for (const [net, prefix] of [
   ['::', 128],
   ['::1', 128],
-  ['::ffff:0:0', 96],
   ['64:ff9b::', 96],
   ['64:ff9b:1::', 48],
   ['100::', 64],
