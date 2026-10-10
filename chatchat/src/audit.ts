@@ -106,14 +106,38 @@ export async function appendAudit(db: PrismaClient | Tx, input: AuditInput): Pro
  * След ретенция (services/audit-retention.ts) най-старите събития ги няма: котвата е хешът на
  * последното изтрито, пазен в последната контролна точка (AuditCheckpoint) — веригата не е счупена.
  */
-export async function verifyAuditChain(db: PrismaClient): Promise<number | null> {
-  const rows = await db.auditEvent.findMany({ orderBy: { id: 'asc' } });
-  const anchor = await db.auditCheckpoint.findFirst({ orderBy: { throughId: 'desc' } });
-  let prev = anchor && (rows[0]?.id ?? Infinity) > anchor.throughId ? anchor.throughHash : GENESIS;
-  for (const row of rows) {
-    const expected = eventHash(prev, row);
-    if (row.prevHash !== prev || row.hash !== expected) return row.id;
-    prev = row.hash;
-  }
-  return null;
+/** Порция при проверката — паметта не расте с одита (милиони събития за години). */
+const VERIFY_PAGE = 5000;
+/** Таван на проверката: една снимка (REPEATABLE READ) за цялата верига, не пречи на записите. */
+const VERIFY_TIMEOUT_MS = 30 * 60 * 1000;
+
+export async function verifyAuditChain(
+  db: PrismaClient,
+  pageSize = VERIFY_PAGE,
+): Promise<number | null> {
+  // Една снимка: ретенцията (трие най-старото + пише точка в една транзакция) не може да се
+  // промъкне между порциите или между точката и редовете и да даде лъжливо „счупено“.
+  return db.$transaction(
+    async (tx) => {
+      const anchor = await tx.auditCheckpoint.findFirst({ orderBy: { throughId: 'desc' } });
+      let prev: string | null = null;
+      let after = 0;
+      for (;;) {
+        const rows = await tx.auditEvent.findMany({
+          where: { id: { gt: after } },
+          orderBy: { id: 'asc' },
+          take: pageSize,
+        });
+        for (const row of rows) {
+          // Веригата започва от контролната точка, ако първото оставащо събитие е след нея.
+          prev ??= anchor && row.id > anchor.throughId ? anchor.throughHash : GENESIS;
+          if (row.prevHash !== prev || row.hash !== eventHash(prev, row)) return row.id;
+          prev = row.hash;
+          after = row.id;
+        }
+        if (rows.length < pageSize) return null;
+      }
+    },
+    { isolationLevel: 'RepeatableRead', timeout: VERIFY_TIMEOUT_MS, maxWait: 10_000 },
+  );
 }

@@ -64,3 +64,30 @@ export async function claimAi(db: PrismaClient, caseId: string): Promise<boolean
   });
   return claimed.count === 1;
 }
+
+/** Колко чака паралелен повтор отговора на първата заявка — над тавана на AI извикването (115 s). */
+export const PEER_WAIT_MS = 118_000;
+const PEER_POLL_MS = 300;
+
+/**
+ * Паралелен повтор (NFR-12): друга заявка вече пита модела за СЪЩОТО съобщение → изчакай нейния
+ * отговор вместо 409. Спира, щом отговорът е записан, случаят вече не е заключен за AI (първата
+ * заявка е приключила — успешно или не), срокът изтече или клиентът се откаже (`signal`).
+ */
+export async function awaitPeerAnswer(
+  db: PrismaClient,
+  tenantId: string,
+  caseId: string,
+  clientMessageId: string,
+  signal: AbortSignal,
+  waitMs = PEER_WAIT_MS,
+): Promise<PriorMessage | null> {
+  const deadline = Date.now() + waitMs;
+  for (;;) {
+    const found = await findPrior(db, tenantId, caseId, clientMessageId);
+    if (!found || found.answer) return found;
+    const c = await db.case.findUnique({ where: { id: caseId }, select: { status: true } });
+    if (c?.status !== 'AI_IN_PROGRESS' || Date.now() >= deadline || signal.aborted) return found;
+    await new Promise((r) => setTimeout(r, PEER_POLL_MS));
+  }
+}

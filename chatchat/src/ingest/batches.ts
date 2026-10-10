@@ -131,12 +131,14 @@ export async function addItem(
   batchId: string,
   input: AddItemInput,
 ): Promise<Result<IngestItem>> {
+  // Пакетът е на създателя му: документът се записва на него (uploadedById, одит, четири очи),
+  // затова чужд човек не добавя в него — иначе би подготвил съдържание от името на друг.
   const batch = await db.ingestBatch.findFirst({
-    where: { id: batchId, tenantId: actor.tenantId },
+    where: { id: batchId, tenantId: actor.tenantId, createdById: actor.userId },
   });
   if (!batch) return fail({ status: 404, code: 'not_found' });
   const attachment = await db.attachment.findFirst({
-    where: { id: input.attachmentId, tenantId: actor.tenantId },
+    where: { id: input.attachmentId, tenantId: actor.tenantId, uploadedById: actor.userId },
   });
   if (
     !attachment ||
@@ -233,7 +235,9 @@ export async function retryItem(
   actor: { tenantId: string; userId: string },
   itemId: string,
 ): Promise<Result<IngestItem>> {
-  const item = await db.ingestItem.findFirst({ where: { id: itemId, tenantId: actor.tenantId } });
+  const item = await db.ingestItem.findFirst({
+    where: { id: itemId, tenantId: actor.tenantId, batch: { createdById: actor.userId } },
+  });
   if (!item) return fail({ status: 404, code: 'not_found' });
   if (!item.attachmentId) return fail({ status: 409, code: 'source_missing' });
   if (!retryable(item)) return fail({ status: 409, code: 'invalid_transition' });

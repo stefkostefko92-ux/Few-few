@@ -18,24 +18,60 @@ import {
   select,
 } from './ui.js';
 
-/** Префикси на действията за филтъра; `auth.` се предлага само там, където сървърът го дава. */
+/**
+ * Префикси на действията за филтъра (`tests/audit-labels.test.ts` пази всяко действие от сървъра
+ * покрито с група и етикет). `auth.` и `document.` (входове, прегледи на оригинали) се предлагат
+ * само там, където сървърът ги дава — на платформения администратор.
+ */
 const GROUPS = [
   'kb.',
+  'proposal.',
   'user.',
+  'sso.',
   'catalog.',
   'quick_response.',
   'case.',
   'ticket.',
+  'handoff.',
+  'step.',
+  'integration.',
   'attachment.',
   'conversation.',
   'message.',
   'ai.',
   'auth.',
+  'document.',
   'retention.',
+  'audit.',
 ];
-const OBJECT_TYPES = ['user', 'document', 'error', 'device', 'product', 'quick_response'];
+const PLATFORM_ONLY = new Set(['auth.', 'document.']);
+const OBJECT_TYPES = [
+  'case',
+  'ticket',
+  'case_step',
+  'step_approval',
+  'step_policy',
+  'document',
+  'error',
+  'proposal',
+  'ingest_batch',
+  'ingest',
+  'user',
+  'sso_config',
+  'device',
+  'product',
+  'quick_response',
+  'attachment',
+  'conversation',
+  'conversation_message',
+  'helpdesk_integration',
+  'helpdesk_delivery',
+  'audit_checkpoint',
+];
 
-const actionLabel = (a) => (has(`admin.audit.action.${a}`) ? t(`admin.audit.action.${a}`) : a);
+const labelOr = (key, raw) => (has(key) ? t(key) : raw);
+const actionLabel = (a) => labelOr(`admin.audit.action.${a}`, a);
+const objectLabel = (o) => labelOr(`admin.audit.object.${o}`, o);
 
 /** Началото на деня (локално) като ISO; `plusDays` за изключващата горна граница. */
 function dayIso(value, plusDays = 0) {
@@ -51,7 +87,7 @@ export function mount(root) {
   const group = select(
     [
       { value: '', label: t('admin.audit.allActions') },
-      ...GROUPS.filter((g) => platform || g !== 'auth.').map((g) => ({
+      ...GROUPS.filter((g) => platform || !PLATFORM_ONLY.has(g)).map((g) => ({
         value: g,
         label: t(`admin.audit.group.${g}`),
       })),
@@ -61,7 +97,7 @@ export function mount(root) {
   const objectType = select(
     [
       { value: '', label: t('admin.audit.allObjects') },
-      ...OBJECT_TYPES.map((o) => ({ value: o, label: o })),
+      ...OBJECT_TYPES.map((o) => ({ value: o, label: objectLabel(o) })),
     ],
     '',
   );
@@ -89,7 +125,7 @@ export function mount(root) {
           ? h(
               'div',
               { class: 'cell-main' },
-              e.objectType,
+              objectLabel(e.objectType),
               h('span', { class: 'muted mono small' }, e.objectId ?? ''),
             )
           : '—',
