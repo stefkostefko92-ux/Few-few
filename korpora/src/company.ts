@@ -24,6 +24,8 @@ export const COMPANY = {
   url: 'https://carbonstealth.eu',
   email: 'info@carbonstealth.eu',
   geo: { region: 'BG-10', latitude: 42.3539, longitude: 23.0008 },
+  /** Официалните профили на фирмата (`sameAs` в JSON-LD) — посочени от собственика; не се добавят други. */
+  profiles: ['https://www.youtube.com/@CarbonStealth', 'https://www.tiktok.com/@zerofucksgiiven'],
 } as const;
 
 /** Публичният адрес на Korpora — за печатните материали (сайтът взима своя от PUBLIC_BASE_URL). */

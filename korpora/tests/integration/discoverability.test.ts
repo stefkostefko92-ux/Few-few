@@ -230,8 +230,12 @@ test('the company node says what it knows about and carries the Korpora brand wi
       ['Brand', 'Korpora', `${BASE}/static/img/brand/logo.png`],
       path,
     );
-    // no profile is claimed until the owner names the real ones
-    assert.equal(org.sameAs, undefined, `${path}: no invented sameAs`);
+    // only the profiles the owner named
+    assert.deepEqual(
+      org.sameAs,
+      ['https://www.youtube.com/@CarbonStealth', 'https://www.tiktok.com/@zerofucksgiiven'],
+      `${path}: sameAs`,
+    );
   }
   const logo = await get('/static/img/brand/logo.png');
   assert.equal(logo.status, 200);

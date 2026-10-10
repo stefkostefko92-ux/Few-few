@@ -67,8 +67,8 @@ function decimal(cents: number): string {
  * Фирмата — един възел и за Organization, и за LocalBusiness (едно `@id`, без раздвояване на субекта).
  * Работно време няма, защото фирмата не е обявила такова; `geo` е същото като в geo мета таговете, а
  * ценовият диапазон идва от ценоразписа (от месечния план до Lifetime, с ДДС). `knowsAbout` е на езика на
- * страницата; марката е Korpora с логото на продукта (фирмено лого няма). `sameAs` липсва, докато
- * собственикът не посочи истинските профили на фирмата — не се измислят.
+ * страницата; марката е Korpora с логото на продукта (фирмено лого няма). `sameAs` са само профилите,
+ * които собственикът е посочил (COMPANY.profiles) — други не се измислят.
  */
 function organization(t: Translator, locale: Locale) {
   const base = config().PUBLIC_BASE_URL;
@@ -80,6 +80,7 @@ function organization(t: Translator, locale: Locale) {
     legalName: COMPANY.name,
     alternateName: COMPANY.nameBg,
     url: COMPANY.url,
+    sameAs: [...COMPANY.profiles],
     email: config().CONTACT_EMAIL,
     telephone: COMPANY.phone,
     contactPoint: {
