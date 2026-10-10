@@ -180,6 +180,34 @@ describe('класове', () => {
     assert.equal(await db.conversationMessage.count({ where: { id: gone.id } }), 0);
   });
 
+  test('предложения към знанието: затворените след срока — да; отворените — никога; без срок — нищо', async () => {
+    const tenantId = w.tenantA.id;
+    const mk = (status: 'NEW' | 'IN_REVIEW' | 'ACCEPTED' | 'REJECTED', days: number) =>
+      db.knowledgeProposal
+        .create({ data: { tenantId, source: 'CONFLICT', status } })
+        .then(async (row) => {
+          await db.$executeRaw`UPDATE "KnowledgeProposal" SET "updatedAt" = ${ago(days)} WHERE id = ${row.id}`;
+          return row.id;
+        });
+    const oldAccepted = await mk('ACCEPTED', 400);
+    const oldRejected = await mk('REJECTED', 400);
+    const freshRejected = await mk('REJECTED', 5);
+    const oldOpen = await mk('NEW', 400);
+    const oldReview = await mk('IN_REVIEW', 400);
+    const untouched = await runRetention(db, store, { sessionDays: 30, caseDays: null });
+    assert.equal(untouched.proposals, null);
+    assert.equal(await db.knowledgeProposal.count(), 5);
+    const report = await runRetention(db, store, {
+      sessionDays: 30,
+      caseDays: null,
+      proposalDays: 365,
+    });
+    assert.equal(report.proposals, 2);
+    const left = (await db.knowledgeProposal.findMany({ select: { id: true } })).map((r) => r.id);
+    assert.deepEqual(left.sort(), [freshRejected, oldOpen, oldReview].sort());
+    assert.ok(![oldAccepted, oldRejected].some((id) => left.includes(id)));
+  });
+
   test('конфигурацията: подразбиранията, празно = „не е зададено“, долни граници', () => {
     const cfg = loadRetentionConfig({ RETENTION_CASE_DAYS: '', RETENTION_DIRECT_DAYS: '180' });
     assert.equal(cfg.RETENTION_CASE_DAYS, null);
@@ -189,6 +217,12 @@ describe('класове', () => {
     assert.equal(cfg.RETENTION_PRESENCE_DAYS, 7);
     assert.throws(() => loadRetentionConfig({ RETENTION_AUDIT_DAYS: '30' }));
     assert.throws(() => loadRetentionConfig({ RETENTION_CASE_DAYS: '5' }));
+    assert.equal(cfg.RETENTION_PROPOSAL_DAYS, null);
+    assert.equal(
+      loadRetentionConfig({ RETENTION_PROPOSAL_DAYS: '365' }).RETENTION_PROPOSAL_DAYS,
+      365,
+    );
+    assert.throws(() => loadRetentionConfig({ RETENTION_PROPOSAL_DAYS: '7' }));
   });
 });
 

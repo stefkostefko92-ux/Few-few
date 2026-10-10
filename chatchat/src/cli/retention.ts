@@ -36,6 +36,7 @@ async function main(): Promise<void> {
       notificationDays: env.RETENTION_NOTIFICATION_DAYS,
       presenceDays: env.RETENTION_PRESENCE_DAYS,
       metadataDays: env.RETENTION_METADATA_DAYS,
+      proposalDays: env.RETENTION_PROPOSAL_DAYS,
       auditDays: env.RETENTION_AUDIT_DAYS,
       orphanHours: env.RETENTION_ORPHAN_HOURS,
       quarantineDays: env.RETENTION_QUARANTINE_DAYS,

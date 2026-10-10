@@ -29,7 +29,7 @@ export const TICKET_EVENT_TYPES = [
 export type TicketEventType = (typeof TICKET_EVENT_TYPES)[number];
 
 /** Действието в одита — „ticket.create“ е запазеното име отпреди работния поток. */
-const AUDIT_ACTION: Record<TicketEventType, string> = {
+export const TICKET_AUDIT_ACTION: Record<TicketEventType, string> = {
   'ticket.created': 'ticket.create',
   'ticket.claimed': 'ticket.claim',
   'ticket.assigned': 'ticket.assign',
@@ -86,7 +86,7 @@ export async function recordTicketEvent(
   await appendAudit(tx, {
     tenantId: e.tenantId,
     actorId: e.actorId,
-    action: AUDIT_ACTION[e.type],
+    action: TICKET_AUDIT_ACTION[e.type],
     objectType: 'ticket',
     objectId: e.ticket.id,
     detail: { caseId: e.ticket.caseId, ...statuses, ...(e.detail ?? {}), ...(e.auditOnly ?? {}) },

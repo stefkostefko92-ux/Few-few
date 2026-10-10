@@ -134,8 +134,10 @@ async function showApp() {
       /* непознат/чужд етикет: продължаваме нормално; ръчното сканиране остава */
     }
   }
-  // На десктоп работното пространство е пълно: отваряме последния случай.
-  if (!navigated && wide() && state.cases.length) await selectCase(state.cases[0].id);
+  // На десктоп работното пространство е пълно: отваряме последния случай — само ако човекът
+  // междувременно не е избрал друго (опашка, списък, разговор, случай), докато се е зареждало.
+  const untouched = app().dataset.main === 'case' && state.currentId === null;
+  if (!navigated && untouched && wide() && state.cases.length) await selectCase(state.cases[0].id);
 }
 
 /** Избран преди вход (екранът за вход) — записва се в профила след втория фактор. */

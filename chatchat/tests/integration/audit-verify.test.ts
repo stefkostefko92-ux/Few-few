@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { after, beforeEach, describe, test } from 'node:test';
 import { promisify } from 'node:util';
-import { appendAudit } from '../../src/audit.js';
+import { appendAudit, verifyAuditChain } from '../../src/audit.js';
 import { pruneAudit } from '../../src/services/audit-retention.js';
 import { db, resetDb } from './helpers.js';
 
@@ -89,6 +89,24 @@ describe('npm run audit:verify', () => {
     const r = await cli();
     assert.equal(r.code, 0, r.stderr);
     assert.match(r.stdout, /от контролна точка до #3/);
+  });
+
+  test('на порции: подправка в по-късна порция и на границата се хваща; котвата важи през порциите', async () => {
+    await events(7);
+    for (const size of [1, 2, 3, 7, 100]) assert.equal(await verifyAuditChain(db, size), null);
+    const rows = await db.auditEvent.findMany({ orderBy: { id: 'asc' } });
+    // Шестият ред е първи в третата порция при размер 2 (граница), в последната при 5.
+    const victim = rows[5];
+    assert.ok(victim);
+    await db.$executeRaw`UPDATE "AuditEvent" SET detail = '{"i":-1}'::jsonb WHERE id = ${victim.id}`;
+    for (const size of [1, 2, 5, 100]) assert.equal(await verifyAuditChain(db, size), victim.id);
+    await resetDb();
+    await events(3, 'old');
+    await new Promise((r) => setTimeout(r, 20));
+    const cutoff = new Date();
+    await events(4, 'new');
+    await pruneAudit(db, { cutoff, archiveDir: null });
+    for (const size of [1, 2, 100]) assert.equal(await verifyAuditChain(db, size), null);
   });
 
   test('базата не отговаря → 1 (не „цяла“, не „счупена“)', async () => {

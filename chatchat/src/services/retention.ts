@@ -7,6 +7,7 @@ import {
   purgeMetadata,
   purgeNotifications,
   purgePresence,
+  purgeProposals,
   type MessageClass,
   type MessagePurge,
   type MetadataPurge,
@@ -30,6 +31,8 @@ export interface RetentionOptions {
   notificationDays?: number | null;
   presenceDays?: number | null;
   metadataDays?: number | null;
+  /** Затворените предложения към знанието; null/липсва → не се трият. */
+  proposalDays?: number | null;
   /** Одитът (по подразбиране в CLI-то 10 г.) — с контролна точка, веригата не се чупи. */
   auditDays?: number | null;
   auditArchiveDir?: string | null;
@@ -50,6 +53,7 @@ export interface RetentionReport {
   notifications: number | null;
   presence: number | null;
   metadata: MetadataPurge | null;
+  proposals: number | null;
   audit: AuditPruneReport | null;
 }
 
@@ -183,6 +187,9 @@ export async function runRetention(
     presence: given(opts.presenceDays) ? await purgePresence(db, opts.presenceDays, nowDate) : null,
     metadata: given(opts.metadataDays)
       ? await purgeMetadata(db, store, opts.metadataDays, nowDate)
+      : null,
+    proposals: given(opts.proposalDays)
+      ? await purgeProposals(db, opts.proposalDays, nowDate)
       : null,
     audit: given(opts.auditDays)
       ? await pruneAudit(db, {

@@ -42,6 +42,11 @@ const RetentionEnvSchema = z.object({
   RETENTION_AUDIT_DAYS: z.coerce.number().int().min(365).max(36500).default(3650),
   /** Архив (JSONL) на изтритите одитни събития преди триенето; празно → без архив. */
   RETENTION_AUDIT_ARCHIVE_DIR: z.string().default(''),
+  /**
+   * Затворените предложения към знанието (ACCEPTED/REJECTED, FR-10) — маскиран текст и id-та;
+   * отворените не се трият никога. Празно → не се трият (решение на администратора на данните).
+   */
+  RETENTION_PROPOSAL_DAYS: optionalDays(30),
   /** Качен, но непривързан файл (или PDF, който не е станал документ). */
   RETENTION_ORPHAN_HOURS: z.coerce.number().int().min(1).max(720).default(24),
   /** INFECTED/FAILED редовете (файлът е изтрит при сканирането). */

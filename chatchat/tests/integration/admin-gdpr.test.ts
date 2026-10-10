@@ -101,6 +101,61 @@ describe('Експорт (чл. 15/20)', () => {
     assert.equal(await db.auditEvent.count({ where: { action: 'user.export', objectId: id } }), 1);
   });
 
+  test('предложенията към знанието (направени и решени) и връзката с фирмения вход', async () => {
+    const tenantId = w.tenantA.id;
+    const tech = w.users.portalAlfa.id;
+    const owner = w.users.ownerA1.id;
+    await db.knowledgeProposal.create({
+      data: { tenantId, source: 'FEEDBACK', createdById: tech, comment: 'Manca il passo X3' },
+    });
+    await db.knowledgeProposal.create({
+      data: {
+        tenantId,
+        source: 'CONFLICT',
+        status: 'REJECTED',
+        decidedById: owner,
+        decidedAt: new Date(),
+        rejectReason: 'Già corretto in rev. B',
+      },
+    });
+    const config = await db.ssoConfig.create({
+      data: {
+        tenantId,
+        scopeKey: 'tenant',
+        provider: 'OIDC',
+        issuer: 'https://idp.alfa.example',
+        clientId: 'chatchat',
+        clientSecretEnc: 'v1.test.x',
+      },
+    });
+    await db.externalIdentity.create({
+      data: {
+        tenantId,
+        userId: tech,
+        configId: config.id,
+        issuer: config.issuer,
+        externalSubject: 'sub-123',
+      },
+    });
+    const mine = (await w.tenantAdmin.get(`/api/v1/admin/users/${tech}/export`)).body;
+    assert.deepEqual(
+      mine.knowledgeProposals.map((p: { comment: string }) => p.comment),
+      ['Manca il passo X3'],
+    );
+    assert.deepEqual(mine.knowledgeDecisions, []);
+    assert.deepEqual(
+      [mine.ssoIdentity.issuer, mine.ssoIdentity.externalSubject],
+      ['https://idp.alfa.example', 'sub-123'],
+    );
+    assert.equal(JSON.stringify(mine).includes('v1.test.x'), false, 'без тайната на доставчика');
+    const decided = (await w.tenantAdmin.get(`/api/v1/admin/users/${owner}/export`)).body;
+    assert.deepEqual(
+      decided.knowledgeDecisions.map((d: { rejectReason: string }) => d.rejectReason),
+      ['Già corretto in rev. B'],
+    );
+    assert.equal(decided.ssoIdentity, null);
+  });
+
   test('чужд клиент → 404; без users:manage → 403; по-висок ранг → 403', async () => {
     assert.equal(
       (await w.tenantAdmin.get(`/api/v1/admin/users/${w.users.portalB.id}/export`)).status,
