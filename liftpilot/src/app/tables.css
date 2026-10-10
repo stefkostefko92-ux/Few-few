@@ -7,7 +7,11 @@
 .data-table td { padding: 12px; border-bottom: 1px solid var(--rule-soft); vertical-align: top; }
 .data-table tbody tr:last-child td { border-bottom: 0; }
 .data-table tbody tr:hover td { background: var(--row-hover); }
-.data-table .spec { font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* a record's summary (what it is: machine, sheave, ropes…) wraps in its column; a short figure (.short) stays on one line */
+.data-table .spec { font-variant-numeric: tabular-nums; }
+.data-table .spec.short { white-space: nowrap; }
+/* the record's title cell (the date, its label) keeps room for the date on one line beside a long summary */
+.data-table td.row-title { min-width: 9rem; }
 .data-table .cell-stack { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
 .data-table td.row-title a { color: var(--ink); text-decoration: none; }
 .data-table td.row-title a:hover { color: var(--accent); }
@@ -21,7 +25,7 @@
 .sec-title .sec-text { min-width: 0; }
 .sec-title .sec-text.stack { display: flex; flex-direction: column; gap: 3px; }
 .sec-title .sec-text.stack .eyebrow { font-weight: 400; letter-spacing: .1em; }
-h2.sec-title { font-size: 18px; letter-spacing: -.015em; }
+h2.sec-title { font: var(--panel-title); letter-spacing: var(--panel-title-track); }
 h3.sec-title { font-size: 15.5px; }
 .sec-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 14px; }
 /* a list of saved records (drawing sets, machine rooms) as rows of the dashboard's list */
@@ -34,7 +38,6 @@ h3.sec-title { font-size: 15.5px; }
 .rec-list > li > .rec-text { flex-basis: 100%; color: var(--ink-2); font-size: 14px; }
 /* the buttons that download a record's documents: the file's icon before its name */
 .doc-links .btn .icon { margin-left: -2px; }
-@media print { .sec-title .icon-tile, .doc-links .icon { display: none; } }
 
 @media (max-width: 719px) {
   .data-table.stack thead { display: none; }

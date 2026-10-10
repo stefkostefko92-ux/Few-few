@@ -30,7 +30,7 @@ body > main { flex: 1 0 auto; }
   --ws-side-bg: #041019; --ws-top-bg: #040d15;
   --ws-sel-bg: linear-gradient(90deg, #103340, #0a202b); --ws-sel-line: #185469; --ws-sel-glow: drop-shadow(0 0 5px rgb(39 223 240 / .35));
   --ws-avatar: linear-gradient(140deg, #c0e9ed, #6f9aa8); --ws-avatar-ink: #08202a; --ws-avatar-line: #244a59;
-  --ws-scroll-hint: rgb(39 223 240 / .28);
+  --ws-scroll-hint: rgb(39 223 240 / .28); --ws-pop-shadow: 0 18px 34px -6px rgb(0 0 0 / .9);
   --ws-backdrop: rgb(1 7 11 / .82); --ws-drawer-shadow: 20px 0 70px rgb(0 0 0 / .65); --ws-beta-glow: 0 0 8px rgb(0 223 246 / .9);
   /* what the top bar's right side takes, so that the page's own breadcrumbs placed in the bar stop before it */
   --ws-top-reserve: calc(var(--ws-pad) + clamp(220px, 22vw, 300px) + 120px);
@@ -106,6 +106,12 @@ html.ws-drawer-open { overflow: hidden; }
   .ws-user { padding-block: 3px; }
 }
 
+/* a window too low for the sections and the user's card (a phone on its side): the whole sidebar scrolls as one */
+@media (max-height: 480px) {
+  .ws-sidebar { overflow-y: auto; overscroll-behavior: contain; }
+  .ws-sidebar .ws-scroll { flex: none; overflow: visible; }
+}
+
 /* the top bar */
 .ws-topbar { position: relative; display: flex; align-items: center; gap: 10px; min-height: var(--ws-top-h); padding: 12px 14px; flex: none;
   background: var(--ws-top-bg); border-bottom: 1px solid var(--rule); }
@@ -138,7 +144,11 @@ html.ws-drawer-open { overflow: hidden; }
   border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); background: var(--btn-bg); }
 .ws-search-narrow > summary::-webkit-details-marker { display: none; }
 .ws-search-narrow[open] > summary { border-color: var(--accent); }
-.ws-search-narrow > .ws-search { position: absolute; left: 12px; right: 12px; top: calc(100% + 8px); z-index: 40; height: 50px; background: var(--surface); box-shadow: var(--shadow-lg); }
+/* the phone's field opens as a second row of the top bar: a band of the bar's colour around it (the two rings of its
+   shadow, the outer one the bar's line) and a deep shadow under it, over the page's head */
+.ws-search-narrow > .ws-search { position: absolute; left: 10px; right: 10px; top: calc(100% + 10px); z-index: 40; height: 46px; background: var(--bg-2);
+  border-color: var(--accent-line); box-shadow: 0 0 0 10px var(--ws-top-bg), 0 0 0 11px var(--rule), var(--ws-pop-shadow); }
+.ws-search-narrow > .ws-search:focus-within { border-color: var(--accent); }
 @media (max-width: 639px) {
   .ws-search-wide { display: none; }
   .ws-search-narrow { display: block; }
@@ -181,6 +191,9 @@ html.ws-drawer-open { overflow: hidden; }
   :is(.ws-crumbs, .crumbs-nav) .crumbs li { flex: 0 1 auto; }
   :is(.ws-crumbs, .crumbs-nav) .crumbs li > :is(a, span) { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   :is(.ws-crumbs, .crumbs-nav) .crumbs li:first-child { flex: none; }
+  /* the page's own name gives way last: the path between shrinks first (its weight is a thousand times the name's)
+     down to a few letters, then the name; with room enough nothing is cut */
+  :is(.ws-crumbs, .crumbs-nav) .crumbs li:not(:first-child):not(:last-child) { flex: 0 1000 auto; min-width: 6ch; }
 }
 
 /* ---- page header, chips, title block --------------------------------------------------------------------------- */
@@ -200,10 +213,15 @@ html.ws-drawer-open { overflow: hidden; }
 .cartiglio .wide { flex-basis: 100%; }
 .cartiglio .hash { font: 12.5px/1.45 var(--font-mono); color: var(--ink-2); }
 
-.site-footer { border-top: 1px solid var(--rule); margin-top: 24px; }
-.site-footer .inner { max-width: 1320px; margin: 0 auto; padding: 16px 16px 26px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 20px; font-size: 13px; color: var(--muted); }
-.site-footer .footer-provider { flex-basis: 100%; font-size: 12px; overflow-wrap: anywhere; }
+/* the footer's grid is landing.css's (logo · note · links, then the credit and the provider); in the workspace it takes
+   the page's side padding, and where the main column is narrow (beside the sidebar up to 1199 px, a tablet without
+   it) the note keeps the room beside the logo and the links go to their own row */
+.site-footer { margin-top: 24px; }
 @media screen and (min-width: 1024px) { .ws-main .site-footer .inner { padding-inline: var(--ws-pad); } }
+@media screen and (min-width: 721px) and (max-width: 1199px) {
+  .ws-main .site-footer .inner { grid-template-columns: auto minmax(0, 1fr); }
+  .ws-main .footer-links { grid-column: 1 / -1; }
+}
 
 /* ---- the two modules (dashboard, new installation) and the choices drawn like them (subscription packs): the
    template's feature card; a radio inside makes it a choice, ringed in cyan when chosen ------------------------- */
@@ -220,7 +238,6 @@ html.ws-drawer-open { overflow: hidden; }
 .app-module > .btn { margin-top: auto; align-self: flex-start; }
 .app-module input[type="radio"] { position: absolute; opacity: 0; pointer-events: none; }
 label.app-module { cursor: pointer; }
-.seg-row > a[aria-current="page"] { background: var(--accent); color: var(--accent-ink); }
 .kind-tag { display: inline-flex; align-items: center; width: fit-content; font: 600 12px/1.25 var(--font-body); padding: 3px 8px; border-radius: 4px; white-space: nowrap;
   border: 1px solid var(--accent-line); background: var(--accent-soft); color: var(--accent-2); }
 .kind-tag.kind-replacement { color: var(--info); background: var(--info-bg); border-color: var(--info-line); }
@@ -232,6 +249,12 @@ label.app-module { cursor: pointer; }
 .billing-banner.bad { background: var(--fail-bg); border-bottom-color: var(--fail-line); }
 .billing-banner .inner { max-width: 1320px; margin: 0 auto; padding: 9px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; font-size: 14px; }
 @media screen and (min-width: 1024px) { .ws-main .billing-banner .inner { padding-inline: var(--ws-pad); } }
+/* the icon stays beside the text (a long text wraps under itself, not under the icon); the action follows on the right
+   or, when there is no room, on its own line */
+.billing-banner .banner-icon { flex: none; align-self: flex-start; margin-top: 1px; }
+.billing-banner .banner-text { flex: 1 1 15rem; min-width: 0; }
+/* the terms' page answers the banner itself: the banner that leads to it is not shown there */
+.ws-main:has(main.terms-gate) .terms-banner { display: none; }
 
 /* ---- paper: the page alone, without the shell -------------------------------------------------------------------- */
 @media print {

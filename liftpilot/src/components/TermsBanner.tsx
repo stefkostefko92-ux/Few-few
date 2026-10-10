@@ -17,10 +17,10 @@ export default async function TermsBanner({ user }: { user: SessionUser }) {
     : !pending ? t('bannerOwner', { date: termsDateText(locale) })
     : user.termsBinding ? t('bannerPending', { date: dateText(locale, user.termsBinding) }) : t('bannerNew', { days: NOTICE_DAYS });
   return (
-    <div className={`billing-banner ${pending ? 'warn' : 'bad'}`} role="status">
+    <div className={`billing-banner terms-banner ${pending ? 'warn' : 'bad'}`} role="status">
       <div className="inner">
         <Icon name={pending ? 'file-clock' : 'file-lock'} size={20} className="banner-icon" />
-        <span>{text}</span>
+        <span className="banner-text">{text}</span>
         {owner ? <Link href="/app/terms" className="btn btn-sm">{t('bannerAction')}</Link> : null}
       </div>
     </div>

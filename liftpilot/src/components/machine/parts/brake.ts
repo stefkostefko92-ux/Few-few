@@ -1,7 +1,7 @@
 // The drum brake between gearbox and motor: two shaped arms pivoted on a bracket at the bottom, lined shoes on the
 // drum, the pressure springs with their nuts on the tie rod, the release magnet between the arm tops with its
 // plungers, and the hand release lever with its red knob.
-// Loaded only through boot.ts, after the prefers-reduced-motion and save-data gate of MachineStage.tsx.
+// Loaded only through the installation's 3D stage (lift3d/boot.ts, lift3d/room.ts).
 import * as THREE from 'three/webgpu';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import type { MachineMaterials } from '../materials';

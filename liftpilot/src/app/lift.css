@@ -13,7 +13,12 @@
   .lift-work { grid-template-columns: minmax(340px, 420px) minmax(0, 1fr); }
   /* the form scrolls on its own beside the page, so the stage stays in view while the data change */
   .lift-form { position: sticky; top: 76px; max-height: calc(100dvh - 76px - 84px); overflow: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
+  /* a choice's row in the form's narrow column (340–420 px): the name over its field, both as wide as the column (beside
+     a 16rem field the name kept 65 px and ran under it; beside a narrower one the chosen value was cut) */
+  .lift-form .row.wide { grid-template-columns: minmax(0, 1fr); row-gap: 5px; }
 }
+/* a long name wraps instead of running under its field; the «standard» badge follows it, on the next line if need be */
+.lift-form .row.wide > label { min-width: 0; overflow-wrap: anywhere; }
 @media (max-width: 1079px) {
   .lift-work .lift-main { display: contents; }
   .lift-work .lift-facts { order: 1; }
@@ -25,7 +30,7 @@
 
 /* the form (its children keep their height when the sticky form scrolls) */
 .lift-form > * { flex-shrink: 0; }
-.lift-form h2 { font-size: 16.5px; letter-spacing: -.015em; padding-top: 14px; border-top: 1px solid var(--rule); }
+.lift-form h2 { font: var(--panel-title); letter-spacing: var(--panel-title-track); padding-top: 14px; border-top: 1px solid var(--rule); }
 .lift-form h2:first-child { padding-top: 0; border-top: 0; }
 .lift-form details.survey > summary { cursor: pointer; width: fit-content; font-size: 14px; font-weight: 500; color: var(--accent); padding-block: 2px; }
 .lift-form .cad-canvas { height: clamp(260px, 42vh, 460px); }

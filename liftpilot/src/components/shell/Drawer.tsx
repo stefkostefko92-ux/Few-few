@@ -2,8 +2,9 @@
 
 // The sidebar as a drawer below 1024 px (shell.css): the top bar's button opens it over a backdrop; Esc, the backdrop,
 // the close button or a link followed close it, and the focus goes back to the button. While it is open the Tab key
-// stays inside it (first and last stops wrap) and the page under it does not scroll. From 1024 px the sidebar stands
-// beside the page and none of this applies (the button is hidden, the drawer never opens).
+// stays inside it (first and last stops wrap), the page under it does not scroll and is inert (a modal dialog for screen
+// readers too). From 1024 px the sidebar stands beside the page and none of this applies (the button is hidden, the
+// drawer never opens; one open when the window grows past 1024 px closes).
 // Motion: the drawer slides in 250 ms, off under prefers-reduced-motion (globals.css).
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from 'react';
 import Icon from '../Icon';
@@ -16,6 +17,10 @@ interface DrawerState {
 
 /** The top bar's menu button: the focus goes back to it when the drawer closes from inside. */
 const BUTTON_ID = 'ws-menu';
+/** The page beside the drawer (AppShell): inert while the drawer is open. */
+const MAIN = '.ws-main';
+/** From here the sidebar stands beside the page (shell.css). */
+const WIDE = '(min-width: 1024px)';
 
 const DrawerCtx = createContext<DrawerState | null>(null);
 
@@ -32,16 +37,25 @@ export function DrawerRoot({ children }: { children: ReactNode }) {
   const toggle = useCallback(() => setOpen((o) => !o), []);
   const close = useCallback((focusButton: boolean) => {
     setOpen(false);
-    if (focusButton) document.getElementById(BUTTON_ID)?.focus();
+    if (!focusButton) return;
+    // the button is in the page: it takes the focus once the page is no longer inert
+    document.querySelector(MAIN)?.removeAttribute('inert');
+    document.getElementById(BUTTON_ID)?.focus();
   }, []);
   useEffect(() => {
     if (!open) return;
+    const main = document.querySelector(MAIN), wide = window.matchMedia(WIDE);
     const onKey = (e: globalThis.KeyboardEvent): void => { if (e.key === 'Escape') close(true); };
+    const onWide = (): void => { if (wide.matches) close(false); };
     document.addEventListener('keydown', onKey);
+    wide.addEventListener('change', onWide);
     document.documentElement.classList.add('ws-drawer-open');
+    main?.setAttribute('inert', '');
     return () => {
       document.removeEventListener('keydown', onKey);
+      wide.removeEventListener('change', onWide);
       document.documentElement.classList.remove('ws-drawer-open');
+      main?.removeAttribute('inert');
     };
   }, [open, close]);
   const value = useMemo(() => ({ open, toggle, close }), [open, toggle, close]);
@@ -85,7 +99,8 @@ export function DrawerPanel({ label, closeLabel, children }: { label: string; cl
   };
   return (
     <>
-      <aside id="ws-sidebar" ref={panel} className={d.open ? 'ws-sidebar open' : 'ws-sidebar'} aria-label={label} onKeyDown={onKeyDown} onClick={onClick}>
+      <aside id="ws-sidebar" ref={panel} className={d.open ? 'ws-sidebar open' : 'ws-sidebar'} aria-label={label} onKeyDown={onKeyDown} onClick={onClick}
+        role={d.open ? 'dialog' : undefined} aria-modal={d.open || undefined}>
         <button type="button" className="ws-close" aria-label={closeLabel} onClick={() => d.close(true)}>
           <Icon name="x" size={18} />
         </button>

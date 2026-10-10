@@ -70,7 +70,8 @@ details.panel { display: block; }
 details.panel > summary { cursor: pointer; width: fit-content; font-weight: 700; }
 details.panel > * + * { margin-top: 12px; }
 .panel-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 14px; }
-.panel-head h2 { font-size: 17px; }
+/* a panel's title, in its title row or first in the panel: one size on every page (globals.css --panel-title) */
+.panel-head h2, .panel > h2 { font: var(--panel-title); letter-spacing: var(--panel-title-track); }
 .panel-inset { background: var(--bg-2); border: 1px solid var(--rule-soft); border-radius: var(--radius-sm); padding: 12px 14px; }
 /* the wash sits under the card's content (isolation + z −1), so it never tints the text nor needs the content positioned */
 .card { position: relative; isolation: isolate; overflow: hidden; display: flex; flex-direction: column; gap: 10px; min-width: 0; padding: 22px 20px 20px;

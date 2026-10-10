@@ -15,7 +15,7 @@ export default async function BillingBanner({ user }: { user: SessionUser }) {
     <div className={`billing-banner ${tone}`} role="status">
       <div className="inner">
         <Icon name={tone === 'info' ? 'info' : tone === 'warn' ? 'alert-triangle' : 'lock'} size={20} className="banner-icon" />
-        <span>{text}</span>
+        <span className="banner-text">{text}</span>
         {can(user, 'billing:manage') ? <Link href="/app/billing" className="btn btn-sm">{t('bannerAction')}</Link> : <span className="note">{t('bannerAskOwner')}</span>}
       </div>
     </div>

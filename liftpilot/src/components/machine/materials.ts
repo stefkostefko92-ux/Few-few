@@ -1,6 +1,6 @@
 // Physically based materials of the machine, after boy's materials.js / surface.js (Nexus combat engine): node
 // materials with procedural surface detail instead of texture files, so the scene loads nothing but code.
-// Loaded only through boot.ts, after the prefers-reduced-motion and save-data gate of MachineStage.tsx.
+// Loaded only through the installation's 3D stage (lift3d/boot.ts, lift3d/room.ts).
 import * as THREE from 'three/webgpu';
 import {
   uv, vec2, vec3, float, sin, abs, atan, mix, step, floor, clamp, smoothstep, fract, length, positionLocal, positionWorld, positionView, normalLocal, normalView, mx_noise_float,

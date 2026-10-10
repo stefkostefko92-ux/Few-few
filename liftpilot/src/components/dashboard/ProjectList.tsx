@@ -105,7 +105,11 @@ export default async function ProjectList({ projects, total, all, archived, kind
                         <VerdictPill verdict={last.verdict} fails={last.failCount} warns={last.warnCount} />
                         {old ? <span className="chip old">{tf('outdated')}</span> : null}
                       </span>
-                      <span className="dash-row-sum" title={last.summary}>{last.summary}</span>
+                      {/* the result's date before its machine line, as the list had it before the redesign */}
+                      <span className="dash-row-sum">
+                        <time className="dash-row-at" dateTime={last.createdAt.toISOString()}><span className="sr-only">{t('col_last')} </span>{fd.dateTime(last.createdAt)}</time>
+                        {' · '}{last.summary}
+                      </span>
                     </>
                   ) : <span className="note">{t('noCalculations')}</span>}
                 </div>

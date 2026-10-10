@@ -2,7 +2,7 @@
 // chromatic aberration and vignette, a warm halation bloom, ACES (Stephen Hill fit) tone mapping, a gentle
 // cool-shadow / warm-highlight grade, film grain and dithering. The output is display-referred sRGB: the render
 // pipeline applies no colour transform after it. Toned down from the night duel: this is a product shot.
-// Loaded only through boot.ts, after the prefers-reduced-motion and save-data gate of MachineStage.tsx.
+// Loaded only through the installation's 3D stage (lift3d/boot.ts, lift3d/room.ts).
 import * as THREE from 'three/webgpu';
 import { Fn, vec2, vec3, vec4, float, uv, dot, pow, clamp, max, mix, fract, screenCoordinate, luminance, uniform } from 'three/tsl';
 import { bloom } from 'three/addons/tsl/display/BloomNode.js';

@@ -24,7 +24,8 @@
 .dash-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 @container dash (min-width: 860px) { .dash-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .dash-kpis .kpi { min-height: 136px; padding: 16px 18px; gap: 4px; }
-.dash-kpis .kpi-head { align-items: flex-start; min-height: 40px; font-size: 13.5px; font-weight: 600; color: var(--ink-2); }
+/* as tall as a label on two lines, so that every figure of the row stands at the same height */
+.dash-kpis .kpi-head { align-items: flex-start; min-height: 44px; font-size: 13.5px; font-weight: 600; color: var(--ink-2); }
 .dash-kpis .kpi-value { margin-top: 6px; font-size: 34px; }
 .dash-kpis .kpi-label { margin-top: auto; display: flex; align-items: baseline; gap: 8px; }
 /* the template's dot before what a figure counts, in the tile's tone (cyan when it has none) */
@@ -47,7 +48,7 @@
   .dash-preview { position: sticky; top: 16px; }
 }
 .dash-panel-titles { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.dash-panel-titles h2 { font-size: 18px; overflow-wrap: anywhere; }
+.dash-panel-titles h2 { overflow-wrap: anywhere; }  /* the size is the panels' title (ui.css --panel-title) */
 
 /* the installations */
 .dash-list { container: dashlist / inline-size; gap: 14px; }
@@ -57,7 +58,7 @@
 .dash-filters a:hover { color: var(--ink); background: var(--surface2); }
 .dash-filters a[aria-current="page"] { color: var(--ink); background: var(--accent-soft); border-color: var(--accent-line); }
 .dash-count { font: 500 12px/1 var(--font-mono); color: var(--accent); }
-.dash-q { font-size: 14px; color: var(--ink-2); }
+.dash-q { font-size: 14px; color: var(--ink-2); overflow-wrap: anywhere; }  /* the words searched can be one long word */
 .dash-empty { display: flex; flex-direction: column; gap: 14px; padding: 6px 0 2px; color: var(--ink-2); }
 
 .dash-rows { list-style: none; margin: 0; padding: 0; display: grid; column-gap: 14px; border-top: 1px solid var(--rule);
@@ -77,7 +78,10 @@
 .dash-row-meta > span:not(.kind-tag) { overflow-wrap: anywhere; }
 .dash-row-result { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-width: 0; }
 .dash-pills { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; }
-.dash-row-sum { max-width: 100%; font: 12px/1.4 var(--font-mono); color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* under the verdict: the latest result's date and its machine line, whole (a short line the engine writes: it wraps,
+   never cut — a cut one could not be read, the row's link covers it) */
+.dash-row-at { color: var(--muted); white-space: nowrap; }
+.dash-row-sum { max-width: 100%; font: 12px/1.4 var(--font-mono); color: var(--dim); overflow-wrap: anywhere; }
 .dash-row-when { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; font: 12px/1.3 var(--font-mono); color: var(--muted); text-align: right; white-space: nowrap; }
 .dash-row-go { display: block; color: var(--muted); }
 .dash-row:hover .dash-row-go { color: var(--accent); }

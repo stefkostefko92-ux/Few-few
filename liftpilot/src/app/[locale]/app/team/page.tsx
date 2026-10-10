@@ -100,7 +100,7 @@ export default async function TeamPage({ params, searchParams }: {
       </div>
       {invites.length ? (
         <section className="table-panel" aria-labelledby="invites-title">
-          <h2 id="invites-title" className="px-4 pt-3">{t('invitesTitle')}</h2>
+          <div className="panel-head px-4 py-3"><h2 id="invites-title">{t('invitesTitle')}</h2></div>
           <table className="data-table stack">
             <thead><tr><th>{t('name')}</th><th>{t('role')}</th><th>{t('status')}</th><th>{t('actions')}</th></tr></thead>
             <tbody>

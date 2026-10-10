@@ -3,7 +3,8 @@
 // The top bar's search of the company's installations: a GET form to the dashboard (`/app?q=…`), which filters them on
 // the server by name, address, municipality and plant number (src/server/queries.ts listProjects). On the dashboard it
 // keeps the list's filters (archived, module) and shows the words searched. Wide screens: the field in the bar, with
-// Ctrl+K / ⌘K to reach it; phones: a search button that opens the field under the bar.
+// Ctrl+K / ⌘K to reach it; phones: a search button that opens the field under the bar, with the focus in it (Esc or a
+// click outside closes it and gives the focus back to the button, as the dashboard's «new» menu).
 import { useEffect, useRef, useSyncExternalStore } from 'react';
 import Form from 'next/form';
 import { useLocale } from 'next-intl';
@@ -37,9 +38,30 @@ export default function ShellSearch({ label, placeholder }: { label: string; pla
         narrow.current.querySelector('input')?.focus();
       }
     };
+    // the phone's field: Esc closes it (the focus back on its button), a click outside closes it
+    const onEsc = (e: globalThis.KeyboardEvent): void => {
+      const d = narrow.current;
+      if (e.key !== 'Escape' || !d?.open) return;
+      d.open = false;
+      d.querySelector('summary')?.focus();
+    };
+    const onDown = (e: PointerEvent): void => {
+      const d = narrow.current;
+      if (d?.open && e.target instanceof Node && !d.contains(e.target)) d.open = false;
+    };
     document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
+    document.addEventListener('keydown', onEsc);
+    document.addEventListener('pointerdown', onDown);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('keydown', onEsc);
+      document.removeEventListener('pointerdown', onDown);
+    };
   }, []);
+  // opened from its button: the focus goes into the field
+  const onToggle = (): void => {
+    if (narrow.current?.open) narrow.current.querySelector('input')?.focus();
+  };
 
   const field = (id: string, ref?: typeof wide, hint?: string) => (
     // keyed by the words: after a search the field shows them, after leaving the dashboard it is empty again
@@ -54,7 +76,7 @@ export default function ShellSearch({ label, placeholder }: { label: string; pla
   return (
     <>
       <div className="ws-search-wide">{field('ws-q', wide, kbd)}</div>
-      <details ref={narrow} className="ws-search-narrow">
+      <details ref={narrow} className="ws-search-narrow" onToggle={onToggle}>
         <summary aria-label={label}><Icon name="search" size={18} /></summary>
         {field('ws-q-phone')}
       </details>

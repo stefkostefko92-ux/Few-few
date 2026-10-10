@@ -63,7 +63,7 @@ export default async function NormePage({ params }: { params: Promise<{ locale: 
       </ul>
       {PARTS.map((p) => (
         <section key={p.key} className="flex flex-col gap-3" aria-labelledby={`part-${p.key}`}>
-          <h2 id={`part-${p.key}`}>{t(`part_${p.key}`)} <span className="note">· {p.voci.length}</span></h2>
+          <div className="panel-head"><h2 id={`part-${p.key}`}>{t(`part_${p.key}`)} <span className="note">· {p.voci.length}</span></h2></div>
           <div className="table-panel">
             <table className="data-table stack">
               <thead><tr><th>{t('col_item')}</th><th>{t('col_value')}</th><th>{t('col_ref')}</th><th>{t('col_status')}</th></tr></thead>

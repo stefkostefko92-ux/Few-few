@@ -13,8 +13,9 @@ export default function ShellCrumbs({ groups, extra, label }: { groups: NavGroup
   return (
     <nav className="ws-crumbs" aria-label={label}>
       <ol className="crumbs">
-        {group ? <li><span>{group.label}</span></li> : null}
-        <li><span aria-current="page">{page}</span></li>
+        {/* a long name is cut in the bar: the whole of it on hover (as Crumbs) */}
+        {group ? <li><span title={group.label}>{group.label}</span></li> : null}
+        <li><span aria-current="page" title={page}>{page}</span></li>
       </ol>
     </nav>
   );
