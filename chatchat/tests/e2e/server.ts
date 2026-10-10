@@ -6,15 +6,20 @@
  */
 import { createServer } from 'node:http';
 import { cite, resetDb, startApp, type Plan } from '../integration/helpers.js';
-import { FakeScanner, SpyStore, URL_KEY } from '../integration/files.js';
+import { FakeScanner, URL_KEY } from '../integration/files.js';
+import { FlakyStore, ingestRig } from '../integration/ingest-world.js';
 import { seedWorld } from '../integration/world.js';
 import { twoSteps } from '../integration/flow-world.js';
 import { E2E_ORIGIN, E2E_PORT, E2E_READY_PORT, PHOTO_CODE } from './support/constants.js';
 
 await resetDb();
+// Приемането на документи през опашката в процеса (фалшив OCR — истинският е в Docker smoke теста).
+const store = new FlakyStore();
+const rig = ingestRig(store);
 const h = await startApp({
   diagnose: 'real',
-  attachments: { store: new SpyStore(), scanner: new FakeScanner(), urlKey: URL_KEY },
+  attachments: { store, scanner: new FakeScanner(), urlKey: URL_KEY },
+  ingest: { bus: rig.bus },
   port: E2E_PORT,
   origin: E2E_ORIGIN,
 });
@@ -79,6 +84,7 @@ console.log('E2E READY', E2E_ORIGIN);
 
 const stop = async () => {
   ready.close();
+  await rig.bus.close();
   await h.close();
   process.exit(0);
 };
