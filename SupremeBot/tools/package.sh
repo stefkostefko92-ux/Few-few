@@ -16,7 +16,7 @@ INCLUDE=(manifest.json icons _locales popup options stats src/shared src/core sr
 
 # Guard: the signing secret / key generator must never be in the package.
 if [ -d tools ] && printf '%s\n' "${INCLUDE[@]}" | grep -q '^tools$'; then
-  echo "REFUSING: tools/ would be packaged (contains genkey + secret)"; exit 1
+  echo "REFUSING: tools/ would be packaged (contains the key generator)"; exit 1
 fi
 
 zip -r -q "$OUT" "${INCLUDE[@]}" \
@@ -25,4 +25,4 @@ zip -r -q "$OUT" "${INCLUDE[@]}" \
 echo "Built $OUT"
 echo "Contents:"; unzip -l "$OUT" | tail -n +2 | head -40
 echo
-echo "Reminder: confirm src/shared/payment.js has YOUR LICENSE_SECRET (not the shipped default) before publishing."
+echo "Reminder: LICENSE_PUBLIC_KEY in src/shared/payment.js must match YOUR private key (tools/genkey.mjs --new-keypair)."

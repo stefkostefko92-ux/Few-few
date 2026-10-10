@@ -15,14 +15,18 @@
     async tick() {
       const c = cfg();
       if (!c.enabled || !Api.ready() || busy()) return null;
-      if (Date.now() < cooldownUntil) return null;
+      if (Date.now() < cooldownUntil) { Scheduler.wakeAt(cooldownUntil); return null; }
 
       const info = State.get().dungeon || {};
       if (!Object.keys(info).length || Date.now() - lastCheck > 120000) {
         return async () => { lastCheck = Date.now(); await Api.getDungeon(); };
       }
 
-      if ((info.freeTries || 0) <= 0) {
+      // free_tries_today is the DAILY CAP, not what is left. The game itself
+      // treats a run as free only while dungeon_made_today < free_tries_today
+      // and charges a bloodstone from then on - so never go past the cap.
+      const freeLeft = (info.freeTries || 0) - (info.madeToday || 0);
+      if (freeLeft <= 0) {
         cooldownUntil = Date.now() + 30 * 60000; // re-check in 30 min
         return null;
       }
@@ -33,7 +37,13 @@
           // Start -> fight a bounded number of rounds (stop early on any fault,
           // e.g. defeat) -> claim the accumulated reward.
           Logger.info(I18n.t('logShadowStart'));
-          await Api.startShadowdungeon();
+          try {
+            await Api.startShadowdungeon();
+          } catch (e) {
+            cooldownUntil = Date.now() + 10 * 60000;
+            lastCheck = 0;
+            throw e;
+          }
           const rounds = Math.max(1, Math.min(50, Number(c.shadowRounds) || 10));
           let fought = 0;
           for (let i = 0; i < rounds; i++) {
@@ -45,13 +55,20 @@
           Logger.success(I18n.t('logShadowDone', [String(fought)]));
         } else {
           Logger.info(I18n.t('logDungeonStart', [String(info.level || 0)]));
-          await Api.startDungeon();
+          try {
+            await Api.startDungeon();
+          } catch (e) {
+            // Refused (hero busy, no tries left server-side): back off.
+            cooldownUntil = Date.now() + 10 * 60000;
+            lastCheck = 0;
+            throw e;
+          }
           Stats.bump({ dungeonRuns: 1 });
           Logger.success(I18n.t('logDungeonDone'));
         }
         await Api.miniUpdate();        // picks up a running-task timer if any
-        // Optimistically drop a try and force a fresh GetDungeon next cycle.
-        State.patch({ dungeon: Object.assign({}, info, { freeTries: (info.freeTries || 1) - 1 }) });
+        // Optimistically count the run and force a fresh GetDungeon next cycle.
+        State.patch({ dungeon: Object.assign({}, info, { madeToday: (info.madeToday || 0) + 1 }) });
         lastCheck = 0;
         // Local cooldown so we never re-fire back-to-back even if MiniUpdate
         // didn't surface a running-task timer.
