@@ -3,7 +3,7 @@
 // трансмисия/дисперсия, емайл с лак. Светещите завършеци са 3D жили (nodes.ts veinMask) →
 // emissive. Връща „M" в договора на boy builders (steelA/steelB/goldB/brass/blade/...).
 import * as THREE from 'three/webgpu';
-import { color, dot, float, materialColor, materialRoughness, mix, normalView, positionViewDirection, uniform, vec3 } from 'three/tsl';
+import { color, cos, dot, float, materialColor, materialRoughness, mix, normalView, positionLocal, positionViewDirection, smoothstep, uniform, vec3 } from 'three/tsl';
 import type { PbrSets } from './pbrSets';
 import type { Plan, Surface } from './plan';
 import { triNormal, triSample, veinMask } from './nodes';
@@ -110,7 +110,11 @@ export function woodMaterial(S: PbrSets, plan: Plan): THREE.MeshPhysicalNodeMate
 function facetFire(c: THREE.Color, k: number) {
   const rim = float(1).sub(normalView.dot(positionViewDirection).abs()).pow(1.8);
   const facet = normalView.dot(vec3(0.35, 0.55, 0.76).normalize()).clamp(0, 1).pow(2.2);
-  return color(c.clone()).mul(rim.mul(0.7).add(facet.mul(1.5)).add(0.08)).mul(k);
+  // дисперсия: всяка стена получава различен спектрален нюанс (косинусова палитра), най-силен по ръба
+  const hue = normalView.x.mul(0.9).add(normalView.y.mul(0.5)).add(vec3(0, 0.33, 0.67)).mul(6.283);
+  const spectral = vec3(0.5).add(cos(hue).mul(0.5));
+  const base = mix(color(c.clone()), spectral, rim.mul(0.45));
+  return base.mul(rim.mul(0.8).add(facet.mul(0.9)).add(0.08)).mul(k);
 }
 
 /** Скъпоценен камък / ядро: плътен наситен диелектрик с високо IOR отражение + фасетен огън. */
@@ -131,11 +135,17 @@ export function lacquer(S: PbrSets, c: THREE.Color, plan: Plan): THREE.MeshPhysi
   return m;
 }
 
-/** Стъкло (полупрозрачно, с ярко отражение) + плътна течност с вътрешен огън + корк + восък. */
+/** Стъкло (френелов ръб: почти прозрачно в центъра, плътно по краищата), течност с вертикален
+ *  градиент и вътрешен огън, корк, восък. */
 export function vesselMaterials(plan: Plan): VesselMaterials {
-  const glass = Phys({ color: 0xdfeaf2, metalness: 0, roughness: 0.02, transparent: true, opacity: 0.3, ior: 1.5, specularIntensity: 1, clearcoat: 1, clearcoatRoughness: 0.01, depthWrite: false, side: THREE.DoubleSide });
-  const liquid = Phys({ color: plan.gem.clone().multiplyScalar(0.5), metalness: 0, roughness: 0.12, clearcoat: 0.8, clearcoatRoughness: 0.05, side: THREE.DoubleSide });
-  liquid.emissiveNode = facetFire(plan.gem, 1.0);
+  const fres = float(1).sub(normalView.dot(positionViewDirection).abs()).pow(2.2);
+  const glass = Phys({ color: 0xe6f0f8, metalness: 0, roughness: 0.015, transparent: true, ior: 1.5, specularIntensity: 1, clearcoat: 1, clearcoatRoughness: 0.01, depthWrite: false, side: THREE.DoubleSide });
+  glass.opacityNode = fres.mul(0.75).add(0.07);
+  const dark = plan.gem.clone().multiplyScalar(0.18);
+  const liquid = Phys({ color: 0xffffff, metalness: 0, roughness: 0.1, clearcoat: 0.9, clearcoatRoughness: 0.04, side: THREE.DoubleSide });
+  const grad = smoothstep(float(0.0), float(0.11), positionLocal.y);
+  liquid.colorNode = mix(color(plan.gem.clone().multiplyScalar(0.8)), color(dark), grad);
+  liquid.emissiveNode = mix(color(plan.gem.clone().multiplyScalar(0.75)), color(plan.gem.clone().multiplyScalar(0.12)), grad).add(color(plan.gem.clone()).mul(fres.mul(0.9)));
   const cork = Phys({ color: 0x8a6a46, metalness: 0, roughness: 0.85 });
   const wax = Phys({ color: plan.gem.clone().multiplyScalar(0.5), metalness: 0, roughness: 0.35, clearcoat: 0.6 });
   return { glass, liquid, cork, wax };

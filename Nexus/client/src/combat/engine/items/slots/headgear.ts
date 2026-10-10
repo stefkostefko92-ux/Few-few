@@ -23,45 +23,53 @@ function fold(g: THREE.BufferGeometry, amp: number, freq: number, seed: number):
   return g;
 }
 
-type Clay = { clay: THREE.Material };
+/** Точка по меридиан на сплеснатата сфера на качулката (три.js параметризация). */
+function sph(r: number, sx: number, sy: number, sz: number, phi: number, theta: number, dy: number, dz: number): THREE.Vector3 {
+  return new THREE.Vector3(-r * Math.cos(phi) * Math.sin(theta) * sx, r * Math.cos(theta) * sy + dy, r * Math.sin(phi) * Math.sin(theta) * sz + dz);
+}
 
-/** Матова „глинена" глава върху шия и рамене — носи качулка/маска/шапка/качулък, за да се чете
- *  като дреха, а не като плаващ плат. Лице към +Z, темето на ≈ +0.075. */
-function clayHead(M: BoyMaterials, g: THREE.Group): void {
-  const clay = (M as unknown as Clay).clay;
-  const head = new THREE.SphereGeometry(0.1, 40, 28);
-  head.scale(0.82, 1.08, 0.95);
-  head.translate(0, -0.03, -0.005);
-  const jaw = new THREE.SphereGeometry(0.06, 24, 16);
-  jaw.scale(0.95, 1, 1);
-  jaw.translate(0, -0.1, 0.022);
-  const nose = new THREE.ConeGeometry(0.014, 0.035, 12);
-  nose.rotateX(Math.PI / 2 + 0.25);
-  nose.translate(0, -0.04, 0.1);
-  const neck = new THREE.CylinderGeometry(0.052, 0.062, 0.14, 24);
-  neck.translate(0, -0.2, -0.01);
-  const shoulders = new THREE.SphereGeometry(0.2, 40, 20, 0, Math.PI * 2, 0, Math.PI / 2);
-  shoulders.scale(1.0, 0.5, 0.5);
-  shoulders.translate(0, -0.3, -0.02);
-  g.add(mesh(merge([head, jaw, nose, neck, shoulders]), clay));
+/** Драпирана качулка/качулък: дебел навит ръб по отвора на лицето, почти черна вътрешност (лицето е
+ *  в сянка), гънки отзад и по раменете, подгъв. Без манекен — само плат; roughness ~0.9, sheen. */
+function drapedHood(M: BoyMaterials, g: THREE.Group, rand: Rand, cloth: THREE.Material, mailHood: boolean): void {
+  const seed = rand() * 10;
+  const R = 0.128; const sx = 0.92; const sy = 1.1; const sz = 1.12; const dy = -0.025; const dz = -0.02;
+  const open = Math.PI * 0.2; // половин ъгъл на отвора около +Z (phi = π/2)
+  const phi0 = Math.PI / 2 + open; const span = Math.PI * 2 - open * 2;
+  const dome = new THREE.SphereGeometry(R, 64, 44, phi0, span, 0, Math.PI * 0.8);
+  dome.scale(sx, sy, sz);
+  dome.translate(0, dy, dz);
+  g.add(mesh(mailHood ? dome : fold(dome, 0.0045, 9, seed), cloth));
+  // тъмна вътрешност: пълна по-малка сфера (затваря отвора с „сянка", лицето не се вижда)
+  const inner = new THREE.SphereGeometry(R * 0.93, 40, 28, 0, Math.PI * 2, 0, Math.PI * 0.82);
+  inner.scale(sx, sy * 0.98, sz);
+  inner.translate(0, dy, dz + 0.004);
+  g.add(mesh(inner, M.slit));
+  // навит ръб по двата меридиана на отвора + горна дъга
+  const rim: THREE.Vector3[][] = [[], []];
+  for (let i = 0; i <= 24; i++) {
+    const th = (i / 24) * Math.PI * 0.8;
+    rim[0].push(sph(R, sx, sy, sz, phi0, th, dy, dz));
+    rim[1].push(sph(R, sx, sy, sz, phi0 + span, th, dy, dz));
+  }
+  for (const pts of rim) g.add(mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 48, 0.0105, 10, false), cloth));
+  // яка/качулък върху раменете с дълбоки гънки + навит подгъв
+  const cowl = lathe([[0.075, -0.12], [0.135, -0.16], [0.205, -0.23], [0.285, -0.33], [0.305, -0.385]], 96, 0, Math.PI * 2);
+  cowl.scale(1, 1, 0.8);
+  g.add(mesh(fold(cowl, mailHood ? 0.002 : 0.016, 11, seed), cloth));
+  const hem = new THREE.TorusGeometry(0.305, 0.0085, 8, 96);
+  hem.rotateX(Math.PI / 2);
+  hem.scale(1, 1, 0.8);
+  hem.translate(0, -0.385, 0);
+  g.add(mesh(fold(hem, 0.016, 11, seed), cloth));
 }
 
 function hood(M: BoyMaterials, g: THREE.Group, rand: Rand): void {
-  const seed = rand() * 10;
-  clayHead(M, g);
-  // купол около главата с отвор за лицето: пълен отзад/отгоре, предният сектор е изрязан
-  const dome = new THREE.SphereGeometry(0.128, 56, 40, Math.PI * 0.69, Math.PI * 1.62, 0, Math.PI * 0.8);
-  dome.scale(0.92, 1.1, 1.12);
-  dome.translate(0, -0.025, -0.02);
-  g.add(mesh(fold(dome, 0.0045, 9, seed), M.capeA));
-  // яка: плат, който пада по раменете, с гънки
-  const cowl = lathe([[0.07, -0.12], [0.13, -0.16], [0.195, -0.23], [0.27, -0.33], [0.29, -0.38]], 72, 0, Math.PI * 2);
-  cowl.scale(1, 1, 0.78);
-  g.add(mesh(fold(cowl, 0.013, 10, seed), M.capeA));
+  g.rotation.y = 0.6; // отворът гледа към камерата
+  drapedHood(M, g, rand, M.capeA, false);
 }
 
 function mask(M: BoyMaterials, g: THREE.Group, rand: Rand): void {
-  clayHead(M, g);
+  g.rotation.y = 0.45;
   const face = new THREE.SphereGeometry(0.108, 48, 32, Math.PI * 0.12, Math.PI * 0.76, Math.PI * 0.22, Math.PI * 0.6);
   face.scale(0.86, 1.12, 0.98);
   face.translate(0, -0.04, -0.005);
@@ -71,8 +79,7 @@ function mask(M: BoyMaterials, g: THREE.Group, rand: Rand): void {
     g.add(mesh(xf(new THREE.TorusGeometry(0.0205, 0.003, 6, 20), [s * 0.034, -0.012, 0.0955], [0, s * 0.3, s * 0.35], [1.5, 0.6, 1]), M.goldB));
   }
   g.add(mesh(xf(new THREE.CylinderGeometry(0.004, 0.012, 0.06, 6), [0, -0.05, 0.1], [0.12, 0, 0]), M.steelB));
-  g.add(mesh(xf(new THREE.TorusGeometry(0.102, 0.004, 6, 48, Math.PI * 0.8), [0, -0.075, -0.0], [Math.PI / 2, 0, Math.PI * 0.6]), M.goldB));
-  g.add(mesh(xf(new THREE.TorusGeometry(0.1, 0.007, 6, 48), [0, -0.03, -0.01], [Math.PI / 2, 0, 0], [1.0, 0.95, 1]), M.leather));
+  for (const s of [-1, 1]) g.add(mesh(xf(new THREE.TorusGeometry(0.1, 0.006, 6, 24, Math.PI * 0.55), [0, -0.03, -0.01], [Math.PI / 2, 0, s > 0 ? -0.3 : Math.PI + 0.3 - Math.PI * 0.55]), M.leather));
   void rand;
 }
 
@@ -135,7 +142,6 @@ function circlet(M: BoyMaterials, g: THREE.Group, rand: Rand, thin: boolean): vo
 }
 
 function cap(M: BoyMaterials, g: THREE.Group, rand: Rand): void {
-  clayHead(M, g);
   const dome = new THREE.SphereGeometry(0.108, 40, 24, 0, Math.PI * 2, 0, Math.PI * 0.55);
   dome.scale(0.88, 1.0, 1.0);
   dome.translate(0, -0.03, -0.008);
@@ -144,13 +150,9 @@ function cap(M: BoyMaterials, g: THREE.Group, rand: Rand): void {
   g.add(mesh(xf(new THREE.ConeGeometry(0.012, 0.11, 8), [-0.05, 0.055, -0.04], [-0.9, 0, 0.7]), M.capeB));
 }
 
-function coif(M: BoyMaterials, g: THREE.Group): void {
-  clayHead(M, g);
-  const dome = new THREE.SphereGeometry(0.113, 56, 40, Math.PI * 0.82, Math.PI * 1.36, 0, Math.PI * 0.8);
-  dome.scale(0.88, 1.1, 1.06);
-  dome.translate(0, -0.03, -0.01);
-  g.add(mesh(dome, M.mail));
-  g.add(mesh(lathe([[0.08, -0.12], [0.12, -0.16], [0.18, -0.24], [0.2, -0.27]], 64, 0, Math.PI * 2), M.mail));
+function coif(M: BoyMaterials, g: THREE.Group, rand: Rand): void {
+  g.rotation.y = 0.6;
+  drapedHood(M, g, rand, M.mail, true);
 }
 
 export function buildHeadgear(M: BoyMaterials, name: string, rand: Rand): THREE.Object3D {
@@ -158,7 +160,7 @@ export function buildHeadgear(M: BoyMaterials, name: string, rand: Rand): THREE.
   if (/hood|cowl|veil/i.test(name)) hood(M, g, rand);
   else if (/mask/i.test(name)) mask(M, g, rand);
   else if (/circlet|diadem/i.test(name)) circlet(M, g, rand, /diadem/i.test(name));
-  else if (/coif/i.test(name)) coif(M, g);
+  else if (/coif/i.test(name)) coif(M, g, rand);
   else if (/\bcap\b/i.test(name)) cap(M, g, rand);
   else crown(M, g, rand, /hollow|primordial|veilforged|king|emperor/i.test(name));
   g.updateMatrixWorld(true);

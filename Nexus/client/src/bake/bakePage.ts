@@ -70,9 +70,9 @@ async function buildObject(entry: CatalogEntry): Promise<{ object: THREE.Object3
     const b = await buildMannequin(entry, rngFor(entry.slug));
     // Продуктов кадър: парчето е в цвят/материал, останалото от манекена е матова въглена „глина".
     const SHOW: Record<string, string[]> = {
-      armor: ['chest', 'upperArmR', 'upperArmL', 'pelvis', 'tassetR', 'tassetL', 'head'],
+      armor: ['chest', 'upperArmR', 'upperArmL', 'pelvis', 'tassetR', 'tassetL'],
       boots: ['shinL', 'shinR', 'footL', 'footR'],
-      cloak: ['chest', 'upperArmR', 'upperArmL', 'head'],
+      cloak: ['chest', 'upperArmR', 'upperArmL'],
     };
     const clay = new THREE.MeshPhysicalNodeMaterial({ color: 0x1b2028, roughness: 0.82, sheen: 0.6, sheenColor: new THREE.Color(0x3a4658), sheenRoughness: 0.5 });
     b.object.traverse((o) => {
@@ -93,7 +93,7 @@ async function render(slug: string, q = 0.8): Promise<{ webp: string; bytes: num
   if (!entry) throw new Error(`непознат slug ${slug}`);
   const built = await buildObject(entry);
   if (!built) return null;
-  const studio = buildBakeStudio(built.object, c.env, { tiltDeg: built.tilt, margin: 1.12 });
+  const studio = buildBakeStudio(built.object, c.env, { tiltDeg: built.tilt, margin: 1.04 });
   c.renderer.setRenderTarget(c.rt);
   c.renderer.setClearColor(0x000000, 0);
   await c.renderer.renderAsync(studio.scene, studio.camera);
@@ -111,7 +111,13 @@ async function render(slug: string, q = 0.8): Promise<{ webp: string; bytes: num
   out.width = out.height = OUT;
   const g = out.getContext('2d')!;
   g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
-  g.drawImage(big, 0, 0, OUT, OUT);
+  // Кадър по обекта: bbox на плътните пиксели → квадрат с ~6% поле, за да запълва ~90% от клетката.
+  let x0 = RES; let y0 = RES; let x1 = 0; let y1 = 0;
+  for (let y = 0; y < RES; y++) for (let x = 0; x < RES; x++) if (px[(y * RES + x) * 4 + 3] > 150) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  const side = Math.min(RES, Math.max(x1 - x0, y1 - y0) * 1.1 + 8);
+  const sx = Math.max(0, Math.min(RES - side, (x0 + x1) / 2 - side / 2));
+  const sy = Math.max(0, Math.min(RES - side, (y0 + y1) / 2 - side / 2));
+  g.drawImage(big, sx, sy, side, side, 0, 0, OUT, OUT);
   const blob = await new Promise<Blob>((res) => out.toBlob((b) => res(b!), 'image/webp', q));
   const buf = new Uint8Array(await blob.arrayBuffer());
   let s = '';

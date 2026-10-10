@@ -72,7 +72,7 @@ export function buildPolearm(M: BoyMaterials, icon: string, name: string, rand: 
   const hammer = /hammer|maul/i.test(name);
   const double = /double|reaper|headsman|greataxe|cleaver/i.test(name) && rand() < 0.7;
   const len = spear ? 1.25 : hammer ? 0.8 : 0.85;
-  haft(M, g, len, spear ? 0.0125 : 0.015);
+  haft(M, g, len, spear ? 0.0165 : 0.0195);
   if (spear) spearHead(M, g, len - 0.08, /trident/i.test(name));
   else axeHead(M, g, len - 0.15, double, hammer);
   g.updateMatrixWorld(true);
