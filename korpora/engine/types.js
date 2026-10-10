@@ -41,6 +41,9 @@ export const TYPES = {
     // the drawer module narrower than the door modules: with GTV H45 in a 560 mm carcass (NL 500) a drawer of a 600 mm
     // module would be wider than its slide (drawers.js); 500 keeps the box at 438,6 mm
     defaults: { modules: 4, moduleWidth: 600, drawerModuleWidth: 500, height: 860, depth: 560, wallHeight: 720, mount: 1450 },
+    // a kitchen saved before drawerModuleWidth had all its modules moduleWidth wide: it opens as it was saved (the
+    // GTV check then says what to change), never silently with a narrower drawer module than the customer drew
+    legacy: { drawerModuleWidth: 'moduleWidth' },
   },
   wardrobe: {
     label: 'Гардероб', group: 'Спалня',
@@ -106,6 +109,9 @@ export function normalizeParams(type, input) {
       if (opt) s[p.key] = opt[0];
     }
   }
+  // a parameter added after the spec was saved takes the value its geometry had then (TYPES[].legacy)
+  const given = (k) => input[k] !== undefined && input[k] !== null && input[k] !== '';
+  for (const [key, from] of Object.entries(t.legacy ?? {})) if (!given(key) && given(from)) s[key] = s[from];
   return s;
 }
 

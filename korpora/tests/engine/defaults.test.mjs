@@ -52,9 +52,13 @@ test('kitchen: the drawer module has its own width, the door modules keep theirs
   assert.equal(typeDims('kitchen', six.spec).W, 4 * 800 + 2 * 450);
 });
 
-test('a saved kitchen without the drawer module width opens with the default one', () => {
+test('a saved kitchen without the drawer module width opens as it was saved; a new one gets the narrower drawer module', () => {
   const saved = { type: 'kitchen', modules: 4, moduleWidth: 600, height: 860, depth: 560, wallHeight: 720, mount: 1450 };
-  assert.equal(normalizeSpec(saved).drawerModuleWidth, 500);
+  // all its modules were moduleWidth wide: the drawers stay where the customer drew them, the GTV check says so
+  assert.equal(normalizeSpec(saved).drawerModuleWidth, 600);
+  assert.equal(normalizeSpec({ ...saved, moduleWidth: 700 }).drawerModuleWidth, 700);
+  assert.ok(buildModel(saved).warnings.some((w) => w.level === 'warn' && /GTV/.test(w.text)), 'the GTV rule is shown');
+  assert.equal(normalizeSpec({ type: 'kitchen' }).drawerModuleWidth, 500, 'a new project');
   assert.equal(normalizeSpec({ ...saved, drawerModuleWidth: 604 }).drawerModuleWidth, 600, 'on its own 10 mm step');
   assert.equal(normalizeSpec({ ...saved, drawerModuleWidth: 'x' }).drawerModuleWidth, 400, 'garbage is clamped, not trusted');
   assert.equal(buildModel(saved).parts.filter((p) => p.role === 'drawer-front').length, 3);
