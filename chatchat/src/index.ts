@@ -11,6 +11,7 @@ import {
 } from './ai/breaker.js';
 import { embeddingModelFrom } from './ai/embeddings.js';
 import { aiEnabled, attachmentsEnabled, emailEnabled, loadConfig, mfaKey } from './config.js';
+import { loadIntegrationsConfig } from './config-integrations.js';
 import { createLogger } from './logger.js';
 import { instrumentDiagnoser, meteredScanner } from './observability/ai.js';
 import { BREAKER_STATE_VALUE, createMetrics, type BreakerName } from './observability/catalog.js';
@@ -19,6 +20,7 @@ import type { AttachmentDeps } from './services/attachments.js';
 import type { MailPolicy } from './services/email/enqueue.js';
 import { BrevoMailer } from './services/email/mailer.js';
 import { EmailWorker } from './services/email/worker.js';
+import { integrationsFrom } from './services/integrations/setup.js';
 import { EmbeddingIndexer } from './store/embeddings.js';
 import { ClamdScanner } from './storage/antivirus.js';
 import { attachmentStoreFrom } from './storage/factory.js';
@@ -144,6 +146,11 @@ if (emailEnabled(config)) {
   logger.warn('BREVO_API_KEY липсва — имейл известията са изключени');
 }
 
+// Интеграцията с helpdesk (FR-09, §14.4): само с INTEGRATION_KEK — тайните на конекторите са шифровани.
+const integrations = integrationsFrom(loadIntegrationsConfig(), config.PUBLIC_BASE_URL, db, logger);
+if (integrations) integrations.worker.start();
+else logger.warn('INTEGRATION_KEK липсва — интеграцията с helpdesk е изключена');
+
 // Един процес = един хъб за SSE. Втори процес/машина иска pub/sub между хъбовете (CLAUDE.md).
 const hub = new RealtimeHub({
   onError: (err) =>
@@ -176,6 +183,7 @@ const app = createApp({
   metrics,
   aiCircuit: () => modelBreaker?.current ?? null,
   mail,
+  integrations: integrations?.deps ?? null,
 });
 
 const server = app.listen(config.PORT, config.HOST, () => {
@@ -186,6 +194,7 @@ const server = app.listen(config.PORT, config.HOST, () => {
       ai: diagnoser !== null,
       uploads: attachments?.scanner != null,
       email: mail !== null,
+      helpdesk: integrations !== null,
       filesEncrypted: attachments ? config.FILES_ENCRYPTION === 'on' : null,
     },
     'chatchat слуша',
@@ -217,6 +226,7 @@ function shutdown(signal: string): void {
   logger.info({ signal }, 'спиране');
   indexer?.stop();
   emailWorker?.stop();
+  integrations?.worker.stop();
   metricsServer?.close();
   // Отворените SSE потоци държат сървъра жив — затваряме ги, клиентите се връщат по REST.
   hub.closeAll();

@@ -103,8 +103,11 @@ test("пръв деплой: ключовете се раждат в shared/.env
   assert.match(env, /^MFA_ENC_KEY=\S{40,}$/m);
   assert.match(env, /^FILES_KEK=\S{40,}$/m);
   assert.equal(Buffer.from(env.match(/^FILES_KEK=(\S+)$/m)[1], "base64").length, 32, "KEK — 32 байта");
+  assert.match(env, /^INTEGRATION_KEK=\S{40,}$/m, "ключът на тайните на helpdesk конектора");
+  assert.equal(Buffer.from(env.match(/^INTEGRATION_KEK=(\S+)$/m)[1], "base64").length, 32, "INTEGRATION_KEK — 32 байта");
+  assert.notEqual(env.match(/^INTEGRATION_KEK=(\S+)$/m)[1], env.match(/^FILES_KEK=(\S+)$/m)[1], "отделен ключ");
   assert.equal(mode(join(L.shared, ".env")), "600");
-  assert.doesNotMatch(r.stderr + r.log, /ATTACHMENT_URL_KEY=|MFA_ENC_KEY=|FILES_KEK=/, "стойностите не се печатат");
+  assert.doesNotMatch(r.stderr + r.log, /ATTACHMENT_URL_KEY=|MFA_ENC_KEY=|FILES_KEK=|INTEGRATION_KEK=/, "стойностите не се печатат");
   order(r.log, "/readyz", "compose exec -T app node dist/cli/files.js encrypt");
   assert.match(r.stderr, /pgdata-encrypt\.sh enable/, "подсказва шифрования том на базата");
   assert.equal(readFileSync(join(L.app, ".env"), "utf8"), env, "release-ът носи същия .env");
@@ -126,6 +129,15 @@ test("съществуващи ключове не се пипат", () => withL
   const env = readFileSync(join(L.shared, ".env"), "utf8");
   assert.equal(env.match(/MFA_ENC_KEY=/g).length, 1);
   assert.match(env, /^MFA_ENC_KEY=old-m$/m);
+}));
+
+test("съществуващ INTEGRATION_KEK не се пипа, липсващ се дописва веднъж", () => withLayout((L) => {
+  sharedEnv(L, "INTEGRATION_KEK=old-i\n");
+  assert.equal(deploy(L).status, 0);
+  assert.equal(deploy(L).status, 0);
+  const env = readFileSync(join(L.shared, ".env"), "utf8");
+  assert.equal(env.match(/^INTEGRATION_KEK=/gm).length, 1);
+  assert.match(env, /^INTEGRATION_KEK=old-i$/m);
 }));
 
 test("съществуваща база без маркер: бекъп → базата на новия образ → REINDEX → up", () => withLayout((L) => {

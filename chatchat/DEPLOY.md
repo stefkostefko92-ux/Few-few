@@ -40,8 +40,9 @@ sudoedit /opt/few-few/shared/chatchat/.env    # по образеца .env.examp
 | `ATTACHMENT_URL_KEY` | `openssl rand -base64 32`                                             | издадените адреси за сваляне на прикачени файлове                 |
 | `MFA_ENC_KEY`        | `openssl rand -base64 32`                                             | **всички MFA устройства** (тайните им в базата не се разшифроват) |
 | `FILES_KEK`          | `openssl rand -base64 32`                                             | **всички прикачени файлове** — смяна само с ротация (т. 12)       |
+| `INTEGRATION_KEK`    | `openssl rand -base64 32`                                             | токените на helpdesk конектора (въвеждат се наново в конзолата)   |
 
-Петте са различни. Ако `ATTACHMENT_URL_KEY`, `MFA_ENC_KEY` или `FILES_KEK` липсват, `deploy.sh` ги
+Шестте са различни. Ако `ATTACHMENT_URL_KEY`, `MFA_ENC_KEY`, `FILES_KEK` или `INTEGRATION_KEK` липсват, `deploy.sh` ги
 генерира сам (само тях, само ако ги няма, никога не ги презаписва и не ги печата) и казва това —
 **копирай `.env` и извън сървъра** (password manager), **никога заедно с бекъпите**: без `MFA_ENC_KEY`
 бекъпът на базата не връща MFA, а без `FILES_KEK` прикачените файлове (и тези в бекъпите) са загубени.

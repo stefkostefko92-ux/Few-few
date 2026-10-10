@@ -5,19 +5,36 @@
  *   DATABASE_URL=…chatchat_test_ac npx tsx tests/e2e/server.ts
  */
 import { createServer } from 'node:http';
-import { cite, resetDb, startApp, type Plan } from '../integration/helpers.js';
+import { IntegrationWorker } from '../../src/services/integrations/worker.js';
+import { cite, db, resetDb, startApp, type Plan } from '../integration/helpers.js';
 import { FakeScanner, SpyStore, URL_KEY } from '../integration/files.js';
+import { FakeHelpdesk } from '../integration/helpdesk-fake.js';
+import { localDeps } from '../integration/helpdesk-world.js';
 import { seedWorld } from '../integration/world.js';
 import { twoSteps } from '../integration/flow-world.js';
-import { E2E_ORIGIN, E2E_PORT, E2E_READY_PORT, PHOTO_CODE } from './support/constants.js';
+import {
+  E2E_HELPDESK_PORT,
+  E2E_ORIGIN,
+  E2E_PORT,
+  E2E_READY_PORT,
+  PHOTO_CODE,
+} from './support/constants.js';
 
 await resetDb();
+// Интеграцията с helpdesk (FR-09): фалшив helpdesk на фиксиран порт и изпращач на всяка секунда.
+const helpdesk = new FakeHelpdesk();
+await helpdesk.start(E2E_HELPDESK_PORT);
+const integrations = localDeps(helpdesk);
 const h = await startApp({
   diagnose: 'real',
   attachments: { store: new SpyStore(), scanner: new FakeScanner(), urlKey: URL_KEY },
   port: E2E_PORT,
   origin: E2E_ORIGIN,
+  integrations,
 });
+const quiet = { info: () => undefined, warn: () => undefined };
+const helpdeskWorker = new IntegrationWorker({ db, integrations, logger: quiet }, 1);
+helpdeskWorker.start();
 
 /** Обобщението на езика, поискан в съобщението на случая (FR-14: езикът на човека). */
 const SUMMARY: Record<string, string> = {
@@ -79,6 +96,8 @@ console.log('E2E READY', E2E_ORIGIN);
 
 const stop = async () => {
   ready.close();
+  helpdeskWorker.stop();
+  await helpdesk.close();
   await h.close();
   process.exit(0);
 };

@@ -84,13 +84,14 @@ sync_env() {
   fi
 }
 
-# Ключовете (подписът на адресите за сваляне, шифроването на MFA и главният ключ на файловете FILES_KEK)
-# са чисто случайни: щом ги няма, приложението не е тръгвало с тях (compose ги иска с `:?`), тоест няма
-# нищо, подписано или шифровано с тях. Затова тук — и само тук — липсващ ключ се ражда на сървъра:
+# Ключовете (подписът на адресите за сваляне, шифроването на MFA, главният ключ на файловете FILES_KEK и
+# този на тайните на helpdesk конекторите INTEGRATION_KEK) са чисто случайни: щом ги няма, приложението не
+# е тръгвало с тях (compose иска първите три с `:?`; без INTEGRATION_KEK интеграцията е изключена), тоест
+# няма нищо, подписано или шифровано с тях. Затова тук — и само тук — липсващ ключ се ражда на сървъра:
 # дописва се в $SHARED/.env (600), никога не се презаписва, никога не се печата. Съществуващ не се пипа.
 ensure_keys() {
   local name added=""
-  for name in ATTACHMENT_URL_KEY MFA_ENC_KEY FILES_KEK; do
+  for name in ATTACHMENT_URL_KEY MFA_ENC_KEY FILES_KEK INTEGRATION_KEK; do
     [ -z "$(env_value "$name")" ] || continue
     if [ "$name" = FILES_KEK ] && sealed_files_exist; then
       fail 1 "FILES_KEK липсва в $SHARED/.env, а в attachments/ има шифровани файлове — нов ключ НЕ ги отваря. Върни ключа от password manager-а (docs/runbook.md, „Изгубен FILES_KEK“)."
@@ -103,7 +104,7 @@ ensure_keys() {
   [ -n "$added" ] || return 0
   chmod 600 "$SHARED/.env"
   install -m 600 "$SHARED/.env" "$APP_DIR/.env"
-  warn "генерирах$added в $SHARED/.env — копирай .env и извън сървъра СЕГА (без MFA_ENC_KEY MFA устройствата се записват наново; без FILES_KEK прикачените файлове — и в бекъпите — са загубени)."
+  warn "генерирах$added в $SHARED/.env — копирай .env и извън сървъра СЕГА (без MFA_ENC_KEY MFA устройствата се записват наново; без FILES_KEK прикачените файлове — и в бекъпите — са загубени; без INTEGRATION_KEK токените на helpdesk конектора се въвеждат наново)."
 }
 
 # Има ли вече шифровани файлове (магията на src/storage/envelope.ts) — тогава FILES_KEK не се ражда наново.
