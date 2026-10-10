@@ -279,8 +279,8 @@ services:
   worker:
     # Същият образ като app (`node dist/worker.js`, NFR-06): опашките от Redis — приемане/извличане на
     # документи (разбор в отделна нишка), OCR (pdftoppm + tesseract, execFile без shell), вектори (Vertex
-    # в ЕС). Без HTTP и без публикувани портове. Без миграции (entrypoint-ът е node): тръгва СЛЕД като
-    # app е здрав, т.е. миграциите са приложени.
+    # в ЕС). Без HTTP; публикуван е само слушателят на метриките (по избор, само 127.0.0.1). Без миграции
+    # (entrypoint-ът е node): тръгва СЛЕД като app е здрав, т.е. миграциите са приложени.
     image: chatchat-app
     pull_policy: never
     <<: *hardening
