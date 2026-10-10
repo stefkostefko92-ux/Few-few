@@ -223,7 +223,13 @@ export async function updateConfig(
       if (domains && (await replaceDomains(tx, cfg, domains))) throw new DomainConflict();
       const users = new Set<string>();
       if (weakened) for (const u of await ssoSessionUsers(tx, id)) users.add(u);
-      if (becomesRequired) for (const u of await passwordSessionUsers(tx, cfg)) users.add(u);
+      // REQUIRED: покритите със сесия с парола излизат. Без самия администратор — той току-що
+      // е доказал входа през доставчика (requiredBlocked); иначе би изгубил и тази си сесия.
+      if (becomesRequired) {
+        for (const u of await passwordSessionUsers(tx, cfg)) {
+          if (u !== ctx.actor.user.id) users.add(u);
+        }
+      }
       const revocation = users.size
         ? await revokeUserSessions(tx, [...users], 'sso_changed')
         : null;

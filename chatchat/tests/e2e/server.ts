@@ -9,7 +9,17 @@ import { cite, resetDb, startApp, type Plan } from '../integration/helpers.js';
 import { FakeScanner, SpyStore, URL_KEY } from '../integration/files.js';
 import { seedWorld } from '../integration/world.js';
 import { twoSteps } from '../integration/flow-world.js';
-import { E2E_ORIGIN, E2E_PORT, E2E_READY_PORT, PHOTO_CODE } from './support/constants.js';
+import { startSsoApp } from '../integration/sso-world.js';
+import { FakeIdp } from '../sso-fake-idp.js';
+import {
+  E2E_IDP_PORT,
+  E2E_ORIGIN,
+  E2E_PORT,
+  E2E_READY_PORT,
+  E2E_SSO_ORIGIN,
+  E2E_SSO_PORT,
+  PHOTO_CODE,
+} from './support/constants.js';
 
 await resetDb();
 const h = await startApp({
@@ -73,12 +83,19 @@ h.model.plan = plan;
 
 await seedWorld(h);
 
+// Единният вход (sso.spec.ts): фалшив OIDC доставчик на localhost + екземпляр с включен SSO.
+const idp = await FakeIdp.create();
+await idp.listen('localhost', E2E_IDP_PORT);
+const sso = await startSsoApp(idp, { port: E2E_SSO_PORT, origin: E2E_SSO_ORIGIN });
+
 const ready = createServer((_req, res) => res.writeHead(200).end('ready'));
 ready.listen(E2E_READY_PORT, '127.0.0.1');
 console.log('E2E READY', E2E_ORIGIN);
 
 const stop = async () => {
   ready.close();
+  await sso.close();
+  await idp.close();
   await h.close();
   process.exit(0);
 };

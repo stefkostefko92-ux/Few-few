@@ -2,12 +2,13 @@ import type { SsoConfig, SsoMode, SsoProvider } from '@prisma/client';
 import type { Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { createApp } from '../../src/app.js';
-import { SESSION_COOKIE, type SessionDeps } from '../../src/auth/sessions.js';
+import { createSession, SESSION_COOKIE, type SessionDeps } from '../../src/auth/sessions.js';
 import { createLogger } from '../../src/logger.js';
 import { RealtimeHub } from '../../src/realtime/hub.js';
 import { SecretBox } from '../../src/services/sso/secret.js';
 import { entraIssuer, type SsoDeps } from '../../src/services/sso/types.js';
 import { ENTRA_TID, FAKE_CLIENT_ID, FAKE_CLIENT_SECRET, type FakeIdp } from '../sso-fake-idp.js';
+import type { User } from '@prisma/client';
 import { Client, db, MFA_KEY, ORIGIN, PEPPER } from './helpers.js';
 
 /**
@@ -116,7 +117,7 @@ export async function makeSsoConfig(idp: FakeIdp, spec: ConfigSpec): Promise<Sso
 }
 
 /** Стойност на бисквитка от Set-Cookie на отговор (или null). */
-export function cookieFrom(res: Response, name: string): string | null {
+export function cookieFrom(res: { headers: Headers }, name: string): string | null {
   for (const c of res.headers.getSetCookie()) {
     const m = new RegExp(`^${name}=([^;]*)`).exec(c);
     if (m && m[1]) return m[1];
@@ -180,4 +181,13 @@ export async function seedSsoTenant(slug = 'sso-alfa') {
     data: { tenantId: tenant.id, name: 'Installatori Srl' },
   });
   return { tenant, company };
+}
+
+/** Сесия с парола (като `signIn` от helpers.ts) срещу приложението с единен вход. */
+export async function signInPassword(h: SsoHarness, user: User): Promise<Client> {
+  const s = await createSession(h.sessions, user.id);
+  if (user.totpEnabledAt) {
+    await db.session.update({ where: { id: s.id }, data: { mfaPassed: true } });
+  }
+  return new Client(h.base, s.token, s.csrfToken);
 }

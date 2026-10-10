@@ -15,7 +15,8 @@ import {
 /**
  * Единният вход през ЛОКАЛЕН фалшив OIDC доставчик (discovery + JWKS + token, подписан с jose
  * ключ): успешен вход и свързване по oid, повторен state, непознат/неактивен/чужд клиент,
- * друга директория (tid), обхват (портал срещу вътрешни), конфликт на връзката, общ OIDC.
+ * друга директория (tid), обхват (портал срещу вътрешни), конфликт на връзката. Токенът и общ OIDC —
+ * sso-tokens.test.ts.
  */
 
 let idp: FakeIdp;
@@ -257,47 +258,5 @@ describe('Entra ID: първи вход, свързване, после само
       member('mario.rossi@alfa.example', { oid: 'aaaaaaaa-bbbb-4ccc-8ddd-0000000000ff' }),
     );
     assert.equal(other.location, '/?sso_error=sso_denied');
-  });
-
-  test('общ OIDC: имейл само с email_verified; sub е връзката', async () => {
-    const { tenant } = await seedSsoTenant('sso-gen');
-    await makeSsoConfig(idp, { tenantId: tenant.id, provider: 'OIDC', domains: ['gamma.example'] });
-    const u = await makeUser({
-      tenantId: tenant.id,
-      role: 'INTERNAL_TECHNICIAN',
-      email: 'ada@gamma.example',
-    });
-    const no = await ssoLogin(h, idp, u.email, { sub: 'kc-1', email: u.email });
-    assert.equal(no.location, '/?sso_error=sso_denied');
-    const yes = await ssoLogin(h, idp, u.email, {
-      sub: 'kc-1',
-      email: u.email,
-      email_verified: true,
-    });
-    assert.equal(yes.location, '/');
-    const link = await db.externalIdentity.findUniqueOrThrow({ where: { userId: u.id } });
-    assert.equal(link.externalSubject, 'kc-1');
-  });
-
-  test('id_token с грешен подпис/nonce/aud → sso_failed, без сесия', async () => {
-    await world();
-    for (const tamper of [
-      { foreignKey: true },
-      { nonce: 'x' },
-      { aud: 'other' },
-      { expired: true },
-    ]) {
-      idp.tamper = tamper;
-      const r = await ssoLogin(
-        h,
-        idp,
-        'mario.rossi@alfa.example',
-        member('mario.rossi@alfa.example'),
-      );
-      assert.equal(r.location, '/?sso_error=sso_failed', JSON.stringify(tamper));
-      assert.equal(r.client, null);
-    }
-    idp.tamper = {};
-    assert.equal(await db.session.count(), 0);
   });
 });

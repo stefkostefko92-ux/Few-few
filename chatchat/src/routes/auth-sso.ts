@@ -54,7 +54,10 @@ function clearFlowCookie(res: Response, sessions: SessionDeps): void {
   });
 }
 
-/** Лимит по IP (§15.1): офис зад един NAT влиза наведнъж — по-широк от този на паролата. */
+/**
+ * Лимит по IP (§15.1): офис зад един NAT влиза наведнъж — по-широк от този на паролата.
+ * Откриването е само индексирано търсене по домейн (без потребители) — най-широкото.
+ */
 function limiter(limit: number) {
   return rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -75,7 +78,7 @@ export function authSsoRouter(deps: AppDeps, runtime: SsoRuntime | null): Router
   // Кой бутон да покаже входът — само по домейна (еднакво за съществуващ и несъществуващ акаунт).
   router.post(
     '/discover',
-    limiter(60),
+    limiter(300),
     requireSameOrigin(deps.publicOrigin),
     async (req, res, next) => {
       try {

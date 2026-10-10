@@ -88,7 +88,7 @@ export class FakeIdp {
     return this.issuer('generic');
   }
 
-  async listen(host = '127.0.0.1'): Promise<void> {
+  async listen(host = '127.0.0.1', port = 0): Promise<void> {
     this.server = createServer((req, res) => {
       void this.toRequest(req, host)
         .then((r) => this.handle(r))
@@ -98,9 +98,9 @@ export class FakeIdp {
         })
         .catch(() => res.writeHead(500).end());
     });
-    await new Promise<void>((resolve) => this.server?.listen(0, host, () => resolve()));
-    const { port } = this.server.address() as AddressInfo;
-    this.base = `http://${host === '127.0.0.1' ? '127.0.0.1' : host}:${port}`;
+    await new Promise<void>((resolve) => this.server?.listen(port, host, () => resolve()));
+    const bound = (this.server.address() as AddressInfo).port;
+    this.base = `http://${host}:${bound}`;
   }
 
   async close(): Promise<void> {
@@ -128,6 +128,11 @@ export class FakeIdp {
   /** Fetch API — за unit тестовете (customFetch на openid-client) и за http сървъра. */
   async handle(req: Request): Promise<Response> {
     const url = new URL(req.url);
+    // Само за e2e (друг процес): кой „влиза“ при следващото /authorize.
+    if (url.pathname === '/_test/next' && req.method === 'POST') {
+      this.next = (await req.json()) as Record<string, unknown>;
+      return json({ ok: true });
+    }
     const m = REALM.exec(url.pathname);
     if (!m) return json({ error: 'not_found' }, 404);
     const realm = m[1] as string;
