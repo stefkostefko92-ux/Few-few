@@ -56,6 +56,12 @@ sudo certbot certonly --nginx -d korpora.carbonstealth.eu --deploy-hook 'systemc
 
 ## 3. Деплой
 
+**Нова версия на общите условия.** Преди деплоя `LEGAL_UPDATED.terms` в `src/company.ts` е денят, в който
+версията реално излиза, не денят на кода: от него тече предизвестието от раздел „Промени в условията“.
+Версията с правилото за невръщане при блокиране носи същата дата и в `BAN_RULE_TERMS`
+(`tests/ban-terms.test.ts` я сверява). В същия ден собственикът пише на клиентите с платен план — поне
+`TERMS_NOTICE_DAYS` (30) дни преди промяната да важи за тях.
+
 Автоматично: `deploy/autodeploy.sh` (и `deploy/fetch-deploy.sh`) разгръща Korpora заедно с другите
 продукти. Само Korpora: `sudo PROJECTS="korpora" bash deploy/fetch-deploy.sh`. Ръчно, от release
 папка — същият скрипт:

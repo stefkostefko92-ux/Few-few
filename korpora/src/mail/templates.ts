@@ -1,6 +1,7 @@
 import { config } from '../config.js';
 import { LOCK_MINUTES } from '../auth/lock.js';
 import { translate, translatorFor, type Locale } from '../i18n.js';
+import { BAN_REPLY_DAYS } from '../plans/ban.js';
 import { ordersKeptText, UNVERIFIED_RETENTION_DAYS } from '../retention.js';
 import { legalPath } from '../seo/paths.js';
 import { link, period, send, validFor } from './compose.js';
@@ -213,22 +214,36 @@ export function mailPlanChanged(
 
 /**
  * Блокиран достъп — мотивите по чл. 17, пар. 3 от Регламент (ЕС) 2022/2065: какво е ограничено, фактите
- * (причината от екипа), правилото в общите условия, че решението е на човек и как се възразява.
+ * (причината от екипа), правилото в общите условия, че решението е на човек и как се възразява. По общите
+ * условия („Блокиране“) — и последицата за платения план, срокът за мотивиран отговор и удължаването при
+ * грешка. `oldTerms` — поръчка по условията отпреди правилото за невръщане, блокирана преди то да важи за нея
+ * (plans/ban.ts, refundsUnderOldTerms): тогава писмото казва преходът и че неизползваната част се връща, а
+ * не „не се връща“. Датите са от services/legal-numbers.ts — същите като в условията.
  */
 export function mailBanned(
   to: string,
   locale: Locale,
   name: string | null,
   reason: string,
+  oldTerms: { banRuleSince: string; banRuleOldOrders: string } | null,
 ): Promise<boolean> {
+  const paid = oldTerms
+    ? translate(locale, 'mail.banned.paidOld', {
+        since: oldTerms.banRuleSince,
+        from: oldTerms.banRuleOldOrders,
+      })
+    : translate(locale, 'mail.banned.paid');
   return send(
     to,
     locale,
     'banned',
     {
       reason,
-      terms: `${config().PUBLIC_BASE_URL}${legalPath(locale, 'terms')}`,
+      paid,
+      // направо в раздела — правилото, по което е блокиран акаунтът
+      terms: `${config().PUBLIC_BASE_URL}${legalPath(locale, 'terms')}#blocking`,
       contact: config().CONTACT_EMAIL,
+      reply: period(locale, 'days', BAN_REPLY_DAYS),
     },
     name,
   );

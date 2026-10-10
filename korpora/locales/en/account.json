@@ -81,9 +81,11 @@
       "short": "early start"
     },
     "accept": "By ordering, you accept the {terms} and the information on the {withdrawal}.",
+    "banRule": "If the account is blocked for a breach of the terms, what you paid for the plan — Premium or Lifetime — is not refunded ({blocking}).",
     "replacesOpen": "You have an order awaiting payment. A new order will replace it and the old one will be cancelled. If you have already paid for it, write to us at {contact} before ordering again.",
     "termsLink": "terms and conditions",
     "withdrawalLink": "right of withdrawal",
+    "blockingLink": "section “Blocking”",
     "orderName": "Premium for {term}",
     "withVatShort": "incl. VAT",
     "netShort": "excl. VAT",

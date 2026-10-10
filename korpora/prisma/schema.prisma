@@ -215,6 +215,10 @@ model AccountBan {
   liftedById    String?
   liftedByLabel String?
   liftNote      String?
+  /// Вдигнат с отметката „Блокирането беше грешка“ (общите условия, „Блокиране“): тестовият или платеният
+  /// период се удължава с liftedAt − createdAt при вдигането; за Lifetime с толкова се удължават първите
+  /// месеци от раздел „Планове и цени“ (src/plans/ban.ts).
+  mistake       Boolean   @default(false)
 
   @@index([userId, createdAt])
 }

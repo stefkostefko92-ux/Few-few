@@ -113,6 +113,7 @@
     "accountDeleted": "L'account è stato eliminato.",
     "accountSaved": "Modifiche salvate.",
     "banned": "L'account è bloccato e tutte le sue sessioni sono state chiuse.",
+    "bannedRefund": "L'account è bloccato e tutte le sue sessioni sono state chiuse. Il suo piano a pagamento è stato ordinato secondo le condizioni precedenti alla regola del mancato rimborso e la transizione è ancora in corso (sezione «Blocco»): dobbiamo alla persona la parte di prezzo non utilizzata. L'email che le abbiamo inviato lo dice.",
     "codeMismatch": "Il codice non corrisponde. Riprovate.",
     "deviceConsentWithdrawn": "Consenso revocato; l'impronta conservata è stata eliminata.",
     "emailChangeSent": "Abbiamo inviato un link al nuovo indirizzo. L'email cambia quando lo aprite.",

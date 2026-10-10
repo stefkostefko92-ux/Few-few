@@ -71,7 +71,7 @@ test('the HTML escapes what people wrote and links only addresses of Korpora', a
   assert.doesNotMatch(html, /<script>alert/);
   assert.match(html, /Eve &lt;script&gt;alert\(1\)&lt;\/script&gt;/);
   assert.doesNotMatch(html, /href="https:\/\/evil\.example/);
-  await t.mailBanned('b@example.test', 'en', null, 'see https://korpora.example.evil.com/x');
+  await t.mailBanned('b@example.test', 'en', null, 'see https://korpora.example.evil.com/x', null);
   assert.doesNotMatch(last().html, /href="https:\/\/korpora\.example\.evil/, 'only our own host');
   assert.match(html, /href="https:\/\/korpora\.example\/account\?lang=en"/);
   assert.match(html, /href="mailto:contact@korpora\.example"/);
