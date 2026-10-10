@@ -220,6 +220,29 @@ tests:
               description: 'Алармите, които зависят от postgres (postgres-exporter:9187), са слепи.'
               runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatmonitoringtargetdown'
 
+  # SMTP опит към Brevo пада → тикет (и докато в последния час има провал).
+  - interval: 1m
+    input_series:
+      - series: 'alertmanager_notification_requests_failed_total{job="alertmanager",instance="alertmanager:9093",integration="email"}'
+        values: '0x10 1x20'
+    alert_rule_test:
+      - eval_time: 9m
+        alertname: ChatchatAlertDeliveryFailing
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: ChatchatAlertDeliveryFailing
+        exp_alerts:
+          - exp_labels:
+              severity: ticket
+              component: alert-delivery
+              job: alertmanager
+              instance: 'alertmanager:9093'
+              integration: email
+            exp_annotations:
+              summary: 'Мониторингът на ChatChat: имейлите за алармите не тръгват (SMTP към Brevo отказва)'
+              description: 'Неуспешни опити за 1 ч: 1. Страниците може да не стигат до човек.'
+              runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatalertdeliveryfailing'
+
   # Връзките към базата: 85 от 100 за 20 мин → тикет.
   - interval: 1m
     input_series:

@@ -12,7 +12,8 @@ import { fileURLToPath } from "node:url";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const DEPLOY_FILES = ["deploy.sh", "backup.sh", "retention.sh", "timers-install.sh", "clamav/clamd.conf",
   "nginx/chatchat.carbonstealth.eu.conf", "systemd/chatchat-backup.service", "systemd/chatchat-backup.timer",
-  "systemd/chatchat-retention.service", "systemd/chatchat-retention.timer"];
+  "systemd/chatchat-retention.service", "systemd/chatchat-retention.timer", "monitoring.sh", "monitoring/audit-verify.sh",
+  "monitoring/systemd/chatchat-audit-verify.service", "monitoring/systemd/chatchat-audit-verify.timer"];
 const mode = (p) => (statSync(p).mode & 0o777).toString(8);
 const hasAge = spawnSync("age", ["--version"]).status === 0;
 
@@ -319,4 +320,26 @@ test("FILES_KEK липсва, а има шифровани файлове: из�
   writeFileSync(join(dir, "0123456789abcdef0123456789abcdef"), Buffer.alloc(200, 0x41));
   assert.equal(deploy(L).status, 0);
   assert.match(readFileSync(join(L.shared, ".env"), "utf8"), /^FILES_KEK=\S{40,}$/m);
+}));
+
+// ── мониторингът (deploy/monitoring.sh) е по избор: деплоят само напомня ───────────────────────────
+test("мониторингът не е включен: само напомняне, изход 0, без таймер за одита", () => withLayout((L) => {
+  sharedEnv(L);
+  const r = deploy(L);
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stderr, /мониторингът .* не е включен — веднъж: sudo bash .*deploy\/monitoring\.sh/);
+  assert.ok(!existsSync(join(L.systemd, "chatchat-audit-verify.timer")));
+}));
+
+test("мониторингът е включен (и шифрованият том): COMPOSE_FILE-списъкът минава, таймерът за одита се подравнява", () => withLayout((L) => {
+  sharedEnv(L, "COMPOSE_FILE=docker-compose.yml:docker-compose.pgdata.yml:docker-compose.monitoring.yml\n");
+  encrypted(L);
+  writeFileSync(join(L.shared, ".db-pgvector"), "x\n");
+  writeFileSync(join(L.shared, "pgdata", "data", "PG_VERSION"), "16\n");
+  const r = deploy(L, { PGDATA_MOUNTED: "1" });
+  assert.equal(r.status, 0, r.stderr);
+  assert.doesNotMatch(r.stderr, /мониторингът .* не е включен/);
+  assert.ok(existsSync(join(L.systemd, "chatchat-audit-verify.timer")));
+  assert.ok(existsSync(join(L.sbin, "chatchat-audit-verify")));
+  assert.match(r.log, /systemctl enable --now chatchat-audit-verify\.timer/);
 }));

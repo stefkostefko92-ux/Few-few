@@ -317,20 +317,23 @@ cmd_test_email() {
   preflight
   am="$(port_of ALERTMANAGER_PORT 4393)"
   wait_ready Alertmanager "$am" || fail 1 "Alertmanager не отговаря на 127.0.0.1:$am"
-  before="$(am_counter "$am" alertmanager_notifications_total)"
-  failed0="$(am_counter "$am" alertmanager_notifications_failed_total)"
+  # Опитите (заявките към SMTP), не известията: notifications_total расте още при опита, а провалът се
+  # брои едва когато Alertmanager се откаже (проверено на живо, 0.34.1).
+  before="$(am_counter "$am" alertmanager_notification_requests_total)"
+  failed0="$(am_counter "$am" alertmanager_notification_requests_failed_total)"
   ends="$(date -u -d '+5 min' +%Y-%m-%dT%H:%M:%SZ)"
   curl -fsS --max-time 5 -X POST -H 'Content-Type: application/json' "http://127.0.0.1:$am/api/v2/alerts" \
     --data "[{\"labels\":{\"alertname\":\"ChatchatMonitoringTestEmail\",\"severity\":\"ticket\",\"component\":\"monitoring-test\"},\"annotations\":{\"summary\":\"Пробно писмо от deploy/monitoring.sh test-email — нищо не гори.\"},\"endsAt\":\"$ends\"}]" \
     >/dev/null || fail 1 "Alertmanager не прие пробната аларма."
   log "пробната аларма е подадена — чакам Alertmanager да я изпрати (групиране до ~1 мин)…"
-  deadline=$((SECONDS + 150))
+  # групиране (1 мин) + един SMTP опит (недостъпен relay се отказва след ~2 мин)
+  deadline=$((SECONDS + 300))
   while :; do
-    after="$(am_counter "$am" alertmanager_notifications_total)"
-    failed1="$(am_counter "$am" alertmanager_notifications_failed_total)"
-    [ "$failed1" -gt "$failed0" ] && fail 1 "Brevo отказа писмото — docker compose logs alertmanager (SMTP login/ключ, подател, порт 2525)."
-    [ "$after" -gt "$before" ] && break
-    [ "$SECONDS" -lt "$deadline" ] || fail 1 "писмото не тръгна за 150 s — docker compose logs alertmanager"
+    after="$(am_counter "$am" alertmanager_notification_requests_total)"
+    failed1="$(am_counter "$am" alertmanager_notification_requests_failed_total)"
+    [ "$failed1" -gt "$failed0" ] && fail 1 "SMTP опитът се провали — docker compose logs alertmanager (SMTP login/ключ, подател, изход към порт 2525)."
+    [ "$((after - failed1))" -gt "$((before - failed0))" ] && break
+    [ "$SECONDS" -lt "$deadline" ] || fail 1 "писмото не тръгна за 300 s — docker compose logs alertmanager"
     sleep 5
   done
   ok "писмото е прието от Brevo — провери пощата на ALERT_EMAIL_TO (тема „[ChatChat][ticket][FIRING] ChatchatMonitoringTestEmail“)"

@@ -1,6 +1,8 @@
 # ChatChat — runbook (наблюдаемост и надеждност, F3)
 
-Какво значи всяка аларма от `deploy/monitoring/alerts.yml`, как се проверява и какво се прави.
+Какво значи всяка аларма от `deploy/monitoring/alerts.yml` (SLO-тата) и
+`deploy/monitoring/infra-alerts.yml` (машината, пробите, базата, одитът, самият мониторинг), как се
+проверява и какво се прави. Стекът и включването — „Включване“.
 Спецификация: „AI Technical Support Platform v1.1“ — NFR-01 (наличност 99.5 %), NFR-02 (P95 на
 текстовия отговор ≤ 8 s), NFR-07 (повторни опити, идемпотентност, circuit breaker), NFR-09
 (наблюдаемост), NFR-11 (реално време P95 ≤ 2 s).
@@ -21,21 +23,86 @@
 Отговорите със снимки/логове (`input="files"`) са извън SLO-2 — по-бавни по природа; виждат се в
 метриките отделно.
 
-## Включване (решение на собственика)
+## Включване
 
-Prometheus/Alertmanager **не са инсталирани** — това е решение на собственика (къде тече, кой
-получава страниците). Приложението е готово:
+Стекът е `docker-compose.monitoring.yml` (Prometheus 3.13 LTS, Alertmanager 0.34, node-exporter,
+blackbox-exporter, postgres-exporter — официалните образи от quay.io, заковани по digest). Включва се
+**веднъж** с `deploy/monitoring.sh` — по избор: `deploy.sh` само напомня, ако не е включен. После всеки
+деплой го вдига с конфига на СЪЩИЯ release (файлът е в `COMPOSE_FILE` на `.env`, както шифрованият
+том; двата се пазят взаимно — списъкът се редактира по елементи).
 
-1. В `/opt/few-few/shared/chatchat/.env`: `METRICS_PORT=9464` (порт на ХОСТА) → нов деплой.
-   Слушателят е отделен от публичния порт; на хоста е публикуван **само** като `127.0.0.1:9464`,
-   nginx никога не го проксира.
-2. Проверка: `curl -fsS 127.0.0.1:9464/metrics | head` (на сървъра).
-3. Prometheus на същия хост (или през SSH тунел) — образец: `deploy/monitoring/prometheus.example.yml`
-   (job `chatchat`, правилата от `alerts.yml`). Проверка на правилата:
-   `promtool check rules alerts.yml && promtool test rules alerts.test.yml`.
-4. Alertmanager: маршрут `severity="page"` → телефон/известие; `severity="ticket"` → имейл/тикет.
-5. Външна синтетична проба (истината отвън): `https://chatchat.carbonstealth.eu/healthz` на 1 мин от
-   монитора на VPS-аджията (Uptime Kuma/Beszel) — улавя и срив на nginx/TLS, който метриките не виждат.
+Нищо не е публично: Prometheus — `127.0.0.1:4390`, Alertmanager — `127.0.0.1:4393` (`PROMETHEUS_PORT`,
+`ALERTMANAGER_PORT` в `.env`), експортерите — само във вътрешните мрежи на проекта. node-exporter и
+postgres-exporter нямат път навън. Всички — read-only, без capabilities, като nobody.
+
+**1. Brevo (веднъж, в конзолата на Brevo):** SMTP & API → SMTP — **SMTP login** (`…@smtp-brevo.com`) и
+**SMTP ключ** (не API ключът `BREVO_API_KEY` на приложението — Brevo ги различава). Подателят
+(`ALERT_EMAIL_FROM` или `MAIL_FROM_EMAIL`) — от проверен в Brevo домейн. Hetzner блокира 25/465/587 →
+relay-ят е `smtp-relay.brevo.com:2525` със STARTTLS (`smtp_require_tls: true` — без TLS писмо не
+тръгва; друг relay — `ALERT_SMTP_SMARTHOST=хост:порт`).
+
+**2. Настройката и тайните (на сървъра):**
+
+```bash
+sudoedit /opt/few-few/shared/chatchat/.env
+#   ALERT_EMAIL_TO=дежурен@carbonstealth.eu[,втори@…]   — кой получава (без интервали)
+#   ALERT_EMAIL_FROM=alerts@carbonstealth.eu           — по избор; иначе MAIL_FROM_EMAIL
+#   METRICS_PORT=9464                                  — по избор: curl от хоста (командите по-долу)
+R="$(cat /opt/few-few/shared/chatchat/last-good)"
+sudo bash "$R/deploy/monitoring.sh"        # първият път: изход 3 + празните файлове за тайните
+sudoedit /opt/few-few/shared/chatchat/monitoring/secrets/smtp-user       # SMTP login
+sudoedit /opt/few-few/shared/chatchat/monitoring/secrets/smtp-password   # SMTP ключът
+sudo bash "$R/deploy/monitoring.sh"        # сега: стекът тръгва
+sudo bash "$R/deploy/monitoring.sh" test-email   # пробно писмо край до край (чака отговора на Brevo)
+```
+
+`monitoring.sh` (идемпотентен, root, само от работещия release): тайните — 400, собственик 65534,
+никога не се печатат; ролята `chatchat_monitor` (само `pg_monitor`, парола от `openssl rand -hex 32`,
+подадена през stdin) за postgres-exporter; `COMPOSE_FILE`; образите по digest; `up`; чака `/-/ready`
+на Prometheus и Alertmanager; проверява, че правилата са заредени и всичките 8 цели се четат;
+слага `chatchat-audit-verify.timer` и пуска първата проверка на одитната верига. Изход: 0 готов · 3
+липсва настройка (нищо не е пуснато — мониторинг, който не може да събуди човек, е самозаблуда) · 1 грешка.
+`… monitoring.sh status` — проверките без промени; `… monitoring.sh disable` — маха файла от
+`COMPOSE_FILE` и спира стека (томовете `prometheus-data`, `alertmanager-data` и тайните остават).
+
+**Маршрути:** `severity="page"` → писмо веднага (тема `[ChatChat][PAGE][FIRING] <аларма>`), повтаря се
+на 1 ч, докато гори; `severity="ticket"` → събрано, на 24 ч. И двата пращат и `RESOLVED`. Страница
+потиска тикета за **същия** `component` (всяка аларма има такъв етикет); `ChatchatDown` потиска
+`ChatchatNotReady` и `ChatchatPublicProbeFailed` (следствия). Имейлът не е пейджър: ако страниците
+трябва да будят нощем — пренасочване към телефон (Brevo SMS/приложение) е **решение на собственика**.
+
+**Какво НЕ вижда този стек:** смъртта на целия сървър (Prometheus е на него). Пробата
+`https://…/healthz` тече от същата машина — минава през DNS, TLS и nginx, но не през мрежата отвън.
+Истината отвън остава **външният монитор на VPS-аджията** (Uptime Kuma на другия VPS) на 1 мин +
+по желание „dead man's switch“ (решение на собственика — изисква външна услуга).
+
+### Графиките — през SSH тунел
+
+```bash
+# от компютъра на собственика:
+ssh -N -L 4390:127.0.0.1:4390 -L 4393:127.0.0.1:4393 root@<сървъра>
+# → http://127.0.0.1:4390 (Prometheus: Graph, Alerts, Status → Targets) · http://127.0.0.1:4393 (Alertmanager)
+```
+
+Полезни заявки в Prometheus (Graph): `chatchat:availability_errors:ratio_rate1h` (дял 5xx),
+`chatchat:ai_text_slow:ratio_rate1h` (AI над 8 s), `sum by (route) (rate(chatchat_http_requests_total[5m]))`
+(трафик), `histogram_quantile(0.95, sum by (le) (rate(chatchat_http_request_duration_seconds_bucket[5m])))`
+(P95), `probe_success`, `(probe_ssl_earliest_cert_expiry - time()) / 86400` (дни до изтичане),
+`node_filesystem_avail_bytes / node_filesystem_size_bytes`, `chatchat_audit_chain_intact`. Grafana няма
+нарочно (още един сървис за поддръжка) — при нужда е решение на собственика.
+
+Заглушаване по време на планирана работа (с причина, никога безсрочно):
+
+```bash
+cd "$(cat /opt/few-few/shared/chatchat/last-good)"
+sudo docker compose exec alertmanager amtool --alertmanager.url=http://127.0.0.1:9093 \
+  silence add alertname=ChatchatDown --duration=30m --comment='деплой' --author=собственик
+```
+
+Правилата се проверяват преди commit: `promtool check rules alerts.yml infra-alerts.yml`,
+`promtool test rules alerts.test.yml infra-alerts.test.yml`, конфигите — `promtool check config` и
+`amtool check-config` върху изобразените шаблони (`node --test tools/vps/chatchat-monitoring.test.mjs`
+с `PROMTOOL`/`AMTOOL` — официалните release-и, сверени по sha256 от prometheus.io/download).
 
 ## Обща диагностика
 
@@ -218,6 +285,161 @@ curl -fsS 127.0.0.1:9464/metrics | grep 'chatchat_av_scans_total{verdict="FAILED
 
 **Направи:** тикет към Кодаджията — етикетите са само затворени множества от кодове (CLAUDE.md,
 инварианти). Ако в етикет има id/имейл/текст — поправка веднага и рестарт (метриките са в паметта).
+
+## ChatchatPublicProbeFailed
+
+**Значи:** синтетичната проба `https://<PUBLIC_BASE_URL>/healthz` (blackbox, DNS → TLS → nginx →
+приложението) не получава `{"ok":true}` 3 мин. Техниците не отварят сайта. Ако гори и
+[ChatchatDown](#chatchatdown) — причината е процесът (тази е потисната).
+
+**Провери:**
+
+```bash
+curl -fsS 127.0.0.1:4330/healthz                          # приложението само — минава ли?
+curl -sv https://chatchat.carbonstealth.eu/healthz 2>&1 | grep -E '^< HTTP|expire|SSL'
+sudo nginx -t && systemctl status nginx --no-pager | head -5
+dig +short chatchat.carbonstealth.eu
+```
+
+В Prometheus: `probe_http_status_code`, `probe_ssl_earliest_cert_expiry`, `probe_dns_lookup_time_seconds`
+за job `blackbox-https` — коя фаза пада.
+
+**Направи:** nginx спрян → `sudo systemctl start nginx`; лош vhost → `deploy.sh` връща стария сам,
+иначе `nginx -t` казва реда; сертификатът → [ChatchatTlsCertExpiryCritical](#chatchattlscertexpirycritical);
+приложението → [ChatchatDown](#chatchatdown).
+
+## ChatchatTlsCertExpiryCritical
+
+**Значи:** сертификатът на домейна изтича до 3 дни — certbot не е подновил (подновява на 30 дни преди
+края). След изтичането браузърите отказват сайта.
+
+**Провери:** `sudo certbot certificates -d chatchat.carbonstealth.eu`; `systemctl list-timers certbot*`;
+`sudo journalctl -u certbot -n 50`; `sudo certbot renew --dry-run`.
+
+**Направи:** `sudo certbot renew --cert-name chatchat.carbonstealth.eu && sudo systemctl reload nginx`.
+Причината (DNS, порт 80 затворен, rate limit на Let's Encrypt) — в изхода на `--dry-run`. Ако renew
+минава, а пробата още вижда стария — nginx не е презареден (`deploy.sh` предупреждава за липсваща кука).
+
+## ChatchatTlsCertExpiringSoon
+
+**Значи:** до 14 дни — подновяването вече е пропуснало поне два опита. **Провери / Направи:** като
+горе, в работно време.
+
+## ChatchatNotReady
+
+**Значи:** отвътре `http://app:4330/readyz` не е `{"ok":true}` 5 мин — процесът е жив, но не стига до
+PostgreSQL. Всяка заявка с данни е 5xx; буди и нощем, без трафик (SLO алармите мълчат под обема си).
+
+**Провери:**
+
+```bash
+$CC ps db; $CC logs --tail=80 db
+curl -fsS 127.0.0.1:4330/readyz; $CC logs --since 15m app | grep -E 'P1001|P1017|ECONNREFUSED'
+df -h /opt/few-few/shared/chatchat; sudo chatchat-pgdata status   # пълен диск? заключен том?
+```
+
+**Направи:** базата спряна → `$CC up -d db` (никога `down -v`); томът не е отключен → раздел
+„Базата не тръгва след рестарт“ по-долу; пълен диск → [ChatchatHostDiskWillFill](#chatchathostdiskwillfill).
+
+## ChatchatHostDiskWillFill
+
+**Значи:** под 15 % свободно на файлова система на хоста и по темпа от последните 6 ч ще се напълни до
+4 ч. Пълен диск = базата спира да пише (5xx), бекъпите падат.
+
+**Провери:**
+
+```bash
+df -h; sudo du -xsh /opt/few-few/shared/chatchat/* /var/lib/docker 2>/dev/null | sort -h | tail
+sudo docker system df
+sudo du -sh /opt/few-few/shared/chatchat/backups/daily /opt/few-few/releases
+```
+
+**Направи:** обичайните виновници — дневните бекъпи (14 + 8, пълен архив на файловете всеки ден),
+стари release-и, образи (`sudo docker image prune` — **не** `volume prune`), логове (`journalctl
+--vacuum-size=500M`). Никога не трий файлове в `attachments/`, `pgdata/` или томовете на базата.
+Растежът е реален → по-голям диск/Hetzner Volume (решение на собственика).
+
+## ChatchatHostDiskSpaceLow
+
+**Значи:** под 10 % свободно 15 мин. **Провери / Направи:** като горе, в работно време.
+
+## ChatchatHostMemoryLow
+
+**Значи:** под 10 % налична памет 15 мин — причина, не симптом: ако боли, SLO алармите будят.
+**Провери:** `free -m`; `sudo docker stats --no-stream`; clamav държи ~1 GB (DEPLOY.md, т. 8).
+**Направи:** чужд процес → неговият собственик; ChatChat расте → таваните в compose/по-голяма машина.
+
+## ChatchatHostOomKills
+
+**Значи:** ядрото е убило процес заради памет (и при таван на контейнер). **Провери:**
+`sudo journalctl -k --since -1h | grep -i 'killed process'`; `$CC ps` (рестартиран?).
+**Направи:** clamav при презареждане на базата → DEPLOY.md, т. 8 (`ConcurrentDatabaseReload`, таван);
+приложението → тикет към Кодаджията (теч? голям файл?).
+
+## ChatchatHostCpuSaturated
+
+**Значи:** процесорът е над 90 % за 30 мин — причина. **Провери:** `top -o %CPU`, `sudo docker stats
+--no-stream` (clamav при сканиране, embeddings, чужд продукт на машината). **Направи:** тикет; ако
+латентността страда — SLO-2 алармите будят по симптома.
+
+## ChatchatPostgresConnectionsSaturated
+
+**Значи:** заетите връзки са над 80 % от `max_connections` (100) 15 мин — следва `too many clients`.
+**Провери:** в Prometheus `sum by (state) (pg_stat_activity_count)`; дълги транзакции —
+`$CC exec -T db psql -U chatchat -d chatchat -c "SELECT state, count(*), max(now()-xact_start) FROM pg_stat_activity GROUP BY 1"`.
+**Направи:** `idle in transaction` → регресия (тикет към Кодаджията); растеж → `connection_limit` в
+`DATABASE_URL`/пул (решение с Кодаджията).
+
+## ChatchatAuditChainBroken
+
+**Значи:** дневната проверка (`chatchat-audit-verify.timer` → `node dist/cli/audit-verify.js`) намери
+звено в `AuditEvent`, чийто хеш не съвпада — **и при втората проверка** (CLI-то потвърждава, за да не
+се бърка с ретенцията). Ред е подправен или изтрит (FR-12, §15.1). Това е инцидент по сигурността,
+докато не е доказано друго.
+
+**Направи — по ред, без да трием или поправяме нищо:**
+
+1. Запази доказателствата: `sudo systemctl start chatchat-backup.service` (шифрован бекъп на
+   сегашното състояние) и `journalctl -u chatchat-audit-verify -n 20` (кое звено, `#id`).
+2. Сравни с последния бекъп отпреди (репетиция в нова база — DEPLOY.md, т. 10): същото `#id` там
+   цяло ли е? Разликата е подправката (кога, кое поле) — само id и метаданни, без съдържание извън
+   сървъра.
+3. Кой е имал запис в базата: `last`, `journalctl _COMM=sshd`, `sudo docker events --since …`;
+   ротирай `POSTGRES_PASSWORD` при съмнение (DEPLOY.md, т. 1).
+4. Ескалация към собственика и Правния Разбирач (възможно нарушение на сигурността — GDPR чл. 33:
+   72 ч за уведомяване, ако засяга лични данни).
+5. Заглуши страницата **само** след като инцидентът е заведен — с причина:
+   `$CC exec alertmanager amtool --alertmanager.url=http://127.0.0.1:9093 silence add alertname=ChatchatAuditChainBroken --duration=7d --comment='инцидент №…'`.
+
+Веригата не се „поправя“ на ръка (нов хеш над подправен ред = заличено доказателство). Решението за
+нова котва е на собственика, записано в постморнема.
+
+**Ръчна проверка:** `$CC exec -T app node dist/cli/audit-verify.js` (= `npm run audit:verify`;
+изход 0 цяла · 2 счупена · 1 не завърши).
+
+## ChatchatAuditVerifyStale
+
+**Значи:** проверката на веригата не е завършила над 50 ч (или резултат изобщо няма).
+**Провери:** `systemctl list-timers chatchat-audit-verify.timer`; `journalctl -u chatchat-audit-verify -n 30`;
+`ls -l /opt/few-few/shared/chatchat/monitoring/textfile/`.
+**Направи:** няма контейнер на app → [ChatchatDown](#chatchatdown); `не завърши` → базата; таймерът го
+няма → `sudo bash "$R/deploy/monitoring.sh"` (слага го наново).
+
+## ChatchatMonitoringTargetDown
+
+**Значи:** експортер, проба или Alertmanager не се чете 10 мин — алармите, които зависят от него, са
+слепи (самото приложение е [ChatchatDown](#chatchatdown)).
+**Провери:** Prometheus → Status → Targets (`lastError`); `$CC ps`; `$CC logs --tail=40 <услугата>`.
+**Направи:** `postgres` с `password authentication failed` → ролята я няма (след възстановяване на
+базата/шифрования том) → `sudo bash "$R/deploy/monitoring.sh"` я създава наново; друго → `$CC up -d <услугата>`.
+
+## ChatchatAlertDeliveryFailing
+
+**Значи:** опит за писмо към Brevo е пропаднал през последния час — страниците може да не стигат.
+**Провери:** `$CC logs --since 1h alertmanager | grep -i 'notify'` (`535` → грешен SMTP login/ключ;
+`timeout`/`connection refused` → изходът към 2525; `sender` → неподвърден подател);
+`sudo bash "$R/deploy/monitoring.sh" test-email`.
+**Направи:** нов SMTP ключ в Brevo → `smtp-password` → `$CC restart alertmanager` → `test-email`.
 
 ## Шифроване в покой (NFR-03): рестарт, изгубен ключ, ротация
 

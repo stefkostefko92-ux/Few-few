@@ -190,3 +190,15 @@ groups:
           summary: 'Мониторингът на ChatChat: {{ $labels.job }} не се чете от 10 мин'
           description: 'Алармите, които зависят от {{ $labels.job }} ({{ $labels.instance }}), са слепи.'
           runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatmonitoringtargetdown'
+
+      - alert: ChatchatAlertDeliveryFailing
+        # SMTP опит към Brevo се е провалил през последния час — писмата за алармите може да не стигат.
+        # Самото това писмо минава само ако провалът е преходен; иначе се вижда в Prometheus/`status`.
+        expr: increase(alertmanager_notification_requests_failed_total{job="alertmanager",integration="email"}[1h]) > 0
+        labels:
+          severity: ticket
+          component: alert-delivery
+        annotations:
+          summary: 'Мониторингът на ChatChat: имейлите за алармите не тръгват (SMTP към Brevo отказва)'
+          description: 'Неуспешни опити за 1 ч: {{ $value }}. Страниците може да не стигат до човек.'
+          runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatalertdeliveryfailing'
