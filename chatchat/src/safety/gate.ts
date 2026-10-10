@@ -15,6 +15,7 @@ import { applyThresholds, lowerOutcome } from './caps.js';
 import { citationOf, verifyCitations } from './citations.js';
 import { collectFor } from './escalation.js';
 import { GATE_VERSION } from './version.js';
+import { withKnowledgeNotices } from './knowledge.js';
 import { detectBypassIntent } from './lexicon.js';
 import { applyPhotoRules, PHOTO_ONLY_BASIS } from './photos.js';
 import {
@@ -261,7 +262,9 @@ export function applyGate(input: GateInput): DiagnosticAnswer {
     .sort((a, b) => Number(a.ref.slice(1)) - Number(b.ref.slice(1)))
     .map((i) => citationOf(i, verifiedQuotes.get(i.ref) ?? null));
 
-  return {
+  // 10. Табло/валидност на знанието: искане на сериен номер, изтекли източници (`knowledge.ts`).
+  const cited = new Set([...draft.evidenceUsed.map((e) => e.ref), ...used]);
+  const answer: DiagnosticAnswer = {
     generatedBy: 'ai',
     status,
     confidence,
@@ -292,4 +295,5 @@ export function applyGate(input: GateInput): DiagnosticAnswer {
     // AC-09: версията на промпта И на правилата на Gate, дали отговора.
     promptVersion: `${input.promptVersion}+${GATE_VERSION}`,
   };
+  return withKnowledgeNotices(answer, retrieval, cited);
 }

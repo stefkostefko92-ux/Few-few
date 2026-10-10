@@ -1,7 +1,16 @@
 import assert from 'node:assert/strict';
 import { after, before, beforeEach, describe, test } from 'node:test';
 import { cite, Client, db, resetDb, startApp, type Harness, type PackItem } from './helpers.js';
-import { answerOf, ask, newCase, publishError, seedWorld, TEXT, type World } from './world.js';
+import {
+  answerOf,
+  ask,
+  EFFECTIVE_FROM,
+  newCase,
+  publishError,
+  seedWorld,
+  TEXT,
+  type World,
+} from './world.js';
 
 /**
  * Критериите за приемане на спецификацията (AC-xx) през целия път на живо:
@@ -268,8 +277,9 @@ describe('AC-05 — safety-relevant без документ → без проц�
   test('същата процедура, но още в чернова/след отписване, не отключва стъпката', async () => {
     const deprecated = await w.ownerA1.post(
       `/api/v1/admin/documents/${w.docs.procedure}/deprecate`,
+      { reason: 'Procedura ritirata' },
     );
-    assert.equal(deprecated.status, 204);
+    assert.equal(deprecated.status, 200);
     h.model.plan = (pack) => {
       const a = find(pack, 'MAN-500', 'A');
       assert.ok(a && !find(pack, 'PROC-DOOR-001'));
@@ -452,7 +462,7 @@ describe('AC-08 — тикет с автоматично обобщение от
 });
 
 describe('AC-10 — публикуване и отписване без преобучение', () => {
-  test('нова ревизия: чернова не се вижда; след публикуване е в търсенето, старата е DEPRECATED', async () => {
+  test('нова ревизия: чернова не се вижда; след публикуване е в търсенето, старата се пази (собственикът)', async () => {
     const caseId = await newCase(w.portalAlfa, { deviceSerial: 'SN-ALFA-1' });
     await ask(w.portalAlfa, caseId, 'E37 cavo encoder');
     const before = answerOf(await ask(w.portalAlfa, caseId, 'E37 cavo encoder'));
@@ -467,6 +477,7 @@ describe('AC-10 — публикуване и отписване без прео
       audience: 'PORTAL',
       safetyRelevant: false,
       sourceFilename: 'man500c.pdf',
+      effectiveFrom: EFFECTIVE_FROM,
       supersedesRevision: 'A',
       applicability: [{ productModel: 'LTX-500', fwMin: '4.0', fwMax: '4.9' }],
       pages: [{ page: 4, text: NEW }],
@@ -488,25 +499,63 @@ describe('AC-10 — публикуване и отписване без прео
       'преглед не се вижда',
     );
 
-    // Нова ревизия: 200 със списъка на кодовете за преглед (тук източникът им е друг документ).
+    // Решение на собственика: новата ревизия НЕ отписва старата — 204, старата остава PUBLISHED.
     const published = await w.ownerA1.post(`/api/v1/admin/documents/${id}/publish`);
-    assert.equal(published.status, 200);
-    assert.deepEqual(published.body, { errorsToReview: [] });
+    assert.equal(published.status, 204);
     const after = answerOf(await ask(w.portalAlfa, caseId, 'E37 cavo encoder'));
     const pack = h.model.packs.at(-1) ?? [];
     assert.equal(find(pack, 'MAN-500', 'C')?.applicable, true);
-    assert.equal(find(pack, 'MAN-500', 'A'), undefined, 'заменената ревизия е изчезнала');
+    // Две ревизии с една и съща приложимост → конфликт: коя важи решава приложимостта/човекът.
+    assert.equal(find(pack, 'MAN-500', 'A')?.applicable, true, 'старата се пази');
+    assert.equal(after.gate.evidenceLevel, 'conflict');
     assert.notEqual(
       after.knowledgeSnapshotId,
       before.knowledgeSnapshotId,
       'новата версия на знанието',
     );
+    const deprecated = await w.ownerA1.get('/api/v1/admin/documents?status=DEPRECATED');
+    assert.deepEqual(deprecated.body.documents, []);
+  });
 
-    const list = await w.ownerA1.get('/api/v1/admin/documents?status=DEPRECATED');
-    assert.deepEqual(
-      list.body.documents.map((d: { code: string; revision: string }) => `${d.code}@${d.revision}`),
-      ['MAN-500@A'],
-    );
+  test('„заменя старата за ВСИЧКИ табла“ — изрично, с причина: старата се отписва (не се трие)', async () => {
+    const upload = await w.ownerA1.post('/api/v1/admin/documents', {
+      code: 'MAN-500',
+      title: 'Manuale MAN-500 rev C',
+      type: 'MANUAL',
+      language: 'it',
+      revision: 'C',
+      audience: 'PORTAL',
+      safetyRelevant: false,
+      sourceFilename: 'man500c.pdf',
+      effectiveFrom: EFFECTIVE_FROM,
+      supersedesRevision: 'A',
+      applicability: [{ productModel: 'LTX-500', fwMin: '4.0', fwMax: '4.9' }],
+      pages: [{ page: 4, text: 'Revisione C: il codice E37 indica cavo encoder scollegato.' }],
+    });
+    const id = upload.body.documentId as string;
+    assert.equal((await w.ownerA1.post(`/api/v1/admin/documents/${id}/submit`)).status, 204);
+    const noReason = await w.ownerA1.post(`/api/v1/admin/documents/${id}/publish`, {
+      replacesPrevious: true,
+    });
+    assert.deepEqual([noReason.status, noReason.body.code], [400, 'invalid_input']);
+    const res = await w.ownerA1.post(`/api/v1/admin/documents/${id}/publish`, {
+      replacesPrevious: true,
+      reason: 'La revisione C sostituisce la A su tutti i quadri',
+    });
+    assert.equal(res.status, 200, JSON.stringify(res.body));
+    assert.deepEqual(res.body, { deprecated: [w.docs.manFw4], errorsAffected: [] });
+    const old = await db.document.findUniqueOrThrow({ where: { id: w.docs.manFw4 } });
+    assert.equal(old.status, 'DEPRECATED');
+    assert.equal(await db.documentChunk.count({ where: { documentId: old.id } }), 2, 'пази се');
+    const caseId = await newCase(w.portalAlfa, { deviceSerial: 'SN-ALFA-1' });
+    const answer = answerOf(await ask(w.portalAlfa, caseId, 'E37 cavo encoder'));
+    const pack = h.model.packs.at(-1) ?? [];
+    assert.equal(find(pack, 'MAN-500', 'A'), undefined, 'отписаната не се търси');
+    assert.notEqual(answer.gate.evidenceLevel, 'conflict');
+    const audit = await db.auditEvent.findFirstOrThrow({
+      where: { action: 'kb.document.deprecate', objectId: w.docs.manFw4 },
+    });
+    assert.deepEqual((audit.detail as { replacedBy: string }).replacedBy, id);
   });
 
   test('отписване на документ: изчезва от следващото търсене и от справката за страница', async () => {
@@ -518,10 +567,13 @@ describe('AC-10 — публикуване и отписване без прео
       200,
     );
 
-    assert.equal(
-      (await w.ownerA1.post(`/api/v1/admin/documents/${w.docs.manFw4}/deprecate`)).status,
-      204,
-    );
+    const noReason = await w.ownerA1.post(`/api/v1/admin/documents/${w.docs.manFw4}/deprecate`);
+    assert.deepEqual([noReason.status, noReason.body.code], [400, 'invalid_input']);
+    const deprecated = await w.ownerA1.post(`/api/v1/admin/documents/${w.docs.manFw4}/deprecate`, {
+      reason: 'Manuale ritirato dal produttore',
+    });
+    assert.equal(deprecated.status, 200);
+    assert.deepEqual(deprecated.body, { errorsAffected: [] });
 
     await ask(w.portalAlfa, caseId, 'E37 cavo encoder');
     assert.equal(find(h.model.packs[1] ?? [], 'MAN-500', 'A'), undefined);
@@ -557,7 +609,10 @@ describe('AC-10 — публикуване и отписване без прео
       [v3]: 'PUBLISHED',
     });
 
-    assert.equal((await w.ownerA1.post(`/api/v1/admin/errors/${v3}/deprecate`)).status, 204);
+    assert.equal(
+      (await w.ownerA1.post(`/api/v1/admin/errors/${v3}/deprecate`, { reason: 'Ritirato' })).status,
+      204,
+    );
     await ask(w.portalAlfa, caseId, 'Errore E37');
     assert.equal(
       errorsIn(h.model.packs[1] ?? []).filter((p) => p.applicable).length,
@@ -579,7 +634,12 @@ describe('AC-10 — публикуване и отписване без прео
       relations: [],
     });
     assert.equal(created.status, 201);
-    const res = await w.ownerA1.post(`/api/v1/admin/errors/${created.body.errorId}/publish`);
+    const id = created.body.errorId as string;
+    // Жизненият цикъл не се прескача: от чернова — 409; след преглед — източникът пречи.
+    const early = await w.ownerA1.post(`/api/v1/admin/errors/${id}/publish`);
+    assert.deepEqual([early.status, early.body.code], [409, 'invalid_transition']);
+    assert.equal((await w.ownerA1.post(`/api/v1/admin/errors/${id}/submit`)).status, 204);
+    const res = await w.ownerA1.post(`/api/v1/admin/errors/${id}/publish`);
     assert.equal(res.status, 422);
     assert.equal(res.body.code, 'source_not_published');
   });
@@ -706,6 +766,26 @@ describe('AC-11 + §15 „accessi incrociati“ — изолация между 
     const all = (h.model.packs[0] ?? []).map((p) => p.text).join('\n');
     assert.equal(all.includes('FENICE'), false);
     assert.equal((await w.ownerA1.get(`/api/v1/documents/${w.docs.draft}/pages/1`)).status, 404);
+  });
+
+  test('чернова: публичната страница остава 404 за всички; админският преглед (kb:manage) я показва', async () => {
+    const page = `/api/v1/documents/${w.docs.draft}/pages/1`;
+    for (const c of [w.ownerA1, w.ownerA2, w.support, w.internal, w.portalAlfa]) {
+      assert.equal((await c.get(page)).status, 404);
+    }
+    const admin = await w.ownerA1.get(`/api/v1/admin/documents/${w.docs.draft}/pages/1`);
+    assert.equal(admin.status, 200);
+    assert.equal(admin.body.document.status, 'DRAFT');
+    assert.ok(admin.body.chunks[0].text.includes('FENICE'));
+    assert.ok(Array.isArray(admin.body.chunks[0].componentRefs));
+    assert.equal(
+      (await w.support.get(`/api/v1/admin/documents/${w.docs.draft}/pages/1`)).status,
+      403,
+    );
+    assert.equal(
+      (await w.ownerB.get(`/api/v1/admin/documents/${w.docs.draft}/pages/1`)).status,
+      404,
+    );
   });
 
   test('поддръжка вижда случаите на цялата организация на клиента (но не на другия клиент)', async () => {

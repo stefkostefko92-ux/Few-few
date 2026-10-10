@@ -1,13 +1,16 @@
 import { canonicalIdentifier } from '../domain/normalize.js';
-import { isApplicable, type ProductVersion } from '../domain/versions.js';
+import type { ProductVersion } from '../domain/versions.js';
+import { applicabilityFields, applicabilityOf } from '../retrieval/applicability.js';
+import { applyBoardOverride } from '../retrieval/levels.js';
 import { baseScore, findConflicts, keyOf, NOT_APPLICABLE_FACTOR } from '../retrieval/retrieve.js';
 import type { EvidenceItem, MatchKind, RawEvidence, RetrievalResult } from '../retrieval/types.js';
 
 /**
  * Доказателственият пакет на един отговор: E1…En от търсенето + каквото добавят инструментите
  * (E13, E14…). Референциите са последователни и стабилни — моделът цитира само тях, а Safety Gate
- * проверява цитатите срещу ФИНАЛНИЯ пакет. Съвместимостта на добавеното се смята със същото
- * правило като в retrieve (`isApplicable` + `versionOf` на въпроса), не от модела.
+ * проверява цитатите срещу ФИНАЛНИЯ пакет. Съвместимостта на добавеното (HW/FW/табло и
+ * валидност към момента на отговора) се смята със същото правило като в retrieve
+ * (`applicabilityOf` + `versionOf` на въпроса), не от модела.
  */
 
 /** Колко записа най-много добавя едно извикване на инструмент. */
@@ -28,15 +31,18 @@ export class EvidencePack {
   private readonly byKey = new Map<string, EvidenceItem>();
   private readonly unknown: Set<string>;
   private readonly initialCount: number;
+  private readonly needsBoard: boolean;
 
   constructor(
     initial: RetrievalResult,
     private readonly version: ProductVersion,
+    private readonly now: Date = new Date(),
   ) {
     this.items = [...initial.items];
     for (const item of this.items) this.byKey.set(keyOf(item), item);
     this.unknown = new Set(initial.unknownIdentifiers);
     this.initialCount = initial.items.length;
+    this.needsBoard = initial.needsBoard === true;
   }
 
   get all(): readonly EvidenceItem[] {
@@ -59,16 +65,16 @@ export class EvidencePack {
     );
     const scored = raws
       .map((raw) => {
-        const applicable = raw.rules.some((rule) => isApplicable(rule, this.version));
+        const a = applicabilityOf(raw, this.version, this.now);
         const share = maxRaw > 0 ? raw.rawScore / maxRaw : 0;
-        const score = baseScore(raw.matchedBy, share) * (applicable ? 1 : NOT_APPLICABLE_FACTOR);
-        return { raw, applicable, score };
+        const score = baseScore(raw.matchedBy, share) * (a.applicable ? 1 : NOT_APPLICABLE_FACTOR);
+        return { raw, a, score };
       })
       .sort((a, b) => b.score - a.score);
 
     const result: AddResult = { added: [], existing: [], truncated: 0 };
     const seen = new Set<string>();
-    for (const { raw, applicable, score } of scored) {
+    for (const { raw, a, score } of scored) {
       const key = keyOf(raw);
       if (seen.has(key)) continue;
       seen.add(key);
@@ -81,12 +87,18 @@ export class EvidencePack {
         result.truncated += 1;
         continue;
       }
-      const { rawScore: _rawScore, rules: _rules, ...rest } = raw;
+      const {
+        rawScore: _rawScore,
+        rules: _rules,
+        effectiveFrom: _from,
+        effectiveTo: _to,
+        ...rest
+      } = raw;
       const item: EvidenceItem = {
         ...rest,
         matchedBy: [...rest.matchedBy],
         ref: `E${this.items.length + 1}`,
-        applicable,
+        ...applicabilityFields(a),
         score: Math.round(score * 1000) / 1000,
       };
       this.items.push(item);
@@ -103,11 +115,13 @@ export class EvidencePack {
    * е конфликт, колкото и слабо да е намерен.
    */
   result(cited: ReadonlySet<string> = new Set()): RetrievalResult {
-    const items = [...this.items];
+    // Собствената схема на таблото, добавена от инструмент, заменя общата и в крайния пакет.
+    const items = applyBoardOverride([...this.items]);
     return {
       items,
       unknownIdentifiers: [...this.unknown],
       conflicts: findConflicts(items, cited),
+      ...(this.needsBoard ? { needsBoard: true } : {}),
     };
   }
 }

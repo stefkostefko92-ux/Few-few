@@ -1,93 +1,19 @@
 import type { PrismaClient } from '@prisma/client';
-import { z } from 'zod';
 import { canonicalJson } from '../audit.js';
 import { sha256 } from '../crypto.js';
 import { extractIdentifiers } from '../domain/normalize.js';
-import { isVersion } from '../domain/versions.js';
 import { refreshChunkIndex } from '../store/knowledge.js';
+import { effectiveRangeOk, type DocumentInput } from './document-meta.js';
+
+export * from './document-meta.js';
 
 /**
  * Приемане на документ (§7.3): администраторът на знанието подава задължителните метаданни (§7.2)
  * и или вече извлечения текст по страници, или чист PDF, качен като прикачен файл (антивирус →
  * текст по страници в routes/admin-documents). С PDF checksum е sha256 на оригиналния файл (§7.2);
  * с подаден текст — на подаденото съдържание. Документът влиза като DRAFT и AI не го вижда до
- * публикуване.
+ * публикуване. Метаданните и проверките им — `document-meta.ts`.
  */
-
-const version = z.string().trim().max(20).refine(isVersion, 'версия като 4.2.1');
-
-const DocumentMetaSchema = z.object({
-  code: z
-    .string()
-    .trim()
-    .min(2)
-    .max(60)
-    .regex(/^[A-Za-z0-9._-]+$/),
-  title: z.string().trim().min(2).max(200),
-  type: z.enum([
-    'MANUAL',
-    'SCHEMATIC',
-    'ERROR_LIST',
-    'FAQ',
-    'BULLETIN',
-    'PROCEDURE',
-    'SOLVED_CASE',
-  ]),
-  language: z.string().regex(/^[a-z]{2}$/),
-  revision: z.string().trim().min(1).max(20),
-  audience: z.enum(['PORTAL', 'INTERNAL', 'ENGINEERING']),
-  safetyRelevant: z.boolean(),
-  subsystem: z.string().trim().max(60).optional(),
-  sourceFilename: z.string().trim().min(1).max(255),
-  effectiveFrom: z.coerce.date().optional(),
-  effectiveTo: z.coerce.date().optional(),
-  /** Предишната ревизия на същия код, която тази заменя (отписва се при публикуване). */
-  supersedesRevision: z.string().trim().min(1).max(20).optional(),
-  applicability: z
-    .array(
-      z.object({
-        productModel: z.string().trim().min(1).max(80),
-        hwRevision: z.string().trim().max(20).optional(),
-        fwMin: version.optional(),
-        fwMax: version.optional(),
-      }),
-    )
-    .min(1)
-    .max(50),
-});
-
-const PagesSchema = z
-  .array(
-    z.object({
-      page: z.number().int().min(1).max(100000),
-      section: z.string().trim().max(200).optional(),
-      text: z.string().max(40000),
-    }),
-  )
-  .min(1)
-  .max(3000);
-
-export const DocumentInputSchema = DocumentMetaSchema.extend({ pages: PagesSchema });
-export type DocumentInput = z.infer<typeof DocumentInputSchema>;
-
-/**
- * Заявката на POST /admin/documents: точно едно от двете — `pages` (както досега, тогава и
- * `sourceFilename`) или `sourceAttachmentId` (CLEAN PDF на същия клиент; името идва от файла).
- */
-export const DocumentRequestSchema = DocumentMetaSchema.extend({
-  sourceFilename: z.string().trim().min(1).max(255).optional(),
-  pages: PagesSchema.optional(),
-  sourceAttachmentId: z.string().min(1).max(40).optional(),
-})
-  .refine((d) => (d.pages === undefined) !== (d.sourceAttachmentId === undefined), {
-    path: ['pages'],
-    message: 'или pages, или sourceAttachmentId',
-  })
-  .refine((d) => d.pages === undefined || d.sourceFilename !== undefined, {
-    path: ['sourceFilename'],
-    message: 'sourceFilename е задължително с pages',
-  });
-export type DocumentRequest = z.infer<typeof DocumentRequestSchema>;
 
 /** Страница без текст (сканиран PDF — OCR не правим): предупреждение към качилия, не грешка. */
 export function pageWarnings(
@@ -147,9 +73,39 @@ export function chunkPages(pages: DocumentInput['pages']): ChunkDraft[] {
 
 export type IngestError =
   | { code: 'unknown_product'; models: string[] }
+  | { code: 'device_not_found'; serials: string[] }
+  | { code: 'invalid_input'; field: 'effectiveTo' }
   | { code: 'duplicate_revision' }
   | { code: 'superseded_not_found' }
   | { code: 'empty_document' };
+
+/**
+ * Таблата от правилата (уникалните схеми): сериен номер → id, само в клиента и само ако моделът
+ * на правилото е моделът на таблото (HW, ако е посочена — също неговата).
+ */
+async function resolveDevices(
+  db: PrismaClient,
+  tenantId: string,
+  rules: DocumentInput['applicability'],
+): Promise<{ ok: true; ids: Map<string, string> } | { ok: false; serials: string[] }> {
+  const serials = [...new Set(rules.flatMap((r) => (r.deviceSerial ? [r.deviceSerial] : [])))];
+  if (serials.length === 0) return { ok: true, ids: new Map() };
+  const devices = await db.device.findMany({
+    where: { tenantId, serial: { in: serials } },
+    include: { revision: { include: { product: true } } },
+  });
+  const bySerial = new Map(devices.map((d) => [d.serial, d]));
+  const bad = new Set<string>();
+  for (const r of rules) {
+    if (!r.deviceSerial) continue;
+    const d = bySerial.get(r.deviceSerial);
+    const hwOk =
+      !r.hwRevision || r.hwRevision.trim().toUpperCase() === d?.revision.hwRevision.toUpperCase();
+    if (!d || d.revision.product.model !== r.productModel || !hwOk) bad.add(r.deviceSerial);
+  }
+  if (bad.size > 0) return { ok: false, serials: [...bad] };
+  return { ok: true, ids: new Map(devices.map((d) => [d.serial, d.id])) };
+}
 
 export async function ingestDocument(
   db: PrismaClient,
@@ -164,6 +120,13 @@ export async function ingestDocument(
   const byModel = new Map(products.map((p) => [p.model, p.id]));
   const unknown = models.filter((m) => !byModel.has(m));
   if (unknown.length > 0) return { ok: false, error: { code: 'unknown_product', models: unknown } };
+  if (!effectiveRangeOk(input)) {
+    return { ok: false, error: { code: 'invalid_input', field: 'effectiveTo' } };
+  }
+  const devices = await resolveDevices(db, tenantId, input.applicability);
+  if (!devices.ok) {
+    return { ok: false, error: { code: 'device_not_found', serials: devices.serials } };
+  }
 
   const exists = await db.document.findUnique({
     where: { tenantId_code_revision: { tenantId, code: input.code, revision: input.revision } },
@@ -211,7 +174,7 @@ export async function ingestDocument(
         subsystem: input.subsystem ?? null,
         sourceFilename: input.sourceFilename,
         checksum: opts.checksum ?? sha256(canonicalJson(input.pages)),
-        effectiveFrom: input.effectiveFrom ?? null,
+        effectiveFrom: input.effectiveFrom,
         effectiveTo: input.effectiveTo ?? null,
         uploadedById,
         supersedesId,
@@ -221,6 +184,8 @@ export async function ingestDocument(
             hwRevision: a.hwRevision ?? null,
             fwMin: a.fwMin ?? null,
             fwMax: a.fwMax ?? null,
+            allFirmware: a.allFirmware === true,
+            deviceId: a.deviceSerial ? (devices.ids.get(a.deviceSerial) ?? null) : null,
           })),
         },
       },

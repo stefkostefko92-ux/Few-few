@@ -183,10 +183,12 @@ model Device {
   qrTokenHash       String?  @unique
   createdAt         DateTime @default(now())
 
-  tenant   Tenant          @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  company  Company?        @relation(fields: [companyId], references: [id], onDelete: Restrict)
-  revision ProductRevision @relation(fields: [productRevisionId], references: [id], onDelete: Restrict)
-  cases    Case[]
+  tenant        Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  company       Company?                @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  revision      ProductRevision         @relation(fields: [productRevisionId], references: [id], onDelete: Restrict)
+  cases         Case[]
+  /// Документите, вързани САМО за това табло (уникалните му схеми — решение на собственика).
+  documentRules DocumentApplicability[]
 
   @@unique([tenantId, serial])
   @@index([companyId])
@@ -220,6 +222,9 @@ enum Audience {
   ENGINEERING
 }
 
+/// Документите са НЕИЗМЕНИМИ и се пазят завинаги (решение на собственика): публикуван документ не
+/// се редактира — само преходи на статуса. Нова ревизия не отписва старата; отписването е изрично
+/// действие с причина и е обратимо (DEPRECATED → REVIEW → PUBLISHED). Ретенцията не ги трие.
 model Document {
   id             String          @id @default(cuid())
   tenantId       String
@@ -236,9 +241,13 @@ model Document {
   sourceFilename String
   /// SHA-256 на оригиналния файл (§7.2, §17.3) — неизменим.
   checksum       String
-  effectiveFrom  DateTime?
+  /// Валидност (§7.2 effective_from/to): извън [effectiveFrom, effectiveTo] документът е
+  /// неприложим за отговорите, колкото и да е PUBLISHED. effectiveFrom е задължителен.
+  effectiveFrom  DateTime
   effectiveTo    DateTime?
   uploadedById   String
+  /// Кой го е пратил за преглед (submit/възстановяване) — и той не публикува документ по безопасност.
+  submittedById  String?
   reviewedById   String?
   approvedById   String?
   approvedAt     DateTime?
@@ -260,21 +269,29 @@ model Document {
   @@index([supersedesId])
 }
 
-/// Правило за съвместимост (§13.1 document_applicability): модел + по избор HW ревизия и обхват на FW.
+/// Правило за съвместимост (§13.1 document_applicability): модел + по избор HW ревизия, обхват на
+/// FW и КОНКРЕТНО табло. Фърмуерът е изричен: обхват ИЛИ `allFirmware` (не мълчалив null —
+/// CHECK в миграцията 20261010110000). С `deviceId` правилото важи САМО за случай с това табло.
 model DocumentApplicability {
-  id         String  @id @default(cuid())
-  documentId String
-  productId  String
+  id          String  @id @default(cuid())
+  documentId  String
+  productId   String
   /// null = всички хардуерни ревизии на модела.
-  hwRevision String?
-  fwMin      String?
-  fwMax      String?
+  hwRevision  String?
+  fwMin       String?
+  fwMax       String?
+  /// Изрично „всички версии на фърмуера“ (тогава fwMin/fwMax са null).
+  allFirmware Boolean @default(false)
+  /// Само за това табло (уникална схема); null = за всички табла на модела.
+  deviceId    String?
 
   document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
   product  Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  device   Device?  @relation(fields: [deviceId], references: [id], onDelete: Restrict)
 
   @@index([documentId])
   @@index([productId])
+  @@index([deviceId])
 }
 
 /// Индексът за търсене (§7.3): парче текст със страница и раздел — основата на всеки цитат.
@@ -326,7 +343,8 @@ enum ActionClass {
 }
 
 /// Код за грешка (§13.1 errors) — версиониран като документите: един код може да значи
-/// различно нещо в различен фърмуер (§16.3 „грешна версия, същото име“).
+/// различно нещо в различен фърмуер (§16.3 „грешна версия, същото име“). Жизнен цикъл (FR-04):
+/// DRAFT (редактируема) → REVIEW → PUBLISHED → DEPRECATED (с причина, обратимо); версиите се пазят.
 model ErrorCode {
   id               String          @id @default(cuid())
   tenantId         String
@@ -344,6 +362,11 @@ model ErrorCode {
   version          Int             @default(1)
   sourceDocumentId String?
   sourcePage       Int?
+  /// Кой е подготвил ТАЗИ версия (създал, редактирал, пратил за преглед, възстановил) — никой от
+  /// тях не публикува версия, свързана с безопасността (четири очи, FR-04 / §11.3).
+  authorIds        String[]        @default([])
+  approvedById     String?
+  approvedAt       DateTime?
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
 
@@ -352,6 +375,7 @@ model ErrorCode {
   relations      ErrorRelation[]
 
   @@index([tenantId, code])
+  @@index([tenantId, status])
   @@index([productId, code])
   @@index([sourceDocumentId])
 }

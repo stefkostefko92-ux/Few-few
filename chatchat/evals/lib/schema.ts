@@ -27,6 +27,19 @@ export const ProductFixture = z.object({
     .min(1),
 });
 
+/**
+ * Физическо табло (§13.1 devices) — за документите, вързани САМО за него (`deviceSerial` в
+ * приложимостта), и за случаите на таблото (`context.serial` = неговият сериен номер).
+ */
+export const DeviceFixture = z.object({
+  tenant: Tenant,
+  serial: z.string().min(1).max(80),
+  productModel: z.string().min(1).max(80),
+  hwRevision: z.string().min(1).max(20),
+  firmware: z.string().min(1).max(20),
+});
+
+/** Метаданните — както при качване (§7.2): effectiveFrom задължителен, фърмуерът — изричен. */
 export const DocumentFixture = DocumentInputSchema.omit({ sourceFilename: true }).extend({
   tenant: Tenant,
   status: Status,
@@ -91,6 +104,7 @@ export const EvalCase = z.object({
   /** Аудиторията на ролята, която пита (PORTAL техник, вътрешен, инженеринг). */
   audience: z.enum(['PORTAL', 'INTERNAL', 'ENGINEERING']).default('PORTAL'),
   question: z.string().min(1).max(4000),
+  /** `serial` на табло от `knowledge.devices` (същият модел) = случаят е вързан за таблото. */
   context: DiagnosticContextSchema,
   expect: z.object({
     /** Ключове на правилните източници (документ „КОД@РЕВ“, код — неговият key). */
@@ -116,6 +130,7 @@ export const EvalSet = z.object({
   description: z.string().max(2000).default(''),
   knowledge: z.object({
     products: z.array(ProductFixture).min(1),
+    devices: z.array(DeviceFixture).default([]),
     documents: z.array(DocumentFixture).min(1),
     errors: z.array(ErrorFixture).default([]),
   }),

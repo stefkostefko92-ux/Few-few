@@ -22,23 +22,39 @@ export const TEXT = {
   tenantB: 'TENANT-B-SECRET: il codice E37 del cliente B indica un guasto riservato.',
 } as const;
 
+/** От кога важат фикстурните документи (§7.2 effectiveFrom е задължителен). */
+export const EFFECTIVE_FROM = '2026-01-01T00:00:00.000Z';
+
+export interface RuleSpec {
+  productModel: string;
+  hwRevision?: string;
+  fwMin?: string;
+  fwMax?: string;
+  allFirmware?: boolean;
+  /** Само за това табло (уникалната му схема). */
+  deviceSerial?: string;
+}
+
 export interface DocSpec {
   code: string;
   revision?: string;
   type?: string;
   audience?: 'PORTAL' | 'INTERNAL' | 'ENGINEERING';
   safetyRelevant?: boolean;
-  applicability?: Array<{
-    productModel: string;
-    hwRevision?: string;
-    fwMin?: string;
-    fwMax?: string;
-  }>;
+  applicability?: RuleSpec[];
   pages: ReadonlyArray<{ page: number; text: string; section?: string }>;
   supersedesRevision?: string;
   /** Език на документа (2 букви); по подразбиране „it“. */
   language?: string;
+  effectiveFrom?: string;
+  effectiveTo?: string;
 }
+
+/** Фърмуерът е изричен (§7.2): правило без обхват в спецификацията → „всички версии“. */
+export const explicitFirmware = (r: RuleSpec): RuleSpec =>
+  r.fwMin !== undefined || r.fwMax !== undefined || r.allFirmware !== undefined
+    ? r
+    : { ...r, allFirmware: true };
 
 export function docBody(spec: DocSpec) {
   return {
@@ -50,7 +66,9 @@ export function docBody(spec: DocSpec) {
     audience: spec.audience ?? 'PORTAL',
     safetyRelevant: spec.safetyRelevant ?? false,
     sourceFilename: `${spec.code}.pdf`,
-    applicability: spec.applicability ?? [{ productModel: MODEL }],
+    effectiveFrom: spec.effectiveFrom ?? EFFECTIVE_FROM,
+    ...(spec.effectiveTo ? { effectiveTo: spec.effectiveTo } : {}),
+    applicability: (spec.applicability ?? [{ productModel: MODEL }]).map(explicitFirmware),
     pages: spec.pages,
     ...(spec.supersedesRevision ? { supersedesRevision: spec.supersedesRevision } : {}),
   };
@@ -93,7 +111,12 @@ export interface ErrorSpec {
   }>;
 }
 
-export async function publishError(owner: Client, spec: ErrorSpec): Promise<string> {
+/** Създава код (DRAFT), праща го за преглед и го публикува (с `approver`, ако е друг човек). */
+export async function publishError(
+  owner: Client,
+  spec: ErrorSpec,
+  approver: Client = owner,
+): Promise<string> {
   const created = await owner.post('/api/v1/admin/errors', {
     productModel: spec.productModel ?? MODEL,
     severity: 'FAULT',
@@ -103,7 +126,8 @@ export async function publishError(owner: Client, spec: ErrorSpec): Promise<stri
   });
   assert.equal(created.status, 201, JSON.stringify(created.body));
   const id = created.body.errorId as string;
-  const published = await owner.post(`/api/v1/admin/errors/${id}/publish`);
+  assert.equal((await owner.post(`/api/v1/admin/errors/${id}/submit`)).status, 204);
+  const published = await approver.post(`/api/v1/admin/errors/${id}/publish`);
   assert.equal(published.status, 204, JSON.stringify(published.body));
   return id;
 }

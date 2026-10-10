@@ -1,9 +1,11 @@
 // Качване на документ (§7.2/§7.3): PDF (текстът се извлича на сървъра, антивирус преди всичко)
 // или JSON с вече извлечен текст по страници. Документът влиза като ЧЕРНОВА — AI не го вижда.
+// Задължителните метаданни (валидност, изричен фърмуер, табло) — documents-meta.js.
 
 import { getLang, t } from '../i18n.js';
 import { ApiError, callDetailed, uploadRaw } from './core.js';
-import { loadProducts, repeater, VERSION_PATTERN } from './kb-common.js';
+import { applicabilityRow, explain, validityFields } from './documents-meta.js';
+import { loadProducts, repeater } from './kb-common.js';
 import { checkbox, dialog, errText, field, h, input, select, toast } from './ui.js';
 
 export const DOC_TYPES = [
@@ -16,57 +18,6 @@ export const DOC_TYPES = [
   'SOLVED_CASE',
 ];
 export const AUDIENCES = ['PORTAL', 'INTERNAL', 'ENGINEERING'];
-
-/** Подробности към кода на грешката: кои полета, кои модели, защо PDF не се чете. */
-function explain(err) {
-  const b = err?.body;
-  if (!b || typeof b !== 'object') return '';
-  if (Array.isArray(b.issues) && b.issues.length) {
-    return `(${b.issues
-      .map((i) => i.path)
-      .filter(Boolean)
-      .slice(0, 6)
-      .join(', ')})`;
-  }
-  if (Array.isArray(b.models) && b.models.length) return `(${b.models.join(', ')})`;
-  if (typeof b.reason === 'string') return `(${t(`admin.docs.pdfReason.${b.reason}`)})`;
-  return '';
-}
-
-function applicabilityRow(products) {
-  const model = select(
-    products.map((p) => ({ value: p.model, label: p.model })),
-    products[0]?.model ?? '',
-  );
-  const hw = input({ maxlength: 20, placeholder: t('admin.docs.hwAny') });
-  const min = input({
-    pattern: VERSION_PATTERN,
-    maxlength: 20,
-    placeholder: t('admin.docs.fwMin'),
-  });
-  const max = input({
-    pattern: VERSION_PATTERN,
-    maxlength: 20,
-    placeholder: t('admin.docs.fwMax'),
-  });
-  const node = h(
-    'div',
-    { class: 'row row-4' },
-    field(t('admin.devices.model'), model),
-    field(t('admin.devices.hw'), hw),
-    field(t('admin.products.fwMin'), min),
-    field(t('admin.products.fwMax'), max),
-  );
-  return {
-    node,
-    read: () => ({
-      productModel: model.value,
-      ...(hw.value.trim() ? { hwRevision: hw.value.trim() } : {}),
-      ...(min.value.trim() ? { fwMin: min.value.trim() } : {}),
-      ...(max.value.trim() ? { fwMax: max.value.trim() } : {}),
-    }),
-  };
-}
 
 export async function uploadDocument(reload) {
   let products = [];
@@ -109,6 +60,7 @@ export async function uploadDocument(reload) {
   const safety = checkbox(t('admin.docs.safety'));
   const supersedes = input({ maxlength: 20 });
   const subsystem = input({ maxlength: 60 });
+  const validity = validityFields();
   const applicability = repeater({
     addLabel: t('admin.docs.addApplicability'),
     makeRow: () => applicabilityRow(products),
@@ -184,8 +136,10 @@ export async function uploadDocument(reload) {
       ),
       safety,
       h('p', { class: 'hint' }, t('admin.docs.safety.hint')),
+      validity.node,
       field(t('admin.docs.supersedes'), supersedes, { hint: t('admin.docs.supersedes.hint') }),
       h('h3', { class: 'sub' }, t('admin.docs.applicability')),
+      h('p', { class: 'hint' }, t('admin.kb.applicability.hint')),
       applicability.node,
     ],
     actions: [
@@ -202,6 +156,7 @@ export async function uploadDocument(reload) {
             revision: revision.value.trim(),
             audience: audience.value,
             safetyRelevant: safety.querySelector('input').checked,
+            ...validity.read(),
             applicability: applicability.values(),
             ...(subsystem.value.trim() ? { subsystem: subsystem.value.trim() } : {}),
             ...(supersedes.value.trim() ? { supersedesRevision: supersedes.value.trim() } : {}),

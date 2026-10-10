@@ -1,6 +1,7 @@
 import type { DiagnosticContext } from '../domain/context.js';
 import { NO_MODEL_INPUTS, type DiagnosticAnswer } from '../domain/response.js';
 import type { GateInput } from './gate.js';
+import { withKnowledgeNotices } from './knowledge.js';
 import { detectBypassIntent } from './lexicon.js';
 import { GATE_VERSION } from './version.js';
 
@@ -38,7 +39,8 @@ export function noEvidenceAnswer(input: Omit<GateInput, 'draft' | 'level'>): Dia
   ];
   if (given.attachments.length > 0) decisions.push('gate.attachment.notAnalyzed');
   for (const n of notSent) if (n.reason.startsWith('collect.')) missing.add(n.reason);
-  return {
+  // Без съвместим източник: защо (изтекъл документ) и какво липсва (табло за уникалната схема).
+  const answer: DiagnosticAnswer = {
     generatedBy: 'ai',
     status: 'undetermined',
     confidence: 'low',
@@ -62,4 +64,5 @@ export function noEvidenceAnswer(input: Omit<GateInput, 'draft' | 'level'>): Dia
     knowledgeSnapshotId: input.knowledgeSnapshotId,
     promptVersion: `${input.promptVersion}+${GATE_VERSION}`,
   };
+  return withKnowledgeNotices(answer, input.retrieval);
 }

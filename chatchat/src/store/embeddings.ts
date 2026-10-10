@@ -2,12 +2,13 @@ import type { PrismaClient } from '@prisma/client';
 import { toVectorLiteral, type EmbeddingModel } from '../ai/embeddings.js';
 import { SEMANTIC_MIN_SIMILARITY } from '../retrieval/retrieve.js';
 import type { RawEvidence, SearchScope } from '../retrieval/types.js';
-import { chunkEvidence, documentInclude } from './knowledge.js';
+import { applicableSql, chunkEvidence, documentInclude } from './scope.js';
 
 /**
  * pgvector: търсене и индексиране (§6.2, §8.1).
  *  - Търсенето има СЪЩИТЕ филтри в SQL като пълнотекстовото: tenant, PUBLISHED, аудитория,
- *    приложимост към модела. Плюс: само вектори от текущия модел на embeddings.
+ *    приложимост към модела (общите правила + само таблото на случая — `store/scope.ts`).
+ *    Плюс: само вектори от текущия модел на embeddings.
  *  - Векторите се смятат САМО за парчета на PUBLISHED документи — никога DRAFT/REVIEW/DEPRECATED;
  *    записът повтаря условието (документ, отписан между четенето и записа, не получава вектор).
  */
@@ -43,11 +44,7 @@ export async function semanticSearch(
         AND d."tenantId" = ${scope.tenantId}
         AND d.status = 'PUBLISHED'
         AND d.audience::text = ANY(${audiences})
-        AND EXISTS (
-          SELECT 1 FROM "DocumentApplicability" a
-          JOIN "Product" p ON p.id = a."productId"
-          WHERE a."documentId" = d.id AND p.model = ${productModel} AND p."tenantId" = ${scope.tenantId}
-        )
+        AND ${applicableSql(scope, productModel)}
       ORDER BY c.embedding <=> ${literal}::vector
       LIMIT ${take}`,
   ]);
@@ -56,7 +53,7 @@ export async function semanticSearch(
   const similarity = new Map(kept.map((r) => [r.id, r.similarity]));
   const chunks = await db.documentChunk.findMany({
     where: { id: { in: [...similarity.keys()] } },
-    include: { document: { include: documentInclude(productModel, scope.tenantId) } },
+    include: { document: { include: documentInclude(productModel, scope) } },
   });
   return chunks.map((c) => ({
     ...chunkEvidence(c, ['semantic'], 0),
