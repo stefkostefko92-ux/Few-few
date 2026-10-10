@@ -1,98 +1,71 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { Link } from '@/i18n/routing';
 import { requireCapability } from '@/lib/auth';
 import { can } from '@/lib/rbac';
-import { dateFormat } from '@/lib/dates';
+import { projectStats, searchWords } from '@/lib/dashboard';
 import type { ProjectKind } from '@/lib/schemas';
+import { latestPlan, recordCounts } from '@/server/dashboard';
 import { listProjects } from '@/server/queries';
-import { outdated } from '@/server/records';
-import VerdictPill from '@/components/VerdictPill';
+import Kpis from '@/components/dashboard/Kpis';
+import ModuleCards, { MODULES } from '@/components/dashboard/ModuleCards';
+import NewMenu from '@/components/dashboard/NewMenu';
+import ProjectList, { latestOf } from '@/components/dashboard/ProjectList';
+import ProjectPreview from '@/components/dashboard/ProjectPreview';
+import '../../dashboard.css';
 
 export async function generateMetadata() {
-  const t = await getTranslations('projects');
-  return { title: t('title') };
+  const t = await getTranslations('nav');
+  return { title: t('dashboard') };
 }
 
-/** The two modules: the machine replacement alone, or a whole project; their slug in the address. */
-const MODULES: readonly { kind: ProjectKind; slug: string }[] = [{ kind: 'REPLACEMENT', slug: 'replacement' }, { kind: 'FULL', slug: 'full' }];
 const kindOf = (slug: string | undefined): ProjectKind | null => MODULES.find((m) => m.slug === slug)?.kind ?? null;
 
-export default async function ProjectsPage({ params, searchParams }: {
-  params: Promise<{ locale: string }>; searchParams: Promise<{ archived?: string; kind?: string }>;
+// The dashboard (the template's workspace): the company's figures, its installations — module filters, archive,
+// search from the top bar (?q=) —, the installation changed last, and the new installation in one of the two modules.
+// Everything shown comes from the company's records; nothing is an example.
+export default async function DashboardPage({ params, searchParams }: {
+  params: Promise<{ locale: string }>; searchParams: Promise<{ archived?: string; kind?: string; q?: string }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const user = await requireCapability(locale, 'projects:view');
   const sp = await searchParams, archived = sp.archived === '1', kind = kindOf(sp.kind);
-  const [t, tf, projects] = await Promise.all([getTranslations('projects'), getTranslations('refresh'), listProjects(user, archived, kind)]);
-  const fd = dateFormat(locale);
+  const words = searchWords(sp.q), q = words.join(' ');
+  const plainView = !archived && kind === null && words.length === 0;
+  // the list as asked; the active installations unfiltered for the figures (the same list when nothing is filtered)
+  const [t, tn, projects, counts] = await Promise.all([
+    getTranslations('projects'), getTranslations('nav'), listProjects(user, archived, kind, words), recordCounts(user),
+  ]);
+  const active = plainView ? projects : await listProjects(user, false, null);
+  const stats = projectStats(active.map((p) => {
+    const { last, old } = latestOf(p);
+    return { kind: p.kind, latest: last ? { verdict: last.verdict, old } : null };
+  }));
+  // the installation changed last among those with a saved result, with the plan of its saved shaft when it is a whole
+  // project; none yet: no preview
+  const latest = archived ? null : (active.find((p) => latestOf(p).last) ?? null);
+  const design = latest ? latestOf(latest).design : null;
+  const plan = design ? await latestPlan(user, design.id) : null;
   const canEdit = can(user, 'projects:edit');
-  const listHref = (slug: string | null, arch = archived): string => {
-    const q = [arch ? 'archived=1' : '', slug ? `kind=${slug}` : ''].filter(Boolean).join('&');
-    return q ? `/app?${q}` : '/app';
-  };
+  // with no installation yet the list itself offers the two modules (ProjectList); else the header's button does
+  const menu = canEdit && !archived && !(plainView && projects.length === 0);
   return (
-    <main className="page">
-      <div className="page-head">
-        <div className="titles"><h1>{archived ? t('archivedTitle') : t('title')}</h1></div>
-        <div className="actions">
-          <Link className="btn" href={listHref(sp.kind && kind ? sp.kind : null, !archived)}>{archived ? t('showActive') : t('showArchived')}</Link>
+    <main className="page dash">
+      <header className="dash-head">
+        <div className="dash-titles">
+          <p className="eyebrow">{t('dashEyebrow')}</p>
+          <h1>{archived ? t('archivedTitle') : tn('dashboard')}</h1>
+          <p className="lead">{archived ? t('dashLeadArchived') : t('dashLead')}</p>
         </div>
+        {menu ? (
+          <NewMenu label={t('new')}><ModuleCards /></NewMenu>
+        ) : null}
+      </header>
+      {archived ? null : <Kpis stats={stats} counts={counts} />}
+      <div className={latest ? 'dash-grid' : 'dash-grid dash-grid-one'}>
+        <ProjectList projects={projects} archived={archived} kind={kind} q={q}
+          counts={archived || q ? null : { all: stats.active, REPLACEMENT: stats.replacement, FULL: stats.full }} canEdit={canEdit} />
+        {latest ? <ProjectPreview project={latest} plan={plan} /> : null}
       </div>
-      {canEdit && !archived ? (
-        <div className="app-modules">
-          {MODULES.map((m) => (
-            <Link key={m.kind} href={`/app/projects/new?kind=${m.slug}`} className={`app-module app-module-${m.slug}`}>
-              <span className="eyebrow">{t(`kind_${m.kind}`)}</span>
-              <strong>{t(`module_${m.kind}_title`)}</strong>
-              <span className="note">{t(`module_${m.kind}_lead`)}</span>
-              <span className="btn btn-primary">{t(`module_${m.kind}_new`)}</span>
-            </Link>
-          ))}
-        </div>
-      ) : null}
-      <nav className="seg-row" aria-label={t('col_kind')}>
-        <Link href={listHref(null)} aria-current={kind === null ? 'page' : undefined}>{t('filter_all')}</Link>
-        {MODULES.map((m) => <Link key={m.kind} href={listHref(m.slug)} aria-current={kind === m.kind ? 'page' : undefined}>{t(`filter_${m.kind}`)}</Link>)}
-      </nav>
-      {projects.length === 0 ? (
-        <div className="panel items-start">
-          <p>{archived ? t('emptyArchived') : t('empty')}</p>
-        </div>
-      ) : (
-        <div className="table-panel">
-          <table className="data-table stack">
-            <thead>
-              <tr><th>{t('col_name')}</th><th>{t('col_kind')}</th><th>{t('col_place')}</th><th>{t('col_plantNumber')}</th><th>{t('col_last')}</th><th className="text-right">{t('col_count')}</th></tr>
-            </thead>
-            <tbody>
-              {projects.map((p) => {
-                // a whole project's result is its latest lift design's; a replacement's, its latest calculation's
-                const design = p.liftDesigns[0], calc = p.calculations[0];
-                const last = design ?? calc, old = design ? outdated.lift(design) : calc ? outdated.calc(calc) : false;
-                return (
-                  <tr key={p.id}>
-                    <td className="row-title"><Link href={`/app/projects/${p.id}`} className="font-semibold">{p.name}</Link></td>
-                    <td data-label={t('col_kind')}><span className={`kind-tag kind-${p.kind.toLowerCase()}`}>{t(`kind_${p.kind}`)}</span></td>
-                    <td data-label={t('col_place')}>{[p.address, p.city, p.province].filter(Boolean).join(', ') || '—'}</td>
-                    <td data-label={t('col_plantNumber')} className="num">{p.plantNumber ?? '—'}</td>
-                    <td data-label={t('col_last')}>
-                      {last ? (
-                        <div className="cell-stack">
-                          <VerdictPill verdict={last.verdict} fails={last.failCount} warns={last.warnCount} />
-                          {old ? <span className="chip old">{tf('outdated')}</span> : null}
-                          <span className="note">{fd.dateTime(last.createdAt)} · <span className="spec">{last.summary}</span></span>
-                        </div>
-                      ) : <span className="note">{t('noCalculations')}</span>}
-                    </td>
-                    <td data-label={t('col_count')} className="num text-right">{p._count.calculations}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
     </main>
   );
 }

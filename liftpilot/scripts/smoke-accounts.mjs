@@ -65,7 +65,7 @@ export async function accountFlows({ BASE, stamp, step, newPage, sink, ADMIN_EMA
   await page.goto(fresh.url);
   await page.fill('input[name="password"]', password);
   await Promise.all([page.waitForURL(/\/it\/app$/), page.click('main form button[type="submit"]')]);
-  assert.match(await page.textContent('header'), new RegExp(`Ascensori ${stamp} srl`), 'signed in, in its own company');
+  assert.match(await page.textContent('.ws-user'), new RegExp(`Ascensori ${stamp} srl`), 'signed in, in its own company');
 
   step('a colleague invited by a self-registered company chooses the password from the link; an address with an account elsewhere gets the same answer');
   const member = `collega.${stamp}@example.com`, memberPw = `Collega${stamp}Pw9`;
@@ -90,7 +90,7 @@ export async function accountFlows({ BASE, stamp, step, newPage, sink, ADMIN_EMA
   const mail = await sink.next(member, since);
   assert.ok(mail, 'the invitation e-mail');
   assert.doesNotMatch(mail.text, new RegExp(`Ascensori ${stamp}`), 'the e-mail names no company');
-  await Promise.all([page.waitForURL(/\/it\/login$/), page.click('header form button[type="submit"]')]);
+  await Promise.all([page.waitForURL(/\/it\/login$/), page.click('.ws-logout button[type="submit"]')]);
   await page.goto('about:blank');
   await page.goto(link(mail.text, 'invite').url);
   await page.waitForSelector('main form input[name="next"]');
@@ -98,15 +98,15 @@ export async function accountFlows({ BASE, stamp, step, newPage, sink, ADMIN_EMA
   await page.fill('input[name="next"]', memberPw);
   await page.fill('input[name="confirm"]', memberPw);
   await Promise.all([page.waitForURL(/\/it\/app$/), page.click('main form button[type="submit"]')]);
-  assert.match(await page.textContent('header'), new RegExp(`Ascensori ${stamp} srl`), 'signed in, in the company that invited');
-  await Promise.all([page.waitForURL(/\/it\/login$/), page.click('header form button[type="submit"]')]);
+  assert.match(await page.textContent('.ws-user'), new RegExp(`Ascensori ${stamp} srl`), 'signed in, in the company that invited');
+  await Promise.all([page.waitForURL(/\/it\/login$/), page.click('.ws-logout button[type="submit"]')]);
 
   step('a sign-out ends the session on the server: a copied cookie no longer opens the app');
   await page.fill('input[name="email"]', email);
   await page.fill('input[name="password"]', password);
   await Promise.all([page.waitForURL(/\/it\/app$/), page.click('main form button[type="submit"]')]);
   const copied = await page.context().cookies();
-  await Promise.all([page.waitForURL(/\/it\/login$/), page.click('header form button[type="submit"]')]);
+  await Promise.all([page.waitForURL(/\/it\/login$/), page.click('.ws-logout button[type="submit"]')]);
   const { page: other } = await newPage();
   await other.context().addCookies(copied);
   await other.goto(`${BASE}/it/app`);
@@ -119,7 +119,7 @@ export async function accountFlows({ BASE, stamp, step, newPage, sink, ADMIN_EMA
   await page.fill('input[name="password"]', password);
   await Promise.all([page.waitForURL(/\/it\/app$/), page.click('main form button[type="submit"]')]);
   await invite('Invitato mai entrato', held);
-  await Promise.all([page.waitForURL(/\/it\/login$/), page.click('header form button[type="submit"]')]);
+  await Promise.all([page.waitForURL(/\/it\/login$/), page.click('.ws-logout button[type="submit"]')]);
   since = Date.now();
   await page.goto(`${BASE}/it/register`);
   for (const [k, v] of [['company', `Azienda trattenuta ${stamp}`], ['name', 'Titolare della casella'], ['email', held], ['password', heldPw], ['confirm', heldPw]]) await page.fill(`input[name="${k}"]`, v);
@@ -135,19 +135,19 @@ export async function accountFlows({ BASE, stamp, step, newPage, sink, ADMIN_EMA
   await Promise.all([page.waitForURL(/\/it\/app$/), page.click('main form button[type="submit"]')]);
   await page.goto(`${BASE}/it/app/team`);
   assert.match(await page.textContent('#invites-title + table'), new RegExp(held.replace(/\./g, '\\.')), 'the invitation before the confirmation');
-  await Promise.all([page.waitForURL(/\/it\/login$/), page.click('header form button[type="submit"]')]);
+  await Promise.all([page.waitForURL(/\/it\/login$/), page.click('.ws-logout button[type="submit"]')]);
   await page.goto('about:blank');
   await page.goto(link(offer.text, 'verify-email').url);
   await page.fill('input[name="password"]', heldPw);
   await Promise.all([page.waitForURL(/\/it\/app$/), page.click('main form button[type="submit"]')]);
-  assert.match(await page.textContent('header'), new RegExp(`Azienda trattenuta ${stamp}`), 'signed in, in the new company');
-  await Promise.all([page.waitForURL(/\/it\/login$/), page.click('header form button[type="submit"]')]);
+  assert.match(await page.textContent('.ws-user'), new RegExp(`Azienda trattenuta ${stamp}`), 'signed in, in the new company');
+  await Promise.all([page.waitForURL(/\/it\/login$/), page.click('.ws-logout button[type="submit"]')]);
   await page.fill('input[name="email"]', email);
   await page.fill('input[name="password"]', password);
   await Promise.all([page.waitForURL(/\/it\/app$/), page.click('main form button[type="submit"]')]);
   await page.goto(`${BASE}/it/app/team`);
   assert.match(await page.textContent('#invites-title + table'), new RegExp(held.replace(/\./g, '\\.')), 'the invitation after the confirmation, alike');
-  await Promise.all([page.waitForURL(/\/it\/login$/), page.click('header form button[type="submit"]')]);
+  await Promise.all([page.waitForURL(/\/it\/login$/), page.click('.ws-logout button[type="submit"]')]);
 
   step('forgotten password: the e-mail link, a new password, the old one refused');
   since = Date.now();
@@ -170,7 +170,7 @@ export async function accountFlows({ BASE, stamp, step, newPage, sink, ADMIN_EMA
   await page.fill('input[name="email"]', email);
   await page.fill('input[name="password"]', next);
   await Promise.all([page.waitForURL(/\/it\/app$/), page.click('main form button[type="submit"]')]);
-  await Promise.all([page.waitForURL(/\/it\/login$/), page.click('header form button[type="submit"]')]);
+  await Promise.all([page.waitForURL(/\/it\/login$/), page.click('.ws-logout button[type="submit"]')]);
 
   step('same answers for a known and an unknown address; the owner of a known one hears it');
   since = Date.now();

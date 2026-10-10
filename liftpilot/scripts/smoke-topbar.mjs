@@ -1,42 +1,56 @@
-// The smoke test's check of the application's header at desktop widths, in the three languages: the page never scrolls
-// sideways and sign-out is always at hand — in the row with the sections, or in the menu that takes the row's place when
-// the sections do not stand in it (an owner's 7, the platform's 8: src/app/shell.css, data-nav).
+// The smoke test's check of the application's workspace shell (src/components/AppShell.tsx, src/app/shell.css), in the
+// three languages, from a phone to a wide laptop: the page never scrolls sideways; no section's name is cut in the
+// sidebar (the long Bulgarian ones wrap); sign-out is always at hand — in the sidebar beside the page from 1024 px,
+// else in the drawer the top bar's button opens, which Esc closes with the focus back on the button; the current
+// section is marked (aria-current) and the search of the installations is there.
 import assert from 'node:assert/strict';
 import { step } from './smoke-kit.mjs';
 
-/** The widths checked: from the phone menu's breakpoint to a wide laptop [px]. */
-export const HEADER_WIDTHS = [900, 1024, 1100, 1180, 1280, 1366, 1440];
+/** The widths checked: a phone, a tablet, the sidebar's breakpoint and laptops [px]. */
+export const HEADER_WIDTHS = [390, 768, 1024, 1100, 1280, 1366, 1440];
+const HEIGHT = 900;
 
-/** Where sign-out ends on the screen: the button shown in the row, else the one in the menu, opened [px]; null: none. */
-async function signOutRight(page) {
-  const inRow = await page.evaluate(() => {
-    const d = globalThis.document, menu = globalThis.getComputedStyle(d.querySelector('.topbar .menu')).display !== 'none';
-    const b = [...d.querySelectorAll('.topbar .bar-wide button[type="submit"]')].find((x) => x.getClientRects().length);
-    return { menu, right: b ? b.getBoundingClientRect().right : null };
-  });
-  if (!inRow.menu) return inRow.right;
-  await page.click('.topbar .menu > summary');
-  const b = page.locator('.topbar .menu-panel button[type="submit"]');
+/** Sign-out's box on the screen (the drawer opened first when the sidebar is one), and whether it was a drawer. */
+async function signOut(page) {
+  const drawer = await page.locator('.ws-menu').isVisible();
+  if (drawer) {
+    await page.click('.ws-menu');
+    // the drawer slides in: wait until it stands on the screen
+    await page.waitForFunction(() => {
+      const s = globalThis.document.querySelector('.ws-sidebar.open');
+      return !!s && s.getBoundingClientRect().left >= -1;
+    });
+  }
+  const b = page.locator('.ws-sidebar .ws-logout button[type="submit"]');
   await b.waitFor({ state: 'visible' });
-  const box = await b.boundingBox();
-  await page.click('.topbar .menu > summary');
-  return box ? box.x + box.width : null;
+  return { box: await b.boundingBox(), drawer };
 }
 
 /** `url(locale)`: a page of the application in that language, signed in as `who`. The viewport is given back as it was. */
 export async function headerFits({ page, url, who }) {
-  step(`the header fits the window: ${who}, it/en/bg`);
+  step(`the workspace fits the window: ${who}, it/en/bg`);
   const size = page.viewportSize();
   try {
     for (const locale of ['it', 'en', 'bg']) {
       await page.goto(url(locale));
       await page.evaluate(() => globalThis.document.fonts.ready);
+      assert.equal(await page.locator('.ws-nav a[aria-current="page"]').count(), 1, `${who}, ${locale}: the current section marked`);
       for (const width of HEADER_WIDTHS) {
-        await page.setViewportSize({ width, height: 900 });
+        await page.setViewportSize({ width, height: HEIGHT });
+        const at = `${who}, ${locale}, ${width} px`;
         const over = await page.evaluate(() => globalThis.document.documentElement.scrollWidth - globalThis.innerWidth);
-        assert.ok(over <= 0, `${who}, ${locale}, ${width} px: the page scrolls sideways by ${over} px`);
-        const right = await signOutRight(page);
-        assert.ok(right !== null && right <= width, `${who}, ${locale}, ${width} px: sign-out off the window (${right})`);
+        assert.ok(over <= 0, `${at}: the page scrolls sideways by ${over} px`);
+        assert.equal(await page.locator('.ws-search input[name="q"]:visible, .ws-search-narrow > summary:visible').count(), 1, `${at}: the search`);
+        const { box, drawer } = await signOut(page);
+        assert.ok(box && box.x >= 0 && box.x + box.width <= width && box.y + box.height <= HEIGHT, `${at}: sign-out off the window (${JSON.stringify(box)})`);
+        const cut = await page.evaluate(() => [...globalThis.document.querySelectorAll('.ws-nav a')]
+          .filter((a) => a.scrollWidth > a.clientWidth + 1).map((a) => a.textContent));
+        assert.deepEqual(cut, [], `${at}: section names cut in the sidebar`);
+        if (drawer) {
+          await page.keyboard.press('Escape');
+          await page.waitForFunction(() => !globalThis.document.querySelector('.ws-sidebar.open'));
+          assert.equal(await page.evaluate(() => globalThis.document.activeElement?.id), 'ws-menu', `${at}: Esc gives the focus back to the menu button`);
+        }
       }
     }
   } finally {

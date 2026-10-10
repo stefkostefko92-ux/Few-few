@@ -1,7 +1,7 @@
 // The smoke test's second company: made by the platform's administrator, its owner changes the password, accepts the
 // terms and downloads the company's data (no secrets in it), and opens nothing of the first company (404 everywhere),
-// its replacement's machine room and documents included. On the way, the header of the administrator (8 sections) and
-// of the owner (7) fits the window at desktop widths (smoke-topbar.mjs).
+// its replacement's machine room and documents included. On the way, the workspace of the administrator (8 sections) and
+// of the owner (7) fits the window from a phone to a laptop (smoke-topbar.mjs).
 import assert from 'node:assert/strict';
 import { step } from './smoke-kit.mjs';
 import { headerFits } from './smoke-topbar.mjs';

@@ -13,9 +13,12 @@ import { DESIGN_SELECT } from './drawing-compose';
 /** The engine versions a lift design's records were saved with (records.ts, `outdated`). */
 const LIFT_VERSIONS = { engineVersion: true, calculation: { select: { engineVersion: true } }, shaftDesign: { select: { engineVersion: true } } } as const;
 
-export function listProjects(user: SessionUser, archived: boolean, kind: ProjectKind | null = null) {
+/** `q`: the words searched (dashboard.ts searchWords), each in the name, the address, the municipality or the plant number. */
+export function listProjects(user: SessionUser, archived: boolean, kind: ProjectKind | null = null, q: readonly string[] = []) {
+  const has = (w: string) => ({ contains: w, mode: 'insensitive' as const });
+  const words = q.map((w) => ({ OR: [{ name: has(w) }, { address: has(w) }, { city: has(w) }, { plantNumber: has(w) }] }));
   return prisma.project.findMany({
-    where: { companyId: user.companyId, archivedAt: archived ? { not: null } : null, ...(kind ? { kind } : {}) },
+    where: { companyId: user.companyId, archivedAt: archived ? { not: null } : null, ...(kind ? { kind } : {}), ...(words.length ? { AND: words } : {}) },
     orderBy: { updatedAt: 'desc' },
     take: 500,
     select: {

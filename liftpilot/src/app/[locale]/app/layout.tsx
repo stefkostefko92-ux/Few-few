@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
 import { getSessionUser } from '@/lib/auth';
-import AppTopbar from '@/components/AppTopbar';
+import AppShell from '@/components/AppShell';
 import BillingBanner from '@/components/BillingBanner';
 import TermsBanner from '@/components/TermsBanner';
 import Footer from '@/components/Footer';
@@ -17,14 +17,13 @@ export default async function AppLayout({ children, params }: { children: ReactN
   setRequestLocale(locale);
   const user = await getSessionUser();
   if (!user) redirect(`/${locale}/login`);
-  // every message for the application's client components (the public layout sends only its own)
+  // every message for the application's client components (the public layout sends only its own); the banners of the
+  // terms and of the subscription stay at the top of the main column, over every page
   return (
     <NextIntlClientProvider>
-      <AppTopbar user={user} />
-      <TermsBanner user={user} />
-      <BillingBanner user={user} />
-      {children}
-      <Footer />
+      <AppShell user={user} banners={<><TermsBanner user={user} /><BillingBanner user={user} /></>} footer={<Footer />}>
+        {children}
+      </AppShell>
     </NextIntlClientProvider>
   );
 }

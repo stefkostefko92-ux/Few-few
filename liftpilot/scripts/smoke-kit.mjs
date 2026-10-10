@@ -49,8 +49,10 @@ export function smokeKit(BASE) {
     }
   }
 
+  /** Sign-out from the workspace's sidebar (its drawer opened first on a narrow window). */
   async function logout(page) {
-    await Promise.all([page.waitForURL(/\/it\/login$/), page.click('header form button[type="submit"]')]);
+    if (await page.locator('.ws-menu').isVisible()) await page.click('.ws-menu');
+    await Promise.all([page.waitForURL(/\/it\/login$/), page.click('.ws-logout button[type="submit"]')]);
   }
   return { newPage, login, hydrated, orderFiles, logout };
 }

@@ -94,6 +94,20 @@ try {
   await orderFiles(page, '/api/calculations/');
   const { roomUrl, roomId } = await replacementRoom({ BASE, page, hydrated, calcUrl, stamp });
 
+  step('the top bar searches the installations on the server: every word, in the name, the address or the plant number');
+  await page.fill('.ws-search-wide input[name="q"]', `Smoke ${stamp}`);
+  await Promise.all([page.waitForURL(/\/it\/app\?q=/), page.press('.ws-search-wide input[name="q"]', 'Enter')]);
+  await page.waitForSelector('.dash-row');
+  assert.equal(await page.locator('.dash-row').count(), 1, 'one installation found');
+  assert.match(await page.textContent('.dash-row'), new RegExp(`Smoke ${stamp}`));
+  // this run's two installations are in Milano (this one and the replacement of smoke-replacement.mjs)
+  await page.goto(`${BASE}/it/app?q=${encodeURIComponent(`milano ${stamp}`)}`);
+  assert.equal(await page.locator('.dash-row').count(), 2, 'the municipality and a word of the name');
+  await page.goto(`${BASE}/it/app?q=${encodeURIComponent(`smoke MILANO ${stamp}`)}`);
+  assert.equal(await page.locator('.dash-row').count(), 1, 'every word, whatever its case');
+  await page.goto(`${BASE}/it/app?q=${encodeURIComponent(`Torino ${stamp}`)}`);
+  assert.equal(await page.locator('.dash-row').count(), 0, 'every word must be found');
+
   step('the replacement becomes a whole project');
   await page.goto(projectUrl);
   assert.match(await page.textContent('.titles'), /Sostituzione argano/);
