@@ -51,3 +51,31 @@ export async function tenantByHelpdeskInbound(db: Db, inboundId: string): Promis
 export async function auditPrevHash(db: Db): Promise<string | null> {
   return one(await db.$queryRaw<Row>`SELECT chatchat_audit_prev_hash() AS t`);
 }
+
+/**
+ * Доказан ли е някой от домейните от ДРУГ доставчик (през всички клиенти — доказаният домейн е
+ * уникален в платформата)? Само да/не.
+ */
+export async function ssoDomainsTaken(
+  db: Db,
+  domains: readonly string[],
+  configId: string,
+): Promise<boolean> {
+  if (domains.length === 0) return false;
+  const rows = await db.$queryRaw<Array<{ taken: boolean }>>`
+    SELECT chatchat_sso_domains_taken(${[...domains]}::text[], ${configId}) AS taken`;
+  return rows[0]?.taken === true;
+}
+
+/**
+ * Доказаният в ТЕКУЩИЯ клиент домейн освобождава недоказаните заявки на другите доставчици (и в
+ * други клиенти) — връща клиента и доставчика на всяка изтрита заявка (за одита в техния клиент).
+ */
+export async function releaseOtherSsoClaims(
+  db: Db,
+  keepId: string,
+): Promise<Array<{ tenantId: string; configId: string }>> {
+  const rows = await db.$queryRaw<Array<{ tenant_id: string; config_id: string }>>`
+    SELECT tenant_id, config_id FROM chatchat_sso_release_claims(${keepId})`;
+  return rows.map((r) => ({ tenantId: r.tenant_id, configId: r.config_id }));
+}

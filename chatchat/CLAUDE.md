@@ -4,13 +4,16 @@
 асансьори (quadri di manovra): въпрос → търсене във версионирана база знания (документи, кодове за
 грешка, приложимост по модел/HW/FW) → Claude предлага диагноза с цитати → **детерминистичен Safety
 Gate** → техникът вижда проверими стъпки или ескалира с тикет. Изпълнява спецификацията „AI Technical
-Support Platform v1.1“ (09.10.2026), фази F1 (MVP), F2 и F3 от пътната карта §18 (премиум: тикети и §11.2, жизнен цикъл на знанието, схеми по табло, криптиране в покой). Самостоятелен продукт —
+Support Platform v1.1“ (09.10.2026), фази F1 (MVP), F2 и F3 от пътната карта §18 (премиум: тикети и §11.2, жизнен цикъл на знанието, схеми по табло, криптиране в покой,
+helpdesk конектори, фирмен вход (OIDC), пакетно приемане с OCR и worker, няколко инстанции, мониторинг и staging). Самостоятелен продукт —
 `cd chatchat/` за всичко. Домейн: chatchat.carbonstealth.eu (порт 4330).
 
 ## Стек
 
 Node ≥22 · TypeScript strict (ESM, `NodeNext`) · Express 5 · Zod 4 на всеки външен вход · Prisma 6 +
-PostgreSQL 16 (пълнотекстово `tsvector` + GIN; семантично pgvector `vector(768)` + HNSW, косинус) · pino (без съдържание и PII) · Argon2id · Claude през
+PostgreSQL 16 (пълнотекстово `tsvector` + GIN; семантично pgvector `vector(768)` + HNSW, косинус) · Redis 7 (опашки
+BullMQ, pub/sub между инстанциите, общи лимити — по избор) · pino (без съдържание и PII) · Argon2id · openid-client (OIDC) ·
+mammoth (DOCX) · pdftoppm + tesseract (OCR, само в образа, `execFile` без shell) · Claude през
 `@anthropic-ai/vertex-sdk` **само в ЕС** (`VERTEX_REGION` = `eu`/`europe-*`) · UI: ванилови ES модули
 в `public/` без билд, строг CSP (`script-src 'self'`, без inline) · тестове `node:test` през tsx.
 
@@ -30,6 +33,11 @@ npm run retention         # дневно: стари сесии; затворе�
 npm run embed             # след build: вектори за публикуваните парчета без вектор (или от друг модел)
 npm run eval -- --set evals/sample.json [--db <url с „test“>]   # оценъчен набор §16 → evals/reports/
 npm run files:status|files:encrypt|files:rekey|files:verify   # криптирането на файловете в покой (след build)
+npm run worker            # след build: опашките от Redis (приемане, OCR, вектори); без REDIS_URL всичко е в процеса
+npm run audit:verify      # веригата на одита: 0 цяла · 2 счупена · 1 не завърши (таймерът на мониторинга)
+npm run sso:off           # TENANT_SLUG=… аварийно: фирменият вход → OPTIONAL (SSO_DISABLE=1 — изключен + сесиите отнети)
+npm run sso:verify-domain # TENANT_SLUG=… SSO_DOMAIN=… SSO_VERIFY_WITHOUT_DNS=1 — аварийно доказване на домейн (в одита via cli)
+npm run test:ocr-smoke    # OCR в истинския образ (Docker), не е в gate
 npm run test:e2e          # Playwright (§17.2), не е в gate: DATABASE_URL=…/chatchat_test_ac; браузърът
                           # от PLAYWRIGHT_BROWSERS_PATH или E2E_CHROMIUM; tests/e2e/server.ts = фалшив модел + AV
 ```
@@ -48,15 +56,27 @@ src/
   domain/      договорите: контекст (§10.1), отговор (§14.3 → ModelDiagnosis + DiagnosticAnswer), версии, нормализация
   retrieval/   хибридното търсене (§8): точно (кодове, клеми) → пълнотекстово + семантично (RRF) → приложимост → прагове §8.3
   store/       KnowledgeStore върху Prisma (+ embeddings.ts: pgvector търсене/индексиране) (tenant + PUBLISHED + аудитория във ВСЯКА заявка), снимка на знанието (§13.3)
+  app.ts + app-routes.ts  middleware-ите + монтирането на рутерите (редът е част от поведението)
+  scale.ts     ЕДНОТО място за мащабирането: с REDIS_URL — опашки/pub-sub/общи лимити, без — всичко в процеса
+  worker.ts    отделната услуга за опашките (същият образ, без HTTP; „жив“ = файл, метрики по избор)
+  queue/       BullMQ (bull.ts) · InlineJobBus без Redis (inline.ts) · задачите (jobs.ts) · runtime.ts —
+               ЕДНОТО сглобяване на обработчиците за API-то и worker-а
+  ingest/      пакетното приемане (§4.1, §7.3): batches/items (API + статуси), pipeline.ts (ingest → ocr →
+               ЧЕРНОВА), разбор в нишка с таван (isolate.ts, parse-thread.ts), формати по магически байтове
+               (formats.ts), собствени ZIP/XML (zip.ts, xml.ts — тавани срещу бомби), docx/xlsx(+xlsx-sheet)/log,
+               OCR (ocr.ts, ocr-flow.ts), манифест CSV/JSON, XLSX шаблон → ЧЕРНОВИ кодове, finalize.ts (една транзакция)
   ai/          оркестраторът: промпт, инструменти само за четене, доказателствен пакет E1…En, Vertex клиент,
+               tool-loop.ts (цикълът с инструментите: тавани, поправка, `notExecuted`),
                breaker.ts (circuit breaker към Vertex — декоратори на DiagnosisModel/EmbeddingModel, NFR-07),
                attachments.ts (снимки P1…/логове L1… към модела: формати, тавани), messages.ts (съобщенията)
-  safety/      Safety Gate (§11.2) · screen.ts (свободен текст + връзка стъпка↔източник) · речник IT/EN/BG
+  safety/      Safety Gate (§11.2) · gate-text.ts (причини и решения — свободен текст) · screen.ts (свободен текст + връзка стъпка↔източник) · речник IT/EN/BG
                (terms.ts данни · patterns.ts блокове · lexicon.ts правила + сгъване срещу обфускация) · цитати · таван · ескалация
                · photos.ts (правилата за снимките §9.2/AC-06) · injection.ts (injection в преписан текст)
   auth/        сесии в базата (httpOnly cookie) + отнемане/кука, RBAC матрица §12.4, CSRF guards,
                TOTP (totp.ts от korpora, mfa.ts — пазач срещу повторен код)
-  routes/      тънки рутери: auth, auth-mfa, catalog, cases, chat, tickets, audit, saved-filters,
+  routes/      тънки рутери: auth, auth-mfa, auth-sso(+admin), catalog, cases, chat (+chat-answer.ts — AI стъпката),
+               tickets, ticket-flow/queue, case-flow, case-steps, step-policy, admin-integrations, integrations-inbound,
+               admin-proposals, proposals, audit, saved-filters,
                attachments (качване), files (подписан адрес + сваляне),
                admin-{catalog,documents,errors}, admin-users (директория) · admin-user-actions · admin-subject (GDPR);
                admin-kpi (`GET /admin/kpi`, `kpi:read`); document-view (визуализаторът §9.2: страница,
@@ -67,31 +87,46 @@ src/
                заглавката; signed-url), ai-answer (запис + одит на AI отговора), model-inputs (файловете
                на въпроса към модела),
                retention, потребители (линкове, ранг, масови), филтри (позволени полета), субект
-               (експорт/изтриване), табла (QR), document-access (ЕДИНСТВЕНОТО място за достъпа до документ
+               (subject.ts изтриване · subject-export.ts експорт), табла (QR), document-access (ЕДИНСТВЕНОТО място за достъпа до документ
                и оригинала му)
                · kpi/ (§16.1: queries.ts — агрегати в SQL по tenantId; anon.ts — k-анонимност „<5“ +
                вторично скриване; evals.ts — последният отчет на оценъчния набор; kpi.ts — сглобяване)
   services/collab/  работното пространство (§12.3): access.ts (ЕДИНСТВЕНОТО място за правилата за достъп),
                разговори/членове, съобщения/нишки/курсор, известия (дедупликация), присъствие, publish → хъба
-  realtime/    hub.ts (SSE потоци в паметта по потребител) · stream.ts (`GET /api/v1/events`)
+  realtime/    hub.ts (SSE потоци в паметта по потребител) · stream.ts (`GET /api/v1/events`) · cluster.ts +
+               redis-transport.ts (няколко инстанции: pub/sub, събитията — вече authorize-нати по получател)
   observability/  метрики (F3, NFR-09): metrics.ts (регистър, текстов формат, без зависимости) · catalog.ts
                (всички метрики + кофи на 8 s/2 s) · http.ts (RED по шаблон на маршрута) · ai.ts (изход на AI,
-               Safety Gate, антивирус — декоратори) · server.ts (отделният слушател METRICS_PORT)
+               Safety Gate, антивирус — декоратори) · helpdesk.ts (куката на изпращача към helpdesk —
+               `services/integrations/outbox-hooks.ts`) · server.ts (отделният слушател METRICS_PORT)
   vendor.ts    pdf.js от собствения домейн (`/vendor/pdfjs/*`, legacy билд, без .wasm и .map)
   storage/     частното хранилище: envelope.ts (AES-256-GCM на 64 KiB сегменти, DEK на файл, опакован с KEK) ·
                keyring.ts/keys.ts · file-store.ts · maintenance.ts/sweep.ts (encrypt/rekey/verify) · factory.ts
                (ЕДИНСТВЕНИЯТ начин да се направи хранилище) · clamd клиент (INSTREAM, node:net)
   store/scope.ts  ЕДИНСТВЕНОТО място за филтрите на знанието (клиент, аудитория, PUBLISHED, валидност, табло)
   services/tickets/  машината на тикета (flow.ts), действия/жизнен цикъл, recordTicketEvent (events.ts), realtime
+  services/integrations/  helpdesk (FR-09, §14.4): outbox.ts (наем, по ред на тикета, отстъп, dead-letter), connectors/
+               (webhook, zendesk, jsm), payload.ts (минимизация), ssrf.ts + http.ts (safeRequest), secrets.ts
+               (INTEGRATION_KEK), signature.ts + inbound*.ts (обратна синхронизация), admin-config/admin-log
+  services/sso/  фирменият вход (OIDC): provider/flow/callback, claims → policy (кой влиза, роля, MFA от
+               доставчика, `ownerLinkRequired`), login/link (свързване по имейл / от собственика), identities
+               (ExternalIdentity), domains.ts (DNS TXT `_chatchat.<домейн>`), admin* + admin-changes (настройка,
+               тайни със SSO_KEK, смяна на доставчика), view, check (метаданни); routes/auth-sso-link.ts
+  services/proposals/  цикълът на знанието (§11.3): решен случай → ЧЕРНОВА (solved-case), конфликти и обратна
+               връзка → предложения, опашката на отговорника (queue.ts), известия
+  services/chat-replay.ts  NFR-12: повтор със същия clientMessageId, `claimAi`, изчакване на паралелен повтор
   services/steps/    изпълнени стъпки (execute.ts) и човешко разрешение §11.2 (policy.ts, approvals.ts)
   services/email/    имейл известия през Brevo (outbox в транзакцията на известието, изпращач със SKIP LOCKED)
   cli/         tenant.ts — клиент/потребител/линк за парола от средата; retention.ts — дневната ретенция
                (класове: config-retention.ts, retention-classes.ts, audit-retention.ts); files.ts — криптирането;
                embed.ts — векторите
-public/        интерфейсът (вход + работно пространство), i18n/{it,en,bg}.json; app/viewer/ — визуализаторът
+public/        интерфейсът (вход + работно пространство), i18n/{it,en}.json (само тези два езика); app/viewer/ — визуализаторът
                на схеми (pdf.js, мащаб/местене, подчертани компоненти, страничен панел); composer.css — мобилния формуляр;
                admin.html + app/admin/*.js — административната конзола (директория, знание, QR, KPI, одит; `admin.*` ключове)
 docs/runbook.md  SLO-тата, всяка аларма (deploy/monitoring/alerts.yml + alerts.test.yml за promtool) и политиката за бюджета
+deploy/      deploy.sh (продукция) · staging.sh (отделен проект chatchat-staging, порт 4331) · monitoring.sh
+             (Prometheus/Alertmanager/експортери, docker-compose.monitoring.yml) · pgdata-encrypt.sh (LUKS2) ·
+             backup*/files-restore · timers; новата машина — `../deploy/provision/chatchat-host.sh` (`--check`)
 evals/         оценъчният набор §16 (формат, фикстури, метрики, run.ts) — how-to в evals/README.md
 tests/e2e/     Playwright потоците (техник, мобилен, снимка, персонал с MFA, DM в реално време, админ, знание)
                + a11y.spec.ts — axe WCAG 2.1 AA на ключовите екрани в светла/тъмна тема (нарушение = червен тест)
@@ -156,7 +191,7 @@ tests/e2e/     Playwright потоците (техник, мобилен, сни
   том (`deploy/pgdata-encrypt.sh`, `docker-compose.pgdata.yml` през `COMPOSE_FILE`); незаключен том →
   базата не тръгва. Ключовете се пазят ИЗВЪН сървъра и никога с бекъпите (`DEPLOY.md` т. 12).
 - Кодовете, които gate/сървърът връщат (`gate.*`, `ctx.*`, `collect.*`, `ai.*`, грешките на API), се
-  превеждат в `public/i18n/*.json` — нов код = превод на трите езика (`tests/i18n-parity.test.ts`).
+  превеждат в `public/i18n/*.json` — нов код = превод на двата езика (`tests/i18n-parity.test.ts`).
 - **Семантичното е подкрепа, не доказателство:** никога „strong“; „high“ само ако поне един източник е
   лексикален (точен/пълнотекстов), а семантичният е от друг документ със сходство ≥ 0.8; под 0.6 — шум
   (`retrieval/retrieve.ts`). Вектори само за PUBLISHED; търсенето има същите SQL филтри + същия модел.
@@ -175,11 +210,42 @@ tests/e2e/     Playwright потоците (техник, мобилен, сни
   (шаблон на маршрута — никога суровият път; изход; `gate.*`), никога tenantId/userId/имейл/id на
   случай/текст; таванът на сериите ги брои в `chatchat_metrics_series_dropped_total`. `/metrics` е
   само на отделния слушател (`METRICS_PORT`, по подразбиране изключен), в compose публикуван като
-  `127.0.0.1:…`; nginx не го проксира. Точките на монтиране в app.ts са статични (параметър в
-  `app.use` би сложил id в етикета). Алармите — по симптом/burn-rate, всяка с раздел в `docs/runbook.md`.
+  `127.0.0.1:…`; nginx не го проксира. Точките на монтиране в app.ts и app-routes.ts са статични
+  (параметър в `app.use` би сложил id в етикета). Метриките на helpdesk са агрегат по всички клиенти
+  (без tenant); броячите, по които има аларма с `increase()`, стартират с нулеви серии; worker-ът се
+  скрейпва като `chatchat-worker` — нов job в `prometheus.yml` влиза и в `JOBS` на `monitoring.sh`. Алармите — по симптом/burn-rate, всяка с раздел в `docs/runbook.md`.
 - **Circuit breaker (NFR-07):** отворен → `CircuitOpenError` → чатът 503 `ai_unavailable` (fail-closed,
   човешкото съобщение остава, повторът с `clientMessageId` работи); embeddings → лексикално (fail-open).
   `/readyz` пази `{ ok, app, ai }` за деплой сондата (+ `aiCircuit`); `ok` зависи само от базата.
+- **Helpdesk (FR-09, §14.4):** доставката се записва в outbox-а В транзакцията на `recordTicketEvent`
+  (няма промяна без доставка); по ред на тикета (`seq`), dead-letter спира тикета до „Пусни наново“;
+  промяна от helpdesk-а (`EXTERNAL`) не се връща обратно. Навън — само `payload.ts` (без имена,
+  имейли, съобщения, файлове; свободният текст — `redactPii` + таван; аудиториите на поддръжката).
+  Всеки изходящ адрес — през `safeRequest` (само https, разрешеният IP се проверява и връзката е към
+  него, без пренасочвания). Тайните — само за запис, AES-256-GCM с `INTEGRATION_KEK` (≠ другите
+  ключове), AAD = клиентът; смяна на вида или целта ги трие. Входящото: подпис върху СУРОВОТО тяло,
+  прозорец за печата, отпечатък на подписа (+ id на доставката) в транзакцията — повторение = „duplicate“;
+  само затвори/отвори наново през машината на преходите.
+- **Приемане на документи (§4.1, §7.3):** форматът — по магическите байтове; макроси → отказ;
+  антивирус преди всичко; разборът е в нишка с таван на паметта и срок, ZIP/XML с тавани срещу
+  бомби; OCR само с `execFile` (без shell, минимална среда, временна папка 0700); резултатът е винаги
+  ЧЕРНОВА (никога публикуван), със същите задължителни метаданни като единичното качване,
+  `checksum` = sha256 на оригинала, в една транзакция. Пакетът е на създателя му (друг не добавя и не
+  повтаря в него); провал на файл не спира пакета; файлов провал — без повтори, временен — с повтори
+  и dead-letter. Worker-ът е least privilege: без ключовете на сесиите/MFA, хранилището — само за четене.
+- **Фирмен вход (OIDC, SECURITY.md):** PLATFORM_ADMIN никога не влиза през доставчик (отказ, връзката
+  се трие, SSO сесия не важи). Свързване по имейл — само за акаунти без `ownerLinkRequired` (ранг под
+  `sso:manage` и без собствен TOTP); останалите — само `POST /auth/sso/link/start` от свежа сесия с
+  парола + TOTP, имейлът на доставчика = имейлът на акаунта. MFA от доставчика замества TOTP само при
+  `idpMfaAccepted`. Във входа участва само ДОКАЗАН домейн (`verifiedDomain`, DNS TXT `_chatchat.`; първият
+  доказал печели). Смяна на издател/tid/clientId = нов доставчик (нов секрет, изключен, връзките и SSO
+  сесиите — изтрити, домейните — наново). Включване само след успешен тест; REQUIRED дава на
+  несвързания сесия само за свързване (`sso_link_required`, `Session.ssoLinkOnly`).
+- **Цикълът на знанието (§11.3):** решен случай, конфликт на източници и обратна връзка стават
+  ПРЕДЛОЖЕНИЯ/ЧЕРНОВИ — никога автоматично знание; аудиторията на черновата не е по-широка от
+  цитираните източници; отговорникът решава (четири очи за safety важат и тук).
+- **Одит в конзолата:** всяко действие от `appendAudit` има етикет и група (`tests/audit-labels.test.ts`
+  — ново действие без превод = червен тест).
 - Миграции: само `prisma migrate deploy` на сървъра, никога `db push`. Файл >300 реда → раздели.
 - Продуктите/документите в тестовете са фикстури; реални данни на клиента в репото — никога.
 - **Прикачени файлове:** типът — по магическите байтове, не по името; антивирус ПРЕДИ всичко
@@ -211,10 +277,12 @@ tests/e2e/     Playwright потоците (техник, мобилен, сни
   текущите роля/активност/членство от базата за свързаните получатели и връща какво вижда всеки.
   Никога не пращай payload в потока без authorize. Изход и всяко `revokeUserSessions` затварят потоците
   (`onSessionsRevoked`); heartbeat на 25 s проверява сесията наново.
-- **Един процес.** Хъбът е в паметта; при втори процес/машина събитие от другия не стига до
-  тукашните потоци — хоризонталното мащабиране иска pub/sub между хъбовете (Redis или Postgres
-  LISTEN/NOTIFY) ПРЕДИ да се пусне втора инстанция. Буфер за пропуснатото няма: при reconnect UI
-  презарежда през REST (`GET /conversations`, `…/messages?after=<последно>`, `GET /notifications`).
+- **Няколко инстанции (NFR-06/11) само с Redis** (`scale.ts`): хъбовете си говорят през pub/sub
+  (`realtime/cluster.ts` — събитието пътува ВЕЧЕ authorize-нато по получател, приемащата инстанция го
+  пише само в потоците на същия човек и клиент; `revoke` затваря потоците навсякъде); лимитите и
+  пазачът на TOTP са общи; опашките са в worker-а. Без `REDIS_URL` — всичко в процеса и САМО една
+  инстанция. Буфер за пропуснатото няма: при reconnect UI презарежда през REST (`GET /conversations`,
+  `…/messages?after=<последно>`, `GET /notifications`).
 - Присъствието е само координация — НЕ е доказателство за дежурство; OFFLINE се смята при четене.
 - Известията не носят текст на съобщения — само идентификатори; съдържанието се чете през REST.
 - **Търсенето в историята** минава само през `conversationAccessSql` (SQL огледало на
@@ -224,9 +292,12 @@ tests/e2e/     Playwright потоците (техник, мобилен, сни
   никога не стигат до AI.
 - **Имейли (Brevo HTTPS):** outbox-ът се пише в транзакцията на известието; писмото не носи съдържание,
   имена или текст; при изпращане се проверяват прочетено/предпочитания/достъп/тихи часове; без ключ — изключени.
-- **Ретенция по класове** (директни/групи/канали/известия/присъствие/метаданни/одит); одитът се трие само с
+- **Ретенция по класове** (директни/групи/канали/известия/присъствие/метаданни/затворени предложения/одит); одитът се трие само с
   контролна точка (`AuditCheckpoint`) — веригата остава проверима; счупена верига не се трие.
-- Езикът (`PATCH /me`, it/en/bg) управлява интерфейса, писмата и AI отговорите (FR-14).
+- Езикът (`PATCH /me`, it/en) управлява интерфейса, писмата и AI отговорите (FR-14). **Интерфейсът е
+  само на италиански и английски** (решение на собственика): bg.json няма, профил/админ/CLI/helpdesk
+  приемат само it/en (миграцията `ui_locales_it_en` премести bg → it). Речникът за безопасност и
+  маскирането на лични данни остават и на български — въпрос/документ на български пак се проверява.
 
 ## Извън тази стъпка (пътна карта §18)
 

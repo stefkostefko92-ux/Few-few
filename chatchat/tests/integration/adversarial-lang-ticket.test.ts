@@ -71,18 +71,18 @@ describe('Ръководство на друг език (§16.3 „manuale in li
     );
   });
 
-  test('потребител с български: езикът на отговора е български, а откъсът остава английски', async () => {
-    const bg = await makeUser({
+  test('въпрос на друг език (български): отговорът е на езика на профила, откъсът остава английски', async () => {
+    const tech = await makeUser({
       tenantId: w.tenantA.id,
       companyId: w.alfa.id,
       role: 'PORTAL_TECHNICIAN',
       kind: 'PORTAL',
-      locale: 'bg',
+      locale: 'en',
     });
-    const c = await signIn(h, bg);
+    const c = await signIn(h, tech);
     const caseId = await newCase(c, { context: { errorCode: null } });
     const answer = answerOf(await ask(c, caseId, 'Ниско напрежение на енкодера, клема X7'));
-    assert.match(h.model.texts[0] ?? '', /Answer language: Bulgarian/);
+    assert.match(h.model.texts[0] ?? '', /Answer language: English/);
     const cited = answer.evidence.find(
       (e: { documentCode: string }) => e.documentCode === 'MAN-500-EN',
     );

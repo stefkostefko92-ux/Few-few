@@ -37,6 +37,7 @@ beforeEach(() => {
     entraAuthority: idp.base,
     allowInsecureHttp: false,
     fetch: (url, options) => idp.handle(new Request(url, options as RequestInit)),
+    resolveTxt: (host) => idp.resolveTxt(host),
   };
   cache = new ProviderCache(sso);
   idp.tamper = {};

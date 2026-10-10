@@ -1,6 +1,6 @@
 // Диалог „Акаунт и сигурност“: втори фактор (включване по желание за техниците, изключване с код;
-// персоналът не го изключва сам — изгубено устройство = нулиране от администратора) и
-// поверителност на присъствието (последно видян).
+// персоналът не го изключва сам — изгубено устройство = нулиране от администратора), свързване с
+// доставчика на единния вход (auth/sso-link.js) и поверителност на присъствието (последно видян).
 
 import { api } from '../api.js';
 import { announce, clear, h, $ } from '../dom.js';
@@ -9,6 +9,7 @@ import { t } from '../i18n.js';
 import { state } from '../store.js';
 import { mountMfaSetup } from './mfa-setup.js';
 import { cleanCode, codeErrorText } from './mfa-verify.js';
+import { ssoSection } from './sso-link.js';
 
 function statusLine(mfa) {
   if (mfa.enabled)
@@ -139,12 +140,13 @@ function presenceSection() {
   );
 }
 
-function render(body) {
-  clear(body).append(mfaSection(body), presenceSection());
+function render(body, note) {
+  clear(body).append(mfaSection(body), ssoSection(note), presenceSection());
 }
 
-export function openSecurityDialog() {
+/** `note` — резултат от връщането на свързването с доставчика (показва се в неговия раздел). */
+export function openSecurityDialog(note) {
   const dlg = $('#dlg-security');
-  render($('#sec-body'));
+  render($('#sec-body'), typeof note === 'string' ? note : undefined);
   if (!dlg.open) dlg.showModal();
 }

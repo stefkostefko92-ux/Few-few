@@ -107,7 +107,7 @@ describe('тайните', () => {
     const res = await configure(w.adminA, {
       kind: 'WEBHOOK',
       enabled: true,
-      settings: { url: `${fake.base}/hook`, language: 'bg' },
+      settings: { url: `${fake.base}/hook`, language: 'en' },
       secrets: { signingSecret: SIGNING, inboundSecret: INBOUND },
     });
     assert.equal(res.status, 200, JSON.stringify(res.body));
@@ -139,6 +139,46 @@ describe('тайните', () => {
       signingSecret: true,
       inboundSecret: false,
     });
+  });
+
+  test('нова цел (същият вид) започва без тайни: старият токен не тръгва към новия адрес', async () => {
+    await configure(w.adminA, {
+      kind: 'WEBHOOK',
+      enabled: true,
+      settings: { url: `${fake.base}/hook` },
+      secrets: { signingSecret: SIGNING, inboundSecret: INBOUND },
+    });
+    const moved = { kind: 'WEBHOOK', settings: { url: `${fake.base}/other` } };
+    const enabled = await configure(w.adminA, { ...moved, enabled: true });
+    assert.deepEqual(
+      [enabled.status, enabled.body.code, enabled.body.fields],
+      [422, 'secrets_missing', ['signingSecret']],
+    );
+    const disabled = await configure(w.adminA, { ...moved, enabled: false });
+    assert.equal(disabled.status, 200, JSON.stringify(disabled.body));
+    assert.deepEqual(disabled.body.integration.secrets, {
+      signingSecret: false,
+      inboundSecret: false,
+    });
+    const row = await db.helpdeskIntegration.findUniqueOrThrow({
+      where: { tenantId: w.tenantA.id },
+    });
+    assert.equal(row.secrets, null);
+    const audit = await db.auditEvent.findFirstOrThrow({
+      where: { action: 'integration.update' },
+      orderBy: { id: 'desc' },
+    });
+    const detail = audit.detail as Record<string, unknown>;
+    assert.deepEqual([detail.targetChanged, detail.secretsReset], [true, true]);
+    // Същата цел (сменен само езикът) пази тайните.
+    await configure(w.adminA, { ...moved, enabled: true, secrets: { signingSecret: SIGNING } });
+    const kept = await configure(w.adminA, {
+      kind: 'WEBHOOK',
+      enabled: true,
+      settings: { url: `${fake.base}/other`, language: 'en' },
+    });
+    assert.equal(kept.status, 200, JSON.stringify(kept.body));
+    assert.equal(kept.body.integration.secrets.signingSecret, true);
   });
 
   test('включване без задължителна тайна, непознато поле, слаба тайна → 422 с имената на полетата', async () => {

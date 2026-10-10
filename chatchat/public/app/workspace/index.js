@@ -129,6 +129,11 @@ async function onOpenNotification(n) {
   }
   const p = n.payload ?? {};
   if (n.objectType === 'conversation') return openConversation(n.objectId);
+  // Предложение за знание се разглежда в конзолата (там са правата и четирите очи).
+  if (n.objectType === 'proposal') {
+    location.assign('/admin.html#proposals');
+    return undefined;
+  }
   const caseId = p.caseId ?? (n.objectType === 'case' ? n.objectId : null);
   if (caseId) await openCase(caseId);
   return undefined;

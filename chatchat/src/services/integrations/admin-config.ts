@@ -21,8 +21,9 @@ import { checkUrl } from './ssrf.js';
 /**
  * Настройката на конектора от администратора на клиента (`integrations:manage`): изглед без тайни
  * (само „зададена ли е“), запис (тайните — само за запис: пропуснато поле = без промяна, null =
- * изтрито), тест на връзката. Смяна на вида/целта трие старите връзки и пропуска чакащите
- * доставки (новият helpdesk започва от следващото събитие); изключване — също пропуска чакащите.
+ * изтрито), тест на връзката. Смяна на вида/целта трие старите тайни и връзки и пропуска
+ * чакащите доставки (новият helpdesk започва от следващото събитие с тайните, въведени за него);
+ * изключване — също пропуска чакащите.
  * Одит на всяка промяна: вид, включен, ИМЕНАТА на сменените полета и тайни — никога стойности.
  */
 
@@ -105,7 +106,12 @@ export async function updateIntegration(
   }
   const existing = await db.helpdeskIntegration.findUnique({ where: { tenantId } });
   const kindChanged = existing !== null && existing.kind !== input.kind;
-  const secrets = kindChanged ? {} : currentSecrets(deps, existing);
+  const before = existing ? parseSettings(existing.kind, existing.settings) : null;
+  const targetChanged = existing !== null && (!before || targetKey(before) !== targetKey(parsed));
+  // Тайните са за ЦЕЛТА, не за клиента: нова цел (вид, адрес, поддомейн) започва без тайни —
+  // иначе токенът на стария helpdesk би тръгнал към адрес, който само администраторът е сменил.
+  const secretsReset = kindChanged || targetChanged;
+  const secrets = secretsReset ? {} : currentSecrets(deps, existing);
   const allowed = secretFieldsOf(input.kind);
   const secretsChanged: string[] = [];
   for (const [field, value] of Object.entries(input.secrets)) {
@@ -123,8 +129,6 @@ export async function updateIntegration(
     const missing = requiredSecrets(input.kind, parsed.settings).filter((f) => !secrets[f]);
     if (missing.length > 0) return fail(422, 'secrets_missing', missing);
   }
-  const before = existing ? parseSettings(existing.kind, existing.settings) : null;
-  const targetChanged = existing !== null && (!before || targetKey(before) !== targetKey(parsed));
   const previous = (existing?.settings ?? {}) as Record<string, unknown>;
   const settings = parsed.settings as Record<string, unknown>;
   const fieldsChanged = Object.keys(settings).filter(
@@ -176,8 +180,8 @@ export async function updateIntegration(
         ...(existing ? { from: { kind: existing.kind, enabled: existing.enabled } } : {}),
         fieldsChanged,
         secretsChanged,
-        // Смяна на вида изтрива тайните на стария вид (не се пренасят към друг helpdesk).
-        secretsReset: kindChanged,
+        // Смяна на вида или целта изтрива старите тайни (не се пренасят към друг helpdesk/адрес).
+        secretsReset,
         targetChanged,
         linksCleared,
         skipped,

@@ -7,7 +7,7 @@ import type { ConversationType } from '@prisma/client';
  * номерът на случая или общо „директен разговор“ (името на човека е лична данна → не).
  */
 
-export type Locale = 'it' | 'en' | 'bg';
+export type Locale = 'it' | 'en';
 
 export interface EmailPlace {
   type: ConversationType;
@@ -96,29 +96,9 @@ const DICT: Record<Locale, Dict> = {
     footer:
       'You receive this email because email notifications are on. You can change them in ChatChat › Inbox › Preferences.',
   },
-  bg: {
-    direct: 'директен разговор',
-    group: 'група',
-    channel: (n) => `„${n}“`,
-    caseDiscussion: (n) => `вътрешната дискусия ${n}`,
-    message: [(x) => `ChatChat: ново съобщение в ${x}`, (x) => `Имате ново съобщение в ${x}.`],
-    mention: [(x) => `ChatChat: споменаване в ${x}`, (x) => `Споменаха Ви в ${x}.`],
-    assigned: [(n) => `ChatChat: случай ${n} е поет`, (n) => `Случай ${n} е поет от оператор.`],
-    urgent: [
-      (n) => `ChatChat: спешен случай ${n}`,
-      (n) => `Спешно: случай ${n} е поет от оператор.`,
-    ],
-    digest: [
-      'ChatChat: дневно обобщение',
-      (m, c, n) => `Имате ${m} непрочетени съобщения в ${c} разговора и ${n} непрочетени известия.`,
-    ],
-    open: 'Отворете ChatChat, за да прочетете:',
-    footer:
-      'Получавате това писмо, защото имейл известията са включени. Можете да ги смените в ChatChat › Входящи › Предпочитания.',
-  },
 };
 
-export const asLocale = (l: string): Locale => (l === 'en' || l === 'bg' ? l : 'it');
+export const asLocale = (l: string): Locale => (l === 'en' ? 'en' : 'it');
 
 function placeText(d: Dict, p: EmailPlace): string {
   if (p.type === 'CASE' && p.name) return d.caseDiscussion(p.name);

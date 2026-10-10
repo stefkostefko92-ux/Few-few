@@ -12,7 +12,7 @@ export const HELPDESK_KINDS = [
   'JSM',
 ] as const satisfies readonly HelpdeskKind[];
 /** Езикът на текстовете, които ChatChat пише в helpdesk-а (тема, описание, коментари). */
-export const EXTERNAL_LANGS = ['it', 'en', 'bg'] as const;
+export const EXTERNAL_LANGS = ['it', 'en'] as const;
 export type ExternalLang = (typeof EXTERNAL_LANGS)[number];
 
 const language = z.enum(EXTERNAL_LANGS).default('it');

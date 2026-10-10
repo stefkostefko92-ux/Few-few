@@ -10,7 +10,7 @@ import type { Metrics } from '../observability/catalog.js';
 import type { AttachmentStore } from '../storage/attachments.js';
 import { embedPending } from '../store/embeddings.js';
 import type { JobBus } from './inline.js';
-import type { JobHandlers, QueueHooks } from './jobs.js';
+import { JOB_RESULTS, QUEUE_NAMES, type JobHandlers, type QueueHooks } from './jobs.js';
 
 /**
  * Сглобяването на обработчиците — ЕДНО място за API-то в процеса (без REDIS_URL) и за worker-а:
@@ -121,6 +121,11 @@ export function jobHandlers(pipeline: PipelineDeps, embed: JobHandlers['embed'])
 }
 
 export function queueHooks(pipeline: PipelineDeps, metrics?: Metrics): QueueHooks {
+  // Сериите съществуват от старта с 0 — иначе първият dead след рестарт е невидим за increase()
+  // (алармата ChatchatQueueDeadLetters, docs/runbook.md).
+  for (const queue of QUEUE_NAMES) {
+    for (const result of JOB_RESULTS) metrics?.queueJobs.inc({ queue, result }, 0);
+  }
   return {
     onDead: async (letter) => {
       const itemId = (letter.data as { itemId?: unknown }).itemId;

@@ -41,7 +41,7 @@ const CreateUser = z
     role: z.enum(ROLES),
     companyId: Id.nullable().optional(),
     expiresAt: isoDate.nullable().optional(),
-    locale: z.enum(['it', 'en', 'bg']).default('it'),
+    locale: z.enum(['it', 'en']).default('it'),
     reason: Reason.optional(),
   })
   .strict();
@@ -53,7 +53,7 @@ const AdminPatch = z
     expiresAt: isoDate.nullable().optional(),
     companyId: Id.nullable().optional(),
     /** FR-14: езикът на интерфейса, писмата и AI отговорите (и самият човек — PATCH /me). */
-    locale: z.enum(['it', 'en', 'bg']).optional(),
+    locale: z.enum(['it', 'en']).optional(),
     reason: Reason,
   })
   .strict();

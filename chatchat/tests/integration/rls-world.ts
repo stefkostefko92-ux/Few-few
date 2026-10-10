@@ -242,8 +242,9 @@ export async function seedEveryTable(slug: string): Promise<SeededTenant> {
       clientSecretEnc: 'v1.x.y',
     },
   });
+  const domain = `${slug}-${hex(3)}.example.test`;
   await db.ssoDomain.create({
-    data: { tenantId, configId: sso.id, domain: `${slug}-${hex(3)}.example.test` },
+    data: { tenantId, configId: sso.id, domain, verifiedDomain: domain, verifiedAt: new Date() },
   });
   await db.externalIdentity.create({
     data: {

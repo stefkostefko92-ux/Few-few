@@ -247,17 +247,15 @@ describe('провал по файл не спира пакета', () => {
     assert.equal(bad.status, 400);
     const batch = await settle(owner, batchId);
     const by = new Map(batch.items.map((i) => [i.fileName, i]));
-    const outcome = (n: string) => [by.get(n)?.status, by.get(n)?.errorCode];
-    assert.deepEqual(['bomba.docx', 'rotto.docx'].map(outcome), [
-      ['FAILED', 'ingest.err.archiveBomb'],
-      ['FAILED', 'ingest.err.archiveInvalid'],
-    ]);
-    // Двата файла със същата ревизия вървят паралелно (concurrency 2) — кой ще е първи, решава
-    // опашката; важното е: точно един документ, другият файл — FAILED с дублирана ревизия.
+    const state = (n: string) => [by.get(n)?.status, by.get(n)?.errorCode];
+    assert.deepEqual(state('bomba.docx'), ['FAILED', 'ingest.err.archiveBomb']);
+    assert.deepEqual(state('rotto.docx'), ['FAILED', 'ingest.err.archiveInvalid']);
+    // Двата файла с един и същ код/ревизия се обработват паралелно: печели който стигне пръв —
+    // точно един е DONE, другият е FAILED duplicateRevision (редът не е част от договора).
     assert.deepEqual(
-      ['buono.pdf', 'doppio.pdf']
-        .map(outcome)
-        .sort((x, y) => String(x[0]).localeCompare(String(y[0]))),
+      [state('buono.pdf'), state('doppio.pdf')].sort((a, b) =>
+        String(a[0]).localeCompare(String(b[0])),
+      ),
       [
         ['DONE', null],
         ['FAILED', 'ingest.err.duplicateRevision'],
@@ -391,6 +389,30 @@ describe('достъп', () => {
       list.body.batches.map((b: { id: string }) => b.id),
       [foreignBatch],
     );
+  });
+
+  test('колега от същия клиент не добавя и не повтаря в чужд пакет, нито с чужд файл — 404/422', async () => {
+    const owner = w.ownerA1;
+    const peer = w.ownerA2;
+    const batchId = await newBatch(owner);
+    const peerFile = await cleanKb(peer, makePdf([['Del collega.']]), 'collega.pdf');
+    const intoOwner = await add(peer, batchId, peerFile);
+    assert.deepEqual([intoOwner.status, intoOwner.body.code], [404, 'not_found']);
+    // Качен от друг файл не влиза и в собствения пакет — авторството се пази.
+    const ownFile = await cleanKb(owner, makePdf([['Mio.']]), 'mio.pdf');
+    const peerBatch = await newBatch(peer);
+    const borrowed = await add(peer, peerBatch, ownFile);
+    assert.deepEqual([borrowed.status, borrowed.body.code], [422, 'invalid_attachment']);
+    rig.ocr.engine.missing = true;
+    const img = await cleanKb(owner, Buffer.concat([pngHeader(64, 64), Buffer.from('x')]), 'f.png');
+    await add(owner, batchId, img);
+    const item = (await settle(owner, batchId)).items[0];
+    assert.equal(item?.status, 'FAILED');
+    rig.ocr.engine.missing = false;
+    const retry = await peer.post(`/api/v1/admin/ingest/items/${item?.id}/retry`);
+    assert.deepEqual([retry.status, retry.body.code], [404, 'not_found']);
+    const own = await owner.post(`/api/v1/admin/ingest/items/${item?.id}/retry`);
+    assert.equal(own.status, 202);
   });
 
   test('качването за базата знания: DOCX/XLSX/PNG/лог — да; макроси — 415; DOCX в разговор — 415', async () => {

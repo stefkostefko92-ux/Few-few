@@ -35,12 +35,18 @@ describe('текстовете', () => {
       link: 'https://x',
     });
     assert.equal(channel.subject, 'ChatChat: you were mentioned in “Service LTX”');
+    // Български няма (интерфейсът е само it/en) — пада към италиански, като всеки непознат език.
     const bg = renderEmail('bg', {
       kind: 'CASE_URGENT',
       caseNumber: 'CASE-2026-000001',
       link: 'https://x',
     });
-    assert.equal(bg.subject, 'ChatChat: спешен случай CASE-2026-000001');
+    assert.match(bg.subject, /^ChatChat: .*CASE-2026-000001$/);
+    assert.equal(
+      bg.subject,
+      renderEmail('it', { kind: 'CASE_URGENT', caseNumber: 'CASE-2026-000001', link: 'https://x' })
+        .subject,
+    );
     const unknown = renderEmail('fr', {
       kind: 'DIGEST',
       messages: 3,

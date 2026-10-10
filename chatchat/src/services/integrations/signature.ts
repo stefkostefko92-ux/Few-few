@@ -11,7 +11,10 @@ import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
  *  • Jira (developer.atlassian.com/cloud/jira/platform/webhooks): X-Hub-Signature: sha256=<hex(HMAC(тайна, тяло))>;
  *    печат в заглавка няма — времето е полето `timestamp` (ms) в ПОДПИСАНОТО тяло, повторите носят
  *    същия X-Atlassian-Webhook-Identifier.
- * Резултатът носи `nonce` (SHA-256) за защитата от повторение — по id на доставката, ако го има.
+ * Резултатът носи отпечатъци (SHA-256) за защитата от повторение: ВИНАГИ на подписа (заглавката с id
+ * на доставката не е подписана — нападател, повторил записано известие с друг id, иначе би минал в
+ * прозореца) и, ако го има, на id-то на доставката (повторът на helpdesk-а с нов печат е същото
+ * събитие). Известието е повторение, ако който и да е отпечатък вече е виждан.
  */
 
 export const CC_SIGNATURE = 'x-chatchat-signature';
@@ -20,7 +23,7 @@ export const CC_DELIVERY = 'x-chatchat-delivery';
 
 export type Headers = Record<string, string | string[] | undefined>;
 export type VerifyResult =
-  | { ok: true; nonce: string; at: number | null }
+  | { ok: true; nonces: string[]; at: number | null }
   | { ok: false; code: 'invalid_signature' | 'stale_request' };
 
 const one = (h: Headers, name: string): string => {
@@ -36,6 +39,12 @@ function equalText(a: string, b: string): boolean {
 
 const nonceOf = (kind: string, value: string) =>
   createHash('sha256').update(`${kind}|${value}`).digest('hex');
+
+/** Отпечатъкът на подписа + (по избор) на id-то на доставката — в различни пространства. */
+const noncesOf = (kind: string, signature: string, delivery: string): string[] => [
+  nonceOf(`${kind}:sig`, signature),
+  ...(delivery ? [nonceOf(`${kind}:id`, delivery.slice(0, 200))] : []),
+];
 
 export function hmacHex(secret: string, data: string): string {
   return createHmac('sha256', secret).update(data).digest('hex');
@@ -67,8 +76,7 @@ export function verifyChatChat(
   if (!sent.some((s) => equalText(s, expected))) return { ok: false, code: 'invalid_signature' };
   const at = Number(ts) * 1000;
   if (!fresh(at, now, toleranceSec)) return { ok: false, code: 'stale_request' };
-  const delivery = one(headers, CC_DELIVERY);
-  return { ok: true, nonce: nonceOf('cc', delivery || expected), at };
+  return { ok: true, nonces: noncesOf('cc', expected, one(headers, CC_DELIVERY)), at };
 }
 
 export function verifyZendesk(
@@ -88,7 +96,7 @@ export function verifyZendesk(
   const at = Date.parse(ts);
   if (!fresh(at, now, toleranceSec)) return { ok: false, code: 'stale_request' };
   const invocation = one(headers, 'x-zendesk-webhook-invocation-id');
-  return { ok: true, nonce: nonceOf('zd', invocation || expected), at };
+  return { ok: true, nonces: noncesOf('zd', expected, invocation), at };
 }
 
 /** Jira/JSM: подписът е върху тялото; печатът се проверява СЛЕД разчитане (`timestamp` в тялото). */
@@ -97,7 +105,7 @@ export function verifyJira(secret: string, headers: Headers, rawBody: string): V
   const expected = `sha256=${hmacHex(secret, rawBody)}`;
   if (!sent || !equalText(sent, expected)) return { ok: false, code: 'invalid_signature' };
   const id = one(headers, 'x-atlassian-webhook-identifier');
-  return { ok: true, nonce: nonceOf('jira', id || expected), at: null };
+  return { ok: true, nonces: noncesOf('jira', expected, id), at: null };
 }
 
 export function jiraFresh(timestampMs: number, now: number, toleranceSec: number): boolean {

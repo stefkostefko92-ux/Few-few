@@ -103,6 +103,19 @@ export async function purgeMessages(
   return out;
 }
 
+/**
+ * Затворените предложения към знанието (FR-10) по-стари от срока; отворените (NEW/IN_REVIEW)
+ * остават — опашката на отговорника не губи работа. Черновата/резултатът са документи и остават.
+ */
+export async function purgeProposals(db: PrismaClient, days: number, now: Date) {
+  const cutoff = new Date(now.getTime() - days * DAY);
+  return (
+    await db.knowledgeProposal.deleteMany({
+      where: { status: { in: ['ACCEPTED', 'REJECTED'] }, updatedAt: { lt: cutoff } },
+    })
+  ).count;
+}
+
 /** Известията (прочетени и не) — координация, не архив. Писмата към тях отпадат (SetNull). */
 export async function purgeNotifications(db: PrismaClient, days: number, now: Date) {
   const cutoff = new Date(now.getTime() - days * DAY);

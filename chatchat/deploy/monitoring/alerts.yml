@@ -1,4 +1,4 @@
-# ChatChat — правила за Prometheus (F3: NFR-01, NFR-02, NFR-07, NFR-09, NFR-11).
+# ChatChat — правила за Prometheus (F3: NFR-01, NFR-02, NFR-06, NFR-07, NFR-09, NFR-11; FR-09).
 #
 # Аларми по СИМПТОМ (какво усеща техникът), не по причина (CPU/памет). Двете SLO-та са с error budget
 # и burn-rate аларми на много прозорци (Google SRE Workbook, гл. 5, табл. 5-8):
@@ -253,3 +253,80 @@ groups:
           summary: 'ChatChat: метрика удари тавана на сериите — проверка за висока кардиналност'
           description: 'Метрика: виж chatchat_metrics_series_dropped_total по етикета metric.'
           runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatmetricscardinalitycap'
+
+  # ── Фоновите потоци (NFR-06, FR-09): worker-ът с опашките и изпращачът към helpdesk ─────────────
+  # Симптомът е „работата на човека стои“: файлът за базата знания не се приема, тикетът не стига до
+  # helpdesk-а. Чатът и вече публикуваното знание не зависят от тях → тикети, не страници.
+  - name: chatchat-background
+    rules:
+      - alert: ChatchatWorkerDown
+        # Worker-ът не отговаря на скрейпа (job chatchat-worker): опашките ingest/ocr/embed не се
+        # обработват. Метриките на опашките са в него — без този скрейп алармите им мълчат.
+        expr: up{job="chatchat-worker"} == 0 or absent(up{job="chatchat-worker"})
+        for: 10m
+        labels:
+          severity: ticket
+          component: worker
+        annotations:
+          summary: 'ChatChat: worker-ът не отговаря от 10 мин — новите файлове за знанието не се обработват'
+          description: 'Prometheus не чете /metrics на worker-а (job chatchat-worker). Чатът работи; приемането, OCR и векторите стоят.'
+          runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatworkerdown'
+      - alert: ChatchatQueueDeadLetters
+        # Задача изчерпа опитите си (dead-letter) през последния час: файлът е „Неуспех“ в конзолата.
+        # Сериите съществуват от старта с 0 (queueHooks) — и първият провал след рестарт се вижда.
+        expr: sum by (queue) (increase(chatchat_queue_jobs_total{result="dead"}[1h])) > 0
+        for: 5m
+        labels:
+          severity: ticket
+          component: queue
+        annotations:
+          summary: 'ChatChat: задачи в опашката {{ $labels.queue }} отидоха в dead-letter през последния час'
+          description: 'Опашка {{ $labels.queue }}: файлът е „Неуспех“ (или векторите не са обновени) — „Повтори“ в конзолата след поправката.'
+          runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatqueuedeadletters'
+      - alert: ChatchatQueueBacklog
+        # Има чакащи задачи и нито една не завършва — 30 мин без прекъсване (`for`): опашката не се
+        # изпразва. Празна опашка (waiting = 0 поне веднъж) или завършена задача нулират брояча на `for`;
+        # `for` (не прозорец [30m]) пази и от фалшива тревога при нова серия без история. `dead` не е
+        # работна опашка.
+        expr: |
+          (
+            max by (queue) (chatchat_queue_depth{queue=~"ingest|ocr|embed",state="waiting"}) > 0
+          )
+          unless on (queue)
+          (
+            sum by (queue) (increase(chatchat_queue_jobs_total{result="completed"}[5m])) > 0
+          )
+        for: 30m
+        labels:
+          severity: ticket
+          component: queue
+        annotations:
+          summary: 'ChatChat: опашката {{ $labels.queue }} стои — чакащи задачи без нито една завършена за 30 мин'
+          description: 'Чакащи сега: {{ $value }} (опашка {{ $labels.queue }}). Файловете остават „В опашката“.'
+          runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatqueuebacklog'
+      - alert: ChatchatHelpdeskDeadLetters
+        # Доставка към helpdesk е в dead-letter (окончателна грешка или изчерпани опити) на ВКЛЮЧЕН
+        # конектор: тикетът е спрял към helpdesk-а, следващите му събития чакат зад нея. max — всяка
+        # инстанция на API-то чете същия агрегат от базата.
+        expr: max(chatchat_helpdesk_outbox{state="dead"}) > 0
+        for: 15m
+        labels:
+          severity: ticket
+          component: helpdesk
+        annotations:
+          summary: 'ChatChat: доставки към helpdesk са в dead-letter от 15 мин — тикетите им са спрели'
+          description: 'Доставки в dead-letter: {{ $value }}. Нужно е „Пусни отново“ от администратора на клиента след поправката.'
+          runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchathelpdeskdeadletters'
+      - alert: ChatchatHelpdeskBacklog
+        # Най-старата доставка, която изпращачът МОЖЕ да вземе (без чакащите зад dead-letter), е на над
+        # 30 мин: helpdesk-ът отказва/не отговаря (повтор с отстъп) или изпращачът не върви. Възрастта
+        # расте и когато изпращачът спре да чете базата (смята се при четене на /metrics).
+        expr: max(chatchat_helpdesk_oldest_pending_seconds) > 1800
+        for: 5m
+        labels:
+          severity: ticket
+          component: helpdesk
+        annotations:
+          summary: 'ChatChat: доставка към helpdesk чака над 30 мин — промените по тикетите закъсняват'
+          description: 'Най-старата чакаща доставка: {{ $value | humanizeDuration }}.'
+          runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchathelpdeskbacklog'

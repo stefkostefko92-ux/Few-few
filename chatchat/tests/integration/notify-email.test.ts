@@ -228,13 +228,13 @@ describe('имейл известия (outbox)', () => {
 
     // Преди забавянето — нищо; после — едно писмо, на езика на човека, без текст и имена.
     assert.equal((await processOutbox(deps())).claimed, 0);
-    await db.user.update({ where: { id: users.engineering.id }, data: { locale: 'bg' } });
+    await db.user.update({ where: { id: users.engineering.id }, data: { locale: 'en' } });
     const report = await processOutbox(deps(), later());
     assert.equal(report.sent, 1);
     const mail = mailer.sent[0];
     assert.ok(mail);
     assert.equal(mail.to, users.engineering.email);
-    assert.match(mail.subject, /ново съобщение в директен разговор/);
+    assert.match(mail.subject, /new message in a direct conversation/);
     const all = `${mail.subject}${mail.text}${mail.html}`;
     for (const leak of ['Mario', 'Rossi', 'secondo', 'Sara', 'Supporto']) {
       assert.equal(all.includes(leak), false, leak);

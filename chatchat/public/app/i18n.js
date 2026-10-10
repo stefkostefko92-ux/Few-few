@@ -1,7 +1,7 @@
-// Езици: it (основен), en, bg. Речникът е плосък (точкови ключове).
+// Езици на интерфейса: it (основен) и en — само тези два (решение на собственика). Речникът е плосък.
 // В localStorage се пази САМО изборът на език (с try/catch).
 
-export const LANGS = ['it', 'en', 'bg'];
+export const LANGS = ['it', 'en'];
 const STORE_KEY = 'chatchat.lang';
 
 let dict = {};

@@ -48,6 +48,9 @@ beforeEach(async () => {
 const status = async (ticketId: string) =>
   (await db.ticket.findUniqueOrThrow({ where: { id: ticketId } })).status;
 
+/** Печат N секунди напред (в прозореца) — отделно подписано известие със същото тяло. */
+const soon = (seconds: number) => Math.floor(Date.now() / 1000) + seconds;
+
 describe('общият webhook (X-ChatChat-Signature)', () => {
   test('подписано „close“ затваря тикета през машината; източник EXTERNAL, без ехо, с хронология и одит', async () => {
     const { inboundUrl } = await configureWebhook(w.adminA, fake);
@@ -56,7 +59,8 @@ describe('общият webhook (X-ChatChat-Signature)', () => {
     await drain(deps);
     const deliveriesBefore = await db.helpdeskDelivery.count();
     const body = { version: 1, ticket: { number: t.number }, action: 'close' };
-    const res = await sendInbound(h.base, inboundUrl, body, { delivery: 'zd-evt-1' });
+    const ts = soon(0);
+    const res = await sendInbound(h.base, inboundUrl, body, { delivery: 'zd-evt-1', ts });
     assert.equal(res.status, 200, JSON.stringify(res.body));
     assert.deepEqual(res.body, { ok: true, result: 'applied', to: 'CLOSED' });
     assert.equal(await status(t.id), 'CLOSED');
@@ -85,8 +89,20 @@ describe('общият webhook (X-ChatChat-Signature)', () => {
       await db.ticketEvent.count({ where: { ticketId: t.id, type: 'ticket.closed' } }),
       1,
     );
-    // Ново известие за вече затворен — пропуснато с код, без промяна.
-    const third = await sendInbound(h.base, inboundUrl, body, { delivery: 'zd-evt-2' });
+    // Записаното подписано известие, пуснато наново с друг (неподписан) id или без id — пак
+    // повторение: отпечатъкът на подписа е общ.
+    for (const delivery of ['attacker-id', undefined]) {
+      const forged = await sendInbound(h.base, inboundUrl, body, {
+        ts,
+        ...(delivery ? { delivery } : {}),
+      });
+      assert.deepEqual(forged.body, { ok: true, result: 'duplicate' });
+    }
+    // Ново известие за вече затворен (друг печат = друго подписано известие) — пропуснато с код.
+    const third = await sendInbound(h.base, inboundUrl, body, {
+      delivery: 'zd-evt-2',
+      ts: soon(1),
+    });
     assert.deepEqual(third.body, { ok: true, result: 'ignored', reason: 'already_closed' });
   });
 
@@ -102,12 +118,12 @@ describe('общият webhook (X-ChatChat-Signature)', () => {
     const replayed = await sendInbound(h.base, inboundUrl, close, { delivery: 'evt-1' });
     assert.deepEqual(replayed.body, { ok: true, result: 'duplicate' });
     assert.equal(await status(open.id), 'IN_PROGRESS');
-    await sendInbound(h.base, inboundUrl, close, { delivery: 'evt-2' });
+    await sendInbound(h.base, inboundUrl, close, { delivery: 'evt-2', ts: soon(1) });
     const reopened = await sendInbound(
       h.base,
       inboundUrl,
       { version: 1, ticket: { number: open.number }, action: 'reopen' },
-      { delivery: 'evt-3' },
+      { delivery: 'evt-3', ts: soon(2) },
     );
     assert.deepEqual(reopened.body, { ok: true, result: 'applied', to: 'ASSIGNED' });
     const c = await db.case.findUniqueOrThrow({ where: { id: open.caseId } });

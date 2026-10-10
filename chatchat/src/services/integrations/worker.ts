@@ -1,3 +1,4 @@
+import { outboxSnapshot } from './outbox-hooks.js';
 import { processDeliveries, type OutboxDeps } from './outbox.js';
 
 /**
@@ -5,6 +6,8 @@ import { processDeliveries, type OutboxDeps } from './outbox.js';
  * — outbox-ът на порции, докато има зрели редове (най-много 50 порции по 20); веднъж на час — чистене на стария дневник
  * (доставени/пропуснати след `logDays`) и на отпечатъците на входящите известия (извън прозореца
  * за печата те и без това се отказват). Паралелни минавания не се застъпват; грешка не сваля процеса.
+ * С кука `onSnapshot` (метриките) — след всяко минаване една агрегатна заявка за състоянието на
+ * outbox-а; провалът ѝ не спира доставките (метриката пази последната снимка, възрастта расте).
  */
 
 const BATCH = 20;
@@ -68,6 +71,7 @@ export class IntegrationWorker {
         if (report.claimed === 0) break;
       }
       if (delivered > 0) this.deps.logger.info({ delivered }, 'доставки към helpdesk');
+      await this.snapshot();
       const at = (now ?? new Date()).getTime();
       if (at - this.lastPrune >= PRUNE_EVERY_MS) {
         this.lastPrune = at;
@@ -77,6 +81,20 @@ export class IntegrationWorker {
       this.deps.logger.warn(
         { errName: err instanceof Error ? err.name : 'unknown' },
         'изпращачът към helpdesk ще опита пак',
+      );
+    }
+  }
+
+  private async snapshot(): Promise<void> {
+    const onSnapshot = this.deps.hooks?.onSnapshot;
+    if (!onSnapshot) return;
+    try {
+      // Агрегат през ВСИЧКИ клиенти (само броеве) — системната роля.
+      onSnapshot(await outboxSnapshot(this.deps.system));
+    } catch (err) {
+      this.deps.logger.warn(
+        { errName: err instanceof Error ? err.name : 'unknown' },
+        'състоянието на outbox-а към helpdesk не е прочетено',
       );
     }
   }

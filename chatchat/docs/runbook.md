@@ -59,7 +59,7 @@ sudo bash "$R/deploy/monitoring.sh" test-email   # пробно писмо кр�
 `monitoring.sh` (идемпотентен, root, само от работещия release): тайните — 400, собственик 65534,
 никога не се печатат; ролята `chatchat_monitor` (само `pg_monitor`, парола от `openssl rand -hex 32`,
 подадена през stdin) за postgres-exporter; `COMPOSE_FILE`; образите по digest; `up`; чака `/-/ready`
-на Prometheus и Alertmanager; проверява, че правилата са заредени и всичките 8 цели се четат;
+на Prometheus и Alertmanager; проверява, че правилата са заредени и всичките 9 цели се четат (с worker-а);
 слага `chatchat-audit-verify.timer` и пуска първата проверка на одитната верига. Изход: 0 готов · 3
 липсва настройка (нищо не е пуснато — мониторинг, който не може да събуди човек, е самозаблуда) · 1 грешка.
 `… monitoring.sh status` — проверките без промени; `… monitoring.sh disable` — маха файла от
@@ -68,7 +68,7 @@ sudo bash "$R/deploy/monitoring.sh" test-email   # пробно писмо кр�
 **Маршрути:** `severity="page"` → писмо веднага (тема `[ChatChat][PAGE][FIRING] <аларма>`), повтаря се
 на 1 ч, докато гори; `severity="ticket"` → събрано, на 24 ч. И двата пращат и `RESOLVED`. Страница
 потиска тикета за **същия** `component` (всяка аларма има такъв етикет); `ChatchatDown` потиска
-`ChatchatNotReady` и `ChatchatPublicProbeFailed` (следствия). Имейлът не е пейджър: ако страниците
+`ChatchatNotReady`, `ChatchatPublicProbeFailed` и `ChatchatWorkerDown` (следствия). Имейлът не е пейджър: ако страниците
 трябва да будят нощем — пренасочване към телефон (Brevo SMS/приложение) е **решение на собственика**.
 
 **Какво НЕ вижда този стек:** смъртта на целия сървър (Prometheus е на него). Пробата
@@ -285,6 +285,154 @@ curl -fsS 127.0.0.1:9464/metrics | grep 'chatchat_av_scans_total{verdict="FAILED
 
 **Направи:** тикет към Кодаджията — етикетите са само затворени множества от кодове (CLAUDE.md,
 инварианти). Ако в етикет има id/имейл/текст — поправка веднага и рестарт (метриките са в паметта).
+
+## Фоновите потоци: worker-ът и изпращачът към helpdesk
+
+Двата потока не са в пътя на техника: чатът и публикуваното знание работят и без тях — затова
+алармите им са **тикети**. Симптомът е „работата на човека стои“: файл за базата знания остава „В
+опашката“/„Неуспех“ (worker-ът, `job="chatchat-worker"`, `worker:9464`); промяна по тикета не стига до
+helpdesk-а на клиента (изпращачът е в API-то, `job="chatchat"`, `app:9464`). Метриките са само кодове и
+агрегати по всички клиенти — кой клиент/тикет се вижда в конзолата или в базата (по-долу), не в Prometheus.
+
+```bash
+cd "$(cat /opt/few-few/shared/chatchat/last-good)"; CC="sudo docker compose"
+# Заявка към Prometheus от хоста (127.0.0.1:4390 — PROMETHEUS_PORT):
+pq() { curl -fsS -G "127.0.0.1:${PROMETHEUS_PORT:-4390}/api/v1/query" --data-urlencode "query=$1"; echo; }
+```
+
+## ChatchatWorkerDown
+
+**Значи:** Prometheus не чете `/metrics` на worker-а от 10 мин (или целта липсва изцяло): опашките
+`ingest`/`ocr`/`embed` не се обработват — новите файлове остават „В опашката“, векторите на новото
+знание не се правят. Задачите НЕ се губят (Redis с AOF) — тръгват, щом worker-ът тръгне. Докато
+worker-ът мълчи, алармите на опашките също мълчат (метриките им са в него). При спряно приложение
+(`ChatchatDown`) тази аларма се потиска — worker-ът тръгва само след здраво приложение.
+
+**Провери:**
+
+```bash
+$CC ps worker redis                       # worker „healthy“ (файлът „жив съм“ ≤ 60 s)? redis „healthy“?
+$CC logs --tail=80 worker | grep -E 'chatchat worker тръгна|метриките на worker-а не тръгнаха|Невалидна конфигурация|"level":(40|50)'
+$CC exec -T worker node -e "fetch('http://127.0.0.1:9464/metrics').then(r=>console.log(r.status))"   # 200 → слушателят е жив
+pq 'up{job="chatchat-worker"}'            # 0 → не се чете; празно → целта я няма в prometheus.yml
+```
+
+- контейнерът го няма/спрял → `Невалидна конфигурация` в лога (поправи `.env`, деплой) или OOM
+  (`dmesg | grep -i oom`; таван 2.5 GB — `INGEST_CONCURRENCY`, `INGEST_THREAD_HEAP_MB`);
+- „unhealthy“ → Redis не отговаря (`$CC logs --tail=40 redis`; `maxmemory` 256 MB, noeviction);
+- здрав, но `up == 0` → слушателят на метриките: `METRICS_PORT` липсва в средата (стекът не е включен
+  с `docker-compose.monitoring.yml` в `COMPOSE_FILE`) или `EADDRINUSE` в лога.
+
+**Направи:** `$CC up -d worker`; спиране е плавно (до 90 s текущите задачи довършват, после се поемат
+наново — идемпотентно). Ако не тръгва след деплой — откат (DEPLOY.md, т. 7). След възстановяване
+опашката се изпразва сама; файл, заседнал над 30 мин., се пуска с „Повтори“ в конзолата.
+
+## ChatchatQueueDeadLetters
+
+**Значи:** задача в опашката (етикетът `queue`) изчерпа опитите си (`QUEUE_ATTEMPTS`, по подразбиране 3) през
+последния час и отиде в dead-letter (опашката `dead`, само id-та и причина). За `ingest`/`ocr` файлът е
+„Неуспех“ в конзолата с код `ingest.err.*`; за `embed` векторите на документа не са обновени (търсенето е
+лексикално за него — fail-open). Алармата стихва сама час след последния провал.
+
+**Провери:**
+
+```bash
+pq 'sum by (queue, result) (increase(chatchat_queue_jobs_total[1h]))'   # колко dead спрямо completed
+$CC logs --since 2h worker | grep '"msg":"dead-letter"'                # queue, itemId, reason (име на грешката)
+$CC exec -T db psql -U chatchat -d chatchat -c \
+  "SELECT \"errorCode\", count(*) FROM \"IngestItem\" WHERE status = 'FAILED' AND \"updatedAt\" > now() - interval '2 hours' GROUP BY 1"
+```
+
+Причината (`reason`): `JobTimeout` → файлът е по-тежък от срока (`INGEST_TIMEOUT_SECONDS`,
+`OCR_TIMEOUT_SECONDS`) или OCR страниците са много (`OCR_MAX_PAGES`); `invalid_data` → повредена задача
+(грешка в кода — тикет към Кодаджията); друго име на грешка → логът на worker-а около същото време;
+`embed` → като [ChatchatSemanticSearchDegraded](#chatchatsemanticsearchdegraded) (Vertex в ЕС).
+
+**Направи:** поправи причината, после „Повтори“ в конзолата („Документи“ → „Пакетно качване“) — новата задача е с
+нов id (`…-r<n>`). Единичен повреден файл (`ingest.err.*` за формата) не иска действие от SRE —
+собственикът на знанието го качва наново. Много наведнъж след деплой → откат.
+
+## ChatchatQueueBacklog
+
+**Значи:** в опашката (етикетът `queue`: `ingest`/`ocr`/`embed`) има чакащи задачи без прекъсване 30 мин и
+нито една не е завършила — опашката не се изпразва; файловете остават „В опашката“. Празна опашка не
+гори; `dead` не се гледа. Възможна законна причина: един дълъг OCR (срокът е до `OCR_TIMEOUT_SECONDS` +
+`INGEST_TIMEOUT_SECONDS`, по подразбиране 70 мин) при `OCR_CONCURRENCY=1` държи опашката `ocr`.
+
+**Провери:**
+
+```bash
+pq 'chatchat_queue_depth{queue=~"ingest|ocr|embed"}'                  # waiting / active / delayed / failed
+pq 'sum by (queue, result) (increase(chatchat_queue_jobs_total[30m]))' # има ли retried (всеки опит пада)?
+$CC logs --since 1h worker | grep -E '"level":(40|50)'
+$CC top worker                                                         # tesseract/pdftoppm въртят ли?
+```
+
+- `active > 0`, задачите в `ocr` — дълъг OCR: изчакай срока (после повтор или dead-letter); често →
+  `OCR_CONCURRENCY` 2 (памет!) или по-нисък `OCR_MAX_PAGES`;
+- `active = 0` при `waiting > 0` → worker-ът не взима задачи: `$CC restart worker` (заседналите се
+  поемат наново);
+- само `retried` расте → всеки опит пада: виж [ChatchatQueueDeadLetters](#chatchatqueuedeadletters).
+
+**Направи:** по горното. Над 30 мин. заседнал файл се пуска с „Повтори“ в конзолата.
+
+## ChatchatHelpdeskDeadLetters
+
+**Значи:** доставка от outbox-а към helpdesk-а на клиент е в dead-letter (окончателна грешка — 4xx,
+повредена настройка/тайна, SSRF отказ — или изчерпани `INTEGRATION_MAX_ATTEMPTS`, по подразбиране 10)
+на **включен** конектор от 15 мин. Тикетът е спрял към helpdesk-а: следващите му събития чакат зад
+нея (подредбата по тикет). В ChatChat тикетът работи — разминаването е само в helpdesk-а на клиента.
+
+**Провери** (само кодове и броеве — без текст):
+
+```bash
+pq 'max(chatchat_helpdesk_outbox) by (state)'
+pq 'sum by (result) (increase(chatchat_helpdesk_deliveries_total[6h]))'
+$CC exec -T db psql -U chatchat -d chatchat -c \
+  "SELECT d.\"tenantId\", i.kind, d.\"lastError\", count(*) FROM \"HelpdeskDelivery\" d JOIN \"HelpdeskIntegration\" i ON i.id = d.\"integrationId\" WHERE d.status = 'DEAD' AND i.enabled GROUP BY 1, 2, 3"
+$CC logs --since 6h app | grep '"msg":"доставката към helpdesk не мина"'   # deliveryId, event, code, attempts
+```
+
+`lastError`: `http_401`/`http_403` → токенът/ключът в helpdesk-а е изтекъл или отнет; `http_404` →
+грешен адрес/service desk; `http_400`/`http_422`/`bad_response` → helpdesk-ът отказва полето/формата
+(промяна от тяхна страна — тикет към Кодаджията); `settings_invalid`/`secret_*`/`secrets_missing` →
+настройката или ключът `INTEGRATION_KEK` (ротация без `INTEGRATION_KEK_PREVIOUS`?); `ssrf_blocked` →
+адресът сочи вътрешна мрежа (DNS rebinding или грешка в настройката — **сигнал за сигурност**,
+`chatchat_helpdesk_deliveries_total{result="ssrf_blocked"}`); `http_5xx`/`timeout`/`network` →
+изчерпани опити при дълъг срив отсреща.
+
+**Направи:** поправката е при администратора на клиента (администрацията → „Интеграция с helpdesk“:
+нов токен/адрес → „Тест на връзката“), после **„Пусни отново“** в „Дневник на доставките“ — ред по ред, с одит;
+следващите събития на тикета тръгват след него. Ние не пускаме наново вместо клиента. Конектор, който
+клиентът изключи, не се брои (повторното пускане е невъзможно) — алармата стихва.
+
+## ChatchatHelpdeskBacklog
+
+**Значи:** най-старата доставка, която изпращачът може да вземе, чака над 30 мин — промените по
+тикетите стигат до helpdesk-а със закъснение. Редовете зад dead-letter не се броят (те са
+[ChatchatHelpdeskDeadLetters](#chatchathelpdeskdeadletters)). Възрастта се смята при четене на
+`/metrics`: ако изпращачът спре да чете базата, тя расте — алармата гори и тогава.
+
+**Провери:**
+
+```bash
+pq 'max(chatchat_helpdesk_oldest_pending_seconds)'
+pq 'sum by (result) (increase(chatchat_helpdesk_deliveries_total[30m]))'   # retry расте? delivered = 0?
+$CC exec -T db psql -U chatchat -d chatchat -c \
+  "SELECT status, \"lastError\", count(*), min(\"createdAt\"), max(attempts) FROM \"HelpdeskDelivery\" WHERE status IN ('PENDING', 'SENDING') GROUP BY 1, 2"
+$CC logs --since 1h app | grep -E 'helpdesk|outbox'
+```
+
+- `retry` расте, `lastError` `http_5xx`/`http_429`/`timeout`/`network` → helpdesk-ът отсреща е
+  недостъпен или ни ограничава: повторите са с отстъп до 1 ч. (и `Retry-After`), нищо не се губи;
+  след `INTEGRATION_MAX_ATTEMPTS` → dead-letter;
+- `delivered` и `retry` са 0, а има чакащи → изпращачът не върви: `изпращачът към helpdesk ще опита
+пак` / `състоянието на outbox-а … не е прочетено` в лога → базата (`$CC ps db`); `INTEGRATION_KEK`
+  липсва → изпращачът не е пуснат (`INTEGRATION_KEK липсва` при старт);
+- `SENDING` с изтекъл наем — процес е паднал по средата; поема се сам след 2 мин.
+
+**Направи:** срив отсреща → чакай и уведоми клиента (статус страницата на Zendesk/Atlassian); ние —
+`$CC restart app`, само ако изпращачът не върви.
 
 ## ChatchatPublicProbeFailed
 
@@ -537,6 +685,10 @@ manager-а и пусни `deploy.sh`. Ако има шифровани файл�
 | `chatchat_realtime_events_total` / `chatchat_realtime_delivery_seconds`                                                       | брояч / хистограма | `type`, `result` / —                                                                                |
 | `chatchat_circuit_breaker_state`                                                                                              | gauge (0/1/2)      | `breaker` (vertex_messages, vertex_embeddings)                                                      |
 | `chatchat_circuit_breaker_transitions_total` / `…_rejections_total`                                                           | брояч              | `breaker`, `to` / `breaker`                                                                         |
+| `chatchat_queue_jobs_total` / `chatchat_queue_job_duration_seconds` (worker)                                                  | брояч / хистограма | `queue` (ingest, ocr, embed), `result` (completed, retried, dead) / `queue`                         |
+| `chatchat_queue_depth` (worker, на 15 s от Redis)                                                                             | gauge              | `queue` (+ dead), `state` (waiting, active, delayed, failed)                                        |
+| `chatchat_helpdesk_deliveries_total` (API)                                                                                    | брояч              | `result` (delivered, skipped, retry, dead, ssrf_blocked, unrecorded)                                |
+| `chatchat_helpdesk_outbox` / `chatchat_helpdesk_oldest_pending_seconds` (API, агрегат по всички клиенти)                      | gauge              | `state` (pending, sending, dead) / —                                                                |
 | `chatchat_metrics_series_dropped_total`                                                                                       | брояч              | `metric`                                                                                            |
 | `process_resident_memory_bytes`, `nodejs_heap_used_bytes`, `nodejs_eventloop_delay_p99_seconds`, `process_start_time_seconds` | gauge              | —                                                                                                   |
 

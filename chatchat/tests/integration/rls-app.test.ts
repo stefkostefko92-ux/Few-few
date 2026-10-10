@@ -4,6 +4,8 @@ import { appendAudit, verifyAuditChain } from '../../src/audit.js';
 import { hashToken } from '../../src/crypto.js';
 import {
   auditPrevHash,
+  releaseOtherSsoClaims,
+  ssoDomainsTaken,
   tenantByEmail,
   tenantByHelpdeskInbound,
   tenantByPasswordReset,
@@ -193,6 +195,33 @@ describe('RLS: клиентът на приложението', () => {
       [],
     );
     assert.ok(rows.every((r) => r.app));
+  });
+
+  test('доказаните SSO домейни: откриване само по доказан; „зает“ през клиенти; освобождаване само от своя', async () => {
+    const domB = await db.ssoDomain.findFirstOrThrow({ where: { tenantId: b.tenantId } });
+    const cfgA = await db.ssoConfig.findFirstOrThrow({ where: { tenantId: a.tenantId } });
+    // Недоказана заявка на A за домейна на B не връща A при откриването.
+    const claimA = await db.ssoDomain.create({
+      data: { tenantId: a.tenantId, configId: cfgA.id, domain: domB.domain },
+    });
+    await db.ssoConfig.updateMany({ data: { enabled: true } });
+    assert.equal(await tenantBySsoDomain(appDb, domB.domain), b.tenantId);
+    // „Доказан от друг доставчик?“ — видимо от A, макар редът да е на B (само да/не).
+    assert.equal(
+      await withTenant(a.tenantId, () => ssoDomainsTaken(appDb, [domB.domain], cfgA.id)),
+      true,
+    );
+    assert.equal(
+      await withTenant(b.tenantId, () => ssoDomainsTaken(appDb, [domB.domain], domB.configId)),
+      false,
+    );
+    // Освобождаване: от A за реда на B — нищо (не е доказан в A); от B — заявката на A изчезва.
+    assert.deepEqual(await withTenant(a.tenantId, () => releaseOtherSsoClaims(appDb, domB.id)), []);
+    assert.deepEqual(await releaseOtherSsoClaims(appDb, domB.id), [], 'без контекст — нищо');
+    assert.deepEqual(await withTenant(b.tenantId, () => releaseOtherSsoClaims(appDb, domB.id)), [
+      { tenantId: a.tenantId, configId: cfgA.id },
+    ]);
+    assert.equal(await db.ssoDomain.count({ where: { id: claimA.id } }), 0);
   });
 
   test('кандидатите за търсенето в историята: само id-та на клиента от контекста', async () => {

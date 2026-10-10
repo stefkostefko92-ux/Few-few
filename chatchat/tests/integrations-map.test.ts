@@ -126,7 +126,7 @@ describe('минимизация (GDPR)', () => {
       subjectOf(TICKET),
       describeTicket('it', TICKET, 'IN_PROGRESS'),
       describeTicket('en', TICKET, 'OPEN'),
-      commentOf('bg', 'ticket.closed', closed, { to: 'CLOSED', assigneeRole: null }),
+      commentOf('en', 'ticket.closed', closed, { to: 'CLOSED', assigneeRole: null }),
       commentOf('it', 'ticket.assigned', TICKET, { to: 'ASSIGNED', assigneeRole: 'ENGINEERING' }),
     ].join('\n');
     assert.match(texts, /Allegati in ChatChat: 2/);

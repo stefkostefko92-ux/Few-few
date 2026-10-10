@@ -22,7 +22,7 @@ import {
   setSessionCookie,
   type Principal,
 } from '../auth/sessions.js';
-import { passwordRefused } from '../services/sso/policy.js';
+import { passwordPolicy } from '../services/sso/policy.js';
 import { resetPasswordWithToken } from '../services/users.js';
 
 const LoginSchema = z.object({
@@ -99,8 +99,10 @@ export function authRouter(deps: AppDeps): Router {
       return apiError(res, 401, 'invalid_credentials');
     }
     // Единният вход е задължителен за човека (REQUIRED) — паролата е вярна, но не стига. Казва
-    // се само на знаещия паролата (иначе отговорът е invalid_credentials като по-горе).
-    if (await passwordRefused(deps.db, user)) {
+    // се само на знаещия паролата (иначе отговорът е invalid_credentials като по-горе). Ако
+    // човекът още не може да влезе през доставчика (свързва се само сам) — сесия само за това.
+    const policy = await passwordPolicy(deps.db, user);
+    if (policy === 'refused') {
       await appendAudit(deps.db, {
         tenantId: user.tenantId,
         actorId: user.id,
@@ -111,12 +113,18 @@ export function authRouter(deps: AppDeps): Router {
     }
     // Сесията започва без втори фактор: включен TOTP → /auth/mfa/verify; персонал без TOTP →
     // /auth/mfa/setup. Дотогава сесията стига само до /auth/me, /auth/logout и /auth/mfa/*.
-    const session = await createSession(sessionDeps, user.id);
+    const linkOnly = policy === 'link_only';
+    const session = await createSession(
+      sessionDeps,
+      user.id,
+      linkOnly ? { ssoLinkOnly: true } : undefined,
+    );
     await deps.db.user.update({ where: { id: user.id }, data: { lastLoginAt: now } });
     await appendAudit(deps.db, {
       tenantId: user.tenantId,
       actorId: user.id,
       action: 'auth.login',
+      ...(linkOnly ? { detail: { method: 'password', linkOnly: true } } : {}),
     });
     setSessionCookie(res, sessionDeps, session.token, session.expiresAt);
     res.json({
@@ -129,6 +137,7 @@ export function authRouter(deps: AppDeps): Router {
       },
       csrfToken: session.csrfToken,
       mfa: mfaStateOf(user, false),
+      ...(linkOnly ? { ssoLinkRequired: true } : {}),
     });
   }
 
@@ -140,6 +149,7 @@ export function authRouter(deps: AppDeps): Router {
       mfa: p.mfa,
       capabilities: capabilitiesFor(p.user.role),
       authMethod: p.session.authMethod === 'SSO' ? 'sso' : 'password',
+      ...(p.session.ssoLinkOnly ? { ssoLinkRequired: true } : {}),
     });
   });
 

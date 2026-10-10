@@ -1,32 +1,60 @@
 import type { Prisma, SsoConfig } from '@prisma/client';
+import { randomToken } from '../../crypto.js';
+import { ssoDomainsTaken } from '../../db/discovery.js';
 
 /**
- * Заявките на управлението на доставчиците в транзакция: домейните (уникални в платформата) и
- * кого засяга смяната на политиката (за `revokeUserSessions`).
+ * Заявките на управлението на доставчиците в транзакция: домейните (заявки; доказаният домейн е
+ * уникален в платформата), нулирането при смяна на доставчика и кого засяга смяната на политиката
+ * (за `revokeUserSessions`).
  */
 
 type Tx = Prisma.TransactionClient;
 
-/** Заменя домейните на доставчика; домейн на ДРУГ доставчик → код на грешката (нищо не пипа). */
+/**
+ * Заменя заявените домейни на доставчика. Домейн, ДОКАЗАН от друг доставчик → код на грешката (нищо
+ * не пипа). Недоказана заявка на друг НЕ пречи — доказва първият, който покаже DNS записа. Новите
+ * заявки са недоказани; махнатите се изтриват (с доказването си — повторно добавен домейн се
+ * доказва наново).
+ */
 export async function replaceDomains(
   tx: Tx,
   cfg: { id: string; tenantId: string },
   domains: string[],
 ): Promise<string | null> {
-  const taken = await tx.ssoDomain.findFirst({
-    where: { domain: { in: domains }, configId: { not: cfg.id } },
-    select: { id: true },
-  });
-  if (taken) return 'sso_domain_taken';
+  // Доказаният домейн може да е в ДРУГ клиент — под RLS се пита тясната функция (само да/не).
+  if (await ssoDomainsTaken(tx, domains, cfg.id)) return 'sso_domain_taken';
   await tx.ssoDomain.deleteMany({ where: { configId: cfg.id, domain: { notIn: domains } } });
   await tx.ssoDomain.createMany({
-    data: domains.map((domain) => ({ tenantId: cfg.tenantId, configId: cfg.id, domain })),
+    data: domains.map((domain) => ({
+      tenantId: cfg.tenantId,
+      configId: cfg.id,
+      domain,
+      tokenNonce: randomToken(),
+    })),
     skipDuplicates: true,
   });
-  // Паралелно заявен от друг доставчик домейн се пропуска тихо (ON CONFLICT) — броят го хваща,
-  // викащият прекъсва транзакцията.
-  const mine = await tx.ssoDomain.count({ where: { configId: cfg.id } });
-  return mine === domains.length ? null : 'sso_domain_taken';
+  return null;
+}
+
+/**
+ * Смяна на доставчика (издател, директория, клиент) = нов доставчик: връзките с акаунти се изтриват
+ * (правят се наново), домейните се доказват наново (нов nonce → нов TXT токен), започнатите входове
+ * се обезсилват. Секретът, тестът и изключването — в `updateConfig`.
+ */
+export async function resetProviderIdentity(
+  tx: Tx,
+  configId: string,
+): Promise<{ identities: number; domains: number }> {
+  const identities = await tx.externalIdentity.deleteMany({ where: { configId } });
+  const rows = await tx.ssoDomain.findMany({ where: { configId }, select: { id: true } });
+  for (const r of rows) {
+    await tx.ssoDomain.update({
+      where: { id: r.id },
+      data: { verifiedAt: null, verifiedDomain: null, tokenNonce: randomToken() },
+    });
+  }
+  await tx.ssoLoginState.deleteMany({ where: { configId, usedAt: null } });
+  return { identities: identities.count, domains: rows.length };
 }
 
 /** Хората с активна SSO сесия от доставчика. */

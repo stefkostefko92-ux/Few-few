@@ -102,7 +102,7 @@ async function editUser(user, ctx) {
   const company = select(companyOptions(companies), user.company?.id ?? '');
   // FR-14: езикът на интерфейса, писмата и AI отговорите (човекът го сменя и сам).
   const locale = select(
-    ['it', 'en', 'bg'].map((l) => ({ value: l, label: t(`settings.lang.${l}`) })),
+    ['it', 'en'].map((l) => ({ value: l, label: t(`settings.lang.${l}`) })),
     user.locale ?? 'it',
   );
   const reason = reasonField();

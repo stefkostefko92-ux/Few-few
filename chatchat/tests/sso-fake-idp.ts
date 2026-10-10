@@ -9,6 +9,8 @@ import { exportJWK, generateKeyPair, SignJWT, type CryptoKey, type JWK } from 'j
  * директория) и `<base>/generic` (общ OIDC). Discovery, JWKS, authorize (code + PKCE S256),
  * token (client_secret_basic/post, проверка на code_verifier, еднократен код), logout.
  * Кой „влиза“ — `next`; повреди на id_token — `tamper` (грешен iss/aud/nonce/подпис, изтекъл…).
+ * И ФАЛШИВ DNS за доказването на домейни (`txt`, `dnsDown`) — приложението го ползва като
+ * `resolveTxt`; в e2e (друг процес) се пълни през `POST /_test/dns`.
  */
 
 export const FAKE_CLIENT_ID = 'chatchat-test-client';
@@ -57,6 +59,10 @@ export class FakeIdp {
   /** Колко пъти са поискани ключовете (кешът на JWKS). */
   jwksCalls = 0;
   readonly redirectUris = new Set<string>();
+  /** TXT записите по име (`_chatchat.<домейн>`) — всеки запис е масив от парчета, като в DNS. */
+  readonly txt = new Map<string, string[][]>();
+  /** Имена, за които DNS „не отговаря“ (SERVFAIL). */
+  readonly dnsDown = new Set<string>();
   private readonly codes = new Map<string, Pending>();
   private server: Server | null = null;
   private key!: { privateKey: CryptoKey; jwk: JWK };
@@ -125,12 +131,33 @@ export class FakeIdp {
     });
   }
 
+  /** Като `dns.promises.resolveTxt`: липсващо име → ENOTFOUND, „паднал“ DNS → ESERVFAIL. */
+  async resolveTxt(host: string): Promise<string[][]> {
+    const name = host.toLowerCase();
+    if (this.dnsDown.has(name)) {
+      throw Object.assign(new Error(`queryTxt ESERVFAIL ${name}`), { code: 'ESERVFAIL' });
+    }
+    const records = this.txt.get(name);
+    if (!records)
+      throw Object.assign(new Error(`queryTxt ENOTFOUND ${name}`), { code: 'ENOTFOUND' });
+    return records.map((r) => [...r]);
+  }
+
   /** Fetch API — за unit тестовете (customFetch на openid-client) и за http сървъра. */
   async handle(req: Request): Promise<Response> {
     const url = new URL(req.url);
     // Само за e2e (друг процес): кой „влиза“ при следващото /authorize.
     if (url.pathname === '/_test/next' && req.method === 'POST') {
       this.next = (await req.json()) as Record<string, unknown>;
+      return json({ ok: true });
+    }
+    // Само за e2e: TXT запис във фалшивия DNS ({ host, value }).
+    if (url.pathname === '/_test/dns' && req.method === 'POST') {
+      const body = (await req.json()) as { host?: unknown; value?: unknown };
+      if (typeof body.host !== 'string' || typeof body.value !== 'string') {
+        return json({ error: 'invalid' }, 400);
+      }
+      this.txt.set(body.host.toLowerCase(), [[body.value]]);
       return json({ ok: true });
     }
     const m = REALM.exec(url.pathname);

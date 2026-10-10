@@ -20,7 +20,8 @@ import type { SsoDeps } from './types.js';
 export const SSO_STATE_TTL_MS = 10 * 60 * 1000;
 const STATE = /^[A-Za-z0-9_-]{20,100}$/;
 export const SSO_COOKIE = 'cc_sso';
-export type FlowPurpose = 'login' | 'test';
+/** login — вход; test — „Тест на конфигурацията“; link — собственикът свързва акаунта си. */
+export type FlowPurpose = 'login' | 'test' | 'link';
 
 export interface FlowDeps {
   db: PrismaClient;
@@ -51,7 +52,14 @@ export async function clientSecretOf(deps: FlowDeps, cfg: SsoConfig): Promise<st
 export async function beginFlow(
   deps: FlowDeps,
   cfg: SsoConfig,
-  opts: { purpose: FlowPurpose; redirectUri: string; loginHint?: string; actorId?: string },
+  opts: {
+    purpose: FlowPurpose;
+    redirectUri: string;
+    loginHint?: string;
+    actorId?: string;
+    /** Свързването: текущата сесия на собственика — връщането важи само докато тя е жива. */
+    sessionId?: string;
+  },
 ): Promise<{ url: string; binding: string }> {
   const client = await deps.cache.get(cfg, await clientSecretOf(deps, cfg));
   const now = Date.now();
@@ -69,6 +77,7 @@ export async function beginFlow(
       bindingHash: hashToken(binding, deps.pepper),
       purpose: opts.purpose,
       actorId: opts.actorId ?? null,
+      sessionId: opts.sessionId ?? null,
       expiresAt: new Date(now + SSO_STATE_TTL_MS),
     },
   });
@@ -83,8 +92,9 @@ export async function beginFlow(
     code_challenge_method: 'S256',
   };
   if (opts.loginHint) params.login_hint = opts.loginHint;
-  // Тестът иска истински вход (за `amr`), не тихо продължение на стара сесия при доставчика.
-  if (opts.purpose === 'test') params.prompt = 'login';
+  // Тестът иска истински вход (за `amr`), а свързването — точно този човек сега (не чужда
+  // сесия при доставчика на споделен компютър): без тихо продължение на стара сесия.
+  if (opts.purpose !== 'login') params.prompt = 'login';
   const url = oidc.buildAuthorizationUrl(client, params);
   if (url.protocol !== 'https:' && !deps.sso.allowInsecureHttp) throw new Error('sso_insecure');
   return { url: url.href, binding };
@@ -97,6 +107,7 @@ export type FlowResult =
       ok: true;
       purpose: FlowPurpose;
       actorId: string | null;
+      sessionId: string | null;
       config: SsoConfig;
       claims: Record<string, unknown>;
     }
@@ -105,9 +116,14 @@ export type FlowResult =
       reason: FlowFailure;
       purpose: FlowPurpose | null;
       actorId: string | null;
+      sessionId: string | null;
       config: SsoConfig | null;
       error?: unknown;
     };
+
+function purposeOf(raw: string): FlowPurpose {
+  return raw === 'test' || raw === 'link' ? raw : 'login';
+}
 
 /**
  * Клиентът на започнатия вход по върнатия `state` — тесният път преди вход (само id на клиента по
@@ -132,7 +148,15 @@ export async function finishFlow(
   const fail = (
     reason: FlowFailure,
     extra: Partial<Extract<FlowResult, { ok: false }>> = {},
-  ): FlowResult => ({ ok: false, reason, purpose: null, actorId: null, config: null, ...extra });
+  ): FlowResult => ({
+    ok: false,
+    reason,
+    purpose: null,
+    actorId: null,
+    sessionId: null,
+    config: null,
+    ...extra,
+  });
   const state = currentUrl.searchParams.get('state') ?? '';
   if (!STATE.test(state) || !binding) return fail('state');
   const row = await deps.db.ssoLoginState.findUnique({
@@ -145,10 +169,11 @@ export async function finishFlow(
     data: { usedAt: now },
   });
   if (used.count !== 1) return fail('state');
-  const purpose: FlowPurpose = row.purpose === 'test' ? 'test' : 'login';
-  const base = { purpose, actorId: row.actorId };
+  const purpose = purposeOf(row.purpose);
+  const base = { purpose, actorId: row.actorId, sessionId: row.sessionId };
   const cfg = await deps.db.ssoConfig.findUnique({ where: { id: row.configId } });
-  if (!cfg || cfg.tenantId !== row.tenantId || (purpose === 'login' && !cfg.enabled)) {
+  // Тестът минава и при изключен доставчик (така се включва); входът и свързването — не.
+  if (!cfg || cfg.tenantId !== row.tenantId || (purpose !== 'test' && !cfg.enabled)) {
     return fail('config', base);
   }
   if (currentUrl.searchParams.has('error')) return fail('idp_error', { ...base, config: cfg });

@@ -119,10 +119,10 @@ describe('резюме на решен случай', () => {
       steps: [],
       rootCause: null,
       solution: 'Reset eseguito',
-      language: 'bg',
+      language: 'en',
     });
-    assert.equal(pages[0]?.section, 'Контекст на таблото');
-    assert.match(pages[2]?.text ?? '', /няма записани стъпки/);
+    assert.equal(pages[0]?.section, 'Board context');
+    assert.match(pages[2]?.text ?? '', /No steps recorded/);
   });
 });
 

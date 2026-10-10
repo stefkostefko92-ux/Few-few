@@ -30,6 +30,11 @@ test('смяна на езика → интерфейсът, профилът и
     const log = page.getByRole('log', { name: 'Conversazione' });
     await expect(log.getByRole('article').last()).toContainText('Diagnosi di prova.');
 
+    // Само италиански и английски — и в горната лента, и на екрана за вход.
+    const options = (sel: string) =>
+      page.locator(`${sel} option`).evaluateAll((els) => els.map((e) => e.getAttribute('value')));
+    expect(await options('#app-lang')).toEqual(['it', 'en']);
+    expect(await options('#login-lang')).toEqual(['it', 'en']);
     // Превключвателят в горната лента → английски: интерфейсът и профилът.
     await page.locator('#app-lang').selectOption('en');
     await expect(page.getByLabel('Describe what you see on the control panel')).toBeVisible();

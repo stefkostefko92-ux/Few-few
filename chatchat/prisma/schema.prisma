@@ -156,9 +156,13 @@ model Session {
   mfaViaIdp   Boolean    @default(false)
   /// Доставчикът на единния вход (само при authMethod = SSO) — за отнемане при смяна на политиката.
   ssoConfigId String?
+  /// Сесия с парола в режим REQUIRED за акаунт, който още няма собствена връзка с доставчика:
+  /// стига само до /auth/me, /auth/mfa/*, свързването и изхода (403 `sso_link_required`).
+  ssoLinkOnly Boolean    @default(false)
 
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  ssoConfig SsoConfig? @relation(fields: [ssoConfigId], references: [id], onDelete: SetNull)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ssoConfig SsoConfig?      @relation(fields: [ssoConfigId], references: [id], onDelete: SetNull)
+  ssoStates SsoLoginState[]
 
   @@index([userId])
   @@index([expiresAt])
@@ -1085,31 +1089,46 @@ model SsoConfig {
 
 /// Позволен имейл домейн на доставчика — уникален в платформата (по него входът намира доставчика).
 model SsoDomain {
-  id        String   @id @default(cuid())
-  tenantId  String
-  configId  String
-  /// Малки букви, без „@“.
-  domain    String   @unique
-  createdAt DateTime @default(now())
+  id             String    @id @default(cuid())
+  tenantId       String
+  configId       String
+  /// Малки букви, без „@“. Заявка — няколко доставчика могат да го заявят; доказва го само един.
+  domain         String
+  /// Случаен — от него (с SESSION_PEPPER) се извежда токенът на DNS TXT записа; самият токен не се пази.
+  tokenNonce     String    @default(dbgenerated("gen_random_uuid()::text"))
+  /// Доказана собственост (DNS TXT или операторът през CLI). Без нея домейнът не участва във входа.
+  verifiedAt     DateTime?
+  /// = domain, когато е доказан (иначе NULL) — уникален: доказаният домейн е само на един доставчик.
+  verifiedDomain String?   @unique
+  createdAt      DateTime  @default(now())
 
   tenant Tenant    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   config SsoConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
 
+  @@unique([configId, domain])
   @@index([tenantId])
   @@index([configId])
+  @@index([domain])
+}
+
+enum SsoLinkMethod {
+  EMAIL // първи вход по проверен имейл в доказан домейн (само акаунти без собствен фактор и под ранга на администратора)
+  SELF // самият собственик от сесия с парола + TOTP („Свържи“)
 }
 
 /// Връзката на локален акаунт с идентичност при доставчика. Първият вход е по проверен имейл;
 /// след него — само по (issuer, externalSubject). Акаунти не се създават от входа.
 model ExternalIdentity {
-  id              String    @id @default(cuid())
+  id              String        @id @default(cuid())
   tenantId        String
-  userId          String    @unique
+  userId          String        @unique
   configId        String
   issuer          String
   /// Стабилният идентификатор: Entra — `oid`; общ OIDC — `sub`.
   externalSubject String
-  createdAt       DateTime  @default(now())
+  /// Как е направена връзката — от нея зависи дали доставчикът замества локалния TOTP.
+  linkMethod      SsoLinkMethod @default(EMAIL)
+  createdAt       DateTime      @default(now())
   lastLoginAt     DateTime?
 
   tenant Tenant    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
@@ -1129,19 +1148,23 @@ model SsoLoginState {
   configId    String
   stateHash   String    @unique
   bindingHash String
-  /// login | test
+  /// login | test | link
   purpose     String
-  /// Тестът: администраторът, който го е пуснал (за одита).
+  /// Тестът: администраторът, който го е пуснал (за одита); свързването — собственикът на акаунта.
   actorId     String?
+  /// Свързването: сесията (парола + TOTP), от която е започнато — връщането важи само докато е жива.
+  sessionId   String?
   createdAt   DateTime  @default(now())
   expiresAt   DateTime
   usedAt      DateTime?
 
-  tenant Tenant    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  config SsoConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+  tenant  Tenant    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  config  SsoConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+  session Session?  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([configId])
+  @@index([sessionId])
   @@index([expiresAt])
 }
 
