@@ -67,6 +67,7 @@
             />
           </div>
           <p id="login-error" class="form-error" role="alert" hidden></p>
+          <p id="login-note" class="form-note" role="status" hidden></p>
           <button id="login-submit" class="btn btn-primary btn-block" type="submit">
             <span data-i18n="login.submit">Accedi</span>
           </button>
@@ -133,6 +134,25 @@
         <div id="setup-host"></div>
         <p class="login-alt">
           <button id="setup-cancel" class="btn btn-quiet" type="button">
+            <span data-i18n="mfa.cancel">Esci</span>
+          </button>
+        </p>
+      </div>
+    </main>
+
+    <!-- Задължителен единен вход: сесия само за свързване на акаунта с доставчика (auth/sso-link.js) -->
+    <main id="sso-link-view" class="login" hidden>
+      <div class="login-card">
+        <h1 class="brand brand-lg">ChatChat</h1>
+        <h2 class="login-h" data-i18n="sso.link.screenTitle">Colleghi l’account aziendale</h2>
+        <p class="login-sub" data-i18n="sso.link.screenIntro"></p>
+        <p id="sso-link-error" class="form-error" role="alert" hidden></p>
+        <button id="sso-link-btn" class="btn btn-primary btn-block btn-sso" type="button">
+          <img id="sso-link-logo" src="/app/auth/microsoft.svg" alt="" hidden />
+          <span id="sso-link-label"></span>
+        </button>
+        <p class="login-alt">
+          <button id="sso-link-cancel" class="btn btn-quiet" type="button">
             <span data-i18n="mfa.cancel">Esci</span>
           </button>
         </p>

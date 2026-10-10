@@ -13,7 +13,8 @@ import { state } from '../store.js';
 let found = null;
 let lastAsked = '';
 
-const RESULT_CODES = ['sso_failed', 'sso_denied', 'sso_unavailable'];
+// sso_link_required — собственикът свързва акаунта сам (администратор, включен TOTP): auth/sso-link.js.
+const RESULT_CODES = ['sso_failed', 'sso_denied', 'sso_unavailable', 'sso_link_required'];
 
 /** Преведена грешка на единния вход (`sso.err.*`), иначе общата. */
 export function ssoErrorText(err) {
