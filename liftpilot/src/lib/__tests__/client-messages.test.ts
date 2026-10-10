@@ -8,11 +8,11 @@ import it from '../../../messages/it.json';
 import { PUBLIC_CLIENT_NAMESPACES, pickMessages } from '@/i18n/client-messages';
 
 const root = path.resolve(new URL('../../..', import.meta.url).pathname);
-/** The client components of the public pages (the header's language switch, the forms around the sign-in, the error page). */
+/** The client components of the public pages (the header's language switch and drawer, the landing's tabs, the forms around the sign-in, the error page). */
 const PUBLIC_CLIENT = [
   'src/components/LangSwitch.tsx', 'src/components/LoginForm.tsx', 'src/components/RegisterForm.tsx', 'src/components/ForgotPasswordForm.tsx',
   'src/components/ResetPasswordForm.tsx', 'src/components/VerifyEmailForm.tsx', 'src/components/InviteAcceptForm.tsx', 'src/app/[locale]/error.tsx',
-  'src/components/landing/FloorNav.tsx', 'src/components/landing/SimPreview.tsx', 'src/components/machine/MachineStage.tsx',
+  'src/components/MobileNav.tsx', 'src/components/landing/ShowcaseTabs.tsx', 'src/components/machine/MachineStage.tsx',
 ];
 
 test('client messages: the public client components read only the namespaces the public pages send', () => {

@@ -11,7 +11,7 @@ export default async function AuthPage({ title, lead, children }: { title: strin
   return (
     <>
       <SiteHeader showLogin={false} />
-      <main className="signin">
+      <main id="main" className="signin">
         <div className="signin-form">
           <h1>{title}</h1>
           <p className="lead">{lead}</p>

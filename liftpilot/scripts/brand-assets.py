@@ -137,7 +137,8 @@ def social(locale):
     lg = width(wordmark, 470)
     im.alpha_composite(lg, (72, 64))
     msgs = json.load(open(os.path.join(ROOT, "messages", f"{locale}.json"), encoding="utf-8"))
-    head = msgs["landing"]["h1"].split(":", 1)[-1].strip()
+    # the landing's title, set there in three lines (h1a, h1b, h1c)
+    head = " ".join(msgs["landing"][k] for k in ("h1a", "h1b", "h1c")).split(":", 1)[-1].strip()
     head = head[:1].upper() + head[1:]
     big = [font(700, "latin", 58), font(700, "cyrillic", 58)]
     small = [font(500, "latin", 24), font(500, "cyrillic", 24)]

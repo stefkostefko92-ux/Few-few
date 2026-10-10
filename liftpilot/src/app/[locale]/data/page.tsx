@@ -40,7 +40,7 @@ export default async function DataPage({ params }: { params: Promise<{ locale: s
   return (
     <>
       <SiteHeader />
-      <main className="legal">
+      <main id="main" className="legal">
         <h1>{t('title')}</h1>
         <p className="note"><time dateTime={EXPORT_REGISTER_DATE}>{t('updated', { date: dateText(locale, EXPORT_REGISTER_DATE) })}</time></p>
         <p className="lead">{t('lead', v)}</p>

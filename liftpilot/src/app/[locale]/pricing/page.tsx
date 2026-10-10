@@ -71,7 +71,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
   return (
     <>
       <SiteHeader />
-      <main className="legal pricing">
+      <main id="main" className="legal pricing">
         <h1>{t('title')}</h1>
         <p id="answer" className="lead">{answer}</p>
         <section aria-labelledby="q-packs">

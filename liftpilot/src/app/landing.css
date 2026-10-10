@@ -1,6 +1,60 @@
-/* Shared by the public pages: the machine stage (the landing's hero, beside the sign-in forms), a question with its
-   answer (pricing), the sign-in and registration forms, the legal pages (the small label over a heading, .eyebrow, is
-   in ui.css). The landing's own sheet is in home.css. */
+/* Shared by the public pages: the header and the footer (after the Premium template), the machine stage beside the
+   sign-in forms, a question with its answer (pricing), the sign-in and registration forms, the legal pages (the small
+   label over a heading, .eyebrow, is in ui.css). The landing's own sheet is in home.css. */
+.lp, .site-header, .site-footer { --gutter: clamp(20px, 4.4vw, 64px); --page: 1312px; --hdr: 82px; }
+
+/* ── header: logo, the landing's sections, language, the way in; a drawer under 1080 px ─────────────────────────── */
+.site-header { position: sticky; top: 0; z-index: 50; background: color-mix(in srgb, var(--bg) 96%, transparent); border-bottom: 1px solid var(--rule-soft); }
+.site-header-inner { display: flex; align-items: center; gap: 34px; height: var(--hdr); width: 100%; max-width: calc(var(--page) + 2 * var(--gutter));
+  margin-inline: auto; padding-inline: var(--gutter); }
+.site-logo { display: inline-flex; flex: none; align-items: center; border-radius: 4px; }
+.site-logo img { display: block; height: 42px; width: auto; }
+.main-nav { display: flex; align-items: center; gap: 28px; }
+.main-nav a, .drawer-nav a { color: var(--ink-2); font: 700 14px/1.2 var(--font-body); text-decoration: none; }
+.main-nav a:hover, .drawer-nav a:hover { color: var(--accent); }
+.header-actions { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.site-header .langs { border: 0; border-radius: 0; gap: 2px; }
+.site-header .langs a { padding: 8px 6px; font: 400 12px/1 var(--font-mono); letter-spacing: .08em; color: var(--muted); background: none; border-bottom: 1px solid transparent; }
+.site-header .langs a:hover { color: var(--ink); }
+.site-header .langs a[aria-current="true"] { color: var(--accent); background: none; border-bottom-color: var(--accent); }
+.nav-drawer { display: none; }
+.nav-drawer > summary { list-style: none; }
+.nav-drawer > summary::-webkit-details-marker { display: none; }
+.nav-drawer .when-open, .nav-drawer[open] .when-closed { display: none; }
+.nav-drawer[open] .when-open { display: inline-block; }
+.drawer-backdrop { position: fixed; inset: var(--hdr) 0 0; z-index: 1; background: rgb(0 0 0 / .55); }
+.drawer-panel { position: fixed; top: var(--hdr); left: 0; right: 0; z-index: 2; max-height: calc(100svh - var(--hdr)); overflow-y: auto;
+  padding: 8px var(--gutter) 22px; background: var(--surface); border-bottom: 1px solid var(--rule); box-shadow: var(--shadow-lg); }
+.drawer-nav { display: flex; flex-direction: column; }
+.drawer-nav a { padding: 15px 4px; border-bottom: 1px solid var(--rule-soft); font-size: 15px; }
+.drawer-actions { display: flex; gap: 10px; margin-top: 18px; }
+.drawer-actions .btn { flex: 1; }
+@media (max-width: 1080px) {
+  .main-nav { display: none; }
+  .nav-drawer { display: block; }
+}
+@media (max-width: 720px) {
+  .site-header { --hdr: 66px; }
+  .site-header-inner { gap: 12px; }
+  .site-logo img { height: 34px; }
+  .header-actions { gap: 8px; }
+  .header-wide { display: none; }
+}
+
+/* ── footer: logo, year and note, links, the credit, the provider in small print ─────────────────────────────────── */
+.site-footer { border-top: 1px solid var(--rule-soft); }
+.site-footer .inner { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px 24px; width: 100%;
+  max-width: calc(var(--page) + 2 * var(--gutter)); margin-inline: auto; padding: 24px var(--gutter) 30px; font-size: 13px; line-height: 1.5; color: var(--dim); }
+.footer-logo img { display: block; height: 36px; width: auto; }
+.footer-links { display: inline-flex; flex-wrap: wrap; gap: 8px 18px; }
+.footer-link { color: var(--muted); text-decoration: none; }
+.footer-link:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.footer-credit { grid-column: 1 / -1; color: var(--muted); }
+.footer-provider { grid-column: 1 / -1; font-size: 12px; overflow-wrap: anywhere; }
+@media (max-width: 720px) {
+  .site-footer .inner { grid-template-columns: minmax(0, 1fr); }
+}
+
 .stage { margin: 0; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 .stage-frame { position: relative; aspect-ratio: 4 / 3; max-width: 100%; border-radius: 16px; overflow: hidden; background: var(--stage-bg); isolation: isolate;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06), var(--shadow-lg); }
@@ -39,11 +93,10 @@ label.check.consent input[aria-invalid="true"] { outline: 2px solid var(--fail);
 .legal h2 { margin: 26px 0 0; padding-top: 14px; border-top: 1px solid var(--rule); }
 .legal h3 { margin: 12px 0 0; font-size: 16px; }
 .legal p { margin: 0; max-width: 70ch; }
-.footer-links { display: inline-flex; flex-wrap: wrap; gap: 8px 18px; }
 .legal section { display: flex; flex-direction: column; gap: 8px; }
 .legal-meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
 @media print {
-  .topbar, .site-footer, .print-hide { display: none !important; }
+  .topbar, .site-header, .skip-link, .site-footer, .print-hide { display: none !important; }
   .legal { max-width: none; padding: 0; }
   .legal p { max-width: none; }
 }
