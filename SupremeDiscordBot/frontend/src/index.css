@@ -8,6 +8,8 @@
 @import "@fontsource/inter-tight/700.css";
 @import "@fontsource/inter-tight/800.css";
 @import "@fontsource/inter-tight/900.css";
+@import "@fontsource/montserrat/800.css";
+@import "@fontsource/montserrat/900.css";
 @import "@fontsource/space-mono/400.css";
 @import "@fontsource/space-mono/700.css";
 
@@ -23,7 +25,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-  html { background: #050804; }
+  html { background: #020605; }
   html, body, #root {
     width: 100%;
     min-height: 100vh;
@@ -45,7 +47,9 @@
     inset: 0;
     z-index: -1;
     background:
-      linear-gradient(180deg, rgba(5, 8, 4, 0.70) 0%, rgba(5, 8, 4, 0.82) 55%, rgba(5, 8, 4, 0.92) 100%),
+      /* По-тъмна завеса по концепцията: секциите стоят на почти черно (#010706),
+         мъглявината остава само като едва видима текстура. */
+      linear-gradient(180deg, rgba(1, 7, 6, 0.84) 0%, rgba(1, 7, 6, 0.93) 50%, rgba(1, 7, 6, 0.97) 100%),
       url("/bg-cosmos.jpg") center center / cover no-repeat;
     pointer-events: none;
   }
@@ -57,6 +61,12 @@
   h1 { @apply text-4xl lg:text-5xl font-extrabold tracking-tight-4; }
   h2 { @apply text-2xl lg:text-3xl font-bold; }
   h3 { @apply text-xl font-bold; }
+
+  /* Заглавието на всяка страница в таблото — едно и също (концепцията,
+     10.10.2026): 28–30 px, получерно, стегнато. Идентификаторът печели срещу
+     старите класове по страниците, без да се пипат двайсет файла. */
+  #main-content h1 { font-size: 1.75rem; line-height: 1.15; font-weight: 700; letter-spacing: -0.02em; }
+  @media (min-width: 640px) { #main-content h1 { font-size: 1.875rem; } }
 
   a { color: inherit; }
 
@@ -87,17 +97,38 @@
   /* Премиум ниво (10.10.2026): по-голям радиус, фина светлина по горния ръб
      (дълбочина без сенки) и БЕЗ hover на всяка карта — реакция само там,
      където картата е действие (cs-card-link). */
+  /* Концепцията (10.10.2026): тъмна зелено-синкава плоча, фина линия
+     (`cs-line`) и радиус 12 px — рамката е декорация, не граница на контрола. */
   .cs-card {
-    @apply bg-cs-surface border border-cs-border rounded-2xl p-6
+    @apply bg-cs-surface border border-cs-line rounded-xl p-6
            transition-colors duration-200;
-    box-shadow: inset 0 1px 0 rgba(240, 240, 235, 0.045);
+    box-shadow: inset 0 1px 0 rgba(240, 240, 235, 0.035);
   }
   .cs-card-link { @apply cursor-pointer; }
-  .cs-card-link:hover { @apply border-cs-borderHi bg-cs-panel/60; }
+  .plan-card-hi {
+    background: linear-gradient(180deg, rgba(143, 230, 0, 0.08), rgba(143, 230, 0, 0.02) 45%, transparent), #061010;
+    box-shadow: 0 0 0 1px rgba(143, 230, 0, 0.22), 0 0 36px rgba(143, 230, 0, 0.12);
+  }
+  .cs-card-link:hover { @apply border-cs-cyan/40 bg-cs-panel/60; }
 
   .cs-panel {
-    @apply bg-cs-panel border border-cs-border rounded-xl;
+    @apply bg-cs-panel border border-cs-line rounded-xl;
   }
+
+  /* Икона в квадрат с лайм рамка и слабо сияние — картите „осем бота“,
+     функциите и бързите действия в таблото. */
+  .cs-icon-tile {
+    @apply flex-none w-11 h-11 rounded-lg border border-cs-cyan/45 bg-cs-cyan/[0.06]
+           text-cs-cyan flex items-center justify-center;
+    box-shadow: 0 0 18px rgba(143, 230, 0, 0.12), inset 0 0 12px rgba(143, 230, 0, 0.06);
+  }
+
+  /* Заглавията на секциите в лендинга — широки главни (Montserrat Black). */
+  .cs-section-title {
+    @apply font-wide font-black uppercase text-cs-text
+           text-[1.65rem] sm:text-[2rem] lg:text-[2.25rem] leading-[1.06] tracking-[-0.005em] text-balance;
+  }
+  .cs-section-sub { @apply text-cs-muted text-base sm:text-lg mt-2; }
 
   /* ─── Buttons ─── */
   /* Бутоните: обикновен регистър, един ред, ясно действие (не крещят с главни
@@ -108,7 +139,7 @@
            whitespace-nowrap
            transition-all duration-200
            cursor-pointer select-none
-           rounded-xl
+           rounded-lg
            border
            focus-visible:outline-none
            focus-visible:ring-2 focus-visible:ring-cs-cyan
@@ -147,7 +178,7 @@
            text-cs-text placeholder-cs-dim
            font-sans text-sm
            focus:outline-none focus:border-cs-cyan focus:shadow-cs-cyan-sm
-           transition-colors rounded-xl;
+           transition-colors rounded-lg;
   }
   .cs-select { @apply cs-input appearance-none cursor-pointer pr-10; }
   .cs-textarea { @apply cs-input font-mono text-xs leading-relaxed resize-y; }
@@ -179,8 +210,9 @@
     @apply absolute bottom-0 left-0 w-16 h-[2px] bg-cs-cyan;
   }
 
+  /* Надписът над заглавие — главни, разредени, лайм (по концепцията). */
   .cs-eyebrow {
-    @apply inline-block text-[13px] font-semibold text-cs-cyan mb-3;
+    @apply inline-block text-xs font-bold uppercase tracking-[0.16em] text-cs-cyan mb-3;
   }
 
   /* ─── Data table ─── */
@@ -188,12 +220,12 @@
     @apply w-full border-collapse text-sm;
   }
   .cs-table thead th {
-    @apply text-left px-4 py-3 border-b border-cs-border
-           text-[13px] font-semibold text-cs-muted bg-cs-bg;
+    @apply text-left px-4 py-3 border-b border-cs-line
+           text-xs font-semibold text-cs-dim bg-transparent;
   }
   .cs-table td { font-variant-numeric: tabular-nums; }
   .cs-table tbody td {
-    @apply px-4 py-3 border-b border-cs-border/50;
+    @apply px-4 py-3.5 border-b border-cs-line/70;
   }
   .cs-table tbody tr { @apply transition-colors; }
   .cs-table tbody tr:hover { @apply bg-cs-panel/50; }
@@ -442,10 +474,11 @@ html, body {
 .hero-aurora {
   position: absolute;
   inset: -20%;
+  /* Само лайм, както в концепцията: сияние зад арта вдясно и едва видимо
+     вляво горе. Лилавото и златното от старата аврора не са част от нея. */
   background:
-    radial-gradient(40% 50% at 20% 25%, rgba(143, 230, 0, 0.16), transparent 70%),
-    radial-gradient(35% 45% at 82% 18%, rgba(139, 92, 246, 0.12), transparent 70%),
-    radial-gradient(45% 55% at 65% 88%, rgba(240, 194, 76, 0.10), transparent 70%);
+    radial-gradient(38% 46% at 74% 30%, rgba(143, 230, 0, 0.14), transparent 70%),
+    radial-gradient(30% 40% at 16% 18%, rgba(143, 230, 0, 0.06), transparent 70%);
   filter: blur(18px);
   will-change: transform;
 }
@@ -456,103 +489,31 @@ html, body {
           mask-image: radial-gradient(120% 78% at 50% 0%, #000 28%, transparent 74%);
 }
 
-/* The "eight signals converge" funnel is now drawn on a <canvas> (see
-   SignalFunnel.jsx) — no SVG, and the reduced-motion / rAF-pause discipline
-   lives in JS there instead of a CSS animation. */
+/* Артът на героя (изрязан от одобрената концепция): ръбовете се топят във
+   фона на страницата — без рамка и без кутия, както в концепцията. */
+.hero-art {
+  /* closest-side: прозрачността стига нула точно на всеки ръб — нито един
+     прав ръб на изрязването не остава видим. */
+  -webkit-mask-image: radial-gradient(closest-side, #000 62%, transparent 100%);
+          mask-image: radial-gradient(closest-side, #000 62%, transparent 100%);
+}
+
+/* Картата върху арта: на телефон — центрирана долу (иначе излиза извън
+   екрана); от sm нагоре — точно където е в концепцията. */
+.hero-art-card { left: 50%; bottom: 0.5rem; transform: translateX(-50%); }
+@media (min-width: 640px) {
+  .hero-art-card { left: 46%; top: 68%; bottom: auto; transform: none; }
+}
 
 @media (prefers-reduced-motion: no-preference) {
   .hero-aurora {
     animation: hero-aurora-drift 26s ease-in-out infinite alternate;
-  }
-  .hero-converge-core {
-    animation: hero-core-glow 4s ease-in-out infinite;
   }
 }
 
 @keyframes hero-aurora-drift {
   0%   { transform: translate3d(-2%, -1%, 0) scale(1); }
   100% { transform: translate3d(2%, 2%, 0) scale(1.08); }
-}
-
-@keyframes hero-core-glow {
-  0%, 100% { box-shadow: 0 0 0 1px rgba(143, 230, 0, 0.35), 0 0 26px rgba(143, 230, 0, 0.12); }
-  50%      { box-shadow: 0 0 0 1px rgba(143, 230, 0, 0.65), 0 0 42px rgba(143, 230, 0, 0.28); }
-}
-
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* SUPREMACY CREST — гербът на командния екран (dashboard overview).           */
-/*                                                                             */
-/* Същата дисциплина като hero-а на landing-а: всяка анимация е ≥3s, само      */
-/* opacity/transform/box-shadow, нула ефекти >3×/s (WCAG 2.3.1), и целият      */
-/* блок е СТАТИЧЕН по подразбиране — движението живее само в                   */
-/* `prefers-reduced-motion: no-preference`. Заглавието (h1) никога не се       */
-/* анимира: то е първото, което човек чете.                                    */
-/* ─────────────────────────────────────────────────────────────────────────── */
-
-.crest {
-  position: relative;
-  overflow: hidden;
-  border: 1px solid var(--crest-line, rgba(143, 230, 0, 0.22));
-  border-radius: 14px;
-  background:
-    radial-gradient(120% 140% at 12% 0%, rgba(143, 230, 0, 0.10), transparent 62%),
-    radial-gradient(90% 120% at 88% 10%, rgba(240, 194, 76, 0.07), transparent 66%),
-    linear-gradient(180deg, rgba(20, 29, 16, 0.92), rgba(7, 10, 6, 0.92));
-}
-
-/* Бавно дишащ ореол зад герба. Отделен слой, за да не пипа четимостта. */
-.crest-aura {
-  position: absolute;
-  inset: -30%;
-  pointer-events: none;
-  background:
-    radial-gradient(38% 48% at 18% 30%, rgba(143, 230, 0, 0.16), transparent 70%),
-    radial-gradient(34% 44% at 84% 22%, rgba(240, 194, 76, 0.10), transparent 70%);
-  filter: blur(22px);
-  will-change: transform;
-}
-
-/* Тънка мрежа — „команден пулт“, не украса. Маскирана да не спори с текста. */
-.crest-grid {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.35;
-  background-image:
-    linear-gradient(rgba(143, 230, 0, 0.10) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(143, 230, 0, 0.10) 1px, transparent 1px);
-  background-size: 44px 44px;
-  -webkit-mask-image: radial-gradient(120% 90% at 50% 0%, #000 22%, transparent 78%);
-          mask-image: radial-gradient(120% 90% at 50% 0%, #000 22%, transparent 78%);
-}
-
-/* Ръбът на плана — свети според тарифата (цветът идва отвън, инлайн). */
-.crest-rail {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  border-radius: 14px 0 0 14px;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .crest-aura {
-    animation: crest-drift 30s ease-in-out infinite alternate;
-  }
-  .crest-rail {
-    animation: crest-rail-pulse 5.5s ease-in-out infinite;
-  }
-}
-
-@keyframes crest-drift {
-  0%   { transform: translate3d(-2%, -1%, 0) scale(1); }
-  100% { transform: translate3d(2%, 2%, 0) scale(1.07); }
-}
-
-@keyframes crest-rail-pulse {
-  0%, 100% { opacity: 0.55; }
-  50%      { opacity: 1; }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
@@ -569,7 +530,9 @@ html, body {
   --window: #0b0f09;
 }
 .bt-ink { color: var(--lure); }
-.bt-title { letter-spacing: -0.035em; }
+/* Заглавието вече е широките главни на концепцията (cs-section-title) —
+   стегнатата разредка тук ги слепваше. */
+.bt-title { letter-spacing: -0.005em; }
 .bt-water {
   opacity: 0.9;
   background:
@@ -609,7 +572,7 @@ html, body {
 .bt-msg { position: relative; display: flex; gap: 0.8rem; align-items: flex-start; }
 .bt-avatar {
   flex: none; width: 38px; height: 38px; border-radius: 50%;
-  display: grid; place-items: center; font-weight: 800; color: #070a06;
+  display: grid; place-items: center; font-weight: 800; color: #030807;
 }
 .bt-avatar-bot { background: #8fe600; }
 .bt-avatar-spam { background: #b0476a; color: #fff; }
@@ -695,7 +658,7 @@ html, body {
 .tk-panel.tk-dim { opacity: 0.45; }
 .tk-btn { display: inline-block; margin-top: 0.6rem; padding: 0.35rem 0.8rem; border-radius: 6px; background: #248046; color: #fff; font-size: 0.8rem; font-weight: 700; }
 .tk-avatar { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; background: #4b5a44; color: #f0f0eb; }
-.tk-avatar-bot { background: #8fe600; color: #070a06; }
+.tk-avatar-bot { background: #8fe600; color: #030807; }
 .tk-avatar-staff { background: #2588c5; color: #fff; }
 .tk-ai { display: inline-flex; align-items: center; gap: 0.2rem; margin-left: 0.35rem; padding: 1px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 700; background: rgba(143, 230, 0, 0.15); color: #b7f24d; vertical-align: 1px; }
 .tk-system { font-size: 0.85rem; color: #aaaaaa; padding-left: 0.2rem; }
@@ -706,11 +669,11 @@ html, body {
 
 .tk-rail { list-style: none; margin: 0; padding: 0; }
 .tk-step { position: relative; display: grid; grid-template-columns: 1.75rem 1fr; column-gap: 0.75rem; align-items: center; color: #9a9a9a; flex: none; }
-.tk-dot { width: 1.75rem; height: 1.75rem; border-radius: 50%; display: grid; place-items: center; font-size: 0.75rem; font-weight: 700; border: 1px solid #4b5a44; background: #0d130b; color: #9a9a9a; }
+.tk-dot { width: 1.75rem; height: 1.75rem; border-radius: 50%; display: grid; place-items: center; font-size: 0.75rem; font-weight: 700; border: 1px solid #4b5a44; background: #061010; color: #9a9a9a; }
 .tk-label { font-weight: 600; }
 .tk-time { grid-column: 2; font-size: 0.75rem; color: #8fe600; min-height: 1rem; }
 .tk-step-on { color: #f0f0eb; }
-.tk-step-on .tk-dot { background: #8fe600; border-color: #8fe600; color: #070a06; }
+.tk-step-on .tk-dot { background: #8fe600; border-color: #8fe600; color: #030807; }
 @media (min-width: 1024px) {
   .tk-step { padding-bottom: 1.6rem; }
   .tk-step:not(:last-child)::after { content: ""; position: absolute; left: calc(0.875rem - 1px); top: 1.85rem; bottom: 0.15rem; width: 2px; background: #263021; }

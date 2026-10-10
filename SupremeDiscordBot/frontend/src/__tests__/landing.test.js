@@ -12,6 +12,7 @@ import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { LANDING_TRANSLATIONS } from "../i18n/landing.js";
+import { LANDING_CONCEPT, BOT_KEYS } from "../i18n/landingConcept.js";
 
 const SRC = join(dirname(fileURLToPath(import.meta.url)), "..");
 const LOCALES = Object.keys(LANDING_TRANSLATIONS);
@@ -81,37 +82,68 @@ describe("landing · икони", () => {
 });
 
 describe("landing · маркетингови твърдения", () => {
-  // Броят заместени ботове се появява в заглавието, надзаглавието и
-  // подзаглавието на ВСЕКИ език. Разминат ли се, сайтът си противоречи.
-  const EIGHT = /осем|acht|ocho|huit|otto|osiem|\b8\b/i;
+  // По одобрената концепция (10.10.2026) „осемте бота“ са заглавието на втората
+  // секция, а под него стоят самите осем карти — на всеки от 8-те езика.
+  // Разминат ли се броят в заглавието и картите, сайтът си противоречи.
+  const EIGHT = /eight|осем|acht|ocho|huit|otto|osiem|\b8\b/i;
+  const CONCEPT_LOCALES = Object.keys(LANDING_CONCEPT);
 
-  it("твърдението „един бот вместо N“ е едно и също на всички езици", () => {
-    for (const loc of LOCALES) {
-      const t = LANDING_TRANSLATIONS[loc];
-      expect(t.eyebrow, `${loc}: eyebrow`).toMatch(EIGHT);
-      expect(t.h1a, `${loc}: заглавие`).toMatch(EIGHT);
-      expect(t.featuresSub, `${loc}: подзаглавие`).toMatch(EIGHT);
+  it("концепцията покрива английския и седемте превода", () => {
+    expect(CONCEPT_LOCALES.sort()).toEqual(["bg", "de", "en", "es", "fr", "it", "nl", "pl"]);
+  });
+
+  it("твърдението „осем бота“ е едно и също на всички езици", () => {
+    for (const loc of CONCEPT_LOCALES) {
+      expect(LANDING_CONCEPT[loc].botsTitle, `${loc}: заглавие на ботовете`).toMatch(EIGHT);
     }
   });
 
-  it("английската версия и визуалният блок казват същото", () => {
-    const login = read("pages", "Login.jsx");
-    expect(login).toContain("Eight bots. Eight bills.");
-    expect(login).toContain("One bot replaces eight.");
-    expect(login).toContain("Before: eight bots");
-    expect(login).not.toMatch(/\bsix bots\b/i);
+  it("картите изброяват точно толкова бота, колкото казва заглавието", () => {
+    expect(BOT_KEYS).toHaveLength(8);
+    for (const loc of CONCEPT_LOCALES) {
+      const bots = LANDING_CONCEPT[loc].bots;
+      expect(bots, `${loc}: брой карти`).toHaveLength(BOT_KEYS.length);
+      for (const [title, sub] of bots) {
+        expect(title?.trim(), `${loc}: карта без име`).toBeTruthy();
+        expect(sub?.trim(), `${loc}/${title}: карта без описание`).toBeTruthy();
+      }
+    }
+    // Всяка карта води някъде — иначе е бутон в нищото.
+    const src = read("components", "LandingConcept.jsx");
+    const links = src.match(/const BOT_LINKS = \{([\s\S]*?)\};/);
+    expect(links, "BOT_LINKS не е намерен").toBeTruthy();
+    for (const k of BOT_KEYS) expect(links[1], `липсва връзка за ${k}`).toMatch(new RegExp(`\\b${k}:\\s*"/`));
   });
 
-  it("визуалният блок изброява точно толкова бота, колкото твърди", () => {
+  it("всеки език има пълен комплект текстове на концепцията", () => {
+    const shape = Object.keys(LANDING_CONCEPT.en).sort();
+    for (const loc of CONCEPT_LOCALES) {
+      const c = LANDING_CONCEPT[loc];
+      expect(Object.keys(c).sort(), `${loc}: различни ключове`).toEqual(shape);
+      expect(c.h1, `${loc}: заглавието е от три реда`).toHaveLength(3);
+      expect(c.trust, `${loc}: три доверителни точки`).toHaveLength(3);
+      expect(c.euFacts, `${loc}: два факта за ЕС`).toHaveLength(2);
+      for (const [k, v] of Object.entries(c)) {
+        if (typeof v === "string") expect(v.trim(), `${loc}/${k}: празно`).toBeTruthy();
+      }
+    }
+  });
+
+  it("твърденията от концепцията, които НЕ са верни, не са пренесени", () => {
+    // 1.2M+ сървъра (измислено), 24/7 поддръжка (best-effort по EULA §12.3),
+    // „най-популярен“ (нямаме данни) — нито на английски, нито в превод.
+    // Само кодът и данните — коментарите обясняват точно кои твърдения отпаднаха.
+    const code = (...p) => read(...p).split("\n").filter((l) => !/^\s*(\/\/|\*|\/\*|\{\/\*)/.test(l)).join("\n");
+    const all = JSON.stringify(LANDING_CONCEPT) + code("components", "LandingConcept.jsx") + code("pages", "Login.jsx");
+    expect(all).not.toMatch(/1[.,]2\s*M\+?|24\s*\/\s*7|most popular|najpopularniejsz|meistgewählt|le plus populaire|más popular|più popolare|meest populair|най-популярн/i);
+  });
+
+  it("английската страница рисува секциите на концепцията", () => {
     const login = read("pages", "Login.jsx");
-    const chips = login.match(/const replaced = \[([\s\S]*?)\];/);
-    const funnel = login.match(/const funnelTops = \[([^\]]*)\];/);
-    expect(chips && funnel).toBeTruthy();
-    const chipCount = [...chips[1].matchAll(/label:/g)].length;
-    const flowCount = funnel[1].split(",").filter((x) => x.trim()).length;
-    expect(chipCount).toBe(8);
-    // По една крива на чип — иначе фунията рисува потоци от нищото.
-    expect(flowCount, "кривите на фунията не съвпадат с чиповете").toBe(chipCount);
+    for (const part of ["<ConceptHero", "<BotsSection", "<FeaturesSection", "<DemoCard", "<PlansSection", "<FaqSection"]) {
+      expect(login, `Login.jsx без ${part}`).toContain(part);
+    }
+    expect(login).not.toMatch(/\bsix bots\b/i);
   });
 });
 

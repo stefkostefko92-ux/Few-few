@@ -20,6 +20,7 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { LANDING_TRANSLATIONS } from "../src/i18n/landing.js";
+import { LANDING_CONCEPT } from "../src/i18n/landingConcept.js";
 import { BAIT_COPY } from "../src/i18n/landingBait.js";
 import { COMMAND_CATALOG } from "../src/data/commandsCatalog.js";
 import {
@@ -155,6 +156,9 @@ function baitSnapshot(locale) {
 
 // ─── content snapshot from a landing translation object ──────────────────────
 function landingSnapshot(t) {
+  // Героят и заглавията — от одобрената концепция (същите като на живата страница).
+  const c = LANDING_CONCEPT[t.locale] || LANDING_CONCEPT.en;
+  const bots = c.bots.map(([n, d]) => `<li><h3>${esc(n)}</h3><p>${esc(d)}</p></li>`).join("");
   const features = t.features.map(
     (f) => `<li><h3>${esc(f.title)}</h3><p>${esc(f.desc)}</p></li>`
   ).join("");
@@ -173,16 +177,17 @@ function landingSnapshot(t) {
       }</tbody></table></section>`
     : "";
   return `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
-    <p>${esc(t.eyebrow)}</p>
-    <h1>${esc(t.h1a)} ${esc(t.h1b)}</h1>
-    <p>${esc(t.sub)}</p>
-    <section><h2>${esc(t.featuresHeading)}</h2><p>${esc(t.featuresSub)}</p><ul>${features}</ul></section>
+    <p>${esc(c.eyebrow)}</p>
+    <h1>${esc(c.h1.join(" "))}</h1>
+    <p>${esc(c.sub)}</p>
+    <section><h2>${esc(c.botsTitle)}</h2><p>${esc(c.botsSub)}</p><ul>${bots}</ul></section>
+    <section><h2>${esc(c.featuresTitle)}</h2><p>${esc(c.featuresSub)}</p><ul>${features}</ul></section>
     ${t.game ? `<section><h2>${esc(t.game.heading)}</h2><p>${esc(t.game.sub)}</p><ul>${t.game.bullets.map((b) => `<li>${esc(b)}</li>`).join("")}</ul></section>` : ""}
     ${baitSnapshot(t.locale)}
     <section><h2>${esc(t.euHeading)}</h2><ul>${eu}</ul></section>
     ${compare}
-    <section><h2>${esc(t.faqHeading)}</h2>${faq}</section>
-    <section><h2>${esc(t.pricingHeading)}</h2>${tier(t.tiers.free)}${tier(t.tiers.premium)}${tier(t.tiers.whitelabel)}${
+    <section><h2>${esc(c.faqTitle)}</h2>${faq}</section>
+    <section><h2>${esc(c.plansTitle)}</h2>${tier(t.tiers.free)}${tier(t.tiers.premium)}${tier(t.tiers.whitelabel)}${
       t.priceNote ? `<p>${esc(t.priceNote)}</p>` : ""
     }</section>
     ${guideLinks(t)}
@@ -289,9 +294,10 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
   }</tbody></table>`;
   const upsellPassage = "Free gets you running; Premium gets you scaling. The Free tier gives one ticket panel, two application forms and 30-day transcript retention — enough to run real support today at no cost. Premium (€4.99 per server per month, sold as a monthly subscription in the Discord store) raises the limits to 50 panels, 50 forms and 50 questions each, and unlocks AI auto-replies, round-robin assignment, conditional form logic, 20 webhook integrations, a public REST API, advanced analytics and unlimited transcript retention. The White-label tier (€9.99/month) adds a custom bot that runs under your own brand. Billing is per server and handled by Discord, so a small community can stay on Free while your main server runs Premium; cancel anytime in Discord; panels, forms and settings are kept, while transcripts of tickets closed more than 30 days ago are deleted once the server is back on Free.";
   const rootSnapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
-    <p>One bot replaces eight. Built in the EU.</p>
-    <h1>Supreme Bot — Discord Ticket Bot &amp; SaaS Platform</h1>
-    <p>Eight bots. Eight bills. One dashboard. Tickets, applications, verification, giveaways, scheduled messages, webhooks and AI-powered replies for Discord communities that outgrew a folder full of single-purpose bots. Multi-tenant Discord bot management by Carbon Stealth VCC — EU-hosted (Germany), GDPR-native.</p>
+    <p>${esc(LANDING_CONCEPT.en.eyebrow)}</p>
+    <h1>${esc(LANDING_CONCEPT.en.h1.join(" "))}</h1>
+    <p>${esc(LANDING_CONCEPT.en.sub)} Supreme Bot is a Discord ticket bot and all-in-one platform: tickets, applications, verification, giveaways, scheduled messages, webhooks and AI-assisted replies. Multi-tenant Discord bot management by Carbon Stealth VCC — EU-hosted (Germany), GDPR-native.</p>
+    <section><h2>${esc(LANDING_CONCEPT.en.botsTitle)}</h2><p>${esc(LANDING_CONCEPT.en.botsSub)}</p><ul>${LANDING_CONCEPT.en.bots.map(([n, d]) => `<li><h3>${esc(n)}</h3><p>${esc(d)}</p></li>`).join("")}</ul></section>
     <section><h2>Free vs Premium</h2><p>${upsellPassage}</p>${compareHtml}</section>
     <section><h2>Everything, integrated</h2><ul>${featuresHtml}</ul></section>
     <section><h2>Simple pricing, per server</h2>${pricingHtml}</section>

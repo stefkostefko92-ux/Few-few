@@ -14,14 +14,14 @@ export default function StatTile({ icon: Icon, label, value, unit, deltaPct, hin
   const flat = deltaPct === 0;
 
   return (
-    <div className="cs-card !p-4">
+    <div className="cs-card !p-5">
       <div className="flex items-start justify-between gap-2">
-        <p className="text-xs text-cs-dim">{label}</p>
+        <p className="text-[13px] text-cs-dim">{label}</p>
         {Icon && <Icon className="w-4 h-4 text-cs-cyan flex-shrink-0" aria-hidden="true" />}
       </div>
 
       <div className="mt-2 flex items-baseline gap-1.5">
-        <span className="text-3xl font-bold text-cs-text leading-none">{has ? value : "—"}</span>
+        <span className="text-[2rem] font-bold text-cs-text leading-none tracking-tight">{has ? value : "—"}</span>
         {has && unit && <span className="text-sm text-cs-muted">{unit}</span>}
       </div>
 

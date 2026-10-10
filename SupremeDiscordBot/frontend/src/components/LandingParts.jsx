@@ -3,26 +3,10 @@
 // (LandingLocalized.jsx). Живеят в главния бъндъл (Login е там), затова
 // чънкът на преводите олеква, вместо да расте (бюджет 30 KB gz).
 //
-// Премиум ниво (10.10.2026): без низове, слепени с „·“, без главни букви и
-// моно надписи — ред с отметки и истински футър с колони.
-import { Check } from "lucide-react";
+// Футърът с колони (10.10.2026); героят и секциите по концепцията са в
+// components/LandingConcept.jsx.
 import SupremeLogo, { SupremeWordmark } from "./SupremeLogo";
 import { FEATURES_HUB, FEATURE_PAGES } from "../data/featurePages";
-
-/** „А · Б · В“ от превода → кратък списък с отметки (един ред на широк екран). */
-export function TrustLine({ text, className = "" }) {
-  const items = String(text || "").split(/\s+·\s+/).filter(Boolean);
-  return (
-    <ul className={`flex flex-wrap items-center justify-center lg:justify-start gap-x-5 gap-y-2 text-sm text-cs-dim ${className}`}>
-      {items.map((it) => (
-        <li key={it} className="inline-flex items-center gap-1.5">
-          <Check className="w-3.5 h-3.5 text-cs-cyan flex-none" aria-hidden="true" />
-          <span>{it}</span>
-        </li>
-      ))}
-    </ul>
-  );
-}
 
 const LANGS = [
   ["en", "/", "English"], ["bg", "/bg", "Български"], ["de", "/de", "Deutsch"], ["es", "/es", "Español"],

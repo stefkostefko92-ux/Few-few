@@ -13,7 +13,7 @@ export default function ProductTour({ locale = "en" }) {
     <section id="tour" className="px-6 sm:px-8 py-24">
       <div className="max-w-6xl mx-auto">
         <div data-reveal className="text-center max-w-3xl mx-auto mb-10">
-          <h2 className="font-display font-black text-4xl sm:text-5xl text-cs-text leading-[1.02] tracking-tight text-balance">{t.heading}</h2>
+          <h2 className="cs-section-title">{t.heading}</h2>
           <p className="text-cs-muted text-lg mt-4">{t.sub}</p>
         </div>
         <div className="flex flex-wrap justify-center gap-2 mb-6" role="group" aria-label={t.heading}>

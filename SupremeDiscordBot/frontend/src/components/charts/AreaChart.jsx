@@ -142,8 +142,8 @@ export default function AreaChart({ data = [], height = 220, className = "" }) {
         {hover != null && (
           <g pointerEvents="none">
             <line x1={pts[hover].x} y1={PAD.top} x2={pts[hover].x} y2={PAD.top + plotH} stroke="rgba(255,255,255,0.18)" strokeWidth="1" />
-            <circle cx={pts[hover].x} cy={pts[hover].yClosed} r="4.5" fill={SERIES.closed.stroke} stroke="#0d130b" strokeWidth="2" />
-            <circle cx={pts[hover].x} cy={pts[hover].yOpened} r="4.5" fill={SERIES.opened.stroke} stroke="#0d130b" strokeWidth="2" />
+            <circle cx={pts[hover].x} cy={pts[hover].yClosed} r="4.5" fill={SERIES.closed.stroke} stroke="#061010" strokeWidth="2" />
+            <circle cx={pts[hover].x} cy={pts[hover].yOpened} r="4.5" fill={SERIES.opened.stroke} stroke="#061010" strokeWidth="2" />
           </g>
         )}
       </svg>

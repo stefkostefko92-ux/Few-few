@@ -47,8 +47,8 @@ export default function TicketShowcase({ locale = "en", href = "/features/discor
     <section id="demo" className="relative px-6 sm:px-8 py-24 overflow-hidden">
       <div className="relative max-w-6xl mx-auto">
         <div data-reveal className="max-w-3xl mb-12">
-          <h2 className="font-display font-black text-4xl sm:text-5xl text-cs-text leading-[1.02] tracking-tight text-balance">{t.heading}</h2>
-          <p className="text-cs-muted text-lg mt-4 text-pretty max-w-2xl">{t.sub}</p>
+          <h2 className="cs-section-title">{t.heading}</h2>
+          <p className="cs-section-sub text-pretty max-w-2xl">{t.sub}</p>
         </div>
 
         <figure ref={rootRef} className="m-0 grid lg:grid-cols-[14rem_1fr] gap-6 lg:gap-10 items-start">

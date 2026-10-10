@@ -10,13 +10,12 @@ import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Ticket, FileText, Layout, Star, Users, ShieldCheck, Zap, LineChart, Key,
-  BookOpen, Webhook, Settings, Bot, CheckCircle2, Circle, ArrowRight,
-  Inbox, Timer, ClipboardList, Activity, Plus, Send, ChevronRight, AlertCircle,
+  Ticket, FileText, LineChart, Bot, CheckCircle2, Circle, ArrowRight, UserCheck,
+  Inbox, Timer, ClipboardList, Activity, Plus, Send, ChevronRight, AlertCircle, Star,
 } from "lucide-react";
 import { getServer, getPanels, getForms, getDashboard, getStatus } from "../api";
 import StatTile from "../components/StatTile";
-import ServerCrest from "../components/ServerCrest";
+import ServerMeta from "../components/ServerCrest";
 import AreaChart from "../components/charts/AreaChart";
 import BarList from "../components/charts/BarList";
 import { useT } from "../contexts/I18nContext";
@@ -74,24 +73,21 @@ export default function ServerHome() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-[1400px]">
-      {/* ── Герб ───────────────────────────────────────────────────────────
-          Заменя стария ред „иконка + име + значка Premium“. Показва ТАРИФАТА
-          поименно, състоянието на бота и заетите места при agency — всичко от
-          реалния отговор, нула догаждане в клиента. */}
-      {/* `/api/status` говори на речника operational|degraded|down. Тук се
-          сравняваше с "ok" — думата от ВЪТРЕШНИЯ `/health` на бота, която
-          backend-ът вече е превел. Значи условието беше винаги невярно и гербът
-          пишеше „БОТЪТ Е ОФЛАЙН" на напълно жив бот. (07.08.2026) */}
-      <ServerCrest server={server} botOnline={status?.services?.bot?.status === "operational"} />
+      {/* ── Заглавие (концепцията, 10.10.2026) ─────────────────────────────
+          Името на сървъра е в горната лента; тук — „Преглед“, подзаглавие и
+          тарифата/ботът като чипове. `/api/status` говори на речника
+          operational|degraded|down (не „ok“ — 07.08.2026). */}
+      <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
+        <div className="min-w-0">
+          <h1 className="!text-[1.75rem] sm:!text-3xl !font-bold !tracking-tight text-cs-text leading-tight">{t("overview.title")}</h1>
+          <p className="text-sm text-cs-muted mt-1">{t("overview.subtitle")}</p>
+          <div className="mt-3">
+            <ServerMeta server={server} botOnline={status?.services?.bot?.status === "operational"} />
+          </div>
+        </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-        <p className="text-sm text-cs-muted">{t("overview.subtitle")}</p>
-
-        {/* Един филтър-ред над всичко, което скоупва */}
-        {/* Сегментиран превключвател: една рамка, вътре само активният
-            сегмент е осветен — три отделни квадратни бутона четяха като три
-            различни действия. */}
-        <div className="inline-flex items-center gap-1 rounded-xl border border-cs-border bg-cs-surface/60 p-1" role="group" aria-label="Time range">
+        {/* Един филтър-ред над всичко, което скоупва — сегментиран превключвател. */}
+        <div className="inline-flex items-center gap-1 rounded-xl border border-cs-line bg-cs-surface/70 p-1" role="group" aria-label="Time range">
           {PERIODS.map((p) => (
             <button
               key={p}
@@ -100,7 +96,7 @@ export default function ServerHome() {
               aria-pressed={days === p}
               className={`min-h-[32px] px-3 rounded-lg text-[13px] font-medium tabular-nums transition-colors ${
                 days === p
-                  ? "bg-cs-cyan/15 text-cs-cyan"
+                  ? "bg-cs-cyan/15 text-cs-cyan ring-1 ring-inset ring-cs-cyan/35"
                   : "text-cs-muted hover:text-cs-text hover:bg-cs-panel"
               }`}
             >
@@ -113,9 +109,9 @@ export default function ServerHome() {
       {/* Задържаме предишния рендер при презареждане — без скелет-мигане */}
       <div className={dashFetching && !dashLoading ? "opacity-60 transition-opacity" : "transition-opacity"}>
         {/* ── KPI ред ──────────────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           {dashLoading ? (
-            Array.from({ length: 4 }).map((_, i) => <div key={i} className="cs-card h-[104px] animate-pulse bg-cs-panel" />)
+            Array.from({ length: 4 }).map((_, i) => <div key={i} className="cs-card h-[112px] animate-pulse bg-cs-panel" />)
           ) : (
             <>
               <StatTile icon={Ticket} label={t("overview.kpi.opened")} value={k?.ticketsOpened?.value}
@@ -130,59 +126,57 @@ export default function ServerHome() {
           )}
         </div>
 
-        {/* ── Активност + странична колона ─────────────────────────────── */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-6">
+        {/* ── Графика + „сега“ ─────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-4">
           <section className="cs-card xl:col-span-2" aria-labelledby="activity-h">
             <div className="flex items-center justify-between mb-3">
-              <h2 id="activity-h" className="font-semibold text-cs-text flex items-center gap-2">
+              <h2 id="activity-h" className="!text-base !font-semibold text-cs-text flex items-center gap-2">
                 <Activity className="w-4 h-4 text-cs-cyan" aria-hidden="true" /> {t("overview.activity")}
               </h2>
               <span className="text-[13px] text-cs-dim">{t("overview.kpi.lastDays", { days })}</span>
             </div>
             {dashLoading
-              ? <div className="h-[300px] animate-pulse bg-cs-panel rounded" />
-              : <AreaChart data={dash?.series || []} height={300} />}
+              ? <div className="h-[280px] animate-pulse bg-cs-panel rounded" />
+              : <AreaChart data={dash?.series || []} height={280} />}
           </section>
 
-          <div className="space-y-4">
-            <LiveStatePanel live={live} loading={dashLoading} satisfaction={dash?.satisfaction} />
-            <SystemStatusPanel status={status} />
-          </div>
+          <LiveStatePanel live={live} loading={dashLoading} satisfaction={dash?.satisfaction} />
         </div>
 
-        {/* ── Разпределение + последни тикети + бързи действия ─────────── */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-8">
-          <section className="cs-card" aria-labelledby="dist-h">
-            <h2 id="dist-h" className="font-semibold text-cs-text mb-3">{t("overview.byPanel")}</h2>
-            <BarList items={dash?.distribution || []} emptyLabel={t("overview.byPanel.empty")} />
-          </section>
-
-          <section className="cs-card" aria-labelledby="recent-h">
-            <div className="flex items-center justify-between mb-3">
-              <h2 id="recent-h" className="font-semibold text-cs-text">{t("overview.recentTickets")}</h2>
-              <Link to={`/dashboard/${serverId}/tickets`} className="text-xs text-cs-cyan hover:opacity-80 flex items-center gap-1">
-                {t("common.viewAll")} <ChevronRight className="w-3 h-3" aria-hidden="true" />
-              </Link>
-            </div>
-            <RecentTickets tickets={dash?.recentTickets} serverId={serverId} />
-          </section>
-
+        {/* ── Бързи действия + последни тикети (концепцията) ───────────── */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-4">
           <section className="cs-card" aria-labelledby="qa-h">
-            <h2 id="qa-h" className="font-semibold text-cs-text mb-3">{t("overview.quickActions")}</h2>
-            <div className="space-y-2">
+            <h2 id="qa-h" className="!text-base !font-semibold text-cs-text mb-4">{t("overview.quickActions")}</h2>
+            <div className="grid grid-cols-2 gap-3">
               <QuickAction to={`/dashboard/${serverId}/panels`} icon={Plus} label={t("overview.qa.createPanel")} />
               <QuickAction to={`/dashboard/${serverId}/forms`} icon={FileText} label={t("overview.qa.buildForm")} />
               <QuickAction to={`/dashboard/${serverId}/automation`} icon={Send} label={t("overview.qa.startGiveaway")} />
               <QuickAction to={`/dashboard/${serverId}/analytics`} icon={LineChart} label={t("overview.qa.openAnalytics")} />
             </div>
           </section>
+
+          <section className="cs-card xl:col-span-2" aria-labelledby="recent-h">
+            <div className="flex items-center justify-between mb-3">
+              <h2 id="recent-h" className="!text-base !font-semibold text-cs-text">{t("overview.recentTickets")}</h2>
+              <Link to={`/dashboard/${serverId}/tickets`} className="text-[13px] font-medium text-cs-cyan no-underline hover:underline flex items-center gap-1">
+                {t("common.viewAll")} <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
+              </Link>
+            </div>
+            <RecentTickets tickets={dash?.recentTickets} serverId={serverId} />
+          </section>
+        </div>
+
+        {/* ── Разпределение + здраве на платформата ────────────────────── */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-8">
+          <section className="cs-card" aria-labelledby="dist-h">
+            <h2 id="dist-h" className="!text-base !font-semibold text-cs-text mb-3">{t("overview.byPanel")}</h2>
+            <BarList items={dash?.distribution || []} emptyLabel={t("overview.byPanel.empty")} />
+          </section>
+          <SystemStatusPanel status={status} />
         </div>
       </div>
 
       <GettingStarted serverId={serverId} panels={panels} forms={forms} />
-
-      <h2 className="text-sm text-cs-dim mb-3">{t("nav.manageServer")}</h2>
-      <NavGrid serverId={serverId} />
     </div>
   );
 }
@@ -192,17 +186,18 @@ function LiveStatePanel({ live, loading, satisfaction }) {
   const { t } = useT();
   return (
     <section className="cs-card" aria-labelledby="live-h">
-      <h2 id="live-h" className="font-semibold text-cs-text mb-3 flex items-center gap-2">
+      <h2 id="live-h" className="!text-base !font-semibold text-cs-text mb-4 flex items-center gap-2">
         <Inbox className="w-4 h-4 text-cs-cyan" aria-hidden="true" /> {t("overview.rightNow")}
       </h2>
       {loading ? (
-        <div className="h-20 animate-pulse bg-cs-panel rounded" />
+        <div className="h-40 animate-pulse bg-cs-panel rounded" />
       ) : (
-        <dl className="space-y-2.5">
-          <Row label={t("overview.openTickets")} value={live?.openTickets ?? 0} />
-          <Row label={t("overview.claimedByStaff")} value={live?.claimedTickets ?? 0} />
-          <Row label={t("overview.applicationsPending")} value={live?.pendingApplications ?? 0} />
+        <dl className="space-y-3">
+          <Row icon={Ticket} label={t("overview.openTickets")} value={live?.openTickets ?? 0} />
+          <Row icon={UserCheck} label={t("overview.claimedByStaff")} value={live?.claimedTickets ?? 0} />
+          <Row icon={ClipboardList} label={t("overview.applicationsPending")} value={live?.pendingApplications ?? 0} />
           <Row
+            icon={Star}
             label={t("overview.satisfaction")}
             value={satisfaction?.avg != null ? `${satisfaction.avg} / 5` : "—"}
             hint={satisfaction?.count ? t("overview.ratings", { n: satisfaction.count }) : t("overview.noRatings")}
@@ -213,13 +208,18 @@ function LiveStatePanel({ live, loading, satisfaction }) {
   );
 }
 
-function Row({ label, value, hint }) {
+function Row({ icon: Icon, label, value, hint }) {
   return (
-    <div className="flex items-baseline justify-between gap-3">
-      <dt className="text-sm text-cs-muted">{label}</dt>
+    <div className="flex items-center justify-between gap-3">
+      <dt className="flex items-center gap-3 text-sm text-cs-muted min-w-0">
+        <span className="cs-icon-tile !w-8 !h-8 !rounded-md">
+          <Icon className="w-4 h-4" aria-hidden="true" />
+        </span>
+        <span className="truncate">{label}</span>
+      </dt>
       <dd className="text-sm font-semibold text-cs-text tabular-nums text-right">
         {value}
-        {hint && <span className="block text-[10px] font-normal text-cs-dim">{hint}</span>}
+        {hint && <span className="block text-[11px] font-normal text-cs-dim">{hint}</span>}
       </dd>
     </div>
   );
@@ -237,7 +237,7 @@ function SystemStatusPanel({ status }) {
   ];
   return (
     <section className="cs-card" aria-labelledby="sys-h">
-      <h2 id="sys-h" className="font-semibold text-cs-text mb-3">{t("overview.systemStatus")}</h2>
+      <h2 id="sys-h" className="!text-base !font-semibold text-cs-text mb-3">{t("overview.systemStatus")}</h2>
       <ul className="space-y-2">
         {services.map(([name, s]) => (
           <li key={name} className="flex items-center justify-between gap-3">
@@ -269,12 +269,16 @@ function StatusPill({ status }) {
   );
 }
 
-/* ─── Последни тикети ────────────────────────────────────────────────── */
+/* ─── Последни тикети (концепцията: № · вид · статус с точка) ───────── */
 const PRIORITY_CLS = {
   URGENT: "text-danger", HIGH: "text-warning", NORMAL: "text-cs-muted", LOW: "text-cs-dim",
 };
-const STATUS_CLS = {
-  OPEN: "cs-badge-success", CLAIMED: "cs-badge-cyan", CLOSED: "cs-badge-muted", ARCHIVED: "cs-badge-muted",
+// Статусът — точка + ДУМА, никога само цвят.
+const STATUS_DOT = {
+  OPEN: { dot: "bg-success", cls: "text-success border-success/35 bg-success/10" },
+  CLAIMED: { dot: "bg-cs-cyan", cls: "text-cs-cyan border-cs-cyan/35 bg-cs-cyan/10" },
+  CLOSED: { dot: "bg-cs-dim", cls: "text-cs-muted border-cs-line bg-cs-panel" },
+  ARCHIVED: { dot: "bg-cs-dim", cls: "text-cs-muted border-cs-line bg-cs-panel" },
 };
 
 function RecentTickets({ tickets, serverId }) {
@@ -283,77 +287,48 @@ function RecentTickets({ tickets, serverId }) {
     return <p className="text-sm text-cs-muted py-6 text-center">{t("overview.recentTickets.empty")}</p>;
   }
   return (
-    <ul className="space-y-2">
-      {tickets.slice(0, 5).map((t) => (
-        <li key={t.id}>
-          {/* no-underline: това е цял ред-връзка с иконки/баджове и hover
-              състояние, не цветна дума в проза — WCAG 1.4.1 е спазен без
-              подчертаване (глобалното `li a` правило цели прозата). */}
-          <Link
-            to={`/dashboard/${serverId}/tickets`}
-            className="flex items-center gap-2.5 py-1 hover:opacity-80 transition-opacity no-underline"
-          >
-            <span className="text-xs text-cs-dim tabular-nums flex-shrink-0">
-              #{t.number != null ? String(t.number).padStart(4, "0") : t.id.slice(-4)}
-            </span>
-            <span className="text-sm text-cs-text truncate flex-1">{t.panel?.name || "Direct ticket"}</span>
-            <span className={`text-xs flex-shrink-0 ${PRIORITY_CLS[t.priority] || ""}`}>
-              {t.priority !== "NORMAL" ? t.priority : ""}
-            </span>
-            <span className={`${STATUS_CLS[t.status] || "cs-badge-muted"} flex-shrink-0`}>{t.status}</span>
-          </Link>
-        </li>
-      ))}
+    <ul className="divide-y divide-cs-line/70">
+      {tickets.slice(0, 5).map((tk) => {
+        const st = STATUS_DOT[tk.status] || STATUS_DOT.CLOSED;
+        return (
+          <li key={tk.id}>
+            {/* no-underline: цял ред-връзка с баджове и hover състояние, не
+                цветна дума в проза — WCAG 1.4.1 е спазен без подчертаване. */}
+            <Link
+              to={`/dashboard/${serverId}/tickets`}
+              className="flex items-center gap-3 py-2.5 hover:bg-cs-panel/50 rounded-md px-1 -mx-1 transition-colors no-underline"
+            >
+              <span className="w-14 text-[13px] text-cs-dim tabular-nums flex-shrink-0">
+                #{tk.number != null ? String(tk.number).padStart(4, "0") : tk.id.slice(-4)}
+              </span>
+              <span className="text-sm text-cs-text truncate flex-1">{tk.panel?.name || "Direct ticket"}</span>
+              {tk.priority !== "NORMAL" && (
+                <span className={`text-xs font-medium flex-shrink-0 ${PRIORITY_CLS[tk.priority] || ""}`}>{tk.priority}</span>
+              )}
+              <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium flex-shrink-0 ${st.cls}`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} aria-hidden="true" />
+                {t(`status.${String(tk.status).toLowerCase()}`)}
+              </span>
+            </Link>
+          </li>
+        );
+      })}
     </ul>
   );
 }
 
+// Бързо действие — плочка с икона в лайм квадрат и надпис под нея (концепцията).
 function QuickAction({ to, icon: Icon, label }) {
   return (
     <Link
       to={to}
-      className="flex items-center gap-2.5 px-3 py-2 border border-cs-border hover:border-cs-cyan/40 hover:bg-cs-panel transition-colors group"
+      className="flex flex-col items-center justify-center gap-2.5 text-center rounded-lg border border-cs-line bg-cs-bg/60 px-3 py-4 hover:border-cs-cyan/45 hover:bg-cs-panel/60 transition-colors no-underline min-h-[104px]"
     >
-      <Icon className="w-4 h-4 text-cs-cyan flex-shrink-0" aria-hidden="true" />
-      <span className="text-sm text-cs-text flex-1">{label}</span>
-      <ArrowRight className="w-3.5 h-3.5 text-cs-dim group-hover:text-cs-cyan transition-colors" aria-hidden="true" />
+      <span className="cs-icon-tile !w-10 !h-10">
+        <Icon className="w-5 h-5" aria-hidden="true" />
+      </span>
+      <span className="text-[13px] font-medium text-cs-text leading-snug">{label}</span>
     </Link>
-  );
-}
-
-/* ─── Навигация ──────────────────────────────────────────────────────── */
-function NavGrid({ serverId }) {
-  const { t } = useT();
-  const ACCENT = "bg-cs-cyanGlow text-cs-cyan";
-  // key = nav.<key> за заглавието и navDesc.<key> за описанието.
-  const cards = [
-    { to: "panels", key: "panels", icon: Layout, color: ACCENT },
-    { to: "forms", key: "forms", icon: FileText, color: ACCENT },
-    { to: "tickets", key: "tickets", icon: Ticket, color: ACCENT },
-    { to: "applications", key: "applications", icon: Users, color: ACCENT },
-    { to: "verification", key: "verification", icon: ShieldCheck, color: ACCENT },
-    { to: "automation", key: "automation", icon: Zap, color: ACCENT },
-    { to: "analytics", key: "analytics", icon: LineChart, color: ACCENT },
-    { to: "apikeys", key: "apikeys", icon: Key, color: ACCENT },
-    { to: "commands", key: "commands", icon: BookOpen, color: ACCENT },
-    { to: "webhooks", key: "webhooks", icon: Webhook, color: ACCENT },
-    { to: "premium", key: "premium", icon: Star, color: "bg-premium/10 text-premium" },
-    { to: "settings", key: "settings", icon: Settings, color: "bg-cs-panel text-cs-muted" },
-  ];
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-      {cards.map((c) => (
-        <Link key={c.to} to={c.to} className="cs-card !p-4 hover:border-cs-cyan/30 hover:bg-cs-panel transition-all flex items-start gap-3">
-          <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${c.color}`} aria-hidden="true">
-            <c.icon className="w-4.5 h-4.5" />
-          </div>
-          <div className="min-w-0">
-            <h3 className="font-semibold text-cs-text text-sm">{t(`nav.${c.key}`)}</h3>
-            <p className="text-xs text-cs-muted mt-0.5">{t(`navDesc.${c.key}`)}</p>
-          </div>
-        </Link>
-      ))}
-    </div>
   );
 }
 
@@ -383,7 +358,7 @@ function GettingStarted({ serverId, panels, forms }) {
   return (
     <div className="cs-card mb-8">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-semibold text-cs-text">First steps</h2>
+        <h2 className="!text-base !font-semibold text-cs-text">First steps</h2>
         <span className="text-[13px] text-cs-muted tabular-nums">{steps.length - remaining}/{steps.length} done</span>
       </div>
       <ol className="space-y-2">{steps.map((s) => <ChecklistRow key={s.label} step={s} />)}</ol>

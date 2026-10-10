@@ -96,6 +96,8 @@ export default function FormsPage() {
   const qc = useQueryClient();
   const { isPremium } = usePremium();
   const [editing, setEditing] = useState(false);
+  // Вид на формуляра в списъка: всички / кандидатури / тикет формуляри.
+  const [typeFilter, setTypeFilter] = useState("all");
   const [editingId, setEditingId] = useState(null); // formId being edited
   const [form, setForm] = useState(defaultForm());
   const [expandedQ, setExpandedQ] = useState(0);
@@ -245,13 +247,14 @@ export default function FormsPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      <div className="flex items-center justify-between mb-8">
+      {/* Заглавието и бутонът — както в концепцията (10.10.2026). */}
+      <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-cs-text">Forms</h1>
+          <h1 className="!text-[1.75rem] sm:!text-3xl !font-bold !tracking-tight text-cs-text leading-tight">Forms</h1>
           <p className="text-cs-muted text-sm mt-1">Build logic-branching questionnaires for tickets and applications</p>
         </div>
-        <button onClick={() => { setForm(defaultForm()); setEditing(true); }} className="cs-btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" /> New form
+        <button onClick={() => { setForm(defaultForm()); setEditing(true); }} className="cs-btn-primary cs-btn-sm flex items-center gap-2">
+          <Plus className="w-4 h-4" aria-hidden="true" /> New form
         </button>
       </div>
 
@@ -266,68 +269,102 @@ export default function FormsPage() {
           onCtaClick={() => { setForm(defaultForm()); setEditing(true); }}
         />
       ) : (
-        <div className="space-y-4">
-          {forms.map((f) => (
-            <div key={f.id} className="cs-card">
-              <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-cs-text">{f.name}</h3>
-                    <span className={f.isApplication ? "cs-badge-premium" : "cs-badge-muted"}>
-                      {f.isApplication ? "Application" : "Ticket form"}
-                    </span>
-                  </div>
-                  <p className="text-sm text-cs-muted mt-0.5">{f.questions.length} questions</p>
-                  {f.description && <p className="text-xs text-cs-muted mt-1">{f.description}</p>}
-                </div>
-                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                  {/* Spawn input — постът отива в канала с това ID (като при панелите) */}
-                  <div className="flex items-center gap-1">
-                    <div className="flex-1 min-w-[11rem] sm:flex-none sm:w-44">
-                      <DiscordChannelSelect kind="text" ariaLabel={t("forms.spawnChannelAria")} value={spawnInputs[f.id] || ""}
-                        onChange={(v) => setSpawnInputs((s) => ({ ...s, [f.id]: v }))} />
-                    </div>
-                    <button
-                      className="cs-btn-primary py-1 px-2 text-xs flex items-center gap-1 disabled:opacity-40"
-                      disabled={!spawnInputs[f.id] || spawnMut.isPending}
-                      onClick={() => spawnMut.mutate({ formId: f.id, channelId: spawnInputs[f.id].trim() })}
-                    >
-                      <Send className="w-3 h-3" /> Post to channel
-                    </button>
-                  </div>
-                  <button
-                    aria-label={t("forms.edit")}
-                    title={t("forms.edit")}
-                    className="text-cs-muted hover:text-white transition-colors p-1"
-                    onClick={() => { setEditingId(f.id); setForm(formToState(f)); setEditing(true); }}
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                  <button
-                    aria-label={t("forms.delete")}
-                    title={t("forms.delete")}
-                    className="text-danger hover:text-red-300 transition-colors p-1 flex-shrink-0"
-                    onClick={() => handleDelete(f)}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+        <>
+          {/* Вид като превключватели с броячи — истински, от самия списък. */}
+          <div className="flex flex-wrap items-center gap-2 mb-4" role="group" aria-label={t("ui.type")}>
+            {[["all", t("tickets.tab.all")], ["application", t("forms.type.application")], ["ticket", t("forms.type.ticket")]].map(([k, label]) => {
+              const n = k === "all" ? forms.length : forms.filter((f) => (k === "application") === !!f.isApplication).length;
+              const on = typeFilter === k;
+              return (
+                <button
+                  key={k}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => setTypeFilter(k)}
+                  className={`inline-flex items-center gap-1.5 min-h-[34px] px-3 rounded-lg text-[13px] font-medium border transition-colors ${
+                    on ? "bg-cs-cyan/10 text-cs-cyan border-cs-cyan/45" : "text-cs-muted border-cs-line hover:text-cs-text hover:border-cs-borderHi"
+                  }`}
+                >
+                  {label} <span className="tabular-nums text-cs-dim">({n})</span>
+                </button>
+              );
+            })}
+          </div>
 
-              {/* Questions preview */}
-              <div className="mt-3 flex flex-wrap gap-1">
-                {f.questions.map((q, i) => (
-                  <span key={q.id} className="bg-cs-bg text-cs-text text-xs px-2 py-0.5 rounded">
-                    {i + 1}. {q.label.slice(0, 30)}{q.label.length > 30 ? "..." : ""}
-                    {Object.keys(q.branches || {}).length > 0 && (
-                      <GitBranch className="w-3 h-3 inline ml-1 text-cs-cyan" />
-                    )}
-                  </span>
-                ))}
-              </div>
+          <div className="cs-card !p-0 overflow-hidden">
+            <div className="hidden md:grid grid-cols-[minmax(0,1fr)_7rem_auto] gap-4 px-5 py-3 border-b border-cs-line text-xs font-semibold text-cs-dim">
+              <span>{t("common.name")}</span>
+              <span>Questions</span>
+              <span className="text-right">{t("tickets.col.actions")}</span>
             </div>
-          ))}
-        </div>
+            <ul className="divide-y divide-cs-line/70">
+              {forms.filter((f) => typeFilter === "all" || (typeFilter === "application") === !!f.isApplication).map((f) => (
+                <li key={f.id} className="px-5 py-4 hover:bg-cs-panel/30 transition-colors">
+                  <div className="grid md:grid-cols-[minmax(0,1fr)_7rem_auto] gap-x-4 gap-y-3 md:items-center">
+                    <div className="flex items-start gap-3 min-w-0">
+                      <span className="cs-icon-tile !w-10 !h-10">
+                        <FileText className="w-5 h-5" aria-hidden="true" />
+                      </span>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="!text-base !font-semibold text-cs-text">{f.name}</h3>
+                          <span className={f.isApplication ? "cs-badge-premium" : "cs-badge-muted"}>
+                            {f.isApplication ? t("forms.type.application") : t("forms.type.ticket")}
+                          </span>
+                        </div>
+                        {f.description && <p className="text-xs text-cs-muted mt-0.5">{f.description}</p>}
+                        {/* Въпросите — кратък преглед */}
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {f.questions.map((q, i) => (
+                            <span key={q.id} className="bg-cs-bg border border-cs-line text-cs-muted text-xs px-2 py-0.5 rounded-md">
+                              {i + 1}. {q.label.slice(0, 30)}{q.label.length > 30 ? "…" : ""}
+                              {Object.keys(q.branches || {}).length > 0 && (
+                                <GitBranch className="w-3 h-3 inline ml-1 text-cs-cyan" aria-hidden="true" />
+                              )}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-sm text-cs-text tabular-nums">
+                      {f.questions.length}<span className="md:hidden text-cs-dim"> questions</span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 md:justify-end">
+                      {/* Spawn input — постът отива в канала с това ID (като при панелите) */}
+                      <div className="flex-1 min-w-[11rem] sm:flex-none sm:w-44">
+                        <DiscordChannelSelect kind="text" ariaLabel={t("forms.spawnChannelAria")} value={spawnInputs[f.id] || ""}
+                          onChange={(v) => setSpawnInputs((s) => ({ ...s, [f.id]: v }))} />
+                      </div>
+                      <button
+                        className="cs-btn-primary cs-btn-sm flex items-center gap-1 disabled:opacity-40"
+                        disabled={!spawnInputs[f.id] || spawnMut.isPending}
+                        onClick={() => spawnMut.mutate({ formId: f.id, channelId: spawnInputs[f.id].trim() })}
+                      >
+                        <Send className="w-3.5 h-3.5" aria-hidden="true" /> Post to channel
+                      </button>
+                      <button
+                        aria-label={t("forms.edit")}
+                        title={t("forms.edit")}
+                        className="rounded-md text-cs-muted hover:text-cs-cyan hover:bg-cs-panel transition-colors p-1.5"
+                        onClick={() => { setEditingId(f.id); setForm(formToState(f)); setEditing(true); }}
+                      >
+                        <Pencil className="w-4 h-4" aria-hidden="true" />
+                      </button>
+                      <button
+                        aria-label={t("forms.delete")}
+                        title={t("forms.delete")}
+                        className="rounded-md text-cs-muted hover:text-danger hover:bg-danger/10 transition-colors p-1.5 flex-shrink-0"
+                        onClick={() => handleDelete(f)}
+                      >
+                        <Trash2 className="w-4 h-4" aria-hidden="true" />
+                      </button>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </>
       )}
 
       {deleteMut.isError && (

@@ -1,8 +1,8 @@
 // frontend/src/components/FeatureGroups.jsx
-// Функциите на лендинга, групирани по задача (Поддръжка · Общност · Защита ·
-// Автоматизация), вместо 16 еднакви карти в решетка. Всяка група: заглавие и
-// едно изречение отляво, функциите като списък отдясно — без кутии, с линия
-// между групите. Едно оформление за английския и 7-те превода; данните са
+// Функциите на лендинга — решетката на одобрената концепция (10.10.2026):
+// икона в лайм квадрат, заглавие и описание, без кутия около всяка функция.
+// Групите по задача (поддръжка → общност → защита → автоматизация) определят
+// реда. Едно оформление за английския и 7-те превода; данните са
 // `{ key, title, desc }` (i18n/landing.js → features, Login.jsx → EN_FEATURES).
 import {
   Ticket, FileText, ShieldCheck, BarChart3, Gift, Pin, CalendarClock, Webhook, Sparkles,
@@ -39,44 +39,41 @@ export const FEATURE_GROUPS = [
 // Без Premium на всеки сървър (lib/premium.js — PREMIUM_FEATURES няма гейт за тях).
 export const FREE_FEATURES = new Set(["ticket", "forms", "reactionRoles", "verification", "polls", "giveaways", "activityLog", "welcomer", "game", "bait"]);
 
-export default function FeatureGroups({ features, ui }) {
+// Решетката на одобрената концепция (10.10.2026): три колони, икона в лайм
+// квадрат, заглавие и описание — без кутии около всяка функция. Групите
+// остават РЕДЪТ (поддръжка → общност → защита → автоматизация) и гаранцията,
+// че всяка функция е на страницата точно веднъж (landing.test.js).
+// `aside` (картата към живото демо) заема горния десен ъгъл на три реда, а
+// функциите обикалят около нея — точно както в концепцията.
+export default function FeatureGroups({ features, ui, aside = null }) {
   const byKey = Object.fromEntries(features.map((f) => [f.key, f]));
+  const ordered = FEATURE_GROUPS.flatMap(([, keys]) => keys).map((k) => byKey[k]).filter(Boolean);
   return (
-    <div className="divide-y divide-cs-border/60">
-      {FEATURE_GROUPS.map(([groupKey, keys], gi) => {
-        const items = keys.map((k) => byKey[k]).filter(Boolean);
-        if (!items.length) return null;
-        const g = ui.groups[groupKey];
+    <ul data-reveal className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-9">
+      {aside && (
+        <li className="sm:col-span-2 lg:col-span-1 lg:col-start-3 lg:row-start-1 lg:row-span-3 order-last lg:order-none">
+          {aside}
+        </li>
+      )}
+      {ordered.map((f) => {
+        const Icon = FEATURE_ICONS[f.key] || Sparkles;
         return (
-          <div key={groupKey} data-reveal className="grid lg:grid-cols-[minmax(0,17rem)_1fr] gap-8 lg:gap-14 py-12 first:pt-0">
-            <div>
-              <h3 className="font-display font-black text-2xl sm:text-3xl text-cs-text leading-tight">{g.title}</h3>
-              <p className="text-cs-muted mt-3 text-pretty">{g.blurb}</p>
+          <li key={f.key} className="flex gap-4">
+            <span className="cs-icon-tile !w-10 !h-10">
+              <Icon className="w-5 h-5" aria-hidden="true" />
+            </span>
+            <div className="min-w-0">
+              <h3 className="text-cs-text text-base font-bold leading-snug">
+                {f.title}
+                {FREE_FEATURES.has(f.key) && (
+                  <span className="ml-2 align-middle text-xs font-semibold text-success">{ui.free}</span>
+                )}
+              </h3>
+              <p className="text-sm text-cs-muted leading-relaxed mt-1">{f.desc}</p>
             </div>
-            <ul className={`grid gap-x-10 gap-y-8 ${gi === 0 ? "sm:grid-cols-2" : "sm:grid-cols-2 xl:grid-cols-3"}`}>
-              {items.map((f) => {
-                const Icon = FEATURE_ICONS[f.key] || Sparkles;
-                return (
-                  <li key={f.key} className="flex gap-4">
-                    <span className="flex-none w-10 h-10 rounded-lg grid place-items-center bg-cs-cyan/10 text-cs-cyan">
-                      <Icon className="w-5 h-5" aria-hidden="true" />
-                    </span>
-                    <div className="min-w-0">
-                      <h4 className="text-cs-text font-bold leading-snug">
-                        {f.title}
-                        {FREE_FEATURES.has(f.key) && (
-                          <span className="ml-2 align-middle text-xs font-semibold text-success">{ui.free}</span>
-                        )}
-                      </h4>
-                      <p className="text-sm text-cs-muted leading-relaxed mt-1">{f.desc}</p>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
+          </li>
         );
       })}
-    </div>
+    </ul>
   );
 }

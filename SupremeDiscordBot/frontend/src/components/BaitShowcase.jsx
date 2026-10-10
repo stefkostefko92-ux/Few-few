@@ -68,7 +68,7 @@ export default function BaitShowcase({ locale = "en", href = "/features/discord-
       <div aria-hidden="true" className="bt-water absolute inset-0 pointer-events-none" />
       <div className="relative max-w-6xl mx-auto grid lg:grid-cols-[0.9fr_1.1fr] gap-12 lg:gap-16 items-center">
         <div data-reveal>
-          <h2 className="bt-title font-display font-black text-4xl sm:text-5xl lg:text-6xl text-cs-text mb-6 text-balance leading-[0.95]">
+          <h2 className="bt-title cs-section-title mb-6">
             {t.heading}
           </h2>
           <p className="text-cs-muted text-lg mb-8 text-pretty max-w-xl">{t.sub}</p>
