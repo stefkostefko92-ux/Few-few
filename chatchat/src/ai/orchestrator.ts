@@ -86,7 +86,9 @@ export async function diagnose(
   const cfg = deps.config;
   // Един краен срок за целия цикъл (под таймаута на Nginx), не по AI_TIMEOUT_MS на всеки кръг.
   const deadline = AbortSignal.any([signal, AbortSignal.timeout(cfg.AI_TIMEOUT_MS)]);
-  const request = { scope: input.scope, context: input.context, query: input.question };
+  // Един момент за целия отговор: спрямо него се смята валидността на документите (§7.2).
+  const now = new Date();
+  const request = { scope: input.scope, context: input.context, query: input.question, now };
 
   const [initial, knowledgeSnapshotId] = await Promise.all([
     retrieve(deps.store, request),
@@ -116,7 +118,7 @@ export async function diagnose(
     };
   }
 
-  const pack = new EvidencePack(initial, versionOf(request));
+  const pack = new EvidencePack(initial, versionOf(request), now);
   // Жетон на маркерите на данните — непредвидим, така че документ не може да „затвори“ блок.
   const token = randomBytes(8).toString('hex');
   const caseText = renderCaseMessage({

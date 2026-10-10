@@ -23,6 +23,7 @@ import { saveAiAnswer } from '../services/ai-answer.js';
 import { claimAi, findPrior, type PriorMessage } from '../services/chat-replay.js';
 import { addTimeline, contextOf, findCaseFor, isUniqueOn } from '../services/cases.js';
 import { caseAudience, notify } from '../services/collab/notify.js';
+import { caseBoardId } from '../services/devices.js';
 
 /**
  * §14.1 POST /chat/messages — съобщение в случая и (по подразбиране) диагностика от AI.
@@ -150,11 +151,13 @@ export function chatRouter(deps: WiredDeps): Router {
           res.on('close', () => {
             if (!res.writableEnded) controller.abort();
           });
+          // Уникалните схеми на таблото — само за провереното табло на случая (сървърът решава).
+          const deviceId = await caseBoardId(deps.db, c);
           let result;
           try {
             result = await diagnose(
               {
-                scope: { tenantId: p.user.tenantId, audiences },
+                scope: { tenantId: p.user.tenantId, audiences, deviceId },
                 context: contextOf(c),
                 question,
                 history: history.reverse().map((h) => ({

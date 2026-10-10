@@ -6,7 +6,7 @@ import { apiError, principalOf, requireUser } from '../auth/guards.js';
 import { audiencesFor } from '../auth/rbac.js';
 import { hashToken } from '../crypto.js';
 import { canonicalIdentifier } from '../domain/normalize.js';
-import { isApplicable } from '../domain/versions.js';
+import { isApplicable, validityAt } from '../domain/versions.js';
 import { deviceView, deviceVisible, QR_TOKEN } from '../services/devices.js';
 
 /** Справочни крайни точки (§14.1): продукти, табла, кодове за грешка, страница на документ. */
@@ -126,6 +126,7 @@ export function catalogRouter(deps: AppDeps): Router {
         take: 10,
       });
       const version = { hwRevision: query.data.hw ?? null, firmware: query.data.fw ?? null };
+      const now = new Date();
       res.json({
         errors: errors.map((e) => ({
           code: e.code,
@@ -133,10 +134,10 @@ export function catalogRouter(deps: AppDeps): Router {
           description: e.description,
           severity: e.severity,
           safetyRelevant: e.safetyRelevant,
-          applicable: isApplicable(
-            { hwRevision: e.hwRevision, fwMin: e.fwMin, fwMax: e.fwMax },
-            version,
-          ),
+          // Кодът важи, докато важи документът му (§7.2 effectiveFrom/To).
+          applicable:
+            isApplicable({ hwRevision: e.hwRevision, fwMin: e.fwMin, fwMax: e.fwMax }, version) &&
+            (e.sourceDocument === null || validityAt(e.sourceDocument, now) === 'effective'),
           validity: { hwRevision: e.hwRevision, fwMin: e.fwMin, fwMax: e.fwMax },
           relations: e.relations.map((r) => ({
             kind: r.kind,
