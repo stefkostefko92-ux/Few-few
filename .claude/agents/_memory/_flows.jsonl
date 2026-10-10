@@ -187,3 +187,5 @@
 {"t":"handoff","ts":"2026-10-06T20:52:55.591Z","id":"r907e9b29","from":"tayniyat-agent","to":"hromadjiyata","status":"блокер","run":"60b5c378"}
 {"t":"start","ts":"2026-10-06T21:19:51.181Z","id":"r51437eb7","flow":"авто","lead":"prevodach","auto":true}
 {"t":"handoff","ts":"2026-10-06T21:19:51.182Z","id":"r51437eb7","from":"prevodach","to":"човек","status":"има бележки","run":"79132612"}
+{"t":"start","ts":"2026-10-10T05:47:44.569Z","id":"rded816bf","flow":"авто","lead":"goladjiyata","auto":true}
+{"t":"handoff","ts":"2026-10-10T05:47:44.569Z","id":"rded816bf","from":"goladjiyata","to":"човек","status":"има бележки","run":"74890fea"}
