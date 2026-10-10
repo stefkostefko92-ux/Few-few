@@ -166,9 +166,9 @@ export default async function CalculationPage({ params, searchParams }: {
           <SectionTitle id="calc-room" icon="building-gear">{tm('calcTitle')}</SectionTitle>
           <p className="note">{below ? tm('calcBelow') : tm('calcLead')}</p>
           {rooms.length ? (
-            <ul className="m-0 flex list-none flex-col gap-1 p-0">
+            <ul className="rec-list">
               {rooms.map((x) => (
-                <li key={x.id}><Link href={`/app/room-designs/${x.id}`}>{fd.dateTime(x.createdAt)}{x.label ? ` · ${x.label}` : ''}</Link> · <span className="note">{x.summary}</span></li>
+                <li key={x.id}><Link href={`/app/room-designs/${x.id}`}>{fd.dateTime(x.createdAt)}{x.label ? ` · ${x.label}` : ''}</Link><span className="note">{x.summary}</span></li>
               ))}
             </ul>
           ) : null}
@@ -181,9 +181,9 @@ export default async function CalculationPage({ params, searchParams }: {
         <SectionTitle icon="file-stack">{tt('title')}</SectionTitle>
         <p className="note">{replacement ? tm('setsFromRoom') : tt('lead')}</p>
         {mine.length ? (
-          <ul className="m-0 flex list-none flex-col gap-1 p-0">
+          <ul className="rec-list">
             {mine.map((x) => (
-              <li key={x.id}><Link href={`/app/drawing-sets/${x.id}`} className="num">{x.number}{x.revision ? ` R${x.revision}` : ''}</Link> · <span className="note">{fd.dateTime(x.createdAt)} · {x.user?.name ?? x.authorInitials}</span></li>
+              <li key={x.id}><Link href={`/app/drawing-sets/${x.id}`} className="num">{x.number}{x.revision ? ` R${x.revision}` : ''}</Link><span className="note">{fd.dateTime(x.createdAt)} · {x.user?.name ?? x.authorInitials}</span></li>
             ))}
           </ul>
         ) : null}

@@ -15,6 +15,7 @@ td.need > input[type=radio] { outline: 1px dashed var(--warn); outline-offset: 2
 .missing-list li { padding-block: 2px; break-inside: avoid; font-size: 14px; }
 /* what «Aggiorna con il software attuale» left to correct in a form (RefreshNotice) */
 .refresh-notice { display: flex; flex-direction: column; gap: 6px; }
+.refresh-notice h2.sec-title { font-size: 16px; }  /* a notice, not a section: under the page's section headings */
 .refresh-notice .missing-list { margin: 0; }
 @media (max-width: 720px) { .missing-list { columns: 1; max-height: 15rem; overflow-y: auto; } }
 .draft-bar { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }

@@ -7,7 +7,7 @@
 import { useTranslations } from 'next-intl';
 import SectionTitle from '@/components/project/SectionTitle';
 import type { Check, CheckStatus } from '@/calc/types';
-import { NORMA_SIGLA, ambitoOf, type LiftDerived } from '@/lib/lift';
+import { NORMA_BREVE, NORMA_SIGLA, ambitoOf, type LiftDerived } from '@/lib/lift';
 import type { Texts } from '@/lib/present/texts';
 import { isUpperLimit, mergeChecks, shownValue, type ShaftCheck } from '@/shaft';
 import { scenarioForCheck } from './scenarios';
@@ -35,7 +35,7 @@ export default function LiftChecks({ derived, X, fmt, onSimulate }: Props) {
     : <span className={`status-pill ${status}`}>{text}</span>);
   return (
     <section className="lift-checks">
-      <SectionTitle icon="list-checks">{t('checks_title')}</SectionTitle>
+      <SectionTitle icon="list-checks" eyebrow={NORMA_BREVE[C.norma]}>{t('checks_title')}</SectionTitle>
       <div className="table-panel">
         <table className="data-table stack">
           <thead><tr><th>{t('col_check')}</th><th className="num">{t('col_value')}</th><th className="num">{t('col_limit')}</th><th>{t('col_result')}</th><th /></tr></thead>

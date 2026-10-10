@@ -138,8 +138,8 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
         <SectionTitle id="room-sets" icon="file-stack">{tt('title')}</SectionTitle>
         <p className="note">{t('setsLead')}</p>
         {sets.length ? (
-          <ul className="m-0 flex list-none flex-col gap-1 p-0">
-            {sets.map((x) => <li key={x.id}><Link href={`/app/drawing-sets/${x.id}`} className="num">{x.number}{x.revision ? ` R${x.revision}` : ''}</Link> · <span className="note">{fd.dateTime(x.createdAt)} · {x.user?.name ?? x.authorInitials}</span></li>)}
+          <ul className="rec-list">
+            {sets.map((x) => <li key={x.id}><Link href={`/app/drawing-sets/${x.id}`} className="num">{x.number}{x.revision ? ` R${x.revision}` : ''}</Link><span className="note">{fd.dateTime(x.createdAt)} · {x.user?.name ?? x.authorInitials}</span></li>)}
           </ul>
         ) : null}
         {d && editable ? <IssueForm roomDesignId={r.id} initials={initialsOf(user.name)} checks={checks} projectId={r.projectId} /> : null}

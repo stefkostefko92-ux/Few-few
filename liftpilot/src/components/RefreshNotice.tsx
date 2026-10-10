@@ -20,7 +20,7 @@ export default function RefreshNotice({ kind, items = null }: { kind: 'lift' | '
   const done = items !== null && items.length === 0;
   return (
     <section className={`alert ${done ? 'alert-ok' : 'alert-warn'} refresh-notice`} role="status" aria-labelledby="refresh-notice-title">
-      <SectionTitle id="refresh-notice-title" className="text-base" icon="refresh-cw" tone={done ? 'ok' : 'warn'}>{t('formTitle')}</SectionTitle>
+      <SectionTitle id="refresh-notice-title" icon="refresh-cw" tone={done ? 'ok' : 'warn'}>{t('formTitle')}</SectionTitle>
       <p className="m-0">{t(`form_${kind}`)}</p>
       {items && items.length ? (
         <>

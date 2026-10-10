@@ -19,7 +19,7 @@
 .plan-fixes { border-top: 1px solid var(--rule); padding-top: 12px; display: flex; flex-direction: column; gap: 10px; }
 .plan-fixes > summary { cursor: pointer; font-weight: 700; width: fit-content; }
 .plan-fixes > summary:hover { color: var(--accent); }
-.plan-fixes .table-wrap { overflow-x: auto; }
+.plan-fixes .table-wrap { overflow-x: auto; position: relative; }  /* keeps the sr-only header inside the scroll clip */
 table.fixes { width: 100%; border-collapse: collapse; font-size: 14px; }
 table.fixes th, table.fixes td { padding: 5px 6px; text-align: left; vertical-align: middle; border-bottom: 1px solid var(--rule-soft); }
 table.fixes thead th { font: 500 11px/1.4 var(--font-mono); letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }

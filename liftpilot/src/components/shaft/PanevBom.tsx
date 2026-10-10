@@ -26,7 +26,7 @@ export default function PanevBom({ L, prices, framed = true, C }: {
   const total = bom.rows.reduce((s, r) => s + (priceOf(r.article.code) ?? 0) * r.qty, 0);
   return (
     <section className={framed ? 'panel panev-bom' : 'panev-bom'} aria-labelledby="panev-bom-h">
-      <SectionTitle id="panev-bom-h" icon="package">{t('title')}</SectionTitle>
+      <SectionTitle id="panev-bom-h" icon="brackets">{t('title')}</SectionTitle>
       <div className="table-scroll">
         <table className="data-table stack">
           <thead>

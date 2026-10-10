@@ -99,7 +99,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
         <>
           <section className="flex flex-col gap-3 lift-home">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <SectionTitle icon="cube">{tl('homeTitle')}</SectionTitle>
+              <SectionTitle icon="cube" eyebrow={latest ? fd.dateTime(latest.createdAt) : undefined}>{tl('homeTitle')}</SectionTitle>
               {latest ? <Link className="btn" href={`/app/lift-designs/${latest.id}`}>{tl('open')}</Link> : null}
             </div>
             {latest && outdated.lift(latest) ? (

@@ -11,7 +11,7 @@
 .data-table .cell-stack { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
 .data-table td.row-title a { color: var(--ink); text-decoration: none; }
 .data-table td.row-title a:hover { color: var(--accent); }
-.table-panel, .table-scroll { min-width: 0; }
+.table-panel, .table-scroll { min-width: 0; position: relative; }  /* absolute (sr-only) children stay inside the scroll clip */
 .table-panel { background: var(--panel-grad); border: 1px solid var(--rule); border-radius: var(--radius); overflow-x: auto; box-shadow: var(--panel-hi), var(--shadow); }
 .panel .table-scroll { overflow-x: auto; border: 1px solid var(--rule-soft); border-radius: var(--radius-sm); }
 
@@ -19,6 +19,8 @@
    a heading row puts its actions at the end. */
 .sec-title { display: flex; align-items: center; gap: 12px; margin: 0; min-width: 0; }
 .sec-title .sec-text { min-width: 0; }
+.sec-title .sec-text.stack { display: flex; flex-direction: column; gap: 3px; }
+.sec-title .sec-text.stack .eyebrow { font-weight: 400; letter-spacing: .1em; }
 h2.sec-title { font-size: 18px; letter-spacing: -.015em; }
 h3.sec-title { font-size: 15.5px; }
 .sec-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 14px; }
@@ -27,6 +29,9 @@ h3.sec-title { font-size: 15.5px; }
 .rec-list > li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 9px 2px; border-bottom: 1px solid var(--rule-soft); }
 .rec-list > li > a:first-child { color: var(--ink); font-weight: 700; text-decoration: none; }
 .rec-list > li > a:first-child:hover { color: var(--accent); }
+/* the record the page shows, in a list of its versions: marked, not linked */
+.rec-list > li > b:first-child { color: var(--accent); }
+.rec-list > li > .rec-text { flex-basis: 100%; color: var(--ink-2); font-size: 14px; }
 /* the buttons that download a record's documents: the file's icon before its name */
 .doc-links .btn .icon { margin-left: -2px; }
 @media print { .sec-title .icon-tile, .doc-links .icon { display: none; } }

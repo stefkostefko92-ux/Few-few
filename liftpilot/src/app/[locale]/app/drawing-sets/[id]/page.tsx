@@ -105,12 +105,12 @@ export default async function DrawingSetPage({ params, searchParams }: { params:
       ) : null}
       <section className="panel">
         <SectionTitle icon="history">{t('history')}</SectionTitle>
-        <ul className="m-0 flex list-none flex-col gap-1 p-0">
+        <ul className="rec-list">
           {history.map((h) => (
             <li key={h.id}>
-              {h.id === s.id ? <b>{h.revision ? `R${h.revision}` : t('firstIssue')}</b> : <Link href={`/app/drawing-sets/${h.id}`}>{h.revision ? `R${h.revision}` : t('firstIssue')}</Link>}
-              {' · '}<span className="note">{fd.dateTime(h.createdAt)}</span>
-              {h.revision && revs.success ? ` · ${revisionsSchema.safeParse(h.revisions).data?.[h.revision - 1]?.text ?? ''}` : ''}
+              {h.id === s.id ? <b aria-current="page">{h.revision ? `R${h.revision}` : t('firstIssue')}</b> : <Link href={`/app/drawing-sets/${h.id}`}>{h.revision ? `R${h.revision}` : t('firstIssue')}</Link>}
+              <span className="note">{fd.dateTime(h.createdAt)}</span>
+              {h.revision && revs.success ? <span className="rec-text">{revisionsSchema.safeParse(h.revisions).data?.[h.revision - 1]?.text ?? ''}</span> : null}
             </li>
           ))}
         </ul>
