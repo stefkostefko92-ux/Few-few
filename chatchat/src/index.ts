@@ -1,4 +1,3 @@
-import { PrismaClient } from '@prisma/client';
 import type { Server } from 'node:http';
 import { diagnose } from './ai/orchestrator.js';
 import { VertexDiagnosisModel } from './ai/model.js';
@@ -20,6 +19,7 @@ import {
 } from './config.js';
 import { loadIntegrationsConfig } from './config-integrations.js';
 import { loadSsoConfig } from './config-sso.js';
+import { createDbClients, ensureDbRoles } from './db/clients.js';
 import { createLogger } from './logger.js';
 import { instrumentDiagnoser, meteredScanner } from './observability/ai.js';
 import { BREAKER_STATE_VALUE, createMetrics, type BreakerName } from './observability/catalog.js';
@@ -42,7 +42,11 @@ import { wireScaling } from './scale.js';
 const config = loadConfig();
 const ssoEnv = loadSsoConfig();
 const logger = createLogger(config.LOG_LEVEL);
-const db = new PrismaClient();
+// Две връзки (NFR-03, RLS): `db` — chatchat_app под политиките с клиента на работата; `system` —
+// chatchat_system само за задачите през клиенти (outbox-ите, прегледът на векторите).
+const clients = createDbClients(config);
+const { db, system } = clients;
+await ensureDbRoles(clients, config, logger);
 // Метриките се събират винаги (евтино, в паметта); изнасят се само с METRICS_PORT.
 const metrics = createMetrics();
 
@@ -86,7 +90,8 @@ if (aiEnabled(config)) {
   });
   // С Redis векторите са в worker-а (опашка `embed` + периодичен преглед) — не в процеса на API-то.
   if (embedder && !redisEnabled(config)) {
-    indexer = new EmbeddingIndexer(db, embedder, logger, config.EMBEDDING_SWEEP_SECONDS);
+    // Прегледът обикаля публикуваното знание на всички клиенти — системната роля.
+    indexer = new EmbeddingIndexer(system, embedder, logger, config.EMBEDDING_SWEEP_SECONDS);
     indexer.start();
   }
   modelBreaker = breakerFor('vertex_messages');
@@ -140,6 +145,7 @@ if (emailEnabled(config)) {
   emailWorker = new EmailWorker(
     {
       db,
+      system,
       mailer: new BrevoMailer({
         apiKey: config.BREVO_API_KEY,
         apiUrl: config.BREVO_API_URL,
@@ -160,7 +166,13 @@ if (emailEnabled(config)) {
 }
 
 // Интеграцията с helpdesk (FR-09, §14.4): само с INTEGRATION_KEK — тайните на конекторите са шифровани.
-const integrations = integrationsFrom(loadIntegrationsConfig(), config.PUBLIC_BASE_URL, db, logger);
+const integrations = integrationsFrom(
+  loadIntegrationsConfig(),
+  config.PUBLIC_BASE_URL,
+  db,
+  system,
+  logger,
+);
 if (integrations) integrations.worker.start();
 else logger.warn('INTEGRATION_KEK липсва — интеграцията с helpdesk е изключена');
 // Единният вход (OIDC / Entra ID): без SSO_KEK — изключен (503 sso_unavailable), паролата работи.
@@ -189,6 +201,7 @@ metrics.sseStreams.collect = () => metrics.sseStreams.set(undefined, hub.localSi
 // Опашките, хъбът между инстанциите, общите лимити и TOTP (NFR-06) — Redis или в процеса.
 const scale = wireScaling(config, {
   db,
+  system,
   logger,
   metrics,
   hub,
@@ -280,7 +293,7 @@ function shutdown(signal: string): void {
     scale
       .close()
       .catch(() => undefined)
-      .then(() => db.$disconnect())
+      .then(() => clients.disconnect())
       .catch((err: unknown) => logger.error({ err }, 'грешка при затваряне на базата'))
       .finally(() => process.exit(0));
   });

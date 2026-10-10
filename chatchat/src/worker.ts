@@ -1,4 +1,3 @@
-import { PrismaClient } from '@prisma/client';
 import { execFile } from 'node:child_process';
 import { writeFile } from 'node:fs/promises';
 import type { Server } from 'node:http';
@@ -7,6 +6,7 @@ import { join } from 'node:path';
 import { BreakerEmbeddingModel, CircuitBreaker } from './ai/breaker.js';
 import { embeddingModelFrom } from './ai/embeddings.js';
 import { loadWorkerConfig } from './config.js';
+import { createDbClients, ensureDbRoles } from './db/clients.js';
 import { createLogger } from './logger.js';
 import { BREAKER_STATE_VALUE, createMetrics } from './observability/catalog.js';
 import { startMetricsServer } from './observability/server.js';
@@ -27,7 +27,11 @@ import { attachmentStoreFrom } from './storage/factory.js';
 
 const config = loadWorkerConfig();
 const logger = createLogger(config.LOG_LEVEL).child({ role: 'worker' });
-const db = new PrismaClient();
+// Работата по файл — chatchat_app в контекста на клиента му (RLS); клиентът на файла по id и прегледът
+// на векторите през всички клиенти — chatchat_system.
+const clients = createDbClients(config);
+const { db, system } = clients;
+await ensureDbRoles(clients, config, logger);
 const metrics = createMetrics();
 const policies = queuePolicies(config);
 
@@ -49,6 +53,7 @@ const redis = createRedis(config.REDIS_URL, 'worker', logger, { blocking: true }
 const bus = new BullJobBus(redis, policies);
 const pipeline = pipelineDeps(config, {
   db,
+  system,
   store: attachmentStoreFrom(config),
   bus,
   logger,
@@ -58,7 +63,7 @@ const host = new WorkerHost(
   redis,
   bus,
   policies,
-  jobHandlers(pipeline, embedHandler(db, embedder, logger)),
+  jobHandlers(pipeline, embedHandler(system, embedder, logger)),
   queueHooks(pipeline, metrics),
   logger,
 );
@@ -143,7 +148,7 @@ async function shutdown(signal: string): Promise<void> {
   metricsServer?.close();
   await bus.close();
   await closeRedis(redis);
-  await db.$disconnect().catch(() => undefined);
+  await clients.disconnect().catch(() => undefined);
   process.exit(0);
 }
 process.on('SIGTERM', () => void shutdown('SIGTERM'));

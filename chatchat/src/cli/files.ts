@@ -1,7 +1,7 @@
-import { PrismaClient } from '@prisma/client';
 import { loadFilesConfig } from '../config.js';
 import { attachmentStoreFrom } from '../storage/factory.js';
 import { sweep, sweepProblems, type ExpectedRow, type SweepMode } from '../storage/sweep.js';
+import { systemClientFromEnv } from '../db/clients.js';
 
 /**
  * Шифрованите файлове в покой (NFR-03) — поддръжка от сървъра (в контейнера: `node dist/cli/files.js`):
@@ -32,7 +32,8 @@ function usage(): never {
 }
 
 async function expectedRows(): Promise<ExpectedRow[]> {
-  const db = new PrismaClient();
+  // Системната роля (chatchat_system, BYPASSRLS): CLI-то обикаля клиенти или създава клиент.
+  const db = systemClientFromEnv();
   try {
     return await db.attachment.findMany({
       select: { objectKey: true, sha256: true, scanStatus: true },

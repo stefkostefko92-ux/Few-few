@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { after, before, beforeEach, describe, test } from 'node:test';
 import type { Mailer, OutgoingMail, SendResult } from '../../src/services/email/mailer.js';
 import { processOutbox, scheduleDigests, type EmailDeps } from '../../src/services/email/outbox.js';
-import { db, startApp, type Harness, type Res } from './helpers.js';
+import { appDb, db, startApp, systemDb, type Harness, type Res } from './helpers.js';
 import { del, open, resetCollab, say, seedCollab, type CollabWorld } from './collab-world.js';
 import { newCase } from './world.js';
 
@@ -29,8 +29,10 @@ class FakeMailer implements Mailer {
 
 const mailer = new FakeMailer();
 const silent = { info: () => undefined, warn: () => undefined };
+// Като в продукция: проверките и изходът под RLS (приложението), взимането — системната роля.
 const deps = (): EmailDeps => ({
-  db,
+  db: appDb,
+  system: systemDb,
   mailer,
   logger: silent,
   baseUrl: 'https://chatchat.test/',

@@ -1,5 +1,6 @@
 import { Prisma, type PrismaClient } from '@prisma/client';
 import { sha256 } from './crypto.js';
+import { auditPrevHash } from './db/discovery.js';
 
 /**
  * Неизменим одит (§15.1, FR-12): всяко събитие носи хеша на предишното — подправка или изтрит
@@ -63,15 +64,10 @@ type Tx = Prisma.TransactionClient;
 export async function appendAudit(db: PrismaClient | Tx, input: AuditInput): Promise<void> {
   const write = async (tx: Tx) => {
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(${AUDIT_LOCK})`;
-    const last = await tx.auditEvent.findFirst({ orderBy: { id: 'desc' }, select: { hash: true } });
-    // Празна таблица след ретенция → котвата от последната контролна точка, не GENESIS.
-    const anchor = last
-      ? null
-      : await tx.auditCheckpoint.findFirst({
-          orderBy: { throughId: 'desc' },
-          select: { throughHash: true },
-        });
-    const prevHash = last?.hash ?? anchor?.throughHash ?? GENESIS;
+    // Веригата е ОБЩА за всички клиенти, а под RLS приложението вижда само своите събития —
+    // предишният хеш идва от тясната функция (последното събитие или, след ретенция, котвата от
+    // последната контролна точка; нищо → GENESIS). Само хеш, без съдържание.
+    const prevHash = (await auditPrevHash(tx)) ?? GENESIS;
     const at = new Date();
     const detail = input.detail ?? null;
     const hash = eventHash(prevHash, {

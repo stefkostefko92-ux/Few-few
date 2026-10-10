@@ -52,6 +52,7 @@ docker() {
     "image inspect"*) return "$IMAGE_RC" ;;
     "compose exec -T db pg_dump"*) [ "$DUMP_RC" = 0 ] && echo "-- dump"; return "$DUMP_RC" ;;
     "compose exec -T db psql"*"REINDEX"*) return "$REINDEX_RC" ;;
+    "compose exec -T db psql -X -q -v ON_ERROR_STOP=1 -U chatchat -d chatchat") cat >> "$LOG.sql"; return "$ROLES_RC" ;;
     "compose exec -T db psql"*) echo 1 ;;
     "compose build app") return "$BUILD_RC" ;;
     "compose up -d --remove-orphans") return "$UP_RC" ;;
@@ -73,7 +74,7 @@ function deploy(L, env = {}) {
     env: { ...process.env, SCRIPT: join(L.app, "deploy", "deploy.sh"), LOG: L.log,
       CHATCHAT_SHARED: L.shared, CHATCHAT_LE_DIR: join(L.base, "le"), CHATCHAT_HEALTH_WAIT: "0",
       CHATCHAT_SYSTEMD_DIR: L.systemd, CHATCHAT_SBIN: L.sbin, CHATCHAT_AGE: "true",
-      VOLUME_RC: "1", IMAGE_RC: "0", DUMP_RC: "0", REINDEX_RC: "0", BUILD_RC: "0", UP_RC: "0", FILES_RC: "0",
+      VOLUME_RC: "1", IMAGE_RC: "0", DUMP_RC: "0", REINDEX_RC: "0", BUILD_RC: "0", UP_RC: "0", FILES_RC: "0", ROLES_RC: "0",
       CHATCHAT_PGDATA_CONF_DIR: L.etc, PGDATA_MOUNTED: "0",
       HEALTH_BODY: '{"ok":true,"ai":false}', WORKER_HEALTH: "healthy", ...env },
   });
@@ -222,6 +223,46 @@ test("паролата на Redis с /, :, @ или +: изход 1 преди b
     const r = deploy(L);
     assert.equal(r.status, 1, bad);
     assert.match(r.stderr, /REDIS_PASSWORD/);
+    assert.doesNotMatch(r.log, /compose build/);
+  }
+}));
+
+// ── Ролите на базата (RLS, NFR-03): chatchat_app / chatchat_system ─────────────────────────────────
+test("ролите на базата: подравнени ПРЕДИ up, паролите — hex от .env и само през stdin, правата — chatchat_apply_grants()", () => withLayout((L) => {
+  sharedEnv(L);
+  const r = deploy(L);
+  assert.equal(r.status, 0, r.stderr);
+  order(r.log, "compose up -d --no-recreate --wait db", "compose exec -T db psql -X -q -v ON_ERROR_STOP=1 -U chatchat -d chatchat\n",
+    "compose up -d --remove-orphans");
+  const env = readFileSync(join(L.shared, ".env"), "utf8");
+  const app = env.match(/^APP_DB_PASSWORD=([0-9a-f]{64})$/m)?.[1];
+  const sys = env.match(/^SYSTEM_DB_PASSWORD=([0-9a-f]{64})$/m)?.[1];
+  assert.ok(app && sys && app !== sys, "две различни hex пароли");
+  const sql = readFileSync(`${L.log}.sql`, "utf8");
+  assert.match(sql, /CREATE ROLE chatchat_app'.*\\gexec/);
+  assert.match(sql, new RegExp(`ALTER ROLE chatchat_app WITH LOGIN .*NOBYPASSRLS PASSWORD '${app}';`));
+  assert.match(sql, new RegExp(`ALTER ROLE chatchat_system WITH LOGIN .* BYPASSRLS PASSWORD '${sys}';`));
+  assert.match(sql, /PERFORM public\.chatchat_apply_grants\(\)/);
+  assert.doesNotMatch(r.log + r.stderr, new RegExp(`${app}|${sys}`), "паролите — нито в аргументите, нито в изхода");
+  // Втори пробег: паролите остават същите (ролята се подравнява, не се сменя).
+  assert.equal(deploy(L).status, 0);
+  assert.equal(readFileSync(join(L.shared, ".env"), "utf8"), env);
+}));
+
+test("ролите на базата не се подравниха: изход 1 преди up (работещото не е пипано)", () => withLayout((L) => {
+  sharedEnv(L);
+  const r = deploy(L, { ROLES_RC: "1" });
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /chatchat_app\/chatchat_system/);
+  assert.doesNotMatch(r.log, /compose up -d --remove-orphans/);
+}));
+
+test("парола на роля на базата с непозволен знак: изход 1 преди build", () => withLayout((L) => {
+  for (const name of ["APP_DB_PASSWORD", "SYSTEM_DB_PASSWORD"]) {
+    sharedEnv(L, `${name}=a'b\n`);
+    const r = deploy(L);
+    assert.equal(r.status, 1, name);
+    assert.match(r.stderr, new RegExp(name));
     assert.doesNotMatch(r.log, /compose build/);
   }
 }));

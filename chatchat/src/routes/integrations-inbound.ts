@@ -3,6 +3,8 @@ import { rateLimit } from 'express-rate-limit';
 import type { WiredDeps } from '../app.js';
 import { sharedStore } from '../auth/rate-limit.js';
 import { apiError } from '../auth/guards.js';
+import { tenantByHelpdeskInbound } from '../db/discovery.js';
+import { withTenant } from '../db/tenant-context.js';
 import { applyInbound } from '../services/integrations/inbound-apply.js';
 import { verifyInbound } from '../services/integrations/inbound.js';
 
@@ -50,23 +52,27 @@ export function integrationsInboundRouter(deps: WiredDeps): Router {
         if (!integrations || !INBOUND_ID.test(inboundId) || !Buffer.isBuffer(req.body)) {
           return apiError(res, 401, 'invalid_signature');
         }
-        const integration = await deps.db.helpdeskIntegration.findUnique({ where: { inboundId } });
-        if (!integration || !integration.enabled) return apiError(res, 401, 'invalid_signature');
-        const verdict = verifyInbound(
-          integrations,
-          integration,
-          req.headers,
-          req.body.toString('utf8'),
-        );
-        if (!verdict.ok) {
-          deps.logger.warn(
-            { kind: integration.kind, code: verdict.code },
-            'входящо от helpdesk отказано',
-          );
-          return apiError(res, verdict.status, verdict.code);
-        }
-        const out = await applyInbound(deps, integration, verdict);
-        res.json({ ok: true, ...out });
+        // Без сесия: клиентът — по адреса, през тесния път (само id на клиента); конекторът,
+        // подписът и промяната — вече под RLS в контекста му. Непознат адрес → същият отказ.
+        const tenantId = await tenantByHelpdeskInbound(deps.db, inboundId);
+        if (!tenantId) return apiError(res, 401, 'invalid_signature');
+        const body = req.body.toString('utf8');
+        await withTenant(tenantId, async () => {
+          const integration = await deps.db.helpdeskIntegration.findUnique({
+            where: { inboundId },
+          });
+          if (!integration || !integration.enabled) return apiError(res, 401, 'invalid_signature');
+          const verdict = verifyInbound(integrations, integration, req.headers, body);
+          if (!verdict.ok) {
+            deps.logger.warn(
+              { kind: integration.kind, code: verdict.code },
+              'входящо от helpdesk отказано',
+            );
+            return apiError(res, verdict.status, verdict.code);
+          }
+          const out = await applyInbound(deps, integration, verdict);
+          res.json({ ok: true, ...out });
+        });
       } catch (err) {
         next(err);
       }

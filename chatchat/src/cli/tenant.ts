@@ -1,4 +1,4 @@
-import { PrismaClient, type AccountKind } from '@prisma/client';
+import type { AccountKind, PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { appendAudit } from '../audit.js';
 import { hashPassword, PASSWORD_MIN_LENGTH } from '../auth/password.js';
@@ -10,6 +10,7 @@ import {
   RESET_TTL_HOURS,
   unusablePasswordHash,
 } from '../services/users.js';
+import { systemClientFromEnv } from '../db/clients.js';
 
 /**
  * Начално създаване и спасяване без UI (на сървъра, от средата):
@@ -165,7 +166,8 @@ async function resetUser(db: PrismaClient): Promise<void> {
 
 async function main(): Promise<void> {
   const command = process.argv[2];
-  const db = new PrismaClient();
+  // Системната роля (chatchat_system, BYPASSRLS): CLI-то обикаля клиенти или създава клиент.
+  const db = systemClientFromEnv();
   try {
     if (command === 'tenant') {
       const env = UserEnv.extend({ TENANT_NAME: z.string().trim().min(2).max(120) }).parse(

@@ -31,7 +31,10 @@ export interface IngestSettings {
 }
 
 export interface PipelineDeps {
+  /** Ролята на приложението: всичко по файла — под RLS в контекста на клиента му (`queue/runtime.ts`). */
   db: PrismaClient;
+  /** Системната роля — САМО клиентът на файла по id от задачата (задачата не носи клиент). */
+  system: PrismaClient;
   store: AttachmentStore;
   bus: Pick<JobBus, 'enqueue'>;
   parser: Parser;

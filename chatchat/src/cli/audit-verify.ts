@@ -1,4 +1,3 @@
-import { PrismaClient } from '@prisma/client';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { verifyAuditChain } from '../audit.js';
 import {
@@ -8,6 +7,7 @@ import {
   parseArgs,
   verifyWithConfirmation,
 } from './audit-verify-core.js';
+import { systemClientFromEnv } from '../db/clients.js';
 
 /**
  * Проверка на одитната верига по график (FR-12, §15.1) — дневно от chatchat-audit-verify.timer
@@ -23,7 +23,8 @@ import {
 
 async function main(): Promise<number> {
   const args = parseArgs(process.argv.slice(2));
-  const db = new PrismaClient();
+  // Системната роля (chatchat_system, BYPASSRLS): CLI-то обикаля клиенти или създава клиент.
+  const db = systemClientFromEnv();
   try {
     const verdict = await verifyWithConfirmation(
       () => verifyAuditChain(db),

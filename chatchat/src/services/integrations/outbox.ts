@@ -1,5 +1,6 @@
 import { Prisma, type PrismaClient } from '@prisma/client';
 import type { IntegrationDeps } from './deps.js';
+import { withTenant } from '../../db/tenant-context.js';
 import { deliverOne, type ClaimedDelivery, type Outcome } from './deliver.js';
 
 /**
@@ -13,7 +14,13 @@ import { deliverOne, type ClaimedDelivery, type Outcome } from './deliver.js';
  */
 
 export interface OutboxDeps {
+  /** Ролята на приложението (под RLS): доставката и изходът — в контекста на клиента на реда. */
   db: PrismaClient;
+  /**
+   * Системната роля (BYPASSRLS) — САМО за взимането на зрелите редове през всички клиенти и за
+   * чистенето на стария дневник; нищо друго (NFR-03, src/config-db.ts).
+   */
+  system: PrismaClient;
   integrations: IntegrationDeps;
   logger: { info: (o: object, m: string) => void; warn: (o: object, m: string) => void };
 }
@@ -104,12 +111,40 @@ export interface DeliveryReport {
   dead: number;
 }
 
+/** Доставката и записът на изхода; null — изходът не е записан (тикетът е изтрит междувременно). */
+async function deliverAndFinish(
+  deps: OutboxDeps,
+  row: ClaimedDelivery,
+  now: Date,
+): Promise<Outcome | null> {
+  let outcome: Outcome;
+  try {
+    outcome = await deliverOne(deps.db, deps.integrations, row);
+  } catch (err) {
+    outcome = { status: 'RETRY', code: err instanceof Error ? 'error' : 'unknown' };
+  }
+  if (outcome.status === 'RETRY' && row.attempts >= deps.integrations.maxAttempts) {
+    outcome = { status: 'DEAD', code: outcome.code };
+  }
+  try {
+    await finish(deps.db, row, outcome, now);
+  } catch (err) {
+    // Тикетът е изтрит междувременно (ретенция) — редът си отива с него.
+    deps.logger.warn(
+      { deliveryId: row.id, errName: err instanceof Error ? err.name : 'unknown' },
+      'изходът на доставката не е записан',
+    );
+    return null;
+  }
+  return outcome;
+}
+
 export async function processDeliveries(
   deps: OutboxDeps,
   now = new Date(),
   limit = 20,
 ): Promise<DeliveryReport> {
-  const rows = await claim(deps.db, now, limit);
+  const rows = await claim(deps.system, now, limit);
   const report: DeliveryReport = {
     claimed: rows.length,
     delivered: 0,
@@ -118,25 +153,9 @@ export async function processDeliveries(
     dead: 0,
   };
   for (const row of rows) {
-    let outcome: Outcome;
-    try {
-      outcome = await deliverOne(deps.db, deps.integrations, row);
-    } catch (err) {
-      outcome = { status: 'RETRY', code: err instanceof Error ? 'error' : 'unknown' };
-    }
-    if (outcome.status === 'RETRY' && row.attempts >= deps.integrations.maxAttempts) {
-      outcome = { status: 'DEAD', code: outcome.code };
-    }
-    try {
-      await finish(deps.db, row, outcome, now);
-    } catch (err) {
-      // Тикетът е изтрит междувременно (ретенция) — редът си отива с него.
-      deps.logger.warn(
-        { deliveryId: row.id, errName: err instanceof Error ? err.name : 'unknown' },
-        'изходът на доставката не е записан',
-      );
-      continue;
-    }
+    // Всяка доставка — в контекста на клиента си: четенето на тикета/конектора и изходът са под RLS.
+    const outcome = await withTenant(row.tenantId, () => deliverAndFinish(deps, row, now));
+    if (outcome === null) continue;
     if (outcome.status === 'DELIVERED') report.delivered += 1;
     else if (outcome.status === 'SKIPPED') report.skipped += 1;
     else if (outcome.status === 'RETRY') report.retried += 1;

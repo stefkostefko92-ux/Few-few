@@ -247,14 +247,18 @@ describe('провал по файл не спира пакета', () => {
     assert.equal(bad.status, 400);
     const batch = await settle(owner, batchId);
     const by = new Map(batch.items.map((i) => [i.fileName, i]));
+    const outcome = (n: string) => [by.get(n)?.status, by.get(n)?.errorCode];
+    assert.deepEqual(['bomba.docx', 'rotto.docx'].map(outcome), [
+      ['FAILED', 'ingest.err.archiveBomb'],
+      ['FAILED', 'ingest.err.archiveInvalid'],
+    ]);
+    // Двата файла със същата ревизия вървят паралелно (concurrency 2) — кой ще е първи, решава
+    // опашката; важното е: точно един документ, другият файл — FAILED с дублирана ревизия.
     assert.deepEqual(
-      ['bomba.docx', 'rotto.docx', 'buono.pdf', 'doppio.pdf'].map((n) => [
-        by.get(n)?.status,
-        by.get(n)?.errorCode,
-      ]),
+      ['buono.pdf', 'doppio.pdf']
+        .map(outcome)
+        .sort((x, y) => String(x[0]).localeCompare(String(y[0]))),
       [
-        ['FAILED', 'ingest.err.archiveBomb'],
-        ['FAILED', 'ingest.err.archiveInvalid'],
         ['DONE', null],
         ['FAILED', 'ingest.err.duplicateRevision'],
       ],

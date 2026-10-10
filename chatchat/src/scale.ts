@@ -38,7 +38,10 @@ export interface ScaleWiring {
 }
 
 interface Parts {
+  /** Ролята на приложението (под RLS). */
   db: PrismaClient;
+  /** Системната роля — само клиентът на файла по id от задачата (`queue/runtime.ts`). */
+  system: PrismaClient;
   logger: Logger;
   metrics: Metrics;
   hub: RealtimeHub;

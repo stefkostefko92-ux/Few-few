@@ -1,4 +1,5 @@
 import type { AccountKind, PrismaClient, Role, SsoConfig } from '@prisma/client';
+import { tenantBySsoDomain } from '../../db/discovery.js';
 import { INTERNAL_SCOPE } from './types.js';
 
 /**
@@ -75,4 +76,16 @@ export async function configForEmail(db: PrismaClient, email: string): Promise<S
   if (!domain) return null;
   const row = await db.ssoDomain.findUnique({ where: { domain }, include: { config: true } });
   return row && row.config.enabled ? row.config : null;
+}
+
+/**
+ * Клиентът на включения доставчик за домейна на имейла — тесният път преди вход (само id на
+ * клиента). `configForEmail` и потокът след нея текат в контекста му, под RLS.
+ */
+export async function tenantForEmailDomain(
+  db: PrismaClient,
+  email: string,
+): Promise<string | null> {
+  const domain = emailDomain(email);
+  return domain ? tenantBySsoDomain(db, domain) : null;
 }

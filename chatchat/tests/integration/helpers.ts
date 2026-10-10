@@ -13,6 +13,8 @@ import { mfaRequired } from '../../src/auth/rbac.js';
 import { createSession, SESSION_COOKIE, type SessionDeps } from '../../src/auth/sessions.js';
 import { totpCode } from '../../src/auth/totp.js';
 import { encryptSecret } from '../../src/crypto.js';
+import { tenantScopedClient } from '../../src/db/rls.js';
+import { withTenant } from '../../src/db/tenant-context.js';
 import type { ModelDiagnosis } from '../../src/domain/response.js';
 import { createLogger } from '../../src/logger.js';
 import type { EmbeddingModel } from '../../src/ai/embeddings.js';
@@ -59,7 +61,40 @@ if (!/test/i.test(dbName)) {
   throw new Error(`Отказ: базата „${dbName}“ не е тестова (името трябва да съдържа „test“).`);
 }
 
+/**
+ * Собственикът (ролята на миграциите) — за засяването, нулирането и проверките в тестовете: вижда
+ * всичко (RLS не важи за собственика без FORCE).
+ */
 export const db = new PrismaClient({ datasources: { db: { url } } });
+
+/** Адрес към същата тестова база с друга роля (създадени с локалния PostgreSQL — DEPLOY.md). */
+function roleUrl(user: string, password: string): string {
+  const u = new URL(url as string);
+  u.username = user;
+  u.password = password;
+  return u.toString();
+}
+
+/**
+ * Приложението в тестовете върви КАТО В ПРОДУКЦИЯ: ролята `chatchat_app` (под RLS) през клиента с
+ * контекста на клиента (src/db/rls.ts). TEST_APP_DATABASE_URL го сменя (напр. друга парола).
+ */
+export const appDb = tenantScopedClient(
+  new PrismaClient({
+    datasources: {
+      db: { url: process.env.TEST_APP_DATABASE_URL || roleUrl('chatchat_app', 'chatchat_app') },
+    },
+  }),
+);
+
+/** Системната роля (BYPASSRLS) — outbox-ите, прегледите, CLI-тата (TEST_SYSTEM_DATABASE_URL). */
+export const systemDb = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.TEST_SYSTEM_DATABASE_URL || roleUrl('chatchat_system', 'chatchat_system'),
+    },
+  },
+});
 
 /** Празна база между тестовете. Само таблици от схемата; идентификаторите се нулират. */
 export async function resetDb(): Promise<void> {
@@ -242,17 +277,18 @@ export async function startApp(
 ): Promise<Harness> {
   const hub = opts.hub ?? new RealtimeHub();
   const model = new ScriptedModel();
-  const sessions: SessionDeps = { db, pepper: PEPPER, ttlHours: 12, secureCookies: false };
-  const store = new PrismaKnowledgeStore(db, { embedder: opts.embedder ?? null });
+  const sessions: SessionDeps = { db: appDb, pepper: PEPPER, ttlHours: 12, secureCookies: false };
+  const store = new PrismaKnowledgeStore(appDb, { embedder: opts.embedder ?? null });
   const silent = { info: () => undefined, warn: () => undefined };
-  const indexer = opts.embedder ? new EmbeddingIndexer(db, opts.embedder, silent, 0) : null;
+  // Прегледът на векторите обикаля клиенти — системната роля (като index.ts).
+  const indexer = opts.embedder ? new EmbeddingIndexer(systemDb, opts.embedder, silent, 0) : null;
   const aiModel = opts.wrapModel ? opts.wrapModel(model) : model;
   const scripted: Diagnoser = (input, signal) =>
     diagnose(
       {
         store,
         model: aiModel,
-        snapshotId: () => knowledgeSnapshotId(db, input.scope.tenantId),
+        snapshotId: () => knowledgeSnapshotId(appDb, input.scope.tenantId),
         config: {
           AI_MODEL: 'claude-test',
           AI_EFFORT: 'medium',
@@ -267,7 +303,7 @@ export async function startApp(
   const real = opts.metrics ? instrumentDiagnoser(scripted, opts.metrics) : scripted;
   const choice = opts.diagnose ?? 'real';
   const app = createApp({
-    db,
+    db: appDb,
     logger: createLogger(process.env.TEST_LOG_LEVEL ?? 'silent'),
     publicOrigin: opts.origin ?? ORIGIN,
     privacyPolicyUrl: 'https://chatchat.test/privacy',
@@ -460,7 +496,8 @@ export async function signIn(
   user: User,
   opts: { mfaPassed?: boolean } = {},
 ): Promise<Client> {
-  const s = await createSession(h.sessions, user.id);
+  // Като входа: сесията се пише в контекста на клиента на човека (под RLS).
+  const s = await withTenant(user.tenantId, () => createSession(h.sessions, user.id));
   if (user.totpEnabledAt && opts.mfaPassed !== false) {
     await db.session.update({ where: { id: s.id }, data: { mfaPassed: true } });
   }

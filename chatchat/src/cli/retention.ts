@@ -1,9 +1,9 @@
-import { PrismaClient } from '@prisma/client';
 import { appendAudit } from '../audit.js';
 import { loadRetentionConfig } from '../config-retention.js';
 import { loadFilesConfig } from '../config.js';
 import { runRetention } from '../services/retention.js';
 import { attachmentStoreFrom } from '../storage/factory.js';
+import { systemClientFromEnv } from '../db/clients.js';
 
 /**
  * Ретенция по класове (GDPR чл. 5(1)(e), NFR-08, NFR-13) — пуска се дневно (systemd timer):
@@ -24,7 +24,8 @@ import { attachmentStoreFrom } from '../storage/factory.js';
 async function main(): Promise<void> {
   const env = loadRetentionConfig();
   const files = loadFilesConfig(process.env);
-  const db = new PrismaClient();
+  // Системната роля (chatchat_system, BYPASSRLS): CLI-то обикаля клиенти или създава клиент.
+  const db = systemClientFromEnv();
   try {
     const store = files.ATTACHMENTS_DIR ? attachmentStoreFrom(files) : null;
     const days = {

@@ -33,9 +33,10 @@ export async function semanticSearch(
   const audiences = [...scope.audiences];
   const take = Math.min(Math.max(limit, 1), MAX_SEMANTIC_LIMIT);
   // <=> е косинусовото РАЗСТОЯНИЕ (0..2); сходство = 1 − разстояние.
-  const [, rows] = await db.$transaction([
-    db.$executeRawUnsafe(`SET LOCAL hnsw.ef_search = ${HNSW_EF_SEARCH}`),
-    db.$queryRaw<Array<{ id: string; similarity: number }>>`
+  // SET LOCAL и търсенето — в една транзакция (под RLS в нея първо е и клиентът — db/rls.ts).
+  const rows = await db.$transaction(async (tx) => {
+    await tx.$executeRawUnsafe(`SET LOCAL hnsw.ef_search = ${HNSW_EF_SEARCH}`);
+    return tx.$queryRaw<Array<{ id: string; similarity: number }>>`
       SELECT c.id, (1 - (c.embedding <=> ${literal}::vector))::float8 AS similarity
       FROM "DocumentChunk" c
       JOIN "Document" d ON d.id = c."documentId"
@@ -46,8 +47,8 @@ export async function semanticSearch(
         AND d.audience::text = ANY(${audiences})
         AND ${applicableSql(scope, productModel)}
       ORDER BY c.embedding <=> ${literal}::vector
-      LIMIT ${take}`,
-  ]);
+      LIMIT ${take}`;
+  });
   const kept = rows.filter((r) => r.similarity >= SEMANTIC_MIN_SIMILARITY);
   if (kept.length === 0) return [];
   const similarity = new Map(kept.map((r) => [r.id, r.similarity]));

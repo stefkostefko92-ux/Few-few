@@ -1,5 +1,6 @@
 import { Prisma, type EmailKind, type PrismaClient } from '@prisma/client';
 import type { Principal } from '../../auth/sessions.js';
+import { withTenant } from '../../db/tenant-context.js';
 import { findCaseFor } from '../cases.js';
 import { conversationAccessSql, loadConversationFor, type Viewer } from '../collab/access.js';
 import { DEFAULT_PREFERENCES } from '../collab/notification-prefs.js';
@@ -20,7 +21,13 @@ import { renderEmail, type EmailData } from './templates.js';
  */
 
 export interface EmailDeps {
+  /** Ролята на приложението (под RLS): проверките и записът на изхода — в контекста на клиента. */
   db: PrismaClient;
+  /**
+   * Системната роля (BYPASSRLS) — САМО за взимането на зрелите редове и за дайджестите през всички
+   * клиенти (NFR-03, src/config-db.ts).
+   */
+  system: PrismaClient;
   mailer: Mailer;
   logger: { info: (o: object, m: string) => void; warn: (o: object, m: string) => void };
   /** https://chatchat.carbonstealth.eu — за връзката в писмото. */
@@ -70,12 +77,26 @@ export interface OutboxReport {
   failed: number;
 }
 
+async function deliverAndFinish(deps: EmailDeps, row: Claimed, now: Date): Promise<Outcome> {
+  let outcome: Outcome;
+  try {
+    outcome = await deliver(deps, row, now);
+  } catch (err) {
+    outcome = { status: 'RETRY', code: err instanceof Error ? err.name : 'error' };
+  }
+  if (outcome.status === 'RETRY' && row.attempts >= deps.maxAttempts) {
+    outcome = { status: 'FAILED', code: outcome.code };
+  }
+  await finish(deps.db, row, outcome, now);
+  return outcome;
+}
+
 export async function processOutbox(
   deps: EmailDeps,
   now = new Date(),
   limit = 20,
 ): Promise<OutboxReport> {
-  const rows = await claim(deps.db, now, limit);
+  const rows = await claim(deps.system, now, limit);
   const report: OutboxReport = {
     claimed: rows.length,
     sent: 0,
@@ -85,16 +106,8 @@ export async function processOutbox(
     failed: 0,
   };
   for (const row of rows) {
-    let outcome: Outcome;
-    try {
-      outcome = await deliver(deps, row, now);
-    } catch (err) {
-      outcome = { status: 'RETRY', code: err instanceof Error ? err.name : 'error' };
-    }
-    if (outcome.status === 'RETRY' && row.attempts >= deps.maxAttempts) {
-      outcome = { status: 'FAILED', code: outcome.code };
-    }
-    await finish(deps.db, row, outcome, now);
+    // Всяко писмо — в контекста на клиента си: проверките на достъпа и изходът са под RLS.
+    const outcome = await withTenant(row.tenantId, () => deliverAndFinish(deps, row, now));
     if (outcome.status === 'SENT') report.sent += 1;
     else if (outcome.status === 'SKIPPED') report.skipped += 1;
     else if (outcome.status === 'DEFER') report.deferred += 1;
@@ -240,7 +253,8 @@ async function unreadCounts(db: PrismaClient, viewer: Viewer) {
  * Ключът `digest:<човек>:<дата>` прави повторното извикване (и втори процес) безвредно.
  */
 export async function scheduleDigests(deps: EmailDeps, now = new Date()): Promise<number> {
-  const subscribers = await deps.db.notificationSettings.findMany({
+  // През всички клиенти — системната роля (редовете носят своя клиент).
+  const subscribers = await deps.system.notificationSettings.findMany({
     where: { digest: 'DAILY', emailEnabled: true },
     select: { userId: true, tenantId: true, timeZone: true },
     take: 10_000,
@@ -259,5 +273,5 @@ export async function scheduleDigests(deps: EmailDeps, now = new Date()): Promis
     ];
   });
   if (due.length === 0) return 0;
-  return (await deps.db.emailOutbox.createMany({ data: due, skipDuplicates: true })).count;
+  return (await deps.system.emailOutbox.createMany({ data: due, skipDuplicates: true })).count;
 }

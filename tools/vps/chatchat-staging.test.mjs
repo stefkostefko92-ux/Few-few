@@ -355,7 +355,8 @@ test("docker compose -p chatchat-staging config: валиден, своите т
   writeFileSync(envFile, [
     "COMPOSE_PROJECT_NAME=chatchat-staging", `CHATCHAT_SHARED=${L.stg}`, "HTTP_PORT=4331",
     "PUBLIC_BASE_URL=https://staging-chatchat.carbonstealth.eu", "POSTGRES_PASSWORD=aa", "SESSION_PEPPER=bb",
-    "ATTACHMENT_URL_KEY=cc", "MFA_ENC_KEY=dd", "FILES_KEK=ee", "REDIS_PASSWORD=0123abcd", "",
+    "ATTACHMENT_URL_KEY=cc", "MFA_ENC_KEY=dd", "FILES_KEK=ee", "REDIS_PASSWORD=0123abcd",
+    "APP_DB_PASSWORD=ff01", "SYSTEM_DB_PASSWORD=ff02", "",
   ].join("\n"));
   for (const args of [["-p", "chatchat-staging"], []]) {
     const res = spawnSync("docker", ["compose", ...args, "--env-file", envFile, "-f", join(root, "chatchat", "docker-compose.yml"), "config", "--format", "json"], { encoding: "utf8" });
@@ -370,6 +371,7 @@ test("docker compose -p chatchat-staging config: валиден, своите т
     for (const b of binds.filter((x) => x !== "/dev/null")) assert.ok(b.startsWith(L.stg), b);
     assert.doesNotMatch(res.stdout, /\/opt\/few-few\/shared\/chatchat[/"]/);
     assert.ok(cfg.services.app.environment.DATABASE_URL.endsWith("@db:5432/chatchat"), "базата на staging е в неговия контейнер db");
+    assert.ok(cfg.services.app.environment.DATABASE_URL.startsWith("postgresql://chatchat_app:ff01@"), "staging — също под RLS");
   }
 }));
 

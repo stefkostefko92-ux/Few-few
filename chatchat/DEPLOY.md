@@ -42,8 +42,10 @@ sudoedit /opt/few-few/shared/chatchat/.env    # по образеца .env.examp
 | `FILES_KEK`          | `openssl rand -base64 32`                                             | **всички прикачени файлове** — смяна само с ротация (т. 12)       |
 | `INTEGRATION_KEK`    | `openssl rand -base64 32`                                             | токените на helpdesk конектора (въвеждат се наново в конзолата)   |
 | `REDIS_PASSWORD`     | `openssl rand -hex 32` (само hex — влиза некодирана в `REDIS_URL`)    | само чакащите задачи (т. 17)                                      |
+| `APP_DB_PASSWORD`    | `openssl rand -hex 32` (ролята `chatchat_app` — т. 18)                | нищо: `deploy.sh` подравнява ролята при всеки деплой              |
+| `SYSTEM_DB_PASSWORD` | `openssl rand -hex 32` (ролята `chatchat_system` — т. 18)             | нищо: `deploy.sh` подравнява ролята при всеки деплой              |
 
-Ключовете са различни. Ако `ATTACHMENT_URL_KEY`, `MFA_ENC_KEY`, `FILES_KEK`, `INTEGRATION_KEK`, `SSO_KEK` или `REDIS_PASSWORD` липсват, `deploy.sh` ги
+Ключовете са различни. Ако `ATTACHMENT_URL_KEY`, `MFA_ENC_KEY`, `FILES_KEK`, `INTEGRATION_KEK`, `SSO_KEK`, `REDIS_PASSWORD`, `APP_DB_PASSWORD` или `SYSTEM_DB_PASSWORD` липсват, `deploy.sh` ги
 генерира сам (само тях, само ако ги няма, никога не ги презаписва и не ги печата) и казва това —
 **копирай `.env` и извън сървъра** (password manager), **никога заедно с бекъпите**: без `MFA_ENC_KEY`
 бекъпът на базата не връща MFA, а без `FILES_KEK` прикачените файлове (и тези в бекъпите) са загубени.
@@ -118,12 +120,15 @@ sudo bash /opt/few-few/releases/<час>/<корен>/chatchat/deploy/deploy.sh
 3. **Бекъп на базата преди миграцията** (`shared/chatchat/backups/pre-deploy-<час>.sql.gz`, последните 5;
    с шифрования том — в него: `shared/chatchat/pgdata/pre-deploy/`) — без валиден дъмп няма миграция (изход 1).
 4. Еднократно: базата на pgvector + `REINDEX` (т. 11).
-5. `docker compose up -d` — entrypoint-ът чака базата и пуска `prisma migrate deploy` (**никога**
-   `db push`), после `node dist/index.js`.
-6. Чака `http://127.0.0.1:4330/readyz` да върне `{"ok":true,"ai":…}` (до `CHATCHAT_HEALTH_WAIT`, 120 s).
+5. Ролите на базата `chatchat_app` и `chatchat_system` — създава/подравнява ги (паролите от `.env`) и
+   прилага правата им (`chatchat_apply_grants()`, щом миграцията я е създала) — т. 18.
+6. `docker compose up -d` — entrypoint-ът чака базата и пуска `prisma migrate deploy` като собственика
+   (`MIGRATE_DATABASE_URL`, **никога** `db push`), маха адреса му от средата, после
+   `node dist/index.js` като `chatchat_app`.
+7. Чака `http://127.0.0.1:4330/readyz` да върне `{"ok":true,"ai":…}` (до `CHATCHAT_HEALTH_WAIT`, 120 s).
    Не → изход 4 и autodeploy вдига предишния release.
-7. Worker-ът (т. 17) трябва да е здрав — иначе само предупреждение (API-то работи, задачите чакат в Redis).
-8. Записва `shared/chatchat/last-good`; шифрова старите нешифровани прикачени файлове
+8. Worker-ът (т. 17) трябва да е здрав — иначе само предупреждение (API-то работи, задачите чакат в Redis).
+9. Записва `shared/chatchat/last-good`; шифрова старите нешифровани прикачени файлове
    (`files.js encrypt`, идемпотентно, т. 12); слага таймерите за бекъпа и ретенцията (т. 9); vhost-а (т. 2);
    мониторингът (т. 16) — ако не е включен, само напомня; ако е — подравнява таймера за одитната верига.
 
@@ -287,7 +292,7 @@ ssh root@СЪРВЪР "cat $R/chatchat-$T.files.tar.age" | age -d -i chatchat-ba
 
 Авария (РАЗРУШИТЕЛНО — губи се всичко след бекъпа; базата и файловете от **същия** час):
 `backup-restore.sh --live --yes-i-know -` (спира app, шифрована снимка на сегашната база, замяна в една
-транзакция, пуска app) и `files-restore.sh --live --yes-i-know -` (спира app, разопакова до живата папка,
+транзакция, връща правата на ролите на базата — дъмпът е без тях, т. 18 — пуска app) и `files-restore.sh --live --yes-i-know -` (спира app, разопакова до живата папка,
 разменя ги; старата остава като `attachments.pre-restore-<час>` до ръчното ѝ изтриване). Репетиция —
 поне веднъж месечно.
 
@@ -632,3 +637,45 @@ $CC exec -T redis redis-cli info memory | grep used_memory_human   # таван 
   — пуска образа като в продукция (node, read-only, tmpfs, без мрежа) и разпознава сканиран PDF и PNG.
 - **Втора инстанция на API-то:** същият `REDIS_URL`; nginx балансира към двете (SSE работи и през двете —
   събитията се разпращат през Redis, правата се проверяват при изпращане).
+
+## 18. Роли на базата и изолацията на клиентите (RLS, NFR-03, §15.1)
+
+Изолацията между клиентите е и в PostgreSQL (Row-Level Security, миграцията `20261011100000_tenant_rls`;
+моделът — `SECURITY.md`, „Изолация и в базата“). Три роли:
+
+| Роля              | Кой я ползва                                                                          | Права                                                                                      |
+| ----------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `chatchat`        | само миграциите (entrypoint-ът, `MIGRATE_DATABASE_URL`), бекъпът, `deploy.sh`         | собственикът (в Docker и superuser)                                                        |
+| `chatchat_app`    | приложението и worker-ът (`DATABASE_URL`)                                             | NOBYPASSRLS; всяка заявка — под политиките с клиента на заявката; без одитни UPDATE/DELETE |
+| `chatchat_system` | outbox-ите (имейл, helpdesk), векторите, ретенцията, CLI-тата (`SYSTEM_DATABASE_URL`) | BYPASSRLS — само там, където работата наистина обикаля клиенти                             |
+
+`deploy.sh` ги създава и подравнява при всеки пробег (паролите `APP_DB_PASSWORD`/`SYSTEM_DB_PASSWORD` от
+`.env` — през stdin, не в аргументите на процес) и вика `chatchat_apply_grants()` — ЕДИНСТВЕНОТО място за
+правата (идемпотентно; бъдещите таблици ги получават по `DEFAULT PRIVILEGES`). Мониторингът
+(`chatchat_monitor`, т. 16) не се пипа. В продукция приложението и worker-ът **не тръгват** с роля, която
+заобикаля RLS (superuser, BYPASSRLS, собственик), нито без `SYSTEM_DATABASE_URL` — `docker compose logs app`
+казва причината.
+
+Проверка на живо (само броеве, без данни):
+
+```bash
+$CC exec -T db psql -X -U chatchat -d chatchat -tAc \
+  "SELECT rolname, rolsuper, rolbypassrls FROM pg_roles WHERE rolname LIKE 'chatchat%' ORDER BY 1"
+$CC exec -T db psql -X -U chatchat -d chatchat -tAc \
+  "SELECT count(*) FILTER (WHERE relrowsecurity), count(*) FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'public' AND relkind = 'r'"
+#   → 51|52 (всички освен _prisma_migrations)
+```
+
+- **Ръчно (база без `deploy.sh`, напр. разработка):** като superuser —
+  `CREATE ROLE chatchat_app LOGIN NOBYPASSRLS PASSWORD '…'` и
+  `CREATE ROLE chatchat_system LOGIN BYPASSRLS PASSWORD '…'`; после миграциите като собственика (те
+  дават правата сами) или `SELECT chatchat_apply_grants();`. Ролята на приложението НЕ бива да е член
+  на собственика (членството се брои за собственост — RLS не би важал). Тестовете очакват ролите с пароли
+  `chatchat_app`/`chatchat_system` на локалния сървър (или `TEST_APP_DATABASE_URL`/`TEST_SYSTEM_DATABASE_URL`).
+- **Смяна на парола:** нова стойност в `.env` → `deploy.sh` (ролята се подравнява, контейнерите се
+  пресъздават с новия адрес).
+- **След възстановяване** (т. 10, `--live`): дъмпът е без права (`--no-acl`) — `backup-restore.sh` вика
+  `chatchat_apply_grants()` сам. На НОВ сървър ролите (клъстерни, не са в дъмпа) ги създава първо
+  `deploy.sh`.
+- **Връщане назад** (т. 7) към release отпреди RLS: старият `docker-compose.yml` върви като `chatchat`
+  (собственикът не е под RLS) — работи както преди; политиките остават в базата.

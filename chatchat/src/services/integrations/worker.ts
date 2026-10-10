@@ -17,10 +17,11 @@ export async function pruneIntegrationLog(deps: OutboxDeps, now = new Date()): P
     now.getTime() - 2 * deps.integrations.inboundToleranceSeconds * 1000 - 60_000,
   );
   const [log, receipts] = await Promise.all([
-    deps.db.helpdeskDelivery.deleteMany({
+    // Дневникът и отпечатъците на всички клиенти — системната роля.
+    deps.system.helpdeskDelivery.deleteMany({
       where: { status: { in: ['DELIVERED', 'SKIPPED'] }, updatedAt: { lt: logCutoff } },
     }),
-    deps.db.helpdeskInboundReceipt.deleteMany({ where: { receivedAt: { lt: receiptCutoff } } }),
+    deps.system.helpdeskInboundReceipt.deleteMany({ where: { receivedAt: { lt: receiptCutoff } } }),
   ]);
   return log.count + receipts.count;
 }

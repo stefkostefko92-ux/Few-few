@@ -2,6 +2,7 @@ import type { PrismaClient, SsoConfig } from '@prisma/client';
 import { createHmac } from 'node:crypto';
 import * as oidc from 'openid-client';
 import { hashToken, randomToken, safeEqual } from '../../crypto.js';
+import { tenantBySsoState } from '../../db/discovery.js';
 import type { ProviderCache } from './provider.js';
 import type { SsoDeps } from './types.js';
 
@@ -17,6 +18,7 @@ import type { SsoDeps } from './types.js';
  */
 
 export const SSO_STATE_TTL_MS = 10 * 60 * 1000;
+const STATE = /^[A-Za-z0-9_-]{20,100}$/;
 export const SSO_COOKIE = 'cc_sso';
 export type FlowPurpose = 'login' | 'test';
 
@@ -107,7 +109,15 @@ export type FlowResult =
       error?: unknown;
     };
 
-const STATE = /^[A-Za-z0-9_-]{20,100}$/;
+/**
+ * Клиентът на започнатия вход по върнатия `state` — тесният път преди вход (само id на клиента по
+ * HMAC-а; неизползван и в срок). Останалото от връщането тече в контекста му, под RLS.
+ */
+export async function tenantOfState(deps: FlowDeps, currentUrl: URL): Promise<string | null> {
+  const state = currentUrl.searchParams.get('state') ?? '';
+  if (!STATE.test(state)) return null;
+  return tenantBySsoState(deps.db, hashToken(state, deps.pepper));
+}
 
 /**
  * Връщането от доставчика: state → записът (еднократно, в срок, същият браузър) → обмяна на кода

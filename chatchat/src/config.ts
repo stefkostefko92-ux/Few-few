@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { describeIssues, isKey32, withoutEmpty } from './config-env.js';
+import { DB_ENV } from './config-db.js';
 import { checkFilesCrypto, FILES_ENV } from './config-files.js';
 import { QUEUE_ENV } from './config-queue.js';
 
@@ -18,6 +19,7 @@ export const EU_REGION = /^(eu|europe-[a-z]+\d+)$/;
 const EnvSchema = z.object({
   ...FILES_ENV,
   ...QUEUE_ENV,
+  ...DB_ENV,
   HOST: z.string().default('127.0.0.1'),
   PORT: z.coerce.number().int().min(1).max(65535).default(4330),
   /** Колко обратни проксита стоят отпред (Nginx = 1) — за коректен req.ip в лимитите. */
@@ -204,7 +206,7 @@ const WorkerSchema = EnvSchema.pick({
   METRICS_PORT: true,
   METRICS_HOST: true,
 })
-  .extend({ ...FILES_ENV, ...QUEUE_ENV })
+  .extend({ ...FILES_ENV, ...QUEUE_ENV, ...DB_ENV })
   .superRefine((c, ctx) => {
     if (c.REDIS_URL === '') {
       ctx.addIssue({

@@ -3,13 +3,14 @@ import type { Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { createApp } from '../../src/app.js';
 import { createSession, SESSION_COOKIE, type SessionDeps } from '../../src/auth/sessions.js';
+import { withTenant } from '../../src/db/tenant-context.js';
 import { createLogger } from '../../src/logger.js';
 import { RealtimeHub } from '../../src/realtime/hub.js';
 import { SecretBox } from '../../src/services/sso/secret.js';
 import { entraIssuer, type SsoDeps } from '../../src/services/sso/types.js';
 import { ENTRA_TID, FAKE_CLIENT_ID, FAKE_CLIENT_SECRET, type FakeIdp } from '../sso-fake-idp.js';
 import type { User } from '@prisma/client';
-import { Client, db, MFA_KEY, ORIGIN, PEPPER } from './helpers.js';
+import { appDb, Client, db, MFA_KEY, ORIGIN, PEPPER } from './helpers.js';
 
 /**
  * Приложението с включен единен вход срещу локалния фалшив доставчик (http на 127.0.0.1 — само в
@@ -30,7 +31,8 @@ export async function startSsoApp(
   idp: FakeIdp,
   opts: { port?: number; origin?: string; sso?: boolean } = {},
 ): Promise<SsoHarness> {
-  const sessions: SessionDeps = { db, pepper: PEPPER, ttlHours: 12, secureCookies: false };
+  // Като в продукция: ролята на приложението под RLS (входът с единен вход е тесен път преди клиента).
+  const sessions: SessionDeps = { db: appDb, pepper: PEPPER, ttlHours: 12, secureCookies: false };
   const hub = new RealtimeHub();
   const origin = opts.origin ?? ORIGIN;
   const sso: SsoDeps | null =
@@ -43,7 +45,7 @@ export async function startSsoApp(
           allowInsecureHttp: true,
         };
   const app = createApp({
-    db,
+    db: appDb,
     logger: createLogger(process.env.TEST_LOG_LEVEL ?? 'silent'),
     publicOrigin: origin,
     privacyPolicyUrl: '',
@@ -185,7 +187,7 @@ export async function seedSsoTenant(slug = 'sso-alfa') {
 
 /** Сесия с парола (като `signIn` от helpers.ts) срещу приложението с единен вход. */
 export async function signInPassword(h: SsoHarness, user: User): Promise<Client> {
-  const s = await createSession(h.sessions, user.id);
+  const s = await withTenant(user.tenantId, () => createSession(h.sessions, user.id));
   if (user.totpEnabledAt) {
     await db.session.update({ where: { id: s.id }, data: { mfaPassed: true } });
   }

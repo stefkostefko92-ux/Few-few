@@ -6,7 +6,7 @@
  */
 import { createServer } from 'node:http';
 import { IntegrationWorker } from '../../src/services/integrations/worker.js';
-import { cite, db, resetDb, startApp, type Plan } from '../integration/helpers.js';
+import { appDb, cite, resetDb, startApp, systemDb, type Plan } from '../integration/helpers.js';
 import { FakeScanner, URL_KEY } from '../integration/files.js';
 import { FakeHelpdesk } from '../integration/helpdesk-fake.js';
 import { localDeps } from '../integration/helpdesk-world.js';
@@ -43,7 +43,10 @@ const h = await startApp({
   integrations,
 });
 const quiet = { info: () => undefined, warn: () => undefined };
-const helpdeskWorker = new IntegrationWorker({ db, integrations, logger: quiet }, 1);
+const helpdeskWorker = new IntegrationWorker(
+  { db: appDb, system: systemDb, integrations, logger: quiet },
+  1,
+);
 helpdeskWorker.start();
 
 /** Обобщението на езика, поискан в съобщението на случая (FR-14: езикът на човека). */

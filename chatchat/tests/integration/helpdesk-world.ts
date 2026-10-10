@@ -6,7 +6,16 @@ import { SecretKeyring } from '../../src/services/integrations/secrets.js';
 import { signChatChat } from '../../src/services/integrations/signature.js';
 import type { NetPolicy } from '../../src/services/integrations/ssrf.js';
 import type { FakeHelpdesk } from './helpdesk-fake.js';
-import { db, makeUser, ORIGIN, signIn, type Client, type Harness } from './helpers.js';
+import {
+  appDb,
+  db,
+  makeUser,
+  ORIGIN,
+  signIn,
+  systemDb,
+  type Client,
+  type Harness,
+} from './helpers.js';
 
 /**
  * Светът на интеграцията с helpdesk: два клиента, администратор и поддръжка във всеки, техник с
@@ -154,7 +163,11 @@ export async function configureWebhook(admin: Client, fake: FakeHelpdesk, inboun
 /** Изпращачът до празно (порциите взимат само главата на всеки тикет). */
 export async function drain(deps: IntegrationDeps, now = new Date()): Promise<void> {
   for (let i = 0; i < 20; i += 1) {
-    const r = await processDeliveries({ db, integrations: deps, logger: silent }, now);
+    // Като в продукция: доставката под RLS (приложението), взимането — системната роля.
+    const r = await processDeliveries(
+      { db: appDb, system: systemDb, integrations: deps, logger: silent },
+      now,
+    );
     if (r.claimed === 0) return;
   }
 }

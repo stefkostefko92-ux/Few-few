@@ -32,7 +32,9 @@ flowchart LR
 cd chatchat
 npm ci
 cp .env.example .env            # попълни PUBLIC_BASE_URL, DATABASE_URL, SESSION_PEPPER (≥32 знака), MFA_ENC_KEY
-npx prisma migrate deploy
+# миграциите — като собственика на базата; приложението — като chatchat_app + SYSTEM_DATABASE_URL
+# (ролите и RLS: DEPLOY.md, т. 18; NODE_ENV=development позволява и собственика — само предупреждение)
+DATABASE_URL=postgresql://chatchat:…@127.0.0.1:5432/chatchat npx prisma migrate deploy
 npm run build
 TENANT_SLUG=demo TENANT_NAME="Demo" USER_EMAIL=ko@example.test USER_NAME="Knowledge owner" \
   USER_ROLE=KNOWLEDGE_OWNER npm run tenant:create   # печата еднократен линк /reset#… за паролата

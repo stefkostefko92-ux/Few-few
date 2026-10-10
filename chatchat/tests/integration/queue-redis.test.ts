@@ -9,7 +9,7 @@ import { jobHandlers, queueHooks } from '../../src/queue/runtime.js';
 import { FakeOcr, FakeRasterizer } from '../fake-ocr.js';
 import { makePdf } from '../file-fixtures.js';
 import { makeDocx } from '../ingest-fixtures.js';
-import { db, resetDb, startApp, type Harness } from './helpers.js';
+import { appDb, db, resetDb, startApp, systemDb, type Harness } from './helpers.js';
 import { FakeScanner, URL_KEY } from './files.js';
 import { cleanKb, FlakyStore } from './ingest-world.js';
 import { startRedis, type TestRedis } from './redis.js';
@@ -201,7 +201,8 @@ describe('целият път през Redis: API → worker → ЧЕРНОВА'
     const conn = redis.client('worker', true);
     const workerBus = new BullJobBus(conn, policies, prefix);
     const pipeline: PipelineDeps = {
-      db,
+      db: appDb,
+      system: systemDb,
       store,
       bus: workerBus,
       parser: new ThreadParser({ heapMb: 256, timeoutMs: 30_000 }),

@@ -46,13 +46,17 @@ export function humanNumber(prefix: 'CASE' | 'TS', now = new Date()): string {
   return `${prefix}-${now.getUTCFullYear()}-${String(randomInt(0, 1_000_000)).padStart(6, '0')}`;
 }
 
-/** Нарушен уникален индекс, който включва полето `field` (P2002). */
+/**
+ * Нарушен уникален индекс, който (може би) включва полето `field` (P2002). Под RLS PostgreSQL НЕ връща
+ * подробността на нарушението (ключът би издал ред, който ролята не вижда), затова Prisma не знае
+ * полетата (`target` е null) — тогава отговорът е „възможно“: викащият ПОТВЪРЖДАВА с четене
+ * (съществуващия ред, повтора) и при липса хвърля, никога не решава на сляпо.
+ */
 export function isUniqueOn(err: unknown, field: string): boolean {
-  return (
-    err instanceof Prisma.PrismaClientKnownRequestError &&
-    err.code === 'P2002' &&
-    JSON.stringify(err.meta ?? {}).includes(field)
-  );
+  if (!(err instanceof Prisma.PrismaClientKnownRequestError) || err.code !== 'P2002') return false;
+  const target = (err.meta as { target?: unknown } | undefined)?.target;
+  if (target === null || target === undefined) return true;
+  return JSON.stringify(target).includes(field);
 }
 
 export async function withUniqueRetry<T>(create: () => Promise<T>, attempts = 5): Promise<T> {

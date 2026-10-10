@@ -62,10 +62,15 @@ export async function createTicket(
   reason: string,
 ): Promise<Result<{ ticket: Ticket; summary: Summary }>> {
   const summary = await buildTicketSummary(deps.db, c, caseAudiences(p.user.role, c.portal));
-  let applied: Applied;
+  let applied: Applied | null;
   try {
     applied = await withUniqueRetry(() =>
       deps.db.$transaction(async (tx) => {
+        // Паралелна заявка за същия случай вече го създаде (видимо след нейния commit — при повтора
+        // след нарушения уникален индекс) → 409, без нов опит за запис.
+        if (await tx.ticket.findUnique({ where: { caseId: c.id }, select: { id: true } })) {
+          return null;
+        }
         const fresh = await tx.case.findUniqueOrThrow({ where: { id: c.id } });
         const ticket = await createTicketTx(tx, fresh, p.user.id, reason, summary);
         const updated = await tx.case.update({
@@ -76,10 +81,17 @@ export async function createTicket(
       }),
     );
   } catch (err) {
-    // Паралелна заявка за същия случай вече създаде тикета.
-    if (isUniqueOn(err, 'caseId')) return fail(409, 'ticket_exists');
+    // Паралелна заявка за същия случай вече създаде тикета (потвърдено с четене — под RLS
+    // нарушението не казва кой индекс).
+    if (
+      isUniqueOn(err, 'caseId') &&
+      (await deps.db.ticket.findUnique({ where: { caseId: c.id }, select: { id: true } }))
+    ) {
+      return fail(409, 'ticket_exists');
+    }
     throw err;
   }
+  if (applied === null) return fail(409, 'ticket_exists');
   await afterTicketChange(deps, changeOf(applied, p.user.id));
   return ok({ ticket: applied.ticket, summary });
 }

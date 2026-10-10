@@ -13,6 +13,7 @@ export function integrationsFrom(
   cfg: IntegrationsConfig,
   baseUrl: string,
   db: PrismaClient,
+  system: PrismaClient,
   logger: { info: (o: object, m: string) => void; warn: (o: object, m: string) => void },
 ): { deps: IntegrationDeps; worker: IntegrationWorker } | null {
   const keys = integrationKeys(cfg);
@@ -30,7 +31,7 @@ export function integrationsFrom(
     logDays: cfg.INTEGRATION_LOG_DAYS,
   };
   const worker = new IntegrationWorker(
-    { db, integrations: deps, logger },
+    { db, system, integrations: deps, logger },
     cfg.INTEGRATION_SWEEP_SECONDS,
   );
   return { deps, worker };

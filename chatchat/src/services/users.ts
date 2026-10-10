@@ -4,6 +4,8 @@ import { hashPassword } from '../auth/password.js';
 import { roleRank } from '../auth/rbac.js';
 import { announceRevocation, revokeUserSessions } from '../auth/sessions.js';
 import { hashToken, randomToken } from '../crypto.js';
+import { tenantByPasswordReset } from '../db/discovery.js';
+import { withTenant } from '../db/tenant-context.js';
 import { redactPii } from '../domain/pii.js';
 
 /**
@@ -86,17 +88,17 @@ export async function issuePasswordLink(
 ): Promise<{ url: string; expiresAt: Date }> {
   const token = randomToken();
   const expiresAt = new Date(Date.now() + opts.ttlHours * 3600 * 1000);
-  await db.$transaction([
-    db.passwordReset.deleteMany({ where: { userId: opts.userId, usedAt: null } }),
-    db.passwordReset.create({
+  await db.$transaction(async (tx) => {
+    await tx.passwordReset.deleteMany({ where: { userId: opts.userId, usedAt: null } });
+    await tx.passwordReset.create({
       data: {
         userId: opts.userId,
         tokenHash: hashToken(token, opts.pepper),
         expiresAt,
         createdById: opts.createdById,
       },
-    }),
-  ]);
+    });
+  });
   return { url: `${opts.origin}/reset#${token}`, expiresAt };
 }
 
@@ -116,8 +118,20 @@ export async function resetPasswordWithToken(
   token: string,
   newPassword: string,
 ): Promise<boolean> {
+  const tokenHash = hashToken(token, pepper);
+  // Човекът не е вписан: клиентът — по тесния път (само id по HMAC на токена), после под RLS.
+  const tenantId = await tenantByPasswordReset(db, tokenHash);
+  if (!tenantId) return false;
+  return withTenant(tenantId, () => consumeResetToken(db, tokenHash, newPassword));
+}
+
+async function consumeResetToken(
+  db: PrismaClient,
+  tokenHash: string,
+  newPassword: string,
+): Promise<boolean> {
   const row = await db.passwordReset.findUnique({
-    where: { tokenHash: hashToken(token, pepper) },
+    where: { tokenHash },
     include: { user: true },
   });
   const now = new Date();

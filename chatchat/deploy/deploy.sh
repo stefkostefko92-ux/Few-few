@@ -9,7 +9,8 @@
 # → папката с прикачените файлове → образите (build на app — същият образ е и worker-ът; db, clamav и
 # redis се теглят само ако ги няма) →
 # бекъп на базата преди миграция (след build-а: дъмпът е отпреди самата смяна) → еднократно: базата на
-# pgvector + REINDEX (DEPLOY.md, т. 11) → up (entrypoint-ът прилага `prisma migrate deploy`) → чака
+# pgvector + REINDEX (DEPLOY.md, т. 11) → ролите на базата chatchat_app/chatchat_system и правата им (RLS,
+# DEPLOY.md, „Роли на базата“) → up (entrypoint-ът прилага `prisma migrate deploy` като собственика) → чака
 # /readyz → worker-ът (опашките, OCR) е здрав — иначе предупреждение → старите нешифровани прикачени
 # файлове се шифроват (`files:encrypt`) → дневният шифрован
 # бекъп и ретенцията (таймери) → vhost-ът от репото, щом има сертификат.
@@ -92,17 +93,22 @@ sync_env() {
 # част от тях с `:?`; без INTEGRATION_KEK/SSO_KEK съответната функция е изключена), тоест няма нищо,
 # подписано или шифровано с тях. Затова тук — и само тук — липсващ ключ се ражда на сървъра: дописва се в
 # $SHARED/.env (600), никога не се презаписва, никога не се печата. Съществуващ не се пипа.
-# REDIS_PASSWORD е hex (влиза некодирана в REDIS_URL — base64 би имал „/“ и „+“).
+# REDIS_PASSWORD и паролите на ролите на базата (APP_DB_PASSWORD, SYSTEM_DB_PASSWORD) са hex: влизат
+# некодирани в адресите (base64 би имал „/“ и „+“). Ролите ги подравнява ensure_db_roles при всеки пробег.
 # Изгубен SSO_KEK не губи данни: администраторът въвежда секрета на доставчика наново (sso:off при нужда).
 ensure_keys() {
   local name added="" value
-  for name in ATTACHMENT_URL_KEY MFA_ENC_KEY FILES_KEK INTEGRATION_KEK SSO_KEK REDIS_PASSWORD; do
+  for name in ATTACHMENT_URL_KEY MFA_ENC_KEY FILES_KEK INTEGRATION_KEK SSO_KEK REDIS_PASSWORD \
+    APP_DB_PASSWORD SYSTEM_DB_PASSWORD; do
     [ -z "$(env_value "$name")" ] || continue
     if [ "$name" = FILES_KEK ] && sealed_files_exist; then
       fail 1 "FILES_KEK липсва в $SHARED/.env, а в attachments/ има шифровани файлове — нов ключ НЕ ги отваря. Върни ключа от password manager-а (docs/runbook.md, „Изгубен FILES_KEK“)."
     fi
     command -v openssl >/dev/null 2>&1 || fail 1 "липсва $name в $SHARED/.env, а openssl го няма — сложи го ръчно (DEPLOY.md, т. 1)."
-    if [ "$name" = REDIS_PASSWORD ]; then value="$(openssl rand -hex 32)"; else value="$(openssl rand -base64 32)"; fi
+    case "$name" in
+      *PASSWORD) value="$(openssl rand -hex 32)" ;;
+      *) value="$(openssl rand -base64 32)" ;;
+    esac
     # пренасочването е на същия ред: стойността отива само във файла
     printf '%s=%s\n' "$name" "$value" >>"$SHARED/.env"
     added="$added $name"
@@ -207,6 +213,42 @@ check_redis_password() {
     '') fail 1 "REDIS_PASSWORD в .env е празна — openssl rand -hex 32 (DEPLOY.md, т. 1)." ;;
     *[!A-Za-z0-9_-]*) fail 1 "REDIS_PASSWORD съдържа знаци извън A-Z, a-z, 0-9, „-“ и „_“ — те чупят REDIS_URL. Нова: openssl rand -hex 32." ;;
   esac
+}
+
+# Паролите на ролите на базата влизат некодирани в DATABASE_URL/SYSTEM_DATABASE_URL (docker-compose.yml) и
+# в SQL литерала на ALTER ROLE: само букви, цифри, „-“ и „_“ (ensure_keys ги ражда като hex).
+check_role_passwords() {
+  local name
+  for name in APP_DB_PASSWORD SYSTEM_DB_PASSWORD; do
+    case "$(env_value "$name")" in
+      '') fail 1 "$name в .env е празна — openssl rand -hex 32 (DEPLOY.md, „Роли на базата“)." ;;
+      *[!A-Za-z0-9_-]*) fail 1 "$name съдържа знаци извън A-Z, a-z, 0-9, „-“ и „_“ — нова: openssl rand -hex 32." ;;
+    esac
+  done
+}
+
+# Ролите на базата (NFR-03, §15.1 — RLS; DEPLOY.md, „Роли на базата“): chatchat_app (приложението и
+# worker-ът — NOBYPASSRLS, под политиките с клиента на заявката) и chatchat_system (BYPASSRLS — само
+# задачите през клиенти: outbox-ите, ретенцията, CLI-тата). Собственикът `chatchat` остава само за
+# миграциите. Всеки пробег ги създава/подравнява (паролите от .env — през stdin, не в аргументите на
+# процес; след възстановяване на тома ролите ги няма) и прилага правата през chatchat_apply_grants(),
+# щом миграцията вече я е създала (при пръв деплой я вика самата миграция). Преди `up`: приложението
+# тръгва като chatchat_app и без ролята не стига до базата.
+ensure_db_roles() {
+  local app_pw sys_pw sql
+  app_pw="$(env_value APP_DB_PASSWORD)"
+  sys_pw="$(env_value SYSTEM_DB_PASSWORD)"
+  docker compose up -d --no-recreate --wait db >/dev/null ||
+    fail 1 "базата не тръгна — ролите не са подравнени, работещите контейнери не са сменени."
+  sql="$(printf '%s\n' \
+    "SELECT 'CREATE ROLE chatchat_app' WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'chatchat_app') \\gexec" \
+    "ALTER ROLE chatchat_app WITH LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS PASSWORD '$app_pw';" \
+    "SELECT 'CREATE ROLE chatchat_system' WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'chatchat_system') \\gexec" \
+    "ALTER ROLE chatchat_system WITH LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION BYPASSRLS PASSWORD '$sys_pw';" \
+    "DO \$\$ BEGIN IF to_regprocedure('public.chatchat_apply_grants()') IS NOT NULL THEN PERFORM public.chatchat_apply_grants(); END IF; END \$\$;")"
+  # here-string, не тръба: паролите не са в аргументите на процес, а psql чете stdin докрай.
+  docker compose exec -T db psql -X -q -v ON_ERROR_STOP=1 -U chatchat -d chatchat >/dev/null <<<"$sql" ||
+    fail 1 "ролите на базата (chatchat_app/chatchat_system) не се подравниха — docker compose logs db."
 }
 
 # Образите на базата, антивируса и Redis са заковани по digest. Теглят се само ако ги няма: изтеглен вече образ
@@ -440,6 +482,7 @@ main() {
   sync_clamd_conf
   check_db_password
   check_redis_password
+  check_role_passwords
   port="$(env_value HTTP_PORT | tr -dc '0-9')"
   port="${port:-4330}"
   log "build…"
@@ -448,6 +491,7 @@ main() {
   plan_backup
   backup_db
   switch_db_image
+  ensure_db_roles
   log "up (entrypoint-ът прилага миграциите)…"
   docker compose up -d --remove-orphans || fail 4 "docker compose up се провали."
   wait_ready "$port" ||

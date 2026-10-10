@@ -5,6 +5,7 @@ import { z } from 'zod';
 import type { AppDeps } from '../app.js';
 import { sharedStore } from '../auth/rate-limit.js';
 import { appendAudit } from '../audit.js';
+import { withTenant, withTenantIfKnown } from '../db/tenant-context.js';
 import {
   apiError,
   principalOf,
@@ -20,8 +21,14 @@ import {
   type SessionDeps,
 } from '../auth/sessions.js';
 import { handleCallback } from '../services/sso/callback.js';
-import { beginFlow, clientSecretOf, SSO_COOKIE, SSO_STATE_TTL_MS } from '../services/sso/flow.js';
-import { configForEmail } from '../services/sso/policy.js';
+import {
+  beginFlow,
+  clientSecretOf,
+  SSO_COOKIE,
+  SSO_STATE_TTL_MS,
+  tenantOfState,
+} from '../services/sso/flow.js';
+import { configForEmail, tenantForEmailDomain } from '../services/sso/policy.js';
 import { oidcErrorCode, type SsoRuntime } from '../services/sso/provider.js';
 import { SSO_BASE_PATH, SSO_CALLBACK_PATH } from '../services/sso/types.js';
 
@@ -86,7 +93,9 @@ export function authSsoRouter(deps: AppDeps, runtime: SsoRuntime | null): Router
       try {
         const parsed = Email.safeParse(req.body);
         if (!parsed.success || !runtime) return res.json({ sso: null });
-        const cfg = await configForEmail(deps.db, parsed.data.email);
+        const { email } = parsed.data;
+        const tenantId = await tenantForEmailDomain(deps.db, email);
+        const cfg = await withTenantIfKnown(tenantId, () => configForEmail(deps.db, email));
         res.json({
           sso: cfg ? { provider: cfg.provider, label: cfg.displayName || null } : null,
         });
@@ -105,15 +114,16 @@ export function authSsoRouter(deps: AppDeps, runtime: SsoRuntime | null): Router
         const parsed = Email.safeParse(req.body);
         if (!parsed.success) return apiError(res, 400, 'invalid_input');
         if (!flowDeps) return apiError(res, 503, 'sso_unavailable');
-        const cfg = await configForEmail(deps.db, parsed.data.email);
+        const { email } = parsed.data;
+        // Доставчикът и записът на започнатия вход — в контекста на клиента му (под RLS).
+        const tenantId = await tenantForEmailDomain(deps.db, email);
+        const cfg = await withTenantIfKnown(tenantId, () => configForEmail(deps.db, email));
         if (!cfg) return apiError(res, 404, 'sso_not_configured');
         let flow: { url: string; binding: string };
         try {
-          flow = await beginFlow(flowDeps, cfg, {
-            purpose: 'login',
-            redirectUri,
-            loginHint: parsed.data.email,
-          });
+          flow = await withTenant(cfg.tenantId, () =>
+            beginFlow(flowDeps, cfg, { purpose: 'login', redirectUri, loginHint: email }),
+          );
         } catch (err) {
           deps.logger.warn(oidcErrorCode(err), 'доставчикът на единния вход не отговаря');
           return apiError(res, 502, 'sso_provider_unreachable');
@@ -133,10 +143,14 @@ export function authSsoRouter(deps: AppDeps, runtime: SsoRuntime | null): Router
       if (!flowDeps) return res.redirect(303, '/?sso_error=sso_unavailable');
       // Публичният адрес (не Host зад проксито): от него openid-client взима redirect_uri.
       const currentUrl = new URL(req.originalUrl, deps.publicOrigin);
-      const outcome = await handleCallback(
-        { db: deps.db, logger: deps.logger, sessions: deps.sessions, flow: flowDeps },
-        currentUrl,
-        binding,
+      // Клиентът — по върнатия state (тесният път); входът, сесията и одитът — под RLS в контекста му.
+      const tenantId = await tenantOfState(flowDeps, currentUrl);
+      const outcome = await withTenantIfKnown(tenantId, () =>
+        handleCallback(
+          { db: deps.db, logger: deps.logger, sessions: deps.sessions, flow: flowDeps },
+          currentUrl,
+          binding,
+        ),
       );
       if (outcome.session) {
         setSessionCookie(res, deps.sessions, outcome.session.token, outcome.session.expiresAt);

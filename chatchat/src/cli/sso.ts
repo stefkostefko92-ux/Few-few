@@ -1,8 +1,8 @@
-import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { appendAudit } from '../audit.js';
 import { revokeUserSessions } from '../auth/sessions.js';
 import { ssoSessionUsers } from '../services/sso/admin-store.js';
+import { systemClientFromEnv } from '../db/clients.js';
 
 /**
  * Аварийният изход от единния вход (на сървъра, от средата) — когато доставчикът е недостъпен или
@@ -24,7 +24,8 @@ const Env = z.object({
 
 async function main(): Promise<void> {
   const env = Env.parse(process.env);
-  const db = new PrismaClient();
+  // Системната роля (chatchat_system, BYPASSRLS): CLI-то обикаля клиенти или създава клиент.
+  const db = systemClientFromEnv();
   try {
     const tenant = await db.tenant.findUnique({ where: { slug: env.TENANT_SLUG } });
     if (!tenant) throw new Error(`Няма клиент „${env.TENANT_SLUG}“.`);

@@ -4,7 +4,7 @@ import { InlineJobBus } from '../../src/queue/inline.js';
 import type { QueuePolicies } from '../../src/queue/jobs.js';
 import { jobHandlers, queueHooks } from '../../src/queue/runtime.js';
 import { FakeOcr, FakeRasterizer } from '../fake-ocr.js';
-import { db, type Client } from './helpers.js';
+import { appDb, db, systemDb, type Client } from './helpers.js';
 import { SpyStore } from './files.js';
 
 /**
@@ -35,8 +35,10 @@ export const FAST_POLICIES: QueuePolicies = {
 export function ingestRig(store: FlakyStore) {
   const bus = new InlineJobBus(FAST_POLICIES);
   const ocr = { engine: new FakeOcr(), rasterizer: new FakeRasterizer() };
+  // Като в продукция: работата по файла под RLS, клиентът на файла — системната роля.
   const pipeline: PipelineDeps = {
-    db,
+    db: appDb,
+    system: systemDb,
     store,
     bus,
     parser: new ThreadParser({ heapMb: 256, timeoutMs: 60_000 }),

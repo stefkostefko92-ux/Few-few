@@ -1,6 +1,7 @@
 import type { PrismaClient } from '@prisma/client';
 import type { Logger } from 'pino';
 import type { EmbeddingModel } from '../ai/embeddings.js';
+import { withTenantIfKnown } from '../db/tenant-context.js';
 import type { QueueEnv } from '../config-queue.js';
 import { ThreadParser } from '../ingest/isolate.js';
 import { PopplerRasterizer, TesseractOcr } from '../ingest/ocr.js';
@@ -32,6 +33,7 @@ export function pipelineDeps(
   cfg: IngestEnv,
   parts: {
     db: PrismaClient;
+    system: PrismaClient;
     store: AttachmentStore;
     bus: Pick<JobBus, 'enqueue'>;
     logger: Logger;
@@ -41,6 +43,7 @@ export function pipelineDeps(
   const { metrics } = parts;
   return {
     db: parts.db,
+    system: parts.system,
     store: parts.store,
     bus: parts.bus,
     parser: new ThreadParser({
@@ -90,17 +93,40 @@ export function embedHandler(
   };
 }
 
+/**
+ * Задачата носи само id на файла: клиентът му се чете със системната роля (само `tenantId`), а
+ * цялата работа по файла тече в контекста на клиента — под RLS. Непознат id → без контекст (базата
+ * не връща нищо — задачата приключва без работа, както при изтрит файл).
+ */
+async function inTenantOfItem<T>(
+  pipeline: PipelineDeps,
+  itemId: string,
+  fn: () => Promise<T>,
+): Promise<T> {
+  const row = await pipeline.system.ingestItem.findUnique({
+    where: { id: itemId },
+    select: { tenantId: true },
+  });
+  return withTenantIfKnown(row?.tenantId ?? null, fn);
+}
+
 export function jobHandlers(pipeline: PipelineDeps, embed: JobHandlers['embed']): JobHandlers {
   return {
-    ingest: (data, ctx) => runIngestJob(pipeline, data.itemId, ctx),
-    ocr: (data, ctx) => runOcrJob(pipeline, data.itemId, ctx),
+    ingest: (data, ctx) =>
+      inTenantOfItem(pipeline, data.itemId, () => runIngestJob(pipeline, data.itemId, ctx)),
+    ocr: (data, ctx) =>
+      inTenantOfItem(pipeline, data.itemId, () => runOcrJob(pipeline, data.itemId, ctx)),
     embed,
   };
 }
 
 export function queueHooks(pipeline: PipelineDeps, metrics?: Metrics): QueueHooks {
   return {
-    onDead: (letter) => onIngestDead(pipeline, letter),
+    onDead: async (letter) => {
+      const itemId = (letter.data as { itemId?: unknown }).itemId;
+      if (typeof itemId !== 'string') return onIngestDead(pipeline, letter);
+      return inTenantOfItem(pipeline, itemId, () => onIngestDead(pipeline, letter));
+    },
     ...(metrics
       ? {
           onResult: (queue, result, seconds) => {

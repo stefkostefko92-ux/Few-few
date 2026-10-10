@@ -5,7 +5,8 @@
 # `deploy/nginx/chatchat.carbonstealth.eu.conf` в това репо, не се пише на ръка на сървъра.
 #
 # Тайните НЕ са тук — идват от `.env` до този файл (mode 600 на сървъра, никога в репото).
-# Задължителни: POSTGRES_PASSWORD и REDIS_PASSWORD (openssl rand -hex 32 — влизат некодирани в адресите) ·
+# Задължителни: POSTGRES_PASSWORD, REDIS_PASSWORD, APP_DB_PASSWORD и SYSTEM_DB_PASSWORD (openssl rand -hex 32 —
+# влизат некодирани в адресите; deploy.sh ражда липсващите освен POSTGRES_PASSWORD) ·
 # SESSION_PEPPER (openssl rand -hex 32) · ATTACHMENT_URL_KEY, MFA_ENC_KEY и FILES_KEK (openssl rand
 # -base64 32) · PUBLIC_BASE_URL. За AI: VERTEX_PROJECT_ID + GCP_SA_FILE. Образецът — `.env.example`.
 # В контейнера влиза само изброеното в `environment:` — нова настройка от `.env` се добавя и там.
@@ -180,7 +181,13 @@ services:
       PORT: '4330'
       HOST: 0.0.0.0
       PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:?липсва PUBLIC_BASE_URL}
-      DATABASE_URL: postgresql://chatchat:${POSTGRES_PASSWORD:?липсва POSTGRES_PASSWORD}@db:5432/chatchat
+      # Ролите на базата (NFR-03, RLS — DEPLOY.md, „Роли на базата“; създава ги deploy/deploy.sh):
+      # приложението — chatchat_app (под политиките с клиента на заявката); задачите през клиенти
+      # (outbox-ите, CLI-тата: ретенция, files, audit:verify) — chatchat_system; миграциите в
+      # entrypoint-а — собственикът chatchat (MIGRATE_DATABASE_URL се маха от средата преди node).
+      DATABASE_URL: postgresql://chatchat_app:${APP_DB_PASSWORD:?липсва APP_DB_PASSWORD}@db:5432/chatchat
+      SYSTEM_DATABASE_URL: postgresql://chatchat_system:${SYSTEM_DB_PASSWORD:?липсва SYSTEM_DB_PASSWORD}@db:5432/chatchat
+      MIGRATE_DATABASE_URL: postgresql://chatchat:${POSTGRES_PASSWORD:?липсва POSTGRES_PASSWORD}@db:5432/chatchat
       SESSION_PEPPER: ${SESSION_PEPPER:?липсва SESSION_PEPPER}
       SESSION_TTL_HOURS: ${SESSION_TTL_HOURS:-12}
       LOG_LEVEL: ${LOG_LEVEL:-info}
@@ -313,7 +320,10 @@ services:
       # САМО каквото worker-ът ползва (least privilege): без SESSION_PEPPER, MFA_ENC_KEY, ключа за адресите.
       NODE_ENV: production
       LOG_LEVEL: ${LOG_LEVEL:-info}
-      DATABASE_URL: postgresql://chatchat:${POSTGRES_PASSWORD:?липсва POSTGRES_PASSWORD}@db:5432/chatchat
+      # Работата по файл — chatchat_app в контекста на клиента му (RLS); клиентът на файла по id и прегледът
+      # на векторите през всички клиенти — chatchat_system. Без собственика: worker-ът не мигрира.
+      DATABASE_URL: postgresql://chatchat_app:${APP_DB_PASSWORD:?липсва APP_DB_PASSWORD}@db:5432/chatchat
+      SYSTEM_DATABASE_URL: postgresql://chatchat_system:${SYSTEM_DB_PASSWORD:?липсва SYSTEM_DB_PASSWORD}@db:5432/chatchat
       REDIS_URL: redis://:${REDIS_PASSWORD:?липсва REDIS_PASSWORD}@redis:6379
       ATTACHMENTS_DIR: /data/attachments
       FILES_KEK: ${FILES_KEK:?липсва FILES_KEK}

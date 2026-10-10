@@ -336,7 +336,8 @@ test("audit-verify: цяла → intact 1; счупена → intact 0 и изх
 // ── compose: валиден с и без файла на мониторинга ──────────────────────────────────────────────────
 test("docker compose config: валиден с и без docker-compose.monitoring.yml; само 127.0.0.1", { skip: !hasDocker && "няма docker" }, () => {
   const env = { PATH: process.env.PATH, HOME: process.env.HOME ?? "/root", POSTGRES_PASSWORD: "x", PUBLIC_BASE_URL: "https://chatchat.example.eu",
-    SESSION_PEPPER: "p", ATTACHMENT_URL_KEY: "a", MFA_ENC_KEY: "m", FILES_KEK: "k", REDIS_PASSWORD: "0123abcd", MAIL_FROM_EMAIL: "no-reply@example.eu" };
+    SESSION_PEPPER: "p", ATTACHMENT_URL_KEY: "a", MFA_ENC_KEY: "m", FILES_KEK: "k", REDIS_PASSWORD: "0123abcd", MAIL_FROM_EMAIL: "no-reply@example.eu",
+    APP_DB_PASSWORD: "a1b2", SYSTEM_DB_PASSWORD: "c3d4" };
   const base = spawnSync("docker", ["compose", "-f", "docker-compose.yml", "config", "-q"], { cwd: cc, env, encoding: "utf8" });
   assert.equal(base.status, 0, base.stderr);
   const full = spawnSync("docker", ["compose", "-f", "docker-compose.yml", "-f", "docker-compose.monitoring.yml", "config", "--format", "json"],
@@ -353,6 +354,19 @@ test("docker compose config: валиден с и без docker-compose.monitori
     for (const p of svc.ports ?? []) assert.equal(p.host_ip, "127.0.0.1", `${s}: публикуван само на loopback`);
   }
   assert.equal(cfg.services.app.environment.METRICS_PORT, "9464");
+  // Ролите на базата (RLS): приложението и worker-ът — chatchat_app; задачите през клиенти —
+  // chatchat_system; собственикът — само за миграциите в entrypoint-а на app (не и в worker-а).
+  const app = cfg.services.app.environment;
+  const worker = cfg.services.worker.environment;
+  assert.match(app.DATABASE_URL, /^postgresql:\/\/chatchat_app:a1b2@db:5432\/chatchat$/);
+  assert.match(app.SYSTEM_DATABASE_URL, /^postgresql:\/\/chatchat_system:c3d4@db:5432\/chatchat$/);
+  assert.match(app.MIGRATE_DATABASE_URL, /^postgresql:\/\/chatchat:x@db:5432\/chatchat$/);
+  assert.match(worker.DATABASE_URL, /^postgresql:\/\/chatchat_app:/);
+  assert.match(worker.SYSTEM_DATABASE_URL, /^postgresql:\/\/chatchat_system:/);
+  assert.equal(worker.MIGRATE_DATABASE_URL, undefined, "worker-ът не мигрира — без адреса на собственика");
+  const missing = spawnSync("docker", ["compose", "-f", "docker-compose.yml", "config", "-q"],
+    { cwd: cc, env: { ...env, APP_DB_PASSWORD: "" }, encoding: "utf8" });
+  assert.notEqual(missing.status, 0, "без APP_DB_PASSWORD compose отказва");
   assert.equal(cfg.services.alertmanager.environment.ALERT_EMAIL_FROM, "no-reply@example.eu", "подателят пада към MAIL_FROM_EMAIL");
   assert.deepEqual(Object.keys(cfg.services["node-exporter"].networks), ["monitoring"], "node-exporter — без път навън");
   assert.equal(cfg.networks.monitoring.internal, true);

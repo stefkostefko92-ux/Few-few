@@ -1,6 +1,8 @@
 import type { AccountKind, AuthMethod, Prisma, PrismaClient, Role } from '@prisma/client';
 import type { NextFunction, Request, Response } from 'express';
 import { hashToken, randomToken } from '../crypto.js';
+import { tenantBySession } from '../db/discovery.js';
+import { withTenant } from '../db/tenant-context.js';
 import { mfaRequired } from './rbac.js';
 
 /**
@@ -130,48 +132,61 @@ export function readCookie(req: Request, name: string): string | null {
   return null;
 }
 
-/** Зарежда вписания човек, ако сесията е жива и акаунтът — активен и в срок. */
+/**
+ * Зарежда вписания човек, ако сесията е жива и акаунтът — активен и в срок. Клиентът на сесията
+ * идва през тесния път (`tenantBySession` — само id на клиента по HMAC на токена); сесията и
+ * човекът се четат вече под RLS, а останалата част от заявката тече в контекста на клиента му.
+ */
 export function loadPrincipal(deps: SessionDeps) {
   return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
     try {
       if (req.principal) return next();
       const token = readCookie(req, SESSION_COOKIE);
       if (!token) return next();
-      const session = await deps.db.session.findUnique({
-        where: { tokenHash: hashToken(token, deps.pepper) },
-        include: { user: true },
-      });
-      const now = new Date();
-      if (
-        !session ||
-        session.revokedAt !== null ||
-        session.expiresAt <= now ||
-        !session.user.active ||
-        (session.user.expiresAt !== null && session.user.expiresAt <= now)
-      ) {
-        return next();
-      }
-      const u = session.user;
-      req.principal = {
-        user: {
-          id: u.id,
-          tenantId: u.tenantId,
-          companyId: u.companyId,
-          name: u.name,
-          role: u.role,
-          kind: u.kind,
-          locale: u.locale,
-        },
-        session: { id: session.id, csrfToken: session.csrfToken, authMethod: session.authMethod },
-        mfa: mfaStateOf(u, session.mfaPassed, session.mfaViaIdp),
-      };
-      if (now.getTime() - session.lastSeenAt.getTime() > TOUCH_EVERY_MS) {
-        await deps.db.session.update({ where: { id: session.id }, data: { lastSeenAt: now } });
-      }
-      next();
+      const tokenHash = hashToken(token, deps.pepper);
+      const tenantId = await tenantBySession(deps.db, tokenHash);
+      if (!tenantId) return next();
+      const principal = await withTenant(tenantId, () => principalFor(deps, tokenHash));
+      if (!principal) return next();
+      req.principal = principal;
+      withTenant(principal.user.tenantId, next);
     } catch (err) {
       next(err);
     }
+  };
+}
+
+async function principalFor(deps: SessionDeps, tokenHash: string): Promise<Principal | null> {
+  const session = await deps.db.session.findUnique({
+    where: { tokenHash },
+    include: { user: true },
+  });
+  const now = new Date();
+  if (
+    !session ||
+    session.revokedAt !== null ||
+    session.expiresAt <= now ||
+    !session.user.active ||
+    (session.user.expiresAt !== null && session.user.expiresAt <= now)
+  ) {
+    return null;
+  }
+  const u = session.user;
+  if (now.getTime() - session.lastSeenAt.getTime() > TOUCH_EVERY_MS) {
+    await deps.db.session.update({ where: { id: session.id }, data: { lastSeenAt: now } });
+  }
+  return {
+    user: {
+      id: u.id,
+      tenantId: u.tenantId,
+      companyId: u.companyId,
+      name: u.name,
+      role: u.role,
+      kind: u.kind,
+      locale: u.locale,
+    },
+    session: { id: session.id, csrfToken: session.csrfToken, authMethod: session.authMethod },
+    mfa: mfaStateOf(u, session.mfaPassed, session.mfaViaIdp),
   };
 }
 
