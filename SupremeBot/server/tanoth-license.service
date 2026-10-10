@@ -3,8 +3,8 @@
 #   sudo mkdir -p /opt/tanoth-license /var/lib/tanoth-license
 #   sudo cp license-server.mjs /opt/tanoth-license/
 #   sudo chown -R tanoth:tanoth /var/lib/tanoth-license
-#   echo 'LICENSE_SECRET=...same as the extension...' | sudo tee /etc/tanoth-license.env
-#   sudo chmod 600 /etc/tanoth-license.env    # the secret must not be world-readable
+#   echo "LICENSE_ADMIN_TOKEN=$(openssl rand -hex 32)" | sudo tee /etc/tanoth-license.env
+#   sudo chmod 600 /etc/tanoth-license.env    # the admin token must not be world-readable
 #   sudo cp tanoth-license.service /etc/systemd/system/
 #   sudo systemctl enable --now tanoth-license
 # Then put nginx/Caddy in front for HTTPS (see DEPLOY.md).
@@ -27,6 +27,26 @@ NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true
 ReadWritePaths=/var/lib/tanoth-license
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+RestrictAddressFamilies=AF_INET AF_INET6
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources
+UMask=0077
+# MemoryDenyWriteExecute is deliberately NOT set: it breaks V8's JIT.
 
 [Install]
 WantedBy=multi-user.target

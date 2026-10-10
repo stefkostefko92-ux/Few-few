@@ -100,7 +100,7 @@
     if (lvl != null && prev > 0 && lvl > prev) {
       TB.Stats?.bump({ levelUps: lvl - prev });
       const g = TB.Storage?.section('general') || {};
-      if (g.notifications && g.notifyOnLevelUp) {
+      if (g.notifyOnLevelUp) {
         TB.notify?.({
           message: TB.I18n.t('notifyLevelUp', [String(lvl)]),
           level: 'success', fields: [{ name: 'Level', value: String(lvl), inline: true }]
@@ -113,6 +113,60 @@
   // True only if `name` is a DIRECT <member> child of `node`. Needed because
   // findValue() searches descendants, so the outer response <struct> would
   // otherwise match a nested monster/item's field and create a phantom entry.
+  // The <value> element of a DIRECT member of a struct (not a descendant).
+  // Needed where the same member name repeats at different depths: in a fight
+  // answer "self" is both a combatant struct and a flag inside every round.
+  function directMemberValue(structEl, name) {
+    for (const child of Array.from((structEl && structEl.children) || [])) {
+      if (!child.tagName || child.tagName.toLowerCase() !== 'member') continue;
+      const n = child.getElementsByTagName('name')[0];
+      if (n && n.textContent === name) return child.getElementsByTagName('value')[0] || null;
+    }
+    return null;
+  }
+
+  // Text of a DIRECT member of a struct (any type tag, or bare text) - never a
+  // same-named field of a nested struct (an item's socketed gem, a fight
+  // result inside cave/dragon details, ...). `node` may be a document (its
+  // top-level struct is used) or a struct element. null when absent.
+  function directText(node, name) {
+    const struct = node && (node.tagName && node.tagName.toLowerCase() === 'struct' ? node : node.querySelector && node.querySelector('struct'));
+    const val = directMemberValue(struct, name);
+    if (!val) return null;
+    const inner = val.firstElementChild;
+    return (inner ? inner.textContent : val.textContent).trim();
+  }
+  function directNum(node, name) {
+    const v = directText(node, name);
+    if (v == null || v === '') return null;
+    const n = parseFloat(v);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  // Did the player win a duel? The response carries no "won" flag. The game
+  // client (BattleGround.getFightersEndHP / playVictorySound) takes the
+  // player's hitpoints, subtracts the damage of every round where self == 0
+  // (magicDamage if there is any, else damage) and counts a win when HP is
+  // still above zero. Returns true / false, or null when the response lacks
+  // what is needed (so callers never call an unreadable fight a defeat).
+  function fightWon(doc) {
+    const answerVal = directMemberValue(doc.querySelector('struct'), 'answer');
+    const answer = (answerVal && answerVal.getElementsByTagName('struct')[0]) || doc.querySelector('struct');
+    if (!answer) return null;
+    const selfVal = directMemberValue(answer, 'self');
+    const selfStruct = selfVal && selfVal.getElementsByTagName('struct')[0];
+    const roundsVal = directMemberValue(answer, 'fightrounds');
+    if (!selfStruct || !roundsVal) return null;
+    let hp = findNum(selfStruct, 'hitpoints');
+    if (hp == null) return null;
+    for (const r of Array.from(roundsVal.querySelectorAll('array > data > value > struct'))) {
+      if (findNum(r, 'self') !== 0) continue;           // only rounds where the player takes the hit
+      const magic = findNum(r, 'magicDamage') || 0;
+      hp -= Math.trunc(magic !== 0 ? magic : (findNum(r, 'damage') || 0));
+    }
+    return hp > 0;
+  }
+
   function directHas(node, name) {
     for (const child of Array.from(node.children || [])) {
       if (!child.tagName || child.tagName.toLowerCase() !== 'member') continue;
@@ -145,8 +199,25 @@
       }
       throw new Error('FAULT:' + (faultStr || method));
     }
+    // The game reports almost every failure IN-BAND, as a normal response whose
+    // top-level struct carries an `error` string (client: "if(!response.error)
+    // routeResponse else _handleError"). Without this a refused purchase
+    // ("insufficient_gold") looked like a success and an expired session
+    // ("no_valid_session") never triggered auto-login.
+    const top = doc.querySelector('methodResponse > params > param > value > struct');
+    const gErr = top ? directText(top, 'error') : null;
+    if (gErr) {
+      if (gErr === 'no_valid_session') {
+        State.patch({ loggedIn: false, sessionLost: Date.now() });
+        throw new Error('SESSION_EXPIRED:' + gErr);
+      }
+      // The client itself shrugs these off (Model.whitelsitedErrors).
+      if (GAME_INFO_ERRORS.includes(gErr)) throw new Error('GAME_INFO:' + gErr);
+      throw new Error('FAULT:' + gErr + ' (' + method + ')');
+    }
     return doc;
   }
+  const GAME_INFO_ERRORS = ['no_auction_active', 'max_dungeon_level_reached', 'game_event_not_activated'];
 
   const Api = {
     ready: () => Bridge.ready(),
@@ -271,6 +342,8 @@
     findValue,
     findNum,
     directHas,
+    directText,
+    directNum,
 
     /* --------------------------- dungeon ---------------------------- */
     async getDungeon() {
@@ -321,11 +394,13 @@
     /* ----------------------------- pvp ------------------------------ */
     async fight(opponentName) {
       const doc = await rpc('Fight', [{ type: 'string', value: opponentName }]);
-      // Reward fields live under the "answer" struct; findValue reads them anywhere.
+      // The game client reads the result from the "answer" struct (FightModel,
+      // case "Fight"): gold taken from the opponent is robbed_gold and the
+      // experience is xp. reward_gold/reward_exp belong to caves and dragons.
       return {
-        won: /1|true|win/i.test(findValue(doc, 'won', 'i4') || findValue(doc, 'victory', 'boolean') || ''),
-        gold: num(findValue(doc, 'reward_gold', 'i4')) || 0,
-        exp: num(findValue(doc, 'reward_exp', 'i4')) || 0
+        won: fightWon(doc),
+        gold: findNum(doc, 'robbed_gold') ?? findNum(doc, 'reward_gold') ?? 0,
+        exp: findNum(doc, 'xp') ?? findNum(doc, 'reward_exp') ?? 0
       };
     },
 
