@@ -10,6 +10,22 @@ Built for VPS deployment, designed to feel enterprise-grade end to end.
 
 ---
 
+## Рендери на предметите (фотореалистични икони)
+
+Иконите на предмети в инвентара/магазина/аукциона/пазара/наградите са **изпечени рендери**
+(`client/public/assets/items/<slug>.webp`), не рисувани снимки. Генерират се офлайн:
+
+```bash
+cd client
+npm run bake:items                                   # всички (539 от каталога + отвари/камъни), ~40 мин на 4 ядра
+npm run bake:items -- --only iron_sword,silver_ring  # избрани
+npm run bake:items -- --out /tmp/preview --jobs 4
+```
+
+Нужни са vite (devDep) и Chromium през `playwright-core` (`PLAYWRIGHT_BROWSERS_PATH` или
+`CHROMIUM_PATH=/път/до/chrome`). Рендерът е без GPU (SwiftShader), HDR 1024px → bloom/сянка/ACES → 512px WebP.
+`Sprite.tsx` избира рендера по slug, после по псевдоним „категория-тир“ от `manifest.json`, после старата икона.
+
 ## Features
 
 ### Public landing page

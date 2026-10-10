@@ -9,8 +9,8 @@ import { buildKnight } from '../boy/src/armor.js';
 import { Rig } from '../boy/src/rig.js';
 import { Cape } from '../boy/src/cloth.js';
 import { SHIELD_WRIST } from '../boy/src/weapons.js';
-import { getBoyMaterials, tintForItem, type BoyMaterials } from './boy-materials';
-import { pickTint } from './tint';
+import { getBoyMaterials, type BoyMaterials } from './boy-materials';
+import { photoMaterials } from './photoreal';
 import { buildWeapon } from './slots/weapons';
 import { buildShield } from './slots/shield';
 import { previewMode } from './support';
@@ -77,9 +77,9 @@ async function assembleKnight(themed: Record<string, CatalogEntry>, style: 'A' |
   const owned: Disposable[] = [];
   const themedKnights: Record<string, Knight> = {};
   for (const cat of Object.keys(themed)) {
-    const tinted = tintForItem(base, pickTint(themed[cat].theme));
-    owned.push({ dispose: () => tinted.dispose() });
-    themedKnights[cat] = buildKnight(tinted.M, style) as Knight;
+    const photo = await photoMaterials(themed[cat]);
+    owned.push({ dispose: () => photo.dispose() });
+    themedKnights[cat] = buildKnight(photo.M, style) as Knight;
   }
 
   const partOwner: Record<string, string> = {};
@@ -108,6 +108,7 @@ async function assembleKnight(themed: Record<string, CatalogEntry>, style: 'A' |
       mesh.matrixAutoUpdate = false;
       mesh.castShadow = true;
       mesh.receiveShadow = true;
+      mesh.userData.partName = name;
       if (owner) mesh.userData.pieceCategory = owner;
       if (focusOnly && !owner && !frameExtra.includes(name)) mesh.userData.excludeFromFraming = true;
       group.add(mesh);
@@ -166,7 +167,7 @@ export async function buildMannequin(entry: CatalogEntry, rand: Rand): Promise<B
   const { group, owned, rig } = await assembleKnight(themed, style, true, frameExtra);
 
   if (isCloak) {
-    const base = await getBoyMaterials();
+    const base = (await photoMaterials(entry)).M;
     // Тялото вече е добавено (bare база от assembleKnight) — маркирай го извън фокус ПРЕДИ да
     // добавим наметалото, за да не го пипнем случайно с него.
     group.traverse((o) => {
@@ -208,9 +209,9 @@ export async function buildDressedKnight(pieces: CatalogEntry[]): Promise<BuiltM
   const weaponEntry = byCategory.weapon;
   if (weaponEntry && previewMode(weaponEntry) === 'standalone') {
     const icon = weaponEntry.icon || weaponEntry.sub_type || 'sword';
-    const tinted = tintForItem(base, pickTint(weaponEntry.theme));
-    owned.push({ dispose: () => tinted.dispose() });
-    const weaponObj = buildWeapon(tinted.M, icon, rngFor(weaponEntry.slug));
+    const photo = await photoMaterials(weaponEntry);
+    owned.push({ dispose: () => photo.dispose() });
+    const weaponObj = buildWeapon(photo.M, icon, rngFor(weaponEntry.slug));
     if (weaponObj) {
       const wrap = new THREE.Group();
       wrap.matrix.copy((neutralKnight.parts as unknown as Record<string, { matrix: THREE.Matrix4 }>).handR.matrix);
@@ -223,9 +224,9 @@ export async function buildDressedKnight(pieces: CatalogEntry[]): Promise<BuiltM
 
   const shieldEntry = byCategory.shield;
   if (shieldEntry) {
-    const tinted = tintForItem(base, pickTint(shieldEntry.theme));
-    owned.push({ dispose: () => tinted.dispose() });
-    const built = buildShield(tinted.M, shieldEntry.theme.trim);
+    const photo = await photoMaterials(shieldEntry);
+    owned.push({ dispose: () => photo.dispose() });
+    const built = buildShield(photo.M, shieldEntry.theme.primary);
     owned.push(built);
     built.object.position.copy(SHIELD_WRIST as THREE.Vector3);
     const wrap = new THREE.Group();
@@ -238,7 +239,7 @@ export async function buildDressedKnight(pieces: CatalogEntry[]): Promise<BuiltM
 
   const cloakEntry = byCategory.cloak;
   if (cloakEntry) {
-    attachCape(group, rig, base, cloakEntry.theme, rngFor(cloakEntry.slug), owned);
+    attachCape(group, rig, (await photoMaterials(cloakEntry)).M, cloakEntry.theme, rngFor(cloakEntry.slug), owned);
   }
 
   return { object: group, dispose: () => disposeGroup(group, owned) };

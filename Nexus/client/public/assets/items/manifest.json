@@ -1,0 +1,2386 @@
+{
+ "version": 1,
+ "size": 512,
+ "format": "webp",
+ "items": {
+  "acolyte_armor": {
+   "file": "acolyte_armor.webp",
+   "hash": "7ef37eab17ab"
+  },
+  "acolyte_boots": {
+   "file": "acolyte_boots.webp",
+   "hash": "2f17bd427dd1"
+  },
+  "acolyte_cloak": {
+   "file": "acolyte_cloak.webp",
+   "hash": "11c355ab37ec"
+  },
+  "acolyte_gloves": {
+   "file": "acolyte_gloves.webp",
+   "hash": "313745521d76"
+  },
+  "acolyte_helm": {
+   "file": "acolyte_helm.webp",
+   "hash": "76725937f225"
+  },
+  "acolyte_staff": {
+   "file": "acolyte_staff.webp",
+   "hash": "83aec9ecaa85"
+  },
+  "adept_amulet_5": {
+   "file": "adept_amulet_5.webp",
+   "hash": "e06327c602b6"
+  },
+  "adept_armor_5": {
+   "file": "adept_armor_5.webp",
+   "hash": "f9e7c6391483"
+  },
+  "adept_axe_5": {
+   "file": "adept_axe_5.webp",
+   "hash": "fcc25926fac4"
+  },
+  "adept_boots_5": {
+   "file": "adept_boots_5.webp",
+   "hash": "14e5df9c3bd4"
+  },
+  "adept_bow_5": {
+   "file": "adept_bow_5.webp",
+   "hash": "4196e6ae2e0d"
+  },
+  "adept_cloak_5": {
+   "file": "adept_cloak_5.webp",
+   "hash": "12bc9fdaaaf9"
+  },
+  "adept_dagger_5": {
+   "file": "adept_dagger_5.webp",
+   "hash": "17364f8fdea7"
+  },
+  "adept_gloves_5": {
+   "file": "adept_gloves_5.webp",
+   "hash": "821470c838ba"
+  },
+  "adept_helm_5": {
+   "file": "adept_helm_5.webp",
+   "hash": "f08824f173d0"
+  },
+  "adept_ring_5": {
+   "file": "adept_ring_5.webp",
+   "hash": "aac8cf760e5c"
+  },
+  "adept_shield_5": {
+   "file": "adept_shield_5.webp",
+   "hash": "21c5a0a08008"
+  },
+  "adept_staff_5": {
+   "file": "adept_staff_5.webp",
+   "hash": "7b05f1aff004"
+  },
+  "adept_sword_5": {
+   "file": "adept_sword_5.webp",
+   "hash": "079ab914a748"
+  },
+  "amulet_of_warding": {
+   "file": "amulet_of_warding.webp",
+   "hash": "c449fa6b0482"
+  },
+  "arcane_conclave_armor": {
+   "file": "arcane_conclave_armor.webp",
+   "hash": "74807d9a8fed"
+  },
+  "arcane_conclave_boots": {
+   "file": "arcane_conclave_boots.webp",
+   "hash": "fcbe0ba14b38"
+  },
+  "arcane_conclave_cloak": {
+   "file": "arcane_conclave_cloak.webp",
+   "hash": "b3ba9fb65c25"
+  },
+  "arcane_conclave_gloves": {
+   "file": "arcane_conclave_gloves.webp",
+   "hash": "0ab085db427a"
+  },
+  "arcane_conclave_helm": {
+   "file": "arcane_conclave_helm.webp",
+   "hash": "567aa629bf39"
+  },
+  "arcane_conclave_staff": {
+   "file": "arcane_conclave_staff.webp",
+   "hash": "1ffdf449e5fc"
+  },
+  "archmage_staff": {
+   "file": "archmage_staff.webp",
+   "hash": "3247360a7aa0"
+  },
+  "archon_armor": {
+   "file": "archon_armor.webp",
+   "hash": "8b9195efaac9"
+  },
+  "archon_boots": {
+   "file": "archon_boots.webp",
+   "hash": "c58a2a992cd0"
+  },
+  "archon_cloak": {
+   "file": "archon_cloak.webp",
+   "hash": "9464f7992813"
+  },
+  "archon_gloves": {
+   "file": "archon_gloves.webp",
+   "hash": "7e0375f09dd7"
+  },
+  "archon_helm": {
+   "file": "archon_helm.webp",
+   "hash": "c6d29a9e27a3"
+  },
+  "archon_staff": {
+   "file": "archon_staff.webp",
+   "hash": "2b68f0af2877"
+  },
+  "ascendant_amulet_7": {
+   "file": "ascendant_amulet_7.webp",
+   "hash": "fe5ee8098b64"
+  },
+  "ascendant_armor_7": {
+   "file": "ascendant_armor_7.webp",
+   "hash": "074be2110000"
+  },
+  "ascendant_axe_7": {
+   "file": "ascendant_axe_7.webp",
+   "hash": "fef80a8d866f"
+  },
+  "ascendant_boots_7": {
+   "file": "ascendant_boots_7.webp",
+   "hash": "9ed20cf14b2f"
+  },
+  "ascendant_bow_7": {
+   "file": "ascendant_bow_7.webp",
+   "hash": "3d8731e908c8"
+  },
+  "ascendant_cloak_7": {
+   "file": "ascendant_cloak_7.webp",
+   "hash": "b2a53db128ba"
+  },
+  "ascendant_dagger_7": {
+   "file": "ascendant_dagger_7.webp",
+   "hash": "d1f9d5f1e972"
+  },
+  "ascendant_gloves_7": {
+   "file": "ascendant_gloves_7.webp",
+   "hash": "371435626a66"
+  },
+  "ascendant_helm_7": {
+   "file": "ascendant_helm_7.webp",
+   "hash": "0c66ae65fc5d"
+  },
+  "ascendant_mace_7": {
+   "file": "ascendant_mace_7.webp",
+   "hash": "58fc9fd34bec"
+  },
+  "ascendant_ring_7": {
+   "file": "ascendant_ring_7.webp",
+   "hash": "a122dd5699bc"
+  },
+  "ascendant_shield_7": {
+   "file": "ascendant_shield_7.webp",
+   "hash": "77ff2ccc10e0"
+  },
+  "ascendant_spear_7": {
+   "file": "ascendant_spear_7.webp",
+   "hash": "3e4b38bfd7b7"
+  },
+  "ascendant_staff_7": {
+   "file": "ascendant_staff_7.webp",
+   "hash": "95f0e006d316"
+  },
+  "ascendant_sword_7": {
+   "file": "ascendant_sword_7.webp",
+   "hash": "b606aa45a7a0"
+  },
+  "ashfeather_armor": {
+   "file": "ashfeather_armor.webp",
+   "hash": "ecae793f03cb"
+  },
+  "ashfeather_boots": {
+   "file": "ashfeather_boots.webp",
+   "hash": "893c3359885c"
+  },
+  "ashfeather_bow": {
+   "file": "ashfeather_bow.webp",
+   "hash": "2eefcd51b976"
+  },
+  "ashfeather_cloak": {
+   "file": "ashfeather_cloak.webp",
+   "hash": "18a9d74ccf87"
+  },
+  "ashfeather_gloves": {
+   "file": "ashfeather_gloves.webp",
+   "hash": "c9685ff3d48d"
+  },
+  "ashfeather_helm": {
+   "file": "ashfeather_helm.webp",
+   "hash": "a6b2f9032564"
+  },
+  "astromancer_armor": {
+   "file": "astromancer_armor.webp",
+   "hash": "0b8ff9d5323b"
+  },
+  "astromancer_boots": {
+   "file": "astromancer_boots.webp",
+   "hash": "5bcd34b5df6d"
+  },
+  "astromancer_cloak": {
+   "file": "astromancer_cloak.webp",
+   "hash": "c0982432dd86"
+  },
+  "astromancer_gloves": {
+   "file": "astromancer_gloves.webp",
+   "hash": "89ea991eae20"
+  },
+  "astromancer_helm": {
+   "file": "astromancer_helm.webp",
+   "hash": "c8806cb13a46"
+  },
+  "astromancer_staff": {
+   "file": "astromancer_staff.webp",
+   "hash": "99e4993f441c"
+  },
+  "aurelion_dawnblade": {
+   "file": "aurelion_dawnblade.webp",
+   "hash": "22322a56d241"
+  },
+  "azhtek_armor": {
+   "file": "azhtek_armor.webp",
+   "hash": "289d4b57cb83"
+  },
+  "blackspire_armor": {
+   "file": "blackspire_armor.webp",
+   "hash": "210333d22980"
+  },
+  "blackspire_boots": {
+   "file": "blackspire_boots.webp",
+   "hash": "472303b9e8cf"
+  },
+  "blackspire_gloves": {
+   "file": "blackspire_gloves.webp",
+   "hash": "28c7ae18da71"
+  },
+  "blackspire_helm": {
+   "file": "blackspire_helm.webp",
+   "hash": "956154d80e09"
+  },
+  "blackspire_shield": {
+   "file": "blackspire_shield.webp",
+   "hash": "6271f1e745dd"
+  },
+  "blackspire_sword": {
+   "file": "blackspire_sword.webp",
+   "hash": "e13fa9a5d3b1"
+  },
+  "caethra_crown": {
+   "file": "caethra_crown.webp",
+   "hash": "0544760f8e75"
+  },
+  "chain_armor": {
+   "file": "chain_armor.webp",
+   "hash": "e6251ef893be"
+  },
+  "chain_boots": {
+   "file": "chain_boots.webp",
+   "hash": "2c5d9c1e2d2c"
+  },
+  "chain_gloves": {
+   "file": "chain_gloves.webp",
+   "hash": "324d0ac90509"
+  },
+  "chain_helm": {
+   "file": "chain_helm.webp",
+   "hash": "45c98fd5f013"
+  },
+  "champion_amulet_35": {
+   "file": "champion_amulet_35.webp",
+   "hash": "612471269cfc"
+  },
+  "champion_armor_35": {
+   "file": "champion_armor_35.webp",
+   "hash": "8f844ffb31dc"
+  },
+  "champion_axe_35": {
+   "file": "champion_axe_35.webp",
+   "hash": "19ac1e922b50"
+  },
+  "champion_boots_35": {
+   "file": "champion_boots_35.webp",
+   "hash": "9e6e2af3c55b"
+  },
+  "champion_bow_35": {
+   "file": "champion_bow_35.webp",
+   "hash": "fa5bc3e2c1cc"
+  },
+  "champion_cloak_35": {
+   "file": "champion_cloak_35.webp",
+   "hash": "a12ffef6f9c1"
+  },
+  "champion_dagger_35": {
+   "file": "champion_dagger_35.webp",
+   "hash": "76c9067d121d"
+  },
+  "champion_gloves_35": {
+   "file": "champion_gloves_35.webp",
+   "hash": "66f1f5685891"
+  },
+  "champion_helm_35": {
+   "file": "champion_helm_35.webp",
+   "hash": "24b386d71520"
+  },
+  "champion_mace_35": {
+   "file": "champion_mace_35.webp",
+   "hash": "8da59d438ad7"
+  },
+  "champion_ring_35": {
+   "file": "champion_ring_35.webp",
+   "hash": "0d09a3fbb428"
+  },
+  "champion_shield_35": {
+   "file": "champion_shield_35.webp",
+   "hash": "9da5b6cdcf61"
+  },
+  "champion_spear_35": {
+   "file": "champion_spear_35.webp",
+   "hash": "fca74c2fb0a3"
+  },
+  "champion_staff_35": {
+   "file": "champion_staff_35.webp",
+   "hash": "3247360a7aa0"
+  },
+  "champion_sword_35": {
+   "file": "champion_sword_35.webp",
+   "hash": "5756527f0678"
+  },
+  "cinderweave_armor": {
+   "file": "cinderweave_armor.webp",
+   "hash": "426c5a3c5a66"
+  },
+  "cinderweave_boots": {
+   "file": "cinderweave_boots.webp",
+   "hash": "34befaf313e9"
+  },
+  "cinderweave_cloak": {
+   "file": "cinderweave_cloak.webp",
+   "hash": "fade1973a6ca"
+  },
+  "cinderweave_gloves": {
+   "file": "cinderweave_gloves.webp",
+   "hash": "5a5e2eeebe0b"
+  },
+  "cinderweave_helm": {
+   "file": "cinderweave_helm.webp",
+   "hash": "b051409ffe27"
+  },
+  "cinderweave_staff": {
+   "file": "cinderweave_staff.webp",
+   "hash": "defa9eeb4969"
+  },
+  "cloth_gloves": {
+   "file": "cloth_gloves.webp",
+   "hash": "ab3dae5a624c"
+  },
+  "cloth_hood": {
+   "file": "cloth_hood.webp",
+   "hash": "c98bf82a51f0"
+  },
+  "cloth_robe": {
+   "file": "cloth_robe.webp",
+   "hash": "883ea5b48684"
+  },
+  "cloth_shoes": {
+   "file": "cloth_shoes.webp",
+   "hash": "601973730992"
+  },
+  "corsair_armor": {
+   "file": "corsair_armor.webp",
+   "hash": "f95d8a859326"
+  },
+  "corsair_boots": {
+   "file": "corsair_boots.webp",
+   "hash": "5fc4b5c1b5b3"
+  },
+  "corsair_cloak": {
+   "file": "corsair_cloak.webp",
+   "hash": "bb9208eee85d"
+  },
+  "corsair_dagger": {
+   "file": "corsair_dagger.webp",
+   "hash": "9cb87c65e37e"
+  },
+  "corsair_gloves": {
+   "file": "corsair_gloves.webp",
+   "hash": "31253bec3b63"
+  },
+  "corsair_helm": {
+   "file": "corsair_helm.webp",
+   "hash": "58cafd0b08f0"
+  },
+  "cosmic_amulet_8": {
+   "file": "cosmic_amulet_8.webp",
+   "hash": "f17b1b006e90"
+  },
+  "cosmic_armor_8": {
+   "file": "cosmic_armor_8.webp",
+   "hash": "9ece3af5a275"
+  },
+  "cosmic_axe_8": {
+   "file": "cosmic_axe_8.webp",
+   "hash": "88638aa05b8a"
+  },
+  "cosmic_boots_8": {
+   "file": "cosmic_boots_8.webp",
+   "hash": "a91cd569e3fc"
+  },
+  "cosmic_bow_8": {
+   "file": "cosmic_bow_8.webp",
+   "hash": "e0248276607f"
+  },
+  "cosmic_cloak_8": {
+   "file": "cosmic_cloak_8.webp",
+   "hash": "b34a7c2a6e3f"
+  },
+  "cosmic_dagger_8": {
+   "file": "cosmic_dagger_8.webp",
+   "hash": "73f75cf975b7"
+  },
+  "cosmic_gloves_8": {
+   "file": "cosmic_gloves_8.webp",
+   "hash": "1c6359b03482"
+  },
+  "cosmic_helm_8": {
+   "file": "cosmic_helm_8.webp",
+   "hash": "a2c85cad33d8"
+  },
+  "cosmic_mace_8": {
+   "file": "cosmic_mace_8.webp",
+   "hash": "d4423e0f715a"
+  },
+  "cosmic_ring_8": {
+   "file": "cosmic_ring_8.webp",
+   "hash": "edde232d3c2d"
+  },
+  "cosmic_shield_8": {
+   "file": "cosmic_shield_8.webp",
+   "hash": "7695fb95b89b"
+  },
+  "cosmic_spear_8": {
+   "file": "cosmic_spear_8.webp",
+   "hash": "851f8ec8da5c"
+  },
+  "cosmic_staff_8": {
+   "file": "cosmic_staff_8.webp",
+   "hash": "75e2a1e19175"
+  },
+  "cosmic_sword_8": {
+   "file": "cosmic_sword_8.webp",
+   "hash": "7a02e21a3b83"
+  },
+  "crownseer_armor": {
+   "file": "crownseer_armor.webp",
+   "hash": "1adc1376b815"
+  },
+  "crownseer_boots": {
+   "file": "crownseer_boots.webp",
+   "hash": "deda3ccb0574"
+  },
+  "crownseer_cloak": {
+   "file": "crownseer_cloak.webp",
+   "hash": "7b4a2642cc08"
+  },
+  "crownseer_gloves": {
+   "file": "crownseer_gloves.webp",
+   "hash": "b31d3d86e9b5"
+  },
+  "crownseer_helm": {
+   "file": "crownseer_helm.webp",
+   "hash": "204f06b3b66b"
+  },
+  "crownseer_staff": {
+   "file": "crownseer_staff.webp",
+   "hash": "24546255a595"
+  },
+  "cutpurse_armor": {
+   "file": "cutpurse_armor.webp",
+   "hash": "a892eea87dfb"
+  },
+  "cutpurse_boots": {
+   "file": "cutpurse_boots.webp",
+   "hash": "baa19a41ab7d"
+  },
+  "cutpurse_cloak": {
+   "file": "cutpurse_cloak.webp",
+   "hash": "5f4403002458"
+  },
+  "cutpurse_dagger": {
+   "file": "cutpurse_dagger.webp",
+   "hash": "6c83f07adc41"
+  },
+  "cutpurse_gloves": {
+   "file": "cutpurse_gloves.webp",
+   "hash": "d73eb500b4fb"
+  },
+  "cutpurse_helm": {
+   "file": "cutpurse_helm.webp",
+   "hash": "47efc4f331f2"
+  },
+  "dawnforge_armor": {
+   "file": "dawnforge_armor.webp",
+   "hash": "08c6c7a6db34"
+  },
+  "dawnforge_boots": {
+   "file": "dawnforge_boots.webp",
+   "hash": "c72d44e0f7d4"
+  },
+  "dawnforge_gloves": {
+   "file": "dawnforge_gloves.webp",
+   "hash": "03332012fe8a"
+  },
+  "dawnforge_helm": {
+   "file": "dawnforge_helm.webp",
+   "hash": "5e17b925205e"
+  },
+  "dawnforge_mace": {
+   "file": "dawnforge_mace.webp",
+   "hash": "d65e375484e8"
+  },
+  "dawnforge_shield": {
+   "file": "dawnforge_shield.webp",
+   "hash": "aa5845085ee9"
+  },
+  "dawnstring_armor": {
+   "file": "dawnstring_armor.webp",
+   "hash": "9befdd0a8d7c"
+  },
+  "dawnstring_boots": {
+   "file": "dawnstring_boots.webp",
+   "hash": "aac66425b3b2"
+  },
+  "dawnstring_bow": {
+   "file": "dawnstring_bow.webp",
+   "hash": "7cf0d772c2db"
+  },
+  "dawnstring_cloak": {
+   "file": "dawnstring_cloak.webp",
+   "hash": "bab412c54d3a"
+  },
+  "dawnstring_gloves": {
+   "file": "dawnstring_gloves.webp",
+   "hash": "da856ce55a45"
+  },
+  "dawnstring_helm": {
+   "file": "dawnstring_helm.webp",
+   "hash": "b931d5c9ba5b"
+  },
+  "divine_amulet_10": {
+   "file": "divine_amulet_10.webp",
+   "hash": "ae0813a8091a"
+  },
+  "divine_armor_10": {
+   "file": "divine_armor_10.webp",
+   "hash": "bf1b4f237db1"
+  },
+  "divine_axe_10": {
+   "file": "divine_axe_10.webp",
+   "hash": "3274ce1e68d4"
+  },
+  "divine_boots_10": {
+   "file": "divine_boots_10.webp",
+   "hash": "671e26446590"
+  },
+  "divine_bow_10": {
+   "file": "divine_bow_10.webp",
+   "hash": "9beb53859581"
+  },
+  "divine_cloak_10": {
+   "file": "divine_cloak_10.webp",
+   "hash": "b03c3913505d"
+  },
+  "divine_dagger_10": {
+   "file": "divine_dagger_10.webp",
+   "hash": "bab4e29e280a"
+  },
+  "divine_gloves_10": {
+   "file": "divine_gloves_10.webp",
+   "hash": "d84d472aa8fe"
+  },
+  "divine_helm_10": {
+   "file": "divine_helm_10.webp",
+   "hash": "89f49d0327a9"
+  },
+  "divine_mace_10": {
+   "file": "divine_mace_10.webp",
+   "hash": "fa5ff617e8da"
+  },
+  "divine_ring_10": {
+   "file": "divine_ring_10.webp",
+   "hash": "309f49f3ea23"
+  },
+  "divine_shield_10": {
+   "file": "divine_shield_10.webp",
+   "hash": "63f06dd536d0"
+  },
+  "divine_spear_10": {
+   "file": "divine_spear_10.webp",
+   "hash": "125601ab5be1"
+  },
+  "divine_staff_10": {
+   "file": "divine_staff_10.webp",
+   "hash": "ec76799a76cb"
+  },
+  "divine_sword_10": {
+   "file": "divine_sword_10.webp",
+   "hash": "9f382f465f29"
+  },
+  "dragonbane": {
+   "file": "dragonbane.webp",
+   "hash": "4334deb0d9a6"
+  },
+  "dragonfang_armor": {
+   "file": "dragonfang_armor.webp",
+   "hash": "bc7b68d96a0c"
+  },
+  "dragonfang_boots": {
+   "file": "dragonfang_boots.webp",
+   "hash": "13cbab1ff970"
+  },
+  "dragonfang_cloak": {
+   "file": "dragonfang_cloak.webp",
+   "hash": "0cd45c4c6a2b"
+  },
+  "dragonfang_dagger": {
+   "file": "dragonfang_dagger.webp",
+   "hash": "185e80575f35"
+  },
+  "dragonfang_gloves": {
+   "file": "dragonfang_gloves.webp",
+   "hash": "9f6ad39bfccd"
+  },
+  "dragonfang_helm": {
+   "file": "dragonfang_helm.webp",
+   "hash": "c43157208ee2"
+  },
+  "dreadnought_armor": {
+   "file": "dreadnought_armor.webp",
+   "hash": "ddcd691a8c41"
+  },
+  "dreadnought_axe": {
+   "file": "dreadnought_axe.webp",
+   "hash": "206c53cea41b"
+  },
+  "dreadnought_boots": {
+   "file": "dreadnought_boots.webp",
+   "hash": "731ad6b777b4"
+  },
+  "dreadnought_gloves": {
+   "file": "dreadnought_gloves.webp",
+   "hash": "d27cfca7e09e"
+  },
+  "dreadnought_helm": {
+   "file": "dreadnought_helm.webp",
+   "hash": "ecec9e8062c7"
+  },
+  "dreadnought_shield": {
+   "file": "dreadnought_shield.webp",
+   "hash": "2fe40d7f5ec9"
+  },
+  "duskfang_armor": {
+   "file": "duskfang_armor.webp",
+   "hash": "369c17a108c3"
+  },
+  "duskfang_boots": {
+   "file": "duskfang_boots.webp",
+   "hash": "a0f5b0944ec2"
+  },
+  "duskfang_cloak": {
+   "file": "duskfang_cloak.webp",
+   "hash": "866fa7c1a73e"
+  },
+  "duskfang_dagger": {
+   "file": "duskfang_dagger.webp",
+   "hash": "c669d6ce3c04"
+  },
+  "duskfang_gloves": {
+   "file": "duskfang_gloves.webp",
+   "hash": "5e61eb4cd3a9"
+  },
+  "duskfang_helm": {
+   "file": "duskfang_helm.webp",
+   "hash": "61e84fedd7ec"
+  },
+  "eclipse_armor": {
+   "file": "eclipse_armor.webp",
+   "hash": "b5f85a55244b"
+  },
+  "eclipse_boots": {
+   "file": "eclipse_boots.webp",
+   "hash": "2f1bdf70035b"
+  },
+  "eclipse_cloak": {
+   "file": "eclipse_cloak.webp",
+   "hash": "94b720c3552c"
+  },
+  "eclipse_dagger": {
+   "file": "eclipse_dagger.webp",
+   "hash": "2084fd2ab262"
+  },
+  "eclipse_gloves": {
+   "file": "eclipse_gloves.webp",
+   "hash": "624c8ac9a6b6"
+  },
+  "eclipse_helm": {
+   "file": "eclipse_helm.webp",
+   "hash": "7c09443cdb89"
+  },
+  "eldritch_amulet_9": {
+   "file": "eldritch_amulet_9.webp",
+   "hash": "c2f4845c12af"
+  },
+  "eldritch_armor_9": {
+   "file": "eldritch_armor_9.webp",
+   "hash": "52e7b7fe3df2"
+  },
+  "eldritch_axe_9": {
+   "file": "eldritch_axe_9.webp",
+   "hash": "1c29b3de357e"
+  },
+  "eldritch_boots_9": {
+   "file": "eldritch_boots_9.webp",
+   "hash": "b7af99ebce8a"
+  },
+  "eldritch_bow_9": {
+   "file": "eldritch_bow_9.webp",
+   "hash": "6869977b1324"
+  },
+  "eldritch_cloak_9": {
+   "file": "eldritch_cloak_9.webp",
+   "hash": "ff7c24899204"
+  },
+  "eldritch_dagger_9": {
+   "file": "eldritch_dagger_9.webp",
+   "hash": "d754c34b5bd9"
+  },
+  "eldritch_gloves_9": {
+   "file": "eldritch_gloves_9.webp",
+   "hash": "6028c0510173"
+  },
+  "eldritch_helm_9": {
+   "file": "eldritch_helm_9.webp",
+   "hash": "09c6827ea0f7"
+  },
+  "eldritch_mace_9": {
+   "file": "eldritch_mace_9.webp",
+   "hash": "652a345a596b"
+  },
+  "eldritch_ring_9": {
+   "file": "eldritch_ring_9.webp",
+   "hash": "47370176c0d9"
+  },
+  "eldritch_shield_9": {
+   "file": "eldritch_shield_9.webp",
+   "hash": "563b3f7f0414"
+  },
+  "eldritch_spear_9": {
+   "file": "eldritch_spear_9.webp",
+   "hash": "46bf41e6dcdc"
+  },
+  "eldritch_staff_9": {
+   "file": "eldritch_staff_9.webp",
+   "hash": "96cd5d2ffcdd"
+  },
+  "eldritch_sword_9": {
+   "file": "eldritch_sword_9.webp",
+   "hash": "fc9b1131221d"
+  },
+  "elite_amulet_4": {
+   "file": "elite_amulet_4.webp",
+   "hash": "561c85cdbc63"
+  },
+  "elite_armor_4": {
+   "file": "elite_armor_4.webp",
+   "hash": "e9e49eacb590"
+  },
+  "elite_axe_4": {
+   "file": "elite_axe_4.webp",
+   "hash": "b3a14f3d5422"
+  },
+  "elite_boots_4": {
+   "file": "elite_boots_4.webp",
+   "hash": "f137e1532184"
+  },
+  "elite_bow_4": {
+   "file": "elite_bow_4.webp",
+   "hash": "a366d71e1b6c"
+  },
+  "elite_cloak_4": {
+   "file": "elite_cloak_4.webp",
+   "hash": "e3a95bcc57f8"
+  },
+  "elite_dagger_4": {
+   "file": "elite_dagger_4.webp",
+   "hash": "d25c13f97c79"
+  },
+  "elite_gloves_4": {
+   "file": "elite_gloves_4.webp",
+   "hash": "4b83bcd1ec9c"
+  },
+  "elite_helm_4": {
+   "file": "elite_helm_4.webp",
+   "hash": "33703a578434"
+  },
+  "elite_mace_4": {
+   "file": "elite_mace_4.webp",
+   "hash": "f6d8a72f2c8e"
+  },
+  "elite_ring_4": {
+   "file": "elite_ring_4.webp",
+   "hash": "7e16d89bdb41"
+  },
+  "elite_shield_4": {
+   "file": "elite_shield_4.webp",
+   "hash": "8c994142a9db"
+  },
+  "elite_spear_4": {
+   "file": "elite_spear_4.webp",
+   "hash": "479a91093fc9"
+  },
+  "elite_staff_4": {
+   "file": "elite_staff_4.webp",
+   "hash": "ae3d50bf2423"
+  },
+  "elite_sword_4": {
+   "file": "elite_sword_4.webp",
+   "hash": "dc452b60ef54"
+  },
+  "elven_bow": {
+   "file": "elven_bow.webp",
+   "hash": "6ef745fb859f"
+  },
+  "flameblade": {
+   "file": "flameblade.webp",
+   "hash": "03a46f93cb87"
+  },
+  "frostgiant_armor": {
+   "file": "frostgiant_armor.webp",
+   "hash": "17428ce7c4c1"
+  },
+  "frostgiant_axe": {
+   "file": "frostgiant_axe.webp",
+   "hash": "b5a1a1332613"
+  },
+  "frostgiant_boots": {
+   "file": "frostgiant_boots.webp",
+   "hash": "848399a3bc34"
+  },
+  "frostgiant_gloves": {
+   "file": "frostgiant_gloves.webp",
+   "hash": "9995ba2c908f"
+  },
+  "frostgiant_helm": {
+   "file": "frostgiant_helm.webp",
+   "hash": "6b1a06e67cbf"
+  },
+  "frostgiant_shield": {
+   "file": "frostgiant_shield.webp",
+   "hash": "3454bae96e28"
+  },
+  "gem": {
+   "file": "gem.webp",
+   "hash": "73d3f42a88ef"
+  },
+  "gem-t1": {
+   "file": "gem-t1.webp",
+   "hash": "7c3174ae36fb"
+  },
+  "gem-t10": {
+   "file": "gem-t10.webp",
+   "hash": "ef3598a4a923"
+  },
+  "gem-t2": {
+   "file": "gem-t2.webp",
+   "hash": "f949c7e1f2d4"
+  },
+  "gem-t3": {
+   "file": "gem-t3.webp",
+   "hash": "b01d9c262ea1"
+  },
+  "gem-t4": {
+   "file": "gem-t4.webp",
+   "hash": "f79474899d66"
+  },
+  "gem-t5": {
+   "file": "gem-t5.webp",
+   "hash": "f10b4994a484"
+  },
+  "gem-t6": {
+   "file": "gem-t6.webp",
+   "hash": "73d3f42a88ef"
+  },
+  "gem-t7": {
+   "file": "gem-t7.webp",
+   "hash": "8f2b463dd4a7"
+  },
+  "gem-t8": {
+   "file": "gem-t8.webp",
+   "hash": "a8459ccba183"
+  },
+  "gem-t9": {
+   "file": "gem-t9.webp",
+   "hash": "1554c0d89d1b"
+  },
+  "gorvak_mace": {
+   "file": "gorvak_mace.webp",
+   "hash": "6f3fccc0f94a"
+  },
+  "gravewind_armor": {
+   "file": "gravewind_armor.webp",
+   "hash": "522a772eba3b"
+  },
+  "gravewind_boots": {
+   "file": "gravewind_boots.webp",
+   "hash": "96cba7e6fc77"
+  },
+  "gravewind_cloak": {
+   "file": "gravewind_cloak.webp",
+   "hash": "b919faf9bd55"
+  },
+  "gravewind_dagger": {
+   "file": "gravewind_dagger.webp",
+   "hash": "06a5d0b64847"
+  },
+  "gravewind_gloves": {
+   "file": "gravewind_gloves.webp",
+   "hash": "74e391a4d4c3"
+  },
+  "gravewind_helm": {
+   "file": "gravewind_helm.webp",
+   "hash": "f01358c570ed"
+  },
+  "hammerhand_armor": {
+   "file": "hammerhand_armor.webp",
+   "hash": "26f661c7e0b2"
+  },
+  "hammerhand_boots": {
+   "file": "hammerhand_boots.webp",
+   "hash": "a0bd16cd1272"
+  },
+  "hammerhand_gloves": {
+   "file": "hammerhand_gloves.webp",
+   "hash": "ae550fafc54b"
+  },
+  "hammerhand_helm": {
+   "file": "hammerhand_helm.webp",
+   "hash": "1bb53a42453f"
+  },
+  "hammerhand_mace": {
+   "file": "hammerhand_mace.webp",
+   "hash": "ebce01ba18eb"
+  },
+  "hammerhand_shield": {
+   "file": "hammerhand_shield.webp",
+   "hash": "a05068159bec"
+  },
+  "hellbound_armor": {
+   "file": "hellbound_armor.webp",
+   "hash": "5f34405e2169"
+  },
+  "hellbound_boots": {
+   "file": "hellbound_boots.webp",
+   "hash": "0bb5979e0f71"
+  },
+  "hellbound_cloak": {
+   "file": "hellbound_cloak.webp",
+   "hash": "0c40bd4bc7df"
+  },
+  "hellbound_dagger": {
+   "file": "hellbound_dagger.webp",
+   "hash": "1138f87e09be"
+  },
+  "hellbound_gloves": {
+   "file": "hellbound_gloves.webp",
+   "hash": "be1e82971811"
+  },
+  "hellbound_helm": {
+   "file": "hellbound_helm.webp",
+   "hash": "0cc9151faa5f"
+  },
+  "hollowstar_armor": {
+   "file": "hollowstar_armor.webp",
+   "hash": "35271cf79bb4"
+  },
+  "hollowstar_boots": {
+   "file": "hollowstar_boots.webp",
+   "hash": "9d3ff0d10fb5"
+  },
+  "hollowstar_bow": {
+   "file": "hollowstar_bow.webp",
+   "hash": "fba91aa673be"
+  },
+  "hollowstar_cloak": {
+   "file": "hollowstar_cloak.webp",
+   "hash": "97f5d5937c3c"
+  },
+  "hollowstar_gloves": {
+   "file": "hollowstar_gloves.webp",
+   "hash": "a2bfe384417e"
+  },
+  "hollowstar_helm": {
+   "file": "hollowstar_helm.webp",
+   "hash": "ef0320f63246"
+  },
+  "iron_sword": {
+   "file": "iron_sword.webp",
+   "hash": "23cdc9503d68"
+  },
+  "ironguard_armor": {
+   "file": "ironguard_armor.webp",
+   "hash": "bd9945ad2f77"
+  },
+  "ironguard_boots": {
+   "file": "ironguard_boots.webp",
+   "hash": "52b399ffcaa4"
+  },
+  "ironguard_gloves": {
+   "file": "ironguard_gloves.webp",
+   "hash": "36e874cf06d6"
+  },
+  "ironguard_helm": {
+   "file": "ironguard_helm.webp",
+   "hash": "d3fe3f721146"
+  },
+  "ironguard_shield": {
+   "file": "ironguard_shield.webp",
+   "hash": "b7c984c5b076"
+  },
+  "ironguard_sword": {
+   "file": "ironguard_sword.webp",
+   "hash": "d3b31011e34b"
+  },
+  "kalyndra_hammer": {
+   "file": "kalyndra_hammer.webp",
+   "hash": "e2ab3cbf17d1"
+  },
+  "karna_blade": {
+   "file": "karna_blade.webp",
+   "hash": "dc08037f1437"
+  },
+  "khalad_fang": {
+   "file": "khalad_fang.webp",
+   "hash": "c447b89f10b9"
+  },
+  "kite_shield": {
+   "file": "kite_shield.webp",
+   "hash": "67546ca6e953"
+  },
+  "leather_armor": {
+   "file": "leather_armor.webp",
+   "hash": "883ea5b48684"
+  },
+  "leather_boots": {
+   "file": "leather_boots.webp",
+   "hash": "ecb2806245e9"
+  },
+  "leather_gloves": {
+   "file": "leather_gloves.webp",
+   "hash": "ab3dae5a624c"
+  },
+  "leather_helm": {
+   "file": "leather_helm.webp",
+   "hash": "7d10015934c9"
+  },
+  "lightwarden_armor": {
+   "file": "lightwarden_armor.webp",
+   "hash": "0946668cde28"
+  },
+  "lightwarden_boots": {
+   "file": "lightwarden_boots.webp",
+   "hash": "d8ef173d8b69"
+  },
+  "lightwarden_bow": {
+   "file": "lightwarden_bow.webp",
+   "hash": "7e10339ceda8"
+  },
+  "lightwarden_cloak": {
+   "file": "lightwarden_cloak.webp",
+   "hash": "0015926c8f74"
+  },
+  "lightwarden_gloves": {
+   "file": "lightwarden_gloves.webp",
+   "hash": "4221b6ff49d8"
+  },
+  "lightwarden_helm": {
+   "file": "lightwarden_helm.webp",
+   "hash": "ca1e729919af"
+  },
+  "mage_robe": {
+   "file": "mage_robe.webp",
+   "hash": "96bbe22ffc0c"
+  },
+  "marshstrider_armor": {
+   "file": "marshstrider_armor.webp",
+   "hash": "bd964a14d540"
+  },
+  "marshstrider_boots": {
+   "file": "marshstrider_boots.webp",
+   "hash": "e1eadda31c85"
+  },
+  "marshstrider_bow": {
+   "file": "marshstrider_bow.webp",
+   "hash": "7a8ed0ea8b29"
+  },
+  "marshstrider_cloak": {
+   "file": "marshstrider_cloak.webp",
+   "hash": "dc9aaa3379aa"
+  },
+  "marshstrider_gloves": {
+   "file": "marshstrider_gloves.webp",
+   "hash": "ad6b86ac1107"
+  },
+  "marshstrider_helm": {
+   "file": "marshstrider_helm.webp",
+   "hash": "3b0af4c6c2b7"
+  },
+  "militia_armor": {
+   "file": "militia_armor.webp",
+   "hash": "6081f8c2f637"
+  },
+  "militia_boots": {
+   "file": "militia_boots.webp",
+   "hash": "0eb2cd874490"
+  },
+  "militia_gloves": {
+   "file": "militia_gloves.webp",
+   "hash": "69ba236eb265"
+  },
+  "militia_helm": {
+   "file": "militia_helm.webp",
+   "hash": "e2cf09114a90"
+  },
+  "militia_shield": {
+   "file": "militia_shield.webp",
+   "hash": "3d6e2fb6db17"
+  },
+  "militia_sword": {
+   "file": "militia_sword.webp",
+   "hash": "20a3dffe5bd1"
+  },
+  "moonshadow_armor": {
+   "file": "moonshadow_armor.webp",
+   "hash": "b5c1054fdda9"
+  },
+  "moonshadow_boots": {
+   "file": "moonshadow_boots.webp",
+   "hash": "1063c4602b74"
+  },
+  "moonshadow_bow": {
+   "file": "moonshadow_bow.webp",
+   "hash": "7b19050efbf1"
+  },
+  "moonshadow_cloak": {
+   "file": "moonshadow_cloak.webp",
+   "hash": "428baa9e406f"
+  },
+  "moonshadow_gloves": {
+   "file": "moonshadow_gloves.webp",
+   "hash": "f86558b297a7"
+  },
+  "moonshadow_helm": {
+   "file": "moonshadow_helm.webp",
+   "hash": "70db4ddee82a"
+  },
+  "moonweaver_armor": {
+   "file": "moonweaver_armor.webp",
+   "hash": "c1a31aa07f31"
+  },
+  "moonweaver_boots": {
+   "file": "moonweaver_boots.webp",
+   "hash": "1c594ba0acb6"
+  },
+  "moonweaver_cloak": {
+   "file": "moonweaver_cloak.webp",
+   "hash": "3cab7101d031"
+  },
+  "moonweaver_gloves": {
+   "file": "moonweaver_gloves.webp",
+   "hash": "591308dd5f0c"
+  },
+  "moonweaver_helm": {
+   "file": "moonweaver_helm.webp",
+   "hash": "6abf8cfba391"
+  },
+  "moonweaver_staff": {
+   "file": "moonweaver_staff.webp",
+   "hash": "2d9bf3fc27e4"
+  },
+  "morvaen_shroud": {
+   "file": "morvaen_shroud.webp",
+   "hash": "82af43822908"
+  },
+  "mythic_amulet_6": {
+   "file": "mythic_amulet_6.webp",
+   "hash": "946f945c6ab7"
+  },
+  "mythic_armor_6": {
+   "file": "mythic_armor_6.webp",
+   "hash": "c53ef3ab2e23"
+  },
+  "mythic_axe_6": {
+   "file": "mythic_axe_6.webp",
+   "hash": "18058490f1d8"
+  },
+  "mythic_boots_6": {
+   "file": "mythic_boots_6.webp",
+   "hash": "2916827a1211"
+  },
+  "mythic_bow_6": {
+   "file": "mythic_bow_6.webp",
+   "hash": "bb13a022a6ac"
+  },
+  "mythic_cloak_6": {
+   "file": "mythic_cloak_6.webp",
+   "hash": "c45bdd831750"
+  },
+  "mythic_dagger_6": {
+   "file": "mythic_dagger_6.webp",
+   "hash": "8cca7e111b5d"
+  },
+  "mythic_gloves_6": {
+   "file": "mythic_gloves_6.webp",
+   "hash": "38e1ffe0a596"
+  },
+  "mythic_helm_6": {
+   "file": "mythic_helm_6.webp",
+   "hash": "a9cf1bce3a04"
+  },
+  "mythic_mace_6": {
+   "file": "mythic_mace_6.webp",
+   "hash": "ff707b476690"
+  },
+  "mythic_ring_6": {
+   "file": "mythic_ring_6.webp",
+   "hash": "371e268c4c05"
+  },
+  "mythic_shield_6": {
+   "file": "mythic_shield_6.webp",
+   "hash": "a5ddee55b1ab"
+  },
+  "mythic_spear_6": {
+   "file": "mythic_spear_6.webp",
+   "hash": "e50ec3b3ec3f"
+  },
+  "mythic_staff_6": {
+   "file": "mythic_staff_6.webp",
+   "hash": "3de26e2973cf"
+  },
+  "mythic_sword_6": {
+   "file": "mythic_sword_6.webp",
+   "hash": "d1ff94389b0a"
+  },
+  "mythwoven_armor": {
+   "file": "mythwoven_armor.webp",
+   "hash": "a1ecfea5a999"
+  },
+  "mythwoven_boots": {
+   "file": "mythwoven_boots.webp",
+   "hash": "990bbaa98520"
+  },
+  "mythwoven_cloak": {
+   "file": "mythwoven_cloak.webp",
+   "hash": "388c73051eb4"
+  },
+  "mythwoven_gloves": {
+   "file": "mythwoven_gloves.webp",
+   "hash": "c67a9e5e16c4"
+  },
+  "mythwoven_helm": {
+   "file": "mythwoven_helm.webp",
+   "hash": "49833a970200"
+  },
+  "mythwoven_shield": {
+   "file": "mythwoven_shield.webp",
+   "hash": "ee3a14cdd449"
+  },
+  "nightcrown_armor": {
+   "file": "nightcrown_armor.webp",
+   "hash": "1803f88d7011"
+  },
+  "nightcrown_boots": {
+   "file": "nightcrown_boots.webp",
+   "hash": "7daf997753dc"
+  },
+  "nightcrown_cloak": {
+   "file": "nightcrown_cloak.webp",
+   "hash": "bf2c78a29c4c"
+  },
+  "nightcrown_gloves": {
+   "file": "nightcrown_gloves.webp",
+   "hash": "922a6acff10f"
+  },
+  "nightcrown_helm": {
+   "file": "nightcrown_helm.webp",
+   "hash": "c2f6b0b40d9f"
+  },
+  "nightcrown_staff": {
+   "file": "nightcrown_staff.webp",
+   "hash": "2055ccad45ab"
+  },
+  "nightveil_armor": {
+   "file": "nightveil_armor.webp",
+   "hash": "418d8b844405"
+  },
+  "nightveil_boots": {
+   "file": "nightveil_boots.webp",
+   "hash": "a97f0438c84d"
+  },
+  "nightveil_cloak": {
+   "file": "nightveil_cloak.webp",
+   "hash": "eb0744ffd19e"
+  },
+  "nightveil_dagger": {
+   "file": "nightveil_dagger.webp",
+   "hash": "5df61098fbf7"
+  },
+  "nightveil_gloves": {
+   "file": "nightveil_gloves.webp",
+   "hash": "a3399aceec18"
+  },
+  "nightveil_helm": {
+   "file": "nightveil_helm.webp",
+   "hash": "27d9002b2c0c"
+  },
+  "novice_staff": {
+   "file": "novice_staff.webp",
+   "hash": "d89c84a42010"
+  },
+  "nullweave_armor": {
+   "file": "nullweave_armor.webp",
+   "hash": "8f803dc56960"
+  },
+  "nullweave_boots": {
+   "file": "nullweave_boots.webp",
+   "hash": "d2f19b55dfd9"
+  },
+  "nullweave_cloak": {
+   "file": "nullweave_cloak.webp",
+   "hash": "40a8b087da7f"
+  },
+  "nullweave_gloves": {
+   "file": "nullweave_gloves.webp",
+   "hash": "3633028a6eb4"
+  },
+  "nullweave_helm": {
+   "file": "nullweave_helm.webp",
+   "hash": "dc65ae7a4215"
+  },
+  "nullweave_staff": {
+   "file": "nullweave_staff.webp",
+   "hash": "3137fad51b10"
+  },
+  "obsidian_armor": {
+   "file": "obsidian_armor.webp",
+   "hash": "665260237316"
+  },
+  "obsidian_boots": {
+   "file": "obsidian_boots.webp",
+   "hash": "b4a8f88d2569"
+  },
+  "obsidian_cloak": {
+   "file": "obsidian_cloak.webp",
+   "hash": "789145a728ae"
+  },
+  "obsidian_dagger": {
+   "file": "obsidian_dagger.webp",
+   "hash": "eb27c2c9aac5"
+  },
+  "obsidian_gloves": {
+   "file": "obsidian_gloves.webp",
+   "hash": "ce5e2e6e796a"
+  },
+  "obsidian_helm": {
+   "file": "obsidian_helm.webp",
+   "hash": "7ab9e7026762"
+  },
+  "plate_armor": {
+   "file": "plate_armor.webp",
+   "hash": "8f844ffb31dc"
+  },
+  "plate_helm": {
+   "file": "plate_helm.webp",
+   "hash": "00a5fdd6fb35"
+  },
+  "potion": {
+   "file": "potion.webp",
+   "hash": "a7d0a4431b2f"
+  },
+  "potion-blue": {
+   "file": "potion-blue.webp",
+   "hash": "f37a4e2b9a7c"
+  },
+  "potion-green": {
+   "file": "potion-green.webp",
+   "hash": "f7f7c0fb3819"
+  },
+  "potion-purple": {
+   "file": "potion-purple.webp",
+   "hash": "fb43de5833da"
+  },
+  "potion-red": {
+   "file": "potion-red.webp",
+   "hash": "cda9390481df"
+  },
+  "primordial_amulet_12": {
+   "file": "primordial_amulet_12.webp",
+   "hash": "6a9d31986ebb"
+  },
+  "primordial_armor_12": {
+   "file": "primordial_armor_12.webp",
+   "hash": "ed80df5a6a60"
+  },
+  "primordial_axe_12": {
+   "file": "primordial_axe_12.webp",
+   "hash": "59b691d7b619"
+  },
+  "primordial_boots_12": {
+   "file": "primordial_boots_12.webp",
+   "hash": "df9c04c78014"
+  },
+  "primordial_bow_12": {
+   "file": "primordial_bow_12.webp",
+   "hash": "a790cc9eacb6"
+  },
+  "primordial_cloak_12": {
+   "file": "primordial_cloak_12.webp",
+   "hash": "6818ae52aa74"
+  },
+  "primordial_dagger_12": {
+   "file": "primordial_dagger_12.webp",
+   "hash": "16c682e5e417"
+  },
+  "primordial_gloves_12": {
+   "file": "primordial_gloves_12.webp",
+   "hash": "bc1263fbec26"
+  },
+  "primordial_helm_12": {
+   "file": "primordial_helm_12.webp",
+   "hash": "f3af3a92c082"
+  },
+  "primordial_mace_12": {
+   "file": "primordial_mace_12.webp",
+   "hash": "e2ab3cbf17d1"
+  },
+  "primordial_ring_12": {
+   "file": "primordial_ring_12.webp",
+   "hash": "4f9c9401cd72"
+  },
+  "primordial_shield_12": {
+   "file": "primordial_shield_12.webp",
+   "hash": "2938ad98e292"
+  },
+  "primordial_spear_12": {
+   "file": "primordial_spear_12.webp",
+   "hash": "d46d93352ca3"
+  },
+  "primordial_staff_12": {
+   "file": "primordial_staff_12.webp",
+   "hash": "0d03d23e89e9"
+  },
+  "primordial_sword_12": {
+   "file": "primordial_sword_12.webp",
+   "hash": "4d26055c4cff"
+  },
+  "realm_dawn_unmaker_ash": {
+   "file": "realm_dawn_unmaker_ash.webp",
+   "hash": "b3a9695c6aa2"
+  },
+  "realm_kallosh_grimoire": {
+   "file": "realm_kallosh_grimoire.webp",
+   "hash": "1d32fdbf858f"
+  },
+  "realm_orsis_pendant": {
+   "file": "realm_orsis_pendant.webp",
+   "hash": "ea3e3c287cc7"
+  },
+  "realm_thalion_crown": {
+   "file": "realm_thalion_crown.webp",
+   "hash": "5833b166c623"
+  },
+  "realm_unnamed_sigil": {
+   "file": "realm_unnamed_sigil.webp",
+   "hash": "d312c557c2b6"
+  },
+  "realm_vethryx_scale": {
+   "file": "realm_vethryx_scale.webp",
+   "hash": "f24d45801306"
+  },
+  "rimecaller_armor": {
+   "file": "rimecaller_armor.webp",
+   "hash": "1439ed0e34b2"
+  },
+  "rimecaller_boots": {
+   "file": "rimecaller_boots.webp",
+   "hash": "07da0ecdfa9f"
+  },
+  "rimecaller_cloak": {
+   "file": "rimecaller_cloak.webp",
+   "hash": "8686baf81e82"
+  },
+  "rimecaller_gloves": {
+   "file": "rimecaller_gloves.webp",
+   "hash": "663016067176"
+  },
+  "rimecaller_helm": {
+   "file": "rimecaller_helm.webp",
+   "hash": "4fe6ae3c22fb"
+  },
+  "rimecaller_staff": {
+   "file": "rimecaller_staff.webp",
+   "hash": "a8cc50f5cf35"
+  },
+  "ring_of_power": {
+   "file": "ring_of_power.webp",
+   "hash": "2ff37759a849"
+  },
+  "rusty_dagger": {
+   "file": "rusty_dagger.webp",
+   "hash": "189052d1b1d7"
+  },
+  "sapphire_staff": {
+   "file": "sapphire_staff.webp",
+   "hash": "beb4192f506d"
+  },
+  "sarghul_crown": {
+   "file": "sarghul_crown.webp",
+   "hash": "f8ea2998b41e"
+  },
+  "season_trophy_bloomtide": {
+   "file": "season_trophy_bloomtide.webp",
+   "hash": "0f1bd0af2016"
+  },
+  "season_trophy_emberfall": {
+   "file": "season_trophy_emberfall.webp",
+   "hash": "cb235e8b6417"
+  },
+  "season_trophy_frostmoot": {
+   "file": "season_trophy_frostmoot.webp",
+   "hash": "f047bcb45712"
+  },
+  "season_trophy_sunhigh": {
+   "file": "season_trophy_sunhigh.webp",
+   "hash": "418fcff91d58"
+  },
+  "selan_mantle": {
+   "file": "selan_mantle.webp",
+   "hash": "192190751c4d"
+  },
+  "shadowfang_bow": {
+   "file": "shadowfang_bow.webp",
+   "hash": "fa5bc3e2c1cc"
+  },
+  "short_bow": {
+   "file": "short_bow.webp",
+   "hash": "b4e2e04bc25c"
+  },
+  "silver_ring": {
+   "file": "silver_ring.webp",
+   "hash": "fb17a216fafc"
+  },
+  "skywatcher_armor": {
+   "file": "skywatcher_armor.webp",
+   "hash": "9eb1db180984"
+  },
+  "skywatcher_boots": {
+   "file": "skywatcher_boots.webp",
+   "hash": "77ae05c9fefa"
+  },
+  "skywatcher_bow": {
+   "file": "skywatcher_bow.webp",
+   "hash": "12f5dfcb3a43"
+  },
+  "skywatcher_cloak": {
+   "file": "skywatcher_cloak.webp",
+   "hash": "e882a3b601eb"
+  },
+  "skywatcher_gloves": {
+   "file": "skywatcher_gloves.webp",
+   "hash": "b188f3042b62"
+  },
+  "skywatcher_helm": {
+   "file": "skywatcher_helm.webp",
+   "hash": "1528a3386fc3"
+  },
+  "snowblind_armor": {
+   "file": "snowblind_armor.webp",
+   "hash": "e603947907dd"
+  },
+  "snowblind_boots": {
+   "file": "snowblind_boots.webp",
+   "hash": "4afd1d3f11dc"
+  },
+  "snowblind_cloak": {
+   "file": "snowblind_cloak.webp",
+   "hash": "ebd9dac27847"
+  },
+  "snowblind_dagger": {
+   "file": "snowblind_dagger.webp",
+   "hash": "e7688dfe78cc"
+  },
+  "snowblind_gloves": {
+   "file": "snowblind_gloves.webp",
+   "hash": "c1454ca254c0"
+  },
+  "snowblind_helm": {
+   "file": "snowblind_helm.webp",
+   "hash": "11000cda794b"
+  },
+  "snowtooth_axe": {
+   "file": "snowtooth_axe.webp",
+   "hash": "15d870609327"
+  },
+  "starfall_armor": {
+   "file": "starfall_armor.webp",
+   "hash": "018d0d5cd4b4"
+  },
+  "starfall_boots": {
+   "file": "starfall_boots.webp",
+   "hash": "c818396b79ce"
+  },
+  "starfall_bow": {
+   "file": "starfall_bow.webp",
+   "hash": "51191ccc1054"
+  },
+  "starfall_cloak": {
+   "file": "starfall_cloak.webp",
+   "hash": "66c2da43df14"
+  },
+  "starfall_gloves": {
+   "file": "starfall_gloves.webp",
+   "hash": "7ddf9dbbd79c"
+  },
+  "starfall_helm": {
+   "file": "starfall_helm.webp",
+   "hash": "6125fa2e3e60"
+  },
+  "steel_longsword": {
+   "file": "steel_longsword.webp",
+   "hash": "e2b8ed591ebc"
+  },
+  "stormfletch_armor": {
+   "file": "stormfletch_armor.webp",
+   "hash": "5f5cd14cabff"
+  },
+  "stormfletch_boots": {
+   "file": "stormfletch_boots.webp",
+   "hash": "a686efad5b2a"
+  },
+  "stormfletch_bow": {
+   "file": "stormfletch_bow.webp",
+   "hash": "c2c3204f32af"
+  },
+  "stormfletch_cloak": {
+   "file": "stormfletch_cloak.webp",
+   "hash": "cf207b0c1bbf"
+  },
+  "stormfletch_gloves": {
+   "file": "stormfletch_gloves.webp",
+   "hash": "2facf2c801b1"
+  },
+  "stormfletch_helm": {
+   "file": "stormfletch_helm.webp",
+   "hash": "552a2e9e02d4"
+  },
+  "sunforged_armor": {
+   "file": "sunforged_armor.webp",
+   "hash": "d47c798515ed"
+  },
+  "sunforged_boots": {
+   "file": "sunforged_boots.webp",
+   "hash": "b54f9eb48203"
+  },
+  "sunforged_gloves": {
+   "file": "sunforged_gloves.webp",
+   "hash": "43144b7b6453"
+  },
+  "sunforged_helm": {
+   "file": "sunforged_helm.webp",
+   "hash": "95264b5232af"
+  },
+  "sunforged_shield": {
+   "file": "sunforged_shield.webp",
+   "hash": "0310e5199825"
+  },
+  "sunforged_sword": {
+   "file": "sunforged_sword.webp",
+   "hash": "a819125d9bd5"
+  },
+  "sunken_king_trident": {
+   "file": "sunken_king_trident.webp",
+   "hash": "9004e57f7d47"
+  },
+  "sylvan_marshal_armor": {
+   "file": "sylvan_marshal_armor.webp",
+   "hash": "b4c6a9e5f494"
+  },
+  "sylvan_marshal_boots": {
+   "file": "sylvan_marshal_boots.webp",
+   "hash": "81b74e7f5602"
+  },
+  "sylvan_marshal_bow": {
+   "file": "sylvan_marshal_bow.webp",
+   "hash": "84490e108035"
+  },
+  "sylvan_marshal_cloak": {
+   "file": "sylvan_marshal_cloak.webp",
+   "hash": "852c31c897c3"
+  },
+  "sylvan_marshal_gloves": {
+   "file": "sylvan_marshal_gloves.webp",
+   "hash": "b9f99e2bc245"
+  },
+  "sylvan_marshal_helm": {
+   "file": "sylvan_marshal_helm.webp",
+   "hash": "2c481d6b8977"
+  },
+  "tempest_armor": {
+   "file": "tempest_armor.webp",
+   "hash": "12b56aa50ab6"
+  },
+  "tempest_boots": {
+   "file": "tempest_boots.webp",
+   "hash": "7b2375577712"
+  },
+  "tempest_cloak": {
+   "file": "tempest_cloak.webp",
+   "hash": "1a96e58dda15"
+  },
+  "tempest_gloves": {
+   "file": "tempest_gloves.webp",
+   "hash": "0a324738c183"
+  },
+  "tempest_helm": {
+   "file": "tempest_helm.webp",
+   "hash": "4ec331ea930d"
+  },
+  "tempest_staff": {
+   "file": "tempest_staff.webp",
+   "hash": "365d12c8ced7"
+  },
+  "throneguard_armor": {
+   "file": "throneguard_armor.webp",
+   "hash": "ce53da130b8b"
+  },
+  "throneguard_boots": {
+   "file": "throneguard_boots.webp",
+   "hash": "b85eb2d52c12"
+  },
+  "throneguard_gloves": {
+   "file": "throneguard_gloves.webp",
+   "hash": "cffe33939651"
+  },
+  "throneguard_helm": {
+   "file": "throneguard_helm.webp",
+   "hash": "c235952164a0"
+  },
+  "throneguard_shield": {
+   "file": "throneguard_shield.webp",
+   "hash": "0bf257f7fe67"
+  },
+  "throneguard_sword": {
+   "file": "throneguard_sword.webp",
+   "hash": "ab834a4f7fd3"
+  },
+  "tidebreaker_armor": {
+   "file": "tidebreaker_armor.webp",
+   "hash": "2724be636184"
+  },
+  "tidebreaker_axe": {
+   "file": "tidebreaker_axe.webp",
+   "hash": "f878a4a0b27a"
+  },
+  "tidebreaker_boots": {
+   "file": "tidebreaker_boots.webp",
+   "hash": "d19a5b9dfbaa"
+  },
+  "tidebreaker_gloves": {
+   "file": "tidebreaker_gloves.webp",
+   "hash": "c9965e9a8343"
+  },
+  "tidebreaker_helm": {
+   "file": "tidebreaker_helm.webp",
+   "hash": "46a371dc4d88"
+  },
+  "tidebreaker_shield": {
+   "file": "tidebreaker_shield.webp",
+   "hash": "bf35362cb909"
+  },
+  "trapper_armor": {
+   "file": "trapper_armor.webp",
+   "hash": "05e04bdbbdc5"
+  },
+  "trapper_boots": {
+   "file": "trapper_boots.webp",
+   "hash": "0dab467df849"
+  },
+  "trapper_bow": {
+   "file": "trapper_bow.webp",
+   "hash": "d69e0acfd564"
+  },
+  "trapper_cloak": {
+   "file": "trapper_cloak.webp",
+   "hash": "7aab48e55ce8"
+  },
+  "trapper_gloves": {
+   "file": "trapper_gloves.webp",
+   "hash": "4062dff9aa1c"
+  },
+  "trapper_helm": {
+   "file": "trapper_helm.webp",
+   "hash": "fd64cd04afb9"
+  },
+  "trial_aegis": {
+   "file": "trial_aegis.webp",
+   "hash": "ff8a873b54f3"
+  },
+  "trial_crown": {
+   "file": "trial_crown.webp",
+   "hash": "955d12fc60ab"
+  },
+  "tunnelrat_armor": {
+   "file": "tunnelrat_armor.webp",
+   "hash": "a82e5b279863"
+  },
+  "tunnelrat_boots": {
+   "file": "tunnelrat_boots.webp",
+   "hash": "3352baeb7fd7"
+  },
+  "tunnelrat_cloak": {
+   "file": "tunnelrat_cloak.webp",
+   "hash": "80d2b490579e"
+  },
+  "tunnelrat_dagger": {
+   "file": "tunnelrat_dagger.webp",
+   "hash": "3672aae7bd6e"
+  },
+  "tunnelrat_gloves": {
+   "file": "tunnelrat_gloves.webp",
+   "hash": "764b0b4c3edd"
+  },
+  "tunnelrat_helm": {
+   "file": "tunnelrat_helm.webp",
+   "hash": "d7b7d7ccbbca"
+  },
+  "umbral_armor": {
+   "file": "umbral_armor.webp",
+   "hash": "2860ed70034d"
+  },
+  "umbral_boots": {
+   "file": "umbral_boots.webp",
+   "hash": "cf0f6baf8c29"
+  },
+  "umbral_cloak": {
+   "file": "umbral_cloak.webp",
+   "hash": "f9deb6153c97"
+  },
+  "umbral_dagger": {
+   "file": "umbral_dagger.webp",
+   "hash": "956cf898a612"
+  },
+  "umbral_gloves": {
+   "file": "umbral_gloves.webp",
+   "hash": "2cf8d9018f76"
+  },
+  "umbral_helm": {
+   "file": "umbral_helm.webp",
+   "hash": "11e5883eb69c"
+  },
+  "unname_blade": {
+   "file": "unname_blade.webp",
+   "hash": "9f382f465f29"
+  },
+  "veilforged_amulet_11": {
+   "file": "veilforged_amulet_11.webp",
+   "hash": "755f037149c5"
+  },
+  "veilforged_armor_11": {
+   "file": "veilforged_armor_11.webp",
+   "hash": "7c24d30eef47"
+  },
+  "veilforged_axe_11": {
+   "file": "veilforged_axe_11.webp",
+   "hash": "3ca8268d381e"
+  },
+  "veilforged_boots_11": {
+   "file": "veilforged_boots_11.webp",
+   "hash": "033ca7e2d8b0"
+  },
+  "veilforged_bow_11": {
+   "file": "veilforged_bow_11.webp",
+   "hash": "daa4f024b7bb"
+  },
+  "veilforged_cloak_11": {
+   "file": "veilforged_cloak_11.webp",
+   "hash": "ecec8714e594"
+  },
+  "veilforged_dagger_11": {
+   "file": "veilforged_dagger_11.webp",
+   "hash": "715f6f81c004"
+  },
+  "veilforged_gloves_11": {
+   "file": "veilforged_gloves_11.webp",
+   "hash": "1103cf28f062"
+  },
+  "veilforged_helm_11": {
+   "file": "veilforged_helm_11.webp",
+   "hash": "e2634961b27d"
+  },
+  "veilforged_mace_11": {
+   "file": "veilforged_mace_11.webp",
+   "hash": "b43413eb3396"
+  },
+  "veilforged_ring_11": {
+   "file": "veilforged_ring_11.webp",
+   "hash": "116482d32ed7"
+  },
+  "veilforged_shield_11": {
+   "file": "veilforged_shield_11.webp",
+   "hash": "c73a8d8ee798"
+  },
+  "veilforged_spear_11": {
+   "file": "veilforged_spear_11.webp",
+   "hash": "46b998c45d3b"
+  },
+  "veilforged_staff_11": {
+   "file": "veilforged_staff_11.webp",
+   "hash": "60f27706c271"
+  },
+  "veilforged_sword_11": {
+   "file": "veilforged_sword_11.webp",
+   "hash": "b976bbedadcb"
+  },
+  "veteran_amulet_25": {
+   "file": "veteran_amulet_25.webp",
+   "hash": "612471269cfc"
+  },
+  "veteran_armor_25": {
+   "file": "veteran_armor_25.webp",
+   "hash": "96bbe22ffc0c"
+  },
+  "veteran_axe_25": {
+   "file": "veteran_axe_25.webp",
+   "hash": "19ac1e922b50"
+  },
+  "veteran_boots_25": {
+   "file": "veteran_boots_25.webp",
+   "hash": "9e6e2af3c55b"
+  },
+  "veteran_bow_25": {
+   "file": "veteran_bow_25.webp",
+   "hash": "fa5bc3e2c1cc"
+  },
+  "veteran_cloak_25": {
+   "file": "veteran_cloak_25.webp",
+   "hash": "62aad6cd35bf"
+  },
+  "veteran_dagger_25": {
+   "file": "veteran_dagger_25.webp",
+   "hash": "76c9067d121d"
+  },
+  "veteran_gloves_25": {
+   "file": "veteran_gloves_25.webp",
+   "hash": "46d07ad026cd"
+  },
+  "veteran_helm_25": {
+   "file": "veteran_helm_25.webp",
+   "hash": "24b386d71520"
+  },
+  "veteran_mace_25": {
+   "file": "veteran_mace_25.webp",
+   "hash": "8da59d438ad7"
+  },
+  "veteran_ring_25": {
+   "file": "veteran_ring_25.webp",
+   "hash": "78a8767bd1b6"
+  },
+  "veteran_shield_25": {
+   "file": "veteran_shield_25.webp",
+   "hash": "9da5b6cdcf61"
+  },
+  "veteran_spear_25": {
+   "file": "veteran_spear_25.webp",
+   "hash": "fca74c2fb0a3"
+  },
+  "veteran_staff_25": {
+   "file": "veteran_staff_25.webp",
+   "hash": "3247360a7aa0"
+  },
+  "veteran_sword_25": {
+   "file": "veteran_sword_25.webp",
+   "hash": "5756527f0678"
+  },
+  "vex_staff": {
+   "file": "vex_staff.webp",
+   "hash": "efcace948fd2"
+  },
+  "vhastar_ring": {
+   "file": "vhastar_ring.webp",
+   "hash": "a917eca56598"
+  },
+  "voidbreaker_armor": {
+   "file": "voidbreaker_armor.webp",
+   "hash": "a822fc9238ec"
+  },
+  "voidbreaker_boots": {
+   "file": "voidbreaker_boots.webp",
+   "hash": "5c9299718dbd"
+  },
+  "voidbreaker_gloves": {
+   "file": "voidbreaker_gloves.webp",
+   "hash": "96eea9f37d11"
+  },
+  "voidbreaker_helm": {
+   "file": "voidbreaker_helm.webp",
+   "hash": "3d61ab8fda10"
+  },
+  "voidbreaker_mace": {
+   "file": "voidbreaker_mace.webp",
+   "hash": "621cad0cb196"
+  },
+  "voidbreaker_shield": {
+   "file": "voidbreaker_shield.webp",
+   "hash": "005c4bfcd5f6"
+  },
+  "voidshard_armor": {
+   "file": "voidshard_armor.webp",
+   "hash": "2fd56c2b8533"
+  },
+  "voidshard_boots": {
+   "file": "voidshard_boots.webp",
+   "hash": "c027c7240eef"
+  },
+  "voidshard_cloak": {
+   "file": "voidshard_cloak.webp",
+   "hash": "84746162b59f"
+  },
+  "voidshard_gloves": {
+   "file": "voidshard_gloves.webp",
+   "hash": "f581effd28b4"
+  },
+  "voidshard_helm": {
+   "file": "voidshard_helm.webp",
+   "hash": "f0ba21c71ae2"
+  },
+  "voidshard_staff": {
+   "file": "voidshard_staff.webp",
+   "hash": "39274ce91901"
+  },
+  "voidwhisper": {
+   "file": "voidwhisper.webp",
+   "hash": "9ad3e44ad317"
+  },
+  "warhammer": {
+   "file": "warhammer.webp",
+   "hash": "46e113bcd7de"
+  },
+  "warlord_amulet_45": {
+   "file": "warlord_amulet_45.webp",
+   "hash": "b55891fda228"
+  },
+  "warlord_armor_45": {
+   "file": "warlord_armor_45.webp",
+   "hash": "24cabf4c2814"
+  },
+  "warlord_axe_45": {
+   "file": "warlord_axe_45.webp",
+   "hash": "ba77d5d13632"
+  },
+  "warlord_boots_45": {
+   "file": "warlord_boots_45.webp",
+   "hash": "aa4c0fceb977"
+  },
+  "warlord_bow_45": {
+   "file": "warlord_bow_45.webp",
+   "hash": "fa5bc3e2c1cc"
+  },
+  "warlord_cloak_45": {
+   "file": "warlord_cloak_45.webp",
+   "hash": "595ee64045c1"
+  },
+  "warlord_dagger_45": {
+   "file": "warlord_dagger_45.webp",
+   "hash": "edd9212c6b7c"
+  },
+  "warlord_gloves_45": {
+   "file": "warlord_gloves_45.webp",
+   "hash": "4b8300dd2946"
+  },
+  "warlord_helm_45": {
+   "file": "warlord_helm_45.webp",
+   "hash": "ec5545c7930e"
+  },
+  "warlord_mace_45": {
+   "file": "warlord_mace_45.webp",
+   "hash": "c50f93c5b41d"
+  },
+  "warlord_ring_45": {
+   "file": "warlord_ring_45.webp",
+   "hash": "fb36e88e0ec2"
+  },
+  "warlord_shield_45": {
+   "file": "warlord_shield_45.webp",
+   "hash": "943c33382be0"
+  },
+  "warlord_spear_45": {
+   "file": "warlord_spear_45.webp",
+   "hash": "203db3c81324"
+  },
+  "warlord_staff_45": {
+   "file": "warlord_staff_45.webp",
+   "hash": "7854a4f6ae6a"
+  },
+  "warlord_sword_45": {
+   "file": "warlord_sword_45.webp",
+   "hash": "96c3aa0acade"
+  },
+  "wayfarer_armor": {
+   "file": "wayfarer_armor.webp",
+   "hash": "818ac04b5c81"
+  },
+  "wayfarer_boots": {
+   "file": "wayfarer_boots.webp",
+   "hash": "1e2cef3381a0"
+  },
+  "wayfarer_cloak": {
+   "file": "wayfarer_cloak.webp",
+   "hash": "193f463a6b96"
+  },
+  "wayfarer_gloves": {
+   "file": "wayfarer_gloves.webp",
+   "hash": "8e05b79b0092"
+  },
+  "wayfarer_helm": {
+   "file": "wayfarer_helm.webp",
+   "hash": "f8f98ebe679b"
+  },
+  "wendigo_armor": {
+   "file": "wendigo_armor.webp",
+   "hash": "eb01e088a989"
+  },
+  "wendigo_boots": {
+   "file": "wendigo_boots.webp",
+   "hash": "157adc7bb4eb"
+  },
+  "wendigo_bow": {
+   "file": "wendigo_bow.webp",
+   "hash": "b43d7917bf7c"
+  },
+  "wendigo_cloak": {
+   "file": "wendigo_cloak.webp",
+   "hash": "29d1b71d2835"
+  },
+  "wendigo_gloves": {
+   "file": "wendigo_gloves.webp",
+   "hash": "6f4b35a3e021"
+  },
+  "wendigo_helm": {
+   "file": "wendigo_helm.webp",
+   "hash": "5bd3270460b9"
+  },
+  "wooden_shield": {
+   "file": "wooden_shield.webp",
+   "hash": "e0cbd39db2ed"
+  },
+  "wyrmsong_blade": {
+   "file": "wyrmsong_blade.webp",
+   "hash": "cc9b9c7d9c3b"
+  },
+  "wyrmspine_armor": {
+   "file": "wyrmspine_armor.webp",
+   "hash": "d8002a36b4ff"
+  },
+  "wyrmspine_axe": {
+   "file": "wyrmspine_axe.webp",
+   "hash": "68b44bc5c487"
+  },
+  "wyrmspine_boots": {
+   "file": "wyrmspine_boots.webp",
+   "hash": "02b020973685"
+  },
+  "wyrmspine_gloves": {
+   "file": "wyrmspine_gloves.webp",
+   "hash": "c757d34dee6e"
+  },
+  "wyrmspine_helm": {
+   "file": "wyrmspine_helm.webp",
+   "hash": "0407a5d63d64"
+  },
+  "wyrmspine_shield": {
+   "file": "wyrmspine_shield.webp",
+   "hash": "aec3b488d888"
+  },
+  "ylthar_eye": {
+   "file": "ylthar_eye.webp",
+   "hash": "3441eb7c75d1"
+  }
+ },
+ "aliases": {
+  "amulet": "warlord_amulet_45",
+  "amulet-t10": "divine_amulet_10",
+  "amulet-t2": "amulet_of_warding",
+  "amulet-t3": "warlord_amulet_45",
+  "amulet-t4": "elite_amulet_4",
+  "amulet-t5": "adept_amulet_5",
+  "amulet-t6": "mythic_amulet_6",
+  "amulet-t7": "season_trophy_frostmoot",
+  "amulet-t8": "realm_orsis_pendant",
+  "amulet-t9": "eldritch_amulet_9",
+  "armor": "warlord_armor_45",
+  "armor-t1": "acolyte_armor",
+  "armor-t10": "astromancer_armor",
+  "armor-t2": "trial_aegis",
+  "armor-t3": "warlord_armor_45",
+  "armor-t4": "voidshard_armor",
+  "armor-t5": "mythwoven_armor",
+  "armor-t6": "frostgiant_armor",
+  "armor-t7": "azhtek_armor",
+  "armor-t8": "realm_vethryx_scale",
+  "armor-t9": "dragonfang_armor",
+  "axe": "warlord_axe_45",
+  "axe-t10": "divine_axe_10",
+  "axe-t2": "warhammer",
+  "axe-t3": "warlord_axe_45",
+  "axe-t4": "elite_axe_4",
+  "axe-t5": "tidebreaker_axe",
+  "axe-t6": "snowtooth_axe",
+  "axe-t7": "ascendant_axe_7",
+  "axe-t8": "cosmic_axe_8",
+  "axe-t9": "wyrmspine_axe",
+  "boots": "warlord_boots_45",
+  "boots-t1": "acolyte_boots",
+  "boots-t10": "astromancer_boots",
+  "boots-t2": "arcane_conclave_boots",
+  "boots-t3": "warlord_boots_45",
+  "boots-t4": "voidshard_boots",
+  "boots-t5": "mythwoven_boots",
+  "boots-t6": "frostgiant_boots",
+  "boots-t7": "blackspire_boots",
+  "boots-t8": "cosmic_boots_8",
+  "boots-t9": "dragonfang_boots",
+  "bow": "warlord_bow_45",
+  "bow-t1": "trapper_bow",
+  "bow-t10": "dawnstring_bow",
+  "bow-t2": "elven_bow",
+  "bow-t3": "warlord_bow_45",
+  "bow-t4": "stormfletch_bow",
+  "bow-t5": "marshstrider_bow",
+  "bow-t6": "wendigo_bow",
+  "bow-t7": "skywatcher_bow",
+  "bow-t8": "cosmic_bow_8",
+  "bow-t9": "moonshadow_bow",
+  "cloak": "warlord_cloak_45",
+  "cloak-t1": "acolyte_cloak",
+  "cloak-t10": "astromancer_cloak",
+  "cloak-t2": "arcane_conclave_cloak",
+  "cloak-t3": "warlord_cloak_45",
+  "cloak-t4": "voidshard_cloak",
+  "cloak-t5": "mythwoven_cloak",
+  "cloak-t6": "rimecaller_cloak",
+  "cloak-t7": "season_trophy_bloomtide",
+  "cloak-t8": "realm_dawn_unmaker_ash",
+  "cloak-t9": "dragonfang_cloak",
+  "dagger": "warlord_dagger_45",
+  "dagger-t1": "cutpurse_dagger",
+  "dagger-t10": "divine_dagger_10",
+  "dagger-t2": "nightveil_dagger",
+  "dagger-t3": "warlord_dagger_45",
+  "dagger-t4": "duskfang_dagger",
+  "dagger-t5": "corsair_dagger",
+  "dagger-t6": "snowblind_dagger",
+  "dagger-t7": "obsidian_dagger",
+  "dagger-t8": "cosmic_dagger_8",
+  "dagger-t9": "dragonfang_dagger",
+  "gloves": "warlord_gloves_45",
+  "gloves-t1": "acolyte_gloves",
+  "gloves-t10": "astromancer_gloves",
+  "gloves-t2": "arcane_conclave_gloves",
+  "gloves-t3": "warlord_gloves_45",
+  "gloves-t4": "voidshard_gloves",
+  "gloves-t5": "mythwoven_gloves",
+  "gloves-t6": "frostgiant_gloves",
+  "gloves-t7": "blackspire_gloves",
+  "gloves-t8": "cosmic_gloves_8",
+  "gloves-t9": "dragonfang_gloves",
+  "helm": "warlord_helm_45",
+  "helm-t1": "acolyte_helm",
+  "helm-t10": "astromancer_helm",
+  "helm-t2": "trial_crown",
+  "helm-t3": "warlord_helm_45",
+  "helm-t4": "voidshard_helm",
+  "helm-t5": "mythwoven_helm",
+  "helm-t6": "frostgiant_helm",
+  "helm-t7": "season_trophy_sunhigh",
+  "helm-t8": "caethra_crown",
+  "helm-t9": "dragonfang_helm",
+  "mace": "warlord_mace_45",
+  "mace-t10": "dawnforge_mace",
+  "mace-t3": "warlord_mace_45",
+  "mace-t4": "gorvak_mace",
+  "mace-t6": "mythic_mace_6",
+  "mace-t7": "ascendant_mace_7",
+  "mace-t8": "cosmic_mace_8",
+  "mace-t9": "eldritch_mace_9",
+  "ring": "warlord_ring_45",
+  "ring-t1": "silver_ring",
+  "ring-t10": "divine_ring_10",
+  "ring-t2": "ring_of_power",
+  "ring-t3": "warlord_ring_45",
+  "ring-t4": "elite_ring_4",
+  "ring-t5": "adept_ring_5",
+  "ring-t6": "mythic_ring_6",
+  "ring-t7": "season_trophy_emberfall",
+  "ring-t8": "realm_unnamed_sigil",
+  "ring-t9": "eldritch_ring_9",
+  "shield": "warlord_shield_45",
+  "shield-t1": "militia_shield",
+  "shield-t10": "dawnforge_shield",
+  "shield-t2": "ironguard_shield",
+  "shield-t3": "warlord_shield_45",
+  "shield-t4": "hammerhand_shield",
+  "shield-t5": "mythwoven_shield",
+  "shield-t6": "frostgiant_shield",
+  "shield-t7": "blackspire_shield",
+  "shield-t8": "cosmic_shield_8",
+  "shield-t9": "wyrmspine_shield",
+  "spear": "warlord_spear_45",
+  "spear-t10": "divine_spear_10",
+  "spear-t3": "warlord_spear_45",
+  "spear-t4": "elite_spear_4",
+  "spear-t6": "sunken_king_trident",
+  "spear-t7": "ascendant_spear_7",
+  "spear-t8": "cosmic_spear_8",
+  "spear-t9": "eldritch_spear_9",
+  "staff": "voidwhisper",
+  "staff-t1": "acolyte_staff",
+  "staff-t10": "astromancer_staff",
+  "staff-t2": "arcane_conclave_staff",
+  "staff-t3": "voidwhisper",
+  "staff-t4": "voidshard_staff",
+  "staff-t5": "vex_staff",
+  "staff-t6": "rimecaller_staff",
+  "staff-t7": "tempest_staff",
+  "staff-t8": "realm_kallosh_grimoire",
+  "staff-t9": "moonweaver_staff",
+  "sword": "dragonbane",
+  "sword-t1": "militia_sword",
+  "sword-t10": "aurelion_dawnblade",
+  "sword-t2": "wyrmsong_blade",
+  "sword-t3": "dragonbane",
+  "sword-t4": "elite_sword_4",
+  "sword-t5": "adept_sword_5",
+  "sword-t6": "mythic_sword_6",
+  "sword-t7": "blackspire_sword",
+  "sword-t8": "karna_blade",
+  "sword-t9": "eldritch_sword_9"
+ }
+}

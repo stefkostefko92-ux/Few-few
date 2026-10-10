@@ -11,7 +11,7 @@ import assert from 'node:assert/strict';
 import { buildItem } from '../buildItem.ts';
 import { buildMannequin, buildDressedKnight } from '../mannequin.ts';
 import { fallbackTheme } from '../theme.ts';
-import { previewMode, supports3DIcon, DIAGONAL_WEAPON_ICONS } from '../support.ts';
+import { previewMode, supports3DIcon, isClosedHelm, DIAGONAL_WEAPON_ICONS } from '../support.ts';
 
 function entry(overrides) {
   const base = { slug: 'test_item', name: 'Test Item', category: 'weapon', sub_type: 'sword', tier: 3, rarity: 'rare', ...overrides };
@@ -28,9 +28,9 @@ function centroid(obj) {
   return sum;
 }
 
-const STANDALONE_CATEGORIES = ['weapon', 'shield', 'helm', 'gloves'];
-const MANNEQUIN_CATEGORIES = ['armor', 'boots', 'cloak'];
-const ICON_CATEGORIES = ['ring', 'amulet'];
+const STANDALONE_CATEGORIES = ['weapon', 'shield', 'helm', 'gloves', 'ring', 'amulet', 'cloak'];
+const MANNEQUIN_CATEGORIES = ['armor', 'boots'];
+const ICON_CATEGORIES = ['potion', 'gem'];
 
 test('previewMode класифицира вярно всеки слот', () => {
   for (const category of STANDALONE_CATEGORIES) {
@@ -46,18 +46,20 @@ test('previewMode класифицира вярно всеки слот', () => 
     assert.equal(previewMode(entry({ slug: `weapon_${icon}`, category: 'weapon', sub_type: icon, icon })), 'standalone', icon);
   }
   for (const icon of ['axe', 'spear']) {
-    assert.equal(previewMode(entry({ slug: `weapon_${icon}`, category: 'weapon', sub_type: icon, icon })), 'icon', icon);
+    assert.equal(previewMode(entry({ slug: `weapon_${icon}`, category: 'weapon', sub_type: icon, icon })), 'standalone', icon);
   }
 });
 
-test('previewMode праща качулка/маска/корона/диадема на стара икона, не метален шлем', () => {
+test('качулка/маска/корона/диадема са самостоятелни предмети със собствена геометрия, не метален шлем', () => {
   const hoodNames = ['Cloth Hood', 'Nightveil Cowl', 'Trial Crown', 'Cutpurse Mask', 'Archon’s Circlet', 'Mythwoven Diadem'];
   for (const name of hoodNames) {
     const e = entry({ slug: `hoodtest_${name}`, category: 'helm', name });
-    assert.equal(previewMode(e), 'icon', name);
+    assert.equal(previewMode(e), 'standalone', name);
+    assert.equal(isClosedHelm(e), false, name);
   }
   const realHelm = entry({ slug: 'real_plate_helm', category: 'helm', name: 'Plate Greathelm' });
   assert.equal(previewMode(realHelm), 'standalone');
+  assert.equal(isClosedHelm(realHelm), true);
 });
 
 test('buildItem е детерминистичен по slug (същият slug -> идентична геометрия)', async () => {
@@ -107,10 +109,31 @@ test('buildItem връща null за mannequin/icon категории (не н�
   }
 });
 
-test('оръжия без боен силует в boy (брадва/копие) са icon режим', () => {
+test('брадва/копие имат собствена процедурна геометрия (вече не са icon режим)', async () => {
   for (const icon of ['axe', 'spear']) {
-    const e = entry({ slug: `weapon_${icon}_none`, category: 'weapon', sub_type: icon, icon });
-    assert.equal(supports3DIcon(e), false, `${icon} трябваше да е icon режим`);
+    const e = entry({ slug: `weapon_${icon}_own`, category: 'weapon', sub_type: icon, icon });
+    assert.equal(supports3DIcon(e), true, `${icon} трябваше да има 3D`);
+    const built = await buildItem(e);
+    assert.ok(built && built.object.children.length > 0, `${icon} не се построи`);
+    built.dispose();
+  }
+});
+
+test('пръстен/амулет/плащ/качулка/маска/корона строят геометрия, детерминистично по slug', async () => {
+  const cases = [
+    { category: 'ring', name: 'Silver Signet' }, { category: 'ring', name: 'Eye of Ylthar' }, { category: 'amulet', name: 'Warding Talisman' },
+    { category: 'amulet', name: 'Veilforged Sigil' }, { category: 'cloak', name: 'Elite Mantle' }, { category: 'helm', name: 'Cloth Hood' },
+    { category: 'helm', name: 'Cutpurse Mask' }, { category: 'helm', name: 'Trial Crown' }, { category: 'helm', name: 'Acolyte Circlet' },
+    { category: 'helm', name: 'Chainmail Coif' }, { category: 'helm', name: 'Wayfarer Cap' },
+  ];
+  for (const c of cases) {
+    const e = entry({ slug: `own_${c.name}`, ...c, rarity: 'epic' });
+    const a = await buildItem(e);
+    const b = await buildItem(e);
+    assert.ok(a && a.object.children.length > 0, `${c.name} без геометрия`);
+    assert.equal(centroid(a.object), centroid(b.object), `${c.name} не е детерминистичен`);
+    a.dispose();
+    b.dispose();
   }
 });
 
