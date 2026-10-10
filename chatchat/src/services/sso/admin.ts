@@ -3,22 +3,30 @@ import { randomBytes } from 'node:crypto';
 import { appendAudit } from '../../audit.js';
 import { announceRevocation, revokeUserSessions, type Principal } from '../../auth/sessions.js';
 import {
-  normalizeDomains,
-  validIssuer,
-  type CreateInputT,
-  type UpdateInputT,
-} from './admin-input.js';
-import { passwordSessionUsers, replaceDomains, ssoSessionUsers } from './admin-store.js';
+  changesOf,
+  identityChanged as isIdentityChange,
+  issuerFor,
+  requiredBlocked,
+} from './admin-changes.js';
+import { normalizeDomains, type CreateInputT, type UpdateInputT } from './admin-input.js';
+import {
+  passwordSessionUsers,
+  replaceDomains,
+  resetProviderIdentity,
+  ssoSessionUsers,
+} from './admin-store.js';
 import { scopeKeyOf } from './policy.js';
 import type { ProviderCache } from './provider.js';
-import { entraIssuer, type SsoDeps } from './types.js';
+import type { SsoDeps } from './types.js';
 
 /**
  * Управлението на доставчиците (TENANT_ADMIN / PLATFORM_ADMIN със `sso:manage`), всичко по
  * tenantId на администратора — чужд запис = 404. Секретът само влиза (шифрован); в одита — само
- * имената на сменените полета. Отслабване на доверието (изключване, друг издател/клиент, без
- * доверие в MFA на доставчика) отнема SSO сесиите на доставчика; преминаване към REQUIRED отнема
- * сесиите с парола на покритите хора — всичко през `revokeUserSessions`.
+ * имената на сменените полета. Доставчикът се ВКЛЮЧВА само след успешен тест на текущите настройки;
+ * нов доставчик се създава изключен. Смяна на издател/директория/клиент = нов доставчик (нов секрет
+ * в същата заявка, изключен, нов тест, нови връзки, ново доказване на домейните). Отслабване на
+ * доверието отнема SSO сесиите на доставчика; преминаване към REQUIRED отнема сесиите с парола на
+ * покритите хора — всичко през `revokeUserSessions`.
  */
 
 export type AdminResult<T> = { ok: true; value: T } | { ok: false; status: number; code: string };
@@ -32,28 +40,18 @@ export interface AdminCtx {
 
 const fail = <T>(status: number, code: string): AdminResult<T> => ({ ok: false, status, code });
 
-/** Домейн на друг доставчик — прекъсва транзакцията (нищо не се записва). */
+/** Домейн, доказан от друг доставчик — прекъсва транзакцията (нищо не се записва). */
 class DomainConflict extends Error {}
 /** Доставчикът е сменен междувременно (от друг администратор) — прекъсва транзакцията. */
 class ConcurrentChange extends Error {}
-
-/** Издателят според доставчика; невалиден вход → null. */
-function issuerFor(
-  sso: SsoDeps,
-  provider: 'ENTRA' | 'OIDC',
-  input: { entraTenantId?: string | undefined; issuer?: string | undefined },
-): string | null {
-  if (provider === 'ENTRA') {
-    return input.entraTenantId ? entraIssuer(sso.entraAuthority, input.entraTenantId) : null;
-  }
-  return input.issuer ? validIssuer(input.issuer, sso.allowInsecureHttp) : null;
-}
 
 export async function createConfig(
   ctx: AdminCtx,
   input: CreateInputT,
 ): Promise<AdminResult<SsoConfig>> {
   const tenantId = ctx.actor.user.tenantId;
+  // Включва се след успешен тест (а тестът иска доказан домейн) — не при създаване.
+  if (input.enabled) return fail(409, 'sso_test_required');
   const issuer = issuerFor(ctx.sso, input.provider, input);
   if (!issuer) return fail(400, 'sso_invalid_issuer');
   const domains = normalizeDomains(input.domains);
@@ -86,7 +84,7 @@ export async function createConfig(
           clientSecretEnc: ctx.sso.box.seal(input.clientSecret, tenantId, id),
           trustIdpMfa: input.trustIdpMfa,
           idpLogout: input.idpLogout,
-          enabled: input.enabled,
+          enabled: false,
         },
       });
       if (await replaceDomains(tx, cfg, domains)) throw new DomainConflict();
@@ -110,69 +108,22 @@ export async function createConfig(
     });
 }
 
-/** Новите стойности на полетата (само сменените) — после стават `data` на Prisma. */
-interface Changes {
-  issuer?: string;
-  entraTenantId?: string;
-  clientId?: string;
-  displayName?: string;
-  mode?: 'OPTIONAL' | 'REQUIRED';
-  trustIdpMfa?: boolean;
-  idpLogout?: boolean;
-  enabled?: boolean;
-}
-
-function changesOf(
-  sso: SsoDeps,
-  before: SsoConfig,
-  input: UpdateInputT,
-): { ok: true; changes: Changes } | { ok: false; code: string } {
-  const c: Changes = {};
-  if (before.provider === 'ENTRA' && input.entraTenantId !== undefined) {
-    c.entraTenantId = input.entraTenantId;
-    c.issuer = entraIssuer(sso.entraAuthority, input.entraTenantId);
-  }
-  if (before.provider === 'OIDC' && input.issuer !== undefined) {
-    const issuer = validIssuer(input.issuer, sso.allowInsecureHttp);
-    if (!issuer) return { ok: false, code: 'sso_invalid_issuer' };
-    c.issuer = issuer;
-  }
-  if (input.clientId !== undefined) c.clientId = input.clientId;
-  if (before.provider === 'OIDC' && input.displayName !== undefined) {
-    c.displayName = input.displayName;
-  }
-  if (input.mode !== undefined) c.mode = input.mode;
-  if (input.trustIdpMfa !== undefined) c.trustIdpMfa = input.trustIdpMfa;
-  if (input.idpLogout !== undefined) c.idpLogout = input.idpLogout;
-  if (input.enabled !== undefined) c.enabled = input.enabled;
-  // Само реално сменените — одитът и решенията (тест, отнемане) гледат тях.
-  for (const k of Object.keys(c) as Array<keyof Changes>) {
-    if (c[k] === before[k]) delete c[k];
-  }
-  return { ok: true, changes: c };
-}
-
-/** Активира ли промяната REQUIRED сега — тогава важат проверките срещу заключване. */
-async function requiredBlocked(
+/** Заявените домейни след промяната; същият набор (UI праща всичко) → null (не е промяна). */
+async function newDomains(
   ctx: AdminCtx,
-  before: SsoConfig,
-  tested: boolean,
-): Promise<string | null> {
-  // Само след успешен тест на ТЕКУЩИТЕ настройки и от човек, който самият е влязъл през този
-  // доставчик (или е платформеният администратор — аварийният вход).
-  if (!tested) return 'sso_test_required';
-  if (ctx.actor.user.role === 'PLATFORM_ADMIN') return null;
-  const own = await ctx.db.session.findUnique({
-    where: { id: ctx.actor.session.id },
-    select: { authMethod: true, ssoConfigId: true },
+  id: string,
+  input: UpdateInputT,
+): Promise<{ ok: true; domains: string[] | null } | { ok: false }> {
+  if (!input.domains) return { ok: true, domains: null };
+  const domains = normalizeDomains(input.domains);
+  if (!domains || domains.length === 0) return { ok: false };
+  const current = await ctx.db.ssoDomain.findMany({
+    where: { configId: id },
+    select: { domain: true },
   });
-  const coveredActor =
-    before.companyId === null
-      ? ctx.actor.user.kind === 'INTERNAL'
-      : ctx.actor.user.companyId === before.companyId;
-  return coveredActor && (own?.authMethod !== 'SSO' || own.ssoConfigId !== before.id)
-    ? 'sso_actor_not_sso'
-    : null;
+  const same =
+    current.length === domains.length && current.every((d) => domains.includes(d.domain));
+  return { ok: true, domains: same ? null : domains };
 }
 
 export async function updateConfig(
@@ -186,23 +137,19 @@ export async function updateConfig(
   const diff = changesOf(ctx.sso, before, input);
   if (!diff.ok) return fail(400, diff.code);
   const c = diff.changes;
-  let domains = input.domains ? normalizeDomains(input.domains) : null;
-  if (input.domains && (!domains || domains.length === 0)) return fail(400, 'sso_invalid_domain');
-  if (domains) {
-    // Същият набор (UI праща всичко) не е промяна — нито в одита, нито в базата.
-    const current = await ctx.db.ssoDomain.findMany({
-      where: { configId: id },
-      select: { domain: true },
-    });
-    const same =
-      current.length === domains.length && current.every((d) => domains?.includes(d.domain));
-    if (same) domains = null;
-  }
+  const dom = await newDomains(ctx, id, input);
+  if (!dom.ok) return fail(400, 'sso_invalid_domain');
+  const domains = dom.domains;
 
-  const identityChanged =
-    c.issuer !== undefined || c.entraTenantId !== undefined || c.clientId !== undefined;
+  const identityChanged = isIdentityChange(c);
   const secretChanged = input.clientSecret !== undefined;
-  const data: Prisma.SsoConfigUpdateManyMutationInput = { ...c };
+  // Старият секрет никога не отива към новия издател: смяната иска нов секрет в същата заявка.
+  if (identityChanged && !secretChanged) return fail(400, 'sso_secret_required');
+  // Нов доставчик се включва само след нов успешен тест (не в същата заявка).
+  if (identityChanged && input.enabled === true) return fail(409, 'sso_test_required');
+  // `updatedAt` изрично: и промяна само на домейните мести версията (празно `data` не би обновило
+  // реда → оптимистичната проверка би отказала с `sso_conflict`).
+  const data: Prisma.SsoConfigUpdateManyMutationInput = { ...c, updatedAt: new Date() };
   if (input.clientSecret !== undefined) {
     data.clientSecretEnc = ctx.sso.box.seal(input.clientSecret, tenantId, id);
     data.secretUpdatedAt = new Date();
@@ -213,12 +160,15 @@ export async function updateConfig(
     data.lastTestOk = null;
     data.lastTestReport = Prisma.JsonNull;
   }
+  if (identityChanged) data.enabled = false;
   const mode = c.mode ?? before.mode;
-  const enabled = c.enabled ?? before.enabled;
+  const enabled = identityChanged ? false : (c.enabled ?? before.enabled);
+  const tested = !identityChanged && !secretChanged && before.lastTestOk === true;
+  // Включване (изключен → включен) — само след успешен тест на ТЕКУЩИТЕ настройки.
+  if (enabled && !before.enabled && !tested) return fail(409, 'sso_test_required');
   const becomesRequired =
     mode === 'REQUIRED' && enabled && !(before.mode === 'REQUIRED' && before.enabled);
   if (becomesRequired) {
-    const tested = !identityChanged && !secretChanged && before.lastTestOk === true;
     const blocked = await requiredBlocked(ctx, before, tested);
     if (blocked) return fail(409, blocked);
   }
@@ -227,7 +177,13 @@ export async function updateConfig(
     (before.enabled && !enabled) ||
     (before.trustIdpMfa && c.trustIdpMfa === false) ||
     identityChanged;
-  const changed = [...Object.keys(c), ...(domains ? ['domains'] : [])].sort();
+  const changed = [
+    ...new Set([
+      ...Object.keys(c),
+      ...(domains ? ['domains'] : []),
+      ...(before.enabled && !enabled ? ['enabled'] : []),
+    ]),
+  ].sort();
 
   const out = await ctx.db
     .$transaction(async (tx) => {
@@ -238,6 +194,7 @@ export async function updateConfig(
       });
       if (saved.count !== 1) throw new ConcurrentChange();
       const cfg = await tx.ssoConfig.findUniqueOrThrow({ where: { id } });
+      const reset = identityChanged ? await resetProviderIdentity(tx, id) : null;
       if (domains && (await replaceDomains(tx, cfg, domains))) throw new DomainConflict();
       const users = new Set<string>();
       if (weakened) for (const u of await ssoSessionUsers(tx, id)) users.add(u);
@@ -257,7 +214,12 @@ export async function updateConfig(
         action: 'sso.config_updated',
         objectType: 'sso_config',
         objectId: id,
-        detail: { changed, secretChanged, revokedUsers: revocation?.userIds.length ?? 0 },
+        detail: {
+          changed,
+          secretChanged,
+          revokedUsers: revocation?.userIds.length ?? 0,
+          ...(reset ? { identitiesReset: reset.identities, domainsReset: reset.domains } : {}),
+        },
       });
       return { cfg, revocation };
     })

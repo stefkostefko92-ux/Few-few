@@ -41,6 +41,7 @@ export async function startSsoApp(
           timeoutSeconds: 5,
           entraAuthority: idp.base,
           allowInsecureHttp: true,
+          resolveTxt: (host) => idp.resolveTxt(host),
         };
   const app = createApp({
     db,
@@ -84,6 +85,8 @@ export interface ConfigSpec {
   enabled?: boolean;
   entraTenantId?: string;
   lastTestOk?: boolean | null;
+  /** Домейните са доказани (DNS) — по подразбиране да; false → само заявени. */
+  verified?: boolean;
 }
 
 /** Доставчик направо в базата (секретът — шифрован като в продукцията). */
@@ -110,8 +113,14 @@ export async function makeSsoConfig(idp: FakeIdp, spec: ConfigSpec): Promise<Sso
       lastTestAt: spec.lastTestOk ? new Date() : null,
     },
   });
+  const verified = spec.verified ?? true;
   await db.ssoDomain.createMany({
-    data: spec.domains.map((domain) => ({ tenantId: spec.tenantId, configId: id, domain })),
+    data: spec.domains.map((domain) => ({
+      tenantId: spec.tenantId,
+      configId: id,
+      domain,
+      ...(verified ? { verifiedAt: new Date(), verifiedDomain: domain } : {}),
+    })),
   });
   return cfg;
 }
@@ -181,6 +190,78 @@ export async function seedSsoTenant(slug = 'sso-alfa') {
     data: { tenantId: tenant.id, name: 'Installatori Srl' },
   });
   return { tenant, company };
+}
+
+export interface LinkAttempt {
+  /** HTTP статусът на началото (200 → потокът е тръгнал). */
+  start: number;
+  /** Кодът на грешката на началото (при start ≠ 200). */
+  code: string | null;
+  /** Накъде праща callback-ът (`/?sso_link=ok|failed|denied`). */
+  location: string | null;
+}
+
+/** „Свържи“ от сесията на клиента (парола + TOTP): start → доставчикът (`claims`) → callback. */
+export async function selfLink(
+  h: SsoHarness,
+  idp: FakeIdp,
+  client: Client,
+  claims: Record<string, unknown>,
+  opts: { beforeCallback?: () => Promise<void>; binding?: string | null } = {},
+): Promise<LinkAttempt> {
+  const start = await client.post('/api/v1/auth/sso/link/start');
+  if (start.status !== 200) {
+    return { start: start.status, code: (start.body?.code as string) ?? null, location: null };
+  }
+  const binding = cookieFrom(start, 'cc_sso');
+  idp.next = claims;
+  const authz = await fetch(start.body.url as string, { redirect: 'manual' });
+  const to = new URL(authz.headers.get('location') ?? `${h.origin}/`);
+  if (opts.beforeCallback) await opts.beforeCallback();
+  const done = await finishCallback(
+    h,
+    `${to.pathname}${to.search}`,
+    opts.binding === undefined ? binding : opts.binding,
+  );
+  return { start: 200, code: null, location: done.location };
+}
+
+/** TXT записът във фалшивия DNS + „Провери“ от конзолата (както администраторът). */
+export async function verifyDomainViaDns(
+  idp: FakeIdp,
+  admin: Client,
+  configId: string,
+  domain: string,
+): Promise<{ status: number; body: Record<string, unknown> }> {
+  const view = await admin.get('/api/v1/admin/sso');
+  const cfg = (view.body.configs as Array<Record<string, unknown>>).find((c) => c.id === configId);
+  const status =
+    (cfg?.domainStatus as Array<{ domain: string; txt: { host: string; value: string } | null }>) ??
+    [];
+  const row = status.find((d) => d.domain === domain);
+  if (row?.txt) idp.txt.set(row.txt.host, [[row.txt.value]]);
+  const res = await admin.post(
+    `/api/v1/admin/sso/configs/${configId}/domains/${encodeURIComponent(domain)}/verify`,
+  );
+  return { status: res.status, body: res.body as Record<string, unknown> };
+}
+
+/** Интерактивният тест на доставчика от конзолата (като браузъра) → накъде води връщането. */
+export async function runProviderTest(
+  h: SsoHarness,
+  idp: FakeIdp,
+  admin: Client,
+  configId: string,
+  claims: Record<string, unknown>,
+): Promise<string | null> {
+  const t = await admin.post(`/api/v1/admin/sso/configs/${configId}/test`);
+  if (t.status !== 200) throw new Error(`test ${t.status}: ${JSON.stringify(t.body)}`);
+  idp.next = claims;
+  const back = new URL(
+    (await fetch(t.body.url as string, { redirect: 'manual' })).headers.get('location') ?? '',
+  );
+  return (await finishCallback(h, `${back.pathname}${back.search}`, cookieFrom(t, 'cc_sso')))
+    .location;
 }
 
 /** Сесия с парола (като `signIn` от helpers.ts) срещу приложението с единен вход. */

@@ -1,28 +1,16 @@
 // Конзолата за единния вход (OIDC / Microsoft Entra ID; §12.4 „MFA federata e policy“, §14.4):
-// доставчик за вътрешните и по избор за фирма от портала, домейни, режим (по избор/задължително),
-// доверие в MFA на доставчика, проверка и тест. Секретът никога не се показва (`hasSecret`).
+// доставчик за вътрешните и по избор за фирма от портала, домейни (доказване през DNS TXT), режим
+// (по избор/задължително), доверие в MFA на доставчика, проверка и тест (включва се само след
+// успешен тест). Секретът никога не се показва (`hasSecret`).
 
 import { t } from '../i18n.js';
 import { call, can, fmtDateTime } from './core.js';
 import { removeConfig, runCheck, showIdentities, startTest } from './sso-actions.js';
+import { copyField, domainsBlock } from './sso-domains.js';
 import { openConfigForm, scopeLabel } from './sso-form.js';
-import { badge, button, emptyState, failure, h, input, loading, sectionHead, toast } from './ui.js';
+import { badge, button, emptyState, failure, h, loading, sectionHead, toast } from './ui.js';
 
 const REPORT_FLAGS = ['emailVerified', 'domainAllowed', 'amrPresent', 'mfa'];
-
-function copyField(label, value) {
-  const box = input({ value, readonly: true, class: 'mono', 'aria-label': label });
-  const copy = button(t('admin.copy'), async () => {
-    try {
-      await navigator.clipboard.writeText(value);
-      toast(t('admin.copied'));
-    } catch {
-      box.focus();
-      box.select();
-    }
-  });
-  return [h('dt', {}, label), h('dd', {}, h('div', { class: 'inline' }, box, copy))];
-}
 
 function fact(label, value) {
   return [h('dt', {}, label), h('dd', {}, value || '—')];
@@ -79,11 +67,11 @@ function card(cfg, reload, ctx) {
         : fact(t('admin.sso.f.issuer'), cfg.issuer)),
       ...fact(t('admin.sso.f.clientId'), cfg.clientId),
       ...fact(t('admin.sso.secretUpdated'), fmtDateTime(cfg.secretUpdatedAt)),
-      ...fact(t('admin.sso.f.domains'), cfg.domains.join(', ')),
       ...fact(t('admin.sso.linked'), String(cfg.linkedUsers)),
       ...fact(t('admin.sso.lastTest'), lastTest(cfg)),
     ),
     report(cfg),
+    domainsBlock(cfg, reload),
     h(
       'div',
       { class: 'btn-row' },

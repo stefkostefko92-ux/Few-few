@@ -1,7 +1,8 @@
 // Форма за доставчик на единния вход (нов / промяна). Секретът само влиза: при промяна празно
 // поле = „остава стария“. Entra ID иска само GUID на директорията (издателят се извежда); общ
-// OIDC — адреса на издателя (само публичен HTTPS — сървърът проверява). REQUIRED се избира само
-// при промяна (сървърът иска успешен тест и човек, влязъл през доставчика).
+// OIDC — адреса на издателя (само публичен HTTPS — сървърът проверява). Нов доставчик е изключен:
+// „Активен“ и REQUIRED се избират само при промяна (сървърът иска успешен тест; REQUIRED — и човек,
+// влязъл през доставчика). Смяна на директорията/издателя/клиента иска нов секрет.
 
 import { has, t } from '../i18n.js';
 import { call } from './core.js';
@@ -79,7 +80,7 @@ export function openConfigForm(cfg, ctx, onSaved) {
   );
   const trust = checkbox(t('admin.sso.f.trustIdpMfa'), { checked: cfg?.trustIdpMfa ?? false });
   const logout = checkbox(t('admin.sso.f.idpLogout'), { checked: cfg?.idpLogout ?? false });
-  const enabled = checkbox(t('admin.sso.f.enabled'), { checked: cfg?.enabled ?? true });
+  const enabled = checkbox(t('admin.sso.f.enabled'), { checked: cfg?.enabled ?? false });
 
   const entraFields = h(
     'div',
@@ -119,7 +120,8 @@ export function openConfigForm(cfg, ctx, onSaved) {
     trust,
     h('p', { class: 'hint' }, t('admin.sso.f.trustIdpMfaHint')),
     logout,
-    enabled,
+    isNew ? h('p', { class: 'hint' }, t('admin.sso.f.newDisabledHint')) : enabled,
+    isNew ? null : h('p', { class: 'hint' }, t('admin.sso.f.enabledHint')),
   );
 
   const payload = () => {
@@ -129,7 +131,6 @@ export function openConfigForm(cfg, ctx, onSaved) {
       domains: domainsFrom(domains.value),
       trustIdpMfa: boxOf(trust).checked,
       idpLogout: boxOf(logout).checked,
-      enabled: boxOf(enabled).checked,
       ...(entra
         ? { entraTenantId: tenantId.value.trim() }
         : { issuer: issuer.value.trim(), displayName: displayName.value.trim() }),
@@ -140,6 +141,7 @@ export function openConfigForm(cfg, ctx, onSaved) {
       out.companyId = scope.value || null;
     } else {
       out.mode = mode.value;
+      out.enabled = boxOf(enabled).checked;
     }
     return out;
   };

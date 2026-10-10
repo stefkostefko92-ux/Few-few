@@ -1,10 +1,21 @@
-import type { AccountKind, PrismaClient, Role, SsoConfig } from '@prisma/client';
+import type { AccountKind, PrismaClient, Role, SsoConfig, SsoLinkMethod } from '@prisma/client';
+import { can, ROLES, roleRank } from '../../auth/rbac.js';
 import { INTERNAL_SCOPE } from './types.js';
 
 /**
  * Кого покрива доставчикът и кога паролата е отказана. Доставчикът на клиента (без фирма) е за
  * вътрешните потребители; доставчикът на фирма — за порталните потребители на ТАЗИ фирма. Акаунти
  * не се създават от входа — само се свързват (администраторът ги създава, както досега).
+ *
+ * Моделът на доверие (SECURITY.md, „Единен вход“): доставчикът се настройва от човек със
+ * `sso:manage` — той избира издателя, т.е. КОЙ твърди имейлите. Затова:
+ * - платформеният администратор НИКОГА не влиза през доставчик (аварийният вход на оператора);
+ * - акаунт с ранг ≥ този на настройващите (администраторът на клиента) или с включен локален TOTP
+ *   (фактор, който държи само собственикът) се свързва САМО от собственика — от сесия с парола +
+ *   TOTP („Свържи“), никога по имейл при вход;
+ * - останалите (техници, персонал без собствен фактор) — по проверен имейл в ДОКАЗАН домейн при
+ *   първи вход: администраторът и без това им издава линк за парола и нулира MFA (шумно, в одита),
+ *   а свързването по имейл също е в одита (`sso.identity_linked`) и в списъка с връзки.
  */
 
 /** Домейн за сравнение: малки букви, без точка накрая; невалиден → null. */
@@ -48,31 +59,111 @@ export function userScopeKey(user: Coverable): string | null {
 }
 
 /**
- * Паролата отказана ли е за човека (режим REQUIRED на включен доставчик, който го покрива)?
- * Платформеният администратор е изключение — операторът на платформата не е в директорията на
- * клиента и е аварийният вход, ако доставчикът падне (заедно с `npm run sso:off` на сървъра).
+ * Най-ниският ранг сред ролите със `sso:manage` — хората, които избират издателя. Изведен от
+ * матрицата (днес TENANT_ADMIN): нова роля с правото автоматично мести границата.
  */
-export async function passwordRefused(
-  db: PrismaClient,
-  user: Coverable & { tenantId: string; role: Role },
-): Promise<boolean> {
-  if (user.role === 'PLATFORM_ADMIN') return false;
-  const scopeKey = userScopeKey(user);
-  if (!scopeKey) return false;
-  const cfg = await db.ssoConfig.findUnique({
-    where: { tenantId_scopeKey: { tenantId: user.tenantId, scopeKey } },
-    select: { enabled: true, mode: true },
-  });
-  return cfg !== null && cfg.enabled && cfg.mode === 'REQUIRED';
+export const SSO_MANAGER_RANK = Math.min(
+  ...ROLES.filter((r) => can(r, 'sso:manage')).map((r) => roleRank(r)),
+);
+
+interface Owned {
+  role: Role;
+  totpEnabledAt: Date | null;
 }
 
 /**
- * Доставчикът за имейла по домейна му (само включен). Не чете потребители — отговорът е еднакъв
- * за съществуващ и несъществуващ акаунт.
+ * Свързва ли се акаунтът САМО от собственика (никога по имейл при вход): ранг ≥ настройващите
+ * доставчика или включен локален TOTP (собственикът държи фактор, който администраторът не може
+ * да ползва тихо — само да го нулира, шумно и в одита).
+ */
+export function ownerLinkRequired(user: Owned): boolean {
+  return roleRank(user.role) >= SSO_MANAGER_RANK || user.totpEnabledAt !== null;
+}
+
+/**
+ * Може ли тази връзка да вписва акаунта: платформеният администратор — никога; ранг ≥
+ * настройващите — само връзка от собственика (SELF); останалите — всяка (по-стара връзка по имейл
+ * на човек с TOTP остава, но НЕ замества локалния TOTP — виж `idpMfaAccepted`).
+ */
+export function linkUsable(user: Owned, method: SsoLinkMethod): boolean {
+  if (user.role === 'PLATFORM_ADMIN') return false;
+  if (roleRank(user.role) >= SSO_MANAGER_RANK) return method === 'SELF';
+  return true;
+}
+
+/**
+ * MFA при доставчика замества локалния TOTP само ако клиентът го е позволил, доставчикът го е
+ * доказал (`amr` ∋ `mfa`) И акаунтът няма собствен фактор, или собственикът сам е направил връзката.
+ * Иначе връзка по имейл (направена от който и да е контролира доставчика) би прескочила TOTP.
+ */
+export function idpMfaAccepted(
+  cfg: Pick<SsoConfig, 'trustIdpMfa'>,
+  idpMfa: boolean,
+  user: Owned,
+  method: SsoLinkMethod,
+): boolean {
+  if (user.role === 'PLATFORM_ADMIN') return false;
+  return cfg.trustIdpMfa && idpMfa && (method === 'SELF' || user.totpEnabledAt === null);
+}
+
+/** Може ли човекът да влезе през доставчика с текущата си връзка (или да се свърже по имейл). */
+export function canUseSso(user: Owned, link: { linkMethod: SsoLinkMethod } | null): boolean {
+  if (link) return linkUsable(user, link.linkMethod);
+  return user.role !== 'PLATFORM_ADMIN' && !ownerLinkRequired(user);
+}
+
+export type PasswordPolicy = 'allowed' | 'refused' | 'link_only';
+
+/**
+ * Паролата при вход: режим REQUIRED на включен доставчик, който покрива човека → отказана; но ако
+ * той още НЕ може да влезе през доставчика (няма собствена връзка, а по имейл не се свързва) —
+ * сесия само за свързването (`link_only`), иначе би останал заключен. Платформеният администратор е
+ * изключение — операторът не е в директорията на клиента и е аварийният вход (с `npm run sso:off`).
+ */
+export async function passwordPolicy(
+  db: PrismaClient,
+  user: Coverable & Owned & { id: string; tenantId: string },
+): Promise<PasswordPolicy> {
+  if (user.role === 'PLATFORM_ADMIN') return 'allowed';
+  const scopeKey = userScopeKey(user);
+  if (!scopeKey) return 'allowed';
+  const cfg = await db.ssoConfig.findUnique({
+    where: { tenantId_scopeKey: { tenantId: user.tenantId, scopeKey } },
+    select: { id: true, enabled: true, mode: true },
+  });
+  if (!cfg || !cfg.enabled || cfg.mode !== 'REQUIRED') return 'allowed';
+  const link = await db.externalIdentity.findFirst({
+    where: { userId: user.id, configId: cfg.id },
+    select: { linkMethod: true },
+  });
+  return canUseSso(user, link) ? 'refused' : 'link_only';
+}
+
+/**
+ * Доставчикът за имейла по ДОКАЗАНИЯ му домейн (само включен). Не чете потребители — отговорът е
+ * еднакъв за съществуващ и несъществуващ акаунт. Заявен, но недоказан домейн не показва бутон.
  */
 export async function configForEmail(db: PrismaClient, email: string): Promise<SsoConfig | null> {
   const domain = emailDomain(email);
   if (!domain) return null;
-  const row = await db.ssoDomain.findUnique({ where: { domain }, include: { config: true } });
+  const row = await db.ssoDomain.findUnique({
+    where: { verifiedDomain: domain },
+    include: { config: true },
+  });
   return row && row.config.enabled ? row.config : null;
+}
+
+/** Домейнът на имейла е доказан за ТОЗИ доставчик. */
+export async function domainVerifiedFor(
+  db: PrismaClient,
+  configId: string,
+  email: string | null,
+): Promise<boolean> {
+  const domain = email ? emailDomain(email) : null;
+  if (!domain) return false;
+  const row = await db.ssoDomain.findUnique({
+    where: { verifiedDomain: domain },
+    select: { configId: true },
+  });
+  return row?.configId === configId;
 }

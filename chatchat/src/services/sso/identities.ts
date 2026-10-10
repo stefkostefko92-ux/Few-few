@@ -5,47 +5,10 @@ import { announceRevocation, revokeUserSessions, type Principal } from '../../au
 import type { AdminResult } from './admin.js';
 
 /**
- * Изгледите на доставчиците за конзолата (без секрета) и връзките с акаунти: списък и развързване
- * (акаунтът се свързва наново при следващия вход по проверен имейл). Резултатът от „Тест на
- * конфигурацията“ — само флагове, без лични данни и без токени.
+ * Връзките с акаунти: списък (с начина на свързване) и развързване (акаунтът се свързва наново —
+ * по проверен имейл или от собственика, според правилата в `policy.ts`). Резултатът от „Тест на
+ * конфигурацията“ — само флагове, без лични данни и без токени. Изгледът на доставчика — `view.ts`.
  */
-
-export function configView(
-  cfg: SsoConfig & {
-    domains: Array<{ domain: string }>;
-    company: { name: string } | null;
-    _count: { identities: number };
-  },
-) {
-  return {
-    id: cfg.id,
-    companyId: cfg.companyId,
-    companyName: cfg.company?.name ?? null,
-    provider: cfg.provider,
-    displayName: cfg.displayName,
-    issuer: cfg.issuer,
-    entraTenantId: cfg.entraTenantId,
-    clientId: cfg.clientId,
-    /** Само че го има и кога е сменен — стойността никога не излиза. */
-    hasSecret: cfg.clientSecretEnc.length > 0,
-    secretUpdatedAt: cfg.secretUpdatedAt,
-    mode: cfg.mode,
-    trustIdpMfa: cfg.trustIdpMfa,
-    idpLogout: cfg.idpLogout,
-    enabled: cfg.enabled,
-    lastTestAt: cfg.lastTestAt,
-    lastTestOk: cfg.lastTestOk,
-    lastTestReport: cfg.lastTestReport,
-    domains: cfg.domains.map((d) => d.domain).sort(),
-    linkedUsers: cfg._count.identities,
-  };
-}
-
-export const CONFIG_INCLUDE = {
-  domains: { select: { domain: true } },
-  company: { select: { name: true } },
-  _count: { select: { identities: true } },
-} as const;
 
 export async function listIdentities(db: PrismaClient, tenantId: string, configId: string) {
   const cfg = await db.ssoConfig.findFirst({
@@ -59,10 +22,11 @@ export async function listIdentities(db: PrismaClient, tenantId: string, configI
     take: 500,
     select: {
       createdAt: true,
+      linkMethod: true,
       user: { select: { id: true, name: true, email: true, role: true, kind: true } },
     },
   });
-  return rows.map((r) => ({ ...r.user, linkedAt: r.createdAt }));
+  return rows.map((r) => ({ ...r.user, linkedAt: r.createdAt, linkMethod: r.linkMethod }));
 }
 
 export async function unlinkIdentity(

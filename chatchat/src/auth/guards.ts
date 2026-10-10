@@ -37,6 +37,14 @@ export function mfaBlock(p: Principal): { status: number; code: string } | null 
   return null;
 }
 
+/**
+ * Вторият фактор и после сесията само за свързване (REQUIRED, акаунт без собствена връзка с
+ * доставчика): тя стига до /auth/me, /auth/mfa/*, /auth/sso/link*, изхода — до данни никога.
+ */
+export function accessBlock(p: Principal): { status: number; code: string } | null {
+  return mfaBlock(p) ?? (p.session.ssoLinkOnly ? { status: 403, code: 'sso_link_required' } : null);
+}
+
 /** Вписан И минал политиката за втори фактор — всеки път към данни минава оттук. */
 export function requireUser(req: Request, res: Response, next: NextFunction): void {
   const principal = req.principal;
@@ -44,7 +52,7 @@ export function requireUser(req: Request, res: Response, next: NextFunction): vo
     apiError(res, 401, 'login_required');
     return;
   }
-  const blocked = mfaBlock(principal);
+  const blocked = accessBlock(principal);
   if (blocked) {
     apiError(res, blocked.status, blocked.code);
     return;
@@ -60,7 +68,7 @@ export function requireCapability(capability: Capability) {
       apiError(res, 401, 'login_required');
       return;
     }
-    const blocked = mfaBlock(principal);
+    const blocked = accessBlock(principal);
     if (blocked) {
       apiError(res, blocked.status, blocked.code);
       return;

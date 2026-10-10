@@ -29,6 +29,7 @@ import type { MailPolicy } from './services/email/enqueue.js';
 import { BrevoMailer } from './services/email/mailer.js';
 import { EmailWorker } from './services/email/worker.js';
 import { integrationsFrom } from './services/integrations/setup.js';
+import { systemTxtResolver } from './services/sso/domains.js';
 import { SecretBox } from './services/sso/secret.js';
 import type { SsoDeps } from './services/sso/types.js';
 import { EmbeddingIndexer } from './store/embeddings.js';
@@ -170,6 +171,7 @@ const sso: SsoDeps | null = ssoEnv.keys
       timeoutSeconds: ssoEnv.timeoutSeconds,
       entraAuthority: 'https://login.microsoftonline.com',
       allowInsecureHttp: false,
+      resolveTxt: systemTxtResolver(ssoEnv.timeoutSeconds),
     }
   : null;
 if (!sso) logger.warn('SSO_KEK липсва — единният вход (OIDC) е изключен');

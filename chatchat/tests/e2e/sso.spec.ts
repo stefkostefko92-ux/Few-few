@@ -1,7 +1,7 @@
 import { AxeBuilder } from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
-import { db, makeUser, PASSWORD } from '../integration/helpers.js';
+import { db, makeUser, PASSWORD, TOTP_SECRET, totpNow } from '../integration/helpers.js';
 import { makeSsoConfig } from '../integration/sso-world.js';
 import { FakeIdp } from '../sso-fake-idp.js';
 import { cookieLogin } from './support/world.js';
@@ -11,7 +11,9 @@ import { E2E_IDP_ORIGIN, E2E_SSO_ORIGIN } from './support/constants.js';
  * Единният вход в браузъра (§14.4, §15.1): екранът за вход открива доставчика по домейна,
  * „Accedi con Microsoft“ води към (фалшивия) Entra ID на друг сайт и обратно в работното
  * пространство — с MFA от доставчика за персонала. Отказите са без подробности; задължителното SSO
- * отказва паролата. Конзолата: нов доставчик през формата, проверка на метаданните, тест на входа.
+ * отказва паролата. Администраторът и хората с TOTP се свързват само сами („Collega con Microsoft“ —
+ * от „Account“ или от екрана при задължителен вход). Конзолата: нов доставчик през формата,
+ * доказване на домейна (DNS TXT във фалшивия DNS), проверка на метаданните, тест, включване.
  */
 
 const DOMAIN = 'sso-e2e.example';
@@ -47,6 +49,16 @@ async function world() {
     mode: 'REQUIRED',
   });
   return { tenant, company };
+}
+
+/** TXT запис във фалшивия DNS (в процеса на server.ts). */
+async function dnsWillAnswer(host: string, value: string) {
+  const res = await fetch(`${E2E_IDP_ORIGIN}/_test/dns`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ host, value }),
+  });
+  expect(res.status).toBe(200);
 }
 
 /** Кой „влиза“ при доставчика при следващото пренасочване. */
@@ -131,7 +143,7 @@ test('SSO задължително (фирма от портала): парол�
   await expect(page.locator('#user-name')).toHaveText('Tecnico Firma');
 });
 
-test('конзола: нов доставчик през формата → проверка на метаданните → тест на входа', async ({
+test('конзола: нов доставчик през формата → доказване на домейна (DNS) → метаданни → тест → включване', async ({
   page,
   context,
 }) => {
@@ -161,6 +173,28 @@ test('конзола: нов доставчик през формата → пр
   const card = page.getByRole('region', { name: 'Utenti interni' });
   await expect(card).toContainText(ADMIN_TID);
   await expect(card).not.toContainText('fake-client-secret');
+  await expect(card).toContainText('Disattivato');
+
+  // Доказване на домейна: записът от конзолата → DNS → „Verifica“.
+  await expect(card.getByText('Da verificare')).toBeVisible();
+  const host = await card
+    .getByRole('textbox', { name: `Nome del record TXT (${ADMIN_DOMAIN})` })
+    .inputValue();
+  const value = await card
+    .getByRole('textbox', { name: `Valore del record TXT (${ADMIN_DOMAIN})` })
+    .inputValue();
+  expect(host).toBe(`_chatchat.${ADMIN_DOMAIN}`);
+  expect(value).toMatch(/^chatchat-verify=[A-Za-z0-9_-]{43}$/);
+  await card.getByRole('button', { name: `Verifica il dominio ${ADMIN_DOMAIN}` }).click();
+  await expect(
+    page.locator('#toasts').getByText('Record TXT non trovato', { exact: false }),
+  ).toBeVisible();
+  await dnsWillAnswer(host, value);
+  await card.getByRole('button', { name: `Verifica il dominio ${ADMIN_DOMAIN}` }).click();
+  await expect(
+    page.locator('#toasts').getByText(`Dominio ${ADMIN_DOMAIN} verificato.`),
+  ).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Utenti interni' })).toContainText('Verificato');
 
   await card.getByRole('button', { name: 'Verifica metadati' }).click();
   const check = page.getByRole('dialog', { name: 'Verifica dei metadati del provider' });
@@ -180,7 +214,112 @@ test('конзола: нов доставчик през формата → пр
   });
   await card.getByRole('button', { name: 'Prova l’accesso' }).click();
   await expect(page.locator('#toasts').getByText('Test dell’accesso riuscito.')).toBeVisible();
-  await expect(page.getByRole('region', { name: 'Utenti interni' })).toContainText('Riuscito');
+  const tested = page.getByRole('region', { name: 'Utenti interni' });
+  await expect(tested).toContainText('Riuscito');
   const cfg = await db.ssoConfig.findFirstOrThrow({ where: { tenantId: tenant.id } });
   expect(cfg.lastTestOk).toBe(true);
+
+  // Включване — след успешния тест.
+  await tested.getByRole('button', { name: 'Modifica' }).click();
+  const edit = page.getByRole('dialog', { name: 'Modifica' });
+  await edit.getByLabel('Attivo', { exact: true }).check();
+  await edit.getByRole('button', { name: 'Salva' }).click();
+  await expect(page.locator('#toasts').getByText('Provider aggiornato.')).toBeVisible();
+  expect((await db.ssoConfig.findFirstOrThrow({ where: { tenantId: tenant.id } })).enabled).toBe(
+    true,
+  );
+});
+
+test('администратор: по имейл — не; „Collega con Microsoft“ от „Account“ → после вход през доставчика', async ({
+  page,
+  context,
+}) => {
+  const { tenant } = await world();
+  const email = `boss-${unique()}@${DOMAIN}`;
+  const admin = await makeUser({
+    tenantId: tenant.id,
+    role: 'TENANT_ADMIN',
+    email,
+    name: 'Ada Link',
+  });
+  const identity = { oid: randomUUID(), preferred_username: email, amr: ['pwd', 'mfa'] };
+  await idpWillSignIn(identity);
+  await typeEmail(page, email);
+  await page.getByRole('button', { name: 'Accedi con Microsoft' }).click();
+  await expect(page.getByRole('alert')).toContainText(
+    'il collegamento all’accesso aziendale lo conferma solo Lei',
+  );
+
+  // Собственикът — от своята сесия (парола + TOTP, свежа).
+  await cookieLogin(context, admin);
+  await page.goto(`${E2E_SSO_ORIGIN}/`);
+  await page.getByRole('button', { name: 'Account', exact: true }).click();
+  const dlg = page.getByRole('dialog', { name: 'Account e sicurezza' });
+  await expect(dlg.getByText('Non collegato.')).toBeVisible();
+  const { violations } = await new AxeBuilder({ page })
+    .include('#dlg-security')
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+    .analyze();
+  expect(violations.map((v) => v.id)).toEqual([]);
+  await idpWillSignIn(identity);
+  await dlg.getByRole('button', { name: 'Collega con Microsoft' }).click();
+  await expect(
+    page
+      .getByRole('dialog', { name: 'Account e sicurezza' })
+      .getByText('Collegato: il collegamento è stato confermato da Lei.'),
+  ).toBeVisible();
+  expect(new URL(page.url()).search).toBe('');
+  const link = await db.externalIdentity.findUniqueOrThrow({ where: { userId: admin.id } });
+  expect(link.linkMethod).toBe('SELF');
+
+  await page
+    .getByRole('dialog', { name: 'Account e sicurezza' })
+    .getByRole('button', { name: 'Chiudi' })
+    .click();
+  await page.getByRole('button', { name: 'Esci' }).click();
+  await idpWillSignIn(identity);
+  await typeEmail(page, email);
+  await page.getByRole('button', { name: 'Accedi con Microsoft' }).click();
+  await expect(page.locator('#user-name')).toHaveText('Ada Link');
+});
+
+test('SSO задължително, техник с TOTP без връзка: парола + код → само свързване → вход през доставчика', async ({
+  page,
+}) => {
+  const { tenant, company } = await world();
+  const email = `totp-${unique()}@${FIRM_DOMAIN}`;
+  await makeUser({
+    tenantId: tenant.id,
+    role: 'PORTAL_TECHNICIAN',
+    kind: 'PORTAL',
+    companyId: company.id,
+    email,
+    name: 'Tecnico TOTP',
+    mfa: true,
+  });
+  await typeEmail(page, email);
+  await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
+  await page.getByRole('button', { name: 'Accedi', exact: true }).click();
+  await page.getByLabel('Codice a 6 cifre').fill(totpNow());
+  await page.getByRole('button', { name: 'Conferma' }).click();
+  await expect(page.getByRole('heading', { name: 'Colleghi l’account aziendale' })).toBeVisible();
+  const { violations } = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+    .analyze();
+  expect(violations.map((v) => v.id)).toEqual([]);
+  const identity = { oid: randomUUID(), tid: FIRM_TID, preferred_username: email };
+  await idpWillSignIn(identity);
+  await page.getByRole('button', { name: 'Collega con Microsoft' }).click();
+  await expect(
+    page.getByRole('status').filter({ hasText: 'Account aziendale collegato.' }),
+  ).toBeVisible();
+  expect(new URL(page.url()).search).toBe('');
+
+  await idpWillSignIn(identity);
+  await typeEmail(page, email);
+  await page.getByRole('button', { name: 'Accedi con Microsoft' }).click();
+  // Без доверие в MFA на доставчика — собственият TOTP (следващата стъпка: предишният код е ползван).
+  await page.getByLabel('Codice a 6 cifre').fill(totpNow(TOTP_SECRET, 1));
+  await page.getByRole('button', { name: 'Conferma' }).click();
+  await expect(page.locator('#user-name')).toHaveText('Tecnico TOTP');
 });

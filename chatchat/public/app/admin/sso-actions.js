@@ -77,6 +77,11 @@ export async function showIdentities(cfg, onChange) {
             { label: t('admin.sso.users.role'), render: (u) => t(`admin.role.${u.role}`) },
             { label: t('admin.sso.users.linkedAt'), render: (u) => fmtDateTime(u.linkedAt) },
             {
+              label: t('admin.sso.users.method'),
+              render: (u) =>
+                t(u.linkMethod === 'SELF' ? 'admin.sso.users.bySelf' : 'admin.sso.users.byEmail'),
+            },
+            {
               label: t('admin.sso.users.actions'),
               cls: 'col-actions',
               render: (u) =>

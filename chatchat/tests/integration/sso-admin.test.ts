@@ -7,18 +7,22 @@ import {
   cookieFrom,
   finishCallback,
   makeSsoConfig,
+  runProviderTest,
   seedSsoTenant,
+  selfLink,
   signInPassword,
   ssoLogin,
   startSsoApp,
+  verifyDomainViaDns,
   type SsoHarness,
 } from './sso-world.js';
 
 /**
  * Конзолата за единния вход (`sso:manage`): създаване/промяна без изтичане на секрета, достъп
  * (роля, чужд клиент = 404, CSRF), домейни, издател (SSRF), проверка на метаданните, интерактивен
- * тест, REQUIRED само след тест и от човек, влязъл през доставчика (+ отнемане на сесиите с парола),
- * развързване, изтриване на връзката при GDPR изтриване.
+ * тест, включване и REQUIRED само след тест (REQUIRED — и от човек, влязъл през доставчика, +
+ * отнемане на сесиите с парола), развързване, изтриване на връзката при GDPR изтриване. Доказването
+ * на домейни — sso-domains.test.ts; смяната на доставчика и свързването — sso-trust.test.ts.
  */
 
 let idp: FakeIdp;
@@ -72,7 +76,6 @@ const entraInput = (over: Record<string, unknown> = {}) => ({
   clientId: FAKE_CLIENT_ID,
   clientSecret: FAKE_CLIENT_SECRET,
   domains: ['Alfa.example'],
-  enabled: true,
   ...over,
 });
 
@@ -86,6 +89,19 @@ describe('Доставчик: създаване, достъп, секрет', (
     assert.equal(res.body.config.hasSecret, true);
     assert.equal(res.body.config.issuer, idp.entraIssuer());
     assert.deepEqual(res.body.config.domains, ['alfa.example']);
+    // Нов доставчик е изключен; домейнът — заявен, с DNS записа за доказване.
+    assert.equal(res.body.config.enabled, false);
+    const [dom] = res.body.config.domainStatus;
+    assert.equal(dom.verifiedAt, null);
+    assert.equal(dom.txt.host, '_chatchat.alfa.example');
+    assert.match(dom.txt.value, /^chatchat-verify=[A-Za-z0-9_-]{43}$/);
+    // Включен при създаване (без тест) → 409.
+    const early = await clientA.post(
+      '/api/v1/admin/sso/configs',
+      entraInput({ enabled: true, companyId: a.company.id, domains: ['x.example'] }),
+    );
+    assert.equal(early.status, 409);
+    assert.equal(early.body.code, 'sso_test_required');
     const row = await db.ssoConfig.findFirstOrThrow({ where: { tenantId: a.tenant.id } });
     assert.doesNotMatch(row.clientSecretEnc, new RegExp(FAKE_CLIENT_SECRET));
     const list = await clientA.get('/api/v1/admin/sso');
@@ -117,9 +133,12 @@ describe('Доставчик: създаване, достъп, секрет', (
     assert.deepEqual((await clientB.get('/api/v1/admin/sso')).body.configs, []);
   });
 
-  test('домейн на друг клиент → 409; невалиден издател (http, IP, вътрешно име) → 400', async () => {
+  test('ДОКАЗАН домейн на друг клиент → 409; невалиден издател (http, IP, вътрешно име) → 400', async () => {
     const { clientA, clientB } = await admins();
-    assert.equal((await clientA.post('/api/v1/admin/sso/configs', entraInput())).status, 201);
+    const created = await clientA.post('/api/v1/admin/sso/configs', entraInput());
+    assert.equal(created.status, 201);
+    const proof = await verifyDomainViaDns(idp, clientA, created.body.config.id, 'alfa.example');
+    assert.equal(proof.status, 200, JSON.stringify(proof.body));
     const taken = await clientB.post('/api/v1/admin/sso/configs', entraInput());
     assert.equal(taken.status, 409);
     assert.equal(taken.body.code, 'sso_domain_taken');
@@ -154,23 +173,33 @@ describe('Тест, REQUIRED, отнемане', () => {
     assert.equal(res.body.check.endSession, true);
   });
 
-  test('REQUIRED: без тест → 409; тестът записва флагове; после — само от SSO сесия', async () => {
+  test('включване и REQUIRED: без тест → 409; тестът записва флагове; REQUIRED — само от SSO сесия', async () => {
     const { clientA, adminA, a } = await admins();
     const id = (await clientA.post('/api/v1/admin/sso/configs', entraInput())).body.config
       .id as string;
-    const early = await clientA.patch(`/api/v1/admin/sso/configs/${id}`, { mode: 'REQUIRED' });
+    const early = await clientA.patch(`/api/v1/admin/sso/configs/${id}`, { enabled: true });
     assert.equal(early.status, 409);
     assert.equal(early.body.code, 'sso_test_required');
+    const adminClaims = {
+      oid: 'aaaaaaaa-bbbb-4ccc-8ddd-0000000000a1',
+      preferred_username: adminA.email,
+      amr: ['mfa'],
+    };
+    // Недоказан домейн → тестът не минава (първото свързване не би било възможно).
+    assert.equal(
+      await runProviderTest(h, idp, clientA, id, adminClaims),
+      '/admin.html#sso?test=failed',
+    );
+    const failedCfg = await db.ssoConfig.findUniqueOrThrow({ where: { id } });
+    assert.equal(failedCfg.lastTestOk, false);
+    assert.equal((failedCfg.lastTestReport as { failure: string }).failure, 'domain_not_allowed');
+    assert.equal((await verifyDomainViaDns(idp, clientA, id, 'alfa.example')).status, 200);
 
     // Интерактивният тест (като браузъра): POST → доставчикът → callback → обратно в конзолата.
     const t = await clientA.post(`/api/v1/admin/sso/configs/${id}/test`);
     assert.equal(t.status, 200);
     const binding = cookieFrom(t, 'cc_sso');
-    idp.next = {
-      oid: 'aaaaaaaa-bbbb-4ccc-8ddd-0000000000a1',
-      preferred_username: adminA.email,
-      amr: ['mfa'],
-    };
+    idp.next = adminClaims;
     const back = new URL(
       (await fetch(t.body.url, { redirect: 'manual' })).headers.get('location') ?? '',
     );
@@ -190,6 +219,11 @@ describe('Тест, REQUIRED, отнемане', () => {
       mfa: true,
     });
 
+    // След успешния тест — включва се.
+    const on = await clientA.patch(`/api/v1/admin/sso/configs/${id}`, { enabled: true });
+    assert.equal(on.status, 200, JSON.stringify(on.body));
+    assert.equal(on.body.config.enabled, true);
+
     // Администраторът е в сесия с парола → не може да заключи себе си.
     const self = await clientA.patch(`/api/v1/admin/sso/configs/${id}`, { mode: 'REQUIRED' });
     assert.equal(self.status, 409);
@@ -202,10 +236,12 @@ describe('Тест, REQUIRED, отнемане', () => {
       email: 't@alfa.example',
     });
     const techClient = await signInPassword(h, tech);
-    const sso = await ssoLogin(h, idp, adminA.email, {
-      oid: 'aaaaaaaa-bbbb-4ccc-8ddd-0000000000a1',
-      preferred_username: adminA.email,
-    });
+    const plain = { oid: 'aaaaaaaa-bbbb-4ccc-8ddd-0000000000a1', preferred_username: adminA.email };
+    // Администраторът не се свързва по имейл — само сам, от сесия с парола + TOTP.
+    const byEmail = await ssoLogin(h, idp, adminA.email, plain);
+    assert.equal(byEmail.location, '/?sso_error=sso_link_required');
+    assert.equal((await selfLink(h, idp, clientA, plain)).location, '/?sso_link=ok');
+    const sso = await ssoLogin(h, idp, adminA.email, plain);
     assert.ok(sso.client);
     // Персоналът без TOTP в SSO сесия без MFA от доставчика → първо TOTP (тук фикстурата го има).
     await db.session.updateMany({

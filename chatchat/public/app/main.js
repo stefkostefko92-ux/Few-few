@@ -18,6 +18,15 @@ import { mountMfaSetup } from './auth/mfa-setup.js';
 import { initReset, showReset, takeResetToken } from './auth/reset.js';
 import { openSecurityDialog } from './auth/security.js';
 import { initSso, logoutRequest, ssoLoginError, ssoResultText, takeSsoError } from './auth/sso.js';
+import {
+  initSsoLink,
+  linkResultText,
+  loginNote,
+  needsLink,
+  showSsoLink,
+  takeSsoLink,
+} from './auth/sso-link.js';
+import { loadMeta, showAdminLink } from './meta.js';
 import { hasPendingQr, initScan, resolvePendingQr, takeQrFromUrl } from './qr/scan.js';
 import { initWorkspace, startWorkspace, stopWorkspace } from './workspace/index.js';
 import { initFlow } from './flow/index.js';
@@ -32,6 +41,7 @@ function showLogin(message) {
   state.user = null;
   state.csrf = null;
   state.mfa = { enabled: false, passed: false, required: false };
+  state.ssoLinkRequired = false;
   state.cases = [];
   state.currentId = null;
   state.current = null;
@@ -42,6 +52,7 @@ function showLogin(message) {
   resetChat();
   show($('#btn-admin'), false);
   showScreen('login');
+  loginNote('');
   const err = $('#login-error');
   err.textContent = message ?? '';
   show(err, Boolean(message));
@@ -65,6 +76,7 @@ async function enter(session) {
   state.csrf = session.csrfToken ?? state.csrf;
   state.mfa = session.mfa ?? state.mfa;
   state.authMethod = session.authMethod ?? 'password';
+  state.ssoLinkRequired = session.ssoLinkRequired === true; // REQUIRED: сесия само за свързване
   // FR-14: езикът на профила (същият за писмата и AI) печели след вход — и на друго устройство;
   // освен ако човекът току-що е избрал друг на екрана за вход (тогава той отива в профила).
   const own = session.user?.locale;
@@ -75,33 +87,20 @@ async function enter(session) {
   if (state.mfa.enabled && !state.mfa.passed) return showMfaVerify();
   // Вторият фактор, доказан от доставчика на единния вход (mfa.idp), не иска локален TOTP.
   if (state.mfa.required && !state.mfa.enabled && !state.mfa.idp) return showSetup();
-  return showApp();
+  return proceed();
 }
+
+/** След втория фактор: приложението — или само свързването с доставчика (REQUIRED). */
+const proceed = () => (needsLink() ? showSsoLink() : showApp());
 
 function showSetup() {
   showScreen('setup');
   mountMfaSetup($('#setup-host'), {
     onDone: () => {
       interactiveEntry = true;
-      return showApp();
+      return proceed();
     },
   });
-}
-
-/** Връзка към конзолата само за ролите с административна способност (сървърът пак проверява). */
-const ADMIN_CAPS = ['users:manage', 'kb:manage', 'audit:read'];
-
-async function showAdminLink() {
-  try {
-    const me = await api('GET', '/auth/me');
-    const caps = Array.isArray(me?.capabilities) ? me.capabilities : [];
-    show(
-      $('#btn-admin'),
-      caps.some((c) => ADMIN_CAPS.includes(c)),
-    );
-  } catch {
-    show($('#btn-admin'), false);
-  }
 }
 
 /** Влязъл е през форма (парола/код): екранът за вход изчезва, а фокусът не бива да остане в нищото. */
@@ -165,21 +164,6 @@ async function changeLang(l) {
   await saveLang(false);
 }
 
-/** Връзката към информацията за поверителност (по чл. 13/14 GDPR), ако администраторът я е дал. */
-async function loadMeta() {
-  try {
-    const meta = await api('GET', '/meta');
-    const url = typeof meta?.privacyUrl === 'string' ? meta.privacyUrl : '';
-    if (/^https:\/\//.test(url)) {
-      const link = $('#privacy-link');
-      link.href = url;
-      show(link, true);
-    }
-  } catch {
-    // Без мета данни приложението работи; връзката просто не се показва.
-  }
-}
-
 function wireLogin() {
   const form = $('#login-form');
   const err = $('#login-error');
@@ -220,6 +204,7 @@ async function init() {
   const isReset = takeResetToken();
   takeQrFromUrl();
   const ssoError = takeSsoError(); // `?sso_error=` от връщането на единния вход
+  const linkResult = takeSsoLink(); // `?sso_link=` от свързването от собственика
   void loadMeta();
   let session = null;
   if (!isReset) {
@@ -240,10 +225,11 @@ async function init() {
   initMfaVerify({
     onPassed: () => {
       interactiveEntry = true;
-      return showApp();
+      return proceed();
     },
     onCancel: logout,
   });
+  initSsoLink({ onCancel: logout });
   $('#setup-cancel').addEventListener('click', logout);
   $('#btn-logout').addEventListener('click', logout);
   $('#btn-security').addEventListener('click', openSecurityDialog);
@@ -284,13 +270,24 @@ async function init() {
     if (kind === 'setup') showSetup();
     else showMfaVerify();
   });
+  on('auth:link', () => {
+    if (!state.user) return;
+    stopWorkspace();
+    state.ssoLinkRequired = true;
+    void showSsoLink();
+  });
 
   if (isReset) {
     showReset();
   } else if (session?.user) {
     await enter(session);
+    const failed = linkResult && linkResult !== 'ok' ? linkResultText(linkResult) : undefined;
+    if (needsLink() && failed) void showSsoLink(failed);
+    else if (linkResult && !needsLink()) openSecurityDialog(failed);
   } else {
-    showLogin(ssoError ? ssoResultText(ssoError) : undefined);
+    const failed = linkResult && linkResult !== 'ok' ? linkResultText(linkResult) : null;
+    showLogin(failed ?? (ssoError ? ssoResultText(ssoError) : undefined));
+    if (linkResult === 'ok') loginNote(linkResultText('ok', { signedIn: false }));
   }
   document.documentElement.dataset.ready = 'true';
 }

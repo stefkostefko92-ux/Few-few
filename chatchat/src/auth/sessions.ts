@@ -36,8 +36,11 @@ export interface Principal {
     kind: AccountKind;
     locale: string;
   };
-  /** authMethod липсва → парола (сесии, създадени без него). */
-  session: { id: string; csrfToken: string; authMethod?: AuthMethod };
+  /**
+   * authMethod липсва → парола (сесии, създадени без него). `ssoLinkOnly` — сесия с парола в режим
+   * REQUIRED само за свързване с доставчика (requireUser → 403 `sso_link_required`).
+   */
+  session: { id: string; csrfToken: string; authMethod?: AuthMethod; ssoLinkOnly?: true };
   mfa: MfaState;
 }
 
@@ -61,7 +64,9 @@ export function mfaStateOf(
 ): MfaState {
   const enabled = user.totpEnabledAt !== null;
   const required = mfaRequired(user.role);
-  if (viaIdp) return { enabled, passed: true, required, idp: true };
+  // Платформеният администратор никога не минава втория фактор при доставчик (fail-closed).
+  if (viaIdp && user.role !== 'PLATFORM_ADMIN')
+    return { enabled, passed: true, required, idp: true };
   return { enabled, passed: enabled && sessionPassed, required };
 }
 
@@ -72,10 +77,15 @@ export interface SsoSessionOrigin {
   mfaViaIdp: boolean;
 }
 
+/** Сесия с парола само за свързване с доставчика (режим REQUIRED, акаунт без собствена връзка). */
+export interface LinkOnlyOrigin {
+  ssoLinkOnly: true;
+}
+
 export async function createSession(
   deps: SessionDeps,
   userId: string,
-  sso?: SsoSessionOrigin,
+  sso?: SsoSessionOrigin | LinkOnlyOrigin,
 ): Promise<{ id: string; token: string; csrfToken: string; expiresAt: Date }> {
   const token = randomToken();
   const csrfToken = randomToken(24);
@@ -147,7 +157,9 @@ export function loadPrincipal(deps: SessionDeps) {
         session.revokedAt !== null ||
         session.expiresAt <= now ||
         !session.user.active ||
-        (session.user.expiresAt !== null && session.user.expiresAt <= now)
+        (session.user.expiresAt !== null && session.user.expiresAt <= now) ||
+        // Платформеният администратор не влиза през доставчик — такава сесия не важи (fail-closed).
+        (session.authMethod === 'SSO' && session.user.role === 'PLATFORM_ADMIN')
       ) {
         return next();
       }
@@ -162,7 +174,12 @@ export function loadPrincipal(deps: SessionDeps) {
           kind: u.kind,
           locale: u.locale,
         },
-        session: { id: session.id, csrfToken: session.csrfToken, authMethod: session.authMethod },
+        session: {
+          id: session.id,
+          csrfToken: session.csrfToken,
+          authMethod: session.authMethod,
+          ...(session.ssoLinkOnly ? { ssoLinkOnly: true as const } : {}),
+        },
         mfa: mfaStateOf(u, session.mfaPassed, session.mfaViaIdp),
       };
       if (now.getTime() - session.lastSeenAt.getTime() > TOUCH_EVERY_MS) {
