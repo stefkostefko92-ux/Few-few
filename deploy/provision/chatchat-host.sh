@@ -10,7 +10,7 @@
 #   sudo bash deploy/provision/chatchat-host.sh --dns      # A/AAAA на домейните срещу адресите на машината
 #
 # Какво: пакетите (Docker Engine + compose plugin от официалното apt репо на Docker, nginx, certbot,
-# cryptsetup, ufw, fail2ban, unattended-upgrades, age, apache2-utils, chrony при нужда) → firewall (само
+# cryptsetup, ufw, fail2ban, unattended-upgrades, age, chrony при нужда) → firewall (само
 # 22/80/443 навътре) → автоматичните кръпки → часовникът (TOTP иска точно време) → папките и правата под
 # /opt/few-few/shared/chatchat{,-staging} → достъпът на staging в nginx → таймерите за бекъп и ретенция
 # (unit-ите от chatchat/deploy/systemd/) → logrotate.
@@ -40,7 +40,7 @@ DOCKER_MIN="29.5.1"
 # Официалният ключ на apt репото на Docker (docs.docker.com/engine/install/ubuntu; проверено на живо
 # 10.10.2026 с `gpg --show-keys`). Друг отпечатък → отказ.
 DOCKER_FPR="9DC858229FC7DD38854AE2D88D81803C0EBFCD88"
-PKGS="nginx certbot python3-certbot-nginx cryptsetup ufw fail2ban unattended-upgrades age apache2-utils curl ca-certificates gnupg logrotate"
+PKGS="nginx certbot python3-certbot-nginx cryptsetup ufw fail2ban unattended-upgrades age curl ca-certificates gnupg logrotate"
 UNITS="chatchat-backup.service chatchat-backup.timer chatchat-retention.service chatchat-retention.timer"
 
 MODE=apply
@@ -259,7 +259,7 @@ step_dirs() {
   ensure_dir "$ACCESS_DIR" 750 0 "$www"
   [ -f "$ACCESS_DIR/allow.conf" ] || change "$ACCESS_DIR/allow.conf (празен = само с парола)" write_allow "$www"
   [ -s "$ACCESS_DIR/htpasswd" ] || [ "$MODE" = check ] ||
-    note "staging е затворен, докато няма $ACCESS_DIR/htpasswd (DEPLOY.md, „Staging“: htpasswd -B -C 12 …)"
+    note "staging е затворен, докато няма $ACCESS_DIR/htpasswd (chatchat/DEPLOY.md, „Staging“)"
 }
 write_allow() {
   printf '%s\n' '# Адресите с достъп до staging без парола: `allow <IP>;` на ред (chatchat/DEPLOY.md, „Staging“).' \
