@@ -336,7 +336,7 @@ test("audit-verify: цяла → intact 1; счупена → intact 0 и изх
 // ── compose: валиден с и без файла на мониторинга ──────────────────────────────────────────────────
 test("docker compose config: валиден с и без docker-compose.monitoring.yml; само 127.0.0.1", { skip: !hasDocker && "няма docker" }, () => {
   const env = { PATH: process.env.PATH, HOME: process.env.HOME ?? "/root", POSTGRES_PASSWORD: "x", PUBLIC_BASE_URL: "https://chatchat.example.eu",
-    SESSION_PEPPER: "p", ATTACHMENT_URL_KEY: "a", MFA_ENC_KEY: "m", FILES_KEK: "k", MAIL_FROM_EMAIL: "no-reply@example.eu" };
+    SESSION_PEPPER: "p", ATTACHMENT_URL_KEY: "a", MFA_ENC_KEY: "m", FILES_KEK: "k", REDIS_PASSWORD: "0123abcd", MAIL_FROM_EMAIL: "no-reply@example.eu" };
   const base = spawnSync("docker", ["compose", "-f", "docker-compose.yml", "config", "-q"], { cwd: cc, env, encoding: "utf8" });
   assert.equal(base.status, 0, base.stderr);
   const full = spawnSync("docker", ["compose", "-f", "docker-compose.yml", "-f", "docker-compose.monitoring.yml", "config", "--format", "json"],

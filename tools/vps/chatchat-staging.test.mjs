@@ -355,14 +355,14 @@ test("docker compose -p chatchat-staging config: валиден, своите т
   writeFileSync(envFile, [
     "COMPOSE_PROJECT_NAME=chatchat-staging", `CHATCHAT_SHARED=${L.stg}`, "HTTP_PORT=4331",
     "PUBLIC_BASE_URL=https://staging-chatchat.carbonstealth.eu", "POSTGRES_PASSWORD=aa", "SESSION_PEPPER=bb",
-    "ATTACHMENT_URL_KEY=cc", "MFA_ENC_KEY=dd", "FILES_KEK=ee", "",
+    "ATTACHMENT_URL_KEY=cc", "MFA_ENC_KEY=dd", "FILES_KEK=ee", "REDIS_PASSWORD=0123abcd", "",
   ].join("\n"));
   for (const args of [["-p", "chatchat-staging"], []]) {
     const res = spawnSync("docker", ["compose", ...args, "--env-file", envFile, "-f", join(root, "chatchat", "docker-compose.yml"), "config", "--format", "json"], { encoding: "utf8" });
     assert.equal(res.status, 0, res.stderr);
     const cfg = JSON.parse(res.stdout);
     assert.equal(cfg.name, "chatchat-staging", "и от .env (ръчните команди от копието), и с -p");
-    assert.deepEqual(Object.values(cfg.volumes).map((v) => v.name).sort(), ["chatchat-staging_clamav-db", "chatchat-staging_db-data"]);
+    assert.deepEqual(Object.values(cfg.volumes).map((v) => v.name).sort(), ["chatchat-staging_clamav-db", "chatchat-staging_db-data", "chatchat-staging_redis-data"]);
     const ports = cfg.services.app.ports.map((p) => `${p.host_ip}:${p.published}:${p.target}`);
     assert.ok(ports.includes("127.0.0.1:4331:4330"), ports.join(","));
     for (const p of cfg.services.app.ports) assert.equal(p.host_ip, "127.0.0.1", "само loopback");
