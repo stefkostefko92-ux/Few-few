@@ -9,6 +9,7 @@ import { HOSTING, PROVIDER } from '@/lib/provider';
 import { SITE_NAME, breadcrumbLd, ldJson, organizationLd, pageMetadata, websiteLd } from '@/lib/seo';
 import SiteHeader from '@/components/SiteHeader';
 import Footer from '@/components/Footer';
+import LegalPage, { type TocItem } from '@/components/LegalPage';
 
 // The register the Data Act asks of a data processing service (Regulation (EU) 2023/2854): what a company can take with
 // it and in which formats, the structure of its JSON export (art. 26(b), kept with src/lib/export-format.ts), how to
@@ -36,15 +37,18 @@ export default async function DataPage({ params }: { params: Promise<{ locale: s
   const ld = ldJson([organizationLd(), websiteLd(loc(locale)), breadcrumbLd([{ name: SITE_NAME, url: `${base}/${locale}` }, { name: t('title'), url }])]);
   const v = { ...legalValues(), backupDays: BACKUP_DAYS, format: EXPORT_FORMAT, version: EXPORT_FORMAT_VERSION, host: HOSTING.provider,
     email: PROVIDER.email, phoneBg: PROVIDER.phones[0], phoneIt: PROVIDER.phones[1], base };
+  const toc: TocItem[] = [{ id: 'q-files', label: t('filesTitle') }, { id: 'q-json', label: t('jsonTitle') },
+    ...SECTIONS.map((k) => ({ id: `q-${k}`, label: t(`${k}Title`) }))];
   const paras = (s: string) => s.split('\n\n').map((p, i) => <p key={i}>{p}</p>);
   return (
     <>
       <SiteHeader />
-      <main id="main" className="legal">
-        <h1>{t('title')}</h1>
-        <p className="note"><time dateTime={EXPORT_REGISTER_DATE}>{t('updated', { date: dateText(locale, EXPORT_REGISTER_DATE) })}</time></p>
-        <p className="lead">{t('lead', v)}</p>
-
+      <LegalPage eyebrow={t('eyebrow')} title={t.rich('headline', { em: (c) => <em>{c}</em> })} tocLabel={t('toc')} toc={toc} head={(
+        <>
+          <p className="note"><time dateTime={EXPORT_REGISTER_DATE}>{t('updated', { date: dateText(locale, EXPORT_REGISTER_DATE) })}</time></p>
+          <p className="lead">{t('lead', v)}</p>
+        </>
+      )}>
         <section aria-labelledby="q-files">
           <h2 id="q-files">{t('filesTitle')}</h2>
           <p>{t('filesText')}</p>
@@ -84,7 +88,7 @@ export default async function DataPage({ params }: { params: Promise<{ locale: s
             {paras(t(`${k}Text`, v))}
           </section>
         ))}
-      </main>
+      </LegalPage>
       <Footer />
       <script type="application/ld+json" nonce={nonce} dangerouslySetInnerHTML={{ __html: ld }} />
     </>

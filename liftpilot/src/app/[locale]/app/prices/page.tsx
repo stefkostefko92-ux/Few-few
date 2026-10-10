@@ -7,6 +7,7 @@ import { PRICE_ARTICLES } from '@/lib/prices/articles';
 import { makeFmt } from '@/lib/present/tr';
 import { companyCustom } from '@/server/prices';
 import PriceList, { type PriceRow } from '@/components/prices/PriceList';
+import AccountHead from '@/components/AccountHead';
 
 export async function generateMetadata() {
   const t = await getTranslations('prices');
@@ -33,12 +34,7 @@ export default async function PricesPage({ params }: { params: Promise<{ locale:
   const editable = can(me, 'prices:edit');
   return (
     <main className="page">
-      <div className="page-head">
-        <div className="titles">
-          <h1>{t('title')}</h1>
-          <p className="lead">{editable ? t('lead') : t('leadView')}</p>
-        </div>
-      </div>
+      <AccountHead area="company" title={t('title')} lead={editable ? t('lead') : t('leadView')} />
       <p className="note">{t('scope')}</p>
       <PriceList rows={rows} values={values} custom={custom} editable={editable} />
     </main>

@@ -67,7 +67,18 @@
     "noAccount": "Non hai un account?",
     "registerLink": "Registra la tua azienda",
     "forgotLink": "Password dimenticata?",
-    "resetDone": "Password aggiornata: accedi con quella nuova."
+    "resetDone": "Password aggiornata: accedi con quella nuova.",
+    "panelLabel": "LiftPilot in breve",
+    "panelEyebrow": "Software di progettazione ascensori",
+    "panelTitle": "Dal rilievo del vano alla relazione di calcolo, <em>in un solo progetto.</em>",
+    "panelCalc": "Verifica dell’argano",
+    "panelDrawings": "Tavole e DXF/DWG",
+    "panelSim": "Simulazione 3D",
+    "panelReport": "Relazione di calcolo",
+    "panelNorms": "Norme di riferimento",
+    "panelHonesty": "Calcoli, tavole e relazioni sono bozze: diventano documenti quando un tecnico abilitato li verifica e li firma.",
+    "panelImgLabel": "Modello dimostrativo",
+    "panelImgAlt": "Illustrazione: spaccato di un vano ascensore con la cabina, le guide e la macchina in alto."
   },
   "nav": {
     "label": "Sezioni",
@@ -379,7 +390,13 @@
     "next": "Nuova password",
     "confirm": "Ripeti la nuova password",
     "rule": "Almeno {min} caratteri, con lettere e cifre.",
-    "change": "Cambia password"
+    "change": "Cambia password",
+    "area": {
+      "profile": "Il tuo profilo",
+      "company": "La tua azienda",
+      "platform": "Amministrazione della piattaforma",
+      "norms": "Riferimenti normativi"
+    }
   },
   "team": {
     "title": "Utenti",
@@ -1402,6 +1419,7 @@
   },
   "legal": {
     "title": "Privacy e condizioni d’uso",
+    "headline": "Privacy <em>e condizioni d’uso</em>",
     "metaDescription": "Come LiftPilot tratta i dati personali di installatori e tecnici, e le condizioni d’uso del servizio.",
     "updated": "Versione {version} del {date}",
     "privacyTitle": "Informativa sulla privacy",
@@ -1475,7 +1493,9 @@
     "archiveTitle": "Versioni precedenti",
     "archiveItem": "Versione {label} del {date}",
     "archiveLead": "Testo archiviato della versione {label} del {date}, parola per parola. Per un’azienda già registrata vale fino al giorno in cui entra in vigore la versione successiva che il titolare ha accettato o che lo vincola (art. {changes}).",
-    "archiveCurrent": "Versione in vigore"
+    "archiveCurrent": "Versione in vigore",
+    "eyebrow": "Privacy e condizioni",
+    "toc": "In questa pagina"
   },
   "mail": {
     "greeting": "Buongiorno,",
@@ -2029,6 +2049,7 @@
   },
   "dataPage": {
     "title": "Dati, formati e giurisdizione",
+    "headline": "Dati, formati <em>e giurisdizione</em>",
     "metaDescription": "Quali dati un’azienda può scaricare da LiftPilot, in quali formati, com’è fatto il file JSON, come si cambia fornitore e dove sono i server (Data Act).",
     "keywords": "Data Act LiftPilot, esportazione dati JSON, portabilità dei dati SaaS, cambio fornitore cloud, giurisdizione server Germania, Carbon Stealth",
     "updated": "Aggiornata il {date}",
@@ -2101,7 +2122,9 @@
       "v2": "2 — dal {date}: si aggiunge invites (gli inviti in attesa)."
     },
     "apiTitle": "C’è un’interfaccia per l’esportazione?",
-    "apiText": "Sì, gratuita e uguale per tutte le aziende: una richiesta GET a {base}/api/company/export restituisce il file JSON descritto sopra al titolare che ha effettuato l’accesso. È la stessa richiesta del pulsante della pagina Azienda, al massimo 6 volte all’ora per azienda. Il nuovo fornitore riceve il file dal titolare; questa pagina descrive il formato per scrivere il programma che lo legge (art. 30, par. 2, del Data Act)."
+    "apiText": "Sì, gratuita e uguale per tutte le aziende: una richiesta GET a {base}/api/company/export restituisce il file JSON descritto sopra al titolare che ha effettuato l’accesso. È la stessa richiesta del pulsante della pagina Azienda, al massimo 6 volte all’ora per azienda. Il nuovo fornitore riceve il file dal titolare; questa pagina descrive il formato per scrivere il programma che lo legge (art. 30, par. 2, del Data Act).",
+    "eyebrow": "Dati e formati",
+    "toc": "In questa pagina"
   },
   "pricing": {
     "title": "Prezzi di LiftPilot",
@@ -2113,20 +2136,14 @@
     "answerBeta": "Durante la beta LiftPilot è gratuito, con tutte le funzioni e senza limite di colleghi. Dopo la beta si pagherà un abbonamento mensile per il titolare dell’azienda e, per i colleghi, un pacchetto di posti calcolato sul prezzo mensile: il prezzo e il giorno in cui finisce la beta saranno comunicati al titolare per e-mail almeno {noticeDays} giorni prima, e nulla è addebitato senza un abbonamento sottoscritto dal titolare.",
     "packsTitle": "Quanto costano i colleghi?",
     "packsText": "Il prezzo mensile comprende il titolare. Ogni collega attivo, e ogni invito in attesa, occupa un posto di un pacchetto, che costa una parte del prezzo mensile:",
-    "colPack": "Chi lavora",
-    "colShare": "Pacchetto",
-    "colTotal": "Totale",
     "share": "+{pct} % del prezzo mensile",
-    "shareNone": "compreso",
-    "onRequest": "su richiesta",
-    "betaFree": "gratuito in beta",
     "trialTitle": "C’è una prova gratuita?",
     "trialText": "Sì: una nuova azienda ha {days} giorni di prova gratuita dal primo accesso, con tutte le funzioni per il titolare e senza carta di credito. La prova finisce da sola e non diventa a pagamento; dopo, senza abbonamento, i progetti restano consultabili e scaricabili in sola lettura.",
     "trialBeta": "Durante la beta non serve: l’uso è gratuito. Quando il servizio diventerà a pagamento, ogni azienda già registrata avrà un periodo di prova gratuito di almeno {minTrialDays} giorni prima di dover scegliere un abbonamento.",
     "cta": "Registra l’azienda",
     "termsTitle": "L’abbonamento in breve",
     "termsNote": "Valgono le <terms>condizioni d’uso</terms>; i dati dell’azienda si scaricano sempre (<data>dati e formati</data>).",
-    "faqTitle": "Domande sui prezzi",
+    "faqTitle": "Domande <em>sui prezzi</em>",
     "faq1q": "Il prezzo comprende tutte le funzioni?",
     "faq1a": "Sì: progetto del vano e dell’impianto, calcolo e scelta dell’argano, simulazione 3D, tavole, relazioni, DXF e DWG, bozze d’ordine e listino. Il pacchetto di posti cambia solo quanti colleghi lavorano insieme al titolare.",
     "faq2q": "Come si paga?",
@@ -2136,6 +2153,18 @@
     "faq4q": "Il prezzo può cambiare?",
     "faq4a": "Sì, con un’e-mail al titolare almeno 30 giorni prima del rinnovo da cui si applica: chi non lo accetta può disdire prima.",
     "faq5q": "Servono molti utenti o più aziende?",
-    "faq5a": "Scrivi a {email} con il numero di aziende e di utenti: ti rispondiamo con una proposta."
+    "faq5a": "Scrivi a {email} con il numero di aziende e di utenti: ti rispondiamo con una proposta.",
+    "eyebrow": "Piani e prezzi",
+    "plansLabel": "I piani",
+    "priceFree": "Gratuito",
+    "priceBeta": "durante la beta",
+    "priceOnRequest": "Su richiesta",
+    "planBase": "Il prezzo mensile del titolare",
+    "planAfterBeta": "Dopo la beta: {share}",
+    "includedTitle": "In ogni piano",
+    "inc1": "Tutte le funzioni: sostituzione dell’argano e progetto completo dell’ascensore, con calcolo, relazione, tavole, DXF/DWG e simulazione 3D",
+    "inc2": "Il registro delle norme, con fonte e stato di ogni valore",
+    "inc3": "I dati dell’azienda sempre scaricabili in un file JSON",
+    "inc4": "Bozze da verificare e firmare da un tecnico abilitato"
   }
 }

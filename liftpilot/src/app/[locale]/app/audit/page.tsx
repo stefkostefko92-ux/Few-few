@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { requireCapability } from '@/lib/auth';
 import { dateFormat } from '@/lib/dates';
 import { listAuditNamed } from '@/server/queries';
+import AccountHead from '@/components/AccountHead';
 
 export async function generateMetadata() {
   const t = await getTranslations('audit');
@@ -17,12 +18,7 @@ export default async function AuditPage({ params }: { params: Promise<{ locale: 
   const label = (group: 'actions' | 'entities', key: string): string => (t.has(`${group}.${key}`) ? t(`${group}.${key}`) : key);
   return (
     <main className="page">
-      <div className="page-head">
-        <div className="titles">
-          <h1>{t('title')}</h1>
-          <p className="lead">{t('lead')}</p>
-        </div>
-      </div>
+      <AccountHead area="company" title={t('title')} lead={t('lead')} />
       <div className="table-panel">
         <table className="data-table stack">
           <thead><tr><th>{t('what')}</th><th>{t('when')}</th><th>{t('who')}</th><th>{t('object')}</th></tr></thead>

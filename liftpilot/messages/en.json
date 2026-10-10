@@ -67,7 +67,18 @@
     "noAccount": "No account yet?",
     "registerLink": "Register your company",
     "forgotLink": "Forgot your password?",
-    "resetDone": "Password updated: sign in with the new one."
+    "resetDone": "Password updated: sign in with the new one.",
+    "panelLabel": "LiftPilot in short",
+    "panelEyebrow": "Lift design software",
+    "panelTitle": "From the shaft survey to the calculation report, <em>in one project.</em>",
+    "panelCalc": "Machine check",
+    "panelDrawings": "Drawing sets and DXF/DWG",
+    "panelSim": "3D simulation",
+    "panelReport": "Calculation report",
+    "panelNorms": "Reference standards",
+    "panelHonesty": "Calculations, drawing sets and reports are drafts: they become documents when a qualified technician checks and signs them.",
+    "panelImgLabel": "Demonstration model",
+    "panelImgAlt": "Illustration: cutaway of a lift shaft with the car, the guide rails and the machine at the top."
   },
   "nav": {
     "label": "Sections",
@@ -379,7 +390,13 @@
     "next": "New password",
     "confirm": "Repeat the new password",
     "rule": "At least {min} characters, with letters and digits.",
-    "change": "Change password"
+    "change": "Change password",
+    "area": {
+      "profile": "Your profile",
+      "company": "Your company",
+      "platform": "Platform administration",
+      "norms": "Reference standards"
+    }
   },
   "team": {
     "title": "Users",
@@ -1402,6 +1419,7 @@
   },
   "legal": {
     "title": "Privacy and terms of use",
+    "headline": "Privacy <em>and terms of use</em>",
     "metaDescription": "How LiftPilot processes the personal data of installers and technicians, and the terms of use of the service.",
     "updated": "Version {version} of {date}",
     "privacyTitle": "Privacy notice",
@@ -1475,7 +1493,9 @@
     "archiveTitle": "Earlier versions",
     "archiveItem": "Version {label} of {date}",
     "archiveLead": "Archived text of version {label} of {date}, word for word. For a company already registered it applies until the day the next version the owner accepted, or that binds the company, takes effect (Art. {changes}).",
-    "archiveCurrent": "Version in force"
+    "archiveCurrent": "Version in force",
+    "eyebrow": "Privacy and terms",
+    "toc": "On this page"
   },
   "mail": {
     "greeting": "Hello,",
@@ -2029,6 +2049,7 @@
   },
   "dataPage": {
     "title": "Data, formats and jurisdiction",
+    "headline": "Data, formats <em>and jurisdiction</em>",
     "metaDescription": "Which data a company can download from LiftPilot, in which formats, how the JSON file is built, how to switch provider and where the servers are (Data Act).",
     "keywords": "LiftPilot Data Act, JSON data export, SaaS data portability, cloud provider switching, server jurisdiction Germany, Carbon Stealth",
     "updated": "Updated on {date}",
@@ -2101,7 +2122,9 @@
       "v2": "2 — from {date}: adds invites (the pending invitations)."
     },
     "apiTitle": "Is there an interface for the export?",
-    "apiText": "Yes, free of charge and the same for every company: a GET request to {base}/api/company/export returns the JSON file described above to the signed-in owner. It is the same request as the button on the Company page, at most 6 times an hour per company. The new provider receives the file from the owner; this page describes the format, to write the program that reads it (Art. 30(2) of the Data Act)."
+    "apiText": "Yes, free of charge and the same for every company: a GET request to {base}/api/company/export returns the JSON file described above to the signed-in owner. It is the same request as the button on the Company page, at most 6 times an hour per company. The new provider receives the file from the owner; this page describes the format, to write the program that reads it (Art. 30(2) of the Data Act).",
+    "eyebrow": "Data and formats",
+    "toc": "On this page"
   },
   "pricing": {
     "title": "LiftPilot pricing",
@@ -2113,20 +2136,14 @@
     "answerBeta": "During the beta LiftPilot is free, with every function and no limit on colleagues. After the beta it will be paid with a monthly subscription for the company’s owner and, for colleagues, a pack of slots priced on the monthly price: the price and the day the beta ends will be e-mailed to the owner at least {noticeDays} days in advance, and nothing is charged without a subscription taken out by the owner.",
     "packsTitle": "What do colleagues cost?",
     "packsText": "The monthly price includes the owner. Every active colleague, and every waiting invitation, takes a slot of a pack, which costs a share of the monthly price:",
-    "colPack": "Who works",
-    "colShare": "Pack",
-    "colTotal": "Total",
     "share": "+{pct} % of the monthly price",
-    "shareNone": "included",
-    "onRequest": "on request",
-    "betaFree": "free in beta",
     "trialTitle": "Is there a free trial?",
     "trialText": "Yes: a new company gets a {days}-day free trial from its first sign-in, with every function for the owner and no credit card. The trial ends by itself and never turns into a paid subscription; afterwards, without a subscription, the projects stay viewable and downloadable read-only.",
     "trialBeta": "Not during the beta: use is free. When the service becomes paid, every company already registered gets a free trial of at least {minTrialDays} days before it has to choose a subscription.",
     "cta": "Register the company",
     "termsTitle": "The subscription in short",
     "termsNote": "The <terms>terms of use</terms> apply; the company’s data can always be downloaded (<data>data and formats</data>).",
-    "faqTitle": "Questions about pricing",
+    "faqTitle": "Questions <em>about pricing</em>",
     "faq1q": "Does the price include every function?",
     "faq1a": "Yes: shaft and lift design, machine calculation and selection, 3D simulation, drawing sets, reports, DXF and DWG, order drafts and price list. The pack of slots only changes how many colleagues work with the owner.",
     "faq2q": "How do I pay?",
@@ -2136,6 +2153,18 @@
     "faq4q": "Can the price change?",
     "faq4a": "Yes, with an e-mail to the owner at least 30 days before the renewal it applies from: whoever does not accept it can cancel before.",
     "faq5q": "Need many users or several companies?",
-    "faq5a": "Write to {email} with the number of companies and users: we will answer with a proposal."
+    "faq5a": "Write to {email} with the number of companies and users: we will answer with a proposal.",
+    "eyebrow": "Plans and pricing",
+    "plansLabel": "The plans",
+    "priceFree": "Free",
+    "priceBeta": "during the beta",
+    "priceOnRequest": "On request",
+    "planBase": "The owner’s monthly price",
+    "planAfterBeta": "After the beta: {share}",
+    "includedTitle": "In every plan",
+    "inc1": "Every feature: machine replacement and the whole lift project, with calculation, report, drawing sets, DXF/DWG and 3D simulation",
+    "inc2": "The register of the standards, with the source and status of every value",
+    "inc3": "The company’s data, always downloadable as one JSON file",
+    "inc4": "Drafts to be checked and signed by a qualified technician"
   }
 }

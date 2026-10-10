@@ -8,6 +8,8 @@ import { companySubscription } from '@/server/billing';
 import { deleteUserAction, inviteAgainAction, revokeInviteAction, updateUserAction } from '@/server/user-actions';
 import CreateUserForm from '@/components/CreateUserForm';
 import ResetPasswordButton from '@/components/ResetPasswordButton';
+import AccountHead from '@/components/AccountHead';
+import Icon from '@/components/Icon';
 
 export async function generateMetadata() {
   const t = await getTranslations('team');
@@ -29,15 +31,10 @@ export default async function TeamPage({ params, searchParams }: {
   const free = sub?.free ?? false, limit = sub && Number.isFinite(sub.limit) ? String(sub.limit) : '∞';
   return (
     <main className="page">
-      <div className="page-head">
-        <div className="titles">
-          <h1>{t('title')}</h1>
-          <p className="lead">{t('lead')}</p>
-        </div>
-      </div>
+      <AccountHead area="company" title={t('title')} lead={t('lead')} />
       {q.e === 'noSeats' ? <p className="alert alert-bad" role="alert">{t('noSeats')}</p> : null}
       <section className="panel">
-        <p>{t('seats', { used: sub?.used ?? 0, limit })}{' '}
+        <p className="seats-line"><Icon name="user-check" size={20} />{t('seats', { used: sub?.used ?? 0, limit })}{' '}
           {can(me, 'billing:manage') && sub?.access !== 'free' ? <Link href="/app/billing">{t('buySeats')}</Link> : null}</p>
         <dl className="flex flex-col gap-1">
           {MEMBER_ROLES.map((r) => <div key={r}><dt className="inline font-semibold">{tr(r)}: </dt><dd className="inline">{t(`roleNote.${r}`)}</dd></div>)}
