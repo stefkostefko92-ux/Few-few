@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
+import Icon from '@/components/Icon';
+import SectionTitle from '@/components/project/SectionTitle';
 import { requireCapability } from '@/lib/auth';
 import { can } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
@@ -93,16 +95,16 @@ export default async function DrawingSetPage({ params, searchParams }: { params:
       ) : null}
       {doc && can(user, 'report:download') ? (
         <section className="panel">
-          <h2>{t('cadTitle')}</h2>
+          <SectionTitle icon="file-cad">{t('cadTitle')}</SectionTitle>
           <p className="note">{t('cadLead')}</p>
-          <div className="flex flex-wrap gap-2">
-            <a className="btn" href={`/api/drawing-sets/${s.id}/dxf`}>{t('cadDxf')}</a>
-            <a className="btn" href={`/api/drawing-sets/${s.id}/dwg`}>{t('cadDwg')}</a>
+          <div className="doc-links">
+            <a className="btn" href={`/api/drawing-sets/${s.id}/dxf`}><Icon name="file-dxf" size={18} />{t('cadDxf')}</a>
+            <a className="btn" href={`/api/drawing-sets/${s.id}/dwg`}><Icon name="file-dwg" size={18} />{t('cadDwg')}</a>
           </div>
         </section>
       ) : null}
       <section className="panel">
-        <h2>{t('history')}</h2>
+        <SectionTitle icon="history">{t('history')}</SectionTitle>
         <ul className="m-0 flex list-none flex-col gap-1 p-0">
           {history.map((h) => (
             <li key={h.id}>

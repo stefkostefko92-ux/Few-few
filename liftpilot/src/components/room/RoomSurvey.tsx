@@ -8,6 +8,7 @@
 // filled in. The save sends the survey only: the server derives everything again.
 import { useMemo, useState, useTransition } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
+import SectionTitle from '@/components/project/SectionTitle';
 import { useRouter } from '@/i18n/routing';
 import type { FormValues } from '@/calc/types';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
@@ -75,7 +76,7 @@ export default function RoomSurvey({ calculationId, values, initial, draft = nul
   return (
     <div className="flex flex-col gap-4">
       <section className="panel" aria-labelledby="room-fields">
-        <h2 id="room-fields">{t('roomTitle')}</h2>
+        <SectionTitle id="room-fields" icon="building-gear">{t('roomTitle')}</SectionTitle>
         <RoomFields R={s.room} put={(patch, entered = []) => change({ ...s, room: { ...s.room, ...patch } }, entered.map((k) => `room.${k}` as SurveyField))}
           blank={(k) => is(`room.${k}` as SurveyField)} choose={tb('choose')}
           machine={d ? { D: d.M.D, shimsAxis: KL.sheaveAxisPerD * d.M.D, shape: d.M.shape ?? null, rinvio: d.M.rinvio ?? null, heb: d.heb, turn: d.G?.dir } : undefined} />
@@ -101,7 +102,7 @@ export default function RoomSurvey({ calculationId, values, initial, draft = nul
       {d?.G ? <SurveyDrawings survey={s} derived={d} onChange={(next) => change(next, [])} id="survey" /> : null}
       {d?.checks.length ? (
         <section className="panel" aria-labelledby="room-checks">
-          <h2 id="room-checks">{t('checksTitle')}</h2>
+          <SectionTitle id="room-checks" icon="list-checks">{t('checksTitle')}</SectionTitle>
           <div className="table-scroll">
             <table className="data-table stack">
               <thead><tr><th scope="col">{t('check')}</th><th scope="col" className="num">{t('value')}</th><th scope="col" className="num">{t('limit')}</th><th scope="col">{t('outcome')}</th></tr></thead>
@@ -121,7 +122,7 @@ export default function RoomSurvey({ calculationId, values, initial, draft = nul
         </section>
       ) : null}
       <section className="panel" aria-labelledby="room-save">
-        <h2 id="room-save">{t('saveTitle')}</h2>
+        <SectionTitle id="room-save" icon="save">{t('saveTitle')}</SectionTitle>
         <label className="field">
           <span>{t('label')}</span>
           <input className="input" value={label} onChange={(e) => setLabel(e.target.value)} maxLength={120} />

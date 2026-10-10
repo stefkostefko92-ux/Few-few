@@ -38,8 +38,18 @@ await build({
   alias: {
     'next-intl': shim('next-intl.ts'), '@/i18n/routing': shim('routing.tsx'), 'server-only': shim('empty.ts'),
     '@/server/calc-actions': shim('actions.ts'), '@/server/lift-actions': shim('actions.ts'), '@/server/draft-actions': shim('actions.ts'),
+    '@/components/Icon': shim('icon.tsx'),
   },
 });
+// the painted icons the components show (<Icon name="…">, shimmed to icons/ beside the page): every name of the pack
+// that the bundle carries as a string; a name that is also a common word costs one small file too many, never one missing
+const iconNames = [...readFileSync(path.join(root, 'src/components/icon-names.ts'), 'utf8').matchAll(/'([a-z0-9-]+)'/g)].map((m) => m[1]);
+const bundle = [path.join(out, 'app.js'), ...readdirSync(path.join(out, 'chunks')).map((f) => path.join(out, 'chunks', f))]
+  .filter((f) => f.endsWith('.js')).map((f) => readFileSync(f, 'utf8')).join('\n');
+for (const n of iconNames) {
+  if (!bundle.includes(`"${n}"`) && !bundle.includes(`'${n}'`)) continue;
+  for (const w of [48, 96]) copyFileSync(path.join(root, 'public/icons', `${n}-${w}.webp`), path.join(out, 'icons', `${n}-${w}.webp`));
+}
 
 writeFileSync(path.join(out, 'index.html'), `<title>LiftPilot</title>
 <meta name="description" content="Scelta e verifica dell’argano geared e progetto dell’ascensore con simulazione 3D e tavole, nel browser.">

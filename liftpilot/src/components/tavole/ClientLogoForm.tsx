@@ -5,6 +5,7 @@
 // keep theirs.
 import { useRef, useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
+import SectionTitle from '@/components/project/SectionTitle';
 import { useRouter } from '@/i18n/routing';
 import { removeClientLogoAction, uploadClientLogoAction } from '@/server/client-logo-actions';
 
@@ -32,7 +33,7 @@ export default function ClientLogoForm({ projectId, current, readOnly }: Props) 
   };
   return (
     <section className="panel flex flex-col gap-3">
-      <h2>{t('clientLogoTitle')}</h2>
+      <SectionTitle icon="file-image">{t('clientLogoTitle')}</SectionTitle>
       <p className="note">{t('clientLogoLead')}</p>
       {current ? (
         <figure className="logo-preview">

@@ -7,11 +7,20 @@
 
 /* fieldsets styled as the other fields; segmented choices */
 fieldset.field { border: 0; margin: 0; padding: 0; min-width: 0; }
-fieldset.field > legend { font-size: 13.5px; font-weight: 500; padding: 0; margin-bottom: 6px; }
-.seg-row { display: inline-flex; flex-wrap: wrap; gap: 1px; width: fit-content; max-width: 100%; border: 1px solid var(--rule); border-radius: 9px; overflow: hidden; background: var(--rule); }
-.seg-row > label, .seg-row > button, .seg-row > a { position: relative; flex: 1 0 auto; text-align: center; font: 500 13.5px/1.2 var(--font-body); color: var(--ink-2); background: var(--surface); border: 0; padding: 9px 13px; cursor: pointer; }
+fieldset.field > legend { font-size: 13.5px; font-weight: 600; color: var(--ink-2); padding: 0; margin-bottom: 7px; }
+/* segmented choice: the template's filter buttons joined in one frame; the chosen one on the cyan-tinted slab with the
+   cyan underline (not a cyan fill: several stand in one form) */
+.seg-row { display: inline-flex; flex-wrap: wrap; gap: 1px; width: fit-content; max-width: 100%; border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); overflow: hidden; background: var(--rule); }
+.seg-row > label, .seg-row > button, .seg-row > a { position: relative; flex: 1 0 auto; text-align: center; font: 600 13.5px/1.2 var(--font-body); color: var(--ink-2); background: var(--surface); border: 0; padding: 10px 14px; cursor: pointer; }
+.seg-row > :is(label, button, a):hover { color: var(--ink); background: var(--surface3); }
 .seg-row > label input { position: absolute; opacity: 0; pointer-events: none; }
-.seg-row > .on { background: var(--accent); color: var(--accent-ink); }
+.seg-row > .on, .seg-row > .on:hover { background: var(--accent-soft); color: var(--accent); box-shadow: inset 0 -2px 0 var(--accent); }
+/* views and sheets (role tablist, the drawing set's pages): separate tabs as the template's showcase tabs */
+.seg-row:is([role="tablist"], nav) { gap: 4px; border: 0; border-radius: 0; overflow: visible; background: none; }
+.seg-row:is([role="tablist"], nav) > :is(button, a) { flex: 0 1 auto; border: 1px solid var(--rule); border-radius: var(--radius-sm); color: var(--muted); }
+.seg-row:is([role="tablist"], nav) > :is(button, a):hover { color: var(--ink); }
+.seg-row:is([role="tablist"], nav) > :is(.on, [aria-current="page"]) { color: var(--ink); background: var(--accent-soft); border-color: var(--accent-line);
+  box-shadow: inset 2px 0 0 var(--accent); }
 .seg-row > a { text-decoration: none; font-variant-numeric: tabular-nums; min-width: 2.6em; }
 .seg-row > button:disabled { color: var(--muted); cursor: not-allowed; }
 .seg-row > label:focus-within, .seg-row > button:focus-visible, .seg-row > a:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
@@ -19,8 +28,9 @@ fieldset.field > legend { font-size: 13.5px; font-weight: 500; padding: 0; margi
 .shaft-input { gap: 14px; }
 .shaft-input h2 + .seg-row { margin-top: -2px; }
 .shaft-options { display: flex; flex-direction: column; gap: 14px; }
-.allowances { border: 1px solid var(--rule); border-radius: 10px; padding: 10px 14px; background: var(--surface2); }
-.allowances > summary { cursor: pointer; font-weight: 500; font-size: 14px; }
+.allowances { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 11px 14px; background: var(--bg-2); }
+.allowances > summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+.allowances > summary:hover { color: var(--accent); }
 .allowances[open] { display: flex; flex-direction: column; gap: 12px; }
 .allowances[open] > summary { margin-bottom: 2px; }
 .allowances .input { background: var(--surface); }
@@ -30,13 +40,13 @@ fieldset.field > legend { font-size: 13.5px; font-weight: 500; padding: 0; margi
 .survey-row { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: flex-end; }
 .survey-row .field:first-child { flex: 0 1 11rem; }
 .cad-view { position: relative; }
-.cad-canvas { height: clamp(300px, 52vh, 600px); border: 1px solid var(--rule-strong); border-radius: 10px; overflow: hidden; background: var(--surface);
-  background-image: radial-gradient(color-mix(in srgb, var(--rule) 70%, transparent) 1px, transparent 1px); background-size: 18px 18px; }
+.cad-canvas { height: clamp(300px, 52vh, 600px); border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); overflow: hidden; background-color: var(--surface);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 24px 24px; }
 .cad-canvas canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
 .cad-tools { position: absolute; top: 8px; right: 8px; display: flex; gap: 6px; }
-.cad-tools .btn { min-width: 34px; box-shadow: 0 1px 2px rgb(0 0 0 / .08); }
+.cad-tools .btn { min-width: 36px; box-shadow: var(--shadow); }
 .layers { font-size: 14px; }
-.layers > summary { cursor: pointer; font-weight: 500; }
+.layers > summary { cursor: pointer; font-weight: 600; }
 .layers ul { list-style: none; margin: 8px 0 0; padding: 0; max-height: 220px; overflow: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); gap: 2px 14px; }
 .layers li label { display: flex; align-items: center; gap: 8px; padding: 3px 0; cursor: pointer; min-width: 0; }
 .layers li .mono { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -45,23 +55,25 @@ fieldset.field > legend { font-size: 13.5px; font-weight: 500; padding: 0; margi
 .shaft-views { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 12px; align-items: start; }
 @media (max-width: 760px) { .shaft-views { grid-template-columns: minmax(0, 1fr); } }
 .sheet-view, .sheet-page { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.sheet-view figcaption, .sheet-page figcaption { font-size: 12.5px; color: var(--muted); text-align: right; }
-.sheet-svg { display: block; width: 100%; height: auto; max-height: 76vh; border: 1px solid var(--rule); border-radius: 8px; background: #fff; }
+.sheet-view figcaption, .sheet-page figcaption { font: 400 12px/1.4 var(--font-mono); letter-spacing: .03em; color: var(--muted); text-align: right; }
+/* a sheet is paper on the dark desk: white, a thin edge, the desk's deep shadow under it */
+.sheet-svg { display: block; width: 100%; height: auto; max-height: 76vh; border: 1px solid var(--rule-strong); border-radius: 4px; background: #fff; box-shadow: var(--shadow-lg); }
 .sheet-view-tall .sheet-svg { max-height: 90vh; }
-.sheet-page .sheet-svg { max-height: none; box-shadow: 0 1px 3px rgb(0 0 0 / .12); }
+.sheet-page .sheet-svg { max-height: none; }
 .sheet-page { max-width: 900px; }
 
 /* the designer's vertical data and machine room */
 .vertical-options, .room-options, .niche-options, .head-options { border-top: 1px solid var(--rule); padding-top: 10px; display: flex; flex-direction: column; gap: 10px; }
-.vertical-options > summary, .room-options > summary, .niche-options > summary, .head-options > summary { cursor: pointer; font-weight: 600; }
+.vertical-options > summary, .room-options > summary, .niche-options > summary, .head-options > summary { cursor: pointer; font-weight: 700; width: fit-content; }
+:is(.vertical-options, .room-options, .niche-options, .head-options) > summary:hover { color: var(--accent); }
 /* the panel's wall and place as the software put them: the value at the start, the badge at the end of the field */
 .room-options .auto-value { justify-content: space-between; min-width: 0; flex-wrap: wrap; row-gap: 4px; }
-.niche-options .niche { margin: 0; min-width: 0; padding: 8px 12px 12px; border: 1px solid var(--rule); border-radius: 10px; display: flex; flex-direction: column; gap: 10px; }
+.niche-options .niche { margin: 0; min-width: 0; padding: 8px 12px 12px; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--bg-2); display: flex; flex-direction: column; gap: 10px; }
 .niche-options .niche > legend { padding: 0 4px; font: 600 13.5px/1.3 var(--font-body); color: var(--ink-2); }
 .niche-options .niche > .btn, .head-options > .btn { align-self: flex-start; }
 .floors { width: 100%; border-collapse: collapse; font-size: 14px; }
-.floors caption { text-align: left; font-weight: 500; padding-bottom: 4px; }
-.floors th { text-align: left; font: 500 12.5px var(--font-body); color: var(--muted); padding: 2px 4px; }
+.floors caption { text-align: left; font-weight: 600; color: var(--ink-2); padding-bottom: 6px; }
+.floors th { text-align: left; font: 500 11px/1.4 var(--font-mono); letter-spacing: .07em; text-transform: uppercase; color: var(--muted); padding: 2px 4px 4px; }
 .floors td { padding: 2px 4px; }
 .floors td .input { min-width: 0; width: 100%; }
 .floors td:nth-child(1) { width: 18%; }
@@ -71,25 +83,27 @@ label.check { display: flex; align-items: center; gap: 8px; cursor: pointer; }
 label.check input { width: 18px; height: 18px; accent-color: var(--accent); }
 
 /* drawing sets */
-.plant-form fieldset > legend { font-weight: 600; padding: 0 6px; }
+.plant-form fieldset > legend { font-weight: 700; padding: 0 6px; }
 .logo-preview { margin: 0; display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
-.logo-preview img { max-width: min(360px, 100%); height: auto; background: #fff; border: 1px solid var(--rule); border-radius: 6px; padding: 8px; }
+/* a logo is shown on the paper it is printed on */
+.logo-preview img { max-width: min(360px, 100%); height: auto; background: #fff; border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); padding: 8px; }
 
 /* figures and checks */
 .shaft-results { display: flex; flex-direction: column; gap: 12px; }
-.shaft-figures { margin: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
-.shaft-figures > div { padding: 10px 14px; border-right: 1px solid var(--rule); display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+/* the shaft's figures as a strip of the template's KPI tiles */
+.shaft-figures { margin: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--rule); border-radius: var(--radius-sm); overflow: hidden; background: var(--bg-2); }
+.shaft-figures > div { padding: 12px 16px; border-right: 1px solid var(--rule-soft); display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .shaft-figures > div:last-child { border-right: 0; }
 .shaft-figures dt { font-size: 12.5px; color: var(--muted); }
-.shaft-figures dd { margin: 0; font: 700 22px/1.15 var(--font-cond); color: var(--ink); }
+.shaft-figures dd { margin: 0; font: 800 24px/1.1 var(--font-body); letter-spacing: -.03em; color: var(--ink); font-variant-numeric: tabular-nums; }
 .shaft-figures dd small { font: 500 13px var(--font-body); color: var(--muted); }
 .shaft-figures dd.small { font: 500 14px/1.3 var(--font-body); color: var(--ink-2); }
 @media (max-width: 560px) {
   .shaft-figures { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .shaft-figures > div:nth-child(2) { border-right: 0; }
-  .shaft-figures > div:nth-child(-n + 2) { border-bottom: 1px solid var(--rule); }
+  .shaft-figures > div:nth-child(-n + 2) { border-bottom: 1px solid var(--rule-soft); }
 }
-.shaft-checks th { white-space: normal; font: 500 13.5px/1.35 var(--font-body); color: var(--ink); background: none; letter-spacing: 0; }
+.shaft-checks tbody th { white-space: normal; font: 500 13.5px/1.4 var(--font-body); color: var(--ink); background: none; letter-spacing: 0; text-transform: none; }
 .shaft-checks td { white-space: nowrap; }
 .shaft-checks td.note { color: var(--muted); }
 @media (max-width: 560px) {

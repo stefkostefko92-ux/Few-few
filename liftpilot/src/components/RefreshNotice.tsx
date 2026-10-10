@@ -5,6 +5,7 @@
 // as the form finds it now — and that the save makes a new record, the old one staying as it was.
 import { useTranslations } from 'next-intl';
 import { goToField } from './MissingPanel';
+import SectionTitle from './project/SectionTitle';
 
 export interface NoticeItem {
   /** the field's id; null: none to go to */
@@ -19,7 +20,7 @@ export default function RefreshNotice({ kind, items = null }: { kind: 'lift' | '
   const done = items !== null && items.length === 0;
   return (
     <section className={`alert ${done ? 'alert-ok' : 'alert-warn'} refresh-notice`} role="status" aria-labelledby="refresh-notice-title">
-      <h2 id="refresh-notice-title" className="m-0 text-base">{t('formTitle')}</h2>
+      <SectionTitle id="refresh-notice-title" className="text-base" icon="refresh-cw" tone={done ? 'ok' : 'warn'}>{t('formTitle')}</SectionTitle>
       <p className="m-0">{t(`form_${kind}`)}</p>
       {items && items.length ? (
         <>

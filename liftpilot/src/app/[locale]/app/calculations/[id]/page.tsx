@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
+import Icon from '@/components/Icon';
+import SectionTitle from '@/components/project/SectionTitle';
 import { requireCapability } from '@/lib/auth';
 import { can } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
@@ -132,21 +134,21 @@ export default async function CalculationPage({ params, searchParams }: {
         editable={can(user, 'prices:edit')} /> : null}
       {download ? (
         <section className="panel">
-          <h2>{ta('order_title')}</h2>
+          <SectionTitle icon="file-text">{ta('order_title')}</SectionTitle>
           <p className="note">{ta('order_lead')}</p>
           {order ? (
             <>
               <p className="order-machine">{ta(`${order.recorded ? 'order_chosen' : 'order_advised'}_${where}`, { machine: `${order.machine.brand} ${order.machine.model}` })}</p>
               <div className="doc-links">
-                <a className="btn" href={`/api/calculations/${c.id}/order/docx`}>{ta('order_docx')}</a>
-                <a className="btn" href={`/api/calculations/${c.id}/order/pdf`}>{ta('order_pdf')}</a>
+                <a className="btn" href={`/api/calculations/${c.id}/order/docx`}><Icon name="file-text" size={18} />{ta('order_docx')}</a>
+                <a className="btn" href={`/api/calculations/${c.id}/order/pdf`}><Icon name="file-pdf" size={18} />{ta('order_pdf')}</a>
               </div>
             </>
           ) : <p className="note">{ta('order_none')}</p>}
         </section>
       ) : null}
       <section className="panel">
-        <h2>{t('reviewsTitle')}</h2>
+        <SectionTitle icon="user-check">{t('reviewsTitle')}</SectionTitle>
         {c.reviews.length ? (
           <ul className="m-0 flex list-none flex-col gap-2 p-0">
             {c.reviews.map((r) => (
@@ -161,7 +163,7 @@ export default async function CalculationPage({ params, searchParams }: {
       </section>
       {replacement ? (
         <section className="panel" aria-labelledby="calc-room">
-          <h2 id="calc-room">{tm('calcTitle')}</h2>
+          <SectionTitle id="calc-room" icon="building-gear">{tm('calcTitle')}</SectionTitle>
           <p className="note">{below ? tm('calcBelow') : tm('calcLead')}</p>
           {rooms.length ? (
             <ul className="m-0 flex list-none flex-col gap-1 p-0">
@@ -176,7 +178,7 @@ export default async function CalculationPage({ params, searchParams }: {
         </section>
       ) : null}
       <section className="panel">
-        <h2>{tt('title')}</h2>
+        <SectionTitle icon="file-stack">{tt('title')}</SectionTitle>
         <p className="note">{replacement ? tm('setsFromRoom') : tt('lead')}</p>
         {mine.length ? (
           <ul className="m-0 flex list-none flex-col gap-1 p-0">

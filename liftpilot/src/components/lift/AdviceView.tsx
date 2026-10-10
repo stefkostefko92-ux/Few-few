@@ -4,6 +4,7 @@
 // No state and no directive: the live panel (MachineAdvice) verifies the models in the browser; the saved pages render
 // it on the server with the advice of the record and no `onUse`.
 import { useTranslations } from 'next-intl';
+import SectionTitle from '@/components/project/SectionTitle';
 import type { MachineAdvice, MachineCandidate } from '@/lib/lift/advice';
 import { dvText, excludedText, machineName, whyValues } from '@/lib/present/advice';
 
@@ -116,7 +117,7 @@ export default function AdviceView({ advice, alt = null, running = null, fmt, in
   return (
     <section className={`panel advice${advice && running ? ' stale' : ''}`} aria-labelledby="advice-title" aria-busy={running ? true : undefined}>
       <div className="advice-head">
-        <h2 id="advice-title">{t('title')}</h2>
+        <SectionTitle id="advice-title" icon="motor">{t('title')}</SectionTitle>
         <p className="note">{t('lead')}</p>
         {running ? (
           <p className="advice-run" role="status">

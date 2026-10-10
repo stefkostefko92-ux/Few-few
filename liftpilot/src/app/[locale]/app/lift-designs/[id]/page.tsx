@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
+import Icon from '@/components/Icon';
+import SectionTitle from '@/components/project/SectionTitle';
 import { requireCapability } from '@/lib/auth';
 import { can } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
@@ -95,37 +97,37 @@ export default async function LiftDesignPage({ params, searchParams }: { params:
           inUse={(c) => own !== null && own.brand === c.brand && own.model === c.model && own.I.layout === c.I.layout} />
       ) : null}
       <section className="flex flex-col gap-3">
-        <h2>{t('docs_title')}</h2>
+        <SectionTitle icon="file-export">{t('docs_title')}</SectionTitle>
         <p className="note">{t('docs_lead')}</p>
         {same ? (
           <div className="doc-links">
-            {can(user, 'report:download') ? <a className="btn" href={`/api/calculations/${d.calculation.id}/relazione`}>{t('doc_relazione')}</a> : null}
-            {can(user, 'report:download') ? <a className="btn" href={`/api/shaft-designs/${d.shaftDesign.id}/dxf`}>{t('doc_dxf')}</a> : null}
-            <Link className="btn" href={`/app/calculations/${d.calculation.id}`}>{t('doc_calc')}</Link>
-            <Link className="btn" href={`/app/shaft-designs/${d.shaftDesign.id}`}>{t('doc_shaft')}</Link>
+            {can(user, 'report:download') ? <a className="btn" href={`/api/calculations/${d.calculation.id}/relazione`}><Icon name="file-pdf" size={18} />{t('doc_relazione')}</a> : null}
+            {can(user, 'report:download') ? <a className="btn" href={`/api/shaft-designs/${d.shaftDesign.id}/dxf`}><Icon name="file-dxf" size={18} />{t('doc_dxf')}</a> : null}
+            <Link className="btn" href={`/app/calculations/${d.calculation.id}`}><Icon name="calculator" size={18} />{t('doc_calc')}</Link>
+            <Link className="btn" href={`/app/shaft-designs/${d.shaftDesign.id}`}><Icon name="floor-plan" size={18} />{t('doc_shaft')}</Link>
           </div>
         ) : <p className="note">{t('docs_refused')}</p>}
         {same && can(user, 'report:download') ? (
           <div className="panel">
-            <h3>{t('doc_export')}</h3>
+            <SectionTitle level={3} icon="file-cad">{t('doc_export')}</SectionTitle>
             <p className="note">{t('export_lead')}</p>
             <div className="doc-links">
-              <a className="btn" href={`/api/lift-designs/${d.id}/pdf`}>{t('doc_pdf')}</a>
-              <a className="btn" href={`/api/lift-designs/${d.id}/dxf`}>{t('doc_dxf_all')}</a>
-              <a className="btn" href={`/api/lift-designs/${d.id}/dwg`}>{t('doc_dwg')}</a>
+              <a className="btn" href={`/api/lift-designs/${d.id}/pdf`}><Icon name="file-pdf" size={18} />{t('doc_pdf')}</a>
+              <a className="btn" href={`/api/lift-designs/${d.id}/dxf`}><Icon name="file-dxf" size={18} />{t('doc_dxf_all')}</a>
+              <a className="btn" href={`/api/lift-designs/${d.id}/dwg`}><Icon name="file-dwg" size={18} />{t('doc_dwg')}</a>
             </div>
           </div>
         ) : null}
         {same && can(user, 'report:download') ? (
           <div className="panel">
-            <h3>{ta('order_title')}</h3>
+            <SectionTitle level={3} icon="file-text">{ta('order_title')}</SectionTitle>
             <p className="note">{ta('order_lead')}</p>
             {order ? (
               <>
                 <p className="order-machine">{ta(order.recorded ? 'order_chosen_design' : 'order_advised_design', { machine: `${order.machine.brand} ${order.machine.model}` })}</p>
                 <div className="doc-links">
-                  <a className="btn" href={`/api/lift-designs/${d.id}/order/docx`}>{ta('order_docx')}</a>
-                  <a className="btn" href={`/api/lift-designs/${d.id}/order/pdf`}>{ta('order_pdf')}</a>
+                  <a className="btn" href={`/api/lift-designs/${d.id}/order/docx`}><Icon name="file-text" size={18} />{ta('order_docx')}</a>
+                  <a className="btn" href={`/api/lift-designs/${d.id}/order/pdf`}><Icon name="file-pdf" size={18} />{ta('order_pdf')}</a>
                 </div>
               </>
             ) : <p className="note">{ta('order_none')}</p>}
@@ -133,7 +135,7 @@ export default async function LiftDesignPage({ params, searchParams }: { params:
         ) : null}
         {same && editable ? (
           <div className="panel">
-            <h3>{tt('title')}</h3>
+            <SectionTitle level={3} icon="file-stack">{tt('title')}</SectionTitle>
             <p className="note">{tt('lead')}</p>
             <IssueForm calculationId={d.calculation.id} initials={initialsOf(user.name)} checks={checks} projectId={d.project.id} />
           </div>

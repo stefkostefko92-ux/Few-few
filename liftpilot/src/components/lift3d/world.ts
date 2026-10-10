@@ -31,7 +31,7 @@ import { buildCable } from './cable';
 import { buildGovernor, governorFloor, governorSpot } from './governor';
 import type { Quality } from '../machine/quality';
 
-export const LIFT_BG = '#10161f';
+export const LIFT_BG = '#030d15';
 /** vertical field of view of the camera [°] */
 export const LIFT_FOV = 38;
 

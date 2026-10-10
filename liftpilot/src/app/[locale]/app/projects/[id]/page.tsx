@@ -13,6 +13,7 @@ import { setProjectArchivedAction, upgradeProjectAction } from '@/server/project
 import Crumbs from '@/components/Crumbs';
 import RefreshForm from '@/components/RefreshForm';
 import RecordTable from '@/components/project/RecordTable';
+import SectionTitle from '@/components/project/SectionTitle';
 import { roomSummaryLine } from '@/server/room-summary';
 import { pitchesOf } from '@/lib/plant';
 
@@ -47,11 +48,11 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
   const liftRows = lifts.map((d) => ({ ...d, old: outdated.lift(d) }));
   const archive = !replacement && (calcRows.length > 0 || shaftRows.length > 0 || roomRows.length > 0);
   const setList = sets.length ? (
-    <ul className="m-0 flex list-none flex-col gap-1 p-0" aria-label={tt('list')}>
+    <ul className="rec-list" aria-label={tt('list')}>
       {sets.map((x) => (
         <li key={x.id}>
-          <Link href={`/app/drawing-sets/${x.id}`} className="num font-semibold">{tt('number')} {x.number}{x.revision ? ` R${x.revision}` : ''}</Link>
-          {' · '}<span className="note">{fd.dateTime(x.createdAt)} · {x.user?.name ?? x.authorInitials}</span>
+          <Link href={`/app/drawing-sets/${x.id}`} className="num">{tt('number')} {x.number}{x.revision ? ` R${x.revision}` : ''}</Link>
+          <span className="note">{fd.dateTime(x.createdAt)} · {x.user?.name ?? x.authorInitials}</span>
         </li>
       ))}
     </ul>
@@ -98,7 +99,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
         <>
           <section className="flex flex-col gap-3 lift-home">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2>{tl('homeTitle')}</h2>
+              <SectionTitle icon="cube">{tl('homeTitle')}</SectionTitle>
               {latest ? <Link className="btn" href={`/app/lift-designs/${latest.id}`}>{tl('open')}</Link> : null}
             </div>
             {latest && outdated.lift(latest) ? (
@@ -113,13 +114,13 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
                 {saves ? <Link className="btn btn-primary" href={`/app/projects/${p.id}/progetto`}>{tl('start')}</Link> : null}
               </div>
             )}
-            {liftRows.length > 1 ? <h3>{tl('history')}</h3> : null}
+            {liftRows.length > 1 ? <SectionTitle level={3} icon="history">{tl('history')}</SectionTitle> : null}
             {liftRows.length > 1 ? <RecordTable rows={liftRows} href={(x) => `/app/lift-designs/${x}`} what={tl('col_design')} locale={locale} /> : null}
           </section>
 
           <section className="flex flex-col gap-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2>{tt('list')}</h2>
+              <SectionTitle icon="file-stack">{tt('list')}</SectionTitle>
               <Link className="btn" href={`/app/projects/${p.id}/impianto`}>{tt('plantTitle')}</Link>
             </div>
             {setList ?? <p className="note">{tt('none')} {tt('needDesign')}</p>}
@@ -146,7 +147,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
       {replacement ? (
         <section className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2>{tc('title')}</h2>
+            <SectionTitle icon="calculator">{tc('title')}</SectionTitle>
             {saves && calcs.length ? <Link className="btn" href={`/app/projects/${p.id}/calc`}>{tc('new')}</Link> : null}
           </div>
           {calcRows.length === 0 ? (
@@ -159,7 +160,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
       ) : null}
       {replacement ? (
         <section className="flex flex-col gap-3" aria-labelledby="project-rooms">
-          <h2 id="project-rooms">{tm('projectTitle')}</h2>
+          <SectionTitle id="project-rooms" icon="building-gear">{tm('projectTitle')}</SectionTitle>
           {roomRows.length === 0 ? <p className="note">{tm('projectEmpty')}</p>
             : <RecordTable rows={roomRows} href={(x) => `/app/room-designs/${x}`} what={tm('col_room')} locale={locale} />}
           {setList}
@@ -168,7 +169,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
       ) : null}
       {replacement && editable ? (
         <section className="panel items-start">
-          <h2>{t('upgradeTitle')}</h2>
+          <SectionTitle icon="elevator">{t('upgradeTitle')}</SectionTitle>
           <p className="note">{t('upgradeLead')}</p>
           <form action={upgradeProjectAction}>
             <input type="hidden" name="locale" value={lang} />
