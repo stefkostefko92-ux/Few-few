@@ -36,6 +36,7 @@ npm run files:status|files:encrypt|files:rekey|files:verify   # криптира
 npm run worker            # след build: опашките от Redis (приемане, OCR, вектори); без REDIS_URL всичко е в процеса
 npm run audit:verify      # веригата на одита: 0 цяла · 2 счупена · 1 не завърши (таймерът на мониторинга)
 npm run sso:off           # TENANT_SLUG=… аварийно: фирменият вход → OPTIONAL (SSO_DISABLE=1 — изключен + сесиите отнети)
+npm run sso:verify-domain # TENANT_SLUG=… SSO_DOMAIN=… SSO_VERIFY_WITHOUT_DNS=1 — аварийно доказване на домейн (в одита via cli)
 npm run test:ocr-smoke    # OCR в истинския образ (Docker), не е в gate
 npm run test:e2e          # Playwright (§17.2), не е в gate: DATABASE_URL=…/chatchat_test_ac; браузърът
                           # от PLAYWRIGHT_BROWSERS_PATH или E2E_CHROMIUM; tests/e2e/server.ts = фалшив модел + AV
@@ -107,7 +108,9 @@ src/
                (webhook, zendesk, jsm), payload.ts (минимизация), ssrf.ts + http.ts (safeRequest), secrets.ts
                (INTEGRATION_KEK), signature.ts + inbound*.ts (обратна синхронизация), admin-config/admin-log
   services/sso/  фирменият вход (OIDC): provider/flow/callback, claims → policy (кой влиза, роля, MFA от
-               доставчика), identities (ExternalIdentity), admin* (настройка, тайни със SSO_KEK), check (метаданни)
+               доставчика, `ownerLinkRequired`), login/link (свързване по имейл / от собственика), identities
+               (ExternalIdentity), domains.ts (DNS TXT `_chatchat.<домейн>`), admin* + admin-changes (настройка,
+               тайни със SSO_KEK, смяна на доставчика), view, check (метаданни); routes/auth-sso-link.ts
   services/proposals/  цикълът на знанието (§11.3): решен случай → ЧЕРНОВА (solved-case), конфликти и обратна
                връзка → предложения, опашката на отговорника (queue.ts), известия
   services/chat-replay.ts  NFR-12: повтор със същия clientMessageId, `claimAi`, изчакване на паралелен повтор
@@ -227,6 +230,14 @@ tests/e2e/     Playwright потоците (техник, мобилен, сни
   `checksum` = sha256 на оригинала, в една транзакция. Пакетът е на създателя му (друг не добавя и не
   повтаря в него); провал на файл не спира пакета; файлов провал — без повтори, временен — с повтори
   и dead-letter. Worker-ът е least privilege: без ключовете на сесиите/MFA, хранилището — само за четене.
+- **Фирмен вход (OIDC, SECURITY.md):** PLATFORM_ADMIN никога не влиза през доставчик (отказ, връзката
+  се трие, SSO сесия не важи). Свързване по имейл — само за акаунти без `ownerLinkRequired` (ранг под
+  `sso:manage` и без собствен TOTP); останалите — само `POST /auth/sso/link/start` от свежа сесия с
+  парола + TOTP, имейлът на доставчика = имейлът на акаунта. MFA от доставчика замества TOTP само при
+  `idpMfaAccepted`. Във входа участва само ДОКАЗАН домейн (`verifiedDomain`, DNS TXT `_chatchat.`; първият
+  доказал печели). Смяна на издател/tid/clientId = нов доставчик (нов секрет, изключен, връзките и SSO
+  сесиите — изтрити, домейните — наново). Включване само след успешен тест; REQUIRED дава на
+  несвързания сесия само за свързване (`sso_link_required`, `Session.ssoLinkOnly`).
 - **Цикълът на знанието (§11.3):** решен случай, конфликт на източници и обратна връзка стават
   ПРЕДЛОЖЕНИЯ/ЧЕРНОВИ — никога автоматично знание; аудиторията на черновата не е по-широка от
   цитираните източници; отговорникът решава (четири очи за safety важат и тук).
