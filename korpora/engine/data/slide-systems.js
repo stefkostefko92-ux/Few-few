@@ -18,7 +18,10 @@ export const SLIDE_SYSTEMS = [
     axisAboveBox: 22.3, // наш избор: долният ръб на профила 44,5 mm = долният ръб на кутията
     drawerLength: (nl) => nl,
     maxWidth: (nl) => nl, // „Uwagi montażowe“ в картата: за правилната работа чекмеджето не е по-широко от NL
-    depthNeeded: (nl) => nl + 10, // наш избор (GTV не дава минимална дълбочина)
+    // GTV Karta techniczna H45 Prestige (Katalog akcesoria meblowe techniczne 2020), стр. 147, PLANOWANIE: „szuflada
+    // standardowa … SKL = NL … NL + 3“ — размерът е от ръба на шкафа по чертежа; тълкуването му като най-малката
+    // вътрешна дълбочина е наше. https://assets.gtv.com.pl/assets/attachments/karta_techniczna/Karta_techniczna_2020_148-149.pdf
+    depthNeeded: (nl) => nl + 3,
     boxSide: 16,
     bottomUp: 10,
     loadKg: 35,
