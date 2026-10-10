@@ -46,18 +46,18 @@ export function planFor(entry: CatalogEntry): Plan {
   switch (fam) {
     case 'leather': plate = m(mixC(P, C('#2a1a10'), 0.1).multiplyScalar(0.8), 0.55, 0.1, 0.4, 'leather'); trim = m(mixC(C(BRONZE), T, 0.3), 0.42, 0.2); blade = m(mixC(C(STEEL), S, 0.06), 0.3, 0.1); leather = mixC(P, C('#1d120a'), 0.25); break;
     case 'mail': plate = m(mixC(C(DSTEEL), P, 0.18), 0.4); trim = m(mixC(C(BRONZE), T, 0.3), 0.4); blade = m(mixC(C(STEEL), S, 0.1), 0.26); break;
-    case 'plate': plate = m(mixC(C(STEEL), P, 0.22), 0.3); trim = m(mixC(C(GOLD), T, 0.4), 0.28, 0.35); blade = m(mixC(C(SILVER), S, 0.08), 0.18, 0.2); break;
+    case 'plate': plate = m(mixC(C(STEEL), P, 0.22), 0.3); trim = m(mixC(C(GOLD), T, 0.4), 0.28, 0.35); blade = m(mixC(C(STEEL), S, 0.08), 0.22, 0.2); break;
     case 'cloth': plate = m(P, 0.9, 0, 0.4, 'cloth'); trim = m(mixC(C(GOLD), T, 0.4), 0.3); blade = m(mixC(C(SILVER), S, 0.15), 0.22); break;
-    case 'bone': plate = m(mixC(C('#e5dcc2'), P, 0.45), 0.55, 0.15, 0.3, 'bone'); trim = m(mixC(C(BRONZE), T, 0.3), 0.45); blade = m(mixC(C('#e8e0c8'), S, 0.2), 0.5, 0.2, 0.3, 'bone'); break;
+    case 'bone': plate = m(mixC(C('#cdbf9e'), P, 0.45), 0.55, 0.15, 0.3, 'bone'); trim = m(mixC(C(BRONZE), T, 0.3), 0.45); blade = m(mixC(C('#d2c6a6'), S, 0.2), 0.5, 0.2, 0.3, 'bone'); break;
     case 'crystal': plate = m(mixC(C('#d4e8ee'), P, 0.45), 0.2, 0.6); trim = m(mixC(C(SILVER), T, 0.25), 0.22, 0.3); blade = m(mixC(C('#cfeaf2'), P, 0.55), 0.05, 0, 0.05, 'crystal'); break;
     case 'void': plate = m(mixC(C(BLACK), P, 0.55), 0.3, 0.8, 0.06); trim = m(mixC(dark(S, 0.9), T, 0.3), 0.25, 0.4); blade = m(mixC(C('#17121e'), P, 0.4), 0.2, 0.7, 0.05); break;
-    case 'celestial': plate = m(mixC(C('#f1e3b4'), P, 0.4), 0.22, 0.4); trim = m(mixC(C(GOLD), T, 0.5), 0.2, 0.4); blade = m(mixC(C('#fff2d0'), S, 0.2), 0.14, 0.3); break;
+    case 'celestial': plate = m(mixC(C('#d6c28a'), P, 0.4), 0.3, 0.35); trim = m(mixC(C(GOLD), T, 0.5), 0.2, 0.4); blade = m(mixC(C('#dcc995'), S, 0.2), 0.2, 0.3); break;
     case 'infernal': plate = m(mixC(C('#2a1210'), P, 0.55), 0.38, 0.4, 0.1); trim = m(mixC(C(COPPER), T, 0.4), 0.3); blade = m(mixC(C('#3a2018'), S, 0.3), 0.26, 0.3); break;
     case 'verdant': plate = m(mixC(C('#8a8f58'), P, 0.5), 0.46, 0.15); trim = m(mixC(C(BRONZE), T, 0.4), 0.38); blade = m(mixC(C('#a8b79a'), S, 0.3), 0.28); break;
     case 'shadow': plate = m(mixC(C('#17171c'), P, 0.4), 0.34, 0.6, 0.07); trim = m(mixC(C('#4a4658'), T, 0.4), 0.3, 0.3); blade = m(mixC(C('#1a1a20'), S, 0.3), 0.22, 0.6, 0.05); break;
     case 'arcane': plate = m(mixC(C('#7a5fa8'), P, 0.6), 0.26, 1, 0.04, 'enamel'); trim = m(mixC(C(GOLD), T, 0.4), 0.26, 0.3); blade = m(mixC(C('#cdb8ee'), S, 0.3), 0.14, 0.3); break;
     case 'storm': plate = m(mixC(C('#6e86a8'), P, 0.5), 0.3, 0.5); trim = m(mixC(C(SILVER), T, 0.3), 0.24, 0.3); blade = m(mixC(C('#a8c0e0'), S, 0.3), 0.16, 0.3); break;
-    case 'frost': plate = m(mixC(C('#d5e6ee'), P, 0.4), 0.26, 0.5); trim = m(mixC(C(SILVER), T, 0.3), 0.22, 0.3); blade = m(mixC(C('#d8f0f8'), P, 0.3), 0.08, 0.1, 0.05, 'crystal'); break;
+    case 'frost': plate = m(mixC(C('#a9c4d2'), P, 0.4), 0.3, 0.45); trim = m(mixC(C(SILVER), T, 0.3), 0.22, 0.3); blade = m(mixC(C('#bcdbe8'), P, 0.3), 0.08, 0.1, 0.05, 'crystal'); break;
   }
   const glowHex = th.emissive || GLOW[fam];
   const glowOn = finish === 'glowing' || ['void', 'infernal', 'arcane', 'celestial', 'storm', 'frost', 'crystal'].includes(fam);

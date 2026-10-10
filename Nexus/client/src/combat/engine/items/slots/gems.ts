@@ -2,10 +2,30 @@
 // за да се чупи светлината по ръбовете като при шлифован камък. Размерите са в метри.
 import * as THREE from 'three/webgpu';
 
-/** Брилянтна шлифовка: корона + павилион, `segs` фасети; `r` радиус на пояса, `h` обща височина. */
-export function brilliant(r: number, h: number, segs = 8): THREE.BufferGeometry {
-  const prof: Array<[number, number]> = [[0, h * 0.62], [r * 0.55, h * 0.62], [r, h * 0.42], [r * 0.98, h * 0.36], [0, 0]];
-  const g = new THREE.LatheGeometry(prof.map(([x, y]) => new THREE.Vector2(x, y)), segs);
+/** Брилянтна шлифовка: маса, звезда, скос, пояс, висок павилион и калет — профил с 9 пръстена × `segs`
+ *  сегмента (≈ 3 редици фасети на половина), с огънато завъртане на всеки втори пръстен за
+ *  „кайт/звезда" фасети. ~ 30+ фасети при segs ≥ 12. */
+export function brilliant(r: number, h: number, segs = 16): THREE.BufferGeometry {
+  const prof: Array<[number, number, number]> = [
+    [0, h * 0.64, 0], [r * 0.52, h * 0.64, 0], [r * 0.7, h * 0.58, 0.5], [r * 0.92, h * 0.5, 0], [r, h * 0.42, 0.5],
+    [r * 0.99, h * 0.38, 0], [r * 0.62, h * 0.18, 0.5], [r * 0.3, h * 0.06, 0], [0, 0, 0],
+  ];
+  const n = Math.max(segs, 16);
+  const pos: number[] = [];
+  const idx: number[] = [];
+  for (let i = 0; i < prof.length; i++) {
+    for (let j = 0; j < n; j++) {
+      const a = ((j + prof[i][2]) / n) * Math.PI * 2;
+      pos.push(Math.sin(a) * prof[i][0], prof[i][1], Math.cos(a) * prof[i][0]);
+    }
+  }
+  for (let i = 0; i < prof.length - 1; i++) for (let j = 0; j < n; j++) {
+    const a = i * n + j; const b = i * n + ((j + 1) % n); const c = (i + 1) * n + j; const d = (i + 1) * n + ((j + 1) % n);
+    idx.push(a, b, c, b, d, c);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setIndex(idx);
   const flat = g.toNonIndexed();
   flat.computeVertexNormals();
   g.dispose();

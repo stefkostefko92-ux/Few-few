@@ -6,7 +6,7 @@ import * as THREE from 'three/webgpu';
 import { color, cos, dot, float, materialColor, materialRoughness, mix, normalView, positionLocal, positionViewDirection, smoothstep, uniform, vec3 } from 'three/tsl';
 import type { PbrSets } from './pbrSets';
 import type { Plan, Surface } from './plan';
-import { triNormal, triSample, veinMask } from './nodes';
+import { triNormal, triNormal2, triSample, veinMask } from './nodes';
 
 const Phys = (p: THREE.MeshPhysicalNodeMaterialParameters): THREE.MeshPhysicalNodeMaterial => new THREE.MeshPhysicalNodeMaterial(p);
 
@@ -18,13 +18,18 @@ function withGlow(m: THREE.MeshPhysicalNodeMaterial, plan: Plan, k: number): voi
 function metal(S: PbrSets, s: Surface, plan: Plan, glow: number): THREE.MeshPhysicalNodeMaterial {
   const m = Phys({ color: s.color, metalness: 1, roughness: s.rough, clearcoat: s.coat, clearcoatRoughness: s.coatRough, side: THREE.DoubleSide });
   const a = triSample(S.metal.albedo, S.metal.tile).rgb;
+  const a2 = triSample(S.metal.albedo, S.metal.tile / 3.7).rgb; // ситна гравюра/драскотини
   const o = triSample(S.metal.orm, S.metal.tile);
-  const wear = float(0.55 + plan.patina * 0.6);
-  m.colorNode = materialColor.mul(mix(vec3(1), a, wear));
-  m.roughnessNode = materialRoughness.mul(o.g.mul(1.5)).clamp(0.06, 1);
+  const wear = float(0.7 + plan.patina * 0.6);
+  // износ по ръбовете: кривината (производна на нормалата) → светъл гол метал, по-гладък; кухините потъмняват
+  const curv = normalView.dFdx().length().add(normalView.dFdy().length());
+  const edge = smoothstep(float(0.025), float(0.11), curv);
+  const varia = mix(vec3(1), a.mul(a2).mul(1.35), wear);
+  m.colorNode = materialColor.mul(varia).mul(mix(float(0.86), float(1.22), edge));
+  m.roughnessNode = materialRoughness.mul(o.g.mul(1.6).add(a2.r.sub(0.5).mul(0.5))).mul(mix(float(1), float(0.55), edge)).clamp(0.06, 1);
   m.metalnessNode = o.b;
-  m.aoNode = mix(float(1), o.r, 0.8);
-  m.normalNode = triNormal(S.metal.normal, S.metal.tile, 0.55);
+  m.aoNode = mix(float(1), o.r, 0.9);
+  m.normalNode = triNormal2(S.metal.normal, S.metal.tile, 0.5, 0.45);
   withGlow(m, plan, glow);
   return m;
 }
@@ -53,8 +58,14 @@ function cloth(S: PbrSets, s: Surface, sheen: THREE.Color): THREE.MeshPhysicalNo
 function bone(S: PbrSets, s: Surface): THREE.MeshPhysicalNodeMaterial {
   const m = Phys({ color: s.color, metalness: 0, roughness: s.rough, clearcoat: s.coat, clearcoatRoughness: 0.35, sheen: 0.3, sheenColor: new THREE.Color('#ffe9c8'), side: THREE.DoubleSide });
   const a = triSample(S.wood.albedo, S.wood.tile).rgb;
-  m.colorNode = materialColor.mul(dot(a, vec3(0.333)).mul(3.2).clamp(0.55, 1.15));
-  m.normalNode = triNormal(S.wood.normal, S.wood.tile, 0.35);
+  const a2 = triSample(S.metal.albedo, S.metal.tile / 3.7).rgb;
+  const o = triSample(S.metal.orm, S.metal.tile);
+  // кост/слонова кост: годишни влакна + ситна гравюра/пукнатини, потъмнени кухини, по-светъл износен ръб
+  const curv = normalView.dFdx().length().add(normalView.dFdy().length());
+  const edge = smoothstep(float(0.025), float(0.11), curv);
+  m.colorNode = materialColor.mul(dot(a, vec3(0.333)).mul(3.4).clamp(0.5, 1.15)).mul(a2.mul(a2).mul(1.9).add(0.35)).mul(float(1).sub(veinMask(0.035).mul(0.55))).mul(mix(float(0.8), float(1.15), edge));
+  m.roughnessNode = materialRoughness.mul(o.g.mul(1.5)).add(a2.r.sub(0.5).mul(0.3)).clamp(0.2, 1);
+  m.normalNode = triNormal2(S.metal.normal, S.metal.tile, 0.9, 1.3);
   return m;
 }
 
@@ -107,21 +118,27 @@ export function woodMaterial(S: PbrSets, plan: Plan): THREE.MeshPhysicalNodeMate
 
 /** Фасетен „вътрешен огън": емисията расте към ръба на всяка фасета (фреснел по плоската нормала) —
  *  всяка стена има различна яркост, камъкът чете като дълбок шлифован кристал, не плоско оцветяване. */
-function facetFire(c: THREE.Color, k: number) {
-  const rim = float(1).sub(normalView.dot(positionViewDirection).abs()).pow(1.8);
-  const facet = normalView.dot(vec3(0.35, 0.55, 0.76).normalize()).clamp(0, 1).pow(2.2);
-  // дисперсия: всяка стена получава различен спектрален нюанс (косинусова палитра), най-силен по ръба
-  const hue = normalView.x.mul(0.9).add(normalView.y.mul(0.5)).add(vec3(0, 0.33, 0.67)).mul(6.283);
-  const spectral = vec3(0.5).add(cos(hue).mul(0.5));
-  const base = mix(color(c.clone()), spectral, rim.mul(0.45));
-  return base.mul(rim.mul(0.8).add(facet.mul(0.9)).add(0.08)).mul(k);
+function saturate(c: THREE.Color): THREE.Color {
+  const hsl = { h: 0, s: 0, l: 0 };
+  c.getHSL(hsl);
+  return new THREE.Color().setHSL(hsl.h, Math.max(hsl.s, 0.85), Math.min(hsl.l, 0.46));
 }
 
-/** Скъпоценен камък / ядро: плътен наситен диелектрик с високо IOR отражение + фасетен огън. */
+/** Фасетен „вътрешен огън": слаба емисия, по-силна по ръба на всяка стена; спектрален нюанс по ръба
+ *  (дисперсия). Телата са тъмни и наситени — отблясъците идват от отраженията по фасетите. */
+function facetFire(c: THREE.Color, k: number) {
+  const rim = float(1).sub(normalView.dot(positionViewDirection).abs()).pow(2.4);
+  const hue = normalView.x.mul(0.9).add(normalView.y.mul(0.5)).add(vec3(0, 0.33, 0.67)).mul(6.283);
+  const spectral = vec3(0.5).add(cos(hue).mul(0.5));
+  const base = mix(color(c.clone()), spectral, rim.mul(0.4));
+  return base.mul(rim.mul(0.9).add(0.12)).mul(k);
+}
+
+/** Скъпоценен камък: тъмен наситен диелектрик с високо IOR, лак и ирисценция; лек вътрешен огън. */
 export function gemMaterial(plan: Plan): THREE.MeshPhysicalNodeMaterial {
-  const g = plan.gem;
-  const m = Phys({ color: g.clone().multiplyScalar(0.3), metalness: 0, roughness: 0.03, ior: 2.2, specularIntensity: 1, clearcoat: 1, clearcoatRoughness: 0.02, iridescence: 0.35, side: THREE.DoubleSide });
-  m.emissiveNode = facetFire(g, 0.55 + Math.min(1, plan.glowStrength) * 0.35);
+  const g = saturate(plan.gem);
+  const m = Phys({ color: g.clone().multiplyScalar(0.22), metalness: 0, roughness: 0.02, ior: 2.4, specularIntensity: 1, specularColor: g.clone().multiplyScalar(1.3), clearcoat: 0, iridescence: 0.45, side: THREE.DoubleSide });
+  m.emissiveNode = facetFire(g, 0.5 + Math.min(1, plan.glowStrength) * 0.3);
   return m;
 }
 
@@ -149,4 +166,14 @@ export function vesselMaterials(plan: Plan): VesselMaterials {
   const cork = Phys({ color: 0x8a6a46, metalness: 0, roughness: 0.85 });
   const wax = Phys({ color: plan.gem.clone().multiplyScalar(0.5), metalness: 0, roughness: 0.35, clearcoat: 0.6 });
   return { glass, liquid, cork, wax };
+}
+
+/** Вътрешност на качулка: същият плат, затъмнен с градиент към дъното (AO по дълбочина) — мек
+ *  дълбок отвор вместо плосък черен диск. */
+export function hoodInner(plan: Plan): THREE.MeshPhysicalNodeMaterial {
+  const base = plan.clothColor.clone();
+  const m = Phys({ color: base, metalness: 0, roughness: 0.95, sheen: 0.4, sheenColor: base.clone().multiplyScalar(0.6), side: THREE.DoubleSide });
+  const depth = smoothstep(float(0.05), float(-0.1), positionLocal.z);
+  m.colorNode = mix(color(base.clone().multiplyScalar(0.3)), color(base.clone().multiplyScalar(0.008)), depth);
+  return m;
 }

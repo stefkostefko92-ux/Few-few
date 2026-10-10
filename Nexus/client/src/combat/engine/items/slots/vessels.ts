@@ -49,9 +49,9 @@ export function buildPotion(M: BoyMaterials, mats: VesselMats, shape: number, ra
 /** Камък: тир → размер/шлифовка (1–3 брилянт, 4–6 емеральд, 7–10 удължен кристален гроздов). */
 export function buildGemstone(gem: THREE.Material, tier: number, rand: Rand): THREE.Object3D {
   const g = new THREE.Group();
-  const spark = new THREE.MeshBasicMaterial({ color: new THREE.Color(9, 9, 9) });
+  const spark = new THREE.MeshBasicMaterial({ color: new THREE.Color(5, 5, 5) });
   // искри върху реални върхове на камъка (горната половина), не във въздуха
-  const sparks = (mesh0: THREE.Mesh, n: number, r = 0.0026): void => {
+  const sparks = (mesh0: THREE.Mesh, n: number, r = 0.0011): void => {
     const p = mesh0.geometry.attributes.position; let top = -1e9;
     for (let i = 0; i < p.count; i++) top = Math.max(top, p.getY(i));
     for (let k = 0, tries = 0; k < n && tries < 200; tries++) {
@@ -62,13 +62,13 @@ export function buildGemstone(gem: THREE.Material, tier: number, rand: Rand): TH
   };
   const s = 0.9 + tier * 0.06;
   if (tier <= 3) {
-    const m1 = mesh(xf(brilliant(0.026 * s, 0.042 * s, 12), [0, 0, 0], [0.3, 0, 0.2]), gem);
+    const m1 = mesh(xf(brilliant(0.026 * s, 0.042 * s, 18), [0, 0, 0], [0.3, 0, 0.2]), gem);
     g.add(m1);
-    sparks(m1, 4);
+    sparks(m1, 3);
   } else if (tier <= 6) {
-    const m2 = mesh(xf(elongated(0.024 * s, 0.04 * s, 1.5, 12), [0, 0, 0], [0.4, 0.4, 0.1]), gem);
+    const m2 = mesh(xf(elongated(0.024 * s, 0.04 * s, 1.5, 18), [0, 0, 0], [0.4, 0.4, 0.1]), gem);
     g.add(m2);
-    sparks(m2, 4);
+    sparks(m2, 3);
   } else {
     for (let i = 0; i < 5; i++) {
       const h = 0.05 + rand() * 0.04 + tier * 0.002;
@@ -77,7 +77,7 @@ export function buildGemstone(gem: THREE.Material, tier: number, rand: Rand): TH
       const k = merge([c, tip]);
       const mc = mesh(xf(k, [(i - 2) * 0.016, h / 2, (rand() - 0.5) * 0.02], [(rand() - 0.5) * 0.4, rand() * 3, (i - 2) * 0.12]), gem);
       g.add(mc);
-      sparks(mc, 1, 0.0022);
+      sparks(mc, 1, 0.0009);
     }
   }
   return collect(g);

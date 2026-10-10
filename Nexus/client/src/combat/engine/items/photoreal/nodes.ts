@@ -39,3 +39,18 @@ export const veinMask = (thickness = 0.06) => Fn(() => {
   const line2 = float(1).sub(smoothstep(float(0), float(thickness * 0.7), b)).mul(0.6);
   return line.add(line2).clamp(0, 1);
 })();
+
+/** Две нормални карти в различен мащаб (макро вдлъбнатини + ситна гравюра/драскотини) в една нормала. */
+export const triNormal2 = (map: THREE.Texture, tile: number, s1: number, s2: number) => Fn(() => {
+  const n = normalLocal;
+  const w = n.abs().pow(4).toVar();
+  const wn = w.div(w.x.add(w.y).add(w.z));
+  const layer = (scale: number, s: number) => {
+    const p = positionLocal.mul(U.texScale.mul(scale).div(tile));
+    const sx = texture(map, p.yz).xy.mul(2).sub(1);
+    const sy = texture(map, p.zx).xy.mul(2).sub(1);
+    const sz = texture(map, p.xy).xy.mul(2).sub(1);
+    return vec3(0, sx.x, sx.y).mul(wn.x).add(vec3(sy.y, 0, sy.x).mul(wn.y)).add(vec3(sz.x, sz.y, 0).mul(wn.z)).mul(s);
+  };
+  return transformNormalToView(n.add(layer(1, s1)).add(layer(3.7, s2)).normalize());
+})();

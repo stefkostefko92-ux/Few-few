@@ -6,7 +6,7 @@ import { getBoyMaterials, type BoyMaterials } from '../boy-materials';
 import type { CatalogEntry } from '../theme';
 import { proceduralSets, type PbrSets } from './pbrSets';
 import { planFor, type Plan } from './plan';
-import { lacquer, vesselMaterials, type VesselMaterials, gemMaterial, mailMaterial, surfaceMaterial, woodMaterial } from './materials';
+import { hoodInner, lacquer, vesselMaterials, type VesselMaterials, gemMaterial, mailMaterial, surfaceMaterial, woodMaterial } from './materials';
 import { U } from './nodes';
 
 /** Привързва плътността на карти/жили към реалния размер на предмета (най-дългата страна, м). */
@@ -53,6 +53,7 @@ export async function photoMaterials(entry: CatalogEntry, sizeM = 0.6): Promise<
     shieldFace: mk(lacquer(sets, new THREE.Color(entry.theme.primary), plan)),
     gambeson: mk(surfaceMaterial(sets, { ...plan.plate, kind: 'cloth', color: plan.leatherColor }, plan)),
     gem,
+    hoodInner: mk(hoodInner(plan)),
     clay: mk(new THREE.MeshPhysicalNodeMaterial({ color: 0x232a35, roughness: 0.8, sheen: 0.7, sheenColor: new THREE.Color(0x4a5a72), sheenRoughness: 0.5 })),
     capeA: cape(),
     capeB: cape(),
