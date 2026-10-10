@@ -16,6 +16,11 @@ export interface SsoDeps {
   allowInsecureHttp: boolean;
   /** САМО за unit тестове: fetch без мрежа. */
   fetch?: CustomFetch;
+  /**
+   * TXT записите на име (проверката на домейн — `domains.ts`). В index.ts — системният резолвер
+   * (`node:dns/promises`, с таймаут); тестовете подават фалшив. Грешката носи `code` (ENOTFOUND…).
+   */
+  resolveTxt: (host: string) => Promise<string[][]>;
 }
 
 /** Началото на пътищата на единния вход — бисквитката на потока е вързана само към тях. */

@@ -1,4 +1,5 @@
 import { Router, type Request, type Response } from 'express';
+import { rateLimit } from 'express-rate-limit';
 import { z } from 'zod';
 import type { AppDeps } from '../app.js';
 import {
@@ -8,6 +9,7 @@ import {
   requireCsrf,
   requireUser,
 } from '../auth/guards.js';
+import { sharedStore } from '../auth/rate-limit.js';
 import {
   createConfig,
   deleteConfig,
@@ -16,23 +18,21 @@ import {
 } from '../services/sso/admin.js';
 import { CreateInput, UpdateInput } from '../services/sso/admin-input.js';
 import { checkMetadata } from '../services/sso/check.js';
+import { verifyDomain } from '../services/sso/domains.js';
 import { beginFlow } from '../services/sso/flow.js';
-import {
-  CONFIG_INCLUDE,
-  configView,
-  listIdentities,
-  unlinkIdentity,
-} from '../services/sso/identities.js';
+import { listIdentities, unlinkIdentity } from '../services/sso/identities.js';
+import { normalizeDomain } from '../services/sso/policy.js';
 import { oidcErrorCode, type SsoRuntime } from '../services/sso/provider.js';
 import { SSO_CALLBACK_PATH } from '../services/sso/types.js';
-import { setFlowCookie } from './auth-sso.js';
+import { CONFIG_INCLUDE, configView } from '../services/sso/view.js';
+import { setFlowCookie } from './sso-cookie.js';
 
 /**
  * Конзолата за единния вход (`sso:manage` — администраторът на клиента; §12.4 „MFA federata e
  * policy“): доставчик за вътрешните и по избор за фирма, домейни, режим, доверие в MFA на
- * доставчика, проверка на метаданните и интерактивен „Тест на конфигурацията“. Всичко по tenantId
- * (чужд запис = 404); защитите — на всеки маршрут (рутерът е монтиран на /admin заедно с други).
- * Секретът само влиза — в отговорите е `hasSecret`.
+ * доставчика, доказване на домейните (DNS TXT), проверка на метаданните и интерактивен „Тест на
+ * конфигурацията“. Всичко по tenantId (чужд запис = 404); защитите — на всеки маршрут (рутерът е
+ * монтиран на /admin заедно с други). Секретът само влиза — в отговорите е `hasSecret`.
  */
 
 const Id = z.string().min(1).max(40);
@@ -41,6 +41,17 @@ export function authSsoAdminRouter(deps: AppDeps, runtime: SsoRuntime | null): R
   const router = Router();
   const guard = [requireUser, requireCsrf(deps.publicOrigin), requireCapability('sso:manage')];
   const redirectUri = `${deps.publicOrigin}${SSO_CALLBACK_PATH}`;
+  const pepper = deps.sessions.pepper;
+  // DNS заявките навън — по човек, срещу въртене на проверката.
+  const verifyLimiter = rateLimit({
+    store: sharedStore('sso-domain-verify'),
+    windowMs: 15 * 60 * 1000,
+    limit: 30,
+    standardHeaders: 'draft-8',
+    legacyHeaders: false,
+    keyGenerator: (req) => req.principal?.user.id ?? 'anonymous',
+    handler: (_req, res) => apiError(res, 429, 'too_many_attempts'),
+  });
 
   /** Контекстът на промените. Без SSO_KEK (runtime = null) промените са 503 `sso_unavailable`. */
   const ctxOf = (req: Request, rt: SsoRuntime) => ({
@@ -58,7 +69,7 @@ export function authSsoAdminRouter(deps: AppDeps, runtime: SsoRuntime | null): R
       where: { id, tenantId },
       include: CONFIG_INCLUDE,
     });
-    return cfg ? configView(cfg) : null;
+    return cfg ? configView(cfg, pepper) : null;
   }
 
   router.get('/sso', ...guard, async (req, res, next) => {
@@ -73,7 +84,7 @@ export function authSsoAdminRouter(deps: AppDeps, runtime: SsoRuntime | null): R
         available: runtime !== null,
         redirectUri,
         postLogoutRedirectUri: `${deps.publicOrigin}/`,
-        configs: configs.map(configView),
+        configs: configs.map((c) => configView(c, pepper)),
       });
     } catch (err) {
       next(err);
@@ -119,6 +130,33 @@ export function authSsoAdminRouter(deps: AppDeps, runtime: SsoRuntime | null): R
       next(err);
     }
   });
+
+  // Доказване на домейн: TXT `_chatchat.<домейн>` = `chatchat-verify=<токен>` (services/sso/domains.ts).
+  router.post(
+    '/sso/configs/:id/domains/:domain/verify',
+    ...guard,
+    verifyLimiter,
+    async (req, res, next) => {
+      try {
+        const id = Id.safeParse(req.params.id);
+        const domain = normalizeDomain(String(req.params.domain ?? ''));
+        if (!id.success || !domain) return apiError(res, 400, 'invalid_input');
+        if (!runtime) return apiError(res, 503, 'sso_unavailable');
+        const p = principalOf(req);
+        const r = await verifyDomain(
+          deps.db,
+          { pepper, resolveTxt: runtime.sso.resolveTxt },
+          { id: p.user.id, tenantId: p.user.tenantId },
+          id.data,
+          domain,
+        );
+        if (!r.ok) return apiError(res, r.status, r.code);
+        res.json({ config: await viewOf(p.user.tenantId, id.data) });
+      } catch (err) {
+        next(err);
+      }
+    },
+  );
 
   // Проверка на метаданните (discovery, крайни точки, JWKS) — без вход и без секрета.
   router.post('/sso/configs/:id/check', ...guard, async (req, res, next) => {

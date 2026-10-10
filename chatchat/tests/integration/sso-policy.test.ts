@@ -6,6 +6,8 @@ import { Client, db, makeUser, PASSWORD, resetDb, totpNow } from './helpers.js';
 import {
   makeSsoConfig,
   seedSsoTenant,
+  selfLink,
+  signInPassword,
   ssoLogin,
   startSsoApp,
   type SsoHarness,
@@ -159,7 +161,11 @@ describe('MFA от доставчика (amr) по политика на кли�
     const { tenant } = await seedSsoTenant();
     await makeSsoConfig(idp, { tenantId: tenant.id, domains: ['alfa.example'] });
     const staff = await makeUser({ tenantId: tenant.id, role: 'SUPPORT', email: 's@alfa.example' });
-    const r = await ssoLogin(h, idp, staff.email, claimsFor(staff.email, { amr: ['mfa'] }));
+    // С включен TOTP човекът се свързва сам (парола + TOTP), не по имейл при вход.
+    const claims = claimsFor(staff.email, { amr: ['mfa'] });
+    const link = await selfLink(h, idp, await signInPassword(h, staff), claims);
+    assert.equal(link.location, '/?sso_link=ok');
+    const r = await ssoLogin(h, idp, staff.email, claims);
     assert.ok(r.client);
     const res = await r.client.get('/api/v1/cases');
     assert.equal(res.status, 401);

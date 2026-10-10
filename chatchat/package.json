@@ -42,6 +42,7 @@
     "user:create": "node dist/cli/tenant.js user",
     "user:reset": "node dist/cli/tenant.js reset",
     "sso:off": "node dist/cli/sso.js",
+    "sso:verify-domain": "node dist/cli/sso-domain.js",
     "retention": "node dist/cli/retention.js",
     "audit:verify": "node dist/cli/audit-verify.js",
     "files:status": "node dist/cli/files.js status",

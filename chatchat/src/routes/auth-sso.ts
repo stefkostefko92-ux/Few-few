@@ -1,4 +1,4 @@
-import { Router, type Response } from 'express';
+import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import * as oidc from 'openid-client';
 import { z } from 'zod';
@@ -17,43 +17,25 @@ import {
   readCookie,
   revokeSession,
   setSessionCookie,
-  type SessionDeps,
 } from '../auth/sessions.js';
 import { handleCallback } from '../services/sso/callback.js';
-import { beginFlow, clientSecretOf, SSO_COOKIE, SSO_STATE_TTL_MS } from '../services/sso/flow.js';
+import { beginFlow, clientSecretOf, SSO_COOKIE } from '../services/sso/flow.js';
 import { configForEmail } from '../services/sso/policy.js';
 import { oidcErrorCode, type SsoRuntime } from '../services/sso/provider.js';
-import { SSO_BASE_PATH, SSO_CALLBACK_PATH } from '../services/sso/types.js';
+import { SSO_CALLBACK_PATH } from '../services/sso/types.js';
+import { authSsoLinkRouter } from './auth-sso-link.js';
+import { clearFlowCookie, setFlowCookie } from './sso-cookie.js';
 
 /**
  * Единният вход (OIDC Authorization Code + PKCE; Microsoft Entra ID и общ OIDC — §14.4, §15.1).
- * Публични пътища (човекът още не е вписан): откриване по домейна, начало, връщане от доставчика;
- * изходът иска сесия + CSRF. Отговорите не издават дали акаунт съществува: откриването и началото
- * гледат само домейна. CSRF: началото е POST с проверка на Origin; връщането е GET от доставчика —
- * пази го еднократният `state`, вързан към браузъра с бисквитката `cc_sso` (+ PKCE + nonce).
+ * Публични пътища (човекът още не е вписан): откриване по ДОКАЗАНИЯ домейн, начало, връщане от
+ * доставчика; изходът иска сесия + CSRF; свързването от собственика — `auth-sso-link.ts`.
+ * Отговорите не издават дали акаунт съществува: откриването и началото гледат само домейна. CSRF:
+ * началото е POST с проверка на Origin; връщането е GET от доставчика — пази го еднократният
+ * `state`, вързан към браузъра с бисквитката `cc_sso` (+ PKCE + nonce).
  */
 
 const Email = z.object({ email: z.string().trim().toLowerCase().email().max(254) });
-
-export function setFlowCookie(res: Response, sessions: SessionDeps, binding: string): void {
-  res.cookie(SSO_COOKIE, binding, {
-    httpOnly: true,
-    secure: sessions.secureCookies,
-    // Lax: връщането от доставчика е навигация от чужд сайт — Strict бисквитка не би дошла.
-    sameSite: 'lax',
-    path: SSO_BASE_PATH,
-    maxAge: SSO_STATE_TTL_MS,
-  });
-}
-
-function clearFlowCookie(res: Response, sessions: SessionDeps): void {
-  res.clearCookie(SSO_COOKIE, {
-    httpOnly: true,
-    secure: sessions.secureCookies,
-    sameSite: 'lax',
-    path: SSO_BASE_PATH,
-  });
-}
 
 /**
  * Лимит по IP (§15.1): офис зад един NAT влиза наведнъж — по-широк от този на паролата.
@@ -188,6 +170,9 @@ export function authSsoRouter(deps: AppDeps, runtime: SsoRuntime | null): Router
       next(err);
     }
   });
+
+  // Свързване от собственика (сесия с парола + TOTP) — под същия път (бисквитката на потока).
+  router.use(authSsoLinkRouter(deps, runtime));
 
   return router;
 }
