@@ -85,6 +85,11 @@ hooks, rules).
 - **Verification agents: hard cap 10.** Never spawn more than **10** generic/external
   agents (anything other than our custom `.claude/agents/`) for verification in a
   task — it burns tokens. Prefer our purpose-built agents; verify inline when cheap.
+- **Не следи CI и PR активността (решение на собственика, 2026-10-10).** След push/PR **не**
+  викай `subscribe_pr_activity`, не „пази" PR-а, не схедюлвай проверки на CI и не отговаряй на
+  CI-събития; това отменя общото правило „след PR → автоматично абониране". Пускай локалния
+  гейт на продукта преди push и спри дотам. Следене на CI/PR — само ако собственикът го поиска
+  изрично в същата сесия.
 
 ## Custom agents — `.claude/agents/`
 
