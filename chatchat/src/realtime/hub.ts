@@ -18,7 +18,11 @@ export type RealtimeEventType =
   | 'conversation.updated'
   | 'presence.changed'
   | 'notification.created'
-  | 'case.assigned';
+  | 'case.assigned'
+  // Работният поток на тикета и стъпките (FR-09, FR-19, §11.2) — само идентификатори и статуси.
+  | 'case.updated'
+  | 'step.updated'
+  | 'queue.updated';
 
 export interface RealtimeEvent {
   type: RealtimeEventType;

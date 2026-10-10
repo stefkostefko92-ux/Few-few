@@ -141,6 +141,7 @@ export async function exportSubject(db: PrismaClient, tenantId: string, userId: 
       select: { id: true, scope: true, name: true, filter: true, shared: true, createdAt: true },
     }),
   ]);
+  const flow = await exportFlow(db, tenantId, userId);
   return {
     format: 'chatchat.subject-export.v1',
     exportedAt: new Date(),
@@ -172,7 +173,53 @@ export async function exportSubject(db: PrismaClient, tenantId: string, userId: 
     notifications,
     presence,
     savedFilters,
+    ...flow,
   };
+}
+
+/**
+ * Написаното от човека в работния поток (FR-09, FR-19, §11.2): бележки към изпълнени стъпки,
+ * заявки и решения по разрешения (с причините), предавания и заявки за данни.
+ */
+async function exportFlow(db: PrismaClient, tenantId: string, userId: string) {
+  const [stepExecutions, stepApprovals, handoffs, infoRequests] = await Promise.all([
+    db.caseStepExecution.findMany({
+      where: { authorId: userId, tenantId },
+      select: { id: true, caseId: true, step: true, result: true, note: true, createdAt: true },
+      orderBy: { createdAt: 'asc' },
+      take: MAX_ROWS,
+    }),
+    db.stepApproval.findMany({
+      where: { tenantId, OR: [{ requestedById: userId }, { decidedById: userId }] },
+      select: {
+        id: true,
+        caseId: true,
+        step: true,
+        status: true,
+        requestedById: true,
+        requestNote: true,
+        decidedById: true,
+        decisionReason: true,
+        createdAt: true,
+        decidedAt: true,
+      },
+      orderBy: { createdAt: 'asc' },
+      take: MAX_ROWS,
+    }),
+    db.caseHandoff.findMany({
+      where: { fromUserId: userId, tenantId },
+      select: { id: true, caseId: true, direction: true, reason: true, createdAt: true },
+      orderBy: { createdAt: 'asc' },
+      take: MAX_ROWS,
+    }),
+    db.ticketInfoRequest.findMany({
+      where: { requestedById: userId, ticket: { case: { tenantId } } },
+      select: { id: true, ticketId: true, items: true, note: true, createdAt: true },
+      orderBy: { createdAt: 'asc' },
+      take: MAX_ROWS,
+    }),
+  ]);
+  return { stepExecutions, stepApprovals, handoffs, infoRequests };
 }
 
 /**

@@ -11,13 +11,28 @@ import { publishToUser, type CollabDeps } from './publish.js';
  */
 
 export type NotificationEvent =
-  'message.created' | 'message.mention' | 'case.assigned' | 'case.ai_answer' | 'ticket.changed';
+  | 'message.created'
+  | 'message.mention'
+  | 'case.assigned'
+  | 'case.ai_answer'
+  | 'ticket.changed'
+  // Работният поток (FR-09, FR-19) и човешкото потвърждение (§11.2) — services/tickets/effects.ts.
+  | 'ticket.assigned'
+  | 'ticket.info_requested'
+  | 'ticket.info_provided'
+  | 'ticket.escalated'
+  | 'handoff.requested'
+  | 'handoff.message'
+  | 'handoff.to_ai'
+  | 'step.approval_requested'
+  | 'step.approval_granted'
+  | 'step.approval_denied';
 
 export interface NotificationInput {
   tenantId: string;
   userId: string;
   eventType: NotificationEvent;
-  objectType: 'conversation' | 'case' | 'ticket';
+  objectType: 'conversation' | 'case' | 'ticket' | 'approval';
   objectId: string;
   payload: Record<string, unknown>;
 }
@@ -206,29 +221,4 @@ export function caseAudience(
   );
 }
 
-/** Промяна по тикет (създаване, статус) — за създателя и поелия случая (FR-18). */
-export async function notifyTicketChange(
-  deps: CollabDeps,
-  c: {
-    id: string;
-    number: string;
-    tenantId: string;
-    createdById: string;
-    assignedToId: string | null;
-  },
-  ticket: { id: string; number: string; status: string },
-  actorId: string,
-): Promise<void> {
-  await notify(
-    deps,
-    caseAudience(c, actorId).map((userId) => ({
-      tenantId: c.tenantId,
-      userId,
-      eventType: 'ticket.changed' as const,
-      objectType: 'ticket' as const,
-      objectId: ticket.id,
-      payload: { caseId: c.id, caseNumber: c.number, number: ticket.number, status: ticket.status },
-    })),
-    actorId,
-  );
-}
+// Промяна по тикет (FR-09, FR-19) — известията са в services/tickets/effects.ts (`afterTicketChange`).

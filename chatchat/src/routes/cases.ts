@@ -13,8 +13,6 @@ import {
 import { can } from '../auth/rbac.js';
 import { DiagnosticContextSchema, redactContext } from '../domain/context.js';
 import { attachmentsByMessage } from '../services/attachments.js';
-import { notify } from '../services/collab/notify.js';
-import { publishCaseAssigned } from '../services/collab/publish.js';
 import {
   addTimeline,
   caseWhereFor,
@@ -23,16 +21,16 @@ import {
   isParticipant,
   withUniqueRetry,
 } from '../services/cases.js';
-import {
-  assigneeFor,
-  assigneeViews,
-  authorFor,
-  caseView,
-  contextWarnings,
-  messageViews,
-} from '../services/case-views.js';
+import { assigneeViews, caseView, contextWarnings, messageViews } from '../services/case-views.js';
+import { afterTicketChange } from '../services/tickets/effects.js';
+import { closeTicketByOutcomeTx } from '../services/tickets/lifecycle.js';
+import { changeOf } from '../services/tickets/tx.js';
+import { caseFlowView } from '../services/tickets/views.js';
 
-/** Случаите (§12.4, §14.1): създаване, контекст, изход, поемане от оператор, хронология. */
+/**
+ * Случаите (§12.4, §14.1): създаване, контекст, изход. Поемането от оператор, предаването и
+ * хронологията — в routes/case-flow.ts; тикетът и стъпките — в tickets/ticket-flow/case-steps.
+ */
 
 const Id = z.string().min(1).max(40);
 const CreateCase = z.object({
@@ -139,7 +137,6 @@ export function casesRouter(deps: WiredDeps): Router {
         orderBy: { createdAt: 'asc' },
         take: 500,
       });
-      const ticket = await deps.db.ticket.findUnique({ where: { caseId: c.id } });
       // Само CLEAN файлове, привързани към съобщение; самите байтове — през подписан адрес.
       const files = await attachmentsByMessage(
         deps.db,
@@ -148,12 +145,14 @@ export function casesRouter(deps: WiredDeps): Router {
       );
       const views = await messageViews(deps.db, p, c, messages);
       const assignees = await assigneeViews(deps.db, p.user, [c]);
+      // Тикетът (отговорник, заявка за данни), изпълнените стъпки и разрешенията (§11.2).
+      const flow = await caseFlowView(deps.db, p, c);
       res.json({
         case: {
           ...caseView(c),
           assignedTo: c.assignedToId ? (assignees.get(c.assignedToId) ?? null) : null,
         },
-        ticket: ticket ? { number: ticket.number, status: ticket.status } : null,
+        ...flow,
         messages: views.map((m) => ({ ...m, attachments: files.get(m.id) ?? [] })),
       });
     } catch (err) {
@@ -205,122 +204,35 @@ export function casesRouter(deps: WiredDeps): Router {
       if (!isParticipant(p, c)) return apiError(res, 403, 'forbidden');
       if (c.status === 'RESOLVED') return apiError(res, 409, 'case_closed');
       const resolved = body.data.outcome === 'RESOLVED';
-      const updated = await deps.db.case.update({
-        where: { id: c.id },
-        data: resolved
-          ? { status: 'RESOLVED', outcome: 'RESOLVED', closedAt: new Date() }
-          : { outcome: 'NOT_RESOLVED' },
+      // „Решен“ при отворен тикет затваря и тикета — в същата транзакция (не остава в опашката).
+      const { updated, closed } = await deps.db.$transaction(async (tx) => {
+        const row = await tx.case.update({
+          where: { id: c.id },
+          data: resolved
+            ? { status: 'RESOLVED', outcome: 'RESOLVED', closedAt: new Date(), aiPaused: false }
+            : { outcome: 'NOT_RESOLVED' },
+        });
+        await addTimeline(tx, c.id, 'case.outcome', p.user.id, { outcome: body.data.outcome });
+        await appendAudit(tx, {
+          tenantId: p.user.tenantId,
+          actorId: p.user.id,
+          action: 'case.outcome',
+          objectType: 'case',
+          objectId: c.id,
+          detail: { outcome: body.data.outcome },
+        });
+        return {
+          updated: row,
+          closed: resolved ? await closeTicketByOutcomeTx(tx, row, p.user.id) : null,
+        };
       });
-      await addTimeline(deps.db, c.id, 'case.outcome', p.user.id, {
-        outcome: body.data.outcome,
-      });
-      await appendAudit(deps.db, {
-        tenantId: p.user.tenantId,
-        actorId: p.user.id,
-        action: 'case.outcome',
-        objectType: 'case',
-        objectId: c.id,
-        detail: { outcome: body.data.outcome },
-      });
+      if (closed) await afterTicketChange(deps, changeOf(closed, p.user.id));
       res.json({ case: caseView(updated) });
     } catch (err) {
       next(err);
     }
   });
 
-  // FR-19: оператор поема случая — AI → човек, със същата история и контекст.
-  router.post('/cases/:id/assign', requireCapability('case:assign'), async (req, res, next) => {
-    try {
-      const id = Id.safeParse(req.params.id);
-      if (!id.success) return apiError(res, 400, 'invalid_input');
-      const p = principalOf(req);
-      const c = await findCaseFor(deps.db, p, id.data);
-      if (!c) return apiError(res, 404, 'not_found');
-      if (c.status === 'RESOLVED') return apiError(res, 409, 'case_closed');
-      const updated = await deps.db.case.update({
-        where: { id: c.id },
-        data: { assignedToId: p.user.id, status: 'IN_PROGRESS' },
-      });
-      await addTimeline(deps.db, c.id, 'case.assigned', p.user.id, { to: p.user.id });
-      // FR-18: създателят научава кой е поел случая (известие + събитие в реално време).
-      // Порталният създател получава РОЛЯТА на служителя, не името (правният одит, т. 12).
-      const operator = {
-        id: p.user.id,
-        name: p.user.name,
-        role: p.user.role,
-        kind: p.user.kind,
-      };
-      const creator = await deps.db.user.findFirst({
-        where: { id: c.createdById, tenantId: c.tenantId },
-        select: { id: true, kind: true },
-      });
-      if (creator && c.createdById !== p.user.id) {
-        const assignedTo = assigneeFor(creator, operator);
-        await notify(
-          deps,
-          [
-            {
-              tenantId: c.tenantId,
-              userId: c.createdById,
-              eventType: 'case.assigned',
-              objectType: 'case',
-              objectId: c.id,
-              payload: { caseId: c.id, number: c.number, assignedTo },
-            },
-          ],
-          p.user.id,
-        );
-      }
-      publishCaseAssigned(deps, { ...c, assignedToId: p.user.id }, operator);
-      res.json({ case: caseView(updated) });
-    } catch (err) {
-      next(err);
-    }
-  });
-
-  router.get('/cases/:id/timeline', async (req, res, next) => {
-    try {
-      const id = Id.safeParse(req.params.id);
-      if (!id.success) return apiError(res, 400, 'invalid_input');
-      const p = principalOf(req);
-      const c = await findCaseFor(deps.db, p, id.data);
-      if (!c) return apiError(res, 404, 'not_found');
-      // Вътрешната дискусия на персонала (internal.*) не се вижда от портала и от техниците
-      // без `case:readAll` — дори като идентификатори (AC-18).
-      const staff = p.user.kind === 'INTERNAL' && can(p.user.role, 'case:readAll');
-      const events = await deps.db.caseTimelineEvent.findMany({
-        where: {
-          caseId: c.id,
-          ...(staff ? {} : { NOT: { type: { startsWith: 'internal.' } } }),
-        },
-        orderBy: { at: 'asc' },
-        take: 1000,
-      });
-      // Авторът на събитието по правилото на читателя: порталът вижда ролята, не името (AC-19).
-      const actorIds = [...new Set(events.map((e) => e.actorId).filter((x): x is string => !!x))];
-      const actors = new Map(
-        (
-          await deps.db.user.findMany({
-            where: { id: { in: actorIds }, tenantId: p.user.tenantId },
-            select: { id: true, name: true, role: true, kind: true },
-          })
-        ).map((u) => [u.id, u]),
-      );
-      res.json({
-        events: events.map((e) => ({
-          type: e.type,
-          actorId: e.actorId,
-          actor: e.actorId ? authorFor(p.user, actors.get(e.actorId)) : null,
-          // Източникът на събитието (AC-19): човек, AI или системата.
-          source: e.type.startsWith('ai.') ? 'ai' : e.actorId ? 'human' : 'system',
-          payload: e.payload,
-          at: e.at,
-        })),
-      });
-    } catch (err) {
-      next(err);
-    }
-  });
-
+  // Поемане (assign), „Предай на оператор“ и хронологията — в routes/case-flow.ts.
   return router;
 }

@@ -24,7 +24,12 @@ import { attachmentUploadRouter } from './routes/attachments.js';
 import { auditRouter } from './routes/audit.js';
 import { authMfaRouter } from './routes/auth-mfa.js';
 import { authRouter } from './routes/auth.js';
+import { caseFlowRouter } from './routes/case-flow.js';
+import { caseStepsRouter } from './routes/case-steps.js';
 import { casesRouter } from './routes/cases.js';
+import { stepPolicyRouter } from './routes/step-policy.js';
+import { ticketFlowRouter } from './routes/ticket-flow.js';
+import { ticketQueueRouter } from './routes/ticket-queue.js';
 import { catalogRouter } from './routes/catalog.js';
 import { documentViewRouter } from './routes/document-view.js';
 import { mountPdfjs } from './vendor.js';
@@ -183,6 +188,8 @@ export function createApp(appDeps: AppDeps): express.Express {
   app.use('/api/v1/admin', adminListsRouter(deps));
   // KPI (kpi:read) — също преди рутерите на знанието (същата причина).
   app.use('/api/v1/admin', adminKpiRouter(deps));
+  // Политиката за разрешенията на стъпки (policy:manage) — и тя преди рутерите на знанието.
+  app.use('/api/v1/admin', stepPolicyRouter(deps));
   app.use('/api/v1/admin', adminCatalogRouter(deps));
   app.use('/api/v1/admin', adminDocumentsRouter(deps));
   app.use('/api/v1/admin', adminErrorsRouter(deps));
@@ -190,8 +197,14 @@ export function createApp(appDeps: AppDeps): express.Express {
   app.use('/api/v1', catalogRouter(deps));
   app.use('/api/v1', documentViewRouter(deps));
   app.use('/api/v1', casesRouter(deps));
+  // Работният поток (FR-09, FR-19, §11.2): поемане/предаване, стъпки и разрешения, тикет, опашка.
+  app.use('/api/v1', caseFlowRouter(deps));
+  app.use('/api/v1', caseStepsRouter(deps));
   app.use('/api/v1', chatRouter(deps));
   app.use('/api/v1', ticketsRouter(deps));
+  // Опашката (GET /tickets, /tickets/assignees) — преди `/tickets/:id`.
+  app.use('/api/v1', ticketQueueRouter(deps));
+  app.use('/api/v1', ticketFlowRouter(deps));
   app.use('/api/v1', filesRouter(deps));
   // Работното пространство (§12.3): разговори, съобщения, присъствие, известия, бързи отговори, SSE.
   app.use('/api/v1', conversationsRouter(deps));
