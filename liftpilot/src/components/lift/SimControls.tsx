@@ -6,8 +6,12 @@
 import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { useTranslations } from 'next-intl';
 import { brakeParams, type ScenarioParams } from '@/sim';
+import Icon, { type IconName } from '@/components/Icon';
 import type { SimClock } from './clock';
 import { SCENARIOS, type ScenarioKey } from './scenarios';
+
+/** the painted icon of each scenario's tab */
+const SC_ICON: Record<ScenarioKey, IconName> = { ride: 'elevator', brake: 'brake', loading: 'weight', stall: 'lock', buffer: 'arrow-down-to-line' };
 
 interface Props {
   sc: ScenarioParams;
@@ -56,7 +60,7 @@ export default function SimControls({ sc, choose, set, labels, here, Q, T, clock
     <div className="sim-controls">
       <div className="scenario-tabs" role="tablist" aria-label={t('scenario')}>
         {SCENARIOS.map((id) => (
-          <button key={id} type="button" role="tab" data-scenario={id} aria-selected={sc.id === id} className={sc.id === id ? 'on' : undefined} onClick={() => choose(id)}>{t(`sc_${id}`)}</button>
+          <button key={id} type="button" role="tab" data-scenario={id} aria-selected={sc.id === id} className={sc.id === id ? 'on' : undefined} onClick={() => choose(id)}><Icon name={SC_ICON[id]} size={18} />{t(`sc_${id}`)}</button>
         ))}
       </div>
       <div className="scenario-params">

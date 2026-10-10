@@ -8,6 +8,7 @@
 // Motion: none; the drawing is redrawn, never animated.
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import SectionTitle from '@/components/project/SectionTitle';
 import type { Edit } from '@/drawing';
 import { screenView, type BelowSource, type ScreenView } from '@/lib/tavole/views';
 import { checkedInputs, editShaft } from '@/lib/shaft-edit';
@@ -34,7 +35,7 @@ interface Props {
 
 const VIEWS: readonly ScreenView[] = ['plan', 'head', 'pit-plan', 'full', 'top', 'floor', 'pit', 'room-plan', 'room-section', 'below-plan', 'below-section'];
 
-export default function PlanEditor({ I, onChange, machine, below = null, onCalc, id, titleAs: Title = 'h2' }: Props) {
+export default function PlanEditor({ I, onChange, machine, below = null, onCalc, id, titleAs = 'h2' }: Props) {
   const t = useTranslations('shaft');
   const [view, setView] = useState<ScreenView>('plan');
   const L = useMemo(() => layout(I), [I]);
@@ -57,7 +58,7 @@ export default function PlanEditor({ I, onChange, machine, below = null, onCalc,
 
   return (
     <div className="plan-editor" role="group" aria-labelledby={`${id}-title`}>
-      <Title id={`${id}-title`}>{t('ed_title')}</Title>
+      <SectionTitle id={`${id}-title`} level={titleAs === 'h3' ? 3 : 2} icon="blueprint">{t('ed_title')}</SectionTitle>
       <p className="note">{t('ed_hint')}</p>
       <div className="seg-row" role="tablist" aria-label={t('ed_views')}>
         {views.map((k) => (

@@ -8,17 +8,19 @@
 html.draw-full-open { overflow: hidden; }
 .draw-frame.full { position: fixed; inset: 0; z-index: 90; width: 100%; height: 100%; max-width: none; margin: 0; gap: 0; display: flex; flex-direction: column;
   background: var(--bg); color: var(--ink); padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
-.draw-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap; padding: 8px 12px; background: var(--surface); border-bottom: 1px solid var(--rule); }
-.draw-title { flex: 1 1 12rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.draw-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap; padding: 8px 12px; background: var(--savebar-bg); border-bottom: 1px solid var(--rule); }
+.draw-title { flex: 1 1 12rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
 .draw-tools { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .draw-tools .btn { min-width: 2.25rem; }
-.draw-zoom { min-width: 4.4em; text-align: center; font-size: 13px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
-.draw-frame.full .draw-viewport { flex: 1 1 auto; min-height: 0; display: flex; overflow: auto; container-type: size; touch-action: none; overscroll-behavior: contain; cursor: grab; outline: none; }
+.draw-zoom { min-width: 4.4em; text-align: center; font: 500 13px/1 var(--font-mono); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+/* the desk under the sheet: the blueprint grid of the template */
+.draw-frame.full .draw-viewport { flex: 1 1 auto; min-height: 0; display: flex; overflow: auto; container-type: size; touch-action: none; overscroll-behavior: contain; cursor: grab; outline: none;
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 32px 32px; background-attachment: local; }
 .draw-frame.full .draw-viewport:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
 .draw-frame.full .draw-stage { flex: none; margin: auto; padding: 12px; width: calc(min(100cqw - 24px, (100cqh - 24px) * var(--ratio)) * var(--zoom)); }
 .draw-frame.full .sheet-svg { width: 100%; height: auto; max-height: none; }
 .draw-frame.full .ed-wrap { max-width: none !important; }
-.draw-hint { margin: 0; padding: 6px 12px; font-size: 12.5px; color: var(--muted); background: var(--surface); border-top: 1px solid var(--rule); }
+.draw-hint { margin: 0; padding: 7px 12px; font-size: 12.5px; color: var(--muted); background: var(--savebar-bg); border-top: 1px solid var(--rule); }
 @media (max-width: 719px) {
   .draw-hint { display: none; }
   .draw-tools .btn span { display: none; }

@@ -8,19 +8,21 @@
 .ed-hits .hit { fill: transparent; stroke: none; cursor: pointer; }
 .ed-hits .hit.manual { fill: rgb(29 50 113 / .07); stroke: #1d3271; stroke-width: .25; stroke-dasharray: .9 .6; }
 .ed-hits .hit:hover, .ed-hits .hit:focus-visible, .ed-hits .hit.on { fill: rgb(29 50 113 / .14); stroke: #1d3271; stroke-width: .35; stroke-dasharray: none; outline: none; }
+/* the field over the paper: a dark panel with the cyan edge of the template's floating labels */
 .ed-pop { position: absolute; z-index: 5; width: 15rem; scroll-margin-block: 88px; max-width: calc(100vw - 32px); display: flex; flex-direction: column; gap: 8px;
-  padding: 10px 12px; background: var(--surface); color: var(--ink); border: 1px solid var(--rule-strong); border-radius: 10px; box-shadow: var(--shadow-lg); }
+  padding: 12px 13px; background: var(--surface); color: var(--ink); border: 1px solid var(--accent-line); border-radius: var(--radius-sm); box-shadow: var(--shadow-lg); }
 .ed-field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--ink-2); }
 .ed-row { display: flex; align-items: center; gap: 8px; }
 .ed-row .input { flex: 1 1 auto; min-width: 0; font-variant-numeric: tabular-nums; }
 .ed-unit { color: var(--muted); font-size: 13px; }
 
-.plan-fixes { border-top: 1px solid var(--rule); padding-top: 10px; display: flex; flex-direction: column; gap: 10px; }
-.plan-fixes > summary { cursor: pointer; font-weight: 600; }
-.plan-fixes .table-wrap { overflow-x: auto; }
+.plan-fixes { border-top: 1px solid var(--rule); padding-top: 12px; display: flex; flex-direction: column; gap: 10px; }
+.plan-fixes > summary { cursor: pointer; font-weight: 700; width: fit-content; }
+.plan-fixes > summary:hover { color: var(--accent); }
+.plan-fixes .table-wrap { overflow-x: auto; position: relative; }  /* keeps the sr-only header inside the scroll clip */
 table.fixes { width: 100%; border-collapse: collapse; font-size: 14px; }
-table.fixes th, table.fixes td { padding: 4px 6px; text-align: left; vertical-align: middle; border-bottom: 1px solid var(--rule); }
-table.fixes thead th { font: 500 12.5px var(--font-body); color: var(--muted); }
+table.fixes th, table.fixes td { padding: 5px 6px; text-align: left; vertical-align: middle; border-bottom: 1px solid var(--rule-soft); }
+table.fixes thead th { font: 500 11px/1.4 var(--font-mono); letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
 table.fixes tbody th { font-weight: 500; color: var(--ink-2); }
 table.fixes td .input { width: 7.5em; font-variant-numeric: tabular-nums; }
 table.fixes td .note { display: block; }

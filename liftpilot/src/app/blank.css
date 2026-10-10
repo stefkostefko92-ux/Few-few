@@ -4,13 +4,18 @@
 .need > .input, .need > select.input, .need .seg-row, td.need > .input, .calc .row.need input, .calc .row.need select {
   border-style: dashed; border-color: var(--warn); background: var(--warn-bg); }
 td.need > input[type=radio] { outline: 1px dashed var(--warn); outline-offset: 2px; }
-.badge.std { margin-left: 6px; color: var(--muted); background: var(--surface2); border: 1px solid var(--rule); text-transform: none; letter-spacing: 0; font-weight: 500; }
-.missing { box-shadow: inset 4px 0 0 var(--warn); }
-.missing h2 { margin-bottom: 4px; }
+.badge.std { margin-left: 6px; color: var(--muted); background: var(--surface2); border-color: var(--rule-strong); text-transform: none; letter-spacing: .02em; }
+/* what is missing: the panel with the amber bar and its tinted tile */
+.missing { border-color: var(--warn-line); box-shadow: inset 3px 0 0 var(--warn), var(--panel-hi), var(--shadow); }
+.missing h2 { margin-bottom: 2px; }
+.missing-list a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--warn-line); text-underline-offset: 3px; }
+.missing-list a:hover { color: var(--warn); text-decoration-color: currentColor; }
+.missing-list li::marker { color: var(--warn); }
 .missing-list { margin: 10px 0 0; padding-left: 1.1rem; columns: 2 15rem; column-gap: 24px; }
 .missing-list li { padding-block: 2px; break-inside: avoid; font-size: 14px; }
 /* what «Aggiorna con il software attuale» left to correct in a form (RefreshNotice) */
 .refresh-notice { display: flex; flex-direction: column; gap: 6px; }
+.refresh-notice h2.sec-title { font-size: 16px; }  /* a notice, not a section: under the page's section headings */
 .refresh-notice .missing-list { margin: 0; }
 @media (max-width: 720px) { .missing-list { columns: 1; max-height: 15rem; overflow-y: auto; } }
 .draft-bar { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }

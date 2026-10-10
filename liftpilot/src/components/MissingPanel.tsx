@@ -1,5 +1,7 @@
 'use client';
 
+import SectionTitle from '@/components/project/SectionTitle';
+
 // What a form still needs before the software works anything out: each value, a link that opens its group and puts
 // the cursor in its field.
 interface Item {
@@ -20,7 +22,7 @@ export function goToField(id: string): void {
 export default function MissingPanel({ title, lead, items, id = 'missing' }: { title: string; lead: string; items: readonly Item[]; id?: string }) {
   return (
     <section className="panel missing" aria-labelledby={`${id}-title`}>
-      <h2 id={`${id}-title`}>{title}</h2>
+      <SectionTitle id={`${id}-title`} icon="clipboard-pen" tone="warn">{title}</SectionTitle>
       <p className="note">{lead}</p>
       <ul className="missing-list">
         {items.map((i) => (

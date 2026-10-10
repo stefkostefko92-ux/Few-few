@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
+import Icon from '@/components/Icon';
+import SectionTitle from '@/components/project/SectionTitle';
 import { requireCapability } from '@/lib/auth';
 import { can } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
@@ -93,14 +95,14 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
       </dl>
       {download ? (
         <section className="panel" aria-labelledby="room-docs">
-          <h2 id="room-docs">{t('docsTitle')}</h2>
+          <SectionTitle id="room-docs" icon="file-export">{t('docsTitle')}</SectionTitle>
           <p className="note">{t('docsLead')}</p>
           <div className="doc-links">
-            <a className="btn" href={`/api/room-designs/${r.id}/relazione`}>{t('docTecnica')}</a>
-            <a className="btn" href={`/api/room-designs/${r.id}/pdf`}>{t('docDraft')}</a>
-            <a className="btn" href={`/api/room-designs/${r.id}/dxf`}>DXF</a>
-            <a className="btn" href={`/api/room-designs/${r.id}/dwg`}>DWG</a>
-            <a className="btn" href={`/api/calculations/${r.calculationId}/relazione?locale=${locale}`}>{tc('downloadReport')}</a>
+            <a className="btn" href={`/api/room-designs/${r.id}/relazione`}><Icon name="file-pdf" size={18} />{t('docTecnica')}</a>
+            <a className="btn" href={`/api/room-designs/${r.id}/pdf`}><Icon name="file-pdf" size={18} />{t('docDraft')}</a>
+            <a className="btn" href={`/api/room-designs/${r.id}/dxf`}><Icon name="file-dxf" size={18} />DXF</a>
+            <a className="btn" href={`/api/room-designs/${r.id}/dwg`}><Icon name="file-dwg" size={18} />DWG</a>
+            <a className="btn" href={`/api/calculations/${r.calculationId}/relazione?locale=${locale}`}><Icon name="file-pdf" size={18} />{tc('downloadReport')}</a>
           </div>
         </section>
       ) : null}
@@ -112,7 +114,7 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
       ))}
       {d && rep.ok ? (
         <section className="panel" aria-labelledby="room-checks">
-          <h2 id="room-checks">{t('checksTitle')}</h2>
+          <SectionTitle id="room-checks" icon="list-checks">{t('checksTitle')}</SectionTitle>
           <div className="table-scroll">
             <table className="data-table stack">
               <thead><tr><th scope="col">{t('check')}</th><th scope="col" className="num">{t('value')}</th><th scope="col" className="num">{t('limit')}</th><th scope="col">{t('outcome')}</th></tr></thead>
@@ -133,11 +135,11 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
       ) : null}
       {costed && rep.ok ? <ProjectCost cost={costed.cost} skipped={costed.skipped} uncounted={calcUncounted(rep.collaudo)} locale={locale} scope="calc" editable={can(user, 'prices:edit')} /> : null}
       <section className="panel" aria-labelledby="room-sets">
-        <h2 id="room-sets">{tt('title')}</h2>
+        <SectionTitle id="room-sets" icon="file-stack">{tt('title')}</SectionTitle>
         <p className="note">{t('setsLead')}</p>
         {sets.length ? (
-          <ul className="m-0 flex list-none flex-col gap-1 p-0">
-            {sets.map((x) => <li key={x.id}><Link href={`/app/drawing-sets/${x.id}`} className="num">{x.number}{x.revision ? ` R${x.revision}` : ''}</Link> · <span className="note">{fd.dateTime(x.createdAt)} · {x.user?.name ?? x.authorInitials}</span></li>)}
+          <ul className="rec-list">
+            {sets.map((x) => <li key={x.id}><Link href={`/app/drawing-sets/${x.id}`} className="num">{x.number}{x.revision ? ` R${x.revision}` : ''}</Link><span className="note">{fd.dateTime(x.createdAt)} · {x.user?.name ?? x.authorInitials}</span></li>)}
           </ul>
         ) : null}
         {d && editable ? <IssueForm roomDesignId={r.id} initials={initialsOf(user.name)} checks={checks} projectId={r.projectId} /> : null}

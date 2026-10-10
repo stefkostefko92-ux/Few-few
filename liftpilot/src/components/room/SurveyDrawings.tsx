@@ -6,6 +6,7 @@
 // Motion: none; the drawing is redrawn, never animated.
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import SectionTitle from '@/components/project/SectionTitle';
 import type { Edit } from '@/drawing';
 import { editLabel } from '@/shaft';
 import { editSurvey } from '@/lib/room/edit';
@@ -50,7 +51,7 @@ export default function SurveyDrawings({ survey, derived, onChange, id }: Props)
   };
   return (
     <div className="plan-editor" role="group" aria-labelledby={`${id}-title`}>
-      <h2 id={`${id}-title`}>{tr('drawTitle')}</h2>
+      <SectionTitle id={`${id}-title`} icon="blueprint">{tr('drawTitle')}</SectionTitle>
       <p className="note">{t('ed_hint')}</p>
       <div className="seg-row" role="tablist" aria-label={t('ed_views')}>
         {(['plan', 'section'] as const).map((k) => (

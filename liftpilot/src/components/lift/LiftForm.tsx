@@ -6,6 +6,7 @@
 // and its pulleys over the slab, the pulley room), the lift and its machine. A new installation starts empty (src/lib/lift/blank.ts); the software's own values (rails,
 // allowances, heights, niches, frames…) come once the project's data are in.
 import { useTranslations } from 'next-intl';
+import SectionTitle from '@/components/project/SectionTitle';
 import type { FormValues } from '@/calc/types';
 import { INTERVENTI, KL, collaudoOf, interventoOf, interventoTo, type AutoFlags, type BottomScheme, type Collaudo, type Intervento, type LiftDerived,
   type LiftInputs } from '@/lib/lift';
@@ -78,7 +79,7 @@ export default function LiftForm({ P, X, inp, derived, complete, blank, bad, nee
   );
   return (
     <form className="lift-form panel" autoComplete="off" noValidate onSubmit={(e) => e.preventDefault()}>
-      <h2>{t('s_context')}</h2>
+      <SectionTitle icon="clipboard-list">{t('s_context')}</SectionTitle>
       <div className="seg-row" role="radiogroup" aria-label={t('s_context')}>
         {INTERVENTI.map((k) => (
           <button key={k} type="button" role="radio" aria-checked={intervento === k} className={intervento === k ? 'on' : undefined} onClick={() => pick(k)}>{t(`context_${k}`)}</button>
@@ -89,7 +90,7 @@ export default function LiftForm({ P, X, inp, derived, complete, blank, bad, nee
       <CollaudoOptions P={P} isNew={intervento === 'new'} chosen={inp.collaudo} set={setCollaudo}
         value={collaudoOf(derived ? { ...derived.values, context: inp.calc.context } : inp.calc, inp.collaudo)}
         access={{ value: is('access') ? 'none' : inp.shaft.access, set: (access) => setShaft({ access }) }} calc={derived?.values} />
-      <h2>{t('s_shaft')}</h2>
+      <SectionTitle icon="building">{t('s_shaft')}</SectionTitle>
       <div className="form-grid">
         {size('W')}
         {size('D')}
@@ -109,14 +110,14 @@ export default function LiftForm({ P, X, inp, derived, complete, blank, bad, nee
           <ImbottiOptions I={inp.shaft} set={setShaft} />
         </>
       ) : null}
-      <h2>{t('s_floors')}</h2>
+      <SectionTitle icon="layers">{t('s_floors')}</SectionTitle>
       <VerticalOptions I={inp.shaft} set={setShaft} open blank={blank} />
       {above ? (
         <RoomOptions I={inp.shaft} set={setShaft} blank={blank}
           machine={derived && complete ? { D: derived.machine.D, shimsAxis: KL.sheaveAxisPerD * derived.machine.D, shape: derived.machine.shape ?? null, rinvio: derived.machine.rinvio ?? null, heb: derived.heb, turn: roomGeo(derived.layout, derived.machine)?.dir } : undefined}
           panel={{ auto: !!inp.auto.panel, set: (on) => setAuto({ panel: on }), placed: derived && complete && derived.origin.panel === 'auto' ? derived.shaft.room : null }} />
       ) : pulley ? <RoomOptions I={inp.shaft} set={setShaft} blank={blank} pulley={pulley} /> : null}
-      <h2>{t('s_drive')}</h2>
+      <SectionTitle icon="gear">{t('s_drive')}</SectionTitle>
       <LiftCalcFields P={P} X={X} inp={inp} derived={derived} complete={complete} bad={bad} need={need} blank={blank} texts={texts} setCalc={setCalc} setAuto={setAuto} setBottom={setBottom}
         setCatalog={setCatalog} t={(k, v) => t(k, v)} />
     </form>

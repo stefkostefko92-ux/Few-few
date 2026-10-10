@@ -4,6 +4,7 @@
 // the brackets of the parts its acceptance test replaces, as the project's cost and sheet 1 (prices/parts.ts
 // panevCounted): nothing left, no panel. No state: used by the one form, the saved design and the shaft designer.
 import { useLocale, useTranslations } from 'next-intl';
+import SectionTitle from '@/components/project/SectionTitle';
 import { PANEV_LISTINO, panevBom } from '@/lib/catalog/panev';
 import type { Collaudo } from '@/lib/lift/collaudo';
 import { money } from '@/lib/money';
@@ -25,7 +26,7 @@ export default function PanevBom({ L, prices, framed = true, C }: {
   const total = bom.rows.reduce((s, r) => s + (priceOf(r.article.code) ?? 0) * r.qty, 0);
   return (
     <section className={framed ? 'panel panev-bom' : 'panev-bom'} aria-labelledby="panev-bom-h">
-      <h2 id="panev-bom-h">{t('title')}</h2>
+      <SectionTitle id="panev-bom-h" icon="brackets">{t('title')}</SectionTitle>
       <div className="table-scroll">
         <table className="data-table stack">
           <thead>

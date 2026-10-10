@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import SectionTitle from '@/components/project/SectionTitle';
 import { Link } from '@/i18n/routing';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { money } from '@/lib/money';
@@ -19,7 +20,7 @@ export default async function ProjectCost({ cost, skipped = [], uncounted = null
   const eur = (c: number | null): string => (c === null ? '—' : money(c, 'eur', locale));
   return (
     <section className="panel" aria-labelledby="project-cost-h">
-      <h2 id="project-cost-h">{t('costTitle')}</h2>
+      <SectionTitle id="project-cost-h" icon="hand-coins">{t('costTitle')}</SectionTitle>
       <div className="table-scroll">
         <table className="data-table stack">
           <thead>
