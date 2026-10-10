@@ -24,7 +24,25 @@ export function explain(err) {
   return '';
 }
 
-/** Ред „модел · HW · FW (всички | обхват) · табло“ за `repeater` от kb-common. */
+/**
+ * Опциите на правилото (FR-01) от „ключ=стойност“, разделени с „;“ или нов ред. Празно → {}
+ * (всички конфигурации); ред без „=“ → null — сървърът отказва (никога тихо по-широко правило).
+ */
+export function parseRuleOptions(text) {
+  const out = {};
+  for (const raw of String(text ?? '').split(/[;\n]/)) {
+    const part = raw.trim();
+    if (!part) continue;
+    const i = part.indexOf('=');
+    const key = part.slice(0, i).trim();
+    const value = part.slice(i + 1).trim();
+    if (i < 1 || !key || !value) return null;
+    out[key] = value;
+  }
+  return out;
+}
+
+/** Ред „модел · HW · FW (всички | обхват) · табло · опции“ за `repeater` от kb-common. */
 export function applicabilityRow(products) {
   const model = select(
     products.map((p) => ({ value: p.model, label: p.model })),
@@ -58,6 +76,7 @@ export function applicabilityRow(products) {
     min.required = !allBox.checked && !max.value.trim();
   });
   const serial = input({ maxlength: 80, placeholder: t('admin.kb.board.placeholder') });
+  const options = input({ maxlength: 600, placeholder: 'inverter=VF-3' });
   const node = h(
     'div',
     { class: 'row row-4 kb-rule' },
@@ -70,6 +89,7 @@ export function applicabilityRow(products) {
       { class: 'kb-rule-extra' },
       all,
       field(t('admin.kb.board.label'), serial, { hint: t('admin.kb.board.hint') }),
+      field(t('options.rule.label'), options, { hint: t('options.rule.hint') }),
     ),
   );
   return {
@@ -84,6 +104,7 @@ export function applicabilityRow(products) {
             ...(max.value.trim() ? { fwMax: max.value.trim() } : {}),
           }),
       ...(serial.value.trim() ? { deviceSerial: serial.value.trim() } : {}),
+      ...(options.value.trim() ? { options: parseRuleOptions(options.value) } : {}),
     }),
   };
 }

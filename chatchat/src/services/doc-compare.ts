@@ -122,9 +122,18 @@ export function ruleKey(r: {
   fwMax: string | null;
   allFirmware: boolean;
   deviceSerial: string | null;
+  /** Ограничението по опции на таблото (FR-01); празно/липсва — без него в ключа. */
+  options?: Readonly<Record<string, string>> | null;
 }): string {
   const fw = r.allFirmware ? 'FW *' : `FW ${r.fwMin ?? ''}–${r.fwMax ?? ''}`;
-  return [r.productModel, `HW ${r.hwRevision ?? '*'}`, fw, `SN ${r.deviceSerial ?? '*'}`].join(
-    ' · ',
-  );
+  const opts = Object.entries(r.options ?? {})
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    .map(([k, v]) => `${k}=${v}`);
+  return [
+    r.productModel,
+    `HW ${r.hwRevision ?? '*'}`,
+    fw,
+    `SN ${r.deviceSerial ?? '*'}`,
+    ...(opts.length > 0 ? [`OPT ${opts.join(',')}`] : []),
+  ].join(' · ');
 }

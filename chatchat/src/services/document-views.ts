@@ -1,5 +1,6 @@
 import type { Prisma } from '@prisma/client';
 import { validityAt } from '../domain/versions.js';
+import { parseRuleOptions } from '../store/scope.js';
 import { fourEyesBlocked } from './kb-lifecycle.js';
 
 /**
@@ -29,6 +30,8 @@ export function applicabilityView(a: AdminDocument['applicability'][number]) {
     fwMax: a.fwMax,
     allFirmware: a.allFirmware,
     deviceSerial: a.device?.serial ?? null,
+    // FR-01: само за конфигурация с тези опции ({} = всички); неразчетено → null.
+    options: parseRuleOptions(a.options),
   };
 }
 

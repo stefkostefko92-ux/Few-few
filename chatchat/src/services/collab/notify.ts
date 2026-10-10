@@ -32,7 +32,9 @@ export type NotificationEvent =
   | 'handoff.to_ai'
   | 'step.approval_requested'
   | 'step.approval_granted'
-  | 'step.approval_denied';
+  | 'step.approval_denied'
+  // Обратната връзка към знанието (FR-10, §11.3) — към отговорниците за знанието (services/proposals/).
+  | 'proposal.created';
 
 /** Видовете с приоритет „спешно“ (UI ги показва отделно; писмото тръгва без забавяне). */
 export const URGENT_EVENTS: ReadonlySet<string> = new Set(['case.urgent']);
@@ -41,7 +43,7 @@ export interface NotificationInput {
   tenantId: string;
   userId: string;
   eventType: NotificationEvent;
-  objectType: 'conversation' | 'case' | 'ticket' | 'approval';
+  objectType: 'conversation' | 'case' | 'ticket' | 'approval' | 'proposal';
   objectId: string;
   payload: Record<string, unknown>;
 }

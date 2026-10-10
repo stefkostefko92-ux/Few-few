@@ -15,6 +15,13 @@ const SECTIONS = [
   { id: 'devices', cap: 'kb:manage', load: () => import('./devices.js') },
   { id: 'documents', cap: 'kb:manage', load: () => import('./documents.js') },
   { id: 'codes', cap: 'kb:manage', load: () => import('./codes.js') },
+  // Опашката с предложенията за знанието (FR-10, §11.3) — етикетът е под своя префикс.
+  {
+    id: 'proposals',
+    cap: 'kb:manage',
+    label: 'kbq.nav',
+    load: () => import('./proposals.js'),
+  },
   { id: 'quick', cap: 'kb:manage', load: () => import('./quick.js') },
   { id: 'kpi', cap: 'kpi:read', load: () => import('./kpi.js') },
   { id: 'audit', cap: 'audit:read', load: () => import('./audit.js') },

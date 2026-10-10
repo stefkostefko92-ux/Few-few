@@ -22,6 +22,8 @@ import { adminErrorsLifecycleRouter } from './routes/admin-errors-lifecycle.js';
 import { adminErrorsVersionsRouter } from './routes/admin-errors-versions.js';
 import { adminIntegrationsRouter } from './routes/admin-integrations.js';
 import { adminKpiRouter } from './routes/admin-kpi.js';
+import { adminProposalsRouter } from './routes/proposals-admin.js';
+import { proposalsRouter } from './routes/proposals.js';
 import { adminSubjectRouter } from './routes/admin-subject.js';
 import { adminUserActionsRouter } from './routes/admin-user-actions.js';
 import { adminUsersRouter } from './routes/admin-users.js';
@@ -39,6 +41,7 @@ import { ticketFlowRouter } from './routes/ticket-flow.js';
 import { ticketQueueRouter } from './routes/ticket-queue.js';
 import { catalogRouter } from './routes/catalog.js';
 import { documentViewRouter } from './routes/document-view.js';
+import { docSearchRouter } from './routes/doc-search.js';
 import { mountPdfjs } from './vendor.js';
 import { chatRouter } from './routes/chat.js';
 import { conversationsRouter } from './routes/conversations.js';
@@ -225,7 +228,11 @@ export function createApp(appDeps: AppDeps): express.Express {
   app.use('/api/v1/admin', adminErrorsRouter(deps));
   app.use('/api/v1/admin', adminErrorsLifecycleRouter(deps));
   app.use('/api/v1/admin', adminErrorsVersionsRouter(deps));
+  // Опашката с предложенията за знанието (FR-10, §11.3) — kb:manage.
+  app.use('/api/v1/admin', adminProposalsRouter(deps));
   app.use('/api/v1', auditRouter(deps));
+  // FR-03: търсенето на документи (`/documents/search`) — преди справките и визуализатора.
+  app.use('/api/v1', docSearchRouter(deps));
   app.use('/api/v1', catalogRouter(deps));
   app.use('/api/v1', documentViewRouter(deps));
   app.use('/api/v1', casesRouter(deps));
@@ -234,6 +241,8 @@ export function createApp(appDeps: AppDeps): express.Express {
   app.use('/api/v1', caseStepsRouter(deps));
   app.use('/api/v1', chatRouter(deps));
   app.use('/api/v1', ticketsRouter(deps));
+  // „Решен случай → знание“ (§11.3) — персоналът с proposal:create.
+  app.use('/api/v1', proposalsRouter(deps));
   // Опашката (GET /tickets, /tickets/assignees) — преди `/tickets/:id`.
   app.use('/api/v1', ticketQueueRouter(deps));
   app.use('/api/v1', ticketFlowRouter(deps));

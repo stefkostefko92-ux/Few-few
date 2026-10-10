@@ -1,6 +1,5 @@
 import type { DiagnosticContext } from '../domain/context.js';
 import { canonicalIdentifier, normalizeQuery } from '../domain/normalize.js';
-import type { ProductVersion } from '../domain/versions.js';
 import { applicabilityFields, applicabilityOf } from './applicability.js';
 import { applyBoardOverride, findConflicts } from './levels.js';
 import {
@@ -15,6 +14,7 @@ import {
 } from './thresholds.js';
 import {
   isExactMatch,
+  type CaseVersion,
   type EvidenceItem,
   type KnowledgeStore,
   type MatchKind,
@@ -34,14 +34,18 @@ import {
 export * from './thresholds.js';
 export { cappedLevel, evidenceLevel, findConflicts, wouldBeRelevant } from './levels.js';
 
-export function versionOf(
-  req: Pick<RetrievalRequest, 'context' | 'query' | 'scope'>,
-): ProductVersion {
+/**
+ * Версията на случая за приложимостта: HW/FW от контекста (или от въпроса), провереното табло от
+ * сървъра и опциите на конфигурацията от контекста (FR-01 — попълнени от регистъра при случай от
+ * табло/QR, редактируеми като HW/FW по FR-02).
+ */
+export function versionOf(req: Pick<RetrievalRequest, 'context' | 'query' | 'scope'>): CaseVersion {
   const fromQuery = normalizeQuery(req.query);
   return {
     hwRevision: req.context.hardwareRevision ?? fromQuery.hardwareRevision,
     firmware: req.context.firmware ?? fromQuery.firmware,
     deviceId: req.scope.deviceId ?? null,
+    options: req.context.options,
   };
 }
 

@@ -21,6 +21,8 @@ import { initSso, logoutRequest, ssoLoginError, ssoResultText, takeSsoError } fr
 import { hasPendingQr, initScan, resolvePendingQr, takeQrFromUrl } from './qr/scan.js';
 import { initWorkspace, startWorkspace, stopWorkspace } from './workspace/index.js';
 import { initFlow } from './flow/index.js';
+import { initDocSearch } from './docsearch.js';
+import { initProposeCase } from './proposals-case.js';
 import { resetQuickResponses } from './workspace/quick.js';
 import { wide } from './workspace/windows.js';
 
@@ -266,6 +268,9 @@ async function init() {
   initScan(openNewCaseWithDevice);
   initWorkspace({ selectCase, refreshCases });
   initFlow();
+  // FR-03 (търсене на документи, бърз код) и §11.3 (решен случай → знание).
+  initDocSearch();
+  initProposeCase();
 
   // Изтекла сесия по средата на работа / втори фактор, поискан от API-то
   on('auth:expired', () => {

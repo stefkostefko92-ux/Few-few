@@ -99,10 +99,12 @@ describe('Тикет без сериен номер или достатъчен 
     const answer = answerOf(await ask(w.portalAlfa, caseId, 'Non funziona niente'));
     assert.equal(h.model.calls, 0);
     assert.equal(answer.status, 'undetermined');
-    assert.deepEqual(answer.escalation.collect.slice(0, 3), [
-      'collect.hardwareRevision',
-      'collect.firmware',
+    // FR-07: по диагностична стойност — сериен номер/QR, фърмуер, HW ревизия, код.
+    assert.deepEqual(answer.escalation.collect.slice(0, 4), [
       'collect.serial',
+      'collect.firmware',
+      'collect.hardwareRevision',
+      'collect.errorCode',
     ]);
 
     const res = await w.portalAlfa.post('/api/v1/tickets', { caseId, reason: 'Non so altro' });

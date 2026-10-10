@@ -192,6 +192,7 @@ describe('схема за табло A', () => {
         fwMax: null,
         allFirmware: true,
         deviceSerial: 'SN-ALFA-1',
+        options: {},
       },
     ]);
     assert.equal(list.body.documents[0].boardSpecific, true);

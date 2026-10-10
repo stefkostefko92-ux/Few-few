@@ -286,6 +286,10 @@ export function createTray({ getCaseId, onChange }) {
     uploading: () => items.some((i) => i.status === 'uploading'),
     hasFailed: () => items.some((i) => i.status === 'error'),
     count: () => items.length,
+    /** Бутон извън тавата (липсващи данни, FR-07): същото като „Снимай“ / „Лог“. */
+    pick: (kind) => {
+      if (!disabled) (kind === 'LOG' ? logs : camera).click();
+    },
     /** След изпращане: готовите са привързани към съобщението, грешните остават за преглед. */
     /** Маха само изпратените (по id) — файлове, качени междувременно, остават. */
     clearSent: (sentIds) => {

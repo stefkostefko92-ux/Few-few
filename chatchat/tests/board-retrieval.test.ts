@@ -141,9 +141,19 @@ describe('правило за табло и валидност (domain)', () => 
       version,
       NOW,
     );
-    assert.deepEqual(expired, { applicable: false, validity: 'expired', boardSpecific: false });
+    assert.deepEqual(expired, {
+      applicable: false,
+      validity: 'expired',
+      boardSpecific: false,
+      missingOptions: [],
+    });
     const own = applicabilityOf({ rules: [onBoard('d1')] }, version, NOW);
-    assert.deepEqual(own, { applicable: true, validity: 'effective', boardSpecific: true });
+    assert.deepEqual(own, {
+      applicable: true,
+      validity: 'effective',
+      boardSpecific: true,
+      missingOptions: [],
+    });
     assert.equal(versionOf({ scope: scope('d9'), context: ctx(), query: '' }).deviceId, 'd9');
   });
 });

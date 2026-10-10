@@ -23,6 +23,7 @@
     <link rel="stylesheet" href="/app/flow.css" />
     <link rel="stylesheet" href="/app/ws-search.css" />
     <link rel="stylesheet" href="/app/auth/sso.css" />
+    <link rel="stylesheet" href="/app/docsearch.css" />
     <script type="module" src="/app/main.js"></script>
   </head>
   <body>
@@ -235,6 +236,12 @@
             <button id="btn-scan" class="btn btn-secondary" type="button">
               <span data-i18n="qr.scan">Scansiona QR</span>
             </button>
+            <button id="btn-codelookup" class="btn btn-secondary" type="button">
+              <span data-i18n="docsearch.openCode">Codice errore</span>
+            </button>
+            <button id="btn-docsearch" class="btn btn-secondary" type="button">
+              <span data-i18n="docsearch.open">Cerca documenti</span>
+            </button>
           </div>
           <ul class="side-nav">
             <li>
@@ -373,6 +380,7 @@
                   <label for="ctx-serial" data-i18n="ctx.serial">Numero di serie</label>
                   <input id="ctx-serial" name="serial" autocomplete="off" class="mono" />
                 </div>
+                <p id="ctx-options" class="hint ctx-options" hidden></p>
                 <div class="field-row">
                   <div class="field">
                     <label for="ctx-error" data-i18n="ctx.error">Codice errore</label>
@@ -428,6 +436,11 @@
                 <button id="btn-timeline" class="btn btn-secondary btn-block" type="button">
                   <span data-i18n="timeline.open">Cronologia del caso</span>
                 </button>
+                <!-- „Решен случай → знание“ (§11.3) — само за персонала; proposals-case.js -->
+                <button id="btn-propose" class="btn btn-secondary btn-block" type="button" hidden>
+                  <span data-i18n="proposal.open">Proponi per la base di conoscenza</span>
+                </button>
+                <p id="propose-status" class="form-note" role="status" hidden></p>
                 <button id="btn-assign" class="btn btn-secondary btn-block" type="button" hidden>
                   <span data-i18n="case.take">Prendi in carico</span>
                 </button>
@@ -585,6 +598,7 @@
             </button>
           </div>
           <p id="new-lookup-msg" class="form-note" role="status" hidden></p>
+          <p id="new-options" class="hint" hidden></p>
         </div>
         <div class="field">
           <label for="new-model" data-i18n="ctx.model">Modello</label>
@@ -636,6 +650,183 @@
           </button>
         </div>
       </form>
+    </dialog>
+
+    <!-- Dialog: caso risolto → base di conoscenza (§11.3, FR-10) -->
+    <dialog id="dlg-propose" class="dlg dlg-wide" aria-labelledby="pr-title">
+      <form id="pr-form" method="dialog" novalidate>
+        <h2 id="pr-title" data-i18n="proposal.title">Proponi il caso per la base di conoscenza</h2>
+        <p class="hint" data-i18n="proposal.hint"></p>
+        <div class="field">
+          <label for="pr-name" data-i18n="proposal.field.title">Titolo</label>
+          <input id="pr-name" maxlength="200" required autocomplete="off" />
+        </div>
+        <div class="field">
+          <label for="pr-cause" data-i18n="proposal.field.rootCause">Causa</label>
+          <textarea id="pr-cause" rows="2" maxlength="2000"></textarea>
+        </div>
+        <div class="field">
+          <label for="pr-solution" data-i18n="proposal.field.solution">Soluzione</label>
+          <textarea
+            id="pr-solution"
+            rows="3"
+            maxlength="4000"
+            aria-describedby="pr-solution-hint"
+          ></textarea>
+          <p id="pr-solution-hint" class="hint" data-i18n="proposal.field.solutionHint"></p>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="pr-audience" data-i18n="proposal.field.audience">Destinatari</label>
+            <select id="pr-audience">
+              <option value="INTERNAL" data-i18n="proposal.audience.INTERNAL">Interni</option>
+              <option value="PORTAL" data-i18n="proposal.audience.PORTAL">Portale</option>
+              <option value="ENGINEERING" data-i18n="proposal.audience.ENGINEERING">
+                Engineering
+              </option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="pr-fw" data-i18n="proposal.field.firmware">Firmware</label>
+            <select id="pr-fw">
+              <option value="exact" data-i18n="proposal.fw.exact">Solo questo firmware</option>
+              <option value="all" data-i18n="proposal.fw.all">Tutte le versioni</option>
+            </select>
+          </div>
+        </div>
+        <label class="check-row"
+          ><input id="pr-options" type="checkbox" />
+          <span data-i18n="proposal.field.matchOptions"
+            >Solo per quadri con le stesse opzioni</span
+          ></label
+        >
+        <div class="field">
+          <label for="pr-note" data-i18n="proposal.field.note">Nota per il responsabile</label>
+          <textarea id="pr-note" rows="2" maxlength="1000"></textarea>
+        </div>
+        <p class="hint" data-i18n="proposal.privacy"></p>
+        <p id="pr-error" class="form-error" role="alert" hidden></p>
+        <div class="dlg-actions">
+          <button class="btn btn-quiet" type="button" data-close>
+            <span data-i18n="common.cancel">Annulla</span>
+          </button>
+          <button id="pr-submit" class="btn btn-primary" type="submit">
+            <span data-i18n="proposal.submit">Invia la proposta</span>
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Dialog: ricerca documenti e codici errore (FR-03, §12.1) -->
+    <dialog id="dlg-docsearch" class="dlg dlg-wide dlg-docsearch" aria-labelledby="ds-title">
+      <div class="dlg-head">
+        <h2 id="ds-title" data-i18n="docsearch.title">Documenti e codici errore</h2>
+        <button class="btn btn-quiet" type="button" data-close>
+          <span data-i18n="common.close">Chiudi</span>
+        </button>
+      </div>
+      <div
+        class="ds-tabs"
+        role="tablist"
+        aria-label="Ricerca"
+        data-i18n-attr="aria-label:docsearch.tabs"
+      >
+        <button
+          id="ds-tab-docs"
+          class="ds-tab"
+          type="button"
+          role="tab"
+          aria-selected="true"
+          aria-controls="ds-panel-docs"
+        >
+          <span data-i18n="docsearch.tab.docs">Documenti</span>
+        </button>
+        <button
+          id="ds-tab-code"
+          class="ds-tab"
+          type="button"
+          role="tab"
+          aria-selected="false"
+          aria-controls="ds-panel-code"
+          tabindex="-1"
+        >
+          <span data-i18n="docsearch.tab.code">Codice errore</span>
+        </button>
+      </div>
+      <fieldset class="ds-board">
+        <legend data-i18n="docsearch.board">Quadro</legend>
+        <div class="field-row">
+          <div class="field">
+            <label for="ds-serial" data-i18n="ctx.serial">Numero di serie</label>
+            <input id="ds-serial" class="mono" autocomplete="off" maxlength="80" />
+          </div>
+          <div class="field">
+            <label for="ds-model" data-i18n="ctx.model">Modello</label>
+            <input id="ds-model" list="product-options" autocomplete="off" maxlength="80" />
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="ds-hw" data-i18n="ctx.hw">Revisione HW</label>
+            <input id="ds-hw" autocomplete="off" maxlength="20" />
+          </div>
+          <div class="field">
+            <label for="ds-fw" data-i18n="ctx.fw">Firmware</label>
+            <input id="ds-fw" autocomplete="off" maxlength="20" />
+          </div>
+        </div>
+        <p class="hint" data-i18n="docsearch.boardHint"></p>
+      </fieldset>
+      <section id="ds-panel-docs" role="tabpanel" aria-labelledby="ds-tab-docs">
+        <form id="ds-form" class="ds-form" novalidate>
+          <div class="field">
+            <label for="ds-q" data-i18n="docsearch.q">Cerca nel testo, codice o titolo</label>
+            <input id="ds-q" type="search" maxlength="200" autocomplete="off" />
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="ds-type" data-i18n="docsearch.type">Tipo</label>
+              <select id="ds-type"></select>
+            </div>
+            <div class="field">
+              <label for="ds-lang" data-i18n="docsearch.language">Lingua</label>
+              <select id="ds-lang">
+                <option value="" data-i18n="docsearch.anyLanguage">Tutte</option>
+                <option value="it">Italiano</option>
+                <option value="en">English</option>
+                <option value="bg">Български</option>
+                <option value="de">Deutsch</option>
+                <option value="fr">Français</option>
+                <option value="es">Español</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-block" type="submit">
+            <span data-i18n="docsearch.submit">Cerca</span>
+          </button>
+        </form>
+        <p id="ds-status" class="form-note" role="status"></p>
+        <ul id="ds-results" class="ds-results"></ul>
+      </section>
+      <section id="ds-panel-code" role="tabpanel" aria-labelledby="ds-tab-code" hidden>
+        <form id="ds-code-form" class="ds-form" novalidate>
+          <div class="field">
+            <label for="ds-code" data-i18n="docsearch.code">Codice errore</label>
+            <input
+              id="ds-code"
+              class="mono code-input"
+              autocomplete="off"
+              autocapitalize="characters"
+              maxlength="20"
+            />
+          </div>
+          <button class="btn btn-primary btn-block" type="submit">
+            <span data-i18n="docsearch.codeSubmit">Mostra il codice</span>
+          </button>
+        </form>
+        <p id="ds-code-status" class="form-note" role="status"></p>
+        <div id="ds-code-results" class="ds-results"></div>
+      </section>
     </dialog>
 
     <!-- Dialog: ticket -->

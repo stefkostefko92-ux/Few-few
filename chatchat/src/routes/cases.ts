@@ -10,7 +10,7 @@ import {
   requireCsrf,
   requireUser,
 } from '../auth/guards.js';
-import { can } from '../auth/rbac.js';
+import type { Principal } from '../auth/sessions.js';
 import { DiagnosticContextSchema, redactContext } from '../domain/context.js';
 import { attachmentsByMessage } from '../services/attachments.js';
 import {
@@ -22,6 +22,7 @@ import {
   withUniqueRetry,
 } from '../services/cases.js';
 import { assigneeViews, caseView, contextWarnings, messageViews } from '../services/case-views.js';
+import { boardContext, deviceVisible, type DeviceWithProduct } from '../services/devices.js';
 import { afterTicketChange } from '../services/tickets/effects.js';
 import { closeTicketByOutcomeTx } from '../services/tickets/lifecycle.js';
 import { changeOf } from '../services/tickets/tx.js';
@@ -38,10 +39,27 @@ const CreateCase = z.object({
   deviceSerial: z.string().trim().min(1).max(80).optional(),
 });
 const Outcome = z.object({ outcome: z.enum(['RESOLVED', 'NOT_RESOLVED']) });
+/**
+ * FR-02 + FR-07: контекстът се редактира; с `deviceSerial` (сериен номер/QR, поискан като липсваща
+ * данна) случаят се ВЪРЗВА за таблото — същите правила за видимост като при създаване.
+ */
+const ContextPatch = z.object({
+  context: DiagnosticContextSchema,
+  deviceSerial: z.string().trim().min(1).max(80).optional(),
+});
 
 export function casesRouter(deps: WiredDeps): Router {
   const router = Router();
   router.use(requireUser, requireCsrf(deps.publicOrigin));
+
+  /** Таблото по сериен номер — само в клиента и само видимо за човека (порталът: своята фирма). */
+  const visibleBoard = async (p: Principal, serial: string): Promise<DeviceWithProduct | null> => {
+    const device = await deps.db.device.findUnique({
+      where: { tenantId_serial: { tenantId: p.user.tenantId, serial } },
+      include: { revision: { include: { product: true } } },
+    });
+    return device && deviceVisible(p.user, device) ? device : null;
+  };
 
   router.get('/cases', async (req, res, next) => {
     try {
@@ -72,25 +90,11 @@ export function casesRouter(deps: WiredDeps): Router {
       let context = redactContext(parsed.data.context);
       let deviceId: string | null = null;
       if (parsed.data.deviceSerial) {
-        const device = await deps.db.device.findUnique({
-          where: {
-            tenantId_serial: { tenantId: p.user.tenantId, serial: parsed.data.deviceSerial },
-          },
-          include: { revision: { include: { product: true } } },
-        });
-        const visible =
-          device !== null &&
-          (can(p.user.role, 'device:readAll') ||
-            (p.user.companyId !== null && device.companyId === p.user.companyId));
-        if (!device || !visible) return apiError(res, 404, 'device_not_found');
-        // Таблото е по-достоверно от ръчно въведеното: модел, HW и FW идват от регистъра.
-        context = {
-          ...context,
-          productModel: device.revision.product.model,
-          hardwareRevision: device.revision.hwRevision,
-          firmware: device.firmware,
-          serial: device.serial,
-        };
+        const device = await visibleBoard(p, parsed.data.deviceSerial);
+        if (!device) return apiError(res, 404, 'device_not_found');
+        // Таблото е по-достоверно от ръчно въведеното: модел, HW, FW и опциите (FR-01) идват от
+        // регистъра.
+        context = boardContext(context, device);
         deviceId = device.id;
       }
       const product = await deps.db.product.findUnique({
@@ -164,28 +168,51 @@ export function casesRouter(deps: WiredDeps): Router {
   router.patch('/cases/:id/context', async (req, res, next) => {
     try {
       const id = Id.safeParse(req.params.id);
-      const body = z.object({ context: DiagnosticContextSchema }).safeParse(req.body);
+      const body = ContextPatch.safeParse(req.body);
       if (!id.success || !body.success) return apiError(res, 400, 'invalid_input');
       const p = principalOf(req);
       const c = await findCaseFor(deps.db, p, id.data);
       if (!c) return apiError(res, 404, 'not_found');
       if (!isParticipant(p, c)) return apiError(res, 403, 'forbidden');
       if (c.status === 'RESOLVED') return apiError(res, 409, 'case_closed');
+      let context = redactContext(body.data.context);
+      let board: DeviceWithProduct | null = null;
+      if (body.data.deviceSerial) {
+        board = await visibleBoard(p, body.data.deviceSerial);
+        // Портален случай — само табло на фирмата на случая: поелият оператор (персонал вижда
+        // всички табла) не може да отвори към портала схемите на чуждо табло (AC-18).
+        if (!board || (c.portal && board.companyId !== c.companyId)) {
+          return apiError(res, 404, 'device_not_found');
+        }
+        context = boardContext(context, board);
+      }
       const product = await deps.db.product.findUnique({
-        where: {
-          tenantId_model: { tenantId: p.user.tenantId, model: body.data.context.productModel },
-        },
+        where: { tenantId_model: { tenantId: p.user.tenantId, model: context.productModel } },
       });
       if (!product) return apiError(res, 422, 'unknown_product');
       const updated = await deps.db.case.update({
         where: { id: c.id },
-        data: { context: redactContext(body.data.context) as Prisma.InputJsonValue },
+        data: {
+          context: context as Prisma.InputJsonValue,
+          ...(board ? { deviceId: board.id } : {}),
+        },
       });
       await addTimeline(deps.db, c.id, 'context.updated', p.user.id, {
         from: c.context,
-        to: body.data.context,
+        to: context,
       });
-      const warnings = await contextWarnings(deps.db, c.id, product.id, body.data.context);
+      if (board && board.id !== c.deviceId) {
+        // Вързването за табло отключва уникалните му схеми — в одита само id-та.
+        await appendAudit(deps.db, {
+          tenantId: p.user.tenantId,
+          actorId: p.user.id,
+          action: 'case.board',
+          objectType: 'case',
+          objectId: c.id,
+          detail: { deviceId: board.id, previousDeviceId: c.deviceId },
+        });
+      }
+      const warnings = await contextWarnings(deps.db, c.id, product.id, context);
       res.json({ case: caseView(updated), warnings });
     } catch (err) {
       next(err);

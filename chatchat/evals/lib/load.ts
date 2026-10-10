@@ -79,6 +79,7 @@ export async function loadKnowledge(db: PrismaClient, set: EvalSetT): Promise<Lo
         serial: d.serial,
         productRevisionId: revision.id,
         firmware: d.firmware,
+        options: d.options,
       },
     });
     if (d.tenant === 'A') devicesA.set(d.serial, { id: device.id, productModel: d.productModel });

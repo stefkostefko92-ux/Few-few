@@ -1,6 +1,6 @@
 import type { DiagnosticContext } from '../domain/context.js';
 import type { ActionClass } from '../domain/response.js';
-import type { ApplicabilityRule, Validity } from '../domain/versions.js';
+import type { ApplicabilityRule, ProductVersion, Validity } from '../domain/versions.js';
 
 /**
  * Договорът на търсенето (§8). Хранилището (Prisma или в паметта за тестовете) прилага ВИНАГИ
@@ -10,6 +10,19 @@ import type { ApplicabilityRule, Validity } from '../domain/versions.js';
  */
 
 export type Audience = 'PORTAL' | 'INTERNAL' | 'ENGINEERING';
+
+/** Опциите на конфигурацията на таблото (FR-01): { inverter: "VF-3", stops: "8" }. */
+export type BoardOptions = Readonly<Record<string, string>>;
+
+/**
+ * Правило за приложимост на запис от пакета: HW/FW/табло (`domain/versions.ts`) + по избор
+ * ограничение по опции (FR-01). `options` липсва/празно → всички конфигурации; null → неразчетено
+ * ограничение (повреден ред) — fail-closed, никога не съвпада (`retrieval/applicability.ts`).
+ */
+export type EvidenceRule = ApplicabilityRule & { options?: BoardOptions | null };
+
+/** Версията на случая за приложимостта: HW/FW/табло + опциите от контекста (FR-01). */
+export type CaseVersion = ProductVersion & { options?: BoardOptions };
 
 export interface SearchScope {
   tenantId: string;
@@ -79,6 +92,8 @@ export interface EvidenceItem {
   validity?: Exclude<Validity, 'effective'>;
   /** Обща ревизия, заменена за таблото на случая от собствената му (`applyBoardOverride`). */
   replacedByBoard?: boolean;
+  /** Би бил приложим, ако случаят знаеше тези опции на таблото (FR-01) — искат се (FR-07). */
+  missingOptions?: string[];
 }
 
 export interface RetrievalRequest {
@@ -110,10 +125,16 @@ export interface RetrievalResult {
  */
 export type RawEvidence = Omit<
   EvidenceItem,
-  'ref' | 'score' | 'applicable' | 'validity' | 'boardSpecific' | 'replacedByBoard'
+  | 'ref'
+  | 'score'
+  | 'applicable'
+  | 'validity'
+  | 'boardSpecific'
+  | 'replacedByBoard'
+  | 'missingOptions'
 > & {
   rawScore: number;
-  rules: ApplicabilityRule[];
+  rules: EvidenceRule[];
   /** Валидността на документа (на кода — на документа-източник); липсва = без ограничение. */
   effectiveFrom?: Date | null;
   effectiveTo?: Date | null;
