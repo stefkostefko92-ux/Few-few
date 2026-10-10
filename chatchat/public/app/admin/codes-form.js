@@ -1,5 +1,6 @@
-// Нов код за грешка (FR-04). Всеки код сочи ДОКУМЕНТ-ИЗТОЧНИК; AI го вижда едва след публикуване,
-// а публикуването иска публикуван източник.
+// Код за грешка (FR-04): нов (DRAFT) или редакция на ЧЕРНОВА. Всеки код сочи ДОКУМЕНТ-ИЗТОЧНИК;
+// AI го вижда едва след публикуване (преглед → четири очи за безопасност), а публикуването иска
+// публикуван източник. Публикуваната версия не се редактира — „Нова версия“ я копира като чернова.
 
 import { t } from '../i18n.js';
 import { call } from './core.js';
@@ -18,18 +19,19 @@ export const ACTION_CLASSES = [
 
 export const docLabel = (d) => `${d.code} · ${d.revision} — ${d.title}`;
 
-function relationRow() {
+function relationRow(init = {}) {
   const kind = select(
     KINDS.map((k) => ({ value: k, label: t(`admin.codes.kind.${k}`) })),
-    'CAUSE',
+    init.kind ?? 'CAUSE',
   );
   const text = textarea({ rows: 2, required: true, maxlength: 1000 });
-  const expected = input({ maxlength: 400 });
+  text.value = init.text ?? '';
+  const expected = input({ maxlength: 400, value: init.expected ?? '' });
   const cls = select(
     ACTION_CLASSES.map((k) => ({ value: k, label: t(`admin.actionClass.${k}`) })),
-    'INFORMATIVE',
+    init.actionClass ?? 'INFORMATIVE',
   );
-  const page = input({ type: 'number', min: 1, max: 100000 });
+  const page = input({ type: 'number', min: 1, max: 100000, value: init.sourcePage ?? '' });
   const node = h(
     'div',
     { class: 'row row-rel' },
@@ -51,62 +53,62 @@ function relationRow() {
   };
 }
 
-export async function newCode(reload) {
-  let products = [];
-  let docs = [];
-  try {
-    [products, docs] = await Promise.all([
-      loadProducts(),
-      call('GET', '/admin/documents?status=PUBLISHED').then((r) => r.documents),
-    ]);
-  } catch (err) {
-    toast(errText(err), 'err');
-    return;
-  }
-  if (products.length === 0 || docs.length === 0) {
-    toast(t('admin.codes.needSource'), 'warn');
-    return;
-  }
+/**
+ * Формата: `entry` (редакция) я попълва и заключва модела/кода (идентичността на версията);
+ * без него — нов код. `save(body)` праща заявката.
+ */
+function codeDialog({ products, docs, entry, title, submitLabel, save }) {
   const model = select(
     products.map((p) => ({ value: p.model, label: p.model })),
-    products[0].model,
+    entry?.productModel ?? products[0].model,
+    { disabled: entry ? true : undefined },
   );
-  const code = input({ required: true, maxlength: 20, placeholder: 'E37' });
-  const title = input({ required: true, minlength: 2, maxlength: 200 });
+  const code = input({
+    required: true,
+    maxlength: 20,
+    placeholder: 'E37',
+    value: entry?.code ?? '',
+  });
+  if (entry) code.readOnly = true;
+  const title_ = input({ required: true, minlength: 2, maxlength: 200, value: entry?.title ?? '' });
   const description = textarea({ rows: 3, required: true, minlength: 2, maxlength: 4000 });
-  const subsystem = input({ maxlength: 60 });
+  description.value = entry?.description ?? '';
+  const subsystem = input({ maxlength: 60, value: entry?.subsystem ?? '' });
   const severity = select(
     SEVERITIES.map((s) => ({ value: s, label: t(`admin.severity.${s}`) })),
-    'FAULT',
+    entry?.severity ?? 'FAULT',
   );
-  const safety = checkbox(t('admin.codes.safety'));
-  const hw = input({ maxlength: 20 });
-  const fwMin = input({ pattern: VERSION_PATTERN, maxlength: 20 });
-  const fwMax = input({ pattern: VERSION_PATTERN, maxlength: 20 });
+  const safety = checkbox(t('admin.codes.safety'), { checked: entry?.safetyRelevant || undefined });
+  const hw = input({ maxlength: 20, value: entry?.hwRevision ?? '' });
+  const fwMin = input({ pattern: VERSION_PATTERN, maxlength: 20, value: entry?.fwMin ?? '' });
+  const fwMax = input({ pattern: VERSION_PATTERN, maxlength: 20, value: entry?.fwMax ?? '' });
   const source = select(
     docs.map((d) => ({ value: d.id, label: docLabel(d) })),
-    docs[0].id,
+    entry?.sourceDocument?.id ?? docs[0].id,
   );
-  const page = input({ type: 'number', min: 1, max: 100000 });
+  const page = input({ type: 'number', min: 1, max: 100000, value: entry?.sourcePage ?? '' });
+  const initial = entry?.relations ?? [];
+  const rows = initial.slice();
   const relations = repeater({
     addLabel: t('admin.codes.addRelation'),
-    makeRow: relationRow,
+    makeRow: () => relationRow(rows.shift()),
     min: 0,
     max: 40,
-    initial: 0,
+    initial: initial.length,
   });
-
+  const opt = (v) => (v.value.trim() ? v.value.trim() : undefined);
   dialog({
-    title: t('admin.codes.new'),
+    title,
     wide: true,
     body: [
+      entry ? h('p', { class: 'note' }, t('admin.err.edit.note')) : null,
       h(
         'div',
         { class: 'field-row' },
         field(t('admin.devices.model'), model),
         field(t('admin.codes.code'), code),
       ),
-      field(t('admin.codes.title'), title),
+      field(t('admin.codes.title'), title_),
       field(t('admin.codes.description'), description),
       h(
         'div',
@@ -134,28 +136,90 @@ export async function newCode(reload) {
     ],
     actions: [
       {
-        label: t('admin.codes.create'),
+        label: submitLabel,
         primary: true,
-        onClick: async () => {
-          await call('POST', '/admin/errors', {
+        onClick: () =>
+          save({
             productModel: model.value,
             code: code.value.trim(),
-            title: title.value.trim(),
+            title: title_.value.trim(),
             description: description.value.trim(),
             severity: severity.value,
             safetyRelevant: safety.querySelector('input').checked,
             sourceDocumentId: source.value,
             relations: relations.values(),
-            ...(subsystem.value.trim() ? { subsystem: subsystem.value.trim() } : {}),
-            ...(hw.value.trim() ? { hwRevision: hw.value.trim() } : {}),
-            ...(fwMin.value.trim() ? { fwMin: fwMin.value.trim() } : {}),
-            ...(fwMax.value.trim() ? { fwMax: fwMax.value.trim() } : {}),
-            ...(page.value ? { sourcePage: Number(page.value) } : {}),
-          });
-          toast(t('admin.codes.created', { code: code.value.trim() }));
-          reload();
-        },
+            subsystem: opt(subsystem),
+            hwRevision: opt(hw),
+            fwMin: opt(fwMin),
+            fwMax: opt(fwMax),
+            sourcePage: page.value ? Number(page.value) : undefined,
+          }),
       },
     ],
+  });
+}
+
+async function loadSources() {
+  const [products, docs] = await Promise.all([
+    loadProducts(),
+    call('GET', '/admin/documents?status=PUBLISHED').then((r) => r.documents),
+  ]);
+  return { products, docs };
+}
+
+export async function newCode(reload) {
+  let src;
+  try {
+    src = await loadSources();
+  } catch (err) {
+    toast(errText(err), 'err');
+    return;
+  }
+  if (src.products.length === 0 || src.docs.length === 0) {
+    toast(t('admin.codes.needSource'), 'warn');
+    return;
+  }
+  codeDialog({
+    ...src,
+    title: t('admin.codes.new'),
+    submitLabel: t('admin.codes.create'),
+    save: async (body) => {
+      const clean = Object.fromEntries(Object.entries(body).filter(([, v]) => v !== undefined));
+      await call('POST', '/admin/errors', clean);
+      toast(t('admin.codes.created', { code: body.code }));
+      reload();
+    },
+  });
+}
+
+/** Редакция на ЧЕРНОВА (PATCH): празно незадължително поле изчиства стойността (null). */
+export async function editCode(entry, reload) {
+  let src;
+  try {
+    src = await loadSources();
+  } catch (err) {
+    toast(errText(err), 'err');
+    return;
+  }
+  // Източникът на черновата може още да не е публикуван — остава избираем.
+  const docs = src.docs.some((d) => d.id === entry.sourceDocument?.id)
+    ? src.docs
+    : [...(entry.sourceDocument ? [{ ...entry.sourceDocument, title: '' }] : []), ...src.docs];
+  if (docs.length === 0) {
+    toast(t('admin.codes.needSource'), 'warn');
+    return;
+  }
+  codeDialog({
+    ...src,
+    docs,
+    entry,
+    title: t('admin.err.edit.title', { code: entry.code, version: entry.version }),
+    submitLabel: t('admin.err.edit.save'),
+    save: async ({ productModel: _m, code: _c, ...body }) => {
+      const patch = Object.fromEntries(Object.entries(body).map(([k, v]) => [k, v ?? null]));
+      await call('PATCH', `/admin/errors/${encodeURIComponent(entry.id)}`, patch);
+      toast(t('admin.err.edit.done', { code: entry.code }));
+      reload();
+    },
   });
 }

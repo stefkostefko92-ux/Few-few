@@ -42,7 +42,7 @@ test('знание: документ → преглед → публикуван
   await upload.getByLabel('Revisione', { exact: true }).fill('A');
   await upload.getByLabel('Titolo', { exact: true }).fill('Procedura di prova E2E (FITTIZIA)');
   await upload.getByLabel('Lingua (2 lettere)').fill('it');
-  await upload.getByRole('checkbox').check();
+  await upload.getByRole('checkbox', { name: 'Rilevante per la sicurezza' }).check();
   await upload.getByRole('button', { name: 'Aggiungi modello' }).click();
   await upload.getByRole('combobox', { name: 'Modello' }).last().selectOption('LTX-500');
   await upload.getByRole('button', { name: 'Carica come bozza' }).click();

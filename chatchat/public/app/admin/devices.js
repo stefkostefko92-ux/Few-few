@@ -2,6 +2,7 @@
 
 import { t } from '../i18n.js';
 import { ApiError, call, query } from './core.js';
+import { openDeviceDocuments } from './devices-docs.js';
 import { issueQr } from './devices-qr.js';
 import { loadProducts, VERSION_PATTERN } from './kb-common.js';
 import {
@@ -141,10 +142,18 @@ export function mount(root) {
       head: h('span', { class: 'sr-only' }, t('admin.users.col.actions')),
       cls: 'col-actions',
       render: (d) =>
-        button(t('admin.devices.qr.new'), () => void issueQr(d, () => void load()), {
-          small: true,
-          'aria-label': `${t('admin.devices.qr.new')}: ${d.serial}`,
-        }),
+        h(
+          'div',
+          { class: 'btn-row' },
+          button(t('admin.kb.device.open'), () => void openDeviceDocuments(d), {
+            small: true,
+            'aria-label': `${t('admin.kb.device.open')}: ${d.serial}`,
+          }),
+          button(t('admin.devices.qr.new'), () => void issueQr(d, () => void load()), {
+            small: true,
+            'aria-label': `${t('admin.devices.qr.new')}: ${d.serial}`,
+          }),
+        ),
     },
   ];
 

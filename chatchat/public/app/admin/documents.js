@@ -1,10 +1,11 @@
-// Документи (§7, §4.1): списък по статус, качване и жизнен цикъл Чернова → Преглед → Публикуван → Отписан.
+// Документи (§7, §4.1): списък по статус, качване и жизнен цикъл Чернова → Преглед → Публикуван →
+// Отписан (обратимо). Документите са неизменими; валидността и таблото личат в списъка.
 
 import { t } from '../i18n.js';
 import { call, fmtDate, query } from './core.js';
 import { openDocument } from './documents-detail.js';
 import { uploadDocument } from './documents-upload.js';
-import { statusBadge } from './kb-common.js';
+import { boardBadge, statusBadge, validityBadge } from './kb-common.js';
 import {
   badge,
   button,
@@ -43,6 +44,7 @@ export function mount(root, params) {
           { class: 'cell-main' },
           h('strong', { class: 'mono' }, d.code),
           h('span', { class: 'muted small' }, `${t('admin.docs.revision')} ${d.revision}`),
+          boardBadge(d),
         ),
     },
     { label: t('admin.docs.title'), render: (d) => d.title },
@@ -52,6 +54,7 @@ export function mount(root, params) {
       render: (d) => (d.safetyRelevant ? badge('warn', t('admin.docs.safetyBadge')) : '—'),
     },
     { label: t('admin.docs.status'), render: (d) => statusBadge(d.status) },
+    { label: t('admin.kb.validity'), render: (d) => validityBadge(d) },
     { label: t('admin.docs.publishedAt'), render: (d) => fmtDate(d.publishedAt) || '—' },
     {
       label: t('admin.users.col.actions'),
