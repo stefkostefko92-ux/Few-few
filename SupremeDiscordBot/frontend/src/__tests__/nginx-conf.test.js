@@ -119,3 +119,27 @@ describe("заглавия за сигурност", () => {
     expect(live.split("\n").some((l) => /server_tokens\s+off;/.test(l))).toBe(true);
   });
 });
+
+describe("nginx.conf — access логът не пише тайни от адреса", () => {
+  // Стандартният формат `main` пише `$request` с целия query низ: `code`/`state`
+  // при всеки вход през Discord и `?t=` токена на всеки отворен транскрипт.
+  it("server блокът ползва собствен формат, а не подразбиращия се `main`", () => {
+    expect(live).toMatch(/access_log\s+\S+\s+supreme_noargs\s*;/);
+    expect(live).not.toMatch(/access_log\s+\S+\s+main\s*;/);
+  });
+
+  it("форматът няма нищо, което носи query частта", () => {
+    const m = live.match(/log_format\s+supreme_noargs\s+([\s\S]*?);/);
+    expect(m, "log_format supreme_noargs липсва").toBeTruthy();
+    for (const v of ["$request ", "$request\"", "$request_uri", "$args", "$query_string", "$arg_", "$http_referer"]) {
+      expect(m[1], v).not.toContain(v);
+    }
+    expect(m[1]).toContain("$supreme_log_path");
+  });
+
+  it("пътят за лога е само частта на $request_uri ПРЕДИ „?“", () => {
+    const map = live.match(/map\s+\$request_uri\s+\$supreme_log_path\s*\{([\s\S]*?)\}/);
+    expect(map, "map за пътя липсва").toBeTruthy();
+    expect(map[1]).toMatch(/\[\^\?\]\*/);
+  });
+});

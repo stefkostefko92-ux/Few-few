@@ -463,7 +463,7 @@ export default {
   "premium.feat.prem7": "Webhooks (HMAC) + public REST API",
   "premium.feat.prem8": "Unlimited transcript retention + CSV/PDF export",
   "premium.feat.wl1": "Everything in Premium",
-  "premium.feat.wl2": "White-label custom bot — upload your own token",
+  "premium.feat.wl2": "White-label custom bot — connect your own Discord bot application",
   "premium.feat.wl3": "Runs under your own brand (name & avatar)",
   "pastDue.title": "Payment failed — your subscription is at risk",
   "pastDue.desc": "We couldn’t charge your payment method. Premium stays on while we retry, but it will be switched off if the payment keeps failing.",

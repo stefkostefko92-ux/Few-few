@@ -14,6 +14,7 @@ import SignalFunnel from "../components/SignalFunnel";
 import Seo from "../components/Seo";
 import FeatureLinks from "../components/FeatureLinks";
 import GameShowcase from "../components/GameShowcase";
+import AuthErrorNotice from "../components/AuthErrorNotice";
 import { useScrollReveal } from "../hooks/useScrollReveal";
 import { useMagnetic, useTiltCard } from "../hooks/useMicroInteractions";
 
@@ -110,17 +111,7 @@ export default function Login() {
                 Tickets, applications, verification, reaction roles, giveaways, activity logging, a leveling game with collectible companions, scheduled messages, webhooks and AI-assisted replies — for Discord communities that outgrew a folder full of single-purpose bots.
               </p>
 
-              {error && (
-                <div className="mb-6 max-w-md mx-auto lg:mx-0 border border-danger/40 bg-danger/5 px-4 py-3 text-left">
-                  <div className="font-mono text-[10px] uppercase tracking-wider text-danger mb-1">✕ Auth Error</div>
-                  <div className="text-sm text-cs-text">
-                    {error === "blacklisted"   ? "You have been blacklisted from this platform."
-                    : error === "oauth_failed" ? "Discord authentication failed. Please try again."
-                    : error === "no_code"      ? "OAuth flow incomplete. Please try again."
-                    : "An error occurred. Please try again."}
-                  </div>
-                </div>
-              )}
+              <AuthErrorNotice code={error} />
 
               <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-3">
                 <button ref={heroCtaRef} onClick={handleLogin} className="cs-btn-primary text-base px-8 py-4">
@@ -407,7 +398,7 @@ export default function Login() {
               />
               <FaqItem
                 q="Can I use my own Discord bot?"
-                a="Yes — on the White-label tier (€9.99 per server per month, bought in the Discord store) you upload your own bot token and it runs under your brand: your bot's name, avatar and server presence. The token is encrypted at rest with AES-256-GCM."
+                a="Yes — on the White-label tier (€9.99 per server per month, bought in the Discord store) you connect your own Discord bot application (its bot token from the Discord Developer Portal) and it runs under your brand: your bot's name, avatar and server presence. The token is encrypted at rest with AES-256-GCM."
               />
               <FaqItem
                 q="What happens if I cancel — can I take my data?"
@@ -497,7 +488,7 @@ export default function Login() {
                 cta="Get White-label"
                 bullets={[
                   "Everything in Premium",
-                  "White-label custom bot (your token)",
+                  "White-label custom bot (your own bot application)",
                   "Runs under your name & avatar",
                 ]}
               />
