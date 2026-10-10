@@ -1,0 +1,130 @@
+@import './fonts.css';
+/* the building blocks first (buttons, panels, fields, pills, tables…), then each area's own sheet over them */
+@import './ui.css';
+@import './ui-forms.css';
+@import './calc.css';
+@import './shell.css';
+@import './tables.css';
+@import './landing.css';
+@import './home.css';
+@import './shaft.css';
+@import './edit.css';
+@import './drawing.css';
+@import './lift.css';
+@import './advice.css';
+@import './blank.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* LiftPilot Premium: one dark theme, the template's (landing.css / workspace-ref.css of the pack). A deep blue-black
+   desk, panels a step lighter with thin cool lines, one cyan for action and focus, amber for what needs attention, mint
+   for what passes, a red that reads on the panels. The token names are the app's since its first theme, so every page
+   follows; the drawing sheets stay white paper on purpose (shaft.css, home.css). Text contrast is WCAG AA on every
+   surface (ink 15.9:1, muted 7.7:1, dim 5.5:1 on --surface2; the status colours >= 6.8:1 on their tints); the input
+   borders reach 3:1 against the panel (1.4.11). The chart series pass the dataviz check on --surface (lightness band,
+   colour-vision separation, 3:1). */
+:root {
+  color-scheme: dark;
+  --bg: #030a11; --bg-2: #04111a; --surface: #07131d; --surface2: #0b1e2a; --surface3: #0e2533;
+  --ink: #f4f8fa; --ink-2: #c4d6de; --muted: #9eb2bd; --dim: #7f97a3;
+  --rule: #193745; --rule-soft: #142d39; --rule-strong: #2a5466; --rule-input: #3a6d82;
+  --accent: #27dff0; --accent-2: #62f0ef; --accent-ink: #031016; --accent-soft: #0a2632; --accent-line: #1a6b7c; --brand: #27dff0;
+  --ok: #66e3b4; --ok-bg: #0b2824; --ok-line: #24574a;
+  --warn: #e7bd75; --warn-bg: #271e11; --warn-line: #5d4724;
+  --fail: #ff8a80; --fail-bg: #2b1316; --fail-line: #6b2f31;
+  --info: #8ec9e6; --info-bg: #0a2230; --info-line: #1f4a5e;
+  --rope: #62f0ef; --steel: #7f97a3; --car: #12303e;
+  --stage-bg: radial-gradient(ellipse at 50% 38%, #0b2633 0%, #061520 46%, #02070c 100%);
+  --lift-bg: #030d15; --hud-bg: rgb(3 13 21 / .8); --hud-ink: #e8f6fa; --hud-muted: #9eb2bd;
+  --series-1: #14a3bd; --series-2: #db7430;
+  /* surfaces of the template: the panel's diagonal gradient, the faint inner highlight, the lift of a floating panel */
+  --panel-grad: linear-gradient(145deg, #0b1c27 0%, #07131d 100%);
+  --panel-hi: inset 0 1px 0 rgb(255 255 255 / .025);
+  --shadow: 0 10px 24px rgb(0 0 0 / .18);
+  --shadow-lg: 0 24px 60px -24px rgb(0 0 0 / .8), 0 0 28px rgb(0 215 237 / .05);
+  --glow: 0 0 22px rgb(9 222 239 / .14);
+  --glow-strong: 0 0 32px rgb(9 222 239 / .3);
+  --grid: rgb(0 210 235 / .085); --grid-diag: rgb(0 185 212 / .1);
+  /* the building blocks' own shades (ui.css, ui-forms.css), here so that paper can turn them black on white: the quiet
+     button, the primary's lighter edges, the eyebrow, the feature card, the icon tile and the icons' glow, the field's
+     hover line, the focus halo, the hovered table row, the save bar */
+  --btn-ink: #effcff; --btn-bg: #06131b; --btn-bg-hover: #09202b;
+  --accent-hover: #52e9f6; --accent-edge: #70f5ff; --accent-edge-hover: #a3faff; --fail-hover: #ffb3ac;
+  --eyebrow-ink: #8cbac7; --dash-glow: 0 0 9px rgb(0 221 246 / .6);
+  --card-grad: linear-gradient(140deg, #0b1b26 0%, #07131d 100%); --card-line: #173747;
+  --card-wash: linear-gradient(130deg, rgb(26 223 242 / .04), transparent 55%); --card-hover-ring: 0 0 0 1px rgb(39 223 240 / .12);
+  --card-on-line: #21cce0; --card-on-glow: 0 0 0 1px rgb(13 210 232 / .15), 0 0 28px rgb(0 206 232 / .06);
+  --tile-line: #126174; --tile-grad: linear-gradient(145deg, #09202b, #06141d); --tile-glow: inset 0 0 13px rgb(0 207 232 / .045);
+  --icon-glow: drop-shadow(0 0 4px rgb(70 231 255 / .2));
+  --rule-input-hover: #4a8399; --focus-halo: 0 0 0 3px rgb(39 223 240 / .14); --row-hover: rgb(14 37 51 / .55);
+  --savebar-bg: rgb(4 14 22 / .94); --savebar-shadow: 0 -12px 30px -18px rgb(0 0 0 / .8);
+  --radius-sm: 5px; --radius: 9px; --radius-lg: 10px;
+  /* type: Manrope throughout (its tight tracking stands in for the old condensed headings), DM Mono for figures */
+  --font-body: "Manrope", "Manrope Fallback", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-cond: var(--font-body);
+  --font-mono: "DM Mono", "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --track-tight: -0.022em;
+  /* one title for a panel or a section of a working page (ui.css .panel-head, tables.css .sec-title, the calculator's
+     cards, the installation's form), whatever sheet draws it */
+  --panel-title: 700 18px/1.3 var(--font-body); --panel-title-track: -0.015em;
+}
+
+/* paper: black on white whatever the screen shows */
+@media print {
+  :root {
+    color-scheme: light;
+    --bg: #fff; --bg-2: #fff; --surface: #fff; --surface2: #f4f6f9; --surface3: #eef1f5;
+    --ink: #000; --ink-2: #222; --muted: #444; --dim: #555;
+    --rule: #c8ced8; --rule-soft: #dde2ea; --rule-strong: #8a94a6; --rule-input: #8a94a6;
+    --accent: #1d3271; --accent-2: #1d3271; --accent-ink: #fff; --accent-soft: #e3e8f5; --accent-line: #1d3271; --brand: #1d3271;
+    --ok: #1f7a4a; --ok-bg: #fff; --ok-line: #1f7a4a; --warn: #8f5500; --warn-bg: #fff; --warn-line: #8f5500;
+    --fail: #b3261e; --fail-bg: #fff; --fail-line: #b3261e; --info: #3b4a73; --info-bg: #fff; --info-line: #3b4a73;
+    --rope: #1d3271; --steel: #8a93ab; --car: #dfe5f1; --series-1: #2a78d6; --series-2: #eb6834;
+    /* the 3D stage and its readout: a white box with black text (the canvas prints the frame it shows) */
+    --stage-bg: #fff; --lift-bg: #fff; --hud-bg: #fff; --hud-ink: #000; --hud-muted: #444;
+    --panel-grad: none; --panel-hi: none; --shadow: none; --shadow-lg: none; --glow: none; --glow-strong: none;
+    --grid: transparent; --grid-diag: transparent;
+    --btn-ink: #000; --btn-bg: transparent; --btn-bg-hover: transparent;
+    --accent-hover: #1d3271; --accent-edge: #1d3271; --accent-edge-hover: #1d3271; --fail-hover: #b3261e;
+    --eyebrow-ink: #444; --dash-glow: none;
+    --card-grad: none; --card-line: #c8ced8; --card-wash: none; --card-hover-ring: none; --card-on-line: #1d3271; --card-on-glow: none;
+    --tile-line: #c8ced8; --tile-grad: none; --tile-glow: none; --icon-glow: none;
+    --rule-input-hover: #8a94a6; --focus-halo: none; --row-hover: transparent; --savebar-bg: #fff; --savebar-shadow: none;
+  }
+  html, body { background: #fff !important; color: #000; }
+  /* a button on paper is its label in a thin frame: no fill (printers drop backgrounds, the primary's white label
+     would vanish with it), no glow */
+  .btn, .btn-primary { color: #000; background: none; border-color: var(--rule-strong); box-shadow: none; }
+  /* the painted icons are cyan glows drawn for the dark desk: on paper they are smudges, the text says it all */
+  img.icon, .icon-tile { display: none !important; }
+}
+
+@layer base {
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html { -webkit-text-size-adjust: 100%; background: var(--bg); scrollbar-color: var(--rule-strong) var(--bg); }
+  /* the template's deep desk: a cool glow from the top right over a near-black blue, painted once (not fixed: no
+     repaint while scrolling) */
+  body { margin: 0; color: var(--ink); font: 15px/1.6 var(--font-body);
+    background: radial-gradient(1100px 620px at 82% -160px, rgb(6 32 43 / .95), transparent 70%),
+      linear-gradient(100deg, #030a11 0%, #04111a 48%, #041019 100%) no-repeat, var(--bg);
+    -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  h1, h2, h3 { font-family: var(--font-body); text-wrap: balance; margin: 0; }
+  h1 { font-size: clamp(28px, 1.5vw + 19px, 40px); line-height: 1.06; letter-spacing: -0.035em; font-weight: 800; }
+  h2 { font-size: 20px; line-height: 1.2; letter-spacing: var(--track-tight); font-weight: 700; }
+  h3 { font-size: 16px; line-height: 1.3; letter-spacing: -0.01em; font-weight: 700; }
+  p { margin: 0; }
+  a { color: var(--accent); }
+  /* a link inside running text is told by more than its colour (WCAG 1.4.1) */
+  :where(p, dd, label, .note, .site-footer) a:not([class]) { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  ::selection { background: rgb(39 223 240 / .32); color: #fff; }
+  /* the focus ring: cyan, 2 px, off the edge (buttons and fields add their own glow in ui.css) */
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  ::-webkit-scrollbar { width: 11px; height: 11px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--rule); border: 3px solid var(--bg); border-radius: 8px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--rule-strong); }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+}

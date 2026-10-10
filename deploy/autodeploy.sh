@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma liftpilot korpora}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -148,6 +148,11 @@ PIUMA_HEALTH_URL="${PIUMA_HEALTH_URL:-http://127.0.0.1:4310/health}"
 # сочи към release без piuma/, тоест „пренеси от текущия" няма откъде; без този път
 # инструкцията „сложи го в current/piuma/.env" сочеше папка, която още не съществува.
 PIUMA_ENV="${PIUMA_ENV:-/opt/few-few/shared/piuma/.env}"
+
+# liftpilot (Docker Compose: app + db, host nginx + Let's Encrypt). Тайните са в стабилния път извън releases/ (600);
+# при пръв деплой liftpilot/deploy/deploy.sh ги генерира (паролата на администратора — от LIFTPILOT_ADMIN_PASSWORD
+# или случайна, отпечатана веднъж); LIFTPILOT_SMTP_USER/LIFTPILOT_SMTP_PASS — данните на Brevo за писмата.
+LIFTPILOT_ENV="${LIFTPILOT_ENV:-/opt/few-few/shared/liftpilot/.env}"
 
 # korpora (Korpora — Docker Compose: db + app на 127.0.0.1:4320 зад nginx на хоста). Стъпките са
 # в korpora/deploy/deploy.sh — същият скрипт и за ръчния деплой, затова двата пътя не се разминават:
@@ -1321,7 +1326,22 @@ deploy_piuma() {
   fi
 }
 
-# ── 3й) korpora — Docker Compose (db + app); стъпките са в korpora/deploy/deploy.sh ──
+# ── 3й) liftpilot — Docker Compose (app + db) зад nginx на хоста ──────────────
+# Цялата логика е в liftpilot/deploy/deploy.sh (идемпотентен): тайни при пръв деплой, pg_dump ПРЕДИ миграцията
+# (без бекъп няма миграция), build + up, health с маркер, nginx vhost + certbot. Тук само го викаме и проверяваме.
+deploy_liftpilot() {
+  local d="$SRC/liftpilot"
+  [ -d "$d" ] || { warn "Няма liftpilot/ в архива — пропускам."; return; }
+  log "Разгръщам liftpilot (Docker Compose)…"
+  command -v docker >/dev/null || { warn "liftpilot: липсва docker — пропускам."; deploy_failed=1; return; }
+  # `( … ) || { … }`: при `set -e` провал тук не бива да спира следващите проекти.
+  ( cd "$d" && LIFTPILOT_ENV="$LIFTPILOT_ENV" bash deploy/deploy.sh ) \
+    || { warn "liftpilot: deploy.sh се провали — старите контейнери остават както са."; deploy_failed=1; return; }
+  local p; p="$(grep -E '^APP_PORT=' "$LIFTPILOT_ENV" 2>/dev/null | head -1 | cut -d= -f2 | tr -dc '0-9' || true)"
+  health "http://127.0.0.1:${p:-4330}/api/health" "liftpilot" '"app":"liftpilot"' || deploy_failed=1
+}
+
+# ── 3к) korpora — Docker Compose (db + app); стъпките са в korpora/deploy/deploy.sh ──
 # Кодовете на deploy.sh: 0 — жив; 3 — няма .env (машината още не е настроена: пропуск, не провал,
 # както при piuma); 4 — контейнерите са сменени, но Korpora не отговаря → откат; друго — спрян
 # преди смяната на контейнерите (работещите не са пипани).
@@ -1707,6 +1727,7 @@ for p in $PROJECTS; do
     SupremeDiscordBot)    deploy_supreme ;;
     eternaltouch)         deploy_eternaltouch ;;
     piuma)      deploy_piuma ;;
+    liftpilot)  deploy_liftpilot ;;
     korpora)   deploy_korpora ;;
     adblock)    deploy_adblock ;;
     vpsdash|vps-dashboard|vpsdashboard) deploy_vpsdashboard ;;

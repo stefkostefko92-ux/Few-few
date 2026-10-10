@@ -1,0 +1,38 @@
+import 'server-only';
+import type { Prisma } from '@prisma/client';
+import { prisma } from './db';
+import { log } from './log';
+
+export type AuditAction =
+  | 'LOGIN' | 'LOGIN_FAILED' | 'LOGOUT' | 'PASSWORD_CHANGED'
+  | 'USER_REGISTERED' | 'EMAIL_VERIFIED' | 'PASSWORD_RESET_REQUESTED' | 'PASSWORD_RESET'
+  | 'PROJECT_CREATED' | 'PROJECT_UPDATED' | 'PROJECT_ARCHIVED' | 'PROJECT_RESTORED' | 'PROJECT_UPGRADED'
+  | 'CALCULATION_SAVED' | 'CALCULATION_REVIEWED' | 'REPORT_DOWNLOADED'
+  | 'SHAFT_DESIGN_SAVED' | 'DXF_DOWNLOADED' | 'LIFT_DESIGN_SAVED' | 'ROOM_DESIGN_SAVED' | 'PROJECT_EXPORTED' | 'ORDER_EXPORTED'
+  | 'PLANT_UPDATED' | 'LOGO_UPLOADED' | 'LOGO_REMOVED' | 'CLIENT_LOGO_UPLOADED' | 'CLIENT_LOGO_REMOVED' | 'DRAWING_SET_ISSUED' | 'DRAWING_SET_REVISED' | 'DRAWING_SET_DOWNLOADED'
+  | 'USER_CREATED' | 'USER_UPDATED' | 'USER_PASSWORD_RESET' | 'USER_RELEASED' | 'USER_DELETED'
+  | 'INVITE_SENT' | 'INVITE_REVOKED'
+  | 'COMPANY_CREATED' | 'COMPANY_UPDATED' | 'COMPANY_DELETED' | 'INACTIVE_NOTICE_SENT'
+  | 'SUBSCRIPTION_CHECKOUT' | 'SUBSCRIPTION_UPDATED' | 'SUBSCRIPTION_PACK_CHANGED' | 'SEATS_ENFORCED' | 'PRICES_UPDATED'
+  | 'TERMS_ACCEPTED' | 'TERMS_NOTICE_SENT'
+  | 'DATA_EXPORTED';
+
+interface AuditInput {
+  companyId: string | null;
+  userId: string | null;
+  action: AuditAction;
+  entity: string;
+  entityId?: string | null;
+  meta?: Prisma.InputJsonValue;
+}
+
+// Records who did what. Never throws: the audit must not break the action itself.
+export async function audit(input: AuditInput): Promise<void> {
+  try {
+    await prisma.auditLog.create({
+      data: { companyId: input.companyId, userId: input.userId, action: input.action, entity: input.entity, entityId: input.entityId ?? null, meta: input.meta },
+    });
+  } catch (err) {
+    log.error({ err, action: input.action }, 'audit write failed');
+  }
+}
