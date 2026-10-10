@@ -14,6 +14,7 @@ import SignalFunnel from "../components/SignalFunnel";
 import Seo from "../components/Seo";
 import FeatureLinks from "../components/FeatureLinks";
 import GameShowcase from "../components/GameShowcase";
+import AuthErrorNotice from "../components/AuthErrorNotice";
 import { useScrollReveal } from "../hooks/useScrollReveal";
 import { useMagnetic, useTiltCard } from "../hooks/useMicroInteractions";
 
@@ -110,17 +111,7 @@ export default function Login() {
                 Tickets, applications, verification, reaction roles, giveaways, activity logging, a leveling game with collectible companions, scheduled messages, webhooks and AI-assisted replies — for Discord communities that outgrew a folder full of single-purpose bots.
               </p>
 
-              {error && (
-                <div className="mb-6 max-w-md mx-auto lg:mx-0 border border-danger/40 bg-danger/5 px-4 py-3 text-left">
-                  <div className="font-mono text-[10px] uppercase tracking-wider text-danger mb-1">✕ Auth Error</div>
-                  <div className="text-sm text-cs-text">
-                    {error === "blacklisted"   ? "You have been blacklisted from this platform."
-                    : error === "oauth_failed" ? "Discord authentication failed. Please try again."
-                    : error === "no_code"      ? "OAuth flow incomplete. Please try again."
-                    : "An error occurred. Please try again."}
-                  </div>
-                </div>
-              )}
+              <AuthErrorNotice code={error} />
 
               <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-3">
                 <button ref={heroCtaRef} onClick={handleLogin} className="cs-btn-primary text-base px-8 py-4">
