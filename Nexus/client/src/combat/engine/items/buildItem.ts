@@ -5,16 +5,20 @@
 // изолирани сами четяха се зле — виж mannequin.ts) и 'icon' (boy няма геометрия — голяма стара
 // снимка в прегледа, viz ItemViewer3DHost.tsx). Връща чист THREE.Object3D + dispose(), без DOM.
 import * as THREE from 'three/webgpu';
-import { getBoyMaterials, tintForItem, type BoyMaterials } from './boy-materials';
+import { photoMaterials, fitTextureScale } from './photoreal';
 import { decalMaterial } from './materials';
 import { buildMotifTexture } from './motifTexture';
-import { pickTint } from './tint';
 import { rngFor } from './rng';
 import { buildHelm } from './slots/helm';
 import { buildGloves } from './slots/hands';
 import { buildShield } from './slots/shield';
 import { buildWeapon } from './slots/weapons';
-import { previewMode } from './support';
+import { buildRing } from './slots/ring';
+import { buildAmulet } from './slots/amulet';
+import { buildPolearm } from './slots/polearms';
+import { buildHeadgear } from './slots/headgear';
+import { buildCloak } from './slots/cloak';
+import { previewMode, isClosedHelm } from './support';
 import type { CatalogEntry } from './theme';
 
 export interface BuildItemOpts {
@@ -68,10 +72,9 @@ export async function buildItem(entry: CatalogEntry, opts: BuildItemOpts = {}): 
   if (previewMode(entry) !== 'standalone') return null;
   const { decal = true } = opts;
   const rand = rngFor(entry.slug);
-  const base: BoyMaterials = await getBoyMaterials();
-  const tinted = tintForItem(base, pickTint(entry.theme));
-  const M = tinted.M;
-  const owned: Array<{ dispose(): void }> = [{ dispose: () => tinted.dispose() }];
+  const photo = await photoMaterials(entry);
+  const M = photo.M;
+  const owned: Array<{ dispose(): void }> = [{ dispose: () => photo.dispose() }];
 
   const group = new THREE.Group();
   group.name = `item:${entry.slug}`;
@@ -80,31 +83,35 @@ export async function buildItem(entry: CatalogEntry, opts: BuildItemOpts = {}): 
   switch (entry.category) {
     case 'weapon': {
       const icon = entry.icon || entry.sub_type || 'sword';
-      piece = buildWeapon(M, icon, rand);
+      piece = icon === 'axe' || icon === 'spear' ? buildPolearm(M, icon, entry.name, rand) : buildWeapon(M, icon, rand);
       break;
     }
     case 'shield': {
-      const built = buildShield(M, entry.theme.trim);
+      const built = buildShield(M, entry.theme.primary);
       owned.push(built);
       piece = built.object;
       break;
     }
-    case 'helm': piece = buildHelm(M, rand); break;
+    case 'helm': piece = isClosedHelm(entry) ? buildHelm(M, rand) : buildHeadgear(M, entry.name, rand); break;
+    case 'ring': piece = buildRing(M, entry.name, rand, photo.plan.gemSize); break;
+    case 'amulet': piece = buildAmulet(M, entry.name, rand, photo.plan.gemSize); break;
+    case 'cloak': piece = buildCloak(M, entry.name, rand, photo.plan.gemSize); break;
     case 'gloves': piece = buildGloves(M, rand); break;
     default: piece = null;
   }
   if (!piece) {
     // previewMode вече би трябвало да е спряло дотук — защитен изход, не гнило състояние.
-    tinted.dispose();
+    photo.dispose();
     return null;
   }
   group.add(piece);
 
-  if (decal && entry.theme.motif !== 'plain' && entry.category === 'helm') {
+  if (decal && entry.theme.motif !== 'plain' && entry.category === 'helm' && isClosedHelm(entry)) {
     attachDecalPlate(group, entry, rand, [0, 0.1, 0.115], [0.09, 0.06], owned);
   }
 
   normalizePivot(group);
+  fitTextureScale(group);
   // boy/surface.js applyGrime() reads WORLD-space Y assuming a full knight standing in mud (fades
   // out above y≈0.55m) — an icon's own local geometry sits near y≈0 (helm/gloves/etc. all built
   // around their own joint origin), which reads as "ankle-deep". An item on a shop shelf isn't

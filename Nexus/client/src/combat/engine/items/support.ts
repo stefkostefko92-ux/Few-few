@@ -14,7 +14,7 @@ import type { CatalogEntry } from './theme';
 
 export type PreviewMode = 'standalone' | 'mannequin' | 'icon';
 
-const STANDALONE_WEAPON_ICONS = new Set(['sword', 'dagger', 'staff', 'bow', 'mace']);
+const STANDALONE_WEAPON_ICONS = new Set(['sword', 'dagger', 'staff', 'bow', 'mace', 'axe', 'spear']);
 /** Тонки боздугани/жезли (`staff`/`bow`) също се диагонализират в прегледа — вижте
  *  ItemViewer3DHost.tsx tiltDeg. */
 export const DIAGONAL_WEAPON_ICONS = STANDALONE_WEAPON_ICONS;
@@ -26,21 +26,22 @@ export const DIAGONAL_WEAPON_ICONS = STANDALONE_WEAPON_ICONS;
 // прегледа: „cloth_hood“ излизаше като метален рицарски шлем).
 const NOT_A_CLOSED_HELM = /\b(hood|cowl|circlet|crown|cap|veil|mask|diadem|coif)\b/i;
 
+export function isClosedHelm(entry: Pick<CatalogEntry, 'name'>): boolean {
+  return !NOT_A_CLOSED_HELM.test(entry.name);
+}
+
 export function previewMode(entry: Pick<CatalogEntry, 'category' | 'icon' | 'sub_type' | 'name'>): PreviewMode {
   switch (entry.category) {
     case 'ring':
     case 'amulet':
-      return 'icon';
+    case 'cloak':
     case 'weapon':
-      return STANDALONE_WEAPON_ICONS.has(entry.icon || entry.sub_type || 'sword') ? 'standalone' : 'icon';
     case 'helm':
-      return NOT_A_CLOSED_HELM.test(entry.name) ? 'icon' : 'standalone';
     case 'gloves':
     case 'shield':
       return 'standalone';
     case 'armor':
     case 'boots':
-    case 'cloak':
       return 'mannequin';
     default:
       return 'icon';
