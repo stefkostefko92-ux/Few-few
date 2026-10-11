@@ -199,14 +199,15 @@ ZIP отпреди месец.
 
 Всички са само на `127.0.0.1` зад nginx/Caddy, освен 80/443 (прокси) и 22 (SSH). Източник: подразбиранията в
 `autodeploy.sh` и в `docker-compose.yml` на продуктите (живият порт може да е друг — `HTTP_PORT` в `.env`;
-провери с `ss -ltnp` преди нов). Към 10.10.2026:
+провери с `ss -ltnp` преди нов). Към 11.10.2026:
 
 | Порт | Продукт | Порт | Продукт |
 | --- | --- | --- | --- |
 | 80 | zabobovdol (nginx в compose) | 4310 | piuma |
 | 3000 | medqr | 4320 | korpora |
-| 3100 | зает от ERP (docker-proxy) | 4330 | chatchat |
+| 3100 | зает от ERP (docker-proxy) | 4330 | chatchat по подразбиране — на t19c-mc-sv е зает от **liftpilot** |
 | 3105 | vizitka | **4331** | **chatchat-staging** |
+| — | — | **4332** | **chatchat на t19c-mc-sv** (`HTTP_PORT=4332` в `.env`; vhost-ът се пренасочва от `deploy.sh`) |
 | 3200 | mastilko | 5435 / 6381 | SupremeDiscordBot (Postgres / Redis) |
 | 4000 | nexus | 5437 | eternaltouch (Postgres) |
 | 4102 | panev | 7700 | vpsdash |
