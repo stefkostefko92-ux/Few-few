@@ -4,6 +4,7 @@ import {
   registerCommand, clearCommands, openPalette, liveStream, confirmDanger,
 } from './ui.js';
 import { t, setLang, getLang, languages, translateDom } from './i18n.js';
+import { mountTerrain } from './terrain.js';
 
 // ── Състояние + API слой (с federation рутинг към избрания възел) ──────────────
 const state = { node: savedNode(), me: null, section: 'overview', metricsEs: null, sectionEs: null, hist: [] };
@@ -609,6 +610,23 @@ async function renderOverview() {
     ])
   );
 
+  // Историята в 3D — четирите метрики една зад друга, за да се види кое се
+  // качи ПЪРВО. Без WebGL2 картата просто не се появява; плочките отгоре и
+  // таблиците отдолу носят същите числа в 2D.
+  const terrainHost = el('div', { class: 'terrain' });
+  const terrainCard = el('div', { class: 'card terrain-card' }, [
+    el('div', { class: 'card-head' }, [
+      el('h3', { text: 'Натоварване във времето' }),
+      el('span', { class: 'metric-sub', text: 'Влачи, за да завъртиш · двоен клик връща изгледа' }),
+    ]),
+    el('div', { class: 'metric-sub', text: 'Всяка колона е пикът за своя интервал. Магентната равнина е прагът от 85%; празнина в лентата е липсваща проба, не нула.' }),
+    terrainHost,
+  ]);
+  view.appendChild(terrainCard);
+  const terrain = mountTerrain(terrainHost, { lang: langTagSafe() });
+  if (terrain) terrain.update(state.hist);
+  else terrainCard.remove();
+
   const sys = el('div', { class: 'grid grid-2' }, [
     el('div', { class: 'card' }, [
       el('h3', { text: 'Система' }),
@@ -661,6 +679,7 @@ async function renderOverview() {
     setHtml('mc-rx', fmtBps(snap.net.rxBps));
     setHtml('mc-disk', `${Math.max(0, ...snap.disks.map((d) => d.usePercent))}<small>%</small>`);
     pushHist(snap);
+    terrain?.update(state.hist);
     drawSpark('spark-cpu', state.hist.map((p) => p.cpu), 100);
     drawSpark('spark-mem', state.hist.map((p) => (p.memUsed / p.memTotal) * 100), 100);
     drawSpark('spark-rx', state.hist.map((p) => p.rxBps), null, true);

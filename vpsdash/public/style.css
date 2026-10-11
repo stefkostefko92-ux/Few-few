@@ -285,6 +285,37 @@ body[data-remote] .node-chip .remote-tag { display: inline; font-weight: 500; op
 .bar.score-warn > i { background: var(--warn); }
 .bar.score-bad > i { background: var(--danger); }
 
+/* ── Натоварване във времето (3D) ──────────────────────────────────────────
+   Платното е прозрачно: мъглата в шейдъра избледнява към цвета на картата,
+   значи дълбочината идва от сцената, не от рамка. Етикетите са HTML отгоре. */
+.terrain-card { gap: 6px; margin-top: 14px; }
+.terrain { position: relative; height: clamp(280px, 30vw, 460px); margin: 4px -8px -6px; }
+/* pan-y: на телефон вертикалното плъзгане си остава скрол на страницата,
+   хоризонталното върти сцената. */
+.terrain-cv { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: pan-y; cursor: grab; border-radius: 4px; }
+.terrain-cv:active { cursor: grabbing; }
+.terrain-labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.terrain-labels span { position: absolute; left: 0; top: 0; font-size: 12px; color: var(--txt-dim); white-space: nowrap; }
+.terrain-labels .tl-lane { color: var(--txt); font-weight: 500; }
+.terrain-labels .tl-thr { color: var(--target); font-weight: 600; }
+.terrain-labels .tl-time, .terrain-labels .tl-pct { font-variant-numeric: tabular-nums; }
+.terrain-tip {
+  position: absolute; left: 0; top: 0; z-index: 3; pointer-events: none; min-width: 180px;
+  background: rgba(27, 30, 34, 0.96); border: 1px solid var(--line); border-left: 2px solid var(--accent);
+  border-radius: 4px; padding: 8px 10px; font-size: 12.5px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+.tt-time { color: var(--txt-dim); margin-bottom: 4px; font-variant-numeric: tabular-nums; }
+.tt-row { display: flex; justify-content: space-between; gap: 16px; line-height: 1.6; }
+.tt-row b { font-family: var(--display); font-weight: 600; font-variant-numeric: tabular-nums; }
+.tt-row[data-level='warn'] b { color: var(--warn); }
+.tt-row[data-level='bad'] b { color: var(--danger); }
+@media (max-width: 820px) {
+  .terrain { height: 300px; }
+  /* На тясно остават 50%, 100% и прагът — четирите резки се застъпваха. */
+  .terrain-labels .tl-pct[data-p='25'], .terrain-labels .tl-pct[data-p='75'] { display: none; }
+  .terrain-labels span { font-size: 11.5px; }
+}
+
 /* ── Таблици ────────────────────────────────────────────── */
 .table-wrap { overflow-x: auto; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--panel); }
 .card .table-wrap { background: transparent; }
