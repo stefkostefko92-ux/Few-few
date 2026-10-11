@@ -188,6 +188,11 @@ ensure_cert() {
     return 0
   fi
   resolved="$(getent ahostsv4 "$fqdn" | awk '{print $1; exit}')"
+  # Нов запис: upstream resolver-ът на VPS-а може да държи стар NXDOMAIN (кеш до SOA минимума), а
+  # Let's Encrypt пита свои resolver-и — затова при празен локален отговор питаме публичен.
+  if [ -z "$resolved" ] && command -v dig >/dev/null; then
+    resolved="$(dig +short A "$fqdn" @1.1.1.1 | grep -E '^[0-9.]+$' | head -n 1)"
+  fi
   if [ -z "$resolved" ] || ! public_ips | grep -qx "$resolved"; then
     warn "DNS: $fqdn сочи '${resolved:-нищо}', а не този сървър ($(public_ips | head -n 1)). Добави A запис и пусни отново."
     return 1
