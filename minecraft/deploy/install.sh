@@ -85,9 +85,10 @@ preflight() {
   total_kb="$(awk '/^MemTotal:/ {print $2}' /proc/meminfo)"
   avail_kb="$(awk '/^MemAvailable:/ {print $2}' /proc/meminfo)"
   log "RAM: общо $((total_kb / 1024)) MB, свободна $((avail_kb / 1024)) MB"
-  # 4 GB за Minecraft + ~1 GB панел/база/Redis/Wings.
-  if [ "$avail_kb" -lt $((5 * 1024 * 1024)) ]; then
-    warn "свободни са под 5 GB — сървър с 4 GB RAM + панелът може да изместят другите продукти"
+  # MC_MEMORY за Minecraft + ~1 GB панел/база/Redis/Wings.
+  local need_mb=$((MC_MEMORY + 1024))
+  if [ "$avail_kb" -lt $((need_mb * 1024)) ]; then
+    warn "свободни са под $need_mb MB — сървър с $MC_MEMORY MB RAM + панелът може да изместят другите продукти (MC_MEMORY=…)"
   fi
 }
 
