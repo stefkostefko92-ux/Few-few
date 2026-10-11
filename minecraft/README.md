@@ -119,6 +119,35 @@ sudo bash /opt/few-few/current/minecraft/deploy/install.sh   # същата ко
 | Още админи/модератори | Admin → Users (админи) или Server → Users (подпотребители с права само за този сървър) |
 | Ресурси | Admin → Servers → Minecraft → Build (RAM/CPU/диск) |
 
+## Offline режим + whitelist (играчи без купена игра)
+
+На нашия сървър е включен, защото играчите нямат Java акаунти. В `server.properties` (Server → Files или
+`/var/lib/pelican/volumes/<uuid>/server.properties`, при спрян сървър):
+
+```
+online-mode=false
+white-list=true
+enforce-whitelist=true
+enforce-secure-profile=false
+```
+
+- **Не ползвай `whitelist add <име>`** в offline режим: командата пита Mojang и записва UUID-то на
+  истинския акаунт с това име, а клиентът влиза с offline UUID → „You are not white-listed“. Записът в
+  `whitelist.json` е с offline UUID = UUID v3 на `OfflinePlayer:<име>` (главните букви имат значение):
+  ```bash
+  python3 -c "import hashlib,uuid,sys;h=bytearray(hashlib.md5(b'OfflinePlayer:'+sys.argv[1].encode()).digest());h[6]=h[6]&15|48;h[8]=h[8]&63|128;print(uuid.UUID(bytes=bytes(h)))" Moni
+  ```
+  После в конзолата: `whitelist reload`.
+- **Рискът:** сървърът не проверява кой стои зад името — който знае име от whitelist-а, влиза като него.
+  Затова **без `op`** за играчи (командите — от конзолата на панела) и адресът не се публикува.
+
+## Малък VPS
+
+На 4 GB машина с другите продукти сървърът е с `MC_MEMORY=1536` (втория пробег на `install.sh` с тази
+променлива) + 2 GB swap на хоста. Нов A запис: ако локалният resolver държи стар NXDOMAIN,
+`install.sh` проверява през 1.1.1.1; Let's Encrypt може да откаже, докато отрицателният кеш не изтече
+(TTL от SOA — у register.it 900 s).
+
 ## Ъпдейт
 
 **Minecraft (напр. 26.4):** първо бекъп (Backups → Create) → Startup → **Server Version** = `26.4` →
