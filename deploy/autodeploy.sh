@@ -1468,9 +1468,19 @@ deploy_vpsdashboard() {
   sleep 2
   # /api/ping без сесия връща 401 → това е „жив". health() приема само 2xx/3xx,
   # затова третираме 401 отделно като успех.
-  local code
-  code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "$VPSDASH_HEALTH_URL" 2>/dev/null || echo 000)"
-  if [ "$code" = "401" ] || [ "$code" = "200" ]; then
+  # 403 също е „жив", но САМО с нашия текст: при включен списък с адреси (allowIps)
+  # пробата от 127.0.0.1 се отказва ПРЕДИ рутера. Без това всеки деплой на възел,
+  # достъпен само за съседа, връщаше панела към предишния код — тихо, с „health
+  # провал (403)". Текстът доказва, че отговаря НАШИЯТ нов процес, не нещо друго
+  # на порта.
+  local code body
+  body="$(curl -s -w '\n%{http_code}' --max-time 5 "$VPSDASH_HEALTH_URL" 2>/dev/null || true)"
+  code="${body##*$'\n'}"
+  case "$code" in [0-9][0-9][0-9]) ;; *) code=000 ;; esac
+  if [ "$code" = "403" ] && printf '%s' "$body" | grep -q 'Достъпът от този адрес не е разрешен'; then
+    code="403 (allowIps)"
+  fi
+  if [ "$code" = "401" ] || [ "$code" = "200" ] || [ "$code" = "403 (allowIps)" ]; then
     ok "vps-dashboard е жив ($VPSDASH_HEALTH_URL → $code)"
     rm -rf "${VPSDASH_DIR}.bak-$TS"
     ls -1dt "${VPSDASH_DIR}".bak-* 2>/dev/null | tail -n +3 | xargs -r rm -rf || true

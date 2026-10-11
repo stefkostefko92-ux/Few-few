@@ -31,6 +31,10 @@ async function api(pathname, { method = 'GET', body, _retry = false } = {}) {
   }
   const res = await fetch(apiBase() + pathname, opts);
   if (res.status === 401) {
+    // Втори предпазител към този в nodes.js: 401 по пътя на СЪСЕД не е изтекла
+    // НАША сесия. Показването на входа тук е безкраен цикъл — входът минава,
+    // следващата заявка пак е към съседа.
+    if (state.node && state.node !== 'local') throw new Error('Съседът отказа достъп — провери peerToken на двата възела.');
     showLogin();
     throw new Error('Не си вписан');
   }

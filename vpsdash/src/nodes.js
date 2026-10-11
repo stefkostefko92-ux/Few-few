@@ -75,6 +75,21 @@ export function proxyToPeer(peer, req, res, restPath, search) {
       // Policy` (по-слаба от нашата), `Access-Control-Allow-Origin: *`,
       // `Strict-Transport-Security`, `Clear-Site-Data`. Компрометиран съсед не
       // бива да пренаписва политиките на нашата страница; той доставя ДАННИ.
+      // 401 от СЪСЕДА никога не е за НАШАТА сесия: тя вече е проверена от
+      // guard-а, преди заявката да тръгне насам. Подаден нагоре едно към едно,
+      // той караше интерфейса да покаже входа — човекът влиза правилно, следващата
+      // заявка пак отива към съседа, пак 401, пак вход. Безкраен цикъл, в който
+      // изглежда, че „правилният код не минава". Открито на живо при свързване
+      // на втори VPS. Казваме истината: съседът отказа жетона.
+      if (up.statusCode === 401) {
+        up.resume();
+        res.writeHead(502, { 'content-type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({
+          error: `Съседът „${peer.name || peer.id}" отказа жетона (401) — peerToken на двата възела не съвпада.`,
+          peerAuth: true,
+        }));
+        return;
+      }
       const outHeaders = {};
       for (const [k, v] of Object.entries(up.headers)) {
         if (PASS_THROUGH.has(k.toLowerCase())) outHeaders[k] = v;
