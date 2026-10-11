@@ -13878,7 +13878,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 227
+        "lessons": 229
       },
       "evolution": [
         {
@@ -13952,9 +13952,20 @@
           "date": "2026-10-11",
           "event": "v21.6 — учене",
           "detail": "Научи: Конфликтните маркери в main (2026-09-25) идваха от старата кука `git push || (git pull … (+7 още)"
+        },
+        {
+          "version": "21.8.0",
+          "date": "2026-10-11",
+          "event": "v21.8 — учене",
+          "detail": "Научи: Конфликтните маркери в main (2026-09-25) идваха от старата кука: `git push || (git pull… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-11",
+          "type": "learning",
+          "summary": "Научи: „Конфликтните маркери в main (2026-09-25) идваха от старата кука: `git push || (git pull…\" (+1 още)"
+        },
         {
           "date": "2026-10-11",
           "type": "learning",
