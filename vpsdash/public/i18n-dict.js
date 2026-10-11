@@ -491,7 +491,7 @@ export const ENTRIES = [
   ['отдалечен', 'remote', 'remoto'],
   ['Натоварване във времето', 'Load over time', 'Carico nel tempo'],
   ['Влачи, за да завъртиш · двоен клик връща изгледа', 'Drag to rotate · double-click resets the view', 'Trascini per ruotare · doppio clic ripristina la vista'],
-  ['Всяка колона е пикът за своя интервал. Магентната равнина е прагът от 85%; празнина в лентата е липсваща проба, не нула.', 'Each column is the peak of its interval. The magenta plane is the 85% threshold; a gap in a lane is a missing sample, not zero.', 'Ogni colonna è il picco del suo intervallo. Il piano magenta è la soglia dell’85%; un vuoto nella fascia è un campione mancante, non zero.'],
+  ['Всяка колона е пикът за своя интервал. Кехлибарената равнина е прагът от 85%; празнина в лентата е липсваща проба, не нула.', 'Each column is the peak of its interval. The amber plane is the 85% threshold; a gap in a lane is a missing sample, not zero.', 'Ogni colonna è il picco del suo intervallo. Il piano ambra è la soglia dell’85%; un vuoto nella fascia è un campione mancante, non zero.'],
   ['Натоварване във времето в 3D: мрежа, CPU, памет и диск. Стрелките въртят изгледа.', 'Load over time in 3D: network, CPU, memory and disk. Arrow keys rotate the view.', 'Carico nel tempo in 3D: rete, CPU, memoria e disco. I tasti freccia ruotano la vista.'],
   ['сега', 'now', 'adesso'],
   ['Без активни аларми', 'No active alerts', 'Nessun allarme attivo'],

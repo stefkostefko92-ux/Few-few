@@ -1,6 +1,7 @@
 // „Терен на натоварването" — историята на машината в 3D, като водопада на
 // спектрален анализатор: всяка метрика е лента във времето, височината е
-// стойността, магентната равнина е прагът от 85%.
+// стойността, кехлибарената равнина е прагът от 85%. Рисува се като фосфор на
+// осцилоскоп: черно поле, светещи ръбове, истински bloom (виж makePost).
 //
 // Защо 3D, а не още една плоска графика: четирите метрики СЕ ГЛЕДАТ ЗАЕДНО.
 // Въпросът при инцидент е „кое се качи първо" — скок в мрежата, после CPU,
@@ -16,7 +17,8 @@
 //   · „не знам" не е нула: липсваща проба СКЪСВА лентата, не я сваля на пода;
 //   · единственото движение без действие на човека е еднократното „изправяне"
 //     при отваряне (0.7 s) и то изчезва при prefers-reduced-motion;
-//   · без WebGL2 връща null — обзорът си остава 2D, нищо не гърми.
+//   · без WebGL2 връща null — обзорът си остава 2D, нищо не гърми; без
+//     рендиране в текстура (стар драйвер) сцената е същата, само без сияние.
 import { el, fmtBps } from './ui.js';
 
 // Ширина на времевата ос (световни единици). На тесен екран е по-къса: иначе
@@ -130,9 +132,18 @@ export function mountTerrain(host, { lang = 'bg-BG' } = {}) {
     warn: hexRgb(css.getPropertyValue('--warn'), 'f2b544'),
     bad: hexRgb(css.getPropertyValue('--danger'), 'ff6b6b'),
     target: hexRgb(css.getPropertyValue('--target'), 'e27ae0'),
-    accent: hexRgb(css.getPropertyValue('--accent'), '5cd0e3'),
+    accent: hexRgb(css.getPropertyValue('--accent'), '33ff77'),
+    black: [0, 0, 0],
   };
-  const stateCol = (lane, v) => (!lane.pct ? mix(C.data, C.panel, 0.25) : v > 95 ? C.bad : v > THRESHOLD ? C.warn : C.data);
+  let post = null;
+  try {
+    post = makePost(gl);
+  } catch {
+    post = null; // без сияние, но със сцена
+  }
+  // Фосфорът: процентните ленти светят в зелено до прага, после кехлибар/червено;
+  // мрежата е бледият фосфор — без праг, за да не се чете като „наред".
+  const stateCol = (lane, v) => (!lane.pct ? mix(C.data, C.black, 0.15) : v > 95 ? C.bad : v > THRESHOLD ? C.warn : C.accent);
 
   const loc = {
     pos: gl.getAttribLocation(prog, 'aPos'),
@@ -227,17 +238,17 @@ export function mountTerrain(host, { lang = 'bg-BG' } = {}) {
         const x0 = xAt(i), x1 = xAt(i + 1);
         const s0 = stateCol(lane, cols[i].v[li]);
         const s1 = stateCol(lane, cols[i + 1].v[li]);
-        // Завеса: тъмна долу, оцветена горе — обемът се чете без осветление.
-        const bot = mix(C.panel, [0, 0, 0], 0.18);
+        // Завеса: черна долу, тъмен фосфор горе — обемът се чете без осветление,
+        // а сиянието остава за ръба (bloom-ът хваща само яркото).
         quad(tri, [[x0, 0, z], [x0, h0, z], [x1, h1, z], [x1, 0, z]],
-          [bot, mix(C.panel, s0, 0.2), mix(C.panel, s1, 0.2), bot]);
+          [C.black, mix(C.black, s0, 0.3), mix(C.black, s1, 0.3), C.black]);
         // Горен ръб: лента с дебелина, видима и отгоре.
         quad(tri, [[x0, h0, z - 0.06], [x0, h0, z + 0.06], [x1, h1, z + 0.06], [x1, h1, z - 0.06]], [s0, s0, s1, s1]);
         v(lin, x0, h0 + 0.002, z, s0); v(lin, x1, h1 + 0.002, z, s1);
       }
     });
 
-    // Прагът: магентна равнина над процентните ленти (не над мрежата — там
+    // Прагът: кехлибарена равнина над процентните ленти (не над мрежата — там
     // „85%" няма смисъл).
     const yT = (THRESHOLD / 100) * H;
     const tz0 = laneZ(1) + 0.55, tz1 = laneZ(LANES.length - 1) - 0.55;
@@ -246,11 +257,11 @@ export function mountTerrain(host, { lang = 'bg-BG' } = {}) {
       v(lin, ...a, C.target, 0.75); v(lin, ...b, C.target, 0.75);
     }
 
-    // Избраният момент: циан срез през всички ленти (циан = изборът на човека).
+    // Избраният момент: бледо фосфорен срез през всички ленти.
     if (hover >= 0 && hover < cols.length) {
       const x = xAt(hover);
-      quad(glass, [[x, 0, zf], [x, H * 1.05, zf], [x, H * 1.05, zb], [x, 0, zb]], C.accent, 0.12);
-      v(lin, x, 0, zf, C.accent); v(lin, x, H * 1.05, zf, C.accent);
+      quad(glass, [[x, 0, zf], [x, H * 1.05, zf], [x, H * 1.05, zb], [x, 0, zb]], C.data, 0.1);
+      v(lin, x, 0, zf, C.data); v(lin, x, H * 1.05, zf, C.data);
     }
     return { tri: new Float32Array(tri), lin: new Float32Array(lin), glass: new Float32Array(glass) };
   }
@@ -272,8 +283,10 @@ export function mountTerrain(host, { lang = 'bg-BG' } = {}) {
       canvas.height = Math.round(h * dpr);
     }
     size = { w, h };
+    const usePost = post && post.ensure(canvas.width, canvas.height);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, usePost ? post.target : null);
     gl.viewport(0, 0, canvas.width, canvas.height);
-    gl.clearColor(0, 0, 0, 0);
+    gl.clearColor(0, 0, 0, 1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     // Кадрирането: камерата е на постоянно разстояние, а проекцията се
@@ -307,7 +320,7 @@ export function mountTerrain(host, { lang = 'bg-BG' } = {}) {
     gl.uniformMatrix4fv(loc.mvp, false, new Float32Array(mvp));
     gl.uniform3fv(loc.eye, eye);
     gl.uniform1f(loc.rise, rise);
-    gl.uniform3fv(loc.fog, C.panel);
+    gl.uniform3fv(loc.fog, C.black);
     gl.uniform2f(loc.fogRange, d * 0.75, d * 1.45);
     gl.bindVertexArray(vao);
     gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
@@ -326,6 +339,7 @@ export function mountTerrain(host, { lang = 'bg-BG' } = {}) {
     gl.bufferData(gl.ARRAY_BUFFER, g.glass, gl.DYNAMIC_DRAW);
     gl.drawArrays(gl.TRIANGLES, 0, g.glass.length / 7);
     gl.depthMask(true);
+    if (usePost) post.finish(canvas.width, canvas.height);
 
     placeLabels();
   }
@@ -455,6 +469,7 @@ export function mountTerrain(host, { lang = 'bg-BG' } = {}) {
       dead = true;
       if (raf) cancelAnimationFrame(raf);
       ro.disconnect();
+      try { post?.dispose(); } catch { /* контекстът вече е изгубен */ }
       try { gl.getExtension('WEBGL_lose_context')?.loseContext(); } catch { /* вече изгубен */ }
       if (current === api) current = null;
     },
@@ -479,4 +494,182 @@ function program(gl, vs, fs) {
   gl.attachShader(p, f);
   gl.linkProgram(p);
   return gl.getProgramParameter(p, gl.LINK_STATUS) ? p : null;
+}
+
+// ── Сиянието (bloom) ────────────────────────────────────────────────────────
+// Сцената се рисува в MSAA буфер → свива се в текстура → ярките части (ръбовете
+// на лентите, решетката не) се изваждат на половин резолюция → размиват се по
+// Гаус хоризонтално и вертикално → второ, по-широко ниво на четвърт резолюция →
+// сглобяване: сцена + две нива сияние + леки редове на кинескопа + винетка.
+// Всичко е RGBA8 — без float текстури, значи работи и на стар телефон.
+const VSQ = `#version 300 es
+out vec2 vUv;
+void main() {
+  vec2 p = vec2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2));
+  vUv = p;
+  gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0);
+}`;
+const FS_BRIGHT = `#version 300 es
+precision mediump float;
+in vec2 vUv;
+uniform sampler2D uTex;
+uniform vec2 uTexel;
+uniform float uCut;
+out vec4 o;
+void main() {
+  vec3 c = (texture(uTex, vUv + uTexel * vec2(-0.5, -0.5)).rgb + texture(uTex, vUv + uTexel * vec2(0.5, -0.5)).rgb
+          + texture(uTex, vUv + uTexel * vec2(-0.5, 0.5)).rgb + texture(uTex, vUv + uTexel * vec2(0.5, 0.5)).rgb) * 0.25;
+  float l = max(c.r, max(c.g, c.b));
+  o = vec4(c * smoothstep(uCut, uCut + 0.25, l), 1.0);
+}`;
+const FS_BLUR = `#version 300 es
+precision mediump float;
+in vec2 vUv;
+uniform sampler2D uTex;
+uniform vec2 uDir;
+out vec4 o;
+void main() {
+  vec3 c = texture(uTex, vUv).rgb * 0.227027;
+  c += (texture(uTex, vUv + uDir).rgb + texture(uTex, vUv - uDir).rgb) * 0.1945946;
+  c += (texture(uTex, vUv + uDir * 2.0).rgb + texture(uTex, vUv - uDir * 2.0).rgb) * 0.1216216;
+  c += (texture(uTex, vUv + uDir * 3.0).rgb + texture(uTex, vUv - uDir * 3.0).rgb) * 0.054054;
+  c += (texture(uTex, vUv + uDir * 4.0).rgb + texture(uTex, vUv - uDir * 4.0).rgb) * 0.016216;
+  o = vec4(c, 1.0);
+}`;
+const FS_COMP = `#version 300 es
+precision mediump float;
+in vec2 vUv;
+uniform sampler2D uScene;
+uniform sampler2D uB1;
+uniform sampler2D uB2;
+out vec4 o;
+void main() {
+  vec3 c = texture(uScene, vUv).rgb;
+  c += texture(uB1, vUv).rgb * 1.05 + texture(uB2, vUv).rgb * 0.85;
+  float scan = 0.94 + 0.06 * sin(gl_FragCoord.y * 3.14159);
+  vec2 d = (vUv - 0.5) * vec2(1.0, 1.3);
+  float vig = 1.0 - smoothstep(0.38, 0.95, length(d));
+  o = vec4(c * scan * mix(0.55, 1.0, vig), 1.0);
+}`;
+
+function makePost(gl) {
+  const progs = {
+    bright: program(gl, VSQ, FS_BRIGHT),
+    blur: program(gl, VSQ, FS_BLUR),
+    comp: program(gl, VSQ, FS_COMP),
+  };
+  if (!progs.bright || !progs.blur || !progs.comp) return null;
+  const U = {};
+  for (const [k, p] of Object.entries(progs)) {
+    U[k] = {};
+    for (const n of ['uTex', 'uTexel', 'uCut', 'uDir', 'uScene', 'uB1', 'uB2']) U[k][n] = gl.getUniformLocation(p, n);
+  }
+  const vao = gl.createVertexArray(); // празен: върховете идват от gl_VertexID
+  const samples = Math.max(0, Math.min(4, gl.getParameter(gl.MAX_SAMPLES) || 0));
+  let res = null; // { w, h, ... }
+
+  const tex = (w, h) => {
+    const t = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    return t;
+  };
+  const fboFor = (t) => {
+    const f = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, f);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t, 0);
+    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) throw new Error('fbo');
+    return f;
+  };
+  const free = () => {
+    if (!res) return;
+    for (const t of res.tex) gl.deleteTexture(t);
+    for (const f of res.fbo) gl.deleteFramebuffer(f);
+    for (const r of res.rb) gl.deleteRenderbuffer(r);
+    res = null;
+  };
+  const build = (w, h) => {
+    free();
+    const hw = Math.max(1, w >> 1), hh = Math.max(1, h >> 1);
+    const qw = Math.max(1, w >> 2), qh = Math.max(1, h >> 2);
+    const r = { w, h, hw, hh, qw, qh, tex: [], fbo: [], rb: [] };
+    res = r;
+    // MSAA буфер за сцената (ръбовете на лентите иначе са стъпаловидни).
+    const msaa = gl.createFramebuffer();
+    const color = gl.createRenderbuffer();
+    const depth = gl.createRenderbuffer();
+    r.fbo.push(msaa); r.rb.push(color, depth);
+    gl.bindRenderbuffer(gl.RENDERBUFFER, color);
+    gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.RGBA8, w, h);
+    gl.bindRenderbuffer(gl.RENDERBUFFER, depth);
+    gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.DEPTH_COMPONENT24, w, h);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, msaa);
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, color);
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depth);
+    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) throw new Error('msaa');
+    r.msaa = msaa;
+    const mk = (tw, th) => { const t = tex(tw, th); const f = fboFor(t); r.tex.push(t); r.fbo.push(f); return { t, f }; };
+    r.scene = mk(w, h);
+    r.h1 = mk(hw, hh); r.h2 = mk(hw, hh);
+    r.q1 = mk(qw, qh); r.q2 = mk(qw, qh);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  };
+  const pass = (prog, u, dst, w, h, set) => {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, dst);
+    gl.viewport(0, 0, w, h);
+    gl.useProgram(prog);
+    set(u);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  };
+  const bindTex = (unit, t, loc) => {
+    gl.activeTexture(gl.TEXTURE0 + unit);
+    gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.uniform1i(loc, unit);
+  };
+
+  const api = {
+    target: null,
+    // Връща false, ако буферите не стават — тогава сцената се рисува направо.
+    ensure(w, h) {
+      try {
+        if (!res || res.w !== w || res.h !== h) build(w, h);
+        api.target = res.msaa;
+        return true;
+      } catch {
+        free();
+        api.target = null;
+        return false;
+      }
+    },
+    finish(w, h) {
+      const r = res;
+      gl.bindFramebuffer(gl.READ_FRAMEBUFFER, r.msaa);
+      gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, r.scene.f);
+      gl.blitFramebuffer(0, 0, w, h, 0, 0, w, h, gl.COLOR_BUFFER_BIT, gl.NEAREST);
+      gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null);
+      gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
+      gl.disable(gl.DEPTH_TEST);
+      gl.disable(gl.BLEND);
+      gl.bindVertexArray(vao);
+      const B = progs.bright, BL = progs.blur;
+      pass(B, U.bright, r.h1.f, r.hw, r.hh, (u) => { bindTex(0, r.scene.t, u.uTex); gl.uniform2f(u.uTexel, 1 / w, 1 / h); gl.uniform1f(u.uCut, 0.42); });
+      pass(BL, U.blur, r.h2.f, r.hw, r.hh, (u) => { bindTex(0, r.h1.t, u.uTex); gl.uniform2f(u.uDir, 1.5 / r.hw, 0); });
+      pass(BL, U.blur, r.h1.f, r.hw, r.hh, (u) => { bindTex(0, r.h2.t, u.uTex); gl.uniform2f(u.uDir, 0, 1.5 / r.hh); });
+      pass(B, U.bright, r.q1.f, r.qw, r.qh, (u) => { bindTex(0, r.h1.t, u.uTex); gl.uniform2f(u.uTexel, 1 / r.hw, 1 / r.hh); gl.uniform1f(u.uCut, 0.0); });
+      pass(BL, U.blur, r.q2.f, r.qw, r.qh, (u) => { bindTex(0, r.q1.t, u.uTex); gl.uniform2f(u.uDir, 2.2 / r.qw, 0); });
+      pass(BL, U.blur, r.q1.f, r.qw, r.qh, (u) => { bindTex(0, r.q2.t, u.uTex); gl.uniform2f(u.uDir, 0, 2.2 / r.qh); });
+      pass(progs.comp, U.comp, null, w, h, (u) => { bindTex(0, r.scene.t, u.uScene); bindTex(1, r.h1.t, u.uB1); bindTex(2, r.q1.t, u.uB2); });
+      gl.activeTexture(gl.TEXTURE0);
+    },
+    dispose() {
+      free();
+      for (const p of Object.values(progs)) gl.deleteProgram(p);
+      gl.deleteVertexArray(vao);
+    },
+  };
+  return api;
 }

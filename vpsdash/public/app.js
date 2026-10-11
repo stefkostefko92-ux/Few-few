@@ -619,7 +619,7 @@ async function renderOverview() {
       el('h3', { text: 'Натоварване във времето' }),
       el('span', { class: 'metric-sub', text: 'Влачи, за да завъртиш · двоен клик връща изгледа' }),
     ]),
-    el('div', { class: 'metric-sub', text: 'Всяка колона е пикът за своя интервал. Магентната равнина е прагът от 85%; празнина в лентата е липсваща проба, не нула.' }),
+    el('div', { class: 'metric-sub', text: 'Всяка колона е пикът за своя интервал. Кехлибарената равнина е прагът от 85%; празнина в лентата е липсваща проба, не нула.' }),
     terrainHost,
   ]);
   view.appendChild(terrainCard);
@@ -725,31 +725,43 @@ function metricCard(title, key, valHtml, sub) {
   ]);
 }
 
-// Canvas sparkline — чисто 2D, без библиотеки.
+// Следа на осцилоскоп — чисто 2D, без библиотеки. Черен екран, решетка 10×4,
+// светеща следа. Сегментът над прага сменя цвета си (кехлибар >85%, червено
+// >95%) — инцидентът се вижда върху самата линия, не само в числото отгоре.
+// `null` (няма проба) скъсва следата: „не знам" не е нула.
 function drawSpark(id, data, max, isRate = false) {
   const cv = document.getElementById(id);
   if (!cv) return;
   const dpr = window.devicePixelRatio || 1;
   const w = cv.clientWidth || 220;
-  const h = cv.clientHeight || 46;
+  const h = cv.clientHeight || 60;
   cv.width = w * dpr;
   cv.height = h * dpr;
   const ctx = cv.getContext('2d');
   ctx.scale(dpr, dpr);
   ctx.clearRect(0, 0, w, h);
-  if (!data || data.length < 2) return;
-  const peak = max || Math.max(1, ...data);
-  const n = data.length;
-  const step = w / (n - 1);
-  const y = (v) => h - 3 - (Math.min(v, peak) / peak) * (h - 6);
   const css = getComputedStyle(document.documentElement);
-  // Прагът (85%) — магента, като чертата по скалите. Само за проценти: при
-  // скорост на мрежата „85% от пика" е безсмислено число.
+  const col = (name, fb) => css.getPropertyValue(name).trim() || fb;
+  const C = { ok: col('--accent', '#33ff77'), warn: col('--warn', '#ffb000'), bad: col('--danger', '#ff3344'), grid: col('--line-soft', '#12301d') };
+  // Решетката: деленията, по които се чете — като на уред.
+  ctx.strokeStyle = C.grid;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (let i = 1; i < 10; i++) { const x = Math.round((w * i) / 10) + 0.5; ctx.moveTo(x, 0); ctx.lineTo(x, h); }
+  for (let i = 1; i < 4; i++) { const y = Math.round((h * i) / 4) + 0.5; ctx.moveTo(0, y); ctx.lineTo(w, y); }
+  ctx.stroke();
+  const vals = (data || []).map((v) => (v == null || !Number.isFinite(v) ? null : v));
+  if (vals.filter((v) => v != null).length < 2) return;
+  const peak = max || Math.max(1, ...vals.filter((v) => v != null));
+  const n = vals.length;
+  const step = w / (n - 1);
+  const y = (v) => h - 4 - (Math.min(v, peak) / peak) * (h - 8);
+  // Прагът (85%) — кехлибарен пунктир. Само за проценти: „85% от пика" на
+  // мрежата е безсмислено число.
   if (max === 100) {
-    ctx.strokeStyle = css.getPropertyValue('--target').trim() || '#e27ae0';
-    ctx.globalAlpha = 0.7;
-    ctx.setLineDash([3, 4]);
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = C.warn;
+    ctx.globalAlpha = 0.75;
+    ctx.setLineDash([4, 4]);
     ctx.beginPath();
     ctx.moveTo(0, Math.round(y(85)) + 0.5);
     ctx.lineTo(w, Math.round(y(85)) + 0.5);
@@ -757,26 +769,53 @@ function drawSpark(id, data, max, isRate = false) {
     ctx.setLineDash([]);
     ctx.globalAlpha = 1;
   }
-  ctx.beginPath();
-  ctx.moveTo(0, y(data[0]));
-  for (let i = 1; i < n; i++) ctx.lineTo(i * step, y(data[i]));
-  // Данните са БЕЛИ — цвят получава само състоянието и прагът.
-  ctx.strokeStyle = css.getPropertyValue('--txt').trim() || '#eef1f3';
-  ctx.globalAlpha = 0.85;
-  ctx.lineWidth = 1.5;
+  const lv = (v) => (max !== 100 ? C.ok : v > 95 ? C.bad : v > 85 ? C.warn : C.ok);
+  // Сиянието под следата — фосфорът свети и около лъча.
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, 'rgba(51,255,119,0.22)');
+  grad.addColorStop(1, 'rgba(51,255,119,0)');
+  ctx.fillStyle = grad;
+  for (let i = 0; i + 1 < n; i++) {
+    if (vals[i] == null || vals[i + 1] == null) continue;
+    ctx.beginPath();
+    ctx.moveTo(i * step, h);
+    ctx.lineTo(i * step, y(vals[i]));
+    ctx.lineTo((i + 1) * step, y(vals[i + 1]));
+    ctx.lineTo((i + 1) * step, h);
+    ctx.closePath();
+    ctx.fill();
+  }
+  // Лъчът: два прохода — широко меко сияние, после тънко ярко ядро.
   ctx.lineJoin = 'round';
-  ctx.stroke();
+  ctx.lineCap = 'round';
+  for (const pass of [{ width: 4, blur: 10, alpha: 0.35 }, { width: 1.6, blur: 4, alpha: 1 }]) {
+    ctx.lineWidth = pass.width;
+    ctx.globalAlpha = pass.alpha;
+    for (let i = 0; i + 1 < n; i++) {
+      if (vals[i] == null || vals[i + 1] == null) continue;
+      const c = lv(Math.max(vals[i], vals[i + 1]));
+      ctx.strokeStyle = c;
+      ctx.shadowColor = c;
+      ctx.shadowBlur = pass.blur;
+      ctx.beginPath();
+      ctx.moveTo(i * step, y(vals[i]));
+      ctx.lineTo((i + 1) * step, y(vals[i + 1]));
+      ctx.stroke();
+    }
+  }
   ctx.globalAlpha = 1;
-  ctx.lineTo(w, h);
-  ctx.lineTo(0, h);
-  ctx.closePath();
-  ctx.fillStyle = 'rgba(238,241,243,0.05)';
-  ctx.fill();
-  // Последната стойност — точка в края: „ето сега".
-  ctx.fillStyle = css.getPropertyValue('--txt').trim() || '#eef1f3';
-  ctx.beginPath();
-  ctx.arc(w - 2.5, y(data[n - 1]), 2.5, 0, Math.PI * 2);
-  ctx.fill();
+  // „Сега" — ярка точка в края на лъча.
+  const last = vals[n - 1];
+  if (last != null) {
+    const c = lv(last);
+    ctx.fillStyle = c;
+    ctx.shadowColor = c;
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.arc(w - 3, y(last), 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.shadowBlur = 0;
 }
 
 function startMetrics(onSnap) {
@@ -4469,9 +4508,10 @@ function fromLocalInput(v) {
 // но с оси, легенда и маркер за момента.
 function drawInvestigateChart(cv, tip, d) {
   const series = Object.entries(d.series).filter(([, s]) => s.points.length > 1);
-  // Категориални цветове, нарочно ДАЛЕЧ от кехлибара и червеното — те значат
-  // „внимание"/„опасност", а линия на диска не е тревога сама по себе си.
-  const colors = { cpu: '#eef1f3', memory: '#7fb2ff', disk: '#b9a3ff', load: '#5fd3bf' };
+  // Сериите са в гамата на фосфора (ярко/бледо/тъмно зелено), нарочно ДАЛЕЧ от
+  // кехлибара и червеното — те значат „внимание"/„опасност", а линия на диска не
+  // е тревога сама по себе си. Различават се и по дебелина (виж lineWidth).
+  const colors = { cpu: '#33ff77', memory: '#d6ffe2', disk: '#1fa851', load: '#9dffbf' };
   const center = new Date(d.at).getTime();
   const half = d.windowMin * 60000;
   const from = center - half;
@@ -4495,7 +4535,7 @@ function drawInvestigateChart(cv, tip, d) {
     const loadMax = Math.max(1, ...(d.series.load?.points || []).map((p) => p.y));
     const y = (v, key) => pad.t + ih - (Math.min(1, (key === 'load' ? v / loadMax : v / 100))) * ih;
 
-    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.strokeStyle = 'rgba(51,255,119,0.12)';
     ctx.lineWidth = 1;
     for (let i = 0; i <= 4; i++) {
       const gy = pad.t + (ih / 4) * i;
@@ -4503,21 +4543,28 @@ function drawInvestigateChart(cv, tip, d) {
       ctx.moveTo(pad.l, gy);
       ctx.lineTo(w - pad.r, gy);
       ctx.stroke();
-      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.fillStyle = 'rgba(116,185,139,0.9)';
       ctx.font = '10px ui-monospace, monospace';
       ctx.fillText(String(100 - i * 25), 6, gy + 3);
     }
 
     for (const [key, s] of series) {
       ctx.strokeStyle = colors[key] || '#888';
-      ctx.lineWidth = 1.6;
+      // В монохрома сериите се различават и по ЛИНИЯТА, не само по оттенъка.
+      const st = { cpu: [2.2, []], memory: [1.4, []], disk: [1.6, [6, 3]], load: [1.3, [2, 3]] }[key] || [1.6, []];
+      ctx.lineWidth = st[0];
+      ctx.setLineDash(st[1]);
+      ctx.shadowColor = colors[key] || '#888';
+      ctx.shadowBlur = 6;
       ctx.beginPath();
       s.points.forEach((p, i) => (i ? ctx.lineTo(x(p.x), y(p.y, key)) : ctx.moveTo(x(p.x), y(p.y, key))));
       ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.shadowBlur = 0;
     }
 
-    // Моментът — магента: това е целта на погледа, не тревога.
-    ctx.strokeStyle = '#e27ae0';
+    // Моментът — кехлибар: границата, около която се разследва.
+    ctx.strokeStyle = '#ffb000';
     ctx.setLineDash([4, 3]);
     ctx.beginPath();
     ctx.moveTo(x(center), pad.t);
@@ -4529,7 +4576,7 @@ function drawInvestigateChart(cv, tip, d) {
     for (const e of d.events) {
       const ex = x(new Date(e.ts).getTime());
       if (ex < pad.l || ex > w - pad.r) continue;
-      ctx.fillStyle = e.kind === 'деплой' ? '#5cd0e3' : e.kind === 'аларма' || e.failed ? '#ff6b6b' : '#a3abb1';
+      ctx.fillStyle = e.kind === 'деплой' ? '#d6ffe2' : e.kind === 'аларма' || e.failed ? '#ff3344' : '#74b98b';
       ctx.beginPath();
       ctx.arc(ex, pad.t + ih + 8, 3, 0, Math.PI * 2);
       ctx.fill();
@@ -4541,7 +4588,7 @@ function drawInvestigateChart(cv, tip, d) {
     for (const [key, s] of series) {
       ctx.fillStyle = colors[key] || '#888';
       ctx.fillRect(lx, 2, 8, 3);
-      ctx.fillStyle = 'rgba(238,241,243,0.7)';
+      ctx.fillStyle = 'rgba(214,255,226,0.75)';
       ctx.fillText(s.label + (key === 'load' ? ` (макс ${loadMax.toFixed(1)})` : ''), lx + 12, 7);
       lx += ctx.measureText(s.label).width + 60;
     }
