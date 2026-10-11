@@ -6,7 +6,7 @@ import {
 import { t, setLang, getLang, languages, translateDom } from './i18n.js';
 
 // ── Състояние + API слой (с federation рутинг към избрания възел) ──────────────
-const state = { node: 'local', me: null, section: 'overview', metricsEs: null, sectionEs: null, hist: [] };
+const state = { node: savedNode(), me: null, section: 'overview', metricsEs: null, sectionEs: null, hist: [] };
 
 // Затваря потока на текущата секция (логове/следене) при навигация.
 function closeSectionStream() {
@@ -211,6 +211,17 @@ document.getElementById('btn-logout').addEventListener('click', async () => {
   location.reload();
 });
 
+// Избраният възел оцелява F5 — иначе всяко презареждане те връща на локалния и
+// следващото действие пада на ГРЕШНАТА машина. sessionStorage, не localStorage:
+// нов раздел започва от локалния (той е подразбирането, което човек очаква).
+// Достъпът може да хвърли (частен режим, блокирани данни) — тогава просто локален.
+function savedNode() {
+  try { return sessionStorage.getItem('csd.node') || 'local'; } catch { return 'local'; }
+}
+function saveNode(id) {
+  try { sessionStorage.setItem('csd.node', id); } catch { /* без памет — пак работи */ }
+}
+
 // ── Навигация ──────────────────────────────────────────────────────────────────
 const SECTIONS = [
   { id: 'overview', img: 'nav-overview', ico: '▤', label: 'Обзор', render: renderOverview },
@@ -252,11 +263,35 @@ const SECTIONS = [
   { id: 'power', img: 'nav-power', ico: '⏼', label: 'Захранване', render: renderPower },
 ];
 
+// Групи по ВЪПРОСА, който човек задава — не по технология. Секция, забравена
+// тук, не изчезва: отива в последната група (по-добре на грешно място, отколкото
+// невидима — същият урок като с трите липсващи секции в README).
+const NAV_GROUPS = [
+  ['Наблюдение', ['overview', 'products', 'slo', 'alerts', 'diagnostics', 'investigate']],
+  ['Работа', ['services', 'docker', 'compose', 'databases', 'redis', 'processes', 'logs', 'traffic']],
+  ['Издаване', ['deploy', 'updates']],
+  ['Защита', ['security', 'ports', 'firewall', 'integrity', 'fail2ban', 'access', 'domains']],
+  ['Сървър', ['webserver', 'backups', 'disk', 'env', 'cron', 'files']],
+  ['Управление', ['desktop', 'terminal', 'runonce', 'agents', 'jobs', 'audit', 'settings', 'power']],
+];
+
 function buildNav() {
   const nav = document.getElementById('nav');
   nav.innerHTML = '';
   clearCommands('nav');
   const gotoFor = Object.fromEntries(Object.entries(GOTO_KEYS).map(([k, v]) => [v, k]));
+  const placed = new Set(NAV_GROUPS.flatMap(([, ids]) => ids));
+  const groups = NAV_GROUPS.map(([label, ids]) => [label, ids.slice()]);
+  groups[groups.length - 1][1].push(...SECTIONS.map((s) => s.id).filter((id) => !placed.has(id)));
+  const holder = {};
+  groups.forEach(([label, ids], gi) => {
+    const hid = `nav-h-${gi}`;
+    const g = el('div', { class: 'nav-group', role: 'group', 'aria-labelledby': hid }, [
+      el('div', { class: 'nav-h', id: hid, text: label }),
+    ]);
+    for (const id of ids) holder[id] = g;
+    nav.appendChild(g);
+  });
   for (const s of SECTIONS) {
     // Секция с img ползва иконата от комплекта; останалите пазят глифа,
     // докато дойде пълният nav-* лист.
@@ -267,7 +302,7 @@ function buildNav() {
       el('span', { text: s.label }),
     ]);
     b.dataset.id = s.id;
-    nav.appendChild(b);
+    (holder[s.id] || nav).appendChild(b);
     registerCommand({
       id: `go:${s.id}`,
       scope: 'nav',
@@ -493,7 +528,9 @@ function langTagSafe() {
         onclick: () => setLang(l.id),
       })
     ));
-  document.querySelector('.topbar-right')?.insertBefore(wrap, document.getElementById('btn-palette'));
+  // В подножието на менюто: горната лента е за „къде съм" и състоянието, а на
+  // телефон превключвателят там избутваше бутоните извън екрана.
+  document.querySelector('.sidebar-foot')?.prepend(wrap);
 }
 
 document.getElementById('menu-toggle').addEventListener('click', () =>
@@ -509,6 +546,10 @@ async function loadNodes() {
   try {
     data = await (await fetch('/api/nodes', { headers: {} })).json();
   } catch {
+    // Без списък не можем да потвърдим запомнения съсед — по-безопасно е
+    // локалният (името му вече стои в горната лента от /api/me).
+    state.node = 'local';
+    delete document.body.dataset.remote;
     return;
   }
   sel.innerHTML = '';
@@ -516,15 +557,30 @@ async function loadNodes() {
   for (const p of data.peers || []) {
     sel.appendChild(el('option', { value: p.id, text: `${p.up ? '●' : '○'} ${p.name}` }));
   }
-  sel.value = state.node;
   const peers = data.peers || [];
+  // Запомненият съсед може вече да го няма в конфига → обратно на локалния.
+  if (state.node !== 'local' && !peers.some((p) => p.id === state.node)) state.node = 'local';
+  sel.value = state.node;
+  const names = { local: data.local.name, ...Object.fromEntries(peers.map((p) => [p.id, p.name])) };
+  markNode(names[state.node] || state.node);
   status.textContent = t(peers.length
     ? `${peers.filter((p) => p.up).length}/${peers.length} peer(s) на линия`
     : 'Няма конфигурирани peer-и');
   sel.onchange = () => {
     state.node = sel.value;
+    saveNode(state.node);
+    markNode(names[state.node] || state.node);
     go(state.section);
+    refreshBadge();
   };
+}
+
+// Чужд възел се вижда от ВСЯКО място на екрана: името стои пред секцията, а
+// рамката на работния изглед става циан (виж body[data-remote] в style.css).
+function markNode(name) {
+  document.getElementById('host-badge').textContent = name;
+  if (state.node === 'local') delete document.body.dataset.remote;
+  else document.body.dataset.remote = '1';
 }
 
 // ── Обзор + живи графики ───────────────────────────────────────────────────────
@@ -591,8 +647,15 @@ async function renderOverview() {
   drawSpark('spark-mem', state.hist.map((p) => (p.memUsed / p.memTotal) * 100), 100);
   drawSpark('spark-rx', state.hist.map((p) => p.rxBps), null, true);
   drawSpark('spark-disk', state.hist.map((p) => p.diskMax), 100);
+  const levels = (mm) => {
+    setLevel('cpu', mm.cpuPct);
+    setLevel('mem', memPctOf(mm.mem));
+    setLevel('disk', mm.disks.length ? Math.max(...mm.disks.map((d) => d.usePercent)) : null);
+  };
+  levels(m);
 
   startMetrics((snap) => {
+    levels(snap);
     setHtml('mc-cpu', pctHtml(snap.cpuPct));
     setHtml('mc-mem', pctHtml(memPctOf(snap.mem)));
     setHtml('mc-rx', fmtBps(snap.net.rxBps));
@@ -618,10 +681,23 @@ function pushHist(snap) {
   if (state.hist.length > 240) state.hist.shift();
 }
 
+// Състояние на уреда по същите прагове като лентите (barEl): над 85% внимание,
+// над 95% опасност. null (няма проба) не е „нормално" — уредът остава неутрален.
+function levelOf(pct) {
+  if (pct == null || !Number.isFinite(pct)) return null;
+  return pct > 95 ? 'bad' : pct > 85 ? 'warn' : 'ok';
+}
+function setLevel(key, pct) {
+  const card = document.getElementById(`mc-${key}`)?.closest('.metric-card');
+  if (!card) return;
+  const lv = levelOf(pct);
+  if (lv) card.dataset.level = lv;
+  else delete card.dataset.level;
+}
+
 function metricCard(title, key, valHtml, sub) {
-  // Собствен клас: живите плочки се държат различно от обикновените карти
-  // (издигат се при посочване, числото носи сияние). Без него ефектът щеше да
-  // важи за ВСЯКА карта, включително дългите текстови — там е шум.
+  // Собствен клас: живите плочки са уреди — числото се оцветява само при праг,
+  // а лявата черта носи състоянието (data-level, виж style.css).
   return el('div', { class: 'card metric-card' }, [
     el('div', { class: 'card-head' }, [el('h3', { text: title })]),
     el('div', { class: 'metric-val', id: `mc-${key}`, html: valHtml }),
@@ -647,19 +723,40 @@ function drawSpark(id, data, max, isRate = false) {
   const n = data.length;
   const step = w / (n - 1);
   const y = (v) => h - 3 - (Math.min(v, peak) / peak) * (h - 6);
+  const css = getComputedStyle(document.documentElement);
+  // Прагът (85%) — магента, като чертата по скалите. Само за проценти: при
+  // скорост на мрежата „85% от пика" е безсмислено число.
+  if (max === 100) {
+    ctx.strokeStyle = css.getPropertyValue('--target').trim() || '#e27ae0';
+    ctx.globalAlpha = 0.7;
+    ctx.setLineDash([3, 4]);
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, Math.round(y(85)) + 0.5);
+    ctx.lineTo(w, Math.round(y(85)) + 0.5);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+  }
   ctx.beginPath();
   ctx.moveTo(0, y(data[0]));
   for (let i = 1; i < n; i++) ctx.lineTo(i * step, y(data[i]));
-  const grad = ctx.createLinearGradient(0, 0, w, 0);
-  grad.addColorStop(0, '#33e6a0');
-  grad.addColorStop(1, '#2bb3ff');
-  ctx.strokeStyle = grad;
-  ctx.lineWidth = 1.8;
+  // Данните са БЕЛИ — цвят получава само състоянието и прагът.
+  ctx.strokeStyle = css.getPropertyValue('--txt').trim() || '#eef1f3';
+  ctx.globalAlpha = 0.85;
+  ctx.lineWidth = 1.5;
+  ctx.lineJoin = 'round';
   ctx.stroke();
+  ctx.globalAlpha = 1;
   ctx.lineTo(w, h);
   ctx.lineTo(0, h);
   ctx.closePath();
-  ctx.fillStyle = 'rgba(51,230,160,0.08)';
+  ctx.fillStyle = 'rgba(238,241,243,0.05)';
+  ctx.fill();
+  // Последната стойност — точка в края: „ето сега".
+  ctx.fillStyle = css.getPropertyValue('--txt').trim() || '#eef1f3';
+  ctx.beginPath();
+  ctx.arc(w - 2.5, y(data[n - 1]), 2.5, 0, Math.PI * 2);
   ctx.fill();
 }
 
@@ -3638,7 +3735,7 @@ async function renderSecurity() {
           el('h3', { text: 'Оценка за сигурност' }),
           pill(kind, `${post.score}/100 · ${post.grade}`),
         ]),
-        barEl(post.score),
+        scoreBar(post.score, kind),
         el('div', { class: 'metric-sub', text: `${post.problems.length} находки от ${plural(post.checks, 'проверка', 'проверки')}. ${post.note}` }),
         ...post.problems.map((p) =>
           el('div', { class: 'finding', style: 'margin-top:10px;padding-left:10px;border-left:3px solid var(--' + (p.severity === 'critical' ? 'danger' : p.severity === 'high' ? 'warn' : 'txt-dim') + ')' }, [
@@ -4353,7 +4450,9 @@ function fromLocalInput(v) {
 // но с оси, легенда и маркер за момента.
 function drawInvestigateChart(cv, tip, d) {
   const series = Object.entries(d.series).filter(([, s]) => s.points.length > 1);
-  const colors = { cpu: '#3ddc97', memory: '#6ea8fe', disk: '#ffb454', load: '#ff6b81' };
+  // Категориални цветове, нарочно ДАЛЕЧ от кехлибара и червеното — те значат
+  // „внимание"/„опасност", а линия на диска не е тревога сама по себе си.
+  const colors = { cpu: '#eef1f3', memory: '#7fb2ff', disk: '#b9a3ff', load: '#5fd3bf' };
   const center = new Date(d.at).getTime();
   const half = d.windowMin * 60000;
   const from = center - half;
@@ -4398,8 +4497,8 @@ function drawInvestigateChart(cv, tip, d) {
       ctx.stroke();
     }
 
-    // Моментът.
-    ctx.strokeStyle = '#ff6b81';
+    // Моментът — магента: това е целта на погледа, не тревога.
+    ctx.strokeStyle = '#e27ae0';
     ctx.setLineDash([4, 3]);
     ctx.beginPath();
     ctx.moveTo(x(center), pad.t);
@@ -4411,7 +4510,7 @@ function drawInvestigateChart(cv, tip, d) {
     for (const e of d.events) {
       const ex = x(new Date(e.ts).getTime());
       if (ex < pad.l || ex > w - pad.r) continue;
-      ctx.fillStyle = e.kind === 'деплой' ? '#ffb454' : e.kind === 'аларма' || e.failed ? '#ff6b81' : '#6ea8fe';
+      ctx.fillStyle = e.kind === 'деплой' ? '#5cd0e3' : e.kind === 'аларма' || e.failed ? '#ff6b6b' : '#a3abb1';
       ctx.beginPath();
       ctx.arc(ex, pad.t + ih + 8, 3, 0, Math.PI * 2);
       ctx.fill();
@@ -4423,7 +4522,7 @@ function drawInvestigateChart(cv, tip, d) {
     for (const [key, s] of series) {
       ctx.fillStyle = colors[key] || '#888';
       ctx.fillRect(lx, 2, 8, 3);
-      ctx.fillStyle = 'rgba(255,255,255,0.6)';
+      ctx.fillStyle = 'rgba(238,241,243,0.7)';
       ctx.fillText(s.label + (key === 'load' ? ` (макс ${loadMax.toFixed(1)})` : ''), lx + 12, 7);
       lx += ctx.measureText(s.label).width + 60;
     }
@@ -5711,8 +5810,16 @@ function kv(obj) {
   return dl;
 }
 function barEl(pct) {
-  const wrap = el('div', { class: 'bar' + (pct > 85 ? ' warn' : '') });
+  const wrap = el('div', { class: 'bar gauge' + (pct > 85 ? ' warn' : '') });
   wrap.appendChild(el('i', { style: `width:${Math.min(100, pct)}%` }));
+  return wrap;
+}
+// Оценката е ОБЪРНАТА скала спрямо заетостта: повече е по-добре. Затова не
+// минава през barEl — там 27 щеше да е „зелено, далеч от прага", а то е двойка.
+// Цветът идва от същата преценка като значката до нея (kind).
+function scoreBar(score, kind) {
+  const wrap = el('div', { class: `bar score score-${kind}` });
+  wrap.appendChild(el('i', { style: `width:${Math.max(0, Math.min(100, score))}%` }));
   return wrap;
 }
 function setHtml(id, h) { const e = document.getElementById(id); if (e) e.innerHTML = h; }
@@ -5721,15 +5828,40 @@ function setHtml(id, h) { const e = document.getElementById(id); if (e) e.innerH
 // Брой активни аларми върху иконата на приложението (Android + iOS 16.4+ PWA).
 // clearAppBadge() е ИЗРИЧЕН — setAppBadge(0) не чисти надеждно в Safari.
 async function refreshBadge() {
+  let a;
+  try {
+    a = await api('/alerts');
+  } catch {
+    // Не знаем → сигнализацията изчезва, НЕ показва „без аларми". Зелено при
+    // неизвестно е точно лъжата, срещу която е целият панел.
+    document.getElementById('annun').classList.add('hidden');
+    return;
+  }
+  showAnnunciator(a.active || []);
   if (!('setAppBadge' in navigator)) return;
   try {
-    const a = await api('/alerts');
     const n = (a.active || []).length;
     if (n > 0) await navigator.setAppBadge(n);
     else await navigator.clearAppBadge();
   } catch {
     /* без баджа — не е фатално */
   }
+}
+
+// Главната сигнализация. Брои САМО critical и warning: аномалиите (info) не
+// будят човек — това е доктрината на алармите, и тук важи същото.
+function showAnnunciator(active) {
+  const b = document.getElementById('annun');
+  const crit = active.filter((x) => x.severity === 'critical').length;
+  const warn = active.filter((x) => x.severity === 'warning').length;
+  b.innerHTML = '';
+  b.classList.remove('hidden');
+  b.dataset.level = crit ? 'bad' : warn ? 'warn' : 'ok';
+  b.appendChild(el('span', { class: 'annun-light', 'aria-hidden': 'true' }));
+  if (!crit && !warn) b.appendChild(el('span', { text: 'Без активни аларми' }));
+  if (crit) b.appendChild(el('span', { text: plural(crit, 'критична', 'критични') }));
+  if (warn) b.appendChild(el('span', { text: plural(warn, 'предупреждение', 'предупреждения') }));
+  b.onclick = () => go('alerts');
 }
 
 async function boot() {
