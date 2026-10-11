@@ -422,7 +422,9 @@ deploy_medqr() {
     sudo -u medqr sqlite3 "$db" ".backup '$dbbak'" || cp -a "$db" "$dbbak"
     log "Снимка на базата преди миграция: $dbbak"
   fi
-  systemctl restart "$MEDQR_SERVICE"
+  # Провал на рестарта решава health check-ът долу (той води до отката) — иначе
+  # set -e прекратява целия пробег ПРЕДИ отката. (одит 25.09.2026)
+  systemctl restart "$MEDQR_SERVICE" || warn "medqr: restart върна грешка — решава health check-ът."
   sleep 2
   if health "$MEDQR_HEALTH_URL" "medqr" "$MEDQR_HEALTH_EXPECT"; then
     rm -rf "${MEDQR_DIR}.bak-$TS"
@@ -451,7 +453,7 @@ medqr_rollback() {
     rsync -a --delete --exclude data/ "${MEDQR_DIR}.bak-$TS"/ "$MEDQR_DIR"/
     chown -R medqr:medqr "$MEDQR_DIR"
   fi
-  systemctl restart "$MEDQR_SERVICE"
+  systemctl restart "$MEDQR_SERVICE" || warn "medqr: и откатът не тръгна — иска ръчна намеса."
 }
 
 # ── 3b') vizitka — systemd (огледално на medqr) ───────────────────────────────
@@ -513,7 +515,9 @@ deploy_vizitka() {
     fi
     log "Снимка на базата преди миграция: $dbbak"
   fi
-  systemctl restart "$VIZITKA_SERVICE"
+  # Провал на рестарта решава health check-ът долу (той води до отката) — иначе
+  # set -e прекратява целия пробег ПРЕДИ отката. (одит 25.09.2026)
+  systemctl restart "$VIZITKA_SERVICE" || warn "vizitka: restart върна грешка — решава health check-ът."
   sleep 2
   if health "$VIZITKA_HEALTH_URL" "vizitka" '"app":"vizitka"'; then
     rm -rf "$bak"
@@ -528,7 +532,7 @@ deploy_vizitka() {
       chown vizitka:vizitka "$db"
     fi
     vizitka_restore_code
-    systemctl restart "$VIZITKA_SERVICE"
+    systemctl restart "$VIZITKA_SERVICE" || warn "vizitka: и откатът не тръгна — иска ръчна намеса."
   fi
 }
 
@@ -624,7 +628,9 @@ EOF
   install -m 644 "$PANEV_DIR/deploy/systemd/panev.service" /etc/systemd/system/panev.service
   systemctl daemon-reload
   systemctl enable "$PANEV_SERVICE" >/dev/null 2>&1 || true
-  systemctl restart "$PANEV_SERVICE"
+  # Провал на рестарта решава health check-ът долу (той води до отката) — иначе
+  # set -e прекратява целия пробег ПРЕДИ отката. (одит 25.09.2026)
+  systemctl restart "$PANEV_SERVICE" || warn "panev: restart върна грешка — решава health check-ът."
   sleep 2
   if health "$PANEV_HEALTH_URL" "panev"; then
     rm -rf "${PANEV_DIR}.bak-$TS"
@@ -693,7 +699,9 @@ deploy_ospedali() {
   install -m 644 "$OSPEDALI_DIR/deploy/systemd/ospedali.service" /etc/systemd/system/ospedali.service
   systemctl daemon-reload
   systemctl enable "$OSPEDALI_SERVICE" >/dev/null 2>&1 || true
-  systemctl restart "$OSPEDALI_SERVICE"
+  # Провал на рестарта решава health check-ът долу (той води до отката) — иначе
+  # set -e прекратява целия пробег ПРЕДИ отката. (одит 25.09.2026)
+  systemctl restart "$OSPEDALI_SERVICE" || warn "ospedali: restart върна грешка — решава health check-ът."
   sleep 2
   if health "$OSPEDALI_HEALTH_URL" "ospedali"; then
     rm -rf "${OSPEDALI_DIR}.bak-$TS"
@@ -713,7 +721,7 @@ deploy_ospedali() {
       rsync -a --delete --exclude server/.env --exclude server/.state/ \
         "${OSPEDALI_DIR}.bak-$TS"/ "$OSPEDALI_DIR"/
       chown -R www-data:www-data "$OSPEDALI_DIR"
-      systemctl restart "$OSPEDALI_SERVICE"
+      systemctl restart "$OSPEDALI_SERVICE" || warn "ospedali: и откатът не тръгна — иска ръчна намеса."
     fi
   fi
 }
@@ -816,31 +824,44 @@ deploy_mastilko() {
   # Системен потребител — самосъздаващ се, идемпотентно.
   id mastilko >/dev/null 2>&1 || useradd --system --create-home --home-dir "$MASTILKO_DIR" \
     --shell /usr/sbin/nologin mastilko
+  # Всяка стъпка оттук нататък е ОХРАНЕНА: под `set -euo pipefail` неохранен провал
+  # (най-често `npm run build`) прекратяваше ЦЕЛИЯ пробег — следващите продукти
+  # оставаха неразгърнати, а кодът на mastilko — сменен и без node_modules.
+  # Сега провалът вдига deploy_failed, връща бекъпа и пробегът продължава.
+  # (VPS-аджията, одит 25.09.2026 — H1; регресия: tools/vps/autodeploy-mastilko.test.mjs)
   # Бекъп на текущия код (.env остава — rsync exclude го пази и от --delete).
-  [ -d "$MASTILKO_DIR" ] && cp -a "$MASTILKO_DIR" "${MASTILKO_DIR}.bak-$TS"
+  if [ -d "$MASTILKO_DIR" ]; then
+    cp -a "$MASTILKO_DIR" "${MASTILKO_DIR}.bak-$TS" \
+      || { warn "mastilko: бекъпът на текущия код не мина (диск?) — пропускам mastilko, нищо не е сменено."; deploy_failed=1; return; }
+  fi
   mkdir -p "$MASTILKO_DIR"
   rsync -a --delete \
     --exclude node_modules/ --exclude .next/ --exclude .env --exclude data/ \
-    "$d"/ "$MASTILKO_DIR"/
+    "$d"/ "$MASTILKO_DIR"/ \
+    || { warn "mastilko: rsync на кода се провали — връщам предишния код."; mastilko_rollback; deploy_failed=1; return; }
   # Версията в service worker-а = този релийз, иначе `activate` не чисти
   # старите кешове (филтрира по неизменен литерал) и статичният кеш расте.
   sed -i "s|^const VERSION = \".*\";|const VERSION = \"mastilko-$TS\";|" \
     "$MASTILKO_DIR/public/sw.js" 2>/dev/null || warn "sw.js: версията не е пренаписана"
-  chown -R mastilko:mastilko "$MASTILKO_DIR"
+  chown -R mastilko:mastilko "$MASTILKO_DIR" \
+    || { warn "mastilko: chown се провали — връщам предишния код."; mastilko_rollback; deploy_failed=1; return; }
   # Билд на сървъра: пълни зависимости → next build → сваляне до продукционни.
   ( cd "$MASTILKO_DIR" \
     && sudo -u mastilko npm ci \
     && sudo -u mastilko npm run build \
-    && sudo -u mastilko npm prune --omit=dev )
+    && sudo -u mastilko npm prune --omit=dev ) \
+    || { warn "mastilko: билдът се провали — връщам предишния код; продължавам с останалите проекти."; mastilko_rollback; deploy_failed=1; return; }
   # ReadWritePaths в unit-а изисква пътищата да съществуват при старт.
   # data/ пази JSON-а на рекламните банери — НЕ се трие при деплой (rsync
   # exclude), за да оцелее между версиите като .env.
-  sudo -u mastilko mkdir -p "$MASTILKO_DIR/.next/cache" "$MASTILKO_DIR/data"
   # systemd unit — самоинсталиращ се/обновяващ се при всеки деплой.
-  install -m 644 "$MASTILKO_DIR/deploy/mastilko.service" /etc/systemd/system/mastilko.service
-  systemctl daemon-reload
+  { sudo -u mastilko mkdir -p "$MASTILKO_DIR/.next/cache" "$MASTILKO_DIR/data" \
+    && install -m 644 "$MASTILKO_DIR/deploy/mastilko.service" /etc/systemd/system/mastilko.service \
+    && systemctl daemon-reload; } \
+    || { warn "mastilko: подготовката на systemd unit-а се провали — връщам предишния код."; mastilko_rollback; deploy_failed=1; return; }
   systemctl enable "$MASTILKO_SERVICE" >/dev/null 2>&1 || true
-  systemctl restart "$MASTILKO_SERVICE"
+  # Провал на рестарта решава health check-ът долу (той води до отката).
+  systemctl restart "$MASTILKO_SERVICE" || warn "mastilko: restart върна грешка — решава health check-ът."
   sleep 2
   if health "$MASTILKO_HEALTH_URL" "mastilko"; then
     rm -rf "${MASTILKO_DIR}.bak-$TS"
@@ -853,12 +874,21 @@ deploy_mastilko() {
   else
     deploy_failed=1
     warn "mastilko health провал — връщам предишния код."
-    systemctl stop "$MASTILKO_SERVICE" || true
-    if [ -d "${MASTILKO_DIR}.bak-$TS" ]; then
-      rsync -a --delete --exclude .env --exclude data/ "${MASTILKO_DIR}.bak-$TS"/ "$MASTILKO_DIR"/
-      chown -R mastilko:mastilko "$MASTILKO_DIR"
-      systemctl restart "$MASTILKO_SERVICE"
-    fi
+    mastilko_rollback
+  fi
+}
+
+# Откатът на mastilko — общ за провален health и за провал ПРЕДИ рестарта (rsync,
+# билд, unit). Самият той не бива да убива пробега: всяка стъпка е охранена.
+mastilko_rollback() {
+  systemctl stop "$MASTILKO_SERVICE" >/dev/null 2>&1 || true
+  if [ -d "${MASTILKO_DIR}.bak-$TS" ]; then
+    { rsync -a --delete --exclude .env --exclude data/ "${MASTILKO_DIR}.bak-$TS"/ "$MASTILKO_DIR"/ \
+      && chown -R mastilko:mastilko "$MASTILKO_DIR" \
+      && systemctl restart "$MASTILKO_SERVICE"; } \
+      || warn "mastilko: и откатът не мина — иска ръчна намеса (бекъп: ${MASTILKO_DIR}.bak-$TS)."
+  else
+    warn "mastilko: първи деплой — няма предишна версия; услугата остава спряна (виж: journalctl -u $MASTILKO_SERVICE -b)."
   fi
 }
 
@@ -1464,7 +1494,9 @@ deploy_vpsdashboard() {
     return
   fi
 
-  systemctl restart "$VPSDASH_SERVICE"
+  # Провал на рестарта решава пробата долу (тя води до отката) — иначе set -e
+  # прекратява целия пробег ПРЕДИ отката.
+  systemctl restart "$VPSDASH_SERVICE" || warn "vps-dashboard: restart върна грешка — решава пробата."
   sleep 2
   # /api/ping без сесия връща 401 → това е „жив". health() приема само 2xx/3xx,
   # затова третираме 401 отделно като успех.
@@ -1489,8 +1521,9 @@ deploy_vpsdashboard() {
     warn "vps-dashboard health провал ($code) — връщам предишния код."
     systemctl stop "$VPSDASH_SERVICE" || true
     if [ -d "${VPSDASH_DIR}.bak-$TS" ]; then
-      rsync -a --delete --exclude .state/ "${VPSDASH_DIR}.bak-$TS"/ "$VPSDASH_DIR"/
-      systemctl restart "$VPSDASH_SERVICE"
+      rsync -a --delete --exclude .state/ "${VPSDASH_DIR}.bak-$TS"/ "$VPSDASH_DIR"/ \
+        && systemctl restart "$VPSDASH_SERVICE" \
+        || warn "vps-dashboard: и откатът не тръгна — иска ръчна намеса (SSH)."
     fi
   fi
 }
