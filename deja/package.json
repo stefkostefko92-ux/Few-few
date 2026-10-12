@@ -10,7 +10,7 @@
   "scripts": {
     "build": "node build.mjs",
     "build:firefox": "node build.mjs --firefox",
-    "test": "node test/bookmarks-unit.mjs && npm run build:test && node test/e2e.mjs && node test/smoke.mjs && node test/ambient.mjs && node test/rate.mjs && node test/bookmarks.mjs",
+    "test": "node test/bookmarks-unit.mjs && node test/answer-unit.mjs && npm run build:test && node test/e2e.mjs && node test/smoke.mjs && node test/ambient.mjs && node test/rate.mjs && node test/bookmarks.mjs && node test/answer.mjs",
     "zip": "npm run build && mkdir -p release && cd dist && zip -qr ../release/deja-$npm_package_version.zip .",
     "zip:firefox": "npm run build:firefox && mkdir -p release && cd dist-firefox && zip -qr ../release/deja-firefox-$npm_package_version.zip .",
     "icons": "python3 tools/generate_icons.py",

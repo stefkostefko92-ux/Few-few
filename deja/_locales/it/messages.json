@@ -389,5 +389,66 @@
   },
   "rateFeedbackSubject": {
     "message": "feedback"
+  },
+  "answerTitle": {
+    "message": "Risposta dalla tua memoria"
+  },
+  "answerAsk": {
+    "message": "Rispondi dalla mia memoria"
+  },
+  "answerEnableTitle": {
+    "message": "Risposte dall'AI integrata di Chrome"
+  },
+  "answerEnableText": {
+    "message": "Déjà può rispondere alle domande partendo da ciò che hai letto, con le fonti. Chrome scarica una sola volta il suo modello sul dispositivo (Gemini Nano) — domande e pagine non lasciano il computer."
+  },
+  "answerEnableButton": {
+    "message": "Attiva le risposte"
+  },
+  "answerNoThanks": {
+    "message": "No, grazie"
+  },
+  "answerDownloading": {
+    "message": "Chrome sta scaricando il modello… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Sto leggendo i tuoi ricordi…"
+  },
+  "answerStop": {
+    "message": "Ferma"
+  },
+  "answerFoot": {
+    "message": "Scritta sul tuo dispositivo dall'AI integrata di Chrome da $COUNT$ dei tuoi ricordi. Verifica le fonti.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Questa volta non sono riuscito a comporre una risposta."
+  },
+  "optAnswersLabel": {
+    "message": "Risposte dall'AI integrata di Chrome"
+  },
+  "optAnswersHelp": {
+    "message": "Per domande come \"cosa ho letto su…?\" scrivo una breve risposta con le fonti dalle tue pagine — interamente sul dispositivo, con Gemini Nano in Chrome. Servono un computer e una lingua supportati (inglese, spagnolo, tedesco, francese, giapponese)."
+  },
+  "optAnswersAvailable": {
+    "message": "Pronto all'uso su questo dispositivo."
+  },
+  "optAnswersDownloadable": {
+    "message": "Supportato — Chrome scaricherà il modello alla prima domanda."
+  },
+  "optAnswersUnavailable": {
+    "message": "Questo dispositivo o la lingua dell'interfaccia non sono supportati dall'AI integrata di Chrome."
+  },
+  "optAnswersUnsupported": {
+    "message": "Questo browser non ha un'AI integrata — tutto il resto di Déjà funziona come sempre."
   }
 }

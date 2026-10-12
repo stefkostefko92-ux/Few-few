@@ -389,5 +389,66 @@
   },
   "rateFeedbackSubject": {
     "message": "обратна връзка"
+  },
+  "answerTitle": {
+    "message": "Отговор от паметта ти"
+  },
+  "answerAsk": {
+    "message": "Отговори от паметта ми"
+  },
+  "answerEnableTitle": {
+    "message": "Отговори от вградения AI на Chrome"
+  },
+  "answerEnableText": {
+    "message": "Déjà може да отговаря на въпроси от прочетеното от теб, с източници. Chrome тегли еднократно своя модел на устройството (Gemini Nano) — въпросите и страниците ти не напускат компютъра."
+  },
+  "answerEnableButton": {
+    "message": "Включи отговорите"
+  },
+  "answerNoThanks": {
+    "message": "Не, благодаря"
+  },
+  "answerDownloading": {
+    "message": "Chrome тегли модела… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Чета спомените ти…"
+  },
+  "answerStop": {
+    "message": "Спри"
+  },
+  "answerFoot": {
+    "message": "Съставен на устройството ти от вградения AI на Chrome по $COUNT$ от спомените ти. Провери източниците.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Не успях да съставя отговор този път."
+  },
+  "optAnswersLabel": {
+    "message": "Отговори от вградения AI на Chrome"
+  },
+  "optAnswersHelp": {
+    "message": "За въпроси като „какво четох за…?“ съставям кратък отговор с източници от твоите страници — изцяло на устройството, с Gemini Nano в Chrome. Иска поддържан компютър и език (английски, испански, немски, френски, японски)."
+  },
+  "optAnswersAvailable": {
+    "message": "Готово за ползване на това устройство."
+  },
+  "optAnswersDownloadable": {
+    "message": "Поддържа се — Chrome ще изтегли модела при първия въпрос."
+  },
+  "optAnswersUnavailable": {
+    "message": "Това устройство или езикът на интерфейса не се поддържат от вградения AI на Chrome."
+  },
+  "optAnswersUnsupported": {
+    "message": "Този браузър няма вграден AI — останалото в Déjà работи както винаги."
   }
 }

@@ -674,3 +674,171 @@ input[type='url']:focus {
 .panel .nudge {
   flex-direction: column;
 }
+
+/* --- „Отговор от паметта ти“ --- */
+.answer {
+  border-radius: 18px;
+  margin: 0 0 16px;
+  padding: 16px 18px 14px;
+}
+
+/* дъга от светлина отгоре — отговорът е „над“ резултатите */
+.answer:not(.answer-compact) {
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim),
+    inset 0 -1px 0 var(--glass-caustic),
+    0 0 0 1px rgba(139, 124, 246, 0.28),
+    0 18px 50px -24px rgba(139, 124, 246, 0.75),
+    var(--glass-shadow);
+}
+
+.answer-compact {
+  padding: 0;
+}
+
+.answer-head {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.answer-mark {
+  color: #f48cc8;
+  display: inline-flex;
+  font-size: 19px;
+}
+
+.answer-title {
+  color: var(--text);
+  flex: 1;
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: 0.3px;
+  margin: 0;
+}
+
+.answer-text {
+  color: var(--text);
+  font-size: 15.5px;
+  line-height: 1.65;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.answer-text:empty {
+  display: none;
+}
+
+.answer-explain {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.answer-status,
+.answer-foot {
+  color: var(--muted);
+  font-size: 12.5px;
+  margin: 4px 0 0;
+}
+
+.answer-foot {
+  border-top: 1px solid var(--glass-edge);
+  margin-top: 12px;
+  padding-top: 9px;
+}
+
+/* цитат [n] → малка стъклена „перла“, линк към източника */
+.cite {
+  align-items: center;
+  background: var(--accent-glass);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
+  color: #fff;
+  display: inline-flex;
+  font-size: 11px;
+  font-weight: 700;
+  height: 18px;
+  justify-content: center;
+  margin: 0 1px 0 2px;
+  min-width: 18px;
+  padding: 0 5px;
+  text-decoration: none;
+  vertical-align: 2px;
+}
+
+.cite:hover,
+.cite:focus-visible {
+  filter: brightness(1.2);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.answer-stop,
+.answer-no {
+  background: none;
+  border: 1px solid var(--glass-edge);
+  border-radius: 9px;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12.5px;
+  padding: 4px 10px;
+}
+
+.answer-no {
+  border: none;
+}
+
+.answer-stop:hover,
+.answer-no:hover {
+  color: var(--text);
+}
+
+.answer-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.answer-enable,
+.answer-ask {
+  align-items: center;
+  border-radius: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 650;
+  gap: 8px;
+  padding: 9px 16px;
+  width: auto;
+}
+
+.answer-ask {
+  color: var(--text);
+}
+
+.answer-ask .icon {
+  color: #f48cc8;
+}
+
+/* перлата на цитирана карта — в горния десен ъгъл */
+.result {
+  position: relative;
+}
+
+.cite-badge {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+}
+
+:is(.answer-stop, .answer-no, .answer-ask, .answer-enable):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

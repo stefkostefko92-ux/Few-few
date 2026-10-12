@@ -8,6 +8,7 @@ import { initAmbient } from '../lib/ambient.js';
 import { icon } from '../lib/icons.js';
 import { mountBookmarkCard } from '../lib/bookmarks-ui.js';
 import { recordWin, mountRateNudge } from '../lib/rate.js';
+import { mountAnswer } from '../lib/answer-ui.js';
 
 applyI18n();
 const ambient = initAmbient();
@@ -19,6 +20,22 @@ const status = document.getElementById('status');
 const resultsEl = document.getElementById('results');
 const filtersEl = document.getElementById('filters');
 const bmCtaEl = document.getElementById('bmCta');
+// „Отговор от паметта ти“ — вграденият AI на Chrome; мълчи, ако не се поддържа
+const answer = mountAnswer(document.getElementById('answer'), {
+  el,
+  icon,
+  t,
+  onCite: recordWin,
+  // цитираните резултати носят същата „перла“ с номера — цитат ↔ карта с един поглед
+  onCited(numbers) {
+    [...resultsEl.querySelectorAll('.result')].forEach((card, i) => {
+      if (!numbers.has(i + 1)) return;
+      const badge = el('span', 'cite cite-badge', String(i + 1));
+      badge.setAttribute('aria-hidden', 'true');
+      card.prepend(badge);
+    });
+  },
+});
 
 // под този брой спомени търсачката предлага отметките — иначе е празна седмици
 const YOUNG_MEMORY = 30;
@@ -182,6 +199,7 @@ async function doSearch(query) {
   form.classList.add('searching'); // паметта „диша“, докато рови
   ambient.focus(true); // мрежата се свива — паметта търси
   status.textContent = t('statusSearching');
+  answer.reset(); // новото търсене прекъсва стария отговор
   try {
     const minTime = activeFilterDays ? Date.now() - activeFilterDays * DAY_MS : 0;
     const results = await send('deja:search', { query, minTime });
@@ -193,6 +211,7 @@ async function doSearch(query) {
         results.length === 1 ? t('statusResultsOne') : t('statusResults', [String(results.length)]);
       render(results, query);
       ambient.surface(results.length); // спомените изплуват
+      answer.run(query, results);
     }
   } catch (err) {
     status.textContent = t('statusError', [String(err?.message || err)]);

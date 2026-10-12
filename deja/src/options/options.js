@@ -3,6 +3,7 @@
 import { getSettings, patchSettings, BUILTIN_DENYLIST } from '../lib/settings.js';
 import { applyI18n, t } from '../lib/i18n.js';
 import { initAmbient } from '../lib/ambient.js';
+import { availability, pickLanguage } from '../lib/answer.js';
 import {
   enableBookmarks,
   disableBookmarks,
@@ -90,6 +91,24 @@ bookmarksEl.addEventListener('change', async () => {
     bookmarksEl.disabled = false;
   }
 });
+
+// Отговорите: ключът действа веднага; статусът казва честно какво може устройството
+const answersEl = document.getElementById('answers');
+const answersStatusEl = document.getElementById('answersStatus');
+const ANSWER_STATUS = {
+  available: 'optAnswersAvailable',
+  downloadable: 'optAnswersDownloadable',
+  downloading: 'optAnswersDownloadable',
+  unavailable: 'optAnswersUnavailable',
+  unsupported: 'optAnswersUnsupported',
+};
+answersEl.addEventListener('change', () => patchSettings({ answers: answersEl.checked }));
+(async () => {
+  answersEl.checked = (await getSettings()).answers !== false;
+  // латинска проба: при BG/IT интерфейс отговорите са възможни за въпроси на английски
+  const state = await availability(pickLanguage(chrome.i18n.getUILanguage(), 'a'));
+  answersStatusEl.textContent = t(ANSWER_STATUS[state] || 'optAnswersUnavailable');
+})();
 
 watchBookmarks((status, enabled) => {
   bookmarksEl.checked = enabled;

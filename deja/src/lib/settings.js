@@ -40,6 +40,9 @@ const DEFAULTS = {
   // Отметките в паметта — по избор, с право „bookmarks“, поискано в момента на
   // включването (optional_permissions → нула предупреждения при инсталация)
   bookmarks: false,
+  // „Отговор от паметта ти“ чрез вградения AI на Chrome (на устройството);
+  // скрива се сам, ако устройството/езикът не се поддържат
+  answers: true,
 };
 
 export async function getSettings() {

@@ -51,7 +51,8 @@
 - Single purpose description → „Single purpose“ от `LISTING.md`.
 - Permission justification — за ВСЯКО право копирай реда от таблицата в
   `LISTING.md` (content script host access, storage, unlimitedStorage, offscreen,
-  alarms, contextMenus, sidePanel, activeTab).
+  alarms, contextMenus, sidePanel, activeTab **и опционалното bookmarks** — от
+  1.5 таблото го показва отделно; обосновката е същата таблица).
 - Are you using remote code? → **No** (WASM е в пакета; моделът е данни, кеширан).
 - Data usage → **ОТМЕТНИ** категориите, които Déjà обработва, макар и само
   локално (CWS User Data FAQ Q3: разкриването е задължително „even when data is

@@ -1,4 +1,4 @@
-# Déjà — Chrome Web Store листинг (v1.4)
+# Déjà — Chrome Web Store листинг (v1.5)
 
 **Английският е основният език на листинга** (default_locale: en); българският
 (и италианският) са допълнителни. Пакетът: `npm run zip` → `release/deja-<версия>.zip`.
@@ -47,6 +47,13 @@ remember the title, the site, or the exact words. It even jumps to the exact
 paragraph.
 
 WHAT YOU GET
+✓ Your bookmarks, searchable by meaning from minute one — optional, one click.
+  Déjà learns their titles and folders (without opening the pages) and keeps
+  them in sync as you add, move or delete bookmarks.
+✓ Answers from your memory — on computers that support Chrome's built-in AI
+  (Gemini Nano), ask a question and get a short answer written on your device
+  from the pages you've read, with clickable sources. (Answers in English,
+  Spanish, German, French and Japanese.)
 ✓ Search by meaning — ask in your own words, in 50+ languages; ask in one
   language, find pages you read in another.
 ✓ Side panel companion — open it next to any page and see what you have
@@ -79,9 +86,10 @@ point it at your own mirror instead).
 
 ## Single purpose (за review-а)
 
-Déjà lets users semantically search the web pages they have already read.
-It locally indexes page text and answers natural-language queries entirely
-on-device. That is its single purpose; every permission serves it.
+Déjà lets users semantically search the web pages they have already read
+(and, if they choose, their bookmarks). It locally indexes page text and
+answers natural-language queries entirely on-device. That is its single
+purpose; every permission serves it.
 
 ## Обосновка на правата (за review-а — copy-paste в „Permission justification“)
 
@@ -95,6 +103,13 @@ on-device. That is its single purpose; every permission serves it.
 | `contextMenus` | "Déjà: remember selected text" and "Déjà: forget this page" items on the page context menu. |
 | `sidePanel` | The companion side panel (search + what you have read on this page's topic). |
 | `activeTab` | Only to read the current tab's URL when the user clicks "Forget this page" in the popup. Not used for anything else. |
+| `bookmarks` (**optional**, requested at runtime) | Only if the user turns on "Bookmarks in memory" (welcome page, search page or settings): reads bookmark titles, URLs and folder names so they become searchable locally. The pages are never opened or fetched. Turning the feature off deletes the bookmark-only memories and calls `permissions.remove`. |
+
+**Chrome built-in AI (Prompt API):** used only on extension pages, only on
+devices where Chrome reports the model as available, and only with the user's
+question plus passages already stored locally. Nothing is sent by the
+extension; the model download (if any) is performed by Chrome itself after the
+user clicks "Turn on answers". No permission is required.
 
 **Remote code:** none. ONNX Runtime WASM ships inside the package. Model
 weights (data, not code) are fetched once from Hugging Face and cached locally.
@@ -106,7 +121,8 @@ a self-hosted mirror instead (Settings → model mirror).
 
 - **Data usage** → отметни **Web history** и **Website content** (обработват се
   изцяло локално, но CWS User Data FAQ Q3 изисква разкриване и при локална
-  обработка). Нищо друго. Подробностите ред по ред — в PUBLISH.md.
+  обработка). Отметките (по избор, от 1.5) попадат в същите две категории —
+  нищо ново за отмятане. Нищо друго. Подробностите ред по ред — в PUBLISH.md.
 - Трите сертификации → отметни и трите (не продаваме, не ползваме извън single
   purpose, не ползваме за кредитоспособност).
 
@@ -130,6 +146,13 @@ a self-hosted mirror instead (Settings → model mirror).
 нито сайта, нито точните думи. Дори скача до точния абзац.
 
 КАКВО ПОЛУЧАВАШ
+✓ Отметките ти — търсими по смисъл от първата минута, по желание, с един клик.
+  Déjà учи заглавията и папките им (без да отваря страниците) и ги следи,
+  докато добавяш, местиш или триеш.
+✓ Отговори от паметта ти — на компютри с вградения AI на Chrome (Gemini Nano)
+  задаваш въпрос и получаваш кратък отговор, съставен на устройството ти от
+  прочетеното, с източници за клик. (Отговори на английски, испански, немски,
+  френски и японски.)
 ✓ Търсене по смисъл — със свои думи, на 50+ езика; питаш на един език,
   намираш четеното на друг.
 ✓ Страничен панел-компаньон — отвори го до всяка страница и виж какво вече си

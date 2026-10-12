@@ -389,5 +389,66 @@
   },
   "rateFeedbackSubject": {
     "message": "feedback"
+  },
+  "answerTitle": {
+    "message": "Answer from your memory"
+  },
+  "answerAsk": {
+    "message": "Answer from my memory"
+  },
+  "answerEnableTitle": {
+    "message": "Answers from Chrome's built-in AI"
+  },
+  "answerEnableText": {
+    "message": "Déjà can answer questions from what you've read, with sources. Chrome downloads its on-device model (Gemini Nano) once — your questions and pages never leave your computer."
+  },
+  "answerEnableButton": {
+    "message": "Turn on answers"
+  },
+  "answerNoThanks": {
+    "message": "No thanks"
+  },
+  "answerDownloading": {
+    "message": "Chrome is downloading the model… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Reading your memories…"
+  },
+  "answerStop": {
+    "message": "Stop"
+  },
+  "answerFoot": {
+    "message": "Written on your device by Chrome's built-in AI from $COUNT$ of your memories. Check the sources.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "I couldn't put together an answer this time."
+  },
+  "optAnswersLabel": {
+    "message": "Answers from Chrome's built-in AI"
+  },
+  "optAnswersHelp": {
+    "message": "For questions like \"what did I read about…?\" I write a short answer with sources from your pages — fully on your device, with Gemini Nano in Chrome. Needs a supported computer and language (English, Spanish, German, French, Japanese)."
+  },
+  "optAnswersAvailable": {
+    "message": "Ready to use on this device."
+  },
+  "optAnswersDownloadable": {
+    "message": "Supported — Chrome will download the model on your first question."
+  },
+  "optAnswersUnavailable": {
+    "message": "This device or interface language isn't supported by Chrome's built-in AI."
+  },
+  "optAnswersUnsupported": {
+    "message": "This browser has no built-in AI — everything else in Déjà works as always."
   }
 }

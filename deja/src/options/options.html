@@ -27,6 +27,19 @@
       </section>
 
       <section class="card">
+        <label class="toggle" for="answers">
+          <span>
+            <span class="label" data-i18n="optAnswersLabel"
+              >Отговори от вградения AI на Chrome</span
+            >
+            <span class="help" data-i18n="optAnswersHelp"></span>
+            <span id="answersStatus" class="help status-line" aria-live="polite"></span>
+          </span>
+          <input id="answers" type="checkbox" role="switch" />
+        </label>
+      </section>
+
+      <section class="card">
         <label class="label" for="retention" data-i18n="optRetentionLabel">Помни страниците</label>
         <select id="retention"></select>
         <p class="help" data-i18n="optRetentionHelp">

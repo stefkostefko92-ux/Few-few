@@ -8,6 +8,7 @@ import { el, countLabel } from '../lib/dom.js';
 import { initAmbient } from '../lib/ambient.js';
 import { icon } from '../lib/icons.js';
 import { recordWin, mountRateNudge } from '../lib/rate.js';
+import { mountAnswer } from '../lib/answer-ui.js';
 
 applyI18n();
 const ambient = initAmbient();
@@ -20,6 +21,7 @@ const resultsEl = document.getElementById('results');
 const contextEl = document.getElementById('context');
 const contextNote = document.getElementById('contextNote');
 const recentEl = document.getElementById('recent');
+const answer = mountAnswer(document.getElementById('answer'), { el, icon, t, onCite: recordWin });
 
 function recallKey(score) {
   if (score >= 0.5) return 'recallVivid';
@@ -72,6 +74,7 @@ async function doSearch(query) {
   form.classList.add('searching');
   ambient.focus(true);
   status.textContent = t('statusSearching');
+  answer.reset();
   try {
     const results = await send('deja:search', { query });
     resultsEl.replaceChildren();
@@ -81,6 +84,7 @@ async function doSearch(query) {
       status.textContent = countLabel(results.length, 'statusResultsOne', 'statusResults');
       results.forEach((r, i) => resultsEl.append(card(r, i)));
       ambient.surface(results.length);
+      answer.run(query, results);
     }
   } catch (err) {
     status.textContent = t('statusError', [String(err?.message || err)]);

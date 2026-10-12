@@ -258,6 +258,7 @@ async function search(query, minTime = 0) {
       title: page?.title || s.urlKey,
       // отметката не е прочетена — няма откъс за показване и абзац за скок
       snippet: isBookmark ? '' : text.slice(0, 260),
+      passage: isBookmark ? '' : text, // цялото парче — за „Отговор от паметта ти“
       quote: isBookmark ? '' : makeQuote(text),
       score: Math.round(s.score * 100) / 100,
       time: page?.time || null,
