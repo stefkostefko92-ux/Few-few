@@ -67,13 +67,16 @@ const tight = Object.entries({ full: promoTL, ...promoTL.cuts }).filter(([, c]) 
 ok(`promo: lightning strikes ≥ 2 s apart in every cut (${tight.join(",") || "all"})`, tight.length === 0);
 
 // Сайтът: badge-ът „Established Publisher“ води към листинга (проверимо твърдение), а броят езици
-// на страницата и в llms.txt е броят на _locales (беше „70“ след 73).
+// на страницата, в llms.txt и в описанието за магазина е броят ЕЗИЦИ, не папки: 73 папки в _locales = 70 езика
+// (es/es_419, pt_BR/pt_PT, zh_CN/zh_TW са варианти). 5.1.5–5.1.8 казваха „73“ — грешно.
 const listing = "https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk";
 const pills = [...idxHtml.matchAll(/<a class="verified" href="([^"]+)"[\s\S]*?<\/a>/g)];
 ok("site: the Established Publisher mark links to the store listing", pills.length >= 1 && pills.every((m) => m[1] === listing && /Established Publisher/.test(m[0])));
 const llms = readFileSync(join(ROOT, "server", "llms.txt"), "utf8");
-const langClaims = [...(idxHtml + llms).matchAll(/(\d+) languages/g)].map((m) => +m[1]).filter((n) => n !== 31);
-ok(`site: “N languages” = ${locs.length} locales everywhere (${[...new Set(langClaims)].join(",")})`, langClaims.length >= 3 && langClaims.every((n) => n === locs.length));
+const storeListing = readFileSync(join(ROOT, "docs", "STORE_LISTING.md"), "utf8");
+const langCount = new Set(locs.map((l) => l.split("_")[0])).size;
+const langClaims = [...(idxHtml + llms + storeListing).matchAll(/(\d+) (?:languages|езика|lingue|Sprachen)/g)].map((m) => +m[1]).filter((n) => n !== 31);
+ok(`site + store listing: “N languages” = ${langCount} languages (${locs.length} locale folders) everywhere (${[...new Set(langClaims)].join(",")})`, langClaims.length >= 6 && langClaims.every((n) => n === langCount));
 
 // Графиките за магазина по правилата на Google („Supplying Images“): точните размери, а иконата 128
 // е 96×96 рисунка с ~16 px прозрачен отстъп (install диалогът и магазинът я ползват от пакета).

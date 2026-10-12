@@ -44,7 +44,7 @@ Supreme AdBlock removes ads and trackers from the pages you visit, without watch
 - Signed (Ed25519), data-only filter updates twice a day, so blocking never goes stale
 - Live stats: ads blocked, data saved, time saved
 - Sleek Carbon Stealth theme (dark) with a light option
-- Available in 73 languages
+- Available in 70 languages
 
 HOW IT WORKS
 
@@ -119,7 +119,7 @@ Supreme AdBlock маха рекламите и тракерите от стра�
 - „Блокирано на тази страница“ в popup-а — виждате колко е спрял всеки филтър-лист
 - Подписани (Ed25519), само-данни ъпдейти на филтрите — блокирането не остарява
 - Статистика на живо: блокирани реклами, спестени данни, спестено време
-- Тема Carbon Stealth (тъмна) и светла опция; интерфейс на 73 езика
+- Тема Carbon Stealth (тъмна) и светла опция; интерфейс на 70 езика
 
 КАК РАБОТИ
 
@@ -166,7 +166,7 @@ Supreme AdBlock toglie annunci e tracker dalle pagine che visiti, senza osservar
 - «Bloccato in questa pagina» nel popup: vedi quanto ha fermato ogni lista di filtri
 - Aggiornamenti dei filtri firmati (Ed25519) e composti solo da dati: il blocco non invecchia
 - Statistiche in tempo reale: annunci bloccati, dati risparmiati, tempo risparmiato
-- Tema Carbon Stealth (scuro) con opzione chiara; interfaccia in 73 lingue
+- Tema Carbon Stealth (scuro) con opzione chiara; interfaccia in 70 lingue
 
 COME FUNZIONA
 
@@ -213,7 +213,7 @@ Supreme AdBlock entfernt Werbung und Tracker von den Seiten, die Sie besuchen, o
 - „Auf dieser Seite blockiert“ im Popup: Sie sehen, wie viel jede Filterliste gestoppt hat
 - Signierte (Ed25519), reine Daten-Updates der Filter: das Blockieren veraltet nicht
 - Live-Statistik: blockierte Anzeigen, gesparte Daten, gesparte Zeit
-- Carbon-Stealth-Design (dunkel) mit heller Option; Oberfläche in 73 Sprachen
+- Carbon-Stealth-Design (dunkel) mit heller Option; Oberfläche in 70 Sprachen
 
 SO FUNKTIONIERT ES
 
