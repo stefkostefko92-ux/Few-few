@@ -12,7 +12,7 @@ function parsedOrFail(body: Record<string, unknown>) {
 }
 
 describe('the field list', () => {
-  it('keeps the 29 fields of the brief, in the brief order (plus the two serrature details)', () => {
+  it('keeps the fields of the brief in its order, the second brief next to what they belong to', () => {
     assert.deepEqual(
       FIELDS.map((field) => field.key),
       [
@@ -21,6 +21,7 @@ describe('the field list', () => {
         'marca',
         'matricola',
         'numeroImpianto',
+        'buonoLavoro',
         'portataKg',
         'capienzaPersone',
         'fermate',
@@ -29,9 +30,18 @@ describe('the field list', () => {
         'parcheggio',
         'tipoImpianto',
         'tipoPorte',
+        'operatoreMarca',
+        'lucePorte',
+        'operatoreTensione',
+        'doppioAccesso',
+        'bloccaPortine',
+        'autolivellamento',
+        'pattinoRetrattile',
+        'pattinoRetrattileNumero',
         'serrature',
         'serratureNumero',
         'serratureTipo',
+        'luceVanoSostituire',
         'funiDiametroMm',
         'funiTrefoli',
         'funiNumero',
@@ -43,13 +53,18 @@ describe('the field list', () => {
         'caviNumero',
         'caviConduttori',
         'caviLunghezzaM',
+        'telesoccorso',
+        'telesoccorsoStato',
+        'allarmePortineria',
+        'displayPortineria',
         'noteQuadretto',
         'noteImpianto',
         'noteBottoniere',
+        'bottoniereMisure',
         'lavoriExtra',
       ],
     );
-    assert.equal(SECTIONS.length, 8);
+    assert.equal(SECTIONS.length, 9);
   });
 
   it('gives every number a kind the brief asked for: the identifiers are digits, never numbers', () => {

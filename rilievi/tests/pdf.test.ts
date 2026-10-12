@@ -18,6 +18,7 @@ const scheda = {
   marca: 'Schindler',
   matricola: '0033871',
   numeroImpianto: '104552',
+  buonoLavoro: 'BL 2026/512',
   portataKg: 630,
   capienzaPersone: 8,
   fermate: 6,
@@ -26,9 +27,18 @@ const scheda = {
   parcheggio: null,
   tipoImpianto: ['ELETTRICO'],
   tipoPorte: ['AUTOMATICHE', 'MANUALI'],
+  operatoreMarca: 'Selcom',
+  lucePorte: '800 x 2000',
+  operatoreTensione: '24 V DC',
+  doppioAccesso: false,
+  bloccaPortine: true,
+  autolivellamento: null,
+  pattinoRetrattile: true,
+  pattinoRetrattileNumero: 1,
   serrature: true,
   serratureNumero: 6,
   serratureTipo: 'Elettromeccaniche',
+  luceVanoSostituire: true,
   funiDiametroMm: new Prisma.Decimal('10.50'),
   funiTrefoli: 8,
   funiNumero: 4,
@@ -40,9 +50,15 @@ const scheda = {
   caviNumero: 2,
   caviConduttori: 24,
   caviLunghezzaM: null,
+  telesoccorso: true,
+  telesoccorsoStato: 'MANCA_PERIFERICA',
+  allarmePortineria: false,
+  displayPortineria: null,
   noteQuadretto: null,
   noteImpianto: 'Бележка на български, città, perché.',
   noteBottoniere: null,
+  bottoniereMisure: false,
+  misureBottoniere: [],
   lavoriExtra: 'x '.repeat(1500),
   searchText: '',
   createdById: null,
@@ -83,6 +99,45 @@ describe('the sheet PDF', { skip: !fontsHere && 'DejaVu fonts are not installed 
     });
   }
 });
+
+const pages = (pdf: Buffer) => (pdf.toString('latin1').match(/\/Type \/Page\b/g) ?? []).length;
+
+describe(
+  'the old push-button panels on the PDF',
+  { skip: !fontsHere && 'DejaVu fonts are not installed here' },
+  () => {
+    it('draws a row for every stop and carries on over the next pages', async () => {
+      const options = {
+        t: translatorFor('it'),
+        fmt: viewHelpers('it'),
+        generatedBy: 'Prova',
+        fontDir,
+        logo: null,
+      };
+      const without = await renderSchedaPdf({ ...scheda, fermate: 60 }, options);
+      const withTable = await renderSchedaPdf(
+        {
+          ...scheda,
+          fermate: 60,
+          bottoniereMisure: true,
+          misureBottoniere: Array.from({ length: 60 }, (_, i) => ({
+            id: `m${i}`,
+            schedaId: scheda.id,
+            fermata: i + 1,
+            piano: i === 0 ? 'S1' : null,
+            lunghezzaMm: new Prisma.Decimal('320.5'),
+            larghezzaMm: new Prisma.Decimal('105'),
+            interasseSuperiore: 'Interasse 60 mm, due fori svasati',
+            interasseInferiore: null,
+            display: i % 2 === 0,
+          })),
+        },
+        options,
+      );
+      assert.ok(pages(withTable) >= pages(without) + 1, '60 rows need at least one more page');
+    });
+  },
+);
 
 describe(
   'the company logo on the PDF',

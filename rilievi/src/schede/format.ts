@@ -1,9 +1,13 @@
-import type { Scheda } from '@prisma/client';
+import type { MisuraBottoniera, Scheda } from '@prisma/client';
 import type { Translator } from '../i18n.js';
 import { toNumber, type ViewHelpers } from '../http/view.js';
 import { dayFromDate } from '../time.js';
-import { SECTIONS, type FieldDef, type SectionKey } from './fields.js';
-import type { FormValues } from './validation.js';
+import { activeFields, SECTIONS, type FieldDef, type SectionKey } from './fields.js';
+import type { FormValues } from './field-parsers.js';
+import { misureFromRows, misureTable, type TableView } from './misure.js';
+
+/** Картата с редовете на мерките по спирки — каквото показват страницата, печатът и PDF-ът. */
+export type SchedaShown = Scheda & { misureBottoniere: MisuraBottoniera[] };
 
 /** Неразделим интервал между число и мерна единица („630 kg“ не се къса на два реда). */
 const NBSP = ' ';
@@ -21,8 +25,10 @@ export interface DisplayField {
   value: string;
   kind: FieldDef['kind'];
   wide: boolean;
-  /** Отметките и Sì/No — за печата с квадратчета. */
+  /** Отметките, изборът и Sì/No — за печата с квадратчета. */
   options?: OptionView[];
+  /** Мерките на старите бутониери по спирки — таблица под полето (при „Sì“ и брой спирки). */
+  table?: TableView;
 }
 
 export interface DisplaySection {
@@ -34,7 +40,7 @@ export interface DisplaySection {
 type Values = Record<string, unknown>;
 
 function optionLabels(field: FieldDef, t: Translator): Array<{ value: string; label: string }> {
-  if (field.kind === 'checks') {
+  if (field.kind === 'checks' || field.kind === 'choice') {
     return field.options.map((value) => ({
       value,
       label: t(`scheda.option.${field.key}.${value}`),
@@ -76,6 +82,8 @@ function displayValue(field: FieldDef, raw: unknown, t: Translator, fmt: ViewHel
             .map((option) => option.label)
             .join(', ')
         : '';
+    case 'choice':
+      return optionLabels(field, t).find((option) => option.value === raw)?.label ?? '';
     case 'yesno':
       return raw === true ? t('common.yes') : raw === false ? t('common.no') : '';
   }
@@ -85,6 +93,9 @@ function optionsView(field: FieldDef, raw: unknown, t: Translator): OptionView[]
   if (field.kind === 'checks') {
     const list = Array.isArray(raw) ? raw : [];
     return optionLabels(field, t).map((o) => ({ ...o, checked: list.includes(o.value) }));
+  }
+  if (field.kind === 'choice') {
+    return optionLabels(field, t).map((o) => ({ ...o, checked: o.value === raw }));
   }
   if (field.kind === 'yesno') {
     return optionLabels(field, t).map((o) => ({
@@ -96,35 +107,44 @@ function optionsView(field: FieldDef, raw: unknown, t: Translator): OptionView[]
 }
 
 /**
- * Разделите със стойностите за страницата, печата и PDF-а. Бройката и видът на ключалките се
- * показват само при „Serrature: Sì“ — иначе не съществуват.
+ * Разделите със стойностите за страницата, печата и PDF-а. Полетата с условие (fields.ts, `when`) се
+ * показват само когато то е изпълнено — „Numero serrature“ при „Serrature: No“ не съществува.
  */
-export function displaySections(scheda: Scheda, t: Translator, fmt: ViewHelpers): DisplaySection[] {
+export function displaySections(
+  scheda: SchedaShown,
+  t: Translator,
+  fmt: ViewHelpers,
+): DisplaySection[] {
   const values = scheda as unknown as Values;
+  const active = activeFields((key) => values[key]);
   return SECTIONS.map((section) => ({
     key: section.key,
     title: t(`scheda.section.${section.key}`),
-    fields: section.fields
-      .filter((field) => !('whenSerrature' in field && field.whenSerrature) || scheda.serrature)
+    fields: (section.fields as readonly FieldDef[])
+      .filter((field) => active.has(field.key))
       .map((field) => {
         const view: DisplayField = {
           key: field.key,
           label: t(`scheda.field.${field.key}`),
           value: displayValue(field, values[field.key], t, fmt),
           kind: field.kind,
-          wide: 'wide' in field && field.wide === true,
+          wide: field.wide === true,
         };
         const options = optionsView(field, values[field.key], t);
         if (options) view.options = options;
+        if (field.misure && values[field.key] === true) {
+          const table = misureTable(scheda.fermate, scheda.misureBottoniere, t, fmt);
+          if (table) view.table = table;
+        }
         return view;
       }),
   }));
 }
 
-/** Стойностите на запазена схема във вида на формата (за „Modifica“). */
-export function formValuesFromScheda(scheda: Scheda, fmt: ViewHelpers): FormValues {
+/** Стойностите на запазена схема във вида на формата (за „Modifica“), с редовете на мерките. */
+export function formValuesFromScheda(scheda: SchedaShown, fmt: ViewHelpers): FormValues {
   const values = scheda as unknown as Values;
-  const out: FormValues = {};
+  const out: FormValues = misureFromRows(scheda.misureBottoniere, fmt);
   for (const section of SECTIONS) {
     for (const field of section.fields as readonly FieldDef[]) {
       const raw = values[field.key];
@@ -137,6 +157,9 @@ export function formValuesFromScheda(scheda: Scheda, fmt: ViewHelpers): FormValu
           break;
         case 'yesno':
           out[field.key] = raw === true ? 'si' : raw === false ? 'no' : '';
+          break;
+        case 'choice':
+          out[field.key] = typeof raw === 'string' ? raw : '';
           break;
         case 'int':
           out[field.key] = typeof raw === 'number' ? String(raw) : '';

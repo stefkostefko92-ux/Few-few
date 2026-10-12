@@ -1,7 +1,7 @@
 {
   "schede": {
     "title": "Карти",
-    "subtitle": "Търси по № на асансьора, матрикула, адрес, марка или бележки.",
+    "subtitle": "Търси по № на асансьора, матрикула, адрес, марка, работна карта или бележки.",
     "new": "Нова карта",
     "count": {
       "one": "1 карта",
@@ -78,6 +78,7 @@
       "funi": "Въжета",
       "limitatore": "Ограничител",
       "cavi": "Кабели",
+      "allarme": "Аларма и аварийна връзка",
       "note": "Бележки и работи"
     },
     "field": {
@@ -86,6 +87,7 @@
       "marca": "Марка на асансьора",
       "matricola": "Матрикула",
       "numeroImpianto": "№ на асансьора",
+      "buonoLavoro": "Референтна работна карта",
       "portataKg": "Товароносимост",
       "capienzaPersone": "Капацитет",
       "fermate": "Спирки",
@@ -94,9 +96,18 @@
       "parcheggio": "Паркиране",
       "tipoImpianto": "Вид асансьор",
       "tipoPorte": "Вид врати",
-      "serrature": "Брави",
-      "serratureNumero": "Брой брави",
-      "serratureTipo": "Вид брави",
+      "operatoreMarca": "Марка на оператора на вратите",
+      "lucePorte": "Светъл отвор на вратите",
+      "operatoreTensione": "Напрежение на оператора",
+      "doppioAccesso": "Двоен достъп",
+      "bloccaPortine": "Блокировка на вратичките",
+      "autolivellamento": "Автоматично донивелиране",
+      "pattinoRetrattile": "Прибираща се шейна",
+      "pattinoRetrattileNumero": "Брой прибиращи се шейни",
+      "serrature": "Брави/окачвания",
+      "serratureNumero": "Брой брави/окачвания",
+      "serratureTipo": "Вид брави/окачвания",
+      "luceVanoSostituire": "Осветление на шахтата за смяна",
       "funiDiametroMm": "Диаметър на въжетата",
       "funiTrefoli": "Снопове на въжетата",
       "funiNumero": "Брой въжета",
@@ -108,11 +119,19 @@
       "caviNumero": "Брой кабели",
       "caviConduttori": "Брой жила",
       "caviLunghezzaM": "Дължина на кабелите",
+      "telesoccorso": "Налична аварийна връзка",
+      "telesoccorsoStato": "Състояние на аварийната връзка",
+      "allarmePortineria": "Аларма в портиерната",
+      "displayPortineria": "Дисплей в портиерната",
       "noteQuadretto": "Бележки: ел. табло",
       "noteImpianto": "Бележки за асансьора",
       "noteBottoniere": "Бележки: монтирани бутонни табла",
+      "bottoniereMisure": "Мерки на старите бутонни табла",
       "lavoriExtra": "Допълнителни работи (работна карта)",
       "azienda": "Фирма"
+    },
+    "question": {
+      "bottoniereMisure": "Ще въвеждаш ли мерките на старите бутонни табла?"
     },
     "option": {
       "ubicazioneMacchina": {
@@ -128,6 +147,10 @@
         "AUTOMATICHE": "Автоматични",
         "SEMIAUTOMATICHE": "Полуавтоматични",
         "MANUALI": "Ръчни"
+      },
+      "telesoccorsoStato": {
+        "COMPLETO": "Пълна",
+        "MANCA_PERIFERICA": "Липсва периферно устройство"
       }
     },
     "unit": {
@@ -138,6 +161,20 @@
       },
       "mm": "мм",
       "m": "м"
+    },
+    "misure": {
+      "row": "Спирка {n}",
+      "fermata": "Спирка",
+      "needFermate": "Първо въведи спирките в „Данни от табелата“: тук се появява ред за всяка спирка.",
+      "errorLabel": "{col}, спирка {n}",
+      "col": {
+        "piano": "Етаж",
+        "lunghezzaMm": "Дължина",
+        "larghezzaMm": "Ширина",
+        "interasseSuperiore": "Междуосие на горния отвор",
+        "interasseInferiore": "Междуосие на долния отвор",
+        "display": "Дисплей"
+      }
     },
     "error": {
       "invalid": "Невалидна стойност.",

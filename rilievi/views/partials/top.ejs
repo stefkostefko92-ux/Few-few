@@ -1,7 +1,7 @@
 <%
   // Заглавие на страницата < 60 знака: „<страница> — Rilievi Impianti“.
   const pageTitle = (typeof title !== 'undefined' && title) ? title : t(titleKey);
-  const sheets = ['base', 'layout', 'plate', 'forms', 'pages', 'data'];
+  const sheets = ['base', 'layout', 'plate', 'forms', 'pages', 'data', 'misure'];
   const narrow = typeof narrowMain !== 'undefined' && narrowMain;
 %><!doctype html>
 <html lang="<%= locale %>"<% if (theme === 'LIGHT') { %> data-theme="light"<% } else if (theme === 'DARK') { %> data-theme="dark"<% } %>>

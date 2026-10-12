@@ -1,7 +1,7 @@
 {
   "schede": {
     "title": "Schede",
-    "subtitle": "Cerca per n° impianto, matricola, indirizzo, marca o note.",
+    "subtitle": "Cerca per n° impianto, matricola, indirizzo, marca, buono di lavoro o note.",
     "new": "Nuova scheda",
     "count": {
       "one": "1 scheda",
@@ -78,6 +78,7 @@
       "funi": "Funi",
       "limitatore": "Limitatore",
       "cavi": "Cavi",
+      "allarme": "Allarme e telesoccorso",
       "note": "Note e lavori"
     },
     "field": {
@@ -86,6 +87,7 @@
       "marca": "Marca impianto",
       "matricola": "Matricola",
       "numeroImpianto": "N° impianto",
+      "buonoLavoro": "Buono di lavoro di riferimento",
       "portataKg": "Portata",
       "capienzaPersone": "Capienza",
       "fermate": "Fermate",
@@ -94,9 +96,18 @@
       "parcheggio": "Parcheggio",
       "tipoImpianto": "Tipo impianto",
       "tipoPorte": "Tipo porte",
-      "serrature": "Serrature",
-      "serratureNumero": "Numero serrature",
-      "serratureTipo": "Tipo serrature",
+      "operatoreMarca": "Marca operatore",
+      "lucePorte": "Luce porte",
+      "operatoreTensione": "Tensione operatore",
+      "doppioAccesso": "Doppio accesso",
+      "bloccaPortine": "Blocca portine",
+      "autolivellamento": "Autolivellamento",
+      "pattinoRetrattile": "Pattino retrattile",
+      "pattinoRetrattileNumero": "Numero pattini retrattili",
+      "serrature": "Serrature/sospensioni",
+      "serratureNumero": "Numero serrature/sospensioni",
+      "serratureTipo": "Tipo serrature/sospensioni",
+      "luceVanoSostituire": "Luce vano da sostituire",
       "funiDiametroMm": "Diametro funi",
       "funiTrefoli": "Trefoli funi",
       "funiNumero": "Numero funi",
@@ -108,11 +119,19 @@
       "caviNumero": "Numero cavi",
       "caviConduttori": "Conduttori cavi",
       "caviLunghezzaM": "Lunghezza cavi",
+      "telesoccorso": "Telesoccorso esistente",
+      "telesoccorsoStato": "Stato telesoccorso",
+      "allarmePortineria": "Allarme in portineria",
+      "displayPortineria": "Display in portineria",
       "noteQuadretto": "Note quadretto elettrico",
       "noteImpianto": "Note impianto",
       "noteBottoniere": "Note bottoniere in opera",
+      "bottoniereMisure": "Misure bottoniere vecchie",
       "lavoriExtra": "Lavori extra (buono di lavoro)",
       "azienda": "Azienda"
+    },
+    "question": {
+      "bottoniereMisure": "Vuoi inserire le misure delle bottoniere vecchie?"
     },
     "option": {
       "ubicazioneMacchina": {
@@ -128,6 +147,10 @@
         "AUTOMATICHE": "Automatiche",
         "SEMIAUTOMATICHE": "Semiautomatiche",
         "MANUALI": "Manuali"
+      },
+      "telesoccorsoStato": {
+        "COMPLETO": "Completo",
+        "MANCA_PERIFERICA": "Manca periferica"
       }
     },
     "unit": {
@@ -138,6 +161,20 @@
       },
       "mm": "mm",
       "m": "m"
+    },
+    "misure": {
+      "row": "Fermata {n}",
+      "fermata": "Fermata",
+      "needFermate": "Indica prima le fermate in «Dati di targa»: qui compare una riga per ogni fermata.",
+      "errorLabel": "{col}, fermata {n}",
+      "col": {
+        "piano": "Piano",
+        "lunghezzaMm": "Lunghezza",
+        "larghezzaMm": "Larghezza",
+        "interasseSuperiore": "Interasse foro superiore",
+        "interasseInferiore": "Interasse foro inferiore",
+        "display": "Display"
+      }
     },
     "error": {
       "invalid": "Valore non valido.",

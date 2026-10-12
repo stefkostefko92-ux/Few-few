@@ -1,25 +1,13 @@
 import { Router, type Request, type Response } from 'express';
 import { config } from '../config.js';
 import { can } from '../auth/roles.js';
-import { scopeOf, type Scope } from '../auth/scope.js';
-import {
-  isPartial,
-  principalOf,
-  requireCapability,
-  requireCsrf,
-  sendError,
-} from '../auth/guards.js';
-import {
-  activeAzienda,
-  activeAziende,
-  allAziendeNames,
-  aziendaLogo,
-  isAziendaId,
-} from '../aziende/service.js';
+import { isPartial, principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
+import { activeAzienda, activeAziende, allAziendeNames, aziendaLogo } from '../aziende/service.js';
 import { setFlash } from '../http/flash.js';
 import { pdfLimiter } from '../http/limits.js';
 import { businessDay } from '../time.js';
-import { SECTIONS } from '../schede/fields.js';
+import { activeFields, SECTIONS } from '../schede/fields.js';
+import { MAX_MISURE, misuraOf, misuraTemplateRow, misureFormRows } from '../schede/misure.js';
 import {
   displaySections,
   emptyFormValues,
@@ -27,13 +15,11 @@ import {
   schedaTitle,
 } from '../schede/format.js';
 import { pdfFileName, renderSchedaPdf } from '../schede/pdf.js';
-import { highlight, MAX_QUERY_LENGTH } from '../schede/search.js';
+import { highlight } from '../schede/search.js';
 import {
   createScheda,
   getScheda,
   listSchede,
-  purgeScheda,
-  restoreScheda,
   trashScheda,
   updateScheda,
   type SchedaFull,
@@ -45,31 +31,16 @@ import {
   type FieldErrors,
   type FormValues,
 } from '../schede/validation.js';
+import { aziendaFilterOf, notFound, queryOf, scope } from './schede-shared.js';
 
 export const schedeRouter: Router = Router();
 
 const read = requireCapability('schede:read');
 const write = requireCapability('schede:write');
 const remove = requireCapability('schede:delete');
-const trash = requireCapability('schede:trash');
 
 /** Ключът на грешката „избери фирма“ във формата на MASTER. */
 const AZIENDA_ERROR_KEY = 'azienda';
-
-function scope(req: Request): Scope {
-  return scopeOf(principalOf(req).user);
-}
-
-function queryOf(req: Request): string {
-  const q = req.query.q;
-  return typeof q === 'string' ? q.slice(0, MAX_QUERY_LENGTH) : '';
-}
-
-/** Филтърът по фирма — само за MASTER; за останалите обхватът вече е тяхната фирма. */
-function aziendaFilterOf(req: Request): string | null {
-  const value = req.query.azienda;
-  return scope(req).all && isAziendaId(value) ? value : null;
-}
 
 schedeRouter.get('/schede', read, async (req, res) => {
   const query = queryOf(req);
@@ -85,10 +56,6 @@ schedeRouter.get('/schede', read, async (req, res) => {
   }
   res.render('schede/list', view);
 });
-
-function notFound(req: Request, res: Response): void {
-  sendError(req, res, 404, 'error.notFoundTitle', 'error.notFound');
-}
 
 /** Картата от адреса, в обхвата; изтритата — само за тези, които виждат кошчето. */
 async function loadScheda(req: Request): Promise<SchedaFull | null> {
@@ -113,6 +80,12 @@ function renderForm(res: Response, status: number, view: FormView): void {
     sections: SECTIONS,
     identifiersErrorKey: IDENTIFIERS_ERROR_KEY,
     aziendaErrorKey: AZIENDA_ERROR_KEY,
+    // Кои полета с условие се виждат при отварянето (app.js ги следи после, докато се пише).
+    active: activeFields((key) => view.values[key]),
+    misureRows: misureFormRows(view.values, view.errors),
+    misuraTemplate: misuraTemplateRow(),
+    maxMisure: MAX_MISURE,
+    misuraOf,
   });
 }
 
@@ -267,34 +240,4 @@ schedeRouter.post('/schede/:id/elimina', remove, requireCsrf, async (req, res) =
   if (!ok) return notFound(req, res);
   setFlash(res, 'ok', 'flash.schedaTrashed');
   res.redirect(303, '/schede');
-});
-
-schedeRouter.get('/cestino', trash, async (req, res) => {
-  const query = queryOf(req);
-  const azienda = aziendaFilterOf(req);
-  const [page, aziende] = await Promise.all([
-    listSchede({ scope: scope(req), azienda, query, page: req.query.p, trash: true }),
-    scope(req).all ? allAziendeNames() : Promise.resolve([]),
-  ]);
-  res.render('schede/trash', { page, query, highlight, aziende, aziendaFilter: azienda ?? '' });
-});
-
-schedeRouter.post('/cestino/:id/ripristina', trash, requireCsrf, async (req, res) => {
-  const ok = await restoreScheda(scope(req), String(req.params.id), principalOf(req).user.id);
-  if (!ok) return notFound(req, res);
-  setFlash(res, 'ok', 'flash.schedaRestored');
-  res.redirect(303, `/schede/${encodeURIComponent(String(req.params.id))}`);
-});
-
-schedeRouter.get('/cestino/:id/elimina', trash, async (req, res) => {
-  const scheda = await getScheda(scope(req), String(req.params.id), true);
-  if (!scheda || !scheda.deletedAt) return notFound(req, res);
-  res.render('schede/confirm', { scheda, ident: schedaTitle(scheda, res.locals.t), mode: 'purge' });
-});
-
-schedeRouter.post('/cestino/:id/elimina', trash, requireCsrf, async (req, res) => {
-  const ok = await purgeScheda(scope(req), String(req.params.id), principalOf(req).user.id);
-  if (!ok) return notFound(req, res);
-  setFlash(res, 'ok', 'flash.schedaPurged');
-  res.redirect(303, '/cestino');
 });

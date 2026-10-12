@@ -38,9 +38,9 @@
   <section class="paper__section">
     <h2><%= section.title %></h2>
     <dl class="paper__grid">
-      <% for (const field of section.fields) { %><div class="paper__cell<%= field.wide || field.options ? ' paper__cell--wide' : '' %>">
+      <% for (const field of section.fields) { %><div class="paper__cell<%= field.wide || (field.options && field.kind !== 'yesno') ? ' paper__cell--wide' : '' %>">
         <dt><%= field.label %></dt>
-        <% if (field.options) { %><dd><span class="opts"><% for (const option of field.options) { %><span class="opt<%= option.checked ? ' opt--on' : '' %>"><span class="opt__box" aria-hidden="true"></span><%= option.label %><% if (option.checked) { %><span class="visually-hidden"> ✓</span><% } %></span><% } %></span></dd>
+        <% if (field.options) { %><dd><span class="opts"><% for (const option of field.options) { %><span class="opt<%= option.checked ? ' opt--on' : '' %>"><span class="opt__box" aria-hidden="true"></span><%= option.label %><% if (option.checked) { %><span class="visually-hidden"> ✓</span><% } %></span><% } %></span><% if (field.table) { %><%- include('_table', { table: field.table, tableClass: 'ptable' }) %><% } %></dd>
         <% } else if (field.value) { %><dd><%= field.value %></dd><% } else { %><dd class="empty-value">—</dd><% } %>
       </div>
       <% } %>

@@ -1,7 +1,8 @@
 // End-to-end check of a running portal in a real Chromium: sign-in, a company with its logo, a full
-// sheet, search, print, PDF, the company ADMIN invited by the MASTER, a technician invited by that
-// ADMIN who sees the company's sheets, and accessibility (axe-core, WCAG 2.1 AA) on every page, in the
-// light and the dark theme. Screenshots land in tests/e2e/shots/ (git-ignored).
+// sheet (the fields that appear with the door type, the alarm, one measurement row per stop that
+// follows "Fermate" while it is typed), search, print, PDF, the company ADMIN invited by the MASTER, a
+// technician invited by that ADMIN who sees the company's sheets, and accessibility (axe-core, WCAG 2.1
+// AA) on every page, in the light and the dark theme. Screenshots land in tests/e2e/shots/ (git-ignored).
 //
 //   RILIEVI_URL=http://127.0.0.1:4330 E2E_EMAIL=… E2E_PASSWORD=… npm run test:e2e
 //
@@ -142,19 +143,48 @@ try {
         noteImpianto: 'Бележка на български — città, perché',
         noteBottoniere: 'Pulsante usurato al piano 2',
         lavoriExtra: 'Buono di lavoro n. 512',
+        buonoLavoro: 'BL 2026/512',
+        operatoreMarca: 'Selcom',
+        lucePorte: '800 x 2000',
+        operatoreTensione: '24 V DC',
       };
+      // The door operator fields appear with automatic doors: tick first, then fill.
+      if (await page.locator('#f-operatoreMarca').isVisible())
+        fail('door operator shown too early');
+      await tick(page, 'tipoPorte', 'AUTOMATICHE');
       for (const [key, value] of Object.entries(fields)) await page.fill(`#f-${key}`, value);
       await tick(page, 'ubicazioneMacchina', 'ALTO');
       await tick(page, 'tipoImpianto', 'ELETTRICO');
-      await tick(page, 'tipoPorte', 'AUTOMATICHE');
+      await tick(page, 'doppioAccesso', 'si');
       await tick(page, 'serrature', 'si');
       await page.fill('#f-serratureNumero', '6');
       await page.fill('#f-serratureTipo', 'Elettromeccaniche');
+      await tick(page, 'luceVanoSostituire', 'si');
+      await tick(page, 'telesoccorso', 'si');
+      await tick(page, 'telesoccorsoStato', 'MANCA_PERIFERICA');
+      await tick(page, 'allarmePortineria', 'no');
+      // The old push-button panels: one row per stop, following "Fermate" while it is typed.
+      await tick(page, 'bottoniereMisure', 'si');
+      const rows = () => page.locator('[data-misura]:visible').count();
+      if ((await rows()) !== 6) fail(`measurement rows for 6 stops: ${await rows()}`);
+      await page.fill('#f-fermate', '8');
+      if ((await rows()) !== 8) fail(`measurement rows for 8 stops: ${await rows()}`);
+      // Typed in a row that the smaller number then hides: it stays in the page, the server skips it.
+      await page.fill('#f-mb-8-lunghezzaMm', 'not a number');
+      await page.fill('#f-fermate', '6');
+      if ((await rows()) !== 6) fail(`measurement rows back to 6 stops: ${await rows()}`);
+      await page.fill('#f-mb-1-piano', 'S1');
+      await page.fill('#f-mb-1-lunghezzaMm', '320,5');
+      await page.fill('#f-mb-1-larghezzaMm', '105');
+      await page.fill('#f-mb-1-interasseSuperiore', '60 mm');
+      await page.fill('#f-mb-1-interasseInferiore', '58 mm');
+      await tick(page, 'mb-1-display', 'si');
       await page.click('.actions button[type=submit]');
       await page.waitForURL(/\/schede\/[a-z0-9]+$/);
       sheetUrl = page.url();
       if (!(await page.textContent('.plate')).includes(fields.numeroImpianto))
         fail('plate without the number');
+      if ((await page.locator('.mtable tbody tr').count()) !== 6) fail('sheet without 6 stop rows');
 
       await page.goto(`${base}/schede`);
       await page.fill('#q', '3387 verdi');
@@ -169,6 +199,7 @@ try {
       await page.goto(`${sheetUrl}/stampa`);
       if (!(await page.locator('.paper__logo').count())) fail('print without the company logo');
       if (!(await page.textContent('.paper__by')).trim()) fail('print without the author');
+      if ((await page.locator('.ptable tbody tr').count()) !== 6) fail('print without 6 stop rows');
     }
 
     for (const [name, path] of [

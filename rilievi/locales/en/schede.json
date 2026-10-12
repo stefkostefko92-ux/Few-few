@@ -1,7 +1,7 @@
 {
   "schede": {
     "title": "Sheets",
-    "subtitle": "Search by lift no., registration no., address, make or notes.",
+    "subtitle": "Search by lift no., registration no., address, make, work order or notes.",
     "new": "New sheet",
     "count": {
       "one": "1 sheet",
@@ -78,6 +78,7 @@
       "funi": "Ropes",
       "limitatore": "Governor",
       "cavi": "Cables",
+      "allarme": "Alarm and emergency call",
       "note": "Notes and work"
     },
     "field": {
@@ -86,6 +87,7 @@
       "marca": "Lift make",
       "matricola": "Registration no.",
       "numeroImpianto": "Lift no.",
+      "buonoLavoro": "Reference work order",
       "portataKg": "Rated load",
       "capienzaPersone": "Capacity",
       "fermate": "Stops",
@@ -94,9 +96,18 @@
       "parcheggio": "Parking",
       "tipoImpianto": "Lift type",
       "tipoPorte": "Door type",
-      "serrature": "Door locks",
-      "serratureNumero": "Number of locks",
-      "serratureTipo": "Lock type",
+      "operatoreMarca": "Door operator make",
+      "lucePorte": "Door clear opening",
+      "operatoreTensione": "Door operator voltage",
+      "doppioAccesso": "Double entrance",
+      "bloccaPortine": "Door blocking device",
+      "autolivellamento": "Self-levelling",
+      "pattinoRetrattile": "Retiring cam",
+      "pattinoRetrattileNumero": "Number of retiring cams",
+      "serrature": "Door locks/hangers",
+      "serratureNumero": "Number of locks/hangers",
+      "serratureTipo": "Lock/hanger type",
+      "luceVanoSostituire": "Shaft lighting to replace",
       "funiDiametroMm": "Rope diameter",
       "funiTrefoli": "Rope strands",
       "funiNumero": "Number of ropes",
@@ -108,11 +119,19 @@
       "caviNumero": "Number of cables",
       "caviConduttori": "Cable conductors",
       "caviLunghezzaM": "Cable length",
+      "telesoccorso": "Existing emergency call system",
+      "telesoccorsoStato": "Emergency call status",
+      "allarmePortineria": "Alarm at the concierge",
+      "displayPortineria": "Display at the concierge",
       "noteQuadretto": "Electrical panel notes",
       "noteImpianto": "Lift notes",
       "noteBottoniere": "Installed push-button panel notes",
+      "bottoniereMisure": "Old push-button panel measurements",
       "lavoriExtra": "Extra work (work order)",
       "azienda": "Company"
+    },
+    "question": {
+      "bottoniereMisure": "Do you want to enter the measurements of the old push-button panels?"
     },
     "option": {
       "ubicazioneMacchina": {
@@ -128,6 +147,10 @@
         "AUTOMATICHE": "Automatic",
         "SEMIAUTOMATICHE": "Semi-automatic",
         "MANUALI": "Manual"
+      },
+      "telesoccorsoStato": {
+        "COMPLETO": "Complete",
+        "MANCA_PERIFERICA": "Peripheral missing"
       }
     },
     "unit": {
@@ -138,6 +161,20 @@
       },
       "mm": "mm",
       "m": "m"
+    },
+    "misure": {
+      "row": "Stop {n}",
+      "fermata": "Stop",
+      "needFermate": "Enter the number of stops under “Rating plate” first: a row appears here for each stop.",
+      "errorLabel": "{col}, stop {n}",
+      "col": {
+        "piano": "Floor",
+        "lunghezzaMm": "Length",
+        "larghezzaMm": "Width",
+        "interasseSuperiore": "Upper hole spacing",
+        "interasseInferiore": "Lower hole spacing",
+        "display": "Display"
+      }
     },
     "error": {
       "invalid": "Invalid value.",

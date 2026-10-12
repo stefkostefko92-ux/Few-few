@@ -1,7 +1,9 @@
 /**
  * Полетата на схемата — ЕДИНСТВЕНИЯТ източник: формата, проверката, страницата, печатът и PDF-ът се
  * строят оттук. Редът е дословно от заданието на клиента; разделите само групират, без да разместват.
- * Етикетите са в речника: `scheda.field.<key>`, `scheda.section.<key>`, `scheda.option.<key>.<СТОЙНОСТ>`.
+ * Полетата от второто задание (врати, аларма, работна поръчка, мерки на бутониерите) стоят до тези,
+ * към които се отнасят. Етикетите са в речника: `scheda.field.<key>`, `scheda.section.<key>`,
+ * `scheda.option.<key>.<СТОЙНОСТ>`, `scheda.question.<key>`.
  */
 
 export type FieldKind =
@@ -12,24 +14,46 @@ export type FieldKind =
   | 'int' // цяло число
   | 'decimal' // до 2 знака след запетаята („6,5“ или „6.5“)
   | 'checks' // отметки (повече от една може)
+  | 'choice' // един избор от няколко (или неотбелязано)
   | 'yesno'; // Sì / No / неотбелязано
 
 export type Unit = 'kg' | 'persone' | 'mm' | 'm';
 
 export type SectionKey =
-  'impianto' | 'targa' | 'ubicazione' | 'tipologia' | 'funi' | 'limitatore' | 'cavi' | 'note';
+  | 'impianto'
+  | 'targa'
+  | 'ubicazione'
+  | 'tipologia'
+  | 'funi'
+  | 'limitatore'
+  | 'cavi'
+  | 'allarme'
+  | 'note';
 
 export const UBICAZIONE_MACCHINA = ['ALTO', 'BASSO'] as const;
 export const TIPO_IMPIANTO = ['ELETTRICO', 'IDRAULICO', 'GEARLESS'] as const;
 export const TIPO_PORTE = ['AUTOMATICHE', 'SEMIAUTOMATICHE', 'MANUALI'] as const;
+export const TELESOCCORSO_STATO = ['COMPLETO', 'MANCA_PERIFERICA'] as const;
+
+/**
+ * Кога полето има смисъл: по-ранно поле от формата има една от `values` — при Sì/No това е 'si', при
+ * отметките стига една от изброените. Иначе полето не се показва и не се пази (null).
+ */
+export interface Condition {
+  field: string;
+  values: readonly string[];
+}
 
 interface BaseField {
   key: string;
   kind: FieldKind;
   /** На цял ред във формата и в PDF-а (адрес, бележки). */
   wide?: boolean;
-  /** Има смисъл само при „Serrature: Sì“. */
-  whenSerrature?: boolean;
+  when?: Condition;
+  /** Във формата етикетът е въпрос (`scheda.question.<key>`); на листа — `scheda.field.<key>`. */
+  question?: boolean;
+  /** При „Sì“ носи таблицата с мерките на старите бутониери — ред за всяка спирка (misure.ts). */
+  misure?: boolean;
 }
 
 export interface TextField extends BaseField {
@@ -44,8 +68,8 @@ export interface NumberField extends BaseField {
   unit?: Unit;
 }
 
-export interface ChecksField extends BaseField {
-  kind: 'checks';
+export interface OptionsField extends BaseField {
+  kind: 'checks' | 'choice';
   options: readonly string[];
 }
 
@@ -53,12 +77,22 @@ export interface PlainField extends BaseField {
   kind: 'date' | 'yesno';
 }
 
-export type FieldDef = TextField | NumberField | ChecksField | PlainField;
+export type FieldDef = TextField | NumberField | OptionsField | PlainField;
 
 export interface SectionDef {
   key: SectionKey;
   fields: readonly FieldDef[];
 }
+
+const yes = (field: string): Condition => ({ field, values: ['si'] });
+/** Операторът на вратите има смисъл при автоматични и полуавтоматични врати. */
+const PORTE_CON_OPERATORE: Condition = {
+  field: 'tipoPorte',
+  values: ['AUTOMATICHE', 'SEMIAUTOMATICHE'],
+};
+const PORTE_MANUALI: Condition = { field: 'tipoPorte', values: ['MANUALI'] };
+/** Прибиращата се шейна — при ръчни и при полуавтоматични врати. */
+const PORTE_CON_PATTINO: Condition = { field: 'tipoPorte', values: ['MANUALI', 'SEMIAUTOMATICHE'] };
 
 export const SECTIONS = [
   {
@@ -69,6 +103,8 @@ export const SECTIONS = [
       { key: 'marca', kind: 'text', maxLength: 120 },
       { key: 'matricola', kind: 'digits', maxLength: 20 },
       { key: 'numeroImpianto', kind: 'digits', maxLength: 20 },
+      // Работната поръчка, по която е огледът — може да остане празно.
+      { key: 'buonoLavoro', kind: 'text', maxLength: 60 },
     ],
   },
   {
@@ -93,9 +129,26 @@ export const SECTIONS = [
     fields: [
       { key: 'tipoImpianto', kind: 'checks', options: TIPO_IMPIANTO },
       { key: 'tipoPorte', kind: 'checks', options: TIPO_PORTE },
+      { key: 'operatoreMarca', kind: 'text', maxLength: 120, when: PORTE_CON_OPERATORE },
+      // Светлият отвор и напрежението — свободен текст („800 x 2000“, „24 V DC“).
+      { key: 'lucePorte', kind: 'text', maxLength: 60, when: PORTE_CON_OPERATORE },
+      { key: 'operatoreTensione', kind: 'text', maxLength: 60, when: PORTE_CON_OPERATORE },
+      { key: 'doppioAccesso', kind: 'yesno', when: PORTE_CON_OPERATORE },
+      { key: 'bloccaPortine', kind: 'yesno', when: PORTE_MANUALI },
+      { key: 'autolivellamento', kind: 'yesno', when: PORTE_MANUALI },
+      { key: 'pattinoRetrattile', kind: 'yesno', when: PORTE_CON_PATTINO },
+      {
+        key: 'pattinoRetrattileNumero',
+        kind: 'int',
+        min: 0,
+        max: 99,
+        when: yes('pattinoRetrattile'),
+      },
+      // „Serrature/sospensioni“ — брави и окачвания на вратите.
       { key: 'serrature', kind: 'yesno' },
-      { key: 'serratureNumero', kind: 'int', min: 0, max: 999, whenSerrature: true },
-      { key: 'serratureTipo', kind: 'text', maxLength: 120, whenSerrature: true },
+      { key: 'serratureNumero', kind: 'int', min: 0, max: 999, when: yes('serrature') },
+      { key: 'serratureTipo', kind: 'text', maxLength: 120, when: yes('serrature') },
+      { key: 'luceVanoSostituire', kind: 'yesno' },
     ],
   },
   {
@@ -125,11 +178,26 @@ export const SECTIONS = [
     ],
   },
   {
+    key: 'allarme',
+    fields: [
+      { key: 'telesoccorso', kind: 'yesno' },
+      {
+        key: 'telesoccorsoStato',
+        kind: 'choice',
+        options: TELESOCCORSO_STATO,
+        when: yes('telesoccorso'),
+      },
+      { key: 'allarmePortineria', kind: 'yesno' },
+      { key: 'displayPortineria', kind: 'yesno' },
+    ],
+  },
+  {
     key: 'note',
     fields: [
       { key: 'noteQuadretto', kind: 'textarea', maxLength: 4000, wide: true },
       { key: 'noteImpianto', kind: 'textarea', maxLength: 4000, wide: true },
       { key: 'noteBottoniere', kind: 'textarea', maxLength: 4000, wide: true },
+      { key: 'bottoniereMisure', kind: 'yesno', wide: true, question: true, misure: true },
       { key: 'lavoriExtra', kind: 'textarea', maxLength: 4000, wide: true },
     ],
   },
@@ -151,7 +219,9 @@ export const SEARCHABLE = [
   'matricola',
   'indirizzo',
   'marca',
+  'buonoLavoro',
   'parcheggio',
+  'operatoreMarca',
   'serratureTipo',
   'limitatoreTipo',
   'tenditore',
@@ -173,6 +243,33 @@ export function isNumberField(field: FieldDef): field is NumberField {
   return field.kind === 'int' || field.kind === 'decimal';
 }
 
-export function isChecksField(field: FieldDef): field is ChecksField {
-  return field.kind === 'checks';
+export function isOptionsField(field: FieldDef): field is OptionsField {
+  return field.kind === 'checks' || field.kind === 'choice';
+}
+
+/** Стойността като думи от формата: Sì/No → 'si'/'no', отметките — списъкът, изборът — той самият. */
+export function tokensOf(raw: unknown): string[] {
+  if (raw === true) return ['si'];
+  if (raw === false) return ['no'];
+  if (typeof raw === 'string') return raw === '' ? [] : [raw];
+  if (Array.isArray(raw)) return raw.filter((value): value is string => typeof value === 'string');
+  return [];
+}
+
+/**
+ * Кои полета имат смисъл при тези стойности: без условие — винаги; с условие — когато то е изпълнено и
+ * полето, от което зависи, само има смисъл („Numero pattini“ ← „Pattino retrattile: Sì“ ← „Porte:
+ * manuali“). Полето-условие стои по-рано в списъка (тестът го пази), затова стига един проход.
+ */
+export function activeFields(valueOf: (key: string) => unknown): Set<string> {
+  const active = new Set<string>();
+  for (const field of FIELDS) {
+    const when = field.when;
+    const met =
+      !when ||
+      (active.has(when.field) &&
+        tokensOf(valueOf(when.field)).some((v) => when.values.includes(v)));
+    if (met) active.add(field.key);
+  }
+  return active;
 }

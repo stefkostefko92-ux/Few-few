@@ -2,11 +2,16 @@
   const isEdit = scheda !== null;
   const action = isEdit ? '/schede/' + scheda.id : '/schede';
   const errorKeys = Object.keys(errors);
-  const serratureOn = values.serrature === 'si';
-  const labelOf = (key) => key === identifiersErrorKey ? t('scheda.identifiers') : t('scheda.field.' + key);
-  const anchorOf = (key) => key === identifiersErrorKey ? '#f-indirizzo' : '#f-' + key;
   const fieldMap = Object.fromEntries(sections.flatMap((s) => s.fields).map((f) => [f.key, f]));
-  const paramsOf = (key) => { const f = fieldMap[key] || {}; return { min: f.min, max: f.max, maxLength: f.maxLength }; };
+  // Грешка в ред от мерките (`mb-<спирка>-<колона>`) — с името на колоната и номера на спирката.
+  const labelOf = (key) => {
+    if (key === identifiersErrorKey) return t('scheda.identifiers');
+    const misura = misuraOf(key);
+    if (misura) return t('scheda.misure.errorLabel', { col: t('scheda.misure.col.' + misura.column.key), n: misura.n });
+    return t('scheda.field.' + key);
+  };
+  const anchorOf = (key) => key === identifiersErrorKey ? '#f-indirizzo' : '#f-' + key;
+  const paramsOf = (key) => { const misura = misuraOf(key); const f = misura ? misura.column : (fieldMap[key] || {}); return { min: f.min, max: f.max, maxLength: f.maxLength }; };
 %><%- include('../partials/top', { titleKey: isEdit ? 'schede.edit.title' : 'schede.create.title' }) %>
 <div class="page-head">
   <div>
@@ -58,7 +63,8 @@
     <legend class="section__title"><%= t('scheda.section.' + section.key) %></legend>
     <% if (section.key === 'impianto') { %><p class="field__hint<%= errors[identifiersErrorKey] ? ' field__error' : '' %>" id="identifiers-hint"><%= t('scheda.identifiersHint') %></p><% } %>
     <div class="grid">
-      <% for (const field of section.fields) { %><%- include('_field', { field, value: values[field.key], error: errors[field.key], serratureOn }) %>
+      <% for (const field of section.fields) { %><%- include('_field', { field, value: values[field.key], error: errors[field.key] }) %>
+      <% if (field.misure) { %><%- include('_misure') %><% } %>
       <% } %>
     </div>
   </fieldset>

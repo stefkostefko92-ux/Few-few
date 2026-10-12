@@ -44,6 +44,12 @@ enum TipoPorte {
   MANUALI
 }
 
+/// Наличната аварийна връзка (telesoccorso): пълна или без периферно устройство.
+enum TelesoccorsoStato {
+  COMPLETO
+  MANCA_PERIFERICA
+}
+
 /// Фирма — клиент на портала: свои хора, свои карти, свое лого на листа. Създава я само MASTER
 /// (собственикът на портала); всяка фирма вижда само своето (src/auth/scope.ts).
 model Azienda {
@@ -168,54 +174,76 @@ model PasswordReset {
 /// Схемата на уредбата — полетата и редът им са дословно от заданието (src/schede/fields.ts).
 /// Идентификаторите (matricola, numeroImpianto) са низове само от цифри: водещата нула се пази.
 model Scheda {
-  id                   String               @id @default(cuid())
-  data                 DateTime             @db.Date
-  indirizzo            String?              @db.VarChar(200)
-  marca                String?              @db.VarChar(120)
-  matricola            String?              @db.VarChar(20)
-  numeroImpianto       String?              @db.VarChar(20)
-  portataKg            Int?
-  capienzaPersone      Int?
-  fermate              Int?
-  ubicazioneMacchina   UbicazioneMacchina[]
-  ubicazioneCassettina Int?
-  parcheggio           String?              @db.VarChar(300)
-  tipoImpianto         TipoImpianto[]
-  tipoPorte            TipoPorte[]
-  /// null — не е отбелязано; numero/tipo имат смисъл само при true.
-  serrature            Boolean?
-  serratureNumero      Int?
-  serratureTipo        String?              @db.VarChar(120)
-  funiDiametroMm       Decimal?             @db.Decimal(6, 2)
-  funiTrefoli          Int?
-  funiNumero           Int?
-  funiLunghezzaM       Decimal?             @db.Decimal(8, 2)
-  limitatoreTipo       String?              @db.VarChar(120)
-  funicellaDiametroMm  Decimal?             @db.Decimal(6, 2)
-  funicellaLunghezzaM  Decimal?             @db.Decimal(8, 2)
-  tenditore            String?              @db.VarChar(120)
-  caviNumero           Int?
-  caviConduttori       Int?
-  caviLunghezzaM       Decimal?             @db.Decimal(8, 2)
-  noteQuadretto        String?
-  noteImpianto         String?
-  noteBottoniere       String?
-  lavoriExtra          String?
+  id                      String               @id @default(cuid())
+  data                    DateTime             @db.Date
+  indirizzo               String?              @db.VarChar(200)
+  marca                   String?              @db.VarChar(120)
+  matricola               String?              @db.VarChar(20)
+  numeroImpianto          String?              @db.VarChar(20)
+  /// Работната поръчка, по която е огледът (по желание).
+  buonoLavoro             String?              @db.VarChar(60)
+  portataKg               Int?
+  capienzaPersone         Int?
+  fermate                 Int?
+  ubicazioneMacchina      UbicazioneMacchina[]
+  ubicazioneCassettina    Int?
+  parcheggio              String?              @db.VarChar(300)
+  tipoImpianto            TipoImpianto[]
+  tipoPorte               TipoPorte[]
+  /// Операторът на вратите — само при автоматични/полуавтоматични врати (иначе null).
+  operatoreMarca          String?              @db.VarChar(120)
+  lucePorte               String?              @db.VarChar(60)
+  operatoreTensione       String?              @db.VarChar(60)
+  doppioAccesso           Boolean?
+  /// Само при ръчни врати; шейната — при ръчни и полуавтоматични, броят — при true.
+  bloccaPortine           Boolean?
+  autolivellamento        Boolean?
+  pattinoRetrattile       Boolean?
+  pattinoRetrattileNumero Int?
+  /// „Serrature/sospensioni“. null — не е отбелязано; numero/tipo имат смисъл само при true.
+  serrature               Boolean?
+  serratureNumero         Int?
+  serratureTipo           String?              @db.VarChar(120)
+  /// Осветлението на шахтата е за смяна.
+  luceVanoSostituire      Boolean?
+  funiDiametroMm          Decimal?             @db.Decimal(6, 2)
+  funiTrefoli             Int?
+  funiNumero              Int?
+  funiLunghezzaM          Decimal?             @db.Decimal(8, 2)
+  limitatoreTipo          String?              @db.VarChar(120)
+  funicellaDiametroMm     Decimal?             @db.Decimal(6, 2)
+  funicellaLunghezzaM     Decimal?             @db.Decimal(8, 2)
+  tenditore               String?              @db.VarChar(120)
+  caviNumero              Int?
+  caviConduttori          Int?
+  caviLunghezzaM          Decimal?             @db.Decimal(8, 2)
+  /// Аварийна връзка; състоянието има смисъл само при true.
+  telesoccorso            Boolean?
+  telesoccorsoStato       TelesoccorsoStato?
+  allarmePortineria       Boolean?
+  displayPortineria       Boolean?
+  noteQuadretto           String?
+  noteImpianto            String?
+  noteBottoniere          String?
+  /// „Мерки на старите бутониери?“ — при true редовете са в MisuraBottoniera.
+  bottoniereMisure        Boolean?
+  misureBottoniere        MisuraBottoniera[]
+  lavoriExtra             String?
   /// Нормализиран текст за търсачката (малки букви, без ударения) — пише го САМО src/schede/service.ts.
-  searchText           String               @default("")
+  searchText              String               @default("")
   /// Фирмата на картата — тази на създателя (или избраната от MASTER). Вижда я само тази фирма и MASTER.
-  aziendaId            String
-  azienda              Azienda              @relation(fields: [aziendaId], references: [id], onDelete: Restrict)
-  createdById          String?
-  createdBy            User?                @relation("SchedeCreated", fields: [createdById], references: [id], onDelete: SetNull)
-  updatedById          String?
-  updatedBy            User?                @relation("SchedeUpdated", fields: [updatedById], references: [id], onDelete: SetNull)
+  aziendaId               String
+  azienda                 Azienda              @relation(fields: [aziendaId], references: [id], onDelete: Restrict)
+  createdById             String?
+  createdBy               User?                @relation("SchedeCreated", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedById             String?
+  updatedBy               User?                @relation("SchedeUpdated", fields: [updatedById], references: [id], onDelete: SetNull)
   /// Кошче: изтритата схема се пази, докато ADMIN не я възстанови или изтрие окончателно.
-  deletedAt            DateTime?
-  deletedById          String?
-  deletedBy            User?                @relation("SchedeDeleted", fields: [deletedById], references: [id], onDelete: SetNull)
-  createdAt            DateTime             @default(now())
-  updatedAt            DateTime             @updatedAt
+  deletedAt               DateTime?
+  deletedById             String?
+  deletedBy               User?                @relation("SchedeDeleted", fields: [deletedById], references: [id], onDelete: SetNull)
+  createdAt               DateTime             @default(now())
+  updatedAt               DateTime             @updatedAt
 
   @@index([aziendaId, deletedAt])
   @@index([data])
@@ -247,4 +275,22 @@ model AuditLog {
   @@index([actorId])
   @@index([targetType, targetId])
   @@index([aziendaId, at])
+}
+
+/// Мерките на една стара бутониера — ред за спирка (1 = най-ниската), до броя „Fermate“ на картата.
+/// Пише ги само src/schede/service.ts (заедно с картата, в една транзакция); изтриват се с нея.
+model MisuraBottoniera {
+  id                 String   @id @default(cuid())
+  schedaId           String
+  scheda             Scheda   @relation(fields: [schedaId], references: [id], onDelete: Cascade)
+  fermata            Int
+  /// Името на етажа („T“, „S1“); null — номерът на спирката.
+  piano              String?  @db.VarChar(20)
+  lunghezzaMm        Decimal? @db.Decimal(7, 2)
+  larghezzaMm        Decimal? @db.Decimal(7, 2)
+  interasseSuperiore String?  @db.VarChar(60)
+  interasseInferiore String?  @db.VarChar(60)
+  display            Boolean?
+
+  @@unique([schedaId, fermata])
 }

@@ -25,9 +25,12 @@
   font-weight: 600;
 }
 
+/* Полетата на един ред се подравняват по полето, не по етикета: етикет на два реда (по-дълъг
+   превод) не измества полето под него спрямо съседите. */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr));
+  align-items: end;
   gap: 16px 14px;
 }
 
@@ -38,8 +41,9 @@
   }
 }
 
-/* Отметките са ред от хартиената схема: „Tipo impianto: ☐ Elettrico ☐ Idraulico ☐ Gearless“. */
-.grid > .choice {
+/* Отметките са ред от хартиената схема: „Tipo impianto: ☐ Elettrico ☐ Idraulico ☐ Gearless“.
+   Sì/No е само две квадратчета — стои в колона до съседните полета. */
+.grid > .choice:not(.choice--compact) {
   grid-column: 1 / -1;
 }
 
@@ -226,7 +230,8 @@
   outline-offset: 3px;
 }
 
-.js [data-when-serrature][data-off] {
+/* Полета с условие (fields.ts, `when`): скрити, докато условието не е изпълнено (app.js). */
+.js [data-when][data-off] {
   display: none;
 }
 

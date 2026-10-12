@@ -4,6 +4,7 @@ import { AUDIT_ACTIONS } from '../src/audit.js';
 import { ALL_ROLES } from '../src/auth/roles.js';
 import { hasKey, keysOf, LOCALES, localeFromHeader, translate } from '../src/i18n.js';
 import { FIELDS, SECTIONS } from '../src/schede/fields.js';
+import { MISURA_COLUMNS } from '../src/schede/misure.js';
 
 const placeholders = (text: string) => [...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
 
@@ -24,11 +25,14 @@ describe('dictionaries', () => {
     }
   });
 
-  it('name every field, section, option, role and audit action', () => {
+  it('name every field, question, section, option, column, role and audit action', () => {
     for (const locale of LOCALES) {
       for (const field of FIELDS) {
         assert.ok(hasKey(locale, `scheda.field.${field.key}`), `${locale} field ${field.key}`);
-        if (field.kind === 'checks') {
+        if (field.question) {
+          assert.ok(hasKey(locale, `scheda.question.${field.key}`), `${locale} ${field.key}?`);
+        }
+        if (field.kind === 'checks' || field.kind === 'choice') {
           for (const option of field.options) {
             assert.ok(
               hasKey(locale, `scheda.option.${field.key}.${option}`),
@@ -38,6 +42,9 @@ describe('dictionaries', () => {
         }
       }
       for (const section of SECTIONS) assert.ok(hasKey(locale, `scheda.section.${section.key}`));
+      for (const column of MISURA_COLUMNS) {
+        assert.ok(hasKey(locale, `scheda.misure.col.${column.key}`), `${locale} ${column.key}`);
+      }
       for (const role of ALL_ROLES) assert.ok(hasKey(locale, `role.${role}`), `${locale} ${role}`);
       for (const action of AUDIT_ACTIONS)
         assert.ok(hasKey(locale, `audit.action.${action}`), action);

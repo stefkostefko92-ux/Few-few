@@ -20,6 +20,7 @@ import { accountRouter } from './routes/account.js';
 import { auditRouter } from './routes/audit.js';
 import { authRouter } from './routes/auth.js';
 import { aziendeRouter } from './routes/aziende.js';
+import { cestinoRouter } from './routes/cestino.js';
 import { healthRouter } from './routes/health.js';
 import { schedeRouter } from './routes/schede.js';
 import { usersRouter } from './routes/users.js';
@@ -138,8 +139,9 @@ export function createServer(): Express {
       ...httpLogOptions,
     }),
   );
-  // Четири бележки по 4000 знака на кирилица са ~100 KB urlencoded — таванът е над това, не повече.
-  app.use(express.urlencoded({ extended: false, limit: '256kb', parameterLimit: 200 }));
+  // Четири бележки по 4000 знака на кирилица са ~100 KB urlencoded, мерките на бутониерите — до 300
+  // спирки × 6 полета (~1800 параметъра, ~300 KB). Таванът е над това, не повече.
+  app.use(express.urlencoded({ extended: false, limit: '1mb', parameterLimit: 2500 }));
   app.use(cookieParser());
   app.use(
     '/static',
@@ -165,6 +167,7 @@ export function createServer(): Express {
   app.use(authRouter);
   app.use(accountRouter);
   app.use(schedeRouter);
+  app.use(cestinoRouter);
   app.use(usersRouter);
   app.use(aziendeRouter);
   app.use(auditRouter);

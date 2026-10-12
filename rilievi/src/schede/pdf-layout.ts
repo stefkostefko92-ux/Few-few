@@ -14,7 +14,7 @@ const FOOTER_SPACE = 34;
 const GAP = 16;
 export const INK = '#000000';
 export const MUTED = '#555555';
-const RULE = '#BDBDBD';
+export const RULE = '#BDBDBD';
 
 export interface PdfContext {
   doc: PDFKit.PDFDocument;
@@ -25,11 +25,12 @@ function bottom(): number {
   return PAGE.height - MARGIN - FOOTER_SPACE;
 }
 
-function ensureSpace(ctx: PdfContext, needed: number): void {
-  if (ctx.doc.y + needed > bottom()) {
-    ctx.doc.addPage();
-    ctx.doc.y = MARGIN;
-  }
+/** Нова страница, ако `needed` не се побира до долния ред; true — ако е започнала нова. */
+export function ensureSpace(ctx: PdfContext, needed: number): boolean {
+  if (ctx.doc.y + needed <= bottom()) return false;
+  ctx.doc.addPage();
+  ctx.doc.y = MARGIN;
+  return true;
 }
 
 /** Стойността на клетка: отметките като ☑/☐, празното като тире. */
@@ -60,9 +61,9 @@ function drawCell(ctx: PdfContext, field: DisplayField, x: number, y: number, wi
     .text(cellText(field), x, valueY, { width });
 }
 
-/** На цял ред: адресът, бележките и отметките (квадратчетата не се свиват в тясна колона). */
+/** На цял ред: адресът, бележките и отметките (квадратчетата не се свиват); Sì/No се побира в колона. */
 function isWide(field: DisplayField): boolean {
-  return field.wide || field.options !== undefined;
+  return field.wide || (field.options !== undefined && field.kind !== 'yesno');
 }
 
 /** Полетата в три колони; широките — на цял ред. */
@@ -98,7 +99,8 @@ export function drawFields(ctx: PdfContext, fields: DisplayField[]): void {
 
 export function drawSectionTitle(ctx: PdfContext, title: string): void {
   const { doc } = ctx;
-  ensureSpace(ctx, 40);
+  // Заглавието и поне един ред полета под него — заглавие сам-само в дъното на страницата няма.
+  ensureSpace(ctx, 64);
   doc.y += 4;
   doc.font('Sans-Bold').fontSize(10.5).fillColor(INK).text(title, MARGIN, doc.y);
   const lineY = doc.y + 3;

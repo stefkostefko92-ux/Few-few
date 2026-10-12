@@ -31,7 +31,7 @@
     <dl class="kv">
       <% for (const field of section.fields) { %><div class="kv__item<%= field.wide ? ' kv__item--wide' : '' %>">
         <dt><%= field.label %></dt>
-        <% if (field.value) { %><dd><%= field.value %></dd><% } else { %><dd class="empty-value">—</dd><% } %>
+        <% if (field.value) { %><dd><%= field.value %><% if (field.table) { %><%- include('_table', { table: field.table }) %><% } %></dd><% } else { %><dd class="empty-value">—</dd><% } %>
       </div>
       <% } %>
     </dl>

@@ -117,6 +117,7 @@ export async function listSchede(options: {
 }
 
 const WITH_PEOPLE = {
+  misureBottoniere: { orderBy: { fermata: 'asc' } },
   createdBy: { select: { name: true } },
   updatedBy: { select: { name: true } },
   deletedBy: { select: { name: true } },
@@ -149,10 +150,12 @@ export async function getScheda(
   return scheda;
 }
 
+/** Колоните на картата (без редовете с мерки — те са отделна таблица) и текстът за търсене. */
 function persisted(
   data: SchedaData,
 ): Omit<Prisma.SchedaUncheckedCreateInput, 'createdById' | 'aziendaId'> {
-  return { ...data, searchText: searchTextOf(data) };
+  const { misureBottoniere: _rows, ...fields } = data;
+  return { ...fields, searchText: searchTextOf(fields) };
 }
 
 /** Нова карта във фирмата `aziendaId` — тази на човека или избраната (и проверена) от MASTER. */
@@ -163,7 +166,13 @@ export async function createScheda(
 ): Promise<Scheda> {
   return prisma.$transaction(async (tx) => {
     const scheda = await tx.scheda.create({
-      data: { ...persisted(data), aziendaId, createdById: actorId, updatedById: actorId },
+      data: {
+        ...persisted(data),
+        aziendaId,
+        createdById: actorId,
+        updatedById: actorId,
+        misureBottoniere: { createMany: { data: data.misureBottoniere } },
+      },
     });
     await writeAudit(
       { actorId, action: 'SCHEDA_CREATE', aziendaId, targetType: 'scheda', targetId: scheda.id },
@@ -211,6 +220,13 @@ export async function updateScheda(
     if (updated.count === 0) {
       const exists = await tx.scheda.count({ where: { id, aziendaId, deletedAt: null } });
       return exists ? 'conflict' : 'missing';
+    }
+    // Мерките по спирки се записват наново — точно каквото е във формата, нищо старо не остава.
+    await tx.misuraBottoniera.deleteMany({ where: { schedaId: id } });
+    if (data.misureBottoniere.length > 0) {
+      await tx.misuraBottoniera.createMany({
+        data: data.misureBottoniere.map((row) => ({ ...row, schedaId: id })),
+      });
     }
     await writeAudit(
       { actorId, action: 'SCHEDA_UPDATE', aziendaId, targetType: 'scheda', targetId: id },

@@ -151,6 +151,10 @@
   break-inside: avoid;
 }
 
+.paper__cell:has(.ptable) {
+  break-inside: auto;
+}
+
 .paper__cell--wide {
   grid-column: 1 / -1;
 }
@@ -206,6 +210,35 @@
 
 .opt--on {
   font-weight: 600;
+}
+
+/* Мерките по спирки: таблица на цялата ширина, заглавието се повтаря на всяка страница. */
+.ptable {
+  width: 100%;
+  margin-top: 4px;
+  border-collapse: collapse;
+  font-size: 8.5pt;
+  font-weight: 400;
+  white-space: normal;
+}
+
+.ptable th,
+.ptable td {
+  padding: 2px 5px;
+  border: 0.75pt solid #9a9a9a;
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+.ptable thead th {
+  border-bottom: 1pt solid #000000;
+  font-size: 7.5pt;
+  color: var(--muted);
+}
+
+.ptable tr {
+  break-inside: avoid;
 }
 
 .paper__foot {

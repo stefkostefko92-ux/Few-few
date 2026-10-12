@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import PDFDocument from 'pdfkit';
 import type { Translator } from '../i18n.js';
 import type { ViewHelpers } from '../http/view.js';
-import { displaySections } from './format.js';
+import { displaySections, type DisplayField } from './format.js';
 import {
   drawFields,
   drawFooters,
@@ -13,6 +13,7 @@ import {
   MARGIN,
   type PdfContext,
 } from './pdf-layout.js';
+import { drawTable } from './pdf-table.js';
 import type { SchedaFull } from './service.js';
 
 /**
@@ -98,7 +99,17 @@ export function renderSchedaPdf(scheda: SchedaFull, options: PdfOptions): Promis
   drawPlate(ctx, scheda, byKey);
   for (const section of sections) {
     drawSectionTitle(ctx, section.title);
-    drawFields(ctx, section.fields);
+    // Таблицата с мерките стои веднага под своето поле: полетата се рисуват на парчета около нея.
+    let chunk: DisplayField[] = [];
+    for (const field of section.fields) {
+      chunk.push(field);
+      if (field.table) {
+        drawFields(ctx, chunk);
+        drawTable(ctx, field.table);
+        chunk = [];
+      }
+    }
+    drawFields(ctx, chunk);
   }
   drawFooters(ctx, t('pdf.generated', { at: fmt.dateTime(new Date()), name: options.generatedBy }));
   doc.end();

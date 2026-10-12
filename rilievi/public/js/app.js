@@ -63,31 +63,64 @@
     });
   }
 
-  // Serrature: number and type of locks only make sense with "Sì".
-  const dependents = document.querySelectorAll('[data-when-serrature]');
-  const syncSerrature = () => {
-    const checked = document.querySelector('input[name="serrature"]:checked');
-    const on = checked !== null && checked.value === 'si';
-    dependents.forEach((el) => el.toggleAttribute('data-off', !on));
+  // Fields that only make sense for some answers (fields.ts `when`): "Numero serrature" with
+  // "Serrature: Sì", the door operator with automatic doors... In page order, so a field hidden by its
+  // condition also hides the fields that depend on it. The server ignores them too.
+  const conditional = Array.from(document.querySelectorAll('[data-when]'));
+  const syncConditions = () => {
+    conditional.forEach((el) => {
+      const control = document.getElementById(`f-${el.dataset.when}`);
+      const values = (el.dataset.whenValues || '').split(' ');
+      const chosen = Array.from(
+        document.querySelectorAll(`input[name="${el.dataset.when}"]:checked`),
+        (input) => input.value,
+      );
+      const on =
+        !(control && control.hasAttribute('data-off')) &&
+        chosen.some((value) => values.includes(value));
+      el.toggleAttribute('data-off', !on);
+    });
   };
-  document.querySelectorAll('input[name="serrature"]').forEach((radio) => {
-    radio.addEventListener('change', syncSerrature);
-  });
+  if (conditional.length) document.addEventListener('change', syncConditions);
 
-  // Yes/No can go back to "not marked": clicking the ticked box again clears it.
-  document.querySelectorAll('input[data-yesno]').forEach((radio) => {
-    const label = radio.closest('label');
-    if (!label) return;
-    label.addEventListener('pointerdown', () => {
-      radio.dataset.was = String(radio.checked);
-    });
-    radio.addEventListener('click', () => {
-      if (radio.dataset.was === 'true') {
-        radio.checked = false;
-        radio.dispatchEvent(new Event('change', { bubbles: true }));
+  // Old push-button panels: one row per stop, as many as "Fermate" says. New rows come from the
+  // template; rows above the number are hidden, never removed, so a typo in the number loses nothing.
+  const misure = document.querySelector('[data-misure]');
+  const fermate = document.getElementById('f-fermate');
+  if (misure && fermate) {
+    const rowsBox = misure.querySelector('[data-misure-rows]');
+    const template = misure.querySelector('[data-misure-template]');
+    const empty = misure.querySelector('[data-misure-empty]');
+    const max = Number(misure.dataset.max) || 0;
+    fermate.addEventListener('input', () => {
+      const raw = fermate.value.trim();
+      const n = /^\d{1,3}$/.test(raw) ? Number(raw) : 0;
+      const wanted = n >= 1 && n <= max ? n : 0;
+      for (let i = rowsBox.querySelectorAll('[data-misura]').length + 1; i <= wanted; i += 1) {
+        rowsBox.insertAdjacentHTML('beforeend', template.innerHTML.replaceAll('__N__', String(i)));
       }
-      radio.dataset.was = 'false';
+      rowsBox.querySelectorAll('[data-misura]').forEach((row) => {
+        row.hidden = Number(row.dataset.misura) > wanted;
+      });
+      if (empty) empty.hidden = wanted > 0;
     });
+  }
+
+  // Yes/No and single choices can go back to "not marked": clicking the ticked box again clears it.
+  // Delegated, so the rows added above behave the same.
+  document.addEventListener('pointerdown', (event) => {
+    const label = event.target instanceof Element ? event.target.closest('label') : null;
+    const radio = label ? label.querySelector('input[data-clearable]') : null;
+    if (radio) radio.dataset.was = String(radio.checked);
+  });
+  document.addEventListener('click', (event) => {
+    const radio = event.target;
+    if (!(radio instanceof HTMLInputElement) || !radio.hasAttribute('data-clearable')) return;
+    if (radio.dataset.was === 'true') {
+      radio.checked = false;
+      radio.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    radio.dataset.was = 'false';
   });
 
   // The long sheet form: warn before leaving with unsaved changes; never send a half-typed number.
