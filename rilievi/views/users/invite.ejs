@@ -1,0 +1,40 @@
+<%- include('../partials/top', { titleKey: 'users.inviteTitle', narrowMain: true }) %>
+<div class="page-head">
+  <div>
+    <a href="/utenti"><%= t('users.back') %></a>
+    <h1><%= t('users.inviteTitle') %></h1>
+    <p class="page-head__sub"><%= t('users.inviteIntro', { days }) %></p>
+  </div>
+</div>
+<form class="form" method="post" action="/utenti/invita" novalidate>
+  <% if (error) { %><div class="errors" role="alert" id="form-error"><h2><%= t(error) %></h2></div><% } %>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <div class="field">
+    <label class="field__label" for="email"><%= t('auth.email') %></label>
+    <input class="input" id="email" name="email" type="email" inputmode="email" autocapitalize="none" spellcheck="false" autocomplete="off" required maxlength="254" value="<%= form.email %>"<% if (error === 'users.error.email' || error === 'users.error.userExists') { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
+  </div>
+  <div class="field">
+    <label class="field__label" for="name"><%= t('users.nameOptional') %></label>
+    <input class="input" id="name" name="name" type="text" autocomplete="off" maxlength="120" value="<%= form.name %>">
+  </div>
+  <div class="field">
+    <label class="field__label" for="role"><%= t('users.role') %></label>
+    <select class="select" id="role" name="role" required aria-describedby="role-hint">
+      <% for (const role of roles) { %><option value="<%= role %>"<% if (form.role === role) { %> selected<% } %>><%= t('role.' + role) %></option>
+      <% } %>
+    </select>
+    <p class="field__hint" id="role-hint"><%= t('users.roleHint') %></p>
+  </div>
+  <div class="field">
+    <label class="field__label" for="locale"><%= t('users.inviteLanguage') %></label>
+    <select class="select" id="locale" name="locale">
+      <% for (const code of locales) { %><option value="<%= code %>"<% if (form.locale === code) { %> selected<% } %>><%= localeLabel[code] %></option>
+      <% } %>
+    </select>
+  </div>
+  <div class="toolbar">
+    <button class="btn btn--primary" type="submit"><%= t('users.inviteSubmit') %></button>
+    <a class="btn btn--ghost" href="/utenti"><%= t('common.cancel') %></a>
+  </div>
+</form>
+<%- include('../partials/bottom') %>

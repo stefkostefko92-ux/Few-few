@@ -1,0 +1,20 @@
+<%- include('../partials/auth-top', { titleKey: 'auth.login.title' }) %>
+<form class="auth__form" method="post" action="/accesso" novalidate>
+  <h1><%= t('auth.login.title') %></h1>
+  <% if (error) { %><div class="errors" role="alert" id="form-error"><h2><%= t(error) %></h2><% if (error === 'auth.error.invalid') { %><p class="muted"><%= t('auth.login.lockHint') %></p><% } %></div><% } %>
+  <input type="hidden" name="_csrf" value="<%= preCsrf %>">
+  <input type="hidden" name="next" value="<%= next %>">
+  <div class="field">
+    <label class="field__label" for="email"><%= t('auth.email') %></label>
+    <input class="input" id="email" name="email" type="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" required maxlength="254" value="<%= email %>"<% if (error) { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
+  </div>
+  <div class="field">
+    <label class="field__label" for="password"><%= t('auth.password') %></label>
+    <input class="input" id="password" name="password" type="password" autocomplete="current-password" required<% if (error) { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
+  </div>
+  <button class="btn btn--primary btn--block" type="submit"><%= t('auth.login.submit') %></button>
+  <div class="auth__links">
+    <a href="/password-dimenticata"><%= t('auth.forgot.link') %></a>
+  </div>
+</form>
+<%- include('../partials/auth-bottom') %>

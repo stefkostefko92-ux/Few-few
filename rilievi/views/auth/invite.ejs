@@ -1,0 +1,28 @@
+<%- include('../partials/auth-top', { titleKey: 'auth.invite.title' }) %>
+<form class="auth__form" method="post" novalidate>
+  <div>
+    <h1><%= t('auth.invite.title') %></h1>
+    <p class="page-head__sub"><%= t('auth.invite.intro', { role: t('role.' + invite.role) }) %></p>
+  </div>
+  <% if (error) { %><div class="errors" role="alert" id="form-error"><h2><%= t(error) %></h2></div><% } %>
+  <input type="hidden" name="_csrf" value="<%= preCsrf %>">
+  <div class="field">
+    <span class="field__label"><%= t('auth.email') %></span>
+    <strong><%= invite.email %></strong>
+  </div>
+  <div class="field">
+    <label class="field__label" for="name"><%= t('auth.name') %></label>
+    <input class="input" id="name" name="name" type="text" autocomplete="name" required minlength="2" maxlength="120" value="<%= name %>"<% if (error === 'auth.error.name') { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
+  </div>
+  <div class="field">
+    <label class="field__label" for="password"><%= t('auth.newPassword') %></label>
+    <input class="input" id="password" name="password" type="password" autocomplete="new-password" required minlength="<%= passwordMin %>" aria-describedby="password-hint">
+    <p class="field__hint" id="password-hint"><%= t('auth.passwordRule') %></p>
+  </div>
+  <div class="field">
+    <label class="field__label" for="confirm"><%= t('auth.confirmPassword') %></label>
+    <input class="input" id="confirm" name="confirm" type="password" autocomplete="new-password" required>
+  </div>
+  <button class="btn btn--primary btn--block" type="submit"><%= t('auth.invite.submit') %></button>
+</form>
+<%- include('../partials/auth-bottom') %>

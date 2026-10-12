@@ -1,0 +1,247 @@
+/* Данните: търсачката, таблиците (на телефон редът става карта), стойностите на схемата. */
+
+.search {
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.search .icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  width: 22px;
+  height: 22px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.search__input {
+  width: 100%;
+  min-height: 60px;
+  padding: 0 16px 0 50px;
+  border: 2px solid var(--line-strong);
+  border-radius: var(--radius-plate);
+  background: var(--field);
+  color: var(--fg);
+  font: inherit;
+  font-size: 1.125rem;
+}
+
+.search__input:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 3px;
+}
+
+.search__input::placeholder {
+  color: var(--muted);
+}
+
+/* Хромовото „×“ за изчистване е синьо — тук е в цвета на текста. */
+.search__input::-webkit-search-cancel-button {
+  filter: grayscale(1) brightness(0.35);
+  cursor: pointer;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .search__input::-webkit-search-cancel-button {
+    filter: grayscale(1) invert(1);
+  }
+}
+
+:root[data-theme='dark'] .search__input::-webkit-search-cancel-button {
+  filter: grayscale(1) invert(1);
+}
+
+.search__status {
+  min-height: 1.5em;
+  margin: 10px 2px 16px;
+  color: var(--muted);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  padding: 10px 12px;
+  border-bottom: 1.5px solid var(--line-strong);
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.table tbody tr:hover {
+  background: var(--hover);
+}
+
+.table .num {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.table .row-link {
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.table .row-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.table tr {
+  position: relative;
+}
+
+.table .actions-cell {
+  position: relative;
+  z-index: 1;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Телефон: редът е карта, заглавието на колоната стои пред стойността (data-label). */
+@media (max-width: 759px) {
+  .table--stack thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .table--stack tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 16px;
+    padding: 14px 4px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  /* block, не grid: в grid всеки текстов възел и всеки <mark> стават отделен ред. */
+  .table--stack td {
+    display: block;
+    padding: 0;
+    border: 0;
+  }
+
+  .table--stack td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 2px;
+    font-size: 0.8125rem;
+    color: var(--muted);
+  }
+
+  .table--stack td.wide {
+    grid-column: 1 / -1;
+  }
+
+  .table--stack .actions-cell {
+    text-align: left;
+  }
+}
+
+.kv {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr));
+  gap: 16px 24px;
+  margin: 0;
+}
+
+.kv__item {
+  min-width: 0;
+}
+
+.kv__item--wide {
+  grid-column: 1 / -1;
+}
+
+.kv dt {
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.kv dd {
+  margin: 2px 0 0;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.kv dd.empty-value {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.sheet {
+  display: grid;
+  gap: 32px;
+}
+
+.sheet__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 24px;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge--off {
+  border-style: dashed;
+  color: var(--muted);
+}
+
+.banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 2px dashed var(--line-strong);
+  border-radius: var(--radius);
+  font-weight: 600;
+}
+
+.stack-gap {
+  display: grid;
+  gap: 32px;
+}
+
+.inline-form {
+  display: inline;
+}
+
+.row-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.row-form .field {
+  flex: 1 1 220px;
+}

@@ -1,0 +1,22 @@
+<%
+  const hide = typeof hideSwitches !== 'undefined' && hideSwitches;
+  const themes = [
+    { value: 'auto', key: 'theme.auto', icon: 'auto', on: theme === 'AUTO' },
+    { value: 'chiaro', key: 'theme.light', icon: 'sun', on: theme === 'LIGHT' },
+    { value: 'scuro', key: 'theme.dark', icon: 'moon', on: theme === 'DARK' },
+  ];
+%><footer class="footer">
+  <div class="footer__inner">
+    <% if (!hide && switchUrl('lang', locale)) { %><div class="switches">
+      <nav class="switch" aria-label="<%= t('switch.language') %>">
+        <% for (const code of locales) { %><a href="<%= switchUrl('lang', code) %>" hreflang="<%= code %>" lang="<%= code %>"<% if (code === locale) { %> aria-current="true"<% } %>><span aria-hidden="true"><%= code.toUpperCase() %></span><span class="visually-hidden"><%= localeLabel[code] %></span></a>
+        <% } %>
+      </nav>
+      <nav class="switch" aria-label="<%= t('switch.theme') %>">
+        <% for (const item of themes) { %><a href="<%= switchUrl('tema', item.value) %>"<% if (item.on) { %> aria-current="true"<% } %>><%- include('icon', { name: item.icon }) %><%= t(item.key) %></a>
+        <% } %>
+      </nav>
+    </div><% } else { %><span></span><% } %>
+    <p class="credit">Created and Designed by <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a></p>
+  </div>
+</footer>

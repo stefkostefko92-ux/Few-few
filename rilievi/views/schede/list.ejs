@@ -1,0 +1,17 @@
+<%- include('../partials/top', { titleKey: 'schede.title' }) %>
+<div class="page-head">
+  <div>
+    <h1><%= t('schede.title') %></h1>
+    <p class="page-head__sub"><%= t('schede.subtitle') %></p>
+  </div>
+</div>
+<form class="search" role="search" method="get" action="/schede" data-live-search>
+  <label class="visually-hidden" for="q"><%= t('schede.search.label') %></label>
+  <%- include('../partials/icon', { name: 'search' }) %>
+  <input class="search__input" id="q" name="q" type="search" value="<%= query %>" placeholder="<%= t('schede.search.placeholder') %>" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="100" enterkeyhint="search" aria-describedby="search-status" aria-controls="results">
+</form>
+<p class="search__status" id="search-status" role="status"><%= query ? t('schede.search.found', { n: page.total, q: query }) : t('schede.count', { n: page.total }) %></p>
+<div id="results" data-results>
+<%- include('_results') %>
+</div>
+<%- include('../partials/bottom') %>

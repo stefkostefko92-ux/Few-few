@@ -1,0 +1,52 @@
+<%
+  const byKey = Object.fromEntries(sections.flatMap((s) => s.fields).map((f) => [f.key, f]));
+%><!doctype html>
+<html lang="<%= locale %>" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= ident.length > 40 ? ident.slice(0, 39) + '…' : ident %> — Rilievi Impianti</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/static/img/favicon.svg?v=<%= v %>" type="image/svg+xml">
+<link rel="stylesheet" href="/static/fonts/fonts.css?v=<%= v %>">
+<link rel="stylesheet" href="/static/css/base.css?v=<%= v %>">
+<link rel="stylesheet" href="/static/css/plate.css?v=<%= v %>">
+<link rel="stylesheet" href="/static/css/print.css?v=<%= v %>">
+<script src="/static/js/app.js?v=<%= v %>" defer></script>
+</head>
+<body class="print-body"<% if (autoPrint) { %> data-auto-print<% } %>>
+<div class="print-bar">
+  <button class="btn btn--primary btn--sm" type="button" data-print><%- include('../partials/icon', { name: 'print' }) %><%= t('scheda.actions.print') %></button>
+  <a class="btn btn--sm" href="/schede/<%= scheda.id %>/pdf"><%- include('../partials/icon', { name: 'download' }) %><%= t('scheda.actions.pdf') %></a>
+  <a class="btn btn--sm" href="/schede/<%= scheda.id %>"><%- include('../partials/icon', { name: 'back' }) %><%= t('print.back') %></a>
+</div>
+<article class="paper">
+  <header class="paper__head">
+    <div>
+      <div class="paper__brand">CARBON STEALTH VCC</div>
+      <h1 class="paper__title"><%= t('scheda.title') %></h1>
+    </div>
+    <div class="paper__meta">
+      <div><strong><%= t('scheda.field.data') %>: <%= fmt.day(scheda.data) %></strong></div>
+      <% if (scheda.createdBy) { %><div><%= t('scheda.meta.created', { name: scheda.createdBy.name, at: fmt.dateTime(scheda.createdAt) }) %></div><% } %>
+      <% if (scheda.updatedBy) { %><div><%= t('scheda.meta.updated', { name: scheda.updatedBy.name, at: fmt.dateTime(scheda.updatedAt) }) %></div><% } %>
+    </div>
+  </header>
+  <%- include('../partials/plate', { byKey }) %>
+  <% for (const section of sections) { %>
+  <section class="paper__section">
+    <h2><%= section.title %></h2>
+    <dl class="paper__grid">
+      <% for (const field of section.fields) { %><div class="paper__cell<%= field.wide || field.options ? ' paper__cell--wide' : '' %>">
+        <dt><%= field.label %></dt>
+        <% if (field.options) { %><dd><span class="opts"><% for (const option of field.options) { %><span class="opt<%= option.checked ? ' opt--on' : '' %>"><span class="opt__box" aria-hidden="true"></span><%= option.label %><% if (option.checked) { %><span class="visually-hidden"> ✓</span><% } %></span><% } %></span></dd>
+        <% } else if (field.value) { %><dd><%= field.value %></dd><% } else { %><dd class="empty-value">—</dd><% } %>
+      </div>
+      <% } %>
+    </dl>
+  </section>
+  <% } %>
+  <footer class="paper__foot"><%= t('pdf.generated', { at: fmt.dateTime(new Date()), name: currentUser.name }) %> — Created and Designed by Carbon Stealth VCC — carbonstealth.eu</footer>
+</article>
+</body>
+</html>

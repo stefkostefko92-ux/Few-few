@@ -1,0 +1,68 @@
+/* Части на страниците: известия, лентата за запис, страниците за вход, копирането на връзка. */
+
+.notice {
+  padding: 16px 18px;
+  border: 2px solid var(--fg);
+  border-radius: var(--radius);
+}
+
+.notice p + p,
+.notice p + .toolbar {
+  margin-top: 10px;
+}
+
+/* Лентата със „Salva“ остава под палеца, докато се попълва дългата схема. */
+.actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin: 0 calc(var(--gutter) * -1);
+  padding: 12px var(--gutter) calc(12px + env(safe-area-inset-bottom));
+  background: var(--bg);
+  border-top: 1.5px solid var(--line-strong);
+}
+
+.actions__hint {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+/* Страниците за вход: табелата с марката и формата под нея, в тясна колона. */
+.auth {
+  display: grid;
+  gap: 28px;
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 40px var(--gutter) 56px;
+}
+
+.auth__form {
+  display: grid;
+  gap: 18px;
+}
+
+.auth__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.btn--block {
+  width: 100%;
+}
+
+.copy {
+  display: flex;
+  gap: 8px;
+}
+
+.copy .input {
+  font-size: 0.9375rem;
+}

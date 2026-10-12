@@ -1,0 +1,83 @@
+{
+  "app": {
+    "product": "Lift surveys"
+  },
+  "meta": {
+    "description": "Carbon Stealth VCC invite-only portal for lift survey sheets: fill in, search, print and PDF.",
+    "keywords": "Carbon Stealth, lift survey, elevator survey sheet, lift registration number, lift maintenance, rilievi impianti"
+  },
+  "nav": {
+    "label": "Main navigation",
+    "skip": "Skip to content",
+    "schede": "Sheets",
+    "utenti": "Users",
+    "cestino": "Bin",
+    "registro": "Log",
+    "account": "Your account"
+  },
+  "common": {
+    "yes": "Yes",
+    "no": "No",
+    "cancel": "Cancel",
+    "actions": "Actions"
+  },
+  "switch": {
+    "language": "Language",
+    "theme": "Theme"
+  },
+  "theme": {
+    "auto": "Automatic",
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "pager": {
+    "label": "Pages",
+    "prev": "Previous",
+    "next": "Next",
+    "status": "Page {page} of {pages}"
+  },
+  "role": {
+    "MASTER": "Master",
+    "ADMIN": "Administrator",
+    "DIREZIONE": "Management",
+    "RESPONSABILE": "Supervisor",
+    "TECNICO": "Technician",
+    "OPERATORE": "Operator",
+    "CLIENTE": "Client (read-only)"
+  },
+  "error": {
+    "code": "Error {status}",
+    "title": "Invalid request",
+    "badInput": "The data sent could not be read. Reload the page and try again.",
+    "tooLarge": "The text sent is too long. Shorten the notes and try again.",
+    "forbiddenTitle": "Access denied",
+    "forbidden": "Your role does not allow this. If you need it, ask the person who invited you.",
+    "csrf": "The page had expired. Reload it and repeat the action.",
+    "notFoundTitle": "Page not found",
+    "notFound": "This page does not exist or the sheet has been deleted.",
+    "internalTitle": "Something went wrong",
+    "internal": "Server error: nothing was saved. Try again in a moment.",
+    "tooManyTitle": "Too many requests",
+    "tooMany": "Too many requests in a short time. Wait a minute and try again.",
+    "loginNeeded": "Session expired: sign in again.",
+    "toSchede": "Back to sheets"
+  },
+  "flash": {
+    "loggedOut": "You have signed out.",
+    "welcome": "Account activated. You can start working.",
+    "mustChangePassword": "Choose a new password before you continue.",
+    "passwordChanged": "Password updated. Your other sessions were closed.",
+    "passwordReset": "Password updated. Sign in with the new password.",
+    "profileSaved": "Name updated.",
+    "roleChanged": "Role updated.",
+    "userDeactivated": "Account deactivated: its sessions were closed.",
+    "userReactivated": "Account reactivated.",
+    "inviteRevoked": "Invite revoked: the link no longer works.",
+    "notAllowed": "Your role does not allow this action.",
+    "schedaCreated": "Sheet saved.",
+    "schedaSaved": "Changes saved.",
+    "schedaTrashed": "Sheet moved to the bin.",
+    "schedaRestored": "Sheet restored.",
+    "schedaPurged": "Sheet deleted for good."
+  }
+}

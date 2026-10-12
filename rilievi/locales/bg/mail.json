@@ -1,0 +1,22 @@
+{
+  "mail": {
+    "duration": {
+      "days": {
+        "one": "1 ден",
+        "other": "{n} дни"
+      },
+      "hours": {
+        "one": "1 час",
+        "other": "{n} часа"
+      }
+    },
+    "invite": {
+      "subject": "Покана за Rilievi Impianti — Carbon Stealth VCC",
+      "body": "Здравей,\n\n{inviter} те кани в портала Rilievi Impianti с роля „{role}“.\n\nОтвори тази връзка, за да избереш парола и да активираш акаунта си:\n{link}\n\nВръзката важи {validity} и се ползва веднъж. Ако не очакваш тази покана, просто я пренебрегни: без връзката акаунт не се създава.\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+    },
+    "reset": {
+      "subject": "Нова парола — Rilievi Impianti",
+      "body": "Здравей,\n\nза да избереш нова парола, отвори тази връзка:\n{link}\n\nВръзката важи {validity} и се ползва веднъж. Ако не си искал(а) смяна на паролата, пренебрегни писмото: текущата парола остава валидна.\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+<%
+  const purge = mode === 'purge';
+%><%- include('../partials/top', { titleKey: purge ? 'trash.purgeTitle' : 'schede.delete.title', narrowMain: true }) %>
+<div class="stack-gap">
+  <div>
+    <h1><%= t(purge ? 'trash.purgeTitle' : 'schede.delete.title') %></h1>
+    <p class="page-head__sub"><%= t(purge ? 'trash.purgeText' : 'schede.delete.text') %></p>
+  </div>
+  <div class="notice">
+    <p><strong><%= ident %></strong></p>
+    <p class="muted"><%= scheda.indirizzo || '' %> <%= fmt.day(scheda.data) %></p>
+  </div>
+  <form method="post" action="<%= purge ? '/cestino/' + scheda.id + '/elimina' : '/schede/' + scheda.id + '/elimina' %>">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="toolbar">
+      <button class="btn btn--danger" type="submit"><%- include('../partials/icon', { name: 'trash' }) %><%= t(purge ? 'trash.purgeConfirm' : 'schede.delete.confirm') %></button>
+      <a class="btn" href="/schede/<%= scheda.id %>"><%= t('common.cancel') %></a>
+    </div>
+  </form>
+</div>
+<%- include('../partials/bottom') %>

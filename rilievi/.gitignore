@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+# Шрифтовете се копират от @fontsource при `npm run build` (scripts/fonts.mjs).
+public/fonts/
+test-results/
+tests/e2e/shots/

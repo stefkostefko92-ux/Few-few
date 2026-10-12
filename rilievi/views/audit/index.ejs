@@ -1,0 +1,28 @@
+<%- include('../partials/top', { titleKey: 'audit.title' }) %>
+<div class="page-head">
+  <div>
+    <h1><%= t('audit.title') %></h1>
+    <p class="page-head__sub"><%= t('audit.subtitle') %></p>
+  </div>
+</div>
+<% if (entries.length === 0) { %><div class="empty"><p><%= t('audit.empty') %></p></div><% } else { %>
+<table class="table table--stack">
+  <thead><tr>
+    <th scope="col"><%= t('audit.when') %></th>
+    <th scope="col"><%= t('audit.who') %></th>
+    <th scope="col"><%= t('audit.what') %></th>
+    <th scope="col"><%= t('audit.target') %></th>
+  </tr></thead>
+  <tbody>
+    <% for (const entry of entries) { %><tr>
+      <td data-label="<%= t('audit.when') %>"><%= fmt.dateTime(entry.at) %></td>
+      <td data-label="<%= t('audit.who') %>"><%= entry.actor ? entry.actor.name : t('audit.system') %></td>
+      <td data-label="<%= t('audit.what') %>"><%= t('audit.action.' + entry.action) %><% if (entry.meta && typeof entry.meta === 'object' && entry.meta.to) { %>: <%= t('role.' + entry.meta.from) %> → <%= t('role.' + entry.meta.to) %><% } else if (entry.meta && typeof entry.meta === 'object' && entry.meta.role) { %> (<%= t('role.' + entry.meta.role) %>)<% } %></td>
+      <td data-label="<%= t('audit.target') %>"><% if (entry.targetType === 'scheda' && entry.targetId && entry.action !== 'SCHEDA_PURGE') { %><a href="/schede/<%= entry.targetId %>"><%= t('audit.openScheda') %></a><% } else if (entry.targetType === 'user' && entry.targetId) { %><a href="/utenti/<%= entry.targetId %>"><%= t('audit.openUser') %></a><% } else { %>—<% } %></td>
+    </tr>
+    <% } %>
+  </tbody>
+</table>
+<%- include('../partials/pager', { base: '/registro', page, pages }) %>
+<% } %>
+<%- include('../partials/bottom') %>

@@ -1,0 +1,212 @@
+// Rilievi Impianti — схема на данните. PostgreSQL, миграции само през `prisma migrate deploy`.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Седем нива както в ERP Ascensori: по-малкият номер включва правата на по-големия
+/// (MASTER 1 … CLIENTE 7). Правата се проверяват по СПОСОБНОСТ в src/auth/roles.ts.
+enum Role {
+  MASTER
+  ADMIN
+  DIREZIONE
+  RESPONSABILE
+  TECNICO
+  OPERATORE
+  CLIENTE
+}
+
+enum Theme {
+  AUTO
+  LIGHT
+  DARK
+}
+
+enum UbicazioneMacchina {
+  ALTO
+  BASSO
+}
+
+enum TipoImpianto {
+  ELETTRICO
+  IDRAULICO
+  GEARLESS
+}
+
+enum TipoPorte {
+  AUTOMATICHE
+  SEMIAUTOMATICHE
+  MANUALI
+}
+
+/// Акаунт. Създава се САМО от приета покана (или от `owner:create` за първия MASTER) — регистрация няма.
+model User {
+  id                 String    @id @default(cuid())
+  /// Винаги с малки букви (src/auth/email.ts).
+  email              String    @unique
+  name               String
+  passwordHash       String
+  role               Role
+  locale             String    @default("it")
+  theme              Theme     @default(AUTO)
+  /// Деактивиран акаунт не влиза; сесиите му падат при деактивирането.
+  deactivatedAt      DateTime?
+  /// Първият MASTER от скрипта сменя паролата при първия вход.
+  mustChangePassword Boolean   @default(false)
+  failedLogins       Int       @default(0)
+  lockedUntil        DateTime?
+  lastLoginAt        DateTime?
+  passwordChangedAt  DateTime  @default(now())
+  invitedById        String?
+  invitedBy          User?     @relation("InvitedUsers", fields: [invitedById], references: [id], onDelete: SetNull)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  invitedUsers  User[]          @relation("InvitedUsers")
+  sessions      Session[]
+  invitesSent   Invite[]        @relation("InvitesSent")
+  resets        PasswordReset[] @relation("ResetsFor")
+  resetsCreated PasswordReset[] @relation("ResetsCreated")
+  schedeCreated Scheda[]        @relation("SchedeCreated")
+  schedeUpdated Scheda[]        @relation("SchedeUpdated")
+  schedeDeleted Scheda[]        @relation("SchedeDeleted")
+  auditEntries  AuditLog[]
+
+  @@index([invitedById])
+  @@index([role])
+}
+
+/// Сесия зад бисквитката: JWT-то носи само `sid`, а редът тук решава дали сесията е жива —
+/// изход, деактивиране и смяна на ролята я прекратяват веднага.
+model Session {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  csrfToken  String
+  createdAt  DateTime @default(now())
+  lastSeenAt DateTime @default(now())
+  /// Плъзгащ се край (бездействие); абсолютният таван се смята от createdAt.
+  expiresAt  DateTime
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+/// Покана: връзка с еднократен токен (в базата е само SHA-256 хешът), валидна INVITE_DAYS дни.
+model Invite {
+  id             String    @id @default(cuid())
+  email          String
+  name           String?
+  role           Role
+  locale         String    @default("it")
+  tokenHash      String    @unique
+  invitedById    String
+  invitedBy      User      @relation("InvitesSent", fields: [invitedById], references: [id], onDelete: Cascade)
+  expiresAt      DateTime
+  acceptedAt     DateTime?
+  acceptedUserId String?
+  revokedAt      DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([email])
+  @@index([invitedById])
+  @@index([expiresAt])
+}
+
+/// Връзка за нова парола: от самия човек („забравена парола“, ако има SMTP) или от по-висок ранг.
+model PasswordReset {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation("ResetsFor", fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash   String    @unique
+  createdById String?
+  createdBy   User?     @relation("ResetsCreated", fields: [createdById], references: [id], onDelete: SetNull)
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([userId])
+  @@index([createdById])
+  @@index([expiresAt])
+}
+
+/// Схемата на уредбата — полетата и редът им са дословно от заданието (src/schede/fields.ts).
+/// Идентификаторите (matricola, numeroImpianto) са низове само от цифри: водещата нула се пази.
+model Scheda {
+  id                   String               @id @default(cuid())
+  data                 DateTime             @db.Date
+  indirizzo            String?              @db.VarChar(200)
+  marca                String?              @db.VarChar(120)
+  matricola            String?              @db.VarChar(20)
+  numeroImpianto       String?              @db.VarChar(20)
+  portataKg            Int?
+  capienzaPersone      Int?
+  fermate              Int?
+  ubicazioneMacchina   UbicazioneMacchina[]
+  ubicazioneCassettina Int?
+  parcheggio           String?              @db.VarChar(300)
+  tipoImpianto         TipoImpianto[]
+  tipoPorte            TipoPorte[]
+  /// null — не е отбелязано; numero/tipo имат смисъл само при true.
+  serrature            Boolean?
+  serratureNumero      Int?
+  serratureTipo        String?              @db.VarChar(120)
+  funiDiametroMm       Decimal?             @db.Decimal(6, 2)
+  funiTrefoli          Int?
+  funiNumero           Int?
+  funiLunghezzaM       Decimal?             @db.Decimal(8, 2)
+  limitatoreTipo       String?              @db.VarChar(120)
+  funicellaDiametroMm  Decimal?             @db.Decimal(6, 2)
+  funicellaLunghezzaM  Decimal?             @db.Decimal(8, 2)
+  tenditore            String?              @db.VarChar(120)
+  caviNumero           Int?
+  caviConduttori       Int?
+  caviLunghezzaM       Decimal?             @db.Decimal(8, 2)
+  noteQuadretto        String?
+  noteImpianto         String?
+  noteBottoniere       String?
+  lavoriExtra          String?
+  /// Нормализиран текст за търсачката (малки букви, без ударения) — пише го САМО src/schede/service.ts.
+  searchText           String               @default("")
+  createdById          String?
+  createdBy            User?                @relation("SchedeCreated", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedById          String?
+  updatedBy            User?                @relation("SchedeUpdated", fields: [updatedById], references: [id], onDelete: SetNull)
+  /// Кошче: изтритата схема се пази, докато ADMIN не я възстанови или изтрие окончателно.
+  deletedAt            DateTime?
+  deletedById          String?
+  deletedBy            User?                @relation("SchedeDeleted", fields: [deletedById], references: [id], onDelete: SetNull)
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  @@index([data])
+  @@index([matricola])
+  @@index([numeroImpianto])
+  @@index([deletedAt])
+  @@index([createdById])
+  @@index([updatedById])
+  @@index([deletedById])
+  @@index([searchText(ops: raw("gin_trgm_ops"))], type: Gin)
+}
+
+/// Одит: кой, какво, кога — без съдържание на схемите и без IP. Само добавяне, маршрут за промяна няма.
+model AuditLog {
+  id         String   @id @default(cuid())
+  at         DateTime @default(now())
+  actorId    String?
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action     String
+  targetType String?
+  targetId   String?
+  /// Малки неличностни подробности (напр. стара/нова роля). Никога пароли, токени или текст от схема.
+  meta       Json?
+
+  @@index([at])
+  @@index([actorId])
+  @@index([targetType, targetId])
+}

@@ -1,0 +1,169 @@
+{
+  "schede": {
+    "title": "Sheets",
+    "subtitle": "Search by lift no., registration no., address, make or notes.",
+    "new": "New sheet",
+    "count": {
+      "one": "1 sheet",
+      "other": "{n} sheets"
+    },
+    "empty": "No sheets yet.",
+    "createFirst": "Create the first sheet",
+    "openRow": "Open sheet {id}",
+    "back": "All sheets",
+    "unsaved": "Unsaved changes",
+    "search": {
+      "label": "Search the sheets",
+      "placeholder": "Lift no., registration no., address…",
+      "found": {
+        "one": "1 sheet for “{q}”",
+        "other": "{n} sheets for “{q}”"
+      },
+      "none": "No sheets for “{q}”.",
+      "tip": "Try part of the number, the registration no. or the street: case and accents do not matter."
+    },
+    "create": {
+      "title": "New sheet",
+      "sub": "The date is today: change it if the survey was on another day.",
+      "submit": "Save sheet"
+    },
+    "edit": {
+      "title": "Edit sheet",
+      "submit": "Save changes"
+    },
+    "delete": {
+      "title": "Move the sheet to the bin?",
+      "text": "An administrator can restore it from the bin.",
+      "confirm": "Move to bin"
+    },
+    "conflict": {
+      "title": "Someone changed this sheet while you were editing it.",
+      "text": "Your input is still below. Open the current version in another browser tab and compare: if you save now, you replace the other person's changes.",
+      "open": "Open the current version"
+    }
+  },
+  "scheda": {
+    "title": "Lift survey sheet",
+    "titleImpianto": "Lift no. {n}",
+    "titleMatricola": "Registration no. {n}",
+    "dateLine": "Survey of {date}",
+    "noAddress": "No address given",
+    "plateLabel": "Rating plate data",
+    "identifiers": "Identification",
+    "identifiersHint": "Fill in at least one of address, registration no. and lift no.: they are how the sheet is found later.",
+    "errorSummary": {
+      "one": "Fix 1 field",
+      "other": "Fix {n} fields"
+    },
+    "meta": {
+      "created": "Created by {name} on {at}",
+      "updated": "Last changed by {name} on {at}"
+    },
+    "actions": {
+      "edit": "Edit",
+      "print": "Print",
+      "pdf": "Download PDF",
+      "delete": "Delete"
+    },
+    "section": {
+      "impianto": "Lift",
+      "targa": "Rating plate",
+      "ubicazione": "Location and access",
+      "tipologia": "Type",
+      "funi": "Ropes",
+      "limitatore": "Governor",
+      "cavi": "Cables",
+      "note": "Notes and work"
+    },
+    "field": {
+      "data": "Date",
+      "indirizzo": "Address",
+      "marca": "Lift make",
+      "matricola": "Registration no.",
+      "numeroImpianto": "Lift no.",
+      "portataKg": "Rated load",
+      "capienzaPersone": "Capacity",
+      "fermate": "Stops",
+      "ubicazioneMacchina": "Machine location",
+      "ubicazioneCassettina": "Box location",
+      "parcheggio": "Parking",
+      "tipoImpianto": "Lift type",
+      "tipoPorte": "Door type",
+      "serrature": "Door locks",
+      "serratureNumero": "Number of locks",
+      "serratureTipo": "Lock type",
+      "funiDiametroMm": "Rope diameter",
+      "funiTrefoli": "Rope strands",
+      "funiNumero": "Number of ropes",
+      "funiLunghezzaM": "Rope length",
+      "limitatoreTipo": "Overspeed governor type",
+      "funicellaDiametroMm": "Governor rope diameter",
+      "funicellaLunghezzaM": "Governor rope length",
+      "tenditore": "Tensioner",
+      "caviNumero": "Number of cables",
+      "caviConduttori": "Cable conductors",
+      "caviLunghezzaM": "Cable length",
+      "noteQuadretto": "Electrical panel notes",
+      "noteImpianto": "Lift notes",
+      "noteBottoniere": "Installed push-button panel notes",
+      "lavoriExtra": "Extra work (work order)"
+    },
+    "option": {
+      "ubicazioneMacchina": {
+        "ALTO": "Top",
+        "BASSO": "Bottom"
+      },
+      "tipoImpianto": {
+        "ELETTRICO": "Electric",
+        "IDRAULICO": "Hydraulic",
+        "GEARLESS": "Gearless"
+      },
+      "tipoPorte": {
+        "AUTOMATICHE": "Automatic",
+        "SEMIAUTOMATICHE": "Semi-automatic",
+        "MANUALI": "Manual"
+      }
+    },
+    "unit": {
+      "kg": "kg",
+      "persone": {
+        "one": "person",
+        "other": "persons"
+      },
+      "mm": "mm",
+      "m": "m"
+    },
+    "error": {
+      "invalid": "Invalid value.",
+      "required": "Enter the survey date.",
+      "invalidDate": "Invalid date.",
+      "tooLong": "At most {maxLength} characters.",
+      "digitsOnly": "Digits only, no letters or symbols.",
+      "integer": "Enter a whole number.",
+      "decimal": "Enter a number, for example 6.5.",
+      "decimalPlaces": "At most 2 decimals.",
+      "range": "Enter a value from {min} to {max}.",
+      "option": "Invalid choice.",
+      "identifierNeeded": "Fill in at least address, registration no. or lift no."
+    }
+  },
+  "trash": {
+    "title": "Bin",
+    "subtitle": "Deleted sheets: restore them or delete them for good.",
+    "empty": "The bin is empty.",
+    "deletedAt": "Deleted on",
+    "restore": "Restore",
+    "purge": "Delete for good",
+    "banner": "In the bin since {at} (deleted by {name}).",
+    "purgeTitle": "Delete the sheet for good?",
+    "purgeText": "This cannot be undone: the sheet disappears from the portal.",
+    "purgeConfirm": "Delete for good"
+  },
+  "print": {
+    "back": "Back to the sheet"
+  },
+  "pdf": {
+    "generated": "Generated on {at} by {name}",
+    "page": "Page {page} of {pages}"
+  }
+}

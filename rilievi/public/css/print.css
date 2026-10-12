@@ -1,0 +1,213 @@
+/* Страницата за печат: A4, винаги черно на бяло (хартията е бяла и в тъмна тема). На екрана — лист
+   върху сив фон и лента с „Stampa“/„Scarica PDF“; при печат остава само листът. */
+
+@page {
+  size: A4;
+  margin: 12mm 12mm 14mm;
+}
+
+.print-body {
+  --bg: #ffffff;
+  --fg: #000000;
+  --muted: #4d4d4d;
+  --line: #bdbdbd;
+  --line-strong: #000000;
+  background: #e9e9e9;
+  color: #000000;
+  color-scheme: light;
+}
+
+.print-bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  padding: 12px var(--gutter);
+  background: #000000;
+}
+
+.print-bar .btn {
+  border-color: #ffffff;
+  color: #ffffff;
+}
+
+.print-bar .btn--primary {
+  background: #ffffff;
+  color: #000000;
+}
+
+.print-bar .btn:hover {
+  background: #1f1f1f;
+}
+
+.print-bar .btn--primary:hover {
+  background: #ffffff;
+  box-shadow:
+    0 0 0 3px #000000,
+    0 0 0 4.5px #ffffff;
+}
+
+.paper {
+  width: min(210mm, 100% - 24px);
+  margin: 24px auto 48px;
+  padding: 14mm 12mm;
+  background: #ffffff;
+  box-shadow: 0 0 0 1px #c8c8c8;
+  font-size: 10.5pt;
+  line-height: 1.35;
+}
+
+.paper__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.paper__brand {
+  font-weight: 700;
+  font-size: 8.5pt;
+  letter-spacing: 0.14em;
+}
+
+.paper__title {
+  margin-top: 2px;
+  font-size: 15pt;
+  font-weight: 700;
+}
+
+.paper__meta {
+  text-align: right;
+  font-size: 8.5pt;
+  color: var(--muted);
+}
+
+.paper .plate {
+  padding: 18px 26px 14px;
+  break-inside: avoid;
+}
+
+.paper .plate__big {
+  font-size: 20pt;
+}
+
+.paper .plate__address {
+  font-size: 10.5pt;
+}
+
+.paper .plate__specs dd {
+  font-size: 11pt;
+}
+
+.paper__section {
+  margin-top: 14px;
+  break-inside: auto;
+}
+
+.paper__section h2 {
+  margin-bottom: 6px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid #000000;
+  font-size: 10.5pt;
+  break-after: avoid;
+}
+
+.paper__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px 18px;
+  margin: 0;
+}
+
+.paper__cell {
+  break-inside: avoid;
+}
+
+.paper__cell--wide {
+  grid-column: 1 / -1;
+}
+
+.paper__cell dt {
+  font-size: 7.5pt;
+  color: var(--muted);
+}
+
+.paper__cell dd {
+  margin: 1px 0 0;
+  min-height: 1.35em;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.paper__cell dd.empty-value {
+  color: var(--muted);
+}
+
+/* Квадратчетата на хартията: ☐ празно, ■ с отметка. */
+.opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+}
+
+.opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.opt__box {
+  position: relative;
+  width: 10pt;
+  height: 10pt;
+  border: 1.2pt solid #000000;
+  border-radius: 1.5pt;
+}
+
+.opt--on .opt__box::after {
+  content: '';
+  position: absolute;
+  left: 2.6pt;
+  top: 0.4pt;
+  width: 3pt;
+  height: 5.8pt;
+  border: solid #000000;
+  border-width: 0 1.4pt 1.4pt 0;
+  transform: rotate(45deg);
+}
+
+.opt--on {
+  font-weight: 600;
+}
+
+.paper__foot {
+  margin-top: 18px;
+  padding-top: 6px;
+  border-top: 1px solid var(--line);
+  font-size: 7.5pt;
+  color: var(--muted);
+}
+
+@media print {
+  .print-body {
+    background: #ffffff;
+  }
+
+  .print-bar {
+    display: none;
+  }
+
+  .paper {
+    width: auto;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  a {
+    text-decoration: none;
+  }
+}

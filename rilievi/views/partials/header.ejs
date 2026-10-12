@@ -1,0 +1,25 @@
+<%
+  const navItems = [
+    { href: '/schede', key: 'nav.schede', show: can('schede:read') },
+    { href: '/utenti', key: 'nav.utenti', show: can('users:manage') },
+    { href: '/cestino', key: 'nav.cestino', show: can('schede:trash') },
+    { href: '/registro', key: 'nav.registro', show: can('audit:view') },
+  ].filter((item) => item.show);
+  const current = (href) => path === href || path.startsWith(href + '/');
+%><header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="/schede">
+      <%- include('brandmark') %>
+      <span class="brand__text"><span class="brand__name">Carbon Stealth VCC</span><span class="brand__product"><%= t('app.product') %></span></span>
+    </a>
+    <nav class="nav" aria-label="<%= t('nav.label') %>">
+      <% for (const item of navItems) { %><a href="<%= item.href %>"<% if (current(item.href)) { %> aria-current="page"<% } %>><%= t(item.key) %></a>
+      <% } %>
+    </nav>
+    <div class="topbar__end">
+      <% if (can('schede:write')) { %><a class="btn btn--primary btn--sm topbar__new" href="/schede/nuova"><%- include('icon', { name: 'plus' }) %><span class="btn__label"><%= t('schede.new') %></span></a><% } %>
+      <a class="who" href="/account"><span class="who__name"><%= currentUser.name %></span><span class="who__role"><%= t('role.' + currentUser.role) %></span></a>
+      <a class="btn btn--ghost btn--sm topbar__account" href="/account" aria-label="<%= t('nav.account') %>"><%- include('icon', { name: 'user' }) %></a>
+    </div>
+  </div>
+</header>

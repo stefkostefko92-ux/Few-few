@@ -1,0 +1,169 @@
+{
+  "schede": {
+    "title": "Schede",
+    "subtitle": "Cerca per n° impianto, matricola, indirizzo, marca o note.",
+    "new": "Nuova scheda",
+    "count": {
+      "one": "1 scheda",
+      "other": "{n} schede"
+    },
+    "empty": "Ancora nessuna scheda.",
+    "createFirst": "Crea la prima scheda",
+    "openRow": "Apri la scheda {id}",
+    "back": "Tutte le schede",
+    "unsaved": "Modifiche non salvate",
+    "search": {
+      "label": "Cerca nelle schede",
+      "placeholder": "N° impianto, matricola, indirizzo…",
+      "found": {
+        "one": "1 scheda per «{q}»",
+        "other": "{n} schede per «{q}»"
+      },
+      "none": "Nessuna scheda per «{q}».",
+      "tip": "Prova con una parte del numero, della matricola o della via: maiuscole e accenti non contano."
+    },
+    "create": {
+      "title": "Nuova scheda",
+      "sub": "La data è quella di oggi: cambiala se il rilievo è di un altro giorno.",
+      "submit": "Salva scheda"
+    },
+    "edit": {
+      "title": "Modifica scheda",
+      "submit": "Salva modifiche"
+    },
+    "delete": {
+      "title": "Spostare la scheda nel cestino?",
+      "text": "Un amministratore potrà ripristinarla dal cestino.",
+      "confirm": "Sposta nel cestino"
+    },
+    "conflict": {
+      "title": "Qualcuno ha modificato questa scheda mentre la stavi compilando.",
+      "text": "I tuoi dati sono ancora qui sotto. Apri la versione attuale in un'altra scheda del browser e confronta: se salvi ora, sostituisci le modifiche dell'altra persona.",
+      "open": "Apri la versione attuale"
+    }
+  },
+  "scheda": {
+    "title": "Scheda rilievo impianto",
+    "titleImpianto": "Impianto n° {n}",
+    "titleMatricola": "Matricola {n}",
+    "dateLine": "Rilievo del {date}",
+    "noAddress": "Indirizzo non indicato",
+    "plateLabel": "Dati di targa",
+    "identifiers": "Identificazione",
+    "identifiersHint": "Compila almeno uno tra indirizzo, matricola e n° impianto: servono per ritrovare la scheda.",
+    "errorSummary": {
+      "one": "Correggi 1 campo",
+      "other": "Correggi {n} campi"
+    },
+    "meta": {
+      "created": "Creata da {name} il {at}",
+      "updated": "Ultima modifica di {name} il {at}"
+    },
+    "actions": {
+      "edit": "Modifica",
+      "print": "Stampa",
+      "pdf": "Scarica PDF",
+      "delete": "Elimina"
+    },
+    "section": {
+      "impianto": "Impianto",
+      "targa": "Dati di targa",
+      "ubicazione": "Ubicazione e accesso",
+      "tipologia": "Tipologia",
+      "funi": "Funi",
+      "limitatore": "Limitatore",
+      "cavi": "Cavi",
+      "note": "Note e lavori"
+    },
+    "field": {
+      "data": "Data",
+      "indirizzo": "Indirizzo",
+      "marca": "Marca impianto",
+      "matricola": "Matricola",
+      "numeroImpianto": "N° impianto",
+      "portataKg": "Portata",
+      "capienzaPersone": "Capienza",
+      "fermate": "Fermate",
+      "ubicazioneMacchina": "Ubicazione macchina",
+      "ubicazioneCassettina": "Ubicazione cassettina",
+      "parcheggio": "Parcheggio",
+      "tipoImpianto": "Tipo impianto",
+      "tipoPorte": "Tipo porte",
+      "serrature": "Serrature",
+      "serratureNumero": "Numero serrature",
+      "serratureTipo": "Tipo serrature",
+      "funiDiametroMm": "Diametro funi",
+      "funiTrefoli": "Trefoli funi",
+      "funiNumero": "Numero funi",
+      "funiLunghezzaM": "Lunghezza funi",
+      "limitatoreTipo": "Tipo limitatore",
+      "funicellaDiametroMm": "Diametro funicella",
+      "funicellaLunghezzaM": "Lunghezza funicella",
+      "tenditore": "Tenditore",
+      "caviNumero": "Numero cavi",
+      "caviConduttori": "Conduttori cavi",
+      "caviLunghezzaM": "Lunghezza cavi",
+      "noteQuadretto": "Note quadretto elettrico",
+      "noteImpianto": "Note impianto",
+      "noteBottoniere": "Note bottoniere in opera",
+      "lavoriExtra": "Lavori extra (buono di lavoro)"
+    },
+    "option": {
+      "ubicazioneMacchina": {
+        "ALTO": "Alto",
+        "BASSO": "Basso"
+      },
+      "tipoImpianto": {
+        "ELETTRICO": "Elettrico",
+        "IDRAULICO": "Idraulico",
+        "GEARLESS": "Gearless"
+      },
+      "tipoPorte": {
+        "AUTOMATICHE": "Automatiche",
+        "SEMIAUTOMATICHE": "Semiautomatiche",
+        "MANUALI": "Manuali"
+      }
+    },
+    "unit": {
+      "kg": "kg",
+      "persone": {
+        "one": "persona",
+        "other": "persone"
+      },
+      "mm": "mm",
+      "m": "m"
+    },
+    "error": {
+      "invalid": "Valore non valido.",
+      "required": "Indica la data del rilievo.",
+      "invalidDate": "Data non valida.",
+      "tooLong": "Massimo {maxLength} caratteri.",
+      "digitsOnly": "Solo cifre, senza lettere o simboli.",
+      "integer": "Inserisci un numero intero.",
+      "decimal": "Inserisci un numero, ad esempio 6,5.",
+      "decimalPlaces": "Al massimo 2 decimali.",
+      "range": "Inserisci un valore tra {min} e {max}.",
+      "option": "Scelta non valida.",
+      "identifierNeeded": "Compila almeno indirizzo, matricola o n° impianto."
+    }
+  },
+  "trash": {
+    "title": "Cestino",
+    "subtitle": "Schede eliminate: ripristinale o eliminale definitivamente.",
+    "empty": "Il cestino è vuoto.",
+    "deletedAt": "Eliminata il",
+    "restore": "Ripristina",
+    "purge": "Elimina definitivamente",
+    "banner": "Nel cestino dal {at} (eliminata da {name}).",
+    "purgeTitle": "Eliminare definitivamente la scheda?",
+    "purgeText": "L'operazione non si può annullare: la scheda sparirà dal portale.",
+    "purgeConfirm": "Elimina definitivamente"
+  },
+  "print": {
+    "back": "Torna alla scheda"
+  },
+  "pdf": {
+    "generated": "Generato il {at} da {name}",
+    "page": "Pagina {page} di {pages}"
+  }
+}

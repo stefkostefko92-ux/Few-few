@@ -1,0 +1,54 @@
+<%
+  const isEdit = scheda !== null;
+  const action = isEdit ? '/schede/' + scheda.id : '/schede';
+  const errorKeys = Object.keys(errors);
+  const serratureOn = values.serrature === 'si';
+  const labelOf = (key) => key === identifiersErrorKey ? t('scheda.identifiers') : t('scheda.field.' + key);
+  const anchorOf = (key) => key === identifiersErrorKey ? '#f-indirizzo' : '#f-' + key;
+  const fieldMap = Object.fromEntries(sections.flatMap((s) => s.fields).map((f) => [f.key, f]));
+  const paramsOf = (key) => { const f = fieldMap[key] || {}; return { min: f.min, max: f.max, maxLength: f.maxLength }; };
+%><%- include('../partials/top', { titleKey: isEdit ? 'schede.edit.title' : 'schede.create.title' }) %>
+<div class="page-head">
+  <div>
+    <h1><%= t(isEdit ? 'schede.edit.title' : 'schede.create.title') %></h1>
+    <p class="page-head__sub"><%= isEdit ? t('scheda.meta.updated', { name: scheda.updatedBy ? scheda.updatedBy.name : '—', at: fmt.dateTime(scheda.updatedAt) }) : t('schede.create.sub') %></p>
+  </div>
+</div>
+<div class="stack-gap">
+<% if (conflict) { %>
+  <div class="notice" role="alert">
+    <p><strong><%= t('schede.conflict.title') %></strong></p>
+    <p><%= t('schede.conflict.text') %></p>
+    <div class="toolbar"><a class="btn btn--sm" href="/schede/<%= scheda.id %>" target="_blank" rel="noopener"><%= t('schede.conflict.open') %></a></div>
+  </div>
+<% } %>
+<% if (errorKeys.length) { %>
+  <div class="errors" role="alert" id="error-summary" tabindex="-1">
+    <h2><%= t('scheda.errorSummary', { n: errorKeys.length }) %></h2>
+    <ul>
+      <% for (const key of errorKeys) { %><li><a href="<%= anchorOf(key) %>"><%= labelOf(key) %>: <%= t('scheda.error.' + errors[key], paramsOf(key)) %></a></li>
+      <% } %>
+    </ul>
+  </div>
+<% } %>
+<form class="form" method="post" action="<%= action %>" novalidate data-scheda-form>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <% if (isEdit) { %><input type="hidden" name="base" value="<%= conflict ? scheda.updatedAt.toISOString() : base %>"><% } %>
+  <% for (const section of sections) { %>
+  <fieldset class="section" id="s-<%= section.key %>">
+    <legend class="section__title"><%= t('scheda.section.' + section.key) %></legend>
+    <% if (section.key === 'impianto') { %><p class="field__hint<%= errors[identifiersErrorKey] ? ' field__error' : '' %>" id="identifiers-hint"><%= t('scheda.identifiersHint') %></p><% } %>
+    <div class="grid">
+      <% for (const field of section.fields) { %><%- include('_field', { field, value: values[field.key], error: errors[field.key], serratureOn }) %>
+      <% } %>
+    </div>
+  </fieldset>
+  <% } %>
+  <div class="actions">
+    <button class="btn btn--primary" type="submit"><%= t(isEdit ? 'schede.edit.submit' : 'schede.create.submit') %></button>
+    <a class="btn btn--ghost" href="<%= isEdit ? '/schede/' + scheda.id : '/schede' %>"><%= t('common.cancel') %></a>
+    <span class="actions__hint" data-dirty-hint hidden><%= t('schede.unsaved') %></span>
+  </div>
+</form>
+</div>
+<%- include('../partials/bottom') %>

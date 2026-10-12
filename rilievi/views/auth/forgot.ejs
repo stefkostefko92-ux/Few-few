@@ -1,0 +1,21 @@
+<%- include('../partials/auth-top', { titleKey: 'auth.forgot.title' }) %>
+<div class="auth__form">
+  <h1><%= t('auth.forgot.title') %></h1>
+  <% if (!mail) { %>
+    <p><%= t('auth.forgot.noMail') %></p>
+  <% } else if (sent) { %>
+    <div class="notice" role="status"><p><%= t('auth.forgot.sent') %></p></div>
+  <% } else { %>
+    <p class="muted"><%= t('auth.forgot.intro') %></p>
+    <form class="auth__form" method="post" action="/password-dimenticata" novalidate>
+      <input type="hidden" name="_csrf" value="<%= preCsrf %>">
+      <div class="field">
+        <label class="field__label" for="email"><%= t('auth.email') %></label>
+        <input class="input" id="email" name="email" type="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" required maxlength="254">
+      </div>
+      <button class="btn btn--primary btn--block" type="submit"><%= t('auth.forgot.submit') %></button>
+    </form>
+  <% } %>
+  <div class="auth__links"><a href="/accesso"><%= t('auth.backToLogin') %></a></div>
+</div>
+<%- include('../partials/auth-bottom') %>

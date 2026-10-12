@@ -1,0 +1,158 @@
+/* Табелата — единственият запомнящ се елемент: както табелата в кабината на всеки асансьор
+   (портата, лица, матрикула), гравирана рамка с четири винта. Всичко около нея остава тихо. */
+
+.plate {
+  position: relative;
+  padding: 22px 26px 20px;
+  border: 2px solid var(--line-strong);
+  border-radius: var(--radius-plate);
+  outline: 1px solid var(--line-strong);
+  outline-offset: -8px;
+  background: var(--bg);
+}
+
+.plate__screw {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 50%;
+}
+
+.plate__screw::after {
+  content: '';
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  top: 50%;
+  border-top: 1.5px solid var(--line-strong);
+  transform: translateY(-50%) rotate(-35deg);
+}
+
+.plate__screw--tl {
+  top: 12px;
+  left: 12px;
+}
+
+.plate__screw--tr {
+  top: 12px;
+  right: 12px;
+}
+
+.plate__screw--bl {
+  bottom: 12px;
+  left: 12px;
+}
+
+.plate__screw--br {
+  bottom: 12px;
+  right: 12px;
+}
+
+.plate__label {
+  display: block;
+  font-family: var(--font-cond);
+  font-weight: 500;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.plate__ids {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px 24px;
+  padding: 0 8px;
+}
+
+.plate__id--end {
+  text-align: right;
+}
+
+.plate__big {
+  display: block;
+  font-family: var(--font-cond);
+  font-weight: 600;
+  font-size: clamp(1.75rem, 1.2rem + 2.4vw, 2.75rem);
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+}
+
+.plate__big--empty {
+  color: var(--muted);
+}
+
+.plate__address {
+  margin: 10px 8px 0;
+  font-size: 1.0625rem;
+  font-weight: 500;
+}
+
+.plate__specs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 8px 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.plate__specs div {
+  min-width: 0;
+}
+
+.plate__specs dt {
+  margin: 0;
+}
+
+.plate__specs dd {
+  margin: 2px 0 0;
+  font-family: var(--font-cond);
+  font-weight: 600;
+  font-size: 1.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 599px) {
+  .plate {
+    padding: 22px 18px 18px;
+  }
+
+  .plate__specs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .plate__id--end {
+    text-align: left;
+  }
+}
+
+/* Табелата на входа: марката, продуктът и правилото за достъп. */
+.plate--brand {
+  text-align: center;
+  padding: 30px 26px 26px;
+}
+
+.plate--brand .plate__big {
+  font-size: clamp(1.375rem, 1rem + 1.6vw, 1.875rem);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.plate--brand .plate__rule {
+  margin: 14px auto 0;
+  padding-top: 12px;
+  max-width: 34ch;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.brand__mark rect,
+.brand__mark circle {
+  fill: none;
+  stroke: currentColor;
+}

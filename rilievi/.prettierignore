@@ -1,0 +1,8 @@
+node_modules
+dist
+public/fonts
+prisma/migrations
+package-lock.json
+views
+test-results
+tests/e2e/shots

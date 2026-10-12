@@ -1,0 +1,291 @@
+/* Рамката на страницата: горна лента, навигация, съдържание, долна лента, съобщения, странициране. */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.topbar__inner {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px var(--gutter);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.brand__mark {
+  width: 34px;
+  height: 26px;
+  flex: none;
+}
+
+.brand__text {
+  display: grid;
+  line-height: 1.1;
+}
+
+.brand__name {
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.brand__product {
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.nav {
+  display: flex;
+  gap: 4px;
+  min-width: 0;
+}
+
+.nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: var(--radius);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.nav a:hover {
+  background: var(--hover);
+}
+
+.nav a[aria-current='page'] {
+  box-shadow: inset 0 -2px 0 var(--fg);
+  border-radius: 0;
+}
+
+.topbar__end {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.who {
+  display: grid;
+  text-align: right;
+  line-height: 1.15;
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: var(--radius);
+}
+
+.who:hover {
+  background: var(--hover);
+}
+
+.who__name {
+  font-weight: 600;
+  max-width: 18ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.who__role {
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+@media (max-width: 879px) {
+  .topbar__inner {
+    grid-template-columns: 1fr auto;
+  }
+
+  .nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    overflow-x: auto;
+    margin: 0 calc(var(--gutter) * -1);
+    padding: 0 calc(var(--gutter) - 12px);
+    scrollbar-width: none;
+  }
+
+  .who {
+    display: none;
+  }
+}
+
+@media (max-width: 479px) {
+  .brand__product {
+    display: none;
+  }
+
+  .topbar__new .btn__label {
+    display: none;
+  }
+}
+
+.main {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px var(--gutter) 64px;
+}
+
+.main--narrow {
+  max-width: 760px;
+}
+
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.page-head__sub {
+  margin-top: 6px;
+  color: var(--muted);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.flash {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--fg);
+  border-radius: var(--radius);
+  font-weight: 500;
+}
+
+.flash--error {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.flash--ok {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.footer {
+  border-top: 1px solid var(--line);
+}
+
+.footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 18px var(--gutter) 22px;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.switches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+}
+
+.switch {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+
+.switch a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 8px;
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--muted);
+}
+
+.switch a:hover {
+  color: var(--fg);
+}
+
+.switch a[aria-current='true'] {
+  color: var(--fg);
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+
+.switch .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.credit a {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.empty {
+  padding: 40px 24px;
+  border: 1.5px dashed var(--field-line);
+  border-radius: var(--radius-plate);
+  text-align: center;
+}
+
+.empty p + p,
+.empty p + .btn {
+  margin-top: 12px;
+}
+
+/* Печат на обикновена страница (Ctrl+P върху схемата): без навигация и бутони. */
+@media print {
+  .topbar,
+  .footer,
+  .toolbar,
+  .actions,
+  .skip {
+    display: none !important;
+  }
+
+  .main {
+    padding: 0;
+  }
+}
+
+.topbar__account {
+  display: none;
+}
+
+@media (max-width: 879px) {
+  .topbar__account {
+    display: inline-flex;
+  }
+}
