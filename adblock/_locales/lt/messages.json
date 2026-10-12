@@ -118,6 +118,27 @@
   "support": {
     "message": "Paremti"
   },
+  "rate": {
+    "message": "Įvertinti"
+  },
+  "rateTitle": {
+    "message": "Įvertinkite Supreme AdBlock „Chrome“ internetinėje parduotuvėje"
+  },
+  "reviewBlocked": {
+    "message": "Iki šiol užblokuota užklausų: $1"
+  },
+  "reviewAsk": {
+    "message": "Jei Supreme AdBlock jums naudingas, trumpas atsiliepimas „Chrome“ internetinėje parduotuvėje padės kitiems jį rasti."
+  },
+  "reviewLeave": {
+    "message": "Parašyti atsiliepimą"
+  },
+  "reviewLater": {
+    "message": "Ne dabar"
+  },
+  "reviewNever": {
+    "message": "Daugiau neklausti"
+  },
   "filtersCount": {
     "message": "$1+ filtrų",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Paaukoti per Revolut"
+  },
+  "opt_review": {
+    "message": "Priminimai apie atsiliepimą"
+  },
+  "opt_review_sub": {
+    "message": "Maža ★ nuoroda Supreme AdBlock lango apačioje ir ne daugiau kaip du kartus trumpas prašymas ten įvertinti jį „Chrome“ internetinėje parduotuvėje. Niekada svetainėse, niekada kaip pranešimas."
   },
   "opt_made_by": {
     "message": "sukūrė Carbon Stealth"

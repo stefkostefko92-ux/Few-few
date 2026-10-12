@@ -118,6 +118,27 @@
   "support": {
     "message": "Destek ol"
   },
+  "rate": {
+    "message": "Puan ver"
+  },
+  "rateTitle": {
+    "message": "Supreme AdBlock'a Chrome Web Mağazası'nda puan verin"
+  },
+  "reviewBlocked": {
+    "message": "Şimdiye kadar $1 istek engellendi"
+  },
+  "reviewAsk": {
+    "message": "Supreme AdBlock işinize yarıyorsa, Chrome Web Mağazası'nda kısa bir yorum başkalarının onu bulmasına yardımcı olur."
+  },
+  "reviewLeave": {
+    "message": "Yorum yaz"
+  },
+  "reviewLater": {
+    "message": "Şimdi değil"
+  },
+  "reviewNever": {
+    "message": "Bir daha sorma"
+  },
   "filtersCount": {
     "message": "$1+ filtre",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Revolut ile bağış yap"
+  },
+  "opt_review": {
+    "message": "Yorum hatırlatmaları"
+  },
+  "opt_review_sub": {
+    "message": "Supreme AdBlock penceresinin altında küçük bir ★ bağlantısı ve en fazla iki kez orada, Chrome Web Mağazası'nda puan vermeniz için kısa bir rica. Asla web sitelerinde, asla bildirim olarak değil."
   },
   "opt_made_by": {
     "message": "Carbon Stealth tarafından yapıldı"

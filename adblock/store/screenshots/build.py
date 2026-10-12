@@ -145,6 +145,7 @@ def popup(blocked="1,204", data="68 MB", time="14 min", host="news.example.com",
     $("savedTime").textContent = {json.dumps(time)};
     $("siteHost").textContent = {json.dumps(host)};
     $("listDot").textContent = "60,000+ filters";
+    $("rate").hidden = false;  // the quiet ★ a Chrome Web Store install shows (popup.js → renderRate)
     var items = {json.dumps(log)};
     $("logCount").textContent = String(items.reduce(function (a, it) {{ return a + (it[1] || 0); }}, 0));
     $("logEmpty").hidden = items.length > 0;

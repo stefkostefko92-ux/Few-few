@@ -118,6 +118,27 @@
   "support": {
     "message": "Поддржете"
   },
+  "rate": {
+    "message": "Оценете"
+  },
+  "rateTitle": {
+    "message": "Оценете го Supreme AdBlock во Chrome Web Store"
+  },
+  "reviewBlocked": {
+    "message": "Досега блокирани барања: $1"
+  },
+  "reviewAsk": {
+    "message": "Ако Supreme AdBlock ви е корисен, кратка рецензија во Chrome Web Store им помага на другите да го најдат."
+  },
+  "reviewLeave": {
+    "message": "Напишете рецензија"
+  },
+  "reviewLater": {
+    "message": "Не сега"
+  },
+  "reviewNever": {
+    "message": "Не прашувај повторно"
+  },
   "filtersCount": {
     "message": "$1+ филтри",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Донирајте преку Revolut"
+  },
+  "opt_review": {
+    "message": "Потсетници за рецензија"
+  },
+  "opt_review_sub": {
+    "message": "Мала ★ врска на дното од прозорецот на Supreme AdBlock и, најмногу двапати, кратко барање таму да го оцените во Chrome Web Store. Никогаш на веб-локации, никогаш како известување."
   },
   "opt_made_by": {
     "message": "изработено од Carbon Stealth"

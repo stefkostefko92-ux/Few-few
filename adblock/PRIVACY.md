@@ -1,6 +1,6 @@
 # Privacy Policy, Supreme AdBlock
 
-_Last updated: 10 October 2026 · applies to the Supreme AdBlock browser extension and to adblock.carbonstealth.eu_
+_Last updated: 12 October 2026 · applies to the Supreme AdBlock browser extension and to adblock.carbonstealth.eu_
 
 <!-- Keep in sync with server/privacy.html (the Privacy Policy URL in the Chrome Web Store). -->
 
@@ -33,6 +33,7 @@ servers, under your account, not ours. Turn sync off and they stay local only.
 - Counters of how many requests were blocked (and the estimated data and time saved), and how many cookie banners were rejected for you — numbers only, no list of sites
 - A short log (last 50 entries) of sites where Smart Detection hid an ad-sized frame, shown in Settings so you can see why
 - The latest downloaded filter data, and the regional lists you downloaded from their authors (see below)
+- Whether review reminders are on *(sync)*; and, on this device only, when the extension was installed and whether the popup already asked you for a Chrome Web Store review (how many times, when, and whether you chose “Don't ask again”) — so it asks at most twice
 
 The popup's "Blocked on this page" view is built on the spot from which of our
 filter lists matched in that tab; it is not stored and never sent anywhere. You
@@ -63,6 +64,11 @@ extension.
    and then about once a day while it stays on. That server sees an ordinary
    request (IP address and user agent), as if you opened the list yourself. We
    are not involved in that request. Settings marks these lists "from its author".
+
+**Leaving a review (only if you click).** The small ★ link and the review request
+in the popup open the extension's Chrome Web Store page in a new tab, like any
+link. The extension itself sends nothing; what you write there is handled by
+Google under its own terms. You can switch these reminders off in Settings.
 
 There are no other requests: no analytics, no crash reports, no "phone home".
 

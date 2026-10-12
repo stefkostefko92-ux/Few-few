@@ -118,6 +118,27 @@
   "support": {
     "message": "Дэмжих"
   },
+  "rate": {
+    "message": "Үнэлэх"
+  },
+  "rateTitle": {
+    "message": "Supreme AdBlock-ийг Chrome Вэб Дэлгүүрт үнэлэх"
+  },
+  "reviewBlocked": {
+    "message": "Одоогоор хаасан хүсэлт: $1"
+  },
+  "reviewAsk": {
+    "message": "Supreme AdBlock танд хэрэгтэй бол Chrome Вэб Дэлгүүрт үлдээсэн богино сэтгэгдэл бусдад үүнийг олоход тусална."
+  },
+  "reviewLeave": {
+    "message": "Сэтгэгдэл бичих"
+  },
+  "reviewLater": {
+    "message": "Одоо биш"
+  },
+  "reviewNever": {
+    "message": "Дахин бүү асуу"
+  },
   "filtersCount": {
     "message": "$1+ шүүлтүүр",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Revolut-ээр хандив өгөх"
+  },
+  "opt_review": {
+    "message": "Сэтгэгдлийн сануулга"
+  },
+  "opt_review_sub": {
+    "message": "Supreme AdBlock-ийн цонхны доод хэсэгт жижиг ★ холбоос, мөн хамгийн ихдээ хоёр удаа тэнд нь Chrome Вэб Дэлгүүрт үнэлэхийг хүссэн богино хүсэлт. Хэзээ ч вэбсайт дээр, хэзээ ч мэдэгдэл хэлбэрээр биш."
   },
   "opt_made_by": {
     "message": "Carbon Stealth бүтээв"

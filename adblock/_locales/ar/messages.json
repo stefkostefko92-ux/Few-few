@@ -118,6 +118,27 @@
   "support": {
     "message": "ادعمنا"
   },
+  "rate": {
+    "message": "قيّمنا"
+  },
+  "rateTitle": {
+    "message": "قيّم Supreme AdBlock في سوق Chrome الإلكتروني"
+  },
+  "reviewBlocked": {
+    "message": "تم حظر $1 من الطلبات حتى الآن"
+  },
+  "reviewAsk": {
+    "message": "إذا كان Supreme AdBlock مفيدًا لك، فإن مراجعة قصيرة في سوق Chrome الإلكتروني تساعد الآخرين في العثور عليه."
+  },
+  "reviewLeave": {
+    "message": "اكتب مراجعة"
+  },
+  "reviewLater": {
+    "message": "ليس الآن"
+  },
+  "reviewNever": {
+    "message": "لا تسألني مجددًا"
+  },
   "filtersCount": {
     "message": "أكثر من $1 فلتر",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "تبرّع عبر Revolut"
+  },
+  "opt_review": {
+    "message": "تذكيرات التقييم"
+  },
+  "opt_review_sub": {
+    "message": "رابط ★ صغير أسفل نافذة Supreme AdBlock، وطلب قصير هناك مرتين على الأكثر لتقييمه في سوق Chrome الإلكتروني. لا يظهر أبدًا على المواقع ولا كإشعار."
   },
   "opt_made_by": {
     "message": "من صنع Carbon Stealth"

@@ -118,6 +118,27 @@
   "support": {
     "message": "支援する"
   },
+  "rate": {
+    "message": "評価する"
+  },
+  "rateTitle": {
+    "message": "Chrome ウェブストアで Supreme AdBlock を評価する"
+  },
+  "reviewBlocked": {
+    "message": "これまでに $1 件のリクエストをブロックしました"
+  },
+  "reviewAsk": {
+    "message": "Supreme AdBlock がお役に立っているなら、Chrome ウェブストアに短いレビューを書いていただくと、ほかの方が見つけやすくなります。"
+  },
+  "reviewLeave": {
+    "message": "レビューを書く"
+  },
+  "reviewLater": {
+    "message": "今はしない"
+  },
+  "reviewNever": {
+    "message": "今後表示しない"
+  },
   "filtersCount": {
     "message": "$1+ 件のフィルタ",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Revolut で寄付する"
+  },
+  "opt_review": {
+    "message": "レビューのお願い"
+  },
+  "opt_review_sub": {
+    "message": "Supreme AdBlock のウィンドウ下部に小さな ★ リンクを表示し、最大 2 回までそこで Chrome ウェブストアでの評価を短くお願いします。ウェブサイト上や通知として表示されることはありません。"
   },
   "opt_made_by": {
     "message": "made by Carbon Stealth"

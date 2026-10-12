@@ -118,6 +118,27 @@
   "support": {
     "message": "Toeta"
   },
+  "rate": {
+    "message": "Hinda"
+  },
+  "rateTitle": {
+    "message": "Hinnake Supreme AdBlocki Chrome'i veebipoes"
+  },
+  "reviewBlocked": {
+    "message": "Seni blokeeritud päringuid: $1"
+  },
+  "reviewAsk": {
+    "message": "Kui Supreme AdBlock on teile kasulik, aitab lühike arvustus Chrome'i veebipoes teistel selle leida."
+  },
+  "reviewLeave": {
+    "message": "Kirjutage arvustus"
+  },
+  "reviewLater": {
+    "message": "Mitte praegu"
+  },
+  "reviewNever": {
+    "message": "Ära enam küsi"
+  },
   "filtersCount": {
     "message": "$1+ filtrit",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Anneta Revoluti kaudu"
+  },
+  "opt_review": {
+    "message": "Arvustuse meeldetuletused"
+  },
+  "opt_review_sub": {
+    "message": "Väike ★-link Supreme AdBlocki akna allosas ja kõige rohkem kaks korda seal lühike palve seda Chrome'i veebipoes hinnata. Mitte kunagi veebisaitidel ega teavitusena."
   },
   "opt_made_by": {
     "message": "loonud Carbon Stealth"

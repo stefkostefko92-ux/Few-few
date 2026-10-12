@@ -202,3 +202,6 @@
 {"t":"start","ts":"2026-10-11T10:40:33.419Z","id":"r9ed67314","flow":"авто","lead":"vps-adjiyata","auto":true}
 {"t":"handoff","ts":"2026-10-11T10:40:33.420Z","id":"r9ed67314","from":"vps-adjiyata","to":"човек","status":"има бележки","run":"99e41890"}
 {"t":"handoff","ts":"2026-10-11T10:53:03.053Z","id":"r9ed67314","from":"ai-djiyata","to":"човек","status":"има бележки","run":"f646f02d"}
+{"t":"start","ts":"2026-10-12T08:11:07.060Z","id":"r443f2f96","flow":"авто","lead":"tayniyat-agent","auto":true}
+{"t":"handoff","ts":"2026-10-12T08:11:07.060Z","id":"r443f2f96","from":"tayniyat-agent","to":"hromadjiyata","status":"има бележки","run":"6ec8d683"}
+{"t":"handoff","ts":"2026-10-12T08:12:13.110Z","id":"r443f2f96","from":"kodadjiyata","to":"hromadjiyata","status":"има бележки","run":"ca4f1757"}

@@ -7,6 +7,7 @@ const FALLBACK = {
   pausedResume: "Paused, resume now ($1m left)", blocking: "Blocking", allowed: "Allowed",
   on: "On", off: "Off", thisPage: "this page", filtersCount: "$1+ filters",
   logUnavailable: "Log unavailable right now (browser quota) — try again in a minute.",
+  reviewBlocked: "$1 requests blocked so far",
 };
 
 const toggle = $("toggle");
@@ -82,6 +83,11 @@ function load() {
         allowToggle.disabled = true;
         cosmToggle.disabled = true;
       }
+
+      // ★ преди мерене (заема място в долната лента), картата след него (покрива каквото покрива)
+      renderRate(res.review);
+      fitPopup();
+      showReviewCard(res.review, res.blockedTotal);
     });
     loadLog();
   });
@@ -137,6 +143,22 @@ function setStatus(enabled) {
   hero.classList.toggle("off", !enabled);
   // read by popup.css and shield3d.js (colour + light of the shield)
   hero.dataset.state = !enabled ? (S.paused ? "paused" : "off") : allowedHere ? "allowed" : "protected";
+}
+
+// Chrome показва popup-а най-много 600 px висок; на дългите езици текстът се пренася и съдържанието
+// минава тавана → скролбар. Тогава — по-стегнати отстояния (html.tight); а ако надписите в долната
+// лента не се събират — само иконите (.foot.compact; текстът остава името на линка, title — подсказка).
+function fitPopup() {
+  const root = document.documentElement;
+  root.classList.remove("tight");
+  if (document.body.getBoundingClientRect().bottom > 600) root.classList.add("tight");
+  const foot = document.querySelector(".foot");
+  foot.classList.remove("compact");
+  const labels = [...foot.querySelectorAll(".links a:not([hidden]) span")];
+  if (labels.some((s) => s.scrollWidth > s.clientWidth + 1)) {
+    foot.classList.add("compact");
+    for (const s of labels) if (!s.parentElement.title) s.parentElement.title = s.textContent.trim();
+  }
 }
 
 function setAllowLabel(blocking) {
@@ -207,6 +229,66 @@ $("reportBtn").addEventListener("click", () => {
   chrome.tabs.create({ url: chrome.runtime.getURL("report/report.html?tab=" + currentTabId) });
   window.close();
 });
+
+// Отзив в Chrome Web Store: тиха ★ в долната лента + най-много два пъти карта след реална полза.
+// Кога — решава service worker-ът (reviewDue в background.js), тук само се рисува; Настройки махат
+// и двете. Нищо не се праща никъде: линкът отваря страницата с отзивите в магазина, нищо повече.
+const review = $("review");
+let reviewShown = false;
+
+function renderRate(rv) {
+  if (!rv || !rv.url || !rv.on) return;
+  $("rate").href = rv.url;
+  $("rate").hidden = false;
+}
+
+function showReviewCard(rv, blocked) {
+  if (!rv || !rv.url || !rv.on || !rv.ask || reviewShown) return; // load() се вика пак след пауза — веднъж на отваряне
+  reviewShown = true;
+  $("reviewTitle").textContent = t("reviewBlocked", [blocked.toLocaleString(UI_LANG)]);
+  $("reviewGo").href = rv.url;
+  review.hidden = false;
+  // каквото листът покрива, не взема фокус (WCAG 2.4.11) — става inert, докато листът е тук
+  // (offsetTop, не getBoundingClientRect: анимацията на влизане го отмества с transform)
+  const top = review.offsetTop;
+  for (const el of document.querySelectorAll("main > *, .foot")) {
+    if (!el.hidden && el.getBoundingClientRect().bottom > top) el.inert = true;
+  }
+  chrome.runtime.sendMessage({ type: "review", action: "shown" });
+}
+
+function closeReview() {
+  if (review.hidden || review.classList.contains("out")) return;
+  const hadFocus = review.contains(document.activeElement);
+  const done = () => {
+    review.hidden = true;
+    review.classList.remove("out");
+    document.querySelectorAll("[inert]").forEach((el) => (el.inert = false));
+    if (hadFocus) document.querySelector("main").focus({ preventScroll: true }); // не на body: Tab продължава от съдържанието
+  };
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return done();
+  review.classList.add("out");
+  setTimeout(done, 200);
+}
+
+// отзивът е оставен (или поне отворен) — картата повече не идва; ★ остава, ако някой иска да го смени
+function goReview(e) {
+  e.preventDefault();
+  const url = e.currentTarget.href;
+  chrome.runtime.sendMessage({ type: "review", action: "done" }, () => {
+    void chrome.runtime.lastError;
+    chrome.tabs.create({ url });
+    window.close();
+  });
+}
+$("reviewGo").addEventListener("click", goReview);
+$("rate").addEventListener("click", goReview);
+$("reviewLater").addEventListener("click", closeReview);
+$("reviewNever").addEventListener("click", () => {
+  chrome.runtime.sendMessage({ type: "review", action: "done" });
+  closeReview();
+});
+addEventListener("keydown", (e) => { if (e.key === "Escape" && !review.hidden) { e.preventDefault(); closeReview(); } });
 
 // 3D щитът (popup/shield3d.js) се зарежда чак СЛЕД първото рисуване: още една заявка към
 // разширението на критичния път струва ~40 ms до първия кадър (измерено), а статичният кадър

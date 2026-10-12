@@ -118,6 +118,27 @@
   "support": {
     "message": "Cefnogi"
   },
+  "rate": {
+    "message": "Graddio"
+  },
+  "rateTitle": {
+    "message": "Graddio Supreme AdBlock ar y Chrome Web Store"
+  },
+  "reviewBlocked": {
+    "message": "$1 o geisiadau wedi’u rhwystro hyd yma"
+  },
+  "reviewAsk": {
+    "message": "Os yw Supreme AdBlock yn ddefnyddiol i chi, mae adolygiad byr ar y Chrome Web Store yn helpu eraill i ddod o hyd iddo."
+  },
+  "reviewLeave": {
+    "message": "Ysgrifennu adolygiad"
+  },
+  "reviewLater": {
+    "message": "Dim nawr"
+  },
+  "reviewNever": {
+    "message": "Peidiwch â gofyn eto"
+  },
   "filtersCount": {
     "message": "$1+ o hidlyddion",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Rhoi drwy Revolut"
+  },
+  "opt_review": {
+    "message": "Nodiadau atgoffa i adolygu"
+  },
+  "opt_review_sub": {
+    "message": "Dolen ★ fach ar waelod ffenestr Supreme AdBlock ac, ar y mwyaf ddwywaith, cais byr yno i’w raddio ar y Chrome Web Store. Byth ar wefannau, byth fel hysbysiad."
   },
   "opt_made_by": {
     "message": "gwnaed gan Carbon Stealth"

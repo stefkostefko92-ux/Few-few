@@ -100,6 +100,8 @@ summary:focus-visible,
   border-radius: 8px;
 }
 
+main:focus { outline: none; } /* фокусът се връща тук, когато картата за отзив се затвори */
+
 /* ---- header ---- */
 .bar {
   display: flex;
@@ -171,7 +173,7 @@ html[data-theme="light"] .switch input:checked + .track { box-shadow: inset 0 2p
   --st-soft: rgba(0, 229, 255, 0.3);
   --st-wash: rgba(0, 229, 255, 0.2);
   position: relative;
-  margin: 10px 12px 8px;
+  margin: 8px 12px 8px;
   padding: 6px 12px 11px;
   /* щитът отляво, състоянието до него — popup-ът на Chrome е най-много 600 px висок */
   display: grid;
@@ -345,7 +347,7 @@ html[data-theme="light"] .metric svg { stroke: var(--accent); }
 
 /* ---- Current site ---- */
 .site-group {
-  margin: 12px 12px 8px;
+  margin: 10px 12px 8px;
   border-radius: 13px;
   border: 1px solid var(--line-hi);
   background: linear-gradient(180deg, var(--panel-2), var(--panel));
@@ -492,7 +494,7 @@ html[data-theme="light"] .site.sub { background: rgba(16, 24, 32, 0.035); }
 
 /* ---- Footer ---- */
 .foot {
-  margin-top: 8px;
+  margin-top: 6px;
   justify-content: space-between;
   border-top: 1px solid var(--line);
   border-bottom: none;
@@ -500,20 +502,25 @@ html[data-theme="light"] .site.sub { background: rgba(16, 24, 32, 0.035); }
   box-shadow: none;
 }
 .foot::after { display: none; }
-#donate {
+.foot .links { display: flex; align-items: center; gap: 12px; min-width: 0; }
+#donate,
+.rate {
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  min-width: 0;
   font-size: 11px;
   font-weight: 600;
   color: var(--muted);
   text-decoration: none;
   transition: color 0.18s;
 }
-#donate svg { width: 13px; height: 13px; fill: var(--accent-2); stroke: none; }
-html[data-theme="light"] #donate svg { fill: var(--accent); }
-#donate:hover { color: var(--ok-text); }
-.foot .meta { display: flex; align-items: center; gap: 10px; font-size: 10.5px; color: var(--muted); }
+#donate span, .rate span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#donate svg, .rate svg { width: 13px; height: 13px; flex: none; fill: var(--accent-2); stroke: none; }
+html[data-theme="light"] #donate svg,
+html[data-theme="light"] .rate svg { fill: var(--accent); }
+#donate:hover, .rate:hover { color: var(--ok-text); }
+.foot .meta { display: flex; flex: none; align-items: center; gap: 10px; font-size: 10.5px; color: var(--muted); }
 .foot .meta i { font-style: normal; }
 
 /* ---- Reduced motion ---- */
@@ -525,7 +532,7 @@ html[data-theme="light"] #donate svg { fill: var(--accent); }
 /* "Site broken?" — a quiet text button under the actions */
 .report-link {
   display: flex; align-items: center; justify-content: center; gap: 6px;
-  width: calc(100% - 24px); margin: 4px 12px 0; padding: 5px;
+  width: calc(100% - 24px); margin: 2px 12px 0; padding: 4px;
   border: 0; background: none; color: var(--muted); font: inherit; font-size: 12px; cursor: pointer;
 }
 .report-link svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
@@ -534,11 +541,122 @@ html[data-theme="light"] #donate svg { fill: var(--accent); }
 /* Cookie banners we said no to */
 .rejections {
   display: flex; align-items: center; justify-content: center; gap: 6px;
-  margin: 9px 12px 0; font-size: 11.5px; color: var(--muted);
+  margin: 8px 12px 0; font-size: 11.5px; color: var(--muted);
 }
 .rejections svg { width: 14px; height: 14px; fill: none; stroke: var(--accent-2); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 html[data-theme="light"] .rejections svg { stroke: var(--accent); }
 .rejections b { color: var(--text); }
+
+/* ---- Отзив: картата след успех — лист отдолу, над клавишите (popup-ът е на тавана си от 600 px) ---- */
+.review {
+  --review-a: rgba(24, 40, 51, 0.86);
+  --review-b: rgba(7, 13, 18, 0.94);
+  position: fixed;
+  inset-inline: 10px;
+  bottom: 10px;
+  z-index: 5;
+  /* звездата до заглавието; текстът и бутоните — на цялата ширина (de/ru/fi бутоните иначе се пренасят) */
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  column-gap: 10px;
+  align-items: center;
+  padding: 12px 14px 8px;
+  border-radius: 16px;
+  background:
+    radial-gradient(130% 90% at var(--mx, 28%) var(--my, -18%), var(--glass-spec), transparent 58%),
+    linear-gradient(180deg, var(--review-a), var(--review-b));
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow:
+    inset 0 1px 0 var(--glass-top),
+    inset 0 0 18px var(--glass-in),
+    inset 0 -16px 24px -18px var(--accent-2),
+    0 -8px 28px -8px var(--shadow),
+    0 18px 30px -12px var(--shadow);
+}
+html[data-theme="light"] .review { --review-a: rgba(255, 255, 255, 0.9); --review-b: rgba(238, 245, 248, 0.96); }
+.review-star {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, rgba(0, 229, 255, 0.34), rgba(0, 229, 255, 0.07) 72%);
+  box-shadow: inset 0 1px 0 var(--glass-top), 0 0 16px rgba(0, 229, 255, 0.3);
+}
+.review-star svg { width: 17px; height: 17px; fill: var(--accent-2); }
+html[data-theme="light"] .review-star svg { fill: var(--accent); }
+.review h2 { min-width: 0; font-size: 13.5px; line-height: 1.3; font-weight: 750; letter-spacing: -0.005em; color: var(--text); overflow-wrap: anywhere; }
+.review p, .review-actions, .review-never { grid-column: 1 / -1; }
+.review p { margin-top: 7px; font-size: 11.5px; line-height: 1.4; color: var(--muted); }
+.review-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+.review-go,
+.review-later {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 13px;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: filter 0.18s, border-color 0.18s, color 0.18s;
+}
+.review-go {
+  border: 1px solid transparent;
+  background: linear-gradient(180deg, #2ee6ff, #00b8d4);
+  color: var(--on-accent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 6px 14px -6px rgba(0, 229, 255, 0.6);
+}
+html[data-theme="light"] .review-go { background: linear-gradient(180deg, #007d91, #00687a); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 6px 14px -6px rgba(0, 104, 122, 0.55); }
+.review-go:hover { filter: brightness(1.08); }
+.review-later { border: 1px solid var(--line-hi); background: transparent; color: var(--text); }
+.review-later:hover { border-color: var(--accent); color: var(--ok-text); }
+.review-never {
+  justify-self: start;
+  margin-top: 5px;
+  padding: 3px 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 11px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.review-never:hover { color: var(--text); text-decoration: underline; }
+@media (prefers-reduced-motion: no-preference) {
+  .review:not([hidden]) { animation: review-in 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+  .review.out { animation: review-out 0.2s ease-in both; }
+}
+@keyframes review-in { from { transform: translateY(22px); opacity: 0; } }
+@keyframes review-out { to { transform: translateY(22px); opacity: 0; } }
+
+/* Дълги езици (ru, de, ta, ml…): текстът се пренася и съдържанието минава 600 px — тавана на Chrome за
+   popup → скролбар. Тогава (и само тогава) отстоянията се стягат; popup.js → fitPopup() мери. */
+html.tight .bar { padding-block: 9px; }
+html.tight .hero { margin-block: 6px; padding-block: 4px 8px; }
+html.tight .pause { padding-block: 6px; font-size: 11.5px; }
+html.tight .metric { padding-block: 8px 7px; }
+html.tight .metric svg { width: 16px; height: 16px; }
+html.tight .metric b { margin-top: 3px; }
+html.tight .metric small { line-height: 1.2; }
+html.tight .rejections { margin-top: 6px; }
+html.tight .site-group { margin-block: 8px 6px; }
+html.tight .site { padding-block: 8px; }
+html.tight .site.sub { padding-block: 5px; }
+html.tight .log { margin-bottom: 6px; }
+html.tight .log summary { padding-block: 7px; }
+html.tight .actions button { padding-block: 6px; }
+html.tight .report-link { padding-block: 2px; }
+html.tight .foot { margin-top: 4px; padding-block: 8px; }
+/* …а долната лента, ако надписите не се събират, остава само с иконите (името е за екранния четец) */
+.foot.compact .links { gap: 16px; }
+.foot.compact #donate span,
+.foot.compact .rate span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.foot.compact #donate svg,
+.foot.compact .rate svg { width: 15px; height: 15px; }
 
 /* An element with [hidden] stays hidden even when a class gives it display:flex. */
 [hidden] { display: none !important; }
@@ -645,6 +763,7 @@ html[data-theme="light"] .site.sub { background: rgba(255, 255, 255, 0.28); }
 .log::after,
 .pause::after,
 .actions button::after,
+.review::after,
 .hero::after {
   content: "";
   position: absolute;
@@ -662,6 +781,7 @@ html[data-theme="light"] .site.sub { background: rgba(255, 255, 255, 0.28); }
 .pause:hover::after,
 .pause.paused::after { background: linear-gradient(135deg, var(--st), var(--glass-rim-dim) 45%, var(--st)); }
 .actions button:hover::after { background: linear-gradient(135deg, var(--accent-2), var(--glass-rim-dim) 45%, var(--accent-2)); }
+.review::after { background: linear-gradient(135deg, var(--accent-2), var(--glass-rim-dim) 38%, var(--glass-rim-dim) 64%, var(--glass-rim)); }
 
 /* без прозрачност по желание на потребителя (или без backdrop-filter): обратно към плътното */
 @media (prefers-reduced-transparency: reduce) {
@@ -674,6 +794,7 @@ html[data-theme="light"] .site.sub { background: rgba(255, 255, 255, 0.28); }
   .site-group, .log { background: linear-gradient(180deg, var(--panel-2), var(--panel)); }
   .bar { background: linear-gradient(180deg, var(--panel-hi), var(--panel)); }
   .foot { background: var(--panel); }
+  .review { -webkit-backdrop-filter: none; backdrop-filter: none; background: linear-gradient(180deg, var(--panel-hi), var(--panel)); }
   .hero {
     background:
       radial-gradient(48% 70% at var(--wash-x, 22%) 42%, var(--st-wash), transparent 72%),

@@ -118,6 +118,27 @@
   "support": {
     "message": "Sokong"
   },
+  "rate": {
+    "message": "Beri nilai"
+  },
+  "rateTitle": {
+    "message": "Beri nilai Supreme AdBlock di Kedai Web Chrome"
+  },
+  "reviewBlocked": {
+    "message": "$1 permintaan disekat setakat ini"
+  },
+  "reviewAsk": {
+    "message": "Jika Supreme AdBlock berguna untuk anda, ulasan ringkas di Kedai Web Chrome membantu orang lain menemuinya."
+  },
+  "reviewLeave": {
+    "message": "Tulis ulasan"
+  },
+  "reviewLater": {
+    "message": "Bukan sekarang"
+  },
+  "reviewNever": {
+    "message": "Jangan tanya lagi"
+  },
   "filtersCount": {
     "message": "$1+ penapis",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Derma melalui Revolut"
+  },
+  "opt_review": {
+    "message": "Peringatan ulasan"
+  },
+  "opt_review_sub": {
+    "message": "Pautan ★ kecil di bahagian bawah tetingkap Supreme AdBlock dan, paling banyak dua kali, permintaan ringkas di situ untuk menilainya di Kedai Web Chrome. Tidak sekali-kali di laman web, tidak sekali-kali sebagai pemberitahuan."
   },
   "opt_made_by": {
     "message": "made by Carbon Stealth"

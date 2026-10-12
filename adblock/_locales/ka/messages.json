@@ -118,6 +118,27 @@
   "support": {
     "message": "მხარდაჭერა"
   },
+  "rate": {
+    "message": "შეფასება"
+  },
+  "rateTitle": {
+    "message": "შეაფასეთ Supreme AdBlock Chrome ვებმაღაზიაში"
+  },
+  "reviewBlocked": {
+    "message": "ჯერჯერობით დაბლოკილი მოთხოვნები: $1"
+  },
+  "reviewAsk": {
+    "message": "თუ Supreme AdBlock გამოგადგათ, მოკლე მიმოხილვა Chrome ვებმაღაზიაში სხვებს დაეხმარება მის პოვნაში."
+  },
+  "reviewLeave": {
+    "message": "მიმოხილვის დაწერა"
+  },
+  "reviewLater": {
+    "message": "ახლა არა"
+  },
+  "reviewNever": {
+    "message": "აღარ მკითხო"
+  },
   "filtersCount": {
     "message": "$1+ ფილტრი",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "შემოწირულობა Revolut-ით"
+  },
+  "opt_review": {
+    "message": "მიმოხილვის შეხსენებები"
+  },
+  "opt_review_sub": {
+    "message": "პატარა ★ ბმული Supreme AdBlock-ის ფანჯრის ბოლოში და მაქსიმუმ ორჯერ მოკლე თხოვნა იქვე, შეაფასოთ ის Chrome ვებმაღაზიაში. არასდროს ვებსაიტებზე, არასდროს შეტყობინების სახით."
   },
   "opt_made_by": {
     "message": "შექმნილია Carbon Stealth-ის მიერ"

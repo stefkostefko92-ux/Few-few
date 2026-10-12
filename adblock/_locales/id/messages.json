@@ -118,6 +118,27 @@
   "support": {
     "message": "Dukung"
   },
+  "rate": {
+    "message": "Beri nilai"
+  },
+  "rateTitle": {
+    "message": "Beri nilai Supreme AdBlock di Chrome Web Store"
+  },
+  "reviewBlocked": {
+    "message": "$1 permintaan diblokir sejauh ini"
+  },
+  "reviewAsk": {
+    "message": "Jika Supreme AdBlock bermanfaat bagi Anda, ulasan singkat di Chrome Web Store membantu orang lain menemukannya."
+  },
+  "reviewLeave": {
+    "message": "Tulis ulasan"
+  },
+  "reviewLater": {
+    "message": "Lain kali"
+  },
+  "reviewNever": {
+    "message": "Jangan tanya lagi"
+  },
   "filtersCount": {
     "message": "$1+ filter",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Donasi via Revolut"
+  },
+  "opt_review": {
+    "message": "Pengingat ulasan"
+  },
+  "opt_review_sub": {
+    "message": "Tautan ★ kecil di bagian bawah jendela Supreme AdBlock dan, paling banyak dua kali, permintaan singkat di sana untuk menilainya di Chrome Web Store. Tidak pernah di situs web, tidak pernah sebagai notifikasi."
   },
   "opt_made_by": {
     "message": "dibuat oleh Carbon Stealth"

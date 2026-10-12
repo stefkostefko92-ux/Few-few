@@ -118,6 +118,27 @@
   "support": {
     "message": "ይደግፉ"
   },
+  "rate": {
+    "message": "ደረጃ ይስጡ"
+  },
+  "rateTitle": {
+    "message": "Supreme AdBlockን በChrome ድር መደብር ላይ ደረጃ ይስጡ"
+  },
+  "reviewBlocked": {
+    "message": "እስካሁን $1 ጥያቄዎች ታግደዋል"
+  },
+  "reviewAsk": {
+    "message": "Supreme AdBlock ጠቃሚ ከሆነልዎ፣ በChrome ድር መደብር ላይ አጭር ግምገማ ሌሎች እንዲያገኙት ይረዳል።"
+  },
+  "reviewLeave": {
+    "message": "ግምገማ ይጻፉ"
+  },
+  "reviewLater": {
+    "message": "አሁን አይደለም"
+  },
+  "reviewNever": {
+    "message": "ዳግመኛ አትጠይቅ"
+  },
   "filtersCount": {
     "message": "$1+ ማጣሪያዎች",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "በRevolut ይለግሱ"
+  },
+  "opt_review": {
+    "message": "የግምገማ አስታዋሾች"
+  },
+  "opt_review_sub": {
+    "message": "በSupreme AdBlock መስኮት ግርጌ ላይ ትንሽ የ★ አገናኝ፣ እና ቢበዛ ሁለት ጊዜ እዚያው በChrome ድር መደብር ላይ ደረጃ እንዲሰጡት የሚጠይቅ አጭር መልዕክት። በድር ጣቢያዎች ላይም ሆነ እንደ ማሳወቂያ ፈጽሞ አይታይም።"
   },
   "opt_made_by": {
     "message": "በCarbon Stealth የተሠራ"

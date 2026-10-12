@@ -148,13 +148,55 @@ const DEFAULTS = {
   noCosmetics: [],     // hosts where cosmetic (element-hiding) filtering is off; network blocking stays
   lists: {},           // { listId: true|false } — only explicit choices; the rest follow rules/lists.json defaults
   cookieRejections: 0, // how many times cookies.js pressed a banner's Reject — a count, no sites
+  reviewAsk: true,     // Chrome Web Store review: the ★ link + the rare card in the popup (Settings → off)
 };
 
 // Settings mirrored to chrome.storage.sync when cross-device sync is on.
 // NOT `enabled`: on/off and a timed pause are per device — the pause's resume
 // alarm lives on the device that paused, so a synced `enabled:false` left the
 // OTHER device switched off with nothing to turn it back on.
-const SYNC_KEYS = ["features", "theme", "allowlist", "userFilters", "subscriptions", "noCosmetics", "lists"];
+const SYNC_KEYS = ["features", "theme", "allowlist", "userFilters", "subscriptions", "noCosmetics", "lists", "reviewAsk"];
+
+// ---- Отзив в Chrome Web Store ----
+// Молбата е тиха и рядка: само в popup-а, който потребителят сам е отворил — никога по сайтовете,
+// никога като известие; без стимули (CWS забранява „incentivized reviews“) и без филтър по мнение —
+// всеки вижда едно и също. Картата: ≥ 7 дни след инсталацията (за обновилите се — след ъпдейта) И
+// ≥ 1000 блокирани, най-много 2 пъти, през ≥ 60 дни, само когато защитата работи на страницата;
+// „Оставете отзив“, ★ или „Не питай повече“ я спират завинаги. reviewAsk:false (Настройки) маха и
+// картата, и ★ в долната лента. Нищо не се праща никъде — линкът само отваря страницата в магазина.
+const REVIEW_URL = "https://chromewebstore.google.com/detail/supreme-adblock/chbjbiabkgocfbbfhednpbhfeipjcclk/reviews";
+const REVIEW = { minDays: 7, minBlocked: 1000, gapDays: 60, maxAsks: 2 };
+const DAY_MS = 86400000;
+
+// Само магазинът, от който сме инсталирани, има нашата страница: инсталацията от Chrome Web Store
+// носи неговия update_url; разархивираният (dev) пакет няма такъв и също получава линка (за тестове);
+// Edge Add-ons, Firefox (AMO) и всичко друго — без линк, вместо грешен.
+function reviewUrl(m) {
+  if (!m || m.browser_specific_settings) return null;
+  if (m.update_url && !/^https:\/\/clients2\.google\.com\//.test(m.update_url)) return null;
+  return REVIEW_URL;
+}
+
+function reviewDue(st, now) {
+  const r = st.review && typeof st.review === "object" ? st.review : {};
+  if (st.reviewAsk === false || r.never || (r.count || 0) >= REVIEW.maxAsks) return false;
+  if (!(st.installedAt > 0) || now - st.installedAt < REVIEW.minDays * DAY_MS) return false;
+  if ((st.blockedTotal || 0) < REVIEW.minBlocked) return false;
+  return !(r.last > 0) || now - r.last >= REVIEW.gapDays * DAY_MS;
+}
+
+// „показана“ и „край“ идват един след друг от същия popup — едно след друго, за да не изтрие
+// едното записа на другото
+let reviewChain = Promise.resolve();
+function recordReview(action) {
+  reviewChain = reviewChain.then(async () => {
+    const { review } = await chrome.storage.local.get("review");
+    const r = review && typeof review === "object" ? review : {};
+    const next = action === "shown" ? { ...r, count: (r.count || 0) + 1, last: Date.now() } : { ...r, never: true };
+    await chrome.storage.local.set({ review: next });
+  }).catch(() => {});
+  return reviewChain;
+}
 
 // Hosts as Chrome/DNR see them: lowercase ASCII (IDN as punycode), IPv4 or a
 // single label (localhost). One malformed entry used to make the WHOLE
@@ -169,11 +211,13 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   if (details && details.reason === "install") {
     try { chrome.tabs.create({ url: chrome.runtime.getURL("welcome/welcome.html") }); } catch {}
   }
-  const stored = await chrome.storage.local.get(Object.keys(DEFAULTS));
+  const stored = await chrome.storage.local.get([...Object.keys(DEFAULTS), "installedAt"]);
   const patch = {};
   for (const [k, v] of Object.entries(DEFAULTS)) {
     if (stored[k] === undefined) patch[k] = v;
   }
+  // откъдето броим 7-те дни до първата молба за отзив (при ъпдейт от по-стара версия — от ъпдейта)
+  if (!(stored.installedAt > 0)) patch.installedAt = Date.now();
   if (Object.keys(patch).length) await chrome.storage.local.set(patch);
   // An update wipes alarms: without this a pause in progress lost its resume
   // alarm and protection stayed OFF until the next browser restart.
@@ -1356,7 +1400,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     case "getStats":
       chrome.storage.local.get(
-        ["enabled", "blockedTotal", "savedBytes", "smartBlocked", "allowlist", "features", "theme", "sync", "pausedUntil", "autoUpdate", "liveConfig", "liveUpdated", "noCosmetics", "cookieRejections"],
+        ["enabled", "blockedTotal", "savedBytes", "smartBlocked", "allowlist", "features", "theme", "sync", "pausedUntil", "autoUpdate", "liveConfig", "liveUpdated", "noCosmetics", "cookieRejections", "reviewAsk", "review", "installedAt"],
         async (data) => {
           let host = null;
           let allowed = false;
@@ -1379,6 +1423,13 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             const { catalog, on } = await listState();
             for (const e of catalog) if (on.has(e.id)) fromLists += (e.network || 0) + (e.cosmetic || 0);
           } catch {}
+          // картата за отзив — само когато защитата наистина работи тук: уебсайт (не нов раздел/chrome://,
+          // там тя не работи и показването пак би се броило), не на пауза, не в allowlist-а
+          const now = Date.now();
+          const storeUrl = reviewUrl(chrome.runtime.getManifest());
+          const reviewOn = data.reviewAsk !== false;
+          const onSite = /^https?:\/\//i.test(msg.tabUrl || "");
+          const reviewAsk = !!storeUrl && onSite && data.enabled !== false && !((data.pausedUntil || 0) > now) && !allowed && reviewDue(data, now);
           sendResponse({
             enabled: data.enabled !== false,
             blockedTotal,
@@ -1397,9 +1448,20 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             host,
             allowed,
             noCosmetics,
+            review: { url: storeUrl, on: reviewOn, ask: reviewAsk },
           });
         }
       );
+      return true;
+
+    case "setReviewAsk":
+      chrome.storage.local.set({ reviewAsk: !!msg.on }, () => sendResponse({ ok: true }));
+      return true;
+
+    case "review":
+      // popup: картата е показана (брои се към двата пъти) / край завинаги (отзив, ★, „Не питай повече“)
+      if (msg.action !== "shown" && msg.action !== "done") return false;
+      recordReview(msg.action).then(() => sendResponse({ ok: true }));
       return true;
 
     case "updateFilters":

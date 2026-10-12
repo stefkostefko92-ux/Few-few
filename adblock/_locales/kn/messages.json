@@ -118,6 +118,27 @@
   "support": {
     "message": "ಬೆಂಬಲಿಸಿ"
   },
+  "rate": {
+    "message": "ರೇಟ್ ಮಾಡಿ"
+  },
+  "rateTitle": {
+    "message": "Chrome ವೆಬ್ ಅಂಗಡಿಯಲ್ಲಿ Supreme AdBlock ಅನ್ನು ರೇಟ್ ಮಾಡಿ"
+  },
+  "reviewBlocked": {
+    "message": "ಇಲ್ಲಿಯವರೆಗೆ $1 ವಿನಂತಿಗಳನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ"
+  },
+  "reviewAsk": {
+    "message": "Supreme AdBlock ನಿಮಗೆ ಉಪಯುಕ್ತವಾಗಿದ್ದರೆ, Chrome ವೆಬ್ ಅಂಗಡಿಯಲ್ಲಿ ಒಂದು ಚಿಕ್ಕ ವಿಮರ್ಶೆ ಇತರರು ಇದನ್ನು ಹುಡುಕಲು ಸಹಾಯ ಮಾಡುತ್ತದೆ."
+  },
+  "reviewLeave": {
+    "message": "ವಿಮರ್ಶೆ ಬರೆಯಿರಿ"
+  },
+  "reviewLater": {
+    "message": "ಈಗ ಬೇಡ"
+  },
+  "reviewNever": {
+    "message": "ಮತ್ತೆ ಕೇಳಬೇಡಿ"
+  },
   "filtersCount": {
     "message": "$1+ ಫಿಲ್ಟರ್‌ಗಳು",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Revolut ಮೂಲಕ ದೇಣಿಗೆ ನೀಡಿ"
+  },
+  "opt_review": {
+    "message": "ವಿಮರ್ಶೆಯ ಜ್ಞಾಪನೆಗಳು"
+  },
+  "opt_review_sub": {
+    "message": "Supreme AdBlock ವಿಂಡೋದ ಕೆಳಭಾಗದಲ್ಲಿ ಚಿಕ್ಕ ★ ಲಿಂಕ್ ಮತ್ತು ಹೆಚ್ಚೆಂದರೆ ಎರಡು ಬಾರಿ ಅಲ್ಲೇ Chrome ವೆಬ್ ಅಂಗಡಿಯಲ್ಲಿ ಇದನ್ನು ರೇಟ್ ಮಾಡುವಂತೆ ಚಿಕ್ಕ ವಿನಂತಿ. ಎಂದಿಗೂ ವೆಬ್‌ಸೈಟ್‌ಗಳಲ್ಲಿ ಅಲ್ಲ, ಎಂದಿಗೂ ಅಧಿಸೂಚನೆಯಾಗಿ ಅಲ್ಲ."
   },
   "opt_made_by": {
     "message": "Carbon Stealth ನಿರ್ಮಿಸಿದೆ"

@@ -118,6 +118,27 @@
   "support": {
     "message": "Sekela"
   },
+  "rate": {
+    "message": "Linganisela"
+  },
+  "rateTitle": {
+    "message": "Linganisela i-Supreme AdBlock ku-Chrome Web Store"
+  },
+  "reviewBlocked": {
+    "message": "Izicelo ezivinjiwe kuze kube manje: $1"
+  },
+  "reviewAsk": {
+    "message": "Uma i-Supreme AdBlock ikusiza, isibuyekezo esifushane ku-Chrome Web Store sisiza abanye bayithole."
+  },
+  "reviewLeave": {
+    "message": "Bhala isibuyekezo"
+  },
+  "reviewLater": {
+    "message": "Hhayi manje"
+  },
+  "reviewNever": {
+    "message": "Ungaphinde ubuze"
+  },
   "filtersCount": {
     "message": "Izihlungi ezingu-$1+",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Nikela nge-Revolut"
+  },
+  "opt_review": {
+    "message": "Izikhumbuzi zesibuyekezo"
+  },
+  "opt_review_sub": {
+    "message": "Isixhumanisi esincane se-★ ngezansi kwewindi le-Supreme AdBlock futhi, okungadluli kabili, isicelo esifushane lapho sokuyilinganisela ku-Chrome Web Store. Akukaze kube kumawebhusayithi, akukaze kube yisaziso."
   },
   "opt_made_by": {
     "message": "yenziwe ngu-Carbon Stealth"

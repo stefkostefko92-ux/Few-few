@@ -118,6 +118,27 @@
   "support": {
     "message": "ஆதரியுங்கள்"
   },
+  "rate": {
+    "message": "மதிப்பிடுக"
+  },
+  "rateTitle": {
+    "message": "Chrome இணைய அங்காடியில் Supreme AdBlock-ஐ மதிப்பிடுக"
+  },
+  "reviewBlocked": {
+    "message": "இதுவரை தடுத்த கோரிக்கைகள்: $1"
+  },
+  "reviewAsk": {
+    "message": "Supreme AdBlock உங்களுக்குப் பயனுள்ளதாக இருந்தால், Chrome இணைய அங்காடியில் ஒரு சிறு மதிப்புரை மற்றவர்கள் இதைக் கண்டறிய உதவும்."
+  },
+  "reviewLeave": {
+    "message": "மதிப்புரை எழுதுக"
+  },
+  "reviewLater": {
+    "message": "இப்போது வேண்டாம்"
+  },
+  "reviewNever": {
+    "message": "மீண்டும் கேட்க வேண்டாம்"
+  },
   "filtersCount": {
     "message": "$1+ வடிப்பான்கள்",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Revolut மூலம் நன்கொடை"
+  },
+  "opt_review": {
+    "message": "மதிப்புரை நினைவூட்டல்கள்"
+  },
+  "opt_review_sub": {
+    "message": "Supreme AdBlock சாளரத்தின் கீழே ஒரு சிறிய ★ இணைப்பு, அதிகபட்சம் இருமுறை அங்கேயே Chrome இணைய அங்காடியில் மதிப்பிடச் சொல்லும் சிறு கோரிக்கை. ஒருபோதும் இணையதளங்களில் இல்லை, ஒருபோதும் அறிவிப்பாக இல்லை."
   },
   "opt_made_by": {
     "message": "Carbon Stealth உருவாக்கியது"

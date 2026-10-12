@@ -118,6 +118,27 @@
   "support": {
     "message": "Suportahan"
   },
+  "rate": {
+    "message": "I-rate"
+  },
+  "rateTitle": {
+    "message": "I-rate ang Supreme AdBlock sa Chrome Web Store"
+  },
+  "reviewBlocked": {
+    "message": "$1 request na ang na-block"
+  },
+  "reviewAsk": {
+    "message": "Kung nakakatulong sa inyo ang Supreme AdBlock, nakakatulong ang maikling review sa Chrome Web Store para mahanap ito ng iba."
+  },
+  "reviewLeave": {
+    "message": "Mag-iwan ng review"
+  },
+  "reviewLater": {
+    "message": "Hindi ngayon"
+  },
+  "reviewNever": {
+    "message": "Huwag nang itanong ulit"
+  },
   "filtersCount": {
     "message": "$1+ filter",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Mag-donate sa Revolut"
+  },
+  "opt_review": {
+    "message": "Paalala sa review"
+  },
+  "opt_review_sub": {
+    "message": "Isang maliit na ★ link sa ibaba ng window ng Supreme AdBlock at, hanggang dalawang beses lang, isang maikling hiling doon na i-rate ito sa Chrome Web Store. Hindi kailanman sa mga website, hindi kailanman bilang notification."
   },
   "opt_made_by": {
     "message": "made by Carbon Stealth"

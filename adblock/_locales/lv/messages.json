@@ -118,6 +118,27 @@
   "support": {
     "message": "Atbalstīt"
   },
+  "rate": {
+    "message": "Novērtēt"
+  },
+  "rateTitle": {
+    "message": "Novērtējiet Supreme AdBlock Chrome interneta veikalā"
+  },
+  "reviewBlocked": {
+    "message": "Līdz šim bloķētie pieprasījumi: $1"
+  },
+  "reviewAsk": {
+    "message": "Ja Supreme AdBlock jums ir noderīgs, īsa atsauksme Chrome interneta veikalā palīdz citiem to atrast."
+  },
+  "reviewLeave": {
+    "message": "Rakstīt atsauksmi"
+  },
+  "reviewLater": {
+    "message": "Ne tagad"
+  },
+  "reviewNever": {
+    "message": "Vairs nejautāt"
+  },
   "filtersCount": {
     "message": "$1+ filtri",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Ziedot, izmantojot Revolut"
+  },
+  "opt_review": {
+    "message": "Atgādinājumi par atsauksmi"
+  },
+  "opt_review_sub": {
+    "message": "Neliela ★ saite Supreme AdBlock loga apakšā un ne vairāk kā divas reizes īss lūgums tur to novērtēt Chrome interneta veikalā. Nekad vietnēs, nekad kā paziņojums."
   },
   "opt_made_by": {
     "message": "izstrādājis Carbon Stealth"

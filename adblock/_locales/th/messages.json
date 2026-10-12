@@ -118,6 +118,27 @@
   "support": {
     "message": "สนับสนุน"
   },
+  "rate": {
+    "message": "ให้คะแนน"
+  },
+  "rateTitle": {
+    "message": "ให้คะแนน Supreme AdBlock ใน Chrome เว็บสโตร์"
+  },
+  "reviewBlocked": {
+    "message": "บล็อกคำขอไปแล้ว $1 รายการ"
+  },
+  "reviewAsk": {
+    "message": "หาก Supreme AdBlock มีประโยชน์กับคุณ รีวิวสั้นๆ ใน Chrome เว็บสโตร์จะช่วยให้คนอื่นค้นพบได้"
+  },
+  "reviewLeave": {
+    "message": "เขียนรีวิว"
+  },
+  "reviewLater": {
+    "message": "ไว้ทีหลัง"
+  },
+  "reviewNever": {
+    "message": "ไม่ต้องถามอีก"
+  },
   "filtersCount": {
     "message": "$1+ ตัวกรอง",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "บริจาคผ่าน Revolut"
+  },
+  "opt_review": {
+    "message": "การเตือนให้รีวิว"
+  },
+  "opt_review_sub": {
+    "message": "ลิงก์ ★ เล็กๆ ที่ด้านล่างของหน้าต่าง Supreme AdBlock และคำขอสั้นๆ ตรงนั้นให้ช่วยให้คะแนนใน Chrome เว็บสโตร์ ไม่เกินสองครั้ง ไม่แสดงบนเว็บไซต์และไม่แสดงเป็นการแจ้งเตือน"
   },
   "opt_made_by": {
     "message": "สร้างโดย Carbon Stealth"

@@ -14,7 +14,7 @@ file. Follow it top to bottom; nothing else to figure out.
 ## 1. The upload package
 
 ```bash
-bash tools/package.sh      # → dist/supreme-adblock-5.1.7.zip
+bash tools/package.sh      # → dist/supreme-adblock-5.1.8.zip
 ```
 
 Runtime files only (manifest, scripts, styles, rules, icons, locales). Docs,
@@ -164,6 +164,14 @@ Chromium; see that script's header).
 > breaks, and that nothing leaves the device. It asks for nothing and sends
 > nothing.
 >
+> **Review request (5.1.8).** The popup has a small ★ “Rate” link in its footer
+> and, at most twice (no earlier than 7 days after install and 1,000 blocked
+> requests, at least 60 days apart), a dismissible card asking for a Chrome Web
+> Store review. It is the same request for everyone (no rating gate), offers no
+> incentive of any kind, never appears on websites or as a notification, and only
+> opens this listing's reviews page in a new tab. One switch in Settings turns
+> both off.
+>
 > **Remote rules (dynamic DNR).** The bundled rulesets in `rules/` are static
 > and fully reviewable. In addition, the service worker may add **dynamic block
 > rules** derived from the same signed **data** file: a list of ad/tracker
@@ -188,7 +196,7 @@ so this is an **update of the existing item**, not a new one:
    the privacy policy with Google's Limited Use statement goes live, and `filters.json`
    (data only — no `scriptlets` key) is published with a fresh Ed25519 signature. Check
    `https://adblock.carbonstealth.eu/privacy` shows the Limited Use section before you submit.
-1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-5.1.7.zip`.
+1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-5.1.8.zip`.
 2. Refresh the listing (§3: description + the new feature bullets) **in every
    language that has its own description** — a package update does NOT replace the
    live text, and an old localised description still saying "100% free" fails the
@@ -223,7 +231,7 @@ so this is an **update of the existing item**, not a new one:
 
 ## 7. Pre-flight checklist
 
-- [ ] `manifest.json` and `package.json` versions match (5.1.7)
+- [ ] `manifest.json` and `package.json` versions match (5.1.8)
 - [ ] `npm test` (tests/) and `node tools/build_scriptlets.mjs --check` are green
 - [ ] `PW_ROOT=$(npm root -g) npm run test:browser` is green — real Chromium, including the
       back/forward-cache check (the page is restored on Back, with the extension on)

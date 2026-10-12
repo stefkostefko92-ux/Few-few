@@ -118,6 +118,27 @@
   "support": {
     "message": "Apoiar"
   },
+  "rate": {
+    "message": "Avaliar"
+  },
+  "rateTitle": {
+    "message": "Avaliar o Supreme AdBlock na Chrome Web Store"
+  },
+  "reviewBlocked": {
+    "message": "$1 pedidos bloqueados até agora"
+  },
+  "reviewAsk": {
+    "message": "Se o Supreme AdBlock lhe é útil, uma breve avaliação na Chrome Web Store ajuda outras pessoas a encontrá-lo."
+  },
+  "reviewLeave": {
+    "message": "Escrever uma avaliação"
+  },
+  "reviewLater": {
+    "message": "Agora não"
+  },
+  "reviewNever": {
+    "message": "Não voltar a perguntar"
+  },
   "filtersCount": {
     "message": "$1+ filtros",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Doar através do Revolut"
+  },
+  "opt_review": {
+    "message": "Lembretes de avaliação"
+  },
+  "opt_review_sub": {
+    "message": "Uma pequena ligação ★ na parte inferior da janela do Supreme AdBlock e, no máximo duas vezes, um breve pedido aí para o avaliar na Chrome Web Store. Nunca em sites, nunca como notificação."
   },
   "opt_made_by": {
     "message": "feito pela Carbon Stealth"
