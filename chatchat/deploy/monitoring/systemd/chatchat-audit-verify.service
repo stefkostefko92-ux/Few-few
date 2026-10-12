@@ -1,0 +1,44 @@
+[Unit]
+# ChatChat — дневната проверка на одитната верига (deploy/monitoring/audit-verify.sh →
+# /usr/local/sbin/chatchat-audit-verify): `node dist/cli/audit-verify.js` в контейнера на приложението,
+# резултатът — в textfile на node-exporter (аларма ChatchatAuditChainBroken). Слага го deploy/monitoring.sh.
+# Лог: journalctl -u chatchat-audit-verify
+Description=ChatChat — проверка на одитната верига
+Documentation=file:///opt/few-few/current/chatchat/docs/runbook.md
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/chatchat-audit-verify
+# Изход 2 (счупена верига) оставя unit-а „failed“ нарочно — вижда се и в `systemctl --failed`;
+# страницата идва от метриката (textfile), не от systemd.
+TimeoutStartSec=30min
+Nice=10
+UMask=0022
+
+# --- Пясъчник ---
+# Само сокетът на docker и папката с метриките: без capabilities, без мрежа, останалото — само за четене.
+CapabilityBoundingSet=
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=-/run/docker.sock /opt/few-few/shared/chatchat/monitoring/textfile
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+ProtectProc=invisible
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@mount @swap @reboot
+RestrictAddressFamilies=AF_UNIX
+IPAddressDeny=any

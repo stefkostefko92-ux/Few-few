@@ -1,0 +1,156 @@
+/* ChatChat — conoscenza: anteprima delle pagine prima della pubblicazione, confronto tra revisioni,
+   regole di applicabilità con firmware esplicito e quadro. Stessi token di admin.css; il diff usa
+   segno + testo (non solo colore). */
+
+/* Regola di applicabilità: modello · HW · FW da/a, poi « tutte le versioni » e il quadro. */
+.kb-rule {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.kb-rule-extra {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0 1rem;
+  align-items: end;
+}
+.kb-rule .row-remove {
+  grid-column: 1 / -1;
+  justify-self: end;
+}
+@media (max-width: 40rem) {
+  .kb-rule,
+  .kb-rule-extra {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Anteprima: porzioni di testo così come le vede la ricerca. */
+.kb-preview {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.6rem 0.8rem;
+  background: var(--surface-2);
+}
+.kb-preview .toolbar {
+  align-items: end;
+}
+.kb-original {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.kb-chunk {
+  margin: 0.6rem 0 0;
+  padding: 0.6rem 0.8rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.kb-chunk-head {
+  margin: 0 0 0.3rem;
+}
+.kb-text {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.kb-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0.5rem 0 0;
+}
+.kb-tags .tag {
+  margin-left: 0;
+}
+.kb-history li {
+  padding: 0.2rem 0;
+}
+
+/* Confronto: due colonne (A | B), una riga per riga del diff. */
+.kb-cmp-heads {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+.kb-cmp-side {
+  padding: 0.5rem 0.75rem;
+  background: var(--surface-2);
+  border-radius: var(--radius);
+}
+.kb-cmp-side p {
+  margin: 0 0 0.3rem;
+  font-weight: 700;
+}
+.kb-cmp-page {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem 0 0.4rem;
+}
+.kb-diff {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.kb-diff-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.kb-diff-row + .kb-diff-row {
+  border-top: 1px solid var(--line);
+}
+.kb-diff-cell {
+  padding: 0.35rem 0.6rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 0.92rem;
+}
+.kb-diff-cell + .kb-diff-cell {
+  border-left: 1px solid var(--line);
+}
+.kb-diff-del {
+  background: var(--stop-bg);
+  color: var(--stop-ink);
+}
+.kb-diff-del::before {
+  content: '− ';
+  font-weight: 700;
+}
+.kb-diff-add {
+  background: var(--ok-bg);
+  color: var(--ok-ink);
+}
+.kb-diff-add::before {
+  content: '+ ';
+  font-weight: 700;
+}
+.kb-diff-none {
+  background: var(--surface-2);
+}
+.kb-set {
+  margin: 0.2rem 0;
+}
+.kb-set-del li {
+  color: var(--stop-ink);
+}
+.kb-set-add li {
+  color: var(--ok-ink);
+}
+.kb-sign {
+  display: inline-block;
+  width: 1.2rem;
+  font-weight: 700;
+}
+@media (max-width: 40rem) {
+  .kb-cmp-heads,
+  .kb-diff-row {
+    grid-template-columns: 1fr;
+  }
+  .kb-diff-cell + .kb-diff-cell {
+    border-left: 0;
+    border-top: 1px dashed var(--line);
+  }
+}

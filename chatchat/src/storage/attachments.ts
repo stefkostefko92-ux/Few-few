@@ -1,12 +1,13 @@
-import { randomBytes } from 'node:crypto';
-import { mkdir, open, readFile, rename, rm } from 'node:fs/promises';
-import { dirname, join, resolve, sep } from 'node:path';
+import { bufferSource } from './envelope.js';
+import { decodeObject, encodeObject, PLAINTEXT_ONLY, type StoreCrypto } from './file-store.js';
+import { assertKey } from './keys.js';
 
 /**
  * Частното хранилище на прикачените файлове (FR-06, §15 „storage privato“). Никога публичен URL:
  * сваляне само през подписан краткотраен адрес и повторна проверка на достъпа (routes/attachments).
- * Ключът е `<tenantId>/<yyyy>/<mm>/<случаен id>` — сглобява го сървърът, вход от клиента в пътя
- * няма (името на файла е само за показване, в базата).
+ * Ключът е `<tenantId>/<yyyy>/<mm>/<случаен id>` (keys.ts). Обектите са шифровани в покой
+ * (envelope.ts, NFR-03): интерфейсът е в открит текст — шифроването е вътре в хранилището, така
+ * всеки, който пише/чете през него (снимки, логове, PDF, файлове в разговорите), е покрит.
  */
 export interface AttachmentStore {
   put(key: string, bytes: Uint8Array): Promise<void>;
@@ -16,90 +17,25 @@ export interface AttachmentStore {
   delete(key: string): Promise<void>;
 }
 
-/** tenantId е cuid (малки букви и цифри); последната част — 128 случайни бита в hex. */
-const KEY = /^[a-z0-9]{1,40}\/\d{4}\/\d{2}\/[a-f0-9]{32}$/;
+export { newObjectKey } from './keys.js';
+export { FileAttachmentStore, type StoreCrypto } from './file-store.js';
 
-export function newObjectKey(tenantId: string, now = new Date()): string {
-  if (!/^[a-z0-9]{1,40}$/.test(tenantId)) throw new Error('Невалиден tenantId за ключ.');
-  const yyyy = String(now.getUTCFullYear());
-  const mm = String(now.getUTCMonth() + 1).padStart(2, '0');
-  return `${tenantId}/${yyyy}/${mm}/${randomBytes(16).toString('hex')}`;
-}
-
-function assertKey(key: string): void {
-  if (!KEY.test(key)) throw new Error('Невалиден ключ на прикачен файл.');
-}
-
-function isNotFound(err: unknown): boolean {
-  return typeof err === 'object' && err !== null && 'code' in err && err.code === 'ENOENT';
-}
-
-/**
- * Файлове на диска: папки 700, файлове 600, атомарен запис (временен файл → fsync → rename),
- * за да не се вижда наполовина записан файл. Пътят се проверява и след сглобяването.
- */
-export class FileAttachmentStore implements AttachmentStore {
-  private readonly root: string;
-
-  constructor(root: string) {
-    this.root = resolve(root);
-  }
-
-  private pathOf(key: string): string {
-    assertKey(key);
-    const full = resolve(join(this.root, key));
-    if (!full.startsWith(this.root + sep)) throw new Error('Ключът излиза от хранилището.');
-    return full;
-  }
-
-  async put(key: string, bytes: Uint8Array): Promise<void> {
-    const target = this.pathOf(key);
-    await mkdir(this.root, { recursive: true, mode: 0o700 });
-    await mkdir(dirname(target), { recursive: true, mode: 0o700 });
-    const temp = `${target}.${randomBytes(6).toString('hex')}.tmp`;
-    const handle = await open(temp, 'wx', 0o600);
-    try {
-      try {
-        await handle.writeFile(bytes);
-        await handle.sync();
-      } finally {
-        await handle.close();
-      }
-      await rename(temp, target);
-    } catch (err) {
-      // Пълен диск или отказ — без недописан временен файл.
-      await rm(temp, { force: true });
-      throw err;
-    }
-  }
-
-  async get(key: string): Promise<Buffer | null> {
-    try {
-      return await readFile(this.pathOf(key));
-    } catch (err) {
-      if (isNotFound(err)) return null;
-      throw err;
-    }
-  }
-
-  async delete(key: string): Promise<void> {
-    await rm(this.pathOf(key), { force: true });
-  }
-}
-
-/** В паметта — за тестовете (същата проверка на ключа). */
+/** В паметта — за тестовете (същата проверка на ключа и същият формат на шифроване). */
 export class MemoryAttachmentStore implements AttachmentStore {
+  /** Каквото би стояло на диска — шифротекст, щом има ключодържател. */
   readonly files = new Map<string, Buffer>();
 
+  constructor(readonly crypto: StoreCrypto = PLAINTEXT_ONLY) {}
+
   async put(key: string, bytes: Uint8Array): Promise<void> {
     assertKey(key);
-    this.files.set(key, Buffer.from(bytes));
+    this.files.set(key, Buffer.concat([...encodeObject(key, bytes, this.crypto)]));
   }
 
   async get(key: string): Promise<Buffer | null> {
     assertKey(key);
     const file = this.files.get(key);
-    return file ? Buffer.from(file) : null;
+    return file ? decodeObject(key, bufferSource(file), this.crypto) : null;
   }
 
   async delete(key: string): Promise<void> {

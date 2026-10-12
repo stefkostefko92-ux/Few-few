@@ -75,6 +75,7 @@ export function openUser(user, ctx) {
         [t('admin.users.col.status'), user.active ? t('admin.active') : t('admin.inactive')],
         [t('admin.users.col.expires'), fmtDate(user.expiresAt)],
         [t('admin.users.col.lastLogin'), fmtDateTime(user.lastLoginAt)],
+        [t('settings.language'), user.locale ? t(`settings.lang.${user.locale}`) : ''],
       ]),
       why ? h('p', { class: 'note' }, why) : null,
       actions.children.length ? h('h3', { class: 'sub' }, t('admin.users.actions')) : null,
@@ -99,6 +100,11 @@ async function editUser(user, ctx) {
   const active = checkbox(t('admin.users.f.activeAccount'), { checked: user.active || undefined });
   const expires = input({ type: 'date', value: toDateInput(user.expiresAt) });
   const company = select(companyOptions(companies), user.company?.id ?? '');
+  // FR-14: езикът на интерфейса, писмата и AI отговорите (човекът го сменя и сам).
+  const locale = select(
+    ['it', 'en'].map((l) => ({ value: l, label: t(`settings.lang.${l}`) })),
+    user.locale ?? 'it',
+  );
   const reason = reasonField();
   dialog({
     title: t('admin.users.edit.title', { name: user.name }),
@@ -106,6 +112,7 @@ async function editUser(user, ctx) {
       field(t('admin.users.col.role'), role),
       field(t('admin.users.col.company'), company),
       field(t('admin.users.col.expires'), expires, { hint: t('admin.users.expires.hint') }),
+      field(t('settings.language'), locale, { hint: t('settings.langHint') }),
       active,
       h('p', { class: 'hint' }, t('admin.users.edit.signout')),
       reason.node,
@@ -120,6 +127,7 @@ async function editUser(user, ctx) {
           const isActive = active.querySelector('input').checked;
           if (isActive !== user.active) body.active = isActive;
           if (company.value !== (user.company?.id ?? '')) body.companyId = company.value || null;
+          if (locale.value !== (user.locale ?? 'it')) body.locale = locale.value;
           if (expires.value !== toDateInput(user.expiresAt)) {
             body.expiresAt = expires.value ? endOfDayIso(expires.value) : null;
           }

@@ -96,6 +96,8 @@ export interface ToolContext {
 export interface ToolOutcome {
   content: string;
   isError: boolean;
+  /** Колко записа е върнал инструментът (нови + вече в пакета) — за одита (FR-12). */
+  results: number;
 }
 
 function zodMessage(error: z.ZodError): string {
@@ -107,9 +109,8 @@ function describeAdd(
   result: ReturnType<EvidencePack['add']>,
   empty: string,
 ): ToolOutcome {
-  if (result.added.length === 0 && result.existing.length === 0) {
-    return { content: empty, isError: false };
-  }
+  const results = result.added.length + result.existing.length;
+  if (results === 0) return { content: empty, isError: false, results: 0 };
   const parts: string[] = [];
   if (result.added.length > 0) {
     parts.push(`New evidence items:\n${renderItems(result.added, ctx.token)}`);
@@ -120,8 +121,11 @@ function describeAdd(
   if (result.truncated > 0) {
     parts.push(`${result.truncated} more result(s) omitted (evidence pack limit).`);
   }
-  return { content: parts.join('\n\n'), isError: false };
+  return { content: parts.join('\n\n'), isError: false, results };
 }
+
+/** Грешка към модела (невалиден вход, отказ) — без резултати. */
+const refused = (content: string): ToolOutcome => ({ content, isError: true, results: 0 });
 
 /** Изпълнява един инструмент за четене. Грешка в входа → is_error към модела, не изключение. */
 export async function runReadTool(
@@ -132,10 +136,10 @@ export async function runReadTool(
   switch (name) {
     case 'lookup_error': {
       const parsed = LookupErrorInput.safeParse(input);
-      if (!parsed.success) return { content: zodMessage(parsed.error), isError: true };
+      if (!parsed.success) return refused(zodMessage(parsed.error));
       const code = canonicalIdentifier(parsed.data.code);
       if (!/^[A-Z0-9]{1,20}$/.test(code)) {
-        return { content: `Invalid code "${code}".`, isError: true };
+        return refused(`Invalid code "${code}".`);
       }
       const raws = await ctx.store.findErrors(ctx.scope, ctx.productModel, [code]);
       return describeAdd(
@@ -146,20 +150,17 @@ export async function runReadTool(
     }
     case 'search_documents': {
       const parsed = SearchDocumentsInput.safeParse(input);
-      if (!parsed.success) return { content: zodMessage(parsed.error), isError: true };
+      if (!parsed.success) return refused(zodMessage(parsed.error));
       const text = normalizeQuery(parsed.data.query).text;
       const raws = await ctx.store.searchChunks(ctx.scope, ctx.productModel, text, SEARCH_LIMIT);
       return describeAdd(ctx, ctx.pack.add(raws), 'No passages found for this query.');
     }
     case 'get_document_page': {
       const parsed = GetPageInput.safeParse(input);
-      if (!parsed.success) return { content: zodMessage(parsed.error), isError: true };
+      if (!parsed.success) return refused(zodMessage(parsed.error));
       const { document_id: documentId, page } = parsed.data;
       if (!ctx.pack.hasDocument(documentId)) {
-        return {
-          content: 'Refused: only documents already in the evidence pack can be opened.',
-          isError: true,
-        };
+        return refused('Refused: only documents already in the evidence pack can be opened.');
       }
       // productModel ВИНАГИ — иначе съвместимостта би се смятала по правила за друг модел.
       const raws = await ctx.store.getPage(ctx.scope, documentId, page, ctx.productModel);
@@ -167,7 +168,7 @@ export async function runReadTool(
       return describeAdd(ctx, ctx.pack.add(own), `Page ${page} has no passages.`);
     }
     default:
-      return { content: `Unknown tool "${name}".`, isError: true };
+      return refused(`Unknown tool "${name}".`);
   }
 }
 

@@ -1,11 +1,13 @@
 import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
+import { sharedStore } from '../auth/rate-limit.js';
 import { z } from 'zod';
 import type { AppDeps } from '../app.js';
 import { appendAudit } from '../audit.js';
 import { apiError, principalOf, requireCsrf, requireSession } from '../auth/guards.js';
-import { checkTotp, MFA_ISSUER, type TotpReplayGuard } from '../auth/mfa.js';
+import { checkTotp, MFA_ISSUER, type TotpReplayStore } from '../auth/mfa.js';
 import { PASSWORD_MAX_LENGTH, verifyPassword } from '../auth/password.js';
+import { ssoProofOf } from '../auth/sso-proof.js';
 import { generateTotpSecret, otpauthUrl } from '../auth/totp.js';
 import { encryptSecret } from '../crypto.js';
 import { qrSvg } from '../qr.js';
@@ -17,15 +19,17 @@ import { qrSvg } from '../qr.js';
  */
 
 const Code = z.object({ code: z.string().trim().min(1).max(12) });
-const Setup = z.object({ password: z.string().min(1).max(PASSWORD_MAX_LENGTH) });
+/** Паролата; без нея — само свеж единен вход (`auth/sso-proof.ts`). */
+const Setup = z.object({ password: z.string().min(1).max(PASSWORD_MAX_LENGTH).optional() });
 
-export function authMfaRouter(deps: AppDeps, replay: TotpReplayGuard): Router {
+export function authMfaRouter(deps: AppDeps, replay: TotpReplayStore): Router {
   const router = Router();
   router.use(requireSession, requireCsrf(deps.publicOrigin));
 
   // Лимит на опитите: 5 грешни за 15 минути на човек (броят се само неуспешните) — 10^6 кода
   // при ±1 стъпка не се изчерпват с налучкване.
   const attempts = rateLimit({
+    store: sharedStore('auth-mfa'),
     windowMs: 15 * 60 * 1000,
     limit: 5,
     skipSuccessfulRequests: true,
@@ -45,8 +49,16 @@ export function authMfaRouter(deps: AppDeps, replay: TotpReplayGuard): Router {
       const p = principalOf(req);
       const user = await deps.db.user.findUniqueOrThrow({ where: { id: p.user.id } });
       if (user.totpEnabledAt) return apiError(res, 409, 'mfa_already_enabled');
-      if (!(await verifyPassword(parsed.data.password, user.passwordHash))) {
-        return apiError(res, 400, 'invalid_password');
+      const password = parsed.data.password;
+      if (password !== undefined) {
+        if (!(await verifyPassword(password, user.passwordHash))) {
+          return apiError(res, 400, 'invalid_password');
+        }
+      } else {
+        // Без парола: само сесия от СВЕЖ единен вход (човек от SSO може да няма парола).
+        const proof = await ssoProofOf(deps.db, p.session.id);
+        if (proof === 'not_sso') return apiError(res, 400, 'invalid_input');
+        if (proof === 'stale') return apiError(res, 409, 'sso_reauth_required');
       }
       const secret = generateTotpSecret();
       // Само докато не е включен: паралелно потвърждение не се подменя с нова тайна.
@@ -70,7 +82,7 @@ export function authMfaRouter(deps: AppDeps, replay: TotpReplayGuard): Router {
       const user = await deps.db.user.findUniqueOrThrow({ where: { id: p.user.id } });
       if (user.totpEnabledAt) return apiError(res, 409, 'mfa_already_enabled');
       if (!user.totpSecretEnc) return apiError(res, 409, 'mfa_setup_missing');
-      if (!checkTotp(deps.mfaKey, replay, user, parsed.data.code)) {
+      if (!(await checkTotp(deps.mfaKey, replay, user, parsed.data.code))) {
         return apiError(res, 400, 'invalid_code');
       }
       // Включва го само заявка с тайната, показана на човека (не подменена от второ /setup).
@@ -102,7 +114,7 @@ export function authMfaRouter(deps: AppDeps, replay: TotpReplayGuard): Router {
       if (!p.mfa.enabled) return apiError(res, 409, 'mfa_not_enabled');
       if (p.mfa.passed) return res.json({ mfa: p.mfa });
       const user = await deps.db.user.findUniqueOrThrow({ where: { id: p.user.id } });
-      if (!checkTotp(deps.mfaKey, replay, user, parsed.data.code)) {
+      if (!(await checkTotp(deps.mfaKey, replay, user, parsed.data.code))) {
         await appendAudit(deps.db, {
           tenantId: p.user.tenantId,
           actorId: p.user.id,
@@ -130,7 +142,7 @@ export function authMfaRouter(deps: AppDeps, replay: TotpReplayGuard): Router {
       if (p.mfa.required) return apiError(res, 403, 'mfa_required_for_role');
       if (!p.mfa.enabled) return apiError(res, 409, 'mfa_not_enabled');
       const user = await deps.db.user.findUniqueOrThrow({ where: { id: p.user.id } });
-      if (!checkTotp(deps.mfaKey, replay, user, parsed.data.code)) {
+      if (!(await checkTotp(deps.mfaKey, replay, user, parsed.data.code))) {
         return apiError(res, 400, 'invalid_code');
       }
       await deps.db.user.update({

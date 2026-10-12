@@ -15,18 +15,20 @@ import {
   pageWarnings,
   type DocumentInput,
 } from '../services/ingest.js';
+import { documentAdminInclude, documentView } from '../services/document-views.js';
 import { extractPdfText, type PdfFailure } from '../services/pdf.js';
 
 /**
- * Управление на знанието (§4.1, §11.3, AC-10): Draft → Review → Published → Deprecated.
- * Публикуване и отписване на ревизия НЕ иска преобучение — AI вижда само PUBLISHED.
- * Документ по безопасност: публикува го човек, различен от качилия (принцип на четирите очи).
- * Нова ревизия (supersedes): кодовете за грешка на старата стават REVIEW и се връщат в отговора.
+ * Управление на знанието (§4.1, §11.3, AC-10): списък и приемане (DRAFT). Преходите са в
+ * `admin-documents-lifecycle.ts`, прегледът/сравнението — в `admin-documents-view.ts`.
+ * Документите са НЕИЗМЕНИМИ (решение на собственика): няма редакция на място — само нова ревизия
+ * (нов документ) и преходи на статуса. Публикуване/отписване НЕ иска преобучение.
  */
 
-const Id = z.string().min(1).max(40);
 const ListQuery = z.object({
   status: z.enum(['DRAFT', 'REVIEW', 'PUBLISHED', 'DEPRECATED']).optional(),
+  /** Само ревизиите на един код (сравнение, история). */
+  code: z.string().trim().min(2).max(60).optional(),
 });
 
 type PdfSource =
@@ -56,14 +58,6 @@ async function pdfSource(
   return { ok: true, name: a.originalName, sha256: a.sha256, pages: extracted.pages };
 }
 
-type Transition = 'submit' | 'reject' | 'publish' | 'deprecate';
-const FROM: Record<Transition, string> = {
-  submit: 'DRAFT',
-  reject: 'REVIEW',
-  publish: 'REVIEW',
-  deprecate: 'PUBLISHED',
-};
-
 export function adminDocumentsRouter(deps: AppDeps): Router {
   const router = Router();
   router.use(requireUser, requireCsrf(deps.publicOrigin), requireCapability('kb:manage'));
@@ -74,40 +68,17 @@ export function adminDocumentsRouter(deps: AppDeps): Router {
       if (!q.success) return apiError(res, 400, 'invalid_input');
       const { tenantId, id: me } = principalOf(req).user;
       const docs = await deps.db.document.findMany({
-        where: { tenantId, ...(q.data.status ? { status: q.data.status } : {}) },
-        include: {
-          applicability: { include: { product: { select: { model: true } } } },
-          _count: { select: { chunks: true } },
+        where: {
+          tenantId,
+          ...(q.data.status ? { status: q.data.status } : {}),
+          ...(q.data.code ? { code: q.data.code } : {}),
         },
+        include: documentAdminInclude,
         orderBy: [{ code: 'asc' }, { createdAt: 'desc' }],
         take: 200,
       });
-      res.json({
-        documents: docs.map((d) => ({
-          id: d.id,
-          code: d.code,
-          title: d.title,
-          type: d.type,
-          language: d.language,
-          revision: d.revision,
-          status: d.status,
-          audience: d.audience,
-          safetyRelevant: d.safetyRelevant,
-          checksum: d.checksum,
-          chunks: d._count.chunks,
-          supersedesId: d.supersedesId,
-          // Четирите очи: качилият не публикува документ по безопасност — UI го казва предварително.
-          uploadedByMe: d.uploadedById === me,
-          applicability: d.applicability.map((a) => ({
-            productModel: a.product.model,
-            hwRevision: a.hwRevision,
-            fwMin: a.fwMin,
-            fwMax: a.fwMax,
-          })),
-          publishedAt: d.publishedAt,
-          deprecatedAt: d.deprecatedAt,
-        })),
-      });
+      const now = new Date();
+      res.json({ documents: docs.map((d) => documentView(d, me, now)) });
     } catch (err) {
       next(err);
     }
@@ -145,7 +116,12 @@ export function adminDocumentsRouter(deps: AppDeps): Router {
         checksum,
       });
       if (!result.ok) {
-        const status = result.error.code === 'duplicate_revision' ? 409 : 422;
+        const status =
+          result.error.code === 'duplicate_revision'
+            ? 409
+            : result.error.code === 'invalid_input'
+              ? 400
+              : 422;
         return res.status(status).json({ error: result.error.code, ...result.error });
       }
       await appendAudit(deps.db, {
@@ -159,6 +135,7 @@ export function adminDocumentsRouter(deps: AppDeps): Router {
           revision: input.revision,
           chunks: result.chunks,
           sourceAttachmentId: sourceAttachmentId ?? null,
+          boardSpecific: input.applicability.some((a) => a.deviceSerial !== undefined),
         },
       });
       res.status(201).json({
@@ -171,110 +148,6 @@ export function adminDocumentsRouter(deps: AppDeps): Router {
       next(err);
     }
   });
-
-  const transition = (action: Transition) =>
-    router.post(`/documents/:id/${action}`, async (req, res, next) => {
-      try {
-        const id = Id.safeParse(req.params.id);
-        if (!id.success) return apiError(res, 400, 'invalid_input');
-        const p = principalOf(req);
-        const doc = await deps.db.document.findFirst({
-          where: { id: id.data, tenantId: p.user.tenantId },
-          include: { _count: { select: { chunks: true, applicability: true } } },
-        });
-        if (!doc) return apiError(res, 404, 'not_found');
-        if (doc.status !== FROM[action]) return apiError(res, 409, 'invalid_transition');
-        const now = new Date();
-        let errorsToReview: Array<{ id: string; code: string; version: number }> | null = null;
-
-        if (action === 'publish') {
-          // §7.3: търсим само с достатъчно метаданни за приложимостта.
-          if (doc._count.chunks === 0 || doc._count.applicability === 0) {
-            return apiError(res, 422, 'insufficient_metadata');
-          }
-          if (doc.safetyRelevant && doc.uploadedById === p.user.id) {
-            return apiError(res, 409, 'four_eyes_required');
-          }
-          errorsToReview = await deps.db.$transaction(async (tx) => {
-            await tx.document.update({
-              where: { id: doc.id },
-              data: {
-                status: 'PUBLISHED',
-                approvedById: p.user.id,
-                approvedAt: now,
-                publishedAt: now,
-              },
-            });
-            if (!doc.supersedesId) return null;
-            await tx.document.updateMany({
-              where: { id: doc.supersedesId, tenantId: p.user.tenantId, status: 'PUBLISHED' },
-              data: { status: 'DEPRECATED', deprecatedAt: now },
-            });
-            // Решение на собственика: кодовете на отписаната ревизия не изчезват тихо — стават
-            // REVIEW (AI не ги вижда) и отговорникът ги свързва с новия документ (`relink`).
-            const affected = await tx.errorCode.findMany({
-              where: {
-                tenantId: p.user.tenantId,
-                sourceDocumentId: doc.supersedesId,
-                status: 'PUBLISHED',
-              },
-              select: { id: true, code: true, version: true },
-              orderBy: [{ code: 'asc' }, { version: 'asc' }],
-            });
-            if (affected.length > 0) {
-              await tx.errorCode.updateMany({
-                where: { id: { in: affected.map((e) => e.id) }, status: 'PUBLISHED' },
-                data: { status: 'REVIEW' },
-              });
-            }
-            for (const e of affected) {
-              await appendAudit(tx, {
-                tenantId: p.user.tenantId,
-                actorId: p.user.id,
-                action: 'kb.error.review_required',
-                objectType: 'error',
-                objectId: e.id,
-                detail: { code: e.code, version: e.version, supersededDocument: doc.supersedesId },
-              });
-            }
-            return affected;
-          });
-          deps.onDocumentPublished?.(doc.id);
-        } else {
-          const data =
-            action === 'submit'
-              ? { status: 'REVIEW' as const }
-              : action === 'reject'
-                ? { status: 'DRAFT' as const, reviewedById: p.user.id }
-                : { status: 'DEPRECATED' as const, deprecatedAt: now };
-          await deps.db.document.update({ where: { id: doc.id }, data });
-        }
-
-        await appendAudit(deps.db, {
-          tenantId: p.user.tenantId,
-          actorId: p.user.id,
-          action: `kb.document.${action}`,
-          objectType: 'document',
-          objectId: doc.id,
-          detail: {
-            code: doc.code,
-            revision: doc.revision,
-            supersedes: doc.supersedesId,
-            ...(errorsToReview ? { errorsToReview: errorsToReview.map((e) => e.id) } : {}),
-          },
-        });
-        // Публикуване на нова ревизия връща кодовете за преглед; останалите преходи — 204.
-        if (errorsToReview) return res.json({ errorsToReview });
-        res.status(204).end();
-      } catch (err) {
-        next(err);
-      }
-    });
-
-  transition('submit');
-  transition('reject');
-  transition('publish');
-  transition('deprecate');
 
   return router;
 }

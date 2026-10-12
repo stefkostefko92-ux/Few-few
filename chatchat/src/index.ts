@@ -1,4 +1,3 @@
-import { PrismaClient } from '@prisma/client';
 import type { Server } from 'node:http';
 import { diagnose } from './ai/orchestrator.js';
 import { VertexDiagnosisModel } from './ai/model.js';
@@ -10,22 +9,46 @@ import {
   CircuitOpenError,
 } from './ai/breaker.js';
 import { embeddingModelFrom } from './ai/embeddings.js';
-import { aiEnabled, attachmentsEnabled, loadConfig, mfaKey } from './config.js';
+import {
+  aiEnabled,
+  attachmentsEnabled,
+  emailEnabled,
+  loadConfig,
+  mfaKey,
+  redisEnabled,
+} from './config.js';
+import { loadIntegrationsConfig } from './config-integrations.js';
+import { loadSsoConfig } from './config-sso.js';
+import { createDbClients, ensureDbRoles } from './db/clients.js';
 import { createLogger } from './logger.js';
 import { instrumentDiagnoser, meteredScanner } from './observability/ai.js';
+import { helpdeskHooks } from './observability/helpdesk.js';
 import { BREAKER_STATE_VALUE, createMetrics, type BreakerName } from './observability/catalog.js';
 import { startMetricsServer } from './observability/server.js';
 import type { AttachmentDeps } from './services/attachments.js';
+import type { MailPolicy } from './services/email/enqueue.js';
+import { BrevoMailer } from './services/email/mailer.js';
+import { EmailWorker } from './services/email/worker.js';
+import { integrationsFrom } from './services/integrations/setup.js';
+import { systemTxtResolver } from './services/sso/domains.js';
+import { SecretBox } from './services/sso/secret.js';
+import type { SsoDeps } from './services/sso/types.js';
 import { EmbeddingIndexer } from './store/embeddings.js';
 import { ClamdScanner } from './storage/antivirus.js';
-import { FileAttachmentStore } from './storage/attachments.js';
+import { attachmentStoreFrom } from './storage/factory.js';
 import { RealtimeHub } from './realtime/hub.js';
 import { PrismaKnowledgeStore } from './store/knowledge.js';
 import { knowledgeSnapshotId } from './store/snapshot.js';
+import { wireScaling } from './scale.js';
 
 const config = loadConfig();
+const ssoEnv = loadSsoConfig();
 const logger = createLogger(config.LOG_LEVEL);
-const db = new PrismaClient();
+// Две връзки (NFR-03, RLS): `db` — chatchat_app под политиките с клиента на работата; `system` —
+// chatchat_system само за задачите през клиенти (outbox-ите, прегледът на векторите).
+const clients = createDbClients(config);
+const { db, system } = clients;
+await ensureDbRoles(clients, config, logger);
 // Метриките се събират винаги (евтино, в паметта); изнасят се само с METRICS_PORT.
 const metrics = createMetrics();
 
@@ -67,8 +90,10 @@ if (aiEnabled(config)) {
       );
     },
   });
-  if (embedder) {
-    indexer = new EmbeddingIndexer(db, embedder, logger, config.EMBEDDING_SWEEP_SECONDS);
+  // С Redis векторите са в worker-а (опашка `embed` + периодичен преглед) — не в процеса на API-то.
+  if (embedder && !redisEnabled(config)) {
+    // Прегледът обикаля публикуваното знание на всички клиенти — системната роля.
+    indexer = new EmbeddingIndexer(system, embedder, logger, config.EMBEDDING_SWEEP_SECONDS);
     indexer.start();
   }
   modelBreaker = breakerFor('vertex_messages');
@@ -96,7 +121,8 @@ if (aiEnabled(config)) {
 let attachments: AttachmentDeps | null = null;
 if (attachmentsEnabled(config)) {
   attachments = {
-    store: new FileAttachmentStore(config.ATTACHMENTS_DIR),
+    // Шифровано в покой (NFR-03): FILES_KEK е проверен от config.ts — без него процесът не стига дотук.
+    store: attachmentStoreFrom(config),
     scanner: config.CLAMAV_HOST
       ? meteredScanner(
           new ClamdScanner({
@@ -113,7 +139,58 @@ if (attachmentsEnabled(config)) {
 } else {
   logger.warn('ATTACHMENTS_DIR липсва — прикачените файлове са изключени');
 }
-// Един процес = един хъб за SSE. Втори процес/машина иска pub/sub между хъбовете (CLAUDE.md).
+// Имейл известия (Brevo, HTTPS): без ключ — изключени, известията в приложението работят (fail-open).
+let mail: MailPolicy | null = null;
+let emailWorker: EmailWorker | null = null;
+if (emailEnabled(config)) {
+  mail = { delayMs: config.EMAIL_DELAY_SECONDS * 1000 };
+  emailWorker = new EmailWorker(
+    {
+      db,
+      system,
+      mailer: new BrevoMailer({
+        apiKey: config.BREVO_API_KEY,
+        apiUrl: config.BREVO_API_URL,
+        fromEmail: config.MAIL_FROM_EMAIL,
+        fromName: config.MAIL_FROM_NAME,
+        timeoutMs: config.EMAIL_TIMEOUT_MS,
+      }),
+      logger,
+      baseUrl: config.PUBLIC_BASE_URL,
+      maxAttempts: config.EMAIL_MAX_ATTEMPTS,
+      digestHour: config.EMAIL_DIGEST_HOUR,
+    },
+    config.EMAIL_SWEEP_SECONDS,
+  );
+  emailWorker.start();
+} else {
+  logger.warn('BREVO_API_KEY липсва — имейл известията са изключени');
+}
+
+// Интеграцията с helpdesk (FR-09, §14.4): само с INTEGRATION_KEK — тайните на конекторите са шифровани.
+const integrations = integrationsFrom(
+  loadIntegrationsConfig(),
+  config.PUBLIC_BASE_URL,
+  db,
+  system,
+  logger,
+  () => helpdeskHooks(metrics),
+);
+if (integrations) integrations.worker.start();
+else logger.warn('INTEGRATION_KEK липсва — интеграцията с helpdesk е изключена');
+// Единният вход (OIDC / Entra ID): без SSO_KEK — изключен (503 sso_unavailable), паролата работи.
+const sso: SsoDeps | null = ssoEnv.keys
+  ? {
+      box: new SecretBox(ssoEnv.keys.current, ssoEnv.keys.previous),
+      timeoutSeconds: ssoEnv.timeoutSeconds,
+      entraAuthority: 'https://login.microsoftonline.com',
+      allowInsecureHttp: false,
+      resolveTxt: systemTxtResolver(ssoEnv.timeoutSeconds),
+    }
+  : null;
+if (!sso) logger.warn('SSO_KEK липсва — единният вход (OIDC) е изключен');
+
+// Един хъб за SSE на процес; с REDIS_URL хъбовете на инстанциите си говорят през pub/sub (scale.ts).
 const hub = new RealtimeHub({
   onError: (err) =>
     logger.warn({ errName: err instanceof Error ? err.name : 'unknown' }, 'поток в реално време'),
@@ -121,8 +198,20 @@ const hub = new RealtimeHub({
     metrics.realtimeEvents.inc({ type, result });
     if (result === 'delivered') metrics.realtimeDelivery.observe(undefined, seconds);
   },
+  onRemoteDelivered: (_type, seconds) => metrics.realtimeDelivery.observe(undefined, seconds),
 });
-metrics.sseStreams.collect = () => metrics.sseStreams.set(undefined, hub.size());
+metrics.sseStreams.collect = () => metrics.sseStreams.set(undefined, hub.localSize());
+
+// Опашките, хъбът между инстанциите, общите лимити и TOTP (NFR-06) — Redis или в процеса.
+const scale = wireScaling(config, {
+  db,
+  system,
+  logger,
+  metrics,
+  hub,
+  store: attachments?.store ?? null,
+  indexer,
+});
 
 const app = createApp({
   db,
@@ -138,12 +227,18 @@ const app = createApp({
   },
   mfaKey: mfaKey(config),
   diagnose: diagnoser,
-  onDocumentPublished: indexer ? () => void indexer?.kick() : undefined,
+  onDocumentPublished: scale.onDocumentPublished,
   attachments,
   hub,
   evalReportsDir: config.EVAL_REPORTS_DIR,
   metrics,
   aiCircuit: () => modelBreaker?.current ?? null,
+  mail,
+  integrations: integrations?.deps ?? null,
+  sso,
+  ingest: scale.ingest,
+  ...(scale.totpReplay ? { totpReplay: scale.totpReplay } : {}),
+  rateLimitStore: scale.rateLimitStore,
 });
 
 const server = app.listen(config.PORT, config.HOST, () => {
@@ -153,10 +248,21 @@ const server = app.listen(config.PORT, config.HOST, () => {
       port: config.PORT,
       ai: diagnoser !== null,
       uploads: attachments?.scanner != null,
+      email: mail !== null,
+      helpdesk: integrations !== null,
+      sso: sso !== null,
+      filesEncrypted: attachments ? config.FILES_ENCRYPTION === 'on' : null,
+      queue: scale.mode,
     },
     'chatchat слуша',
   );
 });
+// Хъбът се свързва с другите инстанции (Redis pub/sub); без Redis — нищо.
+scale
+  .start()
+  .catch((err: unknown) =>
+    logger.error({ errName: (err as Error).name }, 'реалното време между инстанциите не тръгна'),
+  );
 
 // Метриките — отделен слушател (по подразбиране изключен), никога публичният порт.
 let metricsServer: Server | null = null;
@@ -182,11 +288,16 @@ if (config.METRICS_PORT > 0) {
 function shutdown(signal: string): void {
   logger.info({ signal }, 'спиране');
   indexer?.stop();
+  emailWorker?.stop();
+  integrations?.worker.stop();
   metricsServer?.close();
   // Отворените SSE потоци държат сървъра жив — затваряме ги, клиентите се връщат по REST.
   hub.closeAll();
   server.close(() => {
-    db.$disconnect()
+    scale
+      .close()
+      .catch(() => undefined)
+      .then(() => clients.disconnect())
       .catch((err: unknown) => logger.error({ err }, 'грешка при затваряне на базата'))
       .finally(() => process.exit(0));
   });

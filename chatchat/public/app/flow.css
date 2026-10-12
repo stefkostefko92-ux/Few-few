@@ -1,0 +1,238 @@
+/* Работният поток: изпълнени стъпки и разрешения в отговора (§11.2), панелът на тикета и
+   опашката на персонала (FR-09, FR-19). Само токените от styles.css — светла и тъмна тема;
+   смисълът е в текста и знака (✓ ✗ – ⏳), никога само в цвета. Бутони ≥ 48px за ръкавици. */
+
+/* ---------- Стъпка в отговора ---------- */
+
+.step-ctl {
+  margin-top: 0.6rem;
+  padding-top: 0.55rem;
+  border-top: 1px dashed var(--line-strong);
+  display: grid;
+  gap: 0.45rem;
+}
+.step-status {
+  margin: 0;
+  font-weight: 600;
+}
+.step-status:focus {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.step-mark {
+  display: inline-block;
+  min-width: 1.2rem;
+  font-weight: 800;
+}
+.step-ok .step-mark {
+  color: var(--ok-ink);
+}
+.step-ko .step-mark {
+  color: var(--err-ink);
+}
+.step-note-text {
+  font-weight: 400;
+}
+.step-record {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.step-record legend {
+  padding: 0;
+  margin-bottom: 0.35rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+.step-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
+  gap: 0.45rem;
+}
+.btn-step {
+  min-height: var(--tap);
+}
+.step-note {
+  margin-top: 0.45rem;
+}
+.step-note summary {
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.step-note label,
+.step-decide label {
+  display: block;
+  font-weight: 600;
+  margin: 0.25rem 0;
+}
+.step-msg {
+  margin: 0;
+  color: var(--err-ink);
+  font-weight: 600;
+}
+.step-msg:empty {
+  display: none;
+}
+
+/* Разрешението */
+.step-approval-box {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.5rem 0.65rem;
+  background: var(--surface);
+  color: var(--ink);
+  border: 2px solid var(--line-strong);
+  border-radius: var(--radius);
+}
+.step-approval {
+  margin: 0;
+  font-weight: 600;
+}
+.step-granted {
+  color: var(--ok-ink);
+}
+.step-denied {
+  color: var(--err-ink);
+}
+.step-attest {
+  display: grid;
+  gap: 0.45rem;
+}
+.step-attest .check-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+.step-attest input[type='checkbox'] {
+  width: 1.5rem;
+  min-height: 1.5rem;
+  height: 1.5rem;
+  margin-top: 0.1rem;
+  flex: none;
+}
+.step-decide {
+  display: grid;
+  gap: 0.35rem;
+}
+
+/* ---------- Панелът на тикета ---------- */
+
+.ticket-panel {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0.5rem 0;
+}
+.ticket-panel:empty {
+  display: none;
+}
+.ticket-head {
+  margin: 0;
+  font-size: 1rem;
+}
+.ticket-facts {
+  margin: 0;
+}
+.flow-note {
+  margin: 0;
+  padding: 0.55rem 0.7rem;
+  background: var(--surface-2);
+  color: var(--ink);
+  border: 2px solid var(--line-strong);
+  border-radius: var(--radius);
+}
+.flow-note h4 {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+}
+.flow-note ul {
+  margin: 0.25rem 0;
+  padding-left: 1.2rem;
+}
+.flow-note p {
+  margin: 0.25rem 0;
+}
+.flow-paused {
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+  border-color: var(--warn-line);
+  font-weight: 600;
+}
+.flow-request {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+.flow-actions {
+  display: grid;
+  gap: 0.45rem;
+}
+.flow-checks {
+  border: 0;
+  padding: 0;
+  margin: 0 0 0.9rem;
+}
+.flow-checks legend {
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+.flow-checks .check-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+}
+.flow-checks input[type='checkbox'] {
+  width: 1.4rem;
+  min-height: 1.4rem;
+  height: 1.4rem;
+}
+
+/* ---------- Опашката ---------- */
+
+.queue-views {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.queue-filter {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+.queue-filter select {
+  min-height: 2.75rem;
+  width: auto;
+}
+.queue-list {
+  display: grid;
+  gap: 0.45rem;
+}
+.queue-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0.5rem;
+}
+.queue-row .step-msg {
+  grid-column: 1 / -1;
+}
+.queue-open {
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .queue-row {
+    grid-template-columns: 1fr;
+  }
+  .step-buttons {
+    grid-template-columns: 1fr;
+  }
+}

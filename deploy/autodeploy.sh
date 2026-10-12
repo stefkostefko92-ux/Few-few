@@ -156,6 +156,9 @@ PIUMA_ENV="${PIUMA_ENV:-/opt/few-few/shared/piuma/.env}"
 # отговорил, стои на стабилно място извън releases/ (чистенето в т. 4 не трие този release).
 KORPORA_SHARED="${KORPORA_SHARED:-/opt/few-few/shared/korpora}"
 KORPORA_LAST_GOOD="${KORPORA_LAST_GOOD:-$KORPORA_SHARED/last-good}"
+# Корените на продуктите (тайни, бекъпи, `last-good`). Чистенето на releases пази целта на ВСЕКИ
+# `$SHARED_ROOT/*/last-good` — и на продукт, който този autodeploy.sh още не познава.
+SHARED_ROOT="${SHARED_ROOT:-/opt/few-few/shared}"
 
 # chatchat (ChatChat — Docker Compose: db (pgvector) + clamav + app на 127.0.0.1:4330 зад nginx на хоста).
 # Моделът на korpora: стъпките са в chatchat/deploy/deploy.sh (и за ръчния деплой) — тайните от
@@ -163,6 +166,15 @@ KORPORA_LAST_GOOD="${KORPORA_LAST_GOOD:-$KORPORA_SHARED/last-good}"
 # шифрован бекъп и ретенцията (таймери). Тук: откатът към последния release, който е отговорил.
 CHATCHAT_SHARED="${CHATCHAT_SHARED:-/opt/few-few/shared/chatchat}"
 CHATCHAT_LAST_GOOD="${CHATCHAT_LAST_GOOD:-$CHATCHAT_SHARED/last-good}"
+
+# chatchat-staging (STAGING на ChatChat — същият compose файл, проект chatchat-staging, 127.0.0.1:4331,
+# staging-chatchat.carbonstealth.eu само с парола/allowlist). НЕ е в PROJECTS по подразбиране — само изрично:
+#   sudo REF=<клон> PROJECTS="chatchat-staging" bash /opt/few-few/current/deploy/fetch-deploy.sh
+# Стъпките (копие на release-а, .env, пазачите, deploy.sh, оценъчният набор) са в chatchat/deploy/staging.sh.
+# Работните копия и last-good са в CHATCHAT_STAGING_SHARED/releases — извън releases/ (чистенето тук не ги
+# пипа). Пробег САМО със staging проекти не мести `current` (той казва какво върви в продукцията).
+CHATCHAT_STAGING_SHARED="${CHATCHAT_STAGING_SHARED:-/opt/few-few/shared/chatchat-staging}"
+CHATCHAT_STAGING_LAST_GOOD="${CHATCHAT_STAGING_LAST_GOOD:-$CHATCHAT_STAGING_SHARED/last-good}"
 
 # vps-dashboard (Carbon Stealth VPS Dashboard — systemd, Node ≥20, нула runtime
 # зависимости). Панелът управлява СЪРВЪРА → върви като root (виж service unit-а),
@@ -1448,7 +1460,8 @@ chatchat_migration_failed() {
 
 chatchat_migration_help() {
   local dump good
-  dump="$(ls -1t "$CHATCHAT_SHARED/backups"/pre-deploy-*.sql.gz 2>/dev/null | head -n 1 || true)"
+  # дъмпът е в шифрования том на базата, щом тя е там (chatchat/deploy/pgdata-encrypt.sh), иначе — в backups/
+  dump="$(ls -1t "$CHATCHAT_SHARED/backups"/pre-deploy-*.sql.gz "$CHATCHAT_SHARED/pgdata/pre-deploy"/pre-deploy-*.sql.gz 2>/dev/null | head -n 1 || true)"
   good="$(head -n 1 "$CHATCHAT_LAST_GOOD" 2>/dev/null || true)"
   warn "chatchat: миграцията на базата се провали — откат само на кода не помага (старият код спира на P3009)."
   warn "chatchat: бекъпът отпреди миграцията: ${dump:-(няма — виж $CHATCHAT_SHARED/backups)}"
@@ -1488,6 +1501,64 @@ chatchat_rollback() {
     ok "chatchat: предишният код отговаря."
   else
     warn "chatchat: откатът не тръгна — нужен е човек (cd $prev && docker compose logs app)."
+    return 1
+  fi
+}
+
+# ── 3л) chatchat-staging — staging на ChatChat; стъпките са в chatchat/deploy/staging.sh ───────────
+# Кодовете: 0 — жив и оценката (evals/) е зелена; 4 — контейнерите на staging са сменени, но не отговаря →
+# откат към last-good на staging; 5 — жив, но оценката е червена (нарушение на безопасността): провал БЕЗ
+# откат — остава за преглед, last-good не се мести; 3 — не е настроен (пропуск); друго — спрян преди
+# смяната. Продукцията (проект chatchat, CHATCHAT_SHARED, 4330) не се пипа в нито един от тях.
+deploy_chatchat_staging() {
+  local d="$SRC/chatchat" rc=0
+  [ -d "$d" ] || { warn "Няма chatchat/ в архива — пропускам staging."; return; }
+  [ -f "$d/deploy/staging.sh" ] || { warn "chatchat-staging: няма deploy/staging.sh в архива — пропускам."; return; }
+  log "Разгръщам chatchat-staging (Docker Compose, проект chatchat-staging)…"
+  # `|| rc=$?`, не голо извикване: под `set -e` ненулев изход тук би убил ЦЕЛИЯ autodeploy.
+  CHATCHAT_STAGING_SHARED="$CHATCHAT_STAGING_SHARED" CHATCHAT_PROD_SHARED="$CHATCHAT_SHARED" \
+    bash "$d/deploy/staging.sh" || rc=$?
+  case "$rc" in
+    0) ok "chatchat-staging: жив, оценката е зелена." ;;
+    3) warn "chatchat-staging: не е настроен — пропускам, не е провал." ;;
+    4)
+      deploy_failed=1
+      if chatchat_staging_migration_failed; then
+        warn "chatchat-staging: миграцията се провали (P3018/P3009) — откат само на кода не помага."
+        warn "chatchat-staging: данните са тестови; бекъпът отпреди миграцията е в $CHATCHAT_STAGING_SHARED/backups (chatchat/DEPLOY.md, „Staging“)."
+      else
+        chatchat_staging_rollback || true
+      fi
+      ;;
+    5) deploy_failed=1; warn "chatchat-staging: оценката е червена — staging НЕ е годен за продукция (отчетът: $CHATCHAT_STAGING_SHARED/eval-runs)." ;;
+    *) deploy_failed=1; warn "chatchat-staging: деплоят спря преди смяната на контейнерите (код $rc) — работи предишният staging." ;;
+  esac
+}
+
+# Опитът е в работното копие, което staging.sh е записал (last-attempt); проектът е изричен.
+chatchat_staging_migration_failed() {
+  local attempt
+  attempt="$(head -n 1 "$CHATCHAT_STAGING_SHARED/last-attempt" 2>/dev/null || true)"
+  [ -n "$attempt" ] && [ -f "$attempt/docker-compose.yml" ] || return 1
+  docker compose -p chatchat-staging -f "$attempt/docker-compose.yml" logs --no-color --tail 300 app 2>/dev/null | grep -qE 'P3009|P3018'
+}
+
+# Откат САМО на кода на staging: staging.sh от последното работно копие, минало оценката, на място (без
+# ново копие), без нов дъмп и без нова оценка. Никога провалилият се опит; без last-good — вика човек.
+chatchat_staging_rollback() {
+  local prev="" attempt
+  attempt="$(readlink -f "$(head -n 1 "$CHATCHAT_STAGING_SHARED/last-attempt" 2>/dev/null || true)" 2>/dev/null || true)"
+  prev="$(head -n 1 "$CHATCHAT_STAGING_LAST_GOOD" 2>/dev/null || true)"
+  if [ -z "$prev" ] || [ ! -f "$prev/deploy/staging.sh" ] || [ "$(readlink -f "$prev" || true)" = "$attempt" ]; then
+    warn "chatchat-staging: няма предишен работещ staging за откат — нужен е човек (cd ${attempt:-$CHATCHAT_STAGING_SHARED/releases/…} && docker compose logs app)."
+    return 1
+  fi
+  warn "chatchat-staging: връщам предишния код ($prev)…"
+  if CHATCHAT_STAGING_SHARED="$CHATCHAT_STAGING_SHARED" CHATCHAT_PROD_SHARED="$CHATCHAT_SHARED" \
+    CHATCHAT_SKIP_BACKUP=1 STAGING_SKIP_EVAL=1 bash "$prev/deploy/staging.sh"; then
+    ok "chatchat-staging: предишният код отговаря."
+  else
+    warn "chatchat-staging: откатът не тръгна — нужен е човек (cd $prev && docker compose logs app)."
     return 1
   fi
 }
@@ -1797,6 +1868,7 @@ for p in $PROJECTS; do
     piuma)      deploy_piuma ;;
     korpora)   deploy_korpora ;;
     chatchat)  deploy_chatchat ;;
+    chatchat-staging) deploy_chatchat_staging ;;
     adblock)    deploy_adblock ;;
     vpsdash|vps-dashboard|vpsdashboard) deploy_vpsdashboard ;;
     *)          warn "Непознат проект: $p" ;;
@@ -1809,7 +1881,15 @@ done
 # Дотук symlink-ът се вдигаше безусловно: провалил се деплой пак ставаше
 # „текущият", тоест следващият откат сочеше към счупеното, а човек, който гледа
 # `current`, вижда версия, която никога не е тръгнала. (VPS-аджията, 07.08.2026)
-if [ "$deploy_failed" = "0" ]; then
+# Само staging в пробега (PROJECTS="chatchat-staging", обикновено от клон) → `current` остава: той сочи
+# кода на продукцията, а оттам се вземат fetch-deploy.sh, тайните „от current“ и командите в DEPLOY.md.
+only_staging=1
+for p in $PROJECTS; do
+  case "$p" in chatchat-staging) ;; *) only_staging=0 ;; esac
+done
+if [ "$deploy_failed" = "0" ] && [ "$only_staging" = "1" ]; then
+  ok "Само staging — current остава: $(readlink -f "$CURRENT_LINK" 2>/dev/null || echo '(няма)')"
+elif [ "$deploy_failed" = "0" ]; then
   ln -sfn "$SRC" "$CURRENT_LINK"
   ok "current → $SRC"
 else
@@ -1828,17 +1908,23 @@ fi
 # Без него няколко деплоя без korpora (PROJECTS="piuma") изтриваха целта на отката и той падаше към
 # код, който никога не е разгръщан за Korpora. Четвъртото — същото за ChatChat (CHATCHAT_LAST_GOOD).
 prune_releases() {
-  local keep_rel live_rel lg_rel cc_rel old old_real keep protected
-  keep_rel="$(cd "$SRC" && pwd -P)"
-  live_rel="$(readlink -f "$CURRENT_LINK" 2>/dev/null || true)"
-  lg_rel="$(readlink -f "$(cat "$KORPORA_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
-  cc_rel="$(readlink -f "$(cat "$CHATCHAT_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
+  local old old_real keep protected lg
+  local -a guarded=()
+  guarded+=("$(cd "$SRC" && pwd -P)")
+  guarded+=("$(readlink -f "$CURRENT_LINK" 2>/dev/null || true)")
+  # Целта на отката на всеки продукт: деплой само на друг продукт (PROJECTS="piuma", или от
+  # клон/main, който не познава продукта) иначе трие папката, от която тече неговият compose
+  # проект — и командите от DEPLOY.md, и откатът сочат натам (ChatChat, 11.10.2026).
+  for lg in "${KORPORA_LAST_GOOD:-}" "${CHATCHAT_LAST_GOOD:-}" "${SHARED_ROOT:-/opt/few-few/shared}"/*/last-good; do
+    [ -f "$lg" ] || continue
+    guarded+=("$(readlink -f "$(head -n 1 "$lg" 2>/dev/null || true)" 2>/dev/null || true)")
+  done
   while read -r old; do
     [ -n "$old" ] || continue
     old_real="$(cd "$old" 2>/dev/null && pwd -P || true)"
     [ -n "$old_real" ] || continue
     keep=0
-    for protected in "$keep_rel" "$live_rel" "$lg_rel" "$cc_rel"; do
+    for protected in "${guarded[@]}"; do
       [ -n "$protected" ] || continue
       case "$protected" in
         "$old_real"|"$old_real"/*) keep=1 ;;

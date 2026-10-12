@@ -41,7 +41,7 @@ const CreateUser = z
     role: z.enum(ROLES),
     companyId: Id.nullable().optional(),
     expiresAt: isoDate.nullable().optional(),
-    locale: z.enum(['it', 'en', 'bg']).default('it'),
+    locale: z.enum(['it', 'en']).default('it'),
     reason: Reason.optional(),
   })
   .strict();
@@ -52,6 +52,8 @@ const AdminPatch = z
     active: z.boolean().optional(),
     expiresAt: isoDate.nullable().optional(),
     companyId: Id.nullable().optional(),
+    /** FR-14: езикът на интерфейса, писмата и AI отговорите (и самият човек — PATCH /me). */
+    locale: z.enum(['it', 'en']).optional(),
     reason: Reason,
   })
   .strict();
@@ -196,6 +198,7 @@ export function adminUsersRouter(deps: AppDeps): Router {
       }
       const active = input.active ?? target.active;
       const expiresAt = input.expiresAt === undefined ? target.expiresAt : input.expiresAt;
+      const locale = input.locale ?? target.locale;
       const now = new Date();
 
       const changes: Record<string, { from: unknown; to: unknown }> = {};
@@ -207,6 +210,7 @@ export function adminUsersRouter(deps: AppDeps): Router {
       if ((expiresAt?.getTime() ?? null) !== (target.expiresAt?.getTime() ?? null)) {
         changes.expiresAt = { from: target.expiresAt, to: expiresAt };
       }
+      if (locale !== target.locale) changes.locale = { from: target.locale, to: locale };
       if (Object.keys(changes).length === 0) return res.json({ user: directoryView(target) });
 
       const revoke = revocationFor(changes, active, expiresAt, now);
@@ -219,6 +223,7 @@ export function adminUsersRouter(deps: AppDeps): Router {
             companyId,
             active,
             expiresAt,
+            locale,
             ...(changes.active ? { deactivatedAt: active ? null : now } : {}),
           },
           include: withCompany,

@@ -46,6 +46,8 @@ function setError(el, text) {
  * @param {{ onDone: () => void | Promise<void>, onCancel?: () => void }} hooks
  */
 export function mountMfaSetup(host, { onDone, onCancel }) {
+  // Вход през доставчика (SSO): човекът може да няма парола — сървърът приема свеж единен вход.
+  const viaSso = state.authMethod === 'sso';
   const askPassword = () => {
     const err = errorLine();
     const pw = h('input', {
@@ -61,7 +63,7 @@ export function mountMfaSetup(host, { onDone, onCancel }) {
         novalidate: true,
         onsubmit: async (e) => {
           e.preventDefault();
-          if (!pw.value) {
+          if (!viaSso && !pw.value) {
             setError(err, t('mfa.setup.passwordRequired'));
             pw.focus();
             return;
@@ -69,13 +71,17 @@ export function mountMfaSetup(host, { onDone, onCancel }) {
           setError(err, '');
           submit.disabled = true;
           try {
-            const data = await api('POST', '/auth/mfa/setup', { password: pw.value });
+            const data = await api('POST', '/auth/mfa/setup', viaSso ? {} : { password: pw.value });
             pw.value = '';
             showSecret(data);
           } catch (ex) {
             setError(
               err,
-              ex.code === 'invalid_password' ? t('mfa.setup.badPassword') : errorText(ex),
+              ex.code === 'invalid_password'
+                ? t('mfa.setup.badPassword')
+                : ex.code === 'sso_reauth_required'
+                  ? t('sso.err.sso_reauth_required')
+                  : errorText(ex),
             );
             if (ex.code === 'mfa_already_enabled') await finish();
           } finally {
@@ -83,8 +89,8 @@ export function mountMfaSetup(host, { onDone, onCancel }) {
           }
         },
       },
-      h('p', null, t('mfa.setup.intro')),
-      field('setup-password', t('login.password'), pw, t('mfa.setup.passwordHint')),
+      h('p', null, t(viaSso ? 'sso.mfa.setupIntro' : 'mfa.setup.intro')),
+      viaSso ? null : field('setup-password', t('login.password'), pw, t('mfa.setup.passwordHint')),
       err,
       h(
         'div',
@@ -100,7 +106,7 @@ export function mountMfaSetup(host, { onDone, onCancel }) {
       ),
     );
     clear(host).append(form);
-    pw.focus();
+    (viaSso ? submit : pw).focus();
   };
 
   const finish = async () => {

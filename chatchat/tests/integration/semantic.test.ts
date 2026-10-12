@@ -56,8 +56,12 @@ describe('Индексиране', () => {
     assert.equal((await w.ownerA1.post(`/api/v1/admin/documents/${review}/submit`)).status, 204);
     const deprecated = w.docs.manFw5;
     assert.equal(
-      (await w.ownerA1.post(`/api/v1/admin/documents/${deprecated}/deprecate`)).status,
-      204,
+      (
+        await w.ownerA1.post(`/api/v1/admin/documents/${deprecated}/deprecate`, {
+          reason: 'Manuale ritirato',
+        })
+      ).status,
+      200,
     );
     await db.$executeRaw`UPDATE "DocumentChunk" SET embedding = NULL, "embeddingModel" = NULL WHERE "documentId" = ${deprecated}`;
     const result = await embedPending(db, embedder);

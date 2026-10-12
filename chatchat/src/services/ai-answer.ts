@@ -3,6 +3,7 @@ import type { DiagnoseOutput } from '../ai/orchestrator.js';
 import { appendAudit } from '../audit.js';
 import type { Audience } from '../retrieval/types.js';
 import { addTimeline } from './cases.js';
+import { caseStatusFor, isOpenTicket } from './tickets/flow.js';
 
 /**
  * Записът на AI отговора (§14.1, FR-12, AC-09): съобщение + доказателства + статус + хронология
@@ -21,19 +22,27 @@ export async function saveAiAnswer(
 ): Promise<CaseMessage> {
   const { c, result } = args;
   const answer = result.answer;
-  // Поет от оператор → остава при него; ескалиран с тикет → чака оператора, каквото и да
-  // каже AI; иначе по отговора.
-  const status =
-    c.status === 'IN_PROGRESS'
-      ? 'IN_PROGRESS'
-      : c.outcome === 'ESCALATED' ||
-          answer.escalation.recommended ||
-          answer.status === 'undetermined'
-        ? 'WAITING_TECHNICIAN'
-        : 'OPEN';
   const sent = answer.modelInputs.attachments.map((a) => ({ id: a.id, kind: a.kind }));
   const notSent = answer.modelInputs.notSent.map((n) => ({ id: n.id, reason: n.reason }));
   const aiMessage = await db.$transaction(async (tx) => {
+    // Статусът — по ПРЕСНОТО състояние (докато моделът мисли, операторът може да е поел случая
+    // или тикетът да е сменил статус): отворен тикет води случая; поет → остава при оператора;
+    // ескалиран → чака оператора, каквото и да каже AI; иначе по отговора.
+    const fresh = await tx.case.findUniqueOrThrow({
+      where: { id: c.id },
+      select: { assignedToId: true, outcome: true, ticket: { select: { status: true } } },
+    });
+    const ticket = fresh.ticket && isOpenTicket(fresh.ticket.status) ? fresh.ticket.status : null;
+    const status = ticket
+      ? caseStatusFor(ticket)
+      : fresh.assignedToId || c.status === 'IN_PROGRESS'
+        ? 'IN_PROGRESS'
+        : fresh.outcome === 'ESCALATED' ||
+            c.outcome === 'ESCALATED' ||
+            answer.escalation.recommended ||
+            answer.status === 'undetermined'
+          ? 'WAITING_TECHNICIAN'
+          : 'OPEN';
     const created = await tx.caseMessage.create({
       data: {
         caseId: c.id,
@@ -92,6 +101,9 @@ export async function saveAiAnswer(
       attachmentsSent: sent,
       attachmentsNotSent: notSent,
       usage: result.usage,
+      // FR-12: име, ключове на аргументите и брой резултати на всеки инструмент — без текста на
+      // заявките (само дължина + съкратен SHA-256, `ai/tool-audit.ts`).
+      toolCalls: result.toolCalls,
     },
   });
   return aiMessage;

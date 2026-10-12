@@ -15,10 +15,35 @@ const SECTIONS = [
   { id: 'devices', cap: 'kb:manage', load: () => import('./devices.js') },
   { id: 'documents', cap: 'kb:manage', load: () => import('./documents.js') },
   { id: 'codes', cap: 'kb:manage', load: () => import('./codes.js') },
+  // Опашката с предложенията за знанието (FR-10, §11.3) — етикетът е под своя префикс.
+  {
+    id: 'proposals',
+    cap: 'kb:manage',
+    label: 'kbq.nav',
+    load: () => import('./proposals.js'),
+  },
   { id: 'quick', cap: 'kb:manage', load: () => import('./quick.js') },
   { id: 'kpi', cap: 'kpi:read', load: () => import('./kpi.js') },
   { id: 'audit', cap: 'audit:read', load: () => import('./audit.js') },
+  // Политиката за разрешенията на стъпки (§11.2) — етикетът е под своя префикс.
+  {
+    id: 'steppolicy',
+    cap: 'policy:manage',
+    label: 'step.policy.nav',
+    load: () => import('./step-policy.js'),
+  },
+  // Интеграцията с helpdesk (FR-09, §14.4) — етикетът е под своя префикс.
+  {
+    id: 'integrations',
+    cap: 'integrations:manage',
+    label: 'admin.integrations.nav',
+    load: () => import('./integrations.js'),
+  },
+  // Единният вход (OIDC / Entra ID) — доставчик, домейни, режим, MFA на доставчика.
+  { id: 'sso', cap: 'sso:manage', label: 'admin.sso.nav', load: () => import('./sso.js') },
 ];
+
+const labelOf = (s) => t(s.label ?? `admin.nav.${s.id}`);
 
 let available = [];
 let current = null; // { id, destroy }
@@ -35,7 +60,7 @@ function renderNav(activeId) {
   nav.setAttribute('aria-label', t('admin.nav'));
   const list = h('ul', { class: 'nav-list' });
   for (const s of available) {
-    const link = h('a', { href: `#${s.id}`, class: 'nav-link' }, t(`admin.nav.${s.id}`));
+    const link = h('a', { href: `#${s.id}`, class: 'nav-link' }, labelOf(s));
     if (s.id === activeId) link.setAttribute('aria-current', 'page');
     list.append(h('li', {}, link));
   }
@@ -55,7 +80,7 @@ async function route() {
   renderNav(section.id);
   const view = $('#view');
   clear(view).append(loading());
-  document.title = `${t(`admin.nav.${section.id}`)} — ${t('admin.title')} | ChatChat`;
+  document.title = `${labelOf(section)} — ${t('admin.title')} | ChatChat`;
   try {
     const mod = await section.load();
     if (mine !== ticket) return;
@@ -79,7 +104,10 @@ async function init() {
     return goToLogin();
   }
   const mfa = session.mfa ?? {};
-  if ((mfa.enabled && !mfa.passed) || (mfa.required && !mfa.enabled)) return goToLogin();
+  // mfa.idp: вторият фактор е доказан от доставчика на единния вход — локален TOTP не се иска.
+  if ((mfa.enabled && !mfa.passed) || (mfa.required && !mfa.enabled && !mfa.idp)) {
+    return goToLogin();
+  }
   setSession(session);
   await setLang(guessLang(session.user?.locale), { persist: false });
 

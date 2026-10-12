@@ -23,24 +23,34 @@ export function compareVersions(a: string, b: string): number {
   return 0;
 }
 
-/** Правило за приложимост: всяко поле null = без ограничение по него. */
+/**
+ * Правило за приложимост: всяко поле null = без ограничение по него. `deviceId` (по избор) —
+ * правилото важи САМО за това табло (уникалните схеми на таблото — решение на собственика).
+ */
 export interface ApplicabilityRule {
   hwRevision: string | null;
   fwMin: string | null;
   fwMax: string | null;
+  deviceId?: string | null;
 }
 
 export interface ProductVersion {
   hwRevision: string | null;
   firmware: string | null;
+  /** Проверено табло на случая (Case.deviceId, съвпадащо със серийния номер в контекста). */
+  deviceId?: string | null;
 }
 
 /**
  * Приложим ли е източникът за конкретното табло. Непознат HW/FW при правило, което го иска,
  * значи „не е доказано приложим“ → false (fail-closed): по-добре да поискаме данните, отколкото
- * да цитираме ръководство за друга ревизия като основен източник (AC-02).
+ * да цитираме ръководство за друга ревизия като основен източник (AC-02). Правило за конкретно
+ * табло е приложимо само за случай с ТОВА табло — без табло в случая не е.
  */
 export function isApplicable(rule: ApplicabilityRule, version: ProductVersion): boolean {
+  if (rule.deviceId) {
+    if (!version.deviceId || version.deviceId !== rule.deviceId) return false;
+  }
   if (rule.hwRevision !== null) {
     if (version.hwRevision === null) return false;
     if (normalizeRevision(rule.hwRevision) !== normalizeRevision(version.hwRevision)) return false;
@@ -67,6 +77,24 @@ export function firmwareOutsideRevision(
     isVersion(revision.fwMax) &&
     compareVersions(firmware, revision.fwMax) > 0
   );
+}
+
+/** Валидността на документа спрямо момента на отговора (§7.2 effective_from/to). */
+export type Validity = 'effective' | 'notYetEffective' | 'expired';
+
+/**
+ * [effectiveFrom, effectiveTo] включително. Липсваща граница = без ограничение по нея (кодовете за
+ * грешка нямат дати — наследяват ги от документа-източник).
+ */
+export function validityAt(
+  window: { effectiveFrom?: Date | null; effectiveTo?: Date | null },
+  now: Date,
+): Validity {
+  if (window.effectiveFrom && now.getTime() < window.effectiveFrom.getTime()) {
+    return 'notYetEffective';
+  }
+  if (window.effectiveTo && now.getTime() > window.effectiveTo.getTime()) return 'expired';
+  return 'effective';
 }
 
 /** „Rev.B“, „rev b“, „B“ → „B“. */

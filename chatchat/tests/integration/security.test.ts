@@ -15,6 +15,7 @@ import {
 import {
   ask,
   baseContext,
+  EFFECTIVE_FROM,
   newCase,
   publishDoc,
   seedWorld,
@@ -400,7 +401,8 @@ describe('Четири очи за документи по безопаснос�
       audience: 'PORTAL',
       safetyRelevant: false,
       sourceFilename: 'z.pdf',
-      applicability: [{ productModel: 'NEMA-9' }],
+      effectiveFrom: EFFECTIVE_FROM,
+      applicability: [{ productModel: 'NEMA-9', allFirmware: true }],
       pages: base.pages,
     });
     assert.equal(unknown.status, 422);
@@ -415,7 +417,8 @@ describe('Четири очи за документи по безопаснос�
       audience: 'PORTAL',
       safetyRelevant: false,
       sourceFilename: 'z.pdf',
-      applicability: [{ productModel: 'LTX-500' }],
+      effectiveFrom: EFFECTIVE_FROM,
+      applicability: [{ productModel: 'LTX-500', allFirmware: true }],
       pages: base.pages,
     });
     assert.equal(dup.status, 409);
@@ -428,8 +431,9 @@ describe('Четири очи за документи по безопаснос�
       audience: 'PORTAL',
       safetyRelevant: false,
       sourceFilename: 'z.pdf',
+      effectiveFrom: EFFECTIVE_FROM,
       supersedesRevision: 'Q',
-      applicability: [{ productModel: 'LTX-500' }],
+      applicability: [{ productModel: 'LTX-500', allFirmware: true }],
       pages: base.pages,
     });
     assert.equal(missing.status, 422);
@@ -498,8 +502,10 @@ describe('Одит веригата (FR-12, §15.1)', () => {
     const caseId = await newCase(w.portalAlfa, { deviceSerial: 'SN-ALFA-1' });
     await ask(w.portalAlfa, caseId, 'Errore E37');
     await w.portalAlfa.post('/api/v1/tickets', { caseId, reason: 'Non risolto' });
-    await w.ownerA1.post(`/api/v1/admin/documents/${w.docs.manFw4}/deprecate`);
-    await w.ownerA1.post(`/api/v1/admin/errors/${w.errors.e38}/deprecate`);
+    await w.ownerA1.post(`/api/v1/admin/documents/${w.docs.manFw4}/deprecate`, {
+      reason: 'Manuale ritirato',
+    });
+    await w.ownerA1.post(`/api/v1/admin/errors/${w.errors.e38}/deprecate`, { reason: 'Ritirato' });
 
     const events = await db.auditEvent.findMany({ orderBy: { id: 'asc' } });
     assert.ok(events.length >= 25, `събития: ${events.length}`);

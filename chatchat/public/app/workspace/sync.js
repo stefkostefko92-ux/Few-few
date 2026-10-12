@@ -80,6 +80,21 @@ export async function catchUp(convId) {
   }
 }
 
+/**
+ * Страница около съобщение (търсене, връзка): основният списък се подменя с нея — без „дупка“
+ * между нея и последните — и се допълва напред (`catchUp`), докато стигне края.
+ */
+export async function loadAround(convId, messageId) {
+  const s = slotOf(convId);
+  const data = await wsApi.messages(convId, { around: messageId, limit: 50 });
+  s.messages.clear();
+  for (const m of data.messages ?? []) upsertMessage(convId, m);
+  s.hasMore = data.hasMore === true;
+  s.loaded = true;
+  notify(convId);
+  if (data.hasNewer) await catchUp(convId);
+}
+
 export async function loadThread(convId, rootId) {
   const data = await wsApi.messages(convId, { threadId: rootId, limit: 100 });
   for (const m of data.messages ?? []) upsertMessage(convId, m, { counted: true });
@@ -118,10 +133,14 @@ export function scheduleRead(convId) {
 
 /* ---------- Известия ---------- */
 
-export async function loadNotifications() {
-  const data = await wsApi.notifications();
-  ws.notifications = data.notifications ?? [];
+export async function loadNotifications({ more = false } = {}) {
+  const data = await wsApi.notifications(more ? ws.notifCursor : null);
+  const page = data.notifications ?? [];
+  ws.notifications = more ? [...ws.notifications, ...page] : page;
+  ws.notifCursor = data.nextCursor ?? null;
   ws.unreadNotifications = data.unreadCount ?? 0;
+  // Предпочитанията идват с известията (§14.1) — за диалога „Предпочитания“.
+  if (data.preferences) ws.notifPrefs = data.preferences;
   emit('ws:notifs');
 }
 
@@ -227,6 +246,11 @@ export function handleEvent(type, envelope) {
     case 'case.assigned':
       emit('case:assigned', data);
       refreshNotifications();
+      break;
+    case 'case.updated':
+    case 'step.updated':
+    case 'queue.updated':
+      emit(`rt:${type}`, data);
       break;
     default:
       break;

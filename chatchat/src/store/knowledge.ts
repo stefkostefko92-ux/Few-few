@@ -1,14 +1,21 @@
 import { Prisma, type PrismaClient } from '@prisma/client';
 import type { EmbeddingModel } from '../ai/embeddings.js';
 import type { ActionClass } from '../domain/response.js';
-import type { ApplicabilityRule } from '../domain/versions.js';
 import type { ErrorCheck, KnowledgeStore, RawEvidence, SearchScope } from '../retrieval/types.js';
 import { semanticSearch } from './embeddings.js';
+import {
+  applicableSql,
+  chunkEvidence,
+  documentInclude,
+  ruleWhere,
+  visibleDocument,
+} from './scope.js';
 
 /**
  * KnowledgeStore върху PostgreSQL. Във ВСЯКА заявка: tenantId, status = PUBLISHED, аудитория
- * от ролята и приложимост към модела от контекста. Тези филтри са тук, не в модела и не в UI —
- * AI инструментите минават през същите методи и не могат да ги разширят.
+ * от ролята и приложимост към модела от контекста (общите правила + само правилата за таблото на
+ * случая — `store/scope.ts`). Тези филтри са тук, не в модела и не в UI — AI инструментите минават
+ * през същите методи и не могат да ги разширят.
  */
 
 /** Думи, които не носят смисъл за пълнотекстовото търсене (IT/EN/BG). */
@@ -28,64 +35,6 @@ export function toOrTsQuery(text: string): string | null {
     if (terms.size >= 16) break;
   }
   return terms.size > 0 ? [...terms].join(' | ') : null;
-}
-
-export const documentInclude = (productModel: string, tenantId: string) =>
-  ({
-    applicability: { where: { product: { model: productModel, tenantId } } },
-  }) satisfies Prisma.DocumentInclude;
-
-type DocumentWithRules = Prisma.DocumentGetPayload<{
-  include: ReturnType<typeof documentInclude>;
-}>;
-
-function rulesOf(doc: DocumentWithRules): ApplicabilityRule[] {
-  return doc.applicability.map((a) => ({
-    hwRevision: a.hwRevision,
-    fwMin: a.fwMin,
-    fwMax: a.fwMax,
-  }));
-}
-
-function visibleDocument(scope: SearchScope, productModel: string): Prisma.DocumentWhereInput {
-  return {
-    tenantId: scope.tenantId,
-    status: 'PUBLISHED',
-    audience: { in: [...scope.audiences] },
-    applicability: { some: { product: { model: productModel, tenantId: scope.tenantId } } },
-  };
-}
-
-export type ChunkWithDoc = Prisma.DocumentChunkGetPayload<{
-  include: { document: { include: ReturnType<typeof documentInclude> } };
-}>;
-
-export function chunkEvidence(
-  chunk: ChunkWithDoc,
-  matchedBy: RawEvidence['matchedBy'],
-  rawScore: number,
-): RawEvidence {
-  const doc = chunk.document;
-  return {
-    kind: 'document',
-    documentId: doc.id,
-    documentCode: doc.code,
-    documentTitle: doc.title,
-    documentType: doc.type,
-    revision: doc.revision,
-    language: doc.language,
-    page: chunk.page,
-    section: chunk.section,
-    text: chunk.text,
-    safetyRelevant: doc.safetyRelevant,
-    matchedBy,
-    chunkId: chunk.id,
-    errorId: null,
-    errorCode: null,
-    checks: [],
-    rawScore,
-    rules: rulesOf(doc),
-  };
 }
 
 const RELATION_LABEL = { SYMPTOM: 'SYMPTOM', CAUSE: 'CAUSE', CHECK: 'CHECK', FIX: 'FIX' } as const;
@@ -125,12 +74,9 @@ export class PrismaKnowledgeStore implements KnowledgeStore {
         code: { in: codes },
         status: 'PUBLISHED',
         product: { model: productModel, tenantId: scope.tenantId },
-        // Кодът наследява видимостта на документа-източник: без публикуван източник не се цитира.
-        sourceDocument: {
-          tenantId: scope.tenantId,
-          status: 'PUBLISHED',
-          audience: { in: [...scope.audiences] },
-        },
+        // Кодът наследява видимостта на документа-източник: без публикуван източник не се цитира;
+        // източник само за ЧУЖДО табло не стига до случая.
+        sourceDocument: visibleDocument(scope, productModel),
       },
       include: { relations: { orderBy: { ordinal: 'asc' } }, sourceDocument: true },
       take: 20,
@@ -190,6 +136,9 @@ export class PrismaKnowledgeStore implements KnowledgeStore {
         checks,
         rawScore: 1,
         rules: [{ hwRevision: e.hwRevision, fwMin: e.fwMin, fwMax: e.fwMax }],
+        // Кодът е толкова валиден, колкото документът му (§7.2): изтекъл източник → неприложим.
+        effectiveFrom: doc.effectiveFrom,
+        effectiveTo: doc.effectiveTo,
       });
     }
     return result;
@@ -202,7 +151,7 @@ export class PrismaKnowledgeStore implements KnowledgeStore {
         OR: [{ componentRefs: { hasSome: identifiers } }, { errorCodes: { hasSome: identifiers } }],
         document: visibleDocument(scope, productModel),
       },
-      include: { document: { include: documentInclude(productModel, scope.tenantId) } },
+      include: { document: { include: documentInclude(productModel, scope) } },
       orderBy: [{ documentId: 'asc' }, { ordinal: 'asc' }],
       take: 30,
     });
@@ -225,18 +174,14 @@ export class PrismaKnowledgeStore implements KnowledgeStore {
         AND d."tenantId" = ${scope.tenantId}
         AND d.status = 'PUBLISHED'
         AND d.audience::text = ANY(${audiences})
-        AND EXISTS (
-          SELECT 1 FROM "DocumentApplicability" a
-          JOIN "Product" p ON p.id = a."productId"
-          WHERE a."documentId" = d.id AND p.model = ${productModel} AND p."tenantId" = ${scope.tenantId}
-        )
+        AND ${applicableSql(scope, productModel)}
       ORDER BY rank DESC
       LIMIT ${Math.min(Math.max(limit, 1), 30)}`;
     if (ranked.length === 0) return [];
     const rank = new Map(ranked.map((r) => [r.id, r.rank]));
     const chunks = await this.db.documentChunk.findMany({
       where: { id: { in: [...rank.keys()] } },
-      include: { document: { include: documentInclude(productModel, scope.tenantId) } },
+      include: { document: { include: documentInclude(productModel, scope) } },
     });
     return chunks.map((c) => chunkEvidence(c, ['fulltext'], rank.get(c.id) ?? 0));
   }
@@ -258,8 +203,14 @@ export class PrismaKnowledgeStore implements KnowledgeStore {
           include: {
             applicability: {
               where: productModel
-                ? { product: { model: productModel, tenantId: scope.tenantId } }
-                : { product: { tenantId: scope.tenantId } },
+                ? ruleWhere(scope, productModel)
+                : {
+                    product: { tenantId: scope.tenantId },
+                    OR: [
+                      { deviceId: null },
+                      ...(scope.deviceId ? [{ deviceId: scope.deviceId }] : []),
+                    ],
+                  },
             },
           },
         },
@@ -268,6 +219,50 @@ export class PrismaKnowledgeStore implements KnowledgeStore {
       take: 20,
     });
     return chunks.map((c) => chunkEvidence(c, ['exact_ref'], 1));
+  }
+
+  /**
+   * Само сигнал: кои идентификатори на въпроса и какъв най-висок пълнотекстов ранг (същата мярка
+   * като `searchChunks`) имат публикуваните документи за модела, вързани САМО за конкретни табла.
+   * Съдържание не се връща: случаят няма табло — тези документи не са негови.
+   */
+  async boardSpecificMatches(
+    scope: SearchScope,
+    productModel: string,
+    identifiers: string[],
+    text: string,
+  ): Promise<{ identifiers: string[]; rank: number }> {
+    const query = toOrTsQuery(text);
+    if (scope.audiences.length === 0) return { identifiers: [], rank: 0 };
+    const audiences = [...scope.audiences];
+    const boardOnly = Prisma.sql`d."tenantId" = ${scope.tenantId}
+        AND d.status = 'PUBLISHED'
+        AND d.audience::text = ANY(${audiences})
+        AND EXISTS (
+          SELECT 1 FROM "DocumentApplicability" a
+          JOIN "Product" p ON p.id = a."productId"
+          WHERE a."documentId" = d.id AND p.model = ${productModel}
+            AND p."tenantId" = ${scope.tenantId} AND a."deviceId" IS NOT NULL
+        )`;
+    const [ids, ranked] = await Promise.all([
+      identifiers.length === 0
+        ? Promise.resolve([])
+        : this.db.$queryRaw<Array<{ id: string }>>`
+            SELECT x AS id FROM unnest(${identifiers}::text[]) AS x
+            WHERE EXISTS (
+              SELECT 1 FROM "DocumentChunk" c JOIN "Document" d ON d.id = c."documentId"
+              WHERE ${boardOnly} AND (x = ANY(c."componentRefs") OR x = ANY(c."errorCodes"))
+            )`,
+      query === null
+        ? Promise.resolve([])
+        : this.db.$queryRaw<Array<{ rank: number | null }>>`
+            SELECT max(ts_rank_cd(c.tsv, q))::float8 AS rank
+            FROM "DocumentChunk" c
+            JOIN "Document" d ON d.id = c."documentId",
+                 to_tsquery('simple', ${query}) q
+            WHERE c.tsv @@ q AND ${boardOnly}`,
+    ]);
+    return { identifiers: ids.map((r) => r.id), rank: ranked[0]?.rank ?? 0 };
   }
 }
 

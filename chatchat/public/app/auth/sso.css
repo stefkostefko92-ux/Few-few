@@ -1,0 +1,24 @@
+/* Единният вход на екрана за вход: разделител „oppure“ и бутонът на доставчика (Microsoft / OIDC). */
+
+.login-sso {
+  margin-top: 1rem;
+}
+.login-or {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--ink-2);
+  font-size: 0.875rem;
+  margin-bottom: 0.75rem;
+}
+.login-or::before,
+.login-or::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid var(--line);
+}
+.btn-sso img {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: none;
+}

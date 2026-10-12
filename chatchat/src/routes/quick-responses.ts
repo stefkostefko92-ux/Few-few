@@ -30,7 +30,7 @@ const ROLES = [
   'TENANT_ADMIN',
   'PLATFORM_ADMIN',
 ] as const satisfies readonly Role[];
-const Locale = z.enum(['it', 'en', 'bg']);
+const Locale = z.enum(['it', 'en']);
 const Fields = z.object({
   title: z.string().trim().min(1).max(120),
   body: z.string().trim().min(1).max(4000),

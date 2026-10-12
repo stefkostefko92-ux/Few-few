@@ -144,6 +144,24 @@ for (const scheme of ['light', 'dark'] as const) {
           a.page.getByRole('log').filter({ hasText: 'Controllo accessibilità' }),
         ).toBeVisible();
         await expectNoViolations(a.page, 'разговор със съобщение');
+
+        // §12.1/FR-16/FR-18: маркер на съобщение, търсене с подчертаване, предпочитания.
+        await a.page.getByRole('log').getByRole('button', { name: 'Azioni' }).last().click();
+        await a.page.getByRole('button', { name: 'Aggiungi a «Da fare»' }).click();
+        await expect(a.page.locator('#conv-host .mark-tag').first()).toBeVisible();
+        await expectNoViolations(a.page, 'съобщение с маркер и действия');
+        await a.page.getByRole('button', { name: 'Cerca', exact: true }).click();
+        const q = a.page.getByRole('searchbox', { name: 'Cerca nella cronologia' });
+        await q.fill('accessibilita');
+        await q.press('Enter');
+        await expect(a.page.locator('.search-hit mark').first()).toBeVisible();
+        await expectNoViolations(a.page, 'търсене с резултати');
+        await a.page.getByRole('button', { name: 'Inbox' }).first().click();
+        await a.page.getByRole('button', { name: 'Preferenze' }).click();
+        await expect(
+          a.page.getByRole('dialog', { name: 'Preferenze delle notifiche' }),
+        ).toBeVisible();
+        await expectNoViolations(a.page, 'диалог „Preferenze delle notifiche“');
       } finally {
         await a.context.close();
       }

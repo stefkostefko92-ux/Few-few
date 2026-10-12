@@ -1,5 +1,7 @@
 import type { NotificationPref, Prisma, PrismaClient } from '@prisma/client';
+import { enqueueNotificationEmail } from '../email/enqueue.js';
 import { publishToUser, type CollabDeps } from './publish.js';
+import { isUrgentCase } from './urgency.js';
 
 /**
  * Известия (FR-18). Създават се при ново съобщение (по `notificationPref`: ALL / MENTIONS чрез
@@ -8,16 +10,40 @@ import { publishToUser, type CollabDeps } from './publish.js';
  * същия разговор не трупа ново известие, а увеличава брояча на старото.
  * В payload няма съдържание на съобщения — само идентификатори, имена и броячи; текстът се
  * чете през REST с проверка на достъпа.
+ * Поемане на СПЕШЕН случай (urgency.ts) става отделен вид — `case.urgent`, с приоритет „urgent“
+ * (§12.3 „distinguere assegnazione urgente“). Ново (не слято) известие пуска и имейл (outbox в
+ * същата транзакция), ако имейлите са включени.
  */
 
 export type NotificationEvent =
-  'message.created' | 'message.mention' | 'case.assigned' | 'case.ai_answer' | 'ticket.changed';
+  | 'message.created'
+  | 'message.mention'
+  | 'case.assigned'
+  | 'case.urgent'
+  | 'case.ai_answer'
+  | 'ticket.changed'
+  // Работният поток (FR-09, FR-19) и човешкото потвърждение (§11.2) — services/tickets/effects.ts.
+  | 'ticket.assigned'
+  | 'ticket.info_requested'
+  | 'ticket.info_provided'
+  | 'ticket.escalated'
+  | 'handoff.requested'
+  | 'handoff.message'
+  | 'handoff.to_ai'
+  | 'step.approval_requested'
+  | 'step.approval_granted'
+  | 'step.approval_denied'
+  // Обратната връзка към знанието (FR-10, §11.3) — към отговорниците за знанието (services/proposals/).
+  | 'proposal.created';
+
+/** Видовете с приоритет „спешно“ (UI ги показва отделно; писмото тръгва без забавяне). */
+export const URGENT_EVENTS: ReadonlySet<string> = new Set(['case.urgent']);
 
 export interface NotificationInput {
   tenantId: string;
   userId: string;
   eventType: NotificationEvent;
-  objectType: 'conversation' | 'case' | 'ticket';
+  objectType: 'conversation' | 'case' | 'ticket' | 'approval' | 'proposal';
   objectId: string;
   payload: Record<string, unknown>;
 }
@@ -92,12 +118,32 @@ export function notificationView(n: {
   return {
     id: n.id,
     eventType: n.eventType,
+    priority: URGENT_EVENTS.has(n.eventType) ? ('urgent' as const) : ('normal' as const),
     objectType: n.objectType,
     objectId: n.objectId,
     payload: n.payload,
     createdAt: n.createdAt,
     readAt: n.readAt,
   };
+}
+
+/** Поемането на спешен случай е отделен вид известие (същият получател и обект). */
+async function withPriority(
+  db: PrismaClient,
+  items: readonly NotificationInput[],
+): Promise<NotificationInput[]> {
+  const urgent = new Map<string, boolean>();
+  const out: NotificationInput[] = [];
+  for (const item of items) {
+    if (item.eventType !== 'case.assigned') {
+      out.push(item);
+      continue;
+    }
+    if (!urgent.has(item.objectId))
+      urgent.set(item.objectId, await isUrgentCase(db, item.objectId));
+    out.push(urgent.get(item.objectId) ? { ...item, eventType: 'case.urgent' } : item);
+  }
+  return out;
 }
 
 /**
@@ -127,7 +173,7 @@ async function writeNotifications(
   actorId: string | null,
 ): Promise<void> {
   const unique = new Map<string, NotificationInput>();
-  for (const item of items) unique.set(dedupeKey(item), item);
+  for (const item of await withPriority(deps.db, items)) unique.set(dedupeKey(item), item);
   const ordered = [...unique.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
   const written = await deps.db.$transaction(async (tx) => {
     const out = [];
@@ -160,6 +206,7 @@ async function writeNotifications(
               payload: { ...item.payload, count: 1 } as Prisma.InputJsonValue,
             },
           });
+      if (!existing && deps.mail) await enqueueNotificationEmail(tx, deps.mail, row);
       out.push({ row, deduplicated: existing !== null });
     }
     return out;
@@ -206,29 +253,4 @@ export function caseAudience(
   );
 }
 
-/** Промяна по тикет (създаване, статус) — за създателя и поелия случая (FR-18). */
-export async function notifyTicketChange(
-  deps: CollabDeps,
-  c: {
-    id: string;
-    number: string;
-    tenantId: string;
-    createdById: string;
-    assignedToId: string | null;
-  },
-  ticket: { id: string; number: string; status: string },
-  actorId: string,
-): Promise<void> {
-  await notify(
-    deps,
-    caseAudience(c, actorId).map((userId) => ({
-      tenantId: c.tenantId,
-      userId,
-      eventType: 'ticket.changed' as const,
-      objectType: 'ticket' as const,
-      objectId: ticket.id,
-      payload: { caseId: c.id, caseNumber: c.number, number: ticket.number, status: ticket.status },
-    })),
-    actorId,
-  );
-}
+// Промяна по тикет (FR-09, FR-19) — известията са в services/tickets/effects.ts (`afterTicketChange`).

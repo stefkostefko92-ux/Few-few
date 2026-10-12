@@ -1,9 +1,20 @@
 import type { DiagnosticContext } from '../domain/context.js';
 import { canonicalIdentifier, normalizeQuery } from '../domain/normalize.js';
-import type { EvidenceLevel } from '../domain/response.js';
-import { isApplicable, type ProductVersion } from '../domain/versions.js';
+import { applicabilityFields, applicabilityOf } from './applicability.js';
+import { applyBoardOverride, findConflicts } from './levels.js';
+import {
+  DEFAULT_FULLTEXT_LIMIT,
+  DEFAULT_SEMANTIC_LIMIT,
+  FULLTEXT_WEIGHT,
+  LEXICAL_SUPPORT_SCORE,
+  MAX_PACK,
+  NOT_APPLICABLE_FACTOR,
+  RRF_K,
+  SEMANTIC_MIN_SIMILARITY,
+} from './thresholds.js';
 import {
   isExactMatch,
+  type CaseVersion,
   type EvidenceItem,
   type KnowledgeStore,
   type MatchKind,
@@ -14,37 +25,27 @@ import {
 
 /**
  * Хибридното търсене (§8.1): нормализация → точно (кодове, клеми, модел) → пълнотекстово +
- * семантично (pgvector) → филтър по съвместимост → подреждане → доказателствен пакет E1…En.
+ * семантично (pgvector) → филтър по съвместимост и валидност → подреждане → пакет E1…En.
  * Точните съвпадения имат привилегирован път (§8.2) и не се режат от лимита; пълнотекстовото и
- * семантичното се сливат с Reciprocal Rank Fusion (RRF), без да се смесват мащабите им.
+ * семантичното се сливат с Reciprocal Rank Fusion (RRF), без да се смесват мащабите им. В двете
+ * групи документът за ТАБЛОТО на случая е пред общите за модела (уникалните схеми).
  */
 
-export const MAX_PACK = 12;
-const DEFAULT_FULLTEXT_LIMIT = 8;
-export const DEFAULT_SEMANTIC_LIMIT = 6;
-/** Несъвместимото не изчезва (за да се види конфликтът), но пада под всяко съвместимо. */
-export const NOT_APPLICABLE_FACTOR = 0.3;
-/** Константата на RRF (Cormack, Clarke, Büttcher 2009): fused = Σ 1 / (k + ранг). */
-export const RRF_K = 60;
-/**
- * Под това косинусово сходство семантичният резултат е шум: най-близък съсед има винаги, а без
- * праг „нищо съвместимо“ (AC-04) никога не би настъпило. Прилага се и в SQL, и тук (защита в
- * дълбочина). Промяна → нов GATE_VERSION и прогон на оценъчния набор (evals/).
- */
-export const SEMANTIC_MIN_SIMILARITY = 0.6;
-/**
- * От това сходство нагоре семантичен източник ПОТВЪРЖДАВА лексикален за ниво „high“ (§8.3);
- * сам по себе си не стига (виж evidenceLevel).
- */
-export const SEMANTIC_HIGH_SIMILARITY = 0.8;
-/** Лексикалната релевантност, от която документ брои за „high“ (както преди семантичното). */
-export const LEXICAL_SUPPORT_SCORE = 0.35;
+export * from './thresholds.js';
+export { cappedLevel, evidenceLevel, findConflicts, wouldBeRelevant } from './levels.js';
 
-export function versionOf(req: RetrievalRequest): ProductVersion {
+/**
+ * Версията на случая за приложимостта: HW/FW от контекста (или от въпроса), провереното табло от
+ * сървъра и опциите на конфигурацията от контекста (FR-01 — попълнени от регистъра при случай от
+ * табло/QR, редактируеми като HW/FW по FR-02).
+ */
+export function versionOf(req: Pick<RetrievalRequest, 'context' | 'query' | 'scope'>): CaseVersion {
   const fromQuery = normalizeQuery(req.query);
   return {
     hwRevision: req.context.hardwareRevision ?? fromQuery.hardwareRevision,
     firmware: req.context.firmware ?? fromQuery.firmware,
+    deviceId: req.scope.deviceId ?? null,
+    options: req.context.options,
   };
 }
 
@@ -56,7 +57,7 @@ export function keyOf(item: Pick<RawEvidence, 'chunkId' | 'errorId'>): string {
 export function baseScore(matchedBy: MatchKind[], fulltextShare: number): number {
   if (matchedBy.includes('exact_code')) return 1;
   if (matchedBy.includes('exact_ref')) return 0.8;
-  if (matchedBy.includes('fulltext')) return 0.7 * fulltextShare;
+  if (matchedBy.includes('fulltext')) return FULLTEXT_WEIGHT * fulltextShare;
   return 0;
 }
 
@@ -113,6 +114,25 @@ async function searchSemanticSafe(
   }
 }
 
+/**
+ * Случай без проверено табло: има ли по въпроса документи САМО за конкретни табла, които биха
+ * били източник (точно съвпадение или пълнотекстово над прага за подкрепа спрямо общите)? Тогава
+ * отговорът иска сериен номер/QR. Съдържанието им не влиза в пакета.
+ */
+async function needsBoard(
+  store: KnowledgeStore,
+  req: RetrievalRequest,
+  ids: string[],
+  text: string,
+): Promise<{ identifiers: string[]; rank: number } | null> {
+  if (req.scope.deviceId || !store.boardSpecificMatches) return null;
+  try {
+    return await store.boardSpecificMatches(req.scope, req.context.productModel, ids, text);
+  } catch {
+    return null;
+  }
+}
+
 export async function retrieve(
   store: KnowledgeStore,
   req: RetrievalRequest,
@@ -120,14 +140,16 @@ export async function retrieve(
   const normalized = normalizeQuery(req.query);
   const ids = [...caseIdentifiers(req.context, req.query)];
   const model = req.context.productModel;
+  const now = req.now ?? new Date();
 
-  const [errors, byRef, fulltext, semanticRaw] = await Promise.all([
+  const [errors, byRef, fulltext, semanticRaw, board] = await Promise.all([
     ids.length > 0 ? store.findErrors(req.scope, model, ids) : Promise.resolve([]),
     ids.length > 0 ? store.findChunksByIdentifiers(req.scope, model, ids) : Promise.resolve([]),
     normalized.text.length > 0
       ? store.searchChunks(req.scope, model, normalized.text, req.limit ?? DEFAULT_FULLTEXT_LIMIT)
       : Promise.resolve([]),
     normalized.text.length > 0 ? searchSemanticSafe(store, req, normalized.text) : [],
+    needsBoard(store, req, ids, normalized.text),
   ]);
   // Само документни парчета над прага; rawScore не носи сходството (различен мащаб от ts_rank).
   const semantic: RawEvidence[] = semanticRaw
@@ -156,34 +178,44 @@ export async function retrieve(
   );
   const rankLists = [ranks(fulltext, (r) => r.rawScore), ranks(semantic, (r) => r.similarity ?? 0)];
   const scored = [...merged.values()].map((raw) => {
-    const applicable = raw.rules.some((rule) => isApplicable(rule, version));
-    const factor = applicable ? 1 : NOT_APPLICABLE_FACTOR;
+    const a = applicabilityOf(raw, version, now);
+    const factor = a.applicable ? 1 : NOT_APPLICABLE_FACTOR;
     const share = maxFulltext > 0 ? raw.rawScore / maxFulltext : 0;
     const score = baseScore(raw.matchedBy, share) * factor;
     const fused = rrfScore(keyOf(raw), rankLists) * factor;
-    return { raw, applicable, score, fused };
+    return { raw, a, own: a.applicable && a.boardSpecific ? 1 : 0, score, fused };
   });
 
-  // Точните — първи, по лексикалната релевантност; останалите — по RRF (после по score).
+  // Точните — първи, по лексикалната релевантност; останалите — по RRF (после по score). В
+  // двете групи схемата на таблото на случая е пред общите за модела.
   const exact = scored
     .filter((r) => r.raw.matchedBy.some(isExactMatch))
-    .sort((a, b) => b.score - a.score);
+    .sort((a, b) => b.own - a.own || b.score - a.score);
   const rest = scored
     .filter((r) => !r.raw.matchedBy.some(isExactMatch))
-    .sort((a, b) => b.fused - a.fused || b.score - a.score);
+    .sort((a, b) => b.own - a.own || b.fused - a.fused || b.score - a.score);
   const pack = [...exact, ...rest].slice(0, Math.max(MAX_PACK, exact.length));
 
-  const items: EvidenceItem[] = pack.map(({ raw, applicable, score }, i) => {
-    const { rawScore: _rawScore, rules: _rules, similarity, ...fields } = raw;
-    const item: EvidenceItem = {
-      ...fields,
-      ref: `E${i + 1}`,
-      applicable,
-      score: Math.round(score * 1000) / 1000,
-    };
-    if (similarity !== undefined) item.similarity = Math.round(similarity * 1000) / 1000;
-    return item;
-  });
+  const items: EvidenceItem[] = applyBoardOverride(
+    pack.map(({ raw, a, score }, i) => {
+      const {
+        rawScore: _rawScore,
+        rules: _rules,
+        effectiveFrom: _from,
+        effectiveTo: _to,
+        similarity,
+        ...fields
+      } = raw;
+      const item: EvidenceItem = {
+        ...fields,
+        ref: `E${i + 1}`,
+        ...applicabilityFields(a),
+        score: Math.round(score * 1000) / 1000,
+      };
+      if (similarity !== undefined) item.similarity = Math.round(similarity * 1000) / 1000;
+      return item;
+    }),
+  );
 
   const found = new Set<string>();
   for (const item of items) {
@@ -193,118 +225,18 @@ export async function retrieve(
     for (const id of ids) if (item.text.toUpperCase().includes(id)) found.add(id);
   }
 
+  const onBoard = new Set(board?.identifiers ?? []);
+  const boardRelevant =
+    board !== null &&
+    (onBoard.size > 0 ||
+      (board.rank > 0 &&
+        (FULLTEXT_WEIGHT * board.rank) / Math.max(board.rank, maxFulltext) >=
+          LEXICAL_SUPPORT_SCORE));
   return {
     items,
-    unknownIdentifiers: ids.filter((id) => !found.has(id)),
+    // Идентификатор, който е САМО в схема на конкретно табло, не е „непознат“ — липсва таблото.
+    unknownIdentifiers: ids.filter((id) => !found.has(id) && !onBoard.has(id)),
     conflicts: findConflicts(items),
+    ...(boardRelevant ? { needsBoard: true } : {}),
   };
-}
-
-/**
- * Парче, което реално говори по въпроса: лексикално над прага за подкрепа или семантично ≥ 0.8.
- * Под прага е шум (обща дума като „piano“) — не подкрепя (`evidenceLevel`), значи и не опровергава.
- */
-const isRelevant = (i: EvidenceItem): boolean =>
-  i.score >= LEXICAL_SUPPORT_SCORE ||
-  (i.matchedBy.includes('semantic') && (i.similarity ?? 0) >= SEMANTIC_HIGH_SIMILARITY);
-
-/**
- * Противоречия (§8.2 „при конфликт — изрично“): един и същ код за грешка с различни описания,
- * или един и същ документ в две ревизии — и двата записа съвместими с таблото. Ревизиите са
- * конфликт само ако документът е източник за ТОЗИ въпрос: поне едно негово парче е релевантно
- * (`isRelevant`) или е цитирано от модела (`cited`). Иначе две ревизии на несвързан бюлетин,
- * хванати по обща дума, свалят точния код на случая до „conflict“ (реален случай от evals/).
- */
-export function findConflicts(
-  items: EvidenceItem[],
-  cited: ReadonlySet<string> = new Set(),
-): RetrievalResult['conflicts'] {
-  const conflicts: RetrievalResult['conflicts'] = [];
-  const applicable = items.filter((i) => i.applicable);
-
-  const byCode = new Map<string, EvidenceItem[]>();
-  for (const item of applicable) {
-    if (item.kind !== 'error' || !item.errorCode) continue;
-    const list = byCode.get(item.errorCode) ?? [];
-    list.push(item);
-    byCode.set(item.errorCode, list);
-  }
-  for (const [code, list] of byCode) {
-    const meanings = new Set(list.map((i) => i.text.trim().toLowerCase()));
-    if (list.length > 1 && meanings.size > 1) {
-      conflicts.push({ description: `error:${code}`, refs: list.map((i) => i.ref) });
-    }
-  }
-
-  const byDoc = new Map<string, EvidenceItem[]>();
-  for (const item of applicable) {
-    if (item.kind !== 'document') continue;
-    const list = byDoc.get(item.documentCode) ?? [];
-    list.push(item);
-    byDoc.set(item.documentCode, list);
-  }
-  for (const [code, list] of byDoc) {
-    const revisions = new Set(list.map((i) => i.revision));
-    if (revisions.size > 1 && list.some((i) => isRelevant(i) || cited.has(i.ref))) {
-      conflicts.push({ description: `revision:${code}`, refs: list.map((i) => i.ref) });
-    }
-  }
-  return conflicts;
-}
-
-/**
- * Праговете (§8.3), изчислени детерминистично от пакета — моделът не ги определя.
- *  strong   — точен код за грешка, съвместим с версията → водена диагностика (никога семантично)
- *  high     — поне два съвместими източника от различни документи → висока/средна увереност;
- *             поне един ЛЕКСИКАЛЕН (точен или пълнотекстов, score ≥ LEXICAL_SUPPORT_SCORE),
- *             вторият може да е семантичен със сходство ≥ SEMANTIC_HIGH_SIMILARITY.
- *             Само семантични източници → „weak“, колкото и да са.
- *  weak     — един съвместим източник → предпазлив отговор + искане на контекст
- *  conflict — противоречие между съвместими източници → без автоматична сигурност
- *  none     — нищо съвместимо → ескалация или искане на нови данни
- */
-export function evidenceLevel(
-  result: RetrievalResult,
-  caseIds?: ReadonlySet<string>,
-): EvidenceLevel {
-  const applicable = result.items.filter((i) => i.applicable);
-  if (applicable.length === 0) return 'none';
-  if (result.conflicts.length > 0) return 'conflict';
-  // „Точен код“ е кодът на СЛУЧАЯ — не всеки код, който моделът е потърсил с инструмент.
-  const strong = applicable.some(
-    (i) =>
-      i.kind === 'error' &&
-      i.matchedBy.includes('exact_code') &&
-      i.errorCode !== null &&
-      (caseIds === undefined || caseIds.has(canonicalIdentifier(i.errorCode))),
-  );
-  if (strong) return 'strong';
-  const lexical = new Set(
-    applicable.filter((i) => i.score >= LEXICAL_SUPPORT_SCORE).map((i) => i.documentId),
-  );
-  if (lexical.size === 0) return 'weak';
-  const corroborating = new Set(lexical);
-  for (const i of applicable) {
-    if (i.matchedBy.includes('semantic') && (i.similarity ?? 0) >= SEMANTIC_HIGH_SIMILARITY) {
-      corroborating.add(i.documentId);
-    }
-  }
-  return corroborating.size >= 2 ? 'high' : 'weak';
-}
-
-const LEVEL_RANK: Readonly<Record<EvidenceLevel, number>> = {
-  none: 0,
-  weak: 1,
-  conflict: 1,
-  high: 2,
-  strong: 3,
-};
-
-/**
- * Нивото след инструментите не може да е по-високо от началното (моделът сам си избира какво
- * да търси), освен „strong“ — то е възможно само с кода на случая. Конфликт и „none“ се пазят.
- */
-export function cappedLevel(initial: EvidenceLevel, final: EvidenceLevel): EvidenceLevel {
-  if (final === 'strong' || final === 'conflict') return final;
-  return LEVEL_RANK[final] > LEVEL_RANK[initial] ? initial : final;
 }

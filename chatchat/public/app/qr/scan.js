@@ -13,6 +13,9 @@ const TOKEN = /^[A-Za-z0-9_-]{20,100}$/;
 let pendingToken = null;
 let stream = null;
 let rafStop = false;
+/** Кой получава намереното табло: нов случай (по подразбиране) или липсваща данна (FR-07). */
+let onFoundDevice = null;
+let openScanDialog = null;
 
 /** Чете и изтрива `?qr=` от адреса. Връща true, ако е имало токен. */
 export function takeQrFromUrl() {
@@ -109,6 +112,12 @@ async function startCamera(onFound) {
   requestAnimationFrame(tick);
 }
 
+/** Сканиране за друг получател — напр. серийния номер, поискан в отговора (FR-07). */
+export function scanDevice(onDevice) {
+  onFoundDevice = onDevice;
+  openScanDialog?.();
+}
+
 /** @param {(device: object) => void} onDevice */
 export function initScan(onDevice) {
   const dlg = $('#dlg-scan');
@@ -123,21 +132,32 @@ export function initScan(onDevice) {
     say(t('qr.looking'), false);
     try {
       const device = await lookup(parsed);
+      const deliver = onFoundDevice ?? onDevice;
       dlg.close();
-      onDevice(device);
+      deliver(device);
     } catch (err) {
       say(err.status === 404 ? t('qr.notFound') : errorText(err), true);
       if (await cameraSupported()) void startCamera(found);
     }
   };
-  $('#btn-scan').addEventListener('click', async () => {
+  openScanDialog = async () => {
     say('', false);
     $('#scan-serial').value = '';
     dlg.showModal();
     if (await cameraSupported()) void startCamera(found);
     else $('#scan-serial').focus();
+  };
+  $('#btn-scan').addEventListener('click', () => {
+    onFoundDevice = null;
+    void openScanDialog();
   });
-  dlg.addEventListener('close', stopCamera);
+  dlg.addEventListener('close', () => {
+    stopCamera();
+    // Следващото отваряне от страничната лента е отново „нов случай“.
+    setTimeout(() => {
+      onFoundDevice = null;
+    }, 0);
+  });
   $('#scan-form').addEventListener('submit', (e) => {
     e.preventDefault();
     const serial = $('#scan-serial').value.trim();

@@ -1,36 +1,110 @@
-// Един документ: жизненият цикъл и позволените преходи (§4.1/§7.3, AC-10). Принципът на четирите
-// очи (§11.3): документ по безопасност не се публикува от човека, който го е качил.
+// Един документ: метаданните §7.2, приложимостта (вкл. табло), прегледът на страниците преди
+// публикуване, ревизиите на кода (със сравнение), кодовете с този източник, историята от одита и
+// позволените преходи (§4.1/§7.3, AC-10). Документите са неизменими: няма „редакция“ — само
+// преходи. Четирите очи (§11.3): документ по безопасност не се публикува от качилия/пратилия.
 
 import { t } from '../i18n.js';
-import { call, fmtDate, fwRange } from './core.js';
-import { lifecycle } from './kb-common.js';
-import { button, confirmDialog, dialog, errText, h, toast } from './ui.js';
+import { call, fmtDate } from './core.js';
+import { openCompare } from './documents-compare.js';
+import { NEXT, runTransition } from './documents-actions.js';
+import { previewBlock } from './documents-preview.js';
+import {
+  boardBadge,
+  historyList,
+  lifecycle,
+  ruleText,
+  statusBadge,
+  validityBadge,
+  validityText,
+} from './kb-common.js';
+import { badge, button, dialog, errText, h, toast } from './ui.js';
 import { definitionList } from './users-common.js';
 
-/** Кои преходи са възможни от статуса: [действие, етикет, роля на бутона]. */
-const NEXT = {
-  DRAFT: [['submit', 'primary']],
-  REVIEW: [
-    ['publish', 'primary'],
-    ['reject', 'secondary'],
-  ],
-  PUBLISHED: [['deprecate', 'danger']],
-  DEPRECATED: [],
-};
+function fourEyesNote(doc) {
+  if (!doc.safetyRelevant) return null;
+  const blocked = doc.fourEyesBlocked && doc.status === 'REVIEW';
+  return h(
+    'p',
+    { class: `note ${blocked ? 'note-warn' : ''}` },
+    blocked ? t('admin.kb.fourEyes.blocked') : t('admin.kb.fourEyes.rule'),
+  );
+}
 
-export function openDocument(doc, reload) {
-  const blockedFourEyes = doc.safetyRelevant && doc.uploadedByMe;
+const olderFirst = (x, y) =>
+  new Date(x.createdAt).getTime() <= new Date(y.createdAt).getTime() ? [x.id, y.id] : [y.id, x.id];
+
+function revisionsBlock(detail) {
+  const others = detail.revisions.filter((r) => !r.current);
+  if (others.length === 0) return h('p', { class: 'muted' }, t('admin.kb.revisions.none'));
+  return h(
+    'ul',
+    { class: 'plain kb-revisions' },
+    ...others.map((r) =>
+      h(
+        'li',
+        {},
+        h('span', { class: 'mono' }, `${detail.document.code} · ${r.revision}`),
+        ' ',
+        statusBadge(r.status),
+        ' ',
+        // Старата ревизия вляво, новата вдясно (по реда на качване).
+        button(
+          t('admin.kb.compare.go'),
+          () => void openCompare(...olderFirst(r, detail.document)),
+          {
+            small: true,
+            'aria-label': `${t('admin.kb.compare.go')}: ${r.revision} → ${detail.document.revision}`,
+          },
+        ),
+      ),
+    ),
+  );
+}
+
+function errorsBlock(errors) {
+  if (!errors.length) return h('p', { class: 'muted' }, t('admin.kb.errors.none'));
+  return h(
+    'ul',
+    { class: 'plain' },
+    ...errors.map((e) =>
+      h(
+        'li',
+        {},
+        h('span', { class: 'mono' }, `${e.code} v${e.version}`),
+        ' ',
+        statusBadge(e.status),
+      ),
+    ),
+  );
+}
+
+/** Отваря детайла на документ (ред от списъка или { id }). `reload` обновява списъка. */
+export async function openDocument(row, reload) {
+  let detail;
+  try {
+    detail = await call('GET', `/admin/documents/${encodeURIComponent(row.id)}`);
+  } catch (err) {
+    toast(errText(err), 'err');
+    return;
+  }
+  const doc = detail.document;
+  const supersedes = detail.revisions.find((r) => r.id === doc.supersedesId);
   const buttons = h('div', { class: 'btn-row' });
-  for (const [action, kind] of NEXT[doc.status]) {
-    const blocked = action === 'publish' && blockedFourEyes;
+  let d = null;
+  const done = () => {
+    d?.close();
+    reload?.();
+  };
+  for (const [action, kind] of NEXT[doc.status] ?? []) {
+    const blocked = action === 'publish' && doc.fourEyesBlocked;
     buttons.append(
-      button(t(`admin.docs.act.${action}`), () => void transition(doc, action, d, reload), {
+      button(t(`admin.kb.act.${action}`), () => void runTransition(doc, action, done), {
         kind,
         disabled: blocked || undefined,
       }),
     );
   }
-  const d = dialog({
+  d = dialog({
     title: `${doc.code} · ${doc.revision}`,
     wide: true,
     cancel: false,
@@ -38,20 +112,25 @@ export function openDocument(doc, reload) {
     body: [
       h('p', { class: 'doc-title' }, doc.title),
       lifecycle(doc.status),
-      doc.safetyRelevant
-        ? h(
-            'p',
-            { class: `note ${blockedFourEyes && doc.status === 'REVIEW' ? 'note-warn' : ''}` },
-            blockedFourEyes && doc.status === 'REVIEW'
-              ? t('admin.docs.fourEyes.blocked')
-              : t('admin.docs.fourEyes.rule'),
-          )
+      h(
+        'p',
+        { class: 'btn-row' },
+        validityBadge(doc),
+        boardBadge(doc),
+        doc.safetyRelevant ? badge('warn', t('admin.docs.safetyBadge')) : null,
+      ),
+      fourEyesNote(doc),
+      doc.status === 'PUBLISHED' || doc.status === 'DEPRECATED'
+        ? h('p', { class: 'hint' }, t('admin.kb.immutable'))
         : null,
       definitionList([
         [t('admin.docs.type'), t(`admin.docType.${doc.type}`)],
         [t('admin.docs.audience'), t(`admin.audience.${doc.audience}`)],
         [t('admin.docs.language'), doc.language.toUpperCase()],
-        [t('admin.docs.safety'), doc.safetyRelevant ? t('admin.yes') : t('admin.no')],
+        [t('admin.kb.validity'), validityText(doc)],
+        [t('admin.docs.subsystem'), doc.subsystem ?? ''],
+        [t('admin.docs.supersedes'), supersedes ? supersedes.revision : ''],
+        [t('admin.kb.sourceFilename'), doc.sourceFilename],
         [t('admin.docs.chunks'), String(doc.chunks)],
         [
           t('admin.docs.checksum'),
@@ -61,70 +140,19 @@ export function openDocument(doc, reload) {
         [t('admin.docs.deprecatedAt'), fmtDate(doc.deprecatedAt)],
       ]),
       h('h3', { class: 'sub' }, t('admin.docs.applicability')),
-      h(
-        'ul',
-        { class: 'plain' },
-        ...doc.applicability.map((a) =>
-          h(
-            'li',
-            {},
-            h('span', { class: 'mono' }, a.productModel),
-            a.hwRevision ? ` · HW ${a.hwRevision}` : '',
-            ` · ${t('admin.products.fw')} ${fwRange(a.fwMin, a.fwMax)}`,
-          ),
-        ),
-      ),
+      h('ul', { class: 'plain' }, ...doc.applicability.map((a) => h('li', {}, ruleText(a)))),
+      h('h3', { class: 'sub' }, t('admin.kb.preview.title')),
+      previewBlock(detail),
+      h('h3', { class: 'sub' }, t('admin.kb.revisions.title')),
+      revisionsBlock(detail),
+      h('h3', { class: 'sub' }, t('admin.kb.errors.title')),
+      errorsBlock(detail.errors),
+      h('h3', { class: 'sub' }, t('admin.kb.history.title')),
+      historyList(detail.history),
       buttons.children.length ? h('h3', { class: 'sub' }, t('admin.docs.next')) : null,
       buttons,
     ],
     actions: [],
   });
   return d;
-}
-
-async function transition(doc, action, detail, reload) {
-  const ok = await (action === 'submit'
-    ? Promise.resolve(true)
-    : confirmDialog({
-        title: t(`admin.docs.act.${action}`),
-        message: t(`admin.docs.confirm.${action}`, { code: doc.code, rev: doc.revision }),
-        confirmLabel: t(`admin.docs.act.${action}`),
-        danger: action === 'deprecate' || action === 'reject',
-      }));
-  if (!ok) return;
-  detail.close();
-  try {
-    const res = await call('POST', `/admin/documents/${doc.id}/${action}`);
-    toast(t(`admin.docs.done.${action}`, { code: doc.code, rev: doc.revision }));
-    reload();
-    // Нова ревизия отписва старата: кодовете, сочили я, минават в преглед и чакат свързване.
-    if (res?.errorsToReview?.length) {
-      dialog({
-        title: t('admin.docs.review.title'),
-        cancel: false,
-        closeLabel: t('common.close'),
-        body: [
-          h('p', {}, t('admin.docs.review.text', { count: res.errorsToReview.length })),
-          h(
-            'ul',
-            { class: 'plain' },
-            ...res.errorsToReview.map((e) =>
-              h('li', {}, h('span', { class: 'mono' }, `${e.code} v${e.version}`)),
-            ),
-          ),
-        ],
-        actions: [
-          {
-            label: t('admin.docs.review.go'),
-            primary: true,
-            onClick: () => {
-              location.hash = '#codes?status=REVIEW';
-            },
-          },
-        ],
-      });
-    }
-  } catch (err) {
-    toast(errText(err), 'err');
-  }
 }

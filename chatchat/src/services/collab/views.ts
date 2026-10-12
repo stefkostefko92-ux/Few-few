@@ -1,12 +1,34 @@
 import type {
+  Attachment,
   Conversation,
   ConversationMember,
   ConversationMessage,
+  MessageMarkKind,
   MessageReaction,
+  Prisma,
   PrismaClient,
 } from '@prisma/client';
 
 /** Формите, които API-то и потоците връщат — едно място, за да не се разминават. */
+
+/** Какво се зарежда със съобщението за изгледа: реакциите и само проверените (CLEAN) файлове. */
+export const MESSAGE_INCLUDE = {
+  reactions: true,
+  attachments: { where: { scanStatus: 'CLEAN' }, orderBy: { createdAt: 'asc' } },
+} as const satisfies Prisma.ConversationMessageInclude;
+
+/** Описанието на файл в съобщение — без ключа в хранилището; байтовете — само с подписан адрес. */
+export function fileView(
+  a: Pick<Attachment, 'id' | 'kind' | 'mime' | 'sizeBytes' | 'originalName'>,
+) {
+  return {
+    id: a.id,
+    kind: a.kind,
+    mime: a.mime,
+    sizeBytes: a.sizeBytes,
+    originalName: a.originalName,
+  };
+}
 
 /** Позволените реакции (§13.1: незадължителни, никога доказателство) — имена, не свободен текст. */
 export const REACTIONS = [
@@ -21,7 +43,10 @@ export const REACTIONS = [
 
 const PREVIEW = 140;
 
-export type MessageRow = ConversationMessage & { reactions?: MessageReaction[] };
+export type MessageRow = ConversationMessage & {
+  reactions?: MessageReaction[];
+  attachments?: Attachment[];
+};
 
 export function reactionSummary(reactions: readonly MessageReaction[] = []) {
   const by = new Map<string, string[]>();
@@ -36,7 +61,7 @@ export function reactionSummary(reactions: readonly MessageReaction[] = []) {
 export function messageView(
   m: MessageRow,
   names: ReadonlyMap<string, string>,
-  extra: { replyCount?: number } = {},
+  extra: { replyCount?: number; marks?: MessageMarkKind[] } = {},
 ) {
   const deleted = m.deletedAt !== null;
   return {
@@ -48,6 +73,11 @@ export function messageView(
     deleted,
     replyToId: m.replyToId,
     ...(extra.replyCount !== undefined ? { replyCount: extra.replyCount } : {}),
+    // Личните маркери (TODO/STARRED) — само в REST към самия човек, никога в потока.
+    ...(extra.marks !== undefined ? { marks: extra.marks } : {}),
+    attachments: deleted
+      ? []
+      : (m.attachments ?? []).filter((a) => a.scanStatus === 'CLEAN').map(fileView),
     reactions: deleted ? [] : reactionSummary(m.reactions),
     clientMessageId: m.clientMessageId,
     editedAt: m.editedAt,

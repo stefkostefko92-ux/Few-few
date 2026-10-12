@@ -8,7 +8,10 @@ import type { AttachmentDeps } from './attachments.js';
  * Достъп до документ и до оригиналния му PDF за визуализатора (§9.2). ЕДНО място за правилата —
  * текстът на страницата, метаданните и байтовете на PDF минават през `visibleDocument`, същите
  * като филтрите на AI (`store/knowledge.ts`): само своя клиент, само аудиторията на ролята
- * (портален човек → само PORTAL), само PUBLISHED; чернова — само за kb:manage.
+ * (портален човек → само PORTAL), само PUBLISHED; чернова — само за kb:manage. Схема само за
+ * конкретни табла (уникалните схеми) вижда само който вижда поне едно от тези табла: персоналът
+ * (`device:readAll`) или порталът на фирмата на таблото — като AI, който я ползва само в случай,
+ * вързан за таблото (видимостта му е проверена при създаването).
  */
 
 const DOCUMENT_SELECT = {
@@ -31,12 +34,25 @@ export async function visibleDocument(
   /** Чернова — само за kb:manage и само за оригинала (рецензия на схемата преди публикуване). */
   opts: { drafts?: boolean } = {},
 ) {
+  const boards = can(p.user.role, 'device:readAll')
+    ? {}
+    : {
+        applicability: {
+          some: {
+            OR: [
+              { deviceId: null },
+              ...(p.user.companyId ? [{ device: { companyId: p.user.companyId } }] : []),
+            ],
+          },
+        },
+      };
   return db.document.findFirst({
     where: {
       id: documentId,
       tenantId: p.user.tenantId,
       audience: { in: [...audiencesFor(p.user.role)] },
       ...(opts.drafts && can(p.user.role, 'kb:manage') ? {} : { status: 'PUBLISHED' }),
+      ...boards,
     },
     select: DOCUMENT_SELECT,
   });

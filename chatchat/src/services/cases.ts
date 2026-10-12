@@ -5,6 +5,7 @@ import type { Audience } from '../retrieval/types.js';
 import type { Principal } from '../auth/sessions.js';
 import { DiagnosticContextSchema, type DiagnosticContext } from '../domain/context.js';
 import type { DiagnosticAnswer } from '../domain/response.js';
+import { stepsForSummary } from './steps/summary.js';
 
 /**
  * Достъп до случаи (§12.4): техниците (портал и вътрешни) виждат своите и възложените им;
@@ -45,13 +46,17 @@ export function humanNumber(prefix: 'CASE' | 'TS', now = new Date()): string {
   return `${prefix}-${now.getUTCFullYear()}-${String(randomInt(0, 1_000_000)).padStart(6, '0')}`;
 }
 
-/** Нарушен уникален индекс, който включва полето `field` (P2002). */
+/**
+ * Нарушен уникален индекс, който (може би) включва полето `field` (P2002). Под RLS PostgreSQL НЕ връща
+ * подробността на нарушението (ключът би издал ред, който ролята не вижда), затова Prisma не знае
+ * полетата (`target` е null) — тогава отговорът е „възможно“: викащият ПОТВЪРЖДАВА с четене
+ * (съществуващия ред, повтора) и при липса хвърля, никога не решава на сляпо.
+ */
 export function isUniqueOn(err: unknown, field: string): boolean {
-  return (
-    err instanceof Prisma.PrismaClientKnownRequestError &&
-    err.code === 'P2002' &&
-    JSON.stringify(err.meta ?? {}).includes(field)
-  );
+  if (!(err instanceof Prisma.PrismaClientKnownRequestError) || err.code !== 'P2002') return false;
+  const target = (err.meta as { target?: unknown } | undefined)?.target;
+  if (target === null || target === undefined) return true;
+  return JSON.stringify(target).includes(field);
 }
 
 export async function withUniqueRetry<T>(create: () => Promise<T>, attempts = 5): Promise<T> {
@@ -81,14 +86,11 @@ export async function addTimeline(
 
 /**
  * Обобщението на тикета се сглобява от СЪРВЪРА от записаното в случая (AC-08, AC-14): контекст,
- * проверките, които AI е предложил, консултираните източници, решенията на Safety Gate и
- * липсващите данни — техникът не въвежда нищо повторно.
+ * проверките, които AI е предложил, ИЗПЪЛНЕНИТЕ стъпки с резултатите и разрешенията (§11.2),
+ * консултираните източници, решенията на Safety Gate и липсващите данни — техникът не въвежда
+ * нищо повторно.
  */
-export async function buildTicketSummary(
-  db: PrismaClient,
-  c: Case,
-  readerAudiences: readonly Audience[],
-) {
+export async function buildTicketSummary(db: Db, c: Case, readerAudiences: readonly Audience[]) {
   // Само отговорите, които авторът на тикета вижда — обобщението не разширява достъпа.
   const aiMessages = (
     await db.caseMessage.findMany({
@@ -133,6 +135,7 @@ export async function buildTicketSummary(
     orderBy: { createdAt: 'asc' },
     select: { id: true, kind: true, mime: true, originalName: true },
   });
+  const steps = await stepsForSummary(db, c.id, aiMessages);
   return {
     caseNumber: c.number,
     context: contextOf(c),
@@ -150,6 +153,8 @@ export async function buildTicketSummary(
             step: k.step,
             action: k.action,
             expected: k.expected,
+            actionClass: k.actionClass,
+            requiresConfirmation: k.requiresConfirmation,
           })),
           safety: last.safety,
           missingData: last.missingData,
@@ -158,6 +163,8 @@ export async function buildTicketSummary(
       : null,
     sources: [...sources.values()],
     attachments,
+    executedSteps: steps.executedSteps,
+    approvals: steps.approvals,
     knowledgeSnapshots: [...new Set(aiMessages.map((m) => m.knowledgeSnapshotId).filter(Boolean))],
   };
 }

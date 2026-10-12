@@ -29,7 +29,6 @@ export async function createUser(ctx) {
     [
       { value: 'it', label: 'Italiano' },
       { value: 'en', label: 'English' },
-      { value: 'bg', label: 'Български' },
     ],
     getLang(),
   );

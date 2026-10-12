@@ -15,6 +15,7 @@ const HTTP_BUCKETS = [0.025, 0.05, 0.1, 0.25, 0.5, 1, 2, 4, 8, 15, 30, 60, 120];
 const AI_BUCKETS = [0.5, 1, 2, 4, 6, 8, 10, 15, 20, 30, 45, 60, 90, 120];
 const REALTIME_BUCKETS = [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2, 5];
 const AV_BUCKETS = [0.05, 0.1, 0.25, 0.5, 1, 2, 5, 10, 30, 60];
+const JOB_BUCKETS = [0.1, 0.5, 1, 5, 15, 30, 60, 120, 300, 600, 1800, 3600];
 
 /** Изходът на едно AI питане — затвореното множество за етикета `outcome`. */
 export const AI_OUTCOMES = [
@@ -147,6 +148,71 @@ export function createMetrics() {
         name: 'chatchat_circuit_breaker_rejections_total',
         help: 'Заявки, отказани бързо от отворен/полуотворен breaker (без да стигнат до доставчика).',
         labelNames: ['breaker'],
+      }),
+    ),
+    // ── Опашките и worker-ът (NFR-06/07): queue = ingest|ocr|embed|dead; без id-та на задачи.
+    queueJobs: r(
+      new Counter<'queue' | 'result'>({
+        name: 'chatchat_queue_jobs_total',
+        help: 'Опити на задачи по опашка и изход (completed/retried/dead).',
+        labelNames: ['queue', 'result'],
+      }),
+    ),
+    queueDuration: r(
+      new Histogram<'queue'>({
+        name: 'chatchat_queue_job_duration_seconds',
+        help: 'Продължителност на един опит на задача по опашка.',
+        labelNames: ['queue'],
+        buckets: JOB_BUCKETS,
+      }),
+    ),
+    queueDepth: r(
+      new Gauge<'queue' | 'state'>({
+        name: 'chatchat_queue_depth',
+        help: 'Задачи по опашка и състояние (waiting/active/delayed/failed) — от Redis, на 15 s.',
+        labelNames: ['queue', 'state'],
+      }),
+    ),
+    ingestItems: r(
+      new Counter<'format' | 'result'>({
+        name: 'chatchat_ingest_items_total',
+        help: 'Приети файлове за базата знания по формат (pdf/docx/xlsx/image/log) и изход (done/failed).',
+        labelNames: ['format', 'result'],
+      }),
+    ),
+    ocrPages: r(
+      new Counter<'result'>({
+        name: 'chatchat_ocr_pages_total',
+        help: 'Страници през OCR по изход (ok/empty/failed).',
+        labelNames: ['result'],
+      }),
+    ),
+    realtimeBus: r(
+      new Counter<'direction' | 'kind'>({
+        name: 'chatchat_realtime_bus_messages_total',
+        help: 'Съобщения между инстанциите (Redis pub/sub) по посока (in/out) и вид.',
+        labelNames: ['direction', 'kind'],
+      }),
+    ),
+    // ── Изпращачът към helpdesk (FR-09, §14.4): агрегати по всички клиенти — без tenant, без id.
+    helpdeskDeliveries: r(
+      new Counter<'result'>({
+        name: 'chatchat_helpdesk_deliveries_total',
+        help: 'Опити за доставка към helpdesk по изход (delivered/skipped/retry/dead/ssrf_blocked/unrecorded).',
+        labelNames: ['result'],
+      }),
+    ),
+    helpdeskOutbox: r(
+      new Gauge<'state'>({
+        name: 'chatchat_helpdesk_outbox',
+        help: 'Редове в outbox-а към helpdesk по състояние (pending/sending; dead — само на включен конектор).',
+        labelNames: ['state'],
+      }),
+    ),
+    helpdeskOldestPending: r(
+      new Gauge({
+        name: 'chatchat_helpdesk_oldest_pending_seconds',
+        help: 'Възраст на най-старата недоставена доставка, която не чака зад dead-letter (0 — няма).',
       }),
     ),
   };

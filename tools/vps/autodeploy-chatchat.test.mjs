@@ -114,6 +114,20 @@ test("код 4 от провалена миграция (P3009/P3018): без о
   }
 }));
 
+test("провалена миграция при база в шифрования том: сочи дъмпа в тома (pgdata/pre-deploy), най-новия", () => withLayout((L) => {
+  const old = release(L, "old", 0);
+  remember(L, old);
+  const plain = join(L.shared, "backups");
+  const sealed = join(L.shared, "pgdata", "pre-deploy");
+  mkdirSync(plain, { recursive: true });
+  mkdirSync(sealed, { recursive: true });
+  writeFileSync(join(plain, "pre-deploy-20261001-000000.sql.gz"), "стар");
+  writeFileSync(join(sealed, "pre-deploy-20261010-101500.sql.gz"), "нов");
+  utimesSync(join(plain, "pre-deploy-20261001-000000.sql.gz"), new Date(2026, 9, 1), new Date(2026, 9, 1));
+  const log = run(L, release(L, "new", 4), "Error: P3018");
+  assert.ok(log.includes(join(sealed, "pre-deploy-20261010-101500.sql.gz")), log);
+}));
+
 test("базата е на pgvector, а работещият release е отпреди него: без автоматичен откат, вика човек", () => withLayout((L) => {
   const old = release(L, "old", 0, false);
   remember(L, old);

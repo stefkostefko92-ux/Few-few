@@ -1,0 +1,26 @@
+# ChatChat — отключва и монтира шифрования том с данните на PostgreSQL (LUKS2) при старт на машината.
+# Слага го deploy/pgdata-encrypt.sh (enable); пътят /opt/few-few/shared/chatchat се сменя там с истинския.
+#
+# Преди Docker (Before=), но Docker НЕ зависи от него (без Requires=): провал или ръчен режим (паролата
+# чака човек) спира само базата на ChatChat — compose я монтира без create_host_path, — не и другите
+# продукти на машината. При спиране: първо Docker, после демонтиране и заключване (обратният ред).
+[Unit]
+Description=ChatChat: шифрованият том на PostgreSQL (LUKS2)
+Documentation=https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/DEPLOY.md
+After=local-fs.target cryptsetup.target
+Before=docker.service
+RequiresMountsFor=/opt/few-few/shared/chatchat
+ConditionPathExists=/etc/chatchat/pgdata.conf
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+Environment=CHATCHAT_SHARED=/opt/few-few/shared/chatchat
+Environment=CHATCHAT_PGDATA_CONF_DIR=/etc/chatchat
+ExecStart=/usr/local/sbin/chatchat-pgdata open --boot
+ExecStop=/usr/local/sbin/chatchat-pgdata close --boot
+# Argon2id при отключване + проверка на журнала на ext4 — с резерв.
+TimeoutStartSec=5min
+
+[Install]
+WantedBy=multi-user.target

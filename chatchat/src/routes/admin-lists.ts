@@ -3,6 +3,11 @@ import { z } from 'zod';
 import type { AppDeps } from '../app.js';
 import { apiError, principalOf, requireCsrf, requireUser } from '../auth/guards.js';
 import { can } from '../auth/rbac.js';
+import {
+  errorIsSafetyRelevant,
+  fourEyesBlocked,
+  knowledgeHistory,
+} from '../services/kb-lifecycle.js';
 
 /**
  * Списъците за административната конзола (UI): продукти, табла, кодове за грешка, фирми. Само за
@@ -185,14 +190,16 @@ export function adminListsRouter(deps: AppDeps): Router {
     try {
       const id = Id.safeParse(req.params.id);
       if (!id.success) return apiError(res, 400, 'invalid_input');
+      const { tenantId, id: me } = principalOf(req).user;
       const e = await deps.db.errorCode.findFirst({
-        where: { id: id.data, tenantId: principalOf(req).user.tenantId },
+        where: { id: id.data, tenantId },
         include: {
           ...errorInclude,
           relations: { orderBy: [{ kind: 'asc' }, { ordinal: 'asc' }] },
         },
       });
       if (!e) return apiError(res, 404, 'not_found');
+      const history = await knowledgeHistory(deps.db, tenantId, 'error', e.id);
       res.json({
         id: e.id,
         productModel: e.product.model,
@@ -209,6 +216,13 @@ export function adminListsRouter(deps: AppDeps): Router {
         version: e.version,
         sourceDocument: e.sourceDocument,
         sourcePage: e.sourcePage,
+        // FR-04: четирите очи — UI казва предварително, сървърът проверява наново.
+        safetyRelevantVersion: errorIsSafetyRelevant(e),
+        authoredByMe: e.authorIds.includes(me),
+        fourEyesBlocked: errorIsSafetyRelevant(e) && fourEyesBlocked(me, e.authorIds),
+        everPublished: e.approvedAt !== null,
+        approvedAt: e.approvedAt,
+        history,
         relations: e.relations.map((r) => ({
           kind: r.kind,
           text: r.text,

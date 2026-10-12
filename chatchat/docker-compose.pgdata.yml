@@ -1,0 +1,19 @@
+# Данните на PostgreSQL в шифрования том (LUKS2) — NFR-03, §15.1 „cifratura at-rest dei dati“.
+#
+# Включва се САМО от deploy/pgdata-encrypt.sh: той пише в /opt/few-few/shared/chatchat/.env реда
+#   COMPOSE_FILE=docker-compose.yml:docker-compose.pgdata.yml
+# и оттам всяко `docker compose` от папката на release-а (deploy.sh, командите в DEPLOY.md) носи и този
+# файл. Release отпреди шифрования том няма файла → compose отказва (не вдига базата върху стария том).
+#
+# Монтирането замества тома db-data по целта (/var/lib/postgresql/data). Дълъг синтаксис с
+# create_host_path: false — ако томът не е отключен и монтиран, папката `data` я няма и контейнерът на
+# базата НЕ тръгва (никога нова празна база върху некриптирания диск). Другите контейнери на машината
+# не зависят от това.
+services:
+  db:
+    volumes:
+      - type: bind
+        source: ${CHATCHAT_SHARED:-/opt/few-few/shared/chatchat}/pgdata/data
+        target: /var/lib/postgresql/data
+        bind:
+          create_host_path: false

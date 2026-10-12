@@ -38,7 +38,7 @@ export function presenceRouter(deps: WiredDeps): Router {
   const router = Router();
   router.use(requireUser, requireCsrf(deps.publicOrigin));
   const use = requireCapability('conversation:use');
-  const beatLimit = perUserLimit(60 * 1000, 12);
+  const beatLimit = perUserLimit(60 * 1000, 12, 'presence-beat');
 
   /** `presence.changed` до хората, които и в момента на изпращане виждат присъствието му. */
   const announce = (subject: Viewer, view: ReturnType<typeof effectivePresence>) => {

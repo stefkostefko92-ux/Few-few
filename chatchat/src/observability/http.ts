@@ -14,8 +14,9 @@ type RouteLike = { path?: unknown } | undefined;
 
 /**
  * Шаблонът: точката на монтиране (`req.baseUrl` В МОМЕНТА, в който Express избира маршрута) +
- * пътят на маршрута. Точките на монтиране в app.ts са само статични префикси — нов `app.use` с
- * параметър (`/x/:id`) би сложил id в етикета, затова не се прави (CLAUDE.md, инварианти).
+ * пътят на маршрута. Точките на монтиране в app.ts и app-routes.ts са само статични префикси —
+ * нов `app.use` с параметър (`/x/:id`) би сложил id в етикета, затова не се прави (CLAUDE.md,
+ * инварианти).
  */
 export function routeTemplate(baseUrl: string, route: RouteLike, originalUrl: string): string {
   if (route && typeof route.path === 'string') {

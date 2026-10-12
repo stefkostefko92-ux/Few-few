@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import { rateLimit } from 'express-rate-limit';
+import { sharedStore } from '../auth/rate-limit.js';
 import { z } from 'zod';
 import { apiError, principalOf } from '../auth/guards.js';
 import type { Viewer } from '../services/collab/access.js';
@@ -21,9 +22,13 @@ export function viewerOf(req: Request): Viewer & { name: string } {
   };
 }
 
-/** Лимит по потребител (техниците са зад един NAT — не по IP), §15.1. */
-export function perUserLimit(windowMs: number, limit: number) {
+/**
+ * Лимит по потребител (техниците са зад един NAT — не по IP), §15.1. Името е ключът на брояча в
+ * Redis при няколко инстанции (`auth/rate-limit.ts`) — уникално за всеки лимит.
+ */
+export function perUserLimit(windowMs: number, limit: number, name: string) {
   return rateLimit({
+    store: sharedStore(name),
     windowMs,
     limit,
     standardHeaders: 'draft-8',

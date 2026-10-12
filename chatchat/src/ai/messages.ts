@@ -52,6 +52,29 @@ export function caseContent(photos: readonly ModelPhoto[], caseText: string): Co
   return blocks;
 }
 
+/** Началните съобщения към модела: историята + ходът на случая (снимките и пакетът). */
+export function caseMessages(
+  history: ReadonlyArray<{ role: 'user' | 'assistant'; content: string }>,
+  photos: readonly ModelPhoto[],
+  caseText: string,
+): MessageParam[] {
+  const messages: MessageParam[] = [
+    ...historyMessages(history),
+    // Breakpoint на случая: кръговете с инструменти четат префикса (вкл. пакета и снимките) от кеша.
+    { role: 'user', content: caseContent(photos, caseText) },
+  ];
+  // Ако историята завършва с потребител, двата user хода се сливат в един.
+  if (messages.length >= 2) {
+    const prev = messages[messages.length - 2];
+    const last = messages[messages.length - 1];
+    if (prev && last && prev.role === 'user' && Array.isArray(prev.content)) {
+      prev.content.push(...(last.content as ContentBlockParam[]));
+      messages.pop();
+    }
+  }
+  return messages;
+}
+
 export function safeDraft(code: FailureCode): ModelDiagnosis {
   return {
     status: 'undetermined',

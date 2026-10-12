@@ -1,0 +1,31 @@
+# ChatChat — модулите на blackbox exporter (синтетичните проби; prometheus.yml ги вика по име).
+# Проверка: blackbox_exporter --config.check --config.file=blackbox.yml
+
+modules:
+  # Отвън: https://<PUBLIC_BASE_URL>/healthz — само TLS, валиден сертификат, тялото на ChatChat.
+  # Пренасочване не се следва: /healthz отговаря 200 направо; 301 към друг хост значи грешен vhost.
+  https_healthz:
+    prober: http
+    timeout: 10s
+    http:
+      method: GET
+      valid_status_codes: [200]
+      fail_if_not_ssl: true
+      follow_redirects: false
+      fail_if_body_not_matches_regexp:
+        - '"ok":true'
+      preferred_ip_protocol: ip4
+      tls_config:
+        insecure_skip_verify: false
+
+  # Отвътре: http://app:4330/readyz — `ok` е true само когато базата отговаря (src/app.ts).
+  http_ready:
+    prober: http
+    timeout: 5s
+    http:
+      method: GET
+      valid_status_codes: [200]
+      follow_redirects: false
+      fail_if_body_not_matches_regexp:
+        - '"ok":true'
+      preferred_ip_protocol: ip4

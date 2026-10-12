@@ -1,8 +1,6 @@
-import { Prisma } from '@prisma/client';
 import { Router } from 'express';
 import { z } from 'zod';
 import type { WiredDeps } from '../app.js';
-import { appendAudit } from '../audit.js';
 import { redactPii } from '../domain/pii.js';
 import {
   apiError,
@@ -11,16 +9,10 @@ import {
   requireCsrf,
   requireUser,
 } from '../auth/guards.js';
-import {
-  addTimeline,
-  buildTicketSummary,
-  findCaseFor,
-  humanNumber,
-  isUniqueOn,
-  withUniqueRetry,
-} from '../services/cases.js';
-import { caseAudiences } from '../auth/rbac.js';
-import { notifyTicketChange } from '../services/collab/notify.js';
+import { addTimeline, findCaseFor } from '../services/cases.js';
+import { recordFeedbackProposal } from '../services/proposals/feedback.js';
+import { createTicket } from '../services/tickets/lifecycle.js';
+import { sendFailure } from './collab-common.js';
 
 /** Ескалация с тикет (FR-09, AC-08) и обратна връзка върху AI отговор (FR-10). */
 
@@ -46,46 +38,18 @@ export function ticketsRouter(deps: WiredDeps): Router {
       if (c.status === 'RESOLVED') return apiError(res, 409, 'case_closed');
       const existing = await deps.db.ticket.findUnique({ where: { caseId: c.id } });
       if (existing) return apiError(res, 409, 'ticket_exists');
-      const summary = await buildTicketSummary(deps.db, c, caseAudiences(p.user.role, c.portal));
-      // Тикет + ескалиран случай + хронология + одит — всичко или нищо. Повторът при съвпаднал
-      // номер е около цялата транзакция (грешка в Postgres прекратява текущата).
-      let ticket;
-      try {
-        ticket = await withUniqueRetry(() =>
-          deps.db.$transaction(async (tx) => {
-            const created = await tx.ticket.create({
-              data: {
-                caseId: c.id,
-                number: humanNumber('TS'),
-                reason: redactPii(parsed.data.reason),
-                summary: summary as unknown as Prisma.InputJsonValue,
-                createdById: p.user.id,
-              },
-            });
-            await tx.case.update({
-              where: { id: c.id },
-              data: { status: 'WAITING_TECHNICIAN', outcome: 'ESCALATED' },
-            });
-            await addTimeline(tx, c.id, 'ticket.created', p.user.id, { number: created.number });
-            await appendAudit(tx, {
-              tenantId: p.user.tenantId,
-              actorId: p.user.id,
-              action: 'ticket.create',
-              objectType: 'ticket',
-              objectId: created.id,
-              detail: { caseId: c.id },
-            });
-            return created;
-          }),
-        );
-      } catch (err) {
-        // Паралелна заявка за същия случай вече създаде тикета.
-        if (isUniqueOn(err, 'caseId')) return apiError(res, 409, 'ticket_exists');
-        throw err;
-      }
-      await notifyTicketChange(deps, c, ticket, p.user.id);
+      // Тикет + ескалиран случай + хронология + одит (`recordTicketEvent`) — всичко или нищо.
+      const created = await createTicket(deps, p, c, parsed.data.reason);
+      if (sendFailure(res, created)) return;
+      const { ticket, summary } = created.value;
       res.status(201).json({
-        ticket: { number: ticket.number, status: ticket.status, summary },
+        ticket: {
+          id: ticket.id,
+          number: ticket.number,
+          status: ticket.status,
+          queue: ticket.queue,
+          summary,
+        },
       });
     } catch (err) {
       next(err);
@@ -104,22 +68,26 @@ export function ticketsRouter(deps: WiredDeps): Router {
       if (!message || message.kind !== 'AI') return apiError(res, 404, 'not_found');
       const c = await findCaseFor(deps.db, p, message.caseId);
       if (!c) return apiError(res, 404, 'not_found');
-      await deps.db.feedback.upsert({
+      const comment = parsed.data.comment ? redactPii(parsed.data.comment) : null;
+      const feedback = await deps.db.feedback.upsert({
         where: { messageId_userId: { messageId: message.id, userId: p.user.id } },
-        create: {
-          messageId: message.id,
-          userId: p.user.id,
-          rating: parsed.data.rating,
-          comment: parsed.data.comment ? redactPii(parsed.data.comment) : null,
-        },
-        update: {
-          rating: parsed.data.rating,
-          comment: parsed.data.comment ? redactPii(parsed.data.comment) : null,
-        },
+        create: { messageId: message.id, userId: p.user.id, rating: parsed.data.rating, comment },
+        update: { rating: parsed.data.rating, comment },
       });
       await addTimeline(deps.db, c.id, 'feedback', p.user.id, {
         messageId: message.id,
         rating: parsed.data.rating,
+      });
+      // FR-10: „Non utile“/„Errore tecnico“ с коментар → предложение в опашката на отговорника за
+      // знанието (вътрешна; техникът не я вижда). Вторично — не проваля оценката.
+      await recordFeedbackProposal(deps, {
+        tenantId: p.user.tenantId,
+        actorId: p.user.id,
+        caseId: c.id,
+        messageId: message.id,
+        feedbackId: feedback.id,
+        rating: parsed.data.rating,
+        comment,
       });
       res.status(204).end();
     } catch (err) {

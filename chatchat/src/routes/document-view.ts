@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
+import { sharedStore } from '../auth/rate-limit.js';
 import { z } from 'zod';
 import type { AppDeps } from '../app.js';
 import { appendAudit } from '../audit.js';
@@ -30,6 +31,7 @@ export function documentViewRouter(deps: AppDeps): Router {
   const router = Router();
   // Оригиналът е до 50 MB и всеки преглед го чете и хешира — по-строго от общите справки (120/мин.).
   const sourceLimiter = rateLimit({
+    store: sharedStore('document-source'),
     windowMs: 60 * 1000,
     limit: 20,
     standardHeaders: 'draft-8',

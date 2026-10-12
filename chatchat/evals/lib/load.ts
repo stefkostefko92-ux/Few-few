@@ -4,7 +4,7 @@ import { ingestDocument } from '../../src/services/ingest.js';
 import type { EvalSetT } from './schema.js';
 
 /**
- * Зарежда базата знания на набора в ТЕСТОВА база: клиенти A/B, продукти, документи (през
+ * Зарежда базата знания на набора в ТЕСТОВА база: клиенти A/B, продукти, табла, документи (през
  * истинското приемане `ingestDocument` — същото парчене и индекс), кодове за грешка. Статусите
  * се задават директно (оценката не проверява работния поток на публикуването, а отговора).
  */
@@ -14,6 +14,8 @@ export interface LoadedKnowledge {
   tenantB: string;
   /** errorId → ключ от набора; документите се разпознават по „КОД@РЕВИЗИЯ“. */
   errorKeys: Map<string, string>;
+  /** Таблата на клиент A: сериен номер → { id, модел } (случаят на таблото го ползва). */
+  devicesA: Map<string, { id: string; productModel: string }>;
 }
 
 export function documentKey(code: string, revision: string): string {
@@ -60,6 +62,27 @@ export async function loadKnowledge(db: PrismaClient, set: EvalSetT): Promise<Lo
         },
       },
     });
+  }
+
+  const devicesA = new Map<string, { id: string; productModel: string }>();
+  for (const d of set.knowledge.devices) {
+    const revision = await db.productRevision.findFirst({
+      where: {
+        hwRevision: d.hwRevision,
+        product: { tenantId: tenants[d.tenant].id, model: d.productModel },
+      },
+    });
+    if (!revision) throw new Error(`табло ${d.serial}: непознат ${d.productModel}/${d.hwRevision}`);
+    const device = await db.device.create({
+      data: {
+        tenantId: tenants[d.tenant].id,
+        serial: d.serial,
+        productRevisionId: revision.id,
+        firmware: d.firmware,
+        options: d.options,
+      },
+    });
+    if (d.tenant === 'A') devicesA.set(d.serial, { id: device.id, productModel: d.productModel });
   }
 
   const documents = new Map<string, string>();
@@ -126,7 +149,7 @@ export async function loadKnowledge(db: PrismaClient, set: EvalSetT): Promise<Lo
     });
     errorKeys.set(created.id, e.key);
   }
-  return { tenantA: tenants.A.id, tenantB: tenants.B.id, errorKeys };
+  return { tenantA: tenants.A.id, tenantB: tenants.B.id, errorKeys, devicesA };
 }
 
 async function owner(db: PrismaClient, tenantId: string, suffix: string): Promise<string> {

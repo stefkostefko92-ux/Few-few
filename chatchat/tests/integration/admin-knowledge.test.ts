@@ -158,8 +158,8 @@ describe('Фърмуер извън обхвата на ревизията', () 
   });
 });
 
-describe('Нова ревизия на документ: кодовете за грешка не изчезват тихо', () => {
-  test('supersede → REVIEW (200 със списъка) → relink → publish', async () => {
+describe('Нова ревизия на документ: старата се пази, кодовете не се местят (собственикът)', () => {
+  test('supersede → старата остава PUBLISHED; кодът минава през нова версия → relink → четири очи', async () => {
     const newId = await uploadDoc(w.ownerA1, {
       code: 'ERR-LIST-500',
       revision: 'B',
@@ -172,63 +172,64 @@ describe('Нова ревизия на документ: кодовете за �
     });
     assert.equal((await w.ownerA1.post(`/api/v1/admin/documents/${newId}/submit`)).status, 204);
     const published = await w.ownerA1.post(`/api/v1/admin/documents/${newId}/publish`);
-    assert.equal(published.status, 200);
-    const e = w.errors;
-    assert.deepEqual(
-      published.body.errorsToReview.map((x: { id: string }) => x.id).sort(),
-      [e.e37v1, e.e37v2, e.e38, e.e73].sort(),
-    );
-    assert.deepEqual(
-      published.body.errorsToReview.map((x: { code: string; version: number }) => [
-        x.code,
-        x.version,
-      ]),
-      [
-        ['E37', 1],
-        ['E37', 2],
-        ['E38', 1],
-        ['E73', 1],
-      ],
-    );
+    assert.equal(published.status, 204);
+    const old = await db.document.findUniqueOrThrow({ where: { id: w.docs.errList } });
+    assert.equal(old.status, 'PUBLISHED', 'старата ревизия не се отписва сама');
     const statuses = await db.errorCode.findMany({
       select: { status: true },
       where: { tenantId: w.tenantA.id },
     });
-    assert.ok(statuses.every((s) => s.status === 'REVIEW'));
-    assert.equal(await db.auditEvent.count({ where: { action: 'kb.error.review_required' } }), 4);
-    // AI и справката не ги виждат, докато са в преглед.
+    assert.ok(
+      statuses.every((x) => x.status === 'PUBLISHED'),
+      'кодовете не стават REVIEW',
+    );
+    assert.equal(await db.auditEvent.count({ where: { action: 'kb.error.review_required' } }), 0);
     const lookup = await w.portalAlfa.get('/api/v1/errors/E37?model=LTX-500&fw=4.2');
-    assert.deepEqual(lookup.body.errors, []);
+    assert.deepEqual(
+      lookup.body.errors.map((x: { source: { revision: string } }) => x.source.revision),
+      ['A', 'A'],
+    );
 
-    const relink = await w.ownerA1.post(`/api/v1/admin/errors/${e.e37v1}/relink`, {
+    // Публикуваната версия е неизменима: промяна = нова версия (DRAFT) → relink → преглед.
+    const e = w.errors;
+    const draft = await w.ownerA1.post(`/api/v1/admin/errors/${e.e37v1}/new-version`);
+    assert.equal(draft.status, 201);
+    assert.equal(draft.body.version, 3);
+    const v3 = draft.body.errorId as string;
+    const relink = await w.ownerA1.post(`/api/v1/admin/errors/${v3}/relink`, {
       sourceDocumentId: newId,
       sourcePage: 2,
     });
     assert.equal(relink.status, 200, JSON.stringify(relink.body));
     assert.deepEqual(relink.body, {
-      errorId: e.e37v1,
-      status: 'REVIEW',
+      errorId: v3,
+      status: 'DRAFT',
       sourceDocumentId: newId,
       sourcePage: 2,
     });
-    const relations = await db.errorRelation.findMany({ where: { errorId: e.e37v1 } });
+    const relations = await db.errorRelation.findMany({ where: { errorId: v3 } });
     assert.ok(relations.length > 0);
     assert.ok(relations.every((r) => r.sourceDocumentId === newId && r.sourcePage === 2));
-
-    assert.equal((await w.ownerA1.post(`/api/v1/admin/errors/${e.e37v1}/publish`)).status, 204);
+    assert.equal((await w.ownerA1.post(`/api/v1/admin/errors/${v3}/submit`)).status, 204);
+    assert.equal((await w.ownerA1.post(`/api/v1/admin/errors/${v3}/publish`)).status, 204);
     const back = await w.portalAlfa.get('/api/v1/errors/E37?model=LTX-500&fw=4.2');
     assert.deepEqual(
-      back.body.errors.map((x: { source: { revision: string; page: number } }) => [
-        x.source.revision,
-        x.source.page,
-      ]),
-      [['B', 2]],
+      back.body.errors
+        .map((x: { source: { revision: string; page: number } }) => [
+          x.source.revision,
+          x.source.page,
+        ])
+        .sort(),
+      [
+        ['A', 1],
+        ['B', 2],
+      ],
     );
-    // Без relink: източникът е отписан → не се публикува.
-    const stale = await w.ownerA1.post(`/api/v1/admin/errors/${e.e38}/publish`);
-    assert.deepEqual([stale.status, stale.body.code], [422, 'source_not_published']);
+    // Същата валидност → предишната версия е отписана (пази се); v2 (FW 5) остава.
+    const v1 = await db.errorCode.findUniqueOrThrow({ where: { id: e.e37v1 } });
+    assert.equal(v1.status, 'DEPRECATED');
     // Публикуван код не се пресвързва тихо.
-    const again = await w.ownerA1.post(`/api/v1/admin/errors/${e.e37v1}/relink`, {
+    const again = await w.ownerA1.post(`/api/v1/admin/errors/${v3}/relink`, {
       sourceDocumentId: newId,
     });
     assert.deepEqual([again.status, again.body.code], [409, 'invalid_transition']);

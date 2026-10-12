@@ -1,7 +1,9 @@
 import type { BrowserContext, Page } from '@playwright/test';
 import type { Role, User } from '@prisma/client';
 import { SESSION_COOKIE, createSession } from '../../../src/auth/sessions.js';
+import { withTenant } from '../../../src/db/tenant-context.js';
 import {
+  appDb,
   Client,
   PASSWORD,
   PEPPER,
@@ -52,11 +54,11 @@ export async function newStaff(role: Role, name = 'Staff E2E'): Promise<User> {
 }
 
 function harnessLike(): Pick<Harness, 'sessions'> {
-  return { sessions: { db, pepper: PEPPER, ttlHours: 12, secureCookies: false } };
+  return { sessions: { db: appDb, pepper: PEPPER, ttlHours: 12, secureCookies: false } };
 }
 
 async function openSession(user: User) {
-  const s = await createSession(harnessLike().sessions, user.id);
+  const s = await withTenant(user.tenantId, () => createSession(harnessLike().sessions, user.id));
   if (user.totpEnabledAt) {
     await db.session.update({ where: { id: s.id }, data: { mfaPassed: true } });
   }

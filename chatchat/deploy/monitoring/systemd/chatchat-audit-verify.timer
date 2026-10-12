@@ -1,0 +1,15 @@
+[Unit]
+# Всеки ден в 04:07 UTC — след бекъпа (02:45) и ретенцията (03:17, до 30 мин): проверката не се
+# застъпва с триенето на одита (а ако се застъпи — CLI-то потвърждава счупеното с втора проверка).
+Description=ChatChat — дневна проверка на одитната верига (04:07 UTC)
+Documentation=file:///opt/few-few/current/chatchat/docs/runbook.md
+
+[Timer]
+OnCalendar=*-*-* 04:07:00 UTC
+Persistent=true
+RandomizedDelaySec=5min
+AccuracySec=1min
+Unit=chatchat-audit-verify.service
+
+[Install]
+WantedBy=timers.target

@@ -15,6 +15,7 @@ export function caseView(c: {
   context: Prisma.JsonValue;
   portal: boolean;
   assignedToId?: string | null;
+  aiPaused?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }) {
@@ -26,6 +27,8 @@ export function caseView(c: {
     context: c.context,
     portal: c.portal,
     assignedToId: c.assignedToId ?? null,
+    // FR-19: предаден на оператор — AI не отговаря на техника, докато операторът не го върне.
+    aiPaused: c.aiPaused ?? false,
     createdAt: c.createdAt,
     updatedAt: c.updatedAt,
   };

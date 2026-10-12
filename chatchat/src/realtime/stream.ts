@@ -9,8 +9,9 @@ import type { StreamSink } from './hub.js';
  * (§13.3, NFR-11). Само GET; без тяло; без CSRF (не променя нищо).
  *
  * - Събития: message.created · message.updated · conversation.updated · presence.changed ·
- *   notification.created · case.assigned; всяко с tenant_id, conversation_id?, actor_id,
- *   timestamp, schema_version; `id:` е монотонен в процеса.
+ *   notification.created · case.assigned · case.updated · step.updated · queue.updated (само за
+ *   персонала); всяко с tenant_id, conversation_id?, actor_id, timestamp, schema_version; `id:` е
+ *   монотонен в процеса.
  * - На `hub.heartbeatMs` (25 s): коментар `: hb` + повторна проверка на сесията (отнета, изтекла,
  *   деактивиран акаунт → потокът се затваря). Изход и всяко `revokeUserSessions` го затварят веднага.
  * - Fallback (§12.4): буфер за пропуснати събития НЯМА. При reconnect клиентът презарежда

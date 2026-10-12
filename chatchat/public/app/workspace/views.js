@@ -3,24 +3,31 @@
 
 import { clear, h, $ } from '../dom.js';
 import { errorText } from '../errors.js';
-import { fmtStamp } from '../format.js';
-import { t } from '../i18n.js';
+import { fmtStamp, roleLabel } from '../format.js';
+import { has, t } from '../i18n.js';
+import { flowKey } from '../flow/labels.js';
 import { state } from '../store.js';
 import { wsApi } from './api.js';
 import { conversationsByActivity, titleOf, ws } from './model.js';
+import { openNotifSettings } from './notif-settings.js';
 import { conversationItem } from './sidebar.js';
 import { loadConversations, loadNotifications, loadPublicChannels } from './sync.js';
 
 export function notificationText(n) {
   const p = n.payload ?? {};
   const count = p.count > 1 ? ` (×${p.count})` : '';
-  const key = `notif.${n.eventType}`;
+  // Събитията на потока (ticket.*, step.*, handoff.*) — с ключове под своя префикс (flow/labels.js).
+  const key = has(`notif.${n.eventType}`)
+    ? `notif.${n.eventType}`
+    : (flowKey(n.eventType, 'notif') ?? `notif.${n.eventType}`);
   const text = t(key, {
     actor: p.actor?.name ?? '',
     name: p.conversationName ?? t('conv.direct'),
     number: p.number ?? p.caseNumber ?? '',
-    assignee: p.assignedTo?.name ?? '',
+    // Порталът получава ролята на служителя, не името — тогава се показва ролята.
+    assignee: p.assignedTo ? (p.assignedTo.name ?? roleLabel(p.assignedTo.role)) : '',
     status: p.status ? t(`ticketstatus.${p.status}`) : '',
+    step: p.step ?? '',
   });
   return (text === key ? n.eventType : text) + count;
 }
@@ -32,6 +39,15 @@ function setHead(title, tools) {
 
 export function renderInbox({ onOpenNotification }) {
   setHead(t('inbox.title'), [
+    h(
+      'button',
+      {
+        class: 'btn btn-secondary btn-sm',
+        type: 'button',
+        onclick: () => void openNotifSettings(),
+      },
+      t('notif.prefs.open'),
+    ),
     h(
       'button',
       {
@@ -67,13 +83,35 @@ export function renderInbox({ onOpenNotification }) {
               onclick: () => onOpenNotification(n),
             },
             h('span', { class: 'notif-state' }, n.readAt ? t('inbox.read') : t('inbox.new')),
-            h('span', { class: 'notif-text' }, notificationText(n)),
+            h(
+              'span',
+              { class: 'notif-text' },
+              // Спешното се казва с дума, не само с цвят (§12.1 „nessuna funzione solo colore“).
+              n.priority === 'urgent'
+                ? h('span', { class: 'urgent-tag' }, t('notif.urgentTag'))
+                : null,
+              n.priority === 'urgent' ? ' ' : null,
+              notificationText(n),
+            ),
             h('time', { class: 'when', datetime: String(n.createdAt) }, fmtStamp(n.createdAt)),
           ),
         ),
       ),
     ),
   );
+  if (ws.notifCursor) {
+    body.append(
+      h(
+        'button',
+        {
+          class: 'btn btn-secondary',
+          type: 'button',
+          onclick: () => void loadNotifications({ more: true }),
+        },
+        t('notif.more'),
+      ),
+    );
+  }
 }
 
 export function renderHistory({ onOpen, query = '' }) {

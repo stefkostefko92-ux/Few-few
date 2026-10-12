@@ -1,8 +1,8 @@
-import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { embeddingModelFrom } from '../ai/embeddings.js';
 import { EU_REGION } from '../config.js';
 import { embedPending } from '../store/embeddings.js';
+import { systemClientFromEnv } from '../db/clients.js';
 
 /**
  * Векторите за семантичното търсене на всички ПУБЛИКУВАНИ парчета без вектор (или с вектор от
@@ -31,7 +31,8 @@ async function main(): Promise<void> {
   }
   const at = process.argv.indexOf('--tenant');
   const tenantId = at >= 0 ? process.argv[at + 1] : undefined;
-  const db = new PrismaClient();
+  // Системната роля (chatchat_system, BYPASSRLS): CLI-то обикаля клиенти или създава клиент.
+  const db = systemClientFromEnv();
   try {
     const result = await embedPending(db, embedder, tenantId ? { tenantId } : {});
     console.log(

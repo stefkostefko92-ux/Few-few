@@ -2,7 +2,9 @@ import type { PrismaClient } from '@prisma/client';
 import type { Logger } from 'pino';
 import { can } from '../../auth/rbac.js';
 import type { Authorizer, RealtimeEventType, RealtimeHub } from '../../realtime/hub.js';
+import type { AttachmentStore } from '../../storage/attachments.js';
 import { assigneeFor, type MessageAuthor } from '../case-views.js';
+import type { MailPolicy } from '../email/enqueue.js';
 import { canAccessConversation, loadViewers, type Viewer } from './access.js';
 
 /**
@@ -16,6 +18,10 @@ export interface CollabDeps {
   db: PrismaClient;
   hub: RealtimeHub;
   logger: Logger;
+  /** Хранилището на файловете (null → прикачването е изключено; файловете чистят ретенцията). */
+  attachments?: { store: AttachmentStore } | null;
+  /** Имейл известията (null/липсва → изключени: Brevo не е конфигуриран, без outbox). */
+  mail?: MailPolicy | null;
 }
 
 type Data = Record<string, unknown>;

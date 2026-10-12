@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { jpegSized } from '../file-fixtures.js';
 import { cite, type Harness, type Plan } from './helpers.js';
 import { cleanUpload, uploadPdf } from './files.js';
-import { MODEL, answerOf, ask, newCase, type World } from './world.js';
+import { EFFECTIVE_FROM, MODEL, answerOf, ask, newCase, type World } from './world.js';
 import { makeSchematicPdf } from './schematic.js';
 
 /**
@@ -22,7 +22,8 @@ export async function seedViewerDemo(h: Harness, w: World) {
     audience: 'PORTAL',
     safetyRelevant: false,
     subsystem: 'safety_chain',
-    applicability: [{ productModel: MODEL }],
+    effectiveFrom: EFFECTIVE_FROM,
+    applicability: [{ productModel: MODEL, allFirmware: true }],
     sourceAttachmentId: up.body.attachment.id,
   });
   assert.equal(res.status, 201, JSON.stringify(res.body));

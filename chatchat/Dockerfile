@@ -34,6 +34,25 @@ RUN npm prune --omit=dev && test -x node_modules/.bin/prisma
 
 # --- Крайният образ ---
 FROM base AS runner
+# OCR за сканираните PDF и изображенията (§4.1): poppler (pdftoppm — растер на страница) и tesseract с
+# италиански, английски и български. Само в крайния образ; викат се през execFile без shell, с таймаут.
+# Версиите са заковани (Debian 12 bookworm, като базата): ъпдейт = нова версия тук. Ако Debian махне
+# заковната версия (нова поправка по сигурност), билдът спира ПРЕДИ смяната — работещото не се пипа.
+ARG TESSERACT_VERSION=5.3.0-2
+ARG TESSDATA_VERSION=1:4.1.0-2
+ARG POPPLER_VERSION=22.12.0-2+deb12u3
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    "tesseract-ocr=${TESSERACT_VERSION}" \
+    "tesseract-ocr-eng=${TESSDATA_VERSION}" \
+    "tesseract-ocr-ita=${TESSDATA_VERSION}" \
+    "tesseract-ocr-bul=${TESSDATA_VERSION}" \
+    "poppler-utils=${POPPLER_VERSION}" \
+  && rm -rf /var/lib/apt/lists/* \
+  && tesseract --list-langs 2>&1 | grep -qx bul \
+  && tesseract --list-langs 2>&1 | grep -qx ita \
+  && pdftoppm -v >/dev/null 2>&1
+# Една нишка на tesseract процес — едновременността я управлява опашката (OCR_CONCURRENCY).
+ENV OMP_THREAD_LIMIT=1
 ENV NODE_ENV=production
 ENV PORT=4330
 # В контейнера — 0.0.0.0 (иначе публикуваният порт не стига до процеса); навън портът е вързан
@@ -54,6 +73,8 @@ RUN chmod 755 ./docker-entrypoint.sh
 USER node
 EXPOSE 4330
 # /healthz — жизненост на процеса (без базата); готовността с базата е /readyz (Uptime Kuma).
+# Същият образ е и worker-ът (`node dist/worker.js`, услугата worker в docker-compose.yml) — той
+# няма HTTP и ползва своя HEALTHCHECK от compose (файлът „жив съм“ в /tmp).
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||4330)+'/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 ENTRYPOINT ["./docker-entrypoint.sh"]

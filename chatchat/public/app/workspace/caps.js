@@ -4,13 +4,21 @@
 
 import { state } from '../store.js';
 
-const TECH = ['case:create', 'chat:ask', 'ticket:create', 'feedback:create', 'conversation:use'];
+const TECH = [
+  'case:create',
+  'chat:ask',
+  'ticket:create',
+  'feedback:create',
+  'conversation:use',
+  'step:record',
+];
 const STAFF_CHAT = ['conversation:create', 'channel:create'];
+const OPERATOR = ['case:readAll', 'case:assign', 'device:readAll', 'step:approve'];
 const CAPS = {
   PORTAL_TECHNICIAN: TECH,
   INTERNAL_TECHNICIAN: [...TECH, 'device:readAll', 'conversation:create'],
-  SUPPORT: [...TECH, 'case:readAll', 'case:assign', 'device:readAll', ...STAFF_CHAT],
-  ENGINEERING: [...TECH, 'case:readAll', 'case:assign', 'device:readAll', ...STAFF_CHAT],
+  SUPPORT: [...TECH, ...OPERATOR, ...STAFF_CHAT],
+  ENGINEERING: [...TECH, ...OPERATOR, ...STAFF_CHAT],
   KNOWLEDGE_OWNER: [
     ...TECH,
     'case:readAll',
@@ -24,6 +32,7 @@ const CAPS = {
     'device:readAll',
     'users:manage',
     'conversation:use',
+    'policy:manage',
     ...STAFF_CHAT,
   ],
   PLATFORM_ADMIN: ['users:manage'],

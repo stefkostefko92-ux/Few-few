@@ -92,7 +92,11 @@ async function main(): Promise<number> {
 
     const scores: CaseScore[] = [];
     for (const c of set.cases) {
-      const scope = { tenantId: loaded.tenantA, audiences: AUDIENCES[c.audience] };
+      // Случаят е на таблото, ако серийният номер и моделът в контекста са неговите (както
+      // `caseBoardId` в приложението) — само тогава влизат схемите САМО за това табло.
+      const board = c.context.serial ? loaded.devicesA.get(c.context.serial) : undefined;
+      const deviceId = board && board.productModel === c.context.productModel ? board.id : null;
+      const scope = { tenantId: loaded.tenantA, audiences: AUDIENCES[c.audience], deviceId };
       const request = { scope, context: c.context, query: c.question };
       const retrieved = await retrieve(store, request);
       const out = await diagnose(

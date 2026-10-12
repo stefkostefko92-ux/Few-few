@@ -1,18 +1,19 @@
 import type { ConversationMember, Prisma, PrismaClient } from '@prisma/client';
-import { appendAudit } from '../../audit.js';
 import { redactPii } from '../../domain/pii.js';
 import { addTimeline, isUniqueOn } from '../cases.js';
-import { canSelfJoin, ownsConversation, type Loaded, type Viewer } from './access.js';
+import { canSelfJoin, type Loaded, type Viewer } from './access.js';
+import { bindConversationFiles } from './files.js';
 import { mentionedUserIds, messageRecipients, notify } from './notify.js';
 import { publishToConversation, type CollabDeps } from './publish.js';
 import { fail, ok, type Result } from './result.js';
-import { messageView, namesOf } from './views.js';
+import { MESSAGE_INCLUDE, messageView, namesOf } from './views.js';
 
 /**
  * Съобщенията в разговор (FR-16, NFR-12): идемпотентно изпращане по `clientMessageId` (паралелен
- * повтор връща записаното, не 500), лични данни маскирани преди запис, нишки с един корен.
- * Съобщенията във вътрешната дискусия по случай влизат в хронологията му (FR-24, AC-19) — само
- * като идентификатори, без текст.
+ * повтор връща записаното, не 500), лични данни маскирани преди запис, нишки с един корен,
+ * прикачени файлове (§12.1) — привързани в СЪЩАТА транзакция. Съобщенията във вътрешната
+ * дискусия по случай влизат в хронологията му (FR-24, AC-19) — само като идентификатори.
+ * Редакция, триене и реакции — `message-changes.ts`.
  */
 
 export const EDIT_WINDOW_MS = 15 * 60 * 1000;
@@ -21,6 +22,7 @@ export interface PostInput {
   text: string;
   clientMessageId?: string | undefined;
   replyToId?: string | undefined;
+  attachmentIds?: readonly string[] | undefined;
 }
 
 type Db = PrismaClient | Prisma.TransactionClient;
@@ -44,10 +46,10 @@ export async function ensureMember(
   });
 }
 
-async function viewOf(db: PrismaClient, tenantId: string, id: string) {
+export async function viewOf(db: PrismaClient, tenantId: string, id: string) {
   const row = await db.conversationMessage.findUniqueOrThrow({
     where: { id },
-    include: { reactions: true },
+    include: MESSAGE_INCLUDE,
   });
   return { row, view: messageView(row, await namesOf(db, tenantId, [row.senderId])) };
 }
@@ -63,6 +65,9 @@ export function announceMessage(
   publishToConversation(deps, type, conversation, actorId, () => ({ message: view }));
 }
 
+/** Сигнал от транзакцията: файловете не минаха проверката → отмяна, 400 `invalid_attachment`. */
+class AttachmentMismatch extends Error {}
+
 export async function postMessage(
   deps: CollabDeps,
   viewer: Viewer & { name: string },
@@ -72,6 +77,7 @@ export async function postMessage(
   const c = loaded.conversation;
   const membership = await ensureMember(deps.db, viewer, loaded);
   if (!membership) return fail(403, 'forbidden');
+  const attachmentIds = [...new Set(input.attachmentIds ?? [])];
 
   /** Повтор: вече записаното — само ако е на същия подател (чужд clientMessageId не изтича). */
   const replay = async (id: string) => {
@@ -114,15 +120,24 @@ export async function postMessage(
           clientMessageId: input.clientMessageId ?? null,
         },
       });
+      const bound = await bindConversationFiles(tx, attachmentIds, {
+        tenantId: c.tenantId,
+        conversationId: c.id,
+        userId: viewer.id,
+        messageId: row.id,
+      });
+      if (!bound) throw new AttachmentMismatch();
       if (c.caseId) {
         await addTimeline(tx, c.caseId, 'internal.message', viewer.id, {
           conversationId: c.id,
           messageId: row.id,
+          ...(attachmentIds.length > 0 ? { attachmentIds } : {}),
         });
       }
       return row;
     });
   } catch (err) {
+    if (err instanceof AttachmentMismatch) return fail(400, 'invalid_attachment');
     // Паралелен повтор със същия clientMessageId — първият печели, другите получават него.
     if (input.clientMessageId && isUniqueOn(err, 'clientMessageId')) {
       const prior = await replay(input.clientMessageId);
@@ -165,7 +180,7 @@ export async function postMessage(
 
 /** Достъпното съобщение (през разговора); чуждо = null → 404. */
 export async function loadMessageFor(
-  deps: CollabDeps,
+  deps: Pick<CollabDeps, 'db'>,
   viewer: Viewer,
   messageId: string,
   load: (conversationId: string) => Promise<Loaded | null>,
@@ -174,105 +189,4 @@ export async function loadMessageFor(
   if (!message) return null;
   const loaded = await load(message.conversationId);
   return loaded ? { message, loaded } : null;
-}
-
-export async function editMessage(
-  deps: CollabDeps,
-  viewer: Viewer,
-  target: NonNullable<Awaited<ReturnType<typeof loadMessageFor>>>,
-  text: string,
-  now = new Date(),
-): Promise<Result<ReturnType<typeof messageView>>> {
-  const { message, loaded } = target;
-  if (message.senderId !== viewer.id || message.kind !== 'HUMAN') return fail(403, 'forbidden');
-  if (message.deletedAt) return fail(409, 'message_deleted');
-  if (now.getTime() - message.createdAt.getTime() > EDIT_WINDOW_MS) {
-    return fail(409, 'edit_window_expired');
-  }
-  const c = loaded.conversation;
-  await deps.db.$transaction(async (tx) => {
-    await tx.conversationMessage.update({
-      where: { id: message.id },
-      data: { body: redactPii(text), editedAt: now },
-    });
-    if (c.caseId) {
-      await addTimeline(tx, c.caseId, 'internal.message_edited', viewer.id, {
-        conversationId: c.id,
-        messageId: message.id,
-      });
-    }
-    await appendAudit(tx, {
-      tenantId: c.tenantId,
-      actorId: viewer.id,
-      action: 'message.edit',
-      objectType: 'conversation_message',
-      objectId: message.id,
-      detail: { conversationId: c.id },
-    });
-  });
-  const { view } = await viewOf(deps.db, c.tenantId, message.id);
-  announceMessage(deps, 'message.updated', c, viewer.id, view);
-  return ok(view);
-}
-
-/** Меко триене: авторът или OWNER (модерация). Текстът се изчиства — остава само следата. */
-export async function deleteMessage(
-  deps: CollabDeps,
-  viewer: Viewer,
-  target: NonNullable<Awaited<ReturnType<typeof loadMessageFor>>>,
-): Promise<Result<null>> {
-  const { message, loaded } = target;
-  const c = loaded.conversation;
-  const author = message.senderId === viewer.id;
-  const moderator = ownsConversation(viewer, loaded.membership) && c.type !== 'DIRECT';
-  if (!author && !moderator) return fail(403, 'forbidden');
-  if (message.deletedAt) return ok(null);
-  await deps.db.$transaction(async (tx) => {
-    await tx.conversationMessage.update({
-      where: { id: message.id },
-      data: { deletedAt: new Date(), body: '' },
-    });
-    if (c.caseId) {
-      await addTimeline(tx, c.caseId, 'internal.message_deleted', viewer.id, {
-        conversationId: c.id,
-        messageId: message.id,
-      });
-    }
-    await appendAudit(tx, {
-      tenantId: c.tenantId,
-      actorId: viewer.id,
-      action: 'message.delete',
-      objectType: 'conversation_message',
-      objectId: message.id,
-      detail: { conversationId: c.id, moderated: !author },
-    });
-  });
-  const { view } = await viewOf(deps.db, c.tenantId, message.id);
-  announceMessage(deps, 'message.updated', c, viewer.id, view);
-  return ok(null);
-}
-
-export async function setReaction(
-  deps: CollabDeps,
-  viewer: Viewer,
-  target: NonNullable<Awaited<ReturnType<typeof loadMessageFor>>>,
-  reaction: string,
-  on: boolean,
-): Promise<Result<ReturnType<typeof messageView>>> {
-  const { message, loaded } = target;
-  if (!(await ensureMember(deps.db, viewer, loaded))) return fail(403, 'forbidden');
-  if (message.deletedAt) return fail(409, 'message_deleted');
-  if (on) {
-    await deps.db.messageReaction.createMany({
-      data: [{ messageId: message.id, userId: viewer.id, reaction }],
-      skipDuplicates: true,
-    });
-  } else {
-    await deps.db.messageReaction.deleteMany({
-      where: { messageId: message.id, userId: viewer.id, reaction },
-    });
-  }
-  const { view } = await viewOf(deps.db, loaded.conversation.tenantId, message.id);
-  announceMessage(deps, 'message.updated', loaded.conversation, viewer.id, view);
-  return ok(view);
 }

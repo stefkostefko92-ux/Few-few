@@ -102,3 +102,35 @@ describe('Повтор след провал на AI', () => {
     );
   });
 });
+
+describe('Паралелни повтори със същия clientMessageId (NFR-12)', () => {
+  test('бавен модел: вторият повтор изчаква първия — един AI отговор, един човешки, и двата 2xx', async () => {
+    const caseId = await newCase(w.portalAlfa, { deviceSerial: 'SN-ALFA-1' });
+    const clientMessageId = randomUUID();
+    h.model.delayMs = 800; // двете заявки със сигурност се застъпват
+    const first = ask(w.portalAlfa, caseId, 'Errore E37', { clientMessageId });
+    await new Promise((r) => setTimeout(r, 150));
+    const second = ask(w.portalAlfa, caseId, 'Errore E37', { clientMessageId });
+    const [a, b] = await Promise.all([first, second]);
+    assert.deepEqual([a.status, b.status].sort(), [200, 201]);
+    assert.ok(a.body.answer && b.body.answer, 'и двата получават отговора');
+    assert.equal(a.body.answer.id, b.body.answer.id, 'един и същ AI отговор');
+    assert.equal(h.model.calls, 1, 'моделът е питан веднъж');
+    assert.equal(await count(caseId, 'HUMAN'), 1);
+    assert.equal(await count(caseId, 'AI'), 1);
+  });
+
+  test('повтор на чужд човек със същия ключ не чака и не пита AI — вижда само съобщението', async () => {
+    const caseId = await newCase(w.portalAlfa, { deviceSerial: 'SN-ALFA-1' });
+    const clientMessageId = randomUUID();
+    h.model.delayMs = 600;
+    const first = ask(w.portalAlfa, caseId, 'Errore E37', { clientMessageId });
+    await new Promise((r) => setTimeout(r, 150));
+    const other = await ask(w.support, caseId, 'Errore E37', { clientMessageId });
+    const a = await first;
+    assert.equal(a.status, 201);
+    assert.ok(other.status < 400, String(other.status));
+    assert.equal(h.model.calls, 1);
+    assert.equal(await count(caseId, 'HUMAN'), 1);
+  });
+});

@@ -1,0 +1,204 @@
+# ChatChat — правила за машината, пробите, базата, одитната верига и самия мониторинг
+# (docker-compose.monitoring.yml). SLO-тата на приложението са в alerts.yml.
+#
+# Същото правило като там: страница (`severity: page`) само за това, което техникът усеща СЕГА или ще
+# усети до часове без човек (сайтът не се отваря, сертификатът изтича до дни, дискът ще се напълни до
+# 4 ч, одитната верига е счупена — доказателството за подправка). Причините (памет, процесор, връзки
+# към базата) са тикет: ако болят, SLO алармите в alerts.yml будят човек по симптома.
+#
+# Всяка аларма носи `component` (страница потиска тикета за същия компонент — alertmanager.yml) и
+# runbook_url към раздела си в docs/runbook.md.
+#
+# Проверка: promtool check rules infra-alerts.yml && promtool test rules infra-alerts.test.yml
+
+groups:
+  - name: chatchat-probes
+    rules:
+      - alert: ChatchatPublicProbeFailed
+        # Отвън (DNS → TLS → nginx → приложението) /healthz не отговаря с тялото на ChatChat 3 мин.
+        # Хваща и това, което метриките на приложението не виждат: nginx, сертификат, DNS.
+        expr: probe_success{job="blackbox-https"} == 0
+        for: 3m
+        labels:
+          severity: page
+          component: public-endpoint
+        annotations:
+          summary: 'ChatChat: публичният адрес не отговаря от 3 мин (https …/healthz)'
+          description: 'Пробата {{ $labels.instance }} пада — техниците не отварят сайта (nginx, TLS, DNS или приложението).'
+          runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatpublicprobefailed'
+
+      - alert: ChatchatTlsCertExpiryCritical
+        # certbot подновява на 30 дни преди края; под 3 дни → браузърите скоро отказват сайта.
+        expr: (probe_ssl_earliest_cert_expiry{job="blackbox-https"} - time()) < 3 * 86400
+        for: 10m
+        labels:
+          severity: page
+          component: tls
+        annotations:
+          summary: 'ChatChat: TLS сертификатът изтича до 3 дни'
+          description: 'Остават {{ $value | humanizeDuration }} — подновяването не е минало.'
+          runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchattlscertexpirycritical'
+
+      - alert: ChatchatTlsCertExpiringSoon
+        expr: (probe_ssl_earliest_cert_expiry{job="blackbox-https"} - time()) < 14 * 86400
+        for: 1h
+        labels:
+          severity: ticket
+          component: tls
+        annotations:
+          summary: 'ChatChat: TLS сертификатът изтича до 14 дни (подновяването на 30 дни не е минало)'
+          description: 'Остават {{ $value | humanizeDuration }}.'
+          runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchattlscertexpiringsoon'
+
+      - alert: ChatchatNotReady
+        # Отвътре /readyz не е {"ok":true} 5 мин — базата не отговаря; всяка заявка с данни е 5xx.
+        # Буди и без трафик (нощем SLO алармите мълчат под минималния обем).
+        expr: probe_success{job="blackbox-ready"} == 0
+        for: 5m
+        labels:
+          severity: page
+          component: readiness
+        annotations:
+          summary: 'ChatChat не е готов от 5 мин (/readyz) — базата не отговаря'
+          description: 'Процесът е жив, но не стига до PostgreSQL; случаите и чатът не работят.'
+          runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatnotready'
+
+  - name: chatchat-host
+    rules:
+      - alert: ChatchatHostDiskWillFill
+        # Под 15 % свободно И по темпа от последните 6 ч ще се напълни до 4 ч → базата спира да пише.
+        expr: |
+          (
+            node_filesystem_avail_bytes{job="node",fstype!~"tmpfs|ramfs|overlay|squashfs",mountpoint!~"/boot.*"}
+              / node_filesystem_size_bytes{job="node",fstype!~"tmpfs|ramfs|overlay|squashfs",mountpoint!~"/boot.*"}
+          ) < 0.15
+          and predict_linear(node_filesystem_avail_bytes{job="node",fstype!~"tmpfs|ramfs|overlay|squashfs",mountpoint!~"/boot.*"}[6h], 4 * 3600) < 0
+          and node_filesystem_readonly{job="node"} == 0
+        for: 30m
+        labels:
+          severity: page
+          component: disk
+        annotations:
+          summary: 'Сървърът на ChatChat: дискът {{ $labels.mountpoint }} ще се напълни до 4 ч'
+          description: 'Свободни: {{ $value | humanizePercentage }}. Пълен диск = базата и бекъпите спират.'
+          runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchathostdiskwillfill'
+
+      - alert: ChatchatHostDiskSpaceLow
+        expr: |
+          (
+            node_filesystem_avail_bytes{job="node",fstype!~"tmpfs|ramfs|overlay|squashfs",mountpoint!~"/boot.*"}
+              / node_filesystem_size_bytes{job="node",fstype!~"tmpfs|ramfs|overlay|squashfs",mountpoint!~"/boot.*"}
+          ) < 0.10
+          and node_filesystem_readonly{job="node"} == 0
+        for: 15m
+        labels:
+          severity: ticket
+          component: disk
+        annotations:
+          summary: 'Сървърът на ChatChat: под 10 % свободно на {{ $labels.mountpoint }}'
+          description: 'Свободни: {{ $value | humanizePercentage }}.'
+          runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchathostdiskspacelow'
+
+      - alert: ChatchatHostMemoryLow
+        # Причина, не симптом — тикет. Ако боли, SLO-тата будят по 5xx/латентност.
+        expr: node_memory_MemAvailable_bytes{job="node"} / node_memory_MemTotal_bytes{job="node"} < 0.10
+        for: 15m
+        labels:
+          severity: ticket
+          component: memory
+        annotations:
+          summary: 'Сървърът на ChatChat: под 10 % свободна памет за 15 мин'
+          description: 'Налична: {{ $value | humanizePercentage }}. clamav държи ~1 GB (DEPLOY.md, т. 8).'
+          runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchathostmemorylow'
+
+      - alert: ChatchatHostOomKills
+        # Ядрото е убило процес заради памет (и в таван на контейнер) за последните 30 мин.
+        expr: increase(node_vmstat_oom_kill{job="node"}[30m]) > 0
+        labels:
+          severity: ticket
+          component: memory
+        annotations:
+          summary: 'Сървърът на ChatChat: OOM — ядрото уби процес заради памет'
+          description: 'Убити за 30 мин: {{ $value }}. Кой — dmesg/journalctl -k.'
+          runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchathostoomkills'
+
+      - alert: ChatchatHostCpuSaturated
+        # Причина, не симптом — тикет: над 90 % от процесора за 30 мин (сканиране, embeddings, чужд процес).
+        expr: 1 - avg(rate(node_cpu_seconds_total{job="node",mode="idle"}[15m])) > 0.9
+        for: 30m
+        labels:
+          severity: ticket
+          component: cpu
+        annotations:
+          summary: 'Сървърът на ChatChat: процесорът е над 90 % за 30 мин'
+          description: 'Заетост: {{ $value | humanizePercentage }}.'
+          runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchathostcpusaturated'
+
+  - name: chatchat-database
+    rules:
+      - alert: ChatchatPostgresConnectionsSaturated
+        # Над 80 % от max_connections за 15 мин — следващата стъпка е „too many clients“ (5xx).
+        expr: sum(pg_stat_activity_count{job="postgres"}) / max(pg_settings_max_connections{job="postgres"}) > 0.8
+        for: 15m
+        labels:
+          severity: ticket
+          component: database
+        annotations:
+          summary: 'ChatChat: връзките към PostgreSQL са над 80 % от max_connections'
+          description: 'Заети: {{ $value | humanizePercentage }}.'
+          runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatpostgresconnectionssaturated'
+
+  - name: chatchat-audit
+    rules:
+      - alert: ChatchatAuditChainBroken
+        # chatchat-audit-verify.timer (дневно) → textfile на node-exporter. 0 = веригата е счупена и при
+        # втората проверка (src/cli/audit-verify.ts) — подправен или изтрит ред в одита (FR-12, §15.1).
+        expr: chatchat_audit_chain_intact == 0
+        labels:
+          severity: page
+          component: audit
+        annotations:
+          summary: 'ChatChat: одитната верига е СЧУПЕНА — възможна подправка на одита'
+          description: 'Последната проверка намери звено, чийто хеш не съвпада. Запази доказателствата преди всичко друго.'
+          runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatauditchainbroken'
+
+      - alert: ChatchatAuditVerifyStale
+        # Проверката не е завършила над 50 ч (дневна + една пропусната) — или резултат още няма.
+        expr: |
+          (time() - max(chatchat_audit_chain_verified_timestamp_seconds)) > 50 * 3600
+          or (absent(chatchat_audit_chain_verified_timestamp_seconds) and on() (max(up{job="node"}) == 1))
+        for: 1h
+        labels:
+          severity: ticket
+          component: audit
+        annotations:
+          summary: 'ChatChat: одитната верига не е проверена над 50 ч'
+          description: 'chatchat-audit-verify.timer не минава (или node-exporter не вижда резултата му).'
+          runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatauditverifystale'
+
+  - name: chatchat-monitoring
+    rules:
+      - alert: ChatchatMonitoringTargetDown
+        # Експортер, проба или Alertmanager не се четат 10 мин → алармите им са слепи (не самото приложение
+        # и worker-ът: те са ChatchatDown и ChatchatWorkerDown — без двойно писмо за едно и също).
+        expr: up{job!~"chatchat|chatchat-worker|prometheus"} == 0
+        for: 10m
+        labels:
+          severity: ticket
+          component: monitoring
+        annotations:
+          summary: 'Мониторингът на ChatChat: {{ $labels.job }} не се чете от 10 мин'
+          description: 'Алармите, които зависят от {{ $labels.job }} ({{ $labels.instance }}), са слепи.'
+          runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatmonitoringtargetdown'
+
+      - alert: ChatchatAlertDeliveryFailing
+        # SMTP опит към Brevo се е провалил през последния час — писмата за алармите може да не стигат.
+        # Самото това писмо минава само ако провалът е преходен; иначе се вижда в Prometheus/`status`.
+        expr: increase(alertmanager_notification_requests_failed_total{job="alertmanager",integration="email"}[1h]) > 0
+        labels:
+          severity: ticket
+          component: alert-delivery
+        annotations:
+          summary: 'Мониторингът на ChatChat: имейлите за алармите не тръгват (SMTP към Brevo отказва)'
+          description: 'Неуспешни опити за 1 ч: {{ $value }}. Страниците може да не стигат до човек.'
+          runbook_url: 'https://github.com/stefkostefko92-ux/Few-few/blob/main/chatchat/docs/runbook.md#chatchatalertdeliveryfailing'

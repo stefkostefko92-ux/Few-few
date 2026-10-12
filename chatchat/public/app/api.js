@@ -42,6 +42,8 @@ export async function api(method, path, body, { timeoutMs = 30000 } = {}) {
     // Вторият фактор е отделно състояние: сесията е жива, но иска код (или настройка).
     if (data?.code === 'mfa_required') emit('auth:mfa', 'verify');
     else if (data?.code === 'mfa_setup_required') emit('auth:mfa', 'setup');
+    // Задължителен единен вход, а акаунтът още не е свързан от собственика (auth/sso-link.js).
+    else if (data?.code === 'sso_link_required') emit('auth:link');
     else if (res.status === 401 && !path.startsWith('/auth/')) emit('auth:expired');
     throw new ApiError(res.status, data?.code, data?.error);
   }
