@@ -227,6 +227,24 @@ npm run zip           # release/deja-<версия>.zip за Chrome Web Store
   иначе го надписва). Светлата тема на welcome: welcome.css се зарежда след
   search.css — светлият override живее и в welcome.css.
 
+## 73 езика (като Supreme AdBlock)
+
+- `_locales/` — 73 папки (70 езика + es_419, pt_BR/pt_PT, zh_CN/zh_TW), същият
+  набор като `adblock/`. BG е първоизточникът, EN — пивотът за превода; извън
+  en/bg/it преводите са машинно подпомогнати (агентите Преводач по бриф) →
+  **нужен преглед от носител** за големите пазари. Листинг за магазина на всеки
+  език: `store/listing/<локал>.txt` (`TITLE` = extName, `SHORT` ≤132, 14 точки ✓).
+- **Нов ключ → във ВСИЧКИ 73 локала**, иначе `test/i18n.mjs` (в `npm test`) пада:
+  същите ключове, без празни, същите `$МАРКЕРИ$` и `placeholders` блок, марката
+  (Déjà/Chrome/Gemini Nano/Hugging Face/✓) непокътната, extName „Déjà — …“ ≤75,
+  extDesc ≤132, всеки `data-i18n`/`t('…')` ключ съществува в en.
+- **RTL** (ar/he/fa/ur): `applyDirection()` в `lib/i18n.js` слага `lang` и `dir`
+  от `@@bidi_dir` (преди `lang="bg"` беше твърд за всички). CSS — САМО логически
+  свойства (`border-inline-start`, `inset-inline-end`, `padding-inline`); ключовете
+  имат `[dir='rtl']` огледален палец. Физическо `left/right` в CSS = бъг в RTL.
+- `npm run test:i18n-ui` — popup/панел на всички 73 езика в истински Chromium
+  (`--lang`): без отрязан текст, popup ≤600 px, dir правилен. Бавен → не е в CI.
+
 ## Пътна карта (по ред)
 
 1. Качване в Chrome Web Store: деплойни `server/` на deja.carbonstealth.eu

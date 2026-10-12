@@ -1,0 +1,45 @@
+TITLE: Déjà — your browser's memory
+SHORT: Search the pages you've read by meaning, in 50+ languages. Runs entirely on your device — nothing ever leaves your browser.
+
+You've seen it. Déjà finds it.
+
+Your browser history only remembers titles and URLs. Déjà remembers the
+CONTENT. Describe what you recall in your own words — "that article about
+sodium-based batteries" — and Déjà surfaces the page, even if you don't
+remember the title, the site, or the exact words. It even jumps to the exact
+paragraph.
+
+WHAT YOU GET
+✓ Your bookmarks, searchable by meaning from minute one — optional, one click.
+  Déjà learns their titles and folders (without opening the pages) and keeps
+  them in sync as you add, move or delete bookmarks.
+✓ Answers from your memory — on computers that support Chrome's built-in AI
+  (Gemini Nano), ask a question and get a short answer written on your device
+  from the pages you've read, with clickable sources. (Answers in English,
+  Spanish, German, French and Japanese.)
+✓ Search by meaning — ask in your own words, in 50+ languages; ask in one
+  language, find pages you read in another.
+✓ Side panel companion — open it next to any page and see what you have
+  already read on that page's topic, plus your recent memories.
+✓ Type "dj" in the address bar — search your memory straight from the omnibox
+  with live suggestions.
+✓ Remember a passage — right-click any selected text: "Déjà: remember
+  selected text". It becomes its own searchable memory.
+✓ Jump to the exact paragraph — results open the page with the matching
+  passage highlighted.
+✓ Date filters, related memories, recent memories on the empty search page.
+✓ My memory — see everything Déjà remembers, forget any page with one click,
+  export/import your whole index as a file.
+
+PRIVATE BY DESIGN
+✓ 100% local processing — the AI embedding model runs inside your browser and
+  your data lives in IndexedDB. No servers, no cloud, no telemetry, no account.
+✓ Mail, chats, login and banking pages are skipped automatically (built-in
+  address list; add your own patterns).
+✓ Pause with one click. "Forget this page" and "Clear memory" are always there.
+✓ Automatic forgetting — optionally delete pages older than 3/6/12/24 months.
+✓ Light and dark themes follow your system.
+
+The only network request the extension ever makes is a one-time download of
+the embedding model from Hugging Face (cached locally afterwards; you can
+point it at your own mirror instead).

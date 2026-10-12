@@ -45,6 +45,13 @@
 - Small promo tile: `store/promo/small-tile-440x280.png`. Marquee: по избор.
 - Official URL / Homepage: `https://deja.carbonstealth.eu`. Support URL: същият.
 - Add language → **Български** → BG текстовете от `LISTING.md` + `*-bg.png`.
+- **Останалите 71 езика:** Store listing → Language → Add language → за всеки
+  локал от `store/listing/<локал>.txt` копирай `SHORT` в „Summary“ и текста под
+  него в „Description“ (заглавието идва от манифеста). Скрийншоти по езици: ако
+  таблото поиска такива за езика, качи английските (`*-en.png`) — не сме ги
+  правили на 73 езика. Ред по пазари:
+  de, fr, es, pt_BR, ja, ru, zh_CN, ko, it, pl, tr, nl, id, vi… (останалите — по
+  желание; интерфейсът е преведен на всички 73 независимо от листинга).
   (Italiano — по желание; landing-ът и UI-ът го имат, listing текст още не.)
 
 **Privacy practices:**

@@ -181,7 +181,7 @@ input:focus {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
   content: '';
   height: 20px;
-  left: 2px;
+  inset-inline-start: 2px;
   position: absolute;
   top: 2px;
   transition: transform 0.45s var(--spring, ease);
@@ -216,4 +216,9 @@ input:focus {
 
 .status-line:empty {
   display: none;
+}
+
+/* RTL: палецът на ключа тръгва отдясно и се плъзга наляво */
+[dir='rtl'] .toggle input:checked::before {
+  transform: translateX(-20px);
 }

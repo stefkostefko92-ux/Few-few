@@ -16,7 +16,8 @@
     "icons": "python3 tools/generate_icons.py",
     "format": "prettier --write \"src/**/*.{js,css,html}\" build.mjs manifest.json",
     "format:check": "prettier --check \"src/**/*.{js,css,html}\" build.mjs manifest.json",
-    "build:test": "node build.mjs --grant-optional"
+    "build:test": "node build.mjs --grant-optional",
+    "test:i18n-ui": "node test/i18n-ui.mjs"
   },
   "dependencies": {
     "@huggingface/transformers": "^3.0.0"

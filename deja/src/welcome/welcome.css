@@ -24,7 +24,7 @@
 .welcome .points li {
   background: var(--panel);
   border: 1px solid var(--border);
-  border-left: 3px solid var(--accent);
+  border-inline-start: 3px solid var(--accent);
   border-radius: 12px;
   color: #c6c6d4;
   line-height: 1.55;

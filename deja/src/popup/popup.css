@@ -112,7 +112,7 @@ button {
     inset 0 -2px 3px rgba(120, 100, 220, 0.25);
   content: '';
   height: 18px;
-  left: 2px;
+  inset-inline-start: 2px;
   position: absolute;
   top: 2px;
   transition: transform 0.45s var(--spring, ease);
@@ -206,4 +206,9 @@ button {
 
 [hidden] {
   display: none !important;
+}
+
+/* RTL: палецът на ключа тръгва отдясно и се плъзга наляво */
+[dir='rtl'] .switch input:checked::before {
+  transform: translateX(-18px);
 }
