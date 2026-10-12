@@ -55,7 +55,9 @@ const rowsAfter = await memory.$$eval('.page-row', (r) => r.length);
 check('моята памет: списък и забравяне', rowsBefore === 2 && rowsAfter === 1);
 
 // 6) export дава валиден архив
-const dump = await memory.evaluate(() => chrome.runtime.sendMessage({ type: 'deja:memory:export' }));
+const dump = await memory.evaluate(() =>
+  chrome.runtime.sendMessage({ type: 'deja:memory:export' }),
+);
 check(
   'export: валиден deja-memory архив',
   dump?.ok && dump.result?.format === 'deja-memory' && dump.result.pages.length === 1,
@@ -76,7 +78,9 @@ check('clip: избраният текст е приет', clip?.ok && clip.resu
 let recent = [];
 for (let i = 0; i < 20; i++) {
   await bg.waitForTimeout(3000);
-  const res = await bg.evaluate(() => chrome.runtime.sendMessage({ type: 'deja:recent', limit: 8 }));
+  const res = await bg.evaluate(() =>
+    chrome.runtime.sendMessage({ type: 'deja:recent', limit: 8 }),
+  );
   recent = res?.result || [];
   if (recent.some((r) => r.url.includes('#clip-'))) break;
 }

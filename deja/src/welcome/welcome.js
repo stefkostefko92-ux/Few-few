@@ -3,9 +3,30 @@
 
 import { applyI18n } from '../lib/i18n.js';
 import { initAmbient } from '../lib/ambient.js';
+import { send } from '../lib/msg.js';
+import { mountBookmarkCard } from '../lib/bookmarks-ui.js';
 
 applyI18n();
-initAmbient();
+const ambient = initAmbient();
+
+// Отметките: полза от първата минута, вместо празна памет за седмици.
+// Мрежата отзад расте с всяка научена партида — паметта буквално се пълни.
+let base = 0;
+send('deja:stats')
+  .then(({ pages }) => {
+    base = pages;
+    ambient.setMemories(pages);
+  })
+  .catch(() => {});
+let lastDone = 0;
+mountBookmarkCard(document.getElementById('bm'), {
+  onProgress(status) {
+    if (status?.state !== 'running' || !status.total) return;
+    ambient.setMemories(base + status.done);
+    if (status.done > lastDone) ambient.surface(3);
+    lastDone = status.done;
+  },
+});
 
 document.getElementById('open').addEventListener('click', () => {
   location.href = chrome.runtime.getURL('search.html');

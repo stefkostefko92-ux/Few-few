@@ -9,6 +9,7 @@
     "keyword": "dj"
   },
   "minimum_chrome_version": "116",
+  "optional_permissions": ["bookmarks"],
   "permissions": [
     "storage",
     "offscreen",

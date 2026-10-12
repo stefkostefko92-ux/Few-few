@@ -7,7 +7,13 @@
   margin-bottom: 6px;
 }
 
-/* броят и бутоните не се чупят на два реда — при тясно окно редът се пренася цял */
+/* броят е отделен ред отгоре (дълъг брой като „407 страници“ не бута бутоните);
+   броят и бутоните никога не се чупят по средата */
+.toolbar .status {
+  flex-basis: 100%;
+  margin: 0;
+}
+
 .toolbar .status,
 .tool {
   white-space: nowrap;
@@ -119,10 +125,17 @@
   gap: 10px;
 }
 
+.stat-track {
+  flex: none;
+  width: 140px;
+}
+
 .stat-bar {
   background: var(--accent);
   border-radius: 4px;
+  flex: none;
   height: 7px;
+  min-width: 6px;
   opacity: 0.7;
 }
 

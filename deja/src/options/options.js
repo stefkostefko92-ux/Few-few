@@ -3,6 +3,12 @@
 import { getSettings, patchSettings, BUILTIN_DENYLIST } from '../lib/settings.js';
 import { applyI18n, t } from '../lib/i18n.js';
 import { initAmbient } from '../lib/ambient.js';
+import {
+  enableBookmarks,
+  disableBookmarks,
+  watchBookmarks,
+  statusLine,
+} from '../lib/bookmarks-ui.js';
 
 applyI18n();
 initAmbient();
@@ -57,6 +63,37 @@ saveBtn.addEventListener('click', async () => {
   });
   savedEl.textContent = t('optSaved');
   setTimeout(() => (savedEl.textContent = ''), 2000);
+});
+
+// Отметките: ключът действа веднага (правото се иска в момента на клика —
+// жестът на потребителя не бива да чака бутона „Запази“)
+const bookmarksEl = document.getElementById('bookmarks');
+const bookmarksStatusEl = document.getElementById('bookmarksStatus');
+if (!chrome.permissions) bookmarksEl.closest('.card').hidden = true;
+
+bookmarksEl.addEventListener('change', async () => {
+  bookmarksEl.disabled = true;
+  try {
+    if (bookmarksEl.checked) {
+      const ok = await enableBookmarks();
+      if (!ok) {
+        bookmarksEl.checked = false;
+        bookmarksStatusEl.textContent = t('bmDenied');
+      }
+    } else {
+      await disableBookmarks();
+      bookmarksStatusEl.textContent = '';
+    }
+  } catch (err) {
+    bookmarksStatusEl.textContent = t('statusError', [String(err?.message || err)]);
+  } finally {
+    bookmarksEl.disabled = false;
+  }
+});
+
+watchBookmarks((status, enabled) => {
+  bookmarksEl.checked = enabled;
+  if (enabled) bookmarksStatusEl.textContent = statusLine(status);
 });
 
 load();

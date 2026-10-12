@@ -44,7 +44,9 @@ export function startServer(pages) {
   return new Promise((resolve) => server.listen(PORT, () => resolve(server)));
 }
 
-export async function launchWithExtension({ reducedMotion = 'no-preference' } = {}) {
+// ext: папката на билда — 'dist' (релийз) или 'dist-test' (опционалните права
+// са задължителни, защото headless Chromium не може да приеме диалога за право)
+export async function launchWithExtension({ reducedMotion = 'no-preference', ext = EXT } = {}) {
   const executablePath = process.env.DEJA_CHROME;
   if (!executablePath) {
     throw new Error('Задай DEJA_CHROME=/път/до/chrome (тестовете искат реален Chromium)');
@@ -55,8 +57,8 @@ export async function launchWithExtension({ reducedMotion = 'no-preference' } = 
     reducedMotion,
     executablePath,
     args: [
-      `--disable-extensions-except=${EXT}`,
-      `--load-extension=${EXT}`,
+      `--disable-extensions-except=${ext}`,
+      `--load-extension=${ext}`,
       '--ignore-certificate-errors',
     ],
   };

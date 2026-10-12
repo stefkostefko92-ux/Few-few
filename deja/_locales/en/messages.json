@@ -266,12 +266,128 @@
     "message": "The side panel sees the address and title of the page you're viewing so it can show what you've read on its topic — session memory only. Passages you deliberately save also stay with you only."
   },
   "welcomeUpdated": {
-    "message": "Déjà has updated. Here's what it does with your data — nothing has left your device."
+    "message": "Déjà has updated. New: your bookmarks can now be searchable by meaning too — if you want. Here's what I do with your data — nothing has left your device."
   },
   "optAmbientLabel": {
     "message": "Living background"
   },
   "optAmbientHelp": {
     "message": "The web of memories behind the glass drifts slowly. Turn it off if the motion distracts you."
+  },
+  "bmTitle": {
+    "message": "Make your bookmarks searchable — right now"
+  },
+  "bmText": {
+    "message": "Déjà learns the titles and folders of your bookmarks without opening the pages. Find them by meaning from the first minute — everything stays on your device."
+  },
+  "bmTextShort": {
+    "message": "Your memory is still young. Teach me your bookmarks and search them by meaning today."
+  },
+  "bmButton": {
+    "message": "Learn my bookmarks"
+  },
+  "bmNote": {
+    "message": "Your browser will ask for permission. Turn it off anytime in settings."
+  },
+  "bmTitleRunning": {
+    "message": "Learning your bookmarks…"
+  },
+  "bmTitleDone": {
+    "message": "Your bookmarks are searchable"
+  },
+  "bmPreparing": {
+    "message": "Getting ready…"
+  },
+  "bmLearning": {
+    "message": "Learned $DONE$ of $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà is paused — I'll continue as soon as you resume."
+  },
+  "bmError": {
+    "message": "Something went wrong while learning. I'll try again on the next change."
+  },
+  "bmDone": {
+    "message": "Done — $COUNT$ bookmarks are searchable by meaning and kept in sync automatically.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Done — 1 bookmark is searchable by meaning and kept in sync automatically."
+  },
+  "bmDenied": {
+    "message": "Without permission I can't see your bookmarks. You can try again anytime."
+  },
+  "bmTry": {
+    "message": "Try:"
+  },
+  "bmBadge": {
+    "message": "Bookmark"
+  },
+  "bmAddedOn": {
+    "message": "bookmarked on $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Bookmarks in memory"
+  },
+  "optBookmarksHelp": {
+    "message": "I learn your bookmarks' titles and folders (without opening the pages) and follow along as you add or delete them. Turning it off removes them from memory — pages you've read stay."
+  },
+  "memoryFilterAll": {
+    "message": "All"
+  },
+  "memoryFilterRead": {
+    "message": "Read"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Bookmarks"
+  },
+  "welcomePoint5": {
+    "message": "Bookmarks — only if you turn them on: then I learn their titles and folders, without opening the pages. One click turns it off."
+  },
+  "rateTitle": {
+    "message": "Déjà has helped you find something — $COUNT$ times now",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "If it's useful, a rating in the store helps other people discover it — it takes 10 seconds. And if something bugs you, tell us."
+  },
+  "rateButton": {
+    "message": "Rate Déjà"
+  },
+  "rateFeedback": {
+    "message": "Something not working?"
+  },
+  "rateLater": {
+    "message": "Not now"
+  },
+  "rateThanks": {
+    "message": "Thank you! It genuinely helps."
+  },
+  "rateFeedbackThanks": {
+    "message": "Thanks — we read every message."
+  },
+  "rateFeedbackSubject": {
+    "message": "feedback"
   }
 }

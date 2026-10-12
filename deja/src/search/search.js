@@ -5,6 +5,9 @@ import { applyI18n, t } from '../lib/i18n.js';
 import { send } from '../lib/msg.js';
 import { el, countLabel } from '../lib/dom.js';
 import { initAmbient } from '../lib/ambient.js';
+import { icon } from '../lib/icons.js';
+import { mountBookmarkCard } from '../lib/bookmarks-ui.js';
+import { recordWin, mountRateNudge } from '../lib/rate.js';
 
 applyI18n();
 const ambient = initAmbient();
@@ -15,6 +18,10 @@ const button = document.getElementById('go');
 const status = document.getElementById('status');
 const resultsEl = document.getElementById('results');
 const filtersEl = document.getElementById('filters');
+const bmCtaEl = document.getElementById('bmCta');
+
+// под този брой спомени търсачката предлага отметките — иначе е празна седмици
+const YOUNG_MEMORY = 30;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const FILTERS = [
@@ -101,13 +108,24 @@ function render(results, query) {
     link.href = deepLink(r);
     link.target = '_blank';
     link.rel = 'noopener';
-    const snippet = el('p', 'snippet');
-    highlightInto(snippet, '…' + r.snippet + '…', query);
-    card.append(link, el('div', 'url', r.url), snippet);
+    trackWin(link);
+    card.append(link, el('div', 'url', r.url));
+    if (r.kind === 'bookmark') {
+      // отметка без прочит: няма откъс — показваме откъде е (папката)
+      card.classList.add('is-bookmark');
+      card.append(bookmarkTag(r.folder));
+    } else {
+      const snippet = el('p', 'snippet');
+      highlightInto(snippet, '…' + r.snippet + '…', query);
+      card.append(snippet);
+    }
 
     const meta = el('div', 'meta');
     const parts = [t(recallKey(r.score)), t('similarity', [String(r.score)])];
-    if (r.time) parts.push(t('readOn', [new Date(r.time).toLocaleDateString()]));
+    if (r.time) {
+      const date = new Date(r.time).toLocaleDateString();
+      parts.push(t(r.kind === 'bookmark' ? 'bmAddedOn' : 'readOn', [date]));
+    }
     meta.append(document.createTextNode(parts.join(' · ') + ' · '));
     const relatedLink = el('a', 'related-toggle', t('relatedLink'));
     relatedLink.href = '#';
@@ -119,6 +137,19 @@ function render(results, query) {
     card.append(meta, el('div', 'related'));
     resultsEl.append(card);
   });
+}
+
+// клик (и среден бутон) на намерен спомен = търсенето свърши работа
+function trackWin(link) {
+  link.addEventListener('click', recordWin);
+  link.addEventListener('auxclick', (event) => event.button === 1 && recordWin());
+}
+
+function bookmarkTag(folder) {
+  const tag = el('div', 'bm-tag');
+  tag.append(icon('bookmark'), document.createTextNode(t('bmBadge')));
+  if (folder) tag.append(el('span', 'bm-folder', folder));
+  return tag;
 }
 
 function renderFilters() {
@@ -140,6 +171,7 @@ async function refreshStats() {
     const { pages } = await send('deja:stats');
     status.textContent = countLabel(pages, 'pagesInMemoryOne', 'pagesInMemory');
     ambient.setMemories(pages);
+    await maybeOfferBookmarks(pages);
   } catch {
     /* service worker-ът се събужда — не е фатално */
   }
@@ -177,6 +209,26 @@ form.addEventListener('submit', (event) => {
   if (query) doSearch(query);
 });
 
+// Млада памет + изключени отметки → покана; веднъж показана, картата остава
+// до края на сесията (за да видиш прогреса и „Опитай: …“ след включването)
+async function maybeOfferBookmarks(pages) {
+  if (bmCtaEl.dataset.mounted) return;
+  const { settings = {} } = await chrome.storage.local.get('settings');
+  if (settings.bookmarks || pages >= YOUNG_MEMORY || !chrome.permissions) return;
+  bmCtaEl.dataset.mounted = '1';
+  bmCtaEl.hidden = false;
+  mountBookmarkCard(bmCtaEl, {
+    compact: true,
+    onProgress(st) {
+      if (st?.state === 'running' && st.total) ambient.setMemories(pages + st.done);
+      if (st?.state === 'done' && !bmCtaEl.dataset.counted) {
+        bmCtaEl.dataset.counted = '1';
+        refreshStats();
+      }
+    },
+  });
+}
+
 // Празната търсачка не е празна: последните спомени са на един клик
 async function showRecent() {
   try {
@@ -200,7 +252,11 @@ async function showRecent() {
 }
 
 renderFilters();
-refreshStats();
+// една покана наведнъж: първо се решава поканата за отметки (млада памет), чак
+// после молбата за отзив — иначе двете се състезават коя ще излезе първа
+refreshStats().finally(() =>
+  mountRateNudge(document.getElementById('nudge'), { el, icon, t, canShow: () => bmCtaEl.hidden }),
+);
 showRecent();
 
 // omnibox: „dj <заявка>“ пристига като ?q= — пускаме търсенето веднага

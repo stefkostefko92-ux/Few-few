@@ -73,3 +73,12 @@
   padding: 10px 14px;
   text-align: center;
 }
+
+/* светла тема: welcome.css се зарежда СЛЕД search.css и иначе връща светлосивия
+   текст върху светъл фон (контраст под 4.5:1) */
+@media (prefers-color-scheme: light) {
+  .welcome .intro,
+  .welcome .points li {
+    color: #3d3c52;
+  }
+}

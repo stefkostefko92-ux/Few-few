@@ -37,6 +37,9 @@ const DEFAULTS = {
   modelHost: '',
   // „Жив фон“ — анимираната мрежа зад стъклото; изключването я спира (WCAG 2.2.2)
   ambientMotion: true,
+  // Отметките в паметта — по избор, с право „bookmarks“, поискано в момента на
+  // включването (optional_permissions → нула предупреждения при инсталация)
+  bookmarks: false,
 };
 
 export async function getSettings() {

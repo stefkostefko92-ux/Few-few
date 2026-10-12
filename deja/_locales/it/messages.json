@@ -266,12 +266,128 @@
     "message": "Il pannello laterale vede l'indirizzo e il titolo della pagina che stai guardando per mostrarti cosa hai letto sul suo argomento — solo nella memoria di sessione. Anche i brani che salvi di proposito restano solo da te."
   },
   "welcomeUpdated": {
-    "message": "Déjà si è aggiornato. Ecco cosa fa con i tuoi dati — nulla ha lasciato il tuo dispositivo."
+    "message": "Déjà si è aggiornato. Novità: se vuoi, anche i tuoi segnalibri diventano cercabili per significato. Ecco cosa faccio con i tuoi dati — nulla ha lasciato il tuo dispositivo."
   },
   "optAmbientLabel": {
     "message": "Sfondo vivo"
   },
   "optAmbientHelp": {
     "message": "La rete di ricordi dietro il vetro si muove lentamente. Disattivala se il movimento ti distrae."
+  },
+  "bmTitle": {
+    "message": "Rendi cercabili i tuoi segnalibri — subito"
+  },
+  "bmText": {
+    "message": "Déjà impara i titoli e le cartelle dei tuoi segnalibri senza aprire le pagine. Li ritrovi per significato fin dal primo minuto e tutto resta sul tuo dispositivo."
+  },
+  "bmTextShort": {
+    "message": "La tua memoria è ancora giovane. Insegnami i tuoi segnalibri e cercali per significato già oggi."
+  },
+  "bmButton": {
+    "message": "Impara i miei segnalibri"
+  },
+  "bmNote": {
+    "message": "Il browser chiederà il permesso. Puoi disattivarlo quando vuoi nelle impostazioni."
+  },
+  "bmTitleRunning": {
+    "message": "Sto imparando i tuoi segnalibri…"
+  },
+  "bmTitleDone": {
+    "message": "I tuoi segnalibri sono cercabili"
+  },
+  "bmPreparing": {
+    "message": "Mi preparo…"
+  },
+  "bmLearning": {
+    "message": "Imparati $DONE$ su $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà è in pausa — riprendo appena la togli."
+  },
+  "bmError": {
+    "message": "Qualcosa è andato storto. Riproverò alla prossima modifica."
+  },
+  "bmDone": {
+    "message": "Fatto — $COUNT$ segnalibri sono cercabili per significato e sincronizzati automaticamente.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Fatto — 1 segnalibro è cercabile per significato e sincronizzato automaticamente."
+  },
+  "bmDenied": {
+    "message": "Senza permesso non posso vedere i segnalibri. Puoi riprovare quando vuoi."
+  },
+  "bmTry": {
+    "message": "Prova:"
+  },
+  "bmBadge": {
+    "message": "Segnalibro"
+  },
+  "bmAddedOn": {
+    "message": "aggiunto il $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Segnalibri nella memoria"
+  },
+  "optBookmarksHelp": {
+    "message": "Imparo titoli e cartelle dei segnalibri (senza aprire le pagine) e li seguo quando ne aggiungi o elimini. Disattivandolo spariscono dalla memoria — le pagine lette restano."
+  },
+  "memoryFilterAll": {
+    "message": "Tutti"
+  },
+  "memoryFilterRead": {
+    "message": "Letti"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Segnalibri"
+  },
+  "welcomePoint5": {
+    "message": "Segnalibri — solo se li attivi: allora imparo titoli e cartelle, senza aprire le pagine. Si disattiva con un clic."
+  },
+  "rateTitle": {
+    "message": "Déjà ti ha aiutato a ritrovare qualcosa — già $COUNT$ volte",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Se ti è utile, una valutazione nello store aiuta altre persone a scoprirlo — bastano 10 secondi. E se qualcosa non ti piace, scrivici."
+  },
+  "rateButton": {
+    "message": "Valuta Déjà"
+  },
+  "rateFeedback": {
+    "message": "Qualcosa non va?"
+  },
+  "rateLater": {
+    "message": "Non ora"
+  },
+  "rateThanks": {
+    "message": "Grazie! Aiuta davvero."
+  },
+  "rateFeedbackThanks": {
+    "message": "Grazie — leggiamo ogni messaggio."
+  },
+  "rateFeedbackSubject": {
+    "message": "feedback"
   }
 }

@@ -207,3 +207,13 @@ input:focus {
     transition: none;
   }
 }
+
+/* състоянието на отметките (прогрес/брой) — отделен ред под помощния текст */
+.status-line {
+  color: var(--text);
+  margin-top: 6px;
+}
+
+.status-line:empty {
+  display: none;
+}

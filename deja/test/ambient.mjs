@@ -12,7 +12,10 @@ async function scenario({ reducedMotion, ambient }) {
   const page = await context.newPage();
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto(`chrome-extension://${extId}/options.html`);
-  await page.evaluate((on) => chrome.storage.local.set({ settings: { ambientMotion: on } }), ambient);
+  await page.evaluate(
+    (on) => chrome.storage.local.set({ settings: { ambientMotion: on } }),
+    ambient,
+  );
   await page.goto(`chrome-extension://${extId}/welcome.html`);
   await page.waitForSelector('canvas.nebula');
   await page.waitForTimeout(600);

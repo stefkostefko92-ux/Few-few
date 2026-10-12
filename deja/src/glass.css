@@ -348,3 +348,329 @@ input[type='url']:focus {
     transform: none;
   }
 }
+
+/* --- общи компоненти (всички страници) --- */
+
+/* hidden печели винаги — иначе display: flex на компонент го надписва */
+[hidden] {
+  display: none !important;
+}
+
+/* линейни икони от lib/icons.js — наследяват цвета на текста */
+.icon {
+  fill: none;
+  flex: none;
+  height: 1.05em;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+  vertical-align: -0.16em;
+  width: 1.05em;
+}
+
+/* знак „Отметка · папка“ в резултат/ред от паметта */
+.bm-tag {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.bm-tag .icon {
+  color: #5eead4;
+}
+
+.bm-folder {
+  border: 1px solid color-mix(in oklab, var(--muted) 40%, transparent);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+
+/* --- картата „Направи отметките си търсими“ --- */
+.bm {
+  border-radius: 20px;
+  display: flex;
+  gap: 16px;
+  margin: 26px 0 8px;
+  padding: 20px 22px;
+}
+
+.bm-mark {
+  align-items: center;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 60%),
+    var(--accent-glass);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 14px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 8px 24px -10px var(--accent-glass);
+  color: #fff;
+  display: flex;
+  flex: none;
+  font-size: 22px;
+  height: 46px;
+  justify-content: center;
+  width: 46px;
+}
+
+.bm[data-state='done'] .bm-mark {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 60%),
+    rgba(20, 184, 166, 0.55);
+}
+
+.bm-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.bm-title {
+  color: var(--text);
+  font-size: 17px;
+  margin: 2px 0 6px;
+}
+
+.bm-text {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.bm-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin-top: 14px;
+}
+
+.bm-go {
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 650;
+  padding: 10px 18px;
+}
+
+.bm-go:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.bm-note {
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.bm-progress {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  height: 8px;
+  margin-top: 14px;
+  overflow: hidden;
+}
+
+/* лентата тече като течност: преливащ градиент, плавно нарастване */
+.bm-bar {
+  background: linear-gradient(90deg, #8b7cf6, #5eead4, #f48cc8, #8b7cf6);
+  background-size: 300% 100%;
+  border-radius: inherit;
+  box-shadow: 0 0 14px rgba(139, 124, 246, 0.6);
+  height: 100%;
+  transition: width 0.6s var(--spring);
+  width: 4%;
+  animation: bmFlow 3s linear infinite;
+}
+
+@keyframes bmFlow {
+  to {
+    background-position: 300% 0;
+  }
+}
+
+.bm-status {
+  color: var(--text);
+  font-size: 13.5px;
+  margin: 10px 0 0;
+  min-height: 1em;
+}
+
+.bm-status:empty {
+  display: none;
+}
+
+.bm-try {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.bm-try:empty {
+  display: none;
+}
+
+.bm-try-label {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.bm-try .chip {
+  align-items: center;
+  display: inline-flex;
+  gap: 6px;
+  text-decoration: none;
+}
+
+.bm-compact {
+  margin: 18px 0 4px;
+  padding: 16px 18px;
+}
+
+.bm-compact .bm-title {
+  font-size: 15.5px;
+}
+
+.bm-compact .bm-mark {
+  font-size: 18px;
+  height: 38px;
+  width: 38px;
+}
+
+@media (max-width: 520px) {
+  .bm {
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bm-bar {
+    animation: none;
+    transition: none;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  .bm-tag .icon {
+    color: #0f8f84;
+  }
+
+  .bm-progress {
+    background: rgba(27, 26, 43, 0.08);
+  }
+}
+
+/* --- молбата за отзив: тиха стъклена бележка, не модален прозорец --- */
+.nudge {
+  border-radius: 18px;
+  display: flex;
+  gap: 14px;
+  margin: 0 0 16px;
+  padding: 16px 44px 16px 18px;
+  position: relative;
+}
+
+.nudge-mark {
+  align-items: center;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 60%),
+    rgba(244, 140, 200, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 12px;
+  color: #fff;
+  display: flex;
+  flex: none;
+  font-size: 18px;
+  height: 38px;
+  justify-content: center;
+  width: 38px;
+}
+
+.nudge-body {
+  min-width: 0;
+}
+
+.nudge-title {
+  color: var(--text);
+  font-size: 15.5px;
+  margin: 1px 0 5px;
+}
+
+.nudge-text,
+.nudge-thanks {
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.nudge-thanks {
+  color: var(--text);
+  padding: 8px 0;
+}
+
+.nudge-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  margin-top: 12px;
+}
+
+.nudge-rate,
+.nudge-feedback {
+  align-items: center;
+  border-radius: 11px;
+  display: inline-flex;
+  font-size: 13.5px;
+  font-weight: 650;
+  gap: 7px;
+  padding: 8px 14px;
+  text-decoration: none;
+}
+
+.nudge-feedback {
+  color: var(--text);
+  font-weight: 550;
+}
+
+.nudge-later,
+.nudge-close {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  padding: 6px 4px;
+}
+
+.nudge-later:hover,
+.nudge-close:hover {
+  color: var(--text);
+}
+
+.nudge-close {
+  font-size: 16px;
+  position: absolute;
+  right: 10px;
+  top: 8px;
+}
+
+:is(.nudge-later, .nudge-close, .nudge-feedback, .nudge-rate):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* в тесния панел бутоните застават един под друг */
+.panel .nudge {
+  flex-direction: column;
+}

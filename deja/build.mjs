@@ -8,7 +8,10 @@ import { copyFileSync, cpSync, mkdirSync, readdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
 
 const FIREFOX = process.argv.includes('--firefox');
-const dist = FIREFOX ? 'dist-firefox' : 'dist';
+// САМО за тестовете: опционалните права стават задължителни (headless Chromium не
+// може да приеме диалога за право) → отделна папка, никога в релийз пакета
+const GRANT_OPTIONAL = process.argv.includes('--grant-optional');
+const dist = FIREFOX ? 'dist-firefox' : GRANT_OPTIONAL ? 'dist-test' : 'dist';
 rmSync(dist, { recursive: true, force: true });
 mkdirSync(dist, { recursive: true });
 
@@ -77,6 +80,10 @@ const manifest = JSON.parse(
   readFileSync(FIREFOX ? 'firefox/manifest.firefox.json' : 'manifest.json', 'utf8'),
 );
 manifest.version = version;
+if (GRANT_OPTIONAL) {
+  manifest.permissions.push(...(manifest.optional_permissions || []));
+  delete manifest.optional_permissions;
+}
 writeFileSync(`${dist}/manifest.json`, JSON.stringify(manifest, null, 2));
 if (!FIREFOX) copyFileSync('src/offscreen/offscreen.html', `${dist}/offscreen.html`);
 // един източник за набора от страници — entryPoints и статиката не дрейфват
@@ -109,5 +116,5 @@ console.log(`WASM файлове в пакета: ${copied}`);
 console.log(
   FIREFOX
     ? 'Готово → dist-firefox/ (about:debugging → Load Temporary Add-on)'
-    : 'Готово → dist/ (chrome://extensions → Load unpacked)',
+    : `Готово → ${dist}/ (chrome://extensions → Load unpacked)`,
 );

@@ -109,6 +109,54 @@ export async function replacePage(urlKey, time, texts, vectors) {
   return done(tx);
 }
 
+// Отметки на партиди: ЕДНА транзакция за цялата партида. Вътре проверяваме
+// какво вече има под ключа — прочетена страница (с пълен текст) НЕ се подменя
+// със заглавието на отметката, само получава знак „отметка“. Проверката е в
+// същата транзакция, затова паралелно индексиране не може да се вклини.
+export async function putBookmarks(entries) {
+  const db = await open();
+  const tx = db.transaction(['pages', 'chunks', 'pagevecs'], 'readwrite');
+  const pages = tx.objectStore('pages');
+  for (const { page, text, vector } of entries) {
+    const req = pages.get(page.urlKey);
+    req.onsuccess = () => {
+      const existing = req.result;
+      if (existing && existing.kind !== 'bookmark') {
+        pages.put({ ...existing, bookmark: page.bookmark });
+        return;
+      }
+      const chunks = tx.objectStore('chunks');
+      chunks.delete(IDBKeyRange.bound([page.urlKey, 0], [page.urlKey, Infinity]));
+      chunks.add({ urlKey: page.urlKey, pos: 0, text });
+      tx.objectStore('pagevecs').put({
+        urlKey: page.urlKey,
+        time: page.time,
+        dim: vector.length,
+        count: 1,
+        data: Float32Array.from(vector),
+      });
+      pages.put(page);
+    };
+  }
+  return done(tx);
+}
+
+// Сменя (или маха с null) знака „отметка“ на вече запомнена страница.
+export async function setBookmarkMark(urlKey, bookmark) {
+  const db = await open();
+  const tx = db.transaction('pages', 'readwrite');
+  const pages = tx.objectStore('pages');
+  const req = pages.get(urlKey);
+  req.onsuccess = () => {
+    const page = req.result;
+    if (!page) return;
+    if (bookmark) page.bookmark = bookmark;
+    else delete page.bookmark;
+    pages.put(page);
+  };
+  return done(tx);
+}
+
 // Обхожда пакетираните вектори — по един запис на страница.
 export async function forEachPageVec(fn) {
   const db = await open();
@@ -159,11 +207,14 @@ export async function countPages() {
   return reqAsPromise(db.transaction('pages').objectStore('pages').count());
 }
 
-// Retention: трие страниците (и данните им), четени преди cutoff.
+// Retention: трие страниците (и данните им), четени преди cutoff. Отметките
+// не стареят — живеят, докато ги има в браузъра (иначе синхронът ги връща
+// обратно всеки ден и паметта се върти в кръг).
 export async function pruneOlderThan(cutoffTs) {
   const pages = await getAllPages();
   let pruned = 0;
   for (const page of pages) {
+    if (page.bookmark) continue;
     if (page.time && page.time < cutoffTs) {
       await deletePage(page.urlKey);
       pruned++;

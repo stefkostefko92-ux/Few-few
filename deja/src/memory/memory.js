@@ -5,6 +5,7 @@ import { applyI18n, t } from '../lib/i18n.js';
 import { send } from '../lib/msg.js';
 import { el, countLabel } from '../lib/dom.js';
 import { initAmbient } from '../lib/ambient.js';
+import { icon } from '../lib/icons.js';
 
 applyI18n();
 const ambient = initAmbient();
@@ -15,12 +16,44 @@ const exportBtn = document.getElementById('export');
 const importBtn = document.getElementById('import');
 const importFile = document.getElementById('importFile');
 const filterEl = document.getElementById('filter');
+const kindsEl = document.getElementById('kinds');
 
 let allPages = [];
+// какво се показва: всички / само прочетени / само отметки
+const KINDS = [
+  { key: 'memoryFilterAll', test: () => true },
+  { key: 'memoryFilterRead', test: (p) => p.kind !== 'bookmark' },
+  { key: 'memoryFilterBookmarks', test: (p) => p.folder != null },
+];
+let activeKind = 0;
+
+function renderKinds() {
+  const hasBookmarks = allPages.some((p) => p.kind === 'bookmark' || p.folder != null);
+  kindsEl.hidden = !hasBookmarks;
+  if (!hasBookmarks) activeKind = 0;
+  kindsEl.replaceChildren();
+  KINDS.forEach((kind, i) => {
+    const count = allPages.filter(kind.test).length;
+    const chip = el(
+      'button',
+      'chip' + (i === activeKind ? ' active' : ''),
+      `${t(kind.key)} · ${count}`,
+    );
+    chip.type = 'button';
+    chip.setAttribute('aria-pressed', String(i === activeKind));
+    chip.addEventListener('click', () => {
+      activeKind = i;
+      renderKinds();
+      renderList();
+    });
+    kindsEl.append(chip);
+  });
+}
 
 async function refresh() {
   allPages = await send('deja:memory:list');
   ambient.setMemories(allPages.length);
+  renderKinds();
   renderStats();
   renderList();
 }
@@ -45,19 +78,25 @@ function renderStats() {
     const row = el('div', 'stat-row');
     const bar = el('div', 'stat-bar');
     bar.style.width = `${Math.round((count / max) * 140)}px`;
-    row.append(bar, el('span', 'stat-label', `${host} · ${count}`));
+    // лентата живее в писта с фиксирана ширина — етикетите се подравняват в колона
+    const track = el('div', 'stat-track');
+    track.append(bar);
+    row.append(track, el('span', 'stat-label', `${host} · ${count}`));
     statsEl.append(row);
   }
 }
 
 function renderList() {
   const needle = filterEl.value.trim().toLowerCase();
-  const pages = needle
-    ? allPages.filter(
-        (p) =>
-          (p.title || '').toLowerCase().includes(needle) || p.urlKey.toLowerCase().includes(needle),
-      )
-    : allPages;
+  const pages = allPages
+    .filter(KINDS[activeKind].test)
+    .filter(
+      (p) =>
+        !needle ||
+        (p.title || '').toLowerCase().includes(needle) ||
+        p.urlKey.toLowerCase().includes(needle) ||
+        (p.folder || '').toLowerCase().includes(needle),
+    );
   countEl.textContent = countLabel(pages.length, 'pagesInMemoryOne', 'pagesInMemory');
   listEl.replaceChildren();
   if (pages.length === 0) {
@@ -72,12 +111,19 @@ function renderList() {
     link.href = page.urlKey;
     link.target = '_blank';
     link.rel = 'noopener';
+    const dateKey = page.kind === 'bookmark' ? 'bmAddedOn' : 'readOn';
     const sub = el(
       'div',
       'sub',
-      `${page.urlKey}${page.time ? ' · ' + t('readOn', [new Date(page.time).toLocaleDateString()]) : ''}`,
+      `${page.urlKey}${page.time ? ' · ' + t(dateKey, [new Date(page.time).toLocaleDateString()]) : ''}`,
     );
     info.append(link, sub);
+    if (page.folder != null) {
+      const tag = el('div', 'bm-tag');
+      tag.append(icon('bookmark'), document.createTextNode(t('bmBadge')));
+      if (page.folder) tag.append(el('span', 'bm-folder', page.folder));
+      info.append(tag);
+    }
     const forget = el('button', 'forget', t('memoryForget'));
     forget.addEventListener('click', async () => {
       await send('deja:memory:delete', { urlKey: page.urlKey });

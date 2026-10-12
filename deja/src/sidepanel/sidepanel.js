@@ -6,6 +6,8 @@ import { applyI18n, t } from '../lib/i18n.js';
 import { send } from '../lib/msg.js';
 import { el, countLabel } from '../lib/dom.js';
 import { initAmbient } from '../lib/ambient.js';
+import { icon } from '../lib/icons.js';
+import { recordWin, mountRateNudge } from '../lib/rate.js';
 
 applyI18n();
 const ambient = initAmbient();
@@ -31,11 +33,13 @@ function deepLink(r) {
 
 function miniRow(r) {
   const row = el('div', 'mini');
+  if (r.kind === 'bookmark') row.append(icon('bookmark', 'icon mini-icon'));
   const link = el('a', null, r.title || r.url);
   link.href = deepLink(r);
   link.target = '_blank';
   link.rel = 'noopener';
   link.title = r.url;
+  link.addEventListener('click', recordWin);
   row.append(link);
   if (r.time) row.append(el('span', 'when', new Date(r.time).toLocaleDateString()));
   return row;
@@ -49,7 +53,15 @@ function card(r, i) {
   link.href = deepLink(r);
   link.target = '_blank';
   link.rel = 'noopener';
-  node.append(link, el('p', 'snippet', '…' + r.snippet + '…'));
+  link.addEventListener('click', recordWin);
+  if (r.kind === 'bookmark') {
+    const tag = el('div', 'bm-tag');
+    tag.append(icon('bookmark'), document.createTextNode(t('bmBadge')));
+    if (r.folder) tag.append(el('span', 'bm-folder', r.folder));
+    node.append(link, tag);
+  } else {
+    node.append(link, el('p', 'snippet', '…' + r.snippet + '…'));
+  }
   const meta = [t(recallKey(r.score)), t('similarity', [String(r.score)])];
   node.append(el('div', 'meta', meta.join(' · ')));
   return node;
@@ -133,5 +145,6 @@ chrome.storage.onChanged.addListener((changes, area) => {
   if (area === 'session' && changes.activeTab) refreshContext();
 });
 
+mountRateNudge(document.getElementById('nudge'), { el, icon, t });
 refreshContext();
 refreshRecent();

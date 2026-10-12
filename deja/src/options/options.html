@@ -12,6 +12,21 @@
       <h1 class="logo">Déjà<span class="dot">.</span></h1>
 
       <section class="card">
+        <label class="toggle" for="bookmarks">
+          <span>
+            <span class="label" data-i18n="optBookmarksLabel">Отметките в паметта</span>
+            <span class="help" data-i18n="optBookmarksHelp">
+              Уча заглавията и папките на отметките ти (без да отварям страниците) и ги следя,
+              когато добавяш или триеш. Изключването ги маха от паметта — прочетените страници
+              остават.
+            </span>
+            <span id="bookmarksStatus" class="help status-line" aria-live="polite"></span>
+          </span>
+          <input id="bookmarks" type="checkbox" role="switch" />
+        </label>
+      </section>
+
+      <section class="card">
         <label class="label" for="retention" data-i18n="optRetentionLabel">Помни страниците</label>
         <select id="retention"></select>
         <p class="help" data-i18n="optRetentionHelp">

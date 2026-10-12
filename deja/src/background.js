@@ -6,6 +6,8 @@
 import { chunkText } from './lib/chunker.js';
 import * as db from './lib/db.js';
 import { getSettings, isDenied } from './lib/settings.js';
+import { createBookmarkSync } from './bookmark-sync.js';
+import { recordWin } from './lib/rate.js';
 
 const EMBED_BATCH = 8; // парчета на една заявка към offscreen — пази паметта
 const TOP_PAGES = 10; // колко резултата връщаме
@@ -125,6 +127,9 @@ async function indexPage({ url, title, text, lang, urlKey: explicitKey }) {
     time: now,
     chunkCount: chunks.length,
     dim: vectors[0]?.length || 0,
+    // отметка, която най-после е прочетена: пълният текст замества заглавието,
+    // но знакът „отметка“ (и папката ѝ) остава
+    ...(existing?.bookmark ? { bookmark: existing.bookmark } : {}),
   });
   refreshBadge();
 }
@@ -247,13 +252,17 @@ async function search(query, minTime = 0) {
       db.getPage(s.urlKey),
       db.getChunkText(s.urlKey, s.pos),
     ]);
+    const isBookmark = page?.kind === 'bookmark';
     results.push({
       url: s.urlKey,
       title: page?.title || s.urlKey,
-      snippet: text.slice(0, 260),
-      quote: makeQuote(text),
+      // отметката не е прочетена — няма откъс за показване и абзац за скок
+      snippet: isBookmark ? '' : text.slice(0, 260),
+      quote: isBookmark ? '' : makeQuote(text),
       score: Math.round(s.score * 100) / 100,
       time: page?.time || null,
+      kind: isBookmark ? 'bookmark' : 'page',
+      folder: page?.bookmark?.folder ?? null,
     });
   }
   return results;
@@ -290,6 +299,7 @@ async function related(urlKey) {
       title: page?.title || s.urlKey,
       score: Math.round(s.score * 100) / 100,
       time: page?.time || null,
+      kind: page?.kind === 'bookmark' ? 'bookmark' : 'page',
     });
   }
   return results;
@@ -301,24 +311,36 @@ const handlers = {
   'deja:search': (msg) => search(msg.query, msg.minTime || 0),
   'deja:related': (msg) => related(msg.urlKey),
   'deja:stats': async () => ({ pages: await db.countPages() }),
+  // „Изчисти паметта“ трие всичко — вкл. отметките, и спира синхрона им
+  // (иначе той би ги върнал при следващата промяна)
   'deja:clear': async () => {
+    const { bookmarks } = await getSettings();
+    if (bookmarks) await bookmarkSync.disable();
     await db.clearAll();
     refreshBadge();
   },
   'deja:memory:list': async () => {
     const pages = await db.getAllPages();
     pages.sort((a, b) => (b.time || 0) - (a.time || 0));
-    return pages.map(({ urlKey, title, time, chunkCount }) => ({
+    return pages.map(({ urlKey, title, time, chunkCount, kind, bookmark }) => ({
       urlKey,
       title,
       time,
       chunkCount,
+      kind: kind === 'bookmark' ? 'bookmark' : 'page',
+      folder: bookmark?.folder ?? null,
     }));
   },
   'deja:memory:delete': async (msg) => {
-    await db.deletePage(msg.urlKey);
-    refreshBadge();
+    await forget(msg.urlKey);
   },
+  // отметките: страницата първо е взела правото (жест на потребителя), после вика това
+  'deja:bookmarks:enable': async () => {
+    const granted = await chrome.permissions.contains({ permissions: ['bookmarks'] });
+    if (!granted) throw new Error('bookmarks permission not granted');
+    return bookmarkSync.enable();
+  },
+  'deja:bookmarks:disable': () => bookmarkSync.disable(),
   'deja:memory:export': () => db.exportAll(),
   'deja:memory:import': async (msg) => {
     const count = await db.importAll(msg.dump);
@@ -344,8 +366,9 @@ const handlers = {
     });
   },
   // последните N спомена — празното състояние на търсачката и панелът
+  // (само прочетеното — отметка без прочит не е „спомен от последните дни“)
   'deja:recent': async (msg) => {
-    const pages = await db.getAllPages();
+    const pages = (await db.getAllPages()).filter((p) => p.kind !== 'bookmark');
     pages.sort((a, b) => (b.time || 0) - (a.time || 0));
     return pages
       .slice(0, msg.limit || 8)
@@ -364,10 +387,43 @@ const handlers = {
   },
   'deja:clip': (msg) => clipSelection(msg.url, msg.title, msg.text),
   'deja:forget-url': async (msg) => {
-    await db.deletePage(urlKeyOf(msg.url));
-    refreshBadge();
+    await forget(urlKeyOf(msg.url));
   },
 };
+
+async function forget(urlKey) {
+  const page = await db.getPage(urlKey);
+  await bookmarkSync.noteForgotten(page); // забравена отметка не се връща със синхрона
+  await db.deletePage(urlKey);
+  refreshBadge();
+}
+
+// --- отметките в паметта (по избор, optional_permissions: bookmarks) ---
+
+const bookmarkSync = createBookmarkSync({ embed, urlKeyOf, onChange: () => refreshBadge() });
+bookmarkSync.ensureListeners(); // синхронно, на най-горното ниво — иначе събитията не будят SW
+bookmarkSync.resume();
+
+chrome.permissions?.onAdded?.addListener(() => bookmarkSync.ensureListeners());
+// правото е отнето от chrome://extensions → чисто изключване, като от настройките
+chrome.permissions?.onRemoved?.addListener(async (removed) => {
+  if (!removed.permissions?.includes('bookmarks')) return;
+  if ((await getSettings()).bookmarks) bookmarkSync.disable();
+});
+
+// пауза свалена / denylist сменен → отметките се привеждат в съответствие
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== 'local' || !changes.settings) return;
+  const before = changes.settings.oldValue || {};
+  const after = changes.settings.newValue || {};
+  if (!after.bookmarks || !before.bookmarks) return; // enable/disable си имат свой път
+  if (
+    before.paused !== after.paused ||
+    JSON.stringify(before.userDenylist) !== JSON.stringify(after.userDenylist)
+  ) {
+    bookmarkSync.reconcile();
+  }
+});
 
 // „Запомни избрания текст“: откъсът става самостоятелен спомен със свой ключ
 // (hash-ът в urlKey го отличава от самата страница; urlKeyOf го маха, затова
@@ -468,7 +524,9 @@ chrome.omnibox.onInputChanged.addListener(async (text, suggest) => {
 chrome.omnibox.onInputEntered.addListener((text) => {
   const trimmed = text.trim();
   // избрана подсказка (content = URL) → директно към страницата
-  const url = /^https?:\/\//.test(trimmed)
+  const direct = /^https?:\/\//.test(trimmed);
+  if (direct) recordWin(); // избрана подсказка — паметта намери страницата
+  const url = direct
     ? trimmed
     : chrome.runtime.getURL('search.html') + '?q=' + encodeURIComponent(trimmed);
   chrome.tabs.create({ url });
@@ -517,7 +575,8 @@ async function closeIdleOffscreen() {
 
 // последната версия, променила какво Déjà вижда/пази (1.3.0: панелът вижда адреса
 // и заглавието на активния таб; изрезки). ВДИГНИ я при всяка нова такава промяна.
-const DATA_PRACTICES_VERSION = '1.3.0';
+// 1.5.0: по избор — заглавията и папките на отметките (право, поискано в момента).
+const DATA_PRACTICES_VERSION = '1.5.0';
 
 // a < b по semver тройка (липсващите части = 0)
 function olderThan(a, b) {
@@ -554,6 +613,7 @@ chrome.runtime.onStartup.addListener(() => {
   armAlarms();
   installMenus();
   pruneByRetention();
+  bookmarkSync.reconcile(); // отметки, синхронизирани от друго устройство, докато браузърът спеше
 });
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === RETENTION_ALARM) pruneByRetention();
