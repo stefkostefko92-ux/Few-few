@@ -1,0 +1,48 @@
+TITLE: Déjà — la memoria del tuo browser
+SHORT: Cerca per significato nelle pagine che hai letto, in oltre 50 lingue. Tutto avviene sul tuo dispositivo — nulla lascia il browser.
+
+L'hai visto. Déjà lo ritrova.
+
+La cronologia del browser ricorda solo titoli e URL. Déjà ricorda il
+CONTENUTO. Descrivi ciò che ricordi con parole tue — «quell'articolo sulle
+batterie al sodio» — e Déjà fa riemergere la pagina, anche se non ricordi il
+titolo, il sito o le parole esatte. Salta persino al paragrafo esatto.
+
+COSA OTTIENI
+✓ I tuoi segnalibri, cercabili per significato fin dal primo minuto —
+  facoltativo, con un clic. Déjà ne impara titoli e cartelle (senza aprire le
+  pagine) e li mantiene sincronizzati quando aggiungi, sposti o elimini
+  segnalibri.
+✓ Risposte dalla tua memoria — sui computer che supportano l'AI integrata di
+  Chrome (Gemini Nano), fai una domanda e ricevi una breve risposta scritta sul
+  tuo dispositivo a partire dalle pagine che hai letto, con fonti cliccabili.
+  (Risposte in inglese, spagnolo, tedesco, francese e giapponese.)
+✓ Ricerca per significato — chiedi con parole tue, in oltre 50 lingue; chiedi
+  in una lingua e trova pagine lette in un'altra.
+✓ Compagno nel pannello laterale — aprilo accanto a qualsiasi pagina e vedi
+  cosa hai già letto sul suo argomento, oltre ai tuoi ricordi recenti.
+✓ Digita «dj» nella barra degli indirizzi — cerca nella tua memoria
+  direttamente dall'omnibox, con suggerimenti in tempo reale.
+✓ Ricorda un brano — clic destro su qualsiasi testo selezionato: «Déjà:
+  ricorda il testo selezionato». Diventa un ricordo a sé, in cui puoi cercare.
+✓ Vai al paragrafo esatto — i risultati aprono la pagina con il brano
+  corrispondente evidenziato.
+✓ Filtri per data, ricordi collegati, ricordi recenti nella pagina di ricerca
+  vuota.
+✓ La mia memoria — vedi tutto ciò che Déjà ricorda, dimentica qualsiasi pagina
+  con un clic, esporta/importa l'intero indice come file.
+
+PRIVACY FIN DALLA PROGETTAZIONE
+✓ Elaborazione 100% locale — il modello AI di embedding gira nel tuo browser e
+  i tuoi dati restano in IndexedDB. Niente server, niente cloud, niente
+  telemetria, nessun account.
+✓ Le pagine di posta, chat, accesso e servizi bancari vengono saltate
+  automaticamente (elenco di indirizzi integrato; aggiungi i tuoi criteri).
+✓ Pausa con un clic. «Dimentica questa pagina» e «Svuota la memoria» sono
+  sempre a portata di mano.
+✓ Oblio automatico — se vuoi, elimina le pagine più vecchie di 3/6/12/24 mesi.
+✓ I temi chiaro e scuro seguono il tuo sistema.
+
+L'unica richiesta di rete che l'estensione effettua è il download una tantum
+del modello di embedding da Hugging Face (poi resta in cache in locale; puoi
+invece indirizzarlo a un tuo mirror).

@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — selaimesi muisti"
+  },
+  "extDesc": {
+    "message": "Semanttinen haku sivuista, jotka olet lukenut. Kaikki tapahtuu paikallisesti – mikään ei koskaan poistu laitteeltasi."
+  },
+  "cmdOpenSearch": {
+    "message": "Avaa Déjà-haku"
+  },
+  "searchTitle": {
+    "message": "Déjà — hae lukemastasi"
+  },
+  "tagline": {
+    "message": "Olet nähnyt sen. Déjà löytää sen."
+  },
+  "searchPlaceholder": {
+    "message": "Kuvaile, mitä muistat… esim. ”artikkeli natriumpohjaisista akuista”"
+  },
+  "searchButton": {
+    "message": "Hae"
+  },
+  "statusSearching": {
+    "message": "Kaivan muistia… (ensimmäinen haku lataa mallin, ~10-30 s)"
+  },
+  "statusEmpty": {
+    "message": "Mitään ei noussut esiin. Joko et ole lukenut sitä, tai Déjà ei ole vielä painanut sitä mieleensä."
+  },
+  "statusResults": {
+    "message": "$COUNT$ muistoa:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 muisto:"
+  },
+  "errNoResponse": {
+    "message": "muisti ei vastannut – yritä uudelleen"
+  },
+  "recallVivid": {
+    "message": "elävä muisto"
+  },
+  "recallHazy": {
+    "message": "hämärä muisto"
+  },
+  "recallFaint": {
+    "message": "kaukainen muisto"
+  },
+  "statusError": {
+    "message": "Haku epäonnistui: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "Muistissa: $COUNT$ sivua.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "Muistissa: 1 sivu."
+  },
+  "similarity": {
+    "message": "samankaltaisuus $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "luettu $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "$COUNT$ sivua muistissa",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "1 sivu muistissa"
+  },
+  "popupSleeping": {
+    "message": "muisti nukkuu"
+  },
+  "popupWaking": {
+    "message": "muisti herää…"
+  },
+  "popupOpenSearch": {
+    "message": "Avaa haku"
+  },
+  "popupPause": {
+    "message": "Keskeytä muistaminen"
+  },
+  "popupClear": {
+    "message": "Tyhjennä muisti"
+  },
+  "popupClearConfirm": {
+    "message": "Poistetaanko kaikki muistettu? Toimintoa ei voi kumota."
+  },
+  "popupOptions": {
+    "message": "Asetukset"
+  },
+  "optionsTitle": {
+    "message": "Déjà — asetukset"
+  },
+  "optRetentionLabel": {
+    "message": "Muista sivut"
+  },
+  "optRetentionForever": {
+    "message": "ikuisesti"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ kuukautta",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Vanhemmat sivut poistetaan automaattisesti kerran päivässä."
+  },
+  "optDenylistLabel": {
+    "message": "Älä koskaan muista osoitteita, joissa on"
+  },
+  "optDenylistHelp": {
+    "message": "Yksi malli riviä kohden. Vastaa osaa osoitteesta, esim. ”example.com” tai ”/private”."
+  },
+  "optBuiltinLabel": {
+    "message": "Sisäänrakennettu suojaus (aina käytössä)"
+  },
+  "optModelHostLabel": {
+    "message": "Mallin oma peilipalvelin (edistynyt)"
+  },
+  "optModelHostHelp": {
+    "message": "Tyhjä = huggingface.co. Määritä oma palvelin offline- tai yritysympäristöjä varten."
+  },
+  "filterAll": {
+    "message": "kaikki"
+  },
+  "filterWeek": {
+    "message": "viime viikko"
+  },
+  "filterMonth": {
+    "message": "viime kuukausi"
+  },
+  "filterYear": {
+    "message": "viime vuosi"
+  },
+  "relatedLink": {
+    "message": "liittyvät muistot"
+  },
+  "relatedNone": {
+    "message": "ei läheisiä muistoja"
+  },
+  "omniboxDefault": {
+    "message": "Kysy muistiltasi – Déjà hakee merkityksen mukaan"
+  },
+  "popupMemory": {
+    "message": "Muistini"
+  },
+  "memoryTitle": {
+    "message": "Muistini"
+  },
+  "memoryEmpty": {
+    "message": "Muisti on tyhjä – selaa muutamia sivuja ja palaa sitten."
+  },
+  "memoryForget": {
+    "message": "Unohda"
+  },
+  "memoryExport": {
+    "message": "Lataa arkisto"
+  },
+  "memoryImport": {
+    "message": "Palauta arkistosta"
+  },
+  "memoryImportConfirm": {
+    "message": "Palautetaanko arkistosta? Vastaavat sivut korvataan."
+  },
+  "optSave": {
+    "message": "Tallenna"
+  },
+  "optSaved": {
+    "message": "Tallennettu ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "Peilin on oltava https://-osoite"
+  },
+  "welcomeHeading": {
+    "message": "Hei. Olen selaimesi muisti."
+  },
+  "welcomeIntro": {
+    "message": "Tästä hetkestä lähtien muistan, mitä luet, jotta löydät sen myöhemmin merkityksen perusteella – omin sanoin, ei tarkalla otsikolla."
+  },
+  "welcomePoint1": {
+    "message": "Kaikki tapahtuu laitteellasi. Ei palvelimia, ei pilveä, ei lähetettyjä tietoja – ei minnekään, ei koskaan."
+  },
+  "welcomePoint2": {
+    "message": "Sähköpostia, chatteja, kirjautumisia ja verkkopankkia ei koskaan muisteta. Huomaa: en tunnista arkaluonteisia aiheita osoitteen perusteella – käytä niihin taukoa tai omaa listaasi asetuksissa."
+  },
+  "welcomePoint3": {
+    "message": "Sinä päätät: tauko yhdellä napsautuksella, ”Tyhjennä muisti” poistaa kaiken, ja halutessasi unohdan automaattisesti muutaman kuukauden jälkeen."
+  },
+  "welcomeCta": {
+    "message": "Avaa haku"
+  },
+  "welcomeOptions": {
+    "message": "Asetukset"
+  },
+  "memoryFilter": {
+    "message": "Hae muististasi…"
+  },
+  "supportLink": {
+    "message": "Tue Déjàa"
+  },
+  "panelTitle": {
+    "message": "Déjà — kumppani"
+  },
+  "panelOnThisPage": {
+    "message": "Tämän sivun aiheesta"
+  },
+  "panelRecent": {
+    "message": "Viimeisimmät muistot"
+  },
+  "panelNoPage": {
+    "message": "Avaa verkkosivu, niin Déjà näyttää, mitä olet lukenut sen aiheesta."
+  },
+  "popupOpenPanel": {
+    "message": "Sivupaneeli"
+  },
+  "popupForgetPage": {
+    "message": "Unohda tämä sivu"
+  },
+  "popupForgotten": {
+    "message": "Unohdettu ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: muista valittu teksti"
+  },
+  "menuForget": {
+    "message": "Déjà: unohda tämä sivu"
+  },
+  "recentTitle": {
+    "message": "Viimeisimmät muistot"
+  },
+  "cmdOpenPanel": {
+    "message": "Avaa Déjàn sivupaneeli"
+  },
+  "welcomePoint4": {
+    "message": "Sivupaneeli näkee katsomasi sivun osoitteen ja otsikon, jotta se voi näyttää, mitä olet lukenut aiheesta – vain istunnon muistissa. Myös tarkoituksella tallentamasi otteet pysyvät vain sinulla."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà on päivittynyt. Uutta: myös kirjanmerkkisi voivat nyt olla haettavissa merkityksen mukaan – jos haluat. Näin käsittelen tietojasi – mikään ei ole poistunut laitteeltasi."
+  },
+  "optAmbientLabel": {
+    "message": "Elävä tausta"
+  },
+  "optAmbientHelp": {
+    "message": "Muistojen verkko lasin takana liikkuu hitaasti. Poista se käytöstä, jos liike häiritsee sinua."
+  },
+  "bmTitle": {
+    "message": "Tee kirjanmerkeistäsi haettavia – heti nyt"
+  },
+  "bmText": {
+    "message": "Déjà oppii kirjanmerkkiesi otsikot ja kansiot avaamatta sivuja. Löydät ne merkityksen mukaan ensimmäisestä minuutista lähtien – kaikki pysyy laitteellasi."
+  },
+  "bmTextShort": {
+    "message": "Muistisi on vielä nuori. Opeta minulle kirjanmerkkisi ja hae niistä merkityksen mukaan jo tänään."
+  },
+  "bmButton": {
+    "message": "Opi kirjanmerkkini"
+  },
+  "bmNote": {
+    "message": "Selaimesi pyytää lupaa. Voit poistaa tämän käytöstä milloin tahansa asetuksista."
+  },
+  "bmTitleRunning": {
+    "message": "Opettelen kirjanmerkkejäsi…"
+  },
+  "bmTitleDone": {
+    "message": "Kirjanmerkkisi ovat haettavissa"
+  },
+  "bmPreparing": {
+    "message": "Valmistellaan…"
+  },
+  "bmLearning": {
+    "message": "Opittu $DONE$/$TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà on tauolla – jatkan heti, kun poistat tauon."
+  },
+  "bmError": {
+    "message": "Oppimisessa meni jokin vikaan. Yritän uudelleen seuraavan muutoksen yhteydessä."
+  },
+  "bmDone": {
+    "message": "Valmis – $COUNT$ kirjanmerkkiä on haettavissa merkityksen mukaan, ja ne pysyvät automaattisesti ajan tasalla.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Valmis – 1 kirjanmerkki on haettavissa merkityksen mukaan, ja se pysyy automaattisesti ajan tasalla."
+  },
+  "bmDenied": {
+    "message": "Ilman lupaa en näe kirjanmerkkejäsi. Voit yrittää uudelleen milloin tahansa."
+  },
+  "bmTry": {
+    "message": "Kokeile:"
+  },
+  "bmBadge": {
+    "message": "Kirjanmerkki"
+  },
+  "bmAddedOn": {
+    "message": "kirjanmerkki $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Kirjanmerkit muistissa"
+  },
+  "optBookmarksHelp": {
+    "message": "Opin kirjanmerkkiesi otsikot ja kansiot (avaamatta sivuja) ja pysyn mukana, kun lisäät tai poistat niitä. Kun poistat tämän käytöstä, ne poistetaan muistista – lukemasi sivut säilyvät."
+  },
+  "memoryFilterAll": {
+    "message": "Kaikki"
+  },
+  "memoryFilterRead": {
+    "message": "Luetut"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Kirjanmerkit"
+  },
+  "welcomePoint5": {
+    "message": "Kirjanmerkit – vain jos otat ne käyttöön: silloin opin niiden otsikot ja kansiot avaamatta sivuja. Yksi napsautus poistaa sen käytöstä."
+  },
+  "rateTitle": {
+    "message": "Déjà on auttanut sinua löytämään jotain – jo $COUNT$ kertaa",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Jos siitä on hyötyä, arvio kaupassa auttaa muita löytämään sen – se vie 10 sekuntia. Ja jos jokin vaivaa sinua, kerro meille."
+  },
+  "rateButton": {
+    "message": "Arvioi Déjà"
+  },
+  "rateFeedback": {
+    "message": "Eikö jokin toimi?"
+  },
+  "rateLater": {
+    "message": "Ei nyt"
+  },
+  "rateThanks": {
+    "message": "Kiitos! Se todella auttaa."
+  },
+  "rateFeedbackThanks": {
+    "message": "Kiitos – luemme jokaisen viestin."
+  },
+  "rateFeedbackSubject": {
+    "message": "palaute"
+  },
+  "answerTitle": {
+    "message": "Vastaus muististasi"
+  },
+  "answerAsk": {
+    "message": "Vastaa muististani"
+  },
+  "answerEnableTitle": {
+    "message": "Vastaukset Chromen sisäänrakennetulta tekoälyltä"
+  },
+  "answerEnableText": {
+    "message": "Déjà voi vastata kysymyksiin lukemasi perusteella, lähteineen. Chrome lataa laitteella toimivan mallinsa (Gemini Nano) kerran – kysymyksesi ja sivusi eivät koskaan poistu tietokoneeltasi."
+  },
+  "answerEnableButton": {
+    "message": "Ota vastaukset käyttöön"
+  },
+  "answerNoThanks": {
+    "message": "Ei kiitos"
+  },
+  "answerDownloading": {
+    "message": "Chrome lataa mallia… $PCT$ %",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Luen muistojasi…"
+  },
+  "answerStop": {
+    "message": "Pysäytä"
+  },
+  "answerFoot": {
+    "message": "Chromen sisäänrakennettu tekoäly kirjoitti tämän laitteellasi $COUNT$ muistosi pohjalta. Tarkista lähteet.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "En onnistunut kokoamaan vastausta tällä kertaa."
+  },
+  "optAnswersLabel": {
+    "message": "Vastaukset Chromen sisäänrakennetulta tekoälyltä"
+  },
+  "optAnswersHelp": {
+    "message": "Kysymyksiin kuten ”mitä luin aiheesta…?” kirjoitan lyhyen vastauksen ja lähteet sivuistasi – kokonaan laitteellasi, Chromen Gemini Nanolla. Vaatii tuetun tietokoneen ja kielen (englanti, espanja, saksa, ranska, japani)."
+  },
+  "optAnswersAvailable": {
+    "message": "Valmis käytettäväksi tällä laitteella."
+  },
+  "optAnswersDownloadable": {
+    "message": "Tuettu – Chrome lataa mallin ensimmäisen kysymyksesi yhteydessä."
+  },
+  "optAnswersUnavailable": {
+    "message": "Chromen sisäänrakennettu tekoäly ei tue tätä laitetta tai käyttöliittymän kieltä."
+  },
+  "optAnswersUnsupported": {
+    "message": "Tässä selaimessa ei ole sisäänrakennettua tekoälyä – kaikki muu Déjàssa toimii kuten aina."
+  }
+}

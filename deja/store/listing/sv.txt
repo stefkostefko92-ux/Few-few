@@ -1,0 +1,46 @@
+TITLE: Déjà — din webbläsares minne
+SHORT: Sök i sidorna du har läst efter betydelse, på 50+ språk. Körs helt på din enhet – ingenting lämnar någonsin din webbläsare.
+
+Du har sett det. Déjà hittar det.
+
+Webbläsarens historik minns bara titlar och webbadresser. Déjà minns INNEHÅLLET.
+Beskriv med dina egna ord det du minns – ”den där artikeln om natriumbaserade
+batterier” – så plockar Déjà fram sidan, även om du inte minns titeln,
+webbplatsen eller de exakta orden. Den hoppar till och med till rätt stycke.
+
+DET HÄR FÅR DU
+✓ Dina bokmärken, sökbara efter betydelse från första minuten – valfritt, ett
+  klick. Déjà lär sig deras titlar och mappar (utan att öppna sidorna) och håller
+  dem synkroniserade när du lägger till, flyttar eller tar bort bokmärken.
+✓ Svar från ditt minne – på datorer som stöder Chromes inbyggda AI (Gemini Nano)
+  ställer du en fråga och får ett kort svar, skrivet på din enhet utifrån sidorna
+  du har läst, med klickbara källor. (Svar på engelska, spanska, tyska, franska
+  och japanska.)
+✓ Sök efter betydelse – fråga med dina egna ord, på 50+ språk; fråga på ett
+  språk och hitta sidor som du har läst på ett annat.
+✓ Följeslagare i sidopanelen – öppna den bredvid valfri sida och se vad du redan
+  har läst om sidans ämne, plus dina senaste minnen.
+✓ Skriv ”dj” i adressfältet – sök i ditt minne direkt från omnifältet med
+  förslag i realtid.
+✓ Kom ihåg ett utdrag – högerklicka på markerad text: ”Déjà: kom ihåg markerad
+  text”. Det blir ett eget sökbart minne.
+✓ Hoppa till rätt stycke – resultaten öppnar sidan med det matchande avsnittet
+  markerat.
+✓ Datumfilter, relaterade minnen, senaste minnen på den tomma söksidan.
+✓ Mitt minne – se allt som Déjà minns, glöm valfri sida med ett klick,
+  exportera/importera hela ditt index som en fil.
+
+PRIVAT FRÅN GRUNDEN
+✓ 100 % lokal bearbetning – AI-modellen för inbäddningar körs i din webbläsare
+  och dina data finns i IndexedDB. Inga servrar, inget moln, ingen telemetri,
+  inget konto.
+✓ Sidor för e-post, chatt, inloggning och bankärenden hoppas över automatiskt
+  (inbyggd adresslista; lägg till egna mönster).
+✓ Pausa med ett klick. ”Glöm den här sidan” och ”Rensa minnet” finns alltid där.
+✓ Automatisk glömska – radera om du vill sidor som är äldre än 3/6/12/24
+  månader.
+✓ Ljust och mörkt tema följer ditt system.
+
+Den enda nätverksbegäran som tillägget någonsin gör är en engångsnedladdning av
+inbäddningsmodellen från Hugging Face (cachelagras sedan lokalt; du kan i
+stället peka den mot din egen spegel).

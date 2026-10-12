@@ -1,0 +1,48 @@
+TITLE: Déjà — memoria browserului tău
+SHORT: Caută după sens în paginile citite, în peste 50 de limbi. Rulează complet pe dispozitivul tău — nimic nu iese din browserul tău.
+
+L-ai mai văzut. Déjà îl găsește.
+
+Istoricul browserului tău reține doar titluri și adrese URL. Déjà reține
+CONȚINUTUL. Descrie ce îți amintești cu propriile cuvinte — „articolul acela
+despre bateriile pe bază de sodiu” — și Déjà scoate pagina la suprafață, chiar
+dacă nu-ți amintești titlul, site-ul sau cuvintele exacte. Sare chiar și la
+paragraful exact.
+
+CE PRIMEȘTI
+✓ Marcajele tale, căutabile după sens din primul minut — opțional, cu un clic.
+  Déjà le învață titlurile și dosarele (fără să deschidă paginile) și le
+  păstrează sincronizate când adaugi, muți sau ștergi marcaje.
+✓ Răspunsuri din memoria ta — pe computerele compatibile cu AI-ul integrat în
+  Chrome (Gemini Nano), pui o întrebare și primești un răspuns scurt, scris pe
+  dispozitivul tău pe baza paginilor citite, cu surse pe care poți da clic.
+  (Răspunsuri în engleză, spaniolă, germană, franceză și japoneză.)
+✓ Căutare după sens — întreabă cu propriile cuvinte, în peste 50 de limbi;
+  întreabă într-o limbă și găsește pagini citite în alta.
+✓ Însoțitor în panoul lateral — deschide-l lângă orice pagină și vezi ce ai
+  citit deja pe tema ei, plus amintirile tale recente.
+✓ Tastează „dj” în bara de adrese — caută în memoria ta direct din omnibox, cu
+  sugestii în timp real.
+✓ Ține minte un pasaj — clic dreapta pe orice text selectat: „Déjà: ține minte
+  textul selectat”. Devine o amintire separată, în care poți căuta.
+✓ Sari direct la paragraful exact — rezultatele deschid pagina cu pasajul
+  potrivit evidențiat.
+✓ Filtre după dată, amintiri înrudite, amintiri recente pe pagina de căutare
+  goală.
+✓ Memoria mea — vezi tot ce ține minte Déjà, uită orice pagină cu un clic,
+  exportă/importă întregul index ca fișier.
+
+CONFIDENȚIALITATE ÎNCĂ DIN PROIECTARE
+✓ Procesare 100% locală — modelul AI de embeddings rulează în browserul tău,
+  iar datele tale stau în IndexedDB. Fără servere, fără cloud, fără telemetrie,
+  fără cont.
+✓ Paginile de e-mail, chat, autentificare și banking sunt omise automat (listă
+  de adrese integrată; adaugă propriile modele).
+✓ Pauză cu un clic. „Uită această pagină” și „Golește memoria” sunt mereu la
+  îndemână.
+✓ Uitare automată — opțional, șterge paginile mai vechi de 3/6/12/24 de luni.
+✓ Tema deschisă și cea întunecată urmează setarea sistemului tău.
+
+Singura solicitare de rețea pe care o face extensia este o descărcare unică a
+modelului de embeddings de pe Hugging Face (apoi e stocat local în cache; îl
+poți direcționa în schimb către propria oglindă).

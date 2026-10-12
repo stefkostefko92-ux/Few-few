@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — minni vafrans þíns"
+  },
+  "extDesc": {
+    "message": "Merkingarleit í síðunum sem þú hefur lesið. Allt fer fram staðbundið – ekkert yfirgefur nokkurn tímann tækið þitt."
+  },
+  "cmdOpenSearch": {
+    "message": "Opna Déjà-leit"
+  },
+  "searchTitle": {
+    "message": "Déjà — leitaðu í því sem þú hefur lesið"
+  },
+  "tagline": {
+    "message": "Þú hefur séð það. Déjà finnur það."
+  },
+  "searchPlaceholder": {
+    "message": "Lýstu því sem þú manst… t.d. „grein um rafhlöður sem byggja á natríum“"
+  },
+  "searchButton": {
+    "message": "Leita"
+  },
+  "statusSearching": {
+    "message": "Gref í minninu… (fyrsta leitin hleður inn líkaninu, ~10-30 sek.)"
+  },
+  "statusEmpty": {
+    "message": "Ekkert kom upp. Annaðhvort lastu það aldrei, eða Déjà hefur ekki lagt það á minnið enn."
+  },
+  "statusResults": {
+    "message": "Minningar: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 minning:"
+  },
+  "errNoResponse": {
+    "message": "minnið svaraði ekki – reyndu aftur"
+  },
+  "recallVivid": {
+    "message": "skýr minning"
+  },
+  "recallHazy": {
+    "message": "óljós minning"
+  },
+  "recallFaint": {
+    "message": "fjarlæg minning"
+  },
+  "statusError": {
+    "message": "Leit mistókst: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "Síður í minni: $COUNT$.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "Í minni: 1 síða."
+  },
+  "similarity": {
+    "message": "líkindi $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "lesið $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "Síður í minni: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "1 síða í minni"
+  },
+  "popupSleeping": {
+    "message": "minnið sefur"
+  },
+  "popupWaking": {
+    "message": "minnið er að vakna…"
+  },
+  "popupOpenSearch": {
+    "message": "Opna leit"
+  },
+  "popupPause": {
+    "message": "Gera hlé á skráningu"
+  },
+  "popupClear": {
+    "message": "Hreinsa minnið"
+  },
+  "popupClearConfirm": {
+    "message": "Eyða öllu sem hefur verið lagt á minnið? Ekki er hægt að afturkalla það."
+  },
+  "popupOptions": {
+    "message": "Stillingar"
+  },
+  "optionsTitle": {
+    "message": "Déjà — stillingar"
+  },
+  "optRetentionLabel": {
+    "message": "Muna síður"
+  },
+  "optRetentionForever": {
+    "message": "að eilífu"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ mánuðir",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Eldri síðum er eytt sjálfkrafa einu sinni á dag."
+  },
+  "optDenylistLabel": {
+    "message": "Aldrei leggja á minnið vefföng sem innihalda"
+  },
+  "optDenylistHelp": {
+    "message": "Eitt mynstur í hverja línu. Samsvarar hluta veffangsins, t.d. „example.com“ eða „/private“."
+  },
+  "optBuiltinLabel": {
+    "message": "Innbyggð vörn (alltaf virk)"
+  },
+  "optModelHostLabel": {
+    "message": "Eigin spegill fyrir líkanið (ítarlegt)"
+  },
+  "optModelHostHelp": {
+    "message": "Autt = huggingface.co. Tilgreindu eigin þjón fyrir ónettengt umhverfi eða fyrirtækjaumhverfi."
+  },
+  "filterAll": {
+    "message": "allt"
+  },
+  "filterWeek": {
+    "message": "síðasta vika"
+  },
+  "filterMonth": {
+    "message": "síðasti mánuður"
+  },
+  "filterYear": {
+    "message": "síðasta ár"
+  },
+  "relatedLink": {
+    "message": "tengdar minningar"
+  },
+  "relatedNone": {
+    "message": "engar skyldar minningar"
+  },
+  "omniboxDefault": {
+    "message": "Spurðu minnið þitt – Déjà leitar eftir merkingu"
+  },
+  "popupMemory": {
+    "message": "Minnið mitt"
+  },
+  "memoryTitle": {
+    "message": "Minnið mitt"
+  },
+  "memoryEmpty": {
+    "message": "Minnið er tómt – skoðaðu nokkrar síður og komdu svo aftur."
+  },
+  "memoryForget": {
+    "message": "Gleyma"
+  },
+  "memoryExport": {
+    "message": "Sækja safnskrá"
+  },
+  "memoryImport": {
+    "message": "Endurheimta úr safnskrá"
+  },
+  "memoryImportConfirm": {
+    "message": "Endurheimta úr safnskrá? Skrifað verður yfir samsvarandi síður."
+  },
+  "optSave": {
+    "message": "Vista"
+  },
+  "optSaved": {
+    "message": "Vistað ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "Spegillinn verður að vera https://-veffang"
+  },
+  "welcomeHeading": {
+    "message": "Hæ. Ég er minni vafrans þíns."
+  },
+  "welcomeIntro": {
+    "message": "Frá og með núna man ég það sem þú lest, svo þú getir fundið það seinna eftir merkingu – með þínum eigin orðum, ekki nákvæmum titli."
+  },
+  "welcomePoint1": {
+    "message": "Allt gerist í tækinu þínu. Engir þjónar, ekkert ský, engin gögn send – hvergi, aldrei."
+  },
+  "welcomePoint2": {
+    "message": "Tölvupóstur, spjall, innskráningar og heimabanki eru aldrei lögð á minnið. Athugaðu: ég get ekki þekkt viðkvæm málefni út frá veffanginu – notaðu hlé eða eigin lista í stillingunum fyrir þau."
+  },
+  "welcomePoint3": {
+    "message": "Þú ræður: hlé með einum smelli, „Hreinsa minnið“ eyðir öllu, og ef þú vilt gleymi ég sjálfkrafa eftir nokkra mánuði."
+  },
+  "welcomeCta": {
+    "message": "Opna leit"
+  },
+  "welcomeOptions": {
+    "message": "Stillingar"
+  },
+  "memoryFilter": {
+    "message": "Leitaðu í minninu þínu…"
+  },
+  "supportLink": {
+    "message": "Styddu Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — förunautur"
+  },
+  "panelOnThisPage": {
+    "message": "Um efni þessarar síðu"
+  },
+  "panelRecent": {
+    "message": "Nýlegar minningar"
+  },
+  "panelNoPage": {
+    "message": "Opnaðu vefsíðu og Déjà sýnir hvað þú hefur lesið um efni hennar."
+  },
+  "popupOpenPanel": {
+    "message": "Hliðarspjald"
+  },
+  "popupForgetPage": {
+    "message": "Gleyma þessari síðu"
+  },
+  "popupForgotten": {
+    "message": "Gleymt ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: muna valinn texta"
+  },
+  "menuForget": {
+    "message": "Déjà: gleyma þessari síðu"
+  },
+  "recentTitle": {
+    "message": "Nýlegar minningar"
+  },
+  "cmdOpenPanel": {
+    "message": "Opna hliðarspjald Déjà"
+  },
+  "welcomePoint4": {
+    "message": "Hliðarspjaldið sér veffang og titil síðunnar sem þú ert að skoða svo það geti sýnt hvað þú hefur lesið um efnið – aðeins í minni lotunnar. Textabrot sem þú vistar viljandi verða líka aðeins hjá þér."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà hefur verið uppfært. Nýtt: nú er líka hægt að leita eftir merkingu í bókamerkjunum þínum – ef þú vilt. Hér er það sem ég geri við gögnin þín – ekkert hefur farið af tækinu þínu."
+  },
+  "optAmbientLabel": {
+    "message": "Lifandi bakgrunnur"
+  },
+  "optAmbientHelp": {
+    "message": "Net minninganna á bak við glerið hreyfist hægt. Slökktu á því ef hreyfingin truflar þig."
+  },
+  "bmTitle": {
+    "message": "Gerðu bókamerkin þín leitanleg – strax"
+  },
+  "bmText": {
+    "message": "Déjà lærir titla og möppur bókamerkjanna þinna án þess að opna síðurnar. Finndu þau eftir merkingu frá fyrstu mínútu – allt verður áfram í tækinu þínu."
+  },
+  "bmTextShort": {
+    "message": "Minnið þitt er enn ungt. Kenndu mér bókamerkin þín og leitaðu í þeim eftir merkingu strax í dag."
+  },
+  "bmButton": {
+    "message": "Læra bókamerkin mín"
+  },
+  "bmNote": {
+    "message": "Vafrinn biður um heimild. Þú getur slökkt á þessu hvenær sem er í stillingunum."
+  },
+  "bmTitleRunning": {
+    "message": "Er að læra bókamerkin þín…"
+  },
+  "bmTitleDone": {
+    "message": "Bókamerkin þín eru leitanleg"
+  },
+  "bmPreparing": {
+    "message": "Undirbý…"
+  },
+  "bmLearning": {
+    "message": "Lært: $DONE$ af $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà er í hléi – ég held áfram um leið og þú tekur hléið af."
+  },
+  "bmError": {
+    "message": "Eitthvað fór úrskeiðis við lærdóminn. Ég reyni aftur við næstu breytingu."
+  },
+  "bmDone": {
+    "message": "Lokið – bókamerkin eru nú leitanleg eftir merkingu (alls $COUNT$) og samstillast sjálfkrafa.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Lokið – 1 bókamerki er nú leitanlegt eftir merkingu og samstillist sjálfkrafa."
+  },
+  "bmDenied": {
+    "message": "Án heimildar get ég ekki séð bókamerkin þín. Þú getur reynt aftur hvenær sem er."
+  },
+  "bmTry": {
+    "message": "Prófaðu:"
+  },
+  "bmBadge": {
+    "message": "Bókamerki"
+  },
+  "bmAddedOn": {
+    "message": "bókamerkt $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Bókamerki í minni"
+  },
+  "optBookmarksHelp": {
+    "message": "Ég læri titla og möppur bókamerkjanna þinna (án þess að opna síðurnar) og fylgist með þegar þú bætir við eða eyðir. Ef þú slekkur á þessu eru þau fjarlægð úr minninu – síður sem þú hefur lesið verða áfram."
+  },
+  "memoryFilterAll": {
+    "message": "Allt"
+  },
+  "memoryFilterRead": {
+    "message": "Lesið"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Bókamerki"
+  },
+  "welcomePoint5": {
+    "message": "Bókamerki – aðeins ef þú kveikir á þeim: þá læri ég titla þeirra og möppur, án þess að opna síðurnar. Einn smellur slekkur á því."
+  },
+  "rateTitle": {
+    "message": "Déjà hefur hjálpað þér að finna eitthvað – skipti hingað til: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Ef það gagnast þér hjálpar einkunn í versluninni öðrum að uppgötva það – það tekur 10 sekúndur. Og ef eitthvað angrar þig, láttu okkur vita."
+  },
+  "rateButton": {
+    "message": "Gefa Déjà einkunn"
+  },
+  "rateFeedback": {
+    "message": "Virkar eitthvað ekki?"
+  },
+  "rateLater": {
+    "message": "Ekki núna"
+  },
+  "rateThanks": {
+    "message": "Takk! Það hjálpar virkilega."
+  },
+  "rateFeedbackThanks": {
+    "message": "Takk – við lesum hver einustu skilaboð."
+  },
+  "rateFeedbackSubject": {
+    "message": "ábending"
+  },
+  "answerTitle": {
+    "message": "Svar úr minninu þínu"
+  },
+  "answerAsk": {
+    "message": "Svara úr minninu mínu"
+  },
+  "answerEnableTitle": {
+    "message": "Svör frá innbyggðri gervigreind Chrome"
+  },
+  "answerEnableText": {
+    "message": "Déjà getur svarað spurningum út frá því sem þú hefur lesið, með heimildum. Chrome sækir líkanið sitt fyrir tækið (Gemini Nano) einu sinni – spurningar þínar og síður fara aldrei af tölvunni þinni."
+  },
+  "answerEnableButton": {
+    "message": "Kveikja á svörum"
+  },
+  "answerNoThanks": {
+    "message": "Nei takk"
+  },
+  "answerDownloading": {
+    "message": "Chrome er að sækja líkanið… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Les minningarnar þínar…"
+  },
+  "answerStop": {
+    "message": "Stöðva"
+  },
+  "answerFoot": {
+    "message": "Skrifað í tækinu þínu af innbyggðri gervigreind Chrome út frá $COUNT$ af minningum þínum. Athugaðu heimildirnar.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Mér tókst ekki að setja saman svar í þetta skiptið."
+  },
+  "optAnswersLabel": {
+    "message": "Svör frá innbyggðri gervigreind Chrome"
+  },
+  "optAnswersHelp": {
+    "message": "Við spurningum eins og „hvað las ég um…?“ skrifa ég stutt svar með heimildum úr síðunum þínum – alfarið í tækinu þínu, með Gemini Nano í Chrome. Krefst studdrar tölvu og tungumáls (ensku, spænsku, þýsku, frönsku, japönsku)."
+  },
+  "optAnswersAvailable": {
+    "message": "Tilbúið til notkunar í þessu tæki."
+  },
+  "optAnswersDownloadable": {
+    "message": "Stutt – Chrome sækir líkanið við fyrstu spurninguna þína."
+  },
+  "optAnswersUnavailable": {
+    "message": "Innbyggð gervigreind Chrome styður ekki þetta tæki eða tungumál viðmótsins."
+  },
+  "optAnswersUnsupported": {
+    "message": "Þessi vafri er ekki með innbyggða gervigreind – allt annað í Déjà virkar eins og venjulega."
+  }
+}

@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — cof dy borwr"
+  },
+  "extDesc": {
+    "message": "Chwilio semantig drwy’r tudalennau rwyt ti wedi’u darllen. Mae popeth yn lleol – does dim byd byth yn gadael dy ddyfais."
+  },
+  "cmdOpenSearch": {
+    "message": "Agor chwiliad Déjà"
+  },
+  "searchTitle": {
+    "message": "Déjà — chwilia’r hyn rwyt ti wedi’i ddarllen"
+  },
+  "tagline": {
+    "message": "Rwyt ti wedi’i weld. Mae Déjà yn dod o hyd iddo."
+  },
+  "searchPlaceholder": {
+    "message": "Disgrifia’r hyn rwyt ti’n ei gofio… e.e. “erthygl am fatris sy’n seiliedig ar sodiwm”"
+  },
+  "searchButton": {
+    "message": "Chwilio"
+  },
+  "statusSearching": {
+    "message": "Wrthi’n chwilota drwy’r cof… (mae’r chwiliad cyntaf yn llwytho’r model, ~10-30 eiliad)"
+  },
+  "statusEmpty": {
+    "message": "Ddaeth dim byd i’r wyneb. Naill ai wnest ti erioed ei ddarllen, neu dydy Déjà ddim wedi’i gofio eto."
+  },
+  "statusResults": {
+    "message": "Atgofion: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 atgof:"
+  },
+  "errNoResponse": {
+    "message": "wnaeth y cof ddim ateb – rho gynnig arall arni"
+  },
+  "recallVivid": {
+    "message": "atgof byw"
+  },
+  "recallHazy": {
+    "message": "atgof niwlog"
+  },
+  "recallFaint": {
+    "message": "atgof pell"
+  },
+  "statusError": {
+    "message": "Methodd y chwiliad: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "Yn y cof: $COUNT$ o dudalennau.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "Yn y cof: 1 dudalen."
+  },
+  "similarity": {
+    "message": "tebygrwydd $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "darllenwyd ar $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "$COUNT$ o dudalennau yn y cof",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "1 dudalen yn y cof"
+  },
+  "popupSleeping": {
+    "message": "mae’r cof yn cysgu"
+  },
+  "popupWaking": {
+    "message": "mae’r cof yn deffro…"
+  },
+  "popupOpenSearch": {
+    "message": "Agor chwiliad"
+  },
+  "popupPause": {
+    "message": "Oedi’r cofio"
+  },
+  "popupClear": {
+    "message": "Clirio’r cof"
+  },
+  "popupClearConfirm": {
+    "message": "Dileu popeth sydd wedi’i gofio? Does dim modd dadwneud hyn."
+  },
+  "popupOptions": {
+    "message": "Gosodiadau"
+  },
+  "optionsTitle": {
+    "message": "Déjà — gosodiadau"
+  },
+  "optRetentionLabel": {
+    "message": "Cofio tudalennau"
+  },
+  "optRetentionForever": {
+    "message": "am byth"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ mis",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Mae tudalennau hŷn yn cael eu dileu’n awtomatig unwaith y dydd."
+  },
+  "optDenylistLabel": {
+    "message": "Peidio byth â chofio cyfeiriadau sy’n cynnwys"
+  },
+  "optDenylistHelp": {
+    "message": "Un patrwm i bob llinell. Yn cyfateb i ran o’r cyfeiriad, e.e. “example.com” neu “/private”."
+  },
+  "optBuiltinLabel": {
+    "message": "Diogelwch adeiledig (bob amser yn weithredol)"
+  },
+  "optModelHostLabel": {
+    "message": "Drych personol ar gyfer y model (uwch)"
+  },
+  "optModelHostHelp": {
+    "message": "Gwag = huggingface.co. Gosoda dy weinydd dy hun ar gyfer amgylcheddau all-lein neu gorfforaethol."
+  },
+  "filterAll": {
+    "message": "y cyfan"
+  },
+  "filterWeek": {
+    "message": "yr wythnos ddiwethaf"
+  },
+  "filterMonth": {
+    "message": "y mis diwethaf"
+  },
+  "filterYear": {
+    "message": "y flwyddyn ddiwethaf"
+  },
+  "relatedLink": {
+    "message": "atgofion cysylltiedig"
+  },
+  "relatedNone": {
+    "message": "dim atgofion cyfagos"
+  },
+  "omniboxDefault": {
+    "message": "Gofyn i dy gof – mae Déjà yn chwilio yn ôl ystyr"
+  },
+  "popupMemory": {
+    "message": "Fy nghof"
+  },
+  "memoryTitle": {
+    "message": "Fy nghof"
+  },
+  "memoryEmpty": {
+    "message": "Mae’r cof yn wag – pora drwy ychydig o dudalennau a thyrd yn ôl."
+  },
+  "memoryForget": {
+    "message": "Anghofio"
+  },
+  "memoryExport": {
+    "message": "Llwytho archif i lawr"
+  },
+  "memoryImport": {
+    "message": "Adfer o archif"
+  },
+  "memoryImportConfirm": {
+    "message": "Adfer o archif? Bydd tudalennau sy’n cyfateb yn cael eu trosysgrifo."
+  },
+  "optSave": {
+    "message": "Cadw"
+  },
+  "optSaved": {
+    "message": "Wedi’i gadw ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "Rhaid i’r drych fod yn gyfeiriad https://"
+  },
+  "welcomeHeading": {
+    "message": "Helo. Fi yw cof dy borwr."
+  },
+  "welcomeIntro": {
+    "message": "O’r eiliad hon rydw i’n cofio’r hyn rwyt ti’n ei ddarllen, er mwyn i ti ddod o hyd iddo eto yn ôl ystyr – yn dy eiriau dy hun, nid yr union deitl."
+  },
+  "welcomePoint1": {
+    "message": "Mae popeth yn digwydd ar dy ddyfais. Dim gweinyddion, dim cwmwl, dim data’n cael ei anfon – i unman, byth."
+  },
+  "welcomePoint2": {
+    "message": "Dydy e-bost, sgyrsiau, mewngofnodi a bancio byth yn cael eu cofio. Sylwa: alla i ddim adnabod pynciau sensitif o’r cyfeiriad – ar gyfer y rheini, defnyddia’r saib neu dy restr dy hun yn y gosodiadau."
+  },
+  "welcomePoint3": {
+    "message": "Ti sy’n rheoli: saib gydag un clic, mae “Clirio’r cof” yn dileu popeth, ac os wyt ti eisiau, rydw i’n anghofio’n awtomatig ar ôl ychydig fisoedd."
+  },
+  "welcomeCta": {
+    "message": "Agor chwiliad"
+  },
+  "welcomeOptions": {
+    "message": "Gosodiadau"
+  },
+  "memoryFilter": {
+    "message": "Chwilia dy gof…"
+  },
+  "supportLink": {
+    "message": "Cefnogi Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — cydymaith"
+  },
+  "panelOnThisPage": {
+    "message": "Ar bwnc y dudalen hon"
+  },
+  "panelRecent": {
+    "message": "Atgofion diweddar"
+  },
+  "panelNoPage": {
+    "message": "Agora dudalen we a bydd Déjà yn dangos beth rwyt ti wedi’i ddarllen am ei phwnc."
+  },
+  "popupOpenPanel": {
+    "message": "Panel ochr"
+  },
+  "popupForgetPage": {
+    "message": "Anghofio’r dudalen hon"
+  },
+  "popupForgotten": {
+    "message": "Wedi anghofio ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: cofio’r testun a ddewiswyd"
+  },
+  "menuForget": {
+    "message": "Déjà: anghofio’r dudalen hon"
+  },
+  "recentTitle": {
+    "message": "Atgofion diweddar"
+  },
+  "cmdOpenPanel": {
+    "message": "Agor panel ochr Déjà"
+  },
+  "welcomePoint4": {
+    "message": "Mae’r panel ochr yn gweld cyfeiriad a theitl y dudalen rwyt ti’n edrych arni er mwyn dangos beth rwyt ti wedi’i ddarllen am ei phwnc – yng nghof y sesiwn yn unig. Mae darnau rwyt ti’n eu cadw’n fwriadol hefyd yn aros gyda ti yn unig."
+  },
+  "welcomeUpdated": {
+    "message": "Mae Déjà wedi’i ddiweddaru. Newydd: gall dy nodau tudalen fod yn chwiliadwy yn ôl ystyr nawr hefyd – os wyt ti eisiau. Dyma beth rydw i’n ei wneud â dy ddata – does dim wedi gadael dy ddyfais."
+  },
+  "optAmbientLabel": {
+    "message": "Cefndir byw"
+  },
+  "optAmbientHelp": {
+    "message": "Mae gwe’r atgofion y tu ôl i’r gwydr yn symud yn araf. Diffodda hi os yw’r symud yn tynnu dy sylw."
+  },
+  "bmTitle": {
+    "message": "Gwna dy nodau tudalen yn chwiliadwy – nawr"
+  },
+  "bmText": {
+    "message": "Mae Déjà yn dysgu teitlau a ffolderi dy nodau tudalen heb agor y tudalennau. Gelli di ddod o hyd iddyn nhw yn ôl ystyr o’r funud gyntaf – mae popeth yn aros ar dy ddyfais."
+  },
+  "bmTextShort": {
+    "message": "Mae dy gof yn dal yn ifanc. Dysga dy nodau tudalen i mi a chwilia ynddyn nhw yn ôl ystyr heddiw."
+  },
+  "bmButton": {
+    "message": "Dysgu fy nodau tudalen"
+  },
+  "bmNote": {
+    "message": "Bydd dy borwr yn gofyn am ganiatâd. Diffodda fe unrhyw bryd yn y gosodiadau."
+  },
+  "bmTitleRunning": {
+    "message": "Wrthi’n dysgu dy nodau tudalen…"
+  },
+  "bmTitleDone": {
+    "message": "Mae dy nodau tudalen yn chwiliadwy"
+  },
+  "bmPreparing": {
+    "message": "Wrthi’n paratoi…"
+  },
+  "bmLearning": {
+    "message": "Wedi dysgu $DONE$ o $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Mae Déjà wedi’i oedi – bydda i’n parhau cyn gynted ag y byddi di’n ailddechrau."
+  },
+  "bmError": {
+    "message": "Aeth rhywbeth o’i le wrth ddysgu. Bydda i’n rhoi cynnig arall arni gyda’r newid nesaf."
+  },
+  "bmDone": {
+    "message": "Wedi gorffen – mae $COUNT$ o nodau tudalen yn chwiliadwy yn ôl ystyr ac yn cael eu cysoni’n awtomatig.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Wedi gorffen – mae 1 nod tudalen yn chwiliadwy yn ôl ystyr ac yn cael ei gysoni’n awtomatig."
+  },
+  "bmDenied": {
+    "message": "Heb ganiatâd alla i ddim gweld dy nodau tudalen. Gelli di roi cynnig arall arni unrhyw bryd."
+  },
+  "bmTry": {
+    "message": "Ceisia:"
+  },
+  "bmBadge": {
+    "message": "Nod tudalen"
+  },
+  "bmAddedOn": {
+    "message": "nod tudalen ers $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Nodau tudalen yn y cof"
+  },
+  "optBookmarksHelp": {
+    "message": "Rydw i’n dysgu teitlau a ffolderi dy nodau tudalen (heb agor y tudalennau) ac yn dilyn wrth i ti eu hychwanegu neu eu dileu. Mae diffodd hyn yn eu tynnu o’r cof – mae’r tudalennau rwyt ti wedi’u darllen yn aros."
+  },
+  "memoryFilterAll": {
+    "message": "Y cyfan"
+  },
+  "memoryFilterRead": {
+    "message": "Wedi darllen"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Nodau tudalen"
+  },
+  "welcomePoint5": {
+    "message": "Nodau tudalen – dim ond os wyt ti’n eu troi ymlaen: wedyn rydw i’n dysgu eu teitlau a’u ffolderi, heb agor y tudalennau. Mae un clic yn ei ddiffodd."
+  },
+  "rateTitle": {
+    "message": "Mae Déjà wedi dy helpu i ddod o hyd i rywbeth – $COUNT$ gwaith erbyn hyn",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Os yw’n ddefnyddiol, mae sgôr yn y siop yn helpu pobl eraill i’w ddarganfod – mae’n cymryd 10 eiliad. Ac os oes rhywbeth yn dy boeni, dywed wrthon ni."
+  },
+  "rateButton": {
+    "message": "Rhoi sgôr i Déjà"
+  },
+  "rateFeedback": {
+    "message": "Rhywbeth ddim yn gweithio?"
+  },
+  "rateLater": {
+    "message": "Nid nawr"
+  },
+  "rateThanks": {
+    "message": "Diolch! Mae wir yn helpu."
+  },
+  "rateFeedbackThanks": {
+    "message": "Diolch – rydyn ni’n darllen pob neges."
+  },
+  "rateFeedbackSubject": {
+    "message": "adborth"
+  },
+  "answerTitle": {
+    "message": "Ateb o dy gof"
+  },
+  "answerAsk": {
+    "message": "Ateb o fy nghof"
+  },
+  "answerEnableTitle": {
+    "message": "Atebion gan AI adeiledig Chrome"
+  },
+  "answerEnableText": {
+    "message": "Gall Déjà ateb cwestiynau o’r hyn rwyt ti wedi’i ddarllen, gyda ffynonellau. Mae Chrome yn llwytho ei fodel ar y ddyfais (Gemini Nano) i lawr unwaith – dydy dy gwestiynau a’th dudalennau byth yn gadael dy gyfrifiadur."
+  },
+  "answerEnableButton": {
+    "message": "Troi atebion ymlaen"
+  },
+  "answerNoThanks": {
+    "message": "Dim diolch"
+  },
+  "answerDownloading": {
+    "message": "Mae Chrome yn llwytho’r model i lawr… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Wrthi’n darllen dy atgofion…"
+  },
+  "answerStop": {
+    "message": "Stopio"
+  },
+  "answerFoot": {
+    "message": "Wedi’i ysgrifennu ar dy ddyfais gan AI adeiledig Chrome o $COUNT$ o’th atgofion. Gwiria’r ffynonellau.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Doeddwn i ddim yn gallu llunio ateb y tro hwn."
+  },
+  "optAnswersLabel": {
+    "message": "Atebion gan AI adeiledig Chrome"
+  },
+  "optAnswersHelp": {
+    "message": "Ar gyfer cwestiynau fel “beth ddarllenais i am…?” rydw i’n ysgrifennu ateb byr gyda ffynonellau o dy dudalennau – yn llwyr ar dy ddyfais, gyda Gemini Nano yn Chrome. Mae angen cyfrifiadur ac iaith a gefnogir (Saesneg, Sbaeneg, Almaeneg, Ffrangeg, Japaneeg)."
+  },
+  "optAnswersAvailable": {
+    "message": "Yn barod i’w ddefnyddio ar y ddyfais hon."
+  },
+  "optAnswersDownloadable": {
+    "message": "Wedi’i gefnogi – bydd Chrome yn llwytho’r model i lawr gyda dy gwestiwn cyntaf."
+  },
+  "optAnswersUnavailable": {
+    "message": "Dydy AI adeiledig Chrome ddim yn cefnogi’r ddyfais hon nac iaith y rhyngwyneb."
+  },
+  "optAnswersUnsupported": {
+    "message": "Does dim AI adeiledig yn y porwr hwn – mae popeth arall yn Déjà yn gweithio fel arfer."
+  }
+}

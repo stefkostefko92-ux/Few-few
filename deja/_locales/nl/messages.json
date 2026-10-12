@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — het geheugen van je browser"
+  },
+  "extDesc": {
+    "message": "Semantisch zoeken in de pagina’s die je hebt gelezen. Alles gebeurt lokaal – niets verlaat ooit je apparaat."
+  },
+  "cmdOpenSearch": {
+    "message": "Déjà-zoeken openen"
+  },
+  "searchTitle": {
+    "message": "Déjà — zoek wat je hebt gelezen"
+  },
+  "tagline": {
+    "message": "Je hebt het gezien. Déjà vindt het."
+  },
+  "searchPlaceholder": {
+    "message": "Beschrijf wat je je herinnert… bijv. “artikel over batterijen op basis van natrium”"
+  },
+  "searchButton": {
+    "message": "Zoeken"
+  },
+  "statusSearching": {
+    "message": "Ik graaf in het geheugen… (de eerste zoekopdracht laadt het model, ~10-30 s)"
+  },
+  "statusEmpty": {
+    "message": "Niets naar boven gekomen. Of je hebt het nooit gelezen, of Déjà heeft het nog niet onthouden."
+  },
+  "statusResults": {
+    "message": "$COUNT$ herinneringen:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 herinnering:"
+  },
+  "errNoResponse": {
+    "message": "het geheugen gaf geen antwoord – probeer het opnieuw"
+  },
+  "recallVivid": {
+    "message": "levendige herinnering"
+  },
+  "recallHazy": {
+    "message": "vage herinnering"
+  },
+  "recallFaint": {
+    "message": "verre herinnering"
+  },
+  "statusError": {
+    "message": "Zoeken mislukt: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "In het geheugen: $COUNT$ pagina’s.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "In het geheugen: 1 pagina."
+  },
+  "similarity": {
+    "message": "overeenkomst $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "gelezen op $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "$COUNT$ pagina’s in het geheugen",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "1 pagina in het geheugen"
+  },
+  "popupSleeping": {
+    "message": "het geheugen slaapt"
+  },
+  "popupWaking": {
+    "message": "het geheugen wordt wakker…"
+  },
+  "popupOpenSearch": {
+    "message": "Zoeken openen"
+  },
+  "popupPause": {
+    "message": "Onthouden pauzeren"
+  },
+  "popupClear": {
+    "message": "Geheugen wissen"
+  },
+  "popupClearConfirm": {
+    "message": "Alles wat is onthouden verwijderen? Dit kan niet ongedaan worden gemaakt."
+  },
+  "popupOptions": {
+    "message": "Instellingen"
+  },
+  "optionsTitle": {
+    "message": "Déjà — instellingen"
+  },
+  "optRetentionLabel": {
+    "message": "Pagina’s onthouden"
+  },
+  "optRetentionForever": {
+    "message": "voor altijd"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ maanden",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Oudere pagina’s worden eenmaal per dag automatisch verwijderd."
+  },
+  "optDenylistLabel": {
+    "message": "Nooit adressen onthouden die dit bevatten"
+  },
+  "optDenylistHelp": {
+    "message": "Eén patroon per regel. Komt overeen met een deel van het adres, bijv. “example.com” of “/private”."
+  },
+  "optBuiltinLabel": {
+    "message": "Ingebouwde bescherming (altijd actief)"
+  },
+  "optModelHostLabel": {
+    "message": "Eigen mirror voor het model (geavanceerd)"
+  },
+  "optModelHostHelp": {
+    "message": "Leeg = huggingface.co. Stel je eigen server in voor offline- of bedrijfsomgevingen."
+  },
+  "filterAll": {
+    "message": "alles"
+  },
+  "filterWeek": {
+    "message": "afgelopen week"
+  },
+  "filterMonth": {
+    "message": "afgelopen maand"
+  },
+  "filterYear": {
+    "message": "afgelopen jaar"
+  },
+  "relatedLink": {
+    "message": "verwante herinneringen"
+  },
+  "relatedNone": {
+    "message": "geen verwante herinneringen"
+  },
+  "omniboxDefault": {
+    "message": "Vraag het je geheugen – Déjà zoekt op betekenis"
+  },
+  "popupMemory": {
+    "message": "Mijn geheugen"
+  },
+  "memoryTitle": {
+    "message": "Mijn geheugen"
+  },
+  "memoryEmpty": {
+    "message": "Het geheugen is leeg – bekijk een paar pagina’s en kom dan terug."
+  },
+  "memoryForget": {
+    "message": "Vergeten"
+  },
+  "memoryExport": {
+    "message": "Archief downloaden"
+  },
+  "memoryImport": {
+    "message": "Herstellen uit archief"
+  },
+  "memoryImportConfirm": {
+    "message": "Herstellen uit archief? Overeenkomende pagina’s worden overschreven."
+  },
+  "optSave": {
+    "message": "Opslaan"
+  },
+  "optSaved": {
+    "message": "Opgeslagen ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "De mirror moet een https://-adres zijn"
+  },
+  "welcomeHeading": {
+    "message": "Hoi. Ik ben het geheugen van je browser."
+  },
+  "welcomeIntro": {
+    "message": "Vanaf nu onthoud ik wat je leest, zodat je het later op betekenis terugvindt – in je eigen woorden, niet met de exacte titel."
+  },
+  "welcomePoint1": {
+    "message": "Alles gebeurt op je apparaat. Geen servers, geen cloud, er worden geen gegevens verstuurd – nergens heen, nooit."
+  },
+  "welcomePoint2": {
+    "message": "E-mail, chats, inlogpagina’s en bankieren worden nooit onthouden. Let op: gevoelige onderwerpen kan ik niet aan het adres herkennen – gebruik daarvoor de pauze of je eigen lijst in de instellingen."
+  },
+  "welcomePoint3": {
+    "message": "Jij hebt de regie: pauzeren met één klik, “Geheugen wissen” verwijdert alles, en als je wilt vergeet ik automatisch na een paar maanden."
+  },
+  "welcomeCta": {
+    "message": "Zoeken openen"
+  },
+  "welcomeOptions": {
+    "message": "Instellingen"
+  },
+  "memoryFilter": {
+    "message": "Zoek in je geheugen…"
+  },
+  "supportLink": {
+    "message": "Steun Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — metgezel"
+  },
+  "panelOnThisPage": {
+    "message": "Over het onderwerp van deze pagina"
+  },
+  "panelRecent": {
+    "message": "Recente herinneringen"
+  },
+  "panelNoPage": {
+    "message": "Open een webpagina en Déjà laat zien wat je over het onderwerp ervan hebt gelezen."
+  },
+  "popupOpenPanel": {
+    "message": "Zijpaneel"
+  },
+  "popupForgetPage": {
+    "message": "Deze pagina vergeten"
+  },
+  "popupForgotten": {
+    "message": "Vergeten ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: geselecteerde tekst onthouden"
+  },
+  "menuForget": {
+    "message": "Déjà: deze pagina vergeten"
+  },
+  "recentTitle": {
+    "message": "Recente herinneringen"
+  },
+  "cmdOpenPanel": {
+    "message": "Het zijpaneel van Déjà openen"
+  },
+  "welcomePoint4": {
+    "message": "Het zijpaneel ziet het adres en de titel van de pagina die je bekijkt, zodat het kan laten zien wat je over dat onderwerp hebt gelezen – alleen in het sessiegeheugen. Fragmenten die je bewust opslaat, blijven ook alleen bij jou."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà is bijgewerkt. Nieuw: ook je bladwijzers kunnen nu op betekenis doorzoekbaar worden – als je dat wilt. Dit doe ik met je gegevens – niets heeft je apparaat verlaten."
+  },
+  "optAmbientLabel": {
+    "message": "Levende achtergrond"
+  },
+  "optAmbientHelp": {
+    "message": "Het web van herinneringen achter het glas beweegt langzaam. Zet het uit als de beweging je afleidt."
+  },
+  "bmTitle": {
+    "message": "Maak je bladwijzers doorzoekbaar – nu meteen"
+  },
+  "bmText": {
+    "message": "Déjà leert de titels en mappen van je bladwijzers zonder de pagina’s te openen. Vind ze vanaf de eerste minuut op betekenis – alles blijft op je apparaat."
+  },
+  "bmTextShort": {
+    "message": "Je geheugen is nog jong. Leer me je bladwijzers en doorzoek ze vandaag nog op betekenis."
+  },
+  "bmButton": {
+    "message": "Leer mijn bladwijzers"
+  },
+  "bmNote": {
+    "message": "Je browser vraagt om toestemming. Je kunt het altijd uitzetten in de instellingen."
+  },
+  "bmTitleRunning": {
+    "message": "Ik leer je bladwijzers…"
+  },
+  "bmTitleDone": {
+    "message": "Je bladwijzers zijn doorzoekbaar"
+  },
+  "bmPreparing": {
+    "message": "Voorbereiden…"
+  },
+  "bmLearning": {
+    "message": "$DONE$ van $TOTAL$ geleerd",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà is gepauzeerd – ik ga verder zodra je hervat."
+  },
+  "bmError": {
+    "message": "Er ging iets mis tijdens het leren. Ik probeer het opnieuw bij de volgende wijziging."
+  },
+  "bmDone": {
+    "message": "Klaar – $COUNT$ bladwijzers zijn op betekenis doorzoekbaar en worden automatisch gesynchroniseerd.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Klaar – 1 bladwijzer is op betekenis doorzoekbaar en wordt automatisch gesynchroniseerd."
+  },
+  "bmDenied": {
+    "message": "Zonder toestemming kan ik je bladwijzers niet zien. Je kunt het op elk moment opnieuw proberen."
+  },
+  "bmTry": {
+    "message": "Probeer:"
+  },
+  "bmBadge": {
+    "message": "Bladwijzer"
+  },
+  "bmAddedOn": {
+    "message": "bladwijzer sinds $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Bladwijzers in het geheugen"
+  },
+  "optBookmarksHelp": {
+    "message": "Ik leer de titels en mappen van je bladwijzers (zonder de pagina’s te openen) en houd bij wanneer je er toevoegt of verwijdert. Uitzetten haalt ze uit het geheugen – pagina’s die je hebt gelezen blijven."
+  },
+  "memoryFilterAll": {
+    "message": "Alles"
+  },
+  "memoryFilterRead": {
+    "message": "Gelezen"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Bladwijzers"
+  },
+  "welcomePoint5": {
+    "message": "Bladwijzers – alleen als je ze aanzet: dan leer ik hun titels en mappen, zonder de pagina’s te openen. Met één klik zet je het uit."
+  },
+  "rateTitle": {
+    "message": "Déjà heeft je geholpen iets te vinden – al $COUNT$ keer",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Als het je helpt, zorgt een beoordeling in de store ervoor dat anderen het ontdekken – het kost 10 seconden. En als iets je dwarszit, laat het ons weten."
+  },
+  "rateButton": {
+    "message": "Beoordeel Déjà"
+  },
+  "rateFeedback": {
+    "message": "Werkt er iets niet?"
+  },
+  "rateLater": {
+    "message": "Niet nu"
+  },
+  "rateThanks": {
+    "message": "Bedankt! Het helpt echt."
+  },
+  "rateFeedbackThanks": {
+    "message": "Bedankt – we lezen elk bericht."
+  },
+  "rateFeedbackSubject": {
+    "message": "feedback"
+  },
+  "answerTitle": {
+    "message": "Antwoord uit je geheugen"
+  },
+  "answerAsk": {
+    "message": "Antwoord uit mijn geheugen"
+  },
+  "answerEnableTitle": {
+    "message": "Antwoorden van de ingebouwde AI van Chrome"
+  },
+  "answerEnableText": {
+    "message": "Déjà kan vragen beantwoorden op basis van wat je hebt gelezen, met bronnen. Chrome downloadt eenmalig zijn model op je apparaat (Gemini Nano) – je vragen en pagina’s verlaten nooit je computer."
+  },
+  "answerEnableButton": {
+    "message": "Antwoorden aanzetten"
+  },
+  "answerNoThanks": {
+    "message": "Nee, bedankt"
+  },
+  "answerDownloading": {
+    "message": "Chrome downloadt het model… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Ik lees je herinneringen…"
+  },
+  "answerStop": {
+    "message": "Stoppen"
+  },
+  "answerFoot": {
+    "message": "Op je apparaat geschreven door de ingebouwde AI van Chrome, op basis van $COUNT$ van je herinneringen. Controleer de bronnen.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Het lukte me deze keer niet om een antwoord samen te stellen."
+  },
+  "optAnswersLabel": {
+    "message": "Antwoorden van de ingebouwde AI van Chrome"
+  },
+  "optAnswersHelp": {
+    "message": "Bij vragen als “wat heb ik gelezen over…?” schrijf ik een kort antwoord met bronnen uit je pagina’s – volledig op je apparaat, met Gemini Nano in Chrome. Vereist een ondersteunde computer en taal (Engels, Spaans, Duits, Frans, Japans)."
+  },
+  "optAnswersAvailable": {
+    "message": "Klaar voor gebruik op dit apparaat."
+  },
+  "optAnswersDownloadable": {
+    "message": "Ondersteund – Chrome downloadt het model bij je eerste vraag."
+  },
+  "optAnswersUnavailable": {
+    "message": "Dit apparaat of deze interfacetaal wordt niet ondersteund door de ingebouwde AI van Chrome."
+  },
+  "optAnswersUnsupported": {
+    "message": "Deze browser heeft geen ingebouwde AI – al het andere in Déjà werkt zoals altijd."
+  }
+}

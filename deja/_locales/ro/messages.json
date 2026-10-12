@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — memoria browserului tău"
+  },
+  "extDesc": {
+    "message": "Căutare semantică în paginile pe care le-ai citit. Totul se întâmplă local — nimic nu părăsește vreodată dispozitivul tău."
+  },
+  "cmdOpenSearch": {
+    "message": "Deschide căutarea Déjà"
+  },
+  "searchTitle": {
+    "message": "Déjà — caută ce ai citit"
+  },
+  "tagline": {
+    "message": "L-ai mai văzut. Déjà îl găsește."
+  },
+  "searchPlaceholder": {
+    "message": "Descrie ce îți amintești… de ex. „articol despre bateriile pe bază de sodiu”"
+  },
+  "searchButton": {
+    "message": "Caută"
+  },
+  "statusSearching": {
+    "message": "Scotocesc prin memorie… (prima căutare încarcă modelul, ~10-30 s)"
+  },
+  "statusEmpty": {
+    "message": "Nu a ieșit nimic la suprafață. Ori nu l-ai citit niciodată, ori Déjà nu l-a memorat încă."
+  },
+  "statusResults": {
+    "message": "Amintiri: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 amintire:"
+  },
+  "errNoResponse": {
+    "message": "memoria nu a răspuns — încearcă din nou"
+  },
+  "recallVivid": {
+    "message": "amintire vie"
+  },
+  "recallHazy": {
+    "message": "amintire încețoșată"
+  },
+  "recallFaint": {
+    "message": "amintire îndepărtată"
+  },
+  "statusError": {
+    "message": "Căutarea a eșuat: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "Pagini în memorie: $COUNT$.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "În memorie: 1 pagină."
+  },
+  "similarity": {
+    "message": "similaritate $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "citit pe $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "Pagini în memorie: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "1 pagină în memorie"
+  },
+  "popupSleeping": {
+    "message": "memoria doarme"
+  },
+  "popupWaking": {
+    "message": "memoria se trezește…"
+  },
+  "popupOpenSearch": {
+    "message": "Deschide căutarea"
+  },
+  "popupPause": {
+    "message": "Întrerupe memorarea"
+  },
+  "popupClear": {
+    "message": "Golește memoria"
+  },
+  "popupClearConfirm": {
+    "message": "Ștergi tot ce a fost memorat? Nu există cale de întoarcere."
+  },
+  "popupOptions": {
+    "message": "Setări"
+  },
+  "optionsTitle": {
+    "message": "Déjà — setări"
+  },
+  "optRetentionLabel": {
+    "message": "Ține minte paginile"
+  },
+  "optRetentionForever": {
+    "message": "pentru totdeauna"
+  },
+  "optRetentionMonths": {
+    "message": "luni: $N$",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Paginile mai vechi sunt șterse automat o dată pe zi."
+  },
+  "optDenylistLabel": {
+    "message": "Nu memora niciodată adresele care conțin"
+  },
+  "optDenylistHelp": {
+    "message": "Un model pe linie. Se potrivește cu o parte din adresă, de ex. „example.com” sau „/private”."
+  },
+  "optBuiltinLabel": {
+    "message": "Protecție integrată (mereu activă)"
+  },
+  "optModelHostLabel": {
+    "message": "Oglindă personalizată a modelului (avansat)"
+  },
+  "optModelHostHelp": {
+    "message": "Gol = huggingface.co. Setează propriul server pentru medii offline sau de companie."
+  },
+  "filterAll": {
+    "message": "toate"
+  },
+  "filterWeek": {
+    "message": "ultima săptămână"
+  },
+  "filterMonth": {
+    "message": "ultima lună"
+  },
+  "filterYear": {
+    "message": "ultimul an"
+  },
+  "relatedLink": {
+    "message": "amintiri înrudite"
+  },
+  "relatedNone": {
+    "message": "nicio amintire apropiată"
+  },
+  "omniboxDefault": {
+    "message": "Întreabă-ți memoria — Déjà caută după sens"
+  },
+  "popupMemory": {
+    "message": "Memoria mea"
+  },
+  "memoryTitle": {
+    "message": "Memoria mea"
+  },
+  "memoryEmpty": {
+    "message": "Memoria e goală — răsfoiește câteva pagini și revino."
+  },
+  "memoryForget": {
+    "message": "Uită"
+  },
+  "memoryExport": {
+    "message": "Descarcă arhiva"
+  },
+  "memoryImport": {
+    "message": "Restaurează din arhivă"
+  },
+  "memoryImportConfirm": {
+    "message": "Restaurezi din arhivă? Paginile corespunzătoare vor fi suprascrise."
+  },
+  "optSave": {
+    "message": "Salvează"
+  },
+  "optSaved": {
+    "message": "Salvat ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "Oglinda trebuie să fie o adresă https://"
+  },
+  "welcomeHeading": {
+    "message": "Salut. Sunt memoria browserului tău."
+  },
+  "welcomeIntro": {
+    "message": "Din acest moment țin minte ce citești, ca să găsești mai târziu după sens — cu propriile tale cuvinte, nu după titlul exact."
+  },
+  "welcomePoint1": {
+    "message": "Totul se întâmplă pe dispozitivul tău. Fără servere, fără cloud, fără date trimise — nicăieri, niciodată."
+  },
+  "welcomePoint2": {
+    "message": "E-mailul, chaturile, autentificările și serviciile bancare nu sunt memorate niciodată. Atenție: nu pot recunoaște subiectele sensibile după adresă — pentru ele, folosește pauza sau propria listă din setări."
+  },
+  "welcomePoint3": {
+    "message": "Tu decizi: pauză cu un clic, „Golește memoria” șterge tot și, dacă vrei, uit automat după câteva luni."
+  },
+  "welcomeCta": {
+    "message": "Deschide căutarea"
+  },
+  "welcomeOptions": {
+    "message": "Setări"
+  },
+  "memoryFilter": {
+    "message": "Caută în memoria ta…"
+  },
+  "supportLink": {
+    "message": "Susține Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — însoțitor"
+  },
+  "panelOnThisPage": {
+    "message": "Pe tema acestei pagini"
+  },
+  "panelRecent": {
+    "message": "Amintiri recente"
+  },
+  "panelNoPage": {
+    "message": "Deschide o pagină web și Déjà îți va arăta ce ai citit pe tema ei."
+  },
+  "popupOpenPanel": {
+    "message": "Panou lateral"
+  },
+  "popupForgetPage": {
+    "message": "Uită această pagină"
+  },
+  "popupForgotten": {
+    "message": "Uitată ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: ține minte textul selectat"
+  },
+  "menuForget": {
+    "message": "Déjà: uită această pagină"
+  },
+  "recentTitle": {
+    "message": "Amintiri recente"
+  },
+  "cmdOpenPanel": {
+    "message": "Deschide panoul lateral Déjà"
+  },
+  "welcomePoint4": {
+    "message": "Panoul lateral vede adresa și titlul paginii pe care o vizualizezi, ca să-ți arate ce ai citit pe tema ei — doar în memoria sesiunii. Pasajele pe care le salvezi intenționat rămân, de asemenea, doar la tine."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà s-a actualizat. Nou: acum poți căuta și în marcajele tale după sens — dacă vrei. Iată ce fac cu datele tale — nimic nu a părăsit dispozitivul tău."
+  },
+  "optAmbientLabel": {
+    "message": "Fundal viu"
+  },
+  "optAmbientHelp": {
+    "message": "Rețeaua de amintiri din spatele sticlei plutește încet. Dezactiveaz-o dacă mișcarea te distrage."
+  },
+  "bmTitle": {
+    "message": "Caută în marcajele tale după sens — chiar acum"
+  },
+  "bmText": {
+    "message": "Déjà învață titlurile și dosarele marcajelor tale fără să deschidă paginile. Le găsești după sens din primul minut — totul rămâne pe dispozitivul tău."
+  },
+  "bmTextShort": {
+    "message": "Memoria ta e încă tânără. Învață-mă marcajele tale și caută în ele după sens chiar de azi."
+  },
+  "bmButton": {
+    "message": "Învață-mi marcajele"
+  },
+  "bmNote": {
+    "message": "Browserul îți va cere permisiunea. Poți dezactiva oricând din setări."
+  },
+  "bmTitleRunning": {
+    "message": "Îți învăț marcajele…"
+  },
+  "bmTitleDone": {
+    "message": "Acum poți căuta în marcajele tale"
+  },
+  "bmPreparing": {
+    "message": "Mă pregătesc…"
+  },
+  "bmLearning": {
+    "message": "Învățate: $DONE$ din $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà e pe pauză — continui imediat ce reiei."
+  },
+  "bmError": {
+    "message": "Ceva n-a mers bine la învățare. Voi încerca din nou la următoarea modificare."
+  },
+  "bmDone": {
+    "message": "Gata — poți căuta după sens în toate marcajele tale ($COUNT$), sincronizate automat.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Gata — 1 marcaj poate fi căutat după sens și e sincronizat automat."
+  },
+  "bmDenied": {
+    "message": "Fără permisiune nu pot vedea marcajele. Poți încerca din nou oricând."
+  },
+  "bmTry": {
+    "message": "Încearcă:"
+  },
+  "bmBadge": {
+    "message": "Marcaj"
+  },
+  "bmAddedOn": {
+    "message": "marcat pe $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Marcajele în memorie"
+  },
+  "optBookmarksHelp": {
+    "message": "Învăț titlurile și dosarele marcajelor tale (fără să deschid paginile) și le urmăresc când adaugi sau ștergi marcaje. Dezactivarea le elimină din memorie — paginile pe care le-ai citit rămân."
+  },
+  "memoryFilterAll": {
+    "message": "Toate"
+  },
+  "memoryFilterRead": {
+    "message": "Citite"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Marcaje"
+  },
+  "welcomePoint5": {
+    "message": "Marcajele — doar dacă le activezi: atunci le învăț titlurile și dosarele, fără să deschid paginile. Le dezactivezi cu un clic."
+  },
+  "rateTitle": {
+    "message": "Déjà te-a ajutat să găsești ceva — de câte ori până acum: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Dacă îți e util, o evaluare în magazin le ajută pe alte persoane să-l descopere — durează 10 secunde. Iar dacă ceva te deranjează, spune-ne."
+  },
+  "rateButton": {
+    "message": "Evaluează Déjà"
+  },
+  "rateFeedback": {
+    "message": "Ceva nu funcționează?"
+  },
+  "rateLater": {
+    "message": "Nu acum"
+  },
+  "rateThanks": {
+    "message": "Mulțumim! Chiar ajută."
+  },
+  "rateFeedbackThanks": {
+    "message": "Mulțumim — citim fiecare mesaj."
+  },
+  "rateFeedbackSubject": {
+    "message": "feedback"
+  },
+  "answerTitle": {
+    "message": "Răspuns din memoria ta"
+  },
+  "answerAsk": {
+    "message": "Răspunde din memoria mea"
+  },
+  "answerEnableTitle": {
+    "message": "Răspunsuri de la AI-ul integrat în Chrome"
+  },
+  "answerEnableText": {
+    "message": "Déjà poate răspunde la întrebări pe baza a ceea ce ai citit, cu surse. Chrome descarcă o singură dată modelul său care rulează pe dispozitiv (Gemini Nano) — întrebările și paginile tale nu părăsesc niciodată computerul."
+  },
+  "answerEnableButton": {
+    "message": "Activează răspunsurile"
+  },
+  "answerNoThanks": {
+    "message": "Nu, mulțumesc"
+  },
+  "answerDownloading": {
+    "message": "Chrome descarcă modelul… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Îți citesc amintirile…"
+  },
+  "answerStop": {
+    "message": "Oprește"
+  },
+  "answerFoot": {
+    "message": "Scris pe dispozitivul tău de AI-ul integrat în Chrome, pe baza a $COUNT$ dintre amintirile tale. Verifică sursele.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "De data asta n-am reușit să alcătuiesc un răspuns."
+  },
+  "optAnswersLabel": {
+    "message": "Răspunsuri de la AI-ul integrat în Chrome"
+  },
+  "optAnswersHelp": {
+    "message": "Pentru întrebări ca „ce am citit despre…?”, scriu un răspuns scurt, cu surse din paginile tale — complet pe dispozitivul tău, cu Gemini Nano în Chrome. Necesită un computer și o limbă compatibile (engleză, spaniolă, germană, franceză, japoneză)."
+  },
+  "optAnswersAvailable": {
+    "message": "Gata de utilizare pe acest dispozitiv."
+  },
+  "optAnswersDownloadable": {
+    "message": "Compatibil — Chrome va descărca modelul la prima ta întrebare."
+  },
+  "optAnswersUnavailable": {
+    "message": "AI-ul integrat în Chrome nu acceptă acest dispozitiv sau limba interfeței."
+  },
+  "optAnswersUnsupported": {
+    "message": "Acest browser nu are AI integrat — restul funcțiilor Déjà merg ca întotdeauna."
+  }
+}

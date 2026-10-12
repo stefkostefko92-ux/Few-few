@@ -1,0 +1,48 @@
+TITLE: Déjà — hukommelsen til nettleseren din
+SHORT: Søk i sidene du har lest etter betydning, på 50+ språk. Kjører helt på enheten din – ingenting forlater noen gang nettleseren din.
+
+Du har sett det. Déjà finner det.
+
+Nettleserloggen husker bare titler og nettadresser. Déjà husker INNHOLDET.
+Beskriv med dine egne ord det du husker – «den artikkelen om natriumbaserte
+batterier» – så henter Déjà frem siden, selv om du ikke husker tittelen,
+nettstedet eller de nøyaktige ordene. Den hopper til og med til det nøyaktige
+avsnittet.
+
+DETTE FÅR DU
+✓ Bokmerkene dine, søkbare etter betydning fra første minutt – valgfritt, ett
+  klikk. Déjà lærer titlene og mappene deres (uten å åpne sidene) og holder dem
+  synkronisert når du legger til, flytter eller sletter bokmerker.
+✓ Svar fra hukommelsen din – på datamaskiner som støtter den innebygde AI-en i
+  Chrome (Gemini Nano), stiller du et spørsmål og får et kort svar, skrevet på
+  enheten din ut fra sidene du har lest, med klikkbare kilder. (Svar på engelsk,
+  spansk, tysk, fransk og japansk.)
+✓ Søk etter betydning – spør med dine egne ord, på 50+ språk; spør på ett språk,
+  og finn sider du har lest på et annet.
+✓ Følgesvenn i sidepanelet – åpne det ved siden av hvilken som helst side, og se
+  hva du allerede har lest om temaet på siden, i tillegg til de nyligste minnene
+  dine.
+✓ Skriv «dj» i adressefeltet – søk i hukommelsen din rett fra omniboksen med
+  forslag i sanntid.
+✓ Husk et utdrag – høyreklikk på markert tekst: «Déjà: husk markert tekst».
+  Det blir et eget søkbart minne.
+✓ Hopp til det nøyaktige avsnittet – resultatene åpner siden med det samsvarende
+  utdraget uthevet.
+✓ Datofiltre, relaterte minner, nylige minner på den tomme søkesiden.
+✓ Min hukommelse – se alt Déjà husker, glem hvilken som helst side med ett klikk,
+  eksporter/importer hele indeksen din som en fil.
+
+PERSONVERN FRA GRUNNEN AV
+✓ 100 % lokal behandling – AI-modellen for embeddinger kjører i nettleseren din,
+  og dataene dine ligger i IndexedDB. Ingen servere, ingen sky, ingen telemetri,
+  ingen konto.
+✓ Sider for e-post, chat, pålogging og nettbank hoppes automatisk over
+  (innebygd adresseliste; legg til dine egne mønstre).
+✓ Pause med ett klikk. «Glem denne siden» og «Tøm hukommelsen» er alltid der.
+✓ Automatisk glemsel – slett om ønskelig sider som er eldre enn 3/6/12/24
+  måneder.
+✓ Lyst og mørkt tema følger systemet ditt.
+
+Den eneste nettverksforespørselen utvidelsen noen gang gjør, er en engangs
+nedlasting av embeddingmodellen fra Hugging Face (deretter bufret lokalt; du kan
+i stedet peke den til ditt eget speil).

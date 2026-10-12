@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — a memória do teu navegador"
+  },
+  "extDesc": {
+    "message": "Pesquisa semântica nas páginas que leste. Tudo acontece localmente — nada sai nunca do teu dispositivo."
+  },
+  "cmdOpenSearch": {
+    "message": "Abrir a pesquisa do Déjà"
+  },
+  "searchTitle": {
+    "message": "Déjà — pesquisa o que leste"
+  },
+  "tagline": {
+    "message": "Já o viste. O Déjà encontra-o."
+  },
+  "searchPlaceholder": {
+    "message": "Descreve o que te lembras… p. ex., «artigo sobre baterias de sódio»"
+  },
+  "searchButton": {
+    "message": "Pesquisar"
+  },
+  "statusSearching": {
+    "message": "A vasculhar a memória… (a primeira pesquisa carrega o modelo, ~10-30 s)"
+  },
+  "statusEmpty": {
+    "message": "Nada veio à tona. Ou nunca o leste, ou o Déjà ainda não o memorizou."
+  },
+  "statusResults": {
+    "message": "$COUNT$ recordações:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 recordação:"
+  },
+  "errNoResponse": {
+    "message": "a memória não respondeu — tenta novamente"
+  },
+  "recallVivid": {
+    "message": "recordação vívida"
+  },
+  "recallHazy": {
+    "message": "recordação nebulosa"
+  },
+  "recallFaint": {
+    "message": "recordação distante"
+  },
+  "statusError": {
+    "message": "A pesquisa falhou: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "Na memória: $COUNT$ páginas.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "Na memória: 1 página."
+  },
+  "similarity": {
+    "message": "semelhança $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "lido a $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "$COUNT$ páginas na memória",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "1 página na memória"
+  },
+  "popupSleeping": {
+    "message": "a memória está a dormir"
+  },
+  "popupWaking": {
+    "message": "a memória está a acordar…"
+  },
+  "popupOpenSearch": {
+    "message": "Abrir pesquisa"
+  },
+  "popupPause": {
+    "message": "Pausar memorização"
+  },
+  "popupClear": {
+    "message": "Limpar memória"
+  },
+  "popupClearConfirm": {
+    "message": "Eliminar tudo o que foi memorizado? Não há volta atrás."
+  },
+  "popupOptions": {
+    "message": "Definições"
+  },
+  "optionsTitle": {
+    "message": "Déjà — definições"
+  },
+  "optRetentionLabel": {
+    "message": "Lembrar páginas"
+  },
+  "optRetentionForever": {
+    "message": "para sempre"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ meses",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "As páginas mais antigas são eliminadas automaticamente uma vez por dia."
+  },
+  "optDenylistLabel": {
+    "message": "Nunca memorizar endereços que contenham"
+  },
+  "optDenylistHelp": {
+    "message": "Um padrão por linha. Corresponde a parte do endereço, p. ex., «example.com» ou «/private»."
+  },
+  "optBuiltinLabel": {
+    "message": "Proteção integrada (sempre ativa)"
+  },
+  "optModelHostLabel": {
+    "message": "Espelho personalizado do modelo (avançado)"
+  },
+  "optModelHostHelp": {
+    "message": "Vazio = huggingface.co. Define o teu próprio servidor para ambientes offline/empresariais."
+  },
+  "filterAll": {
+    "message": "tudo"
+  },
+  "filterWeek": {
+    "message": "última semana"
+  },
+  "filterMonth": {
+    "message": "último mês"
+  },
+  "filterYear": {
+    "message": "último ano"
+  },
+  "relatedLink": {
+    "message": "recordações relacionadas"
+  },
+  "relatedNone": {
+    "message": "nenhuma recordação próxima"
+  },
+  "omniboxDefault": {
+    "message": "Pergunta à tua memória — o Déjà pesquisa pelo significado"
+  },
+  "popupMemory": {
+    "message": "A minha memória"
+  },
+  "memoryTitle": {
+    "message": "A minha memória"
+  },
+  "memoryEmpty": {
+    "message": "A memória está vazia — navega por algumas páginas e volta."
+  },
+  "memoryForget": {
+    "message": "Esquecer"
+  },
+  "memoryExport": {
+    "message": "Transferir arquivo"
+  },
+  "memoryImport": {
+    "message": "Restaurar do arquivo"
+  },
+  "memoryImportConfirm": {
+    "message": "Restaurar a partir do arquivo? As páginas correspondentes serão substituídas."
+  },
+  "optSave": {
+    "message": "Guardar"
+  },
+  "optSaved": {
+    "message": "Guardado ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "O espelho tem de ser um endereço https://"
+  },
+  "welcomeHeading": {
+    "message": "Olá. Sou a memória do teu navegador."
+  },
+  "welcomeIntro": {
+    "message": "A partir deste momento, lembro-me do que lês, para que o possas encontrar mais tarde pelo significado — com as tuas próprias palavras, não com o título exato."
+  },
+  "welcomePoint1": {
+    "message": "Tudo acontece no teu dispositivo. Sem servidores, sem nuvem, sem envio de dados — para lado nenhum, nunca."
+  },
+  "welcomePoint2": {
+    "message": "E-mail, chats, inícios de sessão e banca online nunca são memorizados. Atenção: não consigo reconhecer temas sensíveis pelo endereço — para esses, usa a pausa ou a tua própria lista nas definições."
+  },
+  "welcomePoint3": {
+    "message": "Tu mandas: pausa com um clique, «Limpar memória» apaga tudo e, se quiseres, esqueço automaticamente ao fim de alguns meses."
+  },
+  "welcomeCta": {
+    "message": "Abrir pesquisa"
+  },
+  "welcomeOptions": {
+    "message": "Definições"
+  },
+  "memoryFilter": {
+    "message": "Pesquisa na tua memória…"
+  },
+  "supportLink": {
+    "message": "Apoia o Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — companheiro"
+  },
+  "panelOnThisPage": {
+    "message": "Sobre o tema desta página"
+  },
+  "panelRecent": {
+    "message": "Recordações recentes"
+  },
+  "panelNoPage": {
+    "message": "Abre uma página web e o Déjà mostra-te o que leste sobre o tema dela."
+  },
+  "popupOpenPanel": {
+    "message": "Painel lateral"
+  },
+  "popupForgetPage": {
+    "message": "Esquecer esta página"
+  },
+  "popupForgotten": {
+    "message": "Esquecida ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: lembrar o texto selecionado"
+  },
+  "menuForget": {
+    "message": "Déjà: esquecer esta página"
+  },
+  "recentTitle": {
+    "message": "Recordações recentes"
+  },
+  "cmdOpenPanel": {
+    "message": "Abrir o painel lateral do Déjà"
+  },
+  "welcomePoint4": {
+    "message": "O painel lateral vê o endereço e o título da página que estás a ver para te mostrar o que leste sobre o tema dela — apenas na memória da sessão. Os excertos que guardas de propósito também ficam só contigo."
+  },
+  "welcomeUpdated": {
+    "message": "O Déjà foi atualizado. Novidade: se quiseres, agora também podes pesquisar os teus marcadores pelo significado. Eis o que faço com os teus dados — nada saiu do teu dispositivo."
+  },
+  "optAmbientLabel": {
+    "message": "Fundo vivo"
+  },
+  "optAmbientHelp": {
+    "message": "A rede de recordações atrás do vidro move-se devagar. Desativa-a se o movimento te distrair."
+  },
+  "bmTitle": {
+    "message": "Pesquisa os teus marcadores pelo significado — já"
+  },
+  "bmText": {
+    "message": "O Déjà aprende os títulos e as pastas dos teus marcadores sem abrir as páginas. Encontra-os pelo significado desde o primeiro minuto — tudo fica no teu dispositivo."
+  },
+  "bmTextShort": {
+    "message": "A tua memória ainda é jovem. Ensina-me os teus marcadores e pesquisa-os pelo significado hoje mesmo."
+  },
+  "bmButton": {
+    "message": "Aprender os meus marcadores"
+  },
+  "bmNote": {
+    "message": "O teu navegador vai pedir autorização. Podes desativar quando quiseres nas definições."
+  },
+  "bmTitleRunning": {
+    "message": "A aprender os teus marcadores…"
+  },
+  "bmTitleDone": {
+    "message": "Já podes pesquisar os teus marcadores"
+  },
+  "bmPreparing": {
+    "message": "A preparar…"
+  },
+  "bmLearning": {
+    "message": "$DONE$ de $TOTAL$ aprendidos",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "O Déjà está em pausa — continuo assim que a retirares."
+  },
+  "bmError": {
+    "message": "Algo correu mal durante a aprendizagem. Volto a tentar na próxima alteração."
+  },
+  "bmDone": {
+    "message": "Concluído — já podes pesquisar $COUNT$ marcadores pelo significado, sincronizados automaticamente.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Concluído — já podes pesquisar 1 marcador pelo significado, sincronizado automaticamente."
+  },
+  "bmDenied": {
+    "message": "Sem autorização não consigo ver os teus marcadores. Podes tentar novamente quando quiseres."
+  },
+  "bmTry": {
+    "message": "Tenta:"
+  },
+  "bmBadge": {
+    "message": "Marcador"
+  },
+  "bmAddedOn": {
+    "message": "adicionado aos marcadores a $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Marcadores na memória"
+  },
+  "optBookmarksHelp": {
+    "message": "Aprendo os títulos e as pastas dos teus marcadores (sem abrir as páginas) e acompanho-os quando adicionas ou eliminas algum. Desativar remove-os da memória — as páginas que leste ficam."
+  },
+  "memoryFilterAll": {
+    "message": "Tudo"
+  },
+  "memoryFilterRead": {
+    "message": "Lidas"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Marcadores"
+  },
+  "welcomePoint5": {
+    "message": "Marcadores — só se os ativares: aí aprendo os títulos e as pastas deles, sem abrir as páginas. Desativa-se com um clique."
+  },
+  "rateTitle": {
+    "message": "O Déjà já te ajudou a encontrar algo — $COUNT$ vezes",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Se te for útil, uma avaliação na loja ajuda outras pessoas a descobri-lo — demora 10 segundos. E se algo te incomodar, diz-nos."
+  },
+  "rateButton": {
+    "message": "Avaliar o Déjà"
+  },
+  "rateFeedback": {
+    "message": "Algo não funciona?"
+  },
+  "rateLater": {
+    "message": "Agora não"
+  },
+  "rateThanks": {
+    "message": "Obrigado! Ajuda mesmo."
+  },
+  "rateFeedbackThanks": {
+    "message": "Obrigado — lemos todas as mensagens."
+  },
+  "rateFeedbackSubject": {
+    "message": "comentários"
+  },
+  "answerTitle": {
+    "message": "Resposta da tua memória"
+  },
+  "answerAsk": {
+    "message": "Responder com a minha memória"
+  },
+  "answerEnableTitle": {
+    "message": "Respostas da IA integrada do Chrome"
+  },
+  "answerEnableText": {
+    "message": "O Déjà pode responder a perguntas a partir do que leste, com fontes. O Chrome transfere uma única vez o seu modelo no dispositivo (Gemini Nano) — as tuas perguntas e páginas nunca saem do teu computador."
+  },
+  "answerEnableButton": {
+    "message": "Ativar respostas"
+  },
+  "answerNoThanks": {
+    "message": "Não, obrigado"
+  },
+  "answerDownloading": {
+    "message": "O Chrome está a transferir o modelo… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "A ler as tuas recordações…"
+  },
+  "answerStop": {
+    "message": "Parar"
+  },
+  "answerFoot": {
+    "message": "Escrita no teu dispositivo pela IA integrada do Chrome a partir de $COUNT$ das tuas recordações. Verifica as fontes.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Desta vez não consegui compor uma resposta."
+  },
+  "optAnswersLabel": {
+    "message": "Respostas da IA integrada do Chrome"
+  },
+  "optAnswersHelp": {
+    "message": "Para perguntas como «o que li sobre…?», escrevo uma resposta curta com fontes das tuas páginas — totalmente no teu dispositivo, com o Gemini Nano no Chrome. Requer um computador e um idioma suportados (inglês, espanhol, alemão, francês, japonês)."
+  },
+  "optAnswersAvailable": {
+    "message": "Pronto a usar neste dispositivo."
+  },
+  "optAnswersDownloadable": {
+    "message": "Suportado — o Chrome vai transferir o modelo na tua primeira pergunta."
+  },
+  "optAnswersUnavailable": {
+    "message": "Este dispositivo ou o idioma da interface não é suportado pela IA integrada do Chrome."
+  },
+  "optAnswersUnsupported": {
+    "message": "Este navegador não tem IA integrada — tudo o resto no Déjà funciona como sempre."
+  }
+}

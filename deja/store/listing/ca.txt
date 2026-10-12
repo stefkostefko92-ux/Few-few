@@ -1,0 +1,51 @@
+TITLE: Déjà — la memòria del teu navegador
+SHORT: Cerca pel significat a les pàgines que has llegit, en 50+ idiomes. Tot passa al teu dispositiu — res no surt del teu navegador.
+
+Ja ho has vist. Déjà ho troba.
+
+L'historial del teu navegador només recorda títols i URL. Déjà recorda el
+CONTINGUT. Descriu el que recordes amb les teves paraules —«aquell article
+sobre bateries de sodi»— i Déjà et torna la pàgina, encara que no recordis el
+títol, el lloc web ni les paraules exactes. Fins i tot salta al paràgraf exacte.
+
+QUÈ HI GUANYES
+✓ Les teves adreces d'interès, cercables pel significat des del primer minut —
+  opcional, amb un clic. Déjà n'aprèn els títols i les carpetes (sense obrir
+  les pàgines) i les manté sincronitzades quan n'afegeixes, en mous o
+  n'elimines.
+✓ Respostes de la teva memòria — als ordinadors compatibles amb la IA
+  integrada de Chrome (Gemini Nano), fes una pregunta i rep una resposta breu,
+  redactada al teu dispositiu a partir de les pàgines que has llegit, amb fonts
+  en què pots fer clic. (Respostes en anglès, espanyol, alemany, francès i
+  japonès.)
+✓ Cerca pel significat — pregunta amb les teves paraules, en més de 50
+  idiomes; pregunta en un idioma i troba pàgines que vas llegir en un altre.
+✓ Company al tauler lateral — obre'l al costat de qualsevol pàgina i mira què
+  has llegit ja sobre el seu tema, a més dels teus records recents.
+✓ Escriu «dj» a la barra d'adreces — cerca a la teva memòria directament des
+  de l'omnibox, amb suggeriments en temps real.
+✓ Recorda un fragment — fes clic amb el botó dret sobre qualsevol text
+  seleccionat: «Déjà: recorda el text seleccionat». Es converteix en un record
+  propi que pots cercar.
+✓ Salta al paràgraf exacte — els resultats obren la pàgina amb el fragment
+  coincident ressaltat.
+✓ Filtres per data, records relacionats i records recents a la pàgina de
+  cerca buida.
+✓ La meva memòria — mira tot el que recorda Déjà, oblida qualsevol pàgina amb
+  un clic i exporta/importa tot el teu índex com a fitxer.
+
+PRIVADESA DES DEL DISSENY
+✓ Processament 100 % local — el model d'IA d'embeddings s'executa dins del teu
+  navegador i les teves dades es desen a IndexedDB. Sense servidors, sense
+  núvol, sense telemetria, sense compte.
+✓ Les pàgines de correu, xats, inici de sessió i banca s'ometen
+  automàticament (llista d'adreces integrada; afegeix-hi els teus propis
+  patrons).
+✓ Pausa amb un clic. «Oblida aquesta pàgina» i «Esborra la memòria» sempre hi
+  són.
+✓ Oblit automàtic — si vols, elimina les pàgines de més de 3/6/12/24 mesos.
+✓ Els temes clar i fosc segueixen el teu sistema.
+
+L'única sol·licitud de xarxa que fa l'extensió és una baixada única del model
+d'embeddings des de Hugging Face (després es desa a la memòria cau local; pots
+fer que apunti a la teva pròpia rèplica).

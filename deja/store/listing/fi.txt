@@ -1,0 +1,49 @@
+TITLE: Déjà — selaimesi muisti
+SHORT: Hae lukemiasi sivuja merkityksen mukaan 50+ kielellä. Toimii kokonaan laitteellasi – mikään ei koskaan poistu selaimestasi.
+
+Olet nähnyt sen. Déjà löytää sen.
+
+Selaimesi historia muistaa vain otsikot ja URL-osoitteet. Déjà muistaa
+SISÄLLÖN. Kuvaile omin sanoin, mitä muistat – ”se artikkeli natriumpohjaisista
+akuista” – niin Déjà nostaa sivun esiin, vaikka et muistaisi otsikkoa,
+sivustoa tai tarkkoja sanoja. Se jopa hyppää täsmälleen oikeaan kappaleeseen.
+
+MITÄ SAAT
+✓ Kirjanmerkkisi haettavina merkityksen mukaan ensimmäisestä minuutista lähtien
+  – valinnainen, yksi napsautus. Déjà oppii niiden otsikot ja kansiot (avaamatta
+  sivuja) ja pitää ne ajan tasalla, kun lisäät, siirrät tai poistat
+  kirjanmerkkejä.
+✓ Vastauksia muististasi – tietokoneilla, jotka tukevat Chromen sisäänrakennettua
+  tekoälyä (Gemini Nano), kysyt kysymyksen ja saat lyhyen vastauksen, joka on
+  kirjoitettu laitteellasi lukemiesi sivujen pohjalta, napsautettavine
+  lähteineen. (Vastaukset englanniksi, espanjaksi, saksaksi, ranskaksi ja
+  japaniksi.)
+✓ Haku merkityksen mukaan – kysy omin sanoin, 50+ kielellä; kysy yhdellä
+  kielellä ja löydä sivuja, jotka luit toisella.
+✓ Kumppani sivupaneelissa – avaa se minkä tahansa sivun viereen ja näe, mitä olet
+  jo lukenut sivun aiheesta, sekä viimeisimmät muistosi.
+✓ Kirjoita ”dj” osoitepalkkiin – hae muististasi suoraan osoitepalkista
+  reaaliaikaisten ehdotusten avulla.
+✓ Muista katkelma – napsauta valittua tekstiä hiiren kakkospainikkeella:
+  ”Déjà: muista valittu teksti”. Siitä tulee oma haettava muisto.
+✓ Siirry täsmälleen oikeaan kappaleeseen – tulokset avaavat sivun, jolla
+  vastaava kohta on korostettu.
+✓ Päivämääräsuodattimet, liittyvät muistot, viimeisimmät muistot tyhjällä
+  hakusivulla.
+✓ Muistini – näe kaikki, mitä Déjà muistaa, unohda mikä tahansa sivu yhdellä
+  napsautuksella, vie/tuo koko hakemistosi tiedostona.
+
+YKSITYISYYS SUUNNITTELUN LÄHTÖKOHTANA
+✓ 100 % paikallinen käsittely – tekoälyn upotusmalli toimii selaimessasi, ja
+  tietosi ovat IndexedDB:ssä. Ei palvelimia, ei pilveä, ei telemetriaa, ei tiliä.
+✓ Sähköposti-, chat-, kirjautumis- ja pankkisivut ohitetaan automaattisesti
+  (sisäänrakennettu osoitelista; lisää omia malleja).
+✓ Tauko yhdellä napsautuksella. ”Unohda tämä sivu” ja ”Tyhjennä muisti” ovat
+  aina käytettävissä.
+✓ Automaattinen unohtaminen – poista halutessasi sivut, jotka ovat vanhempia
+  kuin 3/6/12/24 kuukautta.
+✓ Vaalea ja tumma teema seuraavat järjestelmääsi.
+
+Ainoa verkkopyyntö, jonka laajennus koskaan tekee, on upotusmallin kertaluonteinen
+lataus Hugging Facesta (sen jälkeen välimuistissa paikallisesti; voit myös
+ohjata sen omaan peilipalvelimeesi).

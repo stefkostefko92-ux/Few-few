@@ -1,0 +1,47 @@
+TITLE: Déjà — sinu brauseri mälu
+SHORT: Otsi loetud lehti tähenduse järgi 50+ keeles. Töötab täielikult sinu seadmes – miski ei lahku kunagi sinu brauserist.
+
+Sa oled seda näinud. Déjà leiab selle üles.
+
+Brauseri ajalugu mäletab ainult pealkirju ja URL-e. Déjà mäletab SISU. Kirjelda
+oma sõnadega, mida mäletad – „see artikkel naatriumipõhistest akudest“ – ja
+Déjà toob lehe esile, isegi kui sa ei mäleta pealkirja, saiti ega täpseid sõnu.
+See hüppab isegi täpselt õige lõigu juurde.
+
+MIDA SA SAAD
+✓ Sinu järjehoidjad, tähenduse järgi otsitavad juba esimesest minutist –
+  valikuline, üks klõps. Déjà õpib nende pealkirjad ja kaustad selgeks (lehti
+  avamata) ning hoiab need sünkroonis, kui lisad, teisaldad või kustutad
+  järjehoidjaid.
+✓ Vastused sinu mälust – arvutites, mis toetavad Chrome’i sisseehitatud
+  tehisintellekti (Gemini Nano), esitad küsimuse ja saad lühikese vastuse, mis on
+  koostatud sinu seadmes loetud lehtede põhjal, klõpsatavate allikatega.
+  (Vastused inglise, hispaania, saksa, prantsuse ja jaapani keeles.)
+✓ Otsing tähenduse järgi – küsi oma sõnadega, 50+ keeles; küsi ühes keeles ja
+  leia lehti, mida lugesid teises.
+✓ Kaaslane külgpaneelil – ava see mis tahes lehe kõrval ja vaata, mida oled selle
+  lehe teemal juba lugenud, lisaks oma hiljutisi mälestusi.
+✓ Sisesta aadressiribale „dj“ – otsi oma mälust otse aadressiribalt reaalajas
+  soovitustega.
+✓ Jäta lõik meelde – paremklõpsa valitud tekstil: „Déjà: jäta valitud tekst
+  meelde“. Sellest saab eraldi otsitav mälestus.
+✓ Hüppa täpselt õige lõigu juurde – tulemused avavad lehe, kus vastav lõik on
+  esile tõstetud.
+✓ Kuupäevafiltrid, seotud mälestused, hiljutised mälestused tühjal otsingulehel.
+✓ Minu mälu – vaata kõike, mida Déjà mäletab, unusta mis tahes leht ühe
+  klõpsuga, ekspordi/impordi kogu oma indeks failina.
+
+PRIVAATSUS ALGUSEST PEALE
+✓ 100% lokaalne töötlus – tehisintellekti manustamismudel töötab sinu brauseris
+  ja sinu andmed asuvad IndexedDB-s. Pole servereid, pole pilve, pole
+  telemeetriat, pole kontot.
+✓ E-posti, vestluste, sisselogimise ja pangatoimingute lehed jäetakse
+  automaatselt vahele (sisseehitatud aadressiloend; lisa oma mustreid).
+✓ Paus ühe klõpsuga. „Unusta see leht“ ja „Tühjenda mälu“ on alati olemas.
+✓ Automaatne unustamine – soovi korral kustutatakse lehed, mis on vanemad kui
+  3/6/12/24 kuud.
+✓ Hele ja tume teema järgivad sinu süsteemi.
+
+Ainus võrgupäring, mille laiendus kunagi teeb, on manustamismudeli ühekordne
+allalaadimine Hugging Face’ist (seejärel kohalikult vahemällu salvestatud;
+selle asemel võid suunata selle oma peegelserverisse).

@@ -1,0 +1,53 @@
+TITLE: Déjà — zure nabigatzailearen memoria
+SHORT: Bilatu irakurritako orriak esanahiaren arabera, 50+ hizkuntzatan. Dena gailuan gertatzen da — ezer ez da nabigatzailetik irteten.
+
+Ikusi duzu. Déjàk aurkitzen du.
+
+Zure nabigatzailearen historiak izenburuak eta URLak baino ez ditu
+gogoratzen. Déjàk EDUKIA gogoratzen du. Deskribatu gogoratzen duzuna zure
+hitzekin —«sodioan oinarritutako bateriei buruzko artikulu hura»— eta Déjàk
+orria azaleratuko du, nahiz eta izenburua, webgunea edo hitz zehatzak gogoratu
+ez. Paragrafo zehatzera ere jauzi egiten du.
+
+ZER LORTZEN DUZU
+✓ Zure laster-markak, esanahiaren arabera bilagarri lehen minututik —
+  aukerakoa, klik batekin. Déjàk haien izenburuak eta karpetak ikasten ditu
+  (orriak ireki gabe) eta sinkronizatuta mantentzen ditu laster-markak gehitu,
+  mugitu edo ezabatzen dituzunean.
+✓ Zure memoriako erantzunak — Chrome-ren AA integratua (Gemini Nano) onartzen
+  duten ordenagailuetan, egin galdera bat eta jaso erantzun labur bat, zure
+  gailuan idatzia, irakurri dituzun orrietatik abiatuta eta klik egin
+  daitezkeen iturriekin. (Erantzunak ingelesez, gaztelaniaz, alemanez,
+  frantsesez eta japonieraz.)
+✓ Esanahiaren araberako bilaketa — galdetu zure hitzekin, 50 hizkuntza baino
+  gehiagotan; galdetu hizkuntza batean eta aurkitu beste batean irakurritako
+  orriak.
+✓ Alboko paneleko laguna — ireki edozein orriren ondoan eta ikusi haren gaiari
+  buruz lehendik irakurri duzuna, baita zure azken oroitzapenak ere.
+✓ Idatzi «dj» helbide-barran — bilatu zure memorian zuzenean omniboxetik,
+  denbora errealeko iradokizunekin.
+✓ Gogoratu pasarte bat — egin eskuineko klik hautatutako edozein testutan:
+  «Déjà: gogoratu hautatutako testua». Oroitzapen bereizi bihurtzen da, eta
+  bertan bila dezakezu.
+✓ Jauzi paragrafo zehatzera — emaitzek orria irekitzen dute, bat datorren
+  pasartea nabarmenduta.
+✓ Data-iragazkiak, lotutako oroitzapenak eta azken oroitzapenak bilaketa-orri
+  hutsean.
+✓ Nire memoria — ikusi Déjàk gogoratzen duen guztia, ahaztu edozein orri klik
+  batekin, eta esportatu/inportatu zure indize osoa fitxategi gisa.
+
+PRIBATUTASUNA DISEINUTIK
+✓ % 100 tokiko prozesamendua — AAko embedding eredua zure nabigatzailearen
+  barruan exekutatzen da, eta zure datuak IndexedDB-n gordetzen dira.
+  Zerbitzaririk, hodeirik, telemetriarik eta konturik gabe.
+✓ Posta, txat, saio-hasiera eta banku-orriak automatikoki saltatzen dira
+  (helbide-zerrenda integratua; gehitu zure eredu propioak).
+✓ Pausa klik batekin. «Ahaztu orri hau» eta «Garbitu memoria» beti daude
+  eskura.
+✓ Ahazte automatikoa — aukeran, 3/6/12/24 hilabete baino zaharragoak diren
+  orriak ezabatzen ditu.
+✓ Gai argiak eta ilunak zure sistemari jarraitzen diote.
+
+Luzapenak egiten duen sareko eskaera bakarra embedding ereduaren deskarga da,
+behin bakarrik, Hugging Face-tik (gero lokalean gordetzen da cachean; horren
+ordez, zure ispilu propiora bidera dezakezu).

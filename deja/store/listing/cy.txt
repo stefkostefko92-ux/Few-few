@@ -1,0 +1,51 @@
+TITLE: Déjà — cof dy borwr
+SHORT: Chwilia dudalennau a ddarllenaist yn ôl ystyr, mewn 50+ iaith. Yn llwyr ar dy ddyfais – does dim byth yn gadael dy borwr.
+
+Rwyt ti wedi’i weld. Mae Déjà yn dod o hyd iddo.
+
+Dim ond teitlau ac URLau mae hanes dy borwr yn eu cofio. Mae Déjà yn cofio’r
+CYNNWYS. Disgrifia’r hyn rwyt ti’n ei gofio yn dy eiriau dy hun – “yr erthygl
+honno am fatris sy’n seiliedig ar sodiwm” – a bydd Déjà yn dod â’r dudalen i’r
+wyneb, hyd yn oed os nad wyt ti’n cofio’r teitl, y wefan na’r union eiriau. Mae
+hyd yn oed yn neidio i’r union baragraff.
+
+BETH RWYT TI’N EI GAEL
+✓ Dy nodau tudalen, yn chwiliadwy yn ôl ystyr o’r funud gyntaf – dewisol, un
+  clic. Mae Déjà yn dysgu eu teitlau a’u ffolderi (heb agor y tudalennau) ac yn
+  eu cadw mewn cysondeb wrth i ti ychwanegu, symud neu ddileu nodau tudalen.
+✓ Atebion o dy gof – ar gyfrifiaduron sy’n cefnogi AI adeiledig Chrome
+  (Gemini Nano), gofynna gwestiwn a chael ateb byr wedi’i ysgrifennu ar dy
+  ddyfais o’r tudalennau rwyt ti wedi’u darllen, gyda ffynonellau y gelli di
+  glicio arnyn nhw. (Atebion yn Saesneg, Sbaeneg, Almaeneg, Ffrangeg a
+  Japaneeg.)
+✓ Chwilio yn ôl ystyr – gofynna yn dy eiriau dy hun, mewn 50+ iaith; gofynna
+  mewn un iaith, a dod o hyd i dudalennau a ddarllenaist mewn iaith arall.
+✓ Cydymaith yn y panel ochr – agora fe wrth ymyl unrhyw dudalen a gweld beth
+  rwyt ti eisoes wedi’i ddarllen am bwnc y dudalen honno, ynghyd â’th atgofion
+  diweddar.
+✓ Teipia “dj” yn y bar cyfeiriad – chwilia dy gof yn syth o’r omnibox gydag
+  awgrymiadau byw.
+✓ Cofio darn – de-glicia ar unrhyw destun a ddewiswyd: “Déjà: cofio’r testun a
+  ddewiswyd”. Mae’n troi’n atgof chwiliadwy ar ei ben ei hun.
+✓ Neidio i’r union baragraff – mae canlyniadau’n agor y dudalen gyda’r darn
+  cyfatebol wedi’i amlygu.
+✓ Hidlwyr dyddiad, atgofion cysylltiedig, atgofion diweddar ar y dudalen chwilio
+  wag.
+✓ Fy nghof – gweld popeth mae Déjà yn ei gofio, anghofio unrhyw dudalen gydag un
+  clic, allforio/mewnforio dy fynegai cyfan fel ffeil.
+
+PREIFAT O’R CYCHWYN
+✓ Prosesu 100% lleol – mae’r model mewnosod AI yn rhedeg y tu mewn i dy borwr ac
+  mae dy ddata yn IndexedDB. Dim gweinyddion, dim cwmwl, dim telemetreg, dim
+  cyfrif.
+✓ Mae tudalennau e-bost, sgyrsiau, mewngofnodi a bancio yn cael eu hepgor yn
+  awtomatig (rhestr gyfeiriadau adeiledig; ychwanega dy batrymau dy hun).
+✓ Saib gydag un clic. Mae “Anghofio’r dudalen hon” a “Clirio’r cof” yno bob
+  amser.
+✓ Anghofio awtomatig – os wyt ti eisiau, dileu tudalennau sy’n hŷn na 3/6/12/24
+  mis.
+✓ Mae’r themâu golau a thywyll yn dilyn dy system.
+
+Yr unig gais rhwydwaith mae’r estyniad byth yn ei wneud yw llwytho’r model
+mewnosod i lawr unwaith o Hugging Face (yna caiff ei storio’n lleol; gelli di ei
+gyfeirio at dy ddrych dy hun yn lle hynny).

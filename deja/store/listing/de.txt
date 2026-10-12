@@ -1,0 +1,51 @@
+TITLE: Déjà — das Gedächtnis deines Browsers
+SHORT: Finde gelesene Seiten nach Bedeutung, in 50+ Sprachen. Läuft komplett auf deinem Gerät – nichts verlässt deinen Browser.
+
+Du hast es gesehen. Déjà findet es.
+
+Der Verlauf deines Browsers merkt sich nur Titel und URLs. Déjà merkt sich den
+INHALT. Beschreib mit deinen eigenen Worten, woran du dich erinnerst – „dieser
+Artikel über Batterien auf Natriumbasis“ – und Déjà holt die Seite hervor, auch
+wenn du weder den Titel noch die Website noch die genauen Worte weißt. Es springt
+sogar zum genauen Absatz.
+
+WAS DU BEKOMMST
+✓ Deine Lesezeichen, nach Bedeutung durchsuchbar ab der ersten Minute – optional,
+  mit einem Klick. Déjà lernt ihre Titel und Ordner (ohne die Seiten zu öffnen)
+  und hält sie synchron, wenn du Lesezeichen hinzufügst, verschiebst oder löschst.
+✓ Antworten aus deinem Gedächtnis – auf Computern, die die integrierte KI von
+  Chrome (Gemini Nano) unterstützen, stellst du eine Frage und bekommst eine
+  kurze Antwort, auf deinem Gerät aus den gelesenen Seiten verfasst, mit
+  anklickbaren Quellen. (Antworten auf Englisch, Spanisch, Deutsch, Französisch
+  und Japanisch.)
+✓ Suche nach Bedeutung – frag mit deinen eigenen Worten, in 50+ Sprachen; frag
+  in einer Sprache und finde Seiten, die du in einer anderen gelesen hast.
+✓ Begleiter in der Seitenleiste – öffne ihn neben einer beliebigen Seite und sieh,
+  was du zum Thema dieser Seite schon gelesen hast, dazu deine neuesten
+  Erinnerungen.
+✓ Gib „dj“ in die Adressleiste ein – durchsuche dein Gedächtnis direkt aus der
+  Omnibox, mit Live-Vorschlägen.
+✓ Eine Textstelle merken – Rechtsklick auf markierten Text: „Déjà: markierten
+  Text merken“. Daraus wird eine eigene durchsuchbare Erinnerung.
+✓ Sprung zum genauen Absatz – Ergebnisse öffnen die Seite mit hervorgehobener
+  passender Textstelle.
+✓ Datumsfilter, verwandte Erinnerungen, neueste Erinnerungen auf der leeren
+  Suchseite.
+✓ Mein Gedächtnis – sieh alles, was Déjà sich merkt, vergiss jede Seite mit einem
+  Klick, exportiere/importiere deinen gesamten Index als Datei.
+
+PRIVAT DURCH DESIGN
+✓ 100 % lokale Verarbeitung – das KI-Embedding-Modell läuft in deinem Browser,
+  und deine Daten liegen in IndexedDB. Keine Server, keine Cloud, keine
+  Telemetrie, kein Konto.
+✓ E-Mail-, Chat-, Anmelde- und Banking-Seiten werden automatisch übersprungen
+  (integrierte Adressliste; eigene Muster hinzufügbar).
+✓ Pause mit einem Klick. „Diese Seite vergessen“ und „Gedächtnis löschen“ sind
+  immer da.
+✓ Automatisches Vergessen – auf Wunsch werden Seiten gelöscht, die älter als
+  3/6/12/24 Monate sind.
+✓ Helles und dunkles Design folgen deinem System.
+
+Die einzige Netzwerkanfrage, die die Erweiterung je stellt, ist ein einmaliger
+Download des Embedding-Modells von Hugging Face (danach lokal zwischengespeichert;
+du kannst stattdessen auch auf deinen eigenen Spiegelserver verweisen).

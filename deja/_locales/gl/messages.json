@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — a memoria do teu navegador"
+  },
+  "extDesc": {
+    "message": "Busca semántica nas páxinas que liches. Todo ocorre en local — nada sae nunca do teu dispositivo."
+  },
+  "cmdOpenSearch": {
+    "message": "Abrir a busca de Déjà"
+  },
+  "searchTitle": {
+    "message": "Déjà — busca o que liches"
+  },
+  "tagline": {
+    "message": "Xa o viches. Déjà atópao."
+  },
+  "searchPlaceholder": {
+    "message": "Describe o que lembras… p. ex., «artigo sobre baterías de sodio»"
+  },
+  "searchButton": {
+    "message": "Buscar"
+  },
+  "statusSearching": {
+    "message": "Remexendo na memoria… (a primeira busca carga o modelo, ~10-30 s)"
+  },
+  "statusEmpty": {
+    "message": "Non apareceu nada. Ou nunca o liches, ou Déjà aínda non o memorizou."
+  },
+  "statusResults": {
+    "message": "$COUNT$ lembranzas:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 lembranza:"
+  },
+  "errNoResponse": {
+    "message": "a memoria non respondeu — téntao de novo"
+  },
+  "recallVivid": {
+    "message": "lembranza vívida"
+  },
+  "recallHazy": {
+    "message": "lembranza borrosa"
+  },
+  "recallFaint": {
+    "message": "lembranza afastada"
+  },
+  "statusError": {
+    "message": "Erro na busca: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "Na memoria: $COUNT$ páxinas.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "Na memoria: 1 páxina."
+  },
+  "similarity": {
+    "message": "semellanza $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "lido o $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "$COUNT$ páxinas na memoria",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "1 páxina na memoria"
+  },
+  "popupSleeping": {
+    "message": "a memoria dorme"
+  },
+  "popupWaking": {
+    "message": "a memoria está a espertar…"
+  },
+  "popupOpenSearch": {
+    "message": "Abrir busca"
+  },
+  "popupPause": {
+    "message": "Pausar a memorización"
+  },
+  "popupClear": {
+    "message": "Borrar a memoria"
+  },
+  "popupClearConfirm": {
+    "message": "Queres borrar todo o memorizado? Non hai volta atrás."
+  },
+  "popupOptions": {
+    "message": "Configuración"
+  },
+  "optionsTitle": {
+    "message": "Déjà — configuración"
+  },
+  "optRetentionLabel": {
+    "message": "Lembrar as páxinas"
+  },
+  "optRetentionForever": {
+    "message": "para sempre"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ meses",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "As páxinas máis antigas elimínanse automaticamente unha vez ao día."
+  },
+  "optDenylistLabel": {
+    "message": "Non memorizar nunca enderezos que conteñan"
+  },
+  "optDenylistHelp": {
+    "message": "Un padrón por liña. Coincide cunha parte do enderezo, p. ex., «example.com» ou «/private»."
+  },
+  "optBuiltinLabel": {
+    "message": "Protección integrada (sempre activa)"
+  },
+  "optModelHostLabel": {
+    "message": "Espello personalizado do modelo (avanzado)"
+  },
+  "optModelHostHelp": {
+    "message": "Baleiro = huggingface.co. Indica o teu propio servidor para contornos sen conexión ou corporativos."
+  },
+  "filterAll": {
+    "message": "todo"
+  },
+  "filterWeek": {
+    "message": "última semana"
+  },
+  "filterMonth": {
+    "message": "último mes"
+  },
+  "filterYear": {
+    "message": "último ano"
+  },
+  "relatedLink": {
+    "message": "lembranzas relacionadas"
+  },
+  "relatedNone": {
+    "message": "ningunha lembranza próxima"
+  },
+  "omniboxDefault": {
+    "message": "Pregúntalle á túa memoria — Déjà busca polo significado"
+  },
+  "popupMemory": {
+    "message": "A miña memoria"
+  },
+  "memoryTitle": {
+    "message": "A miña memoria"
+  },
+  "memoryEmpty": {
+    "message": "A memoria está baleira — visita algunhas páxinas e volve."
+  },
+  "memoryForget": {
+    "message": "Esquecer"
+  },
+  "memoryExport": {
+    "message": "Descargar arquivo"
+  },
+  "memoryImport": {
+    "message": "Restaurar desde arquivo"
+  },
+  "memoryImportConfirm": {
+    "message": "Restaurar desde o arquivo? As páxinas coincidentes sobrescribiranse."
+  },
+  "optSave": {
+    "message": "Gardar"
+  },
+  "optSaved": {
+    "message": "Gardado ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "O espello debe ser un enderezo https://"
+  },
+  "welcomeHeading": {
+    "message": "Ola. Son a memoria do teu navegador."
+  },
+  "welcomeIntro": {
+    "message": "Desde este momento lembro o que les, para que o poidas atopar despois polo significado — coas túas propias palabras, non co título exacto."
+  },
+  "welcomePoint1": {
+    "message": "Todo ocorre no teu dispositivo. Sen servidores, sen nube, sen enviar datos — a ningures, nunca."
+  },
+  "welcomePoint2": {
+    "message": "O correo, os chats, os inicios de sesión e a banca nunca se memorizan. Atención: non podo recoñecer temas sensibles polo enderezo — para eses, usa a pausa ou a túa propia lista na configuración."
+  },
+  "welcomePoint3": {
+    "message": "Ti mandas: pausa cun clic, «Borrar a memoria» elimínao todo e, se queres, esquezo automaticamente ao cabo duns meses."
+  },
+  "welcomeCta": {
+    "message": "Abrir busca"
+  },
+  "welcomeOptions": {
+    "message": "Configuración"
+  },
+  "memoryFilter": {
+    "message": "Busca na túa memoria…"
+  },
+  "supportLink": {
+    "message": "Apoia Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — compañeiro"
+  },
+  "panelOnThisPage": {
+    "message": "Sobre o tema desta páxina"
+  },
+  "panelRecent": {
+    "message": "Lembranzas recentes"
+  },
+  "panelNoPage": {
+    "message": "Abre unha páxina web e Déjà amosarache o que liches sobre o seu tema."
+  },
+  "popupOpenPanel": {
+    "message": "Panel lateral"
+  },
+  "popupForgetPage": {
+    "message": "Esquecer esta páxina"
+  },
+  "popupForgotten": {
+    "message": "Esquecida ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: lembrar o texto seleccionado"
+  },
+  "menuForget": {
+    "message": "Déjà: esquecer esta páxina"
+  },
+  "recentTitle": {
+    "message": "Lembranzas recentes"
+  },
+  "cmdOpenPanel": {
+    "message": "Abrir o panel lateral de Déjà"
+  },
+  "welcomePoint4": {
+    "message": "O panel lateral ve o enderezo e o título da páxina que estás a ver para amosarche o que liches sobre o seu tema — só na memoria da sesión. Os fragmentos que gardas a propósito tamén quedan só contigo."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà actualizouse. Novidade: agora, se queres, tamén podes buscar nos teus marcadores polo significado. Isto é o que fago cos teus datos — nada saíu do teu dispositivo."
+  },
+  "optAmbientLabel": {
+    "message": "Fondo vivo"
+  },
+  "optAmbientHelp": {
+    "message": "A rede de lembranzas detrás do cristal móvese amodo. Desactívaa se o movemento te distrae."
+  },
+  "bmTitle": {
+    "message": "Busca nos teus marcadores polo significado — agora mesmo"
+  },
+  "bmText": {
+    "message": "Déjà aprende os títulos e os cartafoles dos teus marcadores sen abrir as páxinas. Atópaos polo significado desde o primeiro minuto — todo queda no teu dispositivo."
+  },
+  "bmTextShort": {
+    "message": "A túa memoria aínda é nova. Ensíname os teus marcadores e busca neles polo significado hoxe mesmo."
+  },
+  "bmButton": {
+    "message": "Aprender os meus marcadores"
+  },
+  "bmNote": {
+    "message": "O navegador pedirache permiso. Podes desactivalo cando queiras na configuración."
+  },
+  "bmTitleRunning": {
+    "message": "Aprendendo os teus marcadores…"
+  },
+  "bmTitleDone": {
+    "message": "Xa podes buscar nos teus marcadores"
+  },
+  "bmPreparing": {
+    "message": "Preparándome…"
+  },
+  "bmLearning": {
+    "message": "Aprendidos $DONE$ de $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà está en pausa — continuarei en canto a quites."
+  },
+  "bmError": {
+    "message": "Algo fallou durante a aprendizaxe. Tentareino de novo co seguinte cambio."
+  },
+  "bmDone": {
+    "message": "Feito — xa podes buscar polo significado en $COUNT$ marcadores, que se sincronizan automaticamente.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Feito — xa podes buscar polo significado en 1 marcador, que se sincroniza automaticamente."
+  },
+  "bmDenied": {
+    "message": "Sen permiso non podo ver os teus marcadores. Podes tentalo de novo cando queiras."
+  },
+  "bmTry": {
+    "message": "Proba:"
+  },
+  "bmBadge": {
+    "message": "Marcador"
+  },
+  "bmAddedOn": {
+    "message": "engadido o $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Marcadores na memoria"
+  },
+  "optBookmarksHelp": {
+    "message": "Aprendo os títulos e os cartafoles dos teus marcadores (sen abrir as páxinas) e sigoos cando engades ou eliminas algún. Ao desactivalo, quítanse da memoria — as páxinas que liches quedan."
+  },
+  "memoryFilterAll": {
+    "message": "Todo"
+  },
+  "memoryFilterRead": {
+    "message": "Lidas"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Marcadores"
+  },
+  "welcomePoint5": {
+    "message": "Marcadores — só se os activas: entón aprendo os seus títulos e cartafoles, sen abrir as páxinas. Desactívase cun clic."
+  },
+  "rateTitle": {
+    "message": "Déjà axudoute a atopar algo — xa $COUNT$ veces",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Se che resulta útil, unha valoración na tenda axuda a outras persoas a descubrilo — leva 10 segundos. E se algo che molesta, cóntanolo."
+  },
+  "rateButton": {
+    "message": "Valorar Déjà"
+  },
+  "rateFeedback": {
+    "message": "Algo non funciona?"
+  },
+  "rateLater": {
+    "message": "Agora non"
+  },
+  "rateThanks": {
+    "message": "Grazas! Axuda de verdade."
+  },
+  "rateFeedbackThanks": {
+    "message": "Grazas — lemos todas as mensaxes."
+  },
+  "rateFeedbackSubject": {
+    "message": "comentarios"
+  },
+  "answerTitle": {
+    "message": "Resposta desde a túa memoria"
+  },
+  "answerAsk": {
+    "message": "Responder desde a miña memoria"
+  },
+  "answerEnableTitle": {
+    "message": "Respostas da IA integrada de Chrome"
+  },
+  "answerEnableText": {
+    "message": "Déjà pode responder preguntas a partir do que liches, con fontes. Chrome descarga unha soa vez o seu modelo no dispositivo (Gemini Nano) — as túas preguntas e páxinas nunca saen do teu ordenador."
+  },
+  "answerEnableButton": {
+    "message": "Activar as respostas"
+  },
+  "answerNoThanks": {
+    "message": "Non, grazas"
+  },
+  "answerDownloading": {
+    "message": "Chrome está a descargar o modelo… $PCT$ %",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Lendo as túas lembranzas…"
+  },
+  "answerStop": {
+    "message": "Deter"
+  },
+  "answerFoot": {
+    "message": "Redactada no teu dispositivo pola IA integrada de Chrome a partir de $COUNT$ das túas lembranzas. Comproba as fontes.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Esta vez non puiden elaborar unha resposta."
+  },
+  "optAnswersLabel": {
+    "message": "Respostas da IA integrada de Chrome"
+  },
+  "optAnswersHelp": {
+    "message": "Para preguntas como «que lin sobre…?», redacto unha resposta breve con fontes das túas páxinas — totalmente no teu dispositivo, con Gemini Nano en Chrome. Require un ordenador e un idioma compatibles (inglés, español, alemán, francés, xaponés)."
+  },
+  "optAnswersAvailable": {
+    "message": "Listo para usar neste dispositivo."
+  },
+  "optAnswersDownloadable": {
+    "message": "Compatible — Chrome descargará o modelo coa túa primeira pregunta."
+  },
+  "optAnswersUnavailable": {
+    "message": "A IA integrada de Chrome non é compatible con este dispositivo ou co idioma da interface."
+  },
+  "optAnswersUnsupported": {
+    "message": "Este navegador non ten IA integrada — todo o demais de Déjà funciona coma sempre."
+  }
+}

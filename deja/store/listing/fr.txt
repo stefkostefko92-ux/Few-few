@@ -1,0 +1,50 @@
+TITLE: Déjà — la mémoire de ton navigateur
+SHORT: Retrouve par le sens les pages que tu as lues, en 50+ langues. Tout se passe sur ton appareil — rien ne quitte ton navigateur.
+
+Tu l'as vu. Déjà le retrouve.
+
+L'historique de ton navigateur ne retient que les titres et les URL. Déjà
+retient le CONTENU. Décris ce dont tu te souviens avec tes propres mots
+— « cet article sur les batteries au sodium » — et Déjà fait remonter la page,
+même si tu ne te souviens ni du titre, ni du site, ni des mots exacts. Il va
+même jusqu'au paragraphe exact.
+
+CE QUE TU OBTIENS
+✓ Tes favoris, consultables par le sens dès la première minute — en option, en
+  un clic. Déjà apprend leurs titres et leurs dossiers (sans ouvrir les pages)
+  et les garde synchronisés quand tu ajoutes, déplaces ou supprimes des favoris.
+✓ Des réponses tirées de ta mémoire — sur les ordinateurs compatibles avec l'IA
+  intégrée de Chrome (Gemini Nano), pose une question et obtiens une courte
+  réponse rédigée sur ton appareil à partir des pages que tu as lues, avec des
+  sources cliquables. (Réponses en anglais, espagnol, allemand, français et
+  japonais.)
+✓ Recherche par le sens — demande avec tes propres mots, dans plus de 50
+  langues ; cherche dans une langue, retrouve des pages lues dans une autre.
+✓ Compagnon dans le panneau latéral — ouvre-le à côté de n'importe quelle page
+  et vois ce que tu as déjà lu sur son sujet, ainsi que tes souvenirs récents.
+✓ Tape « dj » dans la barre d'adresse — cherche dans ta mémoire directement
+  depuis l'omnibox, avec des suggestions en direct.
+✓ Retiens un passage — clic droit sur n'importe quel texte sélectionné :
+  « Déjà: retenir le texte sélectionné ». Il devient un souvenir à part
+  entière, que tu peux rechercher.
+✓ Va droit au paragraphe exact — les résultats ouvrent la page avec le passage
+  correspondant surligné.
+✓ Filtres par date, souvenirs liés, souvenirs récents sur la page de recherche
+  vide.
+✓ Ma mémoire — vois tout ce dont Déjà se souvient, oublie n'importe quelle page
+  en un clic, exporte/importe tout ton index sous forme de fichier.
+
+CONFIDENTIALITÉ DÈS LA CONCEPTION
+✓ Traitement 100 % local — le modèle d'IA d'embeddings tourne dans ton
+  navigateur et tes données sont stockées dans IndexedDB. Pas de serveurs, pas
+  de cloud, pas de télémétrie, pas de compte.
+✓ Les pages de messagerie, de chat, de connexion et de banque sont ignorées
+  automatiquement (liste d'adresses intégrée ; ajoute tes propres motifs).
+✓ Pause en un clic. « Oublier cette page » et « Effacer la mémoire » sont
+  toujours là.
+✓ Oubli automatique — en option, supprime les pages de plus de 3/6/12/24 mois.
+✓ Les thèmes clair et sombre suivent ton système.
+
+La seule requête réseau que l'extension effectue est un téléchargement unique
+du modèle d'embeddings depuis Hugging Face (mis en cache localement ensuite ;
+tu peux le faire pointer vers ton propre miroir à la place).

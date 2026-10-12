@@ -1,0 +1,46 @@
+TITLE: Déjà — minni vafrans þíns
+SHORT: Leitaðu eftir merkingu í síðum sem þú hefur lesið, á 50+ tungumálum. Keyrir alfarið í tækinu – ekkert fer nokkru sinni úr vafranum.
+
+Þú hefur séð það. Déjà finnur það.
+
+Vafraferillinn man aðeins titla og vefslóðir. Déjà man EFNIÐ. Lýstu því sem þú
+manst með þínum eigin orðum – „greinin um rafhlöður sem byggja á natríum“ – og
+Déjà dregur síðuna fram, jafnvel þótt þú munir hvorki titilinn, vefsvæðið né
+nákvæmu orðin. Það stekkur meira að segja beint á réttu efnisgreinina.
+
+ÞETTA FÆRÐU
+✓ Bókamerkin þín, leitanleg eftir merkingu frá fyrstu mínútu – valfrjálst, einn
+  smellur. Déjà lærir titla þeirra og möppur (án þess að opna síðurnar) og heldur
+  þeim samstilltum þegar þú bætir við, færir eða eyðir bókamerkjum.
+✓ Svör úr minninu þínu – á tölvum sem styðja innbyggða gervigreind Chrome
+  (Gemini Nano) spyrðu spurningar og færð stutt svar, skrifað í tækinu þínu út
+  frá síðunum sem þú hefur lesið, með smellanlegum heimildum. (Svör á ensku,
+  spænsku, þýsku, frönsku og japönsku.)
+✓ Leit eftir merkingu – spurðu með þínum eigin orðum, á 50+ tungumálum; spurðu á
+  einu tungumáli og finndu síður sem þú last á öðru.
+✓ Förunautur í hliðarspjaldi – opnaðu það við hlið hvaða síðu sem er og sjáðu
+  hvað þú hefur þegar lesið um efni síðunnar, auk nýlegra minninga.
+✓ Sláðu inn „dj“ í veffangastikuna – leitaðu í minninu beint úr veffangastikunni
+  með tillögum í rauntíma.
+✓ Mundu textabrot – hægrismelltu á valinn texta: „Déjà: muna valinn texta“.
+  Það verður sjálfstæð minning sem hægt er að leita í.
+✓ Stökktu á réttu efnisgreinina – niðurstöður opna síðuna með samsvarandi
+  textabroti auðkenndu.
+✓ Dagsetningasíur, tengdar minningar, nýlegar minningar á tómu leitarsíðunni.
+✓ Minnið mitt – sjáðu allt sem Déjà man, gleymdu hvaða síðu sem er með einum
+  smelli, fluttu alla atriðaskrána út/inn sem skrá.
+
+PERSÓNUVERND FRÁ GRUNNI
+✓ 100% staðbundin vinnsla – gervigreindarlíkanið fyrir vigurgreypingu keyrir í
+  vafranum þínum og gögnin þín eru í IndexedDB. Engir þjónar, ekkert ský, engin
+  fjarmæling, enginn reikningur.
+✓ Síðum fyrir tölvupóst, spjall, innskráningu og heimabanka er sjálfkrafa sleppt
+  (innbyggður listi yfir vefföng; bættu við eigin mynstrum).
+✓ Hlé með einum smelli. „Gleyma þessari síðu“ og „Hreinsa minnið“ eru alltaf til
+  staðar.
+✓ Sjálfvirk gleymska – eyddu að vild síðum sem eru eldri en 3/6/12/24 mánaða.
+✓ Ljóst og dökkt þema fylgja kerfinu þínu.
+
+Eina netbeiðnin sem viðbótin gerir nokkurn tímann er að sækja líkanið einu
+sinni frá Hugging Face (það er síðan geymt í skyndiminni á tækinu; þú getur
+einnig vísað á eigin spegil í staðinn).

@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — jou blaaier se geheue"
+  },
+  "extDesc": {
+    "message": "Semantiese soektog deur die bladsye wat jy gelees het. Alles gebeur plaaslik – niks verlaat ooit jou toestel nie."
+  },
+  "cmdOpenSearch": {
+    "message": "Maak Déjà-soektog oop"
+  },
+  "searchTitle": {
+    "message": "Déjà — soek wat jy gelees het"
+  },
+  "tagline": {
+    "message": "Jy het dit gesien. Déjà kry dit."
+  },
+  "searchPlaceholder": {
+    "message": "Beskryf wat jy onthou… bv. “artikel oor batterye op natriumbasis”"
+  },
+  "searchButton": {
+    "message": "Soek"
+  },
+  "statusSearching": {
+    "message": "Ek delf deur die geheue… (die eerste soektog laai die model, ~10-30 s)"
+  },
+  "statusEmpty": {
+    "message": "Niks het opgeduik nie. Óf jy het dit nooit gelees nie, óf Déjà het dit nog nie onthou nie."
+  },
+  "statusResults": {
+    "message": "$COUNT$ herinneringe:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 herinnering:"
+  },
+  "errNoResponse": {
+    "message": "die geheue het nie geantwoord nie – probeer weer"
+  },
+  "recallVivid": {
+    "message": "helder herinnering"
+  },
+  "recallHazy": {
+    "message": "vae herinnering"
+  },
+  "recallFaint": {
+    "message": "verre herinnering"
+  },
+  "statusError": {
+    "message": "Soektog het misluk: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "In die geheue: $COUNT$ bladsye.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "In die geheue: 1 bladsy."
+  },
+  "similarity": {
+    "message": "ooreenkoms $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "gelees op $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "$COUNT$ bladsye in die geheue",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "1 bladsy in die geheue"
+  },
+  "popupSleeping": {
+    "message": "die geheue slaap"
+  },
+  "popupWaking": {
+    "message": "die geheue word wakker…"
+  },
+  "popupOpenSearch": {
+    "message": "Maak soektog oop"
+  },
+  "popupPause": {
+    "message": "Onderbreek onthou"
+  },
+  "popupClear": {
+    "message": "Vee geheue uit"
+  },
+  "popupClearConfirm": {
+    "message": "Vee alles uit wat onthou is? Dit kan nie ontdoen word nie."
+  },
+  "popupOptions": {
+    "message": "Instellings"
+  },
+  "optionsTitle": {
+    "message": "Déjà — instellings"
+  },
+  "optRetentionLabel": {
+    "message": "Onthou bladsye"
+  },
+  "optRetentionForever": {
+    "message": "vir altyd"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ maande",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Ouer bladsye word een keer per dag outomaties uitgevee."
+  },
+  "optDenylistLabel": {
+    "message": "Moet nooit adresse onthou wat dit bevat nie"
+  },
+  "optDenylistHelp": {
+    "message": "Een patroon per reël. Pas by ’n deel van die adres, bv. “example.com” of “/private”."
+  },
+  "optBuiltinLabel": {
+    "message": "Ingeboude beskerming (altyd aktief)"
+  },
+  "optModelHostLabel": {
+    "message": "Eie spieëlbediener vir die model (gevorderd)"
+  },
+  "optModelHostHelp": {
+    "message": "Leeg = huggingface.co. Stel jou eie bediener in vir vanlyn- of korporatiewe omgewings."
+  },
+  "filterAll": {
+    "message": "alles"
+  },
+  "filterWeek": {
+    "message": "afgelope week"
+  },
+  "filterMonth": {
+    "message": "afgelope maand"
+  },
+  "filterYear": {
+    "message": "afgelope jaar"
+  },
+  "relatedLink": {
+    "message": "verwante herinneringe"
+  },
+  "relatedNone": {
+    "message": "geen verwante herinneringe nie"
+  },
+  "omniboxDefault": {
+    "message": "Vra jou geheue – Déjà soek volgens betekenis"
+  },
+  "popupMemory": {
+    "message": "My geheue"
+  },
+  "memoryTitle": {
+    "message": "My geheue"
+  },
+  "memoryEmpty": {
+    "message": "Die geheue is leeg – blaai deur ’n paar bladsye en kom dan terug."
+  },
+  "memoryForget": {
+    "message": "Vergeet"
+  },
+  "memoryExport": {
+    "message": "Laai argief af"
+  },
+  "memoryImport": {
+    "message": "Herstel uit argief"
+  },
+  "memoryImportConfirm": {
+    "message": "Herstel uit argief? Ooreenstemmende bladsye sal oorskryf word."
+  },
+  "optSave": {
+    "message": "Stoor"
+  },
+  "optSaved": {
+    "message": "Gestoor ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "Die spieëlbediener moet ’n https://-adres wees"
+  },
+  "welcomeHeading": {
+    "message": "Hallo. Ek is jou blaaier se geheue."
+  },
+  "welcomeIntro": {
+    "message": "Van nou af onthou ek wat jy lees, sodat jy dit later volgens betekenis kan vind – in jou eie woorde, nie met die presiese titel nie."
+  },
+  "welcomePoint1": {
+    "message": "Alles gebeur op jou toestel. Geen bedieners nie, geen wolk nie, geen data word gestuur nie – nêrens heen, nooit nie."
+  },
+  "welcomePoint2": {
+    "message": "E-pos, kletse, aanmeldings en bankdienste word nooit onthou nie. Let op: ek kan nie sensitiewe onderwerpe aan die adres herken nie – gebruik daarvoor die pouse of jou eie lys in die instellings."
+  },
+  "welcomePoint3": {
+    "message": "Jy is in beheer: onderbreek met een klik, “Vee geheue uit” vee alles uit, en as jy wil, vergeet ek outomaties ná ’n paar maande."
+  },
+  "welcomeCta": {
+    "message": "Maak soektog oop"
+  },
+  "welcomeOptions": {
+    "message": "Instellings"
+  },
+  "memoryFilter": {
+    "message": "Soek in jou geheue…"
+  },
+  "supportLink": {
+    "message": "Steun Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — metgesel"
+  },
+  "panelOnThisPage": {
+    "message": "Oor die onderwerp van hierdie bladsy"
+  },
+  "panelRecent": {
+    "message": "Onlangse herinneringe"
+  },
+  "panelNoPage": {
+    "message": "Maak ’n webbladsy oop en Déjà sal wys wat jy oor die onderwerp daarvan gelees het."
+  },
+  "popupOpenPanel": {
+    "message": "Sypaneel"
+  },
+  "popupForgetPage": {
+    "message": "Vergeet hierdie bladsy"
+  },
+  "popupForgotten": {
+    "message": "Vergeet ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: onthou geselekteerde teks"
+  },
+  "menuForget": {
+    "message": "Déjà: vergeet hierdie bladsy"
+  },
+  "recentTitle": {
+    "message": "Onlangse herinneringe"
+  },
+  "cmdOpenPanel": {
+    "message": "Maak die Déjà-sypaneel oop"
+  },
+  "welcomePoint4": {
+    "message": "Die sypaneel sien die adres en titel van die bladsy wat jy bekyk, sodat dit kan wys wat jy oor die onderwerp daarvan gelees het – net in die sessiegeheue. Uittreksels wat jy doelbewus stoor, bly ook net by jou."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà is opgedateer. Nuut: jou boekmerke kan nou ook volgens betekenis deursoekbaar wees – as jy wil. Hier is wat ek met jou data doen – niks het jou toestel verlaat nie."
+  },
+  "optAmbientLabel": {
+    "message": "Lewende agtergrond"
+  },
+  "optAmbientHelp": {
+    "message": "Die web van herinneringe agter die glas dryf stadig. Skakel dit af as die beweging jou aandag aftrek."
+  },
+  "bmTitle": {
+    "message": "Maak jou boekmerke deursoekbaar – sommer nou"
+  },
+  "bmText": {
+    "message": "Déjà leer die titels en vouers van jou boekmerke sonder om die bladsye oop te maak. Vind hulle van die eerste minuut af volgens betekenis – alles bly op jou toestel."
+  },
+  "bmTextShort": {
+    "message": "Jou geheue is nog jonk. Leer my jou boekmerke en deursoek hulle vandag nog volgens betekenis."
+  },
+  "bmButton": {
+    "message": "Leer my boekmerke"
+  },
+  "bmNote": {
+    "message": "Jou blaaier sal toestemming vra. Skakel dit enige tyd in die instellings af."
+  },
+  "bmTitleRunning": {
+    "message": "Ek leer jou boekmerke…"
+  },
+  "bmTitleDone": {
+    "message": "Jou boekmerke is deursoekbaar"
+  },
+  "bmPreparing": {
+    "message": "Maak gereed…"
+  },
+  "bmLearning": {
+    "message": "$DONE$ van $TOTAL$ geleer",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà is onderbreek – ek gaan voort sodra jy hervat."
+  },
+  "bmError": {
+    "message": "Iets het skeefgeloop terwyl ek geleer het. Ek probeer weer by die volgende verandering."
+  },
+  "bmDone": {
+    "message": "Klaar – $COUNT$ boekmerke is volgens betekenis deursoekbaar en word outomaties gesinkroniseer.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Klaar – 1 boekmerk is volgens betekenis deursoekbaar en word outomaties gesinkroniseer."
+  },
+  "bmDenied": {
+    "message": "Sonder toestemming kan ek nie jou boekmerke sien nie. Jy kan enige tyd weer probeer."
+  },
+  "bmTry": {
+    "message": "Probeer:"
+  },
+  "bmBadge": {
+    "message": "Boekmerk"
+  },
+  "bmAddedOn": {
+    "message": "boekmerk sedert $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Boekmerke in die geheue"
+  },
+  "optBookmarksHelp": {
+    "message": "Ek leer jou boekmerke se titels en vouers (sonder om die bladsye oop te maak) en hou tred wanneer jy dit byvoeg of uitvee. As jy dit afskakel, word hulle uit die geheue verwyder – bladsye wat jy gelees het, bly."
+  },
+  "memoryFilterAll": {
+    "message": "Alles"
+  },
+  "memoryFilterRead": {
+    "message": "Gelees"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Boekmerke"
+  },
+  "welcomePoint5": {
+    "message": "Boekmerke – net as jy dit aanskakel: dan leer ek hul titels en vouers, sonder om die bladsye oop te maak. Een klik skakel dit af."
+  },
+  "rateTitle": {
+    "message": "Déjà het jou gehelp om iets te vind – al $COUNT$ keer",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "As dit nuttig is, help ’n gradering in die winkel ander mense om dit te ontdek – dit neem 10 sekondes. En as iets jou pla, sê vir ons."
+  },
+  "rateButton": {
+    "message": "Gradeer Déjà"
+  },
+  "rateFeedback": {
+    "message": "Werk iets nie?"
+  },
+  "rateLater": {
+    "message": "Nie nou nie"
+  },
+  "rateThanks": {
+    "message": "Dankie! Dit help regtig."
+  },
+  "rateFeedbackThanks": {
+    "message": "Dankie – ons lees elke boodskap."
+  },
+  "rateFeedbackSubject": {
+    "message": "terugvoer"
+  },
+  "answerTitle": {
+    "message": "Antwoord uit jou geheue"
+  },
+  "answerAsk": {
+    "message": "Antwoord uit my geheue"
+  },
+  "answerEnableTitle": {
+    "message": "Antwoorde van Chrome se ingeboude KI"
+  },
+  "answerEnableText": {
+    "message": "Déjà kan vrae beantwoord uit wat jy gelees het, met bronne. Chrome laai sy model op jou toestel (Gemini Nano) een keer af – jou vrae en bladsye verlaat nooit jou rekenaar nie."
+  },
+  "answerEnableButton": {
+    "message": "Skakel antwoorde aan"
+  },
+  "answerNoThanks": {
+    "message": "Nee dankie"
+  },
+  "answerDownloading": {
+    "message": "Chrome laai die model af… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Ek lees jou herinneringe…"
+  },
+  "answerStop": {
+    "message": "Stop"
+  },
+  "answerFoot": {
+    "message": "Op jou toestel geskryf deur Chrome se ingeboude KI uit $COUNT$ van jou herinneringe. Gaan die bronne na.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Ek kon nie hierdie keer ’n antwoord saamstel nie."
+  },
+  "optAnswersLabel": {
+    "message": "Antwoorde van Chrome se ingeboude KI"
+  },
+  "optAnswersHelp": {
+    "message": "Vir vrae soos “wat het ek gelees oor…?” skryf ek ’n kort antwoord met bronne uit jou bladsye – heeltemal op jou toestel, met Gemini Nano in Chrome. Vereis ’n rekenaar en taal wat ondersteun word (Engels, Spaans, Duits, Frans, Japannees)."
+  },
+  "optAnswersAvailable": {
+    "message": "Gereed vir gebruik op hierdie toestel."
+  },
+  "optAnswersDownloadable": {
+    "message": "Word ondersteun – Chrome sal die model by jou eerste vraag aflaai."
+  },
+  "optAnswersUnavailable": {
+    "message": "Hierdie toestel of koppelvlaktaal word nie deur Chrome se ingeboude KI ondersteun nie."
+  },
+  "optAnswersUnsupported": {
+    "message": "Hierdie blaaier het nie ingeboude KI nie – alles anders in Déjà werk soos altyd."
+  }
+}

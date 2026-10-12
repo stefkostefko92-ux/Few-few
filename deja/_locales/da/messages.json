@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — din browsers hukommelse"
+  },
+  "extDesc": {
+    "message": "Semantisk søgning i de sider, du har læst. Alt foregår lokalt – intet forlader nogensinde din enhed."
+  },
+  "cmdOpenSearch": {
+    "message": "Åbn Déjà-søgning"
+  },
+  "searchTitle": {
+    "message": "Déjà — søg i det, du har læst"
+  },
+  "tagline": {
+    "message": "Du har set det. Déjà finder det."
+  },
+  "searchPlaceholder": {
+    "message": "Beskriv, hvad du husker… f.eks. »artikel om natriumbaserede batterier«"
+  },
+  "searchButton": {
+    "message": "Søg"
+  },
+  "statusSearching": {
+    "message": "Jeg graver i hukommelsen… (første søgning indlæser modellen, ~10-30 sek.)"
+  },
+  "statusEmpty": {
+    "message": "Intet dukkede op. Enten har du aldrig læst det, eller også har Déjà ikke husket det endnu."
+  },
+  "statusResults": {
+    "message": "$COUNT$ minder:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 minde:"
+  },
+  "errNoResponse": {
+    "message": "hukommelsen svarede ikke – prøv igen"
+  },
+  "recallVivid": {
+    "message": "levende minde"
+  },
+  "recallHazy": {
+    "message": "tåget minde"
+  },
+  "recallFaint": {
+    "message": "fjernt minde"
+  },
+  "statusError": {
+    "message": "Søgningen mislykkedes: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "I hukommelsen: $COUNT$ sider.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "I hukommelsen: 1 side."
+  },
+  "similarity": {
+    "message": "lighed $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "læst $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "$COUNT$ sider i hukommelsen",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "1 side i hukommelsen"
+  },
+  "popupSleeping": {
+    "message": "hukommelsen sover"
+  },
+  "popupWaking": {
+    "message": "hukommelsen vågner…"
+  },
+  "popupOpenSearch": {
+    "message": "Åbn søgning"
+  },
+  "popupPause": {
+    "message": "Sæt huskning på pause"
+  },
+  "popupClear": {
+    "message": "Ryd hukommelsen"
+  },
+  "popupClearConfirm": {
+    "message": "Slet alt, hvad der er husket? Det kan ikke fortrydes."
+  },
+  "popupOptions": {
+    "message": "Indstillinger"
+  },
+  "optionsTitle": {
+    "message": "Déjà — indstillinger"
+  },
+  "optRetentionLabel": {
+    "message": "Husk sider"
+  },
+  "optRetentionForever": {
+    "message": "for altid"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ måneder",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Ældre sider slettes automatisk én gang om dagen."
+  },
+  "optDenylistLabel": {
+    "message": "Husk aldrig adresser, der indeholder"
+  },
+  "optDenylistHelp": {
+    "message": "Ét mønster pr. linje. Matcher en del af adressen, f.eks. »example.com« eller »/private«."
+  },
+  "optBuiltinLabel": {
+    "message": "Indbygget beskyttelse (altid aktiv)"
+  },
+  "optModelHostLabel": {
+    "message": "Eget spejl til modellen (avanceret)"
+  },
+  "optModelHostHelp": {
+    "message": "Tom = huggingface.co. Angiv din egen server til offline- eller virksomhedsmiljøer."
+  },
+  "filterAll": {
+    "message": "alle"
+  },
+  "filterWeek": {
+    "message": "seneste uge"
+  },
+  "filterMonth": {
+    "message": "seneste måned"
+  },
+  "filterYear": {
+    "message": "seneste år"
+  },
+  "relatedLink": {
+    "message": "relaterede minder"
+  },
+  "relatedNone": {
+    "message": "ingen nærliggende minder"
+  },
+  "omniboxDefault": {
+    "message": "Spørg din hukommelse – Déjà søger efter betydning"
+  },
+  "popupMemory": {
+    "message": "Min hukommelse"
+  },
+  "memoryTitle": {
+    "message": "Min hukommelse"
+  },
+  "memoryEmpty": {
+    "message": "Hukommelsen er tom – kig på et par sider, og kom tilbage."
+  },
+  "memoryForget": {
+    "message": "Glem"
+  },
+  "memoryExport": {
+    "message": "Download arkiv"
+  },
+  "memoryImport": {
+    "message": "Gendan fra arkiv"
+  },
+  "memoryImportConfirm": {
+    "message": "Gendan fra arkiv? Matchende sider bliver overskrevet."
+  },
+  "optSave": {
+    "message": "Gem"
+  },
+  "optSaved": {
+    "message": "Gemt ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "Spejlet skal være en https://-adresse"
+  },
+  "welcomeHeading": {
+    "message": "Hej. Jeg er din browsers hukommelse."
+  },
+  "welcomeIntro": {
+    "message": "Fra nu af husker jeg, hvad du læser, så du senere kan finde det efter betydning – med dine egne ord, ikke den præcise titel."
+  },
+  "welcomePoint1": {
+    "message": "Alt foregår på din enhed. Ingen servere, ingen sky, ingen data sendes – ingen steder hen, aldrig."
+  },
+  "welcomePoint2": {
+    "message": "Mail, chats, logins og netbank bliver aldrig husket. Bemærk: Jeg kan ikke genkende følsomme emner ud fra adressen – brug pause eller din egen liste i indstillingerne til dem."
+  },
+  "welcomePoint3": {
+    "message": "Du bestemmer: Sæt på pause med ét klik, »Ryd hukommelsen« sletter alt, og hvis du vil, glemmer jeg automatisk efter nogle måneder."
+  },
+  "welcomeCta": {
+    "message": "Åbn søgning"
+  },
+  "welcomeOptions": {
+    "message": "Indstillinger"
+  },
+  "memoryFilter": {
+    "message": "Søg i din hukommelse…"
+  },
+  "supportLink": {
+    "message": "Støt Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — følgesvend"
+  },
+  "panelOnThisPage": {
+    "message": "Om emnet på denne side"
+  },
+  "panelRecent": {
+    "message": "Seneste minder"
+  },
+  "panelNoPage": {
+    "message": "Åbn en webside, så viser Déjà, hvad du har læst om dens emne."
+  },
+  "popupOpenPanel": {
+    "message": "Sidepanel"
+  },
+  "popupForgetPage": {
+    "message": "Glem denne side"
+  },
+  "popupForgotten": {
+    "message": "Glemt ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: husk markeret tekst"
+  },
+  "menuForget": {
+    "message": "Déjà: glem denne side"
+  },
+  "recentTitle": {
+    "message": "Seneste minder"
+  },
+  "cmdOpenPanel": {
+    "message": "Åbn Déjà-sidepanelet"
+  },
+  "welcomePoint4": {
+    "message": "Sidepanelet ser adressen og titlen på den side, du ser, så det kan vise, hvad du har læst om emnet – kun i sessionens hukommelse. Uddrag, du bevidst gemmer, bliver også kun hos dig."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà er blevet opdateret. Nyt: Dine bogmærker kan nu også blive søgbare efter betydning – hvis du vil. Her er, hvad jeg gør med dine data – intet har forladt din enhed."
+  },
+  "optAmbientLabel": {
+    "message": "Levende baggrund"
+  },
+  "optAmbientHelp": {
+    "message": "Nettet af minder bag glasset driver langsomt. Slå det fra, hvis bevægelsen forstyrrer dig."
+  },
+  "bmTitle": {
+    "message": "Gør dine bogmærker søgbare – med det samme"
+  },
+  "bmText": {
+    "message": "Déjà lærer titlerne og mapperne på dine bogmærker uden at åbne siderne. Find dem efter betydning fra første minut – alt bliver på din enhed."
+  },
+  "bmTextShort": {
+    "message": "Din hukommelse er stadig ung. Lær mig dine bogmærker, og søg i dem efter betydning allerede i dag."
+  },
+  "bmButton": {
+    "message": "Lær mine bogmærker"
+  },
+  "bmNote": {
+    "message": "Din browser beder om tilladelse. Slå det fra når som helst i indstillingerne."
+  },
+  "bmTitleRunning": {
+    "message": "Lærer dine bogmærker…"
+  },
+  "bmTitleDone": {
+    "message": "Dine bogmærker er søgbare"
+  },
+  "bmPreparing": {
+    "message": "Gør klar…"
+  },
+  "bmLearning": {
+    "message": "Lært $DONE$ af $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà er sat på pause – jeg fortsætter, så snart du genoptager."
+  },
+  "bmError": {
+    "message": "Noget gik galt under indlæringen. Jeg prøver igen ved næste ændring."
+  },
+  "bmDone": {
+    "message": "Færdig – $COUNT$ bogmærker er søgbare efter betydning og holdes automatisk synkroniseret.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Færdig – 1 bogmærke er søgbart efter betydning og holdes automatisk synkroniseret."
+  },
+  "bmDenied": {
+    "message": "Uden tilladelse kan jeg ikke se dine bogmærker. Du kan prøve igen når som helst."
+  },
+  "bmTry": {
+    "message": "Prøv:"
+  },
+  "bmBadge": {
+    "message": "Bogmærke"
+  },
+  "bmAddedOn": {
+    "message": "bogmærket $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Bogmærker i hukommelsen"
+  },
+  "optBookmarksHelp": {
+    "message": "Jeg lærer titlerne og mapperne på dine bogmærker (uden at åbne siderne) og følger med, når du tilføjer eller sletter dem. Slår du det fra, fjernes de fra hukommelsen – sider, du har læst, bliver."
+  },
+  "memoryFilterAll": {
+    "message": "Alle"
+  },
+  "memoryFilterRead": {
+    "message": "Læst"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Bogmærker"
+  },
+  "welcomePoint5": {
+    "message": "Bogmærker – kun hvis du slår dem til: Så lærer jeg deres titler og mapper uden at åbne siderne. Ét klik slår det fra."
+  },
+  "rateTitle": {
+    "message": "Déjà har hjulpet dig med at finde noget – nu $COUNT$ gange",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Hvis den er nyttig, hjælper en bedømmelse i butikken andre med at opdage den – det tager 10 sekunder. Og hvis noget irriterer dig, så sig det til os."
+  },
+  "rateButton": {
+    "message": "Bedøm Déjà"
+  },
+  "rateFeedback": {
+    "message": "Virker noget ikke?"
+  },
+  "rateLater": {
+    "message": "Ikke nu"
+  },
+  "rateThanks": {
+    "message": "Tak! Det hjælper virkelig."
+  },
+  "rateFeedbackThanks": {
+    "message": "Tak – vi læser hver eneste besked."
+  },
+  "rateFeedbackSubject": {
+    "message": "feedback"
+  },
+  "answerTitle": {
+    "message": "Svar fra din hukommelse"
+  },
+  "answerAsk": {
+    "message": "Svar fra min hukommelse"
+  },
+  "answerEnableTitle": {
+    "message": "Svar fra Chromes indbyggede AI"
+  },
+  "answerEnableText": {
+    "message": "Déjà kan besvare spørgsmål ud fra det, du har læst, med kilder. Chrome downloader sin model til enheden (Gemini Nano) én gang – dine spørgsmål og sider forlader aldrig din computer."
+  },
+  "answerEnableButton": {
+    "message": "Slå svar til"
+  },
+  "answerNoThanks": {
+    "message": "Nej tak"
+  },
+  "answerDownloading": {
+    "message": "Chrome downloader modellen… $PCT$ %",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Læser dine minder…"
+  },
+  "answerStop": {
+    "message": "Stop"
+  },
+  "answerFoot": {
+    "message": "Skrevet på din enhed af Chromes indbyggede AI ud fra $COUNT$ af dine minder. Tjek kilderne.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Jeg kunne ikke sammensætte et svar denne gang."
+  },
+  "optAnswersLabel": {
+    "message": "Svar fra Chromes indbyggede AI"
+  },
+  "optAnswersHelp": {
+    "message": "Ved spørgsmål som »hvad læste jeg om…?« skriver jeg et kort svar med kilder fra dine sider – helt på din enhed, med Gemini Nano i Chrome. Kræver en understøttet computer og et understøttet sprog (engelsk, spansk, tysk, fransk, japansk)."
+  },
+  "optAnswersAvailable": {
+    "message": "Klar til brug på denne enhed."
+  },
+  "optAnswersDownloadable": {
+    "message": "Understøttet – Chrome downloader modellen ved dit første spørgsmål."
+  },
+  "optAnswersUnavailable": {
+    "message": "Denne enhed eller dette sprog i brugerfladen understøttes ikke af Chromes indbyggede AI."
+  },
+  "optAnswersUnsupported": {
+    "message": "Denne browser har ingen indbygget AI – alt andet i Déjà virker som altid."
+  }
+}

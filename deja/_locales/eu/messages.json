@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — zure nabigatzailearen memoria"
+  },
+  "extDesc": {
+    "message": "Bilaketa semantikoa irakurri dituzun orrietan. Dena lokalean gertatzen da — ezer ez da inoiz zure gailutik irteten."
+  },
+  "cmdOpenSearch": {
+    "message": "Ireki Déjàren bilaketa"
+  },
+  "searchTitle": {
+    "message": "Déjà — bilatu irakurri duzuna"
+  },
+  "tagline": {
+    "message": "Ikusi duzu. Déjàk aurkitzen du."
+  },
+  "searchPlaceholder": {
+    "message": "Deskribatu gogoratzen duzuna… adib., «sodioan oinarritutako bateriei buruzko artikulua»"
+  },
+  "searchButton": {
+    "message": "Bilatu"
+  },
+  "statusSearching": {
+    "message": "Memorian arakatzen… (lehen bilaketak eredua kargatzen du, ~10-30 s)"
+  },
+  "statusEmpty": {
+    "message": "Ez da ezer azaleratu. Edo ez duzu inoiz irakurri, edo Déjàk ez du oraindik gogoan gorde."
+  },
+  "statusResults": {
+    "message": "$COUNT$ oroitzapen:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 oroitzapen:"
+  },
+  "errNoResponse": {
+    "message": "memoriak ez du erantzun — saiatu berriro"
+  },
+  "recallVivid": {
+    "message": "oroitzapen bizia"
+  },
+  "recallHazy": {
+    "message": "oroitzapen lausoa"
+  },
+  "recallFaint": {
+    "message": "oroitzapen urruna"
+  },
+  "statusError": {
+    "message": "Bilaketak huts egin du: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "Memorian: $COUNT$ orri.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "Memorian: 1 orri."
+  },
+  "similarity": {
+    "message": "antzekotasuna $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "irakurria: $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "$COUNT$ orri memorian",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "1 orri memorian"
+  },
+  "popupSleeping": {
+    "message": "memoria lotan dago"
+  },
+  "popupWaking": {
+    "message": "memoria esnatzen ari da…"
+  },
+  "popupOpenSearch": {
+    "message": "Ireki bilaketa"
+  },
+  "popupPause": {
+    "message": "Pausatu gogoratzea"
+  },
+  "popupClear": {
+    "message": "Garbitu memoria"
+  },
+  "popupClearConfirm": {
+    "message": "Gogoratutako guztia ezabatu? Ezin da desegin."
+  },
+  "popupOptions": {
+    "message": "Ezarpenak"
+  },
+  "optionsTitle": {
+    "message": "Déjà — ezarpenak"
+  },
+  "optRetentionLabel": {
+    "message": "Gogoratu orriak"
+  },
+  "optRetentionForever": {
+    "message": "betiko"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ hilabete",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Orri zaharrenak automatikoki ezabatzen dira egunean behin."
+  },
+  "optDenylistLabel": {
+    "message": "Ez gogoratu inoiz hauek dituzten helbideak"
+  },
+  "optDenylistHelp": {
+    "message": "Eredu bat lerro bakoitzeko. Helbidearen zati batekin bat dator, adib., «example.com» edo «/private»."
+  },
+  "optBuiltinLabel": {
+    "message": "Babes integratua (beti aktibo)"
+  },
+  "optModelHostLabel": {
+    "message": "Ereduaren ispilu pertsonalizatua (aurreratua)"
+  },
+  "optModelHostHelp": {
+    "message": "Hutsik = huggingface.co. Ezarri zure zerbitzaria lineaz kanpoko edo enpresako inguruneetarako."
+  },
+  "filterAll": {
+    "message": "denak"
+  },
+  "filterWeek": {
+    "message": "azken astea"
+  },
+  "filterMonth": {
+    "message": "azken hilabetea"
+  },
+  "filterYear": {
+    "message": "azken urtea"
+  },
+  "relatedLink": {
+    "message": "lotutako oroitzapenak"
+  },
+  "relatedNone": {
+    "message": "ez dago oroitzapen hurbilik"
+  },
+  "omniboxDefault": {
+    "message": "Galdetu zure memoriari — Déjàk esanahiaren arabera bilatzen du"
+  },
+  "popupMemory": {
+    "message": "Nire memoria"
+  },
+  "memoryTitle": {
+    "message": "Nire memoria"
+  },
+  "memoryEmpty": {
+    "message": "Memoria hutsik dago — arakatu orri batzuk eta itzuli."
+  },
+  "memoryForget": {
+    "message": "Ahaztu"
+  },
+  "memoryExport": {
+    "message": "Deskargatu artxiboa"
+  },
+  "memoryImport": {
+    "message": "Leheneratu artxibotik"
+  },
+  "memoryImportConfirm": {
+    "message": "Artxibotik leheneratu? Bat datozen orriak gainidatziko dira."
+  },
+  "optSave": {
+    "message": "Gorde"
+  },
+  "optSaved": {
+    "message": "Gordeta ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "Ispiluak https:// helbide bat izan behar du"
+  },
+  "welcomeHeading": {
+    "message": "Kaixo. Zure nabigatzailearen memoria naiz."
+  },
+  "welcomeIntro": {
+    "message": "Une honetatik aurrera, irakurtzen duzuna gogoratzen dut, gero esanahiaren arabera aurki dezazun — zure hitzekin, ez izenburu zehatzarekin."
+  },
+  "welcomePoint1": {
+    "message": "Dena zure gailuan gertatzen da. Zerbitzaririk gabe, hodeirik gabe, daturik bidali gabe — inora ez, inoiz ez."
+  },
+  "welcomePoint2": {
+    "message": "Posta, txatak, saio-hasierak eta bankuak ez dira inoiz gogoratzen. Kontuz: ezin ditut gai sentikorrak helbidearen arabera ezagutu — horietarako, erabili pausa edo zure zerrenda propioa ezarpenetan."
+  },
+  "welcomePoint3": {
+    "message": "Zuk agintzen duzu: pausa klik batekin, «Garbitu memoria» aukerak dena ezabatzen du eta, nahi baduzu, automatikoki ahazten dut hilabete batzuen buruan."
+  },
+  "welcomeCta": {
+    "message": "Ireki bilaketa"
+  },
+  "welcomeOptions": {
+    "message": "Ezarpenak"
+  },
+  "memoryFilter": {
+    "message": "Bilatu zure memorian…"
+  },
+  "supportLink": {
+    "message": "Lagundu Déjàri"
+  },
+  "panelTitle": {
+    "message": "Déjà — laguna"
+  },
+  "panelOnThisPage": {
+    "message": "Orri honen gaiari buruz"
+  },
+  "panelRecent": {
+    "message": "Azken oroitzapenak"
+  },
+  "panelNoPage": {
+    "message": "Ireki web-orri bat, eta Déjàk haren gaiari buruz irakurri duzuna erakutsiko dizu."
+  },
+  "popupOpenPanel": {
+    "message": "Alboko panela"
+  },
+  "popupForgetPage": {
+    "message": "Ahaztu orri hau"
+  },
+  "popupForgotten": {
+    "message": "Ahaztuta ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: gogoratu hautatutako testua"
+  },
+  "menuForget": {
+    "message": "Déjà: ahaztu orri hau"
+  },
+  "recentTitle": {
+    "message": "Azken oroitzapenak"
+  },
+  "cmdOpenPanel": {
+    "message": "Ireki Déjàren alboko panela"
+  },
+  "welcomePoint4": {
+    "message": "Alboko panelak ikusten ari zaren orriaren helbidea eta izenburua ikusten ditu, haren gaiari buruz irakurri duzuna erakusteko — saioaren memorian soilik. Nahita gordetzen dituzun pasarteak ere zurekin bakarrik geratzen dira."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà eguneratu da. Berria: orain, nahi baduzu, zure laster-marketan ere bila dezakezu esanahiaren arabera. Hona hemen zer egiten dudan zure datuekin — ezer ez da zure gailutik irten."
+  },
+  "optAmbientLabel": {
+    "message": "Atzeko plano bizia"
+  },
+  "optAmbientHelp": {
+    "message": "Beiraren atzeko oroitzapen-sarea poliki mugitzen da. Desaktibatu, mugimenduak arreta galarazten badizu."
+  },
+  "bmTitle": {
+    "message": "Bilatu zure laster-marketan esanahiaren arabera — oraintxe bertan"
+  },
+  "bmText": {
+    "message": "Déjàk zure laster-marken izenburuak eta karpetak ikasten ditu, orriak ireki gabe. Aurki itzazu esanahiaren arabera lehen minututik — dena zure gailuan geratzen da."
+  },
+  "bmTextShort": {
+    "message": "Zure memoria gaztea da oraindik. Irakatsi zure laster-markak eta bilatu horietan esanahiaren arabera gaur bertan."
+  },
+  "bmButton": {
+    "message": "Ikasi nire laster-markak"
+  },
+  "bmNote": {
+    "message": "Nabigatzaileak baimena eskatuko dizu. Ezarpenetan desaktiba dezakezu edonoiz."
+  },
+  "bmTitleRunning": {
+    "message": "Zure laster-markak ikasten…"
+  },
+  "bmTitleDone": {
+    "message": "Zure laster-marketan bila dezakezu orain"
+  },
+  "bmPreparing": {
+    "message": "Prestatzen…"
+  },
+  "bmLearning": {
+    "message": "Ikasita: $DONE$/$TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà pausan dago — pausa kentzen duzunean jarraituko dut."
+  },
+  "bmError": {
+    "message": "Zerbait gaizki joan da ikastean. Hurrengo aldaketan saiatuko naiz berriro."
+  },
+  "bmDone": {
+    "message": "Eginda — $COUNT$ laster-marka esanahiaren arabera bila daitezke, eta automatikoki sinkronizatzen dira.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Eginda — 1 laster-marka esanahiaren arabera bila daiteke, eta automatikoki sinkronizatzen da."
+  },
+  "bmDenied": {
+    "message": "Baimenik gabe ezin ditut zure laster-markak ikusi. Edonoiz saia zaitezke berriro."
+  },
+  "bmTry": {
+    "message": "Probatu:"
+  },
+  "bmBadge": {
+    "message": "Laster-marka"
+  },
+  "bmAddedOn": {
+    "message": "gehitua: $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Laster-markak memorian"
+  },
+  "optBookmarksHelp": {
+    "message": "Zure laster-marken izenburuak eta karpetak ikasten ditut (orriak ireki gabe), eta gehitzen edo ezabatzen dituzunean jarraitzen ditut. Desaktibatzen baduzu, memoriatik kentzen dira — irakurritako orriak geratu egiten dira."
+  },
+  "memoryFilterAll": {
+    "message": "Denak"
+  },
+  "memoryFilterRead": {
+    "message": "Irakurriak"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Laster-markak"
+  },
+  "welcomePoint5": {
+    "message": "Laster-markak — aktibatzen badituzu bakarrik: orduan haien izenburuak eta karpetak ikasten ditut, orriak ireki gabe. Klik batekin desaktibatzen da."
+  },
+  "rateTitle": {
+    "message": "Déjàk zerbait aurkitzen lagundu dizu — dagoeneko $COUNT$ aldiz",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Erabilgarria bazaizu, dendako balorazio batek beste pertsona batzuei hura ezagutzen laguntzen die — 10 segundo besterik ez. Eta zerbaitek gogaitzen bazaitu, esaguzu."
+  },
+  "rateButton": {
+    "message": "Baloratu Déjà"
+  },
+  "rateFeedback": {
+    "message": "Zerbaitek ez du funtzionatzen?"
+  },
+  "rateLater": {
+    "message": "Orain ez"
+  },
+  "rateThanks": {
+    "message": "Eskerrik asko! Benetan laguntzen du."
+  },
+  "rateFeedbackThanks": {
+    "message": "Eskerrik asko — mezu guztiak irakurtzen ditugu."
+  },
+  "rateFeedbackSubject": {
+    "message": "iritzia"
+  },
+  "answerTitle": {
+    "message": "Zure memoriako erantzuna"
+  },
+  "answerAsk": {
+    "message": "Erantzun nire memoriatik"
+  },
+  "answerEnableTitle": {
+    "message": "Chrome-ren AA integratuaren erantzunak"
+  },
+  "answerEnableText": {
+    "message": "Déjàk irakurri duzunetik abiatuta erantzun diezaieke galderei, iturriekin. Chrome-k behin bakarrik deskargatzen du gailuan exekutatzen den bere eredua (Gemini Nano) — zure galderak eta orriak ez dira inoiz ordenagailutik irteten."
+  },
+  "answerEnableButton": {
+    "message": "Aktibatu erantzunak"
+  },
+  "answerNoThanks": {
+    "message": "Ez, eskerrik asko"
+  },
+  "answerDownloading": {
+    "message": "Chrome eredua deskargatzen ari da… % $PCT$",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Zure oroitzapenak irakurtzen…"
+  },
+  "answerStop": {
+    "message": "Gelditu"
+  },
+  "answerFoot": {
+    "message": "Chrome-ren AA integratuak zure gailuan idatzia, zure $COUNT$ oroitzapenetan oinarrituta. Egiaztatu iturriak.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Oraingoan ezin izan dut erantzunik osatu."
+  },
+  "optAnswersLabel": {
+    "message": "Chrome-ren AA integratuaren erantzunak"
+  },
+  "optAnswersHelp": {
+    "message": "«Zer irakurri nuen … buruz?» bezalako galderetarako, erantzun labur bat idazten dut zure orrietako iturriekin — guztiz zure gailuan, Chrome-ko Gemini Nano erabiliz. Ordenagailu eta hizkuntza bateragarriak behar dira (ingelesa, gaztelania, alemana, frantsesa, japoniera)."
+  },
+  "optAnswersAvailable": {
+    "message": "Gailu honetan erabiltzeko prest."
+  },
+  "optAnswersDownloadable": {
+    "message": "Bateragarria — Chrome-k eredua deskargatuko du zure lehen galderan."
+  },
+  "optAnswersUnavailable": {
+    "message": "Chrome-ren AA integratuak ez ditu gailu hau edo interfazearen hizkuntza onartzen."
+  },
+  "optAnswersUnsupported": {
+    "message": "Nabigatzaile honek ez du AA integraturik — Déjàren gainerako guztiak betiko moduan funtzionatzen du."
+  }
+}

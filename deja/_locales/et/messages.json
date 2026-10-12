@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — sinu brauseri mälu"
+  },
+  "extDesc": {
+    "message": "Semantiline otsing lehtedelt, mida oled lugenud. Kõik toimub lokaalselt – miski ei lahku kunagi sinu seadmest."
+  },
+  "cmdOpenSearch": {
+    "message": "Ava Déjà otsing"
+  },
+  "searchTitle": {
+    "message": "Déjà — otsi loetu hulgast"
+  },
+  "tagline": {
+    "message": "Sa oled seda näinud. Déjà leiab selle üles."
+  },
+  "searchPlaceholder": {
+    "message": "Kirjelda, mida mäletad… nt „artikkel naatriumipõhistest akudest“"
+  },
+  "searchButton": {
+    "message": "Otsi"
+  },
+  "statusSearching": {
+    "message": "Tuhnin mälus… (esimene otsing laadib mudeli, ~10-30 s)"
+  },
+  "statusEmpty": {
+    "message": "Midagi ei kerkinud esile. Kas sa pole seda kunagi lugenud või pole Déjà seda veel meelde jätnud."
+  },
+  "statusResults": {
+    "message": "$COUNT$ mälestust:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 mälestus:"
+  },
+  "errNoResponse": {
+    "message": "mälu ei vastanud – proovi uuesti"
+  },
+  "recallVivid": {
+    "message": "ere mälestus"
+  },
+  "recallHazy": {
+    "message": "udune mälestus"
+  },
+  "recallFaint": {
+    "message": "kauge mälestus"
+  },
+  "statusError": {
+    "message": "Otsing ebaõnnestus: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "Mälus: $COUNT$ lehte.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "Mälus: 1 leht."
+  },
+  "similarity": {
+    "message": "sarnasus $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "loetud $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "$COUNT$ lehte mälus",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "1 leht mälus"
+  },
+  "popupSleeping": {
+    "message": "mälu magab"
+  },
+  "popupWaking": {
+    "message": "mälu ärkab…"
+  },
+  "popupOpenSearch": {
+    "message": "Ava otsing"
+  },
+  "popupPause": {
+    "message": "Peata meeldejätmine"
+  },
+  "popupClear": {
+    "message": "Tühjenda mälu"
+  },
+  "popupClearConfirm": {
+    "message": "Kas kustutada kõik meeldejäetu? Seda ei saa tagasi võtta."
+  },
+  "popupOptions": {
+    "message": "Seaded"
+  },
+  "optionsTitle": {
+    "message": "Déjà — seaded"
+  },
+  "optRetentionLabel": {
+    "message": "Mäleta lehti"
+  },
+  "optRetentionForever": {
+    "message": "igavesti"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ kuud",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Vanemad lehed kustutatakse automaatselt kord päevas."
+  },
+  "optDenylistLabel": {
+    "message": "Ära kunagi jäta meelde aadresse, mis sisaldavad"
+  },
+  "optDenylistHelp": {
+    "message": "Üks muster rea kohta. Sobitub aadressi osaga, nt „example.com“ või „/private“."
+  },
+  "optBuiltinLabel": {
+    "message": "Sisseehitatud kaitse (alati aktiivne)"
+  },
+  "optModelHostLabel": {
+    "message": "Mudeli oma peegelserver (täpsem)"
+  },
+  "optModelHostHelp": {
+    "message": "Tühi = huggingface.co. Määra oma server võrguühenduseta või ettevõtte keskkondade jaoks."
+  },
+  "filterAll": {
+    "message": "kõik"
+  },
+  "filterWeek": {
+    "message": "viimane nädal"
+  },
+  "filterMonth": {
+    "message": "viimane kuu"
+  },
+  "filterYear": {
+    "message": "viimane aasta"
+  },
+  "relatedLink": {
+    "message": "seotud mälestused"
+  },
+  "relatedNone": {
+    "message": "lähedasi mälestusi pole"
+  },
+  "omniboxDefault": {
+    "message": "Küsi oma mälult – Déjà otsib tähenduse järgi"
+  },
+  "popupMemory": {
+    "message": "Minu mälu"
+  },
+  "memoryTitle": {
+    "message": "Minu mälu"
+  },
+  "memoryEmpty": {
+    "message": "Mälu on tühi – sirvi mõnda lehte ja tule tagasi."
+  },
+  "memoryForget": {
+    "message": "Unusta"
+  },
+  "memoryExport": {
+    "message": "Laadi arhiiv alla"
+  },
+  "memoryImport": {
+    "message": "Taasta arhiivist"
+  },
+  "memoryImportConfirm": {
+    "message": "Kas taastada arhiivist? Kattuvad lehed kirjutatakse üle."
+  },
+  "optSave": {
+    "message": "Salvesta"
+  },
+  "optSaved": {
+    "message": "Salvestatud ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "Peegelserver peab olema https://-aadress"
+  },
+  "welcomeHeading": {
+    "message": "Tere. Mina olen sinu brauseri mälu."
+  },
+  "welcomeIntro": {
+    "message": "Nüüdsest jätan meelde, mida sa loed, et saaksid selle hiljem tähenduse järgi üles leida – oma sõnadega, mitte täpse pealkirjaga."
+  },
+  "welcomePoint1": {
+    "message": "Kõik toimub sinu seadmes. Pole servereid, pole pilve, andmeid ei saadeta – mitte kuhugi, mitte kunagi."
+  },
+  "welcomePoint2": {
+    "message": "E-posti, vestlusi, sisselogimisi ja pangatoiminguid ei jäeta kunagi meelde. Pane tähele: tundlikke teemasid ma aadressi järgi ära tunda ei oska – kasuta nende jaoks pausi või oma loendit seadetes."
+  },
+  "welcomePoint3": {
+    "message": "Sina otsustad: paus ühe klõpsuga, „Tühjenda mälu“ kustutab kõik ja soovi korral unustan automaatselt mõne kuu pärast."
+  },
+  "welcomeCta": {
+    "message": "Ava otsing"
+  },
+  "welcomeOptions": {
+    "message": "Seaded"
+  },
+  "memoryFilter": {
+    "message": "Otsi oma mälust…"
+  },
+  "supportLink": {
+    "message": "Toeta Déjàd"
+  },
+  "panelTitle": {
+    "message": "Déjà — kaaslane"
+  },
+  "panelOnThisPage": {
+    "message": "Selle lehe teemal"
+  },
+  "panelRecent": {
+    "message": "Hiljutised mälestused"
+  },
+  "panelNoPage": {
+    "message": "Ava veebileht ja Déjà näitab, mida oled selle teemal lugenud."
+  },
+  "popupOpenPanel": {
+    "message": "Külgpaneel"
+  },
+  "popupForgetPage": {
+    "message": "Unusta see leht"
+  },
+  "popupForgotten": {
+    "message": "Unustatud ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: jäta valitud tekst meelde"
+  },
+  "menuForget": {
+    "message": "Déjà: unusta see leht"
+  },
+  "recentTitle": {
+    "message": "Hiljutised mälestused"
+  },
+  "cmdOpenPanel": {
+    "message": "Ava Déjà külgpaneel"
+  },
+  "welcomePoint4": {
+    "message": "Külgpaneel näeb vaadatava lehe aadressi ja pealkirja, et näidata, mida oled selle teemal lugenud – ainult seansi mälus. Lõigud, mille teadlikult salvestad, jäävad samuti ainult sinu juurde."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà on uuendatud. Uus: soovi korral saab nüüd ka sinu järjehoidjatest tähenduse järgi otsida. Siin on, mida ma sinu andmetega teen – miski pole sinu seadmest lahkunud."
+  },
+  "optAmbientLabel": {
+    "message": "Elav taust"
+  },
+  "optAmbientHelp": {
+    "message": "Mälestuste võrk klaasi taga liigub aeglaselt. Lülita see välja, kui liikumine sind segab."
+  },
+  "bmTitle": {
+    "message": "Tee oma järjehoidjad otsitavaks – kohe praegu"
+  },
+  "bmText": {
+    "message": "Déjà õpib sinu järjehoidjate pealkirjad ja kaustad selgeks lehti avamata. Leia need tähenduse järgi juba esimesest minutist – kõik jääb sinu seadmesse."
+  },
+  "bmTextShort": {
+    "message": "Sinu mälu on veel noor. Õpeta mulle oma järjehoidjad ja otsi neist tähenduse järgi juba täna."
+  },
+  "bmButton": {
+    "message": "Õpi mu järjehoidjad"
+  },
+  "bmNote": {
+    "message": "Brauser küsib luba. Saad selle seadetes igal ajal välja lülitada."
+  },
+  "bmTitleRunning": {
+    "message": "Õpin sinu järjehoidjaid…"
+  },
+  "bmTitleDone": {
+    "message": "Sinu järjehoidjad on otsitavad"
+  },
+  "bmPreparing": {
+    "message": "Valmistun…"
+  },
+  "bmLearning": {
+    "message": "Õpitud $DONE$/$TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà on peatatud – jätkan kohe, kui pausi lõpetad."
+  },
+  "bmError": {
+    "message": "Õppimisel läks midagi valesti. Proovin järgmise muudatuse korral uuesti."
+  },
+  "bmDone": {
+    "message": "Valmis – $COUNT$ järjehoidjat on tähenduse järgi otsitavad ja sünkroonitakse automaatselt.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Valmis – 1 järjehoidja on tähenduse järgi otsitav ja sünkroonitakse automaatselt."
+  },
+  "bmDenied": {
+    "message": "Ilma loata ei näe ma sinu järjehoidjaid. Saad igal ajal uuesti proovida."
+  },
+  "bmTry": {
+    "message": "Proovi:"
+  },
+  "bmBadge": {
+    "message": "Järjehoidja"
+  },
+  "bmAddedOn": {
+    "message": "järjehoidjaks lisatud $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Järjehoidjad mälus"
+  },
+  "optBookmarksHelp": {
+    "message": "Õpin sinu järjehoidjate pealkirjad ja kaustad selgeks (lehti avamata) ning jälgin, kui neid lisad või kustutad. Väljalülitamine eemaldab need mälust – loetud lehed jäävad alles."
+  },
+  "memoryFilterAll": {
+    "message": "Kõik"
+  },
+  "memoryFilterRead": {
+    "message": "Loetud"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Järjehoidjad"
+  },
+  "welcomePoint5": {
+    "message": "Järjehoidjad – ainult siis, kui need sisse lülitad: siis õpin nende pealkirjad ja kaustad selgeks, lehti avamata. Üks klõps lülitab selle välja."
+  },
+  "rateTitle": {
+    "message": "Déjà on aidanud sul midagi leida – juba $COUNT$ korda",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Kui sellest on kasu, aitab hinnang poes teistel seda avastada – see võtab 10 sekundit. Ja kui miski sind häirib, anna meile teada."
+  },
+  "rateButton": {
+    "message": "Hinda Déjàd"
+  },
+  "rateFeedback": {
+    "message": "Midagi ei tööta?"
+  },
+  "rateLater": {
+    "message": "Mitte praegu"
+  },
+  "rateThanks": {
+    "message": "Aitäh! See aitab tõesti."
+  },
+  "rateFeedbackThanks": {
+    "message": "Aitäh – loeme iga sõnumit."
+  },
+  "rateFeedbackSubject": {
+    "message": "tagasiside"
+  },
+  "answerTitle": {
+    "message": "Vastus sinu mälust"
+  },
+  "answerAsk": {
+    "message": "Vasta minu mälust"
+  },
+  "answerEnableTitle": {
+    "message": "Vastused Chrome’i sisseehitatud tehisintellektilt"
+  },
+  "answerEnableText": {
+    "message": "Déjà oskab vastata küsimustele loetu põhjal, koos allikatega. Chrome laadib oma seadmesisese mudeli (Gemini Nano) alla ühe korra – sinu küsimused ja lehed ei lahku kunagi sinu arvutist."
+  },
+  "answerEnableButton": {
+    "message": "Lülita vastused sisse"
+  },
+  "answerNoThanks": {
+    "message": "Ei, aitäh"
+  },
+  "answerDownloading": {
+    "message": "Chrome laadib mudelit alla… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Loen sinu mälestusi…"
+  },
+  "answerStop": {
+    "message": "Peata"
+  },
+  "answerFoot": {
+    "message": "Chrome’i sisseehitatud tehisintellekt koostas selle sinu seadmes $COUNT$ sinu mälestuse põhjal. Kontrolli allikaid.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Seekord ei õnnestunud mul vastust koostada."
+  },
+  "optAnswersLabel": {
+    "message": "Vastused Chrome’i sisseehitatud tehisintellektilt"
+  },
+  "optAnswersHelp": {
+    "message": "Küsimustele nagu „mida ma lugesin … kohta?“ kirjutan lühikese vastuse koos allikatega sinu lehtedelt – täielikult sinu seadmes, Chrome’i Gemini Nanoga. Vajab toetatud arvutit ja keelt (inglise, hispaania, saksa, prantsuse, jaapani)."
+  },
+  "optAnswersAvailable": {
+    "message": "Selles seadmes kasutamiseks valmis."
+  },
+  "optAnswersDownloadable": {
+    "message": "Toetatud – Chrome laadib mudeli alla sinu esimese küsimuse ajal."
+  },
+  "optAnswersUnavailable": {
+    "message": "Chrome’i sisseehitatud tehisintellekt ei toeta seda seadet või liidese keelt."
+  },
+  "optAnswersUnsupported": {
+    "message": "Selles brauseris pole sisseehitatud tehisintellekti – kõik muu Déjàs töötab nagu alati."
+  }
+}

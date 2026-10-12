@@ -1,0 +1,45 @@
+TITLE: Déjà — din browsers hukommelse
+SHORT: Søg i de sider, du har læst, efter betydning – på 50+ sprog. Kører helt på din enhed – intet forlader nogensinde din browser.
+
+Du har set det. Déjà finder det.
+
+Din browserhistorik husker kun titler og webadresser. Déjà husker INDHOLDET.
+Beskriv med dine egne ord, hvad du husker – »den artikel om natriumbaserede
+batterier« – og Déjà finder siden frem, selv hvis du ikke kan huske titlen,
+websitet eller de præcise ord. Den springer endda til det præcise afsnit.
+
+DET FÅR DU
+✓ Dine bogmærker, søgbare efter betydning fra første minut – valgfrit, ét klik.
+  Déjà lærer deres titler og mapper (uden at åbne siderne) og holder dem
+  synkroniseret, når du tilføjer, flytter eller sletter bogmærker.
+✓ Svar fra din hukommelse – på computere, der understøtter Chromes indbyggede
+  AI (Gemini Nano), stiller du et spørgsmål og får et kort svar, skrevet på din
+  enhed ud fra de sider, du har læst, med klikbare kilder. (Svar på engelsk,
+  spansk, tysk, fransk og japansk.)
+✓ Søg efter betydning – spørg med dine egne ord, på 50+ sprog; spørg på ét
+  sprog, og find sider, du har læst på et andet.
+✓ Følgesvend i sidepanelet – åbn det ved siden af en hvilken som helst side, og
+  se, hvad du allerede har læst om sidens emne, plus dine seneste minder.
+✓ Skriv »dj« i adresselinjen – søg i din hukommelse direkte fra omnifeltet med
+  forslag i realtid.
+✓ Husk et uddrag – højreklik på markeret tekst: »Déjà: husk markeret tekst«.
+  Det bliver sit eget søgbare minde.
+✓ Spring til det præcise afsnit – resultaterne åbner siden med den matchende
+  passage fremhævet.
+✓ Datofiltre, relaterede minder, seneste minder på den tomme søgeside.
+✓ Min hukommelse – se alt, hvad Déjà husker, glem en hvilken som helst side med
+  ét klik, eksportér/importér hele dit indeks som en fil.
+
+PRIVAT FRA BUNDEN
+✓ 100 % lokal behandling – AI-embeddingmodellen kører i din browser, og dine
+  data ligger i IndexedDB. Ingen servere, ingen sky, ingen telemetri, ingen konto.
+✓ Sider til mail, chats, login og netbank springes automatisk over (indbygget
+  adresseliste; tilføj dine egne mønstre).
+✓ Sæt på pause med ét klik. »Glem denne side« og »Ryd hukommelsen« er der altid.
+✓ Automatisk glemsel – slet efter ønske sider, der er ældre end 3/6/12/24
+  måneder.
+✓ Lyst og mørkt tema følger dit system.
+
+Den eneste netværksanmodning, udvidelsen nogensinde foretager, er en engangs-
+download af embeddingmodellen fra Hugging Face (derefter cachelagret lokalt; du
+kan i stedet pege den mod dit eget spejl).

@@ -1,0 +1,52 @@
+TITLE: Déjà — het geheugen van je browser
+SHORT: Doorzoek gelezen pagina’s op betekenis, in 50+ talen. Draait volledig op je apparaat – niets verlaat ooit je browser.
+
+Je hebt het gezien. Déjà vindt het.
+
+Je browsergeschiedenis onthoudt alleen titels en URL’s. Déjà onthoudt de
+INHOUD. Beschrijf in je eigen woorden wat je je herinnert – “dat artikel over
+batterijen op basis van natrium” – en Déjà haalt de pagina naar boven, ook als
+je de titel, de site of de exacte woorden niet meer weet. Het springt zelfs naar
+de exacte alinea.
+
+WAT JE KRIJGT
+✓ Je bladwijzers, vanaf de eerste minuut doorzoekbaar op betekenis – optioneel,
+  met één klik. Déjà leert hun titels en mappen (zonder de pagina’s te openen)
+  en houdt ze gesynchroniseerd terwijl je bladwijzers toevoegt, verplaatst of
+  verwijdert.
+✓ Antwoorden uit je geheugen – op computers die de ingebouwde AI van Chrome
+  (Gemini Nano) ondersteunen, stel je een vraag en krijg je een kort antwoord,
+  op je apparaat geschreven op basis van de pagina’s die je hebt gelezen, met
+  klikbare bronnen. (Antwoorden in het Engels, Spaans, Duits, Frans en Japans.)
+✓ Zoeken op betekenis – vraag in je eigen woorden, in 50+ talen; vraag in de ene
+  taal en vind pagina’s die je in een andere hebt gelezen.
+✓ Metgezel in het zijpaneel – open het naast een willekeurige pagina en zie wat
+  je al over het onderwerp van die pagina hebt gelezen, plus je recente
+  herinneringen.
+✓ Typ “dj” in de adresbalk – doorzoek je geheugen rechtstreeks vanuit de
+  omnibox, met live suggesties.
+✓ Onthoud een fragment – klik met de rechtermuisknop op geselecteerde tekst:
+  “Déjà: geselecteerde tekst onthouden”. Het wordt een eigen doorzoekbare
+  herinnering.
+✓ Spring naar de exacte alinea – resultaten openen de pagina met het
+  overeenkomende fragment gemarkeerd.
+✓ Datumfilters, verwante herinneringen, recente herinneringen op de lege
+  zoekpagina.
+✓ Mijn geheugen – zie alles wat Déjà onthoudt, vergeet elke pagina met één klik,
+  exporteer/importeer je hele index als bestand.
+
+PRIVÉ VANAF HET ONTWERP
+✓ 100% lokale verwerking – het AI-embeddingmodel draait in je browser en je
+  gegevens staan in IndexedDB. Geen servers, geen cloud, geen telemetrie, geen
+  account.
+✓ Pagina’s voor e-mail, chats, inloggen en bankieren worden automatisch
+  overgeslagen (ingebouwde adreslijst; voeg je eigen patronen toe).
+✓ Pauzeren met één klik. “Deze pagina vergeten” en “Geheugen wissen” zijn er
+  altijd.
+✓ Automatisch vergeten – verwijder desgewenst pagina’s die ouder zijn dan
+  3/6/12/24 maanden.
+✓ Lichte en donkere thema’s volgen je systeem.
+
+Het enige netwerkverzoek dat de extensie ooit doet, is een eenmalige download
+van het embeddingmodel van Hugging Face (daarna lokaal in de cache; je kunt in
+plaats daarvan ook naar je eigen mirror verwijzen).

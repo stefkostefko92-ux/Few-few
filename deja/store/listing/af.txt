@@ -1,0 +1,51 @@
+TITLE: Déjà — jou blaaier se geheue
+SHORT: Deursoek bladsye wat jy gelees het volgens betekenis, in 50+ tale. Loop heeltemal op jou toestel – niks verlaat jou blaaier nie.
+
+Jy het dit gesien. Déjà kry dit.
+
+Jou blaaiergeskiedenis onthou net titels en URL’e. Déjà onthou die INHOUD.
+Beskryf in jou eie woorde wat jy onthou – “daardie artikel oor batterye op
+natriumbasis” – en Déjà bring die bladsy na vore, selfs as jy nie die titel,
+die webwerf of die presiese woorde onthou nie. Dit spring selfs na die presiese
+paragraaf.
+
+WAT JY KRY
+✓ Jou boekmerke, volgens betekenis deursoekbaar van die eerste minuut af –
+  opsioneel, met een klik. Déjà leer hul titels en vouers (sonder om die bladsye
+  oop te maak) en hou hulle gesinkroniseer terwyl jy boekmerke byvoeg, skuif of
+  uitvee.
+✓ Antwoorde uit jou geheue – op rekenaars wat Chrome se ingeboude KI
+  (Gemini Nano) ondersteun, vra jy ’n vraag en kry ’n kort antwoord wat op jou
+  toestel geskryf is uit die bladsye wat jy gelees het, met klikbare bronne.
+  (Antwoorde in Engels, Spaans, Duits, Frans en Japannees.)
+✓ Soek volgens betekenis – vra in jou eie woorde, in 50+ tale; vra in een taal
+  en vind bladsye wat jy in ’n ander gelees het.
+✓ Metgesel in die sypaneel – maak dit oop langs enige bladsy en sien wat jy
+  reeds oor daardie bladsy se onderwerp gelees het, plus jou onlangse
+  herinneringe.
+✓ Tik “dj” in die adresbalk – deursoek jou geheue direk vanuit die omnikassie,
+  met lewendige voorstelle.
+✓ Onthou ’n uittreksel – regsklik op enige geselekteerde teks: “Déjà: onthou
+  geselekteerde teks”. Dit word ’n eie deursoekbare herinnering.
+✓ Spring na die presiese paragraaf – resultate maak die bladsy oop met die
+  ooreenstemmende gedeelte uitgelig.
+✓ Datumfilters, verwante herinneringe, onlangse herinneringe op die leë
+  soekbladsy.
+✓ My geheue – sien alles wat Déjà onthou, vergeet enige bladsy met een klik,
+  voer jou hele indeks as ’n lêer uit/in.
+
+PRIVAAT DEUR ONTWERP
+✓ 100% plaaslike verwerking – die KI-inbeddingsmodel loop binne jou blaaier en
+  jou data is in IndexedDB. Geen bedieners, geen wolk, geen telemetrie, geen
+  rekening nie.
+✓ Bladsye vir e-pos, kletse, aanmelding en bankdienste word outomaties
+  oorgeslaan (ingeboude adreslys; voeg jou eie patrone by).
+✓ Onderbreek met een klik. “Vergeet hierdie bladsy” en “Vee geheue uit” is altyd
+  daar.
+✓ Outomatiese vergeet – vee opsioneel bladsye uit wat ouer as 3/6/12/24 maande
+  is.
+✓ Ligte en donker temas volg jou stelsel.
+
+Die enigste netwerkversoek wat die uitbreiding ooit maak, is ’n eenmalige
+aflaai van die inbeddingsmodel van Hugging Face (daarna plaaslik gekas; jy kan
+dit eerder na jou eie spieëlbediener verwys).

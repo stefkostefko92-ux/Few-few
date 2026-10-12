@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — la memòria del teu navegador"
+  },
+  "extDesc": {
+    "message": "Cerca semàntica a les pàgines que has llegit. Tot passa en local — res no surt mai del teu dispositiu."
+  },
+  "cmdOpenSearch": {
+    "message": "Obre la cerca de Déjà"
+  },
+  "searchTitle": {
+    "message": "Déjà — cerca el que has llegit"
+  },
+  "tagline": {
+    "message": "Ja ho has vist. Déjà ho troba."
+  },
+  "searchPlaceholder": {
+    "message": "Descriu el que recordes… p. ex., «article sobre bateries de sodi»"
+  },
+  "searchButton": {
+    "message": "Cerca"
+  },
+  "statusSearching": {
+    "message": "Remenant la memòria… (la primera cerca carrega el model, ~10-30 s)"
+  },
+  "statusEmpty": {
+    "message": "No ha sortit res. O no ho has llegit mai, o Déjà encara no ho ha memoritzat."
+  },
+  "statusResults": {
+    "message": "$COUNT$ records:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 record:"
+  },
+  "errNoResponse": {
+    "message": "la memòria no ha respost — torna-ho a provar"
+  },
+  "recallVivid": {
+    "message": "record viu"
+  },
+  "recallHazy": {
+    "message": "record borrós"
+  },
+  "recallFaint": {
+    "message": "record llunyà"
+  },
+  "statusError": {
+    "message": "La cerca ha fallat: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "A la memòria: $COUNT$ pàgines.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "A la memòria: 1 pàgina."
+  },
+  "similarity": {
+    "message": "similitud $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "llegit el $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "$COUNT$ pàgines a la memòria",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "1 pàgina a la memòria"
+  },
+  "popupSleeping": {
+    "message": "la memòria dorm"
+  },
+  "popupWaking": {
+    "message": "la memòria s'està despertant…"
+  },
+  "popupOpenSearch": {
+    "message": "Obre la cerca"
+  },
+  "popupPause": {
+    "message": "Pausa la memorització"
+  },
+  "popupClear": {
+    "message": "Esborra la memòria"
+  },
+  "popupClearConfirm": {
+    "message": "Vols esborrar tot el que s'ha memoritzat? No es pot desfer."
+  },
+  "popupOptions": {
+    "message": "Configuració"
+  },
+  "optionsTitle": {
+    "message": "Déjà — configuració"
+  },
+  "optRetentionLabel": {
+    "message": "Recorda les pàgines"
+  },
+  "optRetentionForever": {
+    "message": "per sempre"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ mesos",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Les pàgines més antigues s'eliminen automàticament un cop al dia."
+  },
+  "optDenylistLabel": {
+    "message": "No memoritzis mai adreces que continguin"
+  },
+  "optDenylistHelp": {
+    "message": "Un patró per línia. Coincideix amb una part de l'adreça, p. ex., «example.com» o «/private»."
+  },
+  "optBuiltinLabel": {
+    "message": "Protecció integrada (sempre activa)"
+  },
+  "optModelHostLabel": {
+    "message": "Rèplica personalitzada del model (avançat)"
+  },
+  "optModelHostHelp": {
+    "message": "Buit = huggingface.co. Indica el teu propi servidor per a entorns sense connexió o corporatius."
+  },
+  "filterAll": {
+    "message": "tot"
+  },
+  "filterWeek": {
+    "message": "última setmana"
+  },
+  "filterMonth": {
+    "message": "últim mes"
+  },
+  "filterYear": {
+    "message": "últim any"
+  },
+  "relatedLink": {
+    "message": "records relacionats"
+  },
+  "relatedNone": {
+    "message": "cap record proper"
+  },
+  "omniboxDefault": {
+    "message": "Pregunta a la teva memòria — Déjà cerca pel significat"
+  },
+  "popupMemory": {
+    "message": "La meva memòria"
+  },
+  "memoryTitle": {
+    "message": "La meva memòria"
+  },
+  "memoryEmpty": {
+    "message": "La memòria és buida — navega per algunes pàgines i torna."
+  },
+  "memoryForget": {
+    "message": "Oblida"
+  },
+  "memoryExport": {
+    "message": "Baixa l'arxiu"
+  },
+  "memoryImport": {
+    "message": "Restaura des de l'arxiu"
+  },
+  "memoryImportConfirm": {
+    "message": "Vols restaurar des de l'arxiu? Les pàgines coincidents se sobreescriuran."
+  },
+  "optSave": {
+    "message": "Desa"
+  },
+  "optSaved": {
+    "message": "Desat ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "La rèplica ha de ser una adreça https://"
+  },
+  "welcomeHeading": {
+    "message": "Hola. Soc la memòria del teu navegador."
+  },
+  "welcomeIntro": {
+    "message": "A partir d'ara recordo el que llegeixes perquè ho puguis trobar després pel significat — amb les teves paraules, no amb el títol exacte."
+  },
+  "welcomePoint1": {
+    "message": "Tot passa al teu dispositiu. Sense servidors, sense núvol, sense enviar dades — enlloc, mai."
+  },
+  "welcomePoint2": {
+    "message": "El correu, els xats, els inicis de sessió i la banca no es memoritzen mai. Compte: no puc reconèixer temes sensibles per l'adreça — per a aquests, fes servir la pausa o la teva pròpia llista a la configuració."
+  },
+  "welcomePoint3": {
+    "message": "Tu manes: pausa amb un clic, «Esborra la memòria» ho elimina tot i, si vols, oblido automàticament al cap d'uns quants mesos."
+  },
+  "welcomeCta": {
+    "message": "Obre la cerca"
+  },
+  "welcomeOptions": {
+    "message": "Configuració"
+  },
+  "memoryFilter": {
+    "message": "Cerca a la teva memòria…"
+  },
+  "supportLink": {
+    "message": "Dona suport a Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — company"
+  },
+  "panelOnThisPage": {
+    "message": "Sobre el tema d'aquesta pàgina"
+  },
+  "panelRecent": {
+    "message": "Records recents"
+  },
+  "panelNoPage": {
+    "message": "Obre una pàgina web i Déjà et mostrarà el que has llegit sobre el seu tema."
+  },
+  "popupOpenPanel": {
+    "message": "Tauler lateral"
+  },
+  "popupForgetPage": {
+    "message": "Oblida aquesta pàgina"
+  },
+  "popupForgotten": {
+    "message": "Oblidada ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: recorda el text seleccionat"
+  },
+  "menuForget": {
+    "message": "Déjà: oblida aquesta pàgina"
+  },
+  "recentTitle": {
+    "message": "Records recents"
+  },
+  "cmdOpenPanel": {
+    "message": "Obre el tauler lateral de Déjà"
+  },
+  "welcomePoint4": {
+    "message": "El tauler lateral veu l'adreça i el títol de la pàgina que estàs mirant per mostrar-te el que has llegit sobre el seu tema — només a la memòria de la sessió. Els fragments que deses expressament també es queden només amb tu."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà s'ha actualitzat. Novetat: ara, si vols, també pots cercar les teves adreces d'interès pel significat. Això és el que faig amb les teves dades — res no ha sortit del teu dispositiu."
+  },
+  "optAmbientLabel": {
+    "message": "Fons viu"
+  },
+  "optAmbientHelp": {
+    "message": "La xarxa de records darrere el vidre es mou lentament. Desactiva-la si el moviment et distreu."
+  },
+  "bmTitle": {
+    "message": "Cerca les teves adreces d'interès pel significat — ara mateix"
+  },
+  "bmText": {
+    "message": "Déjà aprèn els títols i les carpetes de les teves adreces d'interès sense obrir les pàgines. Troba-les pel significat des del primer minut — tot es queda al teu dispositiu."
+  },
+  "bmTextShort": {
+    "message": "La teva memòria encara és jove. Ensenya'm les teves adreces d'interès i cerca-hi pel significat avui mateix."
+  },
+  "bmButton": {
+    "message": "Aprèn les adreces d'interès"
+  },
+  "bmNote": {
+    "message": "El navegador et demanarà permís. Ho pots desactivar quan vulguis a la configuració."
+  },
+  "bmTitleRunning": {
+    "message": "Aprenent les teves adreces d'interès…"
+  },
+  "bmTitleDone": {
+    "message": "Ja pots cercar les teves adreces d'interès"
+  },
+  "bmPreparing": {
+    "message": "Preparant-me…"
+  },
+  "bmLearning": {
+    "message": "Apreses $DONE$ de $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà està en pausa — continuaré tan bon punt la treguis."
+  },
+  "bmError": {
+    "message": "Alguna cosa ha fallat durant l'aprenentatge. Ho tornaré a provar amb el pròxim canvi."
+  },
+  "bmDone": {
+    "message": "Fet — ja pots cercar pel significat $COUNT$ adreces d'interès, que se sincronitzen automàticament.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Fet — ja pots cercar pel significat 1 adreça d'interès, que se sincronitza automàticament."
+  },
+  "bmDenied": {
+    "message": "Sense permís no puc veure les teves adreces d'interès. Ho pots tornar a provar quan vulguis."
+  },
+  "bmTry": {
+    "message": "Prova:"
+  },
+  "bmBadge": {
+    "message": "Adreça d'interès"
+  },
+  "bmAddedOn": {
+    "message": "afegida el $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Adreces d'interès a la memòria"
+  },
+  "optBookmarksHelp": {
+    "message": "Aprenc els títols i les carpetes de les teves adreces d'interès (sense obrir les pàgines) i les segueixo quan n'afegeixes o n'elimines. Si ho desactives, se suprimeixen de la memòria — les pàgines que has llegit es queden."
+  },
+  "memoryFilterAll": {
+    "message": "Tot"
+  },
+  "memoryFilterRead": {
+    "message": "Llegides"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Adreces d'interès"
+  },
+  "welcomePoint5": {
+    "message": "Adreces d'interès — només si les actives: llavors n'aprenc els títols i les carpetes, sense obrir les pàgines. Es desactiva amb un clic."
+  },
+  "rateTitle": {
+    "message": "Déjà t'ha ajudat a trobar alguna cosa — ja $COUNT$ vegades",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Si et resulta útil, una valoració a la botiga ajuda altres persones a descobrir-lo — només calen 10 segons. I si alguna cosa et molesta, digues-nos-ho."
+  },
+  "rateButton": {
+    "message": "Valora Déjà"
+  },
+  "rateFeedback": {
+    "message": "Alguna cosa no funciona?"
+  },
+  "rateLater": {
+    "message": "Ara no"
+  },
+  "rateThanks": {
+    "message": "Gràcies! Ajuda de veritat."
+  },
+  "rateFeedbackThanks": {
+    "message": "Gràcies — llegim tots els missatges."
+  },
+  "rateFeedbackSubject": {
+    "message": "comentaris"
+  },
+  "answerTitle": {
+    "message": "Resposta de la teva memòria"
+  },
+  "answerAsk": {
+    "message": "Respon des de la meva memòria"
+  },
+  "answerEnableTitle": {
+    "message": "Respostes de la IA integrada de Chrome"
+  },
+  "answerEnableText": {
+    "message": "Déjà pot respondre preguntes a partir del que has llegit, amb fonts. Chrome baixa una sola vegada el seu model al dispositiu (Gemini Nano) — les teves preguntes i pàgines no surten mai de l'ordinador."
+  },
+  "answerEnableButton": {
+    "message": "Activa les respostes"
+  },
+  "answerNoThanks": {
+    "message": "No, gràcies"
+  },
+  "answerDownloading": {
+    "message": "Chrome està baixant el model… $PCT$ %",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Llegint els teus records…"
+  },
+  "answerStop": {
+    "message": "Atura"
+  },
+  "answerFoot": {
+    "message": "Redactada al teu dispositiu per la IA integrada de Chrome a partir de $COUNT$ dels teus records. Comprova les fonts.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Aquesta vegada no he pogut elaborar una resposta."
+  },
+  "optAnswersLabel": {
+    "message": "Respostes de la IA integrada de Chrome"
+  },
+  "optAnswersHelp": {
+    "message": "Per a preguntes com «què vaig llegir sobre…?», redacto una resposta breu amb fonts de les teves pàgines — totalment al teu dispositiu, amb Gemini Nano a Chrome. Cal un ordinador i un idioma compatibles (anglès, espanyol, alemany, francès, japonès)."
+  },
+  "optAnswersAvailable": {
+    "message": "A punt per fer-se servir en aquest dispositiu."
+  },
+  "optAnswersDownloadable": {
+    "message": "Compatible — Chrome baixarà el model amb la teva primera pregunta."
+  },
+  "optAnswersUnavailable": {
+    "message": "La IA integrada de Chrome no és compatible amb aquest dispositiu o amb l'idioma de la interfície."
+  },
+  "optAnswersUnsupported": {
+    "message": "Aquest navegador no té IA integrada — la resta de Déjà funciona com sempre."
+  }
+}

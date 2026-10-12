@@ -1,0 +1,51 @@
+TITLE: Déjà — la memoria de tu navegador
+SHORT: Busca por significado en las páginas que leíste, en 50+ idiomas. Todo ocurre en tu dispositivo — nada sale de tu navegador.
+
+Ya lo viste. Déjà lo encuentra.
+
+El historial de tu navegador solo recuerda títulos y URL. Déjà recuerda el
+CONTENIDO. Describe lo que recuerdas con tus propias palabras —“ese artículo
+sobre baterías de sodio”— y Déjà te muestra la página, aunque no recuerdes el
+título, el sitio ni las palabras exactas. Incluso salta al párrafo exacto.
+
+LO QUE OBTIENES
+✓ Busca en tus favoritos por significado desde el primer minuto — opcional,
+  con un clic. Déjà aprende sus títulos y carpetas (sin abrir las páginas) y
+  los mantiene sincronizados cuando agregas, mueves o borras favoritos.
+✓ Respuestas desde tu memoria — en computadoras compatibles con la IA
+  integrada de Chrome (Gemini Nano), haz una pregunta y recibe una respuesta
+  breve, redactada en tu dispositivo a partir de las páginas que leíste, con
+  fuentes en las que puedes hacer clic. (Respuestas en inglés, español, alemán,
+  francés y japonés.)
+✓ Búsqueda por significado — pregunta con tus propias palabras, en más de 50
+  idiomas; pregunta en un idioma y encuentra páginas que leíste en otro.
+✓ Compañero en el panel lateral — ábrelo junto a cualquier página y mira lo
+  que ya leíste sobre su tema, además de tus recuerdos recientes.
+✓ Escribe “dj” en la barra de direcciones — busca en tu memoria directamente
+  desde el omnibox, con sugerencias en tiempo real.
+✓ Recuerda un fragmento — haz clic derecho en cualquier texto seleccionado:
+  “Déjà: recordar el texto seleccionado”. Se convierte en un recuerdo propio
+  en el que puedes buscar.
+✓ Salta al párrafo exacto — los resultados abren la página con el fragmento
+  coincidente resaltado.
+✓ Filtros por fecha, recuerdos relacionados y recuerdos recientes en la página
+  de búsqueda vacía.
+✓ Mi memoria — mira todo lo que recuerda Déjà, olvida cualquier página con un
+  clic y exporta/importa todo tu índice como un archivo.
+
+PRIVACIDAD DESDE EL DISEÑO
+✓ Procesamiento 100% local — el modelo de IA de embeddings se ejecuta en tu
+  navegador y tus datos se guardan en IndexedDB. Sin servidores, sin nube, sin
+  telemetría, sin cuenta.
+✓ Las páginas de correo, chats, inicio de sesión y banca se omiten
+  automáticamente (lista de direcciones integrada; agrega tus propios
+  patrones).
+✓ Pausa con un clic. “Olvidar esta página” y “Borrar memoria” siempre están
+  disponibles.
+✓ Olvido automático — si quieres, borra las páginas de más de 3/6/12/24
+  meses.
+✓ Los temas claro y oscuro siguen a tu sistema.
+
+La única solicitud de red que hace la extensión es una descarga única del
+modelo de embeddings desde Hugging Face (después se guarda en caché local;
+puedes hacer que apunte a tu propio espejo).
