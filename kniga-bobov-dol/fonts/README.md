@@ -11,3 +11,6 @@ Italic 400, Bold Italic 700), получени с `fontTools.varLib.instancer` �
 
 Вътрешните PostScript имена са уникални (`EBGaramond-Regular`, `-Medium`, `-Bold`,
 `-Italic`, `-BoldItalic`) — ReportLab кешира лицата по име и иначе слива теглата.
+
+**Liberation Sans Bold** — © Red Hat, Inc., лиценз **SIL OFL 1.1**; ползва се само за надписа
+„БОБОВ ДОЛ“ в герба (`gerb.py`).
