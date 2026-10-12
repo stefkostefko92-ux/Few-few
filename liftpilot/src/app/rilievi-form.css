@@ -58,13 +58,16 @@
 .rv-choice[aria-describedby] .rv-tick { border-color: var(--fail-line); }
 
 /* a field with a condition (fields.ts `when`): hidden while it does not hold; the wrapper is no box of its own, so the
-   field stays an item of the section's grid. Without JavaScript every field shows (the noscript style in the form). */
+   field stays an item of the section's grid. Without JavaScript every field shows, as in rilievi (nothing could show it). */
 .rv-cond { display: contents; }
 .rv-cond[data-off] { display: none; }
+@media (scripting: none) { .rv-cond[data-off] { display: contents; } }
 
 /* the error summary over the form, its lines linking to the fields */
 .rv-errors { padding: 16px 18px; border: 2px solid var(--fail); border-radius: var(--radius); background: var(--fail-bg); color: var(--fail); }
 .rv-errors:focus { outline: 2px solid var(--fail); outline-offset: 3px; }
+/* the conflict and the refusals take the focus too when they answer */
+.rv-answer:focus { outline: 2px solid currentColor; outline-offset: 3px; }
 .rv-errors h2 { font-size: 17px; color: var(--fail); }
 .rv-errors ul { margin: 8px 0 0; padding-left: 20px; }
 .rv-errors a { color: var(--fail); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
@@ -72,6 +75,13 @@
 /* the save bar: the main action, cancel, the unsaved hint */
 .rv-form .savebar { margin: 0 -2px; border: 1px solid var(--rule); border-radius: var(--radius-sm); }
 .rv-dirty { font-size: 13.5px; color: var(--warn); }
+
+/* the form takes the whole width until there is room for the index beside it too: a stop's measurements stay on one
+   line (as in rilievi) from about 760 px of form, and a module's rows keep their paper's grouping */
+@media screen and (min-width: 1280px) and (max-width: 1439px) {
+  .rv-with-index.rv-form-layout { grid-template-columns: minmax(0, 1fr); }
+  .rv-form-layout > .rv-index { display: none; }
+}
 
 /* ---- the measurements of the old push-button panels: a frame per stop ------------------------------------------ */
 .rv-misure { display: grid; gap: 12px; container-type: inline-size; }
@@ -95,6 +105,10 @@
 .rv-mgroup > legend { padding: 0 6px; font-size: 14px; font-weight: 700; color: var(--ink); }
 .rv-mrow { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; }
 .rv-arrow { align-self: center; font-size: 20px; line-height: 1; color: var(--accent-2); }
+/* what follows the paper's arrow stays together behind it: wrapped, it is still visibly part of its row */
+.rv-mfollow { display: flex; align-items: flex-end; gap: 8px 10px; flex: 1 1 auto; min-width: 0; }
+.rv-mfollow > .rv-arrow { align-self: flex-start; margin-top: 10px; }  /* level with the first box, also when the rest wraps */
+.rv-mfollow-items { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; flex: 1 1 auto; min-width: 0; }
 .rv-mtext { display: grid; gap: 5px; flex: 1 1 180px; max-width: 340px; min-width: 0; }
 .rv-mtext.wide { flex-basis: 100%; max-width: none; }
 /* the module has over a hundred boxes: lower than the sheet's, still over 24 px for a finger */

@@ -1,19 +1,42 @@
 // What the sheet's form shows around its fields, as rilievi's form.ejs and _field.ejs computed it: the label of an error
 // in the summary (a field, a cell of the measurements, a field of a supplier's module, the identifiers), the link to the
-// field, the values of the error's text, the text of an error; and the names of the files of the PDFs. Pure.
-import { fieldByKey, isNumberField, isTextField } from './fields';
+// field, the values of the error's text, the text of an error; and the names of the files of the PDFs. Pure, and light
+// enough for the browser: a supplier module's field is looked up through `ModuloLookup` — over the modules' specs the
+// page hands to the form (specLookup), or over their maps on the server (ordini/form.ts moduloLookup) — so the maps with
+// their PDF coordinates never reach the browser.
+import { fieldByKey, IDENTIFIERS_ERROR_KEY, isNumberField, isTextField } from './fields';
 import type { FieldErrorCode } from './field-parsers';
 import { misuraOf } from './misure';
-import { moduloFieldOf } from './ordini/form';
-import { IDENTIFIERS_ERROR_KEY } from './validation';
+import type { ModuloSpec } from './ordini/form';
 import type { RilieviT } from './t';
+
+/** What the errors need of a supplier module's field: its label (the paper's, verbatim), its supplier, its length. */
+export interface ModuloFieldInfo {
+  label: string;
+  fornitore: string;
+  maxLength: number | null;
+}
+
+/** A supplier module's field by its name in the form (`oq-cliente`), or null for any other key. */
+export type ModuloLookup = (name: string) => ModuloFieldInfo | null;
+
+const noModulo: ModuloLookup = () => null;
+
+/** The lookup over the modules' specs (moduloSpec, plain data the server page passes to the form). */
+export function specLookup(specs: readonly ModuloSpec[]): ModuloLookup {
+  const byName = new Map<string, ModuloFieldInfo>();
+  for (const spec of specs) {
+    for (const g of spec.gruppi) for (const r of g.righe) for (const f of r.campi) byName.set(f.name, { label: f.label, fornitore: spec.fornitore, maxLength: f.maxLength });
+  }
+  return (name) => byName.get(name) ?? null;
+}
 
 /** The label of an error's key in the summary: «Identificazione», «Lunghezza, fermata 2», «Quantità: (Pelazza Peppino)»,
  *  or the field's label. */
-export function errorLabelOf(key: string, t: RilieviT): string {
+export function errorLabelOf(key: string, t: RilieviT, modulo: ModuloLookup = noModulo): string {
   if (key === IDENTIFIERS_ERROR_KEY) return t('scheda.identifiers');
-  const moduloField = moduloFieldOf(key);
-  if (moduloField) return t('ordini.errorLabel', { label: moduloField.field.label, fornitore: moduloField.slot.modulo.fornitore });
+  const moduloField = modulo(key);
+  if (moduloField) return t('ordini.errorLabel', { label: moduloField.label, fornitore: moduloField.fornitore });
   const misura = misuraOf(key);
   if (misura) return t('scheda.misure.errorLabel', { col: t(`scheda.misure.col.${misura.column.key}`), n: misura.n });
   return t(`scheda.field.${key}`);
@@ -24,10 +47,11 @@ export const errorAnchorOf = (key: string): string => (key === IDENTIFIERS_ERROR
 
 /** The values of an error's text («Massimo {maxLength} caratteri», «tra {min} e {max}») for a key of the form, as
  *  strings so that they print as rilievi printed them (100000, not 100.000). */
-export function errorParamsOf(key: string): Record<string, string> {
+export function errorParamsOf(key: string, modulo: ModuloLookup = noModulo): Record<string, string> {
   const misura = misuraOf(key);
-  const moduloField = moduloFieldOf(key)?.field;
-  const field = misura ? misura.column : moduloField ?? fieldByKey(key);
+  const moduloField = misura ? null : modulo(key);
+  if (moduloField) return moduloField.maxLength === null ? {} : { maxLength: String(moduloField.maxLength) };
+  const field = misura ? misura.column : fieldByKey(key);
   const out: Record<string, string> = {};
   if (!field) return out;
   if ('min' in field && typeof field.min === 'number') out.min = String(field.min);
@@ -37,7 +61,8 @@ export function errorParamsOf(key: string): Record<string, string> {
 }
 
 /** The text of an error of the form (`rilievi.scheda.error.<code>`, with its values). */
-export const errorTextOf = (key: string, code: FieldErrorCode, t: RilieviT): string => t(`scheda.error.${code}`, errorParamsOf(key));
+export const errorTextOf = (key: string, code: FieldErrorCode, t: RilieviT, modulo: ModuloLookup = noModulo): string =>
+  t(`scheda.error.${code}`, errorParamsOf(key, modulo));
 
 /** The unit shown next to a number field (`scheda.unit.<u>` with n = 2: «kg», «persone», «mm», «m»), or null. */
 export function unitTextOf(key: string, t: RilieviT): string | null {

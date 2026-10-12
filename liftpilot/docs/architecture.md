@@ -231,7 +231,7 @@ src/lib/             auth (JWT в httpOnly бисквитка, именува с
 src/server/          Server actions ('use server') и заявки, винаги ограничени до фирмата на потребителя (queries.ts);
                      billing (синхрон на абонамента от Stripe, местата и тяхното налагане), billing-actions (Checkout, смяна на
                      пакета, порталът на Stripe), prices + price-actions (листата на фирмата), terms-actions (приемането),
-                     company-export (всички данни на фирмата в JSON, `/api/company/export`);
+                     company-export (всички данни на фирмата в JSON, `/api/company/export`, и картите на Rilievi — `schede`);
                      account-actions — регистрация, потвърждение на адреса, забравена и нова парола; project-export
                      (записаният проект в PDF/DXF/DWG); order-export + order-route (черновата на поръчка от записан проект или
                      изчисление в DOCX/PDF); client-logo-actions (логото на възложителя на проекта); room-actions (записът на
@@ -366,14 +366,17 @@ prisma/              schema + migrations/0_init (тригер: без UPDATE н�
                      11_drawing_set_pdf (DrawingSetPdf — PDF-ът на издадения комплект, какъвто е издаден; тригер: не се мени),
                      12_form_drafts (FormDraft — черновата на формуляр по проект и обхват; не е запис: без хеш и тригер),
                      15_rilievi (Scheda + MisuraBottoniera с енумите Rilievo*, pg_trgm и GIN индексът на searchText,
-                     CHECK на спирките 1..300 и на JSON на модулите; адитивна).
+                     индексите на списъка и на кошчето, CHECK на спирките 1..300 и на JSON на модулите; адитивна; връщането
+                     — в коментара ѝ).
 src/lib/rilievi/     Rilievi (кръг 41) — картите за оглед, чисто (и в браузъра): fields + field-types (ЕДИНСТВЕНИЯТ списък на
                      полетата, условията `when`, activeFields), field-parsers + validation (zod по вида, parseScheda,
                      formValuesFromBody), misure (бутониерите по спирки, mb-<спирка>-<колона>), format (displaySections,
                      formValuesFromScheda, schedaTitle, emptyFormValues), search (нормализаторът, думите, highlight), fmt
                      (датите и числата на rilievi с фиксирани разделители), time (денят в Рим), inputs (bodyOf — формата
-                     като urlencoded на rilievi; id, base, търсене, страница), form-help (етикетите и текстовете на грешките,
-                     имената на PDF-ите, флаш ключовете), prefill-client (правилата на браузъра за модулите), action-state
+                     като urlencoded на rilievi; id, base, търсене, страница), form-help (етикетите и текстовете на грешките —
+                     полетата на модулите през ModuloLookup: specLookup върху спецификациите във формата, moduloLookup върху
+                     картите на сървъра —, имената на PDF-ите, флаш ключовете, tabTitle в format), prefill-client (правилата на
+                     браузъра за модулите; rifImpianto от ordini/rif, без картите), action-state
                      (отговорите на действията), t + i18n (преводачът на `rilievi` през use-intl/core); ordini/ — moduli
                      (картите на полетата на Pelazza и Montanari, zod), registry (SLOTS), valori, prefill, form (withPrefill,
                      moduloSpec за формата).
@@ -383,12 +386,17 @@ src/server/rilievi/  queries (списък и търсене със SQL пара
                      actions ('use server': създаване, промяна, кошче, възстановяване, окончателно), pdf + pdf-layout +
                      pdf-table (PDF-ът на картата, pdfkit + DejaVu), moduli-pdf (празните PDF-и, SHA-256), modulo-pdf
                      (попълнените модули, pdf-lib). Маршрутите: src/app/api/rilievi/[id]/pdf и [id]/[modulo]
-                     (ordine-quadro, preventivo-argano). assets/moduli/ — празните формуляри на доставчиците + картите им.
+                     (ordine-quadro, preventivo-argano). assets/moduli/ — празните формуляри на доставчиците + картите им
+                     (двоични за git). src/instrumentation.ts → instrumentation-node.ts: при старта на Node сървъра —
+                     шрифтът DejaVu и SHA-256 на модулите (иначе всяка заявка дава 500).
 src/app/[locale]/app/rilievi/  Екраните на Rilievi: списък и търсене (page), nuovo, [id] (картата), [id]/modifica, [id]/stampa
                      (листът A4), [id]/elimina (към кошчето), cestino и cestino/[id]/elimina; layout.tsx носи rilievi.css,
                      rilievi-form.css и rilievi-print.css. Пунктът „Rilievi“ е в AppShell (Workspace).
-src/components/rilievi/  SchedaForm (формата: отговорите на действията, обобщението на грешките, конфликтът) + FieldInput,
-                     MisureBlock, ModuloBlock, use-scheda-form (правилата на app.js на rilievi върху формата), SectionIndex,
+src/components/rilievi/  SchedaForm (формата: отговорите на действията, обобщението на грешките, конфликтът, фокусът на
+                     отговора; модулите като спецификации от страницата) + EditLead (редът „Ultima modifica“ в главата на
+                     промяната, обновен при конфликт) + FieldInput,
+                     MisureBlock, ModuloBlock, use-scheda-form (правилата на app.js на rilievi върху формата; връзките на
+                     приложението при непазени промени — пълно зареждане, за да пита браузърът), SectionIndex,
                      LiveSearch (търсенето по адреса), Results (таблицата/картите и празните състояния), parts (табелата, таблицата
                      на мерките, маркираните думи, страниците), ActionButton (кошче/възстановяване/окончателно), Confirm,
                      Flash (`?ok=`), PrintTools, RilieviHead.

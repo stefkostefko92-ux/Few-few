@@ -22,7 +22,8 @@
 .rv-search input::placeholder { color: var(--dim); opacity: 1; }
 .rv-search input::-webkit-search-cancel-button { filter: grayscale(1) brightness(1.6); }
 .rv-search kbd { flex: none; padding: 3px 7px; border: 1px solid var(--rule-strong); border-radius: 4px; font: 500 12px/1 var(--font-mono); color: var(--muted); }
-@media (hover: none) { .rv-search kbd { display: none; } }
+/* the «/» shortcut means nothing on a touch screen */
+@media (hover: none), (pointer: coarse) { .rv-search kbd { display: none; } }
 .rv-status { margin: -6px 0 0; font-size: 14px; color: var(--muted); }
 .rv-results { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 .rv-results[aria-busy="true"] { opacity: .65; transition: opacity .15s; }
@@ -31,8 +32,30 @@
 .rv-results td.ident { font-family: var(--font-mono); white-space: nowrap; }
 .rv-results td.row-title a { font-weight: 700; }
 .rv-results td.date { white-space: nowrap; font-variant-numeric: tabular-nums; }
+/* the whole row (a card on a phone) opens the sheet, as rilievi's .row-link::after: a sheet without a number is one
+   click away too; the trash's buttons stay above it */
+.rv-results tbody tr { position: relative; }
+.rv-results td.row-title a::after { content: ""; position: absolute; inset: 0; }
+.rv-results td.acts { position: relative; z-index: 1; }
+/* the table fits its panel, no scrolling sideways: the heads wrap between words, the number needs no reserved room, the
+   trash's two buttons go under one another until there is room, and below 1100 px the trash is cards (the phone's) */
+.rv-results thead th { white-space: normal; }
+.rv-results td.row-title { min-width: 0; }
 .rv-results td.acts .rv-acts { display: flex; flex-wrap: wrap; gap: 8px; }
-@media (min-width: 720px) { .rv-results td.acts .rv-acts { flex-wrap: nowrap; } }
+@media (max-width: 1439px) { .rv-results td.acts .rv-acts { flex-direction: column; align-items: flex-start; } }
+@media (max-width: 1279px) { .rv-results td.date { white-space: normal; } }
+@media (min-width: 720px) and (max-width: 1099px) {
+  .rv-results .rv-trash thead { display: none; }
+  .rv-results .rv-trash, .rv-results .rv-trash tbody, .rv-results .rv-trash tr, .rv-results .rv-trash td { display: block; width: 100%; }
+  .rv-results .rv-trash tr { padding: 14px 16px; border-bottom: 1px solid var(--rule-soft); }
+  .rv-results .rv-trash tbody tr:last-child { border-bottom: 0; }
+  .rv-results .rv-trash tbody tr:hover td { background: none; }
+  .rv-results .rv-trash td { border: 0; padding: 4px 0; display: grid; grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr); gap: 12px; }
+  .rv-results .rv-trash td::before { content: attr(data-label); color: var(--muted); font: 500 11.5px/1.6 var(--font-mono); letter-spacing: .06em;
+    text-transform: uppercase; }
+  .rv-results .rv-trash td.row-title { display: block; padding-bottom: 8px; font-size: 16px; font-weight: 600; }
+  .rv-results .rv-trash td.row-title::before { content: none; }
+}
 .rv-muted { color: var(--dim); }
 .rv-empty { align-items: flex-start; gap: 10px; }
 .rv-empty strong { font-size: 16px; }

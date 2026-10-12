@@ -5,16 +5,17 @@ import { requireCapability } from '@/lib/auth';
 import { fmt } from '@/lib/rilievi/fmt';
 import { displaySections, schedaTitle } from '@/lib/rilievi/format';
 import type { RilieviT } from '@/lib/rilievi/t';
-import { sheetToShow } from '@/server/rilievi/pages';
+import { sheetTabTitle, sheetToShow } from '@/server/rilievi/pages';
 import { companyLogo } from '@/server/rilievi/queries';
 import Crumbs from '@/components/Crumbs';
 import Icon from '@/components/Icon';
 import { AutoPrint, PrintButton } from '@/components/rilievi/PrintTools';
 import { MisureTable, Plate } from '@/components/rilievi/parts';
 
-export async function generateMetadata() {
-  const t = await getTranslations('rilievi');
-  return { title: t('scheda.title') };
+// the tab (and «Salva come PDF») is named after the sheet, as in rilievi
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const [title, t] = await Promise.all([params.then((p) => sheetTabTitle(p.id)), getTranslations('rilievi')]);
+  return { title: title ?? t('scheda.title') };
 }
 
 // The sheet on A4 paper (rilievi print.ejs): the company's logo (the drawing sets' one) top left, the title and the
@@ -76,7 +77,9 @@ export default async function PrintRilievoPage({ params }: { params: Promise<{ l
                           </span>
                         ))}
                       </span>
-                      {f.table ? <MisureTable table={f.table} className="rv-ptable" /> : null}
+                      {/* the line break after the table is rilievi's (its template's newline under pre-line): the same blank
+                          line on paper, so the pages break where rilievi's do */}
+                      {f.table ? <><MisureTable table={f.table} className="rv-ptable" />{'\n'}</> : null}
                     </dd>
                   ) : f.value ? <dd>{f.value}</dd> : <dd className="empty">—</dd>}
                 </div>

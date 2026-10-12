@@ -1,7 +1,8 @@
 import 'server-only';
 // All the data a company entered, as one JSON document (terms of use, article «exit»; GDPR art. 20; Data Act art. 25):
 // the company, its users (never their password hashes or tokens), the projects with every calculation, shaft design,
-// lift design and drawing set and the drafts of their forms, the logos, the price list and the activity log. The
+// lift design and drawing set and the drafts of their forms, the logos, the price list, the survey sheets (Rilievi, the
+// trashed ones too, with their measurements per stop and the suppliers' modules as filled in) and the activity log. The
 // software's own data (catalogues, the standards register, the engines) are not the company's and stay out. Its format
 // is described in public (src/lib/export-format.ts, the page /<locale>/data).
 import { prisma } from '@/lib/db';
@@ -22,7 +23,7 @@ export async function companyExport(companyId: string): Promise<Record<string, u
       subscriptionStatus: true, seatPack: true, periodEnd: true, cancelAtPeriodEnd: true, trialEndsAt: true },
   });
   if (!company) return null;
-  const [users, invites, logos, projects, priceItems, customPrices, auditLog] = await Promise.all([
+  const [users, invites, logos, projects, priceItems, customPrices, schede, auditLog] = await Promise.all([
     prisma.user.findMany({
       where: { companyId }, orderBy: { createdAt: 'asc' },
       select: { id: true, name: true, email: true, role: true, active: true, locale: true, createdAt: true, lastLoginAt: true, emailVerifiedAt: true,
@@ -47,6 +48,10 @@ export async function companyExport(companyId: string): Promise<Record<string, u
     }),
     prisma.priceItem.findMany({ where: { companyId }, orderBy: { key: 'asc' }, select: { key: true, cents: true, updatedById: true, updatedAt: true } }),
     prisma.customPriceItem.findMany({ where: { companyId }, orderBy: { position: 'asc' }, select: { text: true, cents: true, basis: true, scope: true, position: true, updatedById: true, updatedAt: true } }),
+    // every column of the sheet (Decimal as text, the modules as stored, deletedAt for the trashed ones); the
+    // search text is the software's index of the same values and stays out
+    prisma.scheda.findMany({ where: { companyId }, orderBy: { createdAt: 'asc' }, omit: { searchText: true },
+      include: { misureBottoniere: { orderBy: { fermata: 'asc' }, omit: { schedaId: true } } } }),
     prisma.auditLog.findMany({ where: { companyId }, orderBy: { createdAt: 'asc' }, select: { createdAt: true, userId: true, action: true, entity: true, entityId: true, meta: true } }),
   ]);
   const doc: Record<ExportKey, unknown> = {
@@ -54,7 +59,7 @@ export async function companyExport(companyId: string): Promise<Record<string, u
     note: 'Data entered by the company in LiftPilot (Carbon Stealth VCC). Amounts in euro cents; lengths in millimetres unless stated; logos in base64.',
     company, users, invites, logos: logos.map(image),
     projects: projects.map(({ clientLogos, ...p }) => ({ ...p, clientLogos: clientLogos.map(image) })),
-    priceItems, customPrices, auditLog,
+    priceItems, customPrices, schede, auditLog,
   };
   return doc;
 }

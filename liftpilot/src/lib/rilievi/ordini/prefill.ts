@@ -4,7 +4,10 @@
 // (src/ordini/prefill.ts).
 import type { FormValues } from '../field-parsers';
 import { fieldsOf, type Modulo, type PrefillToken } from './moduli';
+import { rifImpianto } from './rif';
 import type { Valori } from './valori';
+
+export { rifImpianto } from './rif';
 
 export interface PrefillContext {
   /** The survey's values in the shape of the form. */
@@ -20,13 +23,6 @@ const text = (values: FormValues, key: string): string => {
   return typeof value === 'string' ? value.trim() : '';
 };
 
-/** "N° 104552 — Matr. 0033871 — Via Verdi 14": whichever of the three there is. */
-export function rifImpianto(values: FormValues): string {
-  const numero = text(values, 'numeroImpianto');
-  const matricola = text(values, 'matricola');
-  const indirizzo = text(values, 'indirizzo');
-  return [numero && `N° ${numero}`, matricola && `Matr. ${matricola}`, indirizzo].filter(Boolean).join(' — ');
-}
 
 function textToken(token: PrefillToken, ctx: PrefillContext): string {
   switch (token) {

@@ -36,7 +36,7 @@ export default function Results({ page, query, trash, canCreate, base, status, t
   return (
     <>
       <div className="table-panel">
-        <table className="data-table stack">
+        <table className={trash ? 'data-table stack rv-trash' : 'data-table stack'}>
           <caption className="sr-only">{status}</caption>
           <thead>
             <tr>

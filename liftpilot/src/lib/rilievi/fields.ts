@@ -162,6 +162,9 @@ export const FIELDS: readonly FieldDef[] = SECTIONS.flatMap((section): readonly 
 /** At least one of these must be filled in — otherwise the sheet can never be found again. */
 export const IDENTIFIERS = ['indirizzo', 'matricola', 'numeroImpianto'] as const;
 
+/** The form's key of the error "at least one of address / matricola / number". */
+export const IDENTIFIERS_ERROR_KEY = 'identifiers';
+
 /** The text fields the search bar searches (the identifying numbers first). */
 export const SEARCHABLE = [
   'numeroImpianto',

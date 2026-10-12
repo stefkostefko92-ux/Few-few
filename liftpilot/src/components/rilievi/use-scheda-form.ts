@@ -5,6 +5,10 @@
 // prefilled when their «Sì» is chosen (untouched inputs only, the rules of prefill-client.ts), the Sì/No and choices a
 // second click clears, the «unsaved changes» hint and the warning before leaving, and no half-typed number sent. The
 // server decides everything again on submit; this only shows and hides.
+// Leaving: in rilievi every link was a page load, so the browser's own «leave the page?» covered them all. Here the
+// app's links (the sidebar, the breadcrumb, «Annulla») move inside the page; while the form is dirty such a click is
+// turned into a real page load, so the same browser question comes up (a new tab, a modified click, a link within the
+// page stay as they are).
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import type { FormValues } from '@/lib/rilievi/field-parsers';
 import { misureCount } from '@/lib/rilievi/misure';
@@ -96,12 +100,25 @@ export function useSchedaForm(form: RefObject<HTMLFormElement | null>, initial: 
       e.preventDefault();
       e.returnValue = '';
     };
+    // before the app's router sees the click (capture, on the document): a same-origin link to another page loads it
+    const onLinkClick = (e: MouseEvent): void => {
+      if (!isDirty || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const link = e.target instanceof Element ? e.target.closest('a[href]') : null;
+      if (!(link instanceof HTMLAnchorElement) || (link.target && link.target !== '_self') || link.hasAttribute('download')) return;
+      const to = new URL(link.href, window.location.href), here = window.location;
+      if (to.origin !== here.origin) return;
+      if (to.pathname === here.pathname && to.search === here.search) return;
+      e.preventDefault();
+      e.stopPropagation();
+      window.location.assign(to.href);
+    };
     el.addEventListener('input', onInput);
     el.addEventListener('change', onChange);
     el.addEventListener('pointerdown', onPointerDown);
     el.addEventListener('click', onClick);
     el.addEventListener('submit', onSubmit);
     window.addEventListener('beforeunload', onLeave);
+    document.addEventListener('click', onLinkClick, true);
     return () => {
       el.removeEventListener('input', onInput);
       el.removeEventListener('change', onChange);
@@ -109,6 +126,7 @@ export function useSchedaForm(form: RefObject<HTMLFormElement | null>, initial: 
       el.removeEventListener('click', onClick);
       el.removeEventListener('submit', onSubmit);
       window.removeEventListener('beforeunload', onLeave);
+      document.removeEventListener('click', onLinkClick, true);
     };
   }, [form]);
 

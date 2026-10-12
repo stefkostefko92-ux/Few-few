@@ -2,12 +2,14 @@ import 'server-only';
 // What the survey sheets' pages ask the server for, with the rights decided here as in rilievi's routes: a sheet of the
 // company (a trashed one only for whoever manages the trash), the form's starting values (the suppliers' modules
 // prefilled at their first opening from the survey, the company and the person writing), the list or the trash.
-import type { SessionUser } from '@/lib/auth';
+import { cache } from 'react';
+import { getSessionUser, type SessionUser } from '@/lib/auth';
 import { can } from '@/lib/rbac';
-import { emptyFormValues, formValuesFromScheda } from '@/lib/rilievi/format';
+import { emptyFormValues, formValuesFromScheda, schedaTitle, tabTitle } from '@/lib/rilievi/format';
 import type { FormValues } from '@/lib/rilievi/field-parsers';
 import { withPrefill } from '@/lib/rilievi/ordini/form';
 import type { PrefillContext } from '@/lib/rilievi/ordini/prefill';
+import { rilieviTranslator } from '@/lib/rilievi/i18n';
 import { businessDay } from '@/lib/rilievi/time';
 import messages from '../../../messages/it.json';
 import { getScheda, listSchede, type SchedaFull, type SchedaPage } from './queries';
@@ -24,9 +26,21 @@ export const newFormValues = (user: SessionUser, today: string = businessDay()):
 /** A stored sheet's form (for «Modifica»): its values, its rows, its modules (or their prefill when never filled). */
 export const editFormValues = (user: SessionUser, scheda: SchedaFull): FormValues => withPrefill(formValuesFromScheda(scheda), prefillContext(user));
 
+/** One read of a sheet per request, however many parts of the page ask (its metadata, the page). */
+const schedaOnce = cache((companyId: string, id: string, includeDeleted: boolean) => getScheda(companyId, id, includeDeleted));
+
 /** A sheet to show, print or download: of the company; a trashed one only for whoever manages the trash. */
 export function sheetToShow(user: SessionUser, id: string): Promise<SchedaFull | null> {
-  return getScheda(user.companyId, id, can(user, 'rilievi:trash-manage'));
+  return schedaOnce(user.companyId, id, can(user, 'rilievi:trash-manage'));
+}
+
+/** The browser tab's title of a sheet's page (rilievi: its identity, cut at 40 characters), or null when the signed-in
+ *  user may not see it (the page then answers on its own: login, not found). */
+export async function sheetTabTitle(id: string): Promise<string | null> {
+  const user = await getSessionUser();
+  if (!user || !can(user, 'rilievi:view')) return null;
+  const scheda = await sheetToShow(user, id);
+  return scheda ? tabTitle(schedaTitle(scheda, rilieviTranslator())) : null;
 }
 
 /** A sheet to edit or move to the trash: of the company and not in the trash. */

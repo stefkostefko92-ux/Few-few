@@ -724,11 +724,12 @@ model Scheda {
   createdAt               DateTime                    @default(now())
   updatedAt               DateTime                    @updatedAt
 
-  @@index([companyId, deletedAt, updatedAt])
+  /// the list in its order (survey day, then creation, newest first; the trashed ones skipped), and the trash
+  @@index([companyId, data(sort: Desc), createdAt(sort: Desc)])
+  @@index([companyId, deletedAt])
   @@index([data])
   @@index([matricola])
   @@index([numeroImpianto])
-  @@index([deletedAt])
   @@index([createdById])
   @@index([updatedById])
   @@index([deletedById])

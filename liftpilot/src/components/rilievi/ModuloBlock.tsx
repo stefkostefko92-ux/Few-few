@@ -4,19 +4,22 @@
 // as on the paper, so that it comes out in the supplier's own PDF. The labels are the paper's, verbatim (Italian, never
 // translated). It opens under its «Sì»; `data-prefill` names what the survey fills in when it opens (the form's
 // behaviour, the same rules as the server's prefill). The hidden `<prefix>-_` mark is always sent: it tells the server
-// the module was shown, so it is never prefilled again over what the person typed.
-import { Fragment } from 'react';
+// the module was shown, so it is never prefilled again over what the person typed. A row with the paper's arrow keeps
+// what follows the arrow together behind it: on a narrow screen it wraps as one piece, still inside its row.
 import type { FieldErrors, FormValues } from '@/lib/rilievi/field-parsers';
-import { errorTextOf } from '@/lib/rilievi/form-help';
+import { errorTextOf, type ModuloLookup } from '@/lib/rilievi/form-help';
 import type { ModuloFieldSpec, ModuloSpec } from '@/lib/rilievi/ordini/form';
 import type { RilieviT } from '@/lib/rilievi/t';
 import { Tick } from './FieldInput';
 
-function Field({ f, values, errors, t }: { f: ModuloFieldSpec; values: FormValues; errors: FieldErrors; t: RilieviT }) {
+interface FieldProps { f: ModuloFieldSpec; spec: ModuloSpec; values: FormValues; errors: FieldErrors; t: RilieviT }
+
+function Field({ f, spec, values, errors, t }: FieldProps) {
   const id = `f-${f.name}`, errId = `err-${f.name}`, value = values[f.name];
   if (f.kind === 'check') return <Tick type="checkbox" id={id} name={f.name} value="si" checked={value === 'si'} label={f.label} small prefill={f.prefill ?? undefined} />;
   const error = errors[f.name];
-  const errText = error ? errorTextOf(f.name, error, t) : null;
+  const lookup: ModuloLookup = () => ({ label: f.label, fornitore: spec.fornitore, maxLength: f.maxLength });
+  const errText = error ? errorTextOf(f.name, error, t, lookup) : null;
   const common = {
     id, name: f.name, maxLength: f.maxLength ?? undefined, defaultValue: typeof value === 'string' ? value : '', 'data-prefill': f.prefill ?? undefined,
     'aria-invalid': errText ? true : undefined, 'aria-describedby': errText ? errId : undefined,
@@ -41,16 +44,21 @@ export default function ModuloBlock({ spec, values, errors, t }: { spec: ModuloS
       {spec.gruppi.map((g, gi) => (
         <fieldset key={gi} className="rv-mgroup">
           <legend>{g.titolo}</legend>
-          {g.righe.map((r, ri) => (
-            <div key={ri} className="rv-mrow">
-              {r.campi.map((f, i) => (
-                <Fragment key={f.name}>
-                  {r.freccia && i === r.freccia ? <span className="rv-arrow" aria-hidden="true">→</span> : null}
-                  <Field f={f} values={values} errors={errors} t={t} />
-                </Fragment>
-              ))}
-            </div>
-          ))}
+          {g.righe.map((r, ri) => {
+            const field = (f: ModuloFieldSpec) => <Field key={f.name} f={f} spec={spec} values={values} errors={errors} t={t} />;
+            const after = r.freccia ? r.campi.slice(r.freccia) : [];
+            return (
+              <div key={ri} className="rv-mrow">
+                {(r.freccia ? r.campi.slice(0, r.freccia) : r.campi).map(field)}
+                {after.length ? (
+                  <div className="rv-mfollow">
+                    <span className="rv-arrow" aria-hidden="true">→</span>
+                    <div className="rv-mfollow-items">{after.map(field)}</div>
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
         </fieldset>
       ))}
     </div>

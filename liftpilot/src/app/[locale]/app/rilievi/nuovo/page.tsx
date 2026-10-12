@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { requireCapability } from '@/lib/auth';
+import { moduloSpecs } from '@/lib/rilievi/ordini/form';
 import { newFormValues } from '@/server/rilievi/pages';
 import Crumbs from '@/components/Crumbs';
 import RilieviHead from '@/components/rilievi/RilieviHead';
@@ -21,7 +22,7 @@ export default async function NewRilievoPage({ params }: { params: Promise<{ loc
     <main className="page">
       <Crumbs items={[{ href: '/app/rilievi', label: tn('rilievi') }, { label: t('schede.create.title') }]} />
       <RilieviHead title={t('schede.create.title')} lead={t('schede.create.sub')} />
-      <SchedaForm initial={newFormValues(user)} edit={null} cancelHref="/app/rilievi" />
+      <SchedaForm initial={newFormValues(user)} edit={null} cancelHref="/app/rilievi" specs={moduloSpecs()} />
     </main>
   );
 }

@@ -185,6 +185,9 @@ export function schedaTitle(scheda: Pick<Scheda, 'numeroImpianto' | 'matricola' 
   return scheda.indirizzo ?? t('scheda.title');
 }
 
+/** A sheet's identity as a browser tab's title (rilievi's show and print pages): cut at 40 characters, then «…». */
+export const tabTitle = (ident: string): string => (ident.length > 40 ? `${ident.slice(0, 39)}…` : ident);
+
 /** An empty form: today in Rome, everything else empty. */
 export function emptyFormValues(today: string): FormValues {
   const out: FormValues = {};

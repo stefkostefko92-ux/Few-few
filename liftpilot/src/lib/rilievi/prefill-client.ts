@@ -4,7 +4,7 @@
 // has the option ticked. Pure: the form gives the survey's current values (the shape of FormValues, e.g. from
 // `valuesOfForm`), the component applies the result to the inputs it has not marked as touched.
 import type { FormValues } from './field-parsers';
-import { rifImpianto } from './ordini/prefill';
+import { rifImpianto } from './ordini/rif';
 
 /** The text a token gives from the survey on the screen (app.js `surveyText`). The company has no select in LiftPilot
  *  (one company per user), so «azienda» is '' here as for a non-MASTER in rilievi: the server prefilled it already. */

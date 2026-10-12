@@ -8,7 +8,7 @@ import { flashOf } from '@/lib/rilievi/form-help';
 import { displaySections, schedaTitle, type DisplayField } from '@/lib/rilievi/format';
 import type { RilieviT } from '@/lib/rilievi/t';
 import { restoreRilievoAction } from '@/server/rilievi/actions';
-import { sheetToShow } from '@/server/rilievi/pages';
+import { sheetTabTitle, sheetToShow } from '@/server/rilievi/pages';
 import Crumbs from '@/components/Crumbs';
 import Icon from '@/components/Icon';
 import ActionButton from '@/components/rilievi/ActionButton';
@@ -19,9 +19,10 @@ import { MisureTable, Plate } from '@/components/rilievi/parts';
 
 type SP = Promise<Record<string, string | string[] | undefined>>;
 
-export async function generateMetadata() {
-  const t = await getTranslations('rilievi');
-  return { title: t('scheda.title') };
+// the tab (and «Salva come PDF») is named after the sheet, as in rilievi
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const [title, t] = await Promise.all([params.then((p) => sheetTabTitle(p.id)), getTranslations('rilievi')]);
+  return { title: title ?? t('scheda.title') };
 }
 
 /** A filled supplier's module under its question: its own PDF, to save or to print (never in the sheet's). */

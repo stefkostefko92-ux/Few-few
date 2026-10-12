@@ -10,6 +10,8 @@ import { getSessionUser, type SessionUser } from '@/lib/auth';
 import { can, type Capability } from '@/lib/rbac';
 import { rateLimit } from '@/lib/ratelimit';
 import type { RilievoActionState, RilievoFormState } from '@/lib/rilievi/action-state';
+import { fmt } from '@/lib/rilievi/fmt';
+import { rilieviTranslator } from '@/lib/rilievi/i18n';
 import { baseSchema, bodyOf, schedaIdSchema } from '@/lib/rilievi/inputs';
 import { withPrefill } from '@/lib/rilievi/ordini/form';
 import { formValuesFromBody, parseScheda } from '@/lib/rilievi/validation';
@@ -60,8 +62,12 @@ export async function updateRilievoAction(_prev: RilievoFormState, fd: FormData)
   if (!parsed.ok) return { status: 'invalid', values: sentValues(a.user, body), errors: parsed.errors, base };
   const outcome = await updateScheda(a.user.companyId, scheda.id, base, parsed.data, a.user.id);
   if (outcome === 'missing') return { status: 'error', error: 'notFound' };
-  // the input stays on the screen; the person decides after seeing the new version
-  if (outcome === 'conflict') return { status: 'conflict', values: sentValues(a.user, body), base: scheda.updatedAt.toISOString() };
+  // the input stays on the screen; the person decides after seeing the new version — the one read here, before the
+  // save, as rilievi read it for the page it drew again (its head names who saved it and when)
+  if (outcome === 'conflict') {
+    const updated = rilieviTranslator()('scheda.meta.updated', { name: scheda.updatedBy?.name ?? '—', at: fmt.dateTime(scheda.updatedAt) });
+    return { status: 'conflict', values: sentValues(a.user, body), base: scheda.updatedAt.toISOString(), updated };
+  }
   redirect(`${a.base}/${scheda.id}?ok=schedaSaved`);
 }
 

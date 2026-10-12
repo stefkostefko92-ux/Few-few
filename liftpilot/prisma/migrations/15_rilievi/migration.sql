@@ -2,6 +2,17 @@
 -- push-button panels per stop, ported 1:1 from the standalone rilievi portal (commit 174a1e3aa, its migrations init,
 -- porte_allarme_bottoniere and quadro_argano). Additive: two new tables and their enums; the existing tables only gain
 -- the relations. The search runs on "searchText" with a trigram GIN index (pg_trgm, trusted since PostgreSQL 13).
+-- The lists read their page off an index in their own order instead of sorting every sheet of the company: the live
+-- list by (company, survey day, creation) newest first, the few trashed ones skipped on the way (PostgreSQL cannot order
+-- by an index past an IS NULL column); the trash by (company, deletedAt), newest first.
+--
+-- Rollback (DATA LOSS: every survey sheet and its measurements; take a backup first — pg_dump of the two tables):
+--   DROP TABLE "MisuraBottoniera";
+--   DROP TABLE "Scheda";
+--   DROP TYPE "RilievoUbicazioneMacchina", "RilievoTipoImpianto", "RilievoTipoPorte", "RilievoTelesoccorsoStato",
+--     "RilievoQuadroMarca", "RilievoArganoMarca";
+--   DELETE FROM "_prisma_migrations" WHERE "migration_name" = '15_rilievi';
+-- pg_trgm stays (harmless, other databases may use it); the audit rows with entity 'Scheda' stay as history.
 
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
@@ -108,7 +119,10 @@ CREATE TABLE "MisuraBottoniera" (
 );
 
 -- CreateIndex
-CREATE INDEX "Scheda_companyId_deletedAt_updatedAt_idx" ON "Scheda"("companyId", "deletedAt", "updatedAt");
+CREATE INDEX "Scheda_companyId_data_createdAt_idx" ON "Scheda"("companyId", "data" DESC, "createdAt" DESC);
+
+-- CreateIndex
+CREATE INDEX "Scheda_companyId_deletedAt_idx" ON "Scheda"("companyId", "deletedAt");
 
 -- CreateIndex
 CREATE INDEX "Scheda_data_idx" ON "Scheda"("data");
@@ -118,9 +132,6 @@ CREATE INDEX "Scheda_matricola_idx" ON "Scheda"("matricola");
 
 -- CreateIndex
 CREATE INDEX "Scheda_numeroImpianto_idx" ON "Scheda"("numeroImpianto");
-
--- CreateIndex
-CREATE INDEX "Scheda_deletedAt_idx" ON "Scheda"("deletedAt");
 
 -- CreateIndex
 CREATE INDEX "Scheda_createdById_idx" ON "Scheda"("createdById");

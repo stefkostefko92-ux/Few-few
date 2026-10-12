@@ -2,6 +2,7 @@
 // survey and from the person writing; afterwards with what was typed or stored. Ported 1:1 from rilievi
 // (src/ordini/form.ts), plus the plain description of a module the form renders (`moduloSpec`).
 import type { FormValues } from '../field-parsers';
+import type { ModuloLookup } from '../form-help';
 import { fieldsOf, type ModuloField } from './moduli';
 import { prefillValori, type PrefillContext } from './prefill';
 import { SLOTS, type ModuloSlot } from './registry';
@@ -26,6 +27,13 @@ export function moduloFieldOf(name: string): { slot: ModuloSlot; field: ModuloFi
   }
   return null;
 }
+
+/** The errors' lookup of a module's field over the maps (form-help.ts): the server's and the tests' (the form uses its
+ *  specs instead, specLookup). */
+export const moduloLookup: ModuloLookup = (name) => {
+  const hit = moduloFieldOf(name);
+  return hit ? { label: hit.field.label, fornitore: hit.slot.modulo.fornitore, maxLength: hit.field.kind === 'check' ? null : hit.field.maxLength } : null;
+};
 
 /** One field of a module as the form renders it: its input name, kind, label (verbatim from the supplier's paper,
  *  never translated), whether the label is only for screen readers, the length bound and the prefill token. */

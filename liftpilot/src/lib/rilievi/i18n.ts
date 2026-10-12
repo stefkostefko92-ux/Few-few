@@ -1,7 +1,9 @@
 // The translator of the survey sheets outside a page (the PDFs, the tests): the `rilievi` namespace of messages/it.json
 // through next-intl's own formatter — its core, use-intl/core: no React, so it runs alike in a route handler and in the
-// tests under the react-server condition —, so the PDF says exactly what the pages say. Imports all the messages: server
-// and tests only (a component takes `getTranslations('rilievi')` / `useTranslations('rilievi')`).
+// tests under the react-server condition, where next-intl's own entry brings React hooks —, so the PDF says exactly what
+// the pages say. use-intl is next-intl's own dependency, declared with next-intl's range so the two never split into two
+// copies. Imports all the messages: server and tests only (a component takes `getTranslations('rilievi')` /
+// `useTranslations('rilievi')`).
 import { createTranslator } from 'use-intl/core';
 import messages from '../../../messages/it.json';
 import type { RilieviT } from './t';

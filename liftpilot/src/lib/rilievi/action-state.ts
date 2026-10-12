@@ -7,11 +7,12 @@ export type RilievoActionError = 'forbidden' | 'notFound' | 'tooMany' | 'tooLarg
 
 /** The sheet's form after a submit that did not save: the values as sent (to show them again, the modules' marks
  *  included), with the errors per field (rilievi's 422), or the conflict (409: someone saved the sheet meanwhile — the
- *  input stays, `base` is now the current version, so a second «Salva» overwrites knowingly), or a refusal. */
+ *  input stays, `base` is now the current version, so a second «Salva» overwrites knowingly; `updated` is the edit
+ *  page's line about that version, «Ultima modifica di … il …»), or a refusal. */
 export type RilievoFormState =
   | { status: 'idle' }
   | { status: 'invalid'; values: FormValues; errors: FieldErrors; base: string }
-  | { status: 'conflict'; values: FormValues; base: string }
+  | { status: 'conflict'; values: FormValues; base: string; updated: string }
   | { status: 'error'; error: RilievoActionError };
 
 export const initialRilievoFormState: RilievoFormState = { status: 'idle' };

@@ -13,14 +13,15 @@ export const dynamic = 'force-dynamic';
 // A supplier's module filled in on a survey sheet (rilievi's GET /schede/:id/ordine-quadro and /preventivo-argano): the
 // official PDF with the stored values on it, apart from the sheet's PDF. The same rights as the sheet; a sheet of
 // another company, unknown, or without the module answered «Sì» and stored is 404. A blank module whose SHA-256 is not
-// its map's pin makes no PDF (500). `?inline=1` opens it in the browser (to print), otherwise it is saved.
+// its map's pin makes no PDF (500). `?inline=1` opens it in the browser (to print), otherwise it is saved. An unknown
+// module path is 404 before anything else (rilievi never routed it), so it spends no download of the person's quota.
 export async function GET(req: Request, { params }: { params: Promise<{ id: string; modulo: string }> }): Promise<Response> {
   try {
+    const p = await params, slot = slotByPath(p.modulo);
+    if (!slot) return text(404, 'Not found');
     const d = await downloader('rilievi-pdf', 30, 'rilievi:view');
     if ('refused' in d) return d.refused;
     const { user } = d;
-    const p = await params, slot = slotByPath(p.modulo);
-    if (!slot) return text(404, 'Not found');
     const scheda = await sheetToShow(user, p.id);
     if (!scheda || scheda[slot.question] !== true) return text(404, 'Not found');
     const valori = storedValori(slot.modulo, scheda[slot.column]);

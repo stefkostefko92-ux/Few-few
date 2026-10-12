@@ -12,7 +12,7 @@ import type {
 } from '@prisma/client';
 import { SLOTS } from './ordini/registry';
 import { moduloFromBody, parseModulo, type ModuloDati } from './ordini/valori';
-import { activeFields, FIELDS, IDENTIFIERS } from './fields';
+import { activeFields, FIELDS, IDENTIFIERS, IDENTIFIERS_ERROR_KEY } from './fields';
 import {
   checksOf,
   choiceOf,
@@ -31,8 +31,7 @@ import { misureCount, misureFromBody, parseMisure, type MisuraData } from './mis
 
 export type { FieldErrorCode, FieldErrors, FormValues } from './field-parsers';
 
-/** The form's key of the error "at least one of address / matricola / number". */
-export const IDENTIFIERS_ERROR_KEY = 'identifiers';
+export { IDENTIFIERS_ERROR_KEY } from './fields';
 
 export const schedaSchema = z
   .object({

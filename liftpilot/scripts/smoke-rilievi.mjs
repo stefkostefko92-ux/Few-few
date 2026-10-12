@@ -3,7 +3,10 @@
 // old push-button panels' measurements, both suppliers' modules prefilled from the survey; saved; found again by its
 // matricola with the live search; its PDF and the two modules' PDFs; the A4 print page; a field refused with its error
 // and the input kept; two windows saving the same sheet (the second sees the conflict, keeps its input, saves
-// knowingly); the activity log; to the trash and back. Returns the sheet's address for the isolation check.
+// knowingly, the notice focused); leaving a form with unsaved changes through
+// the app's links asks first; the page after a save opens at its top; the whole row of the list opens the sheet; the
+// tab named after the sheet; the activity log; to the trash and back. Returns the sheet's address for the isolation
+// check.
 import assert from 'node:assert/strict';
 import { step } from './smoke-kit.mjs';
 
@@ -83,11 +86,16 @@ export async function rilieviFlow({ BASE, page, hydrated }) {
   assert.equal(await page.locator('#results tbody tr').count(), 1, 'one sheet found');
   assert.equal((await page.textContent('#results tbody tr mark'))?.trim(), matricola, 'the matricola marked');
   assert.match((await page.textContent('#search-status')) ?? '', /^1 scheda per «/);
+  // the whole row opens the sheet (a click on its address, not on the number)
+  const cell = await page.locator('#results tbody tr td:nth-child(3)').boundingBox();
+  await Promise.all([page.waitForURL(new RegExp(`/app/rilievi/${id}$`)), page.mouse.click(cell.x + cell.width / 2, cell.y + 8)]);
+  assert.equal(await page.title(), `Impianto n° ${numero} · LiftPilot`, 'the tab named after the sheet');
   assert.match(await pdfOf(page, `${BASE}/api/rilievi/${id}/pdf`, 'sheet PDF'), new RegExp(`^attachment; filename="scheda-${numero}-\\d{4}-\\d{2}-\\d{2}\\.pdf"$`));
   assert.match(await pdfOf(page, `${BASE}/api/rilievi/${id}/ordine-quadro`, 'Pelazza PDF'), new RegExp(`ordine-quadro-${numero}-`));
   assert.match(await pdfOf(page, `${BASE}/api/rilievi/${id}/preventivo-argano?inline=1`, 'Montanari PDF'), /^inline; /);
   await page.goto(`${sheetUrl}/stampa`);
   await page.waitForSelector('.rv-paper');
+  assert.equal(await page.title(), `Impianto n° ${numero} · LiftPilot`, 'the print named after the sheet («Salva come PDF»)');
   assert.equal(await page.locator('.rv-paper .rv-ptable tbody tr').count(), 3, 'the print: the stops');
   assert.ok((await page.textContent('.rv-paper-by'))?.startsWith('Compilata da'), 'the print: who filled it in');
   assert.equal(await page.locator('.rv-paper .rv-opt.on').filter({ hasText: 'Automatiche' }).count(), 1, 'the print: the boxes');
@@ -102,6 +110,16 @@ export async function rilieviFlow({ BASE, page, hydrated }) {
   assert.equal(await page.inputValue('#f-portataKg'), '63O', 'the input kept');
   assert.equal(await page.evaluate(() => globalThis.document.activeElement?.id), 'error-summary', 'the summary focused');
   await page.fill('#f-portataKg', '630');
+  // unsaved changes: the breadcrumb asks before leaving (the browser's own question), «Annulla» too; staying keeps the input
+  const asked = [];
+  const onDialog = (d) => { asked.push(d.type()); void d.dismiss(); };
+  page.on('dialog', onDialog);
+  await page.click('main nav.crumbs-nav a[href$="/app/rilievi"]');
+  await page.click('form[data-scheda-form] .savebar a');
+  await page.waitForTimeout(500);
+  page.off('dialog', onDialog);
+  assert.deepEqual(asked, ['beforeunload', 'beforeunload'], 'leaving with unsaved changes asks first');
+  assert.ok(page.url().endsWith('/modifica') && (await page.inputValue('#f-portataKg')) === '630', 'stayed, the input kept');
   // a second window of the same person (a new context with the session's cookie: newPage() pages own their context)
   const second = await page.context().browser().newContext({ viewport: { width: 1360, height: 900 } });
   await second.addCookies(await page.context().cookies());
@@ -115,8 +133,12 @@ export async function rilieviFlow({ BASE, page, hydrated }) {
   await page.click('form[data-scheda-form] button[type="submit"]');
   await page.waitForSelector('.rv-conflict');
   assert.equal(await page.inputValue('#f-marca'), 'Otis', 'the conflict keeps the input');
+  assert.equal(await page.evaluate(() => globalThis.document.activeElement?.classList.contains('rv-conflict')), true, 'the notice focused (in view)');
+  // saved knowingly from the bottom of the form: the sheet opens at its top, its notice in view
+  await page.evaluate(() => globalThis.scrollTo(0, globalThis.document.body.scrollHeight));
   await Promise.all([page.waitForURL(/\/app\/rilievi\/[a-z0-9]+$/), page.click('form[data-scheda-form] button[type="submit"]')]);
   await page.waitForSelector('.rv-flash');
+  assert.equal(await page.evaluate(() => globalThis.scrollY), 0, 'the saved sheet opens at its top');
   assert.ok((await page.textContent('.rv-plate-specs'))?.includes('Otis'), 'saved knowingly');
 
   step('Rilievi: the activity log, to the trash and back');

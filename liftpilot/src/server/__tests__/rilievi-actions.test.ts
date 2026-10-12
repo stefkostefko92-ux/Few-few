@@ -166,6 +166,7 @@ test('la versione aperta: chi salva su una versione superata riceve il conflitto
   assert.equal(current?.marca, 'Otis', 'the other person’s change is not overwritten');
   assert.ok(r.status === 'conflict' && r.values.marca === 'Kone', 'the input stays on the screen');
   assert.ok(r.status === 'conflict' && r.base === (current?.updatedAt as Date).toISOString(), 'the base is now the current version');
+  assert.ok(r.status === 'conflict' && /^Ultima modifica di Anna Neri il \d\d\/\d\d\/\d{4}, \d\d:\d\d$/.test(r.updated), 'the head names the version that caused it');
   // saved again knowingly, over the version seen
   assert.match(await redirected(updateRilievoAction({ status: 'idle' }, form({ ...SHEET, id, base: r.status === 'conflict' ? r.base : '', marca: 'Kone' }))), /ok=schedaSaved/);
   assert.equal(schede.find((s) => s.id === id)?.marca, 'Kone');
@@ -233,4 +234,5 @@ test('i PDF: la scheda e il modulo compilato, da scaricare o da stampare; altrim
   assert.equal((await get(modulo, '', { id, modulo: 'ordine-quadro' })).status, 404);
   user = null;
   assert.equal((await get(sheet, '', { id })).status, 401);
+  assert.equal((await get(modulo, '', { id, modulo: 'altro' })).status, 404, 'an unknown module path: 404 before the sign-in and the download quota');
 });
