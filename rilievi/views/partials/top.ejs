@@ -1,8 +1,10 @@
 <%
   // Заглавие на страницата < 60 знака: „<страница> — Rilievi Impianti“.
   const pageTitle = (typeof title !== 'undefined' && title) ? title : t(titleKey);
-  const sheets = ['base', 'layout', 'plate', 'forms', 'pages', 'data', 'misure', 'moduli'];
   const narrow = typeof narrowMain !== 'undefined' && narrowMain;
+  const bareMain = typeof bare !== 'undefined' && bare;
+  // Входът е без лентата на портала, но с чертежа на шахтата (shaft.css).
+  const sheets = ['base', 'buttons', 'shell', 'layout', 'plate', 'forms', 'pages', 'data', 'sheet', 'misure', 'moduli'].concat(bareMain ? ['shaft'] : []);
 %><!doctype html>
 <html lang="<%= locale %>"<% if (theme === 'LIGHT') { %> data-theme="light"<% } else if (theme === 'DARK') { %> data-theme="dark"<% } %>>
 <head>
@@ -23,6 +25,6 @@
 </head>
 <body>
 <a class="skip" href="#main"><%= t('nav.skip') %></a>
-<% if (currentUser && !(typeof bare !== 'undefined' && bare)) { %><%- include('header') %><% } %>
-<main id="main" class="main<%= narrow ? ' main--narrow' : '' %>" tabindex="-1">
-<%- include('flash') %>
+<% if (currentUser && !bareMain) { %><%- include('header') %><% } %>
+<main id="main" class="<%= bareMain ? 'main-bare' : 'main' + (narrow ? ' main--narrow' : '') %>" tabindex="-1">
+<% if (!bareMain) { %><%- include('flash') %><% } %>

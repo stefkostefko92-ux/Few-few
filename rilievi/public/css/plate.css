@@ -130,29 +130,3 @@
     text-align: left;
   }
 }
-
-/* Табелата на входа: марката, продуктът и правилото за достъп. */
-.plate--brand {
-  text-align: center;
-  padding: 30px 26px 26px;
-}
-
-.plate--brand .plate__big {
-  font-size: clamp(1.375rem, 1rem + 1.6vw, 1.875rem);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.plate--brand .plate__rule {
-  margin: 14px auto 0;
-  padding-top: 12px;
-  max-width: 34ch;
-  border-top: 1px solid var(--line);
-  color: var(--muted);
-}
-
-.brand__mark rect,
-.brand__mark circle {
-  fill: none;
-  stroke: currentColor;
-}

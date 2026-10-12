@@ -211,7 +211,8 @@
       "identifierNeeded": "Compila almeno indirizzo, matricola o n° impianto.",
       "azienda": "Scegli l'azienda della scheda."
     },
-    "compiledBy": "Compilata da"
+    "compiledBy": "Compilata da",
+    "index": "Sezioni della scheda"
   },
   "trash": {
     "title": "Cestino",

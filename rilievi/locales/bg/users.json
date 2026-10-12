@@ -106,10 +106,16 @@
       "AZIENDA_LOGO": "Логото на фирмата сменено",
       "AZIENDA_DEACTIVATE": "Фирмата деактивирана",
       "AZIENDA_REACTIVATE": "Фирмата активирана отново",
-      "USER_AZIENDA": "Акаунтът преместен в друга фирма"
+      "USER_AZIENDA": "Акаунтът преместен в друга фирма",
+      "ACCESS_REQUEST": "Получена заявка за достъп",
+      "ACCESS_REQUEST_UPDATE": "Заявката за достъп е обновена от заявителя",
+      "ACCESS_REQUEST_ACCEPT": "Заявката за достъп е приета",
+      "ACCESS_REQUEST_REJECT": "Заявката за достъп е отказана",
+      "ACCESS_REQUEST_DELETE": "Заявката за достъп е изтрита"
     },
     "azienda": "Фирма",
     "platform": "Портал",
-    "openAzienda": "Отвори фирмата"
+    "openAzienda": "Отвори фирмата",
+    "openRequest": "Отвори заявката"
   }
 }

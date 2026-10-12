@@ -91,8 +91,12 @@ function logoData(logo: Logo | null) {
 }
 
 /** Името е уникално без значение от главни/малки букви („Panev“ и „PANEV“ са една фирма). */
-async function nameTaken(name: string, exceptId?: string): Promise<boolean> {
-  const found = await prisma.azienda.findFirst({
+export async function nameTaken(
+  name: string,
+  exceptId?: string,
+  db: Prisma.TransactionClient = prisma,
+): Promise<boolean> {
+  const found = await db.azienda.findFirst({
     where: {
       name: { equals: name, mode: 'insensitive' },
       ...(exceptId ? { id: { not: exceptId } } : {}),
@@ -102,7 +106,7 @@ async function nameTaken(name: string, exceptId?: string): Promise<boolean> {
   return found !== null;
 }
 
-function isUniqueViolation(error: unknown): boolean {
+export function isUniqueViolation(error: unknown): boolean {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002';
 }
 
@@ -114,28 +118,35 @@ export async function createAzienda(
 ): Promise<SaveAziendaResult> {
   if (await nameTaken(input.name)) return { ok: false, error: 'nameTaken' };
   try {
-    const azienda = await prisma.$transaction(async (tx) => {
-      const created = await tx.azienda.create({
-        data: { name: input.name, ...logoData(input.logo) },
-        select: { id: true },
-      });
-      await writeAudit(
-        {
-          actorId: actor.id,
-          action: 'AZIENDA_CREATE',
-          aziendaId: created.id,
-          targetType: 'azienda',
-          targetId: created.id,
-        },
-        tx,
-      );
-      return created;
-    });
+    const azienda = await prisma.$transaction((tx) => insertAzienda(tx, actor, input));
     return { ok: true, id: azienda.id };
   } catch (error) {
     if (isUniqueViolation(error)) return { ok: false, error: 'nameTaken' };
     throw error;
   }
+}
+
+/** Записът на нова фирма с одита ѝ — в транзакцията на извикващия (името е проверено от него). */
+export async function insertAzienda(
+  tx: Prisma.TransactionClient,
+  actor: SessionUser,
+  input: { name: string; logo: Logo | null },
+): Promise<{ id: string }> {
+  const created = await tx.azienda.create({
+    data: { name: input.name, ...logoData(input.logo) },
+    select: { id: true },
+  });
+  await writeAudit(
+    {
+      actorId: actor.id,
+      action: 'AZIENDA_CREATE',
+      aziendaId: created.id,
+      targetType: 'azienda',
+      targetId: created.id,
+    },
+    tx,
+  );
+  return created;
 }
 
 export async function renameAzienda(

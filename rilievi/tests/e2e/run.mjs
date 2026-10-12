@@ -1,19 +1,21 @@
-// End-to-end check of a running portal in a real Chromium: sign-in, a company with its logo, a full
-// sheet (the fields that appear with the door type, the alarm, one measurement row per stop that
-// follows "Fermate" while it is typed), search, print, PDF, the company ADMIN invited by the MASTER, a
-// technician invited by that ADMIN who sees the company's sheets, and accessibility (axe-core, WCAG 2.1
-// AA) on every page, in the light and the dark theme. Screenshots land in tests/e2e/shots/ (git-ignored).
+// End-to-end check of a running portal in a real Chromium: the public pages and an access request
+// accepted by the MASTER (site.mjs), sign-in, a company with its logo, a full sheet (the fields that
+// appear with the door type, the alarm, one measurement row per stop that follows "Fermate" while it
+// is typed), search, print, PDF, the company ADMIN invited by the MASTER, a technician invited by that
+// ADMIN who sees the company's sheets, and accessibility (axe-core, WCAG 2.1 AA) on every page, in the
+// light and the dark theme. Screenshots land in tests/e2e/shots/ (git-ignored).
 //
 //   RILIEVI_URL=http://127.0.0.1:4330 E2E_EMAIL=… E2E_PASSWORD=… npm run test:e2e
 //
 // The account must be a MASTER (companies are theirs). It creates real records — run it against a
 // local or staging portal, never production.
-import { mkdirSync, readFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
+import { mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import sharp from 'sharp';
+import { audit, fail, failures, signIn as signInAt, tick } from './helpers.mjs';
+import { checkSite } from './site.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const base = (process.env.RILIEVI_URL ?? 'http://127.0.0.1:4330').replace(/\/+$/, '');
@@ -25,46 +27,7 @@ if (!email || !password) {
 }
 const shots = join(here, 'shots');
 mkdirSync(shots, { recursive: true });
-const axeSource = readFileSync(
-  createRequire(import.meta.url).resolve('axe-core/axe.min.js'),
-  'utf8',
-);
-const failures = [];
-const fail = (message) => {
-  failures.push(message);
-  console.error(`✘ ${message}`);
-};
-
-async function audit(page, name) {
-  // page.evaluate is not subject to the page CSP, so axe runs without weakening it.
-  await page.evaluate(axeSource);
-  const result = await page.evaluate(() =>
-    window.axe.run(document, {
-      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa'] },
-    }),
-  );
-  for (const violation of result.violations) {
-    if (violation.impact === 'serious' || violation.impact === 'critical') {
-      fail(`${name}: ${violation.id} (${violation.impact}) × ${violation.nodes.length}`);
-    }
-  }
-}
-
-async function signIn(page, who, secret) {
-  await page.goto(`${base}/accesso`);
-  await page.fill('#email', who);
-  await page.fill('#password', secret);
-  await page.click('form button[type=submit]');
-  await page.waitForURL(/\/(schede|account)/);
-}
-
-// The real input sits under its label (visually a tick box); a DOM click is what a tap on the label does,
-// and it is not intercepted by the sticky save bar when the field scrolls under it.
-const tick = (page, name, value) =>
-  page.locator(`input[name=${name}][value=${value}]`).evaluate((input) => {
-    if (!input.checked) input.click();
-  });
-
+const signIn = (page, who, secret) => signInAt(page, base, who, secret);
 const browser = await chromium.launch();
 let sheetUrl = '';
 let aziendaPath = '';
@@ -94,6 +57,9 @@ async function acceptInvite(context, link, name) {
   return page;
 }
 try {
+  // The public side first: the landing pages in three languages and an access request, accepted by
+  // the MASTER as a new company with its administrator invited.
+  await checkSite(browser, { base, shots, email, password });
   for (const scheme of ['light', 'dark']) {
     const context = await browser.newContext({
       colorScheme: scheme,
@@ -232,6 +198,7 @@ try {
       ['company', aziendaPath],
       ['new-company', '/aziende/nuova'],
       ['log', '/registro'],
+      ['requests', '/richieste?stato=ALL'],
       ['account', '/account'],
     ]) {
       await page.goto(base + path);

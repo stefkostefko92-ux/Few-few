@@ -42,3 +42,19 @@ export function resetMail(
     }),
   };
 }
+
+/**
+ * Нова заявка за достъп — до всеки активен MASTER, на неговия език. В писмото е само името на фирмата и
+ * връзката към заявката (зад вход): имейлът и телефонът на заявителя не пътуват по пощата.
+ */
+export function accessRequestMail(
+  locale: Locale,
+  params: { to: string; company: string; link: string },
+): MailMessage {
+  const t = translatorFor(locale);
+  return {
+    to: params.to,
+    subject: t('mail.request.subject'),
+    text: t('mail.request.body', { company: params.company, link: params.link }),
+  };
+}

@@ -28,6 +28,9 @@ describe('config', () => {
 
   it('treats an empty SMTP host from compose as "no mail"', () => {
     assert.equal(loadConfig({ ...base, SMTP_HOST: '' }).SMTP_HOST, undefined);
+    // An empty address from docker-compose (`${CONTACT_EMAIL:-}`) means the default, a bad one fails.
+    assert.equal(loadConfig({ ...base, CONTACT_EMAIL: '' }).CONTACT_EMAIL, 'info@carbonstealth.eu');
+    assert.throws(() => loadConfig({ ...base, PRIVACY_EMAIL: 'nope' }), /PRIVACY_EMAIL/);
   });
 });
 

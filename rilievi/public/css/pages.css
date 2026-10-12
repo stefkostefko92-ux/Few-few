@@ -1,4 +1,4 @@
-/* Части на страниците: известия, лентата за запис, страниците за вход, копирането на връзка. */
+/* Части на страниците: известия, лентата за запис, страниците за вход, копирането на връзка, логото. */
 
 .notice {
   padding: 16px 18px;
@@ -11,7 +11,8 @@
   margin-top: 10px;
 }
 
-/* Лентата със „Salva“ остава под палеца, докато се попълва дългата схема. */
+/* Лентата със „Salva“ остава под палеца, докато се попълва дългата схема — черна като горната лента.
+   Сянката с 100vmax я разпъва до ръбовете на екрана и когато формата е в тясна колона. */
 .actions {
   position: sticky;
   bottom: 0;
@@ -22,26 +23,111 @@
   align-items: center;
   margin: 0 calc(var(--gutter) * -1);
   padding: 12px var(--gutter) calc(12px + env(safe-area-inset-bottom));
-  background: var(--bg);
-  border-top: 1.5px solid var(--line-strong);
+  background: var(--bar);
+  color: var(--bar-fg);
+  border-top: 1px solid var(--bar-edge);
+  box-shadow: 0 0 0 100vmax var(--bar);
+  clip-path: inset(0 -100vmax);
+}
+
+.actions :focus-visible {
+  outline-color: var(--bar-fg);
 }
 
 .actions__hint {
   margin-left: auto;
-  color: var(--muted);
+  color: var(--bar-muted);
   font-size: 0.875rem;
 }
 
-/* Страниците за вход: табелата с марката и формата под нея, в тясна колона. */
-.auth {
-  display: grid;
-  gap: 28px;
-  width: 100%;
-  max-width: 440px;
-  margin: 0 auto;
-  padding: 40px var(--gutter) 56px;
+/* Входът: черният панел с марката и чертежа на шахтата вляво, формата вдясно. На телефон панелът е
+   само лента с марката. */
+.main-bare {
+  flex: 1;
+  display: flex;
 }
 
+.auth {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+}
+
+.auth__panel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 24px;
+  padding: 28px clamp(24px, 4vw, 56px) 32px;
+  background: var(--bar);
+  color: var(--bar-fg);
+  border-right: 1px solid var(--bar-edge);
+}
+
+.auth__panel :focus-visible {
+  outline-color: var(--bar-fg);
+}
+
+.auth__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  justify-self: start;
+  color: inherit;
+  text-decoration: none;
+}
+
+.auth__brandtext {
+  display: grid;
+  line-height: 1.1;
+}
+
+.auth__name {
+  font-family: var(--font-cond);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.auth__product {
+  font-size: 0.8125rem;
+  color: var(--bar-muted);
+}
+
+.auth__drawing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+.auth__drawing .shaft {
+  height: min(64vh, 600px);
+}
+
+.auth__rule {
+  max-width: 36ch;
+  color: var(--bar-muted);
+}
+
+.auth__main {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 28px;
+  padding: 56px var(--gutter);
+}
+
+.auth__main > .flash,
+.auth__box,
+.auth__request {
+  width: 100%;
+  max-width: 420px;
+}
+
+.auth__main > .flash {
+  margin-bottom: 0;
+}
+
+.auth__box,
 .auth__form {
   display: grid;
   gap: 18px;
@@ -52,6 +138,48 @@
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 12px;
+}
+
+.auth__request {
+  display: grid;
+  gap: 12px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.auth__request strong {
+  color: var(--fg);
+}
+
+@media (max-width: 899px) {
+  .main-bare {
+    display: block;
+  }
+
+  .auth {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .auth__panel {
+    grid-template-rows: auto;
+    gap: 6px;
+    padding: 18px var(--gutter);
+    border-right: 0;
+    border-bottom: 1px solid var(--bar-edge);
+  }
+
+  .auth__drawing {
+    display: none;
+  }
+
+  .auth__rule {
+    font-size: 0.875rem;
+  }
+
+  .auth__main {
+    padding: 36px var(--gutter) 48px;
+  }
 }
 
 .btn--block {

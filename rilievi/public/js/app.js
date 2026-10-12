@@ -248,4 +248,31 @@
     const fontsReady = document.fonts ? document.fonts.ready : Promise.resolve();
     fontsReady.then(() => setTimeout(() => window.print(), 250));
   }
+
+  // Section index of a long sheet: marks the first section on screen. The links work without this.
+  const index = document.querySelector('[data-secindex]');
+  if (index && 'IntersectionObserver' in window) {
+    const links = new Map(
+      Array.from(index.querySelectorAll('a[href^="#s-"]'), (a) => [a.hash.slice(1), a]),
+    );
+    const onScreen = new Set();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) =>
+          entry.isIntersecting ? onScreen.add(entry.target.id) : onScreen.delete(entry.target.id),
+        );
+        const first = Array.from(links.keys()).find((id) => onScreen.has(id));
+        links.forEach((link, id) =>
+          id === first
+            ? link.setAttribute('aria-current', 'true')
+            : link.removeAttribute('aria-current'),
+        );
+      },
+      { rootMargin: '-88px 0px -55% 0px' },
+    );
+    links.forEach((_, id) => {
+      const section = document.getElementById(id);
+      if (section) observer.observe(section);
+    });
+  }
 })();

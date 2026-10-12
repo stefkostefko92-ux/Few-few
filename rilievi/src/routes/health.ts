@@ -16,14 +16,6 @@ healthRouter.get('/health', async (_req, res) => {
   }
 });
 
-/** Порталът е само за поканени — търсачките нямат работа тук (и не бива да издават, че съществува). */
-healthRouter.get('/robots.txt', (_req, res) => {
-  res
-    .type('text/plain')
-    .set('Cache-Control', 'public, max-age=86400')
-    .send('User-agent: *\nDisallow: /\n');
-});
-
 healthRouter.get('/favicon.ico', (_req, res) => {
   res.redirect(301, '/static/img/favicon.svg');
 });

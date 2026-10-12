@@ -8,13 +8,13 @@ import { pinoHttp } from 'pino-http';
 import { config, isProduction, mailEnabled } from './config.js';
 import { errorMessage, httpLogOptions, logger } from './logger.js';
 import { ROOT } from './paths.js';
-import { renderError } from './auth/guards.js';
+import { isPartial, renderError, SAFE_METHODS } from './auth/guards.js';
 import { can, type Capability } from './auth/roles.js';
 import { attachSession } from './auth/sessions.js';
 import { readFlash } from './http/flash.js';
 import { writeLimiter } from './http/limits.js';
 import { applyPrefs, attachPrefs, prefUrl, THEME_PARAM } from './http/prefs.js';
-import { DEFAULT_LOCALE, LOCALE_LABEL, LOCALES, isLocale } from './i18n.js';
+import { DEFAULT_LOCALE, LOCALE_LABEL, LOCALES, isLocale, type Locale } from './i18n.js';
 import { PASSWORD_MIN_LENGTH } from './auth/password.js';
 import { accountRouter } from './routes/account.js';
 import { auditRouter } from './routes/audit.js';
@@ -23,8 +23,12 @@ import { aziendeRouter } from './routes/aziende.js';
 import { cestinoRouter } from './routes/cestino.js';
 import { ordiniRouter } from './routes/ordini.js';
 import { healthRouter } from './routes/health.js';
+import { requestsRouter } from './routes/requests.js';
 import { schedeRouter } from './routes/schede.js';
+import { siteRouter } from './routes/site.js';
 import { usersRouter } from './routes/users.js';
+import { countNewRequests } from './requests/service.js';
+import { publicPath } from './seo/paths.js';
 
 /** Кратък отпечатък на статичните файлове — сменя адреса на CSS/JS при всяка промяна (кешът е дълъг). */
 function assetVersion(): string {
@@ -59,6 +63,8 @@ function baseLocals(req: Request, res: Response): void {
   res.locals.mailEnabled = mailEnabled();
   res.locals.passwordMin = PASSWORD_MIN_LENGTH;
   res.locals.path = req.path;
+  // Витрината на езика на страницата — входът и празните страници водят към заявката за достъп.
+  res.locals.landingPath = (locale: Locale): string => publicPath(locale, 'home');
   // Страница след POST (връзката на поканата) не се отваря пак с GET — там превключватели няма.
   res.locals.switchUrl = (key: 'lang' | 'tema', value: string): string | null => {
     if (req.method !== 'GET' && req.method !== 'HEAD') return null;
@@ -164,7 +170,26 @@ export function createServer(): Express {
     baseLocals(req, res);
     next();
   });
+  // Броят на новите заявки за достъп до „Richieste“ — само за MASTER и само на цяла страница.
+  app.use(async (req: Request, res: Response, next: NextFunction) => {
+    res.locals.newRequests = 0;
+    const user = req.principal?.user;
+    if (
+      user &&
+      can(user.role, 'requests:manage') &&
+      SAFE_METHODS.has(req.method) &&
+      !isPartial(req)
+    ) {
+      try {
+        res.locals.newRequests = await countNewRequests();
+      } catch (error) {
+        logger.warn({ err: errorMessage(error) }, 'броят на заявките не се прочете');
+      }
+    }
+    next();
+  });
   app.use(writeLimiter);
+  app.use(siteRouter);
   app.use(authRouter);
   app.use(accountRouter);
   app.use(schedeRouter);
@@ -172,6 +197,7 @@ export function createServer(): Express {
   app.use(ordiniRouter);
   app.use(usersRouter);
   app.use(aziendeRouter);
+  app.use(requestsRouter);
   app.use(auditRouter);
 
   app.use((req: Request, res: Response) => {

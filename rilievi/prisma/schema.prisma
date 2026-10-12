@@ -65,6 +65,21 @@ enum ArganoMarca {
   ALTRO
 }
 
+/// Колко души ще ползват портала — по избор в заявката за достъп.
+enum TeamSize {
+  S1_5
+  S6_20
+  S21_50
+  S50_PLUS
+}
+
+/// Заявката за достъп: нова, приета (фирмата е създадена и администраторът е поканен) или отказана.
+enum AccessRequestStatus {
+  NEW
+  ACCEPTED
+  REJECTED
+}
+
 /// Фирма — клиент на портала: свои хора, свои карти, свое лого на листа. Създава я само MASTER
 /// (собственикът на портала); всяка фирма вижда само своето (src/auth/scope.ts).
 model Azienda {
@@ -81,10 +96,11 @@ model Azienda {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  users   User[]
-  invites Invite[]
-  schede  Scheda[]
-  audit   AuditLog[]
+  users          User[]
+  invites        Invite[]
+  schede         Scheda[]
+  audit          AuditLog[]
+  accessRequests AccessRequest[]
 }
 
 /// Акаунт. Създава се САМО от приета покана (или от `owner:create` за първия MASTER) — регистрация няма.
@@ -113,15 +129,16 @@ model User {
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
-  invitedUsers  User[]          @relation("InvitedUsers")
-  sessions      Session[]
-  invitesSent   Invite[]        @relation("InvitesSent")
-  resets        PasswordReset[] @relation("ResetsFor")
-  resetsCreated PasswordReset[] @relation("ResetsCreated")
-  schedeCreated Scheda[]        @relation("SchedeCreated")
-  schedeUpdated Scheda[]        @relation("SchedeUpdated")
-  schedeDeleted Scheda[]        @relation("SchedeDeleted")
-  auditEntries  AuditLog[]
+  invitedUsers    User[]          @relation("InvitedUsers")
+  sessions        Session[]
+  invitesSent     Invite[]        @relation("InvitesSent")
+  resets          PasswordReset[] @relation("ResetsFor")
+  resetsCreated   PasswordReset[] @relation("ResetsCreated")
+  schedeCreated   Scheda[]        @relation("SchedeCreated")
+  schedeUpdated   Scheda[]        @relation("SchedeUpdated")
+  schedeDeleted   Scheda[]        @relation("SchedeDeleted")
+  auditEntries    AuditLog[]
+  requestsDecided AccessRequest[] @relation("AccessRequestsDecided")
 
   @@index([invitedById])
   @@index([role])
@@ -146,27 +163,63 @@ model Session {
 
 /// Покана: връзка с еднократен токен (в базата е само SHA-256 хешът), валидна INVITE_DAYS дни.
 model Invite {
-  id             String    @id @default(cuid())
+  id             String         @id @default(cuid())
   email          String
   name           String?
   role           Role
-  locale         String    @default("it")
+  locale         String         @default("it")
   /// Фирмата, в която влиза поканеният — избрана от MASTER или фирмата на администратора, който кани.
   aziendaId      String
-  azienda        Azienda   @relation(fields: [aziendaId], references: [id], onDelete: Restrict)
-  tokenHash      String    @unique
+  azienda        Azienda        @relation(fields: [aziendaId], references: [id], onDelete: Restrict)
+  tokenHash      String         @unique
   invitedById    String
-  invitedBy      User      @relation("InvitesSent", fields: [invitedById], references: [id], onDelete: Cascade)
+  invitedBy      User           @relation("InvitesSent", fields: [invitedById], references: [id], onDelete: Cascade)
   expiresAt      DateTime
   acceptedAt     DateTime?
   acceptedUserId String?
   revokedAt      DateTime?
-  createdAt      DateTime  @default(now())
+  createdAt      DateTime       @default(now())
+  /// Заявката за достъп, от която е поканата (ако е от заявка).
+  accessRequest  AccessRequest?
 
   @@index([email])
   @@index([invitedById])
   @@index([expiresAt])
   @@index([aziendaId])
+}
+
+/// Заявка за достъп от публичната страница: фирма иска да влезе в портала. Регистрация няма — MASTER
+/// разглежда заявката и при „да“ създава фирмата (или избира съществуваща) и кани администратора ѝ
+/// (src/requests/). Изтрива се 180 дни след последната промяна (maintenance.ts) или ръчно от MASTER.
+model AccessRequest {
+  id          String              @id @default(cuid())
+  name        String              @db.VarChar(120)
+  company     String              @db.VarChar(120)
+  /// Винаги с малки букви (src/auth/email.ts).
+  email       String              @db.VarChar(254)
+  phone       String?             @db.VarChar(40)
+  city        String?             @db.VarChar(120)
+  teamSize    TeamSize?
+  message     String?             @db.VarChar(2000)
+  /// Езикът на страницата, от която е пратена — на него тръгва и поканата.
+  locale      String              @default("it") @db.VarChar(5)
+  status      AccessRequestStatus @default(NEW)
+  /// При приемане: фирмата, в която е поканен администраторът, и самата покана.
+  aziendaId   String?
+  azienda     Azienda?            @relation(fields: [aziendaId], references: [id], onDelete: SetNull)
+  inviteId    String?             @unique
+  invite      Invite?             @relation(fields: [inviteId], references: [id], onDelete: SetNull)
+  decidedById String?
+  decidedBy   User?               @relation("AccessRequestsDecided", fields: [decidedById], references: [id], onDelete: SetNull)
+  decidedAt   DateTime?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@index([status, createdAt])
+  @@index([email])
+  @@index([aziendaId])
+  @@index([decidedById])
+  @@index([updatedAt])
 }
 
 /// Връзка за нова парола: от самия човек („забравена парола“, ако има SMTP) или от по-висок ранг.

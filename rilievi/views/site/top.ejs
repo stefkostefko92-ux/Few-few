@@ -1,0 +1,74 @@
+<%
+  // Главата на публичните страници: пълният SEO набор (canonical, hreflang, Open Graph, Twitter, geo,
+  // JSON-LD) и черната лента с марката, езиците, „Accedi“ и „Richiedi l'accesso“.
+  // Страницата след заявка е `noindex` — достига се само след формата.
+  const indexable = !(typeof noindex !== 'undefined' && noindex);
+  const sheets = ['base', 'buttons', 'forms', 'site', 'shaft', 'site-hero', 'site-parts', 'site-request'];
+  const ogLocale = { it: 'it_IT', bg: 'bg_BG', en: 'en_GB' };
+  const showNav = typeof sectionNav !== 'undefined' && sectionNav;
+  const pathOf = (href) => href.slice(publicBase.length);
+%><!doctype html>
+<html lang="<%= locale %>"<% if (theme === 'LIGHT') { %> data-theme="light"<% } else if (theme === 'DARK') { %> data-theme="dark"<% } %>>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title><%= pageTitle %></title>
+<meta name="description" content="<%= description %>">
+<meta name="keywords" content="<%= t('site.meta.keywords') %>">
+<meta name="author" content="Carbon Stealth VCC">
+<meta name="robots" content="<%= indexable ? 'index, follow' : 'noindex, nofollow' %>">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#000000">
+<% if (canonical) { %><link rel="canonical" href="<%= canonical %>">
+<% for (const alt of alternates) { %><link rel="alternate" hreflang="<%= alt.locale %>" href="<%= alt.href %>">
+<% } %><link rel="alternate" hreflang="x-default" href="<%= alternates[0].href %>">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Rilievi Impianti">
+<meta property="og:title" content="<%= pageTitle %>">
+<meta property="og:description" content="<%= description %>">
+<meta property="og:url" content="<%= canonical %>">
+<meta property="og:locale" content="<%= ogLocale[locale] %>">
+<% for (const alt of alternates.filter((a) => a.locale !== locale)) { %><meta property="og:locale:alternate" content="<%= ogLocale[alt.locale] %>">
+<% } %><meta property="og:image" content="<%= publicBase %>/static/img/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="<%= t('site.meta.imageAlt') %>">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="<%= pageTitle %>">
+<meta name="twitter:description" content="<%= description %>">
+<meta name="twitter:image" content="<%= publicBase %>/static/img/og.png">
+<meta name="twitter:image:alt" content="<%= t('site.meta.imageAlt') %>">
+<meta name="geo.region" content="<%= company.geo.region %>">
+<meta name="geo.placename" content="<%= t('company.city') %>">
+<meta name="geo.position" content="<%= company.geo.latitude %>;<%= company.geo.longitude %>">
+<meta name="ICBM" content="<%= company.geo.latitude %>, <%= company.geo.longitude %>">
+<% } %><link rel="icon" href="/static/img/favicon.svg?v=<%= v %>" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/static/img/apple-touch-icon.png?v=<%= v %>">
+<link rel="stylesheet" href="/static/fonts/fonts.css?v=<%= v %>">
+<% for (const sheet of sheets) { %><link rel="stylesheet" href="/static/css/<%= sheet %>.css?v=<%= v %>">
+<% } %><% if (typeof jsonLd !== 'undefined' && jsonLd) { %><script type="application/ld+json" nonce="<%= cspNonce %>"><%- jsonLd %></script>
+<% } %></head>
+<body class="site">
+<a class="skip" href="#main"><%= t('nav.skip') %></a>
+<header class="sitebar">
+  <div class="sitebar__inner">
+    <a class="sitebar__brand" href="<%= homePath %>">
+      <%- include('../partials/brandmark') %>
+      <span class="sitebar__name">Rilievi Impianti<span class="sitebar__by"><%= t('site.by') %></span></span>
+    </a>
+    <% if (showNav) { %><nav class="sitebar__nav" aria-label="<%= t('site.nav.label') %>">
+      <a href="#scheda"><%= t('site.nav.scheda') %></a>
+      <a href="#come"><%= t('site.nav.come') %></a>
+      <a href="#faq"><%= t('site.nav.faq') %></a>
+    </nav><% } %>
+    <div class="sitebar__end">
+      <nav class="langs" aria-label="<%= t('switch.language') %>">
+        <% for (const alt of alternates) { %><a href="<%= pathOf(alt.href) %>" hreflang="<%= alt.locale %>" lang="<%= alt.locale %>"<% if (alt.locale === locale) { %> aria-current="true"<% } %>><span aria-hidden="true"><%= alt.locale.toUpperCase() %></span><span class="visually-hidden"><%= localeLabel[alt.locale] %></span></a>
+        <% } %>
+      </nav>
+      <a class="btn btn--sm btn--bar" href="<%= signedIn ? '/schede' : loginUrl %>"><%= t(signedIn ? 'site.nav.app' : 'site.nav.login') %></a>
+      <% if (!signedIn) { %><a class="btn btn--sm btn--inverse sitebar__cta" href="<%= homePath %>#richiesta"><%= t('site.nav.request') %></a><% } %>
+    </div>
+  </div>
+</header>
+<main id="main" class="sitemain" tabindex="-1">

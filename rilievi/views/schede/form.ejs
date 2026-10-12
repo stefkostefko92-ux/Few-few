@@ -44,6 +44,8 @@
   <a class="btn btn--primary" href="/aziende/nuova"><%- include('../partials/icon', { name: 'plus' }) %><%= t('aziende.new') %></a>
 </div>
 <% } else { %>
+<div class="with-index">
+<%- include('_index', { titles: sections.map((s) => ({ key: s.key, title: t('scheda.section.' + s.key) })) }) %>
 <form class="form" method="post" action="<%= action %>" novalidate data-scheda-form>
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <% if (!isEdit && aziende.length > 0) { %>
@@ -60,9 +62,9 @@
   <p class="muted"><%= t('scheda.field.azienda') %>: <strong><%= scheda.azienda.name %></strong></p>
   <% } %>
   <% if (isEdit) { %><input type="hidden" name="base" value="<%= conflict ? scheda.updatedAt.toISOString() : base %>"><% } %>
-  <% for (const section of sections) { %>
+  <% sections.forEach((section, index) => { %>
   <fieldset class="section" id="s-<%= section.key %>">
-    <legend class="section__title"><%= t('scheda.section.' + section.key) %></legend>
+    <legend class="section__title"><span class="secnum" aria-hidden="true"><%= index + 1 %></span><%= t('scheda.section.' + section.key) %></legend>
     <% if (section.key === 'impianto') { %><p class="field__hint<%= errors[identifiersErrorKey] ? ' field__error' : '' %>" id="identifiers-hint"><%= t('scheda.identifiersHint') %></p><% } %>
     <div class="grid">
       <% for (const field of section.fields) { %><%- include('_field', { field, value: values[field.key], error: errors[field.key] }) %>
@@ -71,13 +73,14 @@
       <% } %>
     </div>
   </fieldset>
-  <% } %>
+  <% }) %>
   <div class="actions">
-    <button class="btn btn--primary" type="submit"><%= t(isEdit ? 'schede.edit.submit' : 'schede.create.submit') %></button>
-    <a class="btn btn--ghost" href="<%= isEdit ? '/schede/' + scheda.id : '/schede' %>"><%= t('common.cancel') %></a>
+    <button class="btn btn--inverse" type="submit"><%= t(isEdit ? 'schede.edit.submit' : 'schede.create.submit') %></button>
+    <a class="btn btn--bar" href="<%= isEdit ? '/schede/' + scheda.id : '/schede' %>"><%= t('common.cancel') %></a>
     <span class="actions__hint" data-dirty-hint hidden><%= t('schede.unsaved') %></span>
   </div>
 </form>
+</div>
 <% } %>
 </div>
 <%- include('../partials/bottom') %>

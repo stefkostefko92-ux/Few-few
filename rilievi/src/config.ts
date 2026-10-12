@@ -7,6 +7,10 @@ const flag = z.enum(['true', 'false']).transform((value) => value === 'true');
 const optionalText = () =>
   z.preprocess((value) => (value === '' ? undefined : value), z.string().min(1).optional());
 
+/** Имейл с подразбираща се стойност; празното (`${CONTACT_EMAIL:-}` в compose) значи „подразбиращия се“. */
+const optionalEmail = (fallback: string) =>
+  z.preprocess((value) => (value === '' ? undefined : value), z.string().email().default(fallback));
+
 /** Всяка външна настройка минава през zod — процесът не тръгва с полуготов конфиг. */
 const schema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('production'),
@@ -38,6 +42,10 @@ const schema = z.object({
   PDF_FONT_DIR: z.string().min(1).default('/usr/share/fonts/truetype/dejavu'),
   /** Срок за пазене на одита в дни (по подразбиране 2 години). */
   AUDIT_RETENTION_DAYS: z.coerce.number().int().min(90).max(3650).default(730),
+  /** Адресът за връзка на публичната страница и в JSON-LD (същият като в другите продукти). */
+  CONTACT_EMAIL: optionalEmail('info@carbonstealth.eu'),
+  /** Адресът за въпроси по личните данни — в политиката за поверителност. */
+  PRIVACY_EMAIL: optionalEmail('privacy@carbonstealth.eu'),
 });
 
 export type AppConfig = z.infer<typeof schema>;

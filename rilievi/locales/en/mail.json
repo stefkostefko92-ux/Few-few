@@ -17,6 +17,10 @@
     "reset": {
       "subject": "New password — Rilievi Impianti",
       "body": "Hello,\n\nto choose a new password open this link:\n{link}\n\nThe link is valid for {validity} and works once. If you did not ask to change your password, ignore this email: your current password stays valid.\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+    },
+    "request": {
+      "subject": "New access request — Rilievi Impianti",
+      "body": "Hello,\n\nthe company {company} has asked for access to the Rilievi Impianti portal.\n\nOpen the request (you need to sign in to the portal):\n{link}\n\nCarbon Stealth VCC — https://carbonstealth.eu"
     }
   }
 }

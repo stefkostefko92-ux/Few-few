@@ -1,0 +1,283 @@
+{
+  "company": {
+    "street": "ul. Samuil 3",
+    "city": "Bobov Dol",
+    "region": "Kyustendil Province",
+    "country": "Bulgaria",
+    "areaServed": "European Union",
+    "legalName": "Carbon Stealth VCC",
+    "legalForm": "variable capital company (VCC) under Bulgarian law",
+    "eikLabel": "company no. (EIK)",
+    "vatLabel": "VAT no.",
+    "phoneLabel": "tel."
+  },
+  "site": {
+    "name": "Rilievi Impianti",
+    "by": "by Carbon Stealth VCC",
+    "home": "Home page",
+    "nav": {
+      "label": "Page sections",
+      "scheda": "The sheet",
+      "come": "How it works",
+      "faq": "Questions",
+      "login": "Sign in",
+      "request": "Request access",
+      "app": "Go to sheets"
+    },
+    "meta": {
+      "title": "Rilievi Impianti: the lift survey sheet",
+      "description": "Fill in the lift survey sheet on your phone, find it again by registration number or address and print it on A4 or as a PDF with your logo. Access on request.",
+      "keywords": "Carbon Stealth, lift survey sheet, elevator survey, lift maintenance software, elevator inspection form, lift registration number, Rilievi Impianti",
+      "imageAlt": "Section of a lift shaft drawn in white lines on black, with the name Rilievi Impianti",
+      "browser": "A recent browser: Chrome, Edge, Firefox or Safari"
+    },
+    "hero": {
+      "title": "The lift survey, field by field.",
+      "lead": "Rating plate, ropes, doors, control panel and machine, the push-button panels floor by floor: the technician fills in the sheet on a phone, the office finds it by registration number or address and prints it with the company logo.",
+      "request": "Request access",
+      "login": "Sign in",
+      "note": "There is no open sign-up: each company joins on request, then invites its own technicians."
+    },
+    "shaft": {
+      "title": "Section of a lift shaft",
+      "desc": "Machine room with control panel, traction machine and governor; ropes, car and counterweight; doors and push-button panels on floors 0 to 4; travelling cable and tensioner in the pit. The numbers point to the sections of the sheet."
+    },
+    "legend": {
+      "title": "The sheet, section by section",
+      "lead": "{fields} fields in {sections} sections, in the order of the paper sheet. Every number is also on the drawing, at the part of the lift the section describes.",
+      "extra": "Questions that do not apply to the lift stay hidden: the door operator appears only with automatic or semi-automatic doors, the number of locks only if there are locks."
+    },
+    "features": {
+      "title": "From the site visit to the office",
+      "search": {
+        "title": "Find any lift in a moment",
+        "text": "Search by lift number, registration number, address, make, work order or notes. Results arrive as you type and the exact number comes first."
+      },
+      "phone": {
+        "title": "Fill it in on site, on your phone",
+        "text": "Large fields even for gloved fingers, the unit inside the field and today's date already filled in. It runs in the browser, with no app to install."
+      },
+      "print": {
+        "title": "Print it or send the PDF",
+        "text": "The sheet comes out on A4 or as a PDF, with your company logo at the top and the name of the person who filled it in."
+      },
+      "orders": {
+        "title": "Order the control panel and the machine from the survey",
+        "text": "With a Pelazza control panel or a Montanari machine, the sheet fills in the supplier's original form and prepares it as a separate PDF. Pelazza and Montanari are trademarks of their respective owners."
+      },
+      "misure": {
+        "title": "Measure the push-button panels floor by floor",
+        "text": "Length, width, hole spacing and display of the old push-button panels: one row for every stop of the lift."
+      },
+      "safe": {
+        "title": "No work gets lost",
+        "text": "If two people edit the same sheet, the second one is warned instead of overwriting. Deleted sheets stay in the bin and every action goes into the log."
+      }
+    },
+    "roles": {
+      "title": "Every company in its own space",
+      "lead": "A company's sheets, people and logo are visible to that company only. Inside, six roles decide who views, who fills in, who deletes and who invites.",
+      "caption": "What each role can do",
+      "role": "Role",
+      "yes": "Yes",
+      "no": "No",
+      "cap": {
+        "schede:read": "View",
+        "schede:write": "Fill in",
+        "schede:delete": "Delete",
+        "schede:trash": "Bin",
+        "users:manage": "Invite people",
+        "audit:view": "Log"
+      },
+      "note": "Everyone invites only roles below their own. The portal administration (Carbon Stealth) creates the companies and can access all of them."
+    },
+    "steps": {
+      "title": "How to get access",
+      "s1": {
+        "title": "You send a request",
+        "text": "With the form below: name, company and email are enough."
+      },
+      "s2": {
+        "title": "We check it",
+        "text": "We read the request and create your company's space."
+      },
+      "s3": {
+        "title": "The administrator gets an invitation",
+        "text": "A personal link, valid for {days} days, to choose a password."
+      },
+      "s4": {
+        "title": "The administrator invites colleagues",
+        "text": "Technicians and office, each with their own role."
+      }
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "selfSignup": {
+        "q": "Can I sign up on my own?",
+        "a": "No. Access is only on request: you fill in the form, we check the details and send an invitation to your company's administrator."
+      },
+      "visibility": {
+        "q": "Who can see my company's sheets?",
+        "a": "Only the people in your company, according to their role. Other companies see nothing; the portal administration (Carbon Stealth) can access all companies."
+      },
+      "app": {
+        "q": "Do I need to install an app?",
+        "a": "No. The portal opens in the browser, on phones, tablets and computers."
+      },
+      "print": {
+        "q": "Can the sheet be printed?",
+        "a": "Yes: on A4 from the browser or as a PDF, with the company logo at the top and the name of the person who filled in the sheet."
+      },
+      "data": {
+        "q": "Where is the data kept?",
+        "a": "On a server in the European Union, in a database backed up every day."
+      },
+      "languages": {
+        "q": "Which languages does it support?",
+        "a": "Italian, Bulgarian and English. Everyone chooses their own language and a light or dark theme."
+      }
+    },
+    "request": {
+      "title": "Request access",
+      "lead": "Tell us who you are: we reply to the email address you give.",
+      "next": {
+        "title": "What happens next",
+        "s1": "We read the request and reply by email.",
+        "s2": "If everything is in order, we create your company's space and the administrator gets an invitation.",
+        "s3": "The details are used only to answer the request and we delete them after {days} days."
+      },
+      "contact": "Prefer to write?",
+      "privacyLink": "Privacy policy",
+      "optional": "optional",
+      "name": "Full name",
+      "company": "Company",
+      "email": "Work email",
+      "phone": "Phone",
+      "city": "City",
+      "teamSize": "How many people will use the portal?",
+      "teamSizeNone": "—",
+      "team": {
+        "S1_5": "1 to 5",
+        "S6_20": "6 to 20",
+        "S21_50": "21 to 50",
+        "S50_PLUS": "More than 50"
+      },
+      "message": "Message",
+      "messageHint": "For example how many lifts you maintain or what you need.",
+      "privacy": "I have read the privacy policy",
+      "honeypot": "Leave this field empty",
+      "submit": "Send the request",
+      "errorSummary": {
+        "one": "Check 1 field",
+        "other": "Check {n} fields"
+      },
+      "error": {
+        "required": "Fill in this field.",
+        "tooShort": "Write at least 2 characters.",
+        "tooLong": "Text too long: at most {max} characters.",
+        "email": "Write a valid email address, for example name@company.com.",
+        "phone": "Write the number in digits, optionally with spaces and the symbols + ( ) - . /",
+        "invalid": "Choose one of the options.",
+        "privacy": "Tick the box to send the request.",
+        "busy": "We have received too many requests today. Try again tomorrow or write to {email}."
+      }
+    },
+    "sent": {
+      "title": "Request sent",
+      "text": "Thank you. We will read the request and reply to the email address you gave. If everything is in order, your company's administrator will get an invitation by email.",
+      "back": "Back to the home page"
+    },
+    "footer": {
+      "pages": "Pages",
+      "contact": "Contact",
+      "legal": "Legal",
+      "trademarks": "The trademarks mentioned belong to their respective owners."
+    }
+  },
+  "privacy": {
+    "title": "Privacy policy",
+    "metaDescription": "Which personal data Rilievi Impianti by Carbon Stealth VCC processes, why, for how long and which rights you have under the GDPR.",
+    "updated": "Last updated: {date}",
+    "intro": "This policy explains which personal data the Rilievi Impianti portal processes, why, how long we keep it and which rights you have under the General Data Protection Regulation (GDPR).",
+    "who": {
+      "title": "Who processes the data",
+      "contact": "For questions about personal data, write to"
+    },
+    "roles": {
+      "title": "Controller and processor",
+      "text": "For the public website and access requests, the controller is Carbon Stealth VCC. For the accounts and sheets of a company that uses the portal, the controller is that company: Carbon Stealth processes them on its behalf, as a processor (Art. 28 GDPR), only to provide the portal. For this data, contact the company you work for first."
+    },
+    "table": {
+      "title": "Which data, why and for how long",
+      "data": "Data",
+      "why": "Why",
+      "basis": "Legal basis",
+      "kept": "Retention",
+      "request": {
+        "data": "Name, company, email, phone, city, number of people, message and language of the access request",
+        "why": "To assess the request, reply to it and, if accepted, create your company's space and invite its administrator",
+        "basis": "Pre-contractual steps at your request, Art. 6(1)(b) GDPR",
+        "kept": "{days} days after the request was last changed, then deleted automatically; earlier if you ask"
+      },
+      "account": {
+        "data": "Email, name, role, company, language and theme, password hash (Argon2id), date of the last sign-in, number of wrong passwords and active sessions",
+        "why": "The account and access to the portal on behalf of the company",
+        "basis": "On behalf of the controlling company (Art. 28 GDPR)",
+        "kept": "As long as the account exists; sessions until sign-out or expiry"
+      },
+      "audit": {
+        "data": "Activity log: who did what and when (without the content of the sheets and without IP addresses)",
+        "why": "Accountability for actions and protection in case of a dispute",
+        "basis": "On behalf of the controlling company; for access requests, legitimate interest, Art. 6(1)(f) GDPR",
+        "kept": "{auditDays} days, then deleted automatically"
+      },
+      "ip": {
+        "data": "IP address",
+        "why": "To limit repeated sign-in attempts and mass sending of requests",
+        "basis": "Legitimate interest, Art. 6(1)(f) GDPR",
+        "kept": "Only in the server's memory, for one hour at most; never written to the logs"
+      }
+    },
+    "required": "Name, company and email are needed to answer the request: without them we cannot assess it. The other fields are optional.",
+    "cookies": {
+      "title": "Cookies",
+      "text": "We use only cookies without which the portal does not work or is not protected. We have no advertising, analytics or third-party cookies, which is why there is no consent banner.",
+      "name": "Name",
+      "purpose": "What it is for",
+      "duration": "Duration",
+      "session": "The session after sign-in",
+      "sessionKept": "Until sign-out; {days} days at most ({adminDays} for administrators)",
+      "pre": "Protecting the forms before sign-in (sign-in, access request, password) from forged requests",
+      "preKept": "{hours} hours",
+      "lang": "The chosen language",
+      "theme": "The chosen theme (light, dark or automatic)",
+      "prefKept": "1 year",
+      "flash": "A one-off message after an action, for example “Saved”",
+      "flashKept": "1 minute"
+    },
+    "recipients": {
+      "title": "Who else sees the data",
+      "hosting": "Hetzner Online GmbH, Germany — the server the portal runs on, in a data centre in the European Union.",
+      "mail": "Sendinblue SAS (Brevo), France — sending emails, when enabled: invitations, links for a new password and notices of new requests to the portal administrators.",
+      "text": "We do not sell data or share it for advertising. We do not transfer personal data outside the European Union; if a Brevo sub-processor handles data outside the EU, the transfer is covered by standard contractual clauses (Art. 46 GDPR)."
+    },
+    "security": {
+      "title": "Security",
+      "text": "The connection is HTTPS only. Passwords are stored as Argon2id hashes, sessions live on the server and end immediately on sign-out, on a password change or when the account is deactivated. The web server keeps no request log: it records an IP address only in its log of serious errors, when a request cannot be served. The application logs contain no IP addresses or passwords."
+    },
+    "decisions": {
+      "title": "Automated decisions",
+      "text": "We make no decisions with legal effects based solely on automated processing. After {attempts} wrong passwords, sign-in is locked for {minutes} minutes: a security measure that lifts by itself. Every access request is assessed by a person."
+    },
+    "rights": {
+      "title": "Your rights",
+      "text": "You have the right of access, rectification, erasure, restriction of processing, portability and to object to processing based on legitimate interest. To exercise them, write to",
+      "reply": "We reply within one month.",
+      "complaint": "You also have the right to lodge a complaint with the Bulgarian Commission for Personal Data Protection (2 Prof. Tsvetan Lazarov Blvd., Sofia 1592, www.cpdp.bg) or with the supervisory authority of the EU country where you live; in Italy, the Garante per la protezione dei dati personali."
+    },
+    "changes": {
+      "title": "Changes",
+      "text": "If we change this policy, the new version will be published on this page with the date of the last update at the top."
+    }
+  }
+}

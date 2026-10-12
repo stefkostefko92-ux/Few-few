@@ -1,0 +1,94 @@
+{
+  "requests": {
+    "nav": "Requests",
+    "title": "Access requests",
+    "subtitle": "Companies asking to join the portal from the public page. A request is accepted by creating the company and inviting its administrator.",
+    "filter": {
+      "label": "Status",
+      "NEW": "New",
+      "ACCEPTED": "Accepted",
+      "REJECTED": "Rejected",
+      "ALL": "All"
+    },
+    "status": {
+      "NEW": "New",
+      "ACCEPTED": "Accepted",
+      "REJECTED": "Rejected"
+    },
+    "empty": {
+      "NEW": "No requests waiting.",
+      "other": "No requests in this list."
+    },
+    "count": {
+      "one": "1 request",
+      "other": "{n} requests"
+    },
+    "col": {
+      "company": "Company",
+      "name": "Person",
+      "city": "City",
+      "teamSize": "People",
+      "status": "Status",
+      "received": "Received"
+    },
+    "open": "Open the request from {company}",
+    "back": "All requests",
+    "received": "Received on {at}",
+    "decided": "{status} by {name} on {at}",
+    "decidedNobody": "{status} on {at}",
+    "field": {
+      "name": "Full name",
+      "company": "Company",
+      "email": "Email",
+      "phone": "Phone",
+      "city": "City",
+      "teamSize": "People who will use the portal",
+      "message": "Message",
+      "locale": "Page language"
+    },
+    "accept": {
+      "title": "Accept and invite the administrator",
+      "text": "Create the company (or pick an existing one) and send the invitation to the person in the request. You can correct the name and email before sending.",
+      "newAzienda": "New company",
+      "aziendaName": "Name of the new company",
+      "existing": "Existing company",
+      "existingNone": "No active companies",
+      "role": "Role",
+      "locale": "Invitation language",
+      "submit": "Create and invite"
+    },
+    "reject": {
+      "title": "Reject",
+      "text": "The request stays in the “Rejected” list and is deleted after {days} days. Nothing is sent to the requester.",
+      "submit": "Reject the request"
+    },
+    "delete": {
+      "title": "Delete the request",
+      "text": "Deletes the request's details right away, for example if the requester asks. A company and invitation already created stay.",
+      "submit": "Delete permanently"
+    },
+    "result": {
+      "azienda": "Company",
+      "invite": "Invitation",
+      "inviteAccepted": "Accepted: the account is active.",
+      "inviteRevoked": "Revoked.",
+      "inviteExpired": "Expired without being used.",
+      "invitePending": "Waiting, valid until {at}."
+    },
+    "error": {
+      "decided": "This request has already been decided.",
+      "userExists": "An account with this email already exists.",
+      "nameTaken": "A company with this name already exists: pick it from the existing ones.",
+      "azienda": "Pick an active company.",
+      "roleNotAllowed": "This role cannot be given with an invitation.",
+      "email": "Write a valid email address.",
+      "name": "The name must be at least 2 characters.",
+      "aziendaName": "The company name must be at least 2 characters."
+    }
+  },
+  "flash": {
+    "requestRejected": "Request rejected.",
+    "requestDeleted": "Request deleted.",
+    "requestDecided": "This request has already been decided."
+  }
+}

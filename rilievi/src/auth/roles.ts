@@ -22,7 +22,8 @@ export type Capability =
   | 'schede:trash'
   | 'users:manage'
   | 'audit:view'
-  | 'aziende:manage';
+  | 'aziende:manage'
+  | 'requests:manage';
 
 /** Най-ниската роля (най-голямото число), която още има способността. */
 const REQUIRED: Readonly<Record<Capability, Role>> = {
@@ -36,6 +37,8 @@ const REQUIRED: Readonly<Record<Capability, Role>> = {
   'audit:view': 'ADMIN',
   // Фирмите (създаване, лого, деактивиране) — само собственикът на портала.
   'aziende:manage': 'MASTER',
+  // Заявките за достъп от публичната страница: от тях се раждат нови фирми — също само собственикът.
+  'requests:manage': 'MASTER',
 };
 
 export function can(role: Role, capability: Capability): boolean {

@@ -29,10 +29,6 @@ const loginSchema = z.object({
   next: z.string().max(500).optional(),
 });
 
-authRouter.get('/', (req, res) => {
-  res.redirect(req.principal ? '/schede' : '/accesso');
-});
-
 function renderLogin(
   req: Request,
   res: Response,

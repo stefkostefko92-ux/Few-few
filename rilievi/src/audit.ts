@@ -30,6 +30,11 @@ export const AUDIT_ACTIONS = [
   'AZIENDA_DEACTIVATE',
   'AZIENDA_REACTIVATE',
   'USER_AZIENDA',
+  'ACCESS_REQUEST',
+  'ACCESS_REQUEST_UPDATE',
+  'ACCESS_REQUEST_ACCEPT',
+  'ACCESS_REQUEST_REJECT',
+  'ACCESS_REQUEST_DELETE',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
@@ -42,7 +47,7 @@ export interface AuditEntry {
    * — събитие на самия портал, видимо само за MASTER.
    */
   aziendaId: string | null;
-  targetType?: 'user' | 'invite' | 'scheda' | 'azienda';
+  targetType?: 'user' | 'invite' | 'scheda' | 'azienda' | 'request';
   targetId?: string;
   /** Малки неличностни подробности (роля, брой). Никога пароли, токени, имейли или текст от схема. */
   meta?: Prisma.InputJsonObject;

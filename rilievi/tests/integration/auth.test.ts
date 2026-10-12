@@ -166,8 +166,10 @@ describe('sign-in', () => {
       reply.body,
       /Created and Designed by <a href="https:\/\/carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC<\/a>/,
     );
+    // Only the public pages are crawled; the portal itself stays out (site.test.ts has the details).
     const robots = await new Browser().get('/robots.txt');
-    assert.equal(robots.body, 'User-agent: *\nDisallow: /\n');
+    assert.match(robots.body, /\nDisallow: \/\n/);
+    assert.doesNotMatch(robots.body, /Allow: \/schede/);
     const health = await new Browser().get('/health');
     assert.deepEqual(JSON.parse(health.body), { status: 'ok', app: 'rilievi' });
   });

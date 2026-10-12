@@ -1,4 +1,4 @@
-import type { Invite, Role } from '@prisma/client';
+import type { Invite, Prisma, Role } from '@prisma/client';
 import { prisma } from '../db.js';
 import { writeAudit } from '../audit.js';
 import { hashPassword, passwordProblem, type PasswordProblem } from '../auth/password.js';
@@ -35,50 +35,73 @@ export async function createInvite(
   if (!azienda) return { ok: false, error: 'azienda' };
   const existing = await prisma.user.findUnique({ where: { email: input.email } });
   if (existing) return { ok: false, error: 'userExists' };
+  const { invite, token } = await prisma.$transaction((tx) =>
+    insertInvite(tx, actor, { ...input, aziendaId: azienda.id }),
+  );
+  const { link, mail } = await sendInviteMail(actor, input, azienda.name, token);
+  return { ok: true, link, mail, invite };
+}
+
+/**
+ * Записът на поканата в транзакцията на извикващия: старите неприети покани за същия имейл във фирмата
+ * спират, новата влиза с одита си. Проверките (роля, фирма, съществуващ акаунт) са на извикващия.
+ */
+export async function insertInvite(
+  tx: Prisma.TransactionClient,
+  actor: SessionUser,
+  input: { email: string; name: string; role: Role; locale: Locale; aziendaId: string },
+): Promise<{ invite: Invite; token: string }> {
   const { token, hash } = newToken();
-  const invite = await prisma.$transaction(async (tx) => {
-    await tx.invite.updateMany({
-      where: { email: input.email, aziendaId: azienda.id, acceptedAt: null, revokedAt: null },
-      data: { revokedAt: new Date() },
-    });
-    const created = await tx.invite.create({
-      data: {
-        email: input.email,
-        name: input.name,
-        role: input.role,
-        locale: input.locale,
-        aziendaId: azienda.id,
-        tokenHash: hash,
-        invitedById: actor.id,
-        expiresAt: new Date(Date.now() + INVITE_DAYS * DAY),
-      },
-    });
-    await writeAudit(
-      {
-        actorId: actor.id,
-        action: 'INVITE_CREATE',
-        aziendaId: azienda.id,
-        targetType: 'invite',
-        targetId: created.id,
-        meta: { role: input.role },
-      },
-      tx,
-    );
-    return created;
+  await tx.invite.updateMany({
+    where: { email: input.email, aziendaId: input.aziendaId, acceptedAt: null, revokedAt: null },
+    data: { revokedAt: new Date() },
   });
+  const invite = await tx.invite.create({
+    data: {
+      email: input.email,
+      name: input.name,
+      role: input.role,
+      locale: input.locale,
+      aziendaId: input.aziendaId,
+      tokenHash: hash,
+      invitedById: actor.id,
+      expiresAt: new Date(Date.now() + INVITE_DAYS * DAY),
+    },
+  });
+  await writeAudit(
+    {
+      actorId: actor.id,
+      action: 'INVITE_CREATE',
+      aziendaId: input.aziendaId,
+      targetType: 'invite',
+      targetId: invite.id,
+      meta: { role: input.role },
+    },
+    tx,
+  );
+  return { invite, token };
+}
+
+/** Връзката и писмото с нея — след като поканата е в базата (без SMTP връзката само се показва). */
+export async function sendInviteMail(
+  actor: SessionUser,
+  input: { email: string; role: Role; locale: Locale },
+  aziendaName: string,
+  token: string,
+): Promise<{ link: string; mail: MailResult }> {
   const link = inviteLink(token);
   const t = translatorFor(input.locale);
   const mail = await sendMail(
     inviteMail(input.locale, {
       to: input.email,
       inviter: actor.name,
-      azienda: azienda.name,
+      azienda: aziendaName,
       role: t(`role.${input.role}`),
       link,
       days: INVITE_DAYS,
     }),
   );
-  return { ok: true, link, mail, invite };
+  return { link, mail };
 }
 
 /** Чакащите покани в обхвата (неприети, неотменени, неизтекли) — за страницата „Utenti“. */

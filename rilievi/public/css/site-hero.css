@@ -1,0 +1,81 @@
+/* Първият екран: заглавието вляво, чертежът на шахтата (shaft.css) в черния панел вдясно, до ръба на
+   екрана. */
+
+.hero {
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  min-height: min(calc(100svh - 64px), 900px);
+}
+
+.hero__text {
+  display: grid;
+  align-content: center;
+  gap: 28px;
+  padding: 72px 48px 72px max(var(--gutter), calc((100cqw - 1200px) / 2 + var(--gutter)));
+}
+
+.hero__title {
+  max-width: 13ch;
+  font-size: clamp(2.75rem, 1.4rem + 4.4vw, 5rem);
+  font-weight: 600;
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+}
+
+.hero__lead {
+  max-width: 36rem;
+  font-size: clamp(1.125rem, 1rem + 0.45vw, 1.3125rem);
+  line-height: 1.55;
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.hero__note {
+  max-width: 34rem;
+  padding-left: 14px;
+  border-left: 3px solid var(--fg);
+  font-size: 0.9375rem;
+  color: var(--muted);
+}
+
+.hero__drawing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 40px 24px;
+  background: var(--bar);
+  color: var(--bar-fg);
+  border-left: 1px solid var(--bar-edge);
+}
+
+.hero__drawing .shaft {
+  height: min(calc(100svh - 160px), 760px);
+}
+
+@media (max-width: 899px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .hero__text {
+    padding: 48px var(--gutter) 40px;
+  }
+
+  .hero__drawing {
+    padding: 28px var(--gutter);
+    border-left: 0;
+    border-top: 1px solid var(--bar-edge);
+  }
+
+  .hero__drawing .shaft {
+    width: min(100%, 380px);
+    height: auto;
+  }
+}

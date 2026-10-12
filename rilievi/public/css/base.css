@@ -1,6 +1,7 @@
 /* Rilievi Impianti — основа: токени, нулиране, типография, бутони, фокус.
-   Палитрата е от заданието: бял фон с черен текст и черен фон с бял текст. Червеното е само за грешки
-   и необратими действия — никога за украса. */
+   Палитрата е от заданието: бял фон с черен текст и черен фон с бял текст. Сивите са само стъпала между
+   двете (линии, тихи повърхности); червеното е само за грешки и необратими действия — никога за украса.
+   Черната лента (горе, долу, панелът с чертежа) е еднаква в двете теми. */
 
 :root {
   --bg: #ffffff;
@@ -8,6 +9,7 @@
   --muted: #555555;
   --line: #d6d6d6;
   --line-strong: #000000;
+  --wash: #f4f4f4;
   --field: #ffffff;
   --field-line: #767676;
   --hover: #f1f1f1;
@@ -15,6 +17,11 @@
   --mark-fg: #ffffff;
   --danger: #b3261e;
   --danger-fg: #ffffff;
+  --bar: #000000;
+  --bar-fg: #ffffff;
+  --bar-muted: #b8b8b8;
+  --bar-line: #333333;
+  --bar-edge: transparent;
   --radius: 6px;
   --radius-plate: 12px;
   --gutter: 16px;
@@ -30,6 +37,7 @@
     --muted: #a8a8a8;
     --line: #333333;
     --line-strong: #ffffff;
+    --wash: #121212;
     --field: #000000;
     --field-line: #8a8a8a;
     --hover: #161616;
@@ -37,6 +45,7 @@
     --mark-fg: #000000;
     --danger: #ff8b80;
     --danger-fg: #000000;
+    --bar-edge: #333333;
     color-scheme: dark;
   }
 }
@@ -47,6 +56,7 @@
   --muted: #a8a8a8;
   --line: #333333;
   --line-strong: #ffffff;
+  --wash: #121212;
   --field: #000000;
   --field-line: #8a8a8a;
   --hover: #161616;
@@ -54,6 +64,7 @@
   --mark-fg: #000000;
   --danger: #ff8b80;
   --danger-fg: #000000;
+  --bar-edge: #333333;
   color-scheme: dark;
 }
 
@@ -97,8 +108,12 @@ h3 {
   letter-spacing: -0.01em;
 }
 
+/* Заглавията на страниците са в тесния шрифт — като надписите на табелата. */
 h1 {
-  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);
+  font-family: var(--font-cond);
+  font-size: clamp(1.875rem, 1.45rem + 1.5vw, 2.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.005em;
 }
 
 h2 {
@@ -174,90 +189,15 @@ mark {
   height: 20px;
 }
 
-/* Бутони: черен (основен), с рамка (второстепенен), без рамка (тих), червен (необратим). */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 44px;
-  padding: 0 18px;
-  border: 1.5px solid var(--fg);
-  border-radius: var(--radius);
-  background: transparent;
-  color: var(--fg);
-  font: inherit;
-  font-weight: 600;
-  line-height: 1;
-  text-decoration: none;
-  white-space: nowrap;
-  cursor: pointer;
+/* Марката (табела с четири винта) — в лентата, на входа и във витрината. */
+.brand__mark {
+  flex: none;
+  width: 34px;
+  height: 26px;
 }
 
-.btn:hover {
-  background: var(--hover);
-}
-
-.btn--primary {
-  background: var(--fg);
-  color: var(--bg);
-}
-
-.btn--primary:hover {
-  background: var(--fg);
-  box-shadow:
-    0 0 0 3px var(--bg),
-    0 0 0 4.5px var(--fg);
-}
-
-.btn--ghost {
-  border-color: transparent;
-}
-
-.btn--ghost:hover {
-  border-color: var(--line);
-}
-
-.btn--danger {
-  border-color: var(--danger);
-  background: var(--danger);
-  color: var(--danger-fg);
-}
-
-.btn--danger:hover {
-  background: var(--danger);
-  box-shadow:
-    0 0 0 3px var(--bg),
-    0 0 0 4.5px var(--danger);
-}
-
-.btn--sm {
-  min-height: 38px;
-  padding: 0 12px;
-  font-size: 0.9375rem;
-}
-
-.btn[disabled] {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.link-btn {
-  padding: 0;
-  border: 0;
-  background: none;
-  color: inherit;
-  font: inherit;
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-  cursor: pointer;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .btn,
-  .btn--primary:hover {
-    transition:
-      box-shadow 120ms ease,
-      background-color 120ms ease;
-  }
+.brand__mark rect,
+.brand__mark circle {
+  fill: none;
+  stroke: currentColor;
 }

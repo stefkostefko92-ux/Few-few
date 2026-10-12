@@ -106,10 +106,16 @@
       "AZIENDA_LOGO": "Company logo changed",
       "AZIENDA_DEACTIVATE": "Company deactivated",
       "AZIENDA_REACTIVATE": "Company reactivated",
-      "USER_AZIENDA": "Account moved to another company"
+      "USER_AZIENDA": "Account moved to another company",
+      "ACCESS_REQUEST": "Access request received",
+      "ACCESS_REQUEST_UPDATE": "Access request updated by the requester",
+      "ACCESS_REQUEST_ACCEPT": "Access request accepted",
+      "ACCESS_REQUEST_REJECT": "Access request rejected",
+      "ACCESS_REQUEST_DELETE": "Access request deleted"
     },
     "azienda": "Company",
     "platform": "Portal",
-    "openAzienda": "Open company"
+    "openAzienda": "Open company",
+    "openRequest": "Open the request"
   }
 }

@@ -15,14 +15,52 @@
 
 .section__title {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 12px;
   width: 100%;
   margin-bottom: 14px;
-  padding: 0 0 8px;
+  padding: 0 0 10px;
   border-bottom: 1.5px solid var(--line-strong);
-  font-size: 1.125rem;
+  font-family: var(--font-cond);
+  font-size: 1.375rem;
   font-weight: 600;
+}
+
+/* Разделите на картата във формата са панели: лента с номера и името отгоре, полетата под нея.
+   Легендата е `float`, за да е обикновен блок вътре в рамката (иначе стои върху самата рамка). */
+.form > .section {
+  padding: 0 20px 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-plate);
+  scroll-margin-top: 88px;
+}
+
+.form > .section > .section__title {
+  float: left;
+  width: calc(100% + 40px);
+  margin: 0 -20px 18px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--line);
+  border-radius: calc(var(--radius-plate) - 1px) calc(var(--radius-plate) - 1px) 0 0;
+  background: var(--wash);
+  font-family: var(--font);
+  font-size: 1.0625rem;
+}
+
+.form > .section > .section__title + * {
+  clear: both;
+}
+
+@media (max-width: 479px) {
+  .form > .section {
+    padding: 0 14px 18px;
+  }
+
+  .form > .section > .section__title {
+    width: calc(100% + 28px);
+    margin: 0 -14px 16px;
+    padding: 12px 14px;
+  }
 }
 
 /* Полетата на един ред се подравняват по полето, не по етикета: етикет на два реда (по-дълъг

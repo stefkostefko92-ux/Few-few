@@ -1,0 +1,228 @@
+/* Заявката за достъп, политиката за поверителност и страницата след изпратена заявка. */
+
+/* Заявката: черният панел с какво следва и формата на бяло до него. */
+/* Огледало на първия екран: там черното е вдясно до ръба, тук — вляво до ръба. */
+.request {
+  container-type: inline-size;
+  border-top: 1px solid var(--line);
+  scroll-margin-top: 64px;
+}
+
+.request__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+}
+
+.request__aside {
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  padding: clamp(40px, 3rem + 2vw, 72px) clamp(24px, 1rem + 2vw, 56px) clamp(40px, 3rem + 2vw, 72px)
+    max(var(--gutter), calc((100cqw - 1200px) / 2 + var(--gutter)));
+  background: var(--bar);
+  color: var(--bar-fg);
+  border-right: 1px solid var(--bar-edge);
+}
+
+.request__aside p,
+.request__aside li {
+  color: var(--bar-muted);
+}
+
+.request__aside h3 {
+  margin-top: 10px;
+  font-size: 1.125rem;
+}
+
+.request__aside a {
+  color: var(--bar-fg);
+}
+
+.request__aside :focus-visible {
+  outline-color: var(--bar-fg);
+}
+
+.request__next {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 22px;
+}
+
+.request__form {
+  display: grid;
+  align-content: start;
+  gap: 22px;
+  max-width: 720px;
+  padding: clamp(32px, 2rem + 2vw, 64px) var(--gutter) clamp(32px, 2rem + 2vw, 64px)
+    clamp(var(--gutter), 1rem + 2vw, 56px);
+}
+
+.request__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 18px;
+}
+
+.request__grid .field--wide {
+  grid-column: 1 / -1;
+}
+
+.request .field__label .opt {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.request__privacy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+
+/* Капанът за ботове: извън екрана и извън реда на табулация, не `display: none` (ботовете го познават). */
+.hp {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+@media (max-width: 899px) {
+  .request__inner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .request__aside {
+    padding: 40px var(--gutter);
+  }
+
+  .request__form {
+    padding: 32px var(--gutter) 48px;
+  }
+}
+
+@media (max-width: 559px) {
+  .request__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Политиката и страницата след заявка: текст в тясна колона, таблиците стават карти на телефон. */
+.prose {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: clamp(40px, 3rem + 2vw, 80px) var(--gutter) 80px;
+}
+
+.prose h1 {
+  font-size: clamp(2.25rem, 1.6rem + 2.4vw, 3.25rem);
+}
+
+.prose h2 {
+  margin: 40px 0 12px;
+  font-family: var(--font-cond);
+  font-size: 1.625rem;
+}
+
+.prose p + p,
+.prose p + ul,
+.prose ul + p {
+  margin-top: 12px;
+}
+
+.prose__updated {
+  margin-top: 10px;
+  color: var(--muted);
+}
+
+.prose .table-wrap {
+  margin-top: 16px;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.prose th,
+.prose td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.prose th {
+  border-bottom: 1.5px solid var(--line-strong);
+  font-size: 0.875rem;
+}
+
+.prose code {
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 759px) {
+  .prose thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .prose tr {
+    display: grid;
+    gap: 6px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .prose td {
+    padding: 0;
+    border: 0;
+  }
+
+  .prose td::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--muted);
+  }
+}
+
+.sent {
+  display: grid;
+  gap: 20px;
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: clamp(56px, 4rem + 3vw, 120px) var(--gutter);
+}
+
+.sent .toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.sent__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius);
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.sent__mark .icon {
+  width: 30px;
+  height: 30px;
+  stroke-width: 2.25;
+}

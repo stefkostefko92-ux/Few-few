@@ -1,6 +1,6 @@
 # CLAUDE.md — Rilievi Impianti
 
-Портал само с покана за схемите за оглед на асансьорни уредби („scheda rilievo impianto“): попълване на
+Портал само с покана (и публична витрина със заявка за достъп) за схемите за оглед на асансьорни уредби („scheda rilievo impianto“): попълване на
 29-те полета от заданието и полетата от второто (врати, аларма, работна карта, мерки на старите
 бутониери по спирки), търсене (№ на асансьора, матрикула, адрес, марка, работна карта, бележки), печат
 A4 и PDF. Таблото и аргано за поръчка: при Pelazza / Montanari се попълва самият модул на доставчика и
@@ -47,13 +47,19 @@ src/
                      format.ts · pdf.ts + pdf-layout.ts + pdf-table.ts
   ordini/            модулите на доставчиците: moduli.ts (картите от assets/moduli, SHA-256) · registry.ts
                      (колона ↔ въпрос ↔ модул) · valori.ts · prefill.ts · form.ts · pdf.ts (pdf-lib)
-  routes/            тънки рутери: проверка → услуга → изглед (картите · кошчето · модулите · хора ·
-                     фирми · одит)
+  routes/            тънки рутери: проверка → услуга → изглед (витрината · заявките · картите ·
+                     кошчето · модулите · хора · фирми · одит)
+  requests/          заявките за достъп: form.ts (публичната форма) · service.ts (запис, решение, срок)
+  site/ · seo/       витрината: landing.ts (разделите и ролите от кода) · paths.ts · structured-data.ts
+                     (JSON-LD) · files.ts (robots, sitemap, llms.txt) · company.ts (данните на фирмата)
 assets/moduli/       официалните празни PDF-и на Pelazza и Montanari + картата на полетата им (JSON)
-views/               EJS: partials/ (горна и долна лента, табелата, филтърът по фирма), auth/, schede/,
-                     users/, aziende/, account/, audit/
+views/               EJS: partials/ (горна и долна лента, табелата, филтърът по фирма), site/ (витрината,
+                     чертежът на шахтата, политиката), requests/, auth/, schede/, users/, aziende/,
+                     account/, audit/
 locales/<език>/      common · auth · schede · users · aziende · mail (.json); it е източникът, bg/en — огледала
-public/              css/ (base, layout, plate, forms, pages, data, misure, moduli, print), js/app.js, img/
+public/              css/ (портал: base, buttons, shell, layout, plate, forms, pages, data, sheet, misure,
+                     moduli, print; витрина: site, shaft, site-hero, site-parts, site-request), js/app.js,
+                     img/ (og.png и apple-touch-icon.png — `npm run brand:images`), indexnow-key.txt
 tests/               unit · integration/ (реален Postgres) · e2e/run.mjs (Playwright + axe)
 deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh · nginx/ · systemd/
 ```
@@ -63,6 +69,13 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
 - **Регистрация няма.** Акаунт се ражда само от приета покана (`services/invites.ts`) или от
   `owner:create` за първия MASTER. Имейлът и ролята идват от поканата, не от формата. Токенът на
   поканата/новата парола е 32 случайни байта; в базата е само SHA-256; връзката се показва веднъж.
+- **Заявката за достъп** (витрината, `requests/`) само се записва — акаунт от нея не става. Решава само
+  MASTER (`requests:manage`): „да“ = фирма (нова или съществуваща) + поканата до администратора ѝ в
+  ЕДНА транзакция (`insertAzienda` + `insertInvite`; заявката се заключва първа, провал не оставя нищо),
+  „не“ = отказ без писмо. Защитите: двойна бисквитка, 5/ч. на мрежа, 100 на денонощие за портала,
+  капан за ботове, нова заявка от същия имейл обновява чакащата (advisory lock — без дубли). На заявителя
+  писмо не се праща (адресът не е проверен); до MASTER — само името на фирмата и връзката. Срок 180 дни
+  от последната промяна (`maintenance.ts`), изтриване по всяко време.
 - **Роли — 7 нива като ERP Ascensori** (`auth/roles.ts`): MASTER(1) > ADMIN > DIREZIONE > RESPONSABILE >
   TECNICO > OPERATORE > CLIENTE(7). Проверката е по способност и винаги на сървъра. MASTER е
   собственикът на портала (Carbon Stealth): без фирма, вижда всички, само той създава фирми
@@ -112,9 +125,20 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   (`audit.ts`, само добавяне, без съдържание на схемите и без IP).
 - **PDF:** DejaVu Sans от `PDF_FONT_DIR` (в образа: `fonts-dejavu-core`); без шрифта процесът не тръгва.
   Никога Helvetica/Times — нямат кирилица.
-- **Порталът не се индексира:** `noindex, nofollow`, robots.txt `Disallow: /`, без sitemap/llms.txt —
-  съзнателно (частен инструмент само с покана). Keywords ≥5 с „Carbon Stealth“ все пак стоят (правилото
-  на репото). Футърът носи „Created and Designed by Carbon Stealth VCC“.
+- **Индексира се само витрината:** `/`, `/bg/`, `/en/` и политиката (`seo/paths.ts`) — `index, follow`,
+  canonical, hreflang + x-default, Open Graph/Twitter, geo, JSON-LD (Organization+LocalBusiness,
+  WebSite, WebPage със speakable, BreadcrumbList, SoftwareApplication, HowTo, FAQPage — текстовете
+  дума по дума от екрана), sitemap.xml, llms.txt, ключ за IndexNow. Порталът (вход, карти, хора…) остава
+  `noindex, nofollow`; robots.txt разрешава точно публичните адреси (`$`), входа (за да се види
+  noindex) и статиката, а забранява всичко друго. Разделите и ролите на витрината идват от `fields.ts`
+  и `roles.ts` — тя не може да обещае поле или право, което порталът няма. Данните на фирмата
+  (`company.ts`) са копие от korpora — същите вписани данни. Keywords ≥5 с „Carbon Stealth“; футърът
+  носи „Created and Designed by Carbon Stealth VCC“. Промяна на витрината → `CONTENT_UPDATED` и след
+  деплой IndexNow (`node tools/seo/indexnow.mjs https://rilievi.carbonstealth.eu`).
+- **Визията** е от заданието: бяло/черно, сивите са само линии и тихи повърхности, червеното — само за
+  грешки. Единственото изображение е чертежът на шахтата (`views/site/_shaft.ejs`): маркерите 1–11 са
+  номерата на разделите на картата; единственото движение — кабината се качва веднъж във витрината
+  (кадрите в `shaft.css` са сметнати от координатите на чертежа), неподвижно при reduced motion.
 - Коментарите в `src/`, `views/`, `deploy/` — на български; тестовете и `scripts/` — на английски.
 - Файл над 300 реда се разделя преди да се добавя.
 - Миграциите се пишат на ръка (`prisma migrate diff`) и се прилагат само с `migrate deploy`; никога

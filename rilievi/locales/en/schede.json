@@ -211,7 +211,8 @@
       "identifierNeeded": "Fill in at least address, registration no. or lift no.",
       "azienda": "Choose the sheet's company."
     },
-    "compiledBy": "Filled in by"
+    "compiledBy": "Filled in by",
+    "index": "Sheet sections"
   },
   "trash": {
     "title": "Bin",

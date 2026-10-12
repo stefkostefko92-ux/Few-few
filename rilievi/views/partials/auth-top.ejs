@@ -1,8 +1,13 @@
 <%- include('top', { bare: true }) %>
 <div class="auth">
-  <section class="plate plate--brand" aria-label="Carbon Stealth VCC">
-    <span class="plate__screw plate__screw--tl" aria-hidden="true"></span><span class="plate__screw plate__screw--tr" aria-hidden="true"></span><span class="plate__screw plate__screw--bl" aria-hidden="true"></span><span class="plate__screw plate__screw--br" aria-hidden="true"></span>
-    <span class="plate__label"><%= t('app.product') %></span>
-    <span class="plate__big">Carbon Stealth VCC</span>
-    <p class="plate__rule"><%= t('auth.inviteOnly') %></p>
-  </section>
+  <aside class="auth__panel" aria-label="Carbon Stealth VCC">
+    <a class="auth__brand" href="<%= landingPath(locale) %>">
+      <%- include('brandmark') %>
+      <span class="auth__brandtext"><span class="auth__name">Carbon Stealth VCC</span><span class="auth__product"><%= t('app.product') %></span></span>
+    </a>
+    <div class="auth__drawing"><%- include('../site/_shaft', { markers: false, animate: false }) %></div>
+    <p class="auth__rule"><%= t('auth.inviteOnly') %></p>
+  </aside>
+  <div class="auth__main">
+    <%- include('flash') %>
+    <div class="auth__box">

@@ -106,10 +106,16 @@
       "AZIENDA_LOGO": "Logo dell'azienda cambiato",
       "AZIENDA_DEACTIVATE": "Azienda disattivata",
       "AZIENDA_REACTIVATE": "Azienda riattivata",
-      "USER_AZIENDA": "Account spostato in un'altra azienda"
+      "USER_AZIENDA": "Account spostato in un'altra azienda",
+      "ACCESS_REQUEST": "Richiesta di accesso ricevuta",
+      "ACCESS_REQUEST_UPDATE": "Richiesta di accesso aggiornata dal richiedente",
+      "ACCESS_REQUEST_ACCEPT": "Richiesta di accesso accettata",
+      "ACCESS_REQUEST_REJECT": "Richiesta di accesso rifiutata",
+      "ACCESS_REQUEST_DELETE": "Richiesta di accesso eliminata"
     },
     "azienda": "Azienda",
     "platform": "Portale",
-    "openAzienda": "Apri azienda"
+    "openAzienda": "Apri azienda",
+    "openRequest": "Apri la richiesta"
   }
 }

@@ -71,7 +71,18 @@ sudo bash /opt/few-few/current/rilievi/deploy/create-master.sh
 ```bash
 curl -fsS https://rilievi.carbonstealth.eu/health      # {"status":"ok","app":"rilievi"}
 curl -sI https://rilievi.carbonstealth.eu/accesso | grep -i -E 'content-security-policy|strict-transport'
+curl -fsS https://rilievi.carbonstealth.eu/robots.txt  # Allow само за витрината, накрая Disallow: /
 ```
+
+След деплой, който променя витрината (текст, `CONTENT_UPDATED`, sitemap), търсачките с IndexNow (Bing,
+Yandex, Seznam, Naver, Yep) се известяват от копие на репото — ключът е на `/indexnow-key.txt`:
+
+```bash
+node tools/seo/indexnow.mjs https://rilievi.carbonstealth.eu
+```
+
+Google не поддържа IndexNow — там sitemap-ът се открива сам (`/sitemap.xml`, посочен в robots.txt), а
+първия път се добавя в Search Console.
 
 ## 6. Бекъпи
 

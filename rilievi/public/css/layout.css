@@ -1,173 +1,5 @@
-/* Рамката на страницата: горна лента, навигация, съдържание, долна лента, съобщения, странициране. */
-
-.topbar {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  background: var(--bg);
-  border-bottom: 1px solid var(--line-strong);
-}
-
-.topbar__inner {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 8px 24px;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 10px var(--gutter);
-}
-
-.brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-}
-
-.brand__mark {
-  width: 34px;
-  height: 26px;
-  flex: none;
-}
-
-.brand__text {
-  display: grid;
-  line-height: 1.1;
-}
-
-.brand__name {
-  font-weight: 700;
-  letter-spacing: 0.01em;
-}
-
-.brand__product {
-  font-size: 0.8125rem;
-  color: var(--muted);
-}
-
-.nav {
-  display: flex;
-  gap: 4px;
-  min-width: 0;
-}
-
-.nav a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 40px;
-  padding: 0 12px;
-  border-radius: var(--radius);
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.nav a:hover {
-  background: var(--hover);
-}
-
-.nav a[aria-current='page'] {
-  box-shadow: inset 0 -2px 0 var(--fg);
-  border-radius: 0;
-}
-
-.topbar__end {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.who {
-  display: grid;
-  text-align: right;
-  line-height: 1.15;
-  text-decoration: none;
-  padding: 4px 8px;
-  border-radius: var(--radius);
-}
-
-.who:hover {
-  background: var(--hover);
-}
-
-.who__name {
-  font-weight: 600;
-  max-width: 18ch;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.who__role {
-  max-width: 28ch;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 0.8125rem;
-  color: var(--muted);
-}
-
-@media (max-width: 879px) {
-  .topbar__inner {
-    grid-template-columns: 1fr auto;
-  }
-
-  .nav {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    overflow-x: auto;
-    margin: 0 calc(var(--gutter) * -1);
-    padding: 0 calc(var(--gutter) - 12px);
-    scrollbar-width: none;
-  }
-
-  .who {
-    display: none;
-  }
-}
-
-@media (max-width: 479px) {
-  .brand__product {
-    display: none;
-  }
-
-  /* На телефон бутонът е само иконата, но името му остава за екранния четец (display: none би го
-     оставил безименен). */
-  .topbar__new .btn__label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-  }
-}
-
-.main {
-  flex: 1;
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 28px var(--gutter) 64px;
-}
-
-.main--narrow {
-  max-width: 760px;
-}
-
-.page-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.page-head__sub {
-  margin-top: 6px;
-  color: var(--muted);
-}
+/* Части на страниците: лента с бутони, съобщения, странициране, празни състояния, раздели (табове),
+   панели, опасната зона, долната лента. Горната лента е в shell.css, индексът на картата — в sheet.css. */
 
 .toolbar {
   display: flex;
@@ -204,6 +36,93 @@
   margin-top: 24px;
 }
 
+/* Празно: малък чертеж на празна карта, едно изречение и действието, ако има такова. */
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 48px 24px;
+  border: 1.5px dashed var(--field-line);
+  border-radius: var(--radius-plate);
+  text-align: center;
+}
+
+.empty__art {
+  width: 72px;
+  height: 72px;
+  color: var(--muted);
+}
+
+.empty p {
+  max-width: 48ch;
+}
+
+/* Разделите по състояние (заявките): подчертан е текущият, до всеки — броят. */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.tabs a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.tabs a:hover {
+  color: var(--fg);
+}
+
+.tabs a[aria-current='page'] {
+  color: var(--fg);
+  box-shadow: inset 0 -3px 0 var(--fg);
+}
+
+.tabs__n {
+  min-width: 22px;
+  padding: 1px 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  text-align: center;
+}
+
+.panel {
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-plate);
+}
+
+/* Необратимото е зад разгъване — един клик повече, нищо не се трие случайно. */
+.danger-zone {
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-plate);
+}
+
+.danger-zone summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--danger);
+}
+
+.danger-zone[open] summary {
+  margin-bottom: 10px;
+}
+
+.danger-zone form {
+  margin-top: 14px;
+}
+
+/* Долната лента: език, тема и авторството. */
 .footer {
   border-top: 1px solid var(--line);
 }
@@ -264,24 +183,13 @@
   font-weight: 600;
 }
 
-.empty {
-  padding: 40px 24px;
-  border: 1.5px dashed var(--field-line);
-  border-radius: var(--radius-plate);
-  text-align: center;
-}
-
-.empty p + p,
-.empty p + .btn {
-  margin-top: 12px;
-}
-
 /* Печат на обикновена страница (Ctrl+P върху схемата): без навигация и бутони. */
 @media print {
   .topbar,
   .footer,
   .toolbar,
   .actions,
+  .secindex,
   .skip {
     display: none !important;
   }
@@ -289,14 +197,8 @@
   .main {
     padding: 0;
   }
-}
 
-.topbar__account {
-  display: none;
-}
-
-@media (max-width: 879px) {
-  .topbar__account {
-    display: inline-flex;
+  .with-index {
+    display: block;
   }
 }

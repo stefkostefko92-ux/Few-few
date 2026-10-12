@@ -46,7 +46,7 @@
         <td data-label="<%= t('scheda.field.marca') %>"><%- include('_hl', { text: row.marca, tokens: page.tokens }) %></td>
         <td data-label="<%= t('scheda.field.tipoImpianto') %>"><%= tipo(row) || '—' %></td>
         <% if (showAzienda) { %><td data-label="<%= t('scheda.field.azienda') %>"><%= row.azienda.name %></td><% } %>
-        <td data-label="<%= inTrash ? t('trash.deletedAt') : t('scheda.field.data') %>"><%= inTrash ? fmt.dateTime(row.deletedAt) : fmt.day(row.data) %></td>
+        <td class="date" data-label="<%= inTrash ? t('trash.deletedAt') : t('scheda.field.data') %>"><%= inTrash ? fmt.dateTime(row.deletedAt) : fmt.day(row.data) %></td>
         <% if (inTrash) { %><td class="actions-cell" data-label="<%= t('common.actions') %>">
           <form class="inline-form" method="post" action="/cestino/<%= row.id %>/ripristina"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--sm" type="submit"><%- include('../partials/icon', { name: 'restore' }) %><%= t('trash.restore') %></button></form>
           <a class="btn btn--sm btn--ghost" href="/cestino/<%= row.id %>/elimina"><%= t('trash.purge') %></a>

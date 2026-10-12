@@ -17,6 +17,10 @@
     "reset": {
       "subject": "Nuova password — Rilievi Impianti",
       "body": "Ciao,\n\nper scegliere una nuova password apri questo link:\n{link}\n\nIl link vale {validity} e si usa una volta sola. Se non hai chiesto tu di cambiare la password, ignora l'email: quella attuale resta valida.\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+    },
+    "request": {
+      "subject": "Nuova richiesta di accesso — Rilievi Impianti",
+      "body": "Ciao,\n\nl'azienda {company} ha chiesto l'accesso al portale Rilievi Impianti.\n\nApri la richiesta (serve l'accesso al portale):\n{link}\n\nCarbon Stealth VCC — https://carbonstealth.eu"
     }
   }
 }
