@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — ذاكرة متصفحك"
+  },
+  "extDesc": {
+    "message": "بحث دلالي في الصفحات التي قرأتها. كل شيء يحدث محليًا — لا يغادر أي شيء جهازك أبدًا."
+  },
+  "cmdOpenSearch": {
+    "message": "فتح بحث Déjà"
+  },
+  "searchTitle": {
+    "message": "Déjà — ابحث فيما قرأته"
+  },
+  "tagline": {
+    "message": "رأيتَه من قبل. Déjà يجده."
+  },
+  "searchPlaceholder": {
+    "message": "صِف ما تتذكره… مثلًا «مقال عن البطاريات القائمة على الصوديوم»"
+  },
+  "searchButton": {
+    "message": "بحث"
+  },
+  "statusSearching": {
+    "message": "أبحث في الذاكرة… (البحث الأول يحمّل النموذج، ~10-30 ثانية)"
+  },
+  "statusEmpty": {
+    "message": "لم يظهر شيء. إما أنك لم تقرأه قط، أو أن Déjà لم يحفظه بعد."
+  },
+  "statusResults": {
+    "message": "الذكريات ($COUNT$):",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "ذكرى واحدة:"
+  },
+  "errNoResponse": {
+    "message": "لم تستجب الذاكرة — حاول مرة أخرى"
+  },
+  "recallVivid": {
+    "message": "ذكرى حيّة"
+  },
+  "recallHazy": {
+    "message": "ذكرى ضبابية"
+  },
+  "recallFaint": {
+    "message": "ذكرى بعيدة"
+  },
+  "statusError": {
+    "message": "فشل البحث: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "الصفحات في الذاكرة: $COUNT$.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "في الذاكرة: صفحة واحدة."
+  },
+  "similarity": {
+    "message": "التشابه $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "قُرئت في $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "الصفحات في الذاكرة: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "صفحة واحدة في الذاكرة"
+  },
+  "popupSleeping": {
+    "message": "الذاكرة نائمة"
+  },
+  "popupWaking": {
+    "message": "الذاكرة تستيقظ…"
+  },
+  "popupOpenSearch": {
+    "message": "فتح البحث"
+  },
+  "popupPause": {
+    "message": "إيقاف الحفظ مؤقتًا"
+  },
+  "popupClear": {
+    "message": "مسح الذاكرة"
+  },
+  "popupClearConfirm": {
+    "message": "هل تريد حذف كل ما تم حفظه؟ لا يمكن التراجع."
+  },
+  "popupOptions": {
+    "message": "الإعدادات"
+  },
+  "optionsTitle": {
+    "message": "Déjà — الإعدادات"
+  },
+  "optRetentionLabel": {
+    "message": "تذكُّر الصفحات"
+  },
+  "optRetentionForever": {
+    "message": "إلى الأبد"
+  },
+  "optRetentionMonths": {
+    "message": "عدد الأشهر: $N$",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "تُحذف الصفحات الأقدم تلقائيًا مرة واحدة يوميًا."
+  },
+  "optDenylistLabel": {
+    "message": "لا تحفظ أبدًا العناوين التي تحتوي على"
+  },
+  "optDenylistHelp": {
+    "message": "نمط واحد في كل سطر. يطابق جزءًا من العنوان، مثلًا «example.com» أو «/private»."
+  },
+  "optBuiltinLabel": {
+    "message": "حماية مدمجة (نشطة دائمًا)"
+  },
+  "optModelHostLabel": {
+    "message": "مرآة مخصصة للنموذج (متقدم)"
+  },
+  "optModelHostHelp": {
+    "message": "فارغ = huggingface.co. عيّن خادمك الخاص للبيئات غير المتصلة بالإنترنت أو بيئات الشركات."
+  },
+  "filterAll": {
+    "message": "الكل"
+  },
+  "filterWeek": {
+    "message": "آخر أسبوع"
+  },
+  "filterMonth": {
+    "message": "آخر شهر"
+  },
+  "filterYear": {
+    "message": "آخر سنة"
+  },
+  "relatedLink": {
+    "message": "ذكريات مرتبطة"
+  },
+  "relatedNone": {
+    "message": "لا توجد ذكريات قريبة"
+  },
+  "omniboxDefault": {
+    "message": "اسأل ذاكرتك — Déjà يبحث بالمعنى"
+  },
+  "popupMemory": {
+    "message": "ذاكرتي"
+  },
+  "memoryTitle": {
+    "message": "ذاكرتي"
+  },
+  "memoryEmpty": {
+    "message": "الذاكرة فارغة — تصفّح بعض الصفحات ثم عُد."
+  },
+  "memoryForget": {
+    "message": "نسيان"
+  },
+  "memoryExport": {
+    "message": "تنزيل الأرشيف"
+  },
+  "memoryImport": {
+    "message": "الاستعادة من أرشيف"
+  },
+  "memoryImportConfirm": {
+    "message": "هل تريد الاستعادة من أرشيف؟ ستتم الكتابة فوق الصفحات المطابقة."
+  },
+  "optSave": {
+    "message": "حفظ"
+  },
+  "optSaved": {
+    "message": "تم الحفظ ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "يجب أن تكون المرآة عنوان https://"
+  },
+  "welcomeHeading": {
+    "message": "مرحبًا. أنا ذاكرة متصفحك."
+  },
+  "welcomeIntro": {
+    "message": "من هذه اللحظة أتذكر ما تقرؤه، لتجده لاحقًا بالمعنى — بكلماتك أنت، لا بالعنوان الدقيق."
+  },
+  "welcomePoint1": {
+    "message": "كل شيء يحدث على جهازك. لا خوادم، ولا سحابة، ولا إرسال للبيانات — إلى أي مكان، أبدًا."
+  },
+  "welcomePoint2": {
+    "message": "البريد والدردشات وتسجيل الدخول والخدمات المصرفية لا تُحفظ أبدًا. تنبيه: لا أستطيع التعرّف على المواضيع الحساسة من العنوان — لهذه المواضيع استخدم الإيقاف المؤقت أو قائمتك الخاصة في الإعدادات."
+  },
+  "welcomePoint3": {
+    "message": "أنت المتحكم: إيقاف مؤقت بنقرة واحدة، و«مسح الذاكرة» يحذف كل شيء، ويمكنني اختياريًا أن أنسى تلقائيًا بعد بضعة أشهر."
+  },
+  "welcomeCta": {
+    "message": "فتح البحث"
+  },
+  "welcomeOptions": {
+    "message": "الإعدادات"
+  },
+  "memoryFilter": {
+    "message": "ابحث في ذاكرتك…"
+  },
+  "supportLink": {
+    "message": "ادعم Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — الرفيق"
+  },
+  "panelOnThisPage": {
+    "message": "حول موضوع هذه الصفحة"
+  },
+  "panelRecent": {
+    "message": "أحدث الذكريات"
+  },
+  "panelNoPage": {
+    "message": "افتح صفحة ويب وسيعرض لك Déjà ما قرأته حول موضوعها."
+  },
+  "popupOpenPanel": {
+    "message": "اللوحة الجانبية"
+  },
+  "popupForgetPage": {
+    "message": "نسيان هذه الصفحة"
+  },
+  "popupForgotten": {
+    "message": "تم النسيان ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: تذكّر النص المحدد"
+  },
+  "menuForget": {
+    "message": "Déjà: انسَ هذه الصفحة"
+  },
+  "recentTitle": {
+    "message": "أحدث الذكريات"
+  },
+  "cmdOpenPanel": {
+    "message": "فتح اللوحة الجانبية لـ Déjà"
+  },
+  "welcomePoint4": {
+    "message": "ترى اللوحة الجانبية عنوان URL للصفحة التي تعرضها وعنوانها، لتعرض ما قرأته حول موضوعها — في ذاكرة الجلسة فقط. والمقاطع التي تحفظها عمدًا تبقى أيضًا عندك وحدك."
+  },
+  "welcomeUpdated": {
+    "message": "تم تحديث Déjà. الجديد: يمكن الآن أن تصبح إشاراتك المرجعية أيضًا قابلة للبحث بالمعنى — إن أردت. إليك ما أفعله ببياناتك — لم يغادر أي شيء جهازك."
+  },
+  "optAmbientLabel": {
+    "message": "خلفية حيّة"
+  },
+  "optAmbientHelp": {
+    "message": "شبكة الذكريات خلف الزجاج تنساب ببطء. أوقفها إذا كانت الحركة تشتت انتباهك."
+  },
+  "bmTitle": {
+    "message": "اجعل إشاراتك المرجعية قابلة للبحث — الآن"
+  },
+  "bmText": {
+    "message": "يتعلم Déjà عناوين إشاراتك المرجعية ومجلداتها دون فتح الصفحات. جِدها بالمعنى من الدقيقة الأولى — ويبقى كل شيء على جهازك."
+  },
+  "bmTextShort": {
+    "message": "ذاكرتك ما زالت فتية. علّمني إشاراتك المرجعية وابحث فيها بالمعنى اليوم."
+  },
+  "bmButton": {
+    "message": "تعلّم إشاراتي المرجعية"
+  },
+  "bmNote": {
+    "message": "سيطلب متصفحك الإذن. يمكنك إيقاف ذلك في أي وقت من الإعدادات."
+  },
+  "bmTitleRunning": {
+    "message": "أتعلّم إشاراتك المرجعية…"
+  },
+  "bmTitleDone": {
+    "message": "إشاراتك المرجعية قابلة للبحث"
+  },
+  "bmPreparing": {
+    "message": "أستعد…"
+  },
+  "bmLearning": {
+    "message": "تم تعلّم $DONE$ من $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà متوقف مؤقتًا — سأتابع بمجرد أن تستأنف."
+  },
+  "bmError": {
+    "message": "حدث خطأ أثناء التعلّم. سأحاول مرة أخرى عند التغيير التالي."
+  },
+  "bmDone": {
+    "message": "تم — أصبحت إشاراتك المرجعية قابلة للبحث بالمعنى وتتم مزامنتها تلقائيًا (العدد: $COUNT$).",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "تم — أصبحت إشارة مرجعية واحدة قابلة للبحث بالمعنى وتتم مزامنتها تلقائيًا."
+  },
+  "bmDenied": {
+    "message": "بدون إذن لا أستطيع رؤية إشاراتك المرجعية. يمكنك المحاولة مرة أخرى في أي وقت."
+  },
+  "bmTry": {
+    "message": "جرّب:"
+  },
+  "bmBadge": {
+    "message": "إشارة مرجعية"
+  },
+  "bmAddedOn": {
+    "message": "أُضيفت في $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "الإشارات المرجعية في الذاكرة"
+  },
+  "optBookmarksHelp": {
+    "message": "أتعلّم عناوين إشاراتك المرجعية ومجلداتها (دون فتح الصفحات) وأتابعها عندما تضيفها أو تحذفها. إيقاف الميزة يزيلها من الذاكرة — أما الصفحات التي قرأتها فتبقى."
+  },
+  "memoryFilterAll": {
+    "message": "الكل"
+  },
+  "memoryFilterRead": {
+    "message": "المقروءة"
+  },
+  "memoryFilterBookmarks": {
+    "message": "الإشارات المرجعية"
+  },
+  "welcomePoint5": {
+    "message": "الإشارات المرجعية — فقط إذا فعّلتها: عندها أتعلّم عناوينها ومجلداتها، دون فتح الصفحات. نقرة واحدة توقف ذلك."
+  },
+  "rateTitle": {
+    "message": "ساعدك Déjà في العثور على شيء — عدد المرات حتى الآن: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "إذا كان مفيدًا، فإن تقييمًا في المتجر يساعد الآخرين على اكتشافه — يستغرق 10 ثوانٍ. وإذا أزعجك شيء، فأخبرنا."
+  },
+  "rateButton": {
+    "message": "قيّم Déjà"
+  },
+  "rateFeedback": {
+    "message": "هل هناك شيء لا يعمل؟"
+  },
+  "rateLater": {
+    "message": "ليس الآن"
+  },
+  "rateThanks": {
+    "message": "شكرًا لك! هذا يساعد حقًا."
+  },
+  "rateFeedbackThanks": {
+    "message": "شكرًا — نقرأ كل رسالة."
+  },
+  "rateFeedbackSubject": {
+    "message": "ملاحظات"
+  },
+  "answerTitle": {
+    "message": "إجابة من ذاكرتك"
+  },
+  "answerAsk": {
+    "message": "أجِب من ذاكرتي"
+  },
+  "answerEnableTitle": {
+    "message": "إجابات من الذكاء الاصطناعي المدمج في Chrome"
+  },
+  "answerEnableText": {
+    "message": "يستطيع Déjà الإجابة عن الأسئلة مما قرأته، مع المصادر. ينزّل Chrome نموذجه الذي يعمل على الجهاز (Gemini Nano) مرة واحدة — أسئلتك وصفحاتك لا تغادر حاسوبك أبدًا."
+  },
+  "answerEnableButton": {
+    "message": "تفعيل الإجابات"
+  },
+  "answerNoThanks": {
+    "message": "لا، شكرًا"
+  },
+  "answerDownloading": {
+    "message": "ينزّل Chrome النموذج… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "أقرأ ذكرياتك…"
+  },
+  "answerStop": {
+    "message": "إيقاف"
+  },
+  "answerFoot": {
+    "message": "كتبه الذكاء الاصطناعي المدمج في Chrome على جهازك استنادًا إلى ذكرياتك (عددها: $COUNT$). تحقّق من المصادر.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "لم أتمكن من صياغة إجابة هذه المرة."
+  },
+  "optAnswersLabel": {
+    "message": "إجابات من الذكاء الاصطناعي المدمج في Chrome"
+  },
+  "optAnswersHelp": {
+    "message": "لأسئلة مثل «ماذا قرأتُ عن…؟» أكتب إجابة قصيرة مع مصادر من صفحاتك — بالكامل على جهازك، باستخدام Gemini Nano في Chrome. يتطلب ذلك حاسوبًا ولغة مدعومين (الإنجليزية، الإسبانية، الألمانية، الفرنسية، اليابانية)."
+  },
+  "optAnswersAvailable": {
+    "message": "جاهز للاستخدام على هذا الجهاز."
+  },
+  "optAnswersDownloadable": {
+    "message": "مدعوم — سينزّل Chrome النموذج عند سؤالك الأول."
+  },
+  "optAnswersUnavailable": {
+    "message": "هذا الجهاز أو لغة الواجهة غير مدعومين من الذكاء الاصطناعي المدمج في Chrome."
+  },
+  "optAnswersUnsupported": {
+    "message": "هذا المتصفح لا يحتوي على ذكاء اصطناعي مدمج — كل شيء آخر في Déjà يعمل كالمعتاد."
+  }
+}

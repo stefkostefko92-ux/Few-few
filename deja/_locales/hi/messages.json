@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — तुम्हारे ब्राउज़र की याददाश्त"
+  },
+  "extDesc": {
+    "message": "तुमने जो पेज पढ़े हैं, उनमें अर्थ के आधार पर खोज। सब कुछ लोकल रूप से होता है — कुछ भी कभी तुम्हारे डिवाइस से बाहर नहीं जाता।"
+  },
+  "cmdOpenSearch": {
+    "message": "Déjà खोज खोलो"
+  },
+  "searchTitle": {
+    "message": "Déjà — जो पढ़ा है, उसे खोजो"
+  },
+  "tagline": {
+    "message": "तुमने इसे देखा है। Déjà इसे ढूँढ लेता है।"
+  },
+  "searchPlaceholder": {
+    "message": "जो याद है, उसका वर्णन करो… जैसे “सोडियम-आधारित बैटरियों पर लेख”"
+  },
+  "searchButton": {
+    "message": "खोजो"
+  },
+  "statusSearching": {
+    "message": "याददाश्त में खोज रहा हूँ… (पहली खोज मॉडल लोड करती है, ~10-30 सेकंड)"
+  },
+  "statusEmpty": {
+    "message": "कुछ नहीं मिला। या तो तुमने इसे कभी पढ़ा ही नहीं, या Déjà ने इसे अभी तक याद नहीं किया है।"
+  },
+  "statusResults": {
+    "message": "$COUNT$ यादें:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 याद:"
+  },
+  "errNoResponse": {
+    "message": "याददाश्त ने जवाब नहीं दिया — फिर से कोशिश करो"
+  },
+  "recallVivid": {
+    "message": "साफ़ याद"
+  },
+  "recallHazy": {
+    "message": "धुँधली याद"
+  },
+  "recallFaint": {
+    "message": "दूर की याद"
+  },
+  "statusError": {
+    "message": "खोज विफल रही: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "याददाश्त में: $COUNT$ पेज।",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "याददाश्त में: 1 पेज।"
+  },
+  "similarity": {
+    "message": "समानता $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "$DATE$ को पढ़ा",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "याददाश्त में $COUNT$ पेज",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "याददाश्त में 1 पेज"
+  },
+  "popupSleeping": {
+    "message": "याददाश्त सो रही है"
+  },
+  "popupWaking": {
+    "message": "याददाश्त जाग रही है…"
+  },
+  "popupOpenSearch": {
+    "message": "खोज खोलो"
+  },
+  "popupPause": {
+    "message": "याद रखना रोको"
+  },
+  "popupClear": {
+    "message": "याददाश्त साफ़ करो"
+  },
+  "popupClearConfirm": {
+    "message": "याद रखा गया सब कुछ मिटा दें? इसे वापस नहीं लाया जा सकता।"
+  },
+  "popupOptions": {
+    "message": "सेटिंग"
+  },
+  "optionsTitle": {
+    "message": "Déjà — सेटिंग"
+  },
+  "optRetentionLabel": {
+    "message": "पेज याद रखो"
+  },
+  "optRetentionForever": {
+    "message": "हमेशा के लिए"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ महीने",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "पुराने पेज दिन में एक बार अपने-आप मिटा दिए जाते हैं।"
+  },
+  "optDenylistLabel": {
+    "message": "ऐसे पते कभी याद मत रखो जिनमें यह हो"
+  },
+  "optDenylistHelp": {
+    "message": "हर पंक्ति में एक पैटर्न। पते के किसी हिस्से से मेल खाता है, जैसे “example.com” या “/private”।"
+  },
+  "optBuiltinLabel": {
+    "message": "बिल्ट-इन सुरक्षा (हमेशा चालू)"
+  },
+  "optModelHostLabel": {
+    "message": "मॉडल का अपना मिरर (एडवांस्ड)"
+  },
+  "optModelHostHelp": {
+    "message": "खाली = huggingface.co। ऑफ़लाइन/कॉर्पोरेट माहौल के लिए अपना सर्वर सेट करो।"
+  },
+  "filterAll": {
+    "message": "सभी"
+  },
+  "filterWeek": {
+    "message": "पिछला हफ़्ता"
+  },
+  "filterMonth": {
+    "message": "पिछला महीना"
+  },
+  "filterYear": {
+    "message": "पिछला साल"
+  },
+  "relatedLink": {
+    "message": "जुड़ी हुई यादें"
+  },
+  "relatedNone": {
+    "message": "कोई नज़दीकी याद नहीं"
+  },
+  "omniboxDefault": {
+    "message": "अपनी याददाश्त से पूछो — Déjà अर्थ के आधार पर खोजता है"
+  },
+  "popupMemory": {
+    "message": "मेरी याददाश्त"
+  },
+  "memoryTitle": {
+    "message": "मेरी याददाश्त"
+  },
+  "memoryEmpty": {
+    "message": "याददाश्त खाली है — कुछ पेज देखो और फिर लौटो।"
+  },
+  "memoryForget": {
+    "message": "भूल जाओ"
+  },
+  "memoryExport": {
+    "message": "आर्काइव डाउनलोड करो"
+  },
+  "memoryImport": {
+    "message": "आर्काइव से बहाल करो"
+  },
+  "memoryImportConfirm": {
+    "message": "आर्काइव से बहाल करें? मेल खाने वाले पेज ओवरराइट हो जाएँगे।"
+  },
+  "optSave": {
+    "message": "सेव करो"
+  },
+  "optSaved": {
+    "message": "सेव हो गया ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "मिरर का पता https:// होना चाहिए"
+  },
+  "welcomeHeading": {
+    "message": "नमस्ते। मैं तुम्हारे ब्राउज़र की याददाश्त हूँ।"
+  },
+  "welcomeIntro": {
+    "message": "इस पल से तुम जो पढ़ते हो, मैं उसे याद रखता हूँ, ताकि बाद में तुम उसे अर्थ के आधार पर ढूँढ सको — अपने शब्दों में, सटीक शीर्षक से नहीं।"
+  },
+  "welcomePoint1": {
+    "message": "सब कुछ तुम्हारे डिवाइस पर होता है। न सर्वर, न क्लाउड, न कोई डेटा भेजा जाता है — कहीं भी नहीं, कभी भी नहीं।"
+  },
+  "welcomePoint2": {
+    "message": "मेल, चैट, लॉगिन और बैंकिंग कभी याद नहीं रखे जाते। ध्यान दो: मैं संवेदनशील विषयों को पते से नहीं पहचान सकता — उनके लिए पॉज़ या सेटिंग में अपनी सूची इस्तेमाल करो।"
+  },
+  "welcomePoint3": {
+    "message": "नियंत्रण तुम्हारे हाथ में है: एक क्लिक में पॉज़, “याददाश्त साफ़ करो” सब कुछ मिटा देता है, और चाहो तो मैं कुछ महीनों बाद अपने-आप भूल जाता हूँ।"
+  },
+  "welcomeCta": {
+    "message": "खोज खोलो"
+  },
+  "welcomeOptions": {
+    "message": "सेटिंग"
+  },
+  "memoryFilter": {
+    "message": "अपनी याददाश्त में खोजो…"
+  },
+  "supportLink": {
+    "message": "Déjà का साथ दो"
+  },
+  "panelTitle": {
+    "message": "Déjà — साथी"
+  },
+  "panelOnThisPage": {
+    "message": "इस पेज के विषय पर"
+  },
+  "panelRecent": {
+    "message": "हाल की यादें"
+  },
+  "panelNoPage": {
+    "message": "कोई वेब पेज खोलो और Déjà दिखाएगा कि तुमने उसके विषय पर क्या पढ़ा है।"
+  },
+  "popupOpenPanel": {
+    "message": "साइड पैनल"
+  },
+  "popupForgetPage": {
+    "message": "यह पेज भूल जाओ"
+  },
+  "popupForgotten": {
+    "message": "भुला दिया ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: चुना गया टेक्स्ट याद रखो"
+  },
+  "menuForget": {
+    "message": "Déjà: यह पेज भूल जाओ"
+  },
+  "recentTitle": {
+    "message": "हाल की यादें"
+  },
+  "cmdOpenPanel": {
+    "message": "Déjà का साइड पैनल खोलो"
+  },
+  "welcomePoint4": {
+    "message": "साइड पैनल खुले हुए पेज का पता और शीर्षक देखता है, ताकि दिखा सके कि तुमने उसके विषय पर क्या पढ़ा है — सिर्फ़ सेशन मेमोरी में। जान-बूझकर सेव किए गए अंश भी सिर्फ़ तुम्हारे पास रहते हैं।"
+  },
+  "welcomeUpdated": {
+    "message": "Déjà अपडेट हो गया है। नया: अब तुम्हारे बुकमार्क भी अर्थ के आधार पर खोजे जा सकते हैं — अगर तुम चाहो। यह रहा कि मैं तुम्हारे डेटा के साथ क्या करता हूँ — कुछ भी तुम्हारे डिवाइस से बाहर नहीं गया है।"
+  },
+  "optAmbientLabel": {
+    "message": "जीवंत बैकग्राउंड"
+  },
+  "optAmbientHelp": {
+    "message": "काँच के पीछे यादों का जाल धीरे-धीरे बहता है। अगर हलचल से ध्यान भटकता है, तो इसे बंद कर दो।"
+  },
+  "bmTitle": {
+    "message": "अपने बुकमार्क खोजने लायक बनाओ — अभी"
+  },
+  "bmText": {
+    "message": "Déjà पेज खोले बिना तुम्हारे बुकमार्क के शीर्षक और फ़ोल्डर सीखता है। पहले ही मिनट से उन्हें अर्थ के आधार पर ढूँढो — सब कुछ तुम्हारे डिवाइस पर रहता है।"
+  },
+  "bmTextShort": {
+    "message": "तुम्हारी याददाश्त अभी नई है। मुझे अपने बुकमार्क सिखाओ और आज ही उनमें अर्थ के आधार पर खोजो।"
+  },
+  "bmButton": {
+    "message": "मेरे बुकमार्क सीखो"
+  },
+  "bmNote": {
+    "message": "तुम्हारा ब्राउज़र अनुमति माँगेगा। इसे कभी भी सेटिंग में बंद किया जा सकता है।"
+  },
+  "bmTitleRunning": {
+    "message": "तुम्हारे बुकमार्क सीख रहा हूँ…"
+  },
+  "bmTitleDone": {
+    "message": "तुम्हारे बुकमार्क खोजने लायक हैं"
+  },
+  "bmPreparing": {
+    "message": "तैयारी हो रही है…"
+  },
+  "bmLearning": {
+    "message": "$TOTAL$ में से $DONE$ सीख लिए",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà रुका हुआ है — फिर से चालू होते ही मैं जारी रखूँगा।"
+  },
+  "bmError": {
+    "message": "सीखते समय कुछ गड़बड़ हो गई। अगले बदलाव पर फिर कोशिश करूँगा।"
+  },
+  "bmDone": {
+    "message": "हो गया — $COUNT$ बुकमार्क अर्थ के आधार पर खोजे जा सकते हैं और अपने-आप सिंक रहते हैं।",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "हो गया — 1 बुकमार्क अर्थ के आधार पर खोजा जा सकता है और अपने-आप सिंक रहता है।"
+  },
+  "bmDenied": {
+    "message": "अनुमति के बिना मैं तुम्हारे बुकमार्क नहीं देख सकता। कभी भी फिर से कोशिश की जा सकती है।"
+  },
+  "bmTry": {
+    "message": "आज़माओ:"
+  },
+  "bmBadge": {
+    "message": "बुकमार्क"
+  },
+  "bmAddedOn": {
+    "message": "$DATE$ को बुकमार्क किया",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "याददाश्त में बुकमार्क"
+  },
+  "optBookmarksHelp": {
+    "message": "मैं तुम्हारे बुकमार्क के शीर्षक और फ़ोल्डर सीखता हूँ (पेज खोले बिना) और उन्हें जोड़ने या मिटाने पर साथ-साथ अपडेट रखता हूँ। बंद करने पर वे याददाश्त से हट जाते हैं — तुम्हारे पढ़े हुए पेज बने रहते हैं।"
+  },
+  "memoryFilterAll": {
+    "message": "सभी"
+  },
+  "memoryFilterRead": {
+    "message": "पढ़े हुए"
+  },
+  "memoryFilterBookmarks": {
+    "message": "बुकमार्क"
+  },
+  "welcomePoint5": {
+    "message": "बुकमार्क — सिर्फ़ तभी, जब तुम इन्हें चालू करो: तब मैं पेज खोले बिना उनके शीर्षक और फ़ोल्डर सीखता हूँ। एक क्लिक से बंद हो जाता है।"
+  },
+  "rateTitle": {
+    "message": "Déjà ने तुम्हें कुछ ढूँढने में मदद की — अब तक $COUNT$ बार",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "अगर यह काम का है, तो स्टोर में एक रेटिंग दूसरे लोगों को इसे खोजने में मदद करती है — इसमें 10 सेकंड लगते हैं। और अगर कुछ परेशान करे, तो हमें बताओ।"
+  },
+  "rateButton": {
+    "message": "Déjà को रेट करो"
+  },
+  "rateFeedback": {
+    "message": "कुछ काम नहीं कर रहा?"
+  },
+  "rateLater": {
+    "message": "अभी नहीं"
+  },
+  "rateThanks": {
+    "message": "धन्यवाद! इससे सच में मदद मिलती है।"
+  },
+  "rateFeedbackThanks": {
+    "message": "धन्यवाद — हम हर संदेश पढ़ते हैं।"
+  },
+  "rateFeedbackSubject": {
+    "message": "फ़ीडबैक"
+  },
+  "answerTitle": {
+    "message": "तुम्हारी याददाश्त से जवाब"
+  },
+  "answerAsk": {
+    "message": "मेरी याददाश्त से जवाब दो"
+  },
+  "answerEnableTitle": {
+    "message": "Chrome के बिल्ट-इन AI से जवाब"
+  },
+  "answerEnableText": {
+    "message": "Déjà तुम्हारे पढ़े हुए से सवालों के जवाब दे सकता है, स्रोतों के साथ। Chrome अपना ऑन-डिवाइस मॉडल (Gemini Nano) एक बार डाउनलोड करता है — तुम्हारे सवाल और पेज कभी तुम्हारे कंप्यूटर से बाहर नहीं जाते।"
+  },
+  "answerEnableButton": {
+    "message": "जवाब चालू करो"
+  },
+  "answerNoThanks": {
+    "message": "नहीं, धन्यवाद"
+  },
+  "answerDownloading": {
+    "message": "Chrome मॉडल डाउनलोड कर रहा है… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "तुम्हारी यादें पढ़ रहा हूँ…"
+  },
+  "answerStop": {
+    "message": "रोको"
+  },
+  "answerFoot": {
+    "message": "Chrome के बिल्ट-इन AI ने तुम्हारे डिवाइस पर तुम्हारी $COUNT$ यादों से लिखा। स्रोत जाँच लो।",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "इस बार मैं जवाब नहीं बना सका।"
+  },
+  "optAnswersLabel": {
+    "message": "Chrome के बिल्ट-इन AI से जवाब"
+  },
+  "optAnswersHelp": {
+    "message": "“मैंने … के बारे में क्या पढ़ा था?” जैसे सवालों के लिए मैं तुम्हारे पेजों से स्रोतों के साथ छोटा जवाब लिखता हूँ — पूरी तरह तुम्हारे डिवाइस पर, Chrome में Gemini Nano के साथ। इसके लिए समर्थित कंप्यूटर और भाषा चाहिए (अंग्रेज़ी, स्पैनिश, जर्मन, फ़्रेंच, जापानी)।"
+  },
+  "optAnswersAvailable": {
+    "message": "इस डिवाइस पर इस्तेमाल के लिए तैयार।"
+  },
+  "optAnswersDownloadable": {
+    "message": "समर्थित — Chrome तुम्हारे पहले सवाल पर मॉडल डाउनलोड करेगा।"
+  },
+  "optAnswersUnavailable": {
+    "message": "यह डिवाइस या इंटरफ़ेस की भाषा Chrome के बिल्ट-इन AI द्वारा समर्थित नहीं है।"
+  },
+  "optAnswersUnsupported": {
+    "message": "इस ब्राउज़र में बिल्ट-इन AI नहीं है — Déjà में बाकी सब हमेशा की तरह काम करता है।"
+  }
+}

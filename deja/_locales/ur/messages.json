@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — تمہارے براؤزر کی یادداشت"
+  },
+  "extDesc": {
+    "message": "جو صفحات تم نے پڑھے ہیں ان میں معنوی تلاش۔ سب کچھ مقامی طور پر ہوتا ہے — کچھ بھی کبھی تمہارے آلے سے باہر نہیں جاتا۔"
+  },
+  "cmdOpenSearch": {
+    "message": "Déjà کی تلاش کھولو"
+  },
+  "searchTitle": {
+    "message": "Déjà — جو پڑھا ہے اسے تلاش کرو"
+  },
+  "tagline": {
+    "message": "تم نے اسے دیکھا ہے۔ Déjà اسے ڈھونڈ لیتا ہے۔"
+  },
+  "searchPlaceholder": {
+    "message": "جو یاد ہے اسے بیان کرو… مثلاً “سوڈیم پر مبنی بیٹریوں کے بارے میں مضمون”"
+  },
+  "searchButton": {
+    "message": "تلاش"
+  },
+  "statusSearching": {
+    "message": "یادداشت میں کھوج رہا ہوں… (پہلی تلاش ماڈل لوڈ کرتی ہے، ~10-30 سیکنڈ)"
+  },
+  "statusEmpty": {
+    "message": "کچھ سامنے نہیں آیا۔ یا تو تم نے اسے کبھی پڑھا ہی نہیں، یا Déjà نے اسے ابھی یاد نہیں کیا۔"
+  },
+  "statusResults": {
+    "message": "$COUNT$ یادیں:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "ایک یاد:"
+  },
+  "errNoResponse": {
+    "message": "یادداشت نے جواب نہیں دیا — دوبارہ کوشش کرو"
+  },
+  "recallVivid": {
+    "message": "واضح یاد"
+  },
+  "recallHazy": {
+    "message": "دھندلی یاد"
+  },
+  "recallFaint": {
+    "message": "دور کی یاد"
+  },
+  "statusError": {
+    "message": "تلاش ناکام ہو گئی: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "یادداشت میں: $COUNT$ صفحات۔",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "یادداشت میں: ایک صفحہ۔"
+  },
+  "similarity": {
+    "message": "مماثلت $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "$DATE$ کو پڑھا",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "یادداشت میں $COUNT$ صفحات",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "یادداشت میں ایک صفحہ"
+  },
+  "popupSleeping": {
+    "message": "یادداشت سو رہی ہے"
+  },
+  "popupWaking": {
+    "message": "یادداشت جاگ رہی ہے…"
+  },
+  "popupOpenSearch": {
+    "message": "تلاش کھولو"
+  },
+  "popupPause": {
+    "message": "یاد رکھنا موقوف کرو"
+  },
+  "popupClear": {
+    "message": "یادداشت صاف کرو"
+  },
+  "popupClearConfirm": {
+    "message": "جو کچھ یاد رکھا گیا ہے، سب حذف کر دو؟ واپسی ممکن نہیں۔"
+  },
+  "popupOptions": {
+    "message": "ترتیبات"
+  },
+  "optionsTitle": {
+    "message": "Déjà — ترتیبات"
+  },
+  "optRetentionLabel": {
+    "message": "صفحات یاد رکھو"
+  },
+  "optRetentionForever": {
+    "message": "ہمیشہ کے لیے"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ مہینے",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "پرانے صفحات روزانہ ایک بار خود بخود حذف ہو جاتے ہیں۔"
+  },
+  "optDenylistLabel": {
+    "message": "ایسے پتے کبھی یاد نہ رکھو جن میں یہ شامل ہو"
+  },
+  "optDenylistHelp": {
+    "message": "ہر سطر میں ایک پیٹرن۔ پتے کے کسی حصے سے مماثلت، مثلاً “example.com” یا “/private”۔"
+  },
+  "optBuiltinLabel": {
+    "message": "بلٹ اِن تحفظ (ہمیشہ فعال)"
+  },
+  "optModelHostLabel": {
+    "message": "ماڈل کا اپنا مرر (ایڈوانسڈ)"
+  },
+  "optModelHostHelp": {
+    "message": "خالی = huggingface.co۔ آف لائن/کارپوریٹ ماحول کے لیے اپنا سرور سیٹ کرو۔"
+  },
+  "filterAll": {
+    "message": "سب"
+  },
+  "filterWeek": {
+    "message": "پچھلا ہفتہ"
+  },
+  "filterMonth": {
+    "message": "پچھلا مہینہ"
+  },
+  "filterYear": {
+    "message": "پچھلا سال"
+  },
+  "relatedLink": {
+    "message": "متعلقہ یادیں"
+  },
+  "relatedNone": {
+    "message": "کوئی قریبی یاد نہیں"
+  },
+  "omniboxDefault": {
+    "message": "اپنی یادداشت سے پوچھو — Déjà معنی کے لحاظ سے تلاش کرتا ہے"
+  },
+  "popupMemory": {
+    "message": "میری یادداشت"
+  },
+  "memoryTitle": {
+    "message": "میری یادداشت"
+  },
+  "memoryEmpty": {
+    "message": "یادداشت خالی ہے — چند صفحات دیکھو اور واپس آؤ۔"
+  },
+  "memoryForget": {
+    "message": "بھول جاؤ"
+  },
+  "memoryExport": {
+    "message": "آرکائیو ڈاؤن لوڈ کرو"
+  },
+  "memoryImport": {
+    "message": "آرکائیو سے بحال کرو"
+  },
+  "memoryImportConfirm": {
+    "message": "آرکائیو سے بحال کرو؟ ملتے جلتے صفحات اوور رائٹ ہو جائیں گے۔"
+  },
+  "optSave": {
+    "message": "محفوظ کرو"
+  },
+  "optSaved": {
+    "message": "محفوظ ہو گیا ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "مرر کا https:// پتہ ہونا ضروری ہے"
+  },
+  "welcomeHeading": {
+    "message": "ہیلو۔ میں تمہارے براؤزر کی یادداشت ہوں۔"
+  },
+  "welcomeIntro": {
+    "message": "اس لمحے سے تم جو پڑھتے ہو میں اسے یاد رکھتا ہوں، تاکہ بعد میں تم اسے معنی کے لحاظ سے ڈھونڈ سکو — اپنے الفاظ میں، نہ کہ عین عنوان سے۔"
+  },
+  "welcomePoint1": {
+    "message": "سب کچھ تمہارے آلے پر ہوتا ہے۔ نہ سرور، نہ کلاؤڈ، نہ ڈیٹا کی ترسیل — کہیں بھی نہیں، کبھی بھی نہیں۔"
+  },
+  "welcomePoint2": {
+    "message": "میل، چیٹس، لاگ اِن اور بینکنگ کبھی یاد نہیں رکھے جاتے۔ دھیان رہے: میں حساس موضوعات کو پتے سے نہیں پہچان سکتا — ان کے لیے وقفہ یا ترتیبات میں اپنی فہرست استعمال کرو۔"
+  },
+  "welcomePoint3": {
+    "message": "اختیار تمہارے پاس ہے: ایک کلک سے وقفہ، “یادداشت صاف کرو” سب کچھ حذف کر دیتا ہے، اور اگر چاہو تو میں چند مہینوں بعد خود بخود بھول جاتا ہوں۔"
+  },
+  "welcomeCta": {
+    "message": "تلاش کھولو"
+  },
+  "welcomeOptions": {
+    "message": "ترتیبات"
+  },
+  "memoryFilter": {
+    "message": "اپنی یادداشت میں تلاش کرو…"
+  },
+  "supportLink": {
+    "message": "Déjà کی حمایت"
+  },
+  "panelTitle": {
+    "message": "Déjà — ساتھی"
+  },
+  "panelOnThisPage": {
+    "message": "اس صفحے کے موضوع پر"
+  },
+  "panelRecent": {
+    "message": "حالیہ یادیں"
+  },
+  "panelNoPage": {
+    "message": "کوئی ویب صفحہ کھولو اور Déjà دکھائے گا کہ تم نے اس کے موضوع پر کیا پڑھا ہے۔"
+  },
+  "popupOpenPanel": {
+    "message": "سائیڈ پینل"
+  },
+  "popupForgetPage": {
+    "message": "یہ صفحہ بھول جاؤ"
+  },
+  "popupForgotten": {
+    "message": "بھلا دیا گیا ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: منتخب متن یاد رکھو"
+  },
+  "menuForget": {
+    "message": "Déjà: یہ صفحہ بھول جاؤ"
+  },
+  "recentTitle": {
+    "message": "حالیہ یادیں"
+  },
+  "cmdOpenPanel": {
+    "message": "Déjà کا سائیڈ پینل کھولو"
+  },
+  "welcomePoint4": {
+    "message": "سائیڈ پینل کھلے ہوئے صفحے کا پتہ اور عنوان دیکھتا ہے، تاکہ دکھا سکے کہ تم نے اس کے موضوع پر کیا پڑھا ہے — صرف سیشن کی یادداشت میں۔ جان بوجھ کر محفوظ کیے گئے اقتباسات بھی صرف تمہارے پاس رہتے ہیں۔"
+  },
+  "welcomeUpdated": {
+    "message": "Déjà اپ ڈیٹ ہو گیا ہے۔ نیا: اب تمہارے بُک مارکس بھی معنی کے لحاظ سے قابلِ تلاش ہو سکتے ہیں — اگر تم چاہو۔ یہ ہے جو میں تمہارے ڈیٹا کے ساتھ کرتا ہوں — کچھ بھی تمہارے آلے سے باہر نہیں گیا۔"
+  },
+  "optAmbientLabel": {
+    "message": "زندہ پس منظر"
+  },
+  "optAmbientHelp": {
+    "message": "شیشے کے پیچھے یادوں کا جال آہستہ آہستہ بہتا ہے۔ اگر حرکت توجہ بٹاتی ہے تو اسے بند کر دو۔"
+  },
+  "bmTitle": {
+    "message": "اپنے بُک مارکس قابلِ تلاش بناؤ — ابھی"
+  },
+  "bmText": {
+    "message": "Déjà صفحات کھولے بغیر تمہارے بُک مارکس کے عنوانات اور فولڈرز سیکھتا ہے۔ پہلے ہی منٹ سے انہیں معنی کے لحاظ سے ڈھونڈو — سب کچھ تمہارے آلے پر رہتا ہے۔"
+  },
+  "bmTextShort": {
+    "message": "تمہاری یادداشت ابھی نئی ہے۔ مجھے اپنے بُک مارکس سکھاؤ اور آج ہی ان میں معنی کے لحاظ سے تلاش کرو۔"
+  },
+  "bmButton": {
+    "message": "میرے بُک مارکس سیکھو"
+  },
+  "bmNote": {
+    "message": "تمہارا براؤزر اجازت مانگے گا۔ ترتیبات میں کسی بھی وقت اسے بند کیا جا سکتا ہے۔"
+  },
+  "bmTitleRunning": {
+    "message": "تمہارے بُک مارکس سیکھ رہا ہوں…"
+  },
+  "bmTitleDone": {
+    "message": "تمہارے بُک مارکس قابلِ تلاش ہیں"
+  },
+  "bmPreparing": {
+    "message": "تیاری ہو رہی ہے…"
+  },
+  "bmLearning": {
+    "message": "$TOTAL$ میں سے $DONE$ سیکھ لیے",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà موقوف ہے — دوبارہ شروع ہوتے ہی میں جاری رکھوں گا۔"
+  },
+  "bmError": {
+    "message": "سیکھنے کے دوران کچھ غلط ہو گیا۔ اگلی تبدیلی پر دوبارہ کوشش کروں گا۔"
+  },
+  "bmDone": {
+    "message": "ہو گیا — $COUNT$ بُک مارکس معنی کے لحاظ سے قابلِ تلاش ہیں اور خود بخود ہم آہنگ رہتے ہیں۔",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "ہو گیا — ایک بُک مارک معنی کے لحاظ سے قابلِ تلاش ہے اور خود بخود ہم آہنگ رہتا ہے۔"
+  },
+  "bmDenied": {
+    "message": "اجازت کے بغیر میں تمہارے بُک مارکس نہیں دیکھ سکتا۔ کسی بھی وقت دوبارہ کوشش کی جا سکتی ہے۔"
+  },
+  "bmTry": {
+    "message": "آزماؤ:"
+  },
+  "bmBadge": {
+    "message": "بُک مارک"
+  },
+  "bmAddedOn": {
+    "message": "$DATE$ کو بُک مارک کیا",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "یادداشت میں بُک مارکس"
+  },
+  "optBookmarksHelp": {
+    "message": "میں تمہارے بُک مارکس کے عنوانات اور فولڈرز سیکھتا ہوں (صفحات کھولے بغیر) اور انہیں شامل یا حذف کرنے پر ساتھ ساتھ اپ ڈیٹ رکھتا ہوں۔ بند کرنے سے وہ یادداشت سے ہٹ جاتے ہیں — جو صفحات تم نے پڑھے ہیں وہ رہتے ہیں۔"
+  },
+  "memoryFilterAll": {
+    "message": "سب"
+  },
+  "memoryFilterRead": {
+    "message": "پڑھے ہوئے"
+  },
+  "memoryFilterBookmarks": {
+    "message": "بُک مارکس"
+  },
+  "welcomePoint5": {
+    "message": "بُک مارکس — صرف اگر تم انہیں آن کرو: تب میں صفحات کھولے بغیر ان کے عنوانات اور فولڈرز سیکھتا ہوں۔ ایک کلک سے بند ہو جاتا ہے۔"
+  },
+  "rateTitle": {
+    "message": "Déjà نے تمہیں کچھ ڈھونڈنے میں مدد کی — اب تک $COUNT$ بار",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "اگر یہ مفید ہے تو اسٹور میں ایک ریٹنگ دوسرے لوگوں کو اسے دریافت کرنے میں مدد دیتی ہے — اس میں 10 سیکنڈ لگتے ہیں۔ اور اگر کوئی بات تنگ کرے تو ہمیں بتاؤ۔"
+  },
+  "rateButton": {
+    "message": "Déjà کو ریٹ کرو"
+  },
+  "rateFeedback": {
+    "message": "کچھ کام نہیں کر رہا؟"
+  },
+  "rateLater": {
+    "message": "ابھی نہیں"
+  },
+  "rateThanks": {
+    "message": "شکریہ! اس سے واقعی مدد ملتی ہے۔"
+  },
+  "rateFeedbackThanks": {
+    "message": "شکریہ — ہم ہر پیغام پڑھتے ہیں۔"
+  },
+  "rateFeedbackSubject": {
+    "message": "رائے"
+  },
+  "answerTitle": {
+    "message": "تمہاری یادداشت سے جواب"
+  },
+  "answerAsk": {
+    "message": "میری یادداشت سے جواب دو"
+  },
+  "answerEnableTitle": {
+    "message": "Chrome کے بلٹ اِن AI سے جوابات"
+  },
+  "answerEnableText": {
+    "message": "Déjà تمہارے پڑھے ہوئے مواد سے سوالوں کے جواب دے سکتا ہے، ماخذ کے ساتھ۔ Chrome اپنا آن ڈیوائس ماڈل (Gemini Nano) ایک بار ڈاؤن لوڈ کرتا ہے — تمہارے سوال اور صفحات کبھی تمہارے کمپیوٹر سے باہر نہیں جاتے۔"
+  },
+  "answerEnableButton": {
+    "message": "جوابات آن کرو"
+  },
+  "answerNoThanks": {
+    "message": "نہیں، شکریہ"
+  },
+  "answerDownloading": {
+    "message": "Chrome ماڈل ڈاؤن لوڈ کر رہا ہے… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "تمہاری یادیں پڑھ رہا ہوں…"
+  },
+  "answerStop": {
+    "message": "روکو"
+  },
+  "answerFoot": {
+    "message": "Chrome کے بلٹ اِن AI نے تمہارے آلے پر تمہاری $COUNT$ یادوں سے لکھا۔ ماخذ ضرور دیکھو۔",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "اس بار میں جواب تیار نہیں کر سکا۔"
+  },
+  "optAnswersLabel": {
+    "message": "Chrome کے بلٹ اِن AI سے جوابات"
+  },
+  "optAnswersHelp": {
+    "message": "“میں نے … کے بارے میں کیا پڑھا تھا؟” جیسے سوالوں کے لیے میں تمہارے صفحات سے ماخذ کے ساتھ ایک مختصر جواب لکھتا ہوں — مکمل طور پر تمہارے آلے پر، Chrome میں Gemini Nano کے ساتھ۔ اس کے لیے معاون کمپیوٹر اور زبان درکار ہے (انگریزی، ہسپانوی، جرمن، فرانسیسی، جاپانی)۔"
+  },
+  "optAnswersAvailable": {
+    "message": "اس آلے پر استعمال کے لیے تیار۔"
+  },
+  "optAnswersDownloadable": {
+    "message": "معاون — Chrome تمہارے پہلے سوال پر ماڈل ڈاؤن لوڈ کرے گا۔"
+  },
+  "optAnswersUnavailable": {
+    "message": "Chrome کا بلٹ اِن AI اس آلے یا انٹرفیس کی زبان کو سپورٹ نہیں کرتا۔"
+  },
+  "optAnswersUnsupported": {
+    "message": "اس براؤزر میں بلٹ اِن AI نہیں ہے — Déjà میں باقی سب کچھ ہمیشہ کی طرح کام کرتا ہے۔"
+  }
+}

@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — حافظهٔ مرورگرت"
+  },
+  "extDesc": {
+    "message": "جست‌وجوی معنایی در صفحه‌هایی که خوانده‌ای. همه‌چیز به‌صورت محلی انجام می‌شود — هیچ‌چیز هرگز از دستگاهت خارج نمی‌شود."
+  },
+  "cmdOpenSearch": {
+    "message": "باز کردن جست‌وجوی Déjà"
+  },
+  "searchTitle": {
+    "message": "Déjà — آنچه خوانده‌ای را جست‌وجو کن"
+  },
+  "tagline": {
+    "message": "قبلاً دیده‌ای. Déjà پیدایش می‌کند."
+  },
+  "searchPlaceholder": {
+    "message": "آنچه یادت هست را توصیف کن… مثلاً «مقاله‌ای دربارهٔ باتری‌های مبتنی بر سدیم»"
+  },
+  "searchButton": {
+    "message": "جست‌وجو"
+  },
+  "statusSearching": {
+    "message": "در حال کاویدن حافظه… (اولین جست‌وجو مدل را بارگیری می‌کند، ~10-30 ثانیه)"
+  },
+  "statusEmpty": {
+    "message": "چیزی پیدا نشد. یا هرگز آن را نخوانده‌ای، یا Déjà هنوز آن را به خاطر نسپرده است."
+  },
+  "statusResults": {
+    "message": "$COUNT$ خاطره:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "یک خاطره:"
+  },
+  "errNoResponse": {
+    "message": "حافظه پاسخ نداد — دوباره امتحان کن"
+  },
+  "recallVivid": {
+    "message": "خاطرهٔ روشن"
+  },
+  "recallHazy": {
+    "message": "خاطرهٔ مه‌آلود"
+  },
+  "recallFaint": {
+    "message": "خاطرهٔ دور"
+  },
+  "statusError": {
+    "message": "جست‌وجو ناموفق بود: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "در حافظه: $COUNT$ صفحه.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "در حافظه: یک صفحه."
+  },
+  "similarity": {
+    "message": "شباهت $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "خوانده‌شده در $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "$COUNT$ صفحه در حافظه",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "یک صفحه در حافظه"
+  },
+  "popupSleeping": {
+    "message": "حافظه خواب است"
+  },
+  "popupWaking": {
+    "message": "حافظه دارد بیدار می‌شود…"
+  },
+  "popupOpenSearch": {
+    "message": "باز کردن جست‌وجو"
+  },
+  "popupPause": {
+    "message": "توقف موقت به‌خاطرسپاری"
+  },
+  "popupClear": {
+    "message": "پاک کردن حافظه"
+  },
+  "popupClearConfirm": {
+    "message": "همهٔ موارد به‌خاطرسپرده حذف شود؟ راه برگشتی نیست."
+  },
+  "popupOptions": {
+    "message": "تنظیمات"
+  },
+  "optionsTitle": {
+    "message": "Déjà — تنظیمات"
+  },
+  "optRetentionLabel": {
+    "message": "نگه‌داشتن صفحه‌ها"
+  },
+  "optRetentionForever": {
+    "message": "برای همیشه"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ ماه",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "صفحه‌های قدیمی‌تر روزی یک بار به‌طور خودکار حذف می‌شوند."
+  },
+  "optDenylistLabel": {
+    "message": "هرگز نشانی‌هایی را به خاطر نسپار که شامل این‌ها هستند"
+  },
+  "optDenylistHelp": {
+    "message": "در هر خط یک الگو. با بخشی از نشانی مطابقت داده می‌شود، مثلاً «example.com» یا «/private»."
+  },
+  "optBuiltinLabel": {
+    "message": "محافظت داخلی (همیشه فعال)"
+  },
+  "optModelHostLabel": {
+    "message": "آینهٔ سفارشی مدل (پیشرفته)"
+  },
+  "optModelHostHelp": {
+    "message": "خالی = huggingface.co. برای محیط‌های آفلاین/سازمانی، سرور خودت را تنظیم کن."
+  },
+  "filterAll": {
+    "message": "همه"
+  },
+  "filterWeek": {
+    "message": "هفتهٔ گذشته"
+  },
+  "filterMonth": {
+    "message": "ماه گذشته"
+  },
+  "filterYear": {
+    "message": "سال گذشته"
+  },
+  "relatedLink": {
+    "message": "خاطره‌های مرتبط"
+  },
+  "relatedNone": {
+    "message": "خاطرهٔ نزدیکی نیست"
+  },
+  "omniboxDefault": {
+    "message": "از حافظه‌ات بپرس — Déjà بر اساس معنا جست‌وجو می‌کند"
+  },
+  "popupMemory": {
+    "message": "حافظهٔ من"
+  },
+  "memoryTitle": {
+    "message": "حافظهٔ من"
+  },
+  "memoryEmpty": {
+    "message": "حافظه خالی است — چند صفحه را مرور کن و برگرد."
+  },
+  "memoryForget": {
+    "message": "فراموش کن"
+  },
+  "memoryExport": {
+    "message": "بارگیری بایگانی"
+  },
+  "memoryImport": {
+    "message": "بازیابی از بایگانی"
+  },
+  "memoryImportConfirm": {
+    "message": "از بایگانی بازیابی شود؟ صفحه‌های مطابق بازنویسی می‌شوند."
+  },
+  "optSave": {
+    "message": "ذخیره"
+  },
+  "optSaved": {
+    "message": "ذخیره شد ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "آینه باید یک نشانی https:// باشد"
+  },
+  "welcomeHeading": {
+    "message": "سلام. من حافظهٔ مرورگرت هستم."
+  },
+  "welcomeIntro": {
+    "message": "از همین لحظه آنچه را می‌خوانی به خاطر می‌سپارم تا بعداً بتوانی آن را بر اساس معنا پیدا کنی — با کلمات خودت، نه با عنوان دقیق."
+  },
+  "welcomePoint1": {
+    "message": "همه‌چیز روی دستگاه خودت انجام می‌شود. بدون سرور، بدون ابر، بدون ارسال داده — به هیچ‌جا، هرگز."
+  },
+  "welcomePoint2": {
+    "message": "ایمیل، گفتگوها، ورود به حساب‌ها و بانکداری هرگز به خاطر سپرده نمی‌شوند. توجه کن: موضوعات حساس را نمی‌توانم از روی نشانی تشخیص دهم — برای آن‌ها از توقف موقت یا فهرست خودت در تنظیمات استفاده کن."
+  },
+  "welcomePoint3": {
+    "message": "اختیار دست توست: توقف موقت با یک کلیک، «پاک کردن حافظه» همه‌چیز را حذف می‌کند، و در صورت تمایل بعد از چند ماه خودکار فراموش می‌کنم."
+  },
+  "welcomeCta": {
+    "message": "باز کردن جست‌وجو"
+  },
+  "welcomeOptions": {
+    "message": "تنظیمات"
+  },
+  "memoryFilter": {
+    "message": "در حافظه‌ات جست‌وجو کن…"
+  },
+  "supportLink": {
+    "message": "حمایت از Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — همراه"
+  },
+  "panelOnThisPage": {
+    "message": "دربارهٔ موضوع این صفحه"
+  },
+  "panelRecent": {
+    "message": "خاطره‌های اخیر"
+  },
+  "panelNoPage": {
+    "message": "یک صفحهٔ وب باز کن تا Déjà نشان دهد دربارهٔ موضوع آن چه خوانده‌ای."
+  },
+  "popupOpenPanel": {
+    "message": "پانل کناری"
+  },
+  "popupForgetPage": {
+    "message": "فراموش کردن این صفحه"
+  },
+  "popupForgotten": {
+    "message": "فراموش شد ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: به خاطر سپردن متن انتخاب‌شده"
+  },
+  "menuForget": {
+    "message": "Déjà: فراموش کردن این صفحه"
+  },
+  "recentTitle": {
+    "message": "خاطره‌های اخیر"
+  },
+  "cmdOpenPanel": {
+    "message": "باز کردن پانل کناری Déjà"
+  },
+  "welcomePoint4": {
+    "message": "پانل کناری نشانی و عنوان صفحه‌ای را که باز کرده‌ای می‌بیند تا نشان دهد دربارهٔ موضوعش چه خوانده‌ای — فقط در حافظهٔ جلسه. بخش‌هایی که عمداً به خاطر می‌سپاری هم فقط نزد خودت می‌مانند."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà به‌روز شد. جدید: حالا نشانک‌هایت هم می‌توانند بر اساس معنا قابل جست‌وجو شوند — اگر بخواهی. این کاری است که با داده‌هایت انجام می‌دهم — هیچ‌چیز از دستگاهت خارج نشده است."
+  },
+  "optAmbientLabel": {
+    "message": "پس‌زمینهٔ زنده"
+  },
+  "optAmbientHelp": {
+    "message": "شبکهٔ خاطره‌ها پشت شیشه آرام حرکت می‌کند. اگر حرکت حواست را پرت می‌کند، خاموشش کن."
+  },
+  "bmTitle": {
+    "message": "نشانک‌هایت را قابل جست‌وجو کن — همین حالا"
+  },
+  "bmText": {
+    "message": "Déjà عنوان‌ها و پوشه‌های نشانک‌هایت را یاد می‌گیرد، بدون باز کردن صفحه‌ها. از همان دقیقهٔ اول آن‌ها را بر اساس معنا پیدا کن — همه‌چیز روی دستگاهت می‌ماند."
+  },
+  "bmTextShort": {
+    "message": "حافظه‌ات هنوز جوان است. نشانک‌هایت را به من یاد بده و همین امروز بر اساس معنا در آن‌ها جست‌وجو کن."
+  },
+  "bmButton": {
+    "message": "نشانک‌هایم را یاد بگیر"
+  },
+  "bmNote": {
+    "message": "مرورگرت اجازه می‌خواهد. هر زمان بخواهی از تنظیمات خاموشش کن."
+  },
+  "bmTitleRunning": {
+    "message": "در حال یادگیری نشانک‌هایت…"
+  },
+  "bmTitleDone": {
+    "message": "نشانک‌هایت قابل جست‌وجو هستند"
+  },
+  "bmPreparing": {
+    "message": "در حال آماده شدن…"
+  },
+  "bmLearning": {
+    "message": "$DONE$ از $TOTAL$ یاد گرفته شد",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà متوقف است — به‌محض اینکه ادامه دهی، ادامه می‌دهم."
+  },
+  "bmError": {
+    "message": "هنگام یادگیری مشکلی پیش آمد. در تغییر بعدی دوباره امتحان می‌کنم."
+  },
+  "bmDone": {
+    "message": "تمام شد — $COUNT$ نشانک بر اساس معنا قابل جست‌وجو هستند و خودکار همگام می‌شوند.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "تمام شد — یک نشانک بر اساس معنا قابل جست‌وجو است و خودکار همگام می‌شود."
+  },
+  "bmDenied": {
+    "message": "بدون اجازه نمی‌توانم نشانک‌هایت را ببینم. هر زمان خواستی می‌توانی دوباره امتحان کنی."
+  },
+  "bmTry": {
+    "message": "امتحان کن:"
+  },
+  "bmBadge": {
+    "message": "نشانک"
+  },
+  "bmAddedOn": {
+    "message": "نشانک‌شده در $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "نشانک‌ها در حافظه"
+  },
+  "optBookmarksHelp": {
+    "message": "عنوان‌ها و پوشه‌های نشانک‌هایت را یاد می‌گیرم (بدون باز کردن صفحه‌ها) و وقتی آن‌ها را اضافه یا حذف می‌کنی، به‌روز نگهشان می‌دارم. خاموش کردن، آن‌ها را از حافظه پاک می‌کند — صفحه‌هایی که خوانده‌ای می‌مانند."
+  },
+  "memoryFilterAll": {
+    "message": "همه"
+  },
+  "memoryFilterRead": {
+    "message": "خوانده‌شده"
+  },
+  "memoryFilterBookmarks": {
+    "message": "نشانک‌ها"
+  },
+  "welcomePoint5": {
+    "message": "نشانک‌ها — فقط اگر روشنشان کنی: آن‌وقت عنوان‌ها و پوشه‌هایشان را یاد می‌گیرم، بدون باز کردن صفحه‌ها. با یک کلیک خاموش می‌شود."
+  },
+  "rateTitle": {
+    "message": "Déjà به تو کمک کرد چیزی پیدا کنی — تا حالا $COUNT$ بار",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "اگر مفید است، یک امتیاز در فروشگاه به دیگران کمک می‌کند آن را پیدا کنند — 10 ثانیه طول می‌کشد. و اگر چیزی اذیتت می‌کند، به ما بگو."
+  },
+  "rateButton": {
+    "message": "به Déjà امتیاز بده"
+  },
+  "rateFeedback": {
+    "message": "چیزی کار نمی‌کند؟"
+  },
+  "rateLater": {
+    "message": "حالا نه"
+  },
+  "rateThanks": {
+    "message": "ممنون! واقعاً کمک می‌کند."
+  },
+  "rateFeedbackThanks": {
+    "message": "ممنون — همهٔ پیام‌ها را می‌خوانیم."
+  },
+  "rateFeedbackSubject": {
+    "message": "بازخورد"
+  },
+  "answerTitle": {
+    "message": "پاسخ از حافظه‌ات"
+  },
+  "answerAsk": {
+    "message": "از حافظه‌ام پاسخ بده"
+  },
+  "answerEnableTitle": {
+    "message": "پاسخ‌ها از هوش مصنوعی داخلی Chrome"
+  },
+  "answerEnableText": {
+    "message": "Déjà می‌تواند از آنچه خوانده‌ای، با ذکر منبع، به پرسش‌ها پاسخ دهد. Chrome مدل روی‌دستگاه خود (Gemini Nano) را یک بار بارگیری می‌کند — پرسش‌ها و صفحه‌هایت هرگز از رایانه‌ات خارج نمی‌شوند."
+  },
+  "answerEnableButton": {
+    "message": "روشن کردن پاسخ‌ها"
+  },
+  "answerNoThanks": {
+    "message": "نه، ممنون"
+  },
+  "answerDownloading": {
+    "message": "Chrome در حال بارگیری مدل است… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "در حال خواندن خاطره‌هایت…"
+  },
+  "answerStop": {
+    "message": "توقف"
+  },
+  "answerFoot": {
+    "message": "روی دستگاهت توسط هوش مصنوعی داخلی Chrome بر پایهٔ $COUNT$ مورد از خاطره‌هایت نوشته شد. منابع را بررسی کن.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "این بار نتوانستم پاسخی بنویسم."
+  },
+  "optAnswersLabel": {
+    "message": "پاسخ‌ها از هوش مصنوعی داخلی Chrome"
+  },
+  "optAnswersHelp": {
+    "message": "برای پرسش‌هایی مثل «دربارهٔ… چه خواندم؟» پاسخی کوتاه با منابعی از صفحه‌هایت می‌نویسم — کاملاً روی دستگاهت، با Gemini Nano در Chrome. به رایانه و زبانی پشتیبانی‌شده نیاز دارد (انگلیسی، اسپانیایی، آلمانی، فرانسوی، ژاپنی)."
+  },
+  "optAnswersAvailable": {
+    "message": "آمادهٔ استفاده روی این دستگاه."
+  },
+  "optAnswersDownloadable": {
+    "message": "پشتیبانی می‌شود — Chrome با اولین پرسشت مدل را بارگیری می‌کند."
+  },
+  "optAnswersUnavailable": {
+    "message": "این دستگاه یا زبان رابط کاربری توسط هوش مصنوعی داخلی Chrome پشتیبانی نمی‌شود."
+  },
+  "optAnswersUnsupported": {
+    "message": "این مرورگر هوش مصنوعی داخلی ندارد — بقیهٔ امکانات Déjà مثل همیشه کار می‌کند."
+  }
+}

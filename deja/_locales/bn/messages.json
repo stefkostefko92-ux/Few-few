@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — তোমার ব্রাউজারের স্মৃতি"
+  },
+  "extDesc": {
+    "message": "তোমার পড়া পেজগুলোতে অর্থভিত্তিক সার্চ। সবকিছু স্থানীয়ভাবে ঘটে — কোনো কিছুই কখনো তোমার ডিভাইস ছেড়ে যায় না।"
+  },
+  "cmdOpenSearch": {
+    "message": "Déjà সার্চ খোলো"
+  },
+  "searchTitle": {
+    "message": "Déjà — যা পড়েছ তা খোঁজো"
+  },
+  "tagline": {
+    "message": "তুমি এটা দেখেছ। Déjà এটা খুঁজে দেয়।"
+  },
+  "searchPlaceholder": {
+    "message": "যা মনে আছে তা বর্ণনা করো… যেমন “সোডিয়াম-ভিত্তিক ব্যাটারি নিয়ে প্রবন্ধ”"
+  },
+  "searchButton": {
+    "message": "খোঁজো"
+  },
+  "statusSearching": {
+    "message": "স্মৃতি ঘাঁটছি… (প্রথম সার্চে মডেল লোড হয়, ~10-30 সেকেন্ড)"
+  },
+  "statusEmpty": {
+    "message": "কিছুই ভেসে ওঠেনি। হয় তুমি এটা কখনো পড়োনি, নয়তো Déjà এখনো এটা মনে রাখেনি।"
+  },
+  "statusResults": {
+    "message": "$COUNT$টি স্মৃতি:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1টি স্মৃতি:"
+  },
+  "errNoResponse": {
+    "message": "স্মৃতি সাড়া দেয়নি — আবার চেষ্টা করো"
+  },
+  "recallVivid": {
+    "message": "উজ্জ্বল স্মৃতি"
+  },
+  "recallHazy": {
+    "message": "ঝাপসা স্মৃতি"
+  },
+  "recallFaint": {
+    "message": "দূরের স্মৃতি"
+  },
+  "statusError": {
+    "message": "সার্চ ব্যর্থ হয়েছে: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "স্মৃতিতে: $COUNT$টি পেজ।",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "স্মৃতিতে: 1টি পেজ।"
+  },
+  "similarity": {
+    "message": "সাদৃশ্য $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "$DATE$ তারিখে পড়া",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "স্মৃতিতে $COUNT$টি পেজ",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "স্মৃতিতে 1টি পেজ"
+  },
+  "popupSleeping": {
+    "message": "স্মৃতি ঘুমিয়ে আছে"
+  },
+  "popupWaking": {
+    "message": "স্মৃতি জেগে উঠছে…"
+  },
+  "popupOpenSearch": {
+    "message": "সার্চ খোলো"
+  },
+  "popupPause": {
+    "message": "মনে রাখা থামাও"
+  },
+  "popupClear": {
+    "message": "স্মৃতি মুছে ফেলো"
+  },
+  "popupClearConfirm": {
+    "message": "মনে রাখা সবকিছু মুছে ফেলবে? আর ফেরানো যাবে না।"
+  },
+  "popupOptions": {
+    "message": "সেটিংস"
+  },
+  "optionsTitle": {
+    "message": "Déjà — সেটিংস"
+  },
+  "optRetentionLabel": {
+    "message": "পেজ মনে রাখো"
+  },
+  "optRetentionForever": {
+    "message": "চিরকাল"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ মাস",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "পুরোনো পেজগুলো দিনে একবার স্বয়ংক্রিয়ভাবে মুছে যায়।"
+  },
+  "optDenylistLabel": {
+    "message": "এগুলো আছে এমন ঠিকানা কখনো মনে রেখো না"
+  },
+  "optDenylistHelp": {
+    "message": "প্রতি লাইনে একটি প্যাটার্ন। ঠিকানার কোনো অংশের সঙ্গে মেলে, যেমন “example.com” বা “/private”।"
+  },
+  "optBuiltinLabel": {
+    "message": "বিল্ট-ইন সুরক্ষা (সবসময় সক্রিয়)"
+  },
+  "optModelHostLabel": {
+    "message": "মডেলের নিজস্ব মিরর (উন্নত)"
+  },
+  "optModelHostHelp": {
+    "message": "খালি = huggingface.co। অফলাইন/কর্পোরেট পরিবেশের জন্য নিজের সার্ভার সেট করো।"
+  },
+  "filterAll": {
+    "message": "সব"
+  },
+  "filterWeek": {
+    "message": "গত সপ্তাহ"
+  },
+  "filterMonth": {
+    "message": "গত মাস"
+  },
+  "filterYear": {
+    "message": "গত বছর"
+  },
+  "relatedLink": {
+    "message": "সম্পর্কিত স্মৃতি"
+  },
+  "relatedNone": {
+    "message": "কাছাকাছি কোনো স্মৃতি নেই"
+  },
+  "omniboxDefault": {
+    "message": "তোমার স্মৃতিকে জিজ্ঞেস করো — Déjà অর্থ দিয়ে খোঁজে"
+  },
+  "popupMemory": {
+    "message": "আমার স্মৃতি"
+  },
+  "memoryTitle": {
+    "message": "আমার স্মৃতি"
+  },
+  "memoryEmpty": {
+    "message": "স্মৃতি খালি — কয়েকটা পেজ ঘুরে এসে আবার দেখো।"
+  },
+  "memoryForget": {
+    "message": "ভুলে যাও"
+  },
+  "memoryExport": {
+    "message": "আর্কাইভ ডাউনলোড করো"
+  },
+  "memoryImport": {
+    "message": "আর্কাইভ থেকে ফিরিয়ে আনো"
+  },
+  "memoryImportConfirm": {
+    "message": "আর্কাইভ থেকে ফিরিয়ে আনবে? মিলে যাওয়া পেজগুলো ওভাররাইট হবে।"
+  },
+  "optSave": {
+    "message": "সেভ করো"
+  },
+  "optSaved": {
+    "message": "সেভ হয়েছে ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "মিররকে অবশ্যই একটি https:// ঠিকানা হতে হবে"
+  },
+  "welcomeHeading": {
+    "message": "হাই। আমি তোমার ব্রাউজারের স্মৃতি।"
+  },
+  "welcomeIntro": {
+    "message": "এই মুহূর্ত থেকে তুমি যা পড়ো তা আমি মনে রাখি, যাতে পরে তুমি অর্থ দিয়ে খুঁজে পাও — নিজের ভাষায়, হুবহু শিরোনাম দিয়ে নয়।"
+  },
+  "welcomePoint1": {
+    "message": "সবকিছু তোমার ডিভাইসেই ঘটে। কোনো সার্ভার নেই, কোনো ক্লাউড নেই, কোনো ডেটা পাঠানো হয় না — কোথাও না, কখনো না।"
+  },
+  "welcomePoint2": {
+    "message": "মেল, চ্যাট, লগইন আর ব্যাংকিং কখনো মনে রাখা হয় না। খেয়াল রেখো: সংবেদনশীল বিষয় আমি ঠিকানা দেখে চিনতে পারি না — সেগুলোর জন্য বিরতি বা সেটিংসে নিজের তালিকা ব্যবহার করো।"
+  },
+  "welcomePoint3": {
+    "message": "নিয়ন্ত্রণ তোমার হাতে: এক ক্লিকে বিরতি, “স্মৃতি মুছে ফেলো” সবকিছু মুছে দেয়, আর চাইলে কয়েক মাস পরে আমি নিজে থেকেই ভুলে যাই।"
+  },
+  "welcomeCta": {
+    "message": "সার্চ খোলো"
+  },
+  "welcomeOptions": {
+    "message": "সেটিংস"
+  },
+  "memoryFilter": {
+    "message": "তোমার স্মৃতিতে খোঁজো…"
+  },
+  "supportLink": {
+    "message": "Déjà-কে সমর্থন"
+  },
+  "panelTitle": {
+    "message": "Déjà — সঙ্গী"
+  },
+  "panelOnThisPage": {
+    "message": "এই পেজের বিষয়ে"
+  },
+  "panelRecent": {
+    "message": "সাম্প্রতিক স্মৃতি"
+  },
+  "panelNoPage": {
+    "message": "একটি ওয়েব পেজ খোলো, Déjà দেখাবে তুমি তার বিষয়ে কী পড়েছ।"
+  },
+  "popupOpenPanel": {
+    "message": "সাইড প্যানেল"
+  },
+  "popupForgetPage": {
+    "message": "এই পেজটি ভুলে যাও"
+  },
+  "popupForgotten": {
+    "message": "ভুলে যাওয়া হয়েছে ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: নির্বাচিত টেক্সট মনে রাখো"
+  },
+  "menuForget": {
+    "message": "Déjà: এই পেজটি ভুলে যাও"
+  },
+  "recentTitle": {
+    "message": "সাম্প্রতিক স্মৃতি"
+  },
+  "cmdOpenPanel": {
+    "message": "Déjà-র সাইড প্যানেল খোলো"
+  },
+  "welcomePoint4": {
+    "message": "সাইড প্যানেল তুমি যে পেজ দেখছ তার ঠিকানা আর শিরোনাম দেখে, যাতে তার বিষয়ে তুমি কী পড়েছ তা দেখাতে পারে — শুধু সেশন মেমরিতে। যে অংশগুলো তুমি ইচ্ছে করে সেভ করো, সেগুলোও শুধু তোমার কাছেই থাকে।"
+  },
+  "welcomeUpdated": {
+    "message": "Déjà আপডেট হয়েছে। নতুন: এখন তোমার বুকমার্কগুলোও অর্থ দিয়ে খোঁজা যাবে — যদি তুমি চাও। তোমার ডেটা নিয়ে আমি কী করি, তা এখানে — কোনো কিছুই তোমার ডিভাইস ছেড়ে যায়নি।"
+  },
+  "optAmbientLabel": {
+    "message": "জীবন্ত ব্যাকগ্রাউন্ড"
+  },
+  "optAmbientHelp": {
+    "message": "কাচের পেছনে স্মৃতির জাল ধীরে ধীরে ভেসে চলে। নড়াচড়ায় মনোযোগ নষ্ট হলে এটা বন্ধ করে দাও।"
+  },
+  "bmTitle": {
+    "message": "তোমার বুকমার্কগুলো খোঁজার উপযোগী করো — এখনই"
+  },
+  "bmText": {
+    "message": "Déjà পেজ না খুলেই তোমার বুকমার্কের শিরোনাম আর ফোল্ডার শিখে নেয়। প্রথম মিনিট থেকেই অর্থ দিয়ে সেগুলো খুঁজে পাও — সবকিছু তোমার ডিভাইসেই থাকে।"
+  },
+  "bmTextShort": {
+    "message": "তোমার স্মৃতি এখনো নতুন। আমাকে তোমার বুকমার্কগুলো শেখাও আর আজই অর্থ দিয়ে সেগুলোতে খোঁজো।"
+  },
+  "bmButton": {
+    "message": "আমার বুকমার্ক শেখো"
+  },
+  "bmNote": {
+    "message": "তোমার ব্রাউজার অনুমতি চাইবে। যেকোনো সময় সেটিংস থেকে বন্ধ করতে পারো।"
+  },
+  "bmTitleRunning": {
+    "message": "তোমার বুকমার্ক শিখছি…"
+  },
+  "bmTitleDone": {
+    "message": "তোমার বুকমার্কগুলো খোঁজা যায়"
+  },
+  "bmPreparing": {
+    "message": "প্রস্তুত হচ্ছি…"
+  },
+  "bmLearning": {
+    "message": "$TOTAL$টির মধ্যে $DONE$টি শেখা হয়েছে",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà বিরতিতে আছে — তুমি আবার চালু করলেই আমি চালিয়ে যাব।"
+  },
+  "bmError": {
+    "message": "শেখার সময় কিছু একটা ভুল হয়েছে। পরের পরিবর্তনে আবার চেষ্টা করব।"
+  },
+  "bmDone": {
+    "message": "হয়ে গেছে — $COUNT$টি বুকমার্ক অর্থ দিয়ে খোঁজা যায় এবং স্বয়ংক্রিয়ভাবে সিঙ্ক থাকে।",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "হয়ে গেছে — 1টি বুকমার্ক অর্থ দিয়ে খোঁজা যায় এবং স্বয়ংক্রিয়ভাবে সিঙ্ক থাকে।"
+  },
+  "bmDenied": {
+    "message": "অনুমতি ছাড়া আমি তোমার বুকমার্ক দেখতে পারি না। যেকোনো সময় আবার চেষ্টা করতে পারো।"
+  },
+  "bmTry": {
+    "message": "চেষ্টা করো:"
+  },
+  "bmBadge": {
+    "message": "বুকমার্ক"
+  },
+  "bmAddedOn": {
+    "message": "$DATE$ তারিখে বুকমার্ক করা",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "স্মৃতিতে বুকমার্ক"
+  },
+  "optBookmarksHelp": {
+    "message": "আমি তোমার বুকমার্কের শিরোনাম আর ফোল্ডার শিখি (পেজ না খুলেই) এবং তুমি যোগ বা মুছে ফেললে সঙ্গে সঙ্গে হালনাগাদ রাখি। বন্ধ করলে সেগুলো স্মৃতি থেকে সরে যায় — তোমার পড়া পেজগুলো থেকে যায়।"
+  },
+  "memoryFilterAll": {
+    "message": "সব"
+  },
+  "memoryFilterRead": {
+    "message": "পড়া"
+  },
+  "memoryFilterBookmarks": {
+    "message": "বুকমার্ক"
+  },
+  "welcomePoint5": {
+    "message": "বুকমার্ক — শুধু যদি তুমি চালু করো: তখন আমি পেজ না খুলেই সেগুলোর শিরোনাম আর ফোল্ডার শিখি। এক ক্লিকেই বন্ধ হয়।"
+  },
+  "rateTitle": {
+    "message": "Déjà তোমাকে কিছু খুঁজে পেতে সাহায্য করেছে — এ পর্যন্ত $COUNT$ বার",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "যদি কাজে লাগে, স্টোরে একটি রেটিং অন্যদের এটি খুঁজে পেতে সাহায্য করে — এতে 10 সেকেন্ড লাগে। আর কিছু বিরক্ত করলে আমাদের জানাও।"
+  },
+  "rateButton": {
+    "message": "Déjà-কে রেটিং দাও"
+  },
+  "rateFeedback": {
+    "message": "কিছু কাজ করছে না?"
+  },
+  "rateLater": {
+    "message": "এখন নয়"
+  },
+  "rateThanks": {
+    "message": "ধন্যবাদ! এটা সত্যিই সাহায্য করে।"
+  },
+  "rateFeedbackThanks": {
+    "message": "ধন্যবাদ — আমরা প্রতিটি বার্তা পড়ি।"
+  },
+  "rateFeedbackSubject": {
+    "message": "মতামত"
+  },
+  "answerTitle": {
+    "message": "তোমার স্মৃতি থেকে উত্তর"
+  },
+  "answerAsk": {
+    "message": "আমার স্মৃতি থেকে উত্তর দাও"
+  },
+  "answerEnableTitle": {
+    "message": "Chrome-এর বিল্ট-ইন AI থেকে উত্তর"
+  },
+  "answerEnableText": {
+    "message": "Déjà তোমার পড়া বিষয় থেকে উৎসসহ প্রশ্নের উত্তর দিতে পারে। Chrome তার অন-ডিভাইস মডেল (Gemini Nano) একবার ডাউনলোড করে — তোমার প্রশ্ন আর পেজ কখনো তোমার কম্পিউটার ছেড়ে যায় না।"
+  },
+  "answerEnableButton": {
+    "message": "উত্তর চালু করো"
+  },
+  "answerNoThanks": {
+    "message": "না, ধন্যবাদ"
+  },
+  "answerDownloading": {
+    "message": "Chrome মডেল ডাউনলোড করছে… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "তোমার স্মৃতিগুলো পড়ছি…"
+  },
+  "answerStop": {
+    "message": "থামাও"
+  },
+  "answerFoot": {
+    "message": "Chrome-এর বিল্ট-ইন AI তোমার ডিভাইসে তোমার $COUNT$টি স্মৃতি থেকে লিখেছে। উৎসগুলো যাচাই করে নাও।",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "এবার আমি কোনো উত্তর তৈরি করতে পারিনি।"
+  },
+  "optAnswersLabel": {
+    "message": "Chrome-এর বিল্ট-ইন AI থেকে উত্তর"
+  },
+  "optAnswersHelp": {
+    "message": "“আমি … সম্পর্কে কী পড়েছিলাম?” ধরনের প্রশ্নের জন্য আমি তোমার পেজ থেকে উৎসসহ একটি ছোট উত্তর লিখি — পুরোটাই তোমার ডিভাইসে, Chrome-এর Gemini Nano দিয়ে। এর জন্য সমর্থিত কম্পিউটার ও ভাষা লাগে (ইংরেজি, স্প্যানিশ, জার্মান, ফরাসি, জাপানি)।"
+  },
+  "optAnswersAvailable": {
+    "message": "এই ডিভাইসে ব্যবহারের জন্য প্রস্তুত।"
+  },
+  "optAnswersDownloadable": {
+    "message": "সমর্থিত — তোমার প্রথম প্রশ্নেই Chrome মডেলটি ডাউনলোড করবে।"
+  },
+  "optAnswersUnavailable": {
+    "message": "এই ডিভাইস বা ইন্টারফেসের ভাষা Chrome-এর বিল্ট-ইন AI সমর্থন করে না।"
+  },
+  "optAnswersUnsupported": {
+    "message": "এই ব্রাউজারে বিল্ট-ইন AI নেই — Déjà-র বাকি সবকিছু আগের মতোই কাজ করে।"
+  }
+}

@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — הזיכרון של הדפדפן שלך"
+  },
+  "extDesc": {
+    "message": "חיפוש סמנטי בדפים שקראת. הכול קורה באופן מקומי — שום דבר לא יוצא מהמכשיר שלך, אף פעם."
+  },
+  "cmdOpenSearch": {
+    "message": "פתיחת החיפוש של Déjà"
+  },
+  "searchTitle": {
+    "message": "Déjà — חיפוש במה שקראת"
+  },
+  "tagline": {
+    "message": "ראית את זה. Déjà מוצא את זה."
+  },
+  "searchPlaceholder": {
+    "message": "מה זכור לך? במילים שלך… למשל \"כתבה על סוללות מבוססות נתרן\""
+  },
+  "searchButton": {
+    "message": "חיפוש"
+  },
+  "statusSearching": {
+    "message": "מחפש בזיכרון… (החיפוש הראשון טוען את המודל, ~10-30 שניות)"
+  },
+  "statusEmpty": {
+    "message": "שום דבר לא צף. או שלא קראת את זה, או ש-Déjà עדיין לא שמר את זה בזיכרון."
+  },
+  "statusResults": {
+    "message": "$COUNT$ זיכרונות:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "זיכרון אחד:"
+  },
+  "errNoResponse": {
+    "message": "הזיכרון לא הגיב — כדאי לנסות שוב"
+  },
+  "recallVivid": {
+    "message": "זיכרון חי"
+  },
+  "recallHazy": {
+    "message": "זיכרון מעורפל"
+  },
+  "recallFaint": {
+    "message": "זיכרון רחוק"
+  },
+  "statusError": {
+    "message": "החיפוש נכשל: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "בזיכרון: $COUNT$ דפים.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "בזיכרון: דף אחד."
+  },
+  "similarity": {
+    "message": "דמיון $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "נקרא בתאריך $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "$COUNT$ דפים בזיכרון",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "דף אחד בזיכרון"
+  },
+  "popupSleeping": {
+    "message": "הזיכרון ישן"
+  },
+  "popupWaking": {
+    "message": "הזיכרון מתעורר…"
+  },
+  "popupOpenSearch": {
+    "message": "פתיחת החיפוש"
+  },
+  "popupPause": {
+    "message": "השהיית השמירה"
+  },
+  "popupClear": {
+    "message": "ניקוי הזיכרון"
+  },
+  "popupClearConfirm": {
+    "message": "למחוק את כל מה שנשמר? אין דרך חזרה."
+  },
+  "popupOptions": {
+    "message": "הגדרות"
+  },
+  "optionsTitle": {
+    "message": "Déjà — הגדרות"
+  },
+  "optRetentionLabel": {
+    "message": "לזכור דפים"
+  },
+  "optRetentionForever": {
+    "message": "לתמיד"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ חודשים",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "דפים ישנים יותר נמחקים אוטומטית פעם ביום."
+  },
+  "optDenylistLabel": {
+    "message": "לעולם לא לשמור כתובות שמכילות"
+  },
+  "optDenylistHelp": {
+    "message": "תבנית אחת בכל שורה. מתאימה לחלק מהכתובת, למשל \"example.com\" או \"/private\"."
+  },
+  "optBuiltinLabel": {
+    "message": "הגנה מובנית (פעילה תמיד)"
+  },
+  "optModelHostLabel": {
+    "message": "שרת מראה מותאם למודל (מתקדם)"
+  },
+  "optModelHostHelp": {
+    "message": "ריק = huggingface.co. אפשר להגדיר שרת משלך לסביבות לא מקוונות או ארגוניות."
+  },
+  "filterAll": {
+    "message": "הכול"
+  },
+  "filterWeek": {
+    "message": "השבוע האחרון"
+  },
+  "filterMonth": {
+    "message": "החודש האחרון"
+  },
+  "filterYear": {
+    "message": "השנה האחרונה"
+  },
+  "relatedLink": {
+    "message": "זיכרונות קשורים"
+  },
+  "relatedNone": {
+    "message": "אין זיכרונות קרובים"
+  },
+  "omniboxDefault": {
+    "message": "לשאול את הזיכרון שלך — Déjà מחפש לפי משמעות"
+  },
+  "popupMemory": {
+    "message": "הזיכרון שלי"
+  },
+  "memoryTitle": {
+    "message": "הזיכרון שלי"
+  },
+  "memoryEmpty": {
+    "message": "הזיכרון ריק — כדאי לגלוש בכמה דפים ולחזור."
+  },
+  "memoryForget": {
+    "message": "לשכוח"
+  },
+  "memoryExport": {
+    "message": "הורדת ארכיון"
+  },
+  "memoryImport": {
+    "message": "שחזור מארכיון"
+  },
+  "memoryImportConfirm": {
+    "message": "לשחזר מארכיון? דפים תואמים יידרסו."
+  },
+  "optSave": {
+    "message": "שמירה"
+  },
+  "optSaved": {
+    "message": "נשמר ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "שרת המראה חייב להיות כתובת https://"
+  },
+  "welcomeHeading": {
+    "message": "היי. אני הזיכרון של הדפדפן שלך."
+  },
+  "welcomeIntro": {
+    "message": "מהרגע הזה אני זוכר את מה שקראת, כדי שאפשר יהיה למצוא את זה אחר כך לפי המשמעות — במילים שלך, לא לפי הכותרת המדויקת."
+  },
+  "welcomePoint1": {
+    "message": "הכול קורה במכשיר שלך. בלי שרתים, בלי ענן, בלי שליחת נתונים — לשום מקום, אף פעם."
+  },
+  "welcomePoint2": {
+    "message": "דואר, צ'אטים, התחברות ובנקאות לעולם לא נשמרים. חשוב לדעת: אני לא יכול לזהות נושאים רגישים לפי הכתובת — בשבילם יש להשתמש בהשהיה או ברשימה משלך בהגדרות."
+  },
+  "welcomePoint3": {
+    "message": "השליטה בידיים שלך: השהיה בלחיצה אחת, \"ניקוי הזיכרון\" מוחק הכול, ולפי בחירתך אני שוכח אוטומטית אחרי כמה חודשים."
+  },
+  "welcomeCta": {
+    "message": "פתיחת החיפוש"
+  },
+  "welcomeOptions": {
+    "message": "הגדרות"
+  },
+  "memoryFilter": {
+    "message": "חיפוש בזיכרון שלך…"
+  },
+  "supportLink": {
+    "message": "לתמוך ב-Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — מלווה"
+  },
+  "panelOnThisPage": {
+    "message": "בנושא של הדף הזה"
+  },
+  "panelRecent": {
+    "message": "זיכרונות אחרונים"
+  },
+  "panelNoPage": {
+    "message": "כשדף אינטרנט פתוח, Déjà יציג מה קראת בנושא שלו."
+  },
+  "popupOpenPanel": {
+    "message": "חלונית צדדית"
+  },
+  "popupForgetPage": {
+    "message": "לשכוח את הדף הזה"
+  },
+  "popupForgotten": {
+    "message": "נשכח ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: לזכור את הטקסט שנבחר"
+  },
+  "menuForget": {
+    "message": "Déjà: לשכוח את הדף הזה"
+  },
+  "recentTitle": {
+    "message": "זיכרונות אחרונים"
+  },
+  "cmdOpenPanel": {
+    "message": "פתיחת החלונית הצדדית של Déjà"
+  },
+  "welcomePoint4": {
+    "message": "החלונית הצדדית רואה את הכתובת והכותרת של הדף הפתוח אצלך, כדי להציג מה קראת בנושא שלו — בזיכרון הסשן בלבד. גם קטעים שנשמרים בכוונה נשארים רק אצלך."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà עודכן. חדש: עכשיו אפשר לחפש גם בסימניות שלך לפי משמעות — אם רוצים. הנה מה שאני עושה עם הנתונים שלך — שום דבר לא יצא מהמכשיר שלך."
+  },
+  "optAmbientLabel": {
+    "message": "רקע חי"
+  },
+  "optAmbientHelp": {
+    "message": "רשת הזיכרונות שמאחורי הזכוכית נעה לאט. אפשר לכבות אם התנועה מסיחה את הדעת."
+  },
+  "bmTitle": {
+    "message": "להפוך את הסימניות שלך לניתנות לחיפוש — כבר עכשיו"
+  },
+  "bmText": {
+    "message": "Déjà לומד את הכותרות והתיקיות של הסימניות שלך בלי לפתוח את הדפים. אפשר למצוא אותן לפי משמעות מהדקה הראשונה — והכול נשאר במכשיר שלך."
+  },
+  "bmTextShort": {
+    "message": "הזיכרון שלך עדיין צעיר. אפשר ללמד אותי את הסימניות ולחפש בהן לפי משמעות כבר היום."
+  },
+  "bmButton": {
+    "message": "ללמוד את הסימניות שלי"
+  },
+  "bmNote": {
+    "message": "הדפדפן יבקש הרשאה. אפשר לכבות בכל עת בהגדרות."
+  },
+  "bmTitleRunning": {
+    "message": "לומד את הסימניות שלך…"
+  },
+  "bmTitleDone": {
+    "message": "הסימניות שלך ניתנות לחיפוש"
+  },
+  "bmPreparing": {
+    "message": "מתכונן…"
+  },
+  "bmLearning": {
+    "message": "נלמדו $DONE$ מתוך $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà מושהה — אמשיך ברגע שההשהיה תבוטל."
+  },
+  "bmError": {
+    "message": "משהו השתבש בזמן הלמידה. אנסה שוב בשינוי הבא."
+  },
+  "bmDone": {
+    "message": "סיימתי — $COUNT$ סימניות ניתנות לחיפוש לפי משמעות ומסונכרנות אוטומטית.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "סיימתי — סימנייה אחת ניתנת לחיפוש לפי משמעות ומסונכרנת אוטומטית."
+  },
+  "bmDenied": {
+    "message": "בלי הרשאה אני לא יכול לראות את הסימניות שלך. אפשר לנסות שוב בכל עת."
+  },
+  "bmTry": {
+    "message": "לנסות:"
+  },
+  "bmBadge": {
+    "message": "סימנייה"
+  },
+  "bmAddedOn": {
+    "message": "נוספה בתאריך $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "סימניות בזיכרון"
+  },
+  "optBookmarksHelp": {
+    "message": "אני לומד את הכותרות והתיקיות של הסימניות שלך (בלי לפתוח את הדפים) ועוקב כשמוסיפים או מוחקים אותן. כיבוי מסיר אותן מהזיכרון — דפים שקראת נשארים."
+  },
+  "memoryFilterAll": {
+    "message": "הכול"
+  },
+  "memoryFilterRead": {
+    "message": "נקראו"
+  },
+  "memoryFilterBookmarks": {
+    "message": "סימניות"
+  },
+  "welcomePoint5": {
+    "message": "סימניות — רק אם מפעילים אותן: אז אני לומד את הכותרות והתיקיות שלהן, בלי לפתוח את הדפים. לחיצה אחת מכבה את זה."
+  },
+  "rateTitle": {
+    "message": "Déjà עזר לך למצוא משהו — כבר $COUNT$ פעמים",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "אם זה מועיל, דירוג בחנות עוזר לאנשים אחרים לגלות את זה — זה לוקח 10 שניות. ואם משהו מציק לך — נשמח לשמוע."
+  },
+  "rateButton": {
+    "message": "לדרג את Déjà"
+  },
+  "rateFeedback": {
+    "message": "משהו לא עובד?"
+  },
+  "rateLater": {
+    "message": "לא עכשיו"
+  },
+  "rateThanks": {
+    "message": "תודה! זה באמת עוזר."
+  },
+  "rateFeedbackThanks": {
+    "message": "תודה — אנחנו קוראים כל הודעה."
+  },
+  "rateFeedbackSubject": {
+    "message": "משוב"
+  },
+  "answerTitle": {
+    "message": "תשובה מהזיכרון שלך"
+  },
+  "answerAsk": {
+    "message": "לענות מהזיכרון שלי"
+  },
+  "answerEnableTitle": {
+    "message": "תשובות מה-AI המובנה של Chrome"
+  },
+  "answerEnableText": {
+    "message": "Déjà יכול לענות על שאלות ממה שקראת, עם מקורות. Chrome מוריד פעם אחת את המודל שלו שפועל במכשיר (Gemini Nano) — השאלות והדפים שלך אף פעם לא יוצאים מהמחשב."
+  },
+  "answerEnableButton": {
+    "message": "הפעלת התשובות"
+  },
+  "answerNoThanks": {
+    "message": "לא, תודה"
+  },
+  "answerDownloading": {
+    "message": "Chrome מוריד את המודל… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "קורא את הזיכרונות שלך…"
+  },
+  "answerStop": {
+    "message": "עצירה"
+  },
+  "answerFoot": {
+    "message": "נכתב במכשיר שלך על ידי ה-AI המובנה של Chrome מתוך $COUNT$ מהזיכרונות שלך. כדאי לבדוק את המקורות.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "לא הצלחתי לנסח תשובה הפעם."
+  },
+  "optAnswersLabel": {
+    "message": "תשובות מה-AI המובנה של Chrome"
+  },
+  "optAnswersHelp": {
+    "message": "לשאלות כמו \"מה קראתי על…?\" אני כותב תשובה קצרה עם מקורות מהדפים שלך — כולה במכשיר שלך, עם Gemini Nano ב-Chrome. נדרשים מחשב ושפה נתמכים (אנגלית, ספרדית, גרמנית, צרפתית, יפנית)."
+  },
+  "optAnswersAvailable": {
+    "message": "מוכן לשימוש במכשיר הזה."
+  },
+  "optAnswersDownloadable": {
+    "message": "נתמך — Chrome יוריד את המודל בשאלה הראשונה שלך."
+  },
+  "optAnswersUnavailable": {
+    "message": "המכשיר הזה או שפת הממשק אינם נתמכים על ידי ה-AI המובנה של Chrome."
+  },
+  "optAnswersUnsupported": {
+    "message": "בדפדפן הזה אין AI מובנה — כל השאר ב-Déjà עובד כרגיל."
+  }
+}
