@@ -54,6 +54,27 @@ sudo -u vizitka DATA_DIR=/opt/vizitka/data npm --prefix /opt/vizitka run admin:a
 # няма ли още такъв акаунт: ... run admin:add -- <имейл> --create
 ```
 
+### Сертификатът изтече на 10.10.2026 — сайтът беше недостъпен
+
+Let's Encrypt сертификатът (издаден 12.07, валиден 90 дни) не се поднови.
+
+**Причина.** Взет е с `certbot certonly --webroot`, а живият nginx блок на порт 80
+пренасочваше всичко към https, включително `/.well-known/acme-challenge/`. Let's Encrypt не
+намираше файла и подновяването падаше тихо. Отделно `certonly` не презарежда nginx.
+
+**Трайно решение.** Ежедневен `cert-watch` с резервен nginx плъгин и deploy hook за
+презареждане (`deploy/cert-watch/`, инсталира се от autodeploy). Отделно ACME пътят е в
+`deploy/nginx/vizitka.conf`.
+
+**Спешно на сървъра** (веднага, без да чака деплой):
+
+```bash
+command -v certbot >/dev/null && dpkg -s python3-certbot-nginx >/dev/null 2>&1 || apt-get install -y python3-certbot-nginx
+certbot renew --cert-name vizitka-bg.com --authenticator nginx --installer null --force-renewal
+nginx -t && systemctl reload nginx
+echo | openssl s_client -connect vizitka-bg.com:443 -servername vizitka-bg.com 2>/dev/null | openssl x509 -noout -enddate
+```
+
 ### www.vizitka-bg.com сервираше чужд сайт (Search Console, 08.10.2026)
 
 `http://www.vizitka-bg.com/` отговаряше 200 със страницата на Supreme AdBlock (canonical
