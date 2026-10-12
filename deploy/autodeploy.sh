@@ -156,6 +156,9 @@ PIUMA_ENV="${PIUMA_ENV:-/opt/few-few/shared/piuma/.env}"
 # отговорил, стои на стабилно място извън releases/ (чистенето в т. 4 не трие този release).
 KORPORA_SHARED="${KORPORA_SHARED:-/opt/few-few/shared/korpora}"
 KORPORA_LAST_GOOD="${KORPORA_LAST_GOOD:-$KORPORA_SHARED/last-good}"
+# Корените на продуктите (тайни, бекъпи, `last-good`). Чистенето на releases пази целта на ВСЕКИ
+# `$SHARED_ROOT/*/last-good` — и на продукт, който този autodeploy.sh още не познава.
+SHARED_ROOT="${SHARED_ROOT:-/opt/few-few/shared}"
 
 # chatchat (ChatChat — Docker Compose: db (pgvector) + clamav + app на 127.0.0.1:4330 зад nginx на хоста).
 # Моделът на korpora: стъпките са в chatchat/deploy/deploy.sh (и за ръчния деплой) — тайните от
@@ -1905,17 +1908,23 @@ fi
 # Без него няколко деплоя без korpora (PROJECTS="piuma") изтриваха целта на отката и той падаше към
 # код, който никога не е разгръщан за Korpora. Четвъртото — същото за ChatChat (CHATCHAT_LAST_GOOD).
 prune_releases() {
-  local keep_rel live_rel lg_rel cc_rel old old_real keep protected
-  keep_rel="$(cd "$SRC" && pwd -P)"
-  live_rel="$(readlink -f "$CURRENT_LINK" 2>/dev/null || true)"
-  lg_rel="$(readlink -f "$(cat "$KORPORA_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
-  cc_rel="$(readlink -f "$(cat "$CHATCHAT_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
+  local old old_real keep protected lg
+  local -a guarded=()
+  guarded+=("$(cd "$SRC" && pwd -P)")
+  guarded+=("$(readlink -f "$CURRENT_LINK" 2>/dev/null || true)")
+  # Целта на отката на всеки продукт: деплой само на друг продукт (PROJECTS="piuma", или от
+  # клон/main, който не познава продукта) иначе трие папката, от която тече неговият compose
+  # проект — и командите от DEPLOY.md, и откатът сочат натам (ChatChat, 11.10.2026).
+  for lg in "${KORPORA_LAST_GOOD:-}" "${CHATCHAT_LAST_GOOD:-}" "${SHARED_ROOT:-/opt/few-few/shared}"/*/last-good; do
+    [ -f "$lg" ] || continue
+    guarded+=("$(readlink -f "$(head -n 1 "$lg" 2>/dev/null || true)" 2>/dev/null || true)")
+  done
   while read -r old; do
     [ -n "$old" ] || continue
     old_real="$(cd "$old" 2>/dev/null && pwd -P || true)"
     [ -n "$old_real" ] || continue
     keep=0
-    for protected in "$keep_rel" "$live_rel" "$lg_rel" "$cc_rel"; do
+    for protected in "${guarded[@]}"; do
       [ -n "$protected" ] || continue
       case "$protected" in
         "$old_real"|"$old_real"/*) keep=1 ;;
