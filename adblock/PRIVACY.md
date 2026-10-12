@@ -1,6 +1,6 @@
 # Privacy Policy, Supreme AdBlock
 
-_Last updated: 25 September 2026 · applies to the Supreme AdBlock browser extension and to adblock.carbonstealth.eu_
+_Last updated: 10 October 2026 · applies to the Supreme AdBlock browser extension and to adblock.carbonstealth.eu_
 
 <!-- Keep in sync with server/privacy.html (the Privacy Policy URL in the Chrome Web Store). -->
 
@@ -116,6 +116,14 @@ into a specific request we would need your IP address and the approximate time
 
 You can also complain to the Bulgarian Commission for Personal Data Protection
 (КЗЛД, www.cpdp.bg) or to the data protection authority where you live.
+
+## Chrome Web Store User Data Policy (Limited Use)
+
+The use of information received from Google APIs will adhere to the Chrome Web Store User Data Policy, including the Limited Use requirements. In practice: Supreme AdBlock does not collect, sell or transfer user
+data. What it processes to do its job — which requests to block, which elements to
+hide — stays on your device and is used only for its single purpose: blocking ads,
+trackers and page annoyances. Nothing is used for advertising, nothing is used to
+determine credit-worthiness or for lending, and no person reads it.
 
 ## Extension permissions
 

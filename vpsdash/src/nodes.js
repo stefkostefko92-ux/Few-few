@@ -30,7 +30,7 @@ export function findPeer(cfg, id) {
   return (cfg.peers || []).find((p) => p.id === id) || null;
 }
 
-export function proxyToPeer(peer, req, res, restPath, search) {
+export function proxyToPeer(peer, req, res, restPath, search, { actor } = {}) {
   let target;
   try {
     target = new URL(peer.url);
@@ -55,6 +55,10 @@ export function proxyToPeer(peer, req, res, restPath, search) {
     return;
   }
   headers['x-csd'] = '1'; // proxy заявките носят CSRF маркера — оригиналът вече е проверен локално
+  // Кой човек стои зад заявката — за одита на съседа. Задава се ВИНАГИ от нас
+  // (или се маха): заглавка със същото име от браузъра не бива да мине нагоре.
+  delete headers['x-csd-actor'];
+  if (actor && /^[A-Za-z0-9._-]{1,64}@[A-Za-z0-9._-]{1,64}$/.test(actor)) headers['x-csd-actor'] = actor;
 
   const upstream = reqFn(
     {
@@ -75,6 +79,21 @@ export function proxyToPeer(peer, req, res, restPath, search) {
       // Policy` (по-слаба от нашата), `Access-Control-Allow-Origin: *`,
       // `Strict-Transport-Security`, `Clear-Site-Data`. Компрометиран съсед не
       // бива да пренаписва политиките на нашата страница; той доставя ДАННИ.
+      // 401 от СЪСЕДА никога не е за НАШАТА сесия: тя вече е проверена от
+      // guard-а, преди заявката да тръгне насам. Подаден нагоре едно към едно,
+      // той караше интерфейса да покаже входа — човекът влиза правилно, следващата
+      // заявка пак отива към съседа, пак 401, пак вход. Безкраен цикъл, в който
+      // изглежда, че „правилният код не минава". Открито на живо при свързване
+      // на втори VPS. Казваме истината: съседът отказа жетона.
+      if (up.statusCode === 401) {
+        up.resume();
+        res.writeHead(502, { 'content-type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({
+          error: `Съседът „${peer.name || peer.id}" отказа жетона (401) — peerToken на двата възела не съвпада.`,
+          peerAuth: true,
+        }));
+        return;
+      }
       const outHeaders = {};
       for (const [k, v] of Object.entries(up.headers)) {
         if (PASS_THROUGH.has(k.toLowerCase())) outHeaders[k] = v;

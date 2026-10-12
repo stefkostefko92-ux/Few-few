@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extName__",
-  "version": "5.1.6",
+  "version": "5.1.7",
   "description": "__MSG_extDescription__",
   "author": "Carbon Stealth",
-  "homepage_url": "https://carbonstealth.eu",
+  "homepage_url": "https://adblock.carbonstealth.eu",
   "minimum_chrome_version": "121",
   "default_locale": "en",
   "permissions": [

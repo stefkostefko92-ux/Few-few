@@ -13,7 +13,7 @@
 import { DEFAULT_SETTINGS, mergeSettings, SETTINGS_VERSION } from '../shared/defaults.js';
 import {
   PRICE_EUR, LIFETIME_PRICE_EUR, BILLING_PERIOD_DAYS, TRIAL_DAYS, LIFETIME_THRESHOLD_DAYS,
-  REVOLUT_PAYMENT_URL, LICENSE_SECRET, LICENSE_PREFIX, LICENSE_SERVER_URL,
+  REVOLUT_PAYMENT_URL, LICENSE_PUBLIC_KEY, LICENSE_PREFIX, LICENSE_SERVER_URL,
   MERCHANT_NAME, TERMS_URL, PRIVACY_URL, REFUND_URL
 } from '../shared/payment.js';
 import { buildExternalNotifications } from '../shared/notify.js';
@@ -24,6 +24,10 @@ const LICENSE_KEY = 'tanothBotLicense';   // { key, exp, device }
 const INSTALL_KEY = 'tanothBotInstall';   // { firstRun }
 const DEVICE_KEY = 'tanothBotDevice';     // stable per-install device id
 const PROFILES_KEY = 'tanothBotProfiles'; // { name: settings }
+// Per-hero settings: { "<server>:<name>": { name, server, settings, lastSeen } }.
+// Each hero (tab) runs on its own settings; the global STORAGE_KEY settings are
+// the template a NEW hero starts from (and what an unidentified tab uses).
+const HEROES_KEY = 'tanothBotHeroes';
 
 /* -------------------------------------------------------------------------- */
 /* Install / update                                                            */
@@ -107,21 +111,20 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 async function handleMessage(msg, sender) {
   switch (msg?.type) {
     case 'GET_SETTINGS':
-      return mergeSettings((await chrome.storage.local.get(STORAGE_KEY))[STORAGE_KEY]);
+      return getSettingsFor(heroKeyOf(msg.heroKey));
 
-    case 'SAVE_SETTINGS': {
-      const merged = mergeSettings(msg.settings);
-      await chrome.storage.local.set({ [STORAGE_KEY]: merged });
-      broadcastToGameTabs({ type: 'SETTINGS_UPDATED', settings: merged });
-      return { ok: true };
-    }
+    case 'SAVE_SETTINGS':
+      return saveSettingsFor(heroKeyOf(msg.heroKey), msg.settings);
 
     case 'RESET_SETTINGS': {
       const fresh = structuredClone(DEFAULT_SETTINGS);
-      await chrome.storage.local.set({ [STORAGE_KEY]: fresh });
-      broadcastToGameTabs({ type: 'SETTINGS_UPDATED', settings: fresh });
+      await saveSettingsFor(heroKeyOf(msg.heroKey), fresh);
       return { ok: true, settings: fresh };
     }
+
+    case 'BIND_HERO':     return bindHero(msg);
+    case 'LIST_HEROES':   return listHeroes();
+    case 'FORGET_HERO':   return forgetHero(heroKeyOf(msg.heroKey));
 
     case 'GET_STATS':
       return (await chrome.storage.local.get(STATS_KEY))[STATS_KEY] || emptyStats();
@@ -133,22 +136,30 @@ async function handleMessage(msg, sender) {
     case 'STATS_DELTA':
       return applyStatsDelta(msg.delta);
 
-    case 'NOTIFY':
-      raiseNotification(msg.title, msg.message);
-      await sendWebhooks(msg.title, msg.message, msg.level, msg.fields);   // awaited so the SW survives the fetch
+    case 'NOTIFY': {
+      // Two independent channels: a Chrome desktop popup (only when the desktop
+      // toggle is on) and the Telegram/Discord webhooks (gated by their own
+      // config). So you can send everything to Discord WITHOUT any Chrome popups.
+      // The sending hero's own settings decide where his alerts go.
+      const settings = await getSettingsFor(heroKeyOf(msg.heroKey));
+      if (settings.general?.notifications && msg.desktop !== false) raiseNotification(msg.title, msg.message);
+      await sendWebhooks(msg.title, msg.message, msg.level, msg.fields, settings.webhooks);   // awaited so the SW survives the fetch
       return { ok: true };
+    }
 
     case 'TEST_WEBHOOK':
       return { ok: true, sent: await sendWebhooks(
         msg.title || 'Tanoth Bot', msg.message || 'Test notification ✅', 'success',
-        [{ name: 'Status', value: 'Connected', inline: true }, { name: 'Version', value: chrome.runtime.getManifest().version, inline: true }]
+        [{ name: 'Status', value: 'Connected', inline: true }, { name: 'Version', value: chrome.runtime.getManifest().version, inline: true }],
+        // The options page sends what is typed in the form (not yet saved).
+        msg.webhooks && typeof msg.webhooks === 'object' ? msg.webhooks : null
       ) };
 
     case 'LIST_PROFILES':
       return Object.keys((await chrome.storage.local.get(PROFILES_KEY))[PROFILES_KEY] || {});
 
     case 'SAVE_PROFILE':   return saveProfile(msg.name);
-    case 'LOAD_PROFILE':   return loadProfile(msg.name);
+    case 'LOAD_PROFILE':   return loadProfile(msg.name, heroKeyOf(msg.heroKey));
     case 'DELETE_PROFILE': return deleteProfile(msg.name);
 
     case 'OPEN_OPTIONS':
@@ -168,7 +179,7 @@ async function handleMessage(msg, sender) {
       return { ok: true };
 
     case 'CONTROL':     return forwardToActiveGameTab(msg);
-    case 'GET_STATUS':  return forwardToActiveGameTab({ type: 'GET_STATUS' });
+    case 'GET_STATUS':  return forwardToActiveGameTab({ type: 'GET_STATUS', tabId: msg.tabId });
 
     default: return { ok: false, error: 'UNKNOWN_MESSAGE' };
   }
@@ -202,6 +213,15 @@ async function broadcastToGameTabs(message) {
 }
 
 async function forwardToActiveGameTab(message) {
+  // The popup names the exact tab it controls (it knows its own window); only
+  // fall back to guessing when no tab id was given.
+  if (Number.isInteger(message.tabId)) {
+    const t = await chrome.tabs.get(message.tabId).catch(() => null);
+    if (t && /tanoth\.gameforge\.com/.test(t.url || '')) {
+      try { return await chrome.tabs.sendMessage(t.id, message); }
+      catch (e) { return { ok: false, error: 'TAB_UNREACHABLE' }; }
+    }
+  }
   let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab || !/tanoth\.gameforge\.com/.test(tab.url || '')) {
     const game = await chrome.tabs.query({ url: '*://*.tanoth.gameforge.com/*' });
@@ -250,31 +270,33 @@ function b64urlToBytes(s) {
   for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
   return out;
 }
-function bytesToB64url(bytes) {
-  let bin = '';
-  bytes.forEach((b) => { bin += String.fromCharCode(b); });
-  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+// Public key only: the extension can VERIFY a licence signature but holds
+// nothing that could create one (the private key never leaves the seller).
+let publicKeyPromise = null;
+function licensePublicKey() {
+  if (!publicKeyPromise) {
+    publicKeyPromise = crypto.subtle.importKey(
+      'spki', b64urlToBytes(LICENSE_PUBLIC_KEY),
+      { name: 'ECDSA', namedCurve: 'P-256' }, false, ['verify']
+    );
+  }
+  return publicKeyPromise;
 }
 
-async function hmac(payloadStr) {
-  const enc = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    'raw', enc.encode(LICENSE_SECRET),
-    { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
-  );
-  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(payloadStr));
-  return bytesToB64url(new Uint8Array(sig)).slice(0, 24);
-}
-
-// Key format: TZ1.<payloadB64url>.<sig>  where payload = {"exp":<epochSec>}
+// Key format: TZ2.<payloadB64url>.<sigB64url>, payload = {"exp":<epochSec>},
+// sig = ECDSA P-256 / SHA-256 over the payload text (IEEE P1363, 64 bytes).
 async function verifyKey(key) {
   try {
     if (typeof key !== 'string') return null;
     const parts = key.trim().split('.');
     if (parts.length !== 3 || parts[0] !== LICENSE_PREFIX) return null;
-    const [, payloadB64, sig] = parts;
-    const expected = await hmac(payloadB64);
-    if (sig !== expected) return null;
+    const [, payloadB64, sigB64] = parts;
+    const sig = b64urlToBytes(sigB64);
+    if (sig.length !== 64) return null;
+    const ok = await crypto.subtle.verify(
+      { name: 'ECDSA', hash: 'SHA-256' }, await licensePublicKey(), sig, new TextEncoder().encode(payloadB64)
+    );
+    if (!ok) return null;
     const payload = JSON.parse(new TextDecoder().decode(b64urlToBytes(payloadB64)));
     if (!payload || typeof payload.exp !== 'number') return null;
     return payload; // { exp: epochSeconds }
@@ -364,9 +386,9 @@ async function activateLicense(key) {
 }
 
 /* ---- External notifications (Telegram / Discord) ---- */
-async function sendWebhooks(title, message, level, fields) {
+async function sendWebhooks(title, message, level, fields, override) {
   const settings = mergeSettings((await chrome.storage.local.get(STORAGE_KEY))[STORAGE_KEY]);
-  const w = settings.webhooks || {};
+  const w = override || settings.webhooks || {};
   const reqs = buildExternalNotifications({
     telegram: { enabled: w.telegramEnabled, botToken: w.telegramToken, chatId: w.telegramChat },
     discord: {
@@ -395,13 +417,74 @@ async function saveProfile(name) {
   await chrome.storage.local.set({ [PROFILES_KEY]: Object.assign({}, clean) });
   return { ok: true, profiles: Object.keys(clean) };
 }
-async function loadProfile(name) {
+async function loadProfile(name, heroKey) {
   const profiles = (await chrome.storage.local.get(PROFILES_KEY))[PROFILES_KEY] || {};
   if (!Object.hasOwn(profiles, name)) return { ok: false, error: 'NOT_FOUND' };
   const merged = mergeSettings(profiles[name]);
-  await chrome.storage.local.set({ [STORAGE_KEY]: merged });
-  broadcastToGameTabs({ type: 'SETTINGS_UPDATED', settings: merged });
+  await saveSettingsFor(heroKey, merged);
   return { ok: true, settings: merged };
+}
+
+/* ---- Per-hero settings ---- */
+// "<server>:<name>" built by the content script; validated so it can never be
+// "__proto__"/"constructor" or carry junk into storage keys.
+function heroKeyOf(k) {
+  return typeof k === 'string' && /^[\w-]{1,32}:[^\u0000-\u001f]{1,64}$/.test(k) && !/^(__proto__|constructor|prototype)$/.test(k) ? k : null;
+}
+let heroChain = Promise.resolve();       // serialise read-modify-write across tabs
+function heroWrite(fn) {
+  const run = heroChain.then(async () => {
+    const heroes = Object.assign(Object.create(null), (await chrome.storage.local.get(HEROES_KEY))[HEROES_KEY] || {});
+    const out = await fn(heroes);
+    await chrome.storage.local.set({ [HEROES_KEY]: { ...heroes } });
+    return out;
+  });
+  heroChain = run.catch(() => {});
+  return run;
+}
+async function getSettingsFor(heroKey) {
+  if (heroKey) {
+    const heroes = (await chrome.storage.local.get(HEROES_KEY))[HEROES_KEY] || {};
+    if (Object.hasOwn(heroes, heroKey) && heroes[heroKey].settings) return mergeSettings(heroes[heroKey].settings);
+  }
+  return mergeSettings((await chrome.storage.local.get(STORAGE_KEY))[STORAGE_KEY]);
+}
+async function saveSettingsFor(heroKey, settings) {
+  const merged = mergeSettings(settings);
+  if (heroKey) {
+    await heroWrite((heroes) => {
+      const cur = Object.hasOwn(heroes, heroKey) ? heroes[heroKey] : { name: heroKey.split(':').slice(1).join(':'), server: heroKey.split(':')[0] };
+      heroes[heroKey] = { ...cur, settings: merged };
+    });
+  } else {
+    await chrome.storage.local.set({ [STORAGE_KEY]: merged });
+  }
+  // Each tab applies only the settings of the hero it is bound to.
+  broadcastToGameTabs({ type: 'SETTINGS_UPDATED', settings: merged, heroKey });
+  return { ok: true };
+}
+// A tab identified its hero: return that hero's settings, creating them on the
+// first visit as a copy of the current default settings.
+async function bindHero(msg) {
+  const key = heroKeyOf(msg.heroKey);
+  if (!key) return { ok: false, error: 'BAD_HERO' };
+  const global = mergeSettings((await chrome.storage.local.get(STORAGE_KEY))[STORAGE_KEY]);
+  return heroWrite((heroes) => {
+    const isNew = !Object.hasOwn(heroes, key);
+    const cur = isNew ? { settings: global } : heroes[key];
+    heroes[key] = { ...cur, name: String(msg.name || '').slice(0, 64), server: String(msg.server || '').slice(0, 32), lastSeen: Date.now() };
+    return { ok: true, isNew, settings: mergeSettings(heroes[key].settings) };
+  });
+}
+async function listHeroes() {
+  const heroes = (await chrome.storage.local.get(HEROES_KEY))[HEROES_KEY] || {};
+  return Object.keys(heroes).map((key) => ({ key, name: heroes[key].name, server: heroes[key].server, lastSeen: heroes[key].lastSeen || 0 }))
+    .sort((a, b) => b.lastSeen - a.lastSeen);
+}
+async function forgetHero(heroKey) {
+  if (!heroKey) return { ok: false, error: 'BAD_HERO' };
+  await heroWrite((heroes) => { delete heroes[heroKey]; });
+  return { ok: true };
 }
 async function deleteProfile(name) {
   const profiles = (await chrome.storage.local.get(PROFILES_KEY))[PROFILES_KEY] || {};

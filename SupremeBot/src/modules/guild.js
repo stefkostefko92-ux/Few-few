@@ -26,7 +26,14 @@
           return;
         }
         Logger.info(I18n.t('logGuildDonate', [String(surplus)]));
-        await Api.guildSpendGold(surplus);
+        try {
+          await Api.guildSpendGold(surplus);
+        } catch (e) {
+          // No guild yet / server refused: back off instead of retrying every
+          // cycle (three faults in a row would stop the whole engine).
+          cooldownUntil = Date.now() + 30 * 60000;
+          throw e;
+        }
         Stats.bump({ goldDonated: surplus });
         State.patch({ gold: gold - surplus });
       };

@@ -15,6 +15,34 @@ node tools/vps/deploy-check.mjs deploy/autodeploy.sh   # или папка
 Изход: `0` = чисто/само INFO; `1` = има HIGH. Тестван (`deploy-check.test.mjs`); нашият
 `autodeploy.sh` минава чист (само INFO). Допълва shellcheck — но е zero-dep и в CI sweep-а.
 
+## `propose.mjs` — агентите ПРЕДЛАГАТ поправки, собственикът ги одобрява в панела
+```bash
+# CSD_AGENT_KEY идва като ТАЙНА на средата (панел → „Одобрения" → „Създай нов ключ").
+node tools/vps/propose.mjs diag                 # състоянието: обзор, аларми, услуги, Docker, маскирани логове…
+node tools/vps/propose.mjs actions              # затвореният каталог действия
+node tools/vps/propose.mjs submit предложение.json   # подава (иска поле `review` — прегледа на Claude)
+node tools/vps/propose.mjs status <id>          # чака / изпълнено / отказано
+```
+Веригата: агентът диагностицира → съставя предложение (ЕДНО действие от каталога +
+`why`, `evidence`, `rollback`) → **Claude го преглежда** и попълва `review` → подава →
+**собственикът натиска „Одобри" в панела с парола**. Ключът не може да изпълни нищо и не
+стига до суровия журнал, тайните, файловете и одита. `CSD_PANEL_URL` е по подразбиране
+`https://vps.carbonstealth.eu` и трябва да е https. Ключът се приема САМО от средата —
+аргумент на командния ред влиза в историята на шела. Тестван (`propose.test.mjs`).
+
+Пример за предложение:
+```json
+{
+  "agent": "VPS-аджията",
+  "title": "Рестарт на medqr — паметта расте без край",
+  "why": "RSS на medqr расте линейно 6 ч; след рестарт се връща на ~120 MB.",
+  "evidence": "overview: памет 91%; services: medqr active 6h; logs: няма нови грешки",
+  "review": "Claude: едно обратимо действие, без данни; рестартът е по-евтин от OOM.",
+  "rollback": "Рестартът е обратим сам по себе си; ако не тръгне — деплой откат.",
+  "action": { "type": "service.restart", "params": { "unit": "medqr.service" } }
+}
+```
+
 ## IaC (Ansible)
 ```bash
 SSH_PUBKEY="$(cat ~/.ssh/id_ed25519.pub)" \

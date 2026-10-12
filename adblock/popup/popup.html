@@ -16,11 +16,12 @@
       <span data-i18n="byCarbon">by Carbon Stealth</span>
     </div>
     <label class="switch" data-i18n-title="toggleProtection" title="Toggle protection">
-      <input type="checkbox" id="toggle" checked />
+      <input type="checkbox" id="toggle" checked aria-label="Toggle protection" data-i18n-aria-label="toggleProtection" />
       <span class="track"><span class="thumb"></span></span>
     </label>
   </header>
 
+  <main>
   <section class="hero" id="hero" data-state="protected">
     <!-- Щитът: статичен 3D кадър (два слоя WebP, пререндерирани от tools/popup_shield3d.mjs) —
          видим веднага; popup/shield3d.js (зарежда го popup.js СЛЕД първото рисуване) го заменя с жив
@@ -116,12 +117,14 @@
     <span data-i18n="reportBroken">Site broken? Fix it or tell us</span>
   </button>
 
+  </main>
+
   <footer class="bar foot">
     <a id="donate" href="https://revolut.me/vycanismajoris" target="_blank" rel="noopener">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.5-9.5-9C1 9 2.5 5.5 6 5.5c2 0 3.2 1.2 4 2.4.8-1.2 2-2.4 4-2.4 3.5 0 5 3.5 3.5 6.5C19 16.5 12 21 12 21Z"/></svg>
       <span data-i18n="support">Support</span>
     </a>
-    <span class="meta"><i id="listDot">filters</i><i class="v">v5.1.6</i></span>
+    <span class="meta"><i id="listDot">filters</i><i class="v">v5.1.7</i></span>
   </footer>
 
   <script src="popup.js"></script>
