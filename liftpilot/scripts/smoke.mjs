@@ -71,9 +71,9 @@ try {
     if (size) await page.setViewportSize(size);
   }
 
-  step('the former languages: a permanent redirect to the same page in Italian, the query kept');
+  step('the former languages: a permanent redirect to the same page in Italian, the query kept; no language cookie');
   for (const [from, to] of [['/en', '/it'], ['/bg', '/it'], ['/en/login', '/it/login'], ['/bg/pricing?x=1', '/it/pricing?x=1'],
-    ['/bg/app/projects/abc', '/it/app/projects/abc'], ['/en/privacy?y=2#terms', '/it/privacy?y=2']]) {
+    ['/bg/app/projects/abc', '/it/app/projects/abc'], ['/en/privacy?y=2#terms', '/it/privacy?y=2'], ['/EN/pricing', '/it/pricing']]) {
     const r = await fetch(`${BASE}${from}`, { redirect: 'manual' });
     assert.equal(r.status, 301, `${from}: ${r.status}`);
     const at = new URL(r.headers.get('location') ?? '', BASE);
@@ -81,6 +81,14 @@ try {
   }
   // and the page it leads to is there (one hop)
   assert.equal((await fetch(`${BASE}/bg/pricing?x=1`)).status, 200);
+  // no language cookie any more (the privacy page still names NEXT_LOCALE until the next terms version): none set, with or
+  // without a language asked, and the one a browser kept from the time with three languages removed
+  for (const al of ['', 'bg-BG,bg;q=0.9', 'it-IT']) {
+    const r = await fetch(`${BASE}/it`, { headers: { 'accept-language': al }, redirect: 'manual' });
+    assert.ok(!/NEXT_LOCALE=[^;]/.test(r.headers.get('set-cookie') ?? ''), `no language cookie (accept-language «${al}»)`);
+  }
+  const kept = (await fetch(`${BASE}/it`, { headers: { cookie: 'NEXT_LOCALE=en' }, redirect: 'manual' })).headers.get('set-cookie') ?? '';
+  assert.match(kept, /NEXT_LOCALE=;[^,]*Expires=Thu, 01 Jan 1970/i, `the old language cookie removed: ${kept}`);
 
   step('sign-in and installation');
   await login(page, ADMIN.email, ADMIN.password);

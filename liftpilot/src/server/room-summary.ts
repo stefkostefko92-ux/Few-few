@@ -1,5 +1,5 @@
 import 'server-only';
-// The line that names a saved machine room (RoomDesign.summary, src/lib/room/summary.ts) in the reader's language: the
+// The line that names a saved machine room (RoomDesign.summary, src/lib/room/summary.ts) in Italian: the
 // lists of the project and of the calculation, the head of its page, the revision of a drawing set. A record whose line
 // cannot be read is shown as it was stored.
 import { getLocale, getTranslations } from 'next-intl/server';

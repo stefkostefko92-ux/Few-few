@@ -17,6 +17,8 @@ test('una sola lingua: italiano, con il prefisso /it', () => {
   assert.deepEqual(INTL_LOCALE, { it: 'it-IT' });
   assert.deepEqual([...routing.locales], ['it']);
   assert.equal(routing.localePrefix, 'always');
+  // no language to choose, no language cookie (NEXT_LOCALE)
+  assert.equal(routing.localeCookie, false);
   // a language stored on an account before (en, bg) is not the interface's: the callers fall back to Italian
   for (const x of ['en', 'bg', 'EN', '', null, undefined]) assert.equal(isLocale(x), false, String(x));
   assert.equal(isLocale('it'), true);
@@ -31,8 +33,11 @@ test('gli indirizzi delle lingue di prima vanno alla stessa pagina in italiano, 
   assert.equal(to(`${B}/bg/app/projects/abc`), `${B}/it/app/projects/abc`);
   assert.equal(to(`${B}/en/privacy/3?a=b&c=d`), `${B}/it/privacy/3?a=b&c=d`);
   assert.equal(to(`${B}/en/verify-email`), `${B}/it/verify-email`);
+  // as typed or pasted, in capitals too
+  assert.equal(to(`${B}/EN/pricing`), `${B}/it/pricing`);
+  assert.equal(to(`${B}/Bg`), `${B}/it`);
   // everything else is not touched: Italian, the root, a path that only starts with the letters
-  for (const p of ['/it', '/it/pricing', '/', '/english', '/bgx/pricing', '/api/health', '/enx', '/de/pricing']) assert.equal(to(`${B}${p}`), null, p);
+  for (const p of ['/it', '/it/pricing', '/', '/english', '/bgx/pricing', '/api/health', '/enx', '/de/pricing', '/IT/pricing', '/English']) assert.equal(to(`${B}${p}`), null, p);
 });
 
 test('il middleware rimanda con 301 prima di next-intl', () => {

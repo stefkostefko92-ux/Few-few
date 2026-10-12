@@ -204,7 +204,8 @@ export async function acceptInviteAction(_prev: FormState, fd: FormData): Promis
       if ((await tx.invite.deleteMany({ where: { id: invite.id } })).count !== 1) return null;
       if (!(await seatAvailable(tx, invite.companyId))) throw new NoSeat();
       return tx.user.create({ data: { companyId: invite.companyId, email: invite.email, name: invite.name, role: invite.role,
-        passwordHash, mustChangePassword: false, locale: invite.locale, emailVerifiedAt: now, lastLoginAt: now } });
+        // an invitation made in English or Bulgarian (before 2026-10-12) still gives an account in Italian, the only language
+        passwordHash, mustChangePassword: false, locale: isLocale(invite.locale) ? invite.locale : DEFAULT_LOCALE, emailVerifiedAt: now, lastLoginAt: now } });
     });
   } catch (e) {
     if (e instanceof NoSeat) return { error: 'noSeats' };

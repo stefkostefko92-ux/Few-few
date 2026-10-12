@@ -1,7 +1,7 @@
 // The one line that names a saved machine room of a replacement (RoomDesign.summary) in the lists and at the head of its
 // page: the room's size, the machine, what it stands on (on the HEB beams over the shaft's walls when it stands there;
 // the existing support kept, to survey) and the calculation's drop spacing. Stored as data (JSON, v 1) and written in
-// the reader's language where it is shown (src/server/room-summary.ts). Records saved before round 37 hold an Italian
+// Italian where it is shown (src/server/room-summary.ts). Records saved before round 37 hold an Italian
 // sentence instead: their line is read again from the record's survey and results, the HEB profile the software took
 // (which the results do not keep) from that sentence. The support is named as sheet 1 names it (survey-data.ts
 // supportName, by the same parts and the same rule for the existing support kept): one place. Pure.
@@ -127,7 +127,7 @@ type Tr = (key: string, values?: Record<string, string>) => string;
 // (the survey's name of the existing support, inside the line)
 const lowerFirst = (x: string): string => x.charAt(0).toLocaleLowerCase() + x.slice(1);
 
-/** The summary written with the messages of the reader's language: `t` the room's, `ts` the shaft's (the supports'
+/** The summary written with the interface's messages (Italian): `t` the room's, `ts` the shaft's (the supports'
  *  names), `num` the numbers as the screen writes them. The existing support kept as sheet 1 names it (survey-data.ts
  *  supportName): the bedplate with the pulley on it, else it, reused, to survey — its kind as the survey names it. */
 export function roomSummaryText(s: RoomSummary, t: Tr, ts: Tr, num: (x: number) => string): string {

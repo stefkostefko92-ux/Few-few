@@ -8,7 +8,8 @@ const FEATURES = [1, 2, 3, 4] as const;
 const STEPS = [0, 1, 2, 3, 4] as const;
 
 // llms.txt: what the site is and where the key pages are, for AI crawlers; not found while indexing is off, as robots.txt
-// and the sitemap. In Italian, the only language of the site, with the very words of its pages (messages/it.json).
+// and the sitemap. In Italian, the only language of the site, with the very words of its pages (messages/it.json); a
+// title and its paragraph joined by a dash, as each paragraph starts with a capital (no colon before it).
 export function GET(): Response {
   if (!indexingAllowed()) return new Response('Not found', { status: 404, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
   const base = publicBaseUrl(), l = it.landing;
@@ -18,10 +19,10 @@ export function GET(): Response {
     `> ${l.metaDescription} ${l.answer} ${l.normsEyebrow} ${PROFILO.id}: ${PROFILO.documenti.map((d) => d.sigla).join('; ')}.`,
     '',
     `## ${l.navFeatures}`,
-    ...FEATURES.map((n) => `- ${l[`feat${n}T`]}: ${l[`feat${n}P`]}`),
+    ...FEATURES.map((n) => `- ${l[`feat${n}T`]} — ${l[`feat${n}P`]}`),
     '',
     `## ${l.floorsLabel}`,
-    ...STEPS.map((n) => `- ${l[`fl${n}H`]}: ${l[`fl${n}T`]}`),
+    ...STEPS.map((n) => `- ${l[`fl${n}H`]} — ${l[`fl${n}T`]}`),
     '',
     it.common.footerNote,
     '',

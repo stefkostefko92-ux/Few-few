@@ -1,6 +1,6 @@
 import 'server-only';
 // The checks behind a saved record's result, for the pill that shows it (VerdictChecks): the record of the company read
-// as its counts were made (src/lib/verdict-checks.ts) and written in the reader's language — the names the pages give
+// as its counts were made (src/lib/verdict-checks.ts) and written in Italian — the names the pages give
 // the checks, the value and the limit with their unit and sense. Read only; a record of another company, or none, is
 // null, the same answer.
 import { getMessages, getTranslations } from 'next-intl/server';

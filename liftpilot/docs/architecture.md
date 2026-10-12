@@ -344,7 +344,8 @@ src/app/             [locale]/… страниците, api/ (health, billing/we
                      след грешка — „su richiesta“ за минута), пакетите места и FAQ с JSON-LD.
 messages/            it.json — приложението; messages/calc/it.json — речникът на прототипа v12 (410 ключа). Само италиански
                      (от 2026-10-12): src/i18n/locales.ts (LOCALES = ['it']), legacy.ts (/en и /bg → 301 към /it,
-                     в src/middleware.ts преди next-intl), request.ts (статичните it.json), routing.ts (без hreflang).
+                     в src/middleware.ts преди next-intl), request.ts (статичните it.json), routing.ts (без hreflang и
+                     без бисквитка за езика).
 report/relazione.py  PDF с ReportLab + DejaVu (никога Helvetica/Times); само подрежда подаден модел.
 report/raster.py     Чертежите на модела като PNG 300 dpi (Pillow, същият модел на щрихите, шрифтовете DejaVu) за DOCX.
 report/stamp.py      Датата на записа в PDF (CreationDate/ModDate, /ID от `SOURCE_DATE_EPOCH`) и `/Lang it-IT` — сваляният на запис е

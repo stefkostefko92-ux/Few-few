@@ -49,7 +49,7 @@ export interface StoredCounts {
   warnCount: number;
 }
 
-/** A check as the pill's panel shows it, in the reader's language. */
+/** A check as the pill's panel shows it, in Italian. */
 export interface VerdictRow {
   name: string;
   value: string;

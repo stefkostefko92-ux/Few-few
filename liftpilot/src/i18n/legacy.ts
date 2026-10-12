@@ -2,8 +2,9 @@
 // e-mails, bookmarks and indexed pages, and answer with a permanent redirect to the same page in Italian.
 import { DEFAULT_LOCALE, LEGACY_LOCALES } from './locales';
 
-/** The former languages' prefix: /en, /bg and everything under them (not /english, /bgx). */
-const LEGACY = new RegExp(`^/(?:${LEGACY_LOCALES.join('|')})(?=/|$)`);
+/** The former languages' prefix: /en, /bg and everything under them, in any case (/EN/pricing, as typed or pasted;
+ *  not /english, /bgx). A trailing slash (/en/) first gets Next's own 308 to /en, before the middleware runs. */
+const LEGACY = new RegExp(`^/(?:${LEGACY_LOCALES.join('|')})(?=/|$)`, 'i');
 
 /** The same address under /it, with the rest of the path and the query string; null for every other address. */
 export function legacyRedirect(url: { href: string; pathname: string }): URL | null {

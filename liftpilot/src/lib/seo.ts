@@ -2,6 +2,7 @@
 // release (ALLOW_INDEXING=true); the application pages under /app are never indexed.
 import type { Metadata } from 'next';
 import type { Locale } from '@/i18n/locales';
+import it from '../../messages/it.json';
 import { indexingAllowed, publicBaseUrl } from './env';
 import { PROVIDER } from './provider';
 
@@ -63,7 +64,8 @@ export function softwareLd(locale: Locale, description: string, features: readon
   const base = publicBaseUrl();
   return {
     '@type': 'SoftwareApplication', '@id': `${base}/#app`, name: SITE_NAME, applicationCategory: 'BusinessApplication',
-    applicationSubCategory: 'Lift design and engineering calculation', operatingSystem: 'Web', inLanguage: IN_LANGUAGE[locale], description,
+    // the words the home page gives the kind of software (its hero's eyebrow), in the language of the pages
+    applicationSubCategory: it.landing.heroEyebrow, operatingSystem: 'Web', inLanguage: IN_LANGUAGE[locale], description,
     url: `${base}/${locale}`, image: `${base}/img/og-${locale}.png`, ...(features.length ? { featureList: [...features] } : {}),
     publisher: { '@id': 'https://carbonstealth.eu/#org' }, countriesSupported: 'IT',
   };

@@ -4,6 +4,7 @@ import { routing } from './i18n/routing';
 import { legacyRedirect } from './i18n/legacy';
 
 const intl = createMiddleware(routing);
+const LANGUAGE_COOKIE = 'NEXT_LOCALE';
 
 // Content-Security-Policy with a fresh nonce per request: Next.js reads the nonce from the request header and puts
 // it on its own scripts, so no inline script runs without it. Styles allow inline attributes (bar widths, SVG).
@@ -35,6 +36,8 @@ export default function middleware(request: NextRequest): NextResponse {
   headers.set('Content-Security-Policy', csp);
   const response = intl(new NextRequest(request, { headers }));
   response.headers.set('Content-Security-Policy', csp);
+  // the language cookie of the time with three languages (routing.ts sets none now): gone at the first visit
+  if (request.cookies.has(LANGUAGE_COOKIE)) response.cookies.delete(LANGUAGE_COOKIE);
   return response;
 }
 

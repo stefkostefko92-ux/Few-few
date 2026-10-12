@@ -1,6 +1,6 @@
 import 'server-only';
 import type { PendingRegistration, User } from '@prisma/client';
-import type { Locale } from '@/i18n/locales';
+import { DEFAULT_LOCALE, isLocale, type Locale } from '@/i18n/locales';
 import { prisma } from './db';
 import { TERMS_VERSION, UNCONFIRMED_DAYS } from './legal';
 import { legalSha256 } from './legal-text';
@@ -92,7 +92,10 @@ export async function confirmPending(p: PendingRegistration, token: string): Pro
     const c = await tx.company.create({ data: { name: p.company, vatNumber: p.vatNumber, city: p.city } });
     const user = await tx.user.create({
       data: {
-        companyId: c.id, email: p.email, name: p.name, role: 'OWNER', passwordHash: p.passwordHash, mustChangePassword: false, locale: p.locale,
+        // a registration made in English or Bulgarian (before 2026-10-12) gives an account in Italian; the audit keeps the
+        // language of the text accepted (account-actions.ts)
+        companyId: c.id, email: p.email, name: p.name, role: 'OWNER', passwordHash: p.passwordHash, mustChangePassword: false,
+        locale: isLocale(p.locale) ? p.locale : DEFAULT_LOCALE,
         emailVerifiedAt: now, lastLoginAt: now, termsAcceptedAt: p.createdAt, termsVersion: p.termsVersion,
       },
     });

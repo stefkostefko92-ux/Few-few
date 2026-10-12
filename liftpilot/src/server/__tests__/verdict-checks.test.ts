@@ -74,7 +74,7 @@ async function matches(kind: 'calc' | 'shaft' | 'room' | 'lift', m: Model, id: s
   assert.equal(d.warns.length, r.warnCount, `${kind}: as many warnings as the record keeps`);
   assert.equal(d.note, null, `${kind}: nothing to explain`);
   for (const x of [...d.fails, ...d.warns]) {
-    assert.ok(x.name && !x.name.startsWith('shaft.') && !/^c_/.test(x.name), `${kind}: named in the reader's language (${x.name})`);
+    assert.ok(x.name && !x.name.startsWith('shaft.') && !/^c_/.test(x.name), `${kind}: named in Italian (${x.name})`);
     assert.ok(x.value, `${kind}: ${x.name} has its value`);
   }
   return d;

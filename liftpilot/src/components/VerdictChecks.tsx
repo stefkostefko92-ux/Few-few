@@ -11,7 +11,7 @@
 // a time. The panel lives in the top layer (popover), so no frame of the page clips it; below the pill, above it near the
 // bottom edge, the window's width less 16 px each side on a phone.
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type FocusEvent, type KeyboardEvent, type PointerEvent } from 'react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import type { VerdictDetail, VerdictKind, VerdictRow } from '@/lib/verdict-checks';
 
@@ -27,13 +27,13 @@ const PAGE: Readonly<Record<VerdictKind, { path: string; anchor: string }>> = {
 // be in the page
 const DELAY = 150, PIN = 400, SAY = 120, GAP = 8, EDGE = 16, WIDTH = 400, MAX_H = 440, NARROW = 600;
 
-// one read per record and language for the page's life (a failed one is read again on the next opening)
+// one read per record for the page's life (a failed one is read again on the next opening)
 const reads = new Map<string, Promise<VerdictDetail>>();
-function read(kind: VerdictKind, id: string, locale: string): Promise<VerdictDetail> {
-  const key = `${kind}/${id}/${locale}`;
+function read(kind: VerdictKind, id: string): Promise<VerdictDetail> {
+  const key = `${kind}/${id}`;
   let p = reads.get(key);
   if (!p) {
-    p = fetch(`/api/verdict-checks/${kind}/${id}?locale=${encodeURIComponent(locale)}`, { headers: { accept: 'application/json' }, credentials: 'same-origin' })
+    p = fetch(`/api/verdict-checks/${kind}/${id}`, { headers: { accept: 'application/json' }, credentials: 'same-origin' })
       .then(async (r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         const d = (await r.json()) as VerdictDetail;
@@ -55,7 +55,7 @@ type Load = { s: 'idle' } | { s: 'loading' } | { s: 'error' } | { s: 'ok'; d: Ve
 const canHover = (): boolean => globalThis.matchMedia?.('(hover: hover) and (pointer: fine)').matches ?? false;
 
 export default function VerdictChecks({ kind, id, verdict, label }: { kind: VerdictKind; id: string; verdict: 'FAIL' | 'WARN'; label: string }) {
-  const t = useTranslations('verdictChecks'), locale = useLocale();
+  const t = useTranslations('verdictChecks');
   const uid = useId(), panelId = `vc${uid}`, titleId = `${panelId}t`;
   const [mode, setMode] = useState<Mode | null>(null);
   const [load, setLoad] = useState<Load>({ s: 'idle' });
@@ -82,12 +82,12 @@ export default function VerdictChecks({ kind, id, verdict, label }: { kind: Verd
   const fetchIt = useCallback(() => {
     setLoad({ s: 'loading' });
     say(t('loading'));
-    read(kind, id, locale).then((d) => {
+    read(kind, id).then((d) => {
       setLoad({ s: 'ok', d });
       const heads = [d.fails.length ? t('fails', { n: d.fails.length }) : '', d.warns.length ? t('warns', { n: d.warns.length }) : ''].filter(Boolean);
       say(heads.length ? heads.join('. ') : t('none'));
     }, () => { setLoad({ s: 'error' }); say('', 0); });
-  }, [kind, id, locale, say, t]);
+  }, [kind, id, say, t]);
   // the read starts with the first opening (and again after a failure)
   const open = useCallback((m: Mode) => {
     later(null);
