@@ -31,7 +31,11 @@
     <dl class="kv">
       <% for (const field of section.fields) { %><div class="kv__item<%= field.wide ? ' kv__item--wide' : '' %>">
         <dt><%= field.label %></dt>
-        <% if (field.value) { %><dd><%= field.value %><% if (field.table) { %><%- include('_table', { table: field.table }) %><% } %></dd><% } else { %><dd class="empty-value">—</dd><% } %>
+        <% if (field.value) { %><dd><%= field.value %><% if (field.table) { %><%- include('_table', { table: field.table }) %><% } %><% if (field.modulo) { %>
+          <span class="modulo-links"><span class="modulo-links__name"><%= field.modulo.titolo %> · <%= field.modulo.fornitore %></span>
+            <a class="btn btn--sm" href="/schede/<%= scheda.id %>/<%= field.modulo.path %>"><%- include('../partials/icon', { name: 'download' }) %><%= t('ordini.download') %></a>
+            <a class="btn btn--sm" href="/schede/<%= scheda.id %>/<%= field.modulo.path %>?inline=1" target="_blank" rel="noopener"><%- include('../partials/icon', { name: 'print' }) %><%= t('ordini.print') %></a>
+          </span><% } %></dd><% } else { %><dd class="empty-value">—</dd><% } %>
       </div>
       <% } %>
     </dl>

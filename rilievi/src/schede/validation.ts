@@ -1,10 +1,14 @@
 import { z } from 'zod';
 import type {
+  ArganoMarca,
+  QuadroMarca,
   TelesoccorsoStato,
   TipoImpianto,
   TipoPorte,
   UbicazioneMacchina,
 } from '@prisma/client';
+import { SLOTS } from '../ordini/registry.js';
+import { moduloFromBody, parseModulo, type ModuloDati } from '../ordini/valori.js';
 import { activeFields, FIELDS, IDENTIFIERS } from './fields.js';
 import {
   checksOf,
@@ -81,6 +85,12 @@ export const schedaSchema = z
     noteBottoniere: textOf('noteBottoniere'),
     bottoniereMisure: yesNoOf('bottoniereMisure'),
     lavoriExtra: textOf('lavoriExtra'),
+    quadroMarca: choiceOf<QuadroMarca>('quadroMarca'),
+    quadroMarcaAltro: textOf('quadroMarcaAltro'),
+    quadroOrdine: yesNoOf('quadroOrdine'),
+    arganoMarca: choiceOf<ArganoMarca>('arganoMarca'),
+    arganoMarcaAltro: textOf('arganoMarcaAltro'),
+    arganoPreventivo: yesNoOf('arganoPreventivo'),
   })
   .superRefine((value, ctx) => {
     if (IDENTIFIERS.every((key) => value[key] === null)) {
@@ -92,8 +102,15 @@ export const schedaSchema = z
     }
   });
 
-/** Полетата на картата + мерките на старите бутониери (по спирки, misure.ts). */
-export type SchedaData = z.output<typeof schedaSchema> & { misureBottoniere: MisuraData[] };
+/**
+ * Полетата на картата + мерките на старите бутониери (по спирки, misure.ts) + модулите на доставчиците
+ * (src/ordini/) — всеки само при „Sì“ на своя въпрос, иначе null.
+ */
+export type SchedaData = z.output<typeof schedaSchema> & {
+  misureBottoniere: MisuraData[];
+  ordineQuadro: ModuloDati | null;
+  preventivoArgano: ModuloDati | null;
+};
 
 const asRecord = (body: unknown): Record<string, unknown> =>
   body && typeof body === 'object' ? (body as Record<string, unknown>) : {};
@@ -109,10 +126,30 @@ export function parseScheda(
   );
   // Мерките по спирки: при „Sì“ и брой спирки в границите (иначе редове няма).
   const misure = raw.bottoniereMisure === 'si' ? parseMisure(raw, misureCount(raw.fermate)) : null;
+  // Модулите на доставчиците: само когато въпросът им се вижда и отговорът е „Sì“.
+  const moduli = SLOTS.map((slot) =>
+    active.has(slot.question) && raw[slot.question] === 'si'
+      ? parseModulo(slot.modulo, slot.prefix, raw)
+      : null,
+  );
+  const extraErrors: FieldErrors = Object.assign(
+    {},
+    misure?.errors,
+    ...moduli.map((modulo) => modulo?.errors ?? {}),
+  );
 
   const parsed = schedaSchema.safeParse(input);
-  if (parsed.success && (!misure || Object.keys(misure.errors).length === 0)) {
-    return { ok: true, data: { ...parsed.data, misureBottoniere: misure?.rows ?? [] } };
+  if (parsed.success && Object.keys(extraErrors).length === 0) {
+    const dati = (column: string) => moduli[SLOTS.findIndex((s) => s.column === column)]?.dati;
+    return {
+      ok: true,
+      data: {
+        ...parsed.data,
+        misureBottoniere: misure?.rows ?? [],
+        ordineQuadro: dati('ordineQuadro') ?? null,
+        preventivoArgano: dati('preventivoArgano') ?? null,
+      },
+    };
   }
   const errors: FieldErrors = {};
   for (const issue of parsed.success ? [] : parsed.error.issues) {
@@ -127,12 +164,13 @@ export function parseScheda(
     return typeof value === 'string' && value.trim() !== '';
   });
   if (!hasIdentifier) errors[IDENTIFIERS_ERROR_KEY] ??= 'identifierNeeded';
-  return { ok: false, errors: { ...errors, ...misure?.errors } };
+  return { ok: false, errors: { ...errors, ...extraErrors } };
 }
 
 export function formValuesFromBody(body: unknown): FormValues {
   const source = asRecord(body);
   const values: FormValues = misureFromBody(source);
+  for (const slot of SLOTS) Object.assign(values, moduloFromBody(slot.modulo, slot.prefix, source));
   for (const field of FIELDS) {
     const raw = source[field.key];
     if (field.kind === 'checks') {

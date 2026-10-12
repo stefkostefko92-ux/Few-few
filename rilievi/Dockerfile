@@ -42,6 +42,8 @@ COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=build /app/node_modules/@prisma/client ./node_modules/@prisma/client
 COPY --from=build /app/public ./public
 COPY prisma ./prisma
+# Официалните модули на доставчиците (PDF + карта на полетата) — изходът е самият оригинал.
+COPY assets ./assets
 COPY views ./views
 COPY locales ./locales
 COPY package.json ./package.json

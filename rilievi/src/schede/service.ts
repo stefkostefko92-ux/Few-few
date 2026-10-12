@@ -154,8 +154,14 @@ export async function getScheda(
 function persisted(
   data: SchedaData,
 ): Omit<Prisma.SchedaUncheckedCreateInput, 'createdById' | 'aziendaId'> {
-  const { misureBottoniere: _rows, ...fields } = data;
-  return { ...fields, searchText: searchTextOf(fields) };
+  const { misureBottoniere: _rows, ordineQuadro, preventivoArgano, ...fields } = data;
+  return {
+    ...fields,
+    // Модулите на доставчиците — JSON или истинско NULL в базата (не JSON null).
+    ordineQuadro: ordineQuadro ?? Prisma.DbNull,
+    preventivoArgano: preventivoArgano ?? Prisma.DbNull,
+    searchText: searchTextOf(fields),
+  };
 }
 
 /** Нова карта във фирмата `aziendaId` — тази на човека или избраната (и проверена) от MASTER. */

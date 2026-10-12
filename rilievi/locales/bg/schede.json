@@ -79,7 +79,9 @@
       "limitatore": "Ограничител",
       "cavi": "Кабели",
       "allarme": "Аларма и аварийна връзка",
-      "note": "Бележки и работи"
+      "note": "Бележки и работи",
+      "quadro": "Командно табло",
+      "argano": "Тягова машина"
     },
     "field": {
       "data": "Дата",
@@ -128,10 +130,18 @@
       "noteBottoniere": "Бележки: монтирани бутонни табла",
       "bottoniereMisure": "Мерки на старите бутонни табла",
       "lavoriExtra": "Допълнителни работи (работна карта)",
-      "azienda": "Фирма"
+      "azienda": "Фирма",
+      "quadroMarca": "Марка на таблото",
+      "quadroMarcaAltro": "Друга марка табло",
+      "quadroOrdine": "Поръчка на табло",
+      "arganoMarca": "Марка на машината",
+      "arganoMarcaAltro": "Друга марка машина",
+      "arganoPreventivo": "Запитване за оферта за машина"
     },
     "question": {
-      "bottoniereMisure": "Ще въвеждаш ли мерките на старите бутонни табла?"
+      "bottoniereMisure": "Ще въвеждаш ли мерките на старите бутонни табла?",
+      "quadroOrdine": "Ще попълваш ли поръчката за таблото?",
+      "arganoPreventivo": "Ще попълваш ли запитването за оферта за машината?"
     },
     "option": {
       "ubicazioneMacchina": {
@@ -151,6 +161,17 @@
       "telesoccorsoStato": {
         "COMPLETO": "Пълна",
         "MANCA_PERIFERICA": "Липсва периферно устройство"
+      },
+      "quadroMarca": {
+        "PELAZZA": "Pelazza",
+        "MOVILIFT": "Movilift",
+        "DMG": "DMG",
+        "MASTECH": "Mastech",
+        "ALTRO": "Друга"
+      },
+      "arganoMarca": {
+        "MONTANARI": "Montanari",
+        "ALTRO": "Друга"
       }
     },
     "unit": {
@@ -210,5 +231,11 @@
   "pdf": {
     "generated": "Генериран на {at} от {name}",
     "page": "Страница {page} от {pages}"
+  },
+  "ordini": {
+    "hint": "Оригиналният модул на доставчика — същите полета в същия ред. Излиза като отделен PDF, идентичен с оригинала; не влиза в PDF-а на картата.",
+    "download": "Изтегли PDF",
+    "print": "Печат",
+    "errorLabel": "{label} ({fornitore})"
   }
 }

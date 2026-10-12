@@ -79,7 +79,9 @@
       "limitatore": "Limitatore",
       "cavi": "Cavi",
       "allarme": "Allarme e telesoccorso",
-      "note": "Note e lavori"
+      "note": "Note e lavori",
+      "quadro": "Quadro",
+      "argano": "Argano"
     },
     "field": {
       "data": "Data",
@@ -128,10 +130,18 @@
       "noteBottoniere": "Note bottoniere in opera",
       "bottoniereMisure": "Misure bottoniere vecchie",
       "lavoriExtra": "Lavori extra (buono di lavoro)",
-      "azienda": "Azienda"
+      "azienda": "Azienda",
+      "quadroMarca": "Marca quadro",
+      "quadroMarcaAltro": "Altra marca quadro",
+      "quadroOrdine": "Scheda per l'ordine quadro",
+      "arganoMarca": "Marca argano",
+      "arganoMarcaAltro": "Altra marca argano",
+      "arganoPreventivo": "Richiesta di preventivo argano"
     },
     "question": {
-      "bottoniereMisure": "Vuoi inserire le misure delle bottoniere vecchie?"
+      "bottoniereMisure": "Vuoi inserire le misure delle bottoniere vecchie?",
+      "quadroOrdine": "Vuoi compilare la scheda per l'ordine quadro?",
+      "arganoPreventivo": "Vuoi compilare la richiesta di preventivo argano?"
     },
     "option": {
       "ubicazioneMacchina": {
@@ -151,6 +161,17 @@
       "telesoccorsoStato": {
         "COMPLETO": "Completo",
         "MANCA_PERIFERICA": "Manca periferica"
+      },
+      "quadroMarca": {
+        "PELAZZA": "Pelazza",
+        "MOVILIFT": "Movilift",
+        "DMG": "DMG",
+        "MASTECH": "Mastech",
+        "ALTRO": "Altro"
+      },
+      "arganoMarca": {
+        "MONTANARI": "Montanari",
+        "ALTRO": "Altro"
       }
     },
     "unit": {
@@ -210,5 +231,11 @@
   "pdf": {
     "generated": "Generato il {at} da {name}",
     "page": "Pagina {page} di {pages}"
+  },
+  "ordini": {
+    "hint": "Il modulo originale del fornitore, con gli stessi campi nello stesso ordine. Esce in un PDF a parte, identico all'originale: non entra nel PDF della scheda.",
+    "download": "Scarica PDF",
+    "print": "Stampa",
+    "errorLabel": "{label} ({fornitore})"
   }
 }

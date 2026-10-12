@@ -21,6 +21,7 @@ import { auditRouter } from './routes/audit.js';
 import { authRouter } from './routes/auth.js';
 import { aziendeRouter } from './routes/aziende.js';
 import { cestinoRouter } from './routes/cestino.js';
+import { ordiniRouter } from './routes/ordini.js';
 import { healthRouter } from './routes/health.js';
 import { schedeRouter } from './routes/schede.js';
 import { usersRouter } from './routes/users.js';
@@ -168,6 +169,7 @@ export function createServer(): Express {
   app.use(accountRouter);
   app.use(schedeRouter);
   app.use(cestinoRouter);
+  app.use(ordiniRouter);
   app.use(usersRouter);
   app.use(aziendeRouter);
   app.use(auditRouter);

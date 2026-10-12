@@ -1,5 +1,6 @@
 import { Router, type Request, type Response } from 'express';
 import { config } from '../config.js';
+import { translate } from '../i18n.js';
 import { can } from '../auth/roles.js';
 import { isPartial, principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
 import { activeAzienda, activeAziende, allAziendeNames, aziendaLogo } from '../aziende/service.js';
@@ -31,6 +32,8 @@ import {
   type FieldErrors,
   type FormValues,
 } from '../schede/validation.js';
+import { moduloFieldOf, withPrefill } from '../ordini/form.js';
+import { SLOTS } from '../ordini/registry.js';
 import { aziendaFilterOf, notFound, queryOf, scope } from './schede-shared.js';
 
 export const schedeRouter: Router = Router();
@@ -74,9 +77,19 @@ interface FormView {
   azienda: string;
 }
 
-function renderForm(res: Response, status: number, view: FormView): void {
+function renderForm(req: Request, res: Response, status: number, view: FormView): void {
+  const user = principalOf(req).user;
+  // Модулите на доставчиците: при първото отваряне — от огледа, от фирмата и от човека, който пише.
+  const values = withPrefill(view.values, {
+    azienda: view.scheda?.azienda.name ?? user.aziendaName ?? '',
+    utente: user.name,
+    // Модулите са на италиански — ролята също, на какъвто и език да е екранът.
+    ruolo: translate('it', `role.${user.role}`),
+    email: user.email,
+  });
   res.status(status).render('schede/form', {
     ...view,
+    values,
     sections: SECTIONS,
     identifiersErrorKey: IDENTIFIERS_ERROR_KEY,
     aziendaErrorKey: AZIENDA_ERROR_KEY,
@@ -86,13 +99,15 @@ function renderForm(res: Response, status: number, view: FormView): void {
     misuraTemplate: misuraTemplateRow(),
     maxMisure: MAX_MISURE,
     misuraOf,
+    moduli: SLOTS,
+    moduloFieldOf,
   });
 }
 
 schedeRouter.get('/schede/nuova', write, async (req, res) => {
   const aziende = scope(req).all ? await activeAziende() : [];
   const preset = typeof req.query.azienda === 'string' ? req.query.azienda : '';
-  renderForm(res, 200, {
+  renderForm(req, res, 200, {
     scheda: null,
     values: emptyFormValues(businessDay()),
     errors: {},
@@ -117,7 +132,7 @@ schedeRouter.post('/schede', write, requireCsrf, async (req, res) => {
   if (!parsed.ok || !azienda) {
     const aziende = userScope.all ? await activeAziende() : [];
     const errors: FieldErrors = azienda ? {} : { [AZIENDA_ERROR_KEY]: 'azienda' };
-    renderForm(res, 422, {
+    renderForm(req, res, 422, {
       scheda: null,
       values: formValuesFromBody(body),
       errors: { ...errors, ...(parsed.ok ? {} : parsed.errors) },
@@ -146,7 +161,7 @@ schedeRouter.get('/schede/:id', read, async (req, res) => {
 schedeRouter.get('/schede/:id/modifica', write, async (req, res) => {
   const scheda = await getScheda(scope(req), String(req.params.id));
   if (!scheda) return notFound(req, res);
-  renderForm(res, 200, {
+  renderForm(req, res, 200, {
     scheda,
     values: formValuesFromScheda(scheda, res.locals.fmt),
     errors: {},
@@ -165,7 +180,7 @@ schedeRouter.post('/schede/:id', write, requireCsrf, async (req, res) => {
   const parsed = parseScheda(body);
   const formView = { scheda, base, aziende: [], azienda: scheda.aziendaId };
   if (!parsed.ok) {
-    renderForm(res, 422, {
+    renderForm(req, res, 422, {
       ...formView,
       values: formValuesFromBody(body),
       errors: parsed.errors,
@@ -183,7 +198,7 @@ schedeRouter.post('/schede/:id', write, requireCsrf, async (req, res) => {
   if (outcome === 'missing') return notFound(req, res);
   if (outcome === 'conflict') {
     // Въведеното остава на екрана; човекът решава след като види новата версия.
-    renderForm(res, 409, {
+    renderForm(req, res, 409, {
       ...formView,
       values: formValuesFromBody(body),
       errors: {},

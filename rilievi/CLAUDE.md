@@ -3,7 +3,8 @@
 Портал само с покана за схемите за оглед на асансьорни уредби („scheda rilievo impianto“): попълване на
 29-те полета от заданието и полетата от второто (врати, аларма, работна карта, мерки на старите
 бутониери по спирки), търсене (№ на асансьора, матрикула, адрес, марка, работна карта, бележки), печат
-A4 и PDF.
+A4 и PDF. Таблото и аргано за поръчка: при Pelazza / Montanari се попълва самият модул на доставчика и
+излиза като отделен PDF — оригиналът с данните върху него.
 Многофирмен: всяка фирма (клиент на портала) има свои хора, свои карти и свое лого на листа.
 Бранд Carbon Stealth VCC, монохромен (бяло/черно, светла и тъмна тема). Самостоятелен продукт —
 `cd rilievi/` за всичко. Домейн: rilievi.carbonstealth.eu (порт 4330).
@@ -13,7 +14,8 @@ A4 и PDF.
 Node ≥22 · TypeScript strict (ESM, `NodeNext`) · Express 5 · EJS (сървърно рендиране, строг CSP с nonce,
 `style-src-attr 'none'`) · Prisma 6 + PostgreSQL 16 (`pg_trgm`) · zod на всеки външен вход · pino (без
 PII и токени) · Argon2id · JWT (jose, HS256) в HttpOnly бисквитка, проверяван срещу сесия в базата ·
-pdfkit + DejaVu Sans (PDF с кирилица) · multer + sharp (логото на фирмата, прекодирано) · Fira Sans /
+pdfkit + DejaVu Sans (PDF с кирилица) · pdf-lib + @pdf-lib/fontkit (модулите на доставчиците, попълнени
+с DejaVu) · multer + sharp (логото на фирмата, прекодирано) · Fira Sans /
 Fira Sans Condensed от @fontsource (без CDN).
 UI: италиански (източник) + български + английски.
 
@@ -43,11 +45,15 @@ src/
   schede/            fields.ts (ЕДИНСТВЕНИЯТ списък полета и условията им) · field-parsers.ts (zod по
                      вид) · validation.ts · misure.ts (мерките по спирки) · search.ts · service.ts ·
                      format.ts · pdf.ts + pdf-layout.ts + pdf-table.ts
-  routes/            тънки рутери: проверка → услуга → изглед (картите · кошчето · хора · фирми · одит)
+  ordini/            модулите на доставчиците: moduli.ts (картите от assets/moduli, SHA-256) · registry.ts
+                     (колона ↔ въпрос ↔ модул) · valori.ts · prefill.ts · form.ts · pdf.ts (pdf-lib)
+  routes/            тънки рутери: проверка → услуга → изглед (картите · кошчето · модулите · хора ·
+                     фирми · одит)
+assets/moduli/       официалните празни PDF-и на Pelazza и Montanari + картата на полетата им (JSON)
 views/               EJS: partials/ (горна и долна лента, табелата, филтърът по фирма), auth/, schede/,
                      users/, aziende/, account/, audit/
 locales/<език>/      common · auth · schede · users · aziende · mail (.json); it е източникът, bg/en — огледала
-public/              css/ (base, layout, plate, forms, pages, data, misure, print), js/app.js (прогресивно), img/
+public/              css/ (base, layout, plate, forms, pages, data, misure, moduli, print), js/app.js, img/
 tests/               unit · integration/ (реален Postgres) · e2e/run.mjs (Playwright + axe)
 deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh · nginx/ · systemd/
 ```
@@ -88,6 +94,15 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
 - **Мерките на старите бутониери** (`schede/misure.ts`, таблица `MisuraBottoniera`) — ред за спирка,
   колкото е „Fermate“ (до 300), полетата `mb-<спирка>-<колона>`. Записват се наново с картата в една
   транзакция; празен ред не се пази; редовете над броя на спирките не се четат.
+- **Модулите на доставчиците** (`src/ordini/`, `assets/moduli/`): „Marca quadro“ Pelazza + „Sì“ →
+  техният „Modulo d'ordine quadri“; „Marca argano“ Montanari + „Sì“ → тяхната „Richiesta preventivo
+  argani“. Полетата и редът им са дословно от модула (италиански, не се превеждат). Пазят се като JSON
+  (`ordineQuadro`, `preventivoArgano`: `{modulo, valori}`) и излизат САМО като свой PDF
+  (`/schede/:id/ordine-quadro`, `/preventivo-argano`) — никога в печата или PDF-а на картата. PDF-ът е
+  самият официален модул: Pelazza — кръстчета и текст по координатите от картата; Montanari —
+  попълнен и „заключен“ формуляр. PDF-ите са закрепени по SHA-256: нова версия от доставчика = нова
+  карта (координати/имена), иначе процесът не тръгва. При първото отваряне модулът идва попълнен от
+  огледа (`prefill.ts` на сървъра, същите правила в app.js).
 - **Търсенето** пише `searchText` (нормализиран: малки букви, без ударения) само в `schede/service.ts`;
   триграмен GIN индекс (`pg_trgm`). Всяка дума трябва да се намери; пълното съвпадение на номера е първо.
   Заявката отива като параметри (`Prisma.sql`), никога в текста на SQL.

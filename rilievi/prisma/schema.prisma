@@ -50,6 +50,21 @@ enum TelesoccorsoStato {
   MANCA_PERIFERICA
 }
 
+/// Марката на таблото за поръчка; при Pelazza — техният модул за поръчка.
+enum QuadroMarca {
+  PELAZZA
+  MOVILIFT
+  DMG
+  MASTECH
+  ALTRO
+}
+
+/// Марката на аргано (машината); при Montanari — тяхното запитване за оферта.
+enum ArganoMarca {
+  MONTANARI
+  ALTRO
+}
+
 /// Фирма — клиент на портала: свои хора, свои карти, свое лого на листа. Създава я само MASTER
 /// (собственикът на портала); всяка фирма вижда само своето (src/auth/scope.ts).
 model Azienda {
@@ -229,6 +244,18 @@ model Scheda {
   bottoniereMisure        Boolean?
   misureBottoniere        MisuraBottoniera[]
   lavoriExtra             String?
+  quadroMarca             QuadroMarca?
+  quadroMarcaAltro        String?              @db.VarChar(120)
+  /// „Да попълня ли модула за поръчка на таблото?“ — само при Pelazza.
+  quadroOrdine            Boolean?
+  /// Модулът за поръчка на Pelazza: {modulo, valori} — ключовете са в assets/moduli/*.json. Има свой PDF.
+  ordineQuadro            Json?
+  arganoMarca             ArganoMarca?
+  arganoMarcaAltro        String?              @db.VarChar(120)
+  /// „Да попълня ли запитването за аргано?“ — само при Montanari.
+  arganoPreventivo        Boolean?
+  /// Запитването за оферта на Montanari: {modulo, valori}. Има свой PDF.
+  preventivoArgano        Json?
   /// Нормализиран текст за търсачката (малки букви, без ударения) — пише го САМО src/schede/service.ts.
   searchText              String               @default("")
   /// Фирмата на картата — тази на създателя (или избраната от MASTER). Вижда я само тази фирма и MASTER.

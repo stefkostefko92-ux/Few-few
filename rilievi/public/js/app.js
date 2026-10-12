@@ -106,6 +106,67 @@
     });
   }
 
+  // Supplier forms (src/ordini/): when one opens, the empty fields nobody has touched take what the
+  // survey already says (date, number, stops, doors, load...). The server fills what it knows on its
+  // own (the company, the person writing). Same rules as src/ordini/prefill.ts.
+  const surveyValue = (id) => {
+    const el = document.getElementById(`f-${id}`);
+    return el ? el.value.trim() : '';
+  };
+  const surveyText = (token) => {
+    if (token === 'data') {
+      const day = surveyValue('data');
+      return /^\d{4}-\d{2}-\d{2}$/.test(day) ? day.split('-').reverse().join('/') : '';
+    }
+    if (token === 'rif') {
+      const numero = surveyValue('numeroImpianto');
+      const matricola = surveyValue('matricola');
+      return [numero && `N° ${numero}`, matricola && `Matr. ${matricola}`, surveyValue('indirizzo')]
+        .filter(Boolean)
+        .join(' — ');
+    }
+    if (token === 'accessi') {
+      const doppio = document.querySelector('input[name="doppioAccesso"]:checked');
+      return doppio ? (doppio.value === 'si' ? '2' : '1') : '';
+    }
+    if (token === 'azienda') {
+      const select = document.getElementById('f-azienda');
+      return select && select.value ? select.options[select.selectedIndex].text.trim() : '';
+    }
+    return surveyValue(token);
+  };
+  const prefillModulo = (box) => {
+    box.querySelectorAll('[data-prefill]').forEach((input) => {
+      if (input.dataset.touched) return;
+      const token = input.dataset.prefill;
+      if (input.type === 'checkbox') {
+        const [name, value] = token.split('=');
+        if (document.querySelector(`input[name="${name}"][value="${value}"]:checked`)) {
+          input.checked = true;
+        }
+      } else if (!input.value) {
+        const text = surveyText(token);
+        input.value = input.maxLength > 0 ? text.slice(0, input.maxLength) : text;
+      }
+    });
+  };
+  if (document.querySelector('[data-modulo]')) {
+    const touch = (event) => {
+      const target = event.target;
+      if (target instanceof HTMLElement && target.closest('[data-modulo]')) {
+        target.dataset.touched = '1';
+      }
+    };
+    document.addEventListener('input', touch);
+    document.addEventListener('change', (event) => {
+      touch(event);
+      const radio = event.target;
+      if (!(radio instanceof HTMLInputElement) || radio.value !== 'si' || !radio.checked) return;
+      const box = document.querySelector(`[data-modulo][data-when="${radio.name}"]`);
+      if (box) prefillModulo(box);
+    });
+  }
+
   // Yes/No and single choices can go back to "not marked": clicking the ticked box again clears it.
   // Delegated, so the rows added above behave the same.
   document.addEventListener('pointerdown', (event) => {

@@ -179,6 +179,19 @@ try {
       await page.fill('#f-mb-1-interasseSuperiore', '60 mm');
       await page.fill('#f-mb-1-interasseInferiore', '58 mm');
       await tick(page, 'mb-1-display', 'si');
+      // The supplier forms: Pelazza order and Montanari quote request, prefilled from the survey.
+      await tick(page, 'quadroMarca', 'PELAZZA');
+      await tick(page, 'quadroOrdine', 'si');
+      if ((await page.inputValue('#f-oq-nFermate')) !== '6')
+        fail('Pelazza order without the stops');
+      if (!(await page.isChecked('#f-oq-porteAutomatiche')))
+        fail('Pelazza order without the doors');
+      await tick(page, 'oq-ordine', 'si');
+      await page.fill('#f-oq-quantita', '1');
+      await tick(page, 'arganoMarca', 'MONTANARI');
+      await tick(page, 'arganoPreventivo', 'si');
+      if ((await page.inputValue('#f-pa-portata')) !== '630')
+        fail('Montanari request without the load');
       await page.click('.actions button[type=submit]');
       await page.waitForURL(/\/schede\/[a-z0-9]+$/);
       sheetUrl = page.url();
@@ -191,6 +204,12 @@ try {
       await page.waitForFunction(
         () => document.querySelectorAll('[data-results] .row-link').length > 0,
       );
+      for (const path of ['ordine-quadro', 'preventivo-argano']) {
+        const order = await page.request.get(`${sheetUrl}/${path}`);
+        const bytes = await order.body();
+        if (order.status() !== 200 || bytes.subarray(0, 5).toString() !== '%PDF-')
+          fail(`${path} PDF`);
+      }
       const pdf = await page.request.get(`${sheetUrl}/pdf`);
       const body = await pdf.body();
       if (pdf.status() !== 200 || body.subarray(0, 5).toString() !== '%PDF-') fail('PDF download');
@@ -206,6 +225,7 @@ try {
       ['list', '/schede?q=verdi'],
       ['new', '/schede/nuova'],
       ['sheet', new URL(sheetUrl).pathname],
+      ['edit', `${new URL(sheetUrl).pathname}/modifica`],
       ['users', '/utenti'],
       ['invite', '/utenti/invita'],
       ['companies', '/aziende'],

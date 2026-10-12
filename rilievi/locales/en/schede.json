@@ -79,7 +79,9 @@
       "limitatore": "Governor",
       "cavi": "Cables",
       "allarme": "Alarm and emergency call",
-      "note": "Notes and work"
+      "note": "Notes and work",
+      "quadro": "Control panel",
+      "argano": "Traction machine"
     },
     "field": {
       "data": "Date",
@@ -128,10 +130,18 @@
       "noteBottoniere": "Installed push-button panel notes",
       "bottoniereMisure": "Old push-button panel measurements",
       "lavoriExtra": "Extra work (work order)",
-      "azienda": "Company"
+      "azienda": "Company",
+      "quadroMarca": "Control panel make",
+      "quadroMarcaAltro": "Other control panel make",
+      "quadroOrdine": "Control panel order form",
+      "arganoMarca": "Machine make",
+      "arganoMarcaAltro": "Other machine make",
+      "arganoPreventivo": "Machine quote request"
     },
     "question": {
-      "bottoniereMisure": "Do you want to enter the measurements of the old push-button panels?"
+      "bottoniereMisure": "Do you want to enter the measurements of the old push-button panels?",
+      "quadroOrdine": "Do you want to fill in the control panel order form?",
+      "arganoPreventivo": "Do you want to fill in the machine quote request?"
     },
     "option": {
       "ubicazioneMacchina": {
@@ -151,6 +161,17 @@
       "telesoccorsoStato": {
         "COMPLETO": "Complete",
         "MANCA_PERIFERICA": "Peripheral missing"
+      },
+      "quadroMarca": {
+        "PELAZZA": "Pelazza",
+        "MOVILIFT": "Movilift",
+        "DMG": "DMG",
+        "MASTECH": "Mastech",
+        "ALTRO": "Other"
+      },
+      "arganoMarca": {
+        "MONTANARI": "Montanari",
+        "ALTRO": "Other"
       }
     },
     "unit": {
@@ -210,5 +231,11 @@
   "pdf": {
     "generated": "Generated on {at} by {name}",
     "page": "Page {page} of {pages}"
+  },
+  "ordini": {
+    "hint": "The supplier's original form, with the same fields in the same order. It comes out as a separate PDF identical to the original; it is not part of the sheet PDF.",
+    "download": "Download PDF",
+    "print": "Print",
+    "errorLabel": "{label} ({fornitore})"
   }
 }

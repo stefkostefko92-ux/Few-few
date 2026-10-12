@@ -2,12 +2,15 @@ import { config } from './config.js';
 import { prisma } from './db.js';
 import { errorMessage, logger } from './logger.js';
 import { startMaintenance } from './maintenance.js';
+import { assertModuli } from './ordini/moduli.js';
 import { assertPdfFonts } from './schede/pdf.js';
 import { createServer } from './server.js';
 
 async function main(): Promise<void> {
   const cfg = config();
   assertPdfFonts(cfg.PDF_FONT_DIR);
+  // Официалните модули на доставчиците — точно версията, по която са картите им (SHA-256).
+  assertModuli();
   await prisma.$connect();
   const server = createServer().listen(cfg.PORT, cfg.HOST, () => {
     logger.info({ port: cfg.PORT, host: cfg.HOST }, 'Rilievi слуша');

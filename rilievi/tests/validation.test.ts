@@ -12,7 +12,7 @@ function parsedOrFail(body: Record<string, unknown>) {
 }
 
 describe('the field list', () => {
-  it('keeps the fields of the brief in its order, the second brief next to what they belong to', () => {
+  it('keeps the fields of the brief in its order, the later briefs next to what they belong to', () => {
     assert.deepEqual(
       FIELDS.map((field) => field.key),
       [
@@ -62,9 +62,15 @@ describe('the field list', () => {
         'noteBottoniere',
         'bottoniereMisure',
         'lavoriExtra',
+        'quadroMarca',
+        'quadroMarcaAltro',
+        'quadroOrdine',
+        'arganoMarca',
+        'arganoMarcaAltro',
+        'arganoPreventivo',
       ],
     );
-    assert.equal(SECTIONS.length, 9);
+    assert.equal(SECTIONS.length, 11);
   });
 
   it('gives every number a kind the brief asked for: the identifiers are digits, never numbers', () => {

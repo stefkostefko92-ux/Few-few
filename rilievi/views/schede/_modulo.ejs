@@ -1,0 +1,36 @@
+<%
+  // Модулът на доставчика (src/ordini/, assets/moduli/*.json) — същите полета в същия ред като на
+  // хартията, за да излезе в неговия оригинален PDF. Етикетите са дословно от модула (италиански) и не
+  // се превеждат. Отваря се при „Sì“ на въпроса над него; data-prefill — попълване от огледа (app.js).
+  const name = (key) => slot.prefix + '-' + key;
+  const on = values[slot.question] === 'si';
+%><div class="modulo field--wide" id="f-<%= slot.prefix %>" data-when="<%= slot.question %>" data-when-values="si"<% if (!on) { %> data-off<% } %> data-modulo>
+  <input type="hidden" name="<%= slot.prefix %>-_" value="1">
+  <div class="modulo__head">
+    <p class="modulo__title"><strong><%= slot.modulo.titolo %></strong> · <%= slot.modulo.fornitore %></p>
+    <p class="field__hint"><%= t('ordini.hint') %></p>
+  </div>
+  <% for (const group of slot.modulo.gruppi) { %>
+  <fieldset class="modulo__group">
+    <legend><%= group.titolo %></legend>
+    <% for (const row of group.righe) { %>
+    <div class="modulo__row">
+      <% row.campi.forEach((field, i) => {
+           const id = 'f-' + name(field.key);
+           const errId = 'err-' + name(field.key);
+           const error = errors[name(field.key)];
+           const errText = error ? t('scheda.error.' + error, { maxLength: field.maxLength }) : null;
+           const value = values[name(field.key)];
+           const prefill = field.prefill ? ' data-prefill="' + field.prefill + '"' : '';
+           const aria = errText ? ' aria-invalid="true" aria-describedby="' + errId + '"' : '';
+      %><% if (row.freccia && i === row.freccia) { %><span class="modulo__arrow" aria-hidden="true">→</span><% } %><% if (field.kind === 'check') { %><label class="tick tick--sm"><input type="checkbox" id="<%= id %>" name="<%= name(field.key) %>" value="si"<% if (value === 'si') { %> checked<% } %><%- prefill %>><span class="tick__box" aria-hidden="true"></span><span><%= field.label %></span></label><% } else { %><div class="modulo__text<%= field.kind === 'textarea' ? ' modulo__text--wide' : '' %>">
+        <label class="field__label<%= field.labelNascosta ? ' visually-hidden' : '' %>" for="<%= id %>"><%= field.label %></label>
+        <% if (field.kind === 'textarea') { %><textarea class="textarea" id="<%= id %>" name="<%= name(field.key) %>" rows="3" maxlength="<%= field.maxLength %>"<%- prefill %><%- aria %>><%= typeof value === 'string' ? value : '' %></textarea>
+        <% } else { %><input class="input" id="<%= id %>" name="<%= name(field.key) %>" type="text" maxlength="<%= field.maxLength %>" autocomplete="off" value="<%= typeof value === 'string' ? value : '' %>"<%- prefill %><%- aria %>>
+        <% } %><% if (errText) { %><p class="field__error" id="<%= errId %>"><%= errText %></p><% } %>
+      </div><% } %><% }) %>
+    </div>
+    <% } %>
+  </fieldset>
+  <% } %>
+</div>

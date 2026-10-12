@@ -1,0 +1,96 @@
+/* Модулите на доставчиците в картата: рамка като на хартиения модул, кутийките му като групи, редовете
+   — едни след други, както са на листа (стрелката свързва отметката с подизбора ѝ). */
+
+.modulo {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--radius);
+}
+
+.modulo__head {
+  display: grid;
+  gap: 4px;
+}
+
+.modulo__title {
+  font-size: 1.0625rem;
+}
+
+.modulo__group {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 8px 12px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  min-width: 0;
+}
+
+.modulo__group > legend {
+  padding: 0 6px;
+  font-weight: 600;
+}
+
+.modulo__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px 10px;
+}
+
+.modulo__arrow {
+  align-self: center;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.modulo__text {
+  display: grid;
+  gap: 4px;
+  flex: 1 1 180px;
+  max-width: 340px;
+  min-width: 0;
+}
+
+.modulo__text--wide {
+  flex-basis: 100%;
+  max-width: none;
+}
+
+/* Модулът има над сто отметки: по-ниски от тези на картата, но пак над 24 px за пръст. */
+.tick--sm {
+  min-height: 38px;
+  padding: 0 12px 0 9px;
+  gap: 8px;
+  font-size: 0.9375rem;
+}
+
+.tick--sm .tick__box {
+  width: 18px;
+  height: 18px;
+}
+
+.tick--sm input:checked + .tick__box::after {
+  left: 4.5px;
+  top: 1px;
+  width: 5px;
+  height: 9px;
+}
+
+/* На страницата на картата: попълненият модул — свалянето и печатът му. */
+.modulo-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  white-space: normal;
+}
+
+.modulo-links__name {
+  flex-basis: 100%;
+  font-weight: 400;
+  color: var(--muted);
+}

@@ -5,6 +5,8 @@ import { dayFromDate } from '../time.js';
 import { activeFields, SECTIONS, type FieldDef, type SectionKey } from './fields.js';
 import type { FormValues } from './field-parsers.js';
 import { misureFromRows, misureTable, type TableView } from './misure.js';
+import { slotOf, SLOTS } from '../ordini/registry.js';
+import { moduloFormValues, storedValori } from '../ordini/valori.js';
 
 /** Картата с редовете на мерките по спирки — каквото показват страницата, печатът и PDF-ът. */
 export type SchedaShown = Scheda & { misureBottoniere: MisuraBottoniera[] };
@@ -29,6 +31,8 @@ export interface DisplayField {
   options?: OptionView[];
   /** Мерките на старите бутониери по спирки — таблица под полето (при „Sì“ и брой спирки). */
   table?: TableView;
+  /** Попълненият модул на доставчика — свой PDF (`/schede/:id/<path>`), никога в PDF-а на картата. */
+  modulo?: { path: string; titolo: string; fornitore: string };
 }
 
 export interface DisplaySection {
@@ -132,6 +136,11 @@ export function displaySections(
         };
         const options = optionsView(field, values[field.key], t);
         if (options) view.options = options;
+        const slot = slotOf(field.modulo);
+        if (slot && values[field.key] === true && storedValori(slot.modulo, values[slot.column])) {
+          const { titolo, fornitore } = slot.modulo;
+          view.modulo = { path: slot.path, titolo, fornitore };
+        }
         if (field.misure && values[field.key] === true) {
           const table = misureTable(scheda.fermate, scheda.misureBottoniere, t, fmt);
           if (table) view.table = table;
@@ -145,6 +154,10 @@ export function displaySections(
 export function formValuesFromScheda(scheda: SchedaShown, fmt: ViewHelpers): FormValues {
   const values = scheda as unknown as Values;
   const out: FormValues = misureFromRows(scheda.misureBottoniere, fmt);
+  for (const slot of SLOTS) {
+    const valori = storedValori(slot.modulo, values[slot.column]);
+    if (valori) Object.assign(out, moduloFormValues(slot.modulo, slot.prefix, valori));
+  }
   for (const section of SECTIONS) {
     for (const field of section.fields as readonly FieldDef[]) {
       const raw = values[field.key];

@@ -2,87 +2,21 @@
  * Полетата на схемата — ЕДИНСТВЕНИЯТ източник: формата, проверката, страницата, печатът и PDF-ът се
  * строят оттук. Редът е дословно от заданието на клиента; разделите само групират, без да разместват.
  * Полетата от второто задание (врати, аларма, работна поръчка, мерки на бутониерите) стоят до тези,
- * към които се отнасят. Етикетите са в речника: `scheda.field.<key>`, `scheda.section.<key>`,
+ * към които се отнасят; третото (табло и аргано за поръчка) е накрая — модулите на доставчиците им са в
+ * src/ordini/. Етикетите са в речника: `scheda.field.<key>`, `scheda.section.<key>`,
  * `scheda.option.<key>.<СТОЙНОСТ>`, `scheda.question.<key>`.
  */
 
-export type FieldKind =
-  | 'date' // днешната дата по подразбиране
-  | 'text' // кратък текст
-  | 'textarea' // бележки
-  | 'digits' // идентификатор само от цифри (водещата нула се пази — низ)
-  | 'int' // цяло число
-  | 'decimal' // до 2 знака след запетаята („6,5“ или „6.5“)
-  | 'checks' // отметки (повече от една може)
-  | 'choice' // един избор от няколко (или неотбелязано)
-  | 'yesno'; // Sì / No / неотбелязано
+import type { Condition, FieldDef, SectionDef } from './field-types.js';
 
-export type Unit = 'kg' | 'persone' | 'mm' | 'm';
-
-export type SectionKey =
-  | 'impianto'
-  | 'targa'
-  | 'ubicazione'
-  | 'tipologia'
-  | 'funi'
-  | 'limitatore'
-  | 'cavi'
-  | 'allarme'
-  | 'note';
+export * from './field-types.js';
 
 export const UBICAZIONE_MACCHINA = ['ALTO', 'BASSO'] as const;
 export const TIPO_IMPIANTO = ['ELETTRICO', 'IDRAULICO', 'GEARLESS'] as const;
 export const TIPO_PORTE = ['AUTOMATICHE', 'SEMIAUTOMATICHE', 'MANUALI'] as const;
 export const TELESOCCORSO_STATO = ['COMPLETO', 'MANCA_PERIFERICA'] as const;
-
-/**
- * Кога полето има смисъл: по-ранно поле от формата има една от `values` — при Sì/No това е 'si', при
- * отметките стига една от изброените. Иначе полето не се показва и не се пази (null).
- */
-export interface Condition {
-  field: string;
-  values: readonly string[];
-}
-
-interface BaseField {
-  key: string;
-  kind: FieldKind;
-  /** На цял ред във формата и в PDF-а (адрес, бележки). */
-  wide?: boolean;
-  when?: Condition;
-  /** Във формата етикетът е въпрос (`scheda.question.<key>`); на листа — `scheda.field.<key>`. */
-  question?: boolean;
-  /** При „Sì“ носи таблицата с мерките на старите бутониери — ред за всяка спирка (misure.ts). */
-  misure?: boolean;
-}
-
-export interface TextField extends BaseField {
-  kind: 'text' | 'textarea' | 'digits';
-  maxLength: number;
-}
-
-export interface NumberField extends BaseField {
-  kind: 'int' | 'decimal';
-  min: number;
-  max: number;
-  unit?: Unit;
-}
-
-export interface OptionsField extends BaseField {
-  kind: 'checks' | 'choice';
-  options: readonly string[];
-}
-
-export interface PlainField extends BaseField {
-  kind: 'date' | 'yesno';
-}
-
-export type FieldDef = TextField | NumberField | OptionsField | PlainField;
-
-export interface SectionDef {
-  key: SectionKey;
-  fields: readonly FieldDef[];
-}
+export const QUADRO_MARCA = ['PELAZZA', 'MOVILIFT', 'DMG', 'MASTECH', 'ALTRO'] as const;
+export const ARGANO_MARCA = ['MONTANARI', 'ALTRO'] as const;
 
 const yes = (field: string): Condition => ({ field, values: ['si'] });
 /** Операторът на вратите има смисъл при автоматични и полуавтоматични врати. */
@@ -93,6 +27,8 @@ const PORTE_CON_OPERATORE: Condition = {
 const PORTE_MANUALI: Condition = { field: 'tipoPorte', values: ['MANUALI'] };
 /** Прибиращата се шейна — при ръчни и при полуавтоматични врати. */
 const PORTE_CON_PATTINO: Condition = { field: 'tipoPorte', values: ['MANUALI', 'SEMIAUTOMATICHE'] };
+/** „Altro“ при марката → коя. */
+const ALTRA = (field: string): Condition => ({ field, values: ['ALTRO'] });
 
 export const SECTIONS = [
   {
@@ -201,6 +137,38 @@ export const SECTIONS = [
       { key: 'lavoriExtra', kind: 'textarea', maxLength: 4000, wide: true },
     ],
   },
+  {
+    // Таблото за поръчка: марката; при Pelazza — модулът им за поръчка (src/ordini/).
+    key: 'quadro',
+    fields: [
+      { key: 'quadroMarca', kind: 'choice', options: QUADRO_MARCA },
+      { key: 'quadroMarcaAltro', kind: 'text', maxLength: 120, when: ALTRA('quadroMarca') },
+      {
+        key: 'quadroOrdine',
+        kind: 'yesno',
+        wide: true,
+        question: true,
+        modulo: 'ordineQuadro',
+        when: { field: 'quadroMarca', values: ['PELAZZA'] },
+      },
+    ],
+  },
+  {
+    // Аргано (машината): марката; при Montanari — тяхното запитване за оферта (src/ordini/).
+    key: 'argano',
+    fields: [
+      { key: 'arganoMarca', kind: 'choice', options: ARGANO_MARCA },
+      { key: 'arganoMarcaAltro', kind: 'text', maxLength: 120, when: ALTRA('arganoMarca') },
+      {
+        key: 'arganoPreventivo',
+        kind: 'yesno',
+        wide: true,
+        question: true,
+        modulo: 'preventivoArgano',
+        when: { field: 'arganoMarca', values: ['MONTANARI'] },
+      },
+    ],
+  },
 ] as const satisfies readonly SectionDef[];
 
 export type SchedaFieldKey = (typeof SECTIONS)[number]['fields'][number]['key'];
@@ -233,18 +201,6 @@ export const SEARCHABLE = [
 
 export function fieldByKey(key: string): FieldDef | undefined {
   return FIELDS.find((field) => field.key === key);
-}
-
-export function isTextField(field: FieldDef): field is TextField {
-  return field.kind === 'text' || field.kind === 'textarea' || field.kind === 'digits';
-}
-
-export function isNumberField(field: FieldDef): field is NumberField {
-  return field.kind === 'int' || field.kind === 'decimal';
-}
-
-export function isOptionsField(field: FieldDef): field is OptionsField {
-  return field.kind === 'checks' || field.kind === 'choice';
 }
 
 /** Стойността като думи от формата: Sì/No → 'si'/'no', отметките — списъкът, изборът — той самият. */
